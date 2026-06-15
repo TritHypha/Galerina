@@ -3,6 +3,10 @@
 The LogicN certified package registry is the canonical source of governance-reviewed,
 cryptographically-signed packages for the LogicN platform.
 
+> **⚠️ Scaffold (Phase 28).** The package manifests here are **declarative stubs pending full
+> resolver wiring** (see Status). The guarantees described below are the **intended design** — they
+> are NOT yet actively enforced or signed, so do not treat them as live controls.
+
 ## Concept
 
 Every package in this registry has been reviewed against the LogicN governance rules:

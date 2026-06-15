@@ -26,6 +26,11 @@ training limits
 inference limits
 ```
 
+> Note: the list above is a **conceptual overview**. The package exports typed `Neural*` contracts
+> (`NeuralModelDefinition`, `NeuralLayer`, `ActivationFunction`, `NeuralInferencePlan`,
+> `NeuralTrainingPlan`, …) — see `src/index.ts` for the exact surface; not every concept above maps
+> to a standalone export yet.
+
 ## Boundary
 
 Neural networks are not normal app syntax and should not be hard-coded into

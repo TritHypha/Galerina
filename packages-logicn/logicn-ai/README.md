@@ -19,9 +19,9 @@ memory estimates
 AI safety policy
 AI inference reports
 AI review and report explanation contracts
-passive LLM cache policy contracts
-LLM provider cache key contracts
-embedding cache policy contracts
+passive LLM cache policy contracts        (planned — not yet exported)
+LLM provider cache key contracts          (planned — not yet exported)
+embedding cache policy contracts          (planned — not yet exported)
 target-neutral generation contracts
 AI compute plan declarations
 ```
@@ -85,7 +85,7 @@ Final rule:
 
 ```text
 logicn-ai describes AI inference.
-logicn-ai describes provider-neutral passive LLM cache contracts.
+logicn-ai will describe provider-neutral passive LLM cache contracts (planned — see body).
 logicn-ai-lowbit adapts low-bit model backends.
 logicn-core-compute and target packages choose where work runs.
 logicn-core-security owns secret and privacy checks.
