@@ -63,3 +63,19 @@ test("no attestation policy ⇒ unchanged behaviour (back-compat)", async () => 
   const r = await eng.infer({ prompt: "x", correlationId: cid("compat"), opClasses: ["feedforward"] });
   assert.equal(r.trapFired, false);
 });
+
+test("verifyAttestation ENFORCES the #201 manifest checks end-to-end (fail-closed via validateManifestShape)", () => {
+  // Proves the #201 calibration-as-attestation checks are wired into the Tower's admission gate
+  // (verifyAttestation calls validateManifestShape first), not just unit-tested in the contract pkg.
+  const base = new StubTernaryBridge(inMem()).manifest;
+  const H64 = "a".repeat(64);
+  assert.equal(verifyAttestation({ manifest: base }, {}).ok, true, "valid base manifest is admitted");
+  // injectivity: a non-finite tolerance is rejected at admission (attestation hash safety)
+  assert.equal(verifyAttestation({ manifest: { ...base, tolerance: Infinity } }, {}).ok, false, "non-finite tolerance denied");
+  // fidelity floor: measured below the declared floor is denied
+  assert.equal(verifyAttestation({ manifest: { ...base, minFidelity: 0.9, measuredFidelity: 0.5 } }, {}).ok, false, "measured below fidelity floor denied");
+  // witness invariant: a declared tolerance tighter than the measured epsilon is denied
+  const tighter = { ...base, determinismMode: "tolerance", tolerance: 1e-7, pinnedEnvHash: H64, backendArtifactHash: H64,
+    toleranceWitness: { redundancyN: 8, epsilonMeasured: 1e-6, stdDev: 1e-7, noiseModelId: "m" } };
+  assert.equal(verifyAttestation({ manifest: tighter }, {}).ok, false, "tolerance tighter than measured epsilon denied");
+});

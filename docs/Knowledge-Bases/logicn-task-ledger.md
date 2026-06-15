@@ -301,6 +301,7 @@ Verified: **48/48 · 4,368 tests · 0 fail**. 7 commits on top of `Initial commi
 | AF-3 | `type-registry.ts:145` stale comment → inline `EffectFlags`. | ✅ | `beb575b` |
 | AF-4 | **Graph duplicates:** verified NOT mergeable (`project-graph` is a vendored external repo + `graph-algorithms` is compiler-used); hardened our `canReach` + do-not-merge marker. | ✅ | `f57ef02` |
 
-**#201 — still open (next, in rough order):**
-- **Universal enforcement:** `validateManifestShape` is currently called by `ext-bridge-quantum` + the contract tests only — NOT the Tower's general admission path. Wire it in (or confirm intentional separation, since `bridge-attestation` already does Ed25519 + hash-pin) — VERIFY-BEFORE-BUILD.
-- **#1** precision-attestation gate (compiler-side) · **#3/#4** substrate integration (`verifySubstrate` + the witness) · storage/compute-precision split (needs `int4`/`int8` in the routing enum + both Tower Records) · **#2** comparability as a required pin (with ffsim-manifest migration).
+**#201 — enforcement + still-open (corrected 2026-06-16):**
+- ✅ **Universal enforcement VERIFIED (not a gap).** The Tower admission gate `hybrid-engine.ts:265 → verifyAttestation → validateManifestShape` (`bridge-attestation.ts:71`, fail-closed) runs ALL #201 checks; `attestationHash` hashes the `canonNum`-hardened pre-image. Proven end-to-end by `bridge-attestation.test.mjs` (non-finite tolerance / below-floor fidelity / tighter-than-measured witness all DENY at admission). *(The earlier "not wired" note was a grep `head` truncation false-negative — caught by reading the code.)*
+- 🔒 **Attestation-injectivity fail-open FIXED** (`66e1b48`): non-finite numeric fields can no longer alias two manifests to one sha256.
+- **Still open:** **#1** precision-attestation gate (compiler-side) · **#3/#4** substrate integration (`verifySubstrate` + the witness) · storage/compute-precision split (needs `int4`/`int8` in the routing enum + both Tower Records) · **#2** comparability + mandatory-witness as required pins for `determinismMode='tolerance'` (with ffsim-manifest migration).

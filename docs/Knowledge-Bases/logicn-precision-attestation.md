@@ -33,6 +33,16 @@ Candidate diagnostics (when wired into the compiler/Tower admission path): **LLN
 ≠ observed precision), **LLN-PRECISION-FIDELITY** (below floor), **LLN-PRECISION-WITNESS** (claim tighter
 than measured).
 
+## Enforcement (VERIFIED 2026-06-16 — already wired, not a gap)
+
+The #201 checks are enforced at the Tower's bridge-admission gate, end-to-end:
+`hybrid-engine.ts:265` → `verifyAttestation` (`bridge-attestation.ts:71`, fail-closed) → `validateManifestShape`.
+`attestationHash` hashes the `canonNum`-hardened pre-image, so the NaN/Infinity collision is closed.
+Proven by `logicn-tower-citizen/tests/bridge-attestation.test.mjs` ("ENFORCES the #201 manifest checks
+end-to-end"): a non-finite tolerance, a below-floor `measuredFidelity`, and a tighter-than-measured witness
+all DENY at admission. So no "universal enforcement" wiring is needed (an earlier note claiming otherwise
+was a grep-truncation false negative).
+
 ## Next increments (not yet built)
 
 1. ✅ **#5 — quantization taxonomy (LANDED as `QuantizationMethod`, increment 2).** Verify-before-build
