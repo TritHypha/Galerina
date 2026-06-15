@@ -260,3 +260,27 @@ mutated). **3,322/3,322 compiler tests green.** Parser-parity prerequisites now 
 
 *Maintenance: when a task lands or a file moves, update the row above. Re-run `run-phase-close.mjs`
 after edits to refresh graph node/edge counts and confirm audit/governance stay green.*
+
+---
+
+## 5. Milestone #200 / P10 — Post-P9 Integrity & Graph-Indexing Close-Out (2026-06-15)
+
+Full record: **[logicn-200-closeout-2026-06-15.md](logicn-200-closeout-2026-06-15.md)**.
+Verified state: **48/48 packages · 4,360 tests · 0 fail**; graph **3,533 nodes / 3,969 edges**.
+
+| # | Item | Status |
+|---|---|---|
+| 200 | **Post-P9 integrity close-out (umbrella)** | ✅ in-repo portion COMPLETE |
+| 200a | Doc reconciliation (SOT/ledger counts, #143/#145 un-staled, #199 corrected, FFSM banner) | ✅ |
+| 200b | **#177 graph fix** — `createFileNode`+`extractLogicnSymbols` logicn-source nodes; +3 pkgs to workspace | ✅ |
+| 200c | `SecretSinkMonitor` dead-duplicate consolidation + graph regen | ✅ |
+| 200d | Full-repo deep audit (48 confirmed / 1 refuted; 10H/17M/21L) | ✅ |
+| 200e | External idea-mining (8 repos → 12 ranked; [logicn-external-idea-mining-2026-06-15.md](logicn-external-idea-mining-2026-06-15.md)) | ✅ |
+
+**Open follow-ups become the roadmap (NOT part of #200):**
+- **#201 (proposed) — "calibration-as-attestation" lane:** measured-tolerance/precision-attestation contract work (idea-mining #5→#2+#12→#3+#4→#1); extends `BridgeManifest`+`DeterminismMode "tolerance"`.
+- **#202 (proposed) — honesty pass (#179-class):** H3/H4 ML-DSA naming, manifest CBOR/JSON header, LEXER_PARITY downgrade, scaffold relabeling, README overclaims, `canCommit` wiring-or-docstring.
+- **#177-followon:** add the remaining ~34 real packages to `logicn.workspace.json` (graph under-coverage; #155-adjacent).
+- **User-gated (TCB/decisions):** H1 cert-profile pre-image · H2 `policy{}` fail-open (parser) · H5 fusion-B2 ABI · #149 key rotation+force-push.
+- **External-infra:** real DSS.wasm (#102-106) · ffsim Phase 2 (#199) · ML-DSA-65 manifest wiring.
+- ⚠️ **dead-export findings are "wire-or-verify", NOT "delete"** — some (e.g. plugin-schema.ts) are pending-integration security code per P9-144.
