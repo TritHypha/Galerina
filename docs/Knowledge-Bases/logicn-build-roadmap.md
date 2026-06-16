@@ -19,6 +19,7 @@
   - 🔲 **GOV-001** — Domain-Guard differential proof (`conforms_to`) gap. · 🔲 **GOV-003** — LLN-GOV-003 (protected-data-in-response) enforced on only a partial path.
   - 🔲 **CRYPTO-003** — the governance signature omits several security-relevant ProofGraph fields. **Versioning-sensitive** (crypto-format bump per the design-stability charter — handle deliberately).
   - **+10 medium · 10 low · 6 info** (QB-001 admission-not-structurally-enforced, VSC-004/005, GOV-002/004, CRYPTO-004/005/006, dead-code/style) — full triage list in `tasks/w6lqlqgck.output`.
+  - ✅ **Low cleanup done** (`cleanup` commit): DEAD-001 (TamperResponseStrategy → single source of truth for VALID_TAMPER), DEAD-002 (dead `hasNode` removed), DUP-001 (duplicate context extractor consolidated). 🔲 REDUN-001 (LLN_SUBSTRATE_00x const consolidation across substrate-inference/-model) deferred — analogous to DEAD-001 but cross-file diagnostic construction.
 
 **Benchmark — Gate 9 (`8273ad3`):** `crypto-ops` now measures **ML-DSA-65 + hybrid Ed25519+ML-DSA-65**. PQ-tax: hybrid verify ≈ 1.75 ms (~17× Ed25519), sign ≈ 6.7 ms (~84×); sigs/keys ~50× larger. governance-cost unchanged within noise. These rows are an **R4 regression gate** — PQ stays at amortized admission/build boundaries, never the per-decision hot path.
 
