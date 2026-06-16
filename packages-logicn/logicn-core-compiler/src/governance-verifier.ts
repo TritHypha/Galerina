@@ -656,24 +656,36 @@ function collectBodyFieldNames(flowNode: AstNode): Set<string> {
   const fields = new Set<string>();
 
   function walkReturnExpr(node: AstNode): void {
+    // Discharge: redact(...) / seal(...) sanitise their contents — do not collect inside them
+    // (GOV-003: seal() recognised alongside redact()).
+    if (node.kind === "callExpr" && (node.value === "redact" || node.value === "seal")) {
+      return;
+    }
     if (node.kind === "callExpr") {
       for (const child of node.children ?? []) {
         // Named argument labels are identifier nodes with a value child
         if (child.kind === "identifier" && child.value !== undefined && (child.children ?? []).length > 0) {
-          // Skip if the value is wrapped in redact(...) — it has been sanitised
           const valueChild = child.children![0];
-          const isRedacted = valueChild !== undefined &&
+          const isDischarged = valueChild !== undefined &&
             valueChild.kind === "callExpr" &&
-            valueChild.value === "redact";
-          if (!isRedacted) {
+            (valueChild.value === "redact" || valueChild.value === "seal");
+          if (!isDischarged) {
             fields.add(child.value);
           }
         }
       }
-      for (const child of node.children ?? []) walkReturnExpr(child);
-    } else {
-      for (const child of node.children ?? []) walkReturnExpr(child);
     }
+    // GOV-003 broadening (audit 2026-06-16): a denied field can leak via a bare member access
+    // (`return user.email`) or a positional value (`return Ok(email)`), not only a named-argument
+    // label. Collect those forms too — exact field-name match against response.denies; redact()/
+    // seal() above discharge anything they wrap. memberExpr stores the field name in `value`.
+    if (node.kind === "memberExpr" && node.value !== undefined) {
+      fields.add(node.value);
+    }
+    if (node.kind === "identifier" && node.value !== undefined && (node.children ?? []).length === 0) {
+      fields.add(node.value);
+    }
+    for (const child of node.children ?? []) walkReturnExpr(child);
   }
 
   function findReturnStmts(node: AstNode): void {
