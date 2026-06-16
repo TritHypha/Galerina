@@ -30,6 +30,24 @@ and binds the full tamper-evidence set under the signature.
 
 ---
 
+## 🏗️ Phase 2 — `.tmf` engine build (#6) — IN PROGRESS (2026-06-16)
+
+Owner decision: build as a **new LogicN package** (`packages-logicn/logicn-ext-tmf`), engine first.
+Specs frozen in `LogicN-R-AND-D/tmf/spec/*`; crypto-on-core (bit-exact, deterministic; SHAKE256 via
+`node:crypto`, ML-DSA-65 via `@noble/post-quantum` — no Rust, no photonic crypto).
+
+| Slice | Scope | Status |
+|---|---|---|
+| 1 | **TMX-256 integrity core** (TriMerkle-XOF/SHAKE256: leaf/node/root, ABSENT, tree shape) | ✅ **DONE** — golden-verified vs frozen spec (9 tests; cross-lang conformant w/ Python ref). 49/49 · 4,490. |
+| 2 | Container reader/writer (header + 56-byte section table; §8 fail-closed reader) | ⬜ next |
+| 3 | KEM-DEM confidentiality (ML-KEM-768 hybrid → SHAKE/HKDF → AES-256-GCM, verify-before-decrypt) | ⬜ |
+| 4 | **#7** ML-DSA-65 signing over the root (hybrid Ed25519), reusing the shipped signer | ⬜ |
+| 5 | Inclusion proofs · history chain · **#12** Governed Trust Capsule (RFC 9964) | ⬜ |
+
+Remaining enc-rnd hand-offs gated behind this: #7 (slice 4), #12 (slice 5); #9/#10/#11 (privacy + namespace) and #13 (ffsim landing, needs QB-001) tracked separately.
+
+---
+
 ## 🔐 2026-06-16 cycle — security audit · PQ benchmark · R&D adjudication
 
 **Verified:** 48/48 packages · 4,481 tests · 0 fail · graph 3569 nodes / 4005 edges / 1875 files · zero `.td` (migration complete). **ALL original audit criticals + highs cleared (8):** VSC-001 (crit), VSC-002, VSC-003, CRYPTO-001, CRYPTO-002, CRYPTO-003, GOV-001, GOV-003. Residual: GOV-003 intermediate-binding-rename (dataflow follow-up); the audit's 10 medium / 10 low / 6 info remain as backlog.
