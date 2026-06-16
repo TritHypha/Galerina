@@ -93,6 +93,65 @@ contract { effects { audit.write } }
       `Expected LLN-VALUESTATE-003 for unsafe → AuditLog.write`);
   });
 
+  // VSC-001 (2026-06-16 audit): isGovernedSink had silently diverged from the authoritative
+  // SINK_REQUIREMENTS registry, so unsafe/tainted values escaped into these sinks with NO
+  // diagnostic. The fix makes isGovernedSink consult getSinkRequirement (single source of truth).
+  it("emits LLN-VALUESTATE-003 when unsafe let reaches response.body (VSC-001)", () => {
+    const result = vsCheck(`
+secure flow esc(request: Request) -> Result<String, Error>
+contract { effects { network.outbound } }
+{
+  unsafe let raw: String = request.body.data
+  let x = response.body(raw)
+  return Ok("done")
+}
+`);
+    assert.ok(hasDiag(result, "LLN-VALUESTATE-003"),
+      `Expected LLN-VALUESTATE-003 for unsafe → response.body, got: ${result.diagnostics.map((d) => d.code).join(", ")}`);
+  });
+
+  it("emits LLN-VALUESTATE-003 when unsafe let reaches ai.remoteInference (VSC-001)", () => {
+    const result = vsCheck(`
+secure flow esc(request: Request) -> Result<String, Error>
+contract { effects { ai.inference } }
+{
+  unsafe let raw: String = request.body.data
+  let x = ai.remoteInference(raw)
+  return Ok("done")
+}
+`);
+    assert.ok(hasDiag(result, "LLN-VALUESTATE-003"),
+      `Expected LLN-VALUESTATE-003 for unsafe → ai.remoteInference`);
+  });
+
+  it("emits LLN-VALUESTATE-003 when unsafe let reaches bare database.write (VSC-001)", () => {
+    const result = vsCheck(`
+secure flow esc(request: Request) -> Result<String, Error>
+contract { effects { database.write } }
+{
+  unsafe let raw: String = request.body.data
+  let x = database.write(raw)
+  return Ok("done")
+}
+`);
+    assert.ok(hasDiag(result, "LLN-VALUESTATE-003"),
+      `Expected LLN-VALUESTATE-003 for unsafe → database.write`);
+  });
+
+  it("emits LLN-VALUESTATE-003 when unsafe let reaches log.write (VSC-001)", () => {
+    const result = vsCheck(`
+secure flow esc(request: Request) -> Result<String, Error>
+contract { effects { audit.write } }
+{
+  unsafe let raw: String = request.body.data
+  log.write(raw)
+  return Ok("done")
+}
+`);
+    assert.ok(hasDiag(result, "LLN-VALUESTATE-003"),
+      `Expected LLN-VALUESTATE-003 for unsafe → log.write`);
+  });
+
   it("does not emit LLN-VALUESTATE-003 for plain (non-unsafe) let at a sink", () => {
     const result = vsCheck(`
 secure flow storeClean() -> Result<String, Error>

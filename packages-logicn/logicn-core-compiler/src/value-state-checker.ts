@@ -227,6 +227,13 @@ function isGovernedSink(node: AstNode): boolean {
   if (/^EmailService\.(send\w*|deliver)$/.test(fullName)) return true;
   if (/\w+Payment\.(charge|process|submit)$/.test(fullName)) return true;
 
+  // Single source of truth (audit VSC-001): any sink in the SINK_REQUIREMENTS registry —
+  // exact OR pattern — is governed. This keeps isGovernedSink a strict SUPERSET so the two
+  // registries can't silently diverge. Previously response.body / ai.remoteInference /
+  // network.outbound / log.write / bare database.write / http(s).get were enforced by NEITHER
+  // path, so unsafe/tainted values escaped the trust boundary with no diagnostic.
+  if (getSinkRequirement(fullName) !== undefined) return true;
+
   return false;
 }
 
