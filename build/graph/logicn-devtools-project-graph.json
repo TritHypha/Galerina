@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-06-16T01:59:30.139Z",
+  "generatedAt": "2026-06-16T12:11:35.232Z",
   "nodes": [
     {
       "id": "package:logicn-core",
@@ -8055,6 +8055,15 @@
       ]
     },
     {
+      "id": "doc:docs/Knowledge-Bases/logicn-design-stability-and-forward-planning.md",
+      "kind": "Document",
+      "label": "logicn-design-stability-and-forward-planning.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-design-stability-and-forward-planning.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
       "id": "doc:docs/Knowledge-Bases/logicn-deterministic-runtime-containment.md",
       "kind": "Document",
       "label": "logicn-deterministic-runtime-containment.md",
@@ -8095,6 +8104,15 @@
       "kind": "Document",
       "label": "logicn-developer-ux-phase-8.md",
       "sourcePath": "docs/Knowledge-Bases/logicn-developer-ux-phase-8.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/logicn-diagnostic-namespace-ownership.md",
+      "kind": "Document",
+      "label": "logicn-diagnostic-namespace-ownership.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-diagnostic-namespace-ownership.md",
       "tags": [
         "document"
       ]
@@ -16316,6 +16334,16 @@
       ]
     },
     {
+      "id": "type:logicn-core-compiler:HybridAttestationKeyPair",
+      "kind": "Type",
+      "label": "HybridAttestationKeyPair",
+      "sourcePath": "packages-logicn/logicn-core-compiler/src/attestation.ts",
+      "tags": [
+        "type",
+        "logicn-core-compiler"
+      ]
+    },
+    {
       "id": "flow:logicn-core-compiler:attestationToYaml",
       "kind": "Flow",
       "label": "attestationToYaml",
@@ -17519,6 +17547,16 @@
       "id": "type:logicn-core-compiler:LLN_GOV_012",
       "kind": "Type",
       "label": "LLN_GOV_012",
+      "sourcePath": "packages-logicn/logicn-core-compiler/src/governance-verifier.ts",
+      "tags": [
+        "type",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "type:logicn-core-compiler:LLN_CRYPTO_PQ_001",
+      "kind": "Type",
+      "label": "LLN_CRYPTO_PQ_001",
       "sourcePath": "packages-logicn/logicn-core-compiler/src/governance-verifier.ts",
       "tags": [
         "type",
@@ -38149,6 +38187,20 @@
       "evidencePath": "docs/Knowledge-Bases/logicn-developer-tools.md"
     },
     {
+      "from": "doc:docs/Knowledge-Bases/logicn-diagnostic-namespace-ownership.md",
+      "to": "package:logicn-core",
+      "kind": "documents",
+      "confidence": "INFERRED",
+      "evidencePath": "docs/Knowledge-Bases/logicn-diagnostic-namespace-ownership.md"
+    },
+    {
+      "from": "doc:docs/Knowledge-Bases/logicn-diagnostic-namespace-ownership.md",
+      "to": "package:logicn-core-compiler",
+      "kind": "documents",
+      "confidence": "INFERRED",
+      "evidencePath": "docs/Knowledge-Bases/logicn-diagnostic-namespace-ownership.md"
+    },
+    {
       "from": "doc:docs/Knowledge-Bases/logicn-drcm-phase1-specs.md",
       "to": "package:logicn-core",
       "kind": "documents",
@@ -48013,6 +48065,13 @@
     },
     {
       "from": "package:logicn-core-compiler",
+      "to": "type:logicn-core-compiler:HybridAttestationKeyPair",
+      "kind": "provides",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/src/attestation.ts"
+    },
+    {
+      "from": "package:logicn-core-compiler",
       "to": "flow:logicn-core-compiler:attestationToYaml",
       "kind": "provides",
       "confidence": "EXTRACTED",
@@ -48854,6 +48913,13 @@
     {
       "from": "package:logicn-core-compiler",
       "to": "type:logicn-core-compiler:LLN_GOV_012",
+      "kind": "provides",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/src/governance-verifier.ts"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "type:logicn-core-compiler:LLN_CRYPTO_PQ_001",
       "kind": "provides",
       "confidence": "EXTRACTED",
       "evidencePath": "packages-logicn/logicn-core-compiler/src/governance-verifier.ts"

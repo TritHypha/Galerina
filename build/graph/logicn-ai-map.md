@@ -29,12 +29,12 @@ Provides:
 - signAttestation
 - verifyAttestation
 - generateAttestationKey
+- HybridAttestationKeyPair
 - attestationToYaml
 - attestationFromJson
 - AuditEvent
 - AuditWriter
 - createAuditWriter
-- buildFlowAuditEvent
 
 ## logicn-core-runtime
 
