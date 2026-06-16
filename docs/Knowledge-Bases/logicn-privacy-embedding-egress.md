@@ -90,16 +90,21 @@ verified by reproduction and **CLOSED** (regression-tested in `tests/value-state
 
 ## Residual / deferred (honest limits)
 
+- **Container read-back IS tracked (verified 2026-06-16):** storing a secret/embedding in a record or array
+  and reading an element back in a later statement is caught — the container binding is tagged and member/index
+  access carries the flag to the new binding. Regression-tested in `value-state-egress-hardening.test.mjs`.
 - **Inter-flow is a warning, not inter-procedural proof.** Full inter-procedural egress analysis (a call
-  graph) is a larger feature; the warning is the fail-loud stopgap.
+  graph) is a larger feature; the warning is the fail-loud stopgap (kept a warning so legitimate
+  secret-helper patterns aren't broken).
 - **`fs.writeFile` / generic `*DB` writes of a raw secret are NOT flagged by the network rule** — deliberately:
   `hash(secret) → db.insert(h)` (password storage) is legitimate and only `redact()` declassifies, so routing
   secrets to persistence sinks would false-positive. A separate "secret-at-rest" rule (with a hash declassifier)
   is the correct future home. Embedding→VectorDB *is* flagged (no legitimate cleartext-vector-at-rest pattern).
 - **Runtime backstop** — the DRCM monitor scans only `__tag==='secure'` values; compile-time is the sole
   enforcement for this rule today.
-- **`CRYPTO_EFFECT`** (`substrate-inference.ts`) covers `crypto.hash|sign|verify` only — extend to
-  `crypto.encrypt`/`crypto.seal` for the LLN-SUBSTRATE-001 lane-placement composition (deferred; orthogonal).
+- **`CRYPTO_EFFECT` — DONE 2026-06-16:** `substrate-inference.ts` now covers
+  `crypto.hash|sign|verify|encrypt|decrypt|seal`, so seal()/encrypt() compose with LLN-SUBSTRATE-001
+  (a KEM-DEM/AEAD op on a noisy lane is rejected). `crypto.encrypt/decrypt/seal` are canonical effects.
 - **Tensor<Float32,[N]>** intentionally NOT treated as an embedding (too generic); recognition is precise to
   `Embedding`/`EmbeddingResult`/`EmbeddingModel`/`*embed*` receivers.
 

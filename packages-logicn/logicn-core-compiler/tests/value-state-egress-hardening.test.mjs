@@ -105,6 +105,24 @@ ${rhs}
   });
 });
 
+// ── Container read-back: store in a record/array, read an element back, then egress ──
+// The adversarial review flagged this as a possible gap; the propagation (container binding is
+// tagged; member/index access carries the flag to the new binding) actually closes it. Locked in.
+describe("egress hardening — container read-back is tracked", () => {
+  it("secret stored in a record then read back via field → LLN-SECRET-002", () => {
+    const r = chk(wrap('  let kk = secret.get("api")\n  let rec = { tok: kk }\n  let x = rec.tok\n  let y = http.post("u", x)'));
+    assert.ok(has(r, "LLN-SECRET-002"), codes(r));
+  });
+  it("secret stored in an array then read back via index → LLN-SECRET-002", () => {
+    const r = chk(wrap('  let kk = secret.get("api")\n  let arr = [kk]\n  let x = arr[0]\n  let y = http.post("u", x)'));
+    assert.ok(has(r, "LLN-SECRET-002"), codes(r));
+  });
+  it("embedding stored in an array then read back via index → LLN-PRIVACY-002", () => {
+    const r = chk(wrap('  let e = EmbeddingModel.run(req)\n  let arr = [e]\n  let x = arr[0]\n  let y = http.post("u", x)'));
+    assert.ok(has(r, "LLN-PRIVACY-002"), codes(r));
+  });
+});
+
 describe("egress hardening — no false positives", () => {
   it("seal()-ed embedding stays clean", () => {
     const r = chk(wrap('  let e = EmbeddingModel.run(req)\n  let s = seal(e)\n  let x = http.post("u", s)'));
