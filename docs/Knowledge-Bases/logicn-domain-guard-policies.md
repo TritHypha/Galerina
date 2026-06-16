@@ -214,6 +214,28 @@ Domain guards make the AI authoring safety pipeline structurally stronger. Even 
 
 ---
 
+## 7a. `permitted_effects` state machine (GOV-001 — ratified 2026-06-16)
+
+A Gate-6 audit found the conformance check failed open: an empty/omitted `permitted_effects` was
+treated as allow-all, and an unresolvable `[conforms_to: …]` was only a warning. The ratified
+semantics map `permitted_effects` to the K3 calculus:
+
+| Form | K3 | Meaning |
+|---|---|---|
+| **Omitted** (no `permitted_effects` block) | `0` neutral | The policy makes **no claim** on effects — auto-inherit / get-out-of-the-way. A clean **limits-only** guard; no `LLN-GOV-004` for any declared effect. |
+| **Explicitly empty** `permitted_effects { }` | `−1` hard deny | **Revokes all effects** — every declared effect emits `LLN-GOV-004`. |
+| **Populated** `permitted_effects { a, b }` | `+1` allow | Allows **only** the listed effects (subject to parent constraints); others emit `LLN-GOV-004`. |
+
+**Strict `conforms_to` resolution:** because an omitted block auto-inherits its boundary from the
+named policy, an **unresolvable `[conforms_to: X]`** breaks the inheritance chain — a **FATAL
+`DOMAIN_GUARD_NOT_FOUND` error in `production`/`deterministic`** (fail-closed; the chain collapses
+to `−1` deny) and a **warning in `dev`** (the policy may be in another file still being authored).
+This keeps limits-only guards boilerplate-free while satisfying zero-trust: an empty array denies,
+a broken pointer halts the production build. Implemented in `verifyDomainGuardConformance`; tests
+in `tests/governance/guard-decl.test.mjs`.
+
+---
+
 ## 8. New Diagnostic Codes
 
 | Code | Description |
