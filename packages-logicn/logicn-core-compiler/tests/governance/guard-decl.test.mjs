@@ -279,3 +279,82 @@ contract {
     );
   });
 });
+
+// ---------------------------------------------------------------------------
+// GOV-001 (ratified 2026-06-16): permitted_effects K3 state machine + strict conforms_to
+//   omitted block = 0 neutral (auto-inherit) · empty {} = -1 deny-all · populated = +1 allow-listed
+//   unresolvable conforms_to = warning (dev) / fatal error (production · deterministic)
+// ---------------------------------------------------------------------------
+
+describe("GOV-001: permitted_effects state machine + strict conforms_to", () => {
+  it("OMITTED permitted_effects (limits-only guard) is NEUTRAL — no LLN-GOV-004", () => {
+    const source = `
+guard LimitsOnly {
+  enforced_limits {
+    max_memory_ceiling: 16MB
+  }
+}
+
+secure flow worker(id: String) -> Result<String, String>
+contract [conforms_to: LimitsOnly] {
+  intent { "A limits-only guard makes no claim on effects." }
+  effects { database.write, network.outbound }
+}
+{ return Ok(id) }
+`;
+    const result = parseAndVerify(source);
+    assert.ok(
+      !hasDiag(result, "LLN-GOV-004"),
+      `omitted permitted_effects must be neutral (auto-inherit), got: ${result.diagnostics.map((d) => d.code).join(", ")}`,
+    );
+  });
+
+  it("EXPLICITLY EMPTY permitted_effects {} is DENY-ALL — every declared effect emits LLN-GOV-004", () => {
+    const source = `
+guard DenyAll {
+  permitted_effects {
+  }
+}
+
+secure flow worker(id: String) -> Result<String, String>
+contract [conforms_to: DenyAll] {
+  intent { "Empty permitted_effects revokes all effects." }
+  effects { database.read }
+}
+{ return Ok(id) }
+`;
+    const result = parseAndVerify(source);
+    assert.ok(
+      hasDiag(result, "LLN-GOV-004"),
+      `empty permitted_effects {} must deny all effects, got: ${result.diagnostics.map((d) => d.code).join(", ")}`,
+    );
+  });
+
+  it("unresolvable conforms_to is a WARNING in dev", () => {
+    const source = `
+secure flow worker(id: String) -> Result<String, String>
+contract [conforms_to: MissingPolicy] {
+  intent { "Broken chain — dev profile." }
+  effects { database.read }
+}
+{ return Ok(id) }
+`;
+    const result = parseAndVerify(source, "dev");
+    const d = result.diagnostics.find((x) => x.code === "LLN-GOV-004" && x.name === "DOMAIN_GUARD_NOT_FOUND");
+    assert.ok(d !== undefined && d.severity === "warning", `dev: expected a warning, got: ${d?.severity}`);
+  });
+
+  it("unresolvable conforms_to is a FATAL ERROR in production (fail-closed)", () => {
+    const source = `
+secure flow worker(id: String) -> Result<String, String>
+contract [conforms_to: MissingPolicy] {
+  intent { "Broken chain — production profile." }
+  effects { database.read }
+}
+{ return Ok(id) }
+`;
+    const result = parseAndVerify(source, "production");
+    const d = result.diagnostics.find((x) => x.code === "LLN-GOV-004" && x.name === "DOMAIN_GUARD_NOT_FOUND");
+    assert.ok(d !== undefined && d.severity === "error", `production: expected a fatal error, got: ${d?.severity}`);
+  });
+});

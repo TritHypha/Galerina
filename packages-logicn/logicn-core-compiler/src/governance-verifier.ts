@@ -2326,13 +2326,19 @@ class GovernanceVerifier {
     const policyNode = this.knownDomainGuards.get(policyName);
 
     if (policyNode === undefined) {
-      // Policy referenced but not found — warn, don't error (policy may be in a different file)
+      // GOV-001 (ratified 2026-06-16): a broken conforms_to inheritance chain. Because an OMITTED
+      // permitted_effects block auto-inherits its safety boundary from this policy, a missing
+      // policy means the boundary cannot be resolved — FATAL in production/deterministic
+      // (fail-closed); a warning in dev (the policy may be in another file still being authored).
+      const isProduction = this.currentProfile === "production" || this.currentProfile === "deterministic";
       this.diagnostics.push(makeGovDiag(
         "LLN-GOV-004",
         "DOMAIN_GUARD_NOT_FOUND",
-        "warning",
-        `Flow '${flow.name}' declares [conforms_to: ${policyName}] but no policy '${policyName}' was found in this file. ` +
-        `Ensure the policy is declared at the top level of the same file or imported.`,
+        isProduction ? "error" : "warning",
+        `Flow '${flow.name}' declares [conforms_to: ${policyName}] but no policy '${policyName}' was found in this file.` +
+        (isProduction
+          ? ` A production/deterministic build fails closed on a broken conformance chain.`
+          : ` Ensure the policy is declared at the top level of the same file or imported.`),
         contractNode.location ?? flowNode.location,
         `Add: guard ${policyName} { permitted_effects { ... } enforced_limits { ... } }`,
       ));
@@ -2349,18 +2355,27 @@ class GovernanceVerifier {
         .map((c) => c.value as string)
     );
 
-    // Check declared effects against permitted_effects
-    if (permittedEffects.size > 0) {
+    // GOV-001 permitted_effects state machine (K3 — ratified 2026-06-16):
+    //   • OMITTED block (no node)     → 0 neutral: the policy makes no claim on effects
+    //     (auto-inherit / get-out-of-the-way) — a clean limits-only guard. NO effect check here.
+    //   • EXPLICITLY EMPTY {} (size 0) → −1 hard deny: revokes ALL effects (every declared violates).
+    //   • POPULATED {...}             → +1 allow only the listed effects.
+    if (permittedEffectsBlock !== undefined) {
+      const denyAll = permittedEffects.size === 0;
       for (const declaredEffect of flow.declaredEffects) {
-        if (!permittedEffects.has(declaredEffect)) {
+        if (denyAll || !permittedEffects.has(declaredEffect)) {
           this.diagnostics.push(makeGovDiag(
             "LLN-GOV-004",
             "DOMAIN_GUARD_POLICY_VIOLATION",
             "error",
-            `Policy Violation in flow '${flow.name}': the effect '${declaredEffect}' is not in the ` +
-            `permitted_effects of policy '${policyName}'. Permitted: [${[...permittedEffects].join(", ")}].`,
+            denyAll
+              ? `Policy Violation in flow '${flow.name}': policy '${policyName}' declares an empty permitted_effects {} (deny-all), so effect '${declaredEffect}' is revoked.`
+              : `Policy Violation in flow '${flow.name}': the effect '${declaredEffect}' is not in the ` +
+                `permitted_effects of policy '${policyName}'. Permitted: [${[...permittedEffects].join(", ")}].`,
             contractNode.location ?? flowNode.location,
-            `Remove '${declaredEffect}' from effects, or add it to the '${policyName}' policy's permitted_effects.`,
+            denyAll
+              ? `An empty permitted_effects {} revokes all effects (deny-all). Remove the effect from the flow, or add it to '${policyName}'.`
+              : `Remove '${declaredEffect}' from effects, or add it to the '${policyName}' policy's permitted_effects.`,
           ));
         }
       }
