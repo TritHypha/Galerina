@@ -946,6 +946,8 @@ Under `@experimental_profile(drcm_core_v1)`, the compiler:
 | LLN-SECRET-003 | Security | Secret flows to serialize/record | ENFORCED |
 | LLN-PRIVACY-002 | Privacy | Cleartext semantic embedding flows to network/egress (vec2text-invertible) | ENFORCED |
 | LLN-PRIVACY-001 | Privacy | `privacy {}` block `deny protected X to Y` clause | PLANNED Phase 10C+ |
+| LLN-CRYPTO-PQ-001 | Crypto | `crypto.sign` in a certified profile must declare a PQ/hybrid algorithm (crypto.sign.hybrid/mldsa65/slhdsa) | ENFORCED (certified profiles) |
+| LLN-SUBSTRATE-001 (crypto-on-core) | Crypto | crypto.hash/sign/verify/**encrypt/decrypt/seal** must run on a deterministic bit-exact lane | ENFORCED |
 | LLN-SECRET-BREACH | Security | Secret detected in output stream (runtime trap 3001) | PLANNED Phase 1 |
 | LLN-SECRET-FATAL | Security | Secret breach caused DSS permission drop | PLANNED Phase 1 |
 | LLN-CAP-001 | Capability | Wildcard `*` in NetworkTarget | PLANNED Phase 4 |

@@ -284,6 +284,13 @@ const CANONICAL_EFFECTS = new Set([
   "crypto.encrypt",
   "crypto.decrypt",
   "crypto.seal",
+  // LLN-CRYPTO-PQ-001: signing-algorithm marker effects declared ALONGSIDE crypto.sign to
+  // ASSERT the algorithm. The base `crypto.sign` handles call-matching; these mark whether
+  // the signature is post-quantum. In a certified profile a PQ/hybrid marker is required.
+  "crypto.sign.hybrid",
+  "crypto.sign.mldsa65",
+  "crypto.sign.slhdsa",
+  "crypto.sign.ed25519",
   // Phase 25: random/clock non-deterministic effects
   "random.generate",
   "clock.read",

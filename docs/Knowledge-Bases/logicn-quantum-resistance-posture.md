@@ -67,10 +67,15 @@ Integrity / `Hash` / `Sign` effects must run on a **deterministic, bit-exact** l
 worthless if computed on a non-bit-exact substrate, so the PQ posture (R1–R2) and the substrate posture
 reinforce each other.
 
-## Candidate future enforcement (recorded, not built)
-A compile-time check — **`LLN-CRYPTO-PQ-001`**: a `Sign` effect must declare a PQ-or-hybrid algorithm from
-an approved allowlist — would make this posture machine-checked (deny-by-default for non-PQ signing in
-certified mode). Recorded as a candidate; not yet implemented.
+## Enforcement (BUILT 2026-06-16)
+**`LLN-CRYPTO-PQ-001` — IMPLEMENTED** (governance-verifier, certified profiles): a `crypto.sign` effect must
+declare a PQ/hybrid algorithm via a marker effect from the allowlist — `crypto.sign.hybrid` /
+`crypto.sign.mldsa65` / `crypto.sign.slhdsa`. Bare `crypto.sign` or a classical-only `crypto.sign.ed25519`
+is **denied (error)** in `production`/`deterministic` profiles (deny-by-default), allowed in `dev`. The marker
+is declared alongside the base effect: `effects { crypto.sign crypto.sign.hybrid }` (base handles call-matching;
+marker asserts the algorithm — no parser change, dotted effects already parse). This makes the R2 posture
+machine-checked. Companion: **`LLN-SUBSTRATE-001` (crypto-on-core) now also covers `crypto.encrypt/decrypt/seal`**
+(KEM-DEM/AEAD) — all crypto effects are held to a deterministic bit-exact lane.
 
 ## Net decision
 **KEEP SHA-256 (R1).** Spend the quantum-resistance budget on the **signature** (R2 — finish ML-DSA-65,

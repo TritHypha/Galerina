@@ -686,6 +686,8 @@ export {
   LLN_ID_001,
   LLN_AU_001,
   LLN_DRCM_UNSUPPORTED,
+  // #34 — post-quantum signing enforcement
+  LLN_CRYPTO_PQ_001,
   // Direction B — substrate {} contract obligations
   LLN_SUBSTRATE_001,
   LLN_SUBSTRATE_002,

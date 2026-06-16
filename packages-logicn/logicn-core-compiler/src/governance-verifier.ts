@@ -224,6 +224,17 @@ export const LLN_GOV_012 = {
 // the strings must match byte-for-byte. Implemented in substrate-inference.ts.
 // Spec: docs/Knowledge-Bases/logicn-substrate-contracts.md.
 
+/** LLN-CRYPTO-PQ-001: a crypto.sign effect in a certified profile must declare a PQ/hybrid algorithm. */
+export const LLN_CRYPTO_PQ_001 = {
+  code: "LLN-CRYPTO-PQ-001",
+  name: "SIGN_EFFECT_NOT_POST_QUANTUM",
+  severity: "error" as const,
+  message: "A crypto.sign effect in a certified profile must declare a post-quantum/hybrid signing algorithm — add crypto.sign.hybrid, crypto.sign.mldsa65, or crypto.sign.slhdsa. Ed25519-only signatures are Shor-breakable (harvest-now-forge-later).",
+} as const;
+
+/** PQ/hybrid signing-algorithm marker effects that satisfy LLN-CRYPTO-PQ-001. */
+const PQ_SIGN_ALGORITHMS = new Set(["crypto.sign.hybrid", "crypto.sign.mldsa65", "crypto.sign.slhdsa"]);
+
 /** LLN-SUBSTRATE-001: a crypto/hash/sign effect declared on a noisy lane (integrity is never tolerated). */
 export const LLN_SUBSTRATE_001 = {
   code: "LLN-SUBSTRATE-001",
@@ -1924,6 +1935,24 @@ class GovernanceVerifier {
       const subViolations = checkSubstrateViolations(flowNode, flow, this.currentProfile, externalDeterminismSink);
       for (const v of subViolations) {
         this.diagnostics.push(makeGovDiag(v.code, v.name, v.severity, v.message, loc, v.suggestedFix));
+      }
+    }
+
+    // ── LLN-CRYPTO-PQ-001: a Sign effect must be post-quantum/hybrid in a certified profile ──
+    // (quantum-resistance posture R2). Ed25519-only — or algorithm-unspecified — signing is
+    // Shor-breakable, so it is denied when the deployment is certified (production/deterministic);
+    // dev/check-only profiles allow it. The author asserts the algorithm with a marker effect
+    // alongside crypto.sign, e.g. `effects { crypto.sign crypto.sign.hybrid }`.
+    if (this.currentProfile === "production" || this.currentProfile === "deterministic") {
+      const signEffects = flow.declaredEffects.filter(
+        e => e === "crypto.sign" || e.startsWith("crypto.sign."),
+      );
+      if (signEffects.length > 0 && !signEffects.some(e => PQ_SIGN_ALGORITHMS.has(e))) {
+        this.diagnostics.push(makeGovDiag(
+          LLN_CRYPTO_PQ_001.code, LLN_CRYPTO_PQ_001.name, LLN_CRYPTO_PQ_001.severity,
+          LLN_CRYPTO_PQ_001.message, loc,
+          "Declare the PQ algorithm: effects { crypto.sign crypto.sign.hybrid }.",
+        ));
       }
     }
 
