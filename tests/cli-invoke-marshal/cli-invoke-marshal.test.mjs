@@ -41,3 +41,26 @@ test("an un-parseable invoke arg fails LOUDLY (exit 2 + clear message), never si
   assert.equal(r.status, 2, r.out);
   assert.match(r.out, /not a valid Int or Bool/);
 });
+
+// dogfooding #2: a flow that EXISTS but is not WASM-exportable (a secure/effectful flow) used to
+// report "Flow 'main' not found" — implying it doesn't exist. Now it explains the WASM-surface limit.
+test("a secure/effectful flow gives a CLEAR 'not in the WASM surface' diagnostic, not 'not found'", () => {
+  const f2 = join(ROOT, "build", "__cli_marshal_secure.lln");
+  writeFileSync(f2,
+    `pure flow collapse(v: Int) -> Int { if v == 1 { return 1 } return -1 }\n\n` +
+    `secure flow main() -> Result<Void, Error>\ncontract { intent { "demo" } }\n{\n` +
+    `  console.log("x = " . collapse(1))\n  return Ok()\n}\n`);
+  try {
+    const r = spawnSync(process.execPath, ["logicn.mjs", "run", f2, "--invoke", "main"],
+      { cwd: ROOT, encoding: "utf-8", timeout: 60000 });
+    const out = `${r.stdout ?? ""}${r.stderr ?? ""}`;
+    assert.equal(r.status, 1, out);
+    assert.match(out, /NOT in the WASM --invoke surface/, "must explain main is not WASM-exportable");
+    assert.match(out, /Invokable here: collapse/, "must list the invokable pure flows");
+    const r2 = spawnSync(process.execPath, ["logicn.mjs", "run", f2, "--invoke", "nope"],
+      { cwd: ROOT, encoding: "utf-8", timeout: 60000 });
+    assert.match(`${r2.stdout ?? ""}${r2.stderr ?? ""}`, /No flow named 'nope'/, "absent flow gets the other branch");
+  } finally {
+    try { rmSync(f2, { force: true }); } catch { /* ignore */ }
+  }
+});

@@ -1288,7 +1288,18 @@ Baseline comparison (governance-cost):
     const result = await WebAssembly.instantiate(assembled.wasm, hostRuntime);
     const fn = result.instance.exports[flowName];
     if (typeof fn !== "function") {
-      console.error(`Flow '${flowName}' not found. Available: ${Object.keys(result.instance.exports).filter(k => k !== "memory").join(", ")}`);
+      const exported = Object.keys(result.instance.exports).filter(k => k !== "memory");
+      const declared = (parsed.flows ?? []).some(f => f.name === flowName);
+      if (declared) {
+        // The flow EXISTS in the source but is not a WASM export. Only pure flows that return a
+        // primitive are exported (exportAllPure); effectful/secure flows (e.g. `console.log`, returning
+        // Result/Void) run in the governed runtime, not the raw WASM --invoke surface (dogfooding #2).
+        console.error(`Flow '${flowName}' exists but is NOT in the WASM --invoke surface — only pure flows returning a primitive (Int/Bool) are exported.`);
+        console.error(`('${flowName}' is likely a secure/effectful flow; those run in the governed runtime, not raw WASM --invoke.)`);
+        console.error(`Invokable here: ${exported.join(", ") || "(none)"}`);
+      } else {
+        console.error(`No flow named '${flowName}'. Invokable here: ${exported.join(", ") || "(none)"}`);
+      }
       process.exit(1);
     }
     const rawOutput = fn(...args);
