@@ -10,9 +10,14 @@
   `manifest.ts` (`FFSIM_MANIFEST`), `env-detect.ts` (honest `available:false`), `ffsim-backend.ts` (governed
   lifecycle: LOAD→TRAP→ERASE on breach; NEVER fakes a run), `index.ts` registry, `schemas/data_types.json`,
   **12 package tests** (subspace 5 + governance 7) plus **2 Phase-0 tests** in the shared contract. No ffsim needed.
-**Still PENDING:** Phase 1.5 (wire tower-citizen `AuditLogger` + Ed25519 attestation into the lifecycle) ·
-**Phase 2** (the real hashed `ffsim_worker.py` + `child_process` driver — gated on a pinned venv with ffsim) ·
-**Phase 3** (worked H₂ example flow + flip #199). The rest of this doc is the build spec; §12 is the checklist.
+**Phase 1.5 DONE 2026-06-16** (commits a3536bb attestation + 1a12b4e audit): `src/attestation.ts`
+(`attestFfsimManifest` / `verifyFfsimAdmission`) wires CF-3/CF-7 via tower-citizen's **hybrid
+Ed25519+ML-DSA-65** path — #34 has landed, so it's hybrid, not just Ed25519 (a hybrid policy rejects an
+Ed25519-only or tampered attestation; missing = fail-closed). `FfsimBackend` takes an optional
+`AuditLogger` and emits the **LOAD→TRAP→ERASE** trail (EXEC deferred to Phase 2 — nothing executes yet).
++8 tests (20/20 package, tsc clean).
+**Still PENDING:** **Phase 2** (the real hashed `ffsim_worker.py` + `child_process` driver + EXEC emission —
+gated on a pinned venv with ffsim) · **Phase 3** (worked H₂ example flow + flip #199). §12 is the checklist.
 
 **Decisions: all seven open questions RATIFIED 2026-06-15** (§13). The headline ruling:
 a *tolerance-certified* backend is admissible **iff** it pins all three of
