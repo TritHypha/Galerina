@@ -782,6 +782,24 @@ export function lex(source: string, file: string): LexResult {
       continue;
     }
 
+    // ── Bitwise operators are intentionally not LogicN operators ─────────────
+    // Bit-level math (XOR/NOT/shift) lives in the engine/extension layer, not in
+    // .lln (the crypto-on-core boundary). Give a clear hint rather than a bare
+    // "unexpected character" (dogfooding GAP-4). `&`/`|`/`<<`/`>>` are caught at the
+    // parser; `^` and `~` reach here because the lexer never tokenizes them.
+    if (ch === "^" || ch === "~") {
+      diag(
+        "LLN-PARSE-001",
+        "UNEXPECTED_TOKEN",
+        `Bitwise operator '${ch}' is not a LogicN operator — bit-level operations (XOR/shift/NOT) live in the engine/extension layer, not in .lln (the crypto-on-core boundary).`,
+        startLine,
+        startCol,
+        ".lln has arithmetic (+ - * / %), comparison, and logical (and / or) operators only — move bit-twiddling into a governed engine extension.",
+      );
+      advance();
+      continue;
+    }
+
     // ── Unknown character ──────────────────────────────────────────────────
     diag(
       "LLN-PARSE-001",

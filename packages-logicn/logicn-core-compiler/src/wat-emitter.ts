@@ -513,7 +513,13 @@ export function getInternedStrings(): Array<{ handle: number; value: string }> {
 
 /**
  * Maps a binary operator string to its WAT i32 instruction.
- * Arithmetic, comparison, and bitwise ops — all operating on i32.
+ * Arithmetic, comparison, and logical ops — all operating on i32.
+ *
+ * Bitwise operators (& | ^ << >>) are deliberately NOT here: the LogicN lexer does
+ * not tokenize them (bit-level math lives in the engine/extension layer — the
+ * crypto-on-core boundary), so they can never reach this map. Adding them back would
+ * be dead code (they were unreachable entries until 2026-06-16; removed per dogfooding
+ * GAP-4). `&&`/`||` stay — those are the live logical-and/or operators.
  */
 const BINARY_OP_TO_WAT: ReadonlyMap<string, string> = new Map([
   ["+",  "i32.add"],
@@ -529,11 +535,6 @@ const BINARY_OP_TO_WAT: ReadonlyMap<string, string> = new Map([
   ["!=", "i32.ne"],
   ["&&", "i32.and"],
   ["||", "i32.or"],
-  ["&",  "i32.and"],
-  ["|",  "i32.or"],
-  ["^",  "i32.xor"],
-  ["<<", "i32.shl"],
-  [">>", "i32.shr_s"],
 ]);
 
 // ---------------------------------------------------------------------------

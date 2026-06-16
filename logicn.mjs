@@ -90,6 +90,9 @@ async function main() {
 
 Commands:
   logicn run <file.lln> [--invoke <flow>] [args...]   compile .lln → WASM → run
+                                                      (--invoke targets pure flows returning a primitive Int/Bool;
+                                                       args are ints or true/false. Secure/effectful flows run in
+                                                       the governed runtime, not the raw WASM --invoke surface.)
   logicn build <file.lln>                             compile → build/<name>.wasm + .wat + .lmanifest
   logicn build --package <dir>                        compile a package's /src → governed .wasm in <dir>/dist/ (fusable, emits .fuse.json)
   logicn check <file.lln>                             type-check + governance verify
