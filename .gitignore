@@ -17,3 +17,8 @@ packages-logicn/logicn-devtools-benchmarks/results/history/
 **/*-private.pem
 .env.local
 .env.*.local
+# ── Build / test scratch (do not commit) ──
+test-output.txt
+**/*.pdb
+build/*.out
+build/full-flight-*/
