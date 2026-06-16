@@ -133,3 +133,18 @@ describe("egress hardening — no false positives", () => {
     assert.ok(!has(r, "LLN-SECRET-002"), codes(r));
   });
 });
+
+describe("egress hardening — VSC-003 memberExpr receivers don't bypass the recognizers", () => {
+  it("secret to a memberExpr network sink (client.http.post) → LLN-SECRET-002", () => {
+    const r = chk(wrap('  let kk = secret.get("api")\n  let x = client.http.post("u", kk)'));
+    assert.ok(has(r, "LLN-SECRET-002"), codes(r));
+  });
+  it("secret via a memberExpr source (ctx.secrets.get) then egressed → LLN-SECRET-002", () => {
+    const r = chk(wrap('  let kk = ctx.secrets.get("api")\n  let x = http.post("u", kk)'));
+    assert.ok(has(r, "LLN-SECRET-002"), codes(r));
+  });
+  it("embedding to a memberExpr sink (client.http.post) → LLN-PRIVACY-002", () => {
+    const r = chk(wrap('  let e = EmbeddingModel.run(req)\n  let x = client.http.post("u", e)'));
+    assert.ok(has(r, "LLN-PRIVACY-002"), codes(r));
+  });
+});

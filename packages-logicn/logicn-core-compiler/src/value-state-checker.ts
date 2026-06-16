@@ -253,26 +253,34 @@ function isGovernedSink(node: AstNode): boolean {
 // Serializing a secret value would expose it in the output stream.
 // ---------------------------------------------------------------------------
 
+/** Last dotted-path segment of a call's receiver (handles `identifier` AND `memberExpr`),
+ *  lowercased — so both `http.post` and `client.http.post` resolve the receiver to "http".
+ *  VSC-003: a memberExpr receiver must NOT bypass the sink/source recognizers (it did before,
+ *  because they all bailed on `receiver.kind !== "identifier"` — a silent fail-open). */
+function receiverSegment(node: AstNode): string {
+  const receiver = node.children?.[0];
+  if (receiver === undefined) return "";
+  const name = receiver.kind === "identifier" ? (receiver.value ?? "") : getNodeName(receiver);
+  const seg = name.includes(".") ? name.slice(name.lastIndexOf(".") + 1) : name;
+  return seg.toLowerCase();
+}
+
 function isSerializationCall(node: AstNode): boolean {
   const methodName = node.value ?? "";
   if (methodName === "serialize" || methodName === "stringify") return true;
-  const receiver = node.children?.[0];
-  const receiverName = receiver?.kind === "identifier" ? (receiver.value ?? "") : "";
-  const fullName = receiverName !== "" ? `${receiverName}.${methodName}` : methodName;
-  return /^(json\.encode|json\.stringify|JSON\.stringify|toml\.encode|xml\.encode|serialize)$/.test(fullName);
+  // VSC-003: handle memberExpr receivers (e.g. app.json.encode), not just bare identifiers.
+  const seg = receiverSegment(node);
+  const fullName = seg !== "" ? `${seg}.${methodName}` : methodName;
+  return /^(json\.encode|json\.stringify|toml\.encode|xml\.encode|serialize)$/.test(fullName);
 }
 
 function isLogCall(node: AstNode): boolean {
   const methodName = node.value ?? "";
   // Standalone: print(...)
   if (methodName === "print") return true;
-  // Method: log.info / log.error / log.warn / log.write, Logger.*, console.*
-  const receiver = node.children?.[0];
-  if (receiver?.kind === "identifier") {
-    const rcvName = receiver.value ?? "";
-    if (rcvName === "log" || rcvName === "Logger" || rcvName === "console") return true;
-  }
-  return false;
+  // Method: log.* / Logger.* / console.* — incl. memberExpr receivers (obj.log.info) (VSC-003).
+  const seg = receiverSegment(node);
+  return seg === "log" || seg === "logger" || seg === "console";
 }
 
 // Network / egress sinks — a raw secret transmitted off-host is an exfiltration path.
@@ -281,9 +289,10 @@ function isLogCall(node: AstNode): boolean {
 function isNetworkSink(node: AstNode): boolean {
   const methodName = node.value ?? "";
   if (methodName === "fetch") return true;
-  const receiver = node.children?.[0];
-  if (receiver?.kind !== "identifier") return false;
-  const r = (receiver.value ?? "").toLowerCase();
+  // VSC-003: resolve the receiver via its last path segment so a memberExpr receiver
+  // (e.g. client.http.post) is recognised, not just a bare identifier (was a fail-open).
+  const r = receiverSegment(node);
+  if (r === "") return false;
   if (r === "http" || r === "https" || r === "net" || r === "socket" || r === "ws" || r === "websocket") return true;
   if ((r === "email" || r === "emailservice") && methodName === "send") return true;
   // Egress beyond raw network transport: the HTTP response body leaves the trust
@@ -350,9 +359,8 @@ function isSecretSourceExpression(node: AstNode): boolean {
     return inner !== undefined && isSecretSourceExpression(inner);
   }
   if (node.kind !== "callExpr") return false;
-  const receiver = node.children?.[0];
-  if (receiver?.kind !== "identifier") return false;
-  const ns = (receiver.value ?? "").toLowerCase();
+  // VSC-003: handle memberExpr receivers (e.g. app.vault.read, ctx.secrets.get) via last segment.
+  const ns = receiverSegment(node);
   return ns === "secret" || ns === "secrets" || ns === "vault" || ns === "kms";
 }
 
