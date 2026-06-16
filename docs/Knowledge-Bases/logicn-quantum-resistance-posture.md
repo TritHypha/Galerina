@@ -35,12 +35,22 @@ the ProofGraph governance signature** (Phase 55: `generateHybridGovernanceKeyPai
 `verifyGovernanceSignatureHybrid` in `proof-graph.ts`, via `@noble/post-quantum` `ml_dsa65` — a real
 dependency, not "planned"). Signature tiers: `lln.gov.sig.v1` (Ed25519, compat) → `v2` (hybrid, both
 required) → `v3` (pq_strict, future). It was **untested until 2026-06-16** (`tests/hybrid-pq-signature.test.mjs`,
-proves round-trip + fail-closed + both-required). **Remaining #34 scope:** (a) the audit `attestation.ts` and
-bridge `bridge-attestation.ts` surfaces are **still Ed25519-only** (not yet hybrid); (b) **production key
-custody** (long-lived signing key storage/rotation — relates to `#149`) is the genuine open gate, not the
-algorithm. **Hardening note:** the *sync* `verifyGovernanceSignature` accepts a `v2` signature but checks
-**only the Ed25519 half** — a careless caller silently loses PQ assurance; candidate for `LLN-CRYPTO-PQ-001`
-(force the async hybrid verifier, or reject `v2` in the sync path).
+proves round-trip + fail-closed + both-required).
+
+**#34 ATTESTATION SURFACES — COMPLETED 2026-06-16 (commit 28ea755):** the audit `attestation.ts` and bridge
+`bridge-attestation.ts` surfaces are now **hybrid Ed25519+ML-DSA-65** too (`signAttestationHybrid`/
+`verifyAttestationHybrid`; `signManifestHybrid`/`verifyAttestationHybrid`; `BridgeAttestation` gained an
+optional `mlDsaSignature`; tower-citizen took `@noble/post-quantum`). All three surfaces now bind a **per-surface
+FIPS-204 domain-separation context** (`logicn.proofgraph.governance.v1` / `.audit.attestation.v1` /
+`.bridge.manifest.v1`) so one ML-DSA key can't be cross-protocol-confused between them — empirically verified
+that a wrong/absent context fails verification. **Downgrade hardening DONE:** the sync `verifyGovernanceSignature`
+now **rejects v2 outright** (was validating only the Ed25519 half); all hybrid verifiers require BOTH halves and
+reject a v1 sig. Pure ML-DSA over the digest/pre-image (not HashML-DSA), per the .tmf TASK-2 custody spec.
+Tests: `attestation-hybrid.test.mjs` (+8), `bridge-attestation-hybrid.test.mjs` (+6), `hybrid-pq-signature` v2-reject.
+
+**Remaining #34 gate:** only **production key custody** (long-lived signing-key storage/rotation in HSM/KMS,
+revocation⇒AuthError, out-of-band PKI for public keys — relates to `#149`). The algorithm + all signing surfaces
+are done. Candidate enforcement `LLN-CRYPTO-PQ-001` (a `Sign` effect must declare a PQ/hybrid alg) still recorded.
 
 ### R3 — Key exchange / encryption: **ML-KEM only if/when confidentiality is added.**
 LogicN does **not** encrypt artifacts today (manifests are *signed*, not encrypted), so there is **no
