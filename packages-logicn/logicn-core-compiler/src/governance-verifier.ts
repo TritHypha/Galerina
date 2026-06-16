@@ -40,7 +40,7 @@ import { type AstNode, type AstNodeKind, type FlowMeta, type SourceLocation } fr
 import { KNOWN_SIGNALS, KNOWN_FLOORS, normaliseFloor, KNOWN_CAPABILITIES } from "./capability-types.js";
 import { type EffectCheckResult } from "./effect-checker.js";
 import { GovernanceFlags, type GovernanceFlagsMask, type RuntimeManifest } from "./type-registry.js";
-import { buildProofGraphCached, computeExecutionSignature, generateEpilogueReceipt, type EpilogueFailureAction, type EpilogueProofStrategy, type ProofGraph, type ProofObligation, LLN_HW_001, LLN_HW_002, LLN_HW_003 } from "./proof-graph.js";
+import { buildProofGraphCached, computeExecutionSignature, generateEpilogueReceipt, type EpilogueFailureAction, type EpilogueProofStrategy, type ProofGraph, type ProofObligation, LLN_HW_001, LLN_HW_002, LLN_HW_003, TAMPER_RESPONSE_STRATEGIES } from "./proof-graph.js";
 import { HARDWARE_TRUST_PROFILES, ProofLevel } from "./type-registry.js";
 import { checkResilienceViolations } from "./resilience-inference.js";
 import { checkObservabilityWarnings } from "./observability-inference.js";
@@ -122,10 +122,6 @@ function findNodes(root: AstNode, kind: AstNodeKind): AstNode[] {
   }
   walk(root);
   return found;
-}
-
-function hasNode(root: AstNode, kind: AstNodeKind): boolean {
-  return findNodes(root, kind).length > 0;
 }
 
 function hasCallTo(root: AstNode, receiverPattern: RegExp): boolean {
@@ -705,27 +701,6 @@ function collectBodyFieldNames(flowNode: AstNode): Set<string> {
 // ---------------------------------------------------------------------------
 // LLN-CONTEXT-001 helpers
 // ---------------------------------------------------------------------------
-
-/**
- * Extracts field names from contract.context { require fieldName } declarations.
- * Stored as: contractDecl → identifier { value: "context:block", children: [identifier { value: "require:actor" }] }
- */
-function extractRequiredContextFields(flowNode: AstNode): Set<string> {
-  const required = new Set<string>();
-  const contractNode = (flowNode.children ?? []).find((c) => c.kind === "contractDecl");
-  if (contractNode === undefined) return required;
-
-  for (const child of contractNode.children ?? []) {
-    if (child.kind === "identifier" && child.value === "context:block") {
-      for (const rc of child.children ?? []) {
-        if (rc.kind === "identifier" && rc.value?.startsWith("require:")) {
-          required.add(rc.value.slice("require:".length));
-        }
-      }
-    }
-  }
-  return required;
-}
 
 /**
  * Extracts required context field names from a flow's contract.context block.
@@ -1444,7 +1419,7 @@ class GovernanceVerifier {
     // If contract.context declares require actor (or other field) and the
     // flow body never references that field, emit a warning.
     if (flowNode !== undefined) {
-      const requiredContextFields = extractRequiredContextFields(flowNode);
+      const requiredContextFields = new Set(extractRequiredContext(flowNode));
       for (const field of requiredContextFields) {
         if (!isContextFieldAccessed(flowNode, field)) {
           this.diagnostics.push(makeGovDiag(
@@ -2491,7 +2466,7 @@ class GovernanceVerifier {
     const VALID_SHIELDING = new Set(["active_mesh", "deep_trench", "standard_fabric"]);
     const VALID_FAULT_MIT = new Set(["lockstep", "scalar_single", "none"]);
     const VALID_SIDE_CH  = new Set(["constant_row", "differential_masking", "none"]);
-    const VALID_TAMPER   = new Set(["zeroize", "quarantine_core", "halt", "demote_to_local"]);
+    const VALID_TAMPER   = new Set<string>(TAMPER_RESPONSE_STRATEGIES); // single source of truth (proof-graph.ts)
 
     // Extract keyword=value pairs from the flattened content string
     const extractValue = (keyword: string): string | undefined => {

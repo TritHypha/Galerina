@@ -492,7 +492,11 @@ export interface LiabilityProfile {
 /** Physical shielding tier selected by the runtime or declared in contract.target */
 export type PhysicalHardeningTier = "standard" | "deep_trench" | "active_mesh";
 
-export type TamperResponseStrategy = "halt" | "zeroize" | "quarantine_core" | "demote_to_local";
+/** Recognised tiered tamper-response strategies for `cyber_physical_hardening { on_tamper_signal }`.
+ *  Single source of truth — governance-verifier's `VALID_TAMPER` set is derived from this array
+ *  (audit DEAD-001/REDUN-001: the values were duplicated). Design: `logicn-asic-cyber-physical.md` §6. */
+export const TAMPER_RESPONSE_STRATEGIES = ["halt", "zeroize", "quarantine_core", "demote_to_local"] as const;
+export type TamperResponseStrategy = typeof TAMPER_RESPONSE_STRATEGIES[number];
 
 /**
  * Build a minimal ProofGraph from governance verify results and evidence.
