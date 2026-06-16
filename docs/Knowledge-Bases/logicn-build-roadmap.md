@@ -39,7 +39,7 @@ Specs frozen in `LogicN-R-AND-D/tmf/spec/*`; crypto-on-core (bit-exact, determin
 | Slice | Scope | Status |
 |---|---|---|
 | 1 | **TMX-256 integrity core** (TriMerkle-XOF/SHAKE256: leaf/node/root, ABSENT, tree shape) | ✅ **DONE** — golden-verified vs frozen spec (9 tests; cross-lang conformant w/ Python ref). 49/49 · 4,490. |
-| 2 | Container reader/writer (header + 56-byte section table; §8 fail-closed reader) | ⬜ next |
+| 2 | **Container reader/writer** (header + 56-byte section table; §6 fail-closed reader) | ✅ **DONE** — byte-exact golden (203 B) + full §7 error taxonomy (10 tests). 49/49 · 4,500. |
 | 3 | KEM-DEM confidentiality (ML-KEM-768 hybrid → SHAKE/HKDF → AES-256-GCM, verify-before-decrypt) | ⬜ |
 | 4 | **#7** ML-DSA-65 signing over the root (hybrid Ed25519), reusing the shipped signer | ⬜ |
 | 5 | Inclusion proofs · history chain · **#12** Governed Trust Capsule (RFC 9964) | ⬜ |
