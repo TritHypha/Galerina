@@ -635,6 +635,16 @@ function canonicalSigningPayload(pg: ProofGraph): Uint8Array {
     obligations:   pg.obligations.map(o => ({
       kind: o.kind, claim: o.claim, satisfiedBy: o.satisfiedBy, diagnosticCode: o.diagnosticCode,
     })),
+    // CRYPTO-003 (audit 2026-06-16): bind the tamper-evidence fields too. Their entire purpose is
+    // tamper-evidence, yet they sat OUTSIDE the signature — a forged hardwareSeal / epilogue receipt /
+    // liability class / hardening tier on a signed ProofGraph still verified. Bound via canonical
+    // sub-hashes (null when absent → a field cannot be stripped or added undetected). In-place
+    // payload extension is permitted pre-persistence (gov signatures are still placeholder; crypto
+    // VERSIONING rule = bump once keys persist) — consistent with the #34 obligation binding above.
+    hardwareSeal:          pg.hardwareSeal          ? canonicalHash(pg.hardwareSeal)     : null,
+    epilogueReceipt:       pg.epilogueReceipt       ? canonicalHash(pg.epilogueReceipt)  : null,
+    liabilityProfile:      pg.liabilityProfile      ? canonicalHash(pg.liabilityProfile) : null,
+    physicalHardeningTier: pg.physicalHardeningTier ?? null,
   });
   return new TextEncoder().encode(payloadHex);
 }

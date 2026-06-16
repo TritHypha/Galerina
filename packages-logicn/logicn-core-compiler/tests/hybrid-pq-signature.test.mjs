@@ -157,3 +157,45 @@ describe("Phase 55: hybrid Ed25519 + ML-DSA-65 governance signature", () => {
     assert.equal(await verifyGovernanceSignatureHybrid(tampered, kp.publicKey, kp.mlDsaPublicKey), false);
   });
 });
+
+describe("CRYPTO-003: tamper-evidence fields are bound under the governance signature", () => {
+  it("tampering hardwareSeal.outputSeal invalidates the signature", async () => {
+    const kp = await generateHybridGovernanceKeyPair("hkc1");
+    const pg = { ...mkPg("sealed"), hardwareSeal: { inputSeal: "in-1", outputSeal: "out-1", cpuSovereigntyVerified: true } };
+    const signed = await signProofGraphHybrid(pg, kp);
+    assert.equal(await verifyGovernanceSignatureHybrid(signed, kp.publicKey, kp.mlDsaPublicKey), true);
+    const tampered = { ...signed, hardwareSeal: { ...signed.hardwareSeal, outputSeal: "FORGED" } };
+    assert.equal(await verifyGovernanceSignatureHybrid(tampered, kp.publicKey, kp.mlDsaPublicKey), false);
+  });
+
+  it("tampering epilogueReceipt.inputSeal invalidates the signature", async () => {
+    const kp = await generateHybridGovernanceKeyPair("hkc2");
+    const pg = { ...mkPg("receipted"), epilogueReceipt: { inputSeal: "i", outputSeal: "o", strategy: "sha256_seal" } };
+    const signed = await signProofGraphHybrid(pg, kp);
+    assert.equal(await verifyGovernanceSignatureHybrid(signed, kp.publicKey, kp.mlDsaPublicKey), true);
+    const tampered = { ...signed, epilogueReceipt: { ...signed.epilogueReceipt, inputSeal: "FORGED" } };
+    assert.equal(await verifyGovernanceSignatureHybrid(tampered, kp.publicKey, kp.mlDsaPublicKey), false);
+  });
+
+  it("tampering physicalHardeningTier invalidates the signature", async () => {
+    const kp = await generateHybridGovernanceKeyPair("hkc3");
+    const pg = { ...mkPg("hardened"), physicalHardeningTier: "active_mesh" };
+    const signed = await signProofGraphHybrid(pg, kp);
+    assert.equal(await verifyGovernanceSignatureHybrid(signed, kp.publicKey, kp.mlDsaPublicKey), true);
+    const tampered = { ...signed, physicalHardeningTier: "standard" };
+    assert.equal(await verifyGovernanceSignatureHybrid(tampered, kp.publicKey, kp.mlDsaPublicKey), false);
+  });
+
+  it("a clean (untampered) ProofGraph carrying all four fields still round-trips", async () => {
+    const kp = await generateHybridGovernanceKeyPair("hkc4");
+    const pg = {
+      ...mkPg("full"),
+      hardwareSeal: { inputSeal: "i", outputSeal: "o", cpuSovereigntyVerified: true },
+      epilogueReceipt: { inputSeal: "i", outputSeal: "o", strategy: "sha256_seal" },
+      liabilityProfile: { exposure: "regulated", classification: "tier-3" },
+      physicalHardeningTier: "deep_trench",
+    };
+    const signed = await signProofGraphHybrid(pg, kp);
+    assert.equal(await verifyGovernanceSignatureHybrid(signed, kp.publicKey, kp.mlDsaPublicKey), true);
+  });
+});
