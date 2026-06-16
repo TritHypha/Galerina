@@ -266,6 +266,12 @@ export class HybridInferenceEngine {
     // BOTH the Ed25519 and the ML-DSA-65 half must verify (no PQ downgrade). Absent ⇒
     // classical Ed25519-only verification (backward-compatible default).
     const mlDsaPublicKey = policy.mlDsaPublicKey;
+    // CRYPTO-002: requireHybrid forbids the classical fallback — a policy that mandates hybrid
+    // but provisions no ML-DSA key must fail closed, not silently downgrade to Ed25519-only.
+    if (policy.requireHybrid === true && mlDsaPublicKey === undefined) {
+      this.bridgeAttestationDenial = "requireHybrid set but no mlDsaPublicKey provisioned (no PQ downgrade)";
+      return this.bridgeAttestationDenial;
+    }
     for (const bridge of this.bridges.values()) {
       const result = mlDsaPublicKey !== undefined
         ? await verifyAttestationHybrid(bridge.attestation, policy, mlDsaPublicKey)

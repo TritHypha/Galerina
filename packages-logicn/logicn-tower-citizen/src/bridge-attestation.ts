@@ -45,6 +45,13 @@ export interface AttestationPolicy {
    * key custody (#149).
    */
   readonly mlDsaPublicKey?: Uint8Array;
+  /**
+   * CRYPTO-002: REQUIRE the hybrid path. With `requireHybrid: true` the policy MUST carry
+   * `mlDsaPublicKey` and both signatures are verified; if the key is absent the attestation is
+   * DENIED (no silent classical fallback / PQ downgrade). Tier-3 toxic-border admission (e.g. the
+   * ffsim quantum bridge) defaults this ON. Default off elsewhere (backward-compatible).
+   */
+  readonly requireHybrid?: boolean;
 }
 
 export interface AttestationResult {

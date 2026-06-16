@@ -11,10 +11,18 @@ const mkManifest = () => buildFfsimManifest({
   ffsimVersion: "0.0.81.dev", tolerance: 1e-6, certificationProfile: "certified",
 });
 
-test("Ed25519: attest → admit round-trip", async () => {
+test("Tier-3 default: an Ed25519-only policy is REJECTED — hybrid mandatory (CRYPTO-002)", async () => {
   const k = generateAttestationKeypair();
   const att = await attestFfsimManifest(mkManifest(), k.privateKeyPem);
-  assert.equal((await verifyFfsimAdmission(att, { requireSigned: true, publicKeyPem: k.publicKeyPem })).ok, true);
+  const r = await verifyFfsimAdmission(att, { requireSigned: true, publicKeyPem: k.publicKeyPem });
+  assert.equal(r.ok, false);
+  assert.match(String(r.reason), /ERR_QUANTUM_PQ_REQUIRED/);
+});
+
+test("requireHybrid:false opts down to classical Ed25519 admission (non-Tier-3 callers)", async () => {
+  const k = generateAttestationKeypair();
+  const att = await attestFfsimManifest(mkManifest(), k.privateKeyPem);
+  assert.equal((await verifyFfsimAdmission(att, { requireSigned: true, publicKeyPem: k.publicKeyPem, requireHybrid: false })).ok, true);
 });
 
 test("hybrid: attest → admit round-trip (both signatures present)", async () => {
