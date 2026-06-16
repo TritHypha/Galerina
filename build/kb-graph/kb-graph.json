@@ -1297,7 +1297,7 @@
       "title": "LogicN — Build Roadmap",
       "version": "7.0",
       "layer": "Layer 0",
-      "wordCount": 4681,
+      "wordCount": 4870,
       "lnlCodes": [
         "LLN-ACCESS-001",
         "LLN-ASSIMILATE-001",
@@ -1313,7 +1313,7 @@
         "LLN-SECRET-002",
         "LLN-TRAP-001"
       ],
-      "lastModified": "2026-06-16T21:40:50.917Z"
+      "lastModified": "2026-06-16T22:23:13.712Z"
     },
     {
       "id": "logicn-cache-aware-execution",
