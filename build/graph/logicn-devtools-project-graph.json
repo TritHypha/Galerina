@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-06-17T11:33:09.756Z",
+  "generatedAt": "2026-06-17T18:44:48.286Z",
   "nodes": [
     {
       "id": "package:logicn-core",
@@ -8370,6 +8370,15 @@
       ]
     },
     {
+      "id": "doc:docs/Knowledge-Bases/logicn-governance-mode-ladder.md",
+      "kind": "Document",
+      "label": "logicn-governance-mode-ladder.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-governance-mode-ladder.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
       "id": "doc:docs/Knowledge-Bases/logicn-governance-rules.md",
       "kind": "Document",
       "label": "logicn-governance-rules.md",
@@ -8667,10 +8676,37 @@
       ]
     },
     {
+      "id": "doc:docs/Knowledge-Bases/logicn-interpreter-speedup-and-json-rd.md",
+      "kind": "Document",
+      "label": "logicn-interpreter-speedup-and-json-rd.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-interpreter-speedup-and-json-rd.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
       "id": "doc:docs/Knowledge-Bases/logicn-javascript-escape-hatch.md",
       "kind": "Document",
       "label": "logicn-javascript-escape-hatch.md",
       "sourcePath": "docs/Knowledge-Bases/logicn-javascript-escape-hatch.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/logicn-key-custody-and-rotation.md",
+      "kind": "Document",
+      "label": "logicn-key-custody-and-rotation.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-key-custody-and-rotation.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/logicn-key-lifecycle-diagnostics.md",
+      "kind": "Document",
+      "label": "logicn-key-lifecycle-diagnostics.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-key-lifecycle-diagnostics.md",
       "tags": [
         "document"
       ]
@@ -8815,6 +8851,15 @@
       "kind": "Document",
       "label": "logicn-natural-language-governance-summary.md",
       "sourcePath": "docs/Knowledge-Bases/logicn-natural-language-governance-summary.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/logicn-nested-quantum-future-module.md",
+      "kind": "Document",
+      "label": "logicn-nested-quantum-future-module.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-nested-quantum-future-module.md",
       "tags": [
         "document"
       ]
@@ -9211,6 +9256,15 @@
       "kind": "Document",
       "label": "logicn-rd-adoption-2026-06-16.md",
       "sourcePath": "docs/Knowledge-Bases/logicn-rd-adoption-2026-06-16.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/logicn-rd-benchmarks-and-performance-2026-06-17.md",
+      "kind": "Document",
+      "label": "logicn-rd-benchmarks-and-performance-2026-06-17.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-rd-benchmarks-and-performance-2026-06-17.md",
       "tags": [
         "document"
       ]
@@ -10305,6 +10359,15 @@
       ]
     },
     {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-qrng-conditioning-pipeline-v0.md",
+      "kind": "Document",
+      "label": "rd-qrng-conditioning-pipeline-v0.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-qrng-conditioning-pipeline-v0.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
       "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-qrng-entropy-source-for-hybrid-signing.md",
       "kind": "Document",
       "label": "rd-qrng-entropy-source-for-hybrid-signing.md",
@@ -10336,6 +10399,24 @@
       "kind": "Document",
       "label": "rd-rd-direction.md",
       "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-rd-direction.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-revocation-registry-v0.md",
+      "kind": "Document",
+      "label": "rd-revocation-registry-v0.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-revocation-registry-v0.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-selective-disclosure-ann-v0.md",
+      "kind": "Document",
+      "label": "rd-selective-disclosure-ann-v0.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-selective-disclosure-ann-v0.md",
       "tags": [
         "document"
       ]
@@ -17820,6 +17901,56 @@
       "kind": "Flow",
       "label": "renderGovernanceDiff",
       "sourcePath": "packages-logicn/logicn-core-compiler/src/governance-diff.ts",
+      "tags": [
+        "function",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "type:logicn-core-compiler:GovernanceMode",
+      "kind": "Type",
+      "label": "GovernanceMode",
+      "sourcePath": "packages-logicn/logicn-core-compiler/src/governance-mode.ts",
+      "tags": [
+        "type",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "type:logicn-core-compiler:RuntimeGovernanceTier",
+      "kind": "Type",
+      "label": "RuntimeGovernanceTier",
+      "sourcePath": "packages-logicn/logicn-core-compiler/src/governance-mode.ts",
+      "tags": [
+        "type",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "type:logicn-core-compiler:GovernanceModeInputs",
+      "kind": "Type",
+      "label": "GovernanceModeInputs",
+      "sourcePath": "packages-logicn/logicn-core-compiler/src/governance-mode.ts",
+      "tags": [
+        "type",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "type:logicn-core-compiler:GovernanceModeResolution",
+      "kind": "Type",
+      "label": "GovernanceModeResolution",
+      "sourcePath": "packages-logicn/logicn-core-compiler/src/governance-mode.ts",
+      "tags": [
+        "type",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "flow:logicn-core-compiler:resolveGovernanceMode",
+      "kind": "Flow",
+      "label": "resolveGovernanceMode",
+      "sourcePath": "packages-logicn/logicn-core-compiler/src/governance-mode.ts",
       "tags": [
         "function",
         "logicn-core-compiler"
@@ -38938,6 +39069,20 @@
       "evidencePath": "docs/Knowledge-Bases/logicn-intent-graph.md"
     },
     {
+      "from": "doc:docs/Knowledge-Bases/logicn-interpreter-speedup-and-json-rd.md",
+      "to": "package:logicn-core",
+      "kind": "documents",
+      "confidence": "INFERRED",
+      "evidencePath": "docs/Knowledge-Bases/logicn-interpreter-speedup-and-json-rd.md"
+    },
+    {
+      "from": "doc:docs/Knowledge-Bases/logicn-interpreter-speedup-and-json-rd.md",
+      "to": "package:logicn-core-compiler",
+      "kind": "documents",
+      "confidence": "INFERRED",
+      "evidencePath": "docs/Knowledge-Bases/logicn-interpreter-speedup-and-json-rd.md"
+    },
+    {
       "from": "doc:docs/Knowledge-Bases/logicn-javascript-escape-hatch.md",
       "to": "package:logicn-core",
       "kind": "documents",
@@ -38950,6 +39095,20 @@
       "kind": "documents",
       "confidence": "INFERRED",
       "evidencePath": "docs/Knowledge-Bases/logicn-javascript-escape-hatch.md"
+    },
+    {
+      "from": "doc:docs/Knowledge-Bases/logicn-key-custody-and-rotation.md",
+      "to": "package:logicn-core",
+      "kind": "documents",
+      "confidence": "INFERRED",
+      "evidencePath": "docs/Knowledge-Bases/logicn-key-custody-and-rotation.md"
+    },
+    {
+      "from": "doc:docs/Knowledge-Bases/logicn-key-custody-and-rotation.md",
+      "to": "package:logicn-core-security",
+      "kind": "documents",
+      "confidence": "INFERRED",
+      "evidencePath": "docs/Knowledge-Bases/logicn-key-custody-and-rotation.md"
     },
     {
       "from": "doc:docs/Knowledge-Bases/logicn-language-lessons.md",
@@ -39202,6 +39361,13 @@
       "kind": "documents",
       "confidence": "INFERRED",
       "evidencePath": "docs/Knowledge-Bases/logicn-natural-language-governance-summary.md"
+    },
+    {
+      "from": "doc:docs/Knowledge-Bases/logicn-nested-quantum-future-module.md",
+      "to": "package:logicn-ext-bridge-quantum",
+      "kind": "documents",
+      "confidence": "INFERRED",
+      "evidencePath": "docs/Knowledge-Bases/logicn-nested-quantum-future-module.md"
     },
     {
       "from": "doc:docs/Knowledge-Bases/logicn-one-click-governance-fixes.md",
@@ -39902,6 +40068,20 @@
       "kind": "documents",
       "confidence": "INFERRED",
       "evidencePath": "docs/Knowledge-Bases/logicn-resource-governance.md"
+    },
+    {
+      "from": "doc:docs/Knowledge-Bases/logicn-roadmap-and-audit-2026-06-17.md",
+      "to": "package:logicn-core",
+      "kind": "documents",
+      "confidence": "INFERRED",
+      "evidencePath": "docs/Knowledge-Bases/logicn-roadmap-and-audit-2026-06-17.md"
+    },
+    {
+      "from": "doc:docs/Knowledge-Bases/logicn-roadmap-and-audit-2026-06-17.md",
+      "to": "package:logicn-core-security",
+      "kind": "documents",
+      "confidence": "INFERRED",
+      "evidencePath": "docs/Knowledge-Bases/logicn-roadmap-and-audit-2026-06-17.md"
     },
     {
       "from": "doc:docs/Knowledge-Bases/logicn-roadmap-next10-phases.md",
@@ -49296,6 +49476,41 @@
       "kind": "provides",
       "confidence": "EXTRACTED",
       "evidencePath": "packages-logicn/logicn-core-compiler/src/governance-diff.ts"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "type:logicn-core-compiler:GovernanceMode",
+      "kind": "provides",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/src/governance-mode.ts"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "type:logicn-core-compiler:RuntimeGovernanceTier",
+      "kind": "provides",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/src/governance-mode.ts"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "type:logicn-core-compiler:GovernanceModeInputs",
+      "kind": "provides",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/src/governance-mode.ts"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "type:logicn-core-compiler:GovernanceModeResolution",
+      "kind": "provides",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/src/governance-mode.ts"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "flow:logicn-core-compiler:resolveGovernanceMode",
+      "kind": "provides",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/src/governance-mode.ts"
     },
     {
       "from": "package:logicn-core-compiler",

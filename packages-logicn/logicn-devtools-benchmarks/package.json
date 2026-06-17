@@ -20,6 +20,7 @@
     "build:native":           "node src/build-native.mjs",
     "test":                   "node test/throughput-units.test.mjs",
     "audit":                  "node --expose-gc src/audit.mjs",
+    "snapshot":               "node src/snapshot.mjs",
     "bench":                  "node --expose-gc src/runner.mjs --quick && node src/compare.mjs && node --expose-gc src/audit.mjs",
     "run:diagnostic":         "node src/diagnostic-runner.mjs",
     "run:diagnostic-suite":   "node --expose-gc src/runner.mjs --diagnostic",

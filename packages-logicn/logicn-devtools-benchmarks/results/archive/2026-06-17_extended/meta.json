@@ -1,0 +1,59 @@
+{
+  "label": "extended-full",
+  "date": "2026-06-17",
+  "capturedAt": "2026-06-17T16:41:41.764Z",
+  "mode": "full extended (no --quick, publication-quality)",
+  "git": {
+    "commit": "4e4ad02",
+    "branch": "main"
+  },
+  "node": "v24.16.0",
+  "os": {
+    "platform": "win32",
+    "release": "10.0.19045"
+  },
+  "cpu": "Intel(R) Core(TM) i9-9900K CPU @ 3.60GHz",
+  "cores": 16,
+  "totalMemGB": 34,
+  "benchmarks": 28,
+  "comparable": [
+    "compute-mix",
+    "record-allocation",
+    "collection-pipeline",
+    "low-memory",
+    "gpu-compute",
+    "call-chain",
+    "nbody",
+    "json-parse",
+    "mandelbrot",
+    "spectral-norm",
+    "binary-trees",
+    "tmf-container",
+    "framework-pipeline"
+  ],
+  "excluded": [
+    "matrix-multiply",
+    "tri-logic",
+    "data-query"
+  ],
+  "unitCheck": {
+    "compute-mix": "PASS",
+    "record-allocation": "PASS",
+    "collection-pipeline": "PASS",
+    "low-memory": "PASS",
+    "gpu-compute": "PASS",
+    "matrix-multiply": "FLAGGED",
+    "tri-logic": "FLAGGED",
+    "data-query": "FLAGGED",
+    "call-chain": "PASS",
+    "nbody": "PASS",
+    "json-parse": "PASS",
+    "mandelbrot": "PASS",
+    "spectral-norm": "PASS",
+    "binary-trees": "PASS",
+    "tmf-container": "PASS",
+    "framework-pipeline": "PASS"
+  },
+  "truthAudit": "PASS (npm run audit)",
+  "note": "Unit-normalized to one canonical unit/benchmark; heap-allocated-per-op memory dimension included; 3 workloads flagged non-comparable. crypto-ops Node heap/op lands on the next run (source fixed after this snapshot)."
+}
