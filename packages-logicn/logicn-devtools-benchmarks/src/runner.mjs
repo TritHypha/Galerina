@@ -2,6 +2,7 @@ import { spawnSync, execSync } from "node:child_process";
 import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { benchmarkSpec, normalizeThroughput, assertBenchmarkUnits } from "./throughput-units.mjs";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const benchDir   = join(__dirname, "..", "benchmarks");
@@ -69,6 +70,26 @@ const BENCHMARKS = [
   // One run = scanRecords(500) = 500 records parsed. split/length match JS/Python exactly,
   // so the checksum (12500) is identical across Node, Python and the LogicN string path.
   { id: "json-parse", dir: "json-parse", logicnOpsPerRun: 500, passiveCallCount: 20 },
+  // ── Real-world cross-language benchmarks (Computer Language Benchmarks Game) ──
+  // mandelbrot: scaled-int escape-time over a 128×128 grid (16384 px), max 100 iters.
+  // One op = one pixel; checksum = Σ iteration counts (identical across runtimes).
+  { id: "mandelbrot", dir: "mandelbrot", logicnOpsPerRun: 16384, passiveCallCount: 5 },
+  // spectral-norm: scaled-int, index-math (no arrays). n=100, 10 power-iterations →
+  // 10×2×n² = 200000 A(i,j) evaluations per run. One op = one A-eval.
+  { id: "spectral-norm", dir: "spectral-norm", logicnOpsPerRun: 200000, passiveCallCount: 5 },
+  // binary-trees: THE allocation/GC benchmark. minDepth 4, maxDepth 10 → 135854 nodes
+  // allocated per run. One op = one node allocated. Read the bytes/op column here.
+  { id: "binary-trees", dir: "binary-trees", logicnOpsPerRun: 135854, passiveCallCount: 3 },
+  // ── .tmf trust-container CREATION — TMX-256 SHAKE Merkle + LE container packing ──
+  // The Node.js column IS the shipped @logicn/ext-tmf engine (pure TS/Node — no .lln
+  // path exists); python.py / bench.rs are byte-identical reference writers that assert
+  // the SAME golden root. Honest "can other languages create a .tmf, and how fast?".
+  { id: "tmf-container", dir: "tmf-container" },
+  // ── Native framework vs middleware — LogicN App Kernel's fixed 12-gate pipeline ──
+  // The Node.js column IS the LogicN App Kernel (no middleware chain); python.py is an
+  // equivalent SYNC gate chain (the "middleware" approach) doing the SAME gates. In-process
+  // (no sockets) so it measures pipeline cost, not socket RTT. Unit = requests/sec.
+  { id: "framework-pipeline", dir: "framework-pipeline" },
   // ── HTTP throughput — sequential requests/sec to governed localhost endpoint ──
   { id: "http-throughput", dir: "http-throughput", devtoolsOnly: true },
   // ── DevTools benchmarks — measure tool throughput over auth-service corpus ──
@@ -103,7 +124,10 @@ function resolveDenoBin() {
 }
 
 function runProc(cmd, args=[]) {
-  const r = spawnSync(cmd, args, { encoding:"utf8", timeout:180000 });
+  // --expose-gc lets node runners force a clean GC baseline before measuring heap
+  // delta, so the per-operation memory numbers are reliable (not GC-timing noise).
+  const finalArgs = cmd === "node" ? ["--expose-gc", ...args] : args;
+  const r = spawnSync(cmd, finalArgs, { encoding:"utf8", timeout:180000 });
   if (r.status !== 0 || !r.stdout?.trim()) return null;
   try { return JSON.parse(r.stdout.trim()); } catch { return null; }
 }
@@ -189,20 +213,39 @@ async function runBenchmark(bench) {
     res.logicnPassive = await runLogicN(lln, "passive", bench);
   }
 
-  // Add normalised throughput for LogicN results
-  // ops/sec = opsPerRun × runsPerSec  OR  result.value (if that IS the op count)
-  for (const key of ["logicnGoverned", "logicnManifest"]) {
-    const r = res[key];
-    if (!r || r.error) continue;
-    const resultValue = r.result?.__tag === "int" ? r.result.value : null;
-    const opsPerRun   = bench.logicnOpsPerRun ?? resultValue ?? null;
-    if (opsPerRun !== null && r.execMs > 0) {
-      r.logicnOpsPerSecond = Math.round((opsPerRun / r.execMs) * 1000);
-      r.logicnOpsPerRun    = opsPerRun;
+  // ── Normalise throughput to a single canonical unit per benchmark ──────────
+  // throughput-units.mjs is the source of truth: it converts EVERY runtime to
+  // inner-ops/sec so compare.mjs no longer pits LogicN's inner-ops/sec against
+  // the other languages' whole-call/sec (the false-"LogicN wins" bug).
+  const spec = benchmarkSpec(bench.id);
+  let units;
+  if (spec) {
+    for (const key of Object.keys(res)) {
+      const r = res[key];
+      if (!r || typeof r !== "object") continue;
+      const n = normalizeThroughput(key, r, bench.id);
+      if (!n.speced) continue;
+      r.normThroughput = n.ops;            // inner-ops/sec, or null (excluded / no data)
+      r.throughputUnit = n.unit;
+      if (!n.comparable && n.raw != null) r.rawThroughput = n.raw;  // display-only
+    }
+    units = assertBenchmarkUnits(bench.id, res);
+  } else {
+    // Out-of-scope benchmarks (logicnOpsPerRun null/1) keep the legacy LogicN
+    // normalisation: ops/sec = opsPerRun × runsPerSec, or result.value as the op count.
+    for (const key of ["logicnGoverned", "logicnManifest"]) {
+      const r = res[key];
+      if (!r || r.error) continue;
+      const resultValue = r.result?.__tag === "int" ? r.result.value : null;
+      const opsPerRun   = bench.logicnOpsPerRun ?? resultValue ?? null;
+      if (opsPerRun !== null && r.execMs > 0) {
+        r.logicnOpsPerSecond = Math.round((opsPerRun / r.execMs) * 1000);
+        r.logicnOpsPerRun    = opsPerRun;
+      }
     }
   }
 
-  return { benchmark: bench.id, results: res };
+  return { benchmark: bench.id, results: res, ...(units ? { units } : {}) };
 }
 
 // --quick: use 3s for time-based benchmarks (compute-mix), halve iteration counts.
@@ -226,6 +269,28 @@ async function main() {
   const outPath = join(resultsDir, "latest.json");
   writeFileSync(outPath, JSON.stringify(all, null, 2));
   console.log(`\nResults: ${outPath}`);
+
+  // ── Unit-alignment assertion ───────────────────────────────────────────────
+  // Every comparable benchmark must report ONE unit across all runtimes; the three
+  // non-comparable benchmarks are expected to be FLAGGED (excluded). A FAIL means a
+  // unit mismatch or a silent dropout slipped back in — fail the run so CI catches it.
+  const checks = all.map(b => b.units).filter(Boolean);
+  if (checks.length) {
+    console.log("\n── Unit-alignment check ─────────────────────────────────");
+    let failed = 0;
+    for (const c of checks) {
+      const icon = c.status === "PASS" ? "✅" : c.status === "FLAGGED" ? "⚠️ " : "❌";
+      console.log(`  ${icon} ${c.benchId.padEnd(20)} ${c.status.padEnd(8)} unit=${c.unit}`);
+      if (c.status === "FLAGGED") console.log(`        excluded: ${c.reason}`);
+      for (const p of c.problems ?? []) { console.log(`        ↳ ${p}`); failed++; }
+    }
+    if (failed > 0) {
+      console.error(`\n  ❌ ${failed} unit-alignment problem(s) — see ↳ lines above.`);
+      process.exitCode = 1;
+    } else {
+      console.log("\n  ✅ All comparable benchmarks report a single, matching unit.");
+    }
+  }
 
   // ── Diagnostic Benchmark Suite ────────────────────────────────────────────
   // Only run when --diagnostic flag is passed, or always if --benchmark diagnostic

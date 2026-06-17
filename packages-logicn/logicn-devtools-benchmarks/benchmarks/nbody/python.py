@@ -1,6 +1,8 @@
 import sys
 import json
 import time
+import gc
+import tracemalloc
 
 # N-body pairwise gravitational force — scaled-integer kernel.
 # Mirrors benchmark.lln and node.mjs exactly. `//` (floor) == trunc here because
@@ -70,6 +72,17 @@ def main():
         checksum = simulate(n, steps)
     elapsed_ms = (time.perf_counter() - t0) * 1000.0
 
+    # Memory measurement pass (separate from throughput timing)
+    _mem_iters = min(iterations, 50000)
+    gc.collect()
+    tracemalloc.start()
+    _base = tracemalloc.get_traced_memory()[0]
+    for _ in range(_mem_iters):
+        simulate(n, steps)
+    _cur, _peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    _heap_delta = _cur - _base
+
     force_evals = steps * n * n * iterations
     print(json.dumps({
         "runtime": "python",
@@ -79,6 +92,12 @@ def main():
         "elapsedMs": round(elapsed_ms, 3),
         "iterationsPerSecond": round(iterations / (elapsed_ms / 1000.0), 2),
         "forceEvalsPerSecond": round(force_evals / (elapsed_ms / 1000.0)),
+        "memory": {
+            "heapUsedBytes": _cur,
+            "heapUsedDelta": _heap_delta,
+            "bytesPerOperation": round(_heap_delta / _mem_iters, 2),
+            "tracemallocPeak": _peak,
+        },
         "notes": ["Scaled-integer N-body — checksum matches Node and LogicN bit-for-bit"],
     }, indent=2))
 

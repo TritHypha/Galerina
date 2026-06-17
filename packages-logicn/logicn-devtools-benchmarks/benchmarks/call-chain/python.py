@@ -1,4 +1,4 @@
-import json, os, platform, sys, time
+import json, os, platform, sys, time, gc, tracemalloc
 
 # call-chain benchmark — Python reference
 # Mirrors benchmark.lln: controller -> service.method() -> util function,
@@ -35,6 +35,19 @@ def run_bench(iterations):
     result = chain(iterations)
     elapsed = (time.perf_counter() - t0) * 1000
     cpu_ms = (time.process_time() - cpu0) * 1000
+
+    # Memory measurement pass (separate from throughput timing)
+    _mem_iters = min(iterations, 50000)
+    _svc = ServiceLayer()
+    gc.collect()
+    tracemalloc.start()
+    _base = tracemalloc.get_traced_memory()[0]
+    for _i in range(_mem_iters):
+        _svc.process(_i, _i)
+    _cur, _peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    _heap_delta = _cur - _base
+
     return {
         "runtime": "python", "benchmark": "call-chain-v1",
         "result": result, "iterations": iterations,
@@ -43,7 +56,12 @@ def run_bench(iterations):
         "iterationsPerSecond": round(iterations / max(elapsed / 1000, 1e-9), 2),
         "callsPerSecond": round((iterations * 7) / max(elapsed / 1000, 1e-9), 2),
         "cpu": {"processMs": round(cpu_ms, 3)},
-        "memory": {},
+        "memory": {
+            "heapUsedBytes": _cur,
+            "heapUsedDelta": _heap_delta,
+            "bytesPerOperation": round(_heap_delta / _mem_iters, 2),
+            "tracemallocPeak": _peak,
+        },
         "process": {"pid": os.getpid(), "python": platform.python_version(),
                     "platform": platform.platform(), "arch": platform.machine()},
     }

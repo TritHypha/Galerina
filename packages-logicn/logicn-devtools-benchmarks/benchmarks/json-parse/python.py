@@ -1,4 +1,4 @@
-import json, sys, time
+import json, sys, time, gc, tracemalloc
 
 REC = "id:1001,name:alice,role:admin,active:true,score:95"
 
@@ -41,15 +41,35 @@ def bench(name, fn, iterations):
             "operationsPerSecond": round(iterations / max(elapsed/1000, 1e-9), 0),
             "nsPerOp": round(elapsed * 1e6 / max(iterations, 1), 1)}
 
+results = {
+    "splitScan": bench("Split-scan parse", lambda: scan_records(N), max(1, its // N)),
+    "jsonParse": bench("json.loads + field read", parse_json_record, its),
+}
+
+# Memory measurement pass (separate from throughput timing).
+# Primary/dominant op = splitScan's scan_records(N); use its natural per-call count.
+_mem_iters = min(max(1, its // N), 50000)
+gc.collect()
+tracemalloc.start()
+_base = tracemalloc.get_traced_memory()[0]
+for _ in range(_mem_iters):
+    scan_records(N)
+_cur, _peak = tracemalloc.get_traced_memory()
+tracemalloc.stop()
+_heap_delta = _cur - _base
+
 print(json.dumps({
     "runtime": "python",
     "benchmark": "json-parse-v1",
     "records": N,
     "iterations": its,
     "checksum": scan_records(N),
-    "results": {
-        "splitScan": bench("Split-scan parse", lambda: scan_records(N), max(1, its // N)),
-        "jsonParse": bench("json.loads + field read", parse_json_record, its),
+    "results": results,
+    "memory": {
+        "heapUsedBytes": _cur,
+        "heapUsedDelta": _heap_delta,
+        "bytesPerOperation": round(_heap_delta / _mem_iters, 2),
+        "tracemallocPeak": _peak,
     },
     "notes": [
         f"Records: {N} key:value records",

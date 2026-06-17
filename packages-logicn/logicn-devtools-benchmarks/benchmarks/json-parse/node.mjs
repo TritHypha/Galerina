@@ -46,15 +46,26 @@ function parseIntFlag(name, fb) { const i=process.argv.indexOf(name); return i>=
 const N   = parseIntFlag("--size",       500);
 const its = parseIntFlag("--iterations", parseIntFlag("--operations", 200000));
 
+if (typeof globalThis.gc === "function") globalThis.gc();
+const __memBefore = process.memoryUsage();
+
+const __results = {
+  splitScan: bench("Split-scan parse (fields + value lengths)", () => scanRecords(N), Math.max(1, Math.floor(its / N))),
+  jsonParse: bench("JSON.parse + field read", parseJsonRecord, its),
+};
+
+const __memAfter = process.memoryUsage();
+
 const result = {
   runtime: "nodejs",
   benchmark: "json-parse-v1",
   records: N,
   iterations: its,
   checksum: scanRecords(N),
-  results: {
-    splitScan: bench("Split-scan parse (fields + value lengths)", () => scanRecords(N), Math.max(1, Math.floor(its / N))),
-    jsonParse: bench("JSON.parse + field read", parseJsonRecord, its),
+  results: __results,
+  memory: {
+    heapUsedBefore: __memBefore.heapUsed,
+    heapUsedDelta: __memAfter.heapUsed - __memBefore.heapUsed,
   },
   notes: [
     `Records: ${N} key:value records of 5 fields each`,

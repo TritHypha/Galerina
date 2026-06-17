@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-06-16T21:44:25.381Z",
+  "generatedAt": "2026-06-17T11:33:09.756Z",
   "nodes": [
     {
       "id": "package:logicn-core",
@@ -9153,6 +9153,24 @@
       ]
     },
     {
+      "id": "doc:docs/Knowledge-Bases/logicn-qrng-entropy-capability-design.md",
+      "kind": "Document",
+      "label": "logicn-qrng-entropy-capability-design.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-qrng-entropy-capability-design.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/logicn-quantum-resilience-roadmap.md",
+      "kind": "Document",
+      "label": "logicn-quantum-resilience-roadmap.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-quantum-resilience-roadmap.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
       "id": "doc:docs/Knowledge-Bases/logicn-quantum-resistance-posture.md",
       "kind": "Document",
       "label": "logicn-quantum-resistance-posture.md",
@@ -9180,10 +9198,28 @@
       ]
     },
     {
+      "id": "doc:docs/Knowledge-Bases/logicn-rd-absorption-catalog.md",
+      "kind": "Document",
+      "label": "logicn-rd-absorption-catalog.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-rd-absorption-catalog.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
       "id": "doc:docs/Knowledge-Bases/logicn-rd-adoption-2026-06-16.md",
       "kind": "Document",
       "label": "logicn-rd-adoption-2026-06-16.md",
       "sourcePath": "docs/Knowledge-Bases/logicn-rd-adoption-2026-06-16.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/logicn-rd-performance-and-boundary-opportunities.md",
+      "kind": "Document",
+      "label": "logicn-rd-performance-and-boundary-opportunities.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-rd-performance-and-boundary-opportunities.md",
       "tags": [
         "document"
       ]
@@ -9220,6 +9256,15 @@
       "kind": "Document",
       "label": "logicn-resource-governance.md",
       "sourcePath": "docs/Knowledge-Bases/logicn-resource-governance.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/logicn-roadmap-and-audit-2026-06-17.md",
+      "kind": "Document",
+      "label": "logicn-roadmap-and-audit-2026-06-17.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-roadmap-and-audit-2026-06-17.md",
       "tags": [
         "document"
       ]
@@ -9621,6 +9666,15 @@
       ]
     },
     {
+      "id": "doc:docs/Knowledge-Bases/logicn-tmf-engine.md",
+      "kind": "Document",
+      "label": "logicn-tmf-engine.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-tmf-engine.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
       "id": "doc:docs/Knowledge-Bases/logicn-topological-graph-engine.md",
       "kind": "Document",
       "label": "logicn-topological-graph-engine.md",
@@ -9643,6 +9697,15 @@
       "kind": "Document",
       "label": "logicn-tpl-bitnet-fidelity-audit.md",
       "sourcePath": "docs/Knowledge-Bases/logicn-tpl-bitnet-fidelity-audit.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/logicn-tritmesh-boundary-and-seam.md",
+      "kind": "Document",
+      "label": "logicn-tritmesh-boundary-and-seam.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-tritmesh-boundary-and-seam.md",
       "tags": [
         "document"
       ]
@@ -9724,6 +9787,15 @@
       "kind": "Document",
       "label": "logicn-wasmtime-roadmap.md",
       "sourcePath": "docs/Knowledge-Bases/logicn-wasmtime-roadmap.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/logicn-zero-trust-engine.md",
+      "kind": "Document",
+      "label": "logicn-zero-trust-engine.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-zero-trust-engine.md",
       "tags": [
         "document"
       ]
@@ -10084,6 +10156,276 @@
       "kind": "Document",
       "label": "quiet-runtime-secure-defaults.md",
       "sourcePath": "docs/Knowledge-Bases/quiet-runtime-secure-defaults.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-adversarial-verification-findings-2026-06-16.md",
+      "kind": "Document",
+      "label": "rd-adversarial-verification-findings-2026-06-16.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-adversarial-verification-findings-2026-06-16.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-crossover-encryption-rnd.md",
+      "kind": "Document",
+      "label": "rd-crossover-encryption-rnd.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-crossover-encryption-rnd.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-diagnostics-namespace-rnd-response.md",
+      "kind": "Document",
+      "label": "rd-diagnostics-namespace-rnd-response.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-diagnostics-namespace-rnd-response.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-encryption-rnd-full-brief.md",
+      "kind": "Document",
+      "label": "rd-encryption-rnd-full-brief.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-encryption-rnd-full-brief.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-external-repos-grounding-ledger.md",
+      "kind": "Document",
+      "label": "rd-external-repos-grounding-ledger.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-external-repos-grounding-ledger.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-ffsim-build-readiness.md",
+      "kind": "Document",
+      "label": "rd-ffsim-build-readiness.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-ffsim-build-readiness.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-ffsm-ffsim-op-catalog.md",
+      "kind": "Document",
+      "label": "rd-ffsm-ffsim-op-catalog.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-ffsm-ffsim-op-catalog.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-novelty-and-ip-assessment.md",
+      "kind": "Document",
+      "label": "rd-novelty-and-ip-assessment.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-novelty-and-ip-assessment.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-photonic-accelerated-lattice-signing.md",
+      "kind": "Document",
+      "label": "rd-photonic-accelerated-lattice-signing.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-photonic-accelerated-lattice-signing.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-photonic-lane-c-optical-puf.md",
+      "kind": "Document",
+      "label": "rd-photonic-lane-c-optical-puf.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-photonic-lane-c-optical-puf.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-photonic-lane-e-qkd-confidentiality.md",
+      "kind": "Document",
+      "label": "rd-photonic-lane-e-qkd-confidentiality.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-photonic-lane-e-qkd-confidentiality.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-photonic-sha256-integrity.md",
+      "kind": "Document",
+      "label": "rd-photonic-sha256-integrity.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-photonic-sha256-integrity.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-photonic-signing-and-trust-capsule.md",
+      "kind": "Document",
+      "label": "rd-photonic-signing-and-trust-capsule.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-photonic-signing-and-trust-capsule.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-photonic-ternary-in-tls.md",
+      "kind": "Document",
+      "label": "rd-photonic-ternary-in-tls.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-photonic-ternary-in-tls.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-privacy-governance-compile-time-design.md",
+      "kind": "Document",
+      "label": "rd-privacy-governance-compile-time-design.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-privacy-governance-compile-time-design.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-privacy-governed-compile-time-primitive.md",
+      "kind": "Document",
+      "label": "rd-privacy-governed-compile-time-primitive.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-privacy-governed-compile-time-primitive.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-qrng-entropy-source-for-hybrid-signing.md",
+      "kind": "Document",
+      "label": "rd-qrng-entropy-source-for-hybrid-signing.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-qrng-entropy-source-for-hybrid-signing.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-quantum-digital-signatures-lane-b.md",
+      "kind": "Document",
+      "label": "rd-quantum-digital-signatures-lane-b.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-quantum-digital-signatures-lane-b.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-quantum-resilience-standard-and-roadmap.md",
+      "kind": "Document",
+      "label": "rd-quantum-resilience-standard-and-roadmap.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-quantum-resilience-standard-and-roadmap.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-rd-direction.md",
+      "kind": "Document",
+      "label": "rd-rd-direction.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-rd-direction.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-tmf-confidentiality-layout.md",
+      "kind": "Document",
+      "label": "rd-tmf-confidentiality-layout.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-tmf-confidentiality-layout.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-tmf-real-vs-aspirational-ledger.md",
+      "kind": "Document",
+      "label": "rd-tmf-real-vs-aspirational-ledger.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-tmf-real-vs-aspirational-ledger.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-tmf-research-encryption-architecture.md",
+      "kind": "Document",
+      "label": "rd-tmf-research-encryption-architecture.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-tmf-research-encryption-architecture.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-tmf-research-open-questions.md",
+      "kind": "Document",
+      "label": "rd-tmf-research-open-questions.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-tmf-research-open-questions.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-tmf-research-ternary-in-cryptography.md",
+      "kind": "Document",
+      "label": "rd-tmf-research-ternary-in-cryptography.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-tmf-research-ternary-in-cryptography.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-tmf-storage-and-query.md",
+      "kind": "Document",
+      "label": "rd-tmf-storage-and-query.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-tmf-storage-and-query.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-tri-encription-findings-and-roadmap.md",
+      "kind": "Document",
+      "label": "rd-tri-encription-findings-and-roadmap.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-tri-encription-findings-and-roadmap.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-tri-encription-lln-readme.md",
+      "kind": "Document",
+      "label": "rd-tri-encription-lln-readme.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-tri-encription-lln-readme.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-tri-encription-research-metadata-confidentiality.md",
+      "kind": "Document",
+      "label": "rd-tri-encription-research-metadata-confidentiality.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-tri-encription-research-metadata-confidentiality.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-tri-encription-research-quantum-resilient-tri-encryption.md",
+      "kind": "Document",
+      "label": "rd-tri-encription-research-quantum-resilient-tri-encryption.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-tri-encription-research-quantum-resilient-tri-encryption.md",
       "tags": [
         "document"
       ]
@@ -34824,13 +35166,6 @@
     },
     {
       "from": "doc:README.md",
-      "to": "package:logicn-core-runtime",
-      "kind": "documents",
-      "confidence": "INFERRED",
-      "evidencePath": "README.md"
-    },
-    {
-      "from": "doc:README.md",
       "to": "package:logicn-core-security",
       "kind": "documents",
       "confidence": "INFERRED",
@@ -34845,21 +35180,7 @@
     },
     {
       "from": "doc:README.md",
-      "to": "package:logicn-core-vector",
-      "kind": "documents",
-      "confidence": "INFERRED",
-      "evidencePath": "README.md"
-    },
-    {
-      "from": "doc:README.md",
-      "to": "package:logicn-core-compute",
-      "kind": "documents",
-      "confidence": "INFERRED",
-      "evidencePath": "README.md"
-    },
-    {
-      "from": "doc:README.md",
-      "to": "package:logicn-core-cli",
+      "to": "package:logicn-ext-bridge-quantum",
       "kind": "documents",
       "confidence": "INFERRED",
       "evidencePath": "README.md"
@@ -39534,6 +39855,20 @@
       "evidencePath": "docs/Knowledge-Bases/logicn-r6-bootstrap-corpus.md"
     },
     {
+      "from": "doc:docs/Knowledge-Bases/logicn-rd-absorption-catalog.md",
+      "to": "package:logicn-ext-bridge-quantum",
+      "kind": "documents",
+      "confidence": "INFERRED",
+      "evidencePath": "docs/Knowledge-Bases/logicn-rd-absorption-catalog.md"
+    },
+    {
+      "from": "doc:docs/Knowledge-Bases/logicn-rd-performance-and-boundary-opportunities.md",
+      "to": "package:logicn-ai",
+      "kind": "documents",
+      "confidence": "INFERRED",
+      "evidencePath": "docs/Knowledge-Bases/logicn-rd-performance-and-boundary-opportunities.md"
+    },
+    {
       "from": "doc:docs/Knowledge-Bases/logicn-residual-risks.md",
       "to": "package:logicn-core",
       "kind": "documents",
@@ -40234,6 +40569,34 @@
       "evidencePath": "docs/Knowledge-Bases/logicn-v1-memory-model.md"
     },
     {
+      "from": "doc:docs/Knowledge-Bases/logicn-zero-trust-engine.md",
+      "to": "package:logicn-core",
+      "kind": "documents",
+      "confidence": "INFERRED",
+      "evidencePath": "docs/Knowledge-Bases/logicn-zero-trust-engine.md"
+    },
+    {
+      "from": "doc:docs/Knowledge-Bases/logicn-zero-trust-engine.md",
+      "to": "package:logicn-core-compiler",
+      "kind": "documents",
+      "confidence": "INFERRED",
+      "evidencePath": "docs/Knowledge-Bases/logicn-zero-trust-engine.md"
+    },
+    {
+      "from": "doc:docs/Knowledge-Bases/logicn-zero-trust-engine.md",
+      "to": "package:logicn-core-config",
+      "kind": "documents",
+      "confidence": "INFERRED",
+      "evidencePath": "docs/Knowledge-Bases/logicn-zero-trust-engine.md"
+    },
+    {
+      "from": "doc:docs/Knowledge-Bases/logicn-zero-trust-engine.md",
+      "to": "package:logicn-ext-bridge-quantum",
+      "kind": "documents",
+      "confidence": "INFERRED",
+      "evidencePath": "docs/Knowledge-Bases/logicn-zero-trust-engine.md"
+    },
+    {
       "from": "doc:docs/Knowledge-Bases/logicn-zk-proof-plan.md",
       "to": "package:logicn-core",
       "kind": "documents",
@@ -40505,6 +40868,62 @@
       "kind": "documents",
       "confidence": "INFERRED",
       "evidencePath": "docs/Knowledge-Bases/preplanned-startup-and-fast-response.md"
+    },
+    {
+      "from": "doc:docs/Knowledge-Bases/rd-absorbed/rd-diagnostics-namespace-rnd-response.md",
+      "to": "package:logicn-core",
+      "kind": "documents",
+      "confidence": "INFERRED",
+      "evidencePath": "docs/Knowledge-Bases/rd-absorbed/rd-diagnostics-namespace-rnd-response.md"
+    },
+    {
+      "from": "doc:docs/Knowledge-Bases/rd-absorbed/rd-diagnostics-namespace-rnd-response.md",
+      "to": "package:logicn-core-compiler",
+      "kind": "documents",
+      "confidence": "INFERRED",
+      "evidencePath": "docs/Knowledge-Bases/rd-absorbed/rd-diagnostics-namespace-rnd-response.md"
+    },
+    {
+      "from": "doc:docs/Knowledge-Bases/rd-absorbed/rd-ffsim-build-readiness.md",
+      "to": "package:logicn-ext-bridge-quantum",
+      "kind": "documents",
+      "confidence": "INFERRED",
+      "evidencePath": "docs/Knowledge-Bases/rd-absorbed/rd-ffsim-build-readiness.md"
+    },
+    {
+      "from": "doc:docs/Knowledge-Bases/rd-absorbed/rd-ffsm-ffsim-op-catalog.md",
+      "to": "package:logicn-ext-bridge-quantum",
+      "kind": "documents",
+      "confidence": "INFERRED",
+      "evidencePath": "docs/Knowledge-Bases/rd-absorbed/rd-ffsm-ffsim-op-catalog.md"
+    },
+    {
+      "from": "doc:docs/Knowledge-Bases/rd-absorbed/rd-photonic-sha256-integrity.md",
+      "to": "package:logicn-ext-bridge-quantum",
+      "kind": "documents",
+      "confidence": "INFERRED",
+      "evidencePath": "docs/Knowledge-Bases/rd-absorbed/rd-photonic-sha256-integrity.md"
+    },
+    {
+      "from": "doc:docs/Knowledge-Bases/rd-absorbed/rd-tmf-confidentiality-layout.md",
+      "to": "package:logicn-ext-bridge-quantum",
+      "kind": "documents",
+      "confidence": "INFERRED",
+      "evidencePath": "docs/Knowledge-Bases/rd-absorbed/rd-tmf-confidentiality-layout.md"
+    },
+    {
+      "from": "doc:docs/Knowledge-Bases/rd-absorbed/rd-tri-encription-research-quantum-resilient-tri-encryption.md",
+      "to": "package:logicn-core",
+      "kind": "documents",
+      "confidence": "INFERRED",
+      "evidencePath": "docs/Knowledge-Bases/rd-absorbed/rd-tri-encription-research-quantum-resilient-tri-encryption.md"
+    },
+    {
+      "from": "doc:docs/Knowledge-Bases/rd-absorbed/rd-tri-encription-research-quantum-resilient-tri-encryption.md",
+      "to": "package:logicn-core-logic",
+      "kind": "documents",
+      "confidence": "INFERRED",
+      "evidencePath": "docs/Knowledge-Bases/rd-absorbed/rd-tri-encription-research-quantum-resilient-tri-encryption.md"
     },
     {
       "from": "doc:docs/Knowledge-Bases/runtime-audit-log-format.md",

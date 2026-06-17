@@ -1,5 +1,7 @@
 # LogicN — Continuation / Handoff Brief (2026-06-15)
 
+> ⚠️ **SUPERSEDED for status (2026-06-17).** This is a dated snapshot; its counts (48/48 · 4,3xx) are stale. Current verified status = **49/49 packages · 4,518 tests** — read [`logicn-roadmap-and-audit-2026-06-17.md`](logicn-roadmap-and-audit-2026-06-17.md) + `version.json`. The recent-work narrative below is retained as a historical record.
+
 **Purpose:** read-first state document so a fresh session (or this one) can continue
 **without re-deriving context**. Authoritative status lives in `logicn-runtime-status-SOT.md`
 + the auto-memory SOT; this brief is the *recent-work* snapshot + the audit scope.

@@ -20,6 +20,8 @@ function matMul(n, iterations) {
       }
   }
 
+  if (typeof globalThis.gc === "function") globalThis.gc();
+  const __memBefore = process.memoryUsage();
   const t0 = performance.now();
   const cpu0 = process.cpuUsage();
   let checksum = 0;
@@ -44,7 +46,7 @@ function matMul(n, iterations) {
     iterationsPerSecond: Number((iterations / (elapsedMs / 1000)).toFixed(2)),
     gflops: Number((totalFlops / (elapsedMs / 1000) / 1e9).toFixed(3)),
     cpu: { totalMs: Number(((cpu.user + cpu.system) / 1000).toFixed(3)) },
-    memory: { rssBytes: mem.rss, heapUsedBytes: mem.heapUsed },
+    memory: { rssBytes: mem.rss, heapUsedBytes: mem.heapUsed, heapUsedBefore: __memBefore.heapUsed, heapUsedDelta: mem.heapUsed - __memBefore.heapUsed },
     notes: ["Float32Array matrix multiply — V8 JIT may auto-vectorise to AVX2"],
   };
 }

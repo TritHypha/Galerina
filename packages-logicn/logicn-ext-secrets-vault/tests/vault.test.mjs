@@ -55,6 +55,46 @@ function makeCred(id, path = `secret/data/${id}`, mountPoint = "secret") {
 }
 
 // ---------------------------------------------------------------------------
+// Fail-closed on rotation fault (zero-trust: a stale key must never be served)
+// ---------------------------------------------------------------------------
+describe("SecretsRotationManager — fail-closed on rotation fault", () => {
+  const cred = makeCred("db_password"); // path: secret/data/db_password
+  const goodMap = () => new Map([["secret/data/db_password", "s3cr3t"]]);
+  const faultyClient = () => new MockVaultClient(new Map()); // readSecret throws
+
+  it("'halt' evicts the credential on fault → getActive() fails closed", async () => {
+    const mgr = new SecretsRotationManager();
+    await mgr.load(cred, new MockVaultClient(goodMap()));
+    assert.ok(mgr.getActive("db_password") !== undefined, "value present before fault");
+    const ok = await mgr.rotateOrFault(cred, faultyClient(), "halt");
+    assert.equal(ok, false, "rotateOrFault returns false on fault");
+    assert.equal(mgr.getActive("db_password"), undefined, "halt → stale key not served");
+  });
+
+  it("'quarantine' wipes the active value on fault → reads fail closed, handle retained", async () => {
+    const mgr = new SecretsRotationManager();
+    await mgr.load(cred, new MockVaultClient(goodMap()));
+    await mgr.rotateOrFault(cred, faultyClient(), "quarantine");
+    assert.equal(mgr.getActive("db_password"), undefined, "quarantine → reads fail closed");
+    assert.ok(mgr.listIds().includes("db_password"), "handle retained for inspection");
+  });
+
+  it("'log' keeps serving the previous value (explicit opt-in, NOT fail-closed)", async () => {
+    const mgr = new SecretsRotationManager();
+    await mgr.load(cred, new MockVaultClient(goodMap()));
+    await mgr.rotateOrFault(cred, faultyClient(), "log");
+    assert.ok(mgr.getActive("db_password") !== undefined, "log retains previous value");
+  });
+
+  it("default fault policy is 'halt' (fail-closed by default)", async () => {
+    const mgr = new SecretsRotationManager();
+    await mgr.load(cred, new MockVaultClient(goodMap()));
+    await mgr.rotateOrFault(cred, faultyClient()); // no policy arg → default halt
+    assert.equal(mgr.getActive("db_password"), undefined, "default halt → fail-closed");
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Test 1: VaultClient constructor stores address + token
 // ---------------------------------------------------------------------------
 describe("VaultClient", () => {

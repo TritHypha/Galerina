@@ -69,6 +69,9 @@ const BULK_N = 10_000_000;
 const aData = new Int8Array(BULK_N).map((_,i) => (i%3)-1);
 const bData = new Int8Array(BULK_N).map((_,i) => ((i*7)%3)-1);
 
+if (typeof globalThis.gc === "function") globalThis.gc();
+const __memBefore = process.memoryUsage();
+
 const bulk = bench("Bulk 10M element tri-ops (branchless, Int8Array)", () => {
   let s = 0;
   for (let i = 0; i < BULK_N; i++) {
@@ -78,17 +81,25 @@ const bulk = bench("Bulk 10M element tri-ops (branchless, Int8Array)", () => {
   return s;
 }, 3);  // 3 runs of 10M each
 
+const __triResults = {
+  triAnd_branchless: bench("Tri.and branchless min(a,b)", () => { let s=0; for(const a of VALS)for(const b of VALS)s+=triAnd(a,b); return s; }, its),
+  triOr_branchless:  bench("Tri.or  branchless max(a,b)", () => { let s=0; for(const a of VALS)for(const b of VALS)s+=triOr(a,b);  return s; }, its),
+  triNot_branchless: bench("Tri.not branchless -a",       () => { let s=0; for(const a of VALS)s+=triNot(a); return s; }, its),
+  triAnd_slow:       bench("Tri.and if-chain (original)", () => { let s=0; for(const a of VALS)for(const b of VALS)s+=triAndSlow(a,b); return s; }, its),
+  bulk10M:           bulk,
+};
+
+const __memAfter = process.memoryUsage();
+
 const result = {
   runtime: "nodejs",
   benchmark: "tri-logic-v1",
   truthTableErrors,
   truthTableCorrect: truthTableErrors === 0,
-  results: {
-    triAnd_branchless: bench("Tri.and branchless min(a,b)", () => { let s=0; for(const a of VALS)for(const b of VALS)s+=triAnd(a,b); return s; }, its),
-    triOr_branchless:  bench("Tri.or  branchless max(a,b)", () => { let s=0; for(const a of VALS)for(const b of VALS)s+=triOr(a,b);  return s; }, its),
-    triNot_branchless: bench("Tri.not branchless -a",       () => { let s=0; for(const a of VALS)s+=triNot(a); return s; }, its),
-    triAnd_slow:       bench("Tri.and if-chain (original)", () => { let s=0; for(const a of VALS)for(const b of VALS)s+=triAndSlow(a,b); return s; }, its),
-    bulk10M:           bulk,
+  results: __triResults,
+  memory: {
+    heapUsedBefore: __memBefore.heapUsed,
+    heapUsedDelta: __memAfter.heapUsed - __memBefore.heapUsed,
   },
   kleeneEquivalences: {
     and: "min(a, b) in {-1, 0, 1}",

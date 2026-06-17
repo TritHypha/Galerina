@@ -44,6 +44,8 @@ function run(n, steps, iterations) {
   // Warmup
   for (let w = 0; w < 3; w++) simulate(n, steps);
 
+  if (typeof globalThis.gc === "function") globalThis.gc();
+  const __memBefore = process.memoryUsage();
   const t0 = performance.now();
   const cpu0 = process.cpuUsage();
   let checksum = 0;
@@ -61,7 +63,7 @@ function run(n, steps, iterations) {
     iterationsPerSecond: Number((iterations / (elapsedMs / 1000)).toFixed(2)),
     forceEvalsPerSecond: Number((totalForceEvals / (elapsedMs / 1000)).toFixed(0)),
     cpu: { totalMs: Number(((cpu.user + cpu.system) / 1000).toFixed(3)) },
-    memory: { rssBytes: mem.rss, heapUsedBytes: mem.heapUsed },
+    memory: { rssBytes: mem.rss, heapUsedBytes: mem.heapUsed, heapUsedBefore: __memBefore.heapUsed, heapUsedDelta: mem.heapUsed - __memBefore.heapUsed },
     notes: ["Scaled-integer N-body — checksum matches Python and LogicN bit-for-bit"],
   };
 }

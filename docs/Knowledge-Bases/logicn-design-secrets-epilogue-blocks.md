@@ -35,6 +35,15 @@ So "most apps just use a `.env` and emit no heavy proof" remains true — that's
 > (`parser.ts`), verified by `tests/contract-secrets-epilogue.test.mjs`. `economics {}` has an
 > auto-inference layer (`economics-inference.ts`). The runtime auto-population for `secrets`/
 > `epilogue`, the taint guard, vault drivers, and the zk prover remain forward work (see §4).
+>
+> **Wiring gap (2026-06-17, #110):** `secrets {}` is *retained* as a block, but the credential
+> **body** (`provider`/`path` + the `rotation {}` policy) is **dropped at parse** (`parser.ts:4114`) —
+> only the credential NAME reaches the manifest, so a declared `rotation { interval … on_rotation_fault }`
+> never becomes a verifiable proof obligation. The rotation **engine** is already built in ext
+> (`logicn-ext-secrets-vault` `SecretsRotationManager` — dual-token/quiesce/atomic-swap/zero-wipe) but is
+> not bound to a manifest obligation. Fix is core-side: retain the body in the `contractDecl` AST + emit a
+> manifest proof obligation that binds to the ext driver — the engine stays in ext (govern-don't-absorb).
+> See [[logicn-key-custody-and-rotation]] §2.
 
 ## 0. The unifying pattern — governed contract blocks are *dual-mode*
 

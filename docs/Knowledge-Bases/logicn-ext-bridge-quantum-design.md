@@ -1,7 +1,7 @@
 # LogicN External Bridge — Governed Quantum Simulation (`ffsim`)
 
 **Status:** 🟢 **PHASE 0 + PHASE 1 IMPLEMENTED (2026-06-15).** The package
-`packages-logicn/logicn-ext-bridge-quantum` now exists and is in the suite (48/48 · 4,360 · 0 fail):
+`packages-logicn/logicn-ext-bridge-quantum` now exists and is in the suite (49/49 · 4,518 · 0 fail, verified 2026-06-17; bridge has 21 tests, now Phase 1.5):
 - **Phase 0** — shared `@logicn/inference-bridge-contract` manifest extended (`determinismMode:"tolerance"`,
   optional `domain`/`tolerance`/`pinnedEnvHash`/`backendArtifactHash`, `precision` optional), the
   fail-closed tolerance rule (§9.1.3), additively + hash-preserving. Verified across bitnet/cpp/tower-citizen.
@@ -478,7 +478,7 @@ all three pins are present, and the consuming flow is `LLN-SUBSTRATE-001`-clean.
 ```lln
 /*
  * Example: governed ground-state energy via IBM ffsim (out-of-process, under contract).
- * DESIGN-ONLY — the quantum {} block + @logicn/ext-bridge-quantum do not exist yet.
+ * Phase 1.5 IMPLEMENTED — @logicn/ext-bridge-quantum exists (governance + hybrid attestation, 21 tests); out-of-process EXEC is Phase 2. The quantum {} contract sub-block is still design-stage.
  * See: docs/Knowledge-Bases/logicn-ext-bridge-quantum-design.md
  */
 

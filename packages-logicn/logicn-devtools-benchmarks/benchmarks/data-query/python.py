@@ -1,4 +1,4 @@
-import json, sys, time
+import json, sys, time, gc, tracemalloc
 
 N = 1000
 its = 1000
@@ -25,15 +25,35 @@ def bench(name, fn, iterations):
 
 from collections import defaultdict
 
+results = {
+    "filterByStatus": bench("Filter by status", lambda: [r for r in dataset if r["status"]=="approved"], its),
+    "filterCompound":  bench("Compound filter",  lambda: [r for r in dataset if r["status"]=="approved" and r["amount"]>3000], its),
+    "aggregateSum":    bench("SUM aggregate",    lambda: sum(r["amount"] for r in dataset if r["category"]=="healthcare"), its),
+    "groupBy":         bench("GROUP BY",         lambda: {k: sum(1 for r in dataset if r["category"]==k) for k in categories}, its),
+    "sortTop10":       bench("Sort + LIMIT 10",  lambda: sorted(dataset, key=lambda r: -r["amount"])[:10], its),
+    "joinLike":        bench("JOIN-like filter",  lambda: [r for r in dataset if r["approved"] and r["category"]=="healthcare" and r["amount"]>5000], its),
+}
+
+# Memory measurement pass (separate from throughput timing).
+# Primary/dominant op = filterByStatus, the main filter query.
+_mem_iters = min(its, 50000)
+gc.collect()
+tracemalloc.start()
+_base = tracemalloc.get_traced_memory()[0]
+for _ in range(_mem_iters):
+    [r for r in dataset if r["status"] == "approved"]
+_cur, _peak = tracemalloc.get_traced_memory()
+tracemalloc.stop()
+_heap_delta = _cur - _base
+
 print(json.dumps({
     "runtime": "python", "benchmark": "data-query-v1", "datasetSize": N,
-    "results": {
-        "filterByStatus": bench("Filter by status", lambda: [r for r in dataset if r["status"]=="approved"], its),
-        "filterCompound":  bench("Compound filter",  lambda: [r for r in dataset if r["status"]=="approved" and r["amount"]>3000], its),
-        "aggregateSum":    bench("SUM aggregate",    lambda: sum(r["amount"] for r in dataset if r["category"]=="healthcare"), its),
-        "groupBy":         bench("GROUP BY",         lambda: {k: sum(1 for r in dataset if r["category"]==k) for k in categories}, its),
-        "sortTop10":       bench("Sort + LIMIT 10",  lambda: sorted(dataset, key=lambda r: -r["amount"])[:10], its),
-        "joinLike":        bench("JOIN-like filter",  lambda: [r for r in dataset if r["approved"] and r["category"]=="healthcare" and r["amount"]>5000], its),
+    "results": results,
+    "memory": {
+        "heapUsedBytes": _cur,
+        "heapUsedDelta": _heap_delta,
+        "bytesPerOperation": round(_heap_delta / _mem_iters, 2),
+        "tracemallocPeak": _peak,
     },
     "notes": [f"Dataset: {N} records"],
 }, indent=2))

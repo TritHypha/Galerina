@@ -18,6 +18,8 @@ function runBench(elements, iterations) {
   // Warmup
   for (let i = 0; i < 10; i++) mapReduce(elements);
 
+  if (typeof globalThis.gc === "function") globalThis.gc();
+  const __memBefore = process.memoryUsage();
   const t0 = performance.now();
   const cpu0 = process.cpuUsage();
   let result = 0;
@@ -40,7 +42,7 @@ function runBench(elements, iterations) {
     // ops/sec = total per-element kernel evaluations across all iterations
     operationsPerSecond: Number((totalElements / (elapsedMs / 1000)).toFixed(0)),
     cpu: { totalMs: Number(((cpu.user + cpu.system) / 1000).toFixed(3)) },
-    memory: { rssBytes: mem.rss, heapUsedBytes: mem.heapUsed, maxRssBytes: null },
+    memory: { rssBytes: mem.rss, heapUsedBytes: mem.heapUsed, maxRssBytes: null, heapUsedBefore: __memBefore.heapUsed, heapUsedDelta: mem.heapUsed - __memBefore.heapUsed },
     notes: [
       "CPU serial execution — V8 JIT.",
       "GPU-shaped workload: per-element kernel + reduction. On GPU this parallelises across thousands of threads.",

@@ -10,6 +10,7 @@
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { isComparable as specComparable, benchmarkSpec } from "./throughput-units.mjs";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const dataPath  = join(__dirname, "..", "results", "latest.json");
@@ -38,12 +39,25 @@ const LABEL = {
 
 function throughput(r) {
   if (!r || r.error) return null;
-  // LogicN: use normalised opsPerSecond when available (opsPerRun × runsPerSec)
+  // Canonical: a single unit per benchmark, normalised by throughput-units.mjs.
+  // `null` here means "excluded" (non-comparable benchmark) or "no data" — both
+  // correctly drop the runtime from comparison.
+  if (r.normThroughput !== undefined) return r.normThroughput;
+  // ── Legacy path (out-of-scope benchmarks: logicnOpsPerRun null/1) ──
   if (r.logicnOpsPerSecond) return r.logicnOpsPerSecond;
-  // Passive mode: warmCallsPerSecond is the steady-state execution throughput
   if (r.warmCallsPerSecond) return r.warmCallsPerSecond;
   return r.operationsPerSecond ?? r.additionsPerSecond ?? r.attemptsPerSecond
       ?? r.iterationsPerSecond ?? r.callsPerSecond ?? r.runsPerSecond ?? null;
+}
+
+// Is this benchmark unit-comparable across runtimes? Non-comparable benchmarks
+// (matrix-multiply, tri-logic, data-query) are excluded from winner / floor claims.
+function comparable(bench) {
+  return bench?.units ? bench.units.comparable !== false : specComparable(bench?.benchmark);
+}
+function unitReason(bench) {
+  const full = bench?.units?.reason ?? benchmarkSpec(bench?.benchmark)?.reason ?? "not unit-aligned";
+  return full.split(" — ")[1]?.split(";")[0]?.trim() ?? full.split(".")[0];
 }
 
 function cpuEfficiency(r) {
@@ -62,6 +76,31 @@ function heapUsed(r)      { return r?.memory?.heapUsedAfter ?? r?.memory?.heapUs
 function heapDelta(r)     { return r?.memory?.heapUsedDelta                             ?? null; }
 function cpuMs(r)         { return r?.cpu?.totalMs ?? r?.cpu?.processMs ?? r?.cpu?.warmTotalMs ?? null; }
 function wallMs(r)        { return r?.elapsedMs ?? r?.execMs ?? r?.warmMs              ?? null; }
+
+// Heap allocated per operation (the fair, workload-attributable memory metric).
+// Prefer a runner's self-reported bytesPerOperation; else derive it centrally from
+// heapUsedDelta and the total ops in the timed region (throughput × wall). Managed
+// runtimes (Node/Python/LogicN/WASM) report this; native Rust/C++ are ~0 by design
+// (no GC-managed heap), shown as "~0 (native)".
+function bytesPerOp(r) {
+  if (!r || r.error) return null;
+  const m = r.memory;
+  if (m && typeof m.bytesPerOperation === "number") return m.bytesPerOperation;
+  const hd = m?.heapUsedDelta;
+  const t = throughput(r), wall = wallMs(r);
+  if (typeof hd === "number" && t && wall) {
+    const totalOps = t * (wall / 1000);
+    if (totalOps > 0) return hd / totalOps;
+  }
+  return null;
+}
+const NATIVE_RT = new Set(["rust", "rustAvx2", "rustAvx512", "cpp"]);
+function fmtBpo(n, rt) {
+  if (n === null) return NATIVE_RT.has(rt) ? "~0 (native)" : "—";
+  if (Math.abs(n) < 1) return "~0";
+  if (Math.abs(n) >= 1024) return (n / 1024).toFixed(1) + " KB/op";
+  return n.toFixed(0) + " B/op";
+}
 
 // ── Traffic Light ──────────────────────────────────────────────────────────────
 // Compares a runtime's throughput to a reference (best, Node.js, or Rust).
@@ -196,6 +235,10 @@ console.log("| Benchmark | 🏆 Winner | Winner Speed | LogicN (governed) | gov 
 console.log("|---|---|---|---|---|---|---|");
 
 for (const bench of data) {
+  if (!comparable(bench)) {
+    console.log(`| **${bench.benchmark}** | ⚠️ not unit-aligned | — | — | — | — | excluded — ${unitReason(bench)} |`);
+    continue;
+  }
   const m = {};
   for (const rt of ORDER) m[rt] = throughput(bench.results?.[rt]);
 
@@ -263,15 +306,17 @@ for (const bench of data) {
 
 // Floor-pass summary: how many benchmarks does governed LogicN beat Python on?
 {
-  let beatsPython = 0, comparedToPython = 0;
+  let beatsPython = 0, comparedToPython = 0, excluded = 0;
   for (const bench of data) {
+    if (!comparable(bench)) { excluded++; continue; }
     const gov = throughput(bench.results?.logicnGoverned);
     const py  = throughput(bench.results?.python);
     if (gov && py) { comparedToPython++; if (gov >= py) beatsPython++; }
   }
   if (comparedToPython > 0) {
-    console.log(`\n> **Python floor check:** LogicN (governed) beats Python on **${beatsPython}/${comparedToPython}** benchmarks where both ran. ` +
-      `Python is the like-for-like floor while the Stage-A runtime is still TypeScript-interpreted; Rust/Zig/WASM are the ceiling.`);
+    console.log(`\n> **Python floor check:** LogicN (governed) beats Python on **${beatsPython}/${comparedToPython}** unit-aligned benchmarks where both ran. ` +
+      `Python is the like-for-like floor while the Stage-A runtime is still TypeScript-interpreted; Rust/Zig/WASM are the ceiling.` +
+      (excluded ? ` (${excluded} benchmark(s) excluded — not unit-aligned; see §1.6.)` : ""));
   }
 }
 
@@ -284,6 +329,11 @@ console.log("| Benchmark | " + cols.join(" | ") + " | Node/LogicN† (🖥️ CP
 console.log("|" + Array(ORDER.length + 2).fill("---").join("|") + "|");
 
 for (const bench of data) {
+  if (!comparable(bench)) {
+    const cells = ORDER.map(() => "—");
+    console.log("| " + [`${bench.benchmark} ⚠️`, ...cells, "⚠️ excluded"].join(" | ") + " |");
+    continue;
+  }
   const m = {}; for (const rt of ORDER) m[rt] = throughput(bench.results?.[rt]);
 
   // Bold the winning cell in each row
@@ -305,9 +355,37 @@ for (const bench of data) {
   }
   console.log("| "+row.join(" | ")+" |");
 }
-console.log("\n> †`Node/LogicN > 1` = Node.js faster. `< 1` = LogicN faster (e.g. collection-pipeline).");
+console.log("\n> †`Node/LogicN > 1` = Node.js faster (the usual case for the Stage-A tree-walker). `< 1` = LogicN faster.");
 console.log("> †fibonacci: LogicN=fib(20), others=fib(30) — different workload depth.");
+console.log("> ⚠️ rows are excluded — their workloads are not unit-aligned across runtimes (see §1.6).");
 console.log(`> **Bold** = winner (within 5% of fastest). 🖥️ CPU = CPU execution. 🎮 GPU = Deno WebGPU (${GPU_NAME}).`);
+
+// ── 1.6 Unit Alignment Check ────────────────────────────────────────────────
+// Makes the per-benchmark unit assertion visible: every comparable benchmark must
+// report ONE unit across all runtimes; the rest are flagged & excluded.
+console.log("\n## 1.6 Unit Alignment Check\n");
+console.log("> Throughput is only meaningful when every runtime measures the **same unit**. This");
+console.log("> table is the report-side view of the `assertBenchmarkUnits` guard in `throughput-units.mjs`.\n");
+console.log("| Benchmark | Status | Unit | Notes |");
+console.log("|---|---|---|---|");
+for (const bench of data) {
+  const spec = benchmarkSpec(bench.benchmark);
+  if (!spec) {
+    console.log(`| ${bench.benchmark} | — legacy | per-call | not centrally normalised (out of scope) |`);
+    continue;
+  }
+  const u = bench.units;
+  if (!comparable(bench)) {
+    console.log(`| ${bench.benchmark} | ⚠️ excluded | ${spec.unit} | ${spec.reason} |`);
+  } else {
+    const status = u?.status === "FAIL" ? "❌ FAIL" : "✅ aligned";
+    const note = (u?.problems?.length) ? u.problems.join("; ") : "all runtimes normalised to one unit";
+    console.log(`| ${bench.benchmark} | ${status} | ${spec.unit} | ${note} |`);
+  }
+}
+console.log("\n> **Excluded** benchmarks are dropped from the winner table and the Python-floor check until their");
+console.log("> workloads are realigned across runtimes. Excluding them is what stops false \"LogicN wins\" on");
+console.log("> mismatched workloads (the same class of bug the unit normalisation fixed for the numeric loops).");
 
 // ── 1.5 Traffic Light Summary ──────────────────────────────────────────────────
 // Shows at a glance how each key runtime compares to the best result.
@@ -437,10 +515,28 @@ console.log("\n> **CPU utilisation** = CPU ms ÷ wall ms × 100. Node.js approac
 // ── 4. Per-benchmark detail ────────────────────────────────────────────────────
 
 console.log("\n## 4. Per-Benchmark Detail\n");
+console.log("> **Heap/op** = heap bytes allocated per operation (the fair, workload-attributable memory metric).");
+console.log("> Managed runtimes (Node/Python/LogicN/WASM) report it via a GC'd before/after delta; native Rust/C++");
+console.log("> show **~0 (native)** — no GC-managed heap. `~0` = no measurable per-op allocation (e.g. V8 tagged ints);");
+console.log("> a large positive value (e.g. the LogicN tree-walker boxing a value per AST node) is allocation pressure.\n");
 
 for (const bench of data) {
+  if (!comparable(bench)) {
+    console.log(`### ${bench.benchmark} ⚠️ (excluded — not unit-aligned)\n`);
+    console.log(`> ${benchmarkSpec(bench.benchmark)?.reason ?? "Workloads differ across runtimes."}\n`);
+    console.log("| Runtime | Raw reported throughput (native unit — **NOT comparable**) | Wall |");
+    console.log("|---|---|---|");
+    for (const rt of ORDER) {
+      const r = bench.results?.[rt];
+      if (!r || r.error) continue;
+      const raw = r.rawThroughput ?? null;
+      console.log(`| ${LABEL[rt]} | ${raw != null ? fmtT(raw) : "—"} | ${fmtMs(wallMs(r))} |`);
+    }
+    console.log();
+    continue;
+  }
   console.log(`### ${bench.benchmark}\n`);
-  console.log("| # | 🚦 | Runtime | Throughput | Wall | CPU | RSS | Heap | vs Python | vs Node |");
+  console.log("| # | 🚦 | Runtime | Throughput | Wall | CPU | RSS | Heap/op | vs Python | vs Node |");
   console.log("|---|---|---|---|---|---|---|---|---|---|");
 
   const mt = {}; for (const rt of ORDER) mt[rt] = throughput(bench.results?.[rt]);
@@ -463,8 +559,20 @@ for (const bench of data) {
     const t = mt[rt];
     const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `${idx + 1}`;
     const light = trafficLight(t, nodeRef);
-    console.log(`| ${medal} | ${light} | ${LABEL[rt]} | ${fmtT(t)} | ${fmtMs(wallMs(r))} | ${fmtMs(cpuMs(r))} | ${fmtB(rssBytes(r))} | ${fmtB(heapUsed(r))} | ${ratio(t,py)} | ${ratio(t,nd)} |`);
+    console.log(`| ${medal} | ${light} | ${LABEL[rt]} | ${fmtT(t)} | ${fmtMs(wallMs(r))} | ${fmtMs(cpuMs(r))} | ${fmtB(rssBytes(r))} | ${fmtBpo(bytesPerOp(r), rt)} | ${ratio(t,py)} | ${ratio(t,nd)} |`);
   });
+
+  // Per-op heap winner among managed runtimes (lowest allocation = best).
+  const memRanked = ranked
+    .map(rt => ({ rt, bpo: bytesPerOp(bench.results?.[rt]) }))
+    .filter(x => x.bpo !== null)
+    .sort((a, b) => a.bpo - b.bpo);
+  if (memRanked.length > 0) {
+    const best = memRanked[0], worst = memRanked[memRanked.length - 1];
+    console.log(`\n> 🧠 **Lowest heap/op:** ${LABEL[best.rt]} (${fmtBpo(best.bpo, best.rt)})` +
+      (worst.rt !== best.rt ? ` · **highest:** ${LABEL[worst.rt]} (${fmtBpo(worst.bpo, worst.rt)})` : "") +
+      `. Native Rust/C++ allocate ~0 (no GC heap); a positive figure is GC-managed allocation pressure.`);
+  }
   console.log();
 }
 
@@ -543,12 +651,13 @@ console.log("**Throughput gap (general):**");
 console.log("- Rust and Node.js JIT compile to native machine code — tree-walker cannot compete on hot arithmetic loops.");
 console.log("- Python CPython is 5-100× faster than LogicN on integer-intensive workloads.");
 console.log("- LogicN governed ≈ LogicN manifest — governance overhead is low; tree-walker dispatch dominates.\n");
-console.log("**collection-pipeline: LogicN wins (43× faster than Node.js, 122× faster than Python):**");
-console.log("- Node.js `.filter().map().reduce()` allocates 2 intermediate arrays per iteration — 5000 iters × 10K elements = 100M heap operations.");
-console.log("- Python list comprehension has similar intermediate allocation cost.");
-console.log("- LogicN benchmark uses a while-loop with running sum — zero intermediate collection allocation.");
-console.log("- The win is algorithmic (loop vs pipeline allocation overhead), not interpreter speed.");
-console.log("- **Lesson:** LogicN's explicit, low-level control flow avoids the hidden cost of functional pipeline idioms.\n");
+console.log("**collection-pipeline: the old \"LogicN wins 43×\" was a UNIT bug, now fixed:**");
+console.log("- That claim compared LogicN's *elements/sec* against the other languages' *whole-pipeline-passes/sec* —");
+console.log("  off by the per-pass element count (size = 10,000). Apples to oranges.");
+console.log("- Normalised to elements/sec for every runtime, the tree-walker no longer beats Node.js or Python here.");
+console.log("- Node/Python still pay real intermediate-array allocation for `.filter().map().reduce()`, but V8/CPython");
+console.log("  per-element throughput dwarfs the Stage-A interpreter once the units match.");
+console.log("- **Lesson:** normalise units before declaring a winner — a big `opsPerRun` multiplier flatters whoever it's applied to.\n");
 console.log("**fibonacci-recursive: different workloads:**");
 console.log("- Node.js/Rust/Python benchmark: fib(30) = 832040, ~2.7M recursive calls per invocation.");
 console.log("- LogicN benchmark: fib(20) = 6765, ~21K recursive calls per invocation (fib(30) would take ~19s/call).");
@@ -596,6 +705,7 @@ console.log("| Benchmark | 🏆 Winner | " + rtsInOrder.map(rt => LABEL[rt]).joi
 console.log("|" + Array(rtsInOrder.length + 2).fill("---").join("|") + "|");
 
 for (const bench of data) {
+  if (!comparable(bench)) continue;   // excluded — workloads not unit-aligned
   const m = {};
   for (const rt of ORDER) m[rt] = throughput(bench.results?.[rt]);
 
@@ -638,16 +748,18 @@ console.log(`
 | **collection-pipeline** | Functional pipeline: filter → map → reduce over 10K integer records | Data transformation throughput — the bread-and-butter of governed APIs |
 | **compute-mix** | Mixed workload: string ops, conditionals, arithmetic, object creation | Closest to real-world application code; no single hot path |
 | **crypto-ops** | SHA-256 hashing, HMAC, Ed25519 sign+verify (via stdlib) | Performance of governed cryptographic operations (used in every secure flow) |
-| **data-query** | Filter + sort + aggregate over 1K records with governance checks | LogicN's home turf — **governed path wins this benchmark** |
+| **data-query** | Filter + sort + aggregate over 1K records with governance checks | ⚠️ excluded — not unit-aligned (LogicN main() ≠ the 7 native query micro-benches) |
 | **fibonacci-recursive** | Recursive fib(20): tail-call and LRU cache warm path | Tests recursion overhead + caching benefit across governed/passive/WASM tiers |
 | **governance-cost** | Sum 1..100 (triangle number) with full governance verification overhead | Directly measures the cost of LogicN's contract{} checking vs raw arithmetic |
 | **gpu-compute** | Parallel map-reduce kernel (100K elements) via Deno WebGPU | GPU dispatch throughput on RTX 2060 — the WASM/GPU crossover point |
 | **hardware-targets** | Dispatch to 5 hardware targets: CPU/GPU/NPU/WASM/fallback | Route decision overhead when contract.targets{} selects execution path |
 | **http-throughput** | Sequential HTTP requests/sec to a governed localhost endpoint | Server throughput — how fast LogicN can handle real HTTP requests |
 | **json-parse** | Parse 500 JSON records: split on comma, split on colon, accumulate | Real I/O parsing workload — string-heavy, cache-friendly on repeat calls |
+| **tmf-container** | Create the canonical .tmf trust-container (TMX-256 SHAKE Merkle + LE packing). **The "Node.js" column IS LogicN's \`@logicn/ext-tmf\` engine** (pure TS/Node); Python/Rust are byte-identical reference writers — all assert the same golden root | Can other languages create a .tmf, and how fast? Honest SHAKE256+packing race (the engine is pure Node, so it has no separate interpreter column) |
+| **framework-pipeline** | One full governed request through the **LogicN App Kernel's fixed 12-gate pipeline** (route→policy→size→content-type→auth→decode→idempotency→concurrency→dispatch→encode→audit). **The "Node.js" column IS the App Kernel** (no middleware chain); Python is an equivalent sync gate chain | "Native framework, no middleware" vs a middleware chain — measures pipeline cost in-process (no sockets). The structural win is fewer deps + non-reorderable gates, not raw speed |
 | **low-memory** | Process 10K items with strict heap budget (measures bytes/op) | Memory efficiency — critical for edge/embedded deployment targets |
 | **matrix-multiply** | 32×32 integer GEMM (matrix multiplication) | Scientific / ML workload: dense arithmetic, benefits from SIMD/GPU |
-| **nbody** | N-body gravitational force: pairwise O(N²) physics simulation | Compute-heavy scientific workload — **1,200× faster than Python** via cache |
+| **nbody** | N-body gravitational force: pairwise O(N²) physics simulation | Compute-heavy scientific workload — measured in force-evals/sec; Node/Python (native loops) are far faster than the tree-walker |
 | **record-allocation** | Create 10K records at 2.3B/s: struct construction throughput | Memory allocation cost under governance — critical for high-frequency APIs |
 | **six-digit-guess** | Brute-force 6-digit PIN search with early exit | Branch-heavy search — tests conditional execution + JIT branch prediction |
 | **text-html** | HTML template rendering: string interpolation + escaping | Web/rendering workload — string manipulation under governance |

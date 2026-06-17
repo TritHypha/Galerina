@@ -34,38 +34,49 @@ const N   = parseIntFlag("--size",       1000);
 const its = parseIntFlag("--iterations", parseIntFlag("--operations", 5000));
 const dataset = generateDataset(N);
 
+if (typeof globalThis.gc === "function") globalThis.gc();
+const __memBefore = process.memoryUsage();
+
+const __results = {
+  // WHERE: filter by status (SQL: SELECT * FROM data WHERE status = 'approved')
+  filterByStatus: bench("Filter by status (WHERE status='approved')",
+    () => dataset.filter(r => r.status === "approved"), its),
+
+  // WHERE + AND: compound filter
+  filterCompound: bench("Compound filter (WHERE status='approved' AND amount>3000)",
+    () => dataset.filter(r => r.status === "approved" && r.amount > 3000), its),
+
+  // SUM aggregate (SQL: SELECT SUM(amount) FROM data WHERE category='healthcare')
+  aggregateSum: bench("SUM aggregate by category",
+    () => dataset.filter(r => r.category === "healthcare").reduce((s, r) => s + r.amount, 0), its),
+
+  // GROUP BY (SQL: SELECT category, COUNT(*) FROM data GROUP BY category)
+  groupBy: bench("GROUP BY category",
+    () => dataset.reduce((acc, r) => { acc[r.category] = (acc[r.category] ?? 0) + 1; return acc; }, {}), its),
+
+  // ORDER BY (SQL: SELECT * FROM data ORDER BY amount DESC LIMIT 10)
+  sortTop10: bench("Sort + LIMIT 10 (ORDER BY amount DESC LIMIT 10)",
+    () => [...dataset].sort((a, b) => b.amount - a.amount).slice(0, 10), its),
+
+  // Nested lookup (JOIN-like: find approved high-value records in healthcare)
+  joinLike: bench("JOIN-like: approved AND healthcare AND amount>5000",
+    () => dataset.filter(r => r.approved && r.category === "healthcare" && r.amount > 5000), its),
+
+  // Full text scan (simulate LIKE: find records where category starts with 'h')
+  likeScan: bench("LIKE scan (category LIKE 'h%')",
+    () => dataset.filter(r => r.category.startsWith("h")), its),
+};
+
+const __memAfter = process.memoryUsage();
+
 const result = {
   runtime: "nodejs",
   benchmark: "data-query-v1",
   datasetSize: N,
-  results: {
-    // WHERE: filter by status (SQL: SELECT * FROM data WHERE status = 'approved')
-    filterByStatus: bench("Filter by status (WHERE status='approved')",
-      () => dataset.filter(r => r.status === "approved"), its),
-
-    // WHERE + AND: compound filter
-    filterCompound: bench("Compound filter (WHERE status='approved' AND amount>3000)",
-      () => dataset.filter(r => r.status === "approved" && r.amount > 3000), its),
-
-    // SUM aggregate (SQL: SELECT SUM(amount) FROM data WHERE category='healthcare')
-    aggregateSum: bench("SUM aggregate by category",
-      () => dataset.filter(r => r.category === "healthcare").reduce((s, r) => s + r.amount, 0), its),
-
-    // GROUP BY (SQL: SELECT category, COUNT(*) FROM data GROUP BY category)
-    groupBy: bench("GROUP BY category",
-      () => dataset.reduce((acc, r) => { acc[r.category] = (acc[r.category] ?? 0) + 1; return acc; }, {}), its),
-
-    // ORDER BY (SQL: SELECT * FROM data ORDER BY amount DESC LIMIT 10)
-    sortTop10: bench("Sort + LIMIT 10 (ORDER BY amount DESC LIMIT 10)",
-      () => [...dataset].sort((a, b) => b.amount - a.amount).slice(0, 10), its),
-
-    // Nested lookup (JOIN-like: find approved high-value records in healthcare)
-    joinLike: bench("JOIN-like: approved AND healthcare AND amount>5000",
-      () => dataset.filter(r => r.approved && r.category === "healthcare" && r.amount > 5000), its),
-
-    // Full text scan (simulate LIKE: find records where category starts with 'h')
-    likeScan: bench("LIKE scan (category LIKE 'h%')",
-      () => dataset.filter(r => r.category.startsWith("h")), its),
+  results: __results,
+  memory: {
+    heapUsedBefore: __memBefore.heapUsed,
+    heapUsedDelta: __memAfter.heapUsed - __memBefore.heapUsed,
   },
   notes: [
     `Dataset: ${N} records, 7 fields each`,

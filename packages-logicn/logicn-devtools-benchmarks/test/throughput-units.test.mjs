@@ -1,0 +1,60 @@
+// throughput-units.test.mjs — guards the unit-normalization logic that keeps the
+// benchmark comparison HONEST. Synthetic (no benchmark execution), so it's fast and
+// deterministic. Run via `npm test`. Exits non-zero on any failure (CI gate).
+//
+// This is the regression test for the 2026-06-17 unit bug: compare.mjs used to pit
+// LogicN's inner-ops/sec against the other languages' whole-call/sec, producing false
+// "LogicN wins". These cases lock in the fix.
+import { normalizeThroughput, assertBenchmarkUnits, benchmarkSpec, isComparable } from "../src/throughput-units.mjs";
+
+let fails = 0;
+const ok = (cond, msg) => { console.log(`${cond ? "PASS" : "FAIL"}  ${msg}`); if (!cond) fails++; };
+const approx = (a, b, tol = 0.01) => Math.abs(a - b) / b <= tol;
+
+// ── nbody: the headline inflation case (was 32768×) ─────────────────────────
+const nbody = {
+  nodejs:         { iterationsPerSecond: 3700, forceEvalsPerSecond: 3700 * 32768 },
+  logicnManifest: { execMs: 522.6 },
+};
+const nNode = normalizeThroughput("nodejs", nbody.nodejs, "nbody").ops;
+const nMan  = normalizeThroughput("logicnManifest", nbody.logicnManifest, "nbody").ops;
+ok(nNode === 3700 * 32768, `nbody node → force-evals/s (${nNode})`);
+ok(approx(nMan, 62700, 0.02), `nbody logicn-manifest → force-evals/s (${nMan})`);
+ok(nNode > nMan * 1000, "nbody: Node is >1000× the tree-walker — no false win");
+ok(assertBenchmarkUnits("nbody", nbody).status === "PASS", "nbody unit assertion PASS");
+
+// ── collection-pipeline: whole-pass/sec must be scaled by size (was 10000×) ──
+const cp = { nodejs: { iterationsPerSecond: 1000, size: 10000 }, logicnManifest: { execMs: 50 } };
+ok(normalizeThroughput("nodejs", cp.nodejs, "collection-pipeline").ops === 10_000_000, "collection-pipeline node → elements/s (×size)");
+ok(normalizeThroughput("logicnManifest", cp.logicnManifest, "collection-pipeline").ops === 200_000, "collection-pipeline logicn → elements/s");
+
+// ── json-parse: nested rate must be de-nested (was a silent dropout) ─────────
+const jp = { nodejs: { records: 500, results: { splitScan: { operationsPerSecond: 800 } } } };
+ok(normalizeThroughput("nodejs", jp.nodejs, "json-parse").ops === 400_000, "json-parse node de-nested → records/s");
+ok(assertBenchmarkUnits("json-parse", jp).status === "PASS", "json-parse unit assertion PASS (no dropout)");
+
+// ── dropout detection: a runtime with rate data that fails to normalize → FAIL ──
+const drop = { nodejs: { iterationsPerSecond: 3700 } }; // nbody needs forceEvalsPerSecond
+ok(assertBenchmarkUnits("nbody", drop).status === "FAIL", "dropout (nbody node w/o forceEvalsPerSecond) → FAIL");
+
+// ── non-comparable benchmarks must be excluded, never silently compared ──────
+for (const b of ["matrix-multiply", "tri-logic", "data-query"]) {
+  ok(isComparable(b) === false, `${b} is non-comparable (excluded)`);
+  ok(assertBenchmarkUnits(b, { nodejs: { iterationsPerSecond: 1 } }).status === "FLAGGED", `${b} → FLAGGED`);
+  ok(normalizeThroughput("nodejs", { iterationsPerSecond: 1 }, b).ops === null, `${b} produces no comparable number`);
+}
+
+// ── every registered benchmark declares a single unit ───────────────────────
+const EXPECT_UNITS = {
+  "compute-mix": "mix-ops/s", "record-allocation": "records/s", "collection-pipeline": "elements/s",
+  "low-memory": "items/s", "gpu-compute": "kernel-evals/s", "call-chain": "chains/s",
+  "nbody": "force-evals/s", "json-parse": "records/s", "tmf-container": "containers/s",
+  "framework-pipeline": "requests/s", "mandelbrot": "pixels/s", "spectral-norm": "A-evals/s",
+  "binary-trees": "nodes/s",
+};
+for (const [b, u] of Object.entries(EXPECT_UNITS)) {
+  ok(benchmarkSpec(b)?.unit === u, `${b} unit = ${u}`);
+}
+
+console.log(`\n${fails === 0 ? "ALL PASS" : fails + " FAILED"}`);
+process.exit(fails === 0 ? 0 : 1);

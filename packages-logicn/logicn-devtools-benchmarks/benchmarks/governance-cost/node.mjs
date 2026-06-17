@@ -14,6 +14,8 @@ function runBench(n, iterations) {
   // Warmup
   triangleNumber(n);
 
+  if (typeof globalThis.gc === "function") globalThis.gc();
+  const __memBefore = process.memoryUsage();
   const t0 = performance.now();
   const cpu0 = process.cpuUsage();
   let result = 0;
@@ -29,7 +31,7 @@ function runBench(n, iterations) {
     elapsedMs: Number(elapsedMs.toFixed(3)),
     iterationsPerSecond: Number((iterations / (elapsedMs / 1000)).toFixed(2)),
     cpu: { totalMs: Number(((cpu.user + cpu.system) / 1000).toFixed(3)) },
-    memory: { rssBytes: mem.rss, heapUsedBytes: mem.heapUsed, maxRssBytes: null },
+    memory: { rssBytes: mem.rss, heapUsedBytes: mem.heapUsed, maxRssBytes: null, heapUsedBefore: __memBefore.heapUsed, heapUsedDelta: mem.heapUsed - __memBefore.heapUsed },
     process: { pid: process.pid, node: process.version, platform: process.platform, arch: process.arch },
     notes: ["Pure JS loop: sum 1..n for each iteration"],
   };

@@ -26,6 +26,8 @@ function runBench(iterations) {
   // Warmup
   dotProduct(a, b);
 
+  if (typeof globalThis.gc === "function") globalThis.gc();
+  const __memBefore = process.memoryUsage();
   const t0 = performance.now();
   const cpu0 = process.cpuUsage();
   let result = 0;
@@ -47,7 +49,7 @@ function runBench(iterations) {
     iterationsPerSecond: Number((iterations / (elapsedMs / 1000)).toFixed(2)),
     fmaPerSecond: Number((iterations * VEC_SIZE / (elapsedMs / 1000)).toFixed(0)),
     cpu: { totalMs: Number(((cpu.user + cpu.system) / 1000).toFixed(3)) },
-    memory: { rssBytes: mem.rss, heapUsedBytes: mem.heapUsed, maxRssBytes: null },
+    memory: { rssBytes: mem.rss, heapUsedBytes: mem.heapUsed, maxRssBytes: null, heapUsedBefore: __memBefore.heapUsed, heapUsedDelta: mem.heapUsed - __memBefore.heapUsed },
     process: { pid: process.pid, node: process.version, platform: process.platform, arch: process.arch },
     notes: [
       "Float32Array dot product — 1024 elements × N iterations",

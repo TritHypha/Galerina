@@ -6,6 +6,7 @@ Algorithm must produce the same checksum as the Node.js version.
 """
 
 import argparse
+import gc
 import json
 import math
 import os
@@ -115,6 +116,31 @@ def run_benchmark(args):
     ops_sec  = round(operations / max(elapsed / 1000, sys.float_info.epsilon), 2)
     ops_cpu  = round(operations / max(cpu_ms, sys.float_info.epsilon), 2)
 
+    # Capture the original throughput-pass memory report first (reads the
+    # tracemalloc session started for the throughput pass, if enabled).
+    _memory = memory_report(args.tracemalloc)
+
+    # Separate memory-measurement pass (does not affect throughput numbers above).
+    # N = number of operations the throughput pass ran.
+    N = operations
+    _mem_iters = min(N, 50000)
+    gc.collect()
+    tracemalloc.start()
+    _base = tracemalloc.get_traced_memory()[0]
+    if _mem_iters > 0:
+        # Same core operation the throughput loop ran, _mem_iters times.
+        run_batch(args.seed & UINT32_MASK, 0, _mem_iters)
+    _cur, _peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    _heap_delta = _cur - _base
+
+    _memory.update({
+        "heapUsedBytes":     _cur,
+        "heapUsedDelta":     _heap_delta,
+        "bytesPerOperation": round(_heap_delta / _mem_iters, 2) if _mem_iters else 0,
+        "tracemallocPeak":   _peak,
+    })
+
     return {
         "runtime": "python", "benchmark": "compute-mix-throughput-v2",
         "executionMode": "direct-python", "comparisonType": "direct-runtime",
@@ -125,7 +151,7 @@ def run_benchmark(args):
         "operationsPerSecond": ops_sec, "operationsPerCpuMs": ops_cpu,
         "checksum": checksum & UINT32_MASK,
         "cpu": {"userMs": None, "systemMs": None, "totalMs": round(cpu_ms, 3)},
-        "memory": memory_report(args.tracemalloc),
+        "memory": _memory,
         "process": {"pid": os.getpid(), "node": None,
                     "python": platform.python_version(),
                     "platform": platform.platform(), "arch": platform.machine()},

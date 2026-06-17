@@ -1,4 +1,4 @@
-import json, os, platform, sys, time, tracemalloc
+import gc, json, os, platform, sys, time, tracemalloc
 
 DEFAULT_STREAM_SIZE = 10000
 DEFAULT_ITERATIONS = 1000  # fewer — Python is slower
@@ -37,6 +37,18 @@ def run_bench(stream_size, iterations):
     total_ops = iterations * stream_size
     bytes_per_op = current / total_ops if total_ops > 0 else 0
 
+    # Separate memory-measurement pass (does not affect throughput numbers above).
+    # N = number of iterations the throughput pass ran.
+    _mem_iters = min(iterations, 50000)
+    gc.collect()
+    tracemalloc.start()
+    _base = tracemalloc.get_traced_memory()[0]
+    for _ in range(_mem_iters):
+        process_stream(stream_size)
+    _cur, _peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    _heap_delta = _cur - _base
+
     return {
         "runtime": "python", "benchmark": "low-memory-v1",
         "streamSize": stream_size, "iterations": iterations, "result": result,
@@ -46,7 +58,11 @@ def run_bench(stream_size, iterations):
         "memory": {
             "tracemallocCurrentBytes": current,
             "tracemallocPeakBytes": peak,
-            "bytesPerOperation": round(bytes_per_op, 2),
+            "bytesPerStreamElement": round(bytes_per_op, 2),
+            "heapUsedBytes":     _cur,
+            "heapUsedDelta":     _heap_delta,
+            "bytesPerOperation": round(_heap_delta / _mem_iters, 2) if _mem_iters else 0,
+            "tracemallocPeak":   _peak,
         },
         "cpu": {"processMs": round(cpu_ms, 3)},
         "process": {"pid": os.getpid(), "python": platform.python_version(), "platform": platform.platform()},

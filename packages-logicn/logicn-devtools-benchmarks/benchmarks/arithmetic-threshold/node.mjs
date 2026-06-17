@@ -21,6 +21,8 @@ function validate(threshold) {
 }
 
 function runBenchmark(threshold) {
+  if (typeof globalThis.gc === "function") globalThis.gc();
+  const __memBefore = process.memoryUsage();
   const startedAt  = performance.now();
   const startedCpu = process.cpuUsage();
 
@@ -73,6 +75,8 @@ function runBenchmark(threshold) {
       externalBytes:    memory.external,
       arrayBuffersBytes: memory.arrayBuffers,
       maxRssBytes:      resource ? resource.maxRSS * 1024 : null,
+      heapUsedBefore:   __memBefore.heapUsed,
+      heapUsedDelta:    memory.heapUsed - __memBefore.heapUsed,
     },
     process: {
       pid:      process.pid,

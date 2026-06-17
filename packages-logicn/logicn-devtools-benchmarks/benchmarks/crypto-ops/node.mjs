@@ -49,6 +49,8 @@ function runBench(iterations = DEFAULT_ITERATIONS) {
   const mlKeys = ml_dsa65.keygen(randomBytes(32));
   let mlSig;
 
+  if (typeof globalThis.gc === "function") globalThis.gc();   // clean baseline for heap/op
+  const __memBefore = process.memoryUsage();
   const results = {
     runtime: "nodejs",
     benchmark: "crypto-ops-v1",
@@ -71,6 +73,13 @@ function runBench(iterations = DEFAULT_ITERATIONS) {
       "bcrypt intentionally excluded from this runner (use bcrypt.mjs for that)",
       "SHA-256 throughput: (computed after)",
     ],
+  };
+
+  const __memAfter = process.memoryUsage();
+  results.memory = {
+    rssBytes: __memAfter.rss, heapUsedBytes: __memAfter.heapUsed,
+    heapUsedBefore: __memBefore.heapUsed,
+    heapUsedDelta: __memAfter.heapUsed - __memBefore.heapUsed,
   };
 
   // Fix notes after we have sha256 timing

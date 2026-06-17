@@ -26,23 +26,34 @@ function runBench(iterations = DEFAULT_ITERATIONS) {
   const htmlEscapeMap = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
   const re = /\b\w{4,}\b/g;
 
+  if (typeof globalThis.gc === "function") globalThis.gc();
+  const __memBefore = process.memoryUsage();
+
+  const results = {
+    htmlEscape:      bench("HTML escape (replace chain)", () => {
+      let s = SAMPLE_HTML;
+      s = s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      return s;
+    }, iterations),
+    htmlEscapeRegex: bench("HTML escape (regex map)", () =>
+      SAMPLE_HTML.replace(htmlEscapeRegex, m => htmlEscapeMap[m] ?? m), iterations),
+    jsonParse:    bench("JSON.parse", () => JSON.parse(SAMPLE_JSON_STR), iterations),
+    jsonStringify:bench("JSON.stringify", () => JSON.stringify(SAMPLE_JSON_OBJ), iterations),
+    stringSplit:  bench("String split+join", () => WORDS.split(" ").join("-"), iterations),
+    wordCount:    bench("Word count", () => WORDS.split(" ").length, iterations),
+    templateStr:  bench("Template string", () => `{"status":"ok","data":"${SAMPLE_HTML.slice(0,20)}","ts":${Date.now()}}`, iterations),
+    regexMatch:   bench("Regex match (4+ char words)", () => WORDS.match(re)?.length ?? 0, iterations),
+  };
+
+  const __memAfter = process.memoryUsage();
+
   return {
     runtime: "nodejs",
     benchmark: "text-html-v1",
-    results: {
-      htmlEscape:      bench("HTML escape (replace chain)", () => {
-        let s = SAMPLE_HTML;
-        s = s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-        return s;
-      }, iterations),
-      htmlEscapeRegex: bench("HTML escape (regex map)", () =>
-        SAMPLE_HTML.replace(htmlEscapeRegex, m => htmlEscapeMap[m] ?? m), iterations),
-      jsonParse:    bench("JSON.parse", () => JSON.parse(SAMPLE_JSON_STR), iterations),
-      jsonStringify:bench("JSON.stringify", () => JSON.stringify(SAMPLE_JSON_OBJ), iterations),
-      stringSplit:  bench("String split+join", () => WORDS.split(" ").join("-"), iterations),
-      wordCount:    bench("Word count", () => WORDS.split(" ").length, iterations),
-      templateStr:  bench("Template string", () => `{"status":"ok","data":"${SAMPLE_HTML.slice(0,20)}","ts":${Date.now()}}`, iterations),
-      regexMatch:   bench("Regex match (4+ char words)", () => WORDS.match(re)?.length ?? 0, iterations),
+    results,
+    memory: {
+      heapUsedBefore: __memBefore.heapUsed,
+      heapUsedDelta: __memAfter.heapUsed - __memBefore.heapUsed,
     },
     notes: [
       "HTML escaping is security-critical — must be fast to avoid temptation to skip it",

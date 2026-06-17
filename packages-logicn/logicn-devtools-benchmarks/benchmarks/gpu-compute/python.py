@@ -1,4 +1,4 @@
-import json, os, platform, sys, time
+import json, os, platform, sys, time, gc, tracemalloc
 
 ELEMENTS = 100000
 DEFAULT_ITERATIONS = 500  # Python is slower — fewer outer reps
@@ -24,6 +24,17 @@ def run_bench(elements, iterations):
     elapsed = (time.perf_counter() - t0) * 1000
     cpu_ms = (time.process_time() - cpu0) * 1000
 
+    # Memory measurement pass (separate from throughput timing)
+    _mem_iters = min(iterations, 50000)
+    gc.collect()
+    tracemalloc.start()
+    _base = tracemalloc.get_traced_memory()[0]
+    for _ in range(_mem_iters):
+        map_reduce(elements)
+    _cur, _peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    _heap_delta = _cur - _base
+
     total_elements = iterations * elements
     return {
         "runtime": "python",
@@ -36,6 +47,12 @@ def run_bench(elements, iterations):
         "iterationsPerSecond": round(iterations / max(elapsed / 1000, 1e-9), 2),
         "operationsPerSecond": round(total_elements / max(elapsed / 1000, 1e-9), 0),
         "cpu": {"processMs": round(cpu_ms, 3)},
+        "memory": {
+            "heapUsedBytes": _cur,
+            "heapUsedDelta": _heap_delta,
+            "bytesPerOperation": round(_heap_delta / _mem_iters, 2),
+            "tracemallocPeak": _peak,
+        },
         "process": {"pid": os.getpid(), "python": platform.python_version(), "platform": platform.platform()},
         "notes": ["CPU serial execution — CPython.", "GPU-shaped map-reduce workload."],
     }

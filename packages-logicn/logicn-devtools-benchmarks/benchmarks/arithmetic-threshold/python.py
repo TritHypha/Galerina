@@ -5,6 +5,7 @@ Checksum must match Node.js version for the same threshold.
 """
 
 import argparse
+import gc
 import json
 import os
 import platform
@@ -52,6 +53,28 @@ def run_benchmark(threshold, use_tracemalloc=False):
     else:
         current_bytes = peak_bytes = None
 
+    # Separate memory-measurement pass (does not affect throughput numbers above).
+    # N = number of loop cycles the throughput pass ran.
+    N = additions // 2
+    _mem_iters = min(N, 50000)
+    gc.collect()
+    tracemalloc.start()
+    _base = tracemalloc.get_traced_memory()[0]
+    _m_total = 0
+    _m_i = 0
+    _m_checksum = 0
+    for _ in range(_mem_iters):
+        # Same core operation the throughput loop ran, once.
+        _m_total += _m_i
+        _m_i += 1
+        _m_total += _m_i
+        _m_i += 1
+        _prod = ((_m_checksum ^ (_m_i & UINT32_MASK)) * 2_654_435_761) & UINT32_MASK
+        _m_checksum = (_prod + (_m_i & UINT32_MASK)) & UINT32_MASK
+    _cur, _peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    _heap_delta = _cur - _base
+
     return {
         "runtime":            "python",
         "benchmark":          "arithmetic-threshold-v2",
@@ -71,6 +94,10 @@ def run_benchmark(threshold, use_tracemalloc=False):
             "tracemallocEnabled":      use_tracemalloc,
             "tracemallocCurrentBytes": current_bytes,
             "tracemallocPeakBytes":    peak_bytes,
+            "heapUsedBytes":           _cur,
+            "heapUsedDelta":           _heap_delta,
+            "bytesPerOperation":       round(_heap_delta / _mem_iters, 2) if _mem_iters else 0,
+            "tracemallocPeak":         _peak,
         },
         "process": {
             "pid":      os.getpid(),

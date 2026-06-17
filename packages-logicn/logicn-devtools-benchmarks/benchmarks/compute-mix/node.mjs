@@ -93,6 +93,9 @@ function runBenchmark(config) {
 
   const state = { seed: config.seed >>> 0, checksum: 0 };
 
+  if (typeof globalThis.gc === "function") globalThis.gc();
+  const __memBefore = process.memoryUsage();
+
   const startedAt  = process.hrtime.bigint();
   const startedCpu = process.cpuUsage();
   let operations   = 0;
@@ -146,6 +149,8 @@ function runBenchmark(config) {
       externalBytes:    memory.external,
       arrayBuffersBytes: memory.arrayBuffers,
       maxRssBytes:      resource ? resource.maxRSS * 1024 : null,
+      heapUsedBefore:   __memBefore.heapUsed,
+      heapUsedDelta:    memory.heapUsed - __memBefore.heapUsed,
     },
     process: {
       pid:      process.pid,

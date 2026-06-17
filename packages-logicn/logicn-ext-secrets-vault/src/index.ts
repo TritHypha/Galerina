@@ -92,10 +92,14 @@ export class LogicNSecretsVault {
    */
   startRotation(block: SecretsContractBlock): NodeJS.Timeout {
     const intervalMs = block.rotation?.interval ?? 3_600_000; // default 1 h
+    // Honour the contract's on_rotation_fault policy; default fail-closed ("halt")
+    // so a failed rotation never silently keeps serving a stale key (zero-trust).
+    const onRotationFault = block.rotation?.onRotationFault ?? "halt";
     return this.manager.startRotationSweep(
       block.credentials,
       this.vaultClient,
-      intervalMs
+      intervalMs,
+      onRotationFault
     );
   }
 

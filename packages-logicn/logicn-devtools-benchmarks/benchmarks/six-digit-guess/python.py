@@ -7,6 +7,7 @@ max-attempts default raised to 2,000,000.
 """
 
 import argparse
+import gc
 import json
 import os
 import platform
@@ -70,6 +71,21 @@ def run_benchmark(target, max_attempts, mode):
     current_bytes, peak_bytes = tracemalloc.get_traced_memory()
     tracemalloc.stop()
 
+    # Separate memory-measurement pass (does not affect throughput numbers above).
+    # N = number of attempts the throughput pass ran.
+    N = attempt
+    _mem_iters = min(N, 50000)
+    gc.collect()
+    tracemalloc.start()
+    _base = tracemalloc.get_traced_memory()[0]
+    for _ in range(_mem_iters):
+        # Same core operation the throughput loop ran, once.
+        _cand = format_code(random.randrange(0, CODE_SPACE) if mode == "random" else _ % CODE_SPACE)
+        bulls_and_cows(_cand, target)
+    _cur, _peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    _heap_delta = _cur - _base
+
     return {
         "runtime":           "python",
         "benchmark":         "four-digit-guess-v2",
@@ -90,6 +106,10 @@ def run_benchmark(target, max_attempts, mode):
         "memory": {
             "tracemallocCurrentBytes": current_bytes,
             "tracemallocPeakBytes":    peak_bytes,
+            "heapUsedBytes":           _cur,
+            "heapUsedDelta":           _heap_delta,
+            "bytesPerOperation":       round(_heap_delta / _mem_iters, 2) if _mem_iters else 0,
+            "tracemallocPeak":         _peak,
         },
         "process": {
             "pid":      os.getpid(),

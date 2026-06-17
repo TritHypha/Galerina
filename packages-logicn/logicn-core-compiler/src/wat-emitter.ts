@@ -1639,7 +1639,20 @@ function emitBlockStatements(
       }
 
       default:
-        bodyLines.push(`(i32.const 0) ;; unhandled stmt: ${stmt.kind}`);
+        // FAIL-CLOSED (task #128 · audit-phase1-2026-06-16). An unhandled statement
+        // kind must NEVER lower to a silent `(i32.const 0)` no-op: that is fail-OPEN.
+        // A `forEachStmt` (for-in loop) executes correctly in the Stage-A interpreter
+        // but, under the old fallthrough, compiled to a no-op under Stage-B WASM — the
+        // loop body simply never ran, with no error. Now that WASM is the measured
+        // production tier this violates the project's fail-closed charter.
+        //
+        // Instead emit an atomic trap. `unreachable` is the polymorphic bottom type:
+        // valid anywhere in WAT, and Wasmtime fires a hardware trap before the IP
+        // advances — so the flow refuses to produce wrong results rather than silently
+        // skipping the construct. Mirrors the ensure/trapDecl gates above and the
+        // flow-body stub discipline (~L413-435). Part (b) — real `forEachStmt` lowering
+        // — is the follow-up; until then any unsupported kind fails closed here.
+        bodyLines.push(`(unreachable) ;; unsupported-in-WASM: ${stmt.kind} — fail-closed trap (task #128), not yet lowered to WAT`);
         break;
     }
   }

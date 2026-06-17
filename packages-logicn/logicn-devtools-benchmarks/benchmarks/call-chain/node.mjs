@@ -44,6 +44,8 @@ function runBench(iterations) {
   // Warmup
   chain(Math.min(iterations, 50_000));
 
+  if (typeof globalThis.gc === "function") globalThis.gc();
+  const __memBefore = process.memoryUsage();
   const t0 = performance.now();
   const cpu0 = process.cpuUsage();
   const result = chain(iterations);
@@ -58,7 +60,7 @@ function runBench(iterations) {
     iterationsPerSecond: Number((iterations / (elapsedMs / 1000)).toFixed(2)),
     callsPerSecond: Number(((iterations * 7) / (elapsedMs / 1000)).toFixed(2)),
     cpu: { totalMs: Number(((cpu.user + cpu.system) / 1000).toFixed(3)) },
-    memory: { rssBytes: mem.rss, heapUsedBytes: mem.heapUsed, maxRssBytes: null },
+    memory: { rssBytes: mem.rss, heapUsedBytes: mem.heapUsed, maxRssBytes: null, heapUsedBefore: __memBefore.heapUsed, heapUsedDelta: mem.heapUsed - __memBefore.heapUsed },
     process: { pid: process.pid, node: process.version, platform: process.platform, arch: process.arch },
   };
 }

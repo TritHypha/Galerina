@@ -967,6 +967,25 @@ Baseline comparison (governance-cost):
             const sig = jsonManifest.governanceSignature;
 
             if (sig.algorithm && sig.keyId && sig.signature) {
+              // ── Key revocation pre-check (Gap B, zero-trust v(k) mandate) ──
+              // A revoked key id is Deny even with a valid signature. The registry
+              // is tamper-evident: fail closed if it is signed-but-invalid (edited
+              // without re-signing) or unreadable; warn (but still enforce) while
+              // it is unsigned.
+              try {
+                const reg = await import("./governance/revocation-registry.mjs");
+                const trust = reg.assertRegistryTrustworthy("."); // throws on tamper / revoked signer
+                if (trust.present && !trust.signed) {
+                  console.warn(`   ⚠️  LLN-REVOCATION-UNSIGNED: governance/revocations.json is not signed (tamperable) — run: node governance/sign-revocations.mjs`);
+                }
+                if (reg.isKeyRevoked(sig.keyId)) {
+                  console.error(`❌ LLN-MANIFEST-REVOKED-KEY: manifest signed by REVOKED key ${sig.keyId} — fail-closed (Deny). See security/revocations/REV-2026-06.md`);
+                  process.exit(1);
+                }
+              } catch (revErr) {
+                console.error(`❌ LLN-REVOCATION-REGISTRY: revocation registry untrustworthy — fail-closed (cannot confirm key is not revoked): ${revErr.message}`);
+                process.exit(1);
+              }
               // Look for the public key file
               const pubKeyPath = join("governance", `signing-key-${sig.keyId}.pub.pem`);
               if (existsSync(pubKeyPath)) {
