@@ -17,6 +17,9 @@ packages-logicn/logicn-devtools-benchmarks/results/history/
 **/*-private.pem
 .env.local
 .env.*.local
+# Auto-provisioned dev signing pubkeys (zero-touch key lifecycle regenerates these per
+# machine alongside the gitignored private key — they are build artifacts, not source).
+**/governance/signing-key-*.pub.pem
 # ── Build / test scratch (do not commit) ──
 test-output.txt
 **/*.pdb

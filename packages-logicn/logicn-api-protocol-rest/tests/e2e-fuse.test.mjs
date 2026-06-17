@@ -34,13 +34,15 @@ function capturingWarn() {
 }
 
 // ── 1 — the built package FUSES and its governed flows run end-to-end ─────────
-test("the built REST adapter fuses and invoke('main') routes POST /orders → 201", async () => {
+test("the built REST adapter fuses (zero-touch auto-signed) and invoke('main') routes POST /orders → 201", async () => {
   assert.ok(existsSync(WASM_PATH), "package must be built first (logicn build --package …)");
   const { warn, lines } = capturingWarn();
 
-  // Placeholder-signed (Ed25519+ML-DSA-65) → treated as unsigned by the loader, so
-  // we must opt in with allowUnsigned (fail-closed without it; covered in test 4).
-  const component = await fusePackage(PKG_DIR, { allowUnsigned: true, warn });
+  // Zero-touch key lifecycle: `logicn build` auto-provisioned a dev signing key and
+  // REALLY signed the manifest (Ed25519), so the loader VERIFIES it without allowUnsigned.
+  // The developer never handled a key — yet fusion is from a verified, tamper-evident
+  // manifest. (The unsigned/placeholder fail-closed floor is preserved in test 4.)
+  const component = await fusePackage(PKG_DIR, { warn });
 
   assert.equal(component.name, PKG_NAME);
   assert.equal(component.seam, "protocol.inbound");
@@ -48,8 +50,8 @@ test("the built REST adapter fuses and invoke('main') routes POST /orders → 20
 
   // main() runs the representative POST /orders request → 201 Created.
   assert.equal(component.invoke("main"), 201);
-  // allowUnsigned must announce that it admitted an unsigned manifest.
-  assert.ok(lines.some((l) => l.includes("LLN-FUSE-UNSIGNED-ALLOWED")), "expected unsigned-allowed warning");
+  // A verified manifest must NOT trip any unsigned path.
+  assert.ok(!lines.some((l) => l.includes("LLN-FUSE-UNSIGNED")), "a verified manifest must not warn unsigned");
 });
 
 // ── 2 — the full REST dispatch matrix routes correctly through the fused wasm ──
@@ -105,11 +107,42 @@ test("a tampered .wasm (sha256 mismatch vs signed descriptor) is rejected before
   }
 });
 
-// ── 4 — an unsigned manifest is fail-closed without allowUnsigned ─────────────
-test("the placeholder-signed manifest is refused unless allowUnsigned is set", async () => {
-  await assert.rejects(
-    () => fusePackage(PKG_DIR, { warn: () => {} }),
-    /LLN-FUSE-UNSIGNED/,
-    "unsigned manifest must be refused fail-closed when allowUnsigned is not set",
-  );
+// ── 4 — an UNSIGNED / placeholder manifest is fail-closed without allowUnsigned ─
+// The real build now auto-signs (test 1), so we explicitly DOWNGRADE a temp copy's
+// manifest to a placeholder (Ed25519+ML-DSA-65 stub, no real keyId+signature) — the
+// loader treats that as unsigned — and assert the fail-closed floor still holds, plus
+// that allowUnsigned admits it only with an audible warning.
+test("an unsigned/placeholder manifest is refused unless allowUnsigned is set", async () => {
+  const root = mkdtempSync(join(tmpdir(), "lln-b3-unsigned-"));
+  const pkg = join(root, PKG_NAME);
+  mkdirSync(pkg, { recursive: true });
+  cpSync(PKG_DIR, pkg, { recursive: true });
+  try {
+    const manifestPath = join(pkg, "dist", `${PKG_NAME}.lmanifest.json`);
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    manifest.governanceSignature = {
+      algorithm: "Ed25519+ML-DSA-65",
+      ed25519: "placeholder:unsigned",
+      mlDsa65: "placeholder:unsigned",
+    };
+    writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+
+    // Fail-closed without allowUnsigned.
+    await assert.rejects(
+      () => fusePackage(pkg, { warn: () => {} }),
+      /LLN-FUSE-UNSIGNED/,
+      "unsigned manifest must be refused fail-closed when allowUnsigned is not set",
+    );
+
+    // With allowUnsigned it admits the unsigned manifest, but must announce it.
+    const { warn, lines } = capturingWarn();
+    const component = await fusePackage(pkg, { allowUnsigned: true, warn });
+    assert.equal(component.invoke("main"), 201);
+    assert.ok(
+      lines.some((l) => l.includes("LLN-FUSE-UNSIGNED-ALLOWED")),
+      "expected unsigned-allowed warning",
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });

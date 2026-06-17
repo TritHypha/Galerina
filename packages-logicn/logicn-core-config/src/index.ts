@@ -5,6 +5,11 @@
  * All other packages that need EnvironmentMode should import from here.
  * Once workspace links are established this will be a direct package import.
  */
+import {
+  resolveProjectGovernance,
+  GOVERNANCE_MODES,
+  type GovernanceMode,
+} from "./governance.js";
 export const LOGICN_ENVIRONMENT_MODES = [
   "development",
   "test",
@@ -16,6 +21,9 @@ export type EnvironmentMode = (typeof LOGICN_ENVIRONMENT_MODES)[number];
 
 // #195 — OS/HW-compromised security posture (off|auto|on, default auto, fail-secure).
 export * from "./posture.js";
+
+// JOB 0011 (a) — project governance ceiling (full|auto|lean, default full, fail-closed).
+export * from "./governance.js";
 
 /**
  * Diagnostic severity levels for config diagnostics.
@@ -61,6 +69,8 @@ export interface ProjectConfig {
   readonly entryFiles: readonly string[];
   readonly packages: readonly ProjectPackageReference[];
   readonly strict: boolean;
+  /** Governance ceiling — full|auto|lean, default full (secure pole). JOB 0011 (a). */
+  readonly governance: GovernanceMode;
   readonly targets: readonly string[];
   readonly defaultPackage?: string;
   readonly productionPackageOverrides: readonly ProductionPackageOverride[];
@@ -297,6 +307,19 @@ export function parseProjectConfig(
   const entryFiles = readStringArray(input, "entryFiles", diagnostics);
   const packages = readPackageReferences(input, "packages", diagnostics);
   const strict = readOptionalBoolean(input, "strict") ?? true;
+  const governanceResolved = resolveProjectGovernance(input["governance"]);
+  if (governanceResolved.invalid) {
+    diagnostics.push(
+      createConfigDiagnostic(
+        "LLN-CONFIG-GOV-003",
+        "INVALID_GOVERNANCE_MODE",
+        "error",
+        `Unsupported governance mode "${String(governanceResolved.requested)}" — forcing 'full' (fail-closed).`,
+        "project.governance",
+        `Use one of: ${GOVERNANCE_MODES.join(", ")}.`,
+      ),
+    );
+  }
   const targets = readStringArray(input, "targets", diagnostics);
   const defaultPackage = readOptionalString(input, "defaultPackage");
   const productionPackageOverrides = readProductionPackageOverrides(
@@ -318,6 +341,7 @@ export function parseProjectConfig(
     entryFiles,
     packages,
     strict,
+    governance: governanceResolved.mode,
     targets,
     productionPackageOverrides,
     ...(defaultPackage === undefined ? {} : { defaultPackage }),
