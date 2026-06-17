@@ -1298,7 +1298,7 @@
       "title": "LogicN — Build Roadmap",
       "version": "7.0",
       "layer": "Layer 0",
-      "wordCount": 4870,
+      "wordCount": 4902,
       "lnlCodes": [
         "LLN-ACCESS-001",
         "LLN-ASSIMILATE-001",
@@ -1314,7 +1314,7 @@
         "LLN-SECRET-002",
         "LLN-TRAP-001"
       ],
-      "lastModified": "2026-06-16T22:23:13.712Z"
+      "lastModified": "2026-06-16T23:59:14.848Z"
     },
     {
       "id": "logicn-cache-aware-execution",
@@ -4555,12 +4555,12 @@
       "id": "logicn-tmf-engine",
       "path": "C:\\wwwprojects\\LogicN\\docs\\Knowledge-Bases\\logicn-tmf-engine.md",
       "title": "The `.tmf` Engine (`@logicn/ext-tmf`)",
-      "wordCount": 730,
+      "wordCount": 736,
       "lnlCodes": [
         "LLN-GOV-3",
         "LLN-SUBSTRATE-001"
       ],
-      "lastModified": "2026-06-16T23:04:57.438Z"
+      "lastModified": "2026-06-16T23:59:18.942Z"
     },
     {
       "id": "logicn-topological-graph-engine",

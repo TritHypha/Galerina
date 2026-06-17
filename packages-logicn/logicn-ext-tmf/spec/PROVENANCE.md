@@ -18,7 +18,7 @@ with the code and the golden-vector conformance survives any cleanup of the scra
 | `tmx-256-construction-v0.md` | Slice 1 — TMX-256 integrity core ✅ |
 | `tmf-container-v0.md` | Slice 2 — container reader/writer ✅ |
 | `tmf-modalities-v0.md` | Slice 2 — the leaf `modality` registry the container references |
-| `tmf-encryption-v0.md` | Slice 3 — KEM-DEM confidentiality ⬜ (next) |
+| `tmf-encryption-v0.md` | Slice 3 — KEM-DEM confidentiality ✅ (`src/kemdem.ts`) |
 | `signature-custody-v0.md` | Slice 4 — hybrid Ed25519+ML-DSA-65 signing ⬜ |
 | `threshold-custody-v0.md` | Slice 4 — M-of-N custody extension ⬜ |
 | `inclusion-proof-v0.md` | Slice 5 — inclusion (Merkle-path) proofs ⬜ |

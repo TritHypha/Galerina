@@ -61,8 +61,8 @@ Error taxonomy (§7): `BadMagic · UnsupportedVersion · UnknownProfile · Malfo
 |---|---|---|---|
 | 1 | TMX-256 integrity core | `tmx-256-construction-v0` | ✅ `src/tmx256.ts`, 9 golden tests |
 | 2 | container reader/writer | `tmf-container-v0` (+ `tmf-modalities-v0`) | ✅ `src/container.ts`, 10 golden tests |
-| 3 | KEM-DEM confidentiality | `tmf-encryption-v0` | ⬜ **next** |
-| 4 | hybrid signing over the root (+ M-of-N custody) | `signature-custody-v0`, `threshold-custody-v0` | ⬜ |
+| 3 | KEM-DEM confidentiality | `tmf-encryption-v0` | ✅ `src/kemdem.ts`, 14 golden + round-trip tests |
+| 4 | hybrid signing over the root (+ M-of-N custody) | `signature-custody-v0`, `threshold-custody-v0` | ⬜ **next** |
 | 5 | inclusion proofs + history chain + Trust Capsule | `inclusion-proof-v0`, `tmf-history-chain-v0`, `governed-trust-capsule-v0` | ⬜ |
 
 Slice 4 feeds LogicN **#34** (ML-DSA-65 over the digest, hybrid Ed25519). Conformance is pinned by inline
