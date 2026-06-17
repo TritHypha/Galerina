@@ -11,5 +11,10 @@
       "supersededBy": "ab46f4c7e2797b9b",
       "advisory": "security/revocations/REV-2026-06.md"
     }
-  ]
+  ],
+  "signature": {
+    "keyId": "ab46f4c7e2797b9b",
+    "algorithm": "ed25519",
+    "value": "R+UT+kCL6xYl+u/hhrHvwJxSkWK+8deCfGW996+okdoH8KzuXdpTQhQr6BTFIQNBfEUGIyaObVcjb5glHD4ICQ=="
+  }
 }
