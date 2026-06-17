@@ -16,7 +16,7 @@ classification sweep (2026-06-17), pinned to R&D commit **`238f07a`** (Lane E de
 ## 1. Specs — vendored into `logicn-ext-tmf/spec/`
 `tmx-256-construction-v0` · `tmf-container-v0` · `tmf-modalities-v0` · `tmf-encryption-v0` · `signature-custody-v0` · `threshold-custody-v0` · `inclusion-proof-v0` · `tmf-history-chain-v0` · `governed-trust-capsule-v0` · `nvfp4-codec-v0`. Curated view: `logicn-tmf-engine.md`. The golden generators `tmf/spec/_vectors/*.py` stay upstream as the authoring oracle (binding conformance = the in-package golden tests).
 
-## 2. Mirrored verbatim into `rd-absorbed/` (30 docs)
+## 2. Mirrored verbatim into `rd-absorbed/` (31 docs)
 | R&D source | `rd-absorbed/` mirror | Curated/native view |
 |---|---|---|
 | QUANTUM-RESILIENCE-STANDARD-AND-ROADMAP.md | `rd-absorbed/rd-quantum-resilience-standard-and-roadmap.md` | **logicn-quantum-resilience-roadmap.md** |
@@ -33,6 +33,7 @@ classification sweep (2026-06-17), pinned to R&D commit **`238f07a`** (Lane E de
 | tmf/spec/revocation-registry-v0.md *(roadmap #2, 2026-06-17; bench 28/28)* | `rd-absorbed/rd-revocation-registry-v0.md` | logicn-key-custody-and-rotation.md + logicn-tmf-engine.md (engine Slice-5 conformance) |
 | tmf/spec/qrng-conditioning-pipeline-v0.md *(roadmap #3, 2026-06-17; bench 17/17)* | `rd-absorbed/rd-qrng-conditioning-pipeline-v0.md` | logicn-quantum-resilience-roadmap.md (entropy.qrng interface) |
 | tmf/spec/selective-disclosure-ann-v0.md *(roadmap §1 #4, 2026-06-17; bench 17/17; verdict5_clean)* | `rd-absorbed/rd-selective-disclosure-ann-v0.md` | logicn-tmf-engine.md (two-keyed .tmf sections; embedding-only ANN) |
+| tmf/research/fhe-encrypted-similarity-v0.md *(roadmap "Later/research", 2026-06-17 — **last open in-bounds R&D item**; verdict **TRACK-NOT-BUILD**)* | `rd-absorbed/rd-fhe-encrypted-similarity-v0.md` | logicn-tmf-engine.md (FHE is digital/crypto-on-core-OK but solves a threat model LogicN doesn't have; selective-disclosure ANN dominates once a trusted zone exists) |
 | tmf/research/photonic-ternary-in-tls.md | `rd-absorbed/rd-photonic-ternary-in-tls.md` | (bridge task 0002) |
 | tmf/research/real-vs-aspirational-ledger.md | `rd-absorbed/rd-tmf-real-vs-aspirational-ledger.md` | logicn-tmf-engine.md |
 | tmf/research/storage-and-query-v0.md | `rd-absorbed/rd-tmf-storage-and-query.md` | (gated — MeshQL/DB) |
