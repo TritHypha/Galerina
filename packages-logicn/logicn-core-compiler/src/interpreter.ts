@@ -837,7 +837,7 @@ class Interpreter {
       recordEffect: (effect: string) => this.effectsObserved.add(effect),
       resolveIdentifier: (name: string) => this.lookup(name)?.value,
       callFlow: async (name: string, fnArgs: ReadonlyMap<string, LogicNValue>) => {
-        const sub = new Interpreter(this.ast, this.knownFlows, undefined, undefined, this.runtimeOptions, this.executionPlans);
+        const sub = new Interpreter(this.ast, this.knownFlows, this.enforcer, this.capabilityHost, this.runtimeOptions, this.executionPlans);
         const result = await sub.runFlow(name, fnArgs);
         for (const effect of result.effectsObserved) this.effectsObserved.add(effect);
         this.auditEntries.push(...result.auditEntries);
@@ -846,7 +846,7 @@ class Interpreter {
       applyFn: async (fn: LogicNValue, arg: LogicNValue) => {
         if (fn.__tag === "unresolved" && this.flowIndex.has(fn.name)) {
           const callArgs = new Map<string, LogicNValue>([["arg", arg]]);
-          const sub = new Interpreter(this.ast, this.knownFlows, undefined, undefined, this.runtimeOptions, this.executionPlans);
+          const sub = new Interpreter(this.ast, this.knownFlows, this.enforcer, this.capabilityHost, this.runtimeOptions, this.executionPlans);
           const result = await sub.runFlow(fn.name, callArgs);
           for (const effect of result.effectsObserved) this.effectsObserved.add(effect);
           this.auditEntries.push(...result.auditEntries);
@@ -1202,6 +1202,9 @@ class Interpreter {
             // Now it TRAPS — runFlow's catch turns this into a runtimeError (audit.result='error').
             throw new Error(`Loop exceeded maximum iteration count (${MAX_ITERATIONS}) — fail-closed`);
           }
+          // 0032 fix: bound CPU-only loops by the wall-clock deadline too (was only checked at capability
+          // calls). checkDeadline() throws [LLN-TIMEOUT] when exceeded → runFlow's catch fails closed.
+          this.enforcer?.checkDeadline();
           const cond = await this.evalExpr(conditionNode);
           // Same truthy check as ifStmt: bool, non-zero int, some, ok
           const condTruthy =
@@ -1233,6 +1236,7 @@ class Interpreter {
             // FAIL-CLOSED: bound forEach like while — no silent partial success on an oversized list.
             throw new Error(`forEach exceeded maximum iteration count (${MAX_ITERATIONS}) — fail-closed`);
           }
+          this.enforcer?.checkDeadline(); // 0032 fix: wall-clock deadline bounds forEach too
           this.pushScope();
           this.declare(varName, item);
           const bodyResult = await this.executeBlock(bodyNode);
@@ -2021,7 +2025,7 @@ class Interpreter {
       callArgs.set(paramName, await this.evalExpr(arg));
     }
 
-    const nested = new Interpreter(this.ast, this.knownFlows, undefined, undefined, this.runtimeOptions, this.executionPlans);
+    const nested = new Interpreter(this.ast, this.knownFlows, this.enforcer, this.capabilityHost, this.runtimeOptions, this.executionPlans);
     nested.callDepth = this.callDepth + 1;
     const result = await nested.runFlow(name, callArgs);
     for (const effect of result.effectsObserved) this.effectsObserved.add(effect);
