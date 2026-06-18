@@ -1,5 +1,5 @@
 /**
- * 0014 Fidelity Differential Harness — slice 1: tree-walker ≡ bytecode-VM, BYTE-EXACT.
+ * 0014 Fidelity Differential Harness — slices 1-2: tree-walker ≡ bytecode-VM ≡ WASM, BYTE-EXACT.
  *
  * Owner decision (2026-06-18): WASM i32 is the semantic reference tier; all execution tiers must be
  * byte-identical. This is the foundational slice of the 0014 harness: it drives the same flow + input
@@ -10,12 +10,15 @@
  * (overflow / div0 / mod0 / the mul sqrt-boundary / INT32_MIN÷-1 / the -0 case).
  *
  * It doubles as the conformance lock for slices 1/3 (cfb72f9) + 2/3 (6542bae): if any future change
- * makes a tier diverge on these edges, this fails. The WASM tier comparison + the full 6-component
- * tuple (effect trace, taint/seal, audit record, diagnostics) are the next harness slices.
+ * makes a tier diverge on these edges, this fails. Slice-2 (below) extends the differential to the
+ * REAL WASM tier (.lln → WAT → wabt → #105 admission → instantiate), proving the same i32 conformance
+ * end-to-end against the semantic reference. The full 6-component tuple (effect trace, taint/seal,
+ * audit record, diagnostics) remains the next harness slice.
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { parseProgram, executeFlow, clearBytecodeCache } from "../dist/index.js";
+import * as L from "../dist/index.js"; // WASM-tier path (assembleWAT / admitAndInstantiate / …) for slice-2
 
 const MIN = -2147483648;
 const MAX = 2147483647;
@@ -66,6 +69,58 @@ test("0014 slice-1: tree-walker ≡ bytecode/fast tier, byte-exact (value + trap
       // 3. identical trap kind
       if (ref.__tag === "runtimeError") {
         assert.equal(ref.message, cand.message, `tier TRAP divergence — ${ctx}`);
+      }
+    }
+  }
+});
+
+// ── Slice 2: WASM tier ≡ reference walker (byte-exact value; trap ⟺ trap) ─────────────────────────
+// Owner decision (2026-06-18): WASM i32 is the SEMANTIC REFERENCE tier. Slices 1/3 (cfb72f9) + 2/3
+// (6542bae) made the walker + bytecode + WASM emitter conform on the i32 edges (checked add/sub/mul →
+// trap on overflow; native i32.div_s/rem_s trap on /0 and INT32_MIN÷-1; INT32_MIN%-1 = 0, no trap).
+// This slice PROVES that conformance end-to-end: it drives the SAME pure-i32 flows through the reference
+// async tree-walker AND through real WASM (.lln → WAT → real-wabt → #105 Ed25519-attested admission →
+// instantiate), asserting the WASM result is byte-identical to the walker. Trap MESSAGES legitimately
+// differ across runtimes (walker "integer overflow" vs a WASM `unreachable`/`div_s` trap), so traps are
+// compared by KIND (both trapped) and values by Object.is (catches a -0 that === would hide). This
+// closes the WASM half of the cross-tier i32 conformance (X1 for these ops) at the artifact level.
+const WASM_SRC = CORPUS.map(([src]) => src).join("\n");
+
+test("0014 slice-2: WASM tier ≡ reference walker, byte-exact (value; trap⟺trap) over the i32 edges", async () => {
+  const prog = parseProgram(WASM_SRC, "fid-wasm.lln");
+  const errs = (prog.diagnostics ?? []).filter((d) => d.severity === "error");
+  assert.equal(errs.length, 0, `parse error: ${errs.map((d) => d.message).join("; ")}`);
+
+  // .lln → WAT → real wabt module → #105 Ed25519-attested admission gate → instantiate (once, all flows).
+  const fx = L.checkEffects(prog.flows, prog.ast);
+  const { gir } = L.emitGIR(prog.ast, prog.flows, fx);
+  const wat = L.renderWAT(L.buildWATModuleFromGIR(gir, undefined, "fid", prog.ast, true));
+  const asm = await L.assembleWAT(wat);
+  assert.ok(asm.valid && asm.diagnostics.length === 0, `module assembles: ${JSON.stringify(asm.diagnostics)}`);
+  const kp = L.generateRunnerKeypair();
+  const att = L.signWasm(asm.wasm, kp.privateKeyPem, "dev");
+  const { instance } = await L.admitAndInstantiate({
+    wasm: asm.wasm, attestation: att,
+    policy: { requireSigned: true, publicKeyPem: kp.publicKeyPem },
+    host: L.createHostRuntime(),
+  });
+
+  for (const [, flow, params, caseList] of CORPUS) {
+    assert.equal(typeof instance.exports[flow], "function", `WASM exports pure flow ${flow}`);
+    for (const vals of caseList) {
+      // reference tier = governed async tree-walker (the semantic conformance target)
+      const ref = (await executeFlow(flow, argMap(params, vals), prog.ast, prog.flows)).value;
+      const refTrap = ref.__tag === "runtimeError";
+      // candidate tier = real WASM; an overflow / div0 / mod0 trap surfaces as a thrown RuntimeError on invoke
+      let wasmTrap = false, wasmVal;
+      try { wasmVal = instance.exports[flow](...vals); } catch { wasmTrap = true; }
+      const ctx = `flow=${flow} args=[${vals}] : walker=${refTrap ? "trap" : "int:" + ref.value} wasm=${wasmTrap ? "trap" : "int:" + wasmVal}`;
+      // 1. trap ⟺ trap (a value-vs-trap split is a fidelity failure)
+      assert.equal(refTrap, wasmTrap, `tier TRAP/VALUE divergence — ${ctx}`);
+      // 2. when both produce a value, byte-exact via Object.is (catches a -0 that === would hide)
+      if (!refTrap) {
+        assert.equal(ref.__tag, "int", `reference produced a non-int value — ${ctx}`);
+        assert.ok(Object.is(ref.value, wasmVal), `WASM value divergence (incl. -0) — ${ctx}`);
       }
     }
   }
