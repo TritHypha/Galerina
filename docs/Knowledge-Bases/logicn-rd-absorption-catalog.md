@@ -73,6 +73,18 @@ classification sweep (2026-06-17), pinned to R&D commit **`238f07a`** (Lane E de
 
 Process/scratch deliberately **not** cataloged: `_session-bridge/*`, `*/notes/*` duplicates (`tri-encription/notes/1-3` == `tmf/notes/1-3`), probe `*.lln`, `spec/_vectors/*`, vendored `node_modules`.
 
+### 3b. Bridge prove-own-maths reports — **curated, not mirrored** (2026-06-18)
+The `_session-bridge/done/*` reports are process docs (not mirrored verbatim, per the rule above), but the
+prove-own-maths verification campaign is a major cross-cutting deliverable, so its **knowledge** is curated into a
+first-class graph-indexed doc. Re-runnable evidence (the benches) stays upstream under `tri-encription/bench/`.
+
+| R&D source (`_session-bridge/done/`) | Disposition | Curated home |
+|---|---|---|
+| `0023-tower-citizen-runtime-verification-access.done.md` | **curated** (V1–V12 / X1–X6 ledger) | **logicn-prove-own-maths-roadmap.md** §1–§2 |
+| `PROVE-OWN-MATHS-AUDIT-2026-06-18.md` | **curated** (PROVEN/EXCLUDED/OWED grading of 0001-0023) | **logicn-prove-own-maths-roadmap.md** §3–§4 |
+| `0014-recheck-prove-own-maths.done.md` | **curated** (in-flight-PROVEN self-catch lesson) | **logicn-prove-own-maths-roadmap.md** §1b note |
+| `tri-encription/bench/{tower-citizen-verify,i32-findings-verify}.mjs` | **referenced** (re-runnable evidence; hub re-ran 27/27 + 25/25) | same doc §1a |
+
 ## 4. TritMesh repo (`LogicN-TritMesh/TritMesh` @ `5db2e17`) — separate product, referenced not absorbed
 TritMesh is a downstream **product** that *consumes* LogicN; its own design-notes mandate "separate repos, no
 merge, no shared crypto substrate." So LogicN **references** the seam + conformance (captured in
