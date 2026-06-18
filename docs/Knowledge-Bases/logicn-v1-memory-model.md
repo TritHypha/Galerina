@@ -1,5 +1,13 @@
 # LogicN — V1 Memory Model Specification
 
+> **⚠️ MEMORY-SAFETY STANCE SUPERSEDED (0034 verdict, 2026-06-18).** The "Phase 5 full lifetime and borrow
+> analysis" this doc commits to is a **non-goal** — it was never built and is not on the roadmap.
+> `LLN-MEMORY-001..008` are not emitted; `borrow`/`borrow mut`/`move`/`pinned` examples do not parse. The
+> canonical model is **"Governed Capability + Ternary-Tagged Memory"** (value-state/taint + effect/capability
+> + runtime generation-tag UAF guards, shipped `692e62d`) — see **`logicn-memory-safety-model.md`**. The
+> Phase-3 *scanner-level* enforcement described here is real; the borrow/lifetime tier is design-only, except
+> the `move` + `USE_AFTER_MOVE` linearity sliver (owner-gated).
+
 ## Purpose
 
 This document is the authoritative Phase 3 commitment for the LogicN v1 memory

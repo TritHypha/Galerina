@@ -1,5 +1,15 @@
 # LogicN — Borrow, Move and Pinned Memory Semantics
 
+> **⚠️ NON-GOAL / DESIGN-ONLY (0034 verdict, 2026-06-18).** The full Rust-style borrow checker described
+> below is **not** LogicN's memory-safety model and is **not enforced**: `LLN-MEMORY-001..008` are declared
+> but never emitted, and the `borrow`/`borrow mut` examples here do not parse. LogicN's actual, shipped
+> safety spine is **"Governed Capability + Ternary-Tagged Memory"** — value-state/taint + effect/capability
+> passes, plus the runtime ternary tombstoning + per-allocation **generation tags** (use-after-free guard,
+> shipped `692e62d`). See **`logicn-memory-safety-model.md`** for the canonical model. This document is kept
+> for reference on the *heterogeneous-domain transfer* problem (GPU VRAM / WASM linear memory / edge), which
+> the capability model addresses differently. **The one live sliver worth building from here is `move` +
+> `USE_AFTER_MOVE` linearity** (constants exist, owner-gated) — everything else is non-goal.
+
 ## Overview
 
 Heterogeneous compute introduces multiple memory domains:
