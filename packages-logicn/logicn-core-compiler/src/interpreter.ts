@@ -1501,13 +1501,19 @@ class Interpreter {
     if (this.capabilityHost !== undefined) {
       const capEffect = resolveCapabilityEffect(fullName);
       if (capEffect !== undefined) {
-        // R1B: Check contract enforcer deadline before each capability call
+        // R1B: Check contract enforcer deadline before each capability call.
+        // DEFENSE-IN-DEPTH (2026-06-18 audit): previously this caught the deadline throw, logged a
+        // diagnostic, and fell THROUGH to execute the call — a fail-open *pattern*. The governed
+        // effect was still blocked downstream by capabilityHost.check() (fail-closed), so this was
+        // not an exploitable bypass — but fail-closed-at-every-layer is the rule, so abort here too,
+        // returning the SAME `err` shape the host would (consistent, one layer earlier).
         if (this.enforcer !== undefined) {
           try {
             this.enforcer.checkDeadline();
           } catch (err: unknown) {
             const message = err instanceof Error ? err.message : String(err);
             this.diagnostics.push({ code: LLN_RUNTIME_006.code, message });
+            return { __tag: "err", error: { __tag: "string", value: `Flow deadline exceeded before '${capEffect}': ${message}` } };
           }
         }
         const capId = `host.${capEffect}`;

@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-06-17T18:44:48.286Z",
+  "generatedAt": "2026-06-18T08:34:09.420Z",
   "nodes": [
     {
       "id": "package:logicn-core",
@@ -7623,6 +7623,15 @@
       ]
     },
     {
+      "id": "doc:docs/Knowledge-Bases/logicn-contract-driven-generation.md",
+      "kind": "Document",
+      "label": "logicn-contract-driven-generation.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-contract-driven-generation.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
       "id": "doc:docs/Knowledge-Bases/logicn-contract-economics.md",
       "kind": "Document",
       "label": "logicn-contract-economics.md",
@@ -9144,6 +9153,15 @@
       ]
     },
     {
+      "id": "doc:docs/Knowledge-Bases/logicn-pipeline-security-posture.md",
+      "kind": "Document",
+      "label": "logicn-pipeline-security-posture.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-pipeline-security-posture.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
       "id": "doc:docs/Knowledge-Bases/logicn-platform-infographic-concept.md",
       "kind": "Document",
       "label": "logicn-platform-infographic-concept.md",
@@ -9319,6 +9337,15 @@
       "kind": "Document",
       "label": "logicn-roadmap-and-audit-2026-06-17.md",
       "sourcePath": "docs/Knowledge-Bases/logicn-roadmap-and-audit-2026-06-17.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/logicn-roadmap-autonomous-queue-2026-06-17.md",
+      "kind": "Document",
+      "label": "logicn-roadmap-autonomous-queue-2026-06-17.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-roadmap-autonomous-queue-2026-06-17.md",
       "tags": [
         "document"
       ]
@@ -10278,6 +10305,15 @@
       ]
     },
     {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-fhe-encrypted-similarity-v0.md",
+      "kind": "Document",
+      "label": "rd-fhe-encrypted-similarity-v0.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-fhe-encrypted-similarity-v0.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
       "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-novelty-and-ip-assessment.md",
       "kind": "Document",
       "label": "rd-novelty-and-ip-assessment.md",
@@ -10372,6 +10408,15 @@
       "kind": "Document",
       "label": "rd-qrng-entropy-source-for-hybrid-signing.md",
       "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-qrng-entropy-source-for-hybrid-signing.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/rd-absorbed/rd-qrng-q1-entropy-capability-grounding-survey.md",
+      "kind": "Document",
+      "label": "rd-qrng-q1-entropy-capability-grounding-survey.md",
+      "sourcePath": "docs/Knowledge-Bases/rd-absorbed/rd-qrng-q1-entropy-capability-grounding-survey.md",
       "tags": [
         "document"
       ]
@@ -18367,6 +18412,116 @@
       ]
     },
     {
+      "id": "type:logicn-core-compiler:I32_MIN",
+      "kind": "Type",
+      "label": "I32_MIN",
+      "sourcePath": "packages-logicn/logicn-core-compiler/src/i32-arith.ts",
+      "tags": [
+        "type",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "type:logicn-core-compiler:I32_MAX",
+      "kind": "Type",
+      "label": "I32_MAX",
+      "sourcePath": "packages-logicn/logicn-core-compiler/src/i32-arith.ts",
+      "tags": [
+        "type",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "type:logicn-core-compiler:I32TrapKind",
+      "kind": "Type",
+      "label": "I32TrapKind",
+      "sourcePath": "packages-logicn/logicn-core-compiler/src/i32-arith.ts",
+      "tags": [
+        "type",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "type:logicn-core-compiler:I32Result",
+      "kind": "Type",
+      "label": "I32Result",
+      "sourcePath": "packages-logicn/logicn-core-compiler/src/i32-arith.ts",
+      "tags": [
+        "type",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "flow:logicn-core-compiler:isI32Trap",
+      "kind": "Flow",
+      "label": "isI32Trap",
+      "sourcePath": "packages-logicn/logicn-core-compiler/src/i32-arith.ts",
+      "tags": [
+        "function",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "flow:logicn-core-compiler:i32AddChecked",
+      "kind": "Flow",
+      "label": "i32AddChecked",
+      "sourcePath": "packages-logicn/logicn-core-compiler/src/i32-arith.ts",
+      "tags": [
+        "function",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "flow:logicn-core-compiler:i32SubChecked",
+      "kind": "Flow",
+      "label": "i32SubChecked",
+      "sourcePath": "packages-logicn/logicn-core-compiler/src/i32-arith.ts",
+      "tags": [
+        "function",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "flow:logicn-core-compiler:i32MulChecked",
+      "kind": "Flow",
+      "label": "i32MulChecked",
+      "sourcePath": "packages-logicn/logicn-core-compiler/src/i32-arith.ts",
+      "tags": [
+        "function",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "flow:logicn-core-compiler:i32DivChecked",
+      "kind": "Flow",
+      "label": "i32DivChecked",
+      "sourcePath": "packages-logicn/logicn-core-compiler/src/i32-arith.ts",
+      "tags": [
+        "function",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "flow:logicn-core-compiler:i32ModChecked",
+      "kind": "Flow",
+      "label": "i32ModChecked",
+      "sourcePath": "packages-logicn/logicn-core-compiler/src/i32-arith.ts",
+      "tags": [
+        "function",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "flow:logicn-core-compiler:i32NegChecked",
+      "kind": "Flow",
+      "label": "i32NegChecked",
+      "sourcePath": "packages-logicn/logicn-core-compiler/src/i32-arith.ts",
+      "tags": [
+        "function",
+        "logicn-core-compiler"
+      ]
+    },
+    {
       "id": "type:logicn-core-compiler:ImportedSymbol",
       "kind": "Type",
       "label": "ImportedSymbol",
@@ -26178,6 +26333,66 @@
       "sourcePath": "packages-logicn/logicn-core-config/README.md",
       "tags": [
         "document",
+        "logicn-core-config"
+      ]
+    },
+    {
+      "id": "type:logicn-core-config:GOVERNANCE_MODES",
+      "kind": "Type",
+      "label": "GOVERNANCE_MODES",
+      "sourcePath": "packages-logicn/logicn-core-config/src/governance.ts",
+      "tags": [
+        "type",
+        "logicn-core-config"
+      ]
+    },
+    {
+      "id": "type:logicn-core-config:GovernanceMode",
+      "kind": "Type",
+      "label": "GovernanceMode",
+      "sourcePath": "packages-logicn/logicn-core-config/src/governance.ts",
+      "tags": [
+        "type",
+        "logicn-core-config"
+      ]
+    },
+    {
+      "id": "type:logicn-core-config:DEFAULT_GOVERNANCE_MODE",
+      "kind": "Type",
+      "label": "DEFAULT_GOVERNANCE_MODE",
+      "sourcePath": "packages-logicn/logicn-core-config/src/governance.ts",
+      "tags": [
+        "type",
+        "logicn-core-config"
+      ]
+    },
+    {
+      "id": "flow:logicn-core-config:isGovernanceMode",
+      "kind": "Flow",
+      "label": "isGovernanceMode",
+      "sourcePath": "packages-logicn/logicn-core-config/src/governance.ts",
+      "tags": [
+        "function",
+        "logicn-core-config"
+      ]
+    },
+    {
+      "id": "type:logicn-core-config:ResolvedProjectGovernance",
+      "kind": "Type",
+      "label": "ResolvedProjectGovernance",
+      "sourcePath": "packages-logicn/logicn-core-config/src/governance.ts",
+      "tags": [
+        "type",
+        "logicn-core-config"
+      ]
+    },
+    {
+      "id": "flow:logicn-core-config:resolveProjectGovernance",
+      "kind": "Flow",
+      "label": "resolveProjectGovernance",
+      "sourcePath": "packages-logicn/logicn-core-config/src/governance.ts",
+      "tags": [
+        "function",
         "logicn-core-config"
       ]
     },
@@ -49801,6 +50016,83 @@
     },
     {
       "from": "package:logicn-core-compiler",
+      "to": "type:logicn-core-compiler:I32_MIN",
+      "kind": "provides",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/src/i32-arith.ts"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "type:logicn-core-compiler:I32_MAX",
+      "kind": "provides",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/src/i32-arith.ts"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "type:logicn-core-compiler:I32TrapKind",
+      "kind": "provides",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/src/i32-arith.ts"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "type:logicn-core-compiler:I32Result",
+      "kind": "provides",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/src/i32-arith.ts"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "flow:logicn-core-compiler:isI32Trap",
+      "kind": "provides",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/src/i32-arith.ts"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "flow:logicn-core-compiler:i32AddChecked",
+      "kind": "provides",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/src/i32-arith.ts"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "flow:logicn-core-compiler:i32SubChecked",
+      "kind": "provides",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/src/i32-arith.ts"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "flow:logicn-core-compiler:i32MulChecked",
+      "kind": "provides",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/src/i32-arith.ts"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "flow:logicn-core-compiler:i32DivChecked",
+      "kind": "provides",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/src/i32-arith.ts"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "flow:logicn-core-compiler:i32ModChecked",
+      "kind": "provides",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/src/i32-arith.ts"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "flow:logicn-core-compiler:i32NegChecked",
+      "kind": "provides",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/src/i32-arith.ts"
+    },
+    {
+      "from": "package:logicn-core-compiler",
       "to": "type:logicn-core-compiler:ImportedSymbol",
       "kind": "provides",
       "confidence": "EXTRACTED",
@@ -55461,6 +55753,48 @@
       "kind": "documents",
       "confidence": "INFERRED",
       "evidencePath": "packages-logicn/logicn-core-config/README.md"
+    },
+    {
+      "from": "package:logicn-core-config",
+      "to": "type:logicn-core-config:GOVERNANCE_MODES",
+      "kind": "provides",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-config/src/governance.ts"
+    },
+    {
+      "from": "package:logicn-core-config",
+      "to": "type:logicn-core-config:GovernanceMode",
+      "kind": "provides",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-config/src/governance.ts"
+    },
+    {
+      "from": "package:logicn-core-config",
+      "to": "type:logicn-core-config:DEFAULT_GOVERNANCE_MODE",
+      "kind": "provides",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-config/src/governance.ts"
+    },
+    {
+      "from": "package:logicn-core-config",
+      "to": "flow:logicn-core-config:isGovernanceMode",
+      "kind": "provides",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-config/src/governance.ts"
+    },
+    {
+      "from": "package:logicn-core-config",
+      "to": "type:logicn-core-config:ResolvedProjectGovernance",
+      "kind": "provides",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-config/src/governance.ts"
+    },
+    {
+      "from": "package:logicn-core-config",
+      "to": "flow:logicn-core-config:resolveProjectGovernance",
+      "kind": "provides",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-config/src/governance.ts"
     },
     {
       "from": "package:logicn-core-config",

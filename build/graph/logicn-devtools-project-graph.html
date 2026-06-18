@@ -7,7 +7,7 @@
 </head>
 <body>
 <h1>LogicN Project Graph</h1>
-<p>3622 nodes, 4029 relationships.</p>
+<p>3644 nodes, 4046 relationships.</p>
 <h2>Nodes</h2>
 <ul><li><strong>logicn-core</strong> <span>Package</span></li>
 <li><strong>logicn-core-compiler</strong> <span>Package</span></li>
@@ -836,6 +836,7 @@
 <li><strong>logicn-continuation-brief-2026-06-15.md</strong> <span>Document</span></li>
 <li><strong>logicn-contract-authoring-guide.md</strong> <span>Document</span></li>
 <li><strong>logicn-contract-clause-reference.md</strong> <span>Document</span></li>
+<li><strong>logicn-contract-driven-generation.md</strong> <span>Document</span></li>
 <li><strong>logicn-contract-economics.md</strong> <span>Document</span></li>
 <li><strong>logicn-contract-errors.md</strong> <span>Document</span></li>
 <li><strong>logicn-contract-full-model.md</strong> <span>Document</span></li>
@@ -1005,6 +1006,7 @@
 <li><strong>logicn-photonic-ternary-bridge-spec.md</strong> <span>Document</span></li>
 <li><strong>logicn-photonic-tri-substrate-rd-agenda.md</strong> <span>Document</span></li>
 <li><strong>logicn-pii-handling.md</strong> <span>Document</span></li>
+<li><strong>logicn-pipeline-security-posture.md</strong> <span>Document</span></li>
 <li><strong>logicn-platform-infographic-concept.md</strong> <span>Document</span></li>
 <li><strong>logicn-post-quantum-hardware-security.md</strong> <span>Document</span></li>
 <li><strong>logicn-precision-attestation.md</strong> <span>Document</span></li>
@@ -1025,6 +1027,7 @@
 <li><strong>logicn-resilience-observability-design.md</strong> <span>Document</span></li>
 <li><strong>logicn-resource-governance.md</strong> <span>Document</span></li>
 <li><strong>logicn-roadmap-and-audit-2026-06-17.md</strong> <span>Document</span></li>
+<li><strong>logicn-roadmap-autonomous-queue-2026-06-17.md</strong> <span>Document</span></li>
 <li><strong>logicn-roadmap-next10-phases.md</strong> <span>Document</span></li>
 <li><strong>logicn-roadmap-phase16-20.md</strong> <span>Document</span></li>
 <li><strong>logicn-roadmap-phase26-41.md</strong> <span>Document</span></li>
@@ -1131,6 +1134,7 @@
 <li><strong>rd-external-repos-grounding-ledger.md</strong> <span>Document</span></li>
 <li><strong>rd-ffsim-build-readiness.md</strong> <span>Document</span></li>
 <li><strong>rd-ffsm-ffsim-op-catalog.md</strong> <span>Document</span></li>
+<li><strong>rd-fhe-encrypted-similarity-v0.md</strong> <span>Document</span></li>
 <li><strong>rd-novelty-and-ip-assessment.md</strong> <span>Document</span></li>
 <li><strong>rd-photonic-accelerated-lattice-signing.md</strong> <span>Document</span></li>
 <li><strong>rd-photonic-lane-c-optical-puf.md</strong> <span>Document</span></li>
@@ -1142,6 +1146,7 @@
 <li><strong>rd-privacy-governed-compile-time-primitive.md</strong> <span>Document</span></li>
 <li><strong>rd-qrng-conditioning-pipeline-v0.md</strong> <span>Document</span></li>
 <li><strong>rd-qrng-entropy-source-for-hybrid-signing.md</strong> <span>Document</span></li>
+<li><strong>rd-qrng-q1-entropy-capability-grounding-survey.md</strong> <span>Document</span></li>
 <li><strong>rd-quantum-digital-signatures-lane-b.md</strong> <span>Document</span></li>
 <li><strong>rd-quantum-resilience-standard-and-roadmap.md</strong> <span>Document</span></li>
 <li><strong>rd-rd-direction.md</strong> <span>Document</span></li>
@@ -1951,6 +1956,17 @@
 <li><strong>APUSharedBuffer</strong> <span>Type</span></li>
 <li><strong>APUSharedMemoryPlan</strong> <span>Type</span></li>
 <li><strong>buildAPUSharedMemoryPlan</strong> <span>Flow</span></li>
+<li><strong>I32_MIN</strong> <span>Type</span></li>
+<li><strong>I32_MAX</strong> <span>Type</span></li>
+<li><strong>I32TrapKind</strong> <span>Type</span></li>
+<li><strong>I32Result</strong> <span>Type</span></li>
+<li><strong>isI32Trap</strong> <span>Flow</span></li>
+<li><strong>i32AddChecked</strong> <span>Flow</span></li>
+<li><strong>i32SubChecked</strong> <span>Flow</span></li>
+<li><strong>i32MulChecked</strong> <span>Flow</span></li>
+<li><strong>i32DivChecked</strong> <span>Flow</span></li>
+<li><strong>i32ModChecked</strong> <span>Flow</span></li>
+<li><strong>i32NegChecked</strong> <span>Flow</span></li>
 <li><strong>ImportedSymbol</strong> <span>Type</span></li>
 <li><strong>ImportResolveResult</strong> <span>Type</span></li>
 <li><strong>resolveImports</strong> <span>Flow</span></li>
@@ -2727,6 +2743,12 @@
 <li><strong>project-config.json</strong> <span>Document</span></li>
 <li><strong>package.json</strong> <span>Document</span></li>
 <li><strong>README.md</strong> <span>Document</span></li>
+<li><strong>GOVERNANCE_MODES</strong> <span>Type</span></li>
+<li><strong>GovernanceMode</strong> <span>Type</span></li>
+<li><strong>DEFAULT_GOVERNANCE_MODE</strong> <span>Type</span></li>
+<li><strong>isGovernanceMode</strong> <span>Flow</span></li>
+<li><strong>ResolvedProjectGovernance</strong> <span>Type</span></li>
+<li><strong>resolveProjectGovernance</strong> <span>Flow</span></li>
 <li><strong>LOGICN_ENVIRONMENT_MODES</strong> <span>Type</span></li>
 <li><strong>EnvironmentMode</strong> <span>Type</span></li>
 <li><strong>ConfigDiagnosticSeverity</strong> <span>Type</span></li>

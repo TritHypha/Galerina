@@ -95,18 +95,18 @@ Provides:
 LogicN project configuration, environment mode and policy loading contracts.
 
 Provides:
+- GOVERNANCE_MODES
+- GovernanceMode
+- DEFAULT_GOVERNANCE_MODE
+- isGovernanceMode
+- ResolvedProjectGovernance
+- resolveProjectGovernance
 - LOGICN_ENVIRONMENT_MODES
 - EnvironmentMode
 - ConfigDiagnosticSeverity
 - ConfigDiagnostic
 - ProjectPackageReference
 - ProductionPackageOverride
-- ConfigPathMap
-- ProjectConfig
-- EnvironmentVariableScope
-- EnvironmentVariableReference
-- EnvironmentConfig
-- ProductionStrictnessPolicy
 
 ## logicn-core-reports
 
