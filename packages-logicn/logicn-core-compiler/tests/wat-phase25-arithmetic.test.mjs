@@ -66,31 +66,34 @@ describe("emitWATExpr: identifier", () => {
 });
 
 describe("emitWATExpr: binary operations", () => {
-  it("+ → i32.add", () => {
+  it("+ → checked add", () => {
+    // owner Fork A=TRAP: + lowers to a checked-add call that traps on overflow
     const vars = new Map([["a", "$p0"], ["b", "$p1"]]);
     const node = {
       kind: "binaryExpr", value: "+",
       children: [{ kind: "identifier", value: "a" }, { kind: "identifier", value: "b" }],
     };
-    assert.equal(emitWATExpr(node, vars), "(i32.add (local.get $p0) (local.get $p1))");
+    assert.equal(emitWATExpr(node, vars), "(call $lln_checked_add_i32 (local.get $p0) (local.get $p1))");
   });
 
-  it("- → i32.sub", () => {
+  it("- → checked sub", () => {
+    // owner Fork A=TRAP: - lowers to a checked-sub call that traps on overflow
     const vars = new Map([["a", "$p0"], ["b", "$p1"]]);
     const node = {
       kind: "binaryExpr", value: "-",
       children: [{ kind: "identifier", value: "a" }, { kind: "identifier", value: "b" }],
     };
-    assert.equal(emitWATExpr(node, vars), "(i32.sub (local.get $p0) (local.get $p1))");
+    assert.equal(emitWATExpr(node, vars), "(call $lln_checked_sub_i32 (local.get $p0) (local.get $p1))");
   });
 
-  it("* → i32.mul", () => {
+  it("* → checked mul", () => {
+    // owner Fork A=TRAP: * lowers to a checked-mul call that traps on overflow
     const vars = new Map([["a", "$p0"], ["b", "$p1"]]);
     const node = {
       kind: "binaryExpr", value: "*",
       children: [{ kind: "identifier", value: "a" }, { kind: "identifier", value: "b" }],
     };
-    assert.equal(emitWATExpr(node, vars), "(i32.mul (local.get $p0) (local.get $p1))");
+    assert.equal(emitWATExpr(node, vars), "(call $lln_checked_mul_i32 (local.get $p0) (local.get $p1))");
   });
 
   it("< → i32.lt_s", () => {
@@ -123,21 +126,23 @@ describe("emitWATExpr: binary operations", () => {
         { kind: "identifier", value: "c" },
       ],
     };
+    // owner Fork A=TRAP: nested arithmetic composes the checked-op calls
     assert.equal(
       emitWATExpr(node, vars),
-      "(i32.mul (i32.add (local.get $p0) (local.get $p1)) (local.get $p2))"
+      "(call $lln_checked_mul_i32 (call $lln_checked_add_i32 (local.get $p0) (local.get $p1)) (local.get $p2))"
     );
   });
 });
 
 describe("emitWATExpr: unary operations", () => {
-  it("unary - → i32.sub 0 x", () => {
+  it("unary - → checked sub 0 x", () => {
+    // owner Fork A=TRAP: unary negation lowers to a checked-sub call (0 - x)
     const vars = new Map([["x", "$p0"]]);
     const node = {
       kind: "unaryExpr", value: "-",
       children: [{ kind: "identifier", value: "x" }],
     };
-    assert.equal(emitWATExpr(node, vars), "(i32.sub (i32.const 0) (local.get $p0))");
+    assert.equal(emitWATExpr(node, vars), "(call $lln_checked_sub_i32 (i32.const 0) (local.get $p0))");
   });
 
   it("unary ! → i32.eqz", () => {
@@ -204,30 +209,35 @@ describe("findFlowNodeInAST", () => {
 // ---------------------------------------------------------------------------
 
 describe("Phase 25 integration: real WAT arithmetic", () => {
-  it("add(a,b) → i32.add (not identity stub)", () => {
+  it("add(a,b) → checked add (not identity stub)", () => {
+    // owner Fork A=TRAP: flow must CALL the checked-add op, not just contain i32.add
     const wat = compileToWAT(
       "pure flow add(a: Int, b: Int) -> Int contract { effects {} } { return a + b }"
     );
-    assert.ok(wat.includes("i32.add"), `expected i32.add in:\n${wat}`);
+    assert.ok(wat.includes("call $lln_checked_add_i32"), `expected checked add in:\n${wat}`);
     assert.ok(wat.includes("local.get $p0"));
     assert.ok(wat.includes("local.get $p1"));
-    assert.ok(!wat.includes("unreachable"), "must not use unreachable");
+    // checked helper legitimately contains its own overflow-trap `unreachable`,
+    // so assert the flow lowered to a real body (not the #128 unsupported stub).
+    assert.ok(!wat.includes(";; unsupported-in-WASM"), "must lower to a real body");
   });
 
-  it("sub(a,b) → i32.sub", () => {
+  it("sub(a,b) → checked sub", () => {
+    // owner Fork A=TRAP
     const wat = compileToWAT(
       "pure flow sub(a: Int, b: Int) -> Int contract { effects {} } { return a - b }"
     );
-    assert.ok(wat.includes("i32.sub"));
-    assert.ok(!wat.includes("unreachable"));
+    assert.ok(wat.includes("call $lln_checked_sub_i32"));
+    assert.ok(!wat.includes(";; unsupported-in-WASM"));
   });
 
-  it("mul(a,b) → i32.mul", () => {
+  it("mul(a,b) → checked mul", () => {
+    // owner Fork A=TRAP
     const wat = compileToWAT(
       "pure flow mul(a: Int, b: Int) -> Int contract { effects {} } { return a * b }"
     );
-    assert.ok(wat.includes("i32.mul"));
-    assert.ok(!wat.includes("unreachable"));
+    assert.ok(wat.includes("call $lln_checked_mul_i32"));
+    assert.ok(!wat.includes(";; unsupported-in-WASM"));
   });
 
   it("constant 42 → i32.const 42", () => {
@@ -255,8 +265,8 @@ describe("Phase 25 integration: real WAT arithmetic", () => {
     ].join("\n"));
     assert.ok(wat.includes("(local $result i32)"), `expected local decl:\n${wat}`);
     assert.ok(wat.includes("local.set $result"));
-    assert.ok(wat.includes("i32.mul"));
-    assert.ok(!wat.includes("unreachable"));
+    assert.ok(wat.includes("call $lln_checked_mul_i32")); // owner Fork A=TRAP
+    assert.ok(!wat.includes(";; unsupported-in-WASM"));
   });
 
   it("multiple let bindings in correct order", () => {
@@ -271,8 +281,9 @@ describe("Phase 25 integration: real WAT arithmetic", () => {
     const dblPos  = wat.indexOf("$doubled");
     assert.ok(sumPos !== -1  && dblPos !== -1);
     assert.ok(sumPos < dblPos, "sumVal declaration must precede doubled");
-    assert.ok(wat.includes("i32.add") && wat.includes("i32.mul"));
-    assert.ok(!wat.includes("unreachable"));
+    // owner Fork A=TRAP: both ops lower to checked-op calls
+    assert.ok(wat.includes("call $lln_checked_add_i32") && wat.includes("call $lln_checked_mul_i32"));
+    assert.ok(!wat.includes(";; unsupported-in-WASM"));
   });
 
   it("Phase 24A fallback (no ast) still avoids unreachable", () => {
@@ -295,7 +306,7 @@ describe("Phase 25 integration: real WAT arithmetic", () => {
     assert.ok(wat.startsWith("(module"), "must start with (module");
     assert.ok(wat.includes("(memory"), "must declare memory");
     assert.ok(wat.includes("(func $inc"), "must have func $inc");
-    assert.ok(wat.includes("i32.add"), "must have real arithmetic");
+    assert.ok(wat.includes("call $lln_checked_add_i32"), "must have real arithmetic"); // owner Fork A=TRAP
     assert.ok(wat.includes("i32.const 1"), "must have constant 1");
   });
 });

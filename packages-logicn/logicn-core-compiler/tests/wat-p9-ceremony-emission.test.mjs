@@ -91,9 +91,12 @@ describe("P9 ceremony — self-hosted lexer emits real WASM", () => {
     const { wat } = compileLexer();
     assert.match(wat, /\$host___str_count/, "charCount → host import");
     assert.match(wat, /\$host___result_ok/, "Ok → host import");
+    // owner Fork A=TRAP: integer +/-/* now lower to checked-arith helper calls
+    // ($lln_checked_add_i32 / _sub_ / _mul_), which the module also defines — these are
+    // DEFINED calls, not undefined ones, so they belong in the allowed set.
     const noUndefinedCalls = [...wat.matchAll(/\(call \$([A-Za-z0-9_]+)/g)]
       .map((m) => m[1])
-      .every((c) => c.startsWith("host_") || /^(makeKeywordTable|scanWord|scanOperator|scanDigits|scanString|scanCharLit|scanLineComment|scanBlockComment|tokenize)$/.test(c));
+      .every((c) => c.startsWith("host_") || /^lln_checked_(add|sub|mul)_i32$/.test(c) || /^(makeKeywordTable|scanWord|scanOperator|scanDigits|scanString|scanCharLit|scanLineComment|scanBlockComment|tokenize)$/.test(c));
     assert.equal(noUndefinedCalls, true, "no undefined function calls remain in the lexer");
     const asm = await assembleWAT(wat);
     assert.equal(usedRealWabt(asm), true, "lexer module LINKS + assembles via REAL wabt (no stub fallback)");

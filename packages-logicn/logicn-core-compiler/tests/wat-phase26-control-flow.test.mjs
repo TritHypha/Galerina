@@ -52,7 +52,8 @@ describe("Phase 26: if/else value-producing", () => {
     ].join("\n"));
     assert.ok(wat.includes("(if (result i32)"));
     assert.ok(wat.includes("i32.lt_s"));
-    assert.ok(wat.includes("i32.sub"));
+    // owner Fork A=TRAP: `0 - x` lowers to the checked-sub helper call
+    assert.ok(wat.includes("call $lln_checked_sub_i32"));
   });
 
   it("equals(a, b) → 1 or 0 via == comparison", () => {
@@ -87,7 +88,9 @@ describe("Phase 26: while loops", () => {
     assert.ok(wat.includes("(loop $while_loop_0"), `expected loop label:\n${wat}`);
     assert.ok(wat.includes("br_if $while_exit_0"), `expected br_if to exit:\n${wat}`);
     assert.ok(wat.includes("br $while_loop_0"), `expected br to loop:\n${wat}`);
-    assert.ok(!wat.includes("unreachable"));
+    // owner Fork A=TRAP: body does +/-/* so the checked helper's overflow-trap
+    // `unreachable` is legit; assert the flow lowered to a real body, not the #128 stub
+    assert.ok(!wat.includes(";; unsupported-in-WASM"));
   });
 
   it("while loop exit uses negated condition (i32.gt_s for <=)", () => {
@@ -159,7 +162,9 @@ describe("Phase 26: while loops", () => {
       "  return sum }",
     ].join("\n"));
     assert.ok(wat.includes("(block $while_exit_0"));
-    assert.ok(!wat.includes("unreachable"));
+    // owner Fork A=TRAP: body does `i + 1` so the checked helper's overflow-trap
+    // `unreachable` is legit; assert the flow lowered to a real body, not the #128 stub
+    assert.ok(!wat.includes(";; unsupported-in-WASM"));
   });
 });
 
@@ -177,7 +182,9 @@ describe("Phase 26: WAT structural validity", () => {
       const wat = compileToWAT(src);
       assert.ok(wat.startsWith("(module"), `must start with (module:\n${wat}`);
       assert.ok(wat.includes("(func "), `must have func:\n${wat}`);
-      assert.ok(!wat.includes("unreachable"), `no unreachable:\n${wat}`);
+      // owner Fork A=TRAP: the second source does +/-/* so the checked helper's
+      // overflow-trap `unreachable` is legit; assert no #128 unsupported stub instead
+      assert.ok(!wat.includes(";; unsupported-in-WASM"), `no unsupported stub:\n${wat}`);
     }
   });
 

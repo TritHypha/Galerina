@@ -409,6 +409,21 @@ export function renderWAT(module: WATModule): string {
     lines.push(``);
   }
 
+  // i32 strict-trapping arithmetic helpers (owner Fork A=TRAP). Emit ONLY the helpers a flow body
+  // actually calls — their presence is a deterministic function of the bodies, so wasmHash is stable.
+  const referencedHelpers = new Set<string>();
+  for (const fn of module.functions) {
+    for (const name of Object.keys(I32_CHECKED_HELPERS)) {
+      if (fn.body.includes(name)) referencedHelpers.add(name);
+    }
+  }
+  for (const name of Object.keys(I32_CHECKED_HELPERS)) {
+    if (!referencedHelpers.has(name)) continue;
+    lines.push(`  ;; strict-trapping i32 helper — signed overflow traps (unreachable)`);
+    for (const hl of I32_CHECKED_HELPERS[name]!.split("\n")) lines.push(`  ${hl}`);
+    lines.push("");
+  }
+
   // Function definitions.
   // Pure flows with a real body (fn.body !== "unreachable") emit actual instructions.
   // All other flows use (unreachable) which is valid WAT — polymorphic bottom type.
@@ -522,9 +537,12 @@ export function getInternedStrings(): Array<{ handle: number; value: string }> {
  * GAP-4). `&&`/`||` stay — those are the live logical-and/or operators.
  */
 const BINARY_OP_TO_WAT: ReadonlyMap<string, string> = new Map([
-  ["+",  "i32.add"],
-  ["-",  "i32.sub"],
-  ["*",  "i32.mul"],
+  // +,-,* lower to strict-trapping checked helpers (owner Fork A=TRAP, 2026-06-18): native i32.add/
+  // sub/mul wrap silently, so signed overflow → `unreachable` (LOAD→TRAP→ERASE) via the helpers
+  // below. /,% stay native: i32.div_s/rem_s already trap on /0 AND INT32_MIN/-1 — exactly our semantics.
+  ["+",  "call $lln_checked_add_i32"],
+  ["-",  "call $lln_checked_sub_i32"],
+  ["*",  "call $lln_checked_mul_i32"],
   ["/",  "i32.div_s"],
   ["%",  "i32.rem_s"],
   ["<",  "i32.lt_s"],
@@ -536,6 +554,41 @@ const BINARY_OP_TO_WAT: ReadonlyMap<string, string> = new Map([
   ["&&", "i32.and"],
   ["||", "i32.or"],
 ]);
+
+/**
+ * i32 strict-trapping arithmetic helpers (owner Fork A=TRAP, 2026-06-18). Native WASM i32.add/sub/mul
+ * wrap mod 2^32 — a lying abstraction in a governed system. These harden the WASM-i32 reference so
+ * signed overflow is a TRAP (`unreachable` = LOAD→TRAP→ERASE), byte-identical to the tree-walker +
+ * bytecode VM (the single source of truth is i32-arith.ts; these mirror its predicates exactly).
+ * `+`/`-`/`*` lower to `call` these; `/`/`%` use native i32.div_s/rem_s (already trap on /0 AND
+ * INT32_MIN/-1). Emitted into a module only when a flow body actually references them.
+ */
+const I32_CHECKED_HELPERS: Readonly<Record<string, string>> = {
+  $lln_checked_add_i32: [
+    "(func $lln_checked_add_i32 (param $a i32) (param $b i32) (result i32)",
+    "  (local $r i32)",
+    "  (local.set $r (i32.add (local.get $a) (local.get $b)))",
+    "  ;; signed overflow iff (a^r) & (b^r) < 0",
+    "  (if (i32.lt_s (i32.and (i32.xor (local.get $a) (local.get $r)) (i32.xor (local.get $b) (local.get $r))) (i32.const 0)) (then unreachable))",
+    "  (local.get $r))",
+  ].join("\n"),
+  $lln_checked_sub_i32: [
+    "(func $lln_checked_sub_i32 (param $a i32) (param $b i32) (result i32)",
+    "  (local $r i32)",
+    "  (local.set $r (i32.sub (local.get $a) (local.get $b)))",
+    "  ;; signed overflow iff (a^b) & (a^r) < 0",
+    "  (if (i32.lt_s (i32.and (i32.xor (local.get $a) (local.get $b)) (i32.xor (local.get $a) (local.get $r))) (i32.const 0)) (then unreachable))",
+    "  (local.get $r))",
+  ].join("\n"),
+  $lln_checked_mul_i32: [
+    "(func $lln_checked_mul_i32 (param $a i32) (param $b i32) (result i32)",
+    "  (local $r i64)",
+    "  (local.set $r (i64.mul (i64.extend_i32_s (local.get $a)) (i64.extend_i32_s (local.get $b))))",
+    "  ;; overflow iff the exact i64 product leaves [-2^31, 2^31-1]",
+    "  (if (i32.or (i64.lt_s (local.get $r) (i64.const -2147483648)) (i64.gt_s (local.get $r) (i64.const 2147483647))) (then unreachable))",
+    "  (i32.wrap_i64 (local.get $r)))",
+  ].join("\n"),
+};
 
 // ---------------------------------------------------------------------------
 // P9.3 — Stdlib method → host import bridge
@@ -835,7 +888,7 @@ export function emitWATExpr(
     case "unaryExpr": {
       const op = node.value ?? "";
       const operand = node.children?.[0] ? emitWATExpr(node.children[0], vars, staticConsts) : "(i32.const 0)";
-      if (op === "-") return `(i32.sub (i32.const 0) ${operand})`;
+      if (op === "-") return `(call $lln_checked_sub_i32 (i32.const 0) ${operand})`; // -INT32_MIN overflows → trap
       if (op === "!")  return `(i32.eqz ${operand})`;
       return `(i32.const 0) ;; unknown unary: ${op}`;
     }

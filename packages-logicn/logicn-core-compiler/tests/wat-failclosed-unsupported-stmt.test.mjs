@@ -105,7 +105,7 @@ describe("Task #128: Stage-B WAT emitter fails closed on unsupported statements"
 // ---------------------------------------------------------------------------
 
 describe("Task #128: supported statements are unaffected by the guard", () => {
-  it("a plain while-loop flow lowers without any unreachable/unsupported trap", () => {
+  it("a plain while-loop flow lowers without any unsupported-statement trap", () => {
     const wat = compileToWAT([
       "pure flow sumTo(n: Int) -> Int",
       "contract { effects {} }",
@@ -117,7 +117,11 @@ describe("Task #128: supported statements are unaffected by the guard", () => {
       "  }",
       "  return result }",
     ].join("\n"));
-    assert.ok(!wat.includes("unreachable"), `supported while-loop must not trap:\n${wat}`);
+    // owner Fork A=TRAP: the `+` arithmetic now lowers through $lln_checked_add_i32,
+    // whose body legitimately contains `unreachable` (the overflow trap). Pin the
+    // original intent — "no #128 unsupported-statement stub" — against that marker
+    // instead of the bare `unreachable`.
+    assert.ok(!wat.includes(";; unsupported-in-WASM"), `supported while-loop must not hit the unsupported-statement stub:\n${wat}`);
     assert.ok(!wat.includes("unsupported-in-WASM"), `supported while-loop must not be flagged:\n${wat}`);
     assert.ok(wat.includes("(loop $while_loop_0"), `while-loop must still lower:\n${wat}`);
   });
