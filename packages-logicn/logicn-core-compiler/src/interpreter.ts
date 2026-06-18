@@ -326,6 +326,8 @@ class SyncInterpreter {
   constructor(
     private readonly ast: AstNode,
     private readonly knownFlows: readonly FlowMeta[],
+    /** Fail-closed loop-iteration cap (mirrors the async Interpreter's). Default 100_000. */
+    private readonly maxIterations: number = 100_000,
   ) {
     this.scope = new Map();
   }
@@ -404,17 +406,17 @@ class SyncInterpreter {
         const [condNode, thenBlock, elseBlock] = node.children ?? [];
         const cond = condNode ? this.evalExprS(condNode) : LLN_VOID;
         const branch = cond.__tag === "bool" ? cond.value : cond.__tag === "int" ? cond.value !== 0 : false;
+        // FAIL-CLOSED (2026-06-19): do NOT swallow non-SyncReturn throws here (same bug as whileStmt).
+        // SyncReturn propagates naturally to run()'s handler; SyncNotSupported / runtimeErrors must
+        // propagate so tryPureFlowSync falls back to the trapping async tree-walker rather than
+        // silently skipping an unsupported/overflowing statement inside a branch.
         if (branch) {
-          if (thenBlock !== undefined) {
-            try { this.execBlock(thenBlock); }
-            catch (e) { if (e instanceof SyncReturn) throw e; }
-          }
+          if (thenBlock !== undefined) this.execBlock(thenBlock);
         } else if (elseBlock !== undefined) {
           if (elseBlock.kind === "ifStmt") {
             this.execStmt(elseBlock);
           } else {
-            try { this.execBlock(elseBlock); }
-            catch (e) { if (e instanceof SyncReturn) throw e; }
+            this.execBlock(elseBlock);
           }
         }
         return LLN_VOID;
@@ -422,21 +424,29 @@ class SyncInterpreter {
 
       case "whileStmt": {
         const [condNode, bodyBlock] = node.children ?? [];
+        // FAIL-CLOSED (2026-06-19): this sync fast-path loop previously had NO iteration cap and its
+        // body try/catch swallowed every non-SyncReturn throw. After the Fork-A=TRAP overflow change
+        // (2026-06-18), an int-overflow surfaces as a runtimeError that throws SyncNotSupported the
+        // moment it flows into the next op — the swallow aborted the body BEFORE the loop counter
+        // advanced, so the loop spun forever (e.g. the compute-mix LCG benchmark). Fix: (1) do NOT
+        // swallow — let the throw propagate so tryPureFlowSync bails to the bounded, trapping async
+        // tree-walker (restoring tier fidelity), and (2) bound the loop as defense-in-depth.
+        let iterations = 0;
         while (true) {
+          if (iterations++ > this.maxIterations) {
+            throw new SyncNotSupported(`while loop exceeded ${this.maxIterations} iterations — defer to the bounded tree-walker`);
+          }
           const cond = condNode ? this.evalExprS(condNode) : LLN_VOID;
           const running = cond.__tag === "bool" ? cond.value : cond.__tag === "int" ? cond.value !== 0 : false;
           if (!running) break;
-          if (bodyBlock !== undefined) {
-            try { this.execBlock(bodyBlock); }
-            catch (e) { if (e instanceof SyncReturn) throw e; }
-          }
+          if (bodyBlock !== undefined) this.execBlock(bodyBlock);
         }
         return LLN_VOID;
       }
 
       case "block":
-        try { return this.execBlock(node); }
-        catch (e) { if (e instanceof SyncReturn) throw e; return LLN_VOID; }
+        // FAIL-CLOSED (2026-06-19): propagate non-SyncReturn throws (was swallowed → fail-open).
+        return this.execBlock(node);
 
       default:
         // Expression statement — evaluate and discard
@@ -563,13 +573,14 @@ export function tryPureFlowSync(
   flows: readonly FlowMeta[],
   flowName: string,
   args: ReadonlyMap<string, LogicNValue>,
+  maxIterations: number = 100_000,
 ): LogicNValue | null {
   const flowMeta = flows.find(f => f.name === flowName);
   if (flowMeta === undefined) return null;
   if (flowMeta.qualifier !== "pure") return null;
 
   try {
-    const interp = new SyncInterpreter(ast, flows);
+    const interp = new SyncInterpreter(ast, flows, maxIterations);
     return interp.run(flowName, args);
   } catch (e) {
     if (e instanceof SyncNotSupported) return null;
@@ -2712,7 +2723,7 @@ export async function executeFlow(
     // Phase 27B: Try synchronous fast-path (handles non-integer pure flows).
     // Eliminates ~6μs async/await overhead per call.
     // Falls back to the async Interpreter if sync can't handle the pattern.
-    const syncResult = tryPureFlowSync(ast, knownFlows ?? [], flowName, args);
+    const syncResult = tryPureFlowSync(ast, knownFlows ?? [], flowName, args, runtimeOptions?.maxIterations ?? 100_000);
     if (syncResult !== null) {
       const now = new Date().toISOString();
       const syncAuditResult = {
