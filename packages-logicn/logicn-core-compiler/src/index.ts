@@ -539,6 +539,7 @@ export {
   emitWATBody,
   emitWATFromFlowAST,
   emitWATExpr,
+  emitBlockLastExpr,
   buildRecordLayouts,
   buildEnumVariants,
   getInternedStrings,

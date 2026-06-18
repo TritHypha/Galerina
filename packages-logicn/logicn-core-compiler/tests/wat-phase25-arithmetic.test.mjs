@@ -13,8 +13,27 @@ import {
   parseProgram, checkEffects, emitGIR,
   buildWATModuleFromGIR, renderWAT,
   emitWATExpr, extractFlowParamNames,
-  findFlowNodeInAST,
+  findFlowNodeInAST, emitBlockLastExpr,
 } from "../dist/index.js";
+
+// Cycle-end audit (2026-06-18): emitBlockLastExpr was the ONE fail-open the 9-site hardening pass
+// missed (a double-quoted `return`, not a backtick — so the harden-grep skipped it). A non-empty
+// block whose tail isn't a recognized expr kind must TRAP (fail-closed), not emit a silent 0.
+describe("emitBlockLastExpr: fail-closed on an unlowerable block tail (#128-sibling)", () => {
+  it("an unrecognized last-statement kind → (unreachable), not a silent (i32.const 0)", () => {
+    const block = { kind: "block", children: [{ kind: "letDecl", value: "x", children: [] }] };
+    const result = emitBlockLastExpr(block, new Map());
+    assert.ok(result.includes("unreachable"), "unlowerable block tail must fail-closed");
+    assert.ok(!result.includes("i32.const 0"), "must NOT emit a silent wrong value");
+  });
+  it("a recognized expr tail still lowers normally", () => {
+    const block = { kind: "block", children: [{ kind: "numberLiteral", value: "42" }] };
+    assert.equal(emitBlockLastExpr(block, new Map()), "(i32.const 42)");
+  });
+  it("an empty block stays the legitimate void default (i32.const 0), NOT a trap", () => {
+    assert.equal(emitBlockLastExpr({ kind: "block", children: [] }, new Map()), "(i32.const 0)");
+  });
+});
 
 // ---------------------------------------------------------------------------
 // Helper

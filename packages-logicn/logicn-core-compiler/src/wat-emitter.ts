@@ -1257,7 +1257,7 @@ function negateBinaryOp(op: string): string | null {
  * Finds the last statement in the block that produces a value and returns
  * its WAT expression string (without the surrounding WAT block structure).
  */
-function emitBlockLastExpr(
+export function emitBlockLastExpr(
   blockNode: AstNode,
   vars: ReadonlyMap<string, string>,
   staticConsts: ReadonlyMap<string, number> = new Map(),
@@ -1274,7 +1274,7 @@ function emitBlockLastExpr(
       last.kind === "matchExpr"   || last.kind === "listLiteral") {
     return emitWATExpr(last, vars, staticConsts);
   }
-  return "(i32.const 0) ;; unresolved block expr";
+  return "(unreachable) ;; unresolved block expr — fail-closed (emitter cannot lower block tail; #128-sibling)";
 }
 
 /**
