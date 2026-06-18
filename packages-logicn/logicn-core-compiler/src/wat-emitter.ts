@@ -803,7 +803,7 @@ export function emitWATExpr(
       const constVal = staticConsts.get(name);
       if (constVal !== undefined) return `(i32.const ${constVal}) ;; static ${name}`;
       // Unknown identifier — emit with comment for diagnostics.
-      return `(i32.const 0) ;; unresolved: ${name}`;
+      return `(unreachable) ;; unresolved: ${name} — fail-closed (emitter cannot lower; #128-sibling)`;
     }
 
     case "memberExpr": {
@@ -846,7 +846,7 @@ export function emitWATExpr(
           }
         }
       }
-      return `(i32.const 0) ;; unresolved member: ${memberName}`;
+      return `(unreachable) ;; unresolved member: ${memberName} — fail-closed (emitter cannot lower; #128-sibling)`;
     }
 
     case "numberLiteral": {
@@ -882,7 +882,7 @@ export function emitWATExpr(
       if (watOp !== undefined) {
         return `(${watOp} ${left} ${right})`;
       }
-      return `(i32.const 0) ;; unknown op: ${op}`;
+      return `(unreachable) ;; unknown op: ${op} — fail-closed (emitter cannot lower; #128-sibling)`;
     }
 
     case "unaryExpr": {
@@ -890,7 +890,7 @@ export function emitWATExpr(
       const operand = node.children?.[0] ? emitWATExpr(node.children[0], vars, staticConsts) : "(i32.const 0)";
       if (op === "-") return `(call $lln_checked_sub_i32 (i32.const 0) ${operand})`; // -INT32_MIN overflows → trap
       if (op === "!")  return `(i32.eqz ${operand})`;
-      return `(i32.const 0) ;; unknown unary: ${op}`;
+      return `(unreachable) ;; unknown unary: ${op} — fail-closed (emitter cannot lower; #128-sibling)`;
     }
 
     case "callExpr": {
@@ -1139,7 +1139,7 @@ export function emitWATExpr(
       const arms = node.children?.slice(1).filter(c => c.kind === "matchArm") ?? [];
 
       if (subject === undefined || arms.length === 0) {
-        return `(i32.const 0) ;; empty match`;
+        return `(unreachable) ;; empty match — fail-closed (malformed; emitter cannot lower; #128-sibling)`;
       }
 
       const subjectWat = emitWATExpr(subject, vars, staticConsts);
@@ -1226,7 +1226,7 @@ export function emitWATExpr(
     }
 
     default:
-      return `(i32.const 0) ;; unhandled: ${node.kind}`;
+      return `(unreachable) ;; unhandled: ${node.kind} — fail-closed (emitter cannot lower; #128-sibling)`;
   }
 }
 
@@ -2379,14 +2379,14 @@ export function buildWATModule(
         } else if (flow.executionPlan !== undefined) {
           body = emitWATBody(flow.executionPlan, namedParams.length);
         } else {
-          body = "(i32.const 0) ;; Phase 25: empty body";
+          body = "(unreachable) ;; Phase 25: empty body — fail-closed (cannot lower → falls back to walker)";
         }
       } else if (flow.executionPlan !== undefined) {
         body = emitWATBody(flow.executionPlan, namedParams.length);
       } else if (rawParamTypes.length > 0) {
         body = emitWATBody({ steps: [{ kind: "return" }] }, namedParams.length);
       } else {
-        body = "(i32.const 0) ;; Phase 25: no AST node found";
+        body = "(unreachable) ;; Phase 25: no AST node found — fail-closed (cannot lower → falls back to walker)";
       }
     } else if (isPureFlow && flow.executionPlan !== undefined) {
       // Phase 24A: use PassiveExecutionPlan steps (identity body)
@@ -2396,7 +2396,7 @@ export function buildWATModule(
       body = emitWATBody({ steps: [{ kind: "return" }] }, namedParams.length);
     } else if (isPureFlow) {
       // Fallback: no param info.
-      body = "(i32.const 0) ;; Phase 25: no body info available";
+      body = "(unreachable) ;; Phase 25: no body info available — fail-closed (cannot lower → falls back to walker)";
     } else if (flow.qualifier === "guarded" && flowDeclaredEffects.length === 0 && gir.ast !== undefined) {
       // P9.4: a `guarded` flow is pure computation wrapped in DAG-edge governance —
       // its body has no real side effects, so it can be lowered exactly like a pure

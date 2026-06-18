@@ -58,10 +58,13 @@ describe("emitWATExpr: identifier", () => {
     );
   });
 
-  it("emits i32.const 0 with comment for unknown identifier", () => {
+  it("fail-closes (unreachable) for an unknown identifier — not a silent i32.const 0 (#128-sibling)", () => {
+    // Owner pipeline-security pass: an emitter that can't resolve a symbol must TRAP, not emit a
+    // wrong value (a silent 0 flowing into a governance predicate is a lying-abstraction exploit).
     const result = emitWATExpr({ kind: "identifier", value: "missing" }, new Map());
-    assert.ok(result.includes("i32.const 0"));
-    assert.ok(result.includes("missing"));
+    assert.ok(result.includes("unreachable"), "unresolved identifier must fail-closed, not return a value");
+    assert.ok(!result.includes("i32.const 0"), "must NOT silently emit a wrong value");
+    assert.ok(result.includes("missing"), "diagnostic comment must still name the unresolved symbol");
   });
 });
 
