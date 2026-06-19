@@ -735,6 +735,40 @@ console.log("\n> Bold = significantly behind (>10×). Blanks = benchmark not run
 console.log("> Fibonacci passive is excluded from 'winner' comparison — LRU cache hit is not a fair race.");
 console.log(`> gpu-compute GPU: ${GPU_NAME} slower than CPU at 100K elements (setup overhead dominates — crossover ~500K elements).`);
 
+// ── 7. Per-benchmark scoreboard — winner → slowest, with spread ─────────────────
+// Answers, per benchmark, in one place: who won, who are the runners-up, where EACH
+// language lands, how far each is from the WINNER, and how far from the SLOWEST.
+console.log("\n## 7. Per-Benchmark Scoreboard — Winner → Slowest (full spread)\n");
+console.log("> Every runtime that ran, ranked fastest→slowest, with distance from the winner AND from the slowest.");
+console.log("> ⚠️ **`LogicN passive ⟨interp⟩` figures are LRU cache-HIT rates** (a memoised result for a repeated");
+console.log("> input), **not compute** — flagged `⚠️cache` below. Read the first non-cache row for the real compute winner.\n");
+
+const fmtX = (r) => (r >= 1000 ? (r / 1000).toFixed(1) + "K×" : r >= 10 ? r.toFixed(0) + "×" : r.toFixed(1) + "×");
+for (const bench of data) {
+  if (!comparable(bench)) continue;
+  const rows = ORDER
+    .map((rt) => ({ rt, t: throughput(bench.results?.[rt]) }))
+    .filter((x) => x.t)
+    .sort((a, b) => b.t - a.t);
+  if (rows.length === 0) continue;
+  const winner = rows[0].t, slowest = rows[rows.length - 1].t;
+  const realWinner = rows.find((x) => x.rt !== "logicnPassive");
+  console.log(`### ${bench.benchmark}`);
+  if (rows[0].rt === "logicnPassive" && realWinner) {
+    console.log(`> 🏆 cache-hit "winner" is LogicN passive (memoised); **real compute winner: ${LABEL[realWinner.rt]} at ${fmtT(realWinner.t)}**.`);
+  }
+  console.log("| # | Runtime | Throughput | ×vs winner | ×vs slowest |");
+  console.log("|---|---|---|---|---|");
+  rows.forEach((x, i) => {
+    const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}`;
+    const vsW = i === 0 ? "🏆 winner" : fmtX(winner / x.t) + " slower";
+    const vsS = i === rows.length - 1 ? "— (slowest)" : fmtX(x.t / slowest) + " faster";
+    const flag = x.rt === "logicnPassive" ? " ⚠️cache" : "";
+    console.log(`| ${medal} | ${LABEL[x.rt]}${flag} | ${fmtT(x.t)} | ${vsW} | ${vsS} |`);
+  });
+  console.log("");
+}
+
 // ── Benchmark Glossary ────────────────────────────────────────────────────────
 console.log(`
 ---
