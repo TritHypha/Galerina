@@ -62,7 +62,10 @@ flow's block and **exits 1** if any in-file `//lln:` differs from the freshly-co
 forgot to refresh; never writes). No hash-stamping needed — it compares current-rendered vs in-file (don't-trust-check
 applied to the tool's own output). Drop it into CI alongside the tests. **Still OPEN (stronger):** fold the same check
 into `logicn check` itself so a stale block is a first-class governance diagnostic (not a separate command), per R&D
-0045 forward-design #1.
+0045 forward-design #1. **Design constraint for that build:** only flag files that ALREADY carry at least one `//lln:`
+line (opted-in). A file with NO `//lln:` is NOT stale — demanding metadata everywhere would fail every fixture/example
+that never opted in (a fail-OPEN→breaking gate). `--check` (whole-app, explicit) is correct to flag unannotated files;
+`logicn check` (runs on everything, incl. teaching examples) must not.
 
 **CLI ergonomics** ✅ `<this commit>` — added the short bin alias **`lln`** alongside `logicn` (package.json `bin`); both
 point at `logicn.mjs`. Takes effect after `npm link` / global reinstall (Windows gets an `lln.cmd` shim).
