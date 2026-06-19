@@ -1,5 +1,5 @@
 // =============================================================================
-// Cyclomatic complexity — //@COMPLEXITY (R&D 0045)
+// Cyclomatic complexity — //lln: COMPLEXITY (R&D 0045)
 // complexity = 1 + decision points (if / while / for-each / match arm / && / ||); silent if trivial.
 // =============================================================================
 
@@ -48,10 +48,10 @@ describe("renderComplexityComment — silent when trivial", () => {
     assert.deepEqual(renderComplexityComment(flowNode("pure flow f(x: Int) -> Int { return x }")), []);
   });
 
-  it("emits //@COMPLEXITY for a branchy flow", () => {
+  it("emits //lln: COMPLEXITY for a branchy flow", () => {
     const lines = renderComplexityComment(flowNode(
       "pure flow f(x: Int) -> Int { if x > 0 { return 1 } return 0 }",
     ));
-    assert.deepEqual(lines, ["//@COMPLEXITY: 2"]);
+    assert.deepEqual(lines, ["//lln: COMPLEXITY: 2"]);
   });
 });

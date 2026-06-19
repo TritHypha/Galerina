@@ -9,8 +9,8 @@
 //
 // Reuses the same callee-resolution pattern as LLN-GOV-013 (findNodes(flow,"callExpr") → match a
 // flow name). Only flow→flow calls count; stdlib/method calls (`Db.fetch`) are not flows. This is
-// the generated-tier data behind the `//@` comments the CLI writes; the contract.architecture
-// `depends_on` (authored intent) should agree with `//@USES` (observed reality) — a mismatch is a WARN.
+// the generated-tier data behind the `//lln:` comments the CLI writes; the contract.architecture
+// `depends_on` (authored intent) should agree with `//lln: USES` (observed reality) — a mismatch is a WARN.
 // =============================================================================
 
 import type { AstNode } from "./parser.js";
@@ -85,11 +85,11 @@ export function analyzeFlowDependencies(ast: AstNode): Map<string, FlowDependenc
 export function renderDependencyComments(deps: FlowDependencies): string[] {
   const lines: string[] = [];
   if (deps.uses.length > 0) {
-    lines.push(`//@USES: (${deps.uses.length}) ${deps.uses.join(", ")}`);
+    lines.push(`//lln: USES: (${deps.uses.length}) ${deps.uses.join(", ")}`);
   }
   if (deps.usedBy.length > 0) {
-    lines.push(`//@USEDBY: (${deps.usedBy.length}) ${deps.usedBy.join(", ")}`);
+    lines.push(`//lln: USEDBY: (${deps.usedBy.length}) ${deps.usedBy.join(", ")}`);
   }
-  lines.push(deps.impact === 0 ? `//@IMPACT: (0) — safe to delete` : `//@IMPACT: (${deps.impact})`);
+  lines.push(deps.impact === 0 ? `//lln: IMPACT: (0) — safe to delete` : `//lln: IMPACT: (${deps.impact})`);
   return lines;
 }

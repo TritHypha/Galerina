@@ -3,7 +3,7 @@
 //
 // A whole-graph "hidden physics" metric a human cannot track by eye: how branchy a flow is.
 // complexity = 1 + (decision points), where a decision point is an if / while / for-each / each
-// match arm / a short-circuit `&&` or `||`. This is the generated-tier metric behind //@COMPLEXITY;
+// match arm / a short-circuit `&&` or `||`. This is the generated-tier metric behind //lln: COMPLEXITY;
 // per the owner's rule it is SILENT when trivial (complexity 1 — a straight-line, no-branch flow).
 // =============================================================================
 
@@ -38,12 +38,12 @@ export function cyclomaticComplexity(node: AstNode): number {
 }
 
 /**
- * Render the `//@COMPLEXITY` line for a flow — SILENT (returns []) when trivial (complexity 1), per the
+ * Render the `//lln: COMPLEXITY` line for a flow — SILENT (returns []) when trivial (complexity 1), per the
  * owner's low-noise rule. A short qualifier hints at the dominant branch source when the count is high.
  */
 export function renderComplexityComment(node: AstNode): string[] {
   const c = cyclomaticComplexity(node);
   if (c <= 1) return []; // trivial straight-line flow — stay silent (no clutter)
   const qualifier = c >= 10 ? " (high — consider decomposing)" : "";
-  return [`//@COMPLEXITY: ${c}${qualifier}`];
+  return [`//lln: COMPLEXITY: ${c}${qualifier}`];
 }

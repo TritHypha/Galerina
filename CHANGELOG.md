@@ -27,22 +27,22 @@ verified**; the codebase is in a fail-closed, deterministic state. 48/48 package
 - **`contract.architecture { volatility, depends_on }` parse-only block (R&D 0045 — Phase 2b).** A new
   contract sub-block declaring **volatility-based decomposition** metadata: `volatility: LOW|MED|HIGH` (how
   often the flow changes) + `depends_on [FlowA, FlowB]` (the *authored* dependency intent, which the observed
-  `//@USES` should agree with). Parse-only — registered as a contract section so it parses clean — plus a
+  `//lln:USES` should agree with). Parse-only — registered as a contract section so it parses clean — plus a
   **fail-closed value check** (`LLN-ARCH-001`): an invalid volatility token is a hard error; a missing
   volatility is allowed (treated as the most-volatile HIGH downstream). The Stable-Dependencies enforcement
   (a LOW flow may not depend on a HIGH one) is a later, gated pass. +4 tests.
-- **`//@USES` / `//@USEDBY` / `//@IMPACT` flow-dependency analysis + `logicn deps` (R&D 0045 — Phase 2).**
+- **`//lln:USES` / `//lln:USEDBY` / `//lln:IMPACT` flow-dependency analysis + `logicn deps` (R&D 0045 — Phase 2).**
   `analyzeFlowDependencies(ast)` computes the observed flow→flow call graph per flow: **USES** (upstream
   callees), **USEDBY** (direct callers / "dependants"), and **IMPACT** (transitive downstream blast-radius;
   `0` ⟹ *safe to delete*). `renderDependencyComments()` emits the canonical generated-tier lines
-  (`//@USES: (2) …`, `//@USEDBY: (1) …`, `//@IMPACT: (0) — safe to delete`). New read-only CLI:
-  `logicn deps <file.lln> [--flow <name>]` graphs the app and prints the `//@` comments (no source mutation
+  (`//lln:USES: (2) …`, `//lln:USEDBY: (1) …`, `//lln:IMPACT: (0) — safe to delete`). New read-only CLI:
+  `logicn deps <file.lln> [--flow <name>]` graphs the app and prints the `//lln:` comments (no source mutation
   yet — the source-writer is a later phase, gated on the human-edit decision). Naming standardised on the
   clean antonym pair **USES** (what I call) / **USEDBY** (who calls me); recursion/self-calls and
   stdlib/method calls are excluded. +8 tests.
-- **`//@COMPLEXITY` cyclomatic complexity metric (R&D 0045 — Phase 1c).** `cyclomaticComplexity(node)` =
+- **`//lln:COMPLEXITY` cyclomatic complexity metric (R&D 0045 — Phase 1c).** `cyclomaticComplexity(node)` =
   `1 + decision points` (if / while / for-each / match arm / `&&` / `||`). `renderComplexityComment()` emits
-  `//@COMPLEXITY: N` and stays **silent at complexity 1** (the owner's low-noise rule). Surfaced per flow in
+  `//lln:COMPLEXITY: N` and stays **silent at complexity 1** (the owner's low-noise rule). Surfaced per flow in
   `logicn deps`. +6 tests.
 - **`LLN-HW-004` UnknownHardwareTarget — yellow hardware uncertainty (R&D 0045 — Phase 1b).** A `contract.hardware`
   target that is not in `HARDWARE_TRUST_PROFILES` was previously a **silent `continue`** (the uncertainty was
@@ -50,14 +50,14 @@ verified**; the codebase is in a fail-closed, deterministic state. 48/48 package
   proceeds, and the warning clears automatically once the target becomes registered (a driver/profile update
   collapses the uncertainty into verification). Advisory only — a target *declaration* is not a governed sink
   (where INDETERMINATE must still fail closed). +3 tests; registered in `compiler-diagnostics.md`.
-- **`//@` generated-comment tier (R&D 0045, structured-engineering metadata — Phase 1a).** The lexer now
-  emits a distinct **`genComment`** token for `//@…` lines, scanned *before* the plain `//` branch so a
+- **`//lln:` generated-comment tier (R&D 0045, structured-engineering metadata — Phase 1a).** The lexer now
+  emits a distinct **`genComment`** token for `//lln:…` lines, scanned *before* the plain `//` branch so a
   generated line can never collapse into a human `comment` (fail-closed tier separation). This completes the
-  four-tier comment model: `//` human · **`//@` CLI/compiler-generated** (DependsOn/Complexity/Volatility/WARN,
+  four-tier comment model: `//` human · **`//lln:` CLI/compiler-generated** (DependsOn/Complexity/Volatility/WARN,
   tooling-owned + overwritable) · `///` doc · `;;` system/governance (manifest-bound). The parser skips
   `genComment` (preserved in the token stream for tooling), exactly as it skips the other comment kinds.
   Purely additive tokenisation — no grammar or runtime-semantics change. +6 lexer tests. Keystone for the
-  upcoming `//@DependsOn`/`//@Complexity` auto-generation and the `graph --target` report.
+  upcoming `//lln:DependsOn`/`//lln:Complexity` auto-generation and the `graph --target` report.
 - **AOT #2 — branch-folding + dead-arm DCE (WAT emitter).** `foldToBool` folds a compile-time-constant
   `if` condition (bool literals, `!`, const-int comparisons, const `&&`/`||`) to true/false; the emitter
   then emits **only the taken arm inline** — the dead arm and its locals are never emitted. Semantics-

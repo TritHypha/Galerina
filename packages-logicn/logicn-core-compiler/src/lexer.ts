@@ -31,7 +31,7 @@ export type TokenKind =
   | "comment"
   | "docComment"
   | "govComment"   // ;; governance/system annotation — scanned by verifier + included in manifest
-  | "genComment"   // //@ CLI/compiler-GENERATED metadata (DependsOn/Complexity/Volatility/WARN) — tooling-owned, overwritable
+  | "genComment"   // //lln: CLI/compiler-GENERATED metadata (USES/USEDBY/COMPLEXITY/VOLATILITY/WARN) — tooling-owned, overwritable
   | "newline"
   | "eof";
 
@@ -60,7 +60,7 @@ export const TokenKindId = {
   GovComment: 10,  // ;; system/governance annotation
   Newline:    11,
   Eof:        12,
-  GenComment: 13,  // //@ CLI/compiler-generated metadata (appended to preserve Newline=11/Eof=12 IDs)
+  GenComment: 13,  // //lln: CLI/compiler-generated metadata (appended to preserve Newline=11/Eof=12 IDs)
 } as const;
 export type TokenKindIdValue = typeof TokenKindId[keyof typeof TokenKindId];
 
@@ -427,11 +427,13 @@ export function lex(source: string, file: string): LexResult {
       continue;
     }
 
-    // ── Generated comment //@ ──────────────────────────────────────────────
-    // CLI/compiler-GENERATED metadata (//@DependsOn, //@Complexity, //@Volatility, //@WARN, …).
-    // Checked BEFORE the plain `//` branch so a `//@` line can NEVER fall through to a human
-    // `comment` token (fail-closed tier separation). Tooling owns + overwrites these; humans keep `//`.
-    if (ch === "/" && peek(1) === "/" && peek(2) === "@") {
+    // ── Generated comment //lln: ─────────────────────────────────────────────
+    // CLI/compiler-GENERATED metadata (//lln: USES, //lln: USEDBY, //lln: COMPLEXITY, //lln: WARN, …).
+    // The `//lln:` marker mirrors the .lln file prefix. Checked BEFORE the plain `//` branch so a
+    // `//lln:` line can NEVER fall through to a human `comment` token (fail-closed tier separation).
+    // Tooling OWNS these lines and overwrites them on every run; humans keep `//`. Only the exact
+    // prefix `//lln:` is generated — `// lln` (with a space) or `//lln` (no colon) stays a human comment.
+    if (ch === "/" && peek(1) === "/" && peek(2) === "l" && peek(3) === "l" && peek(4) === "n" && peek(5) === ":") {
       const scanStart = pos;
       while (pos < source.length && peek() !== "\n") {
         advance();

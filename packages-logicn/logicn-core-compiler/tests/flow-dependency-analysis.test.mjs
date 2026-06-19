@@ -1,9 +1,9 @@
 // =============================================================================
-// Flow dependency analysis — //@USES / //@USEDBY / //@IMPACT (R&D 0045)
+// Flow dependency analysis — //lln:USES / //lln: USEDBY / //lln: IMPACT (R&D 0045)
 //
 // Per-flow observed call graph from the AST: USES (upstream callees), USEDBY (direct callers /
 // "dependants"), IMPACT (transitive downstream blast-radius; 0 = safe to delete). Feeds the
-// generated `//@` comment vocabulary.
+// generated `//lln:` comment vocabulary.
 // =============================================================================
 
 import { describe, it } from "node:test";
@@ -75,25 +75,25 @@ pure flow a(x: Int) -> Int { return b(x) }
   });
 });
 
-describe("renderDependencyComments — the canonical //@ lines", () => {
-  it("renders //@USES, //@USEDBY and //@IMPACT in the canonical form", () => {
+describe("renderDependencyComments — the canonical //lln: lines", () => {
+  it("renders //lln: USES, //lln: USEDBY and //lln: IMPACT in the canonical form", () => {
     const d = deps(CHAIN);
     assert.deepEqual(renderDependencyComments(d.get("mid")), [
-      "//@USES: (1) leaf",
-      "//@USEDBY: (1) top",
-      "//@IMPACT: (1)",
+      "//lln: USES: (1) leaf",
+      "//lln: USEDBY: (1) top",
+      "//lln: IMPACT: (1)",
     ]);
   });
 
   it("omits empty USES/USEDBY and flags safe-to-delete at IMPACT 0", () => {
     const d = deps(CHAIN);
     assert.deepEqual(renderDependencyComments(d.get("top")), [
-      "//@USES: (1) mid",
-      "//@IMPACT: (0) — safe to delete",
+      "//lln: USES: (1) mid",
+      "//lln: IMPACT: (0) — safe to delete",
     ]);
     assert.deepEqual(renderDependencyComments(d.get("leaf")), [
-      "//@USEDBY: (1) mid",
-      "//@IMPACT: (2)",
+      "//lln: USEDBY: (1) mid",
+      "//lln: IMPACT: (2)",
     ]);
   });
 });

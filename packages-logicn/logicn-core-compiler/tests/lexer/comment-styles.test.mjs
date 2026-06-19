@@ -116,46 +116,46 @@ describe(";; governance annotation: produces 'govComment' token", () => {
 });
 
 // ---------------------------------------------------------------------------
-// //@ generated metadata → "genComment" token (CLI/compiler-owned, overwritable)
+// //lln: generated metadata → "genComment" token (CLI/compiler-owned, overwritable)
 // ---------------------------------------------------------------------------
 
-describe("//@ generated metadata: produces 'genComment' token (R&D 0045)", () => {
-  it("//@ text produces a token with kind 'genComment'", () => {
-    const result = lex("//@ DependsOn: [DbWrapper]\nlet x = 1", "test.lln");
+describe("//lln: generated metadata: produces 'genComment' token (R&D 0045)", () => {
+  it("//lln: text produces a token with kind 'genComment'", () => {
+    const result = lex("//lln: DependsOn: [DbWrapper]\nlet x = 1", "test.lln");
     const genTok = result.tokens.find((t) => t.kind === "genComment");
-    assert.ok(genTok !== undefined, "Expected a 'genComment' token for //@");
+    assert.ok(genTok !== undefined, "Expected a 'genComment' token for //lln:");
     assert.ok(genTok.value.includes("DependsOn"), `genComment value must include the metadata, got: '${genTok.value}'`);
   });
 
-  it("//@ does NOT collapse into a plain 'comment' token (fail-closed tier separation)", () => {
-    const result = lex("//@ Volatility: LOW\n", "test.lln");
+  it("//lln: does NOT collapse into a plain 'comment' token (fail-closed tier separation)", () => {
+    const result = lex("//lln: Volatility: LOW\n", "test.lln");
     const plain = result.tokens.find((t) => t.kind === "comment");
-    assert.equal(plain, undefined, "//@ must NOT produce a human 'comment' token — the CLI owns this tier");
+    assert.equal(plain, undefined, "//lln: must NOT produce a human 'comment' token — the CLI owns this tier");
     const genTok = result.tokens.find((t) => t.kind === "genComment");
     assert.ok(genTok !== undefined, "Expected a genComment token");
   });
 
-  it("a human // comment is NOT mistaken for a generated //@ token", () => {
+  it("a human // comment is NOT mistaken for a generated //lln: token", () => {
     const result = lex("// just a human note\n", "test.lln");
     assert.ok(result.tokens.find((t) => t.kind === "comment") !== undefined, "// stays a human comment");
     assert.equal(result.tokens.find((t) => t.kind === "genComment"), undefined, "// must NOT become genComment");
   });
 
-  it("all four comment tiers coexist as distinct token kinds (// ;; /// //@)", () => {
-    const result = lex("// human\n//@ gen\n/// doc\n;; gov\n", "test.lln");
+  it("all four comment tiers coexist as distinct token kinds (// ;; /// //lln:)", () => {
+    const result = lex("// human\n//lln: gen\n/// doc\n;; gov\n", "test.lln");
     assert.equal(result.tokens.find((t) => t.kind === "comment")?.value, "// human");
-    assert.equal(result.tokens.find((t) => t.kind === "genComment")?.value, "//@ gen");
+    assert.equal(result.tokens.find((t) => t.kind === "genComment")?.value, "//lln: gen");
     assert.equal(result.tokens.find((t) => t.kind === "docComment")?.value, "/// doc");
     assert.equal(result.tokens.find((t) => t.kind === "govComment")?.value, ";; gov");
   });
 
-  it("//@ is skipped during parse (no syntax error) — preserved in the token stream", () => {
-    const result = lex("//@ Complexity: 4\nlet x = 1", "test.lln");
-    assert.equal(result.diagnostics.length, 0, "a //@ line must not produce a lexer diagnostic");
+  it("//lln: is skipped during parse (no syntax error) — preserved in the token stream", () => {
+    const result = lex("//lln: Complexity: 4\nlet x = 1", "test.lln");
+    assert.equal(result.diagnostics.length, 0, "a //lln: line must not produce a lexer diagnostic");
   });
 
-  it("multiple //@ lines each produce a genComment token", () => {
-    const result = lex("//@ a\n//@ b\n//@ c\n", "test.lln");
+  it("multiple //lln: lines each produce a genComment token", () => {
+    const result = lex("//lln: a\n//lln: b\n//lln: c\n", "test.lln");
     assert.equal(result.tokens.filter((t) => t.kind === "genComment").length, 3, "Expected 3 genComment tokens");
   });
 });
