@@ -57,10 +57,12 @@ mostly **additive wiring**, not new subsystems.
 pre-commit hook ✅ template shipped at `scripts/hooks/pre-commit` (the "keep build pure + use a hook" alternative —
 runs `logicn deps --all --write` + re-stages changed `.lln`; set `LOGICN_APP_DIR` to your src root).
 
-**Open follow-up (recommended next): fail-closed STALENESS GATE** — the build-refresh + hook keep `//lln:` current
-*ergonomically*, but neither *enforces* freshness. Stamp each block with the graph hash and have `logicn check` FAIL
-when the live graph hash ≠ the recorded one (don't-trust-check applied to the tool's own output). This is the stronger
-half of R&D 0045 forward-design #1.
+**STALENESS GATE — opt-in form SHIPPED** ✅ `<this commit>` — `logicn deps --all [dir] --check` re-derives every
+flow's block and **exits 1** if any in-file `//lln:` differs from the freshly-computed one (CI fails when someone
+forgot to refresh; never writes). No hash-stamping needed — it compares current-rendered vs in-file (don't-trust-check
+applied to the tool's own output). Drop it into CI alongside the tests. **Still OPEN (stronger):** fold the same check
+into `logicn check` itself so a stale block is a first-class governance diagnostic (not a separate command), per R&D
+0045 forward-design #1.
 
 **CLI ergonomics** ✅ `<this commit>` — added the short bin alias **`lln`** alongside `logicn` (package.json `bin`); both
 point at `logicn.mjs`. Takes effect after `npm link` / global reinstall (Windows gets an `lln.cmd` shim).

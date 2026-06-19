@@ -102,6 +102,7 @@ Commands:
   logicn deps <file.lln> [--flow <name>]              print generated //lln: USES/USEDBY/IMPACT/COMPLEXITY for a file
   logicn deps <file.lln> --write                      write the //lln: metadata into that file (machine-owned tier)
   logicn deps --all [dir] [--write]                   refresh //lln: across EVERY .lln in the app (cross-file; default dir = cwd)
+  logicn deps --all [dir] --check                     CI gate: exit 1 if any //lln: is stale (don't write)
   logicn check <file.lln>                             type-check + governance verify
   logicn check <file.lln> --diff                      show change class vs HEAD~1 before pushing
   logicn check --what-if <policy.lln>                 shadow policy analysis (dry run)
@@ -691,7 +692,21 @@ Baseline comparison (governance-cost):
     const dirArg = rest.find(a => !a.startsWith("--"));
     const root = packageBuild ?? dirArg ?? ".";
     const write = rest.includes("--write");
-    const { results, parseErrors, parsedCount } = refreshGeneratedComments(root, { write });
+    const check = rest.includes("--check");
+    // --check never writes (even if --write is also passed) — it is the CI staleness GATE.
+    const { results, parseErrors, parsedCount } = refreshGeneratedComments(root, { write: write && !check });
+    if (check) {
+      // A file whose generated block WOULD change is stale (the don't-trust-check rule applied to
+      // the tool's own output). Exit non-zero so CI fails when someone forgot to refresh.
+      const stale = results.filter(r => r.changed);
+      for (const r of stale) console.log(`✗ ${r.file}: //lln: is STALE`);
+      if (stale.length > 0) {
+        console.log(`\n${stale.length}/${results.length} file(s) have stale //lln: metadata — run: logicn deps --all --write`);
+        process.exit(1);
+      }
+      console.log(`✓ //lln: metadata current across ${parsedCount} file(s).`);
+      process.exit(0);
+    }
     if (write) {
       let changed = 0;
       for (const r of results) if (r.changed) { changed++; console.log(`✅ ${r.file}: refreshed //lln: on ${r.flows} flow(s)`); }
