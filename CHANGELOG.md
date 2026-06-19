@@ -24,6 +24,12 @@ verified**; the codebase is in a fail-closed, deterministic state. 48/48 package
   `epilogueReceipt`, `liabilityProfile`, `physicalHardeningTier`).
 
 ### Added
+- **AOT #1 — constant-expression folding (WAT emitter).** `foldToInt` now folds `const <op> const` arithmetic
+  at build time via the *checked* i32 ops → emits `(i32.const RESULT)` instead of the runtime op (also lets
+  `static NAME = 60*24` resolve). Trap-safe: an overflowing/div0 constant is NOT folded (the runtime checked
+  op is emitted → fails closed, Fork-A=TRAP/0038-consistent). Fidelity-safe: folding is semantics-preserving,
+  so WASM ≡ interpreter (tests in `wat-const-fold.test.mjs`). The R&D-0036 #1 lever (proven 1.64× / 7.1×
+  code-size); branch-folding + dead-arm DCE (#2) is the next step.
 - **`for x in list where <guard> { … }` — filtered iteration.** `where` is promoted from reserved-future
   to an active keyword: the loop body runs only for items where the guard is truthy. Works in the
   interpreter and lowers to WASM as an `(if guard (then body))` inside the for-in loop (the index always

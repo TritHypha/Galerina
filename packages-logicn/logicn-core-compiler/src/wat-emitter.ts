@@ -27,6 +27,7 @@
 
 import { STDLIB_CAPABILITY_MAP } from "./stdlib-registry.js";
 import type { AstNode } from "./parser.js";
+import { i32AddChecked, i32SubChecked, i32MulChecked, i32DivChecked, i32ModChecked, isI32Trap, type I32Result } from "./i32-arith.js";
 
 // ---------------------------------------------------------------------------
 // Phase 22A — WASM SIMD capability types
@@ -860,6 +861,12 @@ export function emitWATExpr(
 
     case "binaryExpr": {
       const op = node.value ?? "";
+      // AOT #1 (R&D 0036): const-expression folding — if both operands are compile-time int constants
+      // and the arithmetic doesn't trap, emit the folded literal instead of the runtime op. foldToInt
+      // returns null for non-int / string / comparison operands and for any TRAPPING const op (so those
+      // fall through unchanged and stay fail-closed).
+      const foldedConst = foldToInt(node, staticConsts);
+      if (foldedConst !== null) return `(i32.const ${foldedConst})`;
       const watOp = BINARY_OP_TO_WAT.get(op);
       const children = node.children ?? [];
       const left  = children[0] ? emitWATExpr(children[0], vars, staticConsts) : "(i32.const 0)";
@@ -2289,6 +2296,29 @@ function foldToInt(
     const name = expr.value ?? "";
     const v = consts.get(name);
     return v !== undefined ? v : null;
+  }
+  // Constant-EXPRESSION folding (AOT #1, R&D 0036): fold `const <op> const` arithmetic at build time using
+  // the SAME checked i32 ops as runtime, so the result is identical to executing it. CRITICAL (Fork-A=TRAP /
+  // 0038): if the constant op would TRAP (overflow / div0 / mod0), return null — do NOT fold — so the
+  // runtime checked op is emitted and fails closed exactly as if it ran. Only arithmetic folds here;
+  // comparisons fold to bool (branch-folding = AOT #2, not done here).
+  if (expr.kind === "binaryExpr") {
+    const a = expr.children?.[0];
+    const b = expr.children?.[1];
+    if (a === undefined || b === undefined) return null;
+    const l = foldToInt(a, consts);
+    const r = foldToInt(b, consts);
+    if (l === null || r === null) return null;
+    let res: I32Result;
+    switch (expr.value ?? "") {
+      case "+": res = i32AddChecked(l, r); break;
+      case "-": res = i32SubChecked(l, r); break;
+      case "*": res = i32MulChecked(l, r); break;
+      case "/": res = i32DivChecked(l, r); break;
+      case "%": res = i32ModChecked(l, r); break;
+      default: return null; // comparisons / bitwise / && / || — not folded here
+    }
+    return isI32Trap(res) ? null : res; // trap ⇒ don't fold (emit the runtime op → fails closed)
   }
   return null;
 }
