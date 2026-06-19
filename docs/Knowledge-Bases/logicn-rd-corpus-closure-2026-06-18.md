@@ -38,6 +38,23 @@ WASM handles/WasmGC · the **"Mesh" → ? rename** (owner picks the name; TritMe
 
 ---
 
+## R&D 0036–0043 AT A GLANCE (the latest worker batch)
+
+| # | Investigated | Machine-proven verdict (kernel) | Hub action / status |
+|---|---|---|---|
+| **0036** | which classical AOT tricks LogicN should adopt; the tower-citizen tensor-precompute pitch | const-fold + propagation + branch-fold + DCE = the real adoptable set (**1.64× wall-clock, 7.1× code-size**, byte-identical 50k inputs); tensor-precompute is the classic precompute trade **NOT O(1)** (apply O(N²); fusion densifies 40.9×; ntt_mul≠matmul) | **BUILT** → AOT #1 const-fold (`dc76ed4`) + AOT #2 branch-fold/DCE (`056ac70`); next AOT #3–6 |
+| **0037** | for/where branchless filter; trit-0-as-mask correctness | filter is **MODEST** (~1.0×); the real win is a CORRECTNESS fix — trit-0 aliases 0=INDETERMINATE → needs a separate presence channel | **`for…where` GUARD form SHIPPED** (`2c27e14`); presence-channel = **no production target** (guard form already avoids the aliasing) |
+| **0038** | a checked i32 trap assigned to a non-returned binding silently discarded | CONFIRMED **fail-OPEN** (11/11), tree+sync tiers; fix-spec = trap-at-op | **FIXED in production** (`3596fb5`+`490c492`); R&D detector flips RED = fix present; throw-at-op = recommended cleanup |
+| **0039** | make the 3 excluded benchmarks comparable (matrix-multiply / tri-logic / data-query) | one unit per runtime (mul-adds/s n=32 · trit-ops/s · record-scans/s); **no nbody-class false win** | **Spec ready**; production re-author owner-gated (LLN-MANIFEST-TAMPER blocks in-place `.lln`) |
+| **0040** | output post-conditions (`ensure result …`) + Z3 discharge | the "fail-OPEN" was **REFUTED** (a fail-SAFE compile-reject **capability gap**); single-exit fail-closed gate + Z3 discharge design | **BUILT** → output post-conditions fail-closed across every tier (`fa9fae5` + gap-fix `d9316c2`); WASM single-exit + Z3 = follow-ups |
+| **0041** | sub-expression memoization + content-addressed store | same **amortize envelope** as 0036: 5.27× on repeated/pure, **1.77× SLOWER** on unique; whole-flow LRU already captures most | **DON'T-build-by-default**; the shipped LRU suffices |
+| **0042** | governance over WDM wavelength channels (tri-photonic) | **vocabulary over the proven governance-as-T-MAC fold** (per-channel = `decideAtBoundary`; bank = `allOf`+K3 annihilator, exhaustive 1092 + 200k banks 0 violations); genuine new bit = `.tmf`-category→wavelength-lane partition | **OWNER-AUTHORISED for future photonic compatibility** (2026-06-19) — forward-compat design; projected photonic envelopes now allowed (lenient perf rule) |
+| **0043** | KEEP/REVISE/RETIRE re-audit of every standing owner decision | the spine is proven green TODAY vs the shipped binary; keep it, revise the wiring, retire substrate-magic; **fail-closed-core-LAST** sequencing | **Design audit (steer map)**; hub reconciled stale rows (M4 kemdem fixed / tmx256+container not; M3 gen-tag present; C3 Ed25519-only) |
+
+**Net:** of 0036–0043, **only 0036 (AOT) + 0040 (DbC) were buildable production changes — both now BUILT.** 0038 was already fixed; 0037/0041 = no-build verdicts; 0039 = owner-gated spec; 0042 = owner-authorised future-compat; 0043 = the steer map.
+
+---
+
 > **Status: R&D bridge queue DRAINED — 35/35 tasks done.** Verified structurally by the hub (every
 > `_session-bridge/tasks/00NN-*.md` has a matching `done/00NN-*.done.md`; R&D commits `7f2dae0` + `48b606e`).
 > **Provenance honesty:** verdicts 0009/0031/0032/0033/0034/0035 were **hub-verified this session** (own
