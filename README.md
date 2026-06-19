@@ -56,7 +56,7 @@ Run on an **Intel i9-9900K (8C/16T) + NVIDIA RTX 2060**, across Rust (native, ge
 | **CBOR Manifests (RFC 8949)** | 100% | |
 | **Tests — full suite** | 100% | **49/49 packages · 4,518 tests · 0 failures** |
 | **Type checker / Effect checker** | ~90% | |
-| **WAT emitter** | ~88% | #128(a) fail-closed fix landed (unhandled stmt → `unreachable` trap, no silent no-op); `forEachStmt` lowering open |
+| **WAT emitter** | ~89% | #128(a) fail-closed fix landed (unhandled stmt → `unreachable` trap); #128(b)/GAP-4 `forEachStmt` lowering landed (for-in → counted loop over the host array bridge, execution + interpreter-fidelity tested) |
 | **Runtime interpreter** | ~87% | diagnostic tier (see Benchmarks) |
 | **Stage-B self-hosting — interpreter parity** | 100% | R6 corpus: Stage-A == Stage-B |
 | **Stage-B self-hosting — WASM execution (P9)** | in progress | `tokenize` byte-parity achieved (#143); parser/checker/verifier flows remain |

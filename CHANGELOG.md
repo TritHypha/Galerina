@@ -24,6 +24,10 @@ verified**; the codebase is in a fail-closed, deterministic state. 48/48 package
   `epilogueReceipt`, `liabilityProfile`, `physicalHardeningTier`).
 
 ### Added
+- **#128(b) / GAP-4 — `forEachStmt` (for-in) WASM lowering.** A `for x in list { … }` loop now lowers to
+  a real counted WASM loop over the host array bridge (`__array_length` / `__array_get`) instead of the
+  fail-closed `(unreachable)` trap. Executes correctly and is byte-identical to the reference tree-walker
+  (tests in `wat-forin-execution.test.mjs`).
 - `crypto-ops` benchmark now measures ML-DSA-65 + hybrid Ed25519+ML-DSA-65 signatures (PQ-tax visibility).
 - KB §7a — ratified domain-guard `permitted_effects` state machine.
 - Roadmap #125–#128 (CLI governed-run, parser-level bitwise hint, shape-stable governance objects, GAP-4).

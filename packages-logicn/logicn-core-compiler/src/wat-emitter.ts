@@ -1691,13 +1691,65 @@ function emitBlockStatements(
         break;
       }
 
+      case "forEachStmt": {
+        // for-in lowering (#128 part (b) / GAP-4). `for <var> in <collection> { body }`.
+        // Collections are host-managed i32 array handles (see the listLiteral case), so we
+        // desugar to a counted loop over the __array_length / __array_get host bridge —
+        // matching the Stage-A interpreter's `for item in list` semantics. Previously this
+        // fell through to the fail-closed `unreachable` trap below (correct but unrunnable).
+        //   arr = <collection>; len = __array_length(arr); idx = 0
+        //   loop: if idx >= len break; <var> = __array_get(arr, idx); BODY; idx += 1
+        const rawVar = stmt.value ?? "item";
+        const varName = rawVar.split(":")[0]?.trim() ?? "item";
+        const collectionNode = stmt.children?.[0];
+        const bodyBlock = stmt.children?.[1];
+        const labelN = labelCounter.n++;
+        const exitLabel = `$forin_exit_${labelN}`;
+        const loopLabel = `$forin_loop_${labelN}`;
+        const idxLocal = `$__forin_idx_${labelN}`;
+        const lenLocal = `$__forin_len_${labelN}`;
+        const arrLocal = `$__forin_arr_${labelN}`;
+
+        // Loop-control temps are always fresh (unique per loop).
+        localDecls.push(`(local ${idxLocal} i32)`);
+        localDecls.push(`(local ${lenLocal} i32)`);
+        localDecls.push(`(local ${arrLocal} i32)`);
+        // Loop variable: reuse an existing local (mutation/shadow) else declare + register it.
+        if (!vars.has(varName)) {
+          vars.set(varName, `$${varName}`);
+          localDecls.push(`(local $${varName} i32)`);
+        }
+        const loopVarLocal = vars.get(varName) ?? `$${varName}`;
+
+        const collExpr = collectionNode
+          ? emitWATExpr(collectionNode, vars, staticConsts)
+          : "(call $host___array_create)";
+        bodyLines.push(`;; for-in (#128/GAP-4): ${varName} in <collection>`);
+        bodyLines.push(`(local.set ${arrLocal} ${collExpr})`);
+        bodyLines.push(`(local.set ${lenLocal} (call $host___array_length (local.get ${arrLocal})))`);
+        bodyLines.push(`(local.set ${idxLocal} (i32.const 0))`);
+        bodyLines.push(`(block ${exitLabel}`);
+        bodyLines.push(`  (loop ${loopLabel}`);
+        bodyLines.push(`    (br_if ${exitLabel} (i32.ge_s (local.get ${idxLocal}) (local.get ${lenLocal})))`);
+        bodyLines.push(`    (local.set ${loopVarLocal} (call $host___array_get (local.get ${arrLocal}) (local.get ${idxLocal})))`);
+        if (bodyBlock !== undefined) {
+          const loopLines: string[] = [];
+          emitBlockStatements(bodyBlock, vars, localDecls, loopLines, labelCounter, true, staticConsts);
+          for (const line of loopLines) bodyLines.push(`    ${line}`);
+        }
+        bodyLines.push(`    (local.set ${idxLocal} (i32.add (local.get ${idxLocal}) (i32.const 1)))`);
+        bodyLines.push(`    (br ${loopLabel})`);
+        bodyLines.push(`  )`);
+        bodyLines.push(`)`);
+        break;
+      }
+
       default:
         // FAIL-CLOSED (task #128 · audit-phase1-2026-06-16). An unhandled statement
         // kind must NEVER lower to a silent `(i32.const 0)` no-op: that is fail-OPEN.
-        // A `forEachStmt` (for-in loop) executes correctly in the Stage-A interpreter
-        // but, under the old fallthrough, compiled to a no-op under Stage-B WASM — the
-        // loop body simply never ran, with no error. Now that WASM is the measured
-        // production tier this violates the project's fail-closed charter.
+        // (forEachStmt is now lowered above; any OTHER unhandled kind still traps.)
+        // Now that WASM is the measured production tier this violates the project's
+        // fail-closed charter.
         //
         // Instead emit an atomic trap. `unreachable` is the polymorphic bottom type:
         // valid anywhere in WAT, and Wasmtime fires a hardware trap before the IP

@@ -15,8 +15,11 @@
  * discipline. A flow containing an unsupported statement must therefore EITHER lower
  * correctly OR fail closed (trap / refuse) — it must NEVER produce a silent no-op.
  *
- * Part (b) — real `forEachStmt` lowering — is a follow-up. When it lands, the for-in
- * cases below should lower to a real loop (no `unreachable`); update them then.
+ * Part (b) — real `forEachStmt` lowering — LANDED (#128 / GAP-4, 2026-06-19): for-in now
+ * desugars to a counted loop over the host array bridge (__array_length / __array_get). The
+ * for-in cases below assert that real lowering; full execution + interpreter-fidelity coverage
+ * lives in wat-forin-execution.test.mjs. The fail-closed `default` trap remains for any OTHER
+ * still-unsupported statement kind.
  */
 
 import { describe, it } from "node:test";
@@ -66,19 +69,19 @@ describe("Task #128: Stage-B WAT emitter fails closed on unsupported statements"
     );
   });
 
-  it("for-in (forEachStmt) lowers to a fail-CLOSED (unreachable) trap with a diagnostic", () => {
+  it("for-in (forEachStmt) NOW lowers to a real counted loop (#128 part b / GAP-4 — no longer the fail-closed trap)", () => {
     const wat = compileToWAT(FOR_IN_FLOW);
     assert.ok(
-      wat.includes("unreachable"),
-      `expected a fail-closed (unreachable) trap for the unsupported statement:\n${wat}`,
+      wat.includes("(loop $forin_loop_"),
+      `for-in must lower to a real loop:\n${wat}`,
     );
     assert.ok(
-      wat.includes("unsupported-in-WASM: forEachStmt"),
-      `expected an "unsupported-in-WASM" diagnostic naming the unhandled kind:\n${wat}`,
+      !wat.includes("unsupported-in-WASM: forEachStmt"),
+      `for-in must no longer hit the fail-closed unsupported-statement stub:\n${wat}`,
     );
   });
 
-  it("the fail-closed module is still well-formed WAT (trap, not garbage)", async () => {
+  it("the for-in module is well-formed, balanced WAT that assembles", async () => {
     const wat = compileToWAT(FOR_IN_FLOW);
     assert.ok(wat.startsWith("(module"), `must start with (module:\n${wat}`);
     // Parens must balance — an (unreachable) terminator must not leave dangling forms.
