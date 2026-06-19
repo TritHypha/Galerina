@@ -1150,11 +1150,18 @@ class ValueStateChecker {
   // ── Binding handlers ─────────────────────────────────────────────────────
 
   private registerParamBinding(node: AstNode): void {
-    // paramDecl.value = "name: Type" or "name: Type source_from Origin"
+    // paramDecl.value = "[qualifiers ]name: Type[ source_from Origin]" where leading qualifiers are
+    // any of `readonly` / `tainted` (34A). Extract the bare name as the LAST whitespace token before
+    // the colon; read qualifiers from the preceding tokens.
     const paramValue = node.value ?? "";
     const colonIdx = paramValue.indexOf(":");
     if (colonIdx === -1) return;
-    const name = paramValue.slice(0, colonIdx).trim();
+    const namePart = paramValue.slice(0, colonIdx).trim();
+    const nameTokens = namePart.split(/\s+/).filter(Boolean);
+    const name = nameTokens[nameTokens.length - 1] ?? namePart;
+    // 34A: an explicit `tainted` param is untrusted input — closes the param-trusted-by-default
+    // fail-OPEN (0031). Bare params stay trusted (opt-in, non-breaking).
+    const isTaintedParam = nameTokens.slice(0, -1).includes("tainted");
     const typeSection = paramValue.slice(colonIdx + 1).trim();
 
     // Phase 4.4: detect `source_from` annotation in the type section
@@ -1171,10 +1178,13 @@ class ValueStateChecker {
 
     const locField = node.location !== undefined ? { declaredAt: node.location } : {};
 
-    // Phase 4.4: auto-taint params from untrusted source_from origins
-    // Treat them as `unsafe`-equivalent (safetyPrefix = "unsafe") so existing
-    // VALUESTATE-003 and VALUESTATE-005 sink guards fire normally.
-    if (sourceFromOrigin !== undefined && isUntrustedSourceFromOrigin(sourceFromOrigin)) {
+    // Phase 4.4: auto-taint params from untrusted source_from origins.
+    // 34A: an explicit `tainted` qualifier does the same, without needing a source_from origin.
+    // Treat both as `unsafe`-equivalent (safetyPrefix = "unsafe") so the existing
+    // VALUESTATE-003/004/005 sink guards fire normally — no new diagnostic codes.
+    const untrusted = isTaintedParam
+      || (sourceFromOrigin !== undefined && isUntrustedSourceFromOrigin(sourceFromOrigin));
+    if (untrusted) {
       this.registerBinding({ name, safetyPrefix: "unsafe", typeName, ...locField });
     } else {
       this.registerBinding({ name, safetyPrefix: undefined, typeName, ...locField });

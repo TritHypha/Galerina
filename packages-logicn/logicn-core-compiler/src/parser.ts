@@ -996,12 +996,17 @@ class Parser {
   private parseParam(): AstNode | undefined {
     const loc = this.loc();
 
-    // Optional readonly prefix on parameters: readonly req: Request
+    // Optional leading qualifiers on parameters, in any order:
+    //   readonly req: Request        — APU-shareable view
+    //   tainted data: RequestPayload — untrusted input (34A): marks the param `unsafe` so the
+    //                                  shipped LLN-VALUESTATE-003/004/005 governed-sink guards fire.
+    // `tainted` closes the param-trusted-by-default fail-OPEN (0031) opt-in; bare params are unchanged.
     let isReadonly = false;
-    if (this.currentIs("keyword", "readonly")) {
-      isReadonly = true;
-      this.advance();
-      this.skipNewlines();
+    let isTainted = false;
+    for (;;) {
+      if (this.currentIs("keyword", "readonly")) { isReadonly = true; this.advance(); this.skipNewlines(); continue; }
+      if (this.currentIs("keyword", "tainted"))  { isTainted = true;  this.advance(); this.skipNewlines(); continue; }
+      break;
     }
 
     const nameTok = this.current();
@@ -1027,7 +1032,7 @@ class Parser {
     this.expect("symbol", ":");
     const typeRef = this.parseTypeRef();
 
-    const prefix = isReadonly ? "readonly " : "";
+    const prefix = `${isReadonly ? "readonly " : ""}${isTainted ? "tainted " : ""}`;
 
     // Phase 4.4: optional `source_from Origin` annotation after the type.
     // `source_from` is an identifier token (not a keyword) so we peek at the
