@@ -24,6 +24,13 @@ verified**; the codebase is in a fail-closed, deterministic state. 48/48 package
   `epilogueReceipt`, `liabilityProfile`, `physicalHardeningTier`).
 
 ### Added
+- **`contract.architecture { volatility, depends_on }` parse-only block (R&D 0045 — Phase 2b).** A new
+  contract sub-block declaring **volatility-based decomposition** metadata: `volatility: LOW|MED|HIGH` (how
+  often the flow changes) + `depends_on [FlowA, FlowB]` (the *authored* dependency intent, which the observed
+  `//@USES` should agree with). Parse-only — registered as a contract section so it parses clean — plus a
+  **fail-closed value check** (`LLN-ARCH-001`): an invalid volatility token is a hard error; a missing
+  volatility is allowed (treated as the most-volatile HIGH downstream). The Stable-Dependencies enforcement
+  (a LOW flow may not depend on a HIGH one) is a later, gated pass. +4 tests.
 - **`//@USES` / `//@USEDBY` / `//@IMPACT` flow-dependency analysis + `logicn deps` (R&D 0045 — Phase 2).**
   `analyzeFlowDependencies(ast)` computes the observed flow→flow call graph per flow: **USES** (upstream
   callees), **USEDBY** (direct callers / "dependants"), and **IMPACT** (transitive downstream blast-radius;

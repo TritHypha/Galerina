@@ -22,19 +22,18 @@ mostly **additive wiring**, not new subsystems.
 
 ## Phased roadmap (KB-first · fail-closed · LOW-cost-additive first · enforcement LAST)
 
-**Phase 1 — LOW-cost, additive, fail-closed foundation (BUILD NOW, on auto):**
-- **1a. `//@` generated comment tier** — the KEYSTONE (every other `//@…` feature needs a distinguishable
-  generated tier). Add `genComment` token, ordered before `//`, fail-closed (a `//@` line can never fall
-  through to a human `comment`). Owner leans `//@` (R&D 0045 decision #1 may rename to `//ln:` — reversible).
-- **1b. Hardware `//@WARN`** — flip the silent unknown-target `continue` → yellow `LLN-HW-004` (advisory).
-- **1c. Cyclomatic-complexity metric** — a pure counting visitor (no behaviour change; feeds `//@Complexity`).
+**Phase 1 — LOW-cost, additive, fail-closed foundation — ✅ DONE (2026-06-19):**
+- **1a. `//@` generated comment tier** ✅ `1804557` — `genComment` token, ordered before `//`, fail-closed.
+- **1b. Hardware `//@WARN`** ✅ `5d8d611` — unknown-target → yellow `LLN-HW-004`.
+- **1c. Cyclomatic-complexity metric** ✅ `45bc0a5` — `//@COMPLEXITY` (silent at 1), surfaced in `logicn deps`.
 
-**Phase 2 — MEDIUM, read-only / parse-only (no enforcement, no source-writing):**
-- **2a. `graph --target X`** read-only architectural report (downstream / upstream / safe-to-delete) on the
-  existing graph.
-- **2b. `contract.architecture {}` parse-only** block — fail-closed on an unknown `volatility` token; no
-  enforcement yet.
-- **2c. graph-depth volatility proxy** (no git) — the fail-safe first volatility number.
+**Phase 2 — MEDIUM, read-only / parse-only — IN PROGRESS:**
+- **2a. dependency report** ✅ `1a57761` — shipped as `logicn deps <file> [--flow X]`: `//@USES` (upstream) /
+  `//@USEDBY` (downstream "dependants") / `//@IMPACT` (transitive blast-radius; 0 = safe-to-delete), from the
+  AST call graph. (The graph-package `graph --target` variant can follow; `deps` already delivers the value.)
+- **2b. `contract.architecture {}` parse-only** ✅ `<this commit>` — registered contract section + fail-closed
+  `LLN-ARCH-001` volatility value check; the *authored* `depends_on`/`volatility` (vs observed `//@USES`).
+- **2c. graph-depth volatility proxy** (no git) — the fail-safe first volatility number. ⏳ NEXT.
 
 **Phase 3 — enforcement + generation (gated on R&D 0045 decisions + per-flow edges):**
 - **3a. Per-flow `depends_on`/`uses` graph edges** (close the 30%→full dep data; emit the declared-but-unused `uses` edge).

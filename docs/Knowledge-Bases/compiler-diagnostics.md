@@ -962,6 +962,7 @@ LLN-GOV-011   Contract set referenced with 'use' is not declared at program scop
 LLN-GOV-012   Contract set requires audit.write but the flow does not declare it
 LLN-GOV-013   A pure flow calls a flow with effects (pure flows cannot cross into governed boundaries)
 LLN-GOV-014   Flow declares prefer [...] compute targets but no fallback target (native crash → unrecoverable failure)
+LLN-ARCH-001  contract.architecture volatility must be LOW, MED, or HIGH (invalid token — R&D 0045 fail-closed value check)
 LLN-VAL-001   A safety_critical flow must declare audit.write
 LLN-VAL-002   A safety_critical flow must declare 'require deterministic_execution'
 LLN-VAL-003   Unrecognised classification in contract.value

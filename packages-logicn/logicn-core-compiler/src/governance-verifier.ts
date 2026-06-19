@@ -1885,6 +1885,7 @@ class GovernanceVerifier {
     //   - Unknown at compile time   → record as runtime-precheck (WAT gate to be injected)
     if (flowNode !== undefined) {
       this.verifyInvariantBlock(flow, flowNode, loc);
+      this.verifyArchitectureBlock(flow, flowNode, loc);
     }
 
     // ── LLN-TRAP-001/002: trap {} declarations in flow body ───────────────────
@@ -2155,6 +2156,35 @@ class GovernanceVerifier {
   //   1. Statically TRUE  → statically_verified in ProofGraph (Goal A: no runtime overhead)
   //   2. Statically FALSE → LLN-INV-001 hard error (invariant can never be satisfied)
   //   3. Unknown          → runtime-precheck in ProofGraph (WAT gate injected — Unit 3, task #36)
+
+  // ── LLN-ARCH-001: contract.architecture volatility value check (R&D 0045) ────
+  // Parse-only `contract.architecture { volatility: LOW|MED|HIGH  depends_on [...] }`. Fail-closed on an
+  // INVALID volatility token (a typo) → LLN-ARCH-001 error. A MISSING volatility is allowed (treated as the
+  // most-volatile HIGH downstream when Stable-Dependencies enforcement lands — a later, gated pass).
+  private verifyArchitectureBlock(flow: FlowMeta, flowNode: AstNode, loc: SourceLocation | undefined): void {
+    const contractNode = (flowNode.children ?? []).find(c => c.kind === "contractDecl");
+    if (contractNode === undefined) return;
+    const archBlock = (contractNode.children ?? []).find(
+      c => c.kind === "identifier" && c.value === "architecture:block",
+    );
+    if (archBlock === undefined) return;
+    const VALID = new Set(["LOW", "MED", "MEDIUM", "HIGH"]);
+    for (const child of archBlock.children ?? []) {
+      if (child.kind !== "identifier" || !(child.value ?? "").startsWith("decl:")) continue;
+      const raw = (child.value ?? "").slice("decl:".length);
+      const m = raw.match(/\bvolatility\b\s*:?\s*([A-Za-z_]+)/);
+      if (m && !VALID.has((m[1] ?? "").toUpperCase())) {
+        this.diagnostics.push(makeGovDiag(
+          "LLN-ARCH-001",
+          "InvalidVolatility",
+          "error",
+          `Flow '${flow.name}': contract.architecture volatility must be LOW, MED, or HIGH (got '${m[1]}').`,
+          loc,
+          "Use `volatility: LOW | MED | HIGH`.",
+        ));
+      }
+    }
+  }
 
   private verifyInvariantBlock(flow: FlowMeta, flowNode: AstNode, loc: SourceLocation | undefined): void {
     const contractNode = (flowNode.children ?? []).find(c => c.kind === "contractDecl");

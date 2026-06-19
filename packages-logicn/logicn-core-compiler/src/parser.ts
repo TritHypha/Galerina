@@ -4018,6 +4018,16 @@ class Parser {
         continue;
       }
 
+      // `contract.architecture { volatility: LOW|MED|HIGH  depends_on [FlowA, FlowB] }` (R&D 0045)
+      // Volatility-based decomposition metadata. Parse-only here; the value check (volatility must be
+      // LOW|MED|HIGH, fail-closed) is in the governance verifier, and the Stable-Dependencies
+      // enforcement (a LOW flow may not depend on a HIGH one) is a later pass.
+      if ((tok.kind === "keyword" || tok.kind === "identifier") && tok.value === "architecture") {
+        children.push(this.parseContractSubBlock("architecture"));
+        this.skipNewlines();
+        continue;
+      }
+
       // `@experimental_profile(name: "drcm_core_v1", status: "planned_phaseN") { ... }`
       // Feature-gate attribute — wraps forward-looking DRCM syntax inside contract {}.
       // Parsed as a first-class attributeDecl AST node (task #51).
@@ -5302,6 +5312,7 @@ class Parser {
       "value",     // contract.value { classification safety_critical domain aerospace }
       "safety",    // contract.safety { require deterministic_execution }
       "hardware",  // contract.hardware { target arm.sve2 require mte require pac }
+      "architecture", // contract.architecture { volatility: LOW|MED|HIGH  depends_on [Flow] } (R&D 0045)
     ]);
     while (!this.isEof()) {
       if (this.currentIs("symbol", "}")) break;
