@@ -24,6 +24,14 @@ verified**; the codebase is in a fail-closed, deterministic state. 48/48 package
   `epilogueReceipt`, `liabilityProfile`, `physicalHardeningTier`).
 
 ### Added
+- **`//@` generated-comment tier (R&D 0045, structured-engineering metadata — Phase 1a).** The lexer now
+  emits a distinct **`genComment`** token for `//@…` lines, scanned *before* the plain `//` branch so a
+  generated line can never collapse into a human `comment` (fail-closed tier separation). This completes the
+  four-tier comment model: `//` human · **`//@` CLI/compiler-generated** (DependsOn/Complexity/Volatility/WARN,
+  tooling-owned + overwritable) · `///` doc · `;;` system/governance (manifest-bound). The parser skips
+  `genComment` (preserved in the token stream for tooling), exactly as it skips the other comment kinds.
+  Purely additive tokenisation — no grammar or runtime-semantics change. +6 lexer tests. Keystone for the
+  upcoming `//@DependsOn`/`//@Complexity` auto-generation and the `graph --target` report.
 - **AOT #2 — branch-folding + dead-arm DCE (WAT emitter).** `foldToBool` folds a compile-time-constant
   `if` condition (bool literals, `!`, const-int comparisons, const `&&`/`||`) to true/false; the emitter
   then emits **only the taken arm inline** — the dead arm and its locals are never emitted. Semantics-

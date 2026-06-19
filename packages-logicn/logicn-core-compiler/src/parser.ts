@@ -1400,7 +1400,7 @@ class Parser {
       return this.parseExprStatement();
     }
 
-    if (tok.kind === "comment" || tok.kind === "docComment") {
+    if (tok.kind === "comment" || tok.kind === "docComment" || tok.kind === "genComment") {
       this.advance();
       return undefined;
     }
@@ -5230,7 +5230,8 @@ class Parser {
       this.current().kind === "newline" ||
       this.current().kind === "comment" ||
       this.current().kind === "docComment" ||
-      this.current().kind === "govComment"   // ;; governance annotations — skip during parse, preserved in token stream for manifest
+      this.current().kind === "govComment" ||  // ;; governance annotations — skip during parse, preserved in token stream for manifest
+      this.current().kind === "genComment"   // //@ generated metadata — skip during parse, preserved in the token stream for tooling
     ) {
       this.pos++;
     }

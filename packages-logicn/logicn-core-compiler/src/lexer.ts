@@ -31,6 +31,7 @@ export type TokenKind =
   | "comment"
   | "docComment"
   | "govComment"   // ;; governance/system annotation — scanned by verifier + included in manifest
+  | "genComment"   // //@ CLI/compiler-GENERATED metadata (DependsOn/Complexity/Volatility/WARN) — tooling-owned, overwritable
   | "newline"
   | "eof";
 
@@ -59,6 +60,7 @@ export const TokenKindId = {
   GovComment: 10,  // ;; system/governance annotation
   Newline:    11,
   Eof:        12,
+  GenComment: 13,  // //@ CLI/compiler-generated metadata (appended to preserve Newline=11/Eof=12 IDs)
 } as const;
 export type TokenKindIdValue = typeof TokenKindId[keyof typeof TokenKindId];
 
@@ -74,6 +76,7 @@ const TOKEN_KIND_ID_MAP: Readonly<Record<TokenKind, TokenKindIdValue>> = {
   comment:    TokenKindId.Comment,
   docComment: TokenKindId.DocComment,
   govComment: TokenKindId.GovComment,
+  genComment: TokenKindId.GenComment,
   newline:    TokenKindId.Newline,
   eof:        TokenKindId.Eof,
 };
@@ -421,6 +424,20 @@ export function lex(source: string, file: string): LexResult {
       }
       const value = source.slice(scanStart, pos);
       tokens.push(tok("docComment", value, startPos, startLine, startCol));
+      continue;
+    }
+
+    // ── Generated comment //@ ──────────────────────────────────────────────
+    // CLI/compiler-GENERATED metadata (//@DependsOn, //@Complexity, //@Volatility, //@WARN, …).
+    // Checked BEFORE the plain `//` branch so a `//@` line can NEVER fall through to a human
+    // `comment` token (fail-closed tier separation). Tooling owns + overwrites these; humans keep `//`.
+    if (ch === "/" && peek(1) === "/" && peek(2) === "@") {
+      const scanStart = pos;
+      while (pos < source.length && peek() !== "\n") {
+        advance();
+      }
+      const value = source.slice(scanStart, pos);
+      tokens.push(tok("genComment", value, startPos, startLine, startCol));
       continue;
     }
 
