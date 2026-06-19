@@ -26,11 +26,24 @@
 
 Citation verifiers exit 0 (the content-assert caught + fixed a real mis-cite in the 0031 done-report).
 
+## APPLY PHASE 2026-06-19 (owner Go) — what SHIPPED + what's still parked
+**Shipped this phase (commits on `main`, not pushed):**
+- **0032 liveness** — `a728e44` (loops+recursion fail-closed) + `a9c4ebd` (wall-clock `checkDeadline()` in loop bodies + enforcer/capabilityHost propagated into sub-interpreters) + **`264723a`** (the part the first pass MISSED: the duplicate `whileStmt` in the *synchronous* pure-flow fast-path `tryPureFlowSync` — it had no iteration cap and swallowed every non-`SyncReturn` throw, so after Fork-A=TRAP an int-overflow→runtimeError→thrown-SyncNotSupported aborted the loop body before the counter advanced → **infinite loop**; this is what hung the compute-mix benchmark ~31 min. Fix = stop swallowing (bail → trapping tree-walker) + cap the sync loop; +4 regression tests).
+- **0033** — `5c1f846` (crypto hygiene: `timingSafeEqual` + `fill(0)` derived keys in `logicn-ext-tmf/kemdem.ts`) + `692e62d` (`static-memory-pool` per-allocation **generation tag** → `LSM-UAF-001` use-after-free guard, +2 tests).
+- **0034** — `08d6905` (borrow-checker KB → non-goal banner on 3 docs).
+- Verification: graph regen clean (3660 nodes/4056 edges); SOT `--core` **3608** + compiler **3488** + sentinel **33** all green; full 28-benchmark suite **lands** (was hanging).
+
+**Benchmark before/after (vs `full-suite-2026-06-16.json`) — HONEST attribution:** the deltas are NOT my fixes. My fixes add one int-compare per loop iteration + a no-op deadline check (no enforcer in the bench harness) and *remove* try/catches — perf-neutral by construction. The visible deltas are: (a) **Fork-A=TRAP** (2026-06-18, owner decision): overflow-dependent flows now correctly TRAP → compute-mix / matrix-multiply / data-query / tri-logic / call-chain governed = `—` (IntegerOverflow / excluded), and checked i32 arithmetic is slower than the old wrap (arithmetic-threshold −72%, governance-cost −74%); (b) **unit-normalisation fixes** since 06-16 (the absurd +900,000% swings on nodejs/passive rows = the old per-pass unit bug being corrected, not real perf); (c) **5 new benchmarks** (mandelbrot, spectral-norm, binary-trees, tmf-container, framework-pipeline). The 06-16 baseline is too stale (pre-Fork-A, pre-normalisation) to cleanly isolate my fixes; the real result is *the suite now completes and overflow workloads fail closed*.
+
+**Found + filed (pre-existing, separate — `task_a680d348`):** the bytecode VM (`runBytecode`) has NO loop cap, and `compileToBytecode` caches by flow-NAME only (collides distinct `main` flows; also pollutes the bench runner, which clears `clearPureFlowCache` but not `clearBytecodeCache`).
+
+**Still parked (owner-gated / not started):** 0034 `move`/`USE_AFTER_MOVE` wiring; 0031 `tainted` param (breaking); 0035 trit-fold reachability + 0025 governance-T-MAC decision path; 0033 WASM handles/WasmGC (ABI); **GAP-2/GAP-4** (item 4 — authorised but owner said stop after the benchmark, NOT started).
+
 ## Shipping-readiness / unblock map (what gates the *application* of the proven work)
-1. **Owner-gated (production read-only — the big bucket; now being applied per owner Go 2026-06-18):**
-   - **0032 liveness hazards** — recursion-depth guard + loop/forEach fail-closed: **✅ APPLIED `a728e44`**. Remaining: `checkDeadline()` inside loop bodies; propagate enforcer+capabilityHost into sub-interpreters (close the gate-drop).
-   - **0033 crypto** — `fill(0)` derived keys, `timingSafeEqual`, live `isRevoked`; WASM handles/WasmGC for the intra-module gap; the `static-memory-pool` per-allocation **generation tag** (use-after-free-via-reuse).
-   - **0031** `tainted` param (34A/34B); **0034** downgrade the borrow-checker KB to a non-goal + wire `move`/`USE_AFTER_MOVE`; **0035** wire the trit-fold into live reachability; **0025** governance-T-MAC decision path; GAP-2/GAP-4 engine fixes.
+1. **Owner-gated (production read-only — the big bucket; batch applied per owner Go 2026-06-18/19, see APPLY PHASE above):**
+   - **0032 liveness hazards** — **✅ SHIPPED** `a728e44`+`a9c4ebd`+`264723a` (incl. the sync fast-path completion).
+   - **0033** — crypto hygiene **✅ SHIPPED** `5c1f846`; `static-memory-pool` generation tag **✅ SHIPPED** `692e62d`; WASM handles/WasmGC for the intra-module gap — still parked (ABI).
+   - **0031** `tainted` param (34A/34B); **0034** borrow-checker KB→non-goal **✅ SHIPPED** `08d6905` (the `move`/`USE_AFTER_MOVE` wiring still parked); **0035** wire the trit-fold into live reachability; **0025** governance-T-MAC decision path; GAP-2/GAP-4 engine fixes (parked).
 2. **HW-gated (EXCLUDED-until-silicon):** all photonic latency/energy numbers (0028, governance-T-MAC, linear-flatten on a real T-MAC); real QRNG (IDQ Quantis); a hardware TEE; ARM-MTE/CHERI (declined — no silicon, emulate the idea via gen-tags).
 3. **Env/runtime-gated:** **X1** — that the shipped tiers physically *dispatch* through the proven ops (the standing "proven-semantics ≠ proven-live-dispatch" gap; recurs in 0014/0021/0022/0023/0024/0032) — needs the 0014 fidelity harness wired into the live tiers. G3 (−6.0 Hubbard under pinned `uv.lock` WSL ffsim). Any perf number needs a named machine + reproducible bench.
 4. **Solver-gated:** 0024's 2 div/rem value identities (BV-division SMT limit) — not load-bearing.
