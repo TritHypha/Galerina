@@ -11,11 +11,16 @@ i32-overflow fail-OPEN fix** (`3596fb5`+`490c492`) · global fail-closed-invaria
 condition → emit only the taken arm; dead arm + locals dropped; nested=true → explicit returns valid
 anywhere; fidelity byte-identical interp≡WASM; +6 tests). **▶ Immediate next:** AOT #3 trap-tail simplify ·
 #4 small-pure-flow inlining · #5 cross-flow LTO · #6 PGO (defer). Build order from 0036.
-**0040 follow-ups (owner said "do all"):** WASM single-exit `$logicn_result` lowering (so post-condition
-flows run on WASM, not just decline) — riskier WAT surgery; Z3 discharge of decidable bounds = the 0024
-python track (not yet production-wired). **Governance decision-path wiring (0025/0035)** is gated on the
-0014 differential being wired into the live tiers + the owner naming the SEMANTIC REFERENCE TIER (open
-owner-decision) — do NOT wire the security decision path before that. **0037 presence-channel:** NO PRODUCTION TARGET (confirmed by source —
+**0040 WASM single-exit — ✅ SHIPPED `71ec537`** (owner-authorised): straight-line post-condition flows now
+enforce on WASM (capture tail → `$logicn_result` → gate → trap on violation; WASM≡interp); nested/early-return
+flows still decline to the interpreter (early-return `br` rewrite = remaining follow-up). Z3 discharge of
+decidable bounds = the 0024 python track (not yet production-wired). **Governance decision-path wiring
+(0025/0035) — concrete blocker IDENTIFIED:** the semantic reference tier IS decided (**WASM i32**, owner
+2026-06-18 — NOT open). But `decideFlowVPP`/`decideAtBoundary`/the VPP fold live ONLY in `logicn-tower-citizen`,
+NOT in the core-compiler effect-checker (no `bfsReachable` there either). So "wiring" = a **cross-package
+architectural port** (tower-citizen VPP fold → compiler governance) that is **security-critical** and gated on
+the **0014 differential wired into the live tiers** first. Needs deliberate design — do NOT rush it. The
+next safe step toward it = solidify the 0014 fidelity differential as a permanent live-tier gate. **0037 presence-channel:** NO PRODUCTION TARGET (confirmed by source —
 `interpreter.ts:1302` / `parser.ts:4916`): the SHIPPED `for…where` is the GUARD form ("run the body only
 for items where the guard is truthy"), which never overloads trit-0 as a mask. The trit-0=INDETERMINATE
 aliasing hazard exists only in the R&D *tensor-mask* form, which was never shipped — so the shipped form
