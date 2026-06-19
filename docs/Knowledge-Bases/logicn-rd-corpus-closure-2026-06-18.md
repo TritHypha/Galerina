@@ -34,6 +34,19 @@ imports — mostly already-true, don't change the language), **0052** (WASM comp
 single vs multi-module, packages-outside; verified current = one signed `.wasm`/package + fuse, component-model
 #102–104 reserved; landscape question, no maths yet). See [[logicn-social-ecosystem-cloud-native]].
 
+**▶ 0050 + 0051 + 0052 ALL DONE + HUB-ABSORBED 2026-06-19** (worker done-records committed in R&D repo; hub KB
+docs written). **0050** (`logicn-blind-observability-exporter.md`) — SOUND-WITH-FIXES, bench 42/42; the
+governance-native metrics are the unique value (generic RED/503 deferred to the mesh); backpressure governance_deny
+arm is NET-NEW kernel→runtime bridge wiring; egress fence (never export `AuditEvent.path`). **NAMING: hub 4-lens
+panel UNANIMOUS — drop "telemetry sidecar" → recommend `logicn-governance-exporter`** (owner to confirm).
+**0051** (`logicn-ecosystem-positioning-verified-imports.md`) — positioning-not-language-change, bench 13/13;
+verified-import HYBRID = prod/mesh signed-hash + dev file-path, profile DERIVED from `SecurityPosture`, NO lockfile
+(emit untrusted `import-closure.json`). **0052** (`logicn-wasm-compilation-granularity.md`) — default AOT-fuse +
+opt-in multi-module/component mode; ship interim host-linker over `capabilityRegistry` FIRST, don't block on
+#102–104; bench 15/15. **Three OWNER-GATED builds pending an ask:** the 0050 exporter, the 0051 posture-derived
+import profile, the 0052 multi-module Phase A. **0052's worker artifacts (wasm-granularity/) committed by the
+worker; R&D tree clean.**
+
 **▶ AOT #2 — branch-folding + dead-arm DCE — ✅ SHIPPED `056ac70`** (`foldToBool` folds a const `if`
 condition → emit only the taken arm; dead arm + locals dropped; nested=true → explicit returns valid
 anywhere; fidelity byte-identical interp≡WASM; +6 tests). **▶ Immediate next:** AOT #3 trap-tail simplify ·
