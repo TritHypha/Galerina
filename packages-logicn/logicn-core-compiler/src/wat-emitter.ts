@@ -1835,15 +1835,6 @@ export function emitWATFromFlowAST(
   layouts: ReadonlyMap<string, readonly string[]> | null = null,
   enums: ReadonlyMap<string, readonly string[]> | null = null,
 ): string | null {
-  // 0040/#70: a flow with an OUTPUT post-condition (`invariant { ensure result … }`) needs
-  // the single-exit `$logicn_result` binding + `br $logicn_exit` transformation the WAT tier
-  // does not yet emit (a bare `result` would otherwise lower to `(unreachable)`). Until that
-  // lands, DECLINE such a flow here — returning null routes it to the governed interpreter,
-  // which enforces output post-conditions fail-closed at the flow exit
-  // (interpreter.checkOutputPostconditions). This is the established "cannot lower → falls
-  // back to walker" path (callers at the phase25Body / guardedBody sites).
-  if (flowHasResultPostcondition(flowNode)) return null;
-
   // Build variable map: LogicN name → WAT local name.
   // Params are $p0, $p1, … — immutable (parameters are passed by value in WAT).
   const vars = new Map<string, string>();
@@ -1877,7 +1868,23 @@ export function emitWATFromFlowAST(
     return null;
   }
 
+  // 0040/#70: output post-conditions (`invariant { ensure result … }`). For a STRAIGHT-LINE flow
+  // (no nested/early returns) emit a WASM single-exit gate: capture the tail value into
+  // $logicn_result, check each result-referencing post-condition against it, then return it
+  // (fail-closed — a violation traps via `unreachable`, the value never escapes). A flow with a
+  // nested/early return DECLINES to the governed interpreter (which enforces it fail-closed); the
+  // early-return → `br $logicn_exit` rewrite is the further follow-up.
+  const resultPosts = flowResultPostconditions(flowNode);
+  const singleExit = resultPosts.length > 0;
+  if (singleExit && bodyHasNestedReturn(blockNode)) {
+    recordLayouts = prevLayouts; recordVarTypes = prevVarTypes; enumVariants = prevEnums; // restore
+    return null; // cannot capture-the-tail past an early return → interpreter enforces it
+  }
+  const RESULT_LOCAL = "$logicn_result";
+  if (singleExit) vars.set("result", RESULT_LOCAL);
+
   const localDecls: string[] = [];
+  if (singleExit) localDecls.push(`(local ${RESULT_LOCAL} i32)`);
   const bodyLines:  string[] = [];
   const labelCounter = { n: 0 };
 
@@ -1913,6 +1920,15 @@ export function emitWATFromFlowAST(
     postGates.push(gate.replace(";; ensure", ";; post: ensure"));
   }
 
+  // 0040/#70: precompute the OUTPUT post-condition gates (against $logicn_result) here, while the
+  // record/var-type context is still active (the tail after the body emit makes no emitWATExpr calls).
+  // Pushed after the single-exit capture below.
+  const resultPostGates: string[] = [];
+  for (const p of resultPosts) {
+    const condWAT = emitWATExpr(p, vars, staticConsts);
+    resultPostGates.push(`  (if (i32.eqz ${condWAT}) (then unreachable)) ;; post: ensure ${describeASTExpr(p)} (output)`);
+  }
+
   if (preGates.length > 0) {
     bodyLines.push(`  ;; --- invariant pre-conditions (LLN-INV-001 gate) ---`);
     bodyLines.push(...preGates);
@@ -1938,13 +1954,23 @@ export function emitWATFromFlowAST(
     bodyLines.push(...postGates);
   }
 
+  // 0040/#70: single-exit output post-conditions. The body left its tail value on the stack
+  // (no nested returns — excluded above); capture it, gate each result post-condition against
+  // it (fail-closed: a violation traps), then return it.
+  if (singleExit) {
+    bodyLines.push(`  ;; --- output post-conditions (LLN-INV-002, single-exit on $logicn_result) ---`);
+    bodyLines.push(`  (local.set ${RESULT_LOCAL})`);
+    bodyLines.push(...resultPostGates);
+    bodyLines.push(`  (local.get ${RESULT_LOCAL})`);
+  }
+
   // #160: every WAT flow function is typed `(result i32)`. When the body's last
   // top-level statement is a `match`/`while`/non-value `if` whose every path returns
   // (the lexer's helper flows end this way), the implicit fallthrough is unreachable
   // but still must type-check as [i32] — emit an explicit `(unreachable)` terminator.
   // This cannot affect flows that already end in a value (returnStmt / value-producing
   // if): those validate today and are excluded by the check below.
-  if (postGates.length === 0 && bodyTailIsUnreachable(blockNode)) {
+  if (!singleExit && postGates.length === 0 && bodyTailIsUnreachable(blockNode)) {
     bodyLines.push(`(unreachable) ;; #160: all match/while arms return — implicit [i32] tail`);
   }
 
@@ -2015,19 +2041,45 @@ function extractInvariantEnsures(flowNode: AstNode): AstNode[] {
  * the magic `result` symbol — an output post-condition over the return value. Such flows are
  * declined by emitWATFromFlowAST and enforced fail-closed by the governed interpreter at exit.
  */
-function flowHasResultPostcondition(flowNode: AstNode): boolean {
+function flowResultPostconditions(flowNode: AstNode): AstNode[] {
   const contractNode = (flowNode.children ?? []).find(c => c.kind === "contractDecl");
-  if (contractNode === undefined) return false;
+  if (contractNode === undefined) return [];
   const invariantBlock = (contractNode.children ?? []).find(
     c => c.kind === "identifier" && c.value === "invariant:block"
   );
-  if (invariantBlock === undefined) return false;
+  if (invariantBlock === undefined) return [];
+  const out: AstNode[] = [];
   for (const child of invariantBlock.children ?? []) {
     if (child.kind !== "ensureDecl") continue;
     const expr = child.children?.[0];
-    if (expr !== undefined && exprReferencesResult(expr)) return true;
+    if (expr !== undefined && exprReferencesResult(expr)) out.push(expr);
   }
-  return false;
+  return out;
+}
+
+function flowHasResultPostcondition(flowNode: AstNode): boolean {
+  return flowResultPostconditions(flowNode).length > 0;
+}
+
+/**
+ * 0040/#70: true if the flow body has a returnStmt nested BELOW the top level (inside an if/while/
+ * match arm) — an early return that the simple capture-the-tail single-exit cannot enforce a
+ * post-condition over (it would `(return …)` past the gate). Such flows DECLINE to the governed
+ * interpreter (fail-closed). A top-level tail return / value-producing tail is fine (returns nothing
+ * nested → false). The early-return → `br $logicn_exit` rewrite is the further follow-up.
+ */
+function bodyHasNestedReturn(blockNode: AstNode): boolean {
+  let nested = false;
+  function walk(node: AstNode): void {
+    if (nested) return;
+    if (node.kind === "returnStmt") { nested = true; return; }
+    for (const c of node.children ?? []) walk(c);
+  }
+  for (const c of blockNode.children ?? []) {
+    if (c.kind === "returnStmt") continue; // a top-level (tail) return is allowed
+    walk(c); // any returnStmt strictly inside a non-top-level node is a bypassing/early return
+  }
+  return nested;
 }
 
 /** Walk an expression for any identifier named `result` (including member receivers). */
