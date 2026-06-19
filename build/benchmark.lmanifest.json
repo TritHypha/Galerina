@@ -7,7 +7,7 @@
     "allowedEffects": 0,
     "deniedEffects": 0,
     "conflictsResolved": 0,
-    "resolvedAt": "2026-06-18T09:11:16.908Z"
+    "resolvedAt": "2026-06-19T16:31:40.125Z"
   },
   "behavioralFingerprint": "sha256:c1b5f8c20705e0b901a50dd6eab754721f657e3aa83aab0cfa79c8f23220625e",
   "derivedConstraints": [
@@ -35,11 +35,11 @@
       "verified": "static"
     }
   ],
-  "generatedAt": "2026-06-18T09:11:16.908Z",
+  "generatedAt": "2026-06-19T16:31:40.125Z",
   "governanceSignature": {
     "algorithm": "Ed25519",
     "keyId": "ab46f4c7e2797b9b",
-    "signature": "GcMHfVVyLTiYMzmGVUpj+qfA+FfJSVsJKQ6Zz+IWurVG8q8JCrdwVFGfmMyaWqgBbxevP1eNuTbAjO6IP+OSDg==",
-    "signedAt": "2026-06-18T09:11:16.975Z"
+    "signature": "vwOzIOkAfzPebMgW99Ifln7QVreUO09jVXck8sI2qIHpR6us9gDWN/SQgCwzTXvlk0Jmqxy/GWpx7F239QZqBQ==",
+    "signedAt": "2026-06-19T16:31:40.155Z"
   }
 }

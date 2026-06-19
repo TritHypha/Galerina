@@ -430,6 +430,11 @@ export {
   type AiGraphSourceSpan,
   type PassiveExecutionPlan,
 } from "./gir-emitter.js";
+export {
+  analyzeFlowDependencies,
+  renderDependencyComments,
+  type FlowDependencies,
+} from "./flow-dependency-analysis.js";
 export type { SemanticGraph } from "@logicn/devtools-graph-algorithms";
 
 // Phase 15 — Passive Execution Plans

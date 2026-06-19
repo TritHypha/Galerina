@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "generatedAt": "2026-06-18T08:34:09.420Z",
+  "generatedAt": "2026-06-19T16:20:12.454Z",
   "nodes": [
     {
       "id": "package:logicn-core",
@@ -7272,6 +7272,15 @@
       ]
     },
     {
+      "id": "doc:docs/Knowledge-Bases/logicn-aot-tricks-rd.md",
+      "kind": "Document",
+      "label": "logicn-aot-tricks-rd.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-aot-tricks-rd.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
       "id": "doc:docs/Knowledge-Bases/logicn-api-boundary-architecture.md",
       "kind": "Document",
       "label": "logicn-api-boundary-architecture.md",
@@ -8271,6 +8280,24 @@
       ]
     },
     {
+      "id": "doc:docs/Knowledge-Bases/logicn-for-where-tensor-mask-rd.md",
+      "kind": "Document",
+      "label": "logicn-for-where-tensor-mask-rd.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-for-where-tensor-mask-rd.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/logicn-formal-verification-direction.md",
+      "kind": "Document",
+      "label": "logicn-formal-verification-direction.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-formal-verification-direction.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
       "id": "doc:docs/Knowledge-Bases/logicn-fortified-typed-logic.md",
       "kind": "Document",
       "label": "logicn-fortified-typed-logic.md",
@@ -8784,6 +8811,15 @@
       ]
     },
     {
+      "id": "doc:docs/Knowledge-Bases/logicn-memory-safety-model.md",
+      "kind": "Document",
+      "label": "logicn-memory-safety-model.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-memory-safety-model.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
       "id": "doc:docs/Knowledge-Bases/logicn-metadata-erasure.md",
       "kind": "Document",
       "label": "logicn-metadata-erasure.md",
@@ -9216,6 +9252,15 @@
       ]
     },
     {
+      "id": "doc:docs/Knowledge-Bases/logicn-prove-own-maths-roadmap.md",
+      "kind": "Document",
+      "label": "logicn-prove-own-maths-roadmap.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-prove-own-maths-roadmap.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
       "id": "doc:docs/Knowledge-Bases/logicn-qrng-entropy-capability-design.md",
       "kind": "Document",
       "label": "logicn-qrng-entropy-capability-design.md",
@@ -9283,6 +9328,15 @@
       "kind": "Document",
       "label": "logicn-rd-benchmarks-and-performance-2026-06-17.md",
       "sourcePath": "docs/Knowledge-Bases/logicn-rd-benchmarks-and-performance-2026-06-17.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/logicn-rd-corpus-closure-2026-06-18.md",
+      "kind": "Document",
+      "label": "logicn-rd-corpus-closure-2026-06-18.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-rd-corpus-closure-2026-06-18.md",
       "tags": [
         "document"
       ]
@@ -9576,6 +9630,15 @@
       ]
     },
     {
+      "id": "doc:docs/Knowledge-Bases/logicn-shipped-defects-found-2026-06-18.md",
+      "kind": "Document",
+      "label": "logicn-shipped-defects-found-2026-06-18.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-shipped-defects-found-2026-06-18.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
       "id": "doc:docs/Knowledge-Bases/logicn-signed-attestation.md",
       "kind": "Document",
       "label": "logicn-signed-attestation.md",
@@ -9625,6 +9688,15 @@
       "kind": "Document",
       "label": "logicn-stdlib-reference.md",
       "sourcePath": "docs/Knowledge-Bases/logicn-stdlib-reference.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/logicn-structured-engineering-metadata-roadmap.md",
+      "kind": "Document",
+      "label": "logicn-structured-engineering-metadata-roadmap.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-structured-engineering-metadata-roadmap.md",
       "tags": [
         "document"
       ]
@@ -9783,10 +9855,28 @@
       ]
     },
     {
+      "id": "doc:docs/Knowledge-Bases/logicn-tree-walker-speed-and-photonic-governance.md",
+      "kind": "Document",
+      "label": "logicn-tree-walker-speed-and-photonic-governance.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-tree-walker-speed-and-photonic-governance.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
       "id": "doc:docs/Knowledge-Bases/logicn-tritmesh-boundary-and-seam.md",
       "kind": "Document",
       "label": "logicn-tritmesh-boundary-and-seam.md",
       "sourcePath": "docs/Knowledge-Bases/logicn-tritmesh-boundary-and-seam.md",
+      "tags": [
+        "document"
+      ]
+    },
+    {
+      "id": "doc:docs/Knowledge-Bases/logicn-tritmesh-meshql-shortest-path-parked.md",
+      "kind": "Document",
+      "label": "logicn-tritmesh-meshql-shortest-path-parked.md",
+      "sourcePath": "docs/Knowledge-Bases/logicn-tritmesh-meshql-shortest-path-parked.md",
       "tags": [
         "document"
       ]
@@ -14562,6 +14652,16 @@
       ]
     },
     {
+      "id": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/atLeast_atLeast.egraph.json",
+      "kind": "Document",
+      "label": "atLeast_atLeast.egraph.json",
+      "sourcePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/atLeast_atLeast.egraph.json",
+      "tags": [
+        "report",
+        "logicn-core-compiler"
+      ]
+    },
+    {
       "id": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/audited_audited.egraph.json",
       "kind": "Document",
       "label": "audited_audited.egraph.json",
@@ -14786,6 +14886,26 @@
       "kind": "Document",
       "label": "check_check.egraph.json",
       "sourcePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/check_check.egraph.json",
+      "tags": [
+        "report",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/clampInt_clampInt.egraph.json",
+      "kind": "Document",
+      "label": "clampInt_clampInt.egraph.json",
+      "sourcePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/clampInt_clampInt.egraph.json",
+      "tags": [
+        "report",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/clamp_clamp.egraph.json",
+      "kind": "Document",
+      "label": "clamp_clamp.egraph.json",
+      "sourcePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/clamp_clamp.egraph.json",
       "tags": [
         "report",
         "logicn-core-compiler"
@@ -15182,10 +15302,30 @@
       ]
     },
     {
+      "id": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/fAdd_fAdd.egraph.json",
+      "kind": "Document",
+      "label": "fAdd_fAdd.egraph.json",
+      "sourcePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/fAdd_fAdd.egraph.json",
+      "tags": [
+        "report",
+        "logicn-core-compiler"
+      ]
+    },
+    {
       "id": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/fast_fast.egraph.json",
       "kind": "Document",
       "label": "fast_fast.egraph.json",
       "sourcePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/fast_fast.egraph.json",
+      "tags": [
+        "report",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/fDiv_fDiv.egraph.json",
+      "kind": "Document",
+      "label": "fDiv_fDiv.egraph.json",
+      "sourcePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/fDiv_fDiv.egraph.json",
       "tags": [
         "report",
         "logicn-core-compiler"
@@ -15272,6 +15412,36 @@
       ]
     },
     {
+      "id": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/fMod_fMod.egraph.json",
+      "kind": "Document",
+      "label": "fMod_fMod.egraph.json",
+      "sourcePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/fMod_fMod.egraph.json",
+      "tags": [
+        "report",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/fMul_fMul.egraph.json",
+      "kind": "Document",
+      "label": "fMul_fMul.egraph.json",
+      "sourcePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/fMul_fMul.egraph.json",
+      "tags": [
+        "report",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/fNeg_fNeg.egraph.json",
+      "kind": "Document",
+      "label": "fNeg_fNeg.egraph.json",
+      "sourcePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/fNeg_fNeg.egraph.json",
+      "tags": [
+        "report",
+        "logicn-core-compiler"
+      ]
+    },
+    {
       "id": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/forEarlyExit_forEarlyExit.egraph.json",
       "kind": "Document",
       "label": "forEarlyExit_forEarlyExit.egraph.json",
@@ -15296,6 +15466,16 @@
       "kind": "Document",
       "label": "freqMapSize_freqMapSize.egraph.json",
       "sourcePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/freqMapSize_freqMapSize.egraph.json",
+      "tags": [
+        "report",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/fSub_fSub.egraph.json",
+      "kind": "Document",
+      "label": "fSub_fSub.egraph.json",
+      "sourcePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/fSub_fSub.egraph.json",
       "tags": [
         "report",
         "logicn-core-compiler"
@@ -15586,6 +15766,16 @@
       "kind": "Document",
       "label": "logProtected_logProtected.egraph.json",
       "sourcePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/logProtected_logProtected.egraph.json",
+      "tags": [
+        "report",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/loopForever_loopForever.egraph.json",
+      "kind": "Document",
+      "label": "loopForever_loopForever.egraph.json",
+      "sourcePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/loopForever_loopForever.egraph.json",
       "tags": [
         "report",
         "logicn-core-compiler"
@@ -15902,6 +16092,16 @@
       ]
     },
     {
+      "id": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/pos_pos.egraph.json",
+      "kind": "Document",
+      "label": "pos_pos.egraph.json",
+      "sourcePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/pos_pos.egraph.json",
+      "tags": [
+        "report",
+        "logicn-core-compiler"
+      ]
+    },
+    {
       "id": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/precisionTest_precisionTest.egraph.json",
       "kind": "Document",
       "label": "precisionTest_precisionTest.egraph.json",
@@ -15946,6 +16146,16 @@
       "kind": "Document",
       "label": "recordAmount_recordAmount.egraph.json",
       "sourcePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/recordAmount_recordAmount.egraph.json",
+      "tags": [
+        "report",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/recur_recur.egraph.json",
+      "kind": "Document",
+      "label": "recur_recur.egraph.json",
+      "sourcePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/recur_recur.egraph.json",
       "tags": [
         "report",
         "logicn-core-compiler"
@@ -16236,6 +16446,16 @@
       "kind": "Document",
       "label": "sumList_sumList.egraph.json",
       "sourcePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/sumList_sumList.egraph.json",
+      "tags": [
+        "report",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/sumPositive_sumPositive.egraph.json",
+      "kind": "Document",
+      "label": "sumPositive_sumPositive.egraph.json",
+      "sourcePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/sumPositive_sumPositive.egraph.json",
       "tags": [
         "report",
         "logicn-core-compiler"
@@ -16556,6 +16776,16 @@
       "kind": "Document",
       "label": "t_t.egraph.json",
       "sourcePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/t_t.egraph.json",
+      "tags": [
+        "report",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/useHw_useHw.egraph.json",
+      "kind": "Document",
+      "label": "useHw_useHw.egraph.json",
+      "sourcePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/useHw_useHw.egraph.json",
       "tags": [
         "report",
         "logicn-core-compiler"
@@ -21692,6 +21922,16 @@
       ]
     },
     {
+      "id": "type:logicn-core-compiler:LLN_HW_004",
+      "kind": "Type",
+      "label": "LLN_HW_004",
+      "sourcePath": "packages-logicn/logicn-core-compiler/src/proof-graph.ts",
+      "tags": [
+        "type",
+        "logicn-core-compiler"
+      ]
+    },
+    {
       "id": "type:logicn-core-compiler:ProofObligationKind",
       "kind": "Type",
       "label": "ProofObligationKind",
@@ -24897,6 +25137,16 @@
       "id": "flow:logicn-core-compiler:emitWATExpr",
       "kind": "Flow",
       "label": "emitWATExpr",
+      "sourcePath": "packages-logicn/logicn-core-compiler/src/wat-emitter.ts",
+      "tags": [
+        "function",
+        "logicn-core-compiler"
+      ]
+    },
+    {
+      "id": "flow:logicn-core-compiler:emitBlockLastExpr",
+      "kind": "Flow",
+      "label": "emitBlockLastExpr",
       "sourcePath": "packages-logicn/logicn-core-compiler/src/wat-emitter.ts",
       "tags": [
         "function",
@@ -39431,6 +39681,13 @@
       "evidencePath": "docs/Knowledge-Bases/logicn-memory-request-scope-arenas.md"
     },
     {
+      "from": "doc:docs/Knowledge-Bases/logicn-memory-safety-model.md",
+      "to": "package:logicn-core",
+      "kind": "documents",
+      "confidence": "INFERRED",
+      "evidencePath": "docs/Knowledge-Bases/logicn-memory-safety-model.md"
+    },
+    {
       "from": "doc:docs/Knowledge-Bases/logicn-missing-syntax-keywords.md",
       "to": "package:logicn-core",
       "kind": "documents",
@@ -47265,6 +47522,13 @@
     },
     {
       "from": "package:logicn-core-compiler",
+      "to": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/atLeast_atLeast.egraph.json",
+      "kind": "owns",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/atLeast_atLeast.egraph.json"
+    },
+    {
+      "from": "package:logicn-core-compiler",
       "to": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/audited_audited.egraph.json",
       "kind": "owns",
       "confidence": "EXTRACTED",
@@ -47423,6 +47687,20 @@
       "kind": "owns",
       "confidence": "EXTRACTED",
       "evidencePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/check_check.egraph.json"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/clampInt_clampInt.egraph.json",
+      "kind": "owns",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/clampInt_clampInt.egraph.json"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/clamp_clamp.egraph.json",
+      "kind": "owns",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/clamp_clamp.egraph.json"
     },
     {
       "from": "package:logicn-core-compiler",
@@ -47699,10 +47977,24 @@
     },
     {
       "from": "package:logicn-core-compiler",
+      "to": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/fAdd_fAdd.egraph.json",
+      "kind": "owns",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/fAdd_fAdd.egraph.json"
+    },
+    {
+      "from": "package:logicn-core-compiler",
       "to": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/fast_fast.egraph.json",
       "kind": "owns",
       "confidence": "EXTRACTED",
       "evidencePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/fast_fast.egraph.json"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/fDiv_fDiv.egraph.json",
+      "kind": "owns",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/fDiv_fDiv.egraph.json"
     },
     {
       "from": "package:logicn-core-compiler",
@@ -47762,6 +48054,27 @@
     },
     {
       "from": "package:logicn-core-compiler",
+      "to": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/fMod_fMod.egraph.json",
+      "kind": "owns",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/fMod_fMod.egraph.json"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/fMul_fMul.egraph.json",
+      "kind": "owns",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/fMul_fMul.egraph.json"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/fNeg_fNeg.egraph.json",
+      "kind": "owns",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/fNeg_fNeg.egraph.json"
+    },
+    {
+      "from": "package:logicn-core-compiler",
       "to": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/forEarlyExit_forEarlyExit.egraph.json",
       "kind": "owns",
       "confidence": "EXTRACTED",
@@ -47780,6 +48093,13 @@
       "kind": "owns",
       "confidence": "EXTRACTED",
       "evidencePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/freqMapSize_freqMapSize.egraph.json"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/fSub_fSub.egraph.json",
+      "kind": "owns",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/fSub_fSub.egraph.json"
     },
     {
       "from": "package:logicn-core-compiler",
@@ -47983,6 +48303,13 @@
       "kind": "owns",
       "confidence": "EXTRACTED",
       "evidencePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/logProtected_logProtected.egraph.json"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/loopForever_loopForever.egraph.json",
+      "kind": "owns",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/loopForever_loopForever.egraph.json"
     },
     {
       "from": "package:logicn-core-compiler",
@@ -48203,6 +48530,13 @@
     },
     {
       "from": "package:logicn-core-compiler",
+      "to": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/pos_pos.egraph.json",
+      "kind": "owns",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/pos_pos.egraph.json"
+    },
+    {
+      "from": "package:logicn-core-compiler",
       "to": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/precisionTest_precisionTest.egraph.json",
       "kind": "owns",
       "confidence": "EXTRACTED",
@@ -48235,6 +48569,13 @@
       "kind": "owns",
       "confidence": "EXTRACTED",
       "evidencePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/recordAmount_recordAmount.egraph.json"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/recur_recur.egraph.json",
+      "kind": "owns",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/recur_recur.egraph.json"
     },
     {
       "from": "package:logicn-core-compiler",
@@ -48438,6 +48779,13 @@
       "kind": "owns",
       "confidence": "EXTRACTED",
       "evidencePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/sumList_sumList.egraph.json"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/sumPositive_sumPositive.egraph.json",
+      "kind": "owns",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/sumPositive_sumPositive.egraph.json"
     },
     {
       "from": "package:logicn-core-compiler",
@@ -48662,6 +49010,13 @@
       "kind": "owns",
       "confidence": "EXTRACTED",
       "evidencePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/t_t.egraph.json"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "doc:packages-logicn/logicn-core-compiler/build/.lln-cache/useHw_useHw.egraph.json",
+      "kind": "owns",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/build/.lln-cache/useHw_useHw.egraph.json"
     },
     {
       "from": "package:logicn-core-compiler",
@@ -52312,6 +52667,13 @@
     },
     {
       "from": "package:logicn-core-compiler",
+      "to": "type:logicn-core-compiler:LLN_HW_004",
+      "kind": "provides",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/src/proof-graph.ts"
+    },
+    {
+      "from": "package:logicn-core-compiler",
       "to": "type:logicn-core-compiler:ProofObligationKind",
       "kind": "provides",
       "confidence": "EXTRACTED",
@@ -54525,6 +54887,13 @@
     {
       "from": "package:logicn-core-compiler",
       "to": "flow:logicn-core-compiler:emitWATExpr",
+      "kind": "provides",
+      "confidence": "EXTRACTED",
+      "evidencePath": "packages-logicn/logicn-core-compiler/src/wat-emitter.ts"
+    },
+    {
+      "from": "package:logicn-core-compiler",
+      "to": "flow:logicn-core-compiler:emitBlockLastExpr",
       "kind": "provides",
       "confidence": "EXTRACTED",
       "evidencePath": "packages-logicn/logicn-core-compiler/src/wat-emitter.ts"

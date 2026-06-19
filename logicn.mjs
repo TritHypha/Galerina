@@ -726,6 +726,34 @@ Baseline comparison (governance-cost):
     process.exit(receipt.trapFired ? 1 : 0);
   }
 
+  // ── logicn deps — graph the app's flow→flow call graph (R&D 0045 //@ vocabulary) ──────────────
+  // Read-only. Prints, per flow, the generated //@USES (upstream callees) / //@USEDBY (downstream
+  // "dependants") / //@IMPACT (transitive blast-radius; 0 = safe to delete) comment lines. Does NOT
+  // modify source — the source-writer (inject the //@ lines into the file) is a later phase. Scope
+  // to one flow with `--flow <name>`.
+  if (command === "deps") {
+    if (errors.length > 0) {
+      errors.forEach(d => console.log(`❌ ${d.code}: ${d.message}`));
+      process.exit(1);
+    }
+    const depMap = m.analyzeFlowDependencies(parsed.ast);
+    const flagIdx = rest.indexOf("--flow");
+    const only = flagIdx >= 0 ? rest[flagIdx + 1] : undefined;
+    if (only !== undefined && !depMap.has(only)) {
+      console.error(`Error: no flow named '${only}' in ${llnFile}`);
+      process.exit(1);
+    }
+    const names = only !== undefined ? [only] : [...depMap.keys()];
+    if (names.length === 0) console.log(`(${llnFile}: no flows)`);
+    for (const name of names) {
+      const d = depMap.get(name);
+      if (d === undefined) continue;
+      console.log(`flow ${name}`);
+      for (const line of m.renderDependencyComments(d)) console.log(`  ${line}`);
+    }
+    process.exit(0);
+  }
+
   if (command === "check") {
     const fx = m.checkEffects(parsed.flows, parsed.ast);
     const gov = m.verifyGovernance(parsed.ast, parsed.flows, fx, "production");
