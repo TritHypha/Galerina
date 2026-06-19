@@ -7,9 +7,20 @@ i32-overflow fail-OPEN fix** (`3596fb5`+`490c492`) · global fail-closed-invaria
 (`b403639`) · **AOT #1 const-expression folding** (`dc76ed4`) · **0040 DbC OUTPUT post-conditions**
 (`fa9fae5`, owner re-R&D'd → BUILT). Gate: SOT `--core` **3652 green**, 0014 fidelity 4/4, graph 3666/4060.
 
-**▶ Immediate next autonomous step:** **AOT #2 — branch-folding + dead-arm DCE** (composes on the const-fold
-just shipped: a folded-constant `if` condition → keep one arm, drop the other + now-unused lets). Then AOT
-#3 trap-tail simplify · #4 small-pure-flow inlining · #5 cross-flow LTO · #6 PGO (defer). Build order from 0036.
+**▶ AOT #2 — branch-folding + dead-arm DCE — ✅ SHIPPED `056ac70`** (`foldToBool` folds a const `if`
+condition → emit only the taken arm; dead arm + locals dropped; nested=true → explicit returns valid
+anywhere; fidelity byte-identical interp≡WASM; +6 tests). **▶ Immediate next:** AOT #3 trap-tail simplify ·
+#4 small-pure-flow inlining · #5 cross-flow LTO · #6 PGO (defer). Build order from 0036.
+**0040 follow-ups (owner said "do all"):** WASM single-exit `$logicn_result` lowering (so post-condition
+flows run on WASM, not just decline) — riskier WAT surgery; Z3 discharge of decidable bounds = the 0024
+python track (not yet production-wired). **Governance decision-path wiring (0025/0035)** is gated on the
+0014 differential being wired into the live tiers + the owner naming the SEMANTIC REFERENCE TIER (open
+owner-decision) — do NOT wire the security decision path before that. **0037 presence-channel:** NO PRODUCTION TARGET (confirmed by source —
+`interpreter.ts:1302` / `parser.ts:4916`): the SHIPPED `for…where` is the GUARD form ("run the body only
+for items where the guard is truthy"), which never overloads trit-0 as a mask. The trit-0=INDETERMINATE
+aliasing hazard exists only in the R&D *tensor-mask* form, which was never shipped — so the shipped form
+already avoids it. Nothing to build unless/until the tensor-mask form is added (it would need the separate
+presence bit then).
 Also queued (owner-steer via AskUserQuestion per the new "owner-gated = ask" rule): 0037 separate-presence
 channel · 0031-34B route auto-taint · 0025/0035 governance decision-path wiring · the "Mesh" rename · 0040
 follow-ups (WASM single-exit `$logicn_result` lowering · Z3 discharge of decidable post-condition bounds).
