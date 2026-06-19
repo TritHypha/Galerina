@@ -432,9 +432,12 @@ export {
 } from "./gir-emitter.js";
 export {
   analyzeFlowDependencies,
+  analyzeProgramFlowDependencies,
   renderDependencyComments,
   rewriteGeneratedComments,
   type FlowDependencies,
+  type ProgramFile,
+  type ProgramFlowAnalysis,
 } from "./flow-dependency-analysis.js";
 export {
   cyclomaticComplexity,

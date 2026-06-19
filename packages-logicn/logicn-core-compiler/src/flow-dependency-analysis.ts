@@ -77,6 +77,48 @@ export function analyzeFlowDependencies(ast: AstNode): Map<string, FlowDependenc
   return out;
 }
 
+/** One parsed source file contributing flows to a whole-program (cross-file) analysis. */
+export interface ProgramFile {
+  /** The file path the flows were declared in (used to attribute the generated block back). */
+  readonly file: string;
+  /** The parsed program AST for that file. */
+  readonly ast: AstNode;
+}
+
+/** Whole-program flow dependency analysis, spanning every supplied file. */
+export interface ProgramFlowAnalysis {
+  /** flow name → cross-file USES / USEDBY / IMPACT (callers from ANY file are counted). */
+  readonly deps: Map<string, FlowDependencies>;
+  /** flow name → the file that first declared it (duplicate names union their edges). */
+  readonly fileByFlow: Map<string, string>;
+}
+
+/**
+ * Cross-file dependency analysis for a whole app/package. Merges every file's top-level flow
+ * declarations into ONE synthetic program AST, then runs {@link analyzeFlowDependencies} once — so
+ * USES / USEDBY / IMPACT span file boundaries. The point: a flow called from ANOTHER file correctly
+ * shows that USEDBY and is therefore NOT mislabelled `IMPACT: (0) — safe to delete`. A per-file loop
+ * would emit that fail-OPEN "safe to delete" lie at every file boundary; this does not.
+ *
+ * A flow name declared in two files UNIONS their call edges. That is deliberately fail-SAFE for the
+ * delete signal: a shared name can only OVER-count USEDBY (claim a dependant that belongs to the
+ * other declaration), never UNDER-count — so it can never produce a false "safe to delete".
+ */
+export function analyzeProgramFlowDependencies(files: readonly ProgramFile[]): ProgramFlowAnalysis {
+  const mergedChildren: AstNode[] = [];
+  const fileByFlow = new Map<string, string>();
+  for (const { file, ast } of files) {
+    for (const child of ast.children ?? []) {
+      if (FLOW_KINDS.has(child.kind) && (child.value ?? "") !== "") {
+        mergedChildren.push(child);
+        if (!fileByFlow.has(child.value as string)) fileByFlow.set(child.value as string, file);
+      }
+    }
+  }
+  const merged: AstNode = { kind: "program", children: mergedChildren };
+  return { deps: analyzeFlowDependencies(merged), fileByFlow };
+}
+
 /**
  * Render the canonical generated `//lln:` dependency comment lines for one flow (R&D 0045 vocabulary).
  * Count-prefixed `(N)` so the blast-radius is visible even if a long list is truncated by a writer.

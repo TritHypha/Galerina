@@ -4,7 +4,8 @@
   "description": "LogicN compiler and runtime CLI — compile .lln programs to WASM, run them, type-check with governance.",
   "type": "module",
   "bin": {
-    "logicn": "./logicn.mjs"
+    "logicn": "./logicn.mjs",
+    "lln": "./logicn.mjs"
   },
   "scripts": {
     "test": "node scripts/run-all-tests.cjs",

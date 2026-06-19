@@ -20,7 +20,7 @@
  * This WASM path:                                  ~1,880,000 ops/sec  (588×)
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, appendFileSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync, appendFileSync } from "node:fs";
 import { join, basename, dirname } from "node:path";
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
@@ -98,6 +98,10 @@ Commands:
                                                        + audit. Required for secure/effectful flows; fail-closed.
   logicn build <file.lln>                             compile → build/<name>.wasm + .wat + .lmanifest
   logicn build --package <dir>                        compile a package's /src → governed .wasm in <dir>/dist/ (fusable, emits .fuse.json)
+  logicn build --package <dir> --no-refresh           ...without refreshing the //lln: dependency metadata (reproducible CI)
+  logicn deps <file.lln> [--flow <name>]              print generated //lln: USES/USEDBY/IMPACT/COMPLEXITY for a file
+  logicn deps <file.lln> --write                      write the //lln: metadata into that file (machine-owned tier)
+  logicn deps --all [dir] [--write]                   refresh //lln: across EVERY .lln in the app (cross-file; default dir = cwd)
   logicn check <file.lln>                             type-check + governance verify
   logicn check <file.lln> --diff                      show change class vs HEAD~1 before pushing
   logicn check --what-if <policy.lln>                 shadow policy analysis (dry run)
@@ -597,6 +601,65 @@ Baseline comparison (governance-cost):
 
   const m = await import(compilerPath);
 
+  // ── //lln: whole-app refresh helpers (R&D 0045 — `deps --all` and the build auto-refresh) ──────
+  // Recursively collect every .lln source under a root (skipping build/vendor dirs), then run a
+  // CROSS-FILE flow analysis so USES/USEDBY/IMPACT span files (a flow called from another file is
+  // never mislabelled "safe to delete"). Returns per-file rewrite results; `write:true` persists them.
+  const collectLlnFiles = (root) => {
+    const SKIP = new Set(["node_modules", "dist", "build", ".git", ".logicn"]);
+    const out = [];
+    const walk = (dir) => {
+      let entries;
+      try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return; }
+      for (const e of entries) {
+        if (e.name.startsWith(".")) continue;
+        const p = join(dir, e.name);
+        if (e.isDirectory()) { if (!SKIP.has(e.name)) walk(p); }
+        else if (e.isFile() && e.name.endsWith(".lln")) out.push(p);
+      }
+    };
+    try {
+      const st = statSync(root);
+      if (st.isFile()) { if (root.endsWith(".lln")) out.push(root); }
+      else walk(root);
+    } catch { /* missing root → no files */ }
+    return out;
+  };
+  const refreshGeneratedComments = (root, { write }) => {
+    const FK = new Set(["pureFlowDecl", "flowDecl", "secureFlowDecl", "guardedFlowDecl"]);
+    const files = [];
+    const sources = new Map();
+    let parseErrors = 0;
+    for (const f of collectLlnFiles(root)) {
+      try {
+        const src = readFileSync(f, "utf8");
+        const p = m.parseProgram(src, f);
+        // Fail-closed: never rewrite a file whose program does not parse cleanly.
+        if ((p.diagnostics ?? []).some(d => d.severity === "error")) { parseErrors++; continue; }
+        files.push({ file: f, ast: p.ast });
+        sources.set(f, src);
+      } catch { parseErrors++; }
+    }
+    const { deps } = m.analyzeProgramFlowDependencies(files);
+    const results = [];
+    for (const { file, ast } of files) {
+      const genMap = new Map();
+      for (const child of ast.children ?? []) {
+        if (!FK.has(child.kind) || !child.value) continue;
+        const d = deps.get(child.value);
+        if (d === undefined) continue;
+        genMap.set(child.value, [...m.renderDependencyComments(d), ...m.renderComplexityComment(child)]);
+      }
+      if (genMap.size === 0) continue;
+      const before = sources.get(file);
+      const after = m.rewriteGeneratedComments(before, genMap);
+      const changed = after !== before;
+      if (write && changed) writeFileSync(file, after);
+      results.push({ file, flows: genMap.size, changed, genMap });
+    }
+    return { results, parseErrors, parsedCount: files.length };
+  };
+
   // ── Package build mode: `logicn build --package <dir>` (#175, design-doc §11)
   // Compiles a package's /src entry (with its `import ./*.lln` DAG, #94) into one
   // governed, signed .wasm + .lmanifest written INTO the package's dist/, plus a
@@ -618,6 +681,31 @@ Baseline comparison (governance-cost):
       llnFile = join(pkgDir, packageDescriptor.entry || "src/index.lln");
     }
   }
+
+  // ── logicn deps --all [dir] [--write] — refresh //lln: across EVERY .lln file in the app ──────
+  // Cross-file: builds one whole-program flow graph so USES/USEDBY/IMPACT span files. Without
+  // --write it prints a per-file preview; with --write it rewrites each file's //lln: block in place
+  // (machine-owned tier, R&D 0045 #3 — touches only //lln: lines). Default root = the --package dir,
+  // else a positional path, else the current directory. Must run BEFORE the single-file read below.
+  if (command === "deps" && rest.includes("--all")) {
+    const dirArg = rest.find(a => !a.startsWith("--"));
+    const root = packageBuild ?? dirArg ?? ".";
+    const write = rest.includes("--write");
+    const { results, parseErrors, parsedCount } = refreshGeneratedComments(root, { write });
+    if (write) {
+      let changed = 0;
+      for (const r of results) if (r.changed) { changed++; console.log(`✅ ${r.file}: refreshed //lln: on ${r.flows} flow(s)`); }
+      console.log(`\n${changed}/${results.length} file(s) updated across ${parsedCount} parsed file(s)${parseErrors ? `, ${parseErrors} skipped (parse errors)` : ""}.`);
+    } else {
+      for (const r of results) {
+        console.log(`# ${r.file}`);
+        for (const [flow, lines] of r.genMap) { console.log(`flow ${flow}`); for (const l of lines) console.log(`  ${l}`); }
+      }
+      console.log(`\n(${parsedCount} file(s) analysed${parseErrors ? `, ${parseErrors} skipped` : ""}; re-run with --write to apply.)`);
+    }
+    process.exit(0);
+  }
+
   if (!llnFile) { console.error("Error: no .lln file specified"); process.exit(1); }
 
   const source = readFileSync(llnFile, "utf8");
@@ -1392,6 +1480,20 @@ Baseline comparison (governance-cost):
       };
       writeFileSync(`${outDir}/${name}.fuse.json`, JSON.stringify(fuseDescriptor, null, 2));
       console.log(`   ${outDir}/${name}.fuse.json   (fusion descriptor — kind=${fuseDescriptor.kind}, seam=${fuseDescriptor.seam ?? "—"})`);
+    }
+
+    // ── //lln: auto-refresh (R&D 0045) ── a package build refreshes the generated dependency
+    // metadata across the package's sources by DEFAULT, so `logicn build --package` keeps every
+    // //lln: USES/USEDBY/IMPACT/COMPLEXITY block current (cross-file). Opt out with --no-refresh for
+    // reproducible CI builds. Only //lln: lines are touched — human // comments and code are never
+    // modified. Scoped to the package's own source tree, so it never rewrites files elsewhere.
+    if (packageBuild && !rest.includes("--no-refresh")) {
+      const { results } = refreshGeneratedComments(dirname(llnFile), { write: true });
+      const changed = results.filter(r => r.changed);
+      if (changed.length > 0) {
+        const flows = changed.reduce((n, r) => n + r.flows, 0);
+        console.log(`   refreshed //lln: metadata on ${flows} flow(s) in ${changed.length} file(s)  (--no-refresh to skip)`);
+      }
     }
 
     console.log(`✅ Compiled ${packageBuild ? packageDescriptor.name + " (package)" : llnFile}`);

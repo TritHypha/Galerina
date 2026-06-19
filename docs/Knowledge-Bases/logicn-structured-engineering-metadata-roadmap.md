@@ -42,9 +42,21 @@ mostly **additive wiring**, not new subsystems.
   on the observed call graph; only declared-volatility flows participate.
 - **3c. SOURCE WRITER** ✅ — `logicn deps --write` (rewriteGeneratedComments): silently overwrites only `//lln:` lines, idempotent, fail-closed; unit-tested
   (decision #3, done).
+- **3e. WHOLE-APP WRITER** ✅ `<this commit>` — `logicn deps --all [dir] [--write]` refreshes `//lln:` across EVERY `.lln`
+  in the app. Uses a NEW **cross-file** analyzer `analyzeProgramFlowDependencies` (merges all files' flow nodes into one
+  synthetic program AST → USES/USEDBY/IMPACT span files). This closes a fail-OPEN gap: a per-file loop would print
+  `IMPACT: (0) — safe to delete` for a flow called from ANOTHER file. A duplicate flow name across files UNIONS callers
+  (fail-SAFE: only over-counts USEDBY, never a false safe-to-delete). +3 cross-file tests; CLI smoke verified end-to-end.
+- **3f. BUILD AUTO-REFRESH** ✅ `<this commit>` — `logicn build --package <dir>` refreshes the package's `//lln:` blocks by
+  DEFAULT (owner: "it does it anyway"); `--no-refresh` opts out for reproducible CI. Scoped to the package's own `src` tree
+  (`dirname(entry)`), never the wider repo; only `//lln:` lines touched. (Single-file `logicn build <file>` stays pure —
+  it's used on fixtures/examples in the test suite; only `--package` refreshes.)
 - **3d. git-churn volatility** — gated on history availability (decision #4 open); the graph-depth proxy (2c) is the fallback.
 
 **Phase 4 — polish:** state-mutability metric (`//lln:Mutates`), central Governance-Registry index (decision #2), pre-commit hook.
+
+**CLI ergonomics** ✅ `<this commit>` — added the short bin alias **`lln`** alongside `logicn` (package.json `bin`); both
+point at `logicn.mjs`. Takes effect after `npm link` / global reinstall (Windows gets an `lln.cmd` shim).
 
 ## R&D 0045 decisions (owner, 2026-06-19)
 1. **Token = `//lln:`** ✅ RESOLVED (owner picked it to mirror the `.lln` prefix). Shipped + all artifacts renamed `//@`→`//lln:`.

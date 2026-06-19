@@ -9,7 +9,12 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
-import { parseProgram, analyzeFlowDependencies, renderDependencyComments } from "../dist/index.js";
+import {
+  parseProgram,
+  analyzeFlowDependencies,
+  analyzeProgramFlowDependencies,
+  renderDependencyComments,
+} from "../dist/index.js";
 
 function deps(src) {
   const p = parseProgram(src, "deps.lln");
@@ -72,6 +77,50 @@ pure flow a(x: Int) -> Int { return b(x) }
     const d = deps(`pure flow solo(x: Int) -> Int { return x + 1 }`);
     assert.deepEqual(d.get("solo").uses, []);
     assert.deepEqual(d.get("solo").usedBy, []);
+  });
+});
+
+describe("analyzeProgramFlowDependencies — cross-file (whole-app) analysis", () => {
+  function program(fileMap) {
+    const files = Object.entries(fileMap).map(([file, src]) => {
+      const p = parseProgram(src, file);
+      const errs = p.diagnostics.filter((d) => d.severity === "error");
+      assert.equal(errs.length, 0, `${file}: ` + errs.map((e) => e.message).join("; "));
+      return { file, ast: p.ast };
+    });
+    return analyzeProgramFlowDependencies(files);
+  }
+
+  it("counts a caller in ANOTHER file as USEDBY (the cross-file fix)", () => {
+    // leaf lives in lib.lln and is called only from app.lln. A per-file analysis would say
+    // leaf.usedBy = [] → "safe to delete" (a fail-OPEN lie). Cross-file must see the caller.
+    const { deps } = program({
+      "lib.lln": `pure flow leaf(x: Int) -> Int { return x }`,
+      "app.lln": `pure flow main(x: Int) -> Int { return leaf(x) }`,
+    });
+    assert.deepEqual(deps.get("leaf").usedBy, ["main"], "caller in app.lln is seen");
+    assert.equal(deps.get("leaf").impact, 1, "leaf is NOT safe to delete (impact > 0)");
+    assert.equal(deps.get("main").impact, 0, "nothing calls main → safe to delete");
+  });
+
+  it("attributes each flow to its declaring file", () => {
+    const { fileByFlow } = program({
+      "lib.lln": `pure flow leaf(x: Int) -> Int { return x }`,
+      "app.lln": `pure flow main(x: Int) -> Int { return leaf(x) }`,
+    });
+    assert.equal(fileByFlow.get("leaf"), "lib.lln");
+    assert.equal(fileByFlow.get("main"), "app.lln");
+  });
+
+  it("a duplicate flow name across files UNIONS callers (fail-safe — never a false safe-to-delete)", () => {
+    // `helper` declared in two files; each is called by a different caller. The union must show
+    // BOTH callers, so impact can only be over-counted, never under-counted.
+    const { deps } = program({
+      "a.lln": `pure flow helper(x: Int) -> Int { return x }\npure flow callA(x: Int) -> Int { return helper(x) }`,
+      "b.lln": `pure flow helper(x: Int) -> Int { return x }\npure flow callB(x: Int) -> Int { return helper(x) }`,
+    });
+    assert.deepEqual(deps.get("helper").usedBy, ["callA", "callB"], "both callers unioned");
+    assert.ok(deps.get("helper").impact >= 1, "shared name is never mislabelled safe-to-delete");
   });
 });
 
