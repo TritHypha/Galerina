@@ -1247,6 +1247,11 @@ class GovernanceVerifier {
     // ── LLN-GATE-001/002: gate {} admission guard block validation ────────────────
     this.verifyGateBlocks(allNodes);
 
+    // ── LLN-ARCH-002: Stable-Dependencies enforcement (R&D 0045, owner: always a hard error) ──
+    // A more-stable flow (lower contract.architecture volatility) must not depend on a more-volatile
+    // one. Cross-flow pass over the observed call graph; only flows that DECLARE a volatility participate.
+    this.verifyArchitectureStability(ast, flows);
+
     // ── LLN-STATIC-001/002: static compile-time constant validation ──────────────
     this.verifyStaticDecls(allNodes);
 
@@ -2182,6 +2187,65 @@ class GovernanceVerifier {
           loc,
           "Use `volatility: LOW | MED | HIGH`.",
         ));
+      }
+    }
+  }
+
+  /** Declared contract.architecture volatility level (LOW=0, MED=1, HIGH=2), or undefined if absent/invalid. */
+  private flowVolatilityLevel(flowNode: AstNode): number | undefined {
+    const contractNode = (flowNode.children ?? []).find(c => c.kind === "contractDecl");
+    if (contractNode === undefined) return undefined;
+    const archBlock = (contractNode.children ?? []).find(
+      c => c.kind === "identifier" && c.value === "architecture:block",
+    );
+    if (archBlock === undefined) return undefined;
+    const LEVEL: Record<string, number> = { LOW: 0, MED: 1, MEDIUM: 1, HIGH: 2 };
+    for (const child of archBlock.children ?? []) {
+      if (child.kind !== "identifier" || !(child.value ?? "").startsWith("decl:")) continue;
+      const m = (child.value ?? "").slice("decl:".length).match(/\bvolatility\b\s*:?\s*([A-Za-z_]+)/);
+      if (m) return LEVEL[(m[1] ?? "").toUpperCase()]; // undefined if invalid (already LLN-ARCH-001)
+    }
+    return undefined;
+  }
+
+  // ── LLN-ARCH-002: Stable-Dependencies enforcement (R&D 0045) ─────────────────
+  // A more-stable flow (lower volatility) must NOT depend on a more-volatile one — the Stable
+  // Dependencies Principle. Owner decision: ALWAYS a hard error (every profile). Only flows that DECLARE
+  // a volatility participate (an undeclared flow is "unknown" → not checked → no false positives). Edges
+  // are the OBSERVED flow→flow call graph (you can't lie about what you call).
+  private verifyArchitectureStability(ast: AstNode, _flows: readonly FlowMeta[]): void {
+    const FLOW_KINDS = new Set(["pureFlowDecl", "flowDecl", "secureFlowDecl", "guardedFlowDecl"]);
+    const NAME = ["LOW", "MED", "HIGH"];
+    const flowNodes = new Map<string, AstNode>();
+    const volat = new Map<string, number>();
+    for (const child of ast.children ?? []) {
+      if (!FLOW_KINDS.has(child.kind) || (child.value ?? "") === "") continue;
+      flowNodes.set(child.value as string, child);
+      const lvl = this.flowVolatilityLevel(child);
+      if (lvl !== undefined) volat.set(child.value as string, lvl);
+    }
+    if (volat.size === 0) return; // nothing declares volatility → nothing to enforce
+    for (const [name, node] of flowNodes) {
+      const la = volat.get(name);
+      if (la === undefined) continue;
+      const callees = new Set<string>();
+      for (const call of findNodes(node, "callExpr")) {
+        const callee = call.value ?? "";
+        if (callee !== "" && callee !== name && flowNodes.has(callee)) callees.add(callee);
+      }
+      for (const callee of callees) {
+        const lb = volat.get(callee);
+        if (lb !== undefined && la < lb) {
+          this.diagnostics.push(makeGovDiag(
+            "LLN-ARCH-002",
+            "StableDependencyViolation",
+            "error",
+            `Architectural Violation: flow '${name}' (volatility ${NAME[la]}) depends on '${callee}' ` +
+            `(volatility ${NAME[lb]}). A more-stable flow must not depend on a more-volatile one (Stable Dependencies Principle).`,
+            node.location,
+            `Lower '${callee}'s volatility, raise '${name}'s volatility, or invert the dependency behind a stable boundary.`,
+          ));
+        }
       }
     }
   }

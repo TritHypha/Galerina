@@ -46,3 +46,42 @@ describe("contract.architecture (parse-only + volatility value check)", () => {
     assert.ok(!gov.diagnostics.some((d) => d.code === "LLN-ARCH-001"), "absent volatility is not an error");
   });
 });
+
+describe("Stable-Dependencies enforcement (LLN-ARCH-002, always a hard error)", () => {
+  // two flows where `caller` calls `callee`, each with a declared volatility
+  const pair = (callerVol, calleeVol) => `pure flow caller(x: Int) -> Int
+contract { intent { "c" } architecture { volatility: ${callerVol} } }
+{ return callee(x) }
+pure flow callee(x: Int) -> Int
+contract { intent { "c" } architecture { volatility: ${calleeVol} } }
+{ return x }`;
+  const arch2 = (src) => verify(src).gov.diagnostics.filter((d) => d.code === "LLN-ARCH-002");
+
+  it("a LOW flow depending on a HIGH flow is a hard error", () => {
+    const d = arch2(pair("LOW", "HIGH"));
+    assert.equal(d.length, 1);
+    assert.equal(d[0].severity, "error", "always a hard error (owner decision #5)");
+    assert.ok(d[0].message.includes("caller") && d[0].message.includes("callee"));
+  });
+
+  it("a MED flow depending on a HIGH flow is a violation (general SDP)", () => {
+    assert.equal(arch2(pair("MED", "HIGH")).length, 1);
+  });
+
+  it("a HIGH flow depending on a LOW flow is FINE (volatile may depend on stable)", () => {
+    assert.equal(arch2(pair("HIGH", "LOW")).length, 0);
+  });
+
+  it("equal volatility is fine", () => {
+    assert.equal(arch2(pair("LOW", "LOW")).length, 0);
+    assert.equal(arch2(pair("HIGH", "HIGH")).length, 0);
+  });
+
+  it("if either flow does not declare volatility, it is NOT checked (no false positive)", () => {
+    const onlyCaller = `pure flow caller(x: Int) -> Int
+contract { intent { "c" } architecture { volatility: LOW } }
+{ return callee(x) }
+pure flow callee(x: Int) -> Int { return x }`;
+    assert.equal(verify(onlyCaller).gov.diagnostics.filter((d) => d.code === "LLN-ARCH-002").length, 0);
+  });
+});

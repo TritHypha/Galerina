@@ -24,6 +24,13 @@ verified**; the codebase is in a fail-closed, deterministic state. 48/48 package
   `epilogueReceipt`, `liabilityProfile`, `physicalHardeningTier`).
 
 ### Added
+- **Stable-Dependencies enforcement — `LLN-ARCH-002` (R&D 0045 — Phase 3b; owner: always a hard error).** A
+  cross-flow governance pass: a **more-stable** flow (lower `contract.architecture` volatility) may **not**
+  depend on a **more-volatile** one (the Stable Dependencies Principle). E.g. a `volatility: LOW` flow that
+  calls a `volatility: HIGH` flow → **`LLN-ARCH-002` error in every profile**. Edges are the *observed*
+  flow→flow call graph (you can't lie about what you call); only flows that **declare** a volatility
+  participate (an undeclared flow is "unknown" → not checked → no false positives). Modeled on the existing
+  `LLN-GOV-013` caller/callee-property twin. +5 tests; registered in `compiler-diagnostics.md`.
 - **`contract.architecture { volatility, depends_on }` parse-only block (R&D 0045 — Phase 2b).** A new
   contract sub-block declaring **volatility-based decomposition** metadata: `volatility: LOW|MED|HIGH` (how
   often the flow changes) + `depends_on [FlowA, FlowB]` (the *authored* dependency intent, which the observed
