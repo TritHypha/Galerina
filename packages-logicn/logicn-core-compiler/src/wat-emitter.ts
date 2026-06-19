@@ -1385,6 +1385,33 @@ function emitBlockStatements(
       case "ifStmt": {
         // ifStmt children: [condition, thenBlock, elseBlock?]
         const [condNode, thenBlock, elseBlock] = stmt.children ?? [];
+
+        // AOT #2 (R&D 0036): branch-folding + dead-arm DCE. When the condition folds to a compile-time
+        // constant boolean, the taken branch is deterministic — emit ONLY that arm inline (the dead arm
+        // and its locals are never emitted). The interpreter evaluates the same constant condition and
+        // takes the same branch, so the WASM output is identical (semantics-preserving / 0014-safe).
+        // Arms are emitted with nested=true, so any `return` becomes an explicit `(return …)` — valid at
+        // any position (no stack imbalance), exactly as the un-folded `(if (then …))` arms already do.
+        const foldedCond = foldToBool(condNode, staticConsts);
+        if (foldedCond !== null) {
+          const takenArm = foldedCond ? thenBlock : elseBlock;
+          if (takenArm !== undefined) {
+            if (takenArm.kind === "ifStmt") {
+              // `else if` chain: re-process the taken ifStmt as a synthetic block statement.
+              const synth: AstNode = {
+                kind: "block",
+                children: [takenArm],
+                ...(takenArm.location !== undefined ? { location: takenArm.location } : {}),
+              };
+              emitBlockStatements(synth, vars, localDecls, bodyLines, labelCounter, true, staticConsts);
+            } else {
+              emitBlockStatements(takenArm, vars, localDecls, bodyLines, labelCounter, true, staticConsts);
+            }
+          }
+          // folded-true with no then-block, or folded-false with no else, emits nothing — the if is dead.
+          break;
+        }
+
         const condExpr = condNode ? emitWATExpr(condNode, vars, staticConsts) : "(i32.const 1)";
 
         // Value-producing if/else: ONLY when isLast AND both branches end with returnStmt.
@@ -2359,6 +2386,56 @@ function foldToInt(
       default: return null; // comparisons / bitwise / && / || — not folded here
     }
     return isI32Trap(res) ? null : res; // trap ⇒ don't fold (emit the runtime op → fails closed)
+  }
+  return null;
+}
+
+/**
+ * AOT #2 (R&D 0036): fold a compile-time-constant boolean condition to `true` / `false`, else null.
+ * Drives branch-folding + dead-arm DCE at the `ifStmt` site — when the condition is a known constant
+ * the taken arm is deterministic, so the WAT emitter emits ONLY that arm (the dead arm + its locals
+ * are never emitted). Semantics-preserving: the interpreter evaluates the same constant condition and
+ * takes the same branch, so WASM ≡ interpreter (output-identical / 0014-safe).
+ *
+ * Folds: bool literals; `!expr`; comparisons (>,<,>=,<=,==,!=) of two foldable int constants (reuses
+ * foldToInt); and `&&`/`||` ONLY when BOTH operands fold (conservative — never reasons about a
+ * non-constant operand's side effects). Returns null for anything else → the runtime `(if …)` is
+ * emitted unchanged (no behaviour change).
+ */
+function foldToBool(
+  expr: AstNode | undefined,
+  consts: ReadonlyMap<string, number>,
+): boolean | null {
+  if (expr === undefined) return null;
+  if (expr.kind === "boolLiteral") return expr.value === "true";
+  if (expr.kind === "unaryExpr" && (expr.value ?? "") === "!") {
+    const inner = foldToBool(expr.children?.[0], consts);
+    return inner === null ? null : !inner;
+  }
+  if (expr.kind === "binaryExpr") {
+    const op = expr.value ?? "";
+    if (op === "&&" || op === "||") {
+      // Conservative: fold only when BOTH operands are constant booleans (const-fold context has no
+      // side effects). A non-foldable operand ⇒ null ⇒ emit the runtime op (which short-circuits itself).
+      const l = foldToBool(expr.children?.[0], consts);
+      const r = foldToBool(expr.children?.[1], consts);
+      if (l === null || r === null) return null;
+      return op === "&&" ? (l && r) : (l || r);
+    }
+    const a = expr.children?.[0];
+    const b = expr.children?.[1];
+    const l = a ? foldToInt(a, consts) : null;
+    const r = b ? foldToInt(b, consts) : null;
+    if (l === null || r === null) return null;
+    switch (op) {
+      case ">":  return l > r;
+      case "<":  return l < r;
+      case ">=": return l >= r;
+      case "<=": return l <= r;
+      case "==": return l === r;
+      case "!=": return l !== r;
+      default: return null; // bitwise / arithmetic — not a boolean
+    }
   }
   return null;
 }

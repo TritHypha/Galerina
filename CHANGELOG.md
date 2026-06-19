@@ -24,6 +24,13 @@ verified**; the codebase is in a fail-closed, deterministic state. 48/48 package
   `epilogueReceipt`, `liabilityProfile`, `physicalHardeningTier`).
 
 ### Added
+- **AOT #2 — branch-folding + dead-arm DCE (WAT emitter).** `foldToBool` folds a compile-time-constant
+  `if` condition (bool literals, `!`, const-int comparisons, const `&&`/`||`) to true/false; the emitter
+  then emits **only the taken arm inline** — the dead arm and its locals are never emitted. Semantics-
+  preserving (the interpreter evaluates the same constant condition and takes the same branch → WASM ≡
+  interpreter, 0014-safe); arms emit with explicit `(return …)` so they're valid at any position. A
+  non-constant condition is unaffected. Composes on AOT #1 (a folded-constant comparison now drives the
+  fold). +6 tests (drop-then / drop-else / `!`+`&&` / no-else fall-through / dynamic-unchanged / fidelity).
 - **DbC output post-conditions (0040 / #70).** `invariant { ensure result … }` now expresses an OUTPUT
   post-condition over a flow's return value, enforced **fail-closed at the single flow exit**: a return
   value violating the post-condition becomes a `runtimeError` (`LLN-INV-002`) and never escapes — the same
