@@ -15,7 +15,7 @@
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync, mkdirSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
@@ -30,8 +30,13 @@ const isWin = process.platform === "win32";
 
 /** Run `node logicn.mjs <args>` and return stdout/stderr/code */
 function logicn(...args) {
+  return logicnEnv({}, ...args);
+}
+
+/** Like logicn(), but merges extra environment variables (e.g. LOGICN_PROFILE). */
+function logicnEnv(extraEnv, ...args) {
   const r = spawnSync(process.execPath, [LOGICN, ...args], {
-    cwd: ROOT, encoding: "utf8", timeout: 30000,
+    cwd: ROOT, encoding: "utf8", timeout: 30000, env: { ...process.env, ...extraEnv },
   });
   return { stdout: r.stdout ?? "", stderr: r.stderr ?? "", code: r.status };
 }
@@ -149,6 +154,33 @@ describe("CLI compatibility — logicn build", () => {
       // No signing key configured → both outputs keep the placeholder (backward-compatible).
       assert.ok(cborSig, "an unsigned build still carries a (placeholder) governanceSignature object");
     }
+  });
+});
+
+// ── logicn verify — signature-required policy (audit, profile-gated) ───────────
+describe("CLI compatibility — verify signature-required policy", () => {
+  // AUDIT: an unsigned (placeholder) manifest is fine for dev but must fail-closed under
+  // LOGICN_PROFILE=production. Default profile is dev, so existing behaviour is unchanged.
+  it("a placeholder (unsigned) manifest passes verify in dev but is REJECTED under LOGICN_PROFILE=production", () => {
+    mkdirSync(join(ROOT, "build"), { recursive: true });
+    const built = logicn("build", BENCH);
+    assert.equal(built.code, 0, `build failed: ${built.stdout}`);
+    const jsonPath = join(ROOT, "build", "benchmark.lmanifest.json");
+    if (!existsSync(jsonPath)) return; // manifest generation is non-fatal; skip if absent
+
+    // Force a placeholder signature so the test is deterministic regardless of whether a signing key
+    // is configured in this environment (a configured key would produce a real signature instead).
+    const manifest = JSON.parse(readFileSync(jsonPath, "utf8"));
+    writeFileSync(jsonPath, JSON.stringify({ ...manifest, governanceSignature: "placeholder" }, null, 2));
+
+    // DEV (default profile): a placeholder is informational → verify still succeeds.
+    const dev = logicn("verify", BENCH);
+    assert.equal(dev.code, 0, `dev verify of a placeholder manifest should pass: ${dev.stderr}`);
+
+    // PRODUCTION: an unsigned/placeholder manifest must fail-closed.
+    const prod = logicnEnv({ LOGICN_PROFILE: "production" }, "verify", BENCH);
+    assert.notEqual(prod.code, 0, "production verify must reject an unsigned (placeholder) manifest");
+    assert.ok(prod.stderr.includes("LLN-MANIFEST-UNSIGNED"), `expected LLN-MANIFEST-UNSIGNED, got: ${prod.stderr}`);
   });
 });
 

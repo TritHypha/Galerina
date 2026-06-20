@@ -214,7 +214,12 @@ All affected suites green (core-network 97, tower-citizen 196, photonic-emulator
   `admitManifest` helper, profile-gated). NB the audit's own refutation: the governed runtime re-derives effects
   from the sourceHash-bound source + the WASM admission gate verifies attestation over the binary, so the
   manifest effect-mask is not trusted for enforcement — this bounds the residual.
-- 🟠 unsigned/placeholder manifest accepted by verify/run (add a profile-gated signature-required policy).
+- 🟢 **unsigned/placeholder manifest accepted by `verify` — FIXED (profile-gated):** under `LOGICN_PROFILE=production`
+  a placeholder / absent / incomplete-signature manifest now fails closed with `LLN-MANIFEST-UNSIGNED` (and an
+  unreadable signature copy with `LLN-MANIFEST-INVALID`); the default (dev) profile keeps the informational
+  behaviour byte-for-byte, so existing usage is unchanged. Mirrors `#178` fail-closed-in-prod. +1 cli-compatibility
+  test (placeholder passes in dev, rejected in production). Still open: the same policy on `logicn run` (folds into
+  the run-gate full-enforcement item above).
 - 🟡 CBOR `.lmanifest` signature still verified only via the JSON copy (the deeper self-verifiable-CBOR fix = **#67**);
   sign over RFC-8785 canonical bytes; signing-profile fail-secure default.
 - ✅ **unknown-`opClass` deny-by-default — FIXED:** `routePrecision` (the precision-lane router used by both the

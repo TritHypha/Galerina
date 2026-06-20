@@ -1203,6 +1203,10 @@ Baseline comparison (governance-cost):
       // Stage A: Ed25519-SHA256 (Node.js native crypto)
       // Stage B: ML-DSA-65 (NIST FIPS 204) — upgrade once Node.js adds FIPS 204 support
       // Signature is stored in the .lmanifest.json (human-readable counterpart)
+      // AUDIT (profile-gated signature-required policy): in production an unsigned / placeholder /
+      // incomplete manifest must fail-closed; dev keeps the informational behaviour. Default (no
+      // LOGICN_PROFILE) is dev, so existing usage is byte-unchanged. Mirrors #178 fail-closed-in-prod.
+      const requireSigned = process.env.LOGICN_PROFILE === "production";
       const jsonManifestPath = `build/${name}.lmanifest.json`;
       if (existsSync(jsonManifestPath)) {
         try {
@@ -1268,14 +1272,46 @@ Baseline comparison (governance-cost):
                 console.error(`❌ LLN-MANIFEST-PUBKEY-MISSING: public key ${pubKeyPath} not found but manifest asserts a signature — fail-closed (cannot verify integrity)`);
                 process.exit(1);
               }
+            } else {
+              // Signature object present but INCOMPLETE (missing algorithm/keyId/signature) — can't even
+              // attempt verification. Treat as unsigned: fail-closed under production, warn in dev.
+              if (requireSigned) {
+                console.error(`❌ LLN-MANIFEST-UNSIGNED: signature object is incomplete (missing algorithm/keyId/signature) but LOGICN_PROFILE=production requires a valid signature — fail-closed.`);
+                process.exit(1);
+              }
+              console.warn(`   ⚠️  Manifest signature object is incomplete — treated as unsigned.`);
             }
           } else if (jsonManifest.governanceSignature === "placeholder") {
+            // An unsigned (placeholder) manifest is fine for dev; under LOGICN_PROFILE=production a
+            // signature is REQUIRED — fail-closed (mirrors #178 fail-closed-in-prod).
+            if (requireSigned) {
+              console.error(`❌ LLN-MANIFEST-UNSIGNED: manifest is unsigned (placeholder) but LOGICN_PROFILE=production requires a signature — fail-closed. Run: logicn keygen && logicn build`);
+              process.exit(1);
+            }
             console.log(`   ℹ️  Manifest is unsigned (placeholder). Run: logicn keygen && logicn build`);
+          } else {
+            // No signature field at all, or an unexpected scalar — treat as unsigned.
+            if (requireSigned) {
+              console.error(`❌ LLN-MANIFEST-UNSIGNED: manifest carries no signature but LOGICN_PROFILE=production requires one — fail-closed.`);
+              process.exit(1);
+            }
+            console.log(`   ℹ️  Manifest has no signature field — treated as unsigned.`);
           }
         } catch (err) {
+          // In production a signature MUST be confirmable; an unreadable signature copy means it cannot
+          // be — fail-closed rather than warn-and-pass.
+          if (requireSigned) {
+            console.error(`❌ LLN-MANIFEST-INVALID: could not read ${jsonManifestPath} for the required signature check under LOGICN_PROFILE=production — fail-closed: ${err.message}`);
+            process.exit(1);
+          }
           console.warn(`   ⚠️  Could not read .lmanifest.json for signature check: ${err.message}`);
         }
       } else {
+        // No signed-manifest copy at all. Dev = skip; production = deny (signature required).
+        if (requireSigned) {
+          console.error(`❌ LLN-MANIFEST-UNSIGNED: no ${jsonManifestPath} present but LOGICN_PROFILE=production requires a signed manifest — fail-closed.`);
+          process.exit(1);
+        }
         console.log(`   ℹ️  No .lmanifest.json found — signature check skipped`);
       }
     } catch (e) {
