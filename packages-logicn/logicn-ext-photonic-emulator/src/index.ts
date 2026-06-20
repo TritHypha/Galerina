@@ -36,4 +36,4 @@ export {
   type PhotonicBackend, type PhotonicBridgeConfig,
   PhotonicEmulatorBridge,
 } from "./photonic-bridge.js";
-export { type PhotonicRunResult, PhotonicRuntime } from "./runner.js";
+export { type PhotonicRunResult, PhotonicRuntime, type PhotonicRouteHit, createPhotonicRouterPort } from "./runner.js";

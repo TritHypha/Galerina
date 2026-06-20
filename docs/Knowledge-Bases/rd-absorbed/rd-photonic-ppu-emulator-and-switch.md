@@ -56,11 +56,18 @@ against the package's own compiled code (25 node:test cases + `npm run prove` 10
    (`runner.ts`) demonstrating the §4 path end-to-end: decide → exec → re-verify → **fall back to digital**
    on out-of-tolerance (verify-cheap, never re-execute).
 
-**STILL OPEN (iteration 2, hub):** the **Tower-side dispatch wiring** inside `hybrid-engine.ts` — the
-photonic dispatch path that routes via the decider and re-verifies via Freivalds/tolerance *instead of* the
-bit-exact ternary `assertDeterminism` oracle (a separate, deliberately-reviewed production edit to
-tower-citizen). Closest shipped precedent for the manifest side: the `BridgeDomain` discriminator + the
-ffsim tolerance-backend path.
+**✅ DONE 2026-06-20 (Tower-side dispatch wiring):** `hybrid-engine.ts` now has an additive, opt-in,
+off-by-default `photonic?: PhotonicConfig` — for a ternary op `dispatchPlan` consults the injected
+`PhotonicOffloadPort` first, accepts a tolerance-verified hit WITHOUT `assertDeterminism` (the analog lane
+is tolerance-verified, not bit-exact), and falls through to the unchanged digital dispatch on `null`
+(ineligible/no-win/out-of-tolerance). NEVER consulted in certified mode. Adapter
+`createPhotonicRouterPort()` ships in `logicn-ext-photonic-emulator`. tower-citizen 194/194 (default path
+byte-unchanged), photonic 29/29.
+
+**STILL OPEN (next):** certified-mode photonic admission (an attested/signed tolerance backend so the
+photonic path runs under the certified profile too — today certified fail-closes to digital); the `-hybrid`
+tier package (modeled on `logicn-ext-bridge-cpp`). Closest shipped precedent for the manifest side: the
+`BridgeDomain` discriminator + the ffsim tolerance-backend path.
 
 ## EXCLUDED (HW-gated — recorded with reason)
 Measured silicon MAC speedup; the real PHASE_GAIN/XTALK/READOUT noise floor; the real coupler S-parameter

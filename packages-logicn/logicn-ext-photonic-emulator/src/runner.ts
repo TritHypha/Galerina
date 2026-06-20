@@ -16,7 +16,7 @@
 
 import type { BridgeOp, BridgeResult } from "../../logicn-inference-bridge-contract/dist/index.js";
 import { PartitionDecider, type KernelCost, type Decision, type Target } from "./partition-decider.js";
-import { type PhotonicBackend, PhotonicEmulatorBridge } from "./photonic-bridge.js";
+import { type PhotonicBackend, type PhotonicBridgeConfig, PhotonicEmulatorBridge } from "./photonic-bridge.js";
 import { toleranceCheck } from "./freivalds.js";
 import { adcRange } from "./emulator.js";
 
@@ -92,4 +92,32 @@ export class PhotonicRuntime {
       bridgeResult: res,
     };
   }
+}
+
+/** What `createPhotonicRouterPort().route()` returns: a tolerance-verified value, or null to decline. */
+export interface PhotonicRouteHit { readonly value: number; readonly bridgeId: string; }
+
+/**
+ * Build a photonic offload PORT for the Tower's `HybridInferenceEngine` `photonic` config.
+ * Returns a tolerance-verified photonic value for a net-win ELIGIBLE kernel, or `null` to DECLINE
+ * (not a net win / out-of-tolerance / any uncertainty) — the engine then runs its digital dispatch.
+ * Fail-closed: the only way a value is returned is a proven net-win that ALSO passes the re-verify.
+ */
+export function createPhotonicRouterPort(
+  cfg: PhotonicBridgeConfig = {},
+  decider: PartitionDecider = new PartitionDecider(),
+): { route(op: BridgeOp, kernel: KernelCost): PhotonicRouteHit | null } {
+  const bridge = new PhotonicEmulatorBridge(cfg);
+  return {
+    route(op, kernel) {
+      const d = decider.decide(kernel);
+      if (d.target !== "photonic") return null;            // not a net win → engine's digital path
+      const value = bridge.execute(op, d.N).value;
+      const exact = bridge.executeExact(op);
+      if (toleranceCheck(value, exact, kernel.tolerance ?? 0.05, adcRange(op.count))) {
+        return { value, bridgeId: bridge.bridgeId };
+      }
+      return null;                                          // out-of-tolerance → decline (fail-closed)
+    },
+  };
 }

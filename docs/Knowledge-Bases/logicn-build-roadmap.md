@@ -28,9 +28,9 @@ real TS and re-proves them against the package's own compiled code.
   demonstrates decide → exec → Freivalds/tolerance re-verify → **fall back to digital** on out-of-tolerance.
 - **Verify:** `npm test` (25 node:test cases) + `npm run prove` (10/10, exit 0). The root runner discovers it
   via smart-dispatch against the prebuilt `dist/` (offline; no npm/tsc needed at run time).
-- **STILL OPEN (iteration 2):** the **Tower-side dispatch wiring** in `hybrid-engine.ts` — the photonic path
-  that routes via the decider + re-verifies via Freivalds/tolerance *instead of* the bit-exact ternary
-  `assertDeterminism` oracle. A separate, deliberately-reviewed edit to tower-citizen.
+- ✅ **DONE 2026-06-20 (the Tower-side dispatch wiring):** the photonic path in `hybrid-engine.ts` now
+  routes via the decider + re-verifies via Freivalds/tolerance *instead of* the bit-exact ternary
+  `assertDeterminism` oracle — additive + opt-in + off-by-default. See the dedicated section below.
 - **EXCLUDED (HW-gated):** any measured photonic speedup (ns are aspirational Meech-anchored envelopes); the
   real PIC noise floor / coupler S-params. No speedup claimed without a named PIC.
 
@@ -93,7 +93,33 @@ checker) — it had **no runtime egress guard / SSRF protection / host-IP classi
   `LogicN_NETWORK_EGRESS_*`.
 - **Verify:** `npm test` (71 node:test) + `npm run prove` (8/8 — 2,200 IANA-range samples 0-leak, exact
   172.16/12 CIDR edges, numeric-bypass equivalence, **20k-input fuzz: 0 throws / 0 leaks**, fail-closed URL
-  layer). Full suite green: 53/53 packages.
+  layer). Full suite green: 52/52 packages.
+
+---
+
+## 🔌 2026-06-20 — Photonic Tower-side dispatch wiring BUILT (the switch goes live in the engine)
+
+**The photonic backend is now selectable inside the real `HybridInferenceEngine`** — closing the loop
+on iterations 1–2 (the emulator + the directive/loader were standalone). Edit to
+`logicn-tower-citizen/src/hybrid-engine.ts` is **additive, opt-in, OFF BY DEFAULT** (a new
+`photonic?: PhotonicConfig` on `createHybridEngine`; default `null` ⇒ `dispatchPlan` is byte-identical
+to before — the 188 existing tower tests are unchanged).
+
+- **How it works:** for a ternary op, `dispatchPlan` consults the injected `PhotonicOffloadPort` FIRST.
+  A non-null result has ALREADY passed the port's tolerance re-verify, so it is accepted **without** the
+  bit-exact `assertDeterminism` oracle (the analog lane is tolerance-verified, not bit-exact). A `null`
+  result (ineligible / no net win / out-of-tolerance / any uncertainty) **falls through to the unchanged
+  digital dispatch**. Fail-closed; **NEVER consulted in certified mode** (the dev emulator is an unattested
+  tolerance backend). The Tower stays decoupled — the port is duck-typed; `@logicn/ext-photonic-emulator`
+  ships the adapter `createPhotonicRouterPort()`.
+- **Two axes now compose end-to-end:** `hardware()`/loader (AXIS-1) picks the package; this per-op
+  net-win router (AXIS-2) decides whether to actually offload — preference never forces photonics.
+- **Verify:** tower-citizen **194/194** (was 188; +6 `photonic-dispatch.test.mjs`: default-unchanged,
+  net-win→photonic, no-win→digital, decline→digital, hit→commits-photonic-value, receipt-shape-stable);
+  photonic **29/29** (+4 `router-port.test.mjs`). Full suite green: 52/52 packages.
+- **STILL OPEN:** certified-mode photonic admission (an ATTESTED, signed tolerance backend so the photonic
+  path can run under the certified profile too — today certified mode fail-closes to digital); a real
+  per-op kernel-size source (Stage A demo ops are n=16, so `kernelFor` is deployment-supplied).
 
 ---
 

@@ -9,6 +9,7 @@ export type { PluginMetadata, ExecutionResult } from "./plugin-sandbox.js";
 // ── Unified Hybrid Inference Engine — best-of-all-three (BitNet + NVFP4 + Groq) ──
 export { HybridInferenceEngine, createHybridEngine } from "./hybrid-engine.js";
 export type { HybridInferenceRequest, HybridInferenceReceipt, AiGovernance } from "./hybrid-engine.js";
+export type { PhotonicConfig, PhotonicOffloadPort, PhotonicKernelCost } from "./hybrid-engine.js";
 export {
   routePrecision,
   planHybridInference,

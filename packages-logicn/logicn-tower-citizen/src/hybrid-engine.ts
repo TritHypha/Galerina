@@ -191,6 +191,40 @@ function buildDemoTernaryOp(
   };
 }
 
+/**
+ * Per-kernel cost inputs the photonic offload port reads (a subset of the partition router's
+ * KernelCost). Carried structurally so the Tower never imports the photonic package.
+ */
+export interface PhotonicKernelCost {
+  readonly n: number;
+  readonly lane: "photonic" | "noisy" | "digital";
+  readonly tolerance?: number;
+  readonly isCrypto?: boolean;
+  readonly isControlFlow?: boolean;
+}
+
+/**
+ * Optional photonic offload port (opt-in, off by default). Given a routed op + its kernel cost,
+ * returns a tolerance-verified photonic result for a net-win ELIGIBLE kernel, or `null` to DECLINE
+ * (ineligible / no net win / out-of-tolerance / any uncertainty) — in which case the engine runs
+ * its unchanged digital dispatch. A non-null result has already passed the port's Freivalds/tolerance
+ * re-verify, so it substitutes that for the bit-exact ternary `assertDeterminism` oracle on that op.
+ * Duck-typed so the Tower never depends on the photonic package; a deployment injects an adapter
+ * (e.g. `@logicn/ext-photonic-emulator`'s `createPhotonicRouterPort`). NEVER consulted in certified
+ * mode (the dev emulator is an unattested tolerance backend).
+ */
+export interface PhotonicOffloadPort {
+  route(op: BridgeOp, kernel: PhotonicKernelCost): { value: number; bridgeId: string } | null;
+}
+
+export interface PhotonicConfig {
+  readonly router: PhotonicOffloadPort;
+  /** Map a routed op to its kernel cost. Default: `{ n: op.count, lane: "photonic", tolerance: 0.05 }`. */
+  readonly kernelFor?: (op: BridgeOp) => PhotonicKernelCost;
+}
+
+const defaultPhotonicKernelFor = (op: BridgeOp): PhotonicKernelCost => ({ n: op.count, lane: "photonic", tolerance: 0.05 });
+
 export class HybridInferenceEngine {
   private readonly tower: TowerRuntime;
   private readonly ctx: RoutingContext;
@@ -204,6 +238,8 @@ export class HybridInferenceEngine {
   /** V_DPM authority this engine actually holds. Inference requires AI_INFERENCE_CAP;
    *  a granted mask lacking that bit traps ERR_CAPABILITY_DENIED before any compute. */
   private readonly grantedCapabilityMask: number;
+  /** Optional photonic offload (opt-in; off by default; never used in certified mode). */
+  private readonly photonic: PhotonicConfig | null;
   private bridgeAttestationDenial: string | null = null; // cached: first offending bridge id, if any
   private bridgeAttestationChecked = false;
   private bridgesInitialized = false;
@@ -225,6 +261,7 @@ export class HybridInferenceEngine {
     certified = false,
     attestationPolicy: AttestationPolicy | null = null,
     grantedCapabilityMask: number = HYBRID_METADATA.capabilityMask,
+    photonic: PhotonicConfig | null = null,
   ) {
     this.ctx = {
       governanceTier: ctx.governanceTier ?? 1,
@@ -253,6 +290,7 @@ export class HybridInferenceEngine {
     this.certified = certified;
     this.attestationPolicy = attestationPolicy;
     this.grantedCapabilityMask = grantedCapabilityMask;
+    this.photonic = photonic;
   }
 
   /**
@@ -486,6 +524,29 @@ export class HybridInferenceEngine {
     let ternaryChecksum = 0;
 
     for (const decision of plan.decisions) {
+      const op = buildDemoTernaryOp(decision.opClass, decision.precision, correlationId);
+
+      // ── Photonic offload (opt-in, fail-closed, NOT in certified mode) ─────────────────────
+      // For a ternary op, consult the injected photonic backend FIRST. A non-null result has
+      // ALREADY passed the port's tolerance re-verify, so we accept it WITHOUT the bit-exact
+      // assertDeterminism oracle (the analog lane is tolerance-verified, not bit-exact). A null
+      // result means the port declined (ineligible / no net win / out-of-tolerance / any
+      // uncertainty) → fall through to the UNCHANGED digital dispatch. Default off (this.photonic
+      // === null) ⇒ this whole block is skipped and the path below is byte-identical to before.
+      if (this.photonic && !this.certified && decision.precision === "ternary") {
+        const kernel = (this.photonic.kernelFor ?? defaultPhotonicKernelFor)(op);
+        const ph = this.photonic.router.route(op, kernel);
+        if (ph) {
+          used.add(ph.bridgeId);
+          byOp.set(decision.opClass, {
+            value: ph.value, executedNatively: false, bridgeId: ph.bridgeId,
+            technique: "ternary", latencyMs: 0, deterministic: false,
+          });
+          ternaryChecksum = (ternaryChecksum + (ph.value | 0)) | 0;
+          continue; // photonic handled this op (tolerance-verified) — skip the digital dispatch
+        }
+      }
+
       const bridge = this.bridges.get(decision.precision);
       if (!bridge) {
         // No accelerator bridge for this precision (e.g. fp8/fp16). In permissive
@@ -493,7 +554,6 @@ export class HybridInferenceEngine {
         denied.add(decision.precision);
         continue;
       }
-      const op = buildDemoTernaryOp(decision.opClass, decision.precision, correlationId);
       const result = bridge.execute(op);
       assertDeterminism(result); // Citizen Standard 1 — abort on ternary drift
       used.add(result.bridgeId);
@@ -623,6 +683,14 @@ export function createHybridEngine(profile: {
    * not decorative. A deployment narrows this to express "no inference authority".
    */
   capabilityMask?: number;
+  /**
+   * Photonic offload (opt-in; off by default). When set, a ternary op routed by the partition
+   * cost model to a net-win photonic kernel runs on the injected photonic backend and is accepted
+   * only if it passes that backend's tolerance re-verify; otherwise the unchanged digital dispatch
+   * runs. Fail-closed; NEVER used in certified mode. A deployment wires
+   * `@logicn/ext-photonic-emulator`'s `createPhotonicRouterPort()` here.
+   */
+  photonic?: PhotonicConfig;
 } = {}): HybridInferenceEngine {
   const certified = profile.certified ?? false;
 
@@ -680,5 +748,6 @@ export function createHybridEngine(profile: {
     certified,
     profile.attestation ?? null,
     profile.capabilityMask ?? HYBRID_METADATA.capabilityMask,
+    profile.photonic ?? null,
   );
 }
