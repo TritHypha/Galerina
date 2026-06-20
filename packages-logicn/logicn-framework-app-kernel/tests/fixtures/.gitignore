@@ -1,0 +1,6 @@
+# These are HAND-BUILT test fixtures, not compiler output. The composition tests read
+# pre-assembled .wasm + manifests so they have NO build-time dependency on the compiler,
+# so the dist/ artifacts here MUST be tracked — re-include them despite the repo-wide
+# `dist/` ignore. Regenerate with: node tests/fixtures/compose/_generate.mjs
+!**/dist/
+!**/dist/**
