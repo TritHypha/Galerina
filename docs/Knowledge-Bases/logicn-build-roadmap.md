@@ -216,7 +216,14 @@ All affected suites green (core-network 97, tower-citizen 196, photonic-emulator
   manifest effect-mask is not trusted for enforcement — this bounds the residual.
 - 🟠 unsigned/placeholder manifest accepted by verify/run (add a profile-gated signature-required policy).
 - 🟡 CBOR `.lmanifest` signature still verified only via the JSON copy (the deeper self-verifiable-CBOR fix = **#67**);
-  sign over RFC-8785 canonical bytes; signing-profile fail-secure default; unknown-`opClass` deny-by-default.
+  sign over RFC-8785 canonical bytes; signing-profile fail-secure default.
+- ✅ **unknown-`opClass` deny-by-default — FIXED:** `routePrecision` (the precision-lane router used by both the
+  hybrid engine and the Execution Router) previously let an UNRECOGNIZED op class fall through to a fabricated
+  fp8/ternary decision (every numeric comparison against the `undefined` sensitivity is false). `InferenceOpClass`
+  is a compile-time union (erased at runtime) and `opClass` crosses a trust boundary as a plain string, so an
+  unknown op is now routed to the **fp16 full-precision floor** — no quantization, no photonic offload — mirroring
+  `resolveHardware`'s deny-on-unknown. +1 tower-citizen test (deny-by-default, and a loose tolerance can't coax an
+  unknown op into the ternary lane). Suite 53/53 · 4899.
 
 Full audit JSON (24 findings, reasoning + recommendations): `tasks/weeli9elq.output`.
 

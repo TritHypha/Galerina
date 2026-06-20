@@ -44,3 +44,18 @@ test("0007: tolerance never RAISES precision (monotone — only relaxes a tolera
   assert.equal(base.precision, "ternary");
   assert.equal(tol.precision, "ternary", "already-low op stays ternary (no raise, no double-step)");
 });
+
+// ── audit: DENY-BY-DEFAULT for an UNRECOGNIZED op class ──────────────────────────────────────────
+// InferenceOpClass is a compile-time union, erased at runtime; opClass crosses a trust boundary as a
+// plain string. An unknown op must NOT fall through to a fabricated low-bit decision — it is routed to
+// the fp16 full-precision floor (no quantization, no photonic offload).
+test("audit: an UNRECOGNIZED op class denies to the fp16 full-precision floor (deny-by-default)", () => {
+  const d = routePrecision("totally-bogus-op", CPU);
+  assert.equal(d.precision, "fp16", "unknown op must not get a low-bit lane");
+  assert.match(d.reason, /unrecognized op class/, "the decision must record WHY it was denied");
+  assert.equal(d.opClass, "totally-bogus-op");
+  // The fp16 floor is never the ternary lane → the photonic axis can't offload it.
+  assert.notEqual(d.precision, "ternary");
+  // A loose tolerance can NOT coax an unknown op into the ternary lane (the deny fires first).
+  assert.equal(routePrecision("totally-bogus-op", { ...CPU, tolerance: 0.5 }).precision, "fp16");
+});

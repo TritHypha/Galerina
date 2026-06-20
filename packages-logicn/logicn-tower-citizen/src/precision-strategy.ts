@@ -127,6 +127,21 @@ export function routePrecision(
   opClass: InferenceOpClass,
   ctx: RoutingContext,
 ): PrecisionDecision {
+  // DENY-BY-DEFAULT (audit): an UNRECOGNIZED op class must not silently default into a low-bit lane.
+  // InferenceOpClass is a compile-time union (erased at runtime) and opClass crosses a trust boundary
+  // as a plain string; previously every numeric comparison against the `undefined` sensitivity was
+  // false and the op fell through to a fabricated fp8/ternary decision (with `undefined` in the reason).
+  // Route it to the fp16 full-precision floor — no quantization, no photonic offload — mirroring
+  // resolveHardware's deny-on-unknown.
+  if (!(opClass in OP_SENSITIVITY)) {
+    return {
+      opClass,
+      precision: "fp16",
+      scheduling: "dynamic",
+      sourceEngine: TECHNIQUE_SOURCE["fp16"].engine,
+      reason: `unrecognized op class '${opClass}' — denied to the fp16 full-precision floor (deny-by-default)`,
+    };
+  }
   const sensitivity = OP_SENSITIVITY[opClass];
 
   // ── Precision selection ──────────────────────────────────────────────────
