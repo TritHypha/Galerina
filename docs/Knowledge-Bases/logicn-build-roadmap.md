@@ -208,18 +208,27 @@ All affected suites green (core-network 97, tower-citizen 196, photonic-emulator
   once + per-key `isKeyRevoked`). +1 app-kernel test. app-kernel 58/58.
 
 **STILL OPEN (next):**
-- 🟠 **`logicn run` admission gate — PARTIAL:** ✅ the swallowed-error fail-open is FIXED (a present-but-unreadable
-  manifest now denies with `LLN-MANIFEST-INVALID` instead of silently proceeding). Remaining: it still checks only
-  the (self-referential) `sourceHash`, not the signature/revocation — make it enforce the `verify` gate (a shared
-  `admitManifest` helper, profile-gated). NB the audit's own refutation: the governed runtime re-derives effects
-  from the sourceHash-bound source + the WASM admission gate verifies attestation over the binary, so the
-  manifest effect-mask is not trusted for enforcement — this bounds the residual.
+- 🟢 **`logicn run` admission gate — FIXED (production-gated signature + revocation):** ✅ the swallowed-error
+  fail-open was FIXED first (a present-but-unreadable manifest denies `LLN-MANIFEST-INVALID`). Now, under
+  `LOGICN_PROFILE=production`, the run gate also verifies the manifest **signature + revocation** before executing:
+  a present manifest that is unsigned/placeholder, has an incomplete signature, is signed by a **REVOKED** key,
+  is missing its public key, or whose signature fails to verify is refused (`LLN-MANIFEST-UNSIGNED` /
+  `LLN-MANIFEST-REVOKED-KEY` / `LLN-MANIFEST-PUBKEY-MISSING` / `LLN-MANIFEST-TAMPER`); any failure to complete
+  the check is itself fail-closed (`LLN-MANIFEST-INVALID`). Rationale: the `sourceHash` check is self-referential
+  (an attacker who edits the source AND rewrites `sourceHash` passes it) — only the signature binds the manifest
+  to a trusted signer, only the registry catches a revoked key. Dev (default) profile keeps the sourceHash-only
+  behaviour byte-for-byte. +1 cli-compatibility test (dev runs → 5050; production with a placeholder manifest →
+  `LLN-MANIFEST-UNSIGNED`). **Posture left for owner opt-in:** this is "verify-if-present" — a flow with NO
+  manifest still raw-runs in production; the stricter "production requires a signed manifest to run at all" is a
+  deliberate posture decision, not built. NB the audit's own refutation still bounds the residual (the governed
+  runtime re-derives effects from the sourceHash-bound source; the WASM gate attests over the binary) — this is
+  defence-in-depth. Follow-up cleanup: factor the duplicated verify/run signature logic into a shared
+  `admitManifest` helper (verify still uses its own inline copy).
 - 🟢 **unsigned/placeholder manifest accepted by `verify` — FIXED (profile-gated):** under `LOGICN_PROFILE=production`
   a placeholder / absent / incomplete-signature manifest now fails closed with `LLN-MANIFEST-UNSIGNED` (and an
   unreadable signature copy with `LLN-MANIFEST-INVALID`); the default (dev) profile keeps the informational
   behaviour byte-for-byte, so existing usage is unchanged. Mirrors `#178` fail-closed-in-prod. +1 cli-compatibility
-  test (placeholder passes in dev, rejected in production). Still open: the same policy on `logicn run` (folds into
-  the run-gate full-enforcement item above).
+  test (placeholder passes in dev, rejected in production).
 - 🟡 CBOR `.lmanifest` signature still verified only via the JSON copy (the deeper self-verifiable-CBOR fix = **#67**);
   sign over RFC-8785 canonical bytes; signing-profile fail-secure default.
 - ✅ **unknown-`opClass` deny-by-default — FIXED:** `routePrecision` (the precision-lane router used by both the

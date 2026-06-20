@@ -1354,6 +1354,59 @@ Baseline comparison (governance-cost):
         console.error(`❌ LLN-MANIFEST-INVALID: admission manifest ${manifestPath} is present but could not be read/decoded — fail-closed: ${e.message}`);
         process.exit(1);
       }
+
+      // ── AUDIT: production-gated signature + revocation admission (verify-if-present) ───────────
+      // The sourceHash check above is SELF-REFERENTIAL — an attacker who edits the source AND rewrites
+      // the manifest's sourceHash passes it. Only the SIGNATURE binds the manifest to a trusted signer,
+      // and only the revocation registry catches a stolen-but-revoked key. So in production, RUNNING a
+      // flow whose present manifest is unsigned/placeholder, tamper-flagged, signed by a REVOKED key, or
+      // missing its public key must fail-closed. Dev (the default profile) keeps today's sourceHash-only
+      // behaviour byte-for-byte; this is additive and fires ONLY under LOGICN_PROFILE=production.
+      // (Defence-in-depth, not sole enforcement — the run residual is bounded: the governed runtime
+      // re-derives effects from the sourceHash-bound source and the WASM gate attests over the binary.)
+      // Posture note: this is "verify-if-present" — a flow with NO manifest at all still raw-runs. The
+      // stricter "production requires a signed manifest to run" is a deliberate posture left for owner opt-in.
+      if (process.env.LOGICN_PROFILE === "production") {
+        const jsonPath = `build/${name}.lmanifest.json`;
+        try {
+          if (!existsSync(jsonPath)) {
+            console.error(`❌ LLN-MANIFEST-UNSIGNED: an admission manifest is present but its signed counterpart ${jsonPath} is absent — LOGICN_PROFILE=production refuses to run (fail-closed). Rebuild: logicn build ${llnFile}`);
+            process.exit(1);
+          }
+          const jm = JSON.parse(readFileSync(jsonPath, "utf-8"));
+          const sig = jm.governanceSignature;
+          if (!sig || typeof sig !== "object" || !(sig.algorithm && sig.keyId && sig.signature)) {
+            console.error(`❌ LLN-MANIFEST-UNSIGNED: manifest is unsigned/placeholder but LOGICN_PROFILE=production requires a signature to run — fail-closed. Run: logicn keygen && logicn build ${llnFile}`);
+            process.exit(1);
+          }
+          // A revoked signer is Deny even with a cryptographically valid signature.
+          const reg = await import("./governance/revocation-registry.mjs");
+          reg.assertRegistryTrustworthy("."); // throws on a tampered / revoked-signer registry → caught below
+          if (reg.isKeyRevoked(sig.keyId)) {
+            console.error(`❌ LLN-MANIFEST-REVOKED-KEY: manifest signed by REVOKED key ${sig.keyId} — refusing to run (fail-closed, Deny).`);
+            process.exit(1);
+          }
+          // Signature integrity over the manifest body (mirrors verify / #109).
+          const pubKeyPath = join("governance", `signing-key-${sig.keyId}.pub.pem`);
+          if (!existsSync(pubKeyPath)) {
+            console.error(`❌ LLN-MANIFEST-PUBKEY-MISSING: public key ${pubKeyPath} not found but the manifest asserts a signature — fail-closed (cannot verify before running).`);
+            process.exit(1);
+          }
+          const { verify: cryptoVerify, createPublicKey } = await import("node:crypto");
+          const { governanceSignature: _omit, ...withoutSig } = jm;
+          const sigOk = cryptoVerify(null, Buffer.from(JSON.stringify(withoutSig, null, 2)), createPublicKey(readFileSync(pubKeyPath, "utf-8")), Buffer.from(sig.signature, "base64"));
+          if (!sigOk) {
+            console.error(`❌ LLN-MANIFEST-TAMPER: manifest signature verification FAILED — refusing to run (fail-closed).`);
+            process.exit(1);
+          }
+        } catch (e) {
+          // Only genuine errors reach here (bad JSON / unreadable key / crypto error / untrustworthy
+          // registry); the explicit process.exit(1) calls above terminate synchronously, they do not
+          // throw. Any failure to COMPLETE the admission check is itself fail-closed.
+          console.error(`❌ LLN-MANIFEST-INVALID: could not complete the required signature/revocation admission under LOGICN_PROFILE=production — fail-closed: ${e.message}`);
+          process.exit(1);
+        }
+      }
     }
 
     // ── #125 secure-flow-run — run secure/effectful flows through the GOVERNED runtime ──

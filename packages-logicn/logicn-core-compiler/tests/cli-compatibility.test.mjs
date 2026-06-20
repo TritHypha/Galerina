@@ -98,6 +98,32 @@ describe("CLI compatibility — logicn run", () => {
     const { code } = logicn("run", "nonexistent-file.lln");
     assert.notEqual(code, 0, "should fail on missing file");
   });
+
+  // AUDIT: the run admission gate is sourceHash-only in dev, but under LOGICN_PROFILE=production it must
+  // also verify the manifest signature + revocation — an unsigned/placeholder (or revoked-key) manifest
+  // must not RUN. sourceHash alone is self-referential; only the signature binds the manifest to a signer.
+  it("logicn run is sourceHash-only in dev but REJECTS an unsigned manifest under LOGICN_PROFILE=production", () => {
+    mkdirSync(join(ROOT, "build"), { recursive: true });
+    const built = logicn("build", BENCH);
+    assert.equal(built.code, 0, `build failed: ${built.stdout}`);
+    const cborPath = join(ROOT, "build", "benchmark.lmanifest");
+    const jsonPath = join(ROOT, "build", "benchmark.lmanifest.json");
+    if (!existsSync(cborPath) || !existsSync(jsonPath)) return; // manifest generation is non-fatal; skip if absent
+
+    // Force a placeholder signature on the signed counterpart (deterministic regardless of key config).
+    const manifest = JSON.parse(readFileSync(jsonPath, "utf8"));
+    writeFileSync(jsonPath, JSON.stringify({ ...manifest, governanceSignature: "placeholder" }, null, 2));
+
+    // DEV (default profile): the gate is sourceHash-only → the (untampered) CBOR matches, run succeeds.
+    const dev = logicn("run", BENCH, "--invoke", "main");
+    assert.equal(dev.code, 0, `dev run should succeed: ${dev.stderr}`);
+    assert.equal(dev.stdout.trim(), "5050");
+
+    // PRODUCTION: the present manifest is unsigned (placeholder) → fail-closed before executing.
+    const prod = logicnEnv({ LOGICN_PROFILE: "production" }, "run", BENCH, "--invoke", "main");
+    assert.notEqual(prod.code, 0, "production run must reject an unsigned (placeholder) manifest");
+    assert.ok(prod.stderr.includes("LLN-MANIFEST-UNSIGNED"), `expected LLN-MANIFEST-UNSIGNED, got: ${prod.stderr}`);
+  });
 });
 
 // ── logicn build ──────────────────────────────────────────────────────────────
