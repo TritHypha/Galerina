@@ -116,6 +116,72 @@ for future:
 LogicN must avoid assuming that all future compute is purely binary, purely
 electrical, CPU-local or Von Neumann style.
 
+### The Bifurcated Execution Invariant (Hardware Parity)
+
+> **Unified semantics, divergent physics.** Maintain semantic parity across all hardware tiers;
+> sacrifice shared code before sacrificing hardware performance. If the physics demand it, build it twice.
+
+LogicN guarantees **semantic parity** — *the governed outcome of a program is identical across the
+Binary (discrete/silicon) and Photonic (continuous/optical) tiers* — but it **never bottlenecks one
+tier with the other's logic** (a "lowest-common-denominator" implementation is forbidden). Where the
+two hardware paradigms fundamentally diverge, a component is **bifurcated**: implemented twice under one
+interface, each path native to its substrate — *mechanical sympathy at the ecosystem level*. The
+compiler/Tower is the **router**: at build time it inspects the available hardware and wires each flow
+to the correct implementation. The developer calls one interface and never sees the split.
+
+- **Abstract interface** — all the developer sees (e.g. `@component interface Transform`).
+- **Binary implementation** — native to silicon (strict-trapping i32 / WASM linear memory).
+- **Photonic implementation** — native to optics (e.g. a Mach–Zehnder interferometer mesh), living in a
+  **separate backend package**; the digital path stays the **default and unchanged**.
+- **Router** — selects the implementation from the available hardware **and** the partition cost-model:
+  offload to photonics only when it is a measured/projected **net win**; otherwise stay digital. The
+  worst case is "stayed digital" — never a slowdown.
+
+**What "semantic parity" means precisely — and where the invariant stops:**
+
+1. **Parity is of the GOVERNED OUTCOME, not bit-identical analog values.** A photonic result is
+   non-deterministic within a declared tolerance (`substrate {}`); parity is *enforced* by re-verifying
+   the result on the digital core — **cheaply (Freivalds), never by re-execution** — and by the **K3
+   fail-closed** property (a confident verdict survives bounded analog noise; near-threshold collapses to
+   DENY). It is **not** a promise that two tiers emit the same IEEE-754 bits.
+2. **Crypto, exact arithmetic, and control flow are BINARY-ONLY — they are NOT bifurcated.** Per
+   crypto-on-core (`LLN-SUBSTRATE-001`), bit-exact cryptography and data-dependent control cannot run on
+   analog optics (the precision wall — proven). These have **one** implementation (binary); the photonic
+   tier's programs route them to the binary core. A photonic crypto path would be invented/broken crypto
+   and is forbidden. Bifurcation is *permitted and expected* **only** for components both tiers can
+   natively execute (tensor/MAC, ANN, the governance reduction, transforms like `fft`).
+3. **No measured photonic performance claim without a named device** — projected envelopes are labelled
+   aspirational until a real photonic-integrated-circuit benchmark exists.
+
+In short: **one interface and one governed outcome; two native implementations wherever the physics
+allow and a net win exists; binary-only wherever the physics forbid.** (Maths: the cheap-verify /
+fail-safe-noise / net-win-partition guarantees are proven in
+`LogicN-R-AND-D/scripts/rd-photonic-ppu-virtualisation-proof.mjs`.)
+
+### The Tri-Pipe — three execution tiers under one router
+
+The Bifurcated Invariant materialises as **three execution pipes**, selected per-flow (and
+per-component) by a **single heterogeneous router** — NOT three virtual CPUs (R&D 0009: *"one
+native-routing seam, not three emulated processors"*):
+
+- **Binary** — pure discrete/silicon (strict-trapping i32 / WASM linear memory). Deterministic,
+  bit-exact, the **default and universal fallback**. Every component can run here; **crypto, exact
+  arithmetic, and control flow run ONLY here** (crypto-on-core).
+- **Photonic** — pure continuous/optical (analog MAC). Non-deterministic within a `substrate {}`
+  tolerance, **re-verified on Binary** (Freivalds, never re-execution), **fail-closed**. Eligible for
+  tensor / governance-reduction / transform kernels only; a *whole program* is rarely pure-photonic
+  because control + crypto forbid it.
+- **Hybrid** — the **composition and the realistic dominant mode**: one flow with its control / crypto /
+  exact parts on Binary and its eligible kernels offloaded to Photonic, results re-verified. Realized by
+  the partition router (R&D 0053 `PartitionDecider`) over the shipped Brain→Brawn dispatch
+  (`hybrid-engine.ts`). It offloads only on a measured/projected net win — else it stays Binary.
+
+**One governed outcome across all three pipes** (semantic parity); **fail-closed to Binary** on any
+ineligibility / out-of-tolerance / unattested / no-net-win condition; **never a slowdown** (worst case =
+stayed Binary). *Disambiguation:* the Tri-Pipe **Hybrid** is hybrid **execution** (binary + photonic) —
+distinct from hybrid **signing** (classical Ed25519 + PQ ML-DSA-65), a different axis that applies within
+the Binary pipe.
+
 ## Architectural Stability
 
 LogicN must be additive by design.
