@@ -182,6 +182,32 @@ stayed Binary). *Disambiguation:* the Tri-Pipe **Hybrid** is hybrid **execution*
 distinct from hybrid **signing** (classical Ed25519 + PQ ML-DSA-65), a different axis that applies within
 the Binary pipe.
 
+### Per-tier packages + the hardware-capability passive directive
+
+The Tri-Pipe is realized as a **package topology**, not only internal branching: each component is
+**replicated per pipe** under one abstract interface — e.g. `tower-citizen-binary`,
+`tower-citizen-hybrid`, `tower-citizen-photonic` — each a native implementation for its tier (the
+Bifurcated Invariant's "build it twice", here per-pipe). The pattern **replicates across every
+component**.
+
+Selection is driven by a **passive directive**: a cached hardware-capability query
+**`hardware() → { binary | hybrid | photonic }`**, resolved **once** (boot/admission, deployment-stable)
+and reused throughout the logic — a Passive Execution Plan input, not a per-call cost. The loader picks
+the **most-capable available tier: photonic, else hybrid, else binary** — Binary is always the
+guaranteed fallback.
+
+Reconciliation (the invariants do not change):
+- **Capability preference ≠ blind execution.** Preferring the photonic package means *"use the best
+  hardware you have"*; WITHIN it, crypto / exact / control still run on the Binary core (crypto-on-core),
+  and each eligible kernel is still net-win-gated + re-verified + **fail-closed to Binary**. So
+  "photonic > hybrid > binary" (a **capability** axis) and "fail-closed to Binary" (a **correctness**
+  axis) are orthogonal and coexist.
+- **Honest nuance.** For most *whole* components some control/crypto is present, so the photonic and
+  hybrid packages converge in practice: `*-photonic` is for fully-eligible components (pure
+  tensor / governance-reduction); **`*-hybrid` (photonic HW present, mixed routing) is the dominant real
+  package**; `*-binary` is the no-photonic-HW build. The cached `hardware()` directive + the partition
+  router pick the right one; semantic parity holds across all three.
+
 ## Architectural Stability
 
 LogicN must be additive by design.
