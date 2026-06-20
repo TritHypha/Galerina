@@ -1311,7 +1311,13 @@ Baseline comparison (governance-cost):
           console.error(`   Rebuild with: logicn build ${llnFile}`);
           process.exit(1);
         }
-      } catch { /* non-fatal if manifest is unreadable */ }
+      } catch (e) {
+        // AUDIT FIX (fail-closed): a manifest that EXISTS but cannot be read/decoded is suspicious
+        // (possible tamper of the authoritative CBOR) — DENY rather than silently proceed. An ABSENT
+        // manifest is the dev "run the source directly" case, already handled by the existsSync guard.
+        console.error(`❌ LLN-MANIFEST-INVALID: admission manifest ${manifestPath} is present but could not be read/decoded — fail-closed: ${e.message}`);
+        process.exit(1);
+      }
     }
 
     // ── #125 secure-flow-run — run secure/effectful flows through the GOVERNED runtime ──

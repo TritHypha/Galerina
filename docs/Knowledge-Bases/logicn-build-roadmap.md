@@ -208,8 +208,12 @@ All affected suites green (core-network 97, tower-citizen 196, photonic-emulator
   once + per-key `isKeyRevoked`). +1 app-kernel test. app-kernel 58/58.
 
 **STILL OPEN (next):**
-- 🟠 `logicn run` admission gate does only a self-referential sourceHash check (no signature/revocation) and
-  swallows manifest errors — make it enforce the `verify` gate, fail-closed.
+- 🟠 **`logicn run` admission gate — PARTIAL:** ✅ the swallowed-error fail-open is FIXED (a present-but-unreadable
+  manifest now denies with `LLN-MANIFEST-INVALID` instead of silently proceeding). Remaining: it still checks only
+  the (self-referential) `sourceHash`, not the signature/revocation — make it enforce the `verify` gate (a shared
+  `admitManifest` helper, profile-gated). NB the audit's own refutation: the governed runtime re-derives effects
+  from the sourceHash-bound source + the WASM admission gate verifies attestation over the binary, so the
+  manifest effect-mask is not trusted for enforcement — this bounds the residual.
 - 🟠 unsigned/placeholder manifest accepted by verify/run (add a profile-gated signature-required policy).
 - 🟡 CBOR `.lmanifest` signature still verified only via the JSON copy (the deeper self-verifiable-CBOR fix = **#67**);
   sign over RFC-8785 canonical bytes; signing-profile fail-secure default; unknown-`opClass` deny-by-default.
