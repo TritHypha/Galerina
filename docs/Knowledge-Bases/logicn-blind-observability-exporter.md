@@ -5,10 +5,11 @@
 (two verifiers; fixes applied + lead-re-verified) · **Grounding bench** `telemetry-state-grounding-verify.mjs` **exit 0,
 42/42** (16/16 cited state producers confirmed; exporter absence confirmed N1/N2/N3).
 
-> ⚠️ **NAME UNDER OWNER REVIEW.** The worker's working name is `logicn-telemetry-sidecar`. A 4-lens hub naming panel
-> (backend-dev / DevOps / security / DevRel) unanimously recommends **`logicn-governance-exporter`** instead — see
-> [[logicn-social-ecosystem-cloud-native]] and the "Naming" section below. This doc uses the neutral term **"the
-> exporter"** until the owner picks.
+> ✅ **NAME — OWNER DECISION 2026-06-20: `logicn-governance-telemetry`.** (The 4-lens hub panel had recommended
+> `logicn-governance-exporter` — Prometheus `-exporter` convention; the owner chose to keep "telemetry" for recognition
+> while adding the "governance" differentiator — a deliberate middle path.) **"sidecar" is dropped from the name** — it's a
+> deployment descriptor only. The body below says "the exporter" generically; the shipping artifact is
+> `logicn-governance-telemetry`.
 
 ## What it is
 A thin **read-only exporter** that maps a LogicN app's **already-produced governance / audit / enforcement / surface

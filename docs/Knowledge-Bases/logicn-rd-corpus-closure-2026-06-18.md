@@ -37,8 +37,9 @@ single vs multi-module, packages-outside; verified current = one signed `.wasm`/
 **▶ 0050 + 0051 + 0052 ALL DONE + HUB-ABSORBED 2026-06-19** (worker done-records committed in R&D repo; hub KB
 docs written). **0050** (`logicn-blind-observability-exporter.md`) — SOUND-WITH-FIXES, bench 42/42; the
 governance-native metrics are the unique value (generic RED/503 deferred to the mesh); backpressure governance_deny
-arm is NET-NEW kernel→runtime bridge wiring; egress fence (never export `AuditEvent.path`). **NAMING: hub 4-lens
-panel UNANIMOUS — drop "telemetry sidecar" → recommend `logicn-governance-exporter`** (owner to confirm).
+arm is NET-NEW kernel→runtime bridge wiring; egress fence (never export `AuditEvent.path`). **NAMING — OWNER DECISION
+2026-06-20: `logicn-governance-telemetry`** (panel recommended `-exporter`; owner kept "telemetry" + added "governance";
+"sidecar" dropped from the name).
 **0051** (`logicn-ecosystem-positioning-verified-imports.md`) — positioning-not-language-change, bench 13/13;
 verified-import HYBRID = prod/mesh signed-hash + dev file-path, profile DERIVED from `SecurityPosture`, NO lockfile
 (emit untrusted `import-closure.json`). **0052** (`logicn-wasm-compilation-granularity.md`) — default AOT-fuse +
