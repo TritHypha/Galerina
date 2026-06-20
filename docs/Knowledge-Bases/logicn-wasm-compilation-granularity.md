@@ -98,8 +98,14 @@ proving the 42 genuinely came from the provider module. Order-independence verif
 first regardless of input order). +3 e2e tests; app-kernel 54/54. **Phase B/C remain** (Component Model isolation when
 #102–104 land; app-split).
 
+**CLI — SHIPPED 2026-06-20.** `logicn fuse <dir…> [--allow-unsigned] [--governance-dir <d>] [--invoke <pkg>:<export>]`
+host-links a SET of built packages from the command line, prints the resolved composition (per-package seam +
+capabilities), and optionally invokes an entry. Fail-closed (`LLN-FUSE-SET-UNSIGNED` without `--allow-unsigned`).
+Verified: `logicn fuse clockprovider clockconsumer --allow-unsigned --invoke clockconsumer:main → 42`.
+
 ## Open / next
-The two-mode design is **owner-gated** — **Phase A Slices 1 + 2 are now built** (above). Remaining order: Phase B
-(Component Model memory isolation when #102–104 land) → Phase C (app-split) → the §7 size/cost bench. A natural usability
-follow-up: a `logicn fuse <dirs…>` CLI wrapper over `fusePackages`. See [[logicn-rd-corpus-closure-2026-06-18]] and the package/fuse docs
+The two-mode design is **owner-gated** — **Phase A is COMPLETE** (Slice 1 planner/linker + Slice 2 real wasm call +
+the `logicn fuse` CLI). Remaining order: **Phase B** (Component Model memory isolation when #102–104 land — lets an
+*untrusted* peer be admitted) → **Phase C** (app-split at flow/contract granularity riding the #94 DAG) → the §7
+size/cost bench (perf numbers — currently none, "no maths yet"). See [[logicn-rd-corpus-closure-2026-06-18]] and the package/fuse docs
 (`logicn-package-resolver-architecture.md`, `logicn-native-module-system.md`, `logicn-hybrid-wasm-architecture.md`).

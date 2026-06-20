@@ -99,6 +99,7 @@ Commands:
   logicn build <file.lln>                             compile → build/<name>.wasm + .wat + .lmanifest
   logicn build --package <dir>                        compile a package's /src → governed .wasm in <dir>/dist/ (fusable, emits .fuse.json)
   logicn build --package <dir> --no-refresh           ...without refreshing the //lln: dependency metadata (reproducible CI)
+  logicn fuse <dir...> [--invoke <pkg>:<export>]       host-link a SET of built packages (multi-module; deny-by-default, fail-closed)
   logicn deps <file.lln> [--flow <name>]              print generated //lln: USES/USEDBY/IMPACT/COMPLEXITY for a file
   logicn deps <file.lln> --write                      write the //lln: metadata into that file (machine-owned tier)
   logicn deps --all [dir] [--write]                   refresh //lln: across EVERY .lln in the app (cross-file; default dir = cwd)
@@ -719,6 +720,44 @@ Baseline comparison (governance-cost):
       console.log(`\n(${parsedCount} file(s) analysed${parseErrors ? `, ${parseErrors} skipped` : ""}; re-run with --write to apply.)`);
     }
     process.exit(0);
+  }
+
+  // ── logicn fuse <dir...> — compose multiple built packages (R&D 0052 Phase A) ─────────────────
+  // Host-links a SET of `logicn build --package` outputs: packages can live OUTSIDE the app as
+  // separate signed .wasm and be wired at admission. Fail-closed (set-signed, deny-by-default,
+  // acyclic). First-party/trusted only (shared memory; isolation is Phase B). Prints the resolved
+  // composition; `--invoke <pkg>:<export>` runs an entry. Must run BEFORE the single-file read.
+  if (command === "fuse") {
+    let allowUnsigned = false, governanceDir, invokeSpec;
+    const dirs = [];
+    for (let i = 0; i < rest.length; i++) {
+      const a = rest[i];
+      if (a === "--allow-unsigned") allowUnsigned = true;
+      else if (a === "--governance-dir") governanceDir = rest[++i];
+      else if (a === "--invoke") invokeSpec = rest[++i];
+      else if (!a.startsWith("--")) dirs.push(a);
+    }
+    if (dirs.length === 0) { console.error("Error: logicn fuse needs one or more package directories"); process.exit(1); }
+    const ak = await import(new URL("packages-logicn/logicn-framework-app-kernel/dist/index.js", import.meta.url).href);
+    try {
+      const opts = { allowUnsigned, warn: (msg) => console.warn(`  ⚠ ${msg}`) };
+      if (governanceDir) opts.governanceDir = governanceDir;
+      const components = await ak.fusePackages(dirs, opts);
+      console.log(`✅ Fused ${components.size} package(s) (host-linked, first-party):`);
+      for (const [name, c] of components) {
+        console.log(`   - ${name}  seam=${c.seam ?? "—"}  capabilities=[${[...c.capabilities].join(", ")}]`);
+      }
+      if (invokeSpec) {
+        const [pkg, exp] = invokeSpec.split(":");
+        const comp = components.get(pkg);
+        if (!comp) { console.error(`Error: no fused package named '${pkg}' (have: ${[...components.keys()].join(", ")})`); process.exit(1); }
+        console.log(`   invoke ${pkg}:${exp} → ${comp.invoke(exp)}`);
+      }
+      process.exit(0);
+    } catch (e) {
+      console.error(`❌ ${e.message}`); // fail-closed LLN-FUSE-* codes
+      process.exit(1);
+    }
   }
 
   if (!llnFile) { console.error("Error: no .lln file specified"); process.exit(1); }
