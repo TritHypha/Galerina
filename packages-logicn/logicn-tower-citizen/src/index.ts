@@ -15,6 +15,7 @@ export {
   TECHNIQUE_SOURCE,
   TECHNIQUE_BITS,
   OP_SENSITIVITY,
+  LOOSE_TOLERANCE,
 } from "./precision-strategy.js";
 export type {
   PrecisionTechnique,

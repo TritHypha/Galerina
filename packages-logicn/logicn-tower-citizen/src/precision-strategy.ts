@@ -98,7 +98,23 @@ export interface RoutingContext {
   readonly fp4HardwareAvailable: boolean;
   /** Whether the deployment is air-gapped (forces CPU-only ternary path). */
   readonly airGapped: boolean;
+  /**
+   * Declared loss-tolerance from `contract { substrate { tolerance } }` (R&D 0007 — the
+   * "routePrecision lane axis"). It is the acceptable-error magnitude: tight (≈1e-9, the deny-by-
+   * default) means no quantization budget; a LOOSE value (≥ {@link LOOSE_TOLERANCE}) is the author
+   * opting a NON-sensitive op into the low-bit lane (ternary — CPU/photonic-friendly). FAIL-SAFE: a
+   * declared tolerance can only RELAX a tolerant op; it NEVER overrides the high-sensitivity `fp16`
+   * floor (sensitivity ≥ 0.85), because op sensitivity is about error COMPOUNDING, not budget.
+   */
+  readonly tolerance?: number;
 }
+
+/**
+ * The loss-tolerance threshold (acceptable-error magnitude) at or above which the author is treated
+ * as having opted a non-sensitive op into the low-bit ternary lane. Below it (tight/default), routing
+ * is unchanged. Conservative: this is a meaningful (≥0.1%) declared budget, not the 1e-9 default.
+ */
+export const LOOSE_TOLERANCE = 1e-3;
 
 /**
  * The Hybrid Precision Router — picks the best (precision, scheduling) pair for
@@ -147,6 +163,21 @@ export function routePrecision(
     // Default middle ground.
     precision = "fp8";
     reason = `op '${opClass}' moderate sensitivity ${sensitivity} → fp8 balance`;
+  }
+
+  // ── Declared-tolerance relaxation (R&D 0007) ─────────────────────────────
+  // A LOOSE declared loss-tolerance lets the author opt a NON-sensitive op into the low-bit ternary
+  // lane (CPU/photonic-friendly). FAIL-SAFE by construction: it only fires for sensitivity < 0.7
+  // (so the fp16 floor at ≥0.85 and the air-gapped fp8-for-0.7..0.85 path are untouched) and it only
+  // steps the moderate `fp8` default DOWN to ternary — it never raises precision, never relaxes a floor.
+  if (
+    ctx.tolerance !== undefined &&
+    ctx.tolerance >= LOOSE_TOLERANCE &&
+    sensitivity < 0.7 &&
+    precision === "fp8"
+  ) {
+    precision = "ternary";
+    reason = `op '${opClass}' (sensitivity ${sensitivity}) + declared tolerance ${ctx.tolerance} ≥ ${LOOSE_TOLERANCE} → low-bit ternary lane`;
   }
 
   // ── Scheduling selection ─────────────────────────────────────────────────

@@ -231,6 +231,9 @@ export class HybridInferenceEngine {
       fp4HardwareAvailable: ctx.fp4HardwareAvailable ?? false,
       airGapped: ctx.airGapped ?? true, // safe default: assume regulated/air-gapped
       ...(ctx.maxLatencyMs !== undefined ? { maxLatencyMs: ctx.maxLatencyMs } : {}),
+      // R&D 0007: thread the declared substrate tolerance through so routePrecision can route a
+      // tolerant non-sensitive op to the low-bit lane. Absent ⇒ tight/default (no relaxation).
+      ...(ctx.tolerance !== undefined ? { tolerance: ctx.tolerance } : {}),
     };
     this.tower = tower ?? new TowerRuntime({ assimilationMemoryBudgetMB: 512, auditDepth: "full" });
     // The Brain→Brawn seam: default to the in-package stub registry (the real
