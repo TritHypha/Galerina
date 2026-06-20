@@ -145,10 +145,46 @@ export function generateEffectEgressTests(flow: GIRFlow): EffectEgressTestCase[]
   return out;
 }
 
+// =============================================================================
+// Capability-denial dimension — every capability a flow requires becomes a fail-closed
+// obligation: withhold that capability and the flow must be DENIED before any effect runs
+// ((required & granted) !== required → deny). Exercises the V_DPM capability gate.
+// =============================================================================
+
+/** A generated capability-denial test obligation for one required capability. */
+export interface CapabilityDenialTestCase {
+  readonly id: string;          // `<flow>::cap-deny::<capability>`
+  readonly flow: string;
+  readonly effect: string;      // the effect that requires the capability
+  readonly capability: string;  // the capability name (e.g. host.network.outbound)
+  readonly assertion: string;
+}
+
+/**
+ * Generate one capability-denial obligation per capability a flow requires (from GIRFlow.capabilities,
+ * the effect→capability map). Returns [] for a flow that requires no capability (e.g. a pure flow).
+ */
+export function generateCapabilityDenialTests(flow: GIRFlow): CapabilityDenialTestCase[] {
+  const out: CapabilityDenialTestCase[] = [];
+  for (const [effect, capability] of flow.capabilities) {
+    out.push({
+      id: `${flow.name}::cap-deny::${capability}`,
+      flow: flow.name,
+      effect,
+      capability,
+      assertion:
+        `withhold capability '${capability}' (required for effect '${effect}'): the flow must be DENIED ` +
+        `before any effect runs — the V_DPM gate ((required & granted) !== required) denies — fail-closed`,
+    });
+  }
+  return out;
+}
+
 /** All generated contract test obligations for a flow, by dimension. */
 export interface ContractTestSuite {
   readonly faultInjection: readonly FaultInjectionTestCase[];
   readonly effectEgress: readonly EffectEgressTestCase[];
+  readonly capabilityDenial: readonly CapabilityDenialTestCase[];
 }
 
 /** Run every implemented generator dimension over a program's flows. */
@@ -156,6 +192,7 @@ export function generateContractTestSuite(flows: readonly GIRFlow[]): ContractTe
   return {
     faultInjection: flows.flatMap((f) => generateFaultInjectionTests(f)),
     effectEgress: flows.flatMap((f) => generateEffectEgressTests(f)),
+    capabilityDenial: flows.flatMap((f) => generateCapabilityDenialTests(f)),
   };
 }
 

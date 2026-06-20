@@ -5,7 +5,7 @@ import { describe, it } from "node:test";
 import {
   parseProgram, checkEffects, emitGIR,
   generateFaultInjectionTests, generateFaultInjectionSuite, renderFaultInjectionTAP,
-  generateEffectEgressTests, generateContractTestSuite,
+  generateEffectEgressTests, generateContractTestSuite, generateCapabilityDenialTests,
 } from "../dist/index.js";
 
 function girFlows(source) {
@@ -139,11 +139,32 @@ describe("0016: effect-egress test generation from governed sinks", () => {
     assert.deepEqual(generateEffectEgressTests(flow), []);
   });
 
-  it("generateContractTestSuite returns both dimensions over the program", () => {
+  it("generateContractTestSuite returns all implemented dimensions over the program", () => {
     const flows = girFlows(twoSinks);
     const suite = generateContractTestSuite(flows);
     assert.equal(suite.effectEgress.length, 2, "two governed sinks → two egress obligations");
+    assert.equal(suite.capabilityDenial.length, 2, "two effects → two capability-denial obligations");
     // saveOrder declares no resilience handlers → no fault-injection cases
     assert.equal(suite.faultInjection.length, 0);
+  });
+});
+
+describe("0016: capability-denial test generation", () => {
+  it("emits one fail-closed denial obligation per required capability", () => {
+    const flow = girFlows(twoSinks)[0];
+    const cases = generateCapabilityDenialTests(flow);
+    assert.equal(cases.length, 2, "two declared effects → two required capabilities");
+    const effects = cases.map((c) => c.effect).sort();
+    assert.deepEqual(effects, ["database.write", "network.outbound"]);
+    for (const c of cases) {
+      assert.equal(c.id, `saveOrder::cap-deny::${c.capability}`);
+      assert.ok(c.capability.length > 0, "a capability name is resolved");
+      assert.match(c.assertion, /must be DENIED before any effect runs.*fail-closed/);
+    }
+  });
+
+  it("a flow that requires no capability (pure) generates no denial obligations", () => {
+    const flow = girFlows(pureFlow)[0];
+    assert.deepEqual(generateCapabilityDenialTests(flow), []);
   });
 });

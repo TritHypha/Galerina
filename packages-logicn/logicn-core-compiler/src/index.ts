@@ -435,10 +435,12 @@ export {
   generateFaultInjectionTests,
   generateFaultInjectionSuite,
   generateEffectEgressTests,
+  generateCapabilityDenialTests,
   generateContractTestSuite,
   renderFaultInjectionTAP,
   type FaultInjectionTestCase,
   type EffectEgressTestCase,
+  type CapabilityDenialTestCase,
   type ContractTestSuite,
 } from "./test-generator.js";
 export {
