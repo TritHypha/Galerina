@@ -1,3 +1,5 @@
+import type { EgressPolicy } from "./egress-guard.js";
+
 export type NetworkDirection = "inbound" | "outbound";
 
 export type NetworkProtocol =
@@ -73,6 +75,8 @@ export interface NetworkPolicy {
   readonly denyRawSockets: boolean;
   readonly requireTimeouts: boolean;
   readonly requireBackpressure: boolean;
+  /** Optional declarative outbound-egress posture (SSRF). Validated only when present. */
+  readonly egress?: EgressPolicy;
 }
 
 export interface NetworkBackendCapability {
@@ -140,6 +144,7 @@ export function defineNetworkPolicy(
     denyRawSockets: input.denyRawSockets ?? true,
     requireTimeouts: input.requireTimeouts ?? true,
     requireBackpressure: input.requireBackpressure ?? true,
+    ...(input.egress !== undefined ? { egress: input.egress } : {}),
   };
 }
 
@@ -200,6 +205,10 @@ export function validateNetworkPolicy(
       "Network streams should require bounded backpressure.",
       "requireBackpressure",
     ));
+  }
+
+  if (policy.egress !== undefined) {
+    diagnostics.push(...validateEgressPolicy(policy.egress, options));
   }
 
   return diagnostics;
@@ -371,6 +380,46 @@ function validateEndpointRule(
   return diagnostics;
 }
 
+function validateEgressPolicy(
+  egress: EgressPolicy,
+  options: { readonly production?: boolean },
+): readonly NetworkDiagnostic[] {
+  const diagnostics: NetworkDiagnostic[] = [];
+  if (egress.allowMetadataEndpoint === true) {
+    diagnostics.push(createNetworkDiagnostic(
+      "LogicN_NETWORK_EGRESS_METADATA_ALLOWED",
+      "error",
+      "Egress policy allows the cloud metadata endpoint — a prime SSRF target; remove allowMetadataEndpoint.",
+      "egress.allowMetadataEndpoint",
+    ));
+  }
+  if (egress.allowUrlCredentials === true) {
+    diagnostics.push(createNetworkDiagnostic(
+      "LogicN_NETWORK_EGRESS_URL_CREDENTIALS_ALLOWED",
+      "warning",
+      "Egress policy permits embedded URL credentials (userinfo) — a parser-confusion SSRF vector.",
+      "egress.allowUrlCredentials",
+    ));
+  }
+  if (egress.allowNonPublicHosts === true) {
+    diagnostics.push(createNetworkDiagnostic(
+      "LogicN_NETWORK_EGRESS_NONPUBLIC_ALLOWED",
+      options.production === true ? "error" : "warning",
+      "Egress policy allows non-public (private/loopback/link-local) hosts; prefer an explicit allowedHosts list.",
+      "egress.allowNonPublicHosts",
+    ));
+  }
+  if ((egress.allowedSchemes ?? []).some((s) => s.toLowerCase().replace(/:$/, "") === "http")) {
+    diagnostics.push(createNetworkDiagnostic(
+      "LogicN_NETWORK_EGRESS_PLAINTEXT_SCHEME",
+      options.production === true ? "error" : "warning",
+      "Egress policy permits plaintext http; require https for outbound calls.",
+      "egress.allowedSchemes",
+    ));
+  }
+  return diagnostics;
+}
+
 function createNetworkDiagnostic(
   code: string,
   severity: NetworkDiagnosticSeverity,
@@ -412,4 +461,5 @@ export {
   guardOutboundHost,
   guardOutboundUrl,
   validateWebhookTarget,
+  guardResolvedAddresses,
 } from "./egress-guard.js";

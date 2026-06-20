@@ -248,7 +248,34 @@ export function validateWebhookTarget(url: string, policy: EgressPolicy = {}): E
     allowUrlCredentials: false,
     ...(policy.allowedHosts !== undefined ? { allowedHosts: policy.allowedHosts } : {}),
   };
-  const d = guardOutboundUrl(url, strict);
-  if (d.allowed || d.code !== "LogicN_NETWORK_EGRESS_ALLOWED") return d;
-  return d;
+  return guardOutboundUrl(url, strict);
+}
+
+/**
+ * Connect-time DNS-rebinding defence. A hostname guard alone is TOCTOU-vulnerable: a name that
+ * looked public at check time can resolve to a private IP at connect time (DNS rebinding), or
+ * resolve to a MIX of public + private addresses. Re-classify EVERY resolved address and deny if
+ * ANY is non-public — unless the host is explicitly allow-listed (a trusted internal receiver) or
+ * the policy opts into non-public hosts. The caller passes the addresses its resolver returned and
+ * MUST connect ONLY to a verified address (pin it; do not re-resolve). Fail-closed: no addresses
+ * resolved ⇒ deny.
+ */
+export function guardResolvedAddresses(host: string, resolvedIps: readonly string[], policy: EgressPolicy = {}): EgressDecision {
+  const h = host.trim().toLowerCase();
+  if (resolvedIps.length === 0) {
+    return { allowed: false, code: "LogicN_NETWORK_SSRF_NO_RESOLUTION", category: "invalid", host: h, reason: "no resolved addresses (fail-closed)", requiresDnsRecheck: false };
+  }
+  // An explicitly allow-listed host is trusted to reach its addresses (e.g. a known internal receiver).
+  const allowList = new Set((policy.allowedHosts ?? []).map((x) => x.trim().toLowerCase()));
+  if (allowList.has(h)) {
+    return { allowed: true, code: "LogicN_NETWORK_EGRESS_ALLOWLISTED", category: "public", host: h, reason: "host is explicitly allow-listed", requiresDnsRecheck: false };
+  }
+  // Re-classify EVERY resolved address; deny on the FIRST non-public one (mixed resolution is an attack).
+  for (const ip of resolvedIps) {
+    const d = guardOutboundHost(ip, policy);
+    if (!d.allowed) {
+      return { allowed: false, code: "LogicN_NETWORK_SSRF_DNS_REBIND_DENIED", category: d.category, host: h, reason: `DNS-rebinding guard: resolved address ${ip} → ${d.reason}`, requiresDnsRecheck: false };
+    }
+  }
+  return { allowed: true, code: "LogicN_NETWORK_EGRESS_ALLOWED", category: "public", host: h, reason: `all ${resolvedIps.length} resolved address(es) are public`, requiresDnsRecheck: false };
 }

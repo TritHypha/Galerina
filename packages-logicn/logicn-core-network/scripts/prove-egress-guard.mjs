@@ -7,7 +7,7 @@
 //
 //   Run:  npm run prove   (or: node scripts/prove-egress-guard.mjs)
 
-import { classifyHost, guardOutboundHost, guardOutboundUrl } from "../dist/index.js";
+import { classifyHost, guardOutboundHost, guardOutboundUrl, guardResolvedAddresses } from "../dist/index.js";
 
 const results = [];
 const ok = (name, cond, detail) => results.push({ name, ok: !!cond, detail });
@@ -80,6 +80,24 @@ const rint = (n) => Math.floor(rnd() * n);
   ].every((u) => guardOutboundUrl(u).allowed === false);
   const allowed = guardOutboundUrl("https://example.com/ok").allowed === true;
   ok("P5 URL guard denies plaintext/bad-scheme/credentials/metadata/unparseable; allows https-public", denied && allowed, "fail-closed URL layer");
+}
+
+// P6 — DNS-rebinding guard: ANY non-public resolved address denies; all-public allows; empty fails closed.
+{
+  // A resolution is allowed IFF every address is public. Verify against a fuzz of mixed resolutions.
+  const publics = ["8.8.8.8", "1.1.1.1", "13.107.42.14", "93.184.216.34"];
+  const nonpublics = ["127.0.0.1", "10.0.0.1", "169.254.169.254", "192.168.1.1", "::1", "2130706433"];
+  let leaks = 0, falseDenies = 0;
+  for (let i = 0; i < 5000; i++) {
+    const k = 1 + rint(3);
+    const addrs = Array.from({ length: k }, () => (rnd() < 0.5 ? publics[rint(publics.length)] : nonpublics[rint(nonpublics.length)]));
+    const anyNonPublic = addrs.some((a) => classifyHost(a).category !== "public");
+    const d = guardResolvedAddresses("host.example", addrs);
+    if (d.allowed && anyNonPublic) leaks++;          // a rebinding leak — must never happen
+    if (!d.allowed && !anyNonPublic) falseDenies++;  // an all-public set wrongly denied
+  }
+  ok("P6 DNS-rebinding: a resolution is allowed IFF every address is public (5000 mixed sets)", leaks === 0 && falseDenies === 0, `${leaks} rebinding leaks, ${falseDenies} false denies`);
+  ok("P6b empty resolution fails closed", guardResolvedAddresses("nxdomain", []).allowed === false, "no addresses → deny");
 }
 
 // summary

@@ -94,6 +94,14 @@ checker) — it had **no runtime egress guard / SSRF protection / host-IP classi
 - **Verify:** `npm test` (71 node:test) + `npm run prove` (8/8 — 2,200 IANA-range samples 0-leak, exact
   172.16/12 CIDR edges, numeric-bypass equivalence, **20k-input fuzz: 0 throws / 0 leaks**, fail-closed URL
   layer). Full suite green: 52/52 packages.
+- **Follow-up (DNS-rebinding + declarative egress):** `guardResolvedAddresses(host, resolvedIps, policy)`
+  is the connect-time DNS-rebinding defence — re-classify EVERY resolved address and deny if any is
+  non-public (`LogicN_NETWORK_SSRF_DNS_REBIND_DENIED`; fail-closed on empty resolution), the actual
+  enforcement for the `requiresDnsRecheck` flag. `NetworkPolicy` now carries an optional
+  `egress?: EgressPolicy` that `validateNetworkPolicy` flags for dangerous posture
+  (`allowMetadataEndpoint`/`allowUrlCredentials`/`allowNonPublicHosts`/plaintext-`http`; additive — a
+  policy without `egress` is unaffected). 81 node:test (was 71) + `npm run prove` 10/10 (P6: 5,000 mixed
+  resolutions, 0 rebinding leaks / 0 false denies).
 
 ---
 

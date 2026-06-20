@@ -5,6 +5,7 @@ import { describe, it } from "node:test";
 
 import {
   classifyHost, guardOutboundHost, guardOutboundUrl, validateWebhookTarget,
+  guardResolvedAddresses, defineNetworkPolicy, validateNetworkPolicy,
 } from "../dist/index.js";
 
 describe("classifyHost — IANA special-purpose ranges", () => {
@@ -74,6 +75,48 @@ describe("guardOutboundUrl — scheme + credentials + host", () => {
   });
   it("metadata via decimal-IP URL is denied", () => assert.equal(guardOutboundUrl("https://2852039166/").allowed, false)); // 169.254.169.254
   it("unparseable URL fails closed", () => assert.equal(guardOutboundUrl("http://[bad").allowed, false));
+});
+
+describe("guardResolvedAddresses — connect-time DNS-rebinding defence", () => {
+  it("all-public resolution is allowed", () => assert.equal(guardResolvedAddresses("good.com", ["8.8.8.8", "1.1.1.1"]).allowed, true));
+  it("a public+private MIX is denied (rebinding / mixed resolution)", () => {
+    const d = guardResolvedAddresses("evil.com", ["8.8.8.8", "127.0.0.1"]);
+    assert.equal(d.allowed, false);
+    assert.equal(d.code, "LogicN_NETWORK_SSRF_DNS_REBIND_DENIED");
+  });
+  it("all-private / metadata resolution is denied", () => {
+    assert.equal(guardResolvedAddresses("intranet", ["10.0.0.1"]).allowed, false);
+    assert.equal(guardResolvedAddresses("x", ["169.254.169.254"]).allowed, false);
+  });
+  it("no resolved addresses fails closed", () => {
+    const d = guardResolvedAddresses("nxdomain", []);
+    assert.equal(d.allowed, false);
+    assert.equal(d.code, "LogicN_NETWORK_SSRF_NO_RESOLUTION");
+  });
+  it("an allow-listed host reaches its (private) addresses", () => {
+    assert.equal(guardResolvedAddresses("internal.svc", ["10.0.0.5"], { allowedHosts: ["internal.svc"] }).allowed, true);
+  });
+  it("numeric-bypass addresses are still caught at resolution time", () => {
+    assert.equal(guardResolvedAddresses("sneaky.com", ["8.8.8.8", "2130706433"]).allowed, false); // decimal 127.0.0.1
+  });
+});
+
+describe("NetworkPolicy egress posture validation", () => {
+  it("a safe egress policy produces no diagnostics", () => {
+    assert.equal(validateNetworkPolicy(defineNetworkPolicy("p", { egress: { allowedSchemes: ["https"] } })).length, 0);
+  });
+  it("allowing the metadata endpoint is an error", () => {
+    const codes = validateNetworkPolicy(defineNetworkPolicy("p", { egress: { allowMetadataEndpoint: true } })).map((d) => d.code);
+    assert.ok(codes.includes("LogicN_NETWORK_EGRESS_METADATA_ALLOWED"));
+  });
+  it("plaintext http + non-public are errors in production", () => {
+    const ds = validateNetworkPolicy(defineNetworkPolicy("p", { egress: { allowedSchemes: ["http"], allowNonPublicHosts: true } }), { production: true });
+    assert.ok(ds.some((d) => d.code === "LogicN_NETWORK_EGRESS_PLAINTEXT_SCHEME" && d.severity === "error"));
+    assert.ok(ds.some((d) => d.code === "LogicN_NETWORK_EGRESS_NONPUBLIC_ALLOWED" && d.severity === "error"));
+  });
+  it("a default policy (no egress) is unaffected — backward compatible", () => {
+    assert.equal(validateNetworkPolicy(defineNetworkPolicy("default")).length, 0);
+  });
 });
 
 describe("validateWebhookTarget — strict, ignores caller relaxations", () => {
