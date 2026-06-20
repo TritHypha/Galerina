@@ -102,19 +102,21 @@ describe("CLI compatibility — logicn run", () => {
   // AUDIT: the run admission gate is sourceHash-only in dev, but under LOGICN_PROFILE=production it must
   // also verify the manifest signature + revocation — an unsigned/placeholder (or revoked-key) manifest
   // must not RUN. sourceHash alone is self-referential; only the signature binds the manifest to a signer.
-  it("logicn run is sourceHash-only in dev but REJECTS an unsigned manifest under LOGICN_PROFILE=production", () => {
+  // It self-verifies the AUTHORITATIVE CBOR (#67), so the tamper here is applied to the CBOR, not the .json.
+  it("logicn run is sourceHash-only in dev but REJECTS an unsigned manifest under LOGICN_PROFILE=production", async () => {
     mkdirSync(join(ROOT, "build"), { recursive: true });
     const built = logicn("build", BENCH);
     assert.equal(built.code, 0, `build failed: ${built.stdout}`);
     const cborPath = join(ROOT, "build", "benchmark.lmanifest");
-    const jsonPath = join(ROOT, "build", "benchmark.lmanifest.json");
-    if (!existsSync(cborPath) || !existsSync(jsonPath)) return; // manifest generation is non-fatal; skip if absent
+    if (!existsSync(cborPath)) return; // manifest generation is non-fatal; skip if absent
 
-    // Force a placeholder signature on the signed counterpart (deterministic regardless of key config).
-    const manifest = JSON.parse(readFileSync(jsonPath, "utf8"));
-    writeFileSync(jsonPath, JSON.stringify({ ...manifest, governanceSignature: "placeholder" }, null, 2));
+    // Force a placeholder signature on the AUTHORITATIVE CBOR (deterministic regardless of key config),
+    // preserving sourceHash so the gate reaches the signature check rather than tripping on sourceHash.
+    const { decodeCBOR, serializeManifestCBOR } = await import("../dist/manifest-generator.js");
+    const manifest = decodeCBOR(new Uint8Array(readFileSync(cborPath))).value;
+    writeFileSync(cborPath, Buffer.from(serializeManifestCBOR({ ...manifest, governanceSignature: "placeholder" })));
 
-    // DEV (default profile): the gate is sourceHash-only → the (untampered) CBOR matches, run succeeds.
+    // DEV (default profile): the gate is sourceHash-only → the (untampered) sourceHash matches, run succeeds.
     const dev = logicn("run", BENCH, "--invoke", "main");
     assert.equal(dev.code, 0, `dev run should succeed: ${dev.stderr}`);
     assert.equal(dev.stdout.trim(), "5050");
@@ -123,6 +125,23 @@ describe("CLI compatibility — logicn run", () => {
     const prod = logicnEnv({ LOGICN_PROFILE: "production" }, "run", BENCH, "--invoke", "main");
     assert.notEqual(prod.code, 0, "production run must reject an unsigned (placeholder) manifest");
     assert.ok(prod.stderr.includes("LLN-MANIFEST-UNSIGNED"), `expected LLN-MANIFEST-UNSIGNED, got: ${prod.stderr}`);
+  });
+
+  // #67 happy path: a properly jcs-signed build self-verifies from the AUTHORITATIVE CBOR (no .json read)
+  // and RUNS under production. Only exercisable when this environment can provision a signing key.
+  it("logicn run ACCEPTS a jcs-signed manifest under LOGICN_PROFILE=production (#67 CBOR self-verify)", () => {
+    mkdirSync(join(ROOT, "build"), { recursive: true });
+    const built = logicn("build", BENCH);
+    assert.equal(built.code, 0, `build failed: ${built.stdout}`);
+    const jsonPath = join(ROOT, "build", "benchmark.lmanifest.json");
+    if (!existsSync(jsonPath)) return;
+    const sig = JSON.parse(readFileSync(jsonPath, "utf8")).governanceSignature ?? {};
+    const reallySigned = sig.algorithm === "Ed25519" && typeof sig.signature === "string" && sig.signature.length > 0 && sig.canon === "jcs";
+    if (!reallySigned) return; // no signing key provisioned here → the positive path isn't exercisable
+
+    const prod = logicnEnv({ LOGICN_PROFILE: "production" }, "run", BENCH, "--invoke", "main");
+    assert.equal(prod.code, 0, `production run of a jcs-signed manifest should succeed: ${prod.stderr}`);
+    assert.equal(prod.stdout.trim(), "5050");
   });
 });
 

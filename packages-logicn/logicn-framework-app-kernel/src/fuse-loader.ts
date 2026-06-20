@@ -75,6 +75,48 @@ function base64ToBytes(b64: string): Uint8Array {
   return out;
 }
 
+// ── Manifest signature input (VERSIONED) ────────────────────────────────────────────────────────
+// This MUST stay byte-identical to core-compiler's manifest-generator.{canonicalJson,manifestSigningInput};
+// a conformance test (canonical-json-conformance.test.mjs) asserts that over a corpus so they cannot drift.
+// Kept LOCAL so the app kernel stays self-contained (no core-compiler coupling, no node:* at module top).
+
+/** RFC 8785 §3.2.2 string escaping. */
+function canonStr(s: string): string {
+  let out = '"';
+  for (let i = 0; i < s.length; i++) {
+    const c = s.charCodeAt(i);
+    if (c === 0x22) { out += '\\"'; continue; }
+    if (c === 0x5c) { out += "\\\\"; continue; }
+    if (c < 0x20) { out += "\\u" + c.toString(16).padStart(4, "0"); continue; }
+    out += s[i];
+  }
+  return out + '"';
+}
+
+/** RFC 8785 canonical JSON (keys sorted lexicographically, no whitespace). */
+function canonicalJson(value: unknown): string {
+  if (value === null) return "null";
+  if (typeof value === "boolean") return value ? "true" : "false";
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) throw new Error("RFC 8785: non-finite numbers not allowed");
+    return String(value);
+  }
+  if (typeof value === "string") return canonStr(value);
+  if (Array.isArray(value)) return "[" + value.map(canonicalJson).join(",") + "]";
+  if (typeof value === "object") {
+    const keys = Object.keys(value as Record<string, unknown>).sort();
+    return "{" + keys.map(k => canonStr(k) + ":" + canonicalJson((value as Record<string, unknown>)[k])).join(",") + "}";
+  }
+  throw new Error(`RFC 8785: unsupported type ${typeof value}`);
+}
+
+/** The exact bytes a manifest signature covers, dispatched on the signature's `canon` tag. */
+function manifestSigningInput(manifestWithoutSig: unknown, sig: Record<string, unknown>): string {
+  return sig["canon"] === "jcs"
+    ? canonicalJson(manifestWithoutSig)               // RFC 8785 — new builds
+    : JSON.stringify(manifestWithoutSig, null, 2);    // "legacy" pretty-JSON — untagged older sigs
+}
+
 /** The fuse fields, as embedded in the signed manifest and mirrored in <name>.fuse.json. */
 export interface FuseDescriptor {
   readonly schemaVersion: string;
@@ -288,9 +330,11 @@ function verifyManifestSignature(
     return "unsigned";
   }
 
-  // Reconstruct EXACTLY what `logicn build` signed: the JSON without the signature field.
+  // Reconstruct EXACTLY what `logicn build` signed: the manifest without its signature field, in the
+  // canonicalization the signature names (`canon`: RFC 8785 JCS for new builds, pretty-JSON "legacy" for
+  // older untagged signatures). Routed through the shared local helper so it can't drift from the signer.
   const { governanceSignature: _omit, ...withoutSig } = manifestObj;
-  const bytesForVerification = utf8(JSON.stringify(withoutSig, null, 2));
+  const bytesForVerification = utf8(manifestSigningInput(withoutSig, sig));
 
   let valid = false;
   try {

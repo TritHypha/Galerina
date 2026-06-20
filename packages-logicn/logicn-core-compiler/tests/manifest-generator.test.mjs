@@ -27,7 +27,12 @@ import {
   generateManifest,
   canonicalJson,
   sha256Hex,
+  manifestSigningInput,
+  manifestSigCanon,
+  serializeManifestCBOR,
+  decodeCBOR,
 } from "../dist/manifest-generator.js";
+import { sign as cryptoSign, verify as cryptoVerify, generateKeyPairSync, createPublicKey, createPrivateKey } from "node:crypto";
 
 // ---------------------------------------------------------------------------
 // Minimal valid inputs (shapes per src/parser.ts FlowMeta / SourceLocation)
@@ -192,5 +197,63 @@ describe("manifest-generator: sourceFile path normalization", () => {
       embeddedBodyHash(fromPosix),
       "backslash and forward-slash spellings of the same path must sign identically",
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Versioned signing input + #67 CBOR self-verification
+// ---------------------------------------------------------------------------
+describe("manifest signing input (versioned) + #67 CBOR self-verify", () => {
+  // A manifest body whose keys are deliberately OUT of lexicographic order, with nesting + an array,
+  // so canonicalization (key-sorting) is observable and the JSON↔CBOR representation differs.
+  const BODY = {
+    schemaVersion: "lln.manifest.v2",
+    sourceHash: "sha256:" + "a".repeat(64),
+    zeta: "last-alphabetically",
+    alpha: 1,
+    nested: { y: 2, x: 1, list: [3, 1, 2] },
+    flags: [true, false, null],
+  };
+
+  it("manifestSigCanon: 'jcs' tag ⇒ jcs; untagged/legacy ⇒ legacy (back-compat default)", () => {
+    assert.equal(manifestSigCanon({ algorithm: "Ed25519", canon: "jcs" }), "jcs");
+    assert.equal(manifestSigCanon({ algorithm: "Ed25519" }), "legacy");   // untagged older signature
+    assert.equal(manifestSigCanon("placeholder"), "legacy");
+    assert.equal(manifestSigCanon(null), "legacy");
+  });
+
+  it("jcs input == canonicalJson; legacy input == pretty JSON; the two differ", () => {
+    assert.equal(manifestSigningInput(BODY, "jcs"), canonicalJson(BODY));
+    assert.equal(manifestSigningInput(BODY, "legacy"), JSON.stringify(BODY, null, 2));
+    assert.notEqual(manifestSigningInput(BODY, "jcs"), manifestSigningInput(BODY, "legacy"));
+  });
+
+  it("#67 invariant: canonical (jcs) bytes reconstruct IDENTICALLY from the decoded CBOR (legacy do NOT)", () => {
+    const cbor = serializeManifestCBOR(BODY);
+    const decoded = decodeCBOR(new Uint8Array(cbor)).value;
+    // The canonical (jcs) form is representation-independent → byte-identical from JSON object and CBOR.
+    assert.equal(manifestSigningInput(decoded, "jcs"), manifestSigningInput(BODY, "jcs"),
+      "jcs signing input must be identical whether built from the JSON object or the decoded CBOR");
+    // The legacy (pretty-JSON) form depends on key order, which canonical CBOR re-sorts → it differs.
+    // (This is exactly why #67 self-verification REQUIRES the canonical format.)
+    assert.notEqual(manifestSigningInput(decoded, "legacy"), manifestSigningInput(BODY, "legacy"),
+      "legacy pretty-JSON is order-dependent, so it canNOT self-verify from CBOR");
+  });
+
+  it("a jcs Ed25519 signature verifies from BOTH the JSON body AND the decoded CBOR (self-verifying artifact)", () => {
+    const { publicKey, privateKey } = generateKeyPairSync("ed25519");
+    const sig = cryptoSign(null, Buffer.from(manifestSigningInput(BODY, "jcs")), privateKey);
+
+    // Verify from the JSON object.
+    assert.equal(cryptoVerify(null, Buffer.from(manifestSigningInput(BODY, "jcs")), publicKey, sig), true);
+
+    // Verify from the AUTHORITATIVE CBOR — decode → re-canonicalize → verify. No .json consulted (#67).
+    const decoded = decodeCBOR(new Uint8Array(serializeManifestCBOR(BODY))).value;
+    assert.equal(cryptoVerify(null, Buffer.from(manifestSigningInput(decoded, "jcs")), publicKey, sig), true,
+      "the canonical signature must validate directly over the decoded CBOR");
+
+    // A tampered field breaks it (control).
+    const tampered = { ...decoded, alpha: 999 };
+    assert.equal(cryptoVerify(null, Buffer.from(manifestSigningInput(tampered, "jcs")), publicKey, sig), false);
   });
 });

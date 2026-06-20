@@ -222,15 +222,30 @@ All affected suites green (core-network 97, tower-citizen 196, photonic-emulator
   manifest still raw-runs in production; the stricter "production requires a signed manifest to run at all" is a
   deliberate posture decision, not built. NB the audit's own refutation still bounds the residual (the governed
   runtime re-derives effects from the sourceHash-bound source; the WASM gate attests over the binary) — this is
-  defence-in-depth. Follow-up cleanup: factor the duplicated verify/run signature logic into a shared
-  `admitManifest` helper (verify still uses its own inline copy).
+  defence-in-depth. Update: the signing-bytes reconstruction is now shared (`manifestSigningInput` /
+  `manifestSigCanon`) across the build signer, `verify`, `run`, and the fuse-loader — see the RFC-8785 /
+  #67 entry below. A fuller `admitManifest` helper (the surrounding signature+revocation+pubkey orchestration,
+  still inlined per-site) remains a tidy-up follow-up.
 - 🟢 **unsigned/placeholder manifest accepted by `verify` — FIXED (profile-gated):** under `LOGICN_PROFILE=production`
   a placeholder / absent / incomplete-signature manifest now fails closed with `LLN-MANIFEST-UNSIGNED` (and an
   unreadable signature copy with `LLN-MANIFEST-INVALID`); the default (dev) profile keeps the informational
   behaviour byte-for-byte, so existing usage is unchanged. Mirrors `#178` fail-closed-in-prod. +1 cli-compatibility
   test (placeholder passes in dev, rejected in production).
-- 🟡 CBOR `.lmanifest` signature still verified only via the JSON copy (the deeper self-verifiable-CBOR fix = **#67**);
-  sign over RFC-8785 canonical bytes; signing-profile fail-secure default.
+- 🟢 **RFC-8785 canonical signing + #67 CBOR self-verify — FIXED (owner-directed, versioned):** the CLI now signs
+  the manifest over **RFC 8785 canonical JSON** (not pretty-printed `JSON.stringify(.., null, 2)`), tagged
+  `governanceSignature.canon: "jcs"`. Because canonical JSON is representation-independent, the signed bytes
+  reconstruct identically from EITHER the `.json` or the decoded CBOR — so the **authoritative CBOR is now
+  self-verifiable (#67)**: `logicn run` (production) verifies the signature directly off the CBOR it already
+  decodes, never consulting the `.json`. VERSIONED per the design-stability charter — the format is named in the
+  signature, so older untagged signatures still verify via the `"legacy"` pretty-JSON path (no key rotation,
+  fully backward-compatible). One shared `manifestSigningInput(objWithoutSig, canon)` + `manifestSigCanon(sig)`
+  in `manifest-generator.ts` is routed through by EVERY signer/verifier (build signer, `verify`, `run`, and the
+  app-kernel fuse-loader's self-contained local copy) so they cannot drift; a cross-implementation conformance
+  test (sign with core's `canonicalJson`, verify through the loader's local one) guards the duplication. +6
+  manifest-generator tests (incl. the #67 invariant: jcs reconstructs identically from CBOR, legacy does not;
+  a real Ed25519 jcs sig verifies from both JSON and CBOR), +1 fuse-loader jcs/conformance test, +2
+  cli-compatibility (production run REJECTS an unsigned CBOR, ACCEPTS a jcs-signed CBOR end-to-end). Suite
+  53/53 · 4907. Remaining 🟡 low: signing-profile fail-secure default.
 - ✅ **unknown-`opClass` deny-by-default — FIXED:** `routePrecision` (the precision-lane router used by both the
   hybrid engine and the Execution Router) previously let an UNRECOGNIZED op class fall through to a fabricated
   fp8/ternary decision (every numeric comparison against the `undefined` sensitivity is false). `InferenceOpClass`

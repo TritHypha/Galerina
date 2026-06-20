@@ -165,6 +165,43 @@ function canonicalJsonString(s: string): string {
 }
 
 // ---------------------------------------------------------------------------
+// Manifest SIGNATURE input — the exact bytes an Ed25519 signature covers.
+// VERSIONED per the design-stability charter (crypto-format VERSIONING rule):
+// the canonicalization is named in the signature itself (`governanceSignature.canon`),
+// so a format change does NOT invalidate already-persisted signatures.
+// ---------------------------------------------------------------------------
+
+/**
+ * Canonicalization tag stored in `governanceSignature.canon`:
+ *  - "jcs"    → RFC 8785 canonical JSON. Representation-independent, so the SAME bytes are
+ *               reproducible from EITHER the .json or the decoded CBOR — this is what makes the
+ *               authoritative CBOR self-verifiable (#67). New builds sign with this.
+ *  - "legacy" → `JSON.stringify(obj, null, 2)` (the pre-versioning pretty-printed form). Untagged
+ *               signatures default here so existing signed manifests keep verifying. Verify-only —
+ *               never emitted by new builds.
+ */
+export type ManifestSigCanon = "jcs" | "legacy";
+
+/**
+ * The exact byte string a manifest's Ed25519 signature covers, for the manifest object WITHOUT its
+ * `governanceSignature` field. Every signer AND verifier must route through this one function so they
+ * cannot drift. (Callers reading the CBOR pass the decoded object; canonicalJson erases the JSON↔CBOR
+ * representation difference, so "jcs" verification works identically from either artifact.)
+ */
+export function manifestSigningInput(manifestWithoutSig: unknown, canon: ManifestSigCanon): string {
+  return canon === "jcs"
+    ? canonicalJson(manifestWithoutSig)
+    : JSON.stringify(manifestWithoutSig, null, 2);
+}
+
+/** Resolve the canonicalization of a `governanceSignature` object. Untagged ⇒ "legacy" (back-compat). */
+export function manifestSigCanon(sig: unknown): ManifestSigCanon {
+  return sig !== null && typeof sig === "object" && (sig as Record<string, unknown>)["canon"] === "jcs"
+    ? "jcs"
+    : "legacy";
+}
+
+// ---------------------------------------------------------------------------
 // CBOR Binary Encoder (RFC 8949 + Canonical Deterministic CBOR)
 // DRCM Phase 3 — task #67
 // ---------------------------------------------------------------------------

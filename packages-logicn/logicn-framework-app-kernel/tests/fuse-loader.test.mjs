@@ -189,6 +189,50 @@ test("a validly-signed manifest whose signing key is REVOKED is refused (fail-cl
   }
 });
 
+// ── 5c — VERSIONED signing: a jcs (RFC 8785) signature verifies through the loader ──
+// This doubles as a CONFORMANCE check: the manifest is signed over CORE-compiler's canonicalJson, then
+// verified by the loader's OWN local canonicalJson. If the two implementations drifted by a single byte,
+// the Ed25519 signature would fail to verify — so a pass proves they agree byte-for-byte.
+test("a jcs (RFC 8785 canonical) Ed25519 signature verifies through the loader (legacy ⇄ jcs both work)", async () => {
+  const { canonicalJson } = await import("../../logicn-core-compiler/dist/manifest-generator.js");
+  const { root, pkg } = copyDemo();
+  try {
+    const { publicKey, privateKey } = generateKeyPairSync("ed25519", {
+      publicKeyEncoding: { type: "spki", format: "pem" },
+      privateKeyEncoding: { type: "pkcs8", format: "pem" },
+    });
+    const keyId = "jcskey000000001";
+    const govDir = join(root, "governance");
+    mkdirSync(govDir, { recursive: true });
+    writeFileSync(join(govDir, `signing-key-${keyId}.pub.pem`), publicKey);
+
+    const manifestPath = join(pkg, "dist", "my-custom-api-rest.lmanifest.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    const { governanceSignature: _drop, ...withoutSig } = manifest;
+    // Sign over RFC 8785 canonical JSON and TAG the signature canon: "jcs".
+    const signature = cryptoSign(null, Buffer.from(canonicalJson(withoutSig)), createPrivateKey(privateKey)).toString("base64");
+    writeFileSync(manifestPath, JSON.stringify(
+      { ...withoutSig, governanceSignature: { algorithm: "Ed25519", keyId, signature, canon: "jcs", signedAt: new Date().toISOString() } },
+      null, 2,
+    ));
+
+    // The loader reconstructs the jcs bytes with its own canonicalJson → must verify and fuse.
+    const component = await fusePackage(pkg, { governanceDir: govDir, warn: () => {} });
+    assert.equal(component.invoke("main"), 200);
+
+    // Tamper a signed field without re-signing → the jcs signature must now FAIL (control).
+    const tampered = JSON.parse(readFileSync(manifestPath, "utf8"));
+    tampered.flowCount = (tampered.flowCount ?? 0) + 1;
+    writeFileSync(manifestPath, JSON.stringify(tampered, null, 2));
+    await assert.rejects(
+      () => fusePackage(pkg, { governanceDir: govDir, warn: () => {} }),
+      /LLN-FUSE-SIG-INVALID/,
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 // ── 6 — the embedded fuse block is the source of truth: sidecar drift is caught ──
 test("a .fuse.json whose wasmSha256 disagrees with the signed manifest is rejected", async () => {
   const { root, pkg } = copyDemo();

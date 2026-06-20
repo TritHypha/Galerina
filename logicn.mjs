@@ -1241,13 +1241,17 @@ Baseline comparison (governance-cost):
               if (existsSync(pubKeyPath)) {
                 try {
                   const { verify: cryptoVerify, createPublicKey } = await import("node:crypto");
+                  const { manifestSigningInput, manifestSigCanon } = await import(
+                    new URL("packages-logicn/logicn-core-compiler/dist/manifest-generator.js", import.meta.url).href
+                  );
                   const pubKeyPem = readFileSync(pubKeyPath, "utf-8");
                   const publicKey = createPublicKey(pubKeyPem);
 
-                  // Reconstruct the manifest without the signature field for verification
-                  // (mirrors what was signed: prettyManifest(manifest) before signing was applied)
+                  // Reconstruct the EXACT signed bytes by stripping the signature and re-canonicalizing
+                  // in the format named by the signature (`canon`: RFC 8785 JCS for new sigs, pretty-JSON
+                  // "legacy" for older ones). One shared helper keeps signer + verifier from drifting.
                   const { governanceSignature: _sig, ...manifestWithoutSig } = jsonManifest;
-                  const manifestForVerification = JSON.stringify(manifestWithoutSig, null, 2);
+                  const manifestForVerification = manifestSigningInput(manifestWithoutSig, manifestSigCanon(sig));
 
                   // Ed25519 uses deterministic signing — pass null as algorithm (per RFC 8032)
                   const valid = cryptoVerify(null, Buffer.from(manifestForVerification), publicKey, Buffer.from(sig.signature, "base64"));
@@ -1333,12 +1337,13 @@ Baseline comparison (governance-cost):
     const name = basename(llnFile, ".lln");
     const manifestPath = `build/${name}.lmanifest`;
     if (existsSync(manifestPath)) {
+      let manifest;
       try {
         const { decodeCBOR } = await import(
           new URL("packages-logicn/logicn-core-compiler/dist/manifest-generator.js", import.meta.url).href
         );
         const manifestBytes = new Uint8Array(readFileSync(manifestPath));
-        const { value: manifest } = decodeCBOR(manifestBytes);
+        manifest = decodeCBOR(manifestBytes).value;
         const actualHash = "sha256:" + createHash("sha256").update(source, "utf8").digest("hex");
         if (manifest.sourceHash && manifest.sourceHash !== actualHash) {
           console.error(`❌ LLN-MANIFEST-TAMPER: Source has changed since manifest was signed.`);
@@ -1367,16 +1372,22 @@ Baseline comparison (governance-cost):
       // Posture note: this is "verify-if-present" — a flow with NO manifest at all still raw-runs. The
       // stricter "production requires a signed manifest to run" is a deliberate posture left for owner opt-in.
       if (process.env.LOGICN_PROFILE === "production") {
-        const jsonPath = `build/${name}.lmanifest.json`;
         try {
-          if (!existsSync(jsonPath)) {
-            console.error(`❌ LLN-MANIFEST-UNSIGNED: an admission manifest is present but its signed counterpart ${jsonPath} is absent — LOGICN_PROFILE=production refuses to run (fail-closed). Rebuild: logicn build ${llnFile}`);
+          // #67 — verify the AUTHORITATIVE CBOR directly (self-contained); the human-readable .json is
+          // never consulted. This is possible because new builds sign over RFC 8785 canonical JSON, which
+          // is representation-independent, so the signed bytes reconstruct identically from the decoded CBOR.
+          const { manifestSigningInput, manifestSigCanon } = await import(
+            new URL("packages-logicn/logicn-core-compiler/dist/manifest-generator.js", import.meta.url).href
+          );
+          const sig = manifest && manifest.governanceSignature;
+          if (!sig || typeof sig !== "object" || !(sig.algorithm && sig.keyId && sig.signature)) {
+            console.error(`❌ LLN-MANIFEST-UNSIGNED: the authoritative manifest is unsigned/placeholder but LOGICN_PROFILE=production requires a signature to run — fail-closed. Run: logicn keygen && logicn build ${llnFile}`);
             process.exit(1);
           }
-          const jm = JSON.parse(readFileSync(jsonPath, "utf-8"));
-          const sig = jm.governanceSignature;
-          if (!sig || typeof sig !== "object" || !(sig.algorithm && sig.keyId && sig.signature)) {
-            console.error(`❌ LLN-MANIFEST-UNSIGNED: manifest is unsigned/placeholder but LOGICN_PROFILE=production requires a signature to run — fail-closed. Run: logicn keygen && logicn build ${llnFile}`);
+          // A legacy (pretty-JSON) signature can't be self-verified from CBOR (key order is not preserved
+          // through canonical CBOR) — push toward the current canonical signer rather than mis-report it as tampered.
+          if (manifestSigCanon(sig) !== "jcs") {
+            console.error(`❌ LLN-MANIFEST-LEGACY-FORMAT: the authoritative CBOR carries a legacy-format signature that cannot be self-verified — rebuild with the current canonical signer: logicn build ${llnFile}`);
             process.exit(1);
           }
           // A revoked signer is Deny even with a cryptographically valid signature.
@@ -1393,8 +1404,8 @@ Baseline comparison (governance-cost):
             process.exit(1);
           }
           const { verify: cryptoVerify, createPublicKey } = await import("node:crypto");
-          const { governanceSignature: _omit, ...withoutSig } = jm;
-          const sigOk = cryptoVerify(null, Buffer.from(JSON.stringify(withoutSig, null, 2)), createPublicKey(readFileSync(pubKeyPath, "utf-8")), Buffer.from(sig.signature, "base64"));
+          const { governanceSignature: _omit, ...withoutSig } = manifest;
+          const sigOk = cryptoVerify(null, Buffer.from(manifestSigningInput(withoutSig, manifestSigCanon(sig))), createPublicKey(readFileSync(pubKeyPath, "utf-8")), Buffer.from(sig.signature, "base64"));
           if (!sigOk) {
             console.error(`❌ LLN-MANIFEST-TAMPER: manifest signature verification FAILED — refusing to run (fail-closed).`);
             process.exit(1);
@@ -1494,7 +1505,7 @@ Baseline comparison (governance-cost):
 
     // .lmanifest generation (DRCM Phase 3 task #67 — binary CBOR RFC 8949)
     try {
-      const { generateManifest, serializeManifest, serializeManifestCBOR, prettyManifest, verifyManifestRoundTrip } = await import(
+      const { generateManifest, serializeManifest, serializeManifestCBOR, prettyManifest, verifyManifestRoundTrip, manifestSigningInput } = await import(
         new URL("packages-logicn/logicn-core-compiler/dist/manifest-generator.js", import.meta.url).href
       );
       const govResult = m.verifyGovernance(parsed.ast, parsed.flows,
@@ -1594,9 +1605,14 @@ Baseline comparison (governance-cost):
           // Sign the manifest without the governanceSignature field so verification
           // can reconstruct the exact same bytes by stripping the signature before checking.
           // Ed25519 uses deterministic signing — no external hash algorithm needed (RFC 8032).
+          // VERSIONED signing (charter): we sign over RFC 8785 canonical JSON ("jcs"). Because that
+          // form is representation-independent, the SAME bytes reconstruct from either the .json or the
+          // decoded CBOR — which is what makes the authoritative CBOR self-verifiable (#67). The format
+          // is named in the signature (`canon`) so this change never invalidates older "legacy" sigs.
+          const signCanon = "jcs";
           const manifestObjForSigning = JSON.parse(manifestJson);
           const { governanceSignature: _placeholder, ...manifestWithoutSig } = manifestObjForSigning;
-          const manifestBytesForSigning = JSON.stringify(manifestWithoutSig, null, 2);
+          const manifestBytesForSigning = manifestSigningInput(manifestWithoutSig, signCanon);
           const signature = cryptoSign(null, Buffer.from(manifestBytesForSigning), privateKey).toString("base64");
 
           // Update the .lmanifest.json with real signature
@@ -1605,6 +1621,7 @@ Baseline comparison (governance-cost):
             algorithm: "Ed25519",  // Stage A; will be ML-DSA-65 (NIST FIPS 204) in Stage B
             keyId: signingKeyId,
             signature: signature,
+            canon: signCanon,      // canonicalization of the signed bytes (RFC 8785 JCS) — verifiers dispatch on this
             signedAt: new Date().toISOString(),
           };
 
