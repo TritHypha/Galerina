@@ -4,7 +4,7 @@
 
 LogicN is built for organisations where software failure is not acceptable — financial platforms, healthcare systems, government services, and regulated enterprise. Every execution is **declared, verified, and audited** by design, not by convention.
 
-> **Maturity (honest status, 2026-06-17).** LogicN is an **advanced prototype with several hardened zero-trust subsystems** — *not* yet a production-complete platform. The **compiler, security, and governance core are production-grade** (49/49 packages, 4,518 tests, fail-closed border check). The **app/API/framework layer is still templates**, Stage-B self-hosting is in progress, and the "Tower" compute layer is a **governed software simulator + bridge-attestation runtime, not real photonic-CPU virtualisation**. See [the 2026-06-17 senior-developer audit](notes/2026-06-17-zero-trust-senior-developer-project-audit.md) and [the roadmap](docs/Knowledge-Bases/logicn-build-roadmap.md).
+> **Maturity (honest status, 2026-06-20).** LogicN is an **advanced prototype with several hardened zero-trust subsystems** — *not* yet a production-complete platform. The **compiler, security, and governance core are production-grade** (50/50 packages, 4,731 tests, fail-closed border check). The **app/API/framework layer is still templates**, Stage-B self-hosting is in progress, and the "Tower" compute layer is a **governed software simulator + bridge-attestation runtime, not real photonic-CPU virtualisation**. See [the 2026-06-17 senior-developer audit](notes/2026-06-17-zero-trust-senior-developer-project-audit.md) and [the roadmap](docs/Knowledge-Bases/logicn-build-roadmap.md).
 
 ---
 
@@ -54,7 +54,9 @@ Run on an **Intel i9-9900K (8C/16T) + NVIDIA RTX 2060**, across Rust (native, ge
 | **Lexer / Parser / Governance Verifier / Contract blocks / Value-state checker** | 100% | full pipeline |
 | **DRCM Phases 1–7 (Governed Tower — Stage-A simulation)** | 100% | real `DSS.wasm` is Post-P9 (#102–106) |
 | **CBOR Manifests (RFC 8949)** | 100% | |
-| **Tests — full suite** | 100% | **49/49 packages · 4,518 tests · 0 failures** |
+| **Tests — full suite** | 100% | **50/50 packages · 4,731 tests · 0 failures** |
+| **Resilience — first-class fault handlers (0017)** | shipped | `on_*_fault` → fail-closed `halt` default + LLN-FAULT-001/003 + `GIRFlow.faultHandlers` |
+| **Contract-driven test generation (0016)** | 5/5 vector dimensions | fault-injection · effect-egress · capability-denial · boundary/fuzz · substrate-violation (over GIR) |
 | **Type checker / Effect checker** | ~90% | |
 | **WAT emitter** | ~89% | #128(a) fail-closed fix landed (unhandled stmt → `unreachable` trap); #128(b)/GAP-4 `forEachStmt` lowering landed (for-in → counted loop over the host array bridge); `for…where` filtered iteration lowers as a guarded loop — all execution + interpreter-fidelity tested |
 | **Runtime interpreter** | ~87% | diagnostic tier (see Benchmarks) |
@@ -68,6 +70,8 @@ Run on an **Intel i9-9900K (8C/16T) + NVIDIA RTX 2060**, across Rust (native, ge
 | **App / API / Framework layer** | templates | `logicn-framework-*` are TODO/template-level — not a complete app yet |
 
 > **Full roadmap** → [docs/Knowledge-Bases/logicn-build-roadmap.md](docs/Knowledge-Bases/logicn-build-roadmap.md)
+>
+> **Recent (2026-06-20)** → security residuals closed (**0033** use-after-free REJECT-fill on free · **GOV-003** intermediate-binding response-leak · **`.tmf`** `crypto.timingSafeEqual` integrity compares; the three prior **0032** liveness hazards — fail-open loop, recursion OOM, sub-interpreter gate-drop — verified already-fixed) · **0017** first-class fail-closed `on_*_fault` handlers · **0016** contract-driven test generator (5-dimension vector taxonomy) · governance change-class **NEUTRAL — no authority widening** · graph 3,712 nodes / 4,103 edges · 50/50 · 4,731.
 >
 > **Recent (2026-06-17)** → senior-developer zero-trust audit (advanced-prototype verdict; P0s: history-scrub of rotated signing key, denied `groq-inference-v1` placeholder hash, repo-wide typecheck reproducibility) · third-party license audit CLEAN + [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) shipped (all deps permissive/free) · benchmark unit-bug fixed + corrected numbers · #128(a) WAT fail-closed fix · notes 37/38/39 + tri-pipe/nested-quantum/partial-governance dispatched to R&D.
 
