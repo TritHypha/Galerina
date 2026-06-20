@@ -134,3 +134,30 @@ test("fusePackages: a duplicate package name in the set is refused", async () =>
     /LLN-FUSE-SET-DUPLICATE/,
   );
 });
+
+// ── Slice 2: a REAL producer→consumer wasm→wasm call across the module boundary ──
+const PROVIDER_DIR = join(here, "fixtures", "compose", "clockprovider");
+const CONSUMER_DIR = join(here, "fixtures", "compose", "clockconsumer");
+
+test("fusePackages: a REAL cross-module call — consumer.main() routes through the provider (→ 42)", async () => {
+  const components = await fusePackages([PROVIDER_DIR, CONSUMER_DIR], { allowUnsigned: true, warn: () => {} });
+  assert.equal(components.size, 2);
+  const consumer = components.get("clockconsumer");
+  assert.ok(consumer, "consumer present in the set");
+  // consumer.main() imports clock.__clock_now_ms; the linker backed that capability with the
+  // clockprovider MODULE, so the 42 comes from clockprovider's exported wasm function across the
+  // boundary — NOT from the built-in host shim (which returns 0).
+  assert.equal(consumer.invoke("main"), 42, "wasm→wasm cross-module call returned the provider's value");
+});
+
+test("fusePackages: composition order is independent — consumer listed FIRST still links (topo sort)", async () => {
+  const components = await fusePackages([CONSUMER_DIR, PROVIDER_DIR], { allowUnsigned: true, warn: () => {} });
+  assert.equal(components.get("clockconsumer").invoke("main"), 42, "provider is instantiated before the consumer regardless of input order");
+});
+
+test("fusePackages: WITHOUT the provider, the consumer's clock.read falls back to the host shim (→ 0)", async () => {
+  // Fusing the consumer ALONE resolves clock.read to the built-in shim (__clock_now_ms → 0),
+  // proving the 42 above genuinely came from the provider module, not a coincidence.
+  const components = await fusePackages([CONSUMER_DIR], { allowUnsigned: true, warn: () => {} });
+  assert.equal(components.get("clockconsumer").invoke("main"), 0, "no provider → built-in host shim backs clock.read");
+});
