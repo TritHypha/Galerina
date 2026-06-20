@@ -1,9 +1,15 @@
 # R&D corpus closure + shipping-readiness ledger (2026-06-18)
 
 ## ▶ RESUME POINTER — 2026-06-19 session close v2 (read FIRST after a /clear)
-**▶ NEXT (owner directive): work on the CORE ROADMAP** (`logicn-build-roadmap.md` — the language/compiler
-roadmap). The structured-engineering + social-ecosystem threads below are DONE/R&D-filed; the owner wants the
-core roadmap next.
+**▶ CORE ROADMAP — ACTIVE (2026-06-20).** R&D queue 0036–0052 fully DRAINED + absorbed (nothing left to absorb;
+only `_TEMPLATE` remains in R&D tasks). Now working `logicn-build-roadmap.md`. **DONE: #126 parser-level bitwise
+hint** (`890afed`) — `& | << >>` get the clear crypto-on-core `LLN-PARSE-001` hint in `parseExpression` (value
+context; never flags generics/match-arms); +5 tests, SOT 3710. **⚠ DESIGN NOTE for future me:** bitwise ops are
+*intentionally excluded* from `.lln` (crypto-on-core boundary) — do NOT "add" them; #126 was the HINT.
+**Core-roadmap frontier (ordered, from build-roadmap "Next up"):** **#145 type-aware STRING semantics** = the big one
+(WASM execution byte-parity; `__char_to_string`/`__str_concat` host fns + type-aware lowering + String/Char var-type
+tracking — large, deserves a dedicated session) · #102–104 DSS.wasm (externally blocked) · CF-4 extract
+`@logicn/tpl-oracle` · record follow-ons (cross-flow return-type tracking) · #110 key rotation (security-sensitive).
 
 **State at clear (everything committed local `main`, NOT pushed — #149):** SOT `--core` **3702 green · 0 fail**;
 graph 3676/4069; both LogicN + LogicN-R-AND-D git trees CLEAN.
