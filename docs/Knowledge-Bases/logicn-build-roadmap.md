@@ -35,8 +35,39 @@ real TS and re-proves them against the package's own compiled code.
   real PIC noise floor / coupler S-params. No speedup claimed without a named PIC.
 
 R&D bridge: hub-built 0053 production; R&D task **0054** (hardware-capability directive + per-tier packages)
-remains the OPEN enc-rnd design+proof task — its `hardware()` selector will choose among per-tier packages,
-of which this emulator is the photonic substrate.
+spec has since LANDED → built below.
+
+---
+
+## 🌅 2026-06-20 — Tri-Pipe hardware() directive + tier loader (R&D 0054) BUILT — `logicn-hardware-tier`
+
+**New package `packages-logicn/logicn-hardware-tier`** — the hub-side production of R&D 0054 (the
+owner-directed Tri-Pipe topology), built once the enc-rnd worker's spec landed
+(`tri-pipe-per-tier-packages-and-hardware-directive-spec.md`). Neutral (depends only on
+`@logicn/inference-bridge-contract` + `@logicn/ext-photonic-emulator`, relative-dist); **no production
+edits**. Realizes the owner's *"passive directive — what hardware is available {binary|hybrid|photonic},
+cache it; packages per tier; clearly photonic if not hybrid if not binary."*
+
+- **`hardware()` directive** (`hardware-directive.ts`): cached, deployment-stable, **ATTESTED** — resolves
+  the tier from the bridge manifest's `hardwareIdentity` behind a verifyAttestation result (injected; the
+  package stays crypto-free and binds the **bridge** surface, not audit), **never** the gameable
+  `nativeAvailable` self-claim. Fail-closed: UNKNOWN/UNATTESTED ⇒ binary (K3→DENY, LLN-HW-004). Tier MAP
+  mirrors `HARDWARE_TRUST_PROFILES` (`type-registry.ts:455-505`).
+- **Tier loader** (`tier-loader.ts`): selects the `BridgeRegistry` by cached tier with the
+  photonic > hybrid > binary fall-through; binary is the unconditional floor; injected via
+  `createHybridEngine({ bridges })` — **no Tower edit**.
+- **Two orthogonal axes:** AXIS-1 (this directive) picks the *package*; AXIS-2 (0053 `route()`) gates the
+  *per-kernel* offload. Preference never forces compute onto photonics — **worst case == binary == today.**
+  Honest nuance (§4): whole components converge to **`-hybrid`** (crypto/control always present);
+  `-photonic` is a true package only for fully-eligible pure-tensor components.
+- **Verify:** `npm test` (14 node:test) + `npm run prove` (9/9 — H1–H5 directive + O1–O4 orthogonality;
+  O1 sweeps 12,288 tier×kernel products, 0 over Tdigital). Discharges the spec's §1.4/§5 obligations
+  against the production code.
+- **EXCLUDED (HW-gated):** real-PIC packaging / measured photonic latency; quantum tier (separate path).
+
+R&D bridge: **0053 + 0054 both now have hub production** (`logicn-ext-photonic-emulator` +
+`logicn-hardware-tier`). The R&D-side companion proof scripts the spec flagged "to author" are discharged
+in spirit by the hub's `prove-hardware-tier.mjs` against production code.
 
 ---
 
