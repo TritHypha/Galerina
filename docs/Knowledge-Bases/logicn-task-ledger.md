@@ -94,7 +94,7 @@ which flows/packages depend on the changed node. Status legend: ✅ done · 🔶
 | 102 | **dss/index.lln → build/dss.wasm** | 🔲 | self-hosted/dss · wat pipeline |
 | 103 | **Wasmtime component supervises DWI** | 🔲 | runtime (Post-P9) |
 | 104 | **Real Wasmtime fuel per DWI** | 🔲 | runtime (Post-P9) |
-| 105 | **WASM admission-gate harness** (security core ✅; parity gated on #144/#145) | 🔶 | core-compiler/wasm-runtime.ts |
+| 105 | **WASM admission-gate harness** (security core ✅; tokenize byte-parity ✅ via #144/#145 — `wat-p9-tokenize-parity` 21/21; real-DSS `logicn run` gated on #102/#103) | 🔶 | core-compiler/wasm-runtime.ts |
 | 106 | **Epilogue receipts signed by DSS.wasm** | 🔲 | runtime (Post-P9) |
 | 107–109 | **Ed25519** keygen · build-time manifest signing · admission verify gate (ML-DSA-65 PQ upgrade planned — see §9) | ✅ | core-compiler (attestation, manifest-generator, cli) |
 | 110 | **Key rotation in secrets{}** | 🔲 | core-compiler (secrets) · ext-secrets-vault |

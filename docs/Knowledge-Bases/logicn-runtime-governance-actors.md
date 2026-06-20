@@ -83,8 +83,9 @@ re-deriving shipped architecture — *verify and map* is the correct response, n
 
 ## 4. Decision
 
-**None of the above is on the P9 critical path** (P9 completes via #144 enum lowering + #145
-string table / host-stdlib / output reader). These are post-P9 governance/compliance items,
+**None of the above is on the P9 critical path** (P9 byte-parity is now ✅ COMPLETE — #144 enum
+lowering + #145 string table / host-stdlib / output reader + #143 tokenize byte-parity all shipped
+2026-06-06; golden `tests/wat-p9-tokenize-parity`). These are post-P9 governance/compliance items,
 recorded here so the naming is captured and the existing components are not re-implemented.
 
 ---
@@ -103,12 +104,12 @@ opening any "new" governance/compliance work — if a row says DONE, do not rebu
 | **#147** | Warm-sandbox reuse + Memory Sanitizer (premature until reuse exists) | Post-P9, gated |
 | **#148** | 3 partial deltas: delegatable capability token · versioned decision cache · offline partial-evaluator | Post-P9, evaluate-first |
 
-### P9 critical path (NOT from this audit — the real blockers)
-| Task | Scope |
-|---|---|
-| **#144** | Lower enum-variant member access (kills 9 `tokenize` placeholders) |
-| **#145** | String-intern table + host-stdlib expansion + output reader |
-| **#143** | tokenize.wasm == interpreter byte-parity (blocked by #144, #145) → completes P9 |
+### P9 critical path (NOT from this audit) — ✅ COMPLETE (2026-06-06)
+| Task | Scope | Status |
+|---|---|---|
+| **#144** | Lower enum-variant member access (kills 9 `tokenize` placeholders) | ✅ |
+| **#145** | String-intern table + host-stdlib expansion + output reader | ✅ |
+| **#143** | tokenize.wasm == interpreter byte-parity (was: blocked by #144, #145) → completes P9 | ✅ |
 
 ### DONE — no task (rebuild guard)
 Certification plugin → **devtools-pci** · Access Gatekeeper → **CF-3/CF-7 + #105 + #139** ·

@@ -87,20 +87,23 @@ the HINT, not the feature.
 - **Enforced V_DPM capability gate** — branchless `(required & granted) === required`; `ERR_CAPABILITY_DENIED` before any compute (the bitmask was decorative; now live).
 - **Numeric policy table** — `ai{}` compiled once → packed i32 flags + O(1) `Set` membership + pre-paid certified preconditions (2.04× on the governance-check slice; scales with allow-list size).
 
-**P9 self-hosting bootstrap (logicn-core-compiler) — flow-body emission real; module assembly NOT yet:**
-> CORRECTION (2026-06-06): an earlier claim said the lexer "compiles to a real wabt-assembling WASM module".
-> That was overstated. SMALL flows do compile + execute via real wabt (verified). The LEXER's flow bodies emit
-> real instructions, but the MODULE references undefined stdlib fns (`$charCount`/`$Ok`/`$Some`/`$None`), so real
-> wabt rejects it and `assembleWAT` silently fell back to a 240-byte minimal-encoder stub. Full lexer assembly +
-> execution is gated on the **stdlib runtime (#145)**.
+**P9 self-hosting bootstrap (logicn-core-compiler) — ✅ COMPLETE: emission AND execution byte-parity:**
+> HISTORY (2026-06-06): an earlier claim said the lexer "compiles to a real wabt-assembling WASM module".
+> At the time that was overstated — the MODULE referenced undefined stdlib fns (`$charCount`/`$Ok`/`$Some`/`$None`),
+> so real wabt rejected it and `assembleWAT` fell back to a 240-byte minimal-encoder stub. That gap is now CLOSED:
+> the stdlib runtime (#145) is wired, the lexer module wabt-assembles to a real binary, and `tokenize.wasm`
+> byte-matches the interpreter (golden: `tests/wat-p9-tokenize-parity`, 21 cases).
 - `P9.4a` guarded-flow WAT bodies · `P9.4b` record struct layout (construct + `r.field` access, verified in real WASM) · `P9.4c` guarded-flow export gating.
 - **#145a MILESTONE (2026-06-06): the self-hosted lexer module now wabt-assembles to a real WASM binary.**
   `charCount`/`Ok`/`Err` wired to host imports + `__array_append` returns the array handle (last linking
   blocker cleared). The module LINKS + produces a valid binary via real wabt (verified, not the stub).
-  REMAINING for tokenize byte-parity (#145b): token-VALUE correctness needs type-aware string lowering
-  (String `+`→`__str_concat`; `Char.toString`→`__char_to_string`) + the host output reader. **Linking done; string semantics next.**
+  **#145b ✅ DONE: token-VALUE correctness via type-aware string lowering** (String `+`→`__str_concat`;
+  `Char.toString`→`__char_to_string`) with String/Char var-type tracking (incl. `Option<Char>` match bindings),
+  the host output reader (`readResult`/`readArray`/`readRecordField`), and string-intern exposure
+  (`getInternedStrings`/`seedString`). **Linking AND string semantics done — `tokenize.wasm` byte-matches the
+  interpreter (golden: `wat-p9-tokenize-parity`, 21 cases).**
 
-**The single remaining P9 gate → EXECUTION PARITY (next):** run `tokenize.wasm` and byte-compare to the interpreter. Needs the host-import runtime (string table + `__array_*`/`__str_*`/`__char_*` bridge + list/record memory walk) wired into `WebAssembly.instantiate` — i.e. **#105 (real-Wasmtime `logicn run`)**. Interpreter-level Stage-A==Stage-B parity is already locked (lexer-parity + R6 #101).
+**P9 EXECUTION PARITY → ✅ ACHIEVED (2026-06-06):** `tokenize.wasm` runs through the #105 admission gate and its output byte-matches the interpreter across a 21-case corpus (incl. string-heavy paths: `char_to_string`, `str_concat`, escapes, `Option<Char>` match bindings). The host-import runtime (string table + `__array_*`/`__str_*`/`__char_*` bridge + list/record memory walk) is wired into `WebAssembly.instantiate`. Golden: `tests/wat-p9-tokenize-parity.test.mjs` (21/21). Both the WASM execution parity AND interpreter-level Stage-A==Stage-B parity (lexer-parity + R6 #101) are now locked.
 
 ### Next up (ordered)
 0. ✅ **#105 — WASM admission-gate harness (security core, 2026-06-06):** `wasm-runtime.ts`
@@ -108,17 +111,19 @@ the HINT, not the feature.
    no instantiation), closed-allowlist host imports (no ambient scope), dev/prod differ ONLY in
    observability (host-call log / trap memory dump); proven in real WASM (5 tests). The locked
    security boundary is built.
-1. **Tokenize EXECUTION byte-parity (completes P9):**
+1. ✅ **Tokenize EXECUTION byte-parity — DONE (completes P9, 2026-06-06):**
    - ✅ **#144 enum-variant member lowering (2026-06-06)** — `EnumType.Variant` → declaration-order i32 tag
      (`buildEnumVariants` registry); **all 9 `tokenize` placeholders eliminated**, verified in real WASM
      incl. enum-in-record round-trip (tests/wat-p9_4d-enum-lowering, 4 tests).
-   - 🔲 **#145 — type-aware STRING semantics (the real bulk, discovered reading lexer.lln):** the lexer builds
-     token values via `value = value + nc.toString()`. Today String `+` lowers to `i32.add` (handle arithmetic)
-     and `Char.toString` → `__int_to_str` (returns the char's *decimal*, not the char). Needs: `__char_to_string`
-     + `__str_concat` host fns **and type-aware lowering** (String `+` → concat; `Char.toString` → char-to-string),
-     which needs String/Char var-type tracking (annotations + `Option<Char>` match bindings). Plus string-intern
-     table exposure + a list/record output reader in `wasm-runtime.ts`. *Then* `tokenize.wasm` == interpreter
-     (golden: lexer-parity). Note: no `;; unresolved` markers remain — the string gaps are SEMANTIC, not marker-flagged.
+   - ✅ **#145 — type-aware STRING semantics DONE (2026-06-06):** the lexer builds token values via
+     `value = value + nc.toString()`. String `+` now lowers to `__str_concat` and `Char.toString` to
+     `__char_to_string` (was: `i32.add` handle arithmetic / `__int_to_str` decimal). Shipped + wired:
+     `__str_concat` + `__char_to_string` host fns (`src/wasm-runtime.ts:225,266`); type-aware lowering
+     (`src/wat-emitter.ts:880,1008`); String/Char var-type tracking incl. `Option<Char>` match bindings
+     (`src/wat-emitter.ts:1328-1336,1546-1568,1854-1862`); string-intern table exposure
+     (`getInternedStrings`/`seedString`, `src/wat-emitter.ts:524` + `src/wasm-runtime.ts:297`); list/record
+     output reader (`readArray`/`readResult`/`readRecordField`, `src/wasm-runtime.ts:299-305`). `tokenize.wasm`
+     == interpreter byte-for-byte (golden: `wat-p9-tokenize-parity`, 21 cases). No `;; unresolved` markers remained.
 2. **#102–#104, #106 — real DSS.wasm (Post-P9, DRCM Phase 4):** `dss/index.lln` → `build/dss.wasm`; Wasmtime component supervises DWI guests; real per-DWI fuel; DSS.wasm signs epilogue receipts.
 3. **CF-4 — extract `@logicn/tpl-oracle`** so the Brawn (`ext-bridge-cpp`) imports NO Tower runtime (currently pulls `StubTernaryBridge`/`GovernanceEnforcer` from `tower-citizen`).
 4. **CF-5 / CF-9 / CF-10** — vector T-MAC commit gate · ECC/TMR · atomic failover.
@@ -411,11 +416,11 @@ governed, and benchmarked. The single gate to P9 is self-hosting (Stage B).
   included, using the P9.4b record heap (tests/wat-p9-ceremony-emission, 3 tests). This
   is the milestone "self-hosted `tokenize` emits real WASM". Interpreter-level Stage-A ==
   Stage-B parity is already locked (lexer-parity.test.mjs, PARITY_ACHIEVED=true; R6 #101).
-- **Ceremony — EXECUTION-PARITY half 🔲 REMAINING (Post-P9, overlaps #105):** running
-  `tokenize.wasm` and byte-comparing its output to the interpreter needs the full
-  host-import runtime (string table + `__array_*`/`__str_*`/`__char_*` bridge +
-  list/record memory walk) wired into `WebAssembly.instantiate`. That is the real-Wasmtime
-  `logicn run` harness (#105), not a compiler-emitter gap.
+- **Ceremony — EXECUTION-PARITY half ✅ DONE (2026-06-06):** `tokenize.wasm` runs through
+  the #105 admission gate and its output byte-matches the interpreter. The full host-import
+  runtime (string table + `__array_*`/`__str_*`/`__char_*` bridge + list/record memory walk)
+  is wired into `WebAssembly.instantiate`. Golden: `tests/wat-p9-tokenize-parity.test.mjs`
+  (21/21, incl. string-heavy paths).
 
 ### Post-P9 — real DSS.wasm (DRCM Phase 4)
 - #102 dss/index.lln → build/dss.wasm via Stage B
@@ -427,7 +432,7 @@ These are recorded, not started. Each line = **status + blocker**. Do NOT implem
 
 | Task | Status | Blocker |
 |---|---|---|
-| **#102** — compile `dss/index.lln` → `build/dss.wasm` via Stage B | 🔲 BLOCKED (pending) | Needs Stage B WASM module assembly (gated on P9 string-runtime #145/#143); no real `dss.wasm` until the self-hosted pipeline emits + links full modules. |
+| **#102** — compile `dss/index.lln` → `build/dss.wasm` via Stage B | 🔲 BLOCKED (pending) | P9 string-runtime (#145/#143) is **✅ DONE** — no longer a blocker. Remaining: drive the full self-hosted Stage-B pipeline (parser/type-checker/govern/emit `.lln`) to module-assembly + link parity for `dss/index.lln` (today only `lexer.lln` reaches WASM byte-parity), plus the Wasmtime component host (#103). |
 | **#103/#104** — real Wasmtime component model + per-DWI fuel | 🔲 BLOCKED (pending) | Needs the **Wasmtime runtime** (component-model host + real per-isolate fuel metering); today fuel/supervision is simulated, not enforced by a real engine. |
 | **#106** — epilogue receipts signed by `DSS.wasm` | 🔲 BLOCKED (pending) | Depends on a real `dss.wasm` (#102) running under Wasmtime (#103); receipt-signing logic exists, but in-WASM signing by the supervisor can't land until #102/#103 do. |
 | **#110** — key rotation in `secrets {}` | 🔲 BLOCKED (pending) | Needs an external **KMS** (key-management service) to source/rotate keys; rotation semantics can't be enforced without a real key custodian. |

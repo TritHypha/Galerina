@@ -144,8 +144,10 @@ The distinct issues cluster into four hotspots:
   tested (raw `LinkError` instead of `CRITICAL_SECURITY_VIOLATION`).
 - **#187 (low/S)** `bodyTailIsUnreachable` ifStmt branch has no isolated test.
 - **#188 (low/M)** Option<T> match-in-expression-position has no isolated WAT test.
-- **#189 (medium/S)** Parity corpus has no string/char-literal/comment inputs — the most
-  string-heavy lexer paths have zero WASM-execution parity coverage.
+- **#189 (medium/S) ✅ RESOLVED** — the parity corpus now includes string/char-literal/comment
+  inputs (`scanString`/`scanCharLit`/`scanComment`: quoted strings, escapes `\n`/`\t`, char literals,
+  `//` and `/* */` comments, `str + suffix` concat). `tests/wat-p9-tokenize-parity.test.mjs` 21/21,
+  exercising `char_to_string`/`str_concat`/escape handling under WASM-execution parity.
 - **#190 (low/S)** #105 gate negative paths miss wrong-key / malformed-signature rejection.
 
 ## Category: Cross-cutting / documentation
