@@ -2164,16 +2164,23 @@ class GovernanceVerifier {
         // The flow is either external or doesn't exist.
         // External flows require GovernanceSignature — emit LLN-ASSUME-004 warning.
         // Full manifest-file lookup (LLN-ASSUME-003) is deferred to Phase 5 admission gate.
+        // #178 fail-closed: a proof borrowed from a flow OUTSIDE this compilation unit cannot be
+        // verified here, and the admission gate does NOT yet enforce the external GovernanceSignature
+        // (DRCM Phase-5 LLN-ASSUME-003 check is unbuilt). Trusting an unverified cross-trust-domain
+        // proof is fail-OPEN — so it is an ERROR in production/deterministic, a warning in dev (where
+        // separate-compilation iteration relies on the future admission-gate check).
+        const isProductionAssume = this.currentProfile === "production" || this.currentProfile === "deterministic";
         this.diagnostics.push(makeGovDiag(
           "LLN-ASSUME-004",
           "ASSUMING_EXTERNAL_FLOW",
-          "warning",
+          isProductionAssume ? "error" : "warning",
           `Flow '${flow.name}': assuming() references '${refFlowName}' which is not in this ` +
-          `compilation unit. External proof borrowing requires a GovernanceSignature on ` +
-          `'${refFlowName}'.lmanifest. The admission gate (logicn verify) will check this at runtime.`,
+          `compilation unit, so its proof obligation cannot be verified here. The admission gate does ` +
+          `not yet enforce the external GovernanceSignature (DRCM Phase 5), so in production/deterministic ` +
+          `this unverified cross-module proof borrow is fail-open and is rejected.`,
           loc,
-          `Ensure '${refFlowName}' is compiled separately and its .lmanifest is available at ` +
-          `deployment time. Run: logicn verify --assuming ${refFlowName}`,
+          `Include '${refFlowName}' in this compilation unit so its proof is verified, or borrow only ` +
+          `within a single trust domain. (dev: warning — relies on the future Phase-5 admission check.)`,
         ));
         continue;
       }
