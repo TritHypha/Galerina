@@ -109,6 +109,32 @@ New package **`@logicn/governance-telemetry`** (`packages-logicn/logicn-governan
 `AntiAbuseReport` → `GovernanceSnapshot`); **OTLP** export; and the **`503 + X-LogicN-State` backpressure handshake**
 — which needs the net-new **kernel→runtime governance-deny bridge** (security-sensitive, intentionally held back).
 
+## ⛔ BUILD-IT-CORRECTLY GATE — owner zero-trust audit (2026-06-20) — MUST be answered before "done"
+Slice 1 shipped a working exporter with a strong OUTBOUND egress fence, but it is **NOT yet a proper
+LogicN-governed border** (it's a TS sidecar; the inbound side is unhardened). When this is rebuilt "correctly",
+**every one of these owner questions must be explicitly answered** — they are acceptance criteria, not suggestions.
+Zero-trust: the OS/host is treated as potentially compromised.
+
+| # | Owner question | Slice-1 status | Standard to apply when building correctly |
+|---|---|---|---|
+| 1 | Is the logic treated as a **border** (inbound AND outbound)? | outbound ✅ / inbound ❌ | Both directions hardened; the listener is a governed boundary, not a bare server. |
+| 2 | Are there **declared** details of what info IS / ISN'T provided? | ❌ (allowlist is TS code) | A **declared egress schema / data-dictionary** in a `contract`, not hand-coded TS. |
+| 3 | Is the API written in **`.lln`** (governed), not TS? | ❌ (TS) | `.lln` governed flow. **NB: blocked on #145** (heavy Prometheus string-building needs type-aware String semantics). |
+| 4 | `/src` + build → a **fusable signed `.wasm`** so apps can require it? | ❌ (TS `/src`, JS `/dist`, no wasm) | `logicn build --package` → signed `.wasm` + `.lmanifest`, **fusable via the 0052 multi-module system** (`network.inbound` cap, deny-by-default). |
+| 5 | `secure flow` border? | ❌ | Request handler = a `secure flow`. |
+| 6 | `contract {}`? | ❌ | Declared `effects` (`network.inbound`), `intent`, `limits {}`, egress schema (#2). |
+| 7 | Appropriate **comments**? | TS only ❌ | LogicN three-tier: `//` human · `//lln:` generated · `;;` govComment. |
+| 8 | **`unsafe`** for the border variable? | ❌ | Inbound `url`/`method`/headers = untrusted boundary data → `unsafe`, flow-owned (`LLN-SYNTAX-008`). |
+| 9 | **Timeout, rate-limit, sanitise incoming** (best practice)? | only 405/404/500 ❌ | Request timeout, rate-limit, request/header **size caps**, slowloris guard, inbound sanitisation. |
+| 10 | Run **under the App Kernel**? | ❌ (bare `node:http`) | Host it on the kernel's fixed fail-closed gate pipeline + `route-defaults` `limits{}` (`timeoutMs`/`rate`/`maxConcurrent`/`memoryBytes`) so it inherits them. |
+| 11 | **Auth / mTLS** on `/metrics`? | ❌ | **OWNER DECISION needed** — mTLS/bearer on the metrics port, or rely on K8s network-policy isolation. |
+| 12 | Zero-trust host posture? | ❌ | Honor `SecurityPosture` (`distrustHostTime`/`sealEgress`/`zeroizeAfterUse`) for the border. |
+
+**Why Slice 1 skipped these (honest):** R&D 0050 scoped it sidecar-first/TS; the egress fence was the priority; a
+full `.lln` exporter is partly blocked by #145. The inbound-hardening omission (9/10) has **no** such excuse and is the
+do-now fix. **Buildable now (no #145 dep):** items 1/9/10/12 (inbound hardening + run-under-kernel + posture).
+**Blocked on #145:** items 3/4/5/6 (the `.lln` rewrite → fusable wasm). Item 11 is an owner decision.
+
 ## Forward line
 The structure-not-data egress rule IS the crypto-on-core fence (`LLN-SUBSTRATE-001`) projected onto the wire; the
 K3-INDETERMINATE counter is governance-as-T-MAC made observable — the blind seam a future photonic T-MAC offload would be
