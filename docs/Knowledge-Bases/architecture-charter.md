@@ -158,6 +158,30 @@ allow and a net win exists; binary-only wherever the physics forbid.** (Maths: t
 fail-safe-noise / net-win-partition guarantees are proven in
 `LogicN-R-AND-D/scripts/rd-photonic-ppu-virtualisation-proof.mjs`.)
 
+### The Tri-Pipe — three execution tiers under one router
+
+The Bifurcated Invariant materialises as **three execution pipes**, selected per-flow (and
+per-component) by a **single heterogeneous router** — NOT three virtual CPUs (R&D 0009: *"one
+native-routing seam, not three emulated processors"*):
+
+- **Binary** — pure discrete/silicon (strict-trapping i32 / WASM linear memory). Deterministic,
+  bit-exact, the **default and universal fallback**. Every component can run here; **crypto, exact
+  arithmetic, and control flow run ONLY here** (crypto-on-core).
+- **Photonic** — pure continuous/optical (analog MAC). Non-deterministic within a `substrate {}`
+  tolerance, **re-verified on Binary** (Freivalds, never re-execution), **fail-closed**. Eligible for
+  tensor / governance-reduction / transform kernels only; a *whole program* is rarely pure-photonic
+  because control + crypto forbid it.
+- **Hybrid** — the **composition and the realistic dominant mode**: one flow with its control / crypto /
+  exact parts on Binary and its eligible kernels offloaded to Photonic, results re-verified. Realized by
+  the partition router (R&D 0053 `PartitionDecider`) over the shipped Brain→Brawn dispatch
+  (`hybrid-engine.ts`). It offloads only on a measured/projected net win — else it stays Binary.
+
+**One governed outcome across all three pipes** (semantic parity); **fail-closed to Binary** on any
+ineligibility / out-of-tolerance / unattested / no-net-win condition; **never a slowdown** (worst case =
+stayed Binary). *Disambiguation:* the Tri-Pipe **Hybrid** is hybrid **execution** (binary + photonic) —
+distinct from hybrid **signing** (classical Ed25519 + PQ ML-DSA-65), a different axis that applies within
+the Binary pipe.
+
 ## Architectural Stability
 
 LogicN must be additive by design.
