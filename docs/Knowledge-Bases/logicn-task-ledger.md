@@ -325,6 +325,31 @@ Verified: **48/48 · 4,368 tests · 0 fail**. 7 commits on top of `Initial commi
 
 ---
 
+## 8. R&D 0059–0064 triage → proposed tasks #201–#210 (2026-06-22)
+
+Full triage: **[logicn-rd-0059-0064-triage-2026-06-22.md](logicn-rd-0059-0064-triage-2026-06-22.md)**
+(ground-truthed against live source; design-only). Supersedes nothing — these are NEW proposed tasks layered
+over the #1–#200 register above. Convergent #1 = **#201** (least-privilege minimality, partially shipped).
+
+| # | Task (abbrev) | Status | Source | Subsystem |
+|---|---|---|---|---|
+| 201 | Escalate `LLN-EFFECT-002 OVERDECLARED_EFFECT` warning → profile-gated fail-closed error + port to Stage-B | 🔲 | 0062§2 ∧ 0063§3 | core-compiler (effect-checker) |
+| 202 | Transitive capability-mask `⊆` proof across the signed-package dep graph | 🔲 | 0062§3 | core-compiler · framework-app-kernel |
+| 203 | Full contract digest — extend effects-only `behavioralFingerprint` to limits/substrate/invariant | 🔲 | 0062§5 | core-compiler (manifest-generator) |
+| 204 | Signed-package audit graph: `logicn graph --package` + central auditor over the admission surface | 🔲 | 0064 | core-cli · devtools-graph-project |
+| 205 | Unify `TypeId.Unknown` with the governance K3 algebra (one Kleene lattice) — the 0061 headline | 🔲 | 0061§2 | core-compiler (type-checker · governance-verifier) |
+| 206 | Package-standard profile + basic-rules checker + `@logicn-core/*` verified tier + level-1-only deep deps | 🔲 | 0062§2/§4 | core-compiler (package-resolver) |
+| 207 | Idempotency effect-annotation → `resilience{}` retry-legality (unblocks `LLN-FAULT-005` fallback-half) | 🔲 | 0059§6 | core-compiler (resilience-inference) |
+| 208 | Per-granted-capability egress-policy binding | 🔲 | 0063§3 | core-network |
+| 209 | Key-custody hardening — name-similarity / expected-key check at grant/sign | 🔲 | 0063§3 · 0057 | governance · secrets |
+| 210 | TS7-native `tsc` host build + 53-pkg parallelism + watch (NOT a compiler rewrite) | 🔲 | 0060 | toolchain (#155-adjacent) |
+
+*Already tracked elsewhere (no new task):* 0059 Global Safety Theorem SMT obligations → 0024/0040 Z3 track;
+`LLN-FAULT-005` → fault-tolerance doc §9; per-block differential → formal-verification-direction.md.
+**Owner-gated steers:** #201 (breaking-in-prod), #205 (architecture), #210 (toolchain commitment).
+
+---
+
 ## 7. R&D adoption — `.tmf` / tri-encryption (2026-06-16)
 
 Full review: **[logicn-rd-adoption-2026-06-16.md](logicn-rd-adoption-2026-06-16.md)**. Both R&D tracks are

@@ -5,6 +5,26 @@
 
 ---
 
+## 🧭 2026-06-22 — R&D 0059–0064 triaged → proposed tasks #201–#210
+
+Six R&D done-reports (0059 formal proof structure · 0060 TS7/Go-rewrite · 0061 compiler R&D · 0062 3rd-party
+package architecture · 0063 AI chain-of-attack · 0064 signed-package graph) triaged + ground-truthed against
+live source (3-agent verify workflow). Full analysis, the 0063→packages map, the 14-item tracked-vs-net-new
+gap-check, and the proposed task table in
+**[logicn-rd-0059-0064-triage-2026-06-22.md](logicn-rd-0059-0064-triage-2026-06-22.md)**.
+
+**Net:** 0059 is mostly already absorbed (fault-tolerance doc); the supply-chain/package items are net-new.
+**Convergent #1 (0062 ∧ 0063):** least-privilege minimality is **partially shipped** — `LLN-EFFECT-002
+OVERDECLARED_EFFECT` already detects declare-without-use but only as a **warning** and is **absent from
+Stage-B** → the delta is escalate-to-fail-closed-error + port (proposed **#201**). Other net-new: transitive
+mask-⊆ proof (**#202**), full contract digest (**#203**), signed-package audit graph (**#204**), Kleene-lattice
+type+governance unify (**#205**, the 0061 headline), package-standard profile + verified tier (**#206**),
+idempotency annotation (**#207**), per-cap egress binding (**#208**), key-custody name-check (**#209**),
+TS7 host build (**#210**). Owner-gated steers to surface: #201 (breaking-in-prod), #205 (architecture),
+#210 (toolchain). Design-only; no production code changed by the triage.
+
+---
+
 ## 🛡 2026-06-21 — core-network INBOUND guard + rate limiter (ranked priority "core-network guards")
 
 `logicn-core-network` validated the inbound policy but had **no runtime enforcement** (like egress before
