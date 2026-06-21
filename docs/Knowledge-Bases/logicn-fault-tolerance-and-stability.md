@@ -277,6 +277,18 @@ fully pinned: a finite `tolerance` + `pinnedEnvHash` + `backendArtifactHash` + a
   4. Close two fail-open admission/clamp holes (certified-mode photonic admission bound to a verified
      signed manifest; caller-independent `maxTolerance`/`N_MAX` clamps). *(queued)*
 
+**Recovery & the invariant gate (`LLN-FAULT-005`, designed — enforcement gated).** Fault recovery is the
+shipped `resilience { on_*_fault <action> }` block (R&D 0017, core `621fbda`) — *not* a new `recover {}`
+block. The rule **`recover ⊨ invariant`**: a recovered result (a retry that succeeds, a `fallback` flow's
+return) must still satisfy the flow's `invariant { ensure result }` post-condition, else `halt` (fail-closed).
+Recovery is thus sandwiched — bounded **below** by `effects {}` (the capability floor: idempotency-gated
+retry, `LLN-FAULT-001` no-retry-past-deny, `LLN-FAULT-002` fallback-effects-⊆-parent, monotone) and **above**
+by `invariant {}` (the output gate). *Honest status:* the **retry** case is already structurally safe (the
+single-exit `ensure result` gate gates every return); the **fallback** case is gated on the deferred
+fallback-resolution (0017). So `LLN-FAULT-005` enforcement ships **with** the fault-handler runtime / the
+interim crash-containment harness — it is documented here, not claimed as a standalone shipped rule. Full
+design: R&D 0059.
+
 ---
 
 ## 10. Summary — the invariant table
