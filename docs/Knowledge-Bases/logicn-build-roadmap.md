@@ -26,7 +26,10 @@ backend (crypto/K3/control stay on the digital core). The runtime seam for the P
 **#165** f64 WAT lowering ✅ DONE · **#180** manifest signing ✅ DONE (this session's signing-format hardening +
 RFC-8785/#67/fail-secure profile) · **#194** GateCache ✅ DONE (`gate-cache.ts`) · **#128(b)** for-in WASM
 lowering ✅ DONE (`forEachStmt` lowers to a counted `__array_length`/`__array_get` loop; `wat-forin-execution`
-test green) · **core-network guards** ✅ (egress SSRF/DNS-rebind + this inbound guard). Genuinely-open + non-gated:
+test green) · **core-network guards** ✅ (egress SSRF/DNS-rebind + inbound guard) · **CLI build/verify/deploy** ✅
+(build signing #180 · verify fail-closed + unsigned-policy · run signature+revocation · **deploy `ec3d610`** now
+enforces LOGICN_PROFILE=production by default — build signs, verify enforces; the pre-existing broken
+health-check step fixed via `--governed`). Genuinely-open + non-gated:
 the self-hosted **Stage-B pipeline** (#102 dss→wasm), the photonic **-hybrid tier package** + certified-mode
 admission, and **0055 B3** (generation tag, deferred — pervasive layout change). **#149/#34/.tmf-4** owner-gated.
 
