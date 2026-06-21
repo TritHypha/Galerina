@@ -39,8 +39,10 @@ const FIXTURES = {
   valid:             { manifest: base() },
   // B2: a coarse border spelling (db.read) is admitted via alias → database.read.
   aliasCap:          { manifest: { ...base(), capabilities: ["db.read", "audit.write"] } },
-  // B2: a canonical compiler capability (shell.execute) is now recognised at the border.
-  canonicalCap:      { manifest: { ...base(), capabilities: ["shell.execute"] } },
+  // B2: a canonical compiler capability (shell.execute) is recognised at the border,
+  // but high-authority caps require governanceTier 3 (security review #1).
+  canonicalCap:      { manifest: { ...base(), capabilities: ["shell.execute"], governanceTier: 3 } },
+  highAuthLowTier:   { manifest: { ...base(), capabilities: ["shell.execute"] } }, // base() = tier 2 → denied
   placeholderHash:   { manifest: { ...base(), sourceHash: "sha256:pending-logicn-promote" } },
   shortHash:         { manifest: { ...base(), sourceHash: "sha256:abc" } },
   blacklisted:       { manifest: { ...base(), blacklisted: true } },
@@ -114,11 +116,17 @@ test("B2: a canonical compiler capability (shell.execute) is ADMITTED at the bor
 for (const key of [
   "placeholderHash", "shortHash", "blacklisted", "unknownCap", "emptyCaps",
   "overCeilingMem", "negativeLimit", "badTier", "missingSchema", "malformedSchema", "malformedManifest",
+  "highAuthLowTier",
 ]) {
   test(`${key} is DENIED (fail-closed)`, () => {
     assert.equal(verdict(key), "DENIED", OUT);
   });
 }
+
+test("security #1: a high-authority cap (shell.execute) below governanceTier 3 is DENIED", () => {
+  assert.equal(verdict("highAuthLowTier"), "DENIED", OUT);
+  assert.match(reasonsFor("highAuthLowTier"), /high-authority capability/);
+});
 
 test("the gate exits non-zero when any plugin is denied (deny-by-default)", () => {
   assert.equal(STATUS, 1, `expected exit 1 with denied fixtures present; output:\n${OUT}`);

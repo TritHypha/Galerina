@@ -492,10 +492,14 @@ Baseline comparison (governance-cost):
     // alias-aware admission vocabulary lives in the compiler (capability-types) —
     // the SAME schema the fusion gate is drift-checked against — so the two
     // admission gates validate against ONE list and can't silently diverge.
-    const { isAdmissibleCapability } = await import(
+    const { isAdmissibleCapability, normalizeCapability } = await import(
       new URL("packages-logicn/logicn-core-compiler/dist/capability-types.js", import.meta.url).href
     );
     const CEILINGS = { maxMemoryMB: 4096, maxCpuCycles: 1e10, maxWallMs: 60000 };
+    // High-authority (sandbox-escape / secret-reading) capabilities are admissible
+    // under the unified vocabulary, but must NEVER be gated like a benign I/O shim:
+    // they demand the strictest governance tier (3). Security review 2026-06-21 #1.
+    const HIGH_AUTHORITY_CAPS = new Set(["shell.execute", "native.call", "secret.access"]);
     const SHA256 = /^sha256:[0-9a-f]{64}$/;
 
     function validatePlugin(plugin) {
@@ -524,6 +528,8 @@ Baseline comparison (governance-cost):
         for (const c of m.capabilities) {
           if (typeof c !== "string" || !isAdmissibleCapability(c)) {
             reasons.push(`unknown/unpermitted capability: ${JSON.stringify(c)}`);
+          } else if (HIGH_AUTHORITY_CAPS.has(normalizeCapability(c)) && m.governanceTier !== 3) {
+            reasons.push(`high-authority capability ${JSON.stringify(c)} requires governanceTier 3 (got ${JSON.stringify(m.governanceTier)})`);
           }
         }
       }
@@ -630,7 +636,15 @@ Baseline comparison (governance-cost):
       const attestation = JSON.parse(readFileSync(rest[1], "utf8"));
       const publicKeyPem = readFileSync(rest[2], "utf8");
       const kidIdx = rest.indexOf("--keyid");
-      const signerKeyId = kidIdx !== -1 ? rest[kidIdx + 1] : undefined;
+      let signerKeyId;
+      if (kidIdx !== -1) {
+        signerKeyId = rest[kidIdx + 1];
+        // A valueless --keyid must NOT silently disable the revocation gate.
+        if (!signerKeyId || signerKeyId.startsWith("--")) {
+          console.error("Error: --keyid requires a value (the signer's keyId)");
+          process.exit(2);
+        }
+      }
       const policy = { requireSigned: true, publicKeyPem };
       // Revocation (fail-closed): when a signer keyId is given, refuse a revoked signer.
       // An untrustworthy/tampered revocation registry fails the whole verify closed.
@@ -644,6 +658,8 @@ Baseline comparison (governance-cost):
           console.error(`❌ bridge-attest verify: revocation registry untrusted (${e.message}) — refusing (fail-closed)`);
           process.exit(1);
         }
+      } else {
+        console.warn("⚠  no --keyid given: signature verified, but REVOCATION was NOT checked");
       }
       const result = tc.verifyAttestation(attestation, policy);
       if (result.ok) {
