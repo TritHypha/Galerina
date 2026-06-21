@@ -151,6 +151,12 @@ export interface WATFunction {
   /** Whether this function is exported as a WASM entry point. */
   readonly isEntryPoint: boolean;
   /**
+   * B2b (R&D 0055): true when this flow's contract carries a `privacy {}` or `secrets {}` block, so its
+   * heap allocations may hold secret-derived bytes. Since the WASM module EXPORTS its linear memory, a
+   * reclaimed-but-unzeroed arena is host-readable remanence — a secret-containing module zeroes on reset.
+   */
+  readonly handlesSecrets?: boolean;
+  /**
    * Named parameters for this function.
    * Phase 22: present for pure flows; enables emitWATBody to reference locals.
    * When absent, renderWAT falls back to index-based $p0, $p1, … names.
@@ -251,6 +257,18 @@ function arenaMbOfFlow(flowNode: AstNode): number | undefined {
     }
   }
   return undefined;
+}
+
+/**
+ * B2b (R&D 0055): does this flow's contract carry a `privacy {}` or `secrets {}` block? If so its heap
+ * allocations may hold secret-derived bytes that must not be left resident in the (exported) linear memory.
+ */
+function flowHandlesSecrets(flowNode: AstNode | undefined): boolean {
+  if (flowNode === undefined) return false;
+  const contractDecl = (flowNode.children ?? []).find((c) => c.kind === "contractDecl");
+  return (contractDecl?.children ?? []).some(
+    (c) => c.kind === "identifier" && (c.value === "privacy:block" || c.value === "secrets:block"),
+  );
 }
 
 /**
@@ -495,6 +513,10 @@ export function renderWAT(module: WATModule): string {
       }
     }
   }
+  // B2b (R&D 0055): zero the reclaimed arena on the per-flow reset ONLY when the module contains a
+  // secret-handling flow (privacy/secrets block). Any prior top-level invocation could have been that flow,
+  // and the module EXPORTS its linear memory, so otherwise the reclaimed secret bytes are host-readable.
+  const moduleHasSecret = module.functions.some((f) => f.handlesSecrets === true);
 
   // Function definitions.
   // Pure flows with a real body (fn.body !== "unreachable") emit actual instructions.
@@ -512,23 +534,40 @@ export function renderWAT(module: WATModule): string {
     lines.push(`  ${funcSig}`);
     // Use the real body when available; fall back to unreachable for stubs.
     if (fn.body !== "unreachable" && fn.body.trim().length > 0) {
-      // B2: inject the per-flow heap reset right AFTER the locals (WASM requires all locals first),
-      // for leaf entry-points only, when the module uses the heap. Before any allocation runs.
+      // B2: inject the per-flow heap reset (and B2b secret-zeroing) right AFTER the locals (WASM requires
+      // all locals first), for leaf entry-points only, when the module uses the heap. Before any allocation.
       const emitArenaReset = usesHeap && fn.isEntryPoint && !flowReferenced.has(fn.name);
+      const emitZeroing = emitArenaReset && moduleHasSecret;
+      // B2b: the zeroing loop needs a counter local — declare it first so all locals precede instructions.
+      if (emitZeroing) lines.push(`    (local $__lln_zero_i i32)`);
+      const resetBlock: string[] = [];
+      if (emitZeroing) {
+        resetBlock.push(`    ;; B2b (R&D 0055): zero the reclaimed arena [base, prev-heap) before rebasing — the WASM`);
+        resetBlock.push(`    ;; module exports its memory, so an un-zeroed reclaimed secret arena is host-readable remanence.`);
+        resetBlock.push(`    (local.set $__lln_zero_i (i32.const ${WAT_HEAP_BASE}))`);
+        resetBlock.push(`    (block $__lln_zd (loop $__lln_zl`);
+        resetBlock.push(`      (br_if $__lln_zd (i32.ge_u (local.get $__lln_zero_i) (global.get $__lln_heap)))`);
+        resetBlock.push(`      (i32.store (local.get $__lln_zero_i) (i32.const 0))`);
+        resetBlock.push(`      (local.set $__lln_zero_i (i32.add (local.get $__lln_zero_i) (i32.const 4)))`);
+        resetBlock.push(`      (br $__lln_zl)))`);
+      }
+      if (emitArenaReset) {
+        resetBlock.push(`    ;; B2 (R&D 0055): per-flow arena reset — reclaim the previous invocation's heap (leaf entry-point)`);
+        resetBlock.push(`    (global.set $__lln_heap (i32.const ${WAT_HEAP_BASE}))`);
+      }
       let resetInjected = false;
       // Indent each instruction line with 4 spaces inside the function.
       for (const bodyLine of fn.body.split("\n")) {
         if (bodyLine.trim().length === 0) continue;
         if (emitArenaReset && !resetInjected && !/^\s*\(local\b/.test(bodyLine)) {
-          lines.push(`    ;; B2 (R&D 0055): per-flow arena reset — reclaim the previous invocation's heap (leaf entry-point)`);
-          lines.push(`    (global.set $__lln_heap (i32.const ${WAT_HEAP_BASE}))`);
+          for (const rl of resetBlock) lines.push(rl);
           resetInjected = true;
         }
         lines.push(`    ${bodyLine}`);
       }
-      // A body that is ALL locals (no instructions) still gets the rebase appended.
+      // A body that is ALL locals (no instructions) still gets the rebase (+ zeroing) appended.
       if (emitArenaReset && !resetInjected) {
-        lines.push(`    (global.set $__lln_heap (i32.const ${WAT_HEAP_BASE}))`);
+        for (const rl of resetBlock) lines.push(rl);
       }
     } else {
       lines.push(`    unreachable`);
@@ -2808,6 +2847,7 @@ export function buildWATModule(
       name: flow.name,
       isPure: flow.qualifier === "pure",
       isEntryPoint: entrySet.has(flow.name),
+      handlesSecrets: gir.ast !== undefined ? flowHandlesSecrets(findFlowNodeInAST(gir.ast, flow.name)) : false,
       type: { params: paramValTypes, results: ["i32"] },
       body,
       ...(namedParams.length > 0 ? { namedParams } : {}),
