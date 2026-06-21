@@ -1,7 +1,7 @@
 // app-scaffold.test.mjs — B1: `logicn new app` app-layout scaffolder.
 //
 // Locks the app-framework layout convention + its zero-trust defaults:
-//   App.lln + App.manifest + flows/ + deps/ + proofs/, deny-by-default,
+//   src/App.lln + App.manifest + src/flows/ + deps/ + proofs/, deny-by-default,
 //   fail-closed, refuse-to-overwrite. Structural/content assertions only (no
 //   compile) so the test stays fast and toolchain-independent; the build path is
 //   verified manually + by the compiler suite.
@@ -39,9 +39,9 @@ test("logicn new app — emits the App.lln + App.manifest + flows/ deps/ proofs/
     assert.equal(r.status, 0, `scaffold should succeed:\n${r.stderr}`);
 
     for (const rel of [
-      "App.lln",
+      "src/App.lln",
       "App.manifest",
-      "flows/example.lln",
+      "src/flows/example.lln",
       "deps/README.md",
       "proofs/README.md",
       "README.md",
@@ -49,8 +49,8 @@ test("logicn new app — emits the App.lln + App.manifest + flows/ deps/ proofs/
     ]) {
       assert.ok(existsSync(join(target, rel)), `expected ${rel} to be scaffolded`);
     }
-    // The three convention dirs exist as directories.
-    for (const d of ["flows", "deps", "proofs"]) {
+    // The convention dirs exist as directories.
+    for (const d of ["src", "src/flows", "deps", "proofs"]) {
       assert.ok(statSync(join(target, d)).isDirectory(), `${d}/ should be a directory`);
     }
   });
@@ -65,7 +65,7 @@ test("logicn new app — App.manifest is deny-by-default (no caps, no deps, kind
     const manifest = JSON.parse(readFileSync(join(target, "App.manifest"), "utf8"));
     assert.equal(manifest.kind, "app");
     assert.equal(manifest.schemaVersion, "lln.app.v1");
-    assert.equal(manifest.entry, "App.lln");
+    assert.equal(manifest.entry, "src/App.lln");
     assert.equal(manifest.name, "secure-app");
     // Deny-by-default: nothing granted, nothing admitted.
     assert.deepEqual(manifest.capabilities, [], "capabilities must default to []");
@@ -82,7 +82,7 @@ test("logicn new app — App.lln is pure (no effects) and fail-closed (mandatory
     const r = runScaffold(["app", target]);
     assert.equal(r.status, 0, r.stderr);
 
-    const app = readFileSync(join(target, "App.lln"), "utf8");
+    const app = readFileSync(join(target, "src", "App.lln"), "utf8");
     assert.match(app, /pure flow main\(\)\s*->\s*Int/, "entry must be a pure flow");
     // Check CODE only — the doc comment legitimately mentions `effects {}`.
     const code = app
@@ -115,7 +115,7 @@ test("logicn new — package mode still works (backward compatible)", () => {
     assert.equal(r.status, 0, r.stderr);
     assert.ok(existsSync(join(target, "package.lln.json")), "package descriptor");
     assert.ok(existsSync(join(target, "src", "index.lln")), "package entry");
-    assert.ok(!existsSync(join(target, "App.lln")), "package mode must NOT emit App.lln");
+    assert.ok(!existsSync(join(target, "src", "App.lln")), "package mode must NOT emit the app entry src/App.lln");
   });
 });
 

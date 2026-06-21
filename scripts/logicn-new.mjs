@@ -203,9 +203,10 @@ README.md          this file
 function appLln(name) {
   return `// ${name} — a governed LogicN application (scaffolded by \`logicn new app\`).
 //
-// App.lln is the application's composition ROOT. \`logicn build App.lln\` fuses it
-// into ONE signed build/App.wasm plus a signed build/App.lmanifest (the admission
-// artifact a host App Kernel verifies before it will run a single instruction).
+// src/App.lln is the application's composition ROOT — \`flow main()\` is the entry the
+// host App Kernel invokes AFTER admission (there is no separate boot file; the Kernel
+// IS the boot). \`logicn build src/App.lln\` fuses it into ONE signed build/App.wasm
+// plus a signed build/App.lmanifest (the admission artifact the Kernel verifies first).
 //
 // Zero-trust defaults:
 //   - Deny-by-default: this entry is a \`pure flow\` with NO \`effects {}\` block,
@@ -217,9 +218,9 @@ function appLln(name) {
 //   - Fail-closed: every \`match\` ends with a mandatory \`_ =>\` wildcard
 //     (LLN-TYPE-023) — an unrecognised state exits non-zero, never falls through.
 //
-// Build:  node logicn.mjs build App.lln       →  build/App.wasm + build/App.lmanifest
-// Run:    node logicn.mjs run   App.lln --invoke main
-// Prove:  node logicn.mjs gen-tests App.lln    →  contract obligations (see proofs/)
+// Build:  node logicn.mjs build src/App.lln     →  build/App.wasm + build/App.lmanifest
+// Run:    node logicn.mjs run   src/App.lln --invoke main
+// Prove:  node logicn.mjs gen-tests src/App.lln  →  contract obligations (see proofs/)
 
 pure flow main() -> Int
 contract {
@@ -237,9 +238,9 @@ contract {
 }
 
 function appExampleFlow(name) {
-  return `// flows/example.lln — an example application flow for ${name}.
+  return `// src/flows/example.lln — an example application flow for ${name}.
 //
-// Application flows live in flows/ and are composed by App.lln (the root). Keep
+// Application flows live in src/flows/ and are composed by src/App.lln (the root). Keep
 // each flow least-capability: start \`pure\`, and add an \`effects {}\` block plus
 // the matching capability in App.manifest only when the flow provably needs it.
 
@@ -263,8 +264,8 @@ function appManifest(name) {
       kind: "app",
       name,
       version: "0.1.0",
-      entry: "App.lln",
-      flows: "flows/",
+      entry: "src/App.lln",
+      flows: "src/flows/",
       proofs: "proofs/",
       // Deny-by-default. Grant a capability only alongside a flow's effects {}.
       capabilities: [],
@@ -347,9 +348,9 @@ A governed LogicN **application**, scaffolded with \`logicn new app\`.
 ## Build & run
 
 \`\`\`sh
-node logicn.mjs build App.lln              # → build/App.wasm + build/App.lmanifest
-node logicn.mjs run   App.lln --invoke main
-node logicn.mjs gen-tests App.lln          # contract-driven proofs (see proofs/)
+node logicn.mjs build src/App.lln          # → build/App.wasm + build/App.lmanifest
+node logicn.mjs run   src/App.lln --invoke main
+node logicn.mjs gen-tests src/App.lln      # contract-driven proofs (see proofs/)
 \`\`\`
 
 \`logicn build\` fuses the app into **one signed \`build/App.wasm\`** and emits the
@@ -360,13 +361,23 @@ will run the app: governance is part of execution, not a layer around it.
 ## Layout (app-framework convention)
 
 \`\`\`
-App.lln          governed composition-root flow (the app entry)
-App.manifest     declarative descriptor → folded into the SIGNED build/App.lmanifest
-flows/           application flows composed by App.lln
-deps/            signed governed components admitted at the fuse border
+src/App.lln      composition-root flow — flow main() is the entry the App Kernel invokes
+src/flows/       your governed business logic, composed by src/App.lln
+App.manifest     declarative descriptor (entry, capabilities, deps[]) → SIGNED build/App.lmanifest
+deps/            THIRD-PARTY signed governed components (.wasm + .fuse.json), admitted at the fuse border
+packages/        (optional) the app's OWN split-out LogicN packages — each \`logicn build --package\`-able
 proofs/          contract-driven generated test obligations
-build/           generated, signed output (git-ignored)
+build/           generated, signed output (git-ignored) — App.wasm + App.lmanifest
 \`\`\`
+
+**main / boot.** \`src/App.lln\`'s \`flow main()\` is the entry; the host **App Kernel** is the boot —
+it admits \`build/App.wasm\` (hash · sig+revoke · caps) then invokes main(). There is no separate boot
+file in your source.
+
+**Where LogicN packages go.** Third-party signed components are declared in \`App.manifest\`'s \`deps[]\`
+(name + sha256 + signer) and live in \`deps/\`. The \`logicn\` toolchain (compiler/runtime) is not
+vendored. Registry-resolved packages (forward model) are verified hash+sig+revocation into a local,
+git-ignored store — you commit the lock, not the bytes.
 
 ## Security posture
 
@@ -386,6 +397,8 @@ function appGitignore() {
   return `# Generated, signed build output — never committed (rebuild from source).
 build/
 dist/
+packages/*/dist/
+logicn_modules/
 
 # Secrets are runtime-only and MUST never be committed.
 .env
@@ -426,14 +439,14 @@ Next:
 
 function scaffoldApp(absTarget, name, targetDir) {
   mkdirSync(absTarget, { recursive: true });
-  mkdirSync(join(absTarget, "flows"), { recursive: true });
+  mkdirSync(join(absTarget, "src", "flows"), { recursive: true });
   mkdirSync(join(absTarget, "deps"), { recursive: true });
   mkdirSync(join(absTarget, "proofs"), { recursive: true });
 
   console.log(`logicn-new — scaffolding secure app "${name}" into ${absTarget}`);
-  writeFileStrict(join(absTarget, "App.lln"), appLln(name), "App.lln");
+  writeFileStrict(join(absTarget, "src", "App.lln"), appLln(name), "src/App.lln");
   writeFileStrict(join(absTarget, "App.manifest"), appManifest(name), "App.manifest");
-  writeFileStrict(join(absTarget, "flows", "example.lln"), appExampleFlow(name), "flows/example.lln");
+  writeFileStrict(join(absTarget, "src", "flows", "example.lln"), appExampleFlow(name), "src/flows/example.lln");
   writeFileStrict(join(absTarget, "deps", "README.md"), appDepsReadme(name), "deps/README.md");
   writeFileStrict(join(absTarget, "proofs", "README.md"), appProofsReadme(name), "proofs/README.md");
   writeFileStrict(join(absTarget, "README.md"), appReadme(name), "README.md");
@@ -443,7 +456,7 @@ function scaffoldApp(absTarget, name, targetDir) {
 ✅ Scaffolded app "${name}".
 
 Next:
-  node logicn.mjs build ${join(targetDir, "App.lln")}
+  node logicn.mjs build ${join(targetDir, "src", "App.lln")}
   # → build/App.wasm + build/App.lmanifest  (the signed admission artifact)`);
 }
 
