@@ -182,6 +182,28 @@ stayed Binary). *Disambiguation:* the Tri-Pipe **Hybrid** is hybrid **execution*
 distinct from hybrid **signing** (classical Ed25519 + PQ ML-DSA-65), a different axis that applies within
 the Binary pipe.
 
+### Build rule: the Tri-Pipe coverage check (every feature) — owner directive 2026-06-21
+
+> *"Everything we build, consider if we need to build for the Tri-Pipe (Binary | Hybrid | Photonic)."*
+
+For **every** new feature, explicitly decide and record its Tri-Pipe dimension — this is a *consideration
+checklist*, NOT a mandate to triplicate everything. Apply the invariants:
+
+- **Binary-only is the DEFAULT and the right answer for most features.** Crypto, governance enforcement,
+  K3 decisions, control flow, exact arithmetic, admission/attestation, secret handling, memory-safety, CLI,
+  and the audit/proof machinery **run ONLY on Binary** (crypto-on-core) — they have **no** Hybrid/Photonic
+  facet by invariant. Recent examples: the arena hardening, inbound guard, deploy posture, manifest signing
+  → **all Binary-only.** State this explicitly rather than inventing a photonic version.
+- **Hybrid / Photonic applies ONLY to eligible COMPUTE kernels** — tensor / inference / governance-reduction
+  / transform work — and only behind the shipped gates: the `PartitionDecider` net-win cost model, a
+  `substrate {}` tolerance with a witness, Freivalds re-verify, attestation (the photonic-hardware switch +
+  certified-mode admission), and **fail-closed to Binary** on any ineligibility. A *whole program* is rarely
+  pure-Photonic (control + crypto forbid it); **Hybrid is the realistic dominant mode** when a kernel qualifies.
+- **Record the verdict at build time** (commit message / KB): either **"Binary-only (by invariant)"** or
+  **"has a Hybrid/Photonic kernel facet → [which kernel, how gated]."** The Tri-Pipe is one router + per-pipe
+  packages (below), so a kernel facet means an adapter behind the `PhotonicBackend` / partition seam, never a
+  governance/crypto path leaving Binary.
+
 ### Per-tier packages + the hardware-capability passive directive
 
 The Tri-Pipe is realized as a **package topology**, not only internal branching: each component is
