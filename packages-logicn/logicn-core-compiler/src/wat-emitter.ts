@@ -480,6 +480,22 @@ export function renderWAT(module: WATModule): string {
     lines.push("");
   }
 
+  // B2 (R&D 0055): per-flow arena reset. The bump pointer $__lln_heap is monotone — it is NEVER reset, so
+  // it leaks for the life of the WASM instance (traps at maxPages). We reset it to WAT_HEAP_BASE at the
+  // ENTRY of each *leaf* entry-point — exported AND not called by any other flow — reclaiming the PREVIOUS
+  // top-level invocation's arena. Leaf-only is the safety guard: a reset inside a flow that another flow
+  // CALLS would wipe the caller's still-live allocations mid-computation. (A returned heap handle stays
+  // valid until the next top-level call — the per-invocation arena contract.)
+  const flowReferenced = new Set<string>();
+  for (const a of module.functions) {
+    for (const b of module.functions) {
+      if (a.name === b.name) continue;
+      if (b.body.includes(`(call $${a.name} `) || b.body.includes(`(call $${a.name})`)) {
+        flowReferenced.add(a.name);
+      }
+    }
+  }
+
   // Function definitions.
   // Pure flows with a real body (fn.body !== "unreachable") emit actual instructions.
   // All other flows use (unreachable) which is valid WAT — polymorphic bottom type.
@@ -496,11 +512,23 @@ export function renderWAT(module: WATModule): string {
     lines.push(`  ${funcSig}`);
     // Use the real body when available; fall back to unreachable for stubs.
     if (fn.body !== "unreachable" && fn.body.trim().length > 0) {
+      // B2: inject the per-flow heap reset right AFTER the locals (WASM requires all locals first),
+      // for leaf entry-points only, when the module uses the heap. Before any allocation runs.
+      const emitArenaReset = usesHeap && fn.isEntryPoint && !flowReferenced.has(fn.name);
+      let resetInjected = false;
       // Indent each instruction line with 4 spaces inside the function.
       for (const bodyLine of fn.body.split("\n")) {
-        if (bodyLine.trim().length > 0) {
-          lines.push(`    ${bodyLine}`);
+        if (bodyLine.trim().length === 0) continue;
+        if (emitArenaReset && !resetInjected && !/^\s*\(local\b/.test(bodyLine)) {
+          lines.push(`    ;; B2 (R&D 0055): per-flow arena reset — reclaim the previous invocation's heap (leaf entry-point)`);
+          lines.push(`    (global.set $__lln_heap (i32.const ${WAT_HEAP_BASE}))`);
+          resetInjected = true;
         }
+        lines.push(`    ${bodyLine}`);
+      }
+      // A body that is ALL locals (no instructions) still gets the rebase appended.
+      if (emitArenaReset && !resetInjected) {
+        lines.push(`    (global.set $__lln_heap (i32.const ${WAT_HEAP_BASE}))`);
       }
     } else {
       lines.push(`    unreachable`);
