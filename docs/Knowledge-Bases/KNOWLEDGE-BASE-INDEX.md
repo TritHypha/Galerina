@@ -79,6 +79,7 @@
 | Document | Purpose |
 |---|---|
 | `logicn-engineering-goals.md` | **Start here for "what done looks like"** — Goals A/B/C, T-006/007/008 acceptance tests |
+| `logicn-fault-tolerance-and-stability.md` | **Fault tolerance & stability reference** (2026-06-21 re-R&D) — defines LogicN + every fail-closed/fail-safe mechanism across the Binary/Hybrid/Photonic Tri-Pipe, with the real maths (K3 `vAnd=min` monotonicity, NMR closed form, Freivalds `≤2⁻ᵏ`, the precision wall `(1−ε)^m→0`) + examples + honest weakest links |
 | `logicn-governed-design-synthesis.md` | Deep research: 14-category model, 9 missing categories, change-class workflow |
 | `logicn-governed-runtime-research-2026-06-03.md` | 113-agent research: Cedar/OPA/Pony/Austral/Koka/in-toto/W3C-PROV enhancements |
 | `logicn-platform-infographic-concept.md` | "Governed Tower" poster concept — 5-floor building layout; render when DRCM Phase 2+5 complete |
