@@ -14,6 +14,14 @@ fixed-window `RateLimiter` (clock injected; an **unparseable limit fails CLOSED*
 `rateLimitKey`. +7 tests + prove-own-maths (`prove-inbound-guard.mjs` 6/6: the fixed-window invariant holds
 over 100k fuzzed requests, admission is total + deny-by-default over 20k fuzz). Committed `f4d4bc3`. Suite **53/53 · 4924**.
 
+**Photonic-HARDWARE switch (ranked priority "switchable package; keep digital, add a photonic-hardware switch") —
+`3138cfa`:** `logicn-ext-photonic-emulator/src/photonic-switch.ts` — `selectPhotonicBackend({mode, hardware})`
+picks among `PhotonicBackend` impls behind the existing seam. **FAIL-CLOSED + KEEP-DIGITAL:** default = emulator
+(software); real silicon admitted ONLY when present ∧ `nativeAvailable` ∧ `attested` (else fall back to the
+emulator with `LLN_PHOTONIC_*` codes — never an unverified PIC); the switch only picks the photonic *compute*
+backend (crypto/K3/control stay on the digital core). The runtime seam for the PPU-virtualisation ladder
+(Rung 2 emulator today → Rung 3+ attested silicon). +7 tests + prove-own-maths (exhaustive 15-row truth table 3/3).
+
 **Ranked-priority status reconciliation (2026-06-21, verified against source — roadmap was stale):**
 **#165** f64 WAT lowering ✅ DONE · **#180** manifest signing ✅ DONE (this session's signing-format hardening +
 RFC-8785/#67/fail-secure profile) · **#194** GateCache ✅ DONE (`gate-cache.ts`) · **#128(b)** for-in WASM
