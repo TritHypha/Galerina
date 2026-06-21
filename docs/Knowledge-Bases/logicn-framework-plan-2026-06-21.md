@@ -59,10 +59,40 @@ overflow/division traps that propagate out of bindings · DbC output post-condit
 substrate tolerance · `substrate{}` + `verifySubstrate` · DRCM containment + Wasmtime TCB + fuel ·
 fault-injection diagnostic suite · engineering goal C (no system crash).
 
-A dedicated **Tri-Pipe fault-tolerance re-R&D** (multi-agent) is mapping these across all three pipes,
-finding stability gaps the Tri-Pipe introduces (e.g. an offload failing without a verified binary
-fallback; a photonic drift not failing safe; cross-pipe inconsistency), proposing hardening, and
-adversarially verifying it. Its **ranked stability plan + Tri-Pipe fault model** will be appended here.
+### Tri-Pipe fault model (re-R&D `wpa9c3wqk`, 2026-06-21 — 4 pipes mapped, 24 hardenings adversarially verified)
+
+**One uniform principle:** Binary is the universal floor; every higher pipe can only **decline down to
+it** — never corrupt, never expand authority.
+- **Binary (fail-CLOSED core):** traps/denies rather than proceeds. i32 overflow/div-zero traps
+  propagate out of bindings/operands; K3 verdicts authorize ⇔ *exactly* ALLOW (INDETERMINATE → deny,
+  never silent); empty clause set / `permitted_effects {}` = hard deny-all; DbC post-conditions are
+  atomic single-exit gates; the committed arena traps over-budget. Crypto/governance/K3/admission/
+  secrets/control/exact-arithmetic = Binary-only by invariant (the proven precision wall).
+- **Hybrid (fail-SAFE to Binary, Freivalds-verified):** offload only on a proven absolute-ns net win,
+  crypto/control never eligible; the result is cheap-verified (Freivalds / scalar tolerance) and on any
+  drift / NaN / Inf the photonic value is DENIED and the *exact digital* value committed. Worst case =
+  "stayed digital".
+- **Photonic (tolerance/NMR, K3 dead-zone fail-SAFE):** emulator-only (`executedNatively=false`,
+  honest); the K3 dead-zone is fail-safe-ONLY — `vAnd(ideal,reading)` is monotone, so substrate noise
+  can only degrade a verdict toward DENY, never fabricate an ALLOW.
+
+**Weakest link:** runtime crash-containment (Goal C / DRCM Phase 5) is **asserted, not demonstrated** —
+the T-008 test is `assert.ok(true)` and `logicn diagnostic` only counts trap *declarations*, never
+fires a fault. A second, **live** weak link was concrete and is now fixed (item 1 below).
+
+**Ranked build status:**
+1. ✅ **BUILT (`449d8f2`)** — made `dispatchPlan` total over exceptions: a photonic-port throw declines
+   to the digital floor, a binary fault/drift becomes a governed `ERR_BRIDGE_DISPATCH_FAULT` `trapFired`
+   receipt. The one live, code-confirmed break of fail-safe-to-Binary / no-crash. +4 tests, 206/206.
+2. **NEXT** — split the receipt's truth channels (stop folding the analog photonic value into the
+   bit-exact `ternaryChecksum`; add `valuesReproducible`). *(pins `photonic-dispatch.test.mjs:66` — needs the test updated.)*
+3. **NEXT** — pin **LLN-MONO-001**: parser surfaces an emergency-block `allow` as a hard compile error
+   instead of silently swallowing it (fail-silent permission widening in the Binary governance core).
+4. **NEXT** — close two fail-open admission/clamp holes (certified-mode photonic admission bound to a
+   verified signed manifest; caller-independent `maxTolerance`/`N_MAX` upper-bound clamps).
+5. **DESIGN-ONLY / owner-gated** — the crash-containment weakest link: interim = a real same-process
+   supervisor harness replacing the T-008 placeholder + relabel the diagnostic declaration counts; full
+   DWI / guard-page / fuel isolation is DRCM Phase 5 (#40/#41).
 
 ## 7. Roadmap / next
 - **Built this session:** B1 scaffolder · B2 admission unification · revocation into resolver +
