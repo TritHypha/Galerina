@@ -159,6 +159,9 @@ cost:  O(k·n²)   (verify)   vs   O(n³)   (re-execute)
 k = 20  ⇒  catch ≥ 1 − 2⁻²⁰ ≈ 0.99999905
 ```
 
+*Assumptions:* independent probes · a uniformly-random probe vector · a non-adaptive adversary. The
+bound is **per verify** (k=20 is the shipped default).
+
 On any **drift / NaN / Inf**, the photonic value is **DENIED** and the **exact digital value is
 committed** (tested: `target=digital`, `fellBack=true`, `value == exact`). Worst case = "stayed digital."
 
@@ -201,6 +204,9 @@ for `pBad < 0.5`. Worked example, `pBad = 0.05`:
 | 5 | **≈ 0.00116** | ~43× better |
 
 Redundancy crushes the residual without any sampling — it is the exact binomial tail.
+
+*Assumption:* **lane independence** (`ρ = 0`). Real hardware is correlated (`ρ > 0`); the framework is
+unchanged — substitute a correlated-reliability model for the binomial when a measured `ρ` exists.
 
 The `substrate{}` contract block + `verifySubstrate` pass enforce the rules: **crypto on a noisy lane is
 ALWAYS an error**, the noise floor is **fixed-in-code** (an author cannot game the tolerance down),
@@ -292,3 +298,46 @@ fully pinned: a finite `tolerance` + `pinnedEnvHash` + `backendArtifactHash` + a
 kernel **falls back to the exact digital result** (fail-safe). The only path *up* — fabricating an
 allow or a wrong-but-accepted value — is closed by `vAnd` monotonicity, Freivalds verification, and the
 precision wall. The honest gap is *demonstrating* whole-process crash-containment (Goal C / DRCM Phase 5).
+
+---
+
+## 11. Formal structure (proved · tested · assumed)
+
+The mechanisms above are meant to **compose** into a single claim. The proof program for this is tracked
+in R&D `0059`, building on the existing formal-verification direction (note 40 / tasks 0024, 0040, 0014)
+— the upgrade is *proofs that compose*, not new mechanisms.
+
+**Global Safety Theorem (target).** For every execution `e`:
+```
+observable(e)  ⇒  Binary(e) ∨ Fallback(Binary(e))
+```
+— every observable result is produced by the Binary core or a Binary-approved fallback. Everything else
+is a lemma: K3 monotonicity, Freivalds detection, the NMR residual, the precision wall, and dispatch
+totality each discharge one obligation.
+
+**The Tri-Pipe is a refinement chain.** Define `A ≤ B` ≝ "B is at least as safe as A". Then
+`Photonic ≤ Hybrid ≤ Binary`, so `Photonic ≤ Binary` follows for free. A higher pipe may only *decline*
+to a lower one; it can never exceed Binary's authority — §2 as an order relation.
+
+**Authority is monotone.** With `Authority(DENY) = Authority(INDETERMINATE) = 0`, `Authority(ALLOW) = 1`,
+`vAnd = min` gives `Authority(vAnd(a,b)) ≤ Authority(a)` — composition never *raises* authority.
+
+**Fault taxonomy.** `{crash, omission, timing, Byzantine}`. The Binary core handles a **Byzantine**
+(adversarial / systematically-drifting) component the same way it handles noise — **by DENY**, not by a
+`3f+1` majority vote. Deny-by-default is strictly stronger than crash-only reasoning and avoids the cost
+of a Byzantine quorum.
+
+**Proved vs tested vs assumed** (the honest separation):
+
+| Property | Status | Basis |
+|---|---|---|
+| K3 no-coercion / `vAnd` monotonicity | **proved** (depth ≤ 3 enumerated; unbounded = R&D 0059/0024) | `three-valued-governance.ts` |
+| Freivalds false-accept ≤ 2⁻ᵏ | **proved** (standard) — *assumes* independent probes · random vector · non-adaptive adversary | `freivalds.ts` |
+| NMR residual = binomial tail | **proved** (exact closed form) — *assumes* lane independence `ρ=0` | `substrate-math` |
+| precision wall `(1−ε)^m → 0` | **proved** | §7 |
+| dispatch totality (no escape) | **tested** (4 cases) | `dispatch-failsafe.test.mjs` |
+| Stage-A ≡ Stage-B equivalence | **tested** (R6 corpus parity) → proof = R&D 0059/0014 | `tests/r6-corpus` |
+| whole-process crash-containment (Goal C) | **asserted** (interim harness in progress; full isolation = DRCM Phase 5) | §9 |
+
+The research-grade upgrade is to turn the **tested** rows into **proved** ones and machine-check the
+Global Safety Theorem — *not* to add another fallback mechanism.
