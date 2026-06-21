@@ -230,6 +230,59 @@ export const DEFAULT_WAT_MEMORY: WATMemory = {
   maxPages: 2048, // 128MB — matches runtime policy default
 };
 
+/** 1 MB / 64 KB = 16 WASM pages per declared arena megabyte. */
+const PAGES_PER_MB = (1024 * 1024) / 65536;
+
+/**
+ * Read the `contract.memory { arena N mb }` limit from a flow AST node, in MB, or undefined if undeclared.
+ * Mirrors governance-verifier.extractArenaLimitMB — kept LOCAL so the emitter stays import-cycle-free; the
+ * arena-decl AST shape (contractDecl → `memory:block` → `decl:arena N mb`) is a stable grammar feature.
+ */
+function arenaMbOfFlow(flowNode: AstNode): number | undefined {
+  const contractDecl = (flowNode.children ?? []).find((c) => c.kind === "contractDecl");
+  const memoryBlock = (contractDecl?.children ?? []).find(
+    (c) => c.kind === "identifier" && c.value === "memory:block",
+  );
+  for (const child of memoryBlock?.children ?? []) {
+    if (child.kind === "identifier" && child.value?.startsWith("decl:arena")) {
+      const m = child.value.match(/decl:arena\s+(\d+(?:\.\d+)?)\s*mb/i);
+      const mb = m?.[1] !== undefined ? Number(m[1]) : NaN;
+      if (Number.isFinite(mb) && mb > 0) return mb;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * B1 (R&D 0055) — derive the module's WASM linear-memory ceiling from the declared `contract.memory{arena}`.
+ *
+ * Before: every module shipped DEFAULT_WAT_MEMORY (128 MB) regardless of the declared arena — a fail-OPEN,
+ * because an 8 MB-declared arena still emitted a 128 MB module, so the runtime could grow far past the
+ * GOVERNED ceiling (governed ≠ enforced). Now the emitted `(memory min max)` reflects the contract.
+ *
+ * Conservative / fail-safe: maxPages = the LARGEST declared arena across the module's flows; a flow that
+ * declares NO arena keeps the default ceiling (we cannot tighten below a flow with no stated bound). So a
+ * module tightens only when every flow states an arena — exactly the governed-vs-enforced gap, closed.
+ */
+export function deriveArenaWATMemory(
+  ast: AstNode | undefined,
+  flows: readonly WATFlowInput[],
+): WATMemory {
+  const defaultMax = DEFAULT_WAT_MEMORY.maxPages ?? 2048;
+  if (ast === undefined || flows.length === 0) return DEFAULT_WAT_MEMORY;
+  let maxPages = 0;
+  for (const f of flows) {
+    const node = findFlowNodeInAST(ast, f.name);
+    const mb = node !== undefined ? arenaMbOfFlow(node) : undefined;
+    const pages = mb !== undefined
+      ? Math.min(defaultMax, Math.max(2, Math.ceil(mb * PAGES_PER_MB)))   // declared → tighten (clamped)
+      : defaultMax;                                                        // undeclared → keep the ceiling
+    if (pages > maxPages) maxPages = pages;
+  }
+  if (maxPages <= 0 || maxPages >= defaultMax) return DEFAULT_WAT_MEMORY;
+  return { minPages: Math.min(DEFAULT_WAT_MEMORY.minPages, maxPages), maxPages };
+}
+
 // ---------------------------------------------------------------------------
 // P9.4b — record struct layout (linear-memory bump allocator)
 // ---------------------------------------------------------------------------
@@ -2768,7 +2821,9 @@ export function buildWATModule(
     imports,
     exports,
     functions,
-    memory: DEFAULT_WAT_MEMORY,
+    // B1 (R&D 0055): wire contract.memory{arena} into the emitted module so the GOVERNED ceiling is the
+    // ENFORCED ceiling. Undeclared flows keep DEFAULT_WAT_MEMORY (fail-safe). Default path byte-unchanged.
+    memory: deriveArenaWATMemory(gir.ast, gir.flows),
     target,
   };
 }
