@@ -1,0 +1,3 @@
+{"seq":0,"count":3,"prevHash":"0000000000000000000000000000000000000000000000000000000000000000","batchHash":"da17cb528e23bda614eb6c121494d52b6c35a9840730bda09cfc19ac69689115","records":["k-0","k-1","k-2"]}
+{"seq":1,"count":3,"prevHash":"da17cb528e23bda614eb6c121494d52b6c35a9840730bda09cfc19ac69689115","batchHash":"ed27ce819ce1f690a26555d9f29dd819ae193f53c843a339bdaad5fe5543aece","records":["k-3","k-4","k-5"]}
+{"seq":2,"count":1,"prevHash":"ed27ce819ce1f690a26555d9f29dd819ae193f53c843a339bdaad5fe5543aece","batchHash":"9f6115b3917bece304f4868c3f322f656b1d2d62a58cc600538885c9fcd5eed1","records":["k-6"]}

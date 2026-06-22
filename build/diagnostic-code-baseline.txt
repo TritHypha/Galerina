@@ -1,0 +1,62 @@
+# LogicN diagnostic-code conformance baseline
+
+codes-with-names: 251 · names: 276
+
+
+## V1 OVERLOAD — one code, >1 name (23)
+  LLN-ASSUME-001  ->  ASSUMING_MISSING_FLOW_REF | ASSUMING_MISSING_CLAIM
+  LLN-ASSUME-002  ->  ASSUMING_NO_CONTRACT | ASSUMING_CLAIM_NOT_FOUND
+  LLN-BORDER-004  ->  VALUE_BELOW_MINIMUM | VALUE_ABOVE_MAXIMUM
+  LLN-EFFECT-002  ->  TRANSITIVE_EFFECT_NOT_DECLARED | EFFECT_NOT_INFERRED
+  LLN-EFFECT-003  ->  EFFECT_BOUNDARY_VIOLATION | UNSAFE_EFFECT_IN_SAFE_FLOW
+  LLN-EFFECT-004  ->  NON_CANONICAL_EFFECT | UNKNOWN_EFFECT | TRANSITIVE_EFFECT_UNDECLARED
+  LLN-GATE-001  ->  GATE_UNKNOWN_CONDITION | GateAnnotationRequired
+  LLN-GOV-004  ->  DENIED_TARGET_SELECTED | DOMAIN_GUARD_NOT_FOUND | DOMAIN_GUARD_POLICY_VIOLATION
+  LLN-GOV-017  ->  InvalidPhysicalHardeningValue | PhysicalHardeningOnLowRiskFlow
+  LLN-GRAPH-001  ->  CycleDetected | CYCLE_DETECTED
+  LLN-GRAPH-002  ->  DeadFlow | NODE_NOT_FOUND
+  LLN-GRAPH-003  ->  AuthorityEscalation | DEPENDENCY_MISSING
+  LLN-GRAPH-004  ->  PiiLeakagePath | FIXPOINT_TIMEOUT
+  LLN-GRAPH-005  ->  MissingAuditCoverage | INVALID_TRANSITION
+  LLN-MONO-001  ->  EMERGENCY_EXPANDS_CAPABILITY | EMERGENCY_UNKNOWN_ACTION
+  LLN-PRIVACY-002  ->  EmbeddingCrossesFlowBoundary | EmbeddingEgressDenied
+  LLN-SEC-020  ->  RuntimeMutation | RuntimeMutationProhibited
+  LLN-SEC-021  ->  PrototypeMutation | PrototypeMutationProhibited
+  LLN-SECRET-002  ->  SecretCrossesFlowBoundary | SecretSentToNetwork | SecretComparisonDenied
+  LLN-TYPE-008  ->  InvalidReturnType | SilentNullDenied
+  LLN-TYPE-023  ->  DeferredTypeCheck | MissingWildcardArm
+  LLN-VALUESTATE-005  ->  DERIVED_UNSAFE_VALUE_AT_SINK | DerivedUnsafeValueAtSink
+  LLN-VALUESTATE-006  ->  ProtectedBoundaryViolation | ProtectedValueAtAuditLog
+
+## V2 COLLISION — one name, >1 code (1)
+  INTENT_BEHAVIOR_MISMATCH  ->  LLN-GOV-001 | LLN-INTENT-001
+
+## V3 SEVERITY-VOCAB — outside {error,warning,info} (17)
+  ERROR            logicn-tower-citizen/src/audit-logger.ts:158
+  INFO             logicn-tower-citizen/src/audit-logger.ts:140
+  INFO             logicn-tower-citizen/src/audit-logger.ts:149
+  INFO             logicn-tower-citizen/src/audit-logger.ts:20
+  INFO             logicn-tower-citizen/src/audit-logger.ts:212
+  INFO             logicn-tower-citizen/src/hybrid-engine.ts:682
+  Low              logicn-ai-agent/src/index.ts:43
+  SECURITY_ALERT   logicn-core-compiler/src/plugin-schema.ts:107
+  SECURITY_ALERT   logicn-core-compiler/src/plugin-schema.ts:115
+  SECURITY_ALERT   logicn-core-compiler/src/plugin-schema.ts:119
+  SECURITY_ALERT   logicn-core-compiler/src/plugin-schema.ts:133
+  SECURITY_ALERT   logicn-core-compiler/src/plugin-schema.ts:76
+  SECURITY_ALERT   logicn-core-compiler/src/plugin-schema.ts:92
+  WARNING          logicn-tower-citizen/src/tower-runtime.ts:131
+  critical         logicn-devtools-pci/src/pci-checker.ts:311
+  critical         logicn-devtools-pci/src/types.ts:26
+  high             logicn-devtools-security/src/audit-runner.ts:175
+
+## V4 MULTI-SEVERITY — one code, >1 severity (7; review for legit dev/prod toggles)
+  LLN-ASSUME-002  ->  error | warning
+  LLN-EFFECT-001  ->  error | warning
+  LLN-GATE-001  ->  warning | error
+  LLN-GOV-017  ->  error | warning
+  LLN-GRAPH-002  ->  warning | error
+  LLN-GRAPH-005  ->  warning | error
+  LLN-MONO-001  ->  error | warning
+
+## TOTAL flagged: V1 23 + V2 1 + V3 7 distinct-bad-severities + V4 7
