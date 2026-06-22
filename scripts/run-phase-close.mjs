@@ -211,6 +211,14 @@ run("lint:conventions", "node", ["scripts/lint-conventions.mjs", "--soft"]);
 // holes are triaged; emits build/coverage/coverage-codes.md. GRAPH THE AUDIT (owner 2026-06-22).
 run("coverage:codes", "node", ["scripts/audit-coverage.mjs", "codes", "--soft"]);
 
+// ── 5d. Dev-tool script tests (scripts/tests/) ──
+// These live OUTSIDE packages-logicn, so the package runner (run-all-tests.cjs) never sees them. Run them
+// here so the audit/index/registry tooling is regression-gated (e.g. the shared code-regex self-test).
+const toolingTests = existsSync(join(ROOT, "scripts", "tests"))
+  ? readdirSync(join(ROOT, "scripts", "tests")).filter((f) => f.endsWith(".test.mjs")).map((f) => join("scripts", "tests", f))
+  : [];
+if (toolingTests.length) run("tests:tooling", "node", ["--test", ...toolingTests]);
+
 // ── 6. Standing Governance Sanity Check — diff HEAD~1 ──
 // Transforms governance diff from a passive human-review step into an active quality gate.
 // Enforces the Monotonicity Rule at CI level: expansion requires explicit sign-off.
