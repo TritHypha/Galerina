@@ -58,7 +58,11 @@ pure flow calculateVat(amount: Money<GBP>) -> Money<GBP> { ... }
 | What | File |
 |---|---|
 | Keyword table (lexer source of truth) | `docs/Knowledge-Bases/v1-reserved-keywords.md` |
-| Diagnostic codes | `docs/Knowledge-Bases/compiler-diagnostics.md` |
+| Diagnostic codes — spec catalog | `docs/Knowledge-Bases/compiler-diagnostics.md` (forward-spec; includes unbuilt codes) |
+| Diagnostic codes — LIVE catalog (generated, every real code) | `build/code-registry/REGISTRY.md` (regen: `node scripts/gen-code-registry.mjs`) |
+| Code INDEX — every code → def/emit/test/doc sites (query instead of grep) | `build/code-index/CODE_INDEX.md` (regen: `node scripts/code-index.mjs`) |
+| Diagnostic-code CONVENTIONS (binding) | `docs/Knowledge-Bases/logicn-diagnostic-code-conventions.md` |
+| Audit Coverage & R&D Standards (20, research-grounded) | `docs/Knowledge-Bases/logicn-audit-coverage-and-rd-standards.md` |
 | AST contract (AstNodeKind, Token, etc.) | `packages-logicn/logicn-core/src/index.ts` |
 | Phase 4 plan | `docs/Knowledge-Bases/phase-4-parser-ast-plan.md` |
 | Concept model | `docs/Knowledge-Bases/logicn-concept-map.md` |
@@ -91,7 +95,11 @@ LLN-BINDING-*   binding mutability (001–004 defined)
 LLN-MEMORY-*    memory model (001–008 defined)
 ```
 
-See `docs/Knowledge-Bases/compiler-diagnostics.md` for the full index.
+See `docs/Knowledge-Bases/compiler-diagnostics.md` for the spec catalog, and `build/code-registry/REGISTRY.md`
+for the LIVE generated catalog (every real code + status). **Conventions are binding**
+(`logicn-diagnostic-code-conventions.md`): `name` is `UPPER_SNAKE`, `severity` is lowercase `error|warning|info`,
+one-code-one-fault, one owner per code, emit via an exported constant. Enforced by the umbrella gate
+`node scripts/lint-conventions.mjs` (runs the #215 conformance scanner + #218 coverage; wired into phase-close).
 
 ## Important Rules
 

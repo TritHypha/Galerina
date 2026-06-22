@@ -23,8 +23,14 @@ Weighting by how much each dimension defines whether LogicN *is* what it claims 
 
 ## NEW ROADMAP
 
+### ⛔ OWNER LOCKS (do NOT build autonomously)
+- **HTTP transport / B8 (`logicn-framework-api-server`) — OWNER-LOCKED 2026-06-22.** The owner has R&D for the
+  transport design and will direct it. Do NOT build the api-server / transport adapter; do NOT auto-start it from
+  the roadmap. (This was the prior NEAR lead — it is now gated on the owner's R&D.) `#211 inbound-listener
+  hardening` is adjacent but distinct — confirm with the owner before touching anything HTTP/listener-side.
+
 ### NEAR (build-not-research, highest cross-dimension leverage)
-- **B8 transport adapter** (`logicn-framework-api-server` from its TODO: types · load-manifest · route-table · read-body-with-limit · create-server) — the single biggest blocker to a *usable* framework (no real HTTP request flows through the kernel without it).
+- ~~B8 transport adapter~~ → **⛔ OWNER-LOCKED (see above)** — owner has R&D.
 - **Harden the live inbound listener** (#211: request timeout · rate-limit · body-size cap · slowloris guard · honor SecurityPosture) — highest unblocked-security value; today only 405/404/500 (border-gate items 1/9/10/12, buildable now).
 - **SEC-002 mutation/red-team gate** + register in `lint-conventions` CHECKS — turns audit fixes from asserted-once into continuously-proven; this exact gap let the B5a fail-open slip. (`fast-check` already present.)
 - **H5 fusion-B2 ABI mismatch** (sync `invoke(i32)` → async `HandlerResult`) + one real end-to-end fused-app test — makes a fused package reachable through the kernel; pairs with the transport adapter.

@@ -381,6 +381,11 @@ open, only half-done): #177 (deprecation advisory not emitted), #119 (native Bit
 - **#212** kernel→runtime governance-deny bridge (security-sensitive) · **H2** inline `contract` `policy{}`
   allow/deny parsed but enforced by no checker (a deny-by-default fail-open).
 
+**⛔ OWNER LOCK (2026-06-22): HTTP transport / B8 (`logicn-framework-api-server`) — DO NOT BUILD.** Owner has
+R&D for the transport design and will direct it. Was the roadmap's NEAR lead; now gated on owner R&D. Do not
+auto-start the api-server/transport adapter; confirm with owner before touching anything HTTP/listener-side
+(#211 inbound hardening is adjacent — also confirm first). Memory: [[feedback-http-transport-owner-locked]].
+
 **Filed / decided 2026-06-22 (owner session):**
 - **#201 → built as a NEW code `LLN-EFFECT-006 OVERDECLARED_EFFECT`** (error, ALL profiles), NOT an escalation
   of the overloaded `LLN-EFFECT-002` (owner-directed de-overload). `002` now carries ONLY the transitive-missing
