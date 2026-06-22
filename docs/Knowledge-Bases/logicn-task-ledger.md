@@ -1,6 +1,6 @@
 # LogicN — Task Ledger #1–#148 (graph-review checklist)
 
-**Generated:** 2026-06-06 · **Re-verified:** 2026-06-15 · **State (2026-06-15 snapshot; CURRENT 2026-06-22 = 53/53 · 4,989 — see logicn-roadmap-and-percent-audit-2026-06-21.md + version.json):** 48/48 packages · 4,360 tests · 0 fail · graph 2,995 nodes / 3,764 edges (1,839 files) · governance NEUTRAL.
+**Generated:** 2026-06-06 · **Re-verified:** 2026-06-15 · **State (2026-06-15 snapshot; CURRENT 2026-06-22 = 53/53 · ~5,020 live / 4,993 version.json — see logicn-roadmap-and-percent-audit-2026-06-22.md + version.json; §9 supersedes the §1 rollup; overall ~73%):** 48/48 packages · 4,360 tests · 0 fail · graph 2,995 nodes / 3,764 edges (1,839 files) · governance NEUTRAL.
 *(The original 44/44 · 4,128 figure was a 2026-06-06 snapshot; counts re-run this session via `node scripts/run-all-tests.cjs` + `cli graph`. See SOT §1.)*
 
 ## How to use this (the point)
