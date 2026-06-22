@@ -160,6 +160,41 @@ write to it now so you're ready when the checker lands.
 
 **Takeaway for authors:** request the *smallest* mask that works. It bounds your blast radius and your deps'.
 
+### 6.1 Dependency depth & visibility — why NOT "one level only"
+
+A natural instinct is: *forbid transitive dependencies — a package may depend only 1 level deep* — so you can
+see everything you pull in. The **goal** (maximal visibility + a small trusted set) is exactly right and is a
+first-class design concern. But a **blanket depth-limit-of-1 is the wrong mechanism**, and LogicN deliberately
+does NOT use it (evaluated + rejected in R&D 0062 §3). Three reasons:
+
+1. **It limits DEPTH, not AUTHORITY.** A direct (level-1) dependency can still do anything inside its granted
+   mask — including the malice 0063 targets (exfiltrating through a *legitimately-granted* capability).
+   Depth-limiting stops none of that. What bounds a dependency is its **capability mask**, not how deep it sits.
+2. **It forces copy-paste vendoring → a stale-vuln black hole.** If a package can't have its own deps, every
+   shared library is vendored into every consumer. A vulnerability then must be patched in *every* copy — and
+   the copies drift. Central patching dies.
+3. **It makes visibility WORSE, not better.** Vendored blobs *hide* the real transitive code inside an opaque
+   copy. You wanted to *see* what you depend on; depth-1 buries it.
+
+**What LogicN does instead — depth is safe, and visibility is real:**
+- **Authority narrows with depth (the real control):** the compiler proves `effects(child) ⊆ mask(parent)`
+  monotonically down the WHOLE graph (#202). A dependency 10 levels deep can only ever use a *subset* of what
+  its ancestor declared — a hijacked deep dep can never *acquire* a capability an ancestor never held. Reuse +
+  central patching **at any depth**, with the blast radius still bounded. **[IN-FLIGHT #202]**
+- **Untrusted depth IS capped — to the verified tier (the sound core of the depth-1 idea):** a 3rd-party
+  package's transitive deps must resolve to the curated **`@logicn-core/*` verified tier** (signed by the
+  pinned root) OR carry their own signed + masked admission. They cannot pull *arbitrary unverified* deep
+  deps. This is effectively **"level-1-only for UNTRUSTED code"** — your instinct, scoped to where it pays,
+  without the vendoring tax. **[DESIGN 0062 §4]**
+- **Full visibility, by construction:** the signed-package **audit graph** (`logicn graph --package`) renders
+  the *entire* transitive chain, each edge annotated with its inherited mask, plus provenance + revocation —
+  so you SEE the real effective authority of everything you fuse, **before** you fuse it. An over-broad or
+  unexpected deep edge shows up (not buried). **[DESIGN #204]**
+
+**Author rule of thumb:** you MAY have dependencies; keep your own mask minimal (each level inherits a narrowed
+subset); untrusted deps must resolve to the verified tier; read the audit graph before fusing. That combination
+gives stronger visibility *and* stronger security than a flat 1-level rule ever could.
+
 ---
 
 ## 7. Tri-Pipe transparency — you write governed `.lln`, the substrate picks the tier
