@@ -385,6 +385,17 @@ open, only half-done): #177 (deprecation advisory not emitted), #119 (native Bit
 R&D for the transport design and will direct it. Was the roadmap's NEAR lead; now gated on owner R&D. Do not
 auto-start the api-server/transport adapter; confirm with owner before touching anything HTTP/listener-side
 (#211 inbound hardening is adjacent — also confirm first). Memory: [[feedback-http-transport-owner-locked]].
+  - **R&D decision-support for B8 filed 2026-06-22** (owner's notes `notes/41-tritmesh` + `notes/42-auth` = the
+    "TLSTP" transport+auth series, the R&D behind this lock): `logicn-tlstp-transport-auth-rnd-2026-06-22.md`
+    (18-agent workflow `wi3py3913`, adversarially verified). Headline: ~75-85% RE-DERIVES shipped architecture
+    (content-addressed signed admission, deny-by-default caps, K3 conjunctive gate, anti-downgrade floor, KEM-DEM,
+    capsule macaroon caveats — all shipped/decided; cite, don't rebuild). 3 hard tensions: (1) "Ternary Ephemeral
+    Ratchet" folding analog `E_ternary` into the KDF = HARD crypto-on-core violation → REFUTE; (2) continuous float
+    trust `T_c` as the gate CONFLICTS with discrete fail-closed K3 → telemetry-only, discretize via vAnd; (3)
+    in-sandbox-TLS-termination "mathematical security" rests on DRCM/DSS.wasm (115-byte stub) = aspirational-HW.
+    13 owner decisions tabled; net-new-buildable lead = the **K3 cert-validation gate** (re-R&D 0002). B8 build
+    decisions (WASI-vs-raw-bytes=raw per 0058; legacy=prefer-proxy; morphing=opt-in; SNI=ECH+OHTTP; downgrade=Noise
+    pattern) all in the doc §"B8/HTTP guidance". Crypto stays Binary; photonics feed K3 verdict only. No code written.
 
 **Filed / decided 2026-06-22 (owner session):**
 - **#201 → built as a NEW code `LLN-EFFECT-006 OVERDECLARED_EFFECT`** (error, ALL profiles), NOT an escalation
