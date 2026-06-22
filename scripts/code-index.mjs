@@ -10,6 +10,7 @@
 import { readdirSync, readFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { extractCodes, CODE_TEST, familyOf, nsOf } from "./lib/codes.mjs";
+import { writeProvenance } from "./lib/provenance.mjs"; // BLD-003 / #216 provenance sidecar
 
 const ROOT = process.cwd();
 const SCAN = ["packages-logicn", "docs", "scripts"].map((d) => join(ROOT, d));
@@ -164,6 +165,7 @@ for (const fam of [...byFam.keys()].sort()) {
   md.push("");
 }
 writeFileSync(join(OUT, "CODE_INDEX.md"), md.join("\n"));
+writeProvenance(OUT, "code-index"); // BLD-003 / #216
 
 // stdout summary (concise — don't pull the whole index into context)
 const nNoDef = codes.filter((c) => c.defs.length === 0 && c.emits.length > 0).length;

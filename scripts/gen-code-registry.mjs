@@ -12,6 +12,7 @@
 // Run after code-index.mjs:  node scripts/code-index.mjs && node scripts/gen-code-registry.mjs
 import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { writeProvenance } from "./lib/provenance.mjs"; // BLD-003 / #216 provenance sidecar
 
 const ROOT = process.cwd();
 let arr;
@@ -71,6 +72,7 @@ for (const fam of Object.keys(byFamily).sort()) {
   md.push("");
 }
 writeFileSync(join(ROOT, "build/code-registry/REGISTRY.md"), md.join("\n"));
+writeProvenance(join(ROOT, "build/code-registry"), "gen-code-registry"); // BLD-003 / #216
 
 console.log(`gen-code-registry: ${entries.length} codes — ${Object.entries(counts).map(([k, v]) => `${k}:${v}`).join(" · ")}`);
 console.log("  -> build/code-registry/REGISTRY.md + registry.json");

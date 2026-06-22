@@ -13,7 +13,7 @@ Weighting by how much each dimension defines whether LogicN *is* what it claims 
 | Zero-Trust application framework (scaffold→admission/fuse→kernel→transport) | **72** | 0.22 | kernel 87/87, B1-B5 + B5a shipped; **B8 HTTP transport + example-app are design-only → can't serve a real request end-to-end yet** |
 | Security & governance posture (fail-closed core, audits, B5a, key custody, DRCM) | **80** | 0.20 | both audits' criticals+highs closed in code; admission/fuse/registry/revocation/trust-anchor real + tested; **SEC-002 mutation gate not built**; DRCM Ph5 gated |
 | R&D queue + greenlit build items + open roadmap | **62** | 0.13 | B5a done; #201 in stash (owner map), #202/#216/#217/DOC-004 open |
-| Diagnostic-taxonomy remediation + dev-tooling/audit + #219 standards | **41** | 0.10 | scanner+coverage+registry trustworthy; **DOC-004 doc-drift + SEC-002 mutation gate BOTH BUILT + wired** (DOC-004 fast tier; SEC-002 `--full` heavy, 3/3 B5a mutants killed, git-safe); 4-process program now only BLD-003 open; baseline still `--soft`; Stages E-J open |
+| Diagnostic-taxonomy remediation + dev-tooling/audit + #219 standards | **44** | 0.10 | scanner+coverage+registry trustworthy; **4-process tooling program COMPLETE** (ENV-001 + DOC-004 + SEC-002 + **BLD-003 provenance/freshness** all v1 built + wired into lint-conventions/phase-close; tooling suite 29/29); baseline still `--soft`; Stages E-J + scanner-baseline→0 open |
 | TODO/ledger accuracy | **96** | 0.07 | §9 self-reconciled this session; 17 stale doc entries (below) |
 
 ## The honest gap is concentrated in 3 places

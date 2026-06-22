@@ -26,6 +26,11 @@ const CHECKS = [
     desc: "DOC-004: doc 'living metrics' (global test/package COUNTS) vs the version.json authority — v1 heuristic (living docs only; #150 auto-count is the real remedy)",
   },
   {
+    name: "provenance",
+    script: "scripts/audit-provenance.mjs",
+    desc: "BLD-003 (folds #216): generated artifacts (code-index/code-registry/kb-index) must carry a provenance sidecar + be fresh vs sources (MISSING/UNSTAMPED/STALE)",
+  },
+  {
     name: "mutation",
     script: "scripts/audit-mutation.mjs",
     desc: "SEC-002: re-introduce each fail-closed gate's hole + assert its test catches it (Stryker-style; would have caught the B5a fail-open)",

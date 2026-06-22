@@ -537,9 +537,14 @@ aspirational (#102-106). **#211 listener hardening is now in-scope too.** Memory
     `--full` — rebuilds per mutant ~40s; the fast phase-close sweep skips it). +3 hermetic fixture tests (tmp git repo,
     proves KILL + SURVIVE + git-safety; tooling suite now **23/23**). Follow-on: extend the catalog to fuse-loader
     gates 1–3, secret-egress, and i32-overflow as those get adversarial tests. `fast-check` available for fuzz mutants.
-  - **TASK-BLD-003** — **artifact provenance + freshness** (folds in #216): stamp every generated artifact
-    (graph, code-index, `.wasm`, `.lmanifest`, reports) with git-commit + tool-version + build-time; CI fails if
-    an artifact is stale vs HEAD. Makes "is this current?" a check, not a guess.
+  - **TASK-BLD-003** — **artifact provenance + freshness** (folds in #216): ✅ **v1 BUILT 2026-06-22** —
+    `scripts/lib/provenance.mjs` (`writeProvenance()` stamps a sidecar `provenance.json` = {tool, gitCommit, builtAt,
+    node}) wired into the 3 JSON generators (code-index, gen-code-registry, kb-index); `scripts/audit-provenance.mjs`
+    gate flags **MISSING / UNSTAMPED / STALE** (a source mtime newer than the artifact). Registered in
+    `lint-conventions` CHECKS + settings.json; runs in phase-close via the umbrella (step 5b, after the step-5a regen,
+    so a clean tree is green). +3 fixture tests (`dev-tools-scripts.test.mjs`, now **29/29**). Verified green right
+    after regen; correctly reports STALE when sources are edited post-regen. v2 (later): extend to graph/.wasm/.lmanifest
+    + a gitCommit-ancestor check.
   - **TASK-DOC-004** — **doc↔source drift detector**: ✅ **v1 BUILT 2026-06-22** — `scripts/audit-doc-drift.mjs`,
     registered in `lint-conventions` CHECKS + settings.json + 4 fixture tests (`dev-tools-scripts.test.mjs`, now
     **20/20**). v1 scope = the #1 stale class: doc "living metrics" — GLOBAL test/package COUNTS — vs the
@@ -549,8 +554,8 @@ aspirational (#102-106). **#211 listener hardening is now in-scope too.** Memory
     table-rows *inside* living docs still counted → **v2 = opt-in `<!-- LIVE:testCount -->` markers** (Rust-tidy
     style, zero false positives); the real remedy for the drift itself is **#150 CI auto-count**. Does NOT yet do
     "X shipped" semantic claims (harder; v3).
-  Build sequence: **ENV-001 (umbrella ✅) → DOC-004 (✅ v1) + BLD-003 → SEC-002 (✅ v1)**. Only **BLD-003**
-  (artifact provenance/freshness, folds #216) remains of the 4-process program. Memory:
+  Build sequence: **ENV-001 (umbrella ✅) → DOC-004 (✅ v1) + BLD-003 (✅ v1) → SEC-002 (✅ v1)**. **The 4-process
+  tooling program is now COMPLETE (all four v1 built).** Memory:
   [[feedback-tooled-engineering-processes]]. Sit alongside #218 (coverage cross-check) as the QA-tooling program.
 - **Full code review 2026-06-22 (`wn8v30euh`, 6 agents): VERDICT = expand graph scope, but FIX BEFORE ADD.**
   3 prod suites green (3684+80+90). Two real problem areas found:

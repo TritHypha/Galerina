@@ -45,6 +45,7 @@
       "lint-conventions":"node scripts/lint-conventions.mjs   (umbrella: #215 scanner + registered convention checks; --soft to report; --full adds the heavy SEC-002 mutation gate)",
       "coverage-codes": "node scripts/audit-coverage.mjs codes   (#218 bidirectional code-coverage cross-check)",
       "doc-drift":      "node scripts/audit-doc-drift.mjs   (DOC-004 #219: doc test/package COUNTS vs version.json authority; registered in lint-conventions)",
+      "provenance":     "node scripts/audit-provenance.mjs   (BLD-003 #219/#216: generated artifacts carry a provenance sidecar + are fresh vs sources; registered in lint-conventions)",
       "mutation":       "node scripts/audit-mutation.mjs   (SEC-002 #219: re-introduce each fail-closed gate's hole, assert its test kills it; git-backed safety; ~40s)",
       "fuse-rebuild":   "node scripts/rebuild-fusable-packages.mjs",
       "benchmark":      "cd packages-logicn/logicn-devtools-benchmarks && npm run run",

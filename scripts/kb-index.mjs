@@ -13,6 +13,7 @@
 import { readdirSync, readFileSync, mkdirSync, writeFileSync, statSync } from "node:fs";
 import { join, relative, basename } from "node:path";
 import { extractCodes } from "./lib/codes.mjs";
+import { writeProvenance } from "./lib/provenance.mjs"; // BLD-003 / #216 provenance sidecar
 
 const ROOT = process.cwd();
 const KB = join(ROOT, "docs", "Knowledge-Bases");
@@ -104,4 +105,5 @@ for (const d of [...docs].sort((a, b) => a.rel.localeCompare(b.rel))) {
   md.push("");
 }
 writeFileSync(join(OUT, "KB-INDEX.md"), md.join("\n"));
+writeProvenance(OUT, "kb-index"); // BLD-003 / #216
 console.log(`kb-index: ${N} KB docs indexed -> build/kb-index/KB-INDEX.md + kb-index.json (query: node scripts/kb-index.mjs <terms>)`);

@@ -4,7 +4,7 @@
 // type-decl exclusion, and the conservative dead-detection.
 import { test, after } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, utimesSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
@@ -203,4 +203,27 @@ test("kb-index: query ranks the relevant doc first", () => {
 test("kb-index: --code lists only the doc mentioning the code", () => {
   const out = kb(["--code", "LLN-FOO-001"]).stdout;
   assert.ok(out.includes("alpha.md") && !out.includes("beta.md"));
+});
+
+// ── BLD-003 audit-provenance: a tmp tree proves stamped+fresh vs STALE vs UNSTAMPED (kb-index artifact) ──
+const tmp7 = mkdtempSync(join(tmpdir(), "lln-prov-"));
+after(() => { try { rmSync(tmp7, { recursive: true, force: true }); } catch { /* best effort */ } });
+mkdirSync(join(tmp7, "docs", "Knowledge-Bases"), { recursive: true });
+mkdirSync(join(tmp7, "build", "kb-index"), { recursive: true });
+writeFileSync(join(tmp7, "docs", "Knowledge-Bases", "a.md"), "# A\n");
+writeFileSync(join(tmp7, "build", "kb-index", "kb-index.json"), JSON.stringify({ docs: [] }));
+writeFileSync(join(tmp7, "build", "kb-index", "provenance.json"), JSON.stringify({ tool: "kb-index", gitCommit: "abc1234", builtAt: "x" }));
+const prov = () => JSON.parse(spawnSync(process.execPath, [join(SCRIPTS, "audit-provenance.mjs"), "--json"], { cwd: tmp7, encoding: "utf8" }).stdout);
+const kbFindings = (j) => j.findings.filter((f) => f.name === "kb-index");
+
+test("provenance: a stamped + fresh artifact has no finding", () => {
+  assert.equal(kbFindings(prov()).length, 0);
+});
+test("provenance: a source newer than the artifact → STALE", () => {
+  utimesSync(join(tmp7, "docs", "Knowledge-Bases", "a.md"), new Date(Date.now() + 1e6), new Date(Date.now() + 1e6));
+  assert.ok(kbFindings(prov()).some((f) => f.issue === "STALE"));
+});
+test("provenance: a missing sidecar → UNSTAMPED", () => {
+  rmSync(join(tmp7, "build", "kb-index", "provenance.json"));
+  assert.ok(kbFindings(prov()).some((f) => f.issue === "UNSTAMPED"));
 });
