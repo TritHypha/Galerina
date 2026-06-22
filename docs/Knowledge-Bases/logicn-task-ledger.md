@@ -504,9 +504,11 @@ open, only half-done): #177 (deprecation advisory not emitted), #119 (native Bit
     (layering/dependency-direction + R3 cross-family collision — the graph is indexed but never audited);
     **SEC-002 mutation/fail-closed detector** (slot reserved in lint-conventions; would have caught the B5a
     fail-open); then #217 capability/syntax, effects, contract-clause coverage, DOC-004.
-  - 🔲 **Script tests:** the 4 dev-tool scripts (code-index/audit-coverage/gen-code-registry/lint-conventions)
-    shipped with ZERO tests — add fixture-tree tests (role classification, const-id, window-boundary, statusOf,
-    crash-as-tool-error). Also: lint-conventions counts a child crash as 1 violation (should be a tool error).
+  - ✅ **Script tests DONE:** `scripts/tests/codes.test.mjs` (7, shared-regex) + `dev-tools-scripts.test.mjs`
+    (9, fixture-tree subprocess tests of code-index/gen-code-registry/audit-coverage — trailing-letter, const-id
+    emit, multi-line throw, comment/type-decl exclusion, dead-detection, coverage-holes). **16/16**, wired into
+    phase-close (`f64ba52`). lint-conventions crash-as-tool-error FIXED (`f6c09cc`). All 4 dev-tool scripts now
+    have test coverage.
 - **RULE (binding, owner 2026-06-22):** if a task can be made cheaper by building/extending a dev tool, do
   that — and consider it at the START of every task. Memory: `feedback-build-tools-to-save-tokens`.
 - **#214 — framework developer-tests folder** (owner-raised): the B1 scaffolder emits a `tests/` dir for
