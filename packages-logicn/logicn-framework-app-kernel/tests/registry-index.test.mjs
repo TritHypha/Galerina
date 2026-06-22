@@ -19,6 +19,9 @@ import {
   ERR_REGISTRY_HASH_MISMATCH,
   ERR_REGISTRY_KEYID_MISMATCH,
   ERR_REGISTRY_POLICY_DENIED,
+  ERR_REGISTRY_INDEX_STALE,
+  ERR_REGISTRY_INDEX_MALFORMED,
+  ERR_REGISTRY_DUPLICATE,
 } from "../dist/index.js";
 
 const AUTH_KEY = "registry-authority-2026";
@@ -45,6 +48,49 @@ const freshSigned = () =>
     buildRegistryIndex({ registry: "logicn-central", issuedAt: "2026-06-22T00:00:00Z", entries: ENTRIES }),
     AUTH_KEY, signFn,
   );
+
+describe("B5a hardening — adversarial fail-closed (review wn8v30euh)", () => {
+  it("REJECTS a truthy NON-BOOLEAN verifier return (fail-open fix: result !== true)", () => {
+    for (const truthy of ["yes", 1, {}, []]) {
+      assert.throws(() => verifyRegistryIndex(freshSigned(), () => truthy),
+        (e) => e instanceof RegistryIndexError && e.code === ERR_REGISTRY_INDEX_BAD_SIGNATURE,
+        `truthy ${JSON.stringify(truthy)} must NOT admit`);
+    }
+  });
+  it("REJECTS a stale/replayed index below the issuedAt floor (rollback defense)", () => {
+    const idx = freshSigned();
+    assert.throws(() => verifyRegistryIndex(idx, verifier, "2026-06-22T00:00:00Z"), // equal = replay
+      (e) => e.code === ERR_REGISTRY_INDEX_STALE);
+    assert.throws(() => verifyRegistryIndex(idx, verifier, "2027-01-01T00:00:00Z"), // older = rollback
+      (e) => e.code === ERR_REGISTRY_INDEX_STALE);
+    assert.equal(verifyRegistryIndex(idx, verifier, "2026-01-01T00:00:00Z"), "verified"); // strictly newer → ok
+  });
+  it("REJECTS a flipped (unauthenticated) canon tag", () => {
+    const idx = freshSigned();
+    const tampered = { ...idx, signature: { ...idx.signature, canon: "legacy" } };
+    assert.throws(() => verifyRegistryIndex(tampered, verifier), (e) => e.code === ERR_REGISTRY_INDEX_MALFORMED);
+  });
+  it("REJECTS an unexpected (but validly-signed) schema — post-verify validation", () => {
+    const base = buildRegistryIndex({ registry: "r", issuedAt: "2026-06-22T00:00:00Z", entries: ENTRIES });
+    const wrong = signRegistryIndex({ ...base, schema: "totally-different/v9" }, AUTH_KEY, signFn);
+    assert.throws(() => verifyRegistryIndex(wrong, verifier), (e) => e.code === ERR_REGISTRY_INDEX_MALFORMED);
+  });
+  it("REFUSES a duplicate (name,version) entry — order must not decide facts", () => {
+    const dup = lookupCertifiedPackage(
+      { schema: "logicn-registry-index/v1", registry: "r", issuedAt: "t", entries: [
+        ENTRIES[0], { ...ENTRIES[0], sourceHash: "sha256:EVIL", certificationLevel: "regulated" }] },
+      { name: "Auth.Standard", version: "1.2.0", sourceHash: "sha256:aaa" });
+    assert.equal(dup.ok, false);
+    assert.equal(dup.code, ERR_REGISTRY_DUPLICATE);
+  });
+  it("admitFromRegistry threads the issuedAt floor (stale → structured deny, no throw)", () => {
+    const r = admitFromRegistry(freshSigned(), verifier,
+      { name: "Auth.Standard", version: "1.2.0", sourceHash: "sha256:aaa" },
+      { allowedLevels: ["certified"] }, "2026-12-31T00:00:00Z");
+    assert.equal(r.ok, false);
+    assert.equal(r.code, ERR_REGISTRY_INDEX_STALE);
+  });
+});
 
 describe("B5a registry index — build + sign + verify (real Ed25519)", () => {
   it("verifies a correctly signed index", () => {

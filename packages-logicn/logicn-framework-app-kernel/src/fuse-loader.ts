@@ -868,6 +868,23 @@ export async function fusePackages(
     seen.add(a.name);
   }
 
+  // Gate 2c (B5a) for the SET: every member must ALSO pass the central registry. One unlisted/forked
+  // member refuses the WHOLE composition (set-level fail-closed) — the multi-module path must not be a
+  // bypass of the single-module allow-list.
+  if (opts.registryCheck !== undefined) {
+    for (const a of admitted) {
+      const verdict = opts.registryCheck({
+        name: a.name, version: a.descriptor.version, sourceHash: a.descriptor.wasmSha256, keyId: a.keyId,
+      });
+      if (!verdict.ok) {
+        return fuseError(
+          verdict.code ?? "LLN-FUSE-REGISTRY-DENIED",
+          `central registry refused composition member '${a.name}@${a.descriptor.version}': ${verdict.reason ?? "not admissible"} — refusing the whole set`,
+        );
+      }
+    }
+  }
+
   // 2 — plan (set-signed invariant + deny-by-default routing + acyclic).
   const members: CompositionMember[] = admitted.map((a) => ({
     name: a.name,

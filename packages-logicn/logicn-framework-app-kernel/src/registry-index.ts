@@ -61,6 +61,9 @@ export const ERR_REGISTRY_VERSION_UNKNOWN = "ERR_REGISTRY_VERSION_UNKNOWN";
 export const ERR_REGISTRY_HASH_MISMATCH = "ERR_REGISTRY_HASH_MISMATCH";
 export const ERR_REGISTRY_KEYID_MISMATCH = "ERR_REGISTRY_KEYID_MISMATCH";
 export const ERR_REGISTRY_POLICY_DENIED = "ERR_REGISTRY_POLICY_DENIED";
+export const ERR_REGISTRY_INDEX_STALE = "ERR_REGISTRY_INDEX_STALE";        // signed but older-or-equal than the accepted floor (rollback/replay)
+export const ERR_REGISTRY_INDEX_MALFORMED = "ERR_REGISTRY_INDEX_MALFORMED"; // unsupported schema / signature canon
+export const ERR_REGISTRY_DUPLICATE = "ERR_REGISTRY_DUPLICATE";            // >1 entry for the same (name,version) — ambiguous
 
 const cmp = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 
@@ -111,14 +114,26 @@ export class RegistryIndexError extends Error {
   }
 }
 
-/** Throws RegistryIndexError (fail-closed) unless the index carries a real, verifiable signature. */
-export function verifyRegistryIndex(index: RegistryIndex, verify: IndexVerifier): "verified" {
+/**
+ * Throws RegistryIndexError (fail-closed) unless the index carries a real, verifiable signature.
+ * @param minIssuedAt optional ISO-8601 floor — the index MUST be strictly newer (rollback/replay defense).
+ */
+export function verifyRegistryIndex(
+  index: RegistryIndex,
+  verify: IndexVerifier,
+  minIssuedAt?: string,
+): "verified" {
   const sig = index.signature;
   if (!sig || sig.algorithm !== "Ed25519" || typeof sig.signature !== "string" || sig.signature.length === 0) {
     throw new RegistryIndexError(
       ERR_REGISTRY_INDEX_UNSIGNED,
       "Registry index is unsigned or carries a placeholder signature — refused (fail-closed).",
     );
+  }
+  // `canon` sits OUTSIDE the signed bytes (signature is excluded) so it is UNAUTHENTICATED. We only ever
+  // recompute JCS — reject any other tag rather than let a future legacy branch be downgrade-triggered.
+  if (sig.canon !== "jcs") {
+    throw new RegistryIndexError(ERR_REGISTRY_INDEX_MALFORMED, `unsupported signature canon '${sig.canon}' — only 'jcs' accepted.`);
   }
   const message = new TextEncoder().encode(registryIndexSigningInput(index));
   const result = verify(message, sig.signature, sig.keyId);
@@ -128,10 +143,22 @@ export function verifyRegistryIndex(index: RegistryIndex, verify: IndexVerifier)
       `No public key registered for registry authority keyId '${sig.keyId}' — cannot verify index; refused.`,
     );
   }
-  if (!result) {
+  // FAIL-CLOSED: ONLY a literal `true` admits. A truthy non-boolean verifier return (a raw crypto-lib
+  // result, a thin wrapper) must NOT pass — was `if (!result)`, which admitted any truthy value.
+  if (result !== true) {
     throw new RegistryIndexError(
       ERR_REGISTRY_INDEX_BAD_SIGNATURE,
       `Registry index signature failed verification for keyId '${sig.keyId}' — possible tampering; refused.`,
+    );
+  }
+  // Authentic from here — validate the (signed) schema and enforce freshness.
+  if (index.schema !== "logicn-registry-index/v1") {
+    throw new RegistryIndexError(ERR_REGISTRY_INDEX_MALFORMED, `unsupported index schema '${index.schema}'.`);
+  }
+  if (minIssuedAt !== undefined && !(index.issuedAt > minIssuedAt)) {
+    throw new RegistryIndexError(
+      ERR_REGISTRY_INDEX_STALE,
+      `index issuedAt '${index.issuedAt}' is not newer than the accepted floor '${minIssuedAt}' — possible rollback/replay; refused.`,
     );
   }
   return "verified";
@@ -158,10 +185,16 @@ export function lookupCertifiedPackage(index: RegistryIndex, q: CertifiedLookup)
   if (named.length === 0) {
     return { ok: false, code: ERR_REGISTRY_PACKAGE_UNKNOWN, reason: `Package '${q.name}' is not in the certified registry index.` };
   }
-  const entry = named.find((e) => e.version === q.version);
-  if (!entry) {
+  const matches = named.filter((e) => e.version === q.version);
+  if (matches.length === 0) {
     return { ok: false, code: ERR_REGISTRY_VERSION_UNKNOWN, reason: `Package '${q.name}' has no certified version '${q.version}' (certified: ${named.map((e) => e.version).join(", ")}).` };
   }
+  // Ambiguous: >1 entry for the same (name,version). Entry ORDER must not silently decide which
+  // hash/keyId/level applies (a duplicate placed first = DoS + fact-spoofing). Fail-closed.
+  if (matches.length > 1) {
+    return { ok: false, code: ERR_REGISTRY_DUPLICATE, reason: `Registry has ${matches.length} entries for '${q.name}@${q.version}' — ambiguous; refused.` };
+  }
+  const entry = matches[0]!; // length === 1 guaranteed by the checks above
   if (entry.sourceHash !== q.sourceHash) {
     return { ok: false, code: ERR_REGISTRY_HASH_MISMATCH, reason: `Package '${q.name}@${q.version}' hash ${q.sourceHash} does not match the pinned ${entry.sourceHash} — supply-chain integrity failure.` };
   }
@@ -208,12 +241,13 @@ export function admitFromRegistry(
   verify: IndexVerifier,
   q: CertifiedLookup,
   policy: RegistryPolicy,
+  minIssuedAt?: string,
 ): AdmissionResult {
   try {
-    verifyRegistryIndex(index, verify);
+    verifyRegistryIndex(index, verify, minIssuedAt);
   } catch (e) {
-    const err = e as RegistryIndexError;
-    return { ok: false, code: err.code ?? ERR_REGISTRY_INDEX_BAD_SIGNATURE, reason: err.message };
+    const err = e instanceof RegistryIndexError ? e : new RegistryIndexError(ERR_REGISTRY_INDEX_BAD_SIGNATURE, String((e as Error)?.message ?? e));
+    return { ok: false, code: err.code, reason: err.message };
   }
   const found = lookupCertifiedPackage(index, q);
   if (!found.ok) return found;

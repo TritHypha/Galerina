@@ -12,7 +12,7 @@ import { join, dirname } from "node:path";
 import { tmpdir } from "node:os";
 import { generateKeyPairSync, sign as cryptoSign, createPrivateKey } from "node:crypto";
 
-import { fusePackage, buildCapabilityImports } from "../dist/index.js";
+import { fusePackage, fusePackages, buildCapabilityImports } from "../dist/index.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 // tests/  →  package dir  →  packages-logicn  →  repo root  →  examples/…
@@ -58,6 +58,17 @@ test("registryCheck ALLOW lets the fuse proceed and receives the package identit
   assert.equal(seen.name, "my-custom-api-rest");
   assert.equal(typeof seen.sourceHash, "string");
   assert.ok(seen.sourceHash.startsWith("sha256:"), "registry gate receives the pinned-style wasm hash");
+});
+
+test("fusePackages (multi-module) ALSO enforces registryCheck — an unlisted member refuses the whole set", async () => {
+  assert.ok(existsSync(join(DEMO_DIR, "dist", "my-custom-api-rest.wasm")), "demo must be built first");
+  await assert.rejects(
+    () => fusePackages([DEMO_DIR], {
+      allowUnsigned: true, warn: () => {},
+      registryCheck: () => ({ ok: false, code: "ERR_REGISTRY_PACKAGE_UNKNOWN", reason: "not in the certified index" }),
+    }),
+    /ERR_REGISTRY_PACKAGE_UNKNOWN|central registry refused/,
+  );
 });
 
 // ── 1 — the built demo package fuses, and invoke('main') runs the governed wasm ──
