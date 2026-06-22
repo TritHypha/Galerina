@@ -196,6 +196,7 @@ run("graph:reindex", "node",
 //        so the lint/coverage gates below see current state (std #10 derived-catalog, #219). ──
 run("code-index", "node", ["scripts/code-index.mjs"]);
 run("code-registry", "node", ["scripts/gen-code-registry.mjs"]);
+run("kb-index", "node", ["scripts/kb-index.mjs"]); // KB keyword index (token-saver): keep build/kb-index/ fresh vs the docs
 
 // ── 5b. Convention lint gate (TASK-ENV-001) ──
 // The umbrella that runs every registered convention enforcer (today: the #215 code scanner; later:

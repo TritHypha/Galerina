@@ -177,3 +177,30 @@ test("mutation: git-safety — every target file restored clean after the run", 
   assert.deepEqual(mut.leftDirty, []);
   assert.equal(git3("diff", "--quiet", "--", "gate.mjs").status, 0, "gate.mjs is git-clean after mutation run");
 });
+
+// ── kb-index: a tmp KB tree proves BUILD + QUERY ranking + --code lookup ──
+const tmp6 = mkdtempSync(join(tmpdir(), "lln-kbindex-"));
+after(() => { try { rmSync(tmp6, { recursive: true, force: true }); } catch { /* best effort */ } });
+mkdirSync(join(tmp6, "docs", "Knowledge-Bases"), { recursive: true });
+writeFileSync(join(tmp6, "docs", "Knowledge-Bases", "alpha.md"),
+  "# Alpha Transport\n## Morphing frames\nThe **morphing transport** layer governs LLN-FOO-001 per task #201.\n");
+writeFileSync(join(tmp6, "docs", "Knowledge-Bases", "beta.md"),
+  "# Beta Storage\n## Arena allocator\nMonotone bump memory and zeroize on reset.\n");
+const kb = (a) => spawnSync(process.execPath, [join(SCRIPTS, "kb-index.mjs"), ...a], { cwd: tmp6, encoding: "utf8" });
+kb([]); // build
+const kbIdx = JSON.parse(readFileSync(join(tmp6, "build", "kb-index", "kb-index.json"), "utf8"));
+
+test("kb-index: builds an index over the KB tree (codes + tasks captured)", () => {
+  assert.equal(kbIdx.docCount, 2);
+  const alpha = kbIdx.docs.find((d) => d.rel.endsWith("alpha.md"));
+  assert.ok(alpha.codes.includes("LLN-FOO-001"), "code captured");
+  assert.ok(alpha.tasks.includes("#201"), "task ref captured");
+});
+test("kb-index: query ranks the relevant doc first", () => {
+  const firstHit = kb(["morphing"]).stdout.split(/\r?\n/).find((l) => /\.md$/.test(l)) || "";
+  assert.ok(firstHit.includes("alpha.md"), `morphing -> alpha.md (got: ${firstHit})`);
+});
+test("kb-index: --code lists only the doc mentioning the code", () => {
+  const out = kb(["--code", "LLN-FOO-001"]).stdout;
+  assert.ok(out.includes("alpha.md") && !out.includes("beta.md"));
+});

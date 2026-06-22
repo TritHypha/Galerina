@@ -40,6 +40,7 @@
       "test-all":       "node scripts/run-all-tests.cjs",
       "test-tooling":   "node --test scripts/tests/codes.test.mjs scripts/tests/dev-tools-scripts.test.mjs",
       "code-index":     "node scripts/code-index.mjs   (query build/code-index/CODE_INDEX.md instead of grepping)",
+      "kb-index":       "node scripts/kb-index.mjs <terms>   (KB keyword search over ~495 docs — TOKEN-SAVER; build/kb-index/KB-INDEX.md; --code LLN-... for code lookup)",
       "code-registry":  "node scripts/gen-code-registry.mjs   (-> build/code-registry/REGISTRY.md, the live code catalog)",
       "lint-conventions":"node scripts/lint-conventions.mjs   (umbrella: #215 scanner + registered convention checks; --soft to report; --full adds the heavy SEC-002 mutation gate)",
       "coverage-codes": "node scripts/audit-coverage.mjs codes   (#218 bidirectional code-coverage cross-check)",
