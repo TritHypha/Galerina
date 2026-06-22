@@ -29,32 +29,46 @@ const asJson = process.argv.includes("--json");
 
 const rows = [];
 let total = 0;
+let toolErrors = 0;
 for (const c of CHECKS) {
   const r = spawnSync(process.execPath, [c.script], { encoding: "utf8" });
-  const violations = typeof r.status === "number" ? r.status : 1; // null status (signal) = treat as error
-  const totalLine =
-    (r.stdout || "").split(/\r?\n/).filter((l) => /TOTAL/i.test(l)).pop()?.trim() ?? "";
+  const stdout = r.stdout || "";
+  // Each check MUST print a machine-readable `VIOLATIONS: N` line. Parse THAT, not the raw exit code —
+  // so a child that crashes (uncaught → exit 1) or is killed by a signal (status null) is a TOOL ERROR,
+  // not silently folded in as "1 violation" making the gate look almost-green.
+  const vm = stdout.match(/^VIOLATIONS:\s*(\d+)\s*$/m);
+  if (r.error || r.status === null || !vm) {
+    toolErrors++;
+    const why = r.error?.message || (r.status === null ? "killed by signal" : "no VIOLATIONS line (check crashed?)");
+    rows.push({ name: c.name, desc: c.desc, error: true, why: why.split(/\r?\n/)[0], stderr: (r.stderr || "").split(/\r?\n/)[0] });
+    continue;
+  }
+  const violations = Number(vm[1]);
   total += violations;
-  rows.push({ name: c.name, desc: c.desc, violations, totalLine, stderr: (r.stderr || "").split(/\r?\n/)[0] });
+  const totalLine = stdout.split(/\r?\n/).filter((l) => /TOTAL/i.test(l)).pop()?.trim() ?? "";
+  rows.push({ name: c.name, desc: c.desc, violations, totalLine });
 }
 
 if (asJson) {
-  console.log(JSON.stringify({ total, checks: rows }, null, 2));
+  console.log(JSON.stringify({ total, toolErrors, checks: rows }, null, 2));
 } else {
   const out = ["# LogicN convention lint (TASK-ENV-001)\n"];
   for (const row of rows) {
+    if (row.error) { out.push(`⚠ ${row.name} — TOOL ERROR: ${row.why}${row.stderr ? " — " + row.stderr : ""}`); continue; }
     out.push(`${row.violations === 0 ? "✓" : "✗"} ${row.name} — ${row.violations} violation(s)`);
     out.push(`    ${row.desc}`);
     if (row.totalLine) out.push(`    ${row.totalLine}`);
-    if (row.violations !== 0 && row.stderr) out.push(`    stderr: ${row.stderr}`);
   }
-  out.push(`\nTOTAL: ${total} violation(s) across ${CHECKS.length} registered check(s)`);
+  out.push(`\nTOTAL: ${total} violation(s) across ${CHECKS.length - toolErrors} ran check(s)` + (toolErrors ? `  ·  ⚠ ${toolErrors} TOOL ERROR(s)` : ""));
   out.push(
-    total === 0
-      ? "CONVENTIONS GREEN ✓"
-      : `CONVENTIONS HAVE VIOLATIONS — a strict gate would FAIL${soft ? " (running --soft: reported, not enforced)" : ""}.`,
+    toolErrors > 0
+      ? "GATE INCONCLUSIVE — a check failed to run (fix the tool error)."
+      : total === 0
+        ? "CONVENTIONS GREEN ✓"
+        : `CONVENTIONS HAVE VIOLATIONS — a strict gate would FAIL${soft ? " (running --soft: reported, not enforced)" : ""}.`,
   );
   console.log(out.join("\n"));
 }
 
-process.exit(soft ? 0 : Math.min(total, 250));
+// exit: tool error → distinct sentinel (255) so CI sees "broken gate" not "0/N violations"; else violation count.
+process.exit(soft ? 0 : (toolErrors > 0 ? 255 : Math.min(total, 250)));

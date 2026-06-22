@@ -113,4 +113,6 @@ const v3n = badSevCodes.length;
 const total = overloaded.length + collisions.length + v3n + multiSev.length + badCase.length;
 out.push(`\n## TOTAL flagged: V1 ${overloaded.length} + V2 ${collisions.length} + V3 ${v3n} + V4 ${multiSev.length} + V5 ${badCase.length}`);
 console.log(out.join("\n"));
+console.log("VIOLATIONS: " + total); // machine-readable line the lint-conventions umbrella parses (so a
+                                     // crash/missing-line is a TOOL ERROR, not silently counted as 1 violation)
 process.exit(Math.min(total, 250));
