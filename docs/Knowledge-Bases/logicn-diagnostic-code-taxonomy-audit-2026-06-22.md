@@ -198,6 +198,35 @@ of truth). It is the **target shape** for the `LLN-*` remediation, not a problem
 **Sequencing note (owner's runtime-first rule):** the P0 security overloads sit in the live runtime/governance
 path (value-state-checker, governance-verifier, interpreter), so they rank first under that rule too.
 
+## 7. Remaining identifier namespaces — swept 2026-06-22 (direct grep audit)
+
+Beyond §1-6, a sweep found every other "code-like" namespace. Verdicts:
+
+- **Diagnostic `name:` sub-labels** — cross-code reuse is real but **already captured via their parent codes**
+  (`EFFECT_BOUNDARY_VIOLATION`, `UNDECLARED_EFFECT`, `FileTooLarge`, `TRANSITIVE_EFFECT_NOT_DECLARED` are the
+  §2-4 overloads seen from the name axis); the rest reuse a name at def+emit within one code (benign). No NEW
+  disease beyond §2-6.
+- **Severity vocabulary — INCONSISTENT (NEW finding).** What should be one axis `error|warning|info` is ~3
+  parallel scales with 5+ spellings: (1) compiler diagnostics `error|warning|info` (canonical, lowercase);
+  (2) BORDER bolts a 4th value `SECURITY_ALERT` onto that SAME diagnostic axis (`logicn-core-compiler`) — a
+  real inconsistency; (3) tower-citizen AuditEvents use UPPERCASE `ERROR|WARNING|INFO` (+ a `category`) — same
+  axis, different case; (4) a separate RISK axis `Low|Medium|High|Critical` (`logicn-ai-agent`) vs
+  `critical|high|medium` (`logicn-devtools-pci`/`-security`) — two inconsistent spellings of one risk scale.
+  Honest split: (4) is a *legitimately different axis* (risk-rating ≠ diagnostic severity), but **(2)/(3) are
+  genuine inconsistencies and the two risk scales in (4) disagree with each other.** Fix: `SECURITY_ALERT`→
+  `error`; align AuditEvent severity case (or document the two axes); pick one risk-rating scale. Fold into #215.
+- **Prometheus metric names** (`logicn-governance-telemetry`) — **CLEAN ✅.** Consistent `logicn_` prefix,
+  `_total` counter suffix, clear governance-native names. Well-factored; keep disciplined as #211 grows.
+- **Report-schema field labels** (lowercase `name:` like `protected_values_redacted`) — report fields, not
+  diagnostics; out of scope, no action.
+- **CBOR tags** — confirmed COMPLETE: only 403/410/414/415/416/417 exist (all in the audited 400-417 range).
+
+**Coverage statement:** every code/identifier namespace in the repo is now accounted for — `LLN-*` diagnostics,
+`ERR_*` runtime errors, trap/`*_VIOLATION` codes, CBOR tags, HTTP/`KernelErrorCode`, diagnostic `name:` labels,
+the severity vocabulary, Prometheus metrics, and report fields. **The disease is confined to the two
+inline-emitted diagnostic families (`LLN-*`, `ERR_*`) plus the severity-vocab inconsistency; every
+single-source-of-truth namespace (CBOR, HTTP, metrics) is clean** — which is the whole argument for #215.
+
 ## See also
 [logicn-task-ledger.md](logicn-task-ledger.md) §9 (#213) · [logicn-security-invariants-matrix.md](logicn-security-invariants-matrix.md)
 (the registry several findings reference) · [logicn-diagnostics-spec.md](logicn-diagnostics-spec.md) ·
