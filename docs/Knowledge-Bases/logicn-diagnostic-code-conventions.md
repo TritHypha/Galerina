@@ -72,6 +72,14 @@ A code answers exactly one question. If you need to report a second, distinct pr
   *(Prevents: R3 — the #1 root cause. e.g. `devtools-project-graph/effect-graph.ts` redefining EFFECT-002/003/004
   inverted; the GRAPH-* dual definitions.)*
 - A doc/comment claiming "canonical to X" must actually import from X.
+- **A standalone package that cannot import the owner's constants (no dependency edge) mints its OWN family —
+  it does NOT squat.** e.g. `devtools-project-graph` (zero deps) owns `LLN-PGRAPH-*` for *all* its graph-VIEW
+  findings; it must not reuse core's `LLN-EFFECT-*`/`LLN-BOUNDARY-*`/`LLN-CAPABILITY-*` or flowgraph's
+  `LLN-GRAPH-*`. *(Stage D, 2026-06-22.)*
+- **Ownership counts even when only DOCUMENTED.** A family declared as owned by package X in its
+  README / registry / TODO is X's — another package must not define codes in it, even if X has not yet emitted
+  them in `src`. *(Stage D found project-graph squatting on core's README-only `LLN-BOUNDARY` series; the
+  src-only R3 scan had missed it.)*
 
 ## 7. No dead codes, no false gates
 - **Every defined code is live-emittable OR explicitly `RESERVED`** in the registry; README/spec ranges must

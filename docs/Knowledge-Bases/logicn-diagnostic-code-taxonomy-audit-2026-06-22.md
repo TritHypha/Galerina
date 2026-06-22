@@ -264,7 +264,8 @@ is missing. Token-staged at owner's "next"; each stage re-runs the scanner so th
 | **A** | V1-V4 + R4/R5 quantified | #215 scanner + code-index + conventions doc | ✅ done |
 | **B** | COMPLETE THE GUARD — name-case (§3), R4 inline-no-const (268), R5 dead/doc-only (462+3), MEMORY-* dead-prod-gate, free-text `ERR_` | scanner **+V5 name-case** (revealed **130** PascalCase names); joint guard = scanner V1-V5 + code-index R4/R5. Residual detections (small, tracked into B): free-text `ERR_` overloads + MEMORY-* gate cross-ref | ✅ done 2026-06-22 |
 | **C** | V3 severity-vocab → **0** | ✅ BORDER `SECURITY_ALERT`→`error` (plugin-schema.ts; core-compiler 3684/0); scanner V3 now **diagnostic-axis-only**; audit-event severity (tower UPPERCASE) + risk-rating recognized as SEPARATE axes (conventions §4) — audit-event lowercase = versioning-sensitive, deferred to Stage I | ✅ done 2026-06-22 |
-| **D** | R3 cross-package dup (devtools effect-graph EFFECT-002/003/004; GRAPH-* dup; CONFIG-GOV) | `logicn-core-compiler` sole exporter; project-graph → `PGRAPH-*`; renumber CONFIG-GOV | 🔲 |
+| **D** | R3 cross-package dup — `logicn-devtools-project-graph` squatting on namespaces it doesn't own | ✅ project-graph now owns exactly ONE family `LLN-PGRAPH-*`: EFFECT-001..004→PGRAPH-010..013, GRAPH-001..005→PGRAPH-001..005, **+ BOUNDARY-001..004→PGRAPH-020..023 & CAPABILITY-001→PGRAPH-030** (the latter two caught by the post-edit completeness check — core README/TODO owns the `LLN-BOUNDARY` series & `capability` is a core concept). One colliding name `UNDECLARED_EFFECT`→`UNDECLARED_EFFECT_IN_GRAPH`. All false "canonical to core" comments fixed. Committed in the **nested** project-graph repo (`576585b`). Scanner **V1 23→17**; tsc+90/90; no external consumers. | ✅ done 2026-06-22 |
+| **D2** | `CONFIG-GOV` sub-scheme (split out of D — it is NOT cross-package R3) | `LLN-CONFIG-GOV-003` (core-config) collides with parent `LLN-CONFIG-003` (§2 sub-scheme) and `LLN-CONFIG-GOV-001/002` (core-compiler `governance-mode.ts`) are emitted **inside message template strings** (R4 inline, no structured code). Fix WITH Stage F (R4): give them structured codes in a clean family (e.g. `GOVMODE-*` or next-free `CONFIG-*`), update the core README/registry. | 🔲 (folds into F) |
 | **E** | P0 security overloads (V1): SECRET-002, PRIVACY-002, GOV-004, MONO-001, GOV-017, INV-002, VALUESTATE-006, ASSIMILATE-002; ERR_BRIDGE_UNATTESTED/DISPATCH_FAULT (structure first, then split) | split each → one-code-one-fault; register constants; tests | 🔲 |
 | **F** | R4 single-source migration (268 inline emits → exported constants) | per family; the biggest mechanical item | 🔲 (sub-staged) |
 | **G** | R5 dead/doc-only (462 phantom + 3 dead) + the MEMORY-* dead production-gate | mark RESERVED / remove; reconcile README ranges; fix the false gate | 🔲 |
@@ -275,6 +276,13 @@ is missing. Token-staged at owner's "next"; each stage re-runs the scanner so th
 **Coverage check (nothing unmapped):** V1→D/E/I · V2→I · V3→C · V4→E/I · R3→D · R4 detect→B fix→F · R5
 detect→B fix→G · ERR_* overloads→E/I · cross-namespace→I · name-case detect→B fix→H · MEMORY-dead-gate
 detect→B fix→G · HTTP-minor→I. Every category from §2-7 + the code-index has a detect-stage AND a fix-stage.
+
+**Detector lesson from Stage D (2026-06-22):** the code-index R3 query (codes with `code:` defs/emits in
+>1 package) found EFFECT + GRAPH but **missed** project-graph's `LLN-BOUNDARY-*`/`LLN-CAPABILITY-*` squat —
+because the rightful owner (core-compiler) declares the `LLN-BOUNDARY` series only in its **README/TODO**, not
+yet as `code:` literals in `src`. A grep for the `"canonical to logicn-core-compiler"` comment caught it.
+→ **Cross-package ownership must also be checked against README/registry/TODO claims, not just `src` literals.**
+Future scanner hardening (§6 check): flag any code whose family is *documented* as owned by another package.
 
 **#201 WIP parked (2026-06-22):** the paused #201 `effect-checker.ts` change (LLN-EFFECT-006 strict + the
 AI/payment inference-regex) is held in `git stash@{0}` (tagged) so the suite stays green through the taxonomy
