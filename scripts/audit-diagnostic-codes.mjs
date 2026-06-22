@@ -97,7 +97,15 @@ for (const s of [...new Set(sevOffenders)].sort()) out.push(`  ${s}`);
 out.push(`\n## V4 MULTI-SEVERITY — one code, >1 severity (${multiSev.length}; review for legit dev/prod toggles)`);
 for (const [code, sevs] of multiSev.sort()) out.push(`  ${code}  ->  ${[...sevs].join(" | ")}`);
 
-const total = overloaded.length + collisions.length + new Set(sevOffenders.map((s) => s.split(/\s+/)[0])).size + multiSev.length;
-out.push(`\n## TOTAL flagged: V1 ${overloaded.length} + V2 ${collisions.length} + V3 ${new Set(sevOffenders.map((s) => s.split(/\s+/)[0])).size} distinct-bad-severities + V4 ${multiSev.length}`);
+// V5 NAME-CASE — diagnostic `name` must be UPPER_SNAKE (conventions §3); flag PascalCase (a lowercase
+// letter after a leading uppercase). All-lowercase names (metrics/report fields) are NOT diagnostic names → skip.
+const isPascal = (n) => /^[A-Z]/.test(n) && /[a-z]/.test(n);
+const badCase = [...nameToCodes.entries()].filter(([n]) => isPascal(n)).sort();
+out.push(`\n## V5 NAME-CASE — PascalCase name, convention §3 requires UPPER_SNAKE (${badCase.length})`);
+for (const [name, codes] of badCase) out.push(`  ${name}  (${[...codes].join(",")})`);
+
+const v3n = new Set(sevOffenders.map((s) => s.split(/\s+/)[0])).size;
+const total = overloaded.length + collisions.length + v3n + multiSev.length + badCase.length;
+out.push(`\n## TOTAL flagged: V1 ${overloaded.length} + V2 ${collisions.length} + V3 ${v3n} + V4 ${multiSev.length} + V5 ${badCase.length}`);
 console.log(out.join("\n"));
 process.exit(Math.min(total, 250));

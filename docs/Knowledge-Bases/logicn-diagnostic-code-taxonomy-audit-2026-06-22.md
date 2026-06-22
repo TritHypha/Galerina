@@ -253,6 +253,29 @@ a fix); (b) **dead/unregistered** codes (needs a constant↔emit cross-ref); (c)
 **How it becomes the gate:** each stage cleans a family, re-runs the scanner; when a category hits 0 it flips to
 enforcing (wire into `run-phase-close.mjs`). The baseline only goes down.
 
+## 9. Remediation roadmap — every flagged category → a stage (reconciled 2026-06-22)
+
+Reconciled against ALL three detectors — the manual audit (§2-7), the #215 scanner (V1-V4), and the code-index
+(R4 inline / R5 dead+doc-only) — so the code-index's *new* quantified findings are covered and nothing flagged
+is missing. Token-staged at owner's "next"; each stage re-runs the scanner so the baseline only drops.
+
+| Stage | Covers (category → detector) | What | Status |
+|---|---|---|---|
+| **A** | V1-V4 + R4/R5 quantified | #215 scanner + code-index + conventions doc | ✅ done |
+| **B** | COMPLETE THE GUARD — name-case (§3), R4 inline-no-const (268), R5 dead/doc-only (462+3), MEMORY-* dead-prod-gate, free-text `ERR_` | scanner **+V5 name-case** (revealed **130** PascalCase names); joint guard = scanner V1-V5 + code-index R4/R5. Residual detections (small, tracked into B): free-text `ERR_` overloads + MEMORY-* gate cross-ref | ✅ done 2026-06-22 |
+| **C** | V3 severity-vocab (17) | `SECURITY_ALERT`→`error`; tower UPPERCASE→lowercase; risk-rating = separate field/axis | 🔲 |
+| **D** | R3 cross-package dup (devtools effect-graph EFFECT-002/003/004; GRAPH-* dup; CONFIG-GOV) | `logicn-core-compiler` sole exporter; project-graph → `PGRAPH-*`; renumber CONFIG-GOV | 🔲 |
+| **E** | P0 security overloads (V1): SECRET-002, PRIVACY-002, GOV-004, MONO-001, GOV-017, INV-002, VALUESTATE-006, ASSIMILATE-002; ERR_BRIDGE_UNATTESTED/DISPATCH_FAULT (structure first, then split) | split each → one-code-one-fault; register constants; tests | 🔲 |
+| **F** | R4 single-source migration (268 inline emits → exported constants) | per family; the biggest mechanical item | 🔲 (sub-staged) |
+| **G** | R5 dead/doc-only (462 phantom + 3 dead) + the MEMORY-* dead production-gate | mark RESERVED / remove; reconcile README ranges; fix the false gate | 🔲 |
+| **H** | name-case migration (§3): PascalCase → UPPER_SNAKE | cross-cutting rename (value-state/type/secret families) | 🔲 |
+| **I** | remaining V1/V2 + cross-namespace (EFFECT_BOUNDARY dual-life, CITIZEN dup, ERR_CAPABILITY trio) + the `LogicN-ERR-*` 3rd scheme + HTTP 429-vs-503 | the long tail | 🔲 |
+| **J** | flip the scanner to CI-enforce (`run-phase-close`); resume #201 on the now-clean EFFECT family | the gate goes live | 🔲 |
+
+**Coverage check (nothing unmapped):** V1→D/E/I · V2→I · V3→C · V4→E/I · R3→D · R4 detect→B fix→F · R5
+detect→B fix→G · ERR_* overloads→E/I · cross-namespace→I · name-case detect→B fix→H · MEMORY-dead-gate
+detect→B fix→G · HTTP-minor→I. Every category from §2-7 + the code-index has a detect-stage AND a fix-stage.
+
 ## See also
 [logicn-task-ledger.md](logicn-task-ledger.md) §9 (#213) · [logicn-security-invariants-matrix.md](logicn-security-invariants-matrix.md)
 (the registry several findings reference) · [logicn-diagnostics-spec.md](logicn-diagnostics-spec.md) ·

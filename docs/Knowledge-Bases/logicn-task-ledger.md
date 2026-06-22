@@ -417,11 +417,16 @@ open, only half-done): #177 (deprecation advisory not emitted), #119 (native Bit
   `signedAt`. Extend `manifest-generator.ts` + the `logicn build` path. Verify-first: `signedAt`/`keyId`/
   `sourceHash` exist today; version/commit/repo/author likely don't. 🔲
 - **#217 — Capability/syntax index dev tool** (owner-requested 2026-06-22; applies the build-tools-to-save-
-  tokens rule): a re-runnable graph/index of LogicN's FULL language scope — operators (arithmetic/comparison/
-  logical), keywords + constructs (flow/contract/effects/invariant/trap/gate/match/for/where…), stdlib
-  functions, effect families, types — each mapped to WHERE its logic lives (lexer/parser/type-checker/
-  effect-checker/interpreter/wat-emitter). Like `scripts/code-index.mjs` but for capabilities (query instead
-  of explore). 🔲 scoped, build on go.
+  tokens rule). **SCOPE WIDENED 2026-06-22 to the FULL language surface** (owner: "full scope"): operators
+  (arithmetic/comparison/logical/bitwise-rejected), keywords + constructs (flow/secure/guarded/pure, match,
+  for, where, trap, static, bitfield, import…), **governance blocks** (contract/effects/invariant/limits/
+  gate/access/guard/policy/assuming/resilience/observability/secrets/epilogue), **Tri-Pipe / substrate /
+  hardware** directives (`hardware()`/`substrate{}`/`compute target`/binary|hybrid|photonic tiers), stdlib
+  functions, effect families, types (Int/Float/Bool/Tri/Decision/Result/Option/Tensor/Brand/protected/Secret),
+  and CLI commands. Each capability → (a) WHERE its logic lives (lexer/parser/type-checker/effect-checker/
+  interpreter/wat-emitter), (b) where it's tested, (c) where it's demonstrated (examples corpus), (d) its
+  governing diagnostics (cross-link to the code-index). Like `scripts/code-index.mjs` but for capabilities.
+  🔲 scoped, build on go (broad/fuzzy extraction — wants a clean token budget).
 - **RULE (binding, owner 2026-06-22):** if a task can be made cheaper by building/extending a dev tool, do
   that — and consider it at the START of every task. Memory: `feedback-build-tools-to-save-tokens`.
 - **#214 — framework developer-tests folder** (owner-raised): the B1 scaffolder emits a `tests/` dir for
