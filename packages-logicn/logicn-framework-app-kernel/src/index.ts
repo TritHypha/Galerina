@@ -7,3 +7,6 @@ export * from "./types.js";
 export * from "./route-defaults.js";
 export * from "./kernel.js";
 export * from "./fuse-loader.js";
+// Slice (Fuse B5a): the signed central registry index — a tamper-evident certified-package
+//   catalog the resolver consults before admission (verify → lookup → policy, fail-closed).
+export * from "./registry-index.js";

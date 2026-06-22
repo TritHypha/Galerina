@@ -93,8 +93,10 @@ function canonStr(s: string): string {
   return out + '"';
 }
 
-/** RFC 8785 canonical JSON (keys sorted lexicographically, no whitespace). */
-function canonicalJson(value: unknown): string {
+/** RFC 8785 canonical JSON (keys sorted lexicographically, no whitespace).
+ *  Exported so the signed registry index (B5a, registry-index.ts) signs over the SAME canonical
+ *  form as manifests — one canonicalizer, no drift (asserted by canonical-json-conformance.test.mjs). */
+export function canonicalJson(value: unknown): string {
   if (value === null) return "null";
   if (typeof value === "boolean") return value ? "true" : "false";
   if (typeof value === "number") {
