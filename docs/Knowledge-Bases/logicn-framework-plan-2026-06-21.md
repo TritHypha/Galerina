@@ -86,8 +86,12 @@ fires a fault. A second, **live** weak link was concrete and is now fixed (item 
    receipt. The one live, code-confirmed break of fail-safe-to-Binary / no-crash. +4 tests, 206/206.
 2. **NEXT** — split the receipt's truth channels (stop folding the analog photonic value into the
    bit-exact `ternaryChecksum`; add `valuesReproducible`). *(pins `photonic-dispatch.test.mjs:66` — needs the test updated.)*
-3. **NEXT** — pin **LLN-MONO-001**: parser surfaces an emergency-block `allow` as a hard compile error
-   instead of silently swallowing it (fail-silent permission widening in the Binary governance core).
+3. ✅ **BUILT (2026-06-22)** — pin **LLN-MONO-001**: `parseEmergencyBlock` now SURFACES an emergency-block
+   `allow`/`grant` as an `allow:` action node (was: silently consumed by the "unknown action — skip" branch,
+   so the verifier's `EMERGENCY_EXPANDS_CAPABILITY` check could never fire → fail-silent permission widening
+   in the Binary governance core). The existing verifier error now fires as a hard compile error. Parser-only
+   fix (parser-parses / verifier-validates split preserved). +5 tests `tests/governance/emergency-monotonicity.test.mjs`;
+   compiler 3684, full suite 53/53 · 4989.
 4. **NEXT** — close two fail-open admission/clamp holes (certified-mode photonic admission bound to a
    verified signed manifest; caller-independent `maxTolerance`/`N_MAX` upper-bound clamps).
 5. **DESIGN-ONLY / owner-gated** — the crash-containment weakest link: interim = a real same-process

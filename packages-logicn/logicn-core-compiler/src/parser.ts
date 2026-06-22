@@ -3382,6 +3382,36 @@ class Parser {
               continue;
             }
 
+            // allow / grant — a capability EXPANSION. SURFACE it as an `allow:` action node
+            // (do NOT silently swallow it) so the governance verifier's LLN-MONO-001
+            // EMERGENCY_EXPANDS_CAPABILITY fires as a hard compile error: V_DPM is monotonically
+            // decreasing, so an emergency handler may only clear (deny) capabilities, never grant
+            // new ones. Before this, an unrecognised `allow X` fell through to the silent skip
+            // below, so the verifier never saw an `allow:` node — fail-silent permission widening.
+            if (
+              (actionTok.kind === "keyword" || actionTok.kind === "identifier") &&
+              (actionTok.value === "allow" || actionTok.value === "grant")
+            ) {
+              this.advance(); // consume "allow"/"grant"
+              this.skipNewlines();
+              let effName = "";
+              // dot-path effect name (mirrors the `deny` branch above)
+              if (this.current().kind === "identifier" || this.current().kind === "keyword") {
+                effName = this.current().value;
+                this.advance();
+                while (this.currentIs("symbol", ".")) {
+                  this.advance();
+                  if (this.current().kind === "identifier" || this.current().kind === "keyword") {
+                    effName += "." + this.current().value;
+                    this.advance();
+                  } else break;
+                }
+              }
+              actions.push({ kind: "identifier", value: `allow:${effName}`, location: actionLoc });
+              this.skipNewlines();
+              continue;
+            }
+
             // Unknown action — consume and skip
             this.advance();
             this.skipNewlines();

@@ -273,7 +273,9 @@ fully pinned: a finite `tolerance` + `pinnedEnvHash` + `backendArtifactHash` + a
   1. ✅ **BUILT** (`449d8f2`) — `dispatchPlan` total over exceptions (§5.3).
   2. **NEXT (owner go)** — split the receipt's truth channels (stop folding the analog photonic value
      into the bit-exact `ternaryChecksum`; add `valuesReproducible`).
-  3. Pin **LLN-MONO-001** at parse time (emergency-block `allow` → hard compile error). *(queued)*
+  3. ✅ **BUILT (2026-06-22)** — Pin **LLN-MONO-001** at the parser: `parseEmergencyBlock` surfaces an
+     emergency-block `allow`/`grant` as an `allow:` node so the verifier's `EMERGENCY_EXPANDS_CAPABILITY`
+     error fires (was silently swallowed → fail-silent permission widening). +5 tests; suite 53/53 · 4989.
   4. Close two fail-open admission/clamp holes (certified-mode photonic admission bound to a verified
      signed manifest; caller-independent `maxTolerance`/`N_MAX` clamps). *(queued)*
 
