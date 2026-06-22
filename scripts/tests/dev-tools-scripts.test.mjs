@@ -95,3 +95,41 @@ test("audit-coverage: a clean fixture has 0 coverage holes (no phantom)", () => 
   const j = JSON.parse(r.stdout);
   assert.equal(j.holes, 0, "no registry phantoms on a fixture with no curated registry");
 });
+
+// ── DOC-004 doc↔source drift: a second fixture (version.json authority + crafted docs) ──
+const tmp2 = mkdtempSync(join(tmpdir(), "lln-docdrift-"));
+after(() => { try { rmSync(tmp2, { recursive: true, force: true }); } catch { /* best effort */ } });
+mkdirSync(join(tmp2, "docs", "Knowledge-Bases"), { recursive: true });
+writeFileSync(join(tmp2, "version.json"), JSON.stringify({ testCount: 4993, packageCount: 53 }) + "\n");
+// living doc (no date in filename) — its CURRENT count claim is stale → MUST flag
+writeFileSync(join(tmp2, "docs", "Knowledge-Bases", "living.md"), [
+  `# Status`,
+  `Live full suite: 44/44 packages, 4,128 tests, 0 fail.`,          // drift (both) → flag x2
+  `The kernel package alone has 87 tests.`,                          // per-package, no global ctx → NOT flagged
+  `Previously 40/40 packages (superseded by the above).`,           // historical keyword → NOT flagged
+  `2026-05-01 verified: 33/33 packages, 3,300 tests.`,              // "verified:" historical line → NOT flagged
+].join("\n") + "\n");
+// dated-FILENAME snapshot — counts are historical by construction → whole file exempt
+writeFileSync(join(tmp2, "docs", "Knowledge-Bases", "snap-2026-06-01.md"), `Snapshot: 40/40 packages, 3,000 tests.\n`);
+
+const drift = JSON.parse(run2("audit-doc-drift.mjs", ["--json"]).stdout);
+function run2(script, args = []) { return spawnSync(process.execPath, [join(SCRIPTS, script), ...args], { cwd: tmp2, encoding: "utf8" }); }
+
+test("doc-drift: a living doc's stale CURRENT count is flagged (packages + tests)", () => {
+  const inLiving = drift.drift.filter((d) => d.rel.includes("living.md"));
+  assert.ok(inLiving.some((d) => d.kind === "packages" && d.claim.includes("44/44")), "44/44 packages flagged");
+  assert.ok(inLiving.some((d) => d.kind === "tests" && d.claim.includes("4,128")), "4,128 tests flagged");
+});
+
+test("doc-drift: a per-package count (no global context) is NOT flagged", () => {
+  assert.ok(!drift.drift.some((d) => d.claim.includes("87")), "87 tests (per-package) not treated as global");
+});
+
+test("doc-drift: historical lines (superseded / verified:) are exempt", () => {
+  assert.ok(!drift.drift.some((d) => d.claim.includes("40/40")), "superseded line exempt");
+  assert.ok(!drift.drift.some((d) => d.claim.includes("3,300")), "verified: line exempt");
+});
+
+test("doc-drift: a dated-FILENAME snapshot is fully exempt", () => {
+  assert.ok(!drift.drift.some((d) => d.rel.includes("snap-2026-06-01")), "dated snapshot not scanned");
+});

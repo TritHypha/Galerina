@@ -20,8 +20,13 @@ const CHECKS = [
     script: "scripts/audit-diagnostic-codes.mjs",
     desc: "LLN-*/ERR_* code conventions (V1 overload · V2 collision · V3 sev-vocab · V4 multi-sev · V5 name-case)",
   },
-  // TASK-SEC-002 (mutation/red-team per gate), TASK-DOC-004 (doc↔source drift), and #218 (coverage
-  // cross-check) register additional check scripts here as they are built.
+  {
+    name: "doc-drift",
+    script: "scripts/audit-doc-drift.mjs",
+    desc: "DOC-004: doc 'living metrics' (global test/package COUNTS) vs the version.json authority — v1 heuristic (living docs only; #150 auto-count is the real remedy)",
+  },
+  // TASK-SEC-002 (mutation/red-team per gate) and #218 (coverage cross-check, run separately as
+  // `audit-coverage.mjs`) register additional check scripts here as they are built.
 ];
 
 const soft = process.argv.includes("--soft");

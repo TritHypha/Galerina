@@ -489,10 +489,16 @@ auto-start the api-server/transport adapter; confirm with owner before touching 
   - **TASK-BLD-003** — **artifact provenance + freshness** (folds in #216): stamp every generated artifact
     (graph, code-index, `.wasm`, `.lmanifest`, reports) with git-commit + tool-version + build-time; CI fails if
     an artifact is stale vs HEAD. Makes "is this current?" a check, not a guess.
-  - **TASK-DOC-004** — **doc↔source drift detector**: a markdown-AST tool that checks "living metrics" in the KB
-    (start: `logicn-fault-tolerance-and-stability.md`) against live runtime code / test counts / the runtime-status
-    SOT; flags stale "X shipped" claims + count-authority drift + the advisor re-derive problem.
-  Build sequence: **ENV-001 (umbrella) → DOC-004 + BLD-003 → SEC-002 (largest)**. All 🔲. Memory:
+  - **TASK-DOC-004** — **doc↔source drift detector**: ✅ **v1 BUILT 2026-06-22** — `scripts/audit-doc-drift.mjs`,
+    registered in `lint-conventions` CHECKS + settings.json + 4 fixture tests (`dev-tools-scripts.test.mjs`, now
+    **20/20**). v1 scope = the #1 stale class: doc "living metrics" — GLOBAL test/package COUNTS — vs the
+    `version.json` authority; low-noise (living docs only — dated-filename snapshots + change-log/superseded/
+    verified:/→ lines + per-package counts all exempt). Surfaces **24 living-doc count-drift** claims today
+    (build-roadmap/SOT/README/CHANGELOG/roadmap.md/fault-tolerance/ledger banners). KNOWN v1 limit: historical
+    table-rows *inside* living docs still counted → **v2 = opt-in `<!-- LIVE:testCount -->` markers** (Rust-tidy
+    style, zero false positives); the real remedy for the drift itself is **#150 CI auto-count**. Does NOT yet do
+    "X shipped" semantic claims (harder; v3).
+  Build sequence: **ENV-001 (umbrella ✅) → DOC-004 (✅ v1) + BLD-003 → SEC-002 (largest)**. Memory:
   [[feedback-tooled-engineering-processes]]. Sit alongside #218 (coverage cross-check) as the QA-tooling program.
 - **Full code review 2026-06-22 (`wn8v30euh`, 6 agents): VERDICT = expand graph scope, but FIX BEFORE ADD.**
   3 prod suites green (3684+80+90). Two real problem areas found:
@@ -510,10 +516,10 @@ auto-start the api-server/transport adapter; confirm with owner before touching 
     **SEC-002 mutation/fail-closed detector** (slot reserved in lint-conventions; would have caught the B5a
     fail-open); then #217 capability/syntax, effects, contract-clause coverage, DOC-004.
   - ✅ **Script tests DONE:** `scripts/tests/codes.test.mjs` (7, shared-regex) + `dev-tools-scripts.test.mjs`
-    (9, fixture-tree subprocess tests of code-index/gen-code-registry/audit-coverage — trailing-letter, const-id
-    emit, multi-line throw, comment/type-decl exclusion, dead-detection, coverage-holes). **16/16**, wired into
-    phase-close (`f64ba52`). lint-conventions crash-as-tool-error FIXED (`f6c09cc`). All 4 dev-tool scripts now
-    have test coverage.
+    (13: fixture-tree subprocess tests of code-index/gen-code-registry/audit-coverage — trailing-letter, const-id
+    emit, multi-line throw, comment/type-decl exclusion, dead-detection, coverage-holes — **+4 DOC-004 doc-drift**).
+    **20/20**, wired into phase-close (`f64ba52`). lint-conventions crash-as-tool-error FIXED (`f6c09cc`). All 5
+    dev-tool scripts (code-index/gen-code-registry/audit-coverage/audit-doc-drift + the codes lib) have test coverage.
 - **RULE (binding, owner 2026-06-22):** if a task can be made cheaper by building/extending a dev tool, do
   that — and consider it at the START of every task. Memory: `feedback-build-tools-to-save-tokens`.
 - **#214 — framework developer-tests folder** (owner-raised): the B1 scaffolder emits a `tests/` dir for

@@ -13,7 +13,7 @@ Weighting by how much each dimension defines whether LogicN *is* what it claims 
 | Zero-Trust application framework (scaffold→admission/fuse→kernel→transport) | **72** | 0.22 | kernel 87/87, B1-B5 + B5a shipped; **B8 HTTP transport + example-app are design-only → can't serve a real request end-to-end yet** |
 | Security & governance posture (fail-closed core, audits, B5a, key custody, DRCM) | **80** | 0.20 | both audits' criticals+highs closed in code; admission/fuse/registry/revocation/trust-anchor real + tested; **SEC-002 mutation gate not built**; DRCM Ph5 gated |
 | R&D queue + greenlit build items + open roadmap | **62** | 0.13 | B5a done; #201 in stash (owner map), #202/#216/#217/DOC-004 open |
-| Diagnostic-taxonomy remediation + dev-tooling/audit + #219 standards | **34** | 0.10 | scanner+coverage+registry trustworthy now; baseline **EXIT=154**, most enforcers `--soft` or unbuilt; Stages E-J open |
+| Diagnostic-taxonomy remediation + dev-tooling/audit + #219 standards | **37** | 0.10 | scanner+coverage+registry trustworthy now; **DOC-004 doc-drift enforcer BUILT + wired into lint-conventions** (umbrella 178 = 154 codes + 24 living-doc count-drift); baseline still `--soft`; SEC-002 mutation + Stages E-J open |
 | TODO/ledger accuracy | **96** | 0.07 | §9 self-reconciled this session; 17 stale doc entries (below) |
 
 ## The honest gap is concentrated in 3 places
@@ -47,7 +47,7 @@ Weighting by how much each dimension defines whether LogicN *is* what it claims 
 - **#149 CI secret-scan** (gitleaks/trufflehog in real `.github/workflows/`) + re-sign legacy old-key artifacts — last open key-exposure P0.
 - **#216 WASM build-provenance** (version/gitCommit/repoUrl/buildTimestamp/author into manifest-generator — folds TASK-BLD-003) + **#202 transitive capability-mask ⊆** (after #201, avoid stash conflict).
 - **Real runnable example-app** + replace the **T-008 `assert.ok(true)`** crash-containment placeholder with a same-process supervisor harness.
-- **Remaining #219 enforcers** (DOC-004, then property/differential/coverage-threshold) + drive the scanner baseline 154→0 across Stages F/G/H, then flip `lint-conventions`+scanner `--soft`→CI-enforcing (Stage J) — the bulk of the 34% taxonomy dimension.
+- **Remaining #219 enforcers** (~~DOC-004~~ **BUILT 2026-06-22** — `audit-doc-drift.mjs`, v1 count-drift, wired into `lint-conventions`; v2 = opt-in living-metric markers to kill historical-table-row noise + the real remedy is **#150 CI auto-count**; then property/differential/coverage-threshold) + drive the scanner baseline 154→0 across Stages F/G/H, then flip `lint-conventions`+scanner `--soft`→CI-enforcing (Stage J) — the bulk of the taxonomy dimension.
 
 ### LONG (owner/infra-gated + the one R&D candidate)
 - **Real DSS.wasm**: stand up the Wasmtime component-model host (#102-106) — DWI guests under real per-isolate fuel + in-WASM receipt signing (DRCM Phase 5). The single biggest gap to a complete governed runtime. *(External-infra + owner gated — surface as an explicit decision, don't silently park.)*

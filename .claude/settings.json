@@ -43,6 +43,7 @@
       "code-registry":  "node scripts/gen-code-registry.mjs   (-> build/code-registry/REGISTRY.md, the live code catalog)",
       "lint-conventions":"node scripts/lint-conventions.mjs   (umbrella: #215 scanner + registered convention checks; --soft to report)",
       "coverage-codes": "node scripts/audit-coverage.mjs codes   (#218 bidirectional code-coverage cross-check)",
+      "doc-drift":      "node scripts/audit-doc-drift.mjs   (DOC-004 #219: doc test/package COUNTS vs version.json authority; registered in lint-conventions)",
       "fuse-rebuild":   "node scripts/rebuild-fusable-packages.mjs",
       "benchmark":      "cd packages-logicn/logicn-devtools-benchmarks && npm run run",
       "benchmark-quick":"cd packages-logicn/logicn-devtools-benchmarks && npm run run:quick",
