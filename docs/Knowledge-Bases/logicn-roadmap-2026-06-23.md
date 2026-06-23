@@ -82,6 +82,12 @@ token-saving dev tools** (status/rd-absorb/stray-docs, wired into the Stop caden
 > [R&D results log](logicn-rd-results-log.md) as they land.
 
 ## NEAR (build leverage — non-security)
+- **🔓 #0087 — compiler-enforced affine/type-state authority — UNLOCKED 2026-06-23 (owner GO).** The top net-new
+  security tightening: a bundle of compile-time properties on the value-state pass (affine/move-once authority ·
+  Raw→Verified→Authorized→Sealed type-state · run-scope lifetimes · must-use→compile-error · newtype hashes),
+  build **item 1 (affine) first**. Design + bench done (R&D 0087); zero zero-trust cost (pure tightening).
+  *(The other gated items stay gated pending an EXTERNAL dependency only the owner can supply: #34 PQ signing =
+  offline key custody · #102-106 DSS.wasm = Wasmtime infra · #110 secrets rotation = ext vault.)*
 - **Finish the api-server transport** (building now) + a **real runnable example-app** → the
   scaffold→fuse→kernel→**serve** path end-to-end (the framework's biggest breadth gap; pairs with security #1).
 - **§2 Governance Dead-Code Elimination** (design-complete, `LLN-GDCE-001`) — the compiler-intelligence net-new.
