@@ -56,6 +56,7 @@
         "packages-logicn/logicn-core-cli",
         "packages-logicn/logicn-core-tasks",
         "packages-logicn/logicn-tools-benchmark",
+        "packages-logicn/logicn-test",
         "packages-logicn/logicn-devtools-graph-project",
         "packages-logicn/logicn-framework-example-app",
         "packages-logicn/logicn-api-protocol-rest",
