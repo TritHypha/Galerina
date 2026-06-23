@@ -227,7 +227,7 @@
       "doc docs/Knowledge-Bases/logicn-diagnostic-code-taxonomy-audit-2026-06-22.md:249",
       "doc docs/Knowledge-Bases/logicn-fault-tolerance-and-stability.md:172",
       "doc docs/Knowledge-Bases/logicn-framework-plan-2026-06-21.md:88",
-      "doc docs/Knowledge-Bases/logicn-task-ledger.md:446"
+      "doc docs/Knowledge-Bases/logicn-task-ledger.md:483"
     ]
   },
   {
@@ -286,7 +286,7 @@
       "doc docs/Knowledge-Bases/logicn-diagnostic-code-taxonomy-audit-2026-06-22.md:248",
       "doc docs/Knowledge-Bases/logicn-diagnostic-code-taxonomy-audit-2026-06-22.md:269",
       "doc docs/Knowledge-Bases/logicn-runtime-status-SOT.md:40",
-      "doc docs/Knowledge-Bases/logicn-task-ledger.md:446"
+      "doc docs/Knowledge-Bases/logicn-task-ledger.md:483"
     ]
   },
   {
@@ -1408,9 +1408,9 @@
       "ref packages-logicn/logicn-framework-app-kernel/src/registry-index.ts:16",
       "doc docs/Knowledge-Bases/logicn-coverage-crosscheck-methodology.md:9",
       "doc docs/Knowledge-Bases/logicn-framework-plan-2026-06-21.md:118",
-      "doc docs/Knowledge-Bases/logicn-task-ledger.md:490",
-      "doc docs/Knowledge-Bases/logicn-task-ledger.md:493",
-      "doc docs/Knowledge-Bases/logicn-task-ledger.md:601"
+      "doc docs/Knowledge-Bases/logicn-task-ledger.md:527",
+      "doc docs/Knowledge-Bases/logicn-task-ledger.md:530",
+      "doc docs/Knowledge-Bases/logicn-task-ledger.md:638"
     ]
   },
   {
@@ -1884,7 +1884,7 @@
     "allSites": [
       "ref packages-logicn/logicn-core-compiler/src/governance-verifier.ts:3095",
       "ref packages-logicn/logicn-core-compiler/src/parser.ts:1601",
-      "ref packages-logicn/logicn-core-compiler/src/wat-emitter.ts:1953"
+      "ref packages-logicn/logicn-core-compiler/src/wat-emitter.ts:1964"
     ]
   },
   {
@@ -1980,7 +1980,7 @@
       "doc docs/Knowledge-Bases/logicn-diagnostic-code-conventions.md:63",
       "doc docs/Knowledge-Bases/logicn-diagnostic-code-conventions.md:65",
       "doc docs/Knowledge-Bases/logicn-diagnostic-code-conventions.md:66",
-      "doc docs/Knowledge-Bases/logicn-task-ledger.md:490",
+      "doc docs/Knowledge-Bases/logicn-task-ledger.md:527",
       "ref scripts/code-index.mjs:91",
       "test scripts/tests/codes.test.mjs:45"
     ]
@@ -2092,7 +2092,7 @@
     "code": "LLN-ACCESS-001",
     "namespace": "LLN",
     "family": "ACCESS",
-    "occurrences": 29,
+    "occurrences": 30,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -2100,7 +2100,7 @@
     ],
     "tests": 16,
     "refs": 7,
-    "docs": 5,
+    "docs": 6,
     "names": [
       "ACCESS_UNKNOWN_CAPABILITY"
     ],
@@ -2131,6 +2131,7 @@
       "test packages-logicn/logicn-core-compiler/tests/governance/access-block.test.mjs:168",
       "test packages-logicn/logicn-core-compiler/tests/governance/access-block.test.mjs:169",
       "doc docs/Knowledge-Bases/logicn-build-roadmap.md:507",
+      "doc docs/Knowledge-Bases/logicn-contract-permissions-design.md:51",
       "doc docs/Knowledge-Bases/logicn-governance-rules.md:1000",
       "doc docs/Knowledge-Bases/logicn-governance-rules.md:1171",
       "doc docs/Knowledge-Bases/logicn-governance-rules.md:1176",
@@ -2348,7 +2349,7 @@
     "code": "LLN-ASSIMILATE-001",
     "namespace": "LLN",
     "family": "ASSIMILATE",
-    "occurrences": 10,
+    "occurrences": 11,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -2356,7 +2357,7 @@
     ],
     "tests": 0,
     "refs": 5,
-    "docs": 4,
+    "docs": 5,
     "names": [
       "ASSIMILATE_OUTSIDE_BOOT"
     ],
@@ -2368,6 +2369,7 @@
       "ref packages-logicn/logicn-core-compiler/src/governance-verifier.ts:3281",
       "emit packages-logicn/logicn-core-compiler/src/governance-verifier.ts:3283",
       "ref packages-logicn/logicn-core-compiler/src/governance-verifier.ts:3284",
+      "doc docs/Knowledge-Bases/logicn-contract-permissions-design.md:144",
       "doc docs/Knowledge-Bases/logicn-governance-rules.md:1002",
       "doc docs/Knowledge-Bases/logicn-governance-rules.md:1207",
       "doc docs/Knowledge-Bases/logicn-tower-native-syntax.md:546",
@@ -3519,8 +3521,8 @@
       "doc docs/Knowledge-Bases/logicn-core-logic-tristate-developer-guide.md:716",
       "doc docs/Knowledge-Bases/logicn-core-logic-v02.md:431",
       "doc docs/Knowledge-Bases/logicn-core-logic-v02.md:552",
-      "doc docs/Knowledge-Bases/logicn-task-ledger.md:494",
-      "doc docs/Knowledge-Bases/logicn-task-ledger.md:495",
+      "doc docs/Knowledge-Bases/logicn-task-ledger.md:531",
+      "doc docs/Knowledge-Bases/logicn-task-ledger.md:532",
       "emit scripts/audit-coverage.mjs:92",
       "test scripts/tests/codes.test.mjs:14"
     ]
@@ -4379,7 +4381,7 @@
     "code": "LLN-CAP-001",
     "namespace": "LLN",
     "family": "CAP",
-    "occurrences": 37,
+    "occurrences": 38,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -4388,7 +4390,7 @@
     ],
     "tests": 7,
     "refs": 8,
-    "docs": 20,
+    "docs": 21,
     "names": [
       "NETWORK_WILDCARD_BANNED"
     ],
@@ -4416,6 +4418,7 @@
       "doc docs/Knowledge-Bases/logicn-contract-clause-reference.md:311",
       "doc docs/Knowledge-Bases/logicn-contract-clause-reference.md:334",
       "doc docs/Knowledge-Bases/logicn-contract-clause-reference.md:359",
+      "doc docs/Knowledge-Bases/logicn-contract-permissions-design.md:52",
       "doc docs/Knowledge-Bases/logicn-developer-tools.md:115",
       "doc docs/Knowledge-Bases/logicn-developer-tools.md:475",
       "doc docs/Knowledge-Bases/logicn-diagnostic-code-taxonomy-audit-2026-06-22.md:86",
@@ -6284,7 +6287,7 @@
       "test packages-logicn/logicn-core-compiler/tests/crypto-pq-signing.test.mjs:19",
       "test packages-logicn/logicn-core-compiler/tests/crypto-pq-signing.test.mjs:21",
       "test packages-logicn/logicn-core-compiler/tests/crypto-pq-signing.test.mjs:40",
-      "doc docs/Knowledge-Bases/KNOWLEDGE-BASE-INDEX.md:69",
+      "doc docs/Knowledge-Bases/KNOWLEDGE-BASE-INDEX.md:70",
       "doc docs/Knowledge-Bases/logicn-continuation-brief-2026-06-15.md:61",
       "doc docs/Knowledge-Bases/logicn-design-stability-and-forward-planning.md:5",
       "doc docs/Knowledge-Bases/logicn-design-stability-and-forward-planning.md:19",
@@ -7302,7 +7305,7 @@
       "doc docs/Knowledge-Bases/logicn-static-capability-proofs.md:519",
       "doc docs/Knowledge-Bases/logicn-symbol-resolver-spec.md:582",
       "doc docs/Knowledge-Bases/logicn-task-ledger.md:336",
-      "doc docs/Knowledge-Bases/logicn-task-ledger.md:435",
+      "doc docs/Knowledge-Bases/logicn-task-ledger.md:472",
       "doc docs/patterns/applications/02-workflow-process.md:84"
     ]
   },
@@ -7602,25 +7605,23 @@
     "code": "LLN-EFFECT-006",
     "namespace": "LLN",
     "family": "EFFECT",
-    "occurrences": 12,
-    "docOnly": false,
+    "occurrences": 10,
+    "docOnly": true,
     "defs": [],
     "emits": [],
     "tests": 0,
-    "refs": 2,
+    "refs": 0,
     "docs": 10,
     "names": [],
     "severities": [],
     "allSites": [
-      "ref packages-logicn/logicn-core-compiler/_scratch-effect006.mjs:1",
-      "ref packages-logicn/logicn-core-compiler/_scratch-effect006.mjs:24",
       "doc docs/Knowledge-Bases/logicn-diagnostic-code-taxonomy-audit-2026-06-22.md:16",
       "doc docs/Knowledge-Bases/logicn-diagnostic-code-taxonomy-audit-2026-06-22.md:287",
       "doc docs/Knowledge-Bases/logicn-diagnostic-code-taxonomy-audit-2026-06-22.md:295",
       "doc docs/Knowledge-Bases/logicn-effect006-build-plan-2026-06-22.md:1",
       "doc docs/Knowledge-Bases/logicn-effect006-build-plan-2026-06-22.md:4",
       "doc docs/Knowledge-Bases/logicn-effect006-build-plan-2026-06-22.md:11",
-      "doc docs/Knowledge-Bases/logicn-task-ledger.md:434",
+      "doc docs/Knowledge-Bases/logicn-task-ledger.md:471",
       "doc docs/Knowledge-Bases/logicn-third-party-plugin-authoring-guide.md:114",
       "doc docs/Knowledge-Bases/logicn-third-party-plugin-authoring-guide.md:236",
       "doc docs/Knowledge-Bases/logicn-third-party-plugin-authoring-guide.md:300"
@@ -7674,7 +7675,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "doc docs/Knowledge-Bases/KNOWLEDGE-BASE-INDEX.md:96",
+      "doc docs/Knowledge-Bases/KNOWLEDGE-BASE-INDEX.md:97",
       "doc docs/Knowledge-Bases/logicn-qrng-entropy-capability-design.md:55",
       "doc docs/Knowledge-Bases/logicn-qrng-entropy-capability-design.md:72",
       "doc docs/Knowledge-Bases/logicn-quantum-resilience-roadmap.md:72",
@@ -8754,6 +8755,27 @@
       "doc docs/Knowledge-Bases/logicn-governance-rules.md:1106",
       "doc docs/Knowledge-Bases/logicn-topological-graph-engine.md:205",
       "doc docs/Knowledge-Bases/logicn-tower-native-syntax.md:392"
+    ]
+  },
+  {
+    "code": "LLN-GDCE-001",
+    "namespace": "LLN",
+    "family": "GDCE",
+    "occurrences": 5,
+    "docOnly": true,
+    "defs": [],
+    "emits": [],
+    "tests": 0,
+    "refs": 0,
+    "docs": 5,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "doc docs/Knowledge-Bases/logicn-compiler-intelligence-deterministic-foresight.md:68",
+      "doc docs/Knowledge-Bases/logicn-compiler-intelligence-deterministic-foresight.md:85",
+      "doc docs/Knowledge-Bases/logicn-outstanding-rd-and-todos-2026-06-23.md:40",
+      "doc docs/Knowledge-Bases/logicn-rd-results-log.md:44",
+      "doc docs/Knowledge-Bases/logicn-roadmap-2026-06-23.md:102"
     ]
   },
   {
@@ -10041,7 +10063,7 @@
     "code": "LLN-GOV-3VL-001",
     "namespace": "LLN",
     "family": "GOV",
-    "occurrences": 45,
+    "occurrences": 87,
     "docOnly": false,
     "defs": [
       "packages-logicn/logicn-tower-citizen/src/three-valued-governance.ts:102"
@@ -10049,14 +10071,22 @@
     "emits": [
       "packages-logicn/logicn-tower-citizen/src/three-valued-governance.ts:123"
     ],
-    "tests": 6,
-    "refs": 7,
-    "docs": 30,
+    "tests": 13,
+    "refs": 8,
+    "docs": 64,
     "names": [
       "INDETERMINATE_COLLAPSED_TO_DENY"
     ],
     "severities": [],
     "allSites": [
+      "ref packages-logicn/logicn-core-network/src/cert-gate.ts:246",
+      "test packages-logicn/logicn-core-network/tests/cert-gate.test.mjs:51",
+      "test packages-logicn/logicn-core-network/tests/cert-gate.test.mjs:66",
+      "test packages-logicn/logicn-core-network/tests/cert-gate.test.mjs:68",
+      "test packages-logicn/logicn-core-network/tests/cert-gate.test.mjs:151",
+      "test packages-logicn/logicn-core-network/tests/cert-gate.test.mjs:158",
+      "test packages-logicn/logicn-core-network/tests/cert-gate.test.mjs:174",
+      "test packages-logicn/logicn-core-network/tests/cert-gate.test.mjs:322",
       "ref packages-logicn/logicn-tower-citizen/src/index.ts:41",
       "ref packages-logicn/logicn-tower-citizen/src/three-valued-governance.ts:22",
       "ref packages-logicn/logicn-tower-citizen/src/three-valued-governance.ts:99",
@@ -10071,13 +10101,20 @@
       "doc docs/Knowledge-Bases/compiler-diagnostics.md:796",
       "doc docs/Knowledge-Bases/compiler-diagnostics.md:801",
       "doc docs/Knowledge-Bases/compiler-diagnostics.md:864",
-      "doc docs/Knowledge-Bases/KNOWLEDGE-BASE-INDEX.md:88",
+      "doc docs/Knowledge-Bases/KNOWLEDGE-BASE-INDEX.md:89",
+      "doc docs/Knowledge-Bases/logicn-b8-governed-transport.md:91",
+      "doc docs/Knowledge-Bases/logicn-b8-governed-transport.md:270",
+      "doc docs/Knowledge-Bases/logicn-b8-governed-transport.md:273",
+      "doc docs/Knowledge-Bases/logicn-b8-governed-transport.md:314",
+      "doc docs/Knowledge-Bases/logicn-b8-governed-transport.md:316",
       "doc docs/Knowledge-Bases/logicn-continuation-brief-2026-06-15.md:81",
       "doc docs/Knowledge-Bases/logicn-fault-tolerance-and-stability.md:90",
       "doc docs/Knowledge-Bases/logicn-interpreter-speedup-and-json-rd.md:48",
+      "doc docs/Knowledge-Bases/logicn-pci-dss-evidence-mapping.md:18",
       "doc docs/Knowledge-Bases/logicn-photonic-tri-substrate-rd-agenda.md:117",
       "doc docs/Knowledge-Bases/logicn-qrng-entropy-capability-design.md:49",
       "doc docs/Knowledge-Bases/logicn-rd-adoption-2026-06-16.md:34",
+      "doc docs/Knowledge-Bases/logicn-rd-notes-46-47-50-51-apiserver-lln-2026-06-23.md:75",
       "doc docs/Knowledge-Bases/logicn-substrate-failure-model.md:191",
       "doc docs/Knowledge-Bases/logicn-three-valued-governance.md:126",
       "doc docs/Knowledge-Bases/logicn-three-valued-governance.md:132",
@@ -10090,6 +10127,33 @@
       "doc docs/Knowledge-Bases/logicn-three-valued-governance.md:249",
       "doc docs/Knowledge-Bases/logicn-three-valued-governance.md:254",
       "doc docs/Knowledge-Bases/logicn-three-valued-governance.md:274",
+      "doc docs/Knowledge-Bases/logicn-tlstp-0069-dtm-degrade-only.md:59",
+      "doc docs/Knowledge-Bases/logicn-tlstp-0069-dtm-degrade-only.md:102",
+      "doc docs/Knowledge-Bases/logicn-tlstp-0069-dtm-degrade-only.md:130",
+      "doc docs/Knowledge-Bases/logicn-tlstp-0070-tampertrust.md:111",
+      "doc docs/Knowledge-Bases/logicn-tlstp-0070-tampertrust.md:174",
+      "doc docs/Knowledge-Bases/logicn-tlstp-0070-tampertrust.md:203",
+      "doc docs/Knowledge-Bases/logicn-tlstp-0070-tampertrust.md:207",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s1-cert-gate.md:80",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s1-cert-gate.md:141",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s1-cert-gate.md:155",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s1-cert-gate.md:169",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s1-cert-gate.md:176",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s2-kem-ratchet.md:149",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s2-kem-ratchet.md:227",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s2-kem-ratchet.md:267",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s2-kem-ratchet.md:280",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s3-digital-fec.md:179",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s3-digital-fec.md:268",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s3-digital-fec.md:356",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s3-digital-fec.md:392",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s4-recovering-fsm.md:64",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s4-recovering-fsm.md:215",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s4-recovering-fsm.md:269",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s4-recovering-fsm.md:303",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s4-recovering-fsm.md:335",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s5-morphing-frames.md:257",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s5-morphing-frames.md:301",
       "doc docs/Knowledge-Bases/logicn-tlstp-transport-auth-rnd-2026-06-22.md:101",
       "doc docs/Knowledge-Bases/logicn-tmf-engine.md:37",
       "doc docs/Knowledge-Bases/logicn-tritmesh-boundary-and-seam.md:68",
@@ -11655,7 +11719,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "packages-logicn/logicn-core-compiler/src/wat-emitter.ts:1960"
+      "packages-logicn/logicn-core-compiler/src/wat-emitter.ts:1971"
     ],
     "tests": 3,
     "refs": 1,
@@ -11664,7 +11728,7 @@
     "severities": [],
     "allSites": [
       "ref packages-logicn/logicn-core-compiler/src/capability-types.ts:150",
-      "emit packages-logicn/logicn-core-compiler/src/wat-emitter.ts:1960",
+      "emit packages-logicn/logicn-core-compiler/src/wat-emitter.ts:1971",
       "test packages-logicn/logicn-core-compiler/tests/helpers/tower-log-assertions.mjs:52",
       "test packages-logicn/logicn-core-compiler/tests/helpers/tower-log-assertions.mjs:59",
       "test packages-logicn/logicn-core-compiler/tests/helpers/tower-log-assertions.mjs:60",
@@ -11705,16 +11769,16 @@
     "code": "LLN-INV-001",
     "namespace": "LLN",
     "family": "INV",
-    "occurrences": 42,
+    "occurrences": 45,
     "docOnly": false,
     "defs": [],
     "emits": [
       "packages-logicn/logicn-core-compiler/src/governance-verifier.ts:2393",
-      "packages-logicn/logicn-core-compiler/src/wat-emitter.ts:2171"
+      "packages-logicn/logicn-core-compiler/src/wat-emitter.ts:2182"
     ],
     "tests": 11,
     "refs": 9,
-    "docs": 20,
+    "docs": 23,
     "names": [
       "PRE_CONDITION_STATICALLY_FALSE"
     ],
@@ -11729,8 +11793,8 @@
       "ref packages-logicn/logicn-core-compiler/src/governance-verifier.ts:2394",
       "ref packages-logicn/logicn-core-compiler/src/governance-verifier.ts:2416",
       "ref packages-logicn/logicn-core-compiler/src/parser.ts:4568",
-      "emit packages-logicn/logicn-core-compiler/src/wat-emitter.ts:2171",
-      "ref packages-logicn/logicn-core-compiler/src/wat-emitter.ts:2269",
+      "emit packages-logicn/logicn-core-compiler/src/wat-emitter.ts:2182",
+      "ref packages-logicn/logicn-core-compiler/src/wat-emitter.ts:2280",
       "test packages-logicn/logicn-core-compiler/tests/governance-verifier.test.mjs:1331",
       "test packages-logicn/logicn-core-compiler/tests/governance-verifier.test.mjs:1342",
       "test packages-logicn/logicn-core-compiler/tests/governance-verifier.test.mjs:1345",
@@ -11745,10 +11809,13 @@
       "doc docs/Knowledge-Bases/logicn-architecture-patterns.md:112",
       "doc docs/Knowledge-Bases/logicn-architecture-patterns.md:296",
       "doc docs/Knowledge-Bases/logicn-build-roadmap.md:489",
+      "doc docs/Knowledge-Bases/logicn-compiler-intelligence-deterministic-foresight.md:61",
+      "doc docs/Knowledge-Bases/logicn-compiler-intelligence-deterministic-foresight.md:68",
       "doc docs/Knowledge-Bases/logicn-contract-authoring-guide.md:114",
       "doc docs/Knowledge-Bases/logicn-contract-authoring-guide.md:285",
       "doc docs/Knowledge-Bases/logicn-contract-authoring-guide.md:306",
       "doc docs/Knowledge-Bases/logicn-contract-clause-reference.md:864",
+      "doc docs/Knowledge-Bases/logicn-contract-invariant-module-wide-rd.md:13",
       "doc docs/Knowledge-Bases/logicn-deterministic-runtime-containment.md:87",
       "doc docs/Knowledge-Bases/logicn-deterministic-runtime-containment.md:247",
       "doc docs/Knowledge-Bases/logicn-deterministic-runtime-containment.md:381",
@@ -11768,17 +11835,17 @@
     "code": "LLN-INV-002",
     "namespace": "LLN",
     "family": "INV",
-    "occurrences": 22,
+    "occurrences": 23,
     "docOnly": false,
     "defs": [],
     "emits": [
       "packages-logicn/logicn-core-compiler/src/interpreter.ts:1023",
-      "packages-logicn/logicn-core-compiler/src/wat-emitter.ts:2191",
-      "packages-logicn/logicn-core-compiler/src/wat-emitter.ts:2199"
+      "packages-logicn/logicn-core-compiler/src/wat-emitter.ts:2202",
+      "packages-logicn/logicn-core-compiler/src/wat-emitter.ts:2210"
     ],
     "tests": 4,
     "refs": 4,
-    "docs": 11,
+    "docs": 12,
     "names": [],
     "severities": [],
     "allSites": [
@@ -11787,8 +11854,8 @@
       "emit packages-logicn/logicn-core-compiler/src/interpreter.ts:1023",
       "ref packages-logicn/logicn-core-compiler/src/interpreter.ts:1097",
       "ref packages-logicn/logicn-core-compiler/src/interpreter.ts:1103",
-      "emit packages-logicn/logicn-core-compiler/src/wat-emitter.ts:2191",
-      "emit packages-logicn/logicn-core-compiler/src/wat-emitter.ts:2199",
+      "emit packages-logicn/logicn-core-compiler/src/wat-emitter.ts:2202",
+      "emit packages-logicn/logicn-core-compiler/src/wat-emitter.ts:2210",
       "test packages-logicn/logicn-core-compiler/tests/governance-verifier.test.mjs:1380",
       "test packages-logicn/logicn-core-compiler/tests/output-postconditions.test.mjs:7",
       "test packages-logicn/logicn-core-compiler/tests/output-postconditions.test.mjs:25",
@@ -11803,7 +11870,8 @@
       "doc docs/Knowledge-Bases/logicn-diagnostic-code-taxonomy-audit-2026-06-22.md:50",
       "doc docs/Knowledge-Bases/logicn-governance-rules.md:959",
       "doc docs/Knowledge-Bases/logicn-proof-tracing-design.md:110",
-      "doc docs/Knowledge-Bases/logicn-rd-corpus-closure-2026-06-18.md:256"
+      "doc docs/Knowledge-Bases/logicn-rd-corpus-closure-2026-06-18.md:256",
+      "doc docs/Knowledge-Bases/logicn-rd-notes-46-47-50-51-apiserver-lln-2026-06-23.md:81"
     ]
   },
   {
@@ -11867,7 +11935,7 @@
       "ref packages-logicn/logicn-core-compiler/src/governance-verifier.ts:2372",
       "emit packages-logicn/logicn-core-compiler/src/governance-verifier.ts:2376",
       "ref packages-logicn/logicn-core-compiler/src/governance-verifier.ts:2377",
-      "ref packages-logicn/logicn-core-compiler/src/wat-emitter.ts:2133",
+      "ref packages-logicn/logicn-core-compiler/src/wat-emitter.ts:2144",
       "test packages-logicn/logicn-core-compiler/tests/governance-verifier.test.mjs:1397",
       "test packages-logicn/logicn-core-compiler/tests/governance-verifier.test.mjs:1406",
       "test packages-logicn/logicn-core-compiler/tests/governance-verifier.test.mjs:1407",
@@ -11889,6 +11957,23 @@
       "doc docs/Knowledge-Bases/logicn-governed-tower-specification.md:62",
       "doc docs/Knowledge-Bases/logicn-proof-tracing-design.md:112",
       "doc docs/Knowledge-Bases/logicn-rd-corpus-closure-2026-06-18.md:249"
+    ]
+  },
+  {
+    "code": "LLN-INV-MODULE-001",
+    "namespace": "LLN",
+    "family": "INV",
+    "occurrences": 1,
+    "docOnly": true,
+    "defs": [],
+    "emits": [],
+    "tests": 0,
+    "refs": 0,
+    "docs": 1,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "doc docs/Knowledge-Bases/logicn-contract-invariant-module-wide-rd.md:35"
     ]
   },
   {
@@ -12900,7 +12985,7 @@
       "doc docs/Knowledge-Bases/logicn-memory-borrow-move-pinned.md:4",
       "doc docs/Knowledge-Bases/logicn-memory-borrow-move-pinned.md:241",
       "doc docs/Knowledge-Bases/logicn-memory-safety-model.md:14",
-      "doc docs/Knowledge-Bases/logicn-task-ledger.md:441",
+      "doc docs/Knowledge-Bases/logicn-task-ledger.md:478",
       "doc docs/Knowledge-Bases/logicn-v1-memory-model.md:5",
       "doc docs/Knowledge-Bases/logicn-v1-memory-model.md:135",
       "doc docs/Knowledge-Bases/logicn-v1-memory-model.md:138",
@@ -13484,7 +13569,7 @@
     "code": "LLN-MONO-001",
     "namespace": "LLN",
     "family": "MONO",
-    "occurrences": 53,
+    "occurrences": 57,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -13493,7 +13578,7 @@
     ],
     "tests": 15,
     "refs": 14,
-    "docs": 16,
+    "docs": 20,
     "names": [
       "EMERGENCY_EXPANDS_CAPABILITY",
       "EMERGENCY_UNKNOWN_ACTION"
@@ -13541,6 +13626,8 @@
       "doc docs/Knowledge-Bases/logicn-build-roadmap.md:495",
       "doc docs/Knowledge-Bases/logicn-contract-clause-reference.md:1092",
       "doc docs/Knowledge-Bases/logicn-contract-clause-reference.md:1135",
+      "doc docs/Knowledge-Bases/logicn-contract-invariant-module-wide-rd.md:14",
+      "doc docs/Knowledge-Bases/logicn-contract-invariant-module-wide-rd.md:46",
       "doc docs/Knowledge-Bases/logicn-deterministic-runtime-containment.md:584",
       "doc docs/Knowledge-Bases/logicn-diagnostic-code-taxonomy-audit-2026-06-22.md:49",
       "doc docs/Knowledge-Bases/logicn-drcm-phase1-specs.md:36",
@@ -13552,6 +13639,8 @@
       "doc docs/Knowledge-Bases/logicn-governance-rules.md:961",
       "doc docs/Knowledge-Bases/logicn-governance-rules.md:976",
       "doc docs/Knowledge-Bases/logicn-rd-0059-0064-triage-2026-06-22.md:37",
+      "doc docs/Knowledge-Bases/logicn-rd-notes-46-47-50-51-apiserver-lln-2026-06-23.md:40",
+      "doc docs/Knowledge-Bases/logicn-rd-notes-46-47-50-51-apiserver-lln-2026-06-23.md:81",
       "doc docs/Knowledge-Bases/logicn-tlstp-transport-auth-rnd-2026-06-22.md:64"
     ]
   },
@@ -14595,7 +14684,7 @@
       "ref packages-logicn/logicn-core-compiler/src/governance-verifier.ts:2051",
       "emit packages-logicn/logicn-core-compiler/src/governance-verifier.ts:2083",
       "ref packages-logicn/logicn-core-compiler/src/governance-verifier.ts:2084",
-      "doc docs/Knowledge-Bases/KNOWLEDGE-BASE-INDEX.md:212",
+      "doc docs/Knowledge-Bases/KNOWLEDGE-BASE-INDEX.md:221",
       "doc docs/Knowledge-Bases/logicn-build-roadmap.md:498"
     ]
   },
@@ -15242,13 +15331,13 @@
     "code": "LLN-PCI-001",
     "namespace": "LLN",
     "family": "PCI",
-    "occurrences": 13,
+    "occurrences": 14,
     "docOnly": false,
     "defs": [],
     "emits": [],
     "tests": 5,
     "refs": 5,
-    "docs": 3,
+    "docs": 4,
     "names": [],
     "severities": [],
     "allSites": [
@@ -15264,6 +15353,7 @@
       "test packages-logicn/logicn-devtools-pci/tests/pci.test.mjs:293",
       "doc docs/Knowledge-Bases/compiler-diagnostics.md:822",
       "doc docs/Knowledge-Bases/logicn-compliance-governance.md:383",
+      "doc docs/Knowledge-Bases/logicn-pci-dss-evidence-mapping.md:23",
       "doc docs/Knowledge-Bases/logicn-runtime-component-structure.md:285"
     ]
   },
@@ -15462,6 +15552,123 @@
       "test packages-logicn/logicn-devtools-pci/tests/pci.test.mjs:97",
       "test packages-logicn/logicn-devtools-pci/tests/pci.test.mjs:98",
       "test packages-logicn/logicn-devtools-pci/tests/pci.test.mjs:115"
+    ]
+  },
+  {
+    "code": "LLN-PERM-001",
+    "namespace": "LLN",
+    "family": "PERM",
+    "occurrences": 9,
+    "docOnly": true,
+    "defs": [],
+    "emits": [],
+    "tests": 0,
+    "refs": 0,
+    "docs": 9,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "doc docs/Knowledge-Bases/KNOWLEDGE-BASE-INDEX.md:123",
+      "doc docs/Knowledge-Bases/logicn-architecture-rd-2026-06-23.md:61",
+      "doc docs/Knowledge-Bases/logicn-contract-permissions-design.md:50",
+      "doc docs/Knowledge-Bases/logicn-contract-permissions-design.md:91",
+      "doc docs/Knowledge-Bases/logicn-contract-permissions-design.md:99",
+      "doc docs/Knowledge-Bases/logicn-outstanding-rd-and-todos-2026-06-23.md:33",
+      "doc docs/Knowledge-Bases/logicn-rd-results-log.md:42",
+      "doc docs/Knowledge-Bases/logicn-roadmap-2026-06-23.md:103",
+      "doc docs/Knowledge-Bases/logicn-task-ledger.md:684"
+    ]
+  },
+  {
+    "code": "LLN-PERM-002",
+    "namespace": "LLN",
+    "family": "PERM",
+    "occurrences": 2,
+    "docOnly": true,
+    "defs": [],
+    "emits": [],
+    "tests": 0,
+    "refs": 0,
+    "docs": 2,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "doc docs/Knowledge-Bases/logicn-contract-permissions-design.md:52",
+      "doc docs/Knowledge-Bases/logicn-contract-permissions-design.md:92"
+    ]
+  },
+  {
+    "code": "LLN-PERM-003",
+    "namespace": "LLN",
+    "family": "PERM",
+    "occurrences": 3,
+    "docOnly": true,
+    "defs": [],
+    "emits": [],
+    "tests": 0,
+    "refs": 0,
+    "docs": 3,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "doc docs/Knowledge-Bases/logicn-contract-permissions-design.md:68",
+      "doc docs/Knowledge-Bases/logicn-contract-permissions-design.md:93",
+      "doc docs/Knowledge-Bases/logicn-contract-permissions-design.md:101"
+    ]
+  },
+  {
+    "code": "LLN-PERM-004",
+    "namespace": "LLN",
+    "family": "PERM",
+    "occurrences": 2,
+    "docOnly": true,
+    "defs": [],
+    "emits": [],
+    "tests": 0,
+    "refs": 0,
+    "docs": 2,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "doc docs/Knowledge-Bases/logicn-contract-permissions-design.md:77",
+      "doc docs/Knowledge-Bases/logicn-contract-permissions-design.md:94"
+    ]
+  },
+  {
+    "code": "LLN-PERM-005",
+    "namespace": "LLN",
+    "family": "PERM",
+    "occurrences": 2,
+    "docOnly": true,
+    "defs": [],
+    "emits": [],
+    "tests": 0,
+    "refs": 0,
+    "docs": 2,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "doc docs/Knowledge-Bases/logicn-contract-permissions-design.md:53",
+      "doc docs/Knowledge-Bases/logicn-contract-permissions-design.md:95"
+    ]
+  },
+  {
+    "code": "LLN-PERM-006",
+    "namespace": "LLN",
+    "family": "PERM",
+    "occurrences": 3,
+    "docOnly": true,
+    "defs": [],
+    "emits": [],
+    "tests": 0,
+    "refs": 0,
+    "docs": 3,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "doc docs/Knowledge-Bases/logicn-contract-permissions-design.md:96",
+      "doc docs/Knowledge-Bases/logicn-contract-permissions-design.md:121",
+      "doc docs/Knowledge-Bases/logicn-contract-permissions-design.md:148"
     ]
   },
   {
@@ -16821,13 +17028,13 @@
     "code": "LLN-PRIVACY-001",
     "namespace": "LLN",
     "family": "PRIVACY",
-    "occurrences": 8,
+    "occurrences": 10,
     "docOnly": true,
     "defs": [],
     "emits": [],
     "tests": 0,
     "refs": 0,
-    "docs": 8,
+    "docs": 10,
     "names": [],
     "severities": [],
     "allSites": [
@@ -16837,15 +17044,17 @@
       "doc docs/Knowledge-Bases/logicn-diagnostic-namespace-ownership.md:30",
       "doc docs/Knowledge-Bases/logicn-governance-rules.md:483",
       "doc docs/Knowledge-Bases/logicn-governance-rules.md:948",
+      "doc docs/Knowledge-Bases/logicn-pci-dss-evidence-mapping.md:16",
       "doc docs/Knowledge-Bases/logicn-privacy-embedding-egress.md:7",
-      "doc docs/Knowledge-Bases/logicn-privacy-embedding-egress.md:55"
+      "doc docs/Knowledge-Bases/logicn-privacy-embedding-egress.md:55",
+      "doc docs/Knowledge-Bases/logicn-rd-notes-46-47-50-51-apiserver-lln-2026-06-23.md:100"
     ]
   },
   {
     "code": "LLN-PRIVACY-002",
     "namespace": "LLN",
     "family": "PRIVACY",
-    "occurrences": 79,
+    "occurrences": 100,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -16855,7 +17064,7 @@
     ],
     "tests": 39,
     "refs": 7,
-    "docs": 30,
+    "docs": 51,
     "names": [
       "EmbeddingCrossesFlowBoundary",
       "EmbeddingEgressDenied"
@@ -16913,16 +17122,21 @@
       "test packages-logicn/logicn-core-compiler/tests/value-state-egress-hardening.test.mjs:146",
       "test packages-logicn/logicn-core-compiler/tests/value-state-egress-hardening.test.mjs:148",
       "doc docs/Knowledge-Bases/logicn-audit-coverage-and-rd-standards.md:55",
+      "doc docs/Knowledge-Bases/logicn-b8-governed-transport.md:221",
+      "doc docs/Knowledge-Bases/logicn-b8-governed-transport.md:370",
+      "doc docs/Knowledge-Bases/logicn-contract-invariant-module-wide-rd.md:17",
       "doc docs/Knowledge-Bases/logicn-contract-privacy-observability.md:13",
       "doc docs/Knowledge-Bases/logicn-design-stability-and-forward-planning.md:5",
       "doc docs/Knowledge-Bases/logicn-design-stability-and-forward-planning.md:68",
       "doc docs/Knowledge-Bases/logicn-diagnostic-code-taxonomy-audit-2026-06-22.md:47",
       "doc docs/Knowledge-Bases/logicn-diagnostic-namespace-ownership.md:31",
+      "doc docs/Knowledge-Bases/logicn-external-idea-mining-2026-06-23.md:22",
       "doc docs/Knowledge-Bases/logicn-governance-mode-ladder.md:46",
       "doc docs/Knowledge-Bases/logicn-governance-rules.md:472",
       "doc docs/Knowledge-Bases/logicn-governance-rules.md:479",
       "doc docs/Knowledge-Bases/logicn-governance-rules.md:947",
       "doc docs/Knowledge-Bases/logicn-interpreter-speedup-and-json-rd.md:42",
+      "doc docs/Knowledge-Bases/logicn-pci-dss-evidence-mapping.md:16",
       "doc docs/Knowledge-Bases/logicn-privacy-embedding-egress.md:1",
       "doc docs/Knowledge-Bases/logicn-privacy-embedding-egress.md:37",
       "doc docs/Knowledge-Bases/logicn-privacy-embedding-egress.md:46",
@@ -16930,13 +17144,29 @@
       "doc docs/Knowledge-Bases/logicn-privacy-embedding-egress.md:87",
       "doc docs/Knowledge-Bases/logicn-rd-0059-0064-triage-2026-06-22.md:39",
       "doc docs/Knowledge-Bases/logicn-rd-benchmarks-and-performance-2026-06-17.md:74",
+      "doc docs/Knowledge-Bases/logicn-rd-notes-46-47-50-51-apiserver-lln-2026-06-23.md:40",
+      "doc docs/Knowledge-Bases/logicn-rd-notes-46-47-50-51-apiserver-lln-2026-06-23.md:81",
+      "doc docs/Knowledge-Bases/logicn-rd-results-log.md:57",
+      "doc docs/Knowledge-Bases/logicn-rd-results-log.md:72",
       "doc docs/Knowledge-Bases/logicn-third-party-plugin-authoring-guide.md:157",
       "doc docs/Knowledge-Bases/logicn-third-party-plugin-authoring-guide.md:307",
+      "doc docs/Knowledge-Bases/logicn-tlstp-build-guide-index.md:49",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s3-digital-fec.md:21",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s3-digital-fec.md:130",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s3-digital-fec.md:264",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s3-digital-fec.md:376",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s5-morphing-frames.md:145",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s5-morphing-frames.md:161",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s5-morphing-frames.md:269",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s5-morphing-frames.md:314",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s5-morphing-frames.md:331",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s5-morphing-frames.md:341",
       "doc docs/Knowledge-Bases/logicn-tlstp-transport-auth-rnd-2026-06-22.md:50",
       "doc docs/Knowledge-Bases/logicn-tlstp-transport-auth-rnd-2026-06-22.md:79",
       "doc docs/Knowledge-Bases/logicn-tlstp-transport-auth-rnd-2026-06-22.md:115",
       "doc docs/Knowledge-Bases/logicn-tlstp-transport-auth-rnd-2026-06-22.md:153",
       "doc docs/Knowledge-Bases/logicn-transport-auth-research-explained-2026-06-22.md:70",
+      "doc docs/Knowledge-Bases/logicn-tritmesh-monolith-data-architecture.md:20",
       "doc docs/Knowledge-Bases/rd-absorbed/rd-privacy-governance-compile-time-design.md:17",
       "doc docs/Knowledge-Bases/rd-absorbed/rd-privacy-governance-compile-time-design.md:128",
       "doc docs/Knowledge-Bases/rd-absorbed/rd-privacy-governed-compile-time-primitive.md:15",
@@ -17273,7 +17503,7 @@
       "test packages-logicn/logicn-devtools-security/tests/security-devtools.test.mjs:172",
       "test packages-logicn/logicn-devtools-security/tests/security-devtools.test.mjs:177",
       "doc docs/Knowledge-Bases/compiler-diagnostics.md:418",
-      "doc docs/Knowledge-Bases/logicn-task-ledger.md:497",
+      "doc docs/Knowledge-Bases/logicn-task-ledger.md:534",
       "ref scripts/audit-coverage.mjs:43",
       "ref scripts/lib/codes.mjs:5",
       "test scripts/tests/codes.test.mjs:8",
@@ -20680,7 +20910,7 @@
     "code": "LLN-SUBSTRATE-001",
     "namespace": "LLN",
     "family": "SUBSTRATE",
-    "occurrences": 130,
+    "occurrences": 141,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -20689,7 +20919,7 @@
     ],
     "tests": 17,
     "refs": 15,
-    "docs": 96,
+    "docs": 107,
     "names": [
       "CRYPTO_ON_NOISY_LANE"
     ],
@@ -20734,11 +20964,14 @@
       "test packages-logicn/logicn-tower-citizen/tests/substrate-model.test.mjs:221",
       "doc docs/Knowledge-Bases/architecture-charter.md:148",
       "doc docs/Knowledge-Bases/compiler-diagnostics.md:853",
-      "doc docs/Knowledge-Bases/KNOWLEDGE-BASE-INDEX.md:89",
       "doc docs/Knowledge-Bases/KNOWLEDGE-BASE-INDEX.md:90",
       "doc docs/Knowledge-Bases/KNOWLEDGE-BASE-INDEX.md:91",
       "doc docs/Knowledge-Bases/KNOWLEDGE-BASE-INDEX.md:92",
+      "doc docs/Knowledge-Bases/KNOWLEDGE-BASE-INDEX.md:93",
       "doc docs/Knowledge-Bases/logicn-blind-observability-exporter.md:141",
+      "doc docs/Knowledge-Bases/logicn-compiler-intelligence-deterministic-foresight.md:20",
+      "doc docs/Knowledge-Bases/logicn-compiler-intelligence-deterministic-foresight.md:32",
+      "doc docs/Knowledge-Bases/logicn-compiler-intelligence-deterministic-foresight.md:75",
       "doc docs/Knowledge-Bases/logicn-continuation-brief-2026-06-15.md:57",
       "doc docs/Knowledge-Bases/logicn-continuation-brief-2026-06-15.md:86",
       "doc docs/Knowledge-Bases/logicn-contract-driven-generation.md:37",
@@ -20754,6 +20987,7 @@
       "doc docs/Knowledge-Bases/logicn-ext-bridge-quantum-design.md:726",
       "doc docs/Knowledge-Bases/logicn-ext-bridge-quantum-design.md:744",
       "doc docs/Knowledge-Bases/logicn-external-idea-mining-2026-06-15.md:95",
+      "doc docs/Knowledge-Bases/logicn-external-idea-mining-2026-06-23.md:59",
       "doc docs/Knowledge-Bases/logicn-fault-tolerance-and-stability.md:229",
       "doc docs/Knowledge-Bases/logicn-fault-tolerance-and-stability.md:312",
       "doc docs/Knowledge-Bases/logicn-formal-verification-direction.md:56",
@@ -20789,7 +21023,14 @@
       "doc docs/Knowledge-Bases/logicn-substrate-failure-model.md:246",
       "doc docs/Knowledge-Bases/logicn-substrate-failure-model.md:285",
       "doc docs/Knowledge-Bases/logicn-task-ledger.md:242",
-      "doc docs/Knowledge-Bases/logicn-task-ledger.md:633",
+      "doc docs/Knowledge-Bases/logicn-task-ledger.md:670",
+      "doc docs/Knowledge-Bases/logicn-tlstp-0069-dtm-degrade-only.md:106",
+      "doc docs/Knowledge-Bases/logicn-tlstp-0069-dtm-degrade-only.md:193",
+      "doc docs/Knowledge-Bases/logicn-tlstp-0070-tampertrust.md:13",
+      "doc docs/Knowledge-Bases/logicn-tlstp-0070-tampertrust.md:55",
+      "doc docs/Knowledge-Bases/logicn-tlstp-0070-tampertrust.md:199",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s2-kem-ratchet.md:157",
+      "doc docs/Knowledge-Bases/logicn-tlstp-s2-kem-ratchet.md:300",
       "doc docs/Knowledge-Bases/logicn-tlstp-transport-auth-rnd-2026-06-22.md:42",
       "doc docs/Knowledge-Bases/logicn-tlstp-transport-auth-rnd-2026-06-22.md:87",
       "doc docs/Knowledge-Bases/logicn-tlstp-transport-auth-rnd-2026-06-22.md:172",
@@ -20833,7 +21074,7 @@
     "code": "LLN-SUBSTRATE-002",
     "namespace": "LLN",
     "family": "SUBSTRATE",
-    "occurrences": 57,
+    "occurrences": 58,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -20843,7 +21084,7 @@
     ],
     "tests": 22,
     "refs": 3,
-    "docs": 29,
+    "docs": 30,
     "names": [
       "TOLERANCE_UNACHIEVABLE_UNDER_NOISE"
     ],
@@ -20907,6 +21148,7 @@
       "doc docs/Knowledge-Bases/logicn-substrate-failure-model.md:187",
       "doc docs/Knowledge-Bases/logicn-substrate-failure-model.md:209",
       "doc docs/Knowledge-Bases/logicn-substrate-failure-model.md:247",
+      "doc docs/Knowledge-Bases/logicn-tlstp-0070-tampertrust.md:59",
       "doc docs/Knowledge-Bases/rd-absorbed/rd-ffsim-build-readiness.md:124"
     ]
   },
@@ -20914,7 +21156,7 @@
     "code": "LLN-SUBSTRATE-003",
     "namespace": "LLN",
     "family": "SUBSTRATE",
-    "occurrences": 34,
+    "occurrences": 38,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -20924,7 +21166,7 @@
     ],
     "tests": 12,
     "refs": 6,
-    "docs": 13,
+    "docs": 17,
     "names": [
       "REDUNDANCY_INSUFFICIENT"
     ],
@@ -20965,14 +21207,18 @@
       "doc docs/Knowledge-Bases/logicn-substrate-failure-model.md:146",
       "doc docs/Knowledge-Bases/logicn-substrate-failure-model.md:188",
       "doc docs/Knowledge-Bases/logicn-substrate-failure-model.md:214",
-      "doc docs/Knowledge-Bases/logicn-substrate-failure-model.md:248"
+      "doc docs/Knowledge-Bases/logicn-substrate-failure-model.md:248",
+      "doc docs/Knowledge-Bases/logicn-tlstp-0070-tampertrust.md:57",
+      "doc docs/Knowledge-Bases/logicn-tlstp-0070-tampertrust.md:58",
+      "doc docs/Knowledge-Bases/logicn-tlstp-0070-tampertrust.md:185",
+      "doc docs/Knowledge-Bases/logicn-tlstp-0070-tampertrust.md:207"
     ]
   },
   {
     "code": "LLN-SUBSTRATE-004",
     "namespace": "LLN",
     "family": "SUBSTRATE",
-    "occurrences": 37,
+    "occurrences": 40,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -20981,7 +21227,7 @@
     ],
     "tests": 11,
     "refs": 3,
-    "docs": 21,
+    "docs": 24,
     "names": [
       "UNVOTED_ANALOG_INTO_DETERMINISTIC"
     ],
@@ -21025,6 +21271,9 @@
       "doc docs/Knowledge-Bases/logicn-substrate-failure-model.md:189",
       "doc docs/Knowledge-Bases/logicn-substrate-failure-model.md:229",
       "doc docs/Knowledge-Bases/logicn-substrate-failure-model.md:249",
+      "doc docs/Knowledge-Bases/logicn-tlstp-0070-tampertrust.md:56",
+      "doc docs/Knowledge-Bases/logicn-tlstp-0070-tampertrust.md:180",
+      "doc docs/Knowledge-Bases/logicn-tlstp-0070-tampertrust.md:207",
       "doc docs/Knowledge-Bases/rd-absorbed/rd-tri-encription-research-quantum-resilient-tri-encryption.md:368"
     ]
   },
@@ -24363,7 +24612,7 @@
     "code": "LLN-TYPE-023",
     "namespace": "LLN",
     "family": "TYPE",
-    "occurrences": 47,
+    "occurrences": 48,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -24372,7 +24621,7 @@
       "packages-logicn/logicn-core-compiler/src/type-checker.ts:1764"
     ],
     "tests": 24,
-    "refs": 8,
+    "refs": 9,
     "docs": 11,
     "names": [
       "DeferredTypeCheck",
@@ -24424,6 +24673,7 @@
       "doc docs/Knowledge-Bases/logicn-continuation-brief-2026-06-15.md:176",
       "doc docs/Knowledge-Bases/logicn-continuation-brief-2026-06-15.md:182",
       "doc docs/Knowledge-Bases/logicn-diagnostic-namespace-ownership.md:33",
+      "ref scripts/lint-lln.mjs:247",
       "ref scripts/logicn-new.mjs:27",
       "ref scripts/logicn-new.mjs:145",
       "ref scripts/logicn-new.mjs:187",
@@ -25222,15 +25472,15 @@
     "code": "LLN-VALUESTATE-003",
     "namespace": "LLN",
     "family": "VALUESTATE",
-    "occurrences": 179,
+    "occurrences": 182,
     "docOnly": false,
     "defs": [],
     "emits": [
       "packages-logicn/logicn-core-compiler/src/value-state-checker.ts:1620"
     ],
     "tests": 118,
-    "refs": 8,
-    "docs": 42,
+    "refs": 10,
+    "docs": 43,
     "names": [
       "UnsafeValueReachedGovernedSink"
     ],
@@ -25400,6 +25650,7 @@
       "doc docs/Knowledge-Bases/logicn-pii-handling.md:58",
       "doc docs/Knowledge-Bases/logicn-pii-handling.md:103",
       "doc docs/Knowledge-Bases/logicn-rd-corpus-closure-2026-06-18.md:181",
+      "doc docs/Knowledge-Bases/logicn-roadmap-2026-06-23.md:69",
       "doc docs/Knowledge-Bases/logicn-security-model-layers.md:37",
       "doc docs/Knowledge-Bases/logicn-security-model-layers.md:88",
       "doc docs/Knowledge-Bases/logicn-value-state-checker-architecture.md:52",
@@ -25414,7 +25665,9 @@
       "doc docs/patterns/applications/11-audit-trails.md:44",
       "doc docs/patterns/applications/11-audit-trails.md:101",
       "doc docs/patterns/applications/11-audit-trails.md:117",
-      "doc docs/patterns/applications/11-audit-trails.md:120"
+      "doc docs/patterns/applications/11-audit-trails.md:120",
+      "ref scripts/audit-mutation.mjs:201",
+      "ref scripts/audit-mutation.mjs:208"
     ]
   },
   {

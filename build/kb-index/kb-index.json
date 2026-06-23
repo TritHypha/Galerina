@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 508,
+  "docCount": 520,
   "docs": [
     {
       "rel": "docs/Knowledge-Bases/00-KB-INDEX.md",
@@ -4102,6 +4102,7 @@
         "LLN-GOV-3VL-001",
         "LLN-SUBSTRATE-001",
         "LLN-ENTROPY-001",
+        "LLN-PERM-001",
         "LLN-OBS-002"
       ],
       "tasks": [
@@ -4110,6 +4111,7 @@
         "#32",
         "#34",
         "#35",
+        "#149",
         "#110",
         "#127",
         "#195",
@@ -4120,6 +4122,10 @@
         "#193",
         "#86",
         "#94",
+        "#0087",
+        "#0088",
+        "#0089",
+        "#102",
         "#30",
         "#45",
         "#62",
@@ -4148,24 +4154,24 @@
         "reference",
         "phase",
         "syntax",
+        "build",
+        "contract",
         "governance",
         "model",
-        "contract",
-        "build",
-        "complete",
         "gate",
         "security",
+        "complete",
         "test",
         "rule",
+        "roadmap",
         "map",
+        "code",
         "compiler",
         "document",
-        "code",
-        "roadmap",
-        "category",
-        "profile",
-        "manifest",
-        "next"
+        "architecture",
+        "lln",
+        "key",
+        "category"
       ]
     },
     {
@@ -4593,6 +4599,51 @@
         "wired",
         "status",
         "tcb"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-34-offline-key-ceremony-runbook.md",
+      "title": "#34 — Offline key ceremony runbook (unblocking PQ `.lmanifest` signing)",
+      "headings": [
+        "What already exists (so #34 is NOT a code task)",
+        "The ceremony — what the owner runs OFFLINE (the residual gate, by design)",
+        "What is hub-actionable vs owner-only",
+        "Verdict"
+      ],
+      "codes": [],
+      "tasks": [
+        "#34",
+        "#149",
+        "#110",
+        "#102"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "offline",
+        "key",
+        "ceremony",
+        "rotation",
+        "signing",
+        "owner",
+        "runbook",
+        "code",
+        "custody",
+        "lmanifest",
+        "already",
+        "gate",
+        "design",
+        "unblocking",
+        "exists",
+        "task",
+        "runs",
+        "residual",
+        "air-gapped",
+        "hub-actionable",
+        "owner-only",
+        "verdict",
+        "hybrid",
+        "signproofgraphhybrid",
+        "ed25519"
       ]
     },
     {
@@ -5380,6 +5431,56 @@
         "mutation",
         "return",
         "request"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-architecture-rd-2026-06-23.md",
+      "title": "LogicN — Forward Architecture R&D (2026-06-23)",
+      "headings": [
+        "The unifying theme — generalise the cert-gate K3 pattern everywhere",
+        "Prioritised build ladder (cross-dimension)",
+        "Dimension summaries"
+      ],
+      "codes": [
+        "LLN-PERM-001"
+      ],
+      "tasks": [
+        "#163",
+        "#165",
+        "#34",
+        "#102",
+        "#13",
+        "#14",
+        "#15",
+        "#16"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "net-new",
+        "degrade-only",
+        "cert-gate",
+        "photonic",
+        "build",
+        "architecture",
+        "vand",
+        "everywhere",
+        "logicn",
+        "forward",
+        "design",
+        "tower-citizen",
+        "unifying",
+        "theme",
+        "generalise",
+        "pattern",
+        "prioritised",
+        "ladder",
+        "cross-dimension",
+        "dimension",
+        "summaries",
+        "tri-pipe",
+        "operand",
+        "withsidesignal",
+        "trust"
       ]
     },
     {
@@ -6798,6 +6899,56 @@
         "enforcement",
         "reference",
         "verification"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-compiler-intelligence-deterministic-foresight.md",
+      "title": "LogicN — Deterministic Compiler Intelligence & Tri-Pipe Routing (R&D)",
+      "headings": [
+        "The three pillars (owner's blueprint)",
+        "Verify-before-build mapping (what already ships vs net-new)",
+        "The agency question (owner asked) + recommendation",
+        "R&D results (workflow `w2gzcbx9d`, 4 lenses, 2026-06-23)",
+        "§2 Governance Dead-Code Elimination — high-value net-new (design complete)",
+        "§3 Routing + agency — routing maths ~85% built; 2 net-new gaps",
+        "§4 Auto-resilience — ~80% unbuilt; net-new = the wrapping transform",
+        "Build items (design-complete → engineering, logged in the outstanding catalog)"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-001",
+        "LLN-INV-001",
+        "LLN-GDCE-001"
+      ],
+      "tasks": [],
+      "xrefs": [
+        "feedback-tri-pipe-coverage-rule"
+      ],
+      "topTerms": [
+        "net-new",
+        "routing",
+        "photonic",
+        "agency",
+        "owner",
+        "compiler",
+        "substrate",
+        "deterministic",
+        "tri-pipe",
+        "governance",
+        "blueprint",
+        "binary",
+        "crypto",
+        "auto-resilience",
+        "intelligence",
+        "verdict",
+        "dead-code",
+        "elimination",
+        "built",
+        "wrapping",
+        "transform",
+        "verify-before-build",
+        "pillars",
+        "lattice",
+        "high-value"
       ]
     },
     {
@@ -8233,6 +8384,53 @@
       ]
     },
     {
+      "rel": "docs/Knowledge-Bases/logicn-contract-invariant-module-wide-rd.md",
+      "title": "R&D — module-wide `contract.invariant{}` (note 45), intuition verdict",
+      "headings": [
+        "Verify-before-build — what already ships",
+        "Part 1 — ADOPT, but TIER it by provability (Deterministic Foresight)",
+        "Part 2 — REFUTE-and-reframe (the \"Auto self-healing immune system\")",
+        "Recommendation"
+      ],
+      "codes": [
+        "LLN-INV-001",
+        "LLN-MONO-001",
+        "LLN-PRIVACY-002",
+        "LLN-INV-MODULE-001"
+      ],
+      "tasks": [
+        "#102"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "invariant",
+        "part",
+        "module-wide",
+        "contract",
+        "note",
+        "runtime",
+        "never",
+        "verdict",
+        "system",
+        "already",
+        "intuition",
+        "self-healing",
+        "tier",
+        "auto",
+        "immune",
+        "adopt",
+        "provability",
+        "refute-and-reframe",
+        "overlay",
+        "net-new",
+        "ships",
+        "deterministic",
+        "invariants",
+        "monotonic",
+        "verify-before-build"
+      ]
+    },
+    {
       "rel": "docs/Knowledge-Bases/logicn-contract-operational-constraints.md",
       "title": "LogicN Contract — timeouts {}, retries {}, and limits {} Sections",
       "headings": [
@@ -8293,6 +8491,64 @@
         "require",
         "timeout",
         "must"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-contract-permissions-design.md",
+      "title": "LogicN — `contract.permissions {}` device-permission clause (DESIGN, net-new)",
+      "headings": [
+        "1. What it is + why DISTINCT from `authority{}` / `access{}` / `effects{}`",
+        "2. Grammar (REC-1)",
+        "3. Fail-closed semantics (REC-2) — the zero-trust core",
+        "4. Runtime enforcement + audit (REC-3)",
+        "5. Reconcile the legacy spellings (REC-4)",
+        "6. K3 / Tri-Pipe / tower-citizen tie-in",
+        "7. Diagnostics summary",
+        "8. Build order (when greenlit)",
+        "9. `permissions{}` and third-party packages — it does NOT apply (use `effects{}`)"
+      ],
+      "codes": [
+        "LLN-PERM-001",
+        "LLN-ACCESS-001",
+        "LLN-PERM-002",
+        "LLN-CAP-001",
+        "LLN-PERM-005",
+        "LLN-PERM-003",
+        "LLN-PERM-004",
+        "LLN-PERM-006",
+        "LLN-ASSIMILATE-001"
+      ],
+      "tasks": [
+        "#219",
+        "#202"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "permissions",
+        "device",
+        "effects",
+        "camera",
+        "grant",
+        "contract",
+        "access",
+        "hardware",
+        "third-party",
+        "lln",
+        "flow",
+        "audit",
+        "plugin",
+        "deny",
+        "package",
+        "import",
+        "clause",
+        "distinct",
+        "runtime",
+        "grammar",
+        "authority",
+        "ceiling",
+        "logicn",
+        "design",
+        "why"
       ]
     },
     {
@@ -12759,6 +13015,49 @@
         "model",
         "fidelity",
         "precisiontechnique"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-external-idea-mining-2026-06-23.md",
+      "title": "External Idea Mining — `C:\\wwwprojects\\x` (fresh pass, 2026-06-23)",
+      "headings": [
+        "The 5 HIGH-value net-new ideas",
+        "Net-new MEDIUM / LOW (13)",
+        "Re-derived / out-of-bounds (verify-before-build worked)",
+        "Recommended top picks (for owner decision)"
+      ],
+      "codes": [
+        "LLN-PRIVACY-002",
+        "LLN-SUBSTRATE-001"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "net-new",
+        "med",
+        "degrade-only",
+        "pass",
+        "ideas",
+        "out-of-bounds",
+        "substrate",
+        "low",
+        "idea",
+        "wwwprojects",
+        "verify-before-build",
+        "binary",
+        "owner",
+        "picks",
+        "decision",
+        "invariant",
+        "external",
+        "mining",
+        "fresh",
+        "bitnet",
+        "high-value",
+        "gate",
+        "medium",
+        "re-derived",
+        "worked"
       ]
     },
     {
@@ -17559,6 +17858,65 @@
       ]
     },
     {
+      "rel": "docs/Knowledge-Bases/logicn-outstanding-rd-and-todos-2026-06-23.md",
+      "title": "LogicN — Outstanding R&D + To-Dos catalog (2026-06-23)",
+      "headings": [
+        "A. R&D dispatched to the bridge (`C:\\wwwprojects\\LogicN-R-AND-D\\_session-bridge\\tasks\\`)",
+        "B. R&D designed (in KB; build pending) — [logicn-architecture-rd-2026-06-23.md](logicn-architecture-rd-2026-06-23.md)",
+        "C. Build items (engineering — no further R&D needed)",
+        "D. Missing / incomplete packages (todo + R&D 0082)",
+        "E. Carried doc/tooling work (Phase 3 / earlier batch)",
+        "F. Audit posture (Phase 4, workflow `wj6vrjkmg`)"
+      ],
+      "codes": [
+        "LLN-PERM-001",
+        "LLN-GDCE-001"
+      ],
+      "tasks": [
+        "#13",
+        "#14",
+        "#15",
+        "#16",
+        "#163",
+        "#165",
+        "#161",
+        "#128",
+        "#34",
+        "#102",
+        "#11",
+        "#12",
+        "#149"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "build",
+        "audit",
+        "arch-rd",
+        "logicn-architecture-rd-2026-06-23",
+        "phase",
+        "missing",
+        "packages",
+        "todo",
+        "status",
+        "photonic",
+        "doc",
+        "logicn",
+        "catalog",
+        "incomplete",
+        "bridge",
+        "outstanding",
+        "dispatched",
+        "designed",
+        "pending",
+        "engineering",
+        "needed",
+        "session-bridge",
+        "tasks",
+        "wj6vrjkmg",
+        "to-dos"
+      ]
+    },
+    {
       "rel": "docs/Knowledge-Bases/logicn-package-manifest-spec.md",
       "title": "LogicN Package Manifest Specification",
       "headings": [
@@ -17828,6 +18186,52 @@
         "once",
         "call",
         "privacy"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-pci-dss-evidence-mapping.md",
+      "title": "PCI DSS v4.0 → LogicN compliance-evidence mapping (HONEST)",
+      "headings": [
+        "The accuracy gap you MUST disclose to an assessor",
+        "What is genuinely defensible today (the honest pitch)"
+      ],
+      "codes": [
+        "LLN-PRIVACY-002",
+        "LLN-PRIVACY-001",
+        "LLN-GOV-3VL-001",
+        "LLN-PCI-001"
+      ],
+      "tasks": [
+        "#34",
+        "#102"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "pci",
+        "honest",
+        "enforced",
+        "logicn",
+        "dss",
+        "must",
+        "assessor",
+        "today",
+        "compliance-evidence",
+        "mapping",
+        "present",
+        "accuracy",
+        "gap",
+        "disclose",
+        "genuinely",
+        "defensible",
+        "pitch",
+        "code",
+        "aspirational",
+        "fail-closed",
+        "partial",
+        "residual",
+        "yet",
+        "signed",
+        "lmanifest"
       ]
     },
     {
@@ -20066,6 +20470,64 @@
       ]
     },
     {
+      "rel": "docs/Knowledge-Bases/logicn-rd-notes-46-47-50-51-apiserver-lln-2026-06-23.md",
+      "title": "R&D — notes 46/47/50/51 + blueprint + //lln: cache + api-server (2026-06-23)",
+      "headings": [
+        "Bottom line",
+        "Per-thread",
+        "notes/46 — borrow V8/Node + Rust patterns, never their trust assumptions",
+        "//lln: chain-of-logic cache — serialize the R&D-0045 flow-dependency graph on disk, content-hash-keyed",
+        "Have we done all R&D for logicn-framework-api-server now?",
+        "notes/47 (DRCM precursor spec) + logicn_architecture_blueprint.pdf",
+        "notes/50 — backend-engineering roadmap + tri/photonic primer + open-source photonics pointers",
+        "notes/51 — NumPy→TypeScript cheatsheet: does LogicN give full numeric/ndarray/linalg support?",
+        "Net-new buildable",
+        "Re-derived / already-shipped (cite, do not rebuild)",
+        "Owner decisions"
+      ],
+      "codes": [
+        "LLN-PRIVACY-002",
+        "LLN-MONO-001",
+        "LLN-GOV-3VL-001",
+        "LLN-INV-002",
+        "LLN-PRIVACY-001"
+      ],
+      "tasks": [
+        "#194",
+        "#212",
+        "#102",
+        "#34"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "notes",
+        "cache",
+        "lln",
+        "net-new",
+        "api-server",
+        "shipped",
+        "kernel",
+        "tls",
+        "hash",
+        "never",
+        "signed",
+        "digital",
+        "logicn",
+        "blueprint",
+        "fail-closed",
+        "photonic",
+        "compile",
+        "verdict",
+        "drcm",
+        "numeric",
+        "full",
+        "channelverdict",
+        "deny",
+        "gir",
+        "already-shipped"
+      ]
+    },
+    {
       "rel": "docs/Knowledge-Bases/logicn-rd-performance-and-boundary-opportunities.md",
       "title": "Can the absorbed R&D improve LogicN performance, boundary, or memory?",
       "headings": [
@@ -20111,6 +20573,59 @@
         "key",
         "bottom",
         "line"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-results-log.md",
+      "title": "LogicN — R&D Results Log (quick-lookup verdict table)",
+      "headings": [
+        "Pending (dispatched to the R&D bridge — awaiting `done/`)",
+        "Adopted / Designed (recent)",
+        "Refuted — and WHY we did not adopt (the negative record)",
+        "Complete R&D ledger — all bridge `done/` files (swept 95, 2026-06-23)"
+      ],
+      "codes": [
+        "LLN-PERM-001",
+        "LLN-GDCE-001",
+        "LLN-PRIVACY-002"
+      ],
+      "tasks": [
+        "#102",
+        "#34",
+        "#0089",
+        "#212",
+        "#194",
+        "#205"
+      ],
+      "xrefs": [
+        "feedback-rd-absorb-positive-and-negative"
+      ],
+      "topTerms": [
+        "refuted",
+        "photonic",
+        "adopted",
+        "verdict",
+        "bridge",
+        "logicn",
+        "governance",
+        "why",
+        "designed",
+        "design",
+        "contract",
+        "shipped",
+        "owner",
+        "invariant",
+        "pending",
+        "full",
+        "tri",
+        "fail-closed",
+        "substrate",
+        "log",
+        "table",
+        "gap",
+        "crypto",
+        "gir",
+        "notes"
       ]
     },
     {
@@ -20397,6 +20912,70 @@
       ]
     },
     {
+      "rel": "docs/Knowledge-Bases/logicn-roadmap-2026-06-23.md",
+      "title": "LogicN — Roadmap (rebuilt 2026-06-23, SECURITY FIRST)",
+      "headings": [
+        "🔒 SECURITY — fix first (ordered by severity)",
+        "NEAR (build leverage — non-security)",
+        "MID",
+        "LONG (owner/infra-gated + R&D)",
+        "Missing / stub packages — consider, NOT always"
+      ],
+      "codes": [
+        "LLN-VALUESTATE-003",
+        "LLN-GDCE-001",
+        "LLN-PERM-001"
+      ],
+      "tasks": [
+        "#163",
+        "#165",
+        "#149",
+        "#34",
+        "#102",
+        "#0087",
+        "#110",
+        "#201",
+        "#202",
+        "#150",
+        "#105",
+        "#200",
+        "#171",
+        "#172",
+        "#216",
+        "#212",
+        "#218",
+        "#217"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "security",
+        "first",
+        "owner",
+        "kernel",
+        "fail-closed",
+        "build",
+        "wasm",
+        "fix",
+        "test",
+        "logicn",
+        "stub",
+        "path",
+        "key",
+        "missing",
+        "packages",
+        "cert-gate",
+        "api-server",
+        "mutants",
+        "real",
+        "gate",
+        "always",
+        "near",
+        "roadmap",
+        "rebuilt",
+        "already"
+      ]
+    },
+    {
       "rel": "docs/Knowledge-Bases/logicn-roadmap-and-audit-2026-06-17.md",
       "title": "LogicN — Completion % Audit + Roadmap (2026-06-17)",
       "headings": [
@@ -20568,6 +21147,76 @@
         "weighted",
         "kernel",
         "b5a"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-roadmap-and-percent-audit-2026-06-23.md",
+      "title": "LogicN — % Completion Audit + New Roadmap (2026-06-23)",
+      "headings": [
+        "Overall: **~76%** (weighted, was 73%)",
+        "The honest gap is still concentrated in 3 places",
+        "What changed since 2026-06-22",
+        "NEW ROADMAP",
+        "NEAR (build-not-research, highest cross-dimension leverage)",
+        "MID",
+        "LONG (owner/infra-gated + the one R&D candidate)",
+        "Stale-doc fixes (applied this session unless noted)"
+      ],
+      "codes": [],
+      "tasks": [
+        "#201",
+        "#202",
+        "#216",
+        "#217",
+        "#219",
+        "#218",
+        "#102",
+        "#212",
+        "#211",
+        "#150",
+        "#105",
+        "#200",
+        "#171",
+        "#172",
+        "#34",
+        "#149",
+        "#203",
+        "#205",
+        "#68",
+        "#72",
+        "#76",
+        "#91",
+        "#125",
+        "#126",
+        "#128"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "cert-gate",
+        "roadmap",
+        "still",
+        "wasm",
+        "real",
+        "audit",
+        "live",
+        "kernel",
+        "tests",
+        "gap",
+        "owner",
+        "sec-002",
+        "fail-closed",
+        "today",
+        "logicn",
+        "weighted",
+        "admission",
+        "b5a",
+        "gate",
+        "stale-doc",
+        "fixes",
+        "candidate",
+        "applied",
+        "noted",
+        "completion"
       ]
     },
     {
@@ -23170,7 +23819,8 @@
         "6. Session continuation (2026-06-15 cont.) — #201 lane opened + audit-fix landings",
         "8. R&D 0059–0064 triage → proposed tasks #201–#210 (2026-06-22)",
         "9. Tracker reconciliation (2026-06-22) — corrections + new tasks #211–#212",
-        "7. R&D adoption — `.tmf` / tri-encryption (2026-06-16)"
+        "7. R&D adoption — `.tmf` / tri-encryption (2026-06-16)",
+        "10. Outstanding R&D + To-Dos catalog (2026-06-23)"
       ],
       "codes": [
         "LLN-GOV-010",
@@ -23186,7 +23836,8 @@
         "ERR_X",
         "ERR_REGISTRY",
         "LLN-BOOL-BOUNDARY-001",
-        "LLN-PROFILE-005B"
+        "LLN-PROFILE-005B",
+        "LLN-PERM-001"
       ],
       "tasks": [
         "#148",
@@ -23268,29 +23919,29 @@
       "topTerms": [
         "core-compiler",
         "tests",
+        "build",
         "logicn",
         "mjs",
-        "build",
         "gate",
         "owner",
         "graph",
         "wasm",
         "test",
+        "lln",
         "task",
         "scripts",
-        "lln",
         "parser",
+        "audit",
         "code",
         "index",
         "match",
-        "audit",
-        "real",
         "verified",
         "tasks",
+        "real",
+        "full",
         "string",
         "ledger",
-        "full",
-        "json"
+        "docs"
       ]
     },
     {
@@ -30031,6 +30682,7 @@
       "rel": "README.md",
       "title": "LogicN",
       "headings": [
+        "The Zero-Trust thesis",
         "What LogicN does",
         "Who it is for",
         "Benchmarks (measured 2026-06-17 — honest numbers)",
@@ -30069,28 +30721,28 @@
       "topTerms": [
         "logicn",
         "governed",
+        "wasm",
         "docs",
         "knowledge-bases",
-        "audit",
-        "wasm",
         "app",
+        "audit",
         "runtime",
         "execution",
-        "governance",
-        "build",
-        "lln",
         "tests",
+        "build",
+        "governance",
+        "lln",
+        "active",
+        "compiler",
+        "signed",
+        "architecture",
         "flow",
         "contract",
         "drcm",
         "examples",
-        "active",
-        "benchmarks",
-        "architecture",
-        "compiler",
-        "layer",
-        "signed",
-        "effects",
+        "fail-closed",
+        "real",
+        "progress",
         "dss"
       ]
     },
@@ -30112,6 +30764,7 @@
       ],
       "codes": [],
       "tasks": [
+        "#102",
         "#215",
         "#218"
       ],
@@ -30122,26 +30775,26 @@
         "graph",
         "build",
         "code",
+        "docs",
         "tools",
         "project",
-        "docs",
         "packages-logicn",
         "type",
         "logicn",
-        "package",
         "knowledge-bases",
+        "package",
+        "pipeline",
+        "status",
         "diagnostic",
         "defined",
         "node",
-        "pipeline",
-        "status",
         "agents",
         "coding",
+        "complete",
         "forms",
         "format",
         "security",
-        "purpose",
-        "source"
+        "purpose"
       ]
     }
   ]

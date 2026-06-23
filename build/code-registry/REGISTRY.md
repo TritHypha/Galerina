@@ -12,8 +12,8 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | inline | 289 | emitted, NO exported constant (R4 — Stage F) |
 | referenced | 11 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 0 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
-| phantom | 464 | doc-only mention, not in source (drift — DOC-004) |
-| ref | 140 | referenced only (no def/emit) |
+| phantom | 473 | doc-only mention, not in source (drift — DOC-004) |
+| ref | 139 | referenced only (no def/emit) |
 
 ## RESERVED — defined but not emitted (std #1: tag wire-or-retire)
 
@@ -471,7 +471,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-EFFECT-003 | inline | EFFECT_BOUNDARY_VIOLATION | error |
 | LLN-EFFECT-004 | inline | NON_CANONICAL_EFFECT / UNKNOWN_EFFECT | error |
 | LLN-EFFECT-005 | inline | BroadAliasUsed | warning |
-| LLN-EFFECT-006 | ref | — | — |
+| LLN-EFFECT-006 | phantom | — | — |
 | LLN-EFFECT-2000 | phantom | — | — |
 
 ### ENCAP (1)
@@ -698,6 +698,12 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-GATE-001 | inline | GATE_UNKNOWN_CONDITION / GateAnnotationRequired | error |
 | LLN-GATE-002 | inline | GATE_WRAPS_PURE_FLOW | — |
 
+### GDCE (1)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| LLN-GDCE-001 | phantom | — | — |
+
 ### GEN (7)
 
 | code | status | name(s) | severity |
@@ -844,7 +850,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-INTENT-GRAPH-005 | phantom | — | — |
 | LLN-INTENT-GRAPH-006 | phantom | — | — |
 
-### INV (5)
+### INV (6)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -853,6 +859,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-INV-002 | inline | — | — |
 | LLN-INV-003 | inline | INVARIANT_BLOCK_EMPTY | — |
 | LLN-INV-004 | inline | SYMBOL_UNRESOLVED_IN_INVARIANT | — |
+| LLN-INV-MODULE-001 | phantom | — | — |
 
 ### K8S (1)
 
@@ -1118,6 +1125,17 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-PCI-008 | ref | — | — |
 | LLN-PCI-009 | ref | — | — |
 | LLN-PCI-010 | ref | — | — |
+
+### PERM (6)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| LLN-PERM-001 | phantom | — | — |
+| LLN-PERM-002 | phantom | — | — |
+| LLN-PERM-003 | phantom | — | — |
+| LLN-PERM-004 | phantom | — | — |
+| LLN-PERM-005 | phantom | — | — |
+| LLN-PERM-006 | phantom | — | — |
 
 ### PGO (8)
 

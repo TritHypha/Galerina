@@ -1,10 +1,10 @@
 {
   "generatedFrom": "build/code-index/code-index.json",
-  "total": 941,
+  "total": 949,
   "counts": {
-    "ref": 140,
+    "ref": 139,
     "inline": 289,
-    "phantom": 464,
+    "phantom": 473,
     "live": 37,
     "referenced": 11
   },
@@ -1269,7 +1269,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 16,
-      "docs": 5
+      "docs": 6
     },
     {
       "code": "LLN-ACCESS-002",
@@ -1365,7 +1365,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 0,
-      "docs": 4
+      "docs": 5
     },
     {
       "code": "LLN-ASSIMILATE-002",
@@ -2400,7 +2400,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 7,
-      "docs": 20
+      "docs": 21
     },
     {
       "code": "LLN-CAP-002",
@@ -4040,7 +4040,7 @@
       "code": "LLN-EFFECT-006",
       "family": "EFFECT",
       "namespace": "LLN",
-      "status": "ref",
+      "status": "phantom",
       "names": [],
       "severities": [],
       "defs": 0,
@@ -4630,6 +4630,18 @@
       "docs": 6
     },
     {
+      "code": "LLN-GDCE-001",
+      "family": "GDCE",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 5
+    },
+    {
       "code": "LLN-GEN-TEST-001",
       "family": "GEN",
       "namespace": "LLN",
@@ -5041,8 +5053,8 @@
       "severities": [],
       "defs": 1,
       "emits": 1,
-      "tests": 6,
-      "docs": 30
+      "tests": 13,
+      "docs": 64
     },
     {
       "code": "LLN-GOV-ERROR-001",
@@ -5890,7 +5902,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 11,
-      "docs": 20
+      "docs": 23
     },
     {
       "code": "LLN-INV-002",
@@ -5902,7 +5914,7 @@
       "defs": 0,
       "emits": 3,
       "tests": 4,
-      "docs": 11
+      "docs": 12
     },
     {
       "code": "LLN-INV-003",
@@ -5931,6 +5943,18 @@
       "emits": 1,
       "tests": 15,
       "docs": 6
+    },
+    {
+      "code": "LLN-INV-MODULE-001",
+      "family": "INV",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
     },
     {
       "code": "LLN-K8S-001",
@@ -6803,7 +6827,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 15,
-      "docs": 16
+      "docs": 20
     },
     {
       "code": "LLN-MONO-002",
@@ -7667,7 +7691,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 5,
-      "docs": 3
+      "docs": 4
     },
     {
       "code": "LLN-PCI-002",
@@ -7776,6 +7800,78 @@
       "emits": 0,
       "tests": 4,
       "docs": 0
+    },
+    {
+      "code": "LLN-PERM-001",
+      "family": "PERM",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 9
+    },
+    {
+      "code": "LLN-PERM-002",
+      "family": "PERM",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 2
+    },
+    {
+      "code": "LLN-PERM-003",
+      "family": "PERM",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 3
+    },
+    {
+      "code": "LLN-PERM-004",
+      "family": "PERM",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 2
+    },
+    {
+      "code": "LLN-PERM-005",
+      "family": "PERM",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 2
+    },
+    {
+      "code": "LLN-PERM-006",
+      "family": "PERM",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 3
     },
     {
       "code": "LLN-PGO-001",
@@ -8535,7 +8631,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 8
+      "docs": 10
     },
     {
       "code": "LLN-PRIVACY-002",
@@ -8552,7 +8648,7 @@
       "defs": 0,
       "emits": 3,
       "tests": 39,
-      "docs": 30
+      "docs": 51
     },
     {
       "code": "LLN-PRIVACY-003",
@@ -10370,7 +10466,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 17,
-      "docs": 96
+      "docs": 107
     },
     {
       "code": "LLN-SUBSTRATE-002",
@@ -10386,7 +10482,7 @@
       "defs": 0,
       "emits": 3,
       "tests": 22,
-      "docs": 29
+      "docs": 30
     },
     {
       "code": "LLN-SUBSTRATE-003",
@@ -10402,7 +10498,7 @@
       "defs": 0,
       "emits": 3,
       "tests": 12,
-      "docs": 13
+      "docs": 17
     },
     {
       "code": "LLN-SUBSTRATE-004",
@@ -10418,7 +10514,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 11,
-      "docs": 21
+      "docs": 24
     },
     {
       "code": "LLN-SUPPLY-001",
@@ -11989,7 +12085,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 118,
-      "docs": 42
+      "docs": 43
     },
     {
       "code": "LLN-VALUESTATE-004",

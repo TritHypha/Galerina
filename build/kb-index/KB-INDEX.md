@@ -1,11 +1,11 @@
-# LogicN KB index (508 docs)
+# LogicN KB index (520 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code LLN-...`
 
 ## AGENTS.md
 `AGENTS.md`
-- tasks: #215, #218
-- terms: flow, rules, graph, build, code, tools, project, docs, packages-logicn, type, logicn, package, knowledge-bases, diagnostic
+- tasks: #102, #215, #218
+- terms: flow, rules, graph, build, code, docs, tools, project, packages-logicn, type, logicn, knowledge-bases, package, pipeline
 
 ## LogicN Knowledge Base — Index
 `docs/Knowledge-Bases/00-KB-INDEX.md`
@@ -308,9 +308,9 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 
 ## LogicN Core Knowledge Base — Master Navigation Guide & TCB Map
 `docs/Knowledge-Bases/KNOWLEDGE-BASE-INDEX.md`
-- codes: LLN-CAP-001, LLN-RES-001, LLN-OBS-001, LLN-GOV-004, LLN-BORDER-001, LLN-CRYPTO-PQ-001, LLN-GOV-3VL-001, LLN-SUBSTRATE-001, LLN-ENTROPY-001, LLN-OBS-002
-- tasks: #118, #124, #32, #34, #35, #110, #127, #195, #194, #196, #197, #161, #193, #86, #94, #30, #45, #62, #36, #63, #64, #65, #66, #67
-- terms: drcm, core, layer, logicn, reference, phase, syntax, governance, model, contract, build, complete, gate, security
+- codes: LLN-CAP-001, LLN-RES-001, LLN-OBS-001, LLN-GOV-004, LLN-BORDER-001, LLN-CRYPTO-PQ-001, LLN-GOV-3VL-001, LLN-SUBSTRATE-001, LLN-ENTROPY-001, LLN-PERM-001, LLN-OBS-002
+- tasks: #118, #124, #32, #34, #35, #149, #110, #127, #195, #194, #196, #197, #161, #193, #86, #94, #0087, #0088, #0089, #102, #30, #45, #62, #36
+- terms: drcm, core, layer, logicn, reference, phase, syntax, build, contract, governance, model, gate, security, complete
 
 ## Layered Rate Limits
 `docs/Knowledge-Bases/layered-rate-limits.md`
@@ -345,6 +345,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `docs/Knowledge-Bases/logicn-200-closeout-2026-06-15.md`
 - tasks: #200, #177, #143, #145, #199, #155, #105, #110, #102, #38, #76, #12, #179, #149, #148, #34, #107
 - terms: cycle, open, manifest, real, audit, verified, high, med, low, hmac, technical, debt, graph, path
+
+## #34 — Offline key ceremony runbook (unblocking PQ `.lmanifest` signing)
+`docs/Knowledge-Bases/logicn-34-offline-key-ceremony-runbook.md`
+- tasks: #34, #149, #110, #102
+- terms: offline, key, ceremony, rotation, signing, owner, runbook, code, custody, lmanifest, already, gate, design, unblocking
 
 ## LogicN Architecture: Adaptive Runtime Profiles
 `docs/Knowledge-Bases/logicn-adaptive-runtime-profiles.md`
@@ -407,6 +412,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `docs/Knowledge-Bases/logicn-architecture-patterns.md`
 - codes: LLN-EFFECT-003, LLN-EFFECT-001, LLN-INV-001, LLN-SECRET-001, LLN-GOV-018, LLN-RESOURCE-001, LLN-SECRET-002, LLN-SECRET-003, LLN-MONO-001
 - terms: pattern, drcm, flow, api, step, governed, payload, profile, write, pure, phase, audit, let, core
+
+## LogicN — Forward Architecture R&D (2026-06-23)
+`docs/Knowledge-Bases/logicn-architecture-rd-2026-06-23.md`
+- codes: LLN-PERM-001
+- tasks: #163, #165, #34, #102, #13, #14, #15, #16
+- terms: net-new, degrade-only, cert-gate, photonic, build, architecture, vand, everywhere, logicn, forward, design, tower-citizen, unifying, theme
 
 ## LogicN — ASIC Cyber-Physical Shielding Architecture
 `docs/Knowledge-Bases/logicn-asic-cyber-physical.md`
@@ -520,6 +531,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: LLN-TARGET-CAP-001, LLN-TARGET-CAP-002, LLN-VERIFY-001, LLN-VERIFY-002, LLN-BUDGET-001, LLN-BUDGET-002, LLN-BUDGET-003, LLN-BUDGET-004
 - terms: required, compiler, compute, critical, gap, gpu, problem, capability, logicn, resource, target, targets, runtime, flow
 
+## LogicN — Deterministic Compiler Intelligence & Tri-Pipe Routing (R&D)
+`docs/Knowledge-Bases/logicn-compiler-intelligence-deterministic-foresight.md`
+- codes: LLN-SUBSTRATE-001, LLN-INV-001, LLN-GDCE-001
+- links: [[feedback-tri-pipe-coverage-rule]]
+- terms: net-new, routing, photonic, agency, owner, compiler, substrate, deterministic, tri-pipe, governance, blueprint, binary, crypto, auto-resilience
+
 ## LogicN — Compiler Optimizations and Backend Architecture
 `docs/Knowledge-Bases/logicn-compiler-optimizations.md`
 - codes: LLN-COMPTIME-001, LLN-COMPTIME-002, LLN-COMPTIME-003, LLN-COMPTIME-004, LLN-COMPTIME-005, LLN-COMPTIME-006, LLN-COMPTIME-007, LLN-COMPTIME-008, LLN-PIPELINE-001, LLN-PIPELINE-002, LLN-PIPELINE-003, LLN-PIPELINE-004, LLN-PIPELINE-005, LLN-PIPELINE-006, LLN-BOUNDS-001, LLN-BOUNDS-002, LLN-BOUNDS-003, LLN-BOUNDS-004, LLN-BOUNDS-005, LLN-BOUNDS-006, LLN-PGO-001, LLN-PGO-002, LLN-PGO-003, LLN-PGO-004
@@ -625,10 +642,22 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: LLN-CONTEXT-001, LLN-GOV-003, LLN-SYNTAX-LEGACY-001, LLN-CONTRACT-001, LLN-SYNTAX-010
 - terms: section, flow, contract, effects, phase, model, type, return, audit, response, body, score, logicn, types
 
+## R&D — module-wide `contract.invariant{}` (note 45), intuition verdict
+`docs/Knowledge-Bases/logicn-contract-invariant-module-wide-rd.md`
+- codes: LLN-INV-001, LLN-MONO-001, LLN-PRIVACY-002, LLN-INV-MODULE-001
+- tasks: #102
+- terms: invariant, part, module-wide, contract, note, runtime, never, verdict, system, already, intuition, self-healing, tier, auto
+
 ## LogicN Contract — timeouts {}, retries {}, and limits {} Sections
 `docs/Knowledge-Bases/logicn-contract-operational-constraints.md`
 - codes: LLN-TIMEOUT-001, LLN-RETRY-001, LLN-LIMIT-001
 - terms: deadline, timeouts, retries, limits, max, rules, flow, retry, size, section, network, purpose, logicn, database
+
+## LogicN — `contract.permissions {}` device-permission clause (DESIGN, net-new)
+`docs/Knowledge-Bases/logicn-contract-permissions-design.md`
+- codes: LLN-PERM-001, LLN-ACCESS-001, LLN-PERM-002, LLN-CAP-001, LLN-PERM-005, LLN-PERM-003, LLN-PERM-004, LLN-PERM-006, LLN-ASSIMILATE-001
+- tasks: #219, #202
+- terms: permissions, device, effects, camera, grant, contract, access, hardware, third-party, lln, flow, audit, plugin, deny
 
 ## LogicN Contract — privacy {} and observability {} Sections
 `docs/Knowledge-Bases/logicn-contract-privacy-observability.md`
@@ -984,6 +1013,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #10, #11, #12
 - links: [[logicn-photonic-tri-rd]] [[logicn-substrate-contracts]] [[logicn-ext-bridge-quantum]] [[logicn-quantum-resistance-posture]]
 - terms: precision, tolerance, measured, gate, contract, declared, source, grounded, manifest, state, accuracy, deny-by-default, logicn, whole
+
+## External Idea Mining — `C:\wwwprojects\x` (fresh pass, 2026-06-23)
+`docs/Knowledge-Bases/logicn-external-idea-mining-2026-06-23.md`
+- codes: LLN-PRIVACY-002, LLN-SUBSTRATE-001
+- terms: net-new, med, degrade-only, pass, ideas, out-of-bounds, substrate, low, idea, wwwprojects, verify-before-build, binary, owner, picks
 
 ## LogicN — Fault Tolerance, Stability & the Tri-Pipe
 `docs/Knowledge-Bases/logicn-fault-tolerance-and-stability.md`
@@ -1372,6 +1406,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: LLN-EFFECT-002, LLN-PRIVACY-003, LLN-TAINT-001, LLN-CONTEXT-001, LLN-AUDIT-002, LLN-CONTRACT-005, LLN-EVENT-001, LLN-PRIVACY-005, LLN-NETWORK-003, LLN-NETWORK-007
 - terms: fix, before, ide, code, diagnostic, problem, after, action, missing, flow, governance, email, contract, logicn
 
+## LogicN — Outstanding R&D + To-Dos catalog (2026-06-23)
+`docs/Knowledge-Bases/logicn-outstanding-rd-and-todos-2026-06-23.md`
+- codes: LLN-PERM-001, LLN-GDCE-001
+- tasks: #13, #14, #15, #16, #163, #165, #161, #128, #34, #102, #11, #12, #149
+- terms: build, audit, arch-rd, logicn-architecture-rd-2026-06-23, phase, missing, packages, todo, status, photonic, doc, logicn, catalog, incomplete
+
 ## LogicN Package Manifest Specification
 `docs/Knowledge-Bases/logicn-package-manifest-spec.md`
 - codes: LLN-MODULE-001, LLN-MODULE-002, LLN-MODULE-003, LLN-MODULE-004, LLN-MODULE-005, LLN-MODULE-006, LLN-MODULE-007, LLN-MODULE-008, LLN-MODULE-009, LLN-MODULE-010
@@ -1394,6 +1434,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## LogicN — Passive Execution Plans
 `docs/Knowledge-Bases/logicn-passive-execution-plans.md`
 - terms: plan, execution, runtime, capability, passive, host, write, capabilities, source, type, text, ast, metadata, kind
+
+## PCI DSS v4.0 → LogicN compliance-evidence mapping (HONEST)
+`docs/Knowledge-Bases/logicn-pci-dss-evidence-mapping.md`
+- codes: LLN-PRIVACY-002, LLN-PRIVACY-001, LLN-GOV-3VL-001, LLN-PCI-001
+- tasks: #34, #102
+- terms: pci, honest, enforced, logicn, dss, must, assessor, today, compliance-evidence, mapping, present, accuracy, gap, disclose
 
 ## LogicN — Performance Plan: Closing the Speed Gap
 `docs/Knowledge-Bases/logicn-performance-plan.md`
@@ -1606,11 +1652,24 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - links: [[logicn-structured-engineering-metadata]] [[logicn-social-ecosystem-cloud-native]] [[logicn-aot-tricks-verdict]]
 - terms: shipped, worker, owner, wasm, build, logicn, aot, session, proven, real, fail-closed, owner-gated, production, benchmark
 
+## R&D — notes 46/47/50/51 + blueprint + //lln: cache + api-server (2026-06-23)
+`docs/Knowledge-Bases/logicn-rd-notes-46-47-50-51-apiserver-lln-2026-06-23.md`
+- codes: LLN-PRIVACY-002, LLN-MONO-001, LLN-GOV-3VL-001, LLN-INV-002, LLN-PRIVACY-001
+- tasks: #194, #212, #102, #34
+- terms: notes, cache, lln, net-new, api-server, shipped, kernel, tls, hash, never, signed, digital, logicn, blueprint
+
 ## Can the absorbed R&D improve LogicN performance, boundary, or memory?
 `docs/Knowledge-Bases/logicn-rd-performance-and-boundary-opportunities.md`
 - codes: LLN-ENTROPY-001
 - tasks: #201, #128, #194, #127
 - terms: boundary, memory, security, logicn, performance, efficiency, runtime, real, model, cpu, gpu, trust, governance, crypto
+
+## LogicN — R&D Results Log (quick-lookup verdict table)
+`docs/Knowledge-Bases/logicn-rd-results-log.md`
+- codes: LLN-PERM-001, LLN-GDCE-001, LLN-PRIVACY-002
+- tasks: #102, #34, #0089, #212, #194, #205
+- links: [[feedback-rd-absorb-positive-and-negative]]
+- terms: refuted, photonic, adopted, verdict, bridge, logicn, governance, why, designed, design, contract, shipped, owner, invariant
 
 ## LogicN Language Proposal — Readable Logic Forms
 `docs/Knowledge-Bases/logicn-readable-logic-forms.md`
@@ -1638,6 +1697,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #165, #169, #174, #175, #194, #171, #200, #172, #149, #102, #110
 - terms: owner, line, non-framework, parked, framework, logicn, roadmap, gated, phase-close, session, shipped, wasm, tracked, highest-leverage
 
+## LogicN — Roadmap (rebuilt 2026-06-23, SECURITY FIRST)
+`docs/Knowledge-Bases/logicn-roadmap-2026-06-23.md`
+- codes: LLN-VALUESTATE-003, LLN-GDCE-001, LLN-PERM-001
+- tasks: #163, #165, #149, #34, #102, #0087, #110, #201, #202, #150, #105, #200, #171, #172, #216, #212, #218, #217
+- terms: security, first, owner, kernel, fail-closed, build, wasm, fix, test, logicn, stub, path, key, missing
+
 ## LogicN — Completion % Audit + Roadmap (2026-06-17)
 `docs/Knowledge-Bases/logicn-roadmap-and-audit-2026-06-17.md`
 - tasks: #128, #194, #127, #110, #34, #149, #199
@@ -1653,6 +1718,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `docs/Knowledge-Bases/logicn-roadmap-and-percent-audit-2026-06-22.md`
 - tasks: #150, #201, #202, #216, #217, #219, #102, #211, #105, #200, #171, #172, #34, #149, #218, #212, #203, #205, #128, #68, #72, #76, #91, #125
 - terms: owner, roadmap, wasm, real, audit, todo, ledger, gap, built, stale, logicn, shipped, transport, gate
+
+## LogicN — % Completion Audit + New Roadmap (2026-06-23)
+`docs/Knowledge-Bases/logicn-roadmap-and-percent-audit-2026-06-23.md`
+- tasks: #201, #202, #216, #217, #219, #218, #102, #212, #211, #150, #105, #200, #171, #172, #34, #149, #203, #205, #68, #72, #76, #91, #125, #126
+- terms: cert-gate, roadmap, still, wasm, real, audit, live, kernel, tests, gap, owner, sec-002, fail-closed, today
 
 ## LogicN Roadmap — Autonomous Build Queue (2026-06-17)
 `docs/Knowledge-Bases/logicn-roadmap-autonomous-queue-2026-06-17.md`
@@ -1857,10 +1927,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 
 ## LogicN — Task Ledger #1–#148 (graph-review checklist)
 `docs/Knowledge-Bases/logicn-task-ledger.md`
-- codes: LLN-GOV-010, LLN-INV-000, LLN-MATCH-001, LLN-SUBSTRATE-001, LLN-EFFECT-002, LLN-FAULT-005, LLN-EFFECT-006, LLN-MEMORY-001, ERR_BRIDGE_UNATTESTED, ERR_BRIDGE_DISPATCH_FAULT, ERR_X, ERR_REGISTRY, LLN-BOOL-BOUNDARY-001, LLN-PROFILE-005B
+- codes: LLN-GOV-010, LLN-INV-000, LLN-MATCH-001, LLN-SUBSTRATE-001, LLN-EFFECT-002, LLN-FAULT-005, LLN-EFFECT-006, LLN-MEMORY-001, ERR_BRIDGE_UNATTESTED, ERR_BRIDGE_DISPATCH_FAULT, ERR_X, ERR_REGISTRY, LLN-BOOL-BOUNDARY-001, LLN-PROFILE-005B, LLN-PERM-001
 - tasks: #148, #105, #69, #110, #147, #177, #199, #146, #102, #103, #104, #106, #143, #145, #144, #39, #160, #161, #191, #169, #170, #174, #175, #185
 - links: [[feedback-http-transport-owner-locked]] [[logicn-ip-paper-strategy]] [[logicn-benchmark-suite]] [[feedback-tooled-engineering-processes]]
-- terms: core-compiler, tests, logicn, mjs, build, gate, owner, graph, wasm, test, task, scripts, lln, parser
+- terms: core-compiler, tests, build, logicn, mjs, gate, owner, graph, wasm, test, lln, task, scripts, parser
 
 ## P9 Post-Parity Technical-Debt / Gaps Review (2026-06-06)
 `docs/Knowledge-Bases/logicn-techdebt-gaps-review.md`
@@ -2423,4 +2493,4 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `README.md`
 - codes: LLN-FAULT-001, LLN-PKG-006, LLN-LEX-001, LLN-NAME-001, LLN-TYPE-001, LLN-EFFECT-001, LLN-GOV-001, LLN-TERM-001, LLN-PCI-001
 - tasks: #102, #34, #149, #143, #128
-- terms: logicn, governed, docs, knowledge-bases, audit, wasm, app, runtime, execution, governance, build, lln, tests, flow
+- terms: logicn, governed, wasm, docs, knowledge-bases, app, audit, runtime, execution, tests, build, governance, lln, active
