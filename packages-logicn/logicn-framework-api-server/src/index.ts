@@ -8,18 +8,25 @@
  * of that lives in the kernel's fixed, non-bypassable pipeline and MUST NOT be
  * pre-empted, re-ordered, or skipped here.
  *
- * The single exception is an ADDITIVE denial-of-service guard: a hard cap on how
- * many body bytes the adapter will buffer into memory before it even calls the
- * kernel. This protects the process from an attacker streaming an unbounded
- * body. It is purely additive — the kernel ALSO enforces its own (per-route,
- * posture-aware) body-size policy, and that check is never removed or relaxed by
- * this adapter. When the adapter cap trips we respond 413 and destroy the socket
- * WITHOUT buffering any further bytes.
+ * There are two ADDITIVE exceptions — neither pre-empts, re-orders, or relaxes the
+ * kernel's gate ordering; both are evaluated by the kernel, not the transport:
+ *   1. A hard cap on how many body bytes the adapter will buffer before it even
+ *      calls the kernel (DoS guard). The kernel ALSO enforces its own per-route,
+ *      posture-aware body-size policy; this cap never removes or relaxes it. When
+ *      the cap trips we respond 413 and destroy the socket WITHOUT buffering more.
+ *   2. An OPTIONAL `resolveChannelVerdict` hook that lets the transport feed the
+ *      kernel a K3 channel/identity verdict (TLSTP S1 cert-gate). The kernel folds
+ *      it FAIL-CLOSED in its auth step as an authentication factor: only +1/ALLOW
+ *      (e.g. a fully-validated, pinned, fresh-revocation client cert) authenticates
+ *      the channel; 0/−1 deny. A verified channel authenticates in lieu of a bearer
+ *      token (mutual-TLS semantics); it does not relax any other gate. Unset by
+ *      default (no behaviour change); a throwing resolver denies (fail-closed).
  */
 import http from "node:http";
 import { randomUUID } from "node:crypto";
 import type { AppKernel, LogicnKernelRequest, LogicnKernelResponse } from "../../logicn-framework-app-kernel/dist/index.js";
 import type { HttpMethod } from "../../logicn-framework-app-kernel/dist/index.js";
+import { Verdict } from "../../logicn-tower-citizen/dist/index.js";
 
 /** Default hard cap on buffered body bytes (8 MiB). Additive to the kernel's own body-size gate. */
 export const DEFAULT_MAX_BODY_BYTES = 8 * 1024 * 1024;
@@ -39,6 +46,27 @@ export interface CreateApiServerOptions {
   readonly headersTimeoutMs?: number;
   /** Idle-socket timeout. Default 30s. */
   readonly idleTimeoutMs?: number;
+  /**
+   * OPTIONAL resolver for the TLSTP S1 channel/identity verdict. Given the raw
+   * request (e.g. its TLS socket's peer certificate), return a K3 `Verdict` that
+   * the kernel folds into admission, FAIL-CLOSED (only +1/ALLOW admits; 0/−1 deny).
+   * Wire it to the cert-gate, e.g.:
+   *   `resolveChannelVerdict: (req) => certGate(certInputFrom(req.socket)).verdict`
+   *
+   * This is the live end-to-end channel-verdict path: transport → cert-gate →
+   * `channelVerdict` → kernel `decideAtBoundary` fold. The kernel folds it in its
+   * auth step as a fail-closed authentication factor (a +1 channel authenticates in
+   * lieu of a bearer token; 0/−1 deny). The transport never pre-empts the pipeline.
+   *
+   * Default: unset → no channel verdict is supplied → the kernel uses its own auth
+   * path (Authorization header), exactly as before (no behaviour change).
+   *
+   * Fail-closed contract: if the resolver THROWS, the channel is DENIED (−1) — it is
+   * never silently downgraded to the header path. Opting into a channel verdict means
+   * a resolver error must deny, not fail open. Returning `undefined` is the explicit
+   * "no opinion → defer to the kernel's auth path" signal (distinct from throwing).
+   */
+  readonly resolveChannelVerdict?: (req: http.IncomingMessage) => Verdict | undefined;
 }
 
 /** A fail-closed 500 written when the kernel itself throws. Never leaks the error. */
@@ -158,9 +186,10 @@ export function createApiServer(opts: CreateApiServerOptions): http.Server {
   const { kernel } = opts;
   const maxBodyBytes =
     opts.maxBodyBytes !== undefined ? opts.maxBodyBytes : DEFAULT_MAX_BODY_BYTES;
+  const resolveChannelVerdict = opts.resolveChannelVerdict;
 
   const server = http.createServer((req, res) => {
-    void handleRequest(kernel, maxBodyBytes, req, res);
+    void handleRequest(kernel, maxBodyBytes, resolveChannelVerdict, req, res);
   });
   // Explicit transport timeouts — a slowloris / idle-connection defence at the toxic border, additive
   // to the body cap (the kernel cannot see transport-level stalls). Set intentionally rather than
@@ -174,6 +203,7 @@ export function createApiServer(opts: CreateApiServerOptions): http.Server {
 async function handleRequest(
   kernel: AppKernel,
   maxBodyBytes: number,
+  resolveChannelVerdict: ((req: http.IncomingMessage) => Verdict | undefined) | undefined,
   req: http.IncomingMessage,
   res: http.ServerResponse,
 ): Promise<void> {
@@ -203,7 +233,20 @@ async function handleRequest(
     return;
   }
 
-  // (2) Normalise into a LogicnKernelRequest.
+  // (2) Resolve the optional channel/identity verdict (TLSTP S1) — fail-closed.
+  // A configured resolver that THROWS denies the channel (−1); it is never silently
+  // downgraded to the kernel's header path. An unset resolver, or one returning
+  // undefined, leaves channelVerdict absent → the kernel uses its own auth path.
+  let channelVerdict: Verdict | undefined;
+  if (resolveChannelVerdict !== undefined) {
+    try {
+      channelVerdict = resolveChannelVerdict(req);
+    } catch {
+      channelVerdict = Verdict.DENY;
+    }
+  }
+
+  // (3) Normalise into a LogicnKernelRequest.
   const { path, query } = parseUrl(req.url);
   const kreq: LogicnKernelRequest = {
     method: normaliseMethod(req.method),
@@ -213,9 +256,10 @@ async function handleRequest(
     query,
     requestId: randomUUID(),
     receivedAt: Date.now(),
+    ...(channelVerdict !== undefined ? { channelVerdict } : {}),
   };
 
-  // (3) Hand to the kernel's fixed, non-bypassable pipeline. (4) Write its response.
+  // (4) Hand to the kernel's fixed, non-bypassable pipeline. (5) Write its response.
   let resp: LogicnKernelResponse;
   try {
     resp = await kernel.handle(kreq);

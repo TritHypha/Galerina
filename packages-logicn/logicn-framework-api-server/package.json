@@ -16,7 +16,8 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@logicn/framework-app-kernel": "file:../logicn-framework-app-kernel"
+    "@logicn/framework-app-kernel": "file:../logicn-framework-app-kernel",
+    "@logicn/tower-citizen": "file:../logicn-tower-citizen"
   },
   "devDependencies": {
     "typescript": "^5.5.0"
