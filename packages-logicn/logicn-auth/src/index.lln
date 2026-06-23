@@ -1,0 +1,23 @@
+// logicn-auth — opinionated SECURE LogicN package (scaffolded by logicn-new).
+//
+// Deny-by-default, fail-closed, least-capability:
+//   - `pure flow` declares NO effects — it cannot touch network, storage,
+//     secrets, the database, or run inference. Add an `effects {}` block AND
+//     the matching capability in package.lln.json only when you truly need it.
+//   - Every `match` MUST end with a mandatory `_ =>` wildcard (LLN-TYPE-023):
+//     undeclared inputs fail closed to a safe default, never fall through.
+//
+// Build:  node logicn.mjs build --package <this-dir>  →  dist/logicn-auth.wasm
+
+pure flow main() -> Int
+contract {
+  intent { "Entry point for the logicn-auth package. Replace with the real governed logic." }
+}
+{
+  // Demonstration of the mandatory fail-closed wildcard on a match.
+  let status: Int = 0
+  match status {
+    0 => return 0       // OK — nominal exit
+    _ => return 1       // fail-closed: any other state is treated as an error
+  }
+}
