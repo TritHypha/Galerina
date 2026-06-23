@@ -1,9 +1,0 @@
-{
-  "name": "logicn-auth",
-  "version": "0.1.0",
-  "kind": "pure-transform",
-  "provides": "logicn-auth",
-  "entry": "src/index.lln",
-  "seam": "compute.pure",
-  "capabilities": []
-}
