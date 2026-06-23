@@ -16,6 +16,9 @@
   "engines": {
     "node": ">=18"
   },
+  "dependencies": {
+    "@logicn/tower-citizen": "file:../logicn-tower-citizen"
+  },
   "devDependencies": {
     "typescript": "^5.5.0"
   }

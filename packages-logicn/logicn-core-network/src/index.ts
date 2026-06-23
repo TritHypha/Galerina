@@ -477,3 +477,18 @@ export {
   rateLimitKey,
   RateLimiter,
 } from "./inbound-guard.js";
+
+// TLSTP S1 — K3 cert/channel-validation gate (fail-closed; revocation-unknown → DENY).
+export {
+  Verdict,
+  type BoundaryDecision,
+  type GovernanceDiagnostic,
+  type ChainValidationOutcome,
+  type RevocationOutcome,
+  type CertSubVerdicts,
+  type CertGateInput,
+  toSubVerdicts,
+  certVerdict,
+  withSideSignal,
+  certGate,
+} from "./cert-gate.js";
