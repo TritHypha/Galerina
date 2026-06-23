@@ -33,7 +33,11 @@ const exe = (c) => (process.platform === "win32" && c === "npm" ? "npm.cmd" : c)
 
 // ── built-in catalog: the B5a registry-index fail-closed gates (the review-confirmed fail-opens) ──────
 const K = "packages-logicn/logicn-framework-app-kernel";
-const KERNEL_BUILD = ["npm", "run", "build"];
+// Build with the tower-citizen-vendored compiler, NOT `npm run build`. The kernel's build script is a
+// bare `tsc`, which is not on PATH (no local typescript) — so `npm run build` ALWAYS exits 1 and every
+// kernel mutant was being vacuously "killed by build" without its test ever running. The explicit path
+// actually compiles, so a valid mutant builds and the KILL must come from the adversarial TEST.
+const KERNEL_BUILD = ["node", "../logicn-tower-citizen/node_modules/typescript/lib/tsc.js", "-p", "tsconfig.json"];
 const KERNEL_TEST = ["node", "--test", "tests/registry-index.test.mjs"];
 const BUILTIN = [
   {
@@ -113,7 +117,39 @@ const CERT = [
   },
 ];
 
-const MUTANTS = configArg ? JSON.parse(readFileSync(configArg, "utf8")) : [...BUILTIN, ...CERT];
+// ── fuse-loader: the three fail-closed package-admission gates (hash · signature · revocation) ──
+// Each mutant is a REACHABLE, compile-clean weakening (a plausible planted bug, not dead code) so the
+// KILL comes from the adversarial fuse test — proving the test fires, not merely that tsc rejects dead
+// code. These are the "three fail-closed gates" the module header documents.
+const KERNEL_FUSE_TEST = ["node", "--test", "tests/fuse-loader.test.mjs"];
+const FUSE = [
+  {
+    id: "fuse-gate1-hash-mismatch",
+    file: `${K}/src/fuse-loader.ts`,
+    find: "if (actualSha !== descriptor.wasmSha256) {",
+    replace: "if (actualSha.length !== descriptor.wasmSha256.length) {",
+    cwd: K, build: KERNEL_BUILD, test: KERNEL_FUSE_TEST,
+    desc: "Gate 1 — hash gate weakened to a LENGTH compare; a tampered .wasm (same-length digest) is admitted",
+  },
+  {
+    id: "fuse-gate2-sig-invalid",
+    file: `${K}/src/fuse-loader.ts`,
+    find: "valid = crypto.verify(null, bytesForVerification, publicKey, base64ToBytes(signature as string));",
+    replace: "valid = crypto.verify(null, bytesForVerification, publicKey, base64ToBytes(signature as string)) || true;",
+    cwd: K, build: KERNEL_BUILD, test: KERNEL_FUSE_TEST,
+    desc: "Gate 2 — signature result forced truthy; an INVALID Ed25519 manifest signature is accepted as verified",
+  },
+  {
+    id: "fuse-gate2b-key-revoked",
+    file: `${K}/src/fuse-loader.ts`,
+    find: "revoked = opts.revocationCheck(keyId) === true;",
+    replace: "revoked = opts.revocationCheck(keyId) === false;",
+    cwd: K, build: KERNEL_BUILD, test: KERNEL_FUSE_TEST,
+    desc: "Gate 2b — revocation verdict inverted; a cryptographically-valid signature from a REVOKED key is admitted",
+  },
+];
+
+const MUTANTS = configArg ? JSON.parse(readFileSync(configArg, "utf8")) : [...BUILTIN, ...CERT, ...FUSE];
 
 function git(args) { return spawnSync("git", args, { cwd: ROOT, encoding: "utf8" }); }
 function isClean(file) { return git(["diff", "--quiet", "--", file]).status === 0; }
