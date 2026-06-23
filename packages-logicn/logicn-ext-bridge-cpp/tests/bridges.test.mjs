@@ -173,3 +173,20 @@ test("CPU bridge: authorized governance allows the native addon call (no behavio
   assert.equal(r.executedNatively, true);
   assert.equal(r.value, 30);
 });
+
+test("GPU bridge: governance denial blocks native execution when CUDA is ready (fail-closed)", () => {
+  // CUDA kernel is pending today (nativeAvailable=false → gate is a no-op), so simulate a ready
+  // kernel to exercise the future native gate. A denied COMMIT must throw, not run.
+  const denyAll = {
+    version: "test-deny-all",
+    defaultAction: -1,
+    restrictedTransitions: [
+      { from: 0, to: 1, requires: ["audit_signature"] },
+      { from: -1, to: 0, requires: ["audit_signature"] },
+    ],
+  };
+  const b = new BitNetGpuBridge(undefined, new GovernanceEnforcer(denyAll));
+  b.nativeAvailable = true; // simulate a ready CUDA kernel
+  assert.equal(b.canCommit(), false);
+  assert.throws(() => b.execute(tmacOp([1, 1, 1], [2, 2, 2])), /CITIZEN_STANDARD_VIOLATION/);
+});

@@ -55,6 +55,16 @@ export class BitNetGpuBridge implements InferenceBridge {
     const t0 = Date.now();
     // CUDA kernel pending — run the deterministic simulator reference.
     const ref = this.reference.execute(op);
+    // Standard 2 — Governance Signal: when this bridge WOULD execute natively (CUDA kernel ready),
+    // the COMMIT gate MUST pass first. Fail-closed. There is no live native path yet, so this wires
+    // the gate AHEAD of the kernel — the documented Standard-2 now holds for the GPU bridge too (the
+    // same fix as the CPU bridge); it is a no-op while nativeAvailable is false.
+    if (this.nativeAvailable && !this.canCommit()) {
+      throw new Error(
+        "[CITIZEN_STANDARD_VIOLATION]: GovernanceEnforcer denied the COMMIT transition (0 -> +1) — " +
+          "Standard 2 (Governance Signal) blocks native BitNet GPU execution. Fail-closed.",
+      );
+    }
     return {
       value: ref.value,
       executedNatively: this.nativeAvailable, // false until CUDA kernel is compiled
