@@ -40,6 +40,7 @@ refuted, with the reason — then refreshes the KB index. See [[feedback-rd-abso
 | DRCM degrade-only photonic operand · CBOR SubstrateAttestation Tag-418 · economics/security photonic lanes | 🧪 DESIGNED | degrade-only (brake-only), keep crypto Binary | [architecture R&D](logicn-architecture-rd-2026-06-23.md) |
 | Compiler Intelligence (Doc 005): §2 Governance DCE · §3 substrate envelope+value-taint · §4 auto-resilience wrap | 🧪 DESIGNED | all `design-then-build`; ~75-85% substrate reused; net-new = K3 trust-dataflow pass (LLN-GDCE-001), `substrate{photonic}` keyword, AST→GIR resilience wrap. No "guessing" — deterministic, unknown→0→keep | [compiler-intelligence](logicn-compiler-intelligence-deterministic-foresight.md) (wf `w2gzcbx9d`) |
 | Photonic auto-promotion WITHOUT explicit authorization | ❌ REFUTED | violates "no hidden power/cost" + determinism contract; precision/crypto→photonic "must stay impossible" — agency is BOUNDED (explicit `substrate{}` envelope + auto-route within, fail-closed to Binary) | compiler-intelligence §3 |
+| Module-wide `contract.invariant{}` (note 45 Part 1) | 🧪 DESIGNED | promote flow-`invariant{}` → module-wide, injected into every flow; **tier by provability** (static-proof / block-build · injected DbC `ensure` · alias-to-`limits`); AI-drift immunity (invariant lives at the contract layer, not the body an AI edits) | [invariant module-wide R&D](logicn-contract-invariant-module-wide-rd.md) |
 | FHE encrypted-similarity | 🔭 TRACKED | crypto-on-core-OK but never line-rate + solves a threat model LogicN doesn't have; selective-disclosure ANN dominates | rd-absorbed/rd-fhe-encrypted-similarity-v0.md |
 | Real DSS.wasm / Wasmtime TCB (DRCM Ph5) | 🔒 GATED | #102-106 external-infra + owner gated | logicn-drcm.md |
 | ML-DSA-65 hybrid `.lmanifest` signing (#34) | 🔒 GATED | verify is PQ-ready; signer build owner-gated (offline custody) | logicn-quantum-resistance-posture.md |
@@ -56,6 +57,7 @@ refuted, with the reason — then refreshes the KB index. See [[feedback-rd-abso
 | Tri-logic "speeds up" JSON parsing | ❌ REFUTED | category error (K3 is governance, not parsing); the real win is a simdjson branchless classifier |
 | Photonic tensor-precompute = O(1) | ❌ REFUTED | classic precompute trade (apply still O(N²); dense T_reach mem; fusion densifies 39×) — not O(1) |
 | Cleartext semantic routing across a trust boundary | ❌ KILLED | LLN-PRIVACY-002 blocks cleartext semantic embeddings at network sinks |
+| `contract.invariant` "Auto self-healing immune system" (note 45 Part 2) | ❌ REFUTED | (1) loosen-on-low-risk = FAIL-OPEN (spoof telemetry → loosened net); invariants must be monotonic-tighten-only (`LLN-MONO`); (2) synthesise conditions from analog HIV telemetry = No-Coercion violation + guessing; (3) host-side `LogicNAutoInvariantEngine` misplaces trust (host is hostile; enforcer must be in-DSS.wasm). Sound core re-derives the shipped monotonic emergency overlay | [invariant module-wide R&D](logicn-contract-invariant-module-wide-rd.md) |
 
 
 ## Complete R&D ledger — all bridge `done/` files (swept 95, 2026-06-23)
