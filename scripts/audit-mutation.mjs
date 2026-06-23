@@ -196,7 +196,34 @@ const CC_I32 = [
   },
 ];
 
-const MUTANTS = configArg ? JSON.parse(readFileSync(configArg, "utf8")) : [...BUILTIN, ...CERT, ...FUSE, ...CC_I32];
+// ── secret-egress: the value-state-checker SINK gate (unsafe/tainted/secret → exfiltration sink) ──
+// isNetworkSink (value-state-checker.ts) recognises the egress paths a tainted/secret value must not reach;
+// when it does, LLN-VALUESTATE-003 fires (a compile-time deny). Make a sink go UNRECOGNISED and the unsafe
+// value escapes with NO diagnostic — a fail-OPEN (the exact class the comment notes was a past VSC-003 hole).
+// domain-security.test.mjs asserts the diagnostic fires at each sink, so it kills these [test].
+const VSC_EGRESS_TEST = ["node", "--test", "tests/domain-security.test.mjs"];
+const VSC_EGRESS = [
+  {
+    // Corrupt the registry KEY so the SINK_REQUIREMENTS lookup misses → the sink is ungoverned →
+    // an unsafe value reaches it with no LLN-VALUESTATE-003. (Registry is the single source of truth.)
+    id: "vsc-response-body-sink-unregistered",
+    file: `${CC}/src/value-state-checker.ts`,
+    find: '["response.body",',
+    replace: '["response.body.MUTANT",',
+    cwd: CC, build: CC_BUILD, test: VSC_EGRESS_TEST,
+    desc: "secret-egress hole — response.body removed from SINK_REQUIREMENTS, so an unsafe value in the HTTP response leaving the trust boundary is no longer flagged",
+  },
+  {
+    id: "vsc-remote-inference-sink-unregistered",
+    file: `${CC}/src/value-state-checker.ts`,
+    find: '["ai.remoteInference",',
+    replace: '["ai.remoteInference.MUTANT",',
+    cwd: CC, build: CC_BUILD, test: VSC_EGRESS_TEST,
+    desc: "secret-egress hole — ai.remoteInference removed from SINK_REQUIREMENTS, so an unsafe value shipped to a third-party model is no longer flagged",
+  },
+];
+
+const MUTANTS = configArg ? JSON.parse(readFileSync(configArg, "utf8")) : [...BUILTIN, ...CERT, ...FUSE, ...CC_I32, ...VSC_EGRESS];
 
 function git(args) { return spawnSync("git", args, { cwd: ROOT, encoding: "utf8" }); }
 function isClean(file) { return git(["diff", "--quiet", "--", file]).status === 0; }
