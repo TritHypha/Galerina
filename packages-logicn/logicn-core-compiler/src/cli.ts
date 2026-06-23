@@ -400,7 +400,14 @@ function compileFile(
     );
   }
 
-  const valueStateResult = checkValueStates(parseResult.ast);
+  // Determine compile mode: production/deterministic builds enforce errors; dev/check/build
+  // downgrade migration-stage diagnostics (LLN-VALUESTATE-008, LLN-STDLIB-001) to warnings.
+  const effectCheckerMode: "production" | "development" =
+    (mode === "build-production" || mode === "build-deterministic")
+      ? "production"
+      : "development";
+
+  const valueStateResult = checkValueStates(parseResult.ast, effectCheckerMode);
   for (const d of valueStateResult.diagnostics) {
     pushDiag(
       diagnostics,
@@ -412,13 +419,6 @@ function compileFile(
       d.location?.column,
     );
   }
-
-  // Determine effect checker mode: production/deterministic modes enforce errors;
-  // dev/check/build modes use development mode (LLN-STDLIB-001 emitted as warning).
-  const effectCheckerMode: "production" | "development" =
-    (mode === "build-production" || mode === "build-deterministic")
-      ? "production"
-      : "development";
 
   const effectResults = checkEffects(parseResult.flows, parseResult.ast, effectCheckerMode);
   for (const result of effectResults) {

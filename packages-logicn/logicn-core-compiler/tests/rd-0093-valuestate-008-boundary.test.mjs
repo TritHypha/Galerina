@@ -48,3 +48,11 @@ contract { effects {} }
 `);
   assert.ok(!has(r, "LLN-VALUESTATE-008"), "string-concat is not a governed sink — boundary-untrusted is inert here (the VS-004 false-positive the scoped fix avoids)");
 });
+
+test("VS-008 stage-2: warning in dev/check, escalates to ERROR in production/deterministic (migration)", () => {
+  const ast = parseProgram(sinkBody("secure"), "t.lln").ast;
+  const dev = checkValueStates(ast).diagnostics.filter((d) => d.code === "LLN-VALUESTATE-008");
+  const prod = checkValueStates(ast, "production").diagnostics.filter((d) => d.code === "LLN-VALUESTATE-008");
+  assert.equal(dev[0]?.severity, "warning", "dev/check keeps the migration warning");
+  assert.equal(prod[0]?.severity, "error", "production/deterministic escalates the 34B-hole to an error");
+});

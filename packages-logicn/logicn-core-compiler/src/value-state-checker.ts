@@ -945,10 +945,17 @@ class ValueStateChecker {
   // R&D 0093: the flow-kind currently being walked, so registerParamBinding knows whether
   // a bare param sits at a posture-gated entry boundary (secure/guarded → boundary-untrusted).
   private currentFlowKind: string | undefined;
+  // R&D 0093 stage-2: production/deterministic builds escalate LLN-VALUESTATE-008 to error.
+  private readonly mode: "production" | "development";
 
-  constructor(userGates: ReadonlySet<string> = new Set(), userFlows: ReadonlySet<string> = new Set()) {
+  constructor(
+    userGates: ReadonlySet<string> = new Set(),
+    userFlows: ReadonlySet<string> = new Set(),
+    mode: "production" | "development" = "development",
+  ) {
     this.userGates = userGates;
     this.userFlows = userFlows;
+    this.mode = mode;
   }
 
   check(ast: AstNode): void {
@@ -1701,7 +1708,7 @@ class ValueStateChecker {
               risk: `Unvalidated boundary data at '${sinkName}' risks injection / governance violations. (Stage-1 WARNING; becomes an error in production.)`,
             },
           ),
-          severity: "warning",
+          severity: this.mode === "production" ? "error" : "warning",
         });
       }
     }
@@ -1952,12 +1959,17 @@ class ValueStateChecker {
  * @param ast  The root `program` node from `parseProgram()`.
  * @returns    A result object containing all value-state diagnostics.
  */
-export function checkValueStates(ast: AstNode): ValueStateCheckResult {
+export function checkValueStates(
+  ast: AstNode,
+  // R&D 0093 stage-2: in production/deterministic builds, LLN-VALUESTATE-008 (the 34B-hole
+  // boundary-input warning) escalates to an error; dev/check keep it a warning (migration).
+  mode: "production" | "development" = "development",
+): ValueStateCheckResult {
   // Phase 11B.2: collect user-defined gate functions before running the checker
   const userGates = collectUserGates(ast);
   // Phase 4.3: collect user-defined flow names for inter-flow call-site warnings
   const userFlows = collectUserFlows(ast);
-  const checker = new ValueStateChecker(userGates, userFlows);
+  const checker = new ValueStateChecker(userGates, userFlows, mode);
   checker.check(ast);
   return checker.getResult();
 }
