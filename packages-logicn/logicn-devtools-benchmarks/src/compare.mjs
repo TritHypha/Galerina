@@ -320,6 +320,52 @@ for (const bench of data) {
   }
 }
 
+// ── §1.5: Canonical scoreboard — production-ceiling winner-ordered, with LogicN rank + ×slower ──
+// THE STANDARD benchmark view (owner rule 2026-06-23, see logicn-benchmark-scoreboard-standard.md). The
+// "winner" is the PRODUCTION ceiling — the 3 ⟨interp⟩ diagnostic tiers (LRU-cache passive / manifest /
+// governed) CANNOT win, since reading a warm-cache tier as a "win" is misleading. Every comparable
+// benchmark shows where LogicN's SHIPPING path (WASM ▶ production) and its diagnostic worst-case
+// (governed ⟨interp⟩) placed: rank among the production pool + ×slower vs the winner. No silent caps —
+// excluded (not unit-aligned) + insufficient-data benchmarks are listed.
+console.log("\n## 1.5 Scoreboard — production-ceiling winner-ordered (LogicN rank + ×slower)\n");
+console.log("> **The standard view.** Winner = fastest PRODUCTION runtime (the 3 ⟨interp⟩ diagnostic tiers cannot 'win'). " +
+  "`rank` = where WASM ▶ production placed among the production runtimes; `×slower` = vs the winner. " +
+  "WASM ▶ production is the shipping cost; governed ⟨interp⟩ is the Stage-A diagnostic worst-case (NOT shipping).\n");
+console.log("| Benchmark | 🏆 Winner (ceiling) | Speed | WASM▶prod: rank · ×slower | gov⟨interp⟩: ×slower |");
+console.log("|---|---|---|---|---|");
+
+const PROD_POOL = ORDER.filter((rt) => !["logicnPassive", "logicnManifest", "logicnGoverned"].includes(rt));
+const ordinal = (k) => k + (k % 10 === 1 && k % 100 !== 11 ? "st" : k % 10 === 2 && k % 100 !== 12 ? "nd" : k % 10 === 3 && k % 100 !== 13 ? "rd" : "th");
+const xSlower = (slow, win) => {
+  if (!slow || !win) return "—";
+  if (slow >= win) return "1.0× (won)";
+  const x = win / slow;
+  return x < 10 ? `${x.toFixed(1)}× slower` : x >= 1000 ? `${(x / 1000).toFixed(1)}K× slower` : `${Math.round(x)}× slower`;
+};
+const winTally = {};
+const canonRows = [];
+const lowData = [];
+for (const bench of data) {
+  if (!comparable(bench)) continue;
+  const m = {};
+  for (const rt of PROD_POOL) m[rt] = throughput(bench.results?.[rt]) ?? 0;
+  const ranked = PROD_POOL.filter((rt) => m[rt] > 0).sort((a, b) => m[b] - m[a]);
+  if (ranked.length < 2) { lowData.push(bench.benchmark); continue; }
+  const winnerRt = ranked[0], winSpeed = m[winnerRt], M = ranked.length;
+  const wasmRank = ranked.indexOf("wasm");
+  const wasm = throughput(bench.results?.wasm) ?? 0;
+  const gov = throughput(bench.results?.logicnGoverned) ?? 0;
+  const wasmCell = wasm > 0 && wasmRank >= 0 ? `${ordinal(wasmRank + 1)}/${M} · ${xSlower(wasm, winSpeed)}` : "—";
+  winTally[LABEL[winnerRt]] = (winTally[LABEL[winnerRt]] ?? 0) + 1;
+  canonRows.push({ bench: bench.benchmark, winnerLabel: LABEL[winnerRt], winSpeed, wasmCell, govCell: gov > 0 ? xSlower(gov, winSpeed) : "—" });
+}
+canonRows.sort((a, b) => a.winnerLabel.localeCompare(b.winnerLabel) || b.winSpeed - a.winSpeed);
+for (const r of canonRows) console.log(`| ${r.bench} | **${r.winnerLabel}** | ${fmtT(r.winSpeed)} | ${r.wasmCell} | ${r.govCell} |`);
+console.log("\n**Winner tally (production ceiling):** " + (Object.entries(winTally).sort((a, b) => b[1] - a[1]).map(([w, n]) => `${w} ${n}`).join(" · ") || "—"));
+const canonExcl = data.filter((b) => !comparable(b)).map((b) => b.benchmark);
+if (canonExcl.length) console.log(`\n> **Excluded — not unit-aligned (no silent caps):** ${canonExcl.join(", ")}.`);
+if (lowData.length) console.log(`> **Insufficient data (<2 production runtimes ran):** ${lowData.join(", ")}.`);
+
 // ── Full table ────────────────────────────────────────────────────────────────
 console.log("\n### Full Throughput Table (all runtimes)\n");
 
