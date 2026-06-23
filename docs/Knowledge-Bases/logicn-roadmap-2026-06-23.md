@@ -22,11 +22,15 @@ token-saving dev tools** (status/rd-absorb/stray-docs, wired into the Stop caden
    now makes the path LIVE**: a `resolveChannelVerdict(req)` hook computes the K3 verdict per request and threads it
    to the kernel (transport → `certGate` → `channelVerdict` → fold). Fail-closed: a throwing resolver → DENY (never
    downgraded to the header path); unset → header path (no change); only +1 authenticates (mutual-TLS in lieu of a
-   bearer token). +6 api-server e2e (5→11 green). **Remaining:** (a) a concrete **TLS peer-cert → `CertGateInput`
-   mapper helper** + an https example (the operator currently writes the mapper); (b) **OWNER DECISION** — tighten the
-   legacy presence-only fallback (any non-empty `Authorization` header still passes when no `channelVerdict` is
-   supplied); (c) **OWNER DECISION** — should a DENY channel verdict also block **public** routes (channel-level deny
-   vs route-level auth)? Today the verdict folds only in the required-auth step, so a public route ignores it.
+   bearer token). +6 api-server e2e (5→11 green). **(a) TLS mapper — LANDED** (owner, 2026-06-23): opt-in `tls`
+   mode in `createApiServer` stands up HTTPS, reads `getPeerCertificate(true)`, maps to `CertGateInput`, folds via
+   `certGate` → `channelVerdict` (fail-closed; unreadable factor → DENY). **(b) Tighten presence-only fallback —
+   DONE 2026-06-23:** a required-auth route with no `channelVerdict` no longer admits on mere header presence
+   (deny-by-default); opt back in per-route via `auth.allowHeaderPresenceFallback` (relaxation surfaced in the
+   security report). Composes with the TLS mode (required-auth now demands a real cert verdict, no header bypass).
+   +3 kernel tests, kernel 90→93, api-server 11 green. **Remaining: (c) OWNER DECISION** — should a DENY channel
+   verdict also block **public** routes? Today the verdict folds only in the required-auth step (owner left this
+   as-is on 2026-06-23).
 2. **[HIGH] ✅ Fix the 2 WAT codegen fail-opens — DONE 2026-06-23.** #163 record fail-opens closed: a record
    FIELD access with a known type but no WAT local (was reading reserved scratch at base `0`), and a
    `#record-update` with an un-inferable base type *inside an emission walk* (was a silent null record handle) —

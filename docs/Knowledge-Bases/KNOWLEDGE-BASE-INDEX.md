@@ -117,6 +117,7 @@
 | `logicn-outstanding-rd-and-todos-2026-06-23.md` | Single source of truth for everything outstanding — R&D gaps, designed-but-unbuilt, build items, missing/incomplete packages. |
 | `logicn-rd-results-log.md` | **R&D verdict quick-lookup** — adopted / designed / tracked / **refuted (with reasons)** / pending / gated; append a row per `done/NNNN-*`. |
 | `logicn-rd-notes-46-47-50-51-apiserver-lln-2026-06-23.md` | R&D batch (wf `wg7f09b67`): notes 46/47/50/51 + blueprint PDF + `//lln:` cache-chain + api-server completeness; ~85% re-derive; net-new = affine/type-state authority (#0087) · signed flow-graph+GIR compile-cache (#0088) · api-server TLS mapper (#0089). |
+| `logicn-pci-dss-evidence-mapping.md` | **HONEST** PCI DSS v4.0 → LogicN-artifact compliance-evidence map (6.4.3/3.4/11.3.4/10.2-3); grades each by what is ENFORCED vs ⚠ aspirational (WASI isolation #102-106) vs 🔑 placeholder (PQ signing #34); discloses the 7/12 checker gap. Corrects the blueprint PDF's over-claim. |
 | `logicn-architecture-rd-2026-06-23.md` | Forward architecture R&D — zero-trust · best-tech · photonic-tri · Tri-Pipe + tower-citizen integration; 16-item prioritised build ladder. |
 | `logicn-contract-permissions-design.md` | **Layer 2B Syntax (DESIGN, net-new)** — `contract.permissions { hardware.camera }` device-grant clause (V_PERM + LLN-PERM-001..006, fail-closed). |
 
