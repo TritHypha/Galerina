@@ -1,17 +1,31 @@
-import { test } from "node:test";
+import { test, after } from "node:test";
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   AuditEgress,
   readEgressLedger,
 } from "../dist/audit-egress.js";
 
-let counter = 0;
+// Kernel-unique scratch dir per test (mkdtemp): a recycled PID or concurrent run
+// can never append to a stale ledger. Tracked + removed after the run so nothing
+// accumulates. (Was a relative `build/<pid>-<n>` dir — flaky under load.)
+const createdDirs = [];
 function freshDir() {
-  counter += 1;
-  return join("build", `egress-test-${process.pid}-${counter}`);
+  const dir = mkdtempSync(join(tmpdir(), "logicn-egress-"));
+  createdDirs.push(dir);
+  return dir;
 }
+after(() => {
+  for (const d of createdDirs) {
+    try {
+      rmSync(d, { recursive: true, force: true });
+    } catch {
+      /* best-effort cleanup */
+    }
+  }
+});
 
 test("batchSize <= 0 throws EGR-CFG-001", () => {
   assert.throws(
@@ -72,8 +86,10 @@ test("flush() with nothing buffered returns null and writes no file content", ()
 });
 
 test("readEgressLedger on a missing dir returns []", () => {
-  const dir = join("build", `egress-missing-${process.pid}-${++counter}`);
-  assert.deepEqual(readEgressLedger(dir), []);
+  // A guaranteed-non-existent child of a fresh (empty) temp dir.
+  const missing = join(freshDir(), "does-not-exist");
+  assert.equal(existsSync(missing), false);
+  assert.deepEqual(readEgressLedger(missing), []);
 });
 
 test("seq increments monotonically across multiple flushed batches", () => {

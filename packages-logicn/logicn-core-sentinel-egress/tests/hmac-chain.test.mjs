@@ -1,16 +1,31 @@
-import { test } from "node:test";
+import { test, after } from "node:test";
 import assert from "node:assert/strict";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   AuditEgress,
   readEgressLedger,
 } from "../dist/audit-egress.js";
 
-let counter = 0;
+// Kernel-unique scratch dir per test (mkdtemp): a recycled PID or concurrent run
+// can never append to a stale ledger. Tracked + removed after the run so nothing
+// accumulates. (Was a relative `build/<pid>-<n>` dir — flaky under load.)
+const createdDirs = [];
 function freshDir() {
-  counter += 1;
-  return join("build", `egress-test-hmac-${process.pid}-${counter}`);
+  const dir = mkdtempSync(join(tmpdir(), "logicn-egress-hmac-"));
+  createdDirs.push(dir);
+  return dir;
 }
+after(() => {
+  for (const d of createdDirs) {
+    try {
+      rmSync(d, { recursive: true, force: true });
+    } catch {
+      /* best-effort cleanup */
+    }
+  }
+});
 
 test("readEgressLedger after several batches -> verifyChain === true", () => {
   const dir = freshDir();
