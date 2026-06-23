@@ -62,7 +62,58 @@ const BUILTIN = [
   },
 ];
 
-const MUTANTS = configArg ? JSON.parse(readFileSync(configArg, "utf8")) : BUILTIN;
+// ── cert-gate (TLSTP S1) fail-closed gates — the K3 channel/cert verdict ──────────────
+// core-network has no local tsc; build with the tower-citizen-vendored compiler (the
+// documented build-without-npm-install path). Every mutant below is valid TS (a Verdict
+// enum swap), so the build SUCCEEDS and the KILL must come from the adversarial test —
+// that is the point: prove the test, not the type-checker, guards the fail-closed seam.
+const CN = "packages-logicn/logicn-core-network";
+const CN_BUILD = ["node", "../logicn-tower-citizen/node_modules/typescript/lib/tsc.js", "-p", "tsconfig.json"];
+const CN_TEST = ["node", "--test", "tests/cert-gate.test.mjs"];
+const CERT = [
+  {
+    id: "cert-revocation-unknown-allow",
+    file: `${CN}/src/cert-gate.ts`,
+    find: 'if (resolved !== "good") return Verdict.INDETERMINATE;',
+    replace: 'if (resolved !== "good") return Verdict.ALLOW;',
+    cwd: CN, build: CN_BUILD, test: CN_TEST,
+    desc: "S1 revocation-UNKNOWN soft-fails to ALLOW — the exact public-web hole the gate exists to close",
+  },
+  {
+    id: "cert-revocation-stale-allow",
+    file: `${CN}/src/cert-gate.ts`,
+    find: "if (age < 0 || age > freshnessMs) return Verdict.INDETERMINATE;",
+    replace: "if (age < 0 || age > freshnessMs) return Verdict.ALLOW;",
+    cwd: CN, build: CN_BUILD, test: CN_TEST,
+    desc: "S1 a STALE / future-dated 'good' OCSP response is trusted — replayed-good authorizes the channel",
+  },
+  {
+    id: "cert-revocation-throw-allow",
+    file: `${CN}/src/cert-gate.ts`,
+    find: "return Verdict.INDETERMINATE; // throwing check ⇒ unknown ⇒ 0 (fuse-loader.ts:537)",
+    replace: "return Verdict.ALLOW; // throwing check ⇒ unknown ⇒ 0 (fuse-loader.ts:537)",
+    cwd: CN, build: CN_BUILD, test: CN_TEST,
+    desc: "S1 a THROWING revocation check fails OPEN to ALLOW — a responder error would authorize admission",
+  },
+  {
+    id: "cert-pin-mismatch-soften",
+    file: `${CN}/src/cert-gate.ts`,
+    find: "return pinned.some((d) => d.toLowerCase() === p) ? Verdict.ALLOW : Verdict.DENY;",
+    replace: "return pinned.some((d) => d.toLowerCase() === p) ? Verdict.ALLOW : Verdict.INDETERMINATE;",
+    cwd: CN, build: CN_BUILD, test: CN_TEST,
+    desc: "S1 a pin MISMATCH softens from −1 (annihilator) to 0 — the MITM-with-valid-cert no longer hard-denies",
+  },
+  {
+    id: "cert-no-pin-allow",
+    file: `${CN}/src/cert-gate.ts`,
+    find: "if (pinned === undefined || pinned.length === 0) return Verdict.INDETERMINATE;",
+    replace: "if (pinned === undefined || pinned.length === 0) return Verdict.ALLOW;",
+    cwd: CN, build: CN_BUILD, test: CN_TEST,
+    desc: "S1 fail-closed seam broken — a missing pin defaults to +1 instead of 0 (absence-of-evidence → ALLOW)",
+  },
+];
+
+const MUTANTS = configArg ? JSON.parse(readFileSync(configArg, "utf8")) : [...BUILTIN, ...CERT];
 
 function git(args) { return spawnSync("git", args, { cwd: ROOT, encoding: "utf8" }); }
 function isClean(file) { return git(["diff", "--quiet", "--", file]).status === 0; }
@@ -111,11 +162,18 @@ try {
     results.push(verdict);
   }
 } finally {
-  // Belt-and-suspenders: ensure every target is clean again, then rebuild dist from clean source.
+  // Belt-and-suspenders: ensure every target is clean again, then rebuild dist from clean
+  // source — for EVERY distinct (cwd, build) target. restore() reverts the SOURCE but not the
+  // built artifact, so a mutant in package B would otherwise leave B/dist reflecting the hole
+  // even after the source is clean. Rebuild each distinct package exactly once.
   for (const f of targets) if (!isClean(f)) restore(f);
-  if (MUTANTS.some((m) => m.build)) {
-    const anyBuild = MUTANTS.find((m) => m.build);
-    run(anyBuild, anyBuild.build); // clean rebuild so artifacts match restored source
+  const rebuilt = new Set();
+  for (const m of MUTANTS) {
+    if (!m.build) continue;
+    const key = `${m.cwd} ${JSON.stringify(m.build)}`;
+    if (rebuilt.has(key)) continue;
+    rebuilt.add(key);
+    run(m, m.build); // clean rebuild so this package's artifacts match its restored source
   }
 }
 
