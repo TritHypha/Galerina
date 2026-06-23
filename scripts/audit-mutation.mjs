@@ -25,7 +25,9 @@ const soft = argv.includes("--soft");
 const asJson = argv.includes("--json");
 const rootArg = argv[argv.indexOf("--root") + 1];
 const ROOT = argv.includes("--root") ? rootArg : process.cwd();
-const configArg = argv[argv.indexOf("--config") + 1];
+// Guard like --root above: indexOf returns -1 when --config is absent, so a bare argv[0]
+// (e.g. "--soft") must NOT be read as a config path (was an ENOENT crash on `--soft` alone).
+const configArg = argv.includes("--config") ? argv[argv.indexOf("--config") + 1] : undefined;
 
 const exe = (c) => (process.platform === "win32" && c === "npm" ? "npm.cmd" : c);
 
