@@ -27,10 +27,14 @@ token-saving dev tools** (status/rd-absorb/stray-docs, wired into the Stop caden
    legacy presence-only fallback (any non-empty `Authorization` header still passes when no `channelVerdict` is
    supplied); (c) **OWNER DECISION** — should a DENY channel verdict also block **public** routes (channel-level deny
    vs route-level auth)? Today the verdict folds only in the required-auth step, so a public route ignores it.
-2. **[HIGH] Fix the 2 WAT codegen fail-opens** — #163 `#record-update` emits a silent `(i32.const 0)` placeholder;
-   #165 float arithmetic. A cannot-lower op must emit `(unreachable)` (fail-closed trap), **never a
-   plausible-but-wrong value**. Verify the WASM-parity test impact first, then fix-forward (trap or proper lowering).
-   *(VERIFIED REAL 2026-06-23; techdebt #161-191 set, distinct from the #128 set the Phase-4 audit called hardened.)*
+2. **[HIGH] ✅ Fix the 2 WAT codegen fail-opens — DONE 2026-06-23.** #163 record fail-opens closed: a record
+   FIELD access with a known type but no WAT local (was reading reserved scratch at base `0`), and a
+   `#record-update` with an un-inferable base type *inside an emission walk* (was a silent null record handle) —
+   both now emit `(unreachable)` (fail-closed trap), scoped so non-emission analysis callers keep the placeholder.
+   #165 float was already lowered to f64 (`FLOAT_ARITH_WAT`/`FLOAT_CMP_WAT`). Parity-safe: compiler suite
+   3169/3170, all record-update/layout/fail-closed/tokenize-parity/f64 green. *(Also fixed a found-in-passing
+   hygiene bug: `scripts/audit-mutation.mjs` had a literal NUL byte — the SEC-002 tool itself was binary-flagged /
+   grep-invisible; replaced with the `\0` escape, `source-hygiene-no-nul` now green.)*
 3. **[CRITICAL-open] #149 — CI secret-scan + re-sign legacy old-key artifacts.** The rotated-but-leaked signing key
    `8eecf4…` may still be on the public remote; add gitleaks/trufflehog in a real `.github/workflows/` and re-sign
    any exclusively-old-key-signed artifacts. The last open key-exposure P0.
