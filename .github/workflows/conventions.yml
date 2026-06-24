@@ -66,6 +66,22 @@ jobs:
           node scripts/audit-tier-boundary.mjs --self-test
           node scripts/audit-tier-boundary.mjs
 
+  # production-blockers (build-free, zero-baseline, ENFORCING): every code in production-check.ts
+  # PRODUCTION_BLOCKERS must have a real emitter. A blocker no compiler pass can produce advertises a
+  # deployment block it cannot enforce (the false memory-gate: LLN-MEMORY-001/002/003/007 were blockers
+  # with no emitter). The --self-test proves the detector fires; then the scan runs ENFORCING.
+  production-blockers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Production-blocker emitter guard (self-test, then enforcing)
+        run: |
+          node scripts/audit-production-blockers.mjs --self-test
+          node scripts/audit-production-blockers.mjs
+
   # name-collisions (build-free, zero-baseline, ENFORCING): no two package names may be reordered-token
   # near-anagrams (the graph-project / project-graph tangle) or typo-twins. The --self-test proves the
   # detectors fire; then the scan runs ENFORCING against live package.json names + governance/name-registry.json
