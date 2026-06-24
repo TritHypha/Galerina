@@ -589,12 +589,23 @@ export function createWorkspaceProjectGraph(
       readMarkdownSummary(readmeFile?.text) ??
       packageEntry.role;
 
+    // Point the package node at a source file that ACTUALLY EXISTS: the README when present, else the
+    // package.json (always present — packages are derived from it), else the package dir. Previously
+    // this was hardcoded to `${path}/README.md` even for README-less packages, producing a DANGLING
+    // sourcePath (a node referencing a non-existent file) — caught now by the graph-integrity audit.
+    const packageSourcePath =
+      readmeFile !== undefined
+        ? `${packageEntry.path}/README.md`
+        : packageFile !== undefined
+          ? `${packageEntry.path}/package.json`
+          : packageEntry.path;
+
     addNode(
       nodes,
       createPackageNode(
         packageNodeId(packageEntry.name),
         packageEntry.name,
-        `${packageEntry.path}/README.md`,
+        packageSourcePath,
         packageSummary,
       ),
     );

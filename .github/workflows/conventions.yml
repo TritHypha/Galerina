@@ -66,19 +66,17 @@ jobs:
           node scripts/audit-tier-boundary.mjs --self-test
           node scripts/audit-tier-boundary.mjs
 
-  # A green, build-free, zero-baseline GRAPH-INTEGRITY invariant (RD-0121): the committed project graph
-  # must be structurally valid — no dangling edge (every from/to references a real node), no duplicate
-  # node id, and the depends_on subgraph must be a DAG (no circular package dependency). The `logicn graph`
-  # command itself runs no validation; this is the missing check. --self-test proves the detectors fire,
-  # then the audit runs ENFORCING. FAILS a PR that commits a corrupt or cyclic graph.
-  graph-integrity:
+  # graph-integrity self-test (build-free): the structural-graph detectors (dangling edge / dup id /
+  # dependency cycle / stale sourcePath) must keep firing. The FULL audit validates a GENERATED graph
+  # (build/graph/*.json is a ~3MB gitignored artifact + the CLI dist is not committed), so it cannot run
+  # against a committed graph build-free — it runs locally / pre-commit / in a build-full job. Here we
+  # only enforce that the audit's detectors are not silently neutered (a neutered audit is a fail-open).
+  graph-integrity-selftest:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - name: Graph integrity (self-test, then enforcing)
-        run: |
-          node scripts/audit-graph-integrity.mjs --self-test
-          node scripts/audit-graph-integrity.mjs
+      - name: Graph-integrity detectors self-test (build-free)
+        run: node scripts/audit-graph-integrity.mjs --self-test
