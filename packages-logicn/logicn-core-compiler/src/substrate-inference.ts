@@ -31,6 +31,22 @@ export type SubstrateLane = "photonic" | "noisy" | "digital";
 const DEFAULT_TOLERANCE = 1e-9;
 
 /**
+ * Author-declared disposition when a substrate operation yields the K3-0 INDETERMINATE
+ * dead-zone (a photonic/noisy lane reading that discretizes to 0 — phase drift, an
+ * attacker tapping the fiber, severe noise). Default `trap` = fail-closed (refuse the
+ * value, trap to RECOVERING + audit). `fallback_digital` = recompute the operation
+ * exactly on the digital core. `revote:N` = re-vote the reading N times (NMR-style) —
+ * only meaningful on a lane that can converge (pBad < 0.5). The runtime/router honours
+ * this; omitting it defaults to fail-closed, so it can never weaken safety. (TRACK a.)
+ */
+export type OnIndeterminate =
+  | { readonly kind: "trap" }
+  | { readonly kind: "revote"; readonly n: number }
+  | { readonly kind: "fallback_digital" };
+
+const DEFAULT_ON_INDETERMINATE: OnIndeterminate = { kind: "trap" };
+
+/**
  * Lane → conservative representative noise profile. PLACEHOLDER calibration (no
  * silicon to calibrate against; documented knob — spec §6/§9, same Q3 caveat as
  * Direction C). `digital` is noiseless (inert). The author declares the *guarantee*
@@ -87,14 +103,14 @@ function fieldSegment(text: string, field: string, others: readonly string[]): s
 }
 
 function parseLaneField(text: string): Field<SubstrateLane> {
-  const seg = fieldSegment(text, "lane", ["tolerance", "redundancy"]);
+  const seg = fieldSegment(text, "lane", ["tolerance", "redundancy", "on_indeterminate"]);
   if (seg === undefined || seg === "") return { present: false, value: "digital", malformed: false };
   if (seg === "photonic" || seg === "noisy" || seg === "digital") return { present: true, value: seg, malformed: false };
   return { present: true, value: "digital", malformed: true }; // unrecognised lane keyword → fail closed
 }
 
 function parseToleranceField(text: string): Field<number> {
-  const seg = fieldSegment(text, "tolerance", ["lane", "redundancy"]);
+  const seg = fieldSegment(text, "tolerance", ["lane", "redundancy", "on_indeterminate"]);
   if (seg === undefined || seg === "") return { present: false, value: DEFAULT_TOLERANCE, malformed: false };
   if (!CLEAN_NUMBER.test(seg)) return { present: true, value: DEFAULT_TOLERANCE, malformed: true }; // split/garbage
   const v = parseFloat(seg);
@@ -102,13 +118,28 @@ function parseToleranceField(text: string): Field<number> {
 }
 
 function parseRedundancyField(text: string): Field<number> {
-  const seg = fieldSegment(text, "redundancy", ["lane", "tolerance"]);
+  const seg = fieldSegment(text, "redundancy", ["lane", "tolerance", "on_indeterminate"]);
   if (seg === undefined || seg === "") return { present: false, value: 1, malformed: false };
   if (seg === "tmr") return { present: true, value: 3, malformed: false };
   if (!/^[0-9]+$/.test(seg)) return { present: true, value: 1, malformed: true };
   const n = parseInt(seg, 10);
   if (!Number.isInteger(n) || n < 1 || n % 2 === 0) return { present: true, value: 1, malformed: true }; // even / <1
   return { present: true, value: n, malformed: false };
+}
+
+/** Parse `on_indeterminate: trap | revote:N | fallback_digital`. Absent → trap (fail-closed default). */
+function parseOnIndeterminateField(text: string): Field<OnIndeterminate> {
+  const seg0 = fieldSegment(text, "on_indeterminate", ["lane", "tolerance", "redundancy"]);
+  if (seg0 === undefined || seg0 === "") return { present: false, value: DEFAULT_ON_INDETERMINATE, malformed: false };
+  const seg = seg0.replace(/\s+/g, ""); // value is a single token ("trap"/"fallback_digital"/"revote:N")
+  if (seg === "trap") return { present: true, value: { kind: "trap" }, malformed: false };
+  if (seg === "fallback_digital") return { present: true, value: { kind: "fallback_digital" }, malformed: false };
+  const m = seg.match(/^revote:?([0-9]+)$/);
+  if (m) {
+    const n = parseInt(m[1] ?? "", 10);
+    if (Number.isInteger(n) && n >= 1) return { present: true, value: { kind: "revote", n }, malformed: false };
+  }
+  return { present: true, value: DEFAULT_ON_INDETERMINATE, malformed: true }; // unrecognised → fail closed (trap)
 }
 
 // ---------------------------------------------------------------------------
@@ -119,6 +150,8 @@ export interface InferredSubstrate {
   readonly lane: SubstrateLane;
   readonly tolerance: number;
   readonly redundancyN: number;
+  /** Author disposition on a K3-0 INDETERMINATE substrate reading. Default trap (fail-closed). */
+  readonly onIndeterminate: OnIndeterminate;
   /** true iff a substrate {} block was present (regardless of lane). */
   readonly explicit: boolean;
   /** a declared field failed validation (malformed) — fail-closed signal. */
@@ -132,18 +165,23 @@ export interface InferredSubstrate {
 export function inferFlowSubstrate(flowNode: AstNode, _flow: FlowMeta): InferredSubstrate {
   const block = findSubstrateBlock(flowNode);
   if (block === undefined) {
-    return { lane: "digital", tolerance: DEFAULT_TOLERANCE, redundancyN: 1, explicit: false, malformed: false };
+    return {
+      lane: "digital", tolerance: DEFAULT_TOLERANCE, redundancyN: 1,
+      onIndeterminate: DEFAULT_ON_INDETERMINATE, explicit: false, malformed: false,
+    };
   }
   const text = substrateDeclText(block);
   const lane = parseLaneField(text);
   const tolerance = parseToleranceField(text);
   const redundancy = parseRedundancyField(text);
+  const onIndeterminate = parseOnIndeterminateField(text);
   return {
     lane: lane.value,
     tolerance: tolerance.value,
     redundancyN: redundancy.value,
+    onIndeterminate: onIndeterminate.value,
     explicit: true,
-    malformed: lane.malformed || tolerance.malformed || redundancy.malformed,
+    malformed: lane.malformed || tolerance.malformed || redundancy.malformed || onIndeterminate.malformed,
   };
 }
 
@@ -181,8 +219,8 @@ export function checkSubstrateViolations(
       code: "LLN-SUBSTRATE-002",
       name: "TOLERANCE_UNACHIEVABLE_UNDER_NOISE",
       severity: "error",
-      message: `Flow '${flow.name}' substrate {} has a malformed tolerance/redundancy value. tolerance must be in [0,1]; redundancy must be an odd integer ≥ 1 or 'tmr'.`,
-      suggestedFix: "Fix the substrate {} field values (e.g. tolerance: 0.001, redundancy: 3).",
+      message: `Flow '${flow.name}' substrate {} has a malformed value. tolerance must be in [0,1]; redundancy must be an odd integer ≥ 1 or 'tmr'; on_indeterminate must be trap | revote:N | fallback_digital.`,
+      suggestedFix: "Fix the substrate {} field values (e.g. tolerance: 0.001, redundancy: 3, on_indeterminate: trap).",
     }];
   }
 

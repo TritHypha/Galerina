@@ -278,3 +278,49 @@ describe("drift-control oracle (compiler NMR math must match tower-citizen golde
     assert.equal(LLN_SUBSTRATE_004.code, "LLN-SUBSTRATE-004");
   });
 });
+
+// ── TRACK a — substrate { on_indeterminate } disposition knob ──────────────────
+// Author-declared disposition on a K3-0 INDETERMINATE substrate reading: trap (default,
+// fail-closed), revote:N (re-vote on a converging lane), or fallback_digital (recompute
+// exactly). Parsed + validated + recorded; a malformed value fails closed.
+
+const oiSrc = (oi) => `
+secure flow readSensor(request: Request) -> Result<Response, ApiError>
+contract {
+  effects { audit.write }
+  substrate {
+    lane: photonic
+    tolerance: 5e-3
+    redundancy: 3
+    on_indeterminate: ${oi}
+  }
+}
+{ return Ok(Response.ok({})) }
+`;
+
+describe("TRACK a — substrate { on_indeterminate } disposition", () => {
+  it("trap | fallback_digital | revote:N are accepted on a passing lane (no substrate diagnostic)", () => {
+    for (const oi of ["trap", "fallback_digital", "revote:3"]) {
+      const r = parseAndVerify(oiSrc(oi), "production");
+      assert.equal(substrateCount(r), 0,
+        `on_indeterminate: ${oi} should be clean — got ${JSON.stringify(r.diagnostics.filter((d) => d.code.startsWith("LLN-SUBSTRATE-")))}`);
+    }
+  });
+  it("an unrecognised on_indeterminate value fails closed (LLN-SUBSTRATE-002, malformed)", () => {
+    const r = parseAndVerify(oiSrc("yolo"), "production");
+    assert.ok(has(r, "LLN-SUBSTRATE-002"), "malformed disposition must be rejected");
+    assert.equal(find(r, "LLN-SUBSTRATE-002").severity, "error");
+    assert.match(find(r, "LLN-SUBSTRATE-002").message, /on_indeterminate/);
+  });
+  it("omitting on_indeterminate is non-breaking (defaults to trap; the clean lane stays clean)", () => {
+    const r = parseAndVerify(`
+secure flow readSensor2(request: Request) -> Result<Response, ApiError>
+contract {
+  effects { audit.write }
+  substrate { lane: photonic  tolerance: 5e-3  redundancy: 3 }
+}
+{ return Ok(Response.ok({})) }
+`, "production");
+    assert.equal(substrateCount(r), 0);
+  });
+});
