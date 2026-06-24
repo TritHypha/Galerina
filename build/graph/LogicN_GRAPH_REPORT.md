@@ -1,15 +1,15 @@
 # LogicN Graph Report
 
 Workspace: LogicN-app
-Generated: 2026-06-23T21:57:59.916Z
+Generated: 2026-06-24T05:48:19.692Z
 
 ## Summary
 
-- Packages: 90
-- Documents: 2043
-- Types/interfaces: 1843
-- Functions: 817
-- Relationships: 5443
+- Packages: 91
+- Documents: 2222
+- Types/interfaces: 1860
+- Functions: 845
+- Relationships: 5681
 
 ## Package Nodes
 
@@ -89,6 +89,7 @@ Generated: 2026-06-23T21:57:59.916Z
 - logicn-ext-photonic-emulator (packages-logicn/logicn-ext-photonic-emulator/README.md)
 - logicn-ext-proof-snarkjs (packages-logicn/logicn-ext-proof-snarkjs/README.md)
 - logicn-ext-secrets-vault (packages-logicn/logicn-ext-secrets-vault/README.md)
+- logicn-ext-secrets-tmf (packages-logicn/logicn-ext-secrets-tmf/README.md)
 - logicn-governance-telemetry (packages-logicn/logicn-governance-telemetry/README.md)
 - logicn-observability (packages-logicn/logicn-observability/README.md)
 - logicn-hardware-tier (packages-logicn/logicn-hardware-tier/README.md)

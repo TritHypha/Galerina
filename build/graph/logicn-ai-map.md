@@ -924,6 +924,24 @@ Provides:
 - SecretHandle
 - VaultClient
 
+## logicn-ext-secrets-tmf
+
+OPTIONAL sealed-secrets-on-.tmf layer for LogicN. env.tmf = an encrypted-at-rest replacement for plaintext .env, edited through a governed in-memory-only CLI (no temp file, no $EDITOR, no .swp). Thin orchestration over @logicn/ext-tmf (format/crypto) + the ext-secrets-vault store discipline. No new crypto, no new container bytes; crypto stays Binary (LLN-SUBSTRATE-001). Unsigned-but-encrypted (flags.signed=0); signed root gated on ext-tmf slice 4/#7.
+
+Provides:
+- SecretConfigSource
+- ARGON2ID_PARAMS
+- deriveWrapKey
+- WrappedKey
+- wrapRecipientSecret
+- unwrapRecipientSecret
+- SealArena
+- withWiped
+- readStdinBytes
+- atomicWriteCiphertext
+- setMlockHook
+- tryMlock
+
 ## logicn-governance-telemetry
 
 Blind-observability exporter: streams a LogicN app's governance + operational STATE (masks, verdicts, effect-families, counts, declared budgets) to Prometheus/OpenMetrics — never the data it processes. Log the contract, not the payload.
