@@ -79,6 +79,7 @@
         "packages-logicn/logicn-ext-photonic-emulator",
         "packages-logicn/logicn-ext-proof-snarkjs",
         "packages-logicn/logicn-ext-secrets-vault",
+        "packages-logicn/logicn-ext-secrets-tmf",
         "packages-logicn/logicn-governance-telemetry",
         "packages-logicn/logicn-observability",
         "packages-logicn/logicn-hardware-tier",
