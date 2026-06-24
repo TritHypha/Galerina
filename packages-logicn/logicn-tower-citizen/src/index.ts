@@ -70,6 +70,13 @@ export type {
 export { checkLease, isLeaseValid, leaseVerdict } from "./lease.js";
 export type { CapabilityLease, LeaseDecision, LeaseDenyReason } from "./lease.js";
 
+// ── Distinct-signer M-of-N threshold quorum (R&D 0109 G2, core half) — K3 custody DECISION ──
+// checkQuorum folds per-signer verdicts: ALLOW iff >= M DISTINCT signers approve (anti-Sybil,
+// no equivocation); clean shortfall -> DENY; malformed/equivocation -> INDETERMINATE/LLN-GOV-3VL-001.
+// Governance only — the Shamir secret-share split/combine is custody EXECUTION (ext package).
+export { checkQuorum, meetsQuorum, quorumVerdict } from "./quorum.js";
+export type { SignerVote, QuorumDecision, QuorumDenyReason } from "./quorum.js";
+
 // ── Substrate failure-mode model (Direction C) — seeded, fail-closed ──
 // Models photonic/ternary noise (phase-drift/crosstalk/lane-failure/readout) in software.
 // effectiveVerdict = vAnd(ideal, reading): noise can cost availability, never safety.
