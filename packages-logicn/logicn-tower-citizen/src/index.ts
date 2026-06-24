@@ -64,6 +64,12 @@ export type {
   PhotonicConfigManifest, PhotonicConfigAttestation, PhotonicAdmissionPolicy, PhotonicAdmission,
 } from "./photonic-admission.js";
 
+// ── Fail-closed TTL capability lease (R&D 0109 G6) — bounded delegation that actually expires ──
+// checkLease admits a lease through the shipped K3 boundary: ALLOW only within (now < notAfter);
+// expired -> DENY; malformed/absent -> INDETERMINATE/LLN-GOV-3VL-001. Pure (the caller passes now).
+export { checkLease, isLeaseValid, leaseVerdict } from "./lease.js";
+export type { CapabilityLease, LeaseDecision, LeaseDenyReason } from "./lease.js";
+
 // ── Substrate failure-mode model (Direction C) — seeded, fail-closed ──
 // Models photonic/ternary noise (phase-drift/crosstalk/lane-failure/readout) in software.
 // effectiveVerdict = vAnd(ideal, reading): noise can cost availability, never safety.
