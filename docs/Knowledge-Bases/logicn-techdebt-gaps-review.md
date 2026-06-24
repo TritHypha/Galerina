@@ -57,7 +57,7 @@ The distinct issues cluster into four hotspots:
 | 7 | **Float arithmetic / float locals lowering** (#165) | `wat-emitter.ts:518-537,752-759,1183,1199` | medium | L |
 | 8 | **Code-point-correct host string runtime** (#170) | `wasm-runtime.ts:192-199,221` | medium | S |
 | 9 | **Replace in-band `-1` None sentinel with boxed Option handle** (#171) | `wasm-runtime.ts:223-226,237-255` | high | M |
-| 10 | **Bind certified-profile into the WASM admission signature** (#173) | `wasm-runtime.ts:83,112` | high | M |
+| 10 | ✅ **RESOLVED (2026-06-24)** Bind certified-profile into the WASM admission signature (#173) — pre-image binds `domain‖hash‖profile` in sign+verify | `wasm-runtime.ts:83,122` | high | M |
 | 11 | **Fix `kb-graph`/`diagnostic` shell-injection** (#174) | `logicn.mjs:502-507,541-545` | medium | S |
 | 12 | **Add missing host string/char methods to the bridge** (#162) | `wat-emitter.ts:571-587,2058-2087` | high | M |
 
@@ -103,8 +103,11 @@ The distinct issues cluster into four hotspots:
 
 - **#149 (critical/M, ALREADY TRACKED)** Committed signing private key
   (`8eecf4187ebc9341`) recoverable from git history (`cb5036d:.env.logicn-signing`).
-- **#173 (high/M)** WASM admission gate: certified-profile claim not covered by the
-  signature — dev binary re-labeled `certified` passes.
+- **#173 — RESOLVED (2026-06-24, verified)** WASM admission gate: the certified-profile is now
+  BOUND into the signed pre-image — `wasm-runtime.ts:83` `admissionPreimage()` signs/verifies over
+  `domain‖sha256‖profile` (`LLN-WASM-ADMIT-v1`) in BOTH `signWasm` (:91) and `verifyWasm` (:122), so a
+  dev binary re-labeled `certified` no longer verifies. The earlier "open" flag was stale — it saw the
+  `requireCertifiedProfile` equality check (:109), not the pre-image binding.
 - **#174 (medium/S)** Command injection in `logicn kb-graph` / `logicn diagnostic`
   (raw argv into `execSync` shell string); deploy was hardened, these were not.
 - **#175 (medium/S)** `logicn keygen` writes private key with default (world-readable) mode.
