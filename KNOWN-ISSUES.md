@@ -34,10 +34,6 @@ disclosed below. Read this before relying on any guarantee. Last reconciled: 202
   to **Deny**), and **no in-tree artifact is signed by it**. A history rewrite was deliberately
   avoided because it would rebase every commit SHA and break the verifiable trust chain. Treat any
   signature from `8eecf4187ebc9341` as permanently distrusted.
-- **Permissive-downgrade residuals flagged for hardening (#153).** Two paths default permissive where
-  a zero-trust posture should fail closed: unknown/unrecognised effect names can be silently skipped
-  during effect→flag lowering, and an unknown value *origin* is treated as clean rather than tainted.
-  These are disclosed for hardening (taint-by-default / reject-unknown) before 1.0 final.
 - **`LLN-VALUESTATE-008` is production-only.** The boundary-input cleanliness floor (an unmarked bare
   parameter reaching a governed sink) escalates to an *error* only in production builds; dev/check is
   permissive (warning). This is intentional for beta but means dev builds do not surface it.
