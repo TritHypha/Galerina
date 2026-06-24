@@ -47,6 +47,11 @@ const CHECKS = [
     desc: "0056-ci-lint: open-core contamination guard — no NON-Apache license declaration in the package tree (PD-spec↛Apache) + no core→enterprise import (governance/tier-manifest.json, inert until /enterprise exists). Zero-baseline; also runs ENFORCING in conventions.yml.",
   },
   {
+    name: "name-collisions",
+    script: "scripts/audit-name-collisions.mjs",
+    desc: "RD-0124: no confusingly-similar package names — no two names share a token-multiset (the graph-project/project-graph reordered-token bug) and no typo-twins (Levenshtein 1). Live package names vs governance/name-registry.json (known collisions allowlisted with a decided resolution). Zero-baseline; also runs ENFORCING in conventions.yml.",
+  },
+  {
     name: "diagnostic-doc-drift",
     script: "scripts/audit-diagnostic-doc-drift.mjs",
     desc: "RD-0124: the canonical diagnostic doc (compiler-diagnostics.md) must not misdescribe a wired code — for any LLN-* with a structured name/message in source AND a doc description, the two must share ≥1 meaningful word (zero-overlap = drift). Caught the LLN-RUNTIME-006 'Audit event stream write failed' (really RateLimitExceeded) bug + 14 more. Zero-baseline; also runs ENFORCING in conventions.yml.",

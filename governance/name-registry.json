@@ -1,0 +1,57 @@
+{
+  "$schema": "./name-registry.schema.note",
+  "purpose": "Canonical name policy for the LogicN monorepo, so confusingly-similar names cannot recur (RD-0124). Born from the graph-project / project-graph near-anagram tangle. Enforced by scripts/audit-name-collisions.mjs. The package set is the SOURCE OF TRUTH (read live from packages-logicn/*/package.json) — this file holds POLICY (conventions, the collision rule, the known-collision allowlist + decided resolutions, and any extra named entities to also guard).",
+  "scope": "@logicn",
+  "dirConvention": {
+    "pattern": "logicn-<area>-<name>",
+    "areas": ["core", "devtools", "ext", "target", "framework", "governance", "observability", "hardware", "ai", "cpu", "tools", "substrate", "inference", "tri", "api", "test", "docs"],
+    "note": "A package's directory name is logicn-<...> and its npm name is @logicn/<...> with the 'logicn-' stripped."
+  },
+  "collisionPolicy": {
+    "rule": "no-reordered-token-duplicates",
+    "explanation": "Two package names may NOT share the same token-multiset (the set of '-'/'@'/'/'-split tokens, order-independent). 'devtools-graph-project' and 'devtools-project-graph' have the identical token-multiset {devtools, graph, project} and are a confusing reordered-token collision. Also flags Levenshtein <= 1 typo-twins.",
+    "enforcedBy": "scripts/audit-name-collisions.mjs",
+    "severity": "error (zero new collisions); KNOWN collisions below are allowlisted while their resolution is pending"
+  },
+  "knownCollisions": [
+    {
+      "names": ["@logicn/devtools-graph-project", "@logicn/devtools-project-graph"],
+      "tokenMultiset": ["devtools", "graph", "project"],
+      "discovered": "2026-06-24 (RD-0124)",
+      "status": "ALLOWLISTED — resolution decided, execution pending (see decidedRenames)",
+      "note": "graph-project = the CONTRACTS/schema layer (tracked, zero code consumers). project-graph = the ENGINE (data structures + algorithms + reporting; 3 consumers; currently a stray NESTED git clone of a personal repo — gitignored, see .gitignore). The collision is documented + scheduled, so the guard treats it as known, not a new violation."
+    },
+    {
+      "names": ["@logicn/target-cpu", "@logicn/target-gpu"],
+      "kind": "typo-twin (Levenshtein 1)",
+      "discovered": "2026-06-24 (RD-0124)",
+      "status": "INTENDED — no rename needed",
+      "note": "CPU and GPU are standard, unambiguous compute-target acronyms that happen to differ by one letter. Reviewed and accepted as distinct; allowlisted so the typo-twin detector stays useful for catching ACCIDENTAL near-duplicates without flagging this intended pair."
+    }
+  ],
+  "decidedRenames": [
+    {
+      "from": "@logicn/devtools-graph-project",
+      "to": "@logicn/devtools-graph-contracts",
+      "reason": "It is literally 'project knowledge graph CONTRACTS' (its own package.json description). 'graph-contracts' removes the anagram and is self-describing.",
+      "blastRadius": "logicn.workspace.json (3 refs), version.json, core-cli/package.json (build+typecheck scripts), core-cli/src/graph-command.ts (relative-path import), AGENTS.md + docs/ARCHITECTURE.md + a few KB docs, regenerated build/graph artifacts, and the package's own dir + .graph.",
+      "blockedOn": "a build-verifiable session (the relative-path import + build scripts in core-cli must be updated and the per-package build re-run; not safe to do blind in an autonomous loop).",
+      "executionPlan": "git mv the dir; update name in its package.json; update the 4 load-bearing refs (workspace.json, version.json, core-cli build scripts, core-cli graph-command import); regenerate the graph; sweep docs; run core-cli build + typecheck to verify."
+    },
+    {
+      "from": "@logicn/devtools-project-graph",
+      "to": "@logicn/devtools-graph-engine",
+      "reason": "It is 'graph data structures, algorithms, and runtime reporting' = an engine. 'graph-engine' removes the anagram and is self-describing.",
+      "blockedOn": "OPERATOR de-clone first — this package is currently a stray nested git clone (its own .git/ + a personal remote). The operator must remove the inner .git/ and commit the source in-tree (it is REAL and depended-upon by 3 packages; do NOT delete) BEFORE it can be renamed. Then update its 3 consumers.",
+      "consumers": ["@logicn/core-tasks (src/dependency-graph.ts)", "@logicn/devtools-graph-algorithms (src/algorithms/reach.ts)", "the contracts layer above"]
+    }
+  ],
+  "otherGuardedNames": {
+    "note": "Extra named entities to include in the collision check beyond live package names. Empty for v1 — package names are the recurring problem. Diagnostic-code families are guarded separately by scripts/audit-diagnostic-codes.mjs (one code = one name) and scripts/audit-diagnostic-doc-drift.mjs (doc matches source).",
+    "entries": []
+  },
+  "crossScopePointers": {
+    "diagnosticFamilies": "LLN-<FAMILY>-NNN and ERR_* — canonical list + invariants in scripts/lib/codes.mjs + scripts/audit-diagnostic-codes.mjs; doc taxonomy in docs/Knowledge-Bases/compiler-diagnostics.md (kept honest by audit-diagnostic-doc-drift.mjs).",
+    "rdSeries": "RD-NNNN — R&D corpus in the LogicN-R-AND-D repo; KB write-ups as docs/Knowledge-Bases/logicn-rd-NNNN-*.md. RD-id uniqueness is owner-managed (future: add to otherGuardedNames to machine-enforce)."
+  }
+}

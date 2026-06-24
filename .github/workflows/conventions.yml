@@ -66,6 +66,22 @@ jobs:
           node scripts/audit-tier-boundary.mjs --self-test
           node scripts/audit-tier-boundary.mjs
 
+  # name-collisions (build-free, zero-baseline, ENFORCING): no two package names may be reordered-token
+  # near-anagrams (the graph-project / project-graph tangle) or typo-twins. The --self-test proves the
+  # detectors fire; then the scan runs ENFORCING against live package.json names + governance/name-registry.json
+  # (known collisions allowlisted with a decided resolution). FAILS a PR that introduces a confusing new name.
+  name-collisions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Name-collision guard (self-test, then enforcing)
+        run: |
+          node scripts/audit-name-collisions.mjs --self-test
+          node scripts/audit-name-collisions.mjs
+
   # diagnostic-doc-drift (build-free, zero-baseline, ENFORCING): the canonical diagnostic reference
   # (compiler-diagnostics.md) must not misdescribe a WIRED code. For any LLN-* code that carries a
   # structured name/message in source AND a description in the doc, the two must share at least one
