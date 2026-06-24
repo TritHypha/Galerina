@@ -15,7 +15,7 @@
 //   4. createApiServer is a thin transport that funnels every request through the
 //      kernel — no policy, auth, or routing lives here.
 
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { dirname, join } from "node:path";
 
 import {
@@ -57,14 +57,62 @@ export interface FuseOptions {
 }
 
 /**
+ * Load the registry-backed revocation gate the SAME way the CLI `logicn fuse` does
+ * (logicn.mjs): import `governance/revocation-registry.mjs`, assert the registry is
+ * trustworthy against the pinned trust anchor (THROWS fail-closed on a tampered /
+ * unsigned-under-pin / revoked-signer registry — the signed-anchor verification the
+ * raw `isKeyRevoked` read path does NOT do on its own), and return a synchronous
+ * keyId→revoked predicate. A package signed by a REVOKED key is then refused at fuse
+ * Gate 2b — closing the app-fusion revocation gap (without this injection the kernel's
+ * Gate 2b runs no revocation check at all, since the kernel is node-dependency-free).
+ *
+ * Fail-closed: if the registry cannot be loaded or is untrusted we REFUSE to fuse —
+ * EXCEPT in the documented `allowUnsigned` dev path (an app copied outside the repo
+ * with no governance dir), where we warn and proceed without the gate (an unsigned
+ * manifest never reaches Gate 2b anyway).
+ */
+async function loadRevocationGate(
+  governanceDir: string,
+  allowUnsigned: boolean,
+): Promise<((keyId: string) => boolean) | undefined> {
+  // The registry helpers take the dir that CONTAINS governance/ and append "governance/".
+  const rootDir = dirname(governanceDir);
+  const registryUrl = pathToFileURL(join(governanceDir, "revocation-registry.mjs")).href;
+  try {
+    const { isKeyRevoked, assertRegistryTrustworthy } = await import(registryUrl);
+    // Verify the registry against the pinned anchor FIRST — throws on tamper / rogue or
+    // revoked signer / unsigned-while-pinned. Mirrors logicn.mjs fuse injection.
+    assertRegistryTrustworthy(rootDir);
+    return (keyId: string): boolean => isKeyRevoked(keyId, rootDir) === true;
+  } catch (e) {
+    const msg = (e as Error).message;
+    if (allowUnsigned) {
+      console.warn(`⚠️  revocation gate skipped (dev/allowUnsigned): ${msg}`);
+      return undefined;
+    }
+    throw new Error(
+      `LLN-FUSE-REVOCATION-UNTRUSTED: cannot establish the revocation gate from ${governanceDir} ` +
+        `(${msg}) — refusing to fuse (fail-closed). Ship governance/revocation-registry.mjs + a ` +
+        `signed revocations.json, or pass allowUnsigned for a dev boot outside the repo.`,
+    );
+  }
+}
+
+/**
  * Fuse the governed greeting package, fail-closed. Returns the admitted component whose
  * `invoke("main")` runs the signed .wasm. Throws (LLN-FUSE-*) on tamper / bad signature /
- * unknown capability.
+ * unknown capability / REVOKED signing key.
+ *
+ * The host injects the revocation gate (the kernel stays node-dependency-free): a validly
+ * signed but REVOKED key is refused at fuse Gate 2b. This is the gate `logicn new app`
+ * scaffolds inherit, so every governed app fuses revocation-checked by default.
  */
-export function fuseGreeting(opts: FuseOptions = {}): Promise<FusedComponent> {
+export async function fuseGreeting(opts: FuseOptions = {}): Promise<FusedComponent> {
   const governanceDir = opts.governanceDir ?? paths.governanceDir;
+  const revocationCheck = await loadRevocationGate(governanceDir, opts.allowUnsigned === true);
   return fusePackage(paths.greetingDir, {
     governanceDir,
+    ...(revocationCheck ? { revocationCheck } : {}),
     ...(opts.allowUnsigned === true ? { allowUnsigned: true } : {}),
   });
 }

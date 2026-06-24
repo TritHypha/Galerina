@@ -16,7 +16,7 @@ import assert from "node:assert/strict";
 import http from "node:http";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdtempSync, rmSync, existsSync, readFileSync } from "node:fs";
+import { mkdtempSync, rmSync, existsSync, readFileSync, cpSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
@@ -116,6 +116,46 @@ test("fuse: when App.manifest pins the greeting dep, the sha256 matches the buil
   } else {
     // A fresh scaffold starts deny-by-default (deps []); the user pins after building.
     assert.ok(wasm.length > 0, "the greeting wasm is built and ready to be pinned into deps[]");
+  }
+});
+
+test("fuse: a REVOKED signing key is refused at app fusion (revocation gate wired, fail-closed)", async () => {
+  // The greeting is signed by the repo's ACTIVE key. This stands up a SEPARATE governance
+  // dir that REVOKES that exact signer, then proves fuseGreeting refuses to fuse it — i.e.
+  // the host injects the revocation gate. Without the injection the kernel runs NO
+  // revocation check (Gate 2b only fires when a revocationCheck is passed), so this fusion
+  // would WRONGLY succeed — which is the fail-open this test guards against.
+  const greetingManifest = JSON.parse(
+    readFileSync(join(paths.greetingDir, "dist", "greeting.lmanifest.json"), "utf8"),
+  );
+  const signerKeyId = greetingManifest.governanceSignature?.keyId;
+  assert.ok(typeof signerKeyId === "string" && signerKeyId.length > 0, "greeting declares a signer key id");
+
+  const base = mkdtempSync(join(tmpdir(), "logicn-revoke-"));
+  try {
+    // Full COPY of the repo governance dir (pubkeys + registry module + trust anchor) so
+    // signature verification still has the signer's public key…
+    const govDir = join(base, "governance");
+    cpSync(paths.governanceDir, govDir, { recursive: true });
+
+    // …but with the greeting's own signer added to the revocation list. That signer is also
+    // the registry's pinned signer, so assertRegistryTrustworthy fails closed ("signed by a
+    // REVOKED key") and the host's revocation gate refuses the fuse — fail-closed.
+    const regPath = join(govDir, "revocations.json");
+    const reg = JSON.parse(readFileSync(regPath, "utf8"));
+    reg.revoked.push({
+      keyId: signerKeyId, algorithm: "ed25519", revokedAt: "2026-06-24",
+      reason: "test: revoke the greeting signer to assert the app-fusion revocation gate",
+    });
+    writeFileSync(regPath, JSON.stringify(reg, null, 2));
+
+    await assert.rejects(
+      () => fuseGreeting({ governanceDir: govDir }),
+      (err) => /REVOK|REVOCATION/i.test(err.message),
+      "fuseGreeting must refuse to fuse a package whose signing key is revoked",
+    );
+  } finally {
+    rmSync(base, { recursive: true, force: true });
   }
 });
 
