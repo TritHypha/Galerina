@@ -18,5 +18,5 @@ Next steps for a real app (not required for the template):
 ```text
 [ ] Add more routes/flows and grant only the capabilities they need (effects {} + App.manifest)
 [ ] Wire a revocation registry + central package registry into the fuse border
-[ ] Commit contract-driven proofs (node ../../logicn.mjs gen-tests src/App.lln)
+[ ] Commit contract-driven proofs (node ../../logicn.mjs generate tests src/App.lln)
 ```

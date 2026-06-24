@@ -4,8 +4,8 @@ LogicN derives test obligations from each flow's `contract {}` (intent,
 pre/post-conditions, effects, fail-closed branches). Generate them for this app:
 
 ```sh
-node ../../logicn.mjs gen-tests src/App.lln           # human-readable obligations
-node ../../logicn.mjs gen-tests src/App.lln --tap     # TAP plan for CI
+node ../../logicn.mjs generate tests src/App.lln           # human-readable obligations
+node ../../logicn.mjs generate tests src/App.lln --tap     # TAP plan for CI
 ```
 
 Commit the generated proofs here so the governance surface of the app is checked on
