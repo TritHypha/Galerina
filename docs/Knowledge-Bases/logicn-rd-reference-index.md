@@ -94,5 +94,6 @@ Doc: [`logicn-rd-0118-retain-hardware-directive-2026-06-24.md`](logicn-rd-0118-r
 
 ## Notes
 
+- **Phase-34B boundary param auto-taint** (handover HIGH `34B-paramtaint`) — verified + build-ready spec at [`logicn-rd-34b-paramtaint-buildspec-2026-06-24.md`](logicn-rd-34b-paramtaint-buildspec-2026-06-24.md). Buildable-now non-breaking warning slice (extend the shipped 0093 `boundary-untrusted` to route handlers) + an owner-gated strict-profile error escalation.
 - **Older R&D (RD-0001 … RD-0109)** live primarily in the R&D corpus repo (`C:\wwwprojects\LogicN-R-AND-D`) and the auto-memory index, not all as public KB docs. They keep the same `RD-NNNN` study ID; assign `-Ox/-Gx/-Fx` sub-IDs lazily when one needs to be cited.
 - The study ID **matches** the commit-message prefix convention (`rnd(0111): …`) and the KB doc filename, so a reference like `RD-0114-O2` traces to the commit, the doc, and this index uniformly.
