@@ -87,11 +87,14 @@ Doc: [`logicn-rd-0118-retain-hardware-directive-2026-06-24.md`](logicn-rd-0118-r
 - `RD-0118-O2` — **discovery answer**: an eraseModel is never taken from a drive's self-report; `overwrite` needs a verified signed Ed25519 `storage.admit` attestation, else fail-closed to the stricter `crypto-only`. BUILT: `admitSubstrateWrite`/`effectiveEraseModel` (`746e161`) + the signed rail `admitStorageSubstrate` (`1642f3e`) — lying-WORM-drive attack closed end-to-end, 20/20.
 - `RD-0118-O3` — the crypto-erase **witness** structure + invariants (no-copy / sole-custody, bottom-out at attested-overwrite silicon).
 
-### RD-0119 — Unlock + small-wins discovery sweep *(running)*
-Workflow `w4b5597yv` — finds any clean small buildable win, UNLOCKS (esp. the @noble/post-quantum ML-DSA-65 FIPS-204 verify question), cross-compares, and the 0016 generator verdict. Doc TBD on completion.
+### RD-0119 — Unlock + small-wins discovery sweep
+Workflow `w4b5597yv` · **DONE** — the FIPS-204 UNLOCK (.tmf slice-4 verify buildable now), 4 XS truth-fixes (shipped `7eb2a89`), the secret-taint-lift cross-compare. See [`logicn-rd-0119-0121-findings-2026-06-24.md`](logicn-rd-0119-0121-findings-2026-06-24.md).
 
-### RD-0120 — Missing software-architecture sweep *(running)*
-Workflow `wvc1efjl1` — "anything missing in the software architecture we should have or consider, no matter how small?" Security/resilience/verification/DX lenses, adversarially verified. Doc TBD on completion.
+### RD-0120 — Missing software-architecture sweep
+Workflow `wvc1efjl1` · **DONE** — 6 BUILD-NOW (governedFlowDecl fail-open FIXED `45f4816`; deadline reads-as-enforced; SBOM; observability producer; circuit-breaker no-op; SECURITY.md contact) + 8 owner-greenlight. See [`logicn-rd-0119-0121-findings-2026-06-24.md`](logicn-rd-0119-0121-findings-2026-06-24.md).
+
+### RD-0121 — Dev-tools adequacy (graphs/tests/other)
+Workflow `ws0znezws` · **DONE** — all three adequate-with-gaps: graph CLI runs no validation/cycle-check (39 dep edges/91 pkgs); tests deep (mutation 17/17) but NOT CI-enforced + float/i64 untested + no coverage; lint runs --soft. See [`logicn-rd-0119-0121-findings-2026-06-24.md`](logicn-rd-0119-0121-findings-2026-06-24.md).
 
 ### Hardware protection summary
 [`logicn-hardware-protection-summary-2026-06-24.md`](logicn-hardware-protection-summary-2026-06-24.md) — consolidates what's BUILT (hardware-tier fail-closed attestation, LLN-RETAIN-001 eraseModel rail, photonic-admission, substrate noise model, Safe-Floor Theorem, calibration-as-attestation, bridge attestation) vs R&D'd/designed (ASIC cyber-physical, DRCM, hardware-as-capabilities, cross-layer resilience, future substrates). Answers "did we protect hardware + R&D it" = yes to both.
