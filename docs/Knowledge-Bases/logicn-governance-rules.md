@@ -1254,3 +1254,13 @@ CLI output is scrubbed by `redactCliOutput` / `redactCliOutputChecked` (`logicn-
 A bare-token match is a **tripwire**: a raw credential reaching CLI output means an upstream boundary already leaked it. `redactCliOutputChecked` reports `{ tripwire, markers }`; `formatCliResult` surfaces `LLN-CLI-REDACT-001` (with the marker names, never the value) so an operator investigates the source rather than trusting the scrub silently. Redaction is best-effort defense-in-depth — never the primary secret boundary (`LLN-SECRET-001..003` + `redact()` remain the compiler-enforced sink discipline); it can only ever add safety.
 
 ---
+
+## Sound-erasure obligation for non-overwritable substrates
+
+**Status:** NORMATIVE INVARIANT (R&D 0116 / RD-0114-G3); **code build gated** on a storage-admission path (#102-106)  **Diagnostic:** LLN-RETAIN-001
+
+LogicN's secret-erasure is **overwrite-based** (zero the arena page / derived-secret buffer; B2/B2b in `wat-emitter.ts`). On **write-once/fixed media** that invariant is silently false — a thermally-fixed photorefractive hologram cannot be erased optically (>170 °C re-heat only), WORM glass is physically immutable, and unfixed holograms leave residual/decaying gratings (data remanence). The sound discipline is **cryptographic erase** (NIST SP 800-88 Rev. 1 "Purge"): seal *before* writing, destroy the key to "delete".
+
+The invariant: a substrate admitted via the storage capability whose media is write-once/fixed is flagged `eraseModel: "crypto-only"`; on it (1) **only KEM-DEM ciphertext may be written** — a cleartext-secret-tainted value reaching it is a fail-closed compile/admission error (extends `LLN-SECRET-002` / `LLN-PRIVACY-002` taint to a new sink class); (2) the DEK lives on overwritable digital silicon and "deletion" = key destruction, never media overwrite; (3) erasure emits a key-destruction **witness** (no read-back-verify of the medium is possible). No new crypto — reuses KEM-DEM + key custody (0 patents). Buildable surface: a capability-axis split in `photonic-admission.ts` (`storage.mount` vs `photonic.reprogram`) carrying `eraseModel`, plus one SealTaint sink rule.
+
+---

@@ -67,8 +67,12 @@ Doc: [`logicn-rd-0115-hybrid-photonic-binary-placement-2026-06-24.md`](logicn-rd
 - `RD-0115-O3` — the real gap is **REUSE** (shipped crossover is reuse=1); it is **SAFE** (can only leave wins unclaimed, never break the floor) → a safe lower bound on the optimal rule.
 - `RD-0115-E1/E2/E3` — formalize the safe-floor theorem / wire the reuse crossover / measure on a real workload → being executed as **RD-0117**.
 
-### RD-0116 — Holographic "O(1)-read petabyte" storage: worth more R&D? *(running)*
-Doc: TBD · Status: **in progress** (workflow `w0qh5u5jl`) — extends `RD-0111-C12`.
+### RD-0116 — Holographic "O(1)-read petabyte" storage: worth more R&D?
+Doc: [`logicn-rd-0116-holographic-storage-2026-06-24.md`](logicn-rd-0116-holographic-storage-2026-06-24.md) · Status: **REFUTE-AND-PARK the claim + BUILD one small artifact** (extends `RD-0111-C12`)
+- `RD-0116-O1` — verdict: refute-and-park the storage claim (no more SOTA R&D); build `LLN-RETAIN-001`.
+- `RD-0116-O2` — honest SOTA: ~9.6 GB/cm³ lab (not PB), page-parallel read but Bragg-search addressing (not O(1)), lab-only.
+- `RD-0116-O3` — "O(1)-read petabyte" both halves FALSE (all 3 adversarial verdicts `refuted:false, high`); survivors = "high parallel read bandwidth" + "high volumetric density".
+- `RD-0116-O4` — **net-new finding**: overwrite-erasure is silently false on write-once/fixed media → `LLN-RETAIN-001` (crypto-erase obligation; = guardrail `RD-0114-G3`).
 
 ### RD-0117 — The 0115 join (formalize safe-floor + wire reuse-crossover + measure) *(running)*
 Doc: TBD · Status: **in progress** (workflow `w0w76fzt3`) — executes `RD-0115-E1/E2/E3`, joins `RD-0110-O2`.
