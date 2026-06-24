@@ -15,7 +15,8 @@
 // Exit codes:
 //   0 — success (no high-risk flows)
 //   1 — usage error
-//   2 — high-risk flows found (taint reaches sink ungated)
+//   2 — high-risk flows found (taint reaches sink ungated) OR a file the
+//       analyzer could not parse (LLN-PROV-001 — blind analysis denies by default)
 // =============================================================================
 
 import { readFileSync } from "node:fs";
@@ -51,31 +52,42 @@ async function main(): Promise<number> {
       }
 
       const result = analyzeFile(source, filePath, options);
+      // LLN-PROV-001: a blind (parse-failed) analysis is non-clean -> flag high-risk.
+      const highRisk = result.ungatedSinkReached || result.analyzerBlind;
+      const riskFlows = highRisk
+        ? (result.analyzerBlind
+            ? [{
+                flowName: "<parse-failure>",
+                filePath,
+                risk: "high" as const,
+                description: `LLN-PROV-001: '${filePath}' failed to parse — analyzer BLIND, cannot certify clean (deny-by-default).`,
+              }]
+            : result.flows.map(flowName => ({
+                flowName,
+                filePath,
+                risk: "high" as const,
+                description: `Tainted data reaches a governed sink without a gate in flow '${flowName}'.`,
+              })))
+        : [];
       const graph = {
         nodes: result.nodes,
         edges: result.edges,
         summary: {
           totalFlows: result.flows.length,
           flowsWithTaintedData: result.hasTaintedData ? 1 : 0,
-          flowsWithUngatedSinks: result.ungatedSinkReached ? 1 : 0,
+          flowsWithUngatedSinks: highRisk ? 1 : 0,
           trustBoundaryCrossings: result.edges.filter(e => {
             const fromNode = result.nodes.find(n => n.id === e.from);
             const toNode   = result.nodes.find(n => n.id === e.to);
             return fromNode?.isTrusted === false && toNode?.isTrusted === true;
           }).length,
         },
-        riskFlows: result.ungatedSinkReached
-          ? result.flows.map(flowName => ({
-              flowName,
-              filePath,
-              risk: "high" as const,
-              description: `Tainted data reaches a governed sink without a gate in flow '${flowName}'.`,
-            }))
-          : [],
+        riskFlows,
       };
 
       process.stdout.write(renderTextReport(graph, 1));
-      return result.ungatedSinkReached ? 2 : 0;
+      // LLN-PROV-001: blind analysis is NOT a pass — deny by default.
+      return highRisk ? 2 : 0;
     }
 
     // -------------------------------------------------------------------------

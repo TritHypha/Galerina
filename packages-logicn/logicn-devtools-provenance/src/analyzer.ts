@@ -517,6 +517,13 @@ export interface FileProvenanceResult {
   flows: string[];
   hasTaintedData: boolean;
   ungatedSinkReached: boolean;
+  /**
+   * LLN-PROV-001 (AnalyzerBlindOnParseFailure): the source failed to parse
+   * (error diagnostics + zero flows + empty AST), so the analyzer was BLIND.
+   * A blind analysis is NOT clean — callers must treat this as non-zero/deny,
+   * exactly like ungatedSinkReached (NIST SP 800-207 T6, CWE-636).
+   */
+  analyzerBlind: boolean;
 }
 
 /**
@@ -552,6 +559,15 @@ export function analyzeFile(
   const flowNames: string[] = [];
   const lines = source.split(/\r?\n/);
   const totalLines = lines.length;
+
+  // LLN-PROV-001: read the parse diagnostics that were previously ignored. If the
+  // source did not parse (errors + no flows + empty AST), the analyzer is blind —
+  // every downstream "no ungated sink" conclusion is vacuous, not safe.
+  const parseErrors = (parsed.diagnostics ?? []).filter(d => d.severity === "error");
+  const analyzerBlind =
+    parseErrors.length > 0 &&
+    parsed.flows.length === 0 &&
+    (parsed.ast.children ?? []).length === 0;
 
   // Use the value-state checker as the AUTHORITATIVE source for ungated-sink detection.
   // LLN-VALUESTATE-003 = unsafe value at governed sink
@@ -659,10 +675,12 @@ export function analyzeFile(
         return sourceNodeMap.has(arg) && !gatedBindings.has(arg);
       });
 
-      // The compiler is the authoritative source: if it found no value-state violations for
-      // the whole file, then no flow in this file is truly ungated (compiler-proven clean).
-      // We only use our source-level ungated detection when the compiler also agrees.
-      const sinkUngated = hasUngatedArg && hasCompilerUngatedDiag;
+      // Fail-closed (LLN-PROV-001 / 0098-prov-parsefail): a source-level ungated
+      // detection stands on its own. A SILENT compiler (no LLN-VALUESTATE-003/-005)
+      // means "could not prove a violation" — NOT "proven clean". Use the compiler
+      // diagnostic to ESCALATE (OR), never to SUPPRESS (AND): absence of evidence is
+      // not evidence of safety.
+      const sinkUngated = hasUngatedArg || hasCompilerUngatedDiag;
       const sinkTrusted = !sinkUngated;
 
       const sinkNode: DataNode = {
@@ -735,6 +753,7 @@ export function analyzeFile(
     flows: flowNames,
     hasTaintedData: anyTainted,
     ungatedSinkReached: anyUngated,
+    analyzerBlind,
   };
 }
 
@@ -815,6 +834,22 @@ export function buildProvenanceGraph(
             description: `Tainted data from an unsafe binding reaches a governed sink without passing through a gate in flow '${flowName}'.`,
           });
         }
+      }
+    }
+
+    // LLN-PROV-001: a file the analyzer could not parse is NOT clean. Count it
+    // toward the high-risk total (so cli.ts `flowsWithUngatedSinks > 0 ? 2 : 0`
+    // returns 2) and record an explicit blind-file risk entry, distinct from an
+    // ungated sink but equally "deny".
+    if (result.analyzerBlind) {
+      flowsWithUngatedSinks++;
+      if (!riskFlows.some(r => r.filePath === filePath && r.flowName === "<parse-failure>")) {
+        riskFlows.push({
+          flowName: "<parse-failure>",
+          filePath,
+          risk: "high",
+          description: `LLN-PROV-001: '${filePath}' failed to parse — the provenance analyzer was BLIND and cannot certify it clean (deny-by-default).`,
+        });
       }
     }
   }
