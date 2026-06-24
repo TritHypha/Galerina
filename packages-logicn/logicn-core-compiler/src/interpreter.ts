@@ -90,7 +90,10 @@ const OP_IDS: Record<string, number> = {
  * Bit layout: [7:4] left type, [3:0] right type — op occupies bits [11:4].
  * Uses a 12-bit key: (l << 8) | (o << 4) | r
  */
-function dispatchKey(leftTag: string, op: string, rightTag: string): number {
+// Exported for the dispatch-completeness lemma (tests/dispatch-completeness.test.mjs):
+// proving every int×int arithmetic key is present is what makes the sync raw-arith
+// fallback (interpreter.ts ~:498) provably unreachable for int×int — the R&D-0112 hazard.
+export function dispatchKey(leftTag: string, op: string, rightTag: string): number {
   const l = leftTag  === "int"    ? 1 : leftTag  === "float" ? 2 : leftTag  === "string" ? 3 : leftTag  === "bool" ? 4 : 0;
   const r = rightTag === "int"    ? 1 : rightTag === "float" ? 2 : rightTag === "string" ? 3 : rightTag === "bool" ? 4 : 0;
   const o = OP_IDS[op] ?? 0;
