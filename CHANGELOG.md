@@ -1,8 +1,29 @@
 # Changelog
 
-All notable changes to LogicN are documented here (format: [Keep a Changelog](https://keepachangelog.com); the project is pre-1.0).
+All notable changes to LogicN are documented here (format: [Keep a Changelog](https://keepachangelog.com)).
 
 ## [Unreleased]
+
+## [1.0.0-beta.2] - 2026-06-24
+
+This beta packages the Stage-A production-hardened compiler/runtime, the governed admission
+border, and the post-quantum signing surfaces for full testing. Scope is stated honestly in
+[KNOWN-ISSUES.md](KNOWN-ISSUES.md): what is production-grade (compiler, governance verifier,
+admission gate) vs simulated/aspirational (DSS.wasm isolation, photonic Tower, Stage-B
+self-hosting beyond `tokenize`). 60/60 packages · 5,243 tests · 0 fail.
+
+### Added (this beta)
+- **Opt-in hybrid Ed25519+ML-DSA-65 `.lmanifest` signing (#34).** `logicn build`/`verify`/`run`
+  sign + verify the admission manifest with a post-quantum hybrid signature when a `keygen --hybrid`
+  key is present; `LOGICN_MANIFEST_PROFILE=certified` mandates it (fail-secure, no PQ downgrade).
+  Default Ed25519 path unchanged.
+- **`@logicn/ext-secrets-tmf` — env.tmf sealed secrets.** Optional, encrypted-at-rest replacement
+  for plaintext `.env`, edited through a governed in-memory-only CLI (never argv, no temp file,
+  no `$EDITOR`, in-arena zero-wipe). Thin orchestration over `@logicn/ext-tmf`; not auto-loaded.
+- **`LLN-TIER-001` flow-kind tier floor (production-gated).** A `flow`/`guarded` flow that touches a
+  secure-tier effect (egress, secret/crypto material, high-consequence sink) is floored to `secure`
+  in `build-production`/`build-deterministic`, closing the under-declared-tier fail-open.
+- **`scripts/component-health.mjs`** — per-component v1.0 readiness matrix (test/build/orphan gaps).
 
 ### Security — Phase 1 Audit (2026-06-16): 8/8 criticals + highs cleared
 Adversarial Gate-6 audit (37 raised · 32 confirmed). **All Critical and High findings are patched and
