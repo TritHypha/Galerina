@@ -46,6 +46,11 @@ const CHECKS = [
     script: "scripts/audit-tier-boundary.mjs",
     desc: "0056-ci-lint: open-core contamination guard — no NON-Apache license declaration in the package tree (PD-spec↛Apache) + no core→enterprise import (governance/tier-manifest.json, inert until /enterprise exists). Zero-baseline; also runs ENFORCING in conventions.yml.",
   },
+  {
+    name: "graph-integrity",
+    script: "scripts/audit-graph-integrity.mjs",
+    desc: "RD-0121: structural validation of the committed project graph — no dangling edge (from/to ref a real node), no duplicate node id, and the depends_on subgraph is a DAG (no circular package dependency). The `logicn graph` command runs no validation; this is the missing check. Zero-baseline; also runs ENFORCING in conventions.yml.",
+  },
   // #218 (coverage cross-check) runs separately as `audit-coverage.mjs`.
 ];
 
