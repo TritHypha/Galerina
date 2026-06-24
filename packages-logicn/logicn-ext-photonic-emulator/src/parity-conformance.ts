@@ -90,6 +90,8 @@ export interface ParityReport {
   readonly outOfTolerance: number;
   /** Max measured |photonic − binary| / span across the corpus (feeds the ToleranceWitness). */
   readonly maxRelativeResidual: number;
+  /** Population std-dev of the per-op relative residuals (feeds the ToleranceWitness `stdDev`). */
+  readonly residualStdDev: number;
   /** The invariant holds for EVERY op in the corpus. */
   readonly allConformant: boolean;
 }
@@ -100,6 +102,7 @@ export interface ParityReport {
  */
 export function proveBifurcatedParity(ops: readonly BridgeOp[], opts: ParityOptions = {}): ParityReport {
   let conformant = 0, decisionDivergences = 0, outOfTolerance = 0, maxRelativeResidual = 0;
+  const residuals: number[] = [];
   for (const op of ops) {
     const r = checkParity(op, opts);
     if (r.conformant) conformant++;
@@ -107,11 +110,20 @@ export function proveBifurcatedParity(ops: readonly BridgeOp[], opts: ParityOpti
     if (r.decisionParity && !Number.isNaN(r.binaryValue) && !r.numericWithinTolerance) outOfTolerance++;
     if (!Number.isNaN(r.binaryValue) && !Number.isNaN(r.photonicValue)) {
       const span = Math.max(1, adcRange(op.count));
-      maxRelativeResidual = Math.max(maxRelativeResidual, Math.abs(r.photonicValue - r.binaryValue) / span);
+      const residual = Math.abs(r.photonicValue - r.binaryValue) / span;
+      residuals.push(residual);
+      maxRelativeResidual = Math.max(maxRelativeResidual, residual);
     }
+  }
+  // Population std-dev of the measured residuals (0 when fewer than 2 samples).
+  let residualStdDev = 0;
+  if (residuals.length > 0) {
+    const mean = residuals.reduce((a, b) => a + b, 0) / residuals.length;
+    const variance = residuals.reduce((a, b) => a + (b - mean) ** 2, 0) / residuals.length;
+    residualStdDev = Math.sqrt(variance);
   }
   return {
     total: ops.length, conformant, decisionDivergences, outOfTolerance,
-    maxRelativeResidual, allConformant: conformant === ops.length,
+    maxRelativeResidual, residualStdDev, allConformant: conformant === ops.length,
   };
 }

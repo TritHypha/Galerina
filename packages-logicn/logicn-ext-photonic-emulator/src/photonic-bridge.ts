@@ -17,6 +17,7 @@
 
 import type { InferenceBridge, BridgeOp, BridgeResult, BridgeManifest } from "../../logicn-inference-bridge-contract/dist/index.js";
 import { tmacExact, tmacVoted, clampVotes, PHOTONIC, type PhysParams, Xorshift32 } from "./emulator.js";
+import { proveBifurcatedParity, type ParityReport } from "./parity-conformance.js";
 
 /** The surface the photonic runtime consumes: the contract execute + a cheap exact recompute. */
 export interface PhotonicBackend {
@@ -48,7 +49,11 @@ export class PhotonicEmulatorBridge implements InferenceBridge, PhotonicBackend 
   readonly bridgeId = "photonic-emulator";
   readonly technique = "ternary" as const;     // T-MAC lane (PrecisionTechnique)
   readonly nativeAvailable = false;            // EMULATED — honest (Rung 2, not silicon)
-  readonly manifest: BridgeManifest;
+  // Reassignable (a mutable property still satisfies the contract's readonly member) so calibrate()
+  // can replace the UNCALIBRATED placeholder witness with a MEASURED one (R&D 0057-parity-witness).
+  manifest: BridgeManifest;
+  /** False until calibrate() binds a MEASURED tolerance band — an uncalibrated witness is dev-only. */
+  private calibrated = false;
 
   private readonly phys: PhysParams;
   private readonly redundancyN: number;
@@ -75,7 +80,11 @@ export class PhotonicEmulatorBridge implements InferenceBridge, PhotonicBackend 
       backendArtifactHash: HEX64("b"),
       toleranceWitness: {
         redundancyN: this.redundancyN,
-        epsilonMeasured: 0.02,     // ≤ tolerance — the lane does not claim a tighter band than measured
+        // UNCALIBRATED PLACEHOLDER (R&D 0057-parity-witness). Until calibrate() runs a real parity
+        // sweep, this literal attests NOTHING — it is a dev-only stand-in. calibrate() replaces it
+        // with the MEASURED maxRelativeResidual / residualStdDev so the witness binds the declared
+        // band to an empirical curve (calibration-as-attestation), which is the whole point.
+        epsilonMeasured: 0.02,
         stdDev: 0.01,
         noiseModelId: "photonic-emulator-d1-v0",
       },
@@ -84,6 +93,42 @@ export class PhotonicEmulatorBridge implements InferenceBridge, PhotonicBackend 
 
   initialize(): void { /* no native resources to load — emulated */ }
   shutdown(): void { /* nothing to release */ }
+
+  /** True once calibrate() has bound a MEASURED tolerance band (else the witness is a dev placeholder). */
+  isCalibrated(): boolean { return this.calibrated; }
+
+  /**
+   * Calibration-as-attestation (R&D 0057-parity-witness): run the bifurcated-parity sweep over a
+   * representative corpus and bind the MEASURED band into the manifest's ToleranceWitness, replacing
+   * the uncalibrated placeholder. Fail-closed: a lane that is NOT fully bifurcation-conformant
+   * (any binary≠photonic decision divergence) is REFUSED — we never attest a divergent lane.
+   * Returns the parity report (maxRelativeResidual is the empirical epsilon now in the witness).
+   */
+  calibrate(ops: readonly BridgeOp[]): ParityReport {
+    const report = proveBifurcatedParity(ops, {
+      phys: this.phys,
+      redundancyN: this.redundancyN,
+      tolerance: this.manifest.tolerance ?? 0.05,
+    });
+    if (!report.allConformant) {
+      throw new Error(
+        `LLN-SUBSTRATE: photonic lane is NOT bifurcation-conformant (${report.conformant}/${report.total} conformant, ${report.decisionDivergences} decision divergences) — refusing to calibrate/attest a divergent lane`,
+      );
+    }
+    // Bind the MEASURED band; the declared `tolerance` must still be ≥ epsilonMeasured (validateManifestShape).
+    const prior = this.manifest.toleranceWitness;
+    this.manifest = {
+      ...this.manifest,
+      toleranceWitness: {
+        redundancyN: prior?.redundancyN ?? this.redundancyN,
+        noiseModelId: prior?.noiseModelId ?? "photonic-emulator-d1-v0",
+        epsilonMeasured: report.maxRelativeResidual,
+        stdDev: report.residualStdDev,
+      },
+    };
+    this.calibrated = true;
+    return report;
+  }
 
   /** Decode BitNet-packed i32 words into a trit array (mirrors the stub decoder; traps 0b11). */
   private decodePackedTrits(packed: Int32Array, count: number, offset: number): number[] {
