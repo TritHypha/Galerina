@@ -74,8 +74,12 @@ Doc: [`logicn-rd-0116-holographic-storage-2026-06-24.md`](logicn-rd-0116-hologra
 - `RD-0116-O3` — "O(1)-read petabyte" both halves FALSE (all 3 adversarial verdicts `refuted:false, high`); survivors = "high parallel read bandwidth" + "high volumetric density".
 - `RD-0116-O4` — **net-new finding**: overwrite-erasure is silently false on write-once/fixed media → `LLN-RETAIN-001` (crypto-erase obligation; = guardrail `RD-0114-G3`).
 
-### RD-0117 — The 0115 join (formalize safe-floor + wire reuse-crossover + measure) *(running)*
-Doc: TBD · Status: **in progress** (workflow `w0w76fzt3`) — executes `RD-0115-E1/E2/E3`, joins `RD-0110-O2`.
+### RD-0117 — The 0115 join (formalize safe-floor + wire reuse-crossover + measure)
+Doc: [`logicn-rd-0117-hybrid-join-2026-06-24.md`](logicn-rd-0117-hybrid-join-2026-06-24.md) · Status: **JOINED; safe-floor proof SHIPPED (15/15)** — executes `RD-0115-E1/E2/E3`, joins `RD-0110-O2`
+- `RD-0117-O1` — the unified optimal rule; the shipped router implements all conjuncts but the last (reuse=1 n*) → a **safe lower bound** on the optimal rule.
+- `RD-0117-O2` — **Safe-Floor Theorem** (`realized ≤ Tdigital`, strict on photonic); proved by finite case analysis + shipped as a runtime gate `rd-0117-safe-floor-theorem-proof.mjs` (15/15, imports the real decider).
+- `RD-0117-O3` — reuse-crossover wiring spec (`reuse` + Θ(n²) weightLoad → 0110's gate exactly); reclaims only the band n∈[21,29], reuse=1 default keeps the floor.
+- `RD-0117-O4` — **measured-negative**: `decide()`/`route()` have no production call sites, p≈0, governance matrices small/sparse/reuse-1 → even a free optical core is Amdahl-capped ~1.0–1.1× → router correctly refuses photonic almost everywhere.
 
 ---
 
