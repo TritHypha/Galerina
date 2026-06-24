@@ -52,6 +52,18 @@ export type { GovernanceDiagnostic, BoundaryDecision } from "./three-valued-gove
 export { partialReturn, maskByVerdict, isMasked } from "./partial-return.js";
 export type { Masked, FieldVerdict, PartialReturn } from "./partial-return.js";
 
+// ── T-as-signed-artifact admission rail (R&D 0108 #3) — admit a photonic-config blob ──
+// (the matrix T that reprograms the PPU) as SIGNED code before reprogram: hash-pin +
+// Ed25519 + revocation + photonic.reprogram capability, fail-closed. Freivalds verifies the
+// RESULT; this verifies T is the AUTHORIZED matrix. Crypto Binary; the apply is HW-gated.
+export {
+  admitPhotonicConfig, signPhotonicConfig, photonicConfigHash,
+  generatePhotonicConfigKeypair, PHOTONIC_REPROGRAM_CAP,
+} from "./photonic-admission.js";
+export type {
+  PhotonicConfigManifest, PhotonicConfigAttestation, PhotonicAdmissionPolicy, PhotonicAdmission,
+} from "./photonic-admission.js";
+
 // ── Substrate failure-mode model (Direction C) — seeded, fail-closed ──
 // Models photonic/ternary noise (phase-drift/crosstalk/lane-failure/readout) in software.
 // effectiveVerdict = vAnd(ideal, reading): noise can cost availability, never safety.
