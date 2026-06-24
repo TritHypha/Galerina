@@ -1257,7 +1257,7 @@ A bare-token match is a **tripwire**: a raw credential reaching CLI output means
 
 ## Sound-erasure obligation for non-overwritable substrates
 
-**Status:** ENFORCED at the decision core (R&D 0116/0118; the Substrate Dispatch Gateway runtime-defense gate `admitSubstrateWrite` is BUILT — `logicn-tower-citizen/src/substrate-erasure.ts`, 12/12 tests); the compiler-trap + the real hardware dispatch + the signed-attestation verification wire in with a storage-admission path (#102-106)  **Diagnostic:** LLN-RETAIN-001
+**Status:** ENFORCED at the decision core + the signed discovery rail (R&D 0116/0118; `admitSubstrateWrite` + `admitStorageSubstrate` BUILT — `logicn-tower-citizen/src/substrate-erasure.ts`, 20/20 tests: the lying-WORM-drive attack is closed end-to-end — `overwrite` needs a verified Ed25519-signed `storage.admit` attestation, else fail-closed to `crypto-only`); the Stage-1 compiler trap + Stage-3 crypto-erase witness are owner-gated; the physical Stage-2 dispatch seam + the medium-binding TOCTOU closure are HW-gated (#102-106)  **Diagnostic:** LLN-RETAIN-001
 
 LogicN's secret-erasure is **overwrite-based** (zero the arena page / derived-secret buffer; B2/B2b in `wat-emitter.ts`). On **write-once/fixed media** that invariant is silently false — a thermally-fixed photorefractive hologram cannot be erased optically (>170 °C re-heat only), WORM glass is physically immutable, and unfixed holograms leave residual/decaying gratings (data remanence). The sound discipline is **cryptographic erase** (NIST SP 800-88 Rev. 1 "Purge"): seal *before* writing, destroy the key to "delete".
 

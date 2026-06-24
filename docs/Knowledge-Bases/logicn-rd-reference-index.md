@@ -84,7 +84,7 @@ Doc: [`logicn-rd-0117-hybrid-join-2026-06-24.md`](logicn-rd-0117-hybrid-join-202
 ### RD-0118 — LLN-RETAIN-001 Hardware Protection Directive, hardened
 Doc: [`logicn-rd-0118-retain-hardware-directive-2026-06-24.md`](logicn-rd-0118-retain-hardware-directive-2026-06-24.md) · Status: **decision core BUILT (12/12); directive adversarially hardened** — formalizes `RD-0116-O4` / guardrail `RD-0114-G3`
 - `RD-0118-O1` — **verdict**: yes, LLN-RETAIN-001 becomes a compiler-enforced hardware protection directive (3 stages: compiler trap · dispatch gateway · deletion witness).
-- `RD-0118-O2` — **discovery answer**: an eraseModel is never taken from a drive's self-report; `overwrite` needs a verified signed attestation, else fail-closed to the stricter `crypto-only` (`admitSubstrateWrite`/`effectiveEraseModel`, built `746e161`).
+- `RD-0118-O2` — **discovery answer**: an eraseModel is never taken from a drive's self-report; `overwrite` needs a verified signed Ed25519 `storage.admit` attestation, else fail-closed to the stricter `crypto-only`. BUILT: `admitSubstrateWrite`/`effectiveEraseModel` (`746e161`) + the signed rail `admitStorageSubstrate` (`1642f3e`) — lying-WORM-drive attack closed end-to-end, 20/20.
 - `RD-0118-O3` — the crypto-erase **witness** structure + invariants (no-copy / sole-custody, bottom-out at attested-overwrite silicon).
 
 ### Outcomes + paper ledger
