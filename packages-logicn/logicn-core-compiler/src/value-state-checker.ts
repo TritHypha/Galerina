@@ -1026,6 +1026,11 @@ class ValueStateChecker {
       // diagnostics (LLN-VALUESTATE-003/004/005 all silent) for the whole tier.
       // Every sibling pass (runtime, effect-checker, taint-checker) already
       // enumerates guardedFlowDecl; the value-state checker was the lone omission.
+      // R&D 0120: `governedFlowDecl` (a `governed floor_N flow …` Tower-floor entry, parser.ts:947)
+      // was the SAME omission — value-state had ZERO references to it, so a governed flow's tainted
+      // params reached governed sinks with no LLN-VALUESTATE-003/004/005 (the 0093 fail-open class).
+      // A governed flow IS a posture-gated boundary, so it registers params + is treated like secure/guarded.
+      case "governedFlowDecl":
       case "guardedFlowDecl": {
         this.pushScope();
         const prevFlowKind = this.currentFlowKind;
@@ -1211,7 +1216,7 @@ class ValueStateChecker {
       || (sourceFromOrigin !== undefined && isUntrustedSourceFromOrigin(sourceFromOrigin));
     if (untrusted) {
       this.registerBinding({ name, safetyPrefix: "unsafe", typeName, ...locField });
-    } else if (this.currentFlowKind === "secureFlowDecl" || this.currentFlowKind === "guardedFlowDecl") {
+    } else if (this.currentFlowKind === "secureFlowDecl" || this.currentFlowKind === "guardedFlowDecl" || this.currentFlowKind === "governedFlowDecl") {
       // R&D 0093 "34B hole": a BARE param at a posture-gated entry boundary (secure/guarded
       // flow) is untrusted-until-gated. `boundary-untrusted` is inert everywhere EXCEPT a
       // governed sink, where it fires LLN-VALUESTATE-008 (warning) — closing the
