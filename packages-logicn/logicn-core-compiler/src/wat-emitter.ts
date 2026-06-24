@@ -740,7 +740,9 @@ export function getInternedStrings(): Array<{ handle: number; value: string }> {
 const BINARY_OP_TO_WAT: ReadonlyMap<string, string> = new Map([
   // +,-,* lower to strict-trapping checked helpers (owner Fork A=TRAP, 2026-06-18): native i32.add/
   // sub/mul wrap silently, so signed overflow → `unreachable` (LOAD→TRAP→ERASE) via the helpers
-  // below. /,% stay native: i32.div_s/rem_s already trap on /0 AND INT32_MIN/-1 — exactly our semantics.
+  // below. /,% stay native and match i32-arith.ts exactly: i32.div_s traps on /0 AND INT32_MIN/-1
+  // (overflow); i32.rem_s traps on /0 ONLY — INT32_MIN % -1 returns 0 (no trap), exactly like
+  // i32ModChecked. So div traps the overflow edge, rem returns 0 there — both byte-exact with the VM/walker.
   ["+",  "call $lln_checked_add_i32"],
   ["-",  "call $lln_checked_sub_i32"],
   ["*",  "call $lln_checked_mul_i32"],
@@ -788,8 +790,9 @@ function watStackType(expr: string): WATValType {
  * wrap mod 2^32 — a lying abstraction in a governed system. These harden the WASM-i32 reference so
  * signed overflow is a TRAP (`unreachable` = LOAD→TRAP→ERASE), byte-identical to the tree-walker +
  * bytecode VM (the single source of truth is i32-arith.ts; these mirror its predicates exactly).
- * `+`/`-`/`*` lower to `call` these; `/`/`%` use native i32.div_s/rem_s (already trap on /0 AND
- * INT32_MIN/-1). Emitted into a module only when a flow body actually references them.
+ * `+`/`-`/`*` lower to `call` these; `/`/`%` use native i32.div_s/rem_s — div_s traps on /0 AND
+ * INT32_MIN/-1; rem_s traps on /0 ONLY (INT32_MIN % -1 = 0, no trap), matching i32ModChecked.
+ * Emitted into a module only when a flow body actually references them.
  */
 const I32_CHECKED_HELPERS: Readonly<Record<string, string>> = {
   $lln_checked_add_i32: [

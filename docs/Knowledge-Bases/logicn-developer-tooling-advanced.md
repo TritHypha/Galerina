@@ -5,8 +5,9 @@
 Three tightly related developer tooling features that together make LogicN comprehensible to both
 human developers and AI tools:
 
-1. **Intent-Driven Test Skeleton Generation** — `logicn generate tests` produces typed test
-   scaffolding from API contracts and flow signatures
+1. **Intent-Driven Test Skeleton Generation** — `logicn gen-tests` produces typed test
+   scaffolding from API contracts and flow signatures *(shipping command is `gen-tests`, stdout/TAP;
+   the `generate tests --out` file-emission form below is PLANNED — see R&D 0119/0016)*
 2. **Cross-Package Capability Inheritance Warnings** — import-time visibility of transitive authority
    before code compiles
 3. **Constraint-Complete Callable Signatures** — every public flow exposes effects, capabilities,
@@ -25,7 +26,10 @@ is typically incomplete or missing.
 ### Command
 
 ```bash
-logicn generate tests api-orders.lln
+# SHIPPING today (stdout / TAP):
+logicn gen-tests api-orders.lln
+logicn gen-tests api-orders.lln --tap
+# PLANNED (file-emission + --out; not yet built — R&D 0119/0016):
 logicn generate tests api-orders.lln --out tests/generated/
 ```
 

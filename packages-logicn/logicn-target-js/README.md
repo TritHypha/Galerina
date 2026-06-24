@@ -1,8 +1,15 @@
 # LogicN Target JS
 
+> **Status: PLANNED — NOT ENFORCED.** This package has **no `src/`** yet — it defines target
+> *planning contracts* (the intended shape of JS output), not running code. In particular the
+> security-relevant items below (**server-only import blocking**, **secret/environment access
+> denial for browser JS**) are **described, not enforced**: there is no compiler pass or runtime
+> that applies them today. Do **not** rely on this package as a JS-output security control. The
+> enforcing implementation is future work; until it ships + is tested, treat these as design intent.
+
 `logicn-target-js` defines JavaScript output target planning contracts.
 
-Use this package for:
+Use this package for (planning contracts — see status note above):
 
 ```text
 browser JavaScript output planning
