@@ -12,6 +12,9 @@ contract {
   if amount < 0 {
     return Err("negative amount")
   }
-  AuditLog.write("entry persisted: " + amount.toStr())
+  // Zero-trust: the boundary input must pass an explicit validate.* gate before a governed sink
+  // (discharges LLN-VALUESTATE-008 — an unmarked boundary param reaching a sink ungated).
+  let safeAmount: Int = validate.entryAmount(amount)
+  AuditLog.write("entry persisted: " + safeAmount.toStr())
   return Ok(amount)
 }

@@ -23,6 +23,10 @@ contract {
   trap userId <= 0 : "LLN-INV-000"
   trap amount <= 0 : "LLN-INV-000"
 
-  AuditLog.write("tx submitted: user=" + userId.toStr() + " amount=" + amount.toStr())
+  // Zero-trust: each boundary input passes an explicit validate.* gate before the governed sink
+  // (discharges LLN-VALUESTATE-008 — unmarked boundary params reaching a sink ungated).
+  let safeUser: Int = validate.userId(userId)
+  let safeAmount: Int = validate.txAmount(amount)
+  AuditLog.write("tx submitted: user=" + safeUser.toStr() + " amount=" + safeAmount.toStr())
   return Ok("tx:accepted")
 }
