@@ -175,3 +175,22 @@ Your instinct that "tri implies a third" is **correct as taxonomy**, and "is it 
 **Paper / defensive-pub:** measured-negative only — *"the 'third execution paradigm' for tri/photonic compute is a resolution/collapse model whose physical substrate (analog field computation, dataflow-as-circuit, MBQC) is decades-old prior art; the genuinely-new contribution is the fail-closed K3 resolution boundary that admits the transform/measurement-schedule as signed code and validates probabilistic readout against a signed tolerance-witness."* No patent, no flagship paper.
 
 **Key files:** `proof-graph.ts` (LLN-HW-004 collapse), `photonic-admission.ts:18` (`admitPhotonicConfig` Tier-3 rail), `substrate-erasure.ts` (`effectiveEraseModel` fail-closed-to-stricter), `LogicN-R-AND-D/scripts/rd-0117-safe-floor-theorem-proof.mjs` (15/15) · notes `56-x1`, `57-x` · `logicn-rd-0110/0111/0116/0117/0118-*.md`, `logicn-three-valued-governance.md`, `logicn-substrate-failure-model.md`.
+
+---
+
+## 8. DECISION — are we adding this technology? (owner-facing, 2026-06-24)
+
+**No new technology is being added now. The capability already ships in the core, and the only net-new
+surface is held as a design spec — built on-demand, never speculatively.** This is the most-secure
+zero-trust choice (minimise unproven attack surface; Govern, Don't Absorb).
+
+| Piece | Status | Decision | Why |
+|---|---|---|---|
+| Third paradigm = resolution/collapse delivery | **Ships in core** | nothing to do | `K3 INDETERMINATE (0)` = the held possibility-space; `decideAtBoundary` (`unknown→deny`) = the fail-closed collapse. LogicN already *executes* the third paradigm as a governance discipline on every governed sink. |
+| `resolve … at boundary` source construct | **Track, don't build** | build only when a real `.lln` flow needs an explicit, first-class collapse point | New syntax = new parser + verifier surface. The discipline is *already enforced* without it; adding sugar with no consumer is attack surface for zero benefit. |
+| signed `toleranceWitness` | **Hold the spec; build on-demand** | build when a concrete probabilistic Tier-3 co-processor exists to govern (hardware-gated) | Only meaningful once a probabilistic device must be admitted. The design (signed-witness, fail-closed admission, validate readout against a signed tolerance attestation) mirrors the shipped `admitPhotonicConfig` / `admitStorageSubstrate` rails and is ready when needed. Crypto + bit-exact determinism stay digital. |
+
+**Trigger to revisit:** a real Tier-3 probabilistic substrate (analog/photonic/MBQC co-processor) entering
+the roadmap with measured tolerance characteristics — at which point the `toleranceWitness` admission spec
+is built first (fail-closed), and the `resolve … at boundary` sugar follows only if flows need to name the
+collapse point explicitly. Until then: nothing to add; the core already does it.
