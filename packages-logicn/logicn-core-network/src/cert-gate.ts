@@ -255,3 +255,66 @@ export function certGate(
   const folded = (input.sideSignals ?? []).reduce<Verdict>((acc, r) => vAnd(acc, r), base);
   return decideAtBoundary(folded, onDiagnostic);
 }
+
+// ── Mid-stream revocation re-check cadence (config + pure helper, NOT a protocol) ─ (TRACK c)
+//
+// A long-lived governed stream cannot rely on its OPENING revocation check forever: a
+// signing key may be revoked mid-session. This knob declares HOW OFTEN such a stream
+// re-runs its revocation re-check (the S4 reverify step, which folds the revocation
+// verdict via vAnd/decideAtBoundary, so unknown/revoked still collapses to DENY). This
+// module only answers "is a re-check DUE now?"; it never authorizes, so it cannot weaken
+// unknown->DENY — at worst it forces MORE re-checks. Fail-closed: the default is
+// chunk_boundary, and ANY absent/invalid config degrades to chunk_boundary (re-check
+// every chunk). There is deliberately NO encoding meaning "never". See
+// docs/Knowledge-Bases/logicn-tlstp-s4-recovering-fsm.md + logicn-b8-governed-transport.md.
+
+/**
+ * How often a long-lived governed stream re-runs its signing-key/revocation re-check.
+ *  - `chunk_boundary` — re-check at every chunk/frame boundary (the fail-closed floor).
+ *  - `poll` — re-check once elapsed reaches `everyMs` (and ALSO at every chunk boundary).
+ *    A non-finite or ≤0 `everyMs` is invalid and degrades to the floor.
+ */
+export type RevocationCadence =
+  | { readonly mode: "chunk_boundary" }
+  | { readonly mode: "poll"; readonly everyMs: number };
+
+/** The fail-closed default: re-check at every chunk boundary. */
+export const DEFAULT_REVOCATION_CADENCE: RevocationCadence = { mode: "chunk_boundary" };
+
+/** The stream's progress since the last revocation re-check, supplied by the caller. */
+export interface RecheckState {
+  /** True iff the stream is at a chunk/frame boundary (a re-check opportunity). */
+  readonly atChunkBoundary: boolean;
+  /** ms elapsed since the last completed re-check (injected, never read here). */
+  readonly msSinceLastCheck: number;
+}
+
+function isValidPollIntervalMs(everyMs: number): boolean {
+  return Number.isFinite(everyMs) && everyMs > 0;
+}
+
+/**
+ * Pure, deterministic: given the cadence + the stream's progress, is a re-check DUE?
+ * Fail-closed totality: absent / not-an-object / unknown mode ⇒ chunk_boundary floor;
+ * `poll` with an invalid everyMs ⇒ floor; `poll` valid ⇒ due iff the interval elapsed
+ * OR at a chunk boundary (a non-finite elapsed is treated as due — a broken clock must
+ * not skip a re-check). No input yields "never": a re-check is always due at a boundary.
+ */
+export function revocationRecheckDue(
+  cadence: RevocationCadence | undefined,
+  state: RecheckState,
+): boolean {
+  const atBoundary = state.atChunkBoundary === true;
+  if (cadence === undefined || cadence === null || typeof cadence !== "object") {
+    return atBoundary;
+  }
+  if (cadence.mode === "poll") {
+    if (!isValidPollIntervalMs(cadence.everyMs)) {
+      return atBoundary; // invalid interval ⇒ degrade to the floor, never "never"
+    }
+    const intervalElapsed =
+      !Number.isFinite(state.msSinceLastCheck) || state.msSinceLastCheck >= cadence.everyMs;
+    return intervalElapsed || atBoundary;
+  }
+  return atBoundary; // chunk_boundary (and any unrecognized mode) ⇒ the floor
+}

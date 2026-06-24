@@ -487,10 +487,14 @@ export {
   type RevocationOutcome,
   type CertSubVerdicts,
   type CertGateInput,
+  type RevocationCadence,
+  type RecheckState,
   toSubVerdicts,
   certVerdict,
   withSideSignal,
   certGate,
+  DEFAULT_REVOCATION_CADENCE,
+  revocationRecheckDue,
 } from "./cert-gate.js";
 
 // Telemetry → K3 admission feedback loop (the closed runtime self-throttle).
