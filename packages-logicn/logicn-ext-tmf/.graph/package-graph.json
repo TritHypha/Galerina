@@ -1,0 +1,51 @@
+{
+  "packageName": "@logicn/ext-tmf",
+  "nodes": [
+    "src/container.ts",
+    "src/index.ts",
+    "src/kemdem.ts",
+    "src/tmx256.ts"
+  ],
+  "internalEdges": [
+    {
+      "from": "src/container.ts",
+      "to": "src/tmx256.ts"
+    },
+    {
+      "from": "src/index.ts",
+      "to": "src/tmx256.ts"
+    },
+    {
+      "from": "src/index.ts",
+      "to": "src/container.ts"
+    },
+    {
+      "from": "src/index.ts",
+      "to": "src/kemdem.ts"
+    }
+  ],
+  "externalDeps": [
+    {
+      "specifier": "node:crypto",
+      "kind": "node_core",
+      "importedBy": [
+        "src/container.ts",
+        "src/kemdem.ts",
+        "src/tmx256.ts"
+      ]
+    }
+  ],
+  "orphans": [],
+  "entryPoints": [
+    "src/index.ts"
+  ],
+  "stats": {
+    "fileCount": 4,
+    "internalEdgeCount": 4,
+    "externalDepCount": 1,
+    "nodeCoreCount": 1,
+    "workspaceCount": 0,
+    "thirdpartyCount": 0,
+    "orphanCount": 0
+  }
+}

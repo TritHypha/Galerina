@@ -1,0 +1,8 @@
+{
+  "packageName": "@logicn/ext-bridge-quantum",
+  "allowedExternal": [
+    "node:child_process",
+    "node:crypto"
+  ],
+  "note": "Baseline auto-generated. Edit allowedExternal to widen/narrow the border. `--check` fails if an import appears that is not listed here."
+}

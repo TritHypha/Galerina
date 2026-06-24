@@ -1,0 +1,11 @@
+{
+  "packageName": "@logicn/ext-secrets-tmf",
+  "allowedExternal": [
+    "@logicn/ext-tmf",
+    "node:crypto",
+    "node:fs",
+    "node:path",
+    "node:readline"
+  ],
+  "note": "Baseline auto-generated. Edit allowedExternal to widen/narrow the border. `--check` fails if an import appears that is not listed here."
+}

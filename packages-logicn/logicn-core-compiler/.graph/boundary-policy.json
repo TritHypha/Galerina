@@ -1,0 +1,20 @@
+{
+  "packageName": "@logicn/core-compiler",
+  "allowedExternal": [
+    "${fn.name}",
+    "${imp.module}",
+    "@logicn/devtools-graph-algorithms",
+    "@logicn/substrate-math",
+    "@noble/post-quantum/ml-dsa.js",
+    "argon2",
+    "bcryptjs",
+    "memory",
+    "node:child_process",
+    "node:crypto",
+    "node:fs",
+    "node:fs/promises",
+    "node:http",
+    "node:path"
+  ],
+  "note": "Baseline auto-generated. Edit allowedExternal to widen/narrow the border. `--check` fails if an import appears that is not listed here."
+}

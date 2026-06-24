@@ -1,0 +1,7 @@
+{
+  "packageName": "@logicn/devtools-graph-project",
+  "allowedExternal": [
+    "@logicn/devtools-project-graph"
+  ],
+  "note": "Baseline auto-generated. Edit allowedExternal to widen/narrow the border. `--check` fails if an import appears that is not listed here."
+}
