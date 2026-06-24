@@ -1599,6 +1599,36 @@ contract {
   });
 });
 
+describe("Governance Verifier — LLN-RES-CB-PENDING circuit_breaker fail-loud (R&D 0120)", () => {
+  it("emits LLN-RES-CB-PENDING (warning) when a flow declares fallback circuit_breaker (parsed but inert)", () => {
+    const result = parseAndVerify(`
+secure flow withBreaker(id: String) -> Result<String, String>
+contract {
+  intent { "Declares a circuit breaker that does not yet trip." }
+  effects { network.outbound }
+  resilience { fallback circuit_breaker }
+}
+{ return Ok(id) }
+`);
+    assert.ok(hasDiag(result, "LLN-RES-CB-PENDING"), "a declared-but-inert circuit_breaker must fail LOUD, not read as enforced");
+    const d = result.diagnostics.find((x) => x.code === "LLN-RES-CB-PENDING");
+    assert.equal(d.severity, "warning", "CB-PENDING is a posture-honesty warning (the declaration is valid, just not enforced)");
+  });
+
+  it("an ENFORCED fallback (return_cached) does NOT emit LLN-RES-CB-PENDING", () => {
+    const result = parseAndVerify(`
+secure flow withCache(id: String) -> Result<String, String>
+contract {
+  intent { "Uses an enforced fallback." }
+  effects { network.outbound }
+  resilience { fallback return_cached }
+}
+{ return Ok(id) }
+`);
+    assert.ok(!hasDiag(result, "LLN-RES-CB-PENDING"), "enforced fallbacks must not warn");
+  });
+});
+
 describe("Governance Verifier — LLN-OBS-001 observability on pure flow", () => {
   it("emits LLN-OBS-001 warning for explicit observability on pure flow", () => {
     const result = parseAndVerify(`

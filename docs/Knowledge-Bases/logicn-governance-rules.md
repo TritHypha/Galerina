@@ -1275,3 +1275,11 @@ The `workspace.lindex` cache TRUSTS its stored `flows`/`fileHashes` on an increm
 - **LLN-INTEL-002** — a caller-supplied `indexDir` containing a `..` path-traversal segment is **refused** before any write (CWE-22), so a poisoned indexDir cannot plant/overwrite a `workspace.lindex` outside its intended root. A deliberate absolute/sub-path with no `..` is allowed.
 
 ---
+
+## Declared-but-inert safety control must fail loud
+
+**Status:** ENFORCED (R&D 0120; `resilience-inference.ts` `checkResilienceViolations`, consumed by `governance-verifier.ts`)  **Diagnostic:** LLN-RES-CB-PENDING (warning)
+
+A safety control that is parsed + stored but **not yet enforced** must never read as enforced (the honest-posture / never-silent principle). A flow that declares `resilience { fallback circuit_breaker }` gets a **warning**: the circuit-breaker posture-trip is a NO-OP today (DRCM Phase 5), so on failure it will not actually trip the defensive-mode posture bit — do not rely on it for graceful degradation. The declaration is valid (warning, not error); the author is told to track the breaker externally or choose an enforced fallback (`propagate` / `return_cached` / `return_default` / `quarantine` / `escalate`) until DRCM Phase 5 lands. (The sibling rule `LLN-RES-001` (error) forbids retry on a mutation effect without `idempotent: true`.)
+
+---

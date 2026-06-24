@@ -288,13 +288,19 @@ export function inferFlowResilience(
 // ---------------------------------------------------------------------------
 
 export interface ResilienceViolation {
-  readonly code: "LLN-RES-001";
+  readonly code: "LLN-RES-001" | "LLN-RES-CB-PENDING";
+  readonly severity: "error" | "warning";
+  readonly subcode: string;
   readonly message: string;
+  readonly hint: string;
 }
 
 /**
- * LLN-RES-001: retry is forbidden on flows with database.write or gateway.charge
- * unless the flow explicitly declares idempotent: true in resilience {}.
+ * Resilience governance checks:
+ *  - LLN-RES-001 (error): retry on a mutation effect without idempotent: true.
+ *  - LLN-RES-CB-PENDING (warning, R&D 0120): `fallback circuit_breaker` is parsed + stored but its
+ *    posture-trip is a NO-OP today (DRCM Phase 5). A declared-but-inert safety control must never read
+ *    as enforced — fail LOUD so the author does not rely on graceful degradation that does not happen.
  */
 export function checkResilienceViolations(
   flowNode: AstNode,
@@ -308,13 +314,31 @@ export function checkResilienceViolations(
     if (mutationEffects.length > 0) {
       violations.push({
         code: "LLN-RES-001",
+        severity: "error",
+        subcode: "RESILIENCE_RETRY_ON_MUTATION",
         message:
           `Flow '${flow.name}' declares retry: ${inferred.retryCount} but has ` +
           `mutation effects [${mutationEffects.join(", ")}] without idempotent: true. ` +
           `Retrying mutations risks duplicate writes. Add 'idempotent: true' to ` +
           `resilience {} or remove the retry declaration.`,
+        hint: `Add 'idempotent: true' to the resilience {} block, or remove the retry declaration.`,
       });
     }
+  }
+
+  // LLN-RES-CB-PENDING: a declared circuit_breaker that does not yet trip must not read as enforced.
+  if (inferred.fallback === "circuit_breaker") {
+    violations.push({
+      code: "LLN-RES-CB-PENDING",
+      severity: "warning",
+      subcode: "CIRCUIT_BREAKER_NOT_ENFORCED",
+      message:
+        `Flow '${flow.name}' declares fallback: circuit_breaker, but the posture-trip is NOT YET ` +
+        `enforced (parsed + stored only — DRCM Phase 5). Do NOT rely on it for graceful degradation: ` +
+        `on failure the breaker will not actually trip the defensive-mode posture bit today.`,
+      hint: `Track the breaker externally until DRCM Phase 5 lands, or choose an enforced fallback ` +
+        `(propagate / return_cached / return_default / quarantine / escalate).`,
+    });
   }
 
   return violations;

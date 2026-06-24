@@ -2034,11 +2034,11 @@ class GovernanceVerifier {
       for (const v of resViolations) {
         this.diagnostics.push(makeGovDiag(
           v.code,
-          "RESILIENCE_RETRY_ON_MUTATION",
-          "error",
+          v.subcode,
+          v.severity,
           v.message,
           loc,
-          `Add 'idempotent: true' to the resilience {} block, or remove the retry declaration.`,
+          v.hint,
         ));
       }
     }
