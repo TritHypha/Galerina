@@ -113,6 +113,7 @@ intent  →  governed execution plan  →  coordinated compute  →  audit proof
 | Boundary data silently typed | `unsafe let raw` — untrusted until gated |
 | AI guesses at structure | Machine-readable ProofGraph + intent manifests |
 | Security checked at runtime | Compile-time: taint, secrets, PCI DSS, governance proofs |
+| Dependencies trusted by import | **Signed admission border** — hash-pin · signature · revocation · capability mask before a package runs (see *Package architecture*) |
 | Fixed hardware | Declared targets: CPU · WASM · GPU · NPU · Photonic |
 
 ---
@@ -220,6 +221,27 @@ At runtime the app reaches the world **only** through the deny-by-default **Capa
   ↓ GIR emitter    — Governed Intermediate Representation
   ↓ tiered runtime — cache · bytecode VM · sync · WASM · tree-walker
 ```
+
+### Package architecture
+
+The ~94 package directories (**≈53 active and test-bearing**; the rest are planned data/web/target scaffolds) are organised into **families by prefix**, with two hard rules governing the boundaries between them.
+
+| Family | Role | Trust |
+|---|---|---|
+| `logicn-core-*` (20) | The governance/compiler/runtime **core** — compiler, security (taint · redaction · OWASP), network (TLSTP S1 cert-gate), economics, logic. | **TCB** (production-grade) |
+| `logicn-tower-citizen` | The **governed runtime** — K3 verdict algebra, bridge attestation, revocation registry, substrate model. | **TCB** |
+| `logicn-framework-*` (3) | The **application layer** — the app-kernel admission/fusion border, the api-server REST adapter, the example-app golden template. | governed host |
+| `logicn-ext-*` (7) | **Govern-Don't-Absorb border extensions** — the `.tmf` trust engine (TMX-256 · KEM-DEM), the secrets-vault rotation engine, the native bridges (BitNet · quantum · C++). | governed at the border |
+| `logicn-devtools-*` (13) | Dev/audit **tooling** — the security + PCI auditors, the benchmark suite, the project/code/KB graph generators. | host-side tools |
+| `logicn-target-*` (7) | **Target adapters** — cpu · wasm · gpu · native · js, each deny-by-default capability-gated. | mostly planned |
+| `logicn-data-*` · `logicn-web-*` · `logicn-registry` | The data engine, web-governance stubs, and the signed package registry. | planned/partial |
+
+**Two rules hold the architecture together:**
+
+1. **Govern-Don't-Absorb.** The **core governs**; the **`ext` packages do the heavy lifting** (cryptography, native compute, file formats) *at the border* — never absorbed into the TCB. The `.tmf` KEM-DEM crypto lives in `logicn-ext-tmf`, **governed** by the core's `LLN-SUBSTRATE-001` (crypto-on-core) invariant, so the core never grows a dependency it would have to trust. A bridge or codec is a *governed participant*, not part of the trusted base.
+2. **Self-contained packages, explicit boundaries.** There are **no npm workspaces** — every package installs and builds independently via `file:../` deps, so each boundary is an explicit, individually-deployable seam, and a package enters an app **only across the signed admission border**, never by ambient import.
+
+> **Licensing model (planned).** The intended split is **`core` = Apache-2.0** (free forever — the compiler, runtime, governance core) and an **`enterprise` tier under BSL** (compliance/reporting packages). This is a recorded design decision, not yet a physical directory split.
 
 ### Package layout (status-labelled)
 ```
