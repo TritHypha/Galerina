@@ -7,7 +7,7 @@ disclosed below. Read this before relying on any guarantee. Last reconciled: 202
 ## What is production-grade (real, tested)
 
 - **Compiler & type system (Stage A)** — parsing, type-checking, effect inference, governance
-  verification, WASM codegen. Full suite: **60/60 packages · 5,243 tests · 0 fail**.
+  verification, WASM codegen. Full suite: **60/60 packages · 5,248 tests · 0 fail**.
 - **Governance & admission border** — K3 (Kleene three-valued) fail-closed verdicts, value-state
   taint checking, effect/tier floors, signed `.lmanifest` admission, an enforced revocation registry.
 - **Cryptographic signing** — Ed25519 (default) plus opt-in hybrid Ed25519 + ML-DSA-65 (NIST FIPS 204)
@@ -34,12 +34,15 @@ disclosed below. Read this before relying on any guarantee. Last reconciled: 202
   to **Deny**), and **no in-tree artifact is signed by it**. A history rewrite was deliberately
   avoided because it would rebase every commit SHA and break the verifiable trust chain. Treat any
   signature from `8eecf4187ebc9341` as permanently distrusted.
-- **`LLN-VALUESTATE-008` is production-only.** The boundary-input cleanliness floor (an unmarked bare
-  parameter reaching a governed sink) escalates to an *error* only in production builds; dev/check is
-  permissive (warning). This is intentional for beta but means dev builds do not surface it.
+- **`LLN-VALUESTATE-008` is production-gated.** The boundary-input cleanliness floor (an unmarked bare
+  parameter reaching a governed sink) escalates to an *error* only in production builds, and is now
+  enforced on the user-facing `logicn build` path under `LOGICN_PROFILE=production` (commit `8d840ca`);
+  dev/check remains permissive (warning, a planned follow-up). This is intentional for beta but means
+  dev builds do not surface it.
 - **`LLN-TIER-001` tier floor is production-gated.** The flow-kind tier floor (an under-declared
-  secure-tier flow) is enforced only in `build-production` / `build-deterministic`; dev/check does not
-  yet surface it (the dev-mode warning is a planned follow-up).
+  secure-tier flow) is enforced only in production builds, and is now enforced on the user-facing
+  `logicn build` path under `LOGICN_PROFILE=production` (commit `8d840ca`); dev/check remains permissive
+  and does not yet surface it (the dev-mode warning is a planned follow-up).
 
 ## Test caveats
 
@@ -49,7 +52,6 @@ disclosed below. Read this before relying on any guarantee. Last reconciled: 202
 
 ## Versioning note
 
-- The product version is tracked in `version.json` (currently `1.0.0-beta.2`). Individual package
-  `package.json` versions are **not yet reconciled** to a single beta version (pending an owner
-  decision); npm-visible package versions currently read `0.1.0` / `0.1.0-beta.0`. Pin to the repo
-  commit/tag, not an npm version, for reproducible testing.
+- The product version is tracked in `version.json` (currently `1.0.0-beta.2`). All active workspace
+  packages plus the root `package.json` now carry `1.0.0-beta.2` (reconciled in commit `15914e0`).
+  Pin to the repo commit/tag, not an npm version, for reproducible testing.

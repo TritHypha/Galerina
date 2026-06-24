@@ -115,6 +115,75 @@ A tag 400 (Capability) always requires V_DPM check; tag 402 (SecretHandle) alway
 
 ---
 
+## The `.lmanifest` Signature Envelope (Tag 404 — `GovernanceSignature`)
+
+The `governanceSignature` field (CBOR Tag 404) binds the rest of the manifest. Two
+on-disk shapes exist; the **default is still Ed25519**, with an opt-in hybrid.
+
+### Default (Ed25519) — `schemaVersion: "lln.manifest.v1"`
+
+The classical signature: a `keyId` plus a single base64 Ed25519 `signature` over
+the canonical body. This is the unchanged default path — nothing about it changed
+when hybrid signing shipped.
+
+### Opt-in hybrid (Ed25519 + ML-DSA-65) — `schemaVersion: "lln.manifest.v2"`
+
+> **Status: SHIPPED (opt-in).** Persisted when a hybrid signing key is present;
+> **mandatory and fail-closed** under `LOGICN_MANIFEST_PROFILE=certified` (no
+> post-quantum downgrade). A persisted hybrid signature is a durable on-disk
+> crypto fact, so the manifest `schemaVersion` bumps to `lln.manifest.v2` (the
+> Ed25519 default path stays `lln.manifest.v1`).
+
+The persisted `governanceSignature` object for a hybrid manifest is:
+
+```json
+{
+  "algorithm": "Ed25519+ML-DSA-65",     // hybrid, both required (NIST FIPS 204)
+  "sigAlgorithm": "lln.gov.sig.v2",      // envelope sig version — verifiers DISPATCH on this
+  "keyId": "<signing key id>",
+  "canon": "<body canon id (RFC 8785 JCS)>",
+  "bodyHash": "sha256:<hex>",            // explicit body binding (defence-in-depth only)
+  "signature": "<ed25519_b64url>|<mldsa65_b64url>",   // both halves
+  "signedAt": "<ISO-8601>"
+}
+```
+
+**Both halves required.** A `lln.gov.sig.v2` signature carries the two halves
+joined by `|`. Because base64url never contains `|`, a classical Ed25519 value can
+never be mistaken for a hybrid one — verifiers dispatch on `sigAlgorithm` /
+`algorithm` / the pipe FIRST so a hybrid signature is never decoded by the
+single-key base64 path (which would silently truncate at the `|`).
+
+### The single-source signing envelope — `makeManifestEnvelope`
+
+Both signature flavours bind the body through one fixed-shape `ProofGraph` envelope
+produced by `makeManifestEnvelope(bodyHash, generatedAt)` in
+`packages-logicn/logicn-core-compiler/src/proof-graph.ts:564` (commit `0f0976c`):
+
+- an **all-zero `ExecutionSignature`** (every mask/count `0`)
+- a **single effect-obligation** carrying `claim = "lmanifest.bodyHash=<hash>"`
+- matching evidence, so the graph computes `verified === true`
+
+`generatedAt` and `evidence` are excluded from the signed payload, so the bound
+signature is independent of `generatedAt`. The signer and **both** verify paths
+(build-admission and run-admission) reconstruct the envelope through this **same
+helper**, so the shape cannot drift — if it did, hybrid signatures would silently
+stop verifying. Verifiers also **re-derive** `bodyHash` from the actual body (never
+trusting the persisted `bodyHash` field as the signed input) and reject on mismatch.
+
+### Hybrid verification diagnostics (fail-closed)
+
+| Diagnostic | Fires when |
+|---|---|
+| `LLN-MANIFEST-PQ-REQUIRED` | Incomplete / inconsistent / non-both-half hybrid (v2) signature, or hybrid signing did not produce a both-half v2 result — refuses to run or to write a downgraded manifest |
+| `LLN-MANIFEST-PUBKEY-MISSING` | The Ed25519 and/or ML-DSA-65 published public key for the `keyId` is absent — cannot verify both halves |
+| `LLN-MANIFEST-TAMPER` | Recomputed `bodyHash` does not match, or hybrid verification fails (both halves required) — manifest may be tampered or PQ-downgraded |
+
+See `logicn-governance-signature.md` for the `lln.gov.sig.v2` ProofGraph type and
+`logicn-signed-attestation.md` for the attestation-surface hybrid path.
+
+---
+
 ## Encoding Pipeline
 
 ```mermaid

@@ -575,3 +575,76 @@ It was not cached.
 It was not sent to an LLM.
 It was not compiled into the build.
 ```
+
+## Encrypted-at-Rest Secrets: `env.tmf`
+
+Everything above governs how `.env` *values* flow through the app once loaded.
+But a plaintext `.env` file is still readable by anyone who can read the file on
+disk. For the cases where the secrets file itself must be encrypted at rest,
+LogicN ships an **optional** drop-in replacement: `env.tmf`, provided by the
+`@logicn/ext-secrets-tmf` package.
+
+`env.tmf` is the SOPS / Sealed-Secrets / age pattern built on the `.tmf`
+container. It is a **thin layer** over `@logicn/ext-tmf` (it owns no crypto and
+no container bytes of its own — every byte primitive comes from the engine's
+`writeTmf`/`readTmf` and KEM-DEM `seal`/`open`). Each secret is sealed under a
+recipient public key; the file on disk is ciphertext only.
+
+```text
+.env       -> plaintext key=value, readable by anyone with file access
+env.tmf    -> per-secret KEM-DEM sealed sections, encrypted at rest,
+              opened only in-memory under the recipient key
+```
+
+`env.tmf` is **opt-in**. Plain `.env` (with all the taint, scope, sink and
+report rules above) remains the default. Reach for `env.tmf` when the secrets
+file must survive on shared disk, in a repo, or in a backup without exposing
+values.
+
+### Governed In-Memory CLI
+
+Secrets in `env.tmf` are managed through a governed CRUD/shell CLI
+(`logicn secrets-tmf` / `logicn-secrets-tmf`) that decrypts only into an arena
+buffer and never leaves plaintext where it can be scraped:
+
+```text
+logicn-secrets-tmf init  --pub HEX        create an empty encrypted env.tmf
+logicn-secrets-tmf set   NAME --pub HEX   value from STDIN or no-echo prompt
+logicn-secrets-tmf get   NAME             in-arena -> stdout (piped only)
+logicn-secrets-tmf list                   names + metadata, NEVER values
+logicn-secrets-tmf rm    NAME --pub HEX   remove a section
+logicn-secrets-tmf rotate-recipient --new-pub HEX
+logicn-secrets-tmf shell --pub HEX        in-arena REPL
+```
+
+The CLI enforces the same "used, not seen" rule on the editing surface itself:
+
+```text
+no temp file        edits happen in an arena buffer, re-sealed via an
+                    atomic ciphertext-only write — plaintext never lands on disk
+no $EDITOR / FIFO   the `shell` REPL never spawns an external editor, opens a
+                    FIFO, or writes /tmp or a .swp
+no secret in argv   `set NAME value` is REFUSED — the value must come from STDIN
+                    or a no-echo prompt (argv leaks via ps / proc / shell history)
+no TTY echo         `get` refuses to print to a terminal without --force
+                    (shoulder-surf / scrollback); piped `get` is allowed
+arena-only          the recipient secret and decrypted values live only in
+                    arena buffers that are zero-wiped after use
+```
+
+### Fail-Closed Reading
+
+Reading an `env.tmf` verifies before it decrypts: the engine recomputes the
+container's integrity root over the **ciphertext** leaves and fail-closes on any
+tamper or bounds violation *before* any section is opened. A signed-v0 file is
+rejected. There is no path where a corrupted or partial `env.tmf` yields a
+secret.
+
+### Production Read-Back
+
+Local editing through the CLI is distinct from production read-back. Production
+hosts do not use the editing CLI; they anchor the recipient key through the
+existing `kms` / `vault` `SecretConfigSource` and load secrets through the
+runtime loader. The unsolved secret-zero problem (where the recipient key itself
+lives) is delegated to that external custody anchor, exactly as for plain `.env`
+secret sources.

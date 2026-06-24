@@ -148,6 +148,54 @@ Stage 2 is planned but not scoped within Phase 10.
 
 ---
 
+## Shipped: Hybrid `.lmanifest` Signing (Ed25519 + ML-DSA-65)
+
+> **Status: SHIPPED (opt-in).** The dual-signed transition described in Stage 2 is
+> now live for the `.lmanifest` build artifact. The **default** signing path is
+> still Ed25519 (unchanged). Hybrid signing is opt-in and, under
+> `LOGICN_MANIFEST_PROFILE=certified`, **mandatory** and fail-closed.
+
+### The single-source signing envelope — `makeManifestEnvelope`
+
+Both the Ed25519 and the hybrid `.lmanifest` signatures bind the manifest body
+hash through a **fixed-shape** `ProofGraph` envelope. The single source of truth
+for that shape is `makeManifestEnvelope(bodyHash, generatedAt)` in
+`packages-logicn/logicn-core-compiler/src/proof-graph.ts:564` (commit `0f0976c`).
+
+The envelope is deliberately minimal and identical on every side:
+
+- an **all-zero `ExecutionSignature`** (every mask/count `0`, `hasBoundaryCrossings: false`)
+- a **single effect-obligation** carrying the body binding: `claim = "lmanifest.bodyHash=<hash>"`
+- one matching evidence entry, so the graph computes `verified === true`
+
+Because `generatedAt` and `evidence` are **excluded** from the signed payload
+(see `canonicalSigningPayload` / `manifestSigningInput`), the bound signature is
+independent of `generatedAt` — any value verifies — but the field is threaded
+through so the persisted envelope stays faithful.
+
+The signer (`logicn build` hybrid branch) and **both** verify paths
+(`logicn verify` build-admission, `logicn run` run-admission) call this one helper
+(`logicn.mjs` lines 2025 / 1393 / 1615) so the shape **cannot drift**. If one side
+reconstructed a different envelope, hybrid signatures would silently stop
+verifying — this helper is the guard against that.
+
+### Hybrid algorithm and both-halves rule
+
+The hybrid signature is `algorithm: "Ed25519+ML-DSA-65"` and its `signature.value`
+is the two concatenated halves `"<ed25519_b64url>|<mldsa_b64url>"`. **Both halves
+are required**: neither the Ed25519 half nor the ML-DSA-65 half alone is sufficient.
+The signer refuses to persist anything that is not a both-halves result (no silent
+PQ downgrade). `signAttestationHybrid` / `verifyAttestationHybrid` in
+`src/attestation.ts` implement this for the attestation surface; the manifest
+surface uses `signProofGraphHybrid` / `verifyGovernanceSignatureHybrid` over the
+`makeManifestEnvelope` shape.
+
+See `logicn-governance-signature.md` for the ProofGraph-layer `lln.gov.sig.v2`
+type and `logicn-cbor-manifest-spec.md` for the persisted `.lmanifest` v2 schema
+and diagnostics.
+
+---
+
 ## The Anti-Pattern: Self-Signing at Runtime
 
 A common misreading of "signed attestation" is that a flow can call a signing

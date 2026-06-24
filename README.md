@@ -4,7 +4,7 @@
 
 LogicN is built for organisations where software failure is not acceptable — financial platforms, healthcare systems, government services, and regulated enterprise. Every execution is **declared, verified, and audited** by design, not by convention.
 
-> **Maturity (honest status, 2026-06-23).** LogicN is an **advanced prototype with several hardened zero-trust subsystems** — *not* yet a production-complete platform. The **compiler, security, and governance core are production-grade** (53/53 packages, 5,042 tests, fail-closed border check). The **application-framework layer is now substantially real**: the deny-by-default admission/fusion border (3 gates + multi-module linker + revocation), the `logicn new app` scaffolder, and the governed package resolver are shipped and tested (87 App-Kernel tests). The **governed HTTP transport (B8) is unlocked and in progress** — the TLSTP **S1 K3 cert/channel-validation gate** landed (`logicn-core-network`, 126 tests, fail-closed `revocation-unknown → DENY`), though it is not yet wired into the live kernel auth path; the *servable api-server / example-app* and the *signed registry index* are the remaining framework gaps. Stage-B self-hosting is in progress (≈80%), and the "Tower" compute layer is a **governed software simulator + bridge-attestation runtime, not real photonic-CPU virtualisation**. See [the 2026-06-23 EOD roadmap + % audit](docs/Knowledge-Bases/logicn-roadmap-and-percent-audit-2026-06-23-eod.md) and [the framework plan](docs/Knowledge-Bases/logicn-framework-plan-2026-06-21.md).
+> **Maturity (honest status, 2026-06-24 · v1.0.0-beta.2).** LogicN is an **advanced prototype with several hardened zero-trust subsystems** — *not* yet a production-complete platform. The **compiler, security, and governance core are production-grade** (60/60 packages, 5,248 tests, fail-closed border check). The **application-framework layer is now substantially real**: the deny-by-default admission/fusion border (3 gates + multi-module linker + revocation), the `logicn new app` scaffolder, and the governed package resolver are shipped and tested (87 App-Kernel tests). The **governed HTTP transport (B8) is unlocked and in progress** — the TLSTP **S1 K3 cert/channel-validation gate** landed (`logicn-core-network`, 126 tests, fail-closed `revocation-unknown → DENY`), though it is not yet wired into the live kernel auth path; the *servable api-server / example-app* and the *signed registry index* are the remaining framework gaps. Stage-B self-hosting is in progress (≈80%), and the "Tower" compute layer is a **governed software simulator + bridge-attestation runtime, not real photonic-CPU virtualisation**. See [the 2026-06-23 EOD roadmap + % audit](docs/Knowledge-Bases/logicn-roadmap-and-percent-audit-2026-06-23-eod.md) and [the framework plan](docs/Knowledge-Bases/logicn-framework-plan-2026-06-21.md).
 
 ---
 
@@ -30,7 +30,7 @@ LogicN optimises for **mathematical proof and absolute Zero-Trust containment**:
 
 **Enforces at runtime via the Governed Tower.** The DSS supervisor tracks the V_DPM (Virtual Dynamic Posture Matrix) register — every capability use is a bitmask check, every trap produces a structured AuditEvent, and rollback is clean (`unreachable` fires before the next instruction). *Today this runs as the Stage-A TypeScript simulation; the real `DSS.wasm` component is Post-P9 (#102–106).*
 
-**Produces a cryptographic audit trail.** Every governed execution generates an Epilogue Receipt (sha256_seal or zk_snark). Every security trap appends to an append-only audit log (CBOR Tag 410 AuditEvent). **Hybrid Ed25519 + ML-DSA-65 (NIST FIPS 204) signing is shipped** on the attestation, proof-graph, and bridge surfaces (both halves required — no post-quantum downgrade; certified mode *mandates* the ML-DSA key). The `.lmanifest` itself is still **Ed25519-only**, with the hybrid upgrade gated on production key custody (#34/#149).
+**Produces a cryptographic audit trail.** Every governed execution generates an Epilogue Receipt (sha256_seal or zk_snark). Every security trap appends to an append-only audit log (CBOR Tag 410 AuditEvent). **Hybrid Ed25519 + ML-DSA-65 (NIST FIPS 204) signing is shipped** on the attestation, proof-graph, and bridge surfaces (both halves required — no post-quantum downgrade; certified mode *mandates* the ML-DSA key). **Opt-in hybrid signing now extends to the `.lmanifest`** as well: the default stays **Ed25519** (unchanged), and setting `LOGICN_MANIFEST_PROFILE=certified` *mandates* the hybrid Ed25519+ML-DSA-65 manifest signature — both halves required, fail-closed (`LLN-MANIFEST-PQ-REQUIRED` / `-PUBKEY-MISSING` / `-TAMPER`), with no post-quantum downgrade.
 
 **Compiles to WebAssembly.** Governance is verified by the compiler at build time and enforced on the Stage-A runtime today. **WASM is the production execution path** — independently benchmarked as native-class (see Benchmarks). Full in-WASM self-hosting (P9) is *in progress*: the self-hosted `lexer.lln` `tokenize` reaches **byte-for-byte Stage-A == Stage-B real-WASM parity** (#143); extending that to the parser/type-checker/governance-verifier flows is the remaining gate.
 
@@ -43,7 +43,7 @@ LogicN optimises for **mathematical proof and absolute Zero-Trust containment**:
 | **Financial platforms** | Every payment flow declares and enforces its effects. Audit trail by default. PCI DSS governance built in (`logicn-devtools-pci`). |
 | **Healthcare systems** | PII/PHI is typed and tracked. Redaction is enforced at the type level before data reaches any audit sink. |
 | **Government / defence** | Designed for air-gapped deployment, no cloud dependency. Governed BitNet CPU inference is in early integration (Inference Tower ~12%). |
-| **Enterprise regulated** | OWASP attack vectors blocked at the compiler. Supply-chain provenance via signed manifests (Ed25519 today; hybrid ML-DSA-65 on the attestation/bridge surfaces). |
+| **Enterprise regulated** | OWASP attack vectors blocked at the compiler. Supply-chain provenance via signed manifests (Ed25519 default; opt-in hybrid Ed25519+ML-DSA-65 via `LOGICN_MANIFEST_PROFILE=certified`, plus hybrid on the attestation/bridge surfaces). |
 
 > **New here?** → [**SETUP.md**](SETUP.md) — install · run your first benchmark · Hello World with full governance comments
 
@@ -70,7 +70,7 @@ Run on an **Intel i9-9900K (8C/16T) + NVIDIA RTX 2060**, across Rust (native, ge
 | **Lexer / Parser / Governance Verifier / Contract blocks / Value-state checker** | 100% | full pipeline |
 | **DRCM Phases 1–7 (Governed Tower — Stage-A simulation)** | 100% | real `DSS.wasm` is Post-P9 (#102–106) |
 | **CBOR Manifests (RFC 8949)** | 100% | |
-| **Tests — full suite** | 100% | **53/53 packages · 5,042 tests · 0 failures** |
+| **Tests — full suite** | 100% | **60/60 packages · 5,248 tests · 0 failures** |
 | **Resilience — first-class fault handlers (0017)** | shipped | `on_*_fault` → fail-closed `halt` default + LLN-FAULT-001/003 + `GIRFlow.faultHandlers` |
 | **Contract-driven test generation (0016)** | 5/5 vector dimensions | fault-injection · effect-egress · capability-denial · boundary/fuzz · substrate-violation (over GIR) |
 | **Type checker / Effect checker** | ~90% | |
@@ -78,9 +78,10 @@ Run on an **Intel i9-9900K (8C/16T) + NVIDIA RTX 2060**, across Rust (native, ge
 | **Runtime interpreter** | ~87% | diagnostic tier (see Benchmarks) |
 | **Stage-B self-hosting — interpreter parity** | 100% | R6 corpus: Stage-A == Stage-B |
 | **Stage-B self-hosting — WASM execution (P9)** | in progress | `tokenize` byte-parity achieved (#143); parser/checker/verifier flows remain |
-| **Post-Quantum & Hardware Security** | ~38% | hybrid Ed25519+ML-DSA-65 shipped on attestation/proof/bridge; `.lmanifest` hybrid gated on key custody (#34/#149) |
+| **Post-Quantum & Hardware Security** | ~38% | hybrid Ed25519+ML-DSA-65 shipped on attestation/proof/bridge; **opt-in `.lmanifest` hybrid shipped** (default Ed25519; `LOGICN_MANIFEST_PROFILE=certified` mandates hybrid, both-halves fail-closed via `LLN-MANIFEST-PQ-REQUIRED`) |
 | **`.tmf` trust-capsule format (`logicn-ext-tmf`)** | slices 1–3 done | A **quantum-resilient universal file & communications format** (not just a database): TMX-256 (3-ary SHAKE256 Merkle-XOF) + container + KEM-DEM golden-verified; codec-agnostic modalities (image/audio/video/document/structured) + seekable anti-truncation streaming. ML-DSA-65 root signing (slice 4) next. **Defensive-publication paper:** [`docs/scientific-papers/`](docs/scientific-papers/) |
-| **Security hardening — fail-open class taxonomy** | shipped today | 10 recurring fail-open classes named + mechanically detected; **SEC-002 mutation: all gates killed** (every fail-closed gate genuinely guarded); `lint-wat-inline-comments` + the #163/#165/guarded-flow codegen+value-state fixes landed; the `LLN-TIER-001` tier-floor + value-state 34B-hole + `canCommit` deny-by-default are the next approved items |
+| **`env.tmf` sealed secrets (`@logicn/ext-secrets-tmf`)** | shipped | An **optional encrypted-at-rest `.env` replacement** — sealed credentials in the `.tmf` capsule format instead of a plaintext dotenv file; opt-in package, 17 tests |
+| **Security hardening — fail-open class taxonomy** | shipped today | 10 recurring fail-open classes named + mechanically detected; **SEC-002 mutation: all gates killed** (every fail-closed gate genuinely guarded); `lint-wat-inline-comments` + the #163/#165/guarded-flow codegen+value-state fixes landed; **the `LLN-TIER-001` flow-kind tier-floor is shipped and now enforced on the user-facing `logicn.mjs` production build path** (under `LOGICN_PROFILE=production` an under-declared guarded/plain flow fails the build; `LLN-VALUESTATE-008` likewise enforced there — dev/check stay permissive); the value-state 34B-hole + `canCommit` deny-by-default are the next approved items |
 | **Passive Execution Plans & Target Bridges** | ~22% | |
 | **AI Inference Tower (BitNet / GroqCloud / NVFP4)** | ~12% | default bridges are governed dev stubs/simulators |
 | **Photonic / Ternary Computing** | ~3% | software simulation only (not hardware) |
@@ -88,7 +89,7 @@ Run on an **Intel i9-9900K (8C/16T) + NVIDIA RTX 2060**, across Rust (native, ge
 | **B8 governed HTTP transport (TLSTP)** | in progress | **S1 K3 cert/channel-validation gate shipped** (`logicn-core-network`, 126 tests, fail-closed `revocation-unknown → DENY`, SEC-002 mutation-guarded) — wiring into live kernel auth + 0066 first-3 (handshake-bind · raw-byte shim · ECH/OHTTP) are next |
 | **Tri-Pipe fault tolerance (binary/hybrid/photonic)** | re-R&D | shipped: fail-closed core · arena + overflow traps · DbC post-conditions · K3 fail-safe · NMR tolerance · Freivalds verify · DRCM containment. A multi-agent stability re-R&D is in flight |
 
-**Roadmap (security-first)** → [logicn-roadmap-2026-06-23.md](docs/Knowledge-Bases/logicn-roadmap-2026-06-23.md) · **% audit** → [logicn-roadmap-and-percent-audit-2026-06-23.md](docs/Knowledge-Bases/logicn-roadmap-and-percent-audit-2026-06-23.md) · [build-roadmap](docs/Knowledge-Bases/logicn-build-roadmap.md). *Latest (2026-06-23): the S1 K3 cert-gate + a real api-server HTTP transport landed; the next security fix is wiring the cert-gate into live kernel admission (run `node scripts/status.mjs`).*
+**Roadmap (security-first)** → [logicn-roadmap-2026-06-23.md](docs/Knowledge-Bases/logicn-roadmap-2026-06-23.md) · **% audit** → [logicn-roadmap-and-percent-audit-2026-06-23.md](docs/Knowledge-Bases/logicn-roadmap-and-percent-audit-2026-06-23.md) · [build-roadmap](docs/Knowledge-Bases/logicn-build-roadmap.md). *Latest (2026-06-24, v1.0.0-beta.2): `LLN-TIER-001` + `LLN-VALUESTATE-008` are now enforced on the `logicn.mjs` production build path, opt-in hybrid Ed25519+ML-DSA-65 `.lmanifest` signing shipped (certified profile), and `@logicn/ext-secrets-tmf` (`env.tmf` sealed secrets) landed; the next security fix is wiring the S1 cert-gate into live kernel admission (run `node scripts/status.mjs`).*
 
 ---
 
@@ -224,7 +225,7 @@ At runtime the app reaches the world **only** through the deny-by-default **Capa
 
 ### Package architecture
 
-The ~94 package directories (**≈53 active and test-bearing**; the rest are planned data/web/target scaffolds) are organised into **families by prefix**, with two hard rules governing the boundaries between them.
+The ~94 package directories (**60 active and test-bearing**; the rest are planned data/web/target scaffolds) are organised into **families by prefix**, with two hard rules governing the boundaries between them.
 
 | Family | Role | Trust |
 |---|---|---|
@@ -275,7 +276,7 @@ Layer 3: WASM / bytecode / native     — compiled execution (WASM = production 
        ↓ runtime
 Layer 4: RunResult                    — retVal + auditLog (observable effects)
        ↓ governance
-Layer 5: ProofGraph + .lmanifest      — cryptographic audit proof (Ed25519; hybrid ML-DSA-65 on attestation/bridge)
+Layer 5: ProofGraph + .lmanifest      — cryptographic audit proof (Ed25519 default; opt-in hybrid Ed25519+ML-DSA-65 via certified profile; hybrid on attestation/bridge)
 ```
 
 ---
@@ -283,7 +284,7 @@ Layer 5: ProofGraph + .lmanifest      — cryptographic audit proof (Ed25519; hy
 ## Running the Tools
 
 ```bash
-# Tests — core suite (4 packages) / full suite (53 packages, 5,042 tests)
+# Tests — core suite (4 packages) / full suite (60 packages, 5,248 tests)
 node scripts/run-all-tests.cjs --core
 npm test
 

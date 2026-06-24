@@ -138,6 +138,55 @@ records, use `lln.gov.sig.v1`.
 
 ---
 
+## Shipped: `lln.gov.sig.v2` Hybrid Signature (Ed25519 + ML-DSA-65)
+
+> **Status: SHIPPED (opt-in).** The `lln.gov.sig.v2` algorithm tag is now a live,
+> persisted hybrid signature — not the "high security" size variant the table
+> above describes for v1. The **default** governance signing path remains Ed25519
+> (`lln.gov.sig.v1`, unchanged). Hybrid is opt-in; under
+> `LOGICN_MANIFEST_PROFILE=certified` it is **mandatory and fail-closed**.
+
+The migration profile baked into `proof-graph.ts` is:
+
+| Profile | Algorithm tag | Algorithms | Status |
+|---|---|---|---|
+| compat (Phase 39) | `lln.gov.sig.v1` | Ed25519 only | shipped, default |
+| hybrid (Phase 55) | `lln.gov.sig.v2` | Ed25519 + ML-DSA-65 — **both required** | shipped, opt-in |
+| pq_strict (future) | `lln.gov.sig.v3` | ML-DSA-65 only | reserved |
+
+```typescript
+export interface GovernanceSignature {
+  readonly algorithm: "lln.gov.sig.v1" | "lln.gov.sig.v2";  // v2 = Phase 55 hybrid
+  readonly signerKeyId: string;
+  readonly signature: string;   // v2: "<ed25519_b64url>|<mldsa65_b64url>" — both halves
+  readonly signedAt: string;
+  readonly expiresAt?: string;
+}
+```
+
+**Both-halves rule.** A `lln.gov.sig.v2` signature carries the two halves joined
+by a `|` (base64url never contains `|`, so a classical Ed25519 value can never be
+mistaken for hybrid). `verifyGovernanceSignatureHybrid` checks **both** the
+Ed25519 and the ML-DSA-65 half — neither alone admits. The signer
+(`signProofGraphHybrid`) falls back to Ed25519-only v1 if it does not recognise
+the key as hybrid; the caller therefore **refuses to persist** a result that is
+not a both-halves v2 (no silent post-quantum downgrade).
+
+**Domain separation.** The ML-DSA-65 half is signed under the FIPS-204
+domain-separation context `logicn.proofgraph.governance.v1`, distinct from the
+audit-attestation and bridge-manifest contexts so one ML-DSA key cannot be
+cross-protocol-confused between the three signing surfaces.
+
+**What is signed.** As with v1, only the deterministic ProofGraph fields are
+signed — `schemaVersion + flowName + signatureHash + verified + obligations`. The
+mutable fields (`generatedAt`, `evidence`) are excluded, so adding new evidence
+to an existing proof does not invalidate the signature. For the `.lmanifest`
+signing envelope this fixed shape is produced by `makeManifestEnvelope`
+(`proof-graph.ts:564`); see `logicn-signed-attestation.md` and
+`logicn-cbor-manifest-spec.md`.
+
+---
+
 ## Key Management
 
 ```
