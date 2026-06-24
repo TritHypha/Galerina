@@ -203,8 +203,39 @@ export interface EpilogueReceipt {
   readonly outputSeal?:    string;                 // sha256:<hex> of result (populated post-execution)
   readonly zkReceiptStub?: string;                 // "zk_snark_receipt:PENDING — prover not yet integrated"
   readonly zkProof?:       ZkProof;                // present when prover backend is wired (replaces zkReceiptStub)
+  readonly zkRejected?:    string;                 // certified profile REFUSED the proof (#0094): LLN-PROOF-CERT-00x reason; zkProof is absent (fail-closed)
   readonly generatedAt:    string;                 // ISO timestamp
   readonly onFailure:      EpilogueFailureAction;
+}
+
+// ── #0094 certified-profile proof admission (deny-by-default) ──────────────────────────────────
+// A Phase-1 PLACEHOLDER circuit's verify() is a deterministic recompute over PUBLIC inputs (no
+// witness), so a forged proof passes it — it MUST NOT ride into a certified receipt. In a certified
+// profile a zk_snark_receipt proof is admissible ONLY when it is (a) NOT a placeholder circuit,
+// (b) NOT typed "groth16-phase1", and (c) verify() (when supplied) returns true. Unknown/undecodable
+// -> DENY. Mirrors the rd-0094 acceptance oracle. (Latent-API hardening: the in-tree callers inject
+// no backend today, so the unsafe path is not reachable through the compiler — this closes it by
+// construction before logicn-ext-proof-snarkjs is wired.)
+
+/** Phase-1 placeholder circuit ids whose verify() is a public-input recompute (forgeable). */
+export const PLACEHOLDER_CIRCUIT_IDS: ReadonlySet<string> = new Set(["logicn-sha256-v0.1"]);
+
+/** LLN-PROOF-CERT-001 — certified profile refused a Phase-1 placeholder / undecodable proof. */
+export const LLN_PROOF_CERT_001 = "LLN-PROOF-CERT-001" as const;
+/** LLN-PROOF-CERT-002 — certified profile: the proof did not verify() against the claimed input. */
+export const LLN_PROOF_CERT_002 = "LLN-PROOF-CERT-002" as const;
+
+/** Decode {circuitId, type} from a ZkProof's base64 proof object; undefined on any decode failure. */
+function decodeProofMeta(proofBase64: string): { circuitId?: string | undefined; type?: string | undefined } {
+  try {
+    const obj = JSON.parse(Buffer.from(proofBase64, "base64").toString("utf8")) as Record<string, unknown>;
+    return {
+      circuitId: typeof obj.circuitId === "string" ? obj.circuitId : undefined,
+      type: typeof obj.type === "string" ? obj.type : undefined,
+    };
+  } catch {
+    return {};
+  }
 }
 
 /**
@@ -232,6 +263,10 @@ export function generateEpilogueReceipt(opts: {
   /** Optional injected prover backend (e.g. logicn-ext-proof-snarkjs). When provided
    *  and strategy === "zk_snark_receipt", the backend's prove() is called and the
    *  resulting ZkProof is stored in the receipt instead of the PENDING stub. */
+  /** #0094: when true (a certified deployment profile), the zk_snark_receipt backend path is
+   *  fail-closed — a placeholder/undecodable/unverified proof is REFUSED (zkRejected), never stored.
+   *  Default false keeps the dev/pre-ceremony behaviour (placeholder proofs are explicitly allowed). */
+  certified?: boolean;
   proverBackend?: {
     prove(input: {
       sourceText: string;
@@ -244,6 +279,12 @@ export function generateEpilogueReceipt(opts: {
       verificationKeyHash: string;
       publicSignalsHash: string;
     }>;
+    /** #0094: optional verifier. In a certified profile the proof must verify() === true to be
+     *  admitted (deny on false/throw). Absent verify() in certified mode still rejects placeholders. */
+    verify?(proof: {
+      protocol: string; curve: string; proofBase64: string;
+      verificationKeyHash: string; publicSignalsHash: string;
+    }, input: { sourceText: string; contractHash: string; resultJson?: string }): Promise<boolean>;
   };
 }): EpilogueReceipt | Promise<EpilogueReceipt> {
   const generatedAt = new Date().toISOString();
@@ -266,6 +307,34 @@ export function generateEpilogueReceipt(opts: {
           proveInput.resultJson = resultJson;
         }
         const rawProof = await backend.prove(proveInput);
+        // #0094 certified-profile admission (deny-by-default): a placeholder/undecodable/unverified
+        // proof MUST NOT ride into a certified receipt. Refuse it (zkRejected, no zkProof). Dev /
+        // pre-ceremony (certified !== true) keeps the lenient behaviour.
+        if (opts.certified === true) {
+          const meta = decodeProofMeta(rawProof.proofBase64);
+          if (meta.circuitId === undefined || PLACEHOLDER_CIRCUIT_IDS.has(meta.circuitId) || meta.type === "groth16-phase1") {
+            return {
+              strategy: "zk_snark_receipt",
+              zkRejected: `${LLN_PROOF_CERT_001}: certified profile refuses a Phase-1 placeholder/undecodable proof (circuitId=${meta.circuitId ?? "<undecodable>"}, type=${meta.type ?? "<none>"}) — its verify() is a public-input recompute (forgeable), not admissible.`,
+              generatedAt,
+              onFailure,
+            };
+          }
+          // Deny-by-default: a non-placeholder proof must verify() === true. No verifier supplied
+          // (or verify throws / returns non-true) ⇒ cannot confirm ⇒ refuse.
+          let verified = false;
+          if (backend.verify !== undefined) {
+            try { verified = (await backend.verify(rawProof, proveInput)) === true; } catch { verified = false; }
+          }
+          if (!verified) {
+            return {
+              strategy: "zk_snark_receipt",
+              zkRejected: `${LLN_PROOF_CERT_002}: certified profile rejected the proof — it did not verify() === true against the claimed input (or no verifier was supplied; deny-by-default).`,
+              generatedAt,
+              onFailure,
+            };
+          }
+        }
         const zkProof: ZkProof = {
           protocol: rawProof.protocol as ZkProof["protocol"],
           curve: rawProof.curve as ZkProof["curve"],

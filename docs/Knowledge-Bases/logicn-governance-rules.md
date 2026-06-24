@@ -950,6 +950,8 @@ Under `@experimental_profile(drcm_core_v1)`, the compiler:
 | LLN-SUBSTRATE-001 (crypto-on-core) | Crypto | crypto.hash/sign/verify/**encrypt/decrypt/seal** must run on a deterministic bit-exact lane | ENFORCED |
 | LLN-TENANT-001 | Security | Dangling `tenant.scope` caller-scope binding — declared with no `.tenant_scoped` data-access effect to bind (advisory) | ENFORCED (R&D 0109) |
 | LLN-TENANT-002 | Security | Tenant-scoped data access (`*.tenant_scoped`) not bound to the caller's proven scope (`tenant.scope` marker) — deny-by-default IDOR / OWASP-A01 compile gate, fail-closed in every profile. Capability intersection over the manifest, NOT an AST/query rewriter. Proves the binding is *declared*; the body-dataflow proof is the deferred LLN-TENANT-003. Spec: [[logicn-tritmesh-feature-gap-analysis-2026-06-24]] | ENFORCED (R&D 0109) |
+| LLN-PROOF-CERT-001 | Security | Certified profile REFUSES a Phase-1 placeholder / undecodable zk_snark_receipt proof (circuit `logicn-sha256-v0.1` / type `groth16-phase1`) — its verify() is a public-input recompute (forgeable), so it cannot ride into a certified epilogue receipt. Deny-by-default (`generateEpilogueReceipt`, certified path). CWE-347/345. | ENFORCED (R&D 0094, certified path) |
+| LLN-PROOF-CERT-002 | Security | Certified profile rejected a zk_snark_receipt proof that did not `verify() === true` against the claimed input (or no verifier supplied — deny-by-default). | ENFORCED (R&D 0094, certified path) |
 | LLN-SECRET-BREACH | Security | Secret detected in output stream (runtime trap 3001) | PLANNED Phase 1 |
 | LLN-SECRET-FATAL | Security | Secret breach caused DSS permission drop | PLANNED Phase 1 |
 | LLN-CAP-001 | Capability | Wildcard `*` in NetworkTarget | PLANNED Phase 4 |
