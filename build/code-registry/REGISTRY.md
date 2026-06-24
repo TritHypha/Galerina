@@ -9,11 +9,11 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | status | count | meaning |
 |---|---|---|
 | live | 37 | emitted with an exported constant |
-| inline | 289 | emitted, NO exported constant (R4 — Stage F) |
+| inline | 293 | emitted, NO exported constant (R4 — Stage F) |
 | referenced | 11 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 0 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
-| phantom | 473 | doc-only mention, not in source (drift — DOC-004) |
-| ref | 139 | referenced only (no def/emit) |
+| phantom | 475 | doc-only mention, not in source (drift — DOC-004) |
+| ref | 140 | referenced only (no def/emit) |
 
 ## RESERVED — defined but not emitted (std #1: tag wire-or-retire)
 
@@ -1429,7 +1429,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-SEC-021 | inline | PrototypeMutation / PrototypeMutationProhibited | error |
 | LLN-SEC-PATCH-001 | phantom | — | — |
 
-### SECRET (7)
+### SECRET (8)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -1438,6 +1438,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-SECRET-003 | inline | SecretSerializationDenied | — |
 | LLN-SECRET-004 | phantom | — | — |
 | LLN-SECRET-005 | phantom | — | — |
+| LLN-SECRET-DISK-00 | phantom | — | — |
 | LLN-SECRET-HARDCODED-001 | phantom | — | — |
 | LLN-SECRET-HTTP-004 | phantom | — | — |
 
@@ -1582,6 +1583,14 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-TARGET-CAP-001 | phantom | — | — |
 | LLN-TARGET-CAP-002 | phantom | — | — |
 
+### TENANT (3)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| LLN-TENANT-001 | inline | DANGLING_TENANT_SCOPE_BINDING | warning |
+| LLN-TENANT-002 | inline | UNSCOPED_TENANT_DATA_ACCESS | error |
+| LLN-TENANT-003 | ref | — | — |
+
 ### TENSOR (10)
 
 | code | status | name(s) | severity |
@@ -1612,6 +1621,13 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-TEST-001 | ref | — | — |
 | LLN-TEST-002 | ref | — | — |
 | LLN-TEST-003 | ref | — | — |
+
+### TIER (2)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| LLN-TIER-001 | inline | UNDER_DECLARED_FLOW_TIER | — |
+| LLN-TIER-002 | phantom | — | — |
 
 ### TIMEOUT (1)
 
@@ -1721,7 +1737,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 |---|---|---|---|
 | LLN-VALUE-STATE-001 | phantom | — | — |
 
-### VALUESTATE (8)
+### VALUESTATE (9)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -1733,6 +1749,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-VALUESTATE-005 | inline | DERIVED_UNSAFE_VALUE_AT_SINK / DerivedUnsafeValueAtSink | error |
 | LLN-VALUESTATE-006 | inline | ProtectedBoundaryViolation / ProtectedValueAtAuditLog | error |
 | LLN-VALUESTATE-007 | inline | RedactedBoundaryViolation | error |
+| LLN-VALUESTATE-008 | inline | BoundaryInputUnclean | — |
 
 ### VAULT (5)
 

@@ -641,7 +641,6 @@ Provides:
 - loadConfig
 - paths
 - FuseOptions
-- fuseGreeting
 - createGreetingKernel
 - StartedServer
 

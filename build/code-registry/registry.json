@@ -1,10 +1,10 @@
 {
   "generatedFrom": "build/code-index/code-index.json",
-  "total": 949,
+  "total": 956,
   "counts": {
-    "ref": 139,
-    "inline": 289,
-    "phantom": 473,
+    "ref": 140,
+    "inline": 293,
+    "phantom": 475,
     "live": 37,
     "referenced": 11
   },
@@ -871,7 +871,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 5
+      "docs": 7
     },
     {
       "code": "ERR_REGISTRY_DUPLICATE",
@@ -3532,7 +3532,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 5,
-      "docs": 12
+      "docs": 13
     },
     {
       "code": "LLN-DAG-001",
@@ -3558,7 +3558,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 1
+      "docs": 12
     },
     {
       "code": "LLN-DECISION-001",
@@ -3967,7 +3967,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 64,
-      "docs": 95
+      "docs": 98
     },
     {
       "code": "LLN-EFFECT-002",
@@ -3985,7 +3985,7 @@
       "defs": 0,
       "emits": 3,
       "tests": 18,
-      "docs": 50
+      "docs": 52
     },
     {
       "code": "LLN-EFFECT-003",
@@ -4000,8 +4000,8 @@
       ],
       "defs": 0,
       "emits": 3,
-      "tests": 34,
-      "docs": 27
+      "tests": 37,
+      "docs": 28
     },
     {
       "code": "LLN-EFFECT-004",
@@ -4046,7 +4046,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 10
+      "docs": 11
     },
     {
       "code": "LLN-EFFECT-2000",
@@ -5012,7 +5012,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 11,
-      "docs": 4
+      "docs": 5
     },
     {
       "code": "LLN-GOV-020",
@@ -5053,8 +5053,8 @@
       "severities": [],
       "defs": 1,
       "emits": 1,
-      "tests": 13,
-      "docs": 64
+      "tests": 31,
+      "docs": 70
     },
     {
       "code": "LLN-GOV-ERROR-001",
@@ -5710,7 +5710,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 7,
-      "docs": 2
+      "docs": 4
     },
     {
       "code": "LLN-INHERIT-002",
@@ -6432,7 +6432,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 0,
-      "docs": 17
+      "docs": 18
     },
     {
       "code": "LLN-MATCH-002",
@@ -6484,7 +6484,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 4,
-      "docs": 38
+      "docs": 39
     },
     {
       "code": "LLN-MEMORY-002",
@@ -7691,7 +7691,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 5,
-      "docs": 4
+      "docs": 5
     },
     {
       "code": "LLN-PCI-002",
@@ -8479,7 +8479,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 8,
-      "docs": 15
+      "docs": 16
     },
     {
       "code": "LLN-PKG-002",
@@ -8648,7 +8648,7 @@
       "defs": 0,
       "emits": 3,
       "tests": 39,
-      "docs": 51
+      "docs": 59
     },
     {
       "code": "LLN-PRIVACY-003",
@@ -8720,7 +8720,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 1
+      "docs": 2
     },
     {
       "code": "LLN-PROFILE-001",
@@ -9896,7 +9896,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 43,
-      "docs": 76
+      "docs": 78
     },
     {
       "code": "LLN-SECRET-002",
@@ -9944,6 +9944,18 @@
     },
     {
       "code": "LLN-SECRET-005",
+      "family": "SECRET",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 2
+    },
+    {
+      "code": "LLN-SECRET-DISK-00",
       "family": "SECRET",
       "namespace": "LLN",
       "status": "phantom",
@@ -10466,7 +10478,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 17,
-      "docs": 107
+      "docs": 122
     },
     {
       "code": "LLN-SUBSTRATE-002",
@@ -10481,8 +10493,8 @@
       ],
       "defs": 0,
       "emits": 3,
-      "tests": 22,
-      "docs": 30
+      "tests": 26,
+      "docs": 31
     },
     {
       "code": "LLN-SUBSTRATE-003",
@@ -10514,7 +10526,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 11,
-      "docs": 24
+      "docs": 25
     },
     {
       "code": "LLN-SUPPLY-001",
@@ -10941,6 +10953,50 @@
       "docs": 2
     },
     {
+      "code": "LLN-TENANT-001",
+      "family": "TENANT",
+      "namespace": "LLN",
+      "status": "inline",
+      "names": [
+        "DANGLING_TENANT_SCOPE_BINDING"
+      ],
+      "severities": [
+        "warning"
+      ],
+      "defs": 0,
+      "emits": 1,
+      "tests": 8,
+      "docs": 3
+    },
+    {
+      "code": "LLN-TENANT-002",
+      "family": "TENANT",
+      "namespace": "LLN",
+      "status": "inline",
+      "names": [
+        "UNSCOPED_TENANT_DATA_ACCESS"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 0,
+      "emits": 1,
+      "tests": 16,
+      "docs": 2
+    },
+    {
+      "code": "LLN-TENANT-003",
+      "family": "TENANT",
+      "namespace": "LLN",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 2
+    },
+    {
       "code": "LLN-TENSOR-001",
       "family": "TENSOR",
       "namespace": "LLN",
@@ -11135,6 +11191,32 @@
       "emits": 0,
       "tests": 1,
       "docs": 0
+    },
+    {
+      "code": "LLN-TIER-001",
+      "family": "TIER",
+      "namespace": "LLN",
+      "status": "inline",
+      "names": [
+        "UNDER_DECLARED_FLOW_TIER"
+      ],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 26,
+      "docs": 23
+    },
+    {
+      "code": "LLN-TIER-002",
+      "family": "TIER",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 2
     },
     {
       "code": "LLN-TIMEOUT-001",
@@ -11699,7 +11781,7 @@
       "defs": 0,
       "emits": 3,
       "tests": 24,
-      "docs": 11
+      "docs": 14
     },
     {
       "code": "LLN-TYPE-030",
@@ -12084,8 +12166,8 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 118,
-      "docs": 43
+      "tests": 120,
+      "docs": 45
     },
     {
       "code": "LLN-VALUESTATE-004",
@@ -12152,6 +12234,20 @@
       "emits": 2,
       "tests": 40,
       "docs": 3
+    },
+    {
+      "code": "LLN-VALUESTATE-008",
+      "family": "VALUESTATE",
+      "namespace": "LLN",
+      "status": "inline",
+      "names": [
+        "BoundaryInputUnclean"
+      ],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 13,
+      "docs": 8
     },
     {
       "code": "LLN-VAULT-001",

@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 520,
+  "docCount": 537,
   "docs": [
     {
       "rel": "docs/Knowledge-Bases/00-KB-INDEX.md",
@@ -2038,9 +2038,11 @@
         "LLN-VALUESTATE-005",
         "LLN-VALUESTATE-006",
         "LLN-VALUESTATE-007",
+        "LLN-VALUESTATE-008",
         "LLN-EFFECT-005",
         "LLN-STDLIB-001",
         "LLN-STDLIB-002",
+        "LLN-TIER-001",
         "LLN-GOV-006",
         "LLN-GOV-007",
         "LLN-GOV-009",
@@ -4102,6 +4104,10 @@
         "LLN-GOV-3VL-001",
         "LLN-SUBSTRATE-001",
         "LLN-ENTROPY-001",
+        "LLN-TIER-001",
+        "LLN-DAG-002",
+        "LLN-VALUESTATE-008",
+        "LLN-SECRET-001",
         "LLN-PERM-001",
         "LLN-OBS-002"
       ],
@@ -4126,6 +4132,8 @@
         "#0088",
         "#0089",
         "#102",
+        "#163",
+        "#165",
         "#30",
         "#45",
         "#62",
@@ -4148,30 +4156,30 @@
       "xrefs": [],
       "topTerms": [
         "drcm",
+        "logicn",
         "core",
         "layer",
-        "logicn",
+        "build",
         "reference",
         "phase",
         "syntax",
-        "build",
         "contract",
         "governance",
-        "model",
         "gate",
         "security",
-        "complete",
-        "test",
-        "rule",
-        "roadmap",
-        "map",
-        "code",
+        "model",
+        "shipped",
         "compiler",
-        "document",
-        "architecture",
+        "complete",
+        "rule",
+        "test",
+        "roadmap",
+        "code",
+        "map",
+        "tier",
+        "audit",
         "lln",
-        "key",
-        "category"
+        "document"
       ]
     },
     {
@@ -5949,6 +5957,45 @@
       ]
     },
     {
+      "rel": "docs/Knowledge-Bases/logicn-benchmark-scoreboard-standard.md",
+      "title": "Benchmark scoreboard — presentation standard (the RULE)",
+      "headings": [
+        "The required columns",
+        "The two lies this prevents",
+        "How to produce it"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "benchmark",
+        "scoreboard",
+        "winner",
+        "rule",
+        "run",
+        "production",
+        "prevents",
+        "lies",
+        "presentation",
+        "standard",
+        "npm",
+        "compare",
+        "required",
+        "columns",
+        "wasm",
+        "produce",
+        "logicn",
+        "slower",
+        "interp",
+        "excluded",
+        "every",
+        "runtimes",
+        "path",
+        "diagnostic",
+        "governed"
+      ]
+    },
+    {
       "rel": "docs/Knowledge-Bases/logicn-benchmark-situation-prompt.md",
       "title": "LogicN Benchmark Situation — Full Context Prompt",
       "headings": [
@@ -6054,6 +6101,47 @@
         "correction",
         "don",
         "t-trust-check"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-benchmark-snapshot-2026-06-24.md",
+      "title": "LogicN Benchmark Snapshot — 2026-06-24 (v1.0.0-beta.2)",
+      "headings": [
+        "How to read the LogicN rows (critical)",
+        "Production-ceiling scoreboard (winner-ordered)",
+        "Slowest per benchmark",
+        "Takeaways",
+        "Open benchmark debt"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "logicn",
+        "benchmark",
+        "rust",
+        "production",
+        "node",
+        "rows",
+        "wasm",
+        "slowest",
+        "slower",
+        "generic",
+        "interp",
+        "snapshot",
+        "beta",
+        "read",
+        "critical",
+        "diagnostic",
+        "governed",
+        "production-ceiling",
+        "scoreboard",
+        "winner-ordered",
+        "takeaways",
+        "open",
+        "debt",
+        "avx2",
+        "full"
       ]
     },
     {
@@ -6505,6 +6593,11 @@
         "Core Tags (Governance, Economic, Operational)",
         "Reserved Range",
         "Tag Implementation Rules",
+        "The `.lmanifest` Signature Envelope (Tag 404 — `GovernanceSignature`)",
+        "Default (Ed25519) — `schemaVersion: \"lln.manifest.v1\"`",
+        "Opt-in hybrid (Ed25519 + ML-DSA-65) — `schemaVersion: \"lln.manifest.v2\"`",
+        "The single-source signing envelope — `makeManifestEnvelope`",
+        "Hybrid verification diagnostics (fail-closed)",
         "Encoding Pipeline",
         "Security Hardening — CBOR Parser Requirements",
         "1. Depth + Resource Exhaustion (\"Billion Laughs\")",
@@ -6536,28 +6629,28 @@
         "cbor",
         "tag",
         "manifest",
-        "implementation",
-        "type",
+        "hybrid",
         "lmanifest",
+        "signature",
+        "type",
+        "ed25519",
+        "implementation",
+        "key",
+        "lln",
         "logicn",
         "binary",
         "encoding",
         "parser",
-        "key",
         "json",
         "rfc",
+        "envelope",
+        "schemaversion",
+        "status",
         "tags",
         "reserved",
         "depth",
-        "status",
-        "dss",
-        "map",
         "canonical",
-        "wasm",
-        "keys",
-        "duplicate",
-        "current",
-        "phase"
+        "dss"
       ]
     },
     {
@@ -11185,6 +11278,55 @@
       ]
     },
     {
+      "rel": "docs/Knowledge-Bases/logicn-coverage-audit-zerotrust-tripipe-2026-06-23.md",
+      "title": "Coverage audit — zero-trust + Tri-Pipe/photonic-Tri (2026-06-23)",
+      "headings": [
+        "Bottom line",
+        "Per-group summary",
+        "GAP table",
+        "Zero-trust GAPs (32) — clustered",
+        "Photonic-Tri GAPs (13)",
+        "Well-covered (cite)"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-001",
+        "LLN-GOV-3VL-001"
+      ],
+      "tasks": [
+        "#163",
+        "#165",
+        "#15"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "photonic",
+        "never",
+        "gap",
+        "gaps",
+        "zero-trust",
+        "photonic-tri",
+        "fail-closed",
+        "audit",
+        "tri-pipe",
+        "covered",
+        "substrate",
+        "coverage",
+        "real",
+        "line",
+        "audited",
+        "well-covered",
+        "named",
+        "fail-open",
+        "unit",
+        "yes",
+        "bottom",
+        "adversarially",
+        "live",
+        "assessed",
+        "degrade-only"
+      ]
+    },
+    {
       "rel": "docs/Knowledge-Bases/logicn-coverage-crosscheck-methodology.md",
       "title": "Coverage Cross-Check Methodology — index every dimension, then prove the audit covered it",
       "headings": [
@@ -11921,6 +12063,56 @@
         "problem",
         "strategy",
         "limitation"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-devtools-for-production-2026-06-24.md",
+      "title": "Dev-Tools for Production — map + prioritized proposal (2026-06-24)",
+      "headings": [
+        "0. Headline — verify-before-build correction",
+        "1. [SHIPPED] — what production already has",
+        "2. [ABSENT] — the genuine gaps (verified not in the CLI)",
+        "3a. [IN-FLIGHT / refinement] — the *real* scaffolder delta",
+        "4. Prioritized proposal (corrected; security-first; lowest-risk → highest-value)",
+        "See also"
+      ],
+      "codes": [
+        "LLN-TYPE-023",
+        "ERR_REGISTRY",
+        "LLN-PKG-001",
+        "LLN-EFFECT-006"
+      ],
+      "tasks": [
+        "#202",
+        "#206"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "logicn",
+        "production",
+        "shipped",
+        "prioritized",
+        "proposal",
+        "package",
+        "app",
+        "cli",
+        "plugin",
+        "real",
+        "graph",
+        "audit",
+        "in-flight",
+        "absent",
+        "scaffolder",
+        "already",
+        "see",
+        "build",
+        "verified",
+        "verify-before-build",
+        "lowest-risk",
+        "highest-value",
+        "index",
+        "delta",
+        "dev-tools"
       ]
     },
     {
@@ -13058,6 +13250,53 @@
         "medium",
         "re-derived",
         "worked"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-fail-open-taxonomy.md",
+      "title": "LogicN Retrospective — 2026-06-23: Correctness + Zero-Trust Hardening",
+      "headings": [
+        "1. Fail-Open CLASS Taxonomy",
+        "2. Component-Health Dev-Tool Spec (owner's explicit ask)",
+        "3. Prioritized HARDENING Build-List (security-first)",
+        "4. New Rules · New Docs · Dangerous-Path Test Patterns",
+        "5. Audit / Graph Visibility Expansion"
+      ],
+      "codes": [
+        "LLN-VALUESTATE-003",
+        "LLN-TIER-001"
+      ],
+      "tasks": [
+        "#163",
+        "#218"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "test",
+        "mjs",
+        "every",
+        "gate",
+        "class",
+        "must",
+        "json",
+        "detector",
+        "tier",
+        "logicn",
+        "hardening",
+        "native",
+        "lint",
+        "component-health",
+        "already",
+        "build",
+        "git",
+        "add",
+        "fail-open",
+        "owner",
+        "fail-closed",
+        "path",
+        "check",
+        "call",
+        "taxonomy"
       ]
     },
     {
@@ -14405,6 +14644,9 @@
         "LLN-FG-001",
         "LLN-CRYPTO-PQ-001",
         "LLN-SUBSTRATE-001",
+        "LLN-TENANT-001",
+        "LLN-TENANT-002",
+        "LLN-TENANT-003",
         "LLN-INV-001",
         "LLN-INV-002",
         "LLN-TERM-001",
@@ -14450,7 +14692,8 @@
         "#74"
       ],
       "xrefs": [
-        "logicn-privacy-embedding-egress"
+        "logicn-privacy-embedding-egress",
+        "logicn-tritmesh-feature-gap-analysis-2026-06-24"
       ],
       "topTerms": [
         "must",
@@ -14462,9 +14705,9 @@
         "flow",
         "phase",
         "block",
+        "gate",
         "policy",
         "effects",
-        "gate",
         "diagnostic",
         "capability",
         "enforced",
@@ -14475,9 +14718,9 @@
         "profile",
         "intent",
         "network",
+        "declared",
         "governance",
-        "runtime",
-        "syntax"
+        "runtime"
       ]
     },
     {
@@ -14545,6 +14788,7 @@
         "The Key Property",
         "Why Quantum-Resistant?",
         "Signature Sizes",
+        "Shipped: `lln.gov.sig.v2` Hybrid Signature (Ed25519 + ML-DSA-65)",
         "Key Management",
         "Phase 39 Implementation Plan",
         "Example: Aerospace Audit Chain",
@@ -14558,29 +14802,29 @@
       "topTerms": [
         "logicn",
         "key",
+        "signature",
+        "lln",
+        "gov",
         "governancesignature",
         "proof",
+        "sig",
         "phase",
-        "signature",
-        "governance",
         "readonly",
-        "lln",
-        "terminology",
+        "governance",
+        "hybrid",
+        "ed25519",
+        "string",
         "proofgraph",
+        "ml-dsa-65",
+        "algorithm",
+        "shipped",
+        "terminology",
+        "fields",
         "aerospace",
         "valid",
-        "gov",
         "implementation",
         "compiler",
-        "quantum",
-        "computers",
-        "sig",
-        "string",
-        "audit",
-        "issued",
-        "problem",
-        "solves",
-        "fields"
+        "quantum"
       ]
     },
     {
@@ -15263,6 +15507,77 @@
         "capability",
         "development",
         "dev"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-granular-roadmap-2026-06-24.md",
+      "title": "LogicN Granular Roadmap — sub-100% modules by child node (2026-06-24)",
+      "headings": [
+        "Module: Governance + admission border — 91%",
+        "Module: Value-state / effect / tier checkers — 90%",
+        "Module: WASM codegen / WAT emitter — 89%",
+        "Module: Hybrid cryptographic signing — 88%",
+        "Module: Compiler / Stage-A pipeline (logicn-core-compiler) — 92%",
+        "Module: Devtools / graph — 90%",
+        "Module: Runtime interpreter / Stage-A tree-walker — 87%",
+        "Module: Framework (app-kernel / api-server / example-app) — 72%",
+        "Module: ext packages — 68%",
+        "Module: Stage-B self-hosting (self-hosted compiler → WASM parity) — 42%",
+        "Module: Multi-target backends + AI Inference Tower — 20%",
+        "Module: DSS.wasm deterministic isolation runtime (DRCM Phase 5, #102-106) — 15%",
+        "Module: Photonic / substrate Tower — 12%",
+        "Leverage order — highest-impact next steps across all modules"
+      ],
+      "codes": [
+        "ERR_REGISTRY",
+        "LLN-VALUESTATE-008",
+        "LLN-TIER-001",
+        "LLN-DAG-002",
+        "LLN-CRYPTO-PQ-001",
+        "LLN-GOV-3VL-001",
+        "LLN-SUBSTRATE-001"
+      ],
+      "tasks": [
+        "#102",
+        "#34",
+        "#149",
+        "#0089",
+        "#128",
+        "#163",
+        "#165",
+        "#143",
+        "#624",
+        "#199",
+        "#105",
+        "#189"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "real",
+        "module",
+        "wasm",
+        "tests",
+        "loc",
+        "parity",
+        "stage-a",
+        "path",
+        "lln",
+        "test",
+        "dss",
+        "gap",
+        "hybrid",
+        "child",
+        "governance",
+        "admission",
+        "build",
+        "wire",
+        "parser",
+        "close",
+        "gate",
+        "signed",
+        "signing",
+        "production",
+        "add"
       ]
     },
     {
@@ -16440,8 +16755,8 @@
         "LLN-SECRET-002"
       ],
       "tasks": [
-        "#34",
-        "#110"
+        "#110",
+        "#34"
       ],
       "xrefs": [
         "logicn-design-secrets-epilogue-blocks",
@@ -16450,30 +16765,30 @@
       ],
       "topTerms": [
         "core",
-        "rotation",
         "key",
+        "rotation",
         "registry",
+        "custody",
         "ext",
         "gap",
-        "custody",
         "policy",
+        "ed25519",
         "revocation",
         "revoked",
         "verify",
-        "ed25519",
+        "shipped",
+        "logicn",
+        "both",
         "entry",
         "governance",
-        "shipped",
+        "fail-closed",
+        "manifest",
         "signature",
+        "hybrid",
         "mjs",
-        "design",
-        "verify-before-build",
-        "owner",
-        "split",
-        "logicn",
-        "deterministic",
-        "engine",
-        "artifact"
+        "build",
+        "owner-gated",
+        "design"
       ]
     },
     {
@@ -18127,6 +18442,55 @@
       ]
     },
     {
+      "rel": "docs/Knowledge-Bases/logicn-paper-worthiness-assessment-2026-06-23.md",
+      "title": "Paper-Worthiness Assessment — full-corpus refresh (2026-06-23)",
+      "headings": [
+        "Bottom line",
+        "The bar (applied strictly)",
+        "Per-candidate verdict table",
+        "Strongest candidate + the gap",
+        "What to actually do",
+        "Defensive-publication items (the negative record, citable — NOT papers)",
+        "EXTENSION — 2026-06-23 delta clusters (TritMesh/3D + coverage-audit + 0091 + AI-friendliness)",
+        "Per-cluster verdict table",
+        "Would any survive at workshop+ with an experiment? (and can LogicN run it)",
+        "Honest conclusion"
+      ],
+      "codes": [],
+      "tasks": [
+        "#219",
+        "#194"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "defensive-pub",
+        "re-derives",
+        "verdict",
+        "nothing",
+        "none",
+        "workshop",
+        "measured",
+        "already",
+        "novelty",
+        "logicn",
+        "defensive-publication",
+        "result",
+        "kills",
+        "arxiv",
+        "table",
+        "photonic",
+        "system-design",
+        "delta",
+        "prior",
+        "art",
+        "flagship",
+        "bar",
+        "negative",
+        "fail-closed",
+        "min"
+      ]
+    },
+    {
       "rel": "docs/Knowledge-Bases/logicn-passive-execution-plans.md",
       "title": "LogicN — Passive Execution Plans",
       "headings": [
@@ -18232,6 +18596,61 @@
         "yet",
         "signed",
         "lmanifest"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-percent-audit-roadmap-2026-06-24.md",
+      "title": "LogicN Completion Audit & Roadmap — 2026-06-24",
+      "headings": [
+        "Headline %-table",
+        "Overall — two numbers",
+        "Roadmap — three horizons",
+        "NOW (buildable, no hard blocker; ordered by value/effort)",
+        "NEXT (small owner decision / moderate effort)",
+        "LATER (blocked by #34 / #102-106 / real HW / large effort)",
+        "Adversarial findings — the claims NOT to repeat without an asterisk"
+      ],
+      "codes": [
+        "LLN-MEMORY-001",
+        "LLN-TENANT-003"
+      ],
+      "tasks": [
+        "#167",
+        "#102",
+        "#34",
+        "#170",
+        "#171",
+        "#215",
+        "#150",
+        "#149"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "effort",
+        "real",
+        "roadmap",
+        "blocked",
+        "logicn",
+        "audit",
+        "adversarial",
+        "headline",
+        "runtime",
+        "buildable",
+        "blocker",
+        "owner",
+        "without",
+        "completion",
+        "table",
+        "shipped",
+        "wasm",
+        "tokenize",
+        "gate",
+        "overall",
+        "numbers",
+        "production",
+        "three",
+        "horizons",
+        "hard"
       ]
     },
     {
@@ -20247,6 +20666,61 @@
       ]
     },
     {
+      "rel": "docs/Knowledge-Bases/logicn-rd-53-azt-selfcert-and-blackhole-protocol-2026-06-23.md",
+      "title": "AZT Self-Certification & the Black-Hole Protocol (notes/53-blackhole) — Use/Don't-Use Ledger",
+      "headings": [
+        "0. Terminology policy — NO military-grade language",
+        "1. Use / Don't-use ledger",
+        "PART I — AZT Self-Certification (the `.lproof` artifact)",
+        "PART II — The Black-Hole Protocol (data destruction on intrusion)",
+        "2. NET-NEW buildable items (verified absent — what to grep proves it)",
+        "3. REFUTED items (do not build / strip the framing)",
+        "4. ALREADY-SHIPPED items (cite, don't rebuild)",
+        "5. Tri-Pipe (Substrate) Router → **Substrate Dispatch Gateway**",
+        "6. Net-zero-trust posture & paper-worthiness summary"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-001",
+        "LLN-MATCH-001",
+        "LLN-GOV-3VL-001",
+        "LLN-PCI-001",
+        "LLN-PRIVACY-013"
+      ],
+      "tasks": [
+        "#102",
+        "#34",
+        "#103"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "substrate",
+        "shipped",
+        "tri-pipe",
+        "net-new",
+        "items",
+        "don",
+        "azt",
+        "already-shipped",
+        "router",
+        "gateway",
+        "none",
+        "never",
+        "black-hole",
+        "dispatch",
+        "verified",
+        "part",
+        "self-certification",
+        "protocol",
+        "notes",
+        "t-use",
+        "ledger",
+        "build",
+        "aspirational",
+        "runtime",
+        "trigger"
+      ]
+    },
+    {
       "rel": "docs/Knowledge-Bases/logicn-rd-absorption-catalog.md",
       "title": "R&D Absorption Catalog — the complete ledger",
       "headings": [
@@ -20401,6 +20875,62 @@
       ]
     },
     {
+      "rel": "docs/Knowledge-Bases/logicn-rd-confidential-compute-cheri-threshold-2026-06-23.md",
+      "title": "Secrets / Data-in-Use Hardening — Three-Concept R&D Synthesis",
+      "headings": [
+        "0. Hub critical verdict per concept (up front)",
+        "1. Claim-by-claim verdict table (all three concepts)",
+        "2. Hardware-anchoring vs hardware-agnostic — RECOMMENDATION",
+        "RECOMMENDATION (hub)",
+        "3. Revocation — poll vs push (the answer: BOTH, lease-authoritative)",
+        "4. Buildable-now vs HW-gated vs research-only",
+        "5. Paper verdict",
+        "6. Already-shipped vs net-new (consolidated)",
+        "Sources"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-001"
+      ],
+      "tasks": [
+        "#102"
+      ],
+      "xrefs": [
+        "logicn-rd-ephemeral-secret-ingestion-2026-06-23",
+        "logicn-rd-53-azt-selfcert-and-blackhole-protocol-2026-06-23",
+        "logicn-key-custody-and-rotation",
+        "logicn-memory-safety-model",
+        "logicn-deterministic-runtime-containment",
+        "logicn-quantum-resistance-posture"
+      ],
+      "topTerms": [
+        "cheri",
+        "logicn",
+        "concept",
+        "wasm",
+        "secret",
+        "verdict",
+        "https",
+        "attestation",
+        "revocation",
+        "shamir",
+        "fail-closed",
+        "kms",
+        "buildable-now",
+        "enclave",
+        "secrets",
+        "shipped",
+        "sev-snp",
+        "already",
+        "hw-gated",
+        "runtime",
+        "host",
+        "sealtaint",
+        "sound",
+        "net-new",
+        "hub"
+      ]
+    },
+    {
       "rel": "docs/Knowledge-Bases/logicn-rd-corpus-closure-2026-06-18.md",
       "title": "R&D corpus closure + shipping-readiness ledger (2026-06-18)",
       "headings": [
@@ -20467,6 +20997,170 @@
         "design",
         "fail-open",
         "phase"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-env-tmf-sealed-secrets-2026-06-23.md",
+      "title": "env.tmf — Sealed Secrets on the .tmf Container (R&D)",
+      "headings": [
+        "1. Hub verdict (up front — strict honesty)",
+        "2. Verify-vs-shipped — what reuses, what is net-new",
+        "Reuses the .tmf engine (@logicn/ext-tmf) essentially as-is",
+        "Reuses the secrets-vault store DISCIPLINE (@logicn/ext-secrets-vault) — as a PATTERN, not a drop-in",
+        "Net-new (what neither package provides)",
+        "3. Design — @logicn/ext-secrets-tmf (optional, separate, thin)",
+        "Part 1 — env.tmf schema",
+        "Part 2 — CRUD CLI (SQL-mode style, in-memory only)",
+        "Part 3 — Key anchor (the recipient KEM secret key) — does NOT remove secret-zero",
+        "Part 4 — Production runtime path",
+        "4. Local-edit (fine) vs production read-back (regression) — enforced by construction",
+        "5. What env.tmf does NOT solve (no overclaiming)",
+        "6. Prior art + paper verdict",
+        "7. Effort / sequencing",
+        "8. Relation to neighbours"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-001"
+      ],
+      "tasks": [
+        "#624",
+        "#1044",
+        "#110"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "tmf",
+        "env",
+        "logicn",
+        "key",
+        "part",
+        "secret",
+        "sops",
+        "never",
+        "container",
+        "package",
+        "store",
+        "reuses",
+        "anchor",
+        "file",
+        "production",
+        "net-new",
+        "secret-zero",
+        "vault",
+        "in-memory",
+        "arena",
+        "separate",
+        "verdict",
+        "plaintext",
+        "cli",
+        "pattern"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-ephemeral-secret-ingestion-2026-06-23.md",
+      "title": "Ephemeral Secret Ingestion — Use/Don't-Use Ledger",
+      "headings": [
+        "Critical verdict up front (4 pillars)",
+        "Claim-by-claim verdict table (with citations)",
+        "Honest buildable design",
+        "Already-shipped vs net-new",
+        "Zero-trust score + paper verdict"
+      ],
+      "codes": [
+        "LLN-SECRET-001",
+        "LLN-SECRET-DISK-00"
+      ],
+      "tasks": [
+        "#110",
+        "#102"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "verdict",
+        "net-new",
+        "already-shipped",
+        "fail-closed",
+        "shipped",
+        "rotation",
+        "honest",
+        "design",
+        "secret",
+        "ingestion",
+        "core",
+        "sealtaint",
+        "pillars",
+        "external",
+        "env",
+        "buildable",
+        "zero-trust",
+        "score",
+        "paper",
+        "ephemeral",
+        "don",
+        "t-use",
+        "ledger",
+        "secrets",
+        "critical"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-flow-kind-tier-inference-2026-06-23.md",
+      "title": "Flow-Kind Tier Inference — Floor-Not-Ceiling for `pure` / `guarded` / `secure`",
+      "headings": [
+        "1. Owner idea + the three zero-trust constraints",
+        "2. ALREADY-SHIPPED vs NET-NEW (verify-before-build)",
+        "Mechanics (verified)",
+        "ALREADY-SHIPPED (do NOT rebuild)",
+        "NET-NEW needed (for floor-not-ceiling)",
+        "3. The inference lattice + the floor-check diagnostic",
+        "3.1 Inference rule — `inferMinimumTier(...)`",
+        "3.2 The floor check — `LLN-TIER-001`",
+        "4. The guarded-flow bug — motivating fragility, and how the floor defangs it",
+        "5. Prior art + paper verdict + zero-trust score",
+        "6. Why compile-time, not runtime (rejected)",
+        "7. Build recommendation"
+      ],
+      "codes": [
+        "LLN-EFFECT-003",
+        "LLN-EFFECT-001",
+        "LLN-EFFECT-002",
+        "LLN-INHERIT-001",
+        "LLN-DAG-002",
+        "LLN-TIER-001",
+        "LLN-TIER-002",
+        "LLN-VALUESTATE-003"
+      ],
+      "tasks": [
+        "#0093",
+        "#0088"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "tier",
+        "flow",
+        "floor",
+        "secure",
+        "effect",
+        "guarded",
+        "inference",
+        "pure",
+        "declared",
+        "effects",
+        "zero-trust",
+        "fail-closed",
+        "lln-tier-001",
+        "secret",
+        "runtime",
+        "qualifier",
+        "lattice",
+        "floor-not-ceiling",
+        "already-shipped",
+        "net-new",
+        "verdict",
+        "body",
+        "network",
+        "check",
+        "already"
       ]
     },
     {
@@ -20626,6 +21320,114 @@
         "crypto",
         "gir",
         "notes"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-tenant-isolation-and-meshview-2026-06-24.md",
+      "title": "LogicN — Tenant Isolation (note 54) + MeshView (note 55): Governance-Buildable Subset",
+      "headings": [
+        "1. Hub verdict (up front)",
+        "2. TritMesh-product vs LogicN-governance split",
+        "Note 54",
+        "Note 55",
+        "3. LogicN-buildable designs",
+        "Note 54 — the deny-by-default tenant border (THE net-new build)",
+        "Note 55 — the only buildable governance pieces",
+        "4. Answer to note-54's closing question",
+        "5. Prior art + paper verdict",
+        "6. Cross-references"
+      ],
+      "codes": [
+        "LLN-PRIVACY-002",
+        "LLN-TENANT-001",
+        "LLN-TENANT-002",
+        "LLN-SUBSTRATE-001",
+        "LLN-GOV-3VL-001"
+      ],
+      "tasks": [
+        "#102"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "note",
+        "tenant",
+        "capability",
+        "shipped",
+        "verdict",
+        "logicn",
+        "border",
+        "vault",
+        "governance",
+        "build",
+        "half",
+        "meshview",
+        "deny-by-default",
+        "tritmesh-product",
+        "tritmesh",
+        "scope",
+        "buildable",
+        "prior",
+        "art",
+        "fail-closed",
+        "net-new",
+        "tmf",
+        "isolation",
+        "intersection",
+        "lease"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-tritmesh-1-5-and-52-3d-2026-06-23.md",
+      "title": "R&D — TritMesh notes 1-5 + 52-3D (for LogicN) (2026-06-23)",
+      "headings": [
+        "Bottom line",
+        "The Tri-Pipe-Router vs LogicN-Tri-Pipe distinction (read this first)",
+        "Per-head verdict table",
+        "NEW mechanics worth implementing in LogicN (ranked)",
+        "Already-shipped / re-derived (cite)",
+        "REFUTED (with reason)",
+        "TritMesh-only (saved for later)"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-001",
+        "LLN-SUBSTRATE-004",
+        "LLN-PRIVACY-002",
+        "LLN-GOV-3VL-001",
+        "LLN-SUBSTRATE-002",
+        "LLN-GOV-019"
+      ],
+      "tasks": [
+        "#102",
+        "#103",
+        "#199"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "pass",
+        "already-shipped",
+        "photonic",
+        "tritmesh-only",
+        "logicn",
+        "governance",
+        "tmf",
+        "tm-1",
+        "shipped",
+        "combo",
+        "router",
+        "d-1",
+        "notes",
+        "meshql",
+        "admission",
+        "vand",
+        "d-2",
+        "tri-pipe",
+        "gate",
+        "tritmesh",
+        "degrade-only",
+        "crypto",
+        "digital",
+        "mechanics",
+        "result"
       ]
     },
     {
@@ -20922,6 +21724,8 @@
         "Missing / stub packages — consider, NOT always"
       ],
       "codes": [
+        "LLN-VALUESTATE-008",
+        "LLN-TIER-001",
         "LLN-VALUESTATE-003",
         "LLN-GDCE-001",
         "LLN-PERM-001"
@@ -20952,27 +21756,27 @@
         "first",
         "owner",
         "kernel",
-        "fail-closed",
         "build",
+        "fail-closed",
         "wasm",
+        "stub",
         "fix",
         "test",
         "logicn",
-        "stub",
+        "full",
+        "already",
         "path",
+        "real",
         "key",
+        "fixed",
         "missing",
         "packages",
         "cert-gate",
         "api-server",
         "mutants",
-        "real",
         "gate",
         "always",
-        "near",
-        "roadmap",
-        "rebuilt",
-        "already"
+        "near"
       ]
     },
     {
@@ -21147,6 +21951,62 @@
         "weighted",
         "kernel",
         "b5a"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-roadmap-and-percent-audit-2026-06-23-eod.md",
+      "title": "LogicN — % Completion Audit + Security-First Roadmap (2026-06-23, end of session)",
+      "headings": [
+        "Headline",
+        "1. % audit by dimension",
+        "2. The honest gap — still concentrated in 3 places",
+        "3. SECURITY-FIRST roadmap (owner-confirmed ordering)",
+        "NEAR — the approved security build queue (build, not research)",
+        "MID — features behind the hardening front",
+        "LONG — owner/infra-gated",
+        "4. Today's changes (commit log, local-only until end-of-session push)"
+      ],
+      "codes": [
+        "LLN-TIER-001",
+        "LLN-VALUESTATE-008",
+        "LLN-DAG-002"
+      ],
+      "tasks": [
+        "#163",
+        "#165",
+        "#143",
+        "#0089",
+        "#34",
+        "#102",
+        "#149"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "audit",
+        "roadmap",
+        "build",
+        "security-first",
+        "hardening",
+        "today",
+        "security",
+        "completion",
+        "dimension",
+        "approved",
+        "commit",
+        "logicn",
+        "end-of-session",
+        "test",
+        "wasm",
+        "gap",
+        "honest",
+        "until",
+        "features",
+        "owner",
+        "end",
+        "session",
+        "full",
+        "headline",
+        "governance"
       ]
     },
     {
@@ -22963,6 +23823,9 @@
         "Attestation Artifact Format",
         "Stage 1: Ed25519 (Classical Signing)",
         "Stage 2: Post-Quantum Signing (planned)",
+        "Shipped: Hybrid `.lmanifest` Signing (Ed25519 + ML-DSA-65)",
+        "The single-source signing envelope — `makeManifestEnvelope`",
+        "Hybrid algorithm and both-halves rule",
         "The Anti-Pattern: Self-Signing at Runtime",
         "Important Rule",
         "Rules at a Glance",
@@ -22974,29 +23837,29 @@
       "topTerms": [
         "attestation",
         "signing",
+        "ed25519",
         "stage",
         "signed",
+        "logicn",
         "runtime",
         "artifact",
+        "hybrid",
         "key",
-        "ed25519",
-        "logicn",
         "proof",
-        "sha-256",
-        "post-quantum",
-        "source",
-        "artifacts",
         "signature",
+        "sha-256",
+        "algorithm",
+        "rule",
         "build",
+        "source",
+        "lmanifest",
+        "envelope",
+        "post-quantum",
+        "artifacts",
         "audit",
         "self-signing",
         "sha256",
-        "contract",
-        "execution",
-        "report",
-        "hashes",
-        "gets",
-        "format"
+        "ml-dsa-65"
       ]
     },
     {
@@ -24018,8 +24881,8 @@
         "lowering",
         "parity",
         "string",
-        "test",
         "wasm-runtime",
+        "test",
         "low",
         "str",
         "i32",
@@ -25276,6 +26139,59 @@
         "findings",
         "logicn-issues",
         "shipped"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-tritmesh-feature-gap-analysis-2026-06-24.md",
+      "title": "R&D 0109 — TritMesh \"AZT Database\" feature-list gap analysis (2026-06-24)",
+      "headings": [
+        "Bottom line",
+        "Coverage by pillar",
+        "The \"improving\" — 6 reusable LogicN mechanics worth building (ranked, no crypto/HW/substrate dep)",
+        "The \"dismissing\" — what the AI assumed that we do NOT build / cannot claim",
+        "Positioning-statement calibration (claims → evidence)",
+        "See also"
+      ],
+      "codes": [
+        "LLN-TENANT-001"
+      ],
+      "tasks": [
+        "#102",
+        "#110",
+        "#34",
+        "#107"
+      ],
+      "xrefs": [
+        "logicn-rd-tritmesh-1-5-and-52-3d-2026-06-23",
+        "logicn-tmf-engine",
+        "logicn-b8-governed-transport"
+      ],
+      "topTerms": [
+        "shipped",
+        "logicn",
+        "gap",
+        "reusable",
+        "mechanics",
+        "substrate",
+        "tritmesh",
+        "pillar",
+        "building",
+        "crypto",
+        "build",
+        "claims",
+        "azt",
+        "worth",
+        "tmf",
+        "memory",
+        "database",
+        "feature-list",
+        "analysis",
+        "bottom",
+        "line",
+        "coverage",
+        "runtime",
+        "fail-closed",
+        "wasm"
       ]
     },
     {
@@ -30685,7 +31601,7 @@
         "The Zero-Trust thesis",
         "What LogicN does",
         "Who it is for",
-        "Benchmarks (measured 2026-06-17 — honest numbers)",
+        "Benchmarks (measured 2026-06-23 — honest numbers)",
         "Build Progress",
         "What makes it different",
         "Code Examples",
@@ -30693,6 +31609,7 @@
         "Building an application",
         "Architecture",
         "Compiler pipeline",
+        "Package architecture",
         "Package layout (status-labelled)",
         "Five-layer execution stack",
         "Running the Tools",
@@ -30701,6 +31618,8 @@
       ],
       "codes": [
         "LLN-FAULT-001",
+        "LLN-TIER-001",
+        "LLN-VALUESTATE-008",
         "LLN-PKG-006",
         "LLN-LEX-001",
         "LLN-NAME-001",
@@ -30708,42 +31627,43 @@
         "LLN-EFFECT-001",
         "LLN-GOV-001",
         "LLN-TERM-001",
+        "LLN-SUBSTRATE-001",
         "LLN-PCI-001"
       ],
       "tasks": [
         "#102",
-        "#34",
-        "#149",
         "#143",
-        "#128"
+        "#128",
+        "#163",
+        "#165"
       ],
       "xrefs": [],
       "topTerms": [
         "logicn",
         "governed",
-        "wasm",
         "docs",
+        "wasm",
         "knowledge-bases",
+        "runtime",
+        "package",
+        "architecture",
         "app",
         "audit",
-        "runtime",
-        "execution",
-        "tests",
         "build",
+        "shipped",
+        "execution",
         "governance",
-        "lln",
-        "active",
+        "tests",
         "compiler",
         "signed",
-        "architecture",
-        "flow",
-        "contract",
-        "drcm",
-        "examples",
+        "core",
         "fail-closed",
-        "real",
-        "progress",
-        "dss"
+        "active",
+        "border",
+        "contract",
+        "intent",
+        "flow",
+        "lln"
       ]
     },
     {
