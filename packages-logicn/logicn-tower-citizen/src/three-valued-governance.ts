@@ -204,3 +204,60 @@ export function vAndTensor2D(vCore: Int8Array, tSub: Int8Array, rows: number, co
   }
   return vAndTensor(vCore, tSub); // element-wise; the 2-D shape is the caller's row-major interpretation
 }
+
+// ── Variadic ternary consensus (notes/62 §3, owner-approved 2026-06-25) ──────
+//
+// consensusTritN generalises the 3-input `consensusTrit` (tpl-simulator) to N votes: the consensus is
+// the sign of the sum, with a TIE (or empty) collapsing to INDETERMINATE — fail-closed, never a guessed
+// ALLOW. It is re-implemented inline here (not imported from substrate-model's `majorityVote`) because
+// substrate-model already imports FROM this module — importing back would be a cycle. The no-divergence
+// oracle in the tests pins consensusTritN([a,b,c]) === consensusTrit(a,b,c) over all 27 triples, so the
+// two can never drift. Useful for NMR/redundancy:N folds where the 3-input kernel is too narrow.
+
+/** Sign-of-sum consensus over N Verdict votes; a tie (and the empty set) → INDETERMINATE (fail-closed). */
+export function consensusTritN(votes: readonly Verdict[]): Verdict {
+  let sum = 0;
+  for (const v of votes) {
+    if (v !== -1 && v !== 0 && v !== 1) {
+      throw new Error(`consensusTritN: non-trit vote ${v} — fail-closed`);
+    }
+    sum += v;
+  }
+  return (sum > 0 ? Verdict.ALLOW : sum < 0 ? Verdict.DENY : Verdict.INDETERMINATE);
+}
+
+// ── Continuous-ternary ConfidenceVerdict (notes/62 §1, owner-approved 2026-06-25) ──
+//
+// A ConfidenceVerdict is a probability vector p=[pDeny, pUnknown, pAllow] (components in [0,1], summing
+// to ~1). It is a TRIAGE signal — NOT a new authority. It MUST fail-safe collapse to the shipped discrete
+// Verdict before any decision: `collapseConfidence` authorises ALLOW only when pAllow is a CONFIDENT
+// strict argmax (≥ threshold and strictly greater than the others); anything ambiguous, low-confidence,
+// non-normalised, or out-of-range collapses to INDETERMINATE (→ deny at the boundary). A confidence
+// score can therefore only ever LOWER the outcome toward deny — it can never manufacture an ALLOW the
+// discrete gate would not (No-Coercion preserved).
+
+/** A continuous-ternary confidence vector p=[pDeny, pUnknown, pAllow], components in [0,1], Σ≈1. */
+export interface ConfidenceVerdict {
+  readonly pDeny: number;
+  readonly pUnknown: number;
+  readonly pAllow: number;
+}
+
+/**
+ * Fail-safe collapse of a ConfidenceVerdict to a discrete Verdict.
+ *  - garbage (NaN / out of [0,1]) or a non-normalised vector (Σ ≠ 1) → INDETERMINATE (fail-safe);
+ *  - ALLOW iff pAllow ≥ `allowThreshold` AND strictly greater than both other components;
+ *  - DENY iff pDeny is the (≥-tie) dominant component;
+ *  - otherwise (ambiguous / low-confidence) → INDETERMINATE.
+ * INDETERMINATE and DENY both deny at the boundary, so the ONLY path to authorisation is a confident,
+ * unambiguous allow — a confidence vector cannot lift a verdict, only lower it.
+ */
+export function collapseConfidence(p: ConfidenceVerdict, allowThreshold = 0.5): Verdict {
+  const { pDeny, pUnknown, pAllow } = p;
+  const inRange = (x: number) => Number.isFinite(x) && x >= 0 && x <= 1;
+  if (!inRange(pDeny) || !inRange(pUnknown) || !inRange(pAllow)) return Verdict.INDETERMINATE;
+  if (Math.abs(pDeny + pUnknown + pAllow - 1) > 1e-6) return Verdict.INDETERMINATE; // not a probability vector
+  if (pAllow >= allowThreshold && pAllow > pDeny && pAllow > pUnknown) return Verdict.ALLOW;
+  if (pDeny > pAllow && pDeny >= pUnknown) return Verdict.DENY;
+  return Verdict.INDETERMINATE; // ambiguous / low-confidence → fail-safe deny
+}

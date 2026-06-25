@@ -42,8 +42,9 @@ export type { TransitionPolicy, RestrictedTransition } from "./governance-enforc
 export {
   Verdict, vAnd, vOr, vNot, allOf, anyOf, collapse, authorize,
   decideAtBoundary, GOV_3VL_DIAGNOSTIC,
-  vAndTensor, vAndTensor2D,
+  vAndTensor, vAndTensor2D, consensusTritN, collapseConfidence,
 } from "./three-valued-governance.js";
+export type { ConfidenceVerdict } from "./three-valued-governance.js";
 export type { GovernanceDiagnostic, BoundaryDecision } from "./three-valued-governance.js";
 
 // ── K3 ternary partial-return / `Masked` per-field response shaper (R&D 0108 #2) ──
