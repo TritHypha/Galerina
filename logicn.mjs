@@ -303,10 +303,21 @@ Baseline comparison (governance-cost):
     const flowFiles = [...scanDir("flows"), ...scanDir("examples/auth-service"), ...scanDir("tests/patterns")];
     let allFlows = 0, violations = 0;
     console.log(`logicn init-env — scanning ${flowFiles.length} flow file(s) for policy violations`);
+    let unanalyzable = 0;
     for (const file of flowFiles) {
       try {
         const src = readFileSync(file, "utf8");
         const p = m2.parseProgram(src, file);
+        // H8 (threat-model) — a file that does not PARSE cleanly cannot be fully analyzed, so its parse
+        // errors ARE violations (unknown → deny). init-env previously inspected only GOVERNANCE
+        // diagnostics, so a truncated/garbage/half-parsed flow (parse errors but 0 governance errors on
+        // the partial AST) read as CLEAN — a governance-scan evasion. Counting them makes the dev tool
+        // LOCATE the unanalyzable file (and the non-zero exit fails CI).
+        const parseErrs = (p.diagnostics ?? []).filter(d => d.severity === "error");
+        if (parseErrs.length > 0) {
+          violations += parseErrs.length;
+          parseErrs.slice(0, 3).forEach(d => console.log(`  ❌ ${file}: ${d.code} — ${d.message.slice(0, 100)} (parse error — file cannot be fully analyzed)`));
+        }
         const fx = m2.checkEffects(p.flows, p.ast);
         const g = m2.verifyGovernance(p.ast, p.flows, fx, "dev");
         allFlows += p.flows.length;
@@ -315,12 +326,19 @@ Baseline comparison (governance-cost):
           violations += errs.length;
           errs.forEach(d => console.log(`  ❌ ${file}: ${d.code} — ${d.message.slice(0, 100)}`));
         }
-      } catch { /* skip unparseable files */ }
+      } catch (e) {
+        // H8 (threat-model) — a file the governance gate CANNOT analyze must FAIL the scan, never be
+        // silently skipped as analyzed-clean. Otherwise a crafted flow that crashes the verifier escapes
+        // the baseline ("governance-scan evasion"). Unknown → deny: count it as a hard violation so the
+        // dev tool (init-env) LOCATES it (LLN-SCAN-UNANALYZABLE) and the non-zero exit fails CI.
+        unanalyzable++; violations++;
+        console.log(`  ❌ ${file}: LLN-SCAN-UNANALYZABLE — could not parse/verify (${String(e?.message ?? e).slice(0, 100)}) — a file the gate cannot analyze FAILS the scan`);
+      }
     }
     if (violations === 0) {
       console.log(`✅ init-env: ${allFlows} flows scanned, 0 violations — clean baseline for diffing`);
     } else {
-      console.log(`⚠️  init-env: ${allFlows} flows scanned, ${violations} violation(s) — review before committing`);
+      console.log(`⚠️  init-env: ${allFlows} flows scanned, ${violations} violation(s)${unanalyzable ? ` (incl. ${unanalyzable} UNANALYZABLE → fail-closed)` : ""} — review before committing`);
       process.exit(2);
     }
     return;
@@ -1289,7 +1307,7 @@ Baseline comparison (governance-cost):
           violations += errs.length;
           errs.forEach(d => console.log(`  ❌ ${file}: ${d.code} — ${d.message.slice(0, 80)}`));
         }
-      } catch { /* skip unparseable */ }
+      } catch { violations++; /* H8 fail-closed: an unanalyzable file counts as a violation. NOTE: this init-env handler is UNREACHABLE (the handler at ~296 takes no file arg and returns first) — a dead duplicate kept fail-closed for safety; flagged for removal. */ }
     }
     if (violations === 0) {
       console.log(`✅ init-env: ${allFlows} flows, 0 violations — clean baseline`);
