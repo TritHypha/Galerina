@@ -108,7 +108,19 @@ function bindingDeclaredBase(bindingValue: string): string {
  * the bytecode VM via its INTEGER_TYPES check; this also catches an INTERNAL `let y: Int64` in an int-param
  * flow (the silent-truncation gap, the verified plan's R1).
  */
+// Memoized per flow node — the result is pure over a stable AST, and this runs on the HOT sync fast-path
+// entry (once per nested-flow call); an uncached per-call AST walk would regress tight call-chain loops.
+const unlowerable64Cache = new WeakMap<AstNode, boolean>();
+
 export function flowDeclaresUnlowerable64(flowNode: AstNode): boolean {
+  const cached = unlowerable64Cache.get(flowNode);
+  if (cached !== undefined) return cached;
+  const result = scanFlowFor64(flowNode);
+  unlowerable64Cache.set(flowNode, result);
+  return result;
+}
+
+function scanFlowFor64(flowNode: AstNode): boolean {
   for (const c of flowNode.children ?? []) {
     // Return type = a direct typeRef child of the flow.
     if (c.kind === "typeRef" && typeof c.value === "string" && BACKEND_UNLOWERABLE_SCALAR.has(numericBaseType(c.value))) return true;
