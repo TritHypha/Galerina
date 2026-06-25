@@ -35,6 +35,13 @@ const CORPUS = [
   ["remMin",  ["d"], [i64(-1n)], [-1n], 0n],                                    // I64_MIN % -1 → 0 (no trap) — div/rem asymmetry
   ["bareRet", [], [], [], 9223372036854775807n],                               // bare `return <literal>` (no binding) — the last gap
   ["bareSum", ["a", "b"], [int(2000000000), int(2000000000)], [2000000000, 2000000000], 4000000000n], // bare `return a + b` (i32 vars → i64)
+  // Edge cases R&D wf_054a6a6f flagged as missing (the differential proved walker≡WASM but under-covered the
+  // SIGN + trap corners). Expects are an INDEPENDENT hand-derived spec oracle (BigInt + WASM i64 trap rules).
+  ["widenNeg", ["a", "b"], [int(-2000000000), int(-2000000000)], [-2000000000, -2000000000], -4000000000n], // NEGATIVE i32→i64 sign-ext (extend_i32_s, not _u) — was invisible (addWiden positive-only)
+  ["mulNeg",  ["a", "b"], [i64(-3037000499n), i64(3037000499n)], [-3037000499n, 3037000499n], -9223372030926249001n], // mul to ≈ −2^63, both signs, exact
+  ["subMin",  [], [], [], "trap"],                                              // I64_MIN − 1 → underflow trap (not just MAX+1)
+  ["negMin",  [], [], [], "trap"],                                             // −(I64_MIN) = 2^63 → overflow trap
+  ["divZero", ["d"], [i64(0n)], [0n], "trap"],                                  // ÷0 traps (distinct from the INT64_MIN/−1 overflow trap)
 ];
 
 const SRC = `pure flow bigLit() -> Int64 contract { effects {} } { let x: Int64 = 9007199254740993  return x }
@@ -49,7 +56,12 @@ pure flow ovf() -> Int64 contract { effects {} } { let a: Int64 = 92233720368547
 pure flow divMin(d: Int64) -> Int64 contract { effects {} } { let a: Int64 = -9223372036854775808  return a / d }
 pure flow remMin(d: Int64) -> Int64 contract { effects {} } { let a: Int64 = -9223372036854775808  return a % d }
 pure flow bareRet() -> Int64 contract { effects {} } { return 9223372036854775807 }
-pure flow bareSum(a: Int, b: Int) -> Int64 contract { effects {} } { return a + b }`;
+pure flow bareSum(a: Int, b: Int) -> Int64 contract { effects {} } { return a + b }
+pure flow widenNeg(a: Int, b: Int) -> Int64 contract { effects {} } { let t: Int64 = a + b  return t }
+pure flow mulNeg(a: Int64, b: Int64) -> Int64 contract { effects {} } { return a * b }
+pure flow subMin() -> Int64 contract { effects {} } { let a: Int64 = -9223372036854775808  let b: Int64 = a - 1  return b }
+pure flow negMin() -> Int64 contract { effects {} } { let a: Int64 = -9223372036854775808  let b: Int64 = -a  return b }
+pure flow divZero(d: Int64) -> Int64 contract { effects {} } { let a: Int64 = 5000000000  return a / d }`;
 
 test("0014 Int64 slice: walker ≡ WASM byte-exact over the (2^53,2^63) corpus (param + literal)", async () => {
   const prog = parseProgram(SRC, "i64-diff.lln");
