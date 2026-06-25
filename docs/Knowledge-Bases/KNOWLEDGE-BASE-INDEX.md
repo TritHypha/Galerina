@@ -302,6 +302,7 @@ When an AI tool is generating LogicN code for this project:
 | Which docs/examples are broken vs the current compiler? | `logicn-docs-examples-review-2026-06-25.md` |
 | Full worked governed flow using `substrate {}` + every contract clause | `logicn-substrate-worked-example.md` |
 | How is the quality of photonic-lane maths guaranteed? (self-check) | `logicn-photonic-maths-quality-self-check.md` |
+| What does the photonic lane DO in the real world? which sectors? | `logicn-photonic-real-world-applications.md` |
 | What stops a death loop / runaway computation? (termination guards) | `logicn-termination-and-death-loop-guards.md` |
 | Which `substrate {}` fields should be inferred vs declared? (ergonomics) | `logicn-substrate-ergonomics-infer-vs-declare.md` |
 | Should we build a dev-tools observability/visualiser/replay graph? | `logicn-rd-devtools-observability-graph-2026-06-25.md` |
