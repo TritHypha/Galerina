@@ -1,6 +1,8 @@
-// generate-radars.mjs — produces 3 radar charts comparing LogicN to mainstream languages across
-// three categories. Run: `node docs/diagrams/generate-radars.mjs`. Scores are 0–10, honest/defensible
-// (see README "honest scope"). Short axis labels by design.
+// generate-radars.mjs — produces 9 radar charts comparing LogicN to mainstream languages across
+// distinct categories (security · perf · devx · governed-chaos · ci/cd · tri-ternary · web · databasing ·
+// data-science). Run: `node docs/diagrams/generate-radars.mjs`. Scores are 0–10, honest/defensible
+// (governance-strong, ecosystem-young is shown HONESTLY — LogicN scores low where it genuinely is).
+// Short axis labels by design. esc() XML-escapes all text so `&` in a title can't produce invalid SVG.
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -15,6 +17,10 @@ const SERIES_COLORS = {
   Python: "#3572a5",
   Zig:    "#f7a41d",
   Node:   "#43853d",
+  R:      "#276dc3",
+  "LogicN + SQL":      "#e8590c",
+  "LogicN + TritMesh": "#9c36b5",
+  "Std ORM (Py/Node)": "#868e96",
 };
 
 const charts = [
@@ -68,6 +74,64 @@ const charts = [
       Python: [1, 2, 1, 1, 2, 1],
       Rust:   [1, 3, 1, 1, 2, 2],
       "C++":  [1, 2, 1, 1, 2, 1],
+    },
+  },
+  {
+    file: "radar-5-cicd-devsupport.svg",
+    title: "5 · CI/CD & Developer Support",
+    subtitle: "governance-grade gates vs polished general tooling",
+    axes: ["CI Gates", "Auto-gen Tests", "Supply-chain", "Attestation", "Lint / Format", "IDE / LSP"],
+    series: {
+      LogicN: [9, 7, 9, 9, 6, 3],   // ~15 enforcing lints + #149 + mutation gate + signed witnesses; LSP not built
+      Go:     [6, 5, 5, 2, 9, 9],
+      Rust:   [7, 5, 5, 3, 9, 9],
+      Python: [4, 6, 3, 2, 7, 8],
+    },
+  },
+  {
+    file: "radar-6-tri-ternary.svg",
+    title: "6 · Tri / Ternary Logic",
+    subtitle: "a category binary languages can't enter natively",
+    axes: ["K3 Native Logic", "Abstain State", "No-Coercion", "Ternary Fault-Tol.", "Speculative", "Tri-Substrate"],
+    series: {
+      LogicN: [10, 10, 10, 9, 8, 9],
+      Rust:   [1, 2, 0, 1, 1, 0],   // Option≈Abstain-ish, but no native ternary logic/fold/routing
+      Python: [1, 1, 0, 1, 1, 0],
+      "C++":  [1, 1, 0, 1, 1, 0],
+    },
+  },
+  {
+    file: "radar-7-web-api-secure.svg",
+    title: "7 · Web App / API / Secure Web",
+    subtitle: "governance-strong, runtime ecosystem still young",
+    axes: ["Fail-closed Auth", "K3 API Routing", "Injection / XSS", "Capability Ctrl", "PII / Privacy", "Web Ecosystem"],
+    series: {
+      LogicN: [9, 9, 7, 9, 9, 2],   // web-* contracts deny-by-default but stub runtime; no framework ecosystem yet
+      Node:   [4, 3, 4, 3, 2, 10],
+      Python: [4, 3, 4, 3, 3, 9],
+      Go:     [5, 4, 5, 4, 2, 7],
+    },
+  },
+  {
+    file: "radar-8-databasing.svg",
+    title: "8 · Databasing — over SQL vs native TritMesh",
+    subtitle: "governed data access: LogicN+SQL, LogicN+TritMesh, vs a standard ORM",
+    axes: ["Injection-safe", "Tenant Isolation", "Audit Trail", "Capability-gated", "Schema Safety", "Ecosystem"],
+    series: {
+      "LogicN + SQL":      [9, 9, 9, 9, 7, 6],   // governed access over mature SQL
+      "LogicN + TritMesh": [10, 9, 9, 9, 8, 2],  // no SQL injection surface; ternary mesh is R&D-stage ecosystem
+      "Std ORM (Py/Node)": [6, 3, 4, 2, 6, 10],
+    },
+  },
+  {
+    file: "radar-9-data-science.svg",
+    title: "9 · Data Science",
+    subtitle: "LogicN governs the data; Python/R crunch it",
+    axes: ["PII Protection", "Data Eng", "Data Analysis", "Machine Learning", "Data Viz", "Domain Expertise"],
+    series: {
+      LogicN: [10, 4, 3, 4, 2, 9],   // governance/PII/domain-contracts strong; crunching/viz ecosystem thin
+      Python: [3, 9, 10, 10, 8, 5],
+      R:      [2, 5, 9, 6, 9, 4],
     },
   },
 ];
