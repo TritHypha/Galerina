@@ -3,7 +3,7 @@
 // =============================================================================
 
 import { type AstNode, type FlowMeta, NodeFlags } from "./parser.js";
-import { callStdlib, logicNValuesEqual, moneyBinary } from "./stdlib.js";
+import { callStdlib, logicNValuesEqual, moneyBinary, constantTimeStringEquals } from "./stdlib.js";
 import { type CapabilityHost } from "./runtime/capabilityHost.js";
 import { type RuntimeContext } from "./runtime/runtimeContext.js";
 import { type ContractEnforcer } from "./runtime/contractEnforcer.js";
@@ -1948,7 +1948,9 @@ class Interpreter {
     if (methodName === "constantTimeEquals" || fullName === "constantTimeEquals") {
       const a = args[0] !== undefined ? await this.evalExpr(args[0]) : LLN_NONE;
       const b = args[1] !== undefined ? await this.evalExpr(args[1]) : LLN_NONE;
-      return { __tag: "bool", value: secureComparable(a) === secureComparable(b) };
+      // H7: route the compiler-recommended secret-equality path through the real constant-time
+      // comparison, not the short-circuiting `===` it used to use (timing side-channel).
+      return { __tag: "bool", value: constantTimeStringEquals(secureComparable(a), secureComparable(b)) };
     }
 
     if (fullName === "AuditLog.write") {

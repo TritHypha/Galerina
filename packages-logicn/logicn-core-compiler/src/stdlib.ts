@@ -1080,7 +1080,7 @@ function gateFunction(fullName: string, args: readonly LogicNValue[]): LogicNVal
     const a = arg0.__tag === "secure" ? arg0.value : strVal(arg0);
     const bArg = args[1] ?? LLN_VOID;
     const b = bArg.__tag === "secure" ? bArg.value : strVal(bArg);
-    return { __tag: "bool", value: a === b };
+    return { __tag: "bool", value: constantTimeStringEquals(a, b) }; // H7: timing-safe, never ===
   }
   return undefined;
 }
@@ -2350,6 +2350,30 @@ function tensorModule(method: string, args: readonly LogicNValue[]): LogicNValue
 // Phase R2B — Crypto module: real constant-time equality via node:crypto
 // ---------------------------------------------------------------------------
 
+/**
+ * Constant-time string equality via node:crypto `timingSafeEqual` — the SINGLE source of truth
+ * for `constantTimeEquals` everywhere (the interpreter + both stdlib dispatch paths). The bare
+ * `constantTimeEquals` impls used a short-circuiting `===` (threat-model H7 timing side-channel),
+ * which is doubly wrong because LLN-TYPE-013 actively tells authors to "Use constantTimeEquals()
+ * for equality" on secrets — the recommended path MUST actually be constant-time. Both inputs are
+ * padded to equal length so the compare time is independent of where they first differ AND of
+ * their lengths; a true length difference still yields false, checked AFTER the timing-safe compare
+ * (never as an early short-circuit). Fail-closed: any error → not-equal, never a `===` fallback.
+ */
+export function constantTimeStringEquals(aStr: string, bStr: string): boolean {
+  try {
+    const maxLen = Math.max(aStr.length, bStr.length);
+    const enc = new TextEncoder();
+    const bufA = enc.encode(aStr.padEnd(maxLen, "\0"));
+    const bufB = enc.encode(bStr.padEnd(maxLen, "\0"));
+    // Equal-length buffers → timingSafeEqual cannot throw on length; constant-time over the bytes.
+    const timingEqual = _nodeCryptoTimingSafeEqual(bufA, bufB);
+    return timingEqual && aStr.length === bStr.length;
+  } catch {
+    return false; // fail closed — never fall back to a non-constant-time `===`
+  }
+}
+
 function cryptoModule(method: string, args: readonly LogicNValue[]): LogicNValue | undefined {
   switch (method) {
     case "constantTimeEquals": {
@@ -2357,21 +2381,7 @@ function cryptoModule(method: string, args: readonly LogicNValue[]): LogicNValue
       const bArg = args[1] ?? LLN_VOID;
       const aStr = aArg.__tag === "secure" ? aArg.value : strVal(aArg);
       const bStr = bArg.__tag === "secure" ? bArg.value : strVal(bArg);
-      try {
-        // Pad both to the same length to avoid timing leaks from length checks.
-        const maxLen = Math.max(aStr.length, bStr.length);
-        const enc = new TextEncoder();
-        const bufA = enc.encode(aStr.padEnd(maxLen, "\0"));
-        const bufB = enc.encode(bStr.padEnd(maxLen, "\0"));
-        // Length mismatch means they are not equal — but use timingSafeEqual
-        // on the padded buffers so the timing is identical regardless of input.
-        const timingEqual = _nodeCryptoTimingSafeEqual(bufA, bufB);
-        const lengthEqual = aStr.length === bStr.length;
-        return { __tag: "bool", value: timingEqual && lengthEqual };
-      } catch {
-        // Fallback: plain equality (non-timing-safe, but functional)
-        return { __tag: "bool", value: aStr === bStr };
-      }
+      return { __tag: "bool", value: constantTimeStringEquals(aStr, bStr) };
     }
     default:
       return undefined;
