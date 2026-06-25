@@ -880,6 +880,11 @@ class TypeChecker {
         if (NUMERIC_TYPES.has(leftType) && NUMERIC_TYPES.has(rightType)) {
           if (leftType === "Decimal" || rightType === "Decimal") return "Decimal";
           if (leftType === "Float"   || rightType === "Float")   return "Float";
+          // i64 Step 2a: Int64 is contagious — a mixed Int+Int64 expression is Int64, matching the
+          // interpreter's int64-dispatch promotion (BigInt(int)) and the emitter's i64 routing (which
+          // sign-extends the i32 operand). Behaviour-neutral for non-Int64 programs (needs an Int64 operand,
+          // which LLN-NUMERIC-001 still gates). Keeps all three tiers agreeing on a mixed expression's type.
+          if (leftType === "Int64" || rightType === "Int64") return "Int64";
           return leftType;
         }
         return undefined;
