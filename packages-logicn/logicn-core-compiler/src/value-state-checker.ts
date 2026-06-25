@@ -35,6 +35,7 @@
 // =============================================================================
 
 import { type AstNode, type SourceLocation } from "./parser.js";
+import { numericBaseType } from "./numeric-lowering.js";
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -2069,16 +2070,9 @@ const BACKEND_UNLOWERABLE_SCALAR: ReadonlySet<string> = new Set(["Int64", "UInt6
 const NUMERIC_FLOW_KINDS = new Set(["flowDecl", "secureFlowDecl", "pureFlowDecl", "guardedFlowDecl"]);
 const NUMERIC_BIND_KINDS = new Set(["letDecl", "mutDecl", "readonlyDecl"]);
 
-// Base type identifier from a type annotation string: strips leading governance/safety
-// qualifiers and any generic/array suffix. "protected Int64"→"Int64", "Tensor<Int64,[4]>"→"Tensor".
-function numericBaseType(typeSection: string): string {
-  let s = typeSection.trim();
-  for (const q of ["protected ", "redacted ", "unsafe ", "safe "]) {
-    if (s.startsWith(q)) s = s.slice(q.length).trim();
-  }
-  const m = s.match(/^([A-Za-z_][A-Za-z0-9_]*)/);
-  return m?.[1] ?? "";
-}
+// numericBaseType (base type id from an annotation string) is now shared in ./numeric-lowering.ts
+// so the emitter / interpreter / type-checker consult the SAME stripper (verified i64-lowering plan,
+// Step 0a) — a bare `=== "Int64"` shortcut would miss `protected Int64` and mis-flag `Tensor<Int64>`.
 
 function unlowerableNumericDiag(base: string, location: SourceLocation | undefined): ValueStateDiagnostic {
   return {
