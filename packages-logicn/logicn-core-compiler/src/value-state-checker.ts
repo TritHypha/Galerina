@@ -35,6 +35,7 @@
 // =============================================================================
 
 import { type AstNode, type SourceLocation } from "./parser.js";
+import { buildModuleAliasMap } from "./effect-checker.js"; // C1: resolve `let x = Module` aliases at sinks
 import { numericBaseType, BACKEND_UNLOWERABLE_SCALAR } from "./numeric-lowering.js";
 
 // ---------------------------------------------------------------------------
@@ -227,12 +228,12 @@ export function getSinkRequirement(fullCallName: string): SinkRequirement | unde
 // When adding a new sink, update stdlib-gates.yaml first, then mirror here.
 // ---------------------------------------------------------------------------
 
-function isGovernedSink(node: AstNode): boolean {
+function isGovernedSink(node: AstNode, aliasMap?: ReadonlyMap<string, string>): boolean {
   const methodName = node.value ?? "";
   const receiver = node.children?.[0];
   const receiverName =
-    receiver?.kind === "identifier" ? (receiver.value ?? "")
-    : receiver?.kind === "memberExpr" ? getNodeName(receiver)
+    receiver?.kind === "identifier" ? (aliasMap?.get(receiver.value ?? "") ?? receiver.value ?? "")
+    : receiver?.kind === "memberExpr" ? getNodeName(receiver, aliasMap)
     : "";
   const fullName =
     receiverName !== "" ? `${receiverName}.${methodName}` : methodName;
@@ -678,22 +679,27 @@ function collectUserFlows(ast: AstNode): Set<string> {
 // AST name reconstruction helpers
 // ---------------------------------------------------------------------------
 
-function getNodeName(node: AstNode): string {
-  if (node.kind === "identifier") return node.value ?? "";
+function getNodeName(node: AstNode, aliasMap?: ReadonlyMap<string, string>): string {
+  if (node.kind === "identifier") {
+    const name = node.value ?? "";
+    // C1: resolve a module alias at the receiver leaf (`let x = AuditLog; x.write` → `AuditLog.write`)
+    // so an aliased call is matched against the governed-sink registry instead of being missed.
+    return aliasMap?.get(name) ?? name;
+  }
   if (node.kind === "memberExpr") {
     const parent = node.children?.[0];
-    const parentName = parent !== undefined ? getNodeName(parent) : "";
+    const parentName = parent !== undefined ? getNodeName(parent, aliasMap) : "";
     const memberName = node.value ?? "";
     return parentName !== "" ? `${parentName}.${memberName}` : memberName;
   }
   return "";
 }
 
-function buildFullCallName(node: AstNode): string {
+function buildFullCallName(node: AstNode, aliasMap?: ReadonlyMap<string, string>): string {
   const methodName = node.value ?? "";
   const receiver = node.children?.[0];
   if (receiver === undefined) return methodName;
-  const receiverName = getNodeName(receiver);
+  const receiverName = getNodeName(receiver, aliasMap);
   return receiverName !== "" ? `${receiverName}.${methodName}` : methodName;
 }
 
@@ -973,6 +979,9 @@ class ValueStateChecker {
   // R&D 0093: the flow-kind currently being walked, so registerParamBinding knows whether
   // a bare param sits at a posture-gated entry boundary (secure/guarded → boundary-untrusted).
   private currentFlowKind: string | undefined;
+  // C1: per-flow `let x = Module` alias map, set on flow entry; resolves an aliased sink receiver
+  // (`x.write` → `AuditLog.write`) so the taint/sink gates aren't smuggled past by a rename.
+  private moduleAliases: ReadonlyMap<string, string> = new Map();
   // R&D 0093 stage-2: production/deterministic builds escalate LLN-VALUESTATE-008 to error.
   private readonly mode: "production" | "development";
 
@@ -1063,6 +1072,8 @@ class ValueStateChecker {
         this.pushScope();
         const prevFlowKind = this.currentFlowKind;
         this.currentFlowKind = node.kind; // R&D 0093: posture context for registerParamBinding
+        const prevAliases = this.moduleAliases;
+        this.moduleAliases = buildModuleAliasMap(node); // C1: flow-scoped `let x = Module` aliases
         // Register parameter bindings so SecureString params are tracked
         for (const child of node.children ?? []) {
           if (child.kind === "paramDecl") {
@@ -1070,6 +1081,7 @@ class ValueStateChecker {
           }
         }
         this.walkChildren(node);
+        this.moduleAliases = prevAliases;
         this.currentFlowKind = prevFlowKind;
         this.popScope();
         break;
@@ -1473,13 +1485,14 @@ class ValueStateChecker {
   // ── Call expression rules ────────────────────────────────────────────────
 
   private handleCallExpr(node: AstNode): void {
-    const sinkName = buildFullCallName(node);
+    // C1: resolve `let x = Module` aliases so an aliased sink (`x.write`) is matched + gated, not missed.
+    const sinkName = buildFullCallName(node, this.moduleAliases);
     const isAuditLog = sinkName === "AuditLog.write";
 
     // Rule 1/3: governed sink — check all argument children for unsafe bindings.
     // Task 4: distinguish protected-without-redact at AuditLog (VALUESTATE-006)
     // from plain unsafe-at-sink (VALUESTATE-003).
-    if (isGovernedSink(node)) {
+    if (isGovernedSink(node, this.moduleAliases)) {
       for (const child of node.children ?? []) {
         if (isAuditLog) {
           // For AuditLog.write, check for protected values without redact first.
