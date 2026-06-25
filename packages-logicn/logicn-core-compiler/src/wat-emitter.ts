@@ -1347,7 +1347,16 @@ export function emitWATExpr(
         if (recordCtx !== null && fields.length > 0) {
           const recLocal = `$__lln_rec_${recordCtx.counter.n++}`;
           recordCtx.localDecls.push(`(local ${recLocal} i32)`);
-          const size = fields.length * WAT_REC_FIELD_SIZE;
+          // #32 fail-open fix: store each field at its DECLARED-layout offset — the SAME map the read uses
+          // (recordLayouts.indexOf(name), line ~1184) — NOT the literal child index. An out-of-declared-order
+          // literal (`Pair { b: …, a: … }` for `record Pair { a, b }`) otherwise wrote b's value to a's slot,
+          // so a later `p.a` silently read the WRONG field (a tier-divergent silent-wrong-data fail-open: the
+          // tree-walker is by-name, the WASM tier was by-position). `typeName` is set by the parser for a
+          // named record literal; size on the DECLARED length so a reordered/short literal can't under-allocate.
+          const declaredLayout = (node as { typeName?: string }).typeName
+            ? recordLayouts?.get((node as { typeName?: string }).typeName as string)
+            : undefined;
+          const size = (declaredLayout?.length ?? fields.length) * WAT_REC_FIELD_SIZE;
           const parts: string[] = [`(block (result i32)`];
           // base = heap; heap += size  (per-record local → safe under nesting + calls)
           parts.push(`  (local.set ${recLocal} (global.get $__lln_heap))`);
@@ -1355,7 +1364,8 @@ export function emitWATExpr(
           fields.forEach((f, i) => {
             const valNode = f.children?.[0];
             const valWat = valNode ? emitWATExpr(valNode, vars, staticConsts) : "(i32.const 0)";
-            const off = i * WAT_REC_FIELD_SIZE;
+            const declIdx = declaredLayout ? declaredLayout.indexOf(f.value ?? "") : -1;
+            const off = (declIdx >= 0 ? declIdx : i) * WAT_REC_FIELD_SIZE;
             parts.push(`  (i32.store (i32.add (local.get ${recLocal}) (i32.const ${off})) ${valWat}) ;; .${f.value ?? `f${i}`}`);
           });
           parts.push(`  (local.get ${recLocal})`);
