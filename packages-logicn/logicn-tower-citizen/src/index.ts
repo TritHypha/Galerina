@@ -47,6 +47,13 @@ export {
 export type { ConfidenceVerdict } from "./three-valued-governance.js";
 export type { GovernanceDiagnostic, BoundaryDecision } from "./three-valued-governance.js";
 
+// ── Hallucination-proof AI action admission — No-Coercion made a headline guarantee ──
+// An AI is an UNTRUSTED proposer; the core is the gate. An action executes IFF min(core, ai) = ALLOW, so
+// the AI can only pick WITHIN the core-allowed set — never expand it. Containment + No-Coercion theorems
+// are checked live (fail-closed); blockedHallucinations surfaces the guarantee as audit evidence.
+export { governAiProposal } from "./ai-governance.js";
+export type { AiActionProposal, AiActionDecision, AiGovernanceResult } from "./ai-governance.js";
+
 // ── K3 ternary partial-return / `Masked` per-field response shaper (R&D 0108 #2) ──
 // Per-field vAnd fold at an output boundary: authorized fields pass through, DENY/
 // INDETERMINATE fields become a typed Masked sentinel (keep-the-rest), fail-closed +
