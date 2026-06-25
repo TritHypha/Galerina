@@ -33,6 +33,20 @@ test("a WITHIN-root import is NOT a traversal — it proceeds to the normal not-
   assert.deepEqual(diagCodes(mods), ["LLN-IMPORT-001"]);
 });
 
+test("an OUT-OF-CWD source importing a SIBLING is allowed (own-dir subtree), not a traversal", () => {
+  // a file compiled from outside cwd (one-off file, or a temp-dir fixture) may import its neighbours.
+  // ROOT/.. is an existing dir outside cwd, so the realpath containment layer resolves (no fail-closed).
+  const src = join(ROOT, "..", "main.lln"); // sourceDir = ROOT/.. (exists), outside cwd
+  const mods = resolveFileImports(src, [importDecl("./lib-does-not-exist.lln")]);
+  assert.deepEqual(diagCodes(mods), ["LLN-IMPORT-001"], "sibling import passes containment → normal not-found");
+});
+
+test("an OUT-OF-CWD source ESCAPING its own dir is STILL blocked (LLN-IMPORT-005)", () => {
+  const src = join(ROOT, "..", "main.lln");
+  const mods = resolveFileImports(src, [importDecl("../".repeat(30) + "etc/passwd.lln")]);
+  assert.deepEqual(diagCodes(mods), ["LLN-IMPORT-005"], "climbing above both cwd and the source dir fails closed");
+});
+
 // ── isWithinRoot unit (the two-layer containment primitive) ──
 test("isWithinRoot: contained paths pass, escaping paths fail", () => {
   assert.equal(isWithinRoot(resolve(ROOT, "examples/a/b.lln"), ROOT), true);

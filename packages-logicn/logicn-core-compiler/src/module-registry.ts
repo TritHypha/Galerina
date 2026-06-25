@@ -243,9 +243,14 @@ export function resolveFileImports(
 
     const resolvedPath = resolve(sourceDir, relPath);
 
-    // LLN-IMPORT-005: path-traversal guard. The resolved path is checked for containment BEFORE any
-    // fs access — a pre-governance import must never read a file outside the allowed project root.
-    if (!isWithinRoot(resolvedPath, containmentRoot)) {
+    // LLN-IMPORT-005: path-traversal guard. The resolved path is checked for containment BEFORE any fs
+    // access — a pre-governance import must never read a file outside its allowed scope. Allowed scope =
+    // the project root (LOGICN_FS_ROOT, else cwd) OR the importing file's OWN directory subtree. The
+    // second clause lets a file import its neighbours (`./sibling.lln`) even when the file itself lives
+    // outside cwd (e.g. compiling a one-off file, or a fixture under a temp dir) — importing a neighbour
+    // is always legitimate. Escaping BOTH (a project file's `../../../etc/passwd`) still fails closed: a
+    // `../` chain that climbs above the project AND above the source dir is denied.
+    if (!isWithinRoot(resolvedPath, containmentRoot) && !isWithinRoot(resolvedPath, sourceDir)) {
       results.push({
         filePath: resolvedPath,
         symbols: [],
