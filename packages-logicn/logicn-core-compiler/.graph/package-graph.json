@@ -21,6 +21,7 @@
     "src/governance-verifier.ts",
     "src/gpu-plan.ts",
     "src/i32-arith.ts",
+    "src/i64-arith.ts",
     "src/import-resolver.ts",
     "src/index.ts",
     "src/interpreter.ts",
@@ -585,6 +586,10 @@
       "to": "src/i32-arith.ts"
     },
     {
+      "from": "src/interpreter.ts",
+      "to": "src/i64-arith.ts"
+    },
+    {
       "from": "src/manifest-generator.ts",
       "to": "src/governance-verifier.ts"
     },
@@ -1096,8 +1101,8 @@
     "src/runtime/index.ts"
   ],
   "stats": {
-    "fileCount": 77,
-    "internalEdgeCount": 221,
+    "fileCount": 78,
+    "internalEdgeCount": 222,
     "externalDepCount": 14,
     "nodeCoreCount": 6,
     "workspaceCount": 2,

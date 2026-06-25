@@ -3,6 +3,7 @@
   "nodes": [
     "src/container.ts",
     "src/history.ts",
+    "src/inclusion.ts",
     "src/index.ts",
     "src/kemdem.ts",
     "src/tmx256.ts"
@@ -17,8 +18,16 @@
       "to": "src/tmx256.ts"
     },
     {
+      "from": "src/inclusion.ts",
+      "to": "src/tmx256.ts"
+    },
+    {
       "from": "src/index.ts",
       "to": "src/tmx256.ts"
+    },
+    {
+      "from": "src/index.ts",
+      "to": "src/inclusion.ts"
     },
     {
       "from": "src/index.ts",
@@ -50,8 +59,8 @@
     "src/index.ts"
   ],
   "stats": {
-    "fileCount": 5,
-    "internalEdgeCount": 6,
+    "fileCount": 6,
+    "internalEdgeCount": 8,
     "externalDepCount": 1,
     "nodeCoreCount": 1,
     "workspaceCount": 0,
