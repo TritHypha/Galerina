@@ -335,7 +335,16 @@ export interface InterpreterRuntimeOptions {
   /** Fail-closed loop-iteration cap (while/forEach). Default 100_000. Exceeding it TRAPS (fail-closed) —
    *  it does NOT silently truncate-and-succeed. */
   readonly maxIterations?: number;
+  /** Fail-closed GLOBAL compute-step cap (total expression evaluations in a flow). Default 1_000_000_000.
+   *  Closes the runaway-compute gap that the per-loop maxIterations + per-call maxCallDepth leave open:
+   *  NESTED bounded loops (e.g. 100k × 100k = 10^10 ops, each loop under the 100k per-loop cap) have no
+   *  TOTAL bound. Deterministic (a step count, not wall-clock). Exceeding it TRAPS (deny-by-default). */
+  readonly maxSteps?: number;
 }
+
+/** Default global compute-step budget — high enough that no legitimate flow reaches it (a flow doing
+ *  ~1e9 expression evals is already pathological), low enough to trap a 10^10 nested-loop runaway. */
+const DEFAULT_MAX_STEPS = 1_000_000_000;
 
 // =============================================================================
 // Phase 27B — Synchronous fast-path interpreter for pure EffectFree flows
@@ -373,11 +382,18 @@ class SyncInterpreter {
   /** Flat scope: variable name → current value. Supports shadowing via save/restore. */
   private readonly scope: Map<string, LogicNValue>;
 
+  /** Fail-closed GLOBAL compute-step counter for the sync fast path. */
+  private steps = 0;
+
   constructor(
     private readonly ast: AstNode,
     private readonly knownFlows: readonly FlowMeta[],
     /** Fail-closed loop-iteration cap (mirrors the async Interpreter's). Default 100_000. */
     private readonly maxIterations: number = 100_000,
+    /** Fail-closed GLOBAL compute-step cap (mirrors the async Interpreter's). Default 1e9. On exceed the
+     *  sync path DEFERS to the async tree-walker, which enforces the hard trap — same shape as the
+     *  maxIterations defer, so a runaway pure flow is bounded without a second calibration knob. */
+    private readonly maxSteps: number = DEFAULT_MAX_STEPS,
   ) {
     this.scope = new Map();
   }
@@ -505,6 +521,10 @@ class SyncInterpreter {
   }
 
   private evalExprS(node: AstNode): LogicNValue {
+    if (++this.steps > this.maxSteps) {
+      // Fail-closed: hand off to the async tree-walker, which enforces the hard maxSteps trap.
+      throw new SyncNotSupported(`compute budget exceeded (${this.maxSteps} steps) — defer to the async cap`);
+    }
     switch (node.kind) {
       case "numberLiteral": {
         const raw = (node.value ?? "0").replace(/_/g, "");
@@ -633,13 +653,14 @@ export function tryPureFlowSync(
   flowName: string,
   args: ReadonlyMap<string, LogicNValue>,
   maxIterations: number = 100_000,
+  maxSteps: number = DEFAULT_MAX_STEPS,
 ): LogicNValue | null {
   const flowMeta = flows.find(f => f.name === flowName);
   if (flowMeta === undefined) return null;
   if (flowMeta.qualifier !== "pure") return null;
 
   try {
-    const interp = new SyncInterpreter(ast, flows, maxIterations);
+    const interp = new SyncInterpreter(ast, flows, maxIterations, maxSteps);
     return interp.run(flowName, args);
   } catch (e) {
     if (e instanceof SyncNotSupported) return null;
@@ -800,6 +821,19 @@ class Interpreter {
    *  nested Interpreter to parent+1; runLocalFn increments it; both trap against maxCallDepth. */
   callDepth = 0;
 
+  /** Fail-closed GLOBAL compute-step counter (this Interpreter instance). Incremented per expression
+   *  eval (both the async evalExpr and the sync evalExprSync paths share it); traps at maxSteps — the
+   *  total-compute bound that per-loop maxIterations + per-call maxCallDepth do not provide. */
+  private steps = 0;
+
+  /** Charge one compute step; TRAP (deny-by-default) when the global budget is exhausted. */
+  private chargeStep(): void {
+    const cap = this.runtimeOptions.maxSteps ?? DEFAULT_MAX_STEPS;
+    if (++this.steps > cap) {
+      throw new Error(`Compute budget exceeded (${cap} steps) — fail-closed (bounds TOTAL compute; nested bounded loops that each stay under maxIterations cannot run unboundedly).`);
+    }
+  }
+
   constructor(
     private readonly ast: AstNode,
     private readonly knownFlows: readonly FlowMeta[],
@@ -865,6 +899,7 @@ class Interpreter {
    * that refer to previously-declared static constants.
    */
   private evalExprSync(node: AstNode): LogicNValue {
+    this.chargeStep();
     switch (node.kind) {
       case "numberLiteral": {
         const raw = (node.value ?? "0").replace(/_/g, "");
@@ -1411,6 +1446,7 @@ class Interpreter {
   }
 
   private async evalExpr(node: AstNode): Promise<LogicNValue> {
+    this.chargeStep();
     switch (node.kind) {
       // Phase 41: returnStmt inside match arm bodies — `match x { _ => return "found" }`
       // evalExpr is called from evalMatch for arm bodies. returnStmt needs to
@@ -2975,7 +3011,7 @@ export async function executeFlow(
     // Phase 27B: Try synchronous fast-path (handles non-integer pure flows).
     // Eliminates ~6μs async/await overhead per call.
     // Falls back to the async Interpreter if sync can't handle the pattern.
-    const syncResult = tryPureFlowSync(ast, knownFlows ?? [], flowName, args, runtimeOptions?.maxIterations ?? 100_000);
+    const syncResult = tryPureFlowSync(ast, knownFlows ?? [], flowName, args, runtimeOptions?.maxIterations ?? 100_000, runtimeOptions?.maxSteps ?? DEFAULT_MAX_STEPS);
     if (syncResult !== null) {
       const now = new Date().toISOString();
       const syncAuditResult = {
