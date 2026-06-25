@@ -6,7 +6,7 @@
 // fast tiers bail, so the walker is the sole executor of decimal arithmetic — see the e2e tests below).
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { decAdd, decSub, decMul, decCompare, isDecTrap } from "../dist/decimal-arith.js";
+import { decAdd, decSub, decMul, decCompare, isDecTrap, decDiv, decRem, isRoundMode } from "../dist/decimal-arith.js";
 import { parseProgram, resolveSymbols, checkTypes, executeFlow } from "../dist/index.js";
 
 // ── the exactness oracle (vs the f64 trap) ──
@@ -33,6 +33,66 @@ test("multiply adds scales (exact)", () => {
 test("exact across magnitudes a float would lose (>2^53)", () => {
   assert.equal(decAdd("9999999999999999", "1"), "10000000000000000");
   assert.equal(decAdd("0.0000000001", "0.0000000002"), "0.0000000003");
+});
+
+// ── decDiv: exact division to an EXPLICIT scale + rounding policy (the partial-op resolution, #53/#54) ──
+test("decDiv exact (terminating) quotients at the requested scale", () => {
+  assert.equal(decDiv("1", "4", 2, "halfEven"), "0.25");
+  assert.equal(decDiv("10", "2", 2, "halfEven"), "5.00");
+  assert.equal(decDiv("0.30", "0.10", 2, "halfEven"), "3.00"); // value 3, placed at scale 2
+  assert.equal(decDiv("100.00", "8", 2, "halfEven"), "12.50");
+});
+
+test("decDiv non-terminating quotient (1/3) rounds per the stated scale", () => {
+  assert.equal(decDiv("1", "3", 2, "halfEven"), "0.33");
+  assert.equal(decDiv("1", "3", 4, "halfEven"), "0.3333");
+  assert.equal(decDiv("2", "3", 4, "halfEven"), "0.6667"); // 0.66666… → halfEven up
+});
+
+test("decDiv rounding modes differ on a tie (1.005 → 2dp) and a non-tie", () => {
+  // 1/8 = 0.125 — an exact tie at 2dp (0.12 | 0.13)
+  assert.equal(decDiv("1", "8", 2, "halfEven"), "0.12"); // 12 is even → stay
+  assert.equal(decDiv("3", "8", 2, "halfEven"), "0.38"); // 0.375 tie, 37 odd → away → 0.38
+  assert.equal(decDiv("1", "8", 2, "halfUp"),   "0.13"); // tie → away
+  assert.equal(decDiv("1", "8", 2, "halfDown"), "0.12"); // tie → toward zero
+  assert.equal(decDiv("1", "8", 2, "up"),       "0.13"); // any remainder → away
+  assert.equal(decDiv("1", "8", 2, "down"),     "0.12"); // truncate toward zero
+});
+
+test("decDiv directed rounding respects sign (ceiling/floor toward ±∞)", () => {
+  assert.equal(decDiv("1", "3", 2, "ceiling"), "0.34");  // +0.333 → toward +∞
+  assert.equal(decDiv("1", "3", 2, "floor"),   "0.33");
+  assert.equal(decDiv("-1", "3", 2, "ceiling"), "-0.33"); // −0.333 → toward +∞ (toward zero)
+  assert.equal(decDiv("-1", "3", 2, "floor"),   "-0.34"); // toward −∞ (away from zero)
+  assert.equal(decDiv("-1", "3", 2, "halfEven"), "-0.33");
+});
+
+test("decDiv negative operands round symmetrically for the half modes", () => {
+  assert.equal(decDiv("-1", "8", 2, "halfUp"), "-0.13"); // −0.125 tie → away from zero
+  assert.equal(decDiv("-3", "8", 2, "halfEven"), "-0.38");
+});
+
+test("decDiv fails closed on divide-by-zero and bad scale", () => {
+  assert.ok(isDecTrap(decDiv("1", "0", 2, "halfEven")));
+  assert.equal(decDiv("1", "0", 2, "halfEven"), "DivideByZero");
+  assert.ok(isDecTrap(decDiv("1", "0.0", 2, "halfEven")));
+  assert.ok(isDecTrap(decDiv("x", "3", 2, "halfEven")));   // malformed
+  assert.ok(isDecTrap(decDiv("1", "3", -1, "halfEven")));  // negative scale
+});
+
+test("decRem is exact (no rounding needed) and fails closed on /0", () => {
+  assert.equal(decRem("10", "3"), "1");
+  assert.equal(decRem("0.30", "0.12"), "0.06");  // 0.30 = 2*0.12 + 0.06
+  assert.equal(decRem("-10", "3"), "-1");        // truncate toward zero
+  assert.equal(decRem("7.5", "2.5"), "0.0");
+  assert.equal(decRem("5", "0"), "DivideByZero");
+});
+
+test("isRoundMode gates the policy string", () => {
+  assert.ok(isRoundMode("halfEven"));
+  assert.ok(isRoundMode("floor"));
+  assert.ok(!isRoundMode("nearest"));
+  assert.ok(!isRoundMode(""));
 });
 
 test("comparison is by VALUE not string ('0.1' == '0.10')", () => {
