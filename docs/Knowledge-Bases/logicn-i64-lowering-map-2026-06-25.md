@@ -1,5 +1,13 @@
 # Faithful Int64 lowering — exhaustive site map + phased plan (2026-06-25)
 
+> **SUPERSEDED for the build plan by [logicn-i64-lowering-plan-verified-2026-06-25.md].** This map captured
+> the happy-path sites; the adversarial verification pass (workflow `wf_6ccf9ef5-ba9`) found **5 CRITICAL
+> fail-opens this map MISSED** — the bytecode tier silently lowering Int64→i32 (it isn't mentioned below at
+> all), `foldToInt` const-folding Int64 in 32-bit space, the return-valtype/param-registration dead-routing,
+> and unary-neg calling the i32 helper over an i64 operand — plus 28 residual risks and the shared-resolver
+> decision. **Build against the verified plan, not this list.** This map is retained for the original
+> line-cite index only.
+
 **Goal:** lift scalar `Int64` from the `LLN-NUMERIC-001` fail-close gate by making it faithfully
 lowered end-to-end (no silent 64→32 truncation, CWE-704). `UInt64` stays gated (distinct unsigned
 div/compare semantics) until its own layer lands.
