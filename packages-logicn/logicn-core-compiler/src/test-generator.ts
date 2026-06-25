@@ -261,7 +261,10 @@ export function generateBoundaryTests(flow: GIRFlow): BoundaryTestCase[] {
 // that the op CANNOT run on a noisy/photonic lane (crypto-on-core, LLN-SUBSTRATE-001).
 // =============================================================================
 
-const CRYPTO_EFFECT = /^crypto\.(hash|sign|verify|encrypt|decrypt|seal)$/;
+// `(\.|$)` (not bare `$`) so PQ/algorithm-suffixed variants — crypto.sign.hybrid / .mldsa65 /
+// .slhdsa / crypto.seal.* — are also recognised as crypto-on-core obligations (mirrors the
+// substrate-inference.ts fix: a certified profile mandates the suffixed form).
+const CRYPTO_EFFECT = /^crypto\.(hash|sign|verify|encrypt|decrypt|seal)(\.|$)/;
 
 /** A generated substrate-violation obligation for one crypto effect. */
 export interface SubstrateViolationTestCase {

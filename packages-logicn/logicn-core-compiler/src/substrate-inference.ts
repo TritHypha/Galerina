@@ -62,7 +62,13 @@ const LANE_PROFILES: Record<SubstrateLane, SubstrateNoiseParams> = {
 // Crypto/integrity effects that must run bit-exact on a deterministic core (LLN-SUBSTRATE-001)
 // — extended for #34 confidentiality (encrypt/decrypt/seal) so a KEM-DEM/AEAD op on a noisy
 // or analog (photonic) lane is rejected, exactly as sign/verify/hash already are.
-const CRYPTO_EFFECT = /^crypto\.(hash|sign|verify|encrypt|decrypt|seal)$/;
+// The `(\.|$)` tail (NOT a bare `$`) is load-bearing: it also matches the PQ/algorithm-suffixed
+// variants — crypto.sign.hybrid / crypto.sign.mldsa65 / crypto.sign.slhdsa / crypto.seal.* — which
+// a certified profile MANDATES (LLN-CRYPTO-PQ-001 rejects bare crypto.sign). A `$`-anchored match
+// let the mandatory PQ form escape the crypto-on-noisy-lane gate in exactly the certified posture
+// where it matters most. Match the whole crypto.<head>.* family fail-closed; integrity is never
+// tolerance-bounded, so there is no crypto sub-variant that is legitimate on a noisy lane.
+const CRYPTO_EFFECT = /^crypto\.(hash|sign|verify|encrypt|decrypt|seal)(\.|$)/;
 
 // ---------------------------------------------------------------------------
 // AST extraction (reuses the resilience-inference idiom)
@@ -207,22 +213,27 @@ export function checkSubstrateViolations(
 ): SubstrateViolation[] {
   const inf = inferFlowSubstrate(flowNode, flow);
 
-  // A flow with no substrate block, or a digital (noiseless) lane, is completely inert.
-  if (inf.lane === "digital") return [];
-
-  const laneIsNoisy = inf.lane === "photonic" || inf.lane === "noisy";
-  const hasCrypto = flow.declaredEffects.some((e) => CRYPTO_EFFECT.test(e));
-
-  // Malformed declared value fails closed as a tolerance error (never silently coerced).
+  // Malformed declared value fails closed as an error — checked BEFORE the digital early-return
+  // below. parseLaneField fails an unrecognised lane keyword closed to value "digital" WITH
+  // malformed=true (e.g. `lane: gaming`, or a value polluted by a trailing `//` comment the
+  // parser did not strip). If the `inf.lane === "digital"` early-return ran first, that safe
+  // default would masquerade as an author-chosen inert digital lane and silently drop the
+  // crypto-on-noisy gate — a fail-open. Spec §8: malformed never silently coerces to a default.
   if (inf.malformed) {
     return [{
       code: "LLN-SUBSTRATE-002",
       name: "TOLERANCE_UNACHIEVABLE_UNDER_NOISE",
       severity: "error",
-      message: `Flow '${flow.name}' substrate {} has a malformed value. tolerance must be in [0,1]; redundancy must be an odd integer ≥ 1 or 'tmr'; on_indeterminate must be trap | revote:N | fallback_digital.`,
-      suggestedFix: "Fix the substrate {} field values (e.g. tolerance: 0.001, redundancy: 3, on_indeterminate: trap).",
+      message: `Flow '${flow.name}' substrate {} has a malformed value. lane must be photonic | noisy | digital; tolerance must be in [0,1]; redundancy must be an odd integer ≥ 1 or 'tmr'; on_indeterminate must be trap | revote:N | fallback_digital.`,
+      suggestedFix: "Fix the substrate {} field values (e.g. lane: photonic, tolerance: 0.001, redundancy: 3). Note: a trailing // comment on a field line is not stripped — put comments on their own line.",
     }];
   }
+
+  // A flow with no substrate block, or a (well-formed) digital lane, is completely inert.
+  if (inf.lane === "digital") return [];
+
+  const laneIsNoisy = inf.lane === "photonic" || inf.lane === "noisy";
+  const hasCrypto = flow.declaredEffects.some((e) => CRYPTO_EFFECT.test(e));
 
   const params = LANE_PROFILES[inf.lane];
   const pBad = singleLaneErrorProbability(params);

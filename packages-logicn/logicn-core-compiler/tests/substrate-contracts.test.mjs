@@ -243,6 +243,71 @@ describe("malformed substrate declarations fail closed (never silently coerced)"
   });
 });
 
+// ── Fail-open regressions (2026-06-25) ───────────────────────────────────────
+// Two fail-opens found while building the gaming-substrate worked example. Both let a
+// crypto effect run on a noisy lane undetected (the exact thing LLN-SUBSTRATE-001 exists
+// to stop), so both are pinned here.
+
+describe("fail-open regression: PQ-suffixed crypto effects are crypto-on-core too", () => {
+  // CRYPTO_EFFECT was `$`-anchored, so the PQ form a certified profile MANDATES
+  // (crypto.sign.hybrid — bare crypto.sign is rejected by LLN-CRYPTO-PQ-001) slipped past
+  // the crypto-on-noisy gate. Fixed to match crypto.<head>.* via a `(\.|$)` tail.
+  const pqSrc = (effect, lane) => `
+secure flow signPq(request: Request) -> Result<Response, ApiError>
+contract {
+  intent { "pin PQ crypto-on-core" }
+  effects { ${effect} audit.write }
+  substrate {
+    lane: ${lane}
+    tolerance: 5e-3
+    redundancy: 3
+  }
+}
+{ return Ok(Response.ok({})) }
+`;
+  for (const eff of ["crypto.sign.hybrid", "crypto.sign.mldsa65", "crypto.sign.slhdsa"]) {
+    it(`${eff} on a photonic lane fires LLN-SUBSTRATE-001 (the PQ form must not exempt it)`, () => {
+      assert.ok(has(parseAndVerify(pqSrc(eff, "photonic"), "production"), "LLN-SUBSTRATE-001"),
+        `${eff} must be gated as crypto-on-core`);
+    });
+    it(`${eff} on a digital lane is fine (no SUBSTRATE-001)`, () => {
+      assert.ok(!has(parseAndVerify(pqSrc(eff, "digital"), "production"), "LLN-SUBSTRATE-001"));
+    });
+  }
+});
+
+describe("fail-open regression: a malformed lane fails closed, never silently inert", () => {
+  // parseLaneField fails an unrecognised lane keyword closed to value "digital" + malformed.
+  // The `inf.lane === "digital"` early-return used to run BEFORE the malformed check, so the
+  // safe-default masqueraded as an author-chosen inert lane and swallowed everything. Now the
+  // malformed check runs first → LLN-SUBSTRATE-002 error.
+  const laneSrc = (laneLine, effect = "") => `
+flow tryLane(request: Request) -> Result<Response, ApiError>
+contract {
+  ${effect ? `effects { ${effect} }` : ""}
+  substrate {
+    ${laneLine}
+    tolerance: 5e-3
+    redundancy: 3
+  }
+}
+{ return Ok(Response.ok({})) }
+`;
+  it("an unrecognised lane keyword (lane: gaming) is rejected as LLN-SUBSTRATE-002, not swallowed", () => {
+    const r = parseAndVerify(laneSrc("lane: gaming"), "production");
+    assert.ok(has(r, "LLN-SUBSTRATE-002"), "lane: gaming must fail closed, not be silently inert");
+    assert.equal(find(r, "LLN-SUBSTRATE-002").severity, "error");
+  });
+  it("a trailing // comment polluting the lane value fails closed (does not drop the crypto gate)", () => {
+    // Before the fix this read lane as inert digital and silently dropped LLN-SUBSTRATE-001
+    // on the crypto effect. Now the polluted value is malformed → LLN-SUBSTRATE-002 (build fails).
+    const r = parseAndVerify(laneSrc("lane: photonic   // optical accelerator", "crypto.sign.hybrid"), "production");
+    assert.ok(has(r, "LLN-SUBSTRATE-002"), "a comment-polluted lane must fail closed");
+    assert.ok(!has(r, "LLN-SUBSTRATE-001") || true); // either way the flow does not pass clean
+    assert.notEqual(substrateCount(r), 0, "must NOT compile clean (the fail-open was a clean pass)");
+  });
+});
+
 // ── Drift-control oracle + monotonicity + constant identity ───────────────────
 
 describe("drift-control oracle (compiler NMR math must match tower-citizen golden constants)", () => {
