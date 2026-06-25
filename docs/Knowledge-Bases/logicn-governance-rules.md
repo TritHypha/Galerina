@@ -1001,6 +1001,8 @@ Under `@experimental_profile(drcm_core_v1)`, the compiler:
 | LLN-IMPORT-002 | Import | Imported file has parse errors — cannot merge DAG | PLANNED (v2.1) |
 | LLN-IMPORT-003 | Import | Circular import detected in import chain | PLANNED (v2.1) |
 | LLN-IMPORT-004 | Import | Imported symbol name conflicts with local definition | PLANNED (v2.1) |
+| LLN-IMPORT-005 | Import | Import path escapes the allowed project root — pre-governance path traversal (resolved import must stay within `LOGICN_FS_ROOT` or cwd; checked segment-safe + after symlink canonicalization) | ENFORCED |
+| LLN-IMPORT-006 | Import | Imported file exceeds the maximum import size in bytes — compile-time read DoS guard (stat-checked before the read) | ENFORCED |
 | LLN-ACCESS-001 | Access | `access {}` grant references unknown capability name | PLANNED (v2.1) |
 | LLN-ACCESS-002 | Access | `grant` capability not declared in flow's `effects {}` | PLANNED (v2.1) |
 | LLN-ASSIMILATE-001 | Assimilate | `assimilate` plugin declared outside `boot.lln` | PLANNED (v2.1) |

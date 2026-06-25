@@ -20,10 +20,12 @@
 //   LLN-IMPORT-002  Imported file has parse errors (cannot merge)
 //   LLN-IMPORT-003  Circular import detected
 //   LLN-IMPORT-004  Symbol collision — imported name conflicts with local definition
+//   LLN-IMPORT-005  Import path escapes the allowed project root (pre-governance path traversal)
+//   LLN-IMPORT-006  Imported file exceeds the maximum size (compile-time DoS guard)
 // =============================================================================
 
-import { readFileSync, existsSync } from "node:fs";
-import { resolve, dirname, relative } from "node:path";
+import { readFileSync, existsSync, statSync, realpathSync } from "node:fs";
+import { resolve, dirname, relative, isAbsolute } from "node:path";
 import { parseProgram } from "./parser.js";
 import type { AstNode } from "./parser.js";
 
@@ -159,6 +161,56 @@ function extractSymbols(
 }
 
 // ---------------------------------------------------------------------------
+// Pre-governance read safety (LLN-IMPORT-005 / -006)
+//
+// Import resolution reads files from disk DURING COMPILATION, before any governance
+// applies. Two abuses are closed here:
+//   • Path traversal — a malicious `import "../../../../etc/secret.lln"` would, with
+//     no containment, read an arbitrary host file (its content is then parsed and can
+//     surface via diagnostics / merged symbols). The resolved path MUST stay within the
+//     allowed root (LOGICN_FS_ROOT, else cwd), checked segment-safe (path.relative) AND
+//     after symlink canonicalization (realpathSync) — the same two-layer defence the
+//     runtime fs sandbox uses (stdlib.ts), so an in-root symlink can't point outside.
+//   • Oversize read — readFileSync slurps the whole file into memory; a multi-hundred-MB
+//     import could OOM the compiler before the lexer's own 10 MB ceiling is reached. The
+//     size is stat-checked BEFORE the read so an oversize import fails fast.
+// ---------------------------------------------------------------------------
+
+/** Max bytes for a single imported .lln — matches the lexer's 10 MB source ceiling (LLN-LEX-004). */
+export const MAX_IMPORT_BYTES = 10 * 1024 * 1024;
+
+/** The compile-time filesystem root that imports may not escape (same convention as the runtime sandbox). */
+function importContainmentRoot(): string {
+  const env = (process as unknown as { env: Record<string, string | undefined> }).env;
+  return resolve(env["LOGICN_FS_ROOT"] ?? process.cwd());
+}
+
+/**
+ * True iff `target` is contained within `root`. Two layers, BOTH must agree (either alone is bypassable):
+ *   1. segment-safe — relative(root, target) must not start with ".." or be absolute (blocks ../ traversal
+ *      and sibling-prefix bypasses such as `/root-evil` vs `/root`).
+ *   2. symlink-safe — the same check after realpathSync canonicalizes the nearest existing ancestor
+ *      (blocks an in-root symlink that resolves outside the root). Canonicalizing both sides also avoids a
+ *      false reject when the root itself sits behind a symlink (e.g. macOS /tmp → /private/tmp).
+ * Fails closed: any realpath error (broken symlink / race) is treated as "not contained".
+ */
+export function isWithinRoot(target: string, root: string): boolean {
+  const rel = relative(root, target);
+  if (rel.startsWith("..") || isAbsolute(rel)) return false;
+  try {
+    const realRoot = realpathSync(root);
+    const check = existsSync(target) ? target
+      : existsSync(resolve(target, "..")) ? resolve(target, "..")
+        : root;
+    const realRel = relative(realRoot, realpathSync(check));
+    if (realRel.startsWith("..") || isAbsolute(realRel)) return false;
+  } catch {
+    return false;
+  }
+  return true;
+}
+
+// ---------------------------------------------------------------------------
 // Core resolution logic (synchronous)
 // ---------------------------------------------------------------------------
 
@@ -180,6 +232,7 @@ export function resolveFileImports(
 ): ResolvedFileModule[] {
   const results: ResolvedFileModule[] = [];
   const sourceDir = dirname(sourceFile);
+  const containmentRoot = importContainmentRoot();
 
   for (const decl of importDecls) {
     if (decl.kind !== "importDecl") continue;
@@ -189,6 +242,25 @@ export function resolveFileImports(
     if (relPath === null) continue; // not a file import — skip (package import handled elsewhere)
 
     const resolvedPath = resolve(sourceDir, relPath);
+
+    // LLN-IMPORT-005: path-traversal guard. The resolved path is checked for containment BEFORE any
+    // fs access — a pre-governance import must never read a file outside the allowed project root.
+    if (!isWithinRoot(resolvedPath, containmentRoot)) {
+      results.push({
+        filePath: resolvedPath,
+        symbols: [],
+        diagnostics: [{
+          code: "LLN-IMPORT-005",
+          severity: "error",
+          message:
+            `Import path '${relPath}' escapes the allowed project root. Imports may only reference ` +
+            `files within the project root '${containmentRoot}' (set LOGICN_FS_ROOT to widen it).`,
+          file: sourceFile,
+          importedFrom: relPath,
+        }],
+      });
+      continue;
+    }
 
     // LLN-IMPORT-001: File not found
     if (!existsSync(resolvedPath)) {
@@ -224,6 +296,31 @@ export function resolveFileImports(
         }],
       });
       continue;
+    }
+
+    // LLN-IMPORT-006: size guard — stat BEFORE the read so an oversize import fails fast instead of
+    // being slurped whole into memory (compile-time OOM/DoS). The lexer's own 10 MB ceiling runs only
+    // AFTER the bytes are already resident, so this pre-read check is the one that prevents the spike.
+    try {
+      const bytes = statSync(resolvedPath).size;
+      if (bytes > MAX_IMPORT_BYTES) {
+        results.push({
+          filePath: resolvedPath,
+          symbols: [],
+          diagnostics: [{
+            code: "LLN-IMPORT-006",
+            severity: "error",
+            message:
+              `Imported file '${relative(process.cwd(), resolvedPath)}' is ${bytes} bytes, exceeding ` +
+              `the ${MAX_IMPORT_BYTES}-byte import limit.`,
+            file: sourceFile,
+            importedFrom: relPath,
+          }],
+        });
+        continue;
+      }
+    } catch {
+      // stat failed (vanished/permission) — fall through; the read below yields the canonical LLN-IMPORT-001.
     }
 
     // Read the imported file
