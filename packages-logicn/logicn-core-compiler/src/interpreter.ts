@@ -821,16 +821,18 @@ class Interpreter {
    *  nested Interpreter to parent+1; runLocalFn increments it; both trap against maxCallDepth. */
   callDepth = 0;
 
-  /** Fail-closed GLOBAL compute-step counter (this Interpreter instance). Incremented per expression
-   *  eval (both the async evalExpr and the sync evalExprSync paths share it); traps at maxSteps — the
-   *  total-compute bound that per-loop maxIterations + per-call maxCallDepth do not provide. */
-  private steps = 0;
+  /** Fail-closed GLOBAL compute-step budget. A SHARED object (not a per-instance number) so that a whole
+   *  call tree of nested Interpreters charges ONE total budget — otherwise the bound is per-instance and a
+   *  deeply nested flow could run maxCallDepth × maxSteps total (2000 × 1e9 = 2e12 ≈ hours, effectively a
+   *  hang). Sub-Interpreters inherit this reference at construction (see runNestedFlow / stdlib callFlow).
+   *  Incremented per expression eval (async evalExpr + sync evalExprSync); traps at maxSteps. */
+  private stepBudget: { count: number } = { count: 0 };
 
-  /** Charge one compute step; TRAP (deny-by-default) when the global budget is exhausted. */
+  /** Charge one compute step against the SHARED budget; TRAP (deny-by-default) when exhausted. */
   private chargeStep(): void {
     const cap = this.runtimeOptions.maxSteps ?? DEFAULT_MAX_STEPS;
-    if (++this.steps > cap) {
-      throw new Error(`Compute budget exceeded (${cap} steps) — fail-closed (bounds TOTAL compute; nested bounded loops that each stay under maxIterations cannot run unboundedly).`);
+    if (++this.stepBudget.count > cap) {
+      throw new Error(`Compute budget exceeded (${cap} steps) — fail-closed (bounds TOTAL compute across the whole call tree; nested bounded loops + deep nesting cannot run unboundedly).`);
     }
   }
 
@@ -943,6 +945,7 @@ class Interpreter {
       resolveIdentifier: (name: string) => this.lookup(name)?.value,
       callFlow: async (name: string, fnArgs: ReadonlyMap<string, LogicNValue>) => {
         const sub = new Interpreter(this.ast, this.knownFlows, this.enforcer, this.capabilityHost, this.runtimeOptions, this.executionPlans);
+        sub.stepBudget = this.stepBudget; // share the global compute budget across the call tree
         const result = await sub.runFlow(name, fnArgs);
         for (const effect of result.effectsObserved) this.effectsObserved.add(effect);
         this.auditEntries.push(...result.auditEntries);
@@ -952,6 +955,7 @@ class Interpreter {
         if (fn.__tag === "unresolved" && this.flowIndex.has(fn.name)) {
           const callArgs = new Map<string, LogicNValue>([["arg", arg]]);
           const sub = new Interpreter(this.ast, this.knownFlows, this.enforcer, this.capabilityHost, this.runtimeOptions, this.executionPlans);
+          sub.stepBudget = this.stepBudget; // share the global compute budget across the call tree
           const result = await sub.runFlow(fn.name, callArgs);
           for (const effect of result.effectsObserved) this.effectsObserved.add(effect);
           this.auditEntries.push(...result.auditEntries);
@@ -2223,6 +2227,7 @@ class Interpreter {
 
     const nested = new Interpreter(this.ast, this.knownFlows, this.enforcer, this.capabilityHost, this.runtimeOptions, this.executionPlans);
     nested.callDepth = this.callDepth + 1;
+    nested.stepBudget = this.stepBudget; // share the global compute budget across the whole call tree
     const result = await nested.runFlow(name, callArgs);
     for (const effect of result.effectsObserved) this.effectsObserved.add(effect);
     this.auditEntries.push(...result.auditEntries);
@@ -2495,8 +2500,19 @@ function isRuntimeError(value: LogicNValue): value is { readonly __tag: "runtime
  * NB: matches the two `I32TrapKind`s by message — a cleaner long-term design is a distinct trap tag (0038).
  */
 function isCheckedTrap(value: LogicNValue): boolean {
-  return value.__tag === "runtimeError" &&
-    (value.message === "IntegerOverflow" || value.message === "DivisionByZero");
+  if (value.__tag !== "runtimeError") return false;
+  const m = value.message;
+  // HARD fail-closed traps must PROPAGATE through arithmetic (not fall through to "operator not
+  // supported", which masks the real reason). The i32-arith value traps, plus the liveness traps that
+  // a nested flow's runFlow catch converts to a runtimeError VALUE at the call boundary: if such a trap
+  // is an operand of `a + nested()`, it must surface as the trap, not a confusing operator error.
+  // i32-arith value-traps carry the exact message (returned as values, never thrown → never prefixed).
+  // The liveness traps are THROWN, then a nested flow's runFlow catch wraps them as a value with a
+  // "[Flow 'name'] " prefix — so match by substring, not prefix.
+  return m === "IntegerOverflow" || m === "DivisionByZero" ||
+    m.includes("Compute budget exceeded") ||         // global compute-step cap (maxSteps)
+    m.includes("Loop exceeded maximum iteration") ||  // per-loop cap (maxIterations)
+    m.includes("Recursion depth exceeded");           // call-depth cap (maxCallDepth)
 }
 
 function stripStringQuotes(value: string): string {

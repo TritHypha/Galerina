@@ -51,3 +51,36 @@ describe("interpreter global compute-step cap (maxSteps)", () => {
     assert.equal(a.value.message, b.value.message, "step-count cap is deterministic, not wall-clock");
   });
 });
+
+// The budget is a SHARED object across the whole call tree (not per-Interpreter-instance), so a deep
+// recursion whose TOTAL compute exceeds maxSteps traps — closing the "maxCallDepth × maxSteps ≈ hours"
+// liveness gap. And the liveness trap propagates cleanly through arithmetic (it crosses the nested
+// flow's runFlow catch as a runtimeError value; isCheckedTrap must recognize it, else `1 + rec()` would
+// mask it as "operator not supported").
+describe("interpreter global compute-step cap: SHARED across the call tree + clean propagation", () => {
+  const REC = `pure flow rec(n: Int) -> Int contract { effects {} } {
+  if n <= 0 { return 0 }
+  return 1 + rec(n - 1)
+}`;
+  const runRec = (maxSteps, n = 50) => {
+    const p = parseProgram(REC, "rec.lln");
+    return executeFlow("rec", new Map([["n", { __tag: "int", value: n }]]), p.ast, p.flows,
+      undefined, undefined, { maxSteps }, undefined, undefined);
+  };
+
+  it("a deep recursion whose TOTAL compute exceeds the shared budget traps (per-instance would not)", async () => {
+    const r = await runRec(80);
+    assert.equal(r.value.__tag, "runtimeError", "shared call-tree budget must trap, not run for hours");
+    assert.match(r.value.message ?? "", /Compute budget exceeded/);
+  });
+
+  it("the same recursion under a generous budget computes correctly (shared budget not over-charged)", async () => {
+    const r = await runRec(100_000);
+    assert.equal(r.value.value, 50);
+  });
+
+  it("the liveness trap surfaces as the BUDGET trap through arithmetic, NOT 'operator not supported'", async () => {
+    const r = await runRec(80);
+    assert.doesNotMatch(r.value.message ?? "", /not supported/);
+  });
+});
