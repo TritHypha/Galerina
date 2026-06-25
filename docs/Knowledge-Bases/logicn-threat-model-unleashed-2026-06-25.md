@@ -51,3 +51,28 @@ manifest-verification code (it has been touched this session) before landing.
 
 *Source: workflow `wf_9a0cd48c-71e` (2026-06-25). Full per-finding evidence + the red-team refute notes are in the
 workflow transcript.*
+
+---
+
+## DevSecOps pentest of the session's own fixes (2026-06-25, `wf_8291890f`)
+
+Adversarially re-checked that this session's fixes HOLD + introduced no bypass. **It found 2 real holes the
+original fixes left open — both now FIXED (`74a2a10`):**
+- **CRITICAL — redirect-follow SSRF:** the egress guard ran once on the original URL, but `fetch` defaults to
+  `redirect:"follow"`, so a guard-approved public URL returning `302 Location: http://169.254.169.254/` was
+  followed to the metadata host un-re-checked (returned an internal secret). Fixed: `redirect:"manual"` + re-guard
+  every Location with a 5-hop cap.
+- **HIGH — parser depth guard incomplete:** `LLN-PARSE-DEPTH-001` guarded only expression recursion; nested
+  statement blocks (`if{if{…}}`) re-opened the host-stack RangeError. Fixed: the same depth accounting in
+  `parseBlock` (shared counter).
+- Also fixed a **latent require-in-ESM bug** the redirect path exposed (`createRequire`).
+
+**CONFIRMED sound by the pentest (no action):** the static SSRF classifier (denies the full numeric/IPv6/CGNAT/
+credential bypass corpus), the BOM strip, the `exprDepth`-under-exception balance, the Int64 lift (no fast-tier
+truncation; UInt64 still gated), the reporter delete-to-launder + malformed-allowlist guards, and the allowlist
+audit tool. **Tracked residuals (lower severity → #38):** DNS-rebind socket-pin TOCTOU; 3 directory-scan read
+sites bypass the size pre-check; the import-path traversal. The two queued criticals (effect-alias smuggle,
+signed-WASM-stub) were re-confirmed STILL OPEN (genuinely pending, not masked) → #36.
+
+**Lesson:** a security fix is not done when the happy-path bypass is closed — re-pentest the *fix* itself. The
+redirect-follow vector is the classic "guard the request, miss the redirect" SSRF, and it survived the first fix.
