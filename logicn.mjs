@@ -1133,6 +1133,15 @@ Baseline comparison (governance-cost):
     // fail-closed error. The floor scan always runs; only its severity is gated on the production profile,
     // so in `check` these arrive as warnings — display-only, they do not fail the check.
     const tierWarnings = fx.flatMap(r => (r.diagnostics ?? []).filter(d => d.code === "LLN-TIER-001"));
+    // P2 (threat-model): LLN-EFFECT-003 (an effectful op in a PURE flow — a zero-trust boundary breach)
+    // and LLN-STDLIB-002 (deny-by-default unrecognized effectful method) are integrity invariants the
+    // PRODUCTION build already rejects. `check` (all modes) surfaced NEITHER — it took only LLN-TIER-001
+    // from `fx` and the exit predicate ignored fx entirely — so a pure-flow effect breach or a
+    // deny-by-default escape printed "0 errors" EXIT=0. Surface them and FAIL CLOSED in ALL modes.
+    // (Deliberately narrow: the broader undeclared-effect class EFFECT-001/STDLIB-001 stays dev-advisory.)
+    const INTEGRITY_EFFECT_CODES = new Set(["LLN-EFFECT-003", "LLN-STDLIB-002"]);
+    const integrityEffectErrors = fx.flatMap(r => (r.diagnostics ?? []).filter(
+      d => d.severity === "error" && INTEGRITY_EFFECT_CODES.has(d.code)));
     // Run the value-state checker ONCE and surface ALL of its ERROR-severity diagnostics, not just the
     // migration-grade LLN-VALUESTATE-008 boundary warning. The old code filtered to VALUESTATE-008 ALONE,
     // so a fail-closed value-state ERROR — e.g. LLN-NUMERIC-001 for a still-gated 64-bit width (UInt64)
@@ -1142,7 +1151,7 @@ Baseline comparison (governance-cost):
     const vsDiags = m.checkValueStates(parsed.ast).diagnostics ?? [];
     const valueStateErrors = vsDiags.filter(d => d.severity === "error");
     const boundaryWarnings = vsDiags.filter(d => d.code === "LLN-VALUESTATE-008" && d.severity !== "error");
-    const allDiags = [...errors, ...gov.diagnostics, ...tierWarnings, ...valueStateErrors, ...boundaryWarnings];
+    const allDiags = [...errors, ...gov.diagnostics, ...tierWarnings, ...valueStateErrors, ...boundaryWarnings, ...integrityEffectErrors];
     if (allDiags.length === 0) {
       // We're building the language — distinguish "compiled real content" from "found nothing". A clean
       // parse with ZERO top-level declarations (an empty or comment-only file) must NOT report a blanket
@@ -1193,7 +1202,7 @@ Baseline comparison (governance-cost):
     // Exit non-zero on parse errors OR fail-closed value-state errors (e.g. LLN-NUMERIC-001 for a
     // still-gated width) — these are unconditional correctness failures the build/run path also rejects.
     // Tier/boundary findings stay display-only WARNINGS in check mode and do NOT affect the exit code.
-    process.exit(errors.length > 0 || valueStateErrors.length > 0 ? 1 : 0);
+    process.exit(errors.length > 0 || valueStateErrors.length > 0 || integrityEffectErrors.length > 0 ? 1 : 0);
   }
 
   // ── logicn generate tests <file.lln> [--tap] — contract-driven test obligations (0016) ──
@@ -1876,6 +1885,16 @@ Baseline comparison (governance-cost):
     // DEV / CHECK / UNSET: no tier floor, checkEffects diagnostics stay advisory (mode defaults to
     // "production", enforceTierFloor defaults to false) — `fx` is byte-identical to the pre-existing call.
     fx = m.checkEffects(parsed.flows, parsed.ast);
+    // P2 (threat-model): EVEN in dev, two effect invariants fail closed — LLN-EFFECT-003 (effectful op in
+    // a PURE flow, a boundary breach) and LLN-STDLIB-002 (deny-by-default unrecognized effectful method).
+    // The production branch above already folds ALL error diagnostics; this keeps these two fail-closed at
+    // every profile (the broader EFFECT-001/STDLIB-001 class stays dev-advisory, by design).
+    const INTEGRITY_EFFECT_CODES = new Set(["LLN-EFFECT-003", "LLN-STDLIB-002"]);
+    for (const result of fx) {
+      for (const d of result.diagnostics ?? []) {
+        if (d.severity === "error" && INTEGRITY_EFFECT_CODES.has(d.code)) govErrors.push(d);
+      }
+    }
   }
   // UNCONDITIONAL value-state gate (mirror of cli.ts:416 + runtime.ts:116 — the internal compiler bin and
   // the governed runtime BOTH run checkValueStates on every build/run). The LLN-NUMERIC-001 numeric-
