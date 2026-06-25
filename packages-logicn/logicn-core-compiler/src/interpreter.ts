@@ -135,6 +135,36 @@ const BOOL_TRUE:  LogicNValue = { __tag: "bool", value: true };
 const BOOL_FALSE: LogicNValue = { __tag: "bool", value: false };
 const boolVal = (b: boolean): LogicNValue => b ? BOOL_TRUE : BOOL_FALSE;
 
+/**
+ * LLN-FLOAT-NAN-001 — the fail-closed trap message a non-finite float construction or comparison yields.
+ * Whitelisted in isCheckedTrap so it PROPAGATES through the enclosing expression (never a silent NaN/Inf).
+ */
+const FLOAT_NONFINITE_TRAP = "NonFiniteFloat";
+
+/**
+ * The float-value factory. A NON-FINITE result — NaN (0.0/0.0, sqrt(-1), log(0)), ±Inf (x/0.0, overflow, a
+ * 1e400 literal) — becomes a fail-closed CHECKED TRAP that propagates (isCheckedTrap) instead of a silent
+ * {__tag:"float", value:NaN|Inf}. A silent NaN passes EVERY range guard (IEEE-754: every NaN comparison is
+ * false → "in range" for `>upper` AND `<lower` simultaneously) and could be signed into a manifest. Route
+ * every float construction through here so a non-finite can never enter the value domain. (LLN-FLOAT-NAN-001.)
+ */
+function mkFloat(n: number): LogicNValue {
+  return Number.isFinite(n) ? { __tag: "float", value: n } : { __tag: "runtimeError", message: FLOAT_NONFINITE_TRAP };
+}
+
+/**
+ * Float ORDERING comparison, fail-closed: a non-finite operand TRAPS rather than silently returning a
+ * misleading boolean. This is the exact range-guard fail-open site — `NaN > limit` is `false`, so a NaN
+ * sails through both an upper-bound and a lower-bound deny-guard. Backstops any non-finite that slipped a
+ * producer (stdlib math, host conversion) before it reaches a guard. (== / != stay as-is: equality with a
+ * NaN tends to fail CLOSED, not open, and is not a range bound.) (LLN-FLOAT-NAN-001.)
+ */
+function floatCmp(a: number, b: number, f: (x: number, y: number) => boolean): LogicNValue {
+  return Number.isFinite(a) && Number.isFinite(b)
+    ? boolVal(f(a, b))
+    : { __tag: "runtimeError", message: FLOAT_NONFINITE_TRAP };
+}
+
 // =============================================================================
 // O(1) Binary operation dispatch map
 // =============================================================================
@@ -184,34 +214,35 @@ export const BINARY_DISPATCH = new Map<number, _DispatchFn>([
   [dispatchKey("int", ">=", "int"),  (a, b) => boolVal((a.value as number) >= (b.value as number))],
   [dispatchKey("int", "==", "int"),  (a, b) => boolVal((a.value as number) === (b.value as number))],
   [dispatchKey("int", "!=", "int"),  (a, b) => boolVal((a.value as number) !== (b.value as number))],
-  // --- Float × Float ---
-  [dispatchKey("float", "+",  "float"), (a, b) => ({ __tag: "float", value: (a.value as number) + (b.value as number) })],
-  [dispatchKey("float", "-",  "float"), (a, b) => ({ __tag: "float", value: (a.value as number) - (b.value as number) })],
-  [dispatchKey("float", "*",  "float"), (a, b) => ({ __tag: "float", value: (a.value as number) * (b.value as number) })],
-  [dispatchKey("float", "/",  "float"), (a, b) => ({ __tag: "float", value: (a.value as number) / (b.value as number) })],
-  [dispatchKey("float", "<",  "float"), (a, b) => boolVal((a.value as number) <  (b.value as number))],
-  [dispatchKey("float", "<=", "float"), (a, b) => boolVal((a.value as number) <= (b.value as number))],
-  [dispatchKey("float", ">",  "float"), (a, b) => boolVal((a.value as number) >  (b.value as number))],
-  [dispatchKey("float", ">=", "float"), (a, b) => boolVal((a.value as number) >= (b.value as number))],
+  // --- Float × Float ---  (mkFloat: a non-finite result TRAPS, never a silent NaN/Inf — LLN-FLOAT-NAN-001;
+  //   floatCmp: a non-finite operand in an ORDERING compare TRAPS, never a guard-passing `false`)
+  [dispatchKey("float", "+",  "float"), (a, b) => mkFloat((a.value as number) + (b.value as number))],
+  [dispatchKey("float", "-",  "float"), (a, b) => mkFloat((a.value as number) - (b.value as number))],
+  [dispatchKey("float", "*",  "float"), (a, b) => mkFloat((a.value as number) * (b.value as number))],
+  [dispatchKey("float", "/",  "float"), (a, b) => mkFloat((a.value as number) / (b.value as number))],
+  [dispatchKey("float", "<",  "float"), (a, b) => floatCmp(a.value as number, b.value as number, (x, y) => x <  y)],
+  [dispatchKey("float", "<=", "float"), (a, b) => floatCmp(a.value as number, b.value as number, (x, y) => x <= y)],
+  [dispatchKey("float", ">",  "float"), (a, b) => floatCmp(a.value as number, b.value as number, (x, y) => x >  y)],
+  [dispatchKey("float", ">=", "float"), (a, b) => floatCmp(a.value as number, b.value as number, (x, y) => x >= y)],
   [dispatchKey("float", "==", "float"), (a, b) => boolVal((a.value as number) === (b.value as number))],
   [dispatchKey("float", "!=", "float"), (a, b) => boolVal((a.value as number) !== (b.value as number))],
   // --- Int + Float mixed (promote to float) ---
-  [dispatchKey("int",   "+", "float"), (a, b) => ({ __tag: "float", value: (a.value as number) + (b.value as number) })],
-  [dispatchKey("float", "+", "int"),   (a, b) => ({ __tag: "float", value: (a.value as number) + (b.value as number) })],
-  [dispatchKey("int",   "-", "float"), (a, b) => ({ __tag: "float", value: (a.value as number) - (b.value as number) })],
-  [dispatchKey("float", "-", "int"),   (a, b) => ({ __tag: "float", value: (a.value as number) - (b.value as number) })],
-  [dispatchKey("int",   "*", "float"), (a, b) => ({ __tag: "float", value: (a.value as number) * (b.value as number) })],
-  [dispatchKey("float", "*", "int"),   (a, b) => ({ __tag: "float", value: (a.value as number) * (b.value as number) })],
-  [dispatchKey("int",   "/", "float"), (a, b) => ({ __tag: "float", value: (a.value as number) / (b.value as number) })],
-  [dispatchKey("float", "/", "int"),   (a, b) => ({ __tag: "float", value: (a.value as number) / (b.value as number) })],
-  [dispatchKey("int",   "<",  "float"), (a, b) => boolVal((a.value as number) <  (b.value as number))],
-  [dispatchKey("float", "<",  "int"),   (a, b) => boolVal((a.value as number) <  (b.value as number))],
-  [dispatchKey("int",   "<=", "float"), (a, b) => boolVal((a.value as number) <= (b.value as number))],
-  [dispatchKey("float", "<=", "int"),   (a, b) => boolVal((a.value as number) <= (b.value as number))],
-  [dispatchKey("int",   ">",  "float"), (a, b) => boolVal((a.value as number) >  (b.value as number))],
-  [dispatchKey("float", ">",  "int"),   (a, b) => boolVal((a.value as number) >  (b.value as number))],
-  [dispatchKey("int",   ">=", "float"), (a, b) => boolVal((a.value as number) >= (b.value as number))],
-  [dispatchKey("float", ">=", "int"),   (a, b) => boolVal((a.value as number) >= (b.value as number))],
+  [dispatchKey("int",   "+", "float"), (a, b) => mkFloat((a.value as number) + (b.value as number))],
+  [dispatchKey("float", "+", "int"),   (a, b) => mkFloat((a.value as number) + (b.value as number))],
+  [dispatchKey("int",   "-", "float"), (a, b) => mkFloat((a.value as number) - (b.value as number))],
+  [dispatchKey("float", "-", "int"),   (a, b) => mkFloat((a.value as number) - (b.value as number))],
+  [dispatchKey("int",   "*", "float"), (a, b) => mkFloat((a.value as number) * (b.value as number))],
+  [dispatchKey("float", "*", "int"),   (a, b) => mkFloat((a.value as number) * (b.value as number))],
+  [dispatchKey("int",   "/", "float"), (a, b) => mkFloat((a.value as number) / (b.value as number))],
+  [dispatchKey("float", "/", "int"),   (a, b) => mkFloat((a.value as number) / (b.value as number))],
+  [dispatchKey("int",   "<",  "float"), (a, b) => floatCmp(a.value as number, b.value as number, (x, y) => x <  y)],
+  [dispatchKey("float", "<",  "int"),   (a, b) => floatCmp(a.value as number, b.value as number, (x, y) => x <  y)],
+  [dispatchKey("int",   "<=", "float"), (a, b) => floatCmp(a.value as number, b.value as number, (x, y) => x <= y)],
+  [dispatchKey("float", "<=", "int"),   (a, b) => floatCmp(a.value as number, b.value as number, (x, y) => x <= y)],
+  [dispatchKey("int",   ">",  "float"), (a, b) => floatCmp(a.value as number, b.value as number, (x, y) => x >  y)],
+  [dispatchKey("float", ">",  "int"),   (a, b) => floatCmp(a.value as number, b.value as number, (x, y) => x >  y)],
+  [dispatchKey("int",   ">=", "float"), (a, b) => floatCmp(a.value as number, b.value as number, (x, y) => x >= y)],
+  [dispatchKey("float", ">=", "int"),   (a, b) => floatCmp(a.value as number, b.value as number, (x, y) => x >= y)],
   [dispatchKey("int",   "==", "float"), (a, b) => boolVal((a.value as number) === (b.value as number))],
   [dispatchKey("float", "==", "int"),   (a, b) => boolVal((a.value as number) === (b.value as number))],
   [dispatchKey("int",   "!=", "float"), (a, b) => boolVal((a.value as number) !== (b.value as number))],
@@ -598,7 +629,10 @@ class SyncInterpreter {
     switch (node.kind) {
       case "numberLiteral": {
         const raw = (node.value ?? "0").replace(/_/g, "");
-        if (raw.includes(".")) return { __tag: "float", value: parseFloat(raw) };
+        // A float literal has a '.' OR a decimal exponent (`1e400`, `9e9`). The dotless-exponent form was
+        // mis-classified as int → parseInt stops at 'e' → `9e9` silently became 9 (a wrong value AND a tier
+        // divergence: WASM emits f64.const 9e9). mkFloat traps a literal that overflows to ±Inf (`1e400`).
+        if (raw.includes(".") || /^\d+[eE][+-]?\d+$/.test(raw)) return mkFloat(parseFloat(raw));
         return intVal(parseInt(raw, 10));
       }
 
@@ -646,12 +680,16 @@ class SyncInterpreter {
           // defense-in-depth for the three-tier-divergence class that has bitten before. Float-involving
           // ops keep native arithmetic (no i32 overflow/trap semantics apply to floats).
           const bothInt = left.__tag === "int" && right.__tag === "int";
+          // A float-involving operand promotes to a FLOAT result via mkFloat (fail-closed on non-finite) —
+          // NOT intVal, which silently mis-tagged a float result as int (a sync/async divergence) and let a
+          // NaN/Inf through unchecked. (Provably dead today — every float×{int,float} key is in the dispatch
+          // map above — but kept correct as defense-in-depth for a dropped-key regression. LLN-FLOAT-NAN-001.)
           switch (op) {
-            case "+": return bothInt ? i32R(i32AddChecked(lv, rv)) : intVal(lv + rv);
-            case "-": return bothInt ? i32R(i32SubChecked(lv, rv)) : intVal(lv - rv);
-            case "*": return bothInt ? i32R(i32MulChecked(lv, rv)) : intVal(Math.imul(lv, rv));
-            case "/": return bothInt ? i32R(i32DivChecked(lv, rv)) : intVal(Math.trunc(lv / rv));
-            case "%": return bothInt ? i32R(i32ModChecked(lv, rv)) : intVal(lv % rv);
+            case "+": return bothInt ? i32R(i32AddChecked(lv, rv)) : mkFloat(lv + rv);
+            case "-": return bothInt ? i32R(i32SubChecked(lv, rv)) : mkFloat(lv - rv);
+            case "*": return bothInt ? i32R(i32MulChecked(lv, rv)) : mkFloat(lv * rv);
+            case "/": return bothInt ? i32R(i32DivChecked(lv, rv)) : mkFloat(lv / rv);
+            case "%": return bothInt ? i32R(i32ModChecked(lv, rv)) : mkFloat(lv % rv);
           }
         }
         throw new SyncNotSupported(`binary ${op} on ${left.__tag} × ${right.__tag}`);
@@ -663,7 +701,7 @@ class SyncInterpreter {
         // #0021: checked i32 unary-minus on the SYNC fast path too (traps -INT32_MIN, canonicalizes -0).
         if (op === "-" && operand.__tag === "int")   return i32R(i32NegChecked(operand.value as number));
         if (op === "-" && operand.__tag === "int64")  return i64R(i64NegChecked(operand.value as bigint));
-        if (op === "-" && operand.__tag === "float")  return { __tag: "float", value: -(operand.value as number) };
+        if (op === "-" && operand.__tag === "float")  return mkFloat(-(operand.value as number));
         if (op === "!" && operand.__tag === "bool")   return boolVal(!(operand.value as boolean));
         throw new SyncNotSupported(`unary ${op} on ${operand.__tag}`);
       }
@@ -981,8 +1019,10 @@ class Interpreter {
         if (raw.startsWith("0x") || raw.startsWith("0X")) return { __tag: "int", value: parseInt(raw, 16) };
         if (raw.startsWith("0b") || raw.startsWith("0B")) return { __tag: "int", value: parseInt(raw.slice(2), 2) };
         if (raw.startsWith("0o") || raw.startsWith("0O")) return { __tag: "int", value: parseInt(raw.slice(2), 8) };
-        return raw.includes(".")
-          ? { __tag: "float", value: parseFloat(raw) }
+        // float if it has a '.' OR a decimal exponent (`1e400`, `9e9`); mkFloat traps an overflow-to-±Inf
+        // literal. The dotless-exponent case was previously mis-read as int (`9e9` → 9). (LLN-FLOAT-NAN-001.)
+        return raw.includes(".") || /^\d+[eE][+-]?\d+$/.test(raw)
+          ? mkFloat(parseFloat(raw))
           : { __tag: "int", value: parseInt(raw, 10) };
       }
       case "stringLiteral":
@@ -1621,8 +1661,10 @@ class Interpreter {
         if (raw.startsWith("0x") || raw.startsWith("0X")) return { __tag: "int", value: parseInt(raw, 16) };
         if (raw.startsWith("0b") || raw.startsWith("0B")) return { __tag: "int", value: parseInt(raw.slice(2), 2) };
         if (raw.startsWith("0o") || raw.startsWith("0O")) return { __tag: "int", value: parseInt(raw.slice(2), 8) };
-        return raw.includes(".")
-          ? { __tag: "float", value: parseFloat(raw) }
+        // float if it has a '.' OR a decimal exponent (`1e400`, `9e9`); mkFloat traps an overflow-to-±Inf
+        // literal. The dotless-exponent case was previously mis-read as int (`9e9` → 9). (LLN-FLOAT-NAN-001.)
+        return raw.includes(".") || /^\d+[eE][+-]?\d+$/.test(raw)
+          ? mkFloat(parseFloat(raw))
           : { __tag: "int", value: parseInt(raw, 10) };
       }
 
@@ -1706,7 +1748,7 @@ class Interpreter {
         if (op === "-" && operand.__tag === "int") return i32R(i32NegChecked(operand.value));
         // Step 1e: int64 negation through the checked layer so -INT64_MIN TRAPS (it overflows i64).
         if (op === "-" && operand.__tag === "int64") return i64R(i64NegChecked(operand.value));
-        if (op === "-" && operand.__tag === "float") return { __tag: "float", value: -operand.value };
+        if (op === "-" && operand.__tag === "float") return mkFloat(-operand.value);
         return { __tag: "runtimeError", message: `Unary '${op}' not valid for ${operand.__tag}` };
       }
 
@@ -1771,12 +1813,14 @@ class Interpreter {
 
     if ((left.__tag === "int" || left.__tag === "float") && (right.__tag === "int" || right.__tag === "float")) {
       const resultTag = left.__tag === "float" || right.__tag === "float" ? "float" : "int";
+      // A float result routes through mkFloat (fail-closed on non-finite — never a silent NaN/Inf that would
+      // pass a range guard or be signed). The int branch is unchanged. (LLN-FLOAT-NAN-001.)
       switch (op) {
-        case "+": return { __tag: resultTag, value: left.value + right.value };
-        case "-": return { __tag: resultTag, value: left.value - right.value };
-        case "*": return { __tag: resultTag, value: left.value * right.value };
-        case "/": return { __tag: resultTag, value: resultTag === "int" ? Math.trunc(left.value / right.value) : left.value / right.value };
-        case "%": return { __tag: resultTag, value: left.value % right.value };
+        case "+": return resultTag === "float" ? mkFloat(left.value + right.value) : { __tag: "int", value: left.value + right.value };
+        case "-": return resultTag === "float" ? mkFloat(left.value - right.value) : { __tag: "int", value: left.value - right.value };
+        case "*": return resultTag === "float" ? mkFloat(left.value * right.value) : { __tag: "int", value: left.value * right.value };
+        case "/": return resultTag === "float" ? mkFloat(left.value / right.value) : { __tag: "int", value: Math.trunc(left.value / right.value) };
+        case "%": return resultTag === "float" ? mkFloat(left.value % right.value) : { __tag: "int", value: left.value % right.value };
       }
     }
 
@@ -1794,11 +1838,14 @@ class Interpreter {
     if (left.__tag === "int" || left.__tag === "float") {
       const l = left.value;
       const r = right.__tag === "int" || right.__tag === "float" ? right.value : 0;
+      // A float-involving ordering compare routes through floatCmp (a non-finite operand TRAPS, never a
+      // guard-passing `false`). Int-only compares stay exact. (LLN-FLOAT-NAN-001.)
+      const anyFloat = left.__tag === "float" || right.__tag === "float";
       switch (op) {
-        case "<": return { __tag: "bool", value: l < r };
-        case "<=": return { __tag: "bool", value: l <= r };
-        case ">": return { __tag: "bool", value: l > r };
-        case ">=": return { __tag: "bool", value: l >= r };
+        case "<":  return anyFloat ? floatCmp(l, r, (x, y) => x <  y) : boolVal(l <  r);
+        case "<=": return anyFloat ? floatCmp(l, r, (x, y) => x <= y) : boolVal(l <= r);
+        case ">":  return anyFloat ? floatCmp(l, r, (x, y) => x >  y) : boolVal(l >  r);
+        case ">=": return anyFloat ? floatCmp(l, r, (x, y) => x >= y) : boolVal(l >= r);
       }
     }
 
@@ -2697,6 +2744,7 @@ function isCheckedTrap(value: LogicNValue): boolean {
   // The liveness traps are THROWN, then a nested flow's runFlow catch wraps them as a value with a
   // "[Flow 'name'] " prefix — so match by substring, not prefix.
   return m === "IntegerOverflow" || m === "DivisionByZero" ||
+    m === FLOAT_NONFINITE_TRAP ||                      // non-finite float (NaN/±Inf) — LLN-FLOAT-NAN-001
     m.includes("Compute budget exceeded") ||         // global compute-step cap (maxSteps)
     m.includes("Loop exceeded maximum iteration") ||  // per-loop cap (maxIterations)
     m.includes("Recursion depth exceeded");           // call-depth cap (maxCallDepth)
