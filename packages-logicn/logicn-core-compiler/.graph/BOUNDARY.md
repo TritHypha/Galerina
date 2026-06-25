@@ -9,8 +9,8 @@
 
 | Metric | Count |
 |---|---|
-| Files | 78 |
-| Internal edges | 222 |
+| Files | 79 |
+| Internal edges | 228 |
 | External dependencies | 14 |
 | ├─ Node core | 6 |
 | ├─ Workspace (@logicn/*) | 2 |

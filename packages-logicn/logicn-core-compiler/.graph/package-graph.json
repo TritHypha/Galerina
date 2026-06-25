@@ -31,6 +31,7 @@
     "src/module-registry.ts",
     "src/monkey-patch-checker.ts",
     "src/naming-policy-checker.ts",
+    "src/numeric-lowering.ts",
     "src/observability-inference.ts",
     "src/package-resolver.ts",
     "src/package-type-registry.ts",
@@ -108,6 +109,10 @@
     {
       "from": "src/bytecode-vm.ts",
       "to": "src/i32-arith.ts"
+    },
+    {
+      "from": "src/bytecode-vm.ts",
+      "to": "src/numeric-lowering.ts"
     },
     {
       "from": "src/cli.ts",
@@ -590,6 +595,10 @@
       "to": "src/i64-arith.ts"
     },
     {
+      "from": "src/interpreter.ts",
+      "to": "src/numeric-lowering.ts"
+    },
+    {
       "from": "src/manifest-generator.ts",
       "to": "src/governance-verifier.ts"
     },
@@ -611,6 +620,14 @@
     },
     {
       "from": "src/naming-policy-checker.ts",
+      "to": "src/parser.ts"
+    },
+    {
+      "from": "src/numeric-lowering.ts",
+      "to": "src/i64-arith.ts"
+    },
+    {
+      "from": "src/numeric-lowering.ts",
       "to": "src/parser.ts"
     },
     {
@@ -954,6 +971,10 @@
       "to": "src/parser.ts"
     },
     {
+      "from": "src/value-state-checker.ts",
+      "to": "src/numeric-lowering.ts"
+    },
+    {
       "from": "src/wat-assembler.ts",
       "to": "src/type-registry.ts"
     },
@@ -968,6 +989,10 @@
     {
       "from": "src/wat-emitter.ts",
       "to": "src/i32-arith.ts"
+    },
+    {
+      "from": "src/wat-emitter.ts",
+      "to": "src/numeric-lowering.ts"
     }
   ],
   "externalDeps": [
@@ -1101,8 +1126,8 @@
     "src/runtime/index.ts"
   ],
   "stats": {
-    "fileCount": 78,
-    "internalEdgeCount": 222,
+    "fileCount": 79,
+    "internalEdgeCount": 228,
     "externalDepCount": 14,
     "nodeCoreCount": 6,
     "workspaceCount": 2,
