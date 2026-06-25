@@ -26,6 +26,7 @@
 
 import { consensusTrit } from "./tpl-simulator.js";
 import { Verdict, vAnd } from "./three-valued-governance.js";
+import { dispatchDeadZone, type OnIndeterminate } from "./deadzone-dispatcher.js";
 // Pure NMR compute is the shared single source of truth (also used by the compiler's
 // substrate-inference). This module keeps the SubstrateParamError-throwing validation
 // wrappers below; the math itself lives in @logicn/substrate-math.
@@ -191,6 +192,25 @@ export class NoisyLane {
     for (let k = 0; k < N; k++) trits.push(this.read(t, `${opId}:r${k}`, neighbors).value);
     const value = majorityVote(trits);
     return { value, indeterminate: value === 0, noiseMargin: 0 };
+  }
+
+  /**
+   * Like {@link readVoted}, but when the vote lands in the K3-0 dead zone (value 0 / indeterminate) it
+   * EXECUTES the flow's declared `on_indeterminate` policy (trap | revote:N | fallback_digital) instead of
+   * silently propagating INDETERMINATE. Fail-closed: an unresolved dead zone TRAPS (SubstrateDeadZoneTrap),
+   * never a guessed value. A non-indeterminate vote is returned unchanged (the policy is not invoked). This
+   * is the runtime executor for the previously-parsed-but-dead substrate `on_indeterminate` policy.
+   */
+  readVotedGoverned(
+    t: -1 | 0 | 1,
+    N: number,
+    opId: string,
+    policy: OnIndeterminate,
+    neighbors: Neighbors = NO_NEIGHBORS,
+  ): Reading {
+    const r = this.readVoted(t, N, opId, neighbors);
+    if (r.value !== 0) return r; // definite — no dead-zone policy needed
+    return dispatchDeadZone(policy, t, (n) => this.readVoted(t, n, `${opId}:revote`, neighbors));
   }
 }
 

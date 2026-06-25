@@ -107,6 +107,9 @@ export type {
   SubstrateParameters, Reading, Neighbors, SubstrateGuarantee, SubstrateCheckResult,
   SubstrateDiagnostic, SubstrateVerifyContext, SubstrateProfile, SubstrateDecision,
 } from "./substrate-model.js";
+// K3-0 dead-zone policy executor (runtime enforcer of the parsed `on_indeterminate` policy).
+export { dispatchDeadZone, SubstrateDeadZoneTrap, DEFAULT_ON_INDETERMINATE } from "./deadzone-dispatcher.js";
+export type { OnIndeterminate } from "./deadzone-dispatcher.js";
 
 // ── Hardware Execution Bridge — the Brain/Brawn seam (native FFI contract) ──
 export { assertDeterminism } from "./bridge/interface.js";
