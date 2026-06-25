@@ -771,6 +771,14 @@ const FLOAT_WAT_TYPES = new Set<string>(["Float", "Float64", "Double", "Decimal"
 const FLOAT_ARITH_WAT: Readonly<Record<string, string>> = { "+": "f64.add", "-": "f64.sub", "*": "f64.mul", "/": "f64.div" };
 const FLOAT_CMP_WAT: Readonly<Record<string, string>> = { "==": "f64.eq", "!=": "f64.ne", "<": "f64.lt", ">": "f64.gt", "<=": "f64.le", ">=": "f64.ge" };
 
+// Int64 — the lifted 64-bit signed width (verified i64 plan, Steps 3a/4c). `+`/`-`/`*` route to the
+// strict-trapping checked i64 helpers (Fork A=TRAP); `/`/`%` use native i64.div_s/rem_s (div_s traps /0
+// AND INT64_MIN/-1; rem_s traps /0 only). Comparisons yield an i32 bool. UInt64 is NOT here — unsigned
+// needs i64.div_u/lt_u + its own helpers and stays fail-closed under LLN-NUMERIC-001.
+const INT64_WAT_TYPES = new Set<string>(["Int64"]);
+const INT64_ARITH_WAT: Readonly<Record<string, string>> = { "+": "call $lln_checked_add_i64", "-": "call $lln_checked_sub_i64", "*": "call $lln_checked_mul_i64", "/": "i64.div_s", "%": "i64.rem_s" };
+const INT64_CMP_WAT: Readonly<Record<string, string>> = { "==": "i64.eq", "!=": "i64.ne", "<": "i64.lt_s", ">": "i64.gt_s", "<=": "i64.le_s", ">=": "i64.ge_s" };
+
 /**
  * #165: the WASM stack type a fully-emitted expression string leaves on the stack, read from its
  * leading opcode. Used to declare a `let`/`mut` local with the SAME type as its initialiser — an
@@ -781,7 +789,12 @@ const FLOAT_CMP_WAT: Readonly<Record<string, string>> = { "==": "f64.eq", "!=": 
  * typed but "valid" store that would compute garbage.
  */
 function watStackType(expr: string): WATValType {
-  const m = expr.trimStart().match(/^\(([a-z0-9]+)\.([a-z0-9_]+)/);
+  const t = expr.trimStart();
+  // Step 3d: a checked-i64 helper call leaves an i64 on the stack. The generic match below requires a `.`
+  // after the head, so `(call $…` falls through to the i32 default — correct for the i32 helpers, WRONG
+  // for the i64 ones (an Int64 local declared from it would get an i32 valtype → a truncating/invalid store).
+  if (/^\(call \$lln_checked_(add|sub|mul)_i64\b/.test(t)) return "i64";
+  const m = t.match(/^\(([a-z0-9]+)\.([a-z0-9_]+)/);
   if (m === null) return "i32";
   const prefix = m[1]!, op = m[2]!;
   if (/^(eq|ne|lt|gt|le|ge)/.test(op)) return "i32"; // f64/f32/i64 comparisons → i32 bool
@@ -1029,6 +1042,11 @@ function inferExprType(node: AstNode | undefined): string | undefined {
       // i32 checked-helper path over an f64 operand (invalid module) OR wraps an already-f64 operand in
       // f64.convert_i32_s (reinterprets the bits → garbage). This is the fix for both nested-mixed bugs.
       if (FLOAT_WAT_TYPES.has(l ?? "") || FLOAT_WAT_TYPES.has(r ?? "")) return "Float";
+      // Step 3c: Int64 is contagious — AFTER the float check, so a (type-error) Int64+Float still infers
+      // Float → invalid module → walker fallback (fail-SAFE). Mixed Int+Int64 → Int64, matching the
+      // interpreter's int64 dispatch promotion. Only fires when an operand already infers Int64 (an Int64
+      // binding/param), so non-Int64 flows are unaffected.
+      if (INT64_WAT_TYPES.has(l ?? "") || INT64_WAT_TYPES.has(r ?? "")) return "Int64";
       return "Int"; // +, -, *, /, % over integers
     }
     case "callExpr": {
@@ -1197,6 +1215,24 @@ export function emitWATExpr(
         // emit an i32 op (e.g. i32.rem_s) over f64 operands — a wrong-typed module /
         // wrong value (CWE-704). Fail-closed TRAP instead (inline-safe block comment).
         return `(unreachable) (; #165: i32-only op over float operand — fail-closed ;)`;
+      }
+      // Step 4c: native i64 lowering for Int64 operands — AFTER the float check (so an Int64+Float type
+      // error infers Float → invalid module → walker fallback, fail-SAFE). `+`/`-`/`*` trap via the checked
+      // i64 helpers, `/`/`%` use native i64.div_s/rem_s, comparisons yield an i32 bool. A mixed int operand
+      // is sign-extended (i64.extend_i32_s), matching the interpreter's BigInt(int) promotion. Fires only
+      // when an operand infers Int64, so non-Int64 flows are unaffected. (Gate still CLOSED — unreachable
+      // by a real flow until lift; exercised by the upcoming wat2wasm milestone test.)
+      const lInt64 = INT64_WAT_TYPES.has(lty ?? "");
+      const rInt64 = INT64_WAT_TYPES.has(rty ?? "");
+      if (lInt64 || rInt64) {
+        const iOp = INT64_ARITH_WAT[op] ?? INT64_CMP_WAT[op];
+        if (iOp !== undefined) {
+          const L = lInt64 ? left : `(i64.extend_i32_s ${left})`;
+          const R = rInt64 ? right : `(i64.extend_i32_s ${right})`;
+          return `(${iOp} ${L} ${R})`;
+        }
+        // an i32-only op (e.g. bitwise) over an Int64 operand has no i64 lowering here — fail-closed.
+        return `(unreachable) (; i32-only op over Int64 operand — fail-closed ;)`;
       }
       if (watOp !== undefined) {
         return `(${watOp} ${left} ${right})`;
