@@ -338,15 +338,30 @@ function verifyManifestSignature(
   const keyId = sig["keyId"];
   const signature = sig["signature"];
 
-  // A real, verifiable Ed25519 signature needs an algorithm naming Ed25519, a keyId,
-  // and a base64 signature. Anything else (e.g. the "Ed25519+ML-DSA-65" placeholder
-  // with ed25519/mlDsa65 'placeholder:…' fields) is treated as unsigned.
+  // A real, verifiable Ed25519 signature needs an algorithm naming Ed25519, a keyId, and a base64
+  // signature. A HYBRID v2 manifest (algorithm "Ed25519+ML-DSA-65", signature "<ed>|<mldsa>") is written
+  // by the REAL hybrid signer (logicn.mjs:2125-2210) — NOT a placeholder (the old comment was stale). It
+  // carries a genuine both-half signature this loader CANNOT verify without an injected hybrid (ML-DSA)
+  // verifier + the ProofGraph envelope the signer used — both compiler code the app-kernel must not import
+  // (no-core-compiler-coupling invariant). H3/H4 (TODO #36, tracked): the full fix INJECTS that verifier so
+  // a hybrid manifest is verified at load. Until then a hybrid sig is treated as UNVERIFIED-HERE → "unsigned":
+  // under requireSignature it is REFUSED (fail-closed — the secure production outcome; this is NOT a live
+  // admission bypass), and under allowUnsigned it is admitted like any unsigned package (dev permissiveness).
+  // The one improvement now: never do this SILENTLY — WARN loudly so a present-but-unverified hybrid
+  // signature is visible in the trail, never ignored without a trace.
   const isRealEd25519 =
     typeof algorithm === "string" &&
     algorithm.toLowerCase() === "ed25519" &&
     typeof keyId === "string" &&
     typeof signature === "string";
   if (!isRealEd25519) {
+    const algoStr = typeof algorithm === "string" ? algorithm.toLowerCase() : "";
+    const sigStr = typeof signature === "string" ? signature : "";
+    const sigAlgo = typeof sig["sigAlgorithm"] === "string" ? (sig["sigAlgorithm"] as string).toLowerCase() : "";
+    const looksHybrid = algoStr.includes("ml-dsa") || algoStr.includes("mldsa") || sigStr.includes("|") || sigAlgo.includes("v2");
+    if (looksHybrid) {
+      warn(`LLN-FUSE-HYBRID-UNVERIFIED: manifest carries a HYBRID PQ signature (algorithm '${String(algorithm)}') that this loader cannot verify without an injected hybrid verifier — treating as UNVERIFIED (REFUSED under requireSignature; admitted only where unsigned packages are already permitted). Full hybrid verification at the fuse loader is TODO #36.`);
+    }
     return "unsigned";
   }
 
