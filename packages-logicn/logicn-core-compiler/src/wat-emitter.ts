@@ -549,7 +549,7 @@ export function renderWAT(module: WATModule): string {
   }
   for (const name of Object.keys(ALL_CHECKED_HELPERS)) {
     if (!referencedHelpers.has(name)) continue;
-    lines.push(`  ;; strict-trapping checked helper — signed overflow traps (unreachable)`);
+    lines.push(`  ;; strict-trapping checked helper — signed overflow / non-finite float traps (unreachable)`);
     for (const hl of ALL_CHECKED_HELPERS[name]!.split("\n")) lines.push(`  ${hl}`);
     lines.push("");
   }
@@ -831,6 +831,9 @@ function watStackType(expr: string): WATValType {
   // after the head, so `(call $…` falls through to the i32 default — correct for the i32 helpers, WRONG
   // for the i64 ones (an Int64 local declared from it would get an i32 valtype → a truncating/invalid store).
   if (/^\(call \$lln_checked_(add|sub|mul)_i64\b/.test(t)) return "i64";
+  // #55: the float finiteness guard returns its f64 argument — a `let x = a / b` local declared from it
+  // must be f64, not the i32 default (which would mistype the store).
+  if (/^\(call \$lln_assert_finite_f64\b/.test(t)) return "f64";
   const m = t.match(/^\(([a-z0-9]+)\.([a-z0-9_]+)/);
   if (m === null) return "i32";
   const prefix = m[1]!, op = m[2]!;
@@ -916,8 +919,26 @@ const INT64_CHECKED_HELPERS: Readonly<Record<string, string>> = {
   ].join("\n"),
 };
 
-// All strict-trapping checked helpers (i32 + i64), injected on-demand when a flow body references one.
-const ALL_CHECKED_HELPERS: Readonly<Record<string, string>> = { ...I32_CHECKED_HELPERS, ...INT64_CHECKED_HELPERS };
+/**
+ * Float finiteness guard (#55 / LLN-FLOAT-NAN-001). WASM f64.div/add/sub/mul SILENTLY produce NaN (0/0) or
+ * ±Inf (x/0, overflow) — a non-finite that passes EVERY range compare (every NaN compare is false) and could
+ * be signed into a manifest. This makes the WASM tier fail-closed IDENTICALLY to the tree-walker's mkFloat:
+ * `(v - v)` is 0 for a finite v but NaN for NaN/±Inf, so `f64.ne (v - v) 0` traps (unreachable) on any
+ * non-finite value. Wrapped around every f64 arithmetic RESULT and every ordering-compare OPERAND. Emitted
+ * only when a flow body references it (usage-gated → wasmHash stays a deterministic function of the bodies).
+ */
+const FLOAT_CHECKED_HELPERS: Readonly<Record<string, string>> = {
+  $lln_assert_finite_f64: [
+    "(func $lln_assert_finite_f64 (param $v f64) (result f64)",
+    "  ;; (v - v) = 0 for a finite v but NaN for NaN/±Inf → f64.ne(…,0) traps on any non-finite value",
+    "  (if (f64.ne (f64.sub (local.get $v) (local.get $v)) (f64.const 0)) (then unreachable))",
+    "  (local.get $v))",
+  ].join("\n"),
+};
+
+// All strict-trapping checked helpers (i32 + i64 overflow, f64 non-finite), injected on-demand when a flow
+// body references one.
+const ALL_CHECKED_HELPERS: Readonly<Record<string, string>> = { ...I32_CHECKED_HELPERS, ...INT64_CHECKED_HELPERS, ...FLOAT_CHECKED_HELPERS };
 
 // ---------------------------------------------------------------------------
 // P9.3 — Stdlib method → host import bridge
@@ -1205,6 +1226,11 @@ export function emitWATExpr(
       const raw = node.value ?? "0";
       const isFloat = raw.includes(".") || raw.includes("e") || raw.includes("E");
       if (isFloat) {
+        // #55: a literal that overflows f64 to ±Inf (e.g. 1e400) must NOT emit a non-finite (f64.const …) —
+        // it would pass range guards / be signed. Fail-closed (matches the walker's mkFloat on the literal).
+        if (!Number.isFinite(parseFloat(raw))) {
+          return `(unreachable) (; non-finite float literal '${raw}' overflows f64 to ±Inf — fail-closed (#55/LLN-FLOAT-NAN-001) ;)`;
+        }
         return `(f64.const ${raw})`;
       }
       // Step 3g: an Int64-typed integer literal emits i64.const — an i32.const is INVALID for a >2^31
@@ -1263,16 +1289,27 @@ export function emitWATExpr(
         if (lty === "Decimal" || rty === "Decimal") {
           return `(unreachable) (; Decimal '${op}' is not f64-faithful — emitter declines (no silent f64 money); exact arithmetic is the walker's ;)`;
         }
-        const fOp = FLOAT_ARITH_WAT[op] ?? FLOAT_CMP_WAT[op];
-        if (fOp !== undefined) {
-          const L = lFloat165 ? left : `(f64.convert_i32_s ${left})`;
-          const R = rFloat165 ? right : `(f64.convert_i32_s ${right})`;
-          return `(${fOp} ${L} ${R})`;
+        const L = lFloat165 ? left : `(f64.convert_i32_s ${left})`;
+        const R = rFloat165 ? right : `(f64.convert_i32_s ${right})`;
+        const arithOp = FLOAT_ARITH_WAT[op];
+        if (arithOp !== undefined) {
+          // #55: trap a non-finite RESULT (NaN from 0/0, ±Inf from x/0 or overflow) — fail-closed, byte-for-byte
+          // with the tree-walker's mkFloat. Without this WASM silently produced a NaN/Inf that passed range
+          // guards or was signed into a manifest. (LLN-FLOAT-NAN-001.)
+          return `(call $lln_assert_finite_f64 (${arithOp} ${L} ${R}))`;
+        }
+        const cmpOp = FLOAT_CMP_WAT[op];
+        if (cmpOp !== undefined) {
+          // #55: an ORDERING compare (< <= > >=) with a non-finite OPERAND traps (matching floatCmp) — a NaN
+          // operand otherwise made the compare silently `false`, passing both `> upper` and `< lower` guards.
+          // == / != stay raw (equality fails CLOSED with a NaN; not a range bound).
+          if (op === "==" || op === "!=") return `(${cmpOp} ${L} ${R})`;
+          return `(${cmpOp} (call $lln_assert_finite_f64 ${L}) (call $lln_assert_finite_f64 ${R}))`;
         }
         // #165 fail-open fix: a float operand with an i32-only op (`%`, bitwise) has no
-        // f64 lowering (fOp undefined). Falling through to the `watOp` path below would
-        // emit an i32 op (e.g. i32.rem_s) over f64 operands — a wrong-typed module /
-        // wrong value (CWE-704). Fail-closed TRAP instead (inline-safe block comment).
+        // f64 lowering. Falling through to the `watOp` path below would emit an i32 op
+        // (e.g. i32.rem_s) over f64 operands — a wrong-typed module / wrong value
+        // (CWE-704). Fail-closed TRAP instead (inline-safe block comment).
         return `(unreachable) (; #165: i32-only op over float operand — fail-closed ;)`;
       }
       // Step 4c: native i64 lowering for Int64 operands — AFTER the float check (so an Int64+Float type
