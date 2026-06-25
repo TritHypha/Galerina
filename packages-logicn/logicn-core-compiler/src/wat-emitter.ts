@@ -28,6 +28,7 @@
 import { STDLIB_CAPABILITY_MAP } from "./stdlib-registry.js";
 import type { AstNode } from "./parser.js";
 import { i32AddChecked, i32SubChecked, i32MulChecked, i32DivChecked, i32ModChecked, isI32Trap, type I32Result } from "./i32-arith.js";
+import { numericBaseType } from "./numeric-lowering.js";
 
 // ---------------------------------------------------------------------------
 // Phase 22A — WASM SIMD capability types
@@ -3070,8 +3071,15 @@ export function buildWATModule(
     // EDGE (walker-only, unchanged): a float flow that ALSO has an `invariant { ensure result … }`
     // output post-condition stays on the walker — $logicn_result is declared i32 (§emitWATFromFlowAST),
     // so the single-exit module won't assemble; it was already walker-only before this fix (no regression).
+    // Step 3e: derive the result valtype from the declared return type. Float→f64 (#165); now ALSO
+    // Int64→i64, since the body's i64 routing (Step 4c) leaves an i64 on the stack for an Int64-returning
+    // flow — without this the `(result i32)` mismatches the i64 body → invalid module. SURGICAL: only Int64
+    // (INT64_WAT_TYPES) maps to i64; UInt64 stays i32 (gated, unrouted) and Float32 stays i32 (unchanged).
     const declaredReturn = flowReturnTypes?.get(flow.name);
-    const resultVal: WATValType = declaredReturn !== undefined && FLOAT_WAT_TYPES.has(declaredReturn) ? "f64" : "i32";
+    const resultVal: WATValType =
+      declaredReturn !== undefined && FLOAT_WAT_TYPES.has(declaredReturn) ? "f64" :
+      declaredReturn !== undefined && INT64_WAT_TYPES.has(numericBaseType(declaredReturn)) ? "i64" :
+      "i32";
     return {
       name: flow.name,
       isPure: flow.qualifier === "pure",
