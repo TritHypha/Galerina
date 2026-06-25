@@ -1278,45 +1278,6 @@ Baseline comparison (governance-cost):
     return;
   }
 
-  // ── logicn init-env — validate capabilities against root governance policy (#65) ─
-  // Scans all .lln files in /governance/ (or current directory) and validates
-  // each flow's effects against the declared domain guard policy ceilings.
-  // Used at CI start to establish a clean baseline before diffing.
-  if (command === "init-env") {
-    const { spawnSync } = await import("node:child_process");
-    const { readdirSync } = await import("node:fs");
-    const governanceDir = existsSync("governance") ? "governance" : ".";
-    let allFlows = 0, violations = 0;
-    const scanDir = (dir) => {
-      try {
-        return readdirSync(dir).filter(f => f.endsWith(".lln")).map(f => `${dir}/${f}`);
-      } catch { return []; }
-    };
-    const policyFiles = scanDir(governanceDir);
-    const flowFiles = [...scanDir("flows"), ...scanDir("examples"), ...scanDir("tests/patterns")];
-    console.log(`logicn init-env — validating ${flowFiles.length} flow file(s) against ${policyFiles.length} policy file(s)`);
-    for (const file of flowFiles.slice(0, 20)) { // limit to first 20 for now
-      try {
-        const src = readFileSync(file, "utf8");
-        const p = m.parseProgram(src, file);
-        const fx = m.checkEffects(p.flows, p.ast);
-        const g = m.verifyGovernance(p.ast, p.flows, fx, "dev");
-        allFlows += p.flows.length;
-        const errs = g.diagnostics.filter(d => d.severity === "error");
-        if (errs.length > 0) {
-          violations += errs.length;
-          errs.forEach(d => console.log(`  ❌ ${file}: ${d.code} — ${d.message.slice(0, 80)}`));
-        }
-      } catch { violations++; /* H8 fail-closed: an unanalyzable file counts as a violation. NOTE: this init-env handler is UNREACHABLE (the handler at ~296 takes no file arg and returns first) — a dead duplicate kept fail-closed for safety; flagged for removal. */ }
-    }
-    if (violations === 0) {
-      console.log(`✅ init-env: ${allFlows} flows, 0 violations — clean baseline`);
-    } else {
-      console.log(`⚠️  init-env: ${allFlows} flows, ${violations} violation(s) found — review before diffing`);
-    }
-    return;
-  }
-
   // ── logicn verify — DRCM Phase 3 admission gate (#37) ──────────────────────
   // Verifies the .lmanifest for a compiled .lln file:
   //   1. Checks the manifest exists (build/<name>.lmanifest)
