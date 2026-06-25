@@ -6,7 +6,12 @@
 // Also fixes the dotless-exponent literal mis-parse (`9e9` → 9; `1e400` → Infinity, now trapped).
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
 import * as L from "../dist/index.js";
+
+const SRC = join(dirname(fileURLToPath(import.meta.url)), "..", "src");
 
 async function run(body, ret = "Float") {
   const src = `pure flow f() -> ${ret}\ncontract { effects {} }\n{ ${body} }`;
@@ -53,6 +58,19 @@ test("dotless-exponent literal is parsed as a FLOAT, not mis-read as int (9e9 �
   const v = await run("return 9e9");
   assert.equal(v?.__tag, "float", `9e9 must be a float, got ${JSON.stringify(v)}`);
   assert.equal(v.value, 9000000000, "9e9 must be 9_000_000_000 — the dotless-exponent mis-parse returned 9");
+});
+
+test("DETECTOR: the float factories still ENFORCE finiteness (a neutered guard re-opens the class)", () => {
+  // The error→tooling rule: this guards the FIX itself. mkFloat (interpreter) and floatVal (stdlib) must
+  // gate on Number.isFinite, the WASM helper must trap on a non-finite f64, and isCheckedTrap must keep
+  // propagating the trap. Deleting any of these silently re-opens #55 — this test fails first.
+  const interp = readFileSync(join(SRC, "interpreter.ts"), "utf8");
+  const stdlib = readFileSync(join(SRC, "stdlib.ts"), "utf8");
+  const wat = readFileSync(join(SRC, "wat-emitter.ts"), "utf8");
+  assert.match(interp, /function mkFloat\([\s\S]{0,200}?Number\.isFinite/, "mkFloat must gate on Number.isFinite");
+  assert.match(stdlib, /function floatVal\([\s\S]{0,200}?Number\.isFinite/, "floatVal must gate on Number.isFinite");
+  assert.match(interp, /m === FLOAT_NONFINITE_TRAP/, "isCheckedTrap must still propagate the NonFiniteFloat trap");
+  assert.match(wat, /\$lln_assert_finite_f64[\s\S]{0,200}?f64\.ne/, "the WASM finiteness helper must trap on non-finite");
 });
 
 test("stdlib minters fail closed on non-finite (sqrt(neg), log(0), pow overflow) — increment 3b", async () => {
