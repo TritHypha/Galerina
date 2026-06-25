@@ -209,3 +209,21 @@ jobs:
           npm run build
       - name: Hardened Border — re-scan from source, enforce every package's policy (self-test, then enforcing)
         run: node scripts/audit-package-border.mjs
+
+  # runtime-coverage (#54, build-free, ENFORCING): the type-checker green-lights numeric `a op b` broadly, but
+  # the tree-walker only services a (tag, op) pair that is in BINARY_DISPATCH (or the int/float fallback). A
+  # numeric value-tag that supports SOME operators but is MISSING others traps at runtime ("not supported") —
+  # or, pre-fix, computed a silent wrong value (the Decimal-in-WASM money bug). This lint DERIVES coverage from
+  # interpreter.ts BINARY_DISPATCH (single source of truth) and FAILS if any numeric tag lacks the full operator
+  # set unless the missing pair is an INTENTIONAL partial on the allowlist (with its redirect-to-method form
+  # recorded — e.g. Decimal '/' → a.divide(b, rounding, scale)). Catches partial-op drift + a dropped dispatch
+  # key. --self-test proves the gap detector fires on a planted hole before the enforcing scan. Baseline is 0.
+  runtime-coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Runtime operator-coverage gate (self-test, then enforcing)
+        run: node scripts/audit-runtime-coverage.mjs
