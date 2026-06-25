@@ -617,6 +617,13 @@ export class HybridInferenceEngine {
         //   • reject a non-finite value (fail-closed → fall through to the digital dispatch); and
         //   • record provenance under a reserved `photonic:` namespace so an injected port can NEVER
         //     impersonate an attested registry bridge (e.g. claim bridgeId "stub-ternary") in the trail.
+        // H6 (threat-model, TRACKED follow-up #36): a full engine-side VALUE re-verify (recompute the
+        // digital reference + bound-check) is NOT yet wired here — a naive recompute + relative tolerance
+        // rejects the LEGITIMATE emulator value (its calibrated noise deviates beyond a simple bound), so
+        // the correct re-verify must use the emulator's calibrated ToleranceWitness (photonic-bridge
+        // calibrate()), a focused follow-up. Today the analog value is excluded from the bit-exact
+        // ternaryChecksum and flagged valuesReproducible=false (split truth channels) — a downstream
+        // consumer must treat it as untrusted, degrade-only.
         if (ph && Number.isFinite(ph.value)) {
           const provId = `photonic:${ph.bridgeId}`;
           used.add(provId);
