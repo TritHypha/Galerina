@@ -70,9 +70,11 @@ original fixes left open — both now FIXED (`74a2a10`):**
 **CONFIRMED sound by the pentest (no action):** the static SSRF classifier (denies the full numeric/IPv6/CGNAT/
 credential bypass corpus), the BOM strip, the `exprDepth`-under-exception balance, the Int64 lift (no fast-tier
 truncation; UInt64 still gated), the reporter delete-to-launder + malformed-allowlist guards, and the allowlist
-audit tool. **Tracked residuals (lower severity → #38):** DNS-rebind socket-pin TOCTOU; 3 directory-scan read
-sites bypass the size pre-check; the import-path traversal. The two queued criticals (effect-alias smuggle,
-signed-WASM-stub) were re-confirmed STILL OPEN (genuinely pending, not masked) → #36.
+audit tool. **#38 RESOLVED 2026-06-26:** the import-path traversal (`LLN-IMPORT-005`, two-layer cwd-or-own-dir
+containment, fail-closed) + the read-size pre-check on the import reader and the package-manifest read
+(`LLN-IMPORT-006` + 1 MB manifest cap). **Tracked residual:** DNS-rebind socket-pin TOCTOU (separate, open).
+The two queued criticals (effect-alias smuggle, signed-WASM-stub) were re-confirmed STILL OPEN (genuinely
+pending, not masked) → #36.
 
 **Lesson:** a security fix is not done when the happy-path bypass is closed — re-pentest the *fix* itself. The
 redirect-follow vector is the classic "guard the request, miss the redirect" SSRF, and it survived the first fix.

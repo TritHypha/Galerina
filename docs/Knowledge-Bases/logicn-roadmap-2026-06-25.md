@@ -1,5 +1,20 @@
 # LogicN roadmap (2026-06-25, post security-hardening session)
 
+> ## ✅ SHIPPED since this doc (2026-06-26 autonomous session)
+> - **#149** — Hardened Border wired ENFORCING in CI (`scripts/audit-package-border.mjs` + `hardened-border`
+>   job): zero-trust, re-scans every package FROM SOURCE, self-tested, fail-closed. Workspace 93/0. (`24322f0`,
+>   drift `fe25a4c`.)
+> - **#38** — pre-governance import-path traversal (`LLN-IMPORT-005`, two-layer containment) + uniform
+>   read-size guard (`LLN-IMPORT-006` + manifest cap), fail-closed. (`170eb8a`, `ab99b46`.)
+> - **Compute-only fence** — `LLN-SUBSTRATE-005`: a noisy/photonic lane is deny-by-default compute-only (no
+>   network/persistence/secret/process reach); allowlist = compute.*/ai.inference/random/clock/audit. (`346f8ee`.)
+> - **Owner-gated builds landed:** `vAndTensor`, `consensusTritN` + `ConfidenceVerdict`, dead-zone dispatcher,
+>   calibration-attestation core (signed `SubstrateModelSnapshot` follow-up #50, Ed25519).
+> - **Owner decisions 2026-06-26:** focus = owner-gated roadmap; #34 Ed25519-only for now (keep
+>   `LLN-CRYPTO-PQ-001` enforced); UInt64 unlock (u64-arith) AUTHORIZED; build supply-chain attestation core.
+> - **Remaining owner-gated queue:** prevention-rules (incl. `LLN-NO-COERCION-001`, `LLN-QUORUM-001`),
+>   digital-ECC, `@logicn/ext-attestation` core, u64-arith. Shamir SSS stays blocked (ML-DSA deferred).
+
 **Status:** v1.0.0-beta.2 · **~88% shippable / ~63% full-vision** · 60 packages · compiler suite 3,916/0.
 This session closed the threat-model's two criticals + most highs (C1, C2, H1, H2, H7, H8) plus several
 fresh fail-opens (substrate-lane ×2, `constantTimeEquals`, init-env scan-evasion, false-✅ on empty `.lln`).
