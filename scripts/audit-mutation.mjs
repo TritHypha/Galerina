@@ -227,7 +227,12 @@ const MUTANTS = configArg ? JSON.parse(readFileSync(configArg, "utf8")) : [...BU
 
 function git(args) { return spawnSync("git", args, { cwd: ROOT, encoding: "utf8" }); }
 function isClean(file) { return git(["diff", "--quiet", "--", file]).status === 0; }
-function restore(file) { git(["checkout", "--", file]); }
+function restore(file) {
+  git(["checkout", "--", file]);
+  // If the working-tree copy is STILL dirty (e.g. a stale index entry), force from HEAD — a
+  // mutation must NEVER survive restore in fail-closed security source.
+  if (!isClean(file)) git(["checkout", "HEAD", "--", file]);
+}
 function run(spec, cmd) {
   // npm/npx are .cmd shims on Windows — spawning them needs shell:true (EINVAL otherwise, the CVE-2024-27980 fix).
   const needsShell = cmd[0] === "npm" || cmd[0] === "npx";
@@ -301,4 +306,13 @@ if (asJson) {
   out.push(`VIOLATIONS: ${survived.length}`);
   console.log(out.join("\n"));
 }
-process.exit(soft ? 0 : (leftDirty.length ? 255 : Math.min(survived.length, 250)));
+// SAFETY OVERRIDE — a target left dirty means a mutation may REMAIN in fail-closed security
+// source: a tool malfunction, NOT a reportable finding, so it ALWAYS fails (even under --soft,
+// which otherwise downgrades surviving-mutant findings to exit 0). This closes the silent-leak
+// path where the SEC-002 audit ran --soft in the --full security tier and could swallow a
+// left-behind egress-sink mutant at exit 0.
+if (leftDirty.length) {
+  console.error(`FATAL: ${leftDirty.length} mutation(s) left in source after restore — ${leftDirty.join(", ")}. Run 'git restore' on these NOW; a fail-closed gate may be holed.`);
+  process.exit(255);
+}
+process.exit(soft ? 0 : Math.min(survived.length, 250));
