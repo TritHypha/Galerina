@@ -511,8 +511,21 @@ export function checkFlowEffects(
     }
   }
 
-  if ((flow.qualifier === "secure" || flow.qualifier === "guarded") && flowNode !== undefined) {
+  // EFFECT-001 (undeclared) / EFFECT-002 (overdeclared): the declared effect set must be a
+  // SUPERSET of the observed effects for EVERY governed flow kind. Unqualified `flow` is governed
+  // too — it "defaults to governed behavior" (logicn-core-intent-safety-effects.md:43) — so it is
+  // checked here alongside `guarded`/`secure`. Only `pure` is excluded: its zero-effect boundary is
+  // enforced by the stricter EFFECT-003 path above.
+  //
+  // FO-DISPATCH-MISSING-CASE (logicn-fail-open-taxonomy.md): this gate previously enumerated only
+  // secure/guarded and OMITTED plain `flow`, so a plain flow performing an undeclared effect on a
+  // user-named receiver (e.g. `OrdersDB.find` → database.read, which is neither a secure-tier nor a
+  // registered stdlib effect) emitted ZERO diagnostics and signed a manifest attesting effects
+  // [none]. The enumeration must cover every effectful flow kind — see the exhaustiveness test in
+  // tests/effect-checker.test.mjs.
+  if (flow.qualifier !== "pure" && flowNode !== undefined) {
     const declared = new Set(flow.declaredEffects);
+    const qualifierLabel = flow.qualifier === "flow" ? "plain flow" : `${flow.qualifier} flow`;
     // Pre-compute all missing effects for complete suggestedCode generation
     const missingEffects = [...observedEffects].filter(e => !declared.has(e));
     const mergedEffects = [...new Set([...flow.declaredEffects, ...missingEffects])].sort();
@@ -529,7 +542,7 @@ export function checkFlowEffects(
           code: "LLN-EFFECT-001",
           name: "UNDECLARED_EFFECT",
           severity: "error",
-          message: `${flow.qualifier} flow "${flow.name}" uses effect "${effect}" which is not declared.`,
+          message: `${qualifierLabel} "${flow.name}" uses effect "${effect}" which is not declared.`,
           location: callLocation,
           suggestedFix: `Add "${effect}" to the effects declaration: effects [${mergedEffects.join(", ")}]`,
           suggestedCode: suggestedContractBlock,
@@ -543,7 +556,7 @@ export function checkFlowEffects(
           code: "LLN-EFFECT-002",
           name: "OVERDECLARED_EFFECT",
           severity: "warning",
-          message: `${flow.qualifier} flow "${flow.name}" declares effect "${effect}" but no matching operation was observed.`,
+          message: `${qualifierLabel} "${flow.name}" declares effect "${effect}" but no matching operation was observed.`,
           location: flow.location,
           suggestedFix: `Remove "${effect}" from the effects declaration if it is not required.`,
         });
@@ -699,9 +712,12 @@ function validateInterFlowPropagation(
     }
   }
 
-  // Task 3: check fn helpers declared within this flow for effect-producing calls
+  // Task 3: check fn helpers declared within this flow for effect-producing calls.
+  // Applies to every governed flow kind (flow/guarded/secure); `pure` is excluded — its
+  // zero-effect boundary is enforced by EFFECT-003. (Was gated to secure/guarded only; the
+  // plain-`flow` omission was the same FO-DISPATCH-MISSING-CASE fail-open as the EFFECT-001 gate.)
   const flowNode = findFlowNode(ast, flow.name);
-  if (flowNode !== undefined && (flow.qualifier === "secure" || flow.qualifier === "guarded")) {
+  if (flowNode !== undefined && flow.qualifier !== "pure") {
     const fnHelperEffects = collectFnHelperEffects(flowNode);
     for (const [effect, fnCallLoc] of fnHelperEffects) {
       if (!declared.has(effect)) {

@@ -120,6 +120,84 @@ effects [payment.charge] {
     assert.ok(warnings.some((d) => d.code === "LLN-EFFECT-001"),
       "Expected LLN-EFFECT-001 warning for privileged effect on plain flow");
   });
+
+  // ── FO-DISPATCH-MISSING-CASE regression (logicn-fail-open-taxonomy.md) ────────
+  // A plain `flow` is governed ("defaults to governed behavior", intent-safety-effects.md:43),
+  // so its contract MUST honour declared effects exactly like guarded/secure. The undeclared-
+  // effect pass previously enumerated only secure/guarded, so a plain flow performing an
+  // undeclared effect on a user-named receiver (OrdersDB.find → database.read — neither a
+  // secure-tier nor a registered stdlib effect) emitted ZERO diagnostics and signed a manifest
+  // attesting effects [none]. These tests pin the closed hole.
+  it("emits LLN-EFFECT-001 for a plain flow with an undeclared database.read", () => {
+    const { effectResults } = parseAndCheck(`
+flow loadOrder(order: Order) -> Result<Order, OrderError>
+  contract { effects {  } }
+{
+  return Ok(OrdersDB.find(order.id)?)
+}
+`);
+    assert.ok(
+      hasEffectDiag(effectResults, "LLN-EFFECT-001"),
+      "Expected LLN-EFFECT-001: plain flow performs undeclared database.read (OrdersDB.find)",
+    );
+  });
+
+  it("accepts a plain flow when the database.read effect is correctly declared", () => {
+    const { effectResults } = parseAndCheck(`
+flow loadOrder(order: Order) -> Result<Order, OrderError>
+  contract { effects { database.read } }
+{
+  return Ok(OrdersDB.find(order.id)?)
+}
+`);
+    assert.equal(
+      effectErrors(effectResults).length, 0,
+      "A plain flow that declares database.read for its OrdersDB.find must pass cleanly",
+    );
+  });
+
+  it("emits LLN-EFFECT-002 for a plain flow fn helper with an undeclared effect", () => {
+    const { effectResults } = parseAndCheck(`
+flow processOrder(order: Order) -> Result<Unit, Error>
+  contract { effects {  } }
+{
+  fn save(o: Order) -> Result<Unit, Error> {
+    let _ = OrdersDB.insert(o)?
+    return Ok(unit)
+  }
+  return save(order)
+}
+`);
+    assert.ok(
+      hasEffectDiag(effectResults, "LLN-EFFECT-002"),
+      "Expected LLN-EFFECT-002: plain flow fn helper uses database.write not declared on the parent",
+    );
+  });
+});
+
+// ── FO-DISPATCH-MISSING-CASE: the undeclared-effect pass must enumerate EVERY effectful
+// flow kind. This is the meta-test for the class: dropping any non-pure qualifier from the
+// EFFECT-001 gate (as `flow` once was) makes it go RED. `pure` is intentionally excluded —
+// pure + an effect is a stricter EFFECT-003 boundary error, not EFFECT-001.
+describe("Effect checker — EFFECT-001 covers every effectful flow kind", () => {
+  // The canonical non-pure flow kinds. Mirrors FlowMeta.qualifier minus "pure".
+  const EFFECTFUL_FLOW_KINDS = ["flow", "guarded", "secure"];
+
+  for (const kind of EFFECTFUL_FLOW_KINDS) {
+    it(`${kind} flow with an undeclared effect emits LLN-EFFECT-001`, () => {
+      const { effectResults } = parseAndCheck(`
+${kind} flow loadOrder(order: Order) -> Result<Order, OrderError>
+  contract { effects {  } }
+{
+  return Ok(OrdersDB.find(order.id)?)
+}
+`);
+      assert.ok(
+        hasEffectDiag(effectResults, "LLN-EFFECT-001"),
+        `Expected LLN-EFFECT-001 for an undeclared effect on a "${kind}" flow — the undeclared-effect pass must not skip any effectful flow kind`,
+      );
+    });
+  }
 });
 
 describe("Effect Checker — effectResultsToDiagnostics", () => {
