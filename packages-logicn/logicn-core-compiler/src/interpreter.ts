@@ -16,9 +16,13 @@ import { activeSinkMonitor } from "./security-sink-monitor.js";
 import { buildExecutionGraph, getOrLoadGraph, storeGraph, executionGraphCacheKey, ExecOp, type ExecutionGraph } from "./execution-graph.js";
 import { compileToBytecode, runBytecode } from "./bytecode-vm.js";
 import { i32AddChecked, i32SubChecked, i32MulChecked, i32DivChecked, i32ModChecked, i32NegChecked, isI32Trap, type I32Result } from "./i32-arith.js";
+import { i64AddChecked, i64SubChecked, i64MulChecked, i64DivChecked, i64ModChecked, i64NegChecked, isI64Trap, type I64Result } from "./i64-arith.js";
 
 export type LogicNValue =
   | { readonly __tag: "int";       readonly value: number }
+  // BUILD: Int64 — a JS number cannot hold the i64 range exactly above 2^53, so int64 carries a bigint
+  // (no silent precision loss). Routed through the checked i64-arith layer; see i64-arith.ts.
+  | { readonly __tag: "int64";     readonly value: bigint }
   | { readonly __tag: "float";     readonly value: number }
   | { readonly __tag: "decimal";   readonly value: string }
   | { readonly __tag: "string";    readonly value: string }
@@ -69,6 +73,11 @@ function i32R(r: I32Result): LogicNValue {
   return isI32Trap(r) ? { __tag: "runtimeError", message: r } : intVal(r);
 }
 
+/** Map a checked-i64 result to a LogicNValue: in-range → int64 (bigint); a trap → fail-closed runtimeError. */
+function i64R(r: I64Result): LogicNValue {
+  return isI64Trap(r) ? { __tag: "runtimeError", message: r } : { __tag: "int64", value: r as bigint };
+}
+
 /** Singleton booleans — avoids allocating { __tag: "bool", value: ... } on every comparison. */
 const BOOL_TRUE:  LogicNValue = { __tag: "bool", value: true };
 const BOOL_FALSE: LogicNValue = { __tag: "bool", value: false };
@@ -94,8 +103,8 @@ const OP_IDS: Record<string, number> = {
 // proving every int×int arithmetic key is present is what makes the sync raw-arith
 // fallback (interpreter.ts ~:498) provably unreachable for int×int — the R&D-0112 hazard.
 export function dispatchKey(leftTag: string, op: string, rightTag: string): number {
-  const l = leftTag  === "int"    ? 1 : leftTag  === "float" ? 2 : leftTag  === "string" ? 3 : leftTag  === "bool" ? 4 : 0;
-  const r = rightTag === "int"    ? 1 : rightTag === "float" ? 2 : rightTag === "string" ? 3 : rightTag === "bool" ? 4 : 0;
+  const l = leftTag  === "int"    ? 1 : leftTag  === "float" ? 2 : leftTag  === "string" ? 3 : leftTag  === "bool" ? 4 : leftTag  === "int64" ? 5 : 0;
+  const r = rightTag === "int"    ? 1 : rightTag === "float" ? 2 : rightTag === "string" ? 3 : rightTag === "bool" ? 4 : rightTag === "int64" ? 5 : 0;
   const o = OP_IDS[op] ?? 0;
   return (l << 8) | (o << 4) | r;
 }
@@ -164,6 +173,44 @@ export const BINARY_DISPATCH = new Map<number, _DispatchFn>([
   [dispatchKey("bool", "||", "bool"), (a, b) => boolVal((a.value as boolean) || (b.value as boolean))],
   [dispatchKey("bool", "==", "bool"), (a, b) => boolVal(a.value === b.value)],
   [dispatchKey("bool", "!=", "bool"), (a, b) => boolVal(a.value !== b.value)],
+  // --- Int64 × Int64 ---
+  // Strict-trapping i64 (Fork A=TRAP) via the checked bigint layer; exact above 2^53, no silent wrap.
+  // Shared source of truth = i64-arith.ts. (Created only once Int64 is lifted from LLN-NUMERIC-001;
+  // additive — these keys are unreachable while the gate rejects scalar Int64, so zero regression today.)
+  [dispatchKey("int64", "+",  "int64"), (a, b) => i64R(i64AddChecked(a.value as bigint, b.value as bigint))],
+  [dispatchKey("int64", "-",  "int64"), (a, b) => i64R(i64SubChecked(a.value as bigint, b.value as bigint))],
+  [dispatchKey("int64", "*",  "int64"), (a, b) => i64R(i64MulChecked(a.value as bigint, b.value as bigint))],
+  [dispatchKey("int64", "/",  "int64"), (a, b) => i64R(i64DivChecked(a.value as bigint, b.value as bigint))],
+  [dispatchKey("int64", "%",  "int64"), (a, b) => i64R(i64ModChecked(a.value as bigint, b.value as bigint))],
+  [dispatchKey("int64", "<",  "int64"), (a, b) => boolVal((a.value as bigint) <  (b.value as bigint))],
+  [dispatchKey("int64", "<=", "int64"), (a, b) => boolVal((a.value as bigint) <= (b.value as bigint))],
+  [dispatchKey("int64", ">",  "int64"), (a, b) => boolVal((a.value as bigint) >  (b.value as bigint))],
+  [dispatchKey("int64", ">=", "int64"), (a, b) => boolVal((a.value as bigint) >= (b.value as bigint))],
+  [dispatchKey("int64", "==", "int64"), (a, b) => boolVal((a.value as bigint) === (b.value as bigint))],
+  [dispatchKey("int64", "!=", "int64"), (a, b) => boolVal((a.value as bigint) !== (b.value as bigint))],
+  // --- Int + Int64 mixed (promote the i32 operand to bigint; result is Int64) ---
+  [dispatchKey("int",   "+", "int64"), (a, b) => i64R(i64AddChecked(BigInt(a.value as number), b.value as bigint))],
+  [dispatchKey("int64", "+", "int"),   (a, b) => i64R(i64AddChecked(a.value as bigint, BigInt(b.value as number)))],
+  [dispatchKey("int",   "-", "int64"), (a, b) => i64R(i64SubChecked(BigInt(a.value as number), b.value as bigint))],
+  [dispatchKey("int64", "-", "int"),   (a, b) => i64R(i64SubChecked(a.value as bigint, BigInt(b.value as number)))],
+  [dispatchKey("int",   "*", "int64"), (a, b) => i64R(i64MulChecked(BigInt(a.value as number), b.value as bigint))],
+  [dispatchKey("int64", "*", "int"),   (a, b) => i64R(i64MulChecked(a.value as bigint, BigInt(b.value as number)))],
+  [dispatchKey("int",   "/", "int64"), (a, b) => i64R(i64DivChecked(BigInt(a.value as number), b.value as bigint))],
+  [dispatchKey("int64", "/", "int"),   (a, b) => i64R(i64DivChecked(a.value as bigint, BigInt(b.value as number)))],
+  [dispatchKey("int",   "%", "int64"), (a, b) => i64R(i64ModChecked(BigInt(a.value as number), b.value as bigint))],
+  [dispatchKey("int64", "%", "int"),   (a, b) => i64R(i64ModChecked(a.value as bigint, BigInt(b.value as number)))],
+  [dispatchKey("int",   "<",  "int64"), (a, b) => boolVal(BigInt(a.value as number) <  (b.value as bigint))],
+  [dispatchKey("int64", "<",  "int"),   (a, b) => boolVal((a.value as bigint) <  BigInt(b.value as number))],
+  [dispatchKey("int",   "<=", "int64"), (a, b) => boolVal(BigInt(a.value as number) <= (b.value as bigint))],
+  [dispatchKey("int64", "<=", "int"),   (a, b) => boolVal((a.value as bigint) <= BigInt(b.value as number))],
+  [dispatchKey("int",   ">",  "int64"), (a, b) => boolVal(BigInt(a.value as number) >  (b.value as bigint))],
+  [dispatchKey("int64", ">",  "int"),   (a, b) => boolVal((a.value as bigint) >  BigInt(b.value as number))],
+  [dispatchKey("int",   ">=", "int64"), (a, b) => boolVal(BigInt(a.value as number) >= (b.value as bigint))],
+  [dispatchKey("int64", ">=", "int"),   (a, b) => boolVal((a.value as bigint) >= BigInt(b.value as number))],
+  [dispatchKey("int",   "==", "int64"), (a, b) => boolVal(BigInt(a.value as number) === (b.value as bigint))],
+  [dispatchKey("int64", "==", "int"),   (a, b) => boolVal((a.value as bigint) === BigInt(b.value as number))],
+  [dispatchKey("int",   "!=", "int64"), (a, b) => boolVal(BigInt(a.value as number) !== (b.value as bigint))],
+  [dispatchKey("int64", "!=", "int"),   (a, b) => boolVal((a.value as bigint) !== BigInt(b.value as number))],
 ]);
 
 /**
@@ -525,6 +572,7 @@ class SyncInterpreter {
         const operand = this.evalExprS(node.children![0]!);
         // #0021: checked i32 unary-minus on the SYNC fast path too (traps -INT32_MIN, canonicalizes -0).
         if (op === "-" && operand.__tag === "int")   return i32R(i32NegChecked(operand.value as number));
+        if (op === "-" && operand.__tag === "int64")  return i64R(i64NegChecked(operand.value as bigint));
         if (op === "-" && operand.__tag === "float")  return { __tag: "float", value: -(operand.value as number) };
         if (op === "!" && operand.__tag === "bool")   return boolVal(!(operand.value as boolean));
         throw new SyncNotSupported(`unary ${op} on ${operand.__tag}`);
@@ -2244,6 +2292,7 @@ function safeDisplay(value: LogicNValue): string {
     case "string": return value.value;
     case "char": return value.value;
     case "int":
+    case "int64":
     case "float":
     case "byte": return String(value.value);
     case "bytes": return `[${value.value.byteLength} bytes]`;
