@@ -274,8 +274,14 @@ function flowHandlesSecrets(flowNode: AstNode | undefined): boolean {
   // zeroing. Exact-equality on "…:block" missed the body-less form, silently disabling B2b secret-zeroing
   // while the flow still bump-allocated secret records into the EXPORTED linear memory (host-readable remanence).
   return (contractDecl?.children ?? []).some(
-    (c) => c.kind === "identifier" &&
-      (c.value?.startsWith("privacy:") === true || c.value?.startsWith("secrets:") === true),
+    (c) =>
+      // BUILD #110: secrets{} now parses to a dedicated `secretsBlock` node (braced OR body-less) instead
+      // of a generic identifier "secrets:block". Recognize it here too, or a flow declaring sealed
+      // credentials would silently skip the B2b secret-zeroing loop (a fail-open — secret records left
+      // remnant in the EXPORTED linear memory). privacy{} still uses the generic identifier path.
+      c.kind === "secretsBlock" ||
+      (c.kind === "identifier" &&
+        (c.value?.startsWith("privacy:") === true || c.value?.startsWith("secrets:") === true)),
   );
 }
 

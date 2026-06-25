@@ -50,7 +50,9 @@ describe("contract sub-blocks — secrets / epilogue / economics", () => {
   it("retains economics, secrets, and epilogue as contract sub-blocks", () => {
     const blocks = contractSubBlocks(parsed.ast);
     assert.ok(blocks.includes("economics:block"), `economics missing: ${JSON.stringify(blocks)}`);
-    assert.ok(blocks.includes("secrets:block"), `secrets missing: ${JSON.stringify(blocks)}`);
+    // BUILD #110: secrets is now retained as a dedicated structured `secretsBlock` node (kind, not the
+    // generic `secrets:block` value) so its credential/rotation body survives — see numeric/secrets test.
+    assert.ok(blocks.includes("secretsBlock"), `secrets missing: ${JSON.stringify(blocks)}`);
     assert.ok(blocks.includes("epilogue:block"), `epilogue missing: ${JSON.stringify(blocks)}`);
   });
 

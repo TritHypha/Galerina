@@ -568,6 +568,45 @@ export function generateManifest(
       verified: "static",
     });
   }
+
+  // ── BUILD #110: secret-rotation obligations ────────────────────────────────────────────────
+  // For each flow whose contract declares a secrets{} block with a rotation policy, bind the
+  // (fail-closed, ext-driven) rotation engine to a VERIFIABLE manifest obligation. The engine
+  // stays in logicn-ext-secrets-vault (govern-don't-absorb); core only RETAINS the declared policy
+  // and records the obligation, which is covered by the governance signature (manifestBody) — so a
+  // declared rotation policy becomes a SIGNED, machine-checkable artifact instead of being dropped.
+  // `verified: "runtime-precheck"` because the ext engine enforces rotation at runtime; core cannot
+  // statically prove a live rotation occurred. The `ast` grandchildren are typed `unknown` at this
+  // boundary, so we narrow through a local structural type. No-`ast` callers are a safe no-op.
+  type RotAstNode = { readonly kind: string; readonly value?: string; readonly children?: readonly RotAstNode[] };
+  const SECRET_FLOW_KINDS = new Set(["flowDecl", "secureFlowDecl", "pureFlowDecl", "guardedFlowDecl"]);
+  for (const node of (ast?.children ?? []) as unknown as readonly RotAstNode[]) {
+    if (!SECRET_FLOW_KINDS.has(node.kind)) continue;
+    const flowName = node.value ?? "";
+    const contractNode = (node.children ?? []).find((c) => c.kind === "contractDecl");
+    if (contractNode === undefined) continue;
+    const secretsNode = (contractNode.children ?? []).find((c) => c.kind === "secretsBlock");
+    if (secretsNode === undefined) continue;
+    const secretsChildren = secretsNode.children ?? [];
+    const rotationNode = secretsChildren.find((c) => c.kind === "rotationDecl");
+    if (rotationNode === undefined) continue; // secrets{} without a rotation policy → no obligation
+    const rotKids = rotationNode.children ?? [];
+    const interval = (rotKids.find((c) => (c.value ?? "").startsWith("interval:"))?.value ?? "").replace("interval:", "");
+    const onFault = (rotKids.find((c) => (c.value ?? "").startsWith("on_rotation_fault:"))?.value ?? "").replace("on_rotation_fault:", "");
+    // One obligation per credential declared in the block (or a single placeholder if none named).
+    const credentials = secretsChildren.filter((c) => c.kind === "credentialDecl");
+    const credNames = credentials.length > 0 ? credentials.map((c) => c.value ?? "") : [""];
+    for (const credName of credNames) {
+      const faultClause = onFault !== "" ? `; on_rotation_fault=${onFault}` : "";
+      proofObligations.push({
+        flowName,
+        kind: "secret-rotation",
+        description: `${credName || "<credential>"} rotates every ${interval || "<unspecified>"}${faultClause}`,
+        verified: "runtime-precheck",
+      });
+    }
+  }
+
   if (govResult?.proofObligations !== undefined) {
     for (const obligation of govResult.proofObligations) {
       proofObligations.push({

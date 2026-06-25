@@ -36,14 +36,18 @@ So "most apps just use a `.env` and emit no heavy proof" remains true — that's
 > auto-inference layer (`economics-inference.ts`). The runtime auto-population for `secrets`/
 > `epilogue`, the taint guard, vault drivers, and the zk prover remain forward work (see §4).
 >
-> **Wiring gap (2026-06-17, #110):** `secrets {}` is *retained* as a block, but the credential
-> **body** (`provider`/`path` + the `rotation {}` policy) is **dropped at parse** (`parser.ts:4114`) —
-> only the credential NAME reaches the manifest, so a declared `rotation { interval … on_rotation_fault }`
-> never becomes a verifiable proof obligation. The rotation **engine** is already built in ext
-> (`logicn-ext-secrets-vault` `SecretsRotationManager` — dual-token/quiesce/atomic-swap/zero-wipe) but is
-> not bound to a manifest obligation. Fix is core-side: retain the body in the `contractDecl` AST + emit a
-> manifest proof obligation that binds to the ext driver — the engine stays in ext (govern-don't-absorb).
-> See [[logicn-key-custody-and-rotation]] §2.
+> **Wiring gap (2026-06-17, #110) — RESOLVED 2026-06-25 (RD-0103):** the credential **body**
+> (`provider`/`path` + the `rotation {}` policy) is no longer dropped at parse. A dedicated
+> `parseSecretsBlock()` (parser.ts) RETAINS it as a structured `secretsBlock` node
+> (`credentialDecl` + `rotationDecl`, duration suffixes like `24h` preserved), and
+> `generateManifest` emits a signed `secret-rotation` ProofObligation per credential
+> (`verified: "runtime-precheck"`) so a declared `rotation { interval … on_rotation_fault }` is now a
+> verifiable, signed artifact. The rotation **engine** stays in ext (`logicn-ext-secrets-vault`
+> `SecretsRotationManager`) — core only retains + records the policy (govern-don't-absorb). A
+> security regression was caught + fixed in the same change: the WAT secret-zeroing detector
+> (`flowHandlesSecrets`) now recognizes the new `secretsBlock` node, so a sealed-credential flow still
+> emits the B2b zero-on-exit loop (no remnant in exported linear memory). Tests:
+> `tests/secrets-body-retention-110.test.mjs`. See [[logicn-key-custody-and-rotation]] §2.
 
 ## 0. The unifying pattern — governed contract blocks are *dual-mode*
 

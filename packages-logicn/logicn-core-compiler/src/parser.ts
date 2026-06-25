@@ -123,7 +123,14 @@ export type AstNodeKind =
   // { kind: "assimilatedPluginDecl", value: "Alias", children: [path identifier, contractDecl?] }
   // assimilate implies safe — deep DAG audit performed automatically
   // governed by boot.lln assimilation_memory_budget
-  | "assimilatedPluginDecl";
+  | "assimilatedPluginDecl"
+  // BUILD #110 — secrets{} body retention (parseSecretsBlock): the credential/rotation policy is
+  // RETAINED (not dropped by the generic sub-block parser) so the manifest can bind it to a signed
+  // ProofObligation. secretsBlock = wrapper; credentialDecl = { value:<name>, children:[provider:<P>, path:<X>?] };
+  // rotationDecl = { children:[interval:<I>, on_rotation_fault:<H>?] }. Engine stays in logicn-ext-secrets-vault.
+  | "secretsBlock"
+  | "credentialDecl"
+  | "rotationDecl";
 
 export interface SourceLocation {
   readonly file: string;
@@ -4184,7 +4191,7 @@ class Parser {
       // core parses + retains the block and stamps secret taint; vault/KMS mechanics
       // live in a non-core `logicn-ext-*` driver. See logicn-design-secrets-epilogue-blocks.md.
       if ((tok.kind === "keyword" || tok.kind === "identifier") && tok.value === "secrets") {
-        children.push(this.parseContractSubBlock("secrets"));
+        children.push(this.parseSecretsBlock());
         this.skipNewlines();
         continue;
       }
@@ -4305,6 +4312,147 @@ class Parser {
       location: loc,
       children,
     };
+  }
+
+  /**
+   * BUILD #110 — parses `secrets { credential <name> { provider <P> [path <X>] } rotation { interval <I> [on_rotation_fault <H>] } }`.
+   *
+   * Dedicated handler (NOT the generic parseContractSubBlock) so the credential BODY and the
+   * rotation policy are RETAINED in the AST rather than drained. The rotation ENGINE stays in
+   * the non-core ext driver (logicn-ext-secrets-vault); core only retains the declared policy so
+   * the manifest can bind it to a verifiable, signed ProofObligation (govern-don't-absorb).
+   *
+   * Produced node:
+   *   { kind: "secretsBlock", children: [
+   *       { kind: "credentialDecl", value: <name>, children: [ "provider:<P>", "path:<X>"? ] },
+   *       { kind: "rotationDecl",   children: [ "interval:<I>", "on_rotation_fault:<H>"? ] }
+   *   ]}
+   * Unknown credential-body keys (id/arn/region) and rotation keys (strategy/trigger) are drained,
+   * not errored — forward-compatible with the KB AWS/Doppler examples without expanding core scope.
+   * Values are stored verbatim (opaque strings); core does NOT parse durations — the ext engine does.
+   */
+  private parseSecretsBlock(): AstNode {
+    const loc = this.loc();
+    this.advance(); // consume "secrets"
+    this.skipNewlines();
+
+    const children: AstNode[] = [];
+    if (!this.currentIs("symbol", "{")) {
+      // No-brace form: behave like the generic handler's empty case.
+      return { kind: "secretsBlock", value: "secrets:", location: loc, children };
+    }
+    this.advance(); // consume {
+    this.skipNewlines();
+
+    while (!this.currentIs("symbol", "}") && !this.isEof()) {
+      const tok = this.current();
+
+      // credential <name> { provider <P> [path <X>] }
+      if ((tok.kind === "identifier" || tok.kind === "keyword") && tok.value === "credential") {
+        const credLoc = this.loc();
+        this.advance(); // consume "credential"
+        this.skipNewlines();
+        const nameTok = this.current();
+        const credName =
+          (nameTok.kind === "identifier" || nameTok.kind === "keyword") ? nameTok.value : "";
+        if (credName !== "") this.advance();
+        this.skipNewlines();
+
+        const credChildren: AstNode[] = [];
+        if (this.currentIs("symbol", "{")) {
+          this.advance(); // consume {
+          this.skipNewlines();
+          while (!this.currentIs("symbol", "}") && !this.isEof()) {
+            const inner = this.current();
+            if ((inner.kind === "identifier" || inner.kind === "keyword") && inner.value === "provider") {
+              this.advance(); // consume "provider"
+              this.skipNewlines();
+              const v = this.current();
+              const provider = (v.kind === "identifier" || v.kind === "keyword" || v.kind === "string") ? v.value : "";
+              if (provider !== "") this.advance();
+              credChildren.push({ kind: "identifier", value: `provider:${provider}`, location: this.loc() });
+            } else if ((inner.kind === "identifier" || inner.kind === "keyword") && inner.value === "path") {
+              this.advance(); // consume "path"
+              this.skipNewlines();
+              const v = this.current();
+              const path = (v.kind === "identifier" || v.kind === "keyword" || v.kind === "string") ? v.value : "";
+              if (path !== "") this.advance();
+              credChildren.push({ kind: "identifier", value: `path:${path}`, location: this.loc() });
+            } else if (this.currentIs("symbol", "{")) {
+              this.skipBalancedBraces(); // drain an unknown NESTED block (e.g. aws { region … }) as a unit — no desync
+            } else {
+              this.advance(); // drain unknown credential-body tokens (forward-compatible: id/arn/region/etc.)
+            }
+            this.skipNewlines();
+          }
+          this.expect("symbol", "}");
+        }
+        children.push({ kind: "credentialDecl", value: credName, location: credLoc, children: credChildren });
+        this.skipNewlines();
+        continue;
+      }
+
+      // rotation { interval <I> [on_rotation_fault <H>] }
+      if ((tok.kind === "identifier" || tok.kind === "keyword") && tok.value === "rotation") {
+        const rotLoc = this.loc();
+        this.advance(); // consume "rotation"
+        this.skipNewlines();
+        const rotChildren: AstNode[] = [];
+        if (this.currentIs("symbol", "{")) {
+          this.advance(); // consume {
+          this.skipNewlines();
+          while (!this.currentIs("symbol", "}") && !this.isEof()) {
+            const inner = this.current();
+            if ((inner.kind === "identifier" || inner.kind === "keyword") && inner.value === "interval") {
+              this.advance(); // consume "interval"
+              this.skipNewlines();
+              const v = this.current();
+              let interval = (v.kind === "identifier" || v.kind === "keyword" || v.kind === "number" || v.kind === "string") ? v.value : "";
+              if (interval !== "") this.advance();
+              // A duration like `24h`/`30m`/`1h` may lex as number `24` + unit identifier `h`. Re-join an
+              // immediately-following time-unit suffix so the full duration survives. The unit whitelist
+              // never matches a rotation key (interval/on_rotation_fault/strategy/trigger), so the next key
+              // is not swallowed. If the value already lexed whole (identifier "24h"), this branch is skipped.
+              if (v.kind === "number") {
+                const suffix = this.current();
+                if (suffix.kind === "identifier" && /^(ms|us|ns|s|sec|secs|m|min|mins|h|hr|hrs|d|day|days|w|wk|wks|y|yr|yrs)$/i.test(suffix.value)) {
+                  interval += suffix.value;
+                  this.advance();
+                }
+              }
+              rotChildren.push({ kind: "identifier", value: `interval:${interval}`, location: this.loc() });
+            } else if ((inner.kind === "identifier" || inner.kind === "keyword") && inner.value === "on_rotation_fault") {
+              this.advance(); // consume "on_rotation_fault"
+              this.skipNewlines();
+              const v = this.current();
+              const handler = (v.kind === "identifier" || v.kind === "keyword" || v.kind === "string") ? v.value : "";
+              if (handler !== "") this.advance();
+              rotChildren.push({ kind: "identifier", value: `on_rotation_fault:${handler}`, location: this.loc() });
+            } else if (this.currentIs("symbol", "{")) {
+              this.skipBalancedBraces(); // drain an unknown NESTED block as a unit — no desync
+            } else {
+              this.advance(); // drain unknown rotation-body tokens (forward-compatible: strategy/trigger/etc.)
+            }
+            this.skipNewlines();
+          }
+          this.expect("symbol", "}");
+        }
+        children.push({ kind: "rotationDecl", location: rotLoc, children: rotChildren });
+        this.skipNewlines();
+        continue;
+      }
+
+      // Unknown top-level secrets content: drain gracefully (mirrors the generic handler's fallback).
+      if (this.currentIs("symbol", "{")) {
+        this.skipBalancedBraces();
+      } else {
+        this.advance();
+      }
+      this.skipNewlines();
+    }
+
+    this.expect("symbol", "}");
+    return { kind: "secretsBlock", location: loc, children };
   }
 
   /**
