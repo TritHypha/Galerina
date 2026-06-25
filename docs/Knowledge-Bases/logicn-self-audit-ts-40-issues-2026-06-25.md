@@ -93,7 +93,7 @@ source and adopted.
 - **Regression-lock guards:** tsconfig `target ES2022+` (60-13); future `extends` resolves inside-repo (60-12); `outDir`/`rootDir` reject `..`/absolute (60-14); ban `new Buffer(`/`allocUnsafe` (61-15); re-grep `innerHTML` (61-10); extend `audit-name-collisions.mjs` to a vetted external-dep allow-list (60-2).
 
 ### C. Track (no build now)
-- **61-14** secrets-tmf `parseManifest` fail-closed validator (already spawned a follow-up task).
+- **61-14** secrets-tmf `parseManifest` fail-closed validator — **✅ DONE (`f860bfd`)**: `validateManifest`/`validateSecretMeta` replace the bare `as Manifest`; prototype-free rebuild + `__proto__`/`constructor`/`prototype` rejection; 18/18.
 - **61-16** route `cert-gate.ts:124` through `timingSafeEqual` (public digests → hygiene, not exploitable).
 
 ## Honesty note
