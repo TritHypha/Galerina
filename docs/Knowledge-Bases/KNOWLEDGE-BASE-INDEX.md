@@ -298,6 +298,7 @@ When an AI tool is generating LogicN code for this project:
 | Why wasn't "Secure Cryptographic Paging" used; what do we use instead? | `logicn-rd-photonic-quantum-paging-graph-grounding-2026-06-25.md` (Thread 3) |
 | Have we cloned the 40 classic TS security issues? | `logicn-self-audit-ts-40-issues-2026-06-25.md` |
 | What new attack surfaces does the box unleash? (threat-model) | `logicn-threat-model-unleashed-2026-06-25.md` |
+| What can an attacker do BEFORE governance runs? (pre-gov) | `logicn-pre-governance-threat-model-2026-06-25.md` |
 | Which docs/examples are broken vs the current compiler? | `logicn-docs-examples-review-2026-06-25.md` |
 | Full worked governed flow using `substrate {}` + every contract clause | `logicn-substrate-worked-example.md` |
 | How is the quality of photonic-lane maths guaranteed? (self-check) | `logicn-photonic-maths-quality-self-check.md` |
