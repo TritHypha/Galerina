@@ -43,6 +43,16 @@ These read as "done" but require an asterisk. Saying them without the caveat is 
 ## Roadmap
 
 ### NOW (unblocked, highest zero-trust leverage)
+
+> **STATUS — 2026-06-25 session close: NOW-1/2/3/5/6 DONE; only NOW-4 remains.**
+> - **NOW-1 ✅** false production memory-gate fixed (LLN-MEMORY-001/002/003/007 RESERVED, no emitter) + `scripts/audit-production-blockers.mjs` enforcing CI cross-ref so it can't recur (`69b2769`, `7e784a5`).
+> - **NOW-2 ✅** cross-flow LLN-SECRET-002 / LLN-PRIVACY-002 now fail-CLOSED (error) in production (`c66955a`).
+> - **NOW-3 ✅** `check-gate-injection.mjs` wired enforcing in conventions.yml + self-test (`3d146e7`).
+> - **NOW-4 ⬜ OPEN** — quarantine the env-local signing-key CLI test behind a clean-key fixture + wire the compiler suite into CI. *The last NOW item; CI/test-hygiene, no security hole.*
+> - **NOW-5 ✅** `ext-tmf/src/inclusion.ts` TMX-256 Merkle inclusion proofs (selective disclosure) — golden-verified vs root `43386e64…`, full suite 61/61 (`6a1ac1c`).
+> - **NOW-6 ✅** the 2 RED r6-corpus fixtures gated with explicit `validate.*` (demonstrates the pattern, not a silence) → r6-parity 10/10 (`5adc99e`).
+> - **Also this session:** RD-0126 **A-2 built** (PartitionDecider derives isCrypto from effects, `8d8bdd7`) / **A-1 refuted** (false gap — per-flow lanes, `6738e94`); **5 new enforcing CI lints** (doc-drift · name-collisions · graph-integrity · production-blockers · gate-injection) + `governance/name-registry.json` + `scripts/graph-all.mjs` (all 3 graph generators); the measured-negatives written as a **defensive-pub note** (`docs/scientific-papers/latency-is-not-work-…-2026-06-25.md` — NOT a flagship: would harm credibility per the repo standard; external submission gated on a native/SIMD `f` re-measurement); cross-platform `.env.tmf` brief + 3D-spatial-photonics brief sent to R&D.
+
 1. **Fix the FALSE production memory-gate** — mark LLN-MEMORY-001/002/003/007 RESERVED + drop from PRODUCTION_BLOCKERS (they have no emitter), OR wire real move/borrow detectors; **add a CI cross-ref that fails when any production-blocking code is non-emittable.** *The gate advertises memory-safety it cannot detect — truth-in-capability is the foundation of every other claim.* ← **single most important.**
 2. **Escalate cross-flow LLN-SECRET-002 / LLN-PRIVACY-002 warning→error in production** (mirror the boundary-input escalation ~L1716) or add inter-procedural seal/redact discharge. *Closes the residual credential/embedding exfiltration path.*
 3. **Wire `check-gate-injection.mjs` into conventions.yml as an enforcing job** (version.json already mandates it). *Makes "a caller that skips revocationCheck" fail CI — highest-leverage unblocked CI hardening.*
