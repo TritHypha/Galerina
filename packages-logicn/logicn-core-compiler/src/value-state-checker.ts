@@ -101,6 +101,27 @@ function makeVSDiag(
 }
 
 // ---------------------------------------------------------------------------
+// NET-NEW 0111 — affine consume-once + monotone Raw→Verified→Authorized→Sealed passport typestate.
+// Lifts the rd-0087 proven abstract invariant into the SHIPPED source checker. Pure compile-time
+// type-system analysis (Binary/digital — touches no crypto byte; governs WHO may use a sealed value,
+// it never performs the seal). LLN-AFFINE-001 (consume-once / CWE-664) + LLN-PASSPORT-002 (stage-skip /
+// CWE-696). Deny-by-default: an unknown/un-gated Passport is Raw=0 (the most restricted stage).
+// ---------------------------------------------------------------------------
+export const PassportStage = { Raw: 0, Verified: 1, Authorized: 2, Sealed: 3 } as const;
+type PassportStageV = 0 | 1 | 2 | 3;
+// A gate-call prefix → the stage it PRODUCES on a Passport-typed value.
+const PASSPORT_GATE_STAGE: ReadonlyArray<readonly [RegExp, PassportStageV]> = [
+  [/^verify(\.|$)/i, 1], [/^authorize(\.|$)/i, 2], [/^seal(\.|$)/i, 3],
+];
+// An authority sink → the MINIMUM passport stage it REQUIRES (ordered ladder; extends SINK_REQUIREMENTS).
+function requiredPassportStage(fullCallName: string): PassportStageV | undefined {
+  if (/^response\.body$/.test(fullCallName)) return 2;   // Authorized
+  if (/^database\.write$/.test(fullCallName)) return 2;  // Authorized
+  if (/^AuditLog\.write$/.test(fullCallName)) return 3;  // Sealed
+  return undefined;
+}
+
+// ---------------------------------------------------------------------------
 // ValueStateFlags — internal bitset for fast value-state checks
 //
 // Downstream passes (SemanticGraph, ExecutionPlanner, Backend) can use bit
@@ -710,6 +731,12 @@ interface BindingInfo {
    * LLN-PRIVACY-002. seal()/encrypt() is the sole declassifier. Propagates like `tainted`.
    */
   readonly embeddingDerived?: boolean;
+  /** NET-NEW 0111: current passport typestate stage (Raw=0..Sealed=3) for a Passport-typed value. */
+  readonly passportStage?: PassportStageV;
+  /** NET-NEW 0111: affine — true once this passport has been consumed at an authority sink. */
+  readonly consumed?: boolean;
+  /** NET-NEW 0111: where it was first consumed (Rust-style related location). */
+  readonly consumedAt?: SourceLocation;
 }
 
 function parseBindingValue(value: string): BindingInfo {
@@ -1207,6 +1234,8 @@ class ValueStateChecker {
     }
 
     const locField = node.location !== undefined ? { declaredAt: node.location } : {};
+    // NET-NEW 0111: a Passport-typed param enters at Raw (stage 0) — the most restricted stage.
+    const passportField: { passportStage?: PassportStageV } = /Passport/i.test(typeName) ? { passportStage: 0 } : {};
 
     // Phase 4.4: auto-taint params from untrusted source_from origins.
     // 34A: an explicit `tainted` qualifier does the same, without needing a source_from origin.
@@ -1215,7 +1244,7 @@ class ValueStateChecker {
     const untrusted = isTaintedParam
       || (sourceFromOrigin !== undefined && isUntrustedSourceFromOrigin(sourceFromOrigin));
     if (untrusted) {
-      this.registerBinding({ name, safetyPrefix: "unsafe", typeName, ...locField });
+      this.registerBinding({ name, safetyPrefix: "unsafe", typeName, ...locField, ...passportField });
     } else if (this.currentFlowKind === "secureFlowDecl" || this.currentFlowKind === "guardedFlowDecl" || this.currentFlowKind === "governedFlowDecl") {
       // R&D 0093 "34B hole": a BARE param at a posture-gated entry boundary (secure/guarded
       // flow) is untrusted-until-gated. `boundary-untrusted` is inert everywhere EXCEPT a
@@ -1223,9 +1252,9 @@ class ValueStateChecker {
       // param-trusted-by-default fail-open at the secure/guarded tier without the false
       // positives of a full taint flip (string-concat / VS-004 stays clean). `pure`/plain
       // `flow` stay trusted-by-default (non-breaking).
-      this.registerBinding({ name, safetyPrefix: "boundary-untrusted", typeName, ...locField });
+      this.registerBinding({ name, safetyPrefix: "boundary-untrusted", typeName, ...locField, ...passportField });
     } else {
-      this.registerBinding({ name, safetyPrefix: undefined, typeName, ...locField });
+      this.registerBinding({ name, safetyPrefix: undefined, typeName, ...locField, ...passportField });
     }
   }
 
@@ -1298,7 +1327,29 @@ class ValueStateChecker {
       (init !== undefined && derivesFromEmbedding(init, (name) => this.lookupBinding(name)))
         ? { embeddingDerived: true }
         : {};
-    this.registerBinding({ ...info, ...locField, ...taintField, ...secretField, ...embeddingField });
+    // NET-NEW 0111: passport typestate. A gate (verify/authorize/seal) applied to a passport value
+    // PRODUCES the next stage. Recognize the inflowing value as a passport if it is Passport-typed OR
+    // (CHAIN FIX — the spec's typeName-only check breaks here) the gate's first arg already carries a
+    // passportStage, so `authorize.passport(v)` where v is an unannotated let-binding still advances the
+    // chain. A Passport-typed binding with no gate is Raw(0). Deny-by-default: unknown stays unstaged.
+    const passportField: { passportStage?: PassportStageV } = {};
+    if (init?.kind === "callExpr") {
+      const gate = PASSPORT_GATE_STAGE.find(([re]) => re.test(buildFullCallName(init)));
+      if (gate !== undefined) {
+        // The call's identifier children are [receiver-namespace, ...args] (e.g. `verify.passport(p)`
+        // parses as value="passport", children=[id "verify", id "p"]). The inflow is a passport if ANY
+        // operand resolves to a Passport-typed binding OR one already carrying a passportStage (chain) —
+        // the receiver namespace ("verify"/"authorize") is not a binding, so it filters out.
+        const inflowIsPassport = (init.children ?? []).some((c) => {
+          if (c.kind !== "identifier") return false;
+          const ab = this.lookupBinding(c.value ?? "");
+          return ab !== undefined && (ab.passportStage !== undefined || /Passport/i.test(ab.typeName));
+        });
+        if (inflowIsPassport) passportField.passportStage = gate[1];
+      }
+    }
+    if (passportField.passportStage === undefined && /Passport/i.test(info.typeName)) passportField.passportStage = 0;
+    this.registerBinding({ ...info, ...locField, ...taintField, ...secretField, ...embeddingField, ...passportField });
     // Walk the init expression
     if (init !== undefined) this.walkNode(init);
   }
@@ -1436,6 +1487,33 @@ class ValueStateChecker {
         // Then check for unsafe bindings (VALUESTATE-003) — but not for
         // protected values at AuditLog, which already get VALUESTATE-006.
         this.checkArgForUnsafeBinding(child, sinkName, node.location);
+      }
+
+      // NET-NEW 0111 — affine consume-once + monotone stage-skip on Passport bindings at authority sinks.
+      const need = requiredPassportStage(sinkName);
+      for (const arg of node.children ?? []) {
+        if (arg.kind !== "identifier") continue;
+        const b = this.lookupBinding(arg.value ?? "");
+        if (b?.passportStage === undefined) continue; // not a passport-typed value
+        // (a) STATE-SKIP: the value's stage is below the sink's required stage → deny (Raw<Verified<Authorized<Sealed).
+        if (need !== undefined && b.passportStage < need) {
+          this.diagnostics.push(makeVSDiag(
+            "LLN-PASSPORT-002", "PassportStateSkip",
+            `Passport '${b.name}' is at stage ${b.passportStage} but sink '${sinkName}' requires stage ${need} (Raw<Verified<Authorized<Sealed). Advance it through the missing gate(s) before this sink.`,
+            node.location, `Apply the missing gate (verify/authorize/seal) to '${b.name}' before '${sinkName}'.`));
+        }
+        // (b) CONSUME-ONCE: already consumed at a prior authority sink → deny re-use (affine/linear single-use).
+        if (b.consumed === true) {
+          this.diagnostics.push(makeVSDiag(
+            "LLN-AFFINE-001", "PassportConsumedTwice",
+            `Passport '${b.name}' was already consumed and cannot be re-used (affine/linear single-use).`,
+            node.location, `Re-derive a fresh passport; an authority value is consume-once.`,
+            undefined,
+            b.consumedAt !== undefined ? { relatedLocations: [{ message: "first consumed here", location: b.consumedAt }] } : undefined));
+        } else if (need !== undefined) {
+          // Mark consumed on first authority-sink use, so a second use fails closed.
+          this.updateBinding(b.name, node.location !== undefined ? { consumed: true, consumedAt: node.location } : { consumed: true });
+        }
       }
     }
 

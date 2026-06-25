@@ -534,6 +534,19 @@ LLN-WEB-042   UndeclaredComponentEffect   An undeclared component side-effect (n
 LLN-WEB-050   SanitiseStageSkipped        Render pipeline skips the sanitise stage for HTML content at the umbrella boundary (web umbrella U-1; CWE-79)
 ```
 
+### Affine passport typestate (canonical series: LLN-AFFINE-* / LLN-PASSPORT-*) — RD-0111
+
+Compile-time enforcement of an **affine consume-once** + **monotone Raw→Verified→Authorized→Sealed**
+typestate on `Passport`-typed values, in `value-state-checker.ts` (the same pass the governed runtime +
+production build run). Lifts the rd-0087 proven abstract invariant into the shipped source checker.
+Binary/digital — pure type-system analysis, touches no crypto byte (governs *who may use* a sealed
+value; never performs the seal). Deny-by-default: an un-gated/unknown passport is Raw=0 (most restricted).
+
+```text
+LLN-AFFINE-001     PassportConsumedTwice   An authority passport, already consumed at a sink, is re-used at a second sink — affine/linear single-use violation (CWE-664, resource-lifetime/replay)
+LLN-PASSPORT-002   PassportStateSkip       A passport at a sink whose required stage exceeds the value's current stage (Raw<Verified<Authorized<Sealed) — illegal stage skip (CWE-696, incorrect order)
+```
+
 ### Name Resolution (canonical series: LLN-NAME-*)
 
 ```text
