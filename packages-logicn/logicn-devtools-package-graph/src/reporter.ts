@@ -58,7 +58,20 @@ export function runBoundaryGate(scopePath: string, graph: PackageGraph, check: b
   const orphanWarnings = graph.orphans.map((o) => `orphan: ${o} (no inbound internal import)`);
 
   if (!existsSync(policyPath)) {
-    // First run — establish the baseline (the Hardened Border).
+    // FAIL-CLOSED on a MISSING policy under --check (delete-to-launder defence). If --check re-baselined a
+    // missing policy, an attacker (or an accidental delete) could remove boundary-policy.json and the next
+    // enforcing run would silently re-bless EVERY current import as the new allowlist — laundering drift into
+    // a green baseline. So a missing policy under --check is a VIOLATION; only the non-enforcing
+    // (generate/init) mode establishes the baseline.
+    if (check) {
+      return {
+        status: "FAIL",
+        violations: ["boundary-policy.json is missing — cannot enforce the Hardened Border under --check " +
+                     "(run the generator without --check to establish a baseline)"],
+        orphanWarnings,
+      };
+    }
+    // First run / generate mode — establish the baseline (the Hardened Border).
     const policy: BoundaryPolicy = {
       packageName: graph.packageName,
       allowedExternal: currentExternal,

@@ -73,14 +73,33 @@ test("comments do not produce phantom imports", () => {
   rmSync(root, { recursive: true, force: true });
 });
 
-test("boundary gate: first run creates a baseline (PASS)", () => {
+test("boundary gate: generation (no --check) creates a baseline", () => {
   const root = makeFixture({
     "src/index.ts": `import { readFileSync } from "node:fs";`,
   });
   const graph = buildGraph(scanPackage(root));
-  const result = runBoundaryGate(root, graph, true);
+  const result = runBoundaryGate(root, graph, false); // generation mode establishes the baseline
   assert.equal(result.status, "BASELINE_CREATED");
   assert.ok(existsSync(join(root, ".graph", "boundary-policy.json")));
+  rmSync(root, { recursive: true, force: true });
+});
+
+test("boundary gate: a MISSING policy under --check FAILS (no delete-to-launder)", () => {
+  const root = makeFixture({
+    "src/index.ts": `import { readFileSync } from "node:fs";`,
+  });
+  // Establish the baseline (generation mode).
+  runBoundaryGate(root, buildGraph(scanPackage(root)), false);
+  // Attacker (or accident) deletes the policy AND adds a forbidden import at the same time.
+  rmSync(join(root, ".graph", "boundary-policy.json"), { force: true });
+  writeFileSync(join(root, "src", "index.ts"),
+    `import { readFileSync } from "node:fs";\nimport axios from "axios";`);
+  const result = runBoundaryGate(root, buildGraph(scanPackage(root)), true); // enforce
+  // MUST fail — never silently re-baseline a deleted policy (that would re-bless axios green).
+  assert.equal(result.status, "FAIL");
+  assert.ok(result.violations.some((v) => v.includes("missing")));
+  // And it must NOT re-create the policy under --check (no laundering).
+  assert.ok(!existsSync(join(root, ".graph", "boundary-policy.json")));
   rmSync(root, { recursive: true, force: true });
 });
 
@@ -88,8 +107,8 @@ test("boundary gate: new external dep fails --check after baseline", () => {
   const root = makeFixture({
     "src/index.ts": `import { readFileSync } from "node:fs";`,
   });
-  // First run — baseline with only node:fs
-  runBoundaryGate(root, buildGraph(scanPackage(root)), true);
+  // First run — baseline (generation) with only node:fs
+  runBoundaryGate(root, buildGraph(scanPackage(root)), false);
 
   // Now add a forbidden third-party import
   writeFileSync(join(root, "src", "index.ts"),
@@ -106,8 +125,8 @@ test("boundary gate: dep already in allowlist passes", () => {
   const root = makeFixture({
     "src/index.ts": `import { readFileSync } from "node:fs";`,
   });
-  runBoundaryGate(root, buildGraph(scanPackage(root)), true); // baseline includes node:fs
-  // Re-run with the same imports — should PASS
+  runBoundaryGate(root, buildGraph(scanPackage(root)), false); // baseline (generation) includes node:fs
+  // Re-run --check with the same imports — should PASS
   const result = runBoundaryGate(root, buildGraph(scanPackage(root)), true);
   assert.equal(result.status, "PASS");
   assert.equal(result.violations.length, 0);
