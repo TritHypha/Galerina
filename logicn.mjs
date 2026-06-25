@@ -1919,6 +1919,26 @@ Baseline comparison (governance-cost):
     process.exit(1);
   }
 
+  // ── C2 (threat-model) — never SIGN a non-faithful stub as if it were a faithful artifact ──────
+  // The JS assembler returns a `valid:true` STUB carrying a "NOT a faithful compile" diagnostic when
+  // wabt declines the WAT (wat-assembler.ts:240-247); a faithful compile returns diagnostics:[]. The
+  // build path below hashes `assembled.wasm` INTO the SIGNED manifest, so signing a stub attests
+  // fidelity over a silently-wrong binary (threat-model P1). Gate strictness on the SAME fail-secure
+  // LOGICN_PROFILE resolver the rest of this function already uses: PRODUCTION fail-closes (refuse to
+  // sign/ship a stub — the WASM emitter must faithfully lower the flow first); DEV warns loudly but
+  // proceeds (the .wasm is for local inspection, a dev key is not a production trust anchor, and many
+  // flows the emitter can't yet lower legitimately stub during local iteration).
+  const faithfulCompile = assembled.diagnostics.length === 0;
+  if (!faithfulCompile) {
+    const stubReason = assembled.diagnostics.map(d => d.message).join("; ");
+    if (buildIsProduction) {
+      console.error(`  ⛔ LLN-EMIT-STUB: '${llnFile}' did not lower to a FAITHFUL WASM module — the JS assembler produced a stub (${stubReason}).`);
+      console.error(`\n❌ Build of '${llnFile}' FAILED (fail-closed under LOGICN_PROFILE=production) — refusing to sign a non-faithful artifact: a signed stub would attest fidelity it does not have. The WASM emitter cannot yet faithfully lower this flow.`);
+      process.exit(1);
+    }
+    console.warn(`  ⚠ LLN-EMIT-STUB: '${llnFile}' lowered to a NON-FAITHFUL stub (${stubReason}). The .wasm is for local inspection only — it MUST NOT be shipped (a production build will fail closed here rather than sign it).`);
+  }
+
   if (command === "build") {
     const name = packageBuild ? packageDescriptor.name : basename(llnFile, ".lln");
     const outDir = packageBuild ? join(packageBuild, "dist") : "build";
