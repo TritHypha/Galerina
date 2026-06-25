@@ -2,6 +2,7 @@
   "packageName": "@logicn/ext-secrets-tmf",
   "allowedExternal": [
     "@logicn/ext-tmf",
+    "@noble/hashes/argon2.js",
     "node:crypto",
     "node:fs",
     "node:path",

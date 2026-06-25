@@ -5,16 +5,18 @@
 
 **Status:** ✅ PASS
 
+**Scanned scope:** roots [`src`] · extensions [`.ts`, `.lln`]
+
 ## Summary
 
 | Metric | Count |
 |---|---|
 | Files | 10 |
 | Internal edges | 21 |
-| External dependencies | 5 |
+| External dependencies | 6 |
 | ├─ Node core | 4 |
 | ├─ Workspace (@logicn/*) | 1 |
-| └─ Third-party | 0 |
+| └─ Third-party | 1 |
 | Orphan files | 0 |
 
 ## External Dependencies (the Border)
@@ -29,7 +31,7 @@
 - `@logicn/ext-tmf`
 
 ### Third-party
-_none_
+- `@noble/hashes/argon2.js`
 
 ## Governance
 No boundary violations. All external imports are within the allowlist.

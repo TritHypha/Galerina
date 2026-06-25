@@ -15,7 +15,7 @@
 //   - prod: anchor through the EXISTING core-config SecretConfigSource kinds
 //     ({kind:"kms"} / {kind:"vault"}) — we do NOT invent a new custody mechanism. A fetcher
 //     callback (injected by the host) resolves the source to raw key bytes.
-import { argon2id } from "../../logicn-core-compiler/node_modules/@noble/hashes/argon2.js";
+import { argon2id } from "@noble/hashes/argon2.js";
 import { randomBytes, createCipheriv, createDecipheriv } from "node:crypto";
 import { withWiped } from "./arena.js";
 

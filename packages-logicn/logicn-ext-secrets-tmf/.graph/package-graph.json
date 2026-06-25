@@ -1,5 +1,12 @@
 {
   "packageName": "@logicn/ext-secrets-tmf",
+  "scannedRoots": [
+    "src"
+  ],
+  "scannedExtensions": [
+    ".ts",
+    ".lln"
+  ],
   "nodes": [
     "src/anchor.ts",
     "src/arena.ts",
@@ -107,6 +114,13 @@
       ]
     },
     {
+      "specifier": "@noble/hashes/argon2.js",
+      "kind": "thirdparty",
+      "importedBy": [
+        "src/anchor.ts"
+      ]
+    },
+    {
       "specifier": "node:crypto",
       "kind": "node_core",
       "importedBy": [
@@ -147,10 +161,10 @@
   "stats": {
     "fileCount": 10,
     "internalEdgeCount": 21,
-    "externalDepCount": 5,
+    "externalDepCount": 6,
     "nodeCoreCount": 4,
     "workspaceCount": 1,
-    "thirdpartyCount": 0,
+    "thirdpartyCount": 1,
     "orphanCount": 0
   }
 }
