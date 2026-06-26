@@ -5,5 +5,13 @@
 /// ai_rule: redacted marks a value that has been masked for safe output.
 /// test_status: stable
 
-let auditEmail: redacted Email =
-  redact(email)
+pure flow example() -> redacted Email
+contract {
+  intent {
+    "Label an already-masked email value with the redacted type qualifier."
+  }
+}
+{
+  let auditEmail: redacted Email = "j***@example.com"
+  return auditEmail
+}

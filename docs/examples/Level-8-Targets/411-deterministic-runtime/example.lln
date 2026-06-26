@@ -26,6 +26,7 @@ contract {
   runtime deterministic
 
   compute target cpu { fallback cpu }
+  safe mut input = validate.input(input)?
   let output = RegulatedModel.forward(input)?
   AuditLog.write({ event: "RegulatedInference", inputHash: hash(input) })
   return Ok(output)

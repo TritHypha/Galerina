@@ -7,7 +7,7 @@
 
 type Email = Brand<String, EmailTag>
 
-guarded flow example(email: protected Email) -> Void
+secure flow example(request: Request) -> Void
 
 contract {
   // Security intent: protected Email must be redacted before reaching the audit sink.
@@ -21,6 +21,8 @@ contract {
   }
 }
 {
+  unsafe let rawEmail: String = request.body.email
+  let email: protected Email = validate.email(rawEmail)?
   let auditEmail: redacted Email = redact(email)
   AuditLog.write({ email: auditEmail })
 }

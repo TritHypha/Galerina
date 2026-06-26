@@ -40,6 +40,7 @@ contract {
   authority {
     sharing protected PatientData to "nhs-spine"
     approved_by "data-governance-board"
+    reason "NHS Spine registration requires sharing validated patient identity data"
   }
   policy {
     purpose "patient_registration"

@@ -23,6 +23,7 @@ contract {
   }
 }
 {
+  compute target best { prefer [npu, gpu, cpu] fallback cpu deny [remote.execution] }
   unsafe let rawId: String = request.body.patientId
   let patientId: protected PatientId = validate.patientId(rawId)?
   let features = PatientFeatures.from(patientId)?

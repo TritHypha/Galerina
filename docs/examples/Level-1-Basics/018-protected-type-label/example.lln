@@ -5,5 +5,7 @@
 /// ai_rule: protected marks a validated but sensitive value.
 /// test_status: stable
 
-let email: protected Email =
-  validate.email(rawEmail)?
+pure flow example(rawEmail: protected Email) -> protected Email {
+  let email: protected Email = rawEmail
+  return email
+}

@@ -5,4 +5,7 @@
 /// test_status: stable
 /// ai_rule: Use DynamicShape when tensor dimensions are not known at compile time.
 
-let embedding: Tensor<Float32, DynamicShape>
+pure flow example(input: Tensor<Float32, DynamicShape>) -> Tensor<Float32, DynamicShape> contract { intent { "Bind a dynamically-shaped tensor and return it." } } {
+  let embedding: Tensor<Float32, DynamicShape> = input
+  return embedding
+}

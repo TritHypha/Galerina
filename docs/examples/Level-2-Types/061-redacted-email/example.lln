@@ -5,4 +5,8 @@
 /// test_status: stable
 /// ai_rule: Use redact() to convert a protected value to a redacted value for audit logging.
 
-let auditEmail: redacted Email = redact(email)
+type Email = Brand<String, EmailTag>
+
+pure flow example(email: protected Email) -> Void {
+  let auditEmail: redacted Email = redact(email)
+}

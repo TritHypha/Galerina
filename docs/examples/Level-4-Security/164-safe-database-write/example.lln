@@ -5,7 +5,7 @@
 /// test_status: stable
 /// ai_rule: Validated protected values can be stored in a database sink with database.write declared.
 
-guarded flow savePatient(request: Request) -> SavePatientResult
+secure flow savePatient(request: Request) -> SavePatientResult
 
 contract {
   // Security intent: only validated (protected) values may be written to the database.
@@ -20,11 +20,14 @@ contract {
 
   effects {
     database.write
+    audit.write
   }
 }
 {
   unsafe let rawEmail: String = request.body.email
   let email: protected Email = validate.email(rawEmail)?
   let id = PatientsDB.insert({ email: email })?
+  let auditEmail: redacted Email = redact(email)
+  AuditLog.write({ action: "savePatient", email: auditEmail, patientId: id })
   return Ok(id)
 }

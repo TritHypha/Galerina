@@ -5,4 +5,7 @@
 /// test_status: stable
 /// ai_rule: Result<T, E> represents success (Ok) or failure (Err). Use Ok(value) for success.
 
-let result: Result<User, UserError> = Ok(user)
+pure flow example(user: User) -> Result<User, UserError> {
+  let result: Result<User, UserError> = Ok(user)
+  return result
+}

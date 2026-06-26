@@ -5,4 +5,7 @@
 /// test_status: stable
 /// ai_rule: Option<T> represents a value that may be absent. Some(value) wraps a present value.
 
-let maybeUser: Option<User> = Some(user)
+pure flow example(user: User) -> Option<User> {
+  let maybeUser: Option<User> = Some(user)
+  return maybeUser
+}

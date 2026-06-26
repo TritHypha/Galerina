@@ -5,4 +5,8 @@
 /// test_status: stable
 /// ai_rule: Protected values become redacted through redact(). Use for audit logging.
 
-let auditEmail: redacted Email = redact(email)
+type Email = Brand<String, EmailTag>
+
+pure flow example(email: protected Email) -> Void {
+  let auditEmail: redacted Email = redact(email)
+}

@@ -5,5 +5,14 @@
 /// test_status: stable
 /// ai_rule: PatientId values come from validate.patientId().
 
-unsafe let rawPatientId: String = request.body.patientId
-let patientId: protected PatientId = validate.patientId(rawPatientId)?
+pure flow example() -> protected PatientId
+contract {
+  intent {
+    "Validate a raw patient id from the request into a protected PatientId."
+  }
+}
+{
+  unsafe let rawPatientId: String = request.body.patientId
+  let patientId: protected PatientId = validate.patientId(rawPatientId)?
+  return patientId
+}

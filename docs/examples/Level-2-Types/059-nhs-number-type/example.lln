@@ -5,5 +5,14 @@
 /// test_status: stable
 /// ai_rule: NhsNumber values come from validate.nhsNumber().
 
-unsafe let rawNhsNumber: String = request.body.nhsNumber
-let nhsNumber: protected NhsNumber = validate.nhsNumber(rawNhsNumber)?
+pure flow example(readonly request: Request) -> protected NhsNumber
+contract {
+  intent {
+    "Validate a raw NHS number from the request boundary into a protected NhsNumber domain type."
+  }
+}
+{
+  unsafe let rawNhsNumber: String = request.body.nhsNumber
+  let nhsNumber: protected NhsNumber = validate.nhsNumber(rawNhsNumber)?
+  return nhsNumber
+}

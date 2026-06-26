@@ -5,4 +5,6 @@
 /// test_status: stable
 /// ai_rule: None represents the absence of a value in Option<T>.
 
-let maybeUser: Option<User> = None
+pure flow example() -> Void {
+  let maybeUser: Option<User> = None
+}

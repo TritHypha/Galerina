@@ -5,4 +5,9 @@
 /// test_status: stable
 /// ai_rule: ReadOnlyView<T> exposes a collection without mutation methods.
 
-let users: ReadOnlyView<User>
+pure flow example(source: List<User>) -> ReadOnlyView<User> contract {
+  intent { "Expose a collection of users without mutation methods." }
+} {
+  let users: ReadOnlyView<User> = source.slice(0, source.length)
+  return users
+}

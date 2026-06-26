@@ -5,5 +5,16 @@
 /// ai_rule: Data from external boundaries starts as unsafe.
 /// test_status: stable
 
-unsafe let rawBody: String =
-  request.body
+secure flow readBoundary(readonly request: Request) -> String
+
+contract {
+  intent {
+    "Read raw boundary input as unsafe data owned by a governed flow."
+  }
+}
+{
+  unsafe let rawBody: String =
+    request.body
+
+  return rawBody
+}

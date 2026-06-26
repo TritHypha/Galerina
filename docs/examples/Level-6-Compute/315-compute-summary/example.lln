@@ -25,11 +25,14 @@ contract {
 {
   compute target best { prefer [npu, gpu, cpu] fallback cpu deny [remote.execution] }
 
-  let features: Tensor<Float32, [1, 128]> = FraudFeatures.from(tx)?
+  // Zero-trust gate: the boundary input passes an explicit validate.* gate before the
+  // governed audit sink (discharges LLN-VALUESTATE-008 — boundary input reaching a sink ungated).
+  let safeTx: Transaction = validate.tx(tx)?
+  let features: Tensor<Float32, [1, 128]> = FraudFeatures.from(safeTx)?
   let score: FraudScore = FraudModel.run(features)?
   AuditLog.write({
     event: "FraudScored",
-    transactionId: redact(tx.id),
+    transactionId: redact(safeTx.id),
     band: score.band
   })
   return Ok(score)

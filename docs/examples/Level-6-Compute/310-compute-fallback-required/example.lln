@@ -27,6 +27,10 @@ contract {
 
   let features: Tensor<Float32, [1, 32]> = FraudFeatures.from(tx)?
   let score: FraudScore = FraudModel.run(features)?
-  AuditLog.write({ event: "FraudModelRun", txId: redact(tx.id) })
+  // Zero-trust: gate the boundary input through an explicit validate.* gate before the
+  // governed audit sink (discharges LLN-VALUESTATE-008 — an unmarked boundary param
+  // reaching a sink ungated).
+  let safeTxId: protected String = validate.id(tx.id)?
+  AuditLog.write({ event: "FraudModelRun", txId: redact(safeTxId) })
   return Ok(score)
 }

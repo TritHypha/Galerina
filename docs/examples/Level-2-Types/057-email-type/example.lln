@@ -5,5 +5,9 @@
 /// test_status: stable
 /// ai_rule: Email values come from validate.email().
 
-unsafe let rawEmail: String = request.body.email
-let email: protected Email = validate.email(rawEmail)?
+type Email = Brand<String, EmailTag>
+
+pure flow example(rawEmail: String) -> protected Email {
+  let email: protected Email = validate.email(rawEmail)?
+  return email
+}

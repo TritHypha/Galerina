@@ -5,7 +5,7 @@
 /// ai_rule: All payment flows must declare payment.charge and audit.write effects and include an intent clause.
 /// test_status: stable
 
-guarded flow chargePayment(request: PaymentRequest) -> ChargePaymentResult
+secure flow chargePayment(request: PaymentRequest) -> ChargePaymentResult
 
 contract {
   // Result alias — payment.charge and audit.write required on all payment flows

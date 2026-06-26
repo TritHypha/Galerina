@@ -40,7 +40,8 @@ contract {
 {
   let actor = context.actor
   let traceId = context.trace_id
-  let order = OrdersDB.insert({ actor: actor, items: request.body.items })?
+  safe mut items = validate.orderItems(request.body.items)?
+  let order = OrdersDB.insert({ actor: actor, items: items })?
   AuditLog.write({ event: "OrderCreated", orderId: order.id, actor: actor, traceId: traceId })
   return Ok(Response.created({ orderId: order.id, status: "pending" }))
 }

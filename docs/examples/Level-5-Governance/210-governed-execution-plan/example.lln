@@ -26,6 +26,7 @@ contract {
     deny [remote.execution]
   }
 {
+  safe mut input = validate.fraudInput(input)?
   let score = FraudModel.score(input)
   let id = FraudScoreDB.insert({ input: input, score: score })?
   AuditLog.write({ action: "runFraudModel", score: redact(score) })

@@ -5,4 +5,7 @@
 /// test_status: stable
 /// ai_rule: Auto means infer the type from the initializer expression.
 
-let count: Auto = 42
+pure flow example() -> Int {
+  let count: Auto = 42
+  return count
+}

@@ -5,7 +5,7 @@
 /// ai_rule: List all required effects in the contract effects block.
 /// test_status: stable
 
-guarded flow syncOrder(order: Order) -> SyncOrderResult
+secure flow syncOrder(order: Order) -> SyncOrderResult
 
 contract {
   types {
@@ -13,7 +13,7 @@ contract {
   }
 
   intent {
-    "Insert an order into the local database, sync it to an external service, and write an audit record."
+    "Insert a validated order into the database, sync it to an external service, and write an audit record."
   }
 
   effects {
@@ -23,8 +23,9 @@ contract {
   }
 }
 {
-  let orderId = OrdersDB.insert(order)?
-  let _ = http.post("https://sync.example.com/orders", order)?
+  let safeOrder: protected Order = validate.order(order)?
+  let orderId = OrdersDB.insert(safeOrder)?
+  let _ = http.post("https://sync.example.com/orders", safeOrder)?
   AuditLog.write({ action: "syncOrder", orderId: orderId })
   return Ok(unit)
 }

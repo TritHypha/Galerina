@@ -27,6 +27,7 @@ contract {
 }
   authority {
     grant pii.share to SpecialistService
+    reason "Referral requires sharing patient data with the approved specialist"
     purpose "patient_referral"
     expiry 24h
   }

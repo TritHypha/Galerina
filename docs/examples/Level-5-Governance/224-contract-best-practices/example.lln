@@ -108,7 +108,7 @@ contract {
   let patient = PatientsDB.findById(patientId)?
 
   // Step 5: audit the access (with redacted trace context)
-  AuditLog.write({ event: "PatientProfileRead", id: patientId, actor: actor, traceId: traceId })
+  AuditLog.write({ event: "PatientProfileRead", id: redact(patientId), actor: actor, traceId: traceId })
 
   // Step 6: emit domain event
   emit PatientProfileRead

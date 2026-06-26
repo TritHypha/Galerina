@@ -5,28 +5,26 @@
 /// ai_rule: Local fn may use effects only when the containing flow declares them.
 /// test_status: stable
 
-guarded flow syncOrders(orders: List<Order>) -> SyncOrdersResult
+guarded flow loadSettings(path: String) -> LoadSettingsResult
 
 contract {
   types {
-    type SyncOrdersResult = Result<Unit, SyncError>
+    type LoadSettingsResult = Result<Config, ConfigError>
   }
 
   intent {
-    "Sync a batch of orders by fetching the rate externally and inserting into the database."
+    "Load settings by reading a config file from the filesystem via a local helper."
   }
 
   effects {
-    network.outbound
-    database.write
+    filesystem.read
   }
 }
 {
-  fn fetchRate(currency: String) -> Result<Decimal, RateError> {
-    unsafe let rawResponse = http.get("https://rates.example.com/" + currency)?
-    return json.decode(rawResponse)
+  fn readConfig(p: String) -> Result<Config, ConfigError> {
+    unsafe let rawFile = fs.readText(p)?
+    return toml.decode(rawFile)
   }
-  let rate = fetchRate("GBP")?
-  let _ = OrdersDB.insert(orders[0])?
-  return Ok(unit)
+  let config = readConfig(path)?
+  return Ok(config)
 }

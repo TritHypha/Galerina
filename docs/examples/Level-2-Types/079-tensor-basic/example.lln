@@ -5,4 +5,6 @@
 /// test_status: stable
 /// ai_rule: Tensor requires two type parameters: element type and shape.
 
-let embedding: Tensor<Float32, [1,768]>
+pure flow example(embedding: Tensor<Float32, [1,768]>) -> Tensor<Float32, [1,768]> {
+  return embedding
+}

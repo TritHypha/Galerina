@@ -5,4 +5,7 @@
 /// test_status: stable
 /// ai_rule: Dividing Money<GBP> by Money<GBP> produces a dimensionless Decimal ratio.
 
-let ratio: Decimal = revenue / cost
+pure flow example(revenue: Money<GBP>, cost: Money<GBP>) -> Decimal {
+  let ratio: Decimal = revenue / cost
+  return ratio
+}

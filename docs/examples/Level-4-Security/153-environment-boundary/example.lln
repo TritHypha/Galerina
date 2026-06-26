@@ -5,7 +5,7 @@
 /// ai_rule: Environment values are unsafe. Treat them as untrusted external input.
 /// test_status: stable
 
-guarded flow connectToApi() -> ConnectToApiResult
+secure flow connectToApi() -> ConnectToApiResult
 
 contract {
   // Security intent: environment variables are an external trust boundary.

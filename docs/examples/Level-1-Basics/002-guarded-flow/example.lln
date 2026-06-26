@@ -9,21 +9,21 @@ guarded flow fetchRate(currency: CurrencyCode) -> FetchRateResult
 
 contract {
   types {
-    type FetchRateResult = Result<Decimal, NetworkError>
+    type FetchRateResult = Result<Decimal, ConfigError>
   }
 
   intent {
-    "Fetch the exchange rate for a given currency via an outbound network call."
+    "Read the cached exchange rate for a given currency from the filesystem."
   }
 
   effects {
-    network.outbound
+    filesystem.read
   }
 }
 {
 
   unsafe let rawResponse: String =
-    http.get("/rates/" + currency)?
+    fs.readText("/rates/" + currency)?
 
   let rate: Decimal =
     json.decode<Decimal>(rawResponse)?

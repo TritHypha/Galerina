@@ -20,7 +20,6 @@ contract {
 
   effects {
     filesystem.read
-    database.write
   }
 }
 {

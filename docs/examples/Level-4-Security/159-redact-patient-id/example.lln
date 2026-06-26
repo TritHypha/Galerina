@@ -5,4 +5,16 @@
 /// test_status: stable
 /// ai_rule: Use redact() to safely prepare protected PatientId for audit logs.
 
-let auditPatientId: redacted PatientId = redact(patientId)
+type PatientId = Brand<String, PatientIdTag>
+
+pure flow example(patientId: protected PatientId) -> redacted PatientId
+
+contract {
+  intent {
+    "Demonstrate redaction: convert a protected PatientId into a redacted PatientId for safe audit logging."
+  }
+}
+{
+  let auditPatientId: redacted PatientId = redact(patientId)
+  return auditPatientId
+}

@@ -7,13 +7,13 @@
 
 type Email = Brand<String, EmailTag>
 
-guarded flow example(email: protected Email) -> Void
+secure flow example(rawEmail: protected Email) -> Void
 
 contract {
-  // Security intent: protected values must be redacted inline at the audit sink call.
-  // Never pass protected Email directly to AuditLog — always use redact().
+  // Security intent: protected values must be redacted before the audit sink call.
+  // Never pass protected Email directly to AuditLog — always redact() it first.
   intent {
-    "Demonstrate safe audit logging: redact the protected email inline before writing to AuditLog."
+    "Demonstrate safe audit logging: redact the protected email before writing to AuditLog."
   }
 
   effects {
@@ -21,5 +21,6 @@ contract {
   }
 }
 {
-  AuditLog.write({ email: redact(email) })
+  let email: redacted Email = redact(rawEmail)
+  AuditLog.write({ email: email })
 }

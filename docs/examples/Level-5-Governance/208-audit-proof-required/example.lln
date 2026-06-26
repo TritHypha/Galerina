@@ -5,7 +5,7 @@
 /// test_status: stable
 /// ai_rule: Destructive operations on sensitive data require audit evidence. Declare audit.write and call AuditLog.write.
 
-secure flow deletePatient(patientId: protected PatientId) -> DeletePatientResult
+secure flow deletePatient(rawPatientId: protected PatientId) -> DeletePatientResult
 
 contract {
   types {
@@ -24,8 +24,9 @@ contract {
   }
 }
 {
-  PatientDB.delete(patientId)?
-  let auditId: redacted PatientId = redact(patientId)
+  let safeId: protected PatientId = validate.patientId(rawPatientId)?
+  PatientDB.delete(safeId)?
+  let auditId: redacted PatientId = redact(safeId)
   AuditLog.write({
     action: "deletePatient",
     patientId: auditId,

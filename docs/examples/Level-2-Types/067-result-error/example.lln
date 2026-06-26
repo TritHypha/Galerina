@@ -5,4 +5,7 @@
 /// test_status: stable
 /// ai_rule: Use Err(errorValue) to represent a typed failure in Result<T,E>.
 
-let result: Result<User, UserError> = Err(UserError.NotFound)
+pure flow example() -> Result<User, UserError> {
+  let result: Result<User, UserError> = Err(UserError.NotFound)
+  return result
+}

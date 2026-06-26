@@ -1,4 +1,4 @@
-﻿/// example: 010-readable-equality (PROPOSED)
+/// example: 010-readable-equality (PROPOSED)
 /// status: proposed - not yet in grammar
 /// concept: readable equality alias
 /// readable_form: status is Active
@@ -6,12 +6,29 @@
 /// expected_diagnostics: none (when adopted)
 /// test_status: stable
 
-// Traditional (current, valid)
-if status == Active {
-  return Ok("active")
+enum Status {
+  Pending
+  Active
+  Suspended
 }
 
-// Readable form (proposed alias — same AST when adopted)
-// if status is Active {
-//   return Ok("active")
-// }
+pure flow describe(status: Status) -> Result<String, String>
+
+contract {
+  intent {
+    "Return a readable status label using equality comparison."
+  }
+}
+{
+  // Traditional (current, valid)
+  if status == Active {
+    return Ok("active")
+  }
+
+  // Readable form (proposed alias — same AST when adopted)
+  // if status is Active {
+  //   return Ok("active")
+  // }
+
+  return Ok("other")
+}
