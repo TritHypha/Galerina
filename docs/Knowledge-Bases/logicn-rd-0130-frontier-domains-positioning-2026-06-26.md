@@ -55,6 +55,14 @@ These 8 notes add **zero shippable code** — they inflate the *vision* denomina
 
 **Roadmap delta:** add the 4 buildable items (below) to the backlog; everything else is position-or-strip. No change to the shippable-core %.
 
+## Build-status of the 4 net-new items (as of 2026-06-26)
+- **#3 constant-time lint — SHIPPED** (LLN-SECRET-004, commit d202c5c). Secret-dependent `if`-branch = timing side-channel; declassifiers (constantTimeEquals/redact) exempt; 0 corpus FP.
+- **#1 data-residency policy — PARKED (needs an owner design decision).** Verify-before-build: the Domain-Guard-Policy + classification machinery exists, but the compiler has NO model of an effect's/substrate's physical REGION. A check where the author declares BOTH data-region and sink-region is security theater (fail-open). Prerequisite = a region-of-effect/region-of-sink model. Owner-relevant.
+- **#2 friction-injection harness — DEFERRED w/ finding (needs a deterministic-injection design decision).** Verify-before-build found: **the runtime fault model is FAIL-CLOSED-ONLY** — a fault (deadline via checkDeadline, or a checked trap) is caught by `runFlow` and turned into a `runtimeError` (audit.result='error'); `withRetry` is the one active runtime handler; **quarantine / fallback / degrade are compile-time-VERIFIED (resilience-inference + governance-verifier) and manifest-recorded, but NOT runtime-dispatched** (grep: no quarantine/fallback/degrade in runtime/). This is a FAIL-CLOSED gap (the safe direction — declared resilience richer than the runtime, which defaults to halt), NOT a fail-open — so it is non-urgent. It reframes the RD-0130 #2 premise: a harness can honestly test **fail-closed-under-friction + retry**, NOT quarantine/fallback at runtime. Test-coverage gap noted: `fail-closed-invariant.test.mjs` covers compute-traps (overflow/div-zero) but not friction/deadline faults; a deterministic deadline test needs either a test-only inject seam (ZT-borderline — must only ADD faults) or a past-absolute-deadline via opts (vs timing-flaky `deadline 0`). Decision needed before building.
+- **#4 move/borrow checker — large, deferred** (the reserved LLN-MEMORY-001/002/003/007; the honest Rust-parity gap).
+
+> Net: of the 4, one shipped (#3); two need an owner/design decision (#1 region model, #2 injection mechanism); one is a large build (#4). The remaining RD-0130 backlog is design-gated or large — not clean-small.
+
 ## Compliance with standing rules
 - **Domain names kept** (aerospace / cyber-defence / ZKP / cobots / memory-safety), not relabelled to compute-primitive jargon.
 - **Verify-before-build**: every shipped/refuted verdict carries file evidence (3 read-only agents).
