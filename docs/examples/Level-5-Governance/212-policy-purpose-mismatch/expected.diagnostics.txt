@@ -1,5 +1,5 @@
 none
-// LLN-GOV-005 is the target diagnostic for this example.
+// SPORE-GOV-005 is the target diagnostic for this example.
 // Policy-purpose-mismatch detection is tracked under Phase 8B.
-// The example is stable: only LLN-TYPE-001 (suppressed) and LLN-EFFECT-002 (warning)
+// The example is stable: only SPORE-TYPE-001 (suppressed) and SPORE-EFFECT-002 (warning)
 // are produced by the current pipeline — no unsuppressed errors.

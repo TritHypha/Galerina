@@ -1,4 +1,4 @@
-LLN-VALUESTATE-004 (TaintedValuePropagation)
+SPORE-VALUESTATE-004 (TaintedValuePropagation)
 
 String concatenation includes unsafe binding 'rawEmail'. The result is tainted.
 Use validation before concatenation:

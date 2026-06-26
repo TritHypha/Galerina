@@ -1,4 +1,4 @@
-# LogicN — Value-State Checker
+# Galerina — Value-State Checker
 
 ## Status
 
@@ -46,7 +46,7 @@ It does not change types — it only reads and validates value-state annotations
 
 Safety prefixes appear **before the binding keyword**:
 
-```logicn
+```galerina
 unsafe let rawEmail: String = form.email           // boundary-origin: blocked from sinks
 safe   mut rawEmail         = validate.email(rawEmail)?  // upgraded after gate
 ```
@@ -80,7 +80,7 @@ Full grammar and vocabulary: `docs/Knowledge-Bases/value-state-annotations.md`
 2. On success — rebinds `name` as safe; downstream code may pass it to governed sinks
 3. On failure — propagates the error via `?`; the unsafe value never escapes
 
-```logicn
+```galerina
 unsafe let rawEmail: String = form.email
 safe   mut rawEmail         = validate.email(rawEmail)?
 // rawEmail is now safe — may be passed to database.write
@@ -92,9 +92,9 @@ safe   mut rawEmail         = validate.email(rawEmail)?
 
 ### Rule 1 — `unsafe` bindings cannot reach governed sinks directly
 
-```logicn
+```galerina
 unsafe let rawInput: String = request.body
-Database.insert(rawInput)   // LLN-VALUESTATE-003 — unsafe binding at governed sink
+Database.insert(rawInput)   // SPORE-VALUESTATE-003 — unsafe binding at governed sink
 ```
 
 An `unsafe let` or `unsafe mut` binding cannot be passed directly to:
@@ -107,41 +107,41 @@ An `unsafe let` or `unsafe mut` binding cannot be passed directly to:
 
 ### Rule 2 — `safe mut` requires a recognised gate function
 
-```logicn
+```galerina
 // Invalid:
-safe mut rawEmail = rawEmail         // no gate — LLN-VALUESTATE-001
+safe mut rawEmail = rawEmail         // no gate — SPORE-VALUESTATE-001
 ```
 
 The right side of `safe mut` must be a call to a recognised gate function (see
 Section 5). The compiler verifies the gate was called and the `?` propagation
 is present (gate failure must propagate, not be swallowed).
 
-Diagnostic: `LLN-VALUESTATE-001` (`UnsafeToSafeTransitionDenied`)
+Diagnostic: `SPORE-VALUESTATE-001` (`UnsafeToSafeTransitionDenied`)
 
 ### Rule 3 — Taint propagates through expressions
 
-```logicn
+```galerina
 unsafe let rawInput: String = request.body
-let sql = "SELECT " + rawInput   // sql is now tainted — LLN-VALUESTATE-004
-Database.query(sql)              // LLN-VALUESTATE-003
+let sql = "SELECT " + rawInput   // sql is now tainted — SPORE-VALUESTATE-004
+Database.query(sql)              // SPORE-VALUESTATE-003
 ```
 
 When any operand in a binary expression is an `unsafe` binding, the result is
 tainted. This propagates through string concatenation, member access, and
 function arguments.
 
-Diagnostic: `LLN-VALUESTATE-004` (`TaintedValuePropagation`)
+Diagnostic: `SPORE-VALUESTATE-004` (`TaintedValuePropagation`)
 
 ### Rule 4 — `SecureString` bindings block restricted operations
 
-```logicn
+```galerina
 let apiKey: SecureString = SecretsStore.get("key")
 
 // All of the following are illegal:
-apiKey == expected       // LLN-SECRET-002
-log.write(apiKey)        // LLN-SECRET-001
-serialize(apiKey)        // LLN-SECRET-003
-let plain: String = apiKey  // LLN-SECRET-003
+apiKey == expected       // SPORE-SECRET-002
+log.write(apiKey)        // SPORE-SECRET-001
+serialize(apiKey)        // SPORE-SECRET-003
+let plain: String = apiKey  // SPORE-SECRET-003
 ```
 
 Approved operations:
@@ -149,16 +149,16 @@ Approved operations:
 - `redact(apiKey)` — produces a safe log placeholder
 - Pass to a flow that explicitly accepts `SecureString`
 
-Diagnostics: `LLN-SECRET-001..003`
+Diagnostics: `SPORE-SECRET-001..003`
 
 ### Rule 5 — `let` and `readonly` bindings cannot be reassigned
 
-```logicn
+```galerina
 let count: Int = 0
-count = 1   // LLN-BINDING-001 — let binding is immutable
+count = 1   // SPORE-BINDING-001 — let binding is immutable
 
 readonly config: AppConfig = loadConfig()
-config = newConfig   // LLN-BINDING-002 — readonly binding cannot be mutated
+config = newConfig   // SPORE-BINDING-002 — readonly binding cannot be mutated
 ```
 
 Note: `safe mut` is the one permitted "reassignment" of a `let` binding —
@@ -173,7 +173,7 @@ A gate function is the right-hand side of a `safe mut` upgrade. It takes an
 `unsafe` binding, validates or decodes it, and returns a safe value. The `?`
 operator is required — gate failures must propagate, not be swallowed.
 
-```logicn
+```galerina
 unsafe let raw: String = form.email
 safe   mut raw = validate.email(raw)?   // gate call + ? required
 ```
@@ -191,7 +191,7 @@ safe   mut raw = validate.email(raw)?   // gate call + ? required
 
 Custom gate functions use the `@gate` annotation:
 
-```logicn
+```galerina
 @gate
 pure flow parseOrderId(raw: String) -> ParseOrderIdResult
 contract {
@@ -206,7 +206,7 @@ contract {
 
 Usage:
 
-```logicn
+```galerina
 unsafe let rawId: String = request.params.id
 safe   mut rawId = parseOrderId(rawId)?
 ```
@@ -215,7 +215,7 @@ safe   mut rawId = parseOrderId(rawId)?
 
 ## 6. Full Flow Example
 
-```logicn
+```galerina
 secure flow createCustomer(request: CreateCustomerRequest)
   -> CreateCustomerResult
 contract {
@@ -257,25 +257,25 @@ Value-state checker reasoning:
 
 ---
 
-## 7. Diagnostics (LLN-VALUESTATE-* and LLN-SECRET-* series)
+## 7. Diagnostics (SPORE-VALUESTATE-* and SPORE-SECRET-* series)
 
-### LLN-VALUESTATE-* series
-
-| Code | Name | Description |
-|---|---|---|
-| `LLN-VALUESTATE-001` | `UnsafeToSafeTransitionDenied` | Value cannot become `safe validated` without a recognised gate function |
-| `LLN-VALUESTATE-002` | `UnvalidatedValueUsed` | `unvalidated` value used where `validated` is required |
-| `LLN-VALUESTATE-003` | `UnsafeValueReachedGovernedSink` | `unsafe` or `unvalidated` value passed to a governed sink |
-| `LLN-VALUESTATE-004` | `TaintedValuePropagation` | Expression result is tainted by an `unsafe` operand |
-| `LLN-VALUESTATE-005` | `InvalidValueStateTransition` | Value-state transition is not permitted by the state machine |
-
-### LLN-SECRET-* series
+### SPORE-VALUESTATE-* series
 
 | Code | Name | Description |
 |---|---|---|
-| `LLN-SECRET-001` | `SecretValueLogged` | `secret protected` value passed to a logging function |
-| `LLN-SECRET-002` | `SecretComparisonDenied` | `==` operator used on a `secret protected` value; use `constantTimeEquals()` |
-| `LLN-SECRET-003` | `SecretSerializationDenied` | `secret protected` value serialised or converted to plain `String` |
+| `SPORE-VALUESTATE-001` | `UnsafeToSafeTransitionDenied` | Value cannot become `safe validated` without a recognised gate function |
+| `SPORE-VALUESTATE-002` | `UnvalidatedValueUsed` | `unvalidated` value used where `validated` is required |
+| `SPORE-VALUESTATE-003` | `UnsafeValueReachedGovernedSink` | `unsafe` or `unvalidated` value passed to a governed sink |
+| `SPORE-VALUESTATE-004` | `TaintedValuePropagation` | Expression result is tainted by an `unsafe` operand |
+| `SPORE-VALUESTATE-005` | `InvalidValueStateTransition` | Value-state transition is not permitted by the state machine |
+
+### SPORE-SECRET-* series
+
+| Code | Name | Description |
+|---|---|---|
+| `SPORE-SECRET-001` | `SecretValueLogged` | `secret protected` value passed to a logging function |
+| `SPORE-SECRET-002` | `SecretComparisonDenied` | `==` operator used on a `secret protected` value; use `constantTimeEquals()` |
+| `SPORE-SECRET-003` | `SecretSerializationDenied` | `secret protected` value serialised or converted to plain `String` |
 
 ---
 
@@ -342,10 +342,10 @@ valueStateAudit:
 
 Phase 5 implements:
 - Parsing and storing value-state annotations on `bindingDecl` AST nodes
-- `LLN-VALUESTATE-003`: detecting `unsafe unvalidated` values that reach
+- `SPORE-VALUESTATE-003`: detecting `unsafe unvalidated` values that reach
   governed sinks (requires knowing which calls are governed sinks — use the
   effect checker's `database.write` / `audit.write` markers)
-- `LLN-SECRET-001..003`: protecting `secret protected` values
+- `SPORE-SECRET-001..003`: protecting `secret protected` values
 
 Phase 5 defers:
 - Full taint tracking through arbitrary expression trees

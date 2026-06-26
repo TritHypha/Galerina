@@ -1,4 +1,4 @@
-# LogicN — Formal Type System Specification
+# Galerina — Formal Type System Specification
 
 ## Status
 
@@ -7,33 +7,33 @@ Phase 5 prerequisite
 Source of truth for the type checker
 ```
 
-This document defines the LogicN v1 type system used by the parser, AST,
+This document defines the Galerina v1 type system used by the parser, AST,
 type checker, diagnostic engine, schema generator, and later compiler phases.
 
 ---
 
 ## Rules at a Glance
 
-- `Auto` is an inference marker — never emit `LLN-TYPE-001` for it; defer to the inference pass
-- `Tensor<T, Shape>` has arity 2 — bare `Tensor` emits `LLN-TYPE-009`; use `AnyTensor` for erased form
-- `Money<C>` arithmetic requires the same currency `C` — cross-currency is `LLN-TYPE-004`
-- `SecureString` cannot use `==`, `!=`, or appear in log calls — see LLN-SECRET-001/002
+- `Auto` is an inference marker — never emit `SPORE-TYPE-001` for it; defer to the inference pass
+- `Tensor<T, Shape>` has arity 2 — bare `Tensor` emits `SPORE-TYPE-009`; use `AnyTensor` for erased form
+- `Money<C>` arithmetic requires the same currency `C` — cross-currency is `SPORE-TYPE-004`
+- `SecureString` cannot use `==`, `!=`, or appear in log calls — see SPORE-SECRET-001/002
 - `Option<T>` arity 1 · `Result<T,E>` arity 2 · `Map<K,V>` arity 2 · `Brand<T,Name>` arity 2
-- `null` and `undefined` are not in the language — any occurrence emits `LLN-TYPE-008`
+- `null` and `undefined` are not in the language — any occurrence emits `SPORE-TYPE-008`
 - Only `Bool` may appear as an `if`/`while` condition — `Tri` and all other types are errors
 
 ---
 
 ## TL;DR
-- `Auto` defers to inference — never emit LLN-TYPE-001 for it
-- `Tensor<T, Shape>` has arity 2 — bare `Tensor` emits LLN-TYPE-009
+- `Auto` defers to inference — never emit SPORE-TYPE-001 for it
+- `Tensor<T, Shape>` has arity 2 — bare `Tensor` emits SPORE-TYPE-009
 - `protected` / `redacted` are governance qualifiers, not type names — strip before lookup
 
 ---
 
 ## 1. Type Categories
 
-LogicN types are divided into:
+Galerina types are divided into:
 
 ```
 Primitive
@@ -173,7 +173,7 @@ User-defined
 
 | Type | Description |
 |---|---|
-| `Auto` | Compile-time inference marker — compiler resolves to a concrete type from the initializer. Not a normal nominal type. Do not emit `LLN-TYPE-001` for `Auto`. |
+| `Auto` | Compile-time inference marker — compiler resolves to a concrete type from the initializer. Not a normal nominal type. Do not emit `SPORE-TYPE-001` for `Auto`. |
 
 ### Branded types
 
@@ -206,7 +206,7 @@ export const GENERIC_ARITY: Readonly<Record<string, number>> = {
 
 Valid:
 
-```logicn
+```galerina
 let name:   Option<String>
 let result: Result<User, ValidationError>
 let prices: Array<Money<GBP>>
@@ -215,12 +215,12 @@ let grid:   Matrix<Float32, 4, 4>
 
 Invalid:
 
-```logicn
-let value: Option<String, Error>   // LLN-TYPE-003: Option expects 1 type argument
-let map:   Map<String>             // LLN-TYPE-003: Map expects 2 type arguments
+```galerina
+let value: Option<String, Error>   // SPORE-TYPE-003: Option expects 1 type argument
+let map:   Map<String>             // SPORE-TYPE-003: Map expects 2 type arguments
 ```
 
-Diagnostic: `LLN-TYPE-003` (`ARITY_MISMATCH`)
+Diagnostic: `SPORE-TYPE-003` (`ARITY_MISMATCH`)
 
 ---
 
@@ -236,13 +236,13 @@ A type reference is valid when it resolves to one of:
 
 A type reference that does not resolve to any of the above produces:
 
-Diagnostic: `LLN-TYPE-002` (`UNKNOWN_TYPE`)
+Diagnostic: `SPORE-TYPE-002` (`UNKNOWN_TYPE`)
 
 ---
 
 ## 5. Null and Undefined Policy
 
-LogicN does not allow silent nullability.
+Galerina does not allow silent nullability.
 
 Rules:
 
@@ -254,19 +254,19 @@ Rules:
 
 Valid:
 
-```logicn
+```galerina
 let email: Option<String>
 let raw:   JsonNull
 ```
 
 Invalid:
 
-```logicn
+```galerina
 let email: String = null
 let user = undefined
 ```
 
-Diagnostics: `LLN-TYPE-008` (`SILENT_NULL_DENIED`), `LLN-TYPE-008` (`UNDEFINED_DENIED`)
+Diagnostics: `SPORE-TYPE-008` (`SILENT_NULL_DENIED`), `SPORE-TYPE-008` (`UNDEFINED_DENIED`)
 
 ---
 
@@ -299,7 +299,7 @@ Assignment must **not** silently:
 - Convert `Decimal` to `Float` (lossy)
 - Convert `Money<GBP>` to `Money<USD>`
 
-Diagnostic: `LLN-TYPE-001` (`TYPE_MISMATCH`)
+Diagnostic: `SPORE-TYPE-001` (`TYPE_MISMATCH`)
 
 ---
 
@@ -321,7 +321,7 @@ Decimal arithmetic — mixing with Float is an error.
 `Money<C>` is not a plain number. It does not accept plain integer or float
 literals without an explicit constructor.
 
-Diagnostic for invalid narrowing: `LLN-TYPE-001` (`TYPE_MISMATCH`)
+Diagnostic for invalid narrowing: `SPORE-TYPE-001` (`TYPE_MISMATCH`)
 
 ---
 
@@ -333,7 +333,7 @@ No truthy/falsy coercion. A non-Bool value in condition position is a type error
 
 Valid:
 
-```logicn
+```galerina
 if isReady {
   return true
 }
@@ -341,8 +341,8 @@ if isReady {
 
 Invalid:
 
-```logicn
-if userName {       // LLN-TYPE-001: expected Bool, got String
+```galerina
+if userName {       // SPORE-TYPE-001: expected Bool, got String
   return true
 }
 ```
@@ -376,7 +376,7 @@ Every `match` on `Option<T>` or `Result<T, E>` must handle all cases.
 
 Valid:
 
-```logicn
+```galerina
 match maybeUser {
   Some(user) => user.name
   None       => "Anonymous"
@@ -385,14 +385,14 @@ match maybeUser {
 
 Invalid:
 
-```logicn
+```galerina
 match maybeUser {
   Some(user) => user.name
   // missing None arm
 }
 ```
 
-Diagnostic: `LLN-MATCH-001` (`NON_EXHAUSTIVE_MATCH`)
+Diagnostic: `SPORE-MATCH-001` (`NON_EXHAUSTIVE_MATCH`)
 
 ---
 
@@ -401,7 +401,7 @@ Diagnostic: `LLN-MATCH-001` (`NON_EXHAUSTIVE_MATCH`)
 Every `match` on a user-defined enum must handle all declared variants,
 unless an explicit wildcard `_` arm is present.
 
-```logicn
+```galerina
 enum OrderStatus {
   Draft
   Confirmed
@@ -411,7 +411,7 @@ enum OrderStatus {
 
 Valid:
 
-```logicn
+```galerina
 match status {
   Draft     => "draft"
   Confirmed => "confirmed"
@@ -421,14 +421,14 @@ match status {
 
 Invalid:
 
-```logicn
+```galerina
 match status {
   Draft => "draft"
   // missing Confirmed and Cancelled
 }
 ```
 
-Diagnostic: `LLN-MATCH-001` (`NON_EXHAUSTIVE_MATCH`)
+Diagnostic: `SPORE-MATCH-001` (`NON_EXHAUSTIVE_MATCH`)
 
 ---
 
@@ -436,7 +436,7 @@ Diagnostic: `LLN-MATCH-001` (`NON_EXHAUSTIVE_MATCH`)
 
 User-defined `type` declarations create **structural record types**.
 
-```logicn
+```galerina
 type User {
   id:    String
   email: Option<String>
@@ -474,59 +474,59 @@ Call .constantTimeEquals() for comparison.
 Call redact() to produce a redacted log-safe representation.
 ```
 
-Diagnostic: `LLN-SECRET-001`, `LLN-SECRET-002`, `LLN-SECRET-003`
+Diagnostic: `SPORE-SECRET-001`, `SPORE-SECRET-002`, `SPORE-SECRET-003`
 (see `docs/Knowledge-Bases/value-state-annotations.md`)
 
 ---
 
 ## 13. Required Diagnostics
 
-Full reference: `docs/Knowledge-Bases/compiler-diagnostics.md` (summaries only — defers to this document for LLN-TYPE-* numbering)
-Numbering strategy: `docs/Knowledge-Bases/logicn-diagnostic-numbering-strategy.md`
+Full reference: `docs/Knowledge-Bases/compiler-diagnostics.md` (summaries only — defers to this document for SPORE-TYPE-* numbering)
+Numbering strategy: `docs/Knowledge-Bases/galerina-diagnostic-numbering-strategy.md`
 
-### LLN-TYPE-* series (22 codes)
-
-| Code | Name | Description |
-|---|---|---|
-| `LLN-TYPE-001` | `UnknownType` | Referenced type does not exist in the current scope; emit fuzzy suggestions |
-| `LLN-TYPE-002` | `TypeMismatch` | Cannot assign or convert type X to type Y |
-| `LLN-TYPE-003` | `InvalidNominalConversion` | Cannot implicitly convert nominal alias (e.g. `String` → `Email` requires a validation gate) |
-| `LLN-TYPE-004` | `InvalidBinaryOperation` | Operator `op` cannot be applied to operands of type X and Y |
-| `LLN-TYPE-005` | `InvalidUnaryOperation` | Unary operator `op` requires operand of type X |
-| `LLN-TYPE-006` | `InvalidCallArgument` | Argument N expected type X but received Y |
-| `LLN-TYPE-007` | `InvalidArgumentCount` | Expected N arguments but received M |
-| `LLN-TYPE-008` | `InvalidReturnType` | Flow declared return type X but returned Y |
-| `LLN-TYPE-009` | `InvalidGenericInstantiation` | Generic type `G<T>` expects N type parameters but received M |
-| `LLN-TYPE-010` | `UnsatisfiedGenericConstraint` | Type X does not satisfy constraint Y on type parameter |
-| `LLN-TYPE-011` | `InvalidCollectionElement` | Collection `G<T>` cannot contain element of type X |
-| `LLN-TYPE-012` | `InvalidResultType` | `Ok`/`Err` branch type does not match declared `Result<T, E>` |
-| `LLN-TYPE-013` | `InvalidSecretOperation` | Protected secret value cannot use operator `op`; use `constantTimeEquals()` |
-| `LLN-TYPE-014` | `MissingRequiredEffect` | Calling `f` requires effect `e`; current flow does not declare it |
-| `LLN-TYPE-015` | `GovernedSinkViolation` | Governed sink requires a safe binding; received an `unsafe let` binding that has not been upgraded with `safe mut` |
-| `LLN-TYPE-016` | `TensorShapeMismatch` | Tensor shapes incompatible for operation (e.g. `matmul` shape mismatch) |
-| `LLN-TYPE-017` | `QuantizedPrecisionMismatch` | Cannot mix `Quantized<Int8>` with `Float32` without `dequantize()` |
-| `LLN-TYPE-018` | `InvalidRuntimeTargetType` | Type X cannot exist in compute target Y (e.g. `CpuTensor` inside `gpu` block) |
-| `LLN-TYPE-019` | `UnknownSymbol` | Symbol `x` is not defined in the current scope |
-| `LLN-TYPE-020` | `ShadowedBinding` | Local binding `x` shadows outer-scope variable `x` (warning) |
-| `LLN-TYPE-021` | `NonExhaustiveMatch` | _(retired — superseded by `LLN-TYPE-023` mandatory wildcard)_ |
-| `LLN-TYPE-022` | `UnreachablePattern` | Pattern is unreachable due to a previous wildcard (`_` or `else`) |
-| `LLN-TYPE-023` | `MissingWildcardArm` | every `match` must end with a mandatory `_ =>` (or `else =>`) catch-all (fail-closed, task #174) |
-
-### LLN-NAME-* series
+### SPORE-TYPE-* series (22 codes)
 
 | Code | Name | Description |
 |---|---|---|
-| `LLN-NAME-001` | `UNDECLARED_NAME` | Name not defined in current scope |
-| `LLN-NAME-002` | `DUPLICATE_NAME` | Name already declared in this scope |
-| `LLN-NAME-003` | `USE_BEFORE_DECLARATION` | Name referenced before its declaration point |
+| `SPORE-TYPE-001` | `UnknownType` | Referenced type does not exist in the current scope; emit fuzzy suggestions |
+| `SPORE-TYPE-002` | `TypeMismatch` | Cannot assign or convert type X to type Y |
+| `SPORE-TYPE-003` | `InvalidNominalConversion` | Cannot implicitly convert nominal alias (e.g. `String` → `Email` requires a validation gate) |
+| `SPORE-TYPE-004` | `InvalidBinaryOperation` | Operator `op` cannot be applied to operands of type X and Y |
+| `SPORE-TYPE-005` | `InvalidUnaryOperation` | Unary operator `op` requires operand of type X |
+| `SPORE-TYPE-006` | `InvalidCallArgument` | Argument N expected type X but received Y |
+| `SPORE-TYPE-007` | `InvalidArgumentCount` | Expected N arguments but received M |
+| `SPORE-TYPE-008` | `InvalidReturnType` | Flow declared return type X but returned Y |
+| `SPORE-TYPE-009` | `InvalidGenericInstantiation` | Generic type `G<T>` expects N type parameters but received M |
+| `SPORE-TYPE-010` | `UnsatisfiedGenericConstraint` | Type X does not satisfy constraint Y on type parameter |
+| `SPORE-TYPE-011` | `InvalidCollectionElement` | Collection `G<T>` cannot contain element of type X |
+| `SPORE-TYPE-012` | `InvalidResultType` | `Ok`/`Err` branch type does not match declared `Result<T, E>` |
+| `SPORE-TYPE-013` | `InvalidSecretOperation` | Protected secret value cannot use operator `op`; use `constantTimeEquals()` |
+| `SPORE-TYPE-014` | `MissingRequiredEffect` | Calling `f` requires effect `e`; current flow does not declare it |
+| `SPORE-TYPE-015` | `GovernedSinkViolation` | Governed sink requires a safe binding; received an `unsafe let` binding that has not been upgraded with `safe mut` |
+| `SPORE-TYPE-016` | `TensorShapeMismatch` | Tensor shapes incompatible for operation (e.g. `matmul` shape mismatch) |
+| `SPORE-TYPE-017` | `QuantizedPrecisionMismatch` | Cannot mix `Quantized<Int8>` with `Float32` without `dequantize()` |
+| `SPORE-TYPE-018` | `InvalidRuntimeTargetType` | Type X cannot exist in compute target Y (e.g. `CpuTensor` inside `gpu` block) |
+| `SPORE-TYPE-019` | `UnknownSymbol` | Symbol `x` is not defined in the current scope |
+| `SPORE-TYPE-020` | `ShadowedBinding` | Local binding `x` shadows outer-scope variable `x` (warning) |
+| `SPORE-TYPE-021` | `NonExhaustiveMatch` | _(retired — superseded by `SPORE-TYPE-023` mandatory wildcard)_ |
+| `SPORE-TYPE-022` | `UnreachablePattern` | Pattern is unreachable due to a previous wildcard (`_` or `else`) |
+| `SPORE-TYPE-023` | `MissingWildcardArm` | every `match` must end with a mandatory `_ =>` (or `else =>`) catch-all (fail-closed, task #174) |
 
-### LLN-MATCH-* series
+### SPORE-NAME-* series
 
 | Code | Name | Description |
 |---|---|---|
-| `LLN-MATCH-001` | `NON_EXHAUSTIVE_MATCH` | match case coverage — now enforced by the mandatory wildcard (`LLN-TYPE-023`) |
-| `LLN-MATCH-002` | `UNREACHABLE_PATTERN` | Pattern is unreachable (alias of `LLN-TYPE-022`) |
-| `LLN-MATCH-003` | `INVALID_PATTERN_TYPE` | Pattern cannot match against this type |
+| `SPORE-NAME-001` | `UNDECLARED_NAME` | Name not defined in current scope |
+| `SPORE-NAME-002` | `DUPLICATE_NAME` | Name already declared in this scope |
+| `SPORE-NAME-003` | `USE_BEFORE_DECLARATION` | Name referenced before its declaration point |
+
+### SPORE-MATCH-* series
+
+| Code | Name | Description |
+|---|---|---|
+| `SPORE-MATCH-001` | `NON_EXHAUSTIVE_MATCH` | match case coverage — now enforced by the mandatory wildcard (`SPORE-TYPE-023`) |
+| `SPORE-MATCH-002` | `UNREACHABLE_PATTERN` | Pattern is unreachable (alias of `SPORE-TYPE-022`) |
+| `SPORE-MATCH-003` | `INVALID_PATTERN_TYPE` | Pattern cannot match against this type |
 
 ### Compilation pipeline order
 
@@ -539,15 +539,15 @@ parser
     ↓
 AST
     ↓
-symbol resolution     ← LLN-NAME-*
+symbol resolution     ← SPORE-NAME-*
     ↓
-type checker          ← LLN-TYPE-001..022
+type checker          ← SPORE-TYPE-001..022
     ↓
-value-state checker   ← LLN-VALUESTATE-001..005, LLN-SECRET-001..003
+value-state checker   ← SPORE-VALUESTATE-001..005, SPORE-SECRET-001..003
     ↓
-effect checker        ← LLN-EFFECT-001..006
+effect checker        ← SPORE-EFFECT-001..006
     ↓
-governance verifier   ← LLN-GOV-*
+governance verifier   ← SPORE-GOV-*
     ↓
 IR generation
 ```
@@ -640,5 +640,5 @@ This document satisfies all of those criteria.
 - `docs/Knowledge-Bases/operator-precedence.md`
 - `docs/Knowledge-Bases/compiler-diagnostics.md`
 - `docs/Knowledge-Bases/generic-types.md`
-- `docs/Knowledge-Bases/logicn-core-logic-tri-decision-bool.md`
+- `docs/Knowledge-Bases/galerina-core-logic-tri-decision-bool.md`
 - `docs/Knowledge-Bases/v1-reserved-keywords.md`

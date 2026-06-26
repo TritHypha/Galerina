@@ -2,7 +2,7 @@
 
 ## Definition
 
-LogicN uses `match value { ... }` for all multi-branch matching and
+Galerina uses `match value { ... }` for all multi-branch matching and
 value transformation. This replaces `switch`, `case`, and `elseif` from other
 languages.
 
@@ -13,7 +13,7 @@ closing `}` of the `match` block.
 
 Match a value against known variants:
 
-```logicn
+```galerina
 let message: String = match payment.status {
   Paid     => "Payment complete"
   Failed   => "Payment failed"
@@ -27,7 +27,7 @@ let message: String = match payment.status {
 
 The compiler reports non-exhaustive matches for known enum types:
 
-```logicn
+```galerina
 enum OrderStatus { Placed, Confirmed, Shipped, Delivered, Cancelled }
 
 let label: String = match order.status {
@@ -44,7 +44,7 @@ let label: String = match order.status {
 
 Numeric ranges are matched top-to-bottom, first match wins:
 
-```logicn
+```galerina
 let grade: String = match score {
   >= 90 => "excellent"
   >= 70 => "good"
@@ -57,7 +57,7 @@ let grade: String = match score {
 
 Match against a combination of fields:
 
-```logicn
+```galerina
 let handler = match request {
   { method: "GET",    path: "/users"    } => get_users()
   { method: "POST",   path: "/users"    } => create_user()
@@ -71,7 +71,7 @@ let handler = match request {
 
 Match on a discriminated union variant:
 
-```logicn
+```galerina
 let result: String = match api_result {
   Ok(data)  => format_data(data)
   Err(e)    => format_error(e)
@@ -80,7 +80,7 @@ let result: String = match api_result {
 
 ## Option Matching
 
-```logicn
+```galerina
 let user_name: String = match found_user {
   Some(u) => u.name
   None    => "Guest"
@@ -92,7 +92,7 @@ let user_name: String = match found_user {
 Avoid nesting `match` inside `match` where possible (max nesting depth 2). Extract
 to a named `fn` or `flow` if logic grows:
 
-```logicn
+```galerina
 flow classify_order(order: Order) -> String {
   match order.status {
     Confirmed => classify_payment(order.payment)
@@ -114,7 +114,7 @@ flow classify_payment(payment: Payment) -> String {
 
 Capture the matched value with a name:
 
-```logicn
+```galerina
 match response {
   Ok(order)     => save_and_return(order)
   Err(NotFound) => return Err(OrderError.NotFound)
@@ -126,7 +126,7 @@ match response {
 
 `match` is an expression and can be used directly in assignments:
 
-```logicn
+```galerina
 let fee: Decimal = match order.currency {
   GBP => Decimal(0.02)
   USD => Decimal(0.03)
@@ -137,7 +137,7 @@ let fee: Decimal = match order.currency {
 
 ## What match Replaces
 
-| Other language | LogicN |
+| Other language | Galerina |
 | --- | --- |
 | `switch (x) { case A: ... }` | `match x { A => ... }` |
 | `if x == A ... else if x == B` | `match x { A => ... B => ... }` |
@@ -162,7 +162,7 @@ the match covers all known variants of an enum exhaustively
 
 ### Validation Workflow
 
-```logicn
+```galerina
 let rawEmail: String unsafe unvalidated = form.email
 
 match validate.email(rawEmail) {
@@ -178,7 +178,7 @@ State pipeline: `unsafe unvalidated -> safe validated`
 
 ### API Boundary Matching
 
-```logicn
+```galerina
 secure flow createCustomer(request: Request) -> ApiResponse {
   let body: Json unsafe unvalidated = boundary.api.body(request)
 
@@ -196,7 +196,7 @@ secure flow createCustomer(request: Request) -> ApiResponse {
 
 ### Decision Matching
 
-```logicn
+```galerina
 enum Decision { Allow, Deny, Review }
 
 match fraudDecision(order) {
@@ -211,7 +211,7 @@ and not applicable. Use `Decision` instead.
 
 ### Permission Matching
 
-```logicn
+```galerina
 enum AuthDecision { Allow, Deny, RequireMFA }
 
 match authorize(user, action) {
@@ -223,7 +223,7 @@ match authorize(user, action) {
 
 ### Workflow State Machine
 
-```logicn
+```galerina
 enum OrderWorkflow {
   Draft
   AwaitingPayment
@@ -245,7 +245,7 @@ match order.workflow {
 
 ### Validation Error Matching
 
-```logicn
+```galerina
 enum ValidationError {
   MissingField
   InvalidEmail
@@ -264,7 +264,7 @@ match validate.registration(input) {
 
 ### Runtime Mode Matching
 
-```logicn
+```galerina
 enum RuntimeMode { Checked, Compiled, Development }
 
 match runtime.mode() {
@@ -278,7 +278,7 @@ match runtime.mode() {
 
 ### Struct Destructuring
 
-```logicn
+```galerina
 // Future — not v1
 struct Point {
   x: Int
@@ -295,7 +295,7 @@ Fields may be matched explicitly or bound into local variables.
 
 Nested struct destructuring:
 
-```logicn
+```galerina
 // Future — not v1
 match response {
   Ok(User { role: Admin, name }) => grantAccess(name)
@@ -306,7 +306,7 @@ match response {
 
 ### Sequence / List Patterns
 
-```logicn
+```galerina
 // Future — not v1
 match items {
   []              => "empty"
@@ -319,7 +319,7 @@ Sequence patterns simplify recursive and collection-oriented logic.
 
 ### Guards
 
-```logicn
+```galerina
 // Future — not v1
 match number {
   x if x < 0  => "negative"
@@ -330,7 +330,7 @@ match number {
 
 Guards add runtime conditions evaluated after structural matching succeeds.
 
-```logicn
+```galerina
 // Future — not v1
 match order {
   Order { total } if total > 1000 => requireManagerApproval()
@@ -340,7 +340,7 @@ match order {
 
 ### Pattern Binding (Variable Destructuring)
 
-```logicn
+```galerina
 // Future — not v1
 let Point { x, y } = point
 ```
@@ -349,7 +349,7 @@ Patterns may appear in assignment and parameter binding contexts.
 
 ### Tuple / Multi-Value
 
-```logicn
+```galerina
 // Future — not v1
 match paymentStatus, shipmentStatus {
   (Paid, Queued)    => startPacking()

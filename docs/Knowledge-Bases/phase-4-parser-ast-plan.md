@@ -1,8 +1,8 @@
-# LogicN Phase 4 — Parser and AST: Plan, Flowchart and Suggestions
+# Galerina Phase 4 — Parser and AST: Plan, Flowchart and Suggestions
 
 ## Overview
 
-Phase 4 is the most critical phase in LogicN's development. Without a real, enforceable parser
+Phase 4 is the most critical phase in Galerina's development. Without a real, enforceable parser
 and AST, every governance guarantee, effect declaration, capability constraint, ownership model
 and compute target is documentation-only. Phase 4 makes the language *real*.
 
@@ -17,13 +17,13 @@ The following must be resolved before Phase 4 implementation starts. Leaving the
 building the wrong parser or producing an AST that cannot support later phases.
 
 ### Q1: Grammar Ownership
-Which package owns the LogicN grammar definition?
+Which package owns the Galerina grammar definition?
 
 ```text
-Recommended: logicn-core-compiler
-The grammar file (.logicn.peg, .lark, or hand-written recursive descent) lives in
-logicn-core-compiler/src/parser/grammar.ts (or grammar.lln.peg).
-logicn-core owns the AstNodeKind enum and AST node types, but not the parsing logic.
+Recommended: galerina-core-compiler
+The grammar file (.galerina.peg, .lark, or hand-written recursive descent) lives in
+galerina-core-compiler/src/parser/grammar.ts (or grammar.spore.peg).
+galerina-core owns the AstNodeKind enum and AST node types, but not the parsing logic.
 ```
 
 ### Q2: Parser Technology Choice
@@ -106,7 +106,7 @@ These must be in the lexer before any code that uses them is processed.
 │  • Freeze the v1 AstNodeKind enum (see table below)                         │
 │  • Add new Phase 4 node kinds (see list below)                              │
 │  • Every node kind has a TypeScript interface with span                     │
-│  • AstNode discriminated union type exported from logicn-core               │
+│  • AstNode discriminated union type exported from galerina-core               │
 │                                                                             │
 │  STAGE 4.3: Grammar Productions (recursive descent)                        │
 │  ─────────────────────────────────────────────────                          │
@@ -133,18 +133,18 @@ These must be in the lexer before any code that uses them is processed.
 │  STAGE 4.4: Parser Error Recovery                                           │
 │  ─────────────────────────────────                                          │
 │  • Synchronize at declaration boundaries on error                           │
-│  • Emit LLN-PARSE-* diagnostics with source spans                          │
+│  • Emit SPORE-PARSE-* diagnostics with source spans                          │
 │  • Partial AST is safe to walk (no null dereferences in checkers)          │
 │  • Test: every diagnostic code has at least one rejection test              │
 │                                                                             │
 │  STAGE 4.5: Published AST JSON Schema                                       │
 │  ────────────────────────────────────                                       │
-│  • `logicn ast --json` emits versioned JSON schema                          │
-│  • Schema version: "lln.ast.v1"                                             │
+│  • `galerina ast --json` emits versioned JSON schema                          │
+│  • Schema version: "spore.ast.v1"                                             │
 │  • Every node has: kind, span, children                                     │
 │  • Modes: --syntax-only, --resolved, --include-trivia, --compact            │
 │  • Schema published to build/ast-schema.json                                │
-│  • LLN-AST-001..006 diagnostics                                             │
+│  • SPORE-AST-001..006 diagnostics                                             │
 │                                                                             │
 │  STAGE 4.6: Symbol Table (basic, no type resolution)                        │
 │  ─────────────────────────────────────────────────                          │
@@ -164,10 +164,10 @@ These must be in the lexer before any code that uses them is processed.
 │                                                                             │
 │  STAGE 4.8: Tooling Wiring                                                  │
 │  ────────────────────────                                                   │
-│  • logicn-core-cli: `logicn check --syntax-only` uses new parser           │
-│  • logicn-core-cli: `logicn ast --json` emits published schema             │
-│  • logicn-lsp (stub): parser feeds partial AST to diagnostic loop          │
-│  • logicn-devtools-project-graph: update to consume new AST nodes          │
+│  • galerina-core-cli: `galerina check --syntax-only` uses new parser           │
+│  • galerina-core-cli: `galerina ast --json` emits published schema             │
+│  • galerina-lsp (stub): parser feeds partial AST to diagnostic loop          │
+│  • galerina-devtools-project-graph: update to consume new AST nodes          │
 │  • intent graph node/edge kinds updated for new AST kinds                  │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -287,16 +287,16 @@ NeuralOp                — neural op (matmul, attention, etc.)
 □ Every AST node interface has a span field
 □ Parser covers all grammar productions (see Stage 4.3)
 □ Error recovery at declaration boundaries
-□ LLN-PARSE-001..010 diagnostics defined and testable
-□ `logicn ast --json` emits lln.ast.v1 schema
+□ SPORE-PARSE-001..010 diagnostics defined and testable
+□ `galerina ast --json` emits spore.ast.v1 schema
 □ AST JSON schema published to build/
 □ Symbol table: flow/type name resolution, duplicate detection
 □ ≥80 parser tests (valid + rejection + span correctness)
 □ Round-trip test: parse → JSON → verify schema
-□ logicn-core-cli: --syntax-only uses new parser
-□ logicn-devtools-project-graph: updated for new node kinds
+□ galerina-core-cli: --syntax-only uses new parser
+□ galerina-devtools-project-graph: updated for new node kinds
 □ intent graph updated for new AST kinds
-□ LLN-PARSE diagnostics in compiler-diagnostics.md
+□ SPORE-PARSE diagnostics in compiler-diagnostics.md
 ```
 
 ---
@@ -304,20 +304,20 @@ NeuralOp                — neural op (matmul, attention, etc.)
 ## Phase 4 Parser Diagnostic Codes
 
 ```text
-LLN-PARSE-001  Unexpected token
-LLN-PARSE-002  Expected declaration keyword
-LLN-PARSE-003  Unterminated string literal
-LLN-PARSE-004  Invalid numeric literal
-LLN-PARSE-005  Unclosed block or bracket
-LLN-PARSE-006  Missing return type annotation
-LLN-PARSE-007  Duplicate declaration in same scope
-LLN-PARSE-008  Invalid escape sequence
-LLN-PARSE-009  Reserved keyword used as identifier
-LLN-PARSE-010  Placement hint on non-flow/non-alloc context
-LLN-PARSE-011  Ownership expression outside allowed context
-LLN-PARSE-012  GPU stream used in non-compute context
-LLN-PARSE-013  Atomic operation on non-atomic memory region (parse-level)
-LLN-PARSE-014  Quantized type used outside neural/AI context (parse-level)
+SPORE-PARSE-001  Unexpected token
+SPORE-PARSE-002  Expected declaration keyword
+SPORE-PARSE-003  Unterminated string literal
+SPORE-PARSE-004  Invalid numeric literal
+SPORE-PARSE-005  Unclosed block or bracket
+SPORE-PARSE-006  Missing return type annotation
+SPORE-PARSE-007  Duplicate declaration in same scope
+SPORE-PARSE-008  Invalid escape sequence
+SPORE-PARSE-009  Reserved keyword used as identifier
+SPORE-PARSE-010  Placement hint on non-flow/non-alloc context
+SPORE-PARSE-011  Ownership expression outside allowed context
+SPORE-PARSE-012  GPU stream used in non-compute context
+SPORE-PARSE-013  Atomic operation on non-atomic memory region (parse-level)
+SPORE-PARSE-014  Quantized type used outside neural/AI context (parse-level)
 ```
 
 ---
@@ -329,7 +329,7 @@ LLN-PARSE-014  Quantized type used outside neural/AI context (parse-level)
 Before writing a single parser rule, document the exact set of syntactic forms that must
 be parseable for v1. Every syntax form added after the parser is built is expensive.
 
-The safest approach: write 10–15 real LogicN program files that cover the full v1 surface
+The safest approach: write 10–15 real Galerina program files that cover the full v1 surface
 and commit them as `tests/fixtures/` before the parser is written. The parser passes when
 all fixtures parse correctly.
 
@@ -361,13 +361,13 @@ the parser from becoming untestable. Required test kinds per production:
 
 ```text
 1 valid parse test (passes)
-1 rejection test (fails with LLN-PARSE-NNN)
+1 rejection test (fails with SPORE-PARSE-NNN)
 1 span test (verifies start/end line/col)
 ```
 
 ### Suggestion 5: Use `node:test` Consistently
 
-LogicN already uses `node:test` for compiler tests. Phase 4 parser tests should use the
+Galerina already uses `node:test` for compiler tests. Phase 4 parser tests should use the
 same runner. All test files should be `.test.mjs`. Do not introduce Jest or Vitest.
 
 ### Suggestion 6: Separate the Grammar from the Implementation
@@ -479,12 +479,12 @@ else tractable.
 
 | Package | Phase 4 Role |
 |---|---|
-| `logicn-core` | AstNodeKind enum, AST node interfaces, span format, diagnostic type |
-| `logicn-core-compiler` | Lexer, parser, grammar productions, symbol table, AST JSON emitter |
-| `logicn-core-cli` | `logicn check`, `logicn ast --json`, `logicn signatures` wiring |
-| `logicn-devtools-project-graph` | Update to consume new AST node kinds |
-| `logicn-core-reports` | Intent graph update for new AST kinds |
-| `logicn-lsp` (stub) | Wire parser output to LSP diagnostic loop |
+| `galerina-core` | AstNodeKind enum, AST node interfaces, span format, diagnostic type |
+| `galerina-core-compiler` | Lexer, parser, grammar productions, symbol table, AST JSON emitter |
+| `galerina-core-cli` | `galerina check`, `galerina ast --json`, `galerina signatures` wiring |
+| `galerina-devtools-project-graph` | Update to consume new AST node kinds |
+| `galerina-core-reports` | Intent graph update for new AST kinds |
+| `galerina-lsp` (stub) | Wire parser output to LSP diagnostic loop |
 
 ---
 
@@ -494,13 +494,13 @@ Phase 4 is complete when:
 
 ```text
 1. All Phase 4 checklist items above are ticked
-2. logicn-core-compiler tests: ≥80 tests, all passing
-3. `logicn ast --json` on any fixture file produces valid lln.ast.v1 JSON
-4. `logicn check --syntax-only` reports LLN-PARSE-NNN on all invalid fixtures
+2. galerina-core-compiler tests: ≥80 tests, all passing
+3. `galerina ast --json` on any fixture file produces valid spore.ast.v1 JSON
+4. `galerina check --syntax-only` reports SPORE-PARSE-NNN on all invalid fixtures
 5. No grammar production is without at least one rejection test
 6. AstNodeKind enum is frozen and documented
 7. Published AST JSON schema matches actual output
-8. Zero TypeScript errors in logicn-core and logicn-core-compiler
+8. Zero TypeScript errors in galerina-core and galerina-core-compiler
 9. Incremental compilation strategy decision documented
 10. All new Phase 4 diagnostic codes added to compiler-diagnostics.md
 ```

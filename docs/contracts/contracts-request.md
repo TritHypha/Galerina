@@ -10,7 +10,7 @@ Request contracts are typed input boundaries.
 
 ## Syntax
 
-```logicn
+```galerina
 type CreateOrderRequest {
   sku: String
   quantity: Int

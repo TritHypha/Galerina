@@ -1,8 +1,8 @@
 # Typed Browser Rendering
 
-LogicN should support browser rendering as a typed, safe and reportable pipeline.
+Galerina should support browser rendering as a typed, safe and reportable pipeline.
 
-The goal is not to replace the browser or copy a frontend framework. LogicN
+The goal is not to replace the browser or copy a frontend framework. Galerina
 should compile safe, typed UI contracts into browser-compatible JavaScript,
 WebAssembly or framework adapter output, while ensuring received data is
 validated before it becomes UI.
@@ -27,48 +27,48 @@ API response
 
 ## Package Direction
 
-Browser rendering belongs in `logicn-web-*` packages:
+Browser rendering belongs in `galerina-web-*` packages:
 
 ```text
-logicn-web
+galerina-web
   umbrella browser-safe web contracts
 
-logicn-web-render
+galerina-web-render
   typed safe browser rendering pipeline
 
-logicn-web-state
+galerina-web-state
   client state, state transitions, hydration and diff plans
 
-logicn-web-components
+galerina-web-components
   typed component props, child rendering and component effects
 
-logicn-web-router
+galerina-web-router
   browser routes, navigation and route parameter validation
 
-logicn-web-events
+galerina-web-events
   typed browser events and event-to-state transitions
 ```
 
 Supporting packages:
 
 ```text
-logicn-data-json
+galerina-data-json
   JSON decoding, streaming and schema validation
 
-logicn-data-html
+galerina-data-html
   SafeHtml, sanitization and unsafe HTML reports
 
-logicn-core-security
+galerina-core-security
   browser security policy, secret denial, permissions and redaction
 
-logicn-target-js
+galerina-target-js
   browser JavaScript output planning and source maps
 
-logicn-target-wasm
+galerina-target-wasm
   browser-safe WebAssembly compute output
 ```
 
-Do not put browser rendering into `logicn-core`, the app kernel or the API
+Do not put browser rendering into `galerina-core`, the app kernel or the API
 server. Core may define target boundaries and safe primitive concepts, but
 browser UI behaviour must stay package-owned.
 
@@ -83,9 +83,9 @@ const data = await response.json();
 element.innerHTML = data.description;
 ```
 
-LogicN direction:
+Galerina direction:
 
-```LogicN
+```Galerina
 schema Product {
   id Text
   title Text
@@ -97,7 +97,7 @@ schema Product {
 let products = fetch "/api/products" as Product[]
 ```
 
-If the API returns invalid data, LogicN should block rendering and return a
+If the API returns invalid data, Galerina should block rendering and return a
 typed error. The render report should record the API, schema, failure reason and
 whether any fallback UI was rendered.
 
@@ -113,7 +113,7 @@ RawHtml    denied unless explicitly enabled by reviewed policy
 
 Example:
 
-```LogicN
+```Galerina
 render Text(product.title)
 render SafeHtml(product.description) where policy allows sanitized_product_html
 ```
@@ -124,9 +124,9 @@ security report warnings.
 
 ## State-Driven UI
 
-LogicN browser rendering should be state-driven:
+Galerina browser rendering should be state-driven:
 
-```LogicN
+```Galerina
 state ProductPage {
   products Product[]
   loading Bool = true
@@ -156,14 +156,14 @@ old state -> new state -> changed UI only
 
 The implementation may use generated DOM operations, virtual-DOM-style diffing,
 fine-grained reactive updates, JavaScript, WebAssembly or framework adapters.
-The LogicN contract is the typed state transition and safe render report, not a
+The Galerina contract is the typed state transition and safe render report, not a
 specific rendering engine.
 
 ## Streaming Rendering
 
 Large data should be able to stream in validated batches:
 
-```LogicN
+```Galerina
 stream Product[] from "/api/products" {
   validate_each Product
   render_each ProductCard
@@ -192,7 +192,7 @@ render all data
 freeze browser
 ```
 
-LogicN should support:
+Galerina should support:
 
 ```text
 receive chunk
@@ -207,7 +207,7 @@ backpressure and error UI behaviour.
 
 ## Example Page
 
-```LogicN
+```Galerina
 use web.render
 use web.state
 use data.json
@@ -270,12 +270,12 @@ page Products {
 }
 ```
 
-This is design-direction syntax. It must not be treated as v1 frozen LogicN
+This is design-direction syntax. It must not be treated as v1 frozen Galerina
 syntax until the language docs and compiler agree.
 
 ## Reports
 
-LogicN browser rendering should generate:
+Galerina browser rendering should generate:
 
 ```text
 app.web-render-report.json
@@ -307,7 +307,7 @@ configured, raw personal data and raw unsafe HTML payloads.
 
 ## Non-Goals
 
-LogicN browser rendering should not become:
+Galerina browser rendering should not become:
 
 ```text
 a browser engine

@@ -1,0 +1,76 @@
+/// Mandelbrot escape-time benchmark (Computer Language Benchmarks Game) — scaled-integer.
+/// Deterministic integer kernel over a 128×128 grid: for each pixel (px,py) it maps to a
+/// complex constant c = cr + ci·i (fixed-point, ×SCALE) and counts escape iterations of
+/// z ← z² + c, capped at MAXITER=100. The checksum is the sum of iteration counts over all
+/// 16384 pixels. The complex squaring uses scaled-int arithmetic: zr² and zi² are computed
+/// as (z·z)/SCALE, and the cross term 2·zr·zi is split into sign + magnitude so EVERY
+/// integer division has a non-negative numerator — that makes Galerina `/` agree with Python
+/// `//`, JS `Math.trunc` and Rust `/` bit-for-bit. All intermediates stay < 2^31 (the
+/// integer path is 32-bit): zr,zi ≤ ~2·SCALE = 16384, products ≤ 268M, sums < 536M.
+
+/// |x| helper — used so the cross-term division numerator stays non-negative.
+pure flow absInt(x: Int) -> Int
+contract { effects {} }
+{
+  if x < 0 { return 0 - x }
+  return x
+}
+
+/// sign(x): -1, 0, or +1.
+pure flow signInt(x: Int) -> Int
+contract { effects {} }
+{
+  if x < 0 { return 0 - 1 }
+  if x > 0 { return 1 }
+  return 0
+}
+
+/// Escape-iteration count for a single pixel constant (cr, ci), both ×SCALE.
+pure flow escape(cr: Int, ci: Int) -> Int
+contract { effects {} }
+{
+  mut zr: Int = 0
+  mut zi: Int = 0
+  mut it: Int = 0
+  while it < 100 {
+    let zr2: Int = zr * zr / 8192
+    let zi2: Int = zi * zi / 8192
+    if zr2 + zi2 > 32768 {
+      return it
+    }
+    let cross: Int = zr * zi
+    let sgn: Int = signInt(cross)
+    let mag: Int = absInt(cross)
+    let nzi: Int = sgn * (2 * mag / 8192) + ci
+    let nzr: Int = zr2 - zi2 + cr
+    zr = nzr
+    zi = nzi
+    it = it + 1
+  }
+  return it
+}
+
+/// Sum of escape-iteration counts over the whole 128×128 grid.
+pure flow mandel() -> Int
+contract { effects {} }
+{
+  mut checksum: Int = 0
+  mut py: Int = 0
+  while py < 128 {
+    let ci: Int = 0 - 16384 + py * 32768 / 128
+    mut px: Int = 0
+    while px < 128 {
+      let cr: Int = 0 - 20480 + px * 28672 / 128
+      checksum = checksum + escape(cr, ci)
+      px = px + 1
+    }
+    py = py + 1
+  }
+  return checksum
+}
+
+pure flow main() -> Int
+contract { effects {} }
+{
+  return mandel()
+}

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-LogicN should make every state change visible in source code, reports and AI
+Galerina should make every state change visible in source code, reports and AI
 tooling.
 
 The core rule is:
@@ -37,7 +37,7 @@ Plain mutation hides state change inside normal-looking code.
 
 Allowed:
 
-```logicn
+```galerina
 let foo: Int = 1
 
 mut foo++
@@ -45,13 +45,13 @@ mut foo++
 
 Allowed:
 
-```logicn
+```galerina
 mut foo = foo + 1
 ```
 
 Not allowed:
 
-```logicn
+```galerina
 foo++
 foo = foo + 1
 ```
@@ -64,13 +64,13 @@ Vault writes follow the same rule.
 
 Allowed:
 
-```logicn
+```galerina
 mut secure.loginCount++
 ```
 
 Allowed:
 
-```logicn
+```galerina
 mut secure.session[session_uuid] = {
   actor_uuid: user.uuid,
   created_at: Runtime.now(),
@@ -81,7 +81,7 @@ mut secure.session[session_uuid] = {
 
 Not allowed:
 
-```logicn
+```galerina
 secure.loginCount++
 
 secure.session[session_uuid] = session
@@ -95,7 +95,7 @@ typed, permission-checked, audited where required and visibly marked with
 
 Older design wording such as:
 
-```logicn
+```galerina
 SessionVault.write(context, session_uuid, session)
 ```
 
@@ -103,7 +103,7 @@ should not be the preferred v0.1 surface.
 
 The preferred model is:
 
-```logicn
+```galerina
 mut secure.session[session_uuid] = session
 ```
 
@@ -138,7 +138,7 @@ The active context should provide:
 
 The source code should show the important security operation:
 
-```logicn
+```galerina
 mut secure.session[session_uuid] = session
 ```
 

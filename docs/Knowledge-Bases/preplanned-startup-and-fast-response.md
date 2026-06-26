@@ -2,7 +2,7 @@
 
 ## Purpose
 
-LogicN should treat startup and response speed as governed planning problems,
+Galerina should treat startup and response speed as governed planning problems,
 not runtime guessing problems.
 
 The core rule is:
@@ -17,13 +17,13 @@ This concept combines two related positions:
 - preplanned startup through verified boot profiles
 - fast response through warm request paths and safe connection reuse
 
-The goal is not to claim that LogicN is automatically faster than mature
+The goal is not to claim that Galerina is automatically faster than mature
 runtimes. The goal is to make startup and request handling predictable,
 explainable, measurable and reportable.
 
-## Why This Fits LogicN
+## Why This Fits Galerina
 
-LogicN is strict, permissioned, typed, report-driven and deny-by-default.
+Galerina is strict, permissioned, typed, report-driven and deny-by-default.
 
 That means many startup decisions can be known before the application starts:
 
@@ -36,7 +36,7 @@ That means many startup decisions can be known before the application starts:
 - generated report paths
 - safe cache metadata
 
-Traditional dynamic systems often discover these facts at boot. LogicN should
+Traditional dynamic systems often discover these facts at boot. Galerina should
 prefer to generate and verify them before production startup.
 
 ## Boot Profile
@@ -44,16 +44,16 @@ prefer to generate and verify them before production startup.
 A production build should be able to generate:
 
 ```text
-build/logicn/boot-profile.json
+build/galerina/boot-profile.json
 ```
 
 The boot profile contains deterministic startup facts only:
 
 ```json
 {
-  "schema": "logicn.boot-profile.v1",
+  "schema": "galerina.boot-profile.v1",
   "profile": "production",
-  "entry": "boot.lln",
+  "entry": "boot.spore",
   "targets": ["cpu", "wasm"],
   "routeGraphHash": "sha256:...",
   "policyGraphHash": "sha256:...",
@@ -62,15 +62,15 @@ The boot profile contains deterministic startup facts only:
   "runtimePlan": {
     "loadMode": "minimal",
     "eagerPackages": [
-      "logicn-core",
-      "logicn-core-runtime",
-      "logicn-core-security",
-      "logicn-framework-app-kernel"
+      "galerina-core",
+      "galerina-core-runtime",
+      "galerina-core-security",
+      "galerina-framework-app-kernel"
     ],
     "lazyPackages": [
-      "logicn-ai",
-      "logicn-data-search",
-      "logicn-target-gpu"
+      "galerina-ai",
+      "galerina-data-search",
+      "galerina-target-gpu"
     ]
   },
   "cache": {
@@ -84,17 +84,17 @@ The boot profile contains deterministic startup facts only:
 The profile may be produced by future commands such as:
 
 ```bash
-LogicN check --profile production
-LogicN build --profile production
-LogicN warmup --profile production
+Galerina check --profile production
+Galerina build --profile production
+Galerina warmup --profile production
 ```
 
-At boot, LogicN should verify the profile and load the smallest safe production
+At boot, Galerina should verify the profile and load the smallest safe production
 surface first.
 
 ## Startup Phases
 
-LogicN startup should be split into three phases.
+Galerina startup should be split into three phases.
 
 | Phase | What Happens | Goal |
 | --- | --- | --- |
@@ -110,26 +110,26 @@ runtime.
 Build/check time may generate:
 
 ```text
-build/logicn/routes.json
-build/logicn/security-policy.json
-build/logicn/schema-validators.json
-build/logicn/effects-map.json
-build/logicn/runtime-plan.json
-build/logicn/startup-report.json
+build/galerina/routes.json
+build/galerina/security-policy.json
+build/galerina/schema-validators.json
+build/galerina/effects-map.json
+build/galerina/runtime-plan.json
+build/galerina/startup-report.json
 ```
 
 Boot should verify and load these artefacts instead of rebuilding them from
 scratch.
 
-## LogicN Boot Snapshot
+## Galerina Boot Snapshot
 
-LogicN may later support a boot snapshot.
+Galerina may later support a boot snapshot.
 
 For the first design, this should not be a raw runtime memory dump. It should
 be a verified bundle of deterministic startup artefacts:
 
 ```text
-.logicn/cache/
+.galerina/cache/
   boot-profile.json
   route-table.bin
   policy-table.bin
@@ -148,8 +148,8 @@ warm optional parts after readiness.
 Production startup should use:
 
 ```text
-package-logicn.json
-logicn.lock.json
+package-galerina.json
+galerina.lock.json
 boot-profile.json
 ```
 
@@ -193,16 +193,16 @@ delete, safe to bypass and never required for correctness.
 Future command concepts:
 
 ```bash
-LogicN startup:plan --profile production
-LogicN startup:warm --profile production
-LogicN startup:report
-LogicN serve --profile production --use-boot-profile
+Galerina startup:plan --profile production
+Galerina startup:warm --profile production
+Galerina startup:report
+Galerina serve --profile production --use-boot-profile
 ```
 
 Example report output:
 
 ```text
-LogicN Startup Plan
+Galerina Startup Plan
 
 Profile: production
 Mode: preplanned
@@ -221,31 +221,31 @@ build/reports/startup-report.json
 
 ## Fast Response Chain
 
-Boot warmup makes LogicN ready faster. Keep-alive keeps the network path warm
+Boot warmup makes Galerina ready faster. Keep-alive keeps the network path warm
 after it is ready.
 
-A LogicN API request should follow a known-safe path:
+A Galerina API request should follow a known-safe path:
 
 ```text
 Client
   -> existing keep-alive / HTTP2 / HTTP3 connection
-LogicN API Server
+Galerina API Server
   -> precompiled method/path route lookup
-LogicN App Kernel
+Galerina App Kernel
   -> prevalidated schema and security policy
-LogicN Runtime
+Galerina Runtime
   -> warmed typed flow
 Response
   -> same connection reused where policy allows
 Client
 ```
 
-LogicN should be fast to respond because it knows the safe path before the
+Galerina should be fast to respond because it knows the safe path before the
 request arrives.
 
 ## Prewarmed Runtime State
 
-At boot, LogicN may warm:
+At boot, Galerina may warm:
 
 - route trie or method/path lookup table
 - request schema validators
@@ -273,7 +273,7 @@ syntax.
 
 Example concept:
 
-```logicn
+```galerina
 network transport {
   http1 {
     keepAlive: true
@@ -295,11 +295,11 @@ network transport {
 
 ## Inbound Connection Reuse
 
-Inbound keep-alive allows clients to reuse connections into the LogicN server.
+Inbound keep-alive allows clients to reuse connections into the Galerina server.
 
 Example concept:
 
-```logicn
+```galerina
 server api {
   listen https on 443
 
@@ -330,11 +330,11 @@ server api {
 
 ## Outbound Connection Pooling
 
-Outbound keep-alive helps LogicN reuse safe connections to external services.
+Outbound keep-alive helps Galerina reuse safe connections to external services.
 
 Example concept:
 
-```logicn
+```galerina
 outbound service OpenAI {
   host: "api.openai.com"
   protocol: https
@@ -356,7 +356,7 @@ backpressure, authentication, validation, secret-safe logging or audit rules.
 
 ## Reports
 
-LogicN should emit startup and network performance reports:
+Galerina should emit startup and network performance reports:
 
 ```text
 build/reports/startup-report.json
@@ -415,16 +415,16 @@ never bypass:
 
 ## Positioning
 
-LogicN should not claim:
+Galerina should not claim:
 
 ```text
-LogicN makes the internet faster.
+Galerina makes the internet faster.
 ```
 
-LogicN should claim:
+Galerina should claim:
 
 ```text
-LogicN reduces avoidable application overhead by knowing the safe startup and
+Galerina reduces avoidable application overhead by knowing the safe startup and
 request path before runtime work begins.
 ```
 
@@ -444,6 +444,6 @@ This concept connects:
 ## Final Principle
 
 ```text
-LogicN should be fast to start and fast to respond because it has already
+Galerina should be fast to start and fast to respond because it has already
 planned, verified and reported the safe path before production work begins.
 ```

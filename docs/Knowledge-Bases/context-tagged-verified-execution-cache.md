@@ -2,7 +2,7 @@
 
 ## Purpose
 
-LogicN may cache verified execution plans, but cached plans must be reusable
+Galerina may cache verified execution plans, but cached plans must be reusable
 only inside the context they were verified for.
 
 This is not:
@@ -130,7 +130,7 @@ Context-tagging prevents dangerous reuse:
 
 ## Cache Structure
 
-LogicN should use one central verified execution cache plus specialist caches
+Galerina should use one central verified execution cache plus specialist caches
 for runtime areas.
 
 ```text

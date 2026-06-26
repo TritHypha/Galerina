@@ -2,7 +2,7 @@
 
 ## Definition
 
-LogicN is designed as a **hybrid governed compute runtime** where electronic systems govern and photonic/optical systems accelerate. The two layers work together but are architecturally distinct.
+Galerina is designed as a **hybrid governed compute runtime** where electronic systems govern and photonic/optical systems accelerate. The two layers work together but are architecturally distinct.
 
 ```text
 Electronics govern.
@@ -94,9 +94,9 @@ Dense tensor compute may become optical.
 
 ## Compute-Aware Syntax
 
-LogicN should allow developers and AI systems to declare compute intent:
+Galerina should allow developers and AI systems to declare compute intent:
 
-```logicn
+```galerina
 tensor<float16, [4096,4096]> weights
 
 compute optical preferred {
@@ -125,7 +125,7 @@ electronic -> optical -> electronic -> optical  (unnecessary conversions)
 
 Prefer keeping workloads inside one domain as long as possible:
 
-```logicn
+```galerina
 boundary optical {
   batch infer ProductRankModel
 }
@@ -133,9 +133,9 @@ boundary optical {
 
 ## Precision-Aware Types
 
-Future photonic systems may not use classic binary precision. LogicN should expose precision intentionally:
+Future photonic systems may not use classic binary precision. Galerina should expose precision intentionally:
 
-```logicn
+```galerina
 precision: fp16
 precision: int8
 precision: ternary
@@ -180,9 +180,9 @@ The Balancer and Steward work together to make this decision.
 
 ## Future Syntax Direction
 
-LogicN may eventually distinguish block types:
+Galerina may eventually distinguish block types:
 
-```logicn
+```galerina
 control {
   validate request
   check capability
@@ -207,12 +207,12 @@ electronic state memory
 + accelerator-local memory
 ```
 
-LogicN should therefore prefer: immutable views, stream pipelines, batch processing, compute locality.
+Galerina should therefore prefer: immutable views, stream pipelines, batch processing, compute locality.
 
 ## Long-Term Vision
 
 ```text
-LogicN Source
+Galerina Source
  -> Governed IR
  -> Runtime Planning
  -> Compute Classification
@@ -239,6 +239,6 @@ Optimise avoiding the conversion.
 ```
 
 ```text
-LogicN should model governed computation
+Galerina should model governed computation
 independent of hardware medium.
 ```

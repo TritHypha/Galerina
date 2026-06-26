@@ -2,20 +2,20 @@
 /**
  * governance/sign-revocations.mjs — MAINTAINER-RUN: self-sign the revocation registry.
  *
- * This is NOT a per-developer step. Writing or running LogicN never requires it — it is a
+ * This is NOT a per-developer step. Writing or running Galerina never requires it — it is a
  * project-maintainer action (like a CA signing a CRL): it makes governance/revocations.json
  * tamper-evident, so an edit that is not re-signed by the active key fails the gate closed.
  *
  * SAFE BY DEFAULT — NO key material on the command line. The key is read exactly the way
- * `logicn build` reads it: from .env.logicn-signing (created by `logicn keygen`, mode 0600,
- * git-ignored) as LOGICN_SIGNING_KEY_ID + LOGICN_SIGNING_PRIVATE_KEY_B64. Just run:
+ * `galerina build` reads it: from .env.galerina-signing (created by `galerina keygen`, mode 0600,
+ * git-ignored) as GALERINA_SIGNING_KEY_ID + GALERINA_SIGNING_PRIVATE_KEY_B64. Just run:
  *
  *     node governance/sign-revocations.mjs
  *
  * (If those vars are already exported in your shell they take precedence. Override the file
- *  location with LOGICN_SIGNING_ENV=<path> if your key file lives elsewhere.)
+ *  location with GALERINA_SIGNING_ENV=<path> if your key file lives elsewhere.)
  *
- * PRODUCTION KEY CUSTODY: the plaintext .env.logicn-signing is a DEV stopgap. Production
+ * PRODUCTION KEY CUSTODY: the plaintext .env.galerina-signing is a DEV stopgap. Production
  * should keep the signing key in an HSM / KMS / hardware token and sign via that API so the
  * raw private key never touches disk, env, the shell, or this process — open item #149.
  */
@@ -33,15 +33,15 @@ function readEnvFile(path) {
   return out;
 }
 
-const envFile = process.env.LOGICN_SIGNING_ENV ?? ".env.logicn-signing";
+const envFile = process.env.GALERINA_SIGNING_ENV ?? ".env.galerina-signing";
 const fileVars = readEnvFile(envFile);
-const keyId = process.env.LOGICN_SIGNING_KEY_ID ?? fileVars.LOGICN_SIGNING_KEY_ID;
-const keyB64 = process.env.LOGICN_SIGNING_PRIVATE_KEY_B64 ?? fileVars.LOGICN_SIGNING_PRIVATE_KEY_B64;
+const keyId = process.env.GALERINA_SIGNING_KEY_ID ?? fileVars.GALERINA_SIGNING_KEY_ID;
+const keyB64 = process.env.GALERINA_SIGNING_PRIVATE_KEY_B64 ?? fileVars.GALERINA_SIGNING_PRIVATE_KEY_B64;
 
 if (!keyId || !keyB64) {
   console.error(`No signing key found.`);
-  console.error(`Expected ${envFile} (created by \`logicn keygen\`) to contain`);
-  console.error(`  LOGICN_SIGNING_KEY_ID=... and LOGICN_SIGNING_PRIVATE_KEY_B64=...`);
+  console.error(`Expected ${envFile} (created by \`galerina keygen\`) to contain`);
+  console.error(`  GALERINA_SIGNING_KEY_ID=... and GALERINA_SIGNING_PRIVATE_KEY_B64=...`);
   console.error(`or those vars exported in the shell. Do NOT pass the key on the command line.`);
   process.exit(1);
 }

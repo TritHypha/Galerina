@@ -7,10 +7,10 @@ Planned for: Phase 17+
 
 ## Purpose
 
-The Generative Runtime Mapper is a future LogicN concept for turning code,
+The Generative Runtime Mapper is a future Galerina concept for turning code,
 runtime and security telemetry into an explainable intelligence map.
 
-It fits LogicN's existing direction:
+It fits Galerina's existing direction:
 
 ```text
 machine-readable reports
@@ -253,7 +253,7 @@ user secrets
 
 It must support redaction, hashing and structural telemetry only:
 
-```logicn
+```galerina
 runtime_mapper {
   redact secrets
   hash identities
@@ -262,7 +262,7 @@ runtime_mapper {
 }
 ```
 
-This syntax is conceptual and must not be treated as implemented LogicN syntax
+This syntax is conceptual and must not be treated as implemented Galerina syntax
 until the syntax is formally defined.
 
 ## Authority Boundary
@@ -295,16 +295,16 @@ proposals. They must require explicit review before application.
 Possible future packages:
 
 ```text
-logicn-runtime-telemetry
-logicn-runtime-graph
-logicn-runtime-insight
-logicn-ai-runtime-analysis
-logicn-runtime-evolution
-logicn-dev-mapper
-logicn-code-insight
-logicn-code-graph
-logicn-ai-code-review
-logicn-refactor-planner
+galerina-runtime-telemetry
+galerina-runtime-graph
+galerina-runtime-insight
+galerina-ai-runtime-analysis
+galerina-runtime-evolution
+galerina-dev-mapper
+galerina-code-insight
+galerina-code-graph
+galerina-ai-code-review
+galerina-refactor-planner
 ```
 
 These package names are planning candidates, not committed package creation.
@@ -327,7 +327,7 @@ user data. The preferred export is structural, redacted and provenance-linked.
 
 ## Final Principle
 
-LogicN should be able to generate a typed runtime and code intelligence graph.
+Galerina should be able to generate a typed runtime and code intelligence graph.
 
 The Generative Runtime Mapper observes execution and source structure, builds
 explainable structural knowledge, and helps humans and AI evolve the system

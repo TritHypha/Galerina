@@ -2,7 +2,7 @@
 
 ## Definition
 
-LogicN separates authority into two distinct layers that work together:
+Galerina separates authority into two distinct layers that work together:
 
 ```text
 Compile-time authority — what the code declares it needs
@@ -25,7 +25,7 @@ effects declared match actual code actions
 data exposure declared matches view rules
 ```
 
-At compile time, LogicN can generate a static authority map:
+At compile time, Galerina can generate a static authority map:
 
 ```text
 get_order requires:
@@ -55,7 +55,7 @@ this decision. It does not delegate the decision to user code.
 
 Developers write `permission use name` to declare authority:
 
-```logicn
+```galerina
 secure flow update_user_email(
   request: UpdateEmailRequest,
   contex: RequestContext
@@ -94,7 +94,7 @@ A permission compiles into: actor authority + code effects + data exposure rules
 
 For simpler authority declarations without full permission blocks:
 
-```logicn
+```galerina
 flow cleanup_sessions() -> CleanupResult
   uses database.sessions.write
 {
@@ -109,7 +109,7 @@ the flow is granted that resource before execution begins.
 
 A flow calling another flow does not inherit authority automatically:
 
-```logicn
+```galerina
 flow get_order(id: safe OrderId) -> Order
   uses database.orders.read
 {
@@ -135,7 +135,7 @@ authority beyond what the callee itself declared.
 
 `fn` is a pure local helper. It cannot declare authority:
 
-```logicn
+```galerina
 // Compiler error LNN-SEC-014
 fn bad_helper()
   uses database.orders.read   // ERROR: fn cannot declare uses
@@ -171,7 +171,7 @@ code would gain.
 
 ## Unified Authority Pipeline
 
-LogicN models authority as a pipeline from source to observable execution:
+Galerina models authority as a pipeline from source to observable execution:
 
 ```text
 source code
@@ -194,7 +194,7 @@ Runtime governs effects.
 Boundaries are where compile-time certainty weakens. External inputs from HTTP,
 queues, files, AI responses, and plugins cannot be trusted automatically:
 
-```logicn
+```galerina
 let body: Json unsafe unvalidated = boundary.api.body(request)
 ```
 
@@ -202,7 +202,7 @@ Compile time knows: this value came from outside authority.
 
 Validation restores trust:
 
-```logicn
+```galerina
 let customer: Customer safe validated = validate.customer(body)
 ```
 
@@ -215,7 +215,7 @@ Validation restores authority.
 
 Compile-time proof does not guarantee runtime truth.
 
-```logicn
+```galerina
 flow fetchOrders() -> Result<Array<Order>, ApiError>
 effects [network.outbound] {
   ...
@@ -241,9 +241,9 @@ That is the correct outcome — compile-time approval does not imply runtime per
 
 ## Authority as Contracts
 
-LogicN declarations are authority contracts:
+Galerina declarations are authority contracts:
 
-```logicn
+```galerina
 secure flow createCustomer(input: CustomerInput)
   -> Result<Customer, ApiError>
   effects [database.write, audit.log]
@@ -303,7 +303,7 @@ Runtime uses it to:
 
 The manifest is a runtime governance asset, not just metadata.
 
-## LogicN vs Traditional Languages
+## Galerina vs Traditional Languages
 
 Traditional languages:
 ```text
@@ -311,7 +311,7 @@ compiler checks syntax and types
 runtime executes instructions
 ```
 
-LogicN:
+Galerina:
 ```text
 compiler proves governance contracts
 runtime coordinates governed execution

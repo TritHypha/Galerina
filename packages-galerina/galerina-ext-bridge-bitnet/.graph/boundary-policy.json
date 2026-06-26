@@ -1,0 +1,7 @@
+{
+  "packageName": "@galerina/ext-bridge-bitnet",
+  "allowedExternal": [
+    "@galerina/tower-citizen"
+  ],
+  "note": "Baseline auto-generated. Edit allowedExternal to widen/narrow the border. `--check` fails if an import appears that is not listed here."
+}

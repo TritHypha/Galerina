@@ -1,0 +1,59 @@
+;; mmcp-registry.spore — Memory-Mapped Capability Pointer registry
+;; DRCM Phase 5.5 (#78)
+;;
+;; In Stage B (WASM), MMCPs are real capability-masked pointers in DSS.wasm
+;; linear memory — the DSS physically prevents access outside the declared mask.
+;;
+;; In Stage A (TypeScript), MMCPs are simulated: values carry capability metadata,
+;; the interpreter checks V_DPM before allowing reads/writes.
+;;
+;; CBOR Tag 415: CapabilityPointer — emitted in .lmanifest for every view() declaration.
+;;
+;; Build order position: 5 of 7
+
+import "./vdpm.spore"
+import "./capability-map.spore"
+
+;; MMCP entry — one per view() declaration
+type MMCPEntry {
+  variableName:  String   ;; the variable name (for audit log correlation)
+  capabilityMask: Int     ;; V_DPM bitmask (OR of declared capabilities)
+  cborTag:       Int      ;; always 415
+  status:        String   ;; "active" | "revoked"
+}
+
+;; Parse a view() capability mask string into a V_DPM bitmask
+;; "read|secret" → (0 | V_DPM.secret_access) = 4
+;; "read" → 0 (read-only, no bit required)
+;; "write|secret" → (V_DPM.storage_write | V_DPM.secret_access) = 6
+pure flow parseViewMask(capMaskStr: String) -> Int
+contract {
+  intent "Convert a view() capability mask string to a V_DPM bitmask"
+  effects {}
+}
+{
+  let mask = 0
+  if capMaskStr == "read"               { return 0 }
+  if capMaskStr == "secret"             { return V_DPM.secret_access }
+  if capMaskStr == "write"              { return V_DPM.storage_write }
+  if capMaskStr == "execute"            { return V_DPM.native_call }
+  if capMaskStr == "read|secret"        { return V_DPM.secret_access }
+  if capMaskStr == "write|secret"       { return Int.bitOr(V_DPM.storage_write, V_DPM.secret_access) }
+  if capMaskStr == "read|write"         { return V_DPM.storage_write }
+  if capMaskStr == "secret|audit"       { return Int.bitOr(V_DPM.secret_access, V_DPM.audit_write) }
+  return 0
+}
+
+;; Check if accessing an MMCP is permitted under the current V_DPM state
+;; Returns true if all required capability bits are set in vdpm
+pure flow isMMCPAccessPermitted(vdpm: Int, entry: MMCPEntry) -> Bool
+contract {
+  intent "Check if current V_DPM permits access to this MMCP"
+  effects {}
+}
+{
+  if entry.status != "active" { return false }
+  if entry.capabilityMask == 0 { return true }  ;; read-only, always permitted
+  let result = Int.bitAnd(vdpm, entry.capabilityMask)
+  return result == entry.capabilityMask  ;; ALL required bits must be set
+}

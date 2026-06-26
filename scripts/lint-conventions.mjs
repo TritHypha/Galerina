@@ -18,7 +18,7 @@ const CHECKS = [
   {
     name: "diagnostic-codes",
     script: "scripts/audit-diagnostic-codes.mjs",
-    desc: "LLN-*/ERR_* code conventions (V1 overload · V2 collision · V3 sev-vocab · V4 multi-sev · V5 name-case)",
+    desc: "SPORE-*/ERR_* code conventions (V1 overload · V2 collision · V3 sev-vocab · V4 multi-sev · V5 name-case)",
   },
   {
     name: "doc-drift",
@@ -37,9 +37,9 @@ const CHECKS = [
     heavy: true, // rebuilds + runs tests per mutant (~40s) — only with --full (CI/security tier), skipped in the fast phase-close sweep
   },
   {
-    name: "lln-quality",
-    script: "scripts/lint-lln.mjs",
-    desc: "owner .lln rules (2026-06-23): every flow has a human comment (rule 1) + a contract{intent} declaring clauses EXCEPT auto-settings (rule 2), and no AI slop / bad syntax (rule 3). Production src only — fixtures/examples/benchmarks whitelisted in governance/lln-lint-allow.json. Baseline > 0 (report-only until the self-hosted/.lln corpus is retrofitted).",
+    name: "spore-quality",
+    script: "scripts/lint-spore.mjs",
+    desc: "owner .spore rules (2026-06-23): every flow has a human comment (rule 1) + a contract{intent} declaring clauses EXCEPT auto-settings (rule 2), and no AI slop / bad syntax (rule 3). Production src only — fixtures/examples/benchmarks whitelisted in governance/spore-lint-allow.json. Baseline > 0 (report-only until the self-hosted/.spore corpus is retrofitted).",
   },
   {
     name: "tier-boundary",
@@ -49,7 +49,7 @@ const CHECKS = [
   {
     name: "production-blockers",
     script: "scripts/audit-production-blockers.mjs",
-    desc: "RD-0124 NOW-1: every PRODUCTION_BLOCKER code (production-check.ts) must have a real emitter — a blocker no pass can produce is a FALSE capability claim (the LLN-MEMORY-001/002/003/007 false memory-gate). Zero-baseline; also runs ENFORCING in conventions.yml.",
+    desc: "RD-0124 NOW-1: every PRODUCTION_BLOCKER code (production-check.ts) must have a real emitter — a blocker no pass can produce is a FALSE capability claim (the SPORE-MEMORY-001/002/003/007 false memory-gate). Zero-baseline; also runs ENFORCING in conventions.yml.",
   },
   {
     name: "name-collisions",
@@ -59,12 +59,12 @@ const CHECKS = [
   {
     name: "diagnostic-doc-drift",
     script: "scripts/audit-diagnostic-doc-drift.mjs",
-    desc: "RD-0124: the canonical diagnostic doc (compiler-diagnostics.md) must not misdescribe a wired code — for any LLN-* with a structured name/message in source AND a doc description, the two must share ≥1 meaningful word (zero-overlap = drift). Caught the LLN-RUNTIME-006 'Audit event stream write failed' (really RateLimitExceeded) bug + 14 more. Zero-baseline; also runs ENFORCING in conventions.yml.",
+    desc: "RD-0124: the canonical diagnostic doc (compiler-diagnostics.md) must not misdescribe a wired code — for any SPORE-* with a structured name/message in source AND a doc description, the two must share ≥1 meaningful word (zero-overlap = drift). Caught the SPORE-RUNTIME-006 'Audit event stream write failed' (really RateLimitExceeded) bug + 14 more. Zero-baseline; also runs ENFORCING in conventions.yml.",
   },
   {
     name: "overclaim-phrases",
     script: "scripts/audit-overclaim-phrases.mjs",
-    desc: "RD-0126 overclaim-E / RD-0114-G2: no doc/.lln/comment may pair an O(1)/single-clock/constant-time claim with fill/wipe/memory.fill within ~8 words — memory.fill is ONE opcode doing Θ(arena-size) work, not O(1) (the wat-emitter already phrases it right). Correction/refutation lines are exempt. Approved phrasing: 'one atomic instruction doing Θ(arena-size) work'. Zero-baseline; also runs ENFORCING in conventions.yml.",
+    desc: "RD-0126 overclaim-E / RD-0114-G2: no doc/.spore/comment may pair an O(1)/single-clock/constant-time claim with fill/wipe/memory.fill within ~8 words — memory.fill is ONE opcode doing Θ(arena-size) work, not O(1) (the wat-emitter already phrases it right). Correction/refutation lines are exempt. Approved phrasing: 'one atomic instruction doing Θ(arena-size) work'. Zero-baseline; also runs ENFORCING in conventions.yml.",
   },
   {
     name: "graph-integrity",
@@ -74,7 +74,7 @@ const CHECKS = [
   {
     name: "web-stub-guard",
     script: "scripts/audit-web-stub-guard.mjs",
-    desc: "RD-0100: the deny-by-default logicn-web-* contracts must be born fail-closed. A STUB package (no src/dist) is inert and passes; an IMPLEMENTED web-* package MUST also ship a *.failclosed/acceptance.test exercising its LLN-WEB-* invariants (else the prose 'deny-by-default' fails OPEN the moment impl lands). The contract is governance/web-failclosed-contract.json. Zero-baseline (all 6 are stubs); also runs ENFORCING in conventions.yml.",
+    desc: "RD-0100: the deny-by-default galerina-web-* contracts must be born fail-closed. A STUB package (no src/dist) is inert and passes; an IMPLEMENTED web-* package MUST also ship a *.failclosed/acceptance.test exercising its SPORE-WEB-* invariants (else the prose 'deny-by-default' fails OPEN the moment impl lands). The contract is governance/web-failclosed-contract.json. Zero-baseline (all 6 are stubs); also runs ENFORCING in conventions.yml.",
   },
   // #218 (coverage cross-check) runs separately as `audit-coverage.mjs`.
 ];
@@ -110,7 +110,7 @@ for (const c of CHECKS) {
 if (asJson) {
   console.log(JSON.stringify({ total, toolErrors, skippedHeavy, checks: rows }, null, 2));
 } else {
-  const out = ["# LogicN convention lint (TASK-ENV-001)\n"];
+  const out = ["# Galerina convention lint (TASK-ENV-001)\n"];
   for (const row of rows) {
     if (row.skipped) { out.push(`⊘ ${row.name} — SKIPPED (heavy; pass --full to run)`); out.push(`    ${row.desc}`); continue; }
     if (row.error) { out.push(`⚠ ${row.name} — TOOL ERROR: ${row.why}${row.stderr ? " — " + row.stderr : ""}`); continue; }

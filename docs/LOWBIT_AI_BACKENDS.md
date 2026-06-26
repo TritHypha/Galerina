@@ -2,11 +2,11 @@
 
 ## Summary
 
-LogicN should expose stable AI compute intent, not a vendor or research project name.
+Galerina should expose stable AI compute intent, not a vendor or research project name.
 Application code should request `low_bit_ai` or, when it specifically needs a
 ternary model family, `ternary_ai`. The runtime can then choose BitNet today,
 another low-bit backend later, or a CPU reference fallback without asking
-developers to rename LogicN source code.
+developers to rename Galerina source code.
 
 Primary references:
 
@@ -17,24 +17,24 @@ Primary references:
 ## Package Split
 
 ```text
-logicn-ai
+galerina-ai
   generic AI inference contracts, model metadata, safety policy and reports
 
-logicn-ai-lowbit
+galerina-ai-lowbit
   low-bit model references, backend selection and inference reports
 
-logicn-target-cpu
+galerina-target-cpu
   CPU feature, SIMD, threading, memory and fallback capability contracts
 
-logicn-cpu-kernels
+galerina-cpu-kernels
   optimized CPU kernel contracts for GEMM, GEMV, matrix and low-bit work
 
-logicn-core-compute
+galerina-core-compute
   target preference, fallback and target selection reports
 ```
 
-BitNet remains useful, but it is a backend inside `logicn-ai-lowbit`, not a target
-name in LogicN syntax and not part of `logicn-core`.
+BitNet remains useful, but it is a backend inside `galerina-ai-lowbit`, not a target
+name in Galerina syntax and not part of `galerina-core`.
 
 ## Compute Policy
 
@@ -106,18 +106,18 @@ Deterministic application policy must decide how AI output is used.
 
 ## Ternary Boundary
 
-BitNet b1.58 uses ternary model weights. LogicN `Tri` also uses a three-state value
+BitNet b1.58 uses ternary model weights. Galerina `Tri` also uses a three-state value
 shape, but the meaning is different:
 
 ```text
-logicn-core-logic
-  language-level Tri, LogicN, Decision and Omni semantics
+galerina-core-logic
+  language-level Tri, Galerina, Decision and Omni semantics
 
-logicn-ai-lowbit
+galerina-ai-lowbit
   model-level low-bit and ternary weights for AI inference
 ```
 
-Do not make `logicn-core-logic` depend on BitNet or any AI backend.
+Do not make `galerina-core-logic` depend on BitNet or any AI backend.
 
 ## Report Shape
 
@@ -141,7 +141,7 @@ Do not make `logicn-core-logic` depend on BitNet or any AI backend.
 
 ## Recommendation
 
-Use generic LogicN source syntax:
+Use generic Galerina source syntax:
 
 ```text
 compute auto { prefer low_bit_ai fallback cpu }

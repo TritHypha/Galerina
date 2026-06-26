@@ -10,7 +10,7 @@ Separation of concerns:
   body     = how it executes
 
 Key governance points:
-  - response.denies prevents email, nhsNumber, dateOfBirth from leaking (LLN-GOV-003)
+  - response.denies prevents email, nhsNumber, dateOfBirth from leaking (SPORE-GOV-003)
   - context.require declares that actor, trace_id, deadline must be read first
   - audit.require signed attestation enables Ed25519 artifact signing
   - The 'with effects [...]' form and 'effects {}' inside contract are both valid

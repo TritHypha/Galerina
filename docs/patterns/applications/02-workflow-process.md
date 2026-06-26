@@ -1,4 +1,4 @@
-# LogicN Application Pattern 02 — Workflow / Process State
+# Galerina Application Pattern 02 — Workflow / Process State
 
 **When to use:** Enterprise processes that are NOT CRUD — Draft→Submitted→Approved/Rejected, onboarding, compliance workflows, expense claims, document approvals.
 
@@ -15,13 +15,13 @@ Workflows have:
 - Events emitted on each transition (for audit trails and downstream systems)
 - Mandatory audit on state changes (you must know who approved what, and when)
 
-CRUD operations do not enforce any of these. A `database.write` that changes a `status` field from `"submitted"` to `"approved"` is not a governed transition — it is an unguarded mutation. LogicN workflows make the guard explicit and compiler-verified.
+CRUD operations do not enforce any of these. A `database.write` that changes a `status` field from `"submitted"` to `"approved"` is not a governed transition — it is an unguarded mutation. Galerina workflows make the guard explicit and compiler-verified.
 
 ---
 
 ## Proposed workflow declaration
 
-```logicn
+```galerina
 workflow ExpenseClaim {
   states {
     Draft
@@ -60,11 +60,11 @@ The `after 90 days` clause declares a time-based automatic transition. The runti
 
 The compiler builds a transition graph from the `transitions` block and verifies:
 
-1. Every state referenced in a transition exists in the `states` block — LLN-WORKFLOW-001 if not
-2. No transition is declared more than once with the same source and target — LLN-WORKFLOW-002
-3. Every `requires role.X` clause is resolvable to a declared capability — LLN-CAP-001
-4. No flow implementing a workflow transition may skip `audit.write` when `require audit on every transition` is declared — LLN-AUDIT-001
-5. Time-based transitions (`after N days`) cannot declare `requires actor` — they are system-initiated — LLN-WORKFLOW-003
+1. Every state referenced in a transition exists in the `states` block — SPORE-WORKFLOW-001 if not
+2. No transition is declared more than once with the same source and target — SPORE-WORKFLOW-002
+3. Every `requires role.X` clause is resolvable to a declared capability — SPORE-CAP-001
+4. No flow implementing a workflow transition may skip `audit.write` when `require audit on every transition` is declared — SPORE-AUDIT-001
+5. Time-based transitions (`after N days`) cannot declare `requires actor` — they are system-initiated — SPORE-WORKFLOW-003
 
 Invalid state jumps are caught at compile time. A flow that attempts to set `Approved -> Draft` on an `ExpenseClaim` will fail unless that transition is declared.
 
@@ -81,9 +81,9 @@ Each transition compiles to an implicit effect profile:
 | Submitted -> Rejected | `database.write`, `audit.write`, `event.emit`, `capability:role.approver` |
 | Approved -> Archived | `database.write`, `audit.write` (system-initiated, no actor required) |
 
-The flow implementing the transition must declare at least these effects. Undeclared effects that are used at runtime produce LLN-EFFECT-002.
+The flow implementing the transition must declare at least these effects. Undeclared effects that are used at runtime produce SPORE-EFFECT-002.
 
-```logicn
+```galerina
 flow submitClaim(id: ClaimId) -> Result<ExpenseClaim, ApiError>
   implements workflow.ExpenseClaim.transition(Draft -> Submitted)
   effects [database.write, audit.write, event.emit]

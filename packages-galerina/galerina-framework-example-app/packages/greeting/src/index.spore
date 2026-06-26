@@ -1,0 +1,24 @@
+// greeting — the governed compute the App Kernel fuses and invokes for GET /hello.
+//
+// This is the compiled, signed, fusable form of the app's greeting flow
+// (mirrors src/flows/greeting.spore). `galerina build --package` lowers it to a
+// governed dist/greeting.wasm plus a signed dist/greeting.lmanifest.json; the
+// host (host/server.ts) fuses that at the compute.pure seam and calls main(),
+// whose i32 result is the HTTP status the route returns.
+//
+// Zero-trust posture: `pure` declares NO effects and package.spore.json grants NO
+// capabilities, so this unit cannot reach the network, storage, secrets, the
+// database, or inference — the strongest deny-by-default a useful endpoint can
+// have. The mandatory `_ =>` wildcard keeps the match fail-closed (SPORE-TYPE-023):
+// any unexpected state returns 500, never falls through.
+pure flow main() -> Int
+contract {
+  intent { "Return the HTTP 200 status code for a successful hello-world greeting." }
+}
+{
+  let ready: Int = 200
+  match ready {
+    200 => return 200
+    _ => return 500
+  }
+}

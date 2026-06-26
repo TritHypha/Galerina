@@ -2,11 +2,11 @@
 
 ## Definition
 
-LogicN supports advanced mathematical and combinatoric computation through explicit structures, exact types, and a multi-state logical model — remaining compatible with security-first architecture, strict typing, explicit effects, future photonic compute, and AI-readable contracts.
+Galerina supports advanced mathematical and combinatoric computation through explicit structures, exact types, and a multi-state logical model — remaining compatible with security-first architecture, strict typing, explicit effects, future photonic compute, and AI-readable contracts.
 
 ## Core Principle
 
-LogicN supports mathematics through:
+Galerina supports mathematics through:
 
 ```text
 exact structures
@@ -28,7 +28,7 @@ inheritance-heavy abstraction
 
 ## Suitable Research Domains
 
-LogicN is well suited for:
+Galerina is well suited for:
 
 ```text
 discrete mathematics
@@ -48,13 +48,13 @@ constraint systems
 Mathematics lives outside the core language package:
 
 ```text
-logicn-core              = core type system and execution
-logicn-math-algebra      = rings, fields, groups, matrices
-logicn-math-finite-field = finite field arithmetic
-logicn-math-geometry     = affine/projective geometry
-logicn-math-combinatorics = sumsets, product sets, incidence systems
-logicn-math-proof        = assumptions, lemmas, proof reports
-logicn-math-symbolic     = symbolic expressions and simplification
+galerina-core              = core type system and execution
+galerina-math-algebra      = rings, fields, groups, matrices
+galerina-math-finite-field = finite field arithmetic
+galerina-math-geometry     = affine/projective geometry
+galerina-math-combinatorics = sumsets, product sets, incidence systems
+galerina-math-proof        = assumptions, lemmas, proof reports
+galerina-math-symbolic     = symbolic expressions and simplification
 ```
 
 ## Safe Mathematical Types
@@ -104,7 +104,7 @@ AffineTransform<F>
 
 Traditional binary logic (`true`/`false`) is insufficient for symbolic computation, AI-assisted reasoning, partial proofs, photonic logic, and incomplete information.
 
-LogicN separates logical categories:
+Galerina separates logical categories:
 
 ### Bool
 
@@ -157,19 +157,19 @@ Used for symbolic and research systems.
 
 Instead of:
 
-```logicn
+```galerina
 incidence(point, line) -> Bool
 ```
 
-LogicN supports:
+Galerina supports:
 
-```logicn
+```galerina
 incidence(point, line) -> Decision
 ```
 
 or:
 
-```logicn
+```galerina
 incidence(point, line) -> ProofResult
 ```
 
@@ -219,7 +219,7 @@ implicit plugin discovery
 
 ## Photonic Compatibility Direction
 
-LogicN remains CPU-compatible by default while allowing future support for:
+Galerina remains CPU-compatible by default while allowing future support for:
 
 ```text
 Tri logic
@@ -234,7 +234,7 @@ Mathematical structures remain exact and stable. Logical systems become explicit
 ## Final Principle
 
 ```text
-LogicN supports explicit mathematics and explicit logic.
+Galerina supports explicit mathematics and explicit logic.
 
 Mathematical structures may be neutral.
 

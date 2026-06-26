@@ -1,0 +1,45 @@
+/*
+ * Diagnostic: Governance Violation Detection
+ * Measures: V_DPM trap latency, AuditEvent trail fidelity
+ *
+ * This flow has invariants that simulate capability boundary violations.
+ * In the full Tower (Stage B), these would fire real V_DPM capability denials.
+ * In Stage A, invariant traps simulate the same signal path.
+ */
+
+secure flow attemptUnauthorisedWrite(userId: String, data: String) -> Result<Bool, Error>
+contract {
+  intent "Attempt write — will violate if called with forbidden userId"
+  effects { allow audit.write }
+  invariant {
+    ensure userId != ""
+    ensure userId != "guest"       ;; guest users cannot write
+    ensure userId != "anonymous"   ;; anonymous users cannot write
+    ensure data != ""
+  }
+}
+{
+  ;; These simulate V_DPM capability checks in Stage B DSS.wasm
+  trap userId == "" : ERR_EMPTY_USER_ID
+  trap userId == "guest" : ERR_GUEST_WRITE_DENIED      ;; SPORE-INV-000 + AuditEvent
+  trap userId == "anonymous" : ERR_ANONYMOUS_DENIED     ;; SPORE-INV-000 + AuditEvent
+  trap data == "" : ERR_EMPTY_DATA
+
+  ;; V_DPM bitmask check simulation (Stage A — governance precheck)
+  let vdpmCheck = 1  ;; 1 = database.write bit set (Stage B: real V_DPM AND)
+  trap vdpmCheck == 0 : ERR_CAPABILITY_DENIED   ;; fires when V_DPM bit cleared by emergency SM
+
+  return Ok(true)
+}
+
+;; Compliant flow — authorised user with proper capability
+secure flow authorisedWrite(userId: String, data: String) -> Result<Bool, Error>
+contract {
+  intent "Authorised write — baseline for governance violation comparison"
+  effects { allow audit.write }
+}
+{
+  trap userId == "" : ERR_EMPTY_USER_ID
+  trap data == "" : ERR_EMPTY_DATA
+  return Ok(true)
+}

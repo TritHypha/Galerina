@@ -1,0 +1,14 @@
+{
+  "name": "@galerina/substrate-math",
+  "version": "1.0.0-beta.2",
+  "description": "Pure substrate-noise math shared by the governance layer: per-lane error probability + von Neumann NMR (N-modular-redundancy) closed form. Zero runtime deps. Single source of truth for the NMR calculus used by both galerina-tower-citizen (substrate-model) and galerina-core-compiler (substrate-inference).",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": { ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" } },
+  "scripts": { "build": "tsc", "test": "npm run build && node --test tests/*.test.mjs", "typecheck": "tsc --noEmit" },
+  "devDependencies": { "@types/node": "^25.9.1", "typescript": "^5.5.0" },
+  "keywords": ["galerina", "substrate", "nmr", "redundancy", "noise-model", "photonic", "ternary"]
+}

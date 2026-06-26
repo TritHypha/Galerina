@@ -2,7 +2,7 @@
 
 ## Purpose
 
-LogicN audit events sometimes involve more than one actor.
+Galerina audit events sometimes involve more than one actor.
 
 Examples:
 
@@ -58,7 +58,7 @@ system_actor = payments system actor
 
 Application code may identify non-primary actor roles:
 
-```logicn
+```galerina
 flow approveRefund(
   request: Refund.approve,
   context: Runtime.AuthContext
@@ -126,7 +126,7 @@ trust_zone
 
 Application code should not normally write:
 
-```logicn
+```galerina
 audit.write("refund.approve.requested", {
   primary_actor: support_actor,
   affected_actor: customer_actor,
@@ -147,7 +147,7 @@ actual permission and runtime context.
 
 The permission can declare audit events:
 
-```logicn
+```galerina
 permission refund_approve {
   actor {
     require refunds.approve
@@ -176,7 +176,7 @@ calls may add event-specific metadata.
 
 Multi-actor flows should make relationships explicit:
 
-```logicn
+```galerina
 require support_actor.role == "support_admin"
 require request.refund.owner == customer_actor
 ```
@@ -190,7 +190,7 @@ System actors should be runtime-approved identities.
 
 Example:
 
-```logicn
+```galerina
 let system_actor = Runtime.system_actor("payments")
 ```
 

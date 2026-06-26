@@ -1,9 +1,9 @@
-<!-- ABSORBED R&D SOURCE — verbatim mirror. LogicN is the main library; the R&D repo is upstream/authoring.
-     Source: LogicN-R-AND-D/tri-encription/research/photonic-sha256-integrity.md  ·  Pinned: R&D fb68d06 (2026-06-16)
-     Integrated LogicN view: logicn-hardware-future-substrates.md  ·  Catalog: logicn-rd-absorption-catalog.md
+<!-- ABSORBED R&D SOURCE — verbatim mirror. Galerina is the main library; the R&D repo is upstream/authoring.
+     Source: Galerina-R-AND-D/tri-encription/research/photonic-sha256-integrity.md  ·  Pinned: R&D fb68d06 (2026-06-16)
+     Integrated Galerina view: galerina-hardware-future-substrates.md  ·  Catalog: galerina-rd-absorption-catalog.md
      Rule: edit the upstream source then re-vendor; do not fork this copy (feedback-auto-import-rd-docs). -->
 
-> **Absorbed R&D source (verbatim).** This is the archived upstream document. Curated/integrated view: `logicn-hardware-future-substrates.md`. See `logicn-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
+> **Absorbed R&D source (verbatim).** This is the archived upstream document. Curated/integrated view: `galerina-hardware-future-substrates.md`. See `galerina-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
 
 ---
 # Is there a "photonic SHA-256"? — Integrity hashing on a photonic substrate (R&D)
@@ -17,7 +17,7 @@
 > **Guardrails:** no invented crypto; sharply distinguish **cryptographic** (SHA-256/SHA-3-grade,
 > keyless, collision-resistant, bit-exact) vs **physical** (PUF/speckle) vs **approximate** (LSH/CAM) vs
 > **acceleration** (offload a sub-step). Builds on the crypto-on-core invariant
-> ([`LLN-SUBSTRATE-001`](#9-reconciliation-with-the-logicn--tritmesh-framing)) and the companion
+> ([`SPORE-SUBSTRATE-001`](#9-reconciliation-with-the-galerina--tritmesh-framing)) and the companion
 > [`quantum-resilient-tri-encryption.md`](quantum-resilient-tri-encryption.md).
 
 ---
@@ -221,7 +221,7 @@ the one claim the verifier softened: from "essentially no published role" to the
   path is PQC. [[QRNG]] [[NSA-CNSA]]
 
 So the quantum-resistance budget belongs on the **signature over the digital digest** (ML-DSA-65), exactly the
-established LogicN posture — not on a "photonic hash."
+established Galerina posture — not on a "photonic hash."
 
 ---
 
@@ -285,13 +285,13 @@ motivated to build a photonic hash concluded the cryptographic part must stay di
 
 ---
 
-## 9. Reconciliation with the LogicN / TritMesh framing
+## 9. Reconciliation with the Galerina / TritMesh framing
 
-- **Crypto-on-core, empirically reconfirmed.** This independently re-derives `LLN-SUBSTRATE-001 /
+- **Crypto-on-core, empirically reconfirmed.** This independently re-derives `SPORE-SUBSTRATE-001 /
   CRYPTO_ON_NOISY_LANE` from the photonic-hashing literature: integrity must run bit-exact on a deterministic
   lane; a noisy/photonic lane is forbidden. The rule isn't conservative caution — it's what the physics and
   the real photonic-crypto efforts both confirm.
-- **Resolves the KB contradiction** I flagged earlier: `logicn-hardware-future-substrates.md:63` ("Encryption
+- **Resolves the KB contradiction** I flagged earlier: `galerina-hardware-future-substrates.md:63` ("Encryption
   → Photonic matrix operations") should be corrected — *encryption/hashing is not a photonic-plane operation*;
   only error-tolerant linear algebra is. (See the companion tri-encryption note.)
 - **Consistent with FFSM (#199):** ffsim runs on a `lane: noisy` tolerance lane, but the Epilogue Receipt
@@ -354,4 +354,4 @@ motivated to build a photonic hash concluded the cryptographic part must stay di
 - [[QHash]] Ablayev et al., *Quantum Fingerprinting and Quantum Hashing* (2016/2017) — <https://www.intechopen.com/chapters/56986>
 - [[QRNG]] X. Huang et al., *18.8 Gbps real-time QRNG with a photonic integrated chip* (2021); ID Quantique Quantis; Quside
 
-**Internal cross-refs:** `quantum-resilient-tri-encryption.md` (companion) · `LogicN/docs/Knowledge-Bases/logicn-substrate-failure-model.md` (`LLN-SUBSTRATE-001`) · `logicn-quantum-resistance-posture.md` (keep SHA-256; PQ the signature) · `logicn-ext-bridge-quantum-design.md` (FFSM #199 — sign `sha256(output)` on the deterministic core).
+**Internal cross-refs:** `quantum-resilient-tri-encryption.md` (companion) · `Galerina/docs/Knowledge-Bases/galerina-substrate-failure-model.md` (`SPORE-SUBSTRATE-001`) · `galerina-quantum-resistance-posture.md` (keep SHA-256; PQ the signature) · `galerina-ext-bridge-quantum-design.md` (FFSM #199 — sign `sha256(output)` on the deterministic core).

@@ -1,4 +1,4 @@
-LLN-EFFECT-002
+SPORE-EFFECT-002
 
 processOrder calls saveOrder which requires database.write, but processOrder does not declare it.
 Add database.write to processOrder:

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-LogicN and LSGR should support specialist AI hardware as governed compute
+Galerina and LSGR should support specialist AI hardware as governed compute
 targets, not as ordinary runtime access and not as permanent vendor-specific
 syntax.
 
@@ -117,7 +117,7 @@ They should remain:
 - replaceable
 - fallback-safe
 
-LogicN source should prefer generic target classes such as `tpu`,
+Galerina source should prefer generic target classes such as `tpu`,
 `ai_accelerator` or `tensor_accelerator`, while provider and device details
 remain backend profiles.
 
@@ -148,7 +148,7 @@ effect.compute.accelerator
 
 ## Example
 
-```logicn
+```galerina
 ai infer CustomerRisk {
   input: CustomerRiskInput
   output: RiskScore
@@ -194,7 +194,7 @@ Before selecting specialist hardware, the runtime should verify:
 
 ## Reports
 
-LogicN should generate specialist compute evidence:
+Galerina should generate specialist compute evidence:
 
 ```text
 compute-target-report.json

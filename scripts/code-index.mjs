@@ -1,21 +1,21 @@
 #!/usr/bin/env node
-// code-index.mjs — index EVERY diagnostic/error code in LogicN: its definition, its name/severity,
+// code-index.mjs — index EVERY diagnostic/error code in Galerina: its definition, its name/severity,
 // and every place it is emitted / tested / documented. A re-runnable dev tool that SAVES TOKENS —
 // query build/code-index/CODE_INDEX.md instead of re-grepping the tree. (Owner request, 2026-06-22.)
 //
-// Namespaces indexed: LLN-<FAMILY>-NNN (diagnostics) and ERR_<...> (runtime errors).
+// Namespaces indexed: SPORE-<FAMILY>-NNN (diagnostics) and ERR_<...> (runtime errors).
 // Output: build/code-index/code-index.json (machine) + CODE_INDEX.md (human/AI-browsable) + a stdout summary.
 // Roles per occurrence: def (exported const / make*Diag definition / object literal with name+severity),
-//   emit (push/throw/code: site), test, doc (.md), lln (.lln), ref (any other mention).
+//   emit (push/throw/code: site), test, doc (.md), spore (.spore), ref (any other mention).
 import { readdirSync, readFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { extractCodes, CODE_TEST, familyOf, nsOf } from "./lib/codes.mjs";
 import { writeProvenance } from "./lib/provenance.mjs"; // BLD-003 / #216 provenance sidecar
 
 const ROOT = process.cwd();
-const SCAN = ["packages-logicn", "docs", "scripts"].map((d) => join(ROOT, d));
+const SCAN = ["packages-galerina", "docs", "scripts"].map((d) => join(ROOT, d));
 const OUT = join(ROOT, "build", "code-index");
-const EXT = /\.(ts|mjs|cjs|lln|md)$/;
+const EXT = /\.(ts|mjs|cjs|spore|md)$/;
 const SKIP = new Set(["node_modules", "dist", ".git"]);
 // CODE_RE / CODE_TEST / familyOf / nsOf come from the SHARED module (scripts/lib/codes.mjs) — one regex.
 
@@ -39,7 +39,7 @@ const FILES = SCAN.flatMap(walk);
 
 // PASS 1 — constId -> code: `export const <ID> = { … code:"CODE" … }` or `export const <ID> = "CODE"`.
 // Lets PASS 2 resolve emits/uses that reference a code by its CONSTANT IDENTIFIER (e.g.
-// `code: LLN_BOOL_BOUNDARY_001_FAILED_CLOSED`), which the hyphenated code regex cannot see (id ≠ string).
+// `code: SPORE_BOOL_BOUNDARY_001_FAILED_CLOSED`), which the hyphenated code regex cannot see (id ≠ string).
 const constToCode = new Map();
 for (const file of FILES) {
   let txt; try { txt = readFileSync(file, "utf8"); } catch { continue; }
@@ -56,14 +56,14 @@ for (const file of FILES) {
   const rel = relative(ROOT, file).replace(/\\/g, "/");
   const isTest = /\/tests?\//.test(rel) || /\.test\./.test(rel);
   const isDoc = rel.endsWith(".md");
-  const isLln = rel.endsWith(".lln");
+  const isLln = rel.endsWith(".spore");
   const lines = readFileSync(file, "utf8").split(/\r?\n/);
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const trimmed = line.trimStart();
     // exclude COMMENT lines and TS TYPE positions from emit/def — they mention a code but produce none.
     const isComment = trimmed.startsWith("//") || trimmed.startsWith("*") || trimmed.startsWith("/*");
-    // type position (not a runtime emit): `readonly code: "LLN-X"`, a "X" | "Y" union, or a `type` alias.
+    // type position (not a runtime emit): `readonly code: "SPORE-X"`, a "X" | "Y" union, or a `type` alias.
     const isTypeDecl = /\breadonly\b/.test(line) || /"\s*\|\s*"/.test(line) || /^(?:export\s+)?type\s+\w+/.test(trimmed);
     // multi-line make*Diag(code, name, ...): attribute the windowed (code, name) as an emit at the
     // make-line, even when the code/name args sit on the following lines (common in governance-verifier.ts).
@@ -88,8 +88,8 @@ for (const file of FILES) {
         get(code).occ.push({ file: rel, line: i + 1, role: isDoc ? "doc" : isTest ? "test" : "emit" });
       }
     }
-    // Diagnostic-construction call with a CONST first arg: `createCompilerDiagnostic(LLN_X.code, …)`,
-    // `create*Diagnostic(LLN_X, …)`, or `make*Diag(LLN_X, …)`. The code is named by its constant
+    // Diagnostic-construction call with a CONST first arg: `createCompilerDiagnostic(SPORE_X.code, …)`,
+    // `create*Diagnostic(SPORE_X, …)`, or `make*Diag(SPORE_X, …)`. The code is named by its constant
     // IDENTIFIER (positional), which neither extractCodes (no literal string) nor the `code: IDENT`
     // field check below sees — so these emit sites were INVISIBLE and the code showed "inline" only via
     // its mis-counted const-def line. Window the call and resolve the FIRST constToCode identifier as an
@@ -103,7 +103,7 @@ for (const file of FILES) {
         if (cc) { get(cc).occ.push({ file: rel, line: i + 1, role: isDoc ? "doc" : isTest ? "test" : "emit" }); break; }
       }
     }
-    // const-identifier emit/use: `code: LLN_FOO_001_BAR` / `errorCode: ERR_X` — id ≠ hyphenated code string,
+    // const-identifier emit/use: `code: SPORE_FOO_001_BAR` / `errorCode: ERR_X` — id ≠ hyphenated code string,
     // so extractCodes misses it; resolve via the PASS-1 map. Runs BEFORE the !codes short-circuit (the line
     // has no literal code token). This is what makes 28 const-emitted diagnostics show as live, not dead.
     if (!isComment && !isTypeDecl) {
@@ -118,9 +118,9 @@ for (const file of FILES) {
     // A field line (code:/name:/severity:/message:) inside an `export const X = { … }` diagnostic-OBJECT
     // DEFINITION is a DEF, not an emit — the `export const` opener sits a few lines up (a push/return/
     // create*Diagnostic object has a call/return opener instead). Without this, a RESERVED const's
-    // `code: "LLN-X"` line is mis-read as an emit (role precedence is def>emit), so the const def is
+    // `code: "SPORE-X"` line is mis-read as an emit (role precedence is def>emit), so the const def is
     // never recorded (defs=0) and the code shows "inline" — making a never-emitted reserved code (e.g.
-    // LLN-MEMORY-001..007) indistinguishable from a live one. Require `export const` so local emit objects
+    // SPORE-MEMORY-001..007) indistinguishable from a live one. Require `export const` so local emit objects
     // (`const d = {…}; push(d)`) are NOT mistaken for defs. (#65/0123 — the false-POSITIVE half.)
     let inConstObjDef = false;
     if (!isComment && !isTypeDecl && /^\s*(?:code|name|severity|message)\s*:/.test(line)) {
@@ -136,12 +136,12 @@ for (const file of FILES) {
     // unquoted ERR_ consts were previously mis-classified `ref` → false "dead"), a throw, or a .push.
     const isEmit = !isComment && !isTypeDecl && (isMake
       || /code:\s*"/.test(line)
-      || /\b(?:code|errorCode):\s*(?:"?ERR_[A-Z0-9_]+|"LLN-)/.test(line)
+      || /\b(?:code|errorCode):\s*(?:"?ERR_[A-Z0-9_]+|"SPORE-)/.test(line)
       || /\bthrow\b/.test(line)
       || /\.push\(/.test(line));
     for (const code of codes) {
       const e = get(code);
-      let role = isDoc ? "doc" : isTest ? "test" : isLln ? "lln" : (isDef ? "def" : isEmit ? "emit" : "ref");
+      let role = isDoc ? "doc" : isTest ? "test" : isLln ? "spore" : (isDef ? "def" : isEmit ? "emit" : "ref");
       e.occ.push({ file: rel, line: i + 1, role });
       // capture name/severity only at code-bearing src lines (def/emit), within a tight window
       if (!isDoc && !isTest && (isDef || isEmit)) {
@@ -183,7 +183,7 @@ writeFileSync(join(OUT, "code-index.json"), JSON.stringify(codes, null, 2));
 // markdown (browsable map): grouped by family
 const byFam = new Map();
 for (const c of codes) { if (!byFam.has(c.family)) byFam.set(c.family, []); byFam.get(c.family).push(c); }
-const md = ["# LogicN — Code Index (generated by scripts/code-index.mjs)", "",
+const md = ["# Galerina — Code Index (generated by scripts/code-index.mjs)", "",
   `${codes.length} codes (${codes.filter((c) => !c.docOnly).length} src-real + ${codes.filter((c) => c.docOnly).length} doc-only/phantom) · ${codes.reduce((s, c) => s + c.occurrences, 0)} occurrences · ${[...byFam.keys()].length} families.`,
   "Query this instead of grepping. Regenerate: `node scripts/code-index.mjs`.", ""];
 for (const fam of [...byFam.keys()].sort()) {
@@ -201,6 +201,6 @@ const nNoDef = codes.filter((c) => c.defs.length === 0 && c.emits.length > 0).le
 const nDeadDef = codes.filter((c) => c.defs.length > 0 && c.emits.length === 0 && c.tests === 0).length;
 const srcCodes = codes.filter((c) => !c.docOnly);
 const docOnly = codes.filter((c) => c.docOnly);
-console.log(`code-index: ${codes.length} total = ${srcCodes.length} src-real + ${docOnly.length} doc-only/phantom · ${srcCodes.filter((c) => c.namespace === "LLN").length} LLN-src, ${srcCodes.filter((c) => c.namespace === "ERR").length} ERR-src · ${[...byFam.keys()].length} families`);
+console.log(`code-index: ${codes.length} total = ${srcCodes.length} src-real + ${docOnly.length} doc-only/phantom · ${srcCodes.filter((c) => c.namespace === "SPORE").length} SPORE-src, ${srcCodes.filter((c) => c.namespace === "ERR").length} ERR-src · ${[...byFam.keys()].length} families`);
 console.log(`  inline (emit, no exported const): ${nNoDef}   defined-but-never-emitted/tested: ${nDeadDef}   doc-only/phantom codes: ${docOnly.length}`);
 console.log(`  -> build/code-index/CODE_INDEX.md + code-index.json`);

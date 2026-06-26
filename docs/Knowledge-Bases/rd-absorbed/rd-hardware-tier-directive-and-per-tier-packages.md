@@ -1,8 +1,8 @@
 # Tri-Pipe `hardware()` directive + per-tier packages (R&D 0054, absorbed 2026-06-20)
 
-> **Source:** `LogicN-R-AND-D/_session-bridge/done/0054-hardware-capability-directive-and-per-tier-packages.done.md`
+> **Source:** `Galerina-R-AND-D/_session-bridge/done/0054-hardware-capability-directive-and-per-tier-packages.done.md`
 > + spec `photonic-tri-governance/tri-pipe-per-tier-packages-and-hardware-directive-spec.md`.
-> **Hub production:** built 2026-06-20 as `packages-logicn/logicn-hardware-tier` (directive + loader +
+> **Hub production:** built 2026-06-20 as `packages-galerina/galerina-hardware-tier` (directive + loader +
 > H1–H5/O1–O4 proofs). Builds on [[rd-photonic-ppu-emulator-and-switch]] (0053). Owner-directed.
 
 ## What it is
@@ -24,7 +24,7 @@ re-architecture:
 
 ## Resolution order (§1.2) + fail-closed
 
-`!attested ⇒ binary` · `profiles.get(target)=undefined ⇒ binary` (K3 DENY, LLN-HW-004) ·
+`!attested ⇒ binary` · `profiles.get(target)=undefined ⇒ binary` (K3 DENY, SPORE-HW-004) ·
 `requiresAttestation && !verified ⇒ binary` · `AcceleratorPlane && fully-eligible ⇒ photonic` ·
 `AcceleratorPlane(whole)/ExecutionPlane ⇒ hybrid` · else `⇒ binary`. The tier MAP mirrors
 `HARDWARE_TRUST_PROFILES` (`type-registry.ts:455-505`): cpu/wasm=GovernancePlane(binary);
@@ -53,13 +53,13 @@ distinct package ONLY for fully-eligible pure-tensor / governance-reduction comp
 
 | Spec piece | Hub artifact |
 |---|---|
-| D1 `hardware()` directive + cache | `logicn-hardware-tier/src/hardware-directive.ts` (`resolveHardware`, `HardwareDirective`) |
-| Tier MAP | `logicn-hardware-tier/src/trust-profiles.ts` (mirrors type-registry.ts:455-505) |
-| D2 loader + selection contract | `logicn-hardware-tier/src/tier-loader.ts` (`selectTier`, `createTierLoader`) |
+| D1 `hardware()` directive + cache | `galerina-hardware-tier/src/hardware-directive.ts` (`resolveHardware`, `HardwareDirective`) |
+| Tier MAP | `galerina-hardware-tier/src/trust-profiles.ts` (mirrors type-registry.ts:455-505) |
+| D2 loader + selection contract | `galerina-hardware-tier/src/tier-loader.ts` (`selectTier`, `createTierLoader`) |
 | `-binary` tier | `createStubRegistry()` (shipped, byte-unchanged) |
-| `-photonic` tier | `logicn-ext-photonic-emulator` (0053, built) |
-| `-hybrid` tier | modeled on `logicn-ext-bridge-cpp` (`createCppBridgeRegistry`) |
-| H1–H5 / O1–O4 proofs | `logicn-hardware-tier/scripts/prove-hardware-tier.mjs` + `tests/*` |
+| `-photonic` tier | `galerina-ext-photonic-emulator` (0053, built) |
+| `-hybrid` tier | modeled on `galerina-ext-bridge-cpp` (`createCppBridgeRegistry`) |
+| H1–H5 / O1–O4 proofs | `galerina-hardware-tier/scripts/prove-hardware-tier.mjs` + `tests/*` |
 
 ## EXCLUDED (carried)
 

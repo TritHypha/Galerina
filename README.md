@@ -1,18 +1,18 @@
-# LogicN
+# Galerina
 
 **A governance-first programming language and runtime for high-assurance software.**
 
-LogicN is built for organisations where software failure is not acceptable — financial platforms, healthcare systems, government services, and regulated enterprise. Every execution is **declared, verified, and audited** by design, not by convention.
+Galerina is built for organisations where software failure is not acceptable — financial platforms, healthcare systems, government services, and regulated enterprise. Every execution is **declared, verified, and audited** by design, not by convention.
 
-> **Maturity (honest status, 2026-06-24 · v1.0.0-beta.2).** LogicN is an **advanced prototype with several hardened zero-trust subsystems** — *not* yet a production-complete platform. The **compiler, security, and governance core are production-grade** (60/60 packages, 5,345 tests, fail-closed border check). The **application-framework layer is now substantially real**: the deny-by-default admission/fusion border (3 gates + multi-module linker + revocation), the `logicn new app` scaffolder, and the governed package resolver are shipped and tested (87 App-Kernel tests). The **governed HTTP transport (B8) is unlocked and in progress** — the TLSTP **S1 K3 cert/channel-validation gate** landed (`logicn-core-network`, 126 tests, fail-closed `revocation-unknown → DENY`), though it is not yet wired into the live kernel auth path; the *servable api-server / example-app* and the *signed registry index* are the remaining framework gaps. Stage-B self-hosting is in progress (≈80%), and the "Tower" compute layer is a **governed software simulator + bridge-attestation runtime, not real photonic-CPU virtualisation**. See [the 2026-06-23 EOD roadmap + % audit](docs/Knowledge-Bases/logicn-roadmap-and-percent-audit-2026-06-23-eod.md) and [the framework plan](docs/Knowledge-Bases/logicn-framework-plan-2026-06-21.md).
+> **Maturity (honest status, 2026-06-24 · v1.0.0-beta.2).** Galerina is an **advanced prototype with several hardened zero-trust subsystems** — *not* yet a production-complete platform. The **compiler, security, and governance core are production-grade** (60/60 packages, 5,345 tests, fail-closed border check). The **application-framework layer is now substantially real**: the deny-by-default admission/fusion border (3 gates + multi-module linker + revocation), the `galerina new app` scaffolder, and the governed package resolver are shipped and tested (87 App-Kernel tests). The **governed HTTP transport (B8) is unlocked and in progress** — the TLSTP **S1 K3 cert/channel-validation gate** landed (`galerina-core-network`, 126 tests, fail-closed `revocation-unknown → DENY`), though it is not yet wired into the live kernel auth path; the *servable api-server / example-app* and the *signed registry index* are the remaining framework gaps. Stage-B self-hosting is in progress (≈80%), and the "Tower" compute layer is a **governed software simulator + bridge-attestation runtime, not real photonic-CPU virtualisation**. See [the 2026-06-23 EOD roadmap + % audit](docs/Knowledge-Bases/galerina-roadmap-and-percent-audit-2026-06-23-eod.md) and [the framework plan](docs/Knowledge-Bases/galerina-framework-plan-2026-06-21.md).
 
 ---
 
 ## The Zero-Trust thesis
 
-LogicN optimises for **mathematical proof and absolute Zero-Trust containment**: an ecosystem that trusts **absolutely no one — not the developer, not the network, not the host OS.** Where most languages bolt security on as a library, LogicN treats **every boundary as already hostile** and *proves* the boundary at compile time. Each row below is a boundary and the mandate LogicN enforces at it.
+Galerina optimises for **mathematical proof and absolute Zero-Trust containment**: an ecosystem that trusts **absolutely no one — not the developer, not the network, not the host OS.** Where most languages bolt security on as a library, Galerina treats **every boundary as already hostile** and *proves* the boundary at compile time. Each row below is a boundary and the mandate Galerina enforces at it.
 
-| Boundary | LogicN's mandate | Status |
+| Boundary | Galerina's mandate | Status |
 |---|---|---|
 | **Compiler** | Verifies your **pre-resolved policy + execution DAG** strictly for deterministic, mathematically reproducible correctness — the contract is proven at build time, so there is no runtime surprise. | ✅ shipped |
 | **I/O — the OS kernel** | Assumes the kernel is *already a compromised, hostile environment*. Native capabilities are **denied by default**; the host is a **dumb byte-mover**; authorisation is the fail-closed **`vAnd` Kleene-K3 gate** — never OS-level I/O injected into a `main`. | ◑ K3 gate shipped · full bypass = design intent |
@@ -24,21 +24,21 @@ LogicN optimises for **mathematical proof and absolute Zero-Trust containment**:
 
 ---
 
-## What LogicN does
+## What Galerina does
 
 **Declares governance in source code.** Every flow declares its intent, effects, capability boundaries, and invariants in a `contract {}` block. The compiler verifies these at build time. There is no runtime surprise.
 
 **Enforces at runtime via the Governed Tower.** The DSS supervisor tracks the V_DPM (Virtual Dynamic Posture Matrix) register — every capability use is a bitmask check, every trap produces a structured AuditEvent, and rollback is clean (`unreachable` fires before the next instruction). *Today this runs as the Stage-A TypeScript simulation; the real `DSS.wasm` component is Post-P9 (#102–106).*
 
-**Produces a cryptographic audit trail.** Every governed execution generates an Epilogue Receipt (sha256_seal or zk_snark). Every security trap appends to an append-only audit log (CBOR Tag 410 AuditEvent). **Hybrid Ed25519 + ML-DSA-65 (NIST FIPS 204) signing is shipped** on the attestation, proof-graph, and bridge surfaces (both halves required — no post-quantum downgrade; certified mode *mandates* the ML-DSA key). **Opt-in hybrid signing now extends to the `.lmanifest`** as well: the default stays **Ed25519** (unchanged), and setting `LOGICN_MANIFEST_PROFILE=certified` *mandates* the hybrid Ed25519+ML-DSA-65 manifest signature — both halves required, fail-closed (`LLN-MANIFEST-PQ-REQUIRED` / `-PUBKEY-MISSING` / `-TAMPER`), with no post-quantum downgrade.
+**Produces a cryptographic audit trail.** Every governed execution generates an Epilogue Receipt (sha256_seal or zk_snark). Every security trap appends to an append-only audit log (CBOR Tag 410 AuditEvent). **Hybrid Ed25519 + ML-DSA-65 (NIST FIPS 204) signing is shipped** on the attestation, proof-graph, and bridge surfaces (both halves required — no post-quantum downgrade; certified mode *mandates* the ML-DSA key). **Opt-in hybrid signing now extends to the `.lmanifest`** as well: the default stays **Ed25519** (unchanged), and setting `GALERINA_MANIFEST_PROFILE=certified` *mandates* the hybrid Ed25519+ML-DSA-65 manifest signature — both halves required, fail-closed (`SPORE-MANIFEST-PQ-REQUIRED` / `-PUBKEY-MISSING` / `-TAMPER`), with no post-quantum downgrade.
 
-**Compiles to WebAssembly.** Governance is verified by the compiler at build time and enforced on the Stage-A runtime today. **WASM is the production execution path** — independently benchmarked as native-class (see Benchmarks). Full in-WASM self-hosting (P9) is *in progress*: the self-hosted `lexer.lln` `tokenize` reaches **byte-for-byte Stage-A == Stage-B real-WASM parity** (#143); extending that to the parser/type-checker/governance-verifier flows is the remaining gate.
+**Compiles to WebAssembly.** Governance is verified by the compiler at build time and enforced on the Stage-A runtime today. **WASM is the production execution path** — independently benchmarked as native-class (see Benchmarks). Full in-WASM self-hosting (P9) is *in progress*: the self-hosted `lexer.spore` `tokenize` reaches **byte-for-byte Stage-A == Stage-B real-WASM parity** (#143); extending that to the parser/type-checker/governance-verifier flows is the remaining gate.
 
 ---
 
-## What LogicN can and cannot do (honest scope)
+## What Galerina can and cannot do (honest scope)
 
-Three plain-English blocks. The first is the mature, shipped core; the second is a real but **emulated / owner-gated** frontier; the third is the hard boundary — what LogicN deliberately will **not** do.
+Three plain-English blocks. The first is the mature, shipped core; the second is a real but **emulated / owner-gated** frontier; the third is the hard boundary — what Galerina deliberately will **not** do.
 
 ### 1) What the governance `contract {}` block is good for *(shipped, production-grade)*
 
@@ -55,9 +55,9 @@ The `contract {}` block declares a flow's **intent, effects, capability boundari
 
 ### 2) What the "can do something" with maths / other compute is good for *(real, but emulated today + owner-gated)*
 
-LogicN can **govern a tolerant numeric sub-kernel** as a deny-by-default, untrusted **compute-only lane** (run on a CPU **photonic emulator** today, cheap-verified, fed back as a *degrade-only* verdict under a signed tolerance witness) — **while every decision stays bit-exact on the digital core**. Useful for the *tolerant MAC half* of:
+Galerina can **govern a tolerant numeric sub-kernel** as a deny-by-default, untrusted **compute-only lane** (run on a CPU **photonic emulator** today, cheap-verified, fed back as a *degrade-only* verdict under a signed tolerance witness) — **while every decision stays bit-exact on the digital core**. Useful for the *tolerant MAC half* of:
 
-| Domain (as you'd name it) | What LogicN governs |
+| Domain (as you'd name it) | What Galerina governs |
 |---|---|
 | **Weather prediction** | the ML-surrogate (GNN/attention) half — the chaotic core is refused |
 | **Finance / stocks** | a covariance MVM on the analog lane; pricing/VaR stays bit-exact digital |
@@ -67,13 +67,13 @@ LogicN can **govern a tolerant numeric sub-kernel** as a deny-by-default, untrus
 | **Algebra** *(tolerant low-precision matrix)* | ternary/low-bit GEMM/MVM |
 | **K3 API routing** · **low-level quantum** | *already ship* (the admission spine · the ffsim governance gate — governs, does not execute) |
 
-> Honest fence: the optics is a **precision-limited analog accelerator (~8-bit)** — **latency ≠ work** (~1.9× emulated, never "instant / free / O(1)"), and the analog lane can only **False-DENY, never False-ALLOW**. The deliverable today is a worked-example `.lln` (see `examples/gaming-substrate/`) + a compute-only profile — **not a new math kernel, and not silicon.**
+> Honest fence: the optics is a **precision-limited analog accelerator (~8-bit)** — **latency ≠ work** (~1.9× emulated, never "instant / free / O(1)"), and the analog lane can only **False-DENY, never False-ALLOW**. The deliverable today is a worked-example `.spore` (see `examples/gaming-substrate/`) + a compute-only profile — **not a new math kernel, and not silicon.**
 
 ### 3) What it cannot do *(the hard boundary — by design)*
 
 - **Bit-exact maths on the analog lane** — **number theory** (primes, factorization, modular arithmetic), **symbolic / high-precision algebra**, and the **DFT / quantum-chemistry core** need exact or fp64 results, so they stay on the digital lane (no analog win).
-- **`lane: gaming` (or any domain as a "lane")** — `lane` is a *hardware substrate* axis (`digital | noisy | photonic`), **not** an application domain. A game spans multiple lanes (approximate physics on `photonic`, anti-cheat signing on `digital`), so an unknown lane is **rejected** (`LLN-SUBSTRATE-002`), not silently accepted.
-- **Crypto on a noisy/photonic lane** — integrity is never tolerance-bounded; `crypto.*` on a noisy lane is denied (`LLN-SUBSTRATE-001`) no matter how much voting/averaging/ECC is stacked. **Crypto and any bit-exact result stay digital, always.**
+- **`lane: gaming` (or any domain as a "lane")** — `lane` is a *hardware substrate* axis (`digital | noisy | photonic`), **not** an application domain. A game spans multiple lanes (approximate physics on `photonic`, anti-cheat signing on `digital`), so an unknown lane is **rejected** (`SPORE-SUBSTRATE-002`), not silently accepted.
+- **Crypto on a noisy/photonic lane** — integrity is never tolerance-bounded; `crypto.*` on a noisy lane is denied (`SPORE-SUBSTRATE-001`) no matter how much voting/averaging/ECC is stacked. **Crypto and any bit-exact result stay digital, always.**
 - **AI as an in-path authorizer** — a model may *propose* (untrusted, degrade-only), but a probabilistic/self-reported score can never *lift* a security verdict.
 - **"Instant / free / O(1)" optical compute** — refuted; light transit is N-independent in *latency*, but the *work* is Θ(N²) load + Θ(N) I/O.
 - **Not yet (roadmap, not "cannot"):** real photonic hardware (emulated today), full in-WASM self-hosting (tokenize only so far), and real in-sandbox `DSS.wasm` isolation (#102–106).
@@ -82,12 +82,12 @@ LogicN can **govern a tolerant numeric sub-kernel** as a deny-by-default, untrus
 
 ## Who it is for
 
-| Sector | Why LogicN |
+| Sector | Why Galerina |
 |---|---|
-| **Financial platforms** | Every payment flow declares and enforces its effects. Audit trail by default. PCI DSS governance built in (`logicn-devtools-pci`). |
+| **Financial platforms** | Every payment flow declares and enforces its effects. Audit trail by default. PCI DSS governance built in (`galerina-devtools-pci`). |
 | **Healthcare systems** | PII/PHI is typed and tracked. Redaction is enforced at the type level before data reaches any audit sink. |
 | **Government / defence** | Designed for air-gapped deployment, no cloud dependency. Governed BitNet CPU inference is in early integration (Inference Tower ~12%). |
-| **Enterprise regulated** | OWASP attack vectors blocked at the compiler. Supply-chain provenance via signed manifests (Ed25519 default; opt-in hybrid Ed25519+ML-DSA-65 via `LOGICN_MANIFEST_PROFILE=certified`, plus hybrid on the attestation/bridge surfaces). |
+| **Enterprise regulated** | OWASP attack vectors blocked at the compiler. Supply-chain provenance via signed manifests (Ed25519 default; opt-in hybrid Ed25519+ML-DSA-65 via `GALERINA_MANIFEST_PROFILE=certified`, plus hybrid on the attestation/bridge surfaces). |
 
 > **New here?** → [**SETUP.md**](SETUP.md) — install · run your first benchmark · Hello World with full governance comments
 
@@ -95,15 +95,15 @@ LogicN can **govern a tolerant numeric sub-kernel** as a deny-by-default, untrus
 
 ## Benchmarks (honest numbers — core scoreboard 2026-06-23; Int64 + Tower-of-Hanoi added 2026-06-25)
 
-Run on an **Intel i9-9900K (8C/16T) + NVIDIA RTX 2060**, across Rust (native, generic + AVX2), Node.js (V8), Python (CPython), LogicN's WASM output, the Stage-A interpreter tiers, and real GPU (Deno WebGPU). Harness at `packages-logicn/logicn-devtools-benchmarks`; quote the canonical **§1.5 production-ceiling scoreboard** from `npm run compare` (the standard view — the 3 diagnostic `⟨interp⟩` tiers cannot "win", and the only honest LogicN cost is the shipping **WASM ▶ production** path).
+Run on an **Intel i9-9900K (8C/16T) + NVIDIA RTX 2060**, across Rust (native, generic + AVX2), Node.js (V8), Python (CPython), Galerina's WASM output, the Stage-A interpreter tiers, and real GPU (Deno WebGPU). Harness at `packages-galerina/galerina-devtools-benchmarks`; quote the canonical **§1.5 production-ceiling scoreboard** from `npm run compare` (the standard view — the 3 diagnostic `⟨interp⟩` tiers cannot "win", and the only honest Galerina cost is the shipping **WASM ▶ production** path).
 
 **The production-ceiling scoreboard (WASM ▶ production vs the fastest real runtime):**
 
 - **WASM ▶ production won outright** on `hardware-targets` (1st/4) and `fibonacci-recursive` (1st/5), and lands **~2.0–3.6× the winner** on most hot compute (`record-allocation` 2.0×, `six-digit-guess` 2.0×, `gpu-compute` 2.3×, `matrix-multiply` 3.6× behind the RTX-2060). Winner tally across the comparable set: Node.js 5 · Rust AVX2 5 · Rust (generic) 5 · **WASM ▶ production 2** · Deno-WebGPU 1.
-- **Governance is not free, stated honestly:** `governance-cost` is the heavy outlier at **293×** the AVX2 winner (the per-decision K3 fold), and `collection-pipeline` is 61× — these are the cost of compiling governance *into* the binary; on the per-flow `Node/LogicN` view governed overhead is ~**24.6%**.
+- **Governance is not free, stated honestly:** `governance-cost` is the heavy outlier at **293×** the AVX2 winner (the per-decision K3 fold), and `collection-pipeline` is 61× — these are the cost of compiling governance *into* the binary; on the per-flow `Node/Galerina` view governed overhead is ~**24.6%**.
 - **The Stage-A `⟨interp⟩` tiers are diagnostic, not the product** — they are the WASM byte-parity oracle and are *excluded from winning* by the scoreboard standard (they can read 1.0K–1025K× slower and that is expected).
 - **`tmf-container`** is now benchmarked (Rust 161.5K/s, Node 46.4K/s). `tri-logic` and `data-query` are **excluded — not unit-aligned** (R&D 0092, no silent caps).
-- **New (2026-06-25): `tower-of-hanoi`** — a harder cross-language recursion benchmark (3-peg Hanoi n=16 with a threaded move-checksum; all five runtimes agree on `result=42452`, the truth-audit oracle). Throughput ranks Rust ~237M > Node ~114M > Python ~4M > LogicN governed (slowest, by design). And an **Int64-vs-i32 WASM micro-benchmark** (`bench-i64-vs-i32.mjs`): the newly-added faithful 64-bit lowering is **i64 ≈ i32** (add 1.06×, mul 0.95×, within noise) — exact-past-2⁵³ + overflow-trapping integers cost ~0 throughput on a 64-bit host.
+- **New (2026-06-25): `tower-of-hanoi`** — a harder cross-language recursion benchmark (3-peg Hanoi n=16 with a threaded move-checksum; all five runtimes agree on `result=42452`, the truth-audit oracle). Throughput ranks Rust ~237M > Node ~114M > Python ~4M > Galerina governed (slowest, by design). And an **Int64-vs-i32 WASM micro-benchmark** (`bench-i64-vs-i32.mjs`): the newly-added faithful 64-bit lowering is **i64 ≈ i32** (add 1.06×, mul 0.95×, within noise) — exact-past-2⁵³ + overflow-trapping integers cost ~0 throughput on a 64-bit host.
 
 ---
 
@@ -116,26 +116,26 @@ Run on an **Intel i9-9900K (8C/16T) + NVIDIA RTX 2060**, across Rust (native, ge
 | **DRCM Phases 1–7 (Governed Tower — Stage-A simulation)** | 100% | real `DSS.wasm` is Post-P9 (#102–106) |
 | **CBOR Manifests (RFC 8949)** | 100% | |
 | **Tests — full suite** | 100% | **60/60 packages · 5,345 tests · 0 failures** |
-| **Resilience — first-class fault handlers (0017)** | shipped | `on_*_fault` → fail-closed `halt` default + LLN-FAULT-001/003 + `GIRFlow.faultHandlers` |
+| **Resilience — first-class fault handlers (0017)** | shipped | `on_*_fault` → fail-closed `halt` default + SPORE-FAULT-001/003 + `GIRFlow.faultHandlers` |
 | **Contract-driven test generation (0016)** | 5/5 vector dimensions | fault-injection · effect-egress · capability-denial · boundary/fuzz · substrate-violation (over GIR) |
 | **Type checker / Effect checker** | ~90% | |
 | **WAT emitter** | ~89% | #128(a) fail-closed fix landed (unhandled stmt → `unreachable` trap); #128(b)/GAP-4 `forEachStmt` lowering landed (for-in → counted loop over the host array bridge); `for…where` filtered iteration lowers as a guarded loop — all execution + interpreter-fidelity tested |
-| **Faithful Int64 (i64) lowering** | lift-ready | exact 64-bit integers end-to-end — interpreter `bigint` ≡ WASM `i64`, overflow **traps** (Fork-A, no silent wrap), the walker≡WASM differential passes non-vacuously over (2⁵³,2⁶³). The `LLN-NUMERIC-001` gate stays **closed by design** (declaring a scalar `Int64` errors today); the lift is one owner-gated line + a final cross-flow check. `UInt64` still gated. Throughput i64 ≈ i32. See [integer-types](docs/Knowledge-Bases/logicn-integer-types-and-lowering.md) |
+| **Faithful Int64 (i64) lowering** | lift-ready | exact 64-bit integers end-to-end — interpreter `bigint` ≡ WASM `i64`, overflow **traps** (Fork-A, no silent wrap), the walker≡WASM differential passes non-vacuously over (2⁵³,2⁶³). The `SPORE-NUMERIC-001` gate stays **closed by design** (declaring a scalar `Int64` errors today); the lift is one owner-gated line + a final cross-flow check. `UInt64` still gated. Throughput i64 ≈ i32. See [integer-types](docs/Knowledge-Bases/galerina-integer-types-and-lowering.md) |
 | **Runtime interpreter** | ~87% | diagnostic tier (see Benchmarks) |
 | **Stage-B self-hosting — interpreter parity** | 100% | R6 corpus: Stage-A == Stage-B |
 | **Stage-B self-hosting — WASM execution (P9)** | in progress | `tokenize` byte-parity achieved (#143); parser/checker/verifier flows remain |
-| **Post-Quantum & Hardware Security** | ~38% | hybrid Ed25519+ML-DSA-65 shipped on attestation/proof/bridge; **opt-in `.lmanifest` hybrid shipped** (default Ed25519; `LOGICN_MANIFEST_PROFILE=certified` mandates hybrid, both-halves fail-closed via `LLN-MANIFEST-PQ-REQUIRED`) |
-| **`.tmf` trust-capsule format (`logicn-ext-tmf`)** | slices 1–3 done | A **quantum-resilient universal file & communications format** (not just a database): TMX-256 (3-ary SHAKE256 Merkle-XOF) + container + KEM-DEM golden-verified; codec-agnostic modalities (image/audio/video/document/structured) + seekable anti-truncation streaming. ML-DSA-65 root signing (slice 4) next. **Defensive-publication paper:** [`docs/scientific-papers/`](docs/scientific-papers/) |
-| **`env.tmf` sealed secrets (`@logicn/ext-secrets-tmf`)** | shipped | An **optional encrypted-at-rest `.env` replacement** — sealed credentials in the `.tmf` capsule format instead of a plaintext dotenv file; opt-in package, 17 tests |
-| **Security hardening — fail-open class taxonomy** | shipped today | 10 recurring fail-open classes named + mechanically detected; **SEC-002 mutation: all gates killed** (every fail-closed gate genuinely guarded); `lint-wat-inline-comments` + the #163/#165/guarded-flow codegen+value-state fixes landed; **the `LLN-TIER-001` flow-kind tier-floor is shipped and now enforced on the user-facing `logicn.mjs` production build path** (under `LOGICN_PROFILE=production` an under-declared guarded/plain flow fails the build; `LLN-VALUESTATE-008` likewise enforced there — dev/check stay permissive); the value-state 34B-hole + `canCommit` deny-by-default are the next approved items |
+| **Post-Quantum & Hardware Security** | ~38% | hybrid Ed25519+ML-DSA-65 shipped on attestation/proof/bridge; **opt-in `.lmanifest` hybrid shipped** (default Ed25519; `GALERINA_MANIFEST_PROFILE=certified` mandates hybrid, both-halves fail-closed via `SPORE-MANIFEST-PQ-REQUIRED`) |
+| **`.tmf` trust-capsule format (`galerina-ext-tmf`)** | slices 1–3 done | A **quantum-resilient universal file & communications format** (not just a database): TMX-256 (3-ary SHAKE256 Merkle-XOF) + container + KEM-DEM golden-verified; codec-agnostic modalities (image/audio/video/document/structured) + seekable anti-truncation streaming. ML-DSA-65 root signing (slice 4) next. **Defensive-publication paper:** [`docs/scientific-papers/`](docs/scientific-papers/) |
+| **`env.tmf` sealed secrets (`@galerina/ext-secrets-tmf`)** | shipped | An **optional encrypted-at-rest `.env` replacement** — sealed credentials in the `.tmf` capsule format instead of a plaintext dotenv file; opt-in package, 17 tests |
+| **Security hardening — fail-open class taxonomy** | shipped today | 10 recurring fail-open classes named + mechanically detected; **SEC-002 mutation: all gates killed** (every fail-closed gate genuinely guarded); `lint-wat-inline-comments` + the #163/#165/guarded-flow codegen+value-state fixes landed; **the `SPORE-TIER-001` flow-kind tier-floor is shipped and now enforced on the user-facing `galerina.mjs` production build path** (under `GALERINA_PROFILE=production` an under-declared guarded/plain flow fails the build; `SPORE-VALUESTATE-008` likewise enforced there — dev/check stay permissive); the value-state 34B-hole + `canCommit` deny-by-default are the next approved items |
 | **Passive Execution Plans & Target Bridges** | ~22% | |
 | **AI Inference Tower (BitNet / GroqCloud / NVFP4)** | ~12% | default bridges are governed dev stubs/simulators |
 | **Photonic / Ternary Computing** | ~3% | software simulation only (not hardware) |
-| **Application-framework layer** | ~72% | admission/fusion border (3 gates + `planComposition` multi-module linker + revocation, 87 tests) · `logicn new app` scaffolder · governed resolver (hash/sig/registry/install-deny + LLN-PKG-006) — all real + tested. **B8 HTTP transport unlocked + in progress** (S1 cert-gate landed, kernel-wiring pending). Servable api-server/example-app + signed registry index are the remaining gaps |
-| **B8 governed HTTP transport (TLSTP)** | in progress | **S1 K3 cert/channel-validation gate shipped** (`logicn-core-network`, 126 tests, fail-closed `revocation-unknown → DENY`, SEC-002 mutation-guarded) — wiring into live kernel auth + 0066 first-3 (handshake-bind · raw-byte shim · ECH/OHTTP) are next |
+| **Application-framework layer** | ~72% | admission/fusion border (3 gates + `planComposition` multi-module linker + revocation, 87 tests) · `galerina new app` scaffolder · governed resolver (hash/sig/registry/install-deny + SPORE-PKG-006) — all real + tested. **B8 HTTP transport unlocked + in progress** (S1 cert-gate landed, kernel-wiring pending). Servable api-server/example-app + signed registry index are the remaining gaps |
+| **B8 governed HTTP transport (TLSTP)** | in progress | **S1 K3 cert/channel-validation gate shipped** (`galerina-core-network`, 126 tests, fail-closed `revocation-unknown → DENY`, SEC-002 mutation-guarded) — wiring into live kernel auth + 0066 first-3 (handshake-bind · raw-byte shim · ECH/OHTTP) are next |
 | **Tri-Pipe fault tolerance (binary/hybrid/photonic)** | re-R&D | shipped: fail-closed core · arena + overflow traps · DbC post-conditions · K3 fail-safe · NMR tolerance · Freivalds verify · DRCM containment. A multi-agent stability re-R&D is in flight |
 
-**Roadmap (security-first)** → [logicn-roadmap-2026-06-23.md](docs/Knowledge-Bases/logicn-roadmap-2026-06-23.md) · **% audit** → [logicn-percent-audit-roadmap-2026-06-25-v2.md](docs/Knowledge-Bases/logicn-percent-audit-roadmap-2026-06-25-v2.md) (~88% shippable) · [build-roadmap](docs/Knowledge-Bases/logicn-build-roadmap.md). *2026-06-25: faithful Int64 WASM lowering is lift-ready (gate closed by design); the Untrusted Governed Lane is documented; the Tower-of-Hanoi cross-language benchmark + the JS-quirks-vs-LogicN R&D (notes/59) landed.* *Latest (2026-06-24, v1.0.0-beta.2): `LLN-TIER-001` + `LLN-VALUESTATE-008` are now enforced on the `logicn.mjs` production build path, opt-in hybrid Ed25519+ML-DSA-65 `.lmanifest` signing shipped (certified profile), and `@logicn/ext-secrets-tmf` (`env.tmf` sealed secrets) landed; the next security fix is wiring the S1 cert-gate into live kernel admission (run `node scripts/status.mjs`).*
+**Roadmap (security-first)** → [galerina-roadmap-2026-06-23.md](docs/Knowledge-Bases/galerina-roadmap-2026-06-23.md) · **% audit** → [galerina-percent-audit-roadmap-2026-06-25-v2.md](docs/Knowledge-Bases/galerina-percent-audit-roadmap-2026-06-25-v2.md) (~88% shippable) · [build-roadmap](docs/Knowledge-Bases/galerina-build-roadmap.md). *2026-06-25: faithful Int64 WASM lowering is lift-ready (gate closed by design); the Untrusted Governed Lane is documented; the Tower-of-Hanoi cross-language benchmark + the JS-quirks-vs-Galerina R&D (notes/59) landed.* *Latest (2026-06-24, v1.0.0-beta.2): `SPORE-TIER-001` + `SPORE-VALUESTATE-008` are now enforced on the `galerina.mjs` production build path, opt-in hybrid Ed25519+ML-DSA-65 `.lmanifest` signing shipped (certified profile), and `@galerina/ext-secrets-tmf` (`env.tmf` sealed secrets) landed; the next security fix is wiring the S1 cert-gate into live kernel admission (run `node scripts/status.mjs`).*
 
 ---
 
@@ -143,16 +143,16 @@ Run on an **Intel i9-9900K (8C/16T) + NVIDIA RTX 2060**, across Rust (native, ge
 intent  →  governed execution plan  →  coordinated compute  →  audit proof
 ```
 
-**[Intent](docs/Knowledge-Bases/logicn-concept-intent.md)** — what a flow is *for*: purpose, allowed effects, boundaries. Intent guides optimisation; authority is granted through `contract.effects` and capability declarations.
-**[Governed Execution Plan](docs/Knowledge-Bases/logicn-concept-governed-execution-plan.md)** — the compiler-generated operational contract: capabilities granted, effects allowed, targets approved, behaviours denied.
-**[Coordinated Compute](docs/Knowledge-Bases/logicn-concept-coordinated-compute.md)** — runtime orchestration across CPU/GPU/NPU/WASM and future targets, within declared authority.
-**[Audit Proof](docs/Knowledge-Bases/logicn-concept-audit-proof.md)** — structured, cryptographically signed runtime evidence that execution stayed within declared authority.
+**[Intent](docs/Knowledge-Bases/galerina-concept-intent.md)** — what a flow is *for*: purpose, allowed effects, boundaries. Intent guides optimisation; authority is granted through `contract.effects` and capability declarations.
+**[Governed Execution Plan](docs/Knowledge-Bases/galerina-concept-governed-execution-plan.md)** — the compiler-generated operational contract: capabilities granted, effects allowed, targets approved, behaviours denied.
+**[Coordinated Compute](docs/Knowledge-Bases/galerina-concept-coordinated-compute.md)** — runtime orchestration across CPU/GPU/NPU/WASM and future targets, within declared authority.
+**[Audit Proof](docs/Knowledge-Bases/galerina-concept-audit-proof.md)** — structured, cryptographically signed runtime evidence that execution stayed within declared authority.
 
 ---
 
 ## What makes it different
 
-| Traditional | LogicN |
+| Traditional | Galerina |
 |---|---|
 | Errors as exceptions | Explicit `Result<T, E>` — no silent failure |
 | Mutation is silent | `let` = immutable · `mut` = explicit · `readonly` = view |
@@ -169,7 +169,7 @@ intent  →  governed execution plan  →  coordinated compute  →  audit proof
 
 > **Three-block structure:** `flow name(params) -> ReturnType` (signature) · `contract { ... }` (compile-time governance, *outside* the body) · optional `policy { ... }` (runtime monotonic overlay) · `{ body }`. `contract {}` and `policy {}` are separate blocks, not nested.
 
-```logicn
+```galerina
 // ── Governed secure flow: PII handling ───────────────────────────────────────
 secure flow createPatient(readonly request: Request) -> CreatePatientResult
 contract {
@@ -209,7 +209,7 @@ contract { intent { "Map a status enum to a display string." } }
 
 ## Architecture Patterns
 
-Nine canonical patterns. Patterns 1–6 compile today (`drcm_stable_v0`); 7–9 require DRCM phases (`drcm_core_v1`). Each has a verified `.lln` example in `tests/patterns/`.
+Nine canonical patterns. Patterns 1–6 compile today (`drcm_stable_v0`); 7–9 require DRCM phases (`drcm_core_v1`). Each has a verified `.spore` example in `tests/patterns/`.
 
 | # | Pattern | Profile | When to use |
 |---|---|---|---|
@@ -223,17 +223,17 @@ Nine canonical patterns. Patterns 1–6 compile today (`drcm_stable_v0`); 7–9 
 | 8 | Emergency Policy Overlay | `drcm_core_v1` | DRCM Phase 4 — auto-tightening `policy {}` |
 | 9 | .lmanifest Compliance | `drcm_core_v1` | DRCM Phase 3 — PCI DSS / SOC 2 artifact |
 
-> Full reference: [`docs/Knowledge-Bases/logicn-architecture-patterns.md`](docs/Knowledge-Bases/logicn-architecture-patterns.md)
+> Full reference: [`docs/Knowledge-Bases/galerina-architecture-patterns.md`](docs/Knowledge-Bases/galerina-architecture-patterns.md)
 
 ---
 
 ## Building an application
 
-A LogicN app is **compile-time conventions + signed governed packages fused at declared seams — not runtime middleware.** Scaffold one with `logicn new app`:
+A Galerina app is **compile-time conventions + signed governed packages fused at declared seams — not runtime middleware.** Scaffold one with `galerina new app`:
 
 ```text
 my-orders-app/
-├── App.lln          composition-root flow (the app entry)
+├── App.spore          composition-root flow (the app entry)
 ├── App.manifest     declarative descriptor → folded into the SIGNED build/App.lmanifest
 ├── flows/           your governed business logic (routeOrders, createOrder, …)
 ├── deps/            signed governed components admitted at the fuse border
@@ -241,7 +241,7 @@ my-orders-app/
 └── .gitignore       build/ output + .env secrets are never committed
 ```
 
-`logicn build App.lln` produces **one signed `build/App.wasm` + `build/App.lmanifest`** (Ed25519). A host **App Kernel** admits that wasm at a deny-by-default **fuse border** — three fail-closed gates — before it runs a single instruction:
+`galerina build App.spore` produces **one signed `build/App.wasm` + `build/App.lmanifest`** (Ed25519). A host **App Kernel** admits that wasm at a deny-by-default **fuse border** — three fail-closed gates — before it runs a single instruction:
 
 1. **hash-pin** — the `.wasm` sha256 must equal the signed descriptor.
 2. **signature + revocation** — a valid Ed25519 signature from a **non-revoked** key.
@@ -249,7 +249,7 @@ my-orders-app/
 
 At runtime the app reaches the world **only** through the deny-by-default **Capability Host** (network · db · secrets), with governance — K3, contracts, fail-closed, audit — **compiled into** the wasm rather than wrapped around it. Capability binding lives in the signed `.lmanifest fuse{}` block; `.env` secrets are injected at runtime, never compiled in.
 
-> Detailed plan + flowchart: [`docs/Knowledge-Bases/logicn-framework-plan-2026-06-21.md`](docs/Knowledge-Bases/logicn-framework-plan-2026-06-21.md)
+> Detailed plan + flowchart: [`docs/Knowledge-Bases/galerina-framework-plan-2026-06-21.md`](docs/Knowledge-Bases/galerina-framework-plan-2026-06-21.md)
 
 ---
 
@@ -257,14 +257,14 @@ At runtime the app reaches the world **only** through the deny-by-default **Capa
 
 ### Compiler pipeline
 ```
-.lln source
-  ↓ lexer          — tokenise, LLN-LEX-001..006
+.spore source
+  ↓ lexer          — tokenise, SPORE-LEX-001..006
   ↓ parser         — AST: flow/contract/match/record/for/import
-  ↓ symbol resolver — LLN-NAME-001..003
-  ↓ type checker   — LLN-TYPE-001..023
-  ↓ value-state    — LLN-VALUESTATE/SECRET/TAINT/GATE
-  ↓ effect checker — LLN-EFFECT-001..005
-  ↓ governance     — LLN-GOV-001..020, LLN-TERM-001, ProofGraph
+  ↓ symbol resolver — SPORE-NAME-001..003
+  ↓ type checker   — SPORE-TYPE-001..023
+  ↓ value-state    — SPORE-VALUESTATE/SECRET/TAINT/GATE
+  ↓ effect checker — SPORE-EFFECT-001..005
+  ↓ governance     — SPORE-GOV-001..020, SPORE-TERM-001, ProofGraph
   ↓ GIR emitter    — Governed Intermediate Representation
   ↓ tiered runtime — cache · bytecode VM · sync · WASM · tree-walker
 ```
@@ -275,38 +275,38 @@ The ~94 package directories (**60 active and test-bearing**; the rest are planne
 
 | Family | Role | Trust |
 |---|---|---|
-| `logicn-core-*` (20) | The governance/compiler/runtime **core** — compiler, security (taint · redaction · OWASP), network (TLSTP S1 cert-gate), economics, logic. | **TCB** (production-grade) |
-| `logicn-tower-citizen` | The **governed runtime** — K3 verdict algebra, bridge attestation, revocation registry, substrate model. | **TCB** |
-| `logicn-framework-*` (3) | The **application layer** — the app-kernel admission/fusion border, the api-server REST adapter, the example-app golden template. | governed host |
-| `logicn-ext-*` (7) | **Govern-Don't-Absorb border extensions** — the `.tmf` trust engine (TMX-256 · KEM-DEM), the secrets-vault rotation engine, the native bridges (BitNet · quantum · C++). | governed at the border |
-| `logicn-devtools-*` (13) | Dev/audit **tooling** — the security + PCI auditors, the benchmark suite, the project/code/KB graph generators. | host-side tools |
-| `logicn-target-*` (7) | **Target adapters** — cpu · wasm · gpu · native · js, each deny-by-default capability-gated. | mostly planned |
-| `logicn-data-*` · `logicn-web-*` · `logicn-registry` | The data engine, web-governance stubs, and the signed package registry. | planned/partial |
+| `galerina-core-*` (20) | The governance/compiler/runtime **core** — compiler, security (taint · redaction · OWASP), network (TLSTP S1 cert-gate), economics, logic. | **TCB** (production-grade) |
+| `galerina-tower-citizen` | The **governed runtime** — K3 verdict algebra, bridge attestation, revocation registry, substrate model. | **TCB** |
+| `galerina-framework-*` (3) | The **application layer** — the app-kernel admission/fusion border, the api-server REST adapter, the example-app golden template. | governed host |
+| `galerina-ext-*` (7) | **Govern-Don't-Absorb border extensions** — the `.tmf` trust engine (TMX-256 · KEM-DEM), the secrets-vault rotation engine, the native bridges (BitNet · quantum · C++). | governed at the border |
+| `galerina-devtools-*` (13) | Dev/audit **tooling** — the security + PCI auditors, the benchmark suite, the project/code/KB graph generators. | host-side tools |
+| `galerina-target-*` (7) | **Target adapters** — cpu · wasm · gpu · native · js, each deny-by-default capability-gated. | mostly planned |
+| `galerina-data-*` · `galerina-web-*` · `galerina-registry` | The data engine, web-governance stubs, and the signed package registry. | planned/partial |
 
 **Two rules hold the architecture together:**
 
-1. **Govern-Don't-Absorb.** The **core governs**; the **`ext` packages do the heavy lifting** (cryptography, native compute, file formats) *at the border* — never absorbed into the TCB. The `.tmf` KEM-DEM crypto lives in `logicn-ext-tmf`, **governed** by the core's `LLN-SUBSTRATE-001` (crypto-on-core) invariant, so the core never grows a dependency it would have to trust. A bridge or codec is a *governed participant*, not part of the trusted base.
+1. **Govern-Don't-Absorb.** The **core governs**; the **`ext` packages do the heavy lifting** (cryptography, native compute, file formats) *at the border* — never absorbed into the TCB. The `.tmf` KEM-DEM crypto lives in `galerina-ext-tmf`, **governed** by the core's `SPORE-SUBSTRATE-001` (crypto-on-core) invariant, so the core never grows a dependency it would have to trust. A bridge or codec is a *governed participant*, not part of the trusted base.
 2. **Self-contained packages, explicit boundaries.** There are **no npm workspaces** — every package installs and builds independently via `file:../` deps, so each boundary is an explicit, individually-deployable seam, and a package enters an app **only across the signed admission border**, never by ambient import.
 
 > **Licensing model (planned).** The intended split is **`core` = Apache-2.0** (free forever — the compiler, runtime, governance core) and an **`enterprise` tier under BSL** (compliance/reporting packages). This is a recorded design decision, not yet a physical directory split.
 
 ### Package layout (status-labelled)
 ```
-packages-logicn/
-├── logicn-core-compiler/     ACTIVE — full pipeline, 3,731 tests
-├── logicn-core-security/     ACTIVE — taint profiles, redaction, OWASP boundaries
-├── logicn-core-economics/    ACTIVE — CostGraph, ValueGraph, breach-risk matrix
-├── logicn-core-logic/        ACTIVE — Tri, Decision, RiskLevel
-├── logicn-tower-citizen/     ACTIVE — governed ternary/BitNet simulator + K3 + bridge attestation + revocation (245 tests)
-├── logicn-ext-tmf/           ACTIVE — .tmf trust engine: TMX-256 + container + KEM-DEM (slices 1–3)
-├── logicn-ext-bridge-quantum/ ACTIVE — governed ffsim bridge (Phase 1.5; real exec deferred to Phase 2)
-├── logicn-devtools-security/ ACTIVE — runSecurityAudit, PCI DSS 4.0.1
-├── logicn-devtools-pci/      ACTIVE — PCI DSS 4.0.1 (LLN-PCI-001..010)
-├── logicn-devtools-benchmarks/ ACTIVE — 23 benchmarks across all runtimes
-├── logicn-core-network/      ACTIVE — network I/O policy + egress/inbound guards + TLSTP S1 K3 cert-validation gate (126 tests)
-├── logicn-framework-app-kernel/ ACTIVE — admission/fusion host: fuse-loader 3 gates + planComposition multi-module linker + revocation (87 tests)
-├── logicn-framework-{example-app,api-server}/  REFERENCE — REST adapter (e2e-fused) + worked-example scaffolds
-└── logicn-target-*, data/db/web/registry  PLANNED/PARTIAL — several documentation-only
+packages-galerina/
+├── galerina-core-compiler/     ACTIVE — full pipeline, 3,731 tests
+├── galerina-core-security/     ACTIVE — taint profiles, redaction, OWASP boundaries
+├── galerina-core-economics/    ACTIVE — CostGraph, ValueGraph, breach-risk matrix
+├── galerina-core-logic/        ACTIVE — Tri, Decision, RiskLevel
+├── galerina-tower-citizen/     ACTIVE — governed ternary/BitNet simulator + K3 + bridge attestation + revocation (245 tests)
+├── galerina-ext-tmf/           ACTIVE — .tmf trust engine: TMX-256 + container + KEM-DEM (slices 1–3)
+├── galerina-ext-bridge-quantum/ ACTIVE — governed ffsim bridge (Phase 1.5; real exec deferred to Phase 2)
+├── galerina-devtools-security/ ACTIVE — runSecurityAudit, PCI DSS 4.0.1
+├── galerina-devtools-pci/      ACTIVE — PCI DSS 4.0.1 (SPORE-PCI-001..010)
+├── galerina-devtools-benchmarks/ ACTIVE — 23 benchmarks across all runtimes
+├── galerina-core-network/      ACTIVE — network I/O policy + egress/inbound guards + TLSTP S1 K3 cert-validation gate (126 tests)
+├── galerina-framework-app-kernel/ ACTIVE — admission/fusion host: fuse-loader 3 gates + planComposition multi-module linker + revocation (87 tests)
+├── galerina-framework-{example-app,api-server}/  REFERENCE — REST adapter (e2e-fused) + worked-example scaffolds
+└── galerina-target-*, data/db/web/registry  PLANNED/PARTIAL — several documentation-only
 
 examples/auth-service/        31 governed flows (verifyPassword, charge, sovereign...)
 docs/Knowledge-Bases/         450+ specification documents
@@ -314,7 +314,7 @@ docs/Knowledge-Bases/         450+ specification documents
 
 ### Five-layer execution stack
 ```
-Layer 1: LogicN Source (.lln)         — what the developer writes
+Layer 1: Galerina Source (.spore)         — what the developer writes
        ↓ compiler pipeline
 Layer 2: Governed IR (GIR)            — verified governance contract
        ↓ target bridge
@@ -334,26 +334,26 @@ Layer 5: ProofGraph + .lmanifest      — cryptographic audit proof (Ed25519 def
 node scripts/run-all-tests.cjs --core
 npm test
 
-# Scaffold a new governed app (App.lln + App.manifest + flows/ deps/ proofs/, deny-by-default)
-logicn new app my-orders-app
+# Scaffold a new governed app (App.spore + App.manifest + flows/ deps/ proofs/, deny-by-default)
+galerina new app my-orders-app
 
 # Full benchmark suite (~5–10 min) on this machine, then compare
-cd packages-logicn/logicn-devtools-benchmarks && npm run run && npm run compare
+cd packages-galerina/galerina-devtools-benchmarks && npm run run && npm run compare
 
-# Compile a .lln program to WASM and run it
-logicn build examples/auth-service/sovereignTransaction.lln
-logicn run   examples/auth-service/verifyPassword.lln --invoke verifyPassword
-logicn check examples/auth-service/verifyPassword.lln
+# Compile a .spore program to WASM and run it
+galerina build examples/auth-service/sovereignTransaction.spore
+galerina run   examples/auth-service/verifyPassword.spore --invoke verifyPassword
+galerina check examples/auth-service/verifyPassword.spore
 
 # Run a .wasm binary without Node.js
 wasmtime --invoke main build/benchmark.wasm
 
 # Plugin border check (fail-closed admission)
-node logicn.mjs border-check
+node galerina.mjs border-check
 
 # Security + PCI audit sweep
-node packages-logicn/logicn-devtools-security/dist/cli.js audit examples/auth-service/verifyPassword.lln
-node packages-logicn/logicn-devtools-pci/dist/cli.js audit examples/auth-service/
+node packages-galerina/galerina-devtools-security/dist/cli.js audit examples/auth-service/verifyPassword.spore
+node packages-galerina/galerina-devtools-pci/dist/cli.js audit examples/auth-service/
 ```
 
 ---
@@ -365,22 +365,22 @@ node packages-logicn/logicn-devtools-pci/dist/cli.js audit examples/auth-service
 | [SETUP.md](SETUP.md) | Install on Windows / Linux / macOS, benchmarks, Hello World |
 | [`docs/Knowledge-Bases/KNOWLEDGE-BASE-INDEX.md`](docs/Knowledge-Bases/KNOWLEDGE-BASE-INDEX.md) | Master navigation — 4-layer KB hierarchy, conflict resolution |
 | [`docs/scientific-papers/`](docs/scientific-papers/) | Publishing standard (defensive-pub + measured-negative only, **no flagship by design**) + the `.tmf` defensive-publication paper + UK/US/EU compliance checklist |
-| [`docs/Knowledge-Bases/logicn-fail-open-taxonomy.md`](docs/Knowledge-Bases/logicn-fail-open-taxonomy.md) | The 10 recurring fail-open classes + mechanical detectors + the security-first hardening list |
+| [`docs/Knowledge-Bases/galerina-fail-open-taxonomy.md`](docs/Knowledge-Bases/galerina-fail-open-taxonomy.md) | The 10 recurring fail-open classes + mechanical detectors + the security-first hardening list |
 | [`AGENTS.md`](AGENTS.md) | The AI-agent entry point — authoritative sources, package map, conventions |
-| [`docs/Knowledge-Bases/logicn-build-roadmap.md`](docs/Knowledge-Bases/logicn-build-roadmap.md) | Forward roadmap, P9 critical path, audit remediation |
-| `docs/Knowledge-Bases/logicn-governance-rules.md` | Numbered rule registry — LLN codes, enforce status, examples |
-| `docs/Knowledge-Bases/logicn-architecture-patterns.md` | 9 canonical patterns with feature gates |
-| `docs/Knowledge-Bases/logicn-zero-trust-engine.md` | "LogicN as a zero-trust engine" — the 4 border mandates + status |
-| `docs/Knowledge-Bases/logicn-engineering-goals.md` | 3 architectural goals — native speed, single-cycle bitmask, no system crash |
+| [`docs/Knowledge-Bases/galerina-build-roadmap.md`](docs/Knowledge-Bases/galerina-build-roadmap.md) | Forward roadmap, P9 critical path, audit remediation |
+| `docs/Knowledge-Bases/galerina-governance-rules.md` | Numbered rule registry — SPORE codes, enforce status, examples |
+| `docs/Knowledge-Bases/galerina-architecture-patterns.md` | 9 canonical patterns with feature gates |
+| `docs/Knowledge-Bases/galerina-zero-trust-engine.md` | "Galerina as a zero-trust engine" — the 4 border mandates + status |
+| `docs/Knowledge-Bases/galerina-engineering-goals.md` | 3 architectural goals — native speed, single-cycle bitmask, no system crash |
 | [`docs/Knowledge-Bases/untrusted-governed-lane.md`](docs/Knowledge-Bases/untrusted-governed-lane.md) | **Govern-Don't-Absorb** — running fast/exotic/external work *without trusting it* (decision in the core, work in the lane, No-Coercion `vAnd=min`); worked `substrate{ lane: photonic }` flow example + diagram |
-| [`docs/Knowledge-Bases/logicn-integer-types-and-lowering.md`](docs/Knowledge-Bases/logicn-integer-types-and-lowering.md) | The numeric type system + i32/i64 WASM lowering + the trapping-arithmetic maths (hard file paths) |
-| [`docs/Knowledge-Bases/logicn-rd-59-js-quirks-vs-logicn-2026-06-25.md`](docs/Knowledge-Bases/logicn-rd-59-js-quirks-vs-logicn-2026-06-25.md) | The 10 classic JavaScript bad-design quirks vs LogicN (7/10 avoided by design; the one real gap = NaN on Float) |
-| [`docs/Knowledge-Bases/logicn-percent-audit-roadmap-2026-06-25-v2.md`](docs/Knowledge-Bases/logicn-percent-audit-roadmap-2026-06-25-v2.md) | Latest %-completion audit + roadmap (~88% shippable) + the honest cross-language benchmark standing |
-| `docs/Knowledge-Bases/logicn-deterministic-runtime-containment.md` | DRCM — DSS, DWI, V_DPM, `.lmanifest`, 7-module architecture |
+| [`docs/Knowledge-Bases/galerina-integer-types-and-lowering.md`](docs/Knowledge-Bases/galerina-integer-types-and-lowering.md) | The numeric type system + i32/i64 WASM lowering + the trapping-arithmetic maths (hard file paths) |
+| [`docs/Knowledge-Bases/galerina-rd-59-js-quirks-vs-galerina-2026-06-25.md`](docs/Knowledge-Bases/galerina-rd-59-js-quirks-vs-galerina-2026-06-25.md) | The 10 classic JavaScript bad-design quirks vs Galerina (7/10 avoided by design; the one real gap = NaN on Float) |
+| [`docs/Knowledge-Bases/galerina-percent-audit-roadmap-2026-06-25-v2.md`](docs/Knowledge-Bases/galerina-percent-audit-roadmap-2026-06-25-v2.md) | Latest %-completion audit + roadmap (~88% shippable) + the honest cross-language benchmark standing |
+| `docs/Knowledge-Bases/galerina-deterministic-runtime-containment.md` | DRCM — DSS, DWI, V_DPM, `.lmanifest`, 7-module architecture |
 | [notes/2026-06-17-zero-trust-senior-developer-project-audit.md](notes/2026-06-17-zero-trust-senior-developer-project-audit.md) | Latest independent audit (advanced-prototype verdict) |
 
 ---
 
 ## Licence
 
-LogicN is licensed under the Apache License 2.0. See [`LICENSE`](LICENSE), [`LICENCE.md`](LICENCE.md), [`NOTICE.md`](packages-logicn/logicn-core/NOTICE.md), and [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md) (all third-party dependencies are permissively licensed and free for commercial use).
+Galerina is licensed under the Apache License 2.0. See [`LICENSE`](LICENSE), [`LICENCE.md`](LICENCE.md), [`NOTICE.md`](packages-galerina/galerina-core/NOTICE.md), and [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md) (all third-party dependencies are permissively licensed and free for commercial use).

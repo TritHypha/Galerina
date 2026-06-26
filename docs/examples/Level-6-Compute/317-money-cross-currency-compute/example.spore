@@ -1,0 +1,9 @@
+/// example: 317-money-cross-currency-compute
+/// test_status: stable
+/// level: 6
+/// concept: Cross-currency arithmetic is denied
+/// expected_diagnostics: SPORE-TYPE-004
+
+pure flow example(price: Money<GBP>, fee: Money<USD>) -> Void {
+  let total = price + fee
+}

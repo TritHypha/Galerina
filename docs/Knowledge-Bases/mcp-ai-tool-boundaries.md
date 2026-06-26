@@ -2,10 +2,10 @@
 
 ## Purpose
 
-LogicN may support the Model Context Protocol (MCP) as a controlled integration
+Galerina may support the Model Context Protocol (MCP) as a controlled integration
 boundary for AI tools, resources and prompts.
 
-MCP connects AI systems to external context and actions. LogicN's role is to
+MCP connects AI systems to external context and actions. Galerina's role is to
 make that access typed, permissioned, classified, bounded, audited and
 reportable.
 
@@ -18,10 +18,10 @@ MCP boundary = declared AI/tool access through data, flow, permission, boundary 
 ## Core Rule
 
 ```text
-All MCP tools, resources and prompts must be declared as LogicN AI/tool boundaries before use.
+All MCP tools, resources and prompts must be declared as Galerina AI/tool boundaries before use.
 ```
 
-A LogicN flow may call MCP tools only through a declared AI/tool contract with:
+A Galerina flow may call MCP tools only through a declared AI/tool contract with:
 
 - typed input and output
 - data classification
@@ -34,7 +34,7 @@ A LogicN flow may call MCP tools only through a declared AI/tool contract with:
 
 ## Concept Mapping
 
-| MCP concept | LogicN concept | Meaning |
+| MCP concept | Galerina concept | Meaning |
 | --- | --- | --- |
 | MCP server | `boundary ai_tool` or `boundary external` | Server that exposes context or tools |
 | Tool | declared tool action / secure flow | Function the AI may ask to execute |
@@ -46,19 +46,19 @@ A LogicN flow may call MCP tools only through a declared AI/tool contract with:
 | Tool result | response/view contract | Safe output from the tool |
 | Audit/security | generated reports | Proof of allowed, denied and used access |
 
-## Five-Part LogicN Model
+## Five-Part Galerina Model
 
 ```text
 data       = MCP resources, tool inputs, tool outputs, prompt context and vault entries
-flow       = typed LogicN flow invoked through the MCP boundary
-permission = OAuth/auth plus LogicN permission, capability, effect and approval rules
+flow       = typed Galerina flow invoked through the MCP boundary
+permission = OAuth/auth plus Galerina permission, capability, effect and approval rules
 boundary   = MCP server, client, tool, resource, prompt, filesystem root, network or vault crossing
 report     = proof of exposure, access, denial, approval and token-boundary checks
 ```
 
 ## Boundary Example
 
-```logicn
+```galerina
 boundary ai_tool CustomerSupportMcp {
   protocol mcp
   transport http
@@ -90,7 +90,7 @@ boundary ai_tool CustomerSupportMcp {
 
 ## Tool Contract Example
 
-```logicn
+```galerina
 contract ai_tool CustomerLookupTool {
   protocol mcp
   tool getCustomerById
@@ -127,7 +127,7 @@ contract ai_tool CustomerLookupTool {
 
 ## Flow Example
 
-```logicn
+```galerina
 flow answerCustomerQuestion(
   request: SupportQuestion,
   ctx: RequestContext
@@ -150,7 +150,7 @@ contract {
 
 MCP tool availability is not permission.
 
-LogicN should check:
+Galerina should check:
 
 - whether the MCP client may connect
 - whether the actor may call the tool
@@ -162,7 +162,7 @@ LogicN should check:
 
 ## Token Boundary Rules
 
-For HTTP MCP transports, LogicN should follow the MCP authorization model rather
+For HTTP MCP transports, Galerina should follow the MCP authorization model rather
 than invent hidden login behaviour.
 
 Rules:
@@ -173,7 +173,7 @@ Rules:
 - clients must use protected resource metadata for authorization discovery
 - token passthrough is denied
 - sessions are not authentication
-- all inbound authorized requests remain subject to LogicN permission checks
+- all inbound authorized requests remain subject to Galerina permission checks
 
 ## Vault Rules
 
@@ -182,14 +182,14 @@ vault access.
 
 Allowed:
 
-```logicn
+```galerina
 tool Orders.preview uses vault.session.CustomerProfileData
   when permission OrdersPreview is granted
 ```
 
 Rejected:
 
-```logicn
+```galerina
 tool Vault.getAnything
 ```
 
@@ -204,7 +204,7 @@ Vault access through MCP must be:
 
 ## Generated Reports
 
-LogicN should generate MCP report targets such as:
+Galerina should generate MCP report targets such as:
 
 ```text
 mcp-tool-index.json
@@ -220,7 +220,7 @@ Example report shape:
 
 ```json
 {
-  "reportType": "logicn.mcp.effective_permissions",
+  "reportType": "galerina.mcp.effective_permissions",
   "tool": "CustomerSupportMcp.getCustomerById",
   "actor": "support-ai-agent",
   "allowed": true,
@@ -249,11 +249,11 @@ MCP support is a platform concept.
 
 It should not be treated as a v1 core-language requirement unless the secure web
 runtime needs an AI/tool gateway. The v1 requirement is to preserve the boundary
-rules so MCP can be added without weakening LogicN's security model.
+rules so MCP can be added without weakening Galerina's security model.
 
 ## Best Short Statement
 
 ```text
 MCP connects AI systems to tools and context.
-LogicN controls, types, limits and reports how those capabilities are used.
+Galerina controls, types, limits and reports how those capabilities are used.
 ```

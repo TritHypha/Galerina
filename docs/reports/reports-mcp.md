@@ -3,7 +3,7 @@
 ## Purpose
 
 MCP reports prove how Model Context Protocol tools, resources and prompts are
-declared, permissioned, bounded, exposed and audited in LogicN.
+declared, permissioned, bounded, exposed and audited in Galerina.
 
 ## Short Definition
 
@@ -40,7 +40,7 @@ MCP reports should answer:
 
 ```json
 {
-  "reportType": "logicn.mcp.effective_permissions",
+  "reportType": "galerina.mcp.effective_permissions",
   "tool": "CustomerSupportMcp.getCustomerById",
   "actor": "support-ai-agent",
   "allowed": true,

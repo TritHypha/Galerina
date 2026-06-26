@@ -1,0 +1,8 @@
+{
+  "packageName": "@galerina/ext-secrets-vault",
+  "allowedExternal": [
+    "node:http",
+    "node:https"
+  ],
+  "note": "Baseline auto-generated. Edit allowedExternal to widen/narrow the border. `--check` fails if an import appears that is not listed here."
+}

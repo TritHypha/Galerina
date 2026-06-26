@@ -1,0 +1,50 @@
+;; capability-map.spore — SystemCapabilityType → V_DPM bit mapping
+;; DRCM Phase 5.4 — DSS Supervisor Core (#41)
+;;
+;; This is the canonical capability-to-bitmask mapping for the DSS.
+;; Mirrors capability-types.ts CAPABILITY_BIT_POSITION at the .spore level.
+;; DSS.wasm uses this mapping for O(1) pre-warmed V_DPM checks.
+;;
+;; Build order position: 4a of 7
+
+import "./vdpm.spore"
+
+;; V_DPM is already defined as a bitfield in vdpm.spore.
+;; This file adds the string-to-bitmask lookup function.
+
+;; Maps a declared effect name string to its V_DPM bitmask.
+;; Returns 0 for read-only or unknown effects (no capability bit needed).
+;; This is the .spore equivalent of capabilityToBitmask() in capability-types.ts.
+pure flow effectToBitmask(effect: String) -> Int
+contract {
+  intent "Map a declared effect name to its V_DPM capability bitmask"
+  effects {}
+}
+{
+  if effect == "network.outbound"  { return V_DPM.network_outbound }
+  if effect == "network.inbound"   { return V_DPM.network_outbound }
+  if effect == "storage.write"     { return V_DPM.storage_write }
+  if effect == "secret.access"     { return V_DPM.secret_access }
+  if effect == "secret.read"       { return V_DPM.secret_access }
+  if effect == "audit.write"       { return V_DPM.audit_write }
+  if effect == "database.write"    { return V_DPM.database_write }
+  if effect == "ai.inference"      { return V_DPM.ai_inference }
+  if effect == "shell.execute"     { return V_DPM.shell_execute }
+  if effect == "native.call"       { return V_DPM.native_call }
+  return 0
+}
+
+;; Check if a capability is currently permitted under a given V_DPM state.
+;; Returns true if the capability bit is SET in the V_DPM register.
+;; Returns false if bit is 0 (capability cleared by emergency transition or denial).
+pure flow isCapabilityPermitted(vdpm: Int, effect: String) -> Bool
+contract {
+  intent "O(1) V_DPM capability check — is this effect permitted?"
+  effects {}
+}
+{
+  let mask = effectToBitmask(effect)
+  if mask == 0 { return true }  ;; read-only effects always permitted
+  let result = Int.bitAnd(vdpm, mask)
+  return result != 0
+}

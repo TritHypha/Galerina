@@ -16,10 +16,10 @@ console.log("\n## C1 — Native contiguous Tensor<T> footprint (note16-1)  [ZT 4
   const N = 1_000_000;
   const contiguousF32 = N * 4;                 // a real contiguous Float32 buffer
   const cpythonList   = N * 8 + N * 24;        // 8B pointer + 24B PyFloatObject header each
-  const logicnBoxed   = N * 40;                // the LIVE LogicN rep: a list of {__tag,value} LogicNValue (~40B in V8: tag + boxed value + object header)
-  console.log(`     contiguous f32=${MB(contiguousF32)} · CPython list=${MB(cpythonList)} · LogicN boxed(live)=${MB(logicnBoxed)}`);
+  const logicnBoxed   = N * 40;                // the LIVE Galerina rep: a list of {__tag,value} GalerinaValue (~40B in V8: tag + boxed value + object header)
+  console.log(`     contiguous f32=${MB(contiguousF32)} · CPython list=${MB(cpythonList)} · Galerina boxed(live)=${MB(logicnBoxed)}`);
   ok(Math.round(cpythonList / contiguousF32) === 8, "claim direction TRUE: contiguous f32 is 8x smaller than a Python list (a 30-yr-old numpy result, NOT net-new)");
-  ok(logicnBoxed > cpythonList, "claim REFUTED as the LIVE footprint: LogicN's persistent rep is a boxed list (~40 MB) — 10x worse than the 4 MB claimed, and worse than the list it claims to beat");
+  ok(logicnBoxed > cpythonList, "claim REFUTED as the LIVE footprint: Galerina's persistent rep is a boxed list (~40 MB) — 10x worse than the 4 MB claimed, and worse than the list it claims to beat");
 }
 
 console.log("\n## C4 — AST loop-fusion / deforestation: Σ f(g(x_i))  (note16-4)  [ZT 6 / BUILD]");

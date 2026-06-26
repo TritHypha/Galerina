@@ -29,7 +29,7 @@ but the actor still needs authority to perform the business action.
 
 ## Flow Example
 
-```logicn
+```galerina
 secure flow updateUserEmail(
   request: UpdateEmailRequest,
   ctx: RequestContext
@@ -51,7 +51,7 @@ before the flow can run safely.
 
 ## Response Exposure Example
 
-```logicn
+```galerina
 model User {
   id: UUID view: public
   email: Email view: private
@@ -60,7 +60,7 @@ model User {
 }
 ```
 
-```logicn
+```galerina
 response UserResponse from User {
   include id
   include email requires capability users.pii.read
@@ -128,7 +128,7 @@ dataset.financial.read
 
 Capabilities may come from roles:
 
-```logicn
+```galerina
 role SupportAgent {
   grant users.read
   grant users.pii.read
@@ -138,7 +138,7 @@ role SupportAgent {
 
 Capabilities may come from policy:
 
-```logicn
+```galerina
 policy capability UserAccessPolicy {
   allow users.read when ctx.actor.department == "support"
   allow users.pii.read when ctx.actor.role == "manager"
@@ -148,7 +148,7 @@ policy capability UserAccessPolicy {
 
 Capabilities may be declared by package or app manifests:
 
-```logicn
+```galerina
 package users {
   requires capability db.user.read
   requires capability audit.write
@@ -157,9 +157,9 @@ package users {
 
 ## Developer-Facing Permission Model
 
-Normal LogicN application code should prefer reusable `permission` blocks:
+Normal Galerina application code should prefer reusable `permission` blocks:
 
-```logicn
+```galerina
 permission user_email_update {
   actor require users.email.update
   actor require users.pii.read
@@ -175,7 +175,7 @@ permission user_email_update {
 }
 ```
 
-Internally, LogicN compiles permission into:
+Internally, Galerina compiles permission into:
 
 ```text
 actor capability checks
@@ -187,7 +187,7 @@ report proof
 
 ## Boundary Check Points
 
-Capabilities should be checked wherever protected authority crosses a LogicN
+Capabilities should be checked wherever protected authority crosses a Galerina
 boundary.
 
 | Boundary | Capability question |
@@ -236,7 +236,7 @@ Effects must not be used as a substitute for actor authority.
 Capabilities should be expensive to validate at build/check time and cheap to
 check at runtime.
 
-At build time LogicN can generate a table:
+At build time Galerina can generate a table:
 
 ```text
 getUser requires:

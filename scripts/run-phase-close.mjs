@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // =============================================================================
-// run-phase-close.mjs — LogicN full phase-close cadence
+// run-phase-close.mjs — Galerina full phase-close cadence
 // =============================================================================
 // Runs the standard end-of-stage sweep:
 //   1. Core tests        (SOT four packages — compiler/economics/graph/security)
@@ -13,7 +13,7 @@
 // response. Always exits 0 (informational); prints a PASS/FAIL summary so a
 // regression is visible without blocking the session.
 //
-// Skip with:  LOGICN_SKIP_PHASE_CLOSE=1   (env)   — e.g. for rapid iteration.
+// Skip with:  GALERINA_SKIP_PHASE_CLOSE=1   (env)   — e.g. for rapid iteration.
 // Run manually:  node scripts/run-phase-close.mjs
 // Benchmarks are intentionally EXCLUDED (multi-minute) — run on demand.
 // =============================================================================
@@ -23,8 +23,8 @@ import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-if (process.env.LOGICN_SKIP_PHASE_CLOSE === "1") {
-  console.log("⏭️  phase-close skipped (LOGICN_SKIP_PHASE_CLOSE=1)");
+if (process.env.GALERINA_SKIP_PHASE_CLOSE === "1") {
+  console.log("⏭️  phase-close skipped (GALERINA_SKIP_PHASE_CLOSE=1)");
   process.exit(0);
 }
 
@@ -70,17 +70,17 @@ function summarise(name, out, ok, code) {
   return ok ? "ok" : `FAILED (exit ${code})`;
 }
 
-console.log("══ LogicN phase-close cadence ══");
+console.log("══ Galerina phase-close cadence ══");
 
 // ── 1. Core tests (SOT four) ──
 run("tests:core", "node", ["scripts/run-all-tests.cjs", "--core"]);
 
-// ── 1b. Architecture pattern examples — logicn check on all tests/patterns/*.lln ──
+// ── 1b. Architecture pattern examples — galerina check on all tests/patterns/*.spore ──
 const patternsDir = join(ROOT, "tests", "patterns");
 if (existsSync(patternsDir)) {
-  const patternFiles = readdirSync(patternsDir).filter(f => f.endsWith(".lln"));
-  // Use logicn.mjs (Stage A compiler) — not the legacy logicn-core-cli
-  const logicnMjs = join(ROOT, "logicn.mjs");
+  const patternFiles = readdirSync(patternsDir).filter(f => f.endsWith(".spore"));
+  // Use galerina.mjs (Stage A compiler) — not the legacy galerina-core-cli
+  const logicnMjs = join(ROOT, "galerina.mjs");
   let patternOk = true;
   const patternDetails = [];
   for (const f of patternFiles) {
@@ -107,23 +107,23 @@ if (existsSync(goalsDir)) {
 
 // ── 2. DevTools + ext package tests ──
 for (const p of ["naming", "context", "intelligence", "provenance", "pci"]) {
-  const dir = join(ROOT, "packages-logicn", `logicn-devtools-${p}`);
+  const dir = join(ROOT, "packages-galerina", `galerina-devtools-${p}`);
   if (existsSync(join(dir, "tests"))) run(`tests:devtools-${p}`, "npm", ["test", "--silent"], { cwd: dir });
 }
 // Non-core extension packages
-for (const p of ["logicn-ext-secrets-vault", "logicn-ext-proof-snarkjs"]) {
-  const dir = join(ROOT, "packages-logicn", p);
-  const label = p.replace("logicn-ext-", "");
+for (const p of ["galerina-ext-secrets-vault", "galerina-ext-proof-snarkjs"]) {
+  const dir = join(ROOT, "packages-galerina", p);
+  const label = p.replace("galerina-ext-", "");
   if (existsSync(join(dir, "tests"))) run(`tests:ext-${label}`, "npm", ["test", "--silent"], { cwd: dir });
 }
 
 // ── 3 + 4. In-process security + naming audit sweep over auth-service ──
 const corpus = join(ROOT, "examples", "auth-service");
 if (existsSync(corpus)) {
-  const llnFiles = readdirSync(corpus).filter((f) => f.endsWith(".lln"));
+  const llnFiles = readdirSync(corpus).filter((f) => f.endsWith(".spore"));
   try {
-    const sec = await import(pathToFileURL(join(ROOT, "packages-logicn/logicn-devtools-security/dist/index.js")).href);
-    const nam = await import(pathToFileURL(join(ROOT, "packages-logicn/logicn-devtools-naming/dist/index.js")).href);
+    const sec = await import(pathToFileURL(join(ROOT, "packages-galerina/galerina-devtools-security/dist/index.js")).href);
+    const nam = await import(pathToFileURL(join(ROOT, "packages-galerina/galerina-devtools-naming/dist/index.js")).href);
     let secFindings = 0, secErrors = 0, namFindings = 0;
     for (const f of llnFiles) {
       const src = readFileSync(join(corpus, f), "utf8");
@@ -149,7 +149,7 @@ if (existsSync(corpus)) {
   }
   // provenance directory audit — exit 2 = "risk flows found" is INFORMATIONAL, not a failure.
   run("audit:provenance", "node",
-    ["packages-logicn/logicn-devtools-provenance/dist/cli.js", "audit", corpus], { okCodes: [0, 2] });
+    ["packages-galerina/galerina-devtools-provenance/dist/cli.js", "audit", corpus], { okCodes: [0, 2] });
 }
 
 // ── 4b. CBOR round-trip verification (task #67) ──
@@ -161,7 +161,7 @@ try {
     const manifestFiles = readdirSync(buildDir).filter(f => f.endsWith(".lmanifest") && !f.endsWith(".json"));
     if (manifestFiles.length > 0) {
       const { decodeCBOR, encodeCBOR } = await import(
-        pathToFileURL(join(ROOT, "packages-logicn/logicn-core-compiler/dist/manifest-generator.js")).href
+        pathToFileURL(join(ROOT, "packages-galerina/galerina-core-compiler/dist/manifest-generator.js")).href
       );
       let allOk = true;
       const failures = [];
@@ -214,7 +214,7 @@ run("lint:conventions", "node", ["scripts/lint-conventions.mjs", "--soft"]);
 run("coverage:codes", "node", ["scripts/audit-coverage.mjs", "codes", "--soft"]);
 
 // ── 5d. Dev-tool script tests (scripts/tests/) ──
-// These live OUTSIDE packages-logicn, so the package runner (run-all-tests.cjs) never sees them. Run them
+// These live OUTSIDE packages-galerina, so the package runner (run-all-tests.cjs) never sees them. Run them
 // here so the audit/index/registry tooling is regression-gated (e.g. the shared code-regex self-test).
 const toolingTests = existsSync(join(ROOT, "scripts", "tests"))
   ? readdirSync(join(ROOT, "scripts", "tests")).filter((f) => f.endsWith(".test.mjs")).map((f) => join("scripts", "tests", f))
@@ -224,23 +224,23 @@ if (toolingTests.length) run("tests:tooling", "node", ["--test", ...toolingTests
 // ── 6. Standing Governance Sanity Check — diff HEAD~1 ──
 // Transforms governance diff from a passive human-review step into an active quality gate.
 // Enforces the Monotonicity Rule at CI level: expansion requires explicit sign-off.
-// Reference: logicn-governed-design-synthesis.md change-class table.
+// Reference: galerina-governed-design-synthesis.md change-class table.
 try {
   // Check if HEAD~1 exists (might not on first commit)
   const gitCheck = spawnSync("git", ["rev-parse", "--verify", "HEAD~1"],
     { cwd: ROOT, encoding: "utf8", shell: isWin });
   if (gitCheck.status === 0) {
     const diffResult = spawnSync("node",
-      ["packages-logicn/logicn-core-compiler/dist/cli.js", "diff", "HEAD~1", "--json"],
+      ["packages-galerina/galerina-core-compiler/dist/cli.js", "diff", "HEAD~1", "--json"],
       { cwd: ROOT, encoding: "utf8", shell: isWin, timeout: 30000 });
     const diffOut = diffResult.stdout || "";
     let changeClass = "neutral";
-    let diffSummary = "no .lln changes";
+    let diffSummary = "no .spore changes";
     try {
       const diffData = JSON.parse(diffOut);
       changeClass = diffData.changeClass ?? "neutral";
-      diffSummary = diffData.summary ?? "no .lln changes";
-    } catch { /* parse failure = no .lln changes */ }
+      diffSummary = diffData.summary ?? "no .spore changes";
+    } catch { /* parse failure = no .spore changes */ }
     // In local dev cadence: expansion = warning (GitHub Action handles hard blocking)
     const govOk = changeClass !== "experimental"; // experimental = requires arch review
     results.push({
@@ -258,7 +258,7 @@ run("tests:r6-corpus", "node",
   { silent: false });
 
 // ── 7b. Border-check regression check — surfaces fail-closed admission-gate failures (P9-144 §83).
-//        Non-blocking: the actual deny-by-default gate is the `logicn border-check` CLI (exits 1). ──
+//        Non-blocking: the actual deny-by-default gate is the `galerina border-check` CLI (exits 1). ──
 run("tests:border-check", "node",
   ["--test", "tests/border-check/border-check.test.mjs"],
   { silent: false });

@@ -1,0 +1,184 @@
+// OWASP A05 — Security Misconfiguration
+// EXPECT: ACCEPT
+//
+// This file DOCUMENTS the misconfiguration patterns Galerina prevents.
+// Wildcard capabilities, observability leaking private scope, and inline
+// policy without domain guard are caught at compile time.
+//
+// Reference: docs/Knowledge-Bases/galerina-governance-rules.md
+// Rules: C-001 (SPORE-CAP-001 wildcard), SPORE-OBS-002 (observability ∩ privacy),
+//        SPORE-SYNTAX-LEGACY-003 (advisory: inline policy without guard)
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type ConfigResult = Result<Bool, ConfigError>
+type ConfigError = enum { EmptyInput PolicyViolation ConfigurationError }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CASE 1: Wildcard capability grant
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// BAD PATTERN (do not use — triggers SPORE-CAP-001):
+//
+//   secure flow broadNetworkAccess(url: String) -> Bool
+//   contract {
+//     intent "Open-ended network access"
+//     effects { allow network.* }   // ← SPORE-CAP-001: wildcard capability
+//   }
+//   { ... }
+//
+// Why it is blocked: DRCM Phase 1 (task #30) removed wildcard support from
+// NetworkConstraint. Every capability token must be named explicitly.
+// A glob (`network.*`) is treated as a misconfiguration and rejected.
+//
+// CORRECT pattern: name each required capability individually.
+
+;; CORRECT: exact capabilities named — no wildcard
+secure flow callExternalService(url: String) -> ConfigResult
+contract {
+  intent "Call a known external service — outbound only, no wildcard"
+  effects { network.outbound, audit.write }
+  audit { require runtime report }
+}
+{
+  trap url == "" : ERR_EMPTY_URL
+  let result = http.get(url)
+  AuditLog.write("ExternalCallMade")
+  return Ok(true)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CASE 2: Observability block attempting to access privacy scope
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// BAD PATTERN (do not use — triggers SPORE-OBS-002):
+//
+//   secure flow monitorWithPII(readonly request: Request) -> ConfigResult
+//   contract {
+//     intent "Monitor payment flow"
+//     effects { database.write, audit.write }
+//     request { body { email: unsafe String } }
+//     privacy { pii email masked_in_audit }
+//     observability {
+//       trace flow
+//       measure latency
+//       log email    // ← SPORE-OBS-002: observability cannot access privacy {} scope
+//     }
+//   }
+//   { ... }
+//
+// Why it is blocked: the governance verifier (task #66, SPORE-OBS-002) checks that
+// observability {} directives do not reference field names that appear in
+// privacy {} (pii, phi, or protected values). Logging PII in a metrics/trace
+// stream is a misconfiguration that bypasses the privacy contract.
+//
+// CORRECT pattern: observability {} may log event names, latency, counts —
+// never field values that are declared as private in privacy {}.
+
+;; CORRECT: observability logs only non-private metrics
+secure flow monitoredPayment(readonly request: Request) -> ConfigResult
+contract {
+  intent "Process payment with observability — PII excluded from trace output"
+  effects { database.write, audit.write }
+  request {
+    body { email: unsafe String, amount: unsafe Int }
+  }
+  privacy {
+    pii email masked_in_audit
+    require redaction before audit.write
+  }
+  observability {
+    trace flow
+    measure latency
+    count database.write
+    deny protected values in logs
+  }
+  audit { require runtime report }
+}
+{
+  unsafe let rawEmail: String = request.body.email
+  unsafe let rawAmount: Int = request.body.amount
+  let safeEmail: String = validate.email(rawEmail)?
+  let safeAmount: Int = validate.int(rawAmount)?
+  trap safeAmount <= 0 : ERR_NON_POSITIVE_AMOUNT
+  let redactedEmail: redacted String = redact(safeEmail)
+  Database.insertPayment(safeAmount)
+  AuditLog.write({
+    event: "PaymentProcessed",
+    user_ref: redactedEmail,
+    amount: safeAmount
+  })
+  return Ok(true)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CASE 3: Emergency policy with no domain guard (advisory)
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// BAD PATTERN (advisory — SPORE-SYNTAX-LEGACY-003):
+//
+//   secure flow uncoveredEmergencyFlow(data: String) -> Bool
+//   contract {
+//     intent "Payment with emergency logic — but no guard ceiling"
+//     effects { network.outbound, database.write, audit.write }
+//   }
+//   policy {
+//     emergency {
+//       on invariant_failure { deny network.outbound; quarantine }
+//     }
+//   }
+//   // No guard {} / contract [conforms_to:] — advisory: inline policy without domain guard
+//   { ... }
+//
+// Why it matters: a policy {} block without a guard ceiling means the emergency
+// escalation is unbounded. The advisory SPORE-SYNTAX-LEGACY-003 flags this to
+// encourage authors to attach a domain guard that declares the maximum capability
+// the emergency block can deny. Without a ceiling, the policy has no provable
+// containment bound.
+//
+// CORRECT pattern: emergency policy is always attached to a guarded flow.
+
+guard PaymentServiceGuard {
+  permitted_effects {
+    network.outbound
+    database.write
+    audit.write
+  }
+  emergency {
+    on invariant_failure {
+      deny network.outbound
+      quarantine
+    }
+  }
+}
+
+;; CORRECT: emergency policy is governed by a domain guard ceiling
+secure flow guardedEmergencyFlow(data: String) -> ConfigResult
+contract [conforms_to: PaymentServiceGuard] {
+  intent "Process with emergency escalation — domain guard provides provable containment"
+  effects { network.outbound, database.write, audit.write }
+  audit { require runtime report }
+}
+policy {
+  emergency {
+    on invariant_failure {
+      deny network.outbound
+      quarantine
+    }
+    on capability_denied {
+      deny database.write
+      quarantine
+    }
+    on any_failure {
+      deny network.outbound
+      emergency
+    }
+  }
+}
+{
+  trap data == "" : ERR_EMPTY_DATA
+  let result = ExternalService.call(data)
+  Database.record(result)
+  AuditLog.write("GuardedFlowCompleted")
+  return Ok(true)
+}

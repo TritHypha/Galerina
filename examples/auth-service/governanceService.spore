@@ -1,0 +1,83 @@
+// Phase 43 — Governance Verification Service
+//
+// Verifies governance metadata: maps effect qualifiers to governance levels
+// and determines whether audit logging is required for a given level.
+//
+// HTTP POST /governance/verify  →  governance  →  level + audit check  →  response
+
+;; This is the runtime-in-Galerina governance introspection layer.
+;; It answers: "what level of governance does this effect qualifier require?"
+;; and "does this level mandate audit logging?"
+
+// Maps an effect qualifier string to a governance level integer.
+// 0 = none (unknown), 1 = guarded, 2 = secure, 3 = critical
+pure flow governanceLevel(effectTag: String) -> Int
+contract {
+  intent { "Map an effect qualifier to a governance level (0=none,1=guarded,2=secure,3=critical)." }
+}
+{
+  ;; critical flows require the highest level — mandatory zk proof + hardware shielding
+  if effectTag.contains("critical") { return 3 }
+  ;; secure flows require audit.write and redaction before any externally-visible output
+  if effectTag.contains("secure") { return 2 }
+  ;; guarded flows require audit.write
+  if effectTag.contains("guarded") { return 1 }
+  return 0
+}
+
+// Returns true if the given governance level requires an audit trail.
+pure flow requiresAuditForLevel(level: Int) -> Bool
+contract {
+  intent { "Return true when the governance level mandates audit logging (level >= 2)." }
+}
+{
+  ;; levels 2 (secure) and above mandate audit.write in their contracts
+  ;; this is non-negotiable: violation raises SPORE-GOV-010
+  if level >= 2 { return true }
+  return false
+}
+
+// HTTP endpoint: verify a flow's governance level against its declared qualifier
+secure flow verifyGovernance(readonly request: Request) -> Response
+contract {
+  intent { "Verify a flow's governance level against its declared effect qualifier." }
+  effects {
+    network.inbound
+    audit.write
+  }
+}
+{
+  unsafe let effectTag: String = request.jsonBody.effects
+  unsafe let qualifier: String = request.jsonBody.qualifier
+
+  trap effectTag == "" : ERR_EMPTY_EFFECT_TAG
+  let level: Int = governanceLevel(effectTag)
+  let requiresAudit: Bool = requiresAuditForLevel(level)
+
+  let qualifierValid: Bool = qualifier == "pure" || qualifier == "guarded" || qualifier == "secure"
+
+  let retLevel: Int = level
+  safe mut effectTag = redact(effectTag)
+  safe mut qualifier = redact(qualifier)
+  safe mut level = redact(level)
+
+  AuditLog.write({
+    event: "GovernanceVerify",
+    effectTag: effectTag,
+    qualifier: qualifier,
+    level: level
+  })
+
+  return {
+    level: retLevel,
+    requiresAudit: requiresAudit,
+    qualifierValid: qualifierValid,
+    governed: true
+  }
+}
+
+route POST "/governance/verify" {
+  request Request
+  response Response
+  flow verifyGovernance
+}

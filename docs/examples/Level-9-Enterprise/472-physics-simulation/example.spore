@@ -1,0 +1,56 @@
+/// example: 472-physics-simulation
+/// level: 9
+/// concept: scientific domain — Mass, Force, Energy domain record types, pure kinetic energy calculation
+/// expected_diagnostics: none
+/// test_status: stable
+/// ai_rule: Scientific simulation flows are pure — no effects. Use Decimal for physical quantities to preserve precision. Record types group related physical properties.
+
+record MassKg {
+  massValue: Decimal
+}
+
+record VelocityMs {
+  velocityValue: Decimal
+}
+
+record ForceN {
+  forceValue: Decimal
+}
+
+record EnergyJ {
+  energyValue: Decimal
+}
+
+// Calculate kinetic energy: KE = 0.5 * mass * velocity^2
+pure flow calculateKineticEnergy(massKg: Decimal, velocityMs: Decimal) -> Decimal {
+  let half: Decimal = Decimal("0.5")
+  let vSquared: Decimal = velocityMs * velocityMs
+  return half * massKg * vSquared
+}
+
+// Calculate force from mass and acceleration: F = m * a
+pure flow calculateForce(massKg: Decimal, accelerationMs2: Decimal) -> Decimal {
+  return massKg * accelerationMs2
+}
+
+// Calculate work done: W = F * d
+pure flow calculateWork(forceN: Decimal, distanceM: Decimal) -> Decimal {
+  return forceN * distanceM
+}
+
+// Calculate power: P = W / t. Decimal division needs an EXPLICIT rounding policy + scale (exact division is
+// non-terminating), so it uses the obligation-carrying method form (SPORE-NUMERIC-OP-001): banker's rounding,
+// 6 fractional digits for a physical quantity.
+pure flow calculatePower(workJ: Decimal, timeS: Decimal) -> Decimal {
+  return workJ.divide(timeS, 6, "halfEven")
+}
+
+// Compose a simulation step: given mass, velocity, force, and displacement
+// return the total mechanical energy (KE + work done).
+pure flow simulationStep(massKg: Decimal, velocityMs: Decimal, forceN: Decimal, displacementM: Decimal) -> Decimal {
+  let half: Decimal = Decimal("0.5")
+  let vSquared: Decimal = velocityMs * velocityMs
+  let kineticEnergy: Decimal = half * massKg * vSquared
+  let workDone: Decimal = forceN * displacementM
+  return kineticEnergy + workDone
+}

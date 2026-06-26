@@ -2,7 +2,7 @@
 
 ## Purpose
 
-LogicN uses the five-part core model:
+Galerina uses the five-part core model:
 
 ```text
 data -> flow -> permission -> boundary -> report
@@ -14,7 +14,7 @@ best understood as boundary concepts.
 
 ## Short Definition
 
-Boundary extension concepts are specialised ways that LogicN crosses trust,
+Boundary extension concepts are specialised ways that Galerina crosses trust,
 system or execution boundaries.
 
 ## Concept Map
@@ -53,13 +53,13 @@ Repositories keep database behaviour out of models.
 
 The preferred pattern is:
 
-```logicn
+```galerina
 let user = try UsersRepository.findRequired(userId)
 ```
 
 not:
 
-```logicn
+```galerina
 User.findById(id)
 user.save()
 ```
@@ -87,7 +87,7 @@ policy, secret handling and reports.
 MCP tools, resources and prompts are AI/tool boundary concepts.
 
 MCP should not give AI systems direct authority over tools, files, databases or
-vaults. LogicN should map every MCP tool and resource to typed data, a declared
+vaults. Galerina should map every MCP tool and resource to typed data, a declared
 flow, explicit permission, boundary rules and generated reports.
 
 MCP tool availability is not permission.

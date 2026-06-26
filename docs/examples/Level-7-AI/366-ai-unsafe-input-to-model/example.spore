@@ -1,0 +1,27 @@
+/// example: 366-ai-unsafe-input-to-model
+/// test_status: stable
+/// level: 7
+/// concept: Unsafe input cannot flow directly to AI model
+/// expected_diagnostics: SPORE-VALUESTATE-003
+
+secure flow classifyRaw(readonly request: Request) -> ClassifyRawResult
+
+contract {
+  // Result alias — unsafe input flowing to AI model triggers SPORE-VALUESTATE-003
+  types {
+    type ClassifyRawResult = Result<Label, AiError>
+  }
+
+  intent {
+    "Classify raw request input — demonstrates illegal unsafe-to-model data flow."
+  }
+
+  effects {
+    ai.inference
+  }
+}
+{
+  unsafe let rawInput: String = request.body.text
+  let label = ClassifierModel.classify(rawInput)?
+  return Ok(label)
+}

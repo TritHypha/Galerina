@@ -1,0 +1,43 @@
+/// example: 320-statistics-stdlib
+/// level: 6
+/// concept: pure statistical computation using Array.reduce and map
+/// expected_diagnostics: none
+/// test_status: stable
+/// ai_rule: Use Array.reduce to fold a collection into a single value. Use local fn helpers with Array.map and Array.reduce for typed, composable transformations.
+
+// Compute the sum of an array of Decimals using Array.reduce.
+pure flow sum(values: Array<Decimal>) -> Decimal {
+  fn add(acc: Decimal, x: Decimal) -> Decimal {
+    return acc + x
+  }
+  return values.reduce(Decimal("0"), add)
+}
+
+// Compute the mean (average) of an array of Decimals.
+pure flow mean(values: Array<Decimal>) -> Decimal {
+  fn add(acc: Decimal, x: Decimal) -> Decimal {
+    return acc + x
+  }
+  let total: Decimal = values.reduce(Decimal("0"), add)
+  let count: Int = values.length()
+  // Decimal division needs an EXPLICIT rounding policy + scale — the mean uses banker's rounding at 4 dp
+  // (SPORE-NUMERIC-OP-001: the bare `/` is a compile-reject that redirects here).
+  return total.divide(Decimal.fromInt(count), 4, "halfEven")
+}
+
+// Scale each value in the array by a multiplier.
+pure flow scale(values: Array<Decimal>, factor: Decimal) -> Array<Decimal> {
+  fn multiply(v: Decimal) -> Decimal {
+    return v * factor
+  }
+  return values.map(multiply)
+}
+
+// Compute squared deviations from a given mean — building block for variance.
+pure flow squaredDeviations(values: Array<Decimal>, mu: Decimal) -> Array<Decimal> {
+  fn devSquared(v: Decimal) -> Decimal {
+    let diff: Decimal = v - mu
+    return diff * diff
+  }
+  return values.map(devSquared)
+}

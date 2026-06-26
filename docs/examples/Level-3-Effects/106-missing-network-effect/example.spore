@@ -1,0 +1,27 @@
+/// example: 106-missing-network-effect
+/// level: 3
+/// concept: undeclared network.outbound effect
+/// expected_diagnostics: SPORE-EFFECT-001
+/// test_status: stable
+/// ai_rule: http.get and similar calls require network.outbound to be declared.
+
+guarded flow fetchRate(baseCurrency: String) -> FetchRateResult
+
+contract {
+  types {
+    type FetchRateResult = Result<Decimal, RateError>
+  }
+
+  intent {
+    "Fetch exchange rate — BUG: network.outbound is used but not declared in effects."
+  }
+
+  effects {
+    // BUG: network.outbound is missing here — SPORE-EFFECT-001 fires
+  }
+}
+{
+  unsafe let rawResponse = http.get("https://rates.example.com/" + baseCurrency)?
+  let rate: Decimal = json.decode(rawResponse)?
+  return Ok(rate)
+}

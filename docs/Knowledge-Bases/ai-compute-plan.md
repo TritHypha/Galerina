@@ -2,9 +2,9 @@
 
 ## Purpose
 
-LogicN should not treat AI work as unknown code.
+Galerina should not treat AI work as unknown code.
 
-LogicN should treat AI work as declared, typed, planned compute.
+Galerina should treat AI work as declared, typed, planned compute.
 
 Core principle:
 
@@ -23,7 +23,7 @@ runtime does not understand the data
 runtime does not understand the compute shape
 ```
 
-LogicN should require AI work to declare:
+Galerina should require AI work to declare:
 
 - input type
 - output type
@@ -50,9 +50,9 @@ AI request
  -> audit
 ```
 
-## What LogicN Should Understand
+## What Galerina Should Understand
 
-LogicN should know:
+Galerina should know:
 
 - the kind of AI work: classification, embedding, generation, ranking, vision or planning
 - the sensitivity of the data: public, internal, private, secret or regulated
@@ -64,7 +64,7 @@ LogicN should know:
 
 ## Concept Syntax
 
-```logicn
+```galerina
 ai classify SupportTicketRisk {
   input: SupportTicketSummary
   output: RiskLevel
@@ -110,7 +110,7 @@ tenant isolation, permissions and audit.
 
 ### Zero-Copy AI Buffers
 
-LogicN should prefer typed input views, tensor views and typed output views over
+Galerina should prefer typed input views, tensor views and typed output views over
 repeated JSON/object/string/tensor conversions.
 
 ### Static AI Graphs
@@ -155,16 +155,16 @@ AI caches must be:
 
 ## Runtime Ownership
 
-`logicn-ai` describes provider-neutral AI inference contracts.
+`galerina-ai` describes provider-neutral AI inference contracts.
 
-`logicn-core-runtime` should understand AI compute plans as governed runtime
+`galerina-core-runtime` should understand AI compute plans as governed runtime
 work.
 
-`logicn-core-compute` and target packages choose where work runs.
+`galerina-core-compute` and target packages choose where work runs.
 
-`logicn-core-security` owns secret and privacy checks.
+`galerina-core-security` owns secret and privacy checks.
 
-`logicn-core-reports` owns shared report shapes.
+`galerina-core-reports` owns shared report shapes.
 
 Specialist hardware targets such as NPU, TPU, VPU, FPGA and AI ASIC must remain
 governed compute targets. See [Specialist AI Hardware Compute Targets](specialist-ai-hardware-compute-targets.md).

@@ -1,11 +1,11 @@
 {
-  "name": "@logicn/cli",
+  "name": "@galerina/cli",
   "version": "1.0.0-beta.2",
-  "description": "LogicN compiler and runtime CLI — compile .lln programs to WASM, run them, type-check with governance.",
+  "description": "Galerina compiler and runtime CLI — compile .spore programs to WASM, run them, type-check with governance.",
   "type": "module",
   "bin": {
-    "logicn": "./logicn.mjs",
-    "lln": "./logicn.mjs"
+    "galerina": "./galerina.mjs",
+    "spore": "./galerina.mjs"
   },
   "scripts": {
     "test": "node scripts/run-all-tests.cjs",
@@ -15,6 +15,6 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "keywords": ["logicn", "compiler", "governance", "wasm"],
+  "keywords": ["galerina", "compiler", "governance", "wasm"],
   "license": "Apache-2.0"
 }

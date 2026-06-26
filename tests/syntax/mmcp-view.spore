@@ -1,0 +1,26 @@
+;; P5.5 test: view() MMCP capability-masked pointer enforcement
+
+secure flow accessSecretData(key: String) -> String
+contract {
+  intent "Read secret data via MMCP capability check"
+  effects { allow secret.access }
+}
+{
+  ;; The view() type creates an MMCP — access checks V_DPM for secret.access (bit 2)
+  let secureValue: view(read | secret) = key
+
+  ;; If V_DPM has bit 2 set (secret.access) -> access permitted, returns value
+  ;; If V_DPM bit 2 is 0 -> capability_denied AuditEvent -> SPORE-MMCP-001
+  return secureValue
+}
+
+pure flow readOnlyData(data: String) -> String
+contract {
+  intent "Read-only data — no capability bits required"
+  effects {}
+}
+{
+  let readView: view(read) = data
+  ;; view(read) has mask=0 — always permitted, no V_DPM check needed
+  return readView
+}

@@ -2,10 +2,10 @@
 
 ## Purpose
 
-LogicN should protect internal state, secrets and sensitive data without relying
+Galerina should protect internal state, secrets and sensitive data without relying
 mainly on traditional `public` and `private` field visibility.
 
-LogicN encapsulation is based on controlled data movement:
+Galerina encapsulation is based on controlled data movement:
 
 ```text
 secure flow boundaries
@@ -22,7 +22,7 @@ audit reports
 
 ## Short Definition
 
-Encapsulation in LogicN means controlling how data moves, what can leave, who
+Encapsulation in Galerina means controlling how data moves, what can leave, who
 has capability, what effects are allowed and what reports prove the boundary was
 checked.
 
@@ -34,7 +34,7 @@ Traditional encapsulation asks:
 Is this field public or private?
 ```
 
-LogicN asks stronger questions:
+Galerina asks stronger questions:
 
 ```text
 What type of data is this?
@@ -51,7 +51,7 @@ Can the value escape its scope?
 
 Use first-class view metadata for field exposure:
 
-```logicn
+```galerina
 model User {
   id: UUID view: public
   email: Email view: private
@@ -113,7 +113,7 @@ It declares:
 - what data may be exposed
 - what reports should be generated
 
-```logicn
+```galerina
 secure flow getUser(
   userId: UUID,
   ctx: RequestContext
@@ -147,13 +147,13 @@ response/view = safe output
 
 Rejected:
 
-```logicn
+```galerina
 return Ok(user)
 ```
 
 Accepted:
 
-```logicn
+```galerina
 return Ok(UserResponse.from(user))
 ```
 
@@ -184,7 +184,7 @@ not only field visibility.
 
 Sensitive values should have limited lifetimes.
 
-```logicn
+```galerina
 scope payment_data {
   let cardToken: SecureString = request.cardToken
   let result = try PaymentProvider.charge(cardToken)
@@ -200,7 +200,7 @@ their allowed scope.
 
 Packages encapsulate code and authority.
 
-```logicn
+```galerina
 package users {
   export secure flow getUser
   export secure flow updateUserEmail
@@ -216,11 +216,11 @@ repositories or models by accident.
 
 ## Safe Mutation
 
-LogicN should avoid uncontrolled direct mutation of classified fields.
+Galerina should avoid uncontrolled direct mutation of classified fields.
 
 Rejected:
 
-```logicn
+```galerina
 user.email = newEmail
 user.role = Admin
 user.internalRiskScore = RiskScore.zero
@@ -228,13 +228,13 @@ user.internalRiskScore = RiskScore.zero
 
 Preferred:
 
-```logicn
+```galerina
 let updated = User.changeEmail(user, newEmail)
 ```
 
 or:
 
-```logicn
+```galerina
 let updatedUser = user with {
   email: newEmail
 }
@@ -247,7 +247,7 @@ and AI-readable state transitions.
 
 ## Compiler Checks
 
-LogicN should reject:
+Galerina should reject:
 
 - public routes returning raw internal models
 - secret fields in public responses
@@ -263,7 +263,7 @@ Example diagnostic:
 
 ```json
 {
-  "code": "LLN-ENCAP-001",
+  "code": "SPORE-ENCAP-001",
   "severity": "error",
   "message": "Public route cannot return model User directly. Return a declared response or view contract.",
   "safeToShow": true

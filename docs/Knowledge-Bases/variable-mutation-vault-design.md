@@ -7,7 +7,7 @@ Planned for: Stage B
 
 ## Purpose
 
-This concept defines the LogicN direction for:
+This concept defines the Galerina direction for:
 
 ```text
 local variables
@@ -41,7 +41,7 @@ Secrets and shared state must never be implicit.
 
 ## v0.1 Surface
 
-LogicN v0.1 should prefer this small surface:
+Galerina v0.1 should prefer this small surface:
 
 ```text
 let       normal local variable inside a flow
@@ -56,7 +56,7 @@ Do not use `const` in v0.1.
 
 ```text
 readonly replaces const for now.
-Add const later only if LogicN needs compile-time constants separate from runtime readonly values.
+Add const later only if Galerina needs compile-time constants separate from runtime readonly values.
 ```
 
 ## `let`
@@ -75,7 +75,7 @@ mutation requires mut
 
 Example:
 
-```logicn
+```galerina
 flow myFunction() {
   let counter: Int = 1
 
@@ -85,7 +85,7 @@ flow myFunction() {
 
 Outside the flow:
 
-```logicn
+```galerina
 print(counter)
 ```
 
@@ -106,7 +106,7 @@ increment/decrement without mut fails
 
 Example:
 
-```logicn
+```galerina
 flow myFunction() {
   let counter: Int = 1
 
@@ -116,13 +116,13 @@ flow myFunction() {
 
 Valid:
 
-```logicn
+```galerina
 mut counter = counter + 1
 ```
 
 Invalid:
 
-```logicn
+```galerina
 counter = counter + 1
 counter++
 ```
@@ -147,7 +147,7 @@ flow/block scoped unless used in an approved declaration context
 
 Example:
 
-```logicn
+```galerina
 flow myFunction() {
   readonly requestId: UUID = request.id
 }
@@ -155,7 +155,7 @@ flow myFunction() {
 
 Invalid:
 
-```logicn
+```galerina
 mut requestId = otherId
 ```
 
@@ -165,19 +165,19 @@ mut requestId = otherId
 
 Use:
 
-```logicn
+```galerina
 readonly MaxUsers: Int = 100
 ```
 
 Do not use:
 
-```logicn
+```galerina
 const MaxUsers: Int = 100
 ```
 
 For maths and logic, use readonly symbolic values:
 
-```logicn
+```galerina
 readonly PI: Decimal = 3.14159
 readonly FieldPrime: Int = 1000003
 readonly MatrixSize: Int = 4
@@ -197,7 +197,7 @@ invariant
 
 Example direction:
 
-```logicn
+```galerina
 given p: Prime
 readonly F = FiniteField<p>
 
@@ -219,7 +219,7 @@ destroyed after flow completes
 
 Example:
 
-```logicn
+```galerina
 flow login() {
   let password: Secret<Text> = request.password
 }
@@ -227,7 +227,7 @@ flow login() {
 
 Outside the flow:
 
-```logicn
+```galerina
 print(password)
 ```
 
@@ -253,7 +253,7 @@ Vault values are not normal variables.
 
 Example:
 
-```logicn
+```galerina
 vault {
   loginCount: Int {
     allow incrementLogin write
@@ -279,7 +279,7 @@ audit may be required
 
 The recommended protected access path is:
 
-```logicn
+```galerina
 secure.valueName
 ```
 
@@ -291,7 +291,7 @@ protected runtime-managed access
 
 Read:
 
-```logicn
+```galerina
 flow getLoginCount() {
   let count = secure.loginCount
 }
@@ -299,7 +299,7 @@ flow getLoginCount() {
 
 Write:
 
-```logicn
+```galerina
 flow incrementLogin() {
   mut secure.loginCount++
 }
@@ -307,7 +307,7 @@ flow incrementLogin() {
 
 Invalid:
 
-```logicn
+```galerina
 secure.loginCount++
 secure.loginCount = secure.loginCount + 1
 ```
@@ -318,7 +318,7 @@ Vault writes must be visibly marked with `mut`.
 
 Basic vault value:
 
-```logicn
+```galerina
 vault {
   appCounter: Int {
     allow incrementCounter write
@@ -329,7 +329,7 @@ vault {
 
 Vault value with audit:
 
-```logicn
+```galerina
 vault {
   loginAttempts: Int {
     allow incrementAttempts write
@@ -342,7 +342,7 @@ vault {
 
 Readonly vault value:
 
-```logicn
+```galerina
 vault {
   appId: readonly UUID {
     allow getAppId read
@@ -354,13 +354,13 @@ vault {
 
 Invalid:
 
-```logicn
+```galerina
 mut secure.appId = otherId
 ```
 
 Vault record type:
 
-```logicn
+```galerina
 vault {
   session: SessionRecord keyed by session_uuid {
     allow getSession read
@@ -374,7 +374,7 @@ vault {
 
 Vault record read:
 
-```logicn
+```galerina
 flow getSession(session_uuid: SessionUUID) {
   let session = secure.session[session_uuid]
 }
@@ -382,7 +382,7 @@ flow getSession(session_uuid: SessionUUID) {
 
 Vault record write:
 
-```logicn
+```galerina
 flow revokeSession(session_uuid: SessionUUID) {
   let session = secure.session[session_uuid]
 
@@ -394,7 +394,7 @@ flow revokeSession(session_uuid: SessionUUID) {
 
 Vault record creation:
 
-```logicn
+```galerina
 flow createSession(session_uuid: SessionUUID, user: User) {
   mut secure.session[session_uuid] = {
     actor_uuid: user.uuid,
@@ -407,13 +407,13 @@ flow createSession(session_uuid: SessionUUID, user: User) {
 
 Older direct writer-call wording such as:
 
-```logicn
+```galerina
 SessionVault.write(context, session_uuid, session)
 ```
 
 should not be the preferred v0.1 surface. The preferred source model is:
 
-```logicn
+```galerina
 mut secure.session[session_uuid] = session
 ```
 
@@ -429,13 +429,13 @@ permission grants, audit correlation, policy profile and trust-zone metadata.
 
 Sensitive values should use:
 
-```logicn
+```galerina
 Secret<T>
 ```
 
 Example:
 
-```logicn
+```galerina
 let apiKey: Secret<Text>
 ```
 
@@ -469,20 +469,20 @@ silent side effects
 
 Local state:
 
-```logicn
+```galerina
 let foo: Int = 1
 mut foo++
 ```
 
 Readonly local state:
 
-```logicn
+```galerina
 readonly requestId: UUID = request.id
 ```
 
 Shared protected runtime state:
 
-```logicn
+```galerina
 vault {
   loginCount: Int {
     allow incrementLogin write
@@ -495,7 +495,7 @@ vault {
 
 Shared state access:
 
-```logicn
+```galerina
 let count = secure.loginCount
 
 mut secure.loginCount++

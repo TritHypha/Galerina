@@ -1,14 +1,14 @@
 #!/usr/bin/env node
-// kb-index.mjs — index the LogicN Knowledge-Base (docs/Knowledge-Bases/*.md — ~490 files / 135k+ lines) so you can
+// kb-index.mjs — index the Galerina Knowledge-Base (docs/Knowledge-Bases/*.md — ~490 files / 135k+ lines) so you can
 // FIND the right doc by keyword instead of grep-reading the whole tree. A re-runnable TOKEN-SAVER (owner request,
 // 2026-06-22): build the index once, then QUERY it. Sibling to code-index.mjs (codes) — this indexes KB PROSE.
 //
 // Two modes:
 //   BUILD:  node scripts/kb-index.mjs               -> build/kb-index/kb-index.json + KB-INDEX.md + stdout summary
 //   QUERY:  node scripts/kb-index.mjs <terms...>    -> ranked docs (tf-idf, title/heading/code-boosted) + matching headings
-//           node scripts/kb-index.mjs --code LLN-PRIVACY-002   -> docs that mention a specific code
+//           node scripts/kb-index.mjs --code SPORE-PRIVACY-002   -> docs that mention a specific code
 //
-// Per doc it indexes: title (first # heading), all sub-headings, bold terms, LLN-*/ERR_ codes, task #NNN refs,
+// Per doc it indexes: title (first # heading), all sub-headings, bold terms, SPORE-*/ERR_ codes, task #NNN refs,
 // [[kb-cross-refs]], and a term-frequency table (title+headings weighted). JSON for tools, MD for humans/AI.
 import { readdirSync, readFileSync, mkdirSync, writeFileSync, statSync } from "node:fs";
 import { join, relative, basename } from "node:path";
@@ -94,7 +94,7 @@ mkdirSync(OUT, { recursive: true });
 const topTerms = (d, n) => [...d.tf.entries()].sort((a, b) => b[1] - a[1]).slice(0, n).map(([w]) => w);
 const machine = docs.map((d) => ({ rel: d.rel, title: d.title, headings: d.headings, codes: d.codes, tasks: d.tasks, xrefs: d.xrefs, topTerms: topTerms(d, 25) }));
 writeFileSync(join(OUT, "kb-index.json"), JSON.stringify({ generated: "kb-index", docCount: N, docs: machine }, null, 2));
-const md = [`# LogicN KB index (${N} docs)`, ``, `Query: \`node scripts/kb-index.mjs <terms>\`  ·  by code: \`node scripts/kb-index.mjs --code LLN-...\``, ``];
+const md = [`# Galerina KB index (${N} docs)`, ``, `Query: \`node scripts/kb-index.mjs <terms>\`  ·  by code: \`node scripts/kb-index.mjs --code SPORE-...\``, ``];
 for (const d of [...docs].sort((a, b) => a.rel.localeCompare(b.rel))) {
   md.push(`## ${d.title}`);
   md.push(`\`${d.rel}\``);

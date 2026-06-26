@@ -1,0 +1,80 @@
+// Phase 45 — Proof Verifier Service
+//
+// Verifies cryptographic proof metadata for governed runtime attestation.
+// Determines whether a signing algorithm is recognised and scores its strength.
+//
+// This is the runtime-in-Galerina proof chain validator.
+// It answers: "is this algorithm known?" and "how strong is the proof?"
+//
+// HTTP POST /proof/verify  →  governance  →  algorithm check + strength  →  response
+
+// Returns true when the algorithm string is a recognised proof algorithm.
+// Recognised algorithms: "lln.gov.sig.v1" (native governance) and "sha256".
+pure flow isValidAlgorithm(alg: String) -> Bool
+contract {
+  intent { "Return true when the algorithm is a recognised proof algorithm." }
+}
+{
+  if alg == "lln.gov.sig.v1" { return true }
+  if alg == "sha256" { return true }
+  return false
+}
+
+// Returns a strength score for the proof algorithm.
+// lln.gov.sig.v1 = 3 (native governance sig), sha256 = 2, unknown = 0.
+pure flow proofStrength(algorithm: String) -> Int
+contract {
+  intent { "Return the proof strength score for the given algorithm (3=strongest, 0=unknown)." }
+}
+{
+  if algorithm == "lln.gov.sig.v1" { return 3 }
+  if algorithm == "sha256" { return 2 }
+  return 0
+}
+
+// The governed proof verification endpoint.
+// Accepts { algorithm, signaturePresent } and returns proof metadata.
+secure flow verifyProof(readonly request: Request) -> Response
+contract {
+  intent { "Verify a governance proof using its declared proof algorithm." }
+  effects {
+    network.inbound
+    audit.write
+  }
+}
+{
+  unsafe let algorithm: String = request.jsonBody.algorithm
+  unsafe let signaturePresent: Bool = request.jsonBody.signaturePresent
+
+  trap algorithm == "" : ERR_EMPTY_ALGORITHM
+
+  let valid: Bool = isValidAlgorithm(algorithm)
+  let strength: Int = proofStrength(algorithm)
+
+  let retAlgorithm: String = algorithm
+  let retValid: Bool = valid
+  let retStrength: Int = strength
+  safe mut algorithm = redact(algorithm)
+  safe mut valid = redact(valid)
+  safe mut strength = redact(strength)
+
+  AuditLog.write({
+    event: "ProofVerify",
+    algorithm: algorithm,
+    valid: valid,
+    strength: strength
+  })
+
+  return {
+    algorithm: retAlgorithm,
+    valid: retValid,
+    strength: retStrength,
+    phase39Ready: retValid
+  }
+}
+
+route POST "/proof/verify" {
+  request Request
+  response Response
+  flow verifyProof
+}

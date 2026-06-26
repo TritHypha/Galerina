@@ -25,7 +25,7 @@
 import { spawnSync } from "node:child_process";
 import { readFileSync, existsSync } from "node:fs";
 
-const SCAN_ROOT = "packages-logicn";              // the package tree (scripts/ + root are tooling, Apache)
+const SCAN_ROOT = "packages-galerina";              // the package tree (scripts/ + root are tooling, Apache)
 const SCAN_EXT = /\.(ts|mts|cts|mjs|cjs|js)$/;     // source files
 const SKIP = /(^|\/)(node_modules|dist|build|\.graph|coverage)\//;
 const HEADER_LINES = 30;                           // license headers live at the top
@@ -69,8 +69,8 @@ if (process.argv.includes("--self-test")) {
   const c1 = detectLicenseContamination("// Licensed under the Business Source License 1.1\n");
   const c2 = detectLicenseContamination("// SPDX-License-Identifier: LicenseRef-Proprietary\n");
   const clean = detectLicenseContamination("// SPDX-License-Identifier: Apache-2.0\n// normal header\n");
-  const imp = detectEnterpriseImports('import { x } from "@logicn/enterprise-foo";', ["@logicn/enterprise-foo"]);
-  const impClean = detectEnterpriseImports('import { x } from "@logicn/core-bar";', ["@logicn/enterprise-foo"]);
+  const imp = detectEnterpriseImports('import { x } from "@galerina/enterprise-foo";', ["@galerina/enterprise-foo"]);
+  const impClean = detectEnterpriseImports('import { x } from "@galerina/core-bar";', ["@galerina/enterprise-foo"]);
   const ok = !!c1 && !!c2 && clean === null && imp.length === 1 && impClean.length === 0;
   console.log(`[self-test] BSL header detected: ${!!c1} | non-Apache SPDX detected: ${!!c2} | Apache clean: ${clean === null} | enterprise import detected: ${imp.length === 1} | core import clean: ${impClean.length === 0}`);
   console.log(ok ? "[self-test] PASS — both contamination detectors fire" : "[self-test] FAIL — a detector did not fire");
@@ -91,7 +91,7 @@ const ls = spawnSync("git", ["ls-files", SCAN_ROOT], { encoding: "utf8", maxBuff
 if (ls.status !== 0) { console.error("[tier-boundary] `git ls-files` failed — fail-closed (exit 1)"); process.exit(1); }
 const files = ls.stdout.split("\n").map((f) => f.trim()).filter((f) => f && SCAN_EXT.test(f) && !SKIP.test(f) && !allow.has(f));
 
-// map a file path → its package dir (packages-logicn/<pkg>) for the (inert) tier rule
+// map a file path → its package dir (packages-galerina/<pkg>) for the (inert) tier rule
 const violations = [];
 for (const file of files) {
   let text;
@@ -103,8 +103,8 @@ for (const file of files) {
 
   // tier rule: only meaningful once enterprise packages exist. A core file importing one is a violation.
   // (All packages default to `core`; an enterprise package importing its own tier is fine — skip those.)
-  const pkgMatch = file.match(/^packages-logicn\/([^/]+)\//);
-  const pkgName = pkgMatch ? `@logicn/${pkgMatch[1]}` : "";
+  const pkgMatch = file.match(/^packages-galerina\/([^/]+)\//);
+  const pkgName = pkgMatch ? `@galerina/${pkgMatch[1]}` : "";
   const isEnterpriseFile = enterprisePkgs.includes(pkgName);
   if (!isEnterpriseFile) {
     for (const spec of detectEnterpriseImports(text, enterprisePkgs)) {

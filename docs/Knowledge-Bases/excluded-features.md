@@ -2,7 +2,7 @@
 
 ## Definition
 
-LogicN deliberately excludes certain common programming features to keep the language:
+Galerina deliberately excludes certain common programming features to keep the language:
 
 ```text
 secure
@@ -22,12 +22,12 @@ If a feature makes runtime behaviour harder to prove,
 harder to audit,
 harder to secure,
 or slower to govern,
-LogicN should avoid it.
+Galerina should avoid it.
 ```
 
 ## Excluded Features Table
 
-| Feature LogicN Should Not Have | Reason | Security / Speed Concern | Recommended LogicN Alternative |
+| Feature Galerina Should Not Have | Reason | Security / Speed Concern | Recommended Galerina Alternative |
 | --- | --- | --- | --- |
 | Classes | Can hide state and behaviour inside objects | Harder to audit authority and side effects | Use `type`, `flow`, and `fn` |
 | Inheritance | Creates hidden behaviour through parent/child chains | Harder to reason about permissions, data flow, and overrides | Use composition and explicit functions |
@@ -80,7 +80,7 @@ LogicN should avoid it.
 | Third-party plugins receiving full data | Plugin can exfiltrate sensitive data | Major data exposure risk | Metadata-only by default |
 | Plugins that modify core runtime | Runtime can be weakened | Security boundary collapse | Additive sandboxed runtime extension points only |
 
-## Features LogicN Should Prefer
+## Features Galerina Should Prefer
 
 | Preferred Feature | Purpose |
 | --- | --- |
@@ -108,7 +108,7 @@ LogicN should avoid it.
 
 ## Summary
 
-LogicN avoids features that create:
+Galerina avoids features that create:
 
 ```text
 hidden behaviour
@@ -119,7 +119,7 @@ hidden communication
 hidden trust changes
 ```
 
-LogicN prefers:
+Galerina prefers:
 
 ```text
 explicit flow
@@ -132,6 +132,6 @@ automatic runtime governance
 ## Core Principle
 
 ```text
-LogicN should be powerful through governance,
+Galerina should be powerful through governance,
 not through unrestricted runtime freedom.
 ```

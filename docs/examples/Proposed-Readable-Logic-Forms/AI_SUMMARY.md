@@ -11,7 +11,7 @@
 
 ## Canonical patterns
 
-```lln
+```spore
 // Current valid form (always use this until Readable Logic Forms are adopted)
 if status == Active {
   return Ok("active")
@@ -23,7 +23,7 @@ if status == Active {
 // }
 ```
 
-```lln
+```spore
 // Current valid boolean operators
 if isActive && isVerified { return Ok("proceed") }
 if isAdmin  || isOwner    { return Ok("allowed") }
@@ -45,7 +45,7 @@ if isAdmin  || isOwner    { return Ok("allowed") }
 | Code | Meaning |
 |------|---------|
 | (none yet) | Readable Logic Forms are not in the parser; no diagnostics are defined for them |
-| Future: `LLN-SYNTAX-RLF-001` | Proposed: readable alias used in a context where the canonical form is required |
+| Future: `SPORE-SYNTAX-RLF-001` | Proposed: readable alias used in a context where the canonical form is required |
 
 ## Example IDs at this level
 

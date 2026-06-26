@@ -17,7 +17,7 @@ scheduled action = the flow that runs
 
 A scheduled action is not a distinct keyword or language concept. It is an ordinary flow named in a trigger's `run:` field.
 
-```logicn
+```galerina
 trigger nightly_cleanup {
   on: schedule.daily("02:00")
   run: cleanup_expired_sessions   // cleanup_expired_sessions is the scheduled action
@@ -28,7 +28,7 @@ flow cleanup_expired_sessions() -> CleanupResult { ... }
 
 ## Core Principle
 
-A scheduled action is normal LogicN flow code. It must still obey:
+A scheduled action is normal Galerina flow code. It must still obey:
 
 ```text
 safe / unsafe
@@ -58,7 +58,7 @@ trigger fires
 
 ## Full Example
 
-```logicn
+```galerina
 trigger nightly_cleanup {
   on: schedule.daily("02:00")
   run: cleanup_expired_sessions
@@ -108,7 +108,7 @@ When the scheduled action runs, the runtime automatically:
 
 Data arriving from queues, files, APIs, or events must enter as `unsafe`:
 
-```logicn
+```galerina
 trigger upload_received {
   on: queue.message("uploads")
   run: process_upload
@@ -127,7 +127,7 @@ flow process_upload(message: unsafe Json) -> Result
 
 Even without external input, database output still returns `unsafe`:
 
-```logicn
+```galerina
 trigger daily_report {
   on: schedule.daily("06:00")
   run: build_daily_report
@@ -153,7 +153,7 @@ flow build_daily_report() -> Report
 
 ## With Worker Dispatch
 
-```logicn
+```galerina
 trigger image_batch_nightly {
   on: schedule.daily("01:00")
   run: process_pending_images
@@ -178,7 +178,7 @@ flow process_pending_images() -> BatchResult
 
 After a scheduled action completes, an extension point may let a sandboxed plugin observe limited metadata:
 
-```logicn
+```galerina
 extension after_scheduled_action {
   plugin schedule_metrics
   mode: observe
@@ -191,7 +191,7 @@ The plugin cannot control or modify the scheduled action.
 
 External data must not enter as `safe` without showing where it came from:
 
-```logicn
+```galerina
 // Wrong
 flow charge_all_users(raw_users: safe Json) -> Result { ... }
 

@@ -1,0 +1,109 @@
+<svg width="100%" viewBox="0 0 720 760" xmlns="http://www.w3.org/2000/svg" role="img" font-family="ui-sans-serif, system-ui, sans-serif">
+<title>Galerina application framework — zero-trust app platform</title>
+<desc>Scaffold a governed app with 'galerina new app', build it to one signed App.wasm plus App.lmanifest (Ed25519), then the host App Kernel admits the wasm at a deny-by-default fuse border of three fail-closed gates (hash-pin, signature plus revocation, closed capabilities). At runtime the app reaches the world only through the deny-by-default Capability Host (network, db, secrets) with governance compiled into the wasm; the governed HTTP transport adapter TLSTP carries an S1 K3 cert-gate at the inbound edge. Cross-cutting: K3 fail-closed and ProofGraph plus .lmanifest audit. In-sandbox isolation on a real DSS.wasm is aspirational.</desc>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+</defs>
+
+<text x="40" y="28" font-size="16" font-weight="700" fill="#1c2128">Galerina application framework — the zero-trust app platform</text>
+<text x="40" y="47" font-size="11" fill="#5a6470">blue = compile-time · teal = runtime · amber = governed host · purple = cross-cutting invariant · red = fail-closed deny</text>
+
+<!-- 1. Scaffold -->
+<rect x="200" y="62" width="320" height="48" rx="8" fill="#e8effb" stroke="#3b6fd4" stroke-width="1.5"/>
+<text x="360" y="83" text-anchor="middle" font-size="13" font-weight="600" fill="#1f3a6b">① galerina new app  —  scaffolder</text>
+<text x="360" y="100" text-anchor="middle" font-size="11" fill="#3a5285">compile-time conventions, deny-by-default layout</text>
+<path d="M360 110 L360 124" fill="none" stroke="#8a94a3" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+<!-- 2. App layout -->
+<text x="40" y="124" font-size="11" fill="#5a6470">② app layout (my-orders-app/)</text>
+<rect x="40" y="130" width="640" height="62" rx="8" fill="#eef3fc" stroke="#5b85dd" stroke-width="1.5"/>
+<rect x="52" y="144" width="118" height="36" rx="6" fill="#e8effb" stroke="#5b85dd" stroke-width="1"/>
+<text x="111" y="160" text-anchor="middle" font-size="11" font-weight="600" fill="#1f3a6b">App.spore</text>
+<text x="111" y="174" text-anchor="middle" font-size="9.5" fill="#3a5285">composition root</text>
+<rect x="178" y="144" width="118" height="36" rx="6" fill="#e8effb" stroke="#5b85dd" stroke-width="1"/>
+<text x="237" y="160" text-anchor="middle" font-size="11" font-weight="600" fill="#1f3a6b">App.manifest</text>
+<text x="237" y="174" text-anchor="middle" font-size="9.5" fill="#3a5285">descriptor</text>
+<rect x="304" y="144" width="84" height="36" rx="6" fill="#e8effb" stroke="#5b85dd" stroke-width="1"/>
+<text x="346" y="160" text-anchor="middle" font-size="11" font-weight="600" fill="#1f3a6b">flows/</text>
+<text x="346" y="174" text-anchor="middle" font-size="9.5" fill="#3a5285">logic</text>
+<rect x="396" y="144" width="84" height="36" rx="6" fill="#e8effb" stroke="#5b85dd" stroke-width="1"/>
+<text x="438" y="160" text-anchor="middle" font-size="11" font-weight="600" fill="#1f3a6b">deps/</text>
+<text x="438" y="174" text-anchor="middle" font-size="9.5" fill="#3a5285">signed comps</text>
+<rect x="488" y="144" width="92" height="36" rx="6" fill="#e8effb" stroke="#5b85dd" stroke-width="1"/>
+<text x="534" y="160" text-anchor="middle" font-size="11" font-weight="600" fill="#1f3a6b">proofs/</text>
+<text x="534" y="174" text-anchor="middle" font-size="9.5" fill="#3a5285">generated</text>
+<rect x="588" y="144" width="80" height="36" rx="6" fill="#e8effb" stroke="#5b85dd" stroke-width="1"/>
+<text x="628" y="160" text-anchor="middle" font-size="11" font-weight="600" fill="#1f3a6b">tests/</text>
+<text x="628" y="174" text-anchor="middle" font-size="9.5" fill="#3a5285">hand-written</text>
+<path d="M360 192 L360 206" fill="none" stroke="#8a94a3" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+<!-- 3. Build -->
+<rect x="120" y="212" width="480" height="48" rx="8" fill="#e8effb" stroke="#3b6fd4" stroke-width="1.5"/>
+<text x="360" y="233" text-anchor="middle" font-size="13" font-weight="600" fill="#1f3a6b">③ galerina build App.spore  →  one signed artifact pair (Ed25519)</text>
+<text x="360" y="250" text-anchor="middle" font-size="11" fill="#3a5285">intra-app flows fuse to one wasm · signed .lmanifest (CBOR)</text>
+
+<!-- Two signed artifacts -->
+<rect x="120" y="276" width="232" height="46" rx="8" fill="#efe9fb" stroke="#7c5cd0" stroke-width="1.5"/>
+<text x="236" y="296" text-anchor="middle" font-size="12.5" font-weight="600" fill="#3f2d73">build/App.wasm</text>
+<text x="236" y="312" text-anchor="middle" font-size="10" fill="#5a4584">governance compiled in · sha256-pinned</text>
+<rect x="368" y="276" width="232" height="46" rx="8" fill="#efe9fb" stroke="#7c5cd0" stroke-width="1.5"/>
+<text x="484" y="296" text-anchor="middle" font-size="12.5" font-weight="600" fill="#3f2d73">build/App.lmanifest</text>
+<text x="484" y="312" text-anchor="middle" font-size="10" fill="#5a4584">descriptor + fuse{} caps · Ed25519-signed</text>
+<path d="M360 260 L360 271" fill="none" stroke="#8a94a3" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M360 322 L360 340" fill="none" stroke="#8a94a3" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+<!-- 4. App Kernel fuse border -->
+<rect x="40" y="346" width="640" height="172" rx="10" fill="#e2f5f1" stroke="#2f9e8f" stroke-width="1.5"/>
+<text x="60" y="370" font-size="13" font-weight="700" fill="#16544c">④ host App Kernel — deny-by-default fuse border (galerina-framework-app-kernel)</text>
+<text x="60" y="387" font-size="10.5" fill="#1f6b60">non-bypassable admission gate · admits the wasm before it runs a single instruction · 3 fail-closed gates</text>
+
+<rect x="58" y="398" width="196" height="106" rx="8" fill="#fbecea" stroke="#c0392b" stroke-width="1.5"/>
+<text x="156" y="419" text-anchor="middle" font-size="12" font-weight="600" fill="#8d281c">Gate 1 — hash-pin</text>
+<text x="156" y="436" text-anchor="middle" font-size="10" fill="#9a3a2d">wasm sha256 == signed</text>
+<text x="156" y="450" text-anchor="middle" font-size="10" fill="#9a3a2d">descriptor</text>
+<text x="156" y="476" text-anchor="middle" font-size="9.5" fill="#9a3a2d">mismatch → DENY</text>
+<text x="156" y="491" text-anchor="middle" font-size="9.5" fill="#9a3a2d">(fail-closed)</text>
+
+<rect x="262" y="398" width="196" height="106" rx="8" fill="#fbecea" stroke="#c0392b" stroke-width="1.5"/>
+<text x="360" y="419" text-anchor="middle" font-size="12" font-weight="600" fill="#8d281c">Gate 2 — signature</text>
+<text x="360" y="436" text-anchor="middle" font-size="10" fill="#9a3a2d">valid Ed25519 from a</text>
+<text x="360" y="450" text-anchor="middle" font-size="10" fill="#9a3a2d">non-revoked key</text>
+<text x="360" y="476" text-anchor="middle" font-size="9.5" fill="#9a3a2d">revoked / bad sig → DENY</text>
+<text x="360" y="491" text-anchor="middle" font-size="9.5" fill="#9a3a2d">(revocation registry)</text>
+
+<rect x="466" y="398" width="196" height="106" rx="8" fill="#fbecea" stroke="#c0392b" stroke-width="1.5"/>
+<text x="564" y="419" text-anchor="middle" font-size="12" font-weight="600" fill="#8d281c">Gate 3 — closed caps</text>
+<text x="564" y="436" text-anchor="middle" font-size="10" fill="#9a3a2d">undeclared / unbound cap</text>
+<text x="564" y="450" text-anchor="middle" font-size="10" fill="#9a3a2d">refuses to fuse</text>
+<text x="564" y="476" text-anchor="middle" font-size="9.5" fill="#9a3a2d">LinkError → CRITICAL_</text>
+<text x="564" y="491" text-anchor="middle" font-size="9.5" fill="#9a3a2d">SECURITY_VIOLATION</text>
+
+<path d="M360 518 L360 536" fill="none" stroke="#8a94a3" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+<!-- 5. Runtime: app + capability host -->
+<rect x="40" y="542" width="640" height="118" rx="10" fill="#e2f5f1" stroke="#2f9e8f" stroke-width="1.5"/>
+<text x="60" y="565" font-size="13" font-weight="700" fill="#16544c">⑤ runtime — admitted App.wasm reaches the world only via the Capability Host</text>
+<text x="60" y="582" font-size="10.5" fill="#1f6b60">deny-by-default · K3 · contracts · fail-closed · audit are compiled INTO the wasm, not wrapped around it</text>
+
+<rect x="58" y="594" width="150" height="52" rx="8" fill="#e2f5f1" stroke="#2f9e8f" stroke-width="1.5"/>
+<text x="133" y="616" text-anchor="middle" font-size="12" font-weight="600" fill="#16544c">cap: network</text>
+<text x="133" y="632" text-anchor="middle" font-size="9.5" fill="#1f6b60">declared host shim only</text>
+<rect x="216" y="594" width="120" height="52" rx="8" fill="#e2f5f1" stroke="#2f9e8f" stroke-width="1.5"/>
+<text x="276" y="616" text-anchor="middle" font-size="12" font-weight="600" fill="#16544c">cap: db</text>
+<text x="276" y="632" text-anchor="middle" font-size="9.5" fill="#1f6b60">declared shim only</text>
+<rect x="344" y="594" width="140" height="52" rx="8" fill="#e2f5f1" stroke="#2f9e8f" stroke-width="1.5"/>
+<text x="414" y="616" text-anchor="middle" font-size="12" font-weight="600" fill="#16544c">cap: secrets</text>
+<text x="414" y="632" text-anchor="middle" font-size="9.5" fill="#1f6b60">.env at runtime, not compiled</text>
+<rect x="492" y="594" width="170" height="52" rx="8" fill="#fbf2dd" stroke="#c98a1b" stroke-width="1.5"/>
+<text x="577" y="613" text-anchor="middle" font-size="11.5" font-weight="600" fill="#6b4a12">TLSTP HTTP adapter</text>
+<text x="577" y="628" text-anchor="middle" font-size="9.5" fill="#7a5616">S1 K3 cert-gate (inbound)</text>
+<text x="577" y="641" text-anchor="middle" font-size="9" fill="#7a5616">revocation-unknown → DENY</text>
+
+<!-- TLSTP shipped-but-pending note -->
+<text x="577" y="678" text-anchor="middle" font-size="9.5" fill="#a06614" font-style="italic">TLSTP shipped (galerina-core-network) · kernel-wiring pending</text>
+
+<!-- Cross-cutting purple band -->
+<rect x="40" y="690" width="640" height="52" rx="8" fill="#efe9fb" stroke="#7c5cd0" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="360" y="711" text-anchor="middle" font-size="12.5" font-weight="600" fill="#3f2d73">Cross-cutting — K3 fail-closed (INDETERMINATE → deny) · ProofGraph + signed .lmanifest audit trail</text>
+<text x="360" y="728" text-anchor="middle" font-size="10" fill="#5a4584">in-sandbox isolation on a real DSS.wasm is aspirational — DRCM Phase 5 / untrusted-peer memory isolation (#102–106)</text>
+</svg>

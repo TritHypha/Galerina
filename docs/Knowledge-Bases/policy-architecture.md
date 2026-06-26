@@ -2,7 +2,7 @@
 
 ## Purpose
 
-LogicN should treat policies as first-class source, not hidden framework config.
+Galerina should treat policies as first-class source, not hidden framework config.
 
 Policies define reusable, visible rules for routes, flows, data exposure,
 packages, memory, runtime profiles and boundaries.
@@ -45,7 +45,7 @@ If it applies across the app, place it in /policies.
 
 ## Layered Policy Model
 
-LogicN should support layered policies:
+Galerina should support layered policies:
 
 | Layer | Meaning |
 | --- | --- |
@@ -63,7 +63,7 @@ LogicN should support layered policies:
 
 ## App Policy Example
 
-```logicn
+```galerina
 policy app SecurityDefaults {
   environment production_safe
 
@@ -87,7 +87,7 @@ policy app SecurityDefaults {
 
 ## Data Policy Example
 
-```logicn
+```galerina
 policy data DataClassificationRules {
   public_id {
     allow response.public
@@ -116,7 +116,7 @@ policy data DataClassificationRules {
 
 ## Response Policy Example
 
-```logicn
+```galerina
 policy response PublicApiResponsePolicy {
   deny view: secret
   deny view: internal unless capability internal.response
@@ -133,7 +133,7 @@ Public responses must include or deny every model field.
 
 ## Route Policy Example
 
-```logicn
+```galerina
 policy route PublicUserRoutePolicy {
   require auth.bearer
   require response.contract
@@ -145,7 +145,7 @@ policy route PublicUserRoutePolicy {
 
 ## Flow Policy Example
 
-```logicn
+```galerina
 policy flow UserReadFlowPolicy {
   capabilities {
     require users.read
@@ -177,7 +177,7 @@ policy flow UserReadFlowPolicy {
 
 ## Runtime Policy Example
 
-```logicn
+```galerina
 policy runtime ProductionPolicy {
   environment production
 
@@ -212,7 +212,7 @@ effective policy = final merged enforcement
 
 ## Policy Reports
 
-LogicN should generate:
+Galerina should generate:
 
 ```text
 policy-index.json

@@ -1,3 +1,3 @@
 ﻿# 013 - match on Option
 
-Every match on Option<T> must handle both Some and None. Missing arms emit LLN-MATCH-001.
+Every match on Option<T> must handle both Some and None. Missing arms emit SPORE-MATCH-001.

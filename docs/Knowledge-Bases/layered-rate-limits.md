@@ -10,7 +10,7 @@ See also: network-boundary-policy.md, boot-main-startup-defaults.md, permission-
 
 ## Definition
 
-LogicN rate limits are **layered** — each layer has its own responsibility and the strictest applicable limit wins.
+Galerina rate limits are **layered** — each layer has its own responsibility and the strictest applicable limit wins.
 
 ```text
 Network limit    = protect port/runtime
@@ -24,7 +24,7 @@ Actor limit      = protect account/user
 
 Protects the whole runtime from abuse:
 
-```logicn
+```galerina
 boot main {
   rate limit default {
     ip: 60 per minute
@@ -54,7 +54,7 @@ stop obvious traffic floods
 
 Protects sensitive endpoints with tighter rules:
 
-```logicn
+```galerina
 route POST "/login" {
   request Login.post
   response Login.response
@@ -84,7 +84,7 @@ DB-heavy route protection
 
 For expensive capabilities (GPU, AI, large compute):
 
-```logicn
+```galerina
 permission image_analyse {
   code {
     allow compute.target gpu

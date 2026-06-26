@@ -1,10 +1,10 @@
-# LogicN — AST `.value` Field Encoding
+# Galerina — AST `.value` Field Encoding
 
 ## Status
 
 ```
 Phase 7 reference doc
-Verified against: packages-logicn/logicn-core-compiler/src/parser.ts
+Verified against: packages-galerina/galerina-core-compiler/src/parser.ts
 ```
 
 ## Purpose
@@ -40,7 +40,7 @@ the AST reliably without reverse-engineering the parser.
 ### `importDecl`
 ```
 .value   → the full import path as a single string
-           e.g. "std.text"  or  "orders from ./orders.lln"
+           e.g. "std.text"  or  "orders from ./orders.spore"
 .children → undefined
 ```
 
@@ -465,7 +465,7 @@ function getNodeName(node: AstNode): string {
 
 ## See Also
 
-- `packages-logicn/logicn-core-compiler/src/parser.ts` — canonical implementation
-- `packages-logicn/logicn-core-compiler/src/value-state-checker.ts` — `parseBindingValue()`, `buildFullCallName()`
-- `packages-logicn/logicn-core-compiler/src/type-checker.ts` — `checkBindingTypeAnnotation()`
+- `packages-galerina/galerina-core-compiler/src/parser.ts` — canonical implementation
+- `packages-galerina/galerina-core-compiler/src/value-state-checker.ts` — `parseBindingValue()`, `buildFullCallName()`
+- `packages-galerina/galerina-core-compiler/src/type-checker.ts` — `checkBindingTypeAnnotation()`
 - `docs/Knowledge-Bases/stdlib-gates.yaml` — gate and sink name patterns

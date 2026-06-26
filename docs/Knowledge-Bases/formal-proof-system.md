@@ -7,7 +7,7 @@ Planned for: Stage B
 
 ## Definition
 
-LogicN supports formal mathematical reasoning through a structured proof system
+Galerina supports formal mathematical reasoning through a structured proof system
 with dedicated keywords. This makes proofs typed, reportable and compatible with
 future Tri/Neutral logic extensions.
 
@@ -18,7 +18,7 @@ future Tri/Neutral logic extensions.
 An accepted foundational mathematical rule — trusted without proof inside the
 current proof system.
 
-```logicn
+```galerina
 axiom AdditionAssociative
 ```
 
@@ -26,7 +26,7 @@ axiom AdditionAssociative
 
 A proven or declared mathematical result.
 
-```logicn
+```galerina
 theorem FermatLittle
 ```
 
@@ -34,7 +34,7 @@ theorem FermatLittle
 
 A supporting theorem used to prove larger results.
 
-```logicn
+```galerina
 lemma FiniteFieldClosure
 ```
 
@@ -42,7 +42,7 @@ lemma FiniteFieldClosure
 
 A formal proof block.
 
-```logicn
+```galerina
 proof FermatLittle {
   ...
 }
@@ -52,7 +52,7 @@ proof FermatLittle {
 
 A temporary proof assumption.
 
-```logicn
+```galerina
 assume p: Prime
 ```
 
@@ -60,7 +60,7 @@ assume p: Prime
 
 An input condition or known value.
 
-```logicn
+```galerina
 given field: FiniteField<p>
 ```
 
@@ -68,7 +68,7 @@ given field: FiniteField<p>
 
 A condition that must remain true across transitions.
 
-```logicn
+```galerina
 invariant matrix.rank >= 0
 ```
 
@@ -80,7 +80,7 @@ proof systems, incomplete knowledge and AI-assisted proofs.
 
 ## Future Tri/Neutral Logic Direction
 
-LogicN should eventually support richer proof states beyond `True` / `False`:
+Galerina should eventually support richer proof states beyond `True` / `False`:
 
 ```text
 True
@@ -98,7 +98,7 @@ AssumptionRequired
 
 A condition that should hold but may be unresolved:
 
-```logicn
+```galerina
 constraint energy_balance >= 0
 ```
 
@@ -108,7 +108,7 @@ The runtime or proof system must attempt to preserve or validate this.
 
 A condition formally guaranteed by proof or runtime:
 
-```logicn
+```galerina
 guarantee session.revoked == False
 ```
 
@@ -116,7 +116,7 @@ guarantee session.revoked == False
 
 A condition expected to remain unchanged across state transitions:
 
-```logicn
+```galerina
 stable actor_uuid
 ```
 
@@ -124,7 +124,7 @@ stable actor_uuid
 
 A Tri/Neutral-aware logical state:
 
-```logicn
+```galerina
 truth quantum_state != Unknown
 ```
 
@@ -132,7 +132,7 @@ Possible future states: `True`, `False`, `Neutral`, `Unknown`, `Deferred`.
 
 ## Near-Term Direction
 
-For current LogicN, keep `invariant` but avoid assuming binary-only truth
+For current Galerina, keep `invariant` but avoid assuming binary-only truth
 forever. `invariant` currently means "must remain valid" — not necessarily
 binary Boolean forever.
 

@@ -8,7 +8,7 @@
 
 ## Security Summary
 
-LogicN's strongest security position is secure web runtime policy. The project
+Galerina's strongest security position is secure web runtime policy. The project
 should make permissions, typed API boundaries, package effects, memory-safe
 values, secrets, interop, production rules and AI-readable reports visible
 before code runs. See `docs/SECURE_WEB_RUNTIME_FIRST.md` for the runtime-first
@@ -72,7 +72,7 @@ direction.
 
 ## Default Trust Model
 
-LogicN should use a practical zero-trust baseline:
+Galerina should use a practical zero-trust baseline:
 
 ```text
 untrusted until typed
@@ -100,7 +100,7 @@ parses. New syntax must be governed by type contracts, effect declarations,
 permissions, policy, diagnostics, source maps, tests or generated reports before
 it can be treated as safe.
 
-Monkey patching is denied by default. LogicN must not allow normal source to
+Monkey patching is denied by default. Galerina must not allow normal source to
 modify built-ins, imported package internals, framework methods, runtime
 functions, response serializers or security behaviour after load. Behaviour
 changes must use explicit adapters, interfaces/protocols, pipelines, test-only
@@ -127,7 +127,7 @@ validated, what it redacted and what report proves it.
 
 ## Security Invariants
 
-LogicN should compile through security-aware IR that carries permissions,
+Galerina should compile through security-aware IR that carries permissions,
 capabilities, classifications, exposure levels, ownership, actor identity,
 trust boundaries, side effects, audit requirements, package authority and
 isolation requirements.
@@ -152,7 +152,7 @@ execution.
 
 ## Cache Security
 
-LogicN caches must remember work, not grant trust. Authority Control decides
+Galerina caches must remember work, not grant trust. Authority Control decides
 whether a cached parser result, Governed IR, policy decision, view rule, vault
 read, compute plan, schedule lane, audit buffer or verified execution plan can
 be reused.
@@ -195,7 +195,7 @@ objects or mutable header maps. See `docs/SECURE_HTTP_RESPONSES.md`.
 
 ## CSRF Protection
 
-LogicN should make CSRF protection a default route policy for browser apps that
+Galerina should make CSRF protection a default route policy for browser apps that
 use automatic cookie authentication.
 
 Core rule:
@@ -209,7 +209,7 @@ require CSRF protection when session cookies or other automatically attached
 browser credentials are used. `GET`, `HEAD` and `OPTIONS` routes must not call
 state-changing handlers.
 
-LogicN should support synchronizer tokens for stateful apps, signed
+Galerina should support synchronizer tokens for stateful apps, signed
 double-submit cookies for stateless apps, custom CSRF headers for API-driven
 frontends, Fetch Metadata checks, Origin/Referer checks, SameSite cookie
 defaults and CSRF report output. CSRF does not replace XSS prevention, auth,
@@ -248,33 +248,33 @@ The following must never be committed:
 
 ## Core Security Primitives
 
-`packages-logicn/logicn-core-security/` owns reusable security primitives. Redaction
+`packages-galerina/galerina-core-security/` owns reusable security primitives. Redaction
 must fail closed by default: malformed rules, oversized inputs or replacements
 that can re-emit matched secrets must produce redacted output instead of leaking
 raw text. Permission models must deny by default, and matching deny grants must
 win over matching allow grants.
 
-`logicn-core-security` also owns protected secret references such as `Secret<T>`
+`galerina-core-security` also owns protected secret references such as `Secret<T>`
 or equivalent metadata-only handles, secret-derived taint tracking, secret
 fingerprints, safe sink decisions and report shapes for secret use. The app
 kernel and compiler should use those primitives to deny secret flow into logs,
 errors, cache, LLM input, build output and undeclared network destinations.
 
-`packages-logicn/logicn-core-logic/` owns `Tri` and `LogicN` semantics used by core
+`packages-galerina/galerina-core-logic/` owns `Tri` and `Galerina` semantics used by core
 policy checks. `Tri` unknown states must not implicitly convert to `Bool` or
 security decisions; callers must choose an explicit conversion policy and should
 use `unknown_as_error` or `unknown_as_false` for security-sensitive decisions.
 
-`packages-logicn/logicn-core-compiler/` must catch the same risks before execution when
+`packages-galerina/galerina-core-compiler/` must catch the same risks before execution when
 source text is available. The interim syntax safety scan reports direct Tri
 branch conditions, implicit Tri/Decision/Bool conversions, non-exhaustive Tri
 matches, risky `unknown_as: true` use in secure flows, raw secret-like literals
 and unsafe dynamic execution patterns.
 
-NPM and `package.json` are host tooling only in this beta. LogicN package graph
+NPM and `package.json` are host tooling only in this beta. Galerina package graph
 selection, runtime profiles, compiler target policy and production package
 overrides must not be hidden inside host manifests. Use the future
-`package-logicn.json`/`LogicN.lock.json` boundary for LogicN packages once those schemas are
+`package-galerina.json`/`Galerina.lock.json` boundary for Galerina packages once those schemas are
 implemented.
 
 The governed Package Resolver should check identity, version, lockfile,
@@ -298,7 +298,7 @@ AI output must not directly approve security, payment, access-control or other
 high-impact decisions. Route AI output through deterministic application policy
 before taking action.
 
-Local AI inference packages such as `logicn-ai-lowbit` must use declared model paths,
+Local AI inference packages such as `galerina-ai-lowbit` must use declared model paths,
 memory limits, context limits, output token limits, thread limits and timeouts.
 Prompts and reports must be redacted before logging when they may contain
 secrets or user-sensitive data.
@@ -318,14 +318,14 @@ Production policy must deny debug mode, unsafe interop, raw SQL, shell
 execution and wildcard network access unless an explicit, reviewed and reported
 override exists.
 
-Network policy should be defined through `logicn-core-network` contracts and
-enforced with `logicn-core-security`, `logicn-framework-app-kernel` and the
+Network policy should be defined through `galerina-core-network` contracts and
+enforced with `galerina-core-security`, `galerina-framework-app-kernel` and the
 HTTP/API transport layer. Network reports should show inbound ports, outbound
 hosts, TLS posture, rate limits, selected I/O backend, zero-copy availability
 raw socket or packet-filter permissions, secret URL checks, certificate
 validation, hostname validation and plaintext fallback posture.
 
-LogicN cannot prevent packets from being physically observed on a network. It
+Galerina cannot prevent packets from being physically observed on a network. It
 must assume packets can be observed, copied, delayed, blocked or modified, then
 encrypt, authenticate, validate, minimise and report network communication.
 

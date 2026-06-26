@@ -6,18 +6,18 @@
 Phase 1 complete: Node.js bootstrap runtime (Stage A) ✅ — 2286 tests
 Phase 2 complete: GIR (Governance IR) stabilised ✅ — GIR v1 schema, canonical hash, PassiveExecutionPlan
 Phase 3 in progress: WAT emitter skeleton (Phase 19-23), Register VM types (Phase 23C), WASM target Phase 24
-Phase 4 planned: Phase 25-28 — Stage B self-hosting (lexer.lln token parity, parser.lln, type-checker.lln)
-Phase 5 planned: Phase 28-29 — Full Stage B; LogicN verifies its own governed artifacts
+Phase 4 planned: Phase 25-28 — Stage B self-hosting (lexer.spore token parity, parser.spore, type-checker.spore)
+Phase 5 planned: Phase 28-29 — Full Stage B; Galerina verifies its own governed artifacts
 ```
 
 Current bootstrap architecture:
 - Stage A TypeScript runtime: tree-walking interpreter, capabilityHost, audit trail ✅
 - Stage A WASM path: WAT emitter skeleton → Phase 24 real instruction emission
-- Stage B: lexer.lln (executing), parser.lln v0, type-checker.lln, compiler.capabilities.lln — 0 parse errors ✅
+- Stage B: lexer.spore (executing), parser.spore v0, type-checker.spore, compiler.capabilities.spore — 0 parse errors ✅
 
 ## Definition
 
-LogicN cannot self-host immediately. The bootstrap runtime uses a host language
+Galerina cannot self-host immediately. The bootstrap runtime uses a host language
 (Node.js) with strict contracts to validate the governance model, then
 progressively replaces itself with native and self-hosted components.
 
@@ -28,7 +28,7 @@ Phase 1: Prove the model works with Node.js.
 Phase 2: Stabilise the Governed IR.
 Phase 3: Replace components with native code.
 Phase 4: Achieve partial self-hosting.
-Phase 5: LogicN verifies and signs its own governed artifacts.
+Phase 5: Galerina verifies and signs its own governed artifacts.
 ```
 
 ## Five Bootstrap Phases
@@ -38,11 +38,11 @@ Phase 5: LogicN verifies and signs its own governed artifacts.
 ```text
 Host: Node.js
 Purpose: validate governance model, safe/unsafe trust model, runtime security rules
-Deliverable: working runtime that enforces LogicN security contracts
+Deliverable: working runtime that enforces Galerina security contracts
 Trust: local self-signed artifacts only (Level 0)
 ```
 
-The Node.js runtime implements LogicN governance contracts in strict TypeScript/JavaScript.
+The Node.js runtime implements Galerina governance contracts in strict TypeScript/JavaScript.
 It does not need to be fast — it needs to be correct. Security invariants are validated
 here before any native code is written.
 
@@ -64,7 +64,7 @@ Trust: Level 0–1 (local + team)
 ```
 
 The Governed IR is the neutral, hardware-independent representation that sits
-between the LogicN source and backend execution. It encodes:
+between the Galerina source and backend execution. It encodes:
 
 ```text
 security metadata (permissions, capabilities, effects)
@@ -94,30 +94,30 @@ The governance layer remains the same — only the implementation backend change
 ### Phase 4: Partial Self-Hosting
 
 ```text
-Host: LogicN-compiled runtime components
-Purpose: LogicN compiles and runs some of its own runtime
-Deliverable: select runtime modules compiled from .lln source
+Host: Galerina-compiled runtime components
+Purpose: Galerina compiles and runs some of its own runtime
+Deliverable: select runtime modules compiled from .spore source
 Trust: Level 2 (production, CI/OIDC provenance required)
 ```
 
-LogicN runtime modules are progressively rewritten in LogicN. Each module:
+Galerina runtime modules are progressively rewritten in Galerina. Each module:
 - is compiled by the Phase 3 native compiler
-- passes the same governance checks as any other LogicN package
+- passes the same governance checks as any other Galerina package
 - is signed by CI/OIDC
 
-### Phase 5: LogicN Signs and Verifies Its Own Governed Artifacts
+### Phase 5: Galerina Signs and Verifies Its Own Governed Artifacts
 
 ```text
-Host: Self-hosted LogicN runtime
+Host: Self-hosted Galerina runtime
 Purpose: full supply-chain integrity
-Deliverable: LogicN builds, verifies, and signs its own runtime artifacts
+Deliverable: Galerina builds, verifies, and signs its own runtime artifacts
 Trust: Level 2–3 (production + enterprise)
 ```
 
-At full self-hosting, the LogicN runtime:
+At full self-hosting, the Galerina runtime:
 
 ```text
-compiles from .lln source
+compiles from .spore source
 generates Trust Capsule automatically
 signs artifacts with CI/OIDC identity
 verifies all packages against registry
@@ -138,7 +138,7 @@ publishes to transparency log
 ## What Does Not Change Between Phases
 
 ```text
-The LogicN governance model
+The Galerina governance model
 The safe/unsafe trust model
 The uses permission model
 The Query protection model
@@ -153,13 +153,13 @@ from Phase 1.
 ## CLI at Each Phase
 
 ```bash
-logicn init          # create project trust root
-logicn build         # build with trust capsule generation
-logicn run           # verify trust capsule then execute
-logicn trust inspect # show trust status
-logicn build --profile production  # production trust enforcement
-logicn trust verify --profile production
-logicn deploy        # deploy after trust verification
+galerina init          # create project trust root
+galerina build         # build with trust capsule generation
+galerina run           # verify trust capsule then execute
+galerina trust inspect # show trust status
+galerina build --profile production  # production trust enforcement
+galerina trust verify --profile production
+galerina deploy        # deploy after trust verification
 ```
 
 ## Beyond Phase 5: Ecosystem Expansion
@@ -170,7 +170,7 @@ After full self-hosting is achieved, the platform may extend to:
 Multi-runtime support         — multiple concurrent runtime implementations
 Edge deployment support       — constrained edge and embedded targets
 Federated trust domains       — cross-organisation trust federation
-Third-party verification      — external tooling to verify LogicN artifacts
+Third-party verification      — external tooling to verify Galerina artifacts
 Multi-language compilation    — additional source language frontends
 ```
 
@@ -194,7 +194,7 @@ OpenSSF Scorecard  — automated risk scoring
 ```text
 Phase 1 proves the model.
 Phases 2–3 build the foundation.
-Phases 4–5 make LogicN self-sufficient.
+Phases 4–5 make Galerina self-sufficient.
 
 At every phase the governance model is the same.
 Only the implementation matures.

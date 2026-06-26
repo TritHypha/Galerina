@@ -2,7 +2,7 @@
 
 ## Purpose
 
-LogicN should include a Compute Balancer responsible for hardware awareness,
+Galerina should include a Compute Balancer responsible for hardware awareness,
 runtime pressure monitoring and approved compute target selection.
 
 The Compute Balancer answers:

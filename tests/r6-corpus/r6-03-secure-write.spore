@@ -1,0 +1,20 @@
+// EXPECT: ACCEPT
+// R6 corpus 03 — secure flow with database.write + audit.write
+// Exercises: secure qualifier, effects { database.write audit.write }, AuditLog.write
+
+secure flow persistEntry(amount: Int) -> Result<Int, String>
+contract {
+  intent { "Persist a financial entry and emit an audit event." }
+  effects { database.write, audit.write }
+  audit { require runtime report }
+}
+{
+  if amount < 0 {
+    return Err("negative amount")
+  }
+  // Zero-trust: the boundary input must pass an explicit validate.* gate before a governed sink
+  // (discharges SPORE-VALUESTATE-008 — an unmarked boundary param reaching a sink ungated).
+  let safeAmount: Int = validate.entryAmount(amount)
+  AuditLog.write("entry persisted: " + safeAmount.toStr())
+  return Ok(amount)
+}

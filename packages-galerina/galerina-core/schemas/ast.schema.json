@@ -1,0 +1,244 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://Galerina.local/schemas/ast.schema.json",
+  "title": "Galerina AST Prototype",
+  "type": "object",
+  "required": [
+    "language",
+    "compiler",
+    "files",
+    "targets",
+    "types",
+    "flows"
+  ],
+  "properties": {
+    "language": {
+      "const": "Galerina"
+    },
+    "compiler": {
+      "type": "string"
+    },
+    "project": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "entry": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/sourceFile"
+      }
+    },
+    "targets": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/target"
+      }
+    },
+    "logic": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/logic"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "globals": {
+      "type": "array"
+    },
+    "runtime": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "documentation": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "aiGuide": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "manifests": {
+      "type": "object"
+    },
+    "buildContract": {
+      "type": "object"
+    },
+    "types": {
+      "type": "array"
+    },
+    "enums": {
+      "type": "array"
+    },
+    "flows": {
+      "type": "array"
+    },
+    "apis": {
+      "type": "array"
+    },
+    "webhooks": {
+      "type": "array"
+    },
+    "computeBlocks": {
+      "type": "array"
+    },
+    "strictComments": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/strictComment"
+      }
+    }
+  },
+  "$defs": {
+    "sourceFile": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256",
+        "lines"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "lines": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "target": {
+      "type": "object",
+      "required": [
+        "name",
+        "enabled",
+        "mode"
+      ],
+      "properties": {
+        "name": {
+          "enum": [
+            "binary",
+            "wasm",
+            "gpu",
+            "photonic",
+            "ternary",
+            "omni"
+          ]
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "mode": {
+          "type": "string"
+        },
+        "fallback": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "output": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "logic": {
+      "type": "object",
+      "required": [
+        "mode",
+        "width",
+        "file",
+        "line",
+        "column"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string"
+        },
+        "width": {
+          "type": [
+            "integer",
+            "string",
+            "null"
+          ]
+        },
+        "file": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "strictComment": {
+      "type": "object",
+      "required": [
+        "file",
+        "line",
+        "column",
+        "tags",
+        "raw"
+      ],
+      "properties": {
+        "file": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tags": {
+          "type": "object"
+        },
+        "raw": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "summary": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "subject": {
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}

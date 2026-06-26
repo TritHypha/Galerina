@@ -2,7 +2,7 @@
 
 ## Purpose
 
-LogicN should make security properties visible in syntax, not only enforced as
+Galerina should make security properties visible in syntax, not only enforced as
 late runtime checks.
 
 The core principle is:
@@ -21,7 +21,7 @@ Permissions deny everything unless explicitly allowed.
 
 Example:
 
-```logicn
+```galerina
 permission profile_read {
   code {
     allow db.read
@@ -43,7 +43,7 @@ Risky actions must be declared before code can perform them.
 
 Example:
 
-```logicn
+```galerina
 code {
   allow db.read
   allow audit.write
@@ -71,7 +71,7 @@ Requests should define shape, required fields, limits and allowed values.
 
 Example:
 
-```logicn
+```galerina
 request getProfile {
   user_id: UserId required
 }
@@ -79,7 +79,7 @@ request getProfile {
 
 Future direction:
 
-```logicn
+```galerina
 request searchUsers {
   name: String max 80
   page: Int min 1 max 100
@@ -95,14 +95,14 @@ Field exposure should use `view`.
 
 Example:
 
-```logicn
+```galerina
 email: String view: private
 api_key: String view: secret
 ```
 
 Permissions decide which views can leave a boundary:
 
-```logicn
+```galerina
 data {
   allow expose view: public
   allow expose view: private owner: actor
@@ -117,7 +117,7 @@ Private or owner-scoped data must require explicit ownership rules.
 
 Example:
 
-```logicn
+```galerina
 data {
   allow expose view: private owner: actor
 }
@@ -132,13 +132,13 @@ Raw SQL should not be allowed by default.
 
 Prefer typed queries:
 
-```logicn
+```galerina
 db.read User where User.id == request.user_id
 ```
 
 Raw SQL requires special authority:
 
-```logicn
+```galerina
 code {
   allow db.raw_sql
 }
@@ -151,7 +151,7 @@ normal beginner or default production profiles unless explicitly approved.
 
 Database field reads should prefer explicit allow lists:
 
-```logicn
+```galerina
 allow read Profiles fields: [
   id,
   owner,
@@ -159,9 +159,9 @@ allow read Profiles fields: [
 ]
 ```
 
-LogicN may support broad read rules:
+Galerina may support broad read rules:
 
-```logicn
+```galerina
 allow read Profiles fields: all except [
   email
 ]
@@ -170,7 +170,7 @@ allow read Profiles fields: all except [
 This must be treated as higher risk than an explicit allow list because new
 fields may be added later. A safer broad-read form may use:
 
-```logicn
+```galerina
 allow read Profiles fields: all current except [
   email
 ]
@@ -188,7 +188,7 @@ Output should declare or inherit its target.
 
 Example:
 
-```logicn
+```galerina
 response Profile.response target: json
 ```
 
@@ -206,7 +206,7 @@ csv
 ```
 
 Each target has different escaping, encoding, redaction and injection rules.
-LogicN should not treat all output as plain text.
+Galerina should not treat all output as plain text.
 
 ## 8. Secret-Safe Syntax
 
@@ -215,7 +215,7 @@ audited boundary.
 
 Example:
 
-```logicn
+```galerina
 api_key: String view: secret
 ```
 
@@ -238,7 +238,7 @@ may declare explicit budgets.
 
 Example:
 
-```logicn
+```galerina
 budget {
   cpu: small
   memory: small
@@ -267,7 +267,7 @@ Security-relevant flows should declare audit requirements.
 
 Example:
 
-```logicn
+```galerina
 audit required event "profile.read"
 ```
 
@@ -308,7 +308,7 @@ identity, policy, permission and audit context.
 
 ## 12. Safe Defaults By Language
 
-LogicN should disallow or restrict features that commonly hide authority,
+Galerina should disallow or restrict features that commonly hide authority,
 execution, mutation or unsafe data movement.
 
 Restricted or denied by default:
@@ -361,6 +361,6 @@ This concept connects:
 ```text
 Security should not be hidden in framework behaviour.
 
-LogicN syntax should expose authority, input shape, output visibility,
+Galerina syntax should expose authority, input shape, output visibility,
 ownership, risky effects, resource cost and audit requirements before code runs.
 ```

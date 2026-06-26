@@ -1,13 +1,13 @@
-# LogicN: Project History & Architectural Evolution
+# Galerina: Project History & Architectural Evolution
 
 > A lightweight, append-only record of the project's major decisions and pivots.
 > For verified test counts and runtime status, see
-> `docs/Knowledge-Bases/logicn-runtime-status-SOT.md` (the source of truth).
-> For the build roadmap, see `docs/Knowledge-Bases/logicn-build-roadmap.md`.
+> `docs/Knowledge-Bases/galerina-runtime-status-SOT.md` (the source of truth).
+> For the build roadmap, see `docs/Knowledge-Bases/galerina-build-roadmap.md`.
 
 ## Overview
 This document records the conceptual origins, evolution, and architectural pivots
-of the LogicN project. It tracks the shift from a memory-safe language concept to
+of the Galerina project. It tracks the shift from a memory-safe language concept to
 a hardened, governance-first inference runtime.
 
 ---
@@ -25,8 +25,8 @@ a hardened, governance-first inference runtime.
 * **State Management:** Originally banned global variables to ensure security;
   later pivoted to a "Global Vault" hybrid secure pattern.
 
-### Phase 2: Refinement & Identity (LogicN)
-* **Rebranding:** Renamed to **LogicN**, inspired by mathematical "N" (any number).
+### Phase 2: Refinement & Identity (Galerina)
+* **Rebranding:** Renamed to **Galerina**, inspired by mathematical "N" (any number).
 * **Syntax Refinement:** Shifted syntax to be more TypeScript-like to reduce cognitive load and noise.
 * **Security Primitives:** Introduced types within contracts and explicit
   `safe` / `unsafe` (later `secure` / `protected`) variable markers.
@@ -35,10 +35,10 @@ a hardened, governance-first inference runtime.
 
 ### Phase 3: Runtime Maturity & WASM Integration
 * **Two-stage compiler:** Stage A (TypeScript reference compiler) + Stage B
-  (self-hosted `.lln` compiler emitting WASM, with Wasmtime as the only host).
-* **Self-Hosting push:** Drove runtime components toward 100% in `.lln` (Pre-P9),
-  so LogicN compiles itself rather than relying on Node.js/TypeScript long-term.
-* **WASM Integration:** `.lln` → WAT → WASM. Benchmarked against Rust (incl. AVX2),
+  (self-hosted `.spore` compiler emitting WASM, with Wasmtime as the only host).
+* **Self-Hosting push:** Drove runtime components toward 100% in `.spore` (Pre-P9),
+  so Galerina compiles itself rather than relying on Node.js/TypeScript long-term.
+* **WASM Integration:** `.spore` → WAT → WASM. Benchmarked against Rust (incl. AVX2),
   Python, and Node.js across a multi-tier execution model
   (cache / passive plan / manifest / governed / WASM).
 * **Economic Model:** Introduced a cost/value graph and token-based accounting on
@@ -63,12 +63,12 @@ a hardened, governance-first inference runtime.
 * **Visionary Goal:** native support for next-generation photonic hardware and
   Tri-Logic (ternary, `[-1, 0, +1]`).
 * **Three-package split ("Brain / Brawn / Governance"):**
-    * `logicn-tower-citizen` — **Brain**: the Unified Hybrid Inference Engine
+    * `galerina-tower-citizen` — **Brain**: the Unified Hybrid Inference Engine
       blending BitNet ternary (MIT), NVFP4 block-scaling (Apache-2.0), and Groq
       static scheduling (MIT IP) inside one governed pass.
-    * `logicn-ext-bridge-cpp` — **Brawn**: the first real `InferenceBridge`
+    * `galerina-ext-bridge-cpp` — **Brawn**: the first real `InferenceBridge`
       (BitNet CPU), with the native SIMD addon + CUDA kernel as documented seams.
-    * `logicn-devtools-package-graph` — **Governance**: per-package boundary auditor
+    * `galerina-devtools-package-graph` — **Governance**: per-package boundary auditor
       / CI "Hardened Border" gate.
 * **TPL core:** byte-faithful BitNet I2_S simulator — 2-bit packed trits, T-MAC
   (add/subtract/skip × scale), guard-page canaries, Epistemic-Hold (0→+1 requires
@@ -76,7 +76,7 @@ a hardened, governance-first inference runtime.
   ternary path.
 * **Efficiency rationale:** ternary weights cut memory bandwidth (the CPU "memory
   wall"); maps to integer add/sub/skip and (future) SIMD `v128` / Tensor Cores.
-* **Language surface unchanged:** TPL is *engine-internal* — `.lln` flows stay
+* **Language surface unchanged:** TPL is *engine-internal* — `.spore` flows stay
   binary control-flow + governed contracts; ternary math lives inside the Tower.
 
 ### Phase 6: Runtime Wiring & The Sentinel Ecosystem (2026-06-06)
@@ -106,7 +106,7 @@ a hardened, governance-first inference runtime.
   Honest finding: the proposed "ManifestRegistry/CBOR cache" was a no-op (verifyGovernance
   is already hoisted out of the timed loop); the real per-call redundancy was the re-plan.
 * **Brain/Brawn contract extraction** (audit CF-4): new neutral, zero-dependency
-  package `@logicn/inference-bridge-contract` owns `InferenceBridge`/`BridgeOp`/
+  package `@galerina/inference-bridge-contract` owns `InferenceBridge`/`BridgeOp`/
   `BridgeResult`/`assertDeterminism`, the precision-type vocabulary, a `FixedScale`
   fixed-point type, the **bridge-manifest schema** (sets up CF-3 attestation), and the
   determinism-oracle interface. `tower-citizen` + `ext-bridge-cpp` now import the

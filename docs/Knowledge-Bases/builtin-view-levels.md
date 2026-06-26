@@ -2,12 +2,12 @@
 
 ## Purpose
 
-LogicN should define common data exposure levels as built-in runtime/language
+Galerina should define common data exposure levels as built-in runtime/language
 view levels.
 
 The standard built-in levels are:
 
-```logicn
+```galerina
 runtime view public
 runtime view internal
 runtime view private
@@ -24,7 +24,7 @@ stable runtime meaning.
 
 The built-in view levels may be represented conceptually as:
 
-```logicn
+```galerina
 Runtime.View {
   public
   internal
@@ -38,7 +38,7 @@ Runtime.View {
 
 Then this field:
 
-```logicn
+```galerina
 email: String view: private
 ```
 
@@ -67,7 +67,7 @@ policy or boot/main runtime setup.
 
 Example:
 
-```logicn
+```galerina
 runtime view private {
   expose when owner == actor
 }
@@ -75,7 +75,7 @@ runtime view private {
 
 Then permissions can reference the built-in level:
 
-```logicn
+```galerina
 data {
   allow expose view: private
 }
@@ -98,13 +98,13 @@ safe to expose under normal allowed response rules
 
 Example:
 
-```logicn
+```galerina
 name: String view: public
 ```
 
 Permission:
 
-```logicn
+```galerina
 data {
   allow expose view: public
 }
@@ -115,7 +115,7 @@ contract and permission allow exposure.
 
 Standard behaviour:
 
-```logicn
+```galerina
 runtime view public {
   expose normally
 }
@@ -131,13 +131,13 @@ owned data, only exposed when owner == actor or equivalent ownership policy pass
 
 Example:
 
-```logicn
+```galerina
 email: String view: private
 ```
 
 Standard behaviour:
 
-```logicn
+```galerina
 runtime view private {
   expose when owner == actor
 }
@@ -145,7 +145,7 @@ runtime view private {
 
 Slim permission:
 
-```logicn
+```galerina
 data {
   allow expose view: private
 }
@@ -160,7 +160,7 @@ inheriting owner == actor from the runtime view definition
 
 Permissions may narrow the built-in rule:
 
-```logicn
+```galerina
 data {
   allow expose view: private when owner == actor and purpose == "support"
 }
@@ -172,7 +172,7 @@ data {
 
 Example:
 
-```logicn
+```galerina
 api_key: String view: secret
 ```
 
@@ -204,14 +204,14 @@ The runtime may use built-in view levels for:
 
 ## Custom View Levels
 
-LogicN may later support custom project-specific view levels.
+Galerina may later support custom project-specific view levels.
 
 Custom levels must not weaken built-in levels or silently alias to broader
 exposure.
 
 Example future direction:
 
-```logicn
+```galerina
 runtime view partner_private extends private
 ```
 

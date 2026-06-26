@@ -1,0 +1,245 @@
+// OWASP All-Pass — Positive Test: Correct Implementation of All OWASP Categories
+// EXPECT: ACCEPT
+//
+// This file is the POSITIVE counterpart to the per-category OWASP test files.
+// It demonstrates the correct, compliant implementation of a realistic governed service
+// that addresses all relevant OWASP Top 10 categories Galerina protects against.
+//
+// OWASP coverage in this file:
+//   A01 — Broken Access Control:   guard ceiling + child guard + conforms_to annotation
+//   A02 — Cryptographic Failures:  secrets {} + SecureString + redact() before audit
+//   A03 — Injection:               unsafe inputs validated with validate.* before use
+//   A04 — Insecure Design:         intent {} on every flow + audit on every mutation
+//   A05 — Security Misconfiguration: named effects (no wildcard) + observability ∩ privacy = ∅
+//   A07 — Identification/Auth:     Secrets.get from vault, audit on auth flow
+//   A09 — Security Logging:        structured AuditLog.write + govComment manifest narrative
+
+// ── Shared Types ──────────────────────────────────────────────────────────────
+
+type UserId = Brand<String, "UserId">
+type Email = Brand<String, "Email">
+type AuthToken = Brand<String, "AuthToken">
+type PatientId = Brand<String, "PatientId">
+type PatientSummary = record { patientId: PatientId, name: String, dob: String }
+
+type AuthResult = Result<AuthToken, AuthError>
+type PatientResult = Result<PatientSummary, PatientError>
+type MutationResult = Result<Bool, MutationError>
+
+type AuthError = enum { InvalidCredentials InvalidInput AccountLocked }
+type PatientError = enum { NotFound Unauthorized EmptyInput }
+type MutationError = enum { EmptyInput Unauthorized DatabaseError }
+
+// ── A01 — Broken Access Control: Domain Guard Ceilings ───────────────────────
+
+;; govComment — A01: guard ceiling defines the maximum capability this service may use
+guard MedicalServiceGuard {
+  permitted_effects {
+    database.read
+    database.write
+    secret.read
+    crypto.verify
+    audit.write
+    network.outbound
+  }
+  enforced_limits {
+    max_memory_ceiling: 64MB
+  }
+}
+
+;; govComment — A01: narrower child guard for read-only clinical query flows
+guard ClinicalReadGuard {
+  parent_policy: MedicalServiceGuard
+  permitted_effects {
+    database.read
+    audit.write
+  }
+  enforced_limits {
+    max_memory_ceiling: 16MB
+  }
+}
+
+// ── A07 — Authentication Flow ─────────────────────────────────────────────────
+
+;; govComment — A07: all secrets via sealed secrets {} block (not Env.get)
+;; govComment — A07: every authentication attempt (pass and fail) produces an audit event
+;; govComment — A02: password hash retrieved as SecureString — never logged or returned
+;; govComment — A03: rawEmail and rawPass are tainted (unsafe) — validated before use
+;; govComment — A05: effects enumerated exactly — no wildcard
+;; govComment — A04: intent {} declared — SPORE-GOV-010 passes
+;; govComment — A09: structured AuditEvent record (CBOR Tag 410 compatible)
+secure flow authenticateUser(readonly request: Request) -> AuthResult
+contract [conforms_to: MedicalServiceGuard] {
+  intent "Verify user credentials and issue a short-lived authentication token"
+  request {
+    body {
+      email: unsafe String
+      password: unsafe String
+    }
+  }
+  effects {
+    database.read
+    secret.read
+    crypto.verify
+    audit.write
+  }
+  secrets { bind "USER_PASSWORD_HASH_KEY" }
+  privacy {
+    pii email masked_in_audit
+    require redaction before audit.write
+  }
+  observability {
+    trace flow
+    measure latency
+    deny protected values in logs
+  }
+  audit { require runtime report require actor }
+  limits { memory 16mb request_time 1s }
+}
+{
+  // A03: tainted inputs validated before reaching any privileged sink
+  unsafe let rawEmail: String = request.body.email
+  unsafe let rawPass: String = request.body.password
+
+  let email: protected Email = validate.email(rawEmail)?
+  // A07/A02: secret from vault, typed SecureString — cannot flow to log or response
+  let hash: SecureString = Secrets.get("USER_PASSWORD_HASH_KEY")
+
+  let valid = Crypto.constantTimeEquals(rawPass, hash)
+
+  // A02: PII redacted before reaching audit sink
+  let redactedEmail: redacted String = redact(email)
+  // A09: structured audit record — not a printf string
+  AuditLog.write({
+    event: "AuthAttempt",
+    user: redactedEmail,
+    success: valid
+  })
+
+  if valid {
+    let token: AuthToken = Auth.generateToken(email)
+    return Ok(token)
+  } else {
+    return Err(AuthError.InvalidCredentials)
+  }
+}
+
+// ── A01/A03/A09 — Clinical Read with Guard Ceiling ───────────────────────────
+
+;; govComment — A01: flow conforms to ClinicalReadGuard (subset of MedicalServiceGuard)
+;; govComment — A03: patientId is validated from unsafe input before database call
+;; govComment — A02: PHI fields redacted before audit
+;; govComment — A09: structured audit event with actor and patient ref
+secure flow getPatientSummary(readonly request: Request) -> PatientResult
+contract [conforms_to: ClinicalReadGuard] {
+  intent "Retrieve a patient summary for clinical display — read-only, PHI redacted in audit"
+  request {
+    context { require actor require trace_id }
+  }
+  effects { database.read, audit.write }
+  privacy {
+    phi patientId masked_in_audit
+    deny protected PatientId to response.body
+    require redaction before audit.write
+  }
+  observability {
+    trace flow
+    measure latency
+    count database.read
+    deny protected values in logs
+  }
+  audit { require runtime report require actor }
+  limits { memory 16mb request_time 2s }
+}
+{
+  // A03: taint demotion — validate raw parameter before database read
+  let patientId: protected PatientId = validate.patientId(request.params.id)?
+  trap patientId == "" : ERR_EMPTY_PATIENT_ID
+
+  let patient = PatientsDB.find(patientId)?
+
+  // A02: PHI redacted before entering audit log
+  let redactedId: redacted String = redact(patientId)
+  // A09: structured audit record with actor
+  AuditLog.write({
+    event: "PatientAccessed",
+    patient_ref: redactedId,
+    actor: request.context.actor
+  })
+
+  return Ok({
+    patientId: patientId,
+    name: redact(patient.name),
+    dob: redact(patient.dob)
+  })
+}
+
+// ── A04/A05/A09 — High-Trust Mutation with Correct Design ────────────────────
+
+;; govComment — A04: intent declared, audit.write alongside database.write by design
+;; govComment — A04: limits {} prevent resource exhaustion — insecure design impossible
+;; govComment — A05: no wildcard — effects listed explicitly
+;; govComment — A09: structured deletion event with actor and redacted patient ref
+secure flow deleteClinicalRecord(patientId: PatientId) -> MutationResult
+contract [conforms_to: MedicalServiceGuard] {
+  intent "Delete a clinical record — every deletion must produce a forensic audit event"
+  effects { database.write, audit.write }
+  privacy {
+    phi patientId masked_in_audit
+    require redaction before audit.write
+  }
+  audit { require runtime report require actor require cryptographic_state_hash }
+  limits { memory 32mb request_time 500ms }
+  invariant {
+    ensure patientId != ""
+  }
+}
+{
+  trap patientId == "" : ERR_EMPTY_PATIENT_ID
+
+  let redactedId: redacted String = redact(patientId)
+  MedicalDB.delete(patientId)
+
+  ;; govComment — deletion event hashed into epilogue receipt (DRCM Phase 6)
+  AuditLog.write({
+    event: "ClinicalRecordDeleted",
+    patient_ref: redactedId
+  })
+
+  return Ok(true)
+}
+
+// ── A03/A05 — Injection-Safe Query with Observability Boundary ────────────────
+
+;; govComment — A03: all unsafe inputs validated before database sink
+;; govComment — A05: observability block uses deny protected values in logs — PII safe
+secure flow searchClinicalRecords(readonly request: Request) -> PatientResult
+contract [conforms_to: ClinicalReadGuard] {
+  intent "Search clinical records by validated query — injection-safe, PII not in trace"
+  request {
+    body { query: unsafe String }
+  }
+  effects { database.read, audit.write }
+  observability {
+    trace flow
+    measure latency
+    deny protected values in logs
+    deny request body logging
+  }
+  audit { require runtime report }
+  limits { memory 16mb request_time 3s }
+}
+{
+  // A03: tainted query demoted to safe String before reaching database
+  unsafe let rawQuery: String = request.body.query
+  let safeQuery: String = validate.string(rawQuery)?
+  trap safeQuery == "" : ERR_EMPTY_QUERY
+
+  let results = PatientsDB.search(safeQuery)
+
+  AuditLog.write({
+    event: "ClinicalSearchExecuted"
+  })
+
+  return Ok(results)
+}

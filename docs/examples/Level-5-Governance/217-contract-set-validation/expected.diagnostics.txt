@@ -1,4 +1,4 @@
-LLN-GOV-011 (UnknownContractSet)
+SPORE-GOV-011 (UnknownContractSet)
 
 Flow 'createPatient2' references unknown contract set 'NonExistentSet'.
 Fix: declare it with 'contract set NonExistentSet { ... }' at program scope.

@@ -2,7 +2,7 @@
 
 ## Definition
 
-LogicN performs **automatic runtime cleanup at the end of every flow**. This is
+Galerina performs **automatic runtime cleanup at the end of every flow**. This is
 the Flow Finalizer (also called Runtime Cleanup Phase).
 
 ```text
@@ -15,7 +15,7 @@ end-of-flow cleanup = automatic final cleanup
 Local runtime values are cleaned up automatically when a flow ends. Developers
 do not need to free resources manually.
 
-```logicn
+```galerina
 flow process_upload(raw: unsafe File) -> Result {
   let file: safe File = validate.file(raw)
   process(file)
@@ -29,7 +29,7 @@ Even without `release file`, the runtime cleans up `file` when the flow ends.
 
 Use `release` when cleanup is needed before the flow returns:
 
-```logicn
+```galerina
 flow process_upload(raw: unsafe File) -> Result {
   let file: safe File = validate.file(raw)
   process(file)
@@ -75,7 +75,7 @@ external systems
 
 Example:
 
-```logicn
+```galerina
 flow get_user(id: safe Id) -> User
   uses vault.users.read
 {
@@ -109,7 +109,7 @@ released. The value is preserved, not cleaned up.
 
 ## Runtime GC Strategy
 
-The runtime decides when memory reclamation happens, not the developer. LogicN uses:
+The runtime decides when memory reclamation happens, not the developer. Galerina uses:
 
 ```text
 runtime-managed automatic GC
@@ -131,7 +131,7 @@ returned value      -> transfer ownership to caller
 
 A `let` variable that reads from GlobalVault does not become GlobalVault state:
 
-```logicn
+```galerina
 let token = GlobalVault.secrets.read("api-token")
 ```
 

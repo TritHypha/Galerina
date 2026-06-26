@@ -2,13 +2,13 @@
 
 ## Purpose
 
-The LogicN Architecture Charter defines the long-term identity of the language,
+The Galerina Architecture Charter defines the long-term identity of the language,
 runtime and package ecosystem.
 
-LogicN is a secure, auditable, AI-readable execution language and governed
+Galerina is a secure, auditable, AI-readable execution language and governed
 runtime architecture.
 
-LogicN is not designed primarily around raw speed. It is designed around:
+Galerina is not designed primarily around raw speed. It is designed around:
 
 - controlled authority
 - verifiable execution
@@ -19,7 +19,7 @@ LogicN is not designed primarily around raw speed. It is designed around:
 
 ## Umbrella: Zero Trust Framework (governing security bar)
 
-LogicN and its sibling parts sit under a project umbrella called the **Zero Trust
+Galerina and its sibling parts sit under a project umbrella called the **Zero Trust
 Framework**. This is the **top-level security standard every component must meet to warrant
 the badge** — it is not a feature, it is the bar:
 
@@ -34,7 +34,7 @@ the badge** — it is not a feature, it is the bar:
 - **AI proposes, compiler verifies, runtime authorizes, human/policy approves** authority.
 
 Every new component, contract clause, and runtime path is measured against this bar.
-LogicN itself remains a **TypeScript-like language using `flow` and `contract`** — the
+Galerina itself remains a **TypeScript-like language using `flow` and `contract`** — the
 Zero Trust Framework is the assurance standard, not a change to the language model.
 
 ## Core Philosophy
@@ -45,7 +45,7 @@ Code second.
 Authority never implicit.
 ```
 
-LogicN should make secure execution the default.
+Galerina should make secure execution the default.
 
 ## Foundational Principles
 
@@ -83,11 +83,11 @@ Security rules must be:
 - boundary-aware
 - auditable
 
-LogicN should prefer refusing unsafe execution over allowing unclear behaviour.
+Galerina should prefer refusing unsafe execution over allowing unclear behaviour.
 
 ## Memory Security
 
-LogicN must prevent:
+Galerina must prevent:
 
 - unsafe memory access
 - buffer overflow
@@ -100,7 +100,7 @@ Memory access must remain typed, bounded and verifiable.
 
 ## Future-Capable Memory And Compute
 
-LogicN may support low-level memory access, but only through controlled, typed
+Galerina may support low-level memory access, but only through controlled, typed
 and auditable constructs.
 
 The architecture must work on binary systems today while preserving compatibility
@@ -113,7 +113,7 @@ for future:
 - NPU compute
 - accelerator architectures
 
-LogicN must avoid assuming that all future compute is purely binary, purely
+Galerina must avoid assuming that all future compute is purely binary, purely
 electrical, CPU-local or Von Neumann style.
 
 ### The Bifurcated Execution Invariant (Hardware Parity)
@@ -121,7 +121,7 @@ electrical, CPU-local or Von Neumann style.
 > **Unified semantics, divergent physics.** Maintain semantic parity across all hardware tiers;
 > sacrifice shared code before sacrificing hardware performance. If the physics demand it, build it twice.
 
-LogicN guarantees **semantic parity** — *the governed outcome of a program is identical across the
+Galerina guarantees **semantic parity** — *the governed outcome of a program is identical across the
 Binary (discrete/silicon) and Photonic (continuous/optical) tiers* — but it **never bottlenecks one
 tier with the other's logic** (a "lowest-common-denominator" implementation is forbidden). Where the
 two hardware paradigms fundamentally diverge, a component is **bifurcated**: implemented twice under one
@@ -145,7 +145,7 @@ to the correct implementation. The developer calls one interface and never sees 
    fail-closed** property (a confident verdict survives bounded analog noise; near-threshold collapses to
    DENY). It is **not** a promise that two tiers emit the same IEEE-754 bits.
 2. **Crypto, exact arithmetic, and control flow are BINARY-ONLY — they are NOT bifurcated.** Per
-   crypto-on-core (`LLN-SUBSTRATE-001`), bit-exact cryptography and data-dependent control cannot run on
+   crypto-on-core (`SPORE-SUBSTRATE-001`), bit-exact cryptography and data-dependent control cannot run on
    analog optics (the precision wall — proven). These have **one** implementation (binary); the photonic
    tier's programs route them to the binary core. A photonic crypto path would be invented/broken crypto
    and is forbidden. Bifurcation is *permitted and expected* **only** for components both tiers can
@@ -156,7 +156,7 @@ to the correct implementation. The developer calls one interface and never sees 
 In short: **one interface and one governed outcome; two native implementations wherever the physics
 allow and a net win exists; binary-only wherever the physics forbid.** (Maths: the cheap-verify /
 fail-safe-noise / net-win-partition guarantees are proven in
-`LogicN-R-AND-D/scripts/rd-photonic-ppu-virtualisation-proof.mjs`.)
+`Galerina-R-AND-D/scripts/rd-photonic-ppu-virtualisation-proof.mjs`.)
 
 ### The Tri-Pipe — three execution tiers under one router
 
@@ -232,12 +232,12 @@ Reconciliation (the invariants do not change):
 
 ## Architectural Stability
 
-LogicN must be additive by design.
+Galerina must be additive by design.
 
 Names, syntax, keywords, package structures and core concepts are long-term
 public contracts.
 
-LogicN should avoid:
+Galerina should avoid:
 
 - renaming core concepts
 - removing accepted syntax
@@ -285,7 +285,7 @@ Undeclared effects fail by default.
 
 Auditability is part of correctness.
 
-LogicN programs should explain:
+Galerina programs should explain:
 
 - what ran
 - what data moved
@@ -304,7 +304,7 @@ If execution cannot be explained, it should not be considered production-safe.
 
 Compliance should be generated from architecture, not added afterwards.
 
-LogicN should support machine-readable evidence for:
+Galerina should support machine-readable evidence for:
 
 - data handling rules
 - permission boundaries
@@ -340,7 +340,7 @@ AI execution should occur inside governed, revocable and auditable boundaries.
 
 ## Secure Governed Execution Layer
 
-LogicN should provide a governed runtime layer built around:
+Galerina should provide a governed runtime layer built around:
 
 - typed requests
 - typed responses
@@ -365,7 +365,7 @@ Avoid unnecessary runtime magic or hidden execution behaviour.
 
 ## Efficiency After Safety
 
-LogicN should minimise unnecessary allocation, copying, hidden overhead,
+Galerina should minimise unnecessary allocation, copying, hidden overhead,
 temporary buffers and uncontrolled heap growth.
 
 Performance optimisation should happen after correctness, safety and
@@ -383,14 +383,14 @@ Speed matters, but it must never override:
 
 ## Human And AI Understandability
 
-LogicN should be easy for humans and AI systems to inspect, map, explain,
+Galerina should be easy for humans and AI systems to inspect, map, explain,
 analyse, refactor, verify and audit safely.
 
 Code structure should favour explicitness over hidden behaviour.
 
 ## Disallowed Or Restricted Concepts
 
-Normal LogicN source should disallow or tightly restrict:
+Normal Galerina source should disallow or tightly restrict:
 
 - inheritance
 - global mutable variables
@@ -415,15 +415,15 @@ Safer alternatives include:
 - package manifests
 - audit reports
 
-## LogicN Identity
+## Galerina Identity
 
-LogicN is not:
+Galerina is not:
 
 - a fastest-language-first project
 - an unrestricted scripting language
 - an implicit trust runtime
 
-LogicN is:
+Galerina is:
 
 - a secure execution language
 - an auditable runtime architecture
@@ -447,8 +447,8 @@ These documents translate the charter into concrete rules, patterns, and diagnos
 
 | Document | Purpose |
 |---|---|
-| `logicn-governance-rules.md` | Numbered rule registry with LLN codes + enforce status |
-| `logicn-architecture-patterns.md` | 9 copy-paste patterns for common structures |
-| `logicn-contract-authoring-guide.md` | Canonical contract authoring reference |
-| `logicn-deterministic-runtime-containment.md` | DRCM 7-module security architecture |
+| `galerina-governance-rules.md` | Numbered rule registry with SPORE codes + enforce status |
+| `galerina-architecture-patterns.md` | 9 copy-paste patterns for common structures |
+| `galerina-contract-authoring-guide.md` | Canonical contract authoring reference |
+| `galerina-deterministic-runtime-containment.md` | DRCM 7-module security architecture |
 | `secure-by-default-syntax-principles.md` | Syntax-level security principles |

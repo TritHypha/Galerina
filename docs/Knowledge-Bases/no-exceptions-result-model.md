@@ -5,12 +5,12 @@
 ```
 Status: Active — language invariant
 Scope:  Result<T, Error> return type, no throw/catch/panic
-See also: typed-error-model.md, error-propagation-chains.md, logicn-contract-errors.md
+See also: typed-error-model.md, error-propagation-chains.md, galerina-contract-errors.md
 ```
 
 ## Definition
 
-LogicN does not use a hidden exception system. Every fallible operation is expressed as a `Result<T, Error>` return type. Failures are explicit, typed, and governed.
+Galerina does not use a hidden exception system. Every fallible operation is expressed as a `Result<T, Error>` return type. Failures are explicit, typed, and governed.
 
 ```text
 No throw.
@@ -23,7 +23,7 @@ Use Result<T, Error>.
 
 A flow that can fail must declare what it can return on success and on failure:
 
-```logicn
+```galerina
 flow login(
   request: Login.post
 ) -> LoginResult
@@ -52,7 +52,7 @@ Err(AuthError)
 
 There is no surprise thrown exception.
 
-## Why This Fits LogicN
+## Why This Fits Galerina
 
 ```text
 explicit   — failure is visible in the type signature
@@ -77,7 +77,7 @@ So returning `Err(AuthError.invalid_credentials)` does not mean an internal fail
 
 ## What Is Blocked
 
-LogicN must not allow:
+Galerina must not allow:
 
 ```text
 throw exception
@@ -96,4 +96,4 @@ Both are governed.
 ```
 
 > [!TIP]
-> The exception system in LogicN is `Result<T, Error>` combined with governed failure — not a hidden throw/catch mechanism.
+> The exception system in Galerina is `Result<T, Error>` combined with governed failure — not a hidden throw/catch mechanism.

@@ -1,0 +1,26 @@
+{
+  "name": "@galerina/framework-api-server",
+  "version": "1.0.0-beta.2",
+  "description": "Galerina HTTP API-server adapter: a thin node:http transport that buffers the request body under a hard DoS cap and hands every request to the non-bypassable App Kernel. It never pre-empts a kernel gate except the additive body cap.",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run typecheck && npm run build && node --test tests/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@galerina/core-network": "file:../galerina-core-network",
+    "@galerina/framework-app-kernel": "file:../galerina-framework-app-kernel",
+    "@galerina/tower-citizen": "file:../galerina-tower-citizen"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}

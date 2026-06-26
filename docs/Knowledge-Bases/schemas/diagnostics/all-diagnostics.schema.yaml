@@ -1,9 +1,9 @@
-# LogicN Diagnostic Schema — Master Index
-# Machine-readable registry for all LLN-* diagnostic codes
+# Galerina Diagnostic Schema — Master Index
+# Machine-readable registry for all SPORE-* diagnostic codes
 # Load this file to resolve any diagnostic code without parsing prose.
 #
 # Diagnostic interface (all families):
-#   code:             string   — e.g. "LLN-TYPE-001"
+#   code:             string   — e.g. "SPORE-TYPE-001"
 #   name:             string   — e.g. "UnknownType"
 #   severity:         error | warning | info
 #   message:          string   — what went wrong
@@ -14,33 +14,33 @@
 #   why?:             string   — why this is a problem (Elm-style)
 #   risk?:            string   — what goes wrong if ignored (Elm-style)
 #
-# See: docs/Knowledge-Bases/logicn-language-lessons.md
+# See: docs/Knowledge-Bases/galerina-language-lessons.md
 schemaVersion: "1.0"
 families:
-  - id: LLN-TYPE
+  - id: SPORE-TYPE
     file: type.schema.yaml
     description: "Type checker diagnostics"
-  - id: LLN-NAME
+  - id: SPORE-NAME
     file: name.schema.yaml
     description: "Symbol resolution diagnostics"
-  - id: LLN-MATCH
+  - id: SPORE-MATCH
     file: match.schema.yaml
     description: "Match exhaustiveness diagnostics"
-  - id: LLN-VALUESTATE
+  - id: SPORE-VALUESTATE
     file: valuestate.schema.yaml
     description: "Value-state checker diagnostics"
-  - id: LLN-SECRET
+  - id: SPORE-SECRET
     file: secret.schema.yaml
     description: "Secret / SecureString diagnostics"
-  - id: LLN-EFFECT
+  - id: SPORE-EFFECT
     file: effect.schema.yaml
     description: "Effect checker diagnostics"
-  - id: LLN-GOV
+  - id: SPORE-GOV
     file: governance.schema.yaml
     description: "Governance verifier diagnostics"
-  - id: LLN-SYNTAX
+  - id: SPORE-SYNTAX
     file: syntax.schema.yaml
     description: "Syntax rule violations"
-  - id: LLN-PARSE
+  - id: SPORE-PARSE
     file: parse.schema.yaml
     description: "Parser diagnostics"

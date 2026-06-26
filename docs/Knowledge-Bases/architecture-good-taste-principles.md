@@ -6,7 +6,7 @@
 Good taste = design the model so edge cases disappear.
 ```
 
-This is the governing design philosophy for LogicN's architecture. When a design
+This is the governing design philosophy for Galerina's architecture. When a design
 forces special-case handling, that is a sign the model is wrong. The goal is a
 model where the boring path is also the safe path.
 
@@ -41,7 +41,7 @@ logic. This makes authority visible, auditable and testable.
 
 Prefer early exits and flat flows:
 
-```logicn
+```galerina
 match validate.email(rawEmail) {
   Err(error) => return Api.badRequest(error)
   Ok(email)  => save(email)
@@ -57,7 +57,7 @@ Each flow should have one responsibility.
 
 Bad — one flow doing too much:
 
-```logicn
+```galerina
 secure flow handleCheckout(...)
 // validation, pricing, payment, stock, email, audit all in one place
 ```
@@ -145,7 +145,7 @@ See `build-system-and-cli.md` for the applied build architecture.
 
 ## AI and Tooling Implication
 
-When the model is designed well, AI tools can reason about LogicN code using
+When the model is designed well, AI tools can reason about Galerina code using
 the same plain-data manifests as the runtime:
 
 ```text
@@ -155,4 +155,4 @@ effect graph   -> AI knows all side effects
 authority plan -> AI knows what is allowed
 ```
 
-Good-taste architecture makes LogicN more AI-readable by design.
+Good-taste architecture makes Galerina more AI-readable by design.

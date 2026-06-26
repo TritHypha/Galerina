@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://Galerina.local/schemas/compiler-reports.schema.json",
+  "title": "Galerina Compiler Report Prototype",
+  "type": "object",
+  "required": [
+    "compiler",
+    "project"
+  ],
+  "properties": {
+    "compiler": {
+      "type": "string"
+    },
+    "project": {
+      "type": "string"
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/diagnostic"
+      }
+    }
+  },
+  "$defs": {
+    "diagnostic": {
+      "type": "object",
+      "required": [
+        "code",
+        "level",
+        "category",
+        "message",
+        "source",
+        "target",
+        "recoveryAction",
+        "timestamp",
+        "severity",
+        "errorType",
+        "file",
+        "line",
+        "column",
+        "problem",
+        "suggestedFix"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^galerina-(INFO|WARN|ERR|FATAL)-[A-Z]+-[0-9]{3}$"
+        },
+        "level": {
+          "enum": [
+            "info",
+            "warning",
+            "error",
+            "fatal"
+          ]
+        },
+        "category": {
+          "enum": [
+            "memory",
+            "disk",
+            "cache",
+            "logic",
+            "target",
+            "type",
+            "null",
+            "security",
+            "environment",
+            "io",
+            "network",
+            "api",
+            "build",
+            "runtime"
+          ]
+        },
+        "message": {
+          "type": "string"
+        },
+        "source": {
+          "type": "object",
+          "required": [
+            "file",
+            "line"
+          ],
+          "properties": {
+            "file": {
+              "type": "string"
+            },
+            "line": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "column": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "recoveryAction": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "severity": {
+          "enum": [
+            "error",
+            "warning",
+            "info",
+            "fatal"
+          ]
+        },
+        "errorType": {
+          "type": "string"
+        },
+        "file": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "target": {
+          "type": "string"
+        },
+        "problem": {
+          "type": "string"
+        },
+        "suggestedFix": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

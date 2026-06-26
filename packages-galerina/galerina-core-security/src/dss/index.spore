@@ -1,0 +1,15 @@
+// DSS — Deterministic Security Supervisor
+// DRCM Phase 5 Foundation Files
+//
+// Build order (spec: galerina-governed-tower-specification.md §5):
+//   1. vdpm.spore            ← V_DPM bit layout + capability mapping + O(1) check  [THIS PHASE]
+//   2. capability-map.spore  ← SystemCapabilityType enum + string→bit converter     [#38]
+//   3. emergency-sm.spore    ← Emergency state machine transitions                  [#39]
+//   4. trap-handler.spore    ← unreachable intercept + AuditEvent emission          [#76]
+//   5. dss-supervisor.spore  ← Main DPM tracking loop + WASI import broker          [#41]
+//
+// The entire DSS is a governed .spore program compiled to WASM.
+// It runs as a Wasmtime component alongside guest DWI isolates.
+// It CANNOT be replaced with Rust — see architecture-charter.md.
+
+// use security::dss::vdpm   (import keyword not yet in Stage A — #38 prerequisite)

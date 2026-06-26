@@ -7,7 +7,7 @@ Planned for: Stage B
 
 ## Definition
 
-A **LogicN Governed Worker Pool** is a bounded, isolated execution group managed by the runtime for processing approved flows, events, streams, jobs, and compute operations under explicit governance control.
+A **Galerina Governed Worker Pool** is a bounded, isolated execution group managed by the runtime for processing approved flows, events, streams, jobs, and compute operations under explicit governance control.
 
 ```text
 Workers execute approved plans.
@@ -40,7 +40,7 @@ Request/Event/Stream
 
 ## Worker Pool Declaration
 
-```logicn
+```galerina
 worker pool WebPool auto {
   isolate per_request
   memory max 128mb
@@ -117,6 +117,6 @@ Governance controls authority.
 ```
 
 ```text
-LogicN worker pools exist to coordinate execution safely,
+Galerina worker pools exist to coordinate execution safely,
 not merely to maximise concurrency.
 ```

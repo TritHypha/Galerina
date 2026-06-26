@@ -1,0 +1,41 @@
+/// example: 368-contract-ai-flow
+/// level: 7
+/// concept: flow contract with AI intent for IGO optimisation
+/// expected_diagnostics: SPORE-HINT-COMPUTE-001 (suppressed when contract specifies intent)
+/// test_status: stable
+/// ai_rule: AI flows should use contract.intent to enable IGO — "locally without remote execution" blocks remote targets.
+
+event ClassificationStarted
+event ClassificationCompleted
+
+guarded flow classifyMessage(message: String) -> ClassificationResult
+
+contract {
+  // Result alias — contract.intent enables IGO to suppress SPORE-HINT-COMPUTE-001
+  types {
+    type ClassificationResult = Result<Label, AiError>
+  }
+
+  intent {
+    "Classify inbound messages locally without remote execution."
+  }
+
+  effects {
+    ai.inference
+  }
+
+  events {
+    emits ClassificationStarted
+    emits ClassificationCompleted
+  }
+
+}
+{
+  emit ClassificationStarted
+
+  let label = ClassifierModel.classify(message)?
+
+  emit ClassificationCompleted
+
+  return Ok(label)
+}

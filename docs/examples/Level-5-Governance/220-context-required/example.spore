@@ -1,0 +1,47 @@
+/// example: 220-context-required
+/// level: 5
+/// concept: contract context block — require actor, require trace_id, correct usage
+/// expected_diagnostics: none
+/// test_status: stable
+/// ai_rule: When contract.context declares require fields, the flow body must access them.
+///          This example correctly reads both context.actor and context.trace_id, so no
+///          SPORE-CONTEXT-001 is emitted.
+
+secure flow createOrder(readonly request: Request) -> CreateOrderResult
+
+contract {
+  types {
+    type CreateOrderResult = Result<Response, ApiError>
+  }
+
+  intent {
+    "Create an order for a verified actor. Requires actor identity and trace for auditability."
+  }
+
+  request {
+    accepts CreateOrderRequest
+  }
+
+  response {
+    returns OrderCreatedResponse
+    exposes { orderId status }
+  }
+
+  context {
+    require actor
+    require trace_id
+  }
+
+  effects {
+    database.write
+    audit.write
+  }
+}
+{
+  let actor = context.actor
+  let traceId = context.trace_id
+  safe mut items = validate.orderItems(request.body.items)?
+  let order = OrdersDB.insert({ actor: actor, items: items })?
+  AuditLog.write({ event: "OrderCreated", orderId: order.id, actor: actor, traceId: traceId })
+  return Ok(Response.created({ orderId: order.id, status: "pending" }))
+}

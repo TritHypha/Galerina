@@ -1,0 +1,11 @@
+{
+  "packageName": "@galerina/devtools-security",
+  "allowedExternal": [
+    "@galerina/core-compiler",
+    "@galerina/core-economics",
+    "@galerina/devtools-pci",
+    "node:fs",
+    "node:path"
+  ],
+  "note": "Baseline auto-generated. Edit allowedExternal to widen/narrow the border. `--check` fails if an import appears that is not listed here."
+}

@@ -1,12 +1,12 @@
 # Kubernetes Deployment Target
 
-LogicN should support Kubernetes as a deployment target, not as something every
-LogicN app must use.
+Galerina should support Kubernetes as a deployment target, not as something every
+Galerina app must use.
 
 Kubernetes is a container orchestration system for deploying, scaling and
 managing containerized applications. A Kubernetes Deployment manages Pods and
 ReplicaSets, supports rolling updates and can roll back to earlier revisions.
-LogicN should use that model as one possible deployment output, not as the
+Galerina should use that model as one possible deployment output, not as the
 default application architecture.
 
 Enterprise boundary:
@@ -14,11 +14,11 @@ Enterprise boundary:
 ```text
 Basic Kubernetes output may be free/open.
 Hardened Kubernetes policy packs remain enterprise-only.
-Do not create or activate logicn-kubernetes-enterprise unless explicitly unlocked.
+Do not create or activate galerina-kubernetes-enterprise unless explicitly unlocked.
 ```
 
-`docs/ENTERPRISE.md` reserves `logicn-kubernetes-enterprise`,
-`logicn-security-policy-packs-enterprise` and `logicn-deploy-enterprise` for
+`docs/ENTERPRISE.md` reserves `galerina-kubernetes-enterprise`,
+`galerina-security-policy-packs-enterprise` and `galerina-deploy-enterprise` for
 advanced production hardening, policy packs, multi-environment overlays and
 managed deployment control. This document records product direction only; it
 does not create a Kubernetes package.
@@ -26,19 +26,19 @@ does not create a Kubernetes package.
 ## Core Rule
 
 ```text
-LogicN does not trust Kubernetes YAML written by hand.
-LogicN generates secure YAML from policy.
-LogicN validates the generated YAML.
-LogicN blocks unsafe deployment.
+Galerina does not trust Kubernetes YAML written by hand.
+Galerina generates secure YAML from policy.
+Galerina validates the generated YAML.
+Galerina blocks unsafe deployment.
 Kubernetes enforces the runtime state.
-LogicN verifies the rollout after deployment.
+Galerina verifies the rollout after deployment.
 ```
 
 The broader deployment model is:
 
 ```text
-LogicN describes the app deployment requirements once.
-LogicN translates them to the selected deployment target.
+Galerina describes the app deployment requirements once.
+Galerina translates them to the selected deployment target.
 ```
 
 Possible targets:
@@ -59,10 +59,10 @@ bare metal
 
 ## Deployment Intent
 
-Developers should not start with raw Kubernetes YAML. LogicN should let the app
+Developers should not start with raw Kubernetes YAML. Galerina should let the app
 declare deployment intent:
 
-```LogicN
+```Galerina
 deploy_profile production {
   target kubernetes
 
@@ -125,12 +125,12 @@ deploy_profile production {
 }
 ```
 
-This is design-direction syntax. It must not be treated as frozen LogicN syntax
+This is design-direction syntax. It must not be treated as frozen Galerina syntax
 until the language docs and compiler agree.
 
 ## Generated Kubernetes Objects
 
-For Kubernetes, LogicN may generate:
+For Kubernetes, Galerina may generate:
 
 ```text
 Deployment
@@ -167,14 +167,14 @@ k8s/
 `-- deploy-report.json
 ```
 
-Generated files must be inspectable. LogicN should show which policy caused each
+Generated files must be inspectable. Galerina should show which policy caused each
 important manifest setting.
 
 ## Generated Deployment Shape
 
-LogicN security policy:
+Galerina security policy:
 
-```LogicN
+```Galerina
 security {
   run_as_non_root true
   readonly_root_filesystem true
@@ -241,14 +241,14 @@ spec:
 
 Kubernetes security contexts cover Pod and container access-control settings
 such as non-root execution, capabilities, seccomp, privilege escalation and
-read-only root filesystems. LogicN should generate these from explicit policy
+read-only root filesystems. Galerina should generate these from explicit policy
 instead of relying on defaults.
 
 ## Health, Readiness And Startup
 
-LogicN should generate Kubernetes probes from app declarations:
+Galerina should generate Kubernetes probes from app declarations:
 
-```LogicN
+```Galerina
 health {
   live "/health"
   ready "/ready"
@@ -266,10 +266,10 @@ health {
 Kubernetes liveness, readiness and startup probes serve different purposes:
 startup probes protect slow-starting containers, liveness probes can restart
 unhealthy containers, and readiness probes control whether traffic should be
-sent to a Pod. LogicN should map these carefully and avoid treating "container
+sent to a Pod. Galerina should map these carefully and avoid treating "container
 started" as "deployment succeeded".
 
-LogicN should verify:
+Galerina should verify:
 
 ```text
 container started
@@ -283,7 +283,7 @@ traffic only enabled after readiness passed
 
 ## Secrets
 
-LogicN must be stricter than basic Kubernetes secret usage.
+Galerina must be stricter than basic Kubernetes secret usage.
 
 Never generate this:
 
@@ -306,7 +306,7 @@ env:
 
 Production model:
 
-```LogicN
+```Galerina
 secrets {
   mode external_secret_store
 
@@ -323,7 +323,7 @@ secrets {
 }
 ```
 
-Kubernetes Secrets still require careful cluster configuration. LogicN should
+Kubernetes Secrets still require careful cluster configuration. Galerina should
 warn when production deployments depend on Kubernetes Secrets without evidence
 of encryption at rest, least-privilege RBAC and restricted container access.
 
@@ -332,16 +332,16 @@ Example warning:
 ```json
 {
   "severity": "warning",
-  "code": "LOGICN-K8S-SECRET-002",
+  "code": "GALERINA-K8S-SECRET-002",
   "message": "Kubernetes Secrets require encryption at rest and least-privilege RBAC for production."
 }
 ```
 
 ## NetworkPolicy
 
-LogicN network policy:
+Galerina network policy:
 
-```LogicN
+```Galerina
 network {
   inbound allow [8080]
 
@@ -371,11 +371,11 @@ unless explicitly unlocked.
 
 ## RBAC And ServiceAccounts
 
-LogicN should not let every app run with broad Kubernetes permissions.
+Galerina should not let every app run with broad Kubernetes permissions.
 
 Example:
 
-```LogicN
+```Galerina
 kubernetes {
   service_account orders_api {
     permissions [
@@ -402,7 +402,7 @@ metadata:
   name: orders-api
 ```
 
-LogicN should generate Role and RoleBinding only when needed and should block
+Galerina should generate Role and RoleBinding only when needed and should block
 dangerous defaults:
 
 ```text
@@ -418,7 +418,7 @@ Kubernetes policy area.
 
 ## Admission And Policy Enforcement
 
-For high-security deployments, LogicN can generate policy checks that Kubernetes
+For high-security deployments, Galerina can generate policy checks that Kubernetes
 or an admission-policy system enforces before workloads are admitted. Kubernetes
 admission controllers intercept API server requests after authentication and
 authorization but before persistence, and can validate, mutate or reject
@@ -442,7 +442,7 @@ explicitly unlocked.
 
 ## GitOps
 
-LogicN should support GitOps-style output for Kubernetes:
+Galerina should support GitOps-style output for Kubernetes:
 
 ```text
 k8s/generated/
@@ -453,7 +453,7 @@ k8s/generated/
 `-- reports/
 ```
 
-LogicN's job:
+Galerina's job:
 
 ```text
 generate manifests
@@ -481,21 +481,21 @@ areas unless explicitly unlocked.
 Target generation should use the generic deployment command shape:
 
 ```bash
-logicn generate deploy --target kubernetes
-logicn generate deploy --target docker
-logicn generate deploy --target linux-vps
+galerina generate deploy --target kubernetes
+galerina generate deploy --target docker
+galerina generate deploy --target linux-vps
 ```
 
 A Kubernetes-specific check may be added later:
 
 ```bash
-logicn k8s check --profile production
+galerina k8s check --profile production
 ```
 
 Example output:
 
 ```text
-LogicN Kubernetes Deployment Check
+Galerina Kubernetes Deployment Check
 
 Target: kubernetes
 Image: registry.example.com/orders-api:abc123

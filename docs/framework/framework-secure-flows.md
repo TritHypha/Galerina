@@ -9,11 +9,11 @@ Secure flows define checked application execution boundaries.
 A secure flow is a typed function boundary with explicit return type, error
 model and effects.
 
-Secure flows are the main encapsulation boundary for LogicN execution.
+Secure flows are the main encapsulation boundary for Galerina execution.
 
 ## Syntax Example
 
-```logicn
+```galerina
 secure flow createUser(request: CreateUserRequest)
   -> Result<UserResponse, ApiError>
 effects [database.write] {

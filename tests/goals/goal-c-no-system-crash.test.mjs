@@ -5,12 +5,12 @@
  * individual workflow step terminates ONLY that instance, leaving the DSS
  * supervisor and all other DWI instances running.
  *
- * Reference: docs/Knowledge-Bases/logicn-engineering-goals.md Goal C
+ * Reference: docs/Knowledge-Bases/galerina-engineering-goals.md Goal C
  *
  * Acceptance criterion (three concurrent DWI instances):
  *   - Instance A: well-formed flow → completes successfully
- *   - Instance B: infinite loop → fuel exhausted → LLN-RESOURCE-001 → terminated
- *   - Instance C: path traversal → capability violation → LLN-CAP-003 → terminated
+ *   - Instance B: infinite loop → fuel exhausted → SPORE-RESOURCE-001 → terminated
+ *   - Instance C: path traversal → capability violation → SPORE-CAP-003 → terminated
  *   - DSS supervisor process survives all three
  *   - V_DPM updated for Instance C violation (bit cleared for violated capability)
  *
@@ -40,13 +40,13 @@ describe("T-008: Goal C — Structural Prevention of System-Wide Crashes", () =>
     //
     // 4. Verify:
     //    a. Instance A: retVal == { __tag: "int", value: 5050 } ✓
-    //    b. Instance B: terminated with LLN-RESOURCE-001 (FuelExhaustionFault) ✓
-    //    c. Instance C: terminated with LLN-CAP-003 (path traversal blocked) ✓
+    //    b. Instance B: terminated with SPORE-RESOURCE-001 (FuelExhaustionFault) ✓
+    //    c. Instance C: terminated with SPORE-CAP-003 (path traversal blocked) ✓
     //    d. DSS supervisor process: still running, accepting new isolates ✓
     //    e. V_DPM: network/storage bit cleared for Instance C violation ✓
     //    f. Instance A result unaffected by B and C failures ✓
     //
-    // Reference: logicn-engineering-goals.md Goal C acceptance test T-008
+    // Reference: galerina-engineering-goals.md Goal C acceptance test T-008
     // Fault isolation: each DWI has 4MB sealed linear memory + hardware guard pages
     // Fuel injection: wasmtime::Store::add_fuel limits infinite loops
 

@@ -1,0 +1,28 @@
+/// example: 414-target-no-fallback-invalid
+/// test_status: stable
+/// level: 8
+/// concept: omitting the fallback clause from a non-cpu compute target is an error
+/// expected_diagnostics: SPORE-TARGET-001
+/// ai_rule: Every compute target other than cpu requires an explicit fallback clause.
+
+guarded flow runNoFallback(input: Tensor<Float32, [1, 512]>) -> RunNoFallbackResult
+
+contract {
+  // Result alias — missing fallback on npu target triggers SPORE-TARGET-001
+  types {
+    type RunNoFallbackResult = Result<Tensor<Float32, [1, 128]>, AiError>
+  }
+
+  intent {
+    "Demonstrate missing fallback clause on non-cpu compute target — compile error SPORE-TARGET-001."
+  }
+
+  effects {
+    ai.inference
+  }
+}
+{
+  // SPORE-TARGET-001: compute target npu requires a fallback clause
+  compute target npu { }
+  return Model.forward(input)?
+}

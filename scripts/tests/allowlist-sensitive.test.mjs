@@ -62,7 +62,7 @@ test("classify: process / node:process → host-introspection (env exfil, dlopen
 
 test("classify: benign builtins / workspace deps stay benign (no false positives)", () => {
   for (const benign of ["node:path", "path", "node:crypto", "crypto", "node:url", "node:util",
-    "node:events", "node:stream", "node:buffer", "@logicn/tower-citizen", "lodash"]) {
+    "node:events", "node:stream", "node:buffer", "@galerina/tower-citizen", "lodash"]) {
     assert.equal(classify(benign), null, `${benign} must not be flagged sensitive`);
   }
 });
@@ -110,10 +110,10 @@ function makePkgTree() {
     const dir = join(root, pkg, ".graph");
     mkdirSync(dir, { recursive: true });
     writeFileSync(join(dir, "boundary-policy.json"),
-      JSON.stringify({ packageName: `@logicn/${pkg}`, allowedExternal }));
+      JSON.stringify({ packageName: `@galerina/${pkg}`, allowedExternal }));
   };
-  writePolicy("bare-spawn", ["@logicn/x", "child_process", "node:module", "process"]); // 3 sensitive
-  writePolicy("benign", ["@logicn/x", "node:path", "node:crypto"]);                     // 0 sensitive
+  writePolicy("bare-spawn", ["@galerina/x", "child_process", "node:module", "process"]); // 3 sensitive
+  writePolicy("benign", ["@galerina/x", "node:path", "node:crypto"]);                     // 0 sensitive
   mkdirSync(join(root, "no-policy"), { recursive: true });                              // counted "missing"
   return root;
 }

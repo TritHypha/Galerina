@@ -1,51 +1,51 @@
 #!/usr/bin/env bash
-# LogicN Linux Deployment Script
-# Usage: ./scripts/deploy-linux.sh <app.lln> [--port <N>]
+# Galerina Linux Deployment Script
+# Usage: ./scripts/deploy-linux.sh <app.spore> [--port <N>]
 #
-# Builds .lln -> .wasm, verifies governance manifest, runs a
+# Builds .spore -> .wasm, verifies governance manifest, runs a
 # health-check probe, then prints the commands needed to start
 # the governed runtime under Wasmtime (available in Phase 9+).
 #
 # Requires:
-#   - Node.js >= 18  (logicn CLI runs on the Stage A interpreter today)
+#   - Node.js >= 18  (galerina CLI runs on the Stage A interpreter today)
 #   - wasmtime       (optional — used at runtime when DRCM Phase 9 lands)
 #
 # Examples:
-#   ./scripts/deploy-linux.sh examples/auth-service/createSession.lln
-#   ./scripts/deploy-linux.sh examples/auth-service/createSession.lln --port 9000
+#   ./scripts/deploy-linux.sh examples/auth-service/createSession.spore
+#   ./scripts/deploy-linux.sh examples/auth-service/createSession.spore --port 9000
 
 set -euo pipefail
 
 # ── args ──────────────────────────────────────────────────────────────────────
-LLN_FILE="${1:-examples/auth-service/createSession.lln}"
+SPORE_FILE="${1:-examples/auth-service/createSession.spore}"
 PORT="8080"
 if [[ "${2:-}" == "--port" && -n "${3:-}" ]]; then
   PORT="$3"
 fi
 
 BUILD_DIR="build"
-BASE_NAME="$(basename "${LLN_FILE%.lln}")"
+BASE_NAME="$(basename "${SPORE_FILE%.spore}")"
 WASM_FILE="${BUILD_DIR}/${BASE_NAME}.wasm"
 MANIFEST_FILE="${BUILD_DIR}/${BASE_NAME}.lmanifest"
 MANIFEST_JSON="${BUILD_DIR}/${BASE_NAME}.lmanifest.json"
-HEALTH_LLN="examples/deployment/health-check.lln"
+HEALTH_LLN="examples/deployment/health-check.spore"
 
-echo "LogicN Governed Runtime -- Deployment"
-echo "   File:    ${LLN_FILE}"
+echo "Galerina Governed Runtime -- Deployment"
+echo "   File:    ${SPORE_FILE}"
 echo "   Port:    ${PORT}"
 echo ""
 
 # ── step 1: governance check ─────────────────────────────────────────────────
 echo "Checking governance..."
-if ! node logicn.mjs check "${LLN_FILE}" 2>&1; then
-  echo "Governance check failed: ${LLN_FILE}"
+if ! node galerina.mjs check "${SPORE_FILE}" 2>&1; then
+  echo "Governance check failed: ${SPORE_FILE}"
   exit 1
 fi
 echo ""
 
 # ── step 2: build WASM ───────────────────────────────────────────────────────
 echo "Building .wasm..."
-node logicn.mjs build "${LLN_FILE}"
+node galerina.mjs build "${SPORE_FILE}"
 echo ""
 
 if [ ! -f "${WASM_FILE}" ]; then
@@ -56,7 +56,7 @@ echo "Built: ${WASM_FILE}"
 
 # ── step 3: verify manifest ───────────────────────────────────────────────────
 echo "Verifying governance manifest..."
-if node logicn.mjs verify "${LLN_FILE}" 2>&1; then
+if node galerina.mjs verify "${SPORE_FILE}" 2>&1; then
   echo "Manifest verified"
 else
   echo "Manifest verification returned non-zero -- review ${MANIFEST_JSON}"
@@ -78,7 +78,7 @@ fi
 echo ""
 echo "Running health check flow..."
 if [ -f "${HEALTH_LLN}" ]; then
-  if node logicn.mjs check "${HEALTH_LLN}" 2>&1 | grep -q "0 errors"; then
+  if node galerina.mjs check "${HEALTH_LLN}" 2>&1 | grep -q "0 errors"; then
     echo "Health check flow: ACCEPT (0 errors)"
   else
     echo "Health check flow: governance warning -- review ${HEALTH_LLN}"
@@ -101,7 +101,7 @@ echo "To run with Wasmtime (available from Phase 9 / DRCM DSS.wasm):"
 echo "   wasmtime --invoke main ${WASM_FILE}"
 echo ""
 echo "To check Tower logs:"
-echo "   node logicn.mjs tower-log list"
-echo "   node logicn.mjs tower-log audit-log"
+echo "   node galerina.mjs tower-log list"
+echo "   node galerina.mjs tower-log audit-log"
 echo ""
 echo "Stage note: Stage A (Phase 5-7 DRCM) -- Stage B + DSS.wasm supervision in Phase 9"

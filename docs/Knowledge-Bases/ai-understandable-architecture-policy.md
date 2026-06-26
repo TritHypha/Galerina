@@ -2,7 +2,7 @@
 
 ## Purpose
 
-LogicN architecture must be documented so an AI can locate, explain, test and
+Galerina architecture must be documented so an AI can locate, explain, test and
 audit each concept without guessing.
 
 The goal is:
@@ -24,7 +24,7 @@ links.
 
 ## Knowledge Map Model
 
-LogicN should maintain a navigable architecture map that connects:
+Galerina should maintain a navigable architecture map that connects:
 
 - concepts
 - definitions
@@ -57,7 +57,7 @@ ownership, index rules and report generation.
 
 ## Machine-Readable Concept Indexes
 
-LogicN should support machine-readable indexes so tools do not infer concept
+Galerina should support machine-readable indexes so tools do not infer concept
 locations.
 
 Example shape:
@@ -107,7 +107,7 @@ Component metadata should be stable enough for AI tools to answer:
 
 ## AI-Friendly Documentation Rules
 
-LogicN docs should follow these rules:
+Galerina docs should follow these rules:
 
 1. Use stable names.
 2. Keep one core concept per concept file.
@@ -148,7 +148,7 @@ unredacted production payloads.
 ## Final Rule
 
 ```text
-LogicN architecture must be explicitly indexed, source-linked and
+Galerina architecture must be explicitly indexed, source-linked and
 machine-readable enough that AI tools can explain it without inventing missing
 structure.
 ```

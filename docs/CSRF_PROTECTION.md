@@ -1,18 +1,18 @@
 # CSRF Protection
 
-LogicN should make CSRF protection a default route security rule in the
+Galerina should make CSRF protection a default route security rule in the
 language, compiler checks and Secure App Kernel, not a manual step every
 developer has to remember.
 
 CSRF matters because browsers can automatically attach cookies to requests. A
 malicious site can try to make an authenticated browser send a state-changing
-request to a trusted site. LogicN should treat this as a route-intent problem:
+request to a trusted site. Galerina should treat this as a route-intent problem:
 
 ```text
 Any route that changes state must prove user intent.
 ```
 
-LogicN should follow current OWASP guidance: state-changing requests should use
+Galerina should follow current OWASP guidance: state-changing requests should use
 CSRF protections such as synchronizer tokens for stateful applications, signed
 double-submit cookies for stateless applications, custom request headers for
 API-driven sites, Fetch Metadata checks, SameSite cookie policy, Origin/Referer
@@ -49,7 +49,7 @@ route-level security report
 
 Example policy direction:
 
-```LogicN
+```Galerina
 security csrf {
   enabled true
 
@@ -86,14 +86,14 @@ security csrf {
 }
 ```
 
-This is design-direction syntax. It must not be treated as frozen LogicN syntax
+This is design-direction syntax. It must not be treated as frozen Galerina syntax
 until the language docs and compiler agree.
 
 ## Route Policy
 
 Example route:
 
-```LogicN
+```Galerina
 api AccountApi {
   POST "/account/email" {
     request ChangeEmailRequest
@@ -110,7 +110,7 @@ api AccountApi {
 Compiler or route-check failure:
 
 ```text
-LogicN_SECURITY_ERROR:
+Galerina_SECURITY_ERROR:
 Route POST /account/email changes user state but has no CSRF protection.
 
 Fix:
@@ -120,9 +120,9 @@ Fix:
 
 ## GET Must Not Change State
 
-LogicN should block this:
+Galerina should block this:
 
-```LogicN
+```Galerina
 GET "/delete-account" {
   handler deleteAccount
 }
@@ -131,7 +131,7 @@ GET "/delete-account" {
 Expected diagnostic:
 
 ```text
-LogicN_ROUTE_ERROR:
+Galerina_ROUTE_ERROR:
 GET route cannot call a state-changing handler.
 
 Route:
@@ -155,7 +155,7 @@ especially session cookies.
 
 Cookie-authenticated browser route:
 
-```LogicN
+```Galerina
 auth session_cookie {
   csrf required
 }
@@ -163,7 +163,7 @@ auth session_cookie {
 
 Pure API route using explicit authorization headers:
 
-```LogicN
+```Galerina
 auth bearer_token {
   csrf not_required
   require_header "Authorization"
@@ -193,7 +193,7 @@ Secure App Kernel request flow:
 
 ```text
 1. Request arrives.
-2. LogicN checks HTTP method.
+2. Galerina checks HTTP method.
 3. If method is GET/HEAD/OPTIONS, allow only read-safe behaviour.
 4. If method is POST/PUT/PATCH/DELETE, mark as state-changing.
 5. Check Fetch Metadata headers.
@@ -208,7 +208,7 @@ Secure App Kernel request flow:
 
 ## Reports
 
-LogicN should generate a CSRF section in the security report:
+Galerina should generate a CSRF section in the security report:
 
 ```json
 {
@@ -235,7 +235,7 @@ authorization headers.
 Financial, admin and account-control routes should require more than a CSRF
 token:
 
-```LogicN
+```Galerina
 api TradingApi {
   POST "/trade/buy" {
     auth required
@@ -271,22 +271,22 @@ operations.
 CSRF policy spans several existing packages:
 
 ```text
-logicn-core-network
+galerina-core-network
   secure cookie, Fetch Metadata, Origin/Referer and network route policy
 
-logicn-framework-app-kernel
+galerina-framework-app-kernel
   route-level runtime enforcement before handlers run
 
-logicn-framework-api-server
+galerina-framework-api-server
   HTTP header/cookie extraction and transport-level request normalization
 
-logicn-core-security
+galerina-core-security
   token policy, redaction, route security decisions and reports
 
-logicn-core-compiler
+galerina-core-compiler
   route/effect checks for state-changing methods and missing CSRF policy
 
-logicn-core-reports
+galerina-core-reports
   shared security report contracts if report schemas become package-owned
 ```
 
@@ -306,7 +306,7 @@ a reason to allow state-changing GET routes
 a reason to log token values
 ```
 
-CSRF is one layer in LogicN's route security model.
+CSRF is one layer in Galerina's route security model.
 
 ## References
 

@@ -2,7 +2,7 @@
 
 ## Definition
 
-The **Logic Architecture Policy** defines what belongs in each layer of LogicN and prevents the language from becoming messy as syntax, runtime, and security rules grow.
+The **Logic Architecture Policy** defines what belongs in each layer of Galerina and prevents the language from becoming messy as syntax, runtime, and security rules grow.
 
 ```text
 Syntax expresses intent.
@@ -64,7 +64,7 @@ context is automatic unless authority-sensitive
 
 A flow contains business intent, not repeated security plumbing.
 
-```logicn
+```galerina
 return Ok(Profile.response { ... })
 ```
 
@@ -72,7 +72,7 @@ The runtime still checks: response type, view rules, owner rules, permission rul
 
 ### 6. Shared State Must Use Vaults
 
-```logicn
+```galerina
 SessionVault.write(
   key: session_uuid,
   value: { ... }
@@ -131,7 +131,7 @@ Good design makes edge cases disappear rather than handling them specially.
 Good taste = design the model so edge cases disappear.
 ```
 
-For LogicN:
+For Galerina:
 ```text
 boundary input -> unsafe unvalidated
 validated input -> safe validated
@@ -144,7 +144,7 @@ runtime -> follows simple manifests
 
 Avoid separate handling for API, webhook, CLI, and queue input. Model them all as:
 
-```logicn
+```galerina
 Boundary<T> -> T unsafe unvalidated
 ```
 
@@ -162,7 +162,7 @@ flow -> effects -> runtime authority plan -> allow/deny
 
 Prefer early exits and pattern matching:
 
-```logicn
+```galerina
 match validate.email(rawEmail) {
   Err(error) => return Api.badRequest(error)
   Ok(email)  => save(email)
@@ -173,7 +173,7 @@ match validate.email(rawEmail) {
 
 Instead of one large flow that does everything:
 
-```logicn
+```galerina
 // Avoid: one flow doing validation, pricing, payment, stock, email, audit
 secure flow handleCheckout(...) { ... }
 ```
@@ -220,4 +220,4 @@ Brand<String, "CustomerId">     — removes ID mixing errors
 Design the type/runtime model so the boring path is also the safe path.
 ```
 
-This is the "good taste" version of LogicN architecture.
+This is the "good taste" version of Galerina architecture.

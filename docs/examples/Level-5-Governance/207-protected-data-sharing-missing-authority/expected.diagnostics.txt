@@ -1,4 +1,4 @@
 none
-// LLN-GOV-003 is the target diagnostic for this example.
+// SPORE-GOV-003 is the target diagnostic for this example.
 // Protected-data-sent-externally-without-authority detection is tracked under Phase 8B.
 // The example is stable: no unsuppressed errors are produced by the current pipeline.

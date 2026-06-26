@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "lln.fuse.v1",
+  "schemaVersion": "spore.fuse.v1",
   "name": "my-custom-api-rest",
   "version": "0.1.0",
   "kind": "api-protocol",

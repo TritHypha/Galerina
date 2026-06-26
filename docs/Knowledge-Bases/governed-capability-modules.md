@@ -23,7 +23,7 @@ hook into runtime
 modify runtime behaviour
 ```
 
-LogicN must prevent modules from self-granting authority. A module provides capability — the runtime grants authority through permissions.
+Galerina must prevent modules from self-granting authority. A module provides capability — the runtime grants authority through permissions.
 
 ## Examples of Capability Modules
 
@@ -61,7 +61,7 @@ Authority Control
 
 ## Module Declaration Example
 
-```logicn
+```galerina
 module EmailModule {
   capability email.send
 
@@ -77,7 +77,7 @@ module EmailModule {
 
 Permission grants use of the module capability:
 
-```logicn
+```galerina
 permission send_welcome_email {
   code {
     allow email.send
@@ -89,7 +89,7 @@ permission send_welcome_email {
 
 Flow uses the permission and calls the module:
 
-```logicn
+```galerina
 flow sendWelcomeEmail(
   request: WelcomeEmail.send
 ) -> Result<WelcomeEmail.response, ApiError>
@@ -128,7 +128,7 @@ Capability still requires permission.
 ```
 
 ```text
-LogicN modules provide capability.
+Galerina modules provide capability.
 Permissions grant use.
 Runtime governs execution.
 ```

@@ -1,9 +1,9 @@
-<!-- ABSORBED R&D SOURCE — verbatim mirror. LogicN is the main library; the R&D repo is upstream/authoring.
-     Source: LogicN-R-AND-D/tmf/research/photonic-lane-E-qkd-confidentiality.md (CORRECTED task-0004, 10 edits)  ·  Pinned: R&D rnd-session 2026-06-17
-     Integrated LogicN view: logicn-quantum-resilience-roadmap.md  ·  Catalog: logicn-rd-absorption-catalog.md
+<!-- ABSORBED R&D SOURCE — verbatim mirror. Galerina is the main library; the R&D repo is upstream/authoring.
+     Source: Galerina-R-AND-D/tmf/research/photonic-lane-E-qkd-confidentiality.md (CORRECTED task-0004, 10 edits)  ·  Pinned: R&D rnd-session 2026-06-17
+     Integrated Galerina view: galerina-quantum-resilience-roadmap.md  ·  Catalog: galerina-rd-absorption-catalog.md
      Rule: edit the upstream source then re-vendor; do not fork this copy (feedback-auto-import-rd-docs). -->
 
-> **Absorbed R&D source (verbatim).** See `logicn-rd-absorption-catalog.md`. Internal links point at the upstream R&D tree.
+> **Absorbed R&D source (verbatim).** See `galerina-rd-absorption-catalog.md`. Internal links point at the upstream R&D tree.
 
 ---
 
@@ -17,7 +17,7 @@
 > (`unknown → deny`); honest-core vs aspirational kept strictly separate. **crypto-on-core:** the cipher/AEAD/hash
 > stay bit-exact digital; QKD lives *around* the gate, supplying a key, never computing the cipher.
 > **Scope:** **track + define the governed interface; do NOT build the hardware** (mirrors Lane B). Prompted by
-> the owner's implementation brief `LogicN/notes/36-qtcripto` (which this lane answers, incl. its deployment Q).
+> the owner's implementation brief `Galerina/notes/36-qtcripto` (which this lane answers, incl. its deployment Q).
 
 ---
 
@@ -31,7 +31,7 @@ for bulk data), **special hardware** (single-photon optics, often cryogenic SNSP
 breaks end-to-end ITS across networks, and — most decisively — **QKD does not authenticate**, so it *still* requires
 a PQC (or pre-shared-key) signature to stop a man-in-the-middle. The security agencies (NSA, UK NCSC, German BSI,
 French ANSSI) therefore **recommend PQC over QKD** for general use. **The honest verdict: combine, never substitute.**
-LogicN's role is to **define the governed hybrid-KEM interface** — `K_final = KDF(K_pqc ‖ K_qkd)`, per **RFC 9370**
+Galerina's role is to **define the governed hybrid-KEM interface** — `K_final = KDF(K_pqc ‖ K_qkd)`, per **RFC 9370**
 / **ETSI TS 103 744** — so a QKD-equipped *link* earns an **additional, independent, physics-based confidentiality
 lock on top of PQC**, point-to-point, fail-closed; and to **track the field**, not build the lasers.
 
@@ -93,7 +93,7 @@ range, collapsing to ~0.003 bit/s at 1,000 km.** This **bounds the use**:
 
 ---
 
-## 4. LogicN's role — the governed hybrid-KEM interface (define, do **not** build)
+## 4. Galerina's role — the governed hybrid-KEM interface (define, do **not** build)
 QKD slots in **only** as an *additional* key-establishment input to the existing KEM-DEM
 ([`../spec/tmf-encryption-v0.md`](../spec/tmf-encryption-v0.md) §2/§3), never a replacement:
 
@@ -117,7 +117,7 @@ K_final = KDF( K_pqc ‖ K_qkd )           # secure if EITHER input key is secre
 | **`kem_profile` slot** | a **reserved future** value "hybrid + QKD" in `tmf-encryption-v0` §2.1 — **not allocated** until vetted QKD hardware + a key story exist. The QKD key is mixed into the `K_aead` schedule (§3) via the combiner above. |
 | **Hybrid posture** | QKD is **only ever an additional combiner input**, never a replacement — a QKD-only profile is **forbidden** (it would forfeit open-internet reach and still lack authentication). The PQC KEM stays mandatory. |
 | **Authentication** | the QKD classical channel is authenticated by the **existing #34 hybrid signer** (`signature-custody-v0` §2.1) — Lane E does **not** add a new authenticator; it consumes the one that ships. |
-| **Capability gate** | whether a link *has* a QKD key is a **capability** behind the LogicN governance boundary. A policy that **requires** the QKD lock resolves to **`unknown → deny`** when the link is unavailable (fail-closed) — it **MUST NOT** silently drop the QKD input and fall back to PQC-only without the policy's consent (mirrors Lane B §8.2). A policy that only requires PQC still seals normally; the QKD lock is then an un-asserted bonus. |
+| **Capability gate** | whether a link *has* a QKD key is a **capability** behind the Galerina governance boundary. A policy that **requires** the QKD lock resolves to **`unknown → deny`** when the link is unavailable (fail-closed) — it **MUST NOT** silently drop the QKD input and fall back to PQC-only without the policy's consent (mirrors Lane B §8.2). A policy that only requires PQC still seals normally; the QKD lock is then an un-asserted bonus. |
 | **Key never on the wire** | `K_qkd` is established **out-of-band** on the QKD plane and consumed **locally** (§5); it is never carried in the `.tmf` or over the internet. |
 
 ---
@@ -184,7 +184,7 @@ carry ~1–5% baseline QBER). The **~11% abort threshold is set by the security 
 | Combine via RFC 9370 / ETSI TS 103 744; secure if **either** half holds | **Grounded, cited** |
 | A photon *is* the cipher / OTP everything with QKD | **REJECTED** (crypto-on-core; rate reality) |
 | QKD replaces PQC | **REJECTED** (NSA/NCSC/BSI/ANSSI: combine, never substitute) |
-| Any LogicN QKD throughput / key-rate number | **THEORETICAL GAP — no hardware**; nothing synthesized |
+| Any Galerina QKD throughput / key-rate number | **THEORETICAL GAP — no hardware**; nothing synthesized |
 
 ## 8. What would move Lane E from track → build (acceptance, mirrors Lane B §8.3)
 1. a **vetted QKD system on a real point-to-point link** available to the parties (today: none in scope);

@@ -1,0 +1,44 @@
+{
+  "generatedAt": "2026-05-08T00:00:00.000Z",
+  "diagnostics": [
+    {
+      "code": "Galerina_SECURITY_SECRET_REDACTED",
+      "severity": "info",
+      "safeMessage": "Secret value was redacted.",
+      "redacted": true
+    },
+    {
+      "code": "Galerina_SECURITY_AUTHENTICATED_ENCRYPTION_REQUIRED",
+      "severity": "warning",
+      "safeMessage": "Authenticated encryption should be required for encryption policies.",
+      "path": "crypto.requireAuthenticatedEncryption",
+      "redacted": true
+    }
+  ],
+  "permissions": {
+    "grants": [
+      {
+        "action": "read",
+        "resource": "config:public",
+        "effect": "allow",
+        "reason": "Public config is safe to read."
+      }
+    ],
+    "defaultEffect": "deny"
+  },
+  "redactions": [
+    {
+      "name": "bearer-token",
+      "pattern": "\\bBearer\\s+[A-Za-z0-9._~+\\-/]+=*",
+      "flags": "gi",
+      "replacement": "Bearer SecureString(redacted)",
+      "classification": "token"
+    }
+  ],
+  "redactedSecrets": 1,
+  "blockedOperations": ["secret.print"],
+  "warnings": [
+    "Authenticated encryption should be required for encryption policies."
+  ],
+  "status": "warning"
+}

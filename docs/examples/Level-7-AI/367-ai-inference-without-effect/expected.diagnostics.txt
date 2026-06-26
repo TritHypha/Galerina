@@ -1,4 +1,4 @@
 none
-// LLN-EFFECT-001 is the target diagnostic for this example.
+// SPORE-EFFECT-001 is the target diagnostic for this example.
 // ai.inference effect enforcement is tracked for a future compiler wave.
 // The example is stable: no unsuppressed errors are produced by the current pipeline.

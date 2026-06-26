@@ -17,7 +17,7 @@ A QSA (Qualified Security Assessor) verifies this file without reading source co
 
 ```json
 {
-  "schemaVersion": "lln.manifest.v1",
+  "schemaVersion": "spore.manifest.v1",
   "sourceHash": "sha256:3f4a9c...",
   "derivedConstraints": [
     "CardholderData never_touches TelemetryLog",
@@ -63,7 +63,7 @@ A QSA (Qualified Security Assessor) verifies this file without reading source co
 ## How to produce it (Phase 3)
 
 ```
-logicn build --manifest payment-service.lln
+galerina build --manifest payment-service.spore
 # Outputs: build/payment-service.wasm
 #           build/payment-service.lmanifest
 ```
@@ -76,12 +76,12 @@ Before loading any DWI guest module, the DSS verifies:
 1. `SHA-256(payment-service.wasm)` == `manifest.sourceHash`
 2. ML-DSA-65 signature verifies with the compiler signing key
 
-If either check fails: `LLN-ID-001` — the module is rejected, never instantiated.
+If either check fails: `SPORE-ID-001` — the module is rejected, never instantiated.
 
 ---
 
 ## Reference
 
-- `logicn-governance-rules.md` — ID-001, ID-002, ID-003
-- `logicn-deterministic-runtime-containment.md` — Phase 3 roadmap
-- `logicn-engineering-goals.md` — Goal B (single-cycle bitmask depends on manifest)
+- `galerina-governance-rules.md` — ID-001, ID-002, ID-003
+- `galerina-deterministic-runtime-containment.md` — Phase 3 roadmap
+- `galerina-engineering-goals.md` — Goal B (single-cycle bitmask depends on manifest)

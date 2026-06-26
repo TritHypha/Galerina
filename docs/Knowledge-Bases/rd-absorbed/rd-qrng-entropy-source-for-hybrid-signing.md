@@ -1,9 +1,9 @@
-<!-- ABSORBED R&D SOURCE — verbatim mirror. LogicN is the main library; the R&D repo is upstream/authoring.
-     Source: LogicN-R-AND-D/tmf/research/photonic-lane-D-qrng.md  ·  Pinned: R&D fb68d06 (2026-06-16)
-     Integrated LogicN view: (this archive copy is the primary KB home)  ·  Catalog: logicn-rd-absorption-catalog.md
+<!-- ABSORBED R&D SOURCE — verbatim mirror. Galerina is the main library; the R&D repo is upstream/authoring.
+     Source: Galerina-R-AND-D/tmf/research/photonic-lane-D-qrng.md  ·  Pinned: R&D fb68d06 (2026-06-16)
+     Integrated Galerina view: (this archive copy is the primary KB home)  ·  Catalog: galerina-rd-absorption-catalog.md
      Rule: edit the upstream source then re-vendor; do not fork this copy (feedback-auto-import-rd-docs). -->
 
-> **Absorbed R&D source (verbatim).** This is the archived upstream document. See `logicn-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
+> **Absorbed R&D source (verbatim).** This is the archived upstream document. See `galerina-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
 
 ---
 # Photonic-era signing — Lane D: QRNG for hedged-signing randomness and key generation
@@ -58,7 +58,7 @@ Two facts to keep honest and separate:
   pseudorandom, or all-zeros. QRNG's only contribution at the signing entry point is *defence-in-depth
   side-channel/fault resistance*, not the unforgeability the signature already has from the lattice problem.
 
-> The signing input here is the 32-byte `integrity_root` (`.tmf`) or `.lmanifest` SHA-256 digest (LogicN
+> The signing input here is the 32-byte `integrity_root` (`.tmf`) or `.lmanifest` SHA-256 digest (Galerina
 > #34), signed with **pure ML-DSA** (`M` = the digest) under a per-surface domain-separation `ctx`
 > (`signature-custody-v0.md` §2.1). `rnd` enters *that* call; it is orthogonal to the digest and to `ctx`.
 
@@ -91,7 +91,7 @@ SP 800-90B governs the design and validation of the noise source itself. The pie
   **on-demand**. These detect a noise source that has silently degraded or failed — which for a QRNG is
   exactly the failure modes the literature flags (detector dead-time, afterpulsing, bias, drift,
   non-stationarity). A failing health test must take the source out of service: **fail-closed**, matching
-  LogicN's `unknown → deny`.
+  Galerina's `unknown → deny`.
 - **Optional conditioning** inside the entropy source. Validation evidence is published as an SP 800-90B
   document and certified under NIST's **Entropy Source Validation (ESV)** program.
 
@@ -146,12 +146,12 @@ already requires; it does not change the signer.
    is an integration question to be answered by a measured RBG2/RBG3 throughput test on named hardware if
    the capability is ever wired — it has **not** been benchmarked here. **THEORETICAL GAP — unbenchmarked.**
 
-### LogicN role
+### Galerina role
 An **entropy capability behind the governance boundary**: if/when a QRNG is integrated, it is a host-side
-SP 800-90 RBG invoked through the LogicN capability boundary (crypto and entropy cannot live in `.lln` —
-`logicn check` rejects even bitwise ops, per `signature-custody-v0.md` §7). The governance layer's job is
+SP 800-90 RBG invoked through the Galerina capability boundary (crypto and entropy cannot live in `.spore` —
+`galerina check` rejects even bitwise ops, per `signature-custody-v0.md` §7). The governance layer's job is
 the fail-closed posture: a failed SP 800-90B health test → entropy source unavailable → `unknown → deny`,
-identical to how a missing vetted verifier makes the reader reject every signed file. LogicN governs the
+identical to how a missing vetted verifier makes the reader reject every signed file. Galerina governs the
 *availability and admission* of the entropy capability; it does not generate or condition the bits itself.
 
 ---
@@ -201,7 +201,7 @@ identical to how a missing vetted verifier makes the reader reject every signed 
 ### Cross-references (built work)
 - [`../spec/signature-custody-v0.md`](../spec/signature-custody-v0.md) — the #34 hybrid Ed25519 + ML-DSA-65
   signature over a 32-byte digest that this lane's entropy feeds (KeyGen seed + hedged `rnd`); §2.1
-  pure-ML-DSA + per-surface `ctx`; §7 host-side crypto behind the LogicN boundary.
+  pure-ML-DSA + per-surface `ctx`; §7 host-side crypto behind the Galerina boundary.
 - [`../../ENCRYPTION-RND-FULL-BRIEF.md`](../../ENCRYPTION-RND-FULL-BRIEF.md) §3 (crypto-on-core — QRNG named
   as entropy outside the gate), §10 (two crypto paths; photonics never computes the cipher/hash).
 - Charter [`../../RESEARCH-PHASE-photonic-signing-and-trust-capsule.md`](../../RESEARCH-PHASE-photonic-signing-and-trust-capsule.md)

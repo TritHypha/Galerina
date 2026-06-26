@@ -7,7 +7,7 @@ Planned for: Stage B
 
 ## Definition
 
-LogicN supports event-driven execution but is not a purely event-driven system. It is a **governed execution runtime** that supports event-driven workloads safely.
+Galerina supports event-driven execution but is not a purely event-driven system. It is a **governed execution runtime** that supports event-driven workloads safely.
 
 ```text
 Events may trigger execution.
@@ -34,9 +34,9 @@ invisible compute cost
 runaway event loops
 ```
 
-These conflict with LogicN's security, auditability, governance, and AI-readable architecture goals.
+These conflict with Galerina's security, auditability, governance, and AI-readable architecture goals.
 
-## LogicN Execution Model
+## Galerina Execution Model
 
 Events are one of several input types. All inputs follow the same governed path:
 
@@ -54,7 +54,7 @@ Request/Event
  -> Audit Proof
 ```
 
-## What LogicN Supports
+## What Galerina Supports
 
 ```text
 asynchronous work
@@ -99,7 +99,7 @@ report generation
 
 All events must be typed, permissioned, budgeted, traceable, auditable, schedulable, and bounded:
 
-```logicn
+```galerina
 event ImageUploaded {
   input: Image.uploaded
 
@@ -156,7 +156,7 @@ Run events only when declared.
 ```
 
 ```text
-LogicN supports event-driven execution,
+Galerina supports event-driven execution,
 but all events must remain governed,
 permissioned, auditable and coordinated by the runtime.
 ```

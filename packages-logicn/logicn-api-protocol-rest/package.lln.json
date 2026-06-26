@@ -1,9 +1,0 @@
-{
-  "name": "logicn-api-protocol-rest",
-  "version": "0.1.0",
-  "kind": "api-protocol",
-  "provides": "rest",
-  "entry": "src/index.lln",
-  "seam": "protocol.inbound",
-  "capabilities": ["network.inbound"]
-}

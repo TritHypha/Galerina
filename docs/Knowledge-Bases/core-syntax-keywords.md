@@ -2,7 +2,7 @@
 
 ## Definition
 
-LogicN uses a small, deliberate keyword set for control flow and execution. This
+Galerina uses a small, deliberate keyword set for control flow and execution. This
 document records the canonical keyword decisions and what is intentionally
 excluded.
 
@@ -12,7 +12,7 @@ excluded.
 
 Primary executable unit with runtime authority.
 
-```logicn
+```galerina
 flow checkout(order: Order) -> Receipt
   uses vault.payments.write
 {
@@ -28,7 +28,7 @@ call backend services, spawn workers, be audited, cross trust boundaries.
 
 Pure helper function. Cannot cross trust boundaries.
 
-```logicn
+```galerina
 fn calculate_total(order: Order) -> Decimal {
   return order.items.sum(item -> item.price * item.qty)
 }
@@ -48,7 +48,7 @@ fn is always synchronous.
 
 Local variable declaration:
 
-```logicn
+```galerina
 let message: String = "hello"    // typed
 let total = calculate_total(order)  // inferred
 ```
@@ -57,7 +57,7 @@ let total = calculate_total(order)  // inferred
 
 Simple true/false decision:
 
-```logicn
+```galerina
 if user.is_active {
   allow()
 }
@@ -72,7 +72,7 @@ Use `if` for simple conditions only.
 
 Multi-branch logic and value matching. Replaces `switch`, `case`, and `elseif`:
 
-```logicn
+```galerina
 let message: String = match status {
   "paid"    => "Payment complete"
   "failed"  => "Payment failed"
@@ -83,7 +83,7 @@ let message: String = match status {
 
 Range matching:
 
-```logicn
+```galerina
 let grade = match score {
   >= 90 => "excellent"
   >= 70 => "good"
@@ -100,7 +100,7 @@ Fallback block after `if`. Appears after the closing `}`.
 
 Permission declaration. Only valid on `flow`, not `fn`:
 
-```logicn
+```galerina
 flow load_secret(user_id: Id) -> Secret
   uses vault.secrets.read
 {
@@ -112,19 +112,19 @@ flow load_secret(user_id: Id) -> Secret
 
 Iteration over collections. Preferred over `for`:
 
-```logicn
+```galerina
 each item in items {
   process(item)
 }
 ```
 
-`each` feels more LogicN-native. `for` is not used.
+`each` feels more Galerina-native. `for` is not used.
 
 ### `attempt`
 
 Recoverable operation with explicit error handling. Preferred over `try/catch`:
 
-```logicn
+```galerina
 let result = attempt charge_payment()
 else error {
   return PaymentFailed(error.message)
@@ -135,7 +135,7 @@ else error {
 
 Empty/absent value. Preferred over `null`:
 
-```logicn
+```galerina
 let user = find_user(id)
 else {
   none
@@ -146,7 +146,7 @@ else {
 
 Worker execution:
 
-```logicn
+```galerina
 let result = run worker image_resize(file)
 ```
 
@@ -154,7 +154,7 @@ let result = run worker image_resize(file)
 
 Start governed async work inside a `flow`:
 
-```logicn
+```galerina
 let user_task = task database.users.get(user_id)
 let stats_task = task database.analytics.get(user_id)
 ```
@@ -165,7 +165,7 @@ let stats_task = task database.analytics.get(user_id)
 
 Collect the result of a `task`. The flow does not return until all required waits complete:
 
-```logicn
+```galerina
 let user: safe User = wait user_task
 let stats: safe Stats = wait stats_task
 ```
@@ -205,7 +205,7 @@ wait   = collect async result (flow only)
 
 Current core types:
 
-```logicn
+```galerina
 String
 Int
 Decimal    // use for money and precise values

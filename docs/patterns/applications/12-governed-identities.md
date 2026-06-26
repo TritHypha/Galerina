@@ -1,4 +1,4 @@
-# LogicN Application Pattern 12 — Governed Identities
+# Galerina Application Pattern 12 — Governed Identities
 
 **When to use:** Any system that needs type-safe, governance-aware entity identifiers
 
@@ -13,7 +13,7 @@ A plain UUID is unique, but it conveys nothing about:
 - How long it should be retained
 - Whether it can be exported or logged
 
-```logicn
+```galerina
 fn getUser(id: String) -> User  // which kind of id? UserId? OrderId? SessionId?
 fn getOrder(id: String) -> Order
 getUser(orderId)  // compiles — silent logic error
@@ -27,7 +27,7 @@ Plain `String` identifiers allow functions to be called with the wrong kind of i
 
 The current implementation uses branded types to make identifiers nominally distinct:
 
-```logicn
+```galerina
 type UserId = Brand<String, "UserId">
 type PatientId = Brand<String, "PatientId">
 type OrderId = Brand<String, "OrderId">
@@ -36,7 +36,7 @@ type SessionId = Brand<String, "SessionId">
 
 Now the type system enforces correct usage:
 
-```logicn
+```galerina
 fn getUser(id: UserId) -> User
 fn getOrder(id: OrderId) -> Order
 
@@ -46,7 +46,7 @@ getUser(patientId)  // compile error: expected UserId, got PatientId
 
 Branded IDs are zero-cost at runtime — the brand exists only in the type checker. Values are created with an explicit constructor:
 
-```logicn
+```galerina
 let userId = UserId.from(rawId)
 let patientId = PatientId.from(rawId)
 ```
@@ -57,7 +57,7 @@ let patientId = PatientId.from(rawId)
 
 Phase 17 introduces the `identity` declaration, which attaches governance metadata to an ID type:
 
-```logicn
+```galerina
 identity UserId {
   domain "user"
   classification pii
@@ -93,7 +93,7 @@ The prefix (`usr_`, `pat_`) is derived from the `domain` declaration and is incl
 
 When an entity's identity is derived from its attributes (e.g. a tenant-scoped user), a deterministic ID is preferable to a random UUID:
 
-```logicn
+```galerina
 let userId = UserId.from(tenantId, email)
 // → sha256(tenantId.value + ":" + email.value)
 // → consistent across deployments and data migrations
@@ -112,7 +112,7 @@ The `from` method accepts any combination of typed values. The hash input is the
 
 A `protected UserId` cannot be exported from a governed flow that does not declare `user-identity.export` in its effects:
 
-```logicn
+```galerina
 guarded flow exportUserData(id: protected UserId)
 contract {
   effects { database.read }
@@ -128,7 +128,7 @@ This prevents accidental leakage of identity values through export flows that sh
 
 For identity types governed by an external authority (healthcare, financial regulation), IDs can carry a cryptographic attestation:
 
-```logicn
+```galerina
 identity PatientId signed by HealthcareAuthority {
   domain "patient"
   classification sensitive-pii
@@ -137,7 +137,7 @@ identity PatientId signed by HealthcareAuthority {
 
 A verifiable `PatientId` includes an Ed25519 signature from `HealthcareAuthority`. The runtime verifies the signature before accepting the ID in a governed flow. An unverified or forged ID is rejected at the boundary, not at application logic.
 
-```logicn
+```galerina
 let patientId = PatientId.verify(rawId, authorityPublicKey)?
 // returns protected PatientId or VerificationError
 ```
@@ -148,7 +148,7 @@ let patientId = PatientId.verify(rawId, authorityPublicKey)?
 
 The compiler optionally warns when a binding name ends in `Id` but the declared type is plain `String`:
 
-```logicn
+```galerina
 let userId: String = ...    // warning: consider typed identity UserId
 let patientId: String = ... // warning: consider typed identity PatientId
 ```
@@ -168,7 +168,7 @@ This catches cases where branded types were intended but not applied.
 
 `PatientId` is itself PII — it uniquely identifies a person in a healthcare context. The `identity` declaration makes this explicit:
 
-```logicn
+```galerina
 identity PatientId {
   classification sensitive-pii
   retention 10y

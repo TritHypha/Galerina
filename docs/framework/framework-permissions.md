@@ -11,7 +11,7 @@ move and what audit/report proof is required.
 
 ## Syntax Example
 
-```logicn
+```galerina
 permission user_email_update {
   actor require users.email.update
   actor require users.private.read
@@ -30,7 +30,7 @@ permission user_email_update {
 
 Use it from a flow:
 
-```logicn
+```galerina
 secure flow updateUserEmail(
   request: UpdateEmailRequest,
   ctx: RequestContext

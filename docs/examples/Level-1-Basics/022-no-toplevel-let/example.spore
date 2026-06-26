@@ -1,0 +1,22 @@
+﻿/// example: 022-no-toplevel-let
+/// level: 1
+/// concept: top-level let bindings are rejected
+/// expected_diagnostics: SPORE-SYNTAX-006
+/// test_status: stable
+/// ai_rule: All executable bindings belong inside flows. Top-level scope is for declarations only.
+
+// WRONG: ordinary let outside a flow
+let counter: Int = 0
+
+// RIGHT: binding belongs inside a flow
+pure flow getCount() -> Int
+
+contract {
+  intent {
+    "Return a count value, demonstrating that bindings belong inside flow bodies."
+  }
+}
+{
+  let counter: Int = 0
+  return counter
+}

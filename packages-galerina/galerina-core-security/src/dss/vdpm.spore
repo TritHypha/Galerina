@@ -1,0 +1,182 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// V_DPM — Dynamic Posture Matrix
+// DRCM Phase 5 — DSS.wasm Supervisor Foundation
+//
+// The 32-bit V_DPM register is the physical enforcement mechanism for capability
+// monotonicity in the Governed Tower. It lives exclusively in DSS.wasm's private
+// linear memory. Guest DWI isolates cannot read or write this address.
+//
+// BIT LAYOUT (v2 — with Topological Graph Engine extensions):
+//
+//  Bits  0-7   Capability bits     (8 capabilities)
+//  Bits  8-15  Topology bits       (4 topology + 4 reserved)
+//  Bits 16-19  Phase tracking      (which ExecutionDAG phase is active)
+//  Bits 20-29  Reserved            (future capability families)
+//  Bit  30     quarantine_engaged  (any DWI quarantined)
+//  Bit  31     emergency_mode      (any emergency {} fired)
+//
+// MONOTONICITY RULE: V_DPM bits can ONLY be CLEARED, never SET.
+// The one exception: bit_31 (emergency_mode) can be SET — it is a mode flag,
+// not a permission expansion. Setting bit_31 further restricts what the
+// emergency overlay allows, so it remains monotonically restrictive.
+//
+// CAPABILITY CHECK (O(1)):
+//   request_mask = capability_to_bitmask(requested_effect)
+//   result = Int.bitAnd(V_DPM, request_mask)
+//   if result == 0: fire unreachable trap -> SPORE-INV-000
+//
+// See: docs/Knowledge-Bases/galerina-governed-tower-specification.md §4
+// ═══════════════════════════════════════════════════════════════════════════════
+
+;; V_DPM register — 32-bit Dynamic Posture Matrix
+;; Each field maps to a V_DPM bit position. The compiler generates:
+;;   V_DPM.field_name          = (1 << bit_position)  — bitmask value
+;;   V_DPM.BIT_field_name      = bit_position          — raw bit index
+;;
+;; Usage: V_DPM.network_outbound = 1, V_DPM.dag_edge_valid = 256
+;; Replaces the verbose VDPM_BIT_*() pure flow pattern.
+
+bitfield V_DPM {
+  ;; Capability bits (0-7) — match CAPABILITY_BIT_POSITION in capability-types.ts
+  network_outbound:  0   ;; bit 0 — all outbound network calls
+  storage_write:     1   ;; bit 1 — filesystem writes
+  secret_access:     2   ;; bit 2 — vault/secrets access
+  audit_write:       3   ;; bit 3 — audit log writes (authoritative, signed)
+  database_write:    4   ;; bit 4 — database mutations
+  ai_inference:      5   ;; bit 5 — AI/LLM inference calls
+  shell_execute:     6   ;; bit 6 — shell execution (sovereign/defence tier only)
+  native_call:       7   ;; bit 7 — native FFI calls
+
+  ;; Topology bits (8-15) — DAG and MMCP validation
+  dag_edge_valid:    8   ;; bit 8 — current transition is DAG-authorized (check FIRST)
+  mmcp_read:         9   ;; bit 9 — isolate has active read-capable MMCP
+  mmcp_write:       10   ;; bit 10 — isolate has active write-capable MMCP
+  mmcp_execute:     11   ;; bit 11 — isolate has active execute-capable MMCP
+  mmcp_secret:      12   ;; bit 12 — isolate has a secret-access MMCP
+
+  ;; Containment / override bits (30-31)
+  quarantine_engaged: 30  ;; bit 30 — any DWI is quarantined
+  emergency_mode:     31  ;; bit 31 — emergency {} response active (monotonicity exception)
+}
+
+// ── V_DPM initial state ───────────────────────────────────────────────────────
+//
+// The full initial bitmask for a flow with ALL capabilities granted.
+// DSS.wasm sets V_DPM to this value at isolate instantiation,
+// then CLEARS bits as capabilities are consumed or denied.
+//
+// Bit layout: 0b00000000_00000000_00000000_11111111 (bits 0-7 all set)
+// Plus bit 8 (dag_edge_valid) set immediately after DAG validation.
+// Topology bits (9-12) are set by MMCP allocation in DSS.wasm.
+
+static VDPM_INITIAL_CAPABILITIES = 255
+
+// ── Capability → bitmask mapping ─────────────────────────────────────────────
+//
+// Maps an effect name string to its V_DPM bitmask.
+// Used by DSS.wasm to perform O(1) capability checks at runtime.
+//
+// This is the canonical mapping. The Stage A compiler reads these constants
+// to compute policyResolutionDag (CBOR Tag 416) at compile time.
+
+pure flow capability_to_bitmask(effect: String) -> Int
+contract {
+  intent { "Map a declared effect name to its V_DPM capability bit" }
+  effects {}
+}
+{
+  if effect == "network.outbound" { return V_DPM.network_outbound }
+  if effect == "storage.write" { return V_DPM.storage_write }
+  if effect == "secret.access" { return V_DPM.secret_access }
+  if effect == "audit.write" { return V_DPM.audit_write }
+  if effect == "database.write" { return V_DPM.database_write }
+  if effect == "ai.inference" { return V_DPM.ai_inference }
+  if effect == "shell.execute" { return V_DPM.shell_execute }
+  if effect == "native.call" { return V_DPM.native_call }
+  // Unknown effect -> 0 (no capability granted)
+  return 0
+}
+
+// ── V_DPM capability check ────────────────────────────────────────────────────
+//
+// The O(1) monotonic check used by DSS.wasm before every side-effecting operation.
+// Returns true if the effect is currently permitted under the active V_DPM state.
+//
+// Check order (topology-first, per specification):
+//   1. Bit 8 (dag_edge_valid) — is this a DAG-authorized transition?
+//   2. Int.bitAnd(V_DPM, capability_mask) — does the capability bit exist?
+//
+// In the full DSS.wasm supervisor, this check happens inline in the WASI import broker.
+
+pure flow vdpm_check(vdpm: Int, effect: String) -> Bool
+contract {
+  intent { "O(1) V_DPM capability check — topology-first, then capability bits" }
+  effects {}
+}
+{
+  let dag_bit = V_DPM.dag_edge_valid   ;; resolves to 256 at compile time
+  let dag_valid = Int.bitAnd(vdpm, dag_bit)
+  if dag_valid == 0 { return false }
+
+  let cap_mask = capability_to_bitmask(effect)
+  if cap_mask == 0 { return false }
+
+  let result = Int.bitAnd(vdpm, cap_mask)
+  return result != 0
+}
+
+// ── Emergency state machine transitions ──────────────────────────────────────
+//
+// These flows define the monotonic capability-clearing operations that fire when
+// an emergency {} policy block is triggered. Each clears the relevant bits from V_DPM.
+//
+// Called by DSS.wasm supervisor on signal: invariant_failure, capability_denied, etc.
+//
+// Monotonicity guarantee: Int.bitAnd with a keep_mask can ONLY clear bits.
+// keep_mask = MAX_UINT32 XOR clear_bits (complement computed as a constant).
+
+pure flow vdpm_apply_circuit_breaker(vdpm: Int) -> Int
+contract {
+  intent { "Circuit breaker: clear network, storage, and AI capability bits" }
+  effects {}
+}
+{
+  // Clear bits 0 (network.outbound = V_DPM.network_outbound = 1),
+  //            1 (storage.write    = V_DPM.storage_write    = 2),
+  //            5 (ai.inference     = V_DPM.ai_inference     = 32)
+  // clear_bits = 1 + 2 + 32 = 35
+  // keep_mask = 4294967295 - 35 = 4294967260 (MAX_UINT32 minus clear_bits)
+  let keep_mask = 4294967260
+  return Int.bitAnd(vdpm, keep_mask)
+}
+
+pure flow vdpm_enter_quarantine(vdpm: Int) -> Int
+contract {
+  intent { "Quarantine: set quarantine_engaged bit (bit 30) and clear all capability and topology bits" }
+  effects {}
+}
+{
+  // Clear all capability bits (0-7) and topology bits (8-12)
+  // clear_bits = 8191 (bits 0-12 all set = 0x1FFF)
+  // keep_mask = 4294967295 - 8191 = 4294959104
+  // 4294959104 = 0xFFFFE000 = ~(bits 0-12): clears capability + topology bits
+  // Sets bit 30 (quarantine_engaged = V_DPM.quarantine_engaged = 1073741824)
+  let keep_mask = 4294959104
+  let cleared = Int.bitAnd(vdpm, keep_mask)
+  return Int.bitOr(cleared, V_DPM.quarantine_engaged)
+}
+
+pure flow vdpm_enter_emergency(vdpm: Int) -> Int
+contract {
+  intent { "Emergency mode: clear all capability and topology bits, set emergency_mode flag (bit 31)" }
+  effects {}
+}
+{
+  // Clear all capability and topology bits (0-12)
+  // keep_mask = 4294967295 - 8191 = 4294959104
+  // 4294959104 = 0xFFFFE000 = ~(bits 0-12): clears capability + topology bits
+  // Set bit 31 (emergency_mode = V_DPM.emergency_mode = 2147483648)
+  let keep_mask = 4294959104
+  let cleared = Int.bitAnd(vdpm, keep_mask)
+  return Int.bitOr(cleared, V_DPM.emergency_mode)
+}

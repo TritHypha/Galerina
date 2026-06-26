@@ -2,10 +2,10 @@
 
 ## Definition
 
-The **LogicN Request Lifecycle** is the governed path every request, event, or external input follows from entry to output.
+The **Galerina Request Lifecycle** is the governed path every request, event, or external input follows from entry to output.
 
 ```text
-LogicN Request Lifecycle =
+Galerina Request Lifecycle =
 the governed path every request, event, or external input follows
 from entry to output, enforced by the Intake Guard and the Response Gate.
 ```
@@ -81,16 +81,16 @@ Nothing leaves the runtime until it is safe to expose.
 ```text
 Web/server adapter
  -> Intake Guard
- -> LogicN runtime (route match, validation, permission, flow execution)
+ -> Galerina runtime (route match, validation, permission, flow execution)
  -> Response Gate
  -> Web/server adapter
 ```
 
-Web adapters handle raw HTTP. LogicN governs what enters and what leaves.
+Web adapters handle raw HTTP. Galerina governs what enters and what leaves.
 
 ## Route Example
 
-```logicn
+```galerina
 route GET "/profile" {
   request Profile.get
   response Profile.response

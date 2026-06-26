@@ -1,6 +1,6 @@
 # Photonic PPU — emulator + cost-model + switchable-package (R&D 0053, absorbed 2026-06-20)
 
-> **Source:** `LogicN-R-AND-D/_session-bridge/done/0053-photonic-ppu-emulator-and-cost-model.done.md`
+> **Source:** `Galerina-R-AND-D/_session-bridge/done/0053-photonic-ppu-emulator-and-cost-model.done.md`
 > + proofs `scripts/rd-photonic-ppu-emulator-proof.mjs` (**D1, 18/18**) and
 > `scripts/rd-photonic-ppu-cost-model-proof.mjs` (**D2, 25/25, imports D1**) + spec
 > `photonic-tri-governance/photonic-ppu-switchable-package-spec.md`. **Hub-verified 2026-06-20:** both
@@ -41,11 +41,11 @@ remaining (owner-gated) production edits.
 
 ## GAP — the remaining production edits
 
-**✅ BUILT 2026-06-20 (hub, iteration 1) — `packages-logicn/logicn-ext-photonic-emulator`** (new package,
-depends ONLY on the neutral `@logicn/inference-bridge-contract` via the repo's relative-dist convention;
+**✅ BUILT 2026-06-20 (hub, iteration 1) — `packages-galerina/galerina-ext-photonic-emulator`** (new package,
+depends ONLY on the neutral `@galerina/inference-bridge-contract` via the repo's relative-dist convention;
 production/tower-citizen left byte-unchanged). Ports the proven D1+D2 maths into real TS + re-proves it
 against the package's own compiled code (25 node:test cases + `npm run prove` 10/10, exit 0):
-1. ✅ The **`logicn-ext-photonic-emulator`** package — `PhotonicEmulatorBridge implements InferenceBridge`
+1. ✅ The **`galerina-ext-photonic-emulator`** package — `PhotonicEmulatorBridge implements InferenceBridge`
    (the D1 emulator: `emulator.ts`), `determinismMode:"tolerance"` manifest that passes the shipped
    `validateManifestShape` only when fully pinned + witnessed. Honest: `executedNatively=false`,
    `deterministic=false` (so `assertDeterminism` correctly THROWS on it — proving it can't masquerade as
@@ -61,12 +61,12 @@ off-by-default `photonic?: PhotonicConfig` — for a ternary op `dispatchPlan` c
 `PhotonicOffloadPort` first, accepts a tolerance-verified hit WITHOUT `assertDeterminism` (the analog lane
 is tolerance-verified, not bit-exact), and falls through to the unchanged digital dispatch on `null`
 (ineligible/no-win/out-of-tolerance). NEVER consulted in certified mode. Adapter
-`createPhotonicRouterPort()` ships in `logicn-ext-photonic-emulator`. tower-citizen 194/194 (default path
+`createPhotonicRouterPort()` ships in `galerina-ext-photonic-emulator`. tower-citizen 194/194 (default path
 byte-unchanged), photonic 29/29.
 
 **STILL OPEN (next):** certified-mode photonic admission (an attested/signed tolerance backend so the
 photonic path runs under the certified profile too — today certified fail-closes to digital); the `-hybrid`
-tier package (modeled on `logicn-ext-bridge-cpp`). Closest shipped precedent for the manifest side: the
+tier package (modeled on `galerina-ext-bridge-cpp`). Closest shipped precedent for the manifest side: the
 `BridgeDomain` discriminator + the ffsim tolerance-backend path.
 
 ## EXCLUDED (HW-gated — recorded with reason)

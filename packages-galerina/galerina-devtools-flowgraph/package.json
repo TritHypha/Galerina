@@ -1,0 +1,19 @@
+{
+  "name": "@galerina/devtools-flowgraph",
+  "version": "1.0.0-beta.2",
+  "description": "Flow graph analysis for Galerina — finds cycles, dead flows, authority escalation, PII leakage paths, and missing audit coverage.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": { ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" } },
+  "bin": { "galerina-graph": "./dist/cli.js" },
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test tests/*.test.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": { "@galerina/core-compiler": "file:../galerina-core-compiler" },
+  "devDependencies": { "@types/node": "^25.9.1", "typescript": "^5.5.0" },
+  "private": true
+}

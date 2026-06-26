@@ -1,0 +1,28 @@
+﻿/// example: 467-protected-response-body
+/// test_status: stable
+/// level: 9
+/// concept: Protected value in response body requires policy
+/// expected_diagnostics: SPORE-GOV-003
+
+secure flow getProfile(readonly request: Request) -> GetProfileResult
+
+contract {
+  // Result alias â€” protected value in response body without policy triggers SPORE-GOV-003
+  types {
+    type GetProfileResult = Result<Response, ApiError>
+  }
+
+  intent {
+    "Return patient profile â€” demonstrates protected value in response body without policy."
+  }
+
+  effects {
+    database.read
+  }
+}
+{
+  let patient = PatientsDB.findById(request.patientId)?
+  return Ok(Response.ok({
+    email: patient.email
+  }))
+}

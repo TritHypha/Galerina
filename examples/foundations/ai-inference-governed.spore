@@ -1,0 +1,79 @@
+/*
+ * Example: Governed AI Inference
+ *
+ * Demonstrates the ai {} contract block — every inference call is governed,
+ * audited, and constrained regardless of which engine (BitNet / GroqCloud / NVFP4)
+ * actually runs it. The governance_tier routes to the right backend.
+ *
+ * See: docs/Knowledge-Bases/galerina-governed-inference-tower.md
+ */
+
+;; This flow calls an AI model under full governance.
+;; Every call produces an AuditEvent (CBOR Tag 410) in the Tower ledger.
+secure flow summariseDocument(documentText: String, maxLength: Int) -> Result<String, Error>
+contract {
+  intent "Summarise a document using governed inference"
+
+  ;; effects {} is Deny-by-default: only the listed effects are permitted.
+  ;; ai.infer authorises inference; audit.write authorises the AuditEvent.
+  effects { ai.infer, audit.write }
+
+  ;; invariant {} — proof obligations checked by the governance verifier.
+  ;; These become WAT assertion gates (constant-proved ones cost zero at runtime).
+  invariant {
+    ensure maxLength > 0
+    ensure maxLength <= 4096
+  }
+
+  ;; ai {} — the governed-inference contract sub-block. The V_DPM enforces every
+  ;; constraint here as a hard limit; exceeding one traps the call.
+  ai {
+    ;; Only these models may be invoked — calling any other model is SPORE-ECON-003.
+    ;; approved_models is an allow-list, verified at compile time.
+    approved_models { bitnet_b1_58_2b llama_3_3_70b_versatile }
+
+    ;; governance_tier routes to the backend:
+    ;;   tier-1 → BitNet CPU (air-gapped, deterministic, fully auditable)
+    ;;   tier-2 → GroqCloud (cloud, latency-predictable)
+    ;;   tier-3 → NVFP4 (Blackwell GPU, max throughput)
+    governance_tier tier_1
+
+    ;; Hard resource ceilings — the V_DPM traps the call if any is exceeded.
+    max_model_calls 1            ;; at most one inference per flow invocation
+    max_token_cost GBP0.05       ;; monetary ceiling per call (CostGraph enforced)
+
+    ;; Full audit: token count, latency, input/output hash, model version.
+    require runtime_attestation
+  }
+}
+{
+  trap documentText == "" : ERR_EMPTY_DOCUMENT      ;; toxic input blocked at the border
+  trap maxLength <= 0 : ERR_INVALID_MAX_LENGTH      ;; resource bound enforced
+
+  ;; The summary call dispatches through the Governed Inference Tower.
+  ;; Stage A: the flow body returns a placeholder (it compiles to WASM normally);
+  ;; the GOVERNED inference itself is driven from the ai {} contract above.
+  return Ok("summary-placeholder")
+}
+
+;; ── Running the governed inference ───────────────────────────────────────────
+;; The ai {} contract block above is not decoration — it drives a real, governed
+;; inference through the Tower (Brain → Brawn → audit). Run it with:
+;;
+;;     galerina infer examples/foundations/ai-inference-governed.spore \
+;;            --prompt "Summarise the Q3 compliance report."
+;;
+;; What happens:
+;;   1. The CLI reads this flow's ai {} block (approved_models, governance_tier,
+;;      max_model_calls) — these become HARD limits, not hints.
+;;   2. governance_tier tier_1 selects the air-gapped CPU path: the Unified Hybrid
+;;      Inference Engine (galerina-tower-citizen, the "Brain") routes ternary ops to
+;;      the BitNet CPU bridge (galerina-ext-bridge-cpp, the "Brawn"). With no native
+;;      addon compiled the byte-faithful TPL simulator runs, deterministically.
+;;   3. Every precision decision is written to an append-only audit ledger under
+;;      build/tower-logs/ — the provable mixed-precision trail.
+;;
+;; Governance is enforced at the boundary BEFORE any compute:
+;;     galerina infer …  --model gpt-untrusted   →  ERR_AI_MODEL_NOT_APPROVED (exit 1)
+;; An unapproved model is denied with only LOAD->TRAP->ERASE in the ledger — proof
+;; that no inference ran. This makes `galerina infer` usable as a CI governance gate.

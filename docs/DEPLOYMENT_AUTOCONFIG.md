@@ -2,7 +2,7 @@
 
 ## Purpose
 
-LogicN should treat deployment as a first-class build target, not as an
+Galerina should treat deployment as a first-class build target, not as an
 afterthought handled only by Dockerfiles, YAML files and manual DevOps notes.
 
 The goal is faster and safer deployment through:
@@ -27,7 +27,7 @@ unsafe configs, mismatched ports, missing health checks and failed deploys.
 
 ## Core Rule
 
-LogicN deployment should follow this rule:
+Galerina deployment should follow this rule:
 
 ```text
 Build from source.
@@ -43,14 +43,14 @@ Report everything.
 
 ## Deployment Is Declared, Not Scattered
 
-Deployment intent should live in LogicN-owned declarations such as:
+Deployment intent should live in Galerina-owned declarations such as:
 
 ```text
 boot.ln
-logicn.deploy.ln
-logicn.security-policy.ln
-logicn.memory-policy.ln
-logicn.compute-policy.ln
+galerina.deploy.ln
+galerina.security-policy.ln
+galerina.memory-policy.ln
+galerina.compute-policy.ln
 ```
 
 It should not be scattered only across:
@@ -66,11 +66,11 @@ manual notes
 ```
 
 Generated files may still be emitted for inspection and platform integration.
-LogicN should not hide deployment decisions.
+Galerina should not hide deployment decisions.
 
 Example deployment intent:
 
-```logicn
+```galerina
 deploy_profile production {
   source git
   target auto
@@ -80,7 +80,7 @@ deploy_profile production {
     optimise safe
     detect_architecture on_target
     output signed_artifact
-    exclude [".env", ".logicn/cache", "tests"]
+    exclude [".env", ".galerina/cache", "tests"]
   }
 
   security {
@@ -141,18 +141,18 @@ different secrets
 different network policy
 ```
 
-LogicN must not commit machine-specific runtime facts to Git.
+Galerina must not commit machine-specific runtime facts to Git.
 
 Git-tracked intent:
 
 ```text
 boot.ln
 main.ln
-logicn.deploy.ln
-logicn.lock.json
-logicn.security-policy.ln
-logicn.memory-policy.ln
-logicn.compute-policy.ln
+galerina.deploy.ln
+galerina.lock.json
+galerina.security-policy.ln
+galerina.memory-policy.ln
+galerina.compute-policy.ln
 ```
 
 Not Git-tracked:
@@ -160,12 +160,12 @@ Not Git-tracked:
 ```text
 .env
 .env.*
-.logicn/cache/
-.logicn/runtime/
-.logicn/local/
-.logicn/machine-profile.json
-.logicn/runtime-profile.json
-.logicn/deploy-secrets.json
+.galerina/cache/
+.galerina/runtime/
+.galerina/local/
+.galerina/machine-profile.json
+.galerina/runtime-profile.json
+.galerina/deploy-secrets.json
 *.secret.json
 ```
 
@@ -180,7 +180,7 @@ reports.
 Local detection is for developer ergonomics only.
 
 ```bash
-logicn machine detect --profile development
+galerina machine detect --profile development
 ```
 
 Example report:
@@ -193,7 +193,7 @@ Example report:
   "cpu": "intel",
   "features": ["sse4", "avx2"],
   "gpu": "available",
-  "profileStored": ".logicn/cache/local-machine-profile.json",
+  "profileStored": ".galerina/cache/local-machine-profile.json",
   "gitTracked": false
 }
 ```
@@ -215,8 +215,8 @@ For Git deployment platforms, the safest path is often:
 ```text
 Git push
 -> production build server detects target
--> LogicN builds for that target
--> LogicN runs deploy checks
+-> Galerina builds for that target
+-> Galerina runs deploy checks
 -> app starts only if checks pass
 ```
 
@@ -225,7 +225,7 @@ Git push
 Production performs final detection before receiving traffic.
 
 ```bash
-logicn runtime configure --profile production
+galerina runtime configure --profile production
 ```
 
 Example report:
@@ -248,10 +248,10 @@ Example report:
 
 ## Runtime Capability Profile
 
-On production, LogicN may generate:
+On production, Galerina may generate:
 
 ```text
-.logicn/runtime/capability-profile.json
+.galerina/runtime/capability-profile.json
 ```
 
 Example:
@@ -265,8 +265,8 @@ Example:
     "memoryLimit": "1024mb",
     "container": true
   },
-  "logicn": {
-    "runtime": "logicn-runtime-linux-arm64",
+  "galerina": {
+    "runtime": "galerina-runtime-linux-arm64",
     "safeMode": true,
     "debugMode": false
   },
@@ -289,10 +289,10 @@ This file contains metadata only. It must not contain secret values.
 
 ## Bounded Runtime Tuning
 
-LogicN may run small first-boot tuning checks, but production tuning must be
+Galerina may run small first-boot tuning checks, but production tuning must be
 bounded and safe.
 
-```logicn
+```galerina
 runtime_tuning {
   mode safe_auto
 
@@ -306,7 +306,7 @@ runtime_tuning {
     compute_vector
   ]
 
-  store_result ".logicn/runtime/tuning-profile.json"
+  store_result ".galerina/runtime/tuning-profile.json"
   never_commit true
 }
 ```
@@ -327,18 +327,18 @@ It must not run extreme benchmarks in production.
 
 ## Build Strategies
 
-LogicN should support multiple build strategies.
+Galerina should support multiple build strategies.
 
 Portable build:
 
 ```bash
-logicn build --target portable-linux
+galerina build --target portable-linux
 ```
 
 Multi-arch build:
 
 ```bash
-logicn build --target linux-x64,linux-arm64
+galerina build --target linux-x64,linux-arm64
 ```
 
 Build on target:
@@ -346,8 +346,8 @@ Build on target:
 ```text
 Git push
 -> cloud build runs on linux-arm64
--> LogicN detects linux-arm64
--> LogicN builds linux-arm64 artifact
+-> Galerina detects linux-arm64
+-> Galerina builds linux-arm64 artifact
 ```
 
 The deployment report should state which strategy was used.
@@ -356,7 +356,7 @@ The deployment report should state which strategy was used.
 
 Production deployment must be blocked when safety gates fail.
 
-```logicn
+```galerina
 deployment_gate production {
   require compile passed
   require tests passed
@@ -390,7 +390,7 @@ Reason: PAYMENT_API_KEY is missing in production.
 
 ## Health, Readiness, Smoke Tests And Stability
 
-LogicN should distinguish:
+Galerina should distinguish:
 
 | Check | Meaning |
 | --- | --- |
@@ -401,7 +401,7 @@ LogicN should distinguish:
 
 Example:
 
-```logicn
+```galerina
 health {
   live "/health"
 
@@ -426,10 +426,10 @@ pass.
 
 ## Crash-Loop Protection
 
-Deployments can start successfully and fail shortly after. LogicN should monitor
+Deployments can start successfully and fail shortly after. Galerina should monitor
 stability after traffic is enabled.
 
-```logicn
+```galerina
 stability_policy production {
   watch_after_deploy 10 minutes
 
@@ -505,10 +505,10 @@ Secret names may appear in reports. Secret values must not.
 
 ## Architecture-Specific Compute Selection
 
-LogicN should select safe compute settings on the target machine, not from the
+Galerina should select safe compute settings on the target machine, not from the
 developer laptop.
 
-```logicn
+```galerina
 compute_policy production {
   target auto
 
@@ -534,11 +534,11 @@ compute_policy production {
 ```
 
 On Intel, the selected compute may be `cpu_vector_avx2`. On ARM64, it may be
-`cpu_vector_neon`. If neither is safe, LogicN should fall back to `cpu_scalar`.
+`cpu_vector_neon`. If neither is safe, Galerina should fall back to `cpu_scalar`.
 
 ## Generated Deployment Files
 
-LogicN may generate:
+Galerina may generate:
 
 ```text
 Dockerfile
@@ -553,7 +553,7 @@ deployment manifest
 health check config
 ```
 
-Generated files should be inspectable and overrideable. LogicN should show which
+Generated files should be inspectable and overrideable. Galerina should show which
 policy or profile caused each important generated setting.
 
 Basic Kubernetes output may be free/open. Hardened Kubernetes policy packs,
@@ -618,25 +618,25 @@ AI-readable deployment context should include names and metadata only:
 Recommended production flow:
 
 ```bash
-logicn check --profile production
-logicn test --profile production
-logicn build --profile production --target auto
-logicn deploy-check --profile production
-logicn generate deploy --target docker
-logicn deploy --profile production
-logicn verify-deploy --profile production
+galerina check --profile production
+galerina test --profile production
+galerina build --profile production --target auto
+galerina deploy-check --profile production
+galerina generate deploy --target docker
+galerina deploy --profile production
+galerina verify-deploy --profile production
 ```
 
 For Git platforms:
 
 ```bash
-logicn deploy-pipeline --profile production
+galerina deploy-pipeline --profile production
 ```
 
 Example summary:
 
 ```text
-LogicN Production Deploy
+Galerina Production Deploy
 
 Source check: passed
 Dependency check: passed
@@ -655,7 +655,7 @@ Traffic enabled: yes
 
 ## Caution
 
-LogicN should not hide deployment too much.
+Galerina should not hide deployment too much.
 
 Bad direction:
 

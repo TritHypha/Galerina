@@ -1,14 +1,14 @@
-# LogicN Runtime Audit Log Schema and Execution Proof
+# Galerina Runtime Audit Log Schema and Execution Proof
 
 Status: Draft v0.1 runtime reporting specification  
-Package: `logicn-core-reports`  
-Purpose: Define how LogicN records runtime execution, governance decisions, capability usage and execution integrity.
+Package: `galerina-core-reports`  
+Purpose: Define how Galerina records runtime execution, governance decisions, capability usage and execution integrity.
 
 ---
 
 # 1. Overview
 
-LogicN is governance-first.
+Galerina is governance-first.
 
 That means the runtime should not only execute code.
 
@@ -171,7 +171,7 @@ Recommended minimum schema:
 {
   "timestamp": "2026-01-01T12:00:00Z",
   "traceId": "trace-123",
-  "runtime": "logicn-runtime",
+  "runtime": "galerina-runtime",
   "runtimeVersion": "0.1.0-beta",
   "workspace": "app-main",
   "package": "app-users",
@@ -400,7 +400,7 @@ Did execution stay within approved effects?
   "traceId": "trace-123",
   "timestamp": "2026-01-01T12:00:00Z",
   "runtime": {
-    "name": "logicn-runtime",
+    "name": "galerina-runtime",
     "version": "0.1.0-beta"
   },
   "workspace": "app-main",
@@ -611,7 +611,7 @@ Example:
 ```json
 {
   "timestamp": "2026-01-01T12:00:00Z",
-  "runtime": "logicn-runtime",
+  "runtime": "galerina-runtime",
   "cpuLoad": 0.52,
   "memoryUsageMb": 512,
   "schedulerQueueDepth": 4,
@@ -782,9 +782,9 @@ compiler → deployment → runtime → audit chain
 Recommended CLI integration:
 
 ```bash
-logicn deploy --audit
-logicn explain --trace
-logicn plan --runtime
+galerina deploy --audit
+galerina explain --trace
+galerina plan --runtime
 ```
 
 CLI should read runtime reports directly.
@@ -867,13 +867,13 @@ execution proof
 
 | Code | Meaning |
 |---|---|
-| `LLN-AUDIT-001` | runtime audit write failed |
-| `LLN-AUDIT-002` | execution proof hash mismatch |
-| `LLN-AUDIT-003` | runtime manifest hash mismatch |
-| `LLN-AUDIT-004` | denied effect execution observed |
-| `LLN-AUDIT-005` | secret leakage detected in audit payload |
-| `LLN-AUDIT-006` | runtime capability evidence missing |
-| `LLN-AUDIT-007` | distributed trace correlation failed |
+| `SPORE-AUDIT-001` | runtime audit write failed |
+| `SPORE-AUDIT-002` | execution proof hash mismatch |
+| `SPORE-AUDIT-003` | runtime manifest hash mismatch |
+| `SPORE-AUDIT-004` | denied effect execution observed |
+| `SPORE-AUDIT-005` | secret leakage detected in audit payload |
+| `SPORE-AUDIT-006` | runtime capability evidence missing |
+| `SPORE-AUDIT-007` | distributed trace correlation failed |
 
 ---
 
@@ -941,7 +941,7 @@ photonic distributed runtime proofing
 
 # 47. Final Recommendation
 
-LogicN runtime reporting should not behave like traditional text logging.
+Galerina runtime reporting should not behave like traditional text logging.
 
 It should behave like:
 

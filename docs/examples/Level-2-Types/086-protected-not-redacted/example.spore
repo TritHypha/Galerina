@@ -1,0 +1,8 @@
+/// example: 086-protected-not-redacted
+/// test_status: stable
+/// level: 2
+/// concept: protected value cannot be directly assigned to redacted binding
+/// expected_diagnostics: SPORE-TYPE-002
+/// ai_rule: Use redact(email) to convert a protected value to a redacted value.
+
+let auditEmail: redacted Email = email

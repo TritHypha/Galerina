@@ -32,12 +32,12 @@ const configArg = argv.includes("--config") ? argv[argv.indexOf("--config") + 1]
 const exe = (c) => (process.platform === "win32" && c === "npm" ? "npm.cmd" : c);
 
 // ── built-in catalog: the B5a registry-index fail-closed gates (the review-confirmed fail-opens) ──────
-const K = "packages-logicn/logicn-framework-app-kernel";
+const K = "packages-galerina/galerina-framework-app-kernel";
 // Build with the tower-citizen-vendored compiler, NOT `npm run build`. The kernel's build script is a
 // bare `tsc`, which is not on PATH (no local typescript) — so `npm run build` ALWAYS exits 1 and every
 // kernel mutant was being vacuously "killed by build" without its test ever running. The explicit path
 // actually compiles, so a valid mutant builds and the KILL must come from the adversarial TEST.
-const KERNEL_BUILD = ["node", "../logicn-tower-citizen/node_modules/typescript/lib/tsc.js", "-p", "tsconfig.json"];
+const KERNEL_BUILD = ["node", "../galerina-tower-citizen/node_modules/typescript/lib/tsc.js", "-p", "tsconfig.json"];
 const KERNEL_TEST = ["node", "--test", "tests/registry-index.test.mjs"];
 const BUILTIN = [
   {
@@ -71,8 +71,8 @@ const BUILTIN = [
 // documented build-without-npm-install path). Every mutant below is valid TS (a Verdict
 // enum swap), so the build SUCCEEDS and the KILL must come from the adversarial test —
 // that is the point: prove the test, not the type-checker, guards the fail-closed seam.
-const CN = "packages-logicn/logicn-core-network";
-const CN_BUILD = ["node", "../logicn-tower-citizen/node_modules/typescript/lib/tsc.js", "-p", "tsconfig.json"];
+const CN = "packages-galerina/galerina-core-network";
+const CN_BUILD = ["node", "../galerina-tower-citizen/node_modules/typescript/lib/tsc.js", "-p", "tsconfig.json"];
 const CN_TEST = ["node", "--test", "tests/cert-gate.test.mjs"];
 const CERT = [
   {
@@ -155,7 +155,7 @@ const FUSE = [
 // walker, the bytecode VM, and the WASM emitter, so a wrap-mutant here is a cross-tier fail-open. Each
 // mutant makes one op wrap instead of trap; i32-arith.test.mjs kills it [test]. core-compiler has its own
 // typescript, so build with the local vendored tsc (not a bare `tsc`).
-const CC = "packages-logicn/logicn-core-compiler";
+const CC = "packages-galerina/galerina-core-compiler";
 const CC_BUILD = ["node", "node_modules/typescript/lib/tsc.js", "-p", "tsconfig.json"];
 const CC_TEST = ["node", "--test", "tests/i32-arith.test.mjs"];
 const CC_I32 = [
@@ -198,14 +198,14 @@ const CC_I32 = [
 
 // ── secret-egress: the value-state-checker SINK gate (unsafe/tainted/secret → exfiltration sink) ──
 // isNetworkSink (value-state-checker.ts) recognises the egress paths a tainted/secret value must not reach;
-// when it does, LLN-VALUESTATE-003 fires (a compile-time deny). Make a sink go UNRECOGNISED and the unsafe
+// when it does, SPORE-VALUESTATE-003 fires (a compile-time deny). Make a sink go UNRECOGNISED and the unsafe
 // value escapes with NO diagnostic — a fail-OPEN (the exact class the comment notes was a past VSC-003 hole).
 // domain-security.test.mjs asserts the diagnostic fires at each sink, so it kills these [test].
 const VSC_EGRESS_TEST = ["node", "--test", "tests/domain-security.test.mjs"];
 const VSC_EGRESS = [
   {
     // Corrupt the registry KEY so the SINK_REQUIREMENTS lookup misses → the sink is ungoverned →
-    // an unsafe value reaches it with no LLN-VALUESTATE-003. (Registry is the single source of truth.)
+    // an unsafe value reaches it with no SPORE-VALUESTATE-003. (Registry is the single source of truth.)
     id: "vsc-response-body-sink-unregistered",
     file: `${CC}/src/value-state-checker.ts`,
     find: '["response.body",',
@@ -227,7 +227,7 @@ const VSC_EGRESS = [
 // Prevention coverage for the verdict-combining core (the owner-gated "quorum / No-Coercion" rule, built as
 // BEHAVIOR-gated mutation testing rather than a brittle text-anchor lint). Each mutant re-introduces a real
 // fail-open in quorum.ts / three-valued-governance.ts; a KILL proves the existing adversarial test guards it.
-const TC = "packages-logicn/logicn-tower-citizen";
+const TC = "packages-galerina/galerina-tower-citizen";
 const TC_BUILD = ["node", "node_modules/typescript/lib/tsc.js", "-p", "tsconfig.json"];
 const TC_QUORUM_TEST = ["node", "--test", "tests/quorum.test.mjs"];
 const TC_GOV_TEST = ["node", "--test", "tests/three-valued-governance.test.mjs"];

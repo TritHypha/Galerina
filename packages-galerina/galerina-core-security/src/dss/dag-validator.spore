@@ -1,0 +1,58 @@
+;; dag-validator.spore — ExecutionDAG edge validation
+;; DRCM Phase 5.6 — V_DPM Bit 8 (dag_edge_valid) enforcement
+;;
+;; In the Governed Tower, floor transitions are authorized by the ExecutionDAG.
+;; Bit 8 of V_DPM (dag_edge_valid) is the gate: if 0, no flow executes.
+;;
+;; Stage A: The interpreter sets bit 8 before calling governed flows (simulated auth).
+;; Stage B: DSS.wasm validates the DAG edge against CBOR Tag 414 manifest before dispatch.
+;;
+;; Build order position: 6 of 7 (penultimate)
+;;
+;; See: docs/Knowledge-Bases/galerina-topological-graph-engine.md
+
+import "./vdpm.spore"
+import "./capability-map.spore"
+
+;; DAGEdgeResult — result of a DAG edge validation
+type DAGEdgeResult {
+  authorized:   Bool    ;; true if the transition is in the ExecutionDAG
+  fromFloor:    String  ;; source floor ("floor_1" through "floor_4")
+  toFloor:      String  ;; destination floor
+  vdpmAfter:    Int     ;; V_DPM with bit 8 set (if authorized) or cleared (if denied)
+}
+
+;; Validate a floor transition and set/clear dag_edge_valid (bit 8)
+;; Stage A: all transitions to floor_2/3/4 are authorized (simulated)
+;; Stage B: validates against CBOR Tag 414 ExecutionDAG in manifest
+pure flow validateDAGEdge(vdpm: Int, fromFloor: String, toFloor: String) -> DAGEdgeResult
+contract {
+  intent "Validate a Tower floor transition and update dag_edge_valid bit"
+  effects {}
+}
+{
+  ;; Stage A: authorize all governed flow transitions
+  ;; Real enforcement: Stage B checks CBOR Tag 414 ExecutionDAG
+  let dagBit = V_DPM.dag_edge_valid
+  let authorizedVdpm = Int.bitOr(vdpm, dagBit)   ;; set bit 8
+
+  return DAGEdgeResult {
+    authorized:  true
+    fromFloor:   fromFloor
+    toFloor:     toFloor
+    vdpmAfter:   authorizedVdpm
+  }
+}
+
+;; Clear dag_edge_valid after a governed flow completes
+;; Bit 8 is only valid for a single authorized transition — must be re-validated next call
+pure flow clearDAGEdge(vdpm: Int) -> Int
+contract {
+  intent "Clear dag_edge_valid (bit 8) after transition completes"
+  effects {}
+}
+{
+  ;; Clear bit 8 — the next transition must re-validate
+  let keepMask = 4294967039   ;; ~(1 << 8) = ~256
+  return Int.bitAnd(vdpm, keepMask)
+}

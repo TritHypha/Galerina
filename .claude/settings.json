@@ -1,5 +1,5 @@
 {
-  "description": "LogicN project Claude Code settings — devtools hooks and standard toolchain",
+  "description": "Galerina project Claude Code settings — devtools hooks and standard toolchain",
 
   "hooks": {
     "Stop": [
@@ -9,17 +9,17 @@
           {
             "type": "command",
             "command": "node scripts/rebuild-fusable-packages.mjs",
-            "description": "Before tests: rebuild the governed .wasm for any fusable package (one with package.lln.json) whose /src changed since its last build, so fused artifacts stay current (#175 fuse pipeline). Informational; always exits 0. Skip with LOGICN_SKIP_FUSE_REBUILD=1."
+            "description": "Before tests: rebuild the governed .wasm for any fusable package (one with package.spore.json) whose /src changed since its last build, so fused artifacts stay current (#175 fuse pipeline). Informational; always exits 0. Skip with GALERINA_SKIP_FUSE_REBUILD=1."
           },
           {
             "type": "command",
             "command": "node scripts/run-phase-close.mjs",
-            "description": "Full phase-close cadence at the end of every stage: core tests + devtools tests + security/naming audit sweep + provenance audit + full graph re-index. Always exits 0 (informational). Set LOGICN_SKIP_PHASE_CLOSE=1 to skip during rapid iteration. Benchmarks are intentionally NOT included (multi-minute) — run `npm run run` in logicn-devtools-benchmarks on demand."
+            "description": "Full phase-close cadence at the end of every stage: core tests + devtools tests + security/naming audit sweep + provenance audit + full graph re-index. Always exits 0 (informational). Set GALERINA_SKIP_PHASE_CLOSE=1 to skip during rapid iteration. Benchmarks are intentionally NOT included (multi-minute) — run `npm run run` in galerina-devtools-benchmarks on demand."
           },
           {
             "type": "command",
             "command": "node scripts/rd-absorb.mjs --summary",
-            "description": "Periodic drift heartbeat (informational, exit 0): one-line count of R&D done-files in ../LogicN-R-AND-D/_session-bridge/done/ not yet recorded in docs/Knowledge-Bases/logicn-rd-results-log.md — the absorption backlog the owner's standing process (feedback-rd-absorb-positive-and-negative) clears. Drop --summary for the actionable list."
+            "description": "Periodic drift heartbeat (informational, exit 0): one-line count of R&D done-files in ../Galerina-R-AND-D/_session-bridge/done/ not yet recorded in docs/Knowledge-Bases/galerina-rd-results-log.md — the absorption backlog the owner's standing process (feedback-rd-absorb-positive-and-negative) clears. Drop --summary for the actionable list."
           },
           {
             "type": "command",
@@ -32,57 +32,57 @@
   },
 
   "env": {
-    "LOGICN_DEVTOOLS_NAMING_CLI":      "packages-logicn/logicn-devtools-naming/dist/cli.js",
-    "LOGICN_DEVTOOLS_CONTEXT_CLI":     "packages-logicn/logicn-devtools-context/dist/cli.js",
-    "LOGICN_DEVTOOLS_INTELLIGENCE_CLI":"packages-logicn/logicn-devtools-intelligence/dist/cli.js",
-    "LOGICN_DEVTOOLS_PROVENANCE_CLI":  "packages-logicn/logicn-devtools-provenance/dist/cli.js",
-    "LOGICN_DEVTOOLS_SECURITY_CLI":    "packages-logicn/logicn-devtools-security/dist/cli.js"
+    "GALERINA_DEVTOOLS_NAMING_CLI":      "packages-galerina/galerina-devtools-naming/dist/cli.js",
+    "GALERINA_DEVTOOLS_CONTEXT_CLI":     "packages-galerina/galerina-devtools-context/dist/cli.js",
+    "GALERINA_DEVTOOLS_INTELLIGENCE_CLI":"packages-galerina/galerina-devtools-intelligence/dist/cli.js",
+    "GALERINA_DEVTOOLS_PROVENANCE_CLI":  "packages-galerina/galerina-devtools-provenance/dist/cli.js",
+    "GALERINA_DEVTOOLS_SECURITY_CLI":    "packages-galerina/galerina-devtools-security/dist/cli.js"
   },
 
   "notes": {
     "devtools-standard-commands": {
-      "naming-check":   "node packages-logicn/logicn-devtools-naming/dist/cli.js check <file.lln>",
-      "context-receipt":"node packages-logicn/logicn-devtools-context/dist/cli.js receipt <file.lln> [--markdown]",
-      "intelligence":   "node packages-logicn/logicn-devtools-intelligence/dist/cli.js search \"<query>\" [--effects <effect>]",
-      "provenance":     "node packages-logicn/logicn-devtools-provenance/dist/cli.js audit <directory>",
-      "security-audit": "node packages-logicn/logicn-devtools-security/dist/cli.js audit <file.lln>",
+      "naming-check":   "node packages-galerina/galerina-devtools-naming/dist/cli.js check <file.spore>",
+      "context-receipt":"node packages-galerina/galerina-devtools-context/dist/cli.js receipt <file.spore> [--markdown]",
+      "intelligence":   "node packages-galerina/galerina-devtools-intelligence/dist/cli.js search \"<query>\" [--effects <effect>]",
+      "provenance":     "node packages-galerina/galerina-devtools-provenance/dist/cli.js audit <directory>",
+      "security-audit": "node packages-galerina/galerina-devtools-security/dist/cli.js audit <file.spore>",
       "test-core":      "node scripts/run-all-tests.cjs --core",
       "test-all":       "node scripts/run-all-tests.cjs",
       "test-tooling":   "node --test scripts/tests/codes.test.mjs scripts/tests/dev-tools-scripts.test.mjs",
       "code-index":     "node scripts/code-index.mjs   (query build/code-index/CODE_INDEX.md instead of grepping)",
-      "kb-index":       "node scripts/kb-index.mjs <terms>   (KB keyword search over ~495 docs — TOKEN-SAVER; build/kb-index/KB-INDEX.md; --code LLN-... for code lookup)",
+      "kb-index":       "node scripts/kb-index.mjs <terms>   (KB keyword search over ~495 docs — TOKEN-SAVER; build/kb-index/KB-INDEX.md; --code SPORE-... for code lookup)",
       "status":         "node scripts/status.mjs   (TOKEN-SAVER one-shot: live version/tests/overall-%/open-tasks/R&D-queue + doc pointers — READS version.json, do NOT re-run the suite just to get counts)",
-      "rd-absorb":      "node scripts/rd-absorb.mjs [--summary|--all|--json]   (flags R&D done-files in ../LogicN-R-AND-D/_session-bridge/done/ not yet in logicn-rd-results-log.md; --summary runs periodically at Stop)",
+      "rd-absorb":      "node scripts/rd-absorb.mjs [--summary|--all|--json]   (flags R&D done-files in ../Galerina-R-AND-D/_session-bridge/done/ not yet in galerina-rd-results-log.md; --summary runs periodically at Stop)",
       "stray-docs":     "node scripts/audit-stray-docs.mjs [--summary|--json]   (stray/stale *.md outside docs/ + duplicate basenames + kb-graph orphans/broken-links; --summary runs periodically at Stop)",
       "code-registry":  "node scripts/gen-code-registry.mjs   (-> build/code-registry/REGISTRY.md, the live code catalog)",
       "lint-conventions":"node scripts/lint-conventions.mjs   (umbrella: #215 scanner + registered convention checks; --soft to report; --full adds the heavy SEC-002 mutation gate. RD-0124 added 4 zero-baseline enforcing checks: production-blockers · name-collisions · diagnostic-doc-drift · graph-integrity — plus gate-injection as its own enforcing conventions.yml job. All run ENFORCING in CI.)",
-      "lint-lln":"node scripts/lint-lln.mjs [--summary|--json|--soft] [paths…]   (.lln source-quality gate: flow comments + contract{intent} sans auto-settings + no AI slop/bad-syntax; fixtures whitelisted in governance/lln-lint-allow.json; inline //lln-allow: CODE; registered in lint-conventions → runs at Stop)",
+      "lint-spore":"node scripts/lint-spore.mjs [--summary|--json|--soft] [paths…]   (.spore source-quality gate: flow comments + contract{intent} sans auto-settings + no AI slop/bad-syntax; fixtures whitelisted in governance/spore-lint-allow.json; inline //spore-allow: CODE; registered in lint-conventions → runs at Stop)",
       "coverage-codes": "node scripts/audit-coverage.mjs codes   (#218 bidirectional code-coverage cross-check)",
       "doc-drift":      "node scripts/audit-doc-drift.mjs   (DOC-004 #219: doc test/package COUNTS vs version.json authority; registered in lint-conventions)",
       "provenance":     "node scripts/audit-provenance.mjs   (BLD-003 #219/#216: generated artifacts carry a provenance sidecar + are fresh vs sources; registered in lint-conventions)",
       "mutation":       "node scripts/audit-mutation.mjs   (SEC-002 #219: re-introduce each fail-closed gate's hole, assert its test kills it; git-backed safety; ~40s)",
       "fuse-rebuild":   "node scripts/rebuild-fusable-packages.mjs",
-      "benchmark":      "cd packages-logicn/logicn-devtools-benchmarks && npm run run",
-      "benchmark-quick":"cd packages-logicn/logicn-devtools-benchmarks && npm run run:quick",
+      "benchmark":      "cd packages-galerina/galerina-devtools-benchmarks && npm run run",
+      "benchmark-quick":"cd packages-galerina/galerina-devtools-benchmarks && npm run run:quick",
       "graph-all":      "node scripts/graph-all.mjs   (RD-0124: runs ALL THREE graph generators — project graph + kb graph + per-package Hardened Border --check. This is what 'run graph' should mean; wired into run-phase-close. The bare 'graph' below is PROJECT-only.)",
-      "graph":          "node packages-logicn/logicn-core-cli/dist/index.js graph --out build/graph   (PROJECT graph only — one of three; prefer graph-all)",
-      "kb-graph":       "node packages-logicn/logicn-devtools-kb-graph/dist/cli.js --out build/kb-graph   (KB cross-ref graph: orphans + broken-links → build/kb-graph; the signal audit-stray-docs reads, so refresh before it)",
-      "package-graph":  "node packages-logicn/logicn-devtools-package-graph/dist/cli.js --scope <package-path>",
-      "package-graph-check": "node packages-logicn/logicn-devtools-package-graph/dist/cli.js --scope <package-path> --check   (Hardened Border gate for ONE package; graph-all runs it for ALL)",
-      "tower-citizen":  "node packages-logicn/logicn-tower-citizen/dist/index.js",
-      "bridge-bitnet":  "node packages-logicn/logicn-ext-bridge-bitnet/dist/index.js",
-      "bridge-cpp":     "node packages-logicn/logicn-ext-bridge-cpp/dist/index.js"
+      "graph":          "node packages-galerina/galerina-core-cli/dist/index.js graph --out build/graph   (PROJECT graph only — one of three; prefer graph-all)",
+      "kb-graph":       "node packages-galerina/galerina-devtools-kb-graph/dist/cli.js --out build/kb-graph   (KB cross-ref graph: orphans + broken-links → build/kb-graph; the signal audit-stray-docs reads, so refresh before it)",
+      "package-graph":  "node packages-galerina/galerina-devtools-package-graph/dist/cli.js --scope <package-path>",
+      "package-graph-check": "node packages-galerina/galerina-devtools-package-graph/dist/cli.js --scope <package-path> --check   (Hardened Border gate for ONE package; graph-all runs it for ALL)",
+      "tower-citizen":  "node packages-galerina/galerina-tower-citizen/dist/index.js",
+      "bridge-bitnet":  "node packages-galerina/galerina-ext-bridge-bitnet/dist/index.js",
+      "bridge-cpp":     "node packages-galerina/galerina-ext-bridge-cpp/dist/index.js"
     },
     "devtools-added-2026-06-03": [
-      "logicn-devtools-naming       — LLN-NAMING-001..005 naming standard enforcement (abbreviations, missing intent, generic types)",
-      "logicn-devtools-context      — Context Receipt generator: 51-97% token reduction for AI code windows",
-      "logicn-devtools-intelligence — BM25 hybrid code search: indexes .lln files, queries by semantic tokens + structural filters",
-      "logicn-devtools-provenance   — Data lineage tracker: maps source→transform→sink with trust boundary visualization"
+      "galerina-devtools-naming       — SPORE-NAMING-001..005 naming standard enforcement (abbreviations, missing intent, generic types)",
+      "galerina-devtools-context      — Context Receipt generator: 51-97% token reduction for AI code windows",
+      "galerina-devtools-intelligence — BM25 hybrid code search: indexes .spore files, queries by semantic tokens + structural filters",
+      "galerina-devtools-provenance   — Data lineage tracker: maps source→transform→sink with trust boundary visualization"
     ],
     "devtools-added-2026-06-05": [
-      "logicn-devtools-package-graph — Per-package boundary governance: internal edges, external-dependency surface, orphan detection. Writes .graph/BOUNDARY.md inside each scanned package. `--check` = Hardened Border CI gate (fails on new external deps). Run: package-graph --scope <pkg>",
-      "logicn-ext-bridge-cpp        — First real implements InferenceBridge: BitNet ternary CPU/GPU bridges (MIT). Real hardware detection (AVX2/NEON kernel family + NVIDIA GPU via nvidia-smi). Native N-API addon is a documented seam; TPLSimulator is the deterministic fallback.",
-      "logicn-tower-citizen         — Unified Hybrid Inference Engine (Brain): TPL ternary VPP (BitNet-faithful I2_S), precision router (BitNet/NVFP4/Groq), InferenceBridge contract, governed Load/Execute/Erase lifecycle."
+      "galerina-devtools-package-graph — Per-package boundary governance: internal edges, external-dependency surface, orphan detection. Writes .graph/BOUNDARY.md inside each scanned package. `--check` = Hardened Border CI gate (fails on new external deps). Run: package-graph --scope <pkg>",
+      "galerina-ext-bridge-cpp        — First real implements InferenceBridge: BitNet ternary CPU/GPU bridges (MIT). Real hardware detection (AVX2/NEON kernel family + NVIDIA GPU via nvidia-smi). Native N-API addon is a documented seam; TPLSimulator is the deterministic fallback.",
+      "galerina-tower-citizen         — Unified Hybrid Inference Engine (Brain): TPL ternary VPP (BitNet-faithful I2_S), precision router (BitNet/NVFP4/Groq), InferenceBridge contract, governed Load/Execute/Erase lifecycle."
     ]
   }
 }

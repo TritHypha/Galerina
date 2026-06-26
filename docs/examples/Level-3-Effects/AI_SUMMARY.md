@@ -7,11 +7,11 @@
 - `with effects [...]` inline syntax as an alternative to the contract block
 - How effects propagate: a caller must declare every effect required by every callee
 - `fn` (local helper) inside a flow: the helper cannot re-declare effects; it inherits the parent's scope
-- Error codes `LLN-EFFECT-001` through `LLN-EFFECT-004` and what triggers each
+- Error codes `SPORE-EFFECT-001` through `SPORE-EFFECT-004` and what triggers each
 
 ## Canonical patterns
 
-```lln
+```spore
 // pure flow: no effects permitted, compiler rejects any effectful call
 pure flow calculateVat(price: Money<GBP>) -> Money<GBP>
 contract {
@@ -22,7 +22,7 @@ contract {
 }
 ```
 
-```lln
+```spore
 // guarded flow: effects declared in contract; callers must inherit them
 guarded flow processOrder(order: Order) -> ProcessOrderResult
 contract {
@@ -50,10 +50,10 @@ contract {
 
 | Code | Meaning |
 |------|---------|
-| `LLN-EFFECT-001` | Effect used in body but not declared in the contract `effects` block |
-| `LLN-EFFECT-002` | `pure flow` body contains an effectful call |
-| `LLN-EFFECT-003` | Caller flow missing an effect required by a called flow |
-| `LLN-EFFECT-004` | `fn` local helper attempts to declare its own effects — not permitted |
+| `SPORE-EFFECT-001` | Effect used in body but not declared in the contract `effects` block |
+| `SPORE-EFFECT-002` | `pure flow` body contains an effectful call |
+| `SPORE-EFFECT-003` | Caller flow missing an effect required by a called flow |
+| `SPORE-EFFECT-004` | `fn` local helper attempts to declare its own effects — not permitted |
 
 ## Example IDs at this level
 

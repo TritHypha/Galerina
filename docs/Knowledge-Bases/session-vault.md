@@ -7,7 +7,7 @@ Planned for: Stage B
 
 ## Definition
 
-**SessionVault** is the governed vault for storing active session records in LogicN, replacing PHP-style global session bags.
+**SessionVault** is the governed vault for storing active session records in Galerina, replacing PHP-style global session bags.
 
 ```text
 SessionVault =
@@ -25,9 +25,9 @@ Instead of PHP-style mutable global session state:
 $_SESSION["user_id"] = 123;
 ```
 
-LogicN uses:
+Galerina uses:
 
-```logicn
+```galerina
 SessionVault.write(
   key: session_uuid,
   value: {
@@ -55,7 +55,7 @@ Next request
 
 ## Vault Declaration
 
-```logicn
+```galerina
 vault SessionVault {
   key session_uuid: SessionUUID
 
@@ -72,7 +72,7 @@ vault SessionVault {
 
 ## Permission
 
-```logicn
+```galerina
 permission auth_login {
   code {
     allow db.read table: Users
@@ -88,7 +88,7 @@ permission auth_login {
 
 ## Login Write
 
-```logicn
+```galerina
 let session_uuid = crypto.random.uuid()
 
 SessionVault.write(
@@ -104,7 +104,7 @@ SessionVault.write(
 
 ## Request Read and Validation
 
-```logicn
+```galerina
 let session = SessionVault.read(
   key: request.cookie("__Host-logicn_session")
 )

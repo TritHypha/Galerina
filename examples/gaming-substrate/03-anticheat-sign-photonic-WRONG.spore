@@ -1,0 +1,21 @@
+/// example: gaming-substrate / 03-anticheat-sign-photonic-WRONG
+/// concept: WRONG — crypto on a photonic lane is denied; this is the category error to avoid
+/// expected_diagnostics: SPORE-SUBSTRATE-001
+/// ai_rule: This example is intentionally rejected. It signs an authoritative score on a photonic lane; integrity is never tolerance-bounded, so the compiler denies it with SPORE-SUBSTRATE-001 regardless of tolerance or redundancy. The PQ-suffixed crypto.sign.hybrid does NOT exempt it. Fix: move crypto to lane: digital (see 02).
+
+// The tempting mistake: "the game runs on a photonic accelerator, so put everything on the
+// photonic lane." Anti-cheat signing CANNOT be approximated. No tolerance and no amount of
+// redundancy admits this — SPORE-SUBSTRATE-001 fires at every deployment profile, and the
+// mandatory post-quantum form (crypto.sign.hybrid) is gated just the same.
+secure flow signMatchResultWrong(request: Request) -> Result<Response, ApiError>
+contract {
+  intent { "Attempt to sign a match result on a photonic lane — denied: integrity needs bit-exactness." }
+  effects { crypto.sign.hybrid audit.write }
+  substrate {
+    // crypto.sign.hybrid on a noisy lane -> SPORE-SUBSTRATE-001
+    lane: photonic
+    tolerance: 5e-3
+    redundancy: 3
+  }
+}
+{ return Ok(Response.ok({})) }

@@ -1,14 +1,14 @@
-# LogicN Compiler Effect Checker and Boundary Checker
+# Galerina Compiler Effect Checker and Boundary Checker
 
 Status: Draft v0.1 design document  
-Package: `logicn-core-compiler`  
-Purpose: Define how LogicN validates effects, capabilities, package boundaries and runtime safety before code is allowed to run.
+Package: `galerina-core-compiler`  
+Purpose: Define how Galerina validates effects, capabilities, package boundaries and runtime safety before code is allowed to run.
 
 ---
 
 ## 1. Why This Exists
 
-LogicN is governance-first. That means the compiler must understand more than syntax and types.
+Galerina is governance-first. That means the compiler must understand more than syntax and types.
 
 The compiler must also answer:
 
@@ -22,7 +22,7 @@ Can this code be safely loaded by the runtime?
 Can the decision be explained later?
 ```
 
-The effect checker and boundary checker are two of the most important parts of the LogicN compiler because they turn code into governed execution.
+The effect checker and boundary checker are two of the most important parts of the Galerina compiler because they turn code into governed execution.
 
 They help prevent:
 
@@ -50,7 +50,7 @@ They work together.
 
 Example:
 
-```logicn
+```galerina
 pub fn load_profile(http: HttpClient, id: UserId)
     -> Result<UserProfile, NetworkError>
     effect network
@@ -116,7 +116,7 @@ The compiler must know whether a call is a pure helper, storage call, network ca
 
 The effect checker ensures that every effectful operation is declared, propagated and approved before runtime execution.
 
-LogicN should not allow code to perform dangerous or externally visible operations silently.
+Galerina should not allow code to perform dangerous or externally visible operations silently.
 
 Effectful operations include:
 
@@ -161,7 +161,7 @@ Not every effect needs to be implemented in v0.1, but the checker should be desi
 
 Recommended syntax:
 
-```logicn
+```galerina
 fn name(args) -> ReturnType effect effect_name {
     ...
 }
@@ -169,7 +169,7 @@ fn name(args) -> ReturnType effect effect_name {
 
 Multiple effects:
 
-```logicn
+```galerina
 fn name(args) -> ReturnType effect network, storage {
     ...
 }
@@ -177,7 +177,7 @@ fn name(args) -> ReturnType effect network, storage {
 
 No effect means pure or locally bounded code:
 
-```logicn
+```galerina
 fn add(a: Int, b: Int) -> Int {
     return a + b
 }
@@ -187,7 +187,7 @@ fn add(a: Int, b: Int) -> Int {
 
 ## 8. Example: Pure Function
 
-```logicn
+```galerina
 pub fn normalise_name(name: Text) -> Text {
     return name.trim().lowercase()
 }
@@ -207,8 +207,8 @@ Compiler result:
 
 ## 9. Example: Network Effect
 
-```logicn
-import capability { HttpClient } from "logicn-core-network/http"
+```galerina
+import capability { HttpClient } from "galerina-core-network/http"
 
 pub fn fetch_profile(
     http: HttpClient,
@@ -234,7 +234,7 @@ Compiler result:
 
 Bad:
 
-```logicn
+```galerina
 pub fn fetch_profile(
     http: HttpClient,
     id: UserId
@@ -246,7 +246,7 @@ pub fn fetch_profile(
 Compiler diagnostic:
 
 ```text
-LLN-EFFECT-001: undeclared effect
+SPORE-EFFECT-001: undeclared effect
 function: fetch_profile
 operation: HttpClient.get
 required effect: network
@@ -257,8 +257,8 @@ help: add `effect network` to the function declaration
 
 ## 11. Example: Storage Effect
 
-```logicn
-import capability { Database } from "logicn-core-data/database"
+```galerina
+import capability { Database } from "galerina-core-data/database"
 
 pub fn find_user(
     db: Database,
@@ -276,7 +276,7 @@ The checker sees `db.find_one` and verifies that the function declares `storage`
 
 If a function calls another effectful function, the caller must declare the same effect unless it handles the effect through an approved boundary.
 
-```logicn
+```galerina
 pub fn get_user_page(
     db: Database,
     id: UserId
@@ -294,7 +294,7 @@ Because `find_user` has `effect storage`, `get_user_page` must also have `effect
 
 Bad:
 
-```logicn
+```galerina
 pub fn get_user_page(
     db: Database,
     id: UserId
@@ -307,7 +307,7 @@ pub fn get_user_page(
 Diagnostic:
 
 ```text
-LLN-EFFECT-002: missing propagated effect
+SPORE-EFFECT-002: missing propagated effect
 function: get_user_page
 called function: find_user
 required effect: storage
@@ -337,7 +337,7 @@ Even if source code declares an effect correctly, runtime policy may deny it.
 
 Example source:
 
-```logicn
+```galerina
 pub fn debug_ping(http: HttpClient) -> Result<PingResult, NetworkError> effect network {
     return http.get("https://debug.example.test/ping")
 }
@@ -355,7 +355,7 @@ Production policy:
 Deployment diagnostic:
 
 ```text
-LLN-POLICY-001: effect denied by deployment policy
+SPORE-POLICY-001: effect denied by deployment policy
 module: app/debug/ping
 function: debug_ping
 effect: network
@@ -372,7 +372,7 @@ Capabilities describe who has authority to do it.
 
 Example:
 
-```logicn
+```galerina
 fn read_config(fs: FileSystem) -> Result<Config, FileError> effect filesystem {
     return fs.read_json("config/app.json")
 }
@@ -427,7 +427,7 @@ check_effects(function):
     missing = observed - declared
 
     if missing is not empty:
-        error(LLN-EFFECT-001, missing)
+        error(SPORE-EFFECT-001, missing)
 
     return EffectSummary(declared, observed)
 ```
@@ -496,7 +496,7 @@ environment data
 
 `app/users/service.ln`:
 
-```logicn
+```galerina
 module app/users/service
 
 private fn to_profile(record: UserRecord) -> UserProfile {
@@ -517,14 +517,14 @@ pub fn get_profile(db: Database, id: UserId)
 
 External module:
 
-```logicn
+```galerina
 import { to_profile } from "app/users/service"
 ```
 
 Diagnostic:
 
 ```text
-LLN-BOUNDARY-001: cannot import private symbol
+SPORE-BOUNDARY-001: cannot import private symbol
 symbol: to_profile
 module: app/users/service
 visibility: private
@@ -536,7 +536,7 @@ visibility: private
 
 `app/users/types.ln`:
 
-```logicn
+```galerina
 package type UserRecord = {
     id: UserId,
     display_name: Text,
@@ -546,7 +546,7 @@ package type UserRecord = {
 
 Allowed inside same package:
 
-```logicn
+```galerina
 module app/users/repository
 
 import type { UserRecord } from "app/users/types"
@@ -554,7 +554,7 @@ import type { UserRecord } from "app/users/types"
 
 Denied outside package:
 
-```logicn
+```galerina
 module app/admin/reporting
 
 import type { UserRecord } from "app/users/types"
@@ -563,7 +563,7 @@ import type { UserRecord } from "app/users/types"
 Diagnostic:
 
 ```text
-LLN-BOUNDARY-002: package-visible symbol imported outside owning package
+SPORE-BOUNDARY-002: package-visible symbol imported outside owning package
 symbol: UserRecord
 owner package: app/users
 current package: app/admin
@@ -575,7 +575,7 @@ current package: app/admin
 
 Bad:
 
-```logicn
+```galerina
 private type ApiSecret = Text
 
 pub fn get_api_secret() -> ApiSecret effect secret {
@@ -586,14 +586,14 @@ pub fn get_api_secret() -> ApiSecret effect secret {
 Diagnostic:
 
 ```text
-LLN-BOUNDARY-003: public API exposes secret-bearing private type
+SPORE-BOUNDARY-003: public API exposes secret-bearing private type
 function: get_api_secret
 return type: ApiSecret
 ```
 
 Better:
 
-```logicn
+```galerina
 pub type SecretStatus =
     | Present
     | Missing
@@ -613,18 +613,18 @@ pub fn payment_secret_status() -> SecretStatus effect secret {
 
 Bad import:
 
-```logicn
+```galerina
 import { env } from "../../.env"
 ```
 
 Diagnostic:
 
 ```text
-LLN-BOUNDARY-004: import path escapes package source root
+SPORE-BOUNDARY-004: import path escapes package source root
 import: ../../.env
 ```
 
-LogicN imports should resolve through package manifests, not arbitrary filesystem traversal.
+Galerina imports should resolve through package manifests, not arbitrary filesystem traversal.
 
 ---
 
@@ -632,7 +632,7 @@ LogicN imports should resolve through package manifests, not arbitrary filesyste
 
 Runtime-owned function:
 
-```logicn
+```galerina
 runtime fn __runtime_register_module() -> ModuleDescriptor {
     return descriptor
 }
@@ -640,8 +640,8 @@ runtime fn __runtime_register_module() -> ModuleDescriptor {
 
 Application code:
 
-```logicn
-import { __runtime_register_module } from "logicn-core-runtime/module"
+```galerina
+import { __runtime_register_module } from "galerina-core-runtime/module"
 
 pub fn run() -> ModuleDescriptor {
     return __runtime_register_module()
@@ -651,7 +651,7 @@ pub fn run() -> ModuleDescriptor {
 Diagnostic:
 
 ```text
-LLN-BOUNDARY-005: runtime-only symbol used by normal application code
+SPORE-BOUNDARY-005: runtime-only symbol used by normal application code
 symbol: __runtime_register_module
 ```
 
@@ -661,7 +661,7 @@ symbol: __runtime_register_module
 
 Bad:
 
-```logicn
+```galerina
 pub fn make_database() -> Database {
     return Database("postgres://root:password@localhost")
 }
@@ -670,14 +670,14 @@ pub fn make_database() -> Database {
 Diagnostic:
 
 ```text
-LLN-BOUNDARY-006: capability object cannot be constructed by normal code
+SPORE-BOUNDARY-006: capability object cannot be constructed by normal code
 capability: Database
 help: request Database through runtime capability injection
 ```
 
 Good:
 
-```logicn
+```galerina
 pub fn get_profile(db: Database, id: UserId)
     -> Result<UserProfile, UserError>
     effect storage
@@ -692,7 +692,7 @@ pub fn get_profile(db: Database, id: UserId)
 
 Internal record:
 
-```logicn
+```galerina
 package type UserRecord = {
     id: UserId,
     email: Text,
@@ -702,7 +702,7 @@ package type UserRecord = {
 
 Bad route:
 
-```logicn
+```galerina
 pub route GET "/users/{id}" requires [Database] {
     output Result<UserRecord, UserError>
 
@@ -715,7 +715,7 @@ pub route GET "/users/{id}" requires [Database] {
 Diagnostic:
 
 ```text
-LLN-BOUNDARY-007: public route exposes package-internal type
+SPORE-BOUNDARY-007: public route exposes package-internal type
 route: GET /users/{id}
 type: UserRecord
 field risk: password_hash
@@ -723,7 +723,7 @@ field risk: password_hash
 
 Good route:
 
-```logicn
+```galerina
 pub type UserProfile = {
     id: UserId,
     email: Text
@@ -770,26 +770,26 @@ check_boundaries(module):
         target = resolve(import.path)
 
         if target outside allowed package graph:
-            error(LLN-BOUNDARY-004)
+            error(SPORE-BOUNDARY-004)
 
         for symbol in import.symbols:
             visibility = resolve_visibility(symbol)
 
             if visibility == private and target.module != module:
-                error(LLN-BOUNDARY-001)
+                error(SPORE-BOUNDARY-001)
 
             if visibility == package and target.package != package:
-                error(LLN-BOUNDARY-002)
+                error(SPORE-BOUNDARY-002)
 
             if visibility == runtime and not module.is_runtime_authorized:
-                error(LLN-BOUNDARY-005)
+                error(SPORE-BOUNDARY-005)
 
     for public_symbol in module.public_symbols:
         if exposes_private_type(public_symbol):
-            error(LLN-BOUNDARY-003)
+            error(SPORE-BOUNDARY-003)
 
         if exposes_package_type_outside_package(public_symbol):
-            error(LLN-BOUNDARY-007)
+            error(SPORE-BOUNDARY-007)
 ```
 
 ---
@@ -829,13 +829,13 @@ Example compiler report:
 
 ## 30. Full Example: Correct Module
 
-```logicn
+```galerina
 module app/users/service
 
 import { UserId, UserProfile, UserError } from "app/users/types"
 import type { UserRecord } from "app/users/types"
 import { find_user_record } from "app/users/repository"
-import capability { Database } from "logicn-core-data/database"
+import capability { Database } from "galerina-core-data/database"
 
 private fn to_profile(record: UserRecord) -> UserProfile {
     return {
@@ -874,12 +874,12 @@ status: ok
 
 ## 31. Full Example: Broken Module
 
-```logicn
+```galerina
 module app/users/routes
 
 import { UserRecord } from "app/users/types"
 import { find_user_record } from "app/users/repository"
-import capability { Database } from "logicn-core-data/database"
+import capability { Database } from "galerina-core-data/database"
 
 pub route GET "/users/{id}" requires [Database] {
     output Result<UserRecord, UserError>
@@ -902,12 +902,12 @@ route leaks password_hash
 Diagnostics:
 
 ```text
-LLN-EFFECT-002: missing propagated effect
+SPORE-EFFECT-002: missing propagated effect
 route: GET /users/{id}
 handler: handle
 required effect: storage
 
-LLN-BOUNDARY-007: public route exposes package-internal type
+SPORE-BOUNDARY-007: public route exposes package-internal type
 route: GET /users/{id}
 type: UserRecord
 ```
@@ -970,20 +970,20 @@ reason: effect denied by runtime policy
 
 | Code | Meaning |
 |---|---|
-| `LLN-EFFECT-001` | Function performs undeclared effect |
-| `LLN-EFFECT-002` | Caller missing propagated callee effect |
-| `LLN-EFFECT-003` | Effect not allowed in current package policy |
-| `LLN-EFFECT-004` | Runtime intrinsic requires undeclared effect |
-| `LLN-EFFECT-005` | Effect declared but capability missing |
-| `LLN-BOUNDARY-001` | Private symbol imported outside module |
-| `LLN-BOUNDARY-002` | Package symbol imported outside package |
-| `LLN-BOUNDARY-003` | Public API exposes private or secret-bearing type |
-| `LLN-BOUNDARY-004` | Import path escapes package source root |
-| `LLN-BOUNDARY-005` | Runtime-only symbol used by normal code |
-| `LLN-BOUNDARY-006` | Capability object constructed directly |
-| `LLN-BOUNDARY-007` | Public route exposes package-internal type |
-| `LLN-BOUNDARY-008` | Public API exposes denied dependency |
-| `LLN-BOUNDARY-009` | Module declaration does not match package manifest |
+| `SPORE-EFFECT-001` | Function performs undeclared effect |
+| `SPORE-EFFECT-002` | Caller missing propagated callee effect |
+| `SPORE-EFFECT-003` | Effect not allowed in current package policy |
+| `SPORE-EFFECT-004` | Runtime intrinsic requires undeclared effect |
+| `SPORE-EFFECT-005` | Effect declared but capability missing |
+| `SPORE-BOUNDARY-001` | Private symbol imported outside module |
+| `SPORE-BOUNDARY-002` | Package symbol imported outside package |
+| `SPORE-BOUNDARY-003` | Public API exposes private or secret-bearing type |
+| `SPORE-BOUNDARY-004` | Import path escapes package source root |
+| `SPORE-BOUNDARY-005` | Runtime-only symbol used by normal code |
+| `SPORE-BOUNDARY-006` | Capability object constructed directly |
+| `SPORE-BOUNDARY-007` | Public route exposes package-internal type |
+| `SPORE-BOUNDARY-008` | Public API exposes denied dependency |
+| `SPORE-BOUNDARY-009` | Module declaration does not match package manifest |
 
 ---
 
@@ -1019,7 +1019,7 @@ module declaration must match package manifest
 
 ## 36. Implementation Checklist
 
-For `logicn-core-compiler`:
+For `galerina-core-compiler`:
 
 ```text
 - define effect enum/registry
@@ -1075,7 +1075,7 @@ Omni logic integration
 
 ## 38. Final Rule
 
-LogicN source code should not be considered safe because it compiles syntactically.
+Galerina source code should not be considered safe because it compiles syntactically.
 
 It should only be considered runnable when:
 

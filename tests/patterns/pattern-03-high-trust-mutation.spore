@@ -1,0 +1,54 @@
+// EXPECT: ACCEPT
+// Pattern 3 — High-Trust Mutation (drcm_stable_v0 + invariant {} LIVE as of DRCM Phase 2)
+// Reference: docs/Knowledge-Bases/galerina-architecture-patterns.md
+//
+// Use when: a flow mutates sensitive state — financial ledger, medical, government data.
+// Rules: S-001–S-005, C-001–C-005, E-001–E-003, K-004, A-001–A-005
+//
+// DRCM Phase 2 (task #36): invariant {} is now LIVE — no @experimental_profile needed.
+// WAT assertion gates injected for runtime-precheck invariants (Goal A: static proofs = zero overhead).
+
+type TransferPayload = record { from_account: String, to_account: String, amount: Int }
+type TransferReceipt = record { transaction_id: String, status: String }
+type GovernanceError = enum { InsufficientFunds Unauthorized InvalidPayload }
+
+secure flow transferFunds(readonly payload: TransferPayload) -> Result<TransferReceipt, GovernanceError>
+contract {
+  intent { "Transfer funds between accounts after verifying balance and actor authorization." }
+  effects { database.write, audit.write, secret.read }
+  privacy {
+    pii payload.from_account payload.to_account
+    require redaction before audit.write
+  }
+  secrets { bind "LEDGER_WRITE_KEY" }
+  audit { require runtime report require cryptographic_state_hash }
+  limits { memory 64mb request_time 500ms }
+  economics { allocation profile.financial_operations }
+  // invariant {} is LIVE — WAT assertion gates injected for runtime-precheck exprs
+  // ensure payload.amount > 0:
+  //   runtime-precheck → (if (i32.eqz (i32.gt_s (local.get $p0.amount) (i32.const 0))) (then unreachable))
+  // ensure Ledger.getBalance(...) >= payload.amount:
+  //   function call → runtime-precheck (WAT gate injected at flow entry + exit)
+  invariant {
+    ensure payload.amount > 0;
+  }
+}
+{
+  if payload.amount <= 0 {
+    return Err(GovernanceError.InvalidPayload)
+  }
+
+  let fromBalance: Int = Ledger.getBalance(payload.from_account)
+  if fromBalance < payload.amount {
+    return Err(GovernanceError.InsufficientFunds)
+  }
+
+  Ledger.debit(payload.from_account, payload.amount)
+  Ledger.credit(payload.to_account, payload.amount)
+
+  let txId: String = Ledger.recordTransaction(payload.from_account, payload.to_account, payload.amount)
+
+  AuditLog.write("FundsTransferred: " + txId)
+
+  return Ok(TransferReceipt { transaction_id: txId, status: "completed" })
+}

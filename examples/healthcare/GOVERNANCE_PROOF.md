@@ -9,7 +9,7 @@ re-running the toolchain.
 
 ## Flow: getPatient
 
-**Source:** `getPatient.lln`
+**Source:** `getPatient.spore`
 **Qualifier:** `secure`
 
 ### Declared Effects
@@ -37,7 +37,7 @@ The following fields are declared PHI in the `privacy` block:
 
 Both fields are redacted before any response or audit write. The compiler
 enforces `require redaction before audit.write`, meaning the effect checker
-will emit `LLN-EFFECT-*` diagnostics if `redact()` is not called before
+will emit `SPORE-EFFECT-*` diagnostics if `redact()` is not called before
 `AuditLog.write`.
 
 The `deny protected PatientId to response.body` rule prevents the raw
@@ -83,4 +83,4 @@ pep_sha256: PLACEHOLDER-getPatient-v0
 
 All hashes above are placeholders pending integration of the deterministic GIR
 hasher in Phase 26. Replace each `PLACEHOLDER-*` value with the output of
-`logicn hash <flow-name>` after building the package.
+`galerina hash <flow-name>` after building the package.

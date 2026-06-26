@@ -1,0 +1,10 @@
+/// example: 172-secret-console-log
+/// level: 4
+/// concept: secret value sent to console sink is forbidden
+/// expected_diagnostics: SPORE-SECRET-001
+/// ai_rule: Never log secret values (API keys, passwords, tokens).
+/// test_status: stable
+
+pure flow example(apiKey: SecureString) -> Void {
+  print(apiKey)
+}

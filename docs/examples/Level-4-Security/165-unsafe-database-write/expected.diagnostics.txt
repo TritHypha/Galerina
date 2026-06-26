@@ -1,4 +1,4 @@
-LLN-VALUESTATE-003 (UnsafeValueReachedGovernedSink)
+SPORE-VALUESTATE-003 (UnsafeValueReachedGovernedSink)
 
 Unsafe value passed to governed database sink.
 Validate rawEmail before inserting:

@@ -11,7 +11,7 @@ hidden global state.
 
 ## Syntax Example
 
-```logicn
+```galerina
 secure flow getUser(
   request: User.get,
   ctx: RequestContext

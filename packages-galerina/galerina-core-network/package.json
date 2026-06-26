@@ -1,0 +1,25 @@
+{
+  "name": "@galerina/core-network",
+  "version": "1.0.0-beta.2",
+  "description": "Galerina core network I/O policy, profile, permission and report contracts.",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run typecheck && npm run build && node --test tests/*.test.mjs",
+    "prove": "node scripts/prove-egress-guard.mjs && node scripts/prove-inbound-guard.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@galerina/tower-citizen": "file:../galerina-tower-citizen"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}

@@ -1,8 +1,8 @@
 # Third-Party Notices
 
-**LogicN** — Copyright 2026 PHILLIP BOOTH — Licensed under the Apache License, Version 2.0.
+**Galerina** — Copyright 2026 PHILLIP BOOTH — Licensed under the Apache License, Version 2.0.
 
-This file lists the third-party software that LogicN bundles, links against, or
+This file lists the third-party software that Galerina bundles, links against, or
 otherwise distributes, and reproduces the attribution and licence information for
 each component.
 
@@ -14,7 +14,7 @@ each component.
 licence (MIT, BSD-3-Clause, ISC, or Apache-2.0).** None impose copyleft or
 share-alike obligations, and all are free for unrestricted commercial use —
 including sale and sublicensing — with no royalty, fee, or field-of-use
-restriction. All are compatible with LogicN's own Apache-2.0 licence.
+restriction. All are compatible with Galerina's own Apache-2.0 licence.
 
 The only obligations these licences impose are attribution-related:
 
@@ -28,10 +28,10 @@ The only obligations these licences impose are attribution-related:
   file, so there is no additional NOTICE text to propagate beyond this file.
 
 **On "referencing the source":** none of these licences *require* a link back to
-the upstream project. As a matter of courtesy, LogicN nonetheless credits every
+the upstream project. As a matter of courtesy, Galerina nonetheless credits every
 component with its source URL in the inventory and per-component sections below.
 
-These notices are included in both the source and binary distributions of LogicN.
+These notices are included in both the source and binary distributions of Galerina.
 
 ---
 
@@ -79,7 +79,7 @@ plus bundled subcomponents. Source links are provided as a courtesy.
 | BLAKE2 | argon2 → phc-winner-argon2 | CC0-1.0 OR Apache-2.0 | (same authors as above) | https://github.com/P-H-C/phc-winner-argon2 |
 | FP16 *(provenance only — compiled into wasm-opt, source not redistributed)* | binaryen | MIT | Copyright (c) Marat Dukhan | https://github.com/Maratyszcza/FP16 |
 
-> `typescript` is a build-time **dev dependency** (it compiles LogicN's TypeScript
+> `typescript` is a build-time **dev dependency** (it compiles Galerina's TypeScript
 > sources; it is not shipped in distributed artifacts). It is listed here for
 > completeness. All other components may be present in distributed artifacts.
 
@@ -312,7 +312,7 @@ Daniel Dinu, Dmitry Khovratovich, Jean-Philippe Aumasson, and Samuel Neves
 ```
 Source: https://github.com/P-H-C/phc-winner-argon2
 
-For LogicN, the **Apache-2.0 option** is elected for this subcomponent, in order
+For Galerina, the **Apache-2.0 option** is elected for this subcomponent, in order
 to obtain the express patent grant of Apache-2.0 §3 (CC0-1.0 §4(a) expressly does
 **not** waive patent rights). The Apache-2.0 licence text below therefore also
 governs this subcomponent.
@@ -617,7 +617,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ## CC0 1.0 Universal (referenced for the phc-winner-argon2 subcomponent)
 
 The bundled phc-winner-argon2 C reference implementation (and its bundled BLAKE2
-code) is offered as **CC0-1.0 OR Apache-2.0**. LogicN elects the **Apache-2.0**
+code) is offered as **CC0-1.0 OR Apache-2.0**. Galerina elects the **Apache-2.0**
 option (reproduced above), which provides an express patent grant. The CC0-1.0
 alternative — a public-domain dedication — remains available to downstream
 recipients at their option; its full text is at

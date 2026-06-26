@@ -1,10 +1,10 @@
-# 219 — Response denies (LLN-GOV-003)
+# 219 — Response denies (SPORE-GOV-003)
 
 ## What this example shows
 
 A flow whose `contract.response.denies` block lists `email` and `nhsNumber`, but the
 flow body still returns `email` in the response object literal. This triggers
-**LLN-GOV-003** (PROTECTED_DATA_IN_RESPONSE).
+**SPORE-GOV-003** (PROTECTED_DATA_IN_RESPONSE).
 
 ## The rule
 

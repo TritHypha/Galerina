@@ -2,7 +2,7 @@
 
 ## Summary
 
-LogicN should support recovery and continuing, especially for data processing, but
+Galerina should support recovery and continuing, especially for data processing, but
 it should be controlled recovery. It must not mean "ignore errors and carry on".
 
 There are two different cases:
@@ -36,7 +36,7 @@ and reported.
 
 Example direction:
 
-```LogicN
+```Galerina
 resilient stream flow importCustomers(input: Stream<Untrusted<JsonLine>>)
   -> ImportReport
 {
@@ -109,7 +109,7 @@ multi-step transactions
 anything requiring all-or-nothing consistency
 ```
 
-For those workflows, LogicN should prefer:
+For those workflows, Galerina should prefer:
 
 ```text
 transaction
@@ -125,7 +125,7 @@ stop safely
 
 Stop on first error. This is the default for security-sensitive work.
 
-```LogicN
+```Galerina
 flow processPayment(input: PaymentRequest)
   -> Result<PaymentResult, PaymentError>
 {
@@ -137,7 +137,7 @@ flow processPayment(input: PaymentRequest)
 
 Continue processing other records when one item fails.
 
-```LogicN
+```Galerina
 resilient stream flow importProducts(input: Stream<JsonLine>)
   -> ImportReport
 {
@@ -150,7 +150,7 @@ resilient stream flow importProducts(input: Stream<JsonLine>)
 
 Retry only errors marked as retryable.
 
-```LogicN
+```Galerina
 retry max 3 backoff exponential {
   email.send(message)
 }
@@ -160,7 +160,7 @@ retry max 3 backoff exponential {
 
 Bad data is not ignored. It is captured and reported.
 
-```LogicN
+```Galerina
 error ValidationError as e {
   quarantine.save(item, reason: e)
   continue
@@ -171,7 +171,7 @@ error ValidationError as e {
 
 Useful for large jobs.
 
-```LogicN
+```Galerina
 resilient stream flow indexDocuments(input: Stream<Document>)
   checkpoint every 100 items
 {
@@ -181,7 +181,7 @@ resilient stream flow indexDocuments(input: Stream<Document>)
 
 ## Recover Is Not Ignore
 
-LogicN should never encourage:
+Galerina should never encourage:
 
 ```text
 error happened
@@ -189,7 +189,7 @@ ignore it
 continue silently
 ```
 
-LogicN should encourage:
+Galerina should encourage:
 
 ```text
 error happened
@@ -210,7 +210,7 @@ Recovery must be explicit, typed and reported.
 
 Useful result direction:
 
-```LogicN
+```Galerina
 type BatchResult<T> {
   successful: Array<T>
   failed: Array<FailedItem>
@@ -220,7 +220,7 @@ type BatchResult<T> {
 
 Example:
 
-```LogicN
+```Galerina
 resilient flow processBatch(items: Array<OrderImportRow>)
   -> BatchResult<ImportedOrder>
 {
@@ -261,7 +261,7 @@ resilient flow processBatch(items: Array<OrderImportRow>)
 Bad memory, memory corruption, unsafe native failure or runtime integrity
 failure should normally stop the affected flow.
 
-LogicN should:
+Galerina should:
 
 ```text
 stop the affected flow
@@ -272,7 +272,7 @@ restart worker if supervised
 resume from checkpoint only if safe
 ```
 
-Memory pressure is different. LogicN can recover by:
+Memory pressure is different. Galerina can recover by:
 
 ```text
 switching to streaming mode
@@ -285,7 +285,7 @@ checkpointing and resuming
 
 Example direction:
 
-```LogicN
+```Galerina
 memory_policy {
   on pressure {
     reduce_batch_size
@@ -303,22 +303,22 @@ memory_policy {
 ## Package Ownership
 
 ```text
-logicn-core
+galerina-core
   resilient flow syntax direction, Result/Option, recover/retry/checkpoint syntax notes
 
-logicn-core-runtime
+galerina-core-runtime
   execution supervision, cancellation, retry scheduling, checkpoint/resume hooks
 
-logicn-core-reports
+galerina-core-reports
   processing report, batch result report and failure summaries
 
-logicn-core-security
+galerina-core-security
   policy checks for whether recovery is allowed
 
-logicn-framework-app-kernel
+galerina-framework-app-kernel
   API/job idempotency, transactions, replay protection and safe runtime boundaries
 
-logicn-core-tasks
+galerina-core-tasks
   safe automation reports for task-level partial failures
 ```
 

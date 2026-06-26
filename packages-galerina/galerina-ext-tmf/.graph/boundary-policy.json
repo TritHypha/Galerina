@@ -1,0 +1,9 @@
+{
+  "packageName": "@galerina/ext-tmf",
+  "allowedExternal": [
+    "@noble/ciphers",
+    "@noble/post-quantum",
+    "node:crypto"
+  ],
+  "note": "Baseline auto-generated. Edit allowedExternal to widen/narrow the border. `--check` fails if an import appears that is not listed here."
+}

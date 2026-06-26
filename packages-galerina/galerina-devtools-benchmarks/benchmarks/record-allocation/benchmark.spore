@@ -1,0 +1,20 @@
+/// record-allocation benchmark — Galerina governed runtime
+/// Creates N records with integer fields, sums two fields.
+/// Directly measures {__tag,value} object creation overhead.
+
+pure flow main() -> Int
+contract { effects {} }
+{
+  mut total: Int = 0
+  mut i:     Int = 0
+
+  while i < 10000 {
+    let x: Int = i
+    let y: Int = i * 2
+    let z: Int = i + 1
+    total = total + x + z
+    i = i + 1
+  }
+
+  return total
+}

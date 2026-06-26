@@ -9,7 +9,7 @@ re-running the toolchain.
 
 ## Flow: verifyPassword
 
-**Source:** `verifyPassword.lln`
+**Source:** `verifyPassword.spore`
 **Qualifier:** `secure`
 
 ### Declared Effects
@@ -55,7 +55,7 @@ pep_sha256: PLACEHOLDER-verifyPassword-v0
 
 ## Flow: createSession
 
-**Source:** `createSession.lln`
+**Source:** `createSession.spore`
 **Qualifier:** `secure`
 
 ### Declared Effects
@@ -97,7 +97,7 @@ pep_sha256: PLACEHOLDER-createSession-v0
 
 ## Flow: verifyToken
 
-**Source:** `verifyToken.lln`
+**Source:** `verifyToken.spore`
 **Qualifier:** `pure`
 
 ### Declared Effects
@@ -112,7 +112,7 @@ contains only a function definition; no `(import ...)` stanzas are emitted.
 ### Audit Trail Contents
 
 _None._ `pure` flows cannot call `AuditLog.write` because `audit.write` is
-not in scope. This is enforced statically by the effect checker (LLN-EFFECT-*
+not in scope. This is enforced statically by the effect checker (SPORE-EFFECT-*
 diagnostics).
 
 ### PassiveExecutionPlan Hash
@@ -133,4 +133,4 @@ pep_sha256: PLACEHOLDER-verifyToken-v0
 
 All hashes above are placeholders pending integration of the deterministic GIR
 hasher in Phase 25C. Replace each `PLACEHOLDER-*` value with the output of
-`logicn hash <flow-name>` after building the package.
+`galerina hash <flow-name>` after building the package.

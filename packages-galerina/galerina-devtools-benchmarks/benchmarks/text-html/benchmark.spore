@@ -1,0 +1,29 @@
+/// text-html benchmark — string processing in Galerina
+/// These flows use the String stdlib which goes through the sync fast-path
+/// (not the integer bytecode VM). Shows the string execution tier.
+
+pure flow escapeHtml(input: String): String {
+  contract { effects {} }
+  let s1: String = input.replace("&", "&amp;")
+  let s2: String = s1.replace("<", "&lt;")
+  let s3: String = s2.replace(">", "&gt;")
+  let s4: String = s3.replace("\"", "&quot;")
+  return s4
+}
+
+pure flow buildResponse(status: String, body: String): String {
+  contract { effects {} }
+  return "{\"status\":\"" + status + "\",\"body\":\"" + body + "\"}"
+}
+
+pure flow countWords(text: String): Int {
+  contract { effects {} }
+  return text.split(" ").length()
+}
+
+pure flow main(): String {
+  contract { effects {} }
+  let escaped: String = escapeHtml("<script>alert('xss')</script>")
+  let response: String = buildResponse("ok", escaped)
+  return response
+}

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-LogicN should keep effects, capabilities, policies, audit and reports precise
+Galerina should keep effects, capabilities, policies, audit and reports precise
 internally, but expose a simpler developer-facing permission model.
 
 ## Short Definition
@@ -35,7 +35,7 @@ permission = actor authority + code effects + data exposure + policy rules + aud
 
 ## Simple Use
 
-```logicn
+```galerina
 secure flow updateUserEmail(
   request: UpdateEmailRequest,
   ctx: RequestContext
@@ -51,7 +51,7 @@ secure flow updateUserEmail(
 
 ## Permission Definition
 
-```logicn
+```galerina
 permission user_email_update {
   actor {
     require users.email.update
@@ -84,7 +84,7 @@ permission user_email_update {
 
 Beginner form:
 
-```logicn
+```galerina
 secure flow getUser(...)
   permission use read_user
 {
@@ -94,7 +94,7 @@ secure flow getUser(...)
 
 Advanced form:
 
-```logicn
+```galerina
 secure flow getUser(...)
   capabilities {
     require users.read
@@ -129,7 +129,7 @@ report facts.
 
 ```text
 Developers write permission.
-LogicN compiles it into capabilities, effects, policy and reports.
+Galerina compiles it into capabilities, effects, policy and reports.
 ```
 
 See [Audit Actor Model](audit-actor-model.md).

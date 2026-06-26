@@ -2,45 +2,45 @@
 
 ## API Serving Model
 
-LogicN API serving is split across three layers:
+Galerina API serving is split across three layers:
 
 ```text
-LogicN Core
+Galerina Core
   defines API contracts, types, diagnostics and generated reports
 
-LogicN App Kernel
+Galerina App Kernel
   enforces validation, auth, rate limits, idempotency and typed handler dispatch
 
-logicn-framework-api-server
+galerina-framework-api-server
   serves HTTP, loads route manifests and passes normalised requests to the kernel
 ```
 
-`logicn-framework-api-server` is the default built-in HTTP API server package for simple LogicN API
-services. Bespoke frameworks can use it directly, use `logicn-framework-app-kernel` directly,
+`galerina-framework-api-server` is the default built-in HTTP API server package for simple Galerina API
+services. Bespoke frameworks can use it directly, use `galerina-framework-app-kernel` directly,
 or later use adapter packages such as Express, Fastify, Lambda or Cloudflare
 Workers.
 
-LogicN should support server ecosystems without becoming them. Nginx, Apache
+Galerina should support server ecosystems without becoming them. Nginx, Apache
 and Caddy are deployment/reverse-proxy targets; Node.js is a tooling platform
 and optional runtime target; Express and similar frameworks are optional
-adapters; the long-term preferred runtime is a LogicN-native secure API server.
+adapters; the long-term preferred runtime is a Galerina-native secure API server.
 See `SERVER_PLATFORM_SUPPORT.md`.
 
 ## Runtime Flow
 
 ```text
 HTTP request
-  -> logicn-framework-api-server
-  -> logicn-framework-app-kernel
-  -> LogicN runtime / typed LogicN flow
-  -> logicn-framework-app-kernel
-  -> logicn-framework-api-server
+  -> galerina-framework-api-server
+  -> galerina-framework-app-kernel
+  -> Galerina runtime / typed Galerina flow
+  -> galerina-framework-app-kernel
+  -> galerina-framework-api-server
   -> HTTP response
 ```
 
 ## Boundaries
 
-`logicn-framework-api-server` owns:
+`galerina-framework-api-server` owns:
 
 ```text
 HTTP listener
@@ -55,7 +55,7 @@ runtime report files
 graceful shutdown
 ```
 
-`logicn-framework-app-kernel` owns:
+`galerina-framework-app-kernel` owns:
 
 ```text
 route matching policy
@@ -70,7 +70,7 @@ typed handler execution
 audit reports
 ```
 
-LogicN Core owns:
+Galerina Core owns:
 
 ```text
 language syntax
@@ -97,7 +97,7 @@ See `SECURE_FAST_ROUTING.md`.
 
 ## Response And Error Handling Style
 
-LogicN should support both readable `try`/`catch` style and explicit `match`
+Galerina should support both readable `try`/`catch` style and explicit `match`
 style for `Result<T, E>` values:
 
 ```text
@@ -118,7 +118,7 @@ AppResponses = app response body schemas
 
 Example:
 
-```LogicN
+```Galerina
 return Http.created(
   AppResponses.Order.from(order)
 )
@@ -140,7 +140,7 @@ See `SECURE_HTTP_RESPONSES.md`.
 
 ## Controller Policy
 
-LogicN should not require MVC controllers as a core API concept.
+Galerina should not require MVC controllers as a core API concept.
 
 The API model is:
 
@@ -159,11 +159,11 @@ must compile into the same route manifest and route graph. It must not hide
 auth, CSRF, object access, idempotency, validation, rate limits, audit or
 effects from the compiler, app kernel or reports.
 
-See `why-controllers-not-used-in-LogicN.md`.
+See `why-controllers-not-used-in-Galerina.md`.
 
 ## Non-Goals
 
-`logicn-framework-api-server` must not become:
+`galerina-framework-api-server` must not become:
 
 ```text
 a full web framework

@@ -1,0 +1,37 @@
+/*
+ * Example: Multi-file import — DAG merge
+ *
+ * WHAT THIS TEACHES
+ *   import "./file.spore"   Pulls another module's flows into THIS scope by merging
+ *                         the two governance DAGs. It is not a textual include:
+ *                         the imported flows keep their own contracts, and the
+ *                         verifier checks the COMBINED graph for cycles and for
+ *                         effect-subset conformance. A pure imported flow (no
+ *                         effects) is safe to merge into any context.
+ *
+ *   DAG merge             Imports form a directed acyclic graph. Each file is a
+ *                         node; an import is an edge. The compiler topologically
+ *                         orders the graph, merges scopes, and rejects any cycle.
+ *                         Capabilities never widen on import — a callee can only
+ *                         use what its own contract declares.
+ *
+ * Pair this file with validation-utils.spore (the imported module).
+ */
+
+import "./validation-utils.spore"  // merge validation-utils' flows into this scope via the DAG
+
+secure flow registerUser(email: String, age: Int) -> Result<Bool, Error>
+contract {
+  intent "Register a new user after validation"
+  effects { allow database.write, allow audit.write }
+  invariant {
+    ensure age >= 18
+  }
+}
+{
+  ;; validateEmail and validateAge come from validation-utils.spore via DAG merge
+  trap !validateEmail(email) : ERR_INVALID_EMAIL
+  trap !validateAge(age) : ERR_INVALID_AGE
+  trap age < 18 : ERR_UNDERAGE
+  return Ok(true)
+}

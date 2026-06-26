@@ -11,4 +11,4 @@ Signing model:
   runtime signs execution report
   verifier checks both
 
-LogicN principle: "LogicN signs what it proves. It does not prove something merely because it is signed."
+Galerina principle: "Galerina signs what it proves. It does not prove something merely because it is signed."

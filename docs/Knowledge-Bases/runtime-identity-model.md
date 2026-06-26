@@ -2,7 +2,7 @@
 
 ## Definition
 
-LogicN uses **runtime-managed identity** rather than developer-authored identity
+Galerina uses **runtime-managed identity** rather than developer-authored identity
 declarations. The runtime automatically generates, verifies, rotates and audits
 service identity.
 
@@ -22,7 +22,7 @@ not maintain manual identity blocks correctly.
 
 Developer writes minimal intent:
 
-```logicn
+```galerina
 api payments {
   endpoint: "https://payments.example"
 }
@@ -41,7 +41,7 @@ mark responses as unsafe
 
 ## Application Code Stays Simple
 
-```logicn
+```galerina
 flow charge_order(raw: unsafe Json) -> Receipt {
   let order: safe Order = validate.order(raw)
   let response: unsafe Any = payments.send(order)
@@ -63,7 +63,7 @@ marks returned data unsafe
 
 Enable automatic identity in runtime config:
 
-```logicn
+```galerina
 runtime {
   identity: auto
   verify_services: true
@@ -74,7 +74,7 @@ runtime {
 
 For enterprise/security teams only — optional hardening:
 
-```logicn
+```galerina
 identity service.payments {
   source: GlobalVault.identities.payments
 }
@@ -84,7 +84,7 @@ This should be advanced configuration, not normal app syntax.
 
 ## Alignment with Industry Standards
 
-LogicN runtime identity should behave similarly to:
+Galerina runtime identity should behave similarly to:
 
 ```text
 SPIFFE / SPIRE   — workload identity issued automatically
@@ -96,7 +96,7 @@ TUF              — package trust via signed registry metadata
 ## Core Principle
 
 ```text
-LogicN proves service identity automatically.
+Galerina proves service identity automatically.
 Developers only declare intent.
 The runtime handles cryptographic trust.
 ```

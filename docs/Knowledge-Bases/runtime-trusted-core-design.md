@@ -2,7 +2,7 @@
 
 ## Definition
 
-The LogicN Securely Governed Runtime (LSGR) organises its components into three layers to prevent complexity and maintain security:
+The Galerina Securely Governed Runtime (LSGR) organises its components into three layers to prevent complexity and maintain security:
 
 ```text
 1. Trusted Core       — Sheriff, policy, capability checks, audit integrity

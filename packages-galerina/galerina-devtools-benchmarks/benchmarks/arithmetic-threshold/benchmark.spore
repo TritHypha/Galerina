@@ -1,0 +1,32 @@
+/// arithmetic-threshold benchmark — Galerina governed runtime
+/// SAME algorithm as node.mjs and python.py v2:
+///   double-add per cycle + modular-multiply + XOR checksum
+///
+/// Uses a tree-walker-friendly threshold (5 billion) so Galerina finishes in <2s.
+/// The runner normalises to additions/second for fair cross-runtime comparison.
+
+pure flow main() -> Int
+contract { effects {} }
+{
+  mut total:     Int = 0
+  mut i:         Int = 0
+  mut additions: Int = 0
+  mut checksum:  Int = 0
+
+  while total <= 2000000000 {
+    total = total + i
+    i = i + 1
+    additions = additions + 1
+
+    total = total + i
+    i = i + 1
+    additions = additions + 1
+
+    /// Modular multiply + XOR checksum (same as v2)
+    let ui: Int = i
+    let prod: Int = (checksum + ui) * 2654435761
+    checksum = prod + ui
+  }
+
+  return additions
+}

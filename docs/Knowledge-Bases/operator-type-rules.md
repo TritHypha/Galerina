@@ -1,10 +1,10 @@
-# LogicN — Operator Type Rules
+# Galerina — Operator Type Rules
 
 ## Status
 
 ```
 Phase 7B prerequisite
-Source of truth for LLN-TYPE-004 (InvalidBinaryOperation) and LLN-TYPE-005 (InvalidUnaryOperation)
+Source of truth for SPORE-TYPE-004 (InvalidBinaryOperation) and SPORE-TYPE-005 (InvalidUnaryOperation)
 Machine-readable version: docs/Knowledge-Bases/operator-rules.schema.yaml
 ```
 
@@ -13,10 +13,10 @@ Machine-readable version: docs/Knowledge-Bases/operator-rules.schema.yaml
 ## Rules at a Glance
 
 - Operators are **built-in only** in v1 — no user-defined operator overloading
-- `String + String` is allowed; `String + Int` is `LLN-TYPE-004` — use `format()` instead
-- `Money<GBP> + Money<GBP>` allowed; `Money<GBP> + Money<USD>` is `LLN-TYPE-004`
+- `String + String` is allowed; `String + Int` is `SPORE-TYPE-004` — use `format()` instead
+- `Money<GBP> + Money<GBP>` allowed; `Money<GBP> + Money<USD>` is `SPORE-TYPE-004`
 - `Tri` cannot be used as a branch condition, with `&&`/`||`, or with `!` — use `match` with all three arms
-- `SecureString == x` is `LLN-SECRET-002` — use `constantTimeEquals()` instead
+- `SecureString == x` is `SPORE-SECRET-002` — use `constantTimeEquals()` instead
 - User-defined records do not support `==` by default — requires `derives Eq` (Phase 7+)
 - `!` only valid on `Bool`; unary `-` only valid on numeric types
 
@@ -24,7 +24,7 @@ Machine-readable version: docs/Knowledge-Bases/operator-rules.schema.yaml
 
 ## Policy: Operators Are Built-In Only (v1)
 
-LogicN v1 does **not** support user-defined operator overloading.
+Galerina v1 does **not** support user-defined operator overloading.
 
 Operators are a fixed, compiler-defined set. No user type may define or override
 the meaning of `+`, `==`, `<`, `&&`, or any other operator.
@@ -34,7 +34,7 @@ the meaning of `+`, `==`, `<`, `&&`, or any other operator.
 Reason: Operator overloading introduces hidden control flow, obscures type-safety
 boundaries, and makes governance and audit traces harder to read.
 
-If a future version of LogicN adopts user-defined operators, the following must
+If a future version of Galerina adopts user-defined operators, the following must
 happen first:
 - A formal extension proposal in the KB
 - An update to this document
@@ -42,7 +42,7 @@ happen first:
 - Explicit governance rules for operator declarations
 
 Until that proposal exists, any use of an operator on unsupported types emits
-`LLN-TYPE-004`.
+`SPORE-TYPE-004`.
 
 ---
 
@@ -58,7 +58,7 @@ Until that proposal exists, any use of an operator on unsupported types emits
 | `/` | numeric | same numeric | same numeric | Integer division truncates toward zero |
 | `%` | integer | integer | integer | Float modulo not permitted — use `Float.rem()` |
 | `+` | `String` | `String` | `String` | String concatenation only — no implicit conversion |
-| `+` | `Money<C>` | `Money<C>` | `Money<C>` | Same currency only — cross-currency is `LLN-TYPE-004` |
+| `+` | `Money<C>` | `Money<C>` | `Money<C>` | Same currency only — cross-currency is `SPORE-TYPE-004` |
 | `-` | `Money<C>` | `Money<C>` | `Money<C>` | Same currency only |
 
 **Numeric types:** `Int`, `Int8`, `Int16`, `Int32`, `Int64`, `UInt8`, `UInt16`, `UInt32`, `UInt64`, `Float`, `Float16`, `Float32`, `Float64`, `Decimal`
@@ -111,10 +111,10 @@ Until that proposal exists, any use of an operator on unsupported types emits
 
 ## `Tri` Operator Rules
 
-`Tri` is LogicN's three-valued truth type (`True`, `False`, `Unknown`).
+`Tri` is Galerina's three-valued truth type (`True`, `False`, `Unknown`).
 It is **not** `Bool` and must not be treated as truthy or falsy.
 
-> **Note on naming:** `Tri` is LogicN's three-valued logic type.
+> **Note on naming:** `Tri` is Galerina's three-valued logic type.
 > It is not a trie (prefix-tree data structure). The names are unrelated.
 > Trie runtime characteristics may appear in future standard-library data
 > structures (autocomplete, string indexes, AI lookup) but have no bearing
@@ -122,7 +122,7 @@ It is **not** `Bool` and must not be treated as truthy or falsy.
 
 ### Allowed uses of `Tri`
 
-```logicn
+```galerina
 // Only form: explicit match over all three values
 match decision {
   True    => allow()
@@ -131,23 +131,23 @@ match decision {
 }
 ```
 
-```logicn
+```galerina
 // Equality comparison between Tri values is allowed
 let same: Bool = decisionA == decisionB
 ```
 
 ### Denied uses of `Tri`
 
-```logicn
+```galerina
 // Denied: Tri as a branch condition
-if decision { return allow() }       // LLN-TYPE-004 or LLN-SAFETY-001
+if decision { return allow() }       // SPORE-TYPE-004 or SPORE-SAFETY-001
 
 // Denied: logical operators on Tri
-let result = decisionA && decisionB  // LLN-TYPE-004
-let result = decisionA || decisionB  // LLN-TYPE-004
+let result = decisionA && decisionB  // SPORE-TYPE-004
+let result = decisionA || decisionB  // SPORE-TYPE-004
 
 // Denied: unary negation of Tri
-let flipped = !decision              // LLN-TYPE-004
+let flipped = !decision              // SPORE-TYPE-004
 ```
 
 ### Reason
@@ -161,7 +161,7 @@ is `Unknown`.
 
 ### Future `Tri` operators (not in v1)
 
-If LogicN later adopts Kleene-style three-valued logic (K3 / Strong Kleene Logic),
+If Galerina later adopts Kleene-style three-valued logic (K3 / Strong Kleene Logic),
 it must be defined explicitly in this document before enabling `Tri && Tri` or
 `Tri || Tri`.
 
@@ -194,19 +194,19 @@ Reference: [Three-valued logic — Wikipedia](https://en.wikipedia.org/wiki/Thre
 
 String concatenation with `+` is allowed only between two `String` values:
 
-```logicn
+```galerina
 let name: String = "Logic" + "N"   // OK
 ```
 
 Implicit string conversion is denied:
 
-```logicn
-let value = "count: " + 42         // LLN-TYPE-004
+```galerina
+let value = "count: " + 42         // SPORE-TYPE-004
 ```
 
 Use explicit formatting for mixed types:
 
-```logicn
+```galerina
 let value = format("count: {}", count)  // correct
 ```
 
@@ -216,20 +216,20 @@ let value = format("count: {}", count)  // correct
 
 Same-currency arithmetic is allowed:
 
-```logicn
+```galerina
 Money<GBP> + Money<GBP>   // OK — result: Money<GBP>
 Money<USD> - Money<USD>   // OK — result: Money<USD>
 ```
 
 Cross-currency arithmetic is denied:
 
-```logicn
-Money<GBP> + Money<USD>   // LLN-TYPE-004
+```galerina
+Money<GBP> + Money<USD>   // SPORE-TYPE-004
 ```
 
 Currency conversion is an effectful domain operation, not a silent arithmetic one:
 
-```logicn
+```galerina
 let usd: Money<USD> = fx.convert(gbp, USD)?  // correct explicit form
 ```
 
@@ -239,13 +239,13 @@ let usd: Money<USD> = fx.convert(gbp, USD)?  // correct explicit form
 
 Records do not have structural equality by default:
 
-```logicn
-userA == userB   // LLN-TYPE-004 — User does not derive Eq
+```galerina
+userA == userB   // SPORE-TYPE-004 — User does not derive Eq
 ```
 
 Records must explicitly derive equality to use `==`:
 
-```logicn
+```galerina
 type User derives Eq {
   id:    UserId
   email: Email
@@ -262,18 +262,18 @@ Note: `derives Eq` is a Phase 7+ feature. Phase 7B defers record equality.
 
 ---
 
-## Diagnostic: `LLN-TYPE-004 InvalidBinaryOperation`
+## Diagnostic: `SPORE-TYPE-004 InvalidBinaryOperation`
 
 Emitted when a binary operator is applied to unsupported operand types.
 
 Example:
 
-```logicn
+```galerina
 let x = 1 + "hello"
 ```
 
 ```
-LLN-TYPE-004: InvalidBinaryOperation
+SPORE-TYPE-004: InvalidBinaryOperation
 
 Operator '+' is not valid for operands:
   left:  Int
@@ -284,18 +284,18 @@ Suggested fix: use String.format() or explicit conversion
 
 ---
 
-## Diagnostic: `LLN-TYPE-005 InvalidUnaryOperation`
+## Diagnostic: `SPORE-TYPE-005 InvalidUnaryOperation`
 
 Emitted when a unary operator is applied to an unsupported operand type.
 
 Example:
 
-```logicn
+```galerina
 let flipped = !someIntValue
 ```
 
 ```
-LLN-TYPE-005: InvalidUnaryOperation
+SPORE-TYPE-005: InvalidUnaryOperation
 
 Unary operator '!' requires Bool operand.
   received: Int
@@ -307,7 +307,7 @@ Suggested fix: use a comparison: someIntValue == 0
 
 ## Legacy Compatibility Policy
 
-Before Phase 7B enables `LLN-TYPE-004`, existing examples should be audited
+Before Phase 7B enables `SPORE-TYPE-004`, existing examples should be audited
 for operator usage and classified:
 
 | Classification | Meaning |
@@ -353,6 +353,6 @@ Defer to later phases:
 - `docs/Knowledge-Bases/operator-rules.schema.yaml` — machine-readable version of this table
 - `docs/Knowledge-Bases/operator-precedence.md` — precedence and associativity
 - `docs/Knowledge-Bases/formal-type-system-spec.md` — numeric widening rules (Section 7)
-- `docs/Knowledge-Bases/logicn-core-logic-tri-decision-bool.md` — Tri type design
-- `docs/Knowledge-Bases/logicn-core-logic-tristate-developer-guide.md` — Tri usage guide
+- `docs/Knowledge-Bases/galerina-core-logic-tri-decision-bool.md` — Tri type design
+- `docs/Knowledge-Bases/galerina-core-logic-tristate-developer-guide.md` — Tri usage guide
 - `docs/Knowledge-Bases/value-state-annotations.md` — SecureString equality rules

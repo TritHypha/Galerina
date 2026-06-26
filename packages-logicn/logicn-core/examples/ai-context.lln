@@ -1,8 +1,0 @@
-project "AiContextDemo"
-
-entry "./hello.lln"
-
-secure flow main() -> Result<Void, Error> {
-  print("AI context example")
-  return Ok()
-}

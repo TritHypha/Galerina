@@ -2,16 +2,16 @@
 
 ## Purpose
 
-LogicN may support a built-in passive generic cache for LLM and embedding calls.
+Galerina may support a built-in passive generic cache for LLM and embedding calls.
 
 Passive means:
 
 ```text
 The developer calls the LLM normally.
-LogicN decides whether the request is safe and useful to cache.
-LogicN generates the cache key.
-LogicN stores or reuses the result.
-LogicN records the cache decision in reports.
+Galerina decides whether the request is safe and useful to cache.
+Galerina generates the cache key.
+Galerina stores or reuses the result.
+Galerina records the cache decision in reports.
 ```
 
 Developers should not need to hand-write:
@@ -39,13 +39,13 @@ Passive LLM caching can help with:
 | Schema output cache | Same input converted to the same typed JSON result |
 | Code-analysis cache | Same source file analysed repeatedly |
 | Local model cache | Local LLM outputs reused without recomputing |
-| Provider cache | OpenAI-compatible, local and other providers behind one LogicN interface |
+| Provider cache | OpenAI-compatible, local and other providers behind one Galerina interface |
 
 ## Developer Experience
 
 Developer code stays simple:
 
-```logicn
+```galerina
 let result = LLM.ask<SupportReply>({
   model: "best:support",
   system: "You are a support assistant.",
@@ -54,7 +54,7 @@ let result = LLM.ask<SupportReply>({
 })
 ```
 
-LogicN treats the call as:
+Galerina treats the call as:
 
 ```text
 1. Check whether the LLM call is cacheable.
@@ -68,18 +68,18 @@ LogicN treats the call as:
 9. Record the cache event in a report.
 ```
 
-The developer gets simple code. LogicN gets traceability.
+The developer gets simple code. Galerina gets traceability.
 
 ## Policy Example
 
 Example cache policy:
 
-```logicn
+```galerina
 llm_cache PassiveLLMCache {
   mode passive
   default enabled
 
-  store local "./.logicn/cache/llm"
+  store local "./.galerina/cache/llm"
   scope project
 
   ttl {
@@ -135,7 +135,7 @@ llm_cache PassiveLLMCache {
 
 Sensitive calls can disable caching:
 
-```logicn
+```galerina
 let reply = LLM.ask<ChatReply>({
   model: "best:support",
   input: liveCustomerMessage,
@@ -145,7 +145,7 @@ let reply = LLM.ask<ChatReply>({
 
 Repeatable safe tasks can request a stricter cache policy:
 
-```logicn
+```galerina
 let summary = LLM.ask<InvoiceSummary>({
   model: "best:extraction",
   task: "summarise_invoice",
@@ -180,7 +180,7 @@ tool manifest hash
 temperature
 top_p
 seed where available
-LogicN version
+Galerina version
 security policy hash
 package lock hash where relevant
 source hash where relevant
@@ -210,11 +210,11 @@ or security contexts.
 
 ## Typed Output Rule
 
-LogicN should not cache unvalidated free text by default.
+Galerina should not cache unvalidated free text by default.
 
 Preferred:
 
-```logicn
+```galerina
 type ProductTags = {
   category: String
   tags: List<String>
@@ -227,7 +227,7 @@ let result = LLM.ask<ProductTags>({
 })
 ```
 
-Before caching, LogicN must validate:
+Before caching, Galerina must validate:
 
 ```text
 schema shape
@@ -242,7 +242,7 @@ data classification policy
 
 Embeddings are a strong use case for exact passive caching.
 
-```logicn
+```galerina
 let vector = LLM.embed(documentText)
 ```
 
@@ -260,7 +260,7 @@ tenant/project isolation key
 
 Example policy:
 
-```logicn
+```galerina
 embedding_cache {
   enabled true
   ttl 90 days
@@ -271,7 +271,7 @@ embedding_cache {
 
 ## Code-Analysis And AI Context Cache
 
-LogicN can cache AI-oriented project context:
+Galerina can cache AI-oriented project context:
 
 ```text
 file summaries
@@ -284,10 +284,10 @@ generated AI context
 
 Example:
 
-```logicn
+```galerina
 ai_context_cache {
   enabled true
-  store "./.logicn/cache/ai-context"
+  store "./.galerina/cache/ai-context"
 
   invalidate_when {
     source_file_changed
@@ -302,11 +302,11 @@ Generated AI context must not contain secret values or raw private data.
 
 ## Provider Interface
 
-LogicN should keep LLM calls provider-neutral.
+Galerina should keep LLM calls provider-neutral.
 
 Example:
 
-```logicn
+```galerina
 llm_provider LocalLlama {
   type local
   endpoint "http://localhost:11434"
@@ -322,7 +322,7 @@ llm_provider OpenAICompatible {
 
 Application code can stay generic:
 
-```logicn
+```galerina
 let result = LLM.ask<CodeReview>({
   model: "best:code",
   input: sourceFile,
@@ -334,33 +334,33 @@ Provider, model and model-version facts remain part of the cache key.
 
 ## Cache Stores
 
-LogicN may support multiple stores:
+Galerina may support multiple stores:
 
-```logicn
+```galerina
 llm_cache {
   store memory
 }
 ```
 
-```logicn
+```galerina
 llm_cache {
-  store local "./.logicn/cache/llm"
+  store local "./.galerina/cache/llm"
 }
 ```
 
-```logicn
+```galerina
 llm_cache {
   store redis env "REDIS_URL"
 }
 ```
 
-```logicn
+```galerina
 llm_cache {
   store database "llm_cache"
 }
 ```
 
-```logicn
+```galerina
 llm_cache {
   store encrypted "./secure-cache"
 }
@@ -380,7 +380,7 @@ permission checks
 
 ## Default Denies
 
-LogicN should refuse passive caching for:
+Galerina should refuse passive caching for:
 
 ```text
 passwords
@@ -402,7 +402,7 @@ Example diagnostic:
 
 ```json
 {
-  "code": "LOGICN-LLM-CACHE-003",
+  "code": "GALERINA-LLM-CACHE-003",
   "severity": "blocked",
   "message": "LLM cache refused because input may contain secrets or personal data.",
   "file": "support-chat.ln",
@@ -418,7 +418,7 @@ Recommended modes:
 | Mode | Meaning |
 | --- | --- |
 | `off` | Never cache |
-| `passive` | LogicN decides using policy |
+| `passive` | Galerina decides using policy |
 | `always` | Cache only if security checks pass |
 | `readonly` | Use cache but do not write new entries |
 | `refresh` | Call model again and update cache |
@@ -460,7 +460,7 @@ Semantic cache is riskier and requires explicit permission.
 
 Example policy:
 
-```logicn
+```galerina
 semantic_cache {
   enabled true
   threshold 0.94
@@ -483,7 +483,7 @@ access control
 
 ## Invalidation
 
-LogicN should invalidate passive LLM cache entries when important inputs change:
+Galerina should invalidate passive LLM cache entries when important inputs change:
 
 ```text
 model changed
@@ -493,7 +493,7 @@ output schema changed
 tools changed
 RAG context changed
 security policy changed
-LogicN compiler version changed
+Galerina compiler version changed
 package version changed
 source file changed
 tenant/project isolation key changed

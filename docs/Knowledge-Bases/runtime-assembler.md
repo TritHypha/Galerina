@@ -7,7 +7,7 @@ Planned for: Stage B
 
 ## Definition
 
-The **LogicN Runtime Assembler** (also called Result Assembler) collects, orders, validates, and finalises results from asynchronous or parallel execution, restoring them to the correct governed output order.
+The **Galerina Runtime Assembler** (also called Result Assembler) collects, orders, validates, and finalises results from asynchronous or parallel execution, restoring them to the correct governed output order.
 
 ```text
 Parallel execution may finish out of order.

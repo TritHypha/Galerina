@@ -2,7 +2,7 @@
 
 ## Purpose
 
-LogicN runtime terminology should reflect the runtime's current direction:
+Galerina runtime terminology should reflect the runtime's current direction:
 
 ```text
 a governed operational coordination system
@@ -16,7 +16,7 @@ thread executor
 web server runtime
 ```
 
-LogicN no longer only describes instruction execution. It describes
+Galerina no longer only describes instruction execution. It describes
 classification, governance, planning, coordination, deployment, balancing,
 auditing and heterogeneous computation.
 
@@ -28,7 +28,7 @@ Traditional runtimes focus on:
 execute code
 ```
 
-LogicN increasingly focuses on:
+Galerina increasingly focuses on:
 
 ```text
 coordinate governed computation
@@ -47,7 +47,7 @@ thread-centric
 instruction-centric
 ```
 
-LogicN is moving toward:
+Galerina is moving toward:
 
 ```text
 governed execution
@@ -295,7 +295,7 @@ partially asynchronous execution.
 
 ## Long-Term Runtime Vision
 
-LogicN is moving toward:
+Galerina is moving toward:
 
 ```text
 a governed compute orchestration platform
@@ -324,7 +324,7 @@ audit-native runtime coordination
 ```text
 Traditional runtimes execute instructions.
 
-LogicN coordinates governed computation
+Galerina coordinates governed computation
 across heterogeneous compute systems.
 ```
 

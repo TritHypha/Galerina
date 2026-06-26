@@ -7,11 +7,11 @@
 // filesystem, dynamic code eval, …)? Every entry below is a border a human deliberately widened; this
 // surfaces them for review so an over-permissive border can't hide in a green `--check`.
 //
-// Reads each packages-logicn/<pkg>/.graph/boundary-policy.json — the authoritative allowlist (NOT the
+// Reads each packages-galerina/<pkg>/.graph/boundary-policy.json — the authoritative allowlist (NOT the
 // regex-derived graph, so manual require()/dynamic-import entries are included, no false negatives).
 //
 // ── SPECIFIER FORM: bare AND node:-prefixed both classify (this was a fail-open) ──────────────────────
-//   The package-graph scanner (logicn-devtools-package-graph/src/scanner.ts) accepts a builtin written
+//   The package-graph scanner (galerina-devtools-package-graph/src/scanner.ts) accepts a builtin written
 //   BOTH ways: its NODE_BUILTINS set maps the bare `child_process` to kind "node_core" exactly as it maps
 //   `node:child_process`. So a `--check` gate passes an allowlist entry of bare `child_process`, `tls`,
 //   `net`, `vm`, `process`, `os`, `fs`, `http`, `dns`, … just as it passes the `node:`-prefixed form. The
@@ -42,7 +42,7 @@ import { fileURLToPath } from "node:url";
 import { realpathSync } from "node:fs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const PKG_DIR = join(ROOT, "packages-logicn");
+const PKG_DIR = join(ROOT, "packages-galerina");
 
 // ── Sensitive NODE-CORE capabilities → the risk a human should justify per package. ───────────────────
 // Each regex accepts the bare builtin OR the node:-prefixed form: /^(?:node:)?…$/. Order matters only for

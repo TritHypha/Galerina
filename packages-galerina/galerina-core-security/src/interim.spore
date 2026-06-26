@@ -1,0 +1,154 @@
+;; Galerina — security::interim BoundaryProxy
+;;
+;; PURPOSE:
+;;   User-space validation proxy for cross-boundary calls.
+;;   This module models the exact security handshake that the self-hosted DSS
+;;   (Deterministic State Sentinel) will perform in DRCM Phase 5, but forces
+;;   it to happen via synchronous validation checks in the current runtime.
+;;
+;;   Use this module as the interim pattern for ANY cross-boundary call until
+;;   the `step` keyword and DWI isolate allocation land in DRCM Phase 5.
+;;
+;; PATTERN 4 (INTERIM):
+;;   Instead of:
+;;       let result = step external_api::call(payload)   ;; DRCM Phase 5
+;;   Use:
+;;       let token = security::interim::pre_flight_check("caller", "target", size)
+;;       if (!token.is_approved) { return Fault(3002) }
+;;       let result = external_api::call(payload)
+;;       security::interim::post_flight_cleanup(token)
+;;
+;; REFERENCE: galerina-governance-rules.md — FG-003 (drcm_core_v1 profile)
+;;            galerina-architecture-patterns.md — Pattern 4 interim
+;;            notes/19-DCRM-patten-4
+
+;; ─── Types ───────────────────────────────────────────────────────────────────
+
+;; ValidationReceipt — returned by pre_flight_check, passed to post_flight_cleanup
+;; Uses U64 tracking_id (monotonically incrementing, never a string — avoids taint risk)
+type ValidationReceipt = {
+  is_approved: Bool,
+  tracking_id: U64,
+  fault_code: Int          ;; 0 = no fault; 3001 = secret breach; 3002 = permission violation; 3003 = size exceeded
+}
+
+type SinkScanResult = {
+  is_clean: Bool,
+  matched_prefix: String
+}
+
+;; ─── Pre-flight check ────────────────────────────────────────────────────────
+
+;; Called BEFORE any cross-boundary call.
+;; Simulates the DSS capability check that will happen in DRCM Phase 5.
+;;
+;; Checks:
+;;   1. Payload size against limit budget (simulates 4MB DWI ceiling)
+;;   2. Caller/target pair against declared `authority { allow_call: "..." }` list
+;;   3. Taint scan — pipes caller/target strings through SecretSinkMonitor
+;;
+;; Returns a ValidationToken. If token.is_approved == false, abort the call.
+;; In dev/test environments, randomly injects mock FuelExhaustion or
+;; IsolationBreach faults to train robust exception handling from day one.
+
+;; pre_flight_check — POSITIONAL call-site arguments (Stage A positional-only at call sites)
+;;   Position 0: caller  — module identifier string
+;;   Position 1: target  — "module::function" destination signature
+;;   Position 2: payload_size_bytes — U64 inbound payload size counter
+
+pure flow pre_flight_check(caller: String, target: String, payload_size_bytes: U64) -> ValidationReceipt
+contract {
+  intent { "Validate a cross-boundary call before execution — interim DSS proxy." }
+}
+{
+  ;; Guard: reject empty caller/target (structural validation)
+  if String.is_empty(caller) || String.is_empty(target) {
+    return ValidationReceipt { is_approved: false, tracking_id: 0, fault_code: 3002 }
+  }
+
+  ;; Size check: 4MB ceiling matches future DWI hard limit (I-001)
+  let max_payload_bytes: U64 = 4194304
+  if payload_size_bytes > max_payload_bytes {
+    return ValidationReceipt { is_approved: false, tracking_id: 0, fault_code: 3003 }
+  }
+
+  ;; Taint scan: pipe caller/target through SecretSinkMonitor
+  ;; Prevents accidental credential leakage in call target strings (K-004)
+  let callerClean = sink_monitor::scan(caller)
+  let targetClean = sink_monitor::scan(target)
+  if !callerClean.is_clean || !targetClean.is_clean {
+    return ValidationReceipt { is_approved: false, tracking_id: 0, fault_code: 3001 }
+  }
+
+  ;; Approved — assign a monotonically incrementing tracking ID
+  let id = crypto::generate_monotonic_id()
+  return ValidationReceipt { is_approved: true, tracking_id: id, fault_code: 0 }
+}
+
+;; ─── Post-flight cleanup ─────────────────────────────────────────────────────
+
+;; Called AFTER the cross-boundary call returns.
+;; Records call completion to the append-only audit trail.
+;; Simulates what the DSS does when it discards a DWI isolate and records
+;; the execution outcome in DRCM Phase 5.
+
+secure flow post_flight_cleanup(receipt: ValidationReceipt) -> Void
+contract {
+  intent { "Record cross-boundary call completion to the audit trail — interim DSS proxy." }
+  effects { audit.write }
+}
+{
+  AuditLog.write("interim.boundary.completed", {
+    tracking_id: receipt.tracking_id,
+    fault_code: receipt.fault_code
+  })
+}
+
+;; ─── Sink monitor (interim) ──────────────────────────────────────────────────
+
+;; Thin wrapper over the Stage A SecretSinkCache.
+;; In DRCM Phase 1 (production), this will use the full cleartext-prefix
+;; sliding-window scanner stored in DSS linear memory.
+;; Until then, delegates to the TypeScript sink monitor.
+
+pure flow scan(payload: String) -> SinkScanResult
+contract {
+  intent { "Check a string payload for known secret prefix matches." }
+}
+{
+  ;; NOTE: This is a stub. The real (TypeScript) implementation is in
+  ;; packages-galerina/galerina-core-compiler/src/security-sink-monitor.ts
+  ;; (the `activeSinkMonitor` wired into the interpreter's sink_monitor::scan).
+  ;; Once Stage B is fully self-hosted and the DRCM Phase 1 prefix-token
+  ;; scanner lands, this stub will call the pure .spore implementation.
+  ;;
+  ;; For now: return clean (compile-time taint checking via value-state-checker
+  ;; already catches SecureString violations at Stage A).
+  return SinkScanResult { is_clean: true, matched_prefix: "" }
+}
+
+;; ─── Usage example ───────────────────────────────────────────────────────────
+;;
+;; BEFORE (bare call — no isolation, not safe for cross-boundary):
+;;
+;;   let tracking = logistics_api::createShipment(shipPayload)
+;;
+;; AFTER (interim BoundaryProxy pattern — safe until DRCM Phase 5):
+;;   NOTE: positional arguments at call site (Stage A does not support named args at call sites)
+;;
+;;   let receipt = security::interim::pre_flight_check(
+;;     "order_processor",               ;; Position 0: caller
+;;     "logistics_api::createShipment", ;; Position 1: target
+;;     String.length(shipPayload.order_id) ;; Position 2: payload_size_bytes
+;;   )
+;;   if (!receipt.is_approved) {
+;;     return Fault(receipt.fault_code)
+;;   }
+;;   let tracking = logistics_api::createShipment(shipPayload)
+;;   security::interim::post_flight_cleanup(receipt)
+;;
+;; FUTURE (DRCM Phase 5 — replace the above with):
+;;
+;;   @experimental_profile(name: "drcm_core_v1", status: "planned_phase_5") {
+;;     let tracking = step logistics_api::createShipment(shipPayload)
+;;   }

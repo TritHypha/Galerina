@@ -1,0 +1,10 @@
+/// example: 416-target-fallback-missing
+/// level: 8
+/// concept: compute target without fallback
+/// expected_diagnostics: SPORE-HINT-COMPUTE-001
+/// test_status: stable
+
+pure flow runModel(input: Tensor<Float32, [1, 128]>) -> Tensor<Float32, [1, 10]> {
+  compute target npu {}
+  return NeuralModel.run(input)?
+}

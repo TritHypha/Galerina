@@ -2,24 +2,24 @@
 
 ## Scope
 
-This repository is a LogicN application template and package workspace. It does not
+This repository is a Galerina application template and package workspace. It does not
 yet define one specific product domain. Requirements in this file describe what
 the template, package boundaries and developer tooling must provide so a
-bespoke application can be built on top of LogicN safely.
+bespoke application can be built on top of Galerina safely.
 
 Product-specific requirements belong in this file once an app domain is chosen.
-Until then, `packages-logicn/logicn-framework-example-app/` remains a minimal app area and feature placeholders
+Until then, `packages-galerina/galerina-framework-example-app/` remains a minimal app area and feature placeholders
 must not be treated as implemented app functionality.
 
 ## Template Goals
 
-- Provide a clear workspace for LogicN language, compiler/runtime contracts,
+- Provide a clear workspace for Galerina language, compiler/runtime contracts,
   security primitives, tooling packages and bespoke app code.
-- Keep language documentation in `packages-logicn/logicn-core/` and app/workspace
+- Keep language documentation in `packages-galerina/galerina-core/` and app/workspace
   documentation in `docs/`.
 - Support CPU-compatible checked execution and deterministic reports as the
   practical baseline.
-- Keep v1 focused on `logicn serve` and the secure web runtime.
+- Keep v1 focused on `galerina serve` and the secure web runtime.
   CPU-compatible checked execution remains the baseline, with a simple portable
   build target as a secondary v1 milestone. WASM, GPU, photonic, low-bit AI,
   AI accelerator, optical I/O and native executable support remain target
@@ -28,7 +28,7 @@ must not be treated as implemented app functionality.
   not by making neural networks part of normal app syntax.
 - Support parallel AI agents only as supervised, bounded, permissioned,
   cancelable and reportable workloads.
-- Support LogicN Structured Await as the normal concurrency model: synchronous-looking
+- Support Galerina Structured Await as the normal concurrency model: synchronous-looking
   waits with scoped child work, typed effects, timeouts, cancellation and reports
   instead of exposed future/promise plumbing.
 - Support controlled recovery for batch/data flows while stopping safely on
@@ -49,29 +49,29 @@ must not be treated as implemented app functionality.
 ## V1 Language Requirements
 
 - The v1 surface must freeze around core syntax, the core type system,
-  `Result<T, E>`, `Option<T>`, the memory-safety model, `logicn serve`, secure
+  `Result<T, E>`, `Option<T>`, the memory-safety model, `galerina serve`, secure
   web runtime policy and CPU-compatible checked execution.
-- LogicN's architecture charter must remain stable: security first, code
+- Galerina's architecture charter must remain stable: security first, code
   second, authority never implicit. Raw speed must not override controlled
   authority, verifiable execution, auditability, memory safety, architectural
   stability or governed execution.
-- LogicN must be designed around security invariants rather than isolated
+- Galerina must be designed around security invariants rather than isolated
   exploit patches. Declared security policy must be part of program meaning, so
   the compiler/runtime can prove or deny whether a flow may expose data, use an
   effect, call a package, cross a boundary or execute unsafe behaviour.
-- LogicN's compiler IR should be security-aware. It should carry permissions,
+- Galerina's compiler IR should be security-aware. It should carry permissions,
   capabilities, data classification, exposure level, ownership, actor identity,
   trust boundaries, side effects, audit requirements, package authority and
   runtime isolation requirements into checking, execution planning and reports.
-- LogicN execution plans should become immutable after checking. Runtime monkey
+- Galerina execution plans should become immutable after checking. Runtime monkey
   patching, hidden behaviour injection, reflective execution, dynamic property
   injection, runtime type rewriting and metadata mutation that changes
   authority must be denied in normal code.
-- LogicN high-assurance profiles should support hardened mode rules such as
+- Galerina high-assurance profiles should support hardened mode rules such as
   disabled runtime reflection, denied unsafe blocks, denied shell execution,
   signed-only external plugins/packages, deterministic execution enforcement,
   raw SQL denial and mandatory audit.
-- LogicN ideas must be classified before they are treated as implementation
+- Galerina ideas must be classified before they are treated as implementation
   requirements. The priority order is: non-negotiable rules, core language
   rules, core concepts, platform concepts, recommended design rules and
   future/research concepts.
@@ -82,23 +82,23 @@ must not be treated as implemented app functionality.
 - Everything beyond secure runtime execution and the simple portable build
   target must be labelled post-v1 or target planning unless it is necessary to
   define the core type system.
-- LogicN must not make measured performance claims until the compiler, memory
+- Galerina must not make measured performance claims until the compiler, memory
   model, runtime and benchmark methodology exist. Current performance wording
   must be framed as a goal or opportunity, not a measured fact.
-- LogicN benchmarks must separate validation from speed ranking. Fixed-operation
+- Galerina benchmarks must separate validation from speed ranking. Fixed-operation
   mode validates matching checksums; timed 10-30 second throughput mode provides
   the official median operations-per-second score. Warm-up must use throwaway
   state and must not mutate the measured benchmark state.
-- LogicN startup must prefer verified boot profiles over runtime discovery in
+- Galerina startup must prefer verified boot profiles over runtime discovery in
   production. Expensive route, policy, schema, package and target planning
   should happen at build/check time; boot should verify hashes, load the
   smallest safe runtime surface and defer optional packages until after
   readiness.
-- LogicN boot snapshots, where used, must start as verified bundles of
+- Galerina boot snapshots, where used, must start as verified bundles of
   deterministic startup artefacts rather than raw runtime memory dumps. Startup
   cache artefacts must be bounded, content-addressed where practical, safe to
   delete, safe to bypass, non-secret and never required for correctness.
-- LogicN fast response planning must combine verified boot profiles,
+- Galerina fast response planning must combine verified boot profiles,
   precompiled route dispatch, prebuilt validators, warmed policy tables,
   bounded pools, safe inbound connection reuse and safe outbound connection
   pooling. Keep-alive policy must never bypass auth, validation, TLS, rate
@@ -108,12 +108,12 @@ must not be treated as implemented app functionality.
   Inbound and outbound connection pooling must emit network performance report
   data and remain subject to timeout, rate-limit, body-limit, backpressure,
   audit and TLS policy.
-- LogicN's current practical web/API execution model must be described as
+- Galerina's current practical web/API execution model must be described as
   Node-hosted. The language core must remain target-independent, Node/V8
   behavior must not define source semantics, and Node-hosted benchmarks must
   be labelled as prototype runner or host-runtime overhead rather than native
-  LogicN performance.
-- LogicN v1 concept documentation must keep the five-part model as the main
+  Galerina performance.
+- Galerina v1 concept documentation must keep the five-part model as the main
   teaching structure while indexing detailed concepts underneath it: routes,
   requests, responses/views, secure flows, models, contracts, policies,
   effects, capabilities, classification, context, scopes/lifetimes, errors,
@@ -125,18 +125,18 @@ must not be treated as implemented app functionality.
   which form is canonical or explicitly mark the conflict unresolved.
 - Photonic public contracts must not be implemented from conflicting docs until
   `OpticalTransportMode`, `PhotonicRuntimeTarget`, `PhotonicExecutionPlan` and
-  `LLN-PHOTONIC-001` through `LLN-PHOTONIC-006` have one package-owned canonical
+  `SPORE-PHOTONIC-001` through `SPORE-PHOTONIC-006` have one package-owned canonical
   definition.
 - Webhook HMAC, replay protection and idempotency contracts must use the
-  `logicn-core-network` v0.2 canonical model unless an adapter explicitly maps
+  `galerina-core-network` v0.2 canonical model unless an adapter explicitly maps
   its local names to that model.
-- Logic-state contracts must use the `logicn-core-logic` v0.2 canonical model
+- Logic-state contracts must use the `galerina-core-logic` v0.2 canonical model
   for runtime-facing docs: `TriState` with `kind`, `Decision` with
   `allow|deny|review|unknown`, evidence arrays and fail-closed Bool conversion.
-- LogicN should expose `permission` as the main developer-facing authority
+- Galerina should expose `permission` as the main developer-facing authority
   concept while preserving capabilities, effects, policies, audit and reports as
   precise internal/effective concepts.
-- LogicN syntax and logic principles must be secure by default, not only
+- Galerina syntax and logic principles must be secure by default, not only
   runtime-checked. Insecure behaviour should be impossible by default, and
   privileged behaviour must be visible in syntax through permissions, effects,
   input contracts, output views, ownership checks, safe sinks, budgets and audit
@@ -144,11 +144,11 @@ must not be treated as implemented app functionality.
 - Permission blocks must deny by default. Missing allow rules must mean denied,
   and risky action families such as database, file, network, secret, AI/tool,
   compute, shell and external API access must require explicit authority.
-- LogicN must use a governed Package Resolver rather than an autoloader model.
+- Galerina must use a governed Package Resolver rather than an autoloader model.
   Imports and package references must not grant trust or hidden authority. The
   resolver must find, verify, authorize, load and link packages/modules before
   execution.
-- LogicN should define a Certified Package Registry as a governed package source
+- Galerina should define a Certified Package Registry as a governed package source
   where packages are published, verified, signed, versioned,
   capability-declared and policy-rated before use.
 - The Certified Package Registry must treat packages as governed authority
@@ -199,11 +199,11 @@ must not be treated as implemented app functionality.
 - System actors used in audit metadata, such as a payments system actor, must be
   runtime-approved identities declared in trusted runtime policy, not arbitrary
   application-created actor values.
-- LogicN policies must be first-class source rules. Reusable policies should
+- Galerina policies must be first-class source rules. Reusable policies should
   live under `/policies`, local policy should be placed at the smallest useful
   boundary, and policy reports must include index, definitions, effective
   enforcement, conflicts and AI/human summaries.
-- LogicN must load a system-level Runtime Policy Config early in the request/boot
+- Galerina must load a system-level Runtime Policy Config early in the request/boot
   lifecycle (`boot/main -> Runtime Policy Config -> Package Resolver -> Governance Checks -> Governed IR -> Runtime Execution`)
   before executing any project code. It serves as the runtime's default governance contract.
 - The Runtime Policy Config must define defaults and constraints for deny-by-default mode,
@@ -215,102 +215,102 @@ must not be treated as implemented app functionality.
 - The Runtime Policy Config must remain separated from `boot/main` startup wiring:
   the policy config defines the rules of the environment, while `boot/main` declares
   the entry point wiring and module loading.
-- LogicN must not use PHP-style superglobals. `Runtime.Context` is the
+- Galerina must not use PHP-style superglobals. `Runtime.Context` is the
   runtime-owned, read-controlled execution context for the current flow. It
   contains actor, request, route, permission, capability, audit, budget and
   compute facts but is not a global variable and is not freely writable.
   `Runtime.Context` must be injected into flows only when needed; simple flows
   may omit it. Session and shared mutable state must use governed vaults, not
   global bags or hidden writable context.
-- LogicN encapsulation must be based on controlled data movement rather than
+- Galerina encapsulation must be based on controlled data movement rather than
   public/private field visibility alone. Secure flow boundaries, explicit
   inputs and outputs, classification, response/view contracts, capabilities,
   effects, scoped lifetimes, package exports, safe mutation rules and reports
   must define what data can move and what can leave.
-- LogicN models must be treated as view-governed internal security contracts, not
+- Galerina models must be treated as view-governed internal security contracts, not
   public DTOs or active-record database objects. Production model fields must
   be classified, raw models must not be returned by public routes, model
   mutations and relationships must be explicit and storage access must remain in
   repository/storage boundaries.
-- LogicN may use model views inside `data` blocks to simplify response
+- Galerina may use model views inside `data` blocks to simplify response
   definitions, but model and response/view meanings must stay separate. Public
   output must still use declared views or responses, never raw internal models.
-- LogicN model reports must include model index, model definitions, effective
+- Galerina model reports must include model index, model definitions, effective
   model rules, model exposure, model relationships, model mutation reports and
   AI-readable model summaries as report targets.
-- LogicN boundary concept documentation must index events, repositories/storage
+- Galerina boundary concept documentation must index events, repositories/storage
   and adapters/connectors as boundary specializations. Events, queue/job
   engines, large provider ecosystems and database migration systems may remain
   later implementation work unless needed by the secure web runtime.
-- LogicN polymorphism must be explicit rather than hidden. Contract-based
+- Galerina polymorphism must be explicit rather than hidden. Contract-based
   polymorphism, adapter-based polymorphism, union/match variants and constrained
   generics are allowed directions; inheritance-based behaviour, implicit
   provider swapping and unreported plugin dispatch must not become the main
   application model.
-- LogicN must disallow inheritance and inherited authority in normal application
+- Galerina must disallow inheritance and inherited authority in normal application
   source. Reuse must use composition, contracts, adapters, variants, generics,
   secure flows, explicit views/responses, explicit permissions, explicit
   effects and effective reports.
-- LogicN must assume everything is unsafe until declared safe. Data, effects,
+- Galerina must assume everything is unsafe until declared safe. Data, effects,
   package authority, response exposure, routes and AI-generated changes must
   earn trust through declarations, checks, policies or reports.
 - Polymorphic implementations must keep permissions, effects, data exposure,
   boundaries, errors, audit requirements and selected implementation visible in
   effective reports.
-- LogicN match catch-all branches using `_ => { ... }` must be documented as
+- Galerina match catch-all branches using `_ => { ... }` must be documented as
   explicit fallback handling. For security-sensitive matches, catch-all branches
   must return a typed error, explicit ignored response, safe log, manual review
   or fail-closed result instead of silently swallowing unknown states.
-- LogicN runtime execution must follow the Securely Governed Runtime direction:
+- Galerina runtime execution must follow the Securely Governed Runtime direction:
   authority is verified before execution; policy, capabilities, effects and
   audit hooks are part of execution itself; untrusted packages, plugins,
   AI-generated code, external services and hardware accelerators may execute
   only through declared boundaries.
-- LogicN must support policy proof as a first-class design target. The compiler
+- Galerina must support policy proof as a first-class design target. The compiler
   and reports should be able to answer security questions such as whether a
   flow can expose restricted data, whether an actor can perform an effect,
   whether an unsafe block is allowed by profile and whether a package can reach
   network, filesystem, shell or database effects.
-- LogicN must treat malicious data as an active threat. External input, API
+- Galerina must treat malicious data as an active threat. External input, API
   payloads, files, events, package metadata, AI/tool output, network data,
   storage data and hardware results must not become authority, executable code,
   infinite compute, hidden memory pressure, secret leakage or unsafe hardware
   access.
-- LogicN must enforce that data cannot grant authority. Roles, permissions,
+- Galerina must enforce that data cannot grant authority. Roles, permissions,
   object ownership and capability claims from untrusted data must be verified
   against runtime identity, ownership policy and granted capabilities.
-- LogicN must assign bounded execution budgets to requests, tasks, AI/tool
+- Galerina must assign bounded execution budgets to requests, tasks, AI/tool
   calls and compute plans. Budgets should cover CPU time, wall time, memory,
   recursion, loop iterations where provable, spawned tasks, network calls,
   file operations, AI/tool calls and hardware accelerator work.
-- LogicN malicious-data handling must include size limits, depth limits,
+- Galerina malicious-data handling must include size limits, depth limits,
   schema-first parsing, type/range/encoding validation, canonicalisation before
   policy, ownership checks, safe sinks, output encoding and taint-flow reports.
-- LogicN exploit-resistance planning must use OWASP Top 10, OWASP API Security
+- Galerina exploit-resistance planning must use OWASP Top 10, OWASP API Security
   Top 10, OWASP ASVS and MITRE CWE Top 25 as baseline inputs for access
   control, object-level authorization, injection prevention, SSRF protection,
   resource control, secure error handling and verification levels.
-- LogicN hardware/runtime risk handling must treat CPU side channels, GPU/NPU
+- Galerina hardware/runtime risk handling must treat CPU side channels, GPU/NPU
   side channels, accelerator memory residue, DMA-capable devices, unsafe
   drivers and device plugins as governed boundaries. High-assurance deployments
   may require OS/firmware mitigations, IOMMU or equivalent protection, dedicated
   hardware for high-secret workloads and hardware-risk reports.
-- LogicN capabilities must express actor, package, flow or tool authorization
+- Galerina capabilities must express actor, package, flow or tool authorization
   separately from technical effects. Protected actions and protected data
   exposure must declare required capabilities or permissions at secure flow,
   route, package, response/view, adapter, AI/tool, MCP and scoped vault
   boundaries.
-- LogicN may use verified fast paths only for workloads that match a known
+- Galerina may use verified fast paths only for workloads that match a known
   execution signature. Fast paths must expire, remain auditable and revalidate
   when policy, package versions, model versions, hardware, trust state or output
   contracts change.
-- LogicN verified fast paths should be backed by a context-tagged verified
+- Galerina verified fast paths should be backed by a context-tagged verified
   execution cache. Cached execution plans must be reusable only when the
   current verification context matches the cached context, including source
   hash, Governed IR hash, permission hash, policy version, actor scope, view
   scope, runtime zone, compute target, hardware trust, vault version,
   package version and audit level.
-- LogicN caches must not own authority. Authority Control must decide whether a
+- Galerina caches must not own authority. Authority Control must decide whether a
   cached parser result, IR, policy decision, view rule, vault read, compute
   plan, schedule lane, audit buffer or full verified execution plan may be
   reused, and must be able to invalidate caches on policy, permission, view,
@@ -319,80 +319,80 @@ must not be treated as implemented app functionality.
   cross-user responses, hardware trust decisions and raw sensitive payloads must
   not be cached freely. They require strict context tags, expiry, isolation and
   explicit policy, and some categories should remain denied by default.
-- LogicN AI workloads must be declared as typed AI compute plans rather than
+- Galerina AI workloads must be declared as typed AI compute plans rather than
   opaque model calls. Plans should declare input/output types, model class, data
   sensitivity, precision, latency, compute target, memory needs, allowed tools
   and audit needs.
-- LogicN specialist AI hardware must be represented as governed compute targets,
+- Galerina specialist AI hardware must be represented as governed compute targets,
   not unrestricted runtime access. CPU, GPU, NPU, TPU, VPU, FPGA, AI ASIC and
   future optical/photonic hardware must declare hardware type, provider,
   runtime/driver, supported precision, supported model formats, memory limits,
   isolation level, data sensitivity allowed, audit requirements and fallback
   target before use.
-- LogicN source should prefer generic compute target classes and backend
+- Galerina source should prefer generic compute target classes and backend
   profiles rather than vendor-specific language syntax. Fast hardware is an
   accelerator, not an authority; the verified execution plan must allow the
   target before runtime selection.
-- LogicN local AI review, including BitNet-style low-bit CPU-friendly backends,
+- Galerina local AI review, including BitNet-style low-bit CPU-friendly backends,
   must remain advisory. Deterministic compiler, type, memory, policy, effect
   and report checks remain authoritative.
-- LogicN MCP support, if added, must be implemented as a platform-level AI/tool
+- Galerina MCP support, if added, must be implemented as a platform-level AI/tool
   boundary. MCP tools, resources and prompts must be declared with typed data,
   permissions, effects, auth/token-boundary rules, limits, audit and reports.
   MCP tool availability must not be treated as permission, token passthrough
   must be denied, and MCP clients must not receive direct generic vault access.
-- LogicN quantum readiness must prioritise post-quantum security before quantum
+- Galerina quantum readiness must prioritise post-quantum security before quantum
   compute. Cryptography must be policy-driven and reportable, crypto inventory
   reports must identify quantum-vulnerable algorithm use, `SecureRandom` must be
   required for security randomness, and future quantum state must be measured
   into explicit classical results before controlling application flow.
-- LogicN AI systems may generate code, propose policy and request capabilities,
+- Galerina AI systems may generate code, propose policy and request capabilities,
   but they must not grant capabilities to themselves, approve their own policy
   changes, edit their own boundary or modify trust roots without external
   governance.
-- LogicN must support AI-generated code quarantine before promotion to trusted
+- Galerina must support AI-generated code quarantine before promotion to trusted
   code. Quarantine requires syntax/type checks, effect extraction, policy
   evaluation, sandbox tests, audit reports and human or policy approval.
-- LogicN capability delegation must support attenuation: delegated authority may
+- Galerina capability delegation must support attenuation: delegated authority may
   be equal or narrower than the delegator's authority, never broader. Authority
   should be issued as scoped, revocable, auditable leases where possible.
-- LogicN AI authority must separate AI intent from authority issuance. Reasoning,
+- Galerina AI authority must separate AI intent from authority issuance. Reasoning,
   planning, code generation, self-analysis and optimization proposals may
   request authority, but an authority kernel must evaluate policy, risk,
   approval, scope, expiry and audit before authority is leased.
-- LogicN must protect immutable trust roots from runtime AI self-modification:
+- Galerina must protect immutable trust roots from runtime AI self-modification:
   compiler, policy engine, permission model, audit integrity, capability
   validator, package signing and cryptographic trust roots require external
   governance for change.
-- LogicN must separate AI read, write, tool-call, package-install, migration,
+- Galerina must separate AI read, write, tool-call, package-install, migration,
   deploy and policy-edit capabilities. A permission to read context must not
   imply permission to write files, run shell commands, install packages or
   change policy.
-- LogicN must deny hidden authority features by default, including dynamic eval,
+- Galerina must deny hidden authority features by default, including dynamic eval,
   unrestricted shell execution, hidden network access, raw filesystem access,
   global mutable state, unsafe native interop, raw pointers, monkey patching,
   policy-bypassing reflection and AI self-granted capabilities.
-- LogicN should leave out complexity features that hide behaviour or force
+- Galerina should leave out complexity features that hide behaviour or force
   runtime guessing, including inheritance-heavy object models, multiple
   inheritance, heavy reflection, dynamic typing as the main model, magic
   decorators, automatic global dependency injection, implicit async behaviour,
   unbounded background runtime work and large default frameworks bundled into
   the runtime.
-- LogicN must not claim production language maturity until it has an enforceable
+- Galerina must not claim production language maturity until it has an enforceable
   language core: parser, AST, symbol table, type checker, memory checker, effect
   checker, module system, protocols/interfaces, trusted interop boundary, test
   model, standard library, source-mapped runtime errors and build/release modes.
-- LogicN security positioning must be framed as a secure web runtime goal:
+- Galerina security positioning must be framed as a secure web runtime goal:
   stronger default policy for permissions, APIs, memory-safe values, secrets,
   package effects, interop, deployment and AI-readable reports.
-- LogicN's first product target is secure web-application runtime code:
+- Galerina's first product target is secure web-application runtime code:
   APIs, webhooks, service workers, queue workers, typed JSON services,
   auth-heavy applications and agent/tool gateway backends. Low-level systems
   targets, embedded targets and native executable output remain later target
   paths.
-- LogicN must keep normal source high-level while still allowing local machine
+- Galerina must keep normal source high-level while still allowing local machine
   setup to specialise runtime plans. The Machine Profile Bridge must sit between
-  checked LogicN source and machine-specific execution, detect local
+  checked Galerina source and machine-specific execution, detect local
   capabilities, cache uncommitted local profiles, configure boot/main runtime
   settings for the deployment machine and report every adapter, fallback and
   permission decision.
@@ -400,17 +400,17 @@ must not be treated as implemented app functionality.
   the official draft wording. Native blocks must declare a concrete ABI such as
   `abi c`, `abi wasm`, `abi system` or `abi plugin`; the ABI must drive layout,
   ownership, nullability, allocator and audit checks.
-- LogicN must treat data and behavior as untrusted by default within reason.
+- Galerina must treat data and behavior as untrusted by default within reason.
   External input, dependency output, generated AI content, cached data, network
   data, database data, uploaded files, environment-derived values, headers,
   cookies, tokens, runtime metadata and build artifacts must earn trust through
   validation, typing, provenance, policy checks or explicit reviewed
   boundaries.
-- LogicN syntax itself must be treated as untrusted until governed. A parser
+- Galerina syntax itself must be treated as untrusted until governed. A parser
   accepting a feature must not make that feature production-ready; each syntax
   surface must be typed, effect-checked, permissioned, bounded, source-mapped,
   tested or reportable before it is treated as safe.
-- LogicN must ban monkey patching in normal code. Runtime mutation of built-ins,
+- Galerina must ban monkey patching in normal code. Runtime mutation of built-ins,
   imported modules, package internals, framework methods, response serializers,
   security policies or provider functions must be denied by default. Use
   adapters, interfaces/protocols, pipelines, test-only mocks or signed hotfix
@@ -418,7 +418,7 @@ must not be treated as implemented app functionality.
 - Trust transitions must be represented in types, policies or reports. A value
   must not silently move from untrusted to trusted because it crossed an
   internal function boundary.
-- LogicN must treat `unsafe` values as inert until trust conversion or explicit
+- Galerina must treat `unsafe` values as inert until trust conversion or explicit
   safe declaration. An unsafe variable must not participate in arithmetic,
   concatenation, ordinary string helpers such as `trim`, ordinary array helpers
   such as map/filter/reduce/event counts, query interpolation, shell execution,
@@ -429,10 +429,10 @@ must not be treated as implemented app functionality.
   and must produce a context-specific safe output such as `safe Html`,
   `safe UrlPart`, `safe JavaScript`, `safe Css`, `safe Xml` or
   `safe ShellArg`.
-- LogicN query handling must reject unsafe interpolation. `Query` must be
+- Galerina query handling must reject unsafe interpolation. `Query` must be
   treated as an immutable executable boundary artifact requiring safe
   parameters, runtime authority and audit output, not as ordinary text.
-- LogicN must not claim to make Ethernet hardware faster. Network positioning
+- Galerina must not claim to make Ethernet hardware faster. Network positioning
   must be framed as improving application network I/O through typed APIs,
   deny-by-default network permissions, TLS policy, backpressure, timeout policy,
   zero-copy planning, platform-aware I/O backend selection, reports and
@@ -441,19 +441,19 @@ must not be treated as implemented app functionality.
   hybrid ownership: immutable sharing by default, one active mutable owner,
   read-only and mutable borrows, explicit moves for resources, bounds-checked
   collections and no raw pointers in normal application code.
-- LogicN must not claim direct control over L1/L2/L3 CPU cache or ECC memory.
+- Galerina must not claim direct control over L1/L2/L3 CPU cache or ECC memory.
   Cache behaviour must be framed as optimisation through layout, access pattern,
   batching, copying and vectorisation guidance. ECC must be framed as a
   deployment reliability property that can only be detected or required when
   the platform exposes trustworthy evidence.
-- LogicN syntax should stay readable and examples should be easy to follow,
+- Galerina syntax should stay readable and examples should be easy to follow,
   while types, missing values, errors, effects, package authority, dynamic
   execution, imports, JSON decoding, native interop and secret output remain
   explicit, checked and reportable.
 
 ## Postfix Type State Requirements
 
-- LogicN must use postfix state syntax: base type first, governance state second
+- Galerina must use postfix state syntax: base type first, governance state second
   (`String unsafe`, `Email safe validated`). The base type is the primary
   mental anchor; state qualifiers describe how the value may flow.
 - v1 state set must be: `safe`, `unsafe`, `validated`, `unvalidated`. `secure`
@@ -471,7 +471,7 @@ must not be treated as implemented app functionality.
 
 ## Branded Type Requirements
 
-- LogicN must support branded types using `Brand<T, "Name">` syntax:
+- Galerina must support branded types using `Brand<T, "Name">` syntax:
   `type CustomerId = Brand<String, "CustomerId">`.
 - Branded types must be compile-time distinct but runtime-erased to their base
   type. The compiler rejects mixing `CustomerId` and `OrderId` even though both
@@ -499,10 +499,10 @@ must not be treated as implemented app functionality.
 
 ## Build System Requirements
 
-- `logicn build` must produce an execution contract, not only an executable. The
+- `galerina build` must produce an execution contract, not only an executable. The
   contract includes: type manifest, effect manifest, authority manifest, route
   table, runtime plan, source maps, and structured reports.
-- `logicn deploy` must consume a verified build manifest. It must not rebuild by
+- `galerina deploy` must consume a verified build manifest. It must not rebuild by
   default. The deploy step proves the environment accepts the package.
 - Every build must produce a `build-manifest.json` with source hash, artefact
   hashes, and links to all generated manifests.
@@ -518,7 +518,7 @@ must not be treated as implemented app functionality.
 
 ## Unified Authority Requirements
 
-- LogicN must treat authority as layered: compile time proves intent, runtime
+- Galerina must treat authority as layered: compile time proves intent, runtime
   governs effects.
 - Boundaries must degrade authority: all external input (HTTP, queue, file, AI,
   plugin) must start as `unsafe unvalidated`. Validation must restore trust.
@@ -538,7 +538,7 @@ must not be treated as implemented app functionality.
   unknown. Reports may include ECC detected/unknown status and corrected or
   uncorrected error counts only when exposed by the OS, firmware, hardware or
   runtime environment.
-- LogicN must define deterministic cleanup for explicit resources such as files,
+- Galerina must define deterministic cleanup for explicit resources such as files,
   sockets, locks, GPU buffers, model handles, DB connections, streams and
   temporary secrets.
 - `.env` values must be treated as secrets, not normal strings. Secret values
@@ -551,12 +551,12 @@ must not be treated as implemented app functionality.
   normal functions.
 - Secret reports may include names, required flags, scopes, allowed operations,
   allowed destinations and fingerprints, but must never include secret values.
-- LogicN must define traits, protocols or generic constraints before building a
+- Galerina must define traits, protocols or generic constraints before building a
   large reusable library ecosystem.
 - Recoverable errors must be explicit in syntax and types through
   `Result<T, E>` or an equivalent typed result form. Hidden exceptions must not
   be the default application error model.
-- LogicN must support a first-class Typed Error Model where fallible flows declare
+- Galerina must support a first-class Typed Error Model where fallible flows declare
   their return type as `Result<SuccessType, ErrorType>`. The compiler and runtime
   must restrict flows to only return declared success and error types, preventing
   the propagation of untyped failures, raw stack traces and unmapped exceptions.
@@ -578,7 +578,7 @@ must not be treated as implemented app functionality.
   headers, payment credentials, private customer data or unredacted payloads.
 - Workers and scheduled tasks must support supervised restart policy, bounded
   retries, backoff and crash-loop detection.
-- LogicN may support `try`/`catch` as readable syntax over explicit
+- Galerina may support `try`/`catch` as readable syntax over explicit
   `Result<T, E>` flow, but `match` must remain available for branch-by-branch
   handling where every outcome matters.
 - `Result<T, E>` must be documented as `Result<SuccessType, ErrorType>` for
@@ -592,11 +592,11 @@ must not be treated as implemented app functionality.
   explicit effects, explicit imports, typed errors, source maps, stable
   diagnostics and machine-readable reports. It must not be a vague marketing
   label.
-- LogicN architecture must be AI-understandable by design. AI tools should read
+- Galerina architecture must be AI-understandable by design. AI tools should read
   stable architecture maps, concept definitions, package ownership, generated
   project graph data, report metadata and canonical examples instead of
   guessing from folder names or vague component names.
-- LogicN documentation should maintain one-concept-per-file Knowledge Base
+- Galerina documentation should maintain one-concept-per-file Knowledge Base
   entries for important concepts, stable names, explicit definitions,
   canonical examples where practical, indexed permissions/effects/contexts and
   component responsibility metadata for compiler, runtime, security and
@@ -605,43 +605,43 @@ must not be treated as implemented app functionality.
   metadata such as component name, purpose, authority-granting status,
   trusted-core status, runtime stage, package owner, inputs, outputs and
   emitted reports.
-- LogicN must not claim legal, privacy, security, accessibility, AI governance
+- Galerina must not claim legal, privacy, security, accessibility, AI governance
   or deployment compliance automatically. Compliance packages may define
   policy, evidence, review and report contracts, but compliance depends on
   jurisdiction, organisation process, deployment controls and human review.
-- LogicN data processing must be package-owned and bounded. HTML parsing,
+- Galerina data processing must be package-owned and bounded. HTML parsing,
   search indexing, archive manifests, JSON/database archiving and streaming
-  pipelines must live in `logicn-data-*` packages rather than becoming native
+  pipelines must live in `galerina-data-*` packages rather than becoming native
   core-language features.
-- LogicN database access must be typed, validated, permissioned and reportable.
+- Galerina database access must be typed, validated, permissioned and reportable.
   Database storage models must be distinct from API response models, and raw
   database models containing personal, secret, hidden or internal fields must
   not be returned by public routes.
 - Before adding more active packages, the project must include at least 20 real
-  `.lln` example programs covering basic, intermediate and advanced syntax.
+  `.spore` example programs covering basic, intermediate and advanced syntax.
   This requirement is currently satisfied by the 20 source fixtures in
-  `packages-logicn/logicn-core/examples/`.
+  `packages-galerina/galerina-core/examples/`.
 
 ## Users
 
 | User Type | Description |
 |---|---|
-| App developer | Builds bespoke application source in `packages-logicn/logicn-framework-example-app/` using LogicN packages. |
-| Package maintainer | Evolves reusable LogicN package contracts under `packages-logicn/`. |
+| App developer | Builds bespoke application source in `packages-galerina/galerina-framework-example-app/` using Galerina packages. |
+| Package maintainer | Evolves reusable Galerina package contracts under `packages-galerina/`. |
 | Security reviewer | Reviews policy, secret handling, reports and package boundaries. |
 | AI coding assistant | Uses `AGENTS.md` and `build/graph` to navigate the project safely. |
-| Learner | Uses Learning Mode, examples and guided diagnostics to learn LogicN safely. |
-| Teacher | Uses lessons, exercise reports and safe classroom defaults to teach LogicN. |
+| Learner | Uses Learning Mode, examples and guided diagnostics to learn Galerina safely. |
+| Teacher | Uses lessons, exercise reports and safe classroom defaults to teach Galerina. |
 | Future app user | End user of the bespoke app once a product domain is defined. |
 | Future app admin | Operational/admin user once a product domain is defined. |
 
 ## Core Workspace Requirements
 
-- The root README must introduce LogicN, the workspace layout, current tooling and
+- The root README must introduce Galerina, the workspace layout, current tooling and
   package boundaries.
 - `AGENTS.md` must tell AI tools how to use the project graph and where package
   responsibilities live.
-- `logicn.workspace.json` must identify the package paths and documentation roots
+- `galerina.workspace.json` must identify the package paths and documentation roots
   used by tooling.
 - Generated project graph outputs must be refreshable from the repository root.
 - The workspace must keep generated compiler output out of Git unless a file is
@@ -653,11 +653,11 @@ must not be treated as implemented app functionality.
   photonic planning contracts.
 - Core package examples must be validated by package tests when they are used
   as contract examples rather than prose-only documentation.
-- `logicn-core-cli` must route core developer commands to the current
-  `logicn-core` prototype compiler until those commands have native package
+- `galerina-core-cli` must route core developer commands to the current
+  `galerina-core` prototype compiler until those commands have native package
   implementations.
 - NPU support must be treated as AI inference target planning, not as
-  general-purpose LogicN execution. Model files remain external, fallback must
+  general-purpose Galerina execution. Model files remain external, fallback must
   be explicit and reportable, and on-device inference must deny network
   execution unless policy explicitly changes that boundary.
 - The workspace must keep secrets out of source control.
@@ -666,28 +666,28 @@ must not be treated as implemented app functionality.
 - This workspace is a beta prototype, not a stable release. Version metadata
   must use beta prerelease identifiers until release criteria are explicitly
   met.
-- The future LogicN package split should be documented before implementation:
-  `package.json` for normal app/vendor packages, `package-logicn.json` for LogicN
-  package dependencies, `logicn.lock.json` for locked LogicN package graphs,
-  `packages/` for normal vendor packages and `packages-logicn/` for LogicN packages.
+- The future Galerina package split should be documented before implementation:
+  `package.json` for normal app/vendor packages, `package-galerina.json` for Galerina
+  package dependencies, `galerina.lock.json` for locked Galerina package graphs,
+  `packages/` for normal vendor packages and `packages-galerina/` for Galerina packages.
 - NPM and `package.json` must remain host ecosystem tooling only. They may run
   current JavaScript/TypeScript prototype checks and package generated JS/TS
-  interop, but they must not define LogicN package graph resolution, LogicN runtime
-  profiles, LogicN compiler target policy or LogicN production package overrides.
-- The LogicN Package Resolver must use `package-logicn.json`, `logicn.lock.json`
+  interop, but they must not define Galerina package graph resolution, Galerina runtime
+  profiles, Galerina compiler target policy or Galerina production package overrides.
+- The Galerina Package Resolver must use `package-galerina.json`, `galerina.lock.json`
   and resolver policy as the governed source for package/module approval. It
   must produce package resolution, package provenance, package permission,
   dependency graph and Governed IR package-map reports.
-- `logicn.lock.json` must record registry-derived package evidence where
+- `galerina.lock.json` must record registry-derived package evidence where
   applicable: exact version, hash, signature, publisher, source registry,
   requested capabilities, effects used, certification level, dependency graph,
   selected profile and approved runtime targets.
 - Generated documents and AI-suggested structures are advisory. Repository
-  package boundaries, `AGENTS.md`, `logicn.workspace.json`, package READMEs/TODOs
+  package boundaries, `AGENTS.md`, `galerina.workspace.json`, package READMEs/TODOs
   and maintained docs take precedence when suggestions conflict.
-- Learning Mode must teach real LogicN concepts rather than fake syntax. It may
+- Learning Mode must teach real Galerina concepts rather than fake syntax. It may
   provide progressive levels, guided exercises, hints and beginner-friendly
-  diagnostics, but examples must remain aligned with documented LogicN syntax.
+  diagnostics, but examples must remain aligned with documented Galerina syntax.
 - Learning Mode execution must be safe by default: no shell, no secrets, no
   filesystem writes, no external network, bounded memory and bounded runtime
   unless a lesson explicitly grants a reviewed permission.
@@ -696,7 +696,7 @@ must not be treated as implemented app functionality.
   default.
 - Learning reports must avoid secret values, unnecessary personal data, raw
   student identifiers in shareable reports and private messages.
-- Future `logicn-learn*` package names are reserved planning names only. Do not
+- Future `galerina-learn*` package names are reserved planning names only. Do not
   add active learning packages until the core examples, parser/checker and
   lesson model are stable enough to justify package ownership.
 
@@ -704,15 +704,15 @@ must not be treated as implemented app functionality.
 
 The app package must remain deliberately small until a product domain is chosen.
 
-- Bespoke app source must live in `packages-logicn/logicn-framework-example-app/`.
-- App routes, modules, tests and app configuration must stay in `packages-logicn/logicn-framework-example-app/`
+- Bespoke app source must live in `packages-galerina/galerina-framework-example-app/`.
+- App routes, modules, tests and app configuration must stay in `packages-galerina/galerina-framework-example-app/`
   or app-specific docs.
 - App-specific requirements must be added to this document before implementing
   product features.
 - App source must use explicit validation, explicit error handling and safe
   configuration references.
-- App features must not be implemented inside `packages-logicn/logicn-core/`.
-- App features must not turn `packages-logicn/logicn-framework-app-kernel/` into a full framework,
+- App features must not be implemented inside `packages-galerina/galerina-core/`.
+- App features must not turn `packages-galerina/galerina-framework-app-kernel/` into a full framework,
   CMS, admin dashboard, ORM or frontend framework.
 
 ## Non-Functional Requirements
@@ -789,14 +789,14 @@ The app package must remain deliberately small until a product domain is chosen.
   non-exhaustive known error matches, route responses returned but not declared,
   declared responses that cannot be returned and unsafe raw error messages sent
   to users.
-- LogicN must not require traditional MVC controllers as a core application
+- Galerina must not require traditional MVC controllers as a core application
   concept. The secure API core must be route contracts, typed request/response
   objects, route actions or handlers, policies, effects and generated route
   reports.
 - Controller-style grouping may be supported later only as optional framework
   sugar that compiles into the same route manifest/graph and does not hide auth,
   CSRF, object access, idempotency, validation, rate limits, audit or effects.
-- LogicN may support optional thin DDD structure for business applications, but
+- Galerina may support optional thin DDD structure for business applications, but
   DDD must not be required for small apps, scripts or early compiler examples.
 - Thin DDD guidance must keep business rules in `domain/`, use cases in
   `flows/`, external systems in `infrastructure/`, routes in `api/`, runtime
@@ -805,8 +805,8 @@ The app package must remain deliberately small until a product domain is chosen.
 - Domain code should be pure by default and must not secretly perform database,
   network, file, secret, cache or LLM effects.
 - DDD must not be treated as the security model, memory model or compute
-  performance model. Security must come from LogicN policies and checks, memory
-  safety from LogicN memory rules, and speed from compute policies, profiling,
+  performance model. Security must come from Galerina policies and checks, memory
+  safety from Galerina memory rules, and speed from compute policies, profiling,
   caching and target reports.
 - Architecture reports may warn about excessive layers, empty wrappers,
   database-shaped domains, unused abstractions, business rules inside API files
@@ -825,81 +825,81 @@ The app package must remain deliberately small until a product domain is chosen.
 
 ## Workspace Package Requirements
 
-- The LogicN language core must live in `packages-logicn/logicn-core/`.
-- Compiler pipeline contracts must live in `packages-logicn/logicn-core-compiler/`.
-- Runtime execution contracts must live in `packages-logicn/logicn-core-runtime/`.
-- Shared security primitives must live in `packages-logicn/logicn-core-security/`.
-- Project configuration contracts must live in `packages-logicn/logicn-core-config/`.
-- Shared report contracts must live in `packages-logicn/logicn-core-reports/`.
-- LogicN multi-state logic concepts such as `Tri`, `LogicN` and future Omni logic
-  must live in `packages-logicn/logicn-core-logic/`.
-- LogicN vector value, lane and operation concepts must live in
-  `packages-logicn/logicn-core-vector/`.
-- LogicN compute planning, capability, budget and target selection concepts must
-  live in `packages-logicn/logicn-core-compute/`.
+- The Galerina language core must live in `packages-galerina/galerina-core/`.
+- Compiler pipeline contracts must live in `packages-galerina/galerina-core-compiler/`.
+- Runtime execution contracts must live in `packages-galerina/galerina-core-runtime/`.
+- Shared security primitives must live in `packages-galerina/galerina-core-security/`.
+- Project configuration contracts must live in `packages-galerina/galerina-core-config/`.
+- Shared report contracts must live in `packages-galerina/galerina-core-reports/`.
+- Galerina multi-state logic concepts such as `Tri`, `Galerina` and future Omni logic
+  must live in `packages-galerina/galerina-core-logic/`.
+- Galerina vector value, lane and operation concepts must live in
+  `packages-galerina/galerina-core-vector/`.
+- Galerina compute planning, capability, budget and target selection concepts must
+  live in `packages-galerina/galerina-core-compute/`.
 - Generic AI inference contracts, model metadata, safety policy and AI reports
-  must live in `packages-logicn/logicn-ai/`.
+  must live in `packages-galerina/galerina-ai/`.
 - Low-bit and ternary AI inference contracts must live in
-  `packages-logicn/logicn-ai-lowbit/`, with BitNet represented only as a backend.
+  `packages-galerina/galerina-ai-lowbit/`, with BitNet represented only as a backend.
 - Supervised AI agent definitions, tool permissions, task groups, merge
-  policies and reports must live in `packages-logicn/logicn-ai-agent/`.
+  policies and reports must live in `packages-galerina/galerina-ai-agent/`.
 - Neural-network model, layer, inference and training boundary contracts must
-  live in `packages-logicn/logicn-ai-neural/`.
+  live in `packages-galerina/galerina-ai-neural/`.
 - Neuromorphic spike, event-signal and spiking model contracts must live in
-  `packages-logicn/logicn-ai-neuromorphic/`.
+  `packages-galerina/galerina-ai-neuromorphic/`.
 - Photonic and wavelength hardware concepts must live in
-  `packages-logicn/logicn-core-photonic/`.
+  `packages-galerina/galerina-core-photonic/`.
 - CPU target planning, feature detection and fallback reports must live in
-  `packages-logicn/logicn-target-cpu/`.
-- Optimized CPU kernel contracts must live in `packages-logicn/logicn-cpu-kernels/`.
-- Native executable target planning must live in `packages-logicn/logicn-target-native/`.
+  `packages-galerina/galerina-target-cpu/`.
+- Optimized CPU kernel contracts must live in `packages-galerina/galerina-cpu-kernels/`.
+- Native executable target planning must live in `packages-galerina/galerina-target-native/`.
 - Portable systems output planning may start in
-  `packages-logicn/logicn-target-native/` only after ABI, layout and memory
+  `packages-galerina/galerina-target-native/` only after ABI, layout and memory
   report rules stabilise.
-- LogicN must treat systems output as a generated backend/interop target, not
+- Galerina must treat systems output as a generated backend/interop target, not
   as normal unsafe application source style.
 - Future native ABI work must declare ownership, nullability, string encoding,
   allocator/free policy, blocking/thread-safety assumptions and error mapping.
-- JavaScript target planning must live in `packages-logicn/logicn-target-js/`.
-- WebAssembly target planning must live in `packages-logicn/logicn-target-wasm/`.
-- GPU target planning must live in `packages-logicn/logicn-target-gpu/`.
+- JavaScript target planning must live in `packages-galerina/galerina-target-js/`.
+- WebAssembly target planning must live in `packages-galerina/galerina-target-wasm/`.
+- GPU target planning must live in `packages-galerina/galerina-target-gpu/`.
 - AI accelerator target planning for NPU, TPU and AI-chip backends must live in
-  `packages-logicn/logicn-target-ai-accelerator/`.
+  `packages-galerina/galerina-target-ai-accelerator/`.
 - Photonic backend target planning must live in
-  `packages-logicn/logicn-target-photonic/`.
-- The optional LogicN Secure App Kernel must live in `packages-logicn/logicn-framework-app-kernel/`.
-- The built-in LogicN HTTP API server must live in `packages-logicn/logicn-framework-api-server/`.
+  `packages-galerina/galerina-target-photonic/`.
+- The optional Galerina Secure App Kernel must live in `packages-galerina/galerina-framework-app-kernel/`.
+- The built-in Galerina HTTP API server must live in `packages-galerina/galerina-framework-api-server/`.
 - Server platform support must distinguish deployment targets, runtime targets
   and adapters. Nginx, Apache and Caddy must be treated as reverse-proxy
   deployment targets; Node.js may be a tooling platform and optional runtime
   target; Express/Fastify/Hono-style integrations must be optional adapters;
-  the LogicN-native API server remains the long-term preferred secure runtime.
-- Browser-safe web rendering contracts must live in `packages-logicn/logicn-web/`
-  and focused `logicn-web-*` packages, not in `logicn-core`, the app kernel or
+  the Galerina-native API server remains the long-term preferred secure runtime.
+- Browser-safe web rendering contracts must live in `packages-galerina/galerina-web/`
+  and focused `galerina-web-*` packages, not in `galerina-core`, the app kernel or
   the API server.
-- The LogicN developer CLI must live in `packages-logicn/logicn-core-cli/`.
-- Safe LogicN project automation must live in `packages-logicn/logicn-core-tasks/`.
-- LogicN benchmark and diagnostics tooling must live in `packages-logicn/logicn-tools-benchmark/`.
-- LogicN project knowledge graph tooling must live in `packages-logicn/logicn-devtools-project-graph/`.
-- Bespoke app source must live in `packages-logicn/logicn-framework-example-app/`.
+- The Galerina developer CLI must live in `packages-galerina/galerina-core-cli/`.
+- Safe Galerina project automation must live in `packages-galerina/galerina-core-tasks/`.
+- Galerina benchmark and diagnostics tooling must live in `packages-galerina/galerina-tools-benchmark/`.
+- Galerina project knowledge graph tooling must live in `packages-galerina/galerina-devtools-project-graph/`.
+- Bespoke app source must live in `packages-galerina/galerina-framework-example-app/`.
 - App documentation must live in `docs/`.
-- Language documentation must stay within `packages-logicn/logicn-core/`.
-- Full framework features must stay outside `packages-logicn/logicn-core/` and
-  `packages-logicn/logicn-framework-app-kernel/`.
+- Language documentation must stay within `packages-galerina/galerina-core/`.
+- Full framework features must stay outside `packages-galerina/galerina-core/` and
+  `packages-galerina/galerina-framework-app-kernel/`.
 - Current development may use one root Git repository while package boundaries
   are still being shaped.
-- Later, `packages-logicn/` may become its own Git repository so the LogicN packages can be
+- Later, `packages-galerina/` may become its own Git repository so the Galerina packages can be
   imported into different frameworks.
-- If `packages-logicn/` has its own `.git`, it must be added intentionally as a
+- If `packages-galerina/` has its own `.git`, it must be added intentionally as a
   submodule or standalone nested repository, and the framework root must treat
   it as an external dependency.
-- Development-only packages must use `logicn-devtools-*` or `logicn-tools-*` names for
+- Development-only packages must use `galerina-devtools-*` or `galerina-tools-*` names for
   staging packages, diagnostics, generators and experiments.
 - Development-only packages must be excluded from production package resolution
   and production downloads unless a maintainer explicitly opts into a
   development or staging profile.
 - Production boot/profile defaults must disable development-only and benchmark
-  packages such as `logicn-devtools-*` and `logicn-tools-benchmark`.
+  packages such as `galerina-devtools-*` and `galerina-tools-benchmark`.
 - A production build that includes a default-disabled package must declare an
   explicit production package override with a reason, and the override must be
   visible in config/build/security/deployment reports. Without that override,
@@ -907,30 +907,30 @@ The app package must remain deliberately small until a product domain is chosen.
 - The exact developer package folder name remains provisional, but its boundary
   must stay separate from production runtime package manifests.
 - Finance, electrical and OT package planning must stay archived outside the
-  active workspace under `C:\laragon\www\LogicN_Archive\packages-logicn\` until post-v2
+  active workspace under `C:\laragon\www\Galerina_Archive\packages-galerina\` until post-v2
   package planning resumes.
 - Finance, electrical and OT packages must not be part of active v1 package
   resolution, build graph generation, compiler targets or runtime profiles.
 - Any future restoration of finance, electrical or OT packages must require a
   design review because these domains carry regulatory, protocol correctness,
   safety and cybersecurity requirements beyond the v1 language scope.
-- Package naming must follow `docs/PACKAGE_NAMING.md`: `logicn-target-*` for where
-  code runs or compiles to, `logicn-io-*` for how data moves, `logicn-ai-*` for
-  AI-specific workloads, `logicn-kernel-*` for low-level execution kernels and
-  `logicn-app-*` for runtime/application framework layers.
-- `logicn-target-native` and `logicn-target-photonic` must not be renamed to I/O
+- Package naming must follow `docs/PACKAGE_NAMING.md`: `galerina-target-*` for where
+  code runs or compiles to, `galerina-io-*` for how data moves, `galerina-ai-*` for
+  AI-specific workloads, `galerina-kernel-*` for low-level execution kernels and
+  `galerina-app-*` for runtime/application framework layers.
+- `galerina-target-native` and `galerina-target-photonic` must not be renamed to I/O
   package names; binary and photonic I/O should be added later as separate
-  `logicn-io-*` packages.
+  `galerina-io-*` packages.
 
 ## Archived Electrical and OT Package Requirements
 
 These requirements are preserved as post-v2 archive notes. They do not apply to
 the active v1 build graph.
 
-- `logicn-electrical-core` must be a domain package group, not core LogicN syntax.
-- `logicn-ot-core` must be an operational-technology integration package group, not
-  core LogicN syntax and not a SCADA, PLC or safety controller product.
-- LogicN electrical support must be positioned as modelling, validation,
+- `galerina-electrical-core` must be a domain package group, not core Galerina syntax.
+- `galerina-ot-core` must be an operational-technology integration package group, not
+  core Galerina syntax and not a SCADA, PLC or safety controller product.
+- Galerina electrical support must be positioned as modelling, validation,
   monitoring, workflow and audit support. It must not replace circuit breakers,
   relays, protective devices, PLC safety systems, grid protection, certified
   controllers or qualified electrical design.
@@ -970,7 +970,7 @@ the active v1 build graph.
 These requirements are preserved as post-v2 archive notes. They do not apply to
 the active v1 build graph.
 
-- `logicn-finance-core` must be a domain package group, not core LogicN syntax.
+- `galerina-finance-core` must be a domain package group, not core Galerina syntax.
 - Finance support must start with typed data, deterministic maths, validation,
   audit, replay and integration contracts rather than live trading systems.
 - Finance maths must disallow float money by default, require explicit rounding
@@ -987,11 +987,11 @@ the active v1 build graph.
   and redacted evidence bundles.
 - Risk and pricing package work must wait until finance maths, market data and
   audit contracts are stable enough to support them.
-- LogicN finance packages may wrap mature external finance ecosystems through
+- Galerina finance packages may wrap mature external finance ecosystems through
   controlled interop, but wrappers must declare memory
   isolation, credential policy, network permissions, audit requirements and
   fallback behaviour.
-- Early LogicN finance work must not claim to implement a full stock exchange,
+- Early Galerina finance work must not claim to implement a full stock exchange,
   HFT engine, broker-dealer platform, settlement system, clearing system,
   custody platform or regulated trading-advice engine.
 
@@ -1000,52 +1000,52 @@ the active v1 build graph.
 - The kernel may define typed API boundaries, validation, auth policy,
   rate-limit policy, idempotency, replay protection, jobs and runtime reports.
 - The kernel must receive raw requests and pass only typed, validated values to
-  LogicN handlers unless unsafe raw access is explicitly declared.
-- The kernel must enforce `boot.lln` security policy at runtime where a runtime
+  Galerina handlers unless unsafe raw access is explicitly declared.
+- The kernel must enforce `boot.spore` security policy at runtime where a runtime
   adapter is present.
 - The kernel must support adapter boundaries for HTTP servers, queue backends,
   storage backends and identity providers.
 - The kernel must not include CMS features, admin dashboards, page builders,
   mandatory ORM design, mandatory template engines or frontend framework syntax.
 - The kernel package must support a non-compiled checked Run Mode smoke test for
-  validating simple `.lln` execution during framework development.
+  validating simple `.spore` execution during framework development.
 
 ## API Server Requirements
 
-- `logicn-framework-api-server` must be an HTTP serving package, not a full web framework.
-- `logicn-framework-api-server` must load route manifests generated from LogicN API contracts.
-- `logicn-framework-api-server` should use precompiled route lookup structures
+- `galerina-framework-api-server` must be an HTTP serving package, not a full web framework.
+- `galerina-framework-api-server` must load route manifests generated from Galerina API contracts.
+- `galerina-framework-api-server` should use precompiled route lookup structures
   generated from route manifests where available, such as method-indexed
   tries/radix trees, and must reject unknown methods/paths early.
-- `logicn-framework-api-server` must normalise HTTP requests before passing them to
-  `logicn-framework-app-kernel`.
-- `logicn-framework-api-server` must enforce server-level limits such as body size, timeout,
+- `galerina-framework-api-server` must normalise HTTP requests before passing them to
+  `galerina-framework-app-kernel`.
+- `galerina-framework-api-server` must enforce server-level limits such as body size, timeout,
   connection shutdown and safe response writing.
-- `logicn-framework-api-server` must not try to become Nginx, Apache, Caddy,
+- `galerina-framework-api-server` must not try to become Nginx, Apache, Caddy,
   Express, Fastify, Laravel, Django, Rails, a CMS, a template engine or an ORM.
-- `logicn-framework-api-server` must ask `logicn-framework-app-kernel` for auth, validation, idempotency and
+- `galerina-framework-api-server` must ask `galerina-framework-app-kernel` for auth, validation, idempotency and
   typed route execution decisions.
-- `logicn-framework-api-server` must redact secrets, bearer tokens, cookies and SecureString
+- `galerina-framework-api-server` must redact secrets, bearer tokens, cookies and SecureString
   values from logs and reports.
-- Bespoke frameworks may either use `logicn-framework-api-server` or call `logicn-framework-app-kernel`
+- Bespoke frameworks may either use `galerina-framework-api-server` or call `galerina-framework-app-kernel`
   directly from their own HTTP layer.
 
 ## CLI and Task Requirements
 
-- `logicn-core-cli` must provide developer commands for checking, building, running,
+- `galerina-core-cli` must provide developer commands for checking, building, running,
   serving, reporting, route inspection, security checks and task execution.
-- `logicn-core-cli` may coordinate `logicn-core`, future compiler/runtime packages,
-  `logicn-framework-api-server` and `logicn-core-tasks`, but must not contain application behaviour.
-- `LogicN graph` must generate project graph JSON, Markdown report, AI map and HTML
+- `galerina-core-cli` may coordinate `galerina-core`, future compiler/runtime packages,
+  `galerina-framework-api-server` and `galerina-core-tasks`, but must not contain application behaviour.
+- `Galerina graph` must generate project graph JSON, Markdown report, AI map and HTML
   outputs.
-- `LogicN task` must load task files, list tasks, resolve dependencies, detect
+- `Galerina task` must load task files, list tasks, resolve dependencies, detect
   cycles, support dry-run planning and write task reports.
-- `logicn-core-tasks` must provide safe, typed project automation with declared effects
+- `galerina-core-tasks` must provide safe, typed project automation with declared effects
   and permissions.
-- `logicn-core-tasks` must validate filesystem permissions as safe repository-relative
+- `galerina-core-tasks` must validate filesystem permissions as safe repository-relative
   paths.
-- `logicn-core-tasks` must validate environment permissions as explicit variable names.
-- `logicn-core-tasks` must deny raw shell execution by default.
+- `galerina-core-tasks` must validate environment permissions as explicit variable names.
+- `galerina-core-tasks` must deny raw shell execution by default.
 - Unsafe shell support, if added later, must be explicit, permissioned,
   timeout-limited, reported and redacted.
 - Both packages must redact secrets, bearer tokens, cookies, `SecureString`
@@ -1053,7 +1053,7 @@ the active v1 build graph.
 
 ## Benchmark Requirements
 
-- `logicn-tools-benchmark` must own benchmark configuration, task definitions, result
+- `galerina-tools-benchmark` must own benchmark configuration, task definitions, result
   types, score categories, privacy policy and report payload contracts.
 - Benchmarking must prioritize correctness, fallback behavior and safe
   execution before raw speed.
@@ -1063,12 +1063,12 @@ the active v1 build graph.
   automatically.
 - Benchmark runs must be manual, CI-explicit or development-only major-version
   checks. They must never auto-run in production.
-- `logicn-tools-benchmark` must be disabled by default in production boot/package
+- `galerina-tools-benchmark` must be disabled by default in production boot/package
   profiles. Even if explicitly overridden for a production validation window,
   it must not auto-run.
 - GPU, low-bit AI and future accelerator tests must be optional and must report
   skipped or fallback status when unsupported.
-- Public benchmark names and LogicN syntax must stay backend-neutral. BitNet may be
+- Public benchmark names and Galerina syntax must stay backend-neutral. BitNet may be
   selected as a low-bit backend, but benchmark categories should use
   `low_bit_ai`, `ternary_ai` or `quantized_ai`.
 - Benchmark reports must omit hostname, username, project path, environment
@@ -1083,18 +1083,18 @@ the active v1 build graph.
 
 ## Project Graph Requirements
 
-- `logicn-devtools-project-graph` must own project knowledge graph contracts for packages,
+- `galerina-devtools-project-graph` must own project knowledge graph contracts for packages,
   documents, flows, types, effects, policies, reports, targets and decisions.
 - Project graph tooling must be optional developer tooling and must not be
-  required to compile or run LogicN applications.
+  required to compile or run Galerina applications.
 - Project graph output may explain security and architecture relationships, but
   it must not replace compiler checks, runtime policy enforcement or security
   reports.
 - Project graph scans must redact secrets by default.
-- Project graph syntax and CLI commands must stay backend-neutral; `LogicN graph`
-  must not become `LogicN graphify`.
+- Project graph syntax and CLI commands must stay backend-neutral; `Galerina graph`
+  must not become `Galerina graphify`.
 - Graphify or any future graph tool must be represented as a swappable backend
-  selected by policy, not as LogicN language syntax.
+  selected by policy, not as Galerina language syntax.
 - Git-sourced project graph backends must be explicitly allowed and pinned to a
   commit, tag or versioned ref.
 - Model-assisted extraction for documents, PDFs, images, audio or video must be
@@ -1108,66 +1108,66 @@ the active v1 build graph.
 
 ## Logic and Photonic Package Requirements
 
-- `logicn-core-logic` must own `Tri`, `LogicN`, future Omni logic, multi-state truth
+- `galerina-core-logic` must own `Tri`, `Galerina`, future Omni logic, multi-state truth
   tables, conversion rules and logic reports.
-- `logicn-core-logic` must validate declared logic widths, state names, state
+- `galerina-core-logic` must validate declared logic widths, state names, state
   indexes and truth-table coverage so malformed or incomplete logic definitions
   cannot silently become accepted semantics.
 - `Tri` conversion helpers must require an explicit unknown policy. Unknown
   values must never become `true`, `Allow` or other grant states through an
   implicit conversion.
-- `logicn-core-photonic` must own wavelength, phase, amplitude, optical signal,
+- `galerina-core-photonic` must own wavelength, phase, amplitude, optical signal,
   optical channel, photonic modelling and photonic simulation concepts.
-- `logicn-core-photonic` may map logic states from `logicn-core-logic` to photonic
+- `galerina-core-photonic` may map logic states from `galerina-core-logic` to photonic
   representations, but it must not own the logic semantics.
-- `logicn-core-vector` must own vector values, dimensions, lanes, vector operation rules
+- `galerina-core-vector` must own vector values, dimensions, lanes, vector operation rules
   and vector reports.
-- `logicn-core-vector` must also own matrix, tensor, shape and numeric element contracts
+- `galerina-core-vector` must also own matrix, tensor, shape and numeric element contracts
   used by neural and compute workloads.
-- `logicn-core-compute` must own compute planning, capability, budget, offload and target
+- `galerina-core-compute` must own compute planning, capability, budget, offload and target
   selection concepts.
-- `logicn-ai` must own generic AI inference contracts, prompt/response shapes, model
+- `galerina-ai` must own generic AI inference contracts, prompt/response shapes, model
   capability metadata, memory estimates, safety policy and AI reports.
-- `logicn-ai-agent` must own typed agent definitions, tool permissions, agent limits,
+- `galerina-ai-agent` must own typed agent definitions, tool permissions, agent limits,
   supervised task group plans, merge policies and agent reports.
-- `logicn-ai-neural` must own neural-network model definitions, layers, activations,
+- `galerina-ai-neural` must own neural-network model definitions, layers, activations,
   inference boundaries, training boundaries and neural reports.
-- `logicn-ai-neuromorphic` must own spikes, spike trains, event signals, spiking model
+- `galerina-ai-neuromorphic` must own spikes, spike trains, event signals, spiking model
   contracts and neuromorphic reports.
-- `logicn-ai-lowbit` must own low-bit and ternary model references, GGUF metadata,
+- `galerina-ai-lowbit` must own low-bit and ternary model references, GGUF metadata,
   quantization declarations, backend selection, CPU inference limits and low-bit
   AI inference reports.
-- Enterprise `logicn-compliance` must own umbrella compliance profile, evidence
+- Enterprise `galerina-compliance` must own umbrella compliance profile, evidence
   manifest and compliance report index contracts when unlocked.
-- Enterprise `logicn-compliance-*` packages must own focused policy/report
+- Enterprise `galerina-compliance-*` packages must own focused policy/report
   contracts for privacy, security control mapping, data governance, audit,
   retention, AI governance, accessibility, deployment policy and compliance
   reports when unlocked. They must not provide legal advice, certification
   claims, audit databases, identity providers, data warehouses, frontend
   frameworks or CI/CD systems.
-- Compliance packages must live under `packages-logicn-enterprise/` and must
+- Compliance packages must live under `packages-galerina-enterprise/` and must
   not be part of the active workspace, active v1 build graph, production
   package resolution or default runtime profiles unless explicitly unlocked by
   the project owner.
-- `logicn-data` must own umbrella data-processing vocabulary, package policy,
+- `galerina-data` must own umbrella data-processing vocabulary, package policy,
   memory-limit, archive-integrity and report index contracts.
-- `logicn-data-*` packages must own focused contracts for HTML processing,
+- `galerina-data-*` packages must own focused contracts for HTML processing,
   search, archive integrity, JSON archive, database export/archive, streaming
   pipelines and data-processing reports. They must not implement browser
   engines, database engines, search engines, object storage, unsafe parsers or
   unbounded scraping frameworks.
-- `logicn-data-db`, `logicn-data-model`, `logicn-data-query` and
-  `logicn-data-response` must own typed database boundary, storage model,
+- `galerina-data-db`, `galerina-data-model`, `galerina-data-query` and
+  `galerina-data-response` must own typed database boundary, storage model,
   query/command and safe response mapping contracts. Raw SQL must be denied by
   default unless an explicit reviewed and reported override exists.
-- `logicn-web` must own umbrella browser-safe web package policy and report
+- `galerina-web` must own umbrella browser-safe web package policy and report
   indexes.
-- `logicn-web-render` must own the typed browser rendering pipeline: validated
+- `galerina-web-render` must own the typed browser rendering pipeline: validated
   API response, typed state conversion, safe HTML rendering, state diffing,
   streaming batches, generated DOM/update plans and render reports.
-- `logicn-web-state` must own client state, state transitions, hydration,
+- `galerina-web-state` must own client state, state transitions, hydration,
   partial-data states and state diff plans.
-- `logicn-web-components`, `logicn-web-router` and `logicn-web-events` must own
+- `galerina-web-components`, `galerina-web-router` and `galerina-web-events` must own
   typed browser component, route/navigation and event contracts.
 - Browser rendering must escape text by default, deny raw HTML by default,
   require `SafeHtml` or equivalent sanitized/trusted HTML for HTML rendering,
@@ -1175,36 +1175,36 @@ the active v1 build graph.
 - Browser rendering reports must include API schema status, render mode, unsafe
   HTML status, streaming status, remote image/domain warnings, performance
   warnings and redacted security findings.
-- `logicn-web-*` packages must not become a browser engine, CMS, admin UI, CSS
+- `galerina-web-*` packages must not become a browser engine, CMS, admin UI, CSS
   framework, page builder or mandatory frontend framework.
-- `logicn-db-*` packages must own provider adapter contracts only. PostgreSQL,
+- `galerina-db-*` packages must own provider adapter contracts only. PostgreSQL,
   MySQL, SQLite, OpenSearch and Firestore adapters must not bypass typed
   models, validation, permissions, parameterised access, safe response mapping,
   archive policy or report output.
-- `logicn-target-native` must own future native executable target planning,
+- `galerina-target-native` must own future native executable target planning,
   native ABI boundary planning and artifact metadata.
-- `logicn-target-js` must own browser JavaScript output planning, ESM metadata,
+- `galerina-target-js` must own browser JavaScript output planning, ESM metadata,
   source-map rules, server-only import blocking, browser secret denial and
   JavaScript output reports.
-- `logicn-target-js` may also own JavaScript/Node.js output planning metadata
+- `galerina-target-js` may also own JavaScript/Node.js output planning metadata
   for server targets, but Node.js support must remain a target choice rather
-  than the identity of LogicN.
-- `logicn-target-cpu` must own CPU capability, feature, thread, memory and fallback
+  than the identity of Galerina.
+- `galerina-target-cpu` must own CPU capability, feature, thread, memory and fallback
   planning contracts.
-- `logicn-target-cpu` should own CPU cache fact detection contracts where
+- `galerina-target-cpu` should own CPU cache fact detection contracts where
   available, including cache line size and exposed L1/L2/L3 metadata, while
   reporting unknown when platform details are hidden.
-- `logicn-cpu-kernels` must own CPU kernel contracts for GEMM, GEMV, vector dot
+- `galerina-cpu-kernels` must own CPU kernel contracts for GEMM, GEMV, vector dot
   products, matrix multiplication, low-bit operations, ternary operations,
   tiling and threading plans.
-- `logicn-target-wasm` must own WebAssembly target planning, module metadata and
+- `galerina-target-wasm` must own WebAssembly target planning, module metadata and
   import/export contracts.
-- `logicn-target-gpu` must own GPU target planning, kernel mapping, precision and
+- `galerina-target-gpu` must own GPU target planning, kernel mapping, precision and
   data movement reports.
-- `logicn-target-ai-accelerator` must own NPU, TPU, AI-chip capability reports,
+- `galerina-target-ai-accelerator` must own NPU, TPU, AI-chip capability reports,
   precision support, model operation mapping plans and accelerator fallback
   reports.
-- AI accelerator support must be passive and vendor-neutral. LogicN source syntax
+- AI accelerator support must be passive and vendor-neutral. Galerina source syntax
   should use `ai_accelerator`, not vendor-specific targets such as `gaudi`.
 - Vendor devices such as Intel Gaudi 3 must be represented as backend profiles
   selected by config, adapter policy or capability detection.
@@ -1217,11 +1217,11 @@ the active v1 build graph.
 - First AI accelerator implementations should prefer controlled adapters over
   existing ecosystems such as PyTorch, vLLM, Hugging Face, DeepSpeed,
   TensorFlow or PyTorch Lightning before native backend work.
-- `logicn-target-photonic` must own photonic backend target planning and may use
-  `logicn-core-photonic` concepts.
+- `galerina-target-photonic` must own photonic backend target planning and may use
+  `galerina-core-photonic` concepts.
 - `optical_io` must be treated as a high-speed data-movement and interconnect
   target, not as a normal CPU, GPU or photonic compute target.
-- LogicN must not expose raw light control to normal developers. Optical I/O
+- Galerina must not expose raw light control to normal developers. Optical I/O
   must be represented as a deployment capability for topology-aware,
   encrypted, typed data movement across optical-capable infrastructure.
 - Optical I/O target planning must distinguish Ethernet, Wi-Fi, fibre, RDMA,
@@ -1229,7 +1229,7 @@ the active v1 build graph.
 - Intel Silicon Photonics and OCI-style devices must be documented as optical
   connectivity for distributed compute, AI infrastructure, accelerator
   communication, GPU disaggregation and memory pooling.
-- `logicn-core-compute` must model data movement as a first-class cost for optical I/O
+- `galerina-core-compute` must model data movement as a first-class cost for optical I/O
   planning, including transfer size, data locality, target placement, fallback
   path, serialization format, compression choice, encryption overhead and
   accelerator locality.
@@ -1243,39 +1243,39 @@ the active v1 build graph.
 - Remote memory or memory-pool access over optical I/O must require typed access
   policy, bounds checks, timeout handling, fallback rules, audit logging and
   redacted reports.
-- `logicn-tools-benchmark` should support a future `optical_io` benchmark target for
+- `galerina-tools-benchmark` should support a future `optical_io` benchmark target for
   latency, throughput, tensor transfer, schema-compressed transfer, encryption
   overhead, topology detection, remote memory read and fallback diagnostics.
 
 ## Compiler, Runtime, Security, Config and Report Requirements
 
-- `logicn-core-compiler` must own compiler pipeline contracts for lexing, parsing, AST,
+- `galerina-core-compiler` must own compiler pipeline contracts for lexing, parsing, AST,
   checkers, IR, diagnostics, source maps and compiler reports.
-- `logicn-core-compiler` must use the language-core maturity roadmap as a
+- `galerina-core-compiler` must use the language-core maturity roadmap as a
   foundation checklist: real parser, AST, symbol table, type checker, memory
   checker, effect checker, IR, output, debug/release modes and source-mapped
   runtime errors.
-- Until the full parser/checker exists, `logicn-core-compiler` must provide a
+- Until the full parser/checker exists, `galerina-core-compiler` must provide a
   conservative syntax safety scan for the frozen v1 core risks: direct Tri
   branch conditions, implicit Tri/Decision/Bool boundary assignments,
   non-exhaustive Tri matches, risky secure-flow unknown conversion, raw
   secret-like literals and unsafe dynamic execution forms.
-- `logicn-core-runtime` must own execution contracts for checked and compiled LogicN code.
-- `logicn-core-runtime` may collect runtime memory, cache and hardware
+- `galerina-core-runtime` must own execution contracts for checked and compiled Galerina code.
+- `galerina-core-runtime` may collect runtime memory, cache and hardware
   reliability facts where the environment exposes them, but must report unknown
   status honestly for containers, VMs and managed platforms.
-- `logicn-core-network` must own network I/O policy, profile, permission,
+- `galerina-core-network` must own network I/O policy, profile, permission,
   backend capability and report contracts. It must not own HTTP framework
   behavior, TLS implementation, DNS resolver implementation, kernel driver code
   or DPDK runtime bindings.
-- `logicn-core-network` must define safe-networking contracts for TLS 1.3
+- `galerina-core-network` must define safe-networking contracts for TLS 1.3
   policy, plaintext denial, certificate and hostname validation, mutual TLS,
   service identity, secret-safe URLs, metadata minimisation and packet-capture
   restrictions.
-- `logicn-core-security` must own reusable security primitives, redaction rules,
+- `galerina-core-security` must own reusable security primitives, redaction rules,
   permission models, security diagnostics and security report contracts.
-- `logicn-core-security` must support application-security positioning where
-  LogicN is secure by default, typed by default, permissioned by default,
+- `galerina-core-security` must support application-security positioning where
+  Galerina is secure by default, typed by default, permissioned by default,
   reportable by default, deployment-aware by default and AI-safe by default.
 - Security primitives must represent sensitive values as redacted references in
   reports and diagnostics, not as raw secret values.
@@ -1291,21 +1291,21 @@ the active v1 build graph.
 - Permission decisions must deny by default and must give matching deny grants
   precedence over matching allow grants. Default-allow and wildcard-allow
   models must be reportable diagnostics.
-- `logicn-core-config` must own project config, environment mode and policy loading
+- `galerina-core-config` must own project config, environment mode and policy loading
   contracts.
-- `logicn-core-config` must represent environment variables as safe references by name
+- `galerina-core-config` must represent environment variables as safe references by name
   and metadata; it must not expose secret values in diagnostics or runtime
   handoff objects.
-- `logicn-core-config` must provide production strictness checks for strict project mode,
+- `galerina-core-config` must provide production strictness checks for strict project mode,
   required environment variables and unsafe secret defaults.
-- `logicn-core-config` must enforce production-disabled package defaults for
+- `galerina-core-config` must enforce production-disabled package defaults for
   development-only and benchmark packages, while supporting explicit reported
   production package overrides when policy allows them.
-- `logicn-core-config` must validate the boundary between host package manifests
-  and LogicN package manifests. LogicN package graph keys must not be accepted from
-  `package.json`; they belong in `package-logicn.json`, `logicn.lock.json` or explicit
-  LogicN config once those schemas exist.
-- `logicn-core-config`, `logicn-core-security`, `logicn-core-reports` and future
+- `galerina-core-config` must validate the boundary between host package manifests
+  and Galerina package manifests. Galerina package graph keys must not be accepted from
+  `package.json`; they belong in `package-galerina.json`, `galerina.lock.json` or explicit
+  Galerina config once those schemas exist.
+- `galerina-core-config`, `galerina-core-security`, `galerina-core-reports` and future
   package tooling must support Package Resolver policy, including allowed
   registries, denied registries, lockfile requirement, signature/hash
   requirement, dynamic loading denial, package provenance and package permission
@@ -1313,7 +1313,7 @@ the active v1 build graph.
 - Package report contracts should include package certification, package
   provenance, package risk, package permission, dependency graph and lockfile
   reports.
-- `logicn-core-reports` must own shared report schemas and report-writing contracts.
+- `galerina-core-reports` must own shared report schemas and report-writing contracts.
 - Shared report contracts must include common metadata, generator metadata,
   diagnostic summaries and typed build, security, target, runtime, task and AI
   guide report shapes.
@@ -1328,10 +1328,10 @@ the active v1 build graph.
 
 ## Storage-Aware Performance Requirements
 
-- LogicN must not claim to support M.2, NVMe, SSDs or storage controllers directly.
+- Galerina must not claim to support M.2, NVMe, SSDs or storage controllers directly.
   Operating systems, drivers, firmware and hardware controllers own physical
   storage access.
-- LogicN may detect storage capability where available and use it to guide
+- Galerina may detect storage capability where available and use it to guide
   incremental compilation, IDE indexing, project graph scanning, large-file
   processing, JSON streaming, asset pipelines and diagnostics.
 - Storage detection must degrade to `unknown` in containers, virtual machines,
@@ -1339,7 +1339,7 @@ the active v1 build graph.
 - Cache behavior must be conservative by default: bounded, rebuildable,
   content-addressed where practical, safe to bypass and safe to delete.
 - Only deterministic, non-secret, rebuildable data may be cached automatically.
-- LogicN must not automatically cache secrets, raw sensitive payloads, authorization
+- Galerina must not automatically cache secrets, raw sensitive payloads, authorization
   decisions, non-deterministic results, database query results or external API
   responses.
 - Application-level caching of database/API data must require explicit
@@ -1354,12 +1354,12 @@ the active v1 build graph.
 
 ## Structured Task/Wait Requirements
 
-- LogicN uses `task` to start governed async work and `wait` to collect the
+- Galerina uses `task` to start governed async work and `wait` to collect the
   result. `async`/`await` are not used — they imply uncontrolled async models
   that conflict with runtime governance.
-- LogicN must not expose futures, promises, pinning, executors or manual polling
+- Galerina must not expose futures, promises, pinning, executors or manual polling
   as the normal application model.
-- LogicN must support grouped waits through `wait all`, race waits through
+- Galerina must support grouped waits through `wait all`, race waits through
   `wait race`, bounded stream processing through `wait stream`, queue handoff
   through declared queue/job contracts and retry through explicit retry policy.
 - Every task must belong to a scope. When a scope ends, unfinished child work
@@ -1401,7 +1401,7 @@ the active v1 build graph.
 
 ## AI and Low-Bit Backend Requirements
 
-- AI inference must be target-neutral at the `logicn-ai` layer.
+- AI inference must be target-neutral at the `galerina-ai` layer.
 - AI agents must declare input type, output type, tools, effects, permissions,
   memory budget, timeout, rate limits and failure behaviour.
 - Parallel agents must run inside supervised task groups, queues, worker pools
@@ -1430,21 +1430,21 @@ the active v1 build graph.
   violations, secrets access decisions and human approval requirements.
 - Agent outputs may inform decisions but must not directly authorize security,
   payment, access-control or deployment decisions.
-- Neural-network support must live in `logicn-ai-neural`, not `logicn-core`.
-- Neural workloads must use tensor shapes from `logicn-core-vector`, compute planning
-  from `logicn-core-compute` and safety/report contracts from `logicn-ai`.
+- Neural-network support must live in `galerina-ai-neural`, not `galerina-core`.
+- Neural workloads must use tensor shapes from `galerina-core-vector`, compute planning
+  from `galerina-core-compute` and safety/report contracts from `galerina-ai`.
 - Training flows must declare dataset reference, data policy, loss function,
   optimizer, epochs, batch size, memory limit and timeout.
-- Neuromorphic support must live in `logicn-ai-neuromorphic`, separate from normal
+- Neuromorphic support must live in `galerina-ai-neuromorphic`, separate from normal
   tensor neural networks.
-- Low-bit AI support must be optional and must not be required by `logicn-core`.
-- LogicN source syntax must use generic targets such as `low_bit_ai` and
+- Low-bit AI support must be optional and must not be required by `galerina-core`.
+- Galerina source syntax must use generic targets such as `low_bit_ai` and
   `ternary_ai`, not a backend name such as BitNet.
 - BitNet should be treated as one optional backend for compatible low-bit AI
   inference when GPU, NPU or other accelerator targets are unavailable or not
   permitted.
 - BitNet ternary weights and other model weight formats must not be treated as
-  LogicN `Tri` truth semantics.
+  Galerina `Tri` truth semantics.
 - AI inference declarations must include explicit model reference, context
   limit, output token limit, timeout, thread limit and memory estimate.
 - AI output must be untrusted by default and must not directly authorize
@@ -1453,27 +1453,27 @@ the active v1 build graph.
   `ternary_ai` was selected, which backend was used and why higher-preference
   targets were not selected.
 - AI accelerator and photonic targets must be optional. CPU-compatible fallback
-  must remain the baseline for LogicN developer workflows.
+  must remain the baseline for Galerina developer workflows.
 
 ## Passive LLM Cache Requirements
 
-- LogicN may support passive LLM, embedding, RAG/chunk, schema-output,
+- Galerina may support passive LLM, embedding, RAG/chunk, schema-output,
   code-analysis and AI-context caches.
-- Passive cache means developers call the LLM normally and LogicN decides
+- Passive cache means developers call the LLM normally and Galerina decides
   whether to read, write, bypass or block cache use according to policy.
 - Passive LLM caching must be automatic only when the input and output are safe,
   typed, source-tracked, privacy-checked and reportable.
-- LogicN must not cache raw secrets, API keys, access tokens, payment card data,
+- Galerina must not cache raw secrets, API keys, access tokens, payment card data,
   authentication headers, raw customer chat messages, medical data, legal case
   data, private documents, unredacted personal data, webhook secrets, one-time
   codes or session cookies by default.
-- LogicN must not cache unvalidated free-text LLM output by default. Cacheable
+- Galerina must not cache unvalidated free-text LLM output by default. Cacheable
   LLM output should pass typed schema validation, required-field validation,
   confidence validation where relevant, unsafe-content checks and secret-leakage
   checks.
 - LLM cache keys must include provider, model, model version, system prompt
   hash, input hash, context hash, output schema hash, tool manifest hash,
-  temperature, `top_p`, seed where available, LogicN version, security policy
+  temperature, `top_p`, seed where available, Galerina version, security policy
   hash and package/source hashes where relevant.
 - Embedding cache keys must include text hash, embedding model, model version,
   normalisation settings, chunking settings, provider and project/tenant
@@ -1482,7 +1482,7 @@ the active v1 build graph.
   must be denied by default for payments, legal decisions, medical advice,
   security decisions, webhooks, financial calculations and access control.
 - Passive LLM cache entries must be invalidated when model, model version,
-  system prompt, output schema, tools, RAG context, security policy, LogicN
+  system prompt, output schema, tools, RAG context, security policy, Galerina
   compiler version, package version, source file or project/tenant isolation
   key changes.
 - Production LLM cache stores must require tenant isolation, encryption at rest,
@@ -1496,18 +1496,18 @@ the active v1 build graph.
 
 ## Deployment Auto-Configuration Requirements
 
-- LogicN deployment must be based on portable project intent, not developer
+- Galerina deployment must be based on portable project intent, not developer
   machine assumptions.
 - Deployment declarations should support target auto-detection, runtime
   capability profiles, architecture-aware builds, generated deployment
   artifacts, preflight checks, health checks, readiness checks, smoke tests,
   stability watches and rollback metadata.
 - Kubernetes must be treated as an optional deployment target, not a required
-  runtime for every LogicN app.
+  runtime for every Galerina app.
 - Basic Kubernetes output may include Deployment, Service, Ingress or Gateway,
   ConfigMap, Secret references, ServiceAccount, health/readiness/startup probes,
   resource requests and limits, rollout settings and deployment reports.
-- LogicN must never emit real secret values into Kubernetes YAML. Production
+- Galerina must never emit real secret values into Kubernetes YAML. Production
   Kubernetes output must prefer secret references or external secret stores and
   warn when Kubernetes Secrets are used without evidence of encryption at rest
   and least-privilege RBAC.
@@ -1551,10 +1551,10 @@ the active v1 build graph.
 
 ## Runtime Naming Requirement
 
-- `logicn-framework-app-kernel` must remain the secure application boundary package.
-- A future `logicn-core-runtime` package, if added, should be the LogicN execution engine for
-  compiled or checked LogicN code.
-- `logicn-framework-app-kernel` must not be renamed to `logicn-core-runtime`, because API policy and
+- `galerina-framework-app-kernel` must remain the secure application boundary package.
+- A future `galerina-core-runtime` package, if added, should be the Galerina execution engine for
+  compiled or checked Galerina code.
+- `galerina-framework-app-kernel` must not be renamed to `galerina-core-runtime`, because API policy and
   code execution are separate responsibilities.
 
 ## Generative Runtime Mapper Requirements
@@ -1581,17 +1581,17 @@ the active v1 build graph.
 - Mapper exports intended for future ML training must be structural,
   redacted, provenance-linked and free of secrets and private payloads.
 - The mapper must be policy-governed and auditable. It must not become
-  self-authorizing, self-modifying or a bypass around LogicN capability and
+  self-authorizing, self-modifying or a bypass around Galerina capability and
   effect controls.
 - Candidate mapper package planning may include runtime telemetry, runtime
   graph, runtime insight, AI runtime analysis, code graph, code insight and
   refactor planning packages, but those candidates do not imply implemented
-  LogicN syntax or active package creation.
+  Galerina syntax or active package creation.
 
 ## AI As Untrusted Reasoning Worker Requirements
 
-- LogicN must treat AI as an untrusted reasoning worker, not as trusted program
-  logic. AI may suggest, LogicN must verify and the runtime must enforce.
+- Galerina must treat AI as an untrusted reasoning worker, not as trusted program
+  logic. AI may suggest, Galerina must verify and the runtime must enforce.
 - Future AI support should be expressed through typed contracts such as
   `AiTask`, `AiWorker`, `AiModel`, `AiContext`, `AiEvidence`, `AiClaim`,
   `AiDecision`, `AiToolCall` and `AiReport`, but these names remain planning
@@ -1602,7 +1602,7 @@ the active v1 build graph.
   should load trusted policy, load untrusted context, redact secrets, run the
   AI worker, validate structured output, verify claims against evidence,
   enforce permissions, require human approval where needed and emit reports.
-- LogicN cannot fully prevent hallucination, but hallucinated output must be
+- Galerina cannot fully prevent hallucination, but hallucinated output must be
   non-authoritative. Claims without evidence must be unverified; claims without
   sources must not become facts; low confidence and contradictions must require
   review or escalation; missing data must return `Unknown` rather than a guess.
@@ -1623,7 +1623,7 @@ the active v1 build graph.
 
 ## Untrusted File And Asset Processing Requirements
 
-- LogicN must treat images, PDFs, Office files, archives, SVGs, media files
+- Galerina must treat images, PDFs, Office files, archives, SVGs, media files
   and embedded assets as untrusted executable-adjacent content.
 - File extension and MIME type must not be treated as sufficient trust
   evidence. Security classification must consider signatures, size, structure,
@@ -1652,7 +1652,7 @@ the active v1 build graph.
 
 ## Bit Width And Base64 Asset Policy Requirements
 
-- Normal LogicN application code should not need to think about bit size, but
+- Normal Galerina application code should not need to think about bit size, but
   low-level, binary, AI, network, image, crypto and interop boundaries must use
   explicit numeric representation.
 - Safe default numeric concepts should avoid silent overflow, truncation,
@@ -1672,7 +1672,7 @@ the active v1 build graph.
   vector and compute packages, not ordinary application logic.
 - Base64 embedded content and data URIs must be treated as untrusted encoded
   asset data, not trusted application content.
-- Before decoding base64 content, LogicN must run the security phase, parse
+- Before decoding base64 content, Galerina must run the security phase, parse
   metadata only, validate MIME/policy/size/memory/SVG-script policy, estimate
   decoded size and report the handling decision.
 - Base64 handling modes may include pass-through encoded, decode-and-validate
@@ -1686,7 +1686,7 @@ the active v1 build graph.
 
 ## Memory Pressure Security Requirements
 
-- LogicN must treat low memory and near-out-of-memory conditions as security
+- Galerina must treat low memory and near-out-of-memory conditions as security
   events, not only as crash or performance risks.
 - Apps, packages, tasks, requests, parser workers and AI jobs should have
   explicit memory budgets for app memory, request memory, JSON bodies, stream
@@ -1700,7 +1700,7 @@ the active v1 build graph.
   appropriate and cancelling non-essential work during emergency pressure.
 - Each request and worker should have an isolated budget so one user, upload,
   AI job, parser worker or database query cannot starve the whole runtime.
-- On memory pressure, LogicN should cancel low-priority work such as AI
+- On memory pressure, Galerina should cancel low-priority work such as AI
   summarisation, cache rebuilds, analytics and background jobs before
   cancelling security, authentication, audit or cleanup paths.
 - Runtime defaults should prefer streaming, paging, chunking and bounded
@@ -1720,7 +1720,7 @@ the active v1 build graph.
 
 ## Compile-Time Metadata Reflection Requirements
 
-- LogicN reflection must mean compile-time metadata access for proof, tooling,
+- Galerina reflection must mean compile-time metadata access for proof, tooling,
   reports, audit mapping, schema generation, test generation, AI indexing and
   Governed IR creation.
 - Compile-time metadata may describe declared data, views, flows, permissions,
@@ -1731,7 +1731,7 @@ the active v1 build graph.
   project graph building, AI architecture indexing and Governed IR building
   layers before verified execution.
 - Runtime object inspection and behaviour modification must be denied in
-  normal LogicN execution, including listing live objects, inspecting private
+  normal Galerina execution, including listing live objects, inspecting private
   fields dynamically, invoking methods by string, dynamically loading unknown
   modules, bypassing permission checks, mutating permissions and changing
   response exposure at runtime.
@@ -1746,7 +1746,7 @@ the active v1 build graph.
 
 ## Governed Execution Director Requirements
 
-- LogicN should include a Governed Execution Director as the runtime planning
+- Galerina should include a Governed Execution Director as the runtime planning
   and coordination layer that identifies data, checks contracts and policy,
   builds execution plans, selects allowed compute targets, assigns memory
   paths, chooses normal execution or verified fast pipes and records audit
@@ -1776,7 +1776,7 @@ the active v1 build graph.
 
 ## Runtime Terminology And Naming Requirements
 
-- LogicN should be described as a governance-first programming language,
+- Galerina should be described as a governance-first programming language,
   runtime and execution architecture designed to coordinate secure computation
   across CPUs, GPUs, AI accelerators, optical systems and future heterogeneous
   hardware.
@@ -1834,7 +1834,7 @@ the active v1 build graph.
 
 ## Data Visibility View Requirements
 
-- LogicN should use `view` as the official field-level data exposure term.
+- Galerina should use `view` as the official field-level data exposure term.
 - `view` means who or what may see or expose the data.
 - Field exposure syntax should prefer `fieldName: Type view: level` over
   older `classify` examples.
@@ -1868,17 +1868,17 @@ the active v1 build graph.
 
 ## Variable Mutation And Vault Requirements
 
-- LogicN v0.1 should use a small state surface: `let`, explicit `mut`,
+- Galerina v0.1 should use a small state surface: `let`, explicit `mut`,
   `readonly`, `vault`, `secure` and `Secret<T>`.
 - `let` should declare local flow/block-scoped variables that are not
   accessible outside their scope and are not silently mutable.
 - Mutation must be explicit. Assignment-style mutation without `mut` should
-  fail in normal LogicN code. Increment and decrement mutation without `mut`,
+  fail in normal Galerina code. Increment and decrement mutation without `mut`,
   such as `foo++`, should also fail checker validation.
 - `readonly` should define values that cannot be changed after creation, with
   no unlock mechanism in v0.1.
 - `const` should not be used in v0.1 examples or core syntax direction.
-  `readonly` replaces `const` unless LogicN later needs compile-time constants
+  `readonly` replaces `const` unless Galerina later needs compile-time constants
   distinct from runtime readonly values.
 - Shared state must live in `vault` declarations, not ordinary globals.
 - Vault values must be protected, typed, permission-controlled, audit-aware and
@@ -1935,13 +1935,13 @@ the active v1 build graph.
 ## Out of Scope
 
 - Product-specific app features before a product domain is selected.
-- Full-framework behavior inside `logicn-core` or `logicn-framework-app-kernel`.
+- Full-framework behavior inside `galerina-core` or `galerina-framework-app-kernel`.
 - Mandatory ORM, CMS, admin UI, template engine or frontend framework design.
 - Treating project graph output as a security or compiler authority.
-- Treating BitNet, Graphify or any named backend as LogicN language syntax.
+- Treating BitNet, Graphify or any named backend as Galerina language syntax.
 - Treating neural networks, neuromorphic models or AI accelerators as mandatory
   core language features.
-- Requiring future hardware for the baseline LogicN developer workflow.
+- Requiring future hardware for the baseline Galerina developer workflow.
 - Treating the Generative Runtime Mapper as an automatic production
   self-modification system or as authority to silently rewrite code, policies
   or runtime behaviour.
@@ -1957,16 +1957,16 @@ the active v1 build graph.
   backpressure, cleanup, request isolation and security reporting.
 - Treating reflection as runtime object inspection, string-based method
   invocation, dynamic permission mutation or behaviour modification in normal
-  LogicN execution.
+  Galerina execution.
 - Treating compute, AI, storage, network or boundary modules as independent
   authority layers that can bypass the Director, policy checks or audit proof.
-- Treating LogicN as only a traditional VM, thread executor, web server runtime
+- Treating Galerina as only a traditional VM, thread executor, web server runtime
   or instruction executor when describing the long-term architecture.
 - Renaming packages, APIs or report schemas to metaphorical, hardware-specific
   or implementation-specific terms without a responsibility-based naming
   review.
 - Using `classify` as the preferred field-level data exposure syntax in new
-  LogicN examples.
+  Galerina examples.
 - Using `const` in v0.1 as a separate concept from `readonly`.
 - Allowing implicit mutation, unprotected shared state, generic global
   variables or direct vault access that bypasses `secure`, permission checks or
@@ -1978,7 +1978,7 @@ the active v1 build graph.
 - Package boundaries are explicit and enforced through documentation and tests
   where code exists.
 - Project graph outputs can be regenerated and used by AI tools.
-- `LogicN task` can load, validate, dry-run and report safe task plans.
+- `Galerina task` can load, validate, dry-run and report safe task plans.
 - Secrets are never committed or emitted in reports.
 - A future app can add domain requirements without moving language or framework
   responsibilities into the wrong package.

@@ -1,4 +1,4 @@
 none
-// LLN-MODULE-005 is the target diagnostic for this example.
+// SPORE-MODULE-005 is the target diagnostic for this example.
 // Supply-chain manifest capability enforcement is tracked for a future compiler wave.
-// The example is stable: LLN-EFFECT-002 is a warning — no unsuppressed errors.
+// The example is stable: SPORE-EFFECT-002 is a warning — no unsuppressed errors.

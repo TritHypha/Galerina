@@ -8,7 +8,7 @@
 
 ## ⚠️ Novelty disclaimer — read first
 
-**This is a defensive-publication note, not a flagship or workshop paper, and it makes no claim of novel science or novel cryptography.** Every cryptographic and codec primitive used by `.tmf` is **borrowed and standard** (FIPS / NIST / RFC / peer-reviewed): SHAKE256 (FIPS 202), ML-DSA-65 (FIPS 204), ML-KEM (FIPS 203), AES-GCM (NIST SP 800-38D) / AEAD (RFC 5116), Merkle hash trees (Merkle, 1987), and standard media/document codecs (PNG, JPEG, AVIF, Opus, H.264, JSON, XML, …). What `.tmf` contributes is **engineering composition and byte-precise specification** — a deterministic, fail-closed wrapping order around bytes the format never interprets. Per the LogicN/TritMesh publishing standard ("no new cryptography and no new science"), `.tmf`/TMX-256/KEM-DEM are **pre-graded as engineering composition, not a flagship paper**. This note exists to (a) document the construction precisely and (b) serve as a **timestamped prior-art record** that keeps the composition free.
+**This is a defensive-publication note, not a flagship or workshop paper, and it makes no claim of novel science or novel cryptography.** Every cryptographic and codec primitive used by `.tmf` is **borrowed and standard** (FIPS / NIST / RFC / peer-reviewed): SHAKE256 (FIPS 202), ML-DSA-65 (FIPS 204), ML-KEM (FIPS 203), AES-GCM (NIST SP 800-38D) / AEAD (RFC 5116), Merkle hash trees (Merkle, 1987), and standard media/document codecs (PNG, JPEG, AVIF, Opus, H.264, JSON, XML, …). What `.tmf` contributes is **engineering composition and byte-precise specification** — a deterministic, fail-closed wrapping order around bytes the format never interprets. Per the Galerina/TritMesh publishing standard ("no new cryptography and no new science"), `.tmf`/TMX-256/KEM-DEM are **pre-graded as engineering composition, not a flagship paper**. This note exists to (a) document the construction precisely and (b) serve as a **timestamped prior-art record** that keeps the composition free.
 
 > This is engineering triage informed by training knowledge, **not** a filed legal prior-art search or a freedom-to-operate opinion. Confirm novelty/clearance with a qualified professional before any external submission.
 
@@ -34,7 +34,7 @@ A `.tmf` file is a **trust capsule**: a self-describing container whose entire c
 
 > **Positioning — an honest aspiration, not a claim.** Combining *all* of {content-addressed integrity, quantum-resilient post-quantum authenticity, confidentiality, selective-disclosure inclusion proofs, universal media/document/structured modality, and seekable streaming for communications} in **one fail-closed format** is unusual — most real systems assemble these from several *separate* formats and layers stacked by hand. In that sense `.tmf` aims to be a "unicorn" format: the rare single capsule that does all of it at once. **Whether it earns that status is for adoption and independent measurement to decide — not this note.** Consistent with the novelty disclaimer above, this document claims only the construction and its stated properties; it does **not** claim `.tmf` is the best, fastest, or a uniquely novel format. The engineering value is the *composition discipline* (a deterministic, byte-precise, fail-closed wrapping order over borrowed standards), not an invention.
 
-> **Crypto-on-core boundary (LLN-SUBSTRATE-001).** Every cryptographic operation in `.tmf` — the SHAKE256 hashing, the ML-DSA signature, the KEM-DEM seal — runs on the **digital/binary** substrate and is **bit-exact and reproducible**. The "ternary" in TMX (the 3-ary tree shape) is a *data-structure modelling choice*, **not** a use of analog/photonic/ternary hardware in the cryptographic path, and carries **no performance claim** (§5.3). This separation is a hard line: analog/probabilistic substrates never carry a cryptographic operation.
+> **Crypto-on-core boundary (SPORE-SUBSTRATE-001).** Every cryptographic operation in `.tmf` — the SHAKE256 hashing, the ML-DSA signature, the KEM-DEM seal — runs on the **digital/binary** substrate and is **bit-exact and reproducible**. The "ternary" in TMX (the 3-ary tree shape) is a *data-structure modelling choice*, **not** a use of analog/photonic/ternary hardware in the cryptographic path, and carries **no performance claim** (§5.3). This separation is a hard line: analog/probabilistic substrates never carry a cryptographic operation.
 
 ---
 
@@ -47,7 +47,7 @@ A `.tmf` file is a **trust capsule**: a self-describing container whose entire c
      └─ confidentiality :  KEM-DEM seal       (ML-KEM encapsulation + AEAD DEM; STREAM mode for large media)  → ciphertext
           └─ integrity   :  TMX-256 leaf over the (cipher)text bytes, codec-agnostic (§5)                      → 256-bit root
                └─ authenticity : ML-DSA-65 (FIPS 204) signature over the root (sign-the-hash, never replace it)→ signature
-                    └─ governance : a fail-closed verify-before-release gate (LogicN `.lln`)                    → release
+                    └─ governance : a fail-closed verify-before-release gate (Galerina `.spore`)                    → release
 ```
 
 **Spec-vs-shipped honesty (v0).** The integrity core (TMX-256) and container are **specified with reproducible test vectors and buildable today on commodity hardware**. The ML-DSA-65 signature requires a *vetted* FIPS-204 implementation — a hand-rolled signer must never ship; until a vetted library is wired the signing step is marked **Blocked**, and any placeholder must be explicitly labelled non-cryptographic and rejected outside test profiles. KEM-DEM confidentiality and the custody/threshold features are specified (`tmf-encryption-v0.md`, `signature-custody-v0.md`, `threshold-custody-v0.md`) with parts in progress. This note specifies the format; it does not claim more than the engine ships.
@@ -176,7 +176,7 @@ Every mismatch is a **hard, fail-closed error**; there is **no self-healing in t
 
 ## 7. Reproducibility
 
-TMX-256-SHAKE v0 ships **golden test vectors** generated with only Python's standard-library `hashlib.shake_256` (FIPS 202); any conforming implementation in any language must match them (e.g. `ABSENT = 1758f20e…d563`; a 2-section worked example with `integrity_root = 43386e64…5212`; a tamper case where flipping `modality 0→1` changes the root and fails verification). Reproduce with the vendored generator (`spec/_vectors/gen_tmx_vectors.py`); the inclusion-proof and modality-codec generators reconstruct the same root. The full byte-precise spec lives in `packages-logicn/logicn-ext-tmf/spec/` (`tmx-256-construction-v0.md`, `tmf-container-v0.md`, `tmf-encryption-v0.md`, `tmf-modalities-v0.md`, `inclusion-proof-v0.md`, custody specs).
+TMX-256-SHAKE v0 ships **golden test vectors** generated with only Python's standard-library `hashlib.shake_256` (FIPS 202); any conforming implementation in any language must match them (e.g. `ABSENT = 1758f20e…d563`; a 2-section worked example with `integrity_root = 43386e64…5212`; a tamper case where flipping `modality 0→1` changes the root and fails verification). Reproduce with the vendored generator (`spec/_vectors/gen_tmx_vectors.py`); the inclusion-proof and modality-codec generators reconstruct the same root. The full byte-precise spec lives in `packages-galerina/galerina-ext-tmf/spec/` (`tmx-256-construction-v0.md`, `tmf-container-v0.md`, `tmf-encryption-v0.md`, `tmf-modalities-v0.md`, `inclusion-proof-v0.md`, custody specs).
 
 ---
 
@@ -192,7 +192,7 @@ TMX-256-SHAKE v0 ships **golden test vectors** generated with only Python's stan
 - **RFC 6962**, *Certificate Transparency* — Merkle inclusion-proof formulation. https://www.rfc-editor.org/rfc/rfc6962
 - **RFC 9861**, *KangarooTwelve and TurboSHAKE* (reserved non-FIPS speed profile only). https://www.rfc-editor.org/rfc/rfc9861.html
 - Media/document/structured codecs carried as opaque payloads, neither modified nor re-specified: **RFC 6716** (Opus), **ITU-T H.264** / H.265, **AOMedia AV1**, ISO-BMFF/MP4, Matroska/WebM; **RFC 8259** (JSON), **RFC 8949** (CBOR), **W3C** XML & MathML; **IUPAC InChI**, Daylight SMILES, BIOVIA CTfile/MOL.
-- Kleene three-valued logic (Kleene, 1938) underlies the LogicN K3 verify-before-release governance gate (out of scope here; cited for completeness).
+- Kleene three-valued logic (Kleene, 1938) underlies the Galerina K3 verify-before-release governance gate (out of scope here; cited for completeness).
 
 ---
 
@@ -207,10 +207,10 @@ No `ntt_mul`, no "O(1) single clock cycle," no systolic/photonic path, no NVFP4 
 - **Type:** Defensive-publication note / timestamped prior-art record. **Not** a flagship/workshop paper; no novelty claimed (see disclaimer).
 - **Authorship & AI assistance:** drafted with AI assistance (Claude) under human direction, grounded line-by-line in the vendored `.tmf` v0 specification; all cryptographic claims trace to the cited FIPS/RFC/peer-reviewed sources.
 - **Funding:** none. **Competing interests:** none declared.
-- **Data / artifact availability:** the byte-precise specification, reference generators, and golden vectors are in `packages-logicn/logicn-ext-tmf/spec/`; results reproduce with stdlib SHAKE256.
+- **Data / artifact availability:** the byte-precise specification, reference generators, and golden vectors are in `packages-galerina/galerina-ext-tmf/spec/`; results reproduce with stdlib SHAKE256.
 - **Licence:** Apache-2.0 (consistent with the project's defensive-publication + patent-grant strategy).
 - **Standards alignment:** see `docs/scientific-papers/README.md` for the UK (UKRI / Concordat to Support Research Integrity), US (OSTP 2022 public-access; NSF reproducibility), and EU (ALLEA European Code of Conduct; Horizon Europe open science; FAIR) checklist this note follows.
 
 ---
 
-*Companion: the three defensive-publication notes in `LogicN-Patens/` (No-Coercion K3 composition; prove-own-maths + measured negatives; crypto-on-core rejected paths). Index and publishing standard: `docs/scientific-papers/README.md`.*
+*Companion: the three defensive-publication notes in `Galerina-Patens/` (No-Coercion K3 composition; prove-own-maths + measured negatives; crypto-on-core rejected paths). Index and publishing standard: `docs/scientific-papers/README.md`.*

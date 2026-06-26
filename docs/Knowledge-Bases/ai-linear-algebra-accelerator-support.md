@@ -2,7 +2,7 @@
 
 ## Definition
 
-LogicN supports AI and linear-algebra accelerators through the Neutral Governed IR, making them **first-class governed compute targets** rather than hidden libraries.
+Galerina supports AI and linear-algebra accelerators through the Neutral Governed IR, making them **first-class governed compute targets** rather than hidden libraries.
 
 ```text
 Declare the tensor.
@@ -15,7 +15,7 @@ Audit the result.
 ## Execution Flow
 
 ```text
-LogicN source
+Galerina source
  -> Governed IR
  -> AI/Linear Algebra Compute Plan
  -> Sheriff approves
@@ -28,9 +28,9 @@ LogicN source
 
 ## 1. Native Tensor and Matrix Types
 
-LogicN exposes these as first-class types:
+Galerina exposes these as first-class types:
 
-```logicn
+```galerina
 tensor<float16, [1, 768]> EmbeddingVector
 matrix<float32, [1024, 1024]> WeightMatrix
 ```
@@ -62,7 +62,7 @@ FPGA  = reconfigurable hardware
 
 Hardware is declared with preferences, not hard-coded to a vendor:
 
-```logicn
+```galerina
 compute: npu preferred, gpu fallback, cpu safe_fallback
 ```
 
@@ -114,7 +114,7 @@ future tri-state/optical formats
 
 Precision is declared and runtime-controlled:
 
-```logicn
+```galerina
 ai infer ProductRank {
   input: ProductQuery
   output: RankedProducts

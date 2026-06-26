@@ -1,16 +1,16 @@
-<!-- ABSORBED R&D SOURCE — verbatim mirror. LogicN is the main library; the R&D repo is upstream/authoring.
-     Source: LogicN-R-AND-D/tmf/research/qrng-q1-entropy-capability-grounding-survey.md (bridge task 0005; NEW; fabricated numbers removed in audit) · Pinned: R&D auto-run 2026-06-18
-     Integrated LogicN view: logicn-qrng-entropy-capability-design.md / logicn-quantum-resilience-roadmap.md (the entropy.qrng interface) · Catalog: logicn-rd-absorption-catalog.md
+<!-- ABSORBED R&D SOURCE — verbatim mirror. Galerina is the main library; the R&D repo is upstream/authoring.
+     Source: Galerina-R-AND-D/tmf/research/qrng-q1-entropy-capability-grounding-survey.md (bridge task 0005; NEW; fabricated numbers removed in audit) · Pinned: R&D auto-run 2026-06-18
+     Integrated Galerina view: galerina-qrng-entropy-capability-design.md / galerina-quantum-resilience-roadmap.md (the entropy.qrng interface) · Catalog: galerina-rd-absorption-catalog.md
      Rule: edit the upstream source then re-vendor; do not fork this copy (feedback-auto-import-rd-docs). -->
 
-> **Absorbed R&D source (verbatim).** See `logicn-rd-absorption-catalog.md`. Internal links point at the upstream R&D tree.
+> **Absorbed R&D source (verbatim).** See `galerina-rd-absorption-catalog.md`. Internal links point at the upstream R&D tree.
 
 ---
 
 # QRNG Q1 entropy-capability grounding survey
 
 > **Status:** research grounding survey (2026-06-17). **Bridge task:** 0005. **Feeds:** the hub's **Q1 QRNG
-> entropy-capability interface** for LogicN (capability `entropy.qrng`; fail-closed `LLN-ENTROPY-001/002`).
+> entropy-capability interface** for Galerina (capability `entropy.qrng`; fail-closed `SPORE-ENTROPY-001/002`).
 > **Extends** (does not repeat) [`photonic-lane-D-qrng.md`](photonic-lane-D-qrng.md) with the implementation-grade
 > SP 800-90A/B/C specifics the governed interface needs.
 > **Posture (binding):** grounded + cited (NIST / ITU-T / FIPS + vendor datasheets only); **no throughput number

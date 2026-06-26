@@ -2,7 +2,7 @@
 
 ## Definition
 
-LogicN converts `unsafe` data into `safe` data through approved trust gates.
+Galerina converts `unsafe` data into `safe` data through approved trust gates.
 The vocabulary is kept deliberately small: three operations cover the full
 trust conversion pipeline.
 
@@ -15,10 +15,10 @@ encode    = make safe for a specific output context
 ## Why Three Operations
 
 Security terminology in the industry is broad: escaping, filtering,
-sanitization, output encoding, input validation, etc. LogicN documents those
+sanitization, output encoding, input validation, etc. Galerina documents those
 as industry terms but exposes a small, clear vocabulary in the language.
 
-`sanitize` is used in documentation as the umbrella term. LogicN syntax uses
+`sanitize` is used in documentation as the umbrella term. Galerina syntax uses
 `validate`, `clean` and `encode`.
 
 ## The Trust Gate Pipeline
@@ -36,7 +36,7 @@ unsafe input
 Proves the value is acceptable in shape, type or range. Returns a typed safe
 value:
 
-```logicn
+```galerina
 let email: safe Email = validate.email(raw_email)
 let id: safe Id = validate.id(raw_id)
 let price: safe Decimal = validate.decimal(raw_price)
@@ -46,7 +46,7 @@ let price: safe Decimal = validate.decimal(raw_price)
 
 Removes or normalises dangerous content:
 
-```logicn
+```galerina
 let name: safe String = clean.text(raw_name)
 ```
 
@@ -54,7 +54,7 @@ let name: safe String = clean.text(raw_name)
 
 Makes data safe for a specific output boundary:
 
-```logicn
+```galerina
 let html_comment: safe Html = encode.html(raw_comment)
 let url_part: safe UrlPart = encode.url(raw_part)
 let shell_arg: safe ShellArg = encode.shell_arg(raw_arg)
@@ -68,7 +68,7 @@ different treatment. Do not mix output encodings.
 For database access, prefer parameterized queries rather than manual SQL
 escaping. The runtime handles the encoding:
 
-```logicn
+```galerina
 flow get_user(raw_id: unsafe String) -> User
   uses database.main.read
 {
@@ -90,7 +90,7 @@ Database responses are also `unsafe` until validated.
 
 ## Trust Gate Summary
 
-```logicn
+```galerina
 validate.email(raw)     -> safe Email
 validate.decimal(raw)   -> safe Decimal
 clean.text(raw)         -> safe String
@@ -102,15 +102,15 @@ encode.shell_arg(raw)   -> safe ShellArg
 ## Comparison with Rust
 
 Rust's `unsafe` marks code that crosses a memory safety boundary.
-LogicN's `unsafe` marks data that crosses a trust boundary.
+Galerina's `unsafe` marks data that crosses a trust boundary.
 
 Rust keeps unsafe code behind explicit `unsafe` blocks.
-LogicN keeps unsafe data behind `validate`, `clean` and `encode` gates.
+Galerina keeps unsafe data behind `validate`, `clean` and `encode` gates.
 
 ## Core Principle
 
 ```text
-LogicN does not trust external data.
-LogicN converts unsafe data into safe data
+Galerina does not trust external data.
+Galerina converts unsafe data into safe data
 through approved trust gates: validate, clean, and encode.
 ```

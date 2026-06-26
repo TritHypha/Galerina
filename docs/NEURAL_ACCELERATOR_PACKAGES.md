@@ -2,68 +2,68 @@
 
 ## Summary
 
-LogicN should support neural-network workloads through typed packages and target
+Galerina should support neural-network workloads through typed packages and target
 planning, not by making neural networks part of normal app syntax.
 
 Best rule:
 
 ```text
-LogicN core defines the language.
-logicn-core-vector defines vector, matrix and tensor shapes.
-logicn-ai-neural defines neural network workloads.
-logicn-ai-neuromorphic defines spike/event workloads.
-logicn-core-compute selects targets and fallback plans.
+Galerina core defines the language.
+galerina-core-vector defines vector, matrix and tensor shapes.
+galerina-ai-neural defines neural network workloads.
+galerina-ai-neuromorphic defines spike/event workloads.
+galerina-core-compute selects targets and fallback plans.
 target packages map planned work to CPU, GPU, AI accelerator or photonic plans.
 ```
 
 ## Package Split
 
 ```text
-packages-logicn/logicn-core-vector
+packages-galerina/galerina-core-vector
   Vector<T, N>, Matrix<T, R, C>, Tensor<T, Shape>, numeric element contracts
 
-packages-logicn/logicn-ai-neural
+packages-galerina/galerina-ai-neural
   neural models, layers, activations, inference, training boundaries
 
-packages-logicn/logicn-ai-neuromorphic
+packages-galerina/galerina-ai-neuromorphic
   Spike, SpikeTrain, EventSignal<T>, spiking models
 
-packages-logicn/logicn-ai
+packages-galerina/galerina-ai
   generic AI model metadata, safety policy and AI inference reports
 
-packages-logicn/logicn-ai-lowbit
+packages-galerina/galerina-ai-lowbit
   low-bit, quantized and ternary AI backend contracts
 
-packages-logicn/logicn-core-compute
+packages-galerina/galerina-core-compute
   compute auto, target selection and fallback reports
 
-packages-logicn/logicn-target-ai-accelerator
+packages-galerina/galerina-target-ai-accelerator
   NPU, TPU, AI-chip and passive accelerator backend profile planning
 
-packages-logicn/logicn-target-photonic
+packages-galerina/galerina-target-photonic
   future photonic target planning
 ```
 
 ## Photonic And `-1`
 
-`-1`, `0` and `+1` can appear in more than one LogicN package, but they do not mean
+`-1`, `0` and `+1` can appear in more than one Galerina package, but they do not mean
 the same thing everywhere.
 
 ```text
-logicn-core-logic
+galerina-core-logic
   Tri truth/logical state semantics
 
-logicn-ai-lowbit
+galerina-ai-lowbit
   ternary or low-bit model weights
 
-logicn-core-photonic
+galerina-core-photonic
   possible optical signal mappings for logic or compute states
 
-logicn-target-photonic
+galerina-target-photonic
   backend plans for photonic hardware or simulators
 ```
 
-Photonic support should not own `Tri`. `Tri` belongs to `logicn-core-logic`. Photonic
+Photonic support should not own `Tri`. `Tri` belongs to `galerina-core-logic`. Photonic
 packages can map logic states to optical properties such as phase, amplitude or
 wavelength.
 
@@ -71,7 +71,7 @@ wavelength.
 
 Neural inference should be a typed compute workload:
 
-```LogicN
+```Galerina
 secure compute flow moderateText(input: Text) -> Result<ModerationDecision, AiError> {
   compute auto {
     prefer ai_accelerator
@@ -124,7 +124,7 @@ Do not make source syntax depend on one backend, chipset or vendor.
 
 Vendor-specific AI accelerators should be backend profiles. For example, Intel
 Gaudi 3 can be selected as `intel.gaudi3.hl338` under the generic
-`ai_accelerator` target, but LogicN source should not need `target gaudi`.
+`ai_accelerator` target, but Galerina source should not need `target gaudi`.
 
 The practical first implementation should generate controlled adapter plans for
 existing AI ecosystems such as PyTorch, vLLM, Hugging Face, DeepSpeed,
@@ -146,17 +146,17 @@ warnings
 
 ## Non-Goals
 
-- Do not make LogicN core a neural-network framework.
+- Do not make Galerina core a neural-network framework.
 - Do not make BitNet, Graphify, a GPU vendor or an AI accelerator vendor part of
-  LogicN syntax.
-- Do not require photonic, GPU or AI accelerator hardware for baseline LogicN.
+  Galerina syntax.
+- Do not require photonic, GPU or AI accelerator hardware for baseline Galerina.
 - Do not let model output directly make high-impact decisions.
-- Do not put neural layers or training policy into `logicn-core-vector`.
+- Do not put neural layers or training policy into `galerina-core-vector`.
 
 ## Final Rule
 
 ```text
-LogicN should be able to define, check, run, accelerate and report neural workloads.
+Galerina should be able to define, check, run, accelerate and report neural workloads.
 It should do that through typed packages and target plans, not by turning the
 core language into a neural-network framework.
 ```

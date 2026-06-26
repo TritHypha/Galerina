@@ -8,7 +8,7 @@
 
 ## ⚠️ Novelty disclaimer — read first
 
-**This is a defensive-publication note, not a flagship or workshop paper, and it claims no novel science.** Four of its five results are **known-physics / information-theoretic consequences** (Amdahl's law, the Θ(N²) cost of a dense linear map, optical Fourier optics, Bragg-selectivity, interpreter-dispatch measurement); the fifth (Result A) is a **borderline measured-negative** that is not yet submission-ready (§9). The contribution is **honest measurement and composition discipline**, not invention. Per the LogicN publishing standard ("no new cryptography and no new science"), the unifying principle ("a parallel/exotic substrate buys latency-depth, not work") is **pre-graded as a known principle**; this note exists to (a) record the measurements precisely and (b) serve as a **timestamped prior-art record** that the *govern-don't-absorb* architecture composes only established results.
+**This is a defensive-publication note, not a flagship or workshop paper, and it claims no novel science.** Four of its five results are **known-physics / information-theoretic consequences** (Amdahl's law, the Θ(N²) cost of a dense linear map, optical Fourier optics, Bragg-selectivity, interpreter-dispatch measurement); the fifth (Result A) is a **borderline measured-negative** that is not yet submission-ready (§9). The contribution is **honest measurement and composition discipline**, not invention. Per the Galerina publishing standard ("no new cryptography and no new science"), the unifying principle ("a parallel/exotic substrate buys latency-depth, not work") is **pre-graded as a known principle**; this note exists to (a) record the measurements precisely and (b) serve as a **timestamped prior-art record** that the *govern-don't-absorb* architecture composes only established results.
 
 > This is engineering triage informed by training knowledge, **not** a filed legal prior-art search or a freedom-to-operate opinion. Confirm novelty/clearance with a qualified professional before any external submission. **Internal recommendation (§ Harm review, separate): do not submit externally as a paper; keep as in-repo prior art / defensive-pub until Result A is re-measured.**
 
@@ -34,7 +34,7 @@ Realizing an N-mode unitary `y = T·x` needs a Reck/Clements mesh of **N²/2** M
 
 ## 4. Result C — "holographic O(1)-read petabyte storage" is neither petabyte nor O(1)
 
-Demonstrated volumetric density is **≈ 9.6 GB/cm³** (lab, ~1% of the 1/λ³ limit) — not petabyte. Random page access is a **Bragg-condition search** over the multiplexing dimension, i.e. Θ(search), **not O(1)**. And **overwrite-erasure is unsound on write-once media**: you cannot prove a secret is gone by overwriting it, so erasure must fall back to a signed crypto-shred attestation (the positive `LLN-RETAIN-001` gate — never trust a medium's self-reported erase).
+Demonstrated volumetric density is **≈ 9.6 GB/cm³** (lab, ~1% of the 1/λ³ limit) — not petabyte. Random page access is a **Bragg-condition search** over the multiplexing dimension, i.e. Θ(search), **not O(1)**. And **overwrite-erasure is unsound on write-once media**: you cannot prove a secret is gone by overwriting it, so erasure must fall back to a signed crypto-shred attestation (the positive `SPORE-RETAIN-001` gate — never trust a medium's self-reported erase).
 
 ## 5. Result D — the same trade on a CPU: "compile the AST into a tensor" loses on both axes
 
@@ -59,7 +59,7 @@ The five results are one statement: **a parallel/exotic substrate buys depth, no
 
 ## 9. Reproducibility and the open novelty gate
 
-**Named machine:** i9-9900K @ 3.60 GHz, Node v24.16.0, pinned `@noble/post-quantum` 0.6.1. **Scripts (in `LogicN-R-AND-D`):** Result A `lane-a-{baseline,profile,mac-split}.mjs` (10⁴ runs); B `rd-aot-tensor-precompute-proof.mjs`, `rd-photonic-ppu-virtualisation-proof.mjs`; D/E the tree-walker speed-lever benchmarks; principle `rd-0117-safe-floor-theorem-proof.mjs` (15/15). **Primary sources (by authoritative id):** Amdahl (1967); Reck et al. (PRL 1994); Clements et al. (Optica 2016); Goodman, *Introduction to Fourier Optics*; Meech (arXiv:2308.01719, 2023); LightHash, Pai et al. (arXiv:2205.08512); a vectorized Dilithium profile (arXiv:2306.01989); FIPS 203/204; Kleene (1938).
+**Named machine:** i9-9900K @ 3.60 GHz, Node v24.16.0, pinned `@noble/post-quantum` 0.6.1. **Scripts (in `Galerina-R-AND-D`):** Result A `lane-a-{baseline,profile,mac-split}.mjs` (10⁴ runs); B `rd-aot-tensor-precompute-proof.mjs`, `rd-photonic-ppu-virtualisation-proof.mjs`; D/E the tree-walker speed-lever benchmarks; principle `rd-0117-safe-floor-theorem-proof.mjs` (15/15). **Primary sources (by authoritative id):** Amdahl (1967); Reck et al. (PRL 1994); Clements et al. (Optica 2016); Goodman, *Introduction to Fourier Optics*; Meech (arXiv:2308.01719, 2023); LightHash, Pai et al. (arXiv:2205.08512); a vectorized Dilithium profile (arXiv:2306.01989); FIPS 203/204; Kleene (1938).
 
 **Open novelty gate (Result A only).** §2's bench is **pure-JS single-thread**, while the published vectorized profile already implies the conclusion in the shipping native/SIMD regime — so as written Result A risks being "a measured composition of an already-implied result" (reviewer-novelty ≈ 0.62). To reach even an eprint-scale measured-negative note, re-measure `f` in a **native/SIMD Dilithium** build (AVX2 liboqs/pqclean). **§§3–7 are not gated** (work-bound / named-machine). Until that re-measurement, Result A is **repo prior art, not a submission.**
 
@@ -67,10 +67,10 @@ The five results are one statement: **a parallel/exotic substrate buys depth, no
 
 ## Declarations
 
-- **Type / tier:** defensive-publication note; contains one *borderline* measured-negative (Result A) that is **not submission-ready** (§9). Not a flagship or workshop paper (LogicN publishes none, by design).
+- **Type / tier:** defensive-publication note; contains one *borderline* measured-negative (Result A) that is **not submission-ready** (§9). Not a flagship or workshop paper (Galerina publishes none, by design).
 - **Authorship & AI assistance:** drafted with AI assistance (Claude) under human direction, grounded in the named in-repo scripts/specs and the cited primary sources; all measurements are from the named scripts on the named machine.
 - **Funding:** none.
 - **Competing interests:** none.
-- **Data / artifact availability:** all scripts, specs, and proofs are in-repo (`LogicN-R-AND-D`) and re-runnable on the named machine; this note and its companions live in `docs/scientific-papers/`. Apache-2.0.
+- **Data / artifact availability:** all scripts, specs, and proofs are in-repo (`Galerina-R-AND-D`) and re-runnable on the named machine; this note and its companions live in `docs/scientific-papers/`. Apache-2.0.
 - **Licence:** Apache-2.0.
 - **Caveat:** triage informed by training knowledge, **not** a filed prior-art search; confirm clearance before any external submission.

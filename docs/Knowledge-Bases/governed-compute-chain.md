@@ -1,4 +1,4 @@
-# LogicN — Governed Compute Chain
+# Galerina — Governed Compute Chain
 
 ## Status
 
@@ -8,7 +8,7 @@ Design spec for the compute target system
 ```
 
 This document defines the `compute target` syntax and the governed compute
-chain model for LogicN. It covers CPU/GPU staging, AI inference chains,
+chain model for Galerina. It covers CPU/GPU staging, AI inference chains,
 tensor transfer semantics, fallback policies, and the audit proof format for
 multi-target execution.
 
@@ -20,7 +20,7 @@ Not every part of a flow should run on the same compute target. Some logic
 belongs on the CPU (normal governed logic, database reads, audit writes),
 some belongs on the GPU or NPU (tensor operations, rendering, inference).
 
-LogicN models this as a **chained compute graph** — an ordered sequence of
+Galerina models this as a **chained compute graph** — an ordered sequence of
 compute stages, each with its own target, effects, resources, and fallback:
 
 ```text
@@ -41,7 +41,7 @@ audit proof               (cpu)
 
 ### Basic compute stage
 
-```logicn
+```galerina
 compute target cpu {
   let user: User = UsersDB.findById(request.userId)?
   let data: ChartData = ReportsDB.loadChartData(user.id)?
@@ -50,7 +50,7 @@ compute target cpu {
 
 ### GPU stage
 
-```logicn
+```galerina
 compute target gpu {
   let frame: RenderFrame = Graphics.render({
     vertices: vertices,
@@ -63,7 +63,7 @@ compute target gpu {
 
 ### Best-available target with preferences
 
-```logicn
+```galerina
 compute target best {
   prefer [npu, gpu]
 
@@ -73,7 +73,7 @@ compute target best {
 
 ### Target with fallback and governance
 
-```logicn
+```galerina
 compute target best {
   prefer [gpu, npu]
   fallback cpu
@@ -84,7 +84,7 @@ compute target best {
 
 ### Target with explicit capability requirements
 
-```logicn
+```galerina
 compute target gpu
 requires [graphics.render]
 effects  [gpu.compute]
@@ -114,7 +114,7 @@ fallback cpu {
 Data crossing between compute targets must be **declared explicitly**. Hidden
 memory copies are not allowed.
 
-```logicn
+```galerina
 // CPU → GPU
 let gpuBuffer: GpuBuffer<Vertex> = transfer.toGpu(vertices)
 let frame: RenderFrame = Graphics.render(gpuBuffer)
@@ -125,7 +125,7 @@ let image: Image = transfer.fromGpu(frame)
 
 For AI workloads:
 
-```logicn
+```galerina
 // Full-precision embedding → quantized GPU tensor
 let embedding: Tensor<Float32> = EmbeddingModel.embed(tokens)
 let quantized: Tensor<Int8> quantized = quantize.int8(embedding)
@@ -147,7 +147,7 @@ the audit system to record them.
 
 ## 5. Full Example — Dashboard Rendering
 
-```logicn
+```galerina
 secure flow renderDashboard(request: DashboardRequest)
   -> Result<RenderedDashboard, RenderError>
 effects [database.read, gpu.compute, audit.write] {
@@ -213,7 +213,7 @@ stream output         (cpu / network)
 
 ### Full AI flow example
 
-```logicn
+```galerina
 secure flow answerQuestion(request: ChatRequest)
   -> Result<ChatResponse, ChatError>
 effects [
@@ -265,7 +265,7 @@ effects [
 
 ## 7. AI Governance Intent
 
-```logicn
+```galerina
 intent LocalPrivateInference {
   denies [
     remote.execution,
@@ -340,7 +340,7 @@ auditProof:
     - gpu_to_cpu: LlmCompletion
 
   inference:
-    model:            logicn-7b
+    model:            galerina-7b
     quantized:        true
     precision:        int8
     local_execution:  true
@@ -355,9 +355,9 @@ auditProof:
 
 ## 10. Quantized Execution Chains
 
-LogicN tracks precision transitions across compute targets:
+Galerina tracks precision transitions across compute targets:
 
-```logicn
+```galerina
 let embedding: Tensor<Float32> = EmbeddingModel.embed(tokens)
 let quantized: Tensor<Int8> quantized = quantize.int8(embedding)
 
@@ -369,13 +369,13 @@ let output: Tensor<Float32> = dequantize(logits)
 ```
 
 The compiler prevents mixing quantized and full-precision tensors unsafely
-(see `LLN-TYPE-017: QuantizedPrecisionMismatch`).
+(see `SPORE-TYPE-017: QuantizedPrecisionMismatch`).
 
 ---
 
 ## 11. Streaming Inference
 
-```logicn
+```galerina
 compute target gpu {
   stream token in LocalLLM.stream(prompt) {
     yield token
@@ -392,7 +392,7 @@ runtime cancellation, and audit evidence.
 
 For critical AI workloads, outputs can be verified against a reference:
 
-```logicn
+```galerina
 compute target gpu {
   let logits: Tensor<Float16> = LocalLLM.generate(tokens)
 }
@@ -404,7 +404,7 @@ compute target cpu {
 
 Or declaratively:
 
-```logicn
+```galerina
 verification {
   reference_model cpu
   tolerance       0.001
@@ -435,6 +435,6 @@ The `compute target` syntax is **designed now, implemented post-v1**. In v1:
 
 - Parse `compute target <keyword> { ... }` as a `ComputeTargetBlock` AST node
 - Record `target`, `prefer`, `fallback`, `requires`, `effects` metadata
-- Emit `LLN-COMPUTE-001` (unsupported in runtime) — warn but do not halt
+- Emit `SPORE-COMPUTE-001` (unsupported in runtime) — warn but do not halt
 
 Full runtime dispatch and tensor transfer tracking are Layer B features.

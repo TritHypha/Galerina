@@ -7,7 +7,7 @@ Planned for: Stage B
 
 ## Definition
 
-LogicN uses `task` and `wait` for governed asynchronous work. These keywords replace `async`/`await` from other languages.
+Galerina uses `task` and `wait` for governed asynchronous work. These keywords replace `async`/`await` from other languages.
 
 ```text
 task = start governed async work
@@ -27,7 +27,7 @@ fn may not use task or wait
 
 ## Why Not async/await
 
-LogicN avoids `async/await` as keywords to:
+Galerina avoids `async/await` as keywords to:
 
 ```text
 avoid implying uncontrolled async execution
@@ -38,7 +38,7 @@ keep fn purely synchronous and authority-free
 
 ## Syntax
 
-```logicn
+```galerina
 flow build_report(user_id: safe Id) -> Report
   uses database.users.read
   uses database.analytics.read
@@ -57,7 +57,7 @@ flow build_report(user_id: safe Id) -> Report
 
 ## fn Cannot Use task or wait
 
-```logicn
+```galerina
 // Correct — fn is synchronous only
 fn format_name(first: safe String, last: safe String) -> safe String {
   return first + " " + last
@@ -103,7 +103,7 @@ Developers do not implement this logic.
 
 Data returned from task work that crosses a runtime boundary still returns `unsafe`:
 
-```logicn
+```galerina
 flow fetch_user_data(user_id: safe Id) -> Report
   uses database.users.read
   uses channel.analytics.read
@@ -134,7 +134,7 @@ Tasks declared with `task` are not uncontrolled threads. The Scheduler dispatche
 
 ## Controlled Parallelism
 
-LogicN avoids:
+Galerina avoids:
 
 ```text
 uncontrolled thread spawning
@@ -143,7 +143,7 @@ infinite task trees
 runaway background work
 ```
 
-LogicN prefers:
+Galerina prefers:
 
 ```text
 explicit task declarations
@@ -154,7 +154,7 @@ auditable parallel work
 
 ## Grouped Waits
 
-```logicn
+```galerina
 // Wait for all tasks to complete
 let results: safe Array<Result> = wait all [task_a, task_b, task_c]
 

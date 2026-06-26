@@ -1,13 +1,13 @@
 # Photonic Resolution Boundary
 
-Photonic and optical support fits the LogicN core model as a compute boundary,
+Photonic and optical support fits the Galerina core model as a compute boundary,
 not as normal application control flow.
 
 ## Core Rule
 
 ```text
 Photonic and optical values cannot directly control application flow.
-They must be measured, resolved or matched into classical LogicN values.
+They must be measured, resolved or matched into classical Galerina values.
 ```
 
 Only `Bool` controls ordinary application flow.
@@ -32,11 +32,11 @@ Tri / unknown
 analogue values
 ```
 
-LogicN must not pretend every optical result is automatically a clean Boolean.
+Galerina must not pretend every optical result is automatically a clean Boolean.
 
 ## Unsafe Pattern
 
-```logicn
+```galerina
 let access: PhotonicTri = OpticalAccessCheck.evaluate(user)
 
 if access {
@@ -49,7 +49,7 @@ below the required confidence threshold.
 
 ## Safe Pattern
 
-```logicn
+```galerina
 let access: PhotonicTri = OpticalAccessCheck.evaluate(user)
 
 match access {
@@ -61,7 +61,7 @@ match access {
 
 Or use explicit resolution:
 
-```logicn
+```galerina
 let allowed: Bool = resolve access using {
   unknown_as false
   minimum_confidence 0.98
@@ -72,7 +72,7 @@ let allowed: Bool = resolve access using {
 
 ## Compute Boundary
 
-```logicn
+```galerina
 boundary compute OpticalRiskScoring {
   target light {
     prefer photonic
@@ -92,12 +92,12 @@ boundary compute OpticalRiskScoring {
 }
 ```
 
-Normal LogicN web app code still runs in the secure runtime. Photonic execution
+Normal Galerina web app code still runs in the secure runtime. Photonic execution
 is a declared compute boundary.
 
 ## Resolve Policy
 
-```logicn
+```galerina
 resolve policy AccessResolutionPolicy {
   input PhotonicTri
   output Bool

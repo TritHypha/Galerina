@@ -1,5 +1,5 @@
-﻿LLN-EFFECT-002
+﻿SPORE-EFFECT-002
 
 network.outbound used inside local fn propagates to containing flow, which does not declare it.
 Add network.outbound to the containing flow contract.effects or with effects clause.
-(Previously LLN-EFFECT-001; now LLN-EFFECT-002 due to transitive propagation tracking through fn helpers)
+(Previously SPORE-EFFECT-001; now SPORE-EFFECT-002 due to transitive propagation tracking through fn helpers)

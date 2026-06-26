@@ -1,8 +1,8 @@
 # Node-Hosted Runtime And Standalone Roadmap
 
-LogicN's practical web/API execution path is currently Node-hosted.
+Galerina's practical web/API execution path is currently Node-hosted.
 
-This means LogicN should be described as a secure language/framework layer that
+This means Galerina should be described as a secure language/framework layer that
 can run through Node.js while the core language, checker, runtime contracts and
 reports mature.
 
@@ -11,9 +11,9 @@ reports mature.
 ```text
 HTTP request
   -> Node.js server
-  -> LogicN framework/API server adapter
-  -> LogicN app kernel
-  -> LogicN checked rules and flows
+  -> Galerina framework/API server adapter
+  -> Galerina app kernel
+  -> Galerina checked rules and flows
   -> Node.js executes the runtime path
   -> HTTP response
 ```
@@ -21,14 +21,14 @@ HTTP request
 ## Current Claim
 
 ```text
-At this stage, LogicN is Node-hosted, but the design should keep the core
+At this stage, Galerina is Node-hosted, but the design should keep the core
 language target-independent.
 ```
 
 ## Future Claim
 
 ```text
-LogicN may later compile to secure runtime targets such as WASM, native
+Galerina may later compile to secure runtime targets such as WASM, native
 binaries, VM bytecode or other checked backends.
 ```
 
@@ -38,7 +38,7 @@ Standalone runtime work depends on:
 
 ```text
 stable language core
-LogicN IR
+Galerina IR
 runtime memory model
 VM or interpreter
 WASM/native backend
@@ -51,7 +51,7 @@ production runtime tooling
 
 ## Rule
 
-LogicN should not claim to be a standalone native web server/runtime until these
+Galerina should not claim to be a standalone native web server/runtime until these
 layers exist as implemented, tested, reportable runtime components.
 
 ## Knowledge Base

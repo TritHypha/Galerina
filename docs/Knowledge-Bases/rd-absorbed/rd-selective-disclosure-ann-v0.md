@@ -1,9 +1,9 @@
-<!-- ABSORBED R&D SOURCE — verbatim mirror. LogicN is the main library; the R&D repo is upstream/authoring.
-     Source: LogicN-R-AND-D/tmf/spec/selective-disclosure-ann-v0.md (roadmap §1 #4; bench 17/17; commit a69bb6a)  ·  Pinned: R&D rnd-session 2026-06-17
-     Integrated LogicN view: logicn-tmf-engine.md  ·  Catalog: logicn-rd-absorption-catalog.md
+<!-- ABSORBED R&D SOURCE — verbatim mirror. Galerina is the main library; the R&D repo is upstream/authoring.
+     Source: Galerina-R-AND-D/tmf/spec/selective-disclosure-ann-v0.md (roadmap §1 #4; bench 17/17; commit a69bb6a)  ·  Pinned: R&D rnd-session 2026-06-17
+     Integrated Galerina view: galerina-tmf-engine.md  ·  Catalog: galerina-rd-absorption-catalog.md
      Rule: edit the upstream source then re-vendor; do not fork this copy (feedback-auto-import-rd-docs). -->
 
-> **Absorbed R&D source (verbatim).** See `logicn-rd-absorption-catalog.md`. Internal links point at the upstream R&D tree.
+> **Absorbed R&D source (verbatim).** See `galerina-rd-absorption-catalog.md`. Internal links point at the upstream R&D tree.
 
 ---
 

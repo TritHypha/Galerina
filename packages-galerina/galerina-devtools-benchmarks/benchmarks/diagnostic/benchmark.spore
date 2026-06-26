@@ -1,0 +1,105 @@
+/*
+ * Diagnostic Benchmark Suite — Governance Fidelity Tests
+ * Measures: trap detection, AuditEvent completeness, recovery time, audit overhead
+ * NOT a speed benchmark — a governance reliability benchmark
+ */
+
+;; ── Test 1: Toxic Input Detection ────────────────────────────────────────────
+;; Measures: how fast the Tower detects and traps malformed input
+;; Success criterion: trap fires, AuditEvent written, rollbackStatus = "clean"
+
+pure flow toxicInputTest(amount: Int) -> Bool
+contract {
+  intent "Verify that toxic input (negative amount) is trapped immediately"
+  effects {}
+  invariant {
+    ensure amount >= 0
+    ensure amount <= 1000000
+  }
+}
+{
+  trap amount < 0 : ERR_TOXIC_NEGATIVE           ;; fires on negative input
+  trap amount > 1000000 : ERR_TOXIC_OVERFLOW     ;; fires on overflow input
+  return true
+}
+
+;; ── Test 2: Governance Violation ──────────────────────────────────────────────
+;; Measures: V_DPM capability check timing when a flow exceeds its declared effects
+;; The flow declares only effects {} but tries to signal an audit write intention
+
+secure flow governanceViolationTest(operation: String) -> Bool
+contract {
+  intent "Test governance boundary — declares minimal effects"
+  effects { allow audit.write }
+  invariant {
+    ensure operation != ""
+  }
+}
+{
+  trap operation == "" : ERR_EMPTY_OPERATION     ;; governance trap
+  trap operation == "forbidden" : ERR_FORBIDDEN_OPERATION  ;; semantic boundary
+  return true
+}
+
+;; ── Test 3: Boundary / Resource Exhaustion ────────────────────────────────────
+;; Measures: invariant ceiling enforcement — max request size, max iterations
+;; The flow enforces a strict ceiling and traps when exceeded
+
+pure flow resourceExhaustionTest(requestSizeBytes: Int, iterations: Int) -> Int
+contract {
+  intent "Enforce resource ceilings — measures boundary trap timing"
+  effects {}
+  invariant {
+    ensure requestSizeBytes >= 0
+    ensure requestSizeBytes <= 4194304
+    ensure iterations >= 0
+    ensure iterations <= 10000
+  }
+}
+{
+  trap requestSizeBytes > 4194304 : ERR_SIZE_EXCEEDED      ;; DWI ceiling
+  trap iterations > 10000 : ERR_ITERATIONS_EXCEEDED        ;; compute ceiling
+  trap requestSizeBytes < 0 : ERR_NEGATIVE_SIZE
+  let result = requestSizeBytes * iterations
+  return result
+}
+
+;; ── Test 4: Logging Throughput (Audit Tax) ────────────────────────────────────
+;; Measures: the overhead of governance machinery per call
+;; Run with/without invariant blocks to measure the "audit tax"
+;; Galerina's goal: governance overhead should be < 10% of raw execution
+
+pure flow loggingThroughputTest(x: Int) -> Int
+contract {
+  intent "Measure governance overhead vs raw compute — the audit tax"
+  effects {}
+  invariant {
+    ensure x >= 0
+  }
+}
+{
+  trap x < 0 : ERR_NEGATIVE_INPUT
+  let result = x * x + x + 1
+  return result
+}
+
+;; ── Test 5: Correlation ID Tracing ────────────────────────────────────────────
+;; Measures: that a single correlation ID flows through all audit entries
+;; LOAD → EXEC → trap → AuditEvent → COMPLETE — all with same correlation
+
+secure flow correlationIdTest(correlationId: String, payload: String) -> Bool
+contract {
+  intent "Verify correlation ID propagates through full Tower lifecycle"
+  effects { allow audit.write }
+  invariant {
+    ensure correlationId != ""
+    ensure payload != ""
+  }
+}
+{
+  trap correlationId == "" : ERR_MISSING_CORRELATION_ID
+  trap payload == "" : ERR_EMPTY_PAYLOAD
+  ;; In production: correlation ID would be embedded in every AuditEvent
+  ;; For now: the trapKind field carries the flow context
+  return true
+}

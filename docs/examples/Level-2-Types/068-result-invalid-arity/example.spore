@@ -1,0 +1,10 @@
+/// example: 068-result-invalid-arity
+/// test_status: stable
+/// level: 2
+/// concept: Result<T,E> requires exactly two type parameters
+/// expected_diagnostics: SPORE-TYPE-009
+/// ai_rule: Result takes exactly 2 type parameters: the success type and the error type.
+
+pure flow example() -> Void {
+  let result: Result<User> = Ok(None)
+}

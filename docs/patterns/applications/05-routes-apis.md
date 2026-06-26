@@ -1,4 +1,4 @@
-# LogicN Application Pattern 05 — Routes and API Contracts
+# Galerina Application Pattern 05 — Routes and API Contracts
 
 **When to use:** Every HTTP endpoint — GET /users/:id, POST /orders, PATCH /invoices/:id, DELETE /sessions/:id.
 
@@ -6,9 +6,9 @@
 
 ## Route as authorised entry point
 
-A route in LogicN is not a URL pattern. It is an authorised entry point that binds a public HTTP surface to a governed flow.
+A route in Galerina is not a URL pattern. It is an authorised entry point that binds a public HTTP surface to a governed flow.
 
-```logicn
+```galerina
 route GET "/users/:id" {
   params { id: UserId }
   trigger getUser
@@ -55,7 +55,7 @@ Every route declaration automatically enforces five protections that a plain fun
 
 The route is thin. The flow is the unit of logic.
 
-```logicn
+```galerina
 // Route: declares the surface
 route GET "/users/:id" {
   params { id: UserId }
@@ -78,12 +78,12 @@ This separation means:
 
 ---
 
-## OpenAPI generation (future: logicn emit --openapi)
+## OpenAPI generation (future: galerina emit --openapi)
 
 Because routes declare typed params, typed bodies, and typed return values, the compiler has everything it needs to generate an OpenAPI 3.1 spec. This is a Phase 17+ feature:
 
 ```bash
-logicn emit --openapi --service UserService --out openapi.yaml
+galerina emit --openapi --service UserService --out openapi.yaml
 ```
 
 The generated spec will include:
@@ -94,7 +94,7 @@ The generated spec will include:
 - Security requirements from the flow's capability declarations
 - Description annotations from any doc comments on the route or flow
 
-Until this feature lands, routes are documented by reading the LogicN source. The GIR output already contains enough information to generate the spec by hand.
+Until this feature lands, routes are documented by reading the Galerina source. The GIR output already contains enough information to generate the spec by hand.
 
 ---
 
@@ -138,9 +138,9 @@ The compiler emits a `routes.json` manifest alongside each service. This manifes
 Non-routed flows are not publicly callable. This is a hard compiler guarantee: if a flow has no `route` binding, it cannot be reached via HTTP regardless of how the service is deployed.
 
 The compiler also enforces:
-- A route may not bind to a flow declared in another service's contract — LLN-ROUTE-001
-- A route's `params` types must match the triggered flow's parameter types — LLN-ROUTE-002
-- A route's `body` type must match the triggered flow's input type — LLN-ROUTE-003
+- A route may not bind to a flow declared in another service's contract — SPORE-ROUTE-001
+- A route's `params` types must match the triggered flow's parameter types — SPORE-ROUTE-002
+- A route's `body` type must match the triggered flow's input type — SPORE-ROUTE-003
 
 ---
 
@@ -150,7 +150,7 @@ A `route` declaration is not:
 - A place to put validation logic (that belongs in the flow)
 - A place to put authentication logic (that belongs in the capability system)
 - A place to put business rules (that belongs in the flow)
-- A middleware chain (LogicN has no middleware; effects replace it)
+- A middleware chain (Galerina has no middleware; effects replace it)
 - An HTTP handler function (the runtime generates the handler from the route + flow contract)
 
 The route declaration is pure contract. It is a boundary marker, not a code container.

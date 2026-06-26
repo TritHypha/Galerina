@@ -1,5 +1,5 @@
 none
-// LLN-TYPE-002 is the target diagnostic for this example.
+// SPORE-TYPE-002 is the target diagnostic for this example.
 // The type-mismatch check for protected→redacted assignment is tracked
 // under Phase 8B and suppressed during the current compiler wave.
-// The example is stable: top-level let triggers LLN-SYNTAX-006 (suppressed).
+// The example is stable: top-level let triggers SPORE-SYNTAX-006 (suppressed).

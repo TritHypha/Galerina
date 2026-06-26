@@ -1,0 +1,40 @@
+{
+  "project": {
+    "name": "galerina-app",
+    "version": "0.1.0",
+    "root": ".",
+    "entryFiles": ["packages-galerina/galerina-framework-example-app/src/index.spore"],
+    "packages": [
+      "packages-galerina/galerina-core",
+      "packages-galerina/galerina-core-config",
+      "packages-galerina/galerina-framework-example-app"
+    ],
+    "production": {
+      "packageOverrides": []
+    },
+    "strict": true,
+    "targets": ["cpu", "wasm"],
+    "defaultPackage": "packages-galerina/galerina-framework-example-app",
+    "docs": {
+      "app": "docs",
+      "config": "packages-galerina/galerina-core-config"
+    }
+  },
+  "environment": {
+    "mode": "production",
+    "variables": [
+      {
+        "name": "Galerina_APP_ENV",
+        "required": true,
+        "scope": "runtime"
+      }
+    ],
+    "secrets": [
+      {
+        "name": "Galerina_APP_SECRET",
+        "required": true,
+        "scope": "runtime"
+      }
+    ]
+  }
+}

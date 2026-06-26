@@ -2,7 +2,7 @@
 
 ## Purpose
 
-LogicN should handle bit widths, numeric representation, binary compatibility,
+Galerina should handle bit widths, numeric representation, binary compatibility,
 base64 encoded assets, embedded images, runtime optimisation and security
 boundaries while remaining:
 
@@ -18,7 +18,7 @@ runtime-safe
 Core rule:
 
 ```text
-Normal LogicN code should not need to think about bit size.
+Normal Galerina code should not need to think about bit size.
 Low-level, binary, AI, network, image, crypto and interop boundaries must.
 ```
 
@@ -55,7 +55,7 @@ The runtime/compiler may internally optimise representation automatically.
 
 ## Explicit Fixed-Width Types
 
-LogicN should support fixed-width types for boundary work:
+Galerina should support fixed-width types for boundary work:
 
 ```text
 UInt8
@@ -87,17 +87,17 @@ database wire protocols
 
 ## No Silent Conversion
 
-LogicN must deny unsafe numeric conversion.
+Galerina must deny unsafe numeric conversion.
 
 Rejected pattern:
 
-```logicn
+```galerina
 let x: UInt8 = 300
 ```
 
 Allowed pattern:
 
-```logicn
+```galerina
 let x = UInt8.tryFrom(300)
   -> Result<UInt8, NumericRangeError>
 ```
@@ -130,7 +130,7 @@ These risks should be visible at boundary contracts and report level.
 
 ## Runtime Optimisation
 
-LogicN should optimise automatically where safe.
+Galerina should optimise automatically where safe.
 
 Possible optimisation areas:
 
@@ -149,21 +149,21 @@ developers to manually tune ordinary application code.
 
 ## Passive Backend Representation
 
-LogicN should support target-aware optimisation passively.
+Galerina should support target-aware optimisation passively.
 
 Example target package concepts:
 
 ```text
-logicn-target-cpu
-logicn-target-gpu
-logicn-target-wasm
-logicn-target-ai-accelerator
-logicn-target-photonic
+galerina-target-cpu
+galerina-target-gpu
+galerina-target-wasm
+galerina-target-ai-accelerator
+galerina-target-photonic
 ```
 
 Example:
 
-```logicn
+```galerina
 Vector<UInt8, 1024>
 ```
 
@@ -196,9 +196,9 @@ Ternary
 These should live in package layers such as:
 
 ```text
-logicn-ai-lowbit
-logicn-core-vector
-logicn-core-compute
+galerina-ai-lowbit
+galerina-core-vector
+galerina-core-compute
 ```
 
 not in the normal application core model.
@@ -237,7 +237,7 @@ The runtime should avoid full decode unless required.
 
 ## Security Phase Requirements
 
-Before decoding base64 content, LogicN must validate:
+Before decoding base64 content, Galerina must validate:
 
 ```text
 MIME type
@@ -319,7 +319,7 @@ better streaming
 
 ## Dangerous Embedded Content
 
-LogicN should deny by default:
+Galerina should deny by default:
 
 ```text
 SVG scripts
@@ -381,11 +381,11 @@ Base64 adds roughly:
 ~33% size overhead
 ```
 
-LogicN should prefer external assets for large files.
+Galerina should prefer external assets for large files.
 
 ## Streaming By Default
 
-LogicN should avoid large full-memory operations.
+Galerina should avoid large full-memory operations.
 
 Avoid:
 
@@ -423,7 +423,7 @@ or asset conversion only after security classification.
 
 ## Reports
 
-LogicN should eventually emit:
+Galerina should eventually emit:
 
 ```text
 numeric-width-report.json

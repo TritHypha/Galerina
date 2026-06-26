@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "spore.manifest.v1",
+  "sourceHash": "sha256:83c9763865d0bbf02be0843c3035b305e286082f17c54aa1a76e0e4fa8f55ba3",
+  "sourceFile": "packages-galerina/galerina-framework-example-app/packages/greeting/src/index.spore",
+  "flowCount": 1,
+  "policyResolutionDag": {
+    "allowedEffects": 0,
+    "deniedEffects": 0,
+    "conflictsResolved": 0,
+    "resolvedAt": "2026-06-23T19:52:38.091Z"
+  },
+  "behavioralFingerprint": "sha256:0b634eb7be2a1ad02da52d8c56c79c045598d675521a54ac821b5e023c7c7667",
+  "derivedConstraints": [
+    "main: Flow main has a contract declaration [via contract]"
+  ],
+  "proofObligations": [
+    {
+      "flowName": "main",
+      "kind": "effect-safety",
+      "description": "pure flow declares effects [none]",
+      "verified": "static"
+    }
+  ],
+  "generatedAt": "2026-06-23T19:52:38.091Z",
+  "governanceSignature": {
+    "algorithm": "Ed25519",
+    "keyId": "ab46f4c7e2797b9b",
+    "signature": "oAiRsRpfkKwpzlQx9w9v5VcdGtlZqUxjm/mUdEkYUenbcpsInZLRLYG1g0VbdLuDUzxjPkdho2spKitNHoCVCQ==",
+    "canon": "jcs",
+    "signedAt": "2026-06-23T19:52:38.103Z"
+  },
+  "fuse": {
+    "schemaVersion": "spore.fuse.v1",
+    "name": "greeting",
+    "version": "0.1.0",
+    "kind": "pure-transform",
+    "provides": "greeting",
+    "seam": "compute.pure",
+    "capabilities": [],
+    "wasmSha256": "sha256:0ec90d0214d756e895960fec103ac1579f3787e8b268c10308bd263dd2871c6c"
+  }
+}

@@ -1,19 +1,19 @@
-# LogicN — Scientific Papers
+# Galerina — Scientific Papers
 
-This folder holds LogicN's publishable scholarly artifacts. **Read the standard before adding anything here.**
+This folder holds Galerina's publishable scholarly artifacts. **Read the standard before adding anything here.**
 
 ---
 
 ## 1. The standard — what gets published, and what does not
 
-LogicN's binding rule is **"no new cryptography and no new science."** Every crypto/codec primitive is borrowed and standard (FIPS / NIST / RFC / peer-reviewed); what is "new" is **engineering composition, byte-precise specification, and honest measured results.** Consequently:
+Galerina's binding rule is **"no new cryptography and no new science."** Every crypto/codec primitive is borrowed and standard (FIPS / NIST / RFC / peer-reviewed); what is "new" is **engineering composition, byte-precise specification, and honest measured results.** Consequently:
 
-- **LogicN publishes ZERO flagship and ZERO workshop papers** — by design. A "novel contribution" paper here would fail peer review and damage the project's credibility, because the contribution would not survive an adversarial prior-art search.
+- **Galerina publishes ZERO flagship and ZERO workshop papers** — by design. A "novel contribution" paper here would fail peer review and damage the project's credibility, because the contribution would not survive an adversarial prior-art search.
 - The **only** publishable artifacts are: **defensive-publication notes** (timestamped prior-art records of an engineering composition, novelty *disclaimed*) and, at most, **short measured-negative / experience notes** (eprint-scale) that report a *surprising, decision-relevant negative result* on a *named machine*.
 
 ### Honest-tier framework (label every document)
 
-| Tier | Definition | LogicN policy |
+| Tier | Definition | Galerina policy |
 |---|---|---|
 | **flagship** | top-venue, measured non-obvious result, no close prior art | **none exist** — do not write |
 | **workshop** | narrow but real novel contribution | **none landed** — do not write |
@@ -52,7 +52,7 @@ Any document in this folder follows the conventions below. These are good-practi
 | [`tmf-trust-capsule-format-defensive-publication-2026-06-23.md`](tmf-trust-capsule-format-defensive-publication-2026-06-23.md) | **defensive-pub** | The `.tmf` trust-capsule **universal file & communications format** — TMX-256 (3-ary SHAKE256 Merkle-XOF), ML-DSA-65 root signing, KEM-DEM confidentiality, codec-agnostic modalities (image/audio/video/document/structured), streaming. Maths + usage + security + full references; novelty disclaimed. |
 | [`latency-is-not-work-measured-negatives-defensive-publication-2026-06-25.md`](latency-is-not-work-measured-negatives-defensive-publication-2026-06-25.md) | **defensive-pub** + borderline **measured-negative** | Five reproducible measured-negatives that a parallel/exotic substrate buys latency-depth, **not work** (ML-DSA Amdahl wash · photonic GEMM Θ(N²) · holographic ≠ O(1) · tree-as-tensor · interpreter speed-levers) + the Safe-Floor / reduction-≠-matmul complement. Known-physics/info-theoretic; novelty disclaimed. Result A's external-submission novelty gate (native/SIMD re-measure) stays **OPEN** — internal prior-art only. |
 
-### Companion defensive-publication notes (in the `LogicN-Patens/` repo)
+### Companion defensive-publication notes (in the `Galerina-Patens/` repo)
 
 | Note | Tier | Summary |
 |---|---|---|
@@ -76,4 +76,4 @@ Any document in this folder follows the conventions below. These are good-practi
 
 ---
 
-*Maintained as part of the LogicN KB. The patents-decision rationale lives in `LogicN-Patens/README.md` (zero patents, on purpose); the full paper-worthiness assessments live in `docs/Knowledge-Bases/logicn-paper-worthiness-assessment-2026-06-23.md` and the IP/paper strategy memory.*
+*Maintained as part of the Galerina KB. The patents-decision rationale lives in `Galerina-Patens/README.md` (zero patents, on purpose); the full paper-worthiness assessments live in `docs/Knowledge-Bases/galerina-paper-worthiness-assessment-2026-06-23.md` and the IP/paper strategy memory.*

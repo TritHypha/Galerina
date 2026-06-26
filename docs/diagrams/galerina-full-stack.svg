@@ -1,0 +1,141 @@
+<svg width="100%" viewBox="0 0 720 720" xmlns="http://www.w3.org/2000/svg" role="img" font-family="ui-sans-serif, system-ui, sans-serif">
+<title>Galerina full stack — authoring to low-level substrate, governance-first</title>
+<desc>The whole Galerina stack top to bottom: (1) .spore authoring with flow and contract blocks; (2) the Stage-A compiler lexer, parser, type/effect/value-state checkers, K3 governance verifier and GIR emitter; (3) compile targets WASM/bytecode/native plus Stage-B self-hosting at byte parity; (4) the application framework — scaffolder, deny-by-default fuse border of three gates, App Kernel admission, Capability Host and governed HTTP transport; (5) the low-level substrate — Tri-Pipe Binary/Hybrid/Photonic, tower-citizen, DRCM containment as a Stage-A simulation, and governance sentinels; and (6) a cross-cutting crypto-on-core invariant with K3 fail-closed and ProofGraph audit running down the right side. Aspirational items (real DSS.wasm, photonic silicon, in-sandbox isolation) are marked honestly.</desc>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+</defs>
+
+<text x="24" y="26" font-size="16" font-weight="700" fill="#1c2128">Galerina — the whole stack, authoring to substrate</text>
+<text x="24" y="44" font-size="11" fill="#5a6470">blue = compile-time · teal = runtime · amber = framework / governed-ext · purple = cross-cutting invariant · red = fail-closed · dashed = aspirational</text>
+
+<!-- Right-side cross-cutting invariant band (drawn first, behind) -->
+<rect x="612" y="58" width="92" height="588" rx="8" fill="#f3eefa" stroke="#7c5cd0" stroke-width="1.5" stroke-dasharray="2 0"/>
+<text x="658" y="80" text-anchor="middle" font-size="12" font-weight="600" fill="#3f2d73">Cross-cutting</text>
+<text x="658" y="96" text-anchor="middle" font-size="10.5" fill="#3f2d73">invariant</text>
+<line x1="624" y1="108" x2="692" y2="108" stroke="#7c5cd0" stroke-width="1" stroke-dasharray="3 3"/>
+<text x="658" y="132" text-anchor="middle" font-size="10.5" font-weight="600" fill="#3f2d73">crypto-on-core</text>
+<text x="658" y="147" text-anchor="middle" font-size="9.5" fill="#52407e">digital, bit-exact</text>
+<text x="658" y="162" text-anchor="middle" font-size="9.5" fill="#52407e">Ed25519 +</text>
+<text x="658" y="176" text-anchor="middle" font-size="9.5" fill="#52407e">ML-DSA-65</text>
+<line x1="624" y1="192" x2="692" y2="192" stroke="#7c5cd0" stroke-width="1" stroke-dasharray="3 3"/>
+<text x="658" y="216" text-anchor="middle" font-size="10.5" font-weight="600" fill="#c0392b">K3 fail-closed</text>
+<text x="658" y="231" text-anchor="middle" font-size="9.5" fill="#52407e">vAnd Kleene</text>
+<text x="658" y="245" text-anchor="middle" font-size="9.5" fill="#52407e">0 unknown</text>
+<text x="658" y="259" text-anchor="middle" font-size="9.5" fill="#52407e">→ deny</text>
+<line x1="624" y1="275" x2="692" y2="275" stroke="#7c5cd0" stroke-width="1" stroke-dasharray="3 3"/>
+<text x="658" y="300" text-anchor="middle" font-size="10.5" font-weight="600" fill="#3f2d73">ProofGraph</text>
+<text x="658" y="315" text-anchor="middle" font-size="9.5" fill="#52407e">+ .lmanifest</text>
+<text x="658" y="329" text-anchor="middle" font-size="9.5" fill="#52407e">CBOR audit</text>
+<text x="658" y="343" text-anchor="middle" font-size="9.5" fill="#52407e">Tag 410</text>
+<line x1="624" y1="359" x2="692" y2="359" stroke="#7c5cd0" stroke-width="1" stroke-dasharray="3 3"/>
+<text x="658" y="384" text-anchor="middle" font-size="10.5" font-weight="600" fill="#3f2d73">Monotonic</text>
+<text x="658" y="399" text-anchor="middle" font-size="9.5" fill="#52407e">authority only</text>
+<text x="658" y="413" text-anchor="middle" font-size="9.5" fill="#52407e">shrinks, never</text>
+<text x="658" y="427" text-anchor="middle" font-size="9.5" fill="#52407e">expands</text>
+<line x1="624" y1="443" x2="692" y2="443" stroke="#7c5cd0" stroke-width="1" stroke-dasharray="3 3"/>
+<text x="658" y="468" text-anchor="middle" font-size="10.5" font-weight="600" fill="#3f2d73">Zero-trust</text>
+<text x="658" y="483" text-anchor="middle" font-size="9.5" fill="#52407e">not dev,</text>
+<text x="658" y="497" text-anchor="middle" font-size="9.5" fill="#52407e">net, or host</text>
+<text x="658" y="511" text-anchor="middle" font-size="9.5" fill="#52407e">OS kernel</text>
+<text x="658" y="636" text-anchor="middle" font-size="9" font-style="italic" fill="#7c5cd0">applies to all bands</text>
+
+<!-- BAND 1 — Authoring (blue) -->
+<text x="24" y="76" font-size="11" font-weight="600" fill="#5a6470">① Authoring — .spore source</text>
+<rect x="24" y="82" width="572" height="58" rx="8" fill="#e8effb" stroke="#3b6fd4" stroke-width="1.5"/>
+<text x="40" y="104" font-size="13" font-weight="600" fill="#1f3a6b">flow + contract { … }</text>
+<text x="40" y="122" font-size="10.5" fill="#1f3a6b">intent · effects · authority/capabilities · access · privacy · invariant · policy{} overlay</text>
+<text x="40" y="135" font-size="10" fill="#3a5285">pure / secure / governed flows · deny-by-default · Result&lt;T,E&gt;, no silent failure</text>
+<path d="M310 140 L310 156" stroke="#8a94a3" stroke-width="1.6" fill="none" marker-end="url(#arrow)"/>
+
+<!-- BAND 2 — Stage-A compiler (blue) -->
+<text x="24" y="170" font-size="11" font-weight="600" fill="#5a6470">② Stage-A compiler — compile-time governance</text>
+<rect x="24" y="176" width="572" height="62" rx="8" fill="#eef3fc" stroke="#3b6fd4" stroke-width="1.5"/>
+<rect x="34" y="186" width="100" height="42" rx="6" fill="#e8effb" stroke="#5b85dd" stroke-width="1.2"/>
+<text x="84" y="205" text-anchor="middle" font-size="11" font-weight="600" fill="#1f3a6b">lexer</text>
+<text x="84" y="219" text-anchor="middle" font-size="9" fill="#3a5285">→ parser → AST</text>
+<rect x="142" y="186" width="118" height="42" rx="6" fill="#e8effb" stroke="#5b85dd" stroke-width="1.2"/>
+<text x="201" y="201" text-anchor="middle" font-size="11" font-weight="600" fill="#1f3a6b">type · effect</text>
+<text x="201" y="214" text-anchor="middle" font-size="9.5" fill="#1f3a6b">value-state</text>
+<text x="201" y="225" text-anchor="middle" font-size="8.5" fill="#3a5285">taint · secret · gate</text>
+<rect x="268" y="186" width="148" height="42" rx="6" fill="#efe9fb" stroke="#7c5cd0" stroke-width="1.4"/>
+<text x="342" y="201" text-anchor="middle" font-size="11" font-weight="600" fill="#3f2d73">governance verifier</text>
+<text x="342" y="215" text-anchor="middle" font-size="9.5" fill="#52407e">K3 · SPORE-GOV/SECRET</text>
+<text x="342" y="225" text-anchor="middle" font-size="8.5" fill="#52407e">ProofGraph obligations</text>
+<rect x="424" y="186" width="162" height="42" rx="6" fill="#e8effb" stroke="#5b85dd" stroke-width="1.2"/>
+<text x="505" y="205" text-anchor="middle" font-size="11" font-weight="600" fill="#1f3a6b">GIR emitter</text>
+<text x="505" y="219" text-anchor="middle" font-size="9" fill="#3a5285">Governed IR · verified contract</text>
+<path d="M134 207 L140 207" stroke="#8a94a3" stroke-width="1.4" fill="none" marker-end="url(#arrow)"/>
+<path d="M260 207 L266 207" stroke="#8a94a3" stroke-width="1.4" fill="none" marker-end="url(#arrow)"/>
+<path d="M416 207 L422 207" stroke="#8a94a3" stroke-width="1.4" fill="none" marker-end="url(#arrow)"/>
+<path d="M310 238 L310 254" stroke="#8a94a3" stroke-width="1.6" fill="none" marker-end="url(#arrow)"/>
+
+<!-- BAND 3 — Targets (blue) -->
+<text x="24" y="268" font-size="11" font-weight="600" fill="#5a6470">③ Targets — from GIR</text>
+<rect x="24" y="274" width="278" height="54" rx="8" fill="#e8effb" stroke="#3b6fd4" stroke-width="1.5"/>
+<text x="163" y="295" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f3a6b">WASM · bytecode · native</text>
+<text x="163" y="312" text-anchor="middle" font-size="10" fill="#3a5285">WASM = production path (native-class)</text>
+<text x="163" y="323" text-anchor="middle" font-size="9" fill="#3a5285">native / GPU targets PLANNED/PARTIAL</text>
+<rect x="318" y="274" width="278" height="54" rx="8" fill="#eef3fc" stroke="#5b85dd" stroke-width="1.4" stroke-dasharray="5 4"/>
+<text x="457" y="295" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f3a6b">Stage-B self-hosting</text>
+<text x="457" y="312" text-anchor="middle" font-size="10" fill="#3a5285">tokenize at byte-parity (Stage-A==Stage-B)</text>
+<text x="457" y="323" text-anchor="middle" font-size="9" fill="#3a5285">parser/checker/verifier in WASM = in progress</text>
+<path d="M310 328 L310 344" stroke="#8a94a3" stroke-width="1.6" fill="none" marker-end="url(#arrow)"/>
+
+<!-- BAND 4 — Application framework (amber) -->
+<text x="24" y="358" font-size="11" font-weight="600" fill="#5a6470">④ Application framework — signed packages fused at declared seams (not middleware)</text>
+<rect x="24" y="364" width="572" height="118" rx="8" fill="#fbf2dd" stroke="#c98a1b" stroke-width="1.5"/>
+<rect x="34" y="374" width="120" height="44" rx="6" fill="#fcf6e8" stroke="#c98a1b" stroke-width="1.2"/>
+<text x="94" y="392" text-anchor="middle" font-size="11" font-weight="600" fill="#6b4a12">galerina new app</text>
+<text x="94" y="406" text-anchor="middle" font-size="9" fill="#7d5e1d">scaffolder, deny-default</text>
+<!-- fuse border 3 gates -->
+<rect x="164" y="374" width="270" height="44" rx="6" fill="#fcefe9" stroke="#c0392b" stroke-width="1.4"/>
+<text x="299" y="389" text-anchor="middle" font-size="10.5" font-weight="600" fill="#c0392b">fuse border — 3 fail-closed gates</text>
+<text x="299" y="403" text-anchor="middle" font-size="8.8" fill="#9a3322">① hash-pin  ② signature + revocation</text>
+<text x="299" y="413" text-anchor="middle" font-size="8.8" fill="#9a3322">③ closed capabilities → LinkError</text>
+<rect x="444" y="374" width="142" height="44" rx="6" fill="#fcf6e8" stroke="#c98a1b" stroke-width="1.2"/>
+<text x="515" y="392" text-anchor="middle" font-size="11" font-weight="600" fill="#6b4a12">App Kernel</text>
+<text x="515" y="406" text-anchor="middle" font-size="9" fill="#7d5e1d">non-bypass admission gate</text>
+<path d="M154 396 L162 396" stroke="#8a94a3" stroke-width="1.4" fill="none" marker-end="url(#arrow)"/>
+<path d="M434 396 L442 396" stroke="#8a94a3" stroke-width="1.4" fill="none" marker-end="url(#arrow)"/>
+<!-- second row: capability host + transport -->
+<rect x="164" y="426" width="200" height="46" rx="6" fill="#fcf6e8" stroke="#c98a1b" stroke-width="1.2"/>
+<text x="264" y="445" text-anchor="middle" font-size="11" font-weight="600" fill="#6b4a12">Capability Host</text>
+<text x="264" y="459" text-anchor="middle" font-size="9" fill="#7d5e1d">network · db · secrets (deny-default)</text>
+<rect x="374" y="426" width="212" height="46" rx="6" fill="#fcf6e8" stroke="#c98a1b" stroke-width="1.2" stroke-dasharray="5 4"/>
+<text x="480" y="442" text-anchor="middle" font-size="11" font-weight="600" fill="#6b4a12">governed HTTP transport</text>
+<text x="480" y="456" text-anchor="middle" font-size="9" fill="#7d5e1d">TLSTP S1 K3 cert-gate (shipped)</text>
+<text x="480" y="466" text-anchor="middle" font-size="8.5" fill="#7d5e1d">kernel-bypass byte-mover = design intent</text>
+<path d="M515 418 L515 425" stroke="#8a94a3" stroke-width="1.4" fill="none" marker-end="url(#arrow)"/>
+<path d="M264 472 L264 488" stroke="#8a94a3" stroke-width="1.6" fill="none" marker-end="url(#arrow)"/>
+
+<!-- BAND 5 — Low-level substrate (teal) -->
+<text x="24" y="502" font-size="11" font-weight="600" fill="#5a6470">⑤ Low-level substrate — governed runtime / engines</text>
+<rect x="24" y="508" width="572" height="138" rx="8" fill="#e2f5f1" stroke="#2f9e8f" stroke-width="1.5"/>
+<!-- Tri-Pipe -->
+<rect x="34" y="518" width="270" height="60" rx="6" fill="#d6f0ea" stroke="#2f9e8f" stroke-width="1.3"/>
+<text x="169" y="535" text-anchor="middle" font-size="11.5" font-weight="600" fill="#16544c">Tri-Pipe — ExecutionRouter</text>
+<rect x="42" y="542" width="80" height="28" rx="4" fill="#e2f5f1" stroke="#2f9e8f" stroke-width="1"/>
+<text x="82" y="556" text-anchor="middle" font-size="9.5" font-weight="600" fill="#16544c">Binary</text>
+<text x="82" y="566" text-anchor="middle" font-size="8" fill="#1f6b60">floor / fallback</text>
+<rect x="128" y="542" width="80" height="28" rx="4" fill="#e2f5f1" stroke="#2f9e8f" stroke-width="1"/>
+<text x="168" y="556" text-anchor="middle" font-size="9.5" font-weight="600" fill="#16544c">Hybrid</text>
+<text x="168" y="566" text-anchor="middle" font-size="8" fill="#1f6b60">Freivalds-verify</text>
+<rect x="214" y="542" width="82" height="28" rx="4" fill="#f3eefa" stroke="#7c5cd0" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="255" y="556" text-anchor="middle" font-size="9.5" font-weight="600" fill="#3f2d73">Photonic</text>
+<text x="255" y="566" text-anchor="middle" font-size="7.6" fill="#52407e">emulated, not silicon</text>
+<!-- tower citizen -->
+<rect x="316" y="518" width="270" height="60" rx="6" fill="#d6f0ea" stroke="#2f9e8f" stroke-width="1.3"/>
+<text x="451" y="535" text-anchor="middle" font-size="11.5" font-weight="600" fill="#16544c">tower-citizen</text>
+<text x="451" y="551" text-anchor="middle" font-size="9.5" fill="#1f6b60">governance + inference engine · K3 verdicts</text>
+<text x="451" y="564" text-anchor="middle" font-size="9.5" fill="#1f6b60">bridge attestation · revocation · BitNet sim</text>
+<!-- DRCM containment -->
+<rect x="34" y="584" width="270" height="54" rx="6" fill="#fcf6e8" stroke="#c98a1b" stroke-width="1.3" stroke-dasharray="5 4"/>
+<text x="169" y="601" text-anchor="middle" font-size="11.5" font-weight="600" fill="#6b4a12">DRCM containment</text>
+<text x="169" y="616" text-anchor="middle" font-size="9.5" fill="#7d5e1d">DSS supervisor · V_DPM bitmask · DWI isolates</text>
+<text x="169" y="629" text-anchor="middle" font-size="8.8" fill="#9a3322">Stage-A simulation — real DSS.wasm is Post-P9 stub</text>
+<!-- sentinels -->
+<rect x="316" y="584" width="270" height="54" rx="6" fill="#efe9fb" stroke="#7c5cd0" stroke-width="1.3"/>
+<text x="451" y="601" text-anchor="middle" font-size="11.5" font-weight="600" fill="#3f2d73">sentinels (per governed effect)</text>
+<text x="451" y="616" text-anchor="middle" font-size="9.5" fill="#52407e">egress · io · memory · power</text>
+<text x="451" y="629" text-anchor="middle" font-size="9.5" fill="#52407e">state · time → AuditEvent on trap</text>
+</svg>

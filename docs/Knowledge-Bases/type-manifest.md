@@ -3,7 +3,7 @@
 ## Definition
 
 The **type manifest** (`app.type-manifest.json`) is a compiler-generated artefact
-that records all type contracts used by a LogicN project. It bridges compile-time
+that records all type contracts used by a Galerina project. It bridges compile-time
 proof and runtime authority.
 
 ## Core Rule
@@ -17,7 +17,7 @@ The compiler owns it.
 
 The boot file references the manifest as compiler-generated:
 
-```logicn
+```galerina
 boot {
   type_manifest generated
 }
@@ -29,7 +29,7 @@ to pre-plan type contracts before execution starts.
 ## Generated Output Location
 
 ```text
-build/logicn/manifests/app.type-manifest.json
+build/galerina/manifests/app.type-manifest.json
 ```
 
 ## Manifest Content
@@ -38,7 +38,7 @@ The manifest records types used by the project:
 
 ```json
 {
-  "kind": "logicn.typeManifest",
+  "kind": "galerina.typeManifest",
   "generated": true,
   "sourceHash": "sha256:...",
   "types": [
@@ -109,13 +109,13 @@ Stage 8: Build runtime plan
 Types should be packaged by responsibility, not by individual type.
 
 ```text
-logicn-core
+galerina-core
   String, Bool, Int, Option, Result, Void
 
-logicn-core-runtime
+galerina-core-runtime
   InitPlan, RuntimeMode, StartupReport
 
-logicn-data-json
+galerina-data-json
   Json, JsonObject, JsonArray, JsonDecodeError
 
 application package
@@ -126,9 +126,9 @@ Do NOT create one package per type. A package may expose many related types.
 
 ## Why Not a Hand-Maintained Source Block
 
-A manually edited type list in `boot.lln` would become stale:
+A manually edited type list in `boot.spore` would become stale:
 
-```logicn
+```galerina
 // Avoid — becomes stale
 types {
   Init
@@ -181,7 +181,7 @@ fast route binding
 
 `Option<T>` is the only normal way to express a missing-capable field.
 JSON null compatibility is a boundary encoding detail, not permission for silent
-null inside LogicN source.
+null inside Galerina source.
 
 The manifest records `Option<T>` instantiations so the runtime can prepare the
 correct `anyOf [T, null]` JSON schema shape at boundaries.

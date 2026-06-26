@@ -5,7 +5,7 @@
 ```
 Status: Active — language specification
 Scope:  if, match, pattern matching, no elseif/switch/case
-See also: logicn-syntax-if-match-optional.md, match-catch-all-branch.md, flat-flow-style.md
+See also: galerina-syntax-if-match-optional.md, match-catch-all-branch.md, flat-flow-style.md
 ```
 
 ## Core Rule
@@ -20,7 +20,7 @@ _ =>  = catch-all fallback (inside match block)
 
 Use `if` for simple true/false conditions:
 
-```logicn
+```galerina
 if user.is_active {
   allow()
 } else {
@@ -34,7 +34,7 @@ Use `match value` for comparing one value against multiple outcomes.
 
 ### Value Matching
 
-```logicn
+```galerina
 let payment_message: String = match payment.status {
   Paid    => "Payment complete"
   Failed  => "Payment failed"
@@ -45,7 +45,7 @@ let payment_message: String = match payment.status {
 
 Standard syntax:
 
-```logicn
+```galerina
 match value_to_check {
   possible_value => result
   _ => fallback_result
@@ -54,7 +54,7 @@ match value_to_check {
 
 ### Range Matching
 
-```logicn
+```galerina
 let grade = match score {
   >= 90 => "excellent"
   >= 70 => "good"
@@ -65,7 +65,7 @@ let grade = match score {
 
 ### Object Pattern Matching
 
-```logicn
+```galerina
 let output: String = match request {
   { method: "GET", path: "/users" }  => get_users()
   { method: "POST", path: "/users" } => create_user()
@@ -75,10 +75,10 @@ let output: String = match request {
 
 ## match Replaces switch and case
 
-LogicN does not use `switch` or `case`. `match` provides the same behaviour
+Galerina does not use `switch` or `case`. `match` provides the same behaviour
 with a smaller, cleaner syntax:
 
-```logicn
+```galerina
 match status {
   "paid"    => complete()
   "failed"  => retry()
@@ -91,7 +91,7 @@ match status {
 
 `elseif` is not used. For multiple branches, use `match`:
 
-```logicn
+```galerina
 let result: String = match status {
   "paid"   => "complete"
   "failed" => "failed"

@@ -6,10 +6,10 @@ View metadata marks the exposure and handling rules for data.
 
 ## Short Definition
 
-A view tells LogicN who or what may see or expose data.
+A view tells Galerina who or what may see or expose data.
 
 `public`, `private`, `internal`, `confidential`, `secret`, `restricted` and
-`regulated` are built-in view levels in the LogicN runtime/language standard.
+`regulated` are built-in view levels in the Galerina runtime/language standard.
 For example, `view: private` maps to `Runtime.View.private`.
 
 Older documents may use `classification` for field exposure. New field
@@ -17,7 +17,7 @@ exposure syntax should use `view`.
 
 ## Syntax Example
 
-```logicn
+```galerina
 model User {
   id: UUID view: public
   email: Email view: private
@@ -34,7 +34,7 @@ model User {
 - Secret fields must not appear in public output.
 - Private and regulated data require declared permission before exposure.
 - Internal fields must not leave public route boundaries.
-- View metadata is part of LogicN encapsulation: it controls where data may
+- View metadata is part of Galerina encapsulation: it controls where data may
   flow, not only whether a field is visible.
 - Sensitive values must be redacted from logs, reports and AI-readable output
   unless a safe report format explicitly allows derived metadata.

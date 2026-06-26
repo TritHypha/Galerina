@@ -2,10 +2,10 @@
 
 ## Purpose
 
-LogicN should support reflection for proof, tooling and auditability, not for
+Galerina should support reflection for proof, tooling and auditability, not for
 runtime magic.
 
-In LogicN, reflection should mean:
+In Galerina, reflection should mean:
 
 ```text
 compile-time metadata access only
@@ -16,7 +16,7 @@ dynamic field mutation, permission mutation or behaviour modification.
 
 ## Definition
 
-LogicN compile-time metadata is structured information about declared source
+Galerina compile-time metadata is structured information about declared source
 elements available before execution.
 
 Metadata may describe:
@@ -68,7 +68,7 @@ support static analysis
 
 Conceptual examples:
 
-```logicn
+```galerina
 metadata Profile.response
 metadata permission profile_read
 metadata flow getProfile
@@ -87,11 +87,11 @@ effect declarations
 source locations
 ```
 
-This syntax is conceptual until formal LogicN metadata syntax is specified.
+This syntax is conceptual until formal Galerina metadata syntax is specified.
 
 ## Disallowed Runtime Reflection
 
-LogicN should not allow normal runtime code to:
+Galerina should not allow normal runtime code to:
 
 ```text
 list all live objects
@@ -107,7 +107,7 @@ patch route behaviour dynamically
 
 Unsafe examples:
 
-```logicn
+```galerina
 Runtime.reflect(flowName).invoke()
 Runtime.reflect(Profile).set("email", value)
 Runtime.reflect(permissionName).grant(actor)
@@ -158,7 +158,7 @@ code should not dynamically discover new authority from live objects.
 
 Source concept:
 
-```logicn
+```galerina
 data Profile {
   view response {
     name: String view: public
@@ -179,7 +179,7 @@ The response gate can then use verified metadata generated before runtime to
 enforce response exposure rules. The application code should not inspect and
 rewrite `Profile` dynamically at runtime.
 
-## Why This Fits LogicN
+## Why This Fits Galerina
 
 Runtime reflection creates:
 
@@ -207,7 +207,7 @@ safer generated schemas
 
 ## Relationship To Risk Features
 
-LogicN should keep policy-bypassing reflection denied by default. The safer
+Galerina should keep policy-bypassing reflection denied by default. The safer
 alternative is compile-time metadata plus source-mapped reports.
 
 Related concepts:
@@ -220,6 +220,6 @@ Related concepts:
 ## Final Principle
 
 ```text
-LogicN should support reflection for proof and tooling,
+Galerina should support reflection for proof and tooling,
 not for runtime magic.
 ```

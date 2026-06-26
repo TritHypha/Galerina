@@ -2,7 +2,7 @@
 // audit-name-collisions.mjs — stop confusingly-similar names from recurring (RD-0124).
 //
 // Born from the graph-project / project-graph tangle: two packages whose names are reordered-token
-// near-anagrams (`@logicn/devtools-graph-project` vs `@logicn/devtools-project-graph`) — identical
+// near-anagrams (`@galerina/devtools-graph-project` vs `@galerina/devtools-project-graph`) — identical
 // token-multiset {devtools, graph, project}, trivially confused, and one had silently become a stray
 // nested clone. This lint makes that class of name collision a hard, machine-checked error.
 //
@@ -14,7 +14,7 @@
 //       governance/name-registry.json `knownCollisions` (documented + with a decided resolution). A
 //       known-but-undocumented collision is a violation; a new collision is a violation.
 //
-// Package names are read LIVE from packages-logicn/*/package.json (source of truth). The registry holds
+// Package names are read LIVE from packages-galerina/*/package.json (source of truth). The registry holds
 // POLICY (the allowlist of known collisions + any extra names to also guard via otherGuardedNames).
 //
 // Exit code = violation count (0 = clean). Run from repo root.
@@ -24,7 +24,7 @@ import { readdirSync, readFileSync, existsSync, realpathSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const PKG_ROOT = "packages-logicn";
+const PKG_ROOT = "packages-galerina";
 const REGISTRY = "governance/name-registry.json";
 
 // ── pure detectors (also exercised by --self-test) ───────────────────────────────────────────────

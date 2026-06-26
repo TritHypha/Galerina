@@ -1,26 +1,26 @@
-family: LLN-EFFECT
+family: SPORE-EFFECT
 description: "Effect checker diagnostics"
 canonical_source: "docs/Knowledge-Bases/effect-checker-and-boundary-checker.md"
 diagnostics:
-  - code: LLN-EFFECT-001
+  - code: SPORE-EFFECT-001
     name: UNDECLARED_EFFECT
     severity: error
     phase: effect_checker
     message: "Effect '{effect}' is used but not declared on flow '{flowName}'."
     implemented: true
-  - code: LLN-EFFECT-002
+  - code: SPORE-EFFECT-002
     name: TRANSITIVE_EFFECT_NOT_DECLARED
     severity: error
     phase: effect_checker
     message: "Flow '{callerName}' calls '{calleeName}' which requires effect '{effect}', but '{callerName}' does not declare it."
     implemented: true
-  - code: LLN-EFFECT-003
+  - code: SPORE-EFFECT-003
     name: EFFECT_BOUNDARY_VIOLATION
     severity: error
     phase: effect_checker
     message: "pure flow '{flowName}' cannot use effectful operation '{effect}'."
     implemented: true
-  - code: LLN-EFFECT-004
+  - code: SPORE-EFFECT-004
     name: NON_CANONICAL_EFFECT
     severity: error
     phase: effect_checker

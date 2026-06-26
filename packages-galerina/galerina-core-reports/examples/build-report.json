@@ -1,0 +1,43 @@
+{
+  "kind": "build",
+  "metadata": {
+    "schemaVersion": "0.1.0",
+    "kind": "build",
+    "name": "Galerina build report",
+    "projectName": "Galerina-app",
+    "projectVersion": "0.1.0",
+    "generatedAt": "2026-05-08T00:00:00.000Z",
+    "generator": {
+      "name": "galerina-core-cli",
+      "version": "0.1.0",
+      "packageName": "@galerina/core-cli"
+    }
+  },
+  "summary": {
+    "info": 0,
+    "warnings": 1,
+    "errors": 0,
+    "critical": 0,
+    "total": 1,
+    "status": "warning"
+  },
+  "diagnostics": [
+    {
+      "code": "Galerina_BUILD_TARGET_FALLBACK",
+      "severity": "warning",
+      "message": "GPU target fell back to CPU.",
+      "path": "targets.gpu"
+    }
+  ],
+  "warnings": ["GPU target fell back to CPU."],
+  "targets": ["cpu", "wasm"],
+  "artifacts": [
+    {
+      "path": "build/app.wasm",
+      "kind": "wasm",
+      "bytes": 1024,
+      "sha256": "sha256:example"
+    }
+  ],
+  "durationMs": 42
+}

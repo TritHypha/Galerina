@@ -1,5 +1,5 @@
 none
-// LLN-GOV-002 is the target diagnostic for this example.
-// LLN-GOV-002 is suppressed in the current compiler wave (Wave 2 false-positive resolution).
-// The example is stable: LLN-TYPE-001 is suppressed; LLN-EFFECT-002 is a warning
-// and LLN-HINT-COMPUTE-001 is info — no unsuppressed errors.
+// SPORE-GOV-002 is the target diagnostic for this example.
+// SPORE-GOV-002 is suppressed in the current compiler wave (Wave 2 false-positive resolution).
+// The example is stable: SPORE-TYPE-001 is suppressed; SPORE-EFFECT-002 is a warning
+// and SPORE-HINT-COMPUTE-001 is info — no unsuppressed errors.

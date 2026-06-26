@@ -1,4 +1,4 @@
-# LogicN standard library gate and sink registry
+# Galerina standard library gate and sink registry
 # Proposed path:
 #   docs/Knowledge-Bases/stdlib-gates.yaml
 #
@@ -14,10 +14,10 @@
 #   inside value-state-checker.ts.
 
 version: 0.1
-schema: logicn.stdlib.gates.v1
+schema: galerina.stdlib.gates.v1
 
 metadata:
-  owner: LogicN
+  owner: Galerina
   canonical_name: stdlib-gates
   purpose: >
     Defines recognized value-state gates, sanitizers, validators,
@@ -30,9 +30,9 @@ metadata:
     - IDE quick fixes
     - documentation tooling
   diagnostic_ranges:
-    value_state: LLN-VALUESTATE-*
-    safety: LLN-SAFETY-*
-    type: LLN-TYPE-*
+    value_state: SPORE-VALUESTATE-*
+    safety: SPORE-SAFETY-*
+    type: SPORE-TYPE-*
 
 value_states:
   unsafe:
@@ -220,7 +220,7 @@ gates:
       - pure flow
     notes: >
       Required for equality checks over secret/protected values. Direct == over
-      SecureString or protected secrets is denied — see LLN-SECRET-002.
+      SecureString or protected secrets is denied — see SPORE-SECRET-002.
 
   - id: declassify_explicit
     kind: function
@@ -280,7 +280,7 @@ sinks:
       - unknown
     required_effects:
       - database.write
-    diagnostic_on_reject: LLN-VALUESTATE-003
+    diagnostic_on_reject: SPORE-VALUESTATE-003
     notes: >
       Unsafe boundary data must pass validation, sanitization, or decoding before
       being inserted into a database.
@@ -303,7 +303,7 @@ sinks:
       - unknown
     required_effects:
       - database.write
-    diagnostic_on_reject: LLN-VALUESTATE-003
+    diagnostic_on_reject: SPORE-VALUESTATE-003
 
   - id: database_delete
     kind: method_pattern
@@ -322,7 +322,7 @@ sinks:
       - unknown
     required_effects:
       - database.write
-    diagnostic_on_reject: LLN-VALUESTATE-003
+    diagnostic_on_reject: SPORE-VALUESTATE-003
 
   - id: database_write
     kind: method_pattern
@@ -341,7 +341,7 @@ sinks:
       - unknown
     required_effects:
       - database.write
-    diagnostic_on_reject: LLN-VALUESTATE-003
+    diagnostic_on_reject: SPORE-VALUESTATE-003
 
   - id: audit_log_write
     kind: method
@@ -358,7 +358,7 @@ sinks:
       - unknown
     required_effects:
       - audit.write
-    diagnostic_on_reject: LLN-VALUESTATE-003
+    diagnostic_on_reject: SPORE-VALUESTATE-003
     notes: >
       Audit logs may include redacted values. They must not include raw unsafe
       values or unredacted protected secrets.
@@ -377,7 +377,7 @@ sinks:
       - unknown
     required_effects:
       - shell.exec
-    diagnostic_on_reject: LLN-VALUESTATE-003
+    diagnostic_on_reject: SPORE-VALUESTATE-003
     notes: >
       Shell execution is a high-risk governed sink. Command arguments must be
       fully validated before use. Direct interpolation of unsafe values into
@@ -397,7 +397,7 @@ sinks:
       - unknown
     required_effects:
       - filesystem.write
-    diagnostic_on_reject: LLN-VALUESTATE-003
+    diagnostic_on_reject: SPORE-VALUESTATE-003
 
   - id: log_receiver
     kind: receiver_pattern
@@ -414,7 +414,7 @@ sinks:
       - protected
     required_effects:
       - log.write
-    diagnostic_on_reject: LLN-SECRET-001
+    diagnostic_on_reject: SPORE-SECRET-001
     notes: >
       SecureString and protected values must not be passed to log receivers.
       Use redact() to produce a log-safe placeholder.
@@ -431,7 +431,7 @@ sinks:
       - protected
     required_effects:
       - console.write
-    diagnostic_on_reject: LLN-SECRET-001
+    diagnostic_on_reject: SPORE-SECRET-001
 
 unsafe_sources:
   - id: request_raw_body
@@ -519,7 +519,7 @@ ai_guidance:
     UsersDB.insert({ email: email })?
   unsafe_example: |
     unsafe let rawEmail: String = request.body.email
-    UsersDB.insert({ email: rawEmail })?  // LLN-VALUESTATE-003
+    UsersDB.insert({ email: rawEmail })?  // SPORE-VALUESTATE-003
 
 test_fixtures:
   accepted:
@@ -540,19 +540,19 @@ test_fixtures:
 
   rejected:
     - name: unsafe_direct_database_insert
-      expected_diagnostic: LLN-VALUESTATE-003
+      expected_diagnostic: SPORE-VALUESTATE-003
       source: |
         unsafe let rawEmail: String = request.body.email
         UsersDB.insert({ email: rawEmail })?
 
     - name: protected_direct_log
-      expected_diagnostic: LLN-SECRET-001
+      expected_diagnostic: SPORE-SECRET-001
       source: |
         let secret: SecureString = env.secret("API_KEY")
         log.info(secret)
 
     - name: direct_secret_equality
-      expected_diagnostic: LLN-SECRET-002
+      expected_diagnostic: SPORE-SECRET-002
       source: |
         if expected == provided {
           return Ok()
@@ -574,7 +574,7 @@ response_sinks:
       - protected
     rejects_states:
       - unsafe
-    diagnostic_on_reject: LLN-GOV-003
+    diagnostic_on_reject: SPORE-GOV-003
     notes: >
       API response bodies are external output sinks. Protected values require
       an explicit policy block authorizing the exposure. Use redact() for
@@ -591,7 +591,7 @@ response_sinks:
       - protected
     rejects_states:
       - unsafe
-    diagnostic_on_reject: LLN-GOV-003
+    diagnostic_on_reject: SPORE-GOV-003
 
 # ---------------------------------------------------------------------------
 # String taint propagation rule
@@ -607,7 +607,7 @@ taint_propagation_rules:
     examples:
       tainted: '"SELECT " + rawInput'
       safe: '"SELECT " + validate.input(rawInput)?'
-    diagnostic: LLN-VALUESTATE-004
+    diagnostic: SPORE-VALUESTATE-004
     note: >
       This is the SQL injection pattern. Any string derived from unsafe input
       must be validated before reaching query, render, or shell sinks.

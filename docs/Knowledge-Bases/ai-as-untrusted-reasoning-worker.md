@@ -2,14 +2,14 @@
 
 ## Purpose
 
-LogicN should support AI by treating AI as an untrusted reasoning worker, not
+Galerina should support AI by treating AI as an untrusted reasoning worker, not
 as trusted program logic.
 
 Core rule:
 
 ```text
 AI can suggest.
-LogicN must verify.
+Galerina must verify.
 Runtime must enforce.
 ```
 
@@ -38,7 +38,7 @@ AiReport
 
 Example conceptual syntax:
 
-```logicn
+```galerina
 ai task SummariseInvoice {
   input InvoiceText
   output InvoiceSummary
@@ -82,7 +82,7 @@ Nothing AI-related should happen before the security phase.
 
 ## Hallucination Handling
 
-LogicN cannot fully stop hallucination, but it can make hallucination
+Galerina cannot fully stop hallucination, but it can make hallucination
 non-authoritative.
 
 Rules:
@@ -97,7 +97,7 @@ Missing data -> return Unknown, not a guess
 
 AI should return typed results:
 
-```logicn
+```galerina
 Result<VerifiedAnswer, AiError>
 ```
 
@@ -131,7 +131,7 @@ full audit report
 
 Example conceptual worker declaration:
 
-```logicn
+```galerina
 worker FraudModelWorker {
   input TransactionBatch
   output FraudScoreReport
@@ -144,7 +144,7 @@ This syntax is conceptual until formally specified.
 
 ## Required Separation
 
-LogicN should separate:
+Galerina should separate:
 
 ```text
 AI inference      -> model prediction
@@ -172,7 +172,7 @@ the boundary.
 
 ## Anti-Hallucination Reports
 
-LogicN should eventually produce:
+Galerina should eventually produce:
 
 ```text
 ai-context-report.json
@@ -239,7 +239,7 @@ sandboxed and reported.
 
 ## Final Principle
 
-LogicN should not trust AI.
+Galerina should not trust AI.
 
 It should make AI useful by forcing it into typed tasks, bounded workers,
 evidence-backed claims, permission-gated tools and reportable runtime

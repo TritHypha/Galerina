@@ -1,4 +1,4 @@
-LLN-CONTEXT-001 (REQUIRED_CONTEXT_NOT_ACCESSED) — warning
+SPORE-CONTEXT-001 (REQUIRED_CONTEXT_NOT_ACCESSED) — warning
 
 Flow 'getUserData' declares context.require 'actor' but never accesses it in the flow body.
 Required context fields should be read and used.

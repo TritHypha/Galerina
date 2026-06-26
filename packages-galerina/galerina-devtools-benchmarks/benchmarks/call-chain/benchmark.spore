@@ -1,0 +1,45 @@
+/// call-chain benchmark — Galerina governed runtime
+/// Imitates an OOP call stack: controller → service.method() → util function.
+/// In Galerina every layer is a flow, so this measures flow-call DISPATCH overhead
+/// (arg binding into tagged values + a governed frame) through a 3-deep chain:
+///   main → serviceLayer → domainLayer → leafCompute
+/// Per outer iteration the chain fans out to 7 flow calls
+/// (1 service + 2 domain + 4 leaf). Mirror of node.mjs / python.py.
+///
+/// Each call is salted with the loop index `i`, so every (salt, x) pair is unique
+/// across iterations and the pure-flow memo cache never short-circuits a call —
+/// the number reflects real dispatch cost, not cache hits.
+///
+/// 50,000 outer iterations keeps wall time <1s; the runner normalises to ops/sec.
+
+pure flow leafCompute(salt: Int, x: Int) -> Int
+contract { effects {} }
+{
+  return (salt + x) * 2 + 1
+}
+
+pure flow domainLayer(salt: Int, x: Int) -> Int
+contract { effects {} }
+{
+  return leafCompute(salt, x) + leafCompute(salt, x + 1)
+}
+
+pure flow serviceLayer(salt: Int, x: Int) -> Int
+contract { effects {} }
+{
+  return domainLayer(salt, x) + domainLayer(salt, x + 2)
+}
+
+pure flow main() -> Int
+contract { effects {} }
+{
+  mut checksum: Int = 0
+  mut i:        Int = 0
+
+  while i < 50000 {
+    checksum = checksum + serviceLayer(i, i)
+    i = i + 1
+  }
+
+  return checksum
+}

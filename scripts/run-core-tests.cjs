@@ -3,9 +3,9 @@
 // indicates that relevant files were edited this turn.
 //
 // Execution order (matches the dependency chain):
-//   1. @logicn/devtools-project-graph — upstream library (C:\laragon\www\LLN-Graph, when created)
-//   2. logicn-core-*, logicn-devtools-graph-algorithms  — packages that may depend on @logicn/devtools-project-graph
-//   3. logicn-devtools-graph-project  — downstream consumer of @logicn/devtools-project-graph
+//   1. @galerina/devtools-project-graph — upstream library (C:\laragon\www\SPORE-Graph, when created)
+//   2. galerina-core-*, galerina-devtools-graph-algorithms  — packages that may depend on @galerina/devtools-project-graph
+//   3. galerina-devtools-graph-project  — downstream consumer of @galerina/devtools-project-graph
 //
 // Outputs a JSON { systemMessage } result so Claude Code shows a status chip.
 
@@ -16,10 +16,10 @@ const path = require('path');
 const fs = require('fs');
 
 const ROOT        = path.join(__dirname, '..');
-const PACKAGES_DIR = path.join(ROOT, 'packages-logicn');
-const LLN_GRAPH_DIR = path.join(ROOT, '..', 'LLN-Graph');
+const PACKAGES_DIR = path.join(ROOT, 'packages-galerina');
+const SPORE_GRAPH_DIR = path.join(ROOT, '..', 'SPORE-Graph');
 const SENTINEL    = path.join(ROOT, '.claude', '.core-changed');
-const GRAPH_PKG   = 'logicn-devtools-graph-project';
+const GRAPH_PKG   = 'galerina-devtools-graph-project';
 
 // ── Guard: only run when relevant files changed this turn ──────────────────
 
@@ -56,18 +56,18 @@ function runTest(dir, label) {
 const results = [];
 let allPassed = true;
 
-// 1. @logicn/devtools-project-graph — run first; core packages depend on it
-if (fs.existsSync(LLN_GRAPH_DIR) && hasTestScript(LLN_GRAPH_DIR)) {
-  const r = runTest(LLN_GRAPH_DIR, '@logicn/devtools-project-graph');
+// 1. @galerina/devtools-project-graph — run first; core packages depend on it
+if (fs.existsSync(SPORE_GRAPH_DIR) && hasTestScript(SPORE_GRAPH_DIR)) {
+  const r = runTest(SPORE_GRAPH_DIR, '@galerina/devtools-project-graph');
   results.push(r);
   if (!r.passed) allPassed = false;
 }
 
-// 2. All logicn-* packages (excludes logicn-devtools-graph-project which runs last)
-//    Catches: logicn-core-*, logicn-devtools-graph-algorithms, and any future logicn-* packages.
+// 2. All galerina-* packages (excludes galerina-devtools-graph-project which runs last)
+//    Catches: galerina-core-*, galerina-devtools-graph-algorithms, and any future galerina-* packages.
 const corePackages = fs
   .readdirSync(PACKAGES_DIR)
-  .filter(name => /^logicn-/.test(name) && name !== GRAPH_PKG)
+  .filter(name => /^galerina-/.test(name) && name !== GRAPH_PKG)
   .map(name => ({ name, dir: path.join(PACKAGES_DIR, name) }))
   .filter(({ dir }) => hasTestScript(dir));
 
@@ -77,7 +77,7 @@ for (const { name, dir } of corePackages) {
   if (!r.passed) allPassed = false;
 }
 
-// 3. logicn-devtools-graph-project — run last; downstream of @logicn/devtools-project-graph
+// 3. galerina-devtools-graph-project — run last; downstream of @galerina/devtools-project-graph
 if (allPassed) {
   const graphDir = path.join(PACKAGES_DIR, GRAPH_PKG);
   if (hasTestScript(graphDir)) {
@@ -91,8 +91,8 @@ if (allPassed) {
 
 const lines = results.map(r => `${r.passed ? '✅' : '❌'} ${r.label}`);
 const header = allPassed
-  ? 'LogicN core tests — all passed'
-  : 'LogicN core tests — failures detected';
+  ? 'Galerina core tests — all passed'
+  : 'Galerina core tests — failures detected';
 
 process.stdout.write(
   JSON.stringify({ systemMessage: `${header}:\n${lines.join('\n')}` })

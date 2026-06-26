@@ -1,27 +1,27 @@
 # Secure Web Runtime First
 
-LogicN's first serious milestone should be a memory-safe, security-first,
+Galerina's first serious milestone should be a memory-safe, security-first,
 AI-readable language and runtime for secure web apps, APIs and agent workflows.
 
-The first milestone should not depend on native executable compilation. LogicN
-should be useful for normal web applications through a LogicN secure runtime
+The first milestone should not depend on native executable compilation. Galerina
+should be useful for normal web applications through a Galerina secure runtime
 that can check, serve and run typed application code with reports.
 
 ## Current Node-Hosted Reality
 
-At this stage, practical LogicN web/API execution is Node-hosted.
+At this stage, practical Galerina web/API execution is Node-hosted.
 
 ```text
 HTTP request
   -> Node.js server
-  -> LogicN framework/API server adapter
-  -> LogicN app kernel
-  -> LogicN checked rules and flows
+  -> Galerina framework/API server adapter
+  -> Galerina app kernel
+  -> Galerina checked rules and flows
   -> Node.js executes the runtime path
   -> HTTP response
 ```
 
-This is acceptable for the current phase. It lets LogicN focus on typed
+This is acceptable for the current phase. It lets Galerina focus on typed
 requests, response contracts, policies, effects, capabilities, audit reports and
 AI/tool boundaries while Node provides the host process, HTTP and platform I/O.
 
@@ -33,7 +33,7 @@ Target-independent core.
 Secure runtime targets later.
 ```
 
-Node/V8 behavior must not become the definition of LogicN source semantics.
+Node/V8 behavior must not become the definition of Galerina source semantics.
 
 ## Primary Direction
 
@@ -43,7 +43,7 @@ native executable output later
 accelerator and systems targets later
 ```
 
-The runtime-first path keeps LogicN focused on what makes it different:
+The runtime-first path keeps Galerina focused on what makes it different:
 
 ```text
 typed API contracts
@@ -59,7 +59,7 @@ machine-readable reports
 
 ## Target Workloads
 
-LogicN should first serve:
+Galerina should first serve:
 
 ```text
 HTTP APIs
@@ -82,7 +82,7 @@ paths.
 The main v1 milestone is:
 
 ```text
-logicn serve / secure web runtime
+galerina serve / secure web runtime
 ```
 
 The secondary v1 milestone is:
@@ -91,13 +91,13 @@ The secondary v1 milestone is:
 compile to a simple portable build target
 ```
 
-This means LogicN v1 should be useful for web applications without requiring a
+This means Galerina v1 should be useful for web applications without requiring a
 native executable build. Native and WASM targets can stay visible in reports and
 package planning, but they should not block the first secure runtime slice.
 
 ## Faster Web Apps Without Binary Compilation
 
-LogicN can become fast for web apps before native executable output by making
+Galerina can become fast for web apps before native executable output by making
 the runtime do less work per request.
 
 Runtime-first performance rules:
@@ -136,14 +136,14 @@ loading dev-only packages in production mode
 
 ## Machine Profile Bridge
 
-LogicN should keep developer code high-level while still allowing the runtime to
+Galerina should keep developer code high-level while still allowing the runtime to
 specialise for the machine it is installed on. The draft name for this layer is
 the **Machine Profile Bridge**.
 
-The bridge sits between checked LogicN source and machine-specific execution:
+The bridge sits between checked Galerina source and machine-specific execution:
 
 ```text
-high-level LogicN source
+high-level Galerina source
   -> checked typed IR
   -> Machine Profile Bridge
   -> local runtime plan
@@ -164,14 +164,14 @@ fail closed when a required capability or permission is missing
 
 Example direction:
 
-```logicn
+```galerina
 machine profile local_runtime {
   detect os
   detect architecture
   detect runtime
   detect cpu_features
 
-  cache ".logicn/capabilities.local.json"
+  cache ".galerina/capabilities.local.json"
   commit false
 }
 
@@ -184,15 +184,15 @@ runtime bridge web_runtime {
 ```
 
 This is a tooling/runtime concept, not an invitation to write low-level app
-code. Normal LogicN source should stay readable and policy-first.
+code. Normal Galerina source should stay readable and policy-first.
 
 ## Native Layout And Interop Wording
 
-LogicN should use `layout native` and `interop native` as the official draft
+Galerina should use `layout native` and `interop native` as the official draft
 wording for low-level boundaries. A native block must still declare a concrete
 ABI, because calling convention, layout and ownership rules cannot be guessed.
 
-```logicn
+```galerina
 layout native UserRecord {
   abi c
 
@@ -207,7 +207,7 @@ layout native UserRecord {
 }
 ```
 
-```logicn
+```galerina
 interop native sqlite {
   abi c
   library "sqlite3"
@@ -234,7 +234,7 @@ interop native sqlite {
 The rule is:
 
 ```text
-Use native as the official LogicN category.
+Use native as the official Galerina category.
 Use abi c, abi wasm, abi system or abi plugin for the concrete boundary rules.
 ```
 
@@ -264,7 +264,7 @@ effect or deployment setting is safe enough for the selected profile.
 
 ## Memory Safety
 
-LogicN should make memory behavior clear without forcing normal web developers
+Galerina should make memory behavior clear without forcing normal web developers
 into low-level memory work.
 
 Required direction:
@@ -286,16 +286,16 @@ ordinary values.
 
 ## Developer Experience
 
-LogicN should feel strict but practical.
+Galerina should feel strict but practical.
 
 Developer workflow:
 
 ```text
-logicn check
-logicn run
-logicn serve
-logicn test
-logicn reports
+galerina check
+galerina run
+galerina serve
+galerina test
+galerina reports
 ```
 
 Diagnostics should explain:
@@ -313,7 +313,7 @@ small core concepts, real examples and predictable formatting.
 
 ## AI-Readable Runtime
 
-LogicN should make code understandable to AI tools without giving those tools
+Galerina should make code understandable to AI tools without giving those tools
 unsafe authority.
 
 Runtime and build outputs should include:
@@ -350,7 +350,7 @@ Staged target order:
 6. Accelerator planning and reports for AI/vector workloads.
 ```
 
-Standalone runtime work requires more layers: stable language core, LogicN IR,
+Standalone runtime work requires more layers: stable language core, Galerina IR,
 runtime memory model, VM/interpreter or native/WASM backend, async/event
 runtime, HTTP/web runtime, storage/network libraries, security runtime
 enforcement and production runtime tooling.
@@ -358,6 +358,6 @@ enforcement and production runtime tooling.
 The first public promise should be:
 
 ```text
-LogicN makes secure web runtime behavior typed, explicit, reportable and
+Galerina makes secure web runtime behavior typed, explicit, reportable and
 AI-readable.
 ```

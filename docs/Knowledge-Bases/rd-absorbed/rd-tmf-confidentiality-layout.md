@@ -1,17 +1,17 @@
-<!-- ABSORBED R&D SOURCE — verbatim mirror. LogicN is the main library; the R&D repo is upstream/authoring.
-     Source: LogicN-R-AND-D/tri-encription/research/LLN-AMD-024-tmf-confidentiality.md  ·  Pinned: R&D fb68d06 (2026-06-16)
-     Integrated LogicN view: logicn-tmf-engine.md  ·  Catalog: logicn-rd-absorption-catalog.md
+<!-- ABSORBED R&D SOURCE — verbatim mirror. Galerina is the main library; the R&D repo is upstream/authoring.
+     Source: Galerina-R-AND-D/tri-encription/research/SPORE-AMD-024-tmf-confidentiality.md  ·  Pinned: R&D fb68d06 (2026-06-16)
+     Integrated Galerina view: galerina-tmf-engine.md  ·  Catalog: galerina-rd-absorption-catalog.md
      Rule: edit the upstream source then re-vendor; do not fork this copy (feedback-auto-import-rd-docs). -->
 
-> **Absorbed R&D source (verbatim).** This is the archived upstream document. Curated/integrated view: `logicn-tmf-engine.md`. See `logicn-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
+> **Absorbed R&D source (verbatim).** This is the archived upstream document. Curated/integrated view: `galerina-tmf-engine.md`. See `galerina-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
 
 ---
 # Engineering Amendment: Sovereign Confidentiality & Geometric Integrity Layout for `.tmf`
 
-- **Document ID:** LLN-AMD-024
+- **Document ID:** SPORE-AMD-024
 - **Status:** R&D Reference Blueprint / Approved Architecture
 - **Security Domain:** Software Governance-Verifier & Cryptographic Invariants
-- **Reference Specs:** `LLN-SUBSTRATE-001` (Crypto-on-Core) · `FIPS-203` (ML-KEM) · `FIPS-204` (ML-DSA) · `NIST SP 800-227` (HPKE / Hybrid KEM)
+- **Reference Specs:** `SPORE-SUBSTRATE-001` (Crypto-on-Core) · `FIPS-203` (ML-KEM) · `FIPS-204` (ML-DSA) · `NIST SP 800-227` (HPKE / Hybrid KEM)
 - **Provenance:** R&D artifact (NOT a monorepo / production scaffold). Grounded in the companion research
   notes in this folder — [`quantum-resilient-tri-encryption.md`](quantum-resilient-tri-encryption.md) and
   [`photonic-sha256-integrity.md`](photonic-sha256-integrity.md) — which carry the citations behind every
@@ -36,7 +36,7 @@ The ternary and small-signed connection within post-quantum cryptography is rest
   5-valued, *not* ternary).
 
 All polynomial operations — ring reductions, the NTT, matrix–vector products — must execute with **zero-error
-precision on a deterministic, digital lane** (`LLN-SUBSTRATE-001`).
+precision on a deterministic, digital lane** (`SPORE-SUBSTRATE-001`).
 
 ### 1.2 Software Governance-Verifier Enforcement
 
@@ -222,6 +222,6 @@ triggers an immediate **phase collapse to state `0`**, failing closed and denyin
 
 `quantum-resilient-tri-encryption.md` (the confidentiality design + KEM-DEM rationale) ·
 `photonic-sha256-integrity.md` (why the digest stays digital; photonics = QRNG/PUF/LSH outside the gate) ·
-LogicN KBs: `logicn-substrate-failure-model.md` (`LLN-SUBSTRATE-001`), `logicn-quantum-resistance-posture.md`
-(keep SHA-256; PQ the signature), `logicn-three-valued-governance.md` (K3 fail-closed proofs),
-`logicn-ext-bridge-quantum-design.md` (FFSM #199 — sign `sha256(output)` on the deterministic core).
+Galerina KBs: `galerina-substrate-failure-model.md` (`SPORE-SUBSTRATE-001`), `galerina-quantum-resistance-posture.md`
+(keep SHA-256; PQ the signature), `galerina-three-valued-governance.md` (K3 fail-closed proofs),
+`galerina-ext-bridge-quantum-design.md` (FFSM #199 — sign `sha256(output)` on the deterministic core).

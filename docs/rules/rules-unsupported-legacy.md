@@ -1,6 +1,6 @@
 # Rules: Unsupported Legacy Patterns
 
-LogicN should avoid legacy patterns that hide behavior, weaken contracts or make
+Galerina should avoid legacy patterns that hide behavior, weaken contracts or make
 security difficult to review.
 
 ## Not Core
@@ -70,9 +70,9 @@ No hidden cost.
 ```
 
 If a feature hides behaviour, hides authority or forces runtime guessing, keep
-it out of normal LogicN source.
+it out of normal Galerina source.
 
-Inheritance is disallowed in normal LogicN source because it can hide behaviour,
+Inheritance is disallowed in normal Galerina source because it can hide behaviour,
 authority, effects and response exposure behind parent chains.
 
 This rule follows the Architecture Charter: controlled, explainable and

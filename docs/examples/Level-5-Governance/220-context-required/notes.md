@@ -11,7 +11,7 @@ reads both fields from the execution context in the flow body.
 execution context field (such as `actor`, `trace_id`, `deadline`, etc.). The governance
 verifier checks that each required field is actually accessed in the flow body.
 
-If a required field is never accessed, **LLN-CONTEXT-001** (REQUIRED_CONTEXT_NOT_ACCESSED,
+If a required field is never accessed, **SPORE-CONTEXT-001** (REQUIRED_CONTEXT_NOT_ACCESSED,
 warning) is emitted.
 
 ## Why require context fields in a contract?

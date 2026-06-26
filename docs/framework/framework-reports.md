@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Reports provide machine-readable proof of checked LogicN behavior.
+Reports provide machine-readable proof of checked Galerina behavior.
 
 ## Short Definition
 
@@ -11,7 +11,7 @@ security, memory, routes, packages or runtime setup.
 
 ## Why It Exists
 
-Reports make LogicN understandable to developers, reviewers, deployment tools
+Reports make Galerina understandable to developers, reviewers, deployment tools
 and AI agents without exposing secrets or relying on hidden runtime state.
 
 ## Report Families

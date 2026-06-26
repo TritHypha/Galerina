@@ -1,0 +1,33 @@
+/// example: 452-healthcare-invalid-pii-log
+/// test_status: stable
+/// level: 9
+/// concept: passing a protected PatientId directly to a log call without redaction
+/// expected_diagnostics: SPORE-SECRET-001
+/// ai_rule: Never pass a protected value to a log or audit call without first applying redact().
+
+secure flow logPatientDirectly(readonly request: Request) -> LogPatientDirectlyResult
+
+contract {
+  // Result alias — protected PatientId to audit without redact() triggers SPORE-SECRET-001
+  types {
+    type LogPatientDirectlyResult = Result<Response, PatientError>
+  }
+
+  intent {
+    "Read a patient record and write audit — demonstrates illegal unredacted PII in audit log."
+  }
+
+  effects {
+    pii.read
+    audit.write
+  }
+}
+{
+  unsafe let rawId: String = request.body.patientId
+  let patientId: protected PatientId = validate.patientId(rawId)?
+
+  // SPORE-SECRET-001: protected PatientId passed directly to AuditLog.write without redact()
+  AuditLog.write({ event: "PatientRead", patientId: patientId })
+
+  return Ok(Response.ok({}))
+}

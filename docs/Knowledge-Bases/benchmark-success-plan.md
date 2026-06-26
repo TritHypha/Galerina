@@ -2,37 +2,37 @@
 
 ## Purpose
 
-LogicN benchmark results must be repeatable, correctly interpreted and labelled
-honestly. The current compute-mix benchmark is useful for comparing the LogicN
+Galerina benchmark results must be repeatable, correctly interpreted and labelled
+honestly. The current compute-mix benchmark is useful for comparing the Galerina
 prototype runner with direct Node.js and Python, but it must not be presented as
-native LogicN compiler performance.
+native Galerina compiler performance.
 
 ## Benchmark Position
 
 The compute-mix benchmark compares:
 
-- LogicN prototype runner
+- Galerina prototype runner
 - direct Node.js
 - direct Python
 
-The current LogicN prototype runs through a Node.js-based runner. The benchmark
+The current Galerina prototype runs through a Node.js-based runner. The benchmark
 therefore measures:
 
 ```text
-LogicN prototype runner overhead compared with direct Node.js
+Galerina prototype runner overhead compared with direct Node.js
 ```
 
 It does not yet prove:
 
 ```text
-native LogicN compiler speed
+native Galerina compiler speed
 ```
 
 Reports must use:
 
 ```json
 {
-  "runtime": "logicn-prototype",
+  "runtime": "galerina-prototype",
   "executionMode": "nodejs-runner",
   "comparisonType": "prototype-runner-overhead"
 }
@@ -64,7 +64,7 @@ measure using measured state
 
 This rule applies to:
 
-- LogicN benchmark fixture handler
+- Galerina benchmark fixture handler
 - Node.js benchmark implementation
 - Python benchmark implementation
 
@@ -83,13 +83,13 @@ Validation mode must use:
 Recommended command:
 
 ```powershell
-node packages-logicn\logicn-core\examples\benchmark-runner.node.js --validate --runs 3 --operations 5000000 --batch-size 100000 --buffer-size 65536
+node packages-galerina\galerina-core\examples\benchmark-runner.node.js --validate --runs 3 --operations 5000000 --batch-size 100000 --buffer-size 65536
 ```
 
 Pass condition:
 
 ```text
-LogicN checksum = Node.js checksum = Python checksum
+Galerina checksum = Node.js checksum = Python checksum
 ```
 
 If fixed-operation checksums do not match, the benchmark is invalid.
@@ -101,7 +101,7 @@ Timed mode is the official speed comparison mode.
 Recommended command:
 
 ```powershell
-node packages-logicn\logicn-core\examples\benchmark-runner.node.js --runs 5 --target-ms 20000 --warmup-ms 2000 --batch-size 100000 --buffer-size 65536
+node packages-galerina\galerina-core\examples\benchmark-runner.node.js --runs 5 --target-ms 20000 --warmup-ms 2000 --batch-size 100000 --buffer-size 65536
 ```
 
 Official score:
@@ -143,7 +143,7 @@ Benchmark summaries should include:
     "nodeVsPython": 94.2
   },
   "runOrder": [
-    { "run": 1, "runtime": "logicn-prototype" },
+    { "run": 1, "runtime": "galerina-prototype" },
     { "run": 1, "runtime": "nodejs" },
     { "run": 1, "runtime": "python" }
   ]
@@ -155,10 +155,10 @@ Benchmark summaries should include:
 The benchmark runner should use round-robin ordering by default:
 
 ```text
-LogicN run 1
+Galerina run 1
 Node.js run 1
 Python run 1
-LogicN run 2
+Galerina run 2
 Node.js run 2
 Python run 2
 ```
@@ -187,15 +187,15 @@ The official score remains the median operations per second from timed mode.
 Use cautious wording:
 
 ```text
-The LogicN prototype runner can execute this benchmark in the same broad
+The Galerina prototype runner can execute this benchmark in the same broad
 performance range as direct Node.js for this workload. The benchmark should be
-interpreted as prototype runner overhead, not native LogicN compiler speed.
+interpreted as prototype runner overhead, not native Galerina compiler speed.
 ```
 
 Do not claim:
 
 ```text
-LogicN is faster than Node.js.
+Galerina is faster than Node.js.
 ```
 
 unless a longer timed benchmark consistently supports that claim and the

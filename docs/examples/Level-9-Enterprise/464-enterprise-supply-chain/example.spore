@@ -1,0 +1,35 @@
+/// example: 464-enterprise-supply-chain
+/// test_status: stable
+/// level: 9
+/// concept: flow requiring a module capability that has not been accepted in the supply-chain manifest
+/// expected_diagnostics: SPORE-MODULE-005
+/// ai_rule: All external module capabilities must be listed and accepted in the supply-chain manifest before use.
+
+// Assumes AnalyticsSDK requires capability "analytics.export" which is not in the accepted manifest.
+secure flow exportAnalytics(readonly request: Request) -> ExportAnalyticsResult
+
+contract {
+  // Result alias — AnalyticsSDK.export triggers SPORE-MODULE-005 without manifest acceptance
+  types {
+    type ExportAnalyticsResult = Result<Response, ExportError>
+  }
+
+  intent {
+    "Export anonymised analytics to approved partner"
+  }
+
+  effects {
+    database.read
+    network.outbound
+    audit.write
+  }
+}
+{
+  let data = AnalyticsDB.query(request.filters)?
+
+  // SPORE-MODULE-005: AnalyticsSDK requires capability analytics.export which is not accepted in supply-chain manifest
+  let report = AnalyticsSDK.export(data)?
+
+  AuditLog.write({ event: "AnalyticsExported", filters: request.filters })
+  return Ok(Response.ok(report))
+}

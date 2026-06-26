@@ -11,7 +11,7 @@ A scope limits value lifetime, visibility and escape behaviour.
 
 ## Syntax Example
 
-```logicn
+```galerina
 scope payment_data {
   let token: SecureString = request.cardToken
   let result = try PaymentProvider.charge(token)

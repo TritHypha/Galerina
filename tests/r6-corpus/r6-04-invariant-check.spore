@@ -1,0 +1,15 @@
+// EXPECT: ACCEPT
+// R6 corpus 04 — flow with invariant {} block + trap on violation
+// Exercises: invariant {}, trap keyword, ensure, Int bounds
+
+pure flow clampedDivide(numerator: Int, denominator: Int) -> Result<Int, String>
+contract {
+  intent { "Divide two integers. Traps on zero denominator rather than propagating an error silently." }
+  invariant {
+    ensure denominator != 0
+  }
+}
+{
+  trap denominator == 0 : "SPORE-INV-000"
+  return Ok(numerator / denominator)
+}

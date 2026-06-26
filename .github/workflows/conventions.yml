@@ -1,5 +1,5 @@
 # Convention / quality gate (#6 — flip the enforcers toward CI-enforcing). Runs the build-free
-# `lint-conventions` umbrella (diagnostic-codes · doc-drift · provenance · lint-lln) on every push + PR.
+# `lint-conventions` umbrella (diagnostic-codes · doc-drift · provenance · lint-spore) on every push + PR.
 #
 # STAGE 1 (now): `--soft` = REPORT-ONLY. It prints the full violation report into the Actions log + the
 # step summary but does NOT fail the build, because the baseline is still > 0 (the documented plan:
@@ -47,7 +47,7 @@ jobs:
         with:
           node-version: "20"
       - name: No NUL bytes in source (enforcing)
-        run: node --test packages-logicn/logicn-core-compiler/tests/source-hygiene-no-nul.test.mjs
+        run: node --test packages-galerina/galerina-core-compiler/tests/source-hygiene-no-nul.test.mjs
 
   # A green, build-free, zero-baseline OPEN-CORE invariant (0056-ci-lint): no NON-Apache license
   # declaration may contaminate the Apache-2.0 package tree (PD-spec↛Apache), and no core package may
@@ -85,7 +85,7 @@ jobs:
 
   # production-blockers (build-free, zero-baseline, ENFORCING): every code in production-check.ts
   # PRODUCTION_BLOCKERS must have a real emitter. A blocker no compiler pass can produce advertises a
-  # deployment block it cannot enforce (the false memory-gate: LLN-MEMORY-001/002/003/007 were blockers
+  # deployment block it cannot enforce (the false memory-gate: SPORE-MEMORY-001/002/003/007 were blockers
   # with no emitter). The --self-test proves the detector fires; then the scan runs ENFORCING.
   production-blockers:
     runs-on: ubuntu-latest
@@ -116,9 +116,9 @@ jobs:
           node scripts/audit-name-collisions.mjs
 
   # diagnostic-doc-drift (build-free, zero-baseline, ENFORCING): the canonical diagnostic reference
-  # (compiler-diagnostics.md) must not misdescribe a WIRED code. For any LLN-* code that carries a
+  # (compiler-diagnostics.md) must not misdescribe a WIRED code. For any SPORE-* code that carries a
   # structured name/message in source AND a description in the doc, the two must share at least one
-  # meaningful word — zero overlap means the doc is describing a different fault (the LLN-RUNTIME-006
+  # meaningful word — zero overlap means the doc is describing a different fault (the SPORE-RUNTIME-006
   # "Audit event stream write failed" / really RateLimitExceeded class). The --self-test proves the
   # detector fires; then the scan runs ENFORCING (reads .ts source + the .md doc directly — no build).
   diagnostic-doc-drift:
@@ -133,7 +133,7 @@ jobs:
           node scripts/audit-diagnostic-doc-drift.mjs --self-test
           node scripts/audit-diagnostic-doc-drift.mjs
 
-  # overclaim-phrases (build-free, zero-baseline, ENFORCING): no doc/.lln/code-comment may pair a
+  # overclaim-phrases (build-free, zero-baseline, ENFORCING): no doc/.spore/code-comment may pair a
   # complexity-boost claim (O(1) / single-clock / constant-time) with a zeroing token (fill / wipe /
   # memory.fill) within ~8 words. memory.fill is ONE WASM opcode (0xFC 0x0B) that does Θ(arena-size) work
   # — the "O(1) zero-wipe / single-clock-cycle wipe" framing is settled-false (RD-0126 overclaim-E,
@@ -167,11 +167,11 @@ jobs:
       - name: Graph-integrity detectors self-test (build-free)
         run: node scripts/audit-graph-integrity.mjs --self-test
 
-  # web-stub-guard (build-free, zero-baseline, ENFORCING): the deny-by-default logicn-web-* contracts
+  # web-stub-guard (build-free, zero-baseline, ENFORCING): the deny-by-default galerina-web-* contracts
   # must be born fail-closed. Each README states "RawHtml deny / untrusted-until-typed / gesture-required /
   # redirect-deny" in PROSE only — it fails OPEN the moment impl lands (CWE-79 XSS, CWE-601 open-redirect,
   # CWE-501 trust-boundary, CWE-862 missing-authz). A STUB (no src/dist) is inert and passes; an
-  # IMPLEMENTED web-* package MUST also ship a *.failclosed/acceptance.test exercising its LLN-WEB-*
+  # IMPLEMENTED web-* package MUST also ship a *.failclosed/acceptance.test exercising its SPORE-WEB-*
   # invariants (governance/web-failclosed-contract.json). The --self-test proves the detectors fire; then
   # the scan runs ENFORCING — the first PR that implements a web-* package is forced to add its tests.
   web-stub-guard:
@@ -203,7 +203,7 @@ jobs:
         with:
           node-version: "20"
       - name: Build the package-graph scanner (pure TS, no runtime deps)
-        working-directory: packages-logicn/logicn-devtools-package-graph
+        working-directory: packages-galerina/galerina-devtools-package-graph
         run: |
           npm install --no-audit --no-fund
           npm run build

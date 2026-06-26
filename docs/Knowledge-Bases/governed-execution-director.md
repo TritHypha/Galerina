@@ -2,7 +2,7 @@
 
 ## Purpose
 
-LogicN should include a Governed Execution Director as the runtime planning
+Galerina should include a Governed Execution Director as the runtime planning
 and coordination layer.
 
 The Director asks:
@@ -227,7 +227,7 @@ Why is this permission broader than normal?
 
 Conceptual access request:
 
-```logicn
+```galerina
 request_access database.customer.read
 reason: "needed to calculate customer risk score"
 ```
@@ -235,7 +235,7 @@ reason: "needed to calculate customer risk score"
 The reason becomes part of the execution plan and audit proof. Policy can
 approve, deny or require human review.
 
-This syntax is conceptual until formal LogicN access-request syntax is
+This syntax is conceptual until formal Galerina access-request syntax is
 specified.
 
 ## Reports
@@ -257,7 +257,7 @@ Reports must be source-linked, secret-safe, AI-readable and audit-friendly.
 
 ## Relationship To Other Concepts
 
-The Governed Execution Director connects existing LogicN concepts:
+The Governed Execution Director connects existing Galerina concepts:
 
 - [Securely Governed Runtime](securely-governed-runtime.md)
 - [Verified Fast Paths](verified-fast-paths.md)

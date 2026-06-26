@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // rd-absorb.mjs — R&D DONE-FILE ABSORBER / REPORTER. Automates the standing process (owner 2026-06-23):
 // when an R&D job comes back (`_session-bridge/done/NNNN-*.done.md`) the hub must ABSORB it into the KB and
-// add a verdict row to docs/Knowledge-Bases/logicn-rd-results-log.md. This tool tells you WHAT still needs
+// add a verdict row to docs/Knowledge-Bases/galerina-rd-results-log.md. This tool tells you WHAT still needs
 // absorbing instead of eyeballing two directories — a re-runnable TOKEN-SAVER (reads state, recomputes nothing).
 //
 //   node scripts/rd-absorb.mjs            -> report: UNABSORBED (actionable) vs already-logged
@@ -16,10 +16,10 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, basename } from "node:path";
 
 const ROOT = process.cwd();
-// R&D repo is a sibling of the LogicN repo; allow override via env for non-standard checkouts.
-const RND = process.env.LOGICN_RND_DIR || join(ROOT, "..", "LogicN-R-AND-D");
+// R&D repo is a sibling of the Galerina repo; allow override via env for non-standard checkouts.
+const RND = process.env.GALERINA_RND_DIR || join(ROOT, "..", "Galerina-R-AND-D");
 const DONE_DIR = join(RND, "_session-bridge", "done");
-const LOG = join(ROOT, "docs", "Knowledge-Bases", "logicn-rd-results-log.md");
+const LOG = join(ROOT, "docs", "Knowledge-Bases", "galerina-rd-results-log.md");
 
 const args = process.argv.slice(2);
 const asJson = args.includes("--json");
@@ -136,7 +136,7 @@ console.log(
 if (summaryOnly) process.exit(0);
 
 if (unabsorbed.length) {
-  console.log(`\n── UNABSORBED — add a verdict row to logicn-rd-results-log.md ──`);
+  console.log(`\n── UNABSORBED — add a verdict row to galerina-rd-results-log.md ──`);
   for (const r of unabsorbed) {
     const mark = STAT_MARK[r.status] || "?";
     const tag = pendingOnly(r) ? " [dispatched/pending — done-file just landed]" : "";

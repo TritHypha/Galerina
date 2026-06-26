@@ -1,0 +1,12 @@
+{
+  "packageName": "@galerina/tower-citizen",
+  "allowedExternal": [
+    "@galerina/inference-bridge-contract",
+    "@galerina/substrate-math",
+    "@noble/post-quantum/ml-dsa.js",
+    "node:crypto",
+    "node:fs",
+    "node:path"
+  ],
+  "note": "Baseline auto-generated. Edit allowedExternal to widen/narrow the border. `--check` fails if an import appears that is not listed here."
+}

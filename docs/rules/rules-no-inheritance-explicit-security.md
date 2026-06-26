@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This rule keeps LogicN security explicit by disallowing inheritance-based hidden
+This rule keeps Galerina security explicit by disallowing inheritance-based hidden
 behaviour and inherited authority in normal application code.
 
 ## Rule
@@ -11,7 +11,7 @@ behaviour and inherited authority in normal application code.
 Inheritance is disallowed.
 ```
 
-Normal LogicN source should not use inheritance as a behaviour, data, response,
+Normal Galerina source should not use inheritance as a behaviour, data, response,
 permission or effect-sharing mechanism.
 
 ## Explicit Security Rule
@@ -48,7 +48,7 @@ Assume everything is unsafe until declared safe.
 
 ## AI Instruction
 
-AI tools must not suggest inheritance as the normal LogicN model.
+AI tools must not suggest inheritance as the normal Galerina model.
 
 When reuse is needed, suggest composition, contracts, adapters, variants,
 generics or secure flows instead.

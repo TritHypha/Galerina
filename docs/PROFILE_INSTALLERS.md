@@ -2,16 +2,16 @@
 
 ## Purpose
 
-LogicN should use one language and one shared syntax, with different project
+Galerina should use one language and one shared syntax, with different project
 profiles controlling packages, effects, targets and runtime rules.
 
-Do not create separate LogicN languages for web apps, agents, systems services
+Do not create separate Galerina languages for web apps, agents, systems services
 or kernel research.
 
 Use:
 
 ```text
-same LogicN syntax
+same Galerina syntax
 same compiler frontend
 same core type system
 different profiles
@@ -22,27 +22,27 @@ different installer presets
 
 ## Installer Position
 
-LogicN may expose different installer entry points or templates for convenience,
+Galerina may expose different installer entry points or templates for convenience,
 but they must resolve through the same package/profile system.
 
 Recommended model:
 
 ```text
-logicn install --profile web_app
-logicn install --profile server_app
-logicn install --profile agent_app
-logicn install --profile systems_service
-logicn install --profile kernel
+galerina install --profile web_app
+galerina install --profile server_app
+galerina install --profile agent_app
+galerina install --profile systems_service
+galerina install --profile kernel
 ```
 
 Friendly wrappers may exist:
 
 ```text
-logicn new web
-logicn new server
-logicn new agent
-logicn new systems-service
-logicn new kernel-research
+galerina new web
+galerina new server
+galerina new agent
+galerina new systems-service
+galerina new kernel-research
 ```
 
 Those wrappers must not bypass profile checks. They should only select a
@@ -60,23 +60,23 @@ For HTTP APIs, webhooks and normal backend applications.
 Allowed package families:
 
 ```text
-logicn-core-*
-logicn-data-*
-logicn-db-*
-logicn-framework-app-kernel
-logicn-framework-api-server
-logicn-core-network
-logicn-core-security
-logicn-core-config
-logicn-core-reports
-logicn-target-wasm
-logicn-target-cpu
+galerina-core-*
+galerina-data-*
+galerina-db-*
+galerina-framework-app-kernel
+galerina-framework-api-server
+galerina-core-network
+galerina-core-security
+galerina-core-config
+galerina-core-reports
+galerina-target-wasm
+galerina-target-cpu
 ```
 
 Denied package families:
 
 ```text
-logicn-os
+galerina-os
 kernel/driver packages
 raw hardware packages
 enterprise-only packages unless explicitly unlocked
@@ -94,18 +94,18 @@ For long-running services, workers, scheduled tasks and queues.
 Allowed package families:
 
 ```text
-logicn-core-*
-logicn-data-*
-logicn-db-*
-logicn-framework-app-kernel
-logicn-core-runtime
-logicn-core-network
-logicn-core-security
-logicn-core-config
-logicn-core-reports
-logicn-target-cpu
-logicn-target-wasm
-logicn-target-native
+galerina-core-*
+galerina-data-*
+galerina-db-*
+galerina-framework-app-kernel
+galerina-core-runtime
+galerina-core-network
+galerina-core-security
+galerina-core-config
+galerina-core-reports
+galerina-target-cpu
+galerina-target-wasm
+galerina-target-native
 ```
 
 Server apps may share most web-app packages, but should not require route/API
@@ -118,19 +118,19 @@ For local and small-team AI agent workflows.
 Allowed package families:
 
 ```text
-logicn-core-*
-logicn-ai
-logicn-ai-agent
-logicn-ai-lowbit
-logicn-ai-neural
-logicn-ai-neuromorphic
-logicn-core-runtime
-logicn-core-security
-logicn-core-config
-logicn-core-reports
-logicn-target-cpu
-logicn-target-wasm
-logicn-target-ai-accelerator
+galerina-core-*
+galerina-ai
+galerina-ai-agent
+galerina-ai-lowbit
+galerina-ai-neural
+galerina-ai-neuromorphic
+galerina-core-runtime
+galerina-core-security
+galerina-core-config
+galerina-core-reports
+galerina-target-cpu
+galerina-target-wasm
+galerina-target-ai-accelerator
 ```
 
 Agent profiles should allow supervised local agents, typed messages, tool
@@ -147,13 +147,13 @@ For low-level user-space services, native daemons and infrastructure tooling.
 Allowed package families:
 
 ```text
-logicn-core-*
-logicn-target-native
-logicn-target-cpu
-logicn-core-network
-logicn-core-security
-logicn-core-config
-logicn-core-reports
+galerina-core-*
+galerina-target-native
+galerina-target-cpu
+galerina-core-network
+galerina-core-security
+galerina-core-config
+galerina-core-reports
 future systems packages
 ```
 
@@ -163,8 +163,8 @@ web/server profiles.
 Denied package families:
 
 ```text
-logicn-framework-api-server unless explicitly needed
-logicn-os
+galerina-framework-api-server unless explicitly needed
+galerina-os
 kernel/driver packages
 enterprise-only packages unless explicitly unlocked
 ```
@@ -179,10 +179,10 @@ active v1 installer target.
 Allowed future package families:
 
 ```text
-logicn-core
-logicn-core-compiler
-logicn-core-security
-logicn-target-native
+galerina-core
+galerina-core-compiler
+galerina-core-security
+galerina-target-native
 future systems packages
 future OS/kernel packages
 ```
@@ -190,11 +190,11 @@ future OS/kernel packages
 Denied packages:
 
 ```text
-logicn-framework-api-server
-logicn-framework-app-kernel
-logicn-ai-agent
-logicn-data-*
-logicn-db-*
+galerina-framework-api-server
+galerina-framework-app-kernel
+galerina-ai-agent
+galerina-data-*
+galerina-db-*
 normal web/server packages
 enterprise-only packages unless explicitly unlocked
 ```
@@ -230,7 +230,7 @@ future OS packages -> future systems packages -> core
 Bad:
 
 ```text
-logicn-core depends on web/server/agent packages
+galerina-core depends on web/server/agent packages
 web/server packages depend on OS/kernel packages
 OS/kernel packages depend on web/API packages
 free/open packages depend on locked enterprise packages
@@ -241,7 +241,7 @@ free/open packages depend on locked enterprise packages
 Installers must install the smallest package set required by the selected
 profile.
 
-They must not install every LogicN package by default.
+They must not install every Galerina package by default.
 
 Required installer behavior:
 
@@ -251,7 +251,7 @@ Required installer behavior:
 - deny default-disabled development and benchmark packages in production
 - deny enterprise-only packages unless explicitly unlocked
 - produce a package resolution report
-- record selected profile and package refs in `logicn.lock.json` once that
+- record selected profile and package refs in `galerina.lock.json` once that
   schema exists
 
 Recommended installer report fields:
@@ -288,9 +288,9 @@ enterprise lock state
 Example web-app denial:
 
 ```text
-LOGICN-PROFILE-001
+GALERINA-PROFILE-001
 
-Package logicn.os is not allowed in profile web_app.
+Package galerina.os is not allowed in profile web_app.
 
 Move this code to a systems or kernel profile project.
 ```
@@ -298,9 +298,9 @@ Move this code to a systems or kernel profile project.
 Example kernel denial:
 
 ```text
-LOGICN-PROFILE-002
+GALERINA-PROFILE-002
 
-Package logicn.web is not allowed in profile kernel.
+Package galerina.web is not allowed in profile kernel.
 
 Use a user-space service or management interface instead.
 ```
@@ -310,9 +310,9 @@ Use a user-space service or management interface instead.
 Web app projects should scaffold:
 
 ```text
-logicn.project.json
-boot.lln
-main.lln
+galerina.project.json
+boot.spore
+main.spore
 api/
 flows/
 domain/
@@ -323,9 +323,9 @@ policies/
 Agent projects should scaffold:
 
 ```text
-logicn.project.json
-boot.lln
-main.lln
+galerina.project.json
+boot.spore
+main.spore
 agents/
 tools/
 workflows/
@@ -336,9 +336,9 @@ reports/
 Systems service projects should scaffold:
 
 ```text
-logicn.project.json
-boot.lln
-main.lln
+galerina.project.json
+boot.spore
+main.spore
 services/
 policies/
 reports/

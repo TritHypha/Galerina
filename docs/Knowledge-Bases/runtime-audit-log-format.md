@@ -3,20 +3,20 @@
 ## Status
 
 ```text
-Package: logicn-core-reports
+Package: galerina-core-reports
 Area: runtime audit logs, execution proof, denials, evidence
 Version target: v1 (canonical — lln.runtime.audit.v1)
 Format: JSONL, one RuntimeAuditEvent per line
 Implementation status: fully specified, not yet finalised in package
 Canonical diagnostic ranges:
-  - LLN-AUDIT-001 through LLN-AUDIT-005
-  - LLN-REPORT-001 through LLN-REPORT-005
-  - LLN-PROOF-001 through LLN-PROOF-005
-  - LLN-DENIAL-001 through LLN-DENIAL-005
-  - LLN-EVIDENCE-001 through LLN-EVIDENCE-005
+  - SPORE-AUDIT-001 through SPORE-AUDIT-005
+  - SPORE-REPORT-001 through SPORE-REPORT-005
+  - SPORE-PROOF-001 through SPORE-PROOF-005
+  - SPORE-DENIAL-001 through SPORE-DENIAL-005
+  - SPORE-EVIDENCE-001 through SPORE-EVIDENCE-005
 ```
 
-Runtime audit logs are security-relevant records emitted by the LogicN runtime and related governance tooling.
+Runtime audit logs are security-relevant records emitted by the Galerina runtime and related governance tooling.
 
 They are distinct from normal application logs.
 
@@ -262,9 +262,9 @@ export interface ExecutionProofHashes {
 The five hashes are used by:
 
 ```text
-logicn verify
-logicn deploy
-logicn explain
+galerina verify
+galerina deploy
+galerina explain
 runtime audit reports
 execution proof reports
 ```
@@ -277,7 +277,7 @@ v1 is intentionally simple and fixed to the five confirmed hashes.
 
 ```ts
 export interface ExecutionProofV1 {
-  schemaVersion: "lln.execution.proof.v1"
+  schemaVersion: "spore.execution.proof.v1"
 
   /** Stable proof identifier. */
   proofId: string
@@ -298,7 +298,7 @@ v2 preserves the v1 `hashes` field for compatibility and adds optional extensibl
 
 ```ts
 export interface ExecutionProofV2 {
-  schemaVersion: "lln.execution.proof.v2"
+  schemaVersion: "spore.execution.proof.v2"
 
   proofId: string
 
@@ -338,7 +338,7 @@ export function upgradeExecutionProofV1ToV2(
   proof: ExecutionProofV1
 ): ExecutionProofV2 {
   return {
-    schemaVersion: "lln.execution.proof.v2",
+    schemaVersion: "spore.execution.proof.v2",
     proofId: proof.proofId,
     generatedAt: proof.generatedAt,
     hashes: proof.hashes,
@@ -390,7 +390,7 @@ export function serializeAuditEvent(
 ): string {
   if (event.schemaVersion !== "lln.runtime.audit.v1") {
     throw new ReportError(
-      "LLN-REPORT-001",
+      "SPORE-REPORT-001",
       "Invalid runtime audit schemaVersion."
     )
   }
@@ -404,7 +404,7 @@ export function serializeAuditEvent(
 
 ```ts
 export interface DenialReport {
-  schemaVersion: "lln.denial.report.v1"
+  schemaVersion: "spore.denial.report.v1"
 
   denialId: string
 
@@ -650,7 +650,7 @@ Raw secret types must never be assignable to `AuditReportValue`.
   },
   "actor": {
     "type": "runtime",
-    "id": "logicn-runtime"
+    "id": "galerina-runtime"
   },
   "action": {
     "operation": "network.http.request",
@@ -715,7 +715,7 @@ Raw secret types must never be assignable to `AuditReportValue`.
   },
   "actor": {
     "type": "runtime",
-    "id": "logicn-runtime"
+    "id": "galerina-runtime"
   },
   "action": {
     "operation": "secret.write_to_log",
@@ -729,12 +729,12 @@ Raw secret types must never be assignable to `AuditReportValue`.
     "matchedRules": ["secret.deny.runtime-log"]
   },
   "denial": {
-    "schemaVersion": "lln.denial.report.v1",
+    "schemaVersion": "spore.denial.report.v1",
     "denialId": "deny_001",
     "eventId": "evt_002",
     "reason": "Secret value attempted to cross runtime log boundary.",
     "category": "secret",
-    "diagnosticCode": "LLN-DENIAL-003",
+    "diagnosticCode": "SPORE-DENIAL-003",
     "suggestedFix": "Use a SecretReference or redacted value before logging.",
     "evidence": [
       {
@@ -771,7 +771,7 @@ export function validateAuditSafety(
 
   if (event.schemaVersion !== "lln.runtime.audit.v1") {
     diagnostics.push({
-      code: "LLN-AUDIT-001",
+      code: "SPORE-AUDIT-001",
       severity: "error",
       message: `Unsupported audit schema version: ${event.schemaVersion}.`
     })
@@ -779,7 +779,7 @@ export function validateAuditSafety(
 
   if (!event.eventId || !event.executionId || !event.timestamp) {
     diagnostics.push({
-      code: "LLN-AUDIT-002",
+      code: "SPORE-AUDIT-002",
       severity: "error",
       message: "Audit event is missing required identity or timestamp fields."
     })
@@ -787,7 +787,7 @@ export function validateAuditSafety(
 
   if (containsUnsafeSecretValue(event.metadata)) {
     diagnostics.push({
-      code: "LLN-AUDIT-003",
+      code: "SPORE-AUDIT-003",
       severity: "error",
       message: "Audit event metadata contains an unsafe secret value."
     })
@@ -795,7 +795,7 @@ export function validateAuditSafety(
 
   if (event.status === "denied" && !event.denial) {
     diagnostics.push({
-      code: "LLN-DENIAL-001",
+      code: "SPORE-DENIAL-001",
       severity: "error",
       message: "Denied audit event must include a DenialReport."
     })
@@ -803,7 +803,7 @@ export function validateAuditSafety(
 
   if (event.proof && !hasFiveExecutionProofHashes(event.proof)) {
     diagnostics.push({
-      code: "LLN-PROOF-001",
+      code: "SPORE-PROOF-001",
       severity: "error",
       message: "Execution proof must include all five proof hashes."
     })
@@ -817,55 +817,55 @@ export function validateAuditSafety(
 
 ## Diagnostic Codes
 
-### LLN-AUDIT
+### SPORE-AUDIT
 
 | Code | Meaning |
 | --- | --- |
-| `LLN-AUDIT-001` | Unsupported audit schema version |
-| `LLN-AUDIT-002` | Missing required audit event field |
-| `LLN-AUDIT-003` | Unsafe secret value in audit metadata |
-| `LLN-AUDIT-004` | Invalid audit status transition |
-| `LLN-AUDIT-005` | Audit event ordering or chain failure |
+| `SPORE-AUDIT-001` | Unsupported audit schema version |
+| `SPORE-AUDIT-002` | Missing required audit event field |
+| `SPORE-AUDIT-003` | Unsafe secret value in audit metadata |
+| `SPORE-AUDIT-004` | Invalid audit status transition |
+| `SPORE-AUDIT-005` | Audit event ordering or chain failure |
 
-### LLN-REPORT
-
-| Code | Meaning |
-| --- | --- |
-| `LLN-REPORT-001` | Report schema version missing or unsupported |
-| `LLN-REPORT-002` | Report contains unsafe raw value |
-| `LLN-REPORT-003` | Report references missing artefact |
-| `LLN-REPORT-004` | Report hash mismatch |
-| `LLN-REPORT-005` | Report output path is unsafe |
-
-### LLN-PROOF
+### SPORE-REPORT
 
 | Code | Meaning |
 | --- | --- |
-| `LLN-PROOF-001` | Execution proof missing one or more of the five hashes |
-| `LLN-PROOF-002` | Proof hash format invalid |
-| `LLN-PROOF-003` | Manifest hash mismatch |
-| `LLN-PROOF-004` | Audit chain hash mismatch |
-| `LLN-PROOF-005` | Proof references missing execution id |
+| `SPORE-REPORT-001` | Report schema version missing or unsupported |
+| `SPORE-REPORT-002` | Report contains unsafe raw value |
+| `SPORE-REPORT-003` | Report references missing artefact |
+| `SPORE-REPORT-004` | Report hash mismatch |
+| `SPORE-REPORT-005` | Report output path is unsafe |
 
-### LLN-DENIAL
-
-| Code | Meaning |
-| --- | --- |
-| `LLN-DENIAL-001` | Denied event missing denial report |
-| `LLN-DENIAL-002` | Denial report missing evidence |
-| `LLN-DENIAL-003` | Secret boundary denial |
-| `LLN-DENIAL-004` | Policy denial |
-| `LLN-DENIAL-005` | Target compatibility denial |
-
-### LLN-EVIDENCE
+### SPORE-PROOF
 
 | Code | Meaning |
 | --- | --- |
-| `LLN-EVIDENCE-001` | Unknown evidence type |
-| `LLN-EVIDENCE-002` | Evidence missing required field |
-| `LLN-EVIDENCE-003` | Evidence contains unsafe raw secret |
-| `LLN-EVIDENCE-004` | Evidence hash mismatch |
-| `LLN-EVIDENCE-005` | Evidence references missing event or artefact |
+| `SPORE-PROOF-001` | Execution proof missing one or more of the five hashes |
+| `SPORE-PROOF-002` | Proof hash format invalid |
+| `SPORE-PROOF-003` | Manifest hash mismatch |
+| `SPORE-PROOF-004` | Audit chain hash mismatch |
+| `SPORE-PROOF-005` | Proof references missing execution id |
+
+### SPORE-DENIAL
+
+| Code | Meaning |
+| --- | --- |
+| `SPORE-DENIAL-001` | Denied event missing denial report |
+| `SPORE-DENIAL-002` | Denial report missing evidence |
+| `SPORE-DENIAL-003` | Secret boundary denial |
+| `SPORE-DENIAL-004` | Policy denial |
+| `SPORE-DENIAL-005` | Target compatibility denial |
+
+### SPORE-EVIDENCE
+
+| Code | Meaning |
+| --- | --- |
+| `SPORE-EVIDENCE-001` | Unknown evidence type |
+| `SPORE-EVIDENCE-002` | Evidence missing required field |
+| `SPORE-EVIDENCE-003` | Evidence contains unsafe raw secret |
+| `SPORE-EVIDENCE-004` | Evidence hash mismatch |
+| `SPORE-EVIDENCE-005` | Evidence references missing event or artefact |
 
 ---
 
@@ -886,7 +886,7 @@ build/
 ## Recommended Package File Layout
 
 ```text
-packages-logicn/logicn-core-reports/src/
+packages-galerina/galerina-core-reports/src/
 
   audit/
     runtime-audit-event.ts
@@ -926,7 +926,7 @@ describe("validateAuditSafety", () => {
       denial: undefined
     })
 
-    expect(diagnostics.some(d => d.code === "LLN-DENIAL-001")).toBe(true)
+    expect(diagnostics.some(d => d.code === "SPORE-DENIAL-001")).toBe(true)
   })
 
   it("rejects execution proof missing hashes", () => {
@@ -937,7 +937,7 @@ describe("validateAuditSafety", () => {
       } as ExecutionProofHashes
     })
 
-    expect(diagnostics.some(d => d.code === "LLN-PROOF-001")).toBe(true)
+    expect(diagnostics.some(d => d.code === "SPORE-PROOF-001")).toBe(true)
   })
 })
 ```
@@ -969,11 +969,11 @@ The v1 runtime audit model defines:
 RuntimeAuditStatus
 RuntimeAuditEvent          (schemaVersion: "lln.runtime.audit.v1")
 ExecutionProofHashes       (five confirmed fields: manifestSha256, auditSha256, evidenceSha256, denialSha256, artefactSha256)
-ExecutionProofV1           (schemaVersion: "lln.execution.proof.v1")
-ExecutionProofV2           (schemaVersion: "lln.execution.proof.v2" — extensible sections)
+ExecutionProofV1           (schemaVersion: "spore.execution.proof.v1")
+ExecutionProofV2           (schemaVersion: "spore.execution.proof.v2" — extensible sections)
 ExecutionProofSection
 upgradeExecutionProofV1ToV2
-DenialReport               (schemaVersion: "lln.denial.report.v1")
+DenialReport               (schemaVersion: "spore.denial.report.v1")
 RuntimeEvidence
 JsonlAuditWriter
 serializeAuditEvent
@@ -992,4 +992,4 @@ denialSha256
 artefactSha256
 ```
 
-These contracts allow LogicN runtime, CLI, deploy, verify, explain, and audit tooling to produce safe, tamper-evident, machine-readable execution evidence.
+These contracts allow Galerina runtime, CLI, deploy, verify, explain, and audit tooling to produce safe, tamper-evident, machine-readable execution evidence.

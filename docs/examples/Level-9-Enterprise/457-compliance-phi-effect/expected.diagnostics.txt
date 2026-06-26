@@ -1,4 +1,4 @@
-LLN-EFFECT-001
+SPORE-EFFECT-001
 // The flow uses a phi.read-gated operation but declares no effects at all,
-// which causes LLN-EFFECT-001 (EffectUsedButNotDeclared) in the current pipeline.
-// LLN-PHI-001 is the intended future target once the PHI effect checker is implemented.
+// which causes SPORE-EFFECT-001 (EffectUsedButNotDeclared) in the current pipeline.
+// SPORE-PHI-001 is the intended future target once the PHI effect checker is implemented.

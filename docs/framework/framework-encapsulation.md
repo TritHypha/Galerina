@@ -2,13 +2,13 @@
 
 ## Purpose
 
-Encapsulation in LogicN protects internal state and sensitive data by controlling
+Encapsulation in Galerina protects internal state and sensitive data by controlling
 data movement across secure flows, response contracts, package exports and
 classified boundaries.
 
 ## Short Definition
 
-LogicN encapsulation controls:
+Galerina encapsulation controls:
 
 ```text
 what enters
@@ -22,7 +22,7 @@ what reports prove the boundary
 
 ## Model
 
-LogicN should not rely mainly on `public` and `private` field visibility.
+Galerina should not rely mainly on `public` and `private` field visibility.
 
 It should use:
 

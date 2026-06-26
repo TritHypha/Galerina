@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// status.mjs — LogicN STATUS one-shot. Print the live project state (version / stage / test line / overall % /
+// status.mjs — Galerina STATUS one-shot. Print the live project state (version / stage / test line / overall % /
 // open critical tasks / R&D bridge queue / pointers) WITHOUT re-running the test suite or re-deriving counts.
 // A re-runnable TOKEN-SAVER (owner request, 2026-06-22): a session runs THIS instead of `npm test` or grepping.
 // Pure-read, zero deps (node:fs/node:path only), informational — never throws on missing files, always exit 0.
@@ -10,8 +10,8 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), ".."); // repo root (scripts/..)
-const RND_TASKS = "C:/wwwprojects/LogicN-R-AND-D/_session-bridge/tasks";
-const RND_DONE = "C:/wwwprojects/LogicN-R-AND-D/_session-bridge/done";
+const RND_TASKS = "C:/wwwprojects/Galerina-R-AND-D/_session-bridge/tasks";
+const RND_DONE = "C:/wwwprojects/Galerina-R-AND-D/_session-bridge/done";
 
 const NA = "n/a";
 const readText = (p) => { try { return readFileSync(p, "utf8"); } catch { return null; } };
@@ -40,7 +40,7 @@ let overall = NA;
 let roadmapDoc = null;
 const kbFiles = listDir(KB) || [];
 const audits = kbFiles
-  .filter((f) => /^logicn-roadmap-and-percent-audit-.*\.md$/.test(f))
+  .filter((f) => /^galerina-roadmap-and-percent-audit-.*\.md$/.test(f))
   .sort(); // ISO-date filenames sort chronologically
 if (audits.length) {
   const newest = audits[audits.length - 1];
@@ -72,14 +72,14 @@ if (tasks) {
 // ── pointers (print only if present) ──────────────────────────────────────────
 const pointerCandidates = [
   roadmapDoc,
-  "docs/Knowledge-Bases/logicn-outstanding-rd-and-todos-2026-06-23.md",
-  "docs/Knowledge-Bases/logicn-rd-results-log.md",
+  "docs/Knowledge-Bases/galerina-outstanding-rd-and-todos-2026-06-23.md",
+  "docs/Knowledge-Bases/galerina-rd-results-log.md",
 ].filter(Boolean);
 const pointers = pointerCandidates.filter((p) => existsSync(join(ROOT, p)));
 
 // ── print compact status block ────────────────────────────────────────────────
 const out = [];
-out.push(`LogicN status — v${version} · ${stage}${date !== NA ? ` · ${date}` : ""}`);
+out.push(`Galerina status — v${version} · ${stage}${date !== NA ? ` · ${date}` : ""}`);
 out.push("");
 out.push(`  tests     : ${testLine}`);
 out.push(`  overall   : ${overall}`);

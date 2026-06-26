@@ -1,0 +1,103 @@
+/// @service: effect checker — validates declared effects match observed effects
+/// @phase: 57
+/// @runtime-component: effect checking layer (stub — full in Phase 60)
+/// @milestone: Phase 57 — effect checker in Galerina = 60% Runtime
+
+type EffectCheckResult = Result<Response, String>
+
+// Known stdlib effects and the capabilities they require
+pure flow effectRequiresCapability(effectName: String) -> String
+contract {
+  intent { "Return the capability required to use a given effect." }
+}
+{
+  match effectName {
+    "network.inbound"    => return "network"
+    "network.outbound"   => return "network"
+    "audit.write"        => return "audit"
+    "database.read"      => return "database"
+    "database.write"     => return "database"
+    "filesystem.read"    => return "filesystem"
+    "filesystem.write"   => return "filesystem"
+    "crypto.verify"      => return "crypto"
+    "secret.read"        => return "secrets"
+    "ai.infer"           => return "ai"
+    _                    => return "unknown"
+  }
+}
+
+// Check if a flow's declared effects are complete
+pure flow effectsAreComplete(declaredEffect: String, qualifier: String) -> Bool
+contract {
+  intent { "Return true if the effect declaration is consistent with the flow qualifier." }
+}
+{
+  if qualifier == "pure" {
+    if declaredEffect != "" { return false }
+  }
+  return true
+}
+
+// Classify the effect check severity
+pure flow classifyEffectSeverity(capability: String) -> String
+contract {
+  intent { "Map a capability to its audit severity for compliance tracking." }
+}
+{
+  match capability {
+    "secrets"    => return "critical"
+    "database"   => return "high"
+    "network"    => return "high"
+    "filesystem" => return "medium"
+    "crypto"     => return "medium"
+    "audit"      => return "low"
+    "ai"         => return "high"
+    _            => return "medium"
+  }
+}
+
+// HTTP endpoint: check effect declarations
+secure flow checkEffectDeclaration(readonly request: Request) -> EffectCheckResult
+contract {
+  effects {
+    network.inbound
+    audit.write
+  }
+  intent { "Verify that a flow's declared effects are valid and complete. Phase 57 milestone: the effect checker itself is governed Galerina source." }
+}
+{
+  unsafe let rawEffect: String = request.jsonBody.effect
+  unsafe let rawQualifier: String = request.jsonBody.qualifier
+
+  trap rawEffect == "" : ERR_EMPTY_EFFECT_NAME
+  trap rawQualifier == "" : ERR_EMPTY_QUALIFIER
+
+  let capability: String = effectRequiresCapability(rawEffect)
+  let severity: String = classifyEffectSeverity(capability)
+  let complete: Bool = effectsAreComplete(rawEffect, rawQualifier)
+
+  let retRawEffect: String = rawEffect
+  let retCapability: String = capability
+  safe mut rawEffect = redact(rawEffect)
+  safe mut capability = redact(capability)
+
+  AuditLog.write({
+    eventName: "EffectChecked"
+    effectName: rawEffect
+    capability: capability
+  })
+
+  return Ok({
+    effect: retRawEffect
+    qualifier: rawQualifier
+    capability: retCapability
+    severity: severity
+    complete: complete
+    phase: 57
+  })
+}
+
+route POST "/effect/check" {
+  response EffectCheckResult
+  flow checkEffectDeclaration
+}

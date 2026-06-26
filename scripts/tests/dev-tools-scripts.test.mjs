@@ -13,17 +13,17 @@ import { spawnSync } from "node:child_process";
 const SCRIPTS = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 // ── fixture workspace: one crafted diagnostics file under a fake package ──
-const tmp = mkdtempSync(join(tmpdir(), "lln-devtools-"));
+const tmp = mkdtempSync(join(tmpdir(), "spore-devtools-"));
 after(() => { try { rmSync(tmp, { recursive: true, force: true }); } catch { /* best effort */ } });
-const src = join(tmp, "packages-logicn", "fx", "src");
+const src = join(tmp, "packages-galerina", "fx", "src");
 mkdirSync(src, { recursive: true });
 writeFileSync(join(src, "diag.ts"), [
-  `export const LLN_FX_001 = { code: "LLN-FX-001", name: "FxDefinedNeverUsed", severity: "error" };`,
+  `export const SPORE_FX_001 = { code: "SPORE-FX-001", name: "FxDefinedNeverUsed", severity: "error" };`,
   `export const ERR_FX_THING = "ERR_FX_THING";`,
   `export const ERR_FX_THROWN = "ERR_FX_THROWN";`,
   `export function emitInline(d){`,
   `  d.push({`,
-  `    code: "LLN-FX-002",`,
+  `    code: "SPORE-FX-002",`,
   `    name: "FxInline",`,
   `    severity: "warning",`,
   `  });`,
@@ -35,11 +35,11 @@ writeFileSync(join(src, "diag.ts"), [
   `    "boom",`,
   `  );`,
   `}`,
-  `// a comment mentioning LLN-FX-099 must be a ref, not an emit/def`,
-  `export const LLN_FX_005 = { code: "LLN-FX-005", name: "FxFive", severity: "error" };`,
-  `export const LLN_FX_005B = { code: "LLN-FX-005B", name: "FxFiveB", severity: "error" };`,
-  `export interface FxShape { readonly code: "LLN-FX-050"; }`,
-  `export function useFive(d){ d.push({ ...LLN_FX_005 }); d.push({ ...LLN_FX_005B }); }`,
+  `// a comment mentioning SPORE-FX-099 must be a ref, not an emit/def`,
+  `export const SPORE_FX_005 = { code: "SPORE-FX-005", name: "FxFive", severity: "error" };`,
+  `export const SPORE_FX_005B = { code: "SPORE-FX-005B", name: "FxFiveB", severity: "error" };`,
+  `export interface FxShape { readonly code: "SPORE-FX-050"; }`,
+  `export function useFive(d){ d.push({ ...SPORE_FX_005 }); d.push({ ...SPORE_FX_005B }); }`,
 ].join("\n") + "\n");
 
 const run = (script, args = []) => spawnSync(process.execPath, [join(SCRIPTS, script), ...args], { cwd: tmp, encoding: "utf8" });
@@ -53,8 +53,8 @@ const emits = (c) => (byCode[c]?.emits || []).length;
 const defs = (c) => (byCode[c]?.defs || []).length;
 
 test("code-index: trailing-letter suffix kept distinct (005 vs 005B both indexed)", () => {
-  assert.ok(byCode["LLN-FX-005"], "LLN-FX-005 indexed");
-  assert.ok(byCode["LLN-FX-005B"], "LLN-FX-005B indexed distinctly (not truncated to 005)");
+  assert.ok(byCode["SPORE-FX-005"], "SPORE-FX-005 indexed");
+  assert.ok(byCode["SPORE-FX-005B"], "SPORE-FX-005B indexed distinctly (not truncated to 005)");
 });
 
 test("code-index: const-identifier emit resolved (code: ERR_FX_THING)", () => {
@@ -65,24 +65,24 @@ test("code-index: multi-line `throw new FxError(\\n ERR_FX_THROWN,…)` resolved
   assert.ok(emits("ERR_FX_THROWN") > 0, "ERR_FX_THROWN emitted via the windowed constructor throw");
 });
 
-test("code-index: inline push emit (LLN-FX-002)", () => {
-  assert.ok(emits("LLN-FX-002") > 0);
+test("code-index: inline push emit (SPORE-FX-002)", () => {
+  assert.ok(emits("SPORE-FX-002") > 0);
 });
 
-test("code-index: a comment mention is a ref, NOT an emit/def (LLN-FX-099)", () => {
-  const c = byCode["LLN-FX-099"];
+test("code-index: a comment mention is a ref, NOT an emit/def (SPORE-FX-099)", () => {
+  const c = byCode["SPORE-FX-099"];
   assert.ok(c, "still indexed (as a ref)");
-  assert.equal(emits("LLN-FX-099"), 0);
-  assert.equal(defs("LLN-FX-099"), 0);
+  assert.equal(emits("SPORE-FX-099"), 0);
+  assert.equal(defs("SPORE-FX-099"), 0);
 });
 
-test("code-index: a TS type position is NOT an emit/def (readonly code: LLN-FX-050)", () => {
-  assert.equal(emits("LLN-FX-050"), 0);
-  assert.equal(defs("LLN-FX-050"), 0);
+test("code-index: a TS type position is NOT an emit/def (readonly code: SPORE-FX-050)", () => {
+  assert.equal(emits("SPORE-FX-050"), 0);
+  assert.equal(defs("SPORE-FX-050"), 0);
 });
 
-test("gen-code-registry: defined-AND-unreferenced is DEAD (LLN-FX-001)", () => {
-  assert.equal(status["LLN-FX-001"], "dead", "LLN-FX-001 is defined but never used → RESERVED");
+test("gen-code-registry: defined-AND-unreferenced is DEAD (SPORE-FX-001)", () => {
+  assert.equal(status["SPORE-FX-001"], "dead", "SPORE-FX-001 is defined but never used → RESERVED");
 });
 
 test("gen-code-registry: const-emitted codes are LIVE, not dead (ERR_FX_THING/THROWN)", () => {
@@ -97,7 +97,7 @@ test("audit-coverage: a clean fixture has 0 coverage holes (no phantom)", () => 
 });
 
 // ── DOC-004 doc↔source drift: a second fixture (version.json authority + crafted docs) ──
-const tmp2 = mkdtempSync(join(tmpdir(), "lln-docdrift-"));
+const tmp2 = mkdtempSync(join(tmpdir(), "spore-docdrift-"));
 after(() => { try { rmSync(tmp2, { recursive: true, force: true }); } catch { /* best effort */ } });
 mkdirSync(join(tmp2, "docs", "Knowledge-Bases"), { recursive: true });
 writeFileSync(join(tmp2, "version.json"), JSON.stringify({ testCount: 4993, packageCount: 53 }) + "\n");
@@ -135,7 +135,7 @@ test("doc-drift: a dated-FILENAME snapshot is fully exempt", () => {
 });
 
 // ── SEC-002 mutation gate: a hermetic tmp git repo proves KILL + SURVIVE + git-safety (no production touched) ──
-const tmp3 = mkdtempSync(join(tmpdir(), "lln-mutation-"));
+const tmp3 = mkdtempSync(join(tmpdir(), "spore-mutation-"));
 after(() => { try { rmSync(tmp3, { recursive: true, force: true }); } catch { /* best effort */ } });
 const git3 = (...a) => spawnSync("git", a, { cwd: tmp3, encoding: "utf8" });
 // a fixture "gate": one check is GUARDED by the test, one is NOT
@@ -179,11 +179,11 @@ test("mutation: git-safety — every target file restored clean after the run", 
 });
 
 // ── kb-index: a tmp KB tree proves BUILD + QUERY ranking + --code lookup ──
-const tmp6 = mkdtempSync(join(tmpdir(), "lln-kbindex-"));
+const tmp6 = mkdtempSync(join(tmpdir(), "spore-kbindex-"));
 after(() => { try { rmSync(tmp6, { recursive: true, force: true }); } catch { /* best effort */ } });
 mkdirSync(join(tmp6, "docs", "Knowledge-Bases"), { recursive: true });
 writeFileSync(join(tmp6, "docs", "Knowledge-Bases", "alpha.md"),
-  "# Alpha Transport\n## Morphing frames\nThe **morphing transport** layer governs LLN-FOO-001 per task #201.\n");
+  "# Alpha Transport\n## Morphing frames\nThe **morphing transport** layer governs SPORE-FOO-001 per task #201.\n");
 writeFileSync(join(tmp6, "docs", "Knowledge-Bases", "beta.md"),
   "# Beta Storage\n## Arena allocator\nMonotone bump memory and zeroize on reset.\n");
 const kb = (a) => spawnSync(process.execPath, [join(SCRIPTS, "kb-index.mjs"), ...a], { cwd: tmp6, encoding: "utf8" });
@@ -193,7 +193,7 @@ const kbIdx = JSON.parse(readFileSync(join(tmp6, "build", "kb-index", "kb-index.
 test("kb-index: builds an index over the KB tree (codes + tasks captured)", () => {
   assert.equal(kbIdx.docCount, 2);
   const alpha = kbIdx.docs.find((d) => d.rel.endsWith("alpha.md"));
-  assert.ok(alpha.codes.includes("LLN-FOO-001"), "code captured");
+  assert.ok(alpha.codes.includes("SPORE-FOO-001"), "code captured");
   assert.ok(alpha.tasks.includes("#201"), "task ref captured");
 });
 test("kb-index: query ranks the relevant doc first", () => {
@@ -201,12 +201,12 @@ test("kb-index: query ranks the relevant doc first", () => {
   assert.ok(firstHit.includes("alpha.md"), `morphing -> alpha.md (got: ${firstHit})`);
 });
 test("kb-index: --code lists only the doc mentioning the code", () => {
-  const out = kb(["--code", "LLN-FOO-001"]).stdout;
+  const out = kb(["--code", "SPORE-FOO-001"]).stdout;
   assert.ok(out.includes("alpha.md") && !out.includes("beta.md"));
 });
 
 // ── BLD-003 audit-provenance: a tmp tree proves stamped+fresh vs STALE vs UNSTAMPED (kb-index artifact) ──
-const tmp7 = mkdtempSync(join(tmpdir(), "lln-prov-"));
+const tmp7 = mkdtempSync(join(tmpdir(), "spore-prov-"));
 after(() => { try { rmSync(tmp7, { recursive: true, force: true }); } catch { /* best effort */ } });
 mkdirSync(join(tmp7, "docs", "Knowledge-Bases"), { recursive: true });
 mkdirSync(join(tmp7, "build", "kb-index"), { recursive: true });
@@ -229,7 +229,7 @@ test("provenance: a missing sidecar → UNSTAMPED", () => {
 });
 
 // ── RD-0126 overclaim-E: the "O(1) / constant-time zero-wipe" phrase-blocklist (memory.fill is Θ(arena-size)) ──
-const tmp8 = mkdtempSync(join(tmpdir(), "lln-overclaim-"));
+const tmp8 = mkdtempSync(join(tmpdir(), "spore-overclaim-"));
 after(() => { try { rmSync(tmp8, { recursive: true, force: true }); } catch { /* best effort */ } });
 // a doc: the false claim (flag), the approved phrasing (pass), and a correction line (co-occurs but exempt).
 writeFileSync(join(tmp8, "doc.md"), [

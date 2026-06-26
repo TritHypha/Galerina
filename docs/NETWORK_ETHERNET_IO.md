@@ -1,20 +1,20 @@
 # Network and Ethernet I/O
 
-LogicN should not claim to make Ethernet hardware faster.
+Galerina should not claim to make Ethernet hardware faster.
 
 Ethernet speed is determined by hardware, drivers, network cards, cables,
 switches, operating systems and standards. IEEE 802.3 work continues across
-200 Gb/s, 400 Gb/s, 800 Gb/s and 1.6 Tb/s Ethernet directions, so LogicN should
+200 Gb/s, 400 Gb/s, 800 Gb/s and 1.6 Tb/s Ethernet directions, so Galerina should
 be designed for future high-speed networks instead of assuming ordinary 1 Gb/s
 or 10 Gb/s servers.
 
-The honest LogicN position is:
+The honest Galerina position is:
 
 ```text
-LogicN cannot change the physical Ethernet speed.
-LogicN cannot make packets invisible.
+Galerina cannot change the physical Ethernet speed.
+Galerina cannot make packets invisible.
 
-LogicN can improve how applications use the network:
+Galerina can improve how applications use the network:
 - fewer copies
 - better buffering
 - safer protocols
@@ -25,17 +25,17 @@ LogicN can improve how applications use the network:
 - security rules before deployment
 ```
 
-At code-language level, LogicN cannot stop routers, switches, ISPs, Wi-Fi access
+At code-language level, Galerina cannot stop routers, switches, ISPs, Wi-Fi access
 points, cloud providers or attackers on the path from observing that packets
-exist. LogicN can make useful packet contents encrypted, authenticated,
+exist. Galerina can make useful packet contents encrypted, authenticated,
 permissioned, minimised and auditable.
 
 The safe-networking rule is:
 
 ```text
-LogicN should not trust the network.
-LogicN should assume packets can be observed, copied, delayed, blocked or modified.
-Therefore LogicN must encrypt, authenticate, validate, minimise and report network communication.
+Galerina should not trust the network.
+Galerina should assume packets can be observed, copied, delayed, blocked or modified.
+Therefore Galerina must encrypt, authenticate, validate, minimise and report network communication.
 ```
 
 ## Package Direction
@@ -43,7 +43,7 @@ Therefore LogicN must encrypt, authenticate, validate, minimise and report netwo
 Core network contracts belong in:
 
 ```text
-packages-logicn/logicn-core-network/
+packages-galerina/galerina-core-network/
 ```
 
 That package should own typed, permissioned and reportable network I/O
@@ -54,21 +54,21 @@ Protocol-specific packages can be added later only when they have a clear owner
 and boundary:
 
 ```text
-logicn-core-network       core network policy, profiles and reports
-logicn-network-http       optional HTTP protocol client/server contracts
-logicn-network-tls        optional TLS policy adapter contracts
-logicn-network-dns        optional DNS resolver policy contracts
-logicn-network-quic       optional QUIC transport contracts
-logicn-network-tcp        optional TCP transport contracts
-logicn-network-udp        optional UDP transport contracts
-logicn-network-websocket  optional WebSocket contracts
+galerina-core-network       core network policy, profiles and reports
+galerina-network-http       optional HTTP protocol client/server contracts
+galerina-network-tls        optional TLS policy adapter contracts
+galerina-network-dns        optional DNS resolver policy contracts
+galerina-network-quic       optional QUIC transport contracts
+galerina-network-tcp        optional TCP transport contracts
+galerina-network-udp        optional UDP transport contracts
+galerina-network-websocket  optional WebSocket contracts
 ```
 
-For now, `logicn-core-network` is enough.
+For now, `galerina-core-network` is enough.
 
 ## Safe Networking
 
-LogicN should deny plaintext networking by default. TLS 1.3 is the baseline
+Galerina should deny plaintext networking by default. TLS 1.3 is the baseline
 production transport policy for application traffic, and QUIC should be treated
 as a secure transport only when its TLS 1.3 security model is active.
 
@@ -78,13 +78,13 @@ Bad default:
 http://api.example.com
 ```
 
-Better LogicN default:
+Better Galerina default:
 
 ```text
 https://api.example.com
 ```
 
-Production LogicN applications should require:
+Production Galerina applications should require:
 
 ```text
 TLS
@@ -100,7 +100,7 @@ safe logging and redaction
 generated network security reports
 ```
 
-For enterprise systems, LogicN should also support:
+For enterprise systems, Galerina should also support:
 
 ```text
 mutual TLS
@@ -113,7 +113,7 @@ metadata minimisation where possible
 
 ## Network Runtime Model
 
-LogicN networking should be typed, permissioned and reportable.
+Galerina networking should be typed, permissioned and reportable.
 
 ```text
 network {
@@ -131,8 +131,8 @@ network {
 ```
 
 The Secure App Kernel and API server packages can consume this policy, but the
-policy shape belongs in `logicn-core-network` and the permission enforcement
-must integrate with `logicn-core-security`.
+policy shape belongs in `galerina-core-network` and the permission enforcement
+must integrate with `galerina-core-security`.
 
 Production builds should fail if plaintext transport is used without an
 explicit non-production override:
@@ -146,7 +146,7 @@ Use HTTPS/TLS.
 
 ## Network Auto
 
-LogicN should support a `network auto` planning concept similar to `compute
+Galerina should support a `network auto` planning concept similar to `compute
 auto`. It chooses the safest available network I/O strategy for the platform.
 
 ```text
@@ -179,7 +179,7 @@ This keeps platform-specific network mechanics out of normal application code.
 
 ## Zero-Copy and Buffering
 
-LogicN should support zero-copy networking where available, but it must keep
+Galerina should support zero-copy networking where available, but it must keep
 fallback behavior explicit and safe. Linux supports zero-copy send paths such as
 `MSG_ZEROCOPY` for selected socket use cases, and newer Linux work includes
 zero-copy receive paths around `io_uring`. These are platform capabilities, not
@@ -208,7 +208,7 @@ redaction rules or backpressure.
 
 ## eBPF and XDP
 
-LogicN may support optional eBPF/XDP adapters for advanced edge filtering and
+Galerina may support optional eBPF/XDP adapters for advanced edge filtering and
 observability. XDP can run programs early in packet processing, before the full
 kernel network stack handles the packet.
 
@@ -238,12 +238,12 @@ network edgeFilter {
 }
 ```
 
-XDP/eBPF support is advanced and optional. Normal LogicN apps must not require
+XDP/eBPF support is advanced and optional. Normal Galerina apps must not require
 kernel packet filters.
 
 ## DPDK Adapter
 
-LogicN may support DPDK through a specialist adapter for data-plane systems.
+Galerina may support DPDK through a specialist adapter for data-plane systems.
 DPDK belongs to packet processing, firewalls, routers, telecom systems, load
 balancers, network appliances and custom protocol gateways. It is not a default
 web application path.
@@ -262,7 +262,7 @@ dedicated resource reporting and a fallback plan.
 
 ## Protocol-Safe APIs
 
-LogicN should avoid raw untyped protocol strings at application boundaries.
+Galerina should avoid raw untyped protocol strings at application boundaries.
 
 ```text
 Header<Authorization>
@@ -345,7 +345,7 @@ Package imageProcessor attempted network.open to unknown host.
 
 ## TLS and Certificate Policy
 
-LogicN should require secure transport by default for production networked
+Galerina should require secure transport by default for production networked
 applications.
 
 ```text
@@ -450,7 +450,7 @@ This prevents services from randomly calling anything on the internal network.
 
 TLS protects traffic between network endpoints. Highly sensitive data may still
 pass through load balancers, reverse proxies, gateways, queues, cloud services,
-logs or internal services. LogicN should support application-layer encryption
+logs or internal services. Galerina should support application-layer encryption
 for sensitive payloads when transport encryption is not enough.
 
 ```text
@@ -467,7 +467,7 @@ encrypted until they reach the trusted service.
 
 Even encrypted traffic exposes some metadata: source IP, destination IP, packet
 size, timing, connection frequency, domain names in some cases and traffic
-volume. LogicN cannot remove all metadata, but it can reduce avoidable leaks.
+volume. Galerina cannot remove all metadata, but it can reduce avoidable leaks.
 
 ```text
 network privacy {
@@ -478,7 +478,7 @@ network privacy {
 }
 ```
 
-LogicN should block sensitive tokens in URLs:
+Galerina should block sensitive tokens in URLs:
 
 ```text
 GET /reset-password?token=secret-token
@@ -524,7 +524,7 @@ Secrets must not be transmitted in URLs.
 
 ## Backpressure
 
-LogicN should make network backpressure a first-class runtime contract.
+Galerina should make network backpressure a first-class runtime contract.
 
 ```text
 stream HttpRequestBody {
@@ -561,7 +561,7 @@ networkTool PacketMonitor {
 
 ## Reports
 
-LogicN should generate network reports that can be inspected before deployment.
+Galerina should generate network reports that can be inspected before deployment.
 
 ```text
 app.network-report.json
@@ -603,7 +603,7 @@ Example:
 
 ## Network Profiles
 
-LogicN should support deployment-aware network profiles.
+Galerina should support deployment-aware network profiles.
 
 ```text
 networkProfile default
@@ -645,11 +645,11 @@ planning without turning those targets into ordinary app syntax.
 
 ## Network Benchmarking
 
-Network-aware benchmarks should be owned by `logicn-tools-benchmark`.
+Network-aware benchmarks should be owned by `galerina-tools-benchmark`.
 
 ```text
-LogicN benchmark --network --light
-LogicN benchmark --network --full
+Galerina benchmark --network --light
+Galerina benchmark --network --full
 ```
 
 Test areas:
@@ -688,14 +688,14 @@ Example report:
 The short positioning is:
 
 ```text
-LogicN can be stronger for network and Ethernet I/O by making the network layer
+Galerina can be stronger for network and Ethernet I/O by making the network layer
 faster through zero-copy, batching and async I/O; safer through deny-by-default
 permissions and TLS policy; more reliable through backpressure and timeouts;
 more enterprise-ready through reports and deployment profiles; and more
 future-ready through XDP, DPDK, optical I/O and AI-cluster networking support.
 ```
 
-LogicN should understand and govern network movement before the app runs.
+Galerina should understand and govern network movement before the app runs.
 
 ## References
 

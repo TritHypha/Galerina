@@ -1,7 +1,7 @@
-// governance/profile.mjs — the single, FAIL-SECURE resolver for LOGICN_PROFILE.
+// governance/profile.mjs — the single, FAIL-SECURE resolver for GALERINA_PROFILE.
 //
 // WHY THIS EXISTS (audit, 2026-06-20):
-//   The signing/admission gates (build signing key policy, `logicn verify`, `logicn run`) all key their
+//   The signing/admission gates (build signing key policy, `galerina verify`, `galerina run`) all key their
 //   STRICT behaviour on "is this production?". Resolving that as `=== "production" ? "production" : "dev"`
 //   is FAIL-OPEN: any value other than the exact string "production" (a typo like "prod" or "Production ",
 //   "PRODUCTION", a stray space) silently resolves to dev — silently DISABLING every production gate. So an
@@ -21,13 +21,13 @@
 const DEV_TOKENS = new Set(["", "dev", "develop", "development", "test", "testing", "local"]);
 
 /**
- * Resolve the raw LOGICN_PROFILE value to a signing/admission profile, fail-secure.
- * @param {string|undefined} raw  defaults to process.env.LOGICN_PROFILE
+ * Resolve the raw GALERINA_PROFILE value to a signing/admission profile, fail-secure.
+ * @param {string|undefined} raw  defaults to process.env.GALERINA_PROFILE
  * @returns {{ profile: "dev"|"production", failSecure: boolean, raw: string|undefined }}
  *   `failSecure` is true ONLY when the value was set to something other than a recognized dev token or the
  *   exact canonical "production" (resolved strict as a precaution; the caller should surface a warning).
  */
-export function resolveSigningProfile(raw = process.env.LOGICN_PROFILE) {
+export function resolveSigningProfile(raw = process.env.GALERINA_PROFILE) {
   const v = String(raw ?? "").trim().toLowerCase();
   if (DEV_TOKENS.has(v)) return { profile: "dev", failSecure: false, raw };
   if (v === "production") return { profile: "production", failSecure: false, raw };
@@ -37,7 +37,7 @@ export function resolveSigningProfile(raw = process.env.LOGICN_PROFILE) {
 }
 
 /** True iff the resolved profile is production (the strict signing/admission gate). */
-export function isProductionProfile(raw = process.env.LOGICN_PROFILE) {
+export function isProductionProfile(raw = process.env.GALERINA_PROFILE) {
   return resolveSigningProfile(raw).profile === "production";
 }
 
@@ -47,10 +47,10 @@ export function isProductionProfile(raw = process.env.LOGICN_PROFILE) {
  * @param {(msg: string) => void} warn
  * @param {string|undefined} raw
  */
-export function resolveSigningProfileWarned(warn = console.warn, raw = process.env.LOGICN_PROFILE) {
+export function resolveSigningProfileWarned(warn = console.warn, raw = process.env.GALERINA_PROFILE) {
   const res = resolveSigningProfile(raw);
   if (res.failSecure) {
-    warn(`⚠️  LLN-PROFILE-UNRECOGNIZED: LOGICN_PROFILE='${res.raw}' is not a recognized profile — fail-securing to 'production' (signing/admission enforcement ON). Set it explicitly to 'dev' or 'production'.`);
+    warn(`⚠️  SPORE-PROFILE-UNRECOGNIZED: GALERINA_PROFILE='${res.raw}' is not a recognized profile — fail-securing to 'production' (signing/admission enforcement ON). Set it explicitly to 'dev' or 'production'.`);
   }
   return res;
 }

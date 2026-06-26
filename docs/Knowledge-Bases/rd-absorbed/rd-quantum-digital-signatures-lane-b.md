@@ -1,9 +1,9 @@
-<!-- ABSORBED R&D SOURCE — verbatim mirror. LogicN is the main library; the R&D repo is upstream/authoring.
-     Source: LogicN-R-AND-D/tmf/research/photonic-lane-B-quantum-digital-signatures.md  ·  Pinned: R&D fb68d06 (2026-06-16)
-     Integrated LogicN view: (this archive copy is the primary KB home)  ·  Catalog: logicn-rd-absorption-catalog.md
+<!-- ABSORBED R&D SOURCE — verbatim mirror. Galerina is the main library; the R&D repo is upstream/authoring.
+     Source: Galerina-R-AND-D/tmf/research/photonic-lane-B-quantum-digital-signatures.md  ·  Pinned: R&D fb68d06 (2026-06-16)
+     Integrated Galerina view: (this archive copy is the primary KB home)  ·  Catalog: galerina-rd-absorption-catalog.md
      Rule: edit the upstream source then re-vendor; do not fork this copy (feedback-auto-import-rd-docs). -->
 
-> **Absorbed R&D source (verbatim).** This is the archived upstream document. See `logicn-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
+> **Absorbed R&D source (verbatim).** This is the archived upstream document. See `galerina-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
 
 ---
 # Photonic-era signing — Lane B: Quantum Digital Signatures (QDS / MDI-QDS)
@@ -16,7 +16,7 @@
 > **Scope note:** this is the **track-only** lane by design. QDS is a genuinely *different, genuinely
 > photonic* signing paradigm — real academic field, not invented crypto — but its hardware, throughput, and
 > PKI gaps put it firmly in "survey the literature + define the governance interface, **do not build**" (charter
-> §1 Lane B, §4 acceptance: *"an honest survey table … + a defined LogicN governance interface; no build."*).
+> §1 Lane B, §4 acceptance: *"an honest survey table … + a defined Galerina governance interface; no build."*).
 
 ---
 
@@ -38,7 +38,7 @@ cold-path-only for years: it needs **quantum channels and specialized hardware**
 often cryogenic), it has **tiny throughput** (seconds-to-minutes per signed bit on early demos), and it has **no
 public-key infrastructure** — it relies on pre-distributed, quantum-correlated key material between a *fixed,
 pre-enrolled* set of parties, and its verification semantics are **transferability/repudiation bounds, not
-classical universal non-repudiation**. LogicN's role: **define the governance interface as a future Tier-B
+classical universal non-repudiation**. Galerina's role: **define the governance interface as a future Tier-B
 "strong/slow/cold-path" lane (brief §10 Path B), and track the field. Do not build.**
 
 ---
@@ -59,7 +59,7 @@ conflated with that:
 | Verdict | invented crypto — **rejected** | published, peer-reviewed science — **real, but track-only** |
 
 So the verdict is not "no." It is: **yes, this is a legitimate, fundamentally different, genuinely photonic
-signing paradigm — and it is not deployable on LogicN's near-term path.** Honesty requires holding both halves.
+signing paradigm — and it is not deployable on Galerina's near-term path.** Honesty requires holding both halves.
 
 ---
 
@@ -124,8 +124,8 @@ later enabled chip integration (§4). OTUH-QDS is the protocol behind today's lo
 ## 4. Honest survey table — security model, hardware, throughput, PKI gap
 
 All throughput numbers below are **from the cited demonstrations**, on **their** apparatus (single-photon-grade
-optics, superconducting nanowire detectors). They are **not** LogicN benchmarks and there is **no LogicN bench**
-for this lane — per posture, performance claims carry their source machine, and the LogicN-side number is a
+optics, superconducting nanowire detectors). They are **not** Galerina benchmarks and there is **no Galerina bench**
+for this lane — per posture, performance claims carry their source machine, and the Galerina-side number is a
 **THEORETICAL GAP**: none exists because there is no hardware to run it on (§7).
 
 | Scheme / demo | Security model | Hardware assumptions | Throughput (on cited apparatus) | PKI / key model | Citation |
@@ -149,7 +149,7 @@ result. The peer-reviewed envelope is sub-1-Hz at useful range. That is the thro
 
 ## 5. The PKI gap — why there is no public-key infrastructure (and why that is structural, not fixable by engineering)
 
-This is the blocker that most directly clashes with how LogicN signs today, so it gets its own section.
+This is the blocker that most directly clashes with how Galerina signs today, so it gets its own section.
 
 A classical public key (Ed25519, ML-DSA-65 — see [`../spec/signature-custody-v0.md`](../spec/signature-custody-v0.md))
 is a **freely copyable bit string**. Anyone can fetch it, cache it, mirror it, and verify against it without
@@ -169,7 +169,7 @@ Consequences, stated plainly:
   pre-shared quantum-correlated material with the signer. New, previously-unknown verifiers cannot join after the
   fact the way they can with a classical certificate.
 - **It is closed-set, not open-world.** QDS authenticates among a fixed enrolled group with prior quantum-channel
-  setup. The open-world, anyone-can-verify model that LogicN's Trust Capsule depends on does not exist here.
+  setup. The open-world, anyone-can-verify model that Galerina's Trust Capsule depends on does not exist here.
 - **This is structural, not a missing feature.** It follows directly from no-cloning. You cannot bolt a classical
   PKI onto QDS without giving up the very property (un-copyable key material) that provides the security. There is
   no known engineering path that turns QDS into a classical-PKI-compatible primitive.
@@ -272,15 +272,15 @@ offline, anyone-can-check non-repudiation of a classical digital signature. Diff
 4. **Verification semantics differ** (see §6). Transferability/repudiation **bounds** + arbitration, not classical
    universal non-repudiation. Closed-group, statistical, dispute-resolution-dependent.
 
-**The performance THEORETICAL GAP (stated explicitly per posture):** there is **no LogicN benchmark** for this
+**The performance THEORETICAL GAP (stated explicitly per posture):** there is **no Galerina benchmark** for this
 lane and there cannot be one — we have no quantum-channel hardware to run it on. All numbers in this doc are the
-cited authors' results on the cited authors' apparatus. No LogicN-side throughput, latency, or cost number is
+cited authors' results on the cited authors' apparatus. No Galerina-side throughput, latency, or cost number is
 asserted, synthesized, or extrapolated. When/if a hardware path opens, the acceptance bar would be a reproducible
 demo with its machine, exactly as for the digital lanes.
 
 ---
 
-## 8. LogicN role — define the governance interface (Tier-B Path B), do **not** build
+## 8. Galerina role — define the governance interface (Tier-B Path B), do **not** build
 
 The charter directs (§1 Lane B, §4): track the literature + **define the governance interface** for a future
 Tier-B "strong/slow/cold-path" lane (brief §10 Path B); no build. Here is that interface, defined so that QDS
@@ -298,7 +298,7 @@ governance constraints that are non-negotiable:
 |---|---|
 | **Algorithm id** | A new reserved `alg` value (the current table uses 1=Ed25519, 2=ML-DSA-65, 3=SLH-DSA-256s, 4=ML-DSA-87; QDS would be a **future** id, **not** allocated until a vetted impl + hardware exist). |
 | **Hybrid posture** | QDS is **only ever an additional AND-term**, never a replacement. A `.tmf` would be `{Ed25519, ML-DSA-65 (or ML-DSA-87/SLH-DSA), QDS}` — verification = AND. A QDS-only profile is **forbidden** because it would forfeit open-world public verifiability (§5). The artifact stays classically verifiable by anyone; QDS adds an *extra*, closed-group, quantum guarantee on top for the parties who can check it. |
-| **Verifier capability gate** | Whether a verifier *can* check the QDS term is a **capability**, resolved through the LogicN governance/capability boundary — exactly the host-call seam the digital signer already uses (custody §7; crypto cannot live in `.lln`). A verifier **without** QDS capability MUST treat the QDS term as **`unknown → deny`** for the cold-path tier (fail-closed), **not** silently skip it. |
+| **Verifier capability gate** | Whether a verifier *can* check the QDS term is a **capability**, resolved through the Galerina governance/capability boundary — exactly the host-call seam the digital signer already uses (custody §7; crypto cannot live in `.spore`). A verifier **without** QDS capability MUST treat the QDS term as **`unknown → deny`** for the cold-path tier (fail-closed), **not** silently skip it. |
 | **Key/trust resolution** | The QDS pre-shared/quantum-correlated material is enrolled and resolved through the **Trust Capsule / attestation surface** (custody §7), the same `key_id`-style registry that admits `mlDsaPublicKey` today — **never** trust-on-first-use, **never** trust material carried in the file. Because QDS keys are not freely copyable (§5), this registry entry is a *capability + enrollment record*, not a copyable public key. |
 | **Tier** | **Tier-B "strong/slow/cold-path"** only (brief §10 Path B). Never on the hot path. Pairs naturally with the existing L5 long-lived cold-path profile (`{ML-DSA-87, SLH-DSA-256s}`, custody §5) for decades-lived archives where 45 s/bit is irrelevant. |
 
@@ -316,7 +316,7 @@ inert and deny-by-default until the hardware and key story are real.**
 
 ### 8.3 What would move QDS from "track" to "build" (acceptance criteria for a future phase)
 
-- A vetted, standardized QDS implementation behind the LogicN host-call boundary (today: none — no NIST/FIPS QDS
+- A vetted, standardized QDS implementation behind the Galerina host-call boundary (today: none — no NIST/FIPS QDS
   standard exists; the field is research-grade).
 - A quantum-channel / hardware path actually available to the relevant parties (today: none in scope).
 - A reproducible benchmark **with its machine** showing the Tier-B lane meets its cold-path latency budget (today:

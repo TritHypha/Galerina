@@ -1,9 +1,9 @@
-<!-- ABSORBED R&D SOURCE — verbatim mirror. LogicN is the main library; the R&D repo is upstream/authoring.
-     Source: LogicN-R-AND-D/tmf/research/photonic-ternary-in-tls.md  ·  Pinned: R&D fb68d06 (2026-06-16)
-     Integrated LogicN view: (this archive copy is the primary KB home)  ·  Catalog: logicn-rd-absorption-catalog.md
+<!-- ABSORBED R&D SOURCE — verbatim mirror. Galerina is the main library; the R&D repo is upstream/authoring.
+     Source: Galerina-R-AND-D/tmf/research/photonic-ternary-in-tls.md  ·  Pinned: R&D fb68d06 (2026-06-16)
+     Integrated Galerina view: (this archive copy is the primary KB home)  ·  Catalog: galerina-rd-absorption-catalog.md
      Rule: edit the upstream source then re-vendor; do not fork this copy (feedback-auto-import-rd-docs). -->
 
-> **Absorbed R&D source (verbatim).** This is the archived upstream document. See `logicn-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
+> **Absorbed R&D source (verbatim).** This is the archived upstream document. See `galerina-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
 
 ---
 # Photonic / ternary in TLS·SSL (HTTPS) — honest role-mapping
@@ -17,7 +17,7 @@
 > **no performance number without a reproducible benchmark + the machine it ran on**; **no invented crypto**
 > (no "ternary X.509", no analog cipher/hash); fail-closed (`unknown → deny`).
 > **REUSE — do not re-derive.** The crypto-on-core / precision-wall-vs-exact-modular proof is already written
-> for the encryption sibling: `LogicN-TritMesh/TritMesh/research/encryption-on-photonic-substrates.md` **§2.1**
+> for the encryption sibling: `Galerina-TritMesh/TritMesh/research/encryption-on-photonic-substrates.md` **§2.1**
 > (hardware: analog optics ≈4–8 ENOB, error-tolerant *by design*), **§2.2** (crypto: lattice math is
 > exact-modular, fail-closed via the FO re-encrypt/compare), **§4** (the per-stage analog-eligible? table), and
 > **§5** (photonics' one honest home = the ANN layer, outside the trust gate). The "no photonic SHA-256"
@@ -26,9 +26,9 @@
 > rebuild them.** TLS is just the place those primitives get *composed* on the wire; the substrate verdict is
 > inherited unchanged.
 > **Cross-refs:** charter §1 (the four lanes), `governed-trust-capsule-v0.md` (the COSE token that rides over
-> TLS), `signature-custody-v0.md` (the #34 hybrid Ed25519 + ML-DSA-65 sig), crypto-on-core `LLN-SUBSTRATE-001`,
-> three-valued governance `LLN-GOV-3VL-001`.
-> **Boundary:** R&D-only. `LogicN/packages-logicn` (production) and `LogicN-TritMesh` (product) are read-only
+> TLS), `signature-custody-v0.md` (the #34 hybrid Ed25519 + ML-DSA-65 sig), crypto-on-core `SPORE-SUBSTRATE-001`,
+> three-valued governance `SPORE-GOV-3VL-001`.
+> **Boundary:** R&D-only. `Galerina/packages-galerina` (production) and `Galerina-TritMesh` (product) are read-only
 > grounding; any change they need is recorded here as a recommendation, not an edit.
 
 ---
@@ -43,17 +43,17 @@ cannot compute (`encryption-on-photonic-substrates.md` §2). TLS does not introd
 **composes the same primitives** the encryption and signing notes already adjudicated, so the verdict is
 inherited, not re-litigated.
 
-Where LogicN and photonics *do* have honest, in-scope roles around TLS:
+Where Galerina and photonics *do* have honest, in-scope roles around TLS:
 
 1. **Digital PQ-TLS is the real "post-quantum HTTPS"** — hybrid **X25519 + ML-KEM-768** key exchange + **ML-DSA**
-   certificate signatures, both 100% digital, and both already aligned with LogicN's shipped **hybrid
+   certificate signatures, both 100% digital, and both already aligned with Galerina's shipped **hybrid
    Ed25519 + ML-DSA-65** posture. This is the recommendation, and it reuses primitives we already have.
 2. **Photonics sits strictly *around* the TLS gate, never inside it** — **QRNG** as a handshake-entropy *source*;
    **optical-PUF** as hardware-bound mTLS device identity (defense-in-depth, with the modeling-attack caveat);
    **photonic-ANN** for traffic analysis on **already-decrypted-and-verified plaintext**. None of these is a
    TLS cryptographic primitive.
 3. **The genuine "Tri" fit is a governance decision, not a signal.** A **K3 three-valued cert-validation gate**
-   (`valid / invalid / unknown → deny`, **revocation-unknown ⇒ deny**) is where LogicN adds value: *govern the
+   (`valid / invalid / unknown → deny`, **revocation-unknown ⇒ deny**) is where Galerina adds value: *govern the
    TLS trust decision*, do not rebuild TLS. This is three-valued **logic**, not three-level analog signaling.
 4. **The Trust Capsule binds to the TLS channel** via `cnf` / holder-of-key (RFC 8705 / RFC 9449 / RFC 8473
    token binding), so a stolen token cannot be replayed off-channel.
@@ -82,7 +82,7 @@ reference, so the rest of the note can lean on it:
   a photonic hash buys nothing. The TLS transcript hash and HKDF are Keccak/SHA-2; the same verdict applies
   verbatim. [[BRIEF]] [[SHA-NOTE]]
 
-The crypto-on-core invariant this enforces is LogicN's `LLN-SUBSTRATE-001`: integrity/keying/signing **must**
+The crypto-on-core invariant this enforces is Galerina's `SPORE-SUBSTRATE-001`: integrity/keying/signing **must**
 run on a deterministic, bit-exact lane; binding them to a noisy/photonic lane is a build error, every profile,
 and the fix is structural (move to a digital lane), never "raise redundancy." [[ENC-NOTE §1.3]]
 
@@ -119,7 +119,7 @@ plaintext), which is **not TLS crypto** and lives **outside** the trust gate (§
 
 ---
 
-## 3. The real post-quantum HTTPS — PQ-TLS, mapped onto LogicN's shipped posture
+## 3. The real post-quantum HTTPS — PQ-TLS, mapped onto Galerina's shipped posture
 
 This is the genuinely actionable, 100%-digital recommendation. It is the HTTPS instance of the same hybrid the
 project already ships.
@@ -139,23 +139,23 @@ project already ships.
   Grover-only-quadratic; AES-256-GCM has a 256-bit key). No PQ swap is needed there; "post-quantum TLS" is a
   **KEX + signature** upgrade, not a hash/AEAD upgrade. [[BRIEF]]
 
-### 3.2 The mapping onto LogicN's hybrid Ed25519 + ML-DSA-65
+### 3.2 The mapping onto Galerina's hybrid Ed25519 + ML-DSA-65
 
-LogicN already ships a **hybrid Ed25519 + ML-DSA-65** signature, AND-verified, as the mandatory certified-mode
+Galerina already ships a **hybrid Ed25519 + ML-DSA-65** signature, AND-verified, as the mandatory certified-mode
 posture (`signature-custody-v0.md` §2.1 = the #34 construction; charter §0). The TLS picture lines up almost
 one-for-one:
 
-| TLS PQ component (digital) | LogicN's shipped analog (same family) | Reuse |
+| TLS PQ component (digital) | Galerina's shipped analog (same family) | Reuse |
 |---|---|---|
 | **Hybrid KEX** X25519 + ML-KEM-768 (NIST L3) | the encryption sibling's recommended KEM-DEM uses exactly **X25519 + ML-KEM-768** (`encryption-on-photonic-substrates.md` §7.1) — the confidentiality half of the same posture | **Direct** — the `.tmf` confidentiality recommendation *is* the TLS hybrid-KEM choice; one decision serves both at rest and in transit. |
-| **PQ cert sig** ML-DSA (FIPS 204) | LogicN's **ML-DSA-65** half of the #34 hybrid (NIST L3, pairs with ML-KEM-768's L3) | **Direct** — the PQ half of a LogicN cert signature is the same primitive/level LogicN already signs `.tmf` roots and Trust Capsules with. |
-| **Hybrid (classical + PQ) AND-composition** | LogicN's **AND-verified** Ed25519 + ML-DSA-65 (both must verify, downgrade = fail closed) | **Direct** — TLS hybrid is `secure-if-either`; LogicN sig hybrid is `valid-only-if-both`. Same defense-in-depth instinct, applied at the layer each is meant for (KEX = OR for availability; signature = AND for unforgeability). The distinction is worth keeping explicit and is honoured in `governed-trust-capsule-v0.md` §4. |
+| **PQ cert sig** ML-DSA (FIPS 204) | Galerina's **ML-DSA-65** half of the #34 hybrid (NIST L3, pairs with ML-KEM-768's L3) | **Direct** — the PQ half of a Galerina cert signature is the same primitive/level Galerina already signs `.tmf` roots and Trust Capsules with. |
+| **Hybrid (classical + PQ) AND-composition** | Galerina's **AND-verified** Ed25519 + ML-DSA-65 (both must verify, downgrade = fail closed) | **Direct** — TLS hybrid is `secure-if-either`; Galerina sig hybrid is `valid-only-if-both`. Same defense-in-depth instinct, applied at the layer each is meant for (KEX = OR for availability; signature = AND for unforgeability). The distinction is worth keeping explicit and is honoured in `governed-trust-capsule-v0.md` §4. |
 | **Transcript hash / HKDF / AEAD** | SHAKE256/SHA-256 + AES-256-GCM already in-tree (TMX-256, `tmf-encryption-v0`) | **Direct** — same Keccak/SHA-2 + AEAD cores; no new primitive. |
 
-**Recommendation (digital, no perf claim):** when LogicN endpoints speak HTTPS, prefer **TLS 1.3 with
+**Recommendation (digital, no perf claim):** when Galerina endpoints speak HTTPS, prefer **TLS 1.3 with
 X25519MLKEM768 hybrid KEX and an ML-DSA(-65)-bearing certificate chain** (hybrid with a classical sig during
-transition), which is the transport projection of the posture LogicN already enforces for signatures and
-recommends for `.tmf` confidentiality. LogicN does **not** re-implement TLS; it **governs** the trust decision
+transition), which is the transport projection of the posture Galerina already enforces for signatures and
+recommends for `.tmf` confidentiality. Galerina does **not** re-implement TLS; it **governs** the trust decision
 over it (§4) and may **bind a Trust Capsule to the channel** (§6).
 
 ### 3.3 The PQ tax — honest, and *not* quantified here
@@ -172,10 +172,10 @@ from a comparable reproducible bench **with its machine**, not from this note. [
 
 ---
 
-## 4. The K3 three-valued cert-validation governance gate (where LogicN adds value)
+## 4. The K3 three-valued cert-validation governance gate (where Galerina adds value)
 
 This is the genuine "Tri" fit, and it is **decision logic, not analog signaling** — the same distinction the
-encryption note draws in §6 ("three-valued *logic* ≠ three-level *analog signaling*"). LogicN does **not**
+encryption note draws in §6 ("three-valued *logic* ≠ three-level *analog signaling*"). Galerina does **not**
 rebuild TLS or X.509; it **governs the trust decision** over a validated chain, fail-closed.
 
 Standard X.509 path validation (RFC 5280) is effectively two-valued (valid / invalid) but leaves **revocation
@@ -193,23 +193,23 @@ invalid (−1) ⇐ signature fails  OR  expired  OR  name/constraint/EKU mismatc
 unknown (0)  ⇐ revocation status indeterminate (OCSP/CRL unreachable, no staple, stale)
               OR  chain incomplete  OR  policy/pin not yet resolvable
 
-collapse(unknown) = deny            ; K3 collapseDeny — the No-Coercion rule (LLN-GOV-3VL-001)
+collapse(unknown) = deny            ; K3 collapseDeny — the No-Coercion rule (SPORE-GOV-3VL-001)
 authorize(channel) ⇔ cert_verdict == +1
 ```
 
 - **Revocation-unknown ⇒ deny (hard-fail).** This is the policy the soft-fail TLS ecosystem usually *doesn't*
   enforce; the K3 gate makes it the default. It mirrors the Trust Capsule reader's `unknown → deny`
-  (`governed-trust-capsule-v0.md` §8 step 8) and LogicN's proven K3 calculus (`BRIEF` §4 finding 3:
+  (`governed-trust-capsule-v0.md` §8 step 8) and Galerina's proven K3 calculus (`BRIEF` §4 finding 3:
   `authorize(v) ⇔ v=+1`, `collapse(0)=deny`, No-Coercion theorem). [[BRIEF]]
-- **What it governs** (over a TLS-library-validated chain — LogicN consumes the library's verdict, it does not
+- **What it governs** (over a TLS-library-validated chain — Galerina consumes the library's verdict, it does not
   re-implement ASN.1/path-building): pinning (SPKI pin match), name constraints, EKU/usage, freshness, and the
   revocation tri-state. Any branch that is not a definitive `+1` is `0` or `−1`, both → deny.
 - **Three-valued logic, not analog.** The trit here is a *governance verdict* (a decision), exactly like the
   encryption note's `deny/unknown/allow`. It is **not** a three-level optical signal and carries no substrate
-  claim — `LLN-SUBSTRATE-001` is untouched. [[ENC-NOTE §6]]
+  claim — `SPORE-SUBSTRATE-001` is untouched. [[ENC-NOTE §6]]
 
 > **Honest scope:** "revocation-unknown ⇒ deny" is a *strict* policy; on the public web it can cause
-> availability failures when responders are flaky (the reason browsers soft-fail). For LogicN's
+> availability failures when responders are flaky (the reason browsers soft-fail). For Galerina's
 > zero-trust/fail-closed posture it is the correct default; the gate should expose the verdict and reason so an
 > operator can see *why* a connection was denied, not silently downgrade. This is a policy stance, not a
 > performance or security-proof claim.
@@ -311,20 +311,20 @@ TLS alternative and introduces no TLS primitive.
   primitives already adjudicated; the verdict is **inherited, not re-derived** (§1, §2; `encryption-on-photonic-
   substrates.md` §2/§4/§5). [[ENC-NOTE]]
 - **The real post-quantum HTTPS is digital**: hybrid **X25519 + ML-KEM-768** KEX + **ML-DSA** cert signatures,
-  which **map directly onto LogicN's shipped hybrid Ed25519 + ML-DSA-65** and its recommended `.tmf` hybrid-KEM
+  which **map directly onto Galerina's shipped hybrid Ed25519 + ML-DSA-65** and its recommended `.tmf` hybrid-KEM
   confidentiality — one posture, reused at rest and in transit (§3). The PQ size tax is real and **unquantified
   here** (§3.3). [[HYBRID-DESIGN]] [[TLS-MLDSA]] [[LANE-A]]
 - **Photonics' honest TLS roles are all *around* the gate**: QRNG handshake entropy (source, not cipher),
   optical-PUF mTLS device identity (defense-in-depth, modeling-attack caveat), photonic-ANN traffic analysis (on
   verified plaintext only) (§5). [[CAPSULE]] [[BRIEF]]
-- **LogicN's value-add is governance, not a TLS rebuild**: a **K3 three-valued cert-validation gate**
+- **Galerina's value-add is governance, not a TLS rebuild**: a **K3 three-valued cert-validation gate**
   (`valid/invalid/unknown → deny`; **revocation-unknown ⇒ deny**) — three-valued *logic*, not analog signaling —
   and **Trust-Capsule ↔ TLS channel binding** via `cnf`/holder-of-key + `external_aad` (§4, §6). [[BRIEF]]
   [[CAPSULE]]
 
 This is the crypto-on-core invariant, proven out for the transport layer: **TLS's cryptographic core stays on a
 deterministic digital lane; photonics serves entropy, device identity, and post-verify analytics around it; and
-LogicN governs the trust decision over it.** [[ENC-NOTE]] [[BRIEF]]
+Galerina governs the trust decision over it.** [[ENC-NOTE]] [[BRIEF]]
 
 ---
 
@@ -333,10 +333,10 @@ LogicN governs the trust decision over it.** [[ENC-NOTE]] [[BRIEF]]
 Internal R&D (the reused proof — cite, do not re-derive):
 
 - [[ENC-NOTE]] *Encryption on photonic / ternary substrates for `.tmf`*,
-  `LogicN-TritMesh/TritMesh/research/encryption-on-photonic-substrates.md` — **§2.1** (analog optics ≈4–8 ENOB,
+  `Galerina-TritMesh/TritMesh/research/encryption-on-photonic-substrates.md` — **§2.1** (analog optics ≈4–8 ENOB,
   error-tolerant by design), **§2.2** (lattice crypto is exact-modular, FO fail-closed), **§4** (per-stage
   analog-eligible? table), **§5** (the ANN layer = photonics' one honest home, outside the gate), **§6**
-  (three-valued logic ≠ three-level analog signaling), **§1.3** (`LLN-SUBSTRATE-001` crypto-on-core). *(Read-only
+  (three-valued logic ≠ three-level analog signaling), **§1.3** (`SPORE-SUBSTRATE-001` crypto-on-core). *(Read-only
   grounding; not edited.)*
 - [[BRIEF]] *Encryption R&D full brief*, `../../ENCRYPTION-RND-FULL-BRIEF.md` — **§3** (crypto-on-core; no
   photonic SHA-256 / cipher), **§4** verdicts 2 (no photonic SHA-256), 3 (tri-logic in the gate, not the cipher),

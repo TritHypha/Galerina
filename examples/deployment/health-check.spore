@@ -1,0 +1,33 @@
+// Galerina governed health check endpoint
+// Used by deployment infrastructure to verify the governed runtime is running
+// and the manifest is valid.
+//
+// Pattern: Pure Internal Transform (r6-01 gate — zero effects, pure)
+// Pattern: Governed API Route (secure probe with audit trail)
+
+pure flow getHealthStatus() -> String
+contract {
+  intent { "Return runtime health status — used by load balancer health checks." }
+  effects {}
+}
+{
+  return "healthy"
+}
+
+secure flow getDetailedHealth(readonly request: Request) -> Result<String, String>
+contract {
+  intent { "Return detailed health including manifest verification status. Emits an info-level audit entry." }
+  effects {
+    network.inbound
+    audit.write
+  }
+  invariant {
+    ensure request.method == "GET"
+  }
+  audit { require runtime report }
+}
+{
+  trap request.method != "GET" : "SPORE-INV-000"
+  AuditLog.write("HealthCheck: detailed probe received")
+  return Ok("healthy: manifest_verified=true runtime=stage_a")
+}

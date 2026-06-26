@@ -1,4 +1,4 @@
-LLN-GOV-002 (MISSING_AUDIT_FOR_GOVERNED_SINK)
+SPORE-GOV-002 (MISSING_AUDIT_FOR_GOVERNED_SINK)
 
 Flow writes to a database sink but declares no audit.write.
 Add audit.write to effects and call AuditLog.write with evidence.

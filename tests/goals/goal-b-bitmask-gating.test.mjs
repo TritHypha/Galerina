@@ -4,7 +4,7 @@
  * Validates that capability authorization resolves via a single bitwise AND
  * against the V_DPM register — no string parsing, no policy engine lookups.
  *
- * Reference: docs/Knowledge-Bases/logicn-engineering-goals.md Goal B
+ * Reference: docs/Knowledge-Bases/galerina-engineering-goals.md Goal B
  *
  * Acceptance criterion:
  *   - DWI guest with V_DPM = 0b11111110 (network bit cleared) attempts network.outbound
@@ -35,13 +35,13 @@ describe("T-007: Goal B — Single-Cycle Bitmask Capability Gating", () => {
     //    a. Call is trapped before any data exits the sandbox
     //    b. Trap fires in ≤ 1 CPU instruction cycle (Wasmtime trap metrics)
     //    c. V_DPM is unchanged: still 0b11111110 (trap ≠ permission grant)
-    //    d. DSS emits LLN-CAP-003 diagnostic
+    //    d. DSS emits SPORE-CAP-003 diagnostic
     //
     // 5. Set V_DPM = 0b11111111 (all bits active)
     // 6. Attempt the same network.outbound call
     // 7. Verify call succeeds
     //
-    // Reference: logicn-engineering-goals.md Goal B acceptance test T-007
+    // Reference: galerina-engineering-goals.md Goal B acceptance test T-007
     // Bitwise AND logic: (0b00000001 & 0b11111110) == 0 → TRAP
     //                    (0b00000001 & 0b11111111) != 0 → ALLOW
 

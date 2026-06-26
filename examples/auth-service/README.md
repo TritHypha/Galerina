@@ -1,20 +1,20 @@
 # auth-service example
 
-> **✍️ Writing or AI-generating contracts? Follow the [Contract Authoring Guide](../../docs/Knowledge-Bases/logicn-contract-authoring-guide.md).**
+> **✍️ Writing or AI-generating contracts? Follow the [Contract Authoring Guide](../../docs/Knowledge-Bases/galerina-contract-authoring-guide.md).**
 > These route services correctly put `request`/`response` on the **secure route flow** (external
 > ingress/egress) while their `pure` helper flows omit them. `effects` is deny-by-default. An AI
 > may only **propose** widening `authority`/`effects`/`secrets`, never apply it.
 
 This example demonstrates a `secure flow` that verifies user credentials and
-issues a short-lived authentication token. It covers Phase 25A of the LogicN
-roadmap: the full pipeline from `.lln` source through WAT emission to a
+issues a short-lived authentication token. It covers Phase 25A of the Galerina
+roadmap: the full pipeline from `.spore` source through WAT emission to a
 `.wasm` binary executed inside Node.js via `WebAssembly.instantiate`.
 
 ## Files
 
 | File | Purpose |
 |------|---------|
-| `verifyPassword.lln` | LogicN source — the canonical auth flow |
+| `verifyPassword.spore` | Galerina source — the canonical auth flow |
 
 ## What the example shows
 
@@ -48,9 +48,9 @@ contract {
 ### WAT / WASM pipeline (Phase 25)
 
 ```
-verifyPassword.lln
-  → lexer / parser          (logicn-core-compiler)
-  → effect checker          (LLN-STDLIB-001 / LLN-EFFECT-*)
+verifyPassword.spore
+  → lexer / parser          (galerina-core-compiler)
+  → effect checker          (SPORE-STDLIB-001 / SPORE-EFFECT-*)
   → GIR emitter             (Governed Intermediate Representation)
   → WAT emitter             (.wat text)
   → wat-assembler stub      (.wasm binary — Phase 25B: real assembly)
@@ -72,7 +72,7 @@ verifyPassword.lln
 
 ```bash
 # Build the compiler package
-cd packages-logicn/logicn-core-compiler
+cd packages-galerina/galerina-core-compiler
 npm run build
 
 # Parse and check the example (Phase 25A)
@@ -80,7 +80,7 @@ node --input-type=module <<'EOF'
 import { readFileSync } from "node:fs";
 import { lex, parseProgram, checkEffects } from "./dist/index.js";
 
-const src = readFileSync("../../examples/auth-service/verifyPassword.lln", "utf8");
+const src = readFileSync("../../examples/auth-service/verifyPassword.spore", "utf8");
 const { tokens } = lex(src);
 const { ast, diagnostics, flows } = parseProgram(tokens, src);
 

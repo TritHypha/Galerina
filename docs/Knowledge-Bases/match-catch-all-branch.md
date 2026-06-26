@@ -5,10 +5,10 @@
 The `match` catch-all arm handles every value that was not matched by earlier
 arms.
 
-In LogicN syntax, the catch-all is the `_ =>` arm written inside the closing
+In Galerina syntax, the catch-all is the `_ =>` arm written inside the closing
 `}` of the `match` block:
 
-```logicn
+```galerina
 match value {
   KnownCase => { ... }
   _ => { ... }  // anything else goes here
@@ -17,7 +17,7 @@ match value {
 
 ## Example
 
-```logicn
+```galerina
 match payload.event {
   "payment.succeeded" => {
     Payments.markOrderPaid(payload.orderId, payload.amount)
@@ -40,7 +40,7 @@ match payload.event {
 ```
 
 If `payload.event` is neither `"payment.succeeded"` nor `"payment.failed"`,
-LogicN runs the `_ =>` arm.
+Galerina runs the `_ =>` arm.
 
 ## Meaning
 
@@ -68,7 +68,7 @@ For webhooks, external events, payment states, auth states, permissions,
 
 Explicitly ignore unknown webhook events:
 
-```logicn
+```galerina
 match event.type {
   "payment.succeeded" => handlePaymentSucceeded(event)
   "payment.failed"    => handlePaymentFailed(event)
@@ -85,7 +85,7 @@ match event.type {
 
 Reject unknown webhook events:
 
-```logicn
+```galerina
 match event.type {
   "payment.succeeded" => handlePaymentSucceeded(event)
   "payment.failed"    => handlePaymentFailed(event)
@@ -95,7 +95,7 @@ match event.type {
 
 Fail closed for permissions:
 
-```logicn
+```galerina
 match permission {
   Permission.Read  => grantRead()
   Permission.Write => grantWrite()
@@ -107,7 +107,7 @@ match permission {
 
 This is unsafe because the unknown case is silently swallowed:
 
-```logicn
+```galerina
 match event.type {
   "payment.succeeded" => handlePaymentSucceeded(event)
   _ => { }  // empty — silently ignores unknown events
@@ -117,7 +117,7 @@ match event.type {
 This is also unsafe in a security-sensitive flow because it proceeds as if
 the unknown case were acceptable:
 
-```logicn
+```galerina
 match decision {
   Allow => proceed()
   _ => return Ok(Allowed)  // dangerous: unknown decisions silently allowed
@@ -126,7 +126,7 @@ match decision {
 
 ## Exhaustive match Relationship
 
-For closed enums, `Option<T>`, `Result<T, E>`, `Tri` and `Decision`, LogicN
+For closed enums, `Option<T>`, `Result<T, E>`, `Tri` and `Decision`, Galerina
 should prefer exhaustive explicit branches with no `_ =>` needed.
 
 Use `_ =>` when the input is open-ended or externally controlled, such as:
@@ -140,7 +140,7 @@ Even then, `_ =>` must be explicit and reportable.
 
 ## Reports
 
-LogicN should report catch-all arms in:
+Galerina should report catch-all arms in:
 
 ```text
 match-coverage-report.json

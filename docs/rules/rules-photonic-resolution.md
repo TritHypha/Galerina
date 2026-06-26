@@ -7,7 +7,7 @@ silently become application control flow.
 
 ```text
 Photonic and optical values cannot directly control application flow.
-They must be measured, resolved or matched into classical LogicN values.
+They must be measured, resolved or matched into classical Galerina values.
 ```
 
 ## Required Behavior

@@ -1,9 +1,9 @@
-<!-- ABSORBED R&D SOURCE — verbatim mirror. LogicN is the main library; the R&D repo is upstream/authoring.
-     Source: LogicN-R-AND-D/ENCRYPTION-RND-FULL-BRIEF.md  ·  Pinned: R&D fb68d06 (2026-06-16)
-     Integrated LogicN view: logicn-tmf-engine.md  ·  Catalog: logicn-rd-absorption-catalog.md
+<!-- ABSORBED R&D SOURCE — verbatim mirror. Galerina is the main library; the R&D repo is upstream/authoring.
+     Source: Galerina-R-AND-D/ENCRYPTION-RND-FULL-BRIEF.md  ·  Pinned: R&D fb68d06 (2026-06-16)
+     Integrated Galerina view: galerina-tmf-engine.md  ·  Catalog: galerina-rd-absorption-catalog.md
      Rule: edit the upstream source then re-vendor; do not fork this copy (feedback-auto-import-rd-docs). -->
 
-> **Absorbed R&D source (verbatim).** This is the archived upstream document. Curated/integrated view: `logicn-tmf-engine.md`. See `logicn-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
+> **Absorbed R&D source (verbatim).** This is the archived upstream document. Curated/integrated view: `galerina-tmf-engine.md`. See `galerina-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
 
 ---
 # TritMesh `.tmf` Encryption R&D — Full Brief (resume-from-cold)
@@ -18,14 +18,14 @@
 > **How it relates to the other top-level docs** (this file does not replace them — it explains them):
 > - [`CROSSOVER-encryption-rnd.md`](CROSSOVER-encryption-rnd.md) — the terse **merged index/reconciliation** of both tracks.
 > - [`RD-DIRECTION.md`](RD-DIRECTION.md) — the **owner's ranked priorities + framing directives** (the charter).
-> - This file — the **full narrative**: what each piece is, why, what's proven, what's open, and the 3 LogicN gaps in full.
+> - This file — the **full narrative**: what each piece is, why, what's proven, what's open, and the 3 Galerina gaps in full.
 
 ---
 
 ## 0. Orientation — the 60-second version
 
 We are designing a **quantum-resilient, zero-trust** security layer for the `.tmf` (TritMesh Format) data
-fabric that runs on the (photonic) **LogicN** substrate. The work splits into four cryptographic jobs —
+fabric that runs on the (photonic) **Galerina** substrate. The work splits into four cryptographic jobs —
 **integrity, authenticity, confidentiality, availability** — plus a **three-valued governance gate** that
 decides *whether* any key is released. Everything cryptographic runs **bit-exact on a deterministic digital
 core**; photonics and tri-logic have real but *bounded* roles **around** the crypto, never inside it.
@@ -33,20 +33,20 @@ core**; photonics and tri-logic have real but *bounded* roles **around** the cry
 State as of this writing:
 - **Integrity (TMX-256)** — specced, byte-exact, golden-vectored. **Ship-ready.**
 - **Authenticity (ML-DSA-65 + Ed25519 hybrid + custody)** — spec **FROZEN** (this is **TASK 2**, which directly
-  unblocks LogicN **task #34**); real signing is *Blocked* only on wiring a vetted library.
+  unblocks Galerina **task #34**); real signing is *Blocked* only on wiring a vetted library.
 - **Confidentiality (KEM-DEM)** — now a **byte-precise, oracle-backed spec** (`tmf-encryption-v0.md`), promoted
   this session from a design sketch; real KEM/AEAD bytes await a vetted lib.
 - **Availability (Reed-Solomon erasure)** — designed + benched; outside the trust gate, re-verified.
-- **Governance (K3 tri-logic gate)** — proven fail-closed; cloned in real `.lln`, runs on WASM.
+- **Governance (K3 tri-logic gate)** — proven fail-closed; cloned in real `.spore`, runs on WASM.
 
-Two independent derivations (a byte-precise spec track and a measured-benchmark + runnable-`.lln` track) reached
+Two independent derivations (a byte-precise spec track and a measured-benchmark + runnable-`.spore` track) reached
 the **same** security core — the strongest validation available here.
 
 ---
 
 ## 1. The mission, and the source material
 
-The driving question: *given the LogicN governance lessons, what can encryption actually look like on a
+The driving question: *given the Galerina governance lessons, what can encryption actually look like on a
 photonic/ternary substrate for `.tmf`, and is the ecosystem's own design honest?*
 
 The work began from brainstorm notes (`notes/1.md · 2.md · 3.md`, byte-identical across both track folders).
@@ -60,7 +60,7 @@ keeping what is real and standards-grounded, and explicitly rejecting what is no
 | Track | Folder | Emphasis | State |
 |---|---|---|---|
 | **`.tmf` spec track** | `tmf\` | Byte-precise **format** + **integrity/authenticity** + reference vectors | spec-complete (real signing Blocked on a vetted lib) |
-| **tri-encryption track** | `tri-encription\` | **Confidentiality** design + **measured benchmark** + **runnable `.lln`** + threat literature | done; 11/11 tests + `logicn check` clean |
+| **tri-encryption track** | `tri-encription\` | **Confidentiality** design + **measured benchmark** + **runnable `.spore`** + threat literature | done; 11/11 tests + `galerina check` clean |
 
 Both started from the same notes and corrected them the same way. They are **complementary, not contradictory**:
 the spec track produced the byte-exact container + signature/custody that the confidentiality track *refers to*;
@@ -70,11 +70,11 @@ and as of this session the confidentiality design has been **promoted into the s
 spec (`tmf/spec/tmf-encryption-v0.md`), so both tracks now share one oracle-backed format.
 
 Adjacent R&D (referenced, not merged): `FFSM\` (governed `ffsim` quantum-sim bridge, task #199) and
-`photonic-tri-governance\` (the three-valued K3 governance the `.lln` clone exercises).
+`photonic-tri-governance\` (the three-valued K3 governance the `.spore` clone exercises).
 
 ---
 
-## 3. The one principle everything rests on: crypto-on-core (`LLN-SUBSTRATE-001`)
+## 3. The one principle everything rests on: crypto-on-core (`SPORE-SUBSTRATE-001`)
 
 **Cryptography and integrity must run bit-exact on a deterministic digital core.** Analog photonics is
 ~≤10-bit and error-tolerant; hashing/keying/signing need zero-error bit-exactness, so the avalanche/precision
@@ -88,7 +88,7 @@ roles strictly *outside* the trust gate:
 
 This was independently re-derived from both the photonic-hashing literature and the lattice/encryption
 literature — physics and real systems agree. One KB line that contradicted it
-(`logicn-hardware-future-substrates.md:63`, "Encryption → Photonic matrix operations") was found and **already
+(`galerina-hardware-future-substrates.md:63`, "Encryption → Photonic matrix operations") was found and **already
 corrected** to "Always CPU (deterministic core)."
 
 ---
@@ -97,7 +97,7 @@ corrected** to "Always CPU (deterministic core)."
 
 The five core verdicts (tri-encryption numbering) / eleven consolidated findings (crossover F1–F11):
 
-1. **Confidentiality is genuinely missing.** LogicN/`.tmf` *sign + integrity-check* but do **not** encrypt. The
+1. **Confidentiality is genuinely missing.** Galerina/`.tmf` *sign + integrity-check* but do **not** encrypt. The
    fix is the standards-only **KEM-DEM / HPKE** stack (NIST SP 800-227, RFC 9180): **ML-KEM-768** (NIST level-3,
    matching ML-DSA-65), hybrid **X25519 + ML-KEM-768** during the PQC transition → **SHAKE256 KDF** →
    **AES-256-GCM / streaming AEAD**, layered **under** the TMX-256 + ML-DSA-65 gate, **verify-before-decrypt**,
@@ -109,7 +109,7 @@ The five core verdicts (tri-encryption numbering) / eleven consolidated findings
    matmul. **SHA-256 is already Grover-acceptable**, so a photonic hash buys nothing. The digest stays digital;
    photonics = QRNG/PUF/LSH outside the hash, re-verified.
 
-3. **Tri-logic belongs in the key-release *gate*, not the cipher.** LogicN's strong-Kleene **K3** calculus is
+3. **Tri-logic belongs in the key-release *gate*, not the cipher.** Galerina's strong-Kleene **K3** calculus is
    *proven* fail-closed (`authorize(v) ⇔ v=+1`; `collapse(0)=deny`; No-Coercion theorem). It decides *whether* a
    key releases. The only honest "trit in the crypto" is that **NTRU/ML-KEM** polynomials are already
    balanced-ternary/small-signed — but computed **exactly and digitally**. An analog-trit cipher would be
@@ -171,7 +171,7 @@ mandatory bounds checks *before* any hashing. Golden container: 2 sections, 203 
 golden root (the two specs are provably consistent).
 
 ### 5.3 Authenticity — `signature-custody-v0.md` — **TASK 2, FROZEN, #34-ready**
-This is the **owner's #1 priority** because it directly unblocks shipping LogicN code (**task #34**).
+This is the **owner's #1 priority** because it directly unblocks shipping Galerina code (**task #34**).
 
 - **What is signed:** the **32-byte digest**, signed *over* — never re-hashing the file, never substituting a
   signature for a hash or an address. The block is **generic**: `.tmf` signs the **TMX root**; **#34** signs a
@@ -194,7 +194,7 @@ This is the **owner's #1 priority** because it directly unblocks shipping LogicN
   never trusted from the file.
 - **Status:** spec frozen; real signing is **Blocked only on wiring a vetted FIPS-204/Ed25519 library** — and
   the natural path needs **no Rust and no new crate**: `@noble/post-quantum` (`ml_dsa65` + `ed25519`) is
-  *already* a LogicN dependency, invoked across the LogicN governance/capability boundary. Until wired, readers
+  *already* a Galerina dependency, invoked across the Galerina governance/capability boundary. Until wired, readers
   **reject every signed file** (never a silent downgrade); the golden vector is **structural** (placeholder
   keys of the correct sizes, never shipped as real signatures).
 
@@ -204,7 +204,7 @@ signed root **without shipping the whole file** (selective disclosure / streamin
 proofs reconstruct the published root; tamper / wrong-leaf fail closed.
 
 ### 5.5 Confidentiality — `tmf-encryption-v0.md` (NEW this session; the v1 layer)
-Promoted from the `LLN-AMD-024` blueprint into the byte-precise, oracle-backed spec track. **Layered *under* the
+Promoted from the `SPORE-AMD-024` blueprint into the byte-precise, oracle-backed spec track. **Layered *under* the
 integrity+authenticity gate** — the integrity root is recomputed from the **ciphertext** leaves, the signature
 is verified over it, the K3 verdict must be `ALLOW(+1)`, and only **then** does any key decapsulate. Key design
 decisions, all matched byte-for-byte to the verified `@noble` bench:
@@ -241,18 +241,18 @@ decisions, all matched byte-for-byte to the verified `@noble` bench:
   `bench/oracle-check.mjs` proves the JS (`@noble`) and Python (stdlib) DEM key schedules are **byte-identical**
   (`K_aead 9b4fdce2…`, `key_commit bc8eee3b…`) — the oracle is airtight across both implementations.
 
-### 5.6 Governance — the K3 gate (`tri-encription/lln/k3-gate.lln`)
-The verify-before-decrypt **decision** layer cloned in real `.lln`: `logicn check` → 0 errors/0 warnings, and it
+### 5.6 Governance — the K3 gate (`tri-encription/spore/k3-gate.spore`)
+The verify-before-decrypt **decision** layer cloned in real `.spore`: `galerina check` → 0 errors/0 warnings, and it
 **executes on the compile→WASM path** (`collapse(0)=-1`; `keyRelease(1,1,1)=1`; `(1,1,0)/(0,1,1)/(1,0,1)=-1`
-fail-closed; Kleene min/max/neg; TMR median). **Crypto math is honestly Blocked in `.lln`** — `logicn check`
-rejects even bitwise `^` — so the cipher math stays the engine layer. *LogicN governs whether it runs; the host
+fail-closed; Kleene min/max/neg; TMR median). **Crypto math is honestly Blocked in `.spore`** — `galerina check`
+rejects even bitwise `^` — so the cipher math stays the engine layer. *Galerina governs whether it runs; the host
 lib computes the exact bytes.*
 
 ---
 
 ## 6. The conformance oracle — 5 generators + golden vectors
 
-The byte-exact "anyone can implement this in any language and match the bytes" property is what makes LogicN
+The byte-exact "anyone can implement this in any language and match the bytes" property is what makes Galerina
 adoption *safe*. Five **stdlib-only** Python reference generators emit committed golden vectors (in
 `tmf/spec/_vectors/`):
 
@@ -305,37 +305,37 @@ Every one of these from the source notes was triaged out:
 - **"Photonic SHA-256"** — precision wall vs avalanche; SHA-256 is already Grover-OK (verdict 2).
 - **"Firewalls filter on cleartext meaning in-network"** — killed by embedding-inversion attacks (verdict 5).
 - **`M·D_root ≡ S (mod q)`** ML-DSA "equation" — not how FIPS-204 verifies; corrected to norm-bound + challenge-hash.
-- **`logicn-substrate-mytri`** — a fictional/rejected package.
+- **`galerina-substrate-mytri`** — a fictional/rejected package.
 - **Mandatory NVFP4** — kept opt-in; NVFP4 is real but lossy, so never integrity bytes.
 - **A custom photonic/analog-trit cipher** — would be unvetted "invented crypto"; rejected (verdict 3).
 
 ---
 
-## 9. The 3 LogicN dogfooding gaps — IN FULL
+## 9. The 3 Galerina dogfooding gaps — IN FULL
 
-These were found while building and running the `.lln` governance clone (`k3-gate.lln`) against
-`C:\wwwprojects\LogicN\logicn.mjs` (Phase 27 WASM), reproduced 2026-06-15/16. Source of record:
-[`tri-encription/lln/logicn-gaps-candidate-issues.md`](tri-encription/lln/logicn-gaps-candidate-issues.md).
+These were found while building and running the `.spore` governance clone (`k3-gate.spore`) against
+`C:\wwwprojects\Galerina\galerina.mjs` (Phase 27 WASM), reproduced 2026-06-15/16. Source of record:
+[`tri-encription/spore/galerina-gaps-candidate-issues.md`](tri-encription/spore/galerina-gaps-candidate-issues.md).
 
 > **Status (re-verified 2026-06-16): GAP-1 ✅ FIXED · GAP-3 ✅ FIXED · GAP-2 ⚠️ PARTIAL · GAP-4 🆕 NEW (major).**
-> GAP-1/GAP-3 fixed in LogicN and re-confirmed against `logicn.mjs`. GAP-2's diagnostic is now clear (documents
+> GAP-1/GAP-3 fixed in Galerina and re-confirmed against `galerina.mjs`. GAP-2's diagnostic is now clear (documents
 > the invokable surface) but executing an effectful `main` via the CLI is still missing. **GAP-4 (new):** while
-> expanding the `.lln` clone (`lln/k3-policy.lln` — `allOf`/`anyOf` + the `authorizeRead`/`egressRedact` egress
+> expanding the `.spore` clone (`spore/k3-policy.spore` — `allOf`/`anyOf` + the `authorizeRead`/`egressRedact` egress
 > seam, all `--invoke`-verified), a `for … in` fold was found to **type-check clean but silently not compile to
 > WASM** (`(i32.const 0) ;; unhandled stmt: forEachStmt`), returning the first arg verbatim — a silent
-> correctness gap. To file: GAP-2 (functional half) + GAP-4. Full repros: `logicn-gaps-candidate-issues.md`.
+> correctness gap. To file: GAP-2 (functional half) + GAP-4. Full repros: `galerina-gaps-candidate-issues.md`.
 
 ### GAP-1 — `governance` reserved word, no hint — ✅ FIXED (2026-06-16)
-- **Was:** a `pure flow` with a parameter named `governance` → `❌ LLN-PARSE-001: Expected parameter name, got
+- **Was:** a `pure flow` with a parameter named `governance` → `❌ SPORE-PARSE-001: Expected parameter name, got
   "governance".` — the diagnostic never said it was reserved, so the cause was opaque.
-- **Fix (verified):** the diagnostic now names the cause — *"…"governance" is a reserved LogicN keyword and
+- **Fix (verified):** the diagnostic now names the cause — *"…"governance" is a reserved Galerina keyword and
   cannot be used as an identifier. Rename the parameter (e.g. "governance_")."* The opaqueness (the real defect)
   is resolved. `governance` stays reserved **by design** (the chosen fix was the clear diagnostic). Minor
   cosmetic residual: a few follow-on parse errors still print after the primary one (parser error-recovery;
-  not the gap). Re-checked with `probe-gap1-governance.lln`.
+  not the gap). Re-checked with `probe-gap1-governance.spore`.
 
 ### GAP-2 — `secure flow main` (returning `Result<Void,Error>`, using `console.log`) is absent from the WASM `--invoke` surface
-- **Repro:** `logicn run k3-gate.lln --invoke main` → `Flow 'main' not found. Available: <pure numeric flows>`.
+- **Repro:** `galerina run k3-gate.spore --invoke main` → `Flow 'main' not found. Available: <pure numeric flows>`.
 - **Impact:** a `console.log`-driven demo/entry `main` cannot be executed via `run --invoke`; only pure,
   numerically-typed flows are invokable. Real results had to come from invoking those pure flows directly.
 - **Fix / clarify:** document the invokable surface, **or** expose `secure` / `console`-effecting flows to `--invoke`.
@@ -344,15 +344,15 @@ These were found while building and running the `.lln` governance clone (`k3-gat
 ### GAP-3 — CLI `Bool` args silently mis-marshal (`true`/`false` → `false`) — ✅ FIXED (2026-06-16)
 - **Was:** `--invoke keyRelease true true 1` → `-1` (wrong) because the string `"true"` decoded as `false` — a
   plausible argument **silently produced a fail-closed (wrong) answer** instead of an error.
-- **Fix (verified):** `true`/`false` now marshal correctly to `Bool`. Re-run on the unchanged `k3-gate.lln`:
+- **Fix (verified):** `true`/`false` now marshal correctly to `Bool`. Re-run on the unchanged `k3-gate.spore`:
   `keyRelease true true 1` → **`1`** (was `-1`); `keyRelease false true 1` → **`-1`** (correct fail-closed);
   `keyRelease 1 1 1` → `1`. No more silent mis-marshal.
 
-### Corroborating (not a new gap): no bitwise operators — the "crypto is Blocked in `.lln`" evidence
-- **Repro:** `lln/probe-no-bitwise.lln` (`return a ^ b`) → `❌ LLN-PARSE-001: Unexpected character: '^' (U+005E)`.
-- LogicN's lexer doesn't recognize `^`, so the bit-twiddling that SHA/AES/Reed-Solomon/Keccak are built from
-  **cannot be expressed** in `.lln`. This is **expected/known** (corroborates `logicn-issues/0002` and the
-  "crypto math stays the engine layer; `.lln` governs" split) — listed for completeness, not as a defect.
+### Corroborating (not a new gap): no bitwise operators — the "crypto is Blocked in `.spore`" evidence
+- **Repro:** `spore/probe-no-bitwise.spore` (`return a ^ b`) → `❌ SPORE-PARSE-001: Unexpected character: '^' (U+005E)`.
+- Galerina's lexer doesn't recognize `^`, so the bit-twiddling that SHA/AES/Reed-Solomon/Keccak are built from
+  **cannot be expressed** in `.spore`. This is **expected/known** (corroborates `galerina-issues/0002` and the
+  "crypto math stays the engine layer; `.spore` governs" split) — listed for completeness, not as a defect.
 
 ---
 
@@ -378,26 +378,26 @@ The owner asked for two paths; mapped honestly onto crypto-on-core:
 ## 11. Roadmap
 
 **Done & verified:** TMX-256 + container + NVFP4 codec + sig/custody (TASK 2 frozen) + inclusion proof (Phase
-1c) + the confidentiality spec (Phase 1d); confidentiality design + bench (11/11) + runnable K3 `.lln`; AEAD
+1c) + the confidentiality spec (Phase 1d); confidentiality design + bench (11/11) + runnable K3 `.spore`; AEAD
 crypto-profile registry, committing AEAD, SHAKE256 KDF, metadata-routing kill — all ratified and propagated;
 **bench KDF reconciled to SHAKE256 (1e) with JS↔Python byte-identical key schedules** (`bench/oracle-check.mjs`).
 **Phase 3 (Assurance & profiles) DONE:** level-5 tier — `kem_profile` 0x03/0x04 (ML-KEM-1024 / hybrid+P-384)
 + signature {ML-DSA-87, SLH-DSA-256s}, sizes measured (`profile-l5-sizes.mjs`); section round-trip measured
-(`section-roundtrip.mjs`); `.lln` clone expanded (`k3-policy.lln`). **Phase 4 (Storage & query) DESIGN DONE:**
+(`section-roundtrip.mjs`); `.spore` clone expanded (`k3-policy.spore`). **Phase 4 (Storage & query) DESIGN DONE:**
 `storage-and-query-v0.md` — mesh-coordinate index + HNSW (measured recall, `hnsw-recall.mjs`) + MeshQL.
 **Phase 5 (rich media/data) DONE:** `tmf-modalities-v0.md` codec registry (image/audio/video/math/chemistry/
 JSON/XML), codec-agnostic integrity proven. **`+1` history chain DONE:** `tmf-history-chain-v0.md` — hash-linked
 signed segments + key-erasure ratchet + crypto-erasure; rollback explicitly needs verifier monotone-epoch state
 (adversarially reviewed: 2 blockers + 3 majors fixed pre-commit). Full suite green: **8 generators**, npm test
-11/11, oracle byte-identical, both `.lln` 0/0.
+11/11, oracle byte-identical, both `.spore` 0/0.
 
 **Next (R&D folder, no owner go needed):**
-- A fully key-committing (CMT-1) AEAD profile sketch; expand the `.lln` governance clone (`allOf`/`anyOf`,
+- A fully key-committing (CMT-1) AEAD profile sketch; expand the `.spore` governance clone (`allOf`/`anyOf`,
   `authorizeRead`/egress-redaction seam); end-to-end `.tmf` section round-trip *composition* measurement.
 
 **Gated on owner go (production repo, currently R&D-only):** engine build. Note the language directive has
-shifted — **prefer LogicN + a governed host crypto library over a Rust engine** (Rust is unusable in the main
-project); for #34 the no-new-dependency path is `@noble/post-quantum` across the LogicN attestation boundary.
+shifted — **prefer Galerina + a governed host crypto library over a Rust engine** (Rust is unusable in the main
+project); for #34 the no-new-dependency path is `@noble/post-quantum` across the Galerina attestation boundary.
 
 **Later (labelled, not promised):** `0x03`/SLH-DSA assurance tier; the `+1` append-chain wire format; FHE for
 encrypted similarity (digital research only); photonic ANN benchmark (the only earnable photonic perf claim,
@@ -412,17 +412,17 @@ behind a reproducible benchmark); digital-ternary NTRU/ML-KEM backend (optimizat
    long-lived-archive requirement lands.)*
 2. **Lift the R&D-only gate** — production-repo access / any engine build is currently held. Lift it when?
    *(Default: stay R&D-only / spec-only.)*
-3. **Where to file the remaining LogicN gap** (§9) — GAP-1 + GAP-3 are now **fixed**; only **GAP-2** (`secure
+3. **Where to file the remaining Galerina gap** (§9) — GAP-1 + GAP-3 are now **fixed**; only **GAP-2** (`secure
    flow main` absent from the WASM `--invoke` surface) remains to file. Owner picks the tracker; the TritMesh
-   repo is off-limits to this session. *(Default: left staged in `logicn-gaps-candidate-issues.md`.)*
+   repo is off-limits to this session. *(Default: left staged in `galerina-gaps-candidate-issues.md`.)*
 
 ---
 
 ## 13. Constraints & boundaries (binding)
 
-- **Off-limits to this R&D:** `C:\wwwprojects\LogicN-TritMesh` (the product repo) and
-  `C:\wwwprojects\LogicN\packages-logicn` (production code) — R&D only until the owner says otherwise.
-- All `.tmf` / encryption R&D lives in **`C:\wwwprojects\LogicN-R-AND-D\`**.
+- **Off-limits to this R&D:** `C:\wwwprojects\Galerina-TritMesh` (the product repo) and
+  `C:\wwwprojects\Galerina\packages-galerina` (production code) — R&D only until the owner says otherwise.
+- All `.tmf` / encryption R&D lives in **`C:\wwwprojects\Galerina-R-AND-D\`**.
 - No performance number without a reproducible benchmark + the machine; no invented crypto; honest-core vs
   aspirational kept separate; fail-closed throughout.
 
@@ -431,11 +431,11 @@ behind a reproducible benchmark); digital-ternary NTRU/ML-KEM backend (optimizat
 ## 14. File map (hard paths)
 
 **Top-level (start here):**
-- `C:\wwwprojects\LogicN-R-AND-D\ENCRYPTION-RND-FULL-BRIEF.md` — **this file** (full narrative).
-- `C:\wwwprojects\LogicN-R-AND-D\CROSSOVER-encryption-rnd.md` — merged index/reconciliation.
-- `C:\wwwprojects\LogicN-R-AND-D\RD-DIRECTION.md` — owner's ranked priorities + directives.
+- `C:\wwwprojects\Galerina-R-AND-D\ENCRYPTION-RND-FULL-BRIEF.md` — **this file** (full narrative).
+- `C:\wwwprojects\Galerina-R-AND-D\CROSSOVER-encryption-rnd.md` — merged index/reconciliation.
+- `C:\wwwprojects\Galerina-R-AND-D\RD-DIRECTION.md` — owner's ranked priorities + directives.
 
-**`.tmf` spec track — `C:\wwwprojects\LogicN-R-AND-D\tmf\`:**
+**`.tmf` spec track — `C:\wwwprojects\Galerina-R-AND-D\tmf\`:**
 - `README.md` · `STATUS-AND-NEXT-STEPS.md`
 - `research\` — `encryption-architecture.md` (start), `real-vs-aspirational-ledger.md`,
   `ternary-in-cryptography.md`, `external-repos-analysis.md`, `findings-and-next-intentions.md`, `open-questions.md`
@@ -444,13 +444,13 @@ behind a reproducible benchmark); digital-ternary NTRU/ML-KEM backend (optimizat
 - `spec\_vectors\` — `gen_tmx_vectors.py` · `gen_tmf_container.py` · `gen_nvfp4_block.py` · `gen_sig_block.py` ·
   `gen_inclusion_proof.py` · **`gen_tmf_encryption.py`** (+ matching `*_vectors.txt` / `*.txt` golden outputs)
 
-**tri-encryption track — `C:\wwwprojects\LogicN-R-AND-D\tri-encription\`:**
+**tri-encryption track — `C:\wwwprojects\Galerina-R-AND-D\tri-encription\`:**
 - `FINDINGS-AND-ROADMAP.md` (checkpoint)
 - `research\` — `quantum-resilient-tri-encryption.md` · `photonic-sha256-integrity.md` ·
-  `metadata-confidentiality.md` · `LLN-AMD-024-tmf-confidentiality.md` (the blueprint, now promoted)
+  `metadata-confidentiality.md` · `SPORE-AMD-024-tmf-confidentiality.md` (the blueprint, now promoted)
 - `bench\` — `bench.mjs`, `tmf-crypto.test.mjs`, `aes-native-vs-purejs.mjs`, `lib\{k3,kemdem,rs,stream,tmx}.mjs`,
   `README.md` (`npm install && npm test && npm run bench`)
-- `lln\` — `k3-gate.lln` · `README.md` · `probe-no-bitwise.lln` · **`logicn-gaps-candidate-issues.md`** (the 3 gaps)
+- `spore\` — `k3-gate.spore` · `README.md` · `probe-no-bitwise.spore` · **`galerina-gaps-candidate-issues.md`** (the 3 gaps)
 
 **Adjacent (not merged):** `FFSM\` (task #199) · `photonic-tri-governance\`.
 
@@ -460,7 +460,7 @@ behind a reproducible benchmark); digital-ternary NTRU/ML-KEM backend (optimizat
 
 ```sh
 # Conformance oracle (stdlib, no deps) — regenerate every golden vector:
-cd C:\wwwprojects\LogicN-R-AND-D\tmf
+cd C:\wwwprojects\Galerina-R-AND-D\tmf
 python spec/_vectors/gen_tmx_vectors.py
 python spec/_vectors/gen_tmf_container.py
 python spec/_vectors/gen_inclusion_proof.py
@@ -468,16 +468,16 @@ python spec/_vectors/gen_sig_block.py
 python spec/_vectors/gen_tmf_encryption.py        # the new encryption layer
 
 # Measured crypto oracle (@noble, pure JS) — 11/11 tests + benchmark:
-cd C:\wwwprojects\LogicN-R-AND-D\tri-encription\bench
+cd C:\wwwprojects\Galerina-R-AND-D\tri-encription\bench
 npm install && npm test && npm run bench
 node oracle-check.mjs        # proves the JS SHAKE256 DEM key schedule == the Python golden vector (byte-identical)
 
-# Governance gate on the real LogicN compile->WASM path:
-#   logicn check  C:\wwwprojects\LogicN-R-AND-D\tri-encription\lln\k3-gate.lln      -> 0 errors / 0 warnings
-#   logicn run    ...\k3-gate.lln --invoke keyRelease 1 1 1                          -> 1   (and (1,1,0)->-1, etc.)
+# Governance gate on the real Galerina compile->WASM path:
+#   galerina check  C:\wwwprojects\Galerina-R-AND-D\tri-encription\spore\k3-gate.spore      -> 0 errors / 0 warnings
+#   galerina run    ...\k3-gate.spore --invoke keyRelease 1 1 1                          -> 1   (and (1,1,0)->-1, etc.)
 ```
 
 **The single most valuable output** is the frozen TASK 2 spec (`tmf/spec/signature-custody-v0.md`): it makes
-LogicN **#34** a safe mechanical port with zero crypto-invention. After that, the natural next pushes are
+Galerina **#34** a safe mechanical port with zero crypto-invention. After that, the natural next pushes are
 reconciliation **1e** (align the bench KDF to the spec's SHAKE256) and, only on owner go, the engine build
-(LogicN + host crypto lib, not Rust).
+(Galerina + host crypto lib, not Rust).

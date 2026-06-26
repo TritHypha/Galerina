@@ -25,7 +25,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EMITTER = path.resolve(
   __dirname,
-  "../packages-logicn/logicn-core-compiler/src/wat-emitter.ts",
+  "../packages-galerina/galerina-core-compiler/src/wat-emitter.ts",
 );
 
 let PASS = 0;
@@ -98,7 +98,7 @@ const defaultMaxPages = (() => {
   const nEff = 2.0, c = 3e8;
   const tPath = (depth, edgeLen = 1e-4) => (depth * edgeLen * nEff) / c;
   const tShallow = tPath(2), tDeep = tPath(16);
-  // baseline: LogicN liveness today = 1 pointer rebase (and there is none to even do).
+  // baseline: Galerina liveness today = 1 pointer rebase (and there is none to even do).
   const logicnBaseline = 1;
 
   log(approx(slope, 1.0, 0.05),
@@ -108,7 +108,7 @@ const defaultMaxPages = (() => {
   log(tDeep > tShallow,
     "P2.prop-grows", `t_path(depth16)=${tDeep.toExponential(2)}s > depth2=${tShallow.toExponential(2)}s => REFUTED-propagation-O(1)`);
   log(logicnBaseline === 1,
-    "P2.baseline-already-O1", `LogicN liveness baseline = ${logicnBaseline} (arena-reset) << |V| => CONFIRMED-baseline-already-O(1)`);
+    "P2.baseline-already-O1", `Galerina liveness baseline = ${logicnBaseline} (arena-reset) << |V| => CONFIRMED-baseline-already-O(1)`);
 }
 
 // =====================================================================
@@ -343,7 +343,7 @@ const defaultMaxPages = (() => {
 // =====================================================================
 // 0055 ADDENDUM — three ecosystem-sourced ideas (balanced-ternary phase tag, squeezed-state wipe,
 // MZI bar-state). PennyLane / Strawberry Fields / Piquasso are all CONTINUOUS-VARIABLE QUANTUM
-// simulators, so two of the three import quantum/analog physics that LogicN's charter keeps out.
+// simulators, so two of the three import quantum/analog physics that Galerina's charter keeps out.
 // =====================================================================
 {
   // BB-E — balanced-ternary PHASE as a "sealed" tag → REFUTE. Phase is NOT secrecy. A -1 (antiphase) cell

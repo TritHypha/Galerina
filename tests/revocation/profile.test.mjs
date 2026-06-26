@@ -1,5 +1,5 @@
 /**
- * FAIL-SECURE LOGICN_PROFILE resolution (audit 2026-06-20).
+ * FAIL-SECURE GALERINA_PROFILE resolution (audit 2026-06-20).
  *
  * The signing/admission gates key their strict behaviour on "is this production?". Resolving that
  * fail-OPEN (anything ≠ "production" ⇒ dev) lets a typo'd value silently disable enforcement. This
@@ -7,7 +7,7 @@
  * a set-but-unrecognized value resolves to production. Mirrors core-config posture.ts.
  *
  * (Run by the governance test step; the package suite covers the end-to-end behaviour in
- *  logicn-core-compiler/tests/cli-compatibility.test.mjs.)
+ *  galerina-core-compiler/tests/cli-compatibility.test.mjs.)
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -49,11 +49,11 @@ test("resolveSigningProfileWarned surfaces a coded warning ONLY when it fail-sec
   resolveSigningProfileWarned((m) => warned.push(m), "production");
   assert.equal(warned.length, 0, "recognized profiles must not warn");
 
-  // Unrecognized → exactly one LLN-PROFILE-UNRECOGNIZED warning that names the bad value.
+  // Unrecognized → exactly one SPORE-PROFILE-UNRECOGNIZED warning that names the bad value.
   warned = [];
   const r = resolveSigningProfileWarned((m) => warned.push(m), "prod ");
   assert.equal(r.profile, "production");
   assert.equal(warned.length, 1);
-  assert.ok(warned[0].includes("LLN-PROFILE-UNRECOGNIZED"), "warning must carry the code");
+  assert.ok(warned[0].includes("SPORE-PROFILE-UNRECOGNIZED"), "warning must carry the code");
   assert.ok(warned[0].includes("prod "), "warning must name the offending value");
 });

@@ -1,6 +1,6 @@
 # Documentation Layer Model
 
-LogicN documentation is organised into layers so developers, reviewers and AI
+Galerina documentation is organised into layers so developers, reviewers and AI
 tools can find the right kind of information without mixing framework behavior,
 contract boundaries, policy rules and generated reports.
 
@@ -11,7 +11,7 @@ Framework docs explain concepts.
 Contract docs explain boundary agreements.
 Policy docs explain allowed behavior.
 Report docs explain generated proof.
-Rule docs explain what LogicN must never break.
+Rule docs explain what Galerina must never break.
 Example docs show everything working together.
 ```
 
@@ -32,7 +32,7 @@ near-duplicate names such as **model-contracts**, **contract-model** and
 
 ## Framework Docs
 
-Framework docs describe how a LogicN application is structured and operated.
+Framework docs describe how a Galerina application is structured and operated.
 They answer:
 
 ```text
@@ -117,7 +117,7 @@ AI context reports
 
 ## Rule Docs
 
-Rule docs describe the non-negotiable LogicN constraints:
+Rule docs describe the non-negotiable Galerina constraints:
 
 ```text
 Only Bool controls conditions.
@@ -155,7 +155,7 @@ This structure helps human readers and AI tools compare concepts consistently.
 
 ## AI Understandable Architecture Policy
 
-LogicN documentation should form a knowledge map, not only a folder tree.
+Galerina documentation should form a knowledge map, not only a folder tree.
 
 Architecture, definitions, package ownership, generated project graphs and
 AI-readable context should use stable names and explicit links so tools can

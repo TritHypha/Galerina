@@ -2,7 +2,7 @@
 
 ## Definition
 
-LogicN treats scale as a **runtime contract**, not only infrastructure
+Galerina treats scale as a **runtime contract**, not only infrastructure
 configuration. Scale is declared in syntax, kept pure in logic, and enforced by
 the runtime.
 
@@ -16,7 +16,7 @@ runtime -> executes, balances, limits, and observes
 
 ### Worker Pool Declaration
 
-```logicn
+```galerina
 worker image_processor {
   min: 2
   max: 20
@@ -28,7 +28,7 @@ worker image_processor {
 
 ### Flow Runtime Policy
 
-```logicn
+```galerina
 flow process_upload(file: unsafe File) -> Result
   uses worker.image_processor
   uses database.main.write
@@ -41,7 +41,7 @@ flow process_upload(file: unsafe File) -> Result
 
 ### Queue Declaration
 
-```logicn
+```galerina
 queue uploads {
   worker: image_processor
   max_pending: 10000
@@ -52,7 +52,7 @@ queue uploads {
 
 ## 2. Scaling Through Logic
 
-LogicN encourages:
+Galerina encourages:
 
 ```text
 small flows
@@ -64,7 +64,7 @@ no hidden global side effects
 
 Good pattern:
 
-```logicn
+```galerina
 fn resize_plan(file: safe File) -> ResizePlan {
   return build_plan(file)
 }
@@ -80,7 +80,7 @@ flow resize_upload(file: unsafe File) -> Result
 
 Avoid monolithic flows:
 
-```logicn
+```galerina
 flow do_everything(raw: unsafe Any) { ... }
 ```
 
@@ -103,7 +103,7 @@ audit trails
 
 Runtime config example:
 
-```logicn
+```galerina
 runtime {
   backpressure: enabled
   autoscale: enabled
@@ -116,7 +116,7 @@ runtime {
 
 Multiple named databases are declared explicitly:
 
-```logicn
+```galerina
 database main {
   source: GlobalVault.database.main
 }
@@ -128,7 +128,7 @@ database analytics {
 
 Using multiple databases in a flow:
 
-```logicn
+```galerina
 flow build_report(id: safe Id) -> Report
   uses database.main.read
   uses database.analytics.read
@@ -163,7 +163,7 @@ release      = early cleanup for large/sensitive values
 ## Core Principle
 
 ```text
-LogicN should not scale by hiding complexity.
+Galerina should not scale by hiding complexity.
 It should scale by making runtime behaviour explicit.
 
 Declare scale in syntax.

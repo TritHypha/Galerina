@@ -2,7 +2,7 @@
 
 ## Purpose
 
-LogicN may support multiple AI agents, but agents must be treated as untrusted
+Galerina may support multiple AI agents, but agents must be treated as untrusted
 workers by default.
 
 The design goal is:
@@ -12,7 +12,7 @@ multi-agent AI that is typed, permissioned, audited, bounded, cache-aware and
 safe by default
 ```
 
-LogicN must not copy an uncontrolled agent model where agents freely call tools,
+Galerina must not copy an uncontrolled agent model where agents freely call tools,
 pass arbitrary text around, read secrets, write files, access the network and
 loop until they appear to finish.
 
@@ -22,11 +22,11 @@ Agents do not get direct access to files, secrets, tools, other agents, the
 network or runtime memory.
 
 Agents receive typed inputs and may only perform declared actions through the
-LogicN agent runtime.
+Galerina agent runtime.
 
 ```text
 Agents can think and propose.
-LogicN decides what they can see, do, exchange and apply.
+Galerina decides what they can see, do, exchange and apply.
 ```
 
 ## Runtime Architecture
@@ -36,7 +36,7 @@ The safe runtime shape is:
 ```text
 User Request
   -> Supervisor Agent
-  -> LogicN Agent Runtime
+  -> Galerina Agent Runtime
        -> Agent Registry
        -> Policy Engine
        -> Typed Message Bus
@@ -73,7 +73,7 @@ Every agent needs a manifest before it can run.
 
 Example shape:
 
-```logicn
+```galerina
 agent CodeAgent {
   model "best:code"
 
@@ -161,7 +161,7 @@ Agents must exchange typed data, not arbitrary hidden memory or raw text blobs.
 
 Example:
 
-```logicn
+```galerina
 type CodeTask = {
   filePath: String
   goal: String
@@ -179,7 +179,7 @@ type CodePatch = {
 
 Message policies should define allowed and denied fields:
 
-```logicn
+```galerina
 message CodePatchMessage {
   from CodeAgent
   to SecurityAgent
@@ -201,7 +201,7 @@ Data must be classified before it moves between agents.
 
 Recommended classes:
 
-```logicn
+```galerina
 enum DataClass {
   Public
   ProjectInternal
@@ -231,7 +231,7 @@ Agents should only see the minimum context required for their role.
 
 Example:
 
-```logicn
+```galerina
 visibility_scope PublicProjectContext {
   include [
     "src/**/*.ln",
@@ -273,13 +273,13 @@ Agents must never receive secret values directly.
 
 Bad:
 
-```logicn
+```galerina
 agent.input = Env.get("PAYMENT_API_KEY")
 ```
 
 Good:
 
-```logicn
+```galerina
 SecretGuard.signRequest({
   secret: "PAYMENT_API_KEY",
   payload: requestBody,
@@ -307,7 +307,7 @@ Agents must not run tools directly.
 
 Example tool policy:
 
-```logicn
+```galerina
 tool GitRead {
   allow commands [
     "status",
@@ -387,7 +387,7 @@ temporary workspace
 
 Example:
 
-```logicn
+```galerina
 sandbox_policy DefaultAgentSandbox {
   filesystem {
     mode readonly
@@ -462,7 +462,7 @@ Agent caching must be passive and guarded.
 
 Example policy:
 
-```logicn
+```galerina
 llm_cache_policy AgentCache {
   mode passive
 
@@ -498,7 +498,7 @@ contexts or agent roles.
 
 Agent runtime policy must define hard bounds:
 
-```logicn
+```galerina
 agent_runtime_policy DefaultAgentRuntime {
   max_steps 20
   max_agent_calls 40
@@ -584,7 +584,7 @@ Blocked actions must also be reported:
 
 ## Secure Workflow Example
 
-```logicn
+```galerina
 multi_agent workflow ImplementFeature {
   input FeatureRequest
   output FeatureResult
@@ -691,7 +691,7 @@ See `ENTERPRISE.md`.
 
 ## Best Model
 
-The strongest LogicN agent model is:
+The strongest Galerina agent model is:
 
 ```text
 zero-trust agents

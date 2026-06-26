@@ -2,7 +2,7 @@
 
 ## Definition
 
-LogicN makes build and runtime behaviour explainable through structured,
+Galerina makes build and runtime behaviour explainable through structured,
 machine-readable outputs. Every compiler warning, runtime event, and
 performance signal is observable without requiring manual instrumentation.
 
@@ -13,7 +13,7 @@ Every warning, error, and fatal diagnostic is machine-readable and human-readabl
 Runtime behaviour should be observable without modifying application code.
 ```
 
-## What LogicN Makes Observable
+## What Galerina Makes Observable
 
 ### Compiler Outputs
 
@@ -50,7 +50,7 @@ compute target routing decisions
 
 Observability plugins attach through approved extension points:
 
-```logicn
+```galerina
 plugin metrics_collector {
   runtime: wasm
   source: "./plugins/metrics_collector.wasm"
@@ -92,7 +92,7 @@ generates them based on declared permissions and flow structure.
 
 Observer example:
 
-```logicn
+```galerina
 observer permission_denial_observer on PermissionDenied {
   audit.record({
     flow: event.flow_name,
@@ -147,7 +147,7 @@ Target fallback must never be silent. Operators see why work moved.
 The CLI can generate an AI-readable context summary:
 
 ```bash
-logicn explain --for-ai
+galerina explain --for-ai
 ```
 
 Output includes:
@@ -168,9 +168,9 @@ Never includes: API key values, passwords, tokens, private keys, production data
 CI pipelines consume observability outputs:
 
 ```bash
-logicn check --security      # check security report
-logicn lint --security       # lint for security patterns
-logicn verify build/release/app.build-manifest.json
+galerina check --security      # check security report
+galerina lint --security       # lint for security patterns
+galerina verify build/release/app.build-manifest.json
 ```
 
 Build reports are checked against policy. CI fails on unsafe code, missing
@@ -283,7 +283,7 @@ Splunk
 ## Core Principle
 
 ```text
-LogicN makes builds and runtime behaviour explainable by default.
+Galerina makes builds and runtime behaviour explainable by default.
 Developers declare intent.
 The runtime generates observability artifacts automatically.
 Monitoring is a runtime capability, not an application burden.

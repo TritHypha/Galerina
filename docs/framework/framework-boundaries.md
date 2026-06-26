@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Boundaries define trust crossings in LogicN applications.
+Boundaries define trust crossings in Galerina applications.
 
 ## Short Definition
 
@@ -26,7 +26,7 @@ native interop
 
 ## Syntax Examples
 
-```logicn
+```galerina
 boundary storage UsersDatabase {
   type postgres
   model User
@@ -34,7 +34,7 @@ boundary storage UsersDatabase {
 }
 ```
 
-```logicn
+```galerina
 boundary external PaymentProvider {
   type api
   request ChargePaymentRequest
@@ -60,7 +60,7 @@ boundary external PaymentProvider {
   or package code.
 - MCP boundaries must declare tools, resources, prompts, token-boundary rules,
   typed input/output, limits, effects and audit requirements before use.
-- MCP tool availability is not permission; LogicN permission checks still
+- MCP tool availability is not permission; Galerina permission checks still
   decide whether a caller may use a tool or resource.
 
 ## Generated Reports

@@ -1,0 +1,206 @@
+// OWASP A07 — Identification and Authentication Failures
+// EXPECT: ACCEPT
+//
+// This file DOCUMENTS the authentication failure patterns Galerina prevents.
+// Secrets must come from the sealed secrets {} block, not from raw environment
+// variables or inline literals. Authentication flows must have audit.write
+// in effects so every login attempt is recorded.
+//
+// Reference: docs/Knowledge-Bases/galerina-governance-rules.md
+// Rules: K-004 (SPORE-SECRET-001/002/003), SPORE-SECRET-ENV-001 (raw env var),
+//        A-001 (audit.write on auth flows)
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type AuthResult = Result<AuthToken, AuthError>
+type AuthToken = Brand<String, "AuthToken">
+type AuthError = enum { InvalidCredentials InvalidInput AccountLocked RateExceeded }
+type Email = Brand<String, "Email">
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CASE 1: Raw environment variable used as a secret
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// BAD PATTERN (do not use — triggers SPORE-SECRET-ENV-001):
+//
+//   secure flow verifyPasswordUnsafe(readonly request: Request) -> AuthResult
+//   contract {
+//     intent "Verify password using raw env var"
+//     effects { database.read, audit.write }
+//     request { body { email: unsafe String, password: unsafe String } }
+//   }
+//   {
+//     // Retrieving a secret directly from the environment bypasses the vault.
+//     // The compiler's scanForSecretLiteral pass (task #31) flags env() calls
+//     // on keys that look like credentials outside a secrets {} block.
+//     let secret = Env.get("DB_PASSWORD")   // ← SPORE-SECRET-ENV-001
+//     return Err(AuthError.InvalidInput)
+//   }
+//
+// Why it is blocked: secrets must be declared in the `secrets {}` block and
+// retrieved via Secrets.get(). Raw Env.get() on credential-pattern keys is
+// flagged by SPORE-SECRET-ENV-001 because it bypasses the vault's access controls
+// and audit interception. The sealed secrets {} block ensures every secret access
+// is governed, traceable, and rotation-aware.
+//
+// CORRECT pattern: declare secret binding in secrets {} and retrieve via Secrets.get().
+
+;; CORRECT: password hash from vault via secrets {} — never from raw Env.get
+secure flow verifyPassword(readonly request: Request) -> AuthResult
+contract {
+  intent "Verify user credentials and issue a short-lived authentication token"
+  request {
+    body {
+      email: unsafe String
+      password: unsafe String
+    }
+  }
+  effects {
+    database.read
+    secret.read
+    crypto.verify
+    audit.write
+  }
+  secrets { bind "USER_PASSWORD_HASH_KEY" }
+  privacy {
+    pii email masked_in_audit
+    require redaction before audit.write
+  }
+  audit { require runtime report }
+}
+{
+  unsafe let rawEmail: String = request.body.email
+  unsafe let rawPass: String = request.body.password
+
+  let email: protected Email = validate.email(rawEmail)?
+  // Secret retrieved from vault through sealed secrets {} binding — not Env.get
+  let hash: SecureString = Secrets.get("USER_PASSWORD_HASH_KEY")
+
+  let valid = Crypto.constantTimeEquals(rawPass, hash)
+
+  let redactedEmail: redacted String = redact(email)
+  AuditLog.write({
+    event: "AuthAttempt",
+    user: redactedEmail,
+    success: valid
+  })
+
+  if valid {
+    let token: AuthToken = Auth.generateToken(email)
+    return Ok(token)
+  } else {
+    return Err(AuthError.InvalidCredentials)
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CASE 2: Authentication flow missing audit.write
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// BAD PATTERN (do not use — advisory A-001 / SPORE-GOV-011):
+//
+//   secure flow loginSilent(username: String, password: String) -> AuthResult
+//   contract {
+//     intent "Silent login — no audit trail"
+//     effects { database.read, secret.read, crypto.verify }
+//     // audit.write absent — failed logins, brute-force attempts are invisible
+//     secrets { bind "PASSWORD_HASH" }
+//   }
+//   { ... }
+//
+// Why it matters: authentication events are forensic evidence. A login flow that
+// omits audit.write means failed login attempts, account lockout triggers, and
+// brute-force patterns are invisible to the governance tooling. Rule A-001
+// marks all authentication flows as requiring `audit.write` in effects and
+// `AuditLog.write` in the body. The absence is flagged as SPORE-GOV-011 advisory.
+//
+// CORRECT pattern: audit.write is always declared in authentication flow effects.
+
+;; CORRECT: every authentication event (pass or fail) is audited
+secure flow createSession(readonly request: Request) -> AuthResult
+contract {
+  intent "Create an authenticated session — every attempt must leave an audit trail"
+  request {
+    body {
+      username: unsafe String
+      password: unsafe String
+    }
+  }
+  effects {
+    database.read
+    secret.read
+    crypto.verify
+    audit.write
+  }
+  secrets { bind "SESSION_SIGNING_KEY" }
+  privacy {
+    pii username masked_in_audit
+    require redaction before audit.write
+  }
+  audit { require runtime report require actor }
+  limits { memory 16mb request_time 1s }
+}
+{
+  unsafe let rawUser: String = request.body.username
+  unsafe let rawPass: String = request.body.password
+
+  let safeUser: String = validate.string(rawUser)?
+  trap safeUser == "" : ERR_EMPTY_USERNAME
+
+  let stored: SecureString = Secrets.get("SESSION_SIGNING_KEY")
+  let valid = Crypto.constantTimeEquals(rawPass, stored)
+
+  let redactedUser: redacted String = redact(safeUser)
+  AuditLog.write({
+    event: "SessionCreateAttempt",
+    username: redactedUser,
+    success: valid
+  })
+
+  if valid {
+    let token: AuthToken = Auth.generateToken(safeUser)
+    return Ok(token)
+  } else {
+    return Err(AuthError.InvalidCredentials)
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CASE 3: Session token in network response body
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// BAD PATTERN (do not use — triggers SPORE-SECRET-003):
+//
+//   secure flow issueTokenUnsafe(userId: String) -> Result<String, AuthError>
+//   contract {
+//     intent "Issue session token and include raw signing key in response"
+//     effects { secret.read, audit.write }
+//     secrets { bind "SIGNING_KEY" }
+//   }
+//   {
+//     let signingKey: SecureString = Secrets.get("SIGNING_KEY")
+//     // returning SecureString in response body ← SPORE-SECRET-003
+//     return Ok("token:" + signingKey)
+//   }
+//
+// Why it is blocked: SPORE-SECRET-003 fires when a SecureString flows into a
+// serialized response. The signing key itself must never leave the vault —
+// only the resulting token (which contains no key material) is returned.
+//
+// CORRECT pattern: sign with SecureString internally; return only the output token.
+
+;; CORRECT: signing key stays in vault; only the derived token is returned
+secure flow issueToken(userId: String) -> AuthResult
+contract {
+  intent "Issue a signed session token — signing key never leaves the vault"
+  effects { secret.read, audit.write }
+  secrets { bind "SESSION_SIGNING_KEY" }
+  audit { require runtime report }
+}
+{
+  trap userId == "" : ERR_EMPTY_USER_ID
+  let signingKey: SecureString = Secrets.get("SESSION_SIGNING_KEY")
+  let token: AuthToken = Auth.sign(userId, signingKey)
+  AuditLog.write("TokenIssued: " + userId)
+  return Ok(token)
+}

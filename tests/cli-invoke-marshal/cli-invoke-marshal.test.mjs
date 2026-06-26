@@ -1,4 +1,4 @@
-// Regression for dogfooding #3: `logicn run <f> --invoke <flow> [args]` used to marshal CLI args
+// Regression for dogfooding #3: `galerina run <f> --invoke <flow> [args]` used to marshal CLI args
 // with `.map(Number)`, so BOTH "true" and "false" became NaN → i32 0 → false — a wrong-but-plausible
 // Bool argument silently fizzled to `false` with no error. The fix marshals Bool literals (true/false
 // → 1/0) and fails LOUDLY (exit 2) on anything un-parseable, instead of silently coercing to 0.
@@ -11,10 +11,10 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const FIXTURE = join(ROOT, "build", "__cli_marshal_test.lln");
+const FIXTURE = join(ROOT, "build", "__cli_marshal_test.spore");
 
 function run(...args) {
-  const r = spawnSync(process.execPath, ["logicn.mjs", "run", FIXTURE, "--invoke", "boolToInt", ...args],
+  const r = spawnSync(process.execPath, ["galerina.mjs", "run", FIXTURE, "--invoke", "boolToInt", ...args],
     { cwd: ROOT, encoding: "utf-8", timeout: 60000 });
   return { status: r.status, out: `${r.stdout ?? ""}${r.stderr ?? ""}` };
 }
@@ -45,20 +45,20 @@ test("an un-parseable invoke arg fails LOUDLY (exit 2 + clear message), never si
 // dogfooding #2: a flow that EXISTS but is not WASM-exportable (a secure/effectful flow) used to
 // report "Flow 'main' not found" — implying it doesn't exist. Now it explains the WASM-surface limit.
 test("a secure/effectful flow gives a CLEAR 'not in the WASM surface' diagnostic, not 'not found'", () => {
-  const f2 = join(ROOT, "build", "__cli_marshal_secure.lln");
+  const f2 = join(ROOT, "build", "__cli_marshal_secure.spore");
   writeFileSync(f2,
     `pure flow collapse(v: Int) -> Int { if v == 1 { return 1 } return -1 }\n\n` +
     `secure flow main() -> Result<Void, Error>\ncontract { intent { "demo" } }\n{\n` +
     `  console.log("x = " . collapse(1))\n  return Ok()\n}\n`);
   try {
-    const r = spawnSync(process.execPath, ["logicn.mjs", "run", f2, "--invoke", "main"],
+    const r = spawnSync(process.execPath, ["galerina.mjs", "run", f2, "--invoke", "main"],
       { cwd: ROOT, encoding: "utf-8", timeout: 60000 });
     const out = `${r.stdout ?? ""}${r.stderr ?? ""}`;
     assert.equal(r.status, 1, out);
     assert.match(out, /NOT in the WASM --invoke surface/, "must explain main is not WASM-exportable");
     assert.match(out, /Invokable here.*collapse/, "must list the invokable pure flows");
     assert.match(out, /--governed/, "must point the user to the governed runtime (#125)");
-    const r2 = spawnSync(process.execPath, ["logicn.mjs", "run", f2, "--invoke", "nope"],
+    const r2 = spawnSync(process.execPath, ["galerina.mjs", "run", f2, "--invoke", "nope"],
       { cwd: ROOT, encoding: "utf-8", timeout: 60000 });
     assert.match(`${r2.stdout ?? ""}${r2.stderr ?? ""}`, /No flow named 'nope'/, "absent flow gets the other branch");
   } finally {
@@ -70,10 +70,10 @@ test("a secure/effectful flow gives a CLEAR 'not in the WASM surface' diagnostic
 // enforcer + fail-closed capability host granting only declared effects + audit), instead of the
 // raw WASM --invoke surface. It is the path for secure/effectful flows the WASM surface rejects.
 test("--governed runs a flow through the governed runtime and prints its value (exit 0)", () => {
-  const f = join(ROOT, "build", "__g_clean.lln");
+  const f = join(ROOT, "build", "__g_clean.spore");
   writeFileSync(f, `pure flow answer() -> Int { return 42 }\n`);
   try {
-    const r = spawnSync(process.execPath, ["logicn.mjs", "run", f, "--invoke", "answer", "--governed"],
+    const r = spawnSync(process.execPath, ["galerina.mjs", "run", f, "--invoke", "answer", "--governed"],
       { cwd: ROOT, encoding: "utf-8", timeout: 60000 });
     const out = `${r.stdout ?? ""}${r.stderr ?? ""}`;
     assert.equal(r.status, 0, out);
@@ -84,16 +84,16 @@ test("--governed runs a flow through the governed runtime and prints its value (
   }
 });
 
-test("--governed is FAIL-CLOSED: a governance violation refuses to run (exit 1 + LLN diagnostic)", () => {
-  const f = join(ROOT, "build", "__g_violation.lln");
-  // console.log without an import → LLN-NAME-001; the governed run must refuse, not execute.
+test("--governed is FAIL-CLOSED: a governance violation refuses to run (exit 1 + SPORE diagnostic)", () => {
+  const f = join(ROOT, "build", "__g_violation.spore");
+  // console.log without an import → SPORE-NAME-001; the governed run must refuse, not execute.
   writeFileSync(f, `flow leaky() -> Int {\n  console.log("hi")\n  return 1\n}\n`);
   try {
-    const r = spawnSync(process.execPath, ["logicn.mjs", "run", f, "--invoke", "leaky", "--governed"],
+    const r = spawnSync(process.execPath, ["galerina.mjs", "run", f, "--invoke", "leaky", "--governed"],
       { cwd: ROOT, encoding: "utf-8", timeout: 60000 });
     const out = `${r.stdout ?? ""}${r.stderr ?? ""}`;
     assert.equal(r.status, 1, out);
-    assert.match(out, /LLN-[A-Z]+-\d+/, "must surface the governance diagnostic");
+    assert.match(out, /SPORE-[A-Z]+-\d+/, "must surface the governance diagnostic");
     assert.match(out, /fail-closed/i, "must announce it refused fail-closed");
   } finally {
     try { rmSync(f, { force: true }); } catch { /* ignore */ }

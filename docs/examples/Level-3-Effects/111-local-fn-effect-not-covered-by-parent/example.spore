@@ -1,0 +1,31 @@
+/// example: 111-local-fn-effect-not-covered-by-parent
+/// level: 3
+/// concept: local fn cannot use effects not declared by the containing flow
+/// expected_diagnostics: SPORE-EFFECT-001
+/// test_status: stable
+/// ai_rule: A local fn is bound by the containing flow's effect declarations.
+
+guarded flow saveOrderOnly(order: Order) -> SaveOrderOnlyResult
+
+contract {
+  types {
+    type SaveOrderOnlyResult = Result<Unit, SaveError>
+  }
+
+  intent {
+    "Save an order — BUG: local fn uses network.outbound which is not declared in parent effects."
+  }
+
+  effects {
+    database.write
+    // BUG: network.outbound is missing — local fn fetchRate uses it, triggering SPORE-EFFECT-001
+  }
+}
+{
+  fn fetchRate(currency: String) -> Result<Decimal, RateError> {
+    unsafe let rawResponse = http.get("https://rates.example.com/" + currency)?
+    return json.decode(rawResponse)
+  }
+  let _ = OrdersDB.insert(order)?
+  return Ok(unit)
+}

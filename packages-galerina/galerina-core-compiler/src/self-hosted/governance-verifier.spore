@@ -1,0 +1,747 @@
+/// @file: governance-verifier.spore
+/// @purpose: Stage B governance verifier — real subset, executing
+/// @phase: 67
+/// @version: 2.2
+/// @status: functional subset — validates governance contracts for flows; v2.2 adds guard/hierarchy/emergency/trap/step/mutation
+///
+/// Expected flow-record shape (from the Stage B ParseResult):
+///   { name: String, kind: String, effects: Array<String>,
+///     classification: String, deterministic: Bool }
+///   - classification is "safety_critical" or "standard"
+///   - deterministic is true when the flow requires deterministic_execution
+
+// ============================================================
+// Galerina Self-Hosted Governance Verifier — Phase 67
+//
+// Validates governance invariants from ParseResult:
+//   1. safety_critical flows must declare audit.write       (SPORE-VAL-001)
+//   2. safety_critical flows must require deterministic_exec (SPORE-VAL-002)
+//   3. secure flows must declare at least one effect         (SPORE-GOV-002)
+//
+// hasAudit is DERIVED from the effects array (not trusted from caller), so the
+// safety-critical audit check reflects the flow's real declared effects.
+// ============================================================
+
+record GovDiagnostic {
+  code: String
+  message: String
+  flowName: String
+}
+
+record GovResult {
+  diagnostics: Array
+  passed: Int
+  failed: Int
+}
+
+// ── Helpers ───────────────────────────────────────────────────
+
+// True if `target` appears in the effects array.
+pure flow hasEffect(effectList: Array, wanted: String) -> Bool
+contract {
+  intent { "Return true when the flow's declared effects include the target effect." }
+}
+{
+  mut i: Int = 0
+  while i < effectList.count() {
+    let eOpt = effectList.get(i)
+    match eOpt {
+      Some(e) => {
+        if e == wanted { return true }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return false
+}
+
+// Append every element of `src` onto `dst` and return the result.
+pure flow appendAll(dst: Array, src: Array) -> Array
+contract {
+  intent { "Concatenate src onto dst (Stage B arrays are append-only)." }
+}
+{
+  mut out: Array = dst
+  mut i: Int = 0
+  while i < src.count() {
+    let xOpt = src.get(i)
+    match xOpt {
+      Some(x) => { out = out.append(x) }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return out
+}
+
+// ── Per-flow governance checks ────────────────────────────────
+
+pure flow checkSafetyCritical(flowName: String, hasAudit: Bool, hasDeterministic: Bool) -> Array
+contract {
+  intent { "SPORE-VAL-001/002: safety_critical flows must have audit.write and deterministic_execution." }
+}
+{
+  mut diags: Array = Array.empty()
+  if hasAudit == false {
+    let msg: String = "safety_critical flow '" + flowName + "' must declare audit.write (SPORE-VAL-001)"
+    diags = diags.append({ code: "SPORE-VAL-001", message: msg, flowName: flowName })
+  }
+  if hasDeterministic == false {
+    let msg: String = "safety_critical flow '" + flowName + "' must require deterministic_execution (SPORE-VAL-002)"
+    diags = diags.append({ code: "SPORE-VAL-002", message: msg, flowName: flowName })
+  }
+  return diags
+}
+
+pure flow checkSecureFlowGovernance(flowName: String, effectCount: Int) -> Array
+contract {
+  intent { "Secure flows should declare governance effects for traceability." }
+}
+{
+  mut diags: Array = Array.empty()
+  if effectCount == 0 {
+    let msg: String = "secure flow '" + flowName + "' declares no effects — governance cannot be verified"
+    diags = diags.append({ code: "SPORE-GOV-002", message: msg, flowName: flowName })
+  }
+  return diags
+}
+
+// ── Full governance verification pass ─────────────────────────
+
+pure flow verifyGovernance(flows: Array) -> GovResult
+contract {
+  intent { "Run all governance checks across flows from the Stage B ParseResult." }
+}
+{
+  mut allDiags: Array = Array.empty()
+  mut passed: Int = 0
+  mut failed: Int = 0
+  mut i: Int = 0
+  while i < flows.count() {
+    let fdOpt = flows.get(i)
+    match fdOpt {
+      Some(fd) => {
+        let name: String = fd.name
+        let kind: String = fd.kind
+        let effectCount: Int = fd.effects.count()
+        mut flowDiags: Array = Array.empty()
+        if kind == "secure" {
+          flowDiags = appendAll(flowDiags, checkSecureFlowGovernance(name, effectCount))
+        }
+        if fd.classification == "safety_critical" {
+          let hasAudit: Bool = hasEffect(fd.effects, "audit.write")
+          flowDiags = appendAll(flowDiags, checkSafetyCritical(name, hasAudit, fd.deterministic))
+        }
+        if flowDiags.count() == 0 {
+          passed = passed + 1
+        }
+        if flowDiags.count() > 0 {
+          failed = failed + 1
+          mut j: Int = 0
+          while j < flowDiags.count() {
+            let dOpt = flowDiags.get(j)
+            match dOpt {
+              Some(d) => { allDiags = allDiags.append(d) }
+              None => {}
+              _ => {}
+            }
+            j = j + 1
+          }
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return { diagnostics: allDiags, passed: passed, failed: failed }
+}
+
+// ── Body-AST governance (M-B) ─────────────────────────────────
+//
+// Governance property: a `secure` flow must actually CALL audit in its body.
+// Audit traceability cannot be satisfied by declaration alone — the flow's
+// statement/expression body must contain a `call` Expr with callee "auditWrite".
+//
+// The collectors read AST records dynamically (no FlowDecl/Stmt/Expr type
+// declared). Recursion descends into: statement `expr` (0/1 element), nested
+// if/while `body`, and Expr `children` (call args, binary operands).
+
+// True if ANY call Expr reachable from `e` calls "auditWrite".
+pure flow exprCallsAudit(e: Array) -> Bool
+contract {
+  intent { "Return true when the expression (0/1-element array) contains an auditWrite call." }
+}
+{
+  mut i: Int = 0
+  while i < e.count() {
+    let xOpt = e.get(i)
+    match xOpt {
+      Some(x) => {
+        if x.kind == "call" {
+          if x.value == "auditWrite" { return true }
+        }
+        // Recurse into children (call args / binary operands).
+        mut j: Int = 0
+        while j < x.children.count() {
+          let cOpt = x.children.get(j)
+          match cOpt {
+            Some(c) => {
+              if exprCallsAudit(Array.empty().append(c)) { return true }
+            }
+            None => {}
+            _ => {}
+          }
+          j = j + 1
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return false
+}
+
+// True if ANY call Expr in the statement list calls "auditWrite".
+pure flow flowCallsAudit(stmts: Array) -> Bool
+contract {
+  intent { "Recursively detect whether the flow body performs an auditWrite call." }
+}
+{
+  mut i: Int = 0
+  while i < stmts.count() {
+    let sOpt = stmts.get(i)
+    match sOpt {
+      Some(s) => {
+        // Statement-level expression (let/return/exprStmt/condition).
+        if exprCallsAudit(s.expr) { return true }
+        // Nested if/while block.
+        if flowCallsAudit(s.body) { return true }
+        // Else block of an if.
+        if flowCallsAudit(s.elseBody) { return true }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return false
+}
+
+// ── Domain Guard Differential Proof (task #56) ────────────────
+//
+// The canonical .spore implementation of SPORE-GOV-004.
+// Stage A TypeScript in governance-verifier.ts is a bootstrap mirror of this logic.
+
+pure flow findPolicyExists(policies: Array, name: String) -> Bool
+contract {
+  intent { "Return true if a policy with the given name exists in the policies array." }
+}
+{
+  mut i: Int = 0
+  while i < policies.count() {
+    let pOpt = policies.get(i)
+    match pOpt {
+      Some(pol) => { if pol.name == name { return true } }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return false
+}
+
+pure flow effectIsPermitted(policies: Array, policyName: String, effect: String) -> Bool
+contract {
+  intent { "Return true if the given effect is in the named policy's permitted_effects." }
+}
+{
+  mut i: Int = 0
+  while i < policies.count() {
+    let pOpt = policies.get(i)
+    match pOpt {
+      Some(pol) => {
+        if pol.name == policyName {
+          mut j: Int = 0
+          while j < pol.permittedEffects.count() {
+            let eOpt = pol.permittedEffects.get(j)
+            match eOpt {
+              Some(e) => { if e == effect { return true } }
+              None => {}
+              _ => {}
+            }
+            j = j + 1
+          }
+          return false
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return false
+}
+
+pure flow verifyDomainGuardConformance(flows: Array, policies: Array) -> GovResult
+contract {
+  intent { "SPORE-GOV-004: verify declared effects ⊆ permitted_effects for each [conforms_to: X] contract." }
+}
+{
+  mut allDiags: Array = Array.empty()
+  mut passed: Int = 0
+  mut failed: Int = 0
+  mut i: Int = 0
+  while i < flows.count() {
+    let fdOpt = flows.get(i)
+    match fdOpt {
+      Some(fd) => {
+        let ct: String = fd.conformsTo
+        if ct != "" {
+          let polExists: Bool = findPolicyExists(policies, ct)
+          if polExists == false {
+            let msg: String = "flow '" + fd.name + "' declares [conforms_to: " + ct + "] but no policy '" + ct + "' was found"
+            allDiags = allDiags.append({ code: "SPORE-GOV-004", message: msg, flowName: fd.name })
+            failed = failed + 1
+          } else {
+            mut flowDiags: Array = Array.empty()
+            mut j: Int = 0
+            while j < fd.effects.count() {
+              let effOpt = fd.effects.get(j)
+              match effOpt {
+                Some(eff) => {
+                  let permitted: Bool = effectIsPermitted(policies, ct, eff)
+                  if permitted == false {
+                    let msg: String = "SPORE-GOV-004: effect '" + eff + "' is not permitted by policy '" + ct + "' in flow '" + fd.name + "'"
+                    flowDiags = flowDiags.append({ code: "SPORE-GOV-004", message: msg, flowName: fd.name })
+                  }
+                }
+                None => {}
+                _ => {}
+              }
+              j = j + 1
+            }
+            if flowDiags.count() == 0 { passed = passed + 1 }
+            if flowDiags.count() > 0 {
+              failed = failed + 1
+              allDiags = appendAll(allDiags, flowDiags)
+            }
+          }
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return { diagnostics: allDiags, passed: passed, failed: failed }
+}
+
+// ── Body-governance verification pass ─────────────────────────
+
+pure flow checkBodyGovernance(flows: Array) -> GovResult
+contract {
+  intent { "A secure flow must perform an audit call in its body (SPORE-VAL-001)." }
+}
+{
+  mut allDiags: Array = Array.empty()
+  mut passed: Int = 0
+  mut failed: Int = 0
+  mut i: Int = 0
+  while i < flows.count() {
+    let fdOpt = flows.get(i)
+    match fdOpt {
+      Some(fd) => {
+        let name: String = fd.name
+        let kind: String = fd.kind
+        mut flowDiags: Array = Array.empty()
+        if kind == "secure" {
+          if flowCallsAudit(fd.body) == false {
+            let msg: String = "secure flow '" + name + "' performs no audit call in its body"
+            flowDiags = flowDiags.append({ code: "SPORE-VAL-001", message: msg, flowName: name })
+          }
+        }
+        if flowDiags.count() == 0 {
+          passed = passed + 1
+        }
+        if flowDiags.count() > 0 {
+          failed = failed + 1
+          mut j: Int = 0
+          while j < flowDiags.count() {
+            let dOpt = flowDiags.get(j)
+            match dOpt {
+              Some(d) => { allDiags = allDiags.append(d) }
+              None => {}
+              _ => {}
+            }
+            j = j + 1
+          }
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return { diagnostics: allDiags, passed: passed, failed: failed }
+}
+
+// ── v2.2 Governance Additions ─────────────────────────────────
+//
+// 1. verifyGuardDecl          — guard {} domain ceiling (permitted_effects subset)
+// 2. verifyPolicyHierarchy    — SPORE-INHERIT-001/002: parent_policy resolution + subset
+// 3. verifyEmergencyTransitions — SPORE-MONO-001/002: emergency {} only DENY
+// 4. verifyTrapDecl           — SPORE-TRAP-001/002: error code format + scope
+// 5. verifyStepExpr           — SPORE-STEP-001: step in pure flow warning
+// 6. verifyMutationPolicy     — SPORE-MUTATION-001/002: only_decrease + max_change
+
+// Known capability names recognised by the governance verifier.
+pure flow isKnownCapability(cap: String) -> Bool
+contract {
+  intent { "Return true when cap is a recognised system capability token." }
+}
+{
+  if cap == "audit.write"           { return true }
+  if cap == "memory.read"           { return true }
+  if cap == "memory.write"          { return true }
+  if cap == "network.send"          { return true }
+  if cap == "network.receive"       { return true }
+  if cap == "fs.read"               { return true }
+  if cap == "fs.write"              { return true }
+  if cap == "crypto.sign"           { return true }
+  if cap == "crypto.verify"         { return true }
+  if cap == "deterministic_execution" { return true }
+  if cap == "state.read"            { return true }
+  if cap == "state.write"           { return true }
+  if cap == "timer.read"            { return true }
+  if cap == "log.write"             { return true }
+  return false
+}
+
+// ── 1. Guard Domain Ceiling ───────────────────────────────────
+
+// Verify a single guard {} declaration.
+// guardDecls shape: Array<{ name: String, permittedEffects: Array<String> }>
+// SPORE-GOV-005: every permitted_effect must be a known capability token.
+pure flow verifyGuardDecl(guardDecls: Array) -> GovResult
+contract {
+  intent { "SPORE-GOV-005: guard permitted_effects must all be known capability tokens." }
+}
+{
+  mut allDiags: Array = Array.empty()
+  mut passed: Int = 0
+  mut failed: Int = 0
+  mut i: Int = 0
+  while i < guardDecls.count() {
+    let gOpt = guardDecls.get(i)
+    match gOpt {
+      Some(g) => {
+        mut guardDiags: Array = Array.empty()
+        mut j: Int = 0
+        while j < g.permittedEffects.count() {
+          let eOpt = g.permittedEffects.get(j)
+          match eOpt {
+            Some(e) => {
+              if isKnownCapability(e) == false {
+                let msg: String = "guard '" + g.name + "' permitted_effects contains unknown capability '" + e + "' (SPORE-GOV-005)"
+                guardDiags = guardDiags.append({ code: "SPORE-GOV-005", message: msg, flowName: g.name })
+              }
+            }
+            None => {}
+            _ => {}
+          }
+          j = j + 1
+        }
+        if guardDiags.count() == 0 { passed = passed + 1 }
+        if guardDiags.count() > 0 {
+          failed = failed + 1
+          allDiags = appendAll(allDiags, guardDiags)
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return { diagnostics: allDiags, passed: passed, failed: failed }
+}
+
+// ── 2. Policy Hierarchy (SPORE-INHERIT-001/002) ─────────────────
+
+// Verify parent_policy references resolve and child effects ⊆ parent effects.
+// Each element in guards: { name: String, parentPolicy: String, permittedEffects: Array }
+// SPORE-INHERIT-001: parentPolicy must resolve to an existing guard name.
+// SPORE-INHERIT-002: child permittedEffects must be a subset of parent permittedEffects.
+pure flow verifyPolicyHierarchy(guards: Array) -> GovResult
+contract {
+  intent { "SPORE-INHERIT-001/002: parent_policy references resolve; child effects ⊆ parent effects." }
+}
+{
+  mut allDiags: Array = Array.empty()
+  mut passed: Int = 0
+  mut failed: Int = 0
+  mut i: Int = 0
+  while i < guards.count() {
+    let gOpt = guards.get(i)
+    match gOpt {
+      Some(g) => {
+        let parent: String = g.parentPolicy
+        if parent != "" {
+          // SPORE-INHERIT-001: parent guard must exist.
+          let parentExists: Bool = findPolicyExists(guards, parent)
+          if parentExists == false {
+            let msg: String = "guard '" + g.name + "' declares parent_policy: '" + parent + "' which does not resolve (SPORE-INHERIT-001)"
+            allDiags = allDiags.append({ code: "SPORE-INHERIT-001", message: msg, flowName: g.name })
+            failed = failed + 1
+          } else {
+            // SPORE-INHERIT-002: every child effect must appear in parent's permittedEffects.
+            mut hierDiags: Array = Array.empty()
+            mut j: Int = 0
+            while j < g.permittedEffects.count() {
+              let ceOpt = g.permittedEffects.get(j)
+              match ceOpt {
+                Some(ce) => {
+                  let inParent: Bool = effectIsPermitted(guards, parent, ce)
+                  if inParent == false {
+                    let msg: String = "guard '" + g.name + "' child effect '" + ce + "' is not in parent '" + parent + "' permitted_effects (SPORE-INHERIT-002)"
+                    hierDiags = hierDiags.append({ code: "SPORE-INHERIT-002", message: msg, flowName: g.name })
+                  }
+                }
+                None => {}
+                _ => {}
+              }
+              j = j + 1
+            }
+            if hierDiags.count() == 0 { passed = passed + 1 }
+            if hierDiags.count() > 0 {
+              failed = failed + 1
+              allDiags = appendAll(allDiags, hierDiags)
+            }
+          }
+        } else {
+          passed = passed + 1
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return { diagnostics: allDiags, passed: passed, failed: failed }
+}
+
+// ── 3. Emergency Transitions (SPORE-MONO-001/002) ───────────────
+
+// Verify that emergency {} transitions only DENY, never grant capabilities.
+// guardDecl: Array<{ name: String, emergencyTransitions: Array<{ action: String, capability: String }> }>
+// SPORE-MONO-001: emergency transition action must be "DENY".
+// SPORE-MONO-002: no emergency transition may use action "GRANT".
+pure flow verifyEmergencyTransitions(guardDecl: Array) -> GovResult
+contract {
+  intent { "SPORE-MONO-001/002: emergency transitions must only DENY capabilities, never grant them." }
+}
+{
+  mut allDiags: Array = Array.empty()
+  mut passed: Int = 0
+  mut failed: Int = 0
+  mut i: Int = 0
+  while i < guardDecl.count() {
+    let gOpt = guardDecl.get(i)
+    match gOpt {
+      Some(g) => {
+        mut emDiags: Array = Array.empty()
+        mut j: Int = 0
+        while j < g.emergencyTransitions.count() {
+          let tOpt = g.emergencyTransitions.get(j)
+          match tOpt {
+            Some(t) => {
+              if t.action != "DENY" {
+                let msg1: String = "emergency transition in guard '" + g.name + "' uses action '" + t.action + "' — only DENY is permitted (SPORE-MONO-001)"
+                emDiags = emDiags.append({ code: "SPORE-MONO-001", message: msg1, flowName: g.name })
+              }
+              if t.action == "GRANT" {
+                let msg2: String = "emergency transition in guard '" + g.name + "' must not grant capability '" + t.capability + "' (SPORE-MONO-002)"
+                emDiags = emDiags.append({ code: "SPORE-MONO-002", message: msg2, flowName: g.name })
+              }
+            }
+            None => {}
+            _ => {}
+          }
+          j = j + 1
+        }
+        if emDiags.count() == 0 { passed = passed + 1 }
+        if emDiags.count() > 0 {
+          failed = failed + 1
+          allDiags = appendAll(allDiags, emDiags)
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return { diagnostics: allDiags, passed: passed, failed: failed }
+}
+
+// ── 4. Trap Declaration Validation (SPORE-TRAP-001/002) ─────────
+
+// Verify error code format and scope for trap {} statements.
+// trapDecl: Array<{ kind: "trap", errorCode: String, scopeName: String }>
+// flowParams: Array<{ name: String }> — visible parameter names in the enclosing flow.
+// SPORE-TRAP-001: errorCode must be non-empty (non-blank identifier).
+// SPORE-TRAP-002: errorCode must not shadow a flow parameter name.
+pure flow verifyTrapDecl(trapDecl: Array, flowParams: Array) -> GovResult
+contract {
+  intent { "SPORE-TRAP-001/002: trap error code must be a non-blank identifier and must not shadow a flow parameter." }
+}
+{
+  mut allDiags: Array = Array.empty()
+  mut passed: Int = 0
+  mut failed: Int = 0
+  mut i: Int = 0
+  while i < trapDecl.count() {
+    let tOpt = trapDecl.get(i)
+    match tOpt {
+      Some(t) => {
+        if t.kind == "trap" {
+          mut trapDiags: Array = Array.empty()
+          // SPORE-TRAP-001: error code must be non-empty.
+          if t.errorCode == "" {
+            let msg1: String = "trap statement has no error code identifier (SPORE-TRAP-001)"
+            trapDiags = trapDiags.append({ code: "SPORE-TRAP-001", message: msg1, flowName: t.scopeName })
+          }
+          // SPORE-TRAP-002: error code must not shadow a parameter name.
+          mut j: Int = 0
+          while j < flowParams.count() {
+            let pOpt = flowParams.get(j)
+            match pOpt {
+              Some(p) => {
+                if t.errorCode == p.name {
+                  let msg2: String = "trap error code '" + t.errorCode + "' shadows flow parameter '" + p.name + "' (SPORE-TRAP-002)"
+                  trapDiags = trapDiags.append({ code: "SPORE-TRAP-002", message: msg2, flowName: t.scopeName })
+                }
+              }
+              None => {}
+              _ => {}
+            }
+            j = j + 1
+          }
+          if trapDiags.count() == 0 { passed = passed + 1 }
+          if trapDiags.count() > 0 {
+            failed = failed + 1
+            allDiags = appendAll(allDiags, trapDiags)
+          }
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return { diagnostics: allDiags, passed: passed, failed: failed }
+}
+
+// ── 5. Step Expression Qualifier Check (SPORE-STEP-001) ─────────
+
+// Warn when a step expression appears inside a pure flow.
+// stepExpr: Array<{ kind: String, target: { kind: String, value: String } }>
+// flowQualifier: "pure" | "governed" | "secure" | "flow"
+// SPORE-STEP-001: step in a pure flow is not permitted.
+pure flow verifyStepExpr(stepExpr: Array, flowQualifier: String) -> GovResult
+contract {
+  intent { "SPORE-STEP-001: warn when a step expression is used inside a pure flow." }
+}
+{
+  mut allDiags: Array = Array.empty()
+  mut passed: Int = 0
+  mut failed: Int = 0
+  mut i: Int = 0
+  while i < stepExpr.count() {
+    let eOpt = stepExpr.get(i)
+    match eOpt {
+      Some(e) => {
+        if e.kind == "step" {
+          if flowQualifier == "pure" {
+            let msg: String = "step expression in pure flow '" + e.target.value + "' is not permitted — pure flows cannot spawn DWI isolates (SPORE-STEP-001)"
+            allDiags = allDiags.append({ code: "SPORE-STEP-001", message: msg, flowName: e.target.value })
+            failed = failed + 1
+          } else {
+            passed = passed + 1
+          }
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return { diagnostics: allDiags, passed: passed, failed: failed }
+}
+
+// ── 6. Mutation Policy Constraints (SPORE-MUTATION-001/002) ─────
+
+// Verify only_decrease and max_change constraints in policy {} blocks.
+// policyBlock: Array<{ name: String, onlyDecrease: Bool, maxChange: Int }>
+// flowBody: Array of assignment statements with { kind: "assign", varName: String, delta: Int }
+// SPORE-MUTATION-001: when onlyDecrease is true, no assignment may increase the variable.
+// SPORE-MUTATION-002: when maxChange > 0, no single assignment delta may exceed maxChange.
+pure flow verifyMutationPolicy(policyBlock: Array, flowBody: Array) -> GovResult
+contract {
+  intent { "SPORE-MUTATION-001/002: enforce only_decrease and max_change mutation constraints from policy blocks." }
+}
+{
+  mut allDiags: Array = Array.empty()
+  mut passed: Int = 0
+  mut failed: Int = 0
+  mut i: Int = 0
+  while i < policyBlock.count() {
+    let pOpt = policyBlock.get(i)
+    match pOpt {
+      Some(pol) => {
+        mut polDiags: Array = Array.empty()
+        mut j: Int = 0
+        while j < flowBody.count() {
+          let sOpt = flowBody.get(j)
+          match sOpt {
+            Some(s) => {
+              if s.kind == "assign" {
+                if s.varName == pol.name {
+                  // SPORE-MUTATION-001: only_decrease — delta must be <= 0.
+                  if pol.onlyDecrease {
+                    if s.delta > 0 {
+                      let msg1: String = "mutation policy '" + pol.name + "' only_decrease violated: assignment increases variable by " + s.delta + " (SPORE-MUTATION-001)"
+                      polDiags = polDiags.append({ code: "SPORE-MUTATION-001", message: msg1, flowName: pol.name })
+                    }
+                  }
+                  // SPORE-MUTATION-002: max_change — delta must not exceed maxChange.
+                  if pol.maxChange > 0 {
+                    if s.delta > pol.maxChange {
+                      let msg2: String = "mutation policy '" + pol.name + "' max_change=" + pol.maxChange + " violated: assignment delta " + s.delta + " exceeds limit (SPORE-MUTATION-002)"
+                      polDiags = polDiags.append({ code: "SPORE-MUTATION-002", message: msg2, flowName: pol.name })
+                    }
+                  }
+                }
+              }
+            }
+            None => {}
+            _ => {}
+          }
+          j = j + 1
+        }
+        if polDiags.count() == 0 { passed = passed + 1 }
+        if polDiags.count() > 0 {
+          failed = failed + 1
+          allDiags = appendAll(allDiags, polDiags)
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return { diagnostics: allDiags, passed: passed, failed: failed }
+}

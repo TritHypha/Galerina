@@ -2,22 +2,22 @@
 
 ## Purpose
 
-Define where LogicN application files, framework package docs and generated
+Define where Galerina application files, framework package docs and generated
 reports should live.
 
 ## Short Definition
 
-Project structure separates application source, reusable LogicN package planning,
+Project structure separates application source, reusable Galerina package planning,
 language-core documentation and generated output.
 
 ## Recommended Structure
 
 ```text
-packages-logicn/
-  logicn-core/
-  logicn-framework-app-kernel/
-  logicn-framework-api-server/
-  logicn-framework-example-app/
+packages-galerina/
+  galerina-core/
+  galerina-framework-app-kernel/
+  galerina-framework-api-server/
+  galerina-framework-example-app/
 
 docs/
   framework/
@@ -37,8 +37,8 @@ build/
 
 - Keep secrets out of source control.
 - Keep generated machine-local capability profiles out of Git.
-- Keep app-specific docs in `docs/`, not in `packages-logicn/logicn-core/`.
-- Keep LogicN language-core docs in `packages-logicn/logicn-core/`, not in app docs.
+- Keep app-specific docs in `docs/`, not in `packages-galerina/galerina-core/`.
+- Keep Galerina language-core docs in `packages-galerina/galerina-core/`, not in app docs.
 
 ## AI-Friendly Output
 
@@ -48,9 +48,9 @@ package manifests or source contracts change.
 ## Generated Reports
 
 ```text
-build/graph/logicn-devtools-project-graph.json
-build/graph/LogicN_GRAPH_REPORT.md
-build/graph/logicn-ai-map.md
+build/graph/galerina-devtools-project-graph.json
+build/graph/Galerina_GRAPH_REPORT.md
+build/graph/galerina-ai-map.md
 ```
 
 ## v1 Scope

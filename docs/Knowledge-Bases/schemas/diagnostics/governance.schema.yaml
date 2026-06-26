@@ -1,33 +1,33 @@
-family: LLN-GOV
+family: SPORE-GOV
 description: "Governance verifier diagnostics"
-canonical_source: "docs/Knowledge-Bases/logicn-governance-verifier-spec.md"
+canonical_source: "docs/Knowledge-Bases/galerina-governance-verifier-spec.md"
 diagnostics:
-  - code: LLN-GOV-001
+  - code: SPORE-GOV-001
     name: INTENT_BEHAVIOR_MISMATCH
     severity: warning
     phase: governance_verifier
     message: "Flow intent suggests '{intentHint}' but declared effects include '{conflictingEffect}'."
     implemented: true
-  - code: LLN-GOV-002
+  - code: SPORE-GOV-002
     name: MISSING_AUDIT_FOR_GOVERNED_SINK
     severity: warning
     phase: governance_verifier
     message: "Flow '{flowName}' writes to a database but declares no audit.write."
     implemented: true
-  - code: LLN-GOV-003
+  - code: SPORE-GOV-003
     name: PROTECTED_DATA_SENT_EXTERNALLY_WITHOUT_AUTHORITY
     severity: error
     phase: governance_verifier
     message: "Protected value reaches external sink without authority block."
     implemented: false
     phase_target: "8B"
-  - code: LLN-GOV-004
+  - code: SPORE-GOV-004
     name: DENIED_TARGET_SELECTED
     severity: error
     phase: governance_verifier
     message: "Flow denies remote.execution but declares network.outbound."
     implemented: true
-  - code: LLN-GOV-010
+  - code: SPORE-GOV-010
     name: INTENT_MISSING_ON_SECURE_FLOW
     severity: info
     phase: governance_verifier

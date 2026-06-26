@@ -2,7 +2,7 @@
 
 ## Summary
 
-LogicN should support project maps as optional developer tooling. The goal is to
+Galerina should support project maps as optional developer tooling. The goal is to
 help humans and AI assistants understand package ownership, documentation
 links, policies, reports and design decisions without treating the graph as a
 compiler or runtime authority.
@@ -15,7 +15,7 @@ Primary references:
 ## Package
 
 ```text
-packages-logicn/logicn-devtools-project-graph
+packages-galerina/galerina-devtools-project-graph
 ```
 
 The package owns graph contracts for:
@@ -39,13 +39,13 @@ Decision
 
 ## Backend-Neutral Rule
 
-Do not make developers write Graphify-specific LogicN syntax or commands. Keep the
+Do not make developers write Graphify-specific Galerina syntax or commands. Keep the
 stable surface generic:
 
 ```bash
-LogicN graph
-LogicN graph --out build/graph
-LogicN graph query "Which package owns SecureString?"
+Galerina graph
+Galerina graph --out build/graph
+Galerina graph query "Which package owns SecureString?"
 ```
 
 Backend selection belongs in policy/configuration:
@@ -53,19 +53,19 @@ Backend selection belongs in policy/configuration:
 ```text
 project_graph {
   backend auto
-  allow ["LogicN_native", "graphify", "future_standard"]
+  allow ["Galerina_native", "graphify", "future_standard"]
 }
 ```
 
-This lets LogicN use:
+This lets Galerina use:
 
 ```text
-LogicN_native today
+Galerina_native today
 graphify as an optional pinned Git backend
 another graph backend later
 ```
 
-without changing LogicN source, CLI commands or generated graph file names.
+without changing Galerina source, CLI commands or generated graph file names.
 
 If a backend is loaded from Git, it must be explicitly allowed and pinned to a
 commit, tag or versioned ref. Model-assisted extraction remains opt-in.
@@ -75,10 +75,10 @@ commit, tag or versioned ref. Model-assisted extraction remains opt-in.
 Recommended generated output paths:
 
 ```text
-build/graph/logicn-devtools-project-graph.json
-build/graph/logicn-devtools-project-graph.html
-build/graph/LogicN_GRAPH_REPORT.md
-build/graph/logicn-ai-map.md
+build/graph/galerina-devtools-project-graph.json
+build/graph/galerina-devtools-project-graph.html
+build/graph/Galerina_GRAPH_REPORT.md
+build/graph/galerina-ai-map.md
 ```
 
 ## CLI Direction
@@ -86,40 +86,40 @@ build/graph/logicn-ai-map.md
 Run from the repository root:
 
 ```powershell
-cd C:\laragon\www\LogicN
-node packages-logicn\logicn-core-cli\dist\index.js graph --out build\graph
+cd C:\laragon\www\Galerina
+node packages-galerina\galerina-core-cli\dist\index.js graph --out build\graph
 ```
 
-This writes the graph outputs under `build\graph`. Once `logicn-core-cli` is linked or
+This writes the graph outputs under `build\graph`. Once `galerina-core-cli` is linked or
 published, use the stable installed CLI form:
 
 ```powershell
-LogicN graph --out build\graph
+Galerina graph --out build\graph
 ```
 
-AI coding tools should consult `build\graph\logicn-ai-map.md` or
-`build\graph\LogicN_GRAPH_REPORT.md` when package ownership is unclear. If
-`build\graph\logicn-devtools-project-graph.json` is missing, or if changes were made to
-`AGENTS.md`, `logicn.workspace.json`, `docs/`, package README/TODO files, package
+AI coding tools should consult `build\graph\galerina-ai-map.md` or
+`build\graph\Galerina_GRAPH_REPORT.md` when package ownership is unclear. If
+`build\graph\galerina-devtools-project-graph.json` is missing, or if changes were made to
+`AGENTS.md`, `galerina.workspace.json`, `docs/`, package README/TODO files, package
 manifests or package source contracts, regenerate the graph before relying on
 it.
 
 Current commands:
 
 ```bash
-LogicN graph
-LogicN graph --out build/graph
-LogicN graph query "Which package owns SecureString?"
-LogicN graph explain logicn-core-security
-LogicN graph path logicn-framework-api-server logicn-core-security
+Galerina graph
+Galerina graph --out build/graph
+Galerina graph query "Which package owns SecureString?"
+Galerina graph explain galerina-core-security
+Galerina graph path galerina-framework-api-server galerina-core-security
 ```
 
 Current local Node equivalents:
 
 ```powershell
-node packages-logicn\logicn-core-cli\dist\index.js graph query logicn-core-security --out build\graph
-node packages-logicn\logicn-core-cli\dist\index.js graph explain package:logicn-core-security --out build\graph
-node packages-logicn\logicn-core-cli\dist\index.js graph path package:logicn-devtools-project-graph report:project-graph --out build\graph
+node packages-galerina\galerina-core-cli\dist\index.js graph query galerina-core-security --out build\graph
+node packages-galerina\galerina-core-cli\dist\index.js graph explain package:galerina-core-security --out build\graph
+node packages-galerina\galerina-core-cli\dist\index.js graph path package:galerina-devtools-project-graph report:project-graph --out build\graph
 ```
 
 ## Safety Rules
@@ -147,11 +147,11 @@ distinguish source facts from inferred relationships
 
 ## Native Mapper
 
-The first implementation is the LogicN-native mapper in `packages-logicn/logicn-devtools-project-graph`.
+The first implementation is the Galerina-native mapper in `packages-galerina/galerina-devtools-project-graph`.
 It can scan workspace package paths and project docs, then map:
 
 ```text
-workspace package paths from `logicn.workspace.json`, including `packages-logicn/`
+workspace package paths from `galerina.workspace.json`, including `packages-galerina/`
 README/TODO/docs files
 package.json descriptions and dependencies
 TypeScript exported types, interfaces and functions
@@ -160,10 +160,10 @@ package mentions in documentation
 ```
 
 This is intentionally lightweight and deterministic. Richer external tools can
-be added later as backend adapters without changing `LogicN graph`.
+be added later as backend adapters without changing `Galerina graph`.
 
-When `packages-logicn/` package paths are listed in `logicn.workspace.json`, the native
-mapper should treat them as LogicN package collection paths. They may be beta
+When `packages-galerina/` package paths are listed in `galerina.workspace.json`, the native
+mapper should treat them as Galerina package collection paths. They may be beta
 domain packages or future package-repository mounts, but the graph remains
 advisory and must not decide production package resolution.
 
@@ -172,4 +172,4 @@ over generated graph JSON.
 
 ## Boundary
 
-The graph explains LogicN. It does not enforce LogicN.
+The graph explains Galerina. It does not enforce Galerina.

@@ -1,11 +1,11 @@
 {
-  "name": "logicn-auth-service",
+  "name": "galerina-auth-service",
   "version": "0.1.0",
-  "description": "LogicN governed auth service — verifyPassword endpoint. First live deployment of a .lln governed HTTP service.",
+  "description": "Galerina governed auth service — verifyPassword endpoint. First live deployment of a .spore governed HTTP service.",
   "tasks": {
     "dev": "deno run --allow-net --allow-read main.ts",
-    "deploy": "deployctl deploy --project=logicn-auth main.ts",
-    "serve": "logicn serve examples/auth-service/verifyPasswordService.lln --port 3000"
+    "deploy": "deployctl deploy --project=galerina-auth main.ts",
+    "serve": "galerina serve examples/auth-service/verifyPasswordService.spore --port 3000"
   },
   "imports": {},
   "lint": { "rules": { "exclude": ["no-unused-vars"] } }

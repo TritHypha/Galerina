@@ -1,4 +1,4 @@
-﻿Title: LogicN Contract Pattern — Healthcare Patient Create (Full NHS Pattern)
+﻿Title: Galerina Contract Pattern — Healthcare Patient Create (Full NHS Pattern)
 
 ### When to use
 
@@ -6,7 +6,7 @@ Use this pattern when a flow creates a new patient record in a healthcare contex
 
 ### Correct example
 
-```logicn
+```galerina
 event PatientCreated {
   patientId: String
   nhsNumber: String?
@@ -275,7 +275,7 @@ flow CreatePatientRecord(readonly request: Request) -> CreatePatientRecordResult
 ### Common mistakes
 
 **Mistake 1 — Omitting the `compliance` block for an NHS flow**
-```logicn
+```galerina
 contract {
   security { classification: restricted }
   privacy { pii: true }
@@ -284,7 +284,7 @@ contract {
 Without the `compliance` block, the governance runtime cannot generate DSP Toolkit or GDPR evidence. All healthcare flows must declare the applicable frameworks, lawful basis, and data controller.
 
 **Mistake 2 — Including PII fields in `audit.includes` rather than `audit.redact`**
-```logicn
+```galerina
 effects {
   audit {
     includes: [request.body["demographics"]["nhsNumber"]]
@@ -294,7 +294,7 @@ effects {
 NHS number and all other `privacy.fields` must appear in `audit.redact`, not `audit.includes`. Writing them to the audit log creates a secondary PII store that requires its own data protection assessment.
 
 **Mistake 3 — Omitting `idempotency` and allowing duplicate NHS numbers**
-```logicn
+```galerina
 contract {
   model { writes ["patients"] }
   // no idempotency block
@@ -318,7 +318,7 @@ Without `idempotency`, concurrent or retried requests can create duplicate patie
 
 If `E920 — restricted-classified flow with privacy.pii: true requires compliance block` is raised, add the compliance block inside `contract { }`:
 
-```logicn
+```galerina
 compliance {
   frameworks: ["nhs_dsp_toolkit", "uk_gdpr", "caldicott"]
   data_controller: "nhs_trust"

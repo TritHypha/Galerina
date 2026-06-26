@@ -2,7 +2,7 @@
 
 ## Definition
 
-LogicN uses `type` to define structured data shapes and `enum` to define fixed
+Galerina uses `type` to define structured data shapes and `enum` to define fixed
 named states. Both produce named, strongly-typed values that the compiler
 enforces throughout the codebase.
 
@@ -12,7 +12,7 @@ enforces throughout the codebase.
 
 ### Closed Object Contract
 
-```logicn
+```galerina
 type Customer {
   id:    CustomerId
   name:  String
@@ -35,7 +35,7 @@ Field names: camelCase
 ```
 
 Good:
-```logicn
+```galerina
 type CustomerProfile {
   customerId:  CustomerId
   displayName: String
@@ -43,7 +43,7 @@ type CustomerProfile {
 ```
 
 Avoid:
-```logicn
+```galerina
 type customer_profile {
   CustomerID: string    // wrong case for both name and field
 }
@@ -56,7 +56,7 @@ AI context easier to consume.
 
 All fields are required unless wrapped in `Option<T>`.
 
-```logicn
+```galerina
 type Customer {
   id:    CustomerId
   email: Email
@@ -69,7 +69,7 @@ There is no `?` marker, no default values, no silent null.
 
 ### Nested Types
 
-```logicn
+```galerina
 type Address {
   line1:    String
   city:     String
@@ -87,7 +87,7 @@ type Customer {
 
 ### Type Aliases
 
-```logicn
+```galerina
 type CustomerId  = String
 type OrderId     = String
 type RetryCount  = Int
@@ -97,7 +97,7 @@ Type aliases are separate from object type blocks. They let code be
 self-documenting without inventing a full object shape.
 
 Prefer:
-```logicn
+```galerina
 type CustomerId = String
 
 type Customer {
@@ -107,7 +107,7 @@ type Customer {
 ```
 
 Over:
-```logicn
+```galerina
 type Customer {
   id:   String      // weaker domain signal
   name: String
@@ -119,7 +119,7 @@ type Customer {
 Branded types prevent accidentally passing an `OrderId` where a `CustomerId`
 is expected:
 
-```logicn
+```galerina
 type CustomerId = Brand<String, "CustomerId">
 type OrderId    = Brand<String, "OrderId">
 type PaymentId  = Brand<String, "PaymentId">
@@ -142,7 +142,7 @@ Use aliases for readability. Use brands for safety.
 
 Brand construction from external input:
 
-```logicn
+```galerina
 // Correct — validated before branding
 let id: Result<CustomerId, ValidationError> = parseCustomerId(input)
 
@@ -155,7 +155,7 @@ they remain distinct.
 
 Brands compose with state qualifiers:
 
-```logicn
+```galerina
 type SessionToken = Brand<String secure, "SessionToken">
 type RawHtml      = Brand<String unsafe, "RawHtml">
 ```
@@ -165,7 +165,7 @@ type RawHtml      = Brand<String unsafe, "RawHtml">
 Use `SecureString` (or the postfix state qualifier `String secure`) for
 fields that must not be logged or exposed:
 
-```logicn
+```galerina
 type LoginRequest {
   email:    Email
   password: SecureString
@@ -174,7 +174,7 @@ type LoginRequest {
 
 With state qualifier (preferred long-term):
 
-```logicn
+```galerina
 type WebhookConfig {
   endpoint:      String
   signingSecret: String secure
@@ -185,7 +185,7 @@ type WebhookConfig {
 
 ### AI-Readable Comments
 
-```logicn
+```galerina
 /// @purpose Public request body for creating an order.
 /// @risk User-controlled input reaches pricing and payment checks.
 type CreateOrderRequest {
@@ -219,7 +219,7 @@ TypeRefList
 
 ### What is NOT in v1 Core
 
-```logicn
+```galerina
 type User extends Person { ... }    // no inheritance
 type User { ...Address }            // no spreads
 type User { name?: String }         // no optional marker
@@ -237,7 +237,7 @@ These may become package-owned features or validation policies later.
 
 Enums define a **closed set of named states**:
 
-```logicn
+```galerina
 enum PaymentStatus {
   Paid
   Unpaid
@@ -255,7 +255,7 @@ Enum cases:  PascalCase
 ```
 
 Good:
-```logicn
+```galerina
 enum PaymentStatus {
   Paid
   Pending
@@ -264,7 +264,7 @@ enum PaymentStatus {
 ```
 
 Avoid:
-```logicn
+```galerina
 enum payment_status {
   paid
   pending_payment
@@ -276,7 +276,7 @@ enum payment_status {
 
 The parser accepts:
 
-```logicn
+```galerina
 // Newline-separated (canonical)
 enum Status {
   Paid
@@ -294,7 +294,7 @@ enum Status { Paid, Failed }
 ```
 
 The formatter always outputs the **newline-separated canonical form**:
-```logicn
+```galerina
 enum Status {
   Paid
   Failed
@@ -306,7 +306,7 @@ enum Status {
 An enum may only be one of its declared cases. Unknown states from external
 sources produce decode errors rather than silently passing through.
 
-```logicn
+```galerina
 enum PaymentStatus { Paid, Pending, Failed }
 ```
 
@@ -317,7 +317,7 @@ fail closed with a typed error unless a boundary policy allows a fallback.
 
 The `match` expression must cover all enum variants:
 
-```logicn
+```galerina
 let decision: Decision = match status {
   Paid     => Allow
   Failed   => Deny
@@ -338,13 +338,13 @@ LNN-ERR-TYPE-003: Non-exhaustive match — missing case: Unknown
 
 Allow unqualified enum cases when the expected type is known:
 
-```logicn
+```galerina
 let status: PaymentStatus = Paid
 ```
 
 Require qualified cases when ambiguous (two enums share the same case name):
 
-```logicn
+```galerina
 let payStatus: PaymentStatus = PaymentStatus.Failed
 let jobStatus: JobStatus     = JobStatus.Failed
 ```
@@ -365,7 +365,7 @@ policy, not core enum syntax.
 Use dedicated decision enums for business and security outcomes instead of
 `Bool`:
 
-```logicn
+```galerina
 enum Decision {
   Allow
   Deny
@@ -414,7 +414,7 @@ EnumCase
 
 ### Future: Payload Variants
 
-```logicn
+```galerina
 // Future — not v1
 enum PaymentResult {
   Paid(PaymentId)
@@ -430,9 +430,9 @@ cases only.
 
 ## Standard Discriminated Types
 
-LogicN provides built-in discriminated types:
+Galerina provides built-in discriminated types:
 
-```logicn
+```galerina
 Option<T>    // Some(value) or None
 Result<T, E> // Ok(value) or Err(error)
 Decision     // Allow | Deny | Review
@@ -449,7 +449,7 @@ for Decision and Tri.
 ```text
 No implicit type coercion.
 No silent null — use Option<T>.
-No undefined — not a concept in LogicN.
+No undefined — not a concept in Galerina.
 Conversions must be explicit.
 enum matching must be exhaustive.
 Type aliases are not branded types — they do not block mixing.
@@ -471,7 +471,7 @@ LNN-ERR-NULL-002: None used where a value is required
 
 ## Example: Complete Small Model
 
-```logicn
+```galerina
 type CustomerId = String
 type OrderId    = String
 

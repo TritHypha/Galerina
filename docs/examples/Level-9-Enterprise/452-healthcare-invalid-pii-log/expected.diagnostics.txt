@@ -1,5 +1,5 @@
 none
-// LLN-SECRET-001 is the target diagnostic for this example.
+// SPORE-SECRET-001 is the target diagnostic for this example.
 // Protected-value-to-audit-without-redact() detection is tracked for a future compiler wave.
-// The example is stable: LLN-VALUESTATE-006 is suppressed; LLN-EFFECT-002 is a warning —
+// The example is stable: SPORE-VALUESTATE-006 is suppressed; SPORE-EFFECT-002 is a warning —
 // no unsuppressed errors are produced by the current pipeline.

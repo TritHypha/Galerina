@@ -2,8 +2,8 @@
 
 ## Purpose
 
-The LogicN Securely Governed Runtime is the runtime architecture direction for
-checked LogicN execution.
+The Galerina Securely Governed Runtime is the runtime architecture direction for
+checked Galerina execution.
 
 It is designed for:
 
@@ -33,7 +33,7 @@ Code second.
 Authority never implicit.
 ```
 
-LogicN should establish governance before code is allowed to act. Packages,
+Galerina should establish governance before code is allowed to act. Packages,
 plugins, AI tools, storage, network access and compute targets do not receive
 authority automatically.
 
@@ -118,7 +118,7 @@ See [Malicious Data And Exploit Resistance](malicious-data-and-exploit-resistanc
 
 Auditability is part of correctness.
 
-LogicN programs should explain:
+Galerina programs should explain:
 
 - what ran
 - what data moved
@@ -142,11 +142,11 @@ Memory access must remain typed, bounded, auditable and deterministic.
 
 ### Future-Capable Compute
 
-LogicN should work on binary systems today while avoiding assumptions that all
+Galerina should work on binary systems today while avoiding assumptions that all
 future compute is binary-only, electrical-only, CPU-local or Von Neumann-only.
 
 Future support for tri-state logic, optical compute, photonic compute, GPU/NPU
-compute and accelerator hardware must extend LogicN through declared targets
+compute and accelerator hardware must extend Galerina through declared targets
 and boundaries, not through hidden runtime assumptions.
 
 ### Lightweight Runtime
@@ -205,7 +205,7 @@ relevant.
 
 ## Security-Positive Optimisation
 
-LogicN may optimise memory and speed only when the optimisation preserves or
+Galerina may optimise memory and speed only when the optimisation preserves or
 improves security.
 
 Preferred optimisations include:
@@ -254,7 +254,7 @@ Untrusted systems may execute only through declared boundaries.
 
 ## Runtime Structure
 
-### LogicN Core
+### Galerina Core
 
 Responsible for parser, type checker, effect checker, capability declarations,
 package rules, syntax stability and IR generation.

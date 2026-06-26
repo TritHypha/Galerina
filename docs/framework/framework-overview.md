@@ -2,18 +2,18 @@
 
 ## Purpose
 
-The LogicN framework documentation explains how secure web applications are
+The Galerina framework documentation explains how secure web applications are
 structured around typed routes, contracts, policies, secure flows and reports.
 
 ## Short Definition
 
-The framework layer is the application runtime shape around LogicN source. It
+The framework layer is the application runtime shape around Galerina source. It
 does not replace the language core; it explains how application concepts connect
-when running through `logicn serve` and the secure web runtime.
+when running through `galerina serve` and the secure web runtime.
 
 ## Why It Exists
 
-LogicN needs a consistent application model for security, memory safety,
+Galerina needs a consistent application model for security, memory safety,
 developer clarity, runtime speed and AI understanding.
 
 The framework layer gives names to the moving parts:
@@ -34,9 +34,9 @@ reports
 ## Where It Lives
 
 ```text
-packages-logicn/logicn-framework-app-kernel/
-packages-logicn/logicn-framework-api-server/
-packages-logicn/logicn-framework-example-app/
+packages-galerina/galerina-framework-app-kernel/
+packages-galerina/galerina-framework-api-server/
+packages-galerina/galerina-framework-example-app/
 docs/framework/
 ```
 

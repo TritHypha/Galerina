@@ -1,6 +1,6 @@
 # Local AI Review
 
-LogicN may support local AI review as an advisory development and audit aid.
+Galerina may support local AI review as an advisory development and audit aid.
 
 ## Core Rule
 
@@ -78,10 +78,10 @@ These are suggestions, not proof.
 Possible future commands:
 
 ```bash
-logicn ai-review --local
-logicn explain flow getUser
-logicn explain build/reports/model-exposure.json
-logicn audit --env production
+galerina ai-review --local
+galerina explain flow getUser
+galerina explain build/reports/model-exposure.json
+galerina audit --env production
 ```
 
 ## Security Rules

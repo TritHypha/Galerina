@@ -1,4 +1,4 @@
-LLN-EFFECT-001
+SPORE-EFFECT-001
 // The flow uses a pii.read-gated operation but declares no effects at all,
-// which causes LLN-EFFECT-001 (EffectUsedButNotDeclared) in the current pipeline.
-// LLN-PII-001 is the intended future target once the PII effect checker is implemented.
+// which causes SPORE-EFFECT-001 (EffectUsedButNotDeclared) in the current pipeline.
+// SPORE-PII-001 is the intended future target once the PII effect checker is implemented.

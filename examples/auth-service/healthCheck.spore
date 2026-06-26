@@ -1,0 +1,40 @@
+/// @service: health check — GET /health
+/// @phase: 41
+/// @runtime-pct: 27
+
+type HealthStatus = Result<HealthReport,String>
+
+secure flow healthCheck(readonly request: Request) -> HealthStatus
+contract {
+  intent "Liveness probe — returns runtime version, governance status, and uptime. Safe to call at high frequency. No authentication required. Audit is lightweight (info level)."
+  effects {
+    network.inbound
+    audit.write
+  }
+  response {
+    body {
+      status: String
+      runtime: String
+      governance: String
+      phase: Int
+    }
+  }
+}
+{
+  AuditLog.write({
+    event: "HealthCheck",
+    level: "info"
+  })
+
+  return Ok({
+    status: "ok"
+    runtime: "galerina-stage-a"
+    governance: "verified"
+    phase: 41
+  })
+}
+
+route GET "/health" {
+  response HealthStatus
+  flow healthCheck
+}

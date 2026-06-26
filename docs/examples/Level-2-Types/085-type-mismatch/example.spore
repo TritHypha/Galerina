@@ -1,0 +1,10 @@
+/// example: 085-type-mismatch
+/// test_status: stable
+/// level: 2
+/// concept: type mismatch produces SPORE-TYPE-002
+/// expected_diagnostics: SPORE-TYPE-002
+/// ai_rule: The right-hand side of a binding must match the declared type.
+
+pure flow example() -> Void {
+  let count: Int = "42"
+}

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-LogicN should treat models as first-class security contracts, not just
+Galerina should treat models as first-class security contracts, not just
 database-style data shapes.
 
 The recommended model is:
@@ -18,7 +18,7 @@ model = internal data shape
 
 ## Short Definition
 
-A LogicN model is a view-governed, reportable internal data contract used by
+A Galerina model is a view-governed, reportable internal data contract used by
 secure flows and exposed only through declared response or view contracts.
 
 ## Core Rule
@@ -35,13 +35,13 @@ Public routes must not return raw models.
 
 Rejected:
 
-```logicn
+```galerina
 return Ok(user)
 ```
 
 Accepted:
 
-```logicn
+```galerina
 return Ok(UserResponse.from(user))
 ```
 
@@ -87,7 +87,7 @@ Placement rules:
 
 Use first-class view metadata for field exposure:
 
-```logicn
+```galerina
 model User {
   id: UUID view: public
   email: Email view: private
@@ -118,7 +118,7 @@ regulated
 
 Models are internal contracts. Responses and views are safe output contracts.
 
-```logicn
+```galerina
 response UserResponse from User {
   include id
   include email requires capability users.private.read
@@ -139,7 +139,7 @@ The compiler should be able to check:
 
 Database field reads should prefer explicit field allow lists:
 
-```logicn
+```galerina
 allow read Profiles fields: [
   id,
   owner,
@@ -149,7 +149,7 @@ allow read Profiles fields: [
 
 Broad read rules are possible but riskier:
 
-```logicn
+```galerina
 allow read Profiles fields: all except [
   email
 ]
@@ -165,7 +165,7 @@ See [Field Read Rules](field-read-rules.md).
 
 Model relationships should be explicit and reportable.
 
-```logicn
+```galerina
 relationship User.orders {
   from User.id
   to Order.userId
@@ -173,12 +173,12 @@ relationship User.orders {
 }
 ```
 
-LogicN should avoid hidden lazy-loading behaviour such as `user.orders` when it
+Galerina should avoid hidden lazy-loading behaviour such as `user.orders` when it
 silently performs database access.
 
 Prefer:
 
-```logicn
+```galerina
 let orders = try OrdersRepository.findByUserId(user.id)
 ```
 
@@ -199,7 +199,7 @@ Model memory rules should prefer:
 
 Example:
 
-```logicn
+```galerina
 secure flow summariseOrders(
   orders: ReadOnly<List<Order>>,
   ctx: RequestContext
@@ -219,7 +219,7 @@ contract {
 
 Avoid direct uncontrolled mutation:
 
-```logicn
+```galerina
 user.email = newEmail
 user.role = Admin
 user.internalRiskScore = RiskScore.zero
@@ -227,7 +227,7 @@ user.internalRiskScore = RiskScore.zero
 
 Use declared mutations or secure flows:
 
-```logicn
+```galerina
 mutation User.changeEmail {
   field email
   require valid Email
@@ -238,7 +238,7 @@ mutation User.changeEmail {
 
 Then:
 
-```logicn
+```galerina
 let updated = User.changeEmail(user, request.email)
 ```
 
@@ -248,7 +248,7 @@ Models should not own database behaviour directly.
 
 Avoid active-record style:
 
-```logicn
+```galerina
 user.save()
 user.delete()
 User.findById(id)
@@ -256,7 +256,7 @@ User.findById(id)
 
 Prefer repositories:
 
-```logicn
+```galerina
 let user = try UsersRepository.findRequired(userId)
 let saved = try UsersRepository.save(updatedUser)
 ```
@@ -272,7 +272,7 @@ policy = permissions and effects
 
 ## Model Reports
 
-LogicN should generate machine-readable model reports:
+Galerina should generate machine-readable model reports:
 
 ```text
 model-index.json
@@ -341,7 +341,7 @@ accidental data leaks.
 
 ```json
 {
-  "reportType": "logicn.model.ai_summary",
+  "reportType": "galerina.model.ai_summary",
   "models": [
     {
       "name": "User",
@@ -367,7 +367,7 @@ accidental data leaks.
 Model safety should be expensive at check/build time and cheap at runtime.
 ```
 
-LogicN should precompute:
+Galerina should precompute:
 
 - field view maps
 - response projection functions
@@ -380,7 +380,7 @@ LogicN should precompute:
 
 ## Compiler Checks
 
-LogicN should reject:
+Galerina should reject:
 
 - unclassified production model fields
 - public routes returning raw models
@@ -424,6 +424,6 @@ Recommended design rules:
 ## Core Principle
 
 ```text
-LogicN models are not public DTOs and not database-active records.
+Galerina models are not public DTOs and not database-active records.
 They are view-governed internal data contracts used by secure flows and exposed only through declared response contracts.
 ```

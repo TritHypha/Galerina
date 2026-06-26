@@ -7,9 +7,9 @@ Planned for: Phase 17+
 
 ## Purpose
 
-LogicN should not model package management as "Composer for LogicN".
+Galerina should not model package management as "Composer for Galerina".
 
-The LogicN Certified Package Registry is a governed package source where
+The Galerina Certified Package Registry is a governed package source where
 packages are published, verified, signed, versioned, capability-declared and
 policy-rated before use.
 
@@ -26,7 +26,7 @@ Normal package systems mostly ask:
 Can I download this dependency?
 ```
 
-LogicN should also ask:
+Galerina should also ask:
 
 ```text
 Should this dependency be allowed authority in this runtime context?
@@ -91,11 +91,11 @@ Each package should declare:
 
 Example:
 
-```logicn
+```galerina
 package Auth.Standard {
   version "1.2.0"
   license "MIT"
-  publisher "logicn-certified"
+  publisher "galerina-certified"
 
   capabilities {
     allow crypto.password.verify
@@ -131,7 +131,7 @@ regulated
 
 Example policy:
 
-```logicn
+```galerina
 registry policy {
   allow level certified
   allow level verified
@@ -144,7 +144,7 @@ registry policy {
 
 ## Lockfile Role
 
-LogicN should use `logicn.lock.json` or an equivalent lockfile to prevent
+Galerina should use `galerina.lock.json` or an equivalent lockfile to prevent
 dependency drift.
 
 The lockfile should record:
@@ -184,7 +184,7 @@ package-provenance-report.json
 package-risk-report.json
 package-permission-report.json
 dependency-graph-report.json
-logicn-lock-report.json
+galerina-lock-report.json
 ```
 
 Reports should be machine-readable, source-linked and safe for AI/reviewer use.
@@ -192,6 +192,6 @@ Reports should be machine-readable, source-linked and safe for AI/reviewer use.
 ## Final Rule
 
 ```text
-Packages enter LogicN as declared, verified and policy-rated authority requests,
+Packages enter Galerina as declared, verified and policy-rated authority requests,
 not as passive downloaded code.
 ```

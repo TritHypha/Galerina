@@ -2,17 +2,17 @@
 
 ## Purpose
 
-LogicN ideas must be grouped clearly so humans, contributors and AI agents can
+Galerina ideas must be grouped clearly so humans, contributors and AI agents can
 understand what matters now, what is required, what is recommended and what
 belongs in future research.
 
 The main rule:
 
 ```text
-Do not treat every LogicN idea as equal.
+Do not treat every Galerina idea as equal.
 ```
 
-LogicN should first protect non-negotiable rules, then build the core language,
+Galerina should first protect non-negotiable rules, then build the core language,
 then prove core concepts, then expand platform features, and only then
 prioritise future research ideas.
 
@@ -20,7 +20,7 @@ prioritise future research ideas.
 
 | Priority | Category | Meaning |
 | --- | --- | --- |
-| 1 | Non-Negotiable Rules | What LogicN must never violate |
+| 1 | Non-Negotiable Rules | What Galerina must never violate |
 | 2 | Core Language Rules | What the compiler and runtime must enforce |
 | 3 | Core Concepts | What the first useful version must support |
 | 4 | Platform Concepts | Runtime, tooling, package, deployment and ecosystem work |
@@ -40,7 +40,7 @@ prioritise future research ideas.
 
 ## 1. Non-Negotiable Rules
 
-Non-Negotiable Rules define LogicN's identity.
+Non-Negotiable Rules define Galerina's identity.
 
 If a proposed feature breaks one of these rules, the feature should be rejected,
 redesigned or moved into a clearly marked unsafe or experimental area.
@@ -65,12 +65,12 @@ Examples:
 AI instruction:
 
 ```text
-When suggesting LogicN features, never propose behaviour that violates the Non-Negotiable Rules.
+When suggesting Galerina features, never propose behaviour that violates the Non-Negotiable Rules.
 ```
 
 ## 2. Core Language Rules
 
-Core Language Rules define how LogicN code behaves.
+Core Language Rules define how Galerina code behaves.
 
 These should become compiler or runtime rules.
 
@@ -91,7 +91,7 @@ Examples:
 
 ## 3. Core Concepts
 
-Core Concepts are the concepts the first useful LogicN version must make clear.
+Core Concepts are the concepts the first useful Galerina version must make clear.
 
 Examples:
 
@@ -117,7 +117,7 @@ Examples:
 
 ## 4. Platform Concepts
 
-Platform Concepts grow LogicN into a runtime, package and deployment ecosystem.
+Platform Concepts grow Galerina into a runtime, package and deployment ecosystem.
 
 Examples:
 
@@ -139,7 +139,7 @@ Platform Concepts can be important without being v1 compiler blockers.
 
 ## 5. Recommended Design Rules
 
-Recommended Design Rules are strong preferences that keep LogicN coherent.
+Recommended Design Rules are strong preferences that keep Galerina coherent.
 
 Examples:
 
@@ -155,7 +155,7 @@ These rules can guide design even when they are not strict compiler errors yet.
 
 ## 6. Future / Research Concepts
 
-Future and research concepts may shape LogicN later, but they should not
+Future and research concepts may shape Galerina later, but they should not
 distract from v1.
 
 Examples:
@@ -176,7 +176,7 @@ post-v1 until the core language is stable.
 
 ## Decision Rule
 
-When a new LogicN idea appears, classify it before implementing it:
+When a new Galerina idea appears, classify it before implementing it:
 
 ```text
 1. Does it violate a non-negotiable rule?

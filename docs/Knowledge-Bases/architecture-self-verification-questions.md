@@ -2,7 +2,7 @@
 
 ## Purpose
 
-These questions force the LogicN architecture to prove itself. They should be answered clearly in the documentation and validated by the implementation before shipping.
+These questions force the Galerina architecture to prove itself. They should be answered clearly in the documentation and validated by the implementation before shipping.
 
 ## Security Core Questions
 
@@ -34,7 +34,7 @@ These questions force the LogicN architecture to prove itself. They should be an
 9. What must always be audited?
    → Policy decisions, capability grants, hardware use, AI/tool actions, output filtering.
 
-10. What should LogicN refuse to optimise?
+10. What should Galerina refuse to optimise?
     → Anything that hides authority, mutation, data flow, or security proof.
 ```
 
@@ -59,7 +59,7 @@ These questions force the LogicN architecture to prove itself. They should be an
 21. What should stay electronic even in a photonic future?
 22. What workloads are worth optical conversion?
 23. What precision loss is acceptable?
-24. How does LogicN represent tensor/signal/stream compute?
+24. How does Galerina represent tensor/signal/stream compute?
 25. How does Governed IR avoid binary-only assumptions?
 ```
 
@@ -76,7 +76,7 @@ These questions force the LogicN architecture to prove itself. They should be an
 ## The Most Critical Next Question
 
 ```text
-What is the minimum Governed IR that proves LogicN is different?
+What is the minimum Governed IR that proves Galerina is different?
 ```
 
-This is the design milestone that proves LogicN's governance model is real and not just theoretical.
+This is the design milestone that proves Galerina's governance model is real and not just theoretical.

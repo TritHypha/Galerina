@@ -105,4 +105,4 @@ Deferred does not mean ungoverned.
 
 ## Core Principle
 
-This gives LogicN speed without weakening security.
+This gives Galerina speed without weakening security.

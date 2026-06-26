@@ -2,11 +2,11 @@
 
 ## Purpose
 
-LogicN permissions should make database field access clear, safe and auditable.
+Galerina permissions should make database field access clear, safe and auditable.
 
 The safest field-read rule is an explicit allow list:
 
-```logicn
+```galerina
 allow read Profiles fields: [
   id,
   owner,
@@ -17,9 +17,9 @@ allow read Profiles fields: [
 
 Only the named fields are readable.
 
-LogicN may also support a controlled broad-read form:
+Galerina may also support a controlled broad-read form:
 
-```logicn
+```galerina
 allow read Profiles fields: all except [
   email
 ]
@@ -40,7 +40,7 @@ Broad reads must be visible.
 Use explicit allow lists for sensitive tables, public APIs, regulated data and
 security-critical flows.
 
-```logicn
+```galerina
 allow read Profiles fields: [
   id,
   owner,
@@ -52,9 +52,9 @@ This is safest because new fields are not automatically included.
 
 ## Broad Read Form
 
-LogicN may allow:
+Galerina may allow:
 
-```logicn
+```galerina
 allow read Profiles fields: all except [
   email
 ]
@@ -68,7 +68,7 @@ Allow reading all fields from Profiles except email.
 
 This is clearer than symbolic forms such as:
 
-```logicn
+```galerina
 allow read Profiles fields: [
   *,
   !email
@@ -85,7 +85,7 @@ Avoid symbolic field denial because:
 
 Preferred broad-read wording:
 
-```logicn
+```galerina
 fields: all except [
   email
 ]
@@ -105,20 +105,20 @@ secret_note
 
 then this rule:
 
-```logicn
+```galerina
 allow read Profiles fields: all except [
   email
 ]
 ```
 
-may accidentally allow the new field unless LogicN freezes the resolved field
+may accidentally allow the new field unless Galerina freezes the resolved field
 set or requires explicit future-field permission.
 
 ## Safer Broad Read Form
 
-LogicN may support:
+Galerina may support:
 
-```logicn
+```galerina
 allow read Profiles fields: all current except [
   email
 ]
@@ -145,9 +145,9 @@ until policy is regenerated, reviewed or explicitly widened.
 
 ## Runtime And Compiler Behaviour
 
-When LogicN sees:
+When Galerina sees:
 
-```logicn
+```galerina
 allow read Profiles fields: all except [
   email
 ]
@@ -162,12 +162,12 @@ the compiler/runtime should:
 5. Deny unknown future fields unless policy explicitly allows broad future access.
 6. Emit a field-read report entry.
 
-For `all current except`, LogicN should snapshot the resolved field set and deny
+For `all current except`, Galerina should snapshot the resolved field set and deny
 new future fields until review.
 
 ## Example Broad Permission
 
-```logicn
+```galerina
 permission profile_read {
 
   code {
@@ -189,7 +189,7 @@ permission profile_read {
 
 ## Safer Alternative
 
-```logicn
+```galerina
 permission profile_read {
 
   code {
@@ -267,7 +267,7 @@ This concept connects:
 
 Preferred secure syntax:
 
-```logicn
+```galerina
 allow read Profiles fields: [
   id,
   owner,
@@ -277,7 +277,7 @@ allow read Profiles fields: [
 
 Preferred broad-read syntax:
 
-```logicn
+```galerina
 allow read Profiles fields: all except [
   email
 ]
@@ -285,7 +285,7 @@ allow read Profiles fields: all except [
 
 Safer broad-read syntax:
 
-```logicn
+```galerina
 allow read Profiles fields: all current except [
   email
 ]

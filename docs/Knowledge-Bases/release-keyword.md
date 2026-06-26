@@ -9,7 +9,7 @@ bypass memory safety — the runtime still controls all memory management.
 release = controlled early runtime cleanup
 ```
 
-Most memory management in LogicN is automatic. `release` is used only for
+Most memory management in Galerina is automatic. `release` is used only for
 large, sensitive, high-cost or security-critical values that should be cleaned
 up before the flow ends.
 
@@ -22,7 +22,7 @@ up before the flow ends.
 | free | implies unmanaged allocation |
 | release | controlled runtime cleanup |
 
-`release` fits LogicN philosophy: the runtime owns memory, developers optionally
+`release` fits Galerina philosophy: the runtime owns memory, developers optionally
 signal early cleanup.
 
 ## What `release` Does
@@ -37,13 +37,13 @@ optionally zeros sensitive memory
 
 ## Syntax
 
-```logicn
+```galerina
 release variable_name
 ```
 
 Example:
 
-```logicn
+```galerina
 let upload: safe File = validate.file(raw_upload)
 process(upload)
 release upload
@@ -76,7 +76,7 @@ Not needed for normal local variables — those are cleaned up automatically.
 
 Large file processing:
 
-```logicn
+```galerina
 flow process_upload(raw: unsafe File) -> Result {
   let file: safe File = validate.file(raw)
   process(file)
@@ -87,7 +87,7 @@ flow process_upload(raw: unsafe File) -> Result {
 
 Secret handling (zeros memory where possible):
 
-```logicn
+```galerina
 let token: safe Secret = vault.read("api-token")
 authenticate(token)
 release token
@@ -95,7 +95,7 @@ release token
 
 AI context:
 
-```logicn
+```galerina
 let context: safe AiContext = build_context(messages)
 let response = model.generate(context)
 release context
@@ -103,7 +103,7 @@ release context
 
 Payment:
 
-```logicn
+```galerina
 let card: safe PaymentCard = validate.card(raw_card)
 charge(card)
 release card
@@ -111,7 +111,7 @@ release card
 
 Rejecting unsafe data:
 
-```logicn
+```galerina
 let raw_upload: unsafe File = request.file
 release raw_upload
 ```
@@ -128,7 +128,7 @@ releasable runtime objects
 
 Invalid cases:
 
-```logicn
+```galerina
 release shared_cache       // still referenced elsewhere
 release file               // inside fn when ownership belongs to caller
 ```
@@ -150,7 +150,7 @@ enforce ownership correctness
 
 ## Relationship to Memory Safety
 
-`release` does NOT disable memory safety. LogicN remains bounds-safe,
+`release` does NOT disable memory safety. Galerina remains bounds-safe,
 ownership-safe, allocation-safe and lifetime-safe. The runtime still controls
 memory. `release` only signals: this value may safely be cleaned up early.
 

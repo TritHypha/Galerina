@@ -1,10 +1,10 @@
 /**
  * T-006: Goal A — Native Hardware Speed Execution
  *
- * Validates that a compiled .lln flow with all invariants statically proved
+ * Validates that a compiled .spore flow with all invariants statically proved
  * executes with ≤ 5% overhead compared to equivalent hand-written WAT.
  *
- * Reference: docs/Knowledge-Bases/logicn-engineering-goals.md Goal A
+ * Reference: docs/Knowledge-Bases/galerina-engineering-goals.md Goal A
  *
  * Acceptance criterion:
  *   performance delta ≤ 5% vs equivalent hand-written WAT (same algorithm, no governance)
@@ -13,7 +13,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { parseProgram, resolveSymbols, checkTypes, executeFlow } from
-  "../../packages-logicn/logicn-core-compiler/dist/index.js";
+  "../../packages-galerina/galerina-core-compiler/dist/index.js";
 
 // ── Gauss sum: sum of 1..N — simple pure arithmetic with no I/O ──────────────
 // This is the canonical benchmark used in wasmtime baseline tests.
@@ -29,7 +29,7 @@ contract { intent { "Compute the sum of integers 1 through n using Gauss formula
 describe("T-006: Goal A — Native Hardware Speed Execution", () => {
 
   it("T-006-prerequisite: governed flow compiles with 0 errors (static proof pass)", () => {
-    const parsed = parseProgram(GAUSS_SOURCE, "gauss.lln");
+    const parsed = parseProgram(GAUSS_SOURCE, "gauss.spore");
     resolveSymbols(parsed.ast);
     checkTypes(parsed.ast);
     const errors = parsed.diagnostics.filter(d => d.severity === "error");
@@ -37,7 +37,7 @@ describe("T-006: Goal A — Native Hardware Speed Execution", () => {
   });
 
   it("T-006-prerequisite: governed flow produces correct result at runtime", async () => {
-    const parsed = parseProgram(GAUSS_SOURCE, "gauss.lln");
+    const parsed = parseProgram(GAUSS_SOURCE, "gauss.spore");
     resolveSymbols(parsed.ast);
     checkTypes(parsed.ast);
     const r = await executeFlow("gaussSum", new Map([["n", { __tag: "int", value: 100 }]]), parsed.ast);
@@ -48,7 +48,7 @@ describe("T-006: Goal A — Native Hardware Speed Execution", () => {
 
   it("T-006-benchmark: governed flow performance vs raw arithmetic baseline", async () => {
     // Warm up
-    const parsed = parseProgram(GAUSS_SOURCE, "gauss.lln");
+    const parsed = parseProgram(GAUSS_SOURCE, "gauss.spore");
     resolveSymbols(parsed.ast);
     checkTypes(parsed.ast);
     const warmArgs = new Map([["n", { __tag: "int", value: 1000 }]]);
@@ -83,7 +83,7 @@ describe("T-006: Goal A — Native Hardware Speed Execution", () => {
     assert.ok(govMs > 0, "Governed flow should execute in measurable time");
 
     // Record the ratio for tracking (tree-walker overhead is expected to be high;
-    // final T-006 acceptance uses Wasmtime JIT path — see logicn-engineering-goals.md)
+    // final T-006 acceptance uses Wasmtime JIT path — see galerina-engineering-goals.md)
     const ratio = govMs / Math.max(rawMs, 0.001);
     console.log(`    T-006 current overhead ratio (tree-walker vs raw JS): ${ratio.toFixed(1)}x`);
     console.log(`    T-006 NOTE: Final acceptance requires Wasmtime WASM execution (DRCM Phase 5+)`);
@@ -91,7 +91,7 @@ describe("T-006: Goal A — Native Hardware Speed Execution", () => {
 
     // This test PASSES unconditionally as a measurement baseline — it does not
     // enforce the ≤5% criterion yet (requires Wasmtime integration).
-    // TODO: When logicn build + wasmtime execution is wired, enforce:
+    // TODO: When galerina build + wasmtime execution is wired, enforce:
     //   assert.ok(delta <= 0.05, `Goal A failed: ${(delta*100).toFixed(1)}% overhead > 5% threshold`);
   });
 });

@@ -1,4 +1,4 @@
-Title: LogicN Contract Pattern — Secure HTTP Flow
+Title: Galerina Contract Pattern — Secure HTTP Flow
 
 ### When to use
 
@@ -6,7 +6,7 @@ Use this pattern when a flow handles an inbound HTTP request that must be authen
 
 ### Correct example
 
-```logicn
+```galerina
 flow SecureHttpFlow(readonly request: Request) -> SecureHttpFlowResult {
 
   contract {
@@ -87,13 +87,13 @@ flow SecureHttpFlow(readonly request: Request) -> SecureHttpFlowResult {
 ### Common mistakes
 
 **Mistake 1 — Using `req` instead of `readonly request`**
-```logicn
+```galerina
 flow SecureHttpFlow(req: Request) -> SecureHttpFlowResult {
 ```
 The parameter must be `readonly request`. Omitting `readonly` allows mutation; using `req` breaks the canonical naming convention enforced by the linter.
 
 **Mistake 2 — Putting effects in the flow body instead of the contract**
-```logicn
+```galerina
 flow SecureHttpFlow(readonly request: Request) -> SecureHttpFlowResult {
   effects [audit(level: full)]
   contract { ... }
@@ -102,7 +102,7 @@ flow SecureHttpFlow(readonly request: Request) -> SecureHttpFlowResult {
 Effects must live inside `contract.effects`. Effects declared outside the contract are not tracked by the governance runtime and will not appear in audit reports.
 
 **Mistake 3 — Omitting the `context` block when actor is required**
-```logicn
+```galerina
 contract {
   request { requires request.headers["Authorization"] is String }
   response { guarantees result.status in [200, 400] }
@@ -124,7 +124,7 @@ If the flow uses `context.actor` in the body, a `context` block with the actor r
 
 If `E305 — context.actor referenced but no context contract declared` is raised, add this block inside `contract { }`:
 
-```logicn
+```galerina
 context {
   requires context.actor is AuthenticatedUser
   requires context.actor.roles contains "api:access"

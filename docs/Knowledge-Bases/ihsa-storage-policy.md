@@ -1,4 +1,4 @@
-# LogicN — IHSA Governed Storage Policy
+# Galerina — IHSA Governed Storage Policy
 
 ## Status
 
@@ -8,7 +8,7 @@ Design spec for the storage access governance system
 ```
 
 This document defines the IHSA (Infrequent Hard Storage Access) model for
-LogicN. It specifies how disk access is declared, bounded, audited, and
+Galerina. It specifies how disk access is declared, bounded, audited, and
 prevented by default in favour of memory-resident and streaming execution.
 
 ---
@@ -27,7 +27,7 @@ allow rare disk access only through IHSA
 audit every disk touch
 ```
 
-Disk access is an **effect** in LogicN, not a free operation. Memory pressure
+Disk access is an **effect** in Galerina, not a free operation. Memory pressure
 is a **runtime policy**, not an implicit spill behaviour. Streaming is the
 **default** for large data reads. Spill-to-disk is **denied** unless
 explicitly declared.
@@ -72,7 +72,7 @@ Other related effects:
 
 ## 4. Intent Block
 
-```logicn
+```galerina
 intent ProcessLargeDataset {
   purpose "Process a large dataset without loading everything into memory"
 
@@ -92,7 +92,7 @@ intent ProcessLargeDataset {
 
 ## 5. Governance Policy Block
 
-```logicn
+```galerina
 governance LargeDatasetGovernance {
   effects [
     storage.read.infrequent,
@@ -122,7 +122,7 @@ governance LargeDatasetGovernance {
 
 ## 6. Flow Example
 
-```logicn
+```galerina
 secure flow processDataset(path: FilePath safe validated)
   -> Result<DatasetSummary, DatasetError>
 effects [storage.read.infrequent, memory.stream, audit.write] {
@@ -157,13 +157,13 @@ effects [storage.read.infrequent, memory.stream, audit.write] {
 
 ### Unbounded load
 
-```logicn
+```galerina
 // Under IHSA policy — this is illegal:
 let allRows: List<DataRow> = DatasetStore.readAll(path)
 ```
 
 ```text
-LLN-STORAGE-001:
+SPORE-STORAGE-001:
 Unbounded hard storage load denied.
 
 Reason:
@@ -174,13 +174,13 @@ Reason:
 ### Missing effect declaration
 
 A flow that calls `openStream()` without declaring `storage.read.infrequent`
-in its `effects [ ]` clause receives `LLN-EFFECT-001: UndeclaredEffect`.
+in its `effects [ ]` clause receives `SPORE-EFFECT-001: UndeclaredEffect`.
 
 ### Ungoverned path input
 
 The `path` parameter above is typed `FilePath safe validated`. An
 `unsafe unvalidated` path reaching a storage call would be caught by
-`LLN-VALUESTATE-003: UnsafeValueReachedGovernedSink`.
+`SPORE-VALUESTATE-003: UnsafeValueReachedGovernedSink`.
 
 ---
 
@@ -188,7 +188,7 @@ The `path` parameter above is typed `FilePath safe validated`. An
 
 | Code | Name | Trigger |
 |---|---|---|
-| `LLN-STORAGE-001` | `UnboundedStorageLoad` | `readAll()` or equivalent under IHSA policy |
+| `SPORE-STORAGE-001` | `UnboundedStorageLoad` | `readAll()` or equivalent under IHSA policy |
 
 ---
 
@@ -196,7 +196,7 @@ The `path` parameter above is typed `FilePath safe validated`. An
 
 Declared in the runtime block (future syntax):
 
-```logicn
+```galerina
 runtime {
   memory {
     soft_limit 512mb
@@ -221,10 +221,10 @@ runtime {
 silently spill memory to disk. If memory limits are exceeded, backpressure
 and work rejection are applied first. Spill must be declared explicitly:
 
-```logicn
+```galerina
 spill {
   enabled true
-  target  "/tmp/logicn-spill"
+  target  "/tmp/galerina-spill"
   effect  storage.write.spill
 }
 ```

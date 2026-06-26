@@ -2,7 +2,7 @@
 
 ## Definition
 
-The LogicN platform integrates with modern secure CI/CD practices. The goal is
+The Galerina platform integrates with modern secure CI/CD practices. The goal is
 to eliminate long-lived credentials, produce verifiable provenance, ensure
 artifact integrity, and support auditable deployments.
 
@@ -84,7 +84,7 @@ Example:
 
 ```json
 {
-  "builder": "logicn-build@v1",
+  "builder": "galerina-build@v1",
   "source": "github.com/org/project",
   "commit": "abc123",
   "artifact": "sha256:...",
@@ -150,7 +150,7 @@ Environment-specific approvals
 ```
 
 ```bash
-logicn verify artifact.bundle
+galerina verify artifact.bundle
 ```
 
 ## Build-Once Deploy-Many Architecture
@@ -177,11 +177,11 @@ Not through recompilation.
 ## Promotion Workflow
 
 ```bash
-logicn build --release
-logicn attest
-logicn deploy --env staging
-logicn verify staging
-logicn promote staging production
+galerina build --release
+galerina attest
+galerina deploy --env staging
+galerina verify staging
+galerina promote staging production
 ```
 
 Promotion references the existing artifact digest, not a rebuild.

@@ -1,4 +1,4 @@
-LLN-SEC-014
+SPORE-SEC-014
 
 Local fn declarations cannot declare effects.
 Effect declarations belong on the containing flow, not on local fn.

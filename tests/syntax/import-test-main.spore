@@ -1,0 +1,14 @@
+;; Main file — imports from import-test-lib.spore
+
+import "./import-test-lib.spore"
+
+pure flow calculateResult(n: Int) -> Int
+contract {
+  intent "Calculate result using imported flows"
+  effects {}
+}
+{
+  let a = addTwo(n)
+  let b = multiplyByThree(a)
+  return b
+}

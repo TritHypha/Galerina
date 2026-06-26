@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "governanceTier": 2,
   "license": "MIT",
-  "sourceHash": "sha256:pending-logicn-promote",
+  "sourceHash": "sha256:pending-galerina-promote",
   "resourceLimits": {
     "maxMemoryMB": 64,
     "maxCpuCycles": 10000000,

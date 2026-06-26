@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// audit-diagnostic-codes.mjs — re-runnable conformance scanner for LogicN's diagnostic-code
-// namespaces (#215, the durable fix from logicn-diagnostic-code-taxonomy-audit-2026-06-22.md).
+// audit-diagnostic-codes.mjs — re-runnable conformance scanner for Galerina's diagnostic-code
+// namespaces (#215, the durable fix from galerina-diagnostic-code-taxonomy-audit-2026-06-22.md).
 //
 // THE INVARIANTS (one code = one fault = one name = one severity, single source of truth):
 //   V1 OVERLOAD          one code emitted under >1 distinct `name`
@@ -8,13 +8,13 @@
 //   V3 SEVERITY-VOCAB    a `severity` value outside the canonical {error, warning, info}
 //   V4 MULTI-SEVERITY    one code emitted at >1 distinct severity (candidate; legit dev/prod toggle excepted by review)
 //
-// Scope: packages-logicn/<pkg>/src/**/*.ts. Reports a concise baseline + exit code = #violations
+// Scope: packages-galerina/<pkg>/src/**/*.ts. Reports a concise baseline + exit code = #violations
 // (so it can later gate CI). Pragmatic regex extraction — flags candidates for review, not a proof.
 import { readdirSync, statSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { CODE_TEST } from "./lib/codes.mjs";
 
-const ROOT = join(process.cwd(), "packages-logicn");
+const ROOT = join(process.cwd(), "packages-galerina");
 const CANON_SEV = new Set(["error", "warning", "info"]);
 // code-token validation comes from the SHARED module (scripts/lib/codes.mjs) — CODE_TEST (anchored).
 
@@ -83,7 +83,7 @@ const collisions = [...nameToCodes].filter(([, codes]) => codes.size > 1);
 const multiSev = [...codeToSevs].filter(([, sevs]) => sevs.size > 1);
 
 const out = [];
-out.push("# LogicN diagnostic-code conformance baseline\n");
+out.push("# Galerina diagnostic-code conformance baseline\n");
 out.push(`codes-with-names: ${codeToNames.size} · names: ${nameToCodes.size}\n`);
 
 out.push(`\n## V1 OVERLOAD — one code, >1 name (${overloaded.length})`);

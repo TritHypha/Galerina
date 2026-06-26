@@ -2,15 +2,15 @@
 
 ## Array Type
 
-LogicN uses `Array<T>` for ordered collections:
+Galerina uses `Array<T>` for ordered collections:
 
-```logicn
+```galerina
 let names: safe Array<String> = ["Tom", "Sarah", "Meow"]
 ```
 
 For unsafe external data:
 
-```logicn
+```galerina
 let raw_items: unsafe Array<String> = request.items
 ```
 
@@ -25,7 +25,7 @@ unsafe Array<String> = unsafe array of unsafe strings
 
 If the array is unsafe, all its values are unsafe:
 
-```logicn
+```galerina
 let first = raw_items[0]
 // first: unsafe String
 ```
@@ -34,7 +34,7 @@ Mixed-trust arrays are not supported. Keep it simple.
 
 ## Array Access
 
-```logicn
+```galerina
 tags[0]       // access by index
 first(tags)   // first item
 last(tags)    // last item
@@ -47,7 +47,7 @@ Both index access and named functions are supported.
 
 `split` is a standard string helper that splits on a separator:
 
-```logicn
+```galerina
 split(value, ",")
 ```
 
@@ -59,7 +59,7 @@ split(unsafe String, safe String) -> unsafe Array<String>
 
 Example:
 
-```logicn
+```galerina
 let raw_tags: unsafe String = request.tags
 let tags: unsafe Array<String> = split(raw_tags, ",")
 ```
@@ -103,7 +103,7 @@ validate   = prove shape/type/range
 
 ## Full Pipeline Example
 
-```logicn
+```galerina
 flow search(raw_tags: unsafe String) -> Result {
   let trimmed: unsafe String = trim(raw_tags)
   let parts: unsafe Array<String> = split(trimmed, ",")

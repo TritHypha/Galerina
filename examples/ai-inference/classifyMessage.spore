@@ -1,0 +1,72 @@
+// =============================================================================
+// Galerina Phase 27 — AI Inference Example: classifyMessage
+//
+// Demonstrates the hybrid WASM/Native architecture:
+//   WASM control plane governs (validation, privacy, audit, response)
+//   Native data plane accelerates (Tensor.dot inference via host.npu.inference)
+//
+// Source: docs/Knowledge-Bases/galerina-hybrid-wasm-architecture.md
+// =============================================================================
+
+type ClassifyMessageResult = Result<Response, ApiError>
+
+guarded flow classifyMessage(
+  readonly request: Request
+) -> ClassifyMessageResult
+contract {
+  intent {
+    "Classify a message locally using governed AI inference."
+  }
+
+  request {
+    body {
+      text: unsafe String
+    }
+  }
+
+  effects {
+    ai.inference
+    audit.write
+  }
+
+  targets {
+    prefer [npu, gpu, wasm, cpu]
+    fallback cpu
+    deny [remote.execution]
+  }
+
+  hardware {
+    prefer npu
+    fallback gpu
+    fallback cpu
+  }
+
+  memory {
+    arena 32mb
+  }
+
+  privacy {
+    contains PII
+    deny protected MessageText to remote.execution
+    require redaction before audit.write
+  }
+
+  audit {
+    require runtime report
+    require selected target proof
+  }
+}
+compute target npu {
+  fallback gpu
+  fallback cpu
+}
+{
+  unsafe let rawText: String = request.body.text
+  let text: protected MessageText = validate.messageText(rawText)?
+  let result = Classifier.run(text)?
+  AuditLog.write({
+    event: "MessageClassified",
+    label: result.label
+  })
+  return Ok(Response.okJson({ label: result.label }))
+}

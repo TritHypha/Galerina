@@ -1,4 +1,4 @@
-Title: LogicN Contract Pattern — Audit Write Policy
+Title: Galerina Contract Pattern — Audit Write Policy
 
 ### When to use
 
@@ -6,7 +6,7 @@ Use this pattern when a flow writes data that must be redacted before it enters 
 
 ### Correct example
 
-```logicn
+```galerina
 flow SaveSensitiveRecord(readonly request: Request) -> SaveSensitiveRecordResult {
 
   contract {
@@ -95,7 +95,7 @@ flow SaveSensitiveRecord(readonly request: Request) -> SaveSensitiveRecordResult
 ### Common mistakes
 
 **Mistake 1 — Omitting `redact` and expecting sensitive values to be auto-excluded**
-```logicn
+```galerina
 effects {
   audit {
     on: always
@@ -107,7 +107,7 @@ effects {
 The runtime does not auto-redact. Every field listed in `includes` is written to the audit log verbatim. Sensitive values must appear explicitly in `redact` and must not appear in `includes`.
 
 **Mistake 2 — Placing `reports` outside `effects`**
-```logicn
+```galerina
 contract {
   effects { audit { ... } }
   reports { runtime: true, name: "sensitive-write-report" }
@@ -116,7 +116,7 @@ contract {
 `reports` is a sub-section of `effects`, not a top-level contract section. Placing it at the contract root causes a parse error.
 
 **Mistake 3 — Using `on: write` instead of `on: write_success`**
-```logicn
+```galerina
 effects {
   reports {
     runtime: true
@@ -140,7 +140,7 @@ effects {
 
 If `E310 — db write detected in flow body but model.writes is empty` is raised, add the table to `model.writes`:
 
-```logicn
+```galerina
 model {
   reads []
   writes ["sensitive_records"]

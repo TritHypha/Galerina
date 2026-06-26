@@ -3,11 +3,11 @@
 ## Status
 
 ```text
-Package: logicn-core-compiler
+Package: galerina-core-compiler
 Area: effect checker and boundary checker
 Version target: v0.2
 Implementation status: fully specified, implementation pending
-Canonical diagnostic ranges: LLN-EFFECT-001 through LLN-EFFECT-004, LLN-BOUNDARY-001 through LLN-BOUNDARY-004
+Canonical diagnostic ranges: SPORE-EFFECT-001 through SPORE-EFFECT-004, SPORE-BOUNDARY-001 through SPORE-BOUNDARY-004
 Primary compiler outputs: effect graph, boundary graph, runtime manifest input metadata
 ```
 
@@ -18,7 +18,7 @@ The effect checker and boundary checker are complementary compiler systems.
 | Effect checker | What authority does this code require? |
 | Boundary checker | Is that authority allowed to cross this boundary? |
 
-Together they turn LogicN source into machine-readable governance metadata:
+Together they turn Galerina source into machine-readable governance metadata:
 
 ```text
 source code -> checked program -> effect graph -> boundary graph -> runtime manifest
@@ -360,7 +360,7 @@ export function validateFunctionEffects(
   for (const effect of fn.effectiveEffects) {
     if (!registry.has(effect.name)) {
       diagnostics.push({
-        code: "LLN-EFFECT-001",
+        code: "SPORE-EFFECT-001",
         severity: "error",
         message: `Unknown or undeclared effect ${effect.name}.`,
         sourceLocation: effect.sourceLocation
@@ -369,7 +369,7 @@ export function validateFunctionEffects(
 
     if (!isEffectAllowedOnTarget(effect.name, target)) {
       diagnostics.push({
-        code: "LLN-EFFECT-002",
+        code: "SPORE-EFFECT-002",
         severity: "error",
         message: `Effect ${effect.name} is forbidden for target ${target}.`,
         sourceLocation: effect.sourceLocation
@@ -380,7 +380,7 @@ export function validateFunctionEffects(
   for (const transitive of fn.transitiveEffects) {
     if (!containsEffect(fn.declaredEffects, transitive.name)) {
       diagnostics.push({
-        code: "LLN-EFFECT-004",
+        code: "SPORE-EFFECT-004",
         severity: "error",
         message: `Function ${fn.name} inherits ${transitive.name} but does not declare it.`,
         sourceLocation: transitive.sourceLocation
@@ -394,16 +394,16 @@ export function validateFunctionEffects(
 
 ---
 
-## Canonical LLN-EFFECT Codes
+## Canonical SPORE-EFFECT Codes
 
 | Code | Meaning | Severity | Typical fix |
 | --- | --- | --- | --- |
-| `LLN-EFFECT-001` | Unknown or undeclared effect | error | Declare the effect or add it to the registry |
-| `LLN-EFFECT-002` | Effect forbidden for selected target | error | Change target or remove the effect |
-| `LLN-EFFECT-003` | Effect escalation detected | error | Narrow callee authority or update capability policy |
-| `LLN-EFFECT-004` | Transitive effect mismatch | error/warning | Declare inherited effect or remove effectful call |
+| `SPORE-EFFECT-001` | Unknown or undeclared effect | error | Declare the effect or add it to the registry |
+| `SPORE-EFFECT-002` | Effect forbidden for selected target | error | Change target or remove the effect |
+| `SPORE-EFFECT-003` | Effect escalation detected | error | Narrow callee authority or update capability policy |
+| `SPORE-EFFECT-004` | Transitive effect mismatch | error/warning | Declare inherited effect or remove effectful call |
 
-`LLN-EFFECT-001` through `LLN-EFFECT-004` are the canonical v0.2 compiler codes for this checker. Older `LLN-E4*` codes may remain as compatibility aliases in CLI output, but new reports should use the `LLN-EFFECT-*` range.
+`SPORE-EFFECT-001` through `SPORE-EFFECT-004` are the canonical v0.2 compiler codes for this checker. Older `SPORE-E4*` codes may remain as compatibility aliases in CLI output, but new reports should use the `SPORE-EFFECT-*` range.
 
 ---
 
@@ -520,7 +520,7 @@ export function validateBoundaryEdge(
   for (const effect of edge.transferredEffects) {
     if (boundary.deniedEffects.includes(effect)) {
       diagnostics.push({
-        code: "LLN-BOUNDARY-001",
+        code: "SPORE-BOUNDARY-001",
         severity: "error",
         message: `Effect ${effect} is denied at boundary ${boundary.id}.`
       })
@@ -531,7 +531,7 @@ export function validateBoundaryEdge(
       !boundary.allowedEffects.includes(effect)
     ) {
       diagnostics.push({
-        code: "LLN-BOUNDARY-002",
+        code: "SPORE-BOUNDARY-002",
         severity: "error",
         message: `Effect ${effect} is not allowed at boundary ${boundary.id}.`
       })
@@ -540,7 +540,7 @@ export function validateBoundaryEdge(
 
   if (edge.transferredSecrets.length > 0 && boundary.type !== "secret") {
     diagnostics.push({
-      code: "LLN-BOUNDARY-003",
+      code: "SPORE-BOUNDARY-003",
       severity: "error",
       message: `Secret values cannot cross ${boundary.type} boundary ${boundary.id}.`
     })
@@ -548,7 +548,7 @@ export function validateBoundaryEdge(
 
   if (edge.requiresValidation && !hasValidationPolicy(boundary)) {
     diagnostics.push({
-      code: "LLN-BOUNDARY-004",
+      code: "SPORE-BOUNDARY-004",
       severity: "error",
       message: `Boundary ${boundary.id} requires validation policy before execution.`
     })
@@ -560,16 +560,16 @@ export function validateBoundaryEdge(
 
 ---
 
-## Canonical LLN-BOUNDARY Codes
+## Canonical SPORE-BOUNDARY Codes
 
 | Code | Meaning | Severity | Typical fix |
 | --- | --- | --- | --- |
-| `LLN-BOUNDARY-001` | Denied effect crosses boundary | error | Remove effect or change boundary policy |
-| `LLN-BOUNDARY-002` | Effect not present in boundary allowlist | error | Add explicit allow policy or move code behind safer boundary |
-| `LLN-BOUNDARY-003` | Secret or protected value crosses unsafe boundary | error | Use SecretReference/redaction or keep secret inside secret boundary |
-| `LLN-BOUNDARY-004` | Required boundary policy missing | error | Add validation/auth/rate-limit/replay/secret policy |
+| `SPORE-BOUNDARY-001` | Denied effect crosses boundary | error | Remove effect or change boundary policy |
+| `SPORE-BOUNDARY-002` | Effect not present in boundary allowlist | error | Add explicit allow policy or move code behind safer boundary |
+| `SPORE-BOUNDARY-003` | Secret or protected value crosses unsafe boundary | error | Use SecretReference/redaction or keep secret inside secret boundary |
+| `SPORE-BOUNDARY-004` | Required boundary policy missing | error | Add validation/auth/rate-limit/replay/secret policy |
 
-`LLN-BOUNDARY-001` through `LLN-BOUNDARY-004` are the canonical v0.2 compiler codes for this checker. Older expanded boundary codes may be retained in historical reports, but new compiler reports should use the four-code canonical range above.
+`SPORE-BOUNDARY-001` through `SPORE-BOUNDARY-004` are the canonical v0.2 compiler codes for this checker. Older expanded boundary codes may be retained in historical reports, but new compiler reports should use the four-code canonical range above.
 
 ---
 
@@ -600,7 +600,7 @@ export interface CheckedCallExpression {
 
 ## Example: Network Effect
 
-```logicn
+```galerina
 pub fn load_profile(http: HttpClient, id: UserId)
     -> Result<UserProfile, NetworkError>
     effect network
@@ -625,7 +625,7 @@ Compiler result:
 
 ## Example: Missing Transitive Effect
 
-```logicn
+```galerina
 pub fn load_profile(http: HttpClient, id: UserId)
     -> Result<UserProfile, NetworkError>
     effect network
@@ -642,12 +642,12 @@ pub fn render_profile_page(http: HttpClient, id: UserId) -> Html {
 `render_profile_page` inherits `network` from `load_profile`. If it does not declare that effect, the checker emits:
 
 ```text
-LLN-EFFECT-004: Function render_profile_page inherits network but does not declare it.
+SPORE-EFFECT-004: Function render_profile_page inherits network but does not declare it.
 ```
 
 Corrected:
 
-```logicn
+```galerina
 pub fn render_profile_page(http: HttpClient, id: UserId)
     -> Html
     effect network
@@ -661,7 +661,7 @@ pub fn render_profile_page(http: HttpClient, id: UserId)
 
 ## Example: Secret Boundary Failure
 
-```logicn
+```galerina
 pub fn debug_secret(secret: SecretString) {
     print(secret)
 }
@@ -670,12 +670,12 @@ pub fn debug_secret(secret: SecretString) {
 The boundary checker must reject this because a protected secret crosses a runtime/logging boundary.
 
 ```text
-LLN-BOUNDARY-003: Secret values cannot cross runtime boundary runtime.print.
+SPORE-BOUNDARY-003: Secret values cannot cross runtime boundary runtime.print.
 ```
 
 Corrected:
 
-```logicn
+```galerina
 pub fn debug_secret(secret: SecretString) {
     print(secret.redacted())
 }
@@ -685,7 +685,7 @@ pub fn debug_secret(secret: SecretString) {
 
 ## Example: API Boundary Failure
 
-```logicn
+```galerina
 route POST "/admin/restart" {
     process.spawn("systemctl restart app")
 }
@@ -694,12 +694,12 @@ route POST "/admin/restart" {
 A public API route cannot directly cross into process execution unless an explicit privileged policy exists.
 
 ```text
-LLN-BOUNDARY-001: Effect process.spawn is denied at boundary api.public.
+SPORE-BOUNDARY-001: Effect process.spawn is denied at boundary api.public.
 ```
 
 Corrected design:
 
-```logicn
+```galerina
 route POST "/admin/restart"
     auth AdminOnly
     policy privileged_operation
@@ -714,7 +714,7 @@ The route should enqueue a governed job rather than directly spawning a process 
 
 ## Example: WASM Target Boundary
 
-```logicn
+```galerina
 target wasm
 
 pub fn read_local_file(path: Text) -> Text
@@ -727,7 +727,7 @@ pub fn read_local_file(path: Text) -> Text
 The target policy rejects this because direct filesystem access is not allowed for the selected WASM target.
 
 ```text
-LLN-EFFECT-002: Effect filesystem.read is forbidden for target wasm.
+SPORE-EFFECT-002: Effect filesystem.read is forbidden for target wasm.
 ```
 
 ---
@@ -787,7 +787,7 @@ The checker should produce both human-readable and machine-readable report data.
 
 ```json
 {
-  "schemaVersion": "logicn.effect-boundary-report.v0.2",
+  "schemaVersion": "galerina.effect-boundary-report.v0.2",
   "effects": {
     "functionCount": 12,
     "effectfulFunctionCount": 5,
@@ -806,7 +806,7 @@ The checker should produce both human-readable and machine-readable report data.
 ## Suggested File Layout
 
 ```text
-packages-logicn/logicn-core-compiler/src/
+packages-galerina/galerina-core-compiler/src/
 
   effects/
     effect-types.ts
@@ -843,11 +843,11 @@ packages-logicn/logicn-core-compiler/src/
  6. Build EffectGraph from checked functions and call edges
  7. Propagate effects using iterative fixpoint
  8. Validate undeclared, forbidden, escalated, and transitive effects
- 9. Emit LLN-EFFECT-001 through LLN-EFFECT-004 diagnostics
+ 9. Emit SPORE-EFFECT-001 through SPORE-EFFECT-004 diagnostics
 10. Define Boundary, BoundaryRequirement, BoundaryEdge, and BoundaryGraph
 11. Build boundary graph from routes, packages, jobs, workers, calls, and interop
 12. Validate denied effects, allowlists, secret movement, and required policies
-13. Emit LLN-BOUNDARY-001 through LLN-BOUNDARY-004 diagnostics
+13. Emit SPORE-BOUNDARY-001 through SPORE-BOUNDARY-004 diagnostics
 14. Generate effect-report.json and boundary-report.json
 15. Feed FunctionManifest, EffectManifest, and BoundaryManifest data into pass 14
 16. Add tests for propagation, recursive calls, secret leakage, target denial, and API boundary denial
@@ -901,7 +901,7 @@ describe("boundary checker", () => {
       }
     )
 
-    expect(diagnostics.some(d => d.code === "LLN-BOUNDARY-003")).toBe(true)
+    expect(diagnostics.some(d => d.code === "SPORE-BOUNDARY-003")).toBe(true)
   })
 })
 ```
@@ -931,10 +931,10 @@ If metadata is incomplete, the checker must produce diagnostics and prevent the 
 effect checker       -> feeds capability resolver and runtime manifest
 boundary checker     -> feeds deployment policy, API server, reports, and audit metadata
 runtime manifest     -> consumes function/effect/boundary metadata
-logicn explain       -> explains effect inheritance and boundary decisions
-logicn deploy        -> validates manifest against target policy
-logicn-core-security -> supplies secret-safe boundaries and redaction rules
-logicn-core-network  -> supplies network destination policies
+galerina explain       -> explains effect inheritance and boundary decisions
+galerina deploy        -> validates manifest against target policy
+galerina-core-security -> supplies secret-safe boundaries and redaction rules
+galerina-core-network  -> supplies network destination policies
 ```
 
 ---
@@ -960,8 +960,8 @@ CheckedCallExpression
 The canonical diagnostic ranges are:
 
 ```text
-LLN-EFFECT-001 through LLN-EFFECT-004
-LLN-BOUNDARY-001 through LLN-BOUNDARY-004
+SPORE-EFFECT-001 through SPORE-EFFECT-004
+SPORE-BOUNDARY-001 through SPORE-BOUNDARY-004
 ```
 
-These systems are required before LogicN can truthfully claim governed execution, runtime authority control, deployment-safe manifests, or audit-grade execution proof.
+These systems are required before Galerina can truthfully claim governed execution, runtime authority control, deployment-safe manifests, or audit-grade execution proof.

@@ -1,13 +1,13 @@
-﻿# LogicN — Do Not Use Yet
+﻿# Galerina — Do Not Use Yet
 
 This file lists patterns that look valid but are NOT yet supported by the current compiler.
-Check this file before generating LogicN code.
+Check this file before generating Galerina code.
 
 ---
 
 ## 1. Readable Type Forms (proposal only)
 
-```logicn
+```galerina
 // DO NOT USE
 type GetPatientResult =
   result of Response else ApiError
@@ -23,7 +23,7 @@ type GetPatientResult =
 
 ## 2. Old Effects Syntax
 
-```logicn
+```galerina
 // DO NOT USE
 secure flow foo(readonly request: Request) -> FooResult
   with effects [database.write, audit.write]
@@ -46,7 +46,7 @@ contract {
 
 ## 3. `req` parameter name
 
-```logicn
+```galerina
 // DO NOT USE
 secure flow foo(readonly req: Request) -> FooResult
 
@@ -60,7 +60,7 @@ All parameters must use full names. `req`, `res`, `ctx`, `usr` are forbidden sty
 
 ## 4. Top-level let / mut
 
-```logicn
+```galerina
 // DO NOT USE — top-level bindings are not allowed
 let counter: Int = 0
 
@@ -74,13 +74,13 @@ pure flow increment(counter: Int) -> Int {
 }
 ```
 
-`let` and `mut` at the top level emit LLN-SYNTAX-006 and LLN-SYNTAX-007.
+`let` and `mut` at the top level emit SPORE-SYNTAX-006 and SPORE-SYNTAX-007.
 
 ---
 
 ## 5. Lambda / arrow functions
 
-```logicn
+```galerina
 // DO NOT USE — not yet supported
 let doubled = values.map(x => x * 2)
 
@@ -98,7 +98,7 @@ Lambda syntax `(x) => expr` and `x => expr` are NOT in the parser.
 
 ## 6. `fn` at top level
 
-```logicn
+```galerina
 // DO NOT USE — fn must be inside a flow body
 fn helper(x: Int) -> Int {
   return x * 2
@@ -111,13 +111,13 @@ flow process(values: Array<Int>) -> Array<Int> {
 }
 ```
 
-Top-level `fn` emits LLN-SYNTAX-005.
+Top-level `fn` emits SPORE-SYNTAX-005.
 
 ---
 
 ## 7. `emit` at top level
 
-```logicn
+```galerina
 // DO NOT USE
 event OrderCreated
 emit OrderCreated   // ← top-level emit, not allowed
@@ -130,7 +130,7 @@ flow createOrder(...) -> OrderResult {
 }
 ```
 
-Top-level `emit` emits LLN-SYNTAX-009.
+Top-level `emit` emits SPORE-SYNTAX-009.
 
 ---
 
@@ -147,7 +147,7 @@ The compiler validates syntax. Runtime enforcement ships in Phase 16.
 
 ## 9. Service-level contracts
 
-```logicn
+```galerina
 // DO NOT USE YET — service keyword not yet implemented
 service UserService
 contract {
@@ -162,6 +162,6 @@ The `service` keyword is reserved for Phase 17.
 ## 10. Diagnostics not yet emitted
 
 These constants are exported but the checks are stubs:
-- `LLN-TYPE-011` through `LLN-TYPE-016` — defined, not emitted
-- `LLN-GOV-005`, `LLN-GOV-009` — defined, not emitted
-- `LLN-BUILD-001` — stub, full implementation in Phase 16
+- `SPORE-TYPE-011` through `SPORE-TYPE-016` — defined, not emitted
+- `SPORE-GOV-005`, `SPORE-GOV-009` — defined, not emitted
+- `SPORE-BUILD-001` — stub, full implementation in Phase 16

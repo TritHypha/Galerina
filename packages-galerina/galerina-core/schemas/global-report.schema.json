@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://Galerina.local/schemas/global-report.schema.json",
+  "title": "Galerina Global Registry Report Prototype",
+  "type": "object",
+  "required": [
+    "compiler",
+    "project",
+    "policy",
+    "globals",
+    "summary",
+    "requiredEnvironment",
+    "diagnostics"
+  ],
+  "properties": {
+    "compiler": {
+      "type": "string"
+    },
+    "project": {
+      "type": "string"
+    },
+    "policy": {
+      "type": "object"
+    },
+    "globals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "type",
+          "kind",
+          "source",
+          "value"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "const",
+              "config",
+              "secret",
+              "state"
+            ]
+          },
+          "source": {
+            "type": "string"
+          },
+          "env": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "mutable": {
+            "type": "boolean"
+          },
+          "value": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "object"
+    },
+    "requiredEnvironment": {
+      "type": "array"
+    },
+    "diagnostics": {
+      "type": "array"
+    }
+  }
+}

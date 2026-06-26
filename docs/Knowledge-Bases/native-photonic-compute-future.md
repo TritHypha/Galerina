@@ -7,7 +7,7 @@ Planned for: Stage C
 
 ## Definition
 
-This document captures the long-term research directions for native photonic computing that LogicN's architecture should remain compatible with. These are future possibilities, not current capabilities.
+This document captures the long-term research directions for native photonic computing that Galerina's architecture should remain compatible with. These are future possibilities, not current capabilities.
 
 Current photonic systems accelerate electronic CPUs — they are not truly native optical computers. The long-term goal is a fully photonic-native compute stack.
 
@@ -102,9 +102,9 @@ Current neural networks were designed for electronic hardware. Future models cou
 | 10–20 years | partial optical runtimes |
 | 20+ years | experimental native photonic systems |
 
-## LogicN Compatibility Rule
+## Galerina Compatibility Rule
 
-LogicN's Governed IR and compute architecture must remain hardware-neutral so it can target photonic systems as they mature. The IR should describe governed computation, not CPU-centric instructions.
+Galerina's Governed IR and compute architecture must remain hardware-neutral so it can target photonic systems as they mature. The IR should describe governed computation, not CPU-centric instructions.
 
 ## Final Principle
 

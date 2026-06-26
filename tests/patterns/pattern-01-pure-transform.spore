@@ -1,0 +1,34 @@
+// EXPECT: ACCEPT
+// Pattern 1 — Pure Internal Transform (drcm_stable_v0)
+// Reference: docs/Knowledge-Bases/galerina-architecture-patterns.md
+//
+// Use when: purely computational — no I/O, no network, no secrets, no mutation.
+// Rules: S-001, S-002, S-004 (no effects declared = pure)
+
+pure flow scoreToGrade(score: Int) -> String
+contract {
+  intent { "Convert a numeric score to a letter grade." }
+}
+{
+  if score >= 90 { return "A" }
+  if score >= 80 { return "B" }
+  if score >= 70 { return "C" }
+  return "F"
+}
+
+// ---
+
+// Second example: pure data transform with local types
+pure flow classify(score: Int) -> Result<String, String>
+contract {
+  types {
+    type Grade = Result<String, String>
+  }
+  intent { "Classify a score into a labelled result or an error reason." }
+}
+{
+  if score < 0   { return Err("negative score") }
+  if score > 100 { return Err("score exceeds maximum") }
+  if score >= 50 { return Ok("pass") }
+  return Ok("fail")
+}

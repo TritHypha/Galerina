@@ -1,0 +1,35 @@
+/// example: 212-policy-purpose-mismatch
+/// level: 5
+/// concept: declared purpose does not match observed template use
+/// expected_diagnostics: SPORE-GOV-005
+/// test_status: stable
+/// ai_rule: The template used in a communication flow must match the declared purpose.
+
+secure flow emailPatient(patient: PatientRecord) -> EmailPatientResult
+
+contract {
+  types {
+    type EmailPatientResult = Result<Unit, EmailError>
+  }
+
+  // Security intent: BUG — declared purpose is "appointment_reminder" but the body uses
+  // Template.marketingOffer. The governance verifier detects this mismatch and fires SPORE-GOV-005.
+  intent {
+    "Send an appointment reminder — BUG: body uses a marketing template instead of the declared purpose."
+  }
+
+  effects {
+    network.outbound
+    audit.write
+  }
+}
+  policy {
+    purpose "appointment_reminder"
+    allow protected Email to "patient"
+  }
+{
+  let email: protected Email = patient.email
+  let sent = EmailGateway.send(email, Template.marketingOffer)?
+  AuditLog.write({ action: "emailPatient", purpose: "appointment_reminder" })
+  return Ok(unit)
+}

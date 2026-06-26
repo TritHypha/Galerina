@@ -1,0 +1,16 @@
+{
+  "_comment": "Default whitelist for scripts/lint-spore.mjs (the .spore source-quality gate). It exempts intentionally-minimal FIXTURE .spore (example apps, test corpora, perf benchmarks, REJECT-case tests) from the production 'every flow is commented + contracted' rules. Production package src/ IS still linted. Tune freely: skipPathContains = whole-file exemptions by path substring; rules = disable a code globally; files = exempt an exact rel-path; allow = [{file,rule,line}] for one finding. Inline, prefer //spore-allow: CODE on the offending line.",
+  "skipPathContains": [
+    "examples/",
+    "/examples/",
+    "tests/",
+    "/tests/",
+    "galerina-devtools-benchmarks/",
+    "/benchmarks/",
+    "/test-fixtures/",
+    "tests/r6-corpus/"
+  ],
+  "rules": [],
+  "files": [],
+  "allow": []
+}

@@ -1,6 +1,6 @@
 none
-// LLN-GOV-004 is the target diagnostic for this example.
+// SPORE-GOV-004 is the target diagnostic for this example.
 // Remote-execution-policy enforcement is tracked for a future compiler wave.
-// The example is stable: only LLN-TYPE-001 (suppressed) is produced —
+// The example is stable: only SPORE-TYPE-001 (suppressed) is produced —
 // no unsuppressed errors are produced by the current pipeline.
 // Syntax fix: added empty block to compute target remote {} (required by parser).

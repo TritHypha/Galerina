@@ -4,8 +4,8 @@ This example correctly declares process.spawn in the effects block.
 All spawn calls are therefore governed. No diagnostics expected.
 
 Governance invariants satisfied:
-- LLN-EFFECT-001: process.spawn declared before Process.spawn() call
-- LLN-GOV-010: intent declared on secure flow
-- LLN-CONTEXT-001: actor and trace_id required and accessed in body
-- LLN-VALUE-STATE-001: unsafe inputs validated before use
+- SPORE-EFFECT-001: process.spawn declared before Process.spawn() call
+- SPORE-GOV-010: intent declared on secure flow
+- SPORE-CONTEXT-001: actor and trace_id required and accessed in body
+- SPORE-VALUE-STATE-001: unsafe inputs validated before use
 - Audit trail: pre-spawn and post-spawn audit events recorded

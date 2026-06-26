@@ -1,4 +1,4 @@
-# LogicN diagrams
+# Galerina diagrams
 
 Rendered SVG architecture diagrams. All use a shared palette so the set reads as one system:
 
@@ -6,15 +6,15 @@ Rendered SVG architecture diagrams. All use a shared palette so the set reads as
 
 | Diagram | What it shows | Read it with |
 |---|---|---|
-| [logicn-full-stack.svg](logicn-full-stack.svg) | the whole stack, source → governed runtime | the system overview |
-| [logicn-mechanics.svg](logicn-mechanics.svg) | the governance-first compile→sign→gate pipeline | `logicn-kb-index.md` |
-| [logicn-compiler.svg](logicn-compiler.svg) | Stage-A compiler internals | `project-logicn-compiler-gaps.md` |
-| [logicn-compiler-pipeline-foresight.svg](logicn-compiler-pipeline-foresight.svg) | the compiler pipeline + forward-looking passes | the build roadmap |
-| [logicn-runtime.svg](logicn-runtime.svg) | the K3 fail-closed runtime gate | `logicn-governance-rules.md` |
-| [logicn-framework.svg](logicn-framework.svg) | the Zero-Trust application framework | `logicn-post-framework-architecture.md` |
-| [logicn-tower-citizen.svg](logicn-tower-citizen.svg) | the DRCM / Tower-citizen containment model | `logicn-drcm.md` |
-| [logicn-tri-pipe.svg](logicn-tri-pipe.svg) | the Tri-Pipe execution router (binary / hybrid / photonic) | `logicn-photonic-ppu-virtualisation.md` |
-| **[logicn-untrusted-governed-lane.svg](logicn-untrusted-governed-lane.svg)** | **Govern-Don't-Absorb — the decision stays in the trusted core, the work runs in an untrusted lane admitted by a signed predicate and combined back by No-Coercion `min`** | **[`untrusted-governed-lane.md`](../Knowledge-Bases/untrusted-governed-lane.md)** |
+| [galerina-full-stack.svg](galerina-full-stack.svg) | the whole stack, source → governed runtime | the system overview |
+| [galerina-mechanics.svg](galerina-mechanics.svg) | the governance-first compile→sign→gate pipeline | `galerina-kb-index.md` |
+| [galerina-compiler.svg](galerina-compiler.svg) | Stage-A compiler internals | `project-galerina-compiler-gaps.md` |
+| [galerina-compiler-pipeline-foresight.svg](galerina-compiler-pipeline-foresight.svg) | the compiler pipeline + forward-looking passes | the build roadmap |
+| [galerina-runtime.svg](galerina-runtime.svg) | the K3 fail-closed runtime gate | `galerina-governance-rules.md` |
+| [galerina-framework.svg](galerina-framework.svg) | the Zero-Trust application framework | `galerina-post-framework-architecture.md` |
+| [galerina-tower-citizen.svg](galerina-tower-citizen.svg) | the DRCM / Tower-citizen containment model | `galerina-drcm.md` |
+| [galerina-tri-pipe.svg](galerina-tri-pipe.svg) | the Tri-Pipe execution router (binary / hybrid / photonic) | `galerina-photonic-ppu-virtualisation.md` |
+| **[galerina-untrusted-governed-lane.svg](galerina-untrusted-governed-lane.svg)** | **Govern-Don't-Absorb — the decision stays in the trusted core, the work runs in an untrusted lane admitted by a signed predicate and combined back by No-Coercion `min`** | **[`untrusted-governed-lane.md`](../Knowledge-Bases/untrusted-governed-lane.md)** |
 
 ## How they fit together
 

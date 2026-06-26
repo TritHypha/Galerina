@@ -2,13 +2,13 @@
 
 ## Purpose
 
-LogicN should avoid inheritance-based design because inherited behaviour can
+Galerina should avoid inheritance-based design because inherited behaviour can
 hide authority, effects, data exposure and security rules.
 
 The core rule:
 
 ```text
-Inheritance is disallowed in normal LogicN application code.
+Inheritance is disallowed in normal Galerina application code.
 ```
 
 The companion rule:
@@ -19,13 +19,13 @@ Assume everything is unsafe until declared safe.
 
 ## Short Definition
 
-LogicN does not use inheritance to share behaviour or authority. It uses
+Galerina does not use inheritance to share behaviour or authority. It uses
 composition, contracts, explicit views, explicit permissions, explicit
 boundaries, secure flows and effective reports.
 
 ## Disallowed Forms
 
-Normal LogicN source should not use:
+Normal Galerina source should not use:
 
 ```text
 extends
@@ -63,7 +63,7 @@ code may not show the actual authority being used.
 
 ## Rejected Example
 
-```logicn
+```galerina
 class AdminUser extends User {
   override canAccess() -> Bool {
     return true
@@ -83,7 +83,7 @@ Why this is rejected:
 
 Use composition:
 
-```logicn
+```galerina
 model AdminProfile {
   userId: UUID view: public
   roles: List<Role> view: restricted
@@ -92,7 +92,7 @@ model AdminProfile {
 
 Use explicit contracts:
 
-```logicn
+```galerina
 contract PaymentProvider {
   flow charge(
     request: PaymentRequest,
@@ -103,7 +103,7 @@ contract PaymentProvider {
 
 Use explicit adapters:
 
-```logicn
+```galerina
 adapter StripeProvider implements PaymentProvider {
   boundary external StripeApi
   permission use payment_provider_access
@@ -117,7 +117,7 @@ adapter StripeProvider implements PaymentProvider {
 
 Use explicit views:
 
-```logicn
+```galerina
 response UserAdminResponse from User {
   include id
   include email requires capability users.private.read
@@ -128,7 +128,7 @@ response UserAdminResponse from User {
 
 Use secure flows:
 
-```logicn
+```galerina
 secure flow grantRole(
   request: GrantRoleRequest,
   ctx: RequestContext
@@ -157,7 +157,7 @@ contract {
 
 ## Explicit Security By Default
 
-LogicN should assume a thing is unsafe until it is declared safe.
+Galerina should assume a thing is unsafe until it is declared safe.
 
 Examples:
 
@@ -184,24 +184,24 @@ Examples:
 
 ## Compiler And Checker Direction
 
-LogicN should reject normal source that uses inheritance keywords or semantics.
+Galerina should reject normal source that uses inheritance keywords or semantics.
 
 Diagnostics should be safe to show:
 
 ```json
 {
-  "code": "LLN-INHERIT-001",
+  "code": "SPORE-INHERIT-001",
   "severity": "error",
-  "message": "Inheritance is not supported in normal LogicN source. Use composition, contracts or adapters.",
+  "message": "Inheritance is not supported in normal Galerina source. Use composition, contracts or adapters.",
   "safeToShow": true
 }
 ```
 
-LogicN should also reject inherited authority:
+Galerina should also reject inherited authority:
 
 ```json
 {
-  "code": "LLN-AUTH-003",
+  "code": "SPORE-AUTH-003",
   "severity": "error",
   "message": "Permissions and effects must be declared on the effective flow or adapter. Inherited authority is not allowed.",
   "safeToShow": true
@@ -224,7 +224,7 @@ Reports should not rely on parent-chain inference to explain what happened.
 
 ## Structural Hierarchy Is Allowed
 
-LogicN does allow **containment hierarchy** — hierarchy used for organisation, not authority transfer.
+Galerina does allow **containment hierarchy** — hierarchy used for organisation, not authority transfer.
 
 Allowed:
 
@@ -235,7 +235,7 @@ Permission -> Capability -> Effect -> Audit rule
 
 Example:
 
-```logicn
+```galerina
 package Auth {
   module Login {
     flow login(...)
@@ -245,7 +245,7 @@ package Auth {
 
 Dot-path access is also fine as organisation:
 
-```logicn
+```galerina
 Runtime.Hardware.USB
 Runtime.Context.Auth
 SessionVault.write(...)
@@ -268,5 +268,5 @@ No hidden parent behaviour.
 No assumed safety.
 ```
 
-LogicN should be explicit enough that a developer, AI tool, compiler and auditor
+Galerina should be explicit enough that a developer, AI tool, compiler and auditor
 can see the effective behaviour without chasing inheritance chains.

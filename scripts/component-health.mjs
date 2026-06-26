@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// component-health.mjs — LogicN per-COMPONENT readiness matrix for v1.0 "full testing".
+// component-health.mjs — Galerina per-COMPONENT readiness matrix for v1.0 "full testing".
 // Pure-read, zero-dep (node:fs/node:path only), never throws, exit 0 (1 only with --strict on gaps).
 // Complements status.mjs (headline counts) with a per-package breakdown + gap detector:
 //   which workspace packages have a test script, a tests/ dir + test files, a recorded test count,
-//   and which packages-logicn/ dirs are ORPHANS (a package.json on disk but absent from the workspace).
+//   and which packages-galerina/ dirs are ORPHANS (a package.json on disk but absent from the workspace).
 //
 //   node scripts/component-health.mjs            # full matrix, grouped by family
 //   node scripts/component-health.mjs --gaps     # only rows with a readiness gap
@@ -14,7 +14,7 @@ import { join, dirname, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const PKG_DIR = join(ROOT, "packages-logicn");
+const PKG_DIR = join(ROOT, "packages-galerina");
 
 const argv = new Set(process.argv.slice(2));
 const ONLY_GAPS = argv.has("--gaps");
@@ -27,7 +27,7 @@ const isDir = (p) => { try { return statSync(p).isDirectory(); } catch { return 
 const fmt = (n) => (typeof n === "number" ? n.toLocaleString("en-US") : String(n));
 
 // ── inputs ───────────────────────────────────────────────────────────────────
-const workspace = readJSON(join(ROOT, "logicn.workspace.json")) || {};
+const workspace = readJSON(join(ROOT, "galerina.workspace.json")) || {};
 const wsPackages = Array.isArray(workspace.packages) ? workspace.packages : [];
 const version = readJSON(join(ROOT, "version.json")) || {};
 const testCounts = version.testCountByPackage || {};
@@ -41,7 +41,7 @@ const FAMILY = {
   observability: "governance", tower: "runtime", tri: "runtime", docs: "docs",
   test: "tooling", tools: "tooling",
 };
-const familyOf = (dir) => FAMILY[dir.replace(/^logicn-/, "").split("-")[0]] || "other";
+const familyOf = (dir) => FAMILY[dir.replace(/^galerina-/, "").split("-")[0]] || "other";
 
 // ── per-component rows (driven by the workspace list) ─────────────────────────
 const countTestFiles = (dir) => {
@@ -86,7 +86,7 @@ const gapsFor = (r) => {
 };
 for (const r of rows) r.gaps = gapsFor(r);
 
-// ── orphans: packages-logicn/ dirs with a package.json, absent from the workspace ─
+// ── orphans: packages-galerina/ dirs with a package.json, absent from the workspace ─
 const wsDirs = new Set(wsPackages.map((p) => basename(p)));
 const orphans = [];
 for (const e of listDir(PKG_DIR) || []) {
@@ -114,7 +114,7 @@ if (AS_JSON) {
 // ── render ───────────────────────────────────────────────────────────────────
 const pad = (s, n) => String(s).padEnd(n);
 const out = [];
-out.push(`LogicN component health — ${summary.workspacePackages} workspace packages · ${summary.withTestScript} test-bearing · ${fmt(summary.recordedTotal)} recorded tests`);
+out.push(`Galerina component health — ${summary.workspacePackages} workspace packages · ${summary.withTestScript} test-bearing · ${fmt(summary.recordedTotal)} recorded tests`);
 out.push("");
 for (const fam of [...new Set(rows.map((r) => r.family))].sort()) {
   const famRows = rows.filter((r) => r.family === fam).sort((a, b) => a.dir.localeCompare(b.dir));

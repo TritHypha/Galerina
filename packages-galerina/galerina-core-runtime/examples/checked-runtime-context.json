@@ -1,0 +1,16 @@
+{
+  "context": {
+    "mode": "checked",
+    "projectRoot": ".",
+    "environment": "test",
+    "entryFile": "examples/hello.spore",
+    "timeoutMs": 30000
+  },
+  "effects": [
+    {
+      "kind": "clock",
+      "name": "now",
+      "resource": "system-clock"
+    }
+  ]
+}

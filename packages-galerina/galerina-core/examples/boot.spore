@@ -1,0 +1,310 @@
+project "OrderRiskDemo"
+
+language {
+  name "Galerina"
+  version "0.1"
+  compatibility "prototype"
+}
+
+entry "./src/main.spore"
+
+imports {
+  use system
+  use json
+  use api
+  use environment
+  use target.binary
+  use target.gpu
+  use target.photonic
+  use target.threeway
+  use target.omni
+}
+
+security {
+  memory_safe true
+  strict_types true
+  null "deny"
+  undefined "deny"
+  unsafe "deny"
+  unhandled_errors "deny"
+  implicit_casts "deny"
+  truthy_falsy "deny"
+  secret_logging "deny"
+}
+
+permissions {
+  network "restricted"
+  file_read "restricted"
+  file_write "restricted"
+  environment "restricted"
+  native_bindings "deny"
+}
+
+globals {
+  /// @purpose Public application name used in logs and health checks.
+  readonly APP_NAME: String = "OrderRiskDemo"
+
+  /// @purpose Public application version used in reports.
+  readonly APP_VERSION: String = "0.1.0"
+
+  /// @purpose Port used by the development HTTP server.
+  /// @source runtime environment
+  config APP_PORT: Int = env.int("APP_PORT", default: 8080)
+
+  /// @purpose Default API timeout for local examples.
+  config API_TIMEOUT: Duration = 5s
+
+  /// @purpose Maximum JSON body size for local examples.
+  config MAX_BODY_SIZE: Size = 1mb
+
+  /// @purpose Secret used to verify payment webhooks.
+  /// @security Must never be logged or exposed in AI context.
+  secret PAYMENT_WEBHOOK_SECRET: SecureString = env.secret("PAYMENT_WEBHOOK_SECRET")
+
+  /// @purpose Secret used to call the payment provider.
+  /// @security Must never be logged or exposed in AI context.
+  secret PAYMENTS_API_KEY: SecureString = env.secret("PAYMENTS_API_KEY")
+}
+
+json_policy {
+  max_body_size 1mb
+  max_depth 32
+  duplicate_keys "deny"
+  unknown_fields "warn"
+  null_fields "deny"
+  date_format "iso8601"
+}
+
+runtime {
+  run_mode "checked"
+  cache_ir true
+  hot_reload true
+
+  production {
+    disabled_packages [
+    "packages-galerina/galerina-tools-benchmark",
+    "packages-galerina/galerina-devtools-*"
+    ]
+
+    package_overrides []
+  }
+
+  memory {
+    soft_limit 512mb
+    hard_limit 768mb
+
+    on_pressure [
+    "evict_caches",
+    "bypass_cache",
+    "backpressure",
+    "spill_eligible",
+    "reject_new_work",
+    "graceful_fail"
+    ]
+
+    spill {
+      enabled true
+      path "./storage/tmp/galerina-spill"
+      max_disk 2gb
+      ttl 1h
+      encryption true
+      redact_secrets true
+
+      allow [
+      "cache_entries",
+      "queue_events",
+      "json_stream_buffers",
+      "build_cache"
+      ]
+
+      deny [
+      "SecureString",
+      "RequestContext",
+      "SessionToken",
+      "PaymentToken",
+      "PrivateKey"
+      ]
+    }
+  }
+}
+
+targets {
+  binary {
+    enabled true
+    output "./build/debug/app.bin"
+  }
+
+  wasm {
+    enabled true
+    output "./build/debug/app.wasm"
+  }
+
+  gpu {
+    enabled true
+    mode "plan"
+    fallback "binary"
+    output "./build/debug/app.gpu.plan"
+  }
+
+  photonic {
+    enabled true
+    mode "plan"
+    fallback "gpu"
+    output "./build/debug/app.photonic.plan"
+  }
+
+  ternary {
+    enabled true
+    mode "simulation"
+    output "./build/debug/app.ternary.sim"
+  }
+
+  omni {
+    enabled true
+    mode "simulation"
+    output "./build/debug/app.omni-logic.sim"
+  }
+}
+
+documentation {
+  enabled true
+  required true
+
+  output "./build/docs"
+
+  formats [
+  "markdown",
+  "json"
+  ]
+
+  generate [
+  "api_guide",
+  "webhook_guide",
+  "type_reference",
+  "global_registry_guide",
+  "security_guide",
+  "runtime_guide",
+  "memory_pressure_guide",
+  "run_compile_mode_guide",
+  "deployment_guide",
+  "ai_summary"
+  ]
+
+  sources [
+  "api_contracts",
+  "webhook_contracts",
+  "type_definitions",
+  "global_registry",
+  "strict_comments",
+  "security_rules",
+  "runtime_rules",
+  "memory_rules",
+  "execution_rules",
+  "target_reports",
+  "source_maps"
+  ]
+
+  rules {
+    fail_if_missing true
+    fail_if_outdated true
+    require_strict_comments false
+    redact_secrets true
+    include_internal false
+  }
+}
+
+ai_guide {
+  enabled true
+  update_on_successful_compile true
+  output "./build/app.ai-guide.md"
+  json_output "./build/app.ai-context.json"
+
+  include [
+  "project_summary",
+  "entry_points",
+  "routes",
+  "webhooks",
+  "types",
+  "flows",
+  "effects",
+  "global_registry",
+  "security_rules",
+  "runtime_rules",
+  "memory_rules",
+  "execution_rules",
+  "target_summary",
+  "strict_comments",
+  "known_risks",
+  "ai_todos"
+  ]
+
+  rules {
+    redact_secrets true
+    include_internal false
+    fail_if_stale true
+    require_strict_comments_for_secure_flows false
+  }
+}
+
+manifests {
+  build_manifest {
+    required true
+    output "./build/app.build-manifest.json"
+  }
+
+  source_match {
+    required true
+    output "./build/app.source-map.json"
+  }
+
+  map_manifest {
+    required true
+    output "./build/app.map-manifest.json"
+  }
+
+  api_report {
+    required true
+    output "./build/app.api-report.json"
+  }
+
+  docs_manifest {
+    required true
+    output "./build/docs/docs-manifest.json"
+  }
+}
+
+build {
+  mode "debug"
+  deterministic true
+  source_maps true
+  reports true
+  map_manifest true
+  ai_context true
+  ai_guide true
+  documentation true
+
+  require_outputs [
+  "./build/app.bin",
+  "./build/app.source-map.json",
+  "./build/app.map-manifest.json",
+  "./build/app.ai-guide.md",
+  "./build/app.build-manifest.json",
+  "./build/app.global-report.json",
+  "./build/app.security-report.json",
+  "./build/app.runtime-report.json",
+  "./build/app.memory-report.json",
+  "./build/app.execution-report.json",
+  "./build/app.target-report.json",
+  "./build/app.api-report.json",
+  "./build/docs/api-guide.md",
+  "./build/docs/type-reference.md",
+  "./build/docs/global-registry-guide.md",
+  "./build/docs/runtime-guide.md",
+  "./build/docs/memory-pressure-guide.md",
+  "./build/docs/run-compile-mode-guide.md",
+  "./build/docs/docs-manifest.json"
+  ]
+
+  fail_on_missing_output true
+  fail_on_doc_error true
+}

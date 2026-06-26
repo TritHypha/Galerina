@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Reports are generated proof that LogicN source, packages, policies and runtime
+Reports are generated proof that Galerina source, packages, policies and runtime
 plans were checked.
 
 ## Short Definition

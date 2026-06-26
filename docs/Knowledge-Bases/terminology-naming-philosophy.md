@@ -2,7 +2,7 @@
 
 ## Purpose
 
-LogicN terminology should remain stable, understandable, future-proof,
+Galerina terminology should remain stable, understandable, future-proof,
 AI-readable and operationally meaningful as the project evolves into:
 
 ```text
@@ -44,7 +44,7 @@ unstable APIs
 breaking conceptual models
 ```
 
-LogicN should use intentional terminology architecture from the beginning.
+Galerina should use intentional terminology architecture from the beginning.
 
 ## Naming Priorities
 
@@ -172,7 +172,7 @@ Assembly
 
 ### 4. Design For AI Interpretation
 
-AI systems are first-class readers of LogicN architecture.
+AI systems are first-class readers of Galerina architecture.
 
 Names should:
 
@@ -218,7 +218,7 @@ Execution Coordination
 
 ### 6. Avoid CPU-First Assumptions
 
-LogicN terminology should remain compute-neutral.
+Galerina terminology should remain compute-neutral.
 
 Future compute may include:
 
@@ -250,7 +250,7 @@ This improves security reasoning, AI indexing and architecture auditing.
 
 ### 8. Use Classification Terminology
 
-LogicN increasingly classifies:
+Galerina increasingly classifies:
 
 ```text
 execution nature
@@ -362,7 +362,7 @@ Does the name preserve authority boundaries?
 
 ## Platform Identity
 
-LogicN should be described as:
+Galerina should be described as:
 
 ```text
 a governed compute orchestration platform
@@ -416,7 +416,7 @@ responsibility, not the temporary implementation.
 ```text
 Traditional software names often describe code structures.
 
-LogicN terminology should describe
+Galerina terminology should describe
 governed operational responsibility.
 ```
 

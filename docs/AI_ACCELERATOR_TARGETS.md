@@ -1,6 +1,6 @@
 # AI Accelerator Targets
 
-LogicN should support AI accelerators passively through generic target planning,
+Galerina should support AI accelerators passively through generic target planning,
 capability profiles, adapters and reports.
 
 It should not create permanent language syntax for every hardware vendor or
@@ -9,7 +9,7 @@ chipset.
 The right model is:
 
 ```text
-LogicN source syntax:
+Galerina source syntax:
   prefer ai_accelerator
 
 Runtime or config profile:
@@ -19,13 +19,13 @@ Reports:
   selected_backend: intel.gaudi3.hl338
 ```
 
-This keeps LogicN vendor-neutral while still allowing the project to understand
+This keeps Galerina vendor-neutral while still allowing the project to understand
 important accelerator concepts such as tensor workloads, precision, HBM memory,
 framework interop, topology and fallback behaviour.
 
 ## Intel Gaudi As A Profile
 
-LogicN should treat Intel Gaudi 3 as an AI accelerator profile, not as a normal CPU
+Galerina should treat Intel Gaudi 3 as an AI accelerator profile, not as a normal CPU
 or GPU target.
 
 Intel describes the Intel Gaudi 3 PCIe HL-338 card as an AI accelerator for
@@ -34,7 +34,7 @@ lists features including 128GB HBM2e, 96MB on-die SRAM, 600W TDP, 8 MME
 engines, 64 Tensor Processor Cores, AI data types including FP8, BF16, FP16,
 TF32 and FP32, and HBM bandwidth of 3.7 TB/s.
 
-So LogicN should not ask:
+So Galerina should not ask:
 
 ```text
 Should this run on CPU, GPU or Gaudi?
@@ -56,7 +56,7 @@ What report should be generated?
 
 Prefer this:
 
-```LogicN
+```Galerina
 compute auto {
   prefer ai_accelerator
   prefer gpu
@@ -66,7 +66,7 @@ compute auto {
 
 Avoid this as public language syntax:
 
-```LogicN
+```Galerina
 compute target gaudi {
   ...
 }
@@ -74,7 +74,7 @@ compute target gaudi {
 
 Vendor-specific names should be selected by backend policy:
 
-```LogicN
+```Galerina
 compute_backend {
   ai_accelerator {
     backend auto
@@ -83,7 +83,7 @@ compute_backend {
 }
 ```
 
-This avoids locking LogicN source code to one chipset. Gaudi support can evolve,
+This avoids locking Galerina source code to one chipset. Gaudi support can evolve,
 and another accelerator can replace it later without requiring application code
 to be rewritten.
 
@@ -127,17 +127,17 @@ Lightning and Hugging Face-related workflows.
 Practical first path:
 
 ```text
-LogicN typed AI task
+Galerina typed AI task
   -> generated adapter config
   -> PyTorch / vLLM / Hugging Face / DeepSpeed workflow
   -> Intel Gaudi software stack when selected
-  -> typed LogicN result
-  -> LogicN accelerator report
+  -> typed Galerina result
+  -> Galerina accelerator report
 ```
 
 Example direction:
 
-```LogicN
+```Galerina
 secure compute flow answerQuestion(input: RagRequest)
   -> Result<RagAnswer, AiError>
 {
@@ -162,7 +162,7 @@ secure compute flow answerQuestion(input: RagRequest)
 
 AI accelerator planning depends on first-class tensor and batch types.
 
-Useful LogicN concepts:
+Useful Galerina concepts:
 
 ```text
 Tensor<Float32>
@@ -176,10 +176,10 @@ AudioBatch
 VideoFrameBatch
 ```
 
-`logicn-core-vector` should own tensor shape and numeric element contracts.
-`logicn-ai-neural` should own neural workload contracts.
-`logicn-core-compute` should own target selection.
-`logicn-target-ai-accelerator` should own accelerator capability profiles and
+`galerina-core-vector` should own tensor shape and numeric element contracts.
+`galerina-ai-neural` should own neural workload contracts.
+`galerina-core-compute` should own target selection.
+`galerina-target-ai-accelerator` should own accelerator capability profiles and
 reports.
 
 ## Precision Policy
@@ -189,7 +189,7 @@ AI accelerator planning must be precision-aware.
 For Gaudi 3, Intel lists AI data types including FP8, BF16, FP16, TF32 and FP32,
 and highlights FP8 quantization for large language and multimodal models.
 
-LogicN should support policy such as:
+Galerina should support policy such as:
 
 ```text
 precision auto
@@ -200,7 +200,7 @@ precision deny FP8 for financial/security-critical output
 
 Example:
 
-```LogicN
+```Galerina
 ai model CustomerSupportLlm {
   precision {
     prefer FP8
@@ -221,7 +221,7 @@ FP8 may improve throughput, but high-impact outputs need verification policy.
 
 Accelerator memory is not normal CPU memory.
 
-LogicN should model accelerator memory tiers:
+Galerina should model accelerator memory tiers:
 
 ```text
 CPU RAM
@@ -232,7 +232,7 @@ pooled HBM across cards
 ```
 
 For Gaudi 3 HL-338, Intel lists 128GB HBM2e, 96MB on-die SRAM and 3.7 TB/s HBM
-bandwidth. LogicN should therefore optimise for:
+bandwidth. Galerina should therefore optimise for:
 
 ```text
 keep tensors on accelerator
@@ -246,7 +246,7 @@ reduce batch size on out-of-memory
 
 Example direction:
 
-```LogicN
+```Galerina
 memory ai_accelerator {
   keep_model_weights_on_device true
   batch_inputs auto
@@ -266,7 +266,7 @@ describes 1x4 as four cards with 512GB pooled HBM2e, 2x4 as two groups of four
 cards with 2 x 512GB pooled HBM2e, and 4x1 as four independent cards without a
 top bridge.
 
-LogicN should therefore ask:
+Galerina should therefore ask:
 
 ```text
 How many accelerator cards?
@@ -280,7 +280,7 @@ Should separate models run independently?
 
 Example policy direction:
 
-```LogicN
+```Galerina
 ai_accelerator topology auto {
   if layout == "pooled_1x4" {
     prefer model_sharding
@@ -313,7 +313,7 @@ app.compute-placement-report.json
 ```
 
 Vendor-specific details can appear in the report, but should not become public
-LogicN syntax.
+Galerina syntax.
 
 Example:
 
@@ -341,13 +341,13 @@ Example:
 
 ## Benchmarks
 
-`logicn-tools-benchmark` should benchmark accelerator behavior generically:
+`galerina-tools-benchmark` should benchmark accelerator behavior generically:
 
 ```bash
-LogicN benchmark --target ai_accelerator --light
-LogicN benchmark --target ai_accelerator --llm
-LogicN benchmark --target ai_accelerator --rag
-LogicN benchmark --target ai_accelerator --multimodal
+Galerina benchmark --target ai_accelerator --light
+Galerina benchmark --target ai_accelerator --llm
+Galerina benchmark --target ai_accelerator --rag
+Galerina benchmark --target ai_accelerator --multimodal
 ```
 
 The report can identify the selected backend:
@@ -400,7 +400,7 @@ Phase 6
 
 ```text
 Do not make vendor names part of normal source syntax.
-Do not require AI accelerator hardware for baseline LogicN.
+Do not require AI accelerator hardware for baseline Galerina.
 Do not claim native accelerator execution unless an adapter/backend actually ran.
 Do not silently downgrade precision.
 Do not use FP8 for high-impact decisions without verification policy.
@@ -411,22 +411,22 @@ Always report selected backend, precision, memory tier, topology and fallback.
 ## Package Ownership
 
 ```text
-logicn-core-compute
+galerina-core-compute
   generic ai_accelerator selection and fallback planning
 
-logicn-target-ai-accelerator
+galerina-target-ai-accelerator
   capability profiles, framework adapters, precision and memory reports
 
-logicn-ai
+galerina-ai
   model metadata, inference safety and AI output policy
 
-logicn-ai-neural
+galerina-ai-neural
   neural workload contracts
 
-logicn-core-vector
+galerina-core-vector
   tensor and shape contracts
 
-logicn-tools-benchmark
+galerina-tools-benchmark
   generic ai_accelerator benchmark target and backend-specific report fields
 ```
 

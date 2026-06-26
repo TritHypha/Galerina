@@ -1,0 +1,21 @@
+{
+  "name": "@galerina/ai-neural",
+  "version": "1.0.0-beta.2",
+  "description": "Galerina neural network model, layer, inference and training boundary contracts.",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run typecheck && npm run build && node --test tests/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}

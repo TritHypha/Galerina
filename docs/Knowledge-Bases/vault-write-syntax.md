@@ -7,9 +7,9 @@ Planned for: Stage B
 
 ## Definition
 
-LogicN standardises vault write operations using the vault object as the direct actor:
+Galerina standardises vault write operations using the vault object as the direct actor:
 
-```logicn
+```galerina
 SessionVault.write(
   key: session_uuid,
   value: {
@@ -25,7 +25,7 @@ This is the canonical form. The vault name is the subject; `write` is the operat
 
 The earlier verbose form was:
 
-```logicn
+```galerina
 vault.write(
   context,
   vault: SessionVault,
@@ -49,7 +49,7 @@ made governed storage feel less first-class
 
 Write:
 
-```logicn
+```galerina
 SessionVault.write(
   key: session_uuid,
   value: {
@@ -61,7 +61,7 @@ SessionVault.write(
 
 Read:
 
-```logicn
+```galerina
 let session = SessionVault.read(
   key: session_uuid
 )
@@ -83,7 +83,7 @@ The vault object is the governed storage target. The operation (`write`/`read`) 
 
 `write` is short, direct, and operational. It pairs cleanly with `read`:
 
-```logicn
+```galerina
 SessionVault.write(...)
 SessionVault.read(...)
 ```
@@ -108,7 +108,7 @@ Developers do not pass `context` into every governed operation. The runtime owns
 
 Removing explicit `context` from the call does not remove security. Vault writes still require permission:
 
-```logicn
+```galerina
 permission auth_login {
   code {
     allow vault.write SessionVault

@@ -1,4 +1,4 @@
-LLN-EFFECT-005
+SPORE-EFFECT-005
 
 Broad alias 'network' used. Use the canonical form: network.outbound
-Broad aliases are warning-level (LLN-EFFECT-005); completely unknown names are error-level (LLN-EFFECT-004).
+Broad aliases are warning-level (SPORE-EFFECT-005); completely unknown names are error-level (SPORE-EFFECT-004).

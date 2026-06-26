@@ -1,6 +1,6 @@
 # Permission, Capability And Actor Model
 
-LogicN should expose a simple developer-facing `permission` model while keeping
+Galerina should expose a simple developer-facing `permission` model while keeping
 capabilities, effects, policies and reports internally precise.
 
 ## Short Definitions
@@ -33,7 +33,7 @@ external system
 
 The actor usually comes from `ctx.actor`:
 
-```logicn
+```galerina
 ctx.actor.id
 ctx.actor.type
 ctx.actor.roles
@@ -88,10 +88,10 @@ You normally need both.
 ## Developer-Facing Permission
 
 Instead of making normal developers write separate effects, capabilities,
-policies and audit blocks for every flow, LogicN should support reusable
+policies and audit blocks for every flow, Galerina should support reusable
 permissions.
 
-```logicn
+```galerina
 secure flow updateUserEmail(
   request: UpdateEmailRequest,
   ctx: RequestContext
@@ -112,7 +112,7 @@ contract {
 
 Permission definition:
 
-```logicn
+```galerina
 permission user_email_update {
   actor {
     require users.email.update
@@ -145,7 +145,7 @@ permission user_email_update {
 
 Advanced code may still expose the internal concepts directly:
 
-```logicn
+```galerina
 secure flow getUser(...)
   capabilities {
     require users.read
@@ -183,7 +183,7 @@ data or protected action must declare the required capability or permission.
 
 ## Report Rules
 
-LogicN should generate permission and capability evidence:
+Galerina should generate permission and capability evidence:
 
 ```text
 permission-report.json
@@ -201,7 +201,7 @@ audit-actor-report.json
 Capabilities should be expensive to validate at build/check time and cheap to
 check at runtime.
 
-At build time LogicN can generate:
+At build time Galerina can generate:
 
 ```text
 getUser requires:

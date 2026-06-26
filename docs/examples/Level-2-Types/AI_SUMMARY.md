@@ -13,16 +13,16 @@
 
 ## Canonical patterns
 
-```lln
+```spore
 // Money: currency-parameterised, exact decimal arithmetic
 let price: Money<GBP> = Money.gbp("100.00")
 let vat: Money<GBP>   = price * Decimal("0.20")
 
 // Cross-currency is a compile error
-// let bad = Money.gbp("10.00") + Money.usd("10.00")  -- LLN-TYPE-004
+// let bad = Money.gbp("10.00") + Money.usd("10.00")  -- SPORE-TYPE-004
 ```
 
-```lln
+```spore
 // Tensor: two type parameters required, shape can use named dimensions
 let embedding: Tensor<Float32, [1, 768]>
 let batch:     Tensor<Float32, [Batch, 1024]>
@@ -43,11 +43,11 @@ let auditEmail: redacted  Email = redact(email)
 
 | Code | Meaning |
 |------|---------|
-| `LLN-TYPE-002` | Type mismatch — incompatible types in assignment or expression |
-| `LLN-TYPE-003` | Cannot assign raw `String` to branded type without a validation gate |
-| `LLN-TYPE-004` | Cross-currency `Money` arithmetic is forbidden |
-| `LLN-TYPE-006` | `Tensor` requires exactly two type parameters |
-| `LLN-TYPE-002 / LLN-TYPE-003` | Cannot assign `protected T` to `redacted T` without calling `redact()` |
+| `SPORE-TYPE-002` | Type mismatch — incompatible types in assignment or expression |
+| `SPORE-TYPE-003` | Cannot assign raw `String` to branded type without a validation gate |
+| `SPORE-TYPE-004` | Cross-currency `Money` arithmetic is forbidden |
+| `SPORE-TYPE-006` | `Tensor` requires exactly two type parameters |
+| `SPORE-TYPE-002 / SPORE-TYPE-003` | Cannot assign `protected T` to `redacted T` without calling `redact()` |
 
 ## Example IDs at this level
 

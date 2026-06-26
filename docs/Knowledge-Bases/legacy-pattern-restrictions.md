@@ -2,13 +2,13 @@
 
 ## Definition
 
-LogicN blocks specific legacy patterns that would reintroduce hidden authority, inheritance-style confusion, or uncontrolled runtime behaviour. These restrictions exist to keep the language explicit, auditable, and AI-readable.
+Galerina blocks specific legacy patterns that would reintroduce hidden authority, inheritance-style confusion, or uncontrolled runtime behaviour. These restrictions exist to keep the language explicit, auditable, and AI-readable.
 
 ## Blocked Patterns
 
 ### 1. Inheritance-Style Hierarchy
 
-```logicn
+```galerina
 // Blocked
 permission Admin extends User
 data AdminUser extends User
@@ -17,7 +17,7 @@ flow AdminLogin extends Login
 
 Use explicit composition instead:
 
-```logicn
+```galerina
 permission admin_profile_read {
   code {
     allow db.read table: Profiles
@@ -28,7 +28,7 @@ permission admin_profile_read {
 
 ### 2. Legacy Global Mutable State
 
-```logicn
+```galerina
 // Blocked
 global user_id
 global session
@@ -36,7 +36,7 @@ global session
 
 Use vaults:
 
-```logicn
+```galerina
 SessionVault.write(
   key: session_uuid,
   value: { actor_uuid: user.uuid, expires_at: ... }
@@ -51,7 +51,7 @@ All imports must go through the governed Package Resolver.
 
 ### 4. Ambiguous Legacy Names
 
-Reserved and disallowed names in normal LogicN source:
+Reserved and disallowed names in normal Galerina source:
 
 ```text
 class
@@ -73,7 +73,7 @@ monkey patching
 runtime method replacement
 ```
 
-All are blocked. LogicN execution must be deterministic and auditable at compile time.
+All are blocked. Galerina execution must be deterministic and auditable at compile time.
 
 ### 6. Legacy Permission Inheritance
 
@@ -81,7 +81,7 @@ A permission must not secretly inherit another permission's effects or scope.
 
 Prefer explicit inclusion:
 
-```logicn
+```galerina
 permission admin_profile_read {
   code {
     allow db.read table: Profiles
@@ -92,7 +92,7 @@ permission admin_profile_read {
 
 Not:
 
-```logicn
+```galerina
 // Blocked
 permission admin_profile_read inherits user_profile_read
 ```
@@ -107,4 +107,4 @@ Legacy-style hooks and listeners can create invisible execution paths. All event
 Legacy compatibility must not reintroduce hidden authority.
 ```
 
-LogicN supports clean structural hierarchies but blocks any legacy pattern that creates hidden behaviour, implicit authority, or unaudited execution.
+Galerina supports clean structural hierarchies but blocks any legacy pattern that creates hidden behaviour, implicit authority, or unaudited execution.

@@ -79,7 +79,7 @@ Input/output: DataHandle only — no raw pointers
 No strings, no PII, no protected values
 No filesystem, no network
 Child-process isolation (Phase 27: process, Phase 28: component)
-Signed module (LLN-PKG-005 equivalent for native)
+Signed module (SPORE-PKG-005 equivalent for native)
 Audit entry required: records chosen target, buffer sizes (not content)
 Fallback: cpu (always declared)
 ```
@@ -89,7 +89,7 @@ Fallback: cpu (always declared)
 The Tensor.dot plugin uses a forward-compatible Component Model interface:
 
 ```wit
-interface logicn-hardware-npu {
+interface galerina-hardware-npu {
   record tensor-view {
     offset: u32,
     length: u32,
@@ -115,6 +115,6 @@ Neither recovers the other directly. The supervisor manages both.
 
 ## References
 
-- `docs/Knowledge-Bases/logicn-hybrid-wasm-architecture.md` — architecture decisions and rules
-- `docs/Knowledge-Bases/logicn-phase-27-ai-native.md` — Phase 27 KB doc
-- `packages-logicn/logicn-core-compiler/src/type-registry.ts` — `NativePluginManifest` type
+- `docs/Knowledge-Bases/galerina-hybrid-wasm-architecture.md` — architecture decisions and rules
+- `docs/Knowledge-Bases/galerina-phase-27-ai-native.md` — Phase 27 KB doc
+- `packages-galerina/galerina-core-compiler/src/type-registry.ts` — `NativePluginManifest` type

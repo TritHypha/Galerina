@@ -1,9 +1,9 @@
-<!-- ABSORBED R&D SOURCE — verbatim mirror. LogicN is the main library; the R&D repo is upstream/authoring.
-     Source: LogicN-R-AND-D/RESEARCH-PHASE-photonic-signing-and-trust-capsule.md  ·  Pinned: R&D fb68d06 (2026-06-16)
-     Integrated LogicN view: (this archive copy is the primary KB home)  ·  Catalog: logicn-rd-absorption-catalog.md
+<!-- ABSORBED R&D SOURCE — verbatim mirror. Galerina is the main library; the R&D repo is upstream/authoring.
+     Source: Galerina-R-AND-D/RESEARCH-PHASE-photonic-signing-and-trust-capsule.md  ·  Pinned: R&D fb68d06 (2026-06-16)
+     Integrated Galerina view: (this archive copy is the primary KB home)  ·  Catalog: galerina-rd-absorption-catalog.md
      Rule: edit the upstream source then re-vendor; do not fork this copy (feedback-auto-import-rd-docs). -->
 
-> **Absorbed R&D source (verbatim).** This is the archived upstream document. See `logicn-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
+> **Absorbed R&D source (verbatim).** This is the archived upstream document. See `galerina-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
 
 ---
 # R&D Phase — Photonic-Era Signing & the Governed Trust Capsule
@@ -12,11 +12,11 @@
 > `ENCRYPTION-RND-FULL-BRIEF.md`):** grounded, cited, adversarially verified; honest-core vs aspirational
 > kept strictly separate; **no performance number without a reproducible benchmark + the machine it ran on**;
 > **no invented crypto** (FIPS/NIST/RFC/peer-reviewed primitives only); fail-closed (`unknown → deny`).
-> **Boundary:** R&D-only; production repo (`LogicN/packages-logicn`) and the product repo
-> (`LogicN-TritMesh`) are off-limits unless the owner lifts the gate.
+> **Boundary:** R&D-only; production repo (`Galerina/packages-galerina`) and the product repo
+> (`Galerina-TritMesh`) are off-limits unless the owner lifts the gate.
 > **Builds on:** `tmf/spec/signature-custody-v0.md` (TASK 2 / #34 hybrid sig), `ENCRYPTION-RND-FULL-BRIEF.md`
 > §3 (crypto-on-core), §5.3 (custody), §10 (two crypto paths).
-> **REUSE — your own prior output (do not re-derive):** `LogicN-TritMesh/TritMesh/research/encryption-on-photonic-substrates.md`
+> **REUSE — your own prior output (do not re-derive):** `Galerina-TritMesh/TritMesh/research/encryption-on-photonic-substrates.md`
 > already proves the crypto-on-core verdict for the *encryption* sibling: §2.1 (hardware: analog optics ≈4–8 ENOB,
 > error-tolerant by design) + §2.2 (crypto: lattice math is exact-modular, fail-closed) + §4 (the per-stage
 > analog-eligible? table) + §5.2 (photonics' one honest home = the ANN layer, *outside* the trust gate). Signing
@@ -48,7 +48,7 @@ PKI-compatible · bit-exact deterministic verification.
 
 ---
 
-## 1. The four research lanes (honest survey + LogicN mapping)
+## 1. The four research lanes (honest survey + Galerina mapping)
 
 ### Lane A — Photonic-*accelerated* lattice signing (the earnable performance angle)
 ML-DSA / NTRU signing is dominated by polynomial / matrix arithmetic (NTT, matmul). A photonic matrix-multiply
@@ -60,7 +60,7 @@ the trust boundary.
   *net* faster than the digital baseline **after** re-quantization + digital re-verify overhead.
 - **Honest risk:** re-quantization + error-correction overhead may eat the gain (the LightHash lesson — the
   win is only ever on the bulk linear op). May be a wash for ML-DSA-65 sizes.
-- **LogicN role:** governance + the deterministic re-verify gate; the accelerator lives strictly outside it.
+- **Galerina role:** governance + the deterministic re-verify gate; the accelerator lives strictly outside it.
 
 ### Lane B — Quantum Digital Signatures (QDS / MDI-QDS) — the genuinely photonic signing model
 A *different* signing paradigm: information-theoretically-secure signatures from quantum states (photons),
@@ -71,7 +71,7 @@ and fiber/free-space demonstrations.
 - **Honest blockers (why it's track-not-build):** needs quantum channels / specialized hardware; tiny
   throughput; **no public-key infrastructure** (relies on pre-distributed quantum-correlated key material);
   verification semantics differ (transferability/repudiation bounds, not classical non-repudiation).
-- **LogicN role:** a future Tier-B "strong / slow / cold-path" signing lane (brief §10 Path B). **Track the
+- **Galerina role:** a future Tier-B "strong / slow / cold-path" signing lane (brief §10 Path B). **Track the
   literature + define the governance interface; do not build** until hardware + a PKI story exist.
 
 ### Lane C — Optical-PUF physical authenticators ("signing by physical possession")
@@ -79,7 +79,7 @@ A PUF challenge-response is a form of authentication by an unclonable physical d
 - **Real + complementary:** binds a Trust Capsule to specific hardware (sender-constrained, non-exportable).
 - **What it is NOT:** a digital signature — no public verifiability without an enrollment database, **ML-model
   attacks** mean it is not sole custody, and it gives no classical non-repudiation.
-- **LogicN role:** defense-in-depth **hardware binding under** the digital hybrid signature, never replacing it.
+- **Galerina role:** defense-in-depth **hardware binding under** the digital hybrid signature, never replacing it.
 
 ### Lane D — QRNG for hedged-signing randomness + key generation
 FIPS-204 hedged signing and keygen need entropy; QRNG supplies quantum entropy. Real but peripheral — an
@@ -101,7 +101,7 @@ from-scratch wire format.
 | JSON/base64url canonicalization ambiguity | Length-prefixed canonical encoding (`.tmf` `LP()`) |
 | No post-quantum | Hybrid Ed25519 + ML-DSA-65 + per-surface FIPS-204 domain-separation context (#34, built) |
 | No channel/replay binding | AAD-committing bind of audience ‖ epoch ‖ channel ‖ purpose (`.tmf` 36-byte AAD context) |
-| Coarse ambient claims | Capability-scoped, deny-by-default claims (LogicN model); macaroon-style attenuable caveats |
+| Coarse ambient claims | Capability-scoped, deny-by-default claims (Galerina model); macaroon-style attenuable caveats |
 | Whole-token disclosure | TMX inclusion proofs for selective disclosure |
 | Silent-accept readers | Fail-closed reader; K3 three-valued verdict (allow/deny/**unknown→deny**) |
 | (new) hardware binding | **Optical-PUF** sender-constraint (Lane C, optional, defense-in-depth) |
@@ -125,7 +125,7 @@ vector carried in the capsule (encrypt in transit; match only at the trusted end
 - **Lane A:** a runnable bench (with the machine) — photonic-accelerated sign **net** faster than digital after
   re-quantization + a passing digital re-verify; if it's a wash, say so and stop.
 - **Lane B:** an honest survey table — security model, hardware assumptions, throughput, PKI gap — + a defined
-  LogicN governance interface; no build.
+  Galerina governance interface; no build.
 - **Lane C:** a PUF-binding spec sketch + a modeling-attack analysis stating it is defense-in-depth, not sole.
 - **Trust Capsule:** a byte-precise spec sketch as a COSE/CWT profile + golden vectors (deterministic parts;
   real-crypto via `@noble` bench) + the JWT/COSE comparison + an adversarial review pass (fail-open hunt).
@@ -134,7 +134,7 @@ vector carried in the capsule (encrypt in transit; match only at the trusted end
 
 ## 5. File map / where this connects
 - This doc — the phase charter.
-- `LogicN-TritMesh/TritMesh/research/encryption-on-photonic-substrates.md` — **enc-rnd's own** encryption-side
+- `Galerina-TritMesh/TritMesh/research/encryption-on-photonic-substrates.md` — **enc-rnd's own** encryption-side
   crypto-on-core proof; the signing case reuses its §2/§4/§5 verbatim-in-spirit (see the REUSE banner above).
 - `tmf/spec/signature-custody-v0.md` — the digital hybrid sig the Capsule signs with (#34).
 - `tmf/spec/tmf-container-v0.md` / `tmf-encryption-v0.md` — the container + AEAD the Capsule reuses.

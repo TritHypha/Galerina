@@ -64,7 +64,7 @@ external network results
 
 ## Preload Graph Declaration
 
-```logicn
+```galerina
 preload graph BootPreload {
   node RuntimePolicy
   node ViewRules
@@ -126,7 +126,7 @@ Unless the previous block has already approved that access.
 
 ## Chain Declaration Example
 
-```logicn
+```galerina
 chain LoginChain {
   block ValidateCredentials
   block CreateSession preload after ValidateCredentials starts

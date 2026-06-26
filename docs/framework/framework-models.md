@@ -12,7 +12,7 @@ public output and must not behave like an active-record database object.
 
 ## Syntax Example
 
-```logicn
+```galerina
 model User {
   id: UUID view: public
   email: Email view: private
@@ -69,7 +69,7 @@ model-human-summary.md
 
 ## Rejected Example
 
-```logicn
+```galerina
 return Response.ok(user)
 ```
 

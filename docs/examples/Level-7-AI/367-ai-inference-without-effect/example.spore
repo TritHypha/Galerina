@@ -1,0 +1,9 @@
+﻿/// example: 367-ai-inference-without-effect
+/// test_status: stable
+/// level: 7
+/// concept: ai.inference effect must be declared
+/// expected_diagnostics: SPORE-EFFECT-001
+
+pure flow classify(text: String) -> Label {
+  return ClassifierModel.classify(text)?
+}

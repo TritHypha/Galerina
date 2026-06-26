@@ -6,7 +6,7 @@
 
 ```text
 boot/main policy defaults =
-the governed startup map for a LogicN application,
+the governed startup map for a Galerina application,
 operating within the constraints set by the Runtime Policy Config.
 ```
 
@@ -36,7 +36,7 @@ Runtime starts
 
 ## Boot Block Example
 
-```logicn
+```galerina
 boot main {
 
   profile use strict
@@ -91,7 +91,7 @@ boot/main may not weaken runtime policy.
 
 ## Why This Is Useful
 
-The boot/main block gives LogicN a clear, auditable startup map:
+The boot/main block gives Galerina a clear, auditable startup map:
 
 ```text
 what starts

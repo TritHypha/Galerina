@@ -3,7 +3,7 @@
 ## Definition
 
 `Query` is a protected external-boundary query artifact. It is not normal
-`Text`. It is the LogicN type for parameterized queries sent to external data
+`Text`. It is the Galerina type for parameterized queries sent to external data
 stores.
 
 ## What Query Means to the Runtime
@@ -23,7 +23,7 @@ immutable once created
 Use `Query` as the single type for external queries. One type, multiple block
 labels:
 
-```logicn
+```galerina
 let q: Query = sql {
   SELECT id, email
   FROM users
@@ -42,7 +42,7 @@ The type `Query` tells the runtime this is external-boundary content.
 
 ## Invalid: Unsafe Interpolation
 
-```logicn
+```galerina
 let raw_name: unsafe String = request.name
 
 let query: Query = sql {
@@ -54,7 +54,7 @@ Unsafe values cannot be interpolated into queries.
 
 ## Correct: Parameterized
 
-```logicn
+```galerina
 let raw_name: unsafe String = request.name
 let name: safe String = clean.text(raw_name)
 
@@ -70,7 +70,7 @@ database.main.run(query, { name: name })
 Connections are declared declaratively using GlobalVault. Credentials are never
 stored in variables.
 
-```logicn
+```galerina
 database main_db {
   provider: "postgres"
   source: GlobalVault.database.main
@@ -87,14 +87,14 @@ database analytics_db {
 Database results cross an external boundary and must be treated as unsafe until
 validated:
 
-```logicn
+```galerina
 let raw_result: unsafe Any = database.main_db.run(query, params)
 let result: safe MyType = validate.my_type(raw_result)
 ```
 
 ## Multi-Database Flow Example
 
-```logicn
+```galerina
 flow get_user_report(id: safe Id) -> Report
   uses database.main_db.read
   uses database.analytics_db.read

@@ -2,7 +2,7 @@
 /**
  * audit-package-border.mjs — Hardened Border CI gate (#149), ENFORCING + fail-closed.
  *
- * Re-scans EVERY package under packages-logicn/ FROM SOURCE with the real scanner and enforces that
+ * Re-scans EVERY package under packages-galerina/ FROM SOURCE with the real scanner and enforces that
  * package's committed `.graph/boundary-policy.json` allowlist. This is the zero-trust gate: it does NOT
  * trust the committed `.graph/package-graph.json` (the artifact a drift-introducer controls) — it
  * RE-DERIVES the external import surface from source, then FAILS the build on:
@@ -13,7 +13,7 @@
  * Anti-neuter: a `--self-test` proves the gate still FIRES (on an unlisted external AND a missing policy)
  * before the enforcing sweep — a border gate that has been silently defanged is itself a fail-open.
  *
- * Requires the scanner to be BUILT first (`tsc` on logicn-devtools-package-graph — it is pure TS with no
+ * Requires the scanner to be BUILT first (`tsc` on galerina-devtools-package-graph — it is pure TS with no
  * third-party deps, so the CI build is just tsc, no `npm install` of package deps). If the scanner dist is
  * absent the gate EXITS NON-ZERO rather than skipping (a gate that can't run must not pass).
  *
@@ -32,15 +32,15 @@ import { tmpdir } from "node:os";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const DIST = join(ROOT, "packages-logicn", "logicn-devtools-package-graph", "dist");
-const PKG_ROOT = join(ROOT, "packages-logicn");
+const DIST = join(ROOT, "packages-galerina", "galerina-devtools-package-graph", "dist");
+const PKG_ROOT = join(ROOT, "packages-galerina");
 
 async function loadScanner() {
   for (const f of ["scanner.js", "graph.js", "reporter.js"]) {
     if (!existsSync(join(DIST, f))) {
       console.error(
         `FAIL: the package-graph scanner is not built (${join(DIST, f)} missing).\n` +
-        `       Build it first:  npx -p typescript tsc -p packages-logicn/logicn-devtools-package-graph/tsconfig.json\n` +
+        `       Build it first:  npx -p typescript tsc -p packages-galerina/galerina-devtools-package-graph/tsconfig.json\n` +
         `       (A border gate that cannot run must not silently pass.)`,
       );
       process.exit(2);
@@ -60,7 +60,7 @@ function checkPkg(S, pkgPath) {
 
 /** The gate must FIRE on (A) an unlisted external and (B) a missing policy. Else it is neutered. */
 function selfTest(S) {
-  const base = mkdtempSync(join(tmpdir(), "lln-border-selftest-"));
+  const base = mkdtempSync(join(tmpdir(), "spore-border-selftest-"));
   try {
     // (A) source imports an unlisted external; policy allows nothing → must FAIL with that specifier.
     const a = join(base, "pkgA");

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-LogicN treats fast response time as a full request-path problem, not only a
+Galerina treats fast response time as a full request-path problem, not only a
 language execution problem.
 
 Fast response combines:
@@ -17,34 +17,34 @@ Fast response combines:
 The short rule is:
 
 ```text
-Boot warmup makes LogicN ready faster.
+Boot warmup makes Galerina ready faster.
 Keep-alive keeps the network path warm after it is ready.
 ```
 
 ## Fast Response Chain
 
-A LogicN API request should follow a known-safe path:
+A Galerina API request should follow a known-safe path:
 
 ```text
 Client
   -> existing keep-alive / HTTP2 / HTTP3 connection
-LogicN API Server
+Galerina API Server
   -> precompiled method/path route lookup
-LogicN App Kernel
+Galerina App Kernel
   -> prevalidated schema and security policy
-LogicN Runtime
+Galerina Runtime
   -> warmed typed flow
 Response
   -> same connection reused where policy allows
 Client
 ```
 
-The goal is to reduce avoidable application overhead, not to claim that LogicN
+The goal is to reduce avoidable application overhead, not to claim that Galerina
 makes physical networks faster.
 
 ## Known Safe Path
 
-LogicN should be fast to respond because it knows the safe path before the
+Galerina should be fast to respond because it knows the safe path before the
 request arrives.
 
 This means:
@@ -58,9 +58,9 @@ This means:
 - bad requests rejected early
 - good requests enter typed flows quickly
 
-## What LogicN Should Prewarm
+## What Galerina Should Prewarm
 
-At boot, LogicN may warm:
+At boot, Galerina may warm:
 
 - route trie or method/path lookup table
 - request schema validators
@@ -88,7 +88,7 @@ syntax.
 
 Example concept:
 
-```logicn
+```galerina
 network transport {
   http1 {
     keepAlive: true
@@ -110,11 +110,11 @@ network transport {
 
 ## Inbound Connection Reuse
 
-Inbound keep-alive lets clients reuse connections to the LogicN server.
+Inbound keep-alive lets clients reuse connections to the Galerina server.
 
 Example concept:
 
-```logicn
+```galerina
 server api {
   listen https on 443
 
@@ -145,13 +145,13 @@ server api {
 
 ## Outbound Connection Pooling
 
-Outbound keep-alive helps LogicN reuse safe connections to external services
+Outbound keep-alive helps Galerina reuse safe connections to external services
 such as payment APIs, email APIs, internal services, search services and AI
 services.
 
 Example concept:
 
-```logicn
+```galerina
 outbound service OpenAI {
   host: "api.openai.com"
   protocol: https
@@ -173,7 +173,7 @@ backpressure, authentication, validation, secret-safe logging or audit rules.
 
 ## Network Performance Report
 
-LogicN should generate a network performance report:
+Galerina should generate a network performance report:
 
 ```text
 build/reports/app.network-performance-report.json
@@ -232,7 +232,7 @@ capabilities selected by deployment profile. They are not core language syntax.
 
 ## Design Statement
 
-LogicN should be fast to respond because it knows the safe path before the
+Galerina should be fast to respond because it knows the safe path before the
 request arrives.
 
 This means:

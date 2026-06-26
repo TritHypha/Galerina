@@ -3,7 +3,7 @@
 ## Purpose
 
 Crypto inventory reports show which cryptographic algorithms, libraries,
-purposes and migration risks exist in a LogicN application.
+purposes and migration risks exist in a Galerina application.
 
 ## Short Definition
 
@@ -42,7 +42,7 @@ The report should answer:
 
 ```json
 {
-  "reportType": "logicn.crypto.inventory",
+  "reportType": "galerina.crypto.inventory",
   "postQuantumReady": true,
   "uses": [
     {

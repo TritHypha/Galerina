@@ -7,7 +7,7 @@ Planned for: Stage B
 
 ## Definition
 
-LogicN supports parallelism through governed, explicit mechanisms: `task`/`wait`
+Galerina supports parallelism through governed, explicit mechanisms: `task`/`wait`
 in flows, worker pools, queues, and the Execution Coordination Scheduler. There
 is no uncontrolled thread spawning or hidden async execution.
 
@@ -18,7 +18,7 @@ Workers provide isolation.
 Budgets prevent runaway execution.
 ```
 
-## What LogicN Avoids
+## What Galerina Avoids
 
 ```text
 uncontrolled thread spawning
@@ -35,7 +35,7 @@ invisible task chains
 
 The primary developer-facing mechanism for parallel work in a `flow`:
 
-```logicn
+```galerina
 flow build_report(user_id: safe Id) -> Report
   uses database.users.read
   uses database.analytics.read
@@ -66,7 +66,7 @@ audit
 
 ## Grouped Waits
 
-```logicn
+```galerina
 // All must succeed
 wait all timeout 2500ms cancelOnError {
   user  = database.users.find(user_id)
@@ -96,7 +96,7 @@ manualCancel    — explicit cancellation signal
 
 For background and isolated parallel work:
 
-```logicn
+```galerina
 worker image_processor {
   max: 8
   isolation: strict
@@ -118,7 +118,7 @@ invocations.
 
 Queues allow producers and consumers to work independently:
 
-```logicn
+```galerina
 queue risk_jobs {
   source: GlobalVault.queue.risk
   max_concurrent: 4
@@ -197,7 +197,7 @@ no secret retention between jobs
 
 `fn` is always synchronous and has no runtime authority:
 
-```logicn
+```galerina
 // Compiler error — fn cannot use task
 fn bad_parallel(id: safe Id) -> safe Data {
   let t = task database.get(id)   // ERROR: LNN-SEC-014
@@ -210,7 +210,7 @@ Only `flow` may use `task`, `wait`, `run worker`, and `wait all/race/stream`.
 ## Core Principle
 
 ```text
-Parallelism in LogicN is:
+Parallelism in Galerina is:
   explicit — declared by the developer
   governed — scheduled by the runtime
   bounded — limited by declared budgets

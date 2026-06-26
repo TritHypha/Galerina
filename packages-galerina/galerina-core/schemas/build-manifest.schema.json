@@ -1,0 +1,185 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://Galerina.local/schemas/build-manifest.schema.json",
+  "title": "Galerina Build Manifest Prototype",
+  "type": "object",
+  "required": [
+    "project",
+    "version",
+    "compiler",
+    "mode",
+    "createdAt",
+    "deterministicInputs",
+    "diagnosticSummary",
+    "targetOutputs",
+    "reports",
+    "documentation",
+    "aiGuide",
+    "requiredOutputs",
+    "outputHashes"
+  ],
+  "properties": {
+    "project": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "compiler": {
+      "type": "string"
+    },
+    "mode": {
+      "enum": [
+        "debug",
+        "release"
+      ]
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "deterministicInputs": {
+      "type": "object",
+      "required": [
+        "sourceHash",
+        "fileCount"
+      ],
+      "properties": {
+        "sourceHash": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "fileCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "diagnosticSummary": {
+      "type": "object",
+      "required": [
+        "total",
+        "info",
+        "warning",
+        "error",
+        "fatal",
+        "categories",
+        "codes"
+      ],
+      "properties": {
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "info": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warning": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "error": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fatal": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "categories": {
+          "type": "object"
+        },
+        "codes": {
+          "type": "object"
+        }
+      }
+    },
+    "targetOutputs": {
+      "type": "object",
+      "required": [
+        "binary",
+        "wasm",
+        "gpuPlan",
+        "photonicPlan",
+        "ternarySimulation",
+        "omniLogicSimulation"
+      ],
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "reports": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "documentation": {
+      "type": "object",
+      "required": [
+        "required",
+        "output",
+        "outputs"
+      ],
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "output": {
+          "type": "string"
+        },
+        "outputs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "aiGuide": {
+      "type": "object",
+      "required": [
+        "enabled",
+        "updateOnSuccessfulCompile",
+        "included",
+        "output",
+        "jsonOutput",
+        "stalePolicy"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "updateOnSuccessfulCompile": {
+          "type": "boolean"
+        },
+        "included": {
+          "type": "boolean"
+        },
+        "output": {
+          "type": "string"
+        },
+        "jsonOutput": {
+          "type": "string"
+        },
+        "stalePolicy": {
+          "type": "string"
+        }
+      }
+    },
+    "requiredOutputs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "outputHashes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^sha256:[a-f0-9]{64}$"
+      }
+    }
+  }
+}

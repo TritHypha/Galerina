@@ -1,4 +1,4 @@
-# LogicN Application Pattern 08 — Secrets and Sensitive Values
+# Galerina Application Pattern 08 — Secrets and Sensitive Values
 
 **When to use:** API keys, tokens, passwords, private keys, database credentials
 
@@ -6,13 +6,13 @@
 
 ## Current Approach: `SecureString` Type
 
-LogicN provides a `SecureString` type for credential values. The compiler enforces three rules at the type level:
+Galerina provides a `SecureString` type for credential values. The compiler enforces three rules at the type level:
 
 | Code | Rule |
 |------|------|
-| `LLN-SECRET-001` | `SecureString` may not be passed to `log.*`, `print`, or `audit.write` |
-| `LLN-SECRET-002` | `SecureString` may not be compared with `==` or `!=` |
-| `LLN-SECRET-003` | `SecureString` may not be serialised to JSON, YAML, or any output encoder |
+| `SPORE-SECRET-001` | `SecureString` may not be passed to `log.*`, `print`, or `audit.write` |
+| `SPORE-SECRET-002` | `SecureString` may not be compared with `==` or `!=` |
+| `SPORE-SECRET-003` | `SecureString` may not be serialised to JSON, YAML, or any output encoder |
 
 These rules are enforced regardless of variable name. Any binding of type `SecureString` is subject to them.
 
@@ -26,17 +26,17 @@ A plain `String` credential can be:
 - **Serialised** — `json.encode({ key: apiKey })` silently includes the secret in output
 - **Compared with `==`** — susceptible to timing attacks; no compiler warning
 
-LogicN's `SecureString` type closes all three paths at compile time.
+Galerina's `SecureString` type closes all three paths at compile time.
 
 ---
 
 ## Correct Pattern
 
-```logicn
+```galerina
 let apiKey: SecureString = Secret.env("API_KEY")
-// LLN-SECRET-001 fires if passed to log.*
-// LLN-SECRET-002 fires if compared with ==
-// LLN-SECRET-003 fires if passed to json.encode
+// SPORE-SECRET-001 fires if passed to log.*
+// SPORE-SECRET-002 fires if compared with ==
+// SPORE-SECRET-003 fires if passed to json.encode
 
 // Correct comparison — constant-time:
 let match: Bool = constantTimeEquals(apiKey, expected)
@@ -46,7 +46,7 @@ let match: Bool = constantTimeEquals(apiKey, expected)
 
 Additional sources:
 
-```logicn
+```galerina
 Secret.env("DB_PASSWORD")          // environment variable
 Secret.vault("db/password")        // Vault-compatible secret store
 Secret.file("/run/secrets/key")    // Docker secret mount
@@ -58,7 +58,7 @@ Secret.file("/run/secrets/key")    // Docker secret mount
 
 Phase 17 introduces a declarative form that makes the governance rules visible in the source:
 
-```logicn
+```galerina
 secret ApiKey {
   source env("API_KEY")
   never log
@@ -92,7 +92,7 @@ naming-convention-secrets = "warn"  # or "error"
 
 This catches cases like:
 
-```logicn
+```galerina
 let dbPassword: String = config.get("DB_PASSWORD")
 // warning: binding name suggests credential; consider SecureString
 ```
@@ -103,7 +103,7 @@ let dbPassword: String = config.get("DB_PASSWORD")
 
 Secrets must never appear in audit logs. When a rotation event occurs, log the rotation event, not the secret value:
 
-```logicn
+```galerina
 guarded flow rotateApiKey(newKey: SecureString) {
   contract {
     effects { secret.write, audit.write }
@@ -115,7 +115,7 @@ guarded flow rotateApiKey(newKey: SecureString) {
     event: "api_key_rotated",
     actor: actor.id,
     timestamp: now()
-    // newKey is NOT included — LLN-SECRET-001 would fire
+    // newKey is NOT included — SPORE-SECRET-001 would fire
   })
 }
 ```
@@ -135,12 +135,12 @@ These two types serve different purposes and must not be confused:
 
 A `protected Email` may appear in an audit log (after `redact()`). A `SecureString` must **never** appear in any log, audit, or output — the compiler enforces this unconditionally.
 
-```logicn
+```galerina
 // PII — can appear redacted in audit:
 AuditLog.write({ email: redact(email) })   // OK
 
 // Credential — must never appear:
-AuditLog.write({ key: redact(apiKey) })    // LLN-SECRET-001 — redact() does not lift the restriction
+AuditLog.write({ key: redact(apiKey) })    // SPORE-SECRET-001 — redact() does not lift the restriction
 ```
 
-`redact()` is not a bypass for `LLN-SECRET-001`. Secrets are excluded from all output paths regardless of transformation.
+`redact()` is not a bypass for `SPORE-SECRET-001`. Secrets are excluded from all output paths regardless of transformation.

@@ -12,9 +12,9 @@ Runtime.Context  = governed runtime-provided execution facts
 Vaults           = governed shared/global state
 ```
 
-LogicN must not have PHP-style superglobals:
+Galerina must not have PHP-style superglobals:
 
-```logicn
+```galerina
 // Rejected patterns
 $_SESSION
 $_POST
@@ -24,7 +24,7 @@ global user
 
 Instead:
 
-```logicn
+```galerina
 request: Login.post
 context: Runtime.AuthContext
 SessionVault.write(...)
@@ -51,7 +51,7 @@ compute context
 
 `Runtime.Context` belongs to the runtime layer and is injected into flows only when needed:
 
-```logicn
+```galerina
 flow login(
   request: Login.post,
   context: Runtime.AuthContext
@@ -60,7 +60,7 @@ flow login(
 
 Simple flows can omit it:
 
-```logicn
+```galerina
 flow hello(
   request: Hello.get
 )
@@ -93,7 +93,7 @@ Request enters
 
 Instead of mutable global session state:
 
-```logicn
+```galerina
 SessionVault.write(
   key: session_uuid,
   value: {

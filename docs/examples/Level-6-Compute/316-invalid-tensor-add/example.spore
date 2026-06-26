@@ -1,0 +1,9 @@
+/// example: 316-invalid-tensor-add
+/// level: 6
+/// concept: Tensor arithmetic requires shape compatibility
+/// expected_diagnostics: SPORE-TYPE-004
+/// test_status: stable
+
+pure flow example(a: Tensor<Float32, [4, 8]>, b: Tensor<Float32, [8, 4]>) -> Void {
+  let wrong = a + b
+}

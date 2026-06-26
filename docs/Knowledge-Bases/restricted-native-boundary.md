@@ -2,12 +2,12 @@
 
 ## Definition
 
-The **LogicN Restricted Native Boundary** is a governed interface allowing verified native code to be called from LogicN under explicit capability, permission, audit, and runtime policy control.
+The **Galerina Restricted Native Boundary** is a governed interface allowing verified native code to be called from Galerina under explicit capability, permission, audit, and runtime policy control.
 
 ```text
 Restricted Native Boundary =
 a governed native execution interface where native code crosses
-a controlled boundary but cannot escape LogicN governance.
+a controlled boundary but cannot escape Galerina governance.
 ```
 
 This replaces traditional unrestricted FFI (Foreign Function Interface).
@@ -25,7 +25,7 @@ hidden side effects
 untracked hardware access
 ```
 
-LogicN must prevent all of these.
+Galerina must prevent all of these.
 
 ## When Native Boundary Is Used
 
@@ -65,7 +65,7 @@ Certified Package Registry
 
 ## Native Module Declaration
 
-```logicn
+```galerina
 native module CryptoNative {
 
   capability crypto.hash
@@ -82,7 +82,7 @@ native module CryptoNative {
 
 ## Flow Usage Example
 
-```logicn
+```galerina
 flow hashPassword(
   request: Password.hash
 ) -> HashPasswordResult
@@ -120,7 +120,7 @@ runtime profile
 
 ### 2. Native modules declare all effects
 
-```logicn
+```galerina
 effects {
   network.external
   hardware.usb.read
@@ -148,7 +148,7 @@ runtime-owned buffers
 
 ### 4. Profiles may restrict native boundaries
 
-```logicn
+```galerina
 profile strict {
   deny unrestricted_native_boundary
 }
@@ -160,7 +160,7 @@ profile high_integrity {
 
 ### 5. Native modules must be certified
 
-```logicn
+```galerina
 runtime policy {
   native {
     require signature
@@ -171,7 +171,7 @@ runtime policy {
 }
 ```
 
-## What LogicN Avoids
+## What Galerina Avoids
 
 ```c
 // Rejected: C-style raw FFI
@@ -180,12 +180,12 @@ unsafe_cast(...)
 direct pointer arithmetic
 ```
 
-LogicN exposes governed native capabilities, not raw machine access.
+Galerina exposes governed native capabilities, not raw machine access.
 
 ## Final Architecture
 
 ```text
-LogicN Flow
+Galerina Flow
  -> Permission
  -> Capability Module
  -> Restricted Native Boundary
@@ -201,6 +201,6 @@ Native code must not escape governance.
 ```
 
 ```text
-FFI in LogicN is not "unsafe access."
+FFI in Galerina is not "unsafe access."
 It is a governed native execution boundary.
 ```

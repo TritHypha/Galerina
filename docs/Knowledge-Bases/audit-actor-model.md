@@ -2,7 +2,7 @@
 
 ## Purpose
 
-LogicN audit systems should automatically capture execution identity without
+Galerina audit systems should automatically capture execution identity without
 requiring developers to manually attach actors to every audit event.
 
 The runtime already knows:
@@ -28,7 +28,7 @@ information.
 
 Example:
 
-```logicn
+```galerina
 audit.write(context, "profile.read", {
   actor: context.actor
 })
@@ -46,7 +46,7 @@ This creates avoidable risk:
 
 ## Runtime-Owned Audit Identity
 
-LogicN maintains a governed execution context.
+Galerina maintains a governed execution context.
 
 The runtime already knows:
 
@@ -64,7 +64,7 @@ trust zone
 
 Therefore:
 
-```logicn
+```galerina
 audit.write(context, "profile.read")
 ```
 
@@ -93,7 +93,7 @@ The developer should not need to manually provide these values.
 
 Source:
 
-```logicn
+```galerina
 audit.write(context, "profile.read")
 ```
 
@@ -118,7 +118,7 @@ Audit may be fully automatic through permissions.
 
 Example:
 
-```logicn
+```galerina
 permission profile_read {
 
   code {
@@ -142,7 +142,7 @@ the runtime automatically creates the audit event.
 
 The flow may not need to call:
 
-```logicn
+```galerina
 audit.write(...)
 ```
 
@@ -150,7 +150,7 @@ at all.
 
 ## Example Flow
 
-```logicn
+```galerina
 flow getProfile(
   request: Profile.get,
   context: Runtime.DatabaseContext
@@ -186,7 +186,7 @@ audit event
 
 ## Multiple Actors
 
-LogicN may support multiple actor roles:
+Galerina may support multiple actor roles:
 
 ```text
 primary_actor
@@ -209,7 +209,7 @@ ordinary audit metadata.
 
 Example:
 
-```logicn
+```galerina
 audit.write("refund.approve.completed", {
   affected_actor: customer_actor,
   system_actor: Runtime.system_actor("payments"),
@@ -239,7 +239,7 @@ Flows may attach additional metadata.
 
 Example:
 
-```logicn
+```galerina
 audit.write(context, "refund.approved", {
   refund_id: refund.id,
   amount: refund.amount

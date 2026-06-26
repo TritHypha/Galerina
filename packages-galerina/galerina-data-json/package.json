@@ -1,0 +1,11 @@
+{
+  "name": "@galerina/data-json",
+  "version": "1.0.0-beta.2",
+  "description": "Galerina JSON streaming, validation, redaction and archive contracts.",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  }
+}

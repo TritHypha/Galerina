@@ -1,5 +1,5 @@
-LLN-SECRET-003
+SPORE-SECRET-003
 // SecureString serialization is now DETECTED: RD-0093b closed the false-negative where the
 // secret-serialization walker skipped record-field VALUES (`json.encode({ key: apiKey })`), so the
-// SecureString `apiKey` in the field value now correctly fires LLN-SECRET-003 — the example's stated target.
-// (env.secret/json.encode are undeclared → LLN-NAME-001, suppressed.)
+// SecureString `apiKey` in the field value now correctly fires SPORE-SECRET-003 — the example's stated target.
+// (env.secret/json.encode are undeclared → SPORE-NAME-001, suppressed.)

@@ -22,7 +22,7 @@ const HISTORICAL = /change.?log|history|snapshot|superseded|deprecated|\bprior\b
 // a "X tests" count is only treated as the GLOBAL count when its line is global-context (else it's per-package)
 const GLOBAL_CTX = /packages|full suite|whole suite|\btotal\b|all tests|aggregate/i;
 
-// A doc whose FILENAME carries a date (logicn-*-YYYY-MM-DD.md) is a point-in-time SNAPSHOT — its counts are
+// A doc whose FILENAME carries a date (galerina-*-YYYY-MM-DD.md) is a point-in-time SNAPSHOT — its counts are
 // historical by construction, so it is exempt. Only LIVING docs (no date in the name) must stay current.
 const DATED = /-\d{4}-\d{2}-\d{2}\.md$/;
 const files = [];

@@ -7,7 +7,7 @@ Planned for: Stage B
 
 ## Definition
 
-LogicN channels, portals and routes are **runtime-managed trust boundaries**,
+Galerina channels, portals and routes are **runtime-managed trust boundaries**,
 not manual security topology declarations. Developers describe communication
 intent; the runtime governs trust automatically.
 
@@ -19,7 +19,7 @@ Traditional languages think:
 API call = just HTTP
 ```
 
-LogicN thinks:
+Galerina thinks:
 
 ```text
 API call = trust boundary crossing
@@ -36,7 +36,7 @@ response becomes unsafe
 
 ## What a Channel Really Is
 
-A LogicN channel is not a socket, TLS connection or VPN. It is:
+A Galerina channel is not a socket, TLS connection or VPN. It is:
 
 ```text
 a governed communication policy
@@ -57,7 +57,7 @@ audit
 
 Developers write a minimal declaration:
 
-```logicn
+```galerina
 api payments {
   endpoint: "https://payments.example"
 }
@@ -78,7 +78,7 @@ boundary conversion to unsafe response
 
 Developer application code:
 
-```logicn
+```galerina
 flow charge_order(raw: unsafe Json) -> Receipt {
   let order: safe Order = validate.order(raw)
   let response: unsafe Any = payments.send(order)
@@ -107,7 +107,7 @@ A portal is a controlled gateway into another system (external API, database,
 queue, legacy system, filesystem, cloud service). For most developers, this is
 expressed as a database or API declaration:
 
-```logicn
+```galerina
 database legacy {
   source: GlobalVault.database.legacy
 }
@@ -126,7 +126,7 @@ region, deployment profile and runtime trust rules.
 
 Enterprise/runtime teams may define explicit constraints:
 
-```logicn
+```galerina
 runtime production {
   region_lock: "uk"
   deny_external_relays: true
@@ -154,7 +154,7 @@ package verification, certificate management
 
 ## The Real Innovation
 
-The genuine LogicN innovation is:
+The genuine Galerina innovation is:
 
 ```text
 runtime-aware trust boundaries
@@ -173,7 +173,7 @@ trust orchestration is.
 ## Core Principle
 
 ```text
-LogicN channels, portals and routes should evolve into
+Galerina channels, portals and routes should evolve into
 automatic runtime trust orchestration,
 
 NOT manual security topology programming.

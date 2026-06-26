@@ -1,4 +1,4 @@
-# LogicN Application Pattern 04 — Domain Events
+# Galerina Application Pattern 04 — Domain Events
 
 **When to use:** Distributed systems, audit trails, event-driven architectures — UserCreated, OrderPaid, InvoiceApproved, ClaimRejected.
 
@@ -8,7 +8,7 @@
 
 Events are declared globally, not inside flows. This separates the contract from the implementation and makes the event schema available to every service in the system.
 
-```logicn
+```galerina
 event UserCreated {
   userId:    UserId
   email:     protected Email
@@ -39,7 +39,7 @@ Event fields follow the same type system as flow parameters. The `protected` mar
 
 Event declarations may carry governance annotations:
 
-```logicn
+```galerina
 event UserCreated {
   userId:    UserId
   email:     protected Email
@@ -70,7 +70,7 @@ Governance metadata is emitted into the GIR and is available to the service mani
 
 Events are emitted using the `emit` keyword inside a flow body. The emit must follow the causal write — you cannot emit an event before the state change that motivated it.
 
-```logicn
+```galerina
 flow createUser(input: UserInput) -> Result<User, ApiError>
   effects [database.write, audit.write, validation.run, event.emit]
 {
@@ -88,10 +88,10 @@ flow createUser(input: UserInput) -> Result<User, ApiError>
 ```
 
 The compiler enforces:
-- `event.emit` must be declared in the flow's `effects` block — LLN-EVENT-001 if missing
-- The event name must match a globally declared event — LLN-EVENT-002 if not found
-- All required fields of the event must be provided in the emit expression — LLN-EVENT-003
-- `emit` must not appear before the `database.write` that justifies it — LLN-EVENT-004 (ordering constraint, Phase 17+)
+- `event.emit` must be declared in the flow's `effects` block — SPORE-EVENT-001 if missing
+- The event name must match a globally declared event — SPORE-EVENT-002 if not found
+- All required fields of the event must be provided in the emit expression — SPORE-EVENT-003
+- `emit` must not appear before the `database.write` that justifies it — SPORE-EVENT-004 (ordering constraint, Phase 17+)
 
 ---
 
@@ -99,7 +99,7 @@ The compiler enforces:
 
 Service contracts declare which events they emit. This is the authoritative source for inter-service communication contracts:
 
-```logicn
+```galerina
 contract UserService {
   version "1.0.0"
 
@@ -125,7 +125,7 @@ contract UserService {
 }
 ```
 
-A service that emits an event not listed in its `contract.events` block will fail validation — LLN-CONTRACT-003. A service that lists an event in `contract.events` but never emits it in any flow will produce a warning — LLN-CONTRACT-004.
+A service that emits an event not listed in its `contract.events` block will fail validation — SPORE-CONTRACT-003. A service that lists an event in `contract.events` but never emits it in any flow will produce a warning — SPORE-CONTRACT-004.
 
 ---
 
@@ -133,12 +133,12 @@ A service that emits an event not listed in its `contract.events` block will fai
 
 | Rule | Diagnostic |
 |------|-----------|
-| `emit X` where X is not globally declared | LLN-EVENT-001 |
-| `emit X` without `event.emit` in flow effects | LLN-EVENT-002 |
-| `emit X { ... }` missing required field | LLN-EVENT-003 |
-| `emit` before causal `database.write` (Phase 17+) | LLN-EVENT-004 |
-| Service emits event not listed in contract | LLN-CONTRACT-003 |
-| Contract lists event never emitted in any flow | LLN-CONTRACT-004 (warning) |
+| `emit X` where X is not globally declared | SPORE-EVENT-001 |
+| `emit X` without `event.emit` in flow effects | SPORE-EVENT-002 |
+| `emit X { ... }` missing required field | SPORE-EVENT-003 |
+| `emit` before causal `database.write` (Phase 17+) | SPORE-EVENT-004 |
+| Service emits event not listed in contract | SPORE-CONTRACT-003 |
+| Contract lists event never emitted in any flow | SPORE-CONTRACT-004 (warning) |
 
 ---
 
@@ -157,7 +157,7 @@ The combination means you can reconstruct what happened (from the event stream) 
 
 In Phase 17, events are declared and emitted. Routing to an event bus (Kafka, NATS, SNS) is a Phase 9B+ feature. When it arrives, the `event` declaration will gain a `route` block:
 
-```logicn
+```galerina
 // Future syntax — not yet valid
 event UserCreated {
   userId: UserId

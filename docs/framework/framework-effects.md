@@ -11,7 +11,7 @@ access, filesystem access, runtime clock access or metrics access.
 
 ## Syntax Example
 
-```logicn
+```galerina
 secure flow writeAudit(event: AuditEvent) -> Result<Void, AuditError>
 effects [database.write, runtime.clock] {
   ...

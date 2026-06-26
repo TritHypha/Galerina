@@ -2,20 +2,20 @@
 
 ## Definition
 
-LogicN v1 has two prefix governance qualifiers for type references:
+Galerina v1 has two prefix governance qualifiers for type references:
 
 | Qualifier | Meaning | Example |
 |---|---|---|
 | `protected` | Value is valid but sensitivity-restricted. It cannot reach logs, audit, responses, or network sinks without an allowed policy or redaction. | `let email: protected Email = validate.email(rawEmail)?` |
 | `redacted` | Value has been masked for safe output, audit, and reporting. | `let auditEmail: redacted Email = redact(email)` |
 
-LogicN also retains postfix value-state annotations such as `String unsafe`.
+Galerina also retains postfix value-state annotations such as `String unsafe`.
 Those annotations describe trust state on the base type; they are not the same
 as governance qualifiers.
 
 ## Syntax
 
-```logicn
+```galerina
 let email: protected Email = validate.email(rawEmail)?
 let auditEmail: redacted Email = redact(email)
 let rawBody: String unsafe = request.body
@@ -23,7 +23,7 @@ let rawBody: String unsafe = request.body
 
 `protected` and `redacted` are prefix-only:
 
-```logicn
+```galerina
 let email: Email protected = value       // invalid
 let auditEmail: Email redacted = value   // invalid
 ```
@@ -42,12 +42,12 @@ parseTypeString("redacted Email")  -> qualifier=redacted,  base=Email
 parseTypeString("Email protected") -> syntax/type qualifier placement error
 ```
 
-`LLN-TYPE-001 UnknownType` must not fire for `protected` or `redacted`
+`SPORE-TYPE-001 UnknownType` must not fire for `protected` or `redacted`
 themselves. It may fire for the stripped base type:
 
-```logicn
+```galerina
 let x: protected MissingType = value
-// LLN-TYPE-001 for MissingType, not for protected
+// SPORE-TYPE-001 for MissingType, not for protected
 ```
 
 ## Compiler Enforcement
@@ -74,24 +74,24 @@ Assignment rules:
 
 Level 2 examples 057-087 define the canonical domain patterns:
 
-```logicn
+```galerina
 // 057-email-type
 unsafe let rawEmail: String = request.body.email
 let email: protected Email = validate.email(rawEmail)?
 ```
 
-```logicn
+```galerina
 // 061-redacted-email
 let auditEmail: redacted Email = redact(email)
 ```
 
-```logicn
+```galerina
 // 062-invalid-redacted-email and 086-protected-not-redacted
 let auditEmail: redacted Email = email
 // error: protected value cannot be assigned to redacted binding directly
 ```
 
-```logicn
+```galerina
 // 087-protected-email-audit
 let auditEmail: redacted Email = redact(email)
 AuditLog.write({ email: auditEmail })
@@ -115,11 +115,11 @@ AuditLog.write({ email: auditEmail })
 
 | Rule | Diagnostic |
 |---|---|
-| Unknown stripped base type | `LLN-TYPE-001` |
-| Direct assignment from unvalidated raw value to protected domain type | `LLN-TYPE-002` or domain-specific validation diagnostic |
-| Direct assignment from protected value to redacted binding | `LLN-TYPE-002` |
-| Protected value reaches audit/log/network output without redaction | `LLN-SAFETY-*`, `LLN-SECRET-*`, or sink-specific policy diagnostic |
-| Postfix `Email protected` or `Email redacted` | `LLN-SYNTAX-*` qualifier placement diagnostic |
+| Unknown stripped base type | `SPORE-TYPE-001` |
+| Direct assignment from unvalidated raw value to protected domain type | `SPORE-TYPE-002` or domain-specific validation diagnostic |
+| Direct assignment from protected value to redacted binding | `SPORE-TYPE-002` |
+| Protected value reaches audit/log/network output without redaction | `SPORE-SAFETY-*`, `SPORE-SECRET-*`, or sink-specific policy diagnostic |
+| Postfix `Email protected` or `Email redacted` | `SPORE-SYNTAX-*` qualifier placement diagnostic |
 
 ## Rule
 

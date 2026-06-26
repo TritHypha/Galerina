@@ -1,9 +1,9 @@
-# LogicN Fast Response And Keep-Alive Strategy
+# Galerina Fast Response And Keep-Alive Strategy
 
-LogicN should treat fast response time as a full request-path problem, not only
+Galerina should treat fast response time as a full request-path problem, not only
 a language execution problem.
 
-A LogicN service may respond faster by combining:
+A Galerina service may respond faster by combining:
 
 - verified boot profiles
 - precompiled route lookup tables
@@ -16,9 +16,9 @@ A LogicN service may respond faster by combining:
 - HTTP/2 multiplexing where available
 - strict timeout, rate-limit and backpressure policy
 
-LogicN must not claim to make physical networks faster. Network speed is
+Galerina must not claim to make physical networks faster. Network speed is
 controlled by hardware, operating systems, drivers, providers and protocols.
-LogicN's role is to reduce avoidable application overhead, reuse safe
+Galerina's role is to reduce avoidable application overhead, reuse safe
 connections, reject invalid work early and generate reports explaining runtime
 behaviour.
 

@@ -1,0 +1,132 @@
+<svg width="100%" viewBox="0 0 720 712" xmlns="http://www.w3.org/2000/svg" role="img" font-family="ui-sans-serif, system-ui, sans-serif">
+<title>Galerina Tri-Pipe — Binary / Hybrid / Photonic fault-tolerant execution pipe</title>
+<desc>The ExecutionRouter resolves one decision across three axes (capability tier, precision technique, per-kernel offload) and dispatches each eligible kernel to one of three lanes. Binary is the fail-closed digital core and universal floor (crypto, governance, K3, admission and secrets are Binary-only by invariant). Hybrid offloads only net-win kernels whose result is Freivalds cheap-verified, declining to the exact digital value on any drift. Photonic is an emulated, degrade-only co-processor lane (perf projected, not measured on silicon) — never a key. Cross-cutting K3 fail-safe dead-zone and fail-closed containment shown in purple.</desc>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+</defs>
+
+<text x="40" y="28" font-size="16" font-weight="700" fill="#1c2128">Galerina Tri-Pipe — Binary / Hybrid / Photonic fault-tolerant execution</text>
+<text x="40" y="47" font-size="11" fill="#5a6470">teal = runtime · amber = governed offload · purple = K3 / fail-closed invariant · red = degrade / deny · worst case == Binary == today</text>
+
+<!-- Source: routed kernel -->
+<rect x="260" y="62" width="200" height="46" rx="8" fill="#e2f5f1" stroke="#2f9e8f" stroke-width="1.5"/>
+<text x="360" y="83" text-anchor="middle" font-size="13" font-weight="600" fill="#16544c">Routed compute kernel</text>
+<text x="360" y="99" text-anchor="middle" font-size="10" fill="#1f6b60">opClass · RoutingContext · KernelCost</text>
+<path d="M360 108 L360 124" fill="none" stroke="#8a94a3" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+<!-- ExecutionRouter — three axes -->
+<rect x="56" y="126" width="608" height="92" rx="8" fill="#fbf2dd" stroke="#c98a1b" stroke-width="1.5"/>
+<text x="360" y="146" text-anchor="middle" font-size="13" font-weight="600" fill="#6b4a12">ExecutionRouter — one deterministic decision, three axes (pure · reproducible audit)</text>
+<rect x="72" y="156" width="184" height="52" rx="6" fill="#fdf8ec" stroke="#d8a23e" stroke-width="1.5"/>
+<text x="164" y="176" text-anchor="middle" font-size="11" font-weight="600" fill="#6b4a12">AXIS-1 capability tier</text>
+<text x="164" y="192" text-anchor="middle" font-size="10" fill="#7a5a1c">resolveHardware() · attested</text>
+<text x="164" y="204" text-anchor="middle" font-size="10" fill="#7a5a1c">binary | hybrid | photonic</text>
+<rect x="268" y="156" width="184" height="52" rx="6" fill="#fdf8ec" stroke="#d8a23e" stroke-width="1.5"/>
+<text x="360" y="176" text-anchor="middle" font-size="11" font-weight="600" fill="#6b4a12">AXIS-2 precision</text>
+<text x="360" y="192" text-anchor="middle" font-size="10" fill="#7a5a1c">routePrecision(opClass, ctx)</text>
+<text x="360" y="204" text-anchor="middle" font-size="10" fill="#7a5a1c">ternary gates offload</text>
+<rect x="464" y="156" width="184" height="52" rx="6" fill="#fdf8ec" stroke="#d8a23e" stroke-width="1.5"/>
+<text x="556" y="176" text-anchor="middle" font-size="11" font-weight="600" fill="#6b4a12">AXIS-3 offload</text>
+<text x="556" y="192" text-anchor="middle" font-size="10" fill="#7a5a1c">PartitionDecider.decide()</text>
+<text x="556" y="204" text-anchor="middle" font-size="10" fill="#7a5a1c">net-win partition</text>
+
+<!-- net-win partition rule -->
+<text x="360" y="236" text-anchor="middle" font-size="10.5" fill="#5a6470">net-win partition: offload only when (hybrid|photonic tier) AND precision == ternary AND proven absolute-ns win · else inert → digital</text>
+
+<!-- three arrows down to the three lanes -->
+<path d="M164 240 L164 270" fill="none" stroke="#8a94a3" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M360 240 L360 270" fill="none" stroke="#8a94a3" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M556 240 L556 270" fill="none" stroke="#8a94a3" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+<!-- LANE 1: BINARY (fail-closed core) -->
+<rect x="40" y="272" width="248" height="262" rx="8" fill="#efe9fb" stroke="#7c5cd0" stroke-width="1.5"/>
+<text x="164" y="293" text-anchor="middle" font-size="13" font-weight="600" fill="#3f2d73">BINARY — fail-CLOSED core</text>
+<text x="164" y="309" text-anchor="middle" font-size="10" fill="#52408f">default · universal floor · always runs</text>
+
+<rect x="56" y="320" width="216" height="40" rx="6" fill="#f6f2fe" stroke="#9277d9" stroke-width="1.5"/>
+<text x="164" y="338" text-anchor="middle" font-size="11" font-weight="600" fill="#3f2d73">Arena + overflow traps</text>
+<text x="164" y="352" text-anchor="middle" font-size="9.5" fill="#52408f">bounded · no memory.grow · i32 trap</text>
+
+<rect x="56" y="368" width="216" height="40" rx="6" fill="#f6f2fe" stroke="#9277d9" stroke-width="1.5"/>
+<text x="164" y="386" text-anchor="middle" font-size="11" font-weight="600" fill="#3f2d73">DbC post-conditions</text>
+<text x="164" y="400" text-anchor="middle" font-size="9.5" fill="#52408f">invariant ensure result · single-exit</text>
+
+<rect x="56" y="416" width="216" height="40" rx="6" fill="#f6f2fe" stroke="#9277d9" stroke-width="1.5"/>
+<text x="164" y="434" text-anchor="middle" font-size="11" font-weight="600" fill="#3f2d73">K3 verdict gate</text>
+<text x="164" y="448" text-anchor="middle" font-size="9.5" fill="#52408f">INDETERMINATE → deny, never silent</text>
+
+<rect x="56" y="464" width="216" height="58" rx="6" fill="#fdecea" stroke="#c0392b" stroke-width="1.5"/>
+<text x="164" y="483" text-anchor="middle" font-size="11" font-weight="600" fill="#9b2d20">Binary-only by invariant</text>
+<text x="164" y="498" text-anchor="middle" font-size="9.5" fill="#9b2d20">crypto · governance · K3 · admission</text>
+<text x="164" y="511" text-anchor="middle" font-size="9.5" fill="#9b2d20">secrets · exact arithmetic — the precision wall</text>
+
+<!-- LANE 2: HYBRID -->
+<rect x="300" y="272" width="180" height="262" rx="8" fill="#fbf2dd" stroke="#c98a1b" stroke-width="1.5"/>
+<text x="390" y="293" text-anchor="middle" font-size="13" font-weight="600" fill="#6b4a12">HYBRID</text>
+<text x="390" y="309" text-anchor="middle" font-size="10" fill="#7a5a1c">fail-SAFE to Binary</text>
+
+<rect x="314" y="320" width="152" height="48" rx="6" fill="#fdf8ec" stroke="#d8a23e" stroke-width="1.5"/>
+<text x="390" y="339" text-anchor="middle" font-size="11" font-weight="600" fill="#6b4a12">Offloaded kernel</text>
+<text x="390" y="354" text-anchor="middle" font-size="9.5" fill="#7a5a1c">net-win only · no crypto/control</text>
+
+<rect x="314" y="376" width="152" height="48" rx="6" fill="#fdf8ec" stroke="#d8a23e" stroke-width="1.5"/>
+<text x="390" y="395" text-anchor="middle" font-size="11" font-weight="600" fill="#6b4a12">Freivalds verify</text>
+<text x="390" y="410" text-anchor="middle" font-size="9.5" fill="#7a5a1c">cheap-check · scalar tolerance</text>
+
+<rect x="314" y="432" width="152" height="44" rx="6" fill="#fdecea" stroke="#c0392b" stroke-width="1.5"/>
+<text x="390" y="450" text-anchor="middle" font-size="10.5" font-weight="600" fill="#9b2d20">drift / NaN / Inf</text>
+<text x="390" y="464" text-anchor="middle" font-size="9.5" fill="#9b2d20">→ deny photonic value</text>
+
+<rect x="314" y="484" width="152" height="38" rx="6" fill="#f6f2fe" stroke="#9277d9" stroke-width="1.5"/>
+<text x="390" y="502" text-anchor="middle" font-size="10.5" font-weight="600" fill="#3f2d73">commit EXACT digital</text>
+<text x="390" y="515" text-anchor="middle" font-size="9.5" fill="#52408f">valuesReproducible flag</text>
+
+<path d="M390 368 L390 376" fill="none" stroke="#8a94a3" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M390 424 L390 432" fill="none" stroke="#8a94a3" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M390 476 L390 484" fill="none" stroke="#c0392b" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+<!-- LANE 3: PHOTONIC -->
+<rect x="492" y="272" width="188" height="262" rx="8" fill="#fbf2dd" stroke="#c98a1b" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="586" y="293" text-anchor="middle" font-size="13" font-weight="600" fill="#6b4a12">PHOTONIC</text>
+<text x="586" y="309" text-anchor="middle" font-size="10" fill="#c0392b">EMULATED · degrade-only · never a key</text>
+
+<rect x="506" y="320" width="160" height="44" rx="6" fill="#fdf8ec" stroke="#d8a23e" stroke-width="1.5"/>
+<text x="586" y="338" text-anchor="middle" font-size="11" font-weight="600" fill="#6b4a12">Fully-eligible kernel</text>
+<text x="586" y="352" text-anchor="middle" font-size="9.5" fill="#7a5a1c">pure tensor · no crypto/control</text>
+
+<rect x="506" y="372" width="160" height="50" rx="6" fill="#fdf8ec" stroke="#d8a23e" stroke-width="1.5"/>
+<text x="586" y="390" text-anchor="middle" font-size="11" font-weight="600" fill="#6b4a12">NMR tolerance</text>
+<text x="586" y="404" text-anchor="middle" font-size="9.5" fill="#7a5a1c">von Neumann redundancy</text>
+<text x="586" y="416" text-anchor="middle" font-size="9.5" fill="#7a5a1c">closed-form substrate noise</text>
+
+<rect x="506" y="430" width="160" height="50" rx="6" fill="#f6f2fe" stroke="#9277d9" stroke-width="1.5"/>
+<text x="586" y="448" text-anchor="middle" font-size="11" font-weight="600" fill="#3f2d73">K3 dead-zone</text>
+<text x="586" y="462" text-anchor="middle" font-size="9.5" fill="#52408f">vAnd(ideal,reading) monotone</text>
+<text x="586" y="474" text-anchor="middle" font-size="9.5" fill="#52408f">0 → degrade toward DENY only</text>
+
+<rect x="506" y="488" width="160" height="34" rx="6" fill="#fdecea" stroke="#c0392b" stroke-width="1.5"/>
+<text x="586" y="504" text-anchor="middle" font-size="10" font-weight="600" fill="#9b2d20">executedNatively = false</text>
+<text x="586" y="516" text-anchor="middle" font-size="9" fill="#9b2d20">perf projected, not measured</text>
+
+<path d="M586 364 L586 372" fill="none" stroke="#8a94a3" stroke-width="1.6" marker-end="url(#arrow)"/>
+<path d="M586 422 L586 430" fill="none" stroke="#8a94a3" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+<!-- decline-down arrows: hybrid + photonic fail-safe back to Binary floor -->
+<path d="M314 452 C 280 452, 282 500, 272 500" fill="none" stroke="#c0392b" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+<path d="M506 504 C 300 560, 280 540, 272 524" fill="none" stroke="#c0392b" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+<text x="360" y="554" text-anchor="middle" font-size="10" fill="#9b2d20" font-style="italic">decline-down: every higher pipe can only fall back to Binary — never corrupt, never expand authority</text>
+
+<!-- arrows from lanes to committed receipt -->
+<path d="M164 534 L164 560 L360 560 L360 580" fill="none" stroke="#8a94a3" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+<!-- DRCM containment / receipt -->
+<rect x="56" y="582" width="608" height="58" rx="8" fill="#efe9fb" stroke="#7c5cd0" stroke-width="1.5"/>
+<text x="360" y="603" text-anchor="middle" font-size="13" font-weight="600" fill="#3f2d73">DRCM containment → governed receipt + audit ledger</text>
+<text x="360" y="621" text-anchor="middle" font-size="10" fill="#52408f">ternaryChecksum (bit-exact digital subset) · bridgesUsed · trapFired · ERR_BRIDGE_DISPATCH_FAULT — a port throw declines to the digital floor</text>
+<text x="360" y="634" text-anchor="middle" font-size="9.5" fill="#c0392b" font-style="italic">honest caveat: real DSS.wasm is a stub · crash-containment (Goal C / DRCM Phase 5) asserted, not yet demonstrated</text>
+
+<!-- footer legend -->
+<text x="40" y="666" font-size="10.5" fill="#5a6470">Sources: galerina-tri-pipe/src/{index,tri-pipe,execution-router}.ts · docs/Knowledge-Bases/galerina-framework-plan-2026-06-21.md §5–6 (4 pipes, 24 hardenings adversarially verified)</text>
+<text x="40" y="683" font-size="10.5" fill="#5a6470">Shipped guarantees grounded in §6 ranked build status (449d8f2, 7a58a26, SPORE-MONO-001); photonic lane is the emulator (galerina-ext-photonic-emulator), not silicon.</text>
+<text x="40" y="700" font-size="10.5" fill="#3f2d73" font-weight="600">Invariant: crypto · governance · K3 · admission · secrets stay Binary; photonic is a degrade-only / projected co-processor, never trusted with a key.</text>
+</svg>

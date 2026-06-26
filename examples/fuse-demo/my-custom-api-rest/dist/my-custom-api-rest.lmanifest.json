@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "lln.manifest.v1",
+  "schemaVersion": "spore.manifest.v1",
   "sourceHash": "sha256:a7772a5658b3dd464e6dbc9efb1ff9dc6bfda8869a0f5dddba47b2f18f699803",
-  "sourceFile": "examples/fuse-demo/my-custom-api-rest/src/index.lln",
+  "sourceFile": "examples/fuse-demo/my-custom-api-rest/src/index.spore",
   "flowCount": 1,
   "policyResolutionDag": {
     "allowedEffects": 0,
@@ -29,7 +29,7 @@
     "signerNote": "Placeholder signatures — real ML-DSA-65 signing requires key custody spec (DRCM task #34). The canonical JSON body hash above is stable and verifiable today."
   },
   "fuse": {
-    "schemaVersion": "lln.fuse.v1",
+    "schemaVersion": "spore.fuse.v1",
     "name": "my-custom-api-rest",
     "version": "0.1.0",
     "kind": "api-protocol",

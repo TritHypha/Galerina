@@ -2,7 +2,7 @@
 
 ## Definition
 
-LogicN uses `Result<T, E>` for all fallible operations. Errors propagate
+Galerina uses `Result<T, E>` for all fallible operations. Errors propagate
 explicitly through call chains. There is no hidden exception propagation.
 
 ```text
@@ -16,7 +16,7 @@ See also: `no-exceptions-result-model.md`, `typed-error-model.md`.
 
 ## The `Result<T, E>` Type
 
-```logicn
+```galerina
 enum Result<T, E> {
     Ok(T)
     Err(E)
@@ -30,7 +30,7 @@ Every fallible operation returns either:
 
 ## Basic Usage
 
-```logicn
+```galerina
 flow divide(a: Int, b: Int) -> Result<Int, String> {
     if b == 0 {
         return Err("division by zero")
@@ -49,13 +49,13 @@ match divide(10, 2) {
 
 The `?` operator propagates errors automatically.
 
-```logicn
+```galerina
 let config = readConfig()?
 ```
 
 Equivalent to:
 
-```logicn
+```galerina
 match readConfig() {
     Ok(value) => value
     Err(error) => return Err(error)
@@ -73,14 +73,14 @@ The `?` operator:
 
 Invalid usage:
 
-```logicn
+```galerina
 let value = 123?
-// LLN-E2007: attempt operator requires Result<T,E>
+// SPORE-E2007: attempt operator requires Result<T,E>
 ```
 
 ## Multi-Step Propagation
 
-```logicn
+```galerina
 flow loadConfig() -> Result<Config, Error> {
     let text = fs.read("config.json")?
     parseConfig(text)?
@@ -97,7 +97,7 @@ parseConfig() → Err → propagated immediately
 
 ## Nested Call Chain Example
 
-```logicn
+```galerina
 flow fetchUser() -> Result<User, Error> {
     let response = network.fetch("https://api.example.com/user")?
     parseUser(response)?
@@ -117,7 +117,7 @@ returned to the runtime boundary.
 
 Errors may be transformed between architectural layers using `.map_err()`:
 
-```logicn
+```galerina
 flow loadUser() -> Result<User, AppError> {
     let text = fs.read("user.json")
         .map_err(AppError::ConfigRead)?
@@ -134,7 +134,7 @@ maintaining layer separation.
 
 Prefer structured enums over raw strings:
 
-```logicn
+```galerina
 enum AppError {
     ConfigRead(String)
     InvalidUser(String)
@@ -155,7 +155,7 @@ runtime traceability
 
 The compiler encourages exhaustive handling:
 
-```logicn
+```galerina
 match result {
     Ok(value)                   => handle(value)
     Err(AppError.ConfigRead(e)) => recover(e)
@@ -168,7 +168,7 @@ match result {
 
 Effectful operations typically return `Result<T, E>`:
 
-```logicn
+```galerina
 flow fetch() -> Result<Response, NetworkError>
 effects [network.connect] { ... }
 ```
@@ -179,7 +179,7 @@ This communicates that the operation performs a network effect and may fail.
 
 Async operations preserve propagation semantics:
 
-```logicn
+```galerina
 async flow fetchUser() -> Result<User, NetworkError> {
     let response = await network.fetch(url)?
     parseUser(response)?
@@ -225,13 +225,13 @@ deployment identity
 ## Error Codes
 
 ```text
-LLN-E2001 invalid Result type
-LLN-E2002 unhandled Result
-LLN-E2003 incompatible error type
-LLN-E2004 invalid error conversion
-LLN-E2005 non-exhaustive error match
-LLN-E2006 invalid propagation boundary
-LLN-E2007 invalid attempt operator usage
+SPORE-E2001 invalid Result type
+SPORE-E2002 unhandled Result
+SPORE-E2003 incompatible error type
+SPORE-E2004 invalid error conversion
+SPORE-E2005 non-exhaustive error match
+SPORE-E2006 invalid propagation boundary
+SPORE-E2007 invalid attempt operator usage
 ```
 
 ## Recommended Practices

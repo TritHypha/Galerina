@@ -1,4 +1,4 @@
 none
-// LLN-EFFECT-003 is the target diagnostic for this example.
+// SPORE-EFFECT-003 is the target diagnostic for this example.
 // pure-calls-effectful detection is tracked for a future compiler wave.
-// The example is stable: fetchRate is undeclared (LLN-NAME-001, suppressed).
+// The example is stable: fetchRate is undeclared (SPORE-NAME-001, suppressed).

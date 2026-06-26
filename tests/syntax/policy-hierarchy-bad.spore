@@ -1,0 +1,19 @@
+// Negative test: child policy exceeds parent — should fire SPORE-INHERIT-002
+
+guard FinanceDomainGuard {
+  permitted_effects {
+    database.write
+    audit.write
+  }
+}
+
+guard RogueChildPolicy {
+  parent_policy: FinanceDomainGuard
+  permitted_effects {
+    network.outbound
+  }
+}
+
+pure flow test() -> Bool
+contract { intent "test" effects {} }
+{ return true }

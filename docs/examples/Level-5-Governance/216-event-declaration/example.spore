@@ -1,0 +1,49 @@
+/// example: 216-event-declaration
+/// level: 5
+/// concept: global event declaration + flow emission + SPORE-EVENT-001
+/// expected_diagnostics: SPORE-EVENT-001
+/// test_status: stable
+/// ai_rule: Declare events globally with 'event X' before emitting with 'emit X'. SPORE-EVENT-001 fires if emit has no declaration.
+
+event OrderCreated
+// OrderFailed is declared — it is referenced by contract but never emitted (SPORE-EVENT-002 warning)
+event OrderFailed
+
+secure flow createOrder(readonly request: Request) -> CreateOrderResult
+
+contract {
+  types {
+    type CreateOrderResult = Result<Response, ApiError>
+  }
+
+  intent {
+    "Create a new order and record the event."
+  }
+
+  effects {
+    database.write
+    audit.write
+  }
+
+  events {
+    emits OrderCreated
+    emits OrderFailed
+  }
+}
+{
+
+  let saved = OrdersDB.insert(request.body)?
+
+  AuditLog.write({
+    event: "OrderCreated",
+    orderId: saved.id
+  })
+
+  emit OrderCreated
+
+  // BUG: emit UndeclaredEvent has no matching global 'event UndeclaredEvent'
+  // This emits SPORE-EVENT-001 — fix by adding: event UndeclaredEvent
+  emit UndeclaredEvent
+
+  return Ok(Response.created(saved.id))
+}

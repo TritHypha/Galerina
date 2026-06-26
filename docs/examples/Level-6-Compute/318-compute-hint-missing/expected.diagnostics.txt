@@ -1,4 +1,4 @@
-LLN-HINT-COMPUTE-001 (COMPUTE_TARGET_MISSING_FOR_AI_INFERENCE) — info
+SPORE-HINT-COMPUTE-001 (COMPUTE_TARGET_MISSING_FOR_AI_INFERENCE) — info
 
 Flow 'classifyText' uses ai.inference but has no compute target preference.
 NPU or GPU acceleration would improve performance.

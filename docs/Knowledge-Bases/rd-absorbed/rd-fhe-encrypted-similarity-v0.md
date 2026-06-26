@@ -1,9 +1,9 @@
-<!-- ABSORBED R&D SOURCE — verbatim mirror. LogicN is the main library; the R&D repo is upstream/authoring.
-     Source: LogicN-R-AND-D/tmf/research/fhe-encrypted-similarity-v0.md (roadmap "Later/research" — the LAST open in-bounds R&D item; verdict TRACK-NOT-BUILD) · Pinned: R&D rnd-session 2026-06-17 (9-agent web-cited workflow, accuracy + no-synthesized-number audit)
-     Integrated LogicN view: logicn-tmf-engine.md · Companion (the SHIPPED answer for LogicN's actual threat model): rd-selective-disclosure-ann-v0.md · Catalog: logicn-rd-absorption-catalog.md
+<!-- ABSORBED R&D SOURCE — verbatim mirror. Galerina is the main library; the R&D repo is upstream/authoring.
+     Source: Galerina-R-AND-D/tmf/research/fhe-encrypted-similarity-v0.md (roadmap "Later/research" — the LAST open in-bounds R&D item; verdict TRACK-NOT-BUILD) · Pinned: R&D rnd-session 2026-06-17 (9-agent web-cited workflow, accuracy + no-synthesized-number audit)
+     Integrated Galerina view: galerina-tmf-engine.md · Companion (the SHIPPED answer for Galerina's actual threat model): rd-selective-disclosure-ann-v0.md · Catalog: galerina-rd-absorption-catalog.md
      Rule: edit the upstream source then re-vendor; do not fork this copy (feedback-auto-import-rd-docs). -->
 
-> **Absorbed R&D source (verbatim).** See `logicn-rd-absorption-catalog.md`. Internal links point at the upstream R&D tree.
+> **Absorbed R&D source (verbatim).** See `galerina-rd-absorption-catalog.md`. Internal links point at the upstream R&D tree.
 
 ---
 
@@ -21,7 +21,7 @@
 
 ## TL;DR
 
-Fully homomorphic encryption (FHE) can compute an encrypted similarity score — a dot product, cosine, or Euclidean distance — without ever decrypting the vectors. It is digital, bit-exact lattice arithmetic, so it does **not** violate LogicN's crypto-on-core rule. But two things are true at once: (1) the encrypted *distance* is cheap-ish, while the encrypted *argmax/top-k* (the part that makes it a search) is the genuine bottleneck, often forcing scheme-switching or bootstrapping that costs seconds to tens of thousands of seconds; and (2) FHE's only real win is one narrow threat model — an **untrusted server that must score similarity on ciphertext with no trusted decryption point and minimal interaction**. The shipped `.tmf` selective-disclosure ANN already places a legitimate trusted decryptor in the loop and runs native-speed HNSW, so FHE would re-acquire a property the system does not need, at a large slowdown. Verdict: **track-not-build**, with concrete acceptance criteria to flip it.
+Fully homomorphic encryption (FHE) can compute an encrypted similarity score — a dot product, cosine, or Euclidean distance — without ever decrypting the vectors. It is digital, bit-exact lattice arithmetic, so it does **not** violate Galerina's crypto-on-core rule. But two things are true at once: (1) the encrypted *distance* is cheap-ish, while the encrypted *argmax/top-k* (the part that makes it a search) is the genuine bottleneck, often forcing scheme-switching or bootstrapping that costs seconds to tens of thousands of seconds; and (2) FHE's only real win is one narrow threat model — an **untrusted server that must score similarity on ciphertext with no trusted decryption point and minimal interaction**. The shipped `.tmf` selective-disclosure ANN already places a legitimate trusted decryptor in the loop and runs native-speed HNSW, so FHE would re-acquire a property the system does not need, at a large slowdown. Verdict: **track-not-build**, with concrete acceptance criteria to flip it.
 
 ---
 
@@ -71,7 +71,7 @@ Encrypted similarity is bit-exact but pays a large constant-factor and latency t
 
 FHE's *genuine* niche is narrow and precise: **an untrusted server must compute similarity over ciphertext, with no trusted decryption point anywhere in the loop, and minimal interaction.** That niche is real and shipped — Apple's [Enhanced Visual Search / Live Caller ID](https://machinelearning.apple.com/research/homomorphic-encryption) uses **BFV** for private nearest-neighbour and PIR where "the server does not decrypt the original request or even have access to the decryption key," computing dot-products/cosine on encrypted embeddings (client-side cluster-centroid sharding, DP at ε=0.8, δ=1e-6). Apple publishes **no latency/throughput/DB-size numbers**, so this proves the niche exists, not its cost.
 
-**This model does not match the shipped `.tmf`/LogicN design.** `tmf/spec/selective-disclosure-ann-v0.md` *already has a trusted decryption point*: `K_emb` is decrypted **only inside the trusted zone** to run HNSW, the bulk stays sealed under an independent `K_bulk` that is never released for search, and egress is opaque `{object_id, score}` only (§5–§6). Once a trusted zone legitimately holds keys, FHE's precondition ("no trusted decryptor") is gone — you can run plaintext HNSW on the decrypted embedding at full speed. FHE would buy nothing here except a large slowdown.
+**This model does not match the shipped `.tmf`/Galerina design.** `tmf/spec/selective-disclosure-ann-v0.md` *already has a trusted decryption point*: `K_emb` is decrypted **only inside the trusted zone** to run HNSW, the bulk stays sealed under an independent `K_bulk` that is never released for search, and egress is opaque `{object_id, score}` only (§5–§6). Once a trusted zone legitimately holds keys, FHE's precondition ("no trusted decryptor") is gone — you can run plaintext HNSW on the decrypted embedding at full speed. FHE would buy nothing here except a large slowdown.
 
 **By threat model:**
 
@@ -95,11 +95,11 @@ Where a trusted zone exists, the shipped design **dominates FHE on every axis**:
 
 ---
 
-## 4. Fit to `.tmf`/LogicN + crypto-on-core, and the verdict
+## 4. Fit to `.tmf`/Galerina + crypto-on-core, and the verdict
 
 ### Does FHE violate crypto-on-core? No — but it isn't the cipher
 
-`LLN-SUBSTRATE-001` requires cryptography to run **bit-exact on a deterministic digital core**. FHE qualifies: every mainstream scheme — **BGV** (2011), **BFV** (2012), **CKKS** (ASIACRYPT 2017), **TFHE/CGGI** (2016) — is **lattice-based (R)LWE arithmetic on integer polynomials**, computed digitally (Gentry's 2009 first construction was lattice-based). It is **not** analog/photonic. The "approximate" in CKKS is a property of the *plaintext*: it does approximate real-number (fixed/block-floating-point) arithmetic ([Microsoft SEAL](https://en.wikipedia.org/wiki/Microsoft_SEAL): CKKS "yields only approximate results"; for exact values "the BFV scheme is the only choice"). The **ciphertext operations themselves are deterministic, bit-exact integer ops** — same security model as the shipped KEM-DEM. So FHE is *allowed* on the core.
+`SPORE-SUBSTRATE-001` requires cryptography to run **bit-exact on a deterministic digital core**. FHE qualifies: every mainstream scheme — **BGV** (2011), **BFV** (2012), **CKKS** (ASIACRYPT 2017), **TFHE/CGGI** (2016) — is **lattice-based (R)LWE arithmetic on integer polynomials**, computed digitally (Gentry's 2009 first construction was lattice-based). It is **not** analog/photonic. The "approximate" in CKKS is a property of the *plaintext*: it does approximate real-number (fixed/block-floating-point) arithmetic ([Microsoft SEAL](https://en.wikipedia.org/wiki/Microsoft_SEAL): CKKS "yields only approximate results"; for exact values "the BFV scheme is the only choice"). The **ciphertext operations themselves are deterministic, bit-exact integer ops** — same security model as the shipped KEM-DEM. So FHE is *allowed* on the core.
 
 But FHE is **not a cipher** — it is a **compute-on-ciphertext layer**. It does not replace ML-KEM/AES-GCM; it would sit *beside* them as a way to evaluate a similarity score without decrypting. That is the only thing it buys.
 
@@ -107,13 +107,13 @@ But FHE is **not a cipher** — it is a **compute-on-ciphertext layer**. It does
 
 A **governed, cold-path, never-line-rate** capability for one threat model: **no trusted decryption anywhere** (a fully untrusted compute host that must score similarity on sealed embeddings without ever holding a key). Cost is prohibitive at line rate — Gentry-Halevi's original bootstrap was [~30 min/bit-op](https://en.wikipedia.org/wiki/Homomorphic_encryption); third-generation FHEW/TFHE first cut bootstrapping to "a fraction of a second" per refresh; **modern CKKS bootstrapping is order-of-magnitude tens-of-seconds single-thread, but this is parameter-dependent and is not stated on the Wikipedia HE page** — it must not be cited there, and no apparatus-paired CKKS bootstrap latency was confirmed in this pass (eprint sources Cloudflare/403-blocked).
 
-### Head-to-head: the shipped answer for LogicN's actual threat model
+### Head-to-head: the shipped answer for Galerina's actual threat model
 
-LogicN **already shipped** the answer for its threat model: `selective-disclosure-ann-v0` (reference bench `tri-encription/bench/selective-disclosure-ann.mjs`, **17/17, `verdict5_clean`**, measured on the named i9-9900K / Node v24.16.0 box, recall@10 = 1.000). A `.tmf` carries two independently-keyed sections; a trusted zone decrypts *only* `K_emb` to run plaintext-speed HNSW, never `K_bulk`, and egress is opaque `{object_id, score}` only (filed in `RND-STATE.md` Roadmap §1 #4; FHE is already in the "Later / research — FHE encrypted similarity (digital, never line-rate)" bucket).
+Galerina **already shipped** the answer for its threat model: `selective-disclosure-ann-v0` (reference bench `tri-encription/bench/selective-disclosure-ann.mjs`, **17/17, `verdict5_clean`**, measured on the named i9-9900K / Node v24.16.0 box, recall@10 = 1.000). A `.tmf` carries two independently-keyed sections; a trusted zone decrypts *only* `K_emb` to run plaintext-speed HNSW, never `K_bulk`, and egress is opaque `{object_id, score}` only (filed in `RND-STATE.md` Roadmap §1 #4; FHE is already in the "Later / research — FHE encrypted similarity (digital, never line-rate)" bucket).
 
 ### Verdict: TRACK-NOT-BUILD
 
-FHE solves a threat model **LogicN does not currently have**. The two-zone storage model + selective-disclosure ANN answer the use case at native speed. FHE stays in the labelled "Later/research (track)" bucket — *digital, never line-rate*.
+FHE solves a threat model **Galerina does not currently have**. The two-zone storage model + selective-disclosure ANN answer the use case at native speed. FHE stays in the labelled "Later/research (track)" bucket — *digital, never line-rate*.
 
 **Acceptance criteria to move track → build:**
 1. A concrete requirement for ANN **with zero trusted decryption** (the trusted-zone assumption is formally rejected by a customer/regulator).
@@ -124,7 +124,7 @@ FHE solves a threat model **LogicN does not currently have**. The two-zone stora
 
 ## Verdict
 
-TRACK-NOT-BUILD. FHE for encrypted similarity is technically legitimate on LogicN's terms — it is digital, bit-exact, lattice-based RLWE arithmetic, so it satisfies crypto-on-core (LLN-SUBSTRATE-001) and is not analog/photonic — but it solves a threat model LogicN does not have. Its only genuine win is the untrusted-server, no-trusted-decryptor, low-interaction case (the niche Apple ships with BFV), and it pays for that with a never-line-rate tax: the encrypted distance is tractable but the encrypted argmax/top-k is the real bottleneck, costing seconds to tens of thousands of seconds (e.g. 27,457 s to sort an 8-element 8-bit array via CKKS↔FHEW on a Threadripper PRO 3955WX), plus seconds-class bootstraps. Head-to-head, the shipped selective-disclosure ANN (selective-disclosure-ann-v0, bench 17/17, verdict5_clean) wins decisively for LogicN's actual threat model: it already has a legitimate trusted zone that decrypts only the tiny K_emb to run native-speed HNSW while K_bulk stays sealed and egress is opaque {object_id, score} — dominating FHE on speed, noise budget, and composition (inclusion-proof + revocation) on every axis, because once a trusted decryptor legitimately exists, FHE re-acquires a property the system does not need at a large slowdown. Park it in the labelled track bucket; flip to build only if (1) a customer/regulator formally rejects the trusted-zone assumption, (2) a reproducible cold-path bench lands on a named machine, and (3) FHE's touched-ciphertext leakage is shown bounded below SSE access-pattern leakage.
+TRACK-NOT-BUILD. FHE for encrypted similarity is technically legitimate on Galerina's terms — it is digital, bit-exact, lattice-based RLWE arithmetic, so it satisfies crypto-on-core (SPORE-SUBSTRATE-001) and is not analog/photonic — but it solves a threat model Galerina does not have. Its only genuine win is the untrusted-server, no-trusted-decryptor, low-interaction case (the niche Apple ships with BFV), and it pays for that with a never-line-rate tax: the encrypted distance is tractable but the encrypted argmax/top-k is the real bottleneck, costing seconds to tens of thousands of seconds (e.g. 27,457 s to sort an 8-element 8-bit array via CKKS↔FHEW on a Threadripper PRO 3955WX), plus seconds-class bootstraps. Head-to-head, the shipped selective-disclosure ANN (selective-disclosure-ann-v0, bench 17/17, verdict5_clean) wins decisively for Galerina's actual threat model: it already has a legitimate trusted zone that decrypts only the tiny K_emb to run native-speed HNSW while K_bulk stays sealed and egress is opaque {object_id, score} — dominating FHE on speed, noise budget, and composition (inclusion-proof + revocation) on every axis, because once a trusted decryptor legitimately exists, FHE re-acquires a property the system does not need at a large slowdown. Park it in the labelled track bucket; flip to build only if (1) a customer/regulator formally rejects the trusted-zone assumption, (2) a reproducible cold-path bench lands on a named machine, and (3) FHE's touched-ciphertext leakage is shown bounded below SSE access-pattern leakage.
 
 ## Honesty ledger & residual gaps
 

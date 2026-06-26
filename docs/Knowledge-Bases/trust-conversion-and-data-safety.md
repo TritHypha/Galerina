@@ -2,9 +2,9 @@
 
 ## Purpose
 
-LogicN separates memory safety from trust safety.
+Galerina separates memory safety from trust safety.
 
-All LogicN values should remain memory-safe. An `unsafe` value is not
+All Galerina values should remain memory-safe. An `unsafe` value is not
 memory-unsafe. It is untrusted data that crossed a boundary or has not yet
 earned use in trusted runtime logic.
 
@@ -21,14 +21,14 @@ helpers, or used by privileged runtime APIs.
 
 Invalid:
 
-```lln
+```spore
 let raw_price: unsafe Decimal = request.price
 let total = raw_price + 1
 ```
 
 Invalid:
 
-```lln
+```spore
 let raw_name: unsafe String = request.name
 let name = raw_name.trim()
 ```
@@ -62,7 +62,7 @@ including:
 
 Example:
 
-```lln
+```spore
 let body: unsafe Json = request.body
 ```
 
@@ -73,7 +73,7 @@ let body: unsafe Json = request.body
 Validation proves that data matches a required structure, type, schema, format,
 range, required-field set, allowed-value set or runtime policy.
 
-```lln
+```spore
 let email: safe Email = validate.email(raw_email)
 ```
 
@@ -82,7 +82,7 @@ let email: safe Email = validate.email(raw_email)
 Guard checks for dangerous patterns or payloads. It should reject dangerous
 values rather than silently rewriting them.
 
-```lln
+```spore
 let checked: safe String = guard(raw_comment)
 ```
 
@@ -93,7 +93,7 @@ patterns and suspicious content.
 
 Sanitization cleans and normalises generic untrusted data.
 
-```lln
+```spore
 let cleaned: safe String = sanitize.data(raw)
 ```
 
@@ -109,7 +109,7 @@ JavaScript, CSS, shell execution or XML.
 Encoding converts an already-safe value into a safe representation for a
 specific destination context.
 
-```lln
+```spore
 let html: safe Html = encode.html(cleaned)
 let url: safe UrlPart = encode.url(cleaned)
 let js: safe JavaScript = encode.javascript(cleaned)
@@ -136,9 +136,9 @@ runtime logic before approved trust conversion or explicit safe declaration.
 
 ## Query Safety
 
-LogicN should prefer typed, parameterized queries over manual SQL escaping.
+Galerina should prefer typed, parameterized queries over manual SQL escaping.
 
-```lln
+```spore
 let q: Query = sql {
     SELECT id, email
     FROM users
@@ -152,7 +152,7 @@ database.main.run(q, {
 
 Unsafe interpolation is invalid:
 
-```lln
+```spore
 let q: Query = sql {
     SELECT * FROM users WHERE id = ${raw_id}
 }

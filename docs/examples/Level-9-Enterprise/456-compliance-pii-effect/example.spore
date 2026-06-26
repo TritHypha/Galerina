@@ -1,0 +1,26 @@
+/// example: 456-compliance-pii-effect
+/// level: 9
+/// concept: accessing PII without declaring the pii.read effect
+/// expected_diagnostics: SPORE-PII-001
+/// test_status: stable
+/// ai_rule: Declare effects [pii.read] on every flow that reads personally identifiable information.
+
+// Missing: with effects [pii.read, ...]
+secure flow readPatientRecord(readonly request: Request) -> ReadPatientRecordResult
+
+contract {
+  types {
+    type ReadPatientRecordResult = Result<Response, PatientError>
+  }
+
+  intent {
+    "Read a patient record — demonstrates missing pii.read effect declaration."
+  }
+}
+{
+  unsafe let rawId: String = request.body.patientId
+  // SPORE-PII-001: pii.read required but not declared
+  let patientId: protected PatientId = validate.patientId(rawId)?
+  let record = PatientDB.get(patientId)?
+  return Ok(Response.ok(record))
+}

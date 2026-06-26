@@ -2,7 +2,7 @@
 
 ## Purpose
 
-LogicN should support polymorphism without making class inheritance the main
+Galerina should support polymorphism without making class inheritance the main
 object model.
 
 The goal is to allow different implementations, data variants and reusable
@@ -14,10 +14,10 @@ system, effect system and reports.
 Polymorphism means different implementations or data shapes can be used through
 one declared contract, type family or matchable variant.
 
-## LogicN Rule
+## Galerina Rule
 
 ```text
-LogicN supports explicit polymorphism, not hidden polymorphism.
+Galerina supports explicit polymorphism, not hidden polymorphism.
 ```
 
 Allowed forms:
@@ -55,7 +55,7 @@ See [No Inheritance And Explicit Security](no-inheritance-explicit-security.md).
 
 Contracts are the preferred polymorphism mechanism.
 
-```logicn
+```galerina
 contract PaymentProvider {
   flow charge(
     request: PaymentRequest,
@@ -66,7 +66,7 @@ contract PaymentProvider {
 
 Different adapters may satisfy the same contract:
 
-```logicn
+```galerina
 adapter StripeProvider implements PaymentProvider {
   boundary external StripeApi
   permission use payment_provider_access
@@ -78,7 +78,7 @@ adapter StripeProvider implements PaymentProvider {
 }
 ```
 
-```logicn
+```galerina
 adapter TestPaymentProvider implements PaymentProvider {
   boundary internal TestPaymentBoundary
   permission use payment_test_access
@@ -109,14 +109,14 @@ requirements.
 
 Variant data should use explicit union types and exhaustive `match`.
 
-```logicn
+```galerina
 type Notification =
   | EmailNotification
   | SmsNotification
   | PushNotification
 ```
 
-```logicn
+```galerina
 match notification {
   EmailNotification(email) => return EmailService.send(email, ctx)
   SmsNotification(sms) => return SmsService.send(sms, ctx)
@@ -132,11 +132,11 @@ All variants must be handled unless a safe catch-all policy is declared.
 
 ## Generic Polymorphism
 
-LogicN should support readable, constrained generics.
+Galerina should support readable, constrained generics.
 
 Examples:
 
-```logicn
+```galerina
 Option<T>
 Result<T, E>
 List<T>
@@ -145,7 +145,7 @@ Repository<T>
 
 Generic flows should prefer constraints:
 
-```logicn
+```galerina
 flow getById<T: Model>(
   repository: Repository<T>,
   id: UUID
@@ -159,11 +159,11 @@ Constraints make the generic behaviour easier to check, document and explain.
 Polymorphism must not hide security behaviour.
 
 If two implementations satisfy the same contract but have different effects,
-LogicN must expose the effective implementation and effect set.
+Galerina must expose the effective implementation and effect set.
 
 Example:
 
-```logicn
+```galerina
 adapter LocalSearch implements SearchProvider {
   effects {
     allow storage.read
@@ -172,7 +172,7 @@ adapter LocalSearch implements SearchProvider {
 }
 ```
 
-```logicn
+```galerina
 adapter RemoteSearch implements SearchProvider {
   effects {
     allow network.external
@@ -188,14 +188,14 @@ runtime policy or a reportable selection rule.
 
 Implementation selection should be explicit.
 
-```logicn
+```galerina
 boot MyApp {
   use PaymentProvider = StripeProvider when env.production
   use PaymentProvider = TestPaymentProvider when env.test
 }
 ```
 
-This allows LogicN to report:
+This allows Galerina to report:
 
 ```text
 PaymentProvider is StripeProvider in production.
@@ -206,7 +206,7 @@ PaymentProvider is TestPaymentProvider in test.
 
 ```json
 {
-  "reportType": "logicn.polymorphism.effective",
+  "reportType": "galerina.polymorphism.effective",
   "contract": "PaymentProvider",
   "selectedImplementation": "StripeProvider",
   "environment": "production",

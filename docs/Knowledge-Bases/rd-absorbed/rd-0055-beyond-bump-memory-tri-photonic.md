@@ -1,11 +1,11 @@
-# R&D 0055 — Beyond-bump memory architectures for LogicN (tri/photonic substrate)
+# R&D 0055 — Beyond-bump memory architectures for Galerina (tri/photonic substrate)
 
-**Absorbed:** 2026-06-21 · **Source:** `LogicN-R-AND-D/_session-bridge/tasks/0055-beyond-bump-memory-tri-photonic.md`
+**Absorbed:** 2026-06-21 · **Source:** `Galerina-R-AND-D/_session-bridge/tasks/0055-beyond-bump-memory-tri-photonic.md`
 **Proof:** `scripts/rd-0055-gc-tri-photonic-proof.mjs` (35/35 PASS, exit 0, live-grep guarded)
 **Adjudication:** 18-agent adversarial workflow (find → refute) + a focused beyond-bump pass.
 
 ## TL;DR
-GC is settled — **LogicN compiled is already GC-free** (a monotone linear-memory bump allocator in
+GC is settled — **Galerina compiled is already GC-free** (a monotone linear-memory bump allocator in
 `wat-emitter.ts`; only the Stage-A TS tree-walker is GC'd, via V8/the host). Asking "what's *beyond* the
 bump allocator with tri/photonic logic" yields: **every photonic-GC idea REFUTES** (there is no GC to
 accelerate; the O(1) claims are category errors; reversible "uncompute" *conflicts with mandatory
@@ -40,8 +40,8 @@ B4 keep WDM/photonic as the K3 governance-lane fold only (no perf claim). See th
 **No package refactor.** The shipped Tri-Pipe (`SubstrateLane`, `substrate-inference.ts:28`; `hybrid-engine.ts`;
 execution-router) already IS the "hybrid zone"; GC/MMU is never a dense-linear kernel so the net-win/Freivalds
 partition keeps it digital. The whole surface is 2 hardcoded lines + 1 hook in `wat-emitter.ts`. See
-[[logicn-rd-0055-beyond-bump-memory]] in auto-memory.
+[[galerina-rd-0055-beyond-bump-memory]] in auto-memory.
 
 ## Related KB
-`logicn-core-memory-model.md`, `logicn-data-layout-memory-hints.md`, `logicn-compiler-phase-memory-boundaries.md`,
-`logicn-core-photonic-governance-architecture.md` (the photonic-as-co-processor / Freivalds-cheap-verify pattern).
+`galerina-core-memory-model.md`, `galerina-data-layout-memory-hints.md`, `galerina-compiler-phase-memory-boundaries.md`,
+`galerina-core-photonic-governance-architecture.md` (the photonic-as-co-processor / Freivalds-cheap-verify pattern).

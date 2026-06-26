@@ -1,4 +1,4 @@
-# LogicN — @state() Lifecycle System
+# Galerina — @state() Lifecycle System
 
 ## Status
 
@@ -9,7 +9,7 @@ Design intent preserved for future implementation
 ```
 
 This document defines the proposed `@state()` lifecycle annotation system for
-LogicN. It is **intentionally beyond v1** — beyond core parsing, type
+Galerina. It is **intentionally beyond v1** — beyond core parsing, type
 checking, and governance verification. It belongs to high-level runtime
 orchestration (Layer C).
 
@@ -17,7 +17,7 @@ orchestration (Layer C).
 
 ## 1. What Problem It Solves
 
-LogicN v1 models: flows, effects, capabilities, resources, runtime targets,
+Galerina v1 models: flows, effects, capabilities, resources, runtime targets,
 governance, and audit proof. Applications also need **long-lived evolving
 state** — UI state, session state, streaming state, AI inference context,
 GPU resource state, workflow state, distributed coordination state.
@@ -49,42 +49,42 @@ rather than arbitrary mutable memory.
 
 ### Basic state
 
-```logicn
+```galerina
 @state()
 let currentUser: Option<User> = None
 ```
 
 ### Named scope
 
-```logicn
+```galerina
 @state(session)
 let currentUser: Option<User> = None
 ```
 
 ### Persisted state
 
-```logicn
+```galerina
 @state(persisted)
 let preferences: UserPreferences = defaultPreferences()
 ```
 
 ### GPU resource state
 
-```logicn
+```galerina
 @state(gpu)
 let renderBuffer: GpuBuffer<Vertex>
 ```
 
 ### AI context state
 
-```logicn
+```galerina
 @state(context)
 let conversationMemory: ConversationContext
 ```
 
 ### Distributed state
 
-```logicn
+```galerina
 @state(distributed)
 let clusterRoutingTable: RoutingTable
 ```
@@ -131,7 +131,7 @@ Destroyed
 
 ## 6. Lifecycle Hooks (future syntax)
 
-```logicn
+```galerina
 @onCreate(currentUser)
 @onDestroy(currentUser)
 @onSuspend(currentUser)
@@ -140,7 +140,7 @@ Destroyed
 
 Example cleanup hook:
 
-```logicn
+```galerina
 @onDestroy(renderBuffer)
 flow cleanupBuffer() {
   Gpu.free(renderBuffer)
@@ -167,7 +167,7 @@ stateTransition:
 
 State mutation can require capabilities:
 
-```logicn
+```galerina
 @state(session)
 requires [session.write]
 let paymentContext: PaymentSession
@@ -188,7 +188,7 @@ State access becomes effects:
 | `state.persist` | Checkpoint state to storage |
 | `state.destroy` | Explicitly destroy state |
 
-```logicn
+```galerina
 secure flow impersonateAdmin()
 effects [state.write, audit.write] {
   currentUser = Some(adminUser)
@@ -196,7 +196,7 @@ effects [state.write, audit.write] {
 }
 ```
 
-Pure flows cannot mutate state (`LLN-STATE-001`).
+Pure flows cannot mutate state (`SPORE-STATE-001`).
 
 ---
 
@@ -204,7 +204,7 @@ Pure flows cannot mutate state (`LLN-STATE-001`).
 
 Derived state can be declared:
 
-```logicn
+```galerina
 @state()
 let subtotal: Decimal = 0
 
@@ -229,7 +229,7 @@ dependency explosions or magical observers.
 
 ## 11. Mutation Policies
 
-```logicn
+```galerina
 @state(readonly)         // cannot be mutated after initialisation
 @state(transactional)    // rollback on failure; audit evidence
 @state(immutable)        // never mutates after first write
@@ -238,7 +238,7 @@ dependency explosions or magical observers.
 
 Append-only state is ideal for audit event logs:
 
-```logicn
+```galerina
 @state(append_only)
 let auditEvents: List<AuditEvent>
 ```
@@ -249,7 +249,7 @@ The runtime rejects destructive mutations.
 
 ## 12. Secret + State Interaction
 
-```logicn
+```galerina
 @state(session)
 let apiKey: SecureString secret protected
 ```
@@ -260,7 +260,7 @@ The runtime enforces: no raw serialisation, no unsafe logging, protected cleanup
 
 ## 13. Compute Target State
 
-```logicn
+```galerina
 @state(gpu)
 let embeddings: GpuTensor<Float16>
 ```
@@ -274,7 +274,7 @@ The runtime coordinates:
 
 ## 14. AI Context Compression (future)
 
-```logicn
+```galerina
 @state(context)
 let longConversation: ConversationMemory
 ```
@@ -284,16 +284,16 @@ preserving auditability and provenance.
 
 ---
 
-## 15. Diagnostics (LLN-STATE-* series)
+## 15. Diagnostics (SPORE-STATE-* series)
 
 | Code | Name | Description |
 |---|---|---|
-| `LLN-STATE-001` | `IllegalStateMutation` | Pure flow cannot mutate runtime state |
-| `LLN-STATE-002` | `MissingStateCapability` | Mutation of session state requires `session.write` |
-| `LLN-STATE-003` | `IllegalStateSerialization` | Protected secret state cannot be serialised |
-| `LLN-STATE-004` | `ReactiveCycleDetected` | Reactive state dependency cycle detected (a → b → a) |
-| `LLN-STATE-005` | `InvalidStateTarget` | Type X cannot exist in state category Y |
-| `LLN-STATE-006` | `StateLifecycleViolation` | State accessed after destruction |
+| `SPORE-STATE-001` | `IllegalStateMutation` | Pure flow cannot mutate runtime state |
+| `SPORE-STATE-002` | `MissingStateCapability` | Mutation of session state requires `session.write` |
+| `SPORE-STATE-003` | `IllegalStateSerialization` | Protected secret state cannot be serialised |
+| `SPORE-STATE-004` | `ReactiveCycleDetected` | Reactive state dependency cycle detected (a → b → a) |
+| `SPORE-STATE-005` | `InvalidStateTarget` | Type X cannot exist in state category Y |
+| `SPORE-STATE-006` | `StateLifecycleViolation` | State accessed after destruction |
 
 ---
 
@@ -356,7 +356,7 @@ Distributed coordination
 Stream processing
 ```
 
-LogicN should formalise this instead of leaving it ad-hoc. The `@state()`
+Galerina should formalise this instead of leaving it ad-hoc. The `@state()`
 system is the mechanism for that formalisation.
 
 ---
@@ -365,7 +365,7 @@ system is the mechanism for that formalisation.
 
 If a minimal subset is needed in v1:
 
-```logicn
+```galerina
 @state(session)
 let currentUser: Option<User>
 ```

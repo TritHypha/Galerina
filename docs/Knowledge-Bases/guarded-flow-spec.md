@@ -5,7 +5,7 @@
 `guarded flow` is the v1 effectful execution unit. It is used when a flow may
 perform governed side effects but is not itself the external trust boundary.
 
-```logicn
+```galerina
 guarded flow saveOrder(order: Order) -> SaveOrderResult
 contract {
   types {
@@ -59,7 +59,7 @@ first established.
   guarded flow.
 - A guarded flow may call another effectful flow only when it declares the
   callee's transitive effects.
-- Missing direct or transitive effects are reported with `LLN-EFFECT-*`.
+- Missing direct or transitive effects are reported with `SPORE-EFFECT-*`.
 - `guarded flow` is not a synonym for `secure flow`; it does not by itself mark
   an external trust boundary.
 
@@ -68,7 +68,7 @@ first established.
 Local `fn` helpers cannot declare their own `effects [...]` clause, but their
 body is checked in the containing flow's effect context.
 
-```logicn
+```galerina
 guarded flow syncOrders(orders: List<Order>) -> SyncOrdersResult
 contract {
   types {
@@ -96,7 +96,7 @@ reject the program even though the network call is inside a local `fn`.
 
 ## Canonical Examples
 
-```logicn
+```galerina
 // 102-guarded-database-write
 guarded flow saveOrder(order: Order) -> SaveOrderResult
 contract {
@@ -113,7 +113,7 @@ contract {
 }
 ```
 
-```logicn
+```galerina
 // 103-guarded-network-outbound
 guarded flow fetchRate(baseCurrency: String) -> FetchRateResult
 contract {
@@ -131,7 +131,7 @@ contract {
 }
 ```
 
-```logicn
+```galerina
 // 104-multiple-effects
 guarded flow syncOrder(order: Order) -> SyncOrderResult
 contract {
@@ -152,7 +152,7 @@ contract {
 }
 ```
 
-```logicn
+```galerina
 // 108-guarded-flow-calls-effectful-flow
 guarded flow buildPriceQuote(orderId: OrderId) -> BuildPriceQuoteResult
 contract {

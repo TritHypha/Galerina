@@ -5,7 +5,7 @@ Status: archived post-v2 planning.
 Finance package folders have been moved out of the active workspace to:
 
 ```text
-C:\laragon\www\LogicN_Archive\packages-logicn\LogicN-finance-core
+C:\laragon\www\Galerina_Archive\packages-galerina\Galerina-finance-core
 ```
 
 This document is retained as planning context only. Finance packages must not
@@ -13,8 +13,8 @@ be part of the active v1 build graph.
 
 ## Purpose
 
-LogicN should treat finance as a serious domain package layer, not as core language
-syntax and not as a claim that LogicN is ready to run live trading infrastructure.
+Galerina should treat finance as a serious domain package layer, not as core language
+syntax and not as a claim that Galerina is ready to run live trading infrastructure.
 
 The finance opportunity is strongest around safe data handling, typed
 messaging, auditability, deterministic maths, market data, event streams,
@@ -59,38 +59,38 @@ References:
 Start grouped:
 
 ```text
-packages-logicn/LogicN-finance-core/
+packages-galerina/Galerina-finance-core/
 ```
 
 Split later only after contracts are stable:
 
 ```text
-packages-logicn/LogicN-finance-core-math/
-packages-logicn/LogicN-finance-core-calendar/
-packages-logicn/LogicN-finance-core-market-data/
-packages-logicn/LogicN-finance-core-order/
-packages-logicn/LogicN-finance-core-fix/
-packages-logicn/LogicN-finance-core-audit/
-packages-logicn/LogicN-finance-core-compliance/
-packages-logicn/LogicN-finance-core-risk/
-packages-logicn/LogicN-finance-core-pricing/
-packages-logicn/LogicN-finance-core-products/
-packages-logicn/LogicN-finance-core-scenarios/
-packages-logicn/LogicN-finance-core-fdc3/
+packages-galerina/Galerina-finance-core-math/
+packages-galerina/Galerina-finance-core-calendar/
+packages-galerina/Galerina-finance-core-market-data/
+packages-galerina/Galerina-finance-core-order/
+packages-galerina/Galerina-finance-core-fix/
+packages-galerina/Galerina-finance-core-audit/
+packages-galerina/Galerina-finance-core-compliance/
+packages-galerina/Galerina-finance-core-risk/
+packages-galerina/Galerina-finance-core-pricing/
+packages-galerina/Galerina-finance-core-products/
+packages-galerina/Galerina-finance-core-scenarios/
+packages-galerina/Galerina-finance-core-fdc3/
 ```
 
 Keep general infrastructure outside finance:
 
 ```text
-packages-logicn/LogicN-stream/
-packages-logicn/LogicN-stream-kafka/
-packages-logicn/LogicN-schema-registry/
-packages-logicn/LogicN-ffi/
-packages-logicn/LogicN-ffi-cpp/
-packages-logicn/LogicN-ffi-java/
-packages-logicn/LogicN-ffi-python/
-packages-logicn/LogicN-replay/
-packages-logicn/logicn-core-runtime-low-latency/
+packages-galerina/Galerina-stream/
+packages-galerina/Galerina-stream-kafka/
+packages-galerina/Galerina-schema-registry/
+packages-galerina/Galerina-ffi/
+packages-galerina/Galerina-ffi-cpp/
+packages-galerina/Galerina-ffi-java/
+packages-galerina/Galerina-ffi-python/
+packages-galerina/Galerina-replay/
+packages-galerina/galerina-core-runtime-low-latency/
 ```
 
 ## First Phase
@@ -98,14 +98,14 @@ packages-logicn/logicn-core-runtime-low-latency/
 Build contracts in this order:
 
 ```text
-LogicN-finance-core-math
-LogicN-finance-core-calendar
-LogicN-finance-core-market-data
-LogicN-finance-core-audit
-LogicN-finance-core-fix
+Galerina-finance-core-math
+Galerina-finance-core-calendar
+Galerina-finance-core-market-data
+Galerina-finance-core-audit
+Galerina-finance-core-fix
 ```
 
-This keeps the beta realistic. LogicN should first prove it can model financial
+This keeps the beta realistic. Galerina should first prove it can model financial
 data, rounding, identifiers, timestamps, market events, validation and audit
 evidence safely.
 
@@ -114,19 +114,19 @@ evidence safely.
 After the base contracts are stable:
 
 ```text
-LogicN-stream-kafka
-LogicN-schema-registry
-LogicN-ffi-cpp
-LogicN-ffi-java
-LogicN-ffi-python
-LogicN-finance-core-risk
-LogicN-finance-core-pricing
-LogicN-finance-core-fdc3
-logicn-core-runtime-low-latency
-LogicN-replay
+Galerina-stream-kafka
+Galerina-schema-registry
+Galerina-ffi-cpp
+Galerina-ffi-java
+Galerina-ffi-python
+Galerina-finance-core-risk
+Galerina-finance-core-pricing
+Galerina-finance-core-fdc3
+galerina-core-runtime-low-latency
+Galerina-replay
 ```
 
-Interop should be controlled by policy. A LogicN app may wrap mature external
+Interop should be controlled by policy. A Galerina app may wrap mature external
 finance systems, but the wrapper must declare memory isolation,
 network permissions, credentials policy, audit requirements and fallback
 behaviour.
@@ -145,5 +145,5 @@ custody platform
 trading advice engine
 ```
 
-These are regulated and high-risk systems. LogicN beta work should focus on typed
+These are regulated and high-risk systems. Galerina beta work should focus on typed
 contracts, validation, replay, audit and safe integration first.

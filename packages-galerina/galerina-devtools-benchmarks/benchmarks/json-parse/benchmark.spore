@@ -1,0 +1,56 @@
+/// json-parse benchmark — JSON-style string parsing in Galerina.
+/// Scans key:value records (the expensive part of real JSON workloads):
+/// splits records on ',' into fields, splits each field on ':' to reach the
+/// value, and accumulates field counts + value lengths over N records.
+/// Uses the String stdlib sync fast-path (split / length), not the integer
+/// bytecode VM. split/length match JS and Python semantics exactly, so main()
+/// returns a deterministic Int checksum the mirrors reproduce bit-for-bit.
+
+pure flow countFields(obj: String): Int {
+  contract { effects {} }
+  return obj.split(",").length()
+}
+
+/// Sum the character-length of every value (the part after ':' in each pair).
+pure flow sumValueLengths(obj: String): Int {
+  contract { effects {} }
+  let pairs: Array = obj.split(",")
+  mut total: Int = 0
+  mut i: Int = 0
+  while i < pairs.length() {
+    let pairOpt = pairs.get(i)
+    match pairOpt {
+      Some(pair) => {
+        let kv: Array = pair.split(":")
+        let vOpt = kv.get(1)
+        match vOpt {
+          Some(v) => { total = total + v.length() }
+          None => {}
+          _ => {}
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return total
+}
+
+/// Parse the same record N times, accumulating fields + value lengths.
+pure flow scanRecords(n: Int): Int {
+  contract { effects {} }
+  let rec: String = "id:1001,name:alice,role:admin,active:true,score:95"
+  mut total: Int = 0
+  mut i: Int = 0
+  while i < n {
+    total = total + countFields(rec) + sumValueLengths(rec)
+    i = i + 1
+  }
+  return total
+}
+
+pure flow main(): Int {
+  contract { effects {} }
+  return scanRecords(500)
+}

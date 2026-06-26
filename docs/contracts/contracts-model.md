@@ -12,7 +12,7 @@ database objects.
 
 ## Syntax
 
-```logicn
+```galerina
 model Order {
   id: UUID view: public
   userId: UUID view: internal

@@ -10,7 +10,7 @@ Response contracts are safe public output boundaries.
 
 ## Syntax
 
-```logicn
+```galerina
 type UserResponse {
   id: UserId
   email: Email

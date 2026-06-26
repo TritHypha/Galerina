@@ -1,31 +1,31 @@
-family: LLN-SYNTAX
+family: SPORE-SYNTAX
 description: "Syntax rule violation diagnostics"
 diagnostics:
-  - code: LLN-SYNTAX-001
+  - code: SPORE-SYNTAX-001
     name: VAR_NOT_SUPPORTED
     severity: error
     phase: scanner
-    message: "LogicN does not support 'var'. Use 'let' or 'mut'."
+    message: "Galerina does not support 'var'. Use 'let' or 'mut'."
     implemented: true
-  - code: LLN-SYNTAX-002
+  - code: SPORE-SYNTAX-002
     name: CONST_NOT_SUPPORTED
     severity: error
     phase: scanner
-    message: "LogicN does not support 'const'. Use 'let' or 'readonly'."
+    message: "Galerina does not support 'const'. Use 'let' or 'readonly'."
     implemented: true
-  - code: LLN-SYNTAX-003
+  - code: SPORE-SYNTAX-003
     name: FUTURE_RESERVED_KEYWORD
     severity: error
     phase: lexer
     message: "'{keyword}' is reserved for future use and cannot be used as an identifier."
     implemented: true
-  - code: LLN-SYNTAX-004
+  - code: SPORE-SYNTAX-004
     name: ACTIVE_KEYWORD_AS_IDENT
     severity: error
     phase: lexer
     message: "'{keyword}' is an active keyword and cannot be used as an identifier."
     implemented: true
-  - code: LLN-SYNTAX-005
+  - code: SPORE-SYNTAX-005
     name: FN_AT_TOP_LEVEL
     severity: error
     phase: parser

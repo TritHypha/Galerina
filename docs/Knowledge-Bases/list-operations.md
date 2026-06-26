@@ -2,9 +2,9 @@
 
 ## Definition
 
-`List<T>` is the main collection type in LogicN for ordered values.
+`List<T>` is the main collection type in Galerina for ordered values.
 
-```logicn
+```galerina
 let items: List<Text> = ["apple", "banana", "orange"]
 let users: List<User> = [User(name: "Ava"), User(name: "Ben")]
 ```
@@ -13,14 +13,14 @@ let users: List<User> = [User(name: "Ava"), User(name: "Ben")]
 
 Immutable — return a new list when changing values:
 
-```logicn
+```galerina
 let items: List<Text> = ["apple", "banana"]
 let updated_items: List<Text> = items.with("orange")
 ```
 
 Mutable — modify in place using list methods:
 
-```logicn
+```galerina
 let items: List<Text> = ["apple", "banana"]
 items.add("orange")
 ```
@@ -31,7 +31,7 @@ items.add("orange")
 
 Adds a value to the end:
 
-```logicn
+```galerina
 items.add("orange")
 // ["apple", "banana", "orange"]
 ```
@@ -40,7 +40,7 @@ items.add("orange")
 
 Removes a matching value:
 
-```logicn
+```galerina
 items.remove("banana")
 // ["apple", "orange"]
 ```
@@ -49,7 +49,7 @@ items.remove("banana")
 
 Adds a value at a specific position:
 
-```logicn
+```galerina
 items.insert(1, "banana")
 // ["apple", "banana", "orange"]
 ```
@@ -58,7 +58,7 @@ items.insert(1, "banana")
 
 Replaces the value at a specific position:
 
-```logicn
+```galerina
 items.replace(1, "pear")
 // ["apple", "pear", "orange"]
 ```
@@ -67,7 +67,7 @@ items.replace(1, "pear")
 
 Removes all values:
 
-```logicn
+```galerina
 items.clear()
 // []
 ```
@@ -76,7 +76,7 @@ items.clear()
 
 Sorts ascending by default:
 
-```logicn
+```galerina
 numbers.sort()
 numbers.sort(order: asc)
 numbers.sort(order: desc)
@@ -86,7 +86,7 @@ numbers.sort(order: desc)
 
 Returns only values that match a condition:
 
-```logicn
+```galerina
 let active_users: List<User> = users.filter(user -> user.active)
 ```
 
@@ -94,7 +94,7 @@ let active_users: List<User> = users.filter(user -> user.active)
 
 Transforms each value into a new value:
 
-```logicn
+```galerina
 let names: List<Text> = users.map(user -> user.name)
 ```
 
@@ -102,7 +102,7 @@ let names: List<Text> = users.map(user -> user.name)
 
 Returns the first matching value, or `none` if not found:
 
-```logicn
+```galerina
 let user: User? = users.find(user -> user.id == 2)
 ```
 
@@ -110,7 +110,7 @@ let user: User? = users.find(user -> user.id == 2)
 
 Checks whether the list contains a value:
 
-```logicn
+```galerina
 let has_apple: Bool = items.has("apple")
 ```
 
@@ -118,7 +118,7 @@ let has_apple: Bool = items.has("apple")
 
 Returns the number of values:
 
-```logicn
+```galerina
 let total: Int = items.count()
 ```
 
@@ -126,7 +126,7 @@ let total: Int = items.count()
 
 Returns the first value, or `none` if empty:
 
-```logicn
+```galerina
 let first_item: Text? = items.first()
 ```
 
@@ -134,7 +134,7 @@ let first_item: Text? = items.first()
 
 Returns the last value, or `none` if empty:
 
-```logicn
+```galerina
 let last_item: Text? = items.last()
 ```
 

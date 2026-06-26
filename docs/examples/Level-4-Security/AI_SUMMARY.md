@@ -7,13 +7,13 @@
 - `AuditLog.write(...)` patterns — canonical usage and common mistakes
 - Why tainted (unsafe) values cannot flow into governed database or network sinks
 - Secret handling: `SecureString`, why `==` is forbidden on secrets, `constantTimeEquals(...)` for safe comparison
-- Preventing secret serialization (`LLN-SECRET-003`)
-- SQL injection via string concatenation (`LLN-VALUESTATE-004`)
+- Preventing secret serialization (`SPORE-SECRET-003`)
+- SQL injection via string concatenation (`SPORE-VALUESTATE-004`)
 - Validation chains for multiple protected values
 
 ## Canonical patterns
 
-```lln
+```spore
 // Trust-boundary pattern: unsafe -> validate -> protected -> redact -> audit
 secure flow createUser(request: Request) -> CreateUserResult
 contract {
@@ -33,7 +33,7 @@ contract {
 }
 ```
 
-```lln
+```spore
 // Correct secret comparison — never use == on SecureString
 let match: Bool = constantTimeEquals(storedKey, suppliedKey)
 ```
@@ -44,21 +44,21 @@ let match: Bool = constantTimeEquals(storedKey, suppliedKey)
 - `contract set` (Level 5)
 - `compute target` blocks (Level 6)
 - `authority` blocks (Level 9)
-- Passing `protected` values directly to `AuditLog.write` without `redact()` — triggers `LLN-VALUESTATE-001`
-- Comparing `SecureString` with `==` — triggers `LLN-SECRET-002`
-- String concatenation that includes `unsafe` bindings as query input — triggers `LLN-VALUESTATE-004`
+- Passing `protected` values directly to `AuditLog.write` without `redact()` — triggers `SPORE-VALUESTATE-001`
+- Comparing `SecureString` with `==` — triggers `SPORE-SECRET-002`
+- String concatenation that includes `unsafe` bindings as query input — triggers `SPORE-VALUESTATE-004`
 
 ## Key diagnostics this level demonstrates
 
 | Code | Meaning |
 |------|---------|
-| `LLN-VALUESTATE-001` | Protected value passed directly to an audit or log sink without `redact()` |
-| `LLN-VALUESTATE-003` | Unsafe binding flows into a governed sink (database, network) without validation |
-| `LLN-VALUESTATE-004` | Tainted value propagation — unsafe binding used in string concatenation |
-| `LLN-VALUESTATE-005` | Unsafe binding assigned to a non-unsafe binding without validation |
-| `LLN-SECRET-001` | Secret value flows to a non-secret sink |
-| `LLN-SECRET-002` | Direct equality comparison on a secret — use `constantTimeEquals()` |
-| `LLN-SECRET-003` | Secret value serialized or written to a log/response |
+| `SPORE-VALUESTATE-001` | Protected value passed directly to an audit or log sink without `redact()` |
+| `SPORE-VALUESTATE-003` | Unsafe binding flows into a governed sink (database, network) without validation |
+| `SPORE-VALUESTATE-004` | Tainted value propagation — unsafe binding used in string concatenation |
+| `SPORE-VALUESTATE-005` | Unsafe binding assigned to a non-unsafe binding without validation |
+| `SPORE-SECRET-001` | Secret value flows to a non-secret sink |
+| `SPORE-SECRET-002` | Direct equality comparison on a secret — use `constantTimeEquals()` |
+| `SPORE-SECRET-003` | Secret value serialized or written to a log/response |
 
 ## Example IDs at this level
 

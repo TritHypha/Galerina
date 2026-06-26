@@ -2,7 +2,7 @@
 
 ## Purpose
 
-LogicN should treat images, PDFs, Office files, archives, SVGs, media files and
+Galerina should treat images, PDFs, Office files, archives, SVGs, media files and
 embedded assets as untrusted executable-adjacent content.
 
 They may look like ordinary files, but attackers hide active or parser-hostile
@@ -73,7 +73,7 @@ main runtime parses PDF directly
 Preferred model:
 
 ```text
-LogicN runtime
+Galerina runtime
   -> isolated parser worker
   -> strict memory/time limits
   -> no secrets
@@ -156,7 +156,7 @@ active content denied
 
 ## Streaming And Bounds
 
-LogicN should avoid fully trusting or fully loading large files.
+Galerina should avoid fully trusting or fully loading large files.
 
 Use:
 
@@ -185,7 +185,7 @@ decompression amplification
 
 ## Strong File Classification
 
-LogicN should classify files with security-aware types rather than treating
+Galerina should classify files with security-aware types rather than treating
 everything as `File`.
 
 Candidate concepts:
@@ -238,7 +238,7 @@ Parsing belongs in isolated, capability-limited workers.
 
 ## Reports
 
-LogicN should eventually emit:
+Galerina should eventually emit:
 
 ```text
 file-security-report.json
@@ -260,7 +260,7 @@ audit-friendly
 
 ## Final Principle
 
-LogicN should never trust uploaded files and should never trust the parser
+Galerina should never trust uploaded files and should never trust the parser
 processing them.
 
 The safest file is a reconstructed file created from validated content, not

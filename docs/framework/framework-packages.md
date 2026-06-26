@@ -15,7 +15,7 @@ internal models or internal helper flows.
 
 ## Syntax Example
 
-```logicn
+```galerina
 package users {
   export secure flow getUser
   export secure flow updateUserEmail

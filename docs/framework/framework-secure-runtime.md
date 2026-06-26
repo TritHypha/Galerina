@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Define `logicn serve` as the main v1 framework milestone.
+Define `galerina serve` as the main v1 framework milestone.
 
 ## Short Definition
 
@@ -12,7 +12,7 @@ manifests, applies policy before handler work starts and emits reports.
 ## Why It Exists
 
 Secure web applications need fast request handling without losing explicit
-security boundaries. LogicN should make these boundaries typed, reportable and
+security boundaries. Galerina should make these boundaries typed, reportable and
 AI-readable.
 
 The secure runtime implements the architecture charter at request execution
@@ -91,7 +91,7 @@ capability-lease-report.json
 
 ## v1 Scope
 
-`logicn serve` and secure web runtime behavior are the main v1 milestone.
+`galerina serve` and secure web runtime behavior are the main v1 milestone.
 
 ## Future Scope
 

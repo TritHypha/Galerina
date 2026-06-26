@@ -1,6 +1,6 @@
 ﻿# 084 — Unknown type
 
-**Concept:** Unknown type name produces LLN-TYPE-001
+**Concept:** Unknown type name produces SPORE-TYPE-001
 
 Using an undeclared or unimported type name is a compile error. The compiler cannot proceed without knowing the type's layout and constraints.
 

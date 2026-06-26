@@ -1,79 +1,79 @@
-family: LLN-TYPE
+family: SPORE-TYPE
 description: "Type system diagnostics"
 canonical_source: "docs/Knowledge-Bases/formal-type-system-spec.md"
 diagnostics:
-  - code: LLN-TYPE-001
+  - code: SPORE-TYPE-001
     name: UnknownType
     severity: error
     phase: type_checker
     message: "Type '{typeName}' is not defined in scope."
     suggestedFix: "Check for typos or add a type declaration."
     implemented: true
-  - code: LLN-TYPE-002
+  - code: SPORE-TYPE-002
     name: TypeMismatch
     severity: error
     phase: type_checker
     message: "Cannot assign '{inferredType}' to '{declaredType}'."
     suggestedFix: "Ensure the value type matches the declared type."
     implemented: true
-  - code: LLN-TYPE-003
+  - code: SPORE-TYPE-003
     name: InvalidNominalConversion
     severity: error
     phase: type_checker
     message: "Cannot assign '{sourceType}' to branded type '{targetType}'. Use a validation gate."
     implemented: false
     phase_target: "8B"
-  - code: LLN-TYPE-004
+  - code: SPORE-TYPE-004
     name: InvalidBinaryOperation
     severity: error
     phase: type_checker
     message: "Operator '{op}' cannot be applied to '{leftType}' and '{rightType}'."
     implemented: true
-  - code: LLN-TYPE-005
+  - code: SPORE-TYPE-005
     name: InvalidUnaryOperation
     severity: error
     phase: type_checker
     message: "Unary operator '{op}' requires operand of type '{expectedType}'."
     implemented: false
     phase_target: "8B"
-  - code: LLN-TYPE-006
+  - code: SPORE-TYPE-006
     name: InvalidCallArgument
     severity: error
     phase: type_checker
     message: "Argument {argIndex} to '{flowName}' expects '{expectedType}' but received '{inferredType}'."
     implemented: true
-  - code: LLN-TYPE-007
+  - code: SPORE-TYPE-007
     name: InvalidArgumentCount
     severity: error
     phase: type_checker
     message: "Flow '{flowName}' expects {expectedCount} arguments but received {actualCount}."
     implemented: true
-  - code: LLN-TYPE-008
+  - code: SPORE-TYPE-008
     name: InvalidReturnType
     severity: error
     phase: type_checker
     message: "Flow declares return type '{declaredType}' but return expression has type '{inferredType}'."
     implemented: true
-    note: "LLN-TYPE-008 also covers SilentNullDenied (null/undefined usage)"
-  - code: LLN-TYPE-009
+    note: "SPORE-TYPE-008 also covers SilentNullDenied (null/undefined usage)"
+  - code: SPORE-TYPE-009
     name: InvalidGenericInstantiation
     severity: error
     phase: type_checker
     message: "Generic type '{typeName}' expects {expectedArity} type argument(s) but received {actualArity}."
     implemented: true
-  - code: LLN-TYPE-020
+  - code: SPORE-TYPE-020
     name: ShadowedBinding
     severity: warning
     phase: type_checker
     message: "Binding '{name}' shadows an outer-scope binding."
     implemented: true
-  - code: LLN-TYPE-021
+  - code: SPORE-TYPE-021
     name: NonExhaustiveMatch
     severity: error
     phase: type_checker
     message: "match is missing arm(s): {missingArms}."
     implemented: true
-  - code: LLN-TYPE-022
+  - code: SPORE-TYPE-022
     name: UnreachablePattern
     severity: error
     phase: type_checker

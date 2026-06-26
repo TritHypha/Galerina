@@ -1,16 +1,16 @@
-# LogicN Learning Mode
+# Galerina Learning Mode
 
-LogicN should have a learning mode for students, children, new developers and
+Galerina should have a learning mode for students, children, new developers and
 teachers.
 
 The goal is not to make a separate toy language. Learning mode should teach real
-LogicN concepts with safer defaults, simpler wording, guided exercises and
+Galerina concepts with safer defaults, simpler wording, guided exercises and
 strong guardrails.
 
 Core rule:
 
 ```text
-Learning mode should make LogicN easier to understand without teaching unsafe
+Learning mode should make Galerina easier to understand without teaching unsafe
 habits or fake syntax.
 ```
 
@@ -22,8 +22,8 @@ Learning mode should support:
 children learning first programming ideas
 students learning typed programming
 teachers running classroom exercises
-new developers learning LogicN syntax
-experienced developers learning LogicN safety rules
+new developers learning Galerina syntax
+experienced developers learning Galerina safety rules
 AI-assisted learners who need explanations, hints and safe examples
 ```
 
@@ -31,7 +31,7 @@ Different audiences need different levels, not different languages.
 
 ## Learning Levels
 
-LogicN should support progressive learning levels:
+Galerina should support progressive learning levels:
 
 ```text
 Level 0: Blocks or guided forms
@@ -46,7 +46,7 @@ Example:
 
 ```text
 Beginner:
-  print "Hello LogicN"
+  print "Hello Galerina"
 
 Student:
   let name: Text = "Ada"
@@ -110,7 +110,7 @@ Learning diagnostics must not hide real errors. They should explain them.
 
 ## Guided Lessons
 
-Learning mode should include lessons for core LogicN ideas:
+Learning mode should include lessons for core Galerina ideas:
 
 ```text
 values and variables
@@ -131,7 +131,7 @@ testing
 Security should be taught early in simple language:
 
 ```text
-Do not trust input until LogicN checks it.
+Do not trust input until Galerina checks it.
 Do not print or store secrets.
 Ask permission before using files, network or shell.
 Use Result when something can fail.
@@ -180,7 +180,7 @@ filesystem mutation
 
 ## Playground
 
-LogicN should eventually support a learning playground:
+Galerina should eventually support a learning playground:
 
 ```text
 browser or local mode
@@ -205,8 +205,8 @@ long-running loops
 large memory allocation
 ```
 
-If browser execution is used, `logicn-target-js`, `logicn-target-wasm` and
-`logicn-web-*` planning should provide the output target and safe UI boundary.
+If browser execution is used, `galerina-target-js`, `galerina-target-wasm` and
+`galerina-web-*` planning should provide the output target and safe UI boundary.
 Learning mode itself should remain a product mode, not a browser framework.
 
 ## Teacher Mode
@@ -239,7 +239,7 @@ future hosted service is considered.
 
 ## AI Tutor
 
-An AI tutor can help explain LogicN, but it must be bounded.
+An AI tutor can help explain Galerina, but it must be bounded.
 
 Allowed:
 
@@ -294,7 +294,7 @@ simple game logic
 ```
 
 For real schools, legal and privacy requirements depend on jurisdiction and
-institution policy. LogicN must not claim automatic education privacy
+institution policy. Galerina must not claim automatic education privacy
 compliance.
 
 ## Reports
@@ -319,7 +319,7 @@ Example:
   "status": "needs_hint",
   "diagnostics": [
     {
-      "code": "LOGICN-LEARN-TYPE-001",
+      "code": "GALERINA-LEARN-TYPE-001",
       "topic": "Option",
       "message": "This value might be missing. Match on it before rendering."
     }
@@ -337,10 +337,10 @@ active package.
 Potential future package names:
 
 ```text
-logicn-learn
-logicn-learn-lessons
-logicn-learn-playground
-logicn-learn-teacher
+galerina-learn
+galerina-learn-lessons
+galerina-learn-playground
+galerina-learn-teacher
 ```
 
 Do not add these packages until the core language examples, parser/checker and
@@ -349,22 +349,22 @@ learning content shape are stable enough to justify package ownership.
 Related ownership:
 
 ```text
-logicn-core
+galerina-core
   real language syntax, examples and diagnostics
 
-logicn-core-cli
+galerina-core-cli
   future learning-mode commands
 
-logicn-core-runtime
+galerina-core-runtime
   checked/sandboxed execution policy
 
-logicn-core-security
+galerina-core-security
   permission, secret and child-safe policy
 
-logicn-core-reports
+galerina-core-reports
   learning report contracts if shared broadly
 
-logicn-web-* and target packages
+galerina-web-* and target packages
   future browser playground output, if needed
 ```
 
@@ -373,12 +373,12 @@ logicn-web-* and target packages
 Possible future commands:
 
 ```bash
-logicn learn list
-logicn learn start basics
-logicn learn run lesson-01
-logicn learn hint
-logicn learn explain LOGICN-TYPE-001
-logicn learn teacher-report
+galerina learn list
+galerina learn start basics
+galerina learn run lesson-01
+galerina learn hint
+galerina learn explain GALERINA-TYPE-001
+galerina learn teacher-report
 ```
 
 These commands should never require production deployment, real secrets or
@@ -389,7 +389,7 @@ external services.
 Learning mode should not become:
 
 ```text
-a separate fake LogicN language
+a separate fake Galerina language
 a production sandbox guarantee
 an unbounded AI tutor
 a classroom surveillance tool
@@ -397,4 +397,4 @@ a hosted education product by default
 a replacement for compiler checks
 ```
 
-Learning mode should teach real LogicN, slowly and safely.
+Learning mode should teach real Galerina, slowly and safely.

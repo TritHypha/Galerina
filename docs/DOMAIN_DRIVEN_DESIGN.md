@@ -2,21 +2,21 @@
 
 ## Purpose
 
-LogicN can support Domain-Driven Design style structure, but it should not force
+Galerina can support Domain-Driven Design style structure, but it should not force
 heavy DDD patterns.
 
 Recommended position:
 
 ```text
 Use DDD for business meaning.
-Use LogicN policies for security.
-Use LogicN memory rules for safe data handling.
-Use LogicN compute rules for speed.
-Use LogicN reports so humans and AI can understand the system.
+Use Galerina policies for security.
+Use Galerina memory rules for safe data handling.
+Use Galerina compute rules for speed.
+Use Galerina reports so humans and AI can understand the system.
 Avoid abstractions that do not add meaning, safety or future value.
 ```
 
-LogicN is not automatically DDD. LogicN is a security-first, typed, AI-readable
+Galerina is not automatically DDD. Galerina is a security-first, typed, AI-readable
 backend language concept that can support DDD-style architecture for business
 applications.
 
@@ -26,7 +26,7 @@ effects, permissions, memory costs or performance behavior.
 
 ## Thin DDD
 
-LogicN should prefer:
+Galerina should prefer:
 
 ```text
 Thin DDD
@@ -34,7 +34,7 @@ Domain-first structure
 Policy-enforced architecture
 ```
 
-LogicN should avoid:
+Galerina should avoid:
 
 ```text
 Heavy DDD
@@ -55,7 +55,7 @@ If an abstraction does none of those, it may be waste.
 
 ## Progressive Structure
 
-LogicN should support progressive architecture.
+Galerina should support progressive architecture.
 
 | App size | Recommended structure |
 | --- | --- |
@@ -72,7 +72,7 @@ structure when the extra files clarify business meaning and boundaries.
 ## Recommended App Shape
 
 ```text
-my-logicn-app/
+my-galerina-app/
 |-- boot.ln
 |-- main.ln
 |-- api/
@@ -115,11 +115,11 @@ my-logicn-app/
 
 ## Route-First Compatibility
 
-Thin DDD does not replace LogicN's route-first API policy.
+Thin DDD does not replace Galerina's route-first API policy.
 
 The API route still defines the public contract:
 
-```logicn
+```galerina
 api OrdersApi {
   POST "/orders" {
     request CreateOrderRequest
@@ -141,11 +141,11 @@ api OrdersApi {
 ```
 
 Business meaning moves into domain rules and flows. Controllers remain optional
-framework sugar, not core LogicN architecture.
+framework sugar, not core Galerina architecture.
 
 ## Domain Example
 
-```logicn
+```galerina
 type OrderId = String
 type CustomerId = String
 
@@ -175,7 +175,7 @@ enum OrderError {
 
 Domain rules:
 
-```logicn
+```galerina
 domain Orders {
   rule canBePaid(order: Order) -> Bool {
     match order.status {
@@ -208,7 +208,7 @@ becomes paid. The API route does not decide those rules.
 
 ## Flow Example
 
-```logicn
+```galerina
 secure flow CreateOrder.handle(input: CreateOrderRequest) -> Result<OrderResponse, OrderError>
   effects [
     payment.authorise,
@@ -276,7 +276,7 @@ payment providers
 
 Example:
 
-```logicn
+```galerina
 provider PaymentProvider {
   allow outbound "https://payments.example.com"
 
@@ -310,9 +310,9 @@ guards. DDD structure does not weaken security rules.
 
 ## Architecture Policy
 
-LogicN can enforce thin-domain boundaries with architecture policy:
+Galerina can enforce thin-domain boundaries with architecture policy:
 
-```logicn
+```galerina
 architecture_policy ThinDomain {
   domain {
     pure by_default
@@ -356,7 +356,7 @@ architecture_policy ThinDomain {
 }
 ```
 
-This is where LogicN is stronger than normal DDD. It can enforce and report
+This is where Galerina is stronger than normal DDD. It can enforce and report
 boundaries instead of relying only on naming conventions.
 
 ## Security Position
@@ -372,7 +372,7 @@ infrastructure  = database, APIs, files
 api             = requests and responses
 ```
 
-But LogicN security must come from:
+But Galerina security must come from:
 
 ```text
 explicit effects
@@ -394,7 +394,7 @@ write files, call databases, call networks or send data to LLMs.
 
 DDD is not a memory model.
 
-Memory safety should come from LogicN features:
+Memory safety should come from Galerina features:
 
 ```text
 read-only references
@@ -410,7 +410,7 @@ borrowed values
 
 Example:
 
-```logicn
+```galerina
 flow processLargeImport(data: ReadOnly<JsonDocument>) -> Result<ImportResult, ImportError> {
   // Can read the data.
   // Cannot silently copy or mutate the full document.
@@ -437,7 +437,7 @@ too much indirection
 
 Compute-heavy work should use compute policies and target reports:
 
-```logicn
+```galerina
 compute target best verify cpu_reference {
   prefer gpu
   fallback cpu_vector
@@ -453,7 +453,7 @@ Do not hide compute-heavy paths behind unnecessary factories or service chains.
 
 Without domain boundaries, a handler may accidentally bypass business rules:
 
-```logicn
+```galerina
 let order = {
   ...order,
   status: "Refunded"
@@ -464,7 +464,7 @@ Database.orders.save(order)
 
 Preferred:
 
-```logicn
+```galerina
 let decision = Orders.canRefund(order, refundAmount)
 
 match decision {
@@ -485,7 +485,7 @@ match decision {
 
 The refund rule is visible, named and protected.
 
-## What LogicN Should Avoid
+## What Galerina Should Avoid
 
 Avoid database-shaped domain folders:
 
@@ -509,20 +509,20 @@ domain/
 
 Avoid empty wrappers:
 
-```logicn
+```galerina
 OrderService.callOrderRepositoryToSaveOrder(order)
 ```
 
 Prefer meaningful operations:
 
-```logicn
+```galerina
 Orders.canRefund(order, amount)
 OrderStore.save(order)
 ```
 
 Avoid heavy service chains:
 
-```logicn
+```galerina
 OrderRefundEligibilityDomainServiceFactory
   .create()
   .getService()
@@ -531,13 +531,13 @@ OrderRefundEligibilityDomainServiceFactory
 
 Prefer direct business language:
 
-```logicn
+```galerina
 Orders.canRefund(order, amount)
 ```
 
 ## Architecture Report
 
-LogicN may generate architecture reports:
+Galerina may generate architecture reports:
 
 ```json
 {
@@ -545,11 +545,11 @@ LogicN may generate architecture reports:
     "domainStyle": "thin-domain",
     "warnings": [
       {
-        "code": "LOGICN-ARCH-002",
+        "code": "GALERINA-ARCH-002",
         "message": "OrderService only forwards calls to Orders.create. Consider removing this wrapper."
       },
       {
-        "code": "LOGICN-ARCH-006",
+        "code": "GALERINA-ARCH-006",
         "message": "Domain folder appears to mirror database table names. Consider business-domain names instead."
       }
     ]
@@ -575,5 +575,5 @@ infrastructure_in_domain
 Business meaning belongs in the domain.
 Application steps belong in flows.
 External systems belong in infrastructure.
-Security, memory, crash handling and compute belong in LogicN policies.
+Security, memory, crash handling and compute belong in Galerina policies.
 ```

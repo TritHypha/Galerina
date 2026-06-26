@@ -4,7 +4,7 @@ This folder is for project generators.
 
 Generators may be used to create repeatable files such as:
 
-- new LogicN modules
+- new Galerina modules
 - new routes
 - new tests
 - new documentation pages

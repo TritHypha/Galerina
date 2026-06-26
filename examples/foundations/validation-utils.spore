@@ -1,0 +1,31 @@
+/*
+ * Validation utilities — imported by multi-file-import.spore
+ * Pure functions with no side effects — safe to import into any context.
+ */
+
+pure flow validateEmail(email: String) -> Bool
+contract {
+  intent "Check email format is valid"
+  effects {}
+}
+{
+  ;; Stage A: simple non-empty check
+  ;; Stage B: full regex validation via stdlib
+  trap email == "" : ERR_EMPTY_EMAIL
+  return true
+}
+
+pure flow validateAge(age: Int) -> Bool
+contract {
+  intent "Check age is within acceptable range"
+  effects {}
+  invariant {
+    ensure age >= 0
+    ensure age <= 150
+  }
+}
+{
+  trap age < 0 : ERR_NEGATIVE_AGE
+  trap age > 150 : ERR_UNREALISTIC_AGE
+  return true
+}

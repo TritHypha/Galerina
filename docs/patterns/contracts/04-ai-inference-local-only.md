@@ -1,4 +1,4 @@
-Title: LogicN Contract Pattern — AI Inference Local-Only
+Title: Galerina Contract Pattern — AI Inference Local-Only
 
 ### When to use
 
@@ -6,7 +6,7 @@ Use this pattern when a flow invokes an AI model for inference and must guarante
 
 ### Correct example
 
-```logicn
+```galerina
 flow RunLocalInference(readonly request: Request) -> RunLocalInferenceResult {
 
   contract {
@@ -104,7 +104,7 @@ flow RunLocalInference(readonly request: Request) -> RunLocalInferenceResult {
 ### Common mistakes
 
 **Mistake 1 — Setting `remote: allow` when local-only is required**
-```logicn
+```galerina
 ai {
   intent: local_only
   remote: allow
@@ -113,7 +113,7 @@ ai {
 `remote: allow` directly contradicts `intent: local_only`. The contract validator will raise a conflict error. `remote` must be `deny` whenever `intent` is `local_only`.
 
 **Mistake 2 — Omitting the `ai` block entirely**
-```logicn
+```galerina
 contract {
   intent = "Run AI inference locally."
   request { ... }
@@ -123,7 +123,7 @@ contract {
 The `ai` block is required for any flow that calls `ai.infer`. Without it, the runtime cannot enforce hardware selection or remote-call denial, and the intent string alone has no enforcement effect.
 
 **Mistake 3 — Including the prompt in the audit `includes` list**
-```logicn
+```galerina
 effects {
   audit {
     includes: [request.body["prompt"], result.output]
@@ -146,7 +146,7 @@ Including the prompt or the model output in audit logs means sensitive inference
 
 If `E701 — ai.remote cannot be 'allow' when ai.intent is 'local_only'` is raised, update the `ai` block:
 
-```logicn
+```galerina
 ai {
   intent: local_only
   preferred_hardware: npu

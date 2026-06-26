@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Request docs define how data enters a LogicN application.
+Request docs define how data enters a Galerina application.
 
 ## Short Definition
 
@@ -11,7 +11,7 @@ tool calls.
 
 ## Syntax Example
 
-```logicn
+```galerina
 type CreateUserRequest {
   email: Email
   displayName: String

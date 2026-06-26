@@ -2,12 +2,12 @@
 
 ## Purpose
 
-Audit evidence reports collect deterministic proof about LogicN security,
+Audit evidence reports collect deterministic proof about Galerina security,
 permissions, data exposure, boundaries and runtime configuration.
 
 ## Important Limitation
 
-LogicN reports can support audits, but they do not automatically make a system
+Galerina reports can support audits, but they do not automatically make a system
 compliant. Operational controls, deployment evidence, supplier governance,
 incident response and human review remain required outside the language.
 
@@ -16,7 +16,7 @@ incident response and human review remain required outside the language.
 Possible future command:
 
 ```bash
-logicn audit --env production --out build/audit
+galerina audit --env production --out build/audit
 ```
 
 Output:
@@ -39,7 +39,7 @@ build/audit/
   production-config-report.json
 ```
 
-## What LogicN Can Evidence
+## What Galerina Can Evidence
 
 ```text
 which fields are PII
@@ -54,7 +54,7 @@ which fields are denied from public output
 which policies apply in production
 ```
 
-## What LogicN Cannot Prove Alone
+## What Galerina Cannot Prove Alone
 
 ```text
 the real database is encrypted correctly
@@ -67,7 +67,7 @@ the organisation follows incident process
 
 ## Positioning
 
-LogicN is designed to support audit-ready secure software by making data
+Galerina is designed to support audit-ready secure software by making data
 classification, permissions, flows, contracts, boundaries and exposure rules
 explicit, compiler-checked and reportable.
 

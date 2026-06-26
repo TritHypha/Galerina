@@ -1,0 +1,53 @@
+/// example: 368-signed-attestation
+/// level: 7
+/// concept: flow contract with audit requirement for signed attestation
+/// expected_diagnostics: none
+/// ai_rule: 'require signed attestation' in audit {} block triggers Ed25519 signing of the build artifact. Galerina signs what it proves.
+/// test_status: stable
+
+event ClassificationCompleted
+event ClassificationFailed
+
+guarded flow classifyMessage(message: String) -> ClassifyMessageResult
+
+contract {
+  // Result alias — signed attestation proves the build artifact at the compiler level
+  types {
+    type ClassifyMessageResult = Result<String, AiError>
+  }
+
+  intent {
+    "Classify inbound messages locally without remote execution."
+  }
+
+  effects {
+    ai.inference
+  }
+
+  rules {
+    deny runtime injection
+    require runtime integrity report
+  }
+
+  events {
+    emits ClassificationCompleted
+    emits ClassificationFailed
+  }
+
+  audit {
+    require runtime report
+    require signed attestation
+  }
+}
+
+compute target best {
+  prefer [npu, gpu, cpu]
+  fallback cpu
+}
+{
+  let label = ClassifierModel.classify(message)?
+
+  emit ClassificationCompleted
+
+  return Ok(label)
+}

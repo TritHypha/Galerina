@@ -1,4 +1,4 @@
-LLN-EFFECT-001
+SPORE-EFFECT-001
 
 audit.write used but not declared.
 Add audit.write to the effects clause:

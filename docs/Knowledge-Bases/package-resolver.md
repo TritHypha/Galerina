@@ -2,10 +2,10 @@
 
 ## Purpose
 
-LogicN should use a governed Package Resolver, not a PHP-style autoloader.
+Galerina should use a governed Package Resolver, not a PHP-style autoloader.
 
 The Package Resolver is the governed system that finds, verifies, loads and
-links LogicN packages or modules before execution.
+links Galerina packages or modules before execution.
 
 ## Core Principle
 
@@ -14,7 +14,7 @@ Imports are not trust.
 Packages must be resolved, verified and governed before use.
 ```
 
-LogicN must not blindly load files because code references them.
+Galerina must not blindly load files because code references them.
 
 ## Resolver Responsibilities
 
@@ -84,7 +84,7 @@ access, network access, shell access, database access or secret access.
 
 Simple source references may look like:
 
-```logicn
+```galerina
 use package Auth version "1.2.0"
 use package Payments version "2.0.1"
 use module Profiles
@@ -92,7 +92,7 @@ use module Profiles
 
 The preferred governed form is explicit:
 
-```logicn
+```galerina
 package use Auth {
   version "1.2.0"
   hash "sha256:..."
@@ -107,9 +107,9 @@ package use Auth {
 
 Example policy:
 
-```logicn
+```galerina
 resolver policy {
-  registry allow "logicn-certified"
+  registry allow "galerina-certified"
   registry deny "unknown"
 
   require lockfile

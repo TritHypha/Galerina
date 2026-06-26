@@ -1,4 +1,4 @@
-LLN-SYNTAX-005
+SPORE-SYNTAX-005
 
 Top-level fn declarations are not permitted.
 Use pure flow, guarded flow, or secure flow instead.

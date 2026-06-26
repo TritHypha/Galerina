@@ -1,5 +1,5 @@
 none
-// LLN-GOV-003 is the target diagnostic for this example.
+// SPORE-GOV-003 is the target diagnostic for this example.
 // Authority-block requirement for cross-boundary protected data is tracked under Phase 8B.
-// The example is stable: LLN-TYPE-001 and LLN-VALUESTATE-006 are suppressed;
-// LLN-EFFECT-002 is a warning — no unsuppressed errors are produced.
+// The example is stable: SPORE-TYPE-001 and SPORE-VALUESTATE-006 are suppressed;
+// SPORE-EFFECT-002 is a warning — no unsuppressed errors are produced.

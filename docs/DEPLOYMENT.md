@@ -2,7 +2,7 @@
 
 ## Summary
 
-LogicN deployment should be predictable, typed, checked, reported and automated.
+Galerina deployment should be predictable, typed, checked, reported and automated.
 
 The deployment goal is:
 
@@ -52,11 +52,11 @@ Git should contain portable deployment intent:
 ```text
 boot.ln
 main.ln
-logicn.deploy.ln
-logicn.lock.json
-logicn.security-policy.ln
-logicn.memory-policy.ln
-logicn.compute-policy.ln
+galerina.deploy.ln
+galerina.lock.json
+galerina.security-policy.ln
+galerina.memory-policy.ln
+galerina.compute-policy.ln
 ```
 
 Git should not contain local/runtime machine facts:
@@ -64,12 +64,12 @@ Git should not contain local/runtime machine facts:
 ```text
 .env
 .env.*
-.logicn/cache/
-.logicn/runtime/
-.logicn/local/
-.logicn/machine-profile.json
-.logicn/runtime-profile.json
-.logicn/deploy-secrets.json
+.galerina/cache/
+.galerina/runtime/
+.galerina/local/
+.galerina/machine-profile.json
+.galerina/runtime-profile.json
+.galerina/deploy-secrets.json
 *.secret.json
 ```
 
@@ -78,19 +78,19 @@ Git should not contain local/runtime machine facts:
 Recommended production command flow:
 
 ```bash
-logicn check --profile production
-logicn test --profile production
-logicn build --profile production --target auto
-logicn deploy-check --profile production
-logicn generate deploy --target docker
-logicn deploy --profile production
-logicn verify-deploy --profile production
+galerina check --profile production
+galerina test --profile production
+galerina build --profile production --target auto
+galerina deploy-check --profile production
+galerina generate deploy --target docker
+galerina deploy --profile production
+galerina verify-deploy --profile production
 ```
 
 For Git-based platforms, this may be wrapped as:
 
 ```bash
-logicn deploy-pipeline --profile production
+galerina deploy-pipeline --profile production
 ```
 
 ## Deployment Gates
@@ -133,12 +133,12 @@ Production must detect production capability at first boot rather than inheritin
 developer-machine assumptions.
 
 Runtime-generated files such as capability profiles, tuning profiles and
-deploy-check output belong under `.logicn/runtime/` or another untracked runtime
+deploy-check output belong under `.galerina/runtime/` or another untracked runtime
 location. They must contain metadata only and must not include secret values.
 
 ## Health, Readiness And Rollback
 
-LogicN should distinguish:
+Galerina should distinguish:
 
 | Check | Meaning |
 | --- | --- |
@@ -154,11 +154,11 @@ deployment, artifact hash, migration compatibility and rollback safety.
 
 ## Generated Files
 
-LogicN may generate deployment files such as Dockerfiles, platform YAML,
+Galerina may generate deployment files such as Dockerfiles, platform YAML,
 Kubernetes manifests, systemd units, reverse-proxy config and CI workflow
 snippets.
 
-Generated files must remain inspectable and overrideable. LogicN should show
+Generated files must remain inspectable and overrideable. Galerina should show
 which profile or policy caused each important setting.
 
 Kubernetes is a deployment target, not a mandatory runtime requirement. Basic
@@ -169,7 +169,7 @@ admission policy templates and multi-environment production overlays are
 reserved enterprise areas unless explicitly unlocked. See
 `KUBERNETES_DEPLOYMENT.md` and `ENTERPRISE.md`.
 
-Nginx, Apache and Caddy are reverse-proxy deployment targets, not LogicN
-language features. LogicN may generate inspectable configs for TLS, proxying,
+Nginx, Apache and Caddy are reverse-proxy deployment targets, not Galerina
+language features. Galerina may generate inspectable configs for TLS, proxying,
 body limits, rate limits, hidden-file denial, security headers and health
 checks from route and deployment policy. See `SERVER_PLATFORM_SUPPORT.md`.

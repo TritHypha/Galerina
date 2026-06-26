@@ -1,4 +1,4 @@
-LLN-VALUESTATE-003 (UnsafeValueReachedGovernedSink) or LLN-SECRET-001 (SecretValueLogged)
+SPORE-VALUESTATE-003 (UnsafeValueReachedGovernedSink) or SPORE-SECRET-001 (SecretValueLogged)
 
 Protected value passed to audit sink without redaction.
 Use redact(email) before writing to AuditLog:

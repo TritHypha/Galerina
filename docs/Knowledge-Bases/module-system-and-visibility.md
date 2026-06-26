@@ -2,7 +2,7 @@
 
 ## Definition
 
-The LogicN module system organises code into reusable, isolated, and composable
+The Galerina module system organises code into reusable, isolated, and composable
 units. All module resolution is performed statically during compilation.
 
 Runtime dynamic module loading is not part of the core module model.
@@ -18,29 +18,29 @@ Compile-time verification   — all imports validated before execution
 
 ## Module Structure
 
-Each `.lln` file is a module. Directory hierarchy maps to module hierarchy.
+Each `.spore` file is a module. Directory hierarchy maps to module hierarchy.
 
 ```text
-math/vector.lln  →  module path: math.vector
+math/vector.spore  →  module path: math.vector
 ```
 
 ## Import Syntax
 
 ### Full Module Import
 
-```logicn
+```galerina
 import math.vector
 ```
 
 Access through qualification:
 
-```logicn
+```galerina
 let v = math.vector::Vector { x: 1, y: 2 }
 ```
 
 ### Selective Symbol Import
 
-```logicn
+```galerina
 import math.vector::{Vector, normalize}
 ```
 
@@ -48,7 +48,7 @@ Only specified symbols enter local scope.
 
 ### Aliased Import
 
-```logicn
+```galerina
 import collections.long_module_name as list
 ```
 
@@ -56,7 +56,7 @@ Provides shorter or conflict-free names. Access as `list::create()`.
 
 ### Nested Import
 
-```logicn
+```galerina
 import graphics.render.pipeline
 ```
 
@@ -64,7 +64,7 @@ Modules may be nested arbitrarily.
 
 ### Relative Imports
 
-```logicn
+```galerina
 import ./helpers
 import ../shared/types
 ```
@@ -74,7 +74,7 @@ package boundaries.
 
 ### Standard Library Imports
 
-```logicn
+```galerina
 import std.io
 import std.collections
 ```
@@ -85,21 +85,21 @@ Standard library modules are explicit imports. No implicit preloaded namespaces.
 
 Modules may re-export symbols from dependencies:
 
-```logicn
-// math/mod.lln
+```galerina
+// math/mod.spore
 public import math.vector::{Vector}
 public import math.matrix::{Matrix}
 ```
 
 Consumers can then:
 
-```logicn
+```galerina
 import math::{Vector, Matrix}
 ```
 
 ## Package Imports
 
-```logicn
+```galerina
 import crypto.hash
 ```
 
@@ -152,7 +152,7 @@ independent modules.
 Example diagnostic:
 
 ```text
-LLN-E3007: cyclic module dependency
+SPORE-E3007: cyclic module dependency
 
 Module `auth.session` depends on `auth.user`.
 Module `auth.user` depends on `auth.session`.
@@ -179,7 +179,7 @@ non-deterministic compile-time state
 
 All symbols are private unless explicitly exported.
 
-```logicn
+```galerina
 fn internal_helper() {
     // only accessible within this module
 }
@@ -189,7 +189,7 @@ fn internal_helper() {
 
 Use `public` to expose a symbol outside the current module.
 
-```logicn
+```galerina
 public fn add(a: Int, b: Int) -> Int {
     a + b
 }
@@ -197,7 +197,7 @@ public fn add(a: Int, b: Int) -> Int {
 
 ### Public Struct with Private Fields
 
-```logicn
+```galerina
 public struct User {
     public username: String
     private password_hash: String
@@ -208,7 +208,7 @@ Field visibility protects internal invariants and security-sensitive data.
 
 ### Module-Level Selective Visibility
 
-```logicn
+```galerina
 public fn parse() {}
 fn tokenize() {}
 ```
@@ -217,7 +217,7 @@ fn tokenize() {}
 
 ### Package Visibility
 
-```logicn
+```galerina
 package fn validate_token() {}
 ```
 
@@ -227,14 +227,14 @@ Accessible within the same package but not externally.
 
 Only public symbols may be imported externally.
 
-```logicn
-// auth.lln
+```galerina
+// auth.spore
 private fn hash_password() {}
 public fn login() {}
 
-// app.lln
+// app.spore
 import auth::{login}         // valid
-import auth::{hash_password} // compiler error: LLN-E3004
+import auth::{hash_password} // compiler error: SPORE-E3004
 ```
 
 ### Visibility vs Authority
@@ -245,7 +245,7 @@ Capability systems control authority.
 
 A public function still requires runtime capability approval:
 
-```logicn
+```galerina
 public fn send_request() effects(network.connect) { ... }
 ```
 
@@ -254,16 +254,16 @@ public fn send_request() effects(network.connect) { ... }
 ## Compiler Error Codes
 
 ```text
-LLN-E3001 unresolved import
-LLN-E3002 duplicate symbol
-LLN-E3003 invalid package reference
-LLN-E3004 visibility violation
-LLN-E3005 ambiguous import
-LLN-E3006 invalid relative import
-LLN-E3007 cyclic dependency
-LLN-E3008 inaccessible package symbol
-LLN-E3009 invalid visibility modifier
-LLN-E3010 private field access
+SPORE-E3001 unresolved import
+SPORE-E3002 duplicate symbol
+SPORE-E3003 invalid package reference
+SPORE-E3004 visibility violation
+SPORE-E3005 ambiguous import
+SPORE-E3006 invalid relative import
+SPORE-E3007 cyclic dependency
+SPORE-E3008 inaccessible package symbol
+SPORE-E3009 invalid visibility modifier
+SPORE-E3010 private field access
 ```
 
 ## Recommended Practices
@@ -283,22 +283,22 @@ Separate trusted/internal APIs from public APIs
 
 A file may declare its module name explicitly.
 
-```logicn
+```galerina
 module app/users/service
 ```
 
 The declared name must match the package manifest and source location.
 
 ```text
-File path:    app/src/users/service.lln
+File path:    app/src/users/service.spore
 Module path:  app/users/service
 ```
 
 If the declaration and path disagree, the compiler emits:
 
 ```text
-LLN-MODULE-001: module declaration does not match source location
-file: app/src/users/service.lln
+SPORE-MODULE-001: module declaration does not match source location
+file: app/src/users/service.spore
 found: app/payments/service
 expected: app/users/service
 ```
@@ -311,7 +311,7 @@ The module system supports multiple import forms depending on scope.
 
 ### Named Imports (Preferred)
 
-```logicn
+```galerina
 import { UserId, UserProfile } from "app/users/types"
 import { find_user } from "app/users/repository"
 ```
@@ -320,7 +320,7 @@ Named imports make every dependency explicit and are the easiest to audit.
 
 ### Type-Only Imports
 
-```logicn
+```galerina
 import type { UserRecord } from "app/users/types"
 ```
 
@@ -329,16 +329,16 @@ that import — only type information. This improves runtime planning.
 
 ### Capability Imports
 
-```logicn
-import capability { Database } from "logicn-core-data/database"
-import capability { HttpClient } from "logicn-core-network/http"
+```galerina
+import capability { Database } from "galerina-core-data/database"
+import capability { HttpClient } from "galerina-core-network/http"
 ```
 
 Capability imports make the capability type visible for use in function
 signatures. They do not grant capability authority — the runtime still decides
 whether an instance is issued.
 
-```logicn
+```galerina
 flow get_profile(
     db: Database,
     id: UserId
@@ -358,7 +358,7 @@ contract {
 
 ### Namespace Imports
 
-```logicn
+```galerina
 import * as Users from "app/users/service"
 
 flow run(id: Users.UserId) -> RunResult
@@ -377,7 +377,7 @@ preferred for clarity and auditability.
 
 ### Wildcard Symbol Imports — Disallowed
 
-```logicn
+```galerina
 import * from "app/users/service"   // NOT ALLOWED
 ```
 
@@ -408,7 +408,7 @@ Make refactoring less safe
 
 `pub` is a shorthand for `public`. Both are valid:
 
-```logicn
+```galerina
 pub fn add(a: Int, b: Int) -> Int { a + b }
 public fn add(a: Int, b: Int) -> Int { a + b }
 ```
@@ -417,7 +417,7 @@ public fn add(a: Int, b: Int) -> Int { a + b }
 
 `runtime` is reserved for compiler-generated or runtime-privileged code:
 
-```logicn
+```galerina
 runtime fn __runtime_register_module() -> ModuleDescriptor {
     module_descriptor()
 }
@@ -431,16 +431,16 @@ package manifest explicitly permits it.
 A public function must not expose private or package-only types in its
 return type or parameters:
 
-```logicn
+```galerina
 private type SecretToken = String
 
 pub fn export_token() -> SecretToken { ... }
-// LLN-VIS-003: public function exposes private return type
+// SPORE-VIS-003: public function exposes private return type
 ```
 
 Correct approach — expose a safe wrapper type:
 
-```logicn
+```galerina
 public enum TokenStatus { Present, Missing }
 
 pub fn token_status() -> TokenStatus { ... }
@@ -454,15 +454,15 @@ Visibility is declared directly on the symbol, not in a separate export block.
 
 Preferred:
 
-```logicn
+```galerina
 public fn parse() {}
 fn tokenize() {}         // private by default
 ```
 
 Avoid:
 
-```logicn
-export { parse }         // not the LogicN model
+```galerina
+export { parse }         // not the Galerina model
 ```
 
 The compiler generates an export map for tooling:
@@ -497,7 +497,7 @@ scanning the filesystem. Each module is represented as a descriptor:
   "imports": [
     "app/users/types",
     "app/users/repository",
-    "logicn-core-data/database"
+    "galerina-core-data/database"
   ],
   "effects": ["storage"],
   "capabilities": ["Database"]
@@ -534,9 +534,9 @@ Each package declares its module roots, public entrypoints, and allowed imports:
     "app/users/repository"
   ],
   "allowedImports": [
-    "logicn-core/result",
-    "logicn-core-data/database",
-    "logicn-core-network/http"
+    "galerina-core/result",
+    "galerina-core-data/database",
+    "galerina-core-network/http"
   ]
 }
 ```
@@ -558,7 +558,7 @@ public modules do not expose private types
 Recommended order within a file:
 
 ```text
-1. Standard LogicN core imports
+1. Standard Galerina core imports
 2. Capability imports
 3. External package imports
 4. Application package imports
@@ -567,10 +567,10 @@ Recommended order within a file:
 
 Example:
 
-```logicn
-import { Result } from "logicn-core/result"
-import capability { Database } from "logicn-core-data/database"
-import capability { HttpClient } from "logicn-core-network/http"
+```galerina
+import { Result } from "galerina-core/result"
+import capability { Database } from "galerina-core-data/database"
+import capability { HttpClient } from "galerina-core-network/http"
 import { UserId, UserProfile } from "app/users/types"
 import type { UserRecord } from "app/users/types"
 ```
@@ -584,22 +584,22 @@ The formatter may group and sort imports automatically.
 Module system diagnostics:
 
 ```text
-LLN-MODULE-001  module declaration does not match source location
-LLN-MODULE-002  import path escapes package boundary
-LLN-MODULE-003  circular import detected
-LLN-MODULE-004  imported module not found
-LLN-MODULE-005  import not listed in package policy
-LLN-MODULE-006  wildcard symbol import not allowed
-LLN-VIS-001     cannot import private symbol
-LLN-VIS-002     cannot import package-visible symbol from outside package
-LLN-VIS-003     public function exposes private return type
-LLN-VIS-004     public module exports non-public dependency type
-LLN-VIS-005     runtime-only symbol used by application code
-LLN-CAP-001     imported function requires ungranted capability
-LLN-CAP-002     imported module declares denied effect
+SPORE-MODULE-001  module declaration does not match source location
+SPORE-MODULE-002  import path escapes package boundary
+SPORE-MODULE-003  circular import detected
+SPORE-MODULE-004  imported module not found
+SPORE-MODULE-005  import not listed in package policy
+SPORE-MODULE-006  wildcard symbol import not allowed
+SPORE-VIS-001     cannot import private symbol
+SPORE-VIS-002     cannot import package-visible symbol from outside package
+SPORE-VIS-003     public function exposes private return type
+SPORE-VIS-004     public module exports non-public dependency type
+SPORE-VIS-005     runtime-only symbol used by application code
+SPORE-CAP-001     imported function requires ungranted capability
+SPORE-CAP-002     imported module declares denied effect
 ```
 
-See also the `LLN-E3xxx` series in the compiler diagnostics for earlier
+See also the `SPORE-E3xxx` series in the compiler diagnostics for earlier
 prototype codes.
 
 ---
@@ -608,7 +608,7 @@ prototype codes.
 
 Importing a module makes its symbols visible. It does not grant authority.
 
-```logicn
+```galerina
 import { read_config } from "app/config/reader"
 
 flow boot() -> BootResult

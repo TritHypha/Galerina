@@ -1,13 +1,13 @@
 # Optical I/O and Photonic Networking
 
-LogicN should support optical I/O as a high-speed networking and interconnect
+Galerina should support optical I/O as a high-speed networking and interconnect
 target.
 
 The core rule is:
 
 ```text
-LogicN should not try to control light directly.
-LogicN should understand when a deployment has optical or photonic I/O and
+Galerina should not try to control light directly.
+Galerina should understand when a deployment has optical or photonic I/O and
 optimise data movement, security, topology, batching and fallback around it.
 ```
 
@@ -18,7 +18,7 @@ normal socket code, but with light
 ```
 
 It is a deployment capability for moving data across optical-capable
-infrastructure. LogicN should treat optical I/O, photonic interconnect,
+infrastructure. Galerina should treat optical I/O, photonic interconnect,
 co-packaged optics, optical Ethernet and optical accelerator-to-accelerator
 links as high-bandwidth interconnect layers, not as normal CPU features or
 photonic compute targets.
@@ -27,13 +27,13 @@ Intel's Optical Compute Interconnect, or OCI, is a useful example of this
 direction: an integrated optical I/O chiplet combining photonic and electrical
 ICs, designed for co-packaging with CPUs, GPUs, IPUs and SoCs, with
 multi-terabit connectivity. Intel Silicon Photonics also describes standard
-single-mode fibre support and co-packaged or on-board implementations. LogicN
+single-mode fibre support and co-packaged or on-board implementations. Galerina
 should model that kind of capability as data movement and topology, not as raw
 light control.
 
 ## Target Model
 
-LogicN should separate ordinary networks, high-speed networks and optical
+Galerina should separate ordinary networks, high-speed networks and optical
 interconnects:
 
 ```text
@@ -65,7 +65,7 @@ is not a general-purpose compute target by itself.
 
 Example target concept:
 
-```LogicN
+```Galerina
 network target optical_io {
   kind "photonic_interconnect"
 
@@ -86,7 +86,7 @@ network target optical_io {
 }
 ```
 
-This keeps LogicN honest. The application declares that it understands optical
+This keeps Galerina honest. The application declares that it understands optical
 I/O as a deployment capability; it does not pretend to own the optical hardware.
 
 ## Data Movement As A First-Class Cost
@@ -104,10 +104,10 @@ Where is the data?
 Where is the model?
 Where is the accelerator?
 How much data must cross the optical link?
-Can LogicN send less?
-Can LogicN batch it?
-Can LogicN compress it?
-Can LogicN keep results near the compute node?
+Can Galerina send less?
+Can Galerina batch it?
+Can Galerina compress it?
+Can Galerina keep results near the compute node?
 ```
 
 The compiler, runtime and deployment planner should estimate:
@@ -147,12 +147,12 @@ Example report:
 }
 ```
 
-This is where LogicN can become stronger than ordinary application languages:
+This is where Galerina can become stronger than ordinary application languages:
 it can understand the cost of movement, not just the cost of calculation.
 
 ## AI Cluster Use
 
-Optical I/O is most relevant to LogicN when workloads involve large data
+Optical I/O is most relevant to Galerina when workloads involve large data
 movement:
 
 ```text
@@ -170,10 +170,10 @@ image and video AI pipelines
 ```
 
 AI infrastructure increasingly depends on high-speed fabrics such as RoCE,
-high-bandwidth Ethernet and optical interconnects. LogicN should express that as
+high-bandwidth Ethernet and optical interconnects. Galerina should express that as
 cluster capability and placement policy:
 
-```LogicN
+```Galerina
 aiCluster {
   prefer optical_io
   prefer high_bandwidth_ethernet
@@ -185,7 +185,7 @@ aiCluster {
 
 Example task direction:
 
-```LogicN
+```Galerina
 ai task RunLargeModel {
   compute auto {
     prefer ai_accelerator
@@ -202,13 +202,13 @@ ai task RunLargeModel {
 }
 ```
 
-LogicN should not require developers to hard-code a vendor fabric in normal app
+Galerina should not require developers to hard-code a vendor fabric in normal app
 logic. Vendor-specific capabilities belong in deployment profiles, adapter
 policy and target reports.
 
 ## Topology Awareness
 
-LogicN should not merely detect that a network exists. It should understand the
+Galerina should not merely detect that a network exists. It should understand the
 layout enough to make safer transfer and placement decisions:
 
 ```text
@@ -226,7 +226,7 @@ PCIe fallback
 
 Example topology direction:
 
-```LogicN
+```Galerina
 topology optical {
   detect nodes
   detect accelerators
@@ -285,7 +285,7 @@ zero-copy read-only views where safe
 
 Example transfer declaration:
 
-```LogicN
+```Galerina
 transfer EmbeddingBatch over optical_io {
   format tensorBinary
   batch_size auto
@@ -295,7 +295,7 @@ transfer EmbeddingBatch over optical_io {
 }
 ```
 
-LogicN can remain JSON/API-native at human-facing boundaries while compiling
+Galerina can remain JSON/API-native at human-facing boundaries while compiling
 large internal transfers into compact typed formats where the deployment allows
 it.
 
@@ -305,7 +305,7 @@ Optical links are not automatically secure. Data travelling through fibre or a
 co-packaged optical link can still be tapped, misrouted, mirrored, logged by
 infrastructure or exposed through compromised endpoints.
 
-LogicN optical I/O policy should require:
+Galerina optical I/O policy should require:
 
 ```text
 encryption
@@ -323,7 +323,7 @@ redacted reports
 
 Example:
 
-```LogicN
+```Galerina
 optical_io security {
   require encryption
   require mutual_authentication
@@ -336,7 +336,7 @@ optical_io security {
 
 For enterprise AI:
 
-```LogicN
+```Galerina
 aiCluster network {
   require encrypted_control_plane
   require encrypted_tensor_transfer for sensitive_data
@@ -345,14 +345,14 @@ aiCluster network {
 }
 ```
 
-Remote memory should not be treated like local RAM. If LogicN supports memory
+Remote memory should not be treated like local RAM. If Galerina supports memory
 pooling or remote accelerator memory over optical I/O, it must require typed
 access policy, bounds checks, timeout handling, fallback rules, audit logging
 and safe redaction.
 
 Example:
 
-```LogicN
+```Galerina
 remote memory EmbeddingPool {
   access read_only
   encryption required
@@ -364,7 +364,7 @@ remote memory EmbeddingPool {
 
 ## Fallback Behaviour
 
-Optical I/O will not exist on most systems. LogicN should degrade explicitly:
+Optical I/O will not exist on most systems. Galerina should degrade explicitly:
 
 ```text
 optical_io -> high-speed Ethernet -> RoCE -> normal Ethernet -> local CPU mode -> queue/fail
@@ -372,7 +372,7 @@ optical_io -> high-speed Ethernet -> RoCE -> normal Ethernet -> local CPU mode -
 
 Example:
 
-```LogicN
+```Galerina
 network auto {
   prefer optical_io
   fallback roce
@@ -405,10 +405,10 @@ fallback and unaudited remote memory fallback should be denied by default.
 
 ## Power Awareness
 
-Optical I/O matters for bandwidth, reach and energy per bit. LogicN should be
+Optical I/O matters for bandwidth, reach and energy per bit. Galerina should be
 able to include energy and placement costs in enterprise AI planning:
 
-```LogicN
+```Galerina
 optimise for {
   latency
   bandwidth
@@ -419,7 +419,7 @@ optimise for {
 
 Example:
 
-```LogicN
+```Galerina
 deployment ai_cluster {
   prefer optical_io when transfer_gb_per_minute > 100
   prefer local_compute when transfer_cost_too_high
@@ -432,7 +432,7 @@ adapter data from the deployment.
 
 ## Reports
 
-LogicN should produce optical I/O reports when a workload or deployment profile
+Galerina should produce optical I/O reports when a workload or deployment profile
 uses high-speed interconnect planning.
 
 Possible reports:
@@ -491,12 +491,12 @@ Example:
 
 ## Benchmarks
 
-`logicn-tools-benchmark` should eventually include optical I/O diagnostics:
+`galerina-tools-benchmark` should eventually include optical I/O diagnostics:
 
 ```bash
-LogicN benchmark --network optical
-LogicN benchmark --network optical --light
-LogicN benchmark --network optical --ai-cluster
+Galerina benchmark --network optical
+Galerina benchmark --network optical --light
+Galerina benchmark --network optical --ai-cluster
 ```
 
 Test areas:
@@ -539,34 +539,34 @@ production.
 Recommended ownership:
 
 ```text
-logicn-core-network
+galerina-core-network
   network target policy, permissions, profiles and network reports
 
-logicn-network-highspeed
+galerina-network-highspeed
   future io_uring, zero-copy, RDMA and RoCE planning, if split out later
 
-logicn-io-optical
+galerina-io-optical
   future optical I/O package for photonic interconnect, co-packaged optics and topology
 
-logicn-core-compute
+galerina-core-compute
   optical_io target selection, compute placement and data-movement cost planning
 
-logicn-target-photonic
+galerina-target-photonic
   photonic compute target planning plus optical I/O/interconnect planning reports
 
-logicn-core-vector
+galerina-core-vector
   tensor, matrix and batch shape information used for transfer estimates
 
-logicn-core-security
+galerina-core-security
   remote memory, encryption, endpoint identity and redaction policy
 
-logicn-core-reports
+galerina-core-reports
   shared report metadata and report-writing contracts
 
-logicn-ai-cluster
+galerina-ai-cluster
   future accelerator-aware distributed AI networking and cluster placement policy
 
-logicn-tools-benchmark
+galerina-tools-benchmark
   optical_io benchmark target and fallback diagnostics
 ```
 
@@ -576,11 +576,11 @@ movement package.
 
 ## Non-Goals
 
-LogicN optical I/O planning should not become:
+Galerina optical I/O planning should not become:
 
 ```text
 raw light control for normal developers
-a claim that LogicN makes optical hardware faster
+a claim that Galerina makes optical hardware faster
 a replacement for switch, NIC, driver or fibre engineering
 a guarantee that fibre traffic is automatically secure
 a mandatory AI-cluster feature for normal apps

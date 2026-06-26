@@ -1,7 +1,7 @@
 #!/bin/sh
 # =============================================================================
-# LogicN pre-commit hook — keep the generated //lln: dependency metadata current
-# WITHOUT letting `logicn build` mutate your source.
+# Galerina pre-commit hook — keep the generated //spore: dependency metadata current
+# WITHOUT letting `galerina build` mutate your source.
 #
 # This is the "keep build pure + use a hook" alternative to `build --package`'s
 # auto-refresh: the metadata lands at commit time (in *your* control), not as a
@@ -18,24 +18,24 @@
 # =============================================================================
 set -e
 
-APP_DIR="${LOGICN_APP_DIR:-.}"
+APP_DIR="${GALERINA_APP_DIR:-.}"
 
-# Fast exit: only do work when this commit actually touches .lln files.
-staged_lln=$(git diff --cached --name-only --diff-filter=ACM -- '*.lln')
+# Fast exit: only do work when this commit actually touches .spore files.
+staged_lln=$(git diff --cached --name-only --diff-filter=ACM -- '*.spore')
 [ -z "$staged_lln" ] && exit 0
 
-# Refresh the whole app's //lln: blocks in place (cross-file: a flow called from
-# another file is never mislabelled "safe to delete"). Swap `node logicn.mjs`
-# for `lln` once the CLI is globally linked (npm link).
-node logicn.mjs deps --all "$APP_DIR" --write >/dev/null
+# Refresh the whole app's //spore: blocks in place (cross-file: a flow called from
+# another file is never mislabelled "safe to delete"). Swap `node galerina.mjs`
+# for `spore` once the CLI is globally linked (npm link).
+node galerina.mjs deps --all "$APP_DIR" --write >/dev/null
 
-# Re-stage any .lln the refresh changed, so the commit includes current metadata.
+# Re-stage any .spore the refresh changed, so the commit includes current metadata.
 # (A dependency edit in one file can change another file's USEDBY — that file is
 # re-staged too, which is correct: its metadata genuinely changed in this commit.)
-changed=$(git diff --name-only -- '*.lln')
+changed=$(git diff --name-only -- '*.spore')
 if [ -n "$changed" ]; then
   printf '%s\n' "$changed" | xargs git add
-  echo "pre-commit: refreshed //lln: metadata on:"
+  echo "pre-commit: refreshed //spore: metadata on:"
   printf '  %s\n' $changed
 fi
 

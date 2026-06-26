@@ -1,9 +1,9 @@
-<!-- ABSORBED R&D SOURCE — verbatim mirror. LogicN is the main library; the R&D repo is upstream/authoring.
-     Source: LogicN-R-AND-D/tmf/research/ternary-in-cryptography.md  ·  Pinned: R&D fb68d06 (2026-06-16)
-     Integrated LogicN view: logicn-quantum-resistance-posture.md  ·  Catalog: logicn-rd-absorption-catalog.md
+<!-- ABSORBED R&D SOURCE — verbatim mirror. Galerina is the main library; the R&D repo is upstream/authoring.
+     Source: Galerina-R-AND-D/tmf/research/ternary-in-cryptography.md  ·  Pinned: R&D fb68d06 (2026-06-16)
+     Integrated Galerina view: galerina-quantum-resistance-posture.md  ·  Catalog: galerina-rd-absorption-catalog.md
      Rule: edit the upstream source then re-vendor; do not fork this copy (feedback-auto-import-rd-docs). -->
 
-> **Absorbed R&D source (verbatim).** This is the archived upstream document. Curated/integrated view: `logicn-quantum-resistance-posture.md`. See `logicn-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
+> **Absorbed R&D source (verbatim).** This is the archived upstream document. Curated/integrated view: `galerina-quantum-resistance-posture.md`. See `galerina-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
 
 ---
 # Ternary in cryptography — what's real, what's not, and how to actually use "tri-logic"
@@ -31,8 +31,8 @@ played. This note swaps the emphasis.
 
 ## 2. (T1) Three-valued logic — the real zero-trust lever
 
-This is where ternary genuinely changes the security story, and LogicN already proves it
-(`logicn-three-valued-governance.md`, `logicn-substrate-failure-model.md`).
+This is where ternary genuinely changes the security story, and Galerina already proves it
+(`galerina-three-valued-governance.md`, `galerina-substrate-failure-model.md`).
 
 - **Model.** A verdict is a trit: `+1 = allow`, `−1 = deny`, `0 = unknown/indeterminate`.
   Combine with Kleene operators: `min = ∧`, `max = ∨`, `neg = ¬` (with `¬0 = 0`).
@@ -94,8 +94,8 @@ different scheme than the one you picked:
   trits/byte** (`3⁵=243≤256`) the overhead vs. ideal is ≈ **1%**. That's a true *storage* fact,
   not a speed or crypto fact. The notes' 2-bit packing (4 trits/byte) is simpler but wastes 25%.
 - **BitNet (real, but it's NN weights):** Microsoft's BitNet uses balanced-ternary {−1,0,1}
-  *weights*; LogicN verified its simulator is byte-compatible with BitNet's I2_S encoding
-  (`logicn-tpl-bitnet-fidelity-audit.md`). This is about **neural-network quantization**, *not*
+  *weights*; Galerina verified its simulator is byte-compatible with BitNet's I2_S encoding
+  (`galerina-tpl-bitnet-fidelity-audit.md`). This is about **neural-network quantization**, *not*
   lattice polynomial arithmetic — do not borrow it as evidence that crypto is ternary.
 - **Photonic/ternary ALUs (aspirational):** real research, immature, no hardware in this stack.
   And critically — see §5 — **you would not run crypto on it even if you had it.**
@@ -104,8 +104,8 @@ different scheme than the one you picked:
 
 ## 5. The invariant that ties it together: crypto stays on a deterministic core
 
-LogicN's durable conclusion from this whole thread (`logicn-photonic-tri-substrate-rd-agenda.md`,
-`logicn-substrate-contracts.md`, diagnostic `LLN-SUBSTRATE-001`):
+Galerina's durable conclusion from this whole thread (`galerina-photonic-tri-substrate-rd-agenda.md`,
+`galerina-substrate-contracts.md`, diagnostic `SPORE-SUBSTRATE-001`):
 
 > **Bulk compute may be photonic/ternary/noisy; integrity must stay on a deterministic core.**
 
@@ -139,7 +139,7 @@ security story — they live on opposite sides of a hard line.
    accelerator" can ever pull a hash or a signature onto a noisy lane.
 
 ## Sources
-- LogicN KB (read 2026-06-15): `logicn-three-valued-governance.md`, `logicn-substrate-failure-model.md`, `logicn-substrate-contracts.md`, `logicn-photonic-tri-substrate-rd-agenda.md`, `logicn-tpl-bitnet-fidelity-audit.md`
+- Galerina KB (read 2026-06-15): `galerina-three-valued-governance.md`, `galerina-substrate-failure-model.md`, `galerina-substrate-contracts.md`, `galerina-photonic-tri-substrate-rd-agenda.md`, `galerina-tpl-bitnet-fidelity-audit.md`
 - NTRU: Hoffstein, Pipher, Silverman, *NTRU: A Ring-Based Public Key Cryptosystem*, 1998 — https://www.ntru.org/f/hps98.pdf ; IETF draft-fluhrer-cfrg-ntru — https://www.ietf.org/archive/id/draft-fluhrer-cfrg-ntru-03.html
 - FIPS 203 (ML-KEM, q=3329) — https://csrc.nist.gov/pubs/fips/203/final ; FIPS 204 (ML-DSA, q=8380417) — https://csrc.nist.gov/pubs/fips/204/final
 - NIST SP 800-232 (Ascon) — https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-232.pdf

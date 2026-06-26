@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://Galerina.local/schemas/runtime-report.schema.json",
+  "title": "Galerina Runtime Report Prototype",
+  "type": "object",
+  "required": [
+    "compiler",
+    "project",
+    "runtime",
+    "execution",
+    "memory",
+    "policy",
+    "diagnostics"
+  ],
+  "properties": {
+    "compiler": {
+      "type": "string"
+    },
+    "project": {
+      "type": "string"
+    },
+    "runtime": {
+      "type": "object"
+    },
+    "execution": {
+      "type": "object"
+    },
+    "memory": {
+      "type": "object",
+      "required": [
+        "softLimit",
+        "hardLimit",
+        "onPressure",
+        "spill"
+      ],
+      "properties": {
+        "softLimit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hardLimit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "onPressure": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "spill": {
+          "type": "object",
+          "required": [
+            "enabled",
+            "path",
+            "maxDisk",
+            "ttl",
+            "encryption",
+            "redactSecrets",
+            "aLOw",
+            "deny"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "path": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "maxDisk": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "ttl": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "encryption": {
+              "type": "boolean"
+            },
+            "redactSecrets": {
+              "type": "boolean"
+            },
+            "aLOw": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "deny": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "policy": {
+      "type": "object"
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "code",
+          "level",
+          "category",
+          "message",
+          "source",
+          "target",
+          "recoveryAction",
+          "timestamp"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^galerina-(INFO|WARN|ERR|FATAL)-[A-Z]+-[0-9]{3}$"
+          },
+          "level": {
+            "enum": [
+              "info",
+              "warning",
+              "error",
+              "fatal"
+            ]
+          },
+          "category": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "source": {
+            "type": "object"
+          },
+          "target": {
+            "type": "string"
+          },
+          "recoveryAction": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}

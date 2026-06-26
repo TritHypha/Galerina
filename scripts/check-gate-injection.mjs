@@ -22,8 +22,8 @@ import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const REPO = join(fileURLToPath(new URL(".", import.meta.url)), "..");
-const SCAN_DIRS = ["packages-logicn", "scripts"]; // recursive
-const SCAN_TOPLEVEL = true;                         // top-level *.mjs/*.js (logicn.mjs)
+const SCAN_DIRS = ["packages-galerina", "scripts"]; // recursive
+const SCAN_TOPLEVEL = true;                         // top-level *.mjs/*.js (galerina.mjs)
 
 const ADMIT_CALLS = ["fusePackage(", "fusePackages(", "buildImportClosure("];
 const GATE = "revocationCheck";
@@ -103,7 +103,7 @@ if (offenders.length) {
   console.log(`\n  UNGUARDED non-test callers (admit packages WITHOUT a revocation gate — fail-open):`);
   offenders.forEach((f) => console.log("    [FAIL] " + f));
   console.log(`\nFAIL: ${offenders.length} caller(s) fuse without injecting ${GATE}.`);
-  console.log(`Each must pass revocationCheck — see logicn.mjs (fuse command) or the`);
+  console.log(`Each must pass revocationCheck — see galerina.mjs (fuse command) or the`);
   console.log(`framework-example-app host (fuseGreeting -> loadRevocationGate).`);
   process.exit(1);
 }

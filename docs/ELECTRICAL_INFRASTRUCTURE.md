@@ -6,8 +6,8 @@ Electrical and OT package folders have been moved out of the active workspace
 to:
 
 ```text
-C:\laragon\www\LogicN_Archive\packages-logicn\LogicN-electrical-core
-C:\laragon\www\LogicN_Archive\packages-logicn\LogicN-ot-core
+C:\laragon\www\Galerina_Archive\packages-galerina\Galerina-electrical-core
+C:\laragon\www\Galerina_Archive\packages-galerina\Galerina-ot-core
 ```
 
 This document is retained as planning context only. Electrical and OT packages
@@ -15,16 +15,16 @@ must not be part of the active v1 build graph.
 
 ## Positioning
 
-LogicN can support electrical systems and infrastructure as a typed, secure and
+Galerina can support electrical systems and infrastructure as a typed, secure and
 auditable modelling, monitoring and workflow layer.
 
 Core rule:
 
 ```text
-LogicN should not replace circuit breakers, relays, protective devices, PLC safety
+Galerina should not replace circuit breakers, relays, protective devices, PLC safety
 systems, grid protection, certified controllers or qualified electrical design.
 
-LogicN can help model, validate, monitor, document, automate and audit electrical
+Galerina can help model, validate, monitor, document, automate and audit electrical
 infrastructure safely.
 ```
 
@@ -32,7 +32,7 @@ Electrical support must start above the physical equipment:
 
 ```text
 sensors / meters / relays / PLCs / BMS / SCADA
-  -> LogicN typed integration layer
+  -> Galerina typed integration layer
   -> validation, monitoring, alerts, reports
   -> archive, dashboards, compliance evidence
 ```
@@ -57,7 +57,7 @@ energy metering
 SCADA and OT integrations
 ```
 
-LogicN package work may model these systems, but it must not claim to certify
+Galerina package work may model these systems, but it must not claim to certify
 designs, replace protection settings studies, perform unsupervised switching or
 act as a safety system.
 
@@ -66,31 +66,31 @@ act as a safety system.
 Use grouped beta package areas first:
 
 ```text
-LogicN-electrical-core
-LogicN-ot-core
+Galerina-electrical-core
+Galerina-ot-core
 ```
 
 Future electrical subpackages may include:
 
 ```text
-LogicN-electrical-assets
-LogicN-electrical-monitoring
-LogicN-electrical-energy
-LogicN-electrical-capacity
-LogicN-electrical-maintenance
-LogicN-electrical-protection-records
-LogicN-electrical-reports
+Galerina-electrical-assets
+Galerina-electrical-monitoring
+Galerina-electrical-energy
+Galerina-electrical-capacity
+Galerina-electrical-maintenance
+Galerina-electrical-protection-records
+Galerina-electrical-reports
 ```
 
-Future OT protocol packages should use `LogicN-ot-*`, because protocols such as
+Future OT protocol packages should use `Galerina-ot-*`, because protocols such as
 OPC UA, Modbus, MQTT, SCADA connectors and IEC 61850 are not only electrical:
 
 ```text
-LogicN-ot-opcua
-LogicN-ot-iec61850
-LogicN-ot-modbus
-LogicN-ot-mqtt
-LogicN-ot-scada
+Galerina-ot-opcua
+Galerina-ot-iec61850
+Galerina-ot-modbus
+Galerina-ot-mqtt
+Galerina-ot-scada
 ```
 
 ## Standards Context
@@ -107,7 +107,7 @@ control systems.
 NIST NCCoE guidance notes that connecting OT systems to IT systems can improve
 operations but also increases exposure to cyber threats.
 
-LogicN documentation should reference these standards as integration and security
+Galerina documentation should reference these standards as integration and security
 context, not as claims of compliance.
 
 References:
@@ -121,7 +121,7 @@ References:
 
 ## Asset Modelling
 
-`LogicN-electrical-core` should define typed asset contracts:
+`Galerina-electrical-core` should define typed asset contracts:
 
 ```text
 Panel
@@ -142,7 +142,7 @@ Sensor
 
 Example direction:
 
-```LogicN
+```Galerina
 electrical panel MainPanel {
   voltage 400V
   phases 3
@@ -170,7 +170,7 @@ The first output should be an electrical asset report, not runtime control.
 
 ## Telemetry and Monitoring
 
-LogicN may process live or periodic telemetry:
+Galerina may process live or periodic telemetry:
 
 ```text
 voltage
@@ -191,7 +191,7 @@ UPS load
 
 Example direction:
 
-```LogicN
+```Galerina
 electrical monitor FactoryPower {
   source Meter("main-incomer")
 
@@ -214,7 +214,7 @@ electrical monitor FactoryPower {
 
 ## Safe Command Boundaries
 
-LogicN must distinguish monitoring from control:
+Galerina must distinguish monitoring from control:
 
 ```text
 read telemetry        = lower risk
@@ -228,7 +228,7 @@ override protection   = deny
 
 Default policy:
 
-```LogicN
+```Galerina
 electrical control {
   default deny
 
@@ -246,13 +246,13 @@ electrical control {
 }
 ```
 
-Normal LogicN scripts must not casually operate electrical equipment. High-risk
+Normal Galerina scripts must not casually operate electrical equipment. High-risk
 control must require explicit policy, signed jobs, operator approval, local
 interlocks and package/runtime support designed for that environment.
 
 ## Capacity and Energy
 
-LogicN may model:
+Galerina may model:
 
 ```text
 total connected load
@@ -275,7 +275,7 @@ behind safe command boundaries.
 
 ## Protection Settings Records
 
-LogicN can help manage protection setting records, but not replace relays or
+Galerina can help manage protection setting records, but not replace relays or
 protection devices.
 
 Allowed package responsibilities:
@@ -293,7 +293,7 @@ device compatibility reports
 
 Example direction:
 
-```LogicN
+```Galerina
 protection settings MainIncomerRelay {
   source "./relay-settings/main-incomer.json"
 
@@ -325,7 +325,7 @@ audit all control attempts
 
 Example direction:
 
-```LogicN
+```Galerina
 ot network ElectricalOT {
   default deny
 
@@ -386,7 +386,7 @@ real-time grid control
 
 ## Non-Goals
 
-LogicN electrical package work must not:
+Galerina electrical package work must not:
 
 ```text
 replace certified electrical protection equipment

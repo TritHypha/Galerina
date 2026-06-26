@@ -1,0 +1,606 @@
+# Galerina v1 Formal Grammar (EBNF)
+
+<!-- profile: v1-current -->
+
+## Status
+
+```text
+Spec status: v1 canonical grammar
+Implementation status: parser is live; guarded flow, route, fn, intent,
+compute target, and expression forms are implemented (Phases 7–51 complete).
+```
+
+This grammar defines the intended v1 surface syntax for the Canonical Example
+Corpus. It is more complete than the current TypeScript prototype parser.
+
+## Lexical Conventions
+
+```ebnf
+letter              = "A".."Z" | "a".."z" | "_" ;
+digit               = "0".."9" ;
+identifier          = letter , { letter | digit } ;
+type_identifier     = "A".."Z" , { letter | digit } ;
+enum_case           = type_identifier ;
+
+integer_literal     = digit , { digit } ;
+decimal_literal     = digit , { digit } , "." , digit , { digit } ;
+string_literal      = '"' , { character | escape_sequence } , '"' ;
+char_literal        = "'" , character , "'" ;
+bool_literal        = "true" | "false" ;
+
+literal             = decimal_literal
+                    | integer_literal
+                    | string_literal
+                    | char_literal
+                    | bool_literal ;
+
+comment             = line_comment | doc_comment ;
+line_comment        = "//" , { character } ;
+doc_comment         = "///" , { character } ;
+```
+
+Whitespace and comments separate tokens and are otherwise insignificant except
+where examples use newlines for readability.
+
+## Compilation Unit
+
+```ebnf
+compilation_unit    = { top_level_item } ;
+
+top_level_item      = type_decl
+                    | record_decl
+                    | enum_decl
+                    | flow_decl
+                    | route_decl
+                    | import_decl ;
+
+import_decl         = "import" , qualified_name , [ "as" , identifier ] ;
+```
+
+`fn` is intentionally absent from `top_level_item`; helper functions may only
+appear inside a flow body.
+
+## Types
+
+```ebnf
+type_decl           = "type" , type_identifier , ( type_alias | type_body ) ;
+record_decl         = "record" , type_identifier , type_body ;
+
+type_alias          = "=" , type_ref ;
+type_body           = "{" , { field_decl } , "}" ;
+field_decl          = identifier , ":" , type_ref ;
+
+type_ref            = [ type_governance_qualifier ] , primary_type_ref ,
+                      { type_state_qualifier } ;
+
+type_governance_qualifier
+                    = "protected" | "redacted" ;
+
+primary_type_ref    = type_identifier , [ generic_args ]
+                    | "Brand" , "<" , type_ref , "," , string_literal , ">"
+                    | "(" , type_ref , ")" ;
+
+generic_args        = "<" , type_ref , { "," , type_ref } , ">" ;
+
+type_state_qualifier
+                    = "unsafe" | "safe" | "validated" | "unvalidated"
+                    | "secure" | "secret" ;
+```
+
+`protected` and `redacted` are prefix governance qualifiers. `String unsafe` is
+a postfix value-state type annotation. `Email protected` and `Email redacted`
+are invalid.
+
+## Enums, Option, Result, and Match
+
+```ebnf
+enum_decl           = "enum" , type_identifier , "{" ,
+                      [ enum_case_list ] , "}" ;
+
+enum_case_list      = enum_case , { enum_separator , enum_case } ,
+                      [ enum_separator ] ;
+enum_separator      = "," | newline ;
+
+match_expr          = "match" , expression , "{" , { match_arm } , "}" ;
+match_arm           = ( when_guard_arm | pattern ) , "=>" , arm_body , [ "," ] ;
+
+(* Phase 41 — when-guard arms *)
+when_guard_arm      = "when" , expression ;
+(* 'when expression => ...' allows arbitrary boolean guards in a match arm.
+   Example: when score >= 90 => return "critical"
+   The guard expression may reference the match subject or any in-scope binding. *)
+
+arm_body            = expression | statement ;
+
+pattern             = "_"
+                    | enum_case
+                    | qualified_enum_case
+                    | option_pattern
+                    | result_pattern
+                    | integer_literal
+                    | string_literal
+                    | literal
+                    | identifier ;
+(* integer_literal and string_literal are listed explicitly to document that
+   integer and string match arms are valid. Example: 200 => return "ok"
+   They are subsumed by the 'literal' alternative but called out for clarity. *)
+
+qualified_enum_case = type_identifier , "." , enum_case ;
+option_pattern      = "Some" , "(" , pattern , ")" | "None" ;
+result_pattern      = "Ok" , "(" , pattern , ")" | "Err" , "(" , pattern , ")" ;
+```
+
+`Option<T>` and `Result<T, E>` are standard generic types. Matches over enums,
+`Option`, and `Result` must be exhaustive unless a wildcard arm is accepted by
+policy. General exhaustiveness diagnostics use `SPORE-MATCH-*`; type-level
+match diagnostics may also report `SPORE-TYPE-021`.
+
+## Flow Declarations
+
+```ebnf
+flow_decl           = [ flow_qualifier ] , "flow" , identifier ,
+                      "(" , [ param_list ] , ")" , ( "->" | ":" ) , type_ref ,
+                      { flow_clause } , block ;
+(* Both '->' and ':' are accepted as return-type separators; no diagnostic
+   is emitted for either. Formatters normalise to '->'. *)
+
+flow_qualifier      = "pure" | "guarded" | "secure" ;
+(* Top-level qualifiers 'safe flow', 'guard flow', and 'unsafe flow' are
+   REMOVED. They emit SPORE-SYNTAX-LEGACY-002 (warning) if encountered.
+   Use 'pure', 'guarded', or 'secure' instead. *)
+
+param_list          = param , { "," , param } ;
+param               = [ "readonly" ] , identifier , ":" , type_ref ;
+
+flow_clause         = effects_clause
+                    | intent_clause
+                    | compute_target_block
+                    | contract_block ;
+
+(* Phase 41 — inline contract style
+   The contract block may appear as the FIRST item inside the flow body '{}' instead
+   of between the signature and the body. Both placements are valid.
+
+   Traditional (external) style:
+     pure flow foo(x: Int) -> String
+     contract { intent { "..." } }
+     { ... body ... }
+
+   Modern (inline) style — preferred for compact flows:
+     pure flow foo(x: Int) : String {
+       contract { intent { "..." } }
+       ... body ...
+     }
+
+   The inline form is syntactically a contract_block statement inside the block.
+   Formatters may normalise to either style; the inline style is the modern preferred form. *)
+
+contract_block      = "contract" , "{" ,
+                      { contract_clause } ,
+                      "}" ;
+
+contract_clause     = contract_types
+                    | contract_intent
+                    | contract_request
+                    | contract_response
+                    | contract_context
+                    | contract_model
+                    | contract_effects
+                    | contract_economics
+                    | contract_timeouts
+                    | contract_retries
+                    | contract_limits
+                    | contract_privacy
+                    | contract_errors
+                    | contract_rules
+                    | contract_observability
+                    | contract_events
+                    | contract_audit
+                    | contract_governance
+                    | contract_targets
+                    | contract_examples ;
+
+(* Canonical 17-section contract order (formatters must emit in this order):
+   types, intent, request, response, context, model, effects,
+   economics, timeouts, retries, limits, privacy, errors, rules,
+   observability, events, audit *)
+
+contract_types      = "types" , "{" ,
+                      { type_decl } ,
+                      "}" ;
+
+contract_intent     = "intent" , "{" , string_literal , "}" ;
+
+contract_events     = "events" , "{" ,
+                      { "emits" , identifier } ,
+                      "}" ;
+
+contract_request    = "request" , "{" ,
+                      [ "accepts" , type_ref ] ,
+                      [ "params" , "{" , { field_decl } , "}" ] ,
+                      [ "requires" , "{" , { identifier } , "}" ] ,
+                      "}" ;
+
+contract_response   = "response" , "{" ,
+                      [ "returns" , type_ref ] ,
+                      [ "exposes" , "{" , { identifier } , "}" ] ,
+                      [ "denies" , "{" , { identifier } , "}" ] ,
+                      "}" ;
+
+contract_context    = "context" , "{" , { any_token } , "}" ;
+
+contract_model      = "model" , "{" ,
+                      [ "uses" , type_ref ] ,
+                      [ "reads" , type_ref ] ,
+                      "}" ;
+
+contract_effects    = "effects" , "{" , { effect_name } , "}" ;
+(* Phase 41 — effects {} is optional for pure flows.
+   Omitting effects {} entirely means the flow declares no side-effects (pure).
+   An explicit empty 'effects {}' is equivalent to omission.
+   For guarded and secure flows, effects {} MUST be present if any effects are observed. *)
+
+contract_economics  = "economics" , "{" , { any_token } , "}" ;
+
+contract_rules      = "rules" , "{" , { any_token } , "}" ;
+
+contract_audit      = "audit" , "{" , { any_token } , "}" ;
+
+contract_governance = "governance" , "{" , { any_token } , "}" ;
+
+contract_targets    = "targets" , "{" , { any_token } , "}" ;
+
+contract_examples   = "examples" , "{" , { any_token } , "}" ;
+
+contract_errors     = "errors" , "{" ,
+                      [ "returns" , "{" , { qualified_name } , "}" ] ,
+                      [ "expose"  , "{" , { identifier } , "}" ] ,
+                      [ "redact"  , "{" , { identifier } , "}" ] ,
+                      [ "audit"   , "{" , { any_token } , "}" ] ,
+                      { "map" , qualified_name , "to" , qualified_name } ,
+                      "}" ;
+
+contract_timeouts   = "timeouts" , "{" , { any_token } , "}" ;
+
+contract_retries    = "retries" , "{" , { any_token } , "}" ;
+
+contract_limits     = "limits" , "{" , { any_token } , "}" ;
+
+contract_privacy    = "privacy" , "{" , { any_token } , "}" ;
+
+contract_observability = "observability" , "{" , { any_token } , "}" ;
+
+event_decl          = "event" , identifier ;
+
+emit_stmt           = "emit" , identifier ;
+
+effects_clause      = [ "with" ] , "effects" , "[" ,
+                      [ effect_name , { "," , effect_name } ] , "]" ;
+(* REMOVED — SPORE-SYNTAX-LEGACY-001 (hard error)
+   'with effects [...]' is no longer valid syntax. The parser emits a hard
+   error when this form is encountered. The canonical form is:
+     contract { effects { database.read, audit.write } }
+   See: contract_effects production above. *)
+
+effect_name         = identifier , "." , identifier ,
+                      { "." , identifier } ;
+
+intent_clause       = "intent" , string_literal ;
+```
+
+`with effects [...]` is a **hard error** (SPORE-SYNTAX-LEGACY-001). All effect
+declarations must use `contract { effects {} }`. The `effects_clause` production
+above is retained in the grammar for documentation purposes only and is not
+parsed by the v1 parser.
+
+Rules:
+
+- `pure flow` must not declare or observe effects.
+- `guarded flow` must declare every effect it uses, including effects used by
+  local `fn` helpers.
+- `secure flow` is the trust-boundary form and may declare effects, intent,
+  governance, authority, and audit requirements.
+
+## Local fn
+
+```ebnf
+fn_decl             = "fn" , identifier , "(" , [ param_list ] , ")" ,
+                      ( "->" | ":" ) , type_ref , block ;
+```
+
+`fn_decl` is valid only as a `statement` inside a flow body. It cannot appear
+at top level, cannot declare `effects`, cannot request authority, is always
+synchronous, and cannot spawn tasks.
+
+## Routes
+
+```ebnf
+route_decl          = "route" , route_method , string_literal , "{" ,
+                      route_request ,
+                      route_response ,
+                      route_flow ,
+                      "}" ;
+
+route_method        = "GET" | "POST" | "PUT" | "PATCH" | "DELETE"
+                    | "HEAD" | "OPTIONS" | identifier ;
+
+route_request       = "request" , type_ref ;
+route_response      = "response" , type_ref ;
+route_flow          = "flow" , identifier ;
+```
+
+Routes contain no business logic. They expose an external entry point and
+delegate entirely to a named flow.
+
+## Compute Target Blocks
+
+```ebnf
+compute_target_block
+                    = "compute" , "target" , compute_target_selector ,
+                      "{" , { compute_target_clause } , "}" ;
+
+compute_target_selector
+                    = "best" | compute_target_name ;
+
+compute_target_clause
+                    = "prefer" , "[" , target_list , "]"
+                    | "deny" , "[" , deny_list , "]"
+                    | "fallback" , compute_target_name ;
+
+target_list         = compute_target_name , { "," , compute_target_name } ;
+deny_list           = deny_item , { "," , deny_item } ;
+
+compute_target_name = "cpu" | "gpu" | "npu" | "wasm" | "photonic"
+                    | "ai_accelerator" | identifier ;
+
+deny_item           = qualified_name | identifier ;
+```
+
+Compute target blocks constrain planning. They must not change security,
+governance, authority, effects, validation, redaction, or program meaning.
+
+## Blocks and Statements
+
+```ebnf
+block               = "{" , { statement } , "}" ;
+
+statement           = binding_stmt
+                    | assignment_stmt
+                    | return_stmt
+                    | if_stmt
+                    | match_stmt
+                    | fn_decl
+                    | expression_stmt ;
+
+binding_stmt        = binding_prefix , identifier ,
+                      [ ":" , type_ref ] , "=" , expression ;
+
+binding_prefix      = "let"
+                    | "mut"
+                    | "readonly"
+                    | "unsafe" , ( "let" | "mut" )
+                    | "safe" , "mut" ;
+
+assignment_stmt     = assignable , "=" , expression ;
+return_stmt         = "return" , expression ;
+
+if_stmt             = "if" , expression , block , [ "else" , block ] ;
+(* Phase 41 — 'else if' is a HARD ERROR (SPORE-SYNTAX-010). The grammar intentionally
+   does not allow 'else if_stmt' (recursive else-if chains). The 'else' arm accepts
+   only a plain block. Use 'match' for multi-branch conditions, or write sequential
+   'if' statements. Example:
+
+     // CORRECT — sequential if (binary decision):
+     if age >= 18 {
+       return true
+     }
+     return false
+
+     // CORRECT — match for multi-branch:
+     match score {
+       when score >= 90 => return "critical"
+       when score >= 70 => return "high"
+       _               => return "low"
+     }
+
+     // ERROR SPORE-SYNTAX-010 — else if is not valid Galerina:
+     // if a { ... } else if b { ... }
+*)
+match_stmt          = match_expr ;
+expression_stmt     = expression ;
+
+assignable          = identifier , { "." , identifier | "[" , expression , "]" } ;
+```
+
+`unsafe let` marks boundary-origin data. `safe mut` is the controlled upgrade
+form after an approved validation/decode gate.
+
+## Expressions and Operators
+
+The expression grammar follows the precedence table in
+`docs/Knowledge-Bases/operator-precedence.md`.
+
+```ebnf
+expression          = logical_or ;
+
+logical_or          = logical_and , { "||" , logical_and } ;
+logical_and         = equality , { "&&" , equality } ;
+equality            = comparison , { ( "==" | "!=" ) , comparison } ;
+comparison          = additive , { ( "<" | "<=" | ">" | ">=" ) , additive } ;
+additive            = multiplicative , { ( "+" | "-" ) , multiplicative } ;
+multiplicative      = unary , { ( "*" | "/" | "%" ) , unary } ;
+unary               = ( "!" | "-" ) , unary | postfix ;
+postfix             = primary , { member_access | call_suffix
+                                  | index_suffix | error_propagation } ;
+
+member_access       = "." , identifier ;
+call_suffix         = "(" , [ argument_list ] , ")" ;
+index_suffix        = "[" , expression , "]" ;
+error_propagation   = "?" ;
+
+primary             = literal
+                    | identifier
+                    | qualified_name
+                    | object_literal
+                    | list_literal
+                    | match_expr
+                    | "(" , expression , ")" ;
+
+argument_list       = expression , { "," , expression } ;
+qualified_name      = identifier , { "." , identifier } ;
+
+object_literal      = "{" , [ object_field , { "," , object_field } ] ,
+                      [ "," ] , "}" ;
+object_field        = identifier , ":" , expression ;
+
+list_literal        = "[" , [ expression , { "," , expression } ] ,
+                      [ "," ] , "]" ;
+```
+
+Operator precedence, tightest last:
+
+| Level | Operators | Associativity |
+|---|---|---|
+| 10 | `||` | left |
+| 20 | `&&` | left |
+| 30 | `==` `!=` | left |
+| 40 | `<` `<=` `>` `>=` | left |
+| 50 | `+` `-` | left |
+| 60 | `*` `/` `%` | left |
+| 70 | prefix `!` `-` | right |
+| 80 | `.` `()` `[]` postfix `?` | left/postfix |
+
+`?` is postfix error propagation. It binds tighter than all infix operators:
+`validate.email(raw)? || fallback` parses as `(validate.email(raw)?) || fallback`.
+
+## Governance, Authority, and Policy Blocks
+
+These blocks appear inside `secure flow` bodies and at top-level (governance,
+api declarations). They are Phase 7B / 8 semantics; the parser currently
+handles them as generic blocks (see `parseGenericBlock` in parser.ts).
+
+```ebnf
+governance_decl     = "governance" , identifier , "{" , { governance_clause } , "}" ;
+
+authority_block     = "authority" , authority_action , [ authority_target ] ,
+                      "{" , { authority_clause } , "}" ;
+
+authority_action    = "share" | "delegate" | "grant" | identifier ;
+authority_target    = qualified_name ;
+
+authority_clause    = "reason" , string_literal
+                    | "require" , effect_name
+                    | "expires" , string_literal
+                    | "audit" , ( "required" | "optional" ) ;
+
+policy_block        = "policy" , "{" , { policy_clause } , "}" ;
+
+policy_clause       = "purpose" , string_literal
+                    | "allow" , type_ref , "to" , string_literal
+                    | "deny" , type_ref
+                    | "require" , effect_name ;
+
+runtime_block       = "runtime" , ( "adaptive" | "deterministic" ) ,
+                      [ "{" , { runtime_clause } , "}" ] ;
+
+runtime_clause      = "observe" , identifier
+                    | "learn" , "from" , identifier
+                    | "optimise" , "[" , identifier_list , "]"
+                    | "preserve" , "[" , identifier_list , "]" ;
+
+identifier_list     = identifier , { "," , identifier } ;
+```
+
+The `authority` block grants temporary authority for data sharing outside
+the normal governed boundary. It must include a `reason` and typically
+requires `audit.write` to be declared on the enclosing flow.
+
+The `policy` block constrains what the flow may do with specific data
+categories. `purpose` is a machine-readable intent tag the governance
+verifier checks against observed behaviour.
+
+The `runtime` block configures the Adaptive Runtime profile for this
+flow's execution. `runtime deterministic` disables all adaptive optimisation.
+
+---
+
+## Explicitly Excluded From v1
+
+```text
+safe flow, unsafe flow, guard flow  — emit SPORE-SYNTAX-LEGACY-002 (warning)
+with effects [...]                  — hard error SPORE-SYNTAX-LEGACY-001
+else if                             — hard error SPORE-SYNTAX-010
+top-level fn
+fn effects clauses
+assignment expressions
+++ / --
+ternary ?:
+pipeline operator |>
+```
+
+## Return Type Syntax
+
+Both `->` and `:` are accepted as return-type separators. No diagnostic is
+emitted for either form. `:` is the **modern preferred form**. Formatters may
+normalise to either, but new code should use `:`.
+
+```ebnf
+(* Accepted forms — both valid, no diagnostic; ':' is modern preferred *)
+flow_decl = [ flow_qualifier ] , "flow" , identifier ,
+            "(" , [ param_list ] , ")" , ( "->" | ":" ) , type_ref ,
+            { flow_clause } , block ;
+```
+
+## Top-Level Public Result Types
+
+The preferred pattern for flows with rich return types is to declare the result
+type as a top-level `type` declaration rather than inline in the signature or in
+`contract.types`:
+
+```ebnf
+(* Preferred — top-level public result type *)
+type_decl = "type" , type_identifier , "=" , type_ref ;
+
+(* Examples:
+   type AuditPatientResult = Result<Response, AuditError>
+   type CreateOrderResult  = Result<Response, ApiError>
+
+   These are declared at the compilation unit level so they are visible to
+   routes, tests, and other flows without importing contract internals. *)
+```
+
+The `contract.types {}` form (flow-local aliases) remains valid but is preferred
+only when the result type is genuinely private to a single flow.
+
+## `unsafe let` at the Flow Boundary
+
+`unsafe let` marks variables that originate from raw HTTP / external input at the
+flow boundary. The binding carries `unsafe` value-state and requires a validation
+gate before it can be passed to a governed sink.
+
+```ebnf
+(* From the binding_stmt production — 'unsafe let' is the boundary form *)
+binding_stmt = binding_prefix , identifier , [ ":" , type_ref ] , "=" , expression ;
+binding_prefix = "unsafe" , ( "let" | "mut" ) | ... ;
+
+(* Canonical usage:
+   unsafe let rawId: String = request.params.patientId
+   safe   mut rawId         = validate.uuid(rawId)?
+*)
+```
+
+## Phase 41 Syntax Additions (summary)
+
+The following were formalised or clarified in Phase 41:
+
+| Feature | Rule |
+|---|---|
+| `:` return type | Modern preferred form; `->` still accepted |
+| Inline contract | `contract {}` may appear as first item in flow body `{}` |
+| `when` guard arms | `when expr => body` in `match` expressions |
+| Integer/string literal arms | `200 => return "ok"` in `match` expressions |
+| `effects {}` optional | Omission = pure (no effects declared) |
+| Top-level result types | Preferred over `contract.types {}` for public flows |
+| No `else if` | Hard error SPORE-SYNTAX-010; use `match` or sequential `if` |
+| `unsafe let` boundary form | Marks raw HTTP/request input at flow entry |
+

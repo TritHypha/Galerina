@@ -1,9 +1,9 @@
-<!-- ABSORBED R&D SOURCE — verbatim mirror. LogicN is the main library; the R&D repo is upstream/authoring.
-     Source: LogicN-R-AND-D/tmf/research/storage-and-query-v0.md  ·  Pinned: R&D fb68d06 (2026-06-16)
-     Integrated LogicN view: (this archive copy is the primary KB home)  ·  Catalog: logicn-rd-absorption-catalog.md
+<!-- ABSORBED R&D SOURCE — verbatim mirror. Galerina is the main library; the R&D repo is upstream/authoring.
+     Source: Galerina-R-AND-D/tmf/research/storage-and-query-v0.md  ·  Pinned: R&D fb68d06 (2026-06-16)
+     Integrated Galerina view: (this archive copy is the primary KB home)  ·  Catalog: galerina-rd-absorption-catalog.md
      Rule: edit the upstream source then re-vendor; do not fork this copy (feedback-auto-import-rd-docs). -->
 
-> **Absorbed R&D source (verbatim).** This is the archived upstream document. See `logicn-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
+> **Absorbed R&D source (verbatim).** This is the archived upstream document. See `galerina-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
 
 ---
 # `.tmf` storage & query (the DB half) — design v0
@@ -111,7 +111,7 @@ untrusted — and it is checked before any plan is emitted.
 3. **Egress seam (per projected field).** A `semantic` field projected to an **untrusted** destination is
    **redacted**; to a **trusted** destination it is emitted. The reference models this decision purely as
    **destination trust** (`destTrusted`); in a real deployment the trusted-destination emit is itself gated by
-   the `k3-policy.lln` `authorizeRead == ALLOW` decision (with `egressRedact` on deny) — the reference *abstracts*
+   the `k3-policy.spore` `authorizeRead == ALLOW` decision (with `egressRedact` on deny) — the reference *abstracts*
    that policy call, it does not implement it. The threat model is leakage to an *untrusted* destination, which
    is always redacted.
 

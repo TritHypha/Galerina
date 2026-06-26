@@ -2,18 +2,18 @@
 
 ## Purpose
 
-LogicN should use view-based operational language for field-level data
+Galerina should use view-based operational language for field-level data
 exposure.
 
 Earlier examples used:
 
-```logicn
+```galerina
 message: String classify: public
 ```
 
-LogicN now prefers:
+Galerina now prefers:
 
-```logicn
+```galerina
 message: String view: public
 ```
 
@@ -41,7 +41,7 @@ less suitable for controlled-language design
 less direct about exposure
 ```
 
-LogicN intentionally avoids class-heavy architecture, hidden inheritance and
+Galerina intentionally avoids class-heavy architecture, hidden inheritance and
 implicit object hierarchies. `classify` creates conceptual noise near those
 rejected patterns.
 
@@ -64,19 +64,19 @@ aligned with response and exposure governance
 
 Previous field syntax:
 
-```logicn
+```galerina
 message: String classify: public
 ```
 
 Updated field syntax:
 
-```logicn
+```galerina
 message: String view: public
 ```
 
 Previous permission syntax:
 
-```logicn
+```galerina
 data {
   allow expose classify: public
 }
@@ -84,7 +84,7 @@ data {
 
 Updated permission syntax:
 
-```logicn
+```galerina
 data {
   allow expose view: public
 }
@@ -92,10 +92,10 @@ data {
 
 ## Built-In View Levels
 
-LogicN should define the standard view levels as built-in runtime/language
+Galerina should define the standard view levels as built-in runtime/language
 levels:
 
-```logicn
+```galerina
 runtime view public
 runtime view internal
 runtime view private
@@ -107,7 +107,7 @@ runtime view regulated
 
 Conceptual runtime model:
 
-```logicn
+```galerina
 Runtime.View {
   public
   internal
@@ -121,7 +121,7 @@ Runtime.View {
 
 The field syntax:
 
-```logicn
+```galerina
 email: String view: private
 ```
 
@@ -157,7 +157,7 @@ regulated
 
 ## Example Field Definitions
 
-```logicn
+```galerina
 name: String view: public
 email: String view: private
 api_key: String view: secret
@@ -166,7 +166,7 @@ payment_id: String view: regulated
 
 ## Example Permission Rule
 
-```logicn
+```galerina
 permission profile_read {
 
   code {
@@ -192,7 +192,7 @@ allow expose fields marked Runtime.View.private only when the owner is the actor
 Because built-in view levels carry standard behaviour, permissions may reference
 private directly:
 
-```logicn
+```galerina
 data {
   allow expose view: private
 }
@@ -200,7 +200,7 @@ data {
 
 and inherit the runtime rule:
 
-```logicn
+```galerina
 runtime view private {
   expose when owner == actor
 }

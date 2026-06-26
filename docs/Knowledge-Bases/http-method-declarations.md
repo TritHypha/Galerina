@@ -2,7 +2,7 @@
 
 ## Definition
 
-LogicN treats HTTP methods as **declared governed entry points**, not automatic permissions. A method is only allowed for a path if it is explicitly declared in a route.
+Galerina treats HTTP methods as **declared governed entry points**, not automatic permissions. A method is only allowed for a path if it is explicitly declared in a route.
 
 ```text
 No route exists unless declared.
@@ -13,7 +13,7 @@ No data leaves unless it matches a response schema and view rules.
 
 ## Core Model
 
-```logicn
+```galerina
 route GET "/profile/{id}" {
   request Profile.get
   response Profile.response
@@ -28,7 +28,7 @@ If someone sends `POST /profile/123`, the runtime returns `405 Method Not Allowe
 
 Each HTTP method gets a typed request model:
 
-```logicn
+```galerina
 data Profile {
   request get {
     id: ProfileId required
@@ -58,7 +58,7 @@ PATCH  = partial update route, still requires permission
 DELETE = delete route, still requires permission
 ```
 
-LogicN does not trust HTTP method meaning alone:
+Galerina does not trust HTTP method meaning alone:
 
 ```text
 GET does not automatically mean safe.
@@ -70,7 +70,7 @@ The permission decides authority, not the method name.
 
 ## Permission Example
 
-```logicn
+```galerina
 permission profile_read {
   code {
     allow db.read table: Profiles
@@ -104,7 +104,7 @@ permission profile_update {
 
 ## Route Declarations
 
-```logicn
+```galerina
 route GET "/profile/{id}" {
   request Profile.get
   response Profile.response

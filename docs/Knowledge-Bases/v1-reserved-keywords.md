@@ -1,8 +1,8 @@
-# LogicN V1 Reserved Keyword Table
+# Galerina V1 Reserved Keyword Table
 
 ## Purpose
 
-This document is the authoritative source for keyword reservation in the LogicN
+This document is the authoritative source for keyword reservation in the Galerina
 v1 language. The Phase 4 lexer must keep its keyword sets in sync with this
 file. Active keywords are emitted as `keyword` tokens and cannot be used as
 identifiers.
@@ -13,7 +13,7 @@ constructor identifiers used by `Option` and `Result`.
 ## V1 Active Keywords
 
 These words are active in the v1 grammar and must match
-`V1_ACTIVE_KEYWORDS` in `packages-logicn/logicn-core-compiler/src/lexer.ts`.
+`V1_ACTIVE_KEYWORDS` in `packages-galerina/galerina-core-compiler/src/lexer.ts`.
 
 | Keyword | Category | Description |
 |---|---|---|
@@ -79,7 +79,7 @@ Moved to V1_ACTIVE_KEYWORDS in Phase 9C (Readable Logic Forms implementation).
 ## V1 Future-Reserved Keywords
 
 These words are reserved for planned grammar and must match
-`V1_FUTURE_RESERVED` in `packages-logicn/logicn-core-compiler/src/lexer.ts`.
+`V1_FUTURE_RESERVED` in `packages-galerina/galerina-core-compiler/src/lexer.ts`.
 They must not overlap with `V1_ACTIVE_KEYWORDS`.
 
 | Keyword | Intended future use |
@@ -108,7 +108,7 @@ They must not overlap with `V1_ACTIVE_KEYWORDS`.
 ```text
 For each identifier-shaped token:
   1. Check V1_ACTIVE_KEYWORDS -> emit TokenKind.keyword
-  2. Check V1_FUTURE_RESERVED -> emit LLN-SYNTAX-003 and TokenKind.keyword
+  2. Check V1_FUTURE_RESERVED -> emit SPORE-SYNTAX-003 and TokenKind.keyword
   3. Otherwise -> emit TokenKind.identifier
 ```
 
@@ -116,16 +116,16 @@ For each identifier-shaped token:
 
 | Code | Meaning |
 |---|---|
-| `LLN-SYNTAX-001` | `var` used; not a valid LogicN binding keyword |
-| `LLN-SYNTAX-002` | `const` used; use `let` or `readonly` |
-| `LLN-SYNTAX-003` | Future-reserved keyword used as identifier |
-| `LLN-SYNTAX-004` | Active keyword used as identifier |
+| `SPORE-SYNTAX-001` | `var` used; not a valid Galerina binding keyword |
+| `SPORE-SYNTAX-002` | `const` used; use `let` or `readonly` |
+| `SPORE-SYNTAX-003` | Future-reserved keyword used as identifier |
+| `SPORE-SYNTAX-004` | Active keyword used as identifier |
 
 ## Architecture Placement
 
 | Layer | Responsibility |
 |---|---|
 | `docs/Knowledge-Bases/v1-reserved-keywords.md` | Human-readable keyword source of truth |
-| `packages-logicn/logicn-core-compiler/src/lexer.ts` | Runtime keyword sets used by lexer |
-| `packages-logicn/logicn-core/src/index.ts` | Shared token and AST contracts |
+| `packages-galerina/galerina-core-compiler/src/lexer.ts` | Runtime keyword sets used by lexer |
+| `packages-galerina/galerina-core/src/index.ts` | Shared token and AST contracts |
 

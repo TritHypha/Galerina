@@ -6,12 +6,12 @@
 Status: Active — style rule, compiler-enforced
 Scope:  Flow nesting depth, guard clauses, match preference
 Diagnostic: LNN-STYLE-012 (deep nesting warning)
-See also: branching-model.md, logicn-syntax-if-match-optional.md, flat-flow-style principle in architecture-good-taste-principles.md
+See also: branching-model.md, galerina-syntax-if-match-optional.md, flat-flow-style principle in architecture-good-taste-principles.md
 ```
 
 ## Definition
 
-LogicN enforces flat flow style as the preferred pattern for control flow.
+Galerina enforces flat flow style as the preferred pattern for control flow.
 Deep nesting makes execution harder to audit, read and govern.
 
 ## Rules
@@ -47,7 +47,7 @@ Use flow for authorised steps.
 
 ## Example: Nested (Avoid)
 
-```logicn
+```galerina
 flow checkout(order: safe Order) -> Result {
   if order.valid {
     if order.paid {
@@ -70,7 +70,7 @@ flow checkout(order: safe Order) -> Result {
 
 ## Example: Flat (Preferred)
 
-```logicn
+```galerina
 flow checkout(order: safe Order) -> Result {
   if not order.valid {
     return InvalidOrder
@@ -92,7 +92,7 @@ flow checkout(order: safe Order) -> Result {
 
 For multiple outcomes, prefer `match` over chained conditionals:
 
-```logicn
+```galerina
 let decision = match order.status {
   "invalid" => InvalidOrder
   "unpaid"  => PaymentRequired

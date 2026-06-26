@@ -1,4 +1,4 @@
-LLN-TYPE-001
+SPORE-TYPE-001
 
 Unknown type: MadeUpType.
 Ensure the type is declared in scope or imported from a module.

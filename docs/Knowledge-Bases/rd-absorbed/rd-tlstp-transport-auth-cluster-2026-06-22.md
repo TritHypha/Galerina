@@ -1,10 +1,10 @@
 # Absorbed R&D — TLSTP transport + auth cluster (worker dones 0065 / 0066 / 0068)
 
-**What.** The R&D worker's completed specs for the transport/auth cluster, absorbed into the LogicN KB so they are
+**What.** The R&D worker's completed specs for the transport/auth cluster, absorbed into the Galerina KB so they are
 durable + findable here (not only in the R&D bridge). Canonical full reports live in the R&D repo:
-`C:\wwwprojects\LogicN-R-AND-D\_session-bridge\done\{0065,0066,0068}-*.done.md`. All three are **DESIGN/SPEC only —
-no code**; **B8 (`logicn-framework-api-server`) stays OWNER-LOCKED**. Grounded on the hub's decision-support doc
-[logicn-tlstp-transport-auth-rnd-2026-06-22.md](../logicn-tlstp-transport-auth-rnd-2026-06-22.md) (workflow
+`C:\wwwprojects\Galerina-R-AND-D\_session-bridge\done\{0065,0066,0068}-*.done.md`. All three are **DESIGN/SPEC only —
+no code**; **B8 (`galerina-framework-api-server`) stays OWNER-LOCKED**. Grounded on the hub's decision-support doc
+[galerina-tlstp-transport-auth-rnd-2026-06-22.md](../galerina-tlstp-transport-auth-rnd-2026-06-22.md) (workflow
 `wi3py3913`); ~75-85% of the owner's notes re-derive shipped architecture — those are cited, not rebuilt.
 
 **Binding posture (all three):** crypto/KDF/cipher/signature bytes stay **Binary**; photonics/analog may feed ONLY a
@@ -16,7 +16,7 @@ without a named-machine bench. The **Ternary Ephemeral Ratchet** (`K_{n+1}=KDF(K
 DENY**, over a *library-validated* chain (no ASN.1/path-building re-impl). Highest-value, lowest-risk, zero new
 crypto, reuses shipped `decideAtBoundary`. It works identically for the bespoke TLSTP transport AND for a vanilla
 third-party HTTPS API — so it is the smallest add-on that hardens MITM today. Confirmed UNBUILT (`cert_verdict` = 0
-hits in `packages-logicn`). Owner-gated (B8-adjacent) — surface, don't auto-build.
+hits in `packages-galerina`). Owner-gated (B8-adjacent) — surface, don't auto-build.
 
 ---
 
@@ -28,7 +28,7 @@ hits in `packages-logicn`). Owner-gated (B8-adjacent) — surface, don't auto-bu
 | **S2** | **Asymmetric KEM-rekeying ephemeral ratchet** | hybrid X25519+ML-KEM-768 (`kemdem.ts`); SHAKE256 MK/CK chain (`tmf-history-chain-v0 §2`) | periodic asymmetric rekey → **post-compromise security** on top of the symmetric chain's forward secrecy; rekey secret is the KEM shared secret (Binary), never `E_ternary` | buildable-now (digital) |
 | **S3** | **Digital FEC over OPAQUE AEAD ciphertext** | AES-256-GCM / XChaCha20-Poly1305 ciphertext+tag (`kemdem.ts`) | loss recovery w/o retransmission; FEC sits **UNDER** the AEAD (repairs ciphertext, touches no key/plaintext); post-repair bit error still fails the tag → −1/DENY. The only sound residue of refuted "ternary symbol repair" | buildable-now (digital); overhead needs a bench |
 | **S4** | **"Recovering" transport FSM above K3** | K3 trit + `substrate-model.ts` No-Coercion `e=vAnd(t*,r)≤t*` | exactly ONE added transport state `{Established, Recovering, Closed/Erase}`; Recovering denies ALL data effects, holds the channel, `→Established` only on a fresh +1, `--timeout--> Closed/Erase` (never silently →+1). NOT a parallel +1/0/−1 (that alias is refuted) | buildable-now (digital) |
-| **S5** | **Opt-in `transport.obfuscate` morphing frames** | deny-by-default caps (`fuse-loader.ts:435-455`); digital AEAD/KDF keystream | keystream-seeded frame sizing; morphed frame **REPLACES** any cleartext routing tag (else re-opens `LLN-PRIVACY-002`). Honest limit: resists size/boundary analysis, **NOT** timing/volume. Metadata-confidentiality, not payload | buildable-now (digital); needs a bench |
+| **S5** | **Opt-in `transport.obfuscate` morphing frames** | deny-by-default caps (`fuse-loader.ts:435-455`); digital AEAD/KDF keystream | keystream-seeded frame sizing; morphed frame **REPLACES** any cleartext routing tag (else re-opens `SPORE-PRIVACY-002`). Honest limit: resists size/boundary analysis, **NOT** timing/volume. Metadata-confidentiality, not payload | buildable-now (digital); needs a bench |
 
 **Adjacent (fold into B8):** downgrade negotiation = borrow Noise/WireGuard handshake pattern (0 repo refs);
 identity-on-wire = bind shipped content-addressed admission to the live handshake; kernel auth presence-stub
@@ -65,9 +65,9 @@ cross-trust-boundary zero-copy · admitting an untrusted P2P peer's wasm.
 
 ---
 
-## 0068 — LogicN governance for REGULAR HTTP/SSL APIs (the standard-transport complement)
+## 0068 — Galerina governance for REGULAR HTTP/SSL APIs (the standard-transport complement)
 
-**Honest boundary:** over a standard TLS 1.3 + X.509 chain, LogicN governs **ON TOP of** someone else's PKI — it
+**Honest boundary:** over a standard TLS 1.3 + X.509 chain, Galerina governs **ON TOP of** someone else's PKI — it
 does not replace it (cannot abolish CAs; cannot do photonic auth). Real value = **pinning + a fail-closed K3 verdict
 + egress control + capability bounds**.
 
@@ -90,10 +90,10 @@ factor ("unspoofable" refuted — optical PUFs are PAC-learnable).
 - **Convergent build-first across all three: the K3 cert-gate (S1).** It is the one item that is net-new, in-bounds,
   crypto-digital, and useful for BOTH bespoke TLSTP and standard third-party APIs.
 - **All worker dones now landed — 0067/0069/0070 too** (the full cluster + their use/no-use dispositions are in the
-  narrative explainer [logicn-transport-auth-research-explained-2026-06-22.md](../logicn-transport-auth-research-explained-2026-06-22.md)):
+  narrative explainer [galerina-transport-auth-research-explained-2026-06-22.md](../galerina-transport-auth-research-explained-2026-06-22.md)):
   **0067** boundary+prove-maths audit (13/14 crossings fail-closed; one fail-open = bare-param taint → fix is **34B**
   routeDecl auto-taint; next proof = promote 0014-C3 SAMPLED→Z3-PROVEN); **0069** DTM as degrade-only K3 telemetry
   (No-Coercion proven, codomain `{−1,0}`, rides the 0050 exporter); **0070** photonic TamperTrust resolver
   (deviation→trit→`vAnd`, `cnf`-row under the digital sig, optical front-end aspirational-HW).
 - **✅ B8 UNLOCKED (owner, 2026-06-22)** — the S1 cert-gate is the greenlit build-first. See
-  [logicn-tlstp-transport-auth-rnd-2026-06-22.md](../logicn-tlstp-transport-auth-rnd-2026-06-22.md) §"B8/HTTP guidance".
+  [galerina-tlstp-transport-auth-rnd-2026-06-22.md](../galerina-tlstp-transport-auth-rnd-2026-06-22.md) §"B8/HTTP guidance".

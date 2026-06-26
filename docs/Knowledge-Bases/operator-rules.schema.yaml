@@ -1,5 +1,5 @@
-# LogicN — Operator Rules Schema
-# Machine-readable source for LLN-TYPE-004 and LLN-TYPE-005 implementation.
+# Galerina — Operator Rules Schema
+# Machine-readable source for SPORE-TYPE-004 and SPORE-TYPE-005 implementation.
 # Human-readable version: docs/Knowledge-Bases/operator-type-rules.md
 #
 # Schema:
@@ -8,7 +8,7 @@
 #   operands:             left and right type descriptors (right omitted for unary)
 #   result:               result type or "none" if denied
 #   allowed:              true | false
-#   diagnostic_on_failure: LLN code emitted when allowed: false
+#   diagnostic_on_failure: SPORE code emitted when allowed: false
 #   phase:                7B | deferred | future
 #   notes:                plain English note for AI tooling and humans
 
@@ -18,7 +18,7 @@ policy:
   version: "v1"
 
 # Type aliases used in rule operand/result fields.
-# These are not LogicN types — they are schema-level descriptors for rule matching.
+# These are not Galerina types — they are schema-level descriptors for rule matching.
 type_aliases:
   Numeric:     "Any of the numeric type_group: Int, Int8..Int64, UInt8..UInt64, Float, Float16..Float64, Decimal"
   Integer:     "Any of the integer type_group: Int, Int8..Int64, UInt8..UInt64"
@@ -87,7 +87,7 @@ rules:
       right: SameAsLeft
     result: SameAsLeft
     allowed: true
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Same-type numeric addition. No implicit widening."
 
@@ -98,7 +98,7 @@ rules:
       right: SameAsLeft
     result: SameAsLeft
     allowed: true
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Same-type numeric subtraction."
 
@@ -109,7 +109,7 @@ rules:
       right: SameAsLeft
     result: SameAsLeft
     allowed: true
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Same-type numeric multiplication."
 
@@ -120,7 +120,7 @@ rules:
       right: SameAsLeft
     result: SameAsLeft
     allowed: true
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Same-type numeric division. Integer division truncates toward zero."
 
@@ -131,7 +131,7 @@ rules:
       right: Integer
     result: Integer
     allowed: true
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Integer modulo only. Float modulo is denied — use Float.rem()."
 
@@ -144,7 +144,7 @@ rules:
       right: String
     result: String
     allowed: true
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "String + String is the only allowed string concatenation. No implicit conversion from Int or other types."
 
@@ -155,7 +155,7 @@ rules:
       right: "not String"
     result: none
     allowed: false
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Implicit string conversion is denied. Use format() for mixed types."
 
@@ -168,7 +168,7 @@ rules:
       right: "Money<C> where same C"
     result: "Money<C>"
     allowed: true
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Same-currency Money addition only."
 
@@ -179,7 +179,7 @@ rules:
       right: "Money<C> where same C"
     result: "Money<C>"
     allowed: true
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Same-currency Money subtraction only."
 
@@ -190,7 +190,7 @@ rules:
       right: "Money<C2> where C1 != C2"
     result: none
     allowed: false
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Cross-currency arithmetic is denied. Use fx.convert() explicitly."
 
@@ -203,7 +203,7 @@ rules:
       right: SameAsLeft
     result: Bool
     allowed: true
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Primitive equality — both operands must be the same type."
 
@@ -214,7 +214,7 @@ rules:
       right: SameAsLeft
     result: Bool
     allowed: true
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Primitive inequality — both operands must be the same type."
 
@@ -225,7 +225,7 @@ rules:
       right: Timestamp
     result: Bool
     allowed: true
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Temporal equality."
 
@@ -236,7 +236,7 @@ rules:
       right: any
     result: none
     allowed: false
-    diagnostic_on_failure: LLN-SECRET-002
+    diagnostic_on_failure: SPORE-SECRET-002
     phase: 7B
     notes: "SecureString equality via == is denied. Use constantTimeEquals()."
 
@@ -247,7 +247,7 @@ rules:
       right: any
     result: none
     allowed: false
-    diagnostic_on_failure: LLN-SECRET-002
+    diagnostic_on_failure: SPORE-SECRET-002
     phase: 7B
     notes: "SecureString inequality via != is denied. Use constantTimeEquals()."
 
@@ -258,7 +258,7 @@ rules:
       right: Tri
     result: Bool
     allowed: true
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Tri equality comparison is allowed — comparing enum-like Tri values."
 
@@ -269,7 +269,7 @@ rules:
       right: Tri
     result: Bool
     allowed: true
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Tri inequality comparison is allowed."
 
@@ -280,7 +280,7 @@ rules:
       right: user_defined_record
     result: none
     allowed: false
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: deferred
     notes: "Record equality is denied by default. Requires 'derives Eq' — Phase 7+ feature."
 
@@ -293,7 +293,7 @@ rules:
       right: SameAsLeft
     result: Bool
     allowed: true
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Numeric less-than. Same type required."
 
@@ -304,7 +304,7 @@ rules:
       right: SameAsLeft
     result: Bool
     allowed: true
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Numeric less-than-or-equal. Same type required."
 
@@ -315,7 +315,7 @@ rules:
       right: SameAsLeft
     result: Bool
     allowed: true
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Numeric greater-than. Same type required."
 
@@ -326,7 +326,7 @@ rules:
       right: SameAsLeft
     result: Bool
     allowed: true
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Numeric greater-than-or-equal. Same type required."
 
@@ -337,7 +337,7 @@ rules:
       right: Timestamp
     result: Bool
     allowed: true
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Temporal ordering."
 
@@ -348,7 +348,7 @@ rules:
       right: Timestamp
     result: Bool
     allowed: true
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Temporal ordering."
 
@@ -359,7 +359,7 @@ rules:
       right: Timestamp
     result: Bool
     allowed: true
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Temporal ordering."
 
@@ -370,7 +370,7 @@ rules:
       right: Timestamp
     result: Bool
     allowed: true
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Temporal ordering."
 
@@ -381,7 +381,7 @@ rules:
       right: any
     result: none
     allowed: false
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Tri is not ordered. Use match."
 
@@ -392,7 +392,7 @@ rules:
       right: String
     result: none
     allowed: false
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "String ordering via < is denied. Use String.compareTo()."
 
@@ -405,7 +405,7 @@ rules:
       right: Bool
     result: Bool
     allowed: true
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Boolean AND. Short-circuit — right side only evaluated if left is true."
 
@@ -416,7 +416,7 @@ rules:
       right: Bool
     result: Bool
     allowed: true
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Boolean OR. Short-circuit — right side only evaluated if left is false."
 
@@ -429,7 +429,7 @@ rules:
       right: any
     result: none
     allowed: false
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: >
       Tri && Tri is denied in v1. Tri must be matched explicitly.
@@ -443,7 +443,7 @@ rules:
       right: any
     result: none
     allowed: false
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Tri || Tri is denied in v1. Same reasoning as Tri &&."
 
@@ -455,7 +455,7 @@ rules:
       left: Bool
     result: Bool
     allowed: true
-    diagnostic_on_failure: LLN-TYPE-005
+    diagnostic_on_failure: SPORE-TYPE-005
     phase: 7B
     notes: "Boolean NOT."
 
@@ -465,7 +465,7 @@ rules:
       left: Tri
     result: none
     allowed: false
-    diagnostic_on_failure: LLN-TYPE-005
+    diagnostic_on_failure: SPORE-TYPE-005
     phase: 7B
     notes: "Tri negation via ! is denied. Use match or Tri.not() if explicitly defined."
 
@@ -475,7 +475,7 @@ rules:
       left: Numeric
     result: SameAsLeft
     allowed: true
-    diagnostic_on_failure: LLN-TYPE-005
+    diagnostic_on_failure: SPORE-TYPE-005
     phase: 7B
     notes: "Unary numeric negation."
 
@@ -487,7 +487,7 @@ rules:
       left: Bool
     result: control_flow
     allowed: true
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Only Bool may appear as a condition in if/while. No truthy/falsy coercion."
 
@@ -497,7 +497,7 @@ rules:
       left: Tri
     result: none
     allowed: false
-    diagnostic_on_failure: LLN-SAFETY-001
+    diagnostic_on_failure: SPORE-SAFETY-001
     phase: 7B
     notes: >
       Tri must not be used as a branch condition.
@@ -510,7 +510,7 @@ rules:
       left: "not Bool"
     result: none
     allowed: false
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: 7B
     notes: "Non-Bool in branch condition. No truthy/falsy coercion. Int, String, Option etc. are not branch conditions."
 
@@ -523,7 +523,7 @@ rules:
       right: "Tensor<T, S>"
     result: "Tensor<T, S>"
     allowed: deferred
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: deferred
     notes: "Tensor arithmetic deferred until tensor shape model is finalized."
 
@@ -534,7 +534,7 @@ rules:
       right: "Tensor<T, S>"
     result: none
     allowed: deferred
-    diagnostic_on_failure: LLN-TYPE-004
+    diagnostic_on_failure: SPORE-TYPE-004
     phase: deferred
     notes: "Tensor equality deferred. Shape compatibility rules not yet defined."
 
@@ -547,13 +547,13 @@ rules:
       right: "String"
     result: "String (unsafe)"
     allowed: true
-    diagnostic_on_failure: LLN-VALUESTATE-004
+    diagnostic_on_failure: SPORE-VALUESTATE-004
     phase: 8B
     notes: >
       String concatenation propagates unsafe taint. If either operand is an
       unsafe binding, the result is also unsafe. Sending this result to a
       governed sink (database query, shell exec, HTML render) emits
-      LLN-VALUESTATE-004. This is the SQL injection pattern.
+      SPORE-VALUESTATE-004. This is the SQL injection pattern.
       Fix: validate the unsafe input before concatenation.
 
   - operator: "=="
@@ -563,7 +563,7 @@ rules:
       right: "any"
     result: none
     allowed: false
-    diagnostic_on_failure: LLN-SECRET-002
+    diagnostic_on_failure: SPORE-SECRET-002
     phase: 8B
     notes: >
       Bytes values derived from secret sources (HMAC digests, API token bytes,

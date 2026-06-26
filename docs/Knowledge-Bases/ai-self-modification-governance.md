@@ -2,9 +2,9 @@
 
 ## Purpose
 
-LogicN should not design for "self-aware AI" as a special authority class.
+Galerina should not design for "self-aware AI" as a special authority class.
 
-LogicN should design for AI that can write, test and propose code, but cannot
+Galerina should design for AI that can write, test and propose code, but cannot
 silently gain authority.
 
 Core rule:
@@ -166,7 +166,7 @@ rewrites or hides its own audit trail must fail closed.
 
 ## Capability Lease Model
 
-LogicN should treat capability as an approved lease of authority, not permanent
+Galerina should treat capability as an approved lease of authority, not permanent
 possession.
 
 Example:
@@ -245,7 +245,7 @@ same time.
 
 ## Constitutional Runtime Rule
 
-LogicN should support a runtime governance invariant:
+Galerina should support a runtime governance invariant:
 
 ```text
 No process may grant itself broader authority than the authority already
@@ -336,7 +336,7 @@ The dangerous part is not intelligence.
 
 The dangerous part is uncontrolled authority.
 
-LogicN's safest AI rule is:
+Galerina's safest AI rule is:
 
 ```text
 AI may contribute.

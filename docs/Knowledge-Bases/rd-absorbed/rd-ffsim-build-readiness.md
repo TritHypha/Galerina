@@ -1,16 +1,16 @@
-<!-- ABSORBED R&D SOURCE — verbatim mirror. LogicN is the main library; the R&D repo is upstream/authoring.
-     Source: LogicN-R-AND-D/FFSM/ffsim-build-readiness.md  ·  Pinned: R&D fb68d06 (2026-06-16)
-     Integrated LogicN view: logicn-ext-bridge-quantum-design.md  ·  Catalog: logicn-rd-absorption-catalog.md
+<!-- ABSORBED R&D SOURCE — verbatim mirror. Galerina is the main library; the R&D repo is upstream/authoring.
+     Source: Galerina-R-AND-D/FFSM/ffsim-build-readiness.md  ·  Pinned: R&D fb68d06 (2026-06-16)
+     Integrated Galerina view: galerina-ext-bridge-quantum-design.md  ·  Catalog: galerina-rd-absorption-catalog.md
      Rule: edit the upstream source then re-vendor; do not fork this copy (feedback-auto-import-rd-docs). -->
 
-> **Absorbed R&D source (verbatim).** This is the archived upstream document. Curated/integrated view: `logicn-ext-bridge-quantum-design.md`. See `logicn-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
+> **Absorbed R&D source (verbatim).** This is the archived upstream document. Curated/integrated view: `galerina-ext-bridge-quantum-design.md`. See `galerina-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
 
 ---
 # ffsim — Build-Readiness Grounding (environment · container · determinism · Rust core)
 
-> **R&D scratch — design-only.** Lives outside the LogicN build. Concrete technical
+> **R&D scratch — design-only.** Lives outside the Galerina build. Concrete technical
 > grounding beneath the canonical governance design doc
-> `C:\wwwprojects\LogicN\docs\Knowledge-Bases\logicn-ext-bridge-quantum-design.md` (task **#199**).
+> `C:\wwwprojects\Galerina\docs\Knowledge-Bases\galerina-ext-bridge-quantum-design.md` (task **#199**).
 > It does **not** restate the contract / Toxic-Border / attestation design — it supplies the
 > facts that design needs to be *implemented*. Every concrete fact is cited `relative/path:line`
 > against `C:\wwwprojects\IBM-FFSIM\ffsim`. Items not observed in a file are marked **UNVERIFIED**.
@@ -121,7 +121,7 @@ pinnedEnvHash = SHA-256( canonical_concat_sorted_by_path(
 **Hard honesty rules for the wrapper (do not overstate):**
 - **Do NOT advertise bit-level thread-determinism.** No source asserts it, and `jordan_wigner_qiskit` provably violates it (`jordan_wigner.rs:104-118`; its `tol` cutoff can even flip near-threshold terms). Same-seed+same-threads ⇒ bit-identical is **UNVERIFIED / not guaranteed by the code**.
 - Pin **both** `seed` and `RAYON_NUM_THREADS`, and the BLAS thread env too (`OPENBLAS_NUM_THREADS`/`MKL_NUM_THREADS` — which BLAS ships is UNVERIFIED).
-- **Consequence for the design:** `determinismMode` must be `"tolerance"`, never `"exact"` — exactly as ratified. For **B2 / `LLN-SUBSTRATE-002/003`** (is the declared `tolerance` provable at the declared `N`?), the substrate model needs a **float64/BLAS+Rayon lane noise profile** — it currently has photonic-oriented profiles only. This is the **§13.8 open item** in the design doc. B1 (crypto-on-core) and B3 (unvoted→deterministic) apply unchanged regardless.
+- **Consequence for the design:** `determinismMode` must be `"tolerance"`, never `"exact"` — exactly as ratified. For **B2 / `SPORE-SUBSTRATE-002/003`** (is the declared `tolerance` provable at the declared `N`?), the substrate model needs a **float64/BLAS+Rayon lane noise profile** — it currently has photonic-oriented profiles only. This is the **§13.8 open item** in the design doc. B1 (crypto-on-core) and B3 (unvoted→deterministic) apply unchanged regardless.
 
 ## 6. The Rust-accelerated core = the opaque out-of-process compute (`src/lib.rs:21-64`)
 
@@ -140,7 +140,7 @@ The **only** functions in the compiled `ffsim._lib` (and `python/ffsim/_lib.pyi`
 | `FermionOperator` (class) | Rust-backed operator container | (not a numeric kernel) |
 
 - Numeric kernels are **in-place / into-buffer** (mutate caller-owned NumPy arrays); only `givens_decomposition*` and `jordan_wigner_qiskit` return values.
-- **Critical honesty point:** the code is an **in-process PyO3 extension** (`Cargo.toml:9,16`); there is **no IPC/subprocess boundary in ffsim today**. "Out-of-process" is **LogicN's framing** — a sandbox boundary the *wrapper* imposes, not an existing ffsim property. The wrapper spawns Python (which loads `_lib` in-process inside that subprocess); the isolation is at the OS/process level the wrapper creates, never inside ffsim.
+- **Critical honesty point:** the code is an **in-process PyO3 extension** (`Cargo.toml:9,16`); there is **no IPC/subprocess boundary in ffsim today**. "Out-of-process" is **Galerina's framing** — a sandbox boundary the *wrapper* imposes, not an existing ffsim property. The wrapper spawns Python (which loads `_lib` in-process inside that subprocess); the isolation is at the OS/process level the wrapper creates, never inside ffsim.
 
 ---
 

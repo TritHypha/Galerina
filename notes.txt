@@ -1,12 +1,12 @@
-cd C:\laragon\www\LO\packages-logicn\logicn-devtools-benchmarks
+cd C:\laragon\www\LO\packages-galerina\galerina-devtools-benchmarks
 npm run run
 npm run compare
 -------------------------------------
 # From anywhere:
-node --test /c/laragon/www/LO/packages-logicn/logicn-devtools-graph-algorithms/tests/*.test.mjs
+node --test /c/laragon/www/LO/packages-galerina/galerina-devtools-graph-algorithms/tests/*.test.mjs
 
 # Or from the package dir:
-cd C:\laragon\www\LO\packages-logicn\logicn-devtools-graph-algorithms
+cd C:\laragon\www\LO\packages-galerina\galerina-devtools-graph-algorithms
 npm test
 
 ---------
@@ -25,16 +25,16 @@ This session is being continued from a previous conversation that ran out of con
 
 Summary:
 1. Primary Request and Intent:
-   Complete the TypeScript-readable syntax unification for LogicN with strict rules: (1) public result types at top-level, contract-local types only when private; (2) contract stays inside flow body; (3) effects block optional for pure flows; (4) match preferred over if chains, NO else if allowed (hard error); (5) implement when guard syntax for match arms (when score >= 90 => return "critical"); (6) update all examples to remove legacy notes and follow new patterns; (7) update docs and KB; (8) continue development through Phase 75; (9) after Phase 75, improve gpu-compute performance without affecting security.
+   Complete the TypeScript-readable syntax unification for Galerina with strict rules: (1) public result types at top-level, contract-local types only when private; (2) contract stays inside flow body; (3) effects block optional for pure flows; (4) match preferred over if chains, NO else if allowed (hard error); (5) implement when guard syntax for match arms (when score >= 90 => return "critical"); (6) update all examples to remove legacy notes and follow new patterns; (7) update docs and KB; (8) continue development through Phase 75; (9) after Phase 75, improve gpu-compute performance without affecting security.
 
 2. Key Technical Concepts:
-   - LogicN governance model (effects, privacy, audit, contracts)
+   - Galerina governance model (effects, privacy, audit, contracts)
    - Parser dual-syntax support (: and -> return types)
    - Match guard arms with boolean conditions (pattern matching alternative to else-if)
    - WASM-ready execution architecture
-   - Stage B self-hosted compiler (parser.lln, lexer.lln)
+   - Stage B self-hosted compiler (parser.spore, lexer.spore)
    - Bytecode VM for performance optimization
-   - Runtime-in-LogicN percentage tracking (currently 25%, target 100%)
+   - Runtime-in-Galerina percentage tracking (currently 25%, target 100%)
    - Security audit integration (OWASP findings, taint tracking)
    - GPU compute backend (WebGPU, CUDA potential)
    - 20-phase roadmap (41-60) organized across 4 parallel streams: deployment, self-hosting, performance, security
@@ -57,29 +57,29 @@ Summary:
 
    **Legacy Qualifier Warnings (parser.ts, lines 360-385)**:
    - Added case for "safe" and "guard" keywords at top-level
-   - Emits LLN-SYNTAX-LEGACY-002 warning when detected
+   - Emits SPORE-SYNTAX-LEGACY-002 warning when detected
    - Falls through to continue parsing as valid flow
 
    **else if Hard Error (parser.ts, lines 1213-1221)**:
-   - Changed from advisory warning to hard parse error LLN-SYNTAX-010
-   - Emits: "'else if' is not allowed in LogicN. Use 'match' for multi-branch logic"
+   - Changed from advisory warning to hard parse error SPORE-SYNTAX-010
+   - Emits: "'else if' is not allowed in Galerina. Use 'match' for multi-branch logic"
    - Non-breaking: parse still continues to recover
 
-   **Documentation Created (logicn-roadmap-phases-41-60.md)**:
+   **Documentation Created (galerina-roadmap-phases-41-60.md)**:
    - Comprehensive 20-phase plan covering Phases 41-60
    - Runtime % progression: 27% → 50% (Phase 54) → 75% (Phase 59) → 80% (Phase 60)
    - Four parallel streams: A (deployment), B (self-hosting), C (performance), D (security)
-   - Key milestones: Phase 50 (Stage B first compilation), Phase 54 (route dispatcher in LogicN), Phase 57 (effect checker in LogicN), Phase 59 (capability host complete)
+   - Key milestones: Phase 50 (Stage B first compilation), Phase 54 (route dispatcher in Galerina), Phase 57 (effect checker in Galerina), Phase 59 (capability host complete)
 
 4. Errors and fixes:
-   - **Initial else-if approach was wrong**: User corrected me—else if must be a HARD ERROR (LLN-SYNTAX-010), not an advisory warning. I was treating it as "allowed with advisory" but user stated definitively "Do not allow else if". Fixed by changing emitWarning to emit (error not warning) and updating all Stage B files to remove else if usage.
-   - **Benchmark table accuracy**: I initially misrepresented winners in my summary (said Rust won six-digit-guess, LogicN won fibonacci). Actually WASM wins six-digit-guess at 86.99M/s, and fibonacci has incomparable workloads (LogicN passive runs fib(20) while Node.js runs fib(30)). Corrected in final summary.
-   - **Lexer.lln and parser.lln parsing failures**: Both files had 30+ parse errors after removing else if chains. Fixed by replacing nested if-else-if with sequential if blocks without else clauses, or using if (handled == false) guards.
-   - **Parser brace balance in lexer.lln**: Multiple mismatched braces from my restructuring. Fixed by carefully counting braces through the Some(c) dispatch block and adding proper closing braces.
+   - **Initial else-if approach was wrong**: User corrected me—else if must be a HARD ERROR (SPORE-SYNTAX-010), not an advisory warning. I was treating it as "allowed with advisory" but user stated definitively "Do not allow else if". Fixed by changing emitWarning to emit (error not warning) and updating all Stage B files to remove else if usage.
+   - **Benchmark table accuracy**: I initially misrepresented winners in my summary (said Rust won six-digit-guess, Galerina won fibonacci). Actually WASM wins six-digit-guess at 86.99M/s, and fibonacci has incomparable workloads (Galerina passive runs fib(20) while Node.js runs fib(30)). Corrected in final summary.
+   - **Lexer.spore and parser.spore parsing failures**: Both files had 30+ parse errors after removing else if chains. Fixed by replacing nested if-else-if with sequential if blocks without else clauses, or using if (handled == false) guards.
+   - **Parser brace balance in lexer.spore**: Multiple mismatched braces from my restructuring. Fixed by carefully counting braces through the Some(c) dispatch block and adding proper closing braces.
 
 5. Problem Solving:
    - **Syntax unification at scale**: Implemented 4 parser features simultaneously (: return type, legacy qualifiers, else if hard error, with effects hard error) affecting 2,791 tests. All passed after fixes.
-   - **Stage B self-hosted compiler updates**: Fixed 16 test files and 2 benchmark files to remove else if. Key insight: Stage B parser.lln must follow same rules as Stage A to bootstrap correctly.
+   - **Stage B self-hosted compiler updates**: Fixed 16 test files and 2 benchmark files to remove else if. Key insight: Stage B parser.spore must follow same rules as Stage A to bootstrap correctly.
    - **Governance path overhead vs WASM speed gap**: Identified that governed flows are 500-900× slower than WASM on pure arithmetic. Phase 45 bytecode VM expansion targets closing this by adding Bool/Branch opcodes and record field operations.
    - **Benchmark fidelity**: Clarified that GPU-compute throughput numbers are CPU-bound (setup overhead) not GPU-bound, since actual GPU dispatch isn't live yet. Real CUDA in Phase 58 will show actual GPU performance.
 
@@ -88,7 +88,7 @@ Summary:
    - "For else if — what's the policy right now in v1-current?" User then explicitly stated: "Actually it should not be allowed. use match instead of else if. Do not copy TypeScript's unsafe parts" — this was the critical correction that changed else if from advisory to hard error.
    - "show me some examples of logicN code how you think it now should look" — provided canonical examples using match, contract inside flow, no else if
    - "run another benchmark and plan the next 20 phases" — requested both immediate benchmark execution and comprehensive Phase 41-60 roadmap
-   - "so in the 'Benchmark Results' the winner is written in ie Python/NodeJS etc. So Rust wone the 'six-digit-guess'? and LogicN passive wone the fibonacci" — user questioned accuracy of my benchmark summary, prompting verification
+   - "so in the 'Benchmark Results' the winner is written in ie Python/NodeJS etc. So Rust wone the 'six-digit-guess'? and Galerina passive wone the fibonacci" — user questioned accuracy of my benchmark summary, prompting verification
    - CRITICAL NEW REQUEST: Detailed syntax guidance including: "I'd make public result types top-level, not inside contract, unless the type is private to that one flow" + full TypeScript-Readable Syntax Proposal document + "once you have done this check and update C:\laragon\www\LO\examples also remove legacy notes in examples ie tidy it up. update docs and KB as well. after this keep on going until then end of 75. after you have finished all phases look into getting the 'gpu-compute' improved in the real world with, out effecting security, we could just a little more memory in return for being as fast as or faster etc"
 
 7. Pending Tasks:
@@ -100,9 +100,9 @@ Summary:
      - Use contract { ... } inside flow body (not outside)
      - Replace if chains with match when appropriate
      - Use : return type syntax or arrow, user prefers consistency
-   - Update knowledge bases: logicn-grammar.ebnf, logicn-contract-full-model.md, logicn-cli-current.md, route-spec.md, logicn-core-intent-safety-effects.md, etc. to reflect new syntax and patterns
+   - Update knowledge bases: galerina-grammar.ebnf, galerina-contract-full-model.md, galerina-cli-current.md, route-spec.md, galerina-core-intent-safety-effects.md, etc. to reflect new syntax and patterns
    - Continue implementation of Phases 41-60 per roadmap
-   - Phase 42-60 implementation (wasmtime CLI, Deno Deploy, routes in LogicN, Stage B compiler progress)
+   - Phase 42-60 implementation (wasmtime CLI, Deno Deploy, routes in Galerina, Stage B compiler progress)
    - Phase 58+: GPU compute improvements (CUDA integration, memory/speed trade-offs)
    - Phase 60: v1.0 RC validation
 
@@ -131,7 +131,7 @@ Summary:
    ```
    
    This enables syntax like:
-   ```logicn
+   ```galerina
    match score {
      when score >= 90 => return "critical"
      when score >= 70 => return "high"
@@ -158,16 +158,16 @@ This session is being continued from a previous conversation that ran out of con
 
 Summary:
 1. Primary Request and Intent:
-   Complete the TypeScript-readable syntax unification for LogicN with strict rules: (1) public result types at top-level, contract-local types only when private; (2) contract stays inside flow body; (3) effects block optional for pure flows; (4) match preferred over if chains, NO else if allowed (hard error); (5) implement when guard syntax for match arms (when score >= 90 => return "critical"); (6) update all examples to remove legacy notes and follow new patterns; (7) update docs and KB; (8) continue development through Phase 75; (9) after Phase 75, improve gpu-compute performance without affecting security.
+   Complete the TypeScript-readable syntax unification for Galerina with strict rules: (1) public result types at top-level, contract-local types only when private; (2) contract stays inside flow body; (3) effects block optional for pure flows; (4) match preferred over if chains, NO else if allowed (hard error); (5) implement when guard syntax for match arms (when score >= 90 => return "critical"); (6) update all examples to remove legacy notes and follow new patterns; (7) update docs and KB; (8) continue development through Phase 75; (9) after Phase 75, improve gpu-compute performance without affecting security.
 
 2. Key Technical Concepts:
-   - LogicN governance model (effects, privacy, audit, contracts)
+   - Galerina governance model (effects, privacy, audit, contracts)
    - Parser dual-syntax support (: and -> return types)
    - Match guard arms with boolean conditions (pattern matching alternative to else-if)
    - WASM-ready execution architecture
-   - Stage B self-hosted compiler (parser.lln, lexer.lln)
+   - Stage B self-hosted compiler (parser.spore, lexer.spore)
    - Bytecode VM for performance optimization
-   - Runtime-in-LogicN percentage tracking (currently 25%, target 100%)
+   - Runtime-in-Galerina percentage tracking (currently 25%, target 100%)
    - Security audit integration (OWASP findings, taint tracking)
    - GPU compute backend (WebGPU, CUDA potential)
    - 20-phase roadmap (41-60) organized across 4 parallel streams: deployment, self-hosting, performance, security
@@ -190,29 +190,29 @@ Summary:
 
    **Legacy Qualifier Warnings (parser.ts, lines 360-385)**:
    - Added case for "safe" and "guard" keywords at top-level
-   - Emits LLN-SYNTAX-LEGACY-002 warning when detected
+   - Emits SPORE-SYNTAX-LEGACY-002 warning when detected
    - Falls through to continue parsing as valid flow
 
    **else if Hard Error (parser.ts, lines 1213-1221)**:
-   - Changed from advisory warning to hard parse error LLN-SYNTAX-010
-   - Emits: "'else if' is not allowed in LogicN. Use 'match' for multi-branch logic"
+   - Changed from advisory warning to hard parse error SPORE-SYNTAX-010
+   - Emits: "'else if' is not allowed in Galerina. Use 'match' for multi-branch logic"
    - Non-breaking: parse still continues to recover
 
-   **Documentation Created (logicn-roadmap-phases-41-60.md)**:
+   **Documentation Created (galerina-roadmap-phases-41-60.md)**:
    - Comprehensive 20-phase plan covering Phases 41-60
    - Runtime % progression: 27% → 50% (Phase 54) → 75% (Phase 59) → 80% (Phase 60)
    - Four parallel streams: A (deployment), B (self-hosting), C (performance), D (security)
-   - Key milestones: Phase 50 (Stage B first compilation), Phase 54 (route dispatcher in LogicN), Phase 57 (effect checker in LogicN), Phase 59 (capability host complete)
+   - Key milestones: Phase 50 (Stage B first compilation), Phase 54 (route dispatcher in Galerina), Phase 57 (effect checker in Galerina), Phase 59 (capability host complete)
 
 4. Errors and fixes:
-   - **Initial else-if approach was wrong**: User corrected me—else if must be a HARD ERROR (LLN-SYNTAX-010), not an advisory warning. I was treating it as "allowed with advisory" but user stated definitively "Do not allow else if". Fixed by changing emitWarning to emit (error not warning) and updating all Stage B files to remove else if usage.
-   - **Benchmark table accuracy**: I initially misrepresented winners in my summary (said Rust won six-digit-guess, LogicN won fibonacci). Actually WASM wins six-digit-guess at 86.99M/s, and fibonacci has incomparable workloads (LogicN passive runs fib(20) while Node.js runs fib(30)). Corrected in final summary.
-   - **Lexer.lln and parser.lln parsing failures**: Both files had 30+ parse errors after removing else if chains. Fixed by replacing nested if-else-if with sequential if blocks without else clauses, or using if (handled == false) guards.
-   - **Parser brace balance in lexer.lln**: Multiple mismatched braces from my restructuring. Fixed by carefully counting braces through the Some(c) dispatch block and adding proper closing braces.
+   - **Initial else-if approach was wrong**: User corrected me—else if must be a HARD ERROR (SPORE-SYNTAX-010), not an advisory warning. I was treating it as "allowed with advisory" but user stated definitively "Do not allow else if". Fixed by changing emitWarning to emit (error not warning) and updating all Stage B files to remove else if usage.
+   - **Benchmark table accuracy**: I initially misrepresented winners in my summary (said Rust won six-digit-guess, Galerina won fibonacci). Actually WASM wins six-digit-guess at 86.99M/s, and fibonacci has incomparable workloads (Galerina passive runs fib(20) while Node.js runs fib(30)). Corrected in final summary.
+   - **Lexer.spore and parser.spore parsing failures**: Both files had 30+ parse errors after removing else if chains. Fixed by replacing nested if-else-if with sequential if blocks without else clauses, or using if (handled == false) guards.
+   - **Parser brace balance in lexer.spore**: Multiple mismatched braces from my restructuring. Fixed by carefully counting braces through the Some(c) dispatch block and adding proper closing braces.
 
 5. Problem Solving:
    - **Syntax unification at scale**: Implemented 4 parser features simultaneously (: return type, legacy qualifiers, else if hard error, with effects hard error) affecting 2,791 tests. All passed after fixes.
-   - **Stage B self-hosted compiler updates**: Fixed 16 test files and 2 benchmark files to remove else if. Key insight: Stage B parser.lln must follow same rules as Stage A to bootstrap correctly.
+   - **Stage B self-hosted compiler updates**: Fixed 16 test files and 2 benchmark files to remove else if. Key insight: Stage B parser.spore must follow same rules as Stage A to bootstrap correctly.
    - **Governance path overhead vs WASM speed gap**: Identified that governed flows are 500-900× slower than WASM on pure arithmetic. Phase 45 bytecode VM expansion targets closing this by adding Bool/Branch opcodes and record field operations.
    - **Benchmark fidelity**: Clarified that GPU-compute throughput numbers are CPU-bound (setup overhead) not GPU-bound, since actual GPU dispatch isn't live yet. Real CUDA in Phase 58 will show actual GPU performance.
 
@@ -221,7 +221,7 @@ Summary:
    - "For else if — what's the policy right now in v1-current?" User then explicitly stated: "Actually it should not be allowed. use match instead of else if. Do not copy TypeScript's unsafe parts" — this was the critical correction that changed else if from advisory to hard error.
    - "show me some examples of logicN code how you think it now should look" — provided canonical examples using match, contract inside flow, no else if
    - "run another benchmark and plan the next 20 phases" — requested both immediate benchmark execution and comprehensive Phase 41-60 roadmap
-   - "so in the 'Benchmark Results' the winner is written in ie Python/NodeJS etc. So Rust wone the 'six-digit-guess'? and LogicN passive wone the fibonacci" — user questioned accuracy of my benchmark summary, prompting verification
+   - "so in the 'Benchmark Results' the winner is written in ie Python/NodeJS etc. So Rust wone the 'six-digit-guess'? and Galerina passive wone the fibonacci" — user questioned accuracy of my benchmark summary, prompting verification
    - CRITICAL NEW REQUEST: Detailed syntax guidance including: "I'd make public result types top-level, not inside contract, unless the type is private to that one flow" + full TypeScript-Readable Syntax Proposal document + "once you have done this check and update C:\laragon\www\LO\examples also remove legacy notes in examples ie tidy it up. update docs and KB as well. after this keep on going until then end of 75. after you have finished all phases look into getting the 'gpu-compute' improved in the real world with, out effecting security, we could just a little more memory in return for being as fast as or faster etc"
 
 7. Pending Tasks:
@@ -233,9 +233,9 @@ Summary:
      - Use contract { ... } inside flow body (not outside)
      - Replace if chains with match when appropriate
      - Use : return type syntax or arrow, user prefers consistency
-   - Update knowledge bases: logicn-grammar.ebnf, logicn-contract-full-model.md, logicn-cli-current.md, route-spec.md, logicn-core-intent-safety-effects.md, etc. to reflect new syntax and patterns
+   - Update knowledge bases: galerina-grammar.ebnf, galerina-contract-full-model.md, galerina-cli-current.md, route-spec.md, galerina-core-intent-safety-effects.md, etc. to reflect new syntax and patterns
    - Continue implementation of Phases 41-60 per roadmap
-   - Phase 42-60 implementation (wasmtime CLI, Deno Deploy, routes in LogicN, Stage B compiler progress)
+   - Phase 42-60 implementation (wasmtime CLI, Deno Deploy, routes in Galerina, Stage B compiler progress)
    - Phase 58+: GPU compute improvements (CUDA integration, memory/speed trade-offs)
    - Phase 60: v1.0 RC validation
 
@@ -264,7 +264,7 @@ Summary:
    ```
    
    This enables syntax like:
-   ```logicn
+   ```galerina
    match score {
      when score >= 90 => return "critical"
      when score >= 70 => return "high"

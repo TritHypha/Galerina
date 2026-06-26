@@ -1,0 +1,11 @@
+{
+  "packageName": "@galerina/framework-example-app",
+  "allowedExternal": [
+    "@galerina/framework-api-server",
+    "@galerina/framework-app-kernel",
+    "node:fs",
+    "node:path",
+    "node:url"
+  ],
+  "note": "Baseline auto-generated. Edit allowedExternal to widen/narrow the border. `--check` fails if an import appears that is not listed here."
+}

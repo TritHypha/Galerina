@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 // audit-graph-integrity.mjs — structural validation of the project graph (R&D 0121).
 //
-// `logicn graph` GENERATES build/graph/*.json + reports but runs NO validation — so "no cycles
+// `galerina graph` GENERATES build/graph/*.json + reports but runs NO validation — so "no cycles
 // flagged" means "not checked", not "proven absent" (RD-0121). This audit is the missing check. It is
 // VALIDATE-IF-PRESENT: the graph JSON is a ~3MB GENERATED artifact (gitignored; the CLI dist is not
 // committed), so it is absent in a build-free checkout — there the audit skips cleanly (run it after
-// `logicn graph`, locally / pre-commit / a build-full job). When a graph IS present it validates
+// `galerina graph`, locally / pre-commit / a build-full job). When a graph IS present it validates
 // fail-closed (a present-but-corrupt graph is a hard violation). The --self-test runs build-free in CI
 // to guarantee the detectors are never silently neutered. Checks:
 //
@@ -25,7 +25,7 @@
 
 import { readFileSync, existsSync } from "node:fs";
 
-const GRAPH = "build/graph/logicn-devtools-project-graph.json";
+const GRAPH = "build/graph/galerina-devtools-project-graph.json";
 
 // ── pure detectors (also exercised by --self-test) ───────────────────────────────────────────────
 export function findDanglingEdges(nodes, edges) {
@@ -109,8 +109,8 @@ if (!existsSync(GRAPH)) {
   // absent in a build-free checkout. Absence means "no graph to validate here", NOT "the graph is
   // corrupt" — so this validate-IF-PRESENT audit SKIPS cleanly. It is NOT fail-open: a PRESENT graph
   // is always validated fail-closed (below); only the nothing-to-validate case skips. Run it after
-  // `logicn graph` (locally / pre-commit / a build-full CI), where it has a graph to check.
-  console.log(`[graph-integrity] ${GRAPH} not present (generated artifact) — nothing to validate; run \`logicn graph\` first.`);
+  // `galerina graph` (locally / pre-commit / a build-full CI), where it has a graph to check.
+  console.log(`[graph-integrity] ${GRAPH} not present (generated artifact) — nothing to validate; run \`galerina graph\` first.`);
   console.log("VIOLATIONS: 0");
   console.log("TOTAL: 0 graph-integrity violation(s) (skipped — no generated graph present)");
   process.exit(0);

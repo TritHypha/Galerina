@@ -1,16 +1,16 @@
 # Rules: Boundary Safety
 
-LogicN's first proof target is boundary safety.
+Galerina's first proof target is boundary safety.
 
 ## Core Statement
 
 ```text
-A well-checked LogicN program preserves declared boundaries.
+A well-checked Galerina program preserves declared boundaries.
 ```
 
 ## Required Guarantees
 
-If a program passes LogicN checks, the direction is that:
+If a program passes Galerina checks, the direction is that:
 
 - public routes only return declared views/responses
 - secret fields cannot appear in public output

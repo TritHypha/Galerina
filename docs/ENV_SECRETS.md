@@ -1,6 +1,6 @@
-# LogicN Environment Secrets
+# Galerina Environment Secrets
 
-LogicN should treat `.env` values as secrets, not normal strings.
+Galerina should treat `.env` values as secrets, not normal strings.
 
 Core rule:
 
@@ -10,14 +10,14 @@ Secrets are values that can be used, but not seen.
 
 A secret may be used by an approved operation, but it must not be copied,
 logged, cached, compiled into output, sent to AI, returned in errors or sent to
-undeclared hosts unless LogicN has an explicit safe rule for that use.
+undeclared hosts unless Galerina has an explicit safe rule for that use.
 
 ## Central Declaration
 
-Secrets should be declared centrally, usually in `boot.lln` or the app security
+Secrets should be declared centrally, usually in `boot.spore` or the app security
 policy, instead of being read ad hoc throughout the application.
 
-```LogicN
+```Galerina
 secrets {
   PAYMENT_API_KEY {
     source env
@@ -42,7 +42,7 @@ secrets {
 }
 ```
 
-This gives LogicN a map of:
+This gives Galerina a map of:
 
 ```text
 what secrets exist
@@ -58,13 +58,13 @@ Environment secrets should not become ordinary strings.
 
 Denied pattern:
 
-```LogicN
+```Galerina
 let key: String = Env.get("PAYMENT_API_KEY")
 ```
 
 Preferred pattern:
 
-```LogicN
+```Galerina
 let key: Secret<ApiKey> = Env.secret("PAYMENT_API_KEY")
 ```
 
@@ -73,7 +73,7 @@ APIs, but it cannot be logged or converted to a normal string.
 
 Denied:
 
-```LogicN
+```Galerina
 let key = Env.secret<ApiKey>("PAYMENT_API_KEY")
 
 Log.safe("Using key", key)
@@ -82,10 +82,10 @@ Log.safe("Using key", key)
 Compiler error:
 
 ```text
-LOGICN-SECRET-001
+GALERINA-SECRET-001
 Cannot log Secret<ApiKey>.
 
-File: payments.lln
+File: payments.spore
 Line: 12
 
 Use a non-sensitive reference such as Secret.name(key) or Secret.fingerprint(key).
@@ -93,7 +93,7 @@ Use a non-sensitive reference such as Secret.name(key) or Secret.fingerprint(key
 
 Safe:
 
-```LogicN
+```Galerina
 Log.safe("Using payment provider key", {
   secret: Secret.name(key)
 })
@@ -114,7 +114,7 @@ Secret values should be usable only through safe functions and approved sinks.
 
 Allowed:
 
-```LogicN
+```Galerina
 let key = Env.secret<ApiKey>("PAYMENT_API_KEY")
 
 Payments.charge({
@@ -126,7 +126,7 @@ Payments.charge({
 
 Denied:
 
-```LogicN
+```Galerina
 let key = Env.secret<ApiKey>("PAYMENT_API_KEY")
 
 let copied = key.toString()
@@ -135,7 +135,7 @@ let copied = key.toString()
 Compiler error:
 
 ```text
-LOGICN-SECRET-002
+GALERINA-SECRET-002
 Secret<ApiKey> cannot be converted to String.
 
 Reason:
@@ -144,9 +144,9 @@ Secrets may not be copied into normal memory or returned from functions.
 
 ## Secret Taint Tracking
 
-If a value touches a secret, LogicN should remember that it is secret-derived.
+If a value touches a secret, Galerina should remember that it is secret-derived.
 
-```LogicN
+```Galerina
 let secret = Env.secret<ApiKey>("PAYMENT_API_KEY")
 
 let header = "Bearer " + secret
@@ -154,19 +154,19 @@ let header = "Bearer " + secret
 
 `header` should become:
 
-```LogicN
+```Galerina
 SecretDerived<AuthHeader>
 ```
 
 This must fail:
 
-```LogicN
+```Galerina
 Log.safe("Header is", header)
 ```
 
 Safe usage should flow through a secret-aware helper:
 
-```LogicN
+```Galerina
 Http.post("https://api.payment-provider.com/charge", {
   headers: {
     Authorization: Secret.bearer(secret)
@@ -175,12 +175,12 @@ Http.post("https://api.payment-provider.com/charge", {
 })
 ```
 
-LogicN allows the secret to enter a permitted HTTP header for an approved
+Galerina allows the secret to enter a permitted HTTP header for an approved
 service, but not logs, cache, errors, AI context, build output or reports.
 
 ## Secret-Safe Sinks
 
-LogicN should classify where values are going.
+Galerina should classify where values are going.
 
 | Sink | Secret allowed? | Rule |
 |---|---:|---|
@@ -195,7 +195,7 @@ LogicN should classify where values are going.
 
 Allowed:
 
-```LogicN
+```Galerina
 Http.post(PaymentProvider.chargeUrl, {
   headers: {
     Authorization: Secret.bearer(PAYMENT_API_KEY)
@@ -205,7 +205,7 @@ Http.post(PaymentProvider.chargeUrl, {
 
 Denied:
 
-```LogicN
+```Galerina
 Http.post("https://random-site.example", {
   headers: {
     Authorization: Secret.bearer(PAYMENT_API_KEY)
@@ -216,7 +216,7 @@ Http.post("https://random-site.example", {
 Compiler or runtime error:
 
 ```text
-LOGICN-SECRET-HTTP-004
+GALERINA-SECRET-HTTP-004
 Secret PAYMENT_API_KEY may not be sent to undeclared external host.
 
 Allowed hosts:
@@ -253,10 +253,10 @@ values.
 
 ## Fingerprints
 
-Sometimes operators need to know whether a secret changed. LogicN may expose a
+Sometimes operators need to know whether a secret changed. Galerina may expose a
 safe fingerprint, not the value.
 
-```LogicN
+```Galerina
 Secret.fingerprint(PAYMENT_API_KEY)
 ```
 
@@ -274,7 +274,7 @@ mismatch or a missing secret without revealing the value.
 
 ## Secret Use Report
 
-LogicN should generate a `secret-report.json`.
+Galerina should generate a `secret-report.json`.
 
 ```json
 {
@@ -322,7 +322,7 @@ Reports must include metadata only. They must never include secret values.
 
 A webhook secret should not be visible to app code as a string.
 
-```LogicN
+```Galerina
 let webhookSecret = Env.secret<HmacKey>("WEBHOOK_SECRET")
 
 let verified = Hmac.verifySha256({
@@ -337,7 +337,7 @@ print, copy or convert it.
 
 Denied:
 
-```LogicN
+```Galerina
 Log.safe("Webhook secret", webhookSecret)
 
 LLM.ask({
@@ -349,12 +349,12 @@ Cache.set("debug-webhook-secret", webhookSecret)
 
 ## Secrets and LLM Cache
 
-LogicN should block LLM calls and passive LLM cache entries when input contains
+Galerina should block LLM calls and passive LLM cache entries when input contains
 secrets.
 
 Denied:
 
-```LogicN
+```Galerina
 let key = Env.secret<ApiKey>("PAYMENT_API_KEY")
 
 let result = LLM.ask<DebugHelp>({
@@ -366,7 +366,7 @@ let result = LLM.ask<DebugHelp>({
 Diagnostic:
 
 ```text
-LOGICN-LLM-SECRET-001
+GALERINA-LLM-SECRET-001
 Secret PAYMENT_API_KEY cannot be sent to an LLM.
 
 Suggestion:
@@ -375,7 +375,7 @@ Use Secret.fingerprint(PAYMENT_API_KEY), provider name or a redacted diagnostic 
 
 Safe:
 
-```LogicN
+```Galerina
 let result = LLM.ask<DebugHelp>({
   input: {
     provider: "PaymentProvider",
@@ -390,7 +390,7 @@ let result = LLM.ask<DebugHelp>({
 
 Secrets should have narrow access.
 
-```LogicN
+```Galerina
 secret PAYMENT_API_KEY {
   source env
   allow only PaymentsService
@@ -399,20 +399,20 @@ secret PAYMENT_API_KEY {
 
 Allowed:
 
-```LogicN
+```Galerina
 PaymentsService.charge(order)
 ```
 
 Denied:
 
-```LogicN
+```Galerina
 AdminDashboard.showSecret(PAYMENT_API_KEY)
 ```
 
 Compiler error:
 
 ```text
-LOGICN-SECRET-SCOPE-003
+GALERINA-SECRET-SCOPE-003
 PAYMENT_API_KEY is not available in AdminDashboard.
 
 Allowed scope:
@@ -421,9 +421,9 @@ Allowed scope:
 
 ## Secret Lifetime
 
-LogicN should avoid keeping secrets in memory longer than needed.
+Galerina should avoid keeping secrets in memory longer than needed.
 
-```LogicN
+```Galerina
 with secret PAYMENT_API_KEY as key {
   Payments.charge({
     apiKey: key,
@@ -443,7 +443,7 @@ clear the reference afterwards where possible
 
 Denied:
 
-```LogicN
+```Galerina
 let savedKey
 
 with secret PAYMENT_API_KEY as key {
@@ -455,7 +455,7 @@ The secret cannot escape its safe lifetime.
 
 ## Default Redaction
 
-LogicN should automatically redact known sensitive names:
+Galerina should automatically redact known sensitive names:
 
 ```text
 password
@@ -476,7 +476,7 @@ database_url
 
 Example:
 
-```LogicN
+```Galerina
 Log.safe("Config loaded", Env.all())
 ```
 
@@ -492,31 +492,31 @@ Output:
 
 ## Hard-Coded Secret Detection
 
-LogicN should scan source files for likely secrets.
+Galerina should scan source files for likely secrets.
 
 Denied:
 
-```LogicN
+```Galerina
 let key = "sk_live_abc123456789"
 ```
 
 Compiler warning or error:
 
 ```text
-LOGICN-SECRET-HARDCODED-001
+GALERINA-SECRET-HARDCODED-001
 Possible hard-coded secret detected.
 
-File: payments.lln
+File: payments.spore
 Line: 8
 
-Move this value to .env and declare it in boot.lln.
+Move this value to .env and declare it in boot.spore.
 ```
 
 ## Syntax Pattern
 
 Recommended pattern:
 
-```LogicN
+```Galerina
 secret PAYMENT_API_KEY: ApiKey {
   source env "PAYMENT_API_KEY"
   required true
@@ -530,7 +530,7 @@ secret PAYMENT_API_KEY: ApiKey {
 
 Usage:
 
-```LogicN
+```Galerina
 secure flow chargeCustomer(order: Order) -> Result<PaymentResult, PaymentError>
   effects [secret.read, network.outbound, Log.safe]
 {
@@ -549,7 +549,7 @@ secure flow chargeCustomer(order: Order) -> Result<PaymentResult, PaymentError>
 
 ## Design Summary
 
-LogicN should identify `.env` keys using:
+Galerina should identify `.env` keys using:
 
 ```text
 declared secret blocks
@@ -581,11 +581,11 @@ It was not compiled into the build.
 Everything above governs how `.env` *values* flow through the app once loaded.
 But a plaintext `.env` file is still readable by anyone who can read the file on
 disk. For the cases where the secrets file itself must be encrypted at rest,
-LogicN ships an **optional** drop-in replacement: `env.tmf`, provided by the
-`@logicn/ext-secrets-tmf` package.
+Galerina ships an **optional** drop-in replacement: `env.tmf`, provided by the
+`@galerina/ext-secrets-tmf` package.
 
 `env.tmf` is the SOPS / Sealed-Secrets / age pattern built on the `.tmf`
-container. It is a **thin layer** over `@logicn/ext-tmf` (it owns no crypto and
+container. It is a **thin layer** over `@galerina/ext-tmf` (it owns no crypto and
 no container bytes of its own — every byte primitive comes from the engine's
 `writeTmf`/`readTmf` and KEM-DEM `seal`/`open`). Each secret is sealed under a
 recipient public key; the file on disk is ciphertext only.
@@ -604,17 +604,17 @@ values.
 ### Governed In-Memory CLI
 
 Secrets in `env.tmf` are managed through a governed CRUD/shell CLI
-(`logicn secrets-tmf` / `logicn-secrets-tmf`) that decrypts only into an arena
+(`galerina secrets-tmf` / `galerina-secrets-tmf`) that decrypts only into an arena
 buffer and never leaves plaintext where it can be scraped:
 
 ```text
-logicn-secrets-tmf init  --pub HEX        create an empty encrypted env.tmf
-logicn-secrets-tmf set   NAME --pub HEX   value from STDIN or no-echo prompt
-logicn-secrets-tmf get   NAME             in-arena -> stdout (piped only)
-logicn-secrets-tmf list                   names + metadata, NEVER values
-logicn-secrets-tmf rm    NAME --pub HEX   remove a section
-logicn-secrets-tmf rotate-recipient --new-pub HEX
-logicn-secrets-tmf shell --pub HEX        in-arena REPL
+galerina-secrets-tmf init  --pub HEX        create an empty encrypted env.tmf
+galerina-secrets-tmf set   NAME --pub HEX   value from STDIN or no-echo prompt
+galerina-secrets-tmf get   NAME             in-arena -> stdout (piped only)
+galerina-secrets-tmf list                   names + metadata, NEVER values
+galerina-secrets-tmf rm    NAME --pub HEX   remove a section
+galerina-secrets-tmf rotate-recipient --new-pub HEX
+galerina-secrets-tmf shell --pub HEX        in-arena REPL
 ```
 
 The CLI enforces the same "used, not seen" rule on the editing surface itself:

@@ -1,4 +1,4 @@
-# LogicN — Parser Error Recovery Policy
+# Galerina — Parser Error Recovery Policy
 
 ## Status
 
@@ -11,7 +11,7 @@ Source of truth for parser error handling
 
 ## Principle
 
-The LogicN parser **collects diagnostics** rather than stopping at the first
+The Galerina parser **collects diagnostics** rather than stopping at the first
 error. Every parse failure produces a diagnostic and the parser continues
 scanning. The resulting AST may contain `errorNode` entries where recovery
 occurred — later compiler phases skip `errorNode` branches rather than
@@ -143,8 +143,8 @@ The parser emits one of two codes when it produces an `errorNode`:
 
 | Code | Name | Used when |
 |---|---|---|
-| `LLN-PARSE-001` | `UNEXPECTED_TOKEN` | Token is not valid in this position |
-| `LLN-PARSE-002` | `EXPECTED_FLOW_KEYWORD` | Flow qualifier not followed by `flow` keyword |
+| `SPORE-PARSE-001` | `UNEXPECTED_TOKEN` | Token is not valid in this position |
+| `SPORE-PARSE-002` | `EXPECTED_FLOW_KEYWORD` | Flow qualifier not followed by `flow` keyword |
 
 These codes are already in use in the Phase 4 parser.
 
@@ -156,7 +156,7 @@ These codes are already in use in the Phase 4 parser.
 
 Input:
 
-```logicn
+```galerina
 flow add(a: Int, b: Int) -> Int {
   return a
 ```
@@ -164,7 +164,7 @@ flow add(a: Int, b: Int) -> Int {
 Behaviour:
 
 ```
-LLN-PARSE-001: Expected "}", got eof.
+SPORE-PARSE-001: Expected "}", got eof.
 ```
 
 The parser emits the diagnostic and returns a `block` node with the `}`
@@ -174,15 +174,15 @@ missing; the program node is still returned.
 
 Input:
 
-```logicn
+```galerina
 secure secure
 ```
 
 Behaviour:
 
 ```
-LLN-PARSE-002: Expected "flow" after "secure".
-LLN-PARSE-001: Expected "flow", got "secure" (keyword).
+SPORE-PARSE-002: Expected "flow" after "secure".
+SPORE-PARSE-001: Expected "flow", got "secure" (keyword).
 ... (cascading errors from failed parseFlowDecl)
 ```
 
@@ -193,16 +193,16 @@ this case) and returns the program node.
 
 Input:
 
-```logicn
+```galerina
 !!! flow add(a: Int) -> Int { return a }
 ```
 
 Behaviour:
 
 ```
-LLN-PARSE-001: Unexpected token "!" at top level.
-LLN-PARSE-001: Unexpected token "!" at top level.
-LLN-PARSE-001: Unexpected token "!" at top level.
+SPORE-PARSE-001: Unexpected token "!" at top level.
+SPORE-PARSE-001: Unexpected token "!" at top level.
+SPORE-PARSE-001: Unexpected token "!" at top level.
 ```
 
 The three `!` characters are each skipped individually. The `flow` keyword is
@@ -217,13 +217,13 @@ Phase 4 parser tests already verify recovery:
 
 ```javascript
 it("recovers after an unexpected token at top level", () => {
-  const result = parseProgram("!!! flow add(a: Int) -> Int { return a }", "test.lln");
+  const result = parseProgram("!!! flow add(a: Int) -> Int { return a }", "test.spore");
   assert.ok(result.ast !== undefined);
 });
 
-it("reports LLN-PARSE-002 when flow qualifier is not followed by flow", () => {
-  const result = parseProgram("secure secure", "test.lln");
-  const diag = result.diagnostics.find((d) => d.code === "LLN-PARSE-002");
+it("reports SPORE-PARSE-002 when flow qualifier is not followed by flow", () => {
+  const result = parseProgram("secure secure", "test.spore");
+  const diag = result.diagnostics.find((d) => d.code === "SPORE-PARSE-002");
   assert.ok(diag !== undefined);
 });
 ```
@@ -237,5 +237,5 @@ synchronisation token loops.
 
 - `docs/Knowledge-Bases/operator-precedence.md`
 - `docs/Knowledge-Bases/formal-type-system-spec.md`
-- `packages-logicn/logicn-core-compiler/src/parser.ts`
-- `packages-logicn/logicn-core-compiler/tests/parser.test.mjs`
+- `packages-galerina/galerina-core-compiler/src/parser.ts`
+- `packages-galerina/galerina-core-compiler/tests/parser.test.mjs`

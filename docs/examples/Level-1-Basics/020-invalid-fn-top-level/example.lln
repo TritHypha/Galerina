@@ -1,9 +1,0 @@
-/// example: 020-invalid-fn-top-level
-/// level: 1
-/// concept: fn cannot be declared at top level
-/// expected_diagnostics: LLN-SYNTAX-005
-/// test_status: stable
-
-fn calculateVat(price: Money<GBP>) -> Money<GBP> {
-  return price * Decimal("0.20")
-}

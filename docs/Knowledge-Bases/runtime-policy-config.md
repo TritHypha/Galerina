@@ -2,7 +2,7 @@
 
 ## Definition
 
-The Runtime Policy Config is the system-level configuration that defines default runtime behaviour, security limits, package rules, audit destinations, cache rules, and environment constraints before any LogicN code executes.
+The Runtime Policy Config is the system-level configuration that defines default runtime behaviour, security limits, package rules, audit destinations, cache rules, and environment constraints before any Galerina code executes.
 
 It is the runtime's **default governance contract**.
 
@@ -37,9 +37,9 @@ The runtime does not execute project code until the Runtime Policy Config is ful
 - Secret handling
 - AI/tool permissions
 
-## Example File (`logicn.runtime.policy` or `logicn.policy`)
+## Example File (`galerina.runtime.policy` or `galerina.policy`)
 
-```logicn
+```galerina
 runtime policy {
 
   security {
@@ -59,7 +59,7 @@ runtime policy {
   packages {
     require lockfile
     require signature
-    allow registry "logicn-certified"
+    allow registry "galerina-certified"
     deny uncertified production
   }
 
@@ -86,7 +86,7 @@ runtime policy {
 
 ## Difference from PHP.ini
 
-While `php.ini` configures basic runtime behaviour, the LogicN Runtime Policy Config configures:
+While `php.ini` configures basic runtime behaviour, the Galerina Runtime Policy Config configures:
 
 ```text
 runtime behaviour + security governance + authority defaults
@@ -116,7 +116,7 @@ permission says:
 - **Runtime Policy Config** defines the rules of the world that govern the system.
 
 ### Example boot/main
-```logicn
+```galerina
 boot main {
   policy use RuntimePolicy
 

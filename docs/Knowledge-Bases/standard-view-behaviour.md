@@ -2,7 +2,7 @@
 
 ## Purpose
 
-LogicN should define common view behaviour once in the runtime/language
+Galerina should define common view behaviour once in the runtime/language
 standard, then let permissions reference those view levels.
 
 The core principle is:
@@ -22,7 +22,7 @@ core policy or boot/main runtime setup.
 
 Example:
 
-```logicn
+```galerina
 runtime view private {
   expose when owner == actor
 }
@@ -30,7 +30,7 @@ runtime view private {
 
 Then this permission:
 
-```logicn
+```galerina
 data {
   allow expose view: private
 }
@@ -42,7 +42,7 @@ inherits the standard private exposure rule.
 
 `public` should define normal allowed exposure:
 
-```logicn
+```galerina
 runtime view public {
   expose normally
 }
@@ -57,7 +57,7 @@ contract allow public exposure
 
 Example:
 
-```logicn
+```galerina
 data {
   allow expose view: public
 }
@@ -67,7 +67,7 @@ data {
 
 `private` should define owner-only exposure by default:
 
-```logicn
+```galerina
 runtime view private {
   expose when owner == actor
 }
@@ -82,7 +82,7 @@ the current actor
 
 This allows slimmer permission syntax:
 
-```logicn
+```galerina
 data {
   allow expose view: private
 }
@@ -90,7 +90,7 @@ data {
 
 instead of repeating:
 
-```logicn
+```galerina
 data {
   allow expose view: private when owner == actor
 }
@@ -102,7 +102,7 @@ Permissions may add narrower conditions.
 
 Example:
 
-```logicn
+```galerina
 data {
   allow expose view: private when owner == actor and purpose == "support"
 }
@@ -116,7 +116,7 @@ Permissions should not silently widen built-in view behaviour.
 
 For example, this should not be allowed as an ordinary permission rule:
 
-```logicn
+```galerina
 data {
   allow expose view: private when role == "support_admin"
 }
@@ -133,7 +133,7 @@ review, audit and report entry.
 
 Example direction:
 
-```logicn
+```galerina
 data {
   allow expose view: private widen with policy SupportPrivateAccess
 }
@@ -146,7 +146,7 @@ built-in view behaviour must be visible, reviewed and reported.
 
 With standard view behaviour, this:
 
-```logicn
+```galerina
 data {
   allow expose view: public
   allow expose view: private

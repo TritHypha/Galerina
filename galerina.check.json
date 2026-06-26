@@ -1,0 +1,48 @@
+{
+  "_comment": "galerina.check.json — project-level configuration for `galerina check`",
+  "_docs": "docs/Knowledge-Bases/galerina-check-config.md",
+
+  "profile": "production",
+
+  "rules": {
+    "SPORE-TAINT-001": "error",
+    "SPORE-TAINT-003": "error",
+    "SPORE-TAINT-004": "warning",
+    "SPORE-TAINT-005": "error",
+    "SPORE-TAINT-006": "error",
+
+    "SPORE-PROFILE-001": "error",
+    "SPORE-PROFILE-002": "error",
+    "SPORE-PROFILE-005B": "error",
+    "SPORE-PROFILE-006": "warning",
+
+    "SPORE-VAL-001": "error",
+    "SPORE-VAL-002": "error",
+
+    "SPORE-GOV-002": "error",
+    "SPORE-GOV-009": "error",
+
+    "SPORE-SYNTAX-010": "error",
+    "SPORE-SYNTAX-LEGACY-001": "error",
+    "SPORE-SYNTAX-LEGACY-002": "warning",
+
+    "SPORE-STYLE-001": "off",
+
+    "SPORE-SOURCE-ESCAPE-001": "error",
+    "SPORE-SEC-020": "error",
+    "SPORE-SEC-021": "error"
+  },
+
+  "ignore": [
+    "tests/**",
+    "examples/**",
+    "docs/**"
+  ],
+
+  "minSeverity": "warning",
+
+  "security": false,
+  "flowgraph": false,
+
+  "_note": "Set security:true and flowgraph:true to enable @galerina/devtools-security and @galerina/devtools-flowgraph integration (adds ~2s per file). Recommended for CI but slow for local checks."
+}

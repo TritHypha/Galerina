@@ -10,7 +10,7 @@ Flow contracts combine parameters, return type, recoverable errors and effects.
 
 ## Syntax
 
-```logicn
+```galerina
 secure flow createOrder(request: CreateOrderRequest)
   -> Result<OrderResponse, OrderError>
 effects [database.write] {

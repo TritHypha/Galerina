@@ -1,0 +1,33 @@
+{
+  "name": "@galerina/devtools-naming",
+  "version": "1.0.0-beta.2",
+  "description": "Naming standard enforcer for Galerina: detects abbreviations, implicit types, missing intent. Promotes Zero-Ambiguity / Maximum-Semantics coding.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "bin": { "galerina-naming": "./dist/cli.js" },
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test tests/*.test.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": { "@galerina/core-compiler": "file:../galerina-core-compiler" },
+  "devDependencies": { "@types/node": "^25.9.1", "typescript": "^5.5.0" },
+  "private": true,
+  "keywords": [
+    "galerina",
+    "naming",
+    "devtools",
+    "zero-ambiguity",
+    "semantics",
+    "lint"
+  ],
+  "note": "Naming tooling ships independently of the compiler — naming conventions can be updated without waiting for compiler release cycles."
+}

@@ -2,16 +2,16 @@
 
 ## Purpose
 
-Tests verify that LogicN security and boundary rules remain true.
+Tests verify that Galerina security and boundary rules remain true.
 
 ## Short Definition
 
-LogicN tests should understand routes, responses/views, models, permissions,
+Galerina tests should understand routes, responses/views, models, permissions,
 effects, classifications and error handling.
 
 ## Syntax Examples
 
-```logicn
+```galerina
 test flow getUser denies raw_model_return
 test response User.authorised excludes passwordHash
 test permission user_read denies network.external

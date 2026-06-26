@@ -1,0 +1,22 @@
+// greeting — the app's governed flow for the GET /hello route.
+//
+// This is the human-authored source of the greeting. packages/greeting/ is its
+// compiled, signed, fusable form — what the App Kernel admits and invokes at
+// runtime. Keep the two in step: edit the logic here, then rebuild the package with
+// `galerina build --package packages/greeting`.
+//
+// Deny-by-default: this flow is `pure` and needs NO capabilities, so it cannot reach
+// the network, storage, secrets, the database, or inference. To grant a capability
+// later, add an `effects { ... }` clause to the contract below AND the matching name
+// to App.manifest's `capabilities` — never one without the other.
+pure flow greeting() -> Int
+contract {
+  intent { "Return the HTTP 200 status for the hello-world greeting served at GET /hello." }
+}
+{
+  let ready: Int = 200
+  match ready {
+    200 => return 200
+    _ => return 500
+  }
+}

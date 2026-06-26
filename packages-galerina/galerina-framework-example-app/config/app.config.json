@@ -1,0 +1,13 @@
+{
+  "name": "galerina-framework-example-app",
+  "env": "development",
+  "posture": "auto",
+  "http": {
+    "host": "127.0.0.1",
+    "port": 8787
+  },
+  "greeting": {
+    "message": "hello, governed world",
+    "route": "/hello"
+  }
+}

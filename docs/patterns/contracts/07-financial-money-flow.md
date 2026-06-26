@@ -1,4 +1,4 @@
-Title: LogicN Contract Pattern — Financial Money Flow
+Title: Galerina Contract Pattern — Financial Money Flow
 
 ### When to use
 
@@ -6,7 +6,7 @@ Use this pattern when a flow handles monetary values, enforces single-currency a
 
 ### Correct example
 
-```logicn
+```galerina
 flow ProcessPayment(readonly request: Request) -> ProcessPaymentResult {
 
   contract {
@@ -143,7 +143,7 @@ flow ProcessPayment(readonly request: Request) -> ProcessPaymentResult {
 ### Common mistakes
 
 **Mistake 1 — Using a Float or Decimal type for monetary amounts**
-```logicn
+```galerina
 types {
   PaymentLine = { description: String, amount: Float }
 }
@@ -151,7 +151,7 @@ types {
 `Float` and `Decimal` are forbidden for monetary values in a flow with `financial.precision: bigint`. The type must be `Money<GBP>` (or the relevant currency). Float arithmetic can produce rounding errors that cause ledger imbalances.
 
 **Mistake 2 — Omitting `financial.cross_currency: deny` when mixing currency variables**
-```logicn
+```galerina
 financial {
   currency: GBP
   precision: bigint
@@ -160,7 +160,7 @@ financial {
 Without `cross_currency: deny`, the runtime may silently accept a `Money<USD>` value assigned to a `Money<GBP>` field. The explicit denial turns a silent mismatch into a hard compile-time error.
 
 **Mistake 3 — Using standard integer addition instead of `sum_money` for monetary totals**
-```logicn
+```galerina
 let total = request.body["lines"].reduce((acc, l) => acc + l.amount.value, 0)
 ```
 Extracting `.value` from a `Money<GBP>` and adding raw integers discards the currency tag. The result is an untyped integer, not a `Money<GBP>`, and will fail the `response.guarantees result.total is Money<GBP>` check. Always use the `sum_money` built-in.
@@ -179,7 +179,7 @@ Extracting `.value` from a `Money<GBP>` and adding raw integers discards the cur
 
 If `E902 — cross-currency assignment: cannot assign Money<USD> to Money<GBP>` is raised, ensure all monetary fields are typed as `Money<GBP>` and add the guard to `request`:
 
-```logicn
+```galerina
 request {
   requires request.body["currency"] == "GBP"
 }
@@ -187,7 +187,7 @@ request {
 
 And in the `financial` block:
 
-```logicn
+```galerina
 financial {
   currency: GBP
   precision: bigint

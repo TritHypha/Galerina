@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Repositories and storage contracts define how LogicN flows read and write
+Repositories and storage contracts define how Galerina flows read and write
 persistent data without hiding database behaviour inside models.
 
 ## Short Definition
@@ -25,14 +25,14 @@ security-focused and storage behaviour reportable.
 
 Avoid:
 
-```logicn
+```galerina
 user.save()
 User.findById(id)
 ```
 
 Prefer:
 
-```logicn
+```galerina
 let user = try UsersRepository.findRequired(userId)
 ```
 
@@ -40,7 +40,7 @@ This keeps storage effects visible and reportable.
 
 ## Syntax Example
 
-```logicn
+```galerina
 repository UsersRepository {
   storage UsersDatabase
   model User

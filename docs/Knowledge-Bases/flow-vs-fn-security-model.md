@@ -2,7 +2,7 @@
 
 ## Definition
 
-LogicN has three distinct execution constructs. They are not interchangeable.
+Galerina has three distinct execution constructs. They are not interchangeable.
 
 ```text
 route = external entry point — exposes a flow to callers
@@ -20,11 +20,11 @@ A `route` delegates to a `flow`. A `flow` calls `fn` helpers for local computati
 Effects propagate upward: if a `fn` uses `database.write`, the `flow` calling it
 must also declare or be permitted for that effect, and by extension so must the `route`.
 
-LogicN is a **flow-first language**. The primary governed execution unit is `flow`.
+Galerina is a **flow-first language**. The primary governed execution unit is `flow`.
 
 ## TL;DR
 - route → flow → fn: expose, govern, compute
-- fn may only appear inside a flow body — top-level fn is LLN-SYNTAX-005
+- fn may only appear inside a flow body — top-level fn is SPORE-SYNTAX-005
 - fn cannot declare effects, authority, or await — it is always synchronous
 
 ---
@@ -35,7 +35,7 @@ A `route` is an external entry point. It exposes a `flow` to callers (HTTP, webh
 scheduled job, event trigger). A route does not contain logic — it declares the
 contract and delegates to a flow.
 
-```logicn
+```galerina
 route POST "/orders" {
   request CreateOrderRequest
   response OrderResponse
@@ -75,7 +75,7 @@ cross trust boundaries
 
 Example:
 
-```logicn
+```galerina
 flow checkout_order(order: Order) -> Receipt
   uses vault.payments.read
   uses network.internal
@@ -127,7 +127,7 @@ local reusable logic
 
 Example:
 
-```logicn
+```galerina
 pure flow calculateTotal(price: Money<GBP>) -> Money<GBP> {
   fn calculateVat(value: Money<GBP>) -> Money<GBP> {
     return value * Decimal("0.20")
@@ -140,9 +140,9 @@ pure flow calculateTotal(price: Money<GBP>) -> Money<GBP> {
 ## fn Scope Rules
 
 - `fn` may only appear inside a `flow` body.
-- Top-level `fn` is a compiler error: `LLN-SYNTAX-005`.
+- Top-level `fn` is a compiler error: `SPORE-SYNTAX-005`.
 - `fn` may not declare `effects [...]` or `with effects [...]`; this is
-  `LLN-SEC-014`.
+  `SPORE-SEC-014`.
 - `fn` may not request authority, capabilities, permissions, or `uses`.
 - `fn` may use effects only when the containing flow declares those effects.
 - Effects used inside a `fn` count as observed effects of the containing flow.
@@ -151,7 +151,7 @@ pure flow calculateTotal(price: Money<GBP>) -> Money<GBP> {
 
 Correct local helper, from CEC example 004:
 
-```logicn
+```galerina
 pure flow calculateTotal(price: Money<GBP>) -> Money<GBP> {
   fn calculateVat(value: Money<GBP>) -> Money<GBP> {
     return value * Decimal("0.20")
@@ -163,7 +163,7 @@ pure flow calculateTotal(price: Money<GBP>) -> Money<GBP> {
 
 Correct pure local helper, from CEC example 109:
 
-```logicn
+```galerina
 pure flow calculateTotal(prices: List<Money<GBP>>) -> Money<GBP> {
   fn sum(acc: Money<GBP>, item: Money<GBP>) -> Money<GBP> {
     return acc + item
@@ -174,7 +174,7 @@ pure flow calculateTotal(prices: List<Money<GBP>>) -> Money<GBP> {
 
 Correct effect use through containing flow, from CEC example 110:
 
-```logicn
+```galerina
 guarded flow syncOrders(orders: List<Order>) -> SyncOrdersResult
 contract {
   types {
@@ -199,7 +199,7 @@ contract {
 Invalid: local `fn` observes an effect not declared by the parent flow, from CEC
 example 111:
 
-```logicn
+```galerina
 guarded flow saveOrderOnly(order: Order) -> SaveOrderOnlyResult
 contract {
   types {
@@ -221,7 +221,7 @@ contract {
 
 Invalid: local `fn` declares its own effects, from CEC example 112:
 
-```logicn
+```galerina
 guarded flow processOrder(order: Order) -> ProcessOrderResult
 contract {
   types {
@@ -267,7 +267,7 @@ route keyword: specified — implementation pending (Phase 7+)
 
 If a `fn` attempts to request authority, the compiler rejects it:
 
-```logicn
+```galerina
 fn get_secret(user_id: Id) -> Secret
   uses vault.secrets.read
 {
@@ -278,14 +278,14 @@ fn get_secret(user_id: Id) -> Secret
 Compiler error:
 
 ```text
-LLN-SEC-014:
+SPORE-SEC-014:
 fn declarations cannot request runtime authority.
 Move this operation into a flow or pass the required value as an argument.
 ```
 
 ## Correct Pattern
 
-```logicn
+```galerina
 flow load_secret(user_id: Id) -> Secret
   uses vault.secrets.read
 {
@@ -301,7 +301,7 @@ fn mask_secret(secret: Secret) -> Text {
 
 ## Language Philosophy
 
-LogicN avoids `function`, `def` as primary execution primitives.
+Galerina avoids `function`, `def` as primary execution primitives.
 `flow` is the core governed execution unit. `fn` is for pure local helpers.
 `route` is for external exposure only.
 
@@ -313,7 +313,7 @@ Use flow to govern.
 Use fn to compute.
 ```
 
-LogicN's bigger model:
+Galerina's bigger model:
 
 ```text
 intent -> governed execution plan -> coordinated compute
@@ -328,7 +328,7 @@ auditable behaviour and orchestration-first architecture.
 
 `flow` may start governed async tasks and wait for results. `fn` may not.
 
-```logicn
+```galerina
 // Correct — flow uses task and wait
 flow build_report(user_id: safe Id) -> Report
   uses database.users.read
@@ -345,7 +345,7 @@ flow build_report(user_id: safe Id) -> Report
 
 // Compiler error — fn cannot use task
 fn bad_helper(id: safe Id) -> safe User {
-  let t = task database.users.get(id)  // ERROR: LLN-SEC-014
+  let t = task database.users.get(id)  // ERROR: SPORE-SEC-014
   return wait t
 }
 ```

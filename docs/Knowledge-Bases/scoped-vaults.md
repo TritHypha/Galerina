@@ -5,7 +5,7 @@
 Status: Future — This feature is not yet implemented in Stage A (Phase 1-15).
 Planned for: Stage B
 
-LogicN does not allow global variables, but it still needs efficient state reuse
+Galerina does not allow global variables, but it still needs efficient state reuse
 during requests, flows, sessions and service lifetimes.
 
 ## Core Rule
@@ -16,7 +16,7 @@ A vault is a scoped, permission-controlled runtime storage area owned by a
 request, session, flow or service boundary.
 ```
 
-LogicN does not remove state. It removes uncontrolled state.
+Galerina does not remove state. It removes uncontrolled state.
 
 ## Why Vaults Exist
 
@@ -49,14 +49,14 @@ This improves speed without introducing uncontrolled global state.
 | Vault | Lifetime | Example use |
 |---|---:|---|
 | `vault.request` | One HTTP/API request | Reuse customer data during one API call |
-| `vault.flow` | One LogicN flow/action | Store intermediate data without passing large values through every step |
+| `vault.flow` | One Galerina flow/action | Store intermediate data without passing large values through every step |
 | `vault.session` | Logged-in user session | Recently loaded profile, basket or permission summary |
 | `vault.service` | Running service instance | Read-only route tables, schema validators or safe config |
 | `vault.secure` | Short-lived sensitive storage | PII, payment state, auth metadata or encrypted values |
 
 ## Safe Vault Declaration
 
-```logicn
+```galerina
 vault request CustomerSessionData {
   key: CustomerId
   type: Customer
@@ -85,7 +85,7 @@ what sensitivity it has
 
 Set:
 
-```logicn
+```galerina
 vault.request.set CustomerSessionData {
   key: ctx.user.id
   value: customer
@@ -94,7 +94,7 @@ vault.request.set CustomerSessionData {
 
 Get:
 
-```logicn
+```galerina
 let customer = try vault.request.get CustomerSessionData {
   key: ctx.user.id
   require: Orders.create
@@ -106,14 +106,14 @@ let customer = try vault.request.get CustomerSessionData {
 Vault access should not depend only on string keys. The safer pattern is to
 require an actor capability or permission token:
 
-```logicn
+```galerina
 let customer = try vault.get<Customer>(
   key: CustomerRecord(ctx.user.id),
   using: ctx.capabilities.readCustomerSessionData
 )
 ```
 
-This lets LogicN enforce:
+This lets Galerina enforce:
 
 ```text
 the data exists
@@ -129,7 +129,7 @@ the access is recorded
 
 Flows may return a safe reference instead of passing a large object around:
 
-```logicn
+```galerina
 export action Customer.load(
   id: CustomerId,
   ctx: RequestContext
@@ -155,7 +155,7 @@ contract {
 
 Another permitted flow can dereference it:
 
-```logicn
+```galerina
 let customer = try vault.request.get<Customer>(
   ref: customerRef,
   require: Orders.create
@@ -183,7 +183,7 @@ not shared unless explicitly allowed
 
 ## Rejected Pattern
 
-```logicn
+```galerina
 dbCustomer = db.customers.findById(id)
 vault.put(dbCustomer)
 ```
@@ -192,7 +192,7 @@ This is anonymous, unscoped and under-specified.
 
 ## Required Pattern
 
-```logicn
+```galerina
 vault.request.set CustomerSessionData {
   key: id
   value: dbCustomer
@@ -236,7 +236,7 @@ typed response returned over existing connection
 The performance rule is:
 
 ```text
-LogicN can be fast because it knows the safe path before the request arrives.
+Galerina can be fast because it knows the safe path before the request arrives.
 ```
 
 ## Data Flow Permission Boundary Report Fit
@@ -264,7 +264,7 @@ Report: order flow, data access, permission and boundary event recorded
 
 ## Runtime Plan Example
 
-```logicn
+```galerina
 flow Orders.create {
   input: CreateOrderRequest
   output: OrderResponse
@@ -321,7 +321,7 @@ Vault access must appear in the app security report.
 
 ## Reports
 
-LogicN should generate:
+Galerina should generate:
 
 ```text
 vault-report.json

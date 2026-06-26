@@ -2,7 +2,7 @@
 
 ## Definition
 
-The **Quiet Runtime** principle means LogicN's web runtime actively hides its identity, only exposes declared routes, and protects core files — regardless of web server configuration.
+The **Quiet Runtime** principle means Galerina's web runtime actively hides its identity, only exposes declared routes, and protects core files — regardless of web server configuration.
 
 ```text
 Remain quiet.
@@ -14,10 +14,10 @@ Security must not depend entirely on web server configuration (Apache, Nginx, .h
 
 ## 1. Quiet Runtime Mode
 
-LogicN must not leak:
+Galerina must not leak:
 
 ```text
-LogicN version
+Galerina version
 runtime version
 server framework
 package names
@@ -28,7 +28,7 @@ powered-by headers
 default error pages
 ```
 
-```logicn
+```galerina
 boot main {
   web security {
     quiet true
@@ -53,7 +53,7 @@ no framework information
 
 ## 3. Core File Deny by Default
 
-LogicN must never expose internal files — even if the web server is misconfigured:
+Galerina must never expose internal files — even if the web server is misconfigured:
 
 ```text
 .env
@@ -65,14 +65,14 @@ LogicN must never expose internal files — even if the web server is misconfigu
 /src
 /tests
 /.git
-logicn.lock
-logicn.policy
+galerina.lock
+galerina.policy
 main.boot
 *.vault
 *.key
 ```
 
-```logicn
+```galerina
 boot main {
   web files {
     default deny
@@ -83,8 +83,8 @@ boot main {
     deny path "runtime/**"
     deny path "src/**"
     deny path "packages/**"
-    deny path "logicn.lock"
-    deny path "logicn.policy"
+    deny path "galerina.lock"
+    deny path "galerina.policy"
 
     allow public from "public/**"
   }
@@ -110,7 +110,7 @@ Everything else is denied.
 
 ## Secure Runtime Contract
 
-Any official LogicN runtime or framework must guarantee:
+Any official Galerina runtime or framework must guarantee:
 
 ```text
 deny-by-default routing
@@ -137,7 +137,7 @@ The framework enforces it at HTTP/TCP/file level.
 
 ```text
 The web server may be misconfigured.
-LogicN must still refuse to expose undeclared files, routes, or runtime identity.
+Galerina must still refuse to expose undeclared files, routes, or runtime identity.
 ```
 
 ```text

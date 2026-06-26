@@ -1,0 +1,15 @@
+{
+  "packageName": "@galerina/ext-bridge-cpp",
+  "allowedExternal": [
+    "@galerina/inference-bridge-contract",
+    "@galerina/tower-citizen",
+    "node:child_process",
+    "node:crypto",
+    "node:fs",
+    "node:module",
+    "node:os",
+    "node:path",
+    "node:url"
+  ],
+  "note": "Baseline auto-generated. Edit allowedExternal to widen/narrow the border. `--check` fails if an import appears that is not listed here."
+}

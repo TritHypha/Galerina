@@ -2,29 +2,29 @@
 
 ## Definition
 
-LogicN introduces `safe` and `unsafe` as first-class runtime trust concepts.
-This makes LogicN memory-safe, trust-aware, runtime-governed and security-first.
+Galerina introduces `safe` and `unsafe` as first-class runtime trust concepts.
+This makes Galerina memory-safe, trust-aware, runtime-governed and security-first.
 
 ## Core Distinction
 
-LogicN separates two kinds of safety:
+Galerina separates two kinds of safety:
 
 ```text
 memory safety      = all values, always
 runtime trust safety = requires explicit validation
 ```
 
-LogicN `unsafe` does NOT mean memory-unsafe, pointer-unsafe, unmanaged memory,
+Galerina `unsafe` does NOT mean memory-unsafe, pointer-unsafe, unmanaged memory,
 bypassing bounds checks, manual allocation or raw memory access.
 
 Unlike Rust where `unsafe` means the memory safety guarantees may be bypassed,
-in LogicN:
+in Galerina:
 
 ```text
 unsafe = memory-safe but security-untrusted
 ```
 
-All LogicN values remain memory-safe. `unsafe` means the value originated
+All Galerina values remain memory-safe. `unsafe` means the value originated
 outside the trusted runtime and has not yet been validated or sanitised.
 
 ## What `unsafe` Means
@@ -105,10 +105,10 @@ Not: `unsafe -> use while still marked unsafe`
 
 ## Postfix State Syntax
 
-LogicN uses postfix state syntax: the base type is written first, the state
+Galerina uses postfix state syntax: the base type is written first, the state
 qualifier second. This keeps the base type as the developer's primary mental anchor.
 
-```logicn
+```galerina
 let input:  String  unsafe             = request.body("name")
 let secret: String  secure             = env.secret("APP_SECRET")
 let email:  Email   safe   validated   = validate.email(rawEmail)
@@ -132,7 +132,7 @@ See `postfix-type-state-syntax.md` for the full specification.
 
 Invalid — unsafe participating in arithmetic:
 
-```logicn
+```galerina
 let price: Decimal unsafe = request.price
 let tax:   Decimal safe   = 20
 let total = price + tax    // compile error
@@ -148,7 +148,7 @@ Validate or sanitise before use.
 
 Correct:
 
-```logicn
+```galerina
 let raw_price: Decimal unsafe = request.price
 let price:     Decimal safe   = validate.decimal(raw_price)
 let tax:       Decimal safe   = 20
@@ -157,7 +157,7 @@ let total:     Decimal safe   = price + tax
 
 String example — correct:
 
-```logicn
+```galerina
 let raw_name: String unsafe = request.name
 let name:     String safe   = sanitise.text(raw_name)
 let greeting: String safe   = "Hello " + name
@@ -165,7 +165,7 @@ let greeting: String safe   = "Hello " + name
 
 Database example — correct:
 
-```logicn
+```galerina
 let raw_query: String         unsafe = request.query
 let query:     DatabaseString safe   = database.escape(raw_query)
 database.run(query)
@@ -194,7 +194,7 @@ safe Email     != safe ShellArg
 
 Specialised safe types include:
 
-```logicn
+```galerina
 safe Email
 safe Url
 safe DatabaseString
@@ -207,13 +207,13 @@ safe FilePath
 
 Only approved runtime validators may convert `unsafe` to `safe`:
 
-```logicn
+```galerina
 let email: safe Email = validate.email(raw_email)
 ```
 
 Invalid manual promotion:
 
-```logicn
+```galerina
 let email: safe Email = raw_email
 ```
 
@@ -224,7 +224,7 @@ approved validator.
 
 Flows may validate unsafe data:
 
-```logicn
+```galerina
 flow create_user(body: unsafe Json) -> Result {
   let user: safe User = validate.user(body)
   return GlobalVault.users.create(user)
@@ -238,7 +238,7 @@ validators may return safe values.
 
 Workers receiving unsafe values run with stricter isolation:
 
-```logicn
+```galerina
 worker parse_upload {
   isolation: strict
 }

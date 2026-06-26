@@ -1,5 +1,5 @@
 none
-// LLN-EFFECT-002 is the target diagnostic for this example.
+// SPORE-EFFECT-002 is the target diagnostic for this example.
 // Effect propagation from undeclared callee (classifyText not in scope) is not
 // detected in the current compiler wave — tracked for a future wave.
 // The example is stable: no unsuppressed errors are produced by the current pipeline.

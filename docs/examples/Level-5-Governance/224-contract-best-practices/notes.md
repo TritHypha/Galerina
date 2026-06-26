@@ -20,7 +20,7 @@ secure flow getPatientProfile(readonly request: Request) -> PatientProfileResult
 | `types` | Defines the named result type |
 | `intent` | Human-readable statement of purpose (required for secure flows) |
 | `request` | Accepted input type and required params |
-| `response` | Allowed output fields; denied fields enforced by LLN-GOV-003 |
+| `response` | Allowed output fields; denied fields enforced by SPORE-GOV-003 |
 | `context` | Required execution context fields (actor, trace_id) |
 | `effects` | Canonical list of effects (governs audit, security rules) |
 | `errors` | Full error taxonomy with map, expose, redact, audit clauses |
@@ -43,8 +43,8 @@ return Ok(Response.ok({ ... }))                 // 6. safe response (no denied f
 
 ## Key governance invariants this pattern satisfies
 
-- LLN-GOV-010: intent declared on secure flow
-- LLN-GOV-002: audit.write declared when database.read is used
-- LLN-GOV-003: denied fields (email, nhsNumber) absent from response body
-- LLN-CONTEXT-001: required context fields (actor, trace_id) accessed in body
-- LLN-VALUE-STATE-001: unsafe input validated before use as protected type
+- SPORE-GOV-010: intent declared on secure flow
+- SPORE-GOV-002: audit.write declared when database.read is used
+- SPORE-GOV-003: denied fields (email, nhsNumber) absent from response body
+- SPORE-CONTEXT-001: required context fields (actor, trace_id) accessed in body
+- SPORE-VALUE-STATE-001: unsafe input validated before use as protected type

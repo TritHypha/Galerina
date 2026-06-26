@@ -1,0 +1,13 @@
+/// example: 454-financial-cross-currency-invalid
+/// test_status: stable
+/// level: 9
+/// concept: adding Money<GBP> and Money<USD> without currency conversion is a type error
+/// expected_diagnostics: SPORE-TYPE-004
+/// ai_rule: Cross-currency addition is always a compile error; use an explicit FX conversion before adding.
+
+pure flow invalidCurrencyAdd(gbp: Money<GBP>, usd: Money<USD>) -> Money<GBP>
+{
+  // SPORE-TYPE-004: cannot add Money<GBP> and Money<USD> — currency mismatch
+  let total = gbp + usd
+  return total
+}

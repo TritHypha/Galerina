@@ -1,12 +1,12 @@
-# LogicN Application Patterns — Handbook
+# Galerina Application Patterns — Handbook
 
-These 12 patterns cover 80-90% of what most business systems actually do, and they align with LogicN's governance, effects, capabilities, and semantic graph vision.
+These 12 patterns cover 80-90% of what most business systems actually do, and they align with Galerina's governance, effects, capabilities, and semantic graph vision.
 
 ---
 
 ## The 12 Patterns
 
-| # | Pattern | When to use | LogicN features |
+| # | Pattern | When to use | Galerina features |
 |---|---|---|---|
 | 01 | CRUD Resource | Users, orders, patients | `resource {}`, effects, `response.denies` |
 | 02 | Workflow / Process | Expense claims, approvals | `workflow {}`, transitions, events |
@@ -15,7 +15,7 @@ These 12 patterns cover 80-90% of what most business systems actually do, and th
 | 05 | Routes & APIs | HTTP endpoints | `route {}`, entry points, typed params |
 | 06 | State Machines | Orders, loans, patients | `stateMachine {}`, transitions (future) |
 | 07 | Validation | Email, postcode, NHS | `validate.*`, protected types, taint |
-| 08 | Secrets | API keys, tokens | `SecureString`, `LLN-SECRET-*` |
+| 08 | Secrets | API keys, tokens | `SecureString`, `SPORE-SECRET-*` |
 | 09 | Background Jobs | Email, PDF, sync | `scheduled {}`, `worker {}`, job entry points |
 | 10 | Microservices | Service separation | `service {}`, manifests, least privilege |
 | 11 | Audit Trails | GDPR, healthcare, finance | `audit {}`, signed attestation, proof chain |
@@ -32,7 +32,7 @@ These 12 patterns cover 80-90% of what most business systems actually do, and th
 | 04 — Domain Events | `event {}`, `emit`, `contract.events` implemented (Phase 9B) |
 | 05 — Routes & APIs | `route {}`, typed params, entry points implemented |
 | 07 — Validation | `validate.*`, taint propagation, protected types implemented (Phase 11B) |
-| 08 — Secrets | `SecureString`, `LLN-SECRET-*`, redacted bindings implemented |
+| 08 — Secrets | `SecureString`, `SPORE-SECRET-*`, redacted bindings implemented |
 | 11 — Audit Trails | `audit {}`, Ed25519 signed attestation, proof chain implemented (Phase 10A) |
 | 12 — Governed Identities (partial) | `Brand<String,"X">` typed IDs implemented (Phase 9A) |
 
@@ -57,8 +57,8 @@ These 12 patterns cover 80-90% of what most business systems actually do, and th
 
 ## See Also
 
-- `docs/Knowledge-Bases/logicn-roadmap.md` — implementation phases
-- `docs/AI/LOGICN_5_MINUTE_PRIMER.md` — syntax quick-start for AI code generators
-- `docs/Knowledge-Bases/logicn-flow-contracts.md` — contract model reference
+- `docs/Knowledge-Bases/galerina-roadmap.md` — implementation phases
+- `docs/AI/GALERINA_5_MINUTE_PRIMER.md` — syntax quick-start for AI code generators
+- `docs/Knowledge-Bases/galerina-flow-contracts.md` — contract model reference
 - `docs/Knowledge-Bases/multi-actor-audit-events.md` — audit trail internals
 - `docs/Knowledge-Bases/governed-event-driven-execution.md` — event system

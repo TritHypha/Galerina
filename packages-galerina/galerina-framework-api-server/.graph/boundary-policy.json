@@ -1,0 +1,13 @@
+{
+  "packageName": "@galerina/framework-api-server",
+  "allowedExternal": [
+    "@galerina/core-network",
+    "@galerina/framework-app-kernel",
+    "@galerina/tower-citizen",
+    "node:crypto",
+    "node:http",
+    "node:https",
+    "node:tls"
+  ],
+  "note": "Baseline auto-generated. Edit allowedExternal to widen/narrow the border. `--check` fails if an import appears that is not listed here."
+}

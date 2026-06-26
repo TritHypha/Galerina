@@ -1,0 +1,31 @@
+name: "@galerina/auth"
+version: "0.1.0"
+registry: "https://registry.galerina.dev"
+description: "Certified authentication and authorization flows for Galerina applications."
+
+capabilities:
+  - secret.read
+  - audit.write
+
+effects:
+  - secret.read
+  - audit.write
+  - network.outbound
+
+targets:
+  - wasm
+  - cpu
+
+installScript: null
+
+# Content-addressable hash (placeholder — run `galerina package hash` to generate)
+hash: "sha256:pending"
+
+# Cryptographic signature (placeholder — pending governance review)
+signature: null
+
+governance:
+  reviewed: false
+  reviewedBy: null
+  reviewedAt: null
+  notes: "Phase 28 scaffold. Pending governance review."

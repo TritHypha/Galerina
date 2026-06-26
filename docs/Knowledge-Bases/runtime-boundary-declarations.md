@@ -2,7 +2,7 @@
 
 ## Definition
 
-LogicN uses explicit declaration blocks for every runtime boundary: API
+Galerina uses explicit declaration blocks for every runtime boundary: API
 endpoints, databases, workers, and queues. Declarations are how the developer
 expresses intent; the runtime governs security, identity, and transport
 automatically from those declarations.
@@ -14,7 +14,7 @@ Runtime enforces trust, encryption, identity, audit.
 
 ## API Declaration
 
-```logicn
+```galerina
 api payments {
   endpoint: "https://payments.example"
 }
@@ -25,7 +25,7 @@ identity, audit logging, timeout, retry policy, and marks returned data `unsafe`
 
 Application code:
 
-```logicn
+```galerina
 flow charge_order(order: safe Order) -> Receipt
   uses channel.payments.write
 {
@@ -39,7 +39,7 @@ flow charge_order(order: safe Order) -> Receipt
 
 HTTP routes use explicit `route` blocks:
 
-```logicn
+```galerina
 route GET "/profile/{id}" {
   request Profile.get
   response Profile.response
@@ -68,7 +68,7 @@ If a request arrives for an undeclared method, the runtime returns 405 Method No
 
 ## Database Declaration
 
-```logicn
+```galerina
 database orders {
   source: GlobalVault.database.orders
 }
@@ -83,7 +83,7 @@ verification, audit logging. All query results return `unsafe Any` until validat
 
 Database usage requires an explicit `uses` declaration:
 
-```logicn
+```galerina
 flow get_order(id: safe OrderId) -> Order
   uses database.orders.read
 {
@@ -98,7 +98,7 @@ flow get_order(id: safe OrderId) -> Order
 
 ### Multiple Database Declarations
 
-```logicn
+```galerina
 database sessions {
   source: GlobalVault.database.sessions
 }
@@ -112,7 +112,7 @@ database reporting {
 
 ## Worker Declaration
 
-```logicn
+```galerina
 worker image_processor {
   max: 8
   isolation: strict
@@ -121,7 +121,7 @@ worker image_processor {
 
 Worker options:
 
-```logicn
+```galerina
 worker risk_scorer {
   max: 16
   isolation: per_job
@@ -132,7 +132,7 @@ worker risk_scorer {
 
 Worker invocation:
 
-```logicn
+```galerina
 flow process_image(file: safe File) -> ImageResult
   uses worker.image_processor
 {
@@ -143,7 +143,7 @@ flow process_image(file: safe File) -> ImageResult
 
 Worker pool variants (declared in runtime config):
 
-```logicn
+```galerina
 worker pool WebPool auto {
   isolate per_request
   memory max 128mb
@@ -167,7 +167,7 @@ The `auto` keyword lets the runtime manage pool sizing within declared limits.
 
 ## Queue Declaration
 
-```logicn
+```galerina
 queue uploads {
   source: GlobalVault.queue.uploads
 }
@@ -181,7 +181,7 @@ queue risk_jobs {
 
 Queue trigger wiring:
 
-```logicn
+```galerina
 trigger upload_received {
   on: queue.message("uploads")
   run: process_upload
@@ -190,7 +190,7 @@ trigger upload_received {
 
 Queue messages arrive as `unsafe` — they cross a boundary from external producers:
 
-```logicn
+```galerina
 flow process_upload(message: unsafe Json) -> Result
   uses worker.image_processor
 {

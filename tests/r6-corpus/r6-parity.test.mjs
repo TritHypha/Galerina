@@ -2,11 +2,11 @@
  * R6 Bootstrap Corpus — Stage A compile parity gate
  *
  * For each of the 5 root-level R6 reference flows:
- *   1. `logicn check` must report 0 errors, 0 governance warnings (Stage A accept)
- *   2. `logicn build` must produce a .lmanifest.json with sourceHash + proofObligations
+ *   1. `galerina check` must report 0 errors, 0 governance warnings (Stage A accept)
+ *   2. `galerina build` must produce a .lmanifest.json with sourceHash + proofObligations
  *
  * This is the root-level companion to the deeper Stage A == Stage B value-parity
- * tests in packages-logicn/logicn-core-compiler/tests/self-hosted-bootstrap.test.mjs.
+ * tests in packages-galerina/galerina-core-compiler/tests/self-hosted-bootstrap.test.mjs.
  * Both must pass for the R6 gate to be considered closed.
  *
  * EXPECT: all 10 assertions pass (5 check + 5 manifest)
@@ -23,11 +23,11 @@ const __dir = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dir, "../..");
 
 const R6_FILES = [
-  "r6-01-pure-add.lln",
-  "r6-02-governed-read.lln",
-  "r6-03-secure-write.lln",
-  "r6-04-invariant-check.lln",
-  "r6-05-full-governance.lln",
+  "r6-01-pure-add.spore",
+  "r6-02-governed-read.spore",
+  "r6-03-secure-write.spore",
+  "r6-04-invariant-check.spore",
+  "r6-05-full-governance.spore",
 ];
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -37,7 +37,7 @@ function relPath(file) {
 }
 
 function manifestJsonPath(file) {
-  return join(ROOT, "build", basename(file, ".lln") + ".lmanifest.json");
+  return join(ROOT, "build", basename(file, ".spore") + ".lmanifest.json");
 }
 
 // ── Stage A compile acceptance (0 errors) ────────────────────────────────────
@@ -48,7 +48,7 @@ describe("R6 Bootstrap Corpus — Stage A compile parity", () => {
       let output;
       try {
         output = execSync(
-          `node logicn.mjs check ${relPath(file)}`,
+          `node galerina.mjs check ${relPath(file)}`,
           { cwd: ROOT, encoding: "utf-8", timeout: 30_000 },
         );
       } catch (err) {
@@ -78,7 +78,7 @@ describe("R6 Bootstrap Corpus — manifest generation parity", () => {
       // Build (idempotent — re-runs are fine, output goes to build/)
       try {
         execSync(
-          `node logicn.mjs build ${relPath(file)}`,
+          `node galerina.mjs build ${relPath(file)}`,
           { cwd: ROOT, encoding: "utf-8", timeout: 30_000 },
         );
       } catch (err) {

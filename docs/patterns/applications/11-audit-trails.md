@@ -1,4 +1,4 @@
-# LogicN Application Pattern 11 — Audit Trails
+# Galerina Application Pattern 11 — Audit Trails
 
 **When to use:** Any regulated system — healthcare, finance, government, GDPR — where you need proof of what happened
 
@@ -8,7 +8,7 @@
 
 In most systems, audit logging is added after the fact — a `logger.info()` call inserted by a developer who remembers to do it. It is inconsistent, unverified, and easy to bypass.
 
-LogicN treats audit as a language-level requirement. When a flow declares `require runtime report` or `require signed attestation`, the compiler enforces that the flow cannot complete without producing the required audit record. It is not possible to bypass this at the call site.
+Galerina treats audit as a language-level requirement. When a flow declares `require runtime report` or `require signed attestation`, the compiler enforces that the flow cannot complete without producing the required audit record. It is not possible to bypass this at the call site.
 
 ---
 
@@ -18,7 +18,7 @@ A complete governed audit trail is built from five linked artefacts. Each artefa
 
 ### 1. Declare the requirement in the contract
 
-```logicn
+```galerina
 guarded flow processPatientRecord(id: protected PatientId, data: protected MedicalRecord)
 contract {
   effects { database.write, audit.write }
@@ -34,14 +34,14 @@ contract {
 
 ### 2. Write to the audit log inside the flow
 
-```logicn
+```galerina
 {
   database.write(patientTable, id, data)
   AuditLog.write({
     event: "patient_record_updated",
     actor: actor.id,
     patientId: id,
-    data: redact(data)    // protected → redacted; LLN-VALUESTATE-003 fires if omitted
+    data: redact(data)    // protected → redacted; SPORE-VALUESTATE-003 fires if omitted
   })
 }
 ```
@@ -91,14 +91,14 @@ const result = verifyProofChain({
 
 ---
 
-## What Makes LogicN Audits Different
+## What Makes Galerina Audits Different
 
-| Property | Conventional logging | LogicN audit |
+| Property | Conventional logging | Galerina audit |
 |----------|---------------------|--------------|
 | Enforced by | Developer discipline | Compiler |
 | Signed | No | Ed25519 |
 | Linked to source | No | Yes (source_hash) |
-| Redaction enforced | No | Yes (LLN-VALUESTATE-003) |
+| Redaction enforced | No | Yes (SPORE-VALUESTATE-003) |
 | Tamper-detectable | No | Yes (proof chain) |
 | Retained per policy | Manual | `privacy { retention }` |
 
@@ -108,16 +108,16 @@ const result = verifyProofChain({
 
 The compiler enforces that `protected` values must be redacted before they are passed to `AuditLog.write`. The `privacy` block declares this requirement:
 
-```logicn
+```galerina
 privacy {
   fields { data: redact before audit.write }
 }
 ```
 
-If a `protected` value is passed to `AuditLog.write` without `redact()`, the compiler emits `LLN-VALUESTATE-003`.
+If a `protected` value is passed to `AuditLog.write` without `redact()`, the compiler emits `SPORE-VALUESTATE-003`.
 
-```logicn
-AuditLog.write({ data: patientRecord })          // LLN-VALUESTATE-003
+```galerina
+AuditLog.write({ data: patientRecord })          // SPORE-VALUESTATE-003
 AuditLog.write({ data: redact(patientRecord) })  // OK — redacted value
 ```
 
@@ -129,7 +129,7 @@ AuditLog.write({ data: redact(patientRecord) })  // OK — redacted value
 
 The `privacy` block in the contract declares how long audit records are retained:
 
-```logicn
+```galerina
 privacy {
   retention {
     audit.write: 7y    // GDPR Article 30 records of processing
@@ -155,7 +155,7 @@ If the runtime cannot write the report (storage failure, signing key unavailable
 To verify that an audit record is genuine and unmodified:
 
 ```
-logicn audit verify --hash <audit_hash>
+galerina audit verify --hash <audit_hash>
 ```
 
 This command:

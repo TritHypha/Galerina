@@ -1,9 +1,9 @@
-<!-- ABSORBED R&D SOURCE — verbatim mirror. LogicN is the main library; the R&D repo is upstream/authoring.
-     Source: LogicN-R-AND-D/tri-encription/research/metadata-confidentiality.md  ·  Pinned: R&D fb68d06 (2026-06-16)
-     Integrated LogicN view: logicn-privacy-embedding-egress.md  ·  Catalog: logicn-rd-absorption-catalog.md
+<!-- ABSORBED R&D SOURCE — verbatim mirror. Galerina is the main library; the R&D repo is upstream/authoring.
+     Source: Galerina-R-AND-D/tri-encription/research/metadata-confidentiality.md  ·  Pinned: R&D fb68d06 (2026-06-16)
+     Integrated Galerina view: galerina-privacy-embedding-egress.md  ·  Catalog: galerina-rd-absorption-catalog.md
      Rule: edit the upstream source then re-vendor; do not fork this copy (feedback-auto-import-rd-docs). -->
 
-> **Absorbed R&D source (verbatim).** This is the archived upstream document. Curated/integrated view: `logicn-privacy-embedding-egress.md`. See `logicn-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
+> **Absorbed R&D source (verbatim).** This is the archived upstream document. Curated/integrated view: `galerina-privacy-embedding-egress.md`. See `galerina-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
 
 ---
 # Metadata confidentiality vs. in-network semantic routing for `.tmf` (R&D)
@@ -15,7 +15,7 @@
 > in-network semantic-routing feature without the leak?
 > **Posture:** commodity/grounded; every claim cited; the four core verdict claims were stress-tested by
 > independent agents tasked to *falsify* them — **all four held**.
-> **Resolves:** Open Question #2 of [`LLN-AMD-024`](LLN-AMD-024-tmf-confidentiality.md) (the item I flagged
+> **Resolves:** Open Question #2 of [`SPORE-AMD-024`](SPORE-AMD-024-tmf-confidentiality.md) (the item I flagged
 > as the sharpest unresolved security question). Companion: [`quantum-resilient-tri-encryption.md`](quantum-resilient-tri-encryption.md).
 
 ---
@@ -50,7 +50,7 @@ ANN/similarity layer *outside* the trust gate on decrypted-and-verified plaintex
 
 The notes sell a headline feature: routers/firewalls scan the semantic attribute layer to filter/route
 *"without ever unpacking or decrypting the main file payload."* The implicit security claim is that this is
-safe because the payload is KEM-DEM-encrypted (LLN-AMD-024) and the attribute layer is "just metadata." This
+safe because the payload is KEM-DEM-encrypted (SPORE-AMD-024) and the attribute layer is "just metadata." This
 note tests that claim. It is false: the attribute layer is **content-bearing**, and there is no practical
 mechanism that preserves in-network semantic routing without leaking it.
 
@@ -179,7 +179,7 @@ The realistic options, scored against zero-trust:
 | **(c) Coarse keyed/salted non-invertible routing tag** *(only with explicit owner sign-off)* | few-bit, low-cardinality, k-anonymous, per-epoch-keyed bucket | tier (ii) + bucket membership + linkage; **measured, not zero** | Coarse only | Least-bad *if* a real routing need is documented and the loss is accepted |
 | **(d) Searchable/functional/distance-preserving encryption** | encrypted vector | explicit, bounded distance/order leakage; **not line-rate** | Not at line rate today | Reject for the fast path (offline/endpoint only) |
 
-**Concrete amendment to LLN-AMD-024:** the `.tmf` header must **not** carry a full cleartext semantic
+**Concrete amendment to SPORE-AMD-024:** the `.tmf` header must **not** carry a full cleartext semantic
 embedding. The attribute vector moves *inside* the AEAD-sealed payload (bound by the existing AAD =
 `TVCID ‖ modality ‖ crypto_profile ‖ epoch`). Routing/filtering on meaning happens at trusted, post-verify
 endpoints. Two further hardening notes:
@@ -255,6 +255,6 @@ counterexamples *confirmed* the verdict:
 - [[EFFFLoC]] EFF, *Google's FLoC Is a Terrible Idea*, 2021 — <https://www.eff.org/deeplinks/2021/03/googles-floc-terrible-idea>
 - BlindBox: Sherry et al., *Deep Packet Inspection over Encrypted Traffic*, SIGCOMM 2015 — <http://iot.stanford.edu/pubs/sherry-blindbox-sigcomm15.pdf>
 
-**Internal cross-refs:** `LLN-AMD-024-tmf-confidentiality.md` (this resolves its Open Question #2) ·
+**Internal cross-refs:** `SPORE-AMD-024-tmf-confidentiality.md` (this resolves its Open Question #2) ·
 `quantum-resilient-tri-encryption.md` (§11 metadata-confidentiality open question) ·
-`LogicN-TritMesh/.../research/encryption-on-photonic-substrates.md` §5.2/§7 (ANN stays outside the trust gate).
+`Galerina-TritMesh/.../research/encryption-on-photonic-substrates.md` §5.2/§7 (ANN stays outside the trust gate).

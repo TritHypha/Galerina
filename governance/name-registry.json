@@ -1,11 +1,11 @@
 {
   "$schema": "./name-registry.schema.note",
-  "purpose": "Canonical name policy for the LogicN monorepo, so confusingly-similar names cannot recur (RD-0124). Born from the graph-project / project-graph near-anagram tangle. Enforced by scripts/audit-name-collisions.mjs. The package set is the SOURCE OF TRUTH (read live from packages-logicn/*/package.json) — this file holds POLICY (conventions, the collision rule, the known-collision allowlist + decided resolutions, and any extra named entities to also guard).",
-  "scope": "@logicn",
+  "purpose": "Canonical name policy for the Galerina monorepo, so confusingly-similar names cannot recur (RD-0124). Born from the graph-project / project-graph near-anagram tangle. Enforced by scripts/audit-name-collisions.mjs. The package set is the SOURCE OF TRUTH (read live from packages-galerina/*/package.json) — this file holds POLICY (conventions, the collision rule, the known-collision allowlist + decided resolutions, and any extra named entities to also guard).",
+  "scope": "@galerina",
   "dirConvention": {
-    "pattern": "logicn-<area>-<name>",
+    "pattern": "galerina-<area>-<name>",
     "areas": ["core", "devtools", "ext", "target", "framework", "governance", "observability", "hardware", "ai", "cpu", "tools", "substrate", "inference", "tri", "api", "test", "docs"],
-    "note": "A package's directory name is logicn-<...> and its npm name is @logicn/<...> with the 'logicn-' stripped."
+    "note": "A package's directory name is galerina-<...> and its npm name is @galerina/<...> with the 'galerina-' stripped."
   },
   "collisionPolicy": {
     "rule": "no-reordered-token-duplicates",
@@ -15,14 +15,14 @@
   },
   "knownCollisions": [
     {
-      "names": ["@logicn/devtools-graph-project", "@logicn/devtools-project-graph"],
+      "names": ["@galerina/devtools-graph-project", "@galerina/devtools-project-graph"],
       "tokenMultiset": ["devtools", "graph", "project"],
       "discovered": "2026-06-24 (RD-0124)",
       "status": "ALLOWLISTED — resolution decided, execution pending (see decidedRenames)",
       "note": "graph-project = the CONTRACTS/schema layer (tracked, zero code consumers). project-graph = the ENGINE (data structures + algorithms + reporting; 3 consumers; currently a stray NESTED git clone of a personal repo — gitignored, see .gitignore). The collision is documented + scheduled, so the guard treats it as known, not a new violation."
     },
     {
-      "names": ["@logicn/target-cpu", "@logicn/target-gpu"],
+      "names": ["@galerina/target-cpu", "@galerina/target-gpu"],
       "kind": "typo-twin (Levenshtein 1)",
       "discovered": "2026-06-24 (RD-0124)",
       "status": "INTENDED — no rename needed",
@@ -31,19 +31,19 @@
   ],
   "decidedRenames": [
     {
-      "from": "@logicn/devtools-graph-project",
-      "to": "@logicn/devtools-graph-contracts",
+      "from": "@galerina/devtools-graph-project",
+      "to": "@galerina/devtools-graph-contracts",
       "reason": "It is literally 'project knowledge graph CONTRACTS' (its own package.json description). 'graph-contracts' removes the anagram and is self-describing.",
-      "blastRadius": "logicn.workspace.json (3 refs), version.json, core-cli/package.json (build+typecheck scripts), core-cli/src/graph-command.ts (relative-path import), AGENTS.md + docs/ARCHITECTURE.md + a few KB docs, regenerated build/graph artifacts, and the package's own dir + .graph.",
+      "blastRadius": "galerina.workspace.json (3 refs), version.json, core-cli/package.json (build+typecheck scripts), core-cli/src/graph-command.ts (relative-path import), AGENTS.md + docs/ARCHITECTURE.md + a few KB docs, regenerated build/graph artifacts, and the package's own dir + .graph.",
       "blockedOn": "a build-verifiable session (the relative-path import + build scripts in core-cli must be updated and the per-package build re-run; not safe to do blind in an autonomous loop).",
       "executionPlan": "git mv the dir; update name in its package.json; update the 4 load-bearing refs (workspace.json, version.json, core-cli build scripts, core-cli graph-command import); regenerate the graph; sweep docs; run core-cli build + typecheck to verify."
     },
     {
-      "from": "@logicn/devtools-project-graph",
-      "to": "@logicn/devtools-graph-engine",
+      "from": "@galerina/devtools-project-graph",
+      "to": "@galerina/devtools-graph-engine",
       "reason": "It is 'graph data structures, algorithms, and runtime reporting' = an engine. 'graph-engine' removes the anagram and is self-describing.",
       "blockedOn": "OPERATOR de-clone first — this package is currently a stray nested git clone (its own .git/ + a personal remote). The operator must remove the inner .git/ and commit the source in-tree (it is REAL and depended-upon by 3 packages; do NOT delete) BEFORE it can be renamed. Then update its 3 consumers.",
-      "consumers": ["@logicn/core-tasks (src/dependency-graph.ts)", "@logicn/devtools-graph-algorithms (src/algorithms/reach.ts)", "the contracts layer above"]
+      "consumers": ["@galerina/core-tasks (src/dependency-graph.ts)", "@galerina/devtools-graph-algorithms (src/algorithms/reach.ts)", "the contracts layer above"]
     }
   ],
   "otherGuardedNames": {
@@ -51,7 +51,7 @@
     "entries": []
   },
   "crossScopePointers": {
-    "diagnosticFamilies": "LLN-<FAMILY>-NNN and ERR_* — canonical list + invariants in scripts/lib/codes.mjs + scripts/audit-diagnostic-codes.mjs; doc taxonomy in docs/Knowledge-Bases/compiler-diagnostics.md (kept honest by audit-diagnostic-doc-drift.mjs).",
-    "rdSeries": "RD-NNNN — R&D corpus in the LogicN-R-AND-D repo; KB write-ups as docs/Knowledge-Bases/logicn-rd-NNNN-*.md. RD-id uniqueness is owner-managed (future: add to otherGuardedNames to machine-enforce)."
+    "diagnosticFamilies": "SPORE-<FAMILY>-NNN and ERR_* — canonical list + invariants in scripts/lib/codes.mjs + scripts/audit-diagnostic-codes.mjs; doc taxonomy in docs/Knowledge-Bases/compiler-diagnostics.md (kept honest by audit-diagnostic-doc-drift.mjs).",
+    "rdSeries": "RD-NNNN — R&D corpus in the Galerina-R-AND-D repo; KB write-ups as docs/Knowledge-Bases/galerina-rd-NNNN-*.md. RD-id uniqueness is owner-managed (future: add to otherGuardedNames to machine-enforce)."
   }
 }

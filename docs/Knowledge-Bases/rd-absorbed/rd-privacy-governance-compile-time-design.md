@@ -1,9 +1,9 @@
-<!-- ABSORBED R&D SOURCE — verbatim mirror. LogicN is the main library; the R&D repo is upstream/authoring.
-     Source: LogicN-R-AND-D/privacy/privacy-governance-v0.md  ·  Pinned: R&D fb68d06 (2026-06-16)
-     Integrated LogicN view: (this archive copy is the primary KB home)  ·  Catalog: logicn-rd-absorption-catalog.md
+<!-- ABSORBED R&D SOURCE — verbatim mirror. Galerina is the main library; the R&D repo is upstream/authoring.
+     Source: Galerina-R-AND-D/privacy/privacy-governance-v0.md  ·  Pinned: R&D fb68d06 (2026-06-16)
+     Integrated Galerina view: (this archive copy is the primary KB home)  ·  Catalog: galerina-rd-absorption-catalog.md
      Rule: edit the upstream source then re-vendor; do not fork this copy (feedback-auto-import-rd-docs). -->
 
-> **Absorbed R&D source (verbatim).** This is the archived upstream document. See `logicn-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
+> **Absorbed R&D source (verbatim).** This is the archived upstream document. See `galerina-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
 
 ---
 # Privacy as a Governed, Compile-Time Primitive — design v0
@@ -11,10 +11,10 @@
 **Status:** R&D design (2026-06-16). Charter: [`../RESEARCH-PHASE-privacy-governance.md`](../RESEARCH-PHASE-privacy-governance.md).
 **Posture (binding):** grounded, cited, adversarially verified; honest-core vs aspirational kept separate; **no
 perf number without a reproducible benchmark + the machine**; **no invented crypto**; fail-closed
-(`unknown → deny`). **The lane:** LogicN *governs* privacy (who / where / purpose / how-much) at compile time;
+(`unknown → deny`). **The lane:** Galerina *governs* privacy (who / where / purpose / how-much) at compile time;
 the privacy/DP **mechanisms** (noise, anonymization) stay **vetted host libraries** — the exact crypto-on-core
-analogue (`LLN-SUBSTRATE-001`): *LogicN owns the policy, the host owns the math.*
-**Builds on (shipped):** `LLN-SECRET-002` (secret/derived-secret egress), `LLN-PRIVACY-002` (cleartext-embedding
+analogue (`SPORE-SUBSTRATE-001`): *Galerina owns the policy, the host owns the math.*
+**Builds on (shipped):** `SPORE-SECRET-002` (secret/derived-secret egress), `SPORE-PRIVACY-002` (cleartext-embedding
 egress / SealTaint), the parsed `privacy {}` contract block, taint propagation, the capability/effect model, and
 tri-encryption **verdict 5** (no leak-free in-network semantic routing → encrypt + filter at trusted endpoints).
 
@@ -39,29 +39,29 @@ rigorous and standards-backed (**NIST SP 800-226**, **OpenDP**); the *novel* par
 the **effect/type system**, not at runtime in a library.
 
 ### D1.1 Syntax + the effect
-```lln
+```spore
 privacy { budget epsilon: 1.0, delta: 1e-6 }     // per data-subject, per release-channel (declared scope)
 
 // DP-emitting stdlib ops carry an epsilon-cost EFFECT (the mechanism is the vetted host lib, D1.5):
 secure flow publishMeanAge(rows: PersonalData) -> Released
   effects { dp(epsilon: 0.4) }                     // declared cost, checked against the budget
-{ return opendp.mean(rows, bounds, epsilon: 0.4) } // OpenDP does the noise; LogicN accounts the budget
+{ return opendp.mean(rows, bounds, epsilon: 0.4) } // OpenDP does the noise; Galerina accounts the budget
 ```
 The **effect-checker sums `dp(ε,δ)` costs per data-subject / per release-channel** and **denies the build** if a
 path can exceed the declared budget. Under **basic sequential composition** (Dwork–Roth Thm 3.16) **both ε and
 δ add**, so the checker sums δ alongside ε (a Gaussian-mechanism `dp()` carries δ > 0; a pure-ε / Laplace
 mechanism carries δ = 0) — declaring a δ budget you don't account would be a silent leak. (Advanced composition
-/ RDP tighten the bound — those stay the host lib's accountant; LogicN's static sum is a **sound
+/ RDP tighten the bound — those stay the host lib's accountant; Galerina's static sum is a **sound
 over-approximation**: it may over-charge, never under-charge.)
 
 ### D1.2 The loop / decidability boundary (TRAP 1 — fix stated explicitly)
 Statically summing ε is trivial for straight-line code but **undecidable when a DP-emitting op sits in a loop
 whose trip-count depends on runtime input** — the compiler cannot compute the final ε. **Rule (fail-closed):**
-- A `dp(ε)` effect inside a loop whose bound is **not statically known is a compile error** (`LLN-DP-003`,
+- A `dp(ε)` effect inside a loop whose bound is **not statically known is a compile error** (`SPORE-DP-003`,
   *effect-check*) — never assume a bound.
 - It is allowed **only** with a **static upper-bound annotation** on the loop, and the checker charges
   `ε × upper_bound`:
-  ```lln
+  ```spore
   for r in shards bounded 8 {        // static upper bound REQUIRED for a dp() body
     publishMeanAge(r)                // charged 0.4 × 8 = 3.2 against the budget
   }
@@ -88,7 +88,7 @@ sanctioned declassifier:**
 > `public` egress (DP bounds privacy loss; it does not legally anonymize).
 
 Declassification is **only** via `dp_release` (or an explicit, capability-gated, audited consent re-purpose,
-D2.3). A bare cast that "removes the taint" without a real DP mechanism is **forbidden** (`LLN-DP-004`,
+D2.3). A bare cast that "removes the taint" without a real DP mechanism is **forbidden** (`SPORE-DP-004`,
 *dataflow-taint*) — that is the laundering trap (D2 threat model). This rule is what makes D1 and D2 compose
 instead of deadlock.
 
@@ -97,22 +97,22 @@ instead of deadlock.
 budget epsilon = 1.0 (per subject, per channel "public-stats")
 publishMeanAge(...)   dp(0.4)   -> spent 0.4   (0.4 <= 1.0)  ACCEPT
 publishMeanAge(...)   dp(0.4)   -> spent 0.8   (0.8 <= 1.0)  ACCEPT
-publishMeanAge(...)   dp(0.4)   -> spent 1.2   (1.2  > 1.0)  REJECT  LLN-DP-001 (budget exhausted: 1.2 > 1.0)
+publishMeanAge(...)   dp(0.4)   -> spent 1.2   (1.2  > 1.0)  REJECT  SPORE-DP-001 (budget exhausted: 1.2 > 1.0)
 ```
 The checker prints the running accounting and the exhausting call. The third release is a **compile error**, not
 a runtime exception — the over-budget program does not build.
 
 ### D1.5 Honest scoping (what stays a host lib)
 The **DP mechanism** (Laplace/Gaussian noise, clamping, the actual (ε,δ) math) is **OpenDP** (vetted, the
-mechanism-on-core analogue). LogicN owns: the **budget ledger**, the **effect summation**, the
-**declassification gate**, and the **fail-closed egress**. LogicN never implements a noise mechanism. **No perf
+mechanism-on-core analogue). Galerina owns: the **budget ledger**, the **effect summation**, the
+**declassification gate**, and the **fail-closed egress**. Galerina never implements a noise mechanism. **No perf
 claim** is made; correctness of the mechanism is OpenDP's, audited there.
 
 ### D1.6 Threat model + fail-open review
 | Threat | Mitigation / fail-open check |
 |---|---|
 | Budget under-count via dynamic loop | D1.2: dp() in an unbounded loop is a compile error; bounded loops charge ε×bound |
-| Declassify without real DP (laundering) | D1.3: only `dp_release` via the vetted lib drops taint; bare casts forbidden (`LLN-DP-004`) |
+| Declassify without real DP (laundering) | D1.3: only `dp_release` via the vetted lib drops taint; bare casts forbidden (`SPORE-DP-004`) |
 | Per-subject vs global budget confusion | budget scope is **declared** (`per subject` / `per channel`); cross-subject aggregation re-scopes; checker rejects ambiguous scope (`unknown → deny`) |
 | Parallel composition mis-accounted (disjoint subjects) | static sum **over-approximates** (charges sequential); a tighter parallel bound is opt-in via an annotation the host accountant validates — never the other direction |
 | Privacy loss is incurred at query, not at use | the **debit happens at the effect** (when the mechanism queries the data), not at consumption; discarding the result does not undo the query, so **no refund** (conservative) |
@@ -125,13 +125,13 @@ loops and ambiguous scope both `→ deny`.
 
 Bind data to a declared **purpose** at collection; the compiler forbids data gathered for purpose X reaching a
 sink serving purpose Y. A real regulatory need with **no** language-level solution today — and it is the
-**existing taint/capability machinery + a `purpose` label** (the same engine as `LLN-PRIVACY-002` SealTaint).
+**existing taint/capability machinery + a `purpose` label** (the same engine as `SPORE-PRIVACY-002` SealTaint).
 
 ### D2.1 Worked accept/reject (the acceptance example)
-```lln
+```spore
 let d = collect(form, purpose: "billing")     // d : Tainted<purpose="billing">
 billing.charge(d)                              // sink purpose ⊇ {billing}     -> ACCEPT
-analytics.send(d)                              // sink purpose {analytics}     -> REJECT  LLN-PRIVACY-010 (purpose-limitation, dataflow-taint)
+analytics.send(d)                              // sink purpose {analytics}     -> REJECT  SPORE-PRIVACY-010 (purpose-limitation, dataflow-taint)
 analytics.send(dp_release(d, 0.4))             // declassified to aggregate (D1.3) -> ACCEPT (and debits ε)
 ```
 The purpose taint **propagates through derivations** (any value computed from `d` inherits the taint — the
@@ -146,7 +146,7 @@ nothing. (This is the capability model with a purpose set.)
 1. **`dp_release`** (D1.3) → purpose dropped to `aggregate`, ε debited (the vetted-DP path).
 2. **Consented re-purpose** — an explicit, **capability-gated, audited** `repurpose(d, to:"analytics", consent: c)`
    where `c` is a verifiable consent token; emits an audit record. Without a valid consent capability it is a
-   compile error (`LLN-PRIVACY-011`). Never an implicit cast.
+   compile error (`SPORE-PRIVACY-011`). Never an implicit cast.
 
 ### D2.4 Threat model + fail-open review
 | Threat | Mitigation |
@@ -163,10 +163,10 @@ everything else is a compile error.
 ## D3 — A sensitivity lattice (generalize SealTaint; the *practical* slice of IFC)
 A label lattice `public < internal < PII < PHI < secret/semantic` with **lightweight** information-flow control:
 **label join/meet** on combination + an **egress gate per top label**. The Jif/FlowCaml lesson (academically
-complete, **zero adoption**): ship the 80% (label propagation + egress gates — LogicN already has the engine),
+complete, **zero adoption**): ship the 80% (label propagation + egress gates — Galerina already has the engine),
 **not** the 20% (full static non-interference) that kills usability. **Explicitly not** full non-interference.
 - **Accept/reject:** joining `PII` and `internal` yields `PII`; emitting a `PII` value to a `public` sink is a
-  compile error (`LLN-PRIVACY-012`); the `secret/semantic` top label reuses the existing SealTaint egress gate
+  compile error (`SPORE-PRIVACY-012`); the `secret/semantic` top label reuses the existing SealTaint egress gate
   (embeddings invert to plaintext — verdict 5, encrypt + endpoint-filter).
 - **Scoping:** labels + propagation + per-label egress gate only. No declassification except via D1.3/D2.3.
 
@@ -190,7 +190,7 @@ rotating keys). **Mitigation (the honest design):**
 - **Threat-model entries:** KMS key-count limits, key-rotation throughput, the cost of fine-grained
   (per-subject) vs coarse (per-cohort) erasure, and the **availability tension** (crypto-erasure is irreversible
   — an erroneous erase is unrecoverable; gate it behind a governance capability + audit).
-- **Honest scope:** the KMS/HSM is the host; LogicN governs *when* erasure is required (retention expiry) and
+- **Honest scope:** the KMS/HSM is the host; Galerina governs *when* erasure is required (retention expiry) and
   *that* the key is provably dropped — not the KMS internals.
 
 ---
@@ -206,11 +206,11 @@ clause; a sensitive value may only be computed in a location whose attestation t
 
 ## 2. Honest caveats (so privacy R&D doesn't chase ghosts)
 - **No line-rate private compute.** FHE / PIR / SSE are orders too slow **and** invert zero-trust (verdict 5).
-  LogicN governs privacy; it does not do magic encrypted search.
+  Galerina governs privacy; it does not do magic encrypted search.
 - **Don't reinvent OpenDP / GDPR** — make them **compile-time-governed**; that is the differentiator.
 - **IFC stays lightweight** (the Jif lesson): taint + capability + labels + DP budgets, **not** a full static
   non-interference lattice type system.
-- **Mechanisms stay vetted host libs** (crypto-on-core analogue): LogicN owns the *policy*, the host owns the *math*.
+- **Mechanisms stay vetted host libs** (crypto-on-core analogue): Galerina owns the *policy*, the host owns the *math*.
 
 ## 3. Reserved diagnostic codes (per the namespace-ownership discipline)
 New codes this phase would add — reserved here with **mechanism tags** so they register cleanly (see the
@@ -218,23 +218,23 @@ companion [`../diagnostics-namespace-rnd-response.md`](../diagnostics-namespace-
 
 | Code | Mechanism | Meaning |
 |---|---|---|
-| `LLN-DP-001` | effect-check | DP budget exhausted (Σε over a path > declared budget) |
-| `LLN-DP-002` | declarative-clause | malformed / missing `privacy { budget … }` for a `dp()`-effecting flow |
-| `LLN-DP-003` | effect-check | `dp()` effect inside a loop without a static upper bound |
-| `LLN-DP-004` | dataflow-taint | declassification attempted without the vetted DP mechanism (laundering) |
-| `LLN-PRIVACY-010` | dataflow-taint | purpose-limitation violation (purpose X data → purpose Y sink) |
-| `LLN-PRIVACY-011` | declarative-clause | re-purpose without a valid consent capability |
-| `LLN-PRIVACY-012` | dataflow-taint | sensitivity-label egress violation (label > sink's max) |
-| `LLN-PRIVACY-013` | effect-check | retention expired but key still held (crypto-erasure not performed) |
+| `SPORE-DP-001` | effect-check | DP budget exhausted (Σε over a path > declared budget) |
+| `SPORE-DP-002` | declarative-clause | malformed / missing `privacy { budget … }` for a `dp()`-effecting flow |
+| `SPORE-DP-003` | effect-check | `dp()` effect inside a loop without a static upper bound |
+| `SPORE-DP-004` | dataflow-taint | declassification attempted without the vetted DP mechanism (laundering) |
+| `SPORE-PRIVACY-010` | dataflow-taint | purpose-limitation violation (purpose X data → purpose Y sink) |
+| `SPORE-PRIVACY-011` | declarative-clause | re-purpose without a valid consent capability |
+| `SPORE-PRIVACY-012` | dataflow-taint | sensitivity-label egress violation (label > sink's max) |
+| `SPORE-PRIVACY-013` | effect-check | retention expired but key still held (crypto-erasure not performed) |
 (Numbers are *proposed* next-free; the owner allocates the real ones in `compiler-diagnostics.md`, never
 reusing a retired number — diagnostic-namespace ownership.)
 
 ## 4. Priority + next step
 Lead with **D1 (DP-budget-as-effect)** and **D2 (purpose-typing)** — both are "the taint/effect machinery + one
 label/cost," both fit the governance model, both are genuinely ahead of every general-purpose language. Concrete
-first build target (R&D, no production code): a **worked `.lln` example** exercising D1.4 (two releases accept,
+first build target (R&D, no production code): a **worked `.spore` example** exercising D1.4 (two releases accept,
 the third rejected for ε exhaustion) and D2.1 (billing→analytics rejected; `dp_release` accepted) once the
-effect-checker surface is available — mirroring how `k3-policy.lln` exercises the governance gate.
+effect-checker surface is available — mirroring how `k3-policy.spore` exercises the governance gate.
 
 ## 5. Sources
 NIST **SP 800-226** *Guidelines for Evaluating Differential Privacy Guarantees* — https://csrc.nist.gov/pubs/sp/800/226/final ·

@@ -18,9 +18,9 @@ This document explains how the app should handle errors.
 - Sensitive data must not be logged.
 - Failed operations should not leave the app in an unsafe state.
 
-## LogicN Error Handling Expectations
+## Galerina Error Handling Expectations
 
-Where useful, LogicN code should handle:
+Where useful, Galerina code should handle:
 
 - undefined values
 - expected errors

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-LogicN should treat low memory as a security event, not only as a crash or
+Galerina should treat low memory as a security event, not only as a crash or
 performance problem.
 
 Attackers can deliberately exhaust memory through large inputs, deep nesting,
@@ -16,7 +16,7 @@ bound work, shed load safely and preserve security/audit paths.
 Memory must be budgeted, checked, bounded, and fail-safe.
 ```
 
-Memory handling is part of the LogicN security model because uncontrolled
+Memory handling is part of the Galerina security model because uncontrolled
 allocation can become denial of service, audit loss, transaction corruption or
 secret exposure.
 
@@ -27,7 +27,7 @@ budgets.
 
 Conceptual policy shape:
 
-```logicn
+```galerina
 memory {
   max_app_memory 512mb
   max_request_memory 16mb
@@ -40,21 +40,21 @@ memory {
 These limits prevent one request, upload, JSON body, AI job, parser worker,
 database result or background task from consuming the whole process.
 
-This syntax is conceptual until formal LogicN memory policy syntax is defined.
+This syntax is conceptual until formal Galerina memory policy syntax is defined.
 
 ## Fallible Allocation
 
-LogicN should not assume allocation always succeeds.
+Galerina should not assume allocation always succeeds.
 
 Unsafe model:
 
-```logicn
+```galerina
 let data = allocateHugeBuffer(size)
 ```
 
 Preferred model:
 
-```logicn
+```galerina
 let data = tryAllocate<Buffer>(size)
   -> Result<Buffer, MemoryError>
 ```
@@ -98,7 +98,7 @@ missing audit records.
 
 ## Streaming By Default
 
-LogicN should avoid loading whole data sets into memory.
+Galerina should avoid loading whole data sets into memory.
 
 Prefer:
 
@@ -149,7 +149,7 @@ within their own memory budgets.
 
 ## Priority-Based Load Shedding
 
-When memory pressure rises, LogicN should preserve critical work and cancel
+When memory pressure rises, Galerina should preserve critical work and cancel
 lower-priority work first.
 
 Work priority classes:
@@ -178,11 +178,11 @@ Security and audit work must remain available as long as possible.
 
 ## Safe Cleanup
 
-LogicN needs deterministic cleanup when memory pressure occurs.
+Galerina needs deterministic cleanup when memory pressure occurs.
 
 Conceptual cleanup pattern:
 
-```logicn
+```galerina
 using file = openFile(path) {
   process(file)
 }
@@ -205,7 +205,7 @@ load shedding begins.
 
 ## OOM Attack Classes
 
-LogicN should explicitly model memory exhaustion as an attack class.
+Galerina should explicitly model memory exhaustion as an attack class.
 
 Common inputs:
 
@@ -229,7 +229,7 @@ boundary-bypass risks if the runtime cannot refuse safely.
 
 ## Reports
 
-LogicN should emit secret-safe, machine-readable reports:
+Galerina should emit secret-safe, machine-readable reports:
 
 ```text
 memory-pressure-report.json
@@ -280,7 +280,7 @@ Relevant Knowledge Base concepts:
 ## Final Principle
 
 ```text
-LogicN should not wait for out-of-memory.
+Galerina should not wait for out-of-memory.
 
 It should detect memory pressure early,
 shed load safely,

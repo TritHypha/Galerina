@@ -1,0 +1,36 @@
+{
+  "name": "@galerina/core",
+  "version": "1.0.0-beta.2",
+  "description": "Galerina / Galerina language package, examples, schemas and prototype CLI.",
+  "license": "Apache-2.0",
+  "type": "commonjs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "Galerina": "./compiler/galerina.js"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build:types": "tsc -p tsconfig.json",
+    "check": "node compiler/galerina.js check examples --exclude source-map-error.spore",
+    "build:examples": "node compiler/galerina.js build examples --exclude source-map-error.spore --out build/examples",
+    "ast": "node compiler/galerina.js ast examples/hello.spore",
+    "tokens": "node compiler/galerina.js tokens examples/hello.spore",
+    "fmt": "node compiler/galerina.js fmt examples",
+    "fmt:check": "node compiler/galerina.js fmt examples --check",
+    "test": "node compiler/galerina.js test examples && npm run build:types && node --test tests/*.test.mjs",
+    "generate:dev": "node compiler/galerina.js generate examples --exclude source-map-error.spore --out .build-dev",
+    "dev": "node compiler/galerina.js dev examples/hello.spore --out .build-dev",
+    "schema": "node compiler/galerina.js schema examples/api-orders.spore --type CreateOrderRequest",
+    "openapi": "node compiler/galerina.js openapi examples/api-orders.spore",
+    "verify": "node compiler/galerina.js verify build/examples",
+    "targets": "node compiler/galerina.js targets examples",
+    "ai-context": "node compiler/galerina.js ai-context examples --out build/examples"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

@@ -29,24 +29,24 @@ the declaration must be made explicit.
 
 ### Scalar literals
 
-```logicn
+```galerina
 let count: Auto = 42
 // compiler infers: let count: Int = 42
 ```
 
-```logicn
+```galerina
 let name: Auto = "Phillip"
 // compiler infers: let name: String = "Phillip"
 ```
 
-```logicn
+```galerina
 let active: Auto = true
 // compiler infers: let active: Bool = true
 ```
 
 ### Unambiguous expression result
 
-```logicn
+```galerina
 let total: Auto = order.price * order.quantity
 // compiler infers: let total: Decimal = ... (if price and quantity are Decimal)
 ```
@@ -57,7 +57,7 @@ let total: Auto = order.price * order.quantity
 
 ### Mixed-type branch result
 
-```logicn
+```galerina
 let result: Auto = match status {
   "ok"    => "continue"
   "error" => 500
@@ -67,7 +67,7 @@ let result: Auto = match status {
 
 Use an explicit type instead:
 
-```logicn
+```galerina
 let result: String = match status {
   "ok"    => "continue"
   "error" => "fail"
@@ -76,7 +76,7 @@ let result: String = match status {
 
 ### Ambiguous inference
 
-```logicn
+```galerina
 let x: Auto = someExternalFunction()
 // Only valid if someExternalFunction has a declared return type
 ```
@@ -97,7 +97,7 @@ convenience that removes the need to repeat an obvious type annotation.
 
 ## Design Rationale
 
-`Auto` provides developer convenience without weakening LogicN's strict type
+`Auto` provides developer convenience without weakening Galerina's strict type
 system:
 
 - The compiler still knows the exact type
@@ -114,7 +114,7 @@ to fill it in when the value makes the type obvious.
 
 Prefer explicit types in public flow signatures and type definitions:
 
-```logicn
+```galerina
 // Prefer explicit for public API:
 flow totalPrice(order: Order) -> Decimal {
   ...
@@ -124,7 +124,7 @@ flow totalPrice(order: Order) -> Decimal {
 `Auto` is most appropriate for local intermediate bindings where the type is
 immediately obvious from the expression:
 
-```logicn
+```galerina
 secure flow processOrder(order: Order) -> Result<Invoice, OrderError> {
   let itemCount: Auto = order.items.length  // obvious: Int
   let subtotal: Auto  = order.items.sum(i => i.price)  // obvious: Decimal

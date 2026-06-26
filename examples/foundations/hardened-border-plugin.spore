@@ -1,0 +1,73 @@
+/*
+ * Example: Hardened Border Plugin Import
+ *
+ * Demonstrates import plugin with the Toxic Border protocol — the plugin is
+ * treated as a hostile DMZ. All inputs validated, V_DPM capabilities are the
+ * only authority granted, hard erasure after execution.
+ *
+ * NOTE ON RESIDENCY:
+ *   import plugin safe ...        → standard bridged plugin, demand-loaded.
+ *                                   Permitted in any module (used here).
+ *   import plugin assimilate ...  → Hot-Code Residency, pre-warmed at boot.
+ *                                   Only boot.spore may grant it (SPORE-ASSIMILATE-001),
+ *                                   because residency reserves V_DPM slots for the
+ *                                   whole process lifetime. See the assimilate test
+ *                                   in tests/syntax/assimilate-plugin.spore.
+ *
+ * See: docs/Knowledge-Bases/galerina-hardened-border.md
+ *      docs/Knowledge-Bases/galerina-tower-native-syntax.md §10
+ */
+
+;; Import a payment plugin across the Toxic Border.
+;; 'safe' demand-loads the plugin and bridges it under a Deny-by-default access
+;; set — the plugin's internal effects must be a subset of the granted
+;; capabilities, verified at compile time during the deep DAG audit.
+import plugin safe "./plugins/payment-gateway.spore" as Pay {
+  contract {
+    intent "Payment gateway — Hot-Code Residency, stateless per call"
+    access {
+      ;; Default Deny: only these capabilities are granted.
+      ;; Everything else (filesystem, shell, secrets) is automatically denied.
+      grant network.outbound   ;; V_DPM bit 0 — pre-warmed at boot
+      grant audit.write        ;; V_DPM bit 3 — AuditEvent emission
+    }
+  }
+}
+
+;; A flow that calls the assimilated plugin through the governed boundary.
+secure flow processPayment(amount: Int, currency: String) -> Result<Bool, Error>
+contract {
+  intent "Process a payment via the assimilated gateway"
+
+  ;; Deny-by-default: the flow may only use the two effects it declares,
+  ;; and both must be within the plugin's granted access set above.
+  effects { allow network.outbound, allow audit.write }
+
+  invariant {
+    ensure amount > 0
+    ensure currency != ""
+  }
+}
+{
+  ;; Interrogation: validate every input before it crosses the border.
+  ;; The Toxic Border treats plugin inputs as hostile until proven safe.
+  trap amount <= 0 : ERR_NEGATIVE_AMOUNT
+  trap currency == "" : ERR_EMPTY_CURRENCY
+
+  ;; step creates a DWI isolate — the call runs in shared-nothing memory,
+  ;; V_DPM enforced, hard-erased after. Any trap → AuditEvent → Err.
+  let result = step processPaymentInner(amount)
+  return Ok(true)
+}
+
+;; Inner computation invoked across the DWI boundary by `step` above.
+;; In a full build this would dispatch into the assimilated Pay plugin.
+pure flow processPaymentInner(amount: Int) -> Bool
+contract {
+  intent "Inner payment computation executed inside a DWI isolate"
+  effects {}
+}
+{
+  trap amount <= 0 : ERR_NEGATIVE_AMOUNT
+  return true
+}

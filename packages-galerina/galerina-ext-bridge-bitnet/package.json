@@ -1,0 +1,37 @@
+{
+  "name": "@galerina/ext-bridge-bitnet",
+  "version": "1.0.0-beta.2",
+  "description": "Galerina governed bridge for Microsoft BitNet.cpp — ternary CPU inference with Tower audit lifecycle",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "npm run build && node --test tests/*.test.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@galerina/tower-citizen": "file:../galerina-tower-citizen"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "typescript": "^5.5.0"
+  },
+  "keywords": [
+    "galerina",
+    "bitnet",
+    "inference",
+    "bridge",
+    "governance",
+    "ternary"
+  ],
+  "note": "Stage A: governance wrapper + stub. Stage B: wire ggml_bitnet_mul_mat_task_compute() via Node.js native addon (node-gyp / cmake-js). BitNet source: C:/wwwprojects/BitNet (MIT License)."
+}

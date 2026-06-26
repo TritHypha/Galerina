@@ -28,7 +28,7 @@ Official term: `extension point`. `hook` is an informal alias.
 
 ## Why Not Just Hooks
 
-`hook` can imply arbitrary code injection. LogicN should communicate:
+`hook` can imply arbitrary code injection. Galerina should communicate:
 
 ```text
 controlled extension
@@ -39,7 +39,7 @@ runtime-governed behaviour
 
 ## Plugin Declaration
 
-```logicn
+```galerina
 plugin metrics_collector {
   runtime: wasm
   source: "./plugins/metrics_collector.wasm"
@@ -60,7 +60,7 @@ the runtime result.
 
 ## Extension Point Declaration
 
-```logicn
+```galerina
 extension after_flow_execute {
   plugin metrics_collector
 }
@@ -74,7 +74,7 @@ rules.
 
 Extension points may be implemented internally as event/listener systems:
 
-```logicn
+```galerina
 event FlowExecuted {
   flow_name: String
   duration_ms: Int
@@ -97,7 +97,7 @@ how the runtime implements them internally.
 
 An observer watches runtime activity without changing it:
 
-```logicn
+```galerina
 observer permission_denial_observer on PermissionDenied {
   audit.record({
     flow: event.flow_name,
@@ -117,7 +117,7 @@ Extension = approved runtime place where this is allowed
 
 Plugins should receive metadata by default, not full runtime data:
 
-```logicn
+```galerina
 // Bad - too much exposure
 receives: [request, response, context]
 
@@ -167,7 +167,7 @@ permission enforcement
 safe/unsafe conversion
 ```
 
-Core logic stays in normal LogicN flows.
+Core logic stays in normal Galerina flows.
 
 ## Core Principle
 

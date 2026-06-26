@@ -1,8 +1,8 @@
-# LogicN Enterprise Objectives
+# Galerina Enterprise Objectives
 
 ## Purpose
 
-This document defines the LogicN free/open versus enterprise split.
+This document defines the Galerina free/open versus enterprise split.
 
 The default rule is:
 
@@ -18,19 +18,19 @@ package or feature area.
 
 ## Product Strategy
 
-LogicN should keep the basic developer platform free/open and reserve advanced
+Galerina should keep the basic developer platform free/open and reserve advanced
 governance, compliance, automation and managed-control layers for enterprise.
 
 The commercial goal is:
 
 ```text
-Free LogicN gets adoption.
-Enterprise LogicN sells governance, compliance, deployment safety and
+Free Galerina gets adoption.
+Enterprise Galerina sells governance, compliance, deployment safety and
 operational control.
 ```
 
 Do not make whole technical areas enterprise-only when a basic version can help
-individual developers and small teams adopt LogicN.
+individual developers and small teams adopt Galerina.
 
 ## Locked-Down Enterprise Rule
 
@@ -38,13 +38,13 @@ Enterprise-only packages and features must remain documentation/planning items
 unless explicitly unlocked.
 
 Enterprise-only package **names** live in this document only — there is intentionally
-**no `packages-logicn-enterprise/` scaffold directory** in the tree. The reserved names
+**no `packages-galerina-enterprise/` scaffold directory** in the tree. The reserved names
 (see "Enterprise-Only Scope" and the per-area "Reserved package names") are roadmap
 placeholders, not on-disk packages.
 
 An explicit owner unlock is what first creates a named enterprise package folder. When
 unlocked, an enterprise package must live in its own clearly-marked location and must not
-be placed under the active `packages-logicn/` collection until the owner explicitly moves
+be placed under the active `packages-galerina/` collection until the owner explicitly moves
 it into the active workspace.
 
 AI coding tools must not:
@@ -83,7 +83,7 @@ AI coding tools may:
 | Advanced audit reports | No | Yes |
 | Compliance reports | No | Yes |
 | Certified package registry | No | Yes |
-| Managed LogicN Cloud | No | Yes |
+| Managed Galerina Cloud | No | Yes |
 | Enterprise support | No | Yes |
 
 ## Free/Open Scope
@@ -91,21 +91,21 @@ AI coding tools may:
 Keep these free/open:
 
 ```text
-logicn-core
-logicn-std
-logicn-compiler
-logicn-runtime
-logicn-security-basic
-logicn-reports-basic
-logicn-web
-logicn-web-render
-logicn-agent-local
-logicn-deploy-basic
-logicn-examples
-logicn-docs
+galerina-core
+galerina-std
+galerina-compiler
+galerina-runtime
+galerina-security-basic
+galerina-reports-basic
+galerina-web
+galerina-web-render
+galerina-agent-local
+galerina-deploy-basic
+galerina-examples
+galerina-docs
 ```
 
-Free/open LogicN should support:
+Free/open Galerina should support:
 
 - individual developers
 - small teams
@@ -138,17 +138,17 @@ basic API/webhook examples
 Reserve these package names for enterprise-only work:
 
 ```text
-logicn-agent-orchestrator-enterprise
-logicn-agent-governance-enterprise
-logicn-kubernetes-enterprise
-logicn-security-policy-packs-enterprise
-logicn-deploy-enterprise
-logicn-audit-enterprise
-logicn-compliance-enterprise
-logicn-identity-enterprise
-logicn-registry-enterprise
-logicn-cloud-enterprise
-logicn-support-enterprise
+galerina-agent-orchestrator-enterprise
+galerina-agent-governance-enterprise
+galerina-kubernetes-enterprise
+galerina-security-policy-packs-enterprise
+galerina-deploy-enterprise
+galerina-audit-enterprise
+galerina-compliance-enterprise
+galerina-identity-enterprise
+galerina-registry-enterprise
+galerina-cloud-enterprise
+galerina-support-enterprise
 ```
 
 Make enterprise-only anything that involves:
@@ -201,9 +201,9 @@ enterprise audit trail
 Reserved package names:
 
 ```text
-logicn-agent-enterprise
-logicn-agent-orchestrator-enterprise
-logicn-agent-governance-enterprise
+galerina-agent-enterprise
+galerina-agent-orchestrator-enterprise
+galerina-agent-governance-enterprise
 ```
 
 ### Kubernetes And Security Policy Packs
@@ -236,9 +236,9 @@ rollback automation
 Reserved package names:
 
 ```text
-logicn-kubernetes-enterprise
-logicn-security-policy-packs-enterprise
-logicn-deploy-enterprise
+galerina-kubernetes-enterprise
+galerina-security-policy-packs-enterprise
+galerina-deploy-enterprise
 ```
 
 ### AI Agent Governance Console
@@ -267,8 +267,8 @@ compliance evidence export
 Reserved package names:
 
 ```text
-logicn-governance-console-enterprise
-logicn-agent-dashboard-enterprise
+galerina-governance-console-enterprise
+galerina-agent-dashboard-enterprise
 ```
 
 ### Identity And SSO
@@ -296,7 +296,7 @@ team permissions
 Reserved package name:
 
 ```text
-logicn-identity-enterprise
+galerina-identity-enterprise
 ```
 
 ### Advanced Audit Reports
@@ -326,8 +326,8 @@ board/client-ready reports
 Reserved package names:
 
 ```text
-logicn-audit-enterprise
-logicn-evidence-enterprise
+galerina-audit-enterprise
+galerina-evidence-enterprise
 ```
 
 ### Compliance Reports
@@ -354,7 +354,7 @@ enterprise risk reports
 Reserved package name:
 
 ```text
-logicn-compliance-enterprise
+galerina-compliance-enterprise
 ```
 
 ### Certified Package Registry
@@ -384,16 +384,16 @@ supply-chain reports
 Reserved package names:
 
 ```text
-logicn-registry-enterprise
-logicn-certified-packages-enterprise
+galerina-registry-enterprise
+galerina-certified-packages-enterprise
 ```
 
-### Managed LogicN Cloud
+### Managed Galerina Cloud
 
 Free/local scope:
 
 ```text
-local LogicN CLI
+local Galerina CLI
 local runtime
 local agents
 local reports
@@ -416,7 +416,7 @@ support
 Product name:
 
 ```text
-LogicN Cloud
+Galerina Cloud
 ```
 
 ### Enterprise Support

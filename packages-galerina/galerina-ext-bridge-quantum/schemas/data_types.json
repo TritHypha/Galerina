@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "galerina-ext-bridge-quantum/quantum-job",
+  "title": "QuantumJob — strict Hardened-Border I/O schema (Stage 2 interrogation)",
+  "description": "Deny-by-default validation of a quantum job BEFORE any subprocess spawns. The TS limit gate (limits.ts) is authoritative; this schema mirrors it for the border auditor.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["op", "correlationId", "norb", "nelec", "seed", "params"],
+  "properties": {
+    "op": {
+      "enum": [
+        "hartree_fock_state", "slater_determinant", "apply_orbital_rotation",
+        "simulate_trotter_double_factorized", "simulate_trotter_diag_coulomb_split_op",
+        "expectation_energy", "rdms", "sample_state_vector"
+      ]
+    },
+    "correlationId": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "norb": { "type": "integer", "minimum": 1, "maximum": 64 },
+    "nelec": {
+      "type": "array", "items": { "type": "integer", "minimum": 0 },
+      "minItems": 2, "maxItems": 2
+    },
+    "seed": { "type": "integer", "minimum": 0 },
+    "params": {
+      "type": "object",
+      "additionalProperties": {
+        "oneOf": [
+          { "type": "number" },
+          { "type": "array", "items": { "type": "number" } }
+        ]
+      }
+    },
+    "inputArtifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["handle", "sha256", "shape", "dtype"],
+        "properties": {
+          "handle": { "type": "string" },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "shape": { "type": "array", "items": { "type": "integer", "minimum": 0 } },
+          "dtype": { "enum": ["complex128", "float64"] }
+        }
+      }
+    }
+  }
+}

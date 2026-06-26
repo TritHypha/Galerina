@@ -1,7 +1,0 @@
-# spectral-norm
-
-A scaled-integer power-iteration benchmark from the Computer Language Benchmarks Game family. It repeatedly applies `A^T A` (where `A(i,j)` is the classic Hilbert-style reciprocal kernel) to a vector for `n=100` over `10` power iterations, then reads off a deterministic spectral-ratio checksum. The configured op count is `ITERS × 2 × n² = 200000` `A(i,j)` evaluations per run, and each column reports `operationsPerSecond` as A-evals/sec, making it a numeric/index-math compute throughput test.
-
-The **Node.js, Python and Rust** columns compute a **byte-identical scaled-integer checksum** (`6647`): every value stays non-negative, so truncating integer division behaves the same across Node `Math.trunc(a/b)`, Python `a // b` and Rust `a / b`, and all three reproduce the exact same integer sequence. `SCALE = 4096` keeps every intermediate inside i64 (largest matvec sum ≈ 4.9e11; the final `vBv × SCALE` ≈ 3.1e12, both far below ≈ 9.2e18), so Rust runs i64 throughout and Node's plain `Number` arithmetic stays exact (under 2^53).
-
-**LogicN is intentionally excluded** from this benchmark. The power iteration mutates `u`, `v` and `tmp` vectors in place across iterations, which requires fast mutable arrays. LogicN arrays are immutable and only available on the slow immutable tree-walker path, so a `.lln` version would re-allocate the vectors on every update and end up measuring allocation/GC rather than fair numeric compute. This is a known capability gap (mutable vectors), not a measurement choice — there is deliberately no `benchmark.lln` here.

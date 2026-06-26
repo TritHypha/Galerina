@@ -1,6 +1,6 @@
 # Core Application Model
 
-LogicN uses five beginner-facing concepts for secure application design:
+Galerina uses five beginner-facing concepts for secure application design:
 
 ```text
 data
@@ -20,15 +20,15 @@ internal security model.
 | `data` | Anything the application reads, receives, creates, changes or returns | models, requests, responses/views, vault entries, storage records, classifications |
 | `flow` | The controlled path data follows through the application | validation, permission checks, loading, saving, response creation, errors |
 | `permission` | What is allowed | actor authority, effects, policies, data exposure, audit |
-| `boundary` | Where LogicN connects to another trust area | packages, storage, external APIs, events, AI/tools, compute |
+| `boundary` | Where Galerina connects to another trust area | packages, storage, external APIs, events, AI/tools, compute |
 | `report` | Proof of what was checked | generated evidence for humans, tools and AI |
 
-See [LogicN Concept Map](logicn-concept-map.md) for the detailed concept index
+See [Galerina Concept Map](galerina-concept-map.md) for the detailed concept index
 under this five-part model.
 
 ## Design Rule
 
-LogicN should simplify the surface, not weaken the system.
+Galerina should simplify the surface, not weaken the system.
 
 ```text
 data       = model + request + response/view
@@ -36,7 +36,7 @@ permission = policy + effects + capabilities + audit
 boundary   = package + storage + external + event + AI/tool + compute
 ```
 
-Internally, LogicN still preserves the detailed concepts so the compiler,
+Internally, Galerina still preserves the detailed concepts so the compiler,
 runtime and reports can reason precisely.
 
 Beginner-facing docs should teach the five concepts first. Detailed concepts
@@ -63,7 +63,7 @@ generated reports
 
 Data should be typed and classified:
 
-```logicn
+```galerina
 data PaymentMethod {
   id: PaymentMethodId view: public
   providerRef: Text view: private
@@ -72,7 +72,7 @@ data PaymentMethod {
 }
 ```
 
-LogicN must distinguish public, private, sensitive and secret data.
+Galerina must distinguish public, private, sensitive and secret data.
 
 ## Flow
 
@@ -89,7 +89,7 @@ return response
 write report event
 ```
 
-LogicN should avoid hidden behavior:
+Galerina should avoid hidden behavior:
 
 ```text
 silent database writes
@@ -105,7 +105,7 @@ The flow should show what can happen.
 
 Permission controls whether a flow can read, write, call or expose something.
 
-LogicN should ask:
+Galerina should ask:
 
 ```text
 Can this flow read this data?
@@ -174,7 +174,7 @@ Do not fully merge model and response.
 
 Use model views where useful:
 
-```logicn
+```galerina
 data User {
   model {
     id: UUID view: public
@@ -208,7 +208,7 @@ See [Model Views And Data Blocks](model-views-and-data-blocks.md).
 
 A flow is reusable execution logic. It should not be merged with a route.
 
-```logicn
+```galerina
 flow getUser(
   request: User.get,
   ctx: RequestContext
@@ -227,7 +227,7 @@ boundaries.
 
 Permission is the developer-facing authority block.
 
-```logicn
+```galerina
 permission user_read_with_pii {
   actor require users.read
   actor require users.private.read
@@ -252,7 +252,7 @@ See [Developer-Friendly Permission Model](developer-friendly-permission-model.md
 
 Boundaries describe trust crossings.
 
-```logicn
+```galerina
 boundary storage UsersDatabase {
   type postgres
   model User
@@ -260,7 +260,7 @@ boundary storage UsersDatabase {
 }
 ```
 
-```logicn
+```galerina
 boundary ai SupportAssistant {
   type ai_tool
   input SupportQuestion
@@ -286,11 +286,11 @@ Polymorphism fits the same model:
 
 ## Core Statement
 
-LogicN does not guess trust. It declares data, flow, permission, boundary and
+Galerina does not guess trust. It declares data, flow, permission, boundary and
 report so humans, tools and AI can understand what the system is allowed to do
 before it runs.
 
-LogicN code should communicate system intent, not only machine instructions.
+Galerina code should communicate system intent, not only machine instructions.
 See [Software As Declared Intent](software-as-declared-intent.md).
 
 For a compact beginner example, see

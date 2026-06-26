@@ -1,4 +1,4 @@
-# LogicN Application Pattern 01 — CRUD Resource
+# Galerina Application Pattern 01 — CRUD Resource
 
 **When to use:** Any entity with create/read/update/delete lifecycle (users, orders, patients, products, invoices).
 
@@ -6,7 +6,7 @@
 
 ## Decision: CRUD is a governed pattern, not core syntax
 
-LogicN does not provide a magic `crud` keyword that auto-generates operations. CRUD behaviour is explicit — each operation is a flow, each flow declares its effects, and the compiler verifies those effects against the resource contract.
+Galerina does not provide a magic `crud` keyword that auto-generates operations. CRUD behaviour is explicit — each operation is a flow, each flow declares its effects, and the compiler verifies those effects against the resource contract.
 
 This matters because real CRUD is never symmetric. Creating a user requires validation and audit. Reading a user may require field redaction. Deleting a patient record may be illegal without a retention hold. Auto-generated CRUD hides these distinctions. Governed CRUD makes them visible at compile time.
 
@@ -14,7 +14,7 @@ This matters because real CRUD is never symmetric. Creating a user requires vali
 
 ## The resource contract
 
-```logicn
+```galerina
 resource User {
   id: UserId
   email: protected Email
@@ -43,7 +43,7 @@ The `protected` marker on `email` means the field cannot appear in an unredacted
 
 Each CRUD operation is implemented as a named flow. The flow declares which resource operation it fulfils:
 
-```logicn
+```galerina
 flow createUser(input: UserInput) -> Result<User, ApiError>
   implements resource.User.create
   effects [database.write, audit.write, validation.run]
@@ -88,22 +88,22 @@ flow deleteUser(id: UserId) -> Result<Unit, ApiError>
 
 | Rule | Diagnostic |
 |------|-----------|
-| A flow implementing `resource.X.create` must declare `database.write` | LLN-EFFECT-003 |
-| A flow implementing `resource.X.update` must declare `database.write` | LLN-EFFECT-003 |
-| A flow implementing `resource.X.delete` must declare `database.write` | LLN-EFFECT-003 |
-| A flow implementing `resource.X.read` must NOT declare `database.write` | LLN-EFFECT-004 |
-| `validation.run` must precede `database.write` in create/update flows | LLN-VALIDATE-001 |
-| `protected` fields must appear in `response.denies` or the flow must hold the declared capability | LLN-PROTECTED-001 |
-| `require audit` in policy means audit.write must appear in every matching operation | LLN-AUDIT-001 |
+| A flow implementing `resource.X.create` must declare `database.write` | SPORE-EFFECT-003 |
+| A flow implementing `resource.X.update` must declare `database.write` | SPORE-EFFECT-003 |
+| A flow implementing `resource.X.delete` must declare `database.write` | SPORE-EFFECT-003 |
+| A flow implementing `resource.X.read` must NOT declare `database.write` | SPORE-EFFECT-004 |
+| `validation.run` must precede `database.write` in create/update flows | SPORE-VALIDATE-001 |
+| `protected` fields must appear in `response.denies` or the flow must hold the declared capability | SPORE-PROTECTED-001 |
+| `require audit` in policy means audit.write must appear in every matching operation | SPORE-AUDIT-001 |
 
 ---
 
-## What LogicN avoids
+## What Galerina avoids
 
-LogicN deliberately does not provide:
+Galerina deliberately does not provide:
 
-```logicn
-// NOT valid LogicN
+```galerina
+// NOT valid Galerina
 crud User { ... }
 ```
 
@@ -119,7 +119,7 @@ Every operation must be declared. Every effect must be named. The compiler's job
 
 ## Semantic graph output
 
-The LogicN compiler emits a semantic graph (GIR) with the following node structure for a CRUD resource:
+The Galerina compiler emits a semantic graph (GIR) with the following node structure for a CRUD resource:
 
 ```
 resource:User

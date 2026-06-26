@@ -1,4 +1,4 @@
-LLN-EFFECT-001
+SPORE-EFFECT-001
 
 database.write used but not declared.
 Add database.write to the effects clause:

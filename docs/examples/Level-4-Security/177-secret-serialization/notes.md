@@ -1,6 +1,6 @@
 ﻿# 177 — secret serialization (SECURITY)
 
-**Concept:** LLN-SECRET-003 SecretSerializationDenied
+**Concept:** SPORE-SECRET-003 SecretSerializationDenied
 
 Passing a SecureString to json.encode, serialize, or toString would expose the
 raw secret value in the output payload. This violates the SecureString contract.

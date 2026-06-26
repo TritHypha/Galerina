@@ -2,7 +2,7 @@
 
 ## Purpose
 
-MCP AI tool boundaries define how LogicN applications may expose or consume
+MCP AI tool boundaries define how Galerina applications may expose or consume
 Model Context Protocol tools, resources and prompts without giving AI systems
 hidden authority.
 
@@ -45,7 +45,7 @@ An MCP boundary should declare:
 
 - MCP tools, resources and prompts are untrusted until declared.
 - MCP tool availability is not permission.
-- MCP tool execution must enter through a typed LogicN flow.
+- MCP tool execution must enter through a typed Galerina flow.
 - MCP resources must have classification before entering AI context.
 - MCP prompts must be treated as workflow contracts, not trusted code.
 - Token passthrough is denied.
@@ -56,7 +56,7 @@ An MCP boundary should declare:
 
 ## Syntax Example
 
-```logicn
+```galerina
 boundary ai_tool CustomerSupportMcp {
   protocol mcp
   transport http
@@ -100,7 +100,7 @@ mcp-ai-summary.json
 
 MCP is a platform concept, not a core language requirement. V1 should document
 the boundary rules and report targets so future MCP support cannot bypass
-LogicN permissions, effects, classification, vault rules or audit requirements.
+Galerina permissions, effects, classification, vault rules or audit requirements.
 
 ## Knowledge Base
 

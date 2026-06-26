@@ -1,5 +1,5 @@
 none
-// LLN-SECRET-001 is the target diagnostic for this example.
+// SPORE-SECRET-001 is the target diagnostic for this example.
 // SecureString-in-AI-call detection is tracked for a future compiler wave.
-// The example is stable: LLN-EFFECT-002 is a warning and LLN-HINT-COMPUTE-001 is info —
+// The example is stable: SPORE-EFFECT-002 is a warning and SPORE-HINT-COMPUTE-001 is info —
 // no unsuppressed errors are produced by the current pipeline.

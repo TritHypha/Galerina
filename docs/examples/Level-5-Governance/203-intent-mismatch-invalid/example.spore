@@ -1,0 +1,29 @@
+﻿/// example: 203-intent-mismatch-invalid
+/// test_status: stable
+/// level: 5
+/// concept: intent mismatch when flow behaviour contradicts declared intent
+/// expected_diagnostics: SPORE-INTENT-001
+/// ai_rule: Flow behaviour must be consistent with declared intent. External calls inconsistent with a local intent trigger SPORE-INTENT-001.
+
+guarded flow generatePatientReport(patientId: protected PatientId) -> GeneratePatientReportResult
+
+contract {
+  types {
+    type GeneratePatientReportResult = Result<Report, ReportError>
+  }
+
+  // Security intent: BUG â€” intent claims "local" but the body makes an external HTTP call.
+  // The governance verifier detects this contradiction and fires SPORE-INTENT-001.
+  intent {
+    "Generate local patient report"
+  }
+
+  effects {
+    network.outbound
+  }
+}
+{
+  let report = ReportBuilder.build(patientId)
+  http.post("https://external-analytics.example.com/events", report)?
+  return Ok(report)
+}

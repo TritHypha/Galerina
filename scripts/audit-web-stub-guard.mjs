@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 // audit-web-stub-guard.mjs — RD-0100 web-* fail-closed contract enforcer.
 //
-// The 6 logicn-web-* packages are deny-by-default BY DESIGN, but every README states that rule in
+// The 6 galerina-web-* packages are deny-by-default BY DESIGN, but every README states that rule in
 // PROSE only — it fails OPEN the moment an implementation lands (CWE-79 XSS, CWE-601 open-redirect,
 // CWE-501 trust-boundary, CWE-862 missing-authz). This guard makes "born fail-closed" mechanical:
 //
 //   • A STUB package (no src/ and no dist/) is inert — it cannot fail open. PASS (contract pending).
 //   • An IMPLEMENTED package (has src/ or dist/) MUST also ship a committed fail-closed acceptance test
-//     (a file matching /(failclosed|acceptance)\.test\./i under the package) exercising its LLN-WEB-*
+//     (a file matching /(failclosed|acceptance)\.test\./i under the package) exercising its SPORE-WEB-*
 //     invariants. An impl WITHOUT that test is a VIOLATION — you cannot ship a web-* impl that hasn't
 //     proven its unknown->DENY behaviour. The RD-0100 rule "do NOT promote to BUILD without committing
 //     the acceptance tests" is thus enforced, not advisory.
@@ -27,7 +27,7 @@ import { realpathSync } from "node:fs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CONTRACT_PATH = join(ROOT, "governance", "web-failclosed-contract.json");
-const PKG_ROOT = join(ROOT, "packages-logicn");
+const PKG_ROOT = join(ROOT, "packages-galerina");
 const ACCEPTANCE_RE = /(failclosed|acceptance)\.test\./i;
 
 // ── Pure core: classify a package from its probed state (unit-testable, no FS) ─────────────────────
@@ -43,7 +43,7 @@ export function classifyPackage(pkgName, { exists, hasImpl, hasAcceptanceTest })
   if (!hasAcceptanceTest) {
     return { pkg: pkgName, status: "IMPL_NO_TESTS", violation: true,
       reason: "implementation present (src/ or dist/) but NO fail-closed acceptance test (/(failclosed|acceptance).test./) " +
-              "— a web-* impl must be born fail-closed; commit the LLN-WEB-* acceptance tests from governance/web-failclosed-contract.json in the same change" };
+              "— a web-* impl must be born fail-closed; commit the SPORE-WEB-* acceptance tests from governance/web-failclosed-contract.json in the same change" };
   }
   return { pkg: pkgName, status: "IMPL_GUARDED", violation: false,
     reason: "implementation + fail-closed acceptance test both present" };
@@ -77,17 +77,17 @@ export function scan() {
   for (const pkg of governed) {
     results.push(classifyPackage(pkg, probe(join(PKG_ROOT, pkg))));
   }
-  // Any logicn-web* directory on disk that the contract does not govern is a coverage hole.
+  // Any galerina-web* directory on disk that the contract does not govern is a coverage hole.
   let onDisk = [];
   try {
     onDisk = readdirSync(PKG_ROOT, { withFileTypes: true })
-      .filter((e) => e.isDirectory() && /^logicn-web(\b|-|$)/.test(e.name))
+      .filter((e) => e.isDirectory() && /^galerina-web(\b|-|$)/.test(e.name))
       .map((e) => e.name);
   } catch { /* PKG_ROOT missing → no rogue scan */ }
   for (const name of onDisk) {
     if (!governed.includes(name)) {
       results.push({ pkg: name, status: "UNGOVERNED", violation: true,
-        reason: "a logicn-web-* package exists on disk but is NOT in governance/web-failclosed-contract.json (add it + its LLN-WEB-* invariants)" });
+        reason: "a galerina-web-* package exists on disk but is NOT in governance/web-failclosed-contract.json (add it + its SPORE-WEB-* invariants)" });
     }
   }
   return results;

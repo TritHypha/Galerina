@@ -7,7 +7,7 @@ Planned for: Stage C
 
 ## Purpose
 
-LogicN should be quantum ready in two different ways:
+Galerina should be quantum ready in two different ways:
 
 ```text
 1. post-quantum secure
@@ -17,7 +17,7 @@ LogicN should be quantum ready in two different ways:
 Post-quantum security is the near-term requirement. Quantum compute support is
 future target planning.
 
-LogicN must not claim that ordinary web, API or agent code can simply run on a
+Galerina must not claim that ordinary web, API or agent code can simply run on a
 quantum computer.
 
 ## Short Definition
@@ -28,7 +28,7 @@ quantum readiness = crypto agility now + isolated quantum compute planning later
 
 ## Core Position
 
-LogicN remains a secure web/API/agent language first.
+Galerina remains a secure web/API/agent language first.
 
 Quantum support means:
 
@@ -42,10 +42,10 @@ Quantum support means:
 
 ## Post-Quantum Secure
 
-Post-quantum secure means LogicN applications can migrate away from
+Post-quantum secure means Galerina applications can migrate away from
 cryptographic choices that may become weak against future quantum computers.
 
-LogicN should support policy-driven cryptography so applications do not hard-code
+Galerina should support policy-driven cryptography so applications do not hard-code
 algorithms across business logic.
 
 Current standards baseline:
@@ -61,11 +61,11 @@ syntax.
 
 ## Quantum Compute Ready
 
-Quantum compute ready means LogicN may later describe, check and report quantum
+Quantum compute ready means Galerina may later describe, check and report quantum
 workloads.
 
 Quantum computers are not general-purpose replacements for ordinary application
-servers. Future LogicN quantum support should use specialised compute blocks,
+servers. Future Galerina quantum support should use specialised compute blocks,
 simulators, cloud quantum platforms or intermediate representations such as QIR
 or OpenQASM.
 
@@ -77,7 +77,7 @@ execution.
 
 Example direction:
 
-```logicn
+```galerina
 security crypto {
   profile post_quantum_ready
 
@@ -109,7 +109,7 @@ Compiler and security reports should warn about:
 
 ## Crypto Inventory Report
 
-LogicN should generate:
+Galerina should generate:
 
 ```text
 crypto-inventory-report.json
@@ -119,7 +119,7 @@ Example:
 
 ```json
 {
-  "reportType": "logicn.crypto.inventory",
+  "reportType": "galerina.crypto.inventory",
   "postQuantumReady": true,
   "uses": [
     {
@@ -141,9 +141,9 @@ Example:
 
 Quantum readiness starts with basic cryptographic hygiene.
 
-LogicN should separate non-security randomness from security randomness:
+Galerina should separate non-security randomness from security randomness:
 
-```logicn
+```galerina
 Random.number()
 SecureRandom.bytes(32)
 ```
@@ -158,7 +158,7 @@ Example diagnostic:
 
 ```json
 {
-  "code": "LLN-CRYPTO-001",
+  "code": "SPORE-CRYPTO-001",
   "severity": "error",
   "message": "Random.number() cannot be used for token generation. Use SecureRandom.",
   "safeToShow": true
@@ -167,9 +167,9 @@ Example diagnostic:
 
 ## Quantum Types
 
-Future LogicN may define isolated quantum types:
+Future Galerina may define isolated quantum types:
 
-```logicn
+```galerina
 type QBit
 type QRegister<N>
 type QState<N>
@@ -181,7 +181,7 @@ These must not behave like ordinary values.
 
 Rejected:
 
-```logicn
+```galerina
 if qbit {
   return true
 }
@@ -189,7 +189,7 @@ if qbit {
 
 Accepted:
 
-```logicn
+```galerina
 let result: Measurement<Bool> = measure qbit
 
 match result {
@@ -217,7 +217,7 @@ Quantum compute should be a future target, not the main runtime.
 
 Example future direction:
 
-```logicn
+```galerina
 compute quantum GroverSearch {
   input searchSpace: QuantumRegister<8>
   output result: Measurement<Int>
@@ -232,7 +232,7 @@ compute quantum GroverSearch {
 
 Normal routes still run on the secure web runtime:
 
-```logicn
+```galerina
 route POST "/optimise" {
   request OptimiseRequest
   response OptimiseResponse
@@ -242,7 +242,7 @@ route POST "/optimise" {
 
 ## Reports
 
-Quantum-ready LogicN should support report targets such as:
+Quantum-ready Galerina should support report targets such as:
 
 ```text
 crypto-inventory-report.json
@@ -254,7 +254,7 @@ quantum-fallback-report.json
 
 ## Non-Goals
 
-LogicN should not claim:
+Galerina should not claim:
 
 - ordinary routes run on quantum computers
 - quantum hardware is a general server replacement
@@ -273,5 +273,5 @@ runtime are stable.
 ## Best Short Statement
 
 ```text
-LogicN should be post-quantum secure before it tries to be quantum-compute capable.
+Galerina should be post-quantum secure before it tries to be quantum-compute capable.
 ```

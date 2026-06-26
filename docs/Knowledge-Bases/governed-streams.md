@@ -7,16 +7,16 @@ Planned for: Stage B
 
 ## Definition
 
-A **LogicN governed stream** is a typed, permission-controlled, budgeted, and auditable flow of data over time.
+A **Galerina governed stream** is a typed, permission-controlled, budgeted, and auditable flow of data over time.
 
 ```text
 Streams are data over time.
-LogicN governs every part of that time.
+Galerina governs every part of that time.
 ```
 
 ## Purpose
 
-Streams allow LogicN to process large or continuous data without loading everything into memory.
+Streams allow Galerina to process large or continuous data without loading everything into memory.
 
 Use cases:
 
@@ -48,7 +48,7 @@ Streams pass through the same governance as normal requests.
 
 ## Stream Declaration
 
-```logicn
+```galerina
 stream UsbFileStream {
   source: Runtime.Hardware.USB
   item: FileChunk
@@ -60,7 +60,7 @@ stream UsbFileStream {
 
 ## Flow Using a Stream
 
-```logicn
+```galerina
 flow scanUsbFiles(
   stream: UsbFileStream
 ) -> Result<Scan.response, ScanError>
@@ -78,7 +78,7 @@ flow scanUsbFiles(
 
 ## Permission
 
-```logicn
+```galerina
 permission usb_scan {
   code {
     allow hardware.usb.read

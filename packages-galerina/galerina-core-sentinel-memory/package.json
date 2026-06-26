@@ -1,0 +1,14 @@
+{
+  "name": "@galerina/core-sentinel-memory",
+  "version": "1.0.0-beta.2",
+  "description": "Galerina Sentinel Memory (LSM) — deterministic fixed-block pool, 128-bit alignment, Compute/Governance segmentation, ternary TPL state buffer. Citizen Protocol v1.2.",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": { ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" } },
+  "scripts": { "build": "tsc", "test": "npm run build && node --test tests/*.test.mjs", "typecheck": "tsc --noEmit" },
+  "devDependencies": { "@types/node": "^25.9.1", "typescript": "^5.5.0" },
+  "keywords": ["galerina","sentinel","memory","ternary","deterministic","aerospace"]
+}

@@ -1,4 +1,4 @@
-# LogicN Application Pattern 06 — State Machines
+# Galerina Application Pattern 06 — State Machines
 
 **When to use:** Regulated entities with strict lifecycle — Patient status, Loan application, Order fulfillment, Insurance claim, Policy lifecycle.
 
@@ -6,7 +6,7 @@
 
 ## Proposed stateMachine declaration
 
-```logicn
+```galerina
 stateMachine Order {
   states {
     Pending
@@ -39,8 +39,8 @@ stateMachine Order {
 
 Key elements:
 
-- `initial` declares the starting state. Every new Order entity begins in `Pending`. The compiler will reject any flow that creates an Order entity in any other state — LLN-STATE-002.
-- `terminal` declares states from which no further transition is possible. A flow that attempts to transition out of `Delivered` or `Cancelled` will fail compilation — LLN-STATE-003.
+- `initial` declares the starting state. Every new Order entity begins in `Pending`. The compiler will reject any flow that creates an Order entity in any other state — SPORE-STATE-002.
+- `terminal` declares states from which no further transition is possible. A flow that attempts to transition out of `Delivered` or `Cancelled` will fail compilation — SPORE-STATE-003.
 - `requires payment.processed` binds the transition to a computed condition (not a role). The condition must be declared as a capability or a computable predicate in the type system.
 - `requires manager.approval` binds to a role-based capability.
 - `requires actor` allows any authenticated actor to perform the transition (but audit still records who).
@@ -54,13 +54,13 @@ The compiler constructs a directed transition graph from the `transitions` block
 
 | Rule | Diagnostic |
 |------|-----------|
-| State referenced in a transition not declared in `states` | LLN-STATE-001 |
-| Flow creates entity in a state other than `initial` | LLN-STATE-002 |
-| Flow attempts transition from a `terminal` state | LLN-STATE-003 |
-| Transition not declared in `transitions` block | LLN-STATE-004 |
-| Duplicate transition (same source and target declared twice) | LLN-STATE-005 |
-| `requires X` where X is not a resolvable capability or predicate | LLN-CAP-001 |
-| Transition flow missing `audit.write` when `require audit on every transition` is declared | LLN-AUDIT-001 |
+| State referenced in a transition not declared in `states` | SPORE-STATE-001 |
+| Flow creates entity in a state other than `initial` | SPORE-STATE-002 |
+| Flow attempts transition from a `terminal` state | SPORE-STATE-003 |
+| Transition not declared in `transitions` block | SPORE-STATE-004 |
+| Duplicate transition (same source and target declared twice) | SPORE-STATE-005 |
+| `requires X` where X is not a resolvable capability or predicate | SPORE-CAP-001 |
+| Transition flow missing `audit.write` when `require audit on every transition` is declared | SPORE-AUDIT-001 |
 
 No undeclared transition is possible at the type level. If a flow attempts `Order.transition(Shipped -> Pending)` and that transition is not in the `transitions` block, the compiler rejects it before the code ever runs.
 
@@ -78,7 +78,7 @@ Each transition compiles to an implicit effect profile. Flows implementing trans
 | Pending -> Cancelled | `database.write`, `audit.write` |
 | Paid -> Cancelled | `database.write`, `audit.write`, `capability:manager.approval` |
 
-```logicn
+```galerina
 flow processPayment(id: OrderId) -> Result<Order, ApiError>
   implements stateMachine.Order.transition(Pending -> Paid)
   effects [database.write, audit.write, capability.payment.processed]
@@ -123,12 +123,12 @@ In practice, a real system may compose both. An `InsuranceClaim` may be a StateM
 
 ---
 
-## LLN-STATE-001: invalid transition diagnostic (future)
+## SPORE-STATE-001: invalid transition diagnostic (future)
 
 When a flow attempts a transition not declared in the stateMachine block, the compiler will emit:
 
 ```
-LLN-STATE-004: Invalid state transition in flow `reopenOrder`
+SPORE-STATE-004: Invalid state transition in flow `reopenOrder`
   Order does not declare transition: Delivered -> Pending
   Declared transitions from Delivered: none (terminal state)
   Hint: Add a `reopen` transition to stateMachine.Order if this is intentional,
@@ -141,7 +141,7 @@ This diagnostic replaces a class of runtime bugs — invalid state transitions �
 
 ## Relationship to governed identity
 
-State is part of entity lifecycle. An entity's current state is not just a data field — it is a governance fact. In the LogicN type system:
+State is part of entity lifecycle. An entity's current state is not just a data field — it is a governance fact. In the Galerina type system:
 
 - An `Order` in state `Paid` has different read capabilities than an `Order` in state `Pending`
 - A `Loan` in state `Closed` may not have its `interestRate` field modified, regardless of the caller's role

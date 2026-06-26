@@ -1,4 +1,0 @@
-secure flow main() -> Result<Void, Error> {
-  console.log("hello from LogicN app kernel test")
-  return Ok()
-}

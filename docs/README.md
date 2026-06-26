@@ -1,11 +1,11 @@
-# LogicN Documentation
+# Galerina Documentation
 
-LogicN is a governance-first programming language, runtime and execution
+Galerina is a governance-first programming language, runtime and execution
 architecture for secure, AI-native and hardware-neutral computation across
 heterogeneous compute systems.
 
 This folder contains framework and app/workspace documentation. Language-core
-documentation lives in `../packages-logicn/logicn-core/`.
+documentation lives in `../packages-galerina/galerina-core/`.
 
 ## Start Here
 
@@ -112,7 +112,7 @@ documentation lives in `../packages-logicn/logicn-core/`.
 - [Core Application Model](Knowledge-Bases/core-application-model.md)
 - [Architecture Charter](Knowledge-Bases/architecture-charter.md)
 - [AI Understandable Architecture Policy](Knowledge-Bases/ai-understandable-architecture-policy.md)
-- [LogicN Concept Map](Knowledge-Bases/logicn-concept-map.md)
+- [Galerina Concept Map](Knowledge-Bases/galerina-concept-map.md)
 - [Developer-Friendly Permission Model](Knowledge-Bases/developer-friendly-permission-model.md)
 - [Policy Architecture](Knowledge-Bases/policy-architecture.md)
 - [Model Views And Data Blocks](Knowledge-Bases/model-views-and-data-blocks.md)
@@ -182,8 +182,8 @@ documentation lives in `../packages-logicn/logicn-core/`.
 
 ## Package-Level References
 
-- [Language Core Maturity Roadmap](../packages-logicn/logicn-core/docs/language-core-maturity-roadmap.md)
-- [Syntax And Logic Status](../packages-logicn/logicn-core/docs/syntax-logic-status.md)
-- [Polymorphism Direction](../packages-logicn/logicn-core/docs/polymorphism.md)
-- [Machine Profile Bridge](../packages-logicn/logicn-core/docs/machine-profile-bridge.md)
-- [Benchmark Diagnostics](../packages-logicn/logicn-tools-benchmark/README.md)
+- [Language Core Maturity Roadmap](../packages-galerina/galerina-core/docs/language-core-maturity-roadmap.md)
+- [Syntax And Logic Status](../packages-galerina/galerina-core/docs/syntax-logic-status.md)
+- [Polymorphism Direction](../packages-galerina/galerina-core/docs/polymorphism.md)
+- [Machine Profile Bridge](../packages-galerina/galerina-core/docs/machine-profile-bridge.md)
+- [Benchmark Diagnostics](../packages-galerina/galerina-tools-benchmark/README.md)

@@ -1,0 +1,24 @@
+{
+  "name": "@galerina/framework-example-app",
+  "version": "1.0.0-beta.2",
+  "description": "The canonical runnable 'hello, governed world' Galerina app: a governed flow compiled to a signed .wasm, fused into the App Kernel at a route, and served over HTTP. This is the golden template `galerina new app` emits.",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.json",
+    "build:greeting": "node ../../galerina.mjs build --package packages/greeting --no-refresh",
+    "test": "npm run typecheck && npm run build && node --test tests/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@galerina/framework-app-kernel": "file:../galerina-framework-app-kernel",
+    "@galerina/framework-api-server": "file:../galerina-framework-api-server"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}

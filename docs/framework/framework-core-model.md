@@ -2,11 +2,11 @@
 
 ## Purpose
 
-Define the five beginner-facing LogicN framework concepts.
+Define the five beginner-facing Galerina framework concepts.
 
 ## Short Definition
 
-LogicN applications should be explained through:
+Galerina applications should be explained through:
 
 ```text
 data -> flow -> permission -> boundary -> report
@@ -19,7 +19,7 @@ data -> flow -> permission -> boundary -> report
 | `data` | What information exists, enters and leaves |
 | `flow` | What runs |
 | `permission` | What is allowed |
-| `boundary` | Where LogicN connects to another trust area or system |
+| `boundary` | Where Galerina connects to another trust area or system |
 | `report` | Proof of what was checked |
 
 Detailed framework concepts sit under this model:
@@ -34,7 +34,7 @@ reports and tests
 
 ## Fast Runtime Relationship
 
-Because LogicN declares data, flows, permissions and boundaries before a request
+Because Galerina declares data, flows, permissions and boundaries before a request
 arrives, the secure runtime can prebuild safe execution plans:
 
 ```text

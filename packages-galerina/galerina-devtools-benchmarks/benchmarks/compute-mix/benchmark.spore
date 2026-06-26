@@ -1,0 +1,42 @@
+/// compute-mix benchmark — Galerina governed runtime
+/// SAME algorithm as node.mjs and python.py v2:
+///   2x LCG + 2x xorshift mix + 4-way branch (no float sqrt — Galerina Math.sqrt pending)
+///
+/// Uses 50,000 fixed iterations so Galerina completes in <1s.
+/// The runner normalises to ops/second for fair cross-runtime comparison.
+/// Note: omits float sqrt step because Galerina Math.sqrt is not yet in stdlib.
+
+pure flow main() -> Int
+contract { effects {} }
+{
+  mut seed:     Int = 123456789
+  mut checksum: Int = 0
+  mut i:        Int = 0
+
+  while i < 50000 {
+    /// Step 1: LCG advance
+    seed = seed * 1664525 + 1013904223
+
+    /// Step 2: first xorshift mix (approximate — Galerina uses Int not UInt32)
+    let mix1: Int = (seed + (seed / 8192)) * 2246822519
+
+    /// Step 3: second xorshift mix
+    let mix2: Int = (mix1 + (mix1 / 131072)) * 3266489917
+
+    /// Step 4: 4-way branch on last 2 bits
+    let branch: Int = mix2 - (mix2 / 4) * 4
+
+    if branch == 0 { checksum = checksum + mix2 }
+    if branch == 1 { checksum = checksum - mix1 }
+    if branch == 2 { checksum = checksum + mix1 + mix2 }
+    if branch == 3 { checksum = checksum - mix2 + mix1 }
+
+    /// Step 5: second LCG
+    seed = seed * 2891336453 + 1442695041
+    checksum = checksum + seed
+
+    i = i + 1
+  }
+
+  return checksum
+}

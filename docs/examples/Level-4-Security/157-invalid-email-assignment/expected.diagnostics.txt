@@ -1,4 +1,4 @@
-LLN-TYPE-003 (InvalidNominalConversion — Phase 8B) or LLN-TYPE-002 (TypeMismatch)
+SPORE-TYPE-003 (InvalidNominalConversion — Phase 8B) or SPORE-TYPE-002 (TypeMismatch)
 
 Cannot assign String directly to Email.
 Email is a branded/nominal type requiring validation:

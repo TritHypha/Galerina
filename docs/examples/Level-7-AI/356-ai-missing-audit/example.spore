@@ -1,0 +1,29 @@
+/// example: 356-ai-missing-audit
+/// test_status: stable
+/// level: 7
+/// concept: secure AI flow that declares audit.write but omits the AuditLog.write call
+/// expected_diagnostics: SPORE-GOV-002
+/// ai_rule: If a secure flow declares audit.write, it must call AuditLog.write before returning.
+
+secure flow scorePatient(readonly patient: Patient) -> ScorePatientResult
+
+contract {
+  // Result alias — audit.write declared but AuditLog.write call is missing (triggers SPORE-GOV-002)
+  types {
+    type ScorePatientResult = Result<RiskScore, AiError>
+  }
+
+  intent {
+    "Score patient risk with audit"
+  }
+
+  effects {
+    ai.inference
+    audit.write
+  }
+}
+{
+  let score = RiskModel.run(patient)?
+  // SPORE-GOV-XXX: audit.write declared but AuditLog.write never called
+  return Ok(score)
+}

@@ -1,0 +1,12 @@
+{
+  "packageName": "@galerina/core-cli",
+  "allowedExternal": [
+    "@galerina/core-tasks",
+    "@galerina/devtools-graph-project",
+    "node:child_process",
+    "node:fs/promises",
+    "node:path",
+    "node:url"
+  ],
+  "note": "Baseline auto-generated. Edit allowedExternal to widen/narrow the border. `--check` fails if an import appears that is not listed here."
+}

@@ -232,7 +232,7 @@ scheduled action = the flow that executes
 
 ### Scheduler Config Syntax
 
-```logicn
+```galerina
 scheduler {
   timezone: "Europe/London"
   max_concurrent_jobs: 10
@@ -244,7 +244,7 @@ scheduler {
 
 ### Retry Policy
 
-```logicn
+```galerina
 scheduler {
   retry_policy standard {
     attempts: 3
@@ -284,7 +284,7 @@ hide audit/provenance records
 
 Production:
 
-```logicn
+```galerina
 runtime profile production {
   scheduler: enabled
   audit_scheduled_actions: true
@@ -296,7 +296,7 @@ runtime profile production {
 
 Development:
 
-```logicn
+```galerina
 runtime profile development {
   scheduler: enabled
   audit_scheduled_actions: basic
@@ -308,7 +308,7 @@ runtime profile development {
 
 The Scheduler may emit extension events but is not itself an extension point:
 
-```logicn
+```galerina
 extension after_scheduled_action {
   plugin schedule_metrics
   mode: observe

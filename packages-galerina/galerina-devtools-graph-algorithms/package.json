@@ -1,0 +1,19 @@
+{
+  "name": "@galerina/devtools-graph-algorithms",
+  "version": "1.0.0-beta.2",
+  "description": "Internal graph data structures and algorithms for the Galerina compiler. Designed for future extraction to spore-graph.",
+  "license": "Apache-2.0",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test tests/*.test.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  },
+  "private": true,
+  "note": "Internal package — not published. Will be extracted to spore-graph once APIs stabilise."
+}

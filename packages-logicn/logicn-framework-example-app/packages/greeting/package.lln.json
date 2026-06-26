@@ -1,9 +1,0 @@
-{
-  "name": "greeting",
-  "version": "0.1.0",
-  "kind": "pure-transform",
-  "provides": "greeting",
-  "entry": "src/index.lln",
-  "seam": "compute.pure",
-  "capabilities": []
-}

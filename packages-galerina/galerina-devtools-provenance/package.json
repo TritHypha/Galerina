@@ -1,0 +1,12 @@
+{
+  "name": "@galerina/devtools-provenance",
+  "version": "1.0.0-beta.2",
+  "description": "Data lineage and provenance tracker for Galerina: maps data sources, transformations, and sinks across a workspace. Visualizes trust boundaries and PII flow paths for compliance and security review.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": { "galerina-provenance": "./dist/cli.js" },
+  "scripts": { "build": "tsc", "test": "node --test tests/*.test.mjs", "typecheck": "tsc --noEmit" },
+  "dependencies": { "@galerina/core-compiler": "file:../galerina-core-compiler" },
+  "devDependencies": { "@types/node": "^25.9.1", "typescript": "^5.5.0" },
+  "private": true
+}

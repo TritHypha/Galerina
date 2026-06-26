@@ -1,34 +1,34 @@
-family: LLN-VALUESTATE
+family: SPORE-VALUESTATE
 description: "Value-state checker diagnostics"
 canonical_source: "docs/Knowledge-Bases/value-state-annotations.md"
 diagnostics:
-  - code: LLN-VALUESTATE-001
+  - code: SPORE-VALUESTATE-001
     name: UnsafeToSafeTransitionDenied
     severity: error
     phase: value_state_checker
     message: "'safe mut {name}' requires a recognised gate function on the right-hand side."
     implemented: true
-  - code: LLN-VALUESTATE-002
+  - code: SPORE-VALUESTATE-002
     name: UnvalidatedValueUsed
     severity: warning
     phase: value_state_checker
     message: "Unsafe binding '{name}' passed to '{callName}' without validation."
     implemented: false
     phase_target: "8B"
-  - code: LLN-VALUESTATE-003
+  - code: SPORE-VALUESTATE-003
     name: UnsafeValueReachedGovernedSink
     severity: error
     phase: value_state_checker
     message: "Unsafe binding '{name}' cannot flow into governed sink '{sinkName}'."
     implemented: true
-  - code: LLN-VALUESTATE-004
+  - code: SPORE-VALUESTATE-004
     name: TaintedValuePropagation
     severity: error
     phase: value_state_checker
     message: "Expression flowing into '{sinkName}' contains an unsafe binding."
     implemented: false
     phase_target: "8B"
-  - code: LLN-VALUESTATE-005
+  - code: SPORE-VALUESTATE-005
     name: InvalidValueStateTransition
     severity: error
     phase: value_state_checker

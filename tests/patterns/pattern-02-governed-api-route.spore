@@ -1,0 +1,38 @@
+// EXPECT: ACCEPT
+// Pattern 2 — Governed API Route (drcm_stable_v0)
+// Reference: docs/Knowledge-Bases/galerina-architecture-patterns.md
+//
+// Use when: a flow handles external HTTP/webhook/event ingress.
+// Rules: S-001, S-002, S-003, S-004, C-001, E-001
+
+type CreateOrderRequest = record { product_id: String, quantity: Int }
+type OrderResponse = record { order_id: String, status: String }
+type ApiError = enum { BadRequest Unauthorized InternalError }
+
+secure flow createOrder(readonly request: Request) -> Result<OrderResponse, ApiError>
+contract {
+  intent { "Accept a validated order request and persist it to the order ledger." }
+  request {
+    body {
+      product_id: unsafe String
+      quantity: unsafe Int
+    }
+  }
+  effects { database.write, audit.write }
+  audit { require runtime report require actor }
+  limits { memory 32mb request_time 2s }
+}
+{
+  let productId: String = validate.string(request.body.product_id)
+  let qty: Int = validate.int(request.body.quantity)
+
+  if qty <= 0 {
+    return Err(ApiError.BadRequest)
+  }
+
+  let orderId: String = Database.insertOrder(productId, qty)
+
+  AuditLog.write("OrderCreated: " + orderId)
+
+  return Ok(OrderResponse { order_id: orderId, status: "confirmed" })
+}

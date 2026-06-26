@@ -1,0 +1,602 @@
+/// @file: type-checker.spore
+/// @purpose: Stage B type checker — real subset, executing
+/// @phase: 47
+/// @version: 2.2
+/// @status: functional subset — infers return-expression types and validates them; v2.2 adds static/bitfield/view/trap/step
+///
+/// Expected flow-record shape (from the Stage B ParseResult):
+///   { name: String, returnType: String,
+///     params: Array<{ name: String, typeName: String }>,
+///     returnExpr: { kind: String, litType: String,
+///                   leftType: String, rightType: String } }
+///   returnExpr.kind is one of "literal" | "param" | "arith" | "compare".
+
+// ============================================================
+// Galerina Self-Hosted Type Checker — Phase 47
+//
+// Takes flow records from the Stage B ParseResult and performs real type
+// checks, emitting TypeDiagnostic records with codes that match the Stage A
+// compiler's canonical meanings:
+//   SPORE-TYPE-001  UnknownType            — return/param type not a known type
+//   SPORE-TYPE-002  TypeMismatch           — return expr type ≠ declared return type
+//   SPORE-TYPE-004  InvalidBinaryOperation — arithmetic operand not Int
+//
+// Known types in the Stage B subset: Int, Bool, String, Array.
+// ============================================================
+
+record TypeDiagnostic {
+  code: String
+  message: String
+  flowName: String
+}
+
+record TypeCheckResult {
+  diagnostics: Array
+  flowCount: Int
+  checkedAt: String
+}
+
+// ── Helpers ───────────────────────────────────────────────────
+
+pure flow isKnownType(t: String) -> Bool
+contract {
+  intent { "True when t names a type the Stage B checker knows (Int/Bool/String/Array)." }
+}
+{
+  if t == "Int" { return true }
+  if t == "Bool" { return true }
+  if t == "String" { return true }
+  if t == "Array" { return true }
+  return false
+}
+
+// Infer the static type of a return expression from its decomposed parts.
+//   literal/param → the carried type (litType)
+//   compare       → Bool
+//   arith         → Int when both operands are Int, else "ERROR"
+pure flow inferExprType(kind: String, litType: String, leftType: String, rightType: String) -> String
+contract {
+  intent { "Infer the type of a flow's return expression (literal/param/arith/compare subset)." }
+}
+{
+  if kind == "literal" { return litType }
+  if kind == "param" { return litType }
+  if kind == "compare" { return "Bool" }
+  if kind == "arith" {
+    if leftType == "Int" {
+      if rightType == "Int" { return "Int" }
+    }
+    return "ERROR"
+  }
+  return "Unknown"
+}
+
+// Append every element of `src` onto `dst` and return the result.
+pure flow appendAll(dst: Array, src: Array) -> Array
+contract {
+  intent { "Concatenate src onto dst (Stage B arrays are append-only)." }
+}
+{
+  mut out: Array = dst
+  mut i: Int = 0
+  while i < src.count() {
+    let xOpt = src.get(i)
+    match xOpt {
+      Some(x) => { out = out.append(x) }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return out
+}
+
+// ── Per-flow checks ───────────────────────────────────────────
+
+pure flow checkParams(flowName: String, params: Array) -> Array
+contract {
+  intent { "SPORE-TYPE-001: every parameter must name a known type." }
+}
+{
+  mut diags: Array = Array.empty()
+  mut i: Int = 0
+  while i < params.count() {
+    let pOpt = params.get(i)
+    match pOpt {
+      Some(p) => {
+        let known: Bool = isKnownType(p.typeName)
+        if known == false {
+          let msg: String = "unknown type '" + p.typeName + "' on parameter '" + p.name + "' of flow '" + flowName + "' (SPORE-TYPE-001)"
+          diags = diags.append({ code: "SPORE-TYPE-001", message: msg, flowName: flowName })
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return diags
+}
+
+// ── Full type-check pass ──────────────────────────────────────
+
+pure flow checkFlows(flows: Array) -> TypeCheckResult
+contract {
+  intent { "Run Stage B type checks across all flows from the ParseResult." }
+}
+{
+  mut allDiags: Array = Array.empty()
+  mut flowCount: Int = 0
+  mut i: Int = 0
+  while i < flows.count() {
+    let flowOpt = flows.get(i)
+    match flowOpt {
+      Some(fd) => {
+        let name: String = fd.name
+        let retType: String = fd.returnType
+        mut flowDiags: Array = Array.empty()
+
+        // SPORE-TYPE-001: declared return type must be a known type.
+        let retKnown: Bool = isKnownType(retType)
+        if retKnown == false {
+          let msg1: String = "unknown return type '" + retType + "' on flow '" + name + "' (SPORE-TYPE-001)"
+          flowDiags = flowDiags.append({ code: "SPORE-TYPE-001", message: msg1, flowName: name })
+        }
+
+        // SPORE-TYPE-001: parameter types must be known.
+        flowDiags = appendAll(flowDiags, checkParams(name, fd.params))
+
+        // Infer the return expression's type.
+        let re = fd.returnExpr
+        let inferred: String = inferExprType(re.kind, re.litType, re.leftType, re.rightType)
+
+        // SPORE-TYPE-004: arithmetic with a non-Int operand.
+        if inferred == "ERROR" {
+          let msg4: String = "invalid binary operation: arithmetic operands must be Int on flow '" + name + "' (SPORE-TYPE-004)"
+          flowDiags = flowDiags.append({ code: "SPORE-TYPE-004", message: msg4, flowName: name })
+        }
+
+        // SPORE-TYPE-002: return expression type must match the declared return type.
+        // Only when the declared type is known and the expression typed cleanly.
+        // "Unknown" means the type could not be inferred (e.g. a parameter
+        // reference whose declared type the Stage B parser did not resolve) — that
+        // is not a mismatch, so it is skipped alongside "ERROR". This keeps the
+        // lexer→parser→type-checker pipeline from false-flagging `return param`.
+        if retKnown {
+          if inferred != "ERROR" {
+            if inferred != "Unknown" {
+              if inferred != retType {
+                let msg2: String = "type mismatch: flow '" + name + "' declares return type '" + retType + "' but its return expression is '" + inferred + "' (SPORE-TYPE-002)"
+                flowDiags = flowDiags.append({ code: "SPORE-TYPE-002", message: msg2, flowName: name })
+              }
+            }
+          }
+        }
+
+        allDiags = appendAll(allDiags, flowDiags)
+        flowCount = flowCount + 1
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return { diagnostics: allDiags, flowCount: flowCount, checkedAt: "2026-06-02" }
+}
+
+// ── Statement-body checks (Milestone M-B) ─────────────────────
+//
+// Walks a flow's full statement BODY AST (not just its return expression).
+// Each statement is a dynamic record:
+//   { kind, name, typeName, expr: Array<Expr>, body: Array<Stmt> }
+// and each Expr is { kind, value, litType, children: Array<Expr> }.
+// We emit the Stage-A canonical codes on `let`/`mut` bindings:
+//   SPORE-TYPE-001  UnknownType   — declared typeName is not a known type
+//   SPORE-TYPE-002  TypeMismatch  — known typeName ≠ a single literal's litType
+// and recurse into `if`/`while` bodies so nested bindings are checked too.
+
+// Read the single initializer/condition expression off a statement, if present.
+pure flow firstExpr(stmt: Stmt) -> Option
+contract {
+  intent { "Return Some(expr) for the statement's lone expr (RHS/condition), else None." }
+}
+{
+  if stmt.expr.count() > 0 {
+    return stmt.expr.get(0)
+  }
+  return None
+}
+
+// Check one statement, recursing into if/while bodies, returning its diagnostics.
+pure flow checkStmt(flowName: String, stmt: Stmt) -> Array
+contract {
+  intent { "Type-check a single body statement (let/mut bindings + nested if/while)." }
+}
+{
+  mut diags: Array = Array.empty()
+  let kind: String = stmt.kind
+
+  if kind == "let" {
+    diags = appendAll(diags, checkBinding(flowName, stmt))
+  }
+  if kind == "mut" {
+    diags = appendAll(diags, checkBinding(flowName, stmt))
+  }
+  if kind == "if" {
+    diags = appendAll(diags, checkStmtList(flowName, stmt.body))
+    diags = appendAll(diags, checkStmtList(flowName, stmt.elseBody))
+  }
+  if kind == "while" {
+    diags = appendAll(diags, checkStmtList(flowName, stmt.body))
+  }
+  return diags
+}
+
+// Validate a let/mut binding's declared type against a single literal initializer.
+pure flow checkBinding(flowName: String, stmt: Stmt) -> Array
+contract {
+  intent { "SPORE-TYPE-001/002 for a let/mut binding with a declared type and literal RHS." }
+}
+{
+  mut diags: Array = Array.empty()
+  let typeName: String = stmt.typeName
+  if typeName == "" {
+    return diags
+  }
+
+  let known: Bool = isKnownType(typeName)
+  if known == false {
+    let msg1: String = "unknown type '" + typeName + "' on binding '" + stmt.name + "'"
+    diags = diags.append({ code: "SPORE-TYPE-001", message: msg1, flowName: flowName })
+    return diags
+  }
+
+  let rhsOpt = firstExpr(stmt)
+  match rhsOpt {
+    Some(rhs) => {
+      if rhs.kind == "lit" {
+        let lit: String = rhs.litType
+        if isKnownType(lit) {
+          if lit != typeName {
+            let msg2: String = "type mismatch: binding '" + stmt.name + "' declared '" + typeName + "' but initialized with '" + lit + "'"
+            diags = diags.append({ code: "SPORE-TYPE-002", message: msg2, flowName: flowName })
+          }
+        }
+      }
+    }
+    None => {}
+    _ => {}
+  }
+  return diags
+}
+
+// Check a list of statements (a flow body or a nested if/while block).
+pure flow checkStmtList(flowName: String, stmts: Array) -> Array
+contract {
+  intent { "Walk a statement list, accumulating diagnostics for each statement." }
+}
+{
+  mut diags: Array = Array.empty()
+  mut i: Int = 0
+  while i < stmts.count() {
+    let sOpt = stmts.get(i)
+    match sOpt {
+      Some(s) => { diags = appendAll(diags, checkStmt(flowName, s)) }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return diags
+}
+
+// Walk every flow's full statement body, emitting binding diagnostics.
+pure flow checkFlowBodies(flows: Array) -> TypeCheckResult
+contract {
+  intent { "Stage B body-level type checks: validate each flow's statement body AST." }
+}
+{
+  mut allDiags: Array = Array.empty()
+  mut flowCount: Int = 0
+  mut i: Int = 0
+  while i < flows.count() {
+    let flowOpt = flows.get(i)
+    match flowOpt {
+      Some(fd) => {
+        let name: String = fd.name
+        allDiags = appendAll(allDiags, checkStmtList(name, fd.body))
+        flowCount = flowCount + 1
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return { diagnostics: allDiags, flowCount: flowCount, checkedAt: "2026-06-05" }
+}
+
+// ── v2.2 Additions ────────────────────────────────────────────
+//
+// 1. StaticEnv  — compile-time constant environment (static declarations)
+// 2. BitfieldEnv — governance-register environment (bitfield declarations)
+// 3. view(cap)   — capability-typed view variables
+// 4. trap        — inverted ensure with error code
+// 5. step        — DWI isolate call expression
+
+// ── 1. Static Constants ───────────────────────────────────────
+
+record StaticEnv {
+  entries: Array
+}
+
+// entries element shape: { name: String, value: String, typeName: String }
+
+// Build a StaticEnv from an array of StaticDecl AST nodes.
+// Each StaticDecl: { kind: "static", name: String, typeName: String, value: String }
+pure flow buildStaticEnv(decls: Array) -> StaticEnv
+contract {
+  intent { "Collect StaticDecl nodes into a name→value lookup table (StaticEnv)." }
+}
+{
+  mut entries: Array = Array.empty()
+  mut i: Int = 0
+  while i < decls.count() {
+    let dOpt = decls.get(i)
+    match dOpt {
+      Some(d) => {
+        if d.kind == "static" {
+          entries = entries.append({ name: d.name, value: d.value, typeName: d.typeName })
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return { entries: entries }
+}
+
+// Look up a static constant by name; returns the value String or "" when absent.
+pure flow resolveStatic(env: StaticEnv, name: String) -> String
+contract {
+  intent { "Return the compile-time value of a static constant, or empty string when not found." }
+}
+{
+  mut i: Int = 0
+  while i < env.entries.count() {
+    let eOpt = env.entries.get(i)
+    match eOpt {
+      Some(e) => {
+        if e.name == name { return e.value }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return ""
+}
+
+// Type-check all StaticDecl nodes: declared type must be a known type.
+pure flow checkStaticDecls(decls: Array) -> Array
+contract {
+  intent { "SPORE-TYPE-001: static constant declarations must name a known type." }
+}
+{
+  mut diags: Array = Array.empty()
+  mut i: Int = 0
+  while i < decls.count() {
+    let dOpt = decls.get(i)
+    match dOpt {
+      Some(d) => {
+        if d.kind == "static" {
+          let known: Bool = isKnownType(d.typeName)
+          if known == false {
+            let msg: String = "unknown type '" + d.typeName + "' on static constant '" + d.name + "' (SPORE-TYPE-001)"
+            diags = diags.append({ code: "SPORE-TYPE-001", message: msg, flowName: d.name })
+          }
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return diags
+}
+
+// ── 2. Bitfield Registers ─────────────────────────────────────
+
+record BitfieldEnv {
+  entries: Array
+}
+
+// entries element shape: { register: String, field: String, mask: Int }
+
+// Build a BitfieldEnv from an array of BitfieldDecl AST nodes.
+// Each BitfieldDecl: { kind: "bitfield", register: String,
+//                      fields: Array<{ name: String, mask: Int }> }
+pure flow buildBitfieldEnv(decls: Array) -> BitfieldEnv
+contract {
+  intent { "Collect BitfieldDecl nodes into a REGISTER.field→mask lookup table (BitfieldEnv)." }
+}
+{
+  mut entries: Array = Array.empty()
+  mut i: Int = 0
+  while i < decls.count() {
+    let dOpt = decls.get(i)
+    match dOpt {
+      Some(d) => {
+        if d.kind == "bitfield" {
+          mut j: Int = 0
+          while j < d.fields.count() {
+            let fOpt = d.fields.get(j)
+            match fOpt {
+              Some(f) => {
+                entries = entries.append({ register: d.register, field: f.name, mask: f.mask })
+              }
+              None => {}
+              _ => {}
+            }
+            j = j + 1
+          }
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return { entries: entries }
+}
+
+// Look up the bitmask for a REGISTER.field pair; returns -1 when not found.
+pure flow resolveBitfieldAccess(env: BitfieldEnv, register: String, field: String) -> Int
+contract {
+  intent { "Return the bitmask for a bitfield field access, or -1 when the REGISTER.field is unknown." }
+}
+{
+  mut i: Int = 0
+  while i < env.entries.count() {
+    let eOpt = env.entries.get(i)
+    match eOpt {
+      Some(e) => {
+        if e.register == register {
+          if e.field == field { return e.mask }
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return -1
+}
+
+// ── 3. view(cap) Capability Types ────────────────────────────
+//
+// A view-typed variable carries a capability-mask type of the form
+// "view(CAP_A|CAP_B)".  Type-checking validates that:
+//   a. the typeName starts with "view(" (structurally valid)
+//   b. the capability spec is non-empty
+
+// Type-check a view(cap) type annotation; returns diagnostics on the binding name.
+// capSpec is the raw capability list string — e.g. "CAP_A|CAP_B".
+pure flow checkViewType(bindingName: String, capSpec: String) -> Array
+contract {
+  intent { "Validate that a view(cap) annotation contains well-formed capability names." }
+}
+{
+  mut diags: Array = Array.empty()
+  if capSpec == "" {
+    let msg: String = "view() annotation on '" + bindingName + "' is empty — at least one capability name is required (SPORE-TYPE-005)"
+    diags = diags.append({ code: "SPORE-TYPE-005", message: msg, flowName: bindingName })
+    return diags
+  }
+  return diags
+}
+
+// Walk a list of binding declarations and type-check any view(cap) annotations.
+// Each binding: { kind: String, name: String, typeName: String }
+// typeName may be "view(CAP_A|CAP_B)" — extract the inner spec and validate it.
+pure flow checkViewBindings(flowName: String, bindings: Array) -> Array
+contract {
+  intent { "SPORE-TYPE-005: every view(cap) binding must carry at least one named capability." }
+}
+{
+  mut diags: Array = Array.empty()
+  mut i: Int = 0
+  while i < bindings.count() {
+    let bOpt = bindings.get(i)
+    match bOpt {
+      Some(b) => {
+        let tn: String = b.typeName
+        if tn.startsWith("view(") {
+          let inner: String = tn.slice(5, tn.length() - 1)
+          diags = appendAll(diags, checkViewType(b.name, inner))
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return diags
+}
+
+// ── 4. trap Statements ────────────────────────────────────────
+//
+// A trap statement has shape:
+//   { kind: "trap", condition: Expr, errorCode: String }
+// Type rules:
+//   SPORE-TYPE-006a — the condition expression must be Bool
+//   SPORE-TYPE-006b — errorCode must be a non-empty identifier
+
+pure flow checkTrapDecl(decl: Array, env: Array) -> Array
+contract {
+  intent { "SPORE-TYPE-006: trap condition must be Bool and error code must be a non-empty identifier." }
+}
+{
+  mut diags: Array = Array.empty()
+  mut i: Int = 0
+  while i < decl.count() {
+    let tOpt = decl.get(i)
+    match tOpt {
+      Some(t) => {
+        if t.kind == "trap" {
+          if t.errorCode == "" {
+            let msg: String = "trap statement missing error code identifier (SPORE-TYPE-006)"
+            diags = diags.append({ code: "SPORE-TYPE-006", message: msg, flowName: "trap" })
+          }
+          if t.condition.litType != "" {
+            if t.condition.litType != "Bool" {
+              let msg: String = "trap condition must be Bool, found '" + t.condition.litType + "' (SPORE-TYPE-006)"
+              diags = diags.append({ code: "SPORE-TYPE-006", message: msg, flowName: "trap" })
+            }
+          }
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return diags
+}
+
+// ── 5. step Expressions ───────────────────────────────────────
+//
+// A step expression isolates a flow call into a separate DWI isolate.
+// Shape: { kind: "step", target: Expr }
+// where target.kind must be "call" and target.value must be non-empty.
+// SPORE-TYPE-007 — step target must be a valid flow call (not a literal/param).
+
+pure flow checkStepExpr(expr: Array, env: Array) -> Array
+contract {
+  intent { "SPORE-TYPE-007: step target must be a flow call expression, not a literal or parameter reference." }
+}
+{
+  mut diags: Array = Array.empty()
+  mut i: Int = 0
+  while i < expr.count() {
+    let eOpt = expr.get(i)
+    match eOpt {
+      Some(e) => {
+        if e.kind == "step" {
+          if e.target.kind != "call" {
+            let msg: String = "step target must be a flow call, found kind '" + e.target.kind + "' (SPORE-TYPE-007)"
+            diags = diags.append({ code: "SPORE-TYPE-007", message: msg, flowName: "step" })
+          }
+          if e.target.value == "" {
+            let msg: String = "step target call has no callee name (SPORE-TYPE-007)"
+            diags = diags.append({ code: "SPORE-TYPE-007", message: msg, flowName: "step" })
+          }
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return diags
+}

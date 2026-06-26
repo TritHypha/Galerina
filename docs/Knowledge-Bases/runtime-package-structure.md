@@ -2,7 +2,7 @@
 
 ## Definition
 
-LogicN packages are coarse-grained and responsibility-based. Each package owns
+Galerina packages are coarse-grained and responsibility-based. Each package owns
 a clear runtime or language concern. Tiny packages for every concept are
 avoided.
 
@@ -13,24 +13,24 @@ avoided.
 These are mandatory for the compiler and runtime:
 
 ```text
-logicn-core              language rules, types, diagnostics
-logicn-core-compiler     parser, checker, emit planning
-logicn-core-runtime      runtime command, scheduling, execution contracts
-logicn-core-security     authority, capabilities, effects, policy
-logicn-core-memory       memory-safe values, bounds, ownership/lifetime model
+galerina-core              language rules, types, diagnostics
+galerina-core-compiler     parser, checker, emit planning
+galerina-core-runtime      runtime command, scheduling, execution contracts
+galerina-core-security     authority, capabilities, effects, policy
+galerina-core-memory       memory-safe values, bounds, ownership/lifetime model
 ```
 
 Memory safety is a language/runtime contract — not an optional plugin.
-`logicn-core-memory` is required by the compiler/runtime.
+`galerina-core-memory` is required by the compiler/runtime.
 
 ### Optional but Official Packages
 
 ```text
-logicn-core-worker       workers, queues, bounded parallelism, crash boundaries
-logicn-core-network      typed network/API policy
-logicn-core-compute      compute planning, capabilities, budgets, target selection
-logicn-ai                generic AI inference contracts
-logicn-data              data processing, streaming, memory-bounded contracts
+galerina-core-worker       workers, queues, bounded parallelism, crash boundaries
+galerina-core-network      typed network/API policy
+galerina-core-compute      compute planning, capabilities, budgets, target selection
+galerina-ai                generic AI inference contracts
+galerina-data              data processing, streaming, memory-bounded contracts
 ```
 
 Workers are separate because they are operational runtime infrastructure:
@@ -42,12 +42,12 @@ Use family prefixes that make the runtime, developer-tooling or domain role
 visible from the directory name:
 
 ```text
-logicn-core-*         language and runtime core
-logicn-ai-*           AI compute and inference
-logicn-target-*       compile target backends (cpu, wasm, gpu, etc.)
-logicn-framework-*    application kernel, API server
-logicn-devtools-*     development-only inspection and tooling
-logicn-tools-*        diagnostics and benchmarks
+galerina-core-*         language and runtime core
+galerina-ai-*           AI compute and inference
+galerina-target-*       compile target backends (cpu, wasm, gpu, etc.)
+galerina-framework-*    application kernel, API server
+galerina-devtools-*     development-only inspection and tooling
+galerina-tools-*        diagnostics and benchmarks
 ```
 
 ## Naming Principle
@@ -58,7 +58,7 @@ Execution mechanisms = separate runtime packages.
 Optional domains = optional packages.
 ```
 
-Avoid names like `memory-safe-package`. Use `logicn-core-memory` — it sounds
+Avoid names like `memory-safe-package`. Use `galerina-core-memory` — it sounds
 like part of the runtime contract, not a plugin.
 
 ## Core Rule

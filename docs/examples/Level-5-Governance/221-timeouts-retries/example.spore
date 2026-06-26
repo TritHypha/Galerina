@@ -1,0 +1,61 @@
+/// example: 221-timeouts-retries
+/// level: 5
+/// concept: contract timeouts and retries blocks
+/// expected_diagnostics: none
+/// ai_rule: The timeouts block sets a hard deadline and per-effect timeouts.
+///          The retries block declares retry attempts and strategy per effect.
+///          Both are governance declarations; no SPORE diagnostics are expected here.
+/// test_status: stable
+
+secure flow fetchExternalData(readonly request: Request) -> FetchExternalDataResult
+
+contract {
+  types {
+    type FetchExternalDataResult = Result<Response, ApiError>
+  }
+  intent {
+    "Retrieve external data with a 10-second hard deadline and exponential retry on network failure."
+  }
+  effects {
+    network.outbound
+    database.read
+    audit.write
+  }
+  timeouts {
+    deadline 10 seconds
+    network {
+      timeout 3 seconds
+    }
+    cancel on deadline
+  }
+  retries {
+    network.outbound {
+      attempts 3
+      strategy exponential_backoff
+    }
+    database.read {
+      attempts 2
+    }
+  }
+  errors {
+    returns {
+      ApiError.Timeout
+      ApiError.ServiceUnavailable
+      ApiError.Internal
+    }
+    expose {
+      ApiError.Timeout
+      ApiError.ServiceUnavailable
+    }
+    redact {
+      ApiError.Internal
+    }
+  }
+}
+
+{
+  let raw = ExternalService.fetch(request.params.resourceId)?
+  let record = DataDB.find(raw.id)?
+  AuditLog.write({ event: "ExternalDataFetched", id: raw.id })
+  return Ok(Response.ok({ id: record.id, data: record.summary }))
+}

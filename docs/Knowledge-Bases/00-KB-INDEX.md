@@ -1,4 +1,4 @@
-# LogicN Knowledge Base — Index
+# Galerina Knowledge Base — Index
 
 This index classifies every document in `docs/Knowledge-Bases/` by status.
 Non-`.md` files (YAML, EBNF) are listed separately at the end.
@@ -18,35 +18,35 @@ Non-`.md` files (YAML, EBNF) are listed separately at the end.
 - generic-types.md — parameterised types: List<T>, Optional<T>, Result<T,E>
 - guarded-flow-spec.md — guarded flow: effectful execution unit definition
 - list-operations.md — List<T> collection type and operations
-- logicn-contract-errors.md — contract errors {} section spec (Phase 10B)
-- logicn-contract-full-model.md — flow contract full reference (Phase 10A)
-- logicn-contract-operational-constraints.md — timeouts, retries, limits sections
-- logicn-contract-privacy-observability.md — privacy {} and observability {} sections
-- logicn-contracts-as-meaning-layer.md — contracts as the language's meaning layer
-- logicn-contract-sets.md — contract sets: parsed and validated (Phase 9B)
-- logicn-core-logic-tri-decision-bool.md — Tri type: canonical three-valued logic spec
-- logicn-core-logic-tristate-developer-guide.md — Tri if/match developer guide (uses older naming; canonical name is Tri)
-- logicn-flow-contracts.md — flow contract keywords: contract, emit, emits, event
-- logicn-flow-entry-points.md — flow entry points and access control (Phase 11)
-- logicn-grammar.ebnf — EBNF grammar (machine-readable)
-- logicn-language-lessons.md — design decisions informed by other languages
-- logicn-lexer-lln.md — self-hosted lexer in LogicN (Phase 16)
-- logicn-missing-syntax-keywords.md — parser/AST gaps: critical primitives not yet implemented
-- logicn-naming-conventions.md — flow parameters, bindings, type aliases
-- logicn-no-variables-outside-flows.md — no ordinary variables outside flows (Phase 9B)
-- logicn-phase-11-mut-reassignment.md — mut reassignment enforcement (Phase 11A.2)
-- logicn-phase-11-taint-propagation.md — two-hop taint propagation (Phase 11B)
-- logicn-readable-logic-forms.md — and/or/unless/is keywords: readable logic (Phase 9C)
-- logicn-syntax-if-match-optional.md — if, match, Optional<T>, type guards
-- logicn-syntax-loops-iteration.md — loops, map/filter/fold, iteration patterns
-- logicn-trust-sensitivity-type-rules.md — trust, sensitivity, collection type rules
-- logicn-type-system-compute-extensions.md — numeric tower, memory domain types
-- logicn-v1-memory-model.md — Phase 3 v1 memory model commitment
+- galerina-contract-errors.md — contract errors {} section spec (Phase 10B)
+- galerina-contract-full-model.md — flow contract full reference (Phase 10A)
+- galerina-contract-operational-constraints.md — timeouts, retries, limits sections
+- galerina-contract-privacy-observability.md — privacy {} and observability {} sections
+- galerina-contracts-as-meaning-layer.md — contracts as the language's meaning layer
+- galerina-contract-sets.md — contract sets: parsed and validated (Phase 9B)
+- galerina-core-logic-tri-decision-bool.md — Tri type: canonical three-valued logic spec
+- galerina-core-logic-tristate-developer-guide.md — Tri if/match developer guide (uses older naming; canonical name is Tri)
+- galerina-flow-contracts.md — flow contract keywords: contract, emit, emits, event
+- galerina-flow-entry-points.md — flow entry points and access control (Phase 11)
+- galerina-grammar.ebnf — EBNF grammar (machine-readable)
+- galerina-language-lessons.md — design decisions informed by other languages
+- galerina-lexer-spore.md — self-hosted lexer in Galerina (Phase 16)
+- galerina-missing-syntax-keywords.md — parser/AST gaps: critical primitives not yet implemented
+- galerina-naming-conventions.md — flow parameters, bindings, type aliases
+- galerina-no-variables-outside-flows.md — no ordinary variables outside flows (Phase 9B)
+- galerina-phase-11-mut-reassignment.md — mut reassignment enforcement (Phase 11A.2)
+- galerina-phase-11-taint-propagation.md — two-hop taint propagation (Phase 11B)
+- galerina-readable-logic-forms.md — and/or/unless/is keywords: readable logic (Phase 9C)
+- galerina-syntax-if-match-optional.md — if, match, Optional<T>, type guards
+- galerina-syntax-loops-iteration.md — loops, map/filter/fold, iteration patterns
+- galerina-trust-sensitivity-type-rules.md — trust, sensitivity, collection type rules
+- galerina-type-system-compute-extensions.md — numeric tower, memory domain types
+- galerina-v1-memory-model.md — Phase 3 v1 memory model commitment
 - match-catch-all-branch.md — _ => catch-all arm in match
 - no-exceptions-result-model.md — Result<T,E> invariant; no throw/catch
 - numeric-and-compute-types.md — numeric types, Matrix/Vector/Tensor
 - operator-precedence.md — operator precedence table (Phase 5)
-- operator-type-rules.md — operator type rules: LLN-TYPE-004, LLN-TYPE-005
+- operator-type-rules.md — operator type rules: SPORE-TYPE-004, SPORE-TYPE-005
 - pattern-matching.md — match value { ... } reference
 - postfix-type-state-syntax.md — postfix governance state syntax
 - release-keyword.md — release: explicit early cleanup of runtime values
@@ -61,37 +61,37 @@ Non-`.md` files (YAML, EBNF) are listed separately at the end.
 - ast-value-encoding.md — AST .value field encoding per AstNodeKind
 - compiler-diagnostics.md — structured diagnostic codes, source locations, suggested fixes
 - effect-checker-and-boundary-checker.md — effect and boundary checker spec (v0.2 target, specified pending implementation)
-- logicn-ast-published-schema.md — stable published AST JSON schema for tooling
-- logicn-ast-to-gir.md — AST to GIR transformation (Pass 8)
-- logicn-compiler-enforcement-compute.md — enforcement gaps for compute targets
-- logicn-compiler-optimizations.md — optimizations and LLVM/MLIR backend pathway
-- logicn-compiler-phase-memory-boundaries.md — phase-level memory boundaries (Stage B proposal)
-- logicn-compiler-pipeline.md — authoritative compiler pass order
-- logicn-core-cli-deploy-explain-plan.md — logicn-core-cli: build, verify, deploy, explain, plan (v0.2 target)
-- logicn-core-compiler-manifest-generation-pass-14.md — manifest generation pass 14 spec (v0.2 target)
-- logicn-core-compute-gpu-and-photonic-backends.md — GPU/photonic/WASM target planning spec (v0.2 target)
-- logicn-core-logic-omni-logic.md — Omni Logic: advisory multi-state reasoning model (v0.2 target)
-- logicn-core-syntax-bindings-pipeline.md — let/mut/readonly, method-chain pipelines
-- logicn-core-syntax-typed-content-blocks.md — html/dom/script/css heredoc content blocks
-- logicn-deterministic-selfhost-verification.md — deterministic self-host verification (Stage B proposal)
-- logicn-diagnostic-numbering-strategy.md — diagnostic numbering strategy (Phase 7 resolved)
-- logicn-gir-schema.md — Governed Intermediate Representation schema
-- logicn-gradual-capability-inference.md — gradual capability and effect inference (Phase 13 proposal)
-- logicn-intent-guided-optimisation.md — Intent-Guided Optimisation (IGO), Phase 8+
-- logicn-javascript-escape-hatch.md — LLN-BACKEND-001: ambient authority in generated JS (Phase 13)
-- logicn-logical-planning-target-emission.md — separate logical planning from target emission (Phase 13)
-- logicn-metadata-erasure.md — metadata erasure (Phase 13)
-- logicn-passive-execution-plans.md — passive execution plans (Phase 13 proposal)
-- logicn-static-capability-proofs.md — static capability proofs (Phase 13, partial)
-- logicn-symbol-resolver-spec.md — symbol resolver spec (Phase 7A)
-- logicn-tensor-arity-decision.md — Tensor<T,Shape> arity decision (Phase 7)
+- galerina-ast-published-schema.md — stable published AST JSON schema for tooling
+- galerina-ast-to-gir.md — AST to GIR transformation (Pass 8)
+- galerina-compiler-enforcement-compute.md — enforcement gaps for compute targets
+- galerina-compiler-optimizations.md — optimizations and LLVM/MLIR backend pathway
+- galerina-compiler-phase-memory-boundaries.md — phase-level memory boundaries (Stage B proposal)
+- galerina-compiler-pipeline.md — authoritative compiler pass order
+- galerina-core-cli-deploy-explain-plan.md — galerina-core-cli: build, verify, deploy, explain, plan (v0.2 target)
+- galerina-core-compiler-manifest-generation-pass-14.md — manifest generation pass 14 spec (v0.2 target)
+- galerina-core-compute-gpu-and-photonic-backends.md — GPU/photonic/WASM target planning spec (v0.2 target)
+- galerina-core-logic-omni-logic.md — Omni Logic: advisory multi-state reasoning model (v0.2 target)
+- galerina-core-syntax-bindings-pipeline.md — let/mut/readonly, method-chain pipelines
+- galerina-core-syntax-typed-content-blocks.md — html/dom/script/css heredoc content blocks
+- galerina-deterministic-selfhost-verification.md — deterministic self-host verification (Stage B proposal)
+- galerina-diagnostic-numbering-strategy.md — diagnostic numbering strategy (Phase 7 resolved)
+- galerina-gir-schema.md — Governed Intermediate Representation schema
+- galerina-gradual-capability-inference.md — gradual capability and effect inference (Phase 13 proposal)
+- galerina-intent-guided-optimisation.md — Intent-Guided Optimisation (IGO), Phase 8+
+- galerina-javascript-escape-hatch.md — SPORE-BACKEND-001: ambient authority in generated JS (Phase 13)
+- galerina-logical-planning-target-emission.md — separate logical planning from target emission (Phase 13)
+- galerina-metadata-erasure.md — metadata erasure (Phase 13)
+- galerina-passive-execution-plans.md — passive execution plans (Phase 13 proposal)
+- galerina-static-capability-proofs.md — static capability proofs (Phase 13, partial)
+- galerina-symbol-resolver-spec.md — symbol resolver spec (Phase 7A)
+- galerina-tensor-arity-decision.md — Tensor<T,Shape> arity decision (Phase 7)
 - parser-error-recovery.md — parser error recovery policy (Phase 5)
 - phase-4-parser-ast-plan.md — Phase 4 parser and AST plan
 
 ### Runtime Architecture — Interpreter, CapabilityHost, Execution Plans
 
 - boot-main-startup-defaults.md — boot/main policy defaults and startup rules
-- build-system-and-cli.md — logicn build and deploy as governed workflows
+- build-system-and-cli.md — galerina build and deploy as governed workflows
 - cicd-integration-and-provenance.md — CI/CD integration, provenance, artifact integrity
 - compile-time-vs-runtime-authority.md — compile-time vs runtime authority separation
 - context-tagged-verified-execution-cache.md — verified execution plan cache rules
@@ -101,32 +101,32 @@ Non-`.md` files (YAML, EBNF) are listed separately at the end.
 - fast-response-and-keep-alive.md — fast response as a request-path problem
 - flow-finalizer-and-cleanup.md — automatic runtime cleanup at flow end
 - flow-vs-fn-security-model.md — route / flow / fn: distinct execution constructs
-- logicn-compute-target-optimisation.md — compute target optimisation (Phase 8A complete)
-- logicn-core-flow-trace.md — Flow Trace API: structured governed debug logs
-- logicn-core-intent-safety-effects.md — intent declarations, safety levels, flow tracing
-- logicn-core-memory-model.md — v1 memory model: ownership, borrows, bounds checks
-- logicn-core-network-governance.md — network governance model
-- logicn-core-package-architecture.md — logicn-core* package dependency graph
-- logicn-core-runtime-resources.md — runtime-owned single-instance resources
-- logicn-data-layout-memory-hints.md — data layout hints, profiling, nondeterministic annotation
-- logicn-developer-ux-phase-8.md — developer experience improvements (Phase 8)
-- logicn-governance-diff-ci.md — logicn diff: governance report comparison in CI
-- logicn-intent-graph.md — machine-readable intent graph build artefact
-- logicn-memory-borrow-move-pinned.md — borrow, move, and pinned memory semantics
-- logicn-memory-request-scope-arenas.md — request-scope arena allocators
-- logicn-package-manifest-spec.md — package manifest spec (Phase 8+)
-- logicn-proof-chain-spec.md — execution proof chain spec (Phase 7B/8)
-- logicn-route-runtime-spec.md — route runtime spec (Phase 7B/8)
-- logicn-runtime-lifecycle.md — runtime lifecycle spec (Phase 7B/8)
-- logicn-runtime-value-model.md — runtime value model (Phase 7B/8)
-- logicn-speed-improvements-phase-8.md — speed improvements (Phase 8)
-- logicn-stage-b-root-capability-provider.md — Stage B root capability provider (proposal)
-- logicn-stdlib-reference.md — standard library reference (Phase 7B/8)
-- logicn-type-improvements-phase-8.md — type system improvements (Phase 8B/8C)
-- logicn-developer-tooling-advanced.md — test generation, capability warnings, constraint signatures
-- logicn-developer-tools.md — LSP, diagnostics-with-fixes, governance REPL
-- logicn-ide-tooling.md — IDE tooling design (Phase 13/14 spec)
-- logicn-one-click-governance-fixes.md — one-click governance fixes (Phase 13/14 spec)
+- galerina-compute-target-optimisation.md — compute target optimisation (Phase 8A complete)
+- galerina-core-flow-trace.md — Flow Trace API: structured governed debug logs
+- galerina-core-intent-safety-effects.md — intent declarations, safety levels, flow tracing
+- galerina-core-memory-model.md — v1 memory model: ownership, borrows, bounds checks
+- galerina-core-network-governance.md — network governance model
+- galerina-core-package-architecture.md — galerina-core* package dependency graph
+- galerina-core-runtime-resources.md — runtime-owned single-instance resources
+- galerina-data-layout-memory-hints.md — data layout hints, profiling, nondeterministic annotation
+- galerina-developer-ux-phase-8.md — developer experience improvements (Phase 8)
+- galerina-governance-diff-ci.md — galerina diff: governance report comparison in CI
+- galerina-intent-graph.md — machine-readable intent graph build artefact
+- galerina-memory-borrow-move-pinned.md — borrow, move, and pinned memory semantics
+- galerina-memory-request-scope-arenas.md — request-scope arena allocators
+- galerina-package-manifest-spec.md — package manifest spec (Phase 8+)
+- galerina-proof-chain-spec.md — execution proof chain spec (Phase 7B/8)
+- galerina-route-runtime-spec.md — route runtime spec (Phase 7B/8)
+- galerina-runtime-lifecycle.md — runtime lifecycle spec (Phase 7B/8)
+- galerina-runtime-value-model.md — runtime value model (Phase 7B/8)
+- galerina-speed-improvements-phase-8.md — speed improvements (Phase 8)
+- galerina-stage-b-root-capability-provider.md — Stage B root capability provider (proposal)
+- galerina-stdlib-reference.md — standard library reference (Phase 7B/8)
+- galerina-type-improvements-phase-8.md — type system improvements (Phase 8B/8C)
+- galerina-developer-tooling-advanced.md — test generation, capability warnings, constraint signatures
+- galerina-developer-tools.md — LSP, diagnostics-with-fixes, governance REPL
+- galerina-ide-tooling.md — IDE tooling design (Phase 13/14 spec)
+- galerina-one-click-governance-fixes.md — one-click governance fixes (Phase 13/14 spec)
 - lsgr-runtime-components.md — LSGR runtime components (Phase 17+ future)
 - request-context-keyword.md — ctx: RequestContext naming convention
 - request-lifecycle.md — governed request lifecycle
@@ -149,18 +149,18 @@ Non-`.md` files (YAML, EBNF) are listed separately at the end.
 
 ### Standard Library
 
-- logicn-core-standard-types-string-char-byte.md — String, Char, Byte, Bytes, SecureString
-- logicn-stdlib-reference.md — standard library reference (also listed under runtime)
-- logicn-missing-syntax-keywords.md — also covers stdlib gaps (also listed under language spec)
+- galerina-core-standard-types-string-char-byte.md — String, Char, Byte, Bytes, SecureString
+- galerina-stdlib-reference.md — standard library reference (also listed under runtime)
+- galerina-missing-syntax-keywords.md — also covers stdlib gaps (also listed under language spec)
 
 ### Attestation and Proof Chain
 
 - boundary-safety-proof.md — boundary safety as first proof target
-- logicn-audit-writer-spec.md — JSONL audit writer spec (Phase 7B/8)
-- logicn-compliance-governance.md — compliance governance for regulated industries
-- logicn-concept-audit-proof.md — audit proof concept in the governance pipeline
-- logicn-signed-attestation.md — Ed25519 / post-quantum signed attestation (Phase 10A)
-- logicn-supply-chain-package-governance.md — supply chain attestation, LLN-SUPPLY-001
+- galerina-audit-writer-spec.md — JSONL audit writer spec (Phase 7B/8)
+- galerina-compliance-governance.md — compliance governance for regulated industries
+- galerina-concept-audit-proof.md — audit proof concept in the governance pipeline
+- galerina-signed-attestation.md — Ed25519 / post-quantum signed attestation (Phase 10A)
+- galerina-supply-chain-package-governance.md — supply chain attestation, SPORE-SUPPLY-001
 - security-invariants-and-policy-proof.md — security invariants over isolated fixes
 
 ### Governance
@@ -188,7 +188,7 @@ Non-`.md` files (YAML, EBNF) are listed separately at the end.
 - core-application-model.md — five beginner-facing concepts for secure apps
 - data-visibility-view-terminology.md — view-based field exposure terminology
 - deny-by-default-risk-features.md — features denied: hidden authority, mutation, guessing
-- design-patterns-for-logicn.md — allowed design patterns: visible effects and permissions
+- design-patterns-for-galerina.md — allowed design patterns: visible effects and permissions
 - developer-friendly-permission-model.md — simple developer-facing permission model
 - documentation-layer-model.md — documentation layer organisation
 - encapsulation-model.md — encapsulation through controlled data movement
@@ -204,37 +204,37 @@ Non-`.md` files (YAML, EBNF) are listed separately at the end.
 - local-ai-review.md — local AI as advisory review aid
 - local-low-bit-ai-review.md — BitNet-style local AI for advisory review
 - logic-architecture-policy.md — what belongs in each language layer
-- logicn-ai-neural-npu-targets.md — Neural IR, quantization, NPU compute targets
-- logicn-ai-semantic-graph-output.md — --emit-ai-graph semantic graph output (Phase 13A)
-- logicn-api-boundary-architecture.md — API boundary: typed permissioned request gateway
-- logicn-architecture-layers.md — five-layer architecture (authoritative)
-- logicn-code-examples-full-flow.md — full flow code examples with governance
-- logicn-concept-coordinated-compute.md — coordinated compute concept
-- logicn-concept-governed-execution-plan.md — governed execution plan concept
-- logicn-concept-intent.md — intent concept and semantic layers
-- logicn-concept-map.md — concept map for humans and AI tools
-- logicn-concurrency-synchronisation-compute.md — concurrency/synchronisation for heterogeneous compute
-- logicn-core-config-dotenv-trust-model.md — .env trust model
-- logicn-core-config-environment-secrets.md — environment config and secret reference model
-- logicn-core-config-vault.md — Config Vault: typed non-secret shared config
-- logicn-core-network-webhook.md — webhook security spec (v0.2 specified, not yet implemented)
-- logicn-core-security-secret-reference-model.md — secret reference model with taint tracking (v0.2 draft)
-- logicn-design-primitive-obsession.md — primitive obsession anti-pattern
-- logicn-doc-comment-standard.md — doc comment standard (Phase 8A)
-- logicn-glossary.md — glossary and definition index (living document)
-- logicn-governance-architecture.md — broader governance architecture pipeline
-- logicn-governance-verifier-spec.md — governance verifier spec (Phase 8)
-- logicn-hardware-as-capabilities.md — hardware as governed capabilities (Phase 13/14 spec)
-- logicn-naming-philosophy.md — naming philosophy for runtime/governance/hardware terminology
-- logicn-natural-language-governance-summary.md — plain-English governance summary output
-- logicn-package-naming.md — package naming spec (future migration target)
-- logicn-photonic-distinct-compute-model.md — photonic as distinct compute substrate
-- logicn-security-compile-time-crypto.md — compile-time cryptographic parameters
-- logicn-security-improvements-phase-8.md — security improvements (Phase 8B)
-- logicn-security-secret-safety.md — constant-time comparison, codegen, HSM
-- logicn-security-taint-types.md — Tainted<T> input taint type
-- logicn-semantic-graph-system.md — Semantic Graph System (Phase 13 proposal)
-- logicn-signed-attestation.md — (also listed under attestation)
+- galerina-ai-neural-npu-targets.md — Neural IR, quantization, NPU compute targets
+- galerina-ai-semantic-graph-output.md — --emit-ai-graph semantic graph output (Phase 13A)
+- galerina-api-boundary-architecture.md — API boundary: typed permissioned request gateway
+- galerina-architecture-layers.md — five-layer architecture (authoritative)
+- galerina-code-examples-full-flow.md — full flow code examples with governance
+- galerina-concept-coordinated-compute.md — coordinated compute concept
+- galerina-concept-governed-execution-plan.md — governed execution plan concept
+- galerina-concept-intent.md — intent concept and semantic layers
+- galerina-concept-map.md — concept map for humans and AI tools
+- galerina-concurrency-synchronisation-compute.md — concurrency/synchronisation for heterogeneous compute
+- galerina-core-config-dotenv-trust-model.md — .env trust model
+- galerina-core-config-environment-secrets.md — environment config and secret reference model
+- galerina-core-config-vault.md — Config Vault: typed non-secret shared config
+- galerina-core-network-webhook.md — webhook security spec (v0.2 specified, not yet implemented)
+- galerina-core-security-secret-reference-model.md — secret reference model with taint tracking (v0.2 draft)
+- galerina-design-primitive-obsession.md — primitive obsession anti-pattern
+- galerina-doc-comment-standard.md — doc comment standard (Phase 8A)
+- galerina-glossary.md — glossary and definition index (living document)
+- galerina-governance-architecture.md — broader governance architecture pipeline
+- galerina-governance-verifier-spec.md — governance verifier spec (Phase 8)
+- galerina-hardware-as-capabilities.md — hardware as governed capabilities (Phase 13/14 spec)
+- galerina-naming-philosophy.md — naming philosophy for runtime/governance/hardware terminology
+- galerina-natural-language-governance-summary.md — plain-English governance summary output
+- galerina-package-naming.md — package naming spec (future migration target)
+- galerina-photonic-distinct-compute-model.md — photonic as distinct compute substrate
+- galerina-security-compile-time-crypto.md — compile-time cryptographic parameters
+- galerina-security-improvements-phase-8.md — security improvements (Phase 8B)
+- galerina-security-secret-safety.md — constant-time comparison, codegen, HSM
+- galerina-security-taint-types.md — Tainted<T> input taint type
+- galerina-semantic-graph-system.md — Semantic Graph System (Phase 13 proposal)
+- galerina-signed-attestation.md — (also listed under attestation)
 - malicious-data-and-exploit-resistance.md — malicious data as active threat model
 - mathematics-and-tri-logic.md — mathematical and combinatoric computation support
 - mcp-ai-tool-boundaries.md — MCP as controlled AI tool boundary
@@ -270,48 +270,48 @@ Non-`.md` files (YAML, EBNF) are listed separately at the end.
 - trust-conversion-and-data-safety.md — memory-safe vs trust-safe distinction
 - trust-conversion-model.md — unsafe -> safe: three approved trust operations
 - type-manifest.md — app.type-manifest.json: compiler-generated type contracts
-- unified-syntax-architecture.md — one .lln syntax for all language concerns
+- unified-syntax-architecture.md — one .spore syntax for all language concerns
 - untrusted-file-asset-processing.md — images/PDFs/archives as untrusted executable-adjacent
-- what-logicn-refuses-to-become.md — explicit anti-goals for the language
+- what-galerina-refuses-to-become.md — explicit anti-goals for the language
 - hello-world-api-pattern.md — canonical beginner example: data/flow/permission/route/report
 
 ### Examples and Patterns
 
-- design-patterns-for-logicn.md — (also listed under governance)
+- design-patterns-for-galerina.md — (also listed under governance)
 - hello-world-api-pattern.md — (also listed under governance)
 - http-method-declarations.md — HTTP methods as declared governed entry points
-- logicn-code-examples-full-flow.md — (also listed under governance)
+- galerina-code-examples-full-flow.md — (also listed under governance)
 - docs/examples/Level-5-Security/ — Phase R4 security examples: process.spawn governance, anti-abuse patterns (CEC stable)
 
 ### Phase Decisions and Roadmap
 
-- logicn-phase-9-roadmap.md — Phase 9 roadmap (Phase 8 complete baseline)
-- logicn-phase-10-roadmap.md — Phase 10 roadmap (Active: Phase 9 complete)
-- logicn-roadmap.md — implementation roadmap (updated 2026-05-31, Phase 23 complete)
-- logicn-roadmap-phase16-20.md — Phase 16-20 roadmap (Phase 16 active)
-- logicn-phase-18-23-summary.md — Phase 18-23 complete summary (+293 tests, 10 new source files)
+- galerina-phase-9-roadmap.md — Phase 9 roadmap (Phase 8 complete baseline)
+- galerina-phase-10-roadmap.md — Phase 10 roadmap (Active: Phase 9 complete)
+- galerina-roadmap.md — implementation roadmap (updated 2026-05-31, Phase 23 complete)
+- galerina-roadmap-phase16-20.md — Phase 16-20 roadmap (Phase 16 active)
+- galerina-phase-18-23-summary.md — Phase 18-23 complete summary (+293 tests, 10 new source files)
 - package-completion-status.md — (also listed under governance)
 
 ### Architecture Specifications (Phase 18–Hybrid WASM, current canonical)
 
-- logicn-architecture-high-roi-ideas.md — 16 high-ROI ideas, status by phase
-- logicn-effect-checker-architecture.md — effect checker arch: EffectCheckerFlags, LLN-STDLIB-001, bitsets
-- logicn-explicitness-principles.md — "nothing important hidden" — the core LogicN design principle
-- logicn-gir-emitter-architecture.md — GIR emitter: tensor metadata, WAT emitter, WASM lowering plan
-- logicn-governance-verifier-architecture.md — governance verifier: GovernanceFlags, RuntimeManifest
-- logicn-lexer-optimizations.md — lexer optimisation roadmap (slice scanning, TokenKindId, arena plan)
-- logicn-package-resolver-architecture.md — package resolver: hash/signature/targets/compute/LLN-PKG-*
-- logicn-runtime-interpreter-roadmap.md — runtime improvement roadmap: Lua VM, WASM, JIT, register VM
-- logicn-stdlib-architecture.md — stdlib: STDLIB_CAPABILITY_MAP, pure/effectful split, TRI_STDLIB_OPS
-- logicn-type-checker-architecture.md — type checker: TypeId, EffectFlags, tensor shape checking
-- logicn-value-state-checker-architecture.md — value-state: ValueStateFlags, SINK_REQUIREMENTS, LLN-GATE-001
-- logicn-cli-current.md — current CLI spec: all modes including --target wasm-standalone/hybrid
-- logicn-hybrid-wasm-native-architecture-v1.md — **v1.0 canonical** hybrid WASM-native architecture (Snapdragon/NPU vision + governance model, 2026-05-31)
-- logicn-governance-hierarchy.md — **Foundational** Governance First, Economics Second, Performance Third — the inviolable stack, the test for every future proposal
-- logicn-governance-scope.md — **Foundational** Governance for High Consequence Systems (not just PII) — aerospace, defence, space, AI, critical infrastructure
-- logicn-execution-graph-kernel-architecture.md — 8 architectural suggestions: ProofGraph, ControlNode/DataNode, Capability Routing, Execution Signatures, Graph Fingerprints, Governance Fabric
-- logicn-hybrid-wasm-architecture.md — detailed EDA model, WAT assembler decision, crash recovery, 8 native governance rules
-- logicn-security-anti-abuse.md — anti-botnet architecture: process.spawn/worker.spawn/event.schedule effects (✅ Phase R4), network destination policy, LLN-NET-001/002, rate limit enforcement, DNS rebinding defence, getAntiAbuseReport() devtools (✅ Phase R4)
+- galerina-architecture-high-roi-ideas.md — 16 high-ROI ideas, status by phase
+- galerina-effect-checker-architecture.md — effect checker arch: EffectCheckerFlags, SPORE-STDLIB-001, bitsets
+- galerina-explicitness-principles.md — "nothing important hidden" — the core Galerina design principle
+- galerina-gir-emitter-architecture.md — GIR emitter: tensor metadata, WAT emitter, WASM lowering plan
+- galerina-governance-verifier-architecture.md — governance verifier: GovernanceFlags, RuntimeManifest
+- galerina-lexer-optimizations.md — lexer optimisation roadmap (slice scanning, TokenKindId, arena plan)
+- galerina-package-resolver-architecture.md — package resolver: hash/signature/targets/compute/SPORE-PKG-*
+- galerina-runtime-interpreter-roadmap.md — runtime improvement roadmap: Lua VM, WASM, JIT, register VM
+- galerina-stdlib-architecture.md — stdlib: STDLIB_CAPABILITY_MAP, pure/effectful split, TRI_STDLIB_OPS
+- galerina-type-checker-architecture.md — type checker: TypeId, EffectFlags, tensor shape checking
+- galerina-value-state-checker-architecture.md — value-state: ValueStateFlags, SINK_REQUIREMENTS, SPORE-GATE-001
+- galerina-cli-current.md — current CLI spec: all modes including --target wasm-standalone/hybrid
+- galerina-hybrid-wasm-native-architecture-v1.md — **v1.0 canonical** hybrid WASM-native architecture (Snapdragon/NPU vision + governance model, 2026-05-31)
+- galerina-governance-hierarchy.md — **Foundational** Governance First, Economics Second, Performance Third — the inviolable stack, the test for every future proposal
+- galerina-governance-scope.md — **Foundational** Governance for High Consequence Systems (not just PII) — aerospace, defence, space, AI, critical infrastructure
+- galerina-execution-graph-kernel-architecture.md — 8 architectural suggestions: ProofGraph, ControlNode/DataNode, Capability Routing, Execution Signatures, Graph Fingerprints, Governance Fabric
+- galerina-hybrid-wasm-architecture.md — detailed EDA model, WAT assembler decision, crash recovery, 8 native governance rules
+- galerina-security-anti-abuse.md — anti-botnet architecture: process.spawn/worker.spawn/event.schedule effects (✅ Phase R4), network destination policy, SPORE-NET-001/002, rate limit enforcement, DNS rebinding defence, getAntiAbuseReport() devtools (✅ Phase R4)
 
 ---
 
@@ -319,24 +319,24 @@ Non-`.md` files (YAML, EBNF) are listed separately at the end.
 
 Docs marked SUPERSEDED or carrying "Version target: v0.2" with an explicit current replacement.
 
-- effect-checker-and-boundary-checker.md — v0.2 target spec; implementation pending (superseded in detail by compiler-pipeline + logicn-gir-schema)
-- logicn-core-cli-v02.md — SUPERSEDED v0.2 CLI design document
-- logicn-core-compute-v02.md — SUPERSEDED v0.2 compute spec
-- logicn-core-config-v02.md — SUPERSEDED v0.2 config spec
-- logicn-core-effect-checker-v02.md — SUPERSEDED v0.2 effect checker spec
-- logicn-core-logic-v02.md — SUPERSEDED v0.2 logic spec (canonical: logicn-core-logic-tri-decision-bool.md)
-- logicn-core-manifest-generation-v02.md — SUPERSEDED v0.2 manifest generation spec
-- logicn-core-network-v02.md — SUPERSEDED v0.2 network spec
-- logicn-core-photonic-backend-architecture.md — legacy/historical photonic backend architecture note
-- logicn-core-photonic-governance-architecture.md — v0.2 photonic governance overlay (superseded by logicn-core-photonic-v02.md chain)
-- logicn-core-photonic-v02.md — SUPERSEDED v0.2 photonic spec
-- logicn-core-policy-online-safety-act.md — references tristate-developer-guide; older pattern
-- logicn-core-reports-v02.md — SUPERSEDED v0.2 reports spec
-- logicn-core-security-v02.md — SUPERSEDED v0.2 security spec
-- logicn-core-vector-photonic-governance.md — v0.2 specified, unresolved boundary conflict, not implemented
-- logicn-framework-api-server-implementation.md — v0.2 implementation spec (superseded by Phase 9-15 docs)
-- logicn-framework-api-server-v02.md — SUPERSEDED v0.2 framework API server spec
-- logicn-runtime-rationale.md — design-rationale precursor; superseded by architecture-charter + securely-governed-runtime
+- effect-checker-and-boundary-checker.md — v0.2 target spec; implementation pending (superseded in detail by compiler-pipeline + galerina-gir-schema)
+- galerina-core-cli-v02.md — SUPERSEDED v0.2 CLI design document
+- galerina-core-compute-v02.md — SUPERSEDED v0.2 compute spec
+- galerina-core-config-v02.md — SUPERSEDED v0.2 config spec
+- galerina-core-effect-checker-v02.md — SUPERSEDED v0.2 effect checker spec
+- galerina-core-logic-v02.md — SUPERSEDED v0.2 logic spec (canonical: galerina-core-logic-tri-decision-bool.md)
+- galerina-core-manifest-generation-v02.md — SUPERSEDED v0.2 manifest generation spec
+- galerina-core-network-v02.md — SUPERSEDED v0.2 network spec
+- galerina-core-photonic-backend-architecture.md — legacy/historical photonic backend architecture note
+- galerina-core-photonic-governance-architecture.md — v0.2 photonic governance overlay (superseded by galerina-core-photonic-v02.md chain)
+- galerina-core-photonic-v02.md — SUPERSEDED v0.2 photonic spec
+- galerina-core-policy-online-safety-act.md — references tristate-developer-guide; older pattern
+- galerina-core-reports-v02.md — SUPERSEDED v0.2 reports spec
+- galerina-core-security-v02.md — SUPERSEDED v0.2 security spec
+- galerina-core-vector-photonic-governance.md — v0.2 specified, unresolved boundary conflict, not implemented
+- galerina-framework-api-server-implementation.md — v0.2 implementation spec (superseded by Phase 9-15 docs)
+- galerina-framework-api-server-v02.md — SUPERSEDED v0.2 framework API server spec
+- galerina-runtime-rationale.md — design-rationale precursor; superseded by architecture-charter + securely-governed-runtime
 
 ---
 
@@ -357,14 +357,14 @@ Docs with "Status: Future", "Stage B/C", "post-v1 implementation", or "Proposed 
 - governed-worker-pools.md — governed worker pools (Stage B)
 - ihsa-storage-policy.md — IHSA governed storage policy (post-v1)
 - lifecycle-state-system.md — @state() lifecycle system (Phase 6+, not v1)
-- logicn-adaptive-runtime-profiles.md — adaptive runtime profiles (proposed architecture direction)
-- logicn-governed-apu-memory.md — governed memory boundaries and APU sharing (Phase 14 future)
-- logicn-governed-memory-blocks.md — governed memory blocks (Phase 10C, not yet implemented)
-- logicn-hardware-as-capabilities.md — hardware as governed capabilities (Phase 13/14 future spec)
-- logicn-native-runtime-roadmap.md — native self-hosted runtime roadmap (aspirational)
-- logicn-nvidia-n1x-target.md — NVIDIA N1X target profile (provisional)
-- logicn-package-naming.md — package naming migration (future)
-- logicn-quantum-target-bridge.md — quantum computing target bridge (future)
+- galerina-adaptive-runtime-profiles.md — adaptive runtime profiles (proposed architecture direction)
+- galerina-governed-apu-memory.md — governed memory boundaries and APU sharing (Phase 14 future)
+- galerina-governed-memory-blocks.md — governed memory blocks (Phase 10C, not yet implemented)
+- galerina-hardware-as-capabilities.md — hardware as governed capabilities (Phase 13/14 future spec)
+- galerina-native-runtime-roadmap.md — native self-hosted runtime roadmap (aspirational)
+- galerina-nvidia-n1x-target.md — NVIDIA N1X target profile (provisional)
+- galerina-package-naming.md — package naming migration (future)
+- galerina-quantum-target-bridge.md — quantum computing target bridge (future)
 - lsgr-runtime-components.md — LSGR runtime components (Phase 17+)
 - mathematics-and-tri-logic.md — advanced maths/combinatorics support (aspirational)
 - native-photonic-compute-future.md — native photonic compute (Stage C)
@@ -388,17 +388,17 @@ Docs with "Status: Future", "Stage B/C", "post-v1 implementation", or "Proposed 
 
 ## Decision Records
 
-- logicn-phase-11-decisions.md — Phase 11 design decisions (recorded 2026-05-30)
-- logicn-phase-13-decisions.md — Phase 13/14 design decisions (recorded 2026-05-30)
-- logicn-phase16-20-decisions.md — Phase 16-20 design decisions (recorded 2026-05-31)
+- galerina-phase-11-decisions.md — Phase 11 design decisions (recorded 2026-05-30)
+- galerina-phase-13-decisions.md — Phase 13/14 design decisions (recorded 2026-05-30)
+- galerina-phase16-20-decisions.md — Phase 16-20 design decisions (recorded 2026-05-31)
 
 ---
 
 ## Non-Markdown Reference Files
 
 - capability-registry.yaml — machine-readable capability registry
-- logicn-glossary.schema.yaml — machine-readable glossary schema
-- logicn-grammar.ebnf — EBNF grammar specification
+- galerina-glossary.schema.yaml — machine-readable glossary schema
+- galerina-grammar.ebnf — EBNF grammar specification
 - operator-rules.schema.yaml — machine-readable operator type rules
 - stdlib-gates.yaml — standard library gates, sinks, and log functions
 - schemas/ — subdirectory (additional schema files)

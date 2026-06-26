@@ -1,4 +1,4 @@
-# LogicN Application Pattern 09 — Background Jobs
+# Galerina Application Pattern 09 — Background Jobs
 
 **When to use:** Email sending, PDF generation, report generation, CRM sync, data export
 
@@ -18,11 +18,11 @@ When a job fails silently or exceeds resource bounds, there is no record of what
 
 ---
 
-## LogicN Approach: Jobs Are Governed Flows
+## Galerina Approach: Jobs Are Governed Flows
 
-Every background job in LogicN is a governed flow with a declared entry point. There is no implicit background work.
+Every background job in Galerina is a governed flow with a declared entry point. There is no implicit background work.
 
-```logicn
+```galerina
 scheduled daily at "02:00" {
   trigger generateMonthlyReport
 }
@@ -59,7 +59,7 @@ The runtime enforces memory and duration limits, records all effects used, and g
 
 ### Scheduled
 
-```logicn
+```galerina
 scheduled daily at "02:00" { trigger generateMonthlyReport }
 scheduled every 15min { trigger syncCrmData }
 scheduled cron "0 9 * * MON" { trigger weeklyDigest }
@@ -67,7 +67,7 @@ scheduled cron "0 9 * * MON" { trigger weeklyDigest }
 
 ### Worker
 
-```logicn
+```galerina
 worker queue "pdf-generation" {
   trigger generateUserReport
   concurrency 4
@@ -76,7 +76,7 @@ worker queue "pdf-generation" {
 
 ### Event
 
-```logicn
+```galerina
 event UserCreated triggers sendWelcomeEmail
 event OrderPlaced triggers sendOrderConfirmation
 event PaymentFailed triggers notifyBillingTeam
@@ -84,7 +84,7 @@ event PaymentFailed triggers notifyBillingTeam
 
 Event-triggered flows receive the event payload as their first argument:
 
-```logicn
+```galerina
 guarded flow sendWelcomeEmail(event: UserCreated) -> JobResult
 contract {
   effects { email.send }
@@ -123,7 +123,7 @@ The runtime report is written to the audit log store, not to application logs. I
 
 Retry behaviour is declared in the contract under the effect that may fail:
 
-```logicn
+```galerina
 contract {
   effects { database.read, email.send }
   retries {
@@ -139,13 +139,13 @@ If all retry attempts are exhausted, the job exits with `JobResult.failed` and t
 
 ## Phase 17 Job Scheduler Integration
 
-Phase 17 introduces the `logicn jobs` CLI and a runtime scheduler component:
+Phase 17 introduces the `galerina jobs` CLI and a runtime scheduler component:
 
 ```
-logicn jobs list          # show all declared job entry points
-logicn jobs run <name>    # trigger a job manually (for testing)
-logicn jobs status        # show recent job executions and their reports
-logicn jobs export        # emit job manifest for external scheduler (e.g. Kubernetes CronJob)
+galerina jobs list          # show all declared job entry points
+galerina jobs run <name>    # trigger a job manually (for testing)
+galerina jobs status        # show recent job executions and their reports
+galerina jobs export        # emit job manifest for external scheduler (e.g. Kubernetes CronJob)
 ```
 
 The job manifest output (`jobs.manifest.json`) is compatible with Kubernetes CronJob, AWS EventBridge Scheduler, and Fly Machines scheduled tasks. The runtime scheduler can run embedded or delegate to an external system.

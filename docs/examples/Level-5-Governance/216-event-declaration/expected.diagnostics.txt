@@ -1,4 +1,4 @@
-LLN-EVENT-001 (EventNotDeclared)
+SPORE-EVENT-001 (EventNotDeclared)
 
 'emit UndeclaredEvent' at line ~35 has no matching global 'event UndeclaredEvent' declaration.
 Fix: add 'event UndeclaredEvent' at program scope before using emit.

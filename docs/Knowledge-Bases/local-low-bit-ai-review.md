@@ -2,7 +2,7 @@
 
 ## Purpose
 
-LogicN may use local low-bit AI, including BitNet-style CPU-friendly models, as
+Galerina may use local low-bit AI, including BitNet-style CPU-friendly models, as
 an advisory review and explanation layer.
 
 This must not replace deterministic compiler, type, memory, policy or security
@@ -19,7 +19,7 @@ Reports prove.
 ## Short Definition
 
 ```text
-local low-bit AI review = local advisory explanation over deterministic LogicN reports
+local low-bit AI review = local advisory explanation over deterministic Galerina reports
 ```
 
 ## What Low-Bit AI Can Help With
@@ -69,10 +69,10 @@ build/reports/report-explanation.md
 ## Example Commands
 
 ```bash
-logicn check
-logicn reports
-logicn ai-review --local
-logicn explain flow getUser
+galerina check
+galerina reports
+galerina ai-review --local
+galerina explain flow getUser
 ```
 
 ## BitNet-Style Backend Position
@@ -83,7 +83,7 @@ it can make local CPU-friendly model execution more practical.
 Rules:
 
 ```text
-BitNet is a backend option, not LogicN syntax.
+BitNet is a backend option, not Galerina syntax.
 Low-bit AI is advisory, not authoritative.
 Local review reads reports before raw source where possible.
 External transmission is denied unless explicitly permitted.

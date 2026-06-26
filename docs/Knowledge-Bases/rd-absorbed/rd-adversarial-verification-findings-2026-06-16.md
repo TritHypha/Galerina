@@ -1,9 +1,9 @@
-<!-- ABSORBED R&D SOURCE — verbatim mirror. LogicN is the main library; the R&D repo is upstream/authoring.
-     Source: LogicN-R-AND-D/VERIFICATION-FINDINGS-2026-06-16.md  ·  Pinned: R&D fb68d06 (2026-06-16)
-     Integrated LogicN view: (this archive copy is the primary KB home)  ·  Catalog: logicn-rd-absorption-catalog.md
+<!-- ABSORBED R&D SOURCE — verbatim mirror. Galerina is the main library; the R&D repo is upstream/authoring.
+     Source: Galerina-R-AND-D/VERIFICATION-FINDINGS-2026-06-16.md  ·  Pinned: R&D fb68d06 (2026-06-16)
+     Integrated Galerina view: (this archive copy is the primary KB home)  ·  Catalog: galerina-rd-absorption-catalog.md
      Rule: edit the upstream source then re-vendor; do not fork this copy (feedback-auto-import-rd-docs). -->
 
-> **Absorbed R&D source (verbatim).** This is the archived upstream document. See `logicn-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
+> **Absorbed R&D source (verbatim).** This is the archived upstream document. See `galerina-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
 
 ---
 # Adversarial verification findings — 2026-06-16
@@ -80,7 +80,7 @@ The golden was verified **three independent ways**, not just trusted from the wo
   — in *all* cases the semantic field stayed in the post-Gate residual; `leaksBeforeGate == 0`. Egress redaction
   of semantic fields to untrusted destinations also held (incl. `SELECT *`).
 - **minor:** §4.4(3) said semantic emit "iff `authorizeRead == ALLOW`" but the reference only checks
-  destination-trust → wording softened (the reference *abstracts* the `k3-policy.lln` policy call).
+  destination-trust → wording softened (the reference *abstracts* the `k3-policy.spore` policy call).
 
 ### 2C. CMT-1 / CTX — sound, with an untested claim
 - **MAJOR — the anti-downgrade claim was real but untested.** The reference used a bare random AAD, never the

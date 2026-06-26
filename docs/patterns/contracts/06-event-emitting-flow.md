@@ -1,4 +1,4 @@
-Title: LogicN Contract Pattern — Event-Emitting Flow
+Title: Galerina Contract Pattern — Event-Emitting Flow
 
 ### When to use
 
@@ -6,7 +6,7 @@ Use this pattern when a flow must emit one or more named events as part of its e
 
 ### Correct example
 
-```logicn
+```galerina
 event OrderPlaced {
   orderId: String
   customerId: String
@@ -132,7 +132,7 @@ flow PlaceOrder(readonly request: Request) -> PlaceOrderResult {
 ### Common mistakes
 
 **Mistake 1 — Emitting an event not listed in `contract.events.emits`**
-```logicn
+```galerina
 events {
   emits: [OrderPlaced]
 }
@@ -142,7 +142,7 @@ emit OrderRejected(...)
 The runtime validates that every `emit` call in the body corresponds to an event in `emits`. Emitting an unlisted event raises a contract violation at runtime and a warning at compile time.
 
 **Mistake 2 — Declaring event types inside `contract.types` instead of at module scope**
-```logicn
+```galerina
 contract {
   types {
     OrderPlaced = { orderId: String, total: Money<GBP> }
@@ -152,7 +152,7 @@ contract {
 Events declared inside `contract.types` are local to the flow and cannot be consumed by other flows. Events intended for inter-flow communication must be declared at module scope using the `event` keyword.
 
 **Mistake 3 — Omitting `on_success` and `on_failure` in the `events` block**
-```logicn
+```galerina
 events {
   emits: [OrderPlaced, OrderRejected]
 }
@@ -173,7 +173,7 @@ Without `on_success` and `on_failure`, the runtime cannot automatically emit the
 
 If `E810 — event 'OrderRejected' emitted in body but not declared in contract.events.emits` is raised, add the missing event to the `events` block:
 
-```logicn
+```galerina
 events {
   emits: [OrderPlaced, OrderRejected]
   on_success: OrderPlaced

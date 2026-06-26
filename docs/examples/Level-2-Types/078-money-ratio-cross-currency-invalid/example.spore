@@ -1,0 +1,10 @@
+/// example: 078-money-ratio-cross-currency-invalid
+/// test_status: stable
+/// level: 2
+/// concept: cross-currency Money ratio is forbidden
+/// expected_diagnostics: SPORE-TYPE-004
+/// ai_rule: Money ratio requires matching currency parameters.
+
+pure flow example(revenue: Money<GBP>, usdRevenue: Money<USD>) -> Void {
+  let ratio = revenue / usdRevenue
+}

@@ -1,15 +1,15 @@
-<!-- ABSORBED R&D SOURCE — verbatim mirror. LogicN is the main library; the R&D repo is upstream/authoring.
-     Source: LogicN-R-AND-D/RD-DIRECTION.md  ·  Pinned: R&D fb68d06 (2026-06-16)
-     Integrated LogicN view: logicn-rd-adoption-2026-06-16.md  ·  Catalog: logicn-rd-absorption-catalog.md
+<!-- ABSORBED R&D SOURCE — verbatim mirror. Galerina is the main library; the R&D repo is upstream/authoring.
+     Source: Galerina-R-AND-D/RD-DIRECTION.md  ·  Pinned: R&D fb68d06 (2026-06-16)
+     Integrated Galerina view: galerina-rd-adoption-2026-06-16.md  ·  Catalog: galerina-rd-absorption-catalog.md
      Rule: edit the upstream source then re-vendor; do not fork this copy (feedback-auto-import-rd-docs). -->
 
-> **Absorbed R&D source (verbatim).** This is the archived upstream document. Curated/integrated view: `logicn-rd-adoption-2026-06-16.md`. See `logicn-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
+> **Absorbed R&D source (verbatim).** This is the archived upstream document. Curated/integrated view: `galerina-rd-adoption-2026-06-16.md`. See `galerina-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
 
 ---
 # Encryption R&D — direction & charter (owner-set 2026-06-16)
 
-> **Purpose of this R&D:** mature the **engine spec + the crypto spec**; LogicN's own job is the
-> *governance gate* around it (U1 / pattern-10 already shipped). Highest leverage = the spec LogicN's
+> **Purpose of this R&D:** mature the **engine spec + the crypto spec**; Galerina's own job is the
+> *governance gate* around it (U1 / pattern-10 already shipped). Highest leverage = the spec Galerina's
 > `#34` consumes, **not** building gated engine code. Companion: [`CROSSOVER-encryption-rnd.md`](CROSSOVER-encryption-rnd.md)
 > (merged entry point for both tracks). This file records the owner's ranked priorities and framing directives.
 
@@ -18,7 +18,7 @@
 ## 1. Ranked short-term priorities (owner-set, opinionated)
 
 1. **TASK 2 — ML-DSA-65 + key-custody spec.** *The one that matters most.* Byte-precise, FIPS-204-correct,
-   with a structural golden vector. It is the only R&D output that directly unblocks shipping LogicN code:
+   with a structural golden vector. It is the only R&D output that directly unblocks shipping Galerina code:
    **task #34** (ML-DSA-65 over the SHA-256 digest, hybrid with Ed25519). Freeze it correct → #34 becomes a
    safe mechanical port with zero crypto-invention and zero FIPS-204 mistakes.
    **Status: ✅ FROZEN 2026-06-16** — `tmf/spec/signature-custody-v0.md` carries the corrected FIPS-204
@@ -27,18 +27,18 @@
    root, **#34 digest = SHA-256**), with pure-ML-DSA (not HashML-DSA) + a domain-separation context. Structural
    golden vector reproduces byte-for-byte.
 2. **Keep the golden-vector conformance oracle airtight.** Completeness + the "anyone can implement this in
-   any language and match the bytes" property — that is what makes LogicN adoption *safe*.
+   any language and match the bytes" property — that is what makes Galerina adoption *safe*.
    **Status: ✅ confirmed 2026-06-16** — all four generators (`gen_tmx_vectors`, `gen_tmf_container`,
    `gen_nvfp4_block`, `gen_sig_block`) re-run and reproduce their committed `*_vectors.txt` exactly.
 3. **(Lower) Firm up the metadata-minimization design.** Verdict 5 (encrypt-the-attribute-vector, filter at
-   trusted endpoints) is what a future LogicN governance rule (U2 / `#204`) would enforce; settling it in R&D
+   trusted endpoints) is what a future Galerina governance rule (U2 / `#204`) would enforce; settling it in R&D
    de-risks that rule. **Status: settled** in `tri-encription/research/metadata-confidentiality.md` (adversarially
    verified); ratified into the blueprint + `encryption-architecture.md` §0.
 
 ## 2. Explicitly NOT yet (deferred by owner)
 
 - **`.tmf` Rust engine (`libtmf_core`)** — gated on the production go; building it now is premature. *(See §3.1
-  — the engine-language preference has also shifted toward LogicN + a host crypto lib, away from Rust.)*
+  — the engine-language preference has also shifted toward Galerina + a host crypto lib, away from Rust.)*
 - **Confidentiality build (KEM-DEM impl)** and the **MeshQL / ANN DB layer** — deferred until a real
   requirement, not speculative. (Design + spec only for now.)
 
@@ -48,14 +48,14 @@
 
 ## 3. Framing directives (captured)
 
-### 3.1 Prefer LogicN over Rust
-Rust is **not usable in the main project**, so the engine-language fork (D2) is re-pointed: **prefer LogicN +
-a governed host crypto library over a Rust engine.** Crypto itself cannot be pure `.lln` (proven —
-`logicn check` rejects even bitwise `^`, `tri-encription/lln/probe-no-bitwise.lln`), so the cryptographic
-primitives run as a **vetted host library invoked across the LogicN governance/capability boundary** (the
-seam: LogicN governs *whether* it runs; the host lib computes the exact bytes). For `#34` the natural,
-no-new-dependency path is LogicN's existing attestation host-call surface — **`@noble/post-quantum`
-(`ml_dsa65` + `ed25519`) is already a LogicN dependency**, so no Rust and no new crate are needed.
+### 3.1 Prefer Galerina over Rust
+Rust is **not usable in the main project**, so the engine-language fork (D2) is re-pointed: **prefer Galerina +
+a governed host crypto library over a Rust engine.** Crypto itself cannot be pure `.spore` (proven —
+`galerina check` rejects even bitwise `^`, `tri-encription/spore/probe-no-bitwise.spore`), so the cryptographic
+primitives run as a **vetted host library invoked across the Galerina governance/capability boundary** (the
+seam: Galerina governs *whether* it runs; the host lib computes the exact bytes). For `#34` the natural,
+no-new-dependency path is Galerina's existing attestation host-call surface — **`@noble/post-quantum`
+(`ml_dsa65` + `ed25519`) is already a Galerina dependency**, so no Rust and no new crate are needed.
 
 ### 3.2 Two crypto paths (honestly mapped onto crypto-on-core)
 

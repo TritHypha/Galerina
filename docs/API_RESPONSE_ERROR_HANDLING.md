@@ -1,6 +1,6 @@
 # API Response and Error Handling Style
 
-LogicN should support both readable `try`/`catch` style and explicit `match`
+Galerina should support both readable `try`/`catch` style and explicit `match`
 style for `Result<T, E>` values.
 
 Core rule:
@@ -11,7 +11,7 @@ match     = explicit branch-by-branch logic
 ```
 
 Neither should become legacy because of photonic, GPU, AI accelerator or future
-hardware support. Future targets should affect how LogicN compiles internally,
+hardware support. Future targets should affect how Galerina compiles internally,
 not force developers to rewrite clear source code.
 
 ## Result Type Meaning
@@ -25,7 +25,7 @@ E = the error type
 
 Example:
 
-```LogicN
+```Galerina
 Result<Order, OrderError>
 ```
 
@@ -46,7 +46,7 @@ Result<SuccessType, ErrorType>
 
 ## Response Helper Names
 
-LogicN should avoid confusing names such as:
+Galerina should avoid confusing names such as:
 
 ```text
 Response
@@ -64,7 +64,7 @@ AppResponses  = app response body schemas
 
 Example:
 
-```LogicN
+```Galerina
 return Http.created(
   AppResponses.Order.from(order)
 )
@@ -79,7 +79,7 @@ with an app-specific Order response body.
 
 ## HTTP Response Helpers
 
-LogicN does not require `created`.
+Galerina does not require `created`.
 
 `Http.created(...)` is a helper for:
 
@@ -97,9 +97,9 @@ new uploaded file
 new database item
 ```
 
-LogicN should support common helpers:
+Galerina should support common helpers:
 
-```LogicN
+```Galerina
 Http.ok(...)                 // 200
 Http.created(...)            // 201
 Http.accepted(...)           // 202
@@ -115,7 +115,7 @@ Http.serverError(...)        // 500
 
 It may also support explicit status building:
 
-```LogicN
+```Galerina
 return Http.status(201).body(
   AppResponses.Order.from(order)
 )
@@ -123,7 +123,7 @@ return Http.status(201).body(
 
 For developer readability, keep helpers such as:
 
-```LogicN
+```Galerina
 Http.ok(...)
 Http.created(...)
 Http.noContent()
@@ -133,7 +133,7 @@ Http.noContent()
 
 For simple happy-path route actions, `try` can keep the source readable:
 
-```LogicN
+```Galerina
 export action Orders.createOrder(
   request: Requests.CreateOrderRequest,
   ctx: RequestContext
@@ -157,7 +157,7 @@ catch error {
 The corrected shape keeps the success response inside the `try` block only when
 the operation it depends on has succeeded:
 
-```LogicN
+```Galerina
 try {
   return Http.created(
     AppResponses.Order.from(order)
@@ -181,7 +181,7 @@ there are no security-sensitive domain branches
 
 Use `match` when each branch matters:
 
-```LogicN
+```Galerina
 match result {
   Ok(order) => {
     return Http.created(
@@ -232,7 +232,7 @@ Compiler checks they agree.
 
 Example route contract:
 
-```LogicN
+```Galerina
 POST "/orders" {
   response {
     201: AppResponses.Order
@@ -259,7 +259,7 @@ the compiler or route checker should fail.
 
 ## Full Match Example
 
-```LogicN
+```Galerina
 export action Orders.createOrder(
   request: Requests.CreateOrderRequest,
   ctx: RequestContext
@@ -325,7 +325,7 @@ export action Orders.createOrder(
 
 For simple actions:
 
-```LogicN
+```Galerina
 let order = try Services.OrderService.createOrder(...)
 
 return Http.created(
@@ -335,7 +335,7 @@ return Http.created(
 
 For security-sensitive or complex actions:
 
-```LogicN
+```Galerina
 match result {
   Ok(order) => return Http.created(AppResponses.Order.from(order))
   Err(Errors.OrderError.InvalidItems) => return Http.badRequest(...)
@@ -354,7 +354,7 @@ Use route response contracts for security enforcement.
 
 ## Compiler And Report Requirements
 
-LogicN should report:
+Galerina should report:
 
 ```text
 unhandled Result values
@@ -385,5 +385,5 @@ expose raw internal errors to users
 allow handlers to return undeclared HTTP statuses
 ```
 
-LogicN should keep simple code simple and make complex, security-sensitive code
+Galerina should keep simple code simple and make complex, security-sensitive code
 explicit.

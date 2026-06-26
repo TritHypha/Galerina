@@ -2,7 +2,7 @@
 
 ## Purpose
 
-LogicN should be designed around security invariants instead of isolated exploit
+Galerina should be designed around security invariants instead of isolated exploit
 fixes.
 
 The design question is not:
@@ -31,13 +31,13 @@ policy.
 Declared security policy is part of program meaning.
 ```
 
-LogicN should treat policy, permissions, classifications, effects, ownership,
+Galerina should treat policy, permissions, classifications, effects, ownership,
 trust boundaries and audit obligations as compiler/runtime facts, not comments
 or optional middleware.
 
 ## Security-Aware IR
 
-LogicN should compile through a security-aware intermediate representation.
+Galerina should compile through a security-aware intermediate representation.
 
 The IR should track:
 
@@ -55,7 +55,7 @@ The IR should track:
 
 Example:
 
-```logicn
+```galerina
 field email: text private
 field salary: money restricted
 field password_hash: text secret
@@ -89,7 +89,7 @@ execution.
 After a flow is checked and compiled, its runtime execution graph should become
 immutable.
 
-LogicN should deny:
+Galerina should deny:
 
 - runtime monkey patching
 - hidden behaviour injection
@@ -115,7 +115,7 @@ All code can access filesystem, network, shell or database.
 
 Good model:
 
-```logicn
+```galerina
 flow uploadImage
   use capability File.Temp.Write
 ```
@@ -128,13 +128,13 @@ Permissions should not be buried inside application conditionals.
 
 Bad:
 
-```logicn
+```galerina
 if user.role == admin
 ```
 
 Good:
 
-```logicn
+```galerina
 permission use profile_read
 ```
 
@@ -143,7 +143,7 @@ resource, data classification, effect and boundary allow it.
 
 ## Scoped Capability Tokens
 
-LogicN should prefer signed, scoped, short-lived and revocable capability tokens
+Galerina should prefer signed, scoped, short-lived and revocable capability tokens
 over broad session authority.
 
 A token should describe what it allows and what it does not allow:
@@ -169,7 +169,7 @@ and reports.
 
 Example:
 
-```logicn
+```galerina
 unsafe {
   native memory access
 }
@@ -181,9 +181,9 @@ entirely.
 
 ## Immutable Data By Default
 
-LogicN should default to immutable local values.
+Galerina should default to immutable local values.
 
-```logicn
+```galerina
 let profile = ...
 ```
 
@@ -205,7 +205,7 @@ capability system, test system and audit system remain authoritative.
 
 ## Deterministic Server Execution
 
-LogicN server execution should avoid hidden threading, shared mutable globals
+Galerina server execution should avoid hidden threading, shared mutable globals
 and timing-sensitive behaviour where policy or audit depends on outcome.
 
 Deterministic execution is easier to reproduce, review, audit and secure.
@@ -216,7 +216,7 @@ Audit is part of the language/runtime contract, not optional logging.
 
 Sensitive flows should declare audit requirements:
 
-```logicn
+```galerina
 audit {
   actor
   action
@@ -242,7 +242,7 @@ Packages should support:
 
 Example:
 
-```logicn
+```galerina
 package image.tools
 requires:
   File.Read.Temp
@@ -270,7 +270,7 @@ require safe parameters and runtime authority.
 
 ## Multi-Layer Runtime Isolation
 
-LogicN should not fully trust apps, plugins, flows, agents or packages.
+Galerina should not fully trust apps, plugins, flows, agents or packages.
 
 Isolation may include:
 
@@ -287,7 +287,7 @@ capabilities and deployment profile.
 
 ## Enterprise Hardened Mode
 
-LogicN should define a hardened profile for high-assurance deployments.
+Galerina should define a hardened profile for high-assurance deployments.
 
 Example:
 
@@ -308,7 +308,7 @@ checks, not by convention.
 
 ## Policy Proof Over Speed
 
-LogicN should optimise after security proof.
+Galerina should optimise after security proof.
 
 The strategic proof target is:
 
@@ -324,6 +324,6 @@ plans and audit/report output.
 ## Final Rule
 
 ```text
-LogicN should make declared policy violations impossible by default and
+Galerina should make declared policy violations impossible by default and
 contained, visible, denied or audited when escape hatches are explicitly used.
 ```

@@ -1,0 +1,13 @@
+# Generated, signed build output — rebuild from source with `galerina build`.
+build/
+dist/
+packages/*/dist/
+logicn_modules/
+node_modules/
+
+# Secrets are runtime-only and MUST never be committed.
+.env
+.env.*
+!.env.example
+*.key
+*.pem

@@ -1,0 +1,10 @@
+/// example: 083-readonly-view-invalid
+/// test_status: stable
+/// level: 2
+/// concept: ReadOnlyView requires exactly one type parameter
+/// expected_diagnostics: SPORE-TYPE-009
+/// ai_rule: ReadOnlyView takes exactly 1 type parameter.
+
+pure flow example() -> Void {
+  let users: ReadOnlyView<User, Config> = None
+}

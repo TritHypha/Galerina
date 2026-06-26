@@ -1,9 +1,9 @@
-<!-- ABSORBED R&D SOURCE — verbatim mirror. LogicN is the main library; the R&D repo is upstream/authoring.
-     Source: LogicN-R-AND-D/tmf/research/photonic-lane-A-accelerated-signing.md  ·  Pinned: R&D fb68d06 (2026-06-16)
-     Integrated LogicN view: (this archive copy is the primary KB home)  ·  Catalog: logicn-rd-absorption-catalog.md
+<!-- ABSORBED R&D SOURCE — verbatim mirror. Galerina is the main library; the R&D repo is upstream/authoring.
+     Source: Galerina-R-AND-D/tmf/research/photonic-lane-A-accelerated-signing.md  ·  Pinned: R&D fb68d06 (2026-06-16)
+     Integrated Galerina view: (this archive copy is the primary KB home)  ·  Catalog: galerina-rd-absorption-catalog.md
      Rule: edit the upstream source then re-vendor; do not fork this copy (feedback-auto-import-rd-docs). -->
 
-> **Absorbed R&D source (verbatim).** This is the archived upstream document. See `logicn-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
+> **Absorbed R&D source (verbatim).** This is the archived upstream document. See `galerina-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
 
 ---
 # Lane A — photonic-accelerated lattice signing
@@ -26,7 +26,7 @@ ML-DSA signing (the NTT and matrix products). It can **never** be the signing pr
 bit-exact and EUF-CMA-unforgeable (one flipped bit ⇒ a different signature ⇒ verification fails), whereas analog
 photonics is ~≤6–8-bit and error-tolerant. The honest architecture is therefore **photonic accelerator → re-quantize
 to exact integers → digital re-verify**, with the trust boundary held entirely by the digital re-verify gate
-(LogicN's role).
+(Galerina's role).
 
 **Whether this is a *net* win is, today, a theoretical gap.** No peer-reviewed benchmark exists for the full
 photonic-NTT signing loop *including* the ADC/DAC re-quantization overhead. The one closest peer-reviewed result on
@@ -49,7 +49,7 @@ numbers to fill it.**
 ## 1. What is being signed (why exactness is non-negotiable)
 
 This phase signs with the #34 construction: **hybrid Ed25519 + ML-DSA-65 over a 32-byte digest**
-(`signature-custody-v0.md` §2.1). For `.tmf` the digest is the TMX-256 `integrity_root`; for LogicN #34 it is a
+(`signature-custody-v0.md` §2.1). For `.tmf` the digest is the TMX-256 `integrity_root`; for Galerina #34 it is a
 SHA-256 manifest-body digest. Verification of the ML-DSA-65 half is **two exact checks** (faithful to FIPS-204, not
 a single matrix congruence — see `signature-custody-v0.md` §2):
 
@@ -226,11 +226,11 @@ On a real photonic MVM (silicon-photonic mesh / commercial photonic tensor core)
 - **If it's a wash or worse, say so and stop** (charter §4). Do not ship a photonic-signing performance claim
   without this bench + machine (charter §3 honest ledger).
 
-### 6.4 LogicN's role (the part this project actually owns)
-LogicN does **not** build the accelerator. LogicN owns **governance + the deterministic re-verify gate**: the
+### 6.4 Galerina's role (the part this project actually owns)
+Galerina does **not** build the accelerator. Galerina owns **governance + the deterministic re-verify gate**: the
 host-call boundary that (a) invokes the vetted FIPS-204 verifier on the re-quantized signature, (b) treats any
 mismatch/`unknown` as `deny` (K3 three-valued, charter §2), and (c) keeps the photonic unit strictly outside the
-trust boundary. Crypto cannot live in `.lln` (the governance language rejects even bitwise `^`,
+trust boundary. Crypto cannot live in `.spore` (the governance language rejects even bitwise `^`,
 `signature-custody-v0.md` §7); the accelerator is even further out — an untrusted external compute resource whose
 output is only ever *checked*, never *trusted*.
 
@@ -336,7 +336,7 @@ here** (a native bench would confirm). Either way it points the conservative way
 
 - **Honest-core (defensible now):** the offload boundary in §2 is correct and the safety architecture (photonic
   MVM → re-quantize to exact `Z_q` → digital re-verify, photonics outside the trust gate) is sound and matches the
-  one real precedent (LightHash). LogicN's deliverable here is the **governance + deterministic re-verify gate**,
+  one real precedent (LightHash). Galerina's deliverable here is the **governance + deterministic re-verify gate**,
   which is buildable independent of any photonics.
 - **Aspirational (unproven):** that photonic acceleration yields a *net* speedup for ML-DSA-65 signing. There is
   **no benchmark** for the full photonic-NTT signing loop with ADC/DAC overhead — a **theoretical gap**. The two

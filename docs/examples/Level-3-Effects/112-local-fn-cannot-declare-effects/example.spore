@@ -1,0 +1,33 @@
+/// example: 112-local-fn-cannot-declare-effects
+/// level: 3
+/// concept: local fn cannot declare its own effects
+/// expected_diagnostics: SPORE-SYNTAX-LEGACY-001
+/// test_status: stable
+/// ai_rule: Only flow declarations may declare effects. Local fn cannot declare effects at all.
+
+guarded flow processOrder(order: Order) -> ProcessOrderResult
+
+contract {
+  types {
+    type ProcessOrderResult = Result<Unit, ProcessError>
+  }
+
+  intent {
+    "Process an order — BUG: local fn tries to declare its own effects, which is forbidden.
+     In v1-current, fn declarations cannot carry any effects syntax.
+     'with effects [...]' was removed and triggers SPORE-SYNTAX-LEGACY-001.
+     Effects authority must be declared at the flow level."
+  }
+
+  effects {
+    database.write
+  }
+}
+{
+  fn save(o: Order) -> Result<Unit, SaveError>
+  with effects [database.write]
+  {
+    return OrdersDB.insert(o)
+  }
+  return save(order)
+}

@@ -2,7 +2,7 @@
 
 ## Definition
 
-LogicN's repository, runtime structure, and documentation must be designed for **structured machine understanding** — not only human browsing. AI should never need to guess where security lives, where authority is decided, or where compute routing occurs.
+Galerina's repository, runtime structure, and documentation must be designed for **structured machine understanding** — not only human browsing. AI should never need to guess where security lives, where authority is decided, or where compute routing occurs.
 
 ```text
 The architecture should be understandable without guessing.

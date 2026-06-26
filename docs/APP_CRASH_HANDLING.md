@@ -1,12 +1,12 @@
-# LogicN App Crash Handling
+# Galerina App Crash Handling
 
-LogicN should make application crashes easier to detect without copying another
+Galerina should make application crashes easier to detect without copying another
 language's exception model or relying on F#-style concepts.
 
 The core rule is:
 
 ```text
-LogicN should not allow an app to just crash.
+Galerina should not allow an app to just crash.
 Every failure should become a typed error, a controlled panic or a structured
 crash report.
 ```
@@ -18,7 +18,7 @@ webhooks, workers, scheduled tasks and other application entry points.
 
 ## Error Categories
 
-LogicN should separate expected application problems from runtime integrity
+Galerina should separate expected application problems from runtime integrity
 failures.
 
 | Category | Meaning | Example |
@@ -29,7 +29,7 @@ failures.
 
 Example:
 
-```LogicN
+```Galerina
 enum OrderError {
   BadRequest
   PaymentDeclined
@@ -65,7 +65,7 @@ external API calls
 
 Example policy:
 
-```LogicN
+```Galerina
 app MyApp {
   kernel secure
 
@@ -92,7 +92,7 @@ to users. It should return a safe response and write structured crash evidence.
 Every route, webhook and job should have a crash boundary, either declared
 directly or inherited from an app-level default.
 
-```LogicN
+```Galerina
 api OrdersApi {
   POST "/orders" {
     request CreateOrderRequest
@@ -113,7 +113,7 @@ api OrdersApi {
 
 Boundary example:
 
-```LogicN
+```Galerina
 crash_boundary ApiCrashBoundary {
   on error BadRequest {
     return http 400
@@ -142,7 +142,7 @@ write data, call external systems or process payments without a crash boundary.
 
 Expected problems should not crash the app.
 
-```LogicN
+```Galerina
 flow createOrder(input: CreateOrderRequest) -> Result<OrderResponse, OrderError> {
   let validOrder = validateOrder(input)
     Err(error) => return Err(BadRequest)
@@ -160,13 +160,13 @@ flow createOrder(input: CreateOrderRequest) -> Result<OrderResponse, OrderError>
 Hidden exceptions should not be the default application error model. A fallible
 operation should expose its failure type:
 
-```LogicN
+```Galerina
 Database.save(order) -> Result<SavedOrder, DatabaseError>
 ```
 
 not:
 
-```LogicN
+```Galerina
 Database.save(order) -> SavedOrder
 ```
 
@@ -174,7 +174,7 @@ unless the operation is guaranteed not to fail.
 
 ## Compile-Time Crash Risk Checks
 
-LogicN should warn or fail route checks when it finds risky application code:
+Galerina should warn or fail route checks when it finds risky application code:
 
 ```text
 route has no crash boundary
@@ -193,9 +193,9 @@ Example diagnostic:
 ```json
 {
   "severity": "error",
-  "code": "LOGICN-CRASH-004",
+  "code": "GALERINA-CRASH-004",
   "message": "External API call has no timeout or failure handler.",
-  "file": "payments.lln",
+  "file": "payments.spore",
   "line": 28,
   "suggestion": "Add a timeout and typed Err handler."
 }
@@ -203,7 +203,7 @@ Example diagnostic:
 
 ## Crash Reports
 
-LogicN should produce structured crash reports that are useful to developers,
+Galerina should produce structured crash reports that are useful to developers,
 operators and AI tools without leaking secrets.
 
 Example file:
@@ -221,7 +221,7 @@ Example report:
   "crashId": "crash_01HABC",
   "requestId": "req_99",
   "flow": "Payments.authorise",
-  "sourceFile": "payments.lln",
+  "sourceFile": "payments.spore",
   "sourceLine": 54,
   "compiledTarget": "node",
   "computeTarget": "cpu",
@@ -244,7 +244,7 @@ facts are available.
 Important flow steps should be nameable so a crash report can identify the last
 safe point.
 
-```LogicN
+```Galerina
 flow createOrder(input: CreateOrderRequest) -> Result<OrderResponse, OrderError> {
   checkpoint "validate_order"
   let order = validateOrder(input)
@@ -262,7 +262,7 @@ flow createOrder(input: CreateOrderRequest) -> Result<OrderResponse, OrderError>
 }
 ```
 
-If the app crashes, LogicN can report:
+If the app crashes, Galerina can report:
 
 ```text
 Crashed after checkpoint: authorise_payment
@@ -274,7 +274,7 @@ Next expected checkpoint: save_order
 The app kernel should generate health and readiness checks from declared
 dependencies.
 
-```LogicN
+```Galerina
 app MyApp {
   dependencies {
     database mainDb
@@ -297,7 +297,7 @@ external API configuration, runtime health and recent crash state.
 
 Workers, scheduled tasks and queues should be supervised.
 
-```LogicN
+```Galerina
 worker SendOrderEmails {
   run every 1 minute
 
@@ -334,26 +334,26 @@ Crash reports and logs must never leak secrets.
 
 Denied pattern:
 
-```LogicN
+```Galerina
 Log.info(secret)
 ```
 
 Preferred pattern:
 
-```LogicN
+```Galerina
 Log.safe("Payment provider failed", {
   orderId: order.id,
   provider: "stripe"
 })
 ```
 
-LogicN should redact API keys, passwords, tokens, cookies, authorization
+Galerina should redact API keys, passwords, tokens, cookies, authorization
 headers, payment data and private customer data from crash reports, logs and
 AI-readable context.
 
 ## AI-Readable Crash Context
 
-After a crash, LogicN may generate a small AI debugging context file:
+After a crash, Galerina may generate a small AI debugging context file:
 
 ```text
 runtime/ai-context/crash-context.json
@@ -366,8 +366,8 @@ Example:
   "summary": "Order creation failed because the payment provider timed out.",
   "likelyCause": "External API unavailable or timeout too short.",
   "safeFilesToInspect": [
-    "routes/orders.lln",
-    "services/payments.lln"
+    "routes/orders.spore",
+    "services/payments.spore"
   ],
   "doNotExpose": [
     "PAYMENT_API_KEY",
@@ -386,22 +386,22 @@ AI context must be redacted, bounded and generated from known-safe fields.
 
 ## Project Shape
 
-A LogicN app may organise crash policy like this:
+A Galerina app may organise crash policy like this:
 
 ```text
-my-logicn-app/
-|-- boot.lln
-|-- main.lln
+my-galerina-app/
+|-- boot.spore
+|-- main.spore
 |-- routes/
-|   `-- orders.lln
+|   `-- orders.spore
 |-- services/
-|   `-- payments.lln
+|   `-- payments.spore
 |-- workers/
-|   `-- send-order-emails.lln
+|   `-- send-order-emails.spore
 |-- policies/
-|   |-- crash-policy.lln
-|   |-- security-policy.lln
-|   `-- logging-policy.lln
+|   |-- crash-policy.spore
+|   |-- security-policy.spore
+|   `-- logging-policy.spore
 |-- reports/
 |   |-- compile-report.json
 |   |-- security-report.json
@@ -415,7 +415,7 @@ my-logicn-app/
 
 Example policy:
 
-```LogicN
+```Galerina
 crash_policy DefaultCrashPolicy {
   classify {
     BadRequest => handled_error
@@ -453,7 +453,7 @@ crash_policy DefaultCrashPolicy {
 
 ## Required Capabilities
 
-LogicN needs these capabilities to support safe crash handling:
+Galerina needs these capabilities to support safe crash handling:
 
 | Capability | Needed for |
 |---|---|
@@ -461,7 +461,7 @@ LogicN needs these capabilities to support safe crash handling:
 | `panic` / `crash` categories | Unexpected runtime failures |
 | `crash_boundary` | Route, webhook and worker containment |
 | `crash_policy` | App-wide crash rules |
-| source maps | Link runtime faults back to `.lln` source |
+| source maps | Link runtime faults back to `.spore` source |
 | structured crash reports | Developer, operator and AI debugging |
 | checkpoints | Identify the last successful step |
 | safe logging | Prevent secret leaks |

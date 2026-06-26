@@ -1,1 +1,1 @@
-LLN-TYPE-004 — Cannot add Money<GBP> and Money<USD>. Use fx.convert() for explicit currency conversion.
+SPORE-TYPE-004 — Cannot add Money<GBP> and Money<USD>. Use fx.convert() for explicit currency conversion.

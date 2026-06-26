@@ -83,12 +83,14 @@ const edits = [];       // {path, n}
 let excluded = 0, binarySkipped = 0, cryptoFiles = 0, tritmeshFiles = 0, tritmeshChanged = 0;
 
 for (const p of tracked) {
-  if (isExcluded(p)) { excluded++; continue; }
+  // RENAME is considered for EVERY file (incl. excluded ones) so a package never splits across the old
+  // and new dir — excluded files MOVE with their package, they are only skipped for the text-EDIT.
   const np = transformPath(p);
   if (np !== p) {
     const kind = /\.lln$/.test(p) ? "ext(.lln->.spore)" : /logicn/i.test(p) ? "dir/pkg(logicn->galerina)" : "lln-name";
     renames.push({ from: p, to: np, kind });
   }
+  if (isExcluded(p)) { excluded++; continue; }   // skip the text-edit only
   let buf; try { buf = readFileSync(join(ROOT, p)); } catch { continue; }
   if (isBinary(buf)) { binarySkipped++; continue; }
   const text = buf.toString("utf8");

@@ -2,7 +2,7 @@
 
 ## Definition
 
-LogicN separates what is known and enforced at compile time from what is only
+Galerina separates what is known and enforced at compile time from what is only
 available and executed at runtime. This distinction is central to the language
 safety model.
 
@@ -43,13 +43,13 @@ Visibility enforcement         — enforce public/private boundaries
 
 ### Compile-Time Example
 
-```logicn
+```galerina
 readonly SIZE = 1024
 ```
 
 The compiler fully resolves this value before runtime. No runtime context
-is required. Note: LogicN uses `readonly` for immutable/compile-time values.
-`const` is not a supported keyword — see `LLN-SYNTAX-002`.
+is required. Note: Galerina uses `readonly` for immutable/compile-time values.
+`const` is not a supported keyword — see `SPORE-SYNTAX-002`.
 
 ### Compile-Time Restrictions
 
@@ -87,7 +87,7 @@ Process spawning        — process.spawn
 
 ### Runtime Example
 
-```logicn
+```galerina
 let content = fs.read("config.json")
 ```
 
@@ -98,9 +98,9 @@ system at execution time.
 
 ## Capability Declarations
 
-`.lln` restricts runtime capabilities unless explicitly declared.
+`.spore` restricts runtime capabilities unless explicitly declared.
 
-```logicn
+```galerina
 capability fs
 capability network
 ```
@@ -122,7 +122,7 @@ full capability model.
 
 ## Compile-Time Evaluation vs Runtime Execution
 
-```logicn
+```galerina
 readonly area = 10 * 20   // compile-time evaluation
 let width = input()       // runtime value
 ```
@@ -140,7 +140,7 @@ let width = input()       // runtime value
 
 Macros operate with compile-time authority.
 
-```logicn
+```galerina
 @derive(Serializable)
 ```
 
@@ -160,11 +160,11 @@ Concrete instantiation    — executes at runtime
 
 The effect checker enforces compile-time/runtime separation:
 
-```logicn
+```galerina
 compile flow generateSchema() {
     network.fetch("https://example.com/schema")
 }
-// LLN-E4004: compile-time/runtime boundary violation
+// SPORE-E4004: compile-time/runtime boundary violation
 // Compile-time function attempted runtime-only operation `network.fetch`
 ```
 

@@ -1,6 +1,6 @@
 # Secure HTTP Responses
 
-LogicN should treat every HTTP response as a typed, policy-checked contract,
+Galerina should treat every HTTP response as a typed, policy-checked contract,
 not as a loose string, object or raw header map.
 
 Core rule:
@@ -10,7 +10,7 @@ No raw response leaves the app without a declared type, status code, content
 type, cache rule and security profile.
 ```
 
-A route should not return data unless LogicN knows the response type, content
+A route should not return data unless Galerina knows the response type, content
 type, status code, cache policy, security headers, private-field filtering,
 cookie safety, redirect policy and whether the response can be embedded,
 cached, indexed or downloaded.
@@ -19,7 +19,7 @@ cached, indexed or downloaded.
 
 Denied pattern:
 
-```LogicN
+```Galerina
 return {
   user: user
 }
@@ -27,7 +27,7 @@ return {
 
 Preferred pattern:
 
-```LogicN
+```Galerina
 return Response<UserProfileResponse> {
   status: 200
   content_type: "application/json"
@@ -39,9 +39,9 @@ return Response<UserProfileResponse> {
 
 ## Response Profiles
 
-LogicN should provide built-in response security profiles.
+Galerina should provide built-in response security profiles.
 
-```LogicN
+```Galerina
 response_profile public_json {
   content_type: "application/json; charset=utf-8"
   headers {
@@ -106,7 +106,7 @@ Cache-Control: private/no-store depending on sensitivity
 X-Robots-Tag: noindex, nofollow for private files
 ```
 
-Headers LogicN should avoid or remove:
+Headers Galerina should avoid or remove:
 
 ```text
 X-Powered-By
@@ -120,7 +120,7 @@ X-XSS-Protection except possibly X-XSS-Protection: 0
 
 Status codes should be tied to response body types.
 
-```LogicN
+```Galerina
 route GET "/orders/{orderId: UUID}" {
   response {
     200: OrderResponse
@@ -137,7 +137,7 @@ route GET "/orders/{orderId: UUID}" {
 
 This should fail:
 
-```LogicN
+```Galerina
 return Response<OrderResponse> {
   status: 500
   body: order
@@ -150,7 +150,7 @@ return Response<OrderResponse> {
 
 Response filtering should be automatic and checked.
 
-```LogicN
+```Galerina
 response UserProfileResponse {
   public id: UUID
   public displayName: String
@@ -161,7 +161,7 @@ response UserProfileResponse {
 }
 ```
 
-```LogicN
+```Galerina
 GET "/users/{userId: UUID}" {
   auth required
 
@@ -185,7 +185,7 @@ contain private fields.
 Production routes must not expose stack traces, SQL strings, file paths,
 secrets or internal exception messages.
 
-```LogicN
+```Galerina
 error_response SafeError {
   expose: ["code", "message", "requestId"]
   hide: ["stack", "sql", "filePath", "secret", "internalMessage"]
@@ -202,7 +202,7 @@ Sensitive cookies should default to `HttpOnly`, `Secure`, `SameSite=Lax` or
 
 Redirects should be a separate safe response type:
 
-```LogicN
+```Galerina
 return Redirect {
   status: 303
   to: trustedRoute("account.dashboard")
@@ -218,7 +218,7 @@ HTML responses should generate CSP by default. API routes should declare
 `accepts` and `produces` to prevent accidental wrong-format output. Large
 downloads should stream instead of loading whole files into memory.
 
-```LogicN
+```Galerina
 response_limits {
   max_json_size: 512kb
   max_html_size: 1mb
@@ -229,10 +229,10 @@ response_limits {
 
 ## Fast Response Handling
 
-At build time, LogicN can compile response schemas, header profiles, cache
+At build time, Galerina can compile response schemas, header profiles, cache
 policies, CSP templates, field filters, error mappers and serializers.
 
-At runtime, LogicN should select the response profile, serialize the typed body,
+At runtime, Galerina should select the response profile, serialize the typed body,
 apply precompiled headers, apply the field filter, apply the cache rule and
 return the response.
 
@@ -242,7 +242,7 @@ response mutation.
 
 ## Response Security Report
 
-LogicN should generate a response security report during build.
+Galerina should generate a response security report during build.
 
 ```json
 {
@@ -269,29 +269,29 @@ LogicN should generate a response security report during build.
 ## Package Ownership
 
 ```text
-logicn-core
+galerina-core
   response syntax, status/body contract vocabulary and diagnostics
 
-logicn-core-compiler
+galerina-core-compiler
   response contract checking, profile compilation and response report generation
 
-logicn-framework-app-kernel
+galerina-framework-app-kernel
   response policy enforcement, field filtering, safe error mapping and cookie policy
 
-logicn-framework-api-server
+galerina-framework-api-server
   transport-level headers, content negotiation, streaming and response writing
 
-logicn-core-security
+galerina-core-security
   header safety, cookie safety, redirect safety, redaction and secret leakage checks
 
-logicn-core-reports
+galerina-core-reports
   shared response security report schema
 ```
 
 ## Design Rule
 
 ```text
-LogicN should make secure responses the default.
+Galerina should make secure responses the default.
 Unsafe or unclear HTTP responses should not compile.
 Raw responses should be denied by default except inside trusted low-level packages.
 ```

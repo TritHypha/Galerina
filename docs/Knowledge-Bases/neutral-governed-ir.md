@@ -2,11 +2,11 @@
 
 ## Definition
 
-The **Neutral Governed Intermediate Representation (IR)** is the verified, hardware-neutral execution description that LogicN compiles to before backend-specific execution. It preserves security rules, capability rules, effects, memory rules, audit requirements, compute requirements, and hardware preferences.
+The **Neutral Governed Intermediate Representation (IR)** is the verified, hardware-neutral execution description that Galerina compiles to before backend-specific execution. It preserves security rules, capability rules, effects, memory rules, audit requirements, compute requirements, and hardware preferences.
 
 ```text
-Do not bind LogicN to binary.
-Bind LogicN to verified governed IR.
+Do not bind Galerina to binary.
+Bind Galerina to verified governed IR.
 ```
 
 ## Why It Exists
@@ -17,7 +17,7 @@ Traditional compilation:
 source code -> compiler -> machine code
 ```
 
-This tightly couples the language to CPU assumptions and binary execution. LogicN must instead support:
+This tightly couples the language to CPU assumptions and binary execution. Galerina must instead support:
 
 ```text
 CPU, GPU, NPU, TPU, VPU, ASIC, WASM,
@@ -30,7 +30,7 @@ A hardware-neutral IR provides the stable abstraction layer.
 ## Compilation Flow
 
 ```text
-LogicN Source
+Galerina Source
   -> Parser
   -> Type System
   -> Effect Validation
@@ -151,8 +151,8 @@ The IR must never become: raw unrestricted machine code, hidden runtime state, u
 ## Final Principle
 
 ```text
-LogicN should not compile directly into hardware assumptions.
+Galerina should not compile directly into hardware assumptions.
 
-LogicN should compile into verified governed intent,
+Galerina should compile into verified governed intent,
 then safely translate that intent into hardware execution.
 ```

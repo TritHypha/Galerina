@@ -1,9 +1,9 @@
-<!-- ABSORBED R&D SOURCE — verbatim mirror. LogicN is the main library; the R&D repo is upstream/authoring.
-     Source: LogicN-R-AND-D/tmf/research/external-repos-analysis.md  ·  Pinned: R&D fb68d06 (2026-06-16)
-     Integrated LogicN view: logicn-external-idea-mining-2026-06-15.md  ·  Catalog: logicn-rd-absorption-catalog.md
+<!-- ABSORBED R&D SOURCE — verbatim mirror. Galerina is the main library; the R&D repo is upstream/authoring.
+     Source: Galerina-R-AND-D/tmf/research/external-repos-analysis.md  ·  Pinned: R&D fb68d06 (2026-06-16)
+     Integrated Galerina view: galerina-external-idea-mining-2026-06-15.md  ·  Catalog: galerina-rd-absorption-catalog.md
      Rule: edit the upstream source then re-vendor; do not fork this copy (feedback-auto-import-rd-docs). -->
 
-> **Absorbed R&D source (verbatim).** This is the archived upstream document. Curated/integrated view: `logicn-external-idea-mining-2026-06-15.md`. See `logicn-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
+> **Absorbed R&D source (verbatim).** This is the archived upstream document. Curated/integrated view: `galerina-external-idea-mining-2026-06-15.md`. See `galerina-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
 
 ---
 # External repositories analysis — `C:\wwwprojects\x`
@@ -20,7 +20,7 @@ evidence + a skeptical cross-repo synthesis). Companion to
 > automated pass are flagged and **excluded** from the conclusions: (a) one agent cited a project file
 > `encryption-on-photonic-substrates.md` that **does not exist** in this folder — its ENOB/“Nature 2025”/
 > “Sapphire CHES 2019” claims are plausible but are treated here as **unverified, needs-independent-citation**,
-> not as established; (b) a subagent incidentally read the `LogicN-TritMesh` product repo for context — no
+> not as established; (b) a subagent incidentally read the `Galerina-TritMesh` product repo for context — no
 > facts from it are load-bearing here, and nothing was written to it.
 
 ---
@@ -107,7 +107,7 @@ is a **storage-path vs. compute-path** confusion; resolved against source, the n
 - **Confirms ledger A8/A13:** ML-KEM/ML-DSA are not ternary; the only legitimate ternary↔lattice link is
   **NTRU (p=3)**, which is **non-FIPS**.
 - **The real ternary wins for `.tmf`** (unchanged): (1) **three-valued governance logic**
-  (allow/deny/unknown, `unknown→deny`, proved in LogicN); (2) a **storage** choice — honest density is
+  (allow/deny/unknown, `unknown→deny`, proved in Galerina); (2) a **storage** choice — honest density is
   **5 trits/byte ≈ 1%** overhead, not the notes' 2-bit packing (25% waste, ledger C2).
 
 ---

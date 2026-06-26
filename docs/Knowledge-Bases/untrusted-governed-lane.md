@@ -1,9 +1,9 @@
 # The Untrusted Governed Lane
 
-**Date:** 2026-06-25 · **Posture:** Govern-Don't-Absorb · fail-closed · crypto-on-core (LLN-SUBSTRATE-001)
-**Companions:** [`logicn-zero-trust-core-relaxation-analysis-2026-06-24.md`](logicn-zero-trust-core-relaxation-analysis-2026-06-24.md) · [`ai-as-untrusted-reasoning-worker.md`](ai-as-untrusted-reasoning-worker.md) · [`untrusted-file-asset-processing.md`](untrusted-file-asset-processing.md)
+**Date:** 2026-06-25 · **Posture:** Govern-Don't-Absorb · fail-closed · crypto-on-core (SPORE-SUBSTRATE-001)
+**Companions:** [`galerina-zero-trust-core-relaxation-analysis-2026-06-24.md`](galerina-zero-trust-core-relaxation-analysis-2026-06-24.md) · [`ai-as-untrusted-reasoning-worker.md`](ai-as-untrusted-reasoning-worker.md) · [`untrusted-file-asset-processing.md`](untrusted-file-asset-processing.md)
 
-> **One sentence:** the Untrusted Governed Lane is where LogicN runs fast, exotic, or externally-authored
+> **One sentence:** the Untrusted Governed Lane is where Galerina runs fast, exotic, or externally-authored
 > **work** — *without trusting it* — by keeping the **decision** in a small exact core and letting the
 > untrusted result only ever **lower** a verdict, never raise it.
 
@@ -107,7 +107,7 @@ The lane touches the core at exactly two seams, both guarded:
 
 ## 4. Worked examples
 
-### 4.1 Photonic / analog co-processor (`logicn-ext-photonic-emulator`)
+### 4.1 Photonic / analog co-processor (`galerina-ext-photonic-emulator`)
 - **Work (lane):** a ternary multiply-accumulate runs on a photonic PPU — fast, analog, *not* bit-exact.
 - **Decision (core):** Freivalds-verifies the returned product; the analog tolerance discretizes to a
   degrade-only trit (`vAnd`). Crypto + the governance verdict stay digital.
@@ -142,7 +142,7 @@ A developer opts a flow's *work* onto the untrusted (low-trust) lane with a `sub
 contract. The block is the **declared guarantee** the runtime must verify; the lane is admitted, never
 trusted. This compiles + verifies today (the behaviour is pinned by `substrate-contracts.test.mjs`).
 
-```lln
+```spore
 // The WORK runs on the photonic lane (fast, analog, NOT bit-exact). It carries the VALUE (a score),
 // never the DECISION. `tolerance` is the guarantee the runtime cheap-verifies; `redundancy` majority-votes
 // the noisy reads (NMR); the resilience handler degrades to exact digital fail-closed.
@@ -166,11 +166,11 @@ contract {
 
 The line the lane may **not** cross — the *decision* stays digital, enforced at compile time:
 
-```lln
+```spore
 secure flow sealResult(score: Float) -> Result<Receipt, ApiError>
 contract {
   effects { crypto.sign }
-  substrate { lane: photonic  tolerance: 5e-3 }   // ← COMPILE ERROR: LLN-SUBSTRATE-001
+  substrate { lane: photonic  tolerance: 5e-3 }   // ← COMPILE ERROR: SPORE-SUBSTRATE-001
 }
 { return Ok(sign(score)) }
 // crypto.sign on a noisy (photonic) lane is REFUSED — "crypto stays on the digital, bit-exact lane".
@@ -182,7 +182,7 @@ So the developer's mental model is exactly the two seams of §2–§3: put the *
 scores **low trust but high ZT-alignment** — it's untrusted *by construction*, and the fail-closed border is
 the language, not a convention.
 
-## 5. How the lane merges into the rest of LogicN
+## 5. How the lane merges into the rest of Galerina
 
 | Construct | Role as a lane seam |
 |---|---|
@@ -191,9 +191,9 @@ the language, not a convention.
 | `bridge-attestation` / capability registry / `revocations.json` | what the admission predicate consults |
 | `@experimental_profile` flows | per-flow opt-in to riskier lane features, *still* gated fail-closed — risk contained to the opting flow, not the core |
 | Tri-Pipe / ExecutionRouter | the dispatcher that routes *work* to a lane while the *verdict* path stays binary/digital |
-| PartitionDecider (`logicn-ext-photonic-emulator`) | refuses a net-loss offload (stay in-core) — degrade-only, Freivalds-cheap-verify |
+| PartitionDecider (`galerina-ext-photonic-emulator`) | refuses a net-loss offload (stay in-core) — degrade-only, Freivalds-cheap-verify |
 
-**The merge rule:** to make LogicN "a lot better," **govern more tech, don't trust more tech** — add
+**The merge rule:** to make Galerina "a lot better," **govern more tech, don't trust more tech** — add
 admission rails (more lanes), never lower the core. Each new substrate is one more untrusted lane behind the
 same two seams; the trusted core's guarantees are unchanged.
 
@@ -201,6 +201,6 @@ same two seams; the trusted core's guarantees are unchanged.
 
 ## 6. Diagram
 
-See [`docs/diagrams/logicn-untrusted-governed-lane.svg`](../diagrams/logicn-untrusted-governed-lane.svg) for
+See [`docs/diagrams/galerina-untrusted-governed-lane.svg`](../diagrams/galerina-untrusted-governed-lane.svg) for
 the rendered version, and [`docs/diagrams/README.md`](../diagrams/README.md) for how it fits the diagram set
-(it is the security-architecture companion to `logicn-tri-pipe.svg` and `logicn-runtime.svg`).
+(it is the security-architecture companion to `galerina-tri-pipe.svg` and `galerina-runtime.svg`).

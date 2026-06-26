@@ -1,0 +1,10 @@
+{
+  "packageName": "@galerina/tri-pipe",
+  "allowedExternal": [
+    "@galerina/ext-photonic-emulator",
+    "@galerina/hardware-tier",
+    "@galerina/inference-bridge-contract",
+    "@galerina/tower-citizen"
+  ],
+  "note": "Baseline auto-generated. Edit allowedExternal to widen/narrow the border. `--check` fails if an import appears that is not listed here."
+}

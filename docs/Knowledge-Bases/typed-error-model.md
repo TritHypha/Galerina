@@ -2,9 +2,9 @@
 
 ## Definition
 
-The **LogicN Typed Error Model** is a strict, declared error system where every flow states exactly what error types it may return, and the runtime maps those errors safely to external responses, audit records, and recovery behaviour.
+The **Galerina Typed Error Model** is a strict, declared error system where every flow states exactly what error types it may return, and the runtime maps those errors safely to external responses, audit records, and recovery behaviour.
 
-It builds on top of LogicN's strict type system to ensure errors are treated as first-class outputs.
+It builds on top of Galerina's strict type system to ensure errors are treated as first-class outputs.
 
 ## Where it Sits (Lifecycle)
 
@@ -22,7 +22,7 @@ flow
 
 Every fallible flow must declare its success and error types in the signature:
 
-```logicn
+```galerina
 flow login(
   request: Login.post
 ) -> LoginResult
@@ -47,7 +47,7 @@ It prevents the emission of random strings, raw exceptions, stack traces, or unt
 
 Typed errors are defined using the `error` keyword:
 
-```logicn
+```galerina
 error AuthError {
   invalid_credentials {
     status: 401
@@ -83,7 +83,7 @@ The runtime governs the lifecycle of an error output:
 
 ## Why this Matters
 
-By requiring typed errors, LogicN prevents common security and reliability anti-patterns:
+By requiring typed errors, Galerina prevents common security and reliability anti-patterns:
 - Throwing random, untyped runtime exceptions.
 - Leaking raw database errors (e.g., SQL syntax or connection strings).
 - Leaking stack traces or runtime engine details.

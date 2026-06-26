@@ -1,4 +1,4 @@
-# LogicN Application Pattern 10 — Microservices
+# Galerina Application Pattern 10 — Microservices
 
 **When to use:** Separating concerns into independently deployable units (UserService, PaymentService, NotificationService)
 
@@ -8,7 +8,7 @@
 
 Phase 17 introduces the `service` keyword. A service is a governed deployment unit — it declares its effects, access rules, resource limits, and inter-service communication contracts in one place.
 
-```logicn
+```galerina
 service UserService
 contract {
   effects { database.read, audit.write }
@@ -30,7 +30,7 @@ The compiler verifies that all flows declared inside `UserService` do not use ef
 
 ## Service Manifest Outputs
 
-At build time, `logicn build --service` emits three manifest files per service:
+At build time, `galerina build --service` emits three manifest files per service:
 
 | File | Contents |
 |------|----------|
@@ -46,7 +46,7 @@ These files are consumed by deployment tooling, API gateways, and inter-service 
 
 A service only receives the infrastructure permissions required by its declared effects. The capability manifest is generated from the effect declarations — not from deployment configuration written by hand.
 
-```logicn
+```galerina
 effects { database.read, audit.write }
 ```
 
@@ -58,16 +58,16 @@ This eliminates the class of misconfiguration where a service is granted permiss
 
 ## Scale-to-Zero Manifests
 
-When deploying to platforms that support scale-to-zero (Cloudflare Workers, AWS Lambda, Fly Machines), `logicn build --platform <target>` emits a platform-specific deployment manifest:
+When deploying to platforms that support scale-to-zero (Cloudflare Workers, AWS Lambda, Fly Machines), `galerina build --platform <target>` emits a platform-specific deployment manifest:
 
 ```
-logicn build --platform cloudflare-workers
+galerina build --platform cloudflare-workers
 → worker.toml + service.manifest.json
 
-logicn build --platform lambda
+galerina build --platform lambda
 → template.yaml (SAM) + service.manifest.json
 
-logicn build --platform fly
+galerina build --platform fly
 → fly.toml + service.manifest.json
 ```
 
@@ -79,7 +79,7 @@ The platform manifest inherits resource limits and declared effects from the ser
 
 Services communicate via typed call contracts, not raw HTTP. Each inter-service call is declared:
 
-```logicn
+```galerina
 call PaymentService.chargeCard {
   request: ChargeCardRequest
   response: ChargeCardResponse
@@ -114,5 +114,5 @@ The `service` keyword and associated manifest generation are targeted for Phase 
 2. Service manifest generation (`service.manifest.json`, `service.capabilities.json`, `service.routes.json`)
 3. Typed inter-service call contracts with deadline propagation
 4. Platform manifest generation (Cloudflare Workers, Lambda, Fly Machines)
-5. `logicn services` CLI (`list`, `build`, `diff`, `validate`)
+5. `galerina services` CLI (`list`, `build`, `diff`, `validate`)
 6. Least-privilege IAM policy generation from capability manifests

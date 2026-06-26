@@ -1,0 +1,29 @@
+// App.spore — composition root for galerina-framework-example-app.
+//
+// flow main() is the entry the host App Kernel invokes AFTER admission (the Kernel
+// IS the boot; there is no separate boot file). `galerina build src/App.spore` fuses the
+// app into ONE signed build/App.wasm plus a signed build/App.lmanifest — the
+// admission artifact the Kernel verifies first (signature -> capability bounds ->
+// revocation), before governance is part of execution rather than a layer around it.
+//
+// This app serves its greeting flow at GET /hello through the App Kernel; the runtime
+// wiring lives in host/server.ts and the compiled greeting in packages/greeting/.
+//
+// Zero-trust defaults:
+//   - Deny-by-default: this entry is `pure` with NO `effects {}` block, so it cannot
+//     reach the network, storage, secrets, the database, or inference. Opt into a
+//     capability by adding it to a flow's effects AND App.manifest's `capabilities`;
+//     the build folds that into the SIGNED .lmanifest fuse{} block, never a .tmf.
+//   - Fail-closed: the match keeps its mandatory `_ =>` wildcard (SPORE-TYPE-023) — an
+//     unrecognised state exits non-zero, never falls through.
+pure flow main() -> Int
+contract {
+  intent { "Compose galerina-framework-example-app: serve the greeting flow at GET /hello via the App Kernel." }
+}
+{
+  let status: Int = 0
+  match status {
+    0 => return 0
+    _ => return 1
+  }
+}

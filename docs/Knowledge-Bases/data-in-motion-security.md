@@ -2,13 +2,13 @@
 
 ## Definition
 
-LogicN treats data-in-motion as a first-class runtime security concept.
+Galerina treats data-in-motion as a first-class runtime security concept.
 When data crosses any runtime boundary, the runtime knows and governs the
 crossing.
 
 ## Four Security Layers
 
-LogicN provides:
+Galerina provides:
 
 ```text
 1. Memory safety
@@ -42,13 +42,13 @@ When data crosses a runtime boundary:
 returned data becomes unsafe
 ```
 
-until validated. This is one of the most important LogicN concepts.
+until validated. This is one of the most important Galerina concepts.
 
 ## Developer Experience
 
 Developers write simple code:
 
-```logicn
+```galerina
 api payments {
   endpoint: "https://payments.example"
 }
@@ -91,13 +91,13 @@ policy enforcement
 
 Response always returns `unsafe`:
 
-```logicn
+```galerina
 let response: unsafe Any = payments.send(order)
 ```
 
 ### Database
 
-```logicn
+```galerina
 database analytics {
   source: GlobalVault.database.analytics
 }
@@ -108,7 +108,7 @@ verification, audit, unsafe returned data.
 
 ### Workers
 
-```logicn
+```galerina
 worker image_processor {
   queue: image_jobs
 }
@@ -119,7 +119,7 @@ message verification, unsafe boundary handling.
 
 ### Queues
 
-```logicn
+```galerina
 queue uploads {
   source: GlobalVault.queue.uploads
 }
@@ -141,7 +141,7 @@ portals   = runtime boundary abstractions
 
 ## Runtime Security Profiles
 
-```logicn
+```galerina
 runtime profile production {
   auto_identity: true
   auto_secure_channels: true
@@ -165,11 +165,11 @@ custom runtime identities
 ```
 
 These live in runtime configuration, deployment policy and enterprise manifests
-— not in normal `.lln` application code.
+— not in normal `.spore` application code.
 
 ## Zero Trust Alignment
 
-LogicN aligns with zero trust:
+Galerina aligns with zero trust:
 
 ```text
 never trust communication automatically
@@ -213,10 +213,10 @@ certificate management, secure transport
 ## Core Principle
 
 ```text
-LogicN should not force developers to become
+Galerina should not force developers to become
 network security architects or cryptographic identity engineers.
 
 Instead:
 developers declare intent.
-LogicN runtime governs trust automatically.
+Galerina runtime governs trust automatically.
 ```

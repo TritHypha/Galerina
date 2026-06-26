@@ -1,0 +1,12 @@
+{
+  "packageName": "@galerina/ext-secrets-tmf",
+  "allowedExternal": [
+    "@galerina/ext-tmf",
+    "@noble/hashes/argon2.js",
+    "node:crypto",
+    "node:fs",
+    "node:path",
+    "node:readline"
+  ],
+  "note": "Baseline auto-generated. Edit allowedExternal to widen/narrow the border. `--check` fails if an import appears that is not listed here."
+}

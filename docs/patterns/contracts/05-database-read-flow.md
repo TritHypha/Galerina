@@ -1,4 +1,4 @@
-Title: LogicN Contract Pattern — Database Read Flow
+Title: Galerina Contract Pattern — Database Read Flow
 
 ### When to use
 
@@ -6,7 +6,7 @@ Use this pattern when a flow reads from a database and must guarantee that an au
 
 ### Correct example
 
-```logicn
+```galerina
 flow FetchOrdersByCustomer(readonly request: Request) -> FetchOrdersByCustomerResult {
 
   contract {
@@ -92,7 +92,7 @@ flow FetchOrdersByCustomer(readonly request: Request) -> FetchOrdersByCustomerRe
 ### Common mistakes
 
 **Mistake 1 — Reading from an undeclared table**
-```logicn
+```galerina
 model {
   reads ["customers"]
   writes []
@@ -103,7 +103,7 @@ let rows = db.orders.where(...)
 The flow body queries `orders` but `model.reads` only declares `customers`. The static analyser raises a violation because undeclared table access breaks the capability model.
 
 **Mistake 2 — Missing actor grant check when reading sensitive tables**
-```logicn
+```galerina
 context {
   requires context.actor is AuthenticatedUser
 }
@@ -111,7 +111,7 @@ context {
 Authentication alone is not sufficient when the table contains non-public data. The grant `orders:read` must be declared in the `context` block so it is enforced before the body executes.
 
 **Mistake 3 — Skipping the `rate_limit` block for a public-facing read endpoint**
-```logicn
+```galerina
 contract {
   model { reads ["orders"] }
   // no rate_limit
@@ -133,7 +133,7 @@ Without `rate_limit`, the endpoint is vulnerable to enumeration and denial-of-se
 
 If `E311 — db read on table 'orders' not declared in model.reads` is raised, update the `model` block:
 
-```logicn
+```galerina
 model {
   reads ["orders"]
   writes []

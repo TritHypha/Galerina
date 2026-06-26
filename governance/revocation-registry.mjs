@@ -4,7 +4,7 @@
  * Zero-trust: a revoked signing-key id must evaluate to Deny even if it can still
  * produce a cryptographically valid signature. The verify / admission gates consult
  * this BEFORE trusting any signature (the v(k) mandate —
- * docs/Knowledge-Bases/logicn-key-custody-and-rotation.md §3).
+ * docs/Knowledge-Bases/galerina-key-custody-and-rotation.md §3).
  *
  * Source of truth: governance/revocations.json (append-only). Human mirror:
  * security/revocations/REV-*.md.

@@ -76,7 +76,7 @@ import { tmpdir } from "node:os";
 import { assertRegistryTrustworthy, signRegistryObject as signReg } from "../../governance/revocation-registry.mjs";
 
 function pinnedRoot(rootKeyId) {
-  const d = mkdtempSync(join(tmpdir(), "lln-anchor-"));
+  const d = mkdtempSync(join(tmpdir(), "spore-anchor-"));
   mkdirSync(join(d, "governance"), { recursive: true });
   writeFileSync(join(d, "governance", "trust-anchor.json"),
     JSON.stringify({ schemaVersion: 1, registrySigningRootKeyId: rootKeyId }));
@@ -112,7 +112,7 @@ test("v2: pinned root + UNSIGNED registry → fail closed", () => {
 });
 
 test("v2: malformed trust-anchor.json → fail closed (does not silently drop pinning)", () => {
-  const d = mkdtempSync(join(tmpdir(), "lln-anchor-bad-"));
+  const d = mkdtempSync(join(tmpdir(), "spore-anchor-bad-"));
   mkdirSync(join(d, "governance"), { recursive: true });
   writeFileSync(join(d, "governance", "trust-anchor.json"), "{ not json");
   writeFileSync(join(d, "governance", "revocations.json"),

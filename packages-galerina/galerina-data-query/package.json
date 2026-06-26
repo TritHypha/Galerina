@@ -1,0 +1,11 @@
+{
+  "name": "@galerina/data-query",
+  "version": "1.0.0-beta.2",
+  "description": "Galerina typed query, command, parameterisation and database access report contracts.",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Contracts define explicit boundary agreements in LogicN applications.
+Contracts define explicit boundary agreements in Galerina applications.
 
 ## Short Definition
 

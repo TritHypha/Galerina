@@ -1,0 +1,99 @@
+{
+  "name": "tri-optical-mapping",
+  "mode": "planning",
+  "channels": [
+    {
+      "name": "negative",
+      "signal": {
+        "wavelength": {
+          "nanometers": 1310
+        },
+        "phase": {
+          "degrees": 180
+        },
+        "amplitude": {
+          "value": 0.75
+        }
+      }
+    },
+    {
+      "name": "neutral",
+      "signal": {
+        "wavelength": {
+          "nanometers": 1490
+        },
+        "phase": {
+          "degrees": 90
+        },
+        "amplitude": {
+          "value": 0.5
+        }
+      }
+    },
+    {
+      "name": "positive",
+      "signal": {
+        "wavelength": {
+          "nanometers": 1550
+        },
+        "phase": {
+          "degrees": 0
+        },
+        "amplitude": {
+          "value": 1
+        }
+      }
+    }
+  ],
+  "mappings": [
+    {
+      "logicPackage": "@galerina/core-logic",
+      "logicName": "Tri",
+      "states": [
+        {
+          "state": "Negative",
+          "signal": {
+            "wavelength": {
+              "nanometers": 1310
+            },
+            "phase": {
+              "degrees": 180
+            },
+            "amplitude": {
+              "value": 0.75
+            }
+          }
+        },
+        {
+          "state": "Neutral",
+          "signal": {
+            "wavelength": {
+              "nanometers": 1490
+            },
+            "phase": {
+              "degrees": 90
+            },
+            "amplitude": {
+              "value": 0.5
+            }
+          }
+        },
+        {
+          "state": "Positive",
+          "signal": {
+            "wavelength": {
+              "nanometers": 1550
+            },
+            "phase": {
+              "degrees": 0
+            },
+            "amplitude": {
+              "value": 1
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "report": true
+}

@@ -1,11 +1,11 @@
 # Boundary Safety Proof
 
-LogicN's first proof target should be boundary safety.
+Galerina's first proof target should be boundary safety.
 
 ## Short Definition
 
 ```text
-A well-checked LogicN program preserves declared boundaries.
+A well-checked Galerina program preserves declared boundaries.
 ```
 
 This means protected data stays protected, denied fields stay denied,
@@ -14,9 +14,9 @@ undeclared effects do not happen, missing/error values are handled and only
 
 ## First Safety Goal
 
-LogicN is not initially trying to prove all software correctness.
+Galerina is not initially trying to prove all software correctness.
 
-LogicN is trying to prove/check:
+Galerina is trying to prove/check:
 
 ```text
 Data cannot move where it should not move.
@@ -28,7 +28,7 @@ Program structure is understandable to humans, AI and tools.
 
 ## Core Safety Promises
 
-If a program passes LogicN check, then:
+If a program passes Galerina check, then:
 
 ```text
 public routes only return declared views/responses
@@ -61,7 +61,7 @@ Phase 4: Concurrency safety
 Phase 5: Native/interop safety
 ```
 
-LogicN should start with boundary safety before attempting a Rust-style full
+Galerina should start with boundary safety before attempting a Rust-style full
 memory proof. The first useful claim is that a checked program preserves
 declared application boundaries.
 
@@ -80,5 +80,5 @@ security-report.json
 
 ## Positioning
 
-LogicN makes application boundaries explicit and checks that code cannot cross
+Galerina makes application boundaries explicit and checks that code cannot cross
 them accidentally.

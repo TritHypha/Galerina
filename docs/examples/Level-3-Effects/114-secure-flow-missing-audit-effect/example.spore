@@ -1,0 +1,30 @@
+/// example: 114-secure-flow-missing-audit-effect
+/// level: 3
+/// concept: secure flow calls AuditLog.write but does not declare audit.write
+/// expected_diagnostics: SPORE-EFFECT-001
+/// test_status: stable
+/// ai_rule: AuditLog.write requires audit.write to be declared in the effect list.
+
+secure flow createPatient(request: Request) -> CreatePatientResult
+
+contract {
+  types {
+    type CreatePatientResult = Result<PatientId, PatientError>
+  }
+
+  intent {
+    "Create a patient — BUG: AuditLog.write is called but audit.write is not declared in effects."
+  }
+
+  effects {
+    database.write
+    // BUG: audit.write is missing here — SPORE-EFFECT-001 fires because AuditLog.write is called in body
+  }
+}
+{
+  unsafe let rawEmail: String = request.body.email
+  let email: protected Email = validate.email(rawEmail)?
+  let id = PatientsDB.insert({ email: email })?
+  AuditLog.write({ action: "createPatient", id: id })
+  return Ok(id)
+}

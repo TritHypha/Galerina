@@ -1,0 +1,44 @@
+/// example: 463-policy-mismatch
+/// level: 9
+/// concept: declared purpose does not match the template used in the flow body
+/// expected_diagnostics: SPORE-GOV-005
+/// test_status: stable
+/// ai_rule: The template or action used in the flow body must be consistent with the purpose declared in the policy block.
+
+secure flow emailPatientMismatch(readonly request: Request) -> EmailPatientMismatchResult
+
+contract {
+  // Result alias — "marketing_offer" template contradicts "appointment_reminder" purpose, triggers SPORE-GOV-005
+  types {
+    type EmailPatientMismatchResult = Result<Response, NotificationError>
+  }
+
+  intent {
+    "Send appointment reminder to patient"
+  }
+
+  effects {
+    pii.read
+    network.outbound
+    audit.write
+  }
+}
+  policy {
+    purpose "appointment_reminder"
+    lawfulBasis "legitimate_interest"
+  }
+{
+  unsafe let rawId: String = request.body.patientId
+  let patientId: protected PatientId = validate.patientId(rawId)?
+  let email: protected Email = PatientDB.getEmail(patientId)?
+
+  // SPORE-GOV-005: template "marketing_offer" is inconsistent with declared purpose "appointment_reminder"
+  NotificationService.send({
+    to: email,
+    template: "marketing_offer",
+    data: { offerId: request.body.offerId }
+  })?
+
+  AuditLog.write({ event: "EmailSent", patientId: redact(patientId) })
+  return Ok(Response.ok({}))
+}

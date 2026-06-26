@@ -1,4 +1,4 @@
-LLN-SYNTAX-006 (LET_AT_TOP_LEVEL)
+SPORE-SYNTAX-006 (LET_AT_TOP_LEVEL)
 
 Top-level let bindings are not allowed.
 Move this binding inside a flow, or declare it as const if it is a compile-time constant.

@@ -1,6 +1,6 @@
-# Known Issues & Limitations — LogicN v1.0-beta
+# Known Issues & Limitations — Galerina v1.0-beta
 
-This is the honest front-door for testers. LogicN v1.0-beta is **ready for full testing**: the core
+This is the honest front-door for testers. Galerina v1.0-beta is **ready for full testing**: the core
 is production-grade, but some advertised layers are simulated/aspirational and a few residuals are
 disclosed below. Read this before relying on any guarantee. Last reconciled: 2026-06-24.
 
@@ -34,19 +34,19 @@ disclosed below. Read this before relying on any guarantee. Last reconciled: 202
   to **Deny**), and **no in-tree artifact is signed by it**. A history rewrite was deliberately
   avoided because it would rebase every commit SHA and break the verifiable trust chain. Treat any
   signature from `8eecf4187ebc9341` as permanently distrusted.
-- **`LLN-VALUESTATE-008` is production-gated.** The boundary-input cleanliness floor (an unmarked bare
+- **`SPORE-VALUESTATE-008` is production-gated.** The boundary-input cleanliness floor (an unmarked bare
   parameter reaching a governed sink) escalates to an *error* only in production builds, and is now
-  enforced on the user-facing `logicn build` path under `LOGICN_PROFILE=production` (commit `8d840ca`);
+  enforced on the user-facing `galerina build` path under `GALERINA_PROFILE=production` (commit `8d840ca`);
   dev/check remains permissive (warning, a planned follow-up). This is intentional for beta but means
   dev builds do not surface it.
-- **`LLN-TIER-001` tier floor is production-gated.** The flow-kind tier floor (an under-declared
+- **`SPORE-TIER-001` tier floor is production-gated.** The flow-kind tier floor (an under-declared
   secure-tier flow) is enforced only in production builds, and is now enforced on the user-facing
-  `logicn build` path under `LOGICN_PROFILE=production` (commit `8d840ca`); dev/check remains permissive
+  `galerina build` path under `GALERINA_PROFILE=production` (commit `8d840ca`); dev/check remains permissive
   and does not yet surface it (the dev-mode warning is a planned follow-up).
 
 ## Test caveats
 
-- **Known-flaky test:** the `logicn-core-sentinel-egress` ring-buffer audit-drop test can fail
+- **Known-flaky test:** the `galerina-core-sentinel-egress` ring-buffer audit-drop test can fail
   intermittently under concurrent load (a timing/serialization artifact, not a logic defect). It
   passed across repeated clean full-suite runs but is not yet deterministically isolated.
 

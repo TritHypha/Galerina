@@ -1,8 +1,8 @@
 # Rules: Non-Negotiable
 
-These rules define behavior LogicN must not silently weaken.
+These rules define behavior Galerina must not silently weaken.
 
-Non-negotiable rules are the highest-priority category in LogicN's planning
+Non-negotiable rules are the highest-priority category in Galerina's planning
 model. See [Priority Categories](rules-priority-categories.md).
 
 ## Rules
@@ -39,7 +39,7 @@ model. See [Priority Categories](rules-priority-categories.md).
 - Match catch-all branches must be explicit, observable and safe; they must not
   silently hide unknown security-sensitive states.
 - Native interop must be explicit, permissioned and reportable.
-- Inheritance and inherited authority are disallowed in normal LogicN source.
+- Inheritance and inherited authority are disallowed in normal Galerina source.
 - Runtime mutation and monkey patching are forbidden in normal code.
 - Target fallback must be declared and reported.
 - Verified fast paths must never bypass policy, capability limits, effect

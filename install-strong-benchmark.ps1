@@ -8,11 +8,11 @@ $Stamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $BackupDir = Join-Path $Root "benchmark-backup-$Stamp"
 
 $Files = @(
-  "packages-logicn\logicn-core\examples\compute-mix-throughput-benchmark.node.js",
-  "packages-logicn\logicn-core\examples\compute-mix-throughput-benchmark.py",
-  "packages-logicn\logicn-core\examples\benchmark-runner.node.js",
-  "packages-logicn\logicn-core\examples\compute-mix-throughput-benchmark.lln",
-  "packages-logicn\logicn-core\examples\BENCHMARK-V2-README.md"
+  "packages-galerina\galerina-core\examples\compute-mix-throughput-benchmark.node.js",
+  "packages-galerina\galerina-core\examples\compute-mix-throughput-benchmark.py",
+  "packages-galerina\galerina-core\examples\benchmark-runner.node.js",
+  "packages-galerina\galerina-core\examples\compute-mix-throughput-benchmark.spore",
+  "packages-galerina\galerina-core\examples\BENCHMARK-V2-README.md"
 )
 
 New-Item -ItemType Directory -Force -Path $BackupDir | Out-Null
@@ -39,7 +39,7 @@ Write-Host "Installed strong benchmark files."
 Write-Host "Backup created at: $BackupDir"
 Write-Host ""
 Write-Host "Validation run:"
-Write-Host "node packages-logicn\logicn-core\examples\benchmark-runner.node.js --runs 3 --operations 5000000 --warmup-ms 1000 --batch-size 100000 --buffer-size 65536"
+Write-Host "node packages-galerina\galerina-core\examples\benchmark-runner.node.js --runs 3 --operations 5000000 --warmup-ms 1000 --batch-size 100000 --buffer-size 65536"
 Write-Host ""
 Write-Host "Full benchmark:"
-Write-Host "node packages-logicn\logicn-core\examples\benchmark-runner.node.js --runs 5 --target-ms 20000 --warmup-ms 2000 --batch-size 100000 --buffer-size 65536"
+Write-Host "node packages-galerina\galerina-core\examples\benchmark-runner.node.js --runs 5 --target-ms 20000 --warmup-ms 2000 --batch-size 100000 --buffer-size 65536"

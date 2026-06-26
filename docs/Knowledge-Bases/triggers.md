@@ -19,7 +19,7 @@ A trigger is not a runtime extension point and is not the Scheduler.
 
 ## Core Principle
 
-LogicN triggers are:
+Galerina triggers are:
 
 ```text
 explicit
@@ -29,7 +29,7 @@ runtime-governed
 safe by default
 ```
 
-A trigger never bypasses normal LogicN rules. Triggered flows must still obey:
+A trigger never bypasses normal Galerina rules. Triggered flows must still obey:
 
 ```text
 safe / unsafe
@@ -43,7 +43,7 @@ audit/provenance rules
 
 ## Basic Syntax
 
-```logicn
+```galerina
 trigger trigger_name {
   on: event_or_schedule
   run: flow_name
@@ -74,7 +74,7 @@ Recommended overlap default: `deny`
 
 ## Example: Scheduled Trigger
 
-```logicn
+```galerina
 trigger nightly_cleanup {
   on: schedule.daily("02:00")
   run: cleanup_expired_sessions
@@ -101,7 +101,7 @@ flow cleanup_expired_sessions() -> CleanupResult
 
 ## Example: HTTP Trigger
 
-```logicn
+```galerina
 trigger create_order_http {
   on: http.post("/orders")
   run: create_order
@@ -131,7 +131,7 @@ flow create_order(body: unsafe Json) -> Receipt
 
 ## Example: Queue Trigger
 
-```logicn
+```galerina
 trigger upload_received {
   on: queue.message("uploads")
   run: process_upload
@@ -149,7 +149,7 @@ flow process_upload(message: unsafe Json) -> Result
 
 ## Example: File Upload Trigger
 
-```logicn
+```galerina
 trigger file_uploaded {
   on: file.upload("incoming-files")
   run: scan_uploaded_file
@@ -166,7 +166,7 @@ flow scan_uploaded_file(file: unsafe File) -> Result
 
 ## Example: Runtime Alert Trigger
 
-```logicn
+```galerina
 trigger permission_failure_alert {
   on: runtime.event("permission_denied_rate_high")
   run: notify_security_team
@@ -190,7 +190,7 @@ extension point = lets extra plugin behaviour observe or attach around runtime e
 
 Example showing both:
 
-```logicn
+```galerina
 trigger nightly_cleanup {
   on: schedule.daily("02:00")
   run: cleanup_expired_sessions
@@ -208,7 +208,7 @@ The trigger starts the flow. The extension point allows a sandboxed plugin to ob
 
 HTTP request body must enter as `unsafe`, not `safe`:
 
-```logicn
+```galerina
 // Wrong — HTTP body is external data
 flow charge_card(body: safe Json) -> Receipt { ... }
 
@@ -256,7 +256,7 @@ runtime identity
 
 ## Runtime Policy
 
-```logicn
+```galerina
 runtime {
   audit_triggers: true
   deny_unsafe_trigger_payloads_as_safe: true

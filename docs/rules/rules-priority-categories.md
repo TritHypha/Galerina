@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Priority categories tell contributors and AI tools how to sort LogicN ideas
+Priority categories tell contributors and AI tools how to sort Galerina ideas
 before treating them as requirements.
 
 ## Priority Order
@@ -18,7 +18,7 @@ before treating them as requirements.
 
 ### Non-Negotiable Rules
 
-Rules in this category define LogicN's identity and must not be violated by
+Rules in this category define Galerina's identity and must not be violated by
 normal features.
 
 Examples include memory safety by default, security-first execution, explicit
@@ -34,7 +34,7 @@ errors, explicit effects, declared interop and fail-closed production mode.
 
 ### Core Concepts
 
-Concepts in this category are required for the first useful LogicN version.
+Concepts in this category are required for the first useful Galerina version.
 
 Examples include data, flow, permission, boundary, report, routes, requests,
 responses/views, models, contracts, effects, capabilities, classification,

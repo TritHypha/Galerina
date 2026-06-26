@@ -1,0 +1,22 @@
+// Standard Production Flow — cyber_physical_hardening AUTO-SELECTED by runtime
+//
+// This is the CORRECT pattern for the vast majority of flows.
+// Notice: NO cyber_physical_hardening block is written.
+// The runtime reads the ValueGraph and selects standard_fabric shielding
+// automatically based on the flow's data classification and risk tier.
+//
+// Writing cyber_physical_hardening { enclosure_shielding standard_fabric }
+// explicitly would trigger SPORE-GOV-017:warning ("the runtime handles this;
+// remove the block").
+
+secure flow processStandardRequest(readonly request: Request) -> Result<String, String>
+contract {
+  intent { "Standard API request processing under default runtime-selected shielding." }
+  effects { audit.write  network.inbound }
+  economics { max_compute_cost "0.01"  optimize balanced }
+  privacy { mask email  strategy transform.crypto_pseudonymize }
+}
+{
+  AuditLog.write("Standard request processed")
+  return Ok("request_accepted")
+}

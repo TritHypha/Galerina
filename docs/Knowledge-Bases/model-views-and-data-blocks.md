@@ -10,7 +10,7 @@ See also: data-visibility-view-terminology.md, builtin-view-levels.md, field-rea
 
 ## Purpose
 
-LogicN can simplify the developer surface by grouping models, requests and
+Galerina can simplify the developer surface by grouping models, requests and
 responses under `data`, while preserving the security separation between
 internal data and public output.
 
@@ -31,7 +31,7 @@ The model remains internal truth. A view or response defines what may leave.
 
 ## Data Block Pattern
 
-```logicn
+```galerina
 data User {
   model {
     id: UUID view: public
@@ -64,13 +64,13 @@ data User {
 
 Rejected:
 
-```logicn
+```galerina
 return Ok(user)
 ```
 
 Accepted:
 
-```logicn
+```galerina
 return Ok(User.authorised.from(user))
 ```
 

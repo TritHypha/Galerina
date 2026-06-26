@@ -6,7 +6,7 @@
 flow. It is the boundary shape for HTTP, webhook, event, messaging, or similar
 external callers.
 
-```logicn
+```galerina
 route POST "/patients" {
   request CreatePatientRequest
   response Response
@@ -49,7 +49,7 @@ route -> flow -> fn
 
 Example route for the Level 1 secure flow:
 
-```logicn
+```galerina
 route POST "/patients" {
   request Request
   response Result<Response, ApiError>
@@ -59,7 +59,7 @@ route POST "/patients" {
 
 The flow it delegates to is the Level 1 `003-secure-flow` pattern:
 
-```logicn
+```galerina
 secure flow createPatient(readonly request: Request) -> CreatePatientResult
 contract {
   types {

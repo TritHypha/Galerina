@@ -1,0 +1,28 @@
+/// example: 205-remote-execution-violation
+/// level: 5
+/// concept: compute target remote violates governance policy
+/// expected_diagnostics: SPORE-GOV-004
+/// test_status: stable
+/// ai_rule: Specifying remote as the compute target when governance denies it is a policy violation.
+
+secure flow runFraudModel(input: FraudInput) -> RunFraudModelResult
+
+contract {
+  types {
+    type RunFraudModelResult = Result<FraudScore, FraudError>
+  }
+
+  intent {
+    "Score a transaction for fraud risk on-premises only — BUG: remote compute target violates governance policy."
+  }
+
+  effects {
+    audit.write
+  }
+}
+  compute target remote {}
+{
+  let score = FraudModel.score(input)
+  AuditLog.write({ action: "runFraudModel", score: score })
+  return Ok(score)
+}

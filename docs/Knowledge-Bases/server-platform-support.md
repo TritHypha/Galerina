@@ -6,23 +6,23 @@
 Status: Active — platform tier decisions
 Scope:  Linux/container (Tier 1), bare metal (Tier 2), Windows/IIS (Tier 3),
         shared hosting (Tier 4), serverless (Tier 5)
-See also: logicn-core-network-governance.md, quiet-runtime-secure-defaults.md, bootstrap-runtime-roadmap.md
+See also: galerina-core-network-governance.md, quiet-runtime-secure-defaults.md, bootstrap-runtime-roadmap.md
 ```
 
 ## Principle
 
-LogicN targets **Linux first** but not Linux-only. Its security model lives inside LogicN itself — not inside the web server or reverse proxy configuration.
+Galerina targets **Linux first** but not Linux-only. Its security model lives inside Galerina itself — not inside the web server or reverse proxy configuration.
 
 ```text
-LogicN should run behind any serious server,
-but its security model must live inside LogicN itself.
+Galerina should run behind any serious server,
+but its security model must live inside Galerina itself.
 ```
 
 ## Platform Tiers
 
 ### Tier 1 — Primary Target
 
-**Linux + container + LogicN API server**
+**Linux + container + Galerina API server**
 
 Best distributions:
 
@@ -45,7 +45,7 @@ Kubernetes
 Recommended production model:
 
 ```text
-LogicN app -> container -> Linux host -> reverse proxy
+Galerina app -> container -> Linux host -> reverse proxy
 ```
 
 Benefits: repeatable deployment, clear permissions, resource limits, network isolation, audit-friendly setup.
@@ -60,7 +60,7 @@ Windows Server behind IIS reverse proxy.
 
 IIS provides: TLS termination, reverse proxy, Windows auth integration, request forwarding, process management.
 
-LogicN still enforces: route allow-list, typed request validation, rate limits, auth policy, permission checks, secret-safe errors, deny-by-default behaviour.
+Galerina still enforces: route allow-list, typed request validation, rate limits, auth policy, permission checks, secret-safe errors, deny-by-default behaviour.
 
 ### Tier 4
 
@@ -75,14 +75,14 @@ Serverless / edge runtime. Future target.
 ```text
 Internet
   -> reverse proxy (Nginx, Caddy, Apache, IIS, Cloudflare Tunnel, AWS ALB)
-  -> LogicN API server
+  -> Galerina API server
   -> Secure App Kernel
   -> typed handlers
 ```
 
 ## Key Rule
 
-LogicN must assume the server may be misconfigured. Even if `.htaccess`, IIS rules, or Nginx config are wrong, LogicN must still deny:
+Galerina must assume the server may be misconfigured. Even if `.htaccess`, IIS rules, or Nginx config are wrong, Galerina must still deny:
 
 ```text
 .env

@@ -1,0 +1,22 @@
+{
+  "name": "@galerina/framework-app-kernel",
+  "version": "1.0.0-beta.2",
+  "description": "Optional Galerina secure App Kernel: the fixed, non-bypassable governed request pipeline + secure-default route policy resolver. The fusion host for protocol/capability packages.",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run typecheck && npm run build && node --test tests/*.test.mjs",
+    "test:fixtures": "node ../galerina-core/compiler/galerina.js run tests/hello-world.spore && node ../galerina-core/compiler/galerina.js run tests/vector-function.spore && node ../galerina-core/compiler/galerina.js run tests/sum.spore && node ../galerina-core/compiler/galerina.js run tests/decimal-sum.spore && node ../galerina-core/compiler/galerina.js run tests/json-return.spore"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}

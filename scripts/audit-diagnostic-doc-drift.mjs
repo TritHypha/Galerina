@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // audit-diagnostic-doc-drift.mjs — catch the canonical diagnostic DOC describing a code as something
-// the WIRED SOURCE does not (the LLN-RUNTIME-006 class, 2026-06-24).
+// the WIRED SOURCE does not (the SPORE-RUNTIME-006 class, 2026-06-24).
 //
-// The bug this exists to prevent: compiler-diagnostics.md listed `LLN-RUNTIME-006   Audit event stream
+// The bug this exists to prevent: compiler-diagnostics.md listed `SPORE-RUNTIME-006   Audit event stream
 // write failed`, but the wired emitter (security-policy.ts) defines it as `RateLimitExceeded` — "a
-// declared contract limit was exceeded". A developer who hit a real LLN-RUNTIME-006 (you exceeded your
+// declared contract limit was exceeded". A developer who hit a real SPORE-RUNTIME-006 (you exceeded your
 // request_time limit) and looked it up was MISDIRECTED by the canonical reference. That is a security
 // concern: the document people trust to decode a governance/limit diagnostic must not lie about it.
 //
@@ -18,7 +18,7 @@
 //   meaningful-token overlap (when both sides are substantive) means the doc is describing a different
 //   fault entirely — exactly the RUNTIME-006 failure. Reported as a hard violation.
 //
-// Scope: source = packages-logicn/<pkg>/src/**/*.ts structured diagnostic objects (those with a
+// Scope: source = packages-galerina/<pkg>/src/**/*.ts structured diagnostic objects (those with a
 // `name:`); doc = docs/Knowledge-Bases/compiler-diagnostics.md fenced `CODE   description` lines.
 // Exit code = violation count (0 = clean). Run from repo root.
 //   node scripts/audit-diagnostic-doc-drift.mjs             → scan the committed doc + source
@@ -27,7 +27,7 @@ import { readdirSync, statSync, readFileSync, existsSync, realpathSync } from "n
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const SRC_ROOT = "packages-logicn";
+const SRC_ROOT = "packages-galerina";
 const DOC = "docs/Knowledge-Bases/compiler-diagnostics.md";
 
 // Words too generic to count as agreement between a doc description and a source name/message.
@@ -75,7 +75,7 @@ function walkTs(dir, acc) {
 /** Map code → {name, message} for every structured diagnostic object found in source. */
 export function extractSourceDefs(files, read = readFileSync) {
   const defs = new Map();
-  const codeRe = /code:\s*"(LLN-[A-Z0-9]+(?:-[A-Z0-9]+)*-[0-9]+[A-Z]?)"/g;
+  const codeRe = /code:\s*"(SPORE-[A-Z0-9]+(?:-[A-Z0-9]+)*-[0-9]+[A-Z]?)"/g;
   for (const f of files) {
     let text;
     try { text = read(f, "utf8"); } catch { continue; }
@@ -99,7 +99,7 @@ export function extractSourceDefs(files, read = readFileSync) {
 // ── doc: `CODE   description` lines inside the taxonomy fences ─────────────────────────────────────
 export function extractDocDescriptions(docText) {
   const out = new Map();
-  const lineRe = /^(LLN-[A-Z0-9]+(?:-[A-Z0-9]+)*-[0-9]+[A-Z]?)\s{2,}(.+?)\s*$/;
+  const lineRe = /^(SPORE-[A-Z0-9]+(?:-[A-Z0-9]+)*-[0-9]+[A-Z]?)\s{2,}(.+?)\s*$/;
   for (const line of docText.split(/\r?\n/)) {
     const m = line.match(lineRe);
     if (m && !out.has(m[1])) out.set(m[1], m[2]);
@@ -123,10 +123,10 @@ if (isMain && process.argv.includes("--self-test")) {
   const badDrift = isDrift(badDoc, name, msg);         // expect true  (zero overlap)
   const thinDrift = isDrift(thinDoc, name, msg);       // expect false (thin guard)
   // extraction round-trips
-  const defs = extractSourceDefs(["x.ts"], () => `export const X = { code: "LLN-RUNTIME-006", name: "RateLimitExceeded", message: "A declared contract limit was exceeded." };`);
-  const gotDef = defs.get("LLN-RUNTIME-006")?.name === "RateLimitExceeded";
-  const docs = extractDocDescriptions("LLN-RUNTIME-006   Audit event stream write failed\nLLN-X-1   y");
-  const gotDoc = docs.get("LLN-RUNTIME-006") === "Audit event stream write failed";
+  const defs = extractSourceDefs(["x.ts"], () => `export const X = { code: "SPORE-RUNTIME-006", name: "RateLimitExceeded", message: "A declared contract limit was exceeded." };`);
+  const gotDef = defs.get("SPORE-RUNTIME-006")?.name === "RateLimitExceeded";
+  const docs = extractDocDescriptions("SPORE-RUNTIME-006   Audit event stream write failed\nLLN-X-1   y");
+  const gotDoc = docs.get("SPORE-RUNTIME-006") === "Audit event stream write failed";
   const ok = !goodDrift && badDrift && !thinDrift && gotDef && gotDoc;
   console.log(`[self-test] agree→no-drift: ${!goodDrift} | mismatch→drift: ${badDrift} | thin→no-drift: ${!thinDrift} | src-extract: ${gotDef} | doc-extract: ${gotDoc}`);
   console.log(ok ? "[self-test] PASS — doc↔source drift detector fires on mismatch, silent on agreement" : "[self-test] FAIL");

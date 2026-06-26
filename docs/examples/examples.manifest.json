@@ -252,7 +252,7 @@
       "concept": "fn cannot be declared at top level",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-SYNTAX-005"
+        "SPORE-SYNTAX-005"
       ],
       "features": [
         "Money",
@@ -285,7 +285,7 @@
       "concept": "top-level let bindings are rejected",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-SYNTAX-006"
+        "SPORE-SYNTAX-006"
       ],
       "features": [
         "contract",
@@ -318,7 +318,7 @@
       "status": "stable",
       "expectedDiagnostics": [],
       "features": [],
-      "aiRule": "Int is the standard integer type in LogicN."
+      "aiRule": "Int is the standard integer type in Galerina."
     },
     {
       "id": "052-decimal-basic",
@@ -416,7 +416,7 @@
       "concept": "direct assignment to protected Email is forbidden",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-TYPE-003"
+        "SPORE-TYPE-003"
       ],
       "features": [
         "flow",
@@ -443,7 +443,7 @@
       "concept": "protected Email cannot be assigned to redacted Email directly",
       "status": "draft",
       "expectedDiagnostics": [
-        "LLN-TYPE-002"
+        "SPORE-TYPE-002"
       ],
       "features": [
         "protected",
@@ -482,7 +482,7 @@
       "concept": "Option<T> requires exactly one type parameter",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-TYPE-009"
+        "SPORE-TYPE-009"
       ],
       "features": [
         "Option",
@@ -521,7 +521,7 @@
       "concept": "Result<T,E> requires exactly two type parameters",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-TYPE-009"
+        "SPORE-TYPE-009"
       ],
       "features": [
         "Result",
@@ -546,7 +546,7 @@
       "concept": "Auto requires an initializer",
       "status": "draft",
       "expectedDiagnostics": [
-        "LLN-TYPE-002"
+        "SPORE-TYPE-002"
       ],
       "features": [],
       "aiRule": "Auto cannot infer a type without an initializer. Provide an initial value."
@@ -582,7 +582,7 @@
       "concept": "cross-currency Money addition is forbidden",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-TYPE-004"
+        "SPORE-TYPE-004"
       ],
       "features": [
         "Money",
@@ -621,7 +621,7 @@
       "concept": "Money multiplied by Money is forbidden",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-TYPE-004"
+        "SPORE-TYPE-004"
       ],
       "features": [
         "Money",
@@ -648,7 +648,7 @@
       "concept": "cross-currency Money ratio is forbidden",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-TYPE-004"
+        "SPORE-TYPE-004"
       ],
       "features": [
         "Money",
@@ -687,7 +687,7 @@
       "concept": "Tensor requires exactly two type parameters",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-TYPE-009"
+        "SPORE-TYPE-009"
       ],
       "features": [
         "Tensor",
@@ -712,7 +712,7 @@
       "concept": "ReadOnlyView requires exactly one type parameter",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-TYPE-009"
+        "SPORE-TYPE-009"
       ],
       "features": [
         "flow"
@@ -723,10 +723,10 @@
       "id": "084-unknown-type",
       "level": 2,
       "levelName": "Types",
-      "concept": "unknown type name produces LLN-TYPE-001",
+      "concept": "unknown type name produces SPORE-TYPE-001",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-TYPE-001"
+        "SPORE-TYPE-001"
       ],
       "features": [
         "flow"
@@ -737,10 +737,10 @@
       "id": "085-type-mismatch",
       "level": 2,
       "levelName": "Types",
-      "concept": "type mismatch produces LLN-TYPE-002",
+      "concept": "type mismatch produces SPORE-TYPE-002",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-TYPE-002"
+        "SPORE-TYPE-002"
       ],
       "features": [
         "flow"
@@ -754,7 +754,7 @@
       "concept": "protected value cannot be directly assigned to redacted binding",
       "status": "draft",
       "expectedDiagnostics": [
-        "LLN-TYPE-002"
+        "SPORE-TYPE-002"
       ],
       "features": [
         "protected",
@@ -949,7 +949,7 @@
       "concept": "undeclared database.write effect",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-EFFECT-001"
+        "SPORE-EFFECT-001"
       ],
       "features": [
         "Result",
@@ -966,7 +966,7 @@
       "concept": "undeclared network.outbound effect",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-EFFECT-001"
+        "SPORE-EFFECT-001"
       ],
       "features": [
         "Result",
@@ -984,7 +984,7 @@
       "concept": "pure flow cannot call an effectful flow",
       "status": "draft",
       "expectedDiagnostics": [
-        "LLN-EFFECT-003"
+        "SPORE-EFFECT-003"
       ],
       "features": [
         "Money",
@@ -1048,7 +1048,7 @@
       "concept": "local fn cannot use effects not declared by the containing flow",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-EFFECT-001"
+        "SPORE-EFFECT-001"
       ],
       "features": [
         "Result",
@@ -1067,7 +1067,7 @@
       "concept": "local fn cannot declare its own effects",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-SEC-014"
+        "SPORE-SEC-014"
       ],
       "features": [
         "Result",
@@ -1106,7 +1106,7 @@
       "concept": "secure flow calls AuditLog.write but does not declare audit.write",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-EFFECT-001"
+        "SPORE-EFFECT-001"
       ],
       "features": [
         "Result",
@@ -1142,7 +1142,7 @@
       "concept": "caller missing effect required by callee",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-EFFECT-002"
+        "SPORE-EFFECT-002"
       ],
       "features": [
         "Result",
@@ -1159,7 +1159,7 @@
       "concept": "filesystem.read in a pure flow is forbidden",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-EFFECT-003"
+        "SPORE-EFFECT-003"
       ],
       "features": [
         "Result",
@@ -1193,7 +1193,7 @@
       "concept": "non-canonical effect name is rejected",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-EFFECT-004"
+        "SPORE-EFFECT-004"
       ],
       "features": [
         "Result",
@@ -1344,7 +1344,7 @@
       "concept": "assigning String directly to protected Email is forbidden",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-TYPE-003"
+        "SPORE-TYPE-003"
       ],
       "features": [
         "flow",
@@ -1385,7 +1385,7 @@
       "concept": "protected value cannot be directly assigned to redacted binding",
       "status": "draft",
       "expectedDiagnostics": [
-        "LLN-TYPE-002"
+        "SPORE-TYPE-002"
       ],
       "features": [
         "protected",
@@ -1408,7 +1408,7 @@
         "protected",
         "redacted"
       ],
-      "aiRule": "Protected -> Redacted -> Audit is the canonical LogicN trust flow for sensitive data."
+      "aiRule": "Protected -> Redacted -> Audit is the canonical Galerina trust flow for sensitive data."
     },
     {
       "id": "162-invalid-audit-log",
@@ -1417,7 +1417,7 @@
       "concept": "unsafe value reaches audit sink without validation",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-VALUESTATE-003"
+        "SPORE-VALUESTATE-003"
       ],
       "features": [
         "audit",
@@ -1435,7 +1435,7 @@
       "concept": "passing unsafe value to audit sink",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-VALUESTATE-003"
+        "SPORE-VALUESTATE-003"
       ],
       "features": [
         "audit",
@@ -1472,7 +1472,7 @@
       "concept": "unsafe value cannot be written to a database sink",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-VALUESTATE-003"
+        "SPORE-VALUESTATE-003"
       ],
       "features": [
         "contract",
@@ -1505,7 +1505,7 @@
       "concept": "unsafe value crossing a trust boundary via network",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-VALUESTATE-003"
+        "SPORE-VALUESTATE-003"
       ],
       "features": [
         "contract",
@@ -1542,7 +1542,7 @@
       "concept": "direct equality comparison on secrets is forbidden",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-SECRET-002"
+        "SPORE-SECRET-002"
       ],
       "features": [
         "flow"
@@ -1569,7 +1569,7 @@
       "concept": "secret value sent to console sink is forbidden",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-SECRET-001"
+        "SPORE-SECRET-001"
       ],
       "features": [
         "flow"
@@ -1583,7 +1583,7 @@
       "concept": "secret value sent to console sink is forbidden",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-SECRET-001"
+        "SPORE-SECRET-001"
       ],
       "features": [
         "flow"
@@ -1609,7 +1609,7 @@
         "redacted",
         "unsafe"
       ],
-      "aiRule": "This is the canonical LogicN trust flow: unsafe -> validate -> protected -> redact -> audit."
+      "aiRule": "This is the canonical Galerina trust flow: unsafe -> validate -> protected -> redact -> audit."
     },
     {
       "id": "174-multiple-protected-values",
@@ -1660,7 +1660,7 @@
       "concept": "string taint propagation (SQL injection pattern)",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-VALUESTATE-004"
+        "SPORE-VALUESTATE-004"
       ],
       "features": [
         "Result",
@@ -1678,7 +1678,7 @@
       "concept": "SecureString serialization denied",
       "status": "draft",
       "expectedDiagnostics": [
-        "LLN-SECRET-003"
+        "SPORE-SECRET-003"
       ],
       "features": [
         "Result",
@@ -1732,7 +1732,7 @@
       "concept": "intent mismatch when flow behaviour contradicts declared intent",
       "status": "draft",
       "expectedDiagnostics": [
-        "LLN-INTENT-001"
+        "SPORE-INTENT-001"
       ],
       "features": [
         "Result",
@@ -1769,7 +1769,7 @@
       "concept": "compute target remote violates governance policy",
       "status": "draft",
       "expectedDiagnostics": [
-        "LLN-GOV-004"
+        "SPORE-GOV-004"
       ],
       "features": [
         "Result",
@@ -1807,7 +1807,7 @@
       "concept": "sending protected data externally without authority block",
       "status": "draft",
       "expectedDiagnostics": [
-        "LLN-GOV-003"
+        "SPORE-GOV-003"
       ],
       "features": [
         "Result",
@@ -1846,7 +1846,7 @@
       "concept": "intent requires audit but no audit.write sink used",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-GOV-002"
+        "SPORE-GOV-002"
       ],
       "features": [
         "Result",
@@ -1902,7 +1902,7 @@
       "concept": "declared purpose does not match observed template use",
       "status": "draft",
       "expectedDiagnostics": [
-        "LLN-GOV-005"
+        "SPORE-GOV-005"
       ],
       "features": [
         "Result",
@@ -1984,10 +1984,10 @@
       "id": "216-event-declaration",
       "level": 5,
       "levelName": "Governance",
-      "concept": "global event declaration + flow emission + LLN-EVENT-001",
+      "concept": "global event declaration + flow emission + SPORE-EVENT-001",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-EVENT-001"
+        "SPORE-EVENT-001"
       ],
       "features": [
         "Result",
@@ -2005,10 +2005,10 @@
       "id": "217-contract-set-validation",
       "level": 5,
       "levelName": "Governance",
-      "concept": "contract set use resolution — LLN-GOV-011 and LLN-GOV-012",
+      "concept": "contract set use resolution — SPORE-GOV-011 and SPORE-GOV-012",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-GOV-011"
+        "SPORE-GOV-011"
       ],
       "features": [
         "Result",
@@ -2047,10 +2047,10 @@
       "id": "219-response-denies",
       "level": 5,
       "levelName": "Governance",
-      "concept": "contract response.denies — LLN-GOV-003",
+      "concept": "contract response.denies — SPORE-GOV-003",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-GOV-003"
+        "SPORE-GOV-003"
       ],
       "features": [
         "Result",
@@ -2174,10 +2174,10 @@
       "id": "225-context-missing",
       "level": 5,
       "levelName": "Governance",
-      "concept": "LLN-CONTEXT-001 — context require actor declared but never accessed",
+      "concept": "SPORE-CONTEXT-001 — context require actor declared but never accessed",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-CONTEXT-001"
+        "SPORE-CONTEXT-001"
       ],
       "features": [
         "Result",
@@ -2187,7 +2187,7 @@
         "flow",
         "for"
       ],
-      "aiRule": "When contract.context declares require actor but the flow body never reads context.actor, LLN-CONTEXT-001 is raised."
+      "aiRule": "When contract.context declares require actor but the flow body never reads context.actor, SPORE-CONTEXT-001 is raised."
     },
     {
       "id": "226-full-16-section-minimal",
@@ -2299,7 +2299,7 @@
       "concept": "Tensor requires exactly two type parameters: element type and shape",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-TYPE-009"
+        "SPORE-TYPE-009"
       ],
       "features": [
         "Tensor",
@@ -2390,7 +2390,7 @@
       "concept": "adding Money values of different currencies is a type error",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-TYPE-004"
+        "SPORE-TYPE-004"
       ],
       "features": [
         "Money",
@@ -2455,7 +2455,7 @@
       "concept": "Tensor arithmetic requires shape compatibility",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-TYPE-004"
+        "SPORE-TYPE-004"
       ],
       "features": [
         "Tensor",
@@ -2469,7 +2469,7 @@
       "concept": "Cross-currency arithmetic is denied",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-TYPE-004"
+        "SPORE-TYPE-004"
       ],
       "features": [
         "Money",
@@ -2483,7 +2483,7 @@
       "concept": "ai.inference without compute target preference",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-HINT-COMPUTE-001"
+        "SPORE-HINT-COMPUTE-001"
       ],
       "features": [
         "Result",
@@ -2546,7 +2546,7 @@
       "concept": "calling an AI model without declaring the required ai.inference effect",
       "status": "draft",
       "expectedDiagnostics": [
-        "LLN-EFFECT-001"
+        "SPORE-EFFECT-001"
       ],
       "features": [
         "Result",
@@ -2615,7 +2615,7 @@
       "concept": "secure AI flow that declares audit.write but omits the AuditLog.write call",
       "status": "draft",
       "expectedDiagnostics": [
-        "LLN-GOV-002"
+        "SPORE-GOV-002"
       ],
       "features": [
         "Result",
@@ -2651,7 +2651,7 @@
       "concept": "passing a SecureString to an AI model is a secret-exposure error",
       "status": "draft",
       "expectedDiagnostics": [
-        "LLN-SECRET-001"
+        "SPORE-SECRET-001"
       ],
       "features": [
         "Result",
@@ -2720,10 +2720,10 @@
       "id": "362-ai-invalid-tensor-arity",
       "level": 7,
       "levelName": "AI",
-      "concept": "Tensor type with missing shape argument raises LLN-TYPE-009",
+      "concept": "Tensor type with missing shape argument raises SPORE-TYPE-009",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-TYPE-009"
+        "SPORE-TYPE-009"
       ],
       "features": [
         "Result",
@@ -2758,14 +2758,14 @@
       "concept": "a pure flow calling an ai.inference flow inherits that effect and must declare it",
       "status": "draft",
       "expectedDiagnostics": [
-        "LLN-EFFECT-002"
+        "SPORE-EFFECT-002"
       ],
       "features": [
         "and",
         "effects",
         "flow"
       ],
-      "aiRule": "Effects propagate upward; a caller that does not declare an effect used by its callee receives LLN-EFFECT-002."
+      "aiRule": "Effects propagate upward; a caller that does not declare an effect used by its callee receives SPORE-EFFECT-002."
     },
     {
       "id": "365-ai-summary-flow",
@@ -2794,7 +2794,7 @@
       "concept": "Unsafe input cannot flow directly to AI model",
       "status": "draft",
       "expectedDiagnostics": [
-        "LLN-VALUESTATE-003"
+        "SPORE-VALUESTATE-003"
       ],
       "features": [
         "Result",
@@ -2811,7 +2811,7 @@
       "concept": "ai.inference effect must be declared",
       "status": "draft",
       "expectedDiagnostics": [
-        "LLN-EFFECT-001"
+        "SPORE-EFFECT-001"
       ],
       "features": [
         "flow"
@@ -2824,7 +2824,7 @@
       "concept": "flow contract with AI intent for IGO optimisation",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-HINT-COMPUTE-001"
+        "SPORE-HINT-COMPUTE-001"
       ],
       "features": [
         "Result",
@@ -3105,7 +3105,7 @@
       "concept": "omitting the fallback clause from a non-cpu compute target is an error",
       "status": "draft",
       "expectedDiagnostics": [
-        "LLN-TARGET-001"
+        "SPORE-TARGET-001"
       ],
       "features": [
         "Result",
@@ -3142,7 +3142,7 @@
       "concept": "compute target without fallback",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-HINT-COMPUTE-001"
+        "SPORE-HINT-COMPUTE-001"
       ],
       "features": [
         "Tensor",
@@ -3176,7 +3176,7 @@
       "concept": "passing a protected PatientId directly to a log call without redaction",
       "status": "draft",
       "expectedDiagnostics": [
-        "LLN-SECRET-001"
+        "SPORE-SECRET-001"
       ],
       "features": [
         "Result",
@@ -3218,7 +3218,7 @@
       "concept": "adding Money<GBP> and Money<USD> without currency conversion is a type error",
       "status": "stable",
       "expectedDiagnostics": [
-        "LLN-TYPE-004"
+        "SPORE-TYPE-004"
       ],
       "features": [
         "Money",
@@ -3248,7 +3248,7 @@
       "concept": "accessing PII without declaring the pii.read effect",
       "status": "draft",
       "expectedDiagnostics": [
-        "LLN-PII-001"
+        "SPORE-PII-001"
       ],
       "features": [
         "Result",
@@ -3268,7 +3268,7 @@
       "concept": "handling HIPAA PHI without declaring the phi.read effect",
       "status": "draft",
       "expectedDiagnostics": [
-        "LLN-PHI-001"
+        "SPORE-PHI-001"
       ],
       "features": [
         "Result",
@@ -3288,7 +3288,7 @@
       "concept": "secure flow that declares audit.write but never calls AuditLog.write",
       "status": "draft",
       "expectedDiagnostics": [
-        "LLN-AUDIT-001"
+        "SPORE-AUDIT-001"
       ],
       "features": [
         "Result",
@@ -3347,7 +3347,7 @@
       "concept": "sharing protected data across a trust boundary without an authority block",
       "status": "draft",
       "expectedDiagnostics": [
-        "LLN-GOV-003"
+        "SPORE-GOV-003"
       ],
       "features": [
         "Result",
@@ -3387,7 +3387,7 @@
       "concept": "declared purpose does not match the template used in the flow body",
       "status": "draft",
       "expectedDiagnostics": [
-        "LLN-GOV-005"
+        "SPORE-GOV-005"
       ],
       "features": [
         "Result",
@@ -3408,7 +3408,7 @@
       "concept": "flow requiring a module capability that has not been accepted in the supply-chain manifest",
       "status": "draft",
       "expectedDiagnostics": [
-        "LLN-MODULE-005"
+        "SPORE-MODULE-005"
       ],
       "features": [
         "Result",
@@ -3447,7 +3447,7 @@
       "concept": "PII access requires pii.read effect",
       "status": "draft",
       "expectedDiagnostics": [
-        "LLN-PII-001"
+        "SPORE-PII-001"
       ],
       "features": [
         "Result",
@@ -3463,7 +3463,7 @@
       "concept": "Protected value in response body requires policy",
       "status": "draft",
       "expectedDiagnostics": [
-        "LLN-GOV-003"
+        "SPORE-GOV-003"
       ],
       "features": [
         "Result",

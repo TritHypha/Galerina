@@ -2,7 +2,7 @@
 
 ## Definition
 
-LogicN is designed around a **small secure core with optional extension packages**. Extensions are untrusted by default. Every plugin must explicitly request permissions and the application must explicitly grant them.
+Galerina is designed around a **small secure core with optional extension packages**. Extensions are untrusted by default. Every plugin must explicitly request permissions and the application must explicitly grant them.
 
 ```text
 Small language core
@@ -62,7 +62,7 @@ Audit-first design
 Pure computation or symbolic systems.
 
 ```text
-Examples: LogicN.Math, LogicN.Science
+Examples: Galerina.Math, Galerina.Science
 Primary risks: resource exhaustion, large memory use, cryptographic misuse
 Protections: CPU limits, memory quotas, execution timeouts
 ```
@@ -72,7 +72,7 @@ Protections: CPU limits, memory quotas, execution timeouts
 Can influence real-world systems or calculations.
 
 ```text
-Examples: LogicN.Engineering, LogicN.Chemistry
+Examples: Galerina.Engineering, Galerina.Chemistry
 Primary risks: unsafe simulations, incorrect assumptions, hazardous modelling
 Protections: validation rules, safety assertions, unit checking, simulation isolation, review workflows
 ```
@@ -82,7 +82,7 @@ Protections: validation rules, safety assertions, unit checking, simulation isol
 Can access sensitive data, external systems, or physical systems.
 
 ```text
-Examples: LogicN.AI, LogicN.Medical, LogicN.Finance, LogicN.Robotics, LogicN.Web, LogicN.Database, LogicN.Hardware
+Examples: Galerina.AI, Galerina.Medical, Galerina.Finance, Galerina.Robotics, Galerina.Web, Galerina.Database, Galerina.Hardware
 Primary risks: prompt injection, data exposure, financial fraud, unsafe automation, physical harm
 Protections: strict sandboxing, audit logging, permission gating, manual approval, tool allowlists, network restrictions, vault isolation, human confirmation
 ```
@@ -103,8 +103,8 @@ Every plugin starts with no permissions.
 
 ## Plugin Declaration Syntax
 
-```logicn
-plugin LogicN.AI {
+```galerina
+plugin Galerina.AI {
   permissions {
     deny filesystem
     deny vault
@@ -115,7 +115,7 @@ plugin LogicN.AI {
   }
 }
 
-plugin LogicN.Medical {
+plugin Galerina.Medical {
   permissions {
     require regulated
     require encryption
@@ -124,7 +124,7 @@ plugin LogicN.Medical {
   }
 }
 
-plugin LogicN.Robotics {
+plugin Galerina.Robotics {
   permissions {
     require physical
     require emergency_stop
@@ -138,8 +138,8 @@ plugin LogicN.Robotics {
 
 Every plugin must declare:
 
-```logicn
-plugin LogicN.AI {
+```galerina
+plugin Galerina.AI {
   version "0.1"
 
   permissions {
@@ -148,7 +148,7 @@ plugin LogicN.AI {
   }
 
   dependencies {
-    LogicN.Science >= 0.1
+    Galerina.Science >= 0.1
   }
 }
 ```
@@ -157,8 +157,8 @@ plugin LogicN.AI {
 
 Applications grant scoped capabilities at runtime:
 
-```logicn
-grant LogicN.AI {
+```galerina
+grant Galerina.AI {
   network to "api.openai.com"
   execute tools ["search", "summarise"]
 }
@@ -169,7 +169,7 @@ grant LogicN.AI {
 ```text
 Application
     ↓
-LogicN Runtime
+Galerina Runtime
     ↓
 Permission Manager
     ↓
@@ -277,12 +277,12 @@ safety watchdogs
 Core official packages — heavily reviewed and officially maintained:
 
 ```text
-LogicN.Math
-LogicN.Engineering
-LogicN.AI
-LogicN.Security
-LogicN.Database
-LogicN.Web
+Galerina.Math
+Galerina.Engineering
+Galerina.AI
+Galerina.Security
+Galerina.Database
+Galerina.Web
 ```
 
 Requirements:
@@ -308,7 +308,7 @@ security scoring
 
 ## Relationship to Runtime Extension Points
 
-This document covers domain extension packages (LogicN.AI, LogicN.Medical, etc.).
+This document covers domain extension packages (Galerina.AI, Galerina.Medical, etc.).
 
 Runtime extension points (`extension`, `observer`, `listener`) are internal runtime hooks for metrics, audit, and monitoring — not domain plugins. See `runtime-extension-points.md`.
 
@@ -318,7 +318,7 @@ Runtime extension points (`extension`, `observer`, `listener`) are internal runt
 Core language = trusted
 Plugins = untrusted until granted capabilities
 
-LogicN should safely support AI, engineering, medicine,
+Galerina should safely support AI, engineering, medicine,
 chemistry, finance, robotics and scientific computing
 without compromising the security or simplicity of the core language.
 ```

@@ -2,7 +2,7 @@
 
 ## Definition
 
-LogicN makes mutation **rare, explicit, scoped, and reportable**.
+Galerina makes mutation **rare, explicit, scoped, and reportable**.
 
 ```text
 Immutable by default.
@@ -16,13 +16,13 @@ Shared mutation denied by default.
 
 Normal values do not change after creation:
 
-```logicn
+```galerina
 let user = createUser(input)
 ```
 
 To mutate, the developer must declare it:
 
-```logicn
+```galerina
 mut user = createUser(input)
 ```
 
@@ -30,7 +30,7 @@ mut user = createUser(input)
 
 Mutation only exists inside a controlled block:
 
-```logicn
+```galerina
 mutate user effects [audit.write] {
   user.email = newEmail
 }
@@ -55,7 +55,7 @@ runtime monkey patching
 
 Writing to important systems requires declared capability:
 
-```logicn
+```galerina
 flow updateEmail(
   user: User,
   newEmail: Email,
@@ -71,7 +71,7 @@ No capability — no mutation.
 
 Prefer:
 
-```logicn
+```galerina
 let updatedUser = user with {
   email: newEmail
 }
@@ -96,7 +96,7 @@ Each must declare: lock policy, timeout, ownership, failure mode, audit rules.
 
 Database/file/network writes go through transactions or commands:
 
-```logicn
+```galerina
 command UpdateUserEmail {
   input UpdateEmailRequest
   output User
@@ -145,7 +145,7 @@ rollback-report.json
 ## Final Principle
 
 ```text
-Mutation is not banned in LogicN.
+Mutation is not banned in Galerina.
 
 Uncontrolled mutation is banned.
 

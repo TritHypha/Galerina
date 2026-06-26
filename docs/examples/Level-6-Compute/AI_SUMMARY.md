@@ -9,11 +9,11 @@
 - Explicit single-target syntax: `compute target gpu { fallback cpu }`
 - `Money<C>` arithmetic within compute-heavy flows (VAT, financial modelling)
 - `Decimal` precision for financial calculations
-- `LLN-HINT-COMPUTE-001` — informational hint when `ai.inference` is used without a compute target preference
+- `SPORE-HINT-COMPUTE-001` — informational hint when `ai.inference` is used without a compute target preference
 
 ## Canonical patterns
 
-```lln
+```spore
 // Prefer NPU or GPU with mandatory CPU fallback
 pure flow embedText(text: String) -> Tensor<Float32, [1, 768]>
   with compute target best { prefer [npu, gpu, cpu] fallback cpu }
@@ -22,7 +22,7 @@ pure flow embedText(text: String) -> Tensor<Float32, [1, 768]>
 }
 ```
 
-```lln
+```spore
 // Explicit GPU target for known-large workload
 pure flow processImage(pixels: Tensor<Float32, [3, 224, 224]>) -> Tensor<Float32, [1000]>
   with compute target gpu { fallback cpu }
@@ -43,10 +43,10 @@ pure flow processImage(pixels: Tensor<Float32, [3, 224, 224]>) -> Tensor<Float32
 
 | Code | Meaning |
 |------|---------|
-| `LLN-HINT-COMPUTE-001` | Flow uses `ai.inference` but no compute target preference declared; NPU/GPU would improve performance |
-| `LLN-TARGET-001` | Compute target declared without a required `fallback` |
-| `LLN-TYPE-006` | `Tensor` declared without two type parameters |
-| `LLN-TYPE-004` | Cross-currency `Money` arithmetic — currency mismatch at compile time |
+| `SPORE-HINT-COMPUTE-001` | Flow uses `ai.inference` but no compute target preference declared; NPU/GPU would improve performance |
+| `SPORE-TARGET-001` | Compute target declared without a required `fallback` |
+| `SPORE-TYPE-006` | `Tensor` declared without two type parameters |
+| `SPORE-TYPE-004` | Cross-currency `Money` arithmetic — currency mismatch at compile time |
 
 ## Example IDs at this level
 

@@ -1,6 +1,6 @@
-# LogicN Canonical Syntax Reference
+# Galerina Canonical Syntax Reference
 
-This document is the definitive reference for current canonical LogicN syntax.
+This document is the definitive reference for current canonical Galerina syntax.
 Use it when generating code. Do not invent syntax not listed here.
 
 ---
@@ -9,7 +9,7 @@ Use it when generating code. Do not invent syntax not listed here.
 
 ### Secure Flow
 
-```logicn
+```galerina
 // CORRECT
 secure flow createPatient(readonly request: CreatePatientRequest) -> CreatePatientResult
 
@@ -25,7 +25,7 @@ Rules:
 
 ### Guarded Flow
 
-```logicn
+```galerina
 // CORRECT
 guarded flow getPatient(readonly request: GetPatientRequest) -> GetPatientResult
 
@@ -35,7 +35,7 @@ guarded flow getPatient(readonly request: GetPatientRequest) -> Option<Patient>
 
 ### Pure Flow
 
-```logicn
+```galerina
 // CORRECT
 pure flow formatName(readonly request: FormatNameRequest) -> FormatNameResult
 
@@ -50,7 +50,7 @@ pure flow formatName(readonly req: { first: String, last: String }) -> String
 A contract block must declare its sections in this order. Omit sections that do not
 apply, but never reorder the sections that are present.
 
-```logicn
+```galerina
 contract ExampleContract {
 
     // Section 1: version
@@ -171,7 +171,7 @@ contract ExampleContract {
 Binds a value that has not been validated. Must not reach any guarded resource
 without going through a validation gate. The compiler tracks propagation.
 
-```logicn
+```galerina
 // CORRECT — label raw input immediately
 unsafe let rawBody = request.body
 
@@ -184,7 +184,7 @@ let body = request.body   // misleading; use unsafe let for truly untrusted data
 Immutable. Safe to pass to guarded resources. Promoted from `unsafe let` via
 a validation call.
 
-```logicn
+```galerina
 // CORRECT
 let validated = validate(rawBody)
 let userId    = generateId()
@@ -194,7 +194,7 @@ let userId    = generateId()
 
 Use only when in-place update is semantically required. Not a default choice.
 
-```logicn
+```galerina
 // CORRECT — counter that must accumulate
 mut retryCount = 0
 retryCount = retryCount + 1
@@ -208,7 +208,7 @@ mut name = request.name   // name never changes; use let
 Applied to flow parameters. All `request` parameters must be `readonly`.
 Do not omit this qualifier.
 
-```logicn
+```galerina
 // CORRECT
 secure flow deleteOrder(readonly request: DeleteOrderRequest) -> DeleteOrderResult
 
@@ -223,7 +223,7 @@ secure flow deleteOrder(request: DeleteOrderRequest) -> DeleteOrderResult
 Effects are declared inside the `contract` block in an `effects {}` section.
 Each effect is a bare capability name on its own line.
 
-```logicn
+```galerina
 // CORRECT
 contract CreateOrderContract {
     effects {
@@ -263,7 +263,7 @@ Available effect names:
 Every flow return type must be a named alias declared in `contract.types`.
 Never use generic wrapper types directly in a flow signature.
 
-```logicn
+```galerina
 // CORRECT — named alias in contract
 contract CreatePatientContract {
     types {
@@ -293,7 +293,7 @@ Request type name = flow name (PascalCase) + `Request`.
 
 ### protected
 
-```logicn
+```galerina
 // CORRECT — declare sensitivity, gate response
 protected let ssn = record.ssn
 
@@ -310,7 +310,7 @@ return PatientResult { ssn: ssn }   // missing gate
 
 ### redacted
 
-```logicn
+```galerina
 // CORRECT — redact before audit
 redacted let apiKey = vault.read("service-key")
 AuditLog.write(AuditEvent { key: redact(apiKey) })
@@ -328,7 +328,7 @@ Events must be declared in `contract.events` before they can be emitted.
 Global events shared across contracts must be declared in the module-level
 event registry.
 
-```logicn
+```galerina
 // CORRECT — declared in contract, emitted in flow
 contract OrderContract {
     events {
@@ -356,7 +356,7 @@ emit OrderPlaced { orderId: order.id }   // OrderPlaced not in contract.events
 The compiler requires that `unsafe let` bindings are validated before reaching
 any `database.write` or `audit.write` effect.
 
-```logicn
+```galerina
 // CORRECT
 unsafe let rawRequest = request
 let validated = validate(rawRequest)
@@ -364,9 +364,9 @@ database.write(validated)
 
 // AVOID — unsafe value reaches database directly
 unsafe let rawRequest = request
-database.write(rawRequest)   // diagnostic: LLN-GOV-003 unsafe escape
+database.write(rawRequest)   // diagnostic: SPORE-GOV-003 unsafe escape
 ```
 
 ---
 
-*See also: `LOGICN_5_MINUTE_PRIMER.md`, `DO_NOT_USE_YET.md`, `COMMON_FIXES.md`*
+*See also: `GALERINA_5_MINUTE_PRIMER.md`, `DO_NOT_USE_YET.md`, `COMMON_FIXES.md`*

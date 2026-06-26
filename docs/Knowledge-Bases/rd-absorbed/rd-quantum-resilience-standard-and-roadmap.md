@@ -1,9 +1,9 @@
-<!-- ABSORBED R&D SOURCE — verbatim mirror. LogicN is the main library; the R&D repo is upstream/authoring.
-     Source: LogicN-R-AND-D/QUANTUM-RESILIENCE-STANDARD-AND-ROADMAP.md  ·  Pinned: R&D 238f07a (2026-06-17)
-     Integrated LogicN view: logicn-quantum-resilience-roadmap.md  ·  Catalog: logicn-rd-absorption-catalog.md
+<!-- ABSORBED R&D SOURCE — verbatim mirror. Galerina is the main library; the R&D repo is upstream/authoring.
+     Source: Galerina-R-AND-D/QUANTUM-RESILIENCE-STANDARD-AND-ROADMAP.md  ·  Pinned: R&D 238f07a (2026-06-17)
+     Integrated Galerina view: galerina-quantum-resilience-roadmap.md  ·  Catalog: galerina-rd-absorption-catalog.md
      Rule: edit the upstream source then re-vendor; do not fork this copy (feedback-auto-import-rd-docs). -->
 
-> **Absorbed R&D source (verbatim).** Curated/integrated view: `logicn-quantum-resilience-roadmap.md`. See `logicn-rd-absorption-catalog.md`. Internal links below point at the upstream R&D tree.
+> **Absorbed R&D source (verbatim).** Curated/integrated view: `galerina-quantum-resilience-roadmap.md`. See `galerina-rd-absorption-catalog.md`. Internal links below point at the upstream R&D tree.
 
 ---
 # `.tmf` quantum resilience — what we have, the TRUE-resilience standard, and the roadmap
@@ -131,7 +131,7 @@ backed. *Nothing to do — it stays the always-present base layer.*
 
 **Q1 — QRNG entropy capability (the cheap, deployable, *real* ITS upgrade). 🟢 Buildable as an interface now.**
 - **Deliverable:** wire the **Lane D** governed entropy capability — a host-side SP 800-90B source → 90A DRBG →
-  keygen/nonce, behind the LogicN capability boundary, **fail-closed** on a failed health test (`unknown → deny`).
+  keygen/nonce, behind the Galerina capability boundary, **fail-closed** on a failed health test (`unknown → deny`).
 - **ITS gain:** the *randomness* feeding every key/nonce becomes information-theoretically unpredictable (true
   entropy), removing PRNG-seed as a trust assumption. The digital core is unchanged.
 - **Constraints:** a *source*, not the cipher; must go through the SP 800-90 pipeline; benefit at signing is
@@ -204,7 +204,7 @@ constrained closed-group point-to-point settings. It never claims unconditional 
 - ❌ **Building quantum hardware** (single-photon sources, SNSPDs, repeaters, QRNG chips). We integrate *vetted*
   hardware behind the governance boundary; we do not build or simulate it as if it were real.
 - ❌ **Any ITS / security / performance number without a reproducible benchmark + the device.** Every quantum
-  claim here is either cited to its source apparatus or marked a **THEORETICAL GAP** (no LogicN hardware exists).
+  claim here is either cited to its source apparatus or marked a **THEORETICAL GAP** (no Galerina hardware exists).
   No number is synthesized.
 - ❌ **Replacing the digital bit-exact core.** It stays. Photonics/quantum live *around* the gate, always.
 

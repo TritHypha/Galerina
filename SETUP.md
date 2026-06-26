@@ -1,6 +1,6 @@
-# LogicN — Setup Guide
+# Galerina — Setup Guide
 
-Install LogicN on Windows, Linux, or macOS. The `logicn` command lets you compile `.lln` programs to WebAssembly, run them, and type-check with full governance.
+Install Galerina on Windows, Linux, or macOS. The `galerina` command lets you compile `.spore` programs to WebAssembly, run them, and type-check with full governance.
 
 ---
 
@@ -37,23 +37,23 @@ Type `Y` and press Enter to confirm.
 ### Step 3 — Clone and link
 
 ```powershell
-git clone https://github.com/logicn/LogicN.git
-cd LogicN
+git clone https://github.com/galerina/Galerina.git
+cd Galerina
 npm link
 ```
 
 ### Step 4 — Verify
 
 ```powershell
-logicn --help
+galerina --help
 ```
 
-You should see the LogicN CLI help. If PowerShell still blocks it, use **Command Prompt** (`cmd.exe`) instead — it has no script restrictions:
+You should see the Galerina CLI help. If PowerShell still blocks it, use **Command Prompt** (`cmd.exe`) instead — it has no script restrictions:
 
 ```cmd
-cd C:\wwwprojects\LogicN
+cd C:\wwwprojects\Galerina
 npm link
-logicn --help
+galerina --help
 ```
 
 ### Optional — wasmtime (run compiled .wasm binaries)
@@ -90,8 +90,8 @@ sudo pacman -S nodejs npm
 ### Step 2 — Clone and link
 
 ```bash
-git clone https://github.com/logicn/LogicN.git
-cd LogicN
+git clone https://github.com/galerina/Galerina.git
+cd Galerina
 npm link
 ```
 
@@ -112,7 +112,7 @@ npm link
 ### Step 3 — Verify
 
 ```bash
-logicn --help
+galerina --help
 ```
 
 ### Optional — wasmtime
@@ -143,15 +143,15 @@ nvm use 20
 ### Step 2 — Clone and link
 
 ```bash
-git clone https://github.com/logicn/LogicN.git
-cd LogicN
+git clone https://github.com/galerina/Galerina.git
+cd Galerina
 npm link
 ```
 
 ### Step 3 — Verify
 
 ```bash
-logicn --help
+galerina --help
 ```
 
 ### Optional — wasmtime
@@ -166,17 +166,17 @@ curl https://wasmtime.dev/install.sh -sSf | bash
 
 ## Running your first program
 
-Once `logicn` is on your PATH, try the governance-cost benchmark — it computes the sum of 1 to 100 (= 5050, the Gauss problem) with full governance verification:
+Once `galerina` is on your PATH, try the governance-cost benchmark — it computes the sum of 1 to 100 (= 5050, the Gauss problem) with full governance verification:
 
 **Run it:**
 ```bash
-logicn run packages-logicn/logicn-devtools-benchmarks/benchmarks/governance-cost/benchmark.lln --invoke main
+galerina run packages-galerina/galerina-devtools-benchmarks/benchmarks/governance-cost/benchmark.spore --invoke main
 # → 5050
 ```
 
 **Compile to WebAssembly:**
 ```bash
-logicn build packages-logicn/logicn-devtools-benchmarks/benchmarks/governance-cost/benchmark.lln
+galerina build packages-galerina/galerina-devtools-benchmarks/benchmarks/governance-cost/benchmark.spore
 # → build/benchmark.wasm  (133 bytes)
 # → build/benchmark.wat   (28 lines)
 ```
@@ -189,18 +189,18 @@ wasmtime --invoke main build/benchmark.wasm
 
 **Type-check with governance:**
 ```bash
-logicn check examples/auth-service/verifyPassword.lln
-# → ✅ verifyPassword.lln: 0 errors, 0 governance warnings
+galerina check examples/auth-service/verifyPassword.spore
+# → ✅ verifyPassword.spore: 0 errors, 0 governance warnings
 ```
 
 ---
 
 ## Running the benchmarks
 
-The benchmark suite compares LogicN against Rust, C++, Node.js, Python, and WASM across 23 workloads.
+The benchmark suite compares Galerina against Rust, C++, Node.js, Python, and WASM across 23 workloads.
 
 ```bash
-cd packages-logicn/logicn-devtools-benchmarks
+cd packages-galerina/galerina-devtools-benchmarks
 
 # Run all benchmarks (takes 5–10 minutes):
 npm run run
@@ -214,17 +214,17 @@ You'll see results like this on screen:
 ```
 ## 1. Throughput — Winner per Benchmark
 
-| Benchmark       | 🏆 Winner          | Winner Speed | LogicN (governed) | gov ÷ Python     |
+| Benchmark       | 🏆 Winner          | Winner Speed | Galerina (governed) | gov ÷ Python     |
 |---|---|---|---|---|
 | arithmetic-threshold | WASM (Phase 27) | 4.0B/s  | 860K/s  | ❌ 0.19×         |
-| data-query      | LogicN (governed)  | 228K/s       | 228K/s             | 🏆 (winner)      |
-| nbody           | LogicN (passive)   | 76K/s        | 62K/s              | ✅ 1,200× faster |
+| data-query      | Galerina (governed)  | 228K/s       | 228K/s             | 🏆 (winner)      |
+| nbody           | Galerina (passive)   | 76K/s        | 62K/s              | ✅ 1,200× faster |
 ...
 
 ## Benchmark Glossary
 | nbody | N-body gravitational force: pairwise O(N²) physics simulation | 1,200× faster than Python |
 | governance-cost | Sum 1..100 (triangle number = 5050, the Gauss problem) | Measures governance overhead |
-| data-query | Filter + sort + aggregate — LogicN wins this workload outright | ...
+| data-query | Filter + sort + aggregate — Galerina wins this workload outright | ...
 ```
 
 **Quick benchmark (development feedback, ~30 seconds):**
@@ -237,33 +237,33 @@ npm run run -- --quick
 ## Where are the examples?
 
 ```
-LogicN/
+Galerina/
 ├── examples/
 │   └── auth-service/           ← 31 real governed flows
-│       ├── verifyPassword.lln       verify a user password
-│       ├── governanceService.lln    proof-graph generation
-│       ├── runtimeProfileService.lln security profiles
-│       ├── sovereignTransaction.lln  Tier 1 ASIC hardening example
+│       ├── verifyPassword.spore       verify a user password
+│       ├── governanceService.spore    proof-graph generation
+│       ├── runtimeProfileService.spore security profiles
+│       ├── sovereignTransaction.spore  Tier 1 ASIC hardening example
 │       └── ...28 more flows
 │
-├── packages-logicn/
-│   └── logicn-devtools-benchmarks/
+├── packages-galerina/
+│   └── galerina-devtools-benchmarks/
 │       └── benchmarks/
-│           ├── governance-cost/    benchmark.lln ← good starting point
-│           ├── nbody/              benchmark.lln
-│           ├── data-query/         benchmark.lln
+│           ├── governance-cost/    benchmark.spore ← good starting point
+│           ├── nbody/              benchmark.spore
+│           ├── data-query/         benchmark.spore
 │           └── ...20 more
 │
 └── tests/
     └── r6-corpus/              ← 5 verified reference flows
-        ├── r6-001-classify.lln
-        ├── r6-002-distance.lln
-        ├── r6-003-listlen.lln
-        ├── r6-004-record-amount.lln
-        └── r6-005-name-of.lln
+        ├── r6-001-classify.spore
+        ├── r6-002-distance.spore
+        ├── r6-003-listlen.spore
+        ├── r6-004-record-amount.spore
+        └── r6-005-name-of.spore
 ```
 
-Open any `.lln` file in VS Code to see LogicN source with full governance contracts.
+Open any `.spore` file in VS Code to see Galerina source with full governance contracts.
 
 ---
 
@@ -283,12 +283,12 @@ Open any `.lln` file in VS Code to see LogicN source with full governance contra
 >
 > If you write `contract {}` *inside* the body braces, that is the old syntax and will not work correctly.
 
-```logicn
-// ── hello.lln ─────────────────────────────────────────────────────────────────
+```galerina
+// ── hello.spore ─────────────────────────────────────────────────────────────────
 //
-// Your first LogicN flow.
+// Your first Galerina flow.
 //
-// LogicN is a governed language — every flow (function) declares what it does
+// Galerina is a governed language — every flow (function) declares what it does
 // in a `contract {}` block. This is not documentation; the compiler enforces it.
 //
 // Key ideas:
@@ -323,24 +323,24 @@ contract {
   // or produce any observable side effect. It's mathematically pure.
 }
 {
-  // The flow body. Plain LogicN expressions.
+  // The flow body. Plain Galerina expressions.
   //
-  // `return` is explicit — LogicN has no implicit last-expression return.
+  // `return` is explicit — Galerina has no implicit last-expression return.
   // `+` on strings is concatenation (no toString() needed, types are explicit).
-  return "Hello, " + name + "! Welcome to LogicN."
+  return "Hello, " + name + "! Welcome to Galerina."
 }
 
 
 // ── Running this flow ─────────────────────────────────────────────────────────
 //
-//   logicn run hello.lln --invoke greet
-//   → Hello, World! Welcome to LogicN.
+//   galerina run hello.spore --invoke greet
+//   → Hello, World! Welcome to Galerina.
 //
-//   logicn build hello.lln
+//   galerina build hello.spore
 //   → build/hello.wasm (tiny, runs without Node.js via wasmtime)
 //
-//   logicn check hello.lln
-//   → ✅ hello.lln: 0 errors, 0 governance warnings
+//   galerina check hello.spore
+//   → ✅ hello.spore: 0 errors, 0 governance warnings
 //
 // ──────────────────────────────────────────────────────────────────────────────
 
@@ -381,11 +381,11 @@ contract {
 //               → No governance. No guarantee about side effects.
 //               → An AI or refactor could silently add a database write.
 //
-// LogicN:       pure flow greet(name: String) -> String  contract { ... }  { ... }
+// Galerina:       pure flow greet(name: String) -> String  contract { ... }  { ... }
 //               → Compiler PROVES no side effects possible.
 //               → Any attempt to add a database write causes a compile error.
 //               → The intent is machine-readable and auditable.
 //
-// This is why LogicN targets software handling money, PII, healthcare,
+// This is why Galerina targets software handling money, PII, healthcare,
 // and government data — where "I think this is pure" is not good enough.
 // ──────────────────────────────────────────────────────────────────────────────

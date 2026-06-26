@@ -1,21 +1,21 @@
-family: LLN-MATCH
+family: SPORE-MATCH
 description: "Match exhaustiveness diagnostics"
 diagnostics:
-  - code: LLN-MATCH-001
+  - code: SPORE-MATCH-001
     name: NON_EXHAUSTIVE_MATCH
     severity: error
     phase: type_checker
     message: "match is missing case(s): {missingCases}."
-    note: "Alias of LLN-TYPE-021"
+    note: "Alias of SPORE-TYPE-021"
     implemented: true
-  - code: LLN-MATCH-002
+  - code: SPORE-MATCH-002
     name: UNREACHABLE_PATTERN
     severity: error
     phase: type_checker
     message: "Pattern is unreachable."
-    note: "Alias of LLN-TYPE-022"
+    note: "Alias of SPORE-TYPE-022"
     implemented: true
-  - code: LLN-MATCH-003
+  - code: SPORE-MATCH-003
     name: INVALID_PATTERN_TYPE
     severity: error
     phase: type_checker

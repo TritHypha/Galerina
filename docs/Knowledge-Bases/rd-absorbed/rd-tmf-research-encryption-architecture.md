@@ -1,17 +1,17 @@
-<!-- ABSORBED R&D SOURCE — verbatim mirror. LogicN is the main library; the R&D repo is upstream/authoring.
-     Source: LogicN-R-AND-D/tmf/research/encryption-architecture.md  ·  Pinned: R&D fb68d06 (2026-06-16)
-     Integrated LogicN view: logicn-tmf-engine.md  ·  Catalog: logicn-rd-absorption-catalog.md
+<!-- ABSORBED R&D SOURCE — verbatim mirror. Galerina is the main library; the R&D repo is upstream/authoring.
+     Source: Galerina-R-AND-D/tmf/research/encryption-architecture.md  ·  Pinned: R&D fb68d06 (2026-06-16)
+     Integrated Galerina view: galerina-tmf-engine.md  ·  Catalog: galerina-rd-absorption-catalog.md
      Rule: edit the upstream source then re-vendor; do not fork this copy (feedback-auto-import-rd-docs). -->
 
-> **Absorbed R&D source (verbatim).** This is the archived upstream document. Curated/integrated view: `logicn-tmf-engine.md`. See `logicn-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
+> **Absorbed R&D source (verbatim).** This is the archived upstream document. Curated/integrated view: `galerina-tmf-engine.md`. See `galerina-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
 
 ---
-# Encryption architecture for `.tmf` / TritMesh on a (photonic) LogicN substrate
+# Encryption architecture for `.tmf` / TritMesh on a (photonic) Galerina substrate
 
 **Scope.** A grounded, quantum-resilient, zero-trust **encryption + integrity + authenticity**
 design for the `.tmf` data fabric, usable on commodity hardware today, with a clearly-separated
 aspirational track for photonic/ternary acceleration. Built on your four-pillar primitive choice
-(ML-KEM, ML-DSA, Ascon, ZK-SNARKs), grounded in the finalized NIST PQC standards and the LogicN
+(ML-KEM, ML-DSA, Ascon, ZK-SNARKs), grounded in the finalized NIST PQC standards and the Galerina
 Knowledge-Bases.
 
 **Companion docs:**
@@ -22,8 +22,8 @@ Knowledge-Bases.
 [external-repos analysis](external-repos-analysis.md).
 
 > **Ratified architecture decisions (2026-06-15).** Engine = capability-bounded **wrapped backend**
-> (*govern, don't absorb*), TS/`.lln` governance in `packages-logicn/`, declared **`lane: digital`** so the
-> *already-shipped* `verifySubstrate()` / `LLN-SUBSTRATE-001` enforces §6 for free. **Confidentiality
+> (*govern, don't absorb*), TS/`.spore` governance in `packages-galerina/`, declared **`lane: digital`** so the
+> *already-shipped* `verifySubstrate()` / `SPORE-SUBSTRATE-001` enforces §6 for free. **Confidentiality
 > (ML-KEM + Ascon) is DEFERRED** — Integrity + Authenticity ship first (TMX-256 root +
 > `BridgeManifest` Ed25519→ML-DSA-65, one shared attestation idiom). The §6 "hard line" below is therefore
 > *existing machinery*, not a proposal; and **provenance integrity ≠ value reproducibility** (the signature
@@ -69,7 +69,7 @@ Plus two optional/contextual jobs:
 | Job | Primitive | Notes |
 |---|---|---|
 | **Private query** | **ZK-SNARK** (Groth16/Plonk) | hide query *parameters* from an untrusted host; optional add-on |
-| **Transport** | **TLS 1.3** (hybrid PQC) + Trust Capsule | reuse LogicN's data-in-motion layer; don't reinvent |
+| **Transport** | **TLS 1.3** (hybrid PQC) + Trust Capsule | reuse Galerina's data-in-motion layer; don't reinvent |
 
 The golden rule, applied throughout: **sign over a hash; encrypt the data, sign the root; never
 substitute one primitive's job for another.**
@@ -85,7 +85,7 @@ symmetric/hash security (Grover). The grounded consequences:
   **SLH-DSA** as a hash-based backup; **FN-DSA/Falcon** is still draft FIPS 206 — don't depend
   on it yet).
 - **Hashes mostly stay.** SHA-256 / SHAKE256 keep ~128-bit security under Grover at 256-bit
-  output — **fine**. This is why TMX uses SHAKE256 and LogicN **keeps** SHA-256. Do **not**
+  output — **fine**. This is why TMX uses SHAKE256 and Galerina **keeps** SHA-256. Do **not**
   "replace SHA-256 with a signature" (category error).
 - **Symmetric: use ≥256-bit-flavored strength.** Ascon-AEAD128 targets 128-bit security
   (adequate vs. Grover for most data); for long-lived archival confidentiality consider an
@@ -97,14 +97,14 @@ symmetric/hash security (Grover). The grounded consequences:
 
 **Hybrid during transition (recommended).** Use **X25519 + ML-KEM-768** for key establishment
 and **Ed25519 + ML-DSA-65** dual-signatures. You stay secure if *either* component holds — this
-is also LogicN's stated posture (Ed25519 live, ML-DSA-65 migration on cold paths).
+is also Galerina's stated posture (Ed25519 live, ML-DSA-65 migration on cold paths).
 
 ---
 
 ## 3. The zero-trust spine: three-valued, fail-closed (the real "tri-logic")
 
 NIST SP 800-207 zero trust = **"never trust, always verify,"** per-session least privilege,
-continuous verification, all data sources treated as resources. LogicN already encodes this as
+continuous verification, all data sources treated as resources. Galerina already encodes this as
 **deny-by-default + taint/unsafe types + capability gating + mandatory audit**, and adds the
 piece binary security models fumble: a **proved three-valued decision**.
 
@@ -122,7 +122,7 @@ Applied across the encryption stack:
 | TMX root vs. recomputed | match | path incomplete / not yet computed | mismatch |
 | ML-DSA-65 signature | verified valid | not yet verified / stale attestation | verified invalid |
 | ML-KEM decapsulation | key established | peer offered unknown alg / negotiation incomplete | dec*aps* failure |
-| Authorization (`query-access.lln`) | clearance+region OK | cross-region / touches protected | clearance too low |
+| Authorization (`query-access.spore`) | clearance+region OK | cross-region / touches protected | clearance too low |
 
 The **No-Coercion** and **substrate-cannot-fail-open** theorems (see
 [ternary-in-crypto §2](ternary-in-cryptography.md)) guarantee that "unknown" can never be
@@ -135,7 +135,7 @@ on fast/approximate hardware while the *gate* stays safe (§6).
 
 ```
                           ┌───────────────────────────────────────────────┐
-  GOVERN (.lln)           │ 3-valued authz · egress redaction · audit      │  allow/deny/unknown→deny
+  GOVERN (.spore)           │ 3-valued authz · egress redaction · audit      │  allow/deny/unknown→deny
                           └───────────────────────┬───────────────────────┘
                                                   │ governed effect calls
   PRIVATE QUERY (opt.)    ┌───────────────────────▼───────────────────────┐
@@ -186,13 +186,13 @@ This is the standard, safe **KEM-DEM** pattern; don't invent a new one:
 > authenticity on the ciphertext and **fails closed before spending a decryption** on attacker-
 > controlled bytes — smaller attack surface, classic AEAD ordering.
 
-### 4.2 What to reuse, not reinvent (from LogicN KBs)
+### 4.2 What to reuse, not reinvent (from Galerina KBs)
 
 - **Data-in-motion:** all boundary data is `unsafe` until validated; channels/portals enforce
   TLS + cert + identity. Use these — don't hand-roll transport crypto.
 - **Trust Capsule / signed attestation:** compiler-generated identity + hashes + signature
   (SPIFFE/SPIRE + Sigstore/Cosign-inspired). Bind the `.tmf` root and the public keys into it.
-- **Compile-time crypto policy (`LLN-CRYPTO-001..008`):** algorithm choices are compile-time
+- **Compile-time crypto policy (`SPORE-CRYPTO-001..008`):** algorithm choices are compile-time
   constants, not runtime strings — so a config tweak can't downgrade you to a weak cipher.
 - **SecureRandom vs Random:** keys/nonces/tokens must come from `SecureRandom`, never `Random`.
 
@@ -208,7 +208,7 @@ This is the standard, safe **KEM-DEM** pattern; don't invent a new one:
 | **Replay** a ciphertext elsewhere | move a valid encrypted cell | coord∥modality as AEAD AAD + TMX binding | cross-file replay needs per-file key + context in KDF |
 | **Downgrade** crypto | force weak alg / drop PQC half | compile-time const policy; hybrid requires *both* | negotiation must treat unknown alg as `0 → deny` |
 | **Side channel** (timing) | observe verify/decrypt timing | constant-time ML-DSA/ML-KEM/Ascon impls; Ascon is side-channel-friendly | requires vetted libraries, not hand-rolled |
-| **Info leak** via results | egress of protected fields | `.lln` egress redaction; 3-valued authz | needs the LogicN gaps closed (bytes/closures) |
+| **Info leak** via results | egress of protected fields | `.spore` egress redaction; 3-valued authz | needs the Galerina gaps closed (bytes/closures) |
 | **Self-heal abuse** | reconstruction path inside the gate | **forbidden**: repair is out-of-gate, must re-verify vs. signed root | availability-only feature |
 
 ---
@@ -216,7 +216,7 @@ This is the standard, safe **KEM-DEM** pattern; don't invent a new one:
 ## 6. The hard line: crypto on a deterministic core (photonic stays out)
 
 The one durable engineering insight to carry forward from the whole photonic/ternary thread,
-stated as an enforceable rule (LogicN `LLN-SUBSTRATE-001`):
+stated as an enforceable rule (Galerina `SPORE-SUBSTRATE-001`):
 
 > **Bulk compute may be photonic/ternary/approximate; integrity and crypto must stay on a
 > deterministic, bit-exact core.**
@@ -239,7 +239,7 @@ the aspirational track *safe to keep* — it can never reach into the trust gate
 - ML-DSA-65 (hybrid w/ Ed25519) signing the root — wire a *vetted* FIPS-204 library; until
   then, mark signing **Blocked**, don't fake it.
 - KEM-DEM confidentiality: X25519+ML-KEM-768 → SHAKE256 KDF → Ascon-AEAD128 per section.
-- Three-valued, fail-closed verification spine; reuse LogicN data-in-motion + Trust Capsule.
+- Three-valued, fail-closed verification spine; reuse Galerina data-in-motion + Trust Capsule.
 
 **Later / opt-in:**
 - ZK-SNARK private query (Groth16/Plonk) — real, but trusted-setup + proving cost; scope it.
@@ -256,4 +256,4 @@ the aspirational track *safe to keep* — it can never reach into the trust gate
 - FIPS 202 SHA-3/SHAKE — https://csrc.nist.gov/pubs/fips/202/final · SP 800-185 cSHAKE/KMAC/ParallelHash — https://nvlpubs.nist.gov/nistpubs/specialpublications/nist.sp.800-185.pdf
 - RFC 9861 KangarooTwelve/TurboSHAKE — https://www.rfc-editor.org/rfc/rfc9861.html
 - FIPS 206 FN-DSA (Falcon) status, draft 2025 — https://csrc.nist.gov/presentations/2025/fips-206-fn-dsa-falcon
-- LogicN KBs (read 2026-06-15): `logicn-quantum-resistance-posture.md`, `logicn-post-quantum-hardware-security.md`, `logicn-security-compile-time-crypto.md`, `data-in-motion-security.md`, `automated-runtime-trust-strategy.md`, `logicn-three-valued-governance.md`, `logicn-substrate-contracts.md`
+- Galerina KBs (read 2026-06-15): `galerina-quantum-resistance-posture.md`, `galerina-post-quantum-hardware-security.md`, `galerina-security-compile-time-crypto.md`, `data-in-motion-security.md`, `automated-runtime-trust-strategy.md`, `galerina-three-valued-governance.md`, `galerina-substrate-contracts.md`

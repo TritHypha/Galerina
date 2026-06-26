@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This roadmap keeps LogicN focused on the language foundation before expanding
+This roadmap keeps Galerina focused on the language foundation before expanding
 packages, domains or advanced targets.
 
 V1 must prove the core language first:
@@ -23,8 +23,8 @@ Anything outside that list is post-v1 unless it is needed to define core
 semantics.
 
 The language-core maturity roadmap lives in
-`packages-logicn/logicn-core/docs/language-core-maturity-roadmap.md`. It is the
-foundation checklist for making LogicN credible without pretending the current
+`packages-galerina/galerina-core/docs/language-core-maturity-roadmap.md`. It is the
+foundation checklist for making Galerina credible without pretending the current
 prototype is already a production compiler.
 
 ## Hard Scope Rules
@@ -48,7 +48,7 @@ Goal: keep the repo from drifting while the core is being specified.
 
 Deliverables:
 
-- Active `logicn.workspace.json` packages limited to core, tooling, framework
+- Active `galerina.workspace.json` packages limited to core, tooling, framework
   boundary packages and CPU/WASM target planning.
 - Finance, electrical and OT packages archived outside the active workspace.
 - GPU, AI accelerator, photonic, optical I/O and domain work labelled post-v1.
@@ -56,7 +56,7 @@ Deliverables:
 
 Exit criteria:
 
-- `logicn.workspace.json` active targets are `cpu` and `wasm`.
+- `galerina.workspace.json` active targets are `cpu` and `wasm`.
 - Generated graph reflects the active workspace only.
 - Docs agree that v1 is foundation-first.
 
@@ -86,7 +86,7 @@ Goal: make the language concrete before adding more design documents.
 
 Deliverables:
 
-- At least 20 real `.lln` examples:
+- At least 20 real `.spore` examples:
   - 5 basic examples: variables, functions, records, simple `Result`, simple
     `Option`.
   - 5 type-system examples: variants/enums, exhaustive `match`, `Tri`, explicit
@@ -124,11 +124,11 @@ Deliverables:
 - Authoritative v1 reserved keyword table (`docs/Knowledge-Bases/v1-reserved-keywords.md`).
 - Memory AST node vocabulary committed to `AstNodeKind` (`borrowExpr`, `moveExpr`,
   `pinnedDecl`, `borrowMutExpr`, `ownershipTransfer`, `configMemoryBlock`, `borrowScopeBlock`).
-- Canonical diagnostic series confirmed: `LLN-MEMORY-*` for memory, `LLN-SAFETY-*`
-  for safety-scanner diagnostics (replaces deprecated `LogicN_COMPILER_*` codes).
-- Phase 2 memory fixture examples (`borrow-scope.lln`, `move-cleanup.lln`,
-  `reject-use-after-move.lln`) created and referenced in checker tests.
-- Scanner-level enforcement (binding-level rules) implemented in `logicn-core-compiler`.
+- Canonical diagnostic series confirmed: `SPORE-MEMORY-*` for memory, `SPORE-SAFETY-*`
+  for safety-scanner diagnostics (replaces deprecated `Galerina_COMPILER_*` codes).
+- Phase 2 memory fixture examples (`borrow-scope.spore`, `move-cleanup.spore`,
+  `reject-use-after-move.spore`) created and referenced in checker tests.
+- Scanner-level enforcement (binding-level rules) implemented in `galerina-core-compiler`.
 - Explicit phase boundary documented:
   > Phase 3 enforces binding-level memory rules. Phase 5 enforces
   > lifetime rules after parser and AST support exist.
@@ -139,8 +139,8 @@ Exit criteria:
 - Documentation says exactly what is enforced now and what is future work.
 - Performance wording is consistent with the chosen model.
 - The v1 reserved keyword table exists and is the lexer's source of truth.
-- `LLN-MEMORY-*` and `LLN-SAFETY-*` are the only active diagnostic namespaces
-  for memory and safety checks; `LogicN_COMPILER_*` codes are frozen.
+- `SPORE-MEMORY-*` and `SPORE-SAFETY-*` are the only active diagnostic namespaces
+  for memory and safety checks; `Galerina_COMPILER_*` codes are frozen.
 
 ## Phase 4: Parser And AST
 
@@ -157,7 +157,7 @@ Deliverables:
 
 Exit criteria:
 
-- `logicn-core` test suite parses the v1 example corpus.
+- `galerina-core` test suite parses the v1 example corpus.
 - Parser output is deterministic.
 - Error messages include file, line, column and suggested fixes where practical.
 
@@ -220,7 +220,7 @@ production package registry
 ## Near-Term Work Order
 
 1. Create the v1 grammar draft.
-2. Audit existing `.lln` examples and classify them as v1 or post-v1.
+2. Audit existing `.spore` examples and classify them as v1 or post-v1.
 3. Add enough examples to reach the 20-example corpus.
 4. Implement parser tests around that corpus.
 5. Finalise the memory model document.
@@ -236,7 +236,7 @@ language-core pieces in this order:
    checker, effect checker, IR and output.
 2. Traits, protocols and generic constraints.
 3. Deterministic cleanup for resources and secrets.
-4. Testing syntax and `LogicN test` model.
+4. Testing syntax and `Galerina test` model.
 5. FFI and trusted module system.
 6. Package manager and registry design.
 7. Async streams, cancellation, timeouts, bounded queues and backpressure.

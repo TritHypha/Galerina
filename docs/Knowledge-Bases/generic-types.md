@@ -2,7 +2,7 @@
 
 ## Definition
 
-LogicN supports parameterised types (generics) for collections, optional values,
+Galerina supports parameterised types (generics) for collections, optional values,
 error handling, and compute shapes. Generic type parameters are written in angle
 brackets: `Type<Parameter>`.
 
@@ -34,13 +34,13 @@ The compiler validates arity. Wrong argument count is a compile error:
 
 Represents a value that may be absent. Replaces null and undefined.
 
-```logicn
+```galerina
 let customer: Option<Customer> = database.find_customer(id)
 ```
 
 Handling:
 
-```logicn
+```galerina
 match customer {
   Some(c) => process(c)
   None    => return Err(CustomerError.NotFound)
@@ -59,7 +59,7 @@ The compiler enforces exhaustive handling.
 
 Represents success or typed failure. Replaces exceptions.
 
-```logicn
+```galerina
 flow load_order(id: OrderId) -> Result<Order, OrderError>
   uses database.orders.read
 {
@@ -71,7 +71,7 @@ flow load_order(id: OrderId) -> Result<Order, OrderError>
 
 Handling:
 
-```logicn
+```galerina
 let result: Result<Order, OrderError> = load_order(id)
 
 match result {
@@ -82,7 +82,7 @@ match result {
 
 With `attempt`:
 
-```logicn
+```galerina
 let order = attempt load_order(id)
 else error {
   return Err(error)
@@ -95,7 +95,7 @@ Unhandled `Result` values produce a compiler warning.
 
 Ordered, bounded collection. Bounds-checked — out-of-bounds access fails safely.
 
-```logicn
+```galerina
 let items: Array<OrderItem> = []
 let first: Option<OrderItem> = items.first()
 let count: Int = items.count()
@@ -103,7 +103,7 @@ let count: Int = items.count()
 
 Trust propagates to the array:
 
-```logicn
+```galerina
 let tags: unsafe Array<String> = ...   // whole array is untrusted
 let safe_tags: safe Array<String> = validate.string_list(tags)
 ```
@@ -112,7 +112,7 @@ let safe_tags: safe Array<String> = validate.string_list(tags)
 
 Key-value collection.
 
-```logicn
+```galerina
 let headers: Map<String, String> = request.headers
 let user_id: Option<String> = headers.get("X-User-Id")
 ```
@@ -121,7 +121,7 @@ let user_id: Option<String> = headers.get("X-User-Id")
 
 Unordered collection of distinct values.
 
-```logicn
+```galerina
 let roles: Set<String> = actor.roles
 ```
 
@@ -129,7 +129,7 @@ let roles: Set<String> = actor.roles
 
 Typed communication channel for message passing between flows and workers.
 
-```logicn
+```galerina
 let events: Channel<OrderEvent> = Channel.create()
 ```
 
@@ -137,7 +137,7 @@ let events: Channel<OrderEvent> = Channel.create()
 
 Monetary value parameterised by currency. Prevents mixing currencies.
 
-```logicn
+```galerina
 let price: Money<GBP> = Money.of(1999, GBP)
 let tax:   Money<GBP> = Money.of(399, GBP)
 ```
@@ -155,7 +155,7 @@ Numeric dimension generics for AI and compute packages:
 | `Tensor<T, Shape>` | type + shape (arity 2) | Multi-dimensional tensor |
 | `AnyTensor` | (none) | Fully erased tensor — element type and shape unknown |
 
-```logicn
+```galerina
 let embedding:  Vector<Float32, 768>        = model.embed(text)
 let weights:    Matrix<Float32, 4, 4>       = Matrix.identity()
 let logits:     Tensor<Float32, [Batch, 10]> = model.forward(input)
@@ -166,9 +166,9 @@ let erased:     AnyTensor                   = dynamicLoad()
 
 | Valid | Invalid | Error |
 |---|---|---|
-| `Tensor<Float32, [1, 128]>` | `Tensor` | `LLN-TYPE-009` — expected 2 type arguments |
-| `Tensor<Float16, DynamicShape>` | `Tensor<Float32>` | `LLN-TYPE-009` — expected 2 type arguments |
-| `AnyTensor` | `Tensor<Float32, [1, 128], Gpu>` | `LLN-TYPE-009` — expected 2 type arguments |
+| `Tensor<Float32, [1, 128]>` | `Tensor` | `SPORE-TYPE-009` — expected 2 type arguments |
+| `Tensor<Float16, DynamicShape>` | `Tensor<Float32>` | `SPORE-TYPE-009` — expected 2 type arguments |
+| `AnyTensor` | `Tensor<Float32, [1, 128], Gpu>` | `SPORE-TYPE-009` — expected 2 type arguments |
 
 Use `AnyTensor` when both element type and shape are unknown at compile time.
 Use `Tensor<T, DynamicShape>` when the element type is known but shape is dynamic.
@@ -177,7 +177,7 @@ Backend/device/layout details (GPU, photonic, NPU) belong in `compute target` go
 Numeric generic arguments are only valid for types that explicitly accept
 dimensions. Using numeric arguments on standard types is a compile error:
 
-```logicn
+```galerina
 Option<3>         // invalid
 Result<String, 2> // invalid
 Vector<Float32>   // invalid — missing dimension
@@ -187,7 +187,7 @@ Vector<Float32>   // invalid — missing dimension
 
 Type parameters in flows:
 
-```logicn
+```galerina
 fn wrap_option<T>(value: T) -> Option<T> {
   Some(value)
 }
@@ -198,7 +198,7 @@ fn wrap_option<T>(value: T) -> Option<T> {
 Nested generics are supported. The parser splits arguments only at top-level
 commas:
 
-```logicn
+```galerina
 let report:  Result<Array<OrderItem>, OrderError> = load_order_items(id)
 let users:   Map<UserId, Option<User>>            = load_all_users()
 let batches: Array<Result<OrderId, ValidationError>> = []
@@ -215,7 +215,7 @@ Not three.
 Branded types use `Brand<T, "Name">` — a special generic that gives a plain
 representation a distinct domain identity at compile time:
 
-```logicn
+```galerina
 type CustomerId = Brand<String, "CustomerId">
 type OrderId    = Brand<String, "OrderId">
 type PaymentId  = Brand<String, "PaymentId">
@@ -227,7 +227,7 @@ are type-distinct — the compiler rejects mixing them.
 
 ### Brand Construction
 
-```logicn
+```galerina
 let id: Result<CustomerId, ValidationError> = parseCustomerId(input)
 ```
 
@@ -240,7 +240,7 @@ At runtime, branded types erase to their base representation (`CustomerId → St
 At compile time they remain distinct.
 
 Explicit unbranding:
-```logicn
+```galerina
 let raw: String = customerId.value()
 ```
 
@@ -259,7 +259,7 @@ Use aliases for readability. Use brands for safety.
 
 Brands compose with postfix state qualifiers:
 
-```logicn
+```galerina
 type SessionToken    = Brand<String secure, "SessionToken">
 type PublicCustomerId = Brand<String, "PublicCustomerId">
 type RawHtml          = Brand<String unsafe, "RawHtml">
@@ -282,7 +282,7 @@ The generated `app.type-manifest.json` includes branded type entries:
 Branded values encode like their base type by default:
 
 ```json
-{ "type": "string", "x-logicn-brand": "CustomerId" }
+{ "type": "string", "x-galerina-brand": "CustomerId" }
 ```
 
 ## Future: User-Defined Generic Types
@@ -302,7 +302,7 @@ normalise spacing in formatter output
 ```
 
 Formatter output:
-```logicn
+```galerina
 Result<Array<Customer>, ApiError>    // correct
 Result< Array< Customer > , ApiError > // not allowed by formatter
 ```

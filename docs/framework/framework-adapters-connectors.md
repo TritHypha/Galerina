@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Adapters and connectors define how LogicN integrates with external systems
+Adapters and connectors define how Galerina integrates with external systems
 without hidden SDK calls, monkey patching or uncontrolled plugin behaviour.
 
 ## Short Definition
@@ -18,13 +18,13 @@ Adapters and connectors belong under the core `boundary` concept:
 boundary = package + storage + external + event + AI/tool + compute
 ```
 
-They connect LogicN to systems such as payment providers, email services, search
+They connect Galerina to systems such as payment providers, email services, search
 engines, object storage, AI models, MCP servers, analytics systems and legacy
 APIs.
 
 ## Syntax Example
 
-```logicn
+```galerina
 adapter StripePaymentAdapter implements PaymentProvider {
   contract use PaymentProviderContract
   permission use payment_provider_access

@@ -3,7 +3,7 @@
 ## Definition
 
 This document tracks the remaining implementation gaps across the core
-LogicN packages and defines the contract each package must fulfil for the
+Galerina packages and defines the contract each package must fulfil for the
 v0.1 governance baseline.
 
 ## Status Key
@@ -20,22 +20,22 @@ v0.1 governance baseline.
 
 | Package | Gap | Status |
 | ------- | --- | ------ |
-| `logicn-core-compiler` | Effect checker | ⚠️ Specified |
-| `logicn-core-compiler` | Boundary checker | ⚠️ Specified |
-| `logicn-core-compiler` | Cross-package visibility enforcement | ⚠️ Specified |
-| `logicn-core-cli` | `logicn deploy` | ⚠️ Specified |
-| `logicn-core-cli` | `logicn explain` | ⚠️ Specified |
-| `logicn-core-cli` | `logicn plan` | ⚠️ Specified |
-| `logicn-core-reports` | Runtime audit log schema | ⚠️ Specified |
-| `logicn-core-reports` | Execution proof format | ⚠️ Specified |
-| `logicn-core-compute` | GPU backend | ❌ Planned |
-| `logicn-core-compute` | AI accelerator backend | ❌ Planned |
-| `logicn-core-compute` | Photonic planning backend | ❌ Planned |
-| `logicn-core-logic` | Omni logic implementation | ❌ Planned |
+| `galerina-core-compiler` | Effect checker | ⚠️ Specified |
+| `galerina-core-compiler` | Boundary checker | ⚠️ Specified |
+| `galerina-core-compiler` | Cross-package visibility enforcement | ⚠️ Specified |
+| `galerina-core-cli` | `galerina deploy` | ⚠️ Specified |
+| `galerina-core-cli` | `galerina explain` | ⚠️ Specified |
+| `galerina-core-cli` | `galerina plan` | ⚠️ Specified |
+| `galerina-core-reports` | Runtime audit log schema | ⚠️ Specified |
+| `galerina-core-reports` | Execution proof format | ⚠️ Specified |
+| `galerina-core-compute` | GPU backend | ❌ Planned |
+| `galerina-core-compute` | AI accelerator backend | ❌ Planned |
+| `galerina-core-compute` | Photonic planning backend | ❌ Planned |
+| `galerina-core-logic` | Omni logic implementation | ❌ Planned |
 
 ---
 
-## logicn-core-compiler
+## galerina-core-compiler
 
 ### Responsibilities
 
@@ -109,7 +109,7 @@ optical_io  — optical interconnect / photonic transport
 
 Example — declared correctly:
 
-```logicn
+```galerina
 pub fn fetch_user(
     http: HttpClient,
     id: UserId
@@ -120,14 +120,14 @@ pub fn fetch_user(
 
 Example — missing declaration:
 
-```logicn
+```galerina
 pub fn fetch_user(
     http: HttpClient,
     id: UserId
 ) -> Result<UserProfile, NetworkError> {
     http.get("/users/" + id)
 }
-// LLN-EFFECT-001: undeclared effect
+// SPORE-EFFECT-001: undeclared effect
 // function: fetch_user  required effect: network
 ```
 
@@ -151,17 +151,17 @@ module graph integrity
 
 Example — restricted import:
 
-```logicn
+```galerina
 import { InternalKey } from "app/auth/private-keys"
-// LLN-BOUNDARY-001: import crosses restricted package boundary
+// SPORE-BOUNDARY-001: import crosses restricted package boundary
 ```
 
 Example — secret leakage through public API:
 
-```logicn
+```galerina
 private type SecretToken = String
 pub fn export_token() -> SecretToken { ... }
-// LLN-BOUNDARY-002: public API exposes private secret-bearing type
+// SPORE-BOUNDARY-002: public API exposes private secret-bearing type
 ```
 
 See `effect-checker-and-boundary-checker.md` for full specification.
@@ -185,7 +185,7 @@ The runtime trusts manifests, not dynamic filesystem scanning.
 
 ---
 
-## logicn-core-cli
+## galerina-core-cli
 
 ### CLI Philosophy
 
@@ -200,7 +200,7 @@ deployment coordinator
 compute planner
 ```
 
-### `logicn deploy` (Planned)
+### `galerina deploy` (Planned)
 
 Responsibilities:
 
@@ -235,7 +235,7 @@ network effect not approved in production policy
 module: app/testing/debug-client
 ```
 
-### `logicn explain` (Planned)
+### `galerina explain` (Planned)
 
 Provides human-readable explanations of:
 
@@ -250,7 +250,7 @@ why a scheduler decision occurred
 Example:
 
 ```bash
-logicn explain app/users/service
+galerina explain app/users/service
 ```
 
 Output:
@@ -261,7 +261,7 @@ Module: app/users/service
 Imports:
 - app/users/types
 - app/users/repository
-- logicn-core-data/database
+- galerina-core-data/database
 
 Capabilities:
 - Database
@@ -274,7 +274,7 @@ The module calls find_user_record which performs storage access.
 The storage effect propagates into this module.
 ```
 
-### `logicn plan` (Planned)
+### `galerina plan` (Planned)
 
 Estimates compute execution strategy:
 
@@ -292,7 +292,7 @@ runtime scheduling hints
 Example:
 
 ```bash
-logicn plan app/ai/inference
+galerina plan app/ai/inference
 ```
 
 Output:
@@ -324,7 +324,7 @@ silent (--silent)
 
 ---
 
-## logicn-core-reports
+## galerina-core-reports
 
 ### Purpose
 
@@ -358,7 +358,7 @@ streamable           — forwardable to SIEM/OTel
 ```json
 {
   "timestamp": "2026-01-01T12:00:00Z",
-  "runtime": "logicn-runtime",
+  "runtime": "galerina-runtime",
   "module": "app/users/service",
   "flow": "get_profile",
   "effects": ["storage"],
@@ -423,13 +423,13 @@ Example:
 
 ---
 
-## logicn-core-compute
+## galerina-core-compute
 
 ### Philosophy
 
 The language must remain hardware-neutral:
 
-```logicn
+```galerina
 // bad — vendor-specific
 target nvidia
 
@@ -489,7 +489,7 @@ distributed accelerator coord — multi-node AI scheduling
 
 Not as a CPU replacement. Photonic effects are declared explicitly:
 
-```logicn
+```galerina
 fn distribute_training_batch(
     batch: TensorBatch
 ) effects [optical_io, accelerator] {
@@ -520,7 +520,7 @@ Accelerator denied      → remain CPU-only
 
 ---
 
-## logicn-core-logic
+## galerina-core-logic
 
 ### Binary Safety Rule
 
@@ -551,7 +551,7 @@ Optical compute abstraction layers
 
 Example:
 
-```logicn
+```galerina
 fn evaluate_signal(signal: AISignal) -> OmniState {
     if signal.confidence > 0.95 { return OmniState.TRUE }
     if signal.confidence < 0.40 { return OmniState.FALSE }
@@ -593,7 +593,7 @@ These define governance correctness and must exist before advanced work.
 ### Phase 2 — Observability and Auditability
 
 ```text
-logicn explain
+galerina explain
 runtime audit log schema
 runtime denial reports
 capability reports
@@ -602,7 +602,7 @@ capability reports
 ### Phase 3 — Runtime Coordination
 
 ```text
-logicn deploy
+galerina deploy
 compute planner
 execution planner
 runtime balancing

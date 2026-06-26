@@ -1,0 +1,23 @@
+{
+  "name": "@galerina/ext-photonic-emulator",
+  "version": "1.0.0-beta.2",
+  "description": "Galerina photonic-PPU backend: a physics-faithful (Rung-2) MZI-mesh / micro-ring ternary-MAC emulator + the partition cost-model router behind the neutral Brain/Brawn bridge contract. Digital stays the default; photonic only on a proven net win; fail-closed to digital. EMULATED, not silicon (no measured speedup).",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": { ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" } },
+  "scripts": {
+    "build": "tsc",
+    "test": "npm run build && node --test tests/*.test.mjs",
+    "typecheck": "tsc --noEmit",
+    "prove": "node scripts/prove-photonic.mjs && node scripts/prove-photonic-switch.mjs"
+  },
+  "dependencies": {
+    "@galerina/inference-bridge-contract": "file:../galerina-inference-bridge-contract"
+  },
+  "devDependencies": { "@types/node": "^22.10.0", "typescript": "^5.5.0" },
+  "keywords": ["galerina", "photonic", "emulator", "ternary", "t-mac", "bridge", "governance", "fail-closed", "tolerance-backend"],
+  "note": "R&D 0053 GAP, hub production build. Ports the prove-own-maths D1 emulator (rd-photonic-ppu-emulator-proof.mjs, 18/18) and D2 router (rd-photonic-ppu-cost-model-proof.mjs, 25/25) into a real package behind @galerina/inference-bridge-contract. crypto-on-core: crypto/control-flow never offload. The Tower-side photonic dispatch wiring (the separate Freivalds/tolerance re-verify path that bypasses the bit-exact ternary determinism oracle) is a separate iteration. Contract imported by relative path to the sibling dist (repo convention; offline, no node_modules)."
+}

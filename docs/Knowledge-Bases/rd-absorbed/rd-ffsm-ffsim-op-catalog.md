@@ -1,15 +1,15 @@
-<!-- ABSORBED R&D SOURCE — verbatim mirror. LogicN is the main library; the R&D repo is upstream/authoring.
-     Source: LogicN-R-AND-D/FFSM/ffsim-op-catalog.md  ·  Pinned: R&D fb68d06 (2026-06-16)
-     Integrated LogicN view: logicn-ext-bridge-quantum-design.md  ·  Catalog: logicn-rd-absorption-catalog.md
+<!-- ABSORBED R&D SOURCE — verbatim mirror. Galerina is the main library; the R&D repo is upstream/authoring.
+     Source: Galerina-R-AND-D/FFSM/ffsim-op-catalog.md  ·  Pinned: R&D fb68d06 (2026-06-16)
+     Integrated Galerina view: galerina-ext-bridge-quantum-design.md  ·  Catalog: galerina-rd-absorption-catalog.md
      Rule: edit the upstream source then re-vendor; do not fork this copy (feedback-auto-import-rd-docs). -->
 
-> **Absorbed R&D source (verbatim).** This is the archived upstream document. Curated/integrated view: `logicn-ext-bridge-quantum-design.md`. See `logicn-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
+> **Absorbed R&D source (verbatim).** This is the archived upstream document. Curated/integrated view: `galerina-ext-bridge-quantum-design.md`. See `galerina-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
 
 ---
 # ffsim — Operation Catalog · Wire Protocol · Golden Test
 
 > **R&D scratch — design-only.** Concrete operation grounding beneath the canonical design doc
-> `C:\wwwprojects\LogicN\docs\Knowledge-Bases\logicn-ext-bridge-quantum-design.md` (task **#199**, §7 `QuantumSimBackend`).
+> `C:\wwwprojects\Galerina\docs\Knowledge-Bases\galerina-ext-bridge-quantum-design.md` (task **#199**, §7 `QuantumSimBackend`).
 > Every fact cited `relative/path:line` against `C:\wwwprojects\IBM-FFSIM\ffsim`. **UNVERIFIED** = not observed in a file.
 > Exhaustive findings (full snippets, overloads, all golden values): [`_raw-miner-findings.md`](_raw-miner-findings.md).
 

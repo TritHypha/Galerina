@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to LogicN are documented here (format: [Keep a Changelog](https://keepachangelog.com)).
+All notable changes to Galerina are documented here (format: [Keep a Changelog](https://keepachangelog.com)).
 
 ## [Unreleased]
 
@@ -13,14 +13,14 @@ admission gate) vs simulated/aspirational (DSS.wasm isolation, photonic Tower, S
 self-hosting beyond `tokenize`). 60/60 packages · 5,243 tests · 0 fail.
 
 ### Added (this beta)
-- **Opt-in hybrid Ed25519+ML-DSA-65 `.lmanifest` signing (#34).** `logicn build`/`verify`/`run`
+- **Opt-in hybrid Ed25519+ML-DSA-65 `.lmanifest` signing (#34).** `galerina build`/`verify`/`run`
   sign + verify the admission manifest with a post-quantum hybrid signature when a `keygen --hybrid`
-  key is present; `LOGICN_MANIFEST_PROFILE=certified` mandates it (fail-secure, no PQ downgrade).
+  key is present; `GALERINA_MANIFEST_PROFILE=certified` mandates it (fail-secure, no PQ downgrade).
   Default Ed25519 path unchanged.
-- **`@logicn/ext-secrets-tmf` — env.tmf sealed secrets.** Optional, encrypted-at-rest replacement
+- **`@galerina/ext-secrets-tmf` — env.tmf sealed secrets.** Optional, encrypted-at-rest replacement
   for plaintext `.env`, edited through a governed in-memory-only CLI (never argv, no temp file,
-  no `$EDITOR`, in-arena zero-wipe). Thin orchestration over `@logicn/ext-tmf`; not auto-loaded.
-- **`LLN-TIER-001` flow-kind tier floor (production-gated).** A `flow`/`guarded` flow that touches a
+  no `$EDITOR`, in-arena zero-wipe). Thin orchestration over `@galerina/ext-tmf`; not auto-loaded.
+- **`SPORE-TIER-001` flow-kind tier floor (production-gated).** A `flow`/`guarded` flow that touches a
   secure-tier effect (egress, secret/crypto material, high-consequence sink) is floored to `secure`
   in `build-production`/`build-deterministic`, closing the under-declared-tier fail-open.
 - **`scripts/component-health.mjs`** — per-component v1.0 readiness matrix (test/build/orphan gaps).
@@ -45,54 +45,54 @@ verified**; the codebase is in a fail-closed, deterministic state. 48/48 package
   `epilogueReceipt`, `liabilityProfile`, `physicalHardeningTier`).
 
 ### Added
-- **`logicn deps --write` source-writer (R&D 0045 — Phase 3c; owner: silently overwrite).** `rewriteGeneratedComments(source, genByFlow)`
-  injects/refreshes each flow's `//lln:` block **in the source file**, directly above its declaration —
-  **silently overwriting** the old contiguous `//lln:` block (the generated tier is machine-owned). It
-  touches **only `//lln:` lines** — never a human `//` line, a `contract`, or any code (a human line that
+- **`galerina deps --write` source-writer (R&D 0045 — Phase 3c; owner: silently overwrite).** `rewriteGeneratedComments(source, genByFlow)`
+  injects/refreshes each flow's `//spore:` block **in the source file**, directly above its declaration —
+  **silently overwriting** the old contiguous `//spore:` block (the generated tier is machine-owned). It
+  touches **only `//spore:` lines** — never a human `//` line, a `contract`, or any code (a human line that
   merely contains "USEDBY" is left alone); idempotent; preserves indentation; fail-closed (refuses a file
-  with parse errors). So `logicn deps app.lln --write` graphs the app and writes the `//lln: USES`/`USEDBY`/
+  with parse errors). So `galerina deps app.spore --write` graphs the app and writes the `//spore: USES`/`USEDBY`/
   `IMPACT`/`COMPLEXITY` comments back automatically. The rewrite logic is a unit-tested pure function. +6 tests.
-- **Stable-Dependencies enforcement — `LLN-ARCH-002` (R&D 0045 — Phase 3b; owner: always a hard error).** A
+- **Stable-Dependencies enforcement — `SPORE-ARCH-002` (R&D 0045 — Phase 3b; owner: always a hard error).** A
   cross-flow governance pass: a **more-stable** flow (lower `contract.architecture` volatility) may **not**
   depend on a **more-volatile** one (the Stable Dependencies Principle). E.g. a `volatility: LOW` flow that
-  calls a `volatility: HIGH` flow → **`LLN-ARCH-002` error in every profile**. Edges are the *observed*
+  calls a `volatility: HIGH` flow → **`SPORE-ARCH-002` error in every profile**. Edges are the *observed*
   flow→flow call graph (you can't lie about what you call); only flows that **declare** a volatility
   participate (an undeclared flow is "unknown" → not checked → no false positives). Modeled on the existing
-  `LLN-GOV-013` caller/callee-property twin. +5 tests; registered in `compiler-diagnostics.md`.
+  `SPORE-GOV-013` caller/callee-property twin. +5 tests; registered in `compiler-diagnostics.md`.
 - **`contract.architecture { volatility, depends_on }` parse-only block (R&D 0045 — Phase 2b).** A new
   contract sub-block declaring **volatility-based decomposition** metadata: `volatility: LOW|MED|HIGH` (how
   often the flow changes) + `depends_on [FlowA, FlowB]` (the *authored* dependency intent, which the observed
-  `//lln:USES` should agree with). Parse-only — registered as a contract section so it parses clean — plus a
-  **fail-closed value check** (`LLN-ARCH-001`): an invalid volatility token is a hard error; a missing
+  `//spore:USES` should agree with). Parse-only — registered as a contract section so it parses clean — plus a
+  **fail-closed value check** (`SPORE-ARCH-001`): an invalid volatility token is a hard error; a missing
   volatility is allowed (treated as the most-volatile HIGH downstream). The Stable-Dependencies enforcement
   (a LOW flow may not depend on a HIGH one) is a later, gated pass. +4 tests.
-- **`//lln:USES` / `//lln:USEDBY` / `//lln:IMPACT` flow-dependency analysis + `logicn deps` (R&D 0045 — Phase 2).**
+- **`//spore:USES` / `//spore:USEDBY` / `//spore:IMPACT` flow-dependency analysis + `galerina deps` (R&D 0045 — Phase 2).**
   `analyzeFlowDependencies(ast)` computes the observed flow→flow call graph per flow: **USES** (upstream
   callees), **USEDBY** (direct callers / "dependants"), and **IMPACT** (transitive downstream blast-radius;
   `0` ⟹ *safe to delete*). `renderDependencyComments()` emits the canonical generated-tier lines
-  (`//lln:USES: (2) …`, `//lln:USEDBY: (1) …`, `//lln:IMPACT: (0) — safe to delete`). New read-only CLI:
-  `logicn deps <file.lln> [--flow <name>]` graphs the app and prints the `//lln:` comments (no source mutation
+  (`//spore:USES: (2) …`, `//spore:USEDBY: (1) …`, `//spore:IMPACT: (0) — safe to delete`). New read-only CLI:
+  `galerina deps <file.spore> [--flow <name>]` graphs the app and prints the `//spore:` comments (no source mutation
   yet — the source-writer is a later phase, gated on the human-edit decision). Naming standardised on the
   clean antonym pair **USES** (what I call) / **USEDBY** (who calls me); recursion/self-calls and
   stdlib/method calls are excluded. +8 tests.
-- **`//lln:COMPLEXITY` cyclomatic complexity metric (R&D 0045 — Phase 1c).** `cyclomaticComplexity(node)` =
+- **`//spore:COMPLEXITY` cyclomatic complexity metric (R&D 0045 — Phase 1c).** `cyclomaticComplexity(node)` =
   `1 + decision points` (if / while / for-each / match arm / `&&` / `||`). `renderComplexityComment()` emits
-  `//lln:COMPLEXITY: N` and stays **silent at complexity 1** (the owner's low-noise rule). Surfaced per flow in
-  `logicn deps`. +6 tests.
-- **`LLN-HW-004` UnknownHardwareTarget — yellow hardware uncertainty (R&D 0045 — Phase 1b).** A `contract.hardware`
+  `//spore:COMPLEXITY: N` and stays **silent at complexity 1** (the owner's low-noise rule). Surfaced per flow in
+  `galerina deps`. +6 tests.
+- **`SPORE-HW-004` UnknownHardwareTarget — yellow hardware uncertainty (R&D 0045 — Phase 1b).** A `contract.hardware`
   target that is not in `HARDWARE_TRUST_PROFILES` was previously a **silent `continue`** (the uncertainty was
-  invisible). It now emits a **yellow `LLN-HW-004` warning** (K3 INDETERMINATE — *not* a red error): the build
+  invisible). It now emits a **yellow `SPORE-HW-004` warning** (K3 INDETERMINATE — *not* a red error): the build
   proceeds, and the warning clears automatically once the target becomes registered (a driver/profile update
   collapses the uncertainty into verification). Advisory only — a target *declaration* is not a governed sink
   (where INDETERMINATE must still fail closed). +3 tests; registered in `compiler-diagnostics.md`.
-- **`//lln:` generated-comment tier (R&D 0045, structured-engineering metadata — Phase 1a).** The lexer now
-  emits a distinct **`genComment`** token for `//lln:…` lines, scanned *before* the plain `//` branch so a
+- **`//spore:` generated-comment tier (R&D 0045, structured-engineering metadata — Phase 1a).** The lexer now
+  emits a distinct **`genComment`** token for `//spore:…` lines, scanned *before* the plain `//` branch so a
   generated line can never collapse into a human `comment` (fail-closed tier separation). This completes the
-  four-tier comment model: `//` human · **`//lln:` CLI/compiler-generated** (DependsOn/Complexity/Volatility/WARN,
+  four-tier comment model: `//` human · **`//spore:` CLI/compiler-generated** (DependsOn/Complexity/Volatility/WARN,
   tooling-owned + overwritable) · `///` doc · `;;` system/governance (manifest-bound). The parser skips
   `genComment` (preserved in the token stream for tooling), exactly as it skips the other comment kinds.
   Purely additive tokenisation — no grammar or runtime-semantics change. +6 lexer tests. Keystone for the
-  upcoming `//lln:DependsOn`/`//lln:Complexity` auto-generation and the `graph --target` report.
+  upcoming `//spore:DependsOn`/`//spore:Complexity` auto-generation and the `graph --target` report.
 - **AOT #2 — branch-folding + dead-arm DCE (WAT emitter).** `foldToBool` folds a compile-time-constant
   `if` condition (bool literals, `!`, const-int comparisons, const `&&`/`||`) to true/false; the emitter
   then emits **only the taken arm inline** — the dead arm and its locals are never emitted. Semantics-
@@ -102,10 +102,10 @@ verified**; the codebase is in a fail-closed, deterministic state. 48/48 package
   fold). +6 tests (drop-then / drop-else / `!`+`&&` / no-else fall-through / dynamic-unchanged / fidelity).
 - **DbC output post-conditions (0040 / #70).** `invariant { ensure result … }` now expresses an OUTPUT
   post-condition over a flow's return value, enforced **fail-closed at the single flow exit**: a return
-  value violating the post-condition becomes a `runtimeError` (`LLN-INV-002`) and never escapes — the same
+  value violating the post-condition becomes a `runtimeError` (`SPORE-INV-002`) and never escapes — the same
   posture as the i32 trap (Fork-A) / 0038. The magic `result` symbol is recognised by the symbol resolver
   and governance verifier *only* inside an `ensure` (so `ensure result <= 100` is accepted; genuine typos
-  still raise `LLN-NAME-001`/`LLN-INV-004`). Enforcement holds on **every interpreter tier**: the async
+  still raise `SPORE-NAME-001`/`SPORE-INV-004`). Enforcement holds on **every interpreter tier**: the async
   tree-walker enforces the gate, and a post-condition flow is excluded from the bytecode VM / sync
   fast-path / ExecutionGraph fast-path / pure-flow cache (which return early and would bypass it). On the
   WASM tier, a **straight-line** post-condition flow now emits a **single-exit gate** (`$logicn_result`):
@@ -156,4 +156,4 @@ verified**; the codebase is in a fail-closed, deterministic state. 48/48 package
 
 ### Deferred to Phase 2
 Semantic mediums (VSC-004/005, GOV-002/004), CRYPTO-004 (versioning), engine integration, and the safe
-maintenance subset (REDUN-001, STYLE/INFO). See `docs/Knowledge-Bases/logicn-build-roadmap.md`.
+maintenance subset (REDUN-001, STYLE/INFO). See `docs/Knowledge-Bases/galerina-build-roadmap.md`.

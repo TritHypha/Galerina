@@ -2,7 +2,7 @@
 
 ## Scope
 
-This document describes the design of the LogicN application template and developer
+This document describes the design of the Galerina application template and developer
 experience. It does not define the final product UI for a bespoke app. Product
 screens, branding, visual language and user flows should be added after a
 specific app domain is selected.
@@ -30,13 +30,13 @@ change and friendly to both humans and AI coding tools.
 
 1. Open `README.md`.
 2. Read the status, quick start and package map.
-3. If package ownership is unclear, open `build/graph/logicn-ai-map.md` or
-   `build/graph/LogicN_GRAPH_REPORT.md`.
+3. If package ownership is unclear, open `build/graph/galerina-ai-map.md` or
+   `build/graph/Galerina_GRAPH_REPORT.md`.
 4. Query the graph if needed:
 
 ```powershell
-node packages-logicn\logicn-core-cli\dist\index.js graph query logicn-core-security --out build\graph
-node packages-logicn\logicn-core-cli\dist\index.js graph explain package:logicn-core-security --out build\graph
+node packages-galerina\galerina-core-cli\dist\index.js graph query galerina-core-security --out build\graph
+node packages-galerina\galerina-core-cli\dist\index.js graph explain package:galerina-core-security --out build\graph
 ```
 
 ### Refresh Project Context
@@ -45,7 +45,7 @@ node packages-logicn\logicn-core-cli\dist\index.js graph explain package:logicn-
 2. Regenerate the project graph:
 
 ```powershell
-node packages-logicn\logicn-core-cli\dist\index.js graph --out build\graph
+node packages-galerina\galerina-core-cli\dist\index.js graph --out build\graph
 ```
 
 3. Review generated graph output when the change affects package ownership,
@@ -56,19 +56,19 @@ node packages-logicn\logicn-core-cli\dist\index.js graph --out build\graph
 1. Inspect task definitions.
 
 ```powershell
-node packages-logicn\logicn-core-cli\dist\index.js task --file packages-logicn\logicn-core-tasks\examples\tasks.lln
+node packages-galerina\galerina-core-cli\dist\index.js task --file packages-galerina\galerina-core-tasks\examples\tasks.spore
 ```
 
 2. Dry-run a task before execution.
 
 ```powershell
-node packages-logicn\logicn-core-cli\dist\index.js task buildApi --file packages-logicn\logicn-core-tasks\examples\tasks.lln --dry-run
+node packages-galerina\galerina-core-cli\dist\index.js task buildApi --file packages-galerina\galerina-core-tasks\examples\tasks.spore --dry-run
 ```
 
 3. Review the task report at `build/reports/task-report.json` unless a custom
    report path was passed.
 
-### Learn LogicN
+### Learn Galerina
 
 1. Start with `docs/LEARNING_MODE.md`.
 2. Pick the learner level: guided blocks/forms, simple text syntax, typed app
@@ -83,7 +83,7 @@ node packages-logicn\logicn-core-cli\dist\index.js task buildApi --file packages
 
 1. Add product requirements to `docs/REQUIREMENTS.md`.
 2. Add product UX rules and screens to this document.
-3. Add app source under `packages-logicn/logicn-framework-example-app/`.
+3. Add app source under `packages-galerina/galerina-framework-example-app/`.
 4. Keep reusable language, runtime, security and tooling contracts in their
    owning packages.
 
@@ -91,13 +91,13 @@ node packages-logicn\logicn-core-cli\dist\index.js task buildApi --file packages
 
 | Area | Purpose |
 |---|---|
-| `README.md` | Human entry point for LogicN status, package map and commands. |
+| `README.md` | Human entry point for Galerina status, package map and commands. |
 | `AGENTS.md` | AI coding tool instructions and package boundary rules. |
-| `logicn.workspace.json` | Machine-readable workspace package and docs index. |
+| `galerina.workspace.json` | Machine-readable workspace package and docs index. |
 | `docs/` | App/workspace requirements, design, architecture, security and operations. |
-| `packages-logicn/logicn-core/` | LogicN language introduction and language documentation. |
-| `packages-logicn/*/README.md` | LogicN package-specific purpose, boundaries and contracts. |
-| `packages-logicn/*/TODO.md` | LogicN package-specific remaining work. |
+| `packages-galerina/galerina-core/` | Galerina language introduction and language documentation. |
+| `packages-galerina/*/README.md` | Galerina package-specific purpose, boundaries and contracts. |
+| `packages-galerina/*/TODO.md` | Galerina package-specific remaining work. |
 | `build/graph/` | Generated graph, report, AI map and HTML overview. |
 | `build/reports/` | Generated task and future CLI/runtime reports. |
 
@@ -112,7 +112,7 @@ Docs should be scannable and role-oriented.
 - Record completed work in `docs/CHANGELOG.md`.
 - Mark planning tasks in `docs/TASKS.md` when a document becomes usable.
 - Do not duplicate large language specifications in `docs/`; link to
-  `packages-logicn/logicn-core/` instead.
+  `packages-galerina/galerina-core/` instead.
 
 ## CLI Output Design
 
@@ -130,14 +130,14 @@ Required output qualities:
 Current examples:
 
 ```text
-LogicN project graph generated.
-Graph JSON: build\graph\logicn-devtools-project-graph.json
-Graph report: build\graph\LogicN_GRAPH_REPORT.md
+Galerina project graph generated.
+Graph JSON: build\graph\galerina-devtools-project-graph.json
+Graph report: build\graph\Galerina_GRAPH_REPORT.md
 ```
 
 ```text
 Task buildApi dry-run planned.
-Task file: packages-logicn\logicn-core-tasks\examples\tasks.lln
+Task file: packages-galerina\galerina-core-tasks\examples\tasks.spore
 Dependency order: generateReports -> buildApi
 Task report: build\reports\task-report.json
 ```
@@ -204,7 +204,7 @@ Use components that match actual user work:
 - report links for generated artefacts
 
 Avoid adding a CMS, admin framework, ORM UI or frontend framework design to
-`logicn-core` or `logicn-framework-app-kernel`.
+`galerina-core` or `galerina-framework-app-kernel`.
 
 ## Accessibility Baseline
 
@@ -222,10 +222,10 @@ Future app UI must:
 
 - Defining a product-specific homepage before a product domain exists.
 - Defining brand, copy, illustrations or marketing pages for the template.
-- Putting frontend framework syntax into `logicn-core`.
+- Putting frontend framework syntax into `galerina-core`.
 - Treating generated graph HTML as the production app UI.
 - Treating task or graph reports as a substitute for tests.
-- Creating a separate fake LogicN language for beginners.
+- Creating a separate fake Galerina language for beginners.
 - Turning Learning Mode into classroom surveillance or an unbounded AI tutor.
 
 ## Success Criteria
@@ -236,4 +236,4 @@ Future app UI must:
 - CLI output is concise and safe.
 - Reports provide enough structured context for review.
 - Future product UI work has a clear place to add screens and UX rules without
-  polluting LogicN language packages.
+  polluting Galerina language packages.

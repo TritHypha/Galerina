@@ -1,0 +1,10 @@
+/// example: 073-money-cross-currency-invalid
+/// test_status: stable
+/// level: 2
+/// concept: cross-currency Money addition is forbidden
+/// expected_diagnostics: SPORE-TYPE-004
+/// ai_rule: Money types with different currency parameters cannot be added together.
+
+pure flow example(gbp: Money<GBP>, usd: Money<USD>) -> Void {
+  let total = gbp + usd
+}

@@ -1,0 +1,62 @@
+﻿/// example: 217-contract-set-validation
+/// level: 5
+/// concept: contract set use resolution — SPORE-GOV-011 and SPORE-GOV-012
+/// expected_diagnostics: SPORE-GOV-011
+/// test_status: stable
+/// ai_rule: 'use SetName' inside a flow contract must resolve to a declared 'contract set SetName'.
+
+event PatientCreated
+
+// ValidPatientSet is a declared contract set — using it is valid
+contract set ValidPatientSet {
+  rules {
+    require validation before database.write
+    require redaction before audit.write
+  }
+
+  audit {
+    require audit.write
+  }
+}
+
+// VALID: this flow uses a known contract set AND declares audit.write
+secure flow createPatient(readonly request: Request) -> CreatePatientResult
+
+contract {
+  types {
+    type CreatePatientResult = Result<Response, ApiError>
+  }
+  use ValidPatientSet
+  intent { "Create a patient record protecting PII." }
+
+  effects {
+    database.write
+    audit.write
+  }
+}
+{
+  unsafe let raw: String = request.body.email
+  let email: protected Email = validate.email(raw)?
+  let saved = PatientsDB.insert({ email: email })?
+  AuditLog.write({ event: "PatientCreated", id: saved.id })
+  emit PatientCreated
+  return Ok(Response.created(saved.id))
+}
+
+// ERROR: this flow references a non-existent contract set — SPORE-GOV-011
+secure flow createPatient2(readonly request: Request) -> CreatePatient2Result
+
+contract {
+  types {
+    type CreatePatient2Result = Result<Response, ApiError>
+  }
+  use NonExistentSet
+  intent { "Buggy flow — contract set does not exist." }
+
+  effects {
+    database.write
+  }
+}
+{
+  return Ok(Response.ok("{}"))
+}

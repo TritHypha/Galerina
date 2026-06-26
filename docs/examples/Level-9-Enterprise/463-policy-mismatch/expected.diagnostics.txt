@@ -1,4 +1,4 @@
-LLN-EFFECT-001
+SPORE-EFFECT-001
 // The flow uses pii.read-gated access to email but that effect appears to be detected
-// by the effect checker, producing LLN-EFFECT-001 in the current pipeline.
-// LLN-GOV-005 (policy-purpose-mismatch) is the intended future target diagnostic.
+// by the effect checker, producing SPORE-EFFECT-001 in the current pipeline.
+// SPORE-GOV-005 (policy-purpose-mismatch) is the intended future target diagnostic.

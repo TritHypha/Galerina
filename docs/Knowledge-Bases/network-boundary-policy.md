@@ -5,12 +5,12 @@
 ```
 Status: Active — governing policy
 Scope:  TCP/UDP port policy, boot network declarations, named boundaries
-See also: logicn-core-network-governance.md, layered-rate-limits.md, deny-by-default-risk-features.md
+See also: galerina-core-network-governance.md, layered-rate-limits.md, deny-by-default-risk-features.md
 ```
 
 ## Definition
 
-LogicN treats TCP/UDP network access as **runtime network policy** — not normal application logic. Ports are closed and protocols denied by default. Only declared listeners may open network boundaries.
+Galerina treats TCP/UDP network access as **runtime network policy** — not normal application logic. Ports are closed and protocols denied by default. Only declared listeners may open network boundaries.
 
 ```text
 Ports closed by default.
@@ -30,7 +30,7 @@ These are distinct concerns at distinct layers. Application routes cannot substi
 
 ## Boot Network Policy Example
 
-```logicn
+```galerina
 boot main {
   network policy {
     default deny
@@ -47,7 +47,7 @@ boot main {
 
 Routes can explicitly attach to a named network boundary:
 
-```logicn
+```galerina
 network boundary WebServer {
   protocol tcp
   ports [80, 443]
@@ -67,7 +67,7 @@ route GET "/hello" {
 
 To reduce fingerprinting:
 
-```logicn
+```galerina
 network policy {
   default deny
   allow tcp port 443 purpose https

@@ -1,0 +1,159 @@
+// OWASP A02 — Cryptographic Failures
+// EXPECT: ACCEPT
+//
+// This file DOCUMENTS the cryptographic failure patterns Galerina prevents.
+// Bad patterns are in comments with the SPORE diagnostic they trigger.
+// Correct patterns are live compilable code.
+//
+// Reference: docs/Knowledge-Bases/galerina-governance-rules.md
+// Rules: K-004 (SecureString sink guards), SPORE-SECRET-001/002/003,
+//        SPORE-VALUESTATE-006 (protected PII / redaction before audit)
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type CryptoResult = Result<Bool, CryptoError>
+type CryptoError = enum { InvalidInput VerificationFailed VaultError }
+type Email = Brand<String, "Email">
+type ApiKey = Brand<String, "ApiKey">
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CASE 1: Secret value appearing in audit log
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// BAD PATTERN (do not use — triggers SPORE-SECRET-001):
+//
+//   secure flow logApiKey(apiKey: SecureString) -> Bool
+//   contract {
+//     intent "Debug — log the API key"
+//     effects { audit.write }
+//     secrets { bind "API_KEY" }
+//   }
+//   {
+//     let key: SecureString = Secrets.get("API_KEY")
+//     AuditLog.write("Key: " + key)    // ← SPORE-SECRET-001: SecureString to log
+//     return true
+//   }
+//
+// Why it is blocked: the K-004 SecureString sink guard forbids SecureString values
+// from flowing to: log sinks, network bodies, or serialized responses. The only
+// safe escape from SecureString is redact() which returns a redacted String.
+// SPORE-SECRET-001 (log), SPORE-SECRET-002 (network body), SPORE-SECRET-003 (response).
+//
+// CORRECT pattern: use redact() before any observable output.
+
+;; CORRECT: API key retrieved as SecureString, never logged directly
+secure flow sendNotificationWithKey(recipient: String) -> CryptoResult
+contract {
+  intent "Send a notification using a secret API key — key never touches logs"
+  effects { network.outbound, audit.write }
+  secrets { bind "EMAIL_API_KEY" }
+  audit { require runtime report }
+}
+{
+  trap recipient == "" : ERR_EMPTY_RECIPIENT
+  let apiKey: SecureString = Secrets.get("EMAIL_API_KEY")
+  // apiKey passed to gateway driver internally — never in log, body, or response
+  let result = EmailGateway.send(recipient, apiKey)
+  // Only the recipient (non-secret) goes into the audit log
+  AuditLog.write("NotificationSent: " + recipient)
+  return Ok(true)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CASE 2: Protected PII appearing in audit log without redaction
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// BAD PATTERN (do not use — triggers SPORE-VALUESTATE-006):
+//
+//   secure flow auditRawEmail(email: protected Email) -> Bool
+//   contract {
+//     intent "Log a user email to audit"
+//     effects { audit.write }
+//     privacy {
+//       pii email masked_in_audit
+//       require redaction before audit.write
+//     }
+//   }
+//   {
+//     AuditLog.write("Email: " + email)   // ← SPORE-VALUESTATE-006: protected value
+//                                          //   must be redacted before audit.write
+//     return true
+//   }
+//
+// Why it is blocked: the privacy clause `require redaction before audit.write`
+// is enforced by the governance verifier (SPORE-VALUESTATE-006). A protected PII
+// field must pass through redact() before it reaches any audit sink.
+//
+// CORRECT pattern: always redact() PII before AuditLog.write.
+
+;; CORRECT: email is redacted before appearing in any audit event
+secure flow verifyEmailOwnership(readonly request: Request) -> CryptoResult
+contract {
+  intent "Verify email ownership — PII is redacted in audit trail"
+  request {
+    body { email: unsafe String }
+  }
+  effects { database.read, audit.write }
+  privacy {
+    pii email masked_in_audit
+    require redaction before audit.write
+  }
+  audit { require runtime report }
+}
+{
+  unsafe let rawInput: String = request.body.email
+  let email: protected Email = validate.email(rawInput)?
+  let redactedEmail: redacted String = redact(email)
+  let exists = UsersDB.emailExists(email)
+  AuditLog.write({
+    event: "EmailOwnershipVerified",
+    user_ref: redactedEmail,
+    result: exists
+  })
+  return Ok(exists)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CASE 3: Tainted network input passed to crypto without validation
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// BAD PATTERN (do not use — triggers SPORE-VALUESTATE-004):
+//
+//   secure flow hashUnsafeInput(readonly request: Request) -> Bool
+//   contract {
+//     intent "Hash raw network input"
+//     effects { crypto.hash, audit.write }
+//     request { body { data: unsafe String } }
+//   }
+//   {
+//     let data: unsafe String = request.body.data
+//     // Passing unsafe (tainted) value directly to a crypto flow without validation
+//     Crypto.hash(data)   // ← SPORE-VALUESTATE-004: tainted source_from:network
+//                          //   flows to crypto without a validation guard
+//     return true
+//   }
+//
+// Why it is blocked: the value-state taint tracker (SPORE-VALUESTATE-004) rejects
+// paths where a value declared `unsafe` (network-tainted) reaches a privileged
+// sink — including crypto operations — without an intervening validate.* call.
+// Validation demotes the type from `unsafe String` to a brand type or `String`.
+//
+// CORRECT pattern: always validate unsafe input before passing to crypto.
+
+;; CORRECT: tainted input is validated before reaching the crypto call
+secure flow hashValidatedInput(readonly request: Request) -> CryptoResult
+contract {
+  intent "Hash a validated, non-tainted string from network input"
+  effects { crypto.hash, audit.write }
+  request {
+    body { data: unsafe String }
+  }
+  audit { require runtime report }
+}
+{
+  unsafe let rawData: String = request.body.data
+  let safeData: String = validate.string(rawData)?
+  let digest: String = Crypto.hash(safeData)
+  AuditLog.write("HashComputed")
+  return Ok(true)
+}

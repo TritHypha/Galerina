@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Local AI review reports explain deterministic LogicN reports in human-readable
+Local AI review reports explain deterministic Galerina reports in human-readable
 language and highlight possible risks.
 
 ## Core Rule

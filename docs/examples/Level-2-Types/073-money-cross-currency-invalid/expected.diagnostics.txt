@@ -1,4 +1,4 @@
-LLN-TYPE-004
+SPORE-TYPE-004
 
 Cannot add Money<GBP> and Money<USD>.
 Currency parameters must match for arithmetic operations.

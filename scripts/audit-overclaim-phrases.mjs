@@ -6,22 +6,22 @@
 // zero-wipe as "O(1) memory.fill", a "constant-time zero-wipe", or a "single-clock-cycle wipe". That is
 // settled-false. `memory.fill(0)` is ONE WASM opcode (0xFC 0x0B) — but it does Θ(arena-size) work,
 // linear in the number of bytes zeroed. One *instruction* is not one *clock*, and a single opcode over a
-// region is not O(1). The SHIPPED emitter (packages-logicn/logicn-core-compiler/src/wat-emitter.ts) already
+// region is not O(1). The SHIPPED emitter (packages-galerina/galerina-core-compiler/src/wat-emitter.ts) already
 // phrases it correctly — "ONE atomic instruction" doing work "over [base, heap)". This lint stops the
 // false complexity claim from re-entering the docs/source where the emitter got it right.
 //
 // THE INVARIANT (phrase-blocklist, proximity-scoped to stay high-signal):
-//   In *.md, *.lln, and code COMMENTS, no complexity-boost token — "O(1)", "single-clock",
+//   In *.md, *.spore, and code COMMENTS, no complexity-boost token — "O(1)", "single-clock",
 //   "constant-time" — may appear within ~8 words of a zeroing token — "fill", "wipe", "zero-wipe",
 //   "zeroize arena", "memory.fill". A pairing is the false claim; the approved phrasing is
 //   "one atomic instruction doing Θ(arena-size) work".
 //
 // NOT a violation (so the lint does not flag the docs that CORRECT the claim): a line that is debunking
 // the overclaim — it carries the approved correction "Θ(arena-size)", or an explicit refutation marker
-// ("overclaim", "settled-false", "debunk", "refute", "myth"), or an inline `lln-allow: overclaim-phrase`.
+// ("overclaim", "settled-false", "debunk", "refute", "myth"), or an inline `spore-allow: overclaim-phrase`.
 // The proximity window also means an unrelated "O(1) allocation … bump arena" (no fill/wipe nearby) is fine.
 //
-// Scope: walks from --root (default cwd). *.md / *.lln scanned whole; *.ts/.tsx/.mjs/.cjs/.js/.jsx scanned
+// Scope: walks from --root (default cwd). *.md / *.spore scanned whole; *.ts/.tsx/.mjs/.cjs/.js/.jsx scanned
 // COMMENTS-ONLY (code + string literals are masked, so the emitter's literal `(memory.fill …)` instruction
 // strings are not mistaken for prose). This file + *.test.* + node_modules/dist/build/.graph are skipped.
 // Exit code = violation count (0 = clean). Run from repo root.
@@ -43,7 +43,7 @@ export const TARGET_RE = /memory\.fill|zero[-\s]?wipe|zeroize\s+arena|\bfill\b|\
 // a line is EXEMPT when it is correcting/quoting the overclaim, not asserting it. Markers: the approved
 // correction (Θ(arena-size) or its big-O twin O(arena-size) / "linear work|time|in"), an explicit
 // "not O(1)" negation, a refutation word (overclaim/settled-false/debunk/refute/myth), or the inline allow.
-export const EXEMPT_RE = /[ΘOoΟθ]\s*\(\s*arena|theta\s*\(\s*arena|linear\s+(?:work|time|in\b)|not\s+["'“”]?O\s*\(\s*1\s*\)|overclaim|settled[-\s]?false|debunk|refut|\bmyth\b|lln-allow:\s*overclaim-phrase/i;
+export const EXEMPT_RE = /[ΘOoΟθ]\s*\(\s*arena|theta\s*\(\s*arena|linear\s+(?:work|time|in\b)|not\s+["'“”]?O\s*\(\s*1\s*\)|overclaim|settled[-\s]?false|debunk|refut|\bmyth\b|spore-allow:\s*overclaim-phrase/i;
 
 /** Number of whitespace-delimited words strictly between two character spans (0 if adjacent/overlapping). */
 function wordsBetween(text, earlierEnd, laterStart) {
@@ -149,11 +149,11 @@ export function maskToComments(src) {
 }
 
 // ── file walk ───────────────────────────────────────────────────────────────────────────────────────
-const PROSE_EXT = new Set([".md", ".lln"]);
+const PROSE_EXT = new Set([".md", ".spore"]);
 const CODE_EXT = new Set([".ts", ".tsx", ".mjs", ".cjs", ".js", ".jsx"]);
 const SKIP_DIR = new Set(["node_modules", "dist", "build", ".graph", ".git", "coverage", "test-fixtures"]);
 // path fragments that exclude a FILE: this audit itself (it spells the phrases out), any test, and the
-// example/benchmark corpora (whitelisted like the other .lln lints — not where the overclaim lands).
+// example/benchmark corpora (whitelisted like the other .spore lints — not where the overclaim lands).
 const SKIP_FILE = ["audit-overclaim-phrases", ".test.", "/examples/", "\\examples\\", "/benchmarks/", "\\benchmarks\\"];
 
 function walk(dir, acc) {
@@ -223,7 +223,7 @@ if (isMain) {
     process.exit(violations.length);
   }
 
-  console.log(`overclaim-phrases: scanned ${files.length} doc/.lln/source file(s) for O(1)/single-clock/constant-time within ${WINDOW} words of fill/wipe/memory.fill`);
+  console.log(`overclaim-phrases: scanned ${files.length} doc/.spore/source file(s) for O(1)/single-clock/constant-time within ${WINDOW} words of fill/wipe/memory.fill`);
   for (const v of violations) {
     console.log(`  ✖ ${v.file}:${v.line}: "${v.boost}" ${v.gap} word(s) from "${v.target}" — ${v.snippet}`);
   }

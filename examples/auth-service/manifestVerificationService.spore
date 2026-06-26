@@ -1,0 +1,47 @@
+// Phase 51 — Manifest Verification Service (v1.0 RC)
+// The runtime manifest verification endpoint — validates the production deployment contract
+
+pure flow isValidManifestVersion(version: String) -> Bool
+{
+  return version.contains("spore.") and version.contains(".v1")
+}
+
+pure flow isValidGovernanceFlags(flags: Int) -> Bool
+{
+  return flags > 0
+}
+
+pure flow manifestTrustLevel(verified: Bool, hasSignature: Bool, flagsValid: Bool) -> Int
+{
+  if verified and hasSignature and flagsValid { return 4 }
+  if verified and flagsValid { return 3 }
+  if verified { return 2 }
+  return 0
+}
+
+secure flow verifyManifest(readonly request: Request) -> Response
+contract {
+  intent { "Verify a runtime manifest's schema version and signature status." }
+  effects { network.inbound  audit.write }
+}
+{
+  unsafe let schemaVersion: String = request.jsonBody.schemaVersion
+  unsafe let verified: Bool = request.jsonBody.verified
+  unsafe let hasSignature: Bool = request.jsonBody.hasSignature
+  unsafe let governanceFlagsMask: Int = request.jsonBody.governanceFlagsMask
+  trap schemaVersion == "" : ERR_EMPTY_SCHEMA_VERSION
+  trap governanceFlagsMask < 0 : ERR_INVALID_FLAGS
+  let isVerified: Bool = verified == true
+  let versionValid: Bool = isValidManifestVersion(schemaVersion)
+  let flagsValid: Bool = isValidGovernanceFlags(governanceFlagsMask)
+  let trustLevel: Int = manifestTrustLevel(isVerified, hasSignature, flagsValid)
+  let accepted: Bool = trustLevel >= 3
+  let retTrustLevel: Int = trustLevel
+  let retAccepted: Bool = accepted
+  safe mut trustLevel = redact(trustLevel)
+  safe mut accepted = redact(accepted)
+  AuditLog.write({ event: "ManifestVerification", trustLevel: trustLevel, accepted: accepted })
+  return { schemaVersion: schemaVersion, versionValid: versionValid, flagsValid: flagsValid, trustLevel: retTrustLevel, accepted: retAccepted }
+}
+
+route POST "/manifest/verify" { request Request  response Response  flow verifyManifest }

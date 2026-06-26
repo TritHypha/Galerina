@@ -4,13 +4,13 @@
 # `docs/COMPILED_APP_GIT.md`
 
 ```md
-# Git Guide for Compiled LogicN Apps
+# Git Guide for Compiled Galerina Apps
 
 ## Purpose
 
-This document explains how a compiled LogicN application should be handled in Git.
+This document explains how a compiled Galerina application should be handled in Git.
 
-A LogicN app may compile to multiple targets, such as:
+A Galerina app may compile to multiple targets, such as:
 
 - CPU binary
 - WASM
@@ -25,7 +25,7 @@ Compiled output should usually not be committed unless the project has a specifi
 
 ## Commit These
 
-- `.lln` source files
+- `.spore` source files
 - app configuration
 - tests
 - documentation
@@ -45,7 +45,7 @@ Compiled output should usually not be committed unless the project has a specifi
 
 ## Source Maps
 
-Source maps and debug metadata are important because compiled errors should map back to original `.lln` files and line numbers.
+Source maps and debug metadata are important because compiled errors should map back to original `.spore` files and line numbers.
 
 For local development, source maps may be generated but not committed.
 

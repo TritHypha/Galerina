@@ -11,7 +11,7 @@ response/view, flow and policy.
 
 ## Syntax Example
 
-```logicn
+```galerina
 route GET "/users/{id}" {
   request User.get
   response User.authorised

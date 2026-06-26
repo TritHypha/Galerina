@@ -1,0 +1,106 @@
+// EXPECT: ACCEPT
+// Pattern 6 — Multi-Tier Governed Service (drcm_stable_v0 stable portions)
+// Reference: docs/Knowledge-Bases/galerina-architecture-patterns.md
+//
+// Use when: designing a full service — API layer → business logic → data layer.
+// This file shows the stable (compilable) portions. The step boundary calls
+// between tiers are DRCM Phase 5 — see comments.
+//
+// Profile: drcm_stable_v0 (stable) + future drcm_core_v1 (step boundaries, marked)
+
+// ─── Shared Types ─────────────────────────────────────────────────────────────
+
+type PaymentRequest = record { from_account: String, to_account: String, amount: Int, currency: String }
+type PaymentResult  = record { transaction_id: String, status: String }
+type PaymentError   = enum { InvalidInput InsufficientFunds Unauthorized ServiceError }
+
+// ─── Layer 1: Data Layer — pure validation + secure persistence ───────────────
+
+// Pure helper: validate a payment request (no effects)
+pure flow validatePayment(req: PaymentRequest) -> Result<PaymentRequest, PaymentError>
+contract {
+  intent { "Validate payment request fields before persistence." }
+}
+{
+  if req.amount <= 0   { return Err(PaymentError.InvalidInput) }
+  if String.length(req.from_account) == 0 { return Err(PaymentError.InvalidInput) }
+  if String.length(req.to_account) == 0   { return Err(PaymentError.InvalidInput) }
+  return Ok(req)
+}
+
+// Secure mutation: persist validated payment to ledger
+secure flow persistPayment(readonly req: PaymentRequest) -> Result<String, PaymentError>
+contract {
+  intent { "Persist a validated payment record to the ledger." }
+  effects { database.write, audit.write, secret.read }
+  secrets { bind "LEDGER_WRITE_KEY" }
+  audit   { require cryptographic_state_hash require actor }
+  limits  { memory 32mb request_time 1s }
+}
+{
+  let txId: String = Ledger.debitAndCredit(req.from_account, req.to_account, req.amount)
+  AuditLog.write("PaymentPersisted: " + txId)
+  return Ok(txId)
+}
+
+// ─── Layer 2: Business Logic ──────────────────────────────────────────────────
+
+secure flow processPayment(readonly req: PaymentRequest) -> Result<PaymentResult, PaymentError>
+contract {
+  intent { "Validate and persist a payment through the governed business logic pipeline." }
+  effects { database.write, audit.write, secret.read }
+  limits  { memory 64mb request_time 2s }
+}
+{
+  let validated = validatePayment(req)
+  match validated {
+    Err(e) => return Err(e)
+    Ok(v)  => {
+      // DRCM Phase 5 — when step ships, replace with:
+      // let txId = step persistPayment(v)
+      let txIdResult = persistPayment(v)
+      match txIdResult {
+        Err(e)    => return Err(e)
+        Ok(txId)  => return Ok(PaymentResult { transaction_id: txId, status: "completed" })
+        _         => return Err(PaymentError.ServiceError)
+      }
+    }
+    _      => return Err(PaymentError.ServiceError)
+  }
+}
+
+// ─── Layer 3: API Route ───────────────────────────────────────────────────────
+
+// NOTE: Stage A parser limitation — 'let x = TypeName { field: value }' is ambiguous
+// (parser cannot distinguish the record constructor '{' from a block statement '{').
+// Workaround: wrap the constructor inside a function call argument, e.g. Ok(TypeName { ... }).
+// Task #57 tracks implementing proper record constructor expressions in Stage A.
+
+secure flow createPayment(readonly request: Request) -> Result<PaymentResult, PaymentError>
+contract {
+  intent { "Accept an external payment request and route it through the governed pipeline." }
+  request {
+    body {
+      from_account: unsafe String
+      to_account:   unsafe String
+      amount:       unsafe Int
+      currency:     unsafe String
+    }
+  }
+  effects { database.write, audit.write, secret.read, network.inbound }
+  limits  { memory 64mb request_time 5s }
+  audit   { require runtime report require actor }
+}
+{
+  let fromAcc = validate.string(request.body.from_account)
+  let toAcc   = validate.string(request.body.to_account)
+  let amt     = validate.int(request.body.amount)
+  let curr    = validate.string(request.body.currency)
+
+  // Named record constructor in let binding — works after task #57 fix
+  let req = PaymentRequest { from_account: fromAcc, to_account: toAcc, amount: amt, currency: curr }
+
+  // DRCM Phase 5 — when step ships, replace with: let result = step processPayment(req)
+  let result = processPayment(req)
+  return result
+}

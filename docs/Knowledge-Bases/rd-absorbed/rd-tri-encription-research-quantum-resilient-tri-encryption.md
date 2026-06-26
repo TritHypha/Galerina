@@ -1,16 +1,16 @@
-<!-- ABSORBED R&D SOURCE — verbatim mirror. LogicN is the main library; the R&D repo is upstream/authoring.
-     Source: LogicN-R-AND-D/tri-encription/research/quantum-resilient-tri-encryption.md  ·  Pinned: R&D fb68d06 (2026-06-16)
-     Integrated LogicN view: logicn-tmf-engine.md  ·  Catalog: logicn-rd-absorption-catalog.md
+<!-- ABSORBED R&D SOURCE — verbatim mirror. Galerina is the main library; the R&D repo is upstream/authoring.
+     Source: Galerina-R-AND-D/tri-encription/research/quantum-resilient-tri-encryption.md  ·  Pinned: R&D fb68d06 (2026-06-16)
+     Integrated Galerina view: galerina-tmf-engine.md  ·  Catalog: galerina-rd-absorption-catalog.md
      Rule: edit the upstream source then re-vendor; do not fork this copy (feedback-auto-import-rd-docs). -->
 
-> **Absorbed R&D source (verbatim).** This is the archived upstream document. Curated/integrated view: `logicn-tmf-engine.md`. See `logicn-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
+> **Absorbed R&D source (verbatim).** This is the archived upstream document. Curated/integrated view: `galerina-tmf-engine.md`. See `galerina-rd-absorption-catalog.md` for the full ledger. Internal links below point at the upstream R&D tree.
 
 ---
-# Quantum-Resilient, Zero-Trust, Tri-Logic Encryption for the `.tmf` / photonic-LogicN ecosystem
+# Quantum-Resilient, Zero-Trust, Tri-Logic Encryption for the `.tmf` / photonic-Galerina ecosystem
 
 > **Status:** Research note (grounded & cited, per request). **Date:** 2026-06-15.
 > **Question (from `notes/1.md`–`3.md` + brief):** what can *encryption* look like for the `.tmf`
-> container and the photonic LogicN ecosystem, given that we need **(1) zero-trust**,
+> container and the photonic Galerina ecosystem, given that we need **(1) zero-trust**,
 > **(2) quantum-resilience**, and **(3) tri-logic** woven in — across DB comms, images/audio/
 > video, and API-to-API packages, with append-only `+1` history and self-healing?
 > **Posture (your choice):** design for commodity hardware first, cite real sources, and label
@@ -18,19 +18,19 @@
 > **Hard guardrails:** **no invented crypto**; distinguish *hash ≠ signature ≠ KEM ≠ AEAD ≠ FHE*
 > precisely; keep integrity/crypto on a **deterministic bit-exact core**; tri-logic governs *whether*
 > crypto runs, never *how* it computes.
-> **Grounding:** every "LogicN says…" claim below carries a `file:line` into
-> `C:\wwwprojects\LogicN\docs\Knowledge-Bases\` (abbreviated `KB/…`). External claims are cited in §13.
+> **Grounding:** every "Galerina says…" claim below carries a `file:line` into
+> `C:\wwwprojects\Galerina\docs\Knowledge-Bases\` (abbreviated `KB/…`). External claims are cited in §13.
 
 ---
 
 ## 0. Verdict (TL;DR)
 
-1. **The honest answer to "in theory it should already do this": it does NOT.** Both LogicN and the
+1. **The honest answer to "in theory it should already do this": it does NOT.** Both Galerina and the
    `.tmf` notes deliver **integrity** (hashing / TMX-256) and **authenticity** (ML-DSA-65 signing) but
-   **no confidentiality primitive at all**. LogicN ships hashing + signing only; encryption is a *policy
-   stub* and ML-KEM is explicitly deferred: *"LogicN does **not** encrypt artifacts today … If confidential
+   **no confidentiality primitive at all**. Galerina ships hashing + signing only; encryption is a *policy
+   stub* and ML-KEM is explicitly deferred: *"Galerina does **not** encrypt artifacts today … If confidential
    data-at-rest/in-transit is ever added, use ML-KEM (FIPS 203). Not currently needed."*
-   (`KB/logicn-quantum-resistance-posture.md:34-37`). The `.tmf` notes encrypt nothing — they even
+   (`KB/galerina-quantum-resistance-posture.md:34-37`). The `.tmf` notes encrypt nothing — they even
    advertise routers scanning the semantic **attribute layer "without … decrypting the main file payload"**
    (`notes/2.md:45`, `notes/3.md:58`), i.e. payloads and semantic embeddings travel **in clear**.
    **Confidentiality is the missing layer; this doc specifies how to add it.**
@@ -40,9 +40,9 @@
    transition) → **HKDF/SHAKE** → **AEAD** (AES-256-GCM / streaming AEAD), layered *under* the existing
    **TMX-256 + ML-DSA-65** gate. No new crypto is invented. (§4)
 
-3. **Tri-logic's correct primary home is the governance / key-release gate**, not the cipher. LogicN's
+3. **Tri-logic's correct primary home is the governance / key-release gate**, not the cipher. Galerina's
    three-valued calculus is *proven* fail-closed (`authorize(v) ⇔ v=+1`; `collapse(0)=deny`;
-   No-Coercion theorem — `KB/logicn-three-valued-governance.md:139-179`). Use it to decide *whether* a key
+   No-Coercion theorem — `KB/galerina-three-valued-governance.md:139-179`). Use it to decide *whether* a key
    is released; keep the cipher math bit-exact. (§5.1)
 
 4. **Tri-logic already lives *inside* PQ crypto — and that is the only honest "trit-native" path.**
@@ -61,10 +61,10 @@
    for availability *outside* the gate + mandatory re-verification against the signed TMX root, fail-closed.**
    (§8)
 
-7. **One internal KB contradiction to fix (the "check"):** `KB/logicn-hardware-future-substrates.md:63`
+7. **One internal KB contradiction to fix (the "check"):** `KB/galerina-hardware-future-substrates.md:63`
    lists *"Encryption → Photonic matrix operations"* — which **directly contradicts** the canonical
-   crypto-on-core invariant **`LLN-SUBSTRATE-001 / CRYPTO_ON_NOISY_LANE`** (always-error;
-   `KB/logicn-substrate-failure-model.md:186,247`). The future-substrates file is the superseded 2026-06-01
+   crypto-on-core invariant **`SPORE-SUBSTRATE-001 / CRYPTO_ON_NOISY_LANE`** (always-error;
+   `KB/galerina-substrate-failure-model.md:186,247`). The future-substrates file is the superseded 2026-06-01
    outlier (it assumes photonic = "Full" determinism, `:42`); the 2026-06-15 substrate model overturns that.
    **Recommend correcting line 63.** (§6.3)
 
@@ -74,7 +74,7 @@
 |---|---|---|
 | Confidentiality at rest / in transit | **ADD** ML-KEM-768 (hybrid) + AEAD (KEM-DEM/HPKE) | deterministic digital core |
 | Quantum-resilience | KEM = ML-KEM (FIPS 203); sig = ML-DSA-65 (FIPS 204); hash = SHA-256/SHAKE (keep) | digital core |
-| Zero-trust | verify-before-decrypt, fail-closed; tri-logic `unknown→deny` key-release | `.lln` governance + engine |
+| Zero-trust | verify-before-decrypt, fail-closed; tri-logic `unknown→deny` key-release | `.spore` governance + engine |
 | Tri-logic in crypto | adopt NTRU/Kyber ternary polynomials (exact, digital) | digital core |
 | Compute-on-encrypted (FHE) | research track only; digital; not a near-term `.tmf` feature | digital core |
 | Self-heal | erasure coding + re-verify vs signed root, **outside** the gate | engine, fail-closed |
@@ -93,7 +93,7 @@
 - **Append-only `+1` history** — confidentiality that composes with an immutable, hash-linked timeline. §4.4.
 - **Self-healing** — availability under corruption, reconciled with fail-closed integrity. §8.
 
-**Method.** Grounded first in the LogicN Knowledge-Bases (four parallel readers covered the crypto/PQ/custody,
+**Method.** Grounded first in the Galerina Knowledge-Bases (four parallel readers covered the crypto/PQ/custody,
 tri-logic, photonic/substrate, and resilience clusters), then cross-checked against NIST/IETF standards and the
 optical-computing + lattice-crypto literature. Posture: grounded & cited; commodity-first; aspirational claims
 labelled.
@@ -109,41 +109,41 @@ labelled.
 | **FHE** (BFV/CKKS/TFHE) | "compute on the bytes *without* decrypting" | symmetric/public | lattice-based → **PQ**, but huge cost |
 
 You **sign over a hash**; you **derive an AEAD key from a KEM secret**; you never "replace a hash with a
-signature" or "use a KEM as an AEAD." (This is the exact boundary the LogicN notes 31–34 were written to
+signature" or "use a KEM as an AEAD." (This is the exact boundary the Galerina notes 31–34 were written to
 defend.)
 
 ---
 
 ## 2. What the ecosystem already has — and the confidentiality gap (the "check")
 
-### 2.1 LogicN today: integrity + authenticity + strong custody, **no encryption**
+### 2.1 Galerina today: integrity + authenticity + strong custody, **no encryption**
 
 - **Hashing + signing only.** Signed attestation uses SHA-256/512 + Ed25519 today, with **ML-DSA-65 (FIPS
-  204)** the planned PQ signature (`KB/logicn-signed-attestation.md:114-129,138-141`). The crypto **effects**
-  that exist are `Hash` / `Sign` (`KB/logicn-quantum-resistance-posture.md:44-47`).
+  204)** the planned PQ signature (`KB/galerina-signed-attestation.md:114-129,138-141`). The crypto **effects**
+  that exist are `Hash` / `Sign` (`KB/galerina-quantum-resistance-posture.md:44-47`).
 - **Encryption is a *policy stub*, not a primitive.** `EncryptionPolicy.Aes256Gcm` / `TlsPolicy` are sealed
-  *declarations* of which algorithm *would* be used (`KB/logicn-security-compile-time-crypto.md:122-158`); the
+  *declarations* of which algorithm *would* be used (`KB/galerina-security-compile-time-crypto.md:122-158`); the
   `security crypto { key_exchange { prefer ML_KEM } }` block is marked **"Future — not yet implemented"**
   (`KB/quantum-readiness.md:5-7,80-98`). ML-KEM is deferred (§0.1).
 - **Key custody is already zero-trust-grade** (this is the strong foundation to build on):
   - Sealed sources `env < vault < kms < hsm`, non-exportable hardware keys, declared `rotate every Nd`
-    (`KB/logicn-security-secret-safety.md:180-198`).
+    (`KB/galerina-security-secret-safety.md:180-198`).
   - `KeyHandle<T>` / `ProtectedSecret<T>`: *"never enters application memory as key material. Only operations
     (sign, decrypt, verify) are performed through the handle"* (`:209-221`).
   - Constant-time only: no `==`, only `.constantTimeEquals()`; secrets may not drive branches/indices/loops
     (`:24-46,88-114`).
   - Fail-closed release: runtime *"must NOT silently translate `hsm → env → string`"*; diagnostics
-    `LLN-SECURITY-HSM-002/003/005/006` deny downgrade/reveal/fallback (`:228-249`).
+    `SPORE-SECURITY-HSM-002/003/005/006` deny downgrade/reveal/fallback (`:228-249`).
   - Compile-time crypto: cipher suite / min key bits / AEAD mode are **compile-time constants**, *"a tampered
     config file must not be able to downgrade encryption"*, fallback **must fail closed**
-    (`KB/logicn-security-compile-time-crypto.md:5-9,82-98`; `LLN-CRYPTO-007`).
+    (`KB/galerina-security-compile-time-crypto.md:5-9,82-98`; `SPORE-CRYPTO-007`).
   - Scoped vaults (request/flow/session/service/secure), owner-checked, TTL'd, audited
     (`KB/scoped-vaults.md:48-56,308-320`); session cookie holds only a UUID — *"the SessionVault holds the
     authority"* (`KB/session-vault.md:122-138`).
 
-> **Implication.** LogicN gives us a production-grade *key-custody and constant-time discipline* to plug an
+> **Implication.** Galerina gives us a production-grade *key-custody and constant-time discipline* to plug an
 > encryption layer into — but the encryption layer itself (KEM + AEAD) does not exist and must be built
-> (engine-side, governed by `.lln` — §10).
+> (engine-side, governed by `.spore` — §10).
 
 ### 2.2 The `.tmf` notes today: integrity + authenticity, **payload in clear**
 
@@ -164,10 +164,10 @@ absent end-to-end.** Everything below adds it without disturbing the working int
 
 ## 3. The quantum threat model, stated precisely (requirement #2)
 
-LogicN's posture is already correct and we adopt it verbatim:
+Galerina's posture is already correct and we adopt it verbatim:
 
 - **Shor → asymmetric / signatures / key-exchange** break in polynomial time (RSA, ECDSA, Ed25519, classical
-  DH/ECDH). *"This is the real quantum threat."* (`KB/logicn-quantum-resistance-posture.md:11-12`).
+  DH/ECDH). *"This is the real quantum threat."* (`KB/galerina-quantum-resistance-posture.md:11-12`).
 - **Grover → symmetric + hashes** get only a quadratic speedup; SHA-256's preimage work drops to ~2¹²⁸ —
   *"still infeasible. NIST treats SHA-256 as quantum-acceptable."* (`:13-14`). AES-256 likewise stays safe.
 
@@ -211,8 +211,8 @@ ENCRYPT a confidential .tmf section:
 ```
 
 Choose **ML-KEM-768** (NIST level-3) to match the already-chosen **ML-DSA-65** (also level-3) — equal security
-margins, no weak link. AEAD = **AES-256-GCM** (FIPS-approved; keeps the FIPS posture LogicN already targets,
-`KB/logicn-security-compile-time-crypto.md:65-76`) or **ChaCha20-Poly1305** where AES-NI is absent.
+margins, no weak link. AEAD = **AES-256-GCM** (FIPS-approved; keeps the FIPS posture Galerina already targets,
+`KB/galerina-security-compile-time-crypto.md:65-76`) or **ChaCha20-Poly1305** where AES-NI is absent.
 
 ### 4.2 Per-modality DEM (DB comms, images, photo, video, audio, API packets)
 
@@ -244,9 +244,9 @@ READ a confidential .tmf section:
 ```
 
 - **Integrity covers the ciphertext** (TMX root is over the stored cipher bytes), so tamper is caught *before*
-  any key is touched. This matches LogicN's *"block hashes are re-checked at effect boundaries and at flow
-  completion"* (`KB/logicn-governed-memory-blocks.md:219`) and *"verification gate distinct from execution"*
-  (`KB/logicn-governance-verifier-architecture.md:91`).
+  any key is touched. This matches Galerina's *"block hashes are re-checked at effect boundaries and at flow
+  completion"* (`KB/galerina-governed-memory-blocks.md:219`) and *"verification gate distinct from execution"*
+  (`KB/galerina-governance-verifier-architecture.md:91`).
 - **Position binding is preserved twice:** coordinate+modality are in the TMX leaf (`notes/1.md:124-130`) *and*
   in the AEAD AAD (§4.1) — a ciphertext section can't be lifted/replanted, and can't be decrypted under the
   wrong context.
@@ -259,25 +259,25 @@ The notes model writes as a *"constructive +1 timeline state rather than overwri
 `notes/3.md:71`). Encrypt it as a **hash-linked chain of independently-encrypted, signed segments**:
 
 - Each `+1` append is its own AEAD-sealed segment with its own nonce; its AAD binds the **previous segment's
-  TMX root** (hash-linking) → immutability + tamper-evidence of order, exactly like LogicN's hash-linked
+  TMX root** (hash-linking) → immutability + tamper-evidence of order, exactly like Galerina's hash-linked
   compliance ledger.
-- **Per-epoch key rotation for forward secrecy:** rotate the KEM/DEM keys per epoch (declared with LogicN's
-  `rotate every Nd`, `KB/logicn-security-secret-safety.md:189-198`) and derive segment keys from an epoch key
+- **Per-epoch key rotation for forward secrecy:** rotate the KEM/DEM keys per epoch (declared with Galerina's
+  `rotate every Nd`, `KB/galerina-security-secret-safety.md:189-198`) and derive segment keys from an epoch key
   via a one-way KDF ratchet. Compromise of a *current* key does not expose *past* segments.
 - **Crypto-erasure for "right to be forgotten":** because history is append-only (you can't delete a signed
   segment without breaking the chain), honor erasure by **destroying the segment's key** (the ciphertext
-  becomes permanently undecryptable). This composes cleanly with LogicN's existing *metadata-erasure /
-  right-to-erasure* model (`KB/logicn-metadata-erasure.md`, `KB/logicn-compliance-governance.md:172`) — the
+  becomes permanently undecryptable). This composes cleanly with Galerina's existing *metadata-erasure /
+  right-to-erasure* model (`KB/galerina-metadata-erasure.md`, `KB/galerina-compliance-governance.md:172`) — the
   immutable chain stays intact; the plaintext becomes unrecoverable.
 
-### 4.5 Key custody & release under zero-trust (reuse LogicN's model)
+### 4.5 Key custody & release under zero-trust (reuse Galerina's model)
 
-No new custody design is needed — bind the new KEM/DEM keys into LogicN's existing zero-trust custody:
+No new custody design is needed — bind the new KEM/DEM keys into Galerina's existing zero-trust custody:
 
 - KEM/DEM private keys live as **`KeyHandle` in HSM/KMS**; **decapsulation happens through the handle**, key
-  material never enters app memory (`KB/logicn-security-secret-safety.md:209-221`).
+  material never enters app memory (`KB/galerina-security-secret-safety.md:209-221`).
 - Suite (ML-KEM-768 + AES-256-GCM) pinned at **compile time**; config cannot downgrade; fallback fails closed
-  (`KB/logicn-security-compile-time-crypto.md:82-98`).
+  (`KB/galerina-security-compile-time-crypto.md:82-98`).
 - **Release is gated by the tri-logic decision** of §5.1 — the handle performs `Decaps` *only* on a definite
   `allow (+1)`.
 
@@ -287,19 +287,19 @@ No new custody design is needed — bind the new KEM/DEM keys into LogicN's exis
 
 ### 5.1 Layer 1 — governance / key-release: the proven, recommended home
 
-Use LogicN's **strong-Kleene K3** three-valued calculus as the **authorization + key-release gate** around the
+Use Galerina's **strong-Kleene K3** three-valued calculus as the **authorization + key-release gate** around the
 crypto. This is where tri-logic is *earned*, not decorative:
 
-- **Encoding & operators** (`KB/logicn-three-valued-governance.md:51-92`): `-1=DENY`, `0=INDETERMINATE/unknown`,
+- **Encoding & operators** (`KB/galerina-three-valued-governance.md:51-92`): `-1=DENY`, `0=INDETERMINATE/unknown`,
   `+1=ALLOW`; `min`=Kleene ∧ ("more-cautious input wins, fail-closed"), `max`=∨, `neg` (where `¬0=0` — *"a
   negation never turns 'we don't know' into a definite verdict"*, `:100-101`), and majority `consensusTrit`.
 - **The release rule:** `authorizeDecrypt(caller, object) → {allow,deny,unknown}`; **`collapse(0)=deny`**
-  (audited `LLN-GOV-3VL-001`, `:124-128`); the `KeyHandle` runs `Decaps`/`Open` **only** when the verdict is
-  `+1`. Mirrors LogicN's existing *Secret Access* example where `revealSecret()` requires definite `true` and
-  *"unknown fails closed"* (`KB/logicn-core-logic-tristate-developer-guide.md:32-33,668-700`).
+  (audited `SPORE-GOV-3VL-001`, `:124-128`); the `KeyHandle` runs `Decaps`/`Open` **only** when the verdict is
+  `+1`. Mirrors Galerina's existing *Secret Access* example where `revealSecret()` requires definite `true` and
+  *"unknown fails closed"* (`KB/galerina-core-logic-tristate-developer-guide.md:32-33,668-700`).
 - **Why it satisfies zero-trust (provably):**
   - **Theorem — Fail-Closed Soundness:** `authorize(v) ⇔ v=+1`; *"No INDETERMINATE verdict can ever
-    authorize"* (`KB/logicn-three-valued-governance.md:139-143`).
+    authorize"* (`KB/galerina-three-valued-governance.md:139-143`).
   - **Theorem — No Coercion:** *"`0` cannot be coerced into the `+1` that authorizes, anywhere in
     composition"*, proven exhaustively over expression trees to depth 4 (`:145-167`).
   - **Empty-set denies:** `allOf([])`/`anyOf([])` → `INDETERMINATE`, not vacuous-true (`:110-115`).
@@ -307,9 +307,9 @@ crypto. This is where tri-logic is *earned*, not decorative:
     erasure-to-`0`** all collapse to **deny key release**. A literal analog `0` from a noisy lane is *itself*
     `unknown` (`:24,55`) → deny.
 - **Crucially, tri-logic governs *whether* the cipher runs, never *how* it computes.** The KEM/AEAD math stays
-  bit-exact binary/modular on the deterministic core (`LLN-SUBSTRATE-001`, §6). Advisory/uncertain reasoning
+  bit-exact binary/modular on the deterministic core (`SPORE-SUBSTRATE-001`, §6). Advisory/uncertain reasoning
   (e.g. an AI risk score) is **barred from authority** — *Omni Logic* "must never … grant runtime authority
-  directly … convert uncertainty into allow", downgrading to `review` (`KB/logicn-core-logic-omni-logic.md:30-32,160-171`).
+  directly … convert uncertainty into allow", downgrading to `review` (`KB/galerina-core-logic-omni-logic.md:30-32,160-171`).
 
 This is the single highest-value use of tri-logic in the whole design: a **machine-checked, fail-closed
 key-release gate**.
@@ -329,24 +329,24 @@ honest findings settle it:
   the arithmetic is **exact modular** over a polynomial ring (mod `q`, mod `3`) — not an analog three-level
   signal. A noisy/photonic trit lane cannot perform it (crypto-on-core; ≤~10-bit analog precision, §6.1); a
   single wrong coefficient → wrong key → decapsulation fails closed.
-- **Finding C — LogicN has no ternary arithmetic and the rules forbid inventing crypto.** LogicN's `Tri` is
+- **Finding C — Galerina has no ternary arithmetic and the rules forbid inventing crypto.** Galerina's `Tri` is
   strictly a **3-state *logical/decision*** type, not an arithmetic substrate (*"Internal encoding … Surface
-  language remains True/False/Unknown"*, `KB/logicn-photonic-ternary-bridge-spec.md:133-135`); the governance
+  language remains True/False/Unknown"*, `KB/galerina-photonic-ternary-bridge-spec.md:133-135`); the governance
   spec says to *"**govern** an emerging substrate, never **absorb** its hardware or crypto"* and **"no invented
-  crypto"** (`KB/logicn-three-valued-governance.md:6-13`). `mathematics-and-tri-logic.md` provides exact
+  crypto"** (`KB/galerina-three-valued-governance.md:6-13`). `mathematics-and-tri-logic.md` provides exact
   numeric types (`FiniteField<p>`, `Polynomial<F>`, `:83-91`) **but no base-3 arithmetic**; the
   `ternary-balanced` photonic encoding that does exist is **tensor compute, forbidden from any crypto/authority
-  role** (`KB/logicn-photonic-ternary-bridge-spec.md:113-123`).
+  role** (`KB/galerina-photonic-ternary-bridge-spec.md:113-123`).
 
 > **Verdict for the trit-native track:** **Do NOT design a new balanced-ternary / analog-trit cipher.** It
 > would be unvetted (zero cryptanalysis confidence — the cardinal sin of rolling your own crypto), a
 > crypto-on-core violation if analog, and explicitly "inventing crypto." The standards-aligned way to honor
 > "tri in the crypto" is to **adopt NTRU and/or ML-KEM** (which already use ternary/small-coefficient
 > polynomials) and run them on a **deterministic digital** core. *If* a deterministic-digital ternary ALU
-> (Setun-style, `KB/logicn-photonic-ternary-bridge-spec.md:169`) ever existed, it could host that exact
+> (Setun-style, `KB/galerina-photonic-ternary-bridge-spec.md:169`) ever existed, it could host that exact
 > arithmetic with **no crypto objection** — but it buys nothing over binary and is **not** the analog/photonic
 > trit the notes imagine. (A "digital-ternary NTRU backend" is a legitimate *optimization* gap to file under
-> LogicN purpose #2 — not a security feature.)
+> Galerina purpose #2 — not a security feature.)
 
 ---
 
@@ -361,11 +361,11 @@ honest findings settle it:
   ±1 coefficient error propagates through the NTT and yields the wrong key / a failed re-encryption check
   → **fail closed**. [[FIPS-203]] [[FIPS-204]] Error tolerance is *zero*; analog precision is ≤~10 bits. The
   gap is unbridgeable for the crypto math.
-- LogicN already encodes this as a **rule, not an opinion**: **`LLN-SUBSTRATE-001 / CRYPTO_ON_NOISY_LANE`** —
+- Galerina already encodes this as a **rule, not an opinion**: **`SPORE-SUBSTRATE-001 / CRYPTO_ON_NOISY_LANE`** —
   *"a Hash/Sign/crypto effect declared on a noisy lane. Integrity is **never tolerated** — forbidden outright …
-  **error** (always)"* (`KB/logicn-substrate-failure-model.md:186,247`); *"**Crypto cannot be analog.** …
-  hashing/signing must be bit-exact, so it cannot run on a noisy lane"* (`KB/logicn-photonic-tri-substrate-rd-agenda.md:58-59`).
-  Un-voted analog into a deterministic/crypto sink is `LLN-SUBSTRATE-004` (`:189`).
+  **error** (always)"* (`KB/galerina-substrate-failure-model.md:186,247`); *"**Crypto cannot be analog.** …
+  hashing/signing must be bit-exact, so it cannot run on a noisy lane"* (`KB/galerina-photonic-tri-substrate-rd-agenda.md:58-59`).
+  Un-voted analog into a deterministic/crypto sink is `SPORE-SUBSTRATE-004` (`:189`).
 
 ### 6.2 What photonics *legitimately* accelerates (outside the crypto)
 
@@ -385,12 +385,12 @@ honest findings settle it:
 
 ### 6.3 The KB contradiction to fix (the "check")
 
-`KB/logicn-hardware-future-substrates.md:63` lists **"Encryption → Photonic matrix operations"** as an
-accelerated-math use. This **contradicts `LLN-SUBSTRATE-001`**. The future-substrates file is the **superseded
+`KB/galerina-hardware-future-substrates.md:63` lists **"Encryption → Photonic matrix operations"** as an
+accelerated-math use. This **contradicts `SPORE-SUBSTRATE-001`**. The future-substrates file is the **superseded
 2026-06-01 outlier**: it assumes photonic = *"Full"* determinism (`:42`), an assumption the 2026-06-15
 substrate-failure model explicitly overturns (photonic is analog/probabilistic;
-`KB/logicn-photonic-tri-substrate-rd-agenda.md:48-51`). **Recommendation:** correct `future-substrates:63` to
-move "Encryption" out of the photonic plane and add a pointer to `LLN-SUBSTRATE-001` — and keep its own correct
+`KB/galerina-photonic-tri-substrate-rd-agenda.md:48-51`). **Recommendation:** correct `future-substrates:63` to
+move "Encryption" out of the photonic plane and add a pointer to `SPORE-SUBSTRATE-001` — and keep its own correct
 rule that photonic is *"Suitable only for mathematical operations (never governance logic)"* (`:54`) and *"No
 hardware may become a source of authority"* (`:304-324`).
 
@@ -436,11 +436,11 @@ actively read."* Three independent problems:
 3. **In-the-gate repair is an attacker target.** An attacker who corrupts a cell gets it "healed" to an
    attacker-influenceable interpolation that was never in the signed root — a **silent integrity bypass**.
 
-This contradicts LogicN's actual posture: there is **no data-reconstruction self-heal** in LogicN; "self-heal"
-means **zeroize-on-tamper** (destroy, not rebuild — `KB/logicn-cross-layer-resilience.md:156-172`) or
+This contradicts Galerina's actual posture: there is **no data-reconstruction self-heal** in Galerina; "self-heal"
+means **zeroize-on-tamper** (destroy, not rebuild — `KB/galerina-cross-layer-resilience.md:156-172`) or
 availability degradation via `resilience{}` (retry/fallback/quarantine, never reconstruct —
-`KB/logicn-resilience-observability-design.md:68-82`). The substrate theorem guarantees recovery/voting *"can
-cost availability … never safety"* (`vAnd(t*,r) ≤ t*`, `KB/logicn-substrate-failure-model.md:159-170`).
+`KB/galerina-resilience-observability-design.md:68-82`). The substrate theorem guarantees recovery/voting *"can
+cost availability … never safety"* (`vAnd(t*,r) ≤ t*`, `KB/galerina-substrate-failure-model.md:159-170`).
 
 ### 8.2 The honest self-heal: erasure coding *outside* the gate + re-verify against the signed root
 
@@ -470,11 +470,11 @@ cost availability … never safety"* (`vAnd(t*,r) ≤ t*`, `KB/logicn-substrate-
   ML-DSA-65-signed TMX root**; mismatch ⇒ fail closed. This is the documented pattern — *"Reed-Solomon erasure
   coding … combined with a cryptographic integrity layer to deliver both self-healing redundancy and
   mathematical proof that data is intact"* [[Integrity-Storage]] [[Self-Repair-Untrusted]] — and it matches
-  LogicN's *"hashes re-checked at effect boundaries"* (`KB/logicn-governed-memory-blocks.md:219`) and
-  *"recovered/cached evidence requires re-verification before reuse"* (`KB/logicn-adaptive-runtime-profiles.md:234`).
+  Galerina's *"hashes re-checked at effect boundaries"* (`KB/galerina-governed-memory-blocks.md:219`) and
+  *"recovered/cached evidence requires re-verification before reuse"* (`KB/galerina-adaptive-runtime-profiles.md:234`).
 - **Tri-logic ties in:** a segment whose reconstruction does not verify is `unknown(0)` → **deny** → re-fetch;
-  it never silently enters the store. This is the `LLN-SUBSTRATE` *erasure-to-`0`* discipline applied to
-  storage (`KB/logicn-substrate-failure-model.md:48,71`).
+  it never silently enters the store. This is the `SPORE-SUBSTRATE` *erasure-to-`0`* discipline applied to
+  storage (`KB/galerina-substrate-failure-model.md:48,71`).
 
 This delivers everything the notes wanted from "self-heal" (data survives bit-rot / dropped sub-vectors /
 degraded lanes) **without** fabricating data, decrypting prematurely, or opening an in-gate bypass.
@@ -493,14 +493,14 @@ degraded lanes) **without** fabricating data, decrypting prematurely, or opening
 | `0` stored in **"0 bits"** via "hardware-level bypass" (`1.md:53-59`) while layout is "fixed-width, non-variable" (`1.md:67`) | **Self-contradictory** | Can't be both O(1) fixed-width-indexable *and* zero-allocation-sparse; pick one (fixed-width OR sparse+index) |
 | Payload is **NVFP4** 4-bit float blocks (`1.md:100-116`) but file is a "balanced ternary substrate" (`1.md:24`) | **Incoherent** | NVFP4 ≠ trits; choose representation per modality, don't claim both |
 | In-cache **convolution self-heal** hot-committed live (`3.md:160-168`) | **Unsafe** | Replace with erasure-coding + re-verify vs signed root, §8 |
-| `LLN-SUBSTRATE-001` crypto-on-core (from LogicN) | **Sound** | Adopt — keep all crypto on the deterministic core |
+| `SPORE-SUBSTRATE-001` crypto-on-core (from Galerina) | **Sound** | Adopt — keep all crypto on the deterministic core |
 | `future-substrates.md:63` "Encryption → Photonic" | **Contradiction** | Correct the KB (superseded outlier), §6.3 |
 
 ---
 
 ## 10. Concrete recommendation — how to *extend* the `.tmf` spec
 
-**Add a confidentiality layer, engine-side, governed by `.lln`, leaving the integrity/authenticity gate intact:**
+**Add a confidentiality layer, engine-side, governed by `.spore`, leaving the integrity/authenticity gate intact:**
 
 1. **Container changes (`.tmf`):**
    - Header `flags` **bit1 = encrypted** (alongside existing `bit0 = signed`); a **`crypto_profile`** field
@@ -511,22 +511,22 @@ degraded lanes) **without** fabricating data, decrypting prematurely, or opening
    - **Streaming AEAD** layout for large-media sections (segment size, per-segment nonce, last-segment flag).
    - **`+1` history**: per-epoch key, KDF ratchet, hash-linked segment roots; crypto-erasure tombstones.
 2. **Placement (non-negotiable):** all KEM/AEAD/hash math on the **deterministic digital core**
-   (`LLN-SUBSTRATE-001`). **Tri-logic key-release gate** in `.lln` governance (`collapse_deny`). **Erasure-code
+   (`SPORE-SUBSTRATE-001`). **Tri-logic key-release gate** in `.spore` governance (`collapse_deny`). **Erasure-code
    self-heal outside the gate**, re-verify vs signed root.
 3. **Defaults:** ML-KEM-768 (hybrid X25519+ML-KEM-768 during transition); AES-256-GCM / streaming AEAD;
    HKDF-SHA256 or SHAKE256 KDF; suite pinned at compile time; fail-closed downgrade.
 
-**LogicN gaps this surfaces** (noted here since the deliverable is doc-only; candidates to file under
-purpose #2 if/when the `.lln` governance side is built):
+**Galerina gaps this surfaces** (noted here since the deliverable is doc-only; candidates to file under
+purpose #2 if/when the `.spore` governance side is built):
 
-- **No encryption / KEM / AEAD effect** exposed to `.lln` (only `Hash`/`Sign`) — the core gap.
-- **No bytes/buffer primitive** to assemble container bytes from `.lln` (already a known TritMesh blocker).
+- **No encryption / KEM / AEAD effect** exposed to `.spore` (only `Hash`/`Sign`) — the core gap.
+- **No bytes/buffer primitive** to assemble container bytes from `.spore` (already a known TritMesh blocker).
 - **No streaming-AEAD abstraction** for large media.
 - *(Optional, optimization not security)* **No balanced-ternary arithmetic** — only needed if a digital-ternary
   NTRU/ML-KEM backend is ever pursued.
 
-The crypto itself stays **engine-side** (per the LogicN↔TritMesh boundary: *LogicN governs, the engine
-stores/computes*); `.lln` makes the **policy/key-release** decisions only.
+The crypto itself stays **engine-side** (per the Galerina↔TritMesh boundary: *Galerina governs, the engine
+stores/computes*); `.spore` makes the **policy/key-release** decisions only.
 
 ---
 
@@ -552,7 +552,7 @@ stores/computes*); `.lln` makes the **policy/key-release** decisions only.
 
 ## 12. The answer, in one paragraph
 
-The `.tmf`/photonic-LogicN ecosystem today proves *who signed* data and *that it is intact*, but it does **not
+The `.tmf`/photonic-Galerina ecosystem today proves *who signed* data and *that it is intact*, but it does **not
 keep it secret** — confidentiality is genuinely missing, not merely unfinished. It can be made **quantum-resilient
 and zero-trust** by adding a standards-only **KEM-DEM** layer (**ML-KEM-768**, hybrid X25519+ML-KEM during
 transition, → **HKDF/SHAKE** → **AES-256-GCM / streaming AEAD**), layered **under** the existing TMX-256 +
@@ -605,23 +605,23 @@ never the notes' fabricating in-cache convolution.
 **Side-channel / constant-time (why the digital core must be hardened)**
 - KyberSlash (secret-dependent division timing → key recovery): <https://eprint.iacr.org/2024/1049> · FO comparison timing: <https://eprint.iacr.org/2020/743> · Sapphire digital lattice processor (constant-time): <https://eprint.iacr.org/2019/1140>
 
-**LogicN Knowledge-Bases** (`C:\wwwprojects\LogicN\docs\Knowledge-Bases\`)
-- `logicn-quantum-resistance-posture.md` (Shor/Grover; keep SHA-256; ML-KEM deferred; PQ cold-paths) ·
-  `logicn-three-valued-governance.md` (K3 operators; fail-closed + no-coercion theorems; collapse) ·
-  `logicn-substrate-failure-model.md` (`LLN-SUBSTRATE-001..004`; noise model; TMR; "cannot fail open") ·
-  `logicn-photonic-tri-substrate-rd-agenda.md` ("crypto cannot be analog"; no invented crypto) ·
-  `logicn-substrate-contracts.md` (substrate `{lane/tolerance/redundancy}`; crypto-on-core fix) ·
-  `logicn-security-secret-safety.md` (HSM/KMS; `KeyHandle`/`ProtectedSecret`; constant-time; fail-closed) ·
-  `logicn-security-compile-time-crypto.md` (sealed crypto policy; no downgrade; `LLN-CRYPTO-*`) ·
+**Galerina Knowledge-Bases** (`C:\wwwprojects\Galerina\docs\Knowledge-Bases\`)
+- `galerina-quantum-resistance-posture.md` (Shor/Grover; keep SHA-256; ML-KEM deferred; PQ cold-paths) ·
+  `galerina-three-valued-governance.md` (K3 operators; fail-closed + no-coercion theorems; collapse) ·
+  `galerina-substrate-failure-model.md` (`SPORE-SUBSTRATE-001..004`; noise model; TMR; "cannot fail open") ·
+  `galerina-photonic-tri-substrate-rd-agenda.md` ("crypto cannot be analog"; no invented crypto) ·
+  `galerina-substrate-contracts.md` (substrate `{lane/tolerance/redundancy}`; crypto-on-core fix) ·
+  `galerina-security-secret-safety.md` (HSM/KMS; `KeyHandle`/`ProtectedSecret`; constant-time; fail-closed) ·
+  `galerina-security-compile-time-crypto.md` (sealed crypto policy; no downgrade; `SPORE-CRYPTO-*`) ·
   `scoped-vaults.md` / `session-vault.md` (scoped, audited custody) ·
-  `logicn-signed-attestation.md` (Ed25519→ML-DSA-65; "signs what it proves") ·
+  `galerina-signed-attestation.md` (Ed25519→ML-DSA-65; "signs what it proves") ·
   `hybrid-electronic-optical-compute.md` (good vs bad optical candidates; governance stays electronic) ·
-  `logicn-hardware-future-substrates.md` (**:63 contradiction**; "no hardware is a source of authority") ·
-  `logicn-photonic-ternary-bridge-spec.md` (`Tri` is logic not arithmetic; `ternary-balanced` is compute-only) ·
+  `galerina-hardware-future-substrates.md` (**:63 contradiction**; "no hardware is a source of authority") ·
+  `galerina-photonic-ternary-bridge-spec.md` (`Tri` is logic not arithmetic; `ternary-balanced` is compute-only) ·
   `mathematics-and-tri-logic.md` (exact numeric types; no base-3 arithmetic) ·
-  `logicn-cross-layer-resilience.md` / `logicn-resilience-observability-design.md` (self-heal = zeroize/degrade) ·
-  `logicn-governed-memory-blocks.md` / `logicn-governance-verifier-architecture.md` (re-check hashes; gate ≠ exec) ·
-  `logicn-core-logic-tristate-developer-guide.md` / `logicn-core-logic-omni-logic.md` (secret-access; advisory barred from authority).
+  `galerina-cross-layer-resilience.md` / `galerina-resilience-observability-design.md` (self-heal = zeroize/degrade) ·
+  `galerina-governed-memory-blocks.md` / `galerina-governance-verifier-architecture.md` (re-check hashes; gate ≠ exec) ·
+  `galerina-core-logic-tristate-developer-guide.md` / `galerina-core-logic-omni-logic.md` (secret-access; advisory barred from authority).
 
 > **Companion analysis:** a focused treatment of "can crypto run on a photonic substrate" exists in the sister
-> repo at `LogicN-TritMesh/research/encryption-on-photonic-substrates.md` (same verdict, narrower scope).
+> repo at `Galerina-TritMesh/research/encryption-on-photonic-substrates.md` (same verdict, narrower scope).

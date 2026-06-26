@@ -1,0 +1,12 @@
+/// example: 157-invalid-email-assignment
+/// test_status: stable
+/// level: 4
+/// concept: assigning String directly to protected Email is forbidden
+/// expected_diagnostics: SPORE-TYPE-003
+/// ai_rule: Cannot assign String directly to Email. Use validate.email(...).
+
+type Email = Brand<String, EmailTag>
+
+pure flow example(rawEmail: String) -> Void {
+  let email: protected Email = rawEmail
+}

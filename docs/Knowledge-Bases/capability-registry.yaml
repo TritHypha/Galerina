@@ -1,4 +1,4 @@
-﻿# LogicN Capability Registry
+﻿# Galerina Capability Registry
 #
 # Single source of truth for the mapping between:
 #   - capability IDs  (used by capabilityHost.ts at runtime)
@@ -6,10 +6,10 @@
 #   - contract section (used by contractEnforcer.ts)
 #
 # Used by:
-#   packages-logicn/logicn-core-compiler/src/effect-checker.ts
-#   packages-logicn/logicn-core-compiler/src/type-checker.ts
-#   packages-logicn/logicn-core-compiler/src/runtime/capabilityHost.ts (Phase 11C)
-#   packages-logicn/logicn-core-compiler/src/runtime/contractEnforcer.ts
+#   packages-galerina/galerina-core-compiler/src/effect-checker.ts
+#   packages-galerina/galerina-core-compiler/src/type-checker.ts
+#   packages-galerina/galerina-core-compiler/src/runtime/capabilityHost.ts (Phase 11C)
+#   packages-galerina/galerina-core-compiler/src/runtime/contractEnforcer.ts
 #
 # Rule: the interpreter MUST NOT call host resources directly.
 # It MUST call through capabilities in capabilityHost.ts.

@@ -33,7 +33,7 @@ a request, flow, session, service or secure boundary.
 
 ## Fast Runtime Use
 
-Vaults let LogicN avoid repeated database calls while preserving the no-global
+Vaults let Galerina avoid repeated database calls while preserving the no-global
 rule. The runtime can reuse typed request/session data after the route, schema,
 permission and owner checks have passed.
 

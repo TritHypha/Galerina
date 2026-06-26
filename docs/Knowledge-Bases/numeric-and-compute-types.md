@@ -2,7 +2,7 @@
 
 ## Definition
 
-LogicN provides precise numeric types for financial work, and shaped numeric
+Galerina provides precise numeric types for financial work, and shaped numeric
 types (Matrix, Vector, Tensor) for compute-heavy workloads. All types are
 explicit — no implicit narrowing or coercion.
 
@@ -16,7 +16,7 @@ explicit — no implicit narrowing or coercion.
 
 ### Int
 
-```logicn
+```galerina
 let count: Int = 10
 let retry: Int32 = 3
 let packet: UInt16 = 512
@@ -31,13 +31,13 @@ Overflow is checked. Wrapping arithmetic requires explicit wrapping operations.
 
 String-to-int conversion must be explicit:
 
-```logicn
+```galerina
 let n: Int = toInt("42")
 ```
 
 ### Float
 
-```logicn
+```galerina
 let score: Float = 0.87
 let weight: Float32 = 0.25
 let activation: Float16 = 0.5
@@ -54,7 +54,7 @@ Do not use Float for money. Use `Decimal` or `Money<Currency>`.
 
 Exact base-10 decimal for financial and API values:
 
-```logicn
+```galerina
 let rate: Decimal = 19.99
 let tax: Decimal = 3.40
 ```
@@ -72,7 +72,7 @@ JSON decimal values must preserve decimal text before validation.
 
 Currency-typed monetary values. Cross-currency operations are compile-time errors.
 
-```logicn
+```galerina
 let price: Money<GBP> = Money(100.00)
 let tax: Money<GBP> = Money(20.00)
 let total: Money<GBP> = price + tax
@@ -80,7 +80,7 @@ let total: Money<GBP> = price + tax
 
 Invalid:
 
-```logicn
+```galerina
 let a: Money<GBP> = Money(100.00)
 let b: Money<USD> = Money(80.00)
 let bad = a + b   // Compiler error: cannot add Money<GBP> and Money<USD>
@@ -88,7 +88,7 @@ let bad = a + b   // Compiler error: cannot add Money<GBP> and Money<USD>
 
 Currency conversion must be explicit:
 
-```logicn
+```galerina
 let usd: Money<USD> = convert(amount, to: USD, rate: exchange_rate)
 ```
 
@@ -96,7 +96,7 @@ Currency codes: `GBP`, `USD`, `EUR`, `JPY`, and other ISO 4217 codes.
 
 ## Timestamp and Duration
 
-```logicn
+```galerina
 let created_at: Timestamp = runtime.now()
 let timeout: Duration = 5s
 let retry_delay: Duration = 500ms
@@ -111,14 +111,14 @@ For ML and scientific workloads. Shape parameters are compile-time constants.
 
 ### Matrix<Rows, Columns, Type>
 
-```logicn
+```galerina
 let weights: Matrix<1024, 1024, Float16>
 let transform: Matrix<128, 256, Float32>
 ```
 
 Shape mismatch is a compile-time error:
 
-```logicn
+```galerina
 // Invalid — inner dimensions don't match
 Matrix<128, 256, Float32> * Matrix<128, 64, Float32>
 
@@ -128,14 +128,14 @@ Matrix<128, 256, Float32> * Matrix<256, 64, Float32>
 
 ### Vector<Length, Type>
 
-```logicn
+```galerina
 let embedding: Vector<1024, Float16>
 let input: Vector<512, Float32>
 ```
 
 ### Tensor<Shape, Type>
 
-```logicn
+```galerina
 let image: Tensor<[1, 224, 224, 3], Float32>
 let batch: Tensor<[32, 224, 224, 3], Float32>
 ```
@@ -164,7 +164,7 @@ model input/output types
 
 Secret text that cannot be printed, logged, or converted to String accidentally:
 
-```logicn
+```galerina
 let api_key: SecureString = GlobalVault.secrets.read("api-token")
 ```
 

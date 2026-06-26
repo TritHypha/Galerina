@@ -1,0 +1,35 @@
+name: "@galerina/healthcare"
+version: "0.1.0"
+registry: "https://registry.galerina.dev"
+description: "Certified healthcare data flows for Galerina — HIPAA-aligned PHI handling."
+
+capabilities:
+  - secret.read
+  - database.read
+  - database.write
+  - audit.write
+
+effects:
+  - secret.read
+  - database.read
+  - database.write
+  - audit.write
+
+targets:
+  - wasm
+  - cpu
+
+installScript: null
+
+# Content-addressable hash (placeholder — run `galerina package hash` to generate)
+hash: "sha256:pending"
+
+# Cryptographic signature (placeholder — pending governance review)
+signature: null
+
+governance:
+  reviewed: false
+  reviewedBy: null
+  reviewedAt: null
+  complianceFramework: "HIPAA"
+  notes: "Phase 28 scaffold. PHI handling flows require governance review before production use."

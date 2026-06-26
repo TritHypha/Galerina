@@ -2,18 +2,18 @@
 
 ## Purpose
 
-Response docs define what may leave a LogicN application.
+Response docs define what may leave a Galerina application.
 
 ## Short Definition
 
 A response contract is a safe public output boundary.
 
-Response contracts are part of LogicN encapsulation because they define what may
+Response contracts are part of Galerina encapsulation because they define what may
 leave a model, flow or route boundary.
 
 ## Syntax Example
 
-```logicn
+```galerina
 type UserResponse {
   id: UserId
   email: Email

@@ -1,14 +1,14 @@
-# LogicN Application Pattern 07 — Validation and Gates
+# Galerina Application Pattern 07 — Validation and Gates
 
 **When to use:** Every boundary input — email, postcode, age, NHS number, currency amount, phone number
 
 ---
 
-## LogicN Validation Gates
+## Galerina Validation Gates
 
 Validation gates are the canonical mechanism for transitioning a value from `unsafe` to `protected`. The standard library provides built-in gates for common formats.
 
-```logicn
+```galerina
 let raw: unsafe String = request.body("email")
 let email: protected Email = validate.email(raw)?
 ```
@@ -17,7 +17,7 @@ The `?` propagates a `ValidationError` if the gate rejects the value. The return
 
 Additional built-in gates:
 
-```logicn
+```galerina
 validate.postcode(raw)?         → protected Postcode
 validate.nhsNumber(raw)?        → protected NhsNumber
 validate.phone(raw)?            → protected PhoneNumber
@@ -42,7 +42,7 @@ User-defined gates follow naming conventions that the compiler recognises as tai
 
 A custom gate must declare its output type as `protected T` to participate in taint tracking:
 
-```logicn
+```galerina
 fn validateOrderRef(raw: unsafe String) -> Result<protected OrderRef, ValidationError> {
   // must match /^ORD-[0-9]{8}$/
 }
@@ -56,7 +56,7 @@ If a function accepts `unsafe` input and returns a plain (non-protected) type, t
 
 Phase 17 introduces a declarative `validate` block that compiles to the gate function above:
 
-```logicn
+```galerina
 validate Email {
   must match EmailFormat
   must not be empty
@@ -70,7 +70,7 @@ The compiler generates `validate.Email(raw)?` from this declaration and register
 
 ## Value-State Transitions
 
-LogicN tracks three value states:
+Galerina tracks three value states:
 
 | State | Meaning | Example |
 |-------|---------|---------|
@@ -93,7 +93,7 @@ These operations break the taint chain (promote `unsafe` to `protected`):
 
 These operations do **not** break the taint chain:
 
-```logicn
+```galerina
 raw.trim()       // still unsafe
 raw.toLower()    // still unsafe
 raw.slice(0, 5)  // still unsafe
@@ -107,8 +107,8 @@ String transformations preserve the taint state of their input. A value that was
 
 | Code | Trigger |
 |------|---------|
-| `LLN-VALUESTATE-003` | `unsafe` value passed to a function that requires `protected` |
-| `LLN-VALUESTATE-005` | `unsafe` value written to a `protected`-typed binding |
+| `SPORE-VALUESTATE-003` | `unsafe` value passed to a function that requires `protected` |
+| `SPORE-VALUESTATE-005` | `unsafe` value written to a `protected`-typed binding |
 
 The compiler emits these errors at the point of misuse, not at the gate. The error message names the nearest upstream gate that would resolve the issue.
 
@@ -118,7 +118,7 @@ The compiler emits these errors at the point of misuse, not at the gate. The err
 
 **Resource boundary** — the outer edge of the system (HTTP, file, CLI, queue):
 
-```logicn
+```galerina
 entry POST "/register" {
   let raw = request.body("email")           // unsafe
   let email = validate.email(raw)?          // protected — gate here
@@ -128,7 +128,7 @@ entry POST "/register" {
 
 **Flow boundary** — between internal flows where a protected value is re-validated for a narrower domain:
 
-```logicn
+```galerina
 guarded flow processPayment(email: protected Email) {
   // email is already protected; no re-validation needed
   // but amount may need a narrower gate:
@@ -156,7 +156,7 @@ gates:
     error: ValidationError
 ```
 
-Third-party gates can be registered in a project-local `gates.yaml` and referenced in `logicn.toml`:
+Third-party gates can be registered in a project-local `gates.yaml` and referenced in `galerina.toml`:
 
 ```toml
 [gates]

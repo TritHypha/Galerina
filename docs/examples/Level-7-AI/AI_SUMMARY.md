@@ -3,7 +3,7 @@
 - `ai.inference` as the required effect for any flow calling a machine-learning model
 - Embedding flows: typed `Tensor<Float32, [1, 768]>` outputs from embedding models
 - Local-model-only patterns: `deny [remote.execution, network.outbound]` for air-gapped deployments
-- Protected AI input: validating raw user input before passing it to a model (`LLN-VALUESTATE-003`)
+- Protected AI input: validating raw user input before passing it to a model (`SPORE-VALUESTATE-003`)
 - AI batch inference — processing multiple inputs under a single `ai.inference` declaration
 - Embedding with fallback — handling model unavailability via `Result<T, E>`
 - `ai.inference` effect propagation through call chains (same rules as other effects)
@@ -13,7 +13,7 @@
 
 ## Canonical patterns
 
-```lln
+```spore
 // Basic embedding flow — ai.inference effect required
 guarded flow embedText(text: String) -> EmbedTextResult
 contract {
@@ -27,7 +27,7 @@ contract {
 }
 ```
 
-```lln
+```spore
 // Local-only AI: deny remote execution for data-residency compliance
 secure flow classify(readonly request: Request) -> ClassifyResult
 contract {
@@ -47,19 +47,19 @@ contract {
 ## Do not use in this level
 
 - `result of X else Y` (proposal only — use `Result<T, E>`)
-- Passing `unsafe` bindings directly to model calls without validation — triggers `LLN-VALUESTATE-003`
-- Calling a model in a flow without declaring `ai.inference` — triggers `LLN-EFFECT-001`
-- Logging raw model input or output as `protected` without `redact()` — triggers `LLN-VALUESTATE-001`
+- Passing `unsafe` bindings directly to model calls without validation — triggers `SPORE-VALUESTATE-003`
+- Calling a model in a flow without declaring `ai.inference` — triggers `SPORE-EFFECT-001`
+- Logging raw model input or output as `protected` without `redact()` — triggers `SPORE-VALUESTATE-001`
 - `authority` blocks (Level 9 concern for cross-boundary AI results)
 
 ## Key diagnostics this level demonstrates
 
 | Code | Meaning |
 |------|---------|
-| `LLN-EFFECT-001` | `ai.inference` used in flow body but not declared in `effects` |
-| `LLN-VALUESTATE-003` | Unsafe binding flows into a governed model sink without validation |
-| `LLN-VALUESTATE-001` | Protected model output logged without `redact()` |
-| `LLN-HINT-COMPUTE-001` | `ai.inference` present but no compute target preference declared |
+| `SPORE-EFFECT-001` | `ai.inference` used in flow body but not declared in `effects` |
+| `SPORE-VALUESTATE-003` | Unsafe binding flows into a governed model sink without validation |
+| `SPORE-VALUESTATE-001` | Protected model output logged without `redact()` |
+| `SPORE-HINT-COMPUTE-001` | `ai.inference` present but no compute target preference declared |
 
 ## Example IDs at this level
 

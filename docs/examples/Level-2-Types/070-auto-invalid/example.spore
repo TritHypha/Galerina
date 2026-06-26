@@ -1,0 +1,8 @@
+/// example: 070-auto-invalid
+/// test_status: stable
+/// level: 2
+/// concept: Auto requires an initializer
+/// expected_diagnostics: SPORE-TYPE-002
+/// ai_rule: Auto cannot infer a type without an initializer. Provide an initial value.
+
+let count: Auto

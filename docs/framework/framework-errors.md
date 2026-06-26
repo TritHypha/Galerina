@@ -11,7 +11,7 @@ form. Missing values should use `Option<T>` or another explicit optional form.
 
 ## Syntax Example
 
-```logicn
+```galerina
 match result {
   Ok(user) => return Ok(User.authorised.from(user))
   Err(error) => return Err(error)

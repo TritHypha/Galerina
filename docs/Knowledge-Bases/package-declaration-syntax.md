@@ -2,7 +2,7 @@
 
 ## Definition
 
-LogicN packages are declared, versioned, and governed. Every package must declare
+Galerina packages are declared, versioned, and governed. Every package must declare
 its identity, version, dependencies, and permissions. The runtime verifies
 packages against lockfiles, hashes, and registry signatures before linking.
 
@@ -10,45 +10,45 @@ packages against lockfiles, hashes, and registry signatures before linking.
 
 | Prefix | Purpose |
 | --- | --- |
-| `logicn-core-*` | Required core packages (compiler, runtime, security, memory) |
-| `logicn-ai-*` | AI and inference packages |
-| `logicn-target-*` | Compile target backends (WASM, GPU, photonic) |
-| `logicn-framework-*` | Application framework packages |
-| `logicn-devtools-*` | Developer tooling |
-| `logicn-tools-*` | CLI and build tools |
+| `galerina-core-*` | Required core packages (compiler, runtime, security, memory) |
+| `galerina-ai-*` | AI and inference packages |
+| `galerina-target-*` | Compile target backends (WASM, GPU, photonic) |
+| `galerina-framework-*` | Application framework packages |
+| `galerina-devtools-*` | Developer tooling |
+| `galerina-tools-*` | CLI and build tools |
 
 ## Required Core Packages
 
 ```text
-logicn-core             — language core
-logicn-core-compiler    — compiler
-logicn-core-runtime     — runtime engine
-logicn-core-security    — security primitives
-logicn-core-memory      — memory model
+galerina-core             — language core
+galerina-core-compiler    — compiler
+galerina-core-runtime     — runtime engine
+galerina-core-security    — security primitives
+galerina-core-memory      — memory model
 ```
 
 ## Optional Official Packages
 
 ```text
-logicn-core-worker      — worker pools
-logicn-core-network     — network boundary
-logicn-core-compute     — hardware compute targets
-logicn-ai               — AI and ML integration
-logicn-data             — data access
+galerina-core-worker      — worker pools
+galerina-core-network     — network boundary
+galerina-core-compute     — hardware compute targets
+galerina-ai               — AI and ML integration
+galerina-data             — data access
 ```
 
 ## Dependency Declaration
 
-Declared in the project manifest (`.lln` or separate manifest file):
+Declared in the project manifest (`.spore` or separate manifest file):
 
-```logicn
+```galerina
 package my_app {
   version: "1.0.0"
 
   dependencies {
-    logicn-core >= 0.1
-    logicn-core-runtime >= 0.1
-    logicn-ai >= 0.1
+    galerina-core >= 0.1
+    galerina-core-runtime >= 0.1
+    galerina-ai >= 0.1
   }
 }
 ```
@@ -57,8 +57,8 @@ package my_app {
 
 Every package declares the permissions it needs:
 
-```logicn
-package logicn-ai {
+```galerina
+package galerina-ai {
   version: "0.1"
 
   permissions {
@@ -67,14 +67,14 @@ package logicn-ai {
   }
 
   dependencies {
-    logicn-core >= 0.1
+    galerina-core >= 0.1
   }
 }
 ```
 
 ## Lockfile
 
-The lockfile (`logicn.lock`) records the exact resolved versions, hashes,
+The lockfile (`galerina.lock`) records the exact resolved versions, hashes,
 licences, and permissions for every dependency:
 
 ```text
@@ -112,7 +112,7 @@ unverified packages.
 
 Modules within a package declare their visibility:
 
-```logicn
+```galerina
 module orders {
   expose: [create_order, get_order, cancel_order]
   internal: [validate_stock, compute_total]

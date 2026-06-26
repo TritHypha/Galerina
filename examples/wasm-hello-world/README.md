@@ -1,10 +1,10 @@
 # wasm-hello-world
 
-Phase 24 milestone: `greet.lln` compiles to WAT with real instruction bodies.
+Phase 24 milestone: `greet.spore` compiles to WAT with real instruction bodies.
 
 ## What this demonstrates
 
-`greet.lln` declares a single pure flow:
+`greet.spore` declares a single pure flow:
 
 ```
 pure flow greet(name: String) -> String
@@ -21,7 +21,7 @@ Instead of emitting `unreachable` stubs, the compiler now emits:
 ## Compilation pipeline
 
 ```
-greet.lln
+greet.spore
   → parseProgram()
   → checkEffects()
   → emitGIR()           (Governed Intermediate Representation)
@@ -50,12 +50,12 @@ The compiled `greet` flow emits WAT like:
 ## Target: Phase 25 and beyond
 
 - Phase 25: `wat2wasm` compiles the `.wat` to `.wasm`; `wasmtime` executes it
-- Phase 25: `verifyPassword` end-to-end LogicN → WAT → WASM → Node → HTTP → WASM → HTTP response
+- Phase 25: `verifyPassword` end-to-end Galerina → WAT → WASM → Node → HTTP → WASM → HTTP response
 - Phase 26: `wasmtime` standalone (no Node.js), WASI imports
 
 ## Running the Phase 24 test
 
 ```
-cd packages-logicn/logicn-core-compiler
+cd packages-galerina/galerina-core-compiler
 npm run build && npm test -- --test-name-pattern "Phase 24"
 ```

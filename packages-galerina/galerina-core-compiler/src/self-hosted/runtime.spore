@@ -1,0 +1,957 @@
+/// @file: runtime.spore
+/// @purpose: Stage B runtime dispatcher stub — Phase 69 milestone
+/// @phase: 69
+/// @status: bootstrap stub — routes flow execution to the appropriate tier
+
+// ============================================================
+// Galerina Self-Hosted Runtime Dispatcher — Phase 69
+//
+// Decides which execution tier handles a given flow based on:
+//   1. Flow qualifier (pure/guarded/secure)
+//   2. Effect declarations
+//   3. Param types (integer-only = bytecode eligible)
+//
+// This IS the runtime tier router expressed in Galerina source.
+// The TypeScript route-dispatcher.ts remains as the bootstrap.
+// ============================================================
+
+record TierDecision {
+  tier: String
+  reason: String
+  isOptimal: Bool
+}
+
+// ── Tier selection logic ──────────────────────────────────────
+
+pure flow selectTier(qualifier: String, effectCount: Int, isIntegerOnly: Bool) -> TierDecision
+contract {
+  intent { "Select the optimal execution tier for a flow given its governance properties." }
+}
+{
+  if qualifier == "pure" {
+    if isIntegerOnly {
+      return { tier: "bytecode", reason: "pure integer flow → bytecode VM (14x speedup)", isOptimal: true }
+    }
+    return { tier: "wasm", reason: "pure flow → WASM (native speed)", isOptimal: true }
+  }
+  if effectCount == 0 {
+    return { tier: "sync", reason: "no effects → sync fast-path (2.7x speedup)", isOptimal: true }
+  }
+  return { tier: "tree", reason: "effectful governed flow → async tree-walker", isOptimal: false }
+}
+
+// Determine if a cached result is available (same inputs = same output for pure)
+pure flow isCacheEligible(qualifier: String, effectCount: Int) -> Bool
+contract {
+  intent { "Return true if this flow can benefit from the pure-flow LRU cache." }
+}
+{
+  if qualifier == "pure" {
+    if effectCount == 0 { return true }
+  }
+  return false
+}
+
+// Build the runtime execution plan summary for a flow
+pure flow buildExecutionPlan(flowName: String, qualifier: String, effectCount: Int, isIntegerOnly: Bool) -> Array
+contract {
+  intent { "Build a runtime execution plan: [tier, cacheEligible, reason] as a string array." }
+}
+{
+  let decision: TierDecision = selectTier(qualifier, effectCount, isIntegerOnly)
+  let cacheEligible: Bool = isCacheEligible(qualifier, effectCount)
+  mut cacheStr: String = "cache:false"
+  if cacheEligible { cacheStr = "cache:true" }
+  return [decision.tier, cacheStr, decision.reason]
+}
+
+// ════════════════════════════════════════════════════════════
+// GIR EVALUATOR (Milestone S7) — execute the emitted GIR in Galerina
+//
+// A small tree-walking interpreter over the GIR produced by
+// gir-emitter.spore's emitBodyGIR. This is the LAST self-hosted stage:
+// source → lex → parse → emit GIR → EXECUTE, all in Galerina.
+//
+// Supported GIR:
+//   GIRExpr op: "const" | "load" | "binop" | "unop" (call/unknown → 0)
+//   GIRStmt op: "store" | "ret" | "branch" | "loop" | "eval"
+// Values are Int/Bool. The environment is an append-only assoc list of
+// Bindings; envLookup returns the most-recent binding for a name (so a
+// later `store` shadows an earlier one). Cross-flow `call` evaluation is
+// resolved against a flow table threaded through the evaluator; an empty
+// table makes a `call` evaluate to 0 (preserving the no-table behavior).
+// ════════════════════════════════════════════════════════════
+
+record RtValue {
+  ty: String                // "Int" | "Bool" | "String" | "tag" | "record" | "list"
+  i: Int
+  b: Bool
+  s: String                 // ty=="String": the string value
+  tag: String               // ty=="tag": "Ok" | "Err" | "Some" | "None"
+  payload: Array<RtValue>   // ty=="tag": 0/1 wrapped value; ty=="list": elements
+  fields: Array<RtValue>    // ty=="record": alternating [name-as-String-val, value] pairs
+}
+
+record Binding {
+  name: String
+  val: RtValue
+}
+
+// Audit entry produced by an effect call inside a governed flow.
+record AuditEntry {
+  flowName: String    // the flow that produced this effect
+  effect: String      // e.g. "audit.write" | "database.write"
+  message: String     // the argument passed to the effect call
+  timestamp: Int      // execution-order counter (not wall-clock — Stage B has no Date.now())
+}
+
+record ExecResult {
+  env: Array<Binding>
+  returned: Bool
+  retVal: RtValue
+  auditLog: Array<AuditEntry>   // effects observed during this execution
+}
+
+// Build an empty ExecResult (no return yet, clean env + audit log).
+pure flow emptyExecResult(env: Array<Binding>) -> ExecResult
+contract { intent { "Build an initial ExecResult with an empty env and empty audit log." } }
+{
+  return { env: env, returned: false, retVal: rtInt(0), auditLog: Array.empty() }
+}
+
+// Merge an audit log from a sub-execution into the current result.
+pure flow mergeAuditLog(base: Array<AuditEntry>, additions: Array<AuditEntry>) -> Array<AuditEntry>
+contract { intent { "Append all additions to base audit log." } }
+{
+  mut result: Array<AuditEntry> = base
+  mut i: Int = 0
+  while i < additions.count() {
+    let entOpt = additions.get(i)
+    match entOpt {
+      Some(ent) => { result = result.append(ent) }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return result
+}
+
+pure flow rtInt(n: Int) -> RtValue
+contract { intent { "Build an Int runtime value." } }
+{
+  return { ty: "Int", i: n, b: false, s: "", tag: "", payload: Array.empty(), fields: Array.empty() }
+}
+
+pure flow rtBool(x: Bool) -> RtValue
+contract { intent { "Build a Bool runtime value." } }
+{
+  return { ty: "Bool", i: 0, b: x, s: "", tag: "", payload: Array.empty(), fields: Array.empty() }
+}
+
+pure flow rtStr(x: String) -> RtValue
+contract { intent { "Build a String runtime value." } }
+{
+  return { ty: "String", i: 0, b: false, s: x, tag: "", payload: Array.empty(), fields: Array.empty() }
+}
+
+// Build a tagged value (Result Ok/Err, Option Some) wrapping one inner value.
+pure flow rtTag(tagName: String, inner: RtValue) -> RtValue
+contract { intent { "Build a tagged runtime value (Ok/Err/Some) around an inner value." } }
+{
+  mut p: Array<RtValue> = Array.empty()
+  p = p.append(inner)
+  return { ty: "tag", i: 0, b: false, s: "", tag: tagName, payload: p, fields: Array.empty() }
+}
+
+// Build the empty-payload None value.
+pure flow rtNone() -> RtValue
+contract { intent { "Build the Option None runtime value (no payload)." } }
+{
+  return { ty: "tag", i: 0, b: false, s: "", tag: "None", payload: Array.empty(), fields: Array.empty() }
+}
+
+// Build a list runtime value from an array of RtValues.
+pure flow rtList(items: Array) -> RtValue
+contract { intent { "Build a List runtime value." } }
+{
+  return { ty: "list", i: 0, b: false, s: "", tag: "", payload: items, fields: Array.empty() }
+}
+
+// Look up a field name in a record's fields array (alternating name/value pairs).
+// Returns rtInt(0) when the field is absent.
+pure flow recordGet(rec: RtValue, fieldName: String) -> RtValue
+contract { intent { "Read a named field from a record runtime value." } }
+{
+  let flds: Array = rec.fields
+  let n: Int = flds.count()
+  mut i: Int = 0
+  mut result: RtValue = rtInt(0)
+  mut scanning: Bool = true
+  while i + 1 < n and scanning {
+    let kOpt = flds.get(i)
+    match kOpt {
+      Some(k) => {
+        if k.s == fieldName {
+          let vOpt = flds.get(i + 1)
+          match vOpt {
+            Some(v) => { result = v  scanning = false }
+            None => {}
+            _ => {}
+          }
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 2
+  }
+  return result
+}
+
+// Look up the most-recent binding of `name`; rtInt(0) when unbound.
+pure flow envLookup(env: Array, name: String) -> RtValue
+contract { intent { "Return the most-recently-bound value for name, or Int 0 if unbound." } }
+{
+  mut result: RtValue = rtInt(0)
+  mut i: Int = 0
+  while i < env.count() {
+    let bOpt = env.get(i)
+    match bOpt {
+      Some(b) => {
+        if b.name == name { result = b.val }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return result
+}
+
+// Bind name → value (append; later bindings shadow earlier ones on lookup).
+pure flow envBind(env: Array, name: String, v: RtValue) -> Array
+contract { intent { "Append a name→value binding to the environment." } }
+{
+  return env.append({ name: name, val: v })
+}
+
+// Apply a binary opcode to two runtime values.
+pure flow applyBinop(op: String, a: RtValue, b: RtValue) -> RtValue
+contract { intent { "Evaluate a GIR binop opcode over two runtime values." } }
+{
+  if op == "add" {
+    if a.ty == "String" { return rtStr(a.s + b.s) }
+    return rtInt(a.i + b.i)
+  }
+  if op == "sub" { return rtInt(a.i - b.i) }
+  if op == "mul" { return rtInt(a.i * b.i) }
+  if op == "div" {
+    if b.i == 0 { return rtInt(0) }
+    return rtInt(a.i / b.i)
+  }
+  // Equality is type-aware: Bool values carry their payload in `.b` (with `.i`
+  // pinned to 0), so comparing `.i` would make every Bool compare equal.
+  if op == "eq" {
+    if a.ty == "Bool" { return rtBool(a.b == b.b) }
+    if a.ty == "String" { return rtBool(a.s == b.s) }
+    return rtBool(a.i == b.i)
+  }
+  if op == "ne" {
+    if a.ty == "Bool" { return rtBool(a.b != b.b) }
+    if a.ty == "String" { return rtBool(a.s != b.s) }
+    return rtBool(a.i != b.i)
+  }
+  if op == "lt" { return rtBool(a.i < b.i) }
+  if op == "gt" { return rtBool(a.i > b.i) }
+  if op == "le" { return rtBool(a.i <= b.i) }
+  if op == "ge" { return rtBool(a.i >= b.i) }
+  return rtInt(0)
+}
+
+// Find a flow entry by name in the flow table; sentinel (empty name/params/body)
+// when absent. Entries are read dynamically: entry.name / entry.params / entry.body.
+pure flow lookupFlow(flows: Array, name: String) -> Any
+contract { intent { "Return the flow-table entry whose name matches, or an empty sentinel entry." } }
+{
+  mut result: Any = { name: "", params: Array.empty(), body: Array.empty() }
+  mut i: Int = 0
+  while i < flows.count() {
+    let eOpt = flows.get(i)
+    match eOpt {
+      Some(e) => {
+        if e.name == name { result = e }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return result
+}
+
+// Evaluate a GIRExpr in an environment, resolving `call`s against `flows`.
+pure flow evalGIRExpr(expr: Any, env: Array, flows: Array) -> RtValue
+contract { intent { "Recursively evaluate a GIR expression node to an Int/Bool runtime value." } }
+{
+  let op: String = expr.op
+
+  if op == "const" {
+    if expr.ty == "Bool" {
+      if expr.value == "true" { return rtBool(true) }
+      return rtBool(false)
+    }
+    if expr.ty == "String" {
+      return rtStr(expr.value)
+    }
+    return rtInt(expr.value.toInt().unwrapOr(0))
+  }
+
+  if op == "load" {
+    // Built-in zero-arity constructors: None (and similar sentinels)
+    if expr.value == "None" { return rtNone() }
+    return envLookup(env, expr.value)
+  }
+
+  if op == "binop" {
+    let kids: Array = expr.kids
+    mut a: RtValue = rtInt(0)
+    mut b: RtValue = rtInt(0)
+    let lOpt = kids.get(0)
+    match lOpt {
+      Some(l) => { a = evalGIRExpr(l, env, flows) }
+      None => {}
+      _ => {}
+    }
+    let rOpt = kids.get(1)
+    match rOpt {
+      Some(r) => { b = evalGIRExpr(r, env, flows) }
+      None => {}
+      _ => {}
+    }
+    return applyBinop(expr.value, a, b)
+  }
+
+  if op == "unop" {
+    let kids: Array = expr.kids
+    mut a: RtValue = rtInt(0)
+    let kOpt = kids.get(0)
+    match kOpt {
+      Some(k) => { a = evalGIRExpr(k, env, flows) }
+      None => {}
+      _ => {}
+    }
+    if expr.value == "neg" { return rtInt(0 - a.i) }
+    if expr.value == "not" { return rtBool(a.b == false) }
+    return a
+  }
+
+  if op == "call" {
+    // Evaluate the arguments in the current env, then bind them positionally
+    // into a fresh callee env and execute the callee's body.
+    let kids: Array = expr.kids
+    mut argVals: Array = Array.empty()
+    mut ai: Int = 0
+    while ai < kids.count() {
+      let kOpt = kids.get(ai)
+      match kOpt {
+        Some(k) => { argVals = argVals.append(evalGIRExpr(k, env, flows)) }
+        None => {}
+        _ => {}
+      }
+      ai = ai + 1
+    }
+
+    // Built-in value constructors (Result / Option) — these are NOT flow-table
+    // entries; they wrap their argument into a tagged runtime value.
+    if expr.value == "None" {
+      return rtNone()
+    }
+    if expr.value == "Ok" or expr.value == "Err" or expr.value == "Some" {
+      mut inner: RtValue = rtInt(0)
+      let a0 = argVals.get(0)
+      match a0 {
+        Some(v) => { inner = v }
+        None => {}
+        _ => {}
+      }
+      return rtTag(expr.value, inner)
+    }
+
+    // R2: built-in list / record method calls.
+    // `count` (no extra args): the first argVal is the receiver list/record.
+    // `get` (1 extra arg): first argVal = list, second = index.
+    if expr.value == "count" {
+      let recvOpt = argVals.get(0)
+      match recvOpt {
+        Some(recv) => {
+          if recv.ty == "list" { return rtInt(recv.payload.count()) }
+          if recv.ty == "record" {
+            // record fields are stored as alternating name/value pairs → /2
+            return rtInt(recv.fields.count() / 2)
+          }
+        }
+        None => {}
+        _ => {}
+      }
+      return rtInt(0)
+    }
+
+    if expr.value == "get" {
+      let recvOpt = argVals.get(0)
+      let idxOpt = argVals.get(1)
+      match recvOpt {
+        Some(recv) => {
+          match idxOpt {
+            Some(idx) => {
+              if recv.ty == "list" {
+                let items: Array = recv.payload
+                let elemOpt = items.get(idx.i)
+                match elemOpt {
+                  Some(elem) => { return rtTag("Some", elem) }
+                  None => { return rtNone() }
+                  _ => { return rtNone() }
+                }
+              }
+            }
+            None => {}
+            _ => {}
+          }
+        }
+        None => {}
+        _ => {}
+      }
+      return rtNone()
+    }
+
+    // append(elem) — list: return a new list with elem added at the end
+    if expr.value == "append" {
+      let recvOpt = argVals.get(0)
+      let elemOpt = argVals.get(1)
+      match recvOpt {
+        Some(recv) => {
+          match elemOpt {
+            Some(elem) => {
+              if recv.ty == "list" {
+                let newItems: Array<RtValue> = recv.payload.append(elem)
+                return rtList(newItems)
+              }
+            }
+            None => {}
+            _ => {}
+          }
+        }
+        None => {}
+        _ => {}
+      }
+      return rtNone()
+    }
+
+    // String methods: length, contains, startsWith, endsWith, toUpper, toLower, trim
+    if expr.value == "length" {
+      let recvOpt = argVals.get(0)
+      match recvOpt {
+        Some(recv) => {
+          if recv.ty == "String" { return rtInt(recv.s.length()) }
+          if recv.ty == "list"   { return rtInt(recv.payload.count()) }
+        }
+        None => {}
+        _ => {}
+      }
+      return rtInt(0)
+    }
+
+    if expr.value == "contains" {
+      let recvOpt = argVals.get(0)
+      let subOpt = argVals.get(1)
+      match recvOpt {
+        Some(recv) => {
+          match subOpt {
+            Some(sub) => {
+              if recv.ty == "String" { return rtBool(recv.s.contains(sub.s)) }
+            }
+            None => {}
+            _ => {}
+          }
+        }
+        None => {}
+        _ => {}
+      }
+      return rtBool(false)
+    }
+
+    if expr.value == "startsWith" {
+      let recvOpt = argVals.get(0)
+      let subOpt = argVals.get(1)
+      match recvOpt {
+        Some(recv) => {
+          match subOpt {
+            Some(sub) => {
+              if recv.ty == "String" { return rtBool(recv.s.startsWith(sub.s)) }
+            }
+            None => {}
+            _ => {}
+          }
+        }
+        None => {}
+        _ => {}
+      }
+      return rtBool(false)
+    }
+
+    if expr.value == "endsWith" {
+      let recvOpt = argVals.get(0)
+      let subOpt = argVals.get(1)
+      match recvOpt {
+        Some(recv) => {
+          match subOpt {
+            Some(sub) => {
+              if recv.ty == "String" { return rtBool(recv.s.endsWith(sub.s)) }
+            }
+            None => {}
+            _ => {}
+          }
+        }
+        None => {}
+        _ => {}
+      }
+      return rtBool(false)
+    }
+
+    // toStr / toString — convert any value to a String representation
+    // Int → convert via "" + n (string concatenation forces JS toString in interpreter)
+    if expr.value == "toStr" or expr.value == "toString" {
+      let recvOpt = argVals.get(0)
+      match recvOpt {
+        Some(recv) => {
+          if recv.ty == "String" { return recv }
+          if recv.ty == "Int"    {
+            // Build the string from the integer by repeated digit extraction.
+            // This avoids relying on a stdlib call that may not be available in
+            // the self-hosted interpreter context.
+            let n: Int = recv.i
+            if n == 0 { return rtStr("0") }
+            mut digits: String = ""
+            mut remaining: Int = n
+            mut negative: Bool = false
+            if n < 0 { negative = true  remaining = 0 - n }
+            while remaining > 0 {
+              let d: Int = remaining - (remaining / 10) * 10
+              // Map digit 0-9 to character
+              mut ch: String = "0"
+              if d == 1 { ch = "1" }
+              if d == 2 { ch = "2" }
+              if d == 3 { ch = "3" }
+              if d == 4 { ch = "4" }
+              if d == 5 { ch = "5" }
+              if d == 6 { ch = "6" }
+              if d == 7 { ch = "7" }
+              if d == 8 { ch = "8" }
+              if d == 9 { ch = "9" }
+              digits = ch + digits
+              remaining = remaining / 10
+            }
+            if negative { digits = "-" + digits }
+            return rtStr(digits)
+          }
+          if recv.ty == "Bool"   {
+            if recv.b { return rtStr("true") }
+            return rtStr("false")
+          }
+          if recv.ty == "tag"    { return rtStr(recv.tag) }
+        }
+        None => {}
+        _ => {}
+      }
+      return rtStr("")
+    }
+
+    // unwrapOr(default) — unwrap an Option Some(x) → x, or return default on None
+    if expr.value == "unwrapOr" {
+      let recvOpt = argVals.get(0)
+      let defOpt = argVals.get(1)
+      match recvOpt {
+        Some(recv) => {
+          if recv.ty == "tag" {
+            if recv.tag == "Some" or recv.tag == "Ok" {
+              let pl: Array = recv.payload
+              let innerOpt = pl.get(0)
+              match innerOpt {
+                Some(inner) => { return inner }
+                None => {}
+                _ => {}
+              }
+            }
+            // None / Err — return default
+            match defOpt {
+              Some(def) => { return def }
+              None => {}
+              _ => {}
+            }
+          }
+        }
+        None => {}
+        _ => {}
+      }
+      match defOpt {
+        Some(def) => { return def }
+        None => {}
+        _ => {}
+      }
+      return rtInt(0)
+    }
+
+    // toInt — parse a String to an Int, returning Option<Int>
+    if expr.value == "toInt" {
+      let recvOpt = argVals.get(0)
+      match recvOpt {
+        Some(recv) => {
+          if recv.ty == "String" {
+            let parsed: Int = recv.s.toInt().unwrapOr(0)
+            return rtTag("Some", rtInt(parsed))
+          }
+          if recv.ty == "Int" { return rtTag("Some", recv) }
+        }
+        None => {}
+        _ => {}
+      }
+      return rtNone()
+    }
+
+    let entry: Any = lookupFlow(flows, expr.value)
+    let params: Array = entry.params
+    mut calleeEnv: Array = Array.empty()
+    mut pi: Int = 0
+    while pi < params.count() and pi < argVals.count() {
+      let pOpt = params.get(pi)
+      let vOpt = argVals.get(pi)
+      match pOpt {
+        Some(pName) => {
+          match vOpt {
+            Some(v) => { calleeEnv = envBind(calleeEnv, pName, v) }
+            None => {}
+            _ => {}
+          }
+        }
+        None => {}
+        _ => {}
+      }
+      pi = pi + 1
+    }
+
+    let sub: ExecResult = execGIRBody(entry.body, calleeEnv, flows)
+    return sub.retVal
+  }
+
+  // R2: field access — op:"field", value:fieldName, kids:[receiver]
+  if op == "field" {
+    let kids: Array = expr.kids
+    mut recv: RtValue = rtInt(0)
+    let rOpt = kids.get(0)
+    match rOpt {
+      Some(r) => { recv = evalGIRExpr(r, env, flows) }
+      None => {}
+      _ => {}
+    }
+    return recordGet(recv, expr.value)
+  }
+
+  // Record literal — op:"reclit", kids:[nameConst,valExpr, nameConst,valExpr,...]
+  // Fields are stored as alternating (name-as-String-RtValue, value-RtValue) pairs
+  // matching the layout expected by recordGet().
+  if op == "reclit" {
+    let kids: Array = expr.kids
+    mut fields: Array<RtValue> = Array.empty()
+    mut ri: Int = 0
+    while ri + 1 < kids.count() {
+      let nameOpt = kids.get(ri)
+      let valOpt = kids.get(ri + 1)
+      match nameOpt {
+        Some(nameNode) => {
+          match valOpt {
+            Some(valNode) => {
+              // nameNode is a "const" GIRExpr whose value is the field name string
+              let fieldName: String = nameNode.value
+              let fieldVal: RtValue = evalGIRExpr(valNode, env, flows)
+              fields = fields.append(rtStr(fieldName))
+              fields = fields.append(fieldVal)
+            }
+            None => {}
+            _ => {}
+          }
+        }
+        None => {}
+        _ => {}
+      }
+      ri = ri + 2
+    }
+    return { ty: "record", i: 0, b: false, s: "", tag: "", payload: Array.empty(), fields: fields }
+  }
+
+  // R2: array literal — op:"arrlit", kids:[elements]
+  if op == "arrlit" {
+    let kids: Array = expr.kids
+    mut items: Array<RtValue> = Array.empty()
+    mut ai: Int = 0
+    while ai < kids.count() {
+      let kOpt = kids.get(ai)
+      match kOpt {
+        Some(k) => { items = items.append(evalGIRExpr(k, env, flows)) }
+        None => {}
+        _ => {}
+      }
+      ai = ai + 1
+    }
+    return rtList(items)
+  }
+
+  // unknown opcode — out of scope for the current subset.
+  return rtInt(0)
+}
+
+// Evaluate the lone expression carried by a GIRStmt (or Int 0 when absent).
+pure flow evalFirst(exprs: Array, env: Array, flows: Array) -> RtValue
+contract { intent { "Evaluate a statement's single carried GIR expression, or Int 0 if none." } }
+{
+  let opt = exprs.get(0)
+  match opt {
+    Some(e) => { return evalGIRExpr(e, env, flows) }
+    None => { return rtInt(0) }
+    _ => { return rtInt(0) }
+  }
+}
+
+// Execute a GIR statement list, threading the environment. Stops early on `ret`.
+pure flow execGIRBody(stmts: Array, env: Array, flows: Array) -> ExecResult
+contract { intent { "Execute a GIR statement body; thread the env, short-circuit on return. Collects audit entries from effect calls." } }
+{
+  mut curEnv: Array = env
+  mut returned: Bool = false
+  mut retVal: RtValue = rtInt(0)
+  mut auditEntries: Array<AuditEntry> = Array.empty()
+  mut auditCounter: Int = 0
+  mut i: Int = 0
+  while i < stmts.count() and returned == false {
+    let sOpt = stmts.get(i)
+    match sOpt {
+      Some(s) => {
+        let op: String = s.op
+
+        if op == "store" {
+          let v: RtValue = evalFirst(s.expr, curEnv, flows)
+          curEnv = envBind(curEnv, s.name, v)
+        }
+
+        if op == "ret" {
+          retVal = evalFirst(s.expr, curEnv, flows)
+          returned = true
+        }
+
+        if op == "eval" {
+          // Intercept effect calls BEFORE general eval so we can record them.
+          // Current intercepted effects: AuditLog.write, audit.write
+          let evalExpr: Any = s.expr
+          let exprOpt = evalExpr.get(0)
+          match exprOpt {
+            Some(ex) => {
+              // Check if this is an AuditLog.write or audit.write call
+              let isAuditWrite: Bool = ex.op == "call" and (ex.value == "write")
+              if isAuditWrite {
+                // Evaluate the argument to get the message
+                mut msgVal: RtValue = rtStr("")
+                let msgKidsOpt = ex.kids.get(1)  // first kid is receiver, second is message arg
+                match msgKidsOpt {
+                  Some(msgKid) => { msgVal = evalGIRExpr(msgKid, curEnv, flows) }
+                  None => {
+                    // Some calls have the msg as kid[0] if receiver already evaluated
+                    let msg0Opt = ex.kids.get(0)
+                    match msg0Opt {
+                      Some(msg0) => { msgVal = evalGIRExpr(msg0, curEnv, flows) }
+                      None => {}
+                      _ => {}
+                    }
+                  }
+                  _ => {}
+                }
+                let msg: String = msgVal.s
+                let entry: AuditEntry = { flowName: "runtime", effect: "audit.write", message: msg, timestamp: auditCounter }
+                auditEntries = auditEntries.append(entry)
+                auditCounter = auditCounter + 1
+              }
+            }
+            None => {}
+            _ => {}
+          }
+          let ignored: RtValue = evalFirst(s.expr, curEnv, flows)
+        }
+
+        if op == "branch" {
+          let cond: RtValue = evalFirst(s.expr, curEnv, flows)
+          mut sub: ExecResult = emptyExecResult(curEnv)
+          if cond.b {
+            sub = execGIRBody(s.body, curEnv, flows)
+          }
+          else {
+            sub = execGIRBody(s.elseBody, curEnv, flows)
+          }
+          curEnv = sub.env
+          auditEntries = mergeAuditLog(auditEntries, sub.auditLog)
+          if sub.returned {
+            returned = true
+            retVal = sub.retVal
+          }
+        }
+
+        // R5: match statement — evaluate subject, compare to each arm's pattern.
+        // Arms are GIRStmt { op:"arm", name:pattern, name2:bindingName, body:[arm stmts] }.
+        // Pattern matching:
+        //   Int literal   — subject.ty=="Int"   and subject.i == patVal
+        //   String literal — subject.ty=="String" and subject.s == pat
+        //   Bool literal  — "true"/"false"
+        //   Tag name      — subject.ty=="tag"   and subject.tag == pat (Some/Ok/Err/None)
+        //   Wildcard "_"  — always fires
+        // When armNode has a non-empty binding name (typeName in the parser's Stmt),
+        // the payload[0] is bound into the arm's execution environment.
+        if op == "matche" {
+          let subjVal: RtValue = evalFirst(s.expr, curEnv, flows)
+          let armList: Array = s.body
+          mut ai2: Int = 0
+          mut matched: Bool = false
+          while ai2 < armList.count() and matched == false and returned == false {
+            let armOpt = armList.get(ai2)
+            match armOpt {
+              Some(armNode) => {
+                let pat2: String = armNode.name
+                // bindName is stored in an extra field on the arm node (name2);
+                // fall back to empty if the field does not exist (older emitted GIR).
+                let bindName: String = armNode.name2
+                let isWild: Bool = pat2 == "_"
+                mut armFires: Bool = isWild
+                if isWild == false {
+                  if subjVal.ty == "Int" {
+                    let patVal: Int = pat2.toInt().unwrapOr(0)
+                    armFires = subjVal.i == patVal
+                  }
+                  if subjVal.ty == "String" {
+                    armFires = subjVal.s == pat2
+                  }
+                  if subjVal.ty == "Bool" {
+                    if pat2 == "true"  { armFires = subjVal.b }
+                    if pat2 == "false" { armFires = subjVal.b == false }
+                  }
+                  // Tag pattern: Some / Ok / Err / None — match on the tag name
+                  if subjVal.ty == "tag" {
+                    armFires = subjVal.tag == pat2
+                  }
+                }
+                if armFires {
+                  matched = true
+                  // If a binding name exists, inject payload[0] into the arm env
+                  mut armEnv: Array = curEnv
+                  if bindName != "" {
+                    if subjVal.ty == "tag" {
+                      let plItems: Array = subjVal.payload
+                      let plOpt = plItems.get(0)
+                      match plOpt {
+                        Some(pl) => { armEnv = envBind(armEnv, bindName, pl) }
+                        None => {}
+                        _ => {}
+                      }
+                    }
+                  }
+                  let mSub: ExecResult = execGIRBody(armNode.body, armEnv, flows)
+                  curEnv = mSub.env
+                  auditEntries = mergeAuditLog(auditEntries, mSub.auditLog)
+                  if mSub.returned {
+                    returned = true
+                    retVal = mSub.retVal
+                  }
+                }
+              }
+              None => {}
+              _ => {}
+            }
+            ai2 = ai2 + 1
+          }
+        }
+
+        if op == "loop" {
+          mut looping: Bool = true
+          while looping {
+            let cond: RtValue = evalFirst(s.expr, curEnv, flows)
+            if cond.b == false {
+              looping = false
+            }
+            else {
+              let sub: ExecResult = execGIRBody(s.body, curEnv, flows)
+              curEnv = sub.env
+              auditEntries = mergeAuditLog(auditEntries, sub.auditLog)
+              if sub.returned {
+                returned = true
+                retVal = sub.retVal
+                looping = false
+              }
+            }
+          }
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return { env: curEnv, returned: returned, retVal: retVal, auditLog: auditEntries }
+}
+
+// Public entry: execute a GIR body with a given initial environment (params),
+// returning the flow's return value.
+pure flow runGIRBody(stmts: Array, env: Array) -> RtValue
+contract { intent { "Execute a GIR flow body with an initial environment; return its return value." } }
+{
+  let res: ExecResult = execGIRBody(stmts, env, Array.empty())
+  return res.retVal
+}
+
+// Convenience: execute a GIR body with an empty environment.
+pure flow runGIR(stmts: Array) -> RtValue
+contract { intent { "Execute a GIR flow body with an empty environment." } }
+{
+  return runGIRBody(stmts, Array.empty())
+}
+
+// Public entry: run a multi-flow program. Look up `entryName` in the flow
+// table, bind its params positionally to `args`, execute its body resolving
+// cross-flow calls against the table, and return the flow's return value.
+// RunResult carries both the return value and the observed audit log.
+// Callers who only need the value use .retVal; governed callers check .auditLog.
+record RunResult {
+  retVal: RtValue
+  auditLog: Array<AuditEntry>
+}
+
+pure flow runProgram(flows: Array, entryName: String, args: Array) -> RunResult
+contract { intent { "Run a flow-table program from an entry flow with positional args; return value + audit log." } }
+{
+  let entry: Any = lookupFlow(flows, entryName)
+  let params: Array = entry.params
+  mut env: Array = Array.empty()
+  mut i: Int = 0
+  while i < params.count() and i < args.count() {
+    let pOpt = params.get(i)
+    let vOpt = args.get(i)
+    match pOpt {
+      Some(pName) => {
+        match vOpt {
+          Some(v) => { env = envBind(env, pName, v) }
+          None => {}
+          _ => {}
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  let res: ExecResult = execGIRBody(entry.body, env, flows)
+  return { retVal: res.retVal, auditLog: res.auditLog }
+}

@@ -1,0 +1,10 @@
+/// example: 084-unknown-type
+/// test_status: stable
+/// level: 2
+/// concept: unknown type name produces SPORE-TYPE-001
+/// expected_diagnostics: SPORE-TYPE-001
+/// ai_rule: All types must be declared or imported. Unknown type names are compile errors.
+
+pure flow example() -> Void {
+  let value: MadeUpType = 42
+}

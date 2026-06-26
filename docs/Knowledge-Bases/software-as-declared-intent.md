@@ -1,6 +1,6 @@
 # Software As Declared Intent
 
-LogicN is built on the idea that modern code should not only execute. It should
+Galerina is built on the idea that modern code should not only execute. It should
 communicate system intent.
 
 ## Core Statement
@@ -16,9 +16,9 @@ machines to clearly expressing the methods, policies, data flows and intentions
 behind a system so humans, AI tools and compilers can all understand, verify
 and improve it.
 
-## LogicN Statement
+## Galerina Statement
 
-LogicN programs should clearly express:
+Galerina programs should clearly express:
 
 ```text
 methods
@@ -34,13 +34,13 @@ reports
 The goal is for developers, AI systems, compilers and runtime tools to
 understand what the software is meant to do before it runs.
 
-A LogicN program should clearly express the methods, rules, policies, data flows
+A Galerina program should clearly express the methods, rules, policies, data flows
 and security boundaries it represents, so developers, AI systems and runtime
 tools can understand what the software is meant to do before it runs.
 
-## How LogicN Expresses Intent
+## How Galerina Expresses Intent
 
-LogicN uses:
+Galerina uses:
 
 ```text
 data       = what information exists, enters and leaves
@@ -52,7 +52,7 @@ report     = proof of what was checked
 
 ## Security Value
 
-Declared intent lets LogicN check whether implementation behavior matches the
+Declared intent lets Galerina check whether implementation behavior matches the
 declared model:
 
 ```text
@@ -71,14 +71,14 @@ changes that preserve those declarations.
 
 ## Rule
 
-When LogicN accepts a feature, it should be visible to humans, AI and tools
+When Galerina accepts a feature, it should be visible to humans, AI and tools
 through types, permissions, policies, effects, source maps or reports.
 
 ---
 
 ## Governance Execution Pipeline
 
-Declared intent is the first stage of LogicN's four-stage governance pipeline:
+Declared intent is the first stage of Galerina's four-stage governance pipeline:
 
 ```text
 intent                  — why this system exists; declared purpose and authority
@@ -92,7 +92,7 @@ audit proof             — verifiable evidence that execution respected all dec
 
 Each stage has a full specification:
 
-- [logicn-concept-intent.md](logicn-concept-intent.md)
-- [logicn-concept-governed-execution-plan.md](logicn-concept-governed-execution-plan.md)
-- [logicn-concept-coordinated-compute.md](logicn-concept-coordinated-compute.md)
-- [logicn-concept-audit-proof.md](logicn-concept-audit-proof.md)
+- [galerina-concept-intent.md](galerina-concept-intent.md)
+- [galerina-concept-governed-execution-plan.md](galerina-concept-governed-execution-plan.md)
+- [galerina-concept-coordinated-compute.md](galerina-concept-coordinated-compute.md)
+- [galerina-concept-audit-proof.md](galerina-concept-audit-proof.md)

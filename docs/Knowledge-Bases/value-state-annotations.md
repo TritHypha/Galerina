@@ -1,4 +1,4 @@
-# LogicN — Value-State Annotations
+# Galerina — Value-State Annotations
 
 ## Status
 
@@ -12,8 +12,8 @@ Phase 5 prerequisite
 ## Rules at a Glance
 
 - `unsafe let` marks a boundary-origin binding — it cannot reach governed sinks without a gate upgrade
-- `safe mut` upgrade requires a recognised gate on the RHS (`validate.*`, `sanitize.*`, `json.decode`, `parse.*`) — emits `LLN-VALUESTATE-001` if missing
-- Unsafe binding passed directly to a governed sink emits `LLN-VALUESTATE-003`
+- `safe mut` upgrade requires a recognised gate on the RHS (`validate.*`, `sanitize.*`, `json.decode`, `parse.*`) — emits `SPORE-VALUESTATE-001` if missing
+- Unsafe binding passed directly to a governed sink emits `SPORE-VALUESTATE-003`
 - `SecureString` must not be passed to `print`, `log.*`, `Logger.*`, `console.*` — use `redact()` instead
 - `SecureString` must not be compared with `==` or `!=` — use `constantTimeEquals()` instead
 - Gate and sink registry: `docs/Knowledge-Bases/stdlib-gates.yaml`
@@ -22,7 +22,7 @@ Phase 5 prerequisite
 
 ## Purpose
 
-Value-state annotations let LogicN attach **trust, safety, validation, and
+Value-state annotations let Galerina attach **trust, safety, validation, and
 provenance state** to individual values at the binding site.
 
 They are distinct from flow qualifiers.
@@ -35,7 +35,7 @@ They are distinct from flow qualifiers.
 A flow can be `secure` (security-sensitive execution) while still holding
 `unsafe` values from an external API body. These are orthogonal properties.
 
-```logicn
+```galerina
 secure flow createCustomer(request: Request) -> CreateCustomerResult
 contract {
   types {
@@ -63,7 +63,7 @@ gate it becomes `safe`. All three statements are correct and independent.
 A safety prefix describes **what trust state a binding starts in**, and
 `safe mut` upgrades it after a validation gate.
 
-```logicn
+```galerina
 unsafe let rawEmail: String = form.email              // boundary-origin: blocked from sinks
 safe   mut rawEmail         = validate.email(rawEmail)?  // gate passed: now safe
 ```
@@ -113,7 +113,7 @@ For v1, the supported states are deliberately minimal.
 
 These states are composable in pairs:
 
-```logicn
+```galerina
 String unsafe unvalidated
 Email safe validated
 SecureString secret protected
@@ -158,7 +158,7 @@ trust state of the value being bound.
 
 ### Examples
 
-```logicn
+```galerina
 unsafe let rawEmail: String = form.email              // boundary input — unsafe
 safe   mut rawEmail         = validate.email(rawEmail)?  // gate passed — now safe
 
@@ -202,7 +202,7 @@ export interface BindingNode extends AstNode {
 
 Source:
 
-```logicn
+```galerina
 unsafe let rawEmail: String = form.email
 ```
 
@@ -214,7 +214,7 @@ AST:
   "value": "rawEmail",
   "typeAnnotation": "String",
   "safetyPrefix": "unsafe",
-  "location": { "file": "forms.lln", "line": 3, "column": 3 }
+  "location": { "file": "forms.spore", "line": 3, "column": 3 }
 }
 ```
 
@@ -240,7 +240,7 @@ payment.charge
 
 without first passing through a `safe mut` upgrade.
 
-Diagnostic: `LLN-VALUESTATE-001`
+Diagnostic: `SPORE-VALUESTATE-001`
 
 ### Rule 2 — `safe mut` requires an approved gate
 
@@ -249,19 +249,19 @@ Directly re-assigning an `unsafe` binding to safe without a gate is illegal.
 
 Invalid:
 
-```logicn
+```galerina
 unsafe let rawEmail: String = input.email
-safe   mut rawEmail = rawEmail   // no gate — LLN-VALUESTATE-002
+safe   mut rawEmail = rawEmail   // no gate — SPORE-VALUESTATE-002
 ```
 
 Valid:
 
-```logicn
+```galerina
 unsafe let rawEmail: String = input.email
 safe   mut rawEmail = validate.email(rawEmail)?   // gate present
 ```
 
-Diagnostic: `LLN-VALUESTATE-002`
+Diagnostic: `SPORE-VALUESTATE-002`
 
 ### Rule 3 — `SecureString` bindings have restricted operations
 
@@ -272,15 +272,15 @@ Diagnostic: `LLN-VALUESTATE-002`
 - Included in an API response body
 - Stored in a plain `String` binding
 
-Diagnostic: `LLN-SECRET-001` (print/log), `LLN-SECRET-002` (equality comparison),
-`LLN-SECRET-003` (API response)
+Diagnostic: `SPORE-SECRET-001` (print/log), `SPORE-SECRET-002` (equality comparison),
+`SPORE-SECRET-003` (API response)
 
 ### Rule 4 — Tainted bindings require sanitisation
 
 A binding tainted by an `unsafe` operand in an expression must pass through a
 `sanitize.*` gate before it can be used at a governed sink.
 
-Diagnostic: `LLN-VALUESTATE-004`
+Diagnostic: `SPORE-VALUESTATE-004`
 
 ### Rule 5 — Boundary values must be declared `unsafe`
 
@@ -288,7 +288,7 @@ Values arriving from HTTP bodies, file reads, environment, or external APIs
 must be declared with `unsafe let` or `unsafe mut`. Assigning them to a plain
 `let` without the prefix is a state contradiction.
 
-Diagnostic: `LLN-VALUESTATE-005`
+Diagnostic: `SPORE-VALUESTATE-005`
 
 ---
 
@@ -296,7 +296,7 @@ Diagnostic: `LLN-VALUESTATE-005`
 
 State upgrades from `unsafe → safe` require a `safe mut` with a named gate.
 
-```logicn
+```galerina
 unsafe let raw: String = request.body
 safe   mut raw = validate.email(raw)?   // gate call required
 ```
@@ -320,35 +320,35 @@ full type-system gate registry is a Phase 6+ addition.
 
 ## Diagnostic Codes
 
-All codes follow the `LLN-SERIES-NNN` format.
+All codes follow the `SPORE-SERIES-NNN` format.
 
-### LLN-VALUESTATE series
-
-| Code | Name | Severity | Description |
-|---|---|---|---|
-| `LLN-VALUESTATE-001` | `UNSAFE_VALUE_AT_SINK` | error | `unsafe` or `unvalidated` value reached a governed sink |
-| `LLN-VALUESTATE-002` | `IMPLICIT_STATE_UPGRADE` | error | Cannot assign `unsafe unvalidated` to `safe validated` without a gate |
-| `LLN-VALUESTATE-003` | `MISSING_VALIDATION_GATE` | error | A validation gate is required but not present |
-| `LLN-VALUESTATE-004` | `TAINTED_VALUE_UNSANITISED` | error | `tainted` value used without a sanitiser |
-| `LLN-VALUESTATE-005` | `STATE_ANNOTATION_CONFLICT` | error | Value-state annotation conflicts with inferred source state |
-
-### LLN-SECRET series
+### SPORE-VALUESTATE series
 
 | Code | Name | Severity | Description |
 |---|---|---|---|
-| `LLN-SECRET-001` | `SECRET_LOGGED_RAW` | error | `secret protected` value passed to a print or log function |
-| `LLN-SECRET-002` | `SECRET_EQUALITY_COMPARISON` | error | `secret protected` value compared with `==` (use `constantTimeEquals()`) |
-| `LLN-SECRET-003` | `SECRET_IN_API_RESPONSE` | error | `secret protected` value included in an API response |
+| `SPORE-VALUESTATE-001` | `UNSAFE_VALUE_AT_SINK` | error | `unsafe` or `unvalidated` value reached a governed sink |
+| `SPORE-VALUESTATE-002` | `IMPLICIT_STATE_UPGRADE` | error | Cannot assign `unsafe unvalidated` to `safe validated` without a gate |
+| `SPORE-VALUESTATE-003` | `MISSING_VALIDATION_GATE` | error | A validation gate is required but not present |
+| `SPORE-VALUESTATE-004` | `TAINTED_VALUE_UNSANITISED` | error | `tainted` value used without a sanitiser |
+| `SPORE-VALUESTATE-005` | `STATE_ANNOTATION_CONFLICT` | error | Value-state annotation conflicts with inferred source state |
+
+### SPORE-SECRET series
+
+| Code | Name | Severity | Description |
+|---|---|---|---|
+| `SPORE-SECRET-001` | `SECRET_LOGGED_RAW` | error | `secret protected` value passed to a print or log function |
+| `SPORE-SECRET-002` | `SECRET_EQUALITY_COMPARISON` | error | `secret protected` value compared with `==` (use `constantTimeEquals()`) |
+| `SPORE-SECRET-003` | `SECRET_IN_API_RESPONSE` | error | `secret protected` value included in an API response |
 
 ### Diagnostic shape
 
 ```typescript
 {
-  code: "LLN-VALUESTATE-001",
+  code: "SPORE-VALUESTATE-001",
   name: "UNSAFE_VALUE_AT_SINK",
   severity: "error",
   message: "Unsafe unvalidated value 'rawMessage' cannot flow into database.write.",
-  location: { file: "forms.lln", line: 14, column: 7 },
+  location: { file: "forms.spore", line: 14, column: 7 },
   suggestedFix: "Pass rawMessage through validate.* or sanitize.* before writing to the database."
 }
 ```
@@ -359,7 +359,7 @@ All codes follow the `LLN-SERIES-NNN` format.
 
 ### API boundary — correct pattern
 
-```logicn
+```galerina
 secure flow createCustomer(request: Request) -> CreateCustomerResult
 contract {
   types {
@@ -382,7 +382,7 @@ contract {
 
 ### API boundary — error (unsafe value reaches database)
 
-```logicn
+```galerina
 secure flow unsafeSave(request: ContactFormRequest) -> UnsafeSaveResult
 contract {
   types {
@@ -395,7 +395,7 @@ contract {
 {
   unsafe let rawMessage: String = request.message
 
-  // LLN-VALUESTATE-001: unsafe binding cannot flow into database.write
+  // SPORE-VALUESTATE-001: unsafe binding cannot flow into database.write
   let saved: ContactForm = ContactFormsDB.insert({ message: rawMessage })?
 
   return Ok(saved)
@@ -404,7 +404,7 @@ contract {
 
 ### Secret — correct pattern
 
-```logicn
+```galerina
 secure flow loadApiKey() -> LoadApiKeyResult
 contract {
   types {
@@ -417,7 +417,7 @@ contract {
 {
   let apiKey: SecureString = env.secret("API_KEY")
 
-  // LLN-SECRET-001 would fire here — do NOT uncomment:
+  // SPORE-SECRET-001 would fire here — do NOT uncomment:
   // print(apiKey)
 
   log.info("API key loaded", { key: redact(apiKey) })
@@ -428,7 +428,7 @@ contract {
 
 ### Constant-time comparison — correct pattern
 
-```logicn
+```galerina
 secure flow verifyToken(provided: SecureString) -> VerifyTokenResult
 contract {
   types {
@@ -442,7 +442,7 @@ contract {
 {
   let expected: SecureString = env.secret("EXPECTED_TOKEN")
 
-  // LLN-SECRET-002 would fire here — do NOT uncomment:
+  // SPORE-SECRET-002 would fire here — do NOT uncomment:
   // if provided == expected { ... }
 
   let valid: Bool = constantTimeEquals(provided, expected)
@@ -473,9 +473,9 @@ qualifiers apply to bindings (`let`, `mut`), not flows.
 
 The value-state checker and the effect checker are separate passes.
 
-- The **effect checker** (`LLN-EFFECT-*`) validates that declared effects match
+- The **effect checker** (`SPORE-EFFECT-*`) validates that declared effects match
   flow qualifiers (e.g. `pure flow` must declare no effects).
-- The **value-state checker** (`LLN-VALUESTATE-*`, `LLN-SECRET-*`) validates
+- The **value-state checker** (`SPORE-VALUESTATE-*`, `SPORE-SECRET-*`) validates
   that annotated values do not reach sinks incompatible with their state.
 
 A future joint pass may correlate effect sinks with value states (e.g.
@@ -516,6 +516,6 @@ See: `docs/Knowledge-Bases/v1-reserved-keywords.md`
 ## See Also
 
 - `docs/Knowledge-Bases/effect-checker-and-boundary-checker.md`
-- `docs/Knowledge-Bases/logicn-core-effect-checker-v02.md`
+- `docs/Knowledge-Bases/galerina-core-effect-checker-v02.md`
 - `docs/Knowledge-Bases/formal-type-system-spec.md`
-- `packages-logicn/logicn-core-compiler/src/parser.ts` — `parseTypeRefWithValueState()`
+- `packages-galerina/galerina-core-compiler/src/parser.ts` — `parseTypeRefWithValueState()`

@@ -7,7 +7,7 @@ planning separate from ordinary application execution.
 
 ## Rules
 
-- LogicN must not claim ordinary web/API code runs on quantum computers.
+- Galerina must not claim ordinary web/API code runs on quantum computers.
 - Crypto choices must be policy-driven, not hard-coded across application code.
 - Post-quantum readiness must be reportable through crypto inventory reports.
 - `Random` must not be used for secrets, tokens, keys, salts or nonces.

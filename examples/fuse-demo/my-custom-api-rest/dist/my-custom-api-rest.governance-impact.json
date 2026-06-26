@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "lln.governance-impact.v1",
-  "sourceFile": "examples/fuse-demo/my-custom-api-rest/src/index.lln",
+  "schemaVersion": "spore.governance-impact.v1",
+  "sourceFile": "examples/fuse-demo/my-custom-api-rest/src/index.spore",
   "sourceHash": "sha256:a7772a5658b3dd464e6dbc9efb1ff9dc6bfda8869a0f5dddba47b2f18f699803",
   "generatedAt": "2026-06-14T22:37:46.250Z",
   "flowCount": 1,

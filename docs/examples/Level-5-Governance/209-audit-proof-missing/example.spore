@@ -1,0 +1,29 @@
+/// example: 209-audit-proof-missing
+/// level: 5
+/// concept: intent requires audit but no audit.write sink used
+/// expected_diagnostics: SPORE-GOV-002
+/// test_status: stable
+/// ai_rule: If intent or policy requires audit evidence, AuditLog.write must be called.
+
+secure flow deletePatient(patientId: protected PatientId) -> DeletePatientResult
+
+contract {
+  types {
+    type DeletePatientResult = Result<Unit, DeleteError>
+  }
+
+  // Security intent: BUG — intent claims "full audit trail" but audit.write is not declared,
+  // and AuditLog.write is never called. SPORE-GOV-002 fires.
+  intent {
+    "Delete a patient record with full audit trail — BUG: audit.write is missing from effects."
+  }
+
+  effects {
+    database.write
+    // BUG: audit.write is missing — SPORE-GOV-002 fires because intent requires audit evidence
+  }
+}
+{
+  PatientDB.delete(patientId)?
+  return Ok(unit)
+}

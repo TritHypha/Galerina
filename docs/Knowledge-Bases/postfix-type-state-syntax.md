@@ -2,10 +2,10 @@
 
 ## Definition
 
-LogicN attaches governance state to values using **postfix state syntax**: the
+Galerina attaches governance state to values using **postfix state syntax**: the
 base type is written first, the state qualifier second.
 
-```logicn
+```galerina
 let input:  String unsafe             = request.body("name")
 let secret: String secure             = env.secret("APP_SECRET")
 let email:  Email  safe validated     = validate.email(rawEmail)
@@ -27,11 +27,11 @@ runtime considers untrusted.
 Prefix style (`unsafe String`) makes the qualifier look like a new type name.
 Postfix style keeps the base type as the developer's primary mental anchor:
 
-```logicn
+```galerina
 // Postfix: type is clear, state is additional
 let input: String unsafe = ...
 
-// Prefix alternative (not used in LogicN):
+// Prefix alternative (not used in Galerina):
 let input: unsafe String = ...    // reads like "unsafe" is the type
 ```
 
@@ -51,7 +51,7 @@ Unmarked values are ordinary safe values unless they originate from an unsafe so
 
 A value may carry multiple state qualifiers:
 
-```logicn
+```galerina
 let rawEmail: String unsafe unvalidated = form.email
 let email:    Email  safe  validated    = validate.email(rawEmail)
 ```
@@ -70,28 +70,28 @@ State must change through approved operations — not by assignment.
 
 Invalid (direct assignment across state):
 
-```logicn
+```galerina
 let rawEmail: String unsafe unvalidated = form.email
 let email: Email safe validated = rawEmail    // compile error
 ```
 
 Valid (through a validator):
 
-```logicn
+```galerina
 let rawEmail: String unsafe unvalidated = form.email
 let email: Email safe validated = validate.email(rawEmail)
 ```
 
 Invalid (secret leaking without declassification):
 
-```logicn
+```galerina
 let secret: String secure = env.secret("API_TOKEN")
 let leaked: String = secret    // compile error
 ```
 
 Valid (explicit declassification):
 
-```logicn
+```galerina
 let secret: String secure = env.secret("API_TOKEN")
 let preview: String = secret.redacted()
 ```
@@ -112,7 +112,7 @@ Approved transitions:
 
 State qualifiers may appear on struct fields:
 
-```logicn
+```galerina
 type WebhookConfig {
   endpoint:      String
   signingSecret: String secure
@@ -132,7 +132,7 @@ type LoginRequest {
 
 ## State in Flow Parameters
 
-```logicn
+```galerina
 secure flow login(email: String unsafe, password: String secure)
   -> LoginResult
 contract {
@@ -157,7 +157,7 @@ Two distinct forms:
 
 Prefer attaching state to the smallest sensitive part:
 
-```logicn
+```galerina
 Option<String secure>       // preferred for sensitive inner values
 Array<String unsafe>        // preferred for arrays of untrusted input
 ```
@@ -166,7 +166,7 @@ Array<String unsafe>        // preferred for arrays of untrusted input
 
 State qualifiers compose with `Brand<T, "Name">`:
 
-```logicn
+```galerina
 type SessionToken = Brand<String secure, "SessionToken">
 type CustomerId   = Brand<String, "CustomerId">
 type RawHtml      = Brand<String unsafe, "RawHtml">
@@ -181,7 +181,7 @@ This reads as:
 
 **Style A — New binding per transition (preferred):**
 
-```logicn
+```galerina
 let emailRaw:       String unsafe unvalidated = form.email
 let emailValidated: Email  safe  validated    = validate.email(emailRaw)
 ```
@@ -191,7 +191,7 @@ AI can follow state transitions.
 
 **Style B — Mutating state on the same variable (not v1):**
 
-```logicn
+```galerina
 mut myEmail: String unsafe unvalidated = form.email
 myEmail = validate.email(myEmail)    // type/state changes over time
 ```
@@ -206,7 +206,7 @@ v1 rule: prefer new bindings for state transitions.
 
 The compiler understands that validator flows change state:
 
-```logicn
+```galerina
 flow validate.email(value: String unsafe unvalidated) -> Email safe validated
 flow validate.username(value: String unsafe unvalidated) -> Username safe validated
 ```
@@ -246,7 +246,7 @@ StateKeyword
 
 Ordinary code does not need state annotations everywhere:
 
-```logicn
+```galerina
 let title:   String  = "Checkout"   // normal safe string
 let count:   Int     = 3            // normal safe int
 let enabled: Bool    = true         // normal safe bool
@@ -257,7 +257,7 @@ secure, or untrusted source.
 
 ## Example: Full Boundary Pipeline
 
-```logicn
+```galerina
 secure flow submitForm(request: Request) -> SubmitFormResult
 contract {
   types {

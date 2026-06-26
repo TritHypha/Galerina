@@ -1,4 +1,4 @@
-LLN-EFFECT-001
+SPORE-EFFECT-001
 
 network.outbound used but not declared.
 Add network.outbound to the effects clause:

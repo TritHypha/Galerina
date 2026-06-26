@@ -1,21 +1,21 @@
 # Server Platform Support
 
-LogicN should support common server platforms without becoming those platforms.
+Galerina should support common server platforms without becoming those platforms.
 
 Core rule:
 
 ```text
-LogicN should not try to become Nginx, Apache, Node.js or Express.
-LogicN should understand how to work with them, generate safe configuration for
-them and optionally replace some of their jobs for LogicN-native apps.
+Galerina should not try to become Nginx, Apache, Node.js or Express.
+Galerina should understand how to work with them, generate safe configuration for
+them and optionally replace some of their jobs for Galerina-native apps.
 ```
 
-This keeps LogicN deployment-friendly while preserving its route-first,
+This keeps Galerina deployment-friendly while preserving its route-first,
 security-first design.
 
 ## Support Model
 
-| Technology | Support level | LogicN role |
+| Technology | Support level | Galerina role |
 |---|---:|---|
 | Nginx | Yes | Generate reverse proxy config |
 | Apache | Yes | Generate vhost/reverse proxy config |
@@ -23,8 +23,8 @@ security-first design.
 | Node.js | Yes | Tooling platform and optional runtime target |
 | Express | Optional | Adapter/interoperability target |
 | Fastify / Hono | Later | Adapters if useful |
-| LogicN-native API server | Yes | Long-term preferred secure API runtime |
-| PHP-FPM style | Maybe | Interop only, not core LogicN |
+| Galerina-native API server | Yes | Long-term preferred secure API runtime |
+| PHP-FPM style | Maybe | Interop only, not core Galerina |
 | Static file serving | Yes | Basic built-in or reverse proxy-generated |
 | WebSockets | Later | Typed real-time route support |
 | gRPC | Later | Typed service target |
@@ -32,7 +32,7 @@ security-first design.
 
 ## Reverse Proxies
 
-LogicN does not need to copy Nginx, Apache or Caddy as language features. Those
+Galerina does not need to copy Nginx, Apache or Caddy as language features. Those
 tools are usually used for:
 
 ```text
@@ -45,9 +45,9 @@ compression and cache layers
 legacy PHP/server integration
 ```
 
-LogicN should support them as deployment targets.
+Galerina should support them as deployment targets.
 
-```LogicN
+```Galerina
 deploy_profile production {
   target linux_vps
 
@@ -78,7 +78,7 @@ rate-limit config
 health check config
 ```
 
-LogicN should derive those configs from route and deployment policy:
+Galerina should derive those configs from route and deployment policy:
 
 ```text
 This app needs HTTPS.
@@ -92,23 +92,23 @@ This path must not serve hidden files.
 
 Node.js should be supported in two different ways.
 
-First, as a tooling platform. Early LogicN tooling may be written in
+First, as a tooling platform. Early Galerina tooling may be written in
 TypeScript/Node.js:
 
 ```text
-LogicN compiler prototype
-LogicN CLI
-LogicN package tooling
-LogicN dev server
-LogicN documentation generator
+Galerina compiler prototype
+Galerina CLI
+Galerina package tooling
+Galerina dev server
+Galerina documentation generator
 ```
 
-This does not mean every LogicN application must run on Node.js.
+This does not mean every Galerina application must run on Node.js.
 
 Second, as an optional runtime target:
 
 ```bash
-logicn build --target node
+galerina build --target node
 ```
 
 Output may include:
@@ -120,7 +120,7 @@ build/node/source-map.json
 build/node/security-report.json
 ```
 
-Node.js is a target, not the identity of LogicN. Long-term targets may include:
+Node.js is a target, not the identity of Galerina. Long-term targets may include:
 
 ```text
 native executable
@@ -133,7 +133,7 @@ Node.js target
 
 ## Express And Framework Adapters
 
-LogicN should not depend on Express, but it should be possible to generate or
+Galerina should not depend on Express, but it should be possible to generate or
 provide adapters for Express and similar frameworks.
 
 Express-style code often leaves important behaviour spread across middleware
@@ -146,9 +146,9 @@ app.post("/orders", async (req, res) => {
 });
 ```
 
-LogicN route contracts should be more explicit:
+Galerina route contracts should be more explicit:
 
-```LogicN
+```Galerina
 api OrdersApi {
   POST "/orders" {
     request CreateOrderRequest
@@ -182,15 +182,15 @@ auth, CSRF, idempotency and effect policy
 ```
 
 Adapters must not hide those facts. Express, Fastify, Hono, Lambda or edge
-adapters should compile from the same LogicN route manifest and call the same
+adapters should compile from the same Galerina route manifest and call the same
 Secure App Kernel boundary.
 
-## LogicN-Native API Server
+## Galerina-Native API Server
 
-LogicN should eventually have a native secure API server for LogicN-native apps.
+Galerina should eventually have a native secure API server for Galerina-native apps.
 
-```LogicN
-server LogicNApiServer {
+```Galerina
+server GalerinaApiServer {
   port env "PORT"
 
   security {
@@ -213,13 +213,13 @@ Recommended path:
 
 ```text
 Short term: Node.js target and Express/Fastify adapters for adoption.
-Long term: LogicN-native secure API server.
+Long term: Galerina-native secure API server.
 Always: generate Nginx, Apache and Caddy reverse proxy config.
 ```
 
 ## Server Concepts
 
-LogicN should support web/server concepts directly as typed contracts:
+Galerina should support web/server concepts directly as typed contracts:
 
 ```text
 api
@@ -258,7 +258,7 @@ edge worker routes
 
 Webhook example:
 
-```LogicN
+```Galerina
 api PaymentWebhookApi {
   POST "/webhooks/payment" {
     request raw_body
@@ -279,9 +279,9 @@ api PaymentWebhookApi {
 }
 ```
 
-## What LogicN Should Avoid
+## What Galerina Should Avoid
 
-LogicN should avoid copying legacy server patterns into the language:
+Galerina should avoid copying legacy server patterns into the language:
 
 ```text
 global request objects
@@ -295,38 +295,38 @@ manual body size checks everywhere
 manual CORS scattered across files
 ```
 
-LogicN should make these typed, declared and reportable instead.
+Galerina should make these typed, declared and reportable instead.
 
 ## App Shape
 
-A server-capable LogicN app might look like:
+A server-capable Galerina app might look like:
 
 ```text
-my-logicn-app/
+my-galerina-app/
 |-- api/
-|   |-- orders-api.lln
-|   `-- payment-webhook-api.lln
+|   |-- orders-api.spore
+|   `-- payment-webhook-api.spore
 |-- flows/
-|   `-- create-order.lln
+|   `-- create-order.spore
 |-- domain/
-|   `-- orders.lln
+|   `-- orders.spore
 |-- infrastructure/
-|   `-- payment-provider.lln
+|   `-- payment-provider.spore
 |-- server/
-|   `-- logicn-server.lln
+|   `-- galerina-server.spore
 |-- deploy/
-|   |-- nginx.lln
-|   |-- docker.lln
-|   `-- kubernetes.lln
+|   |-- nginx.spore
+|   |-- docker.spore
+|   `-- kubernetes.spore
 `-- policies/
-    |-- security-policy.lln
-    |-- crash-policy.lln
-    `-- deployment-policy.lln
+    |-- security-policy.spore
+    |-- crash-policy.spore
+    `-- deployment-policy.spore
 ```
 
 Example server file:
 
-```LogicN
+```Galerina
 server AppServer {
   runtime logicn_native
 
@@ -354,16 +354,16 @@ server AppServer {
 ## Package Ownership
 
 ```text
-logicn-framework-api-server
+galerina-framework-api-server
   built-in HTTP API serving package
 
-logicn-framework-app-kernel
+galerina-framework-app-kernel
   validation, auth, CSRF, idempotency, route policy and typed handler dispatch
 
-logicn-target-js
+galerina-target-js
   JavaScript/Node output planning and source-map/report contracts
 
-logicn-target-wasm
+galerina-target-wasm
   WASM/WASI and edge-compatible output planning
 
 future adapter packages
@@ -379,8 +379,8 @@ deployment tooling
 Nginx / Apache / Caddy = deployment and reverse proxy targets.
 Node.js = tooling platform and optional runtime target.
 Express = optional compatibility adapter.
-LogicN-native server = preferred long-term secure API runtime.
+Galerina-native server = preferred long-term secure API runtime.
 ```
 
-LogicN should let developers write route-first, typed API contracts and then
+Galerina should let developers write route-first, typed API contracts and then
 generate or target the appropriate runtime and deployment files.

@@ -1,5 +1,5 @@
-// Integration tests for the `logicn border-check` fail-closed plugin admission gate
-// (logicn.mjs:426-504, hardened 2026-06-06). P9-144 §83.
+// Integration tests for the `galerina border-check` fail-closed plugin admission gate
+// (galerina.mjs:426-504, hardened 2026-06-06). P9-144 §83.
 //
 // APPROACH: spawn the real CLI and assert on per-plugin verdicts in its output.
 // This locks in the gate's behaviour WITHOUT refactoring it (the gate reads the
@@ -43,7 +43,7 @@ const FIXTURES = {
   // but high-authority caps require governanceTier 3 (security review #1).
   canonicalCap:      { manifest: { ...base(), capabilities: ["shell.execute"], governanceTier: 3 } },
   highAuthLowTier:   { manifest: { ...base(), capabilities: ["shell.execute"] } }, // base() = tier 2 → denied
-  placeholderHash:   { manifest: { ...base(), sourceHash: "sha256:pending-logicn-promote" } },
+  placeholderHash:   { manifest: { ...base(), sourceHash: "sha256:pending-galerina-promote" } },
   shortHash:         { manifest: { ...base(), sourceHash: "sha256:abc" } },
   blacklisted:       { manifest: { ...base(), blacklisted: true } },
   unknownCap:        { manifest: { ...base(), capabilities: ["ai.inference", "evil.root"] } },
@@ -73,7 +73,7 @@ let STATUS = null;
 
 before(() => {
   for (const [k, spec] of Object.entries(FIXTURES)) writeFixture(k, spec);
-  const r = spawnSync(process.execPath, ["logicn.mjs", "border-check"], { cwd: ROOT, encoding: "utf-8" });
+  const r = spawnSync(process.execPath, ["galerina.mjs", "border-check"], { cwd: ROOT, encoding: "utf-8" });
   OUT = `${r.stdout ?? ""}${r.stderr ?? ""}`;
   STATUS = r.status;
 });

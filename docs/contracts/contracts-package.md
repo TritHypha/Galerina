@@ -2,7 +2,7 @@
 
 ## Purpose
 
-A package contract defines what a reusable LogicN package provides and what
+A package contract defines what a reusable Galerina package provides and what
 authority it requires.
 
 ## Short Definition

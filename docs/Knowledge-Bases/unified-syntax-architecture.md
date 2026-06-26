@@ -2,10 +2,10 @@
 
 ## Definition
 
-LogicN uses **one unified syntax** for all language concerns: application logic,
+Galerina uses **one unified syntax** for all language concerns: application logic,
 runtime configuration, build targets, security policy and effect declarations.
 
-The file extension for all LogicN source files is `.lln`.
+The file extension for all Galerina source files is `.spore`.
 
 ```text
 One language.
@@ -26,7 +26,7 @@ A dual-language design creates fragmentation:
 | Security inconsistency | Policies become disconnected from code |
 | Build confusion | Harder deployment and packaging |
 
-LogicN is designed to be strict, predictable, auditable and governed. A single
+Galerina is designed to be strict, predictable, auditable and governed. A single
 syntax supports these goals far better.
 
 ## Five Declaration Domains
@@ -41,9 +41,9 @@ All domains share the same syntax rules. They differ in what they declare:
 | Security declarations | Capabilities, permissions, policy boundaries |
 | Effect declarations | Side-effect tracking and verification |
 
-## Example: Unified .lln File
+## Example: Unified .spore File
 
-```logicn
+```galerina
 package user_service
 
 import database.users
@@ -88,7 +88,7 @@ security {
 Application types, functions, modules, packages, data structures and business
 logic.
 
-```logicn
+```galerina
 fn calculate_total(price: Decimal, qty: Int) -> Decimal {
   price * qty
 }
@@ -99,7 +99,7 @@ fn calculate_total(price: Decimal, qty: Int) -> Decimal {
 Controls execution behaviour: workers, memory rules, isolation, resource
 budgets, scheduling, fault recovery and queue management.
 
-```logicn
+```galerina
 runtime {
   workers: 8
   memory: safe
@@ -112,7 +112,7 @@ runtime {
 Controls build outputs: multi-target compilation, build configuration,
 optimisation, packaging and artifact generation.
 
-```logicn
+```galerina
 compile {
   target: ["wasm", "native", "node"]
   optimisation: aggressive
@@ -125,7 +125,7 @@ compile {
 Capability declarations, permission enforcement, effect validation, policy
 boundaries and least-authority execution. No ambient authority.
 
-```logicn
+```galerina
 security {
   allow: [
     db.read,
@@ -143,7 +143,7 @@ security {
 Explicit side-effect declarations for auditability and compile-time
 verification:
 
-```logicn
+```galerina
 effects {
   uses: [
     db.read,
@@ -158,7 +158,7 @@ effects {
 External systems are accessed only through capability-guarded interfaces. No
 external access without declared permission:
 
-```logicn
+```galerina
 service payments {
   capability: network.internal
   endpoint "https://payments.internal"
@@ -169,24 +169,24 @@ service payments {
 
 ```text
 src/
-  main.lln
-  auth.lln
-  api.lln
+  main.spore
+  auth.spore
+  api.spore
 
 runtime/
-  workers.lln
-  scheduling.lln
+  workers.spore
+  scheduling.spore
 
 build/
-  targets.lln
-  reports.lln
+  targets.spore
+  reports.spore
 
 security/
-  policy.lln
-  capabilities.lln
+  policy.spore
+  capabilities.spore
 ```
 
-All files use valid `.lln` syntax.
+All files use valid `.spore` syntax.
 
 ## Core Principle
 

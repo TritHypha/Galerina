@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Events define asynchronous or externally delivered payloads that cross a LogicN
+Events define asynchronous or externally delivered payloads that cross a Galerina
 boundary.
 
 Events are useful for queues, webhooks, background workers and data-platform
@@ -27,7 +27,7 @@ queue, webhook provider, package, job or runtime component.
 
 ## Syntax Example
 
-```logicn
+```galerina
 event OrderCreated {
   orderId: UUID view: public
   customerId: UUID view: internal
@@ -35,7 +35,7 @@ event OrderCreated {
 }
 ```
 
-```logicn
+```galerina
 contract event OrderCreatedContract {
   event OrderCreated
   topic "orders.created"

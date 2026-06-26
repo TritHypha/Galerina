@@ -2,10 +2,10 @@
 
 ## Definition
 
-LogicN **Runtime Profiles** are restricted runtime and language subsets that selectively disable unsafe features or require stronger guarantees. They apply additional governance restrictions on top of the standard LogicN runtime.
+Galerina **Runtime Profiles** are restricted runtime and language subsets that selectively disable unsafe features or require stronger guarantees. They apply additional governance restrictions on top of the standard Galerina runtime.
 
 ```text
-LogicN is governed by default.
+Galerina is governed by default.
 Profiles restrict further when the environment demands it.
 ```
 
@@ -48,7 +48,7 @@ inside restricted profiles.
 
 Focus: mandatory governance, mandatory audit, maximum analyzability.
 
-```logicn
+```galerina
 profile strict {
 
   require audit required
@@ -75,7 +75,7 @@ profile strict {
 
 Focus: deterministic execution, runtime predictability, fault isolation.
 
-```logicn
+```galerina
 profile high_integrity {
 
   require Result<T, Error>
@@ -95,7 +95,7 @@ profile high_integrity {
 
 Focus: bounded timing, runtime predictability, controlled scheduling.
 
-```logicn
+```galerina
 profile deterministic {
 
   require bounded_loops
@@ -109,7 +109,7 @@ profile deterministic {
 
 ## Combining Profiles
 
-```logicn
+```galerina
 boot main {
   profile use strict, high_integrity
 }
@@ -165,7 +165,7 @@ Avoid: `Aerospace Mode`, `Industrial Mode`, `Military Mode`, `Certified Mode` â€
 ## Final Principle
 
 ```text
-LogicN profiles increase analyzability,
+Galerina profiles increase analyzability,
 determinism, and governance restrictions
 without implying certification guarantees.
 ```

@@ -1,0 +1,22 @@
+{
+  "name": "@galerina/core-cli",
+  "version": "1.0.0-beta.2",
+  "description": "Galerina developer command-line interface for checking, building, serving, reporting and running safe tasks.",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "Galerina": "./dist/index.js"
+  },
+  "scripts": {
+    "typecheck": "npm --prefix ../galerina-devtools-project-graph run build && npm --prefix ../galerina-devtools-graph-project run build && npm --prefix ../galerina-core-tasks run build && tsc --noEmit",
+    "build": "npm --prefix ../galerina-devtools-project-graph run build && npm --prefix ../galerina-devtools-graph-project run build && npm --prefix ../galerina-core-tasks run build && tsc -p tsconfig.json",
+    "test": "npm run typecheck && npm run build && node --test tests/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://Galerina.local/schemas/precision-report.schema.json",
+  "title": "Galerina Precision Report Prototype",
+  "type": "object",
+  "required": [
+    "compiler",
+    "project",
+    "principle",
+    "rule",
+    "cpuReferenceRule",
+    "errorCorrectionPolicy",
+    "risks",
+    "computeBlocks"
+  ],
+  "properties": {
+    "compiler": {
+      "type": "string"
+    },
+    "project": {
+      "type": "string"
+    },
+    "principle": {
+      "type": "string"
+    },
+    "rule": {
+      "type": "string"
+    },
+    "cpuReferenceRule": {
+      "type": "string"
+    },
+    "errorCorrectionPolicy": {
+      "type": "object",
+      "required": [
+        "detection",
+        "correction",
+        "nonGoals"
+      ],
+      "properties": {
+        "detection": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "correction": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "nonGoals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "computeBlocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "file",
+          "line",
+          "target",
+          "preference",
+          "verification",
+          "errorCorrection",
+          "precision"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string"
+          },
+          "line": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "target": {
+            "type": "string"
+          },
+          "preference": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "verification": {
+            "type": "object"
+          },
+          "errorCorrection": {
+            "type": "object"
+          },
+          "precision": {
+            "type": "object"
+          },
+          "fallbackCovered": {
+            "type": "boolean"
+          },
+          "blockedOperations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

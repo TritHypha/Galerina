@@ -16,12 +16,12 @@ const ROOT = process.cwd();
 const soft = process.argv.includes("--soft");
 const asJson = process.argv.includes("--json");
 const SKIP = new Set(["node_modules", "dist", ".git", "build"]);
-const EXT = /\.(ts|mjs|cjs|lln|md|json)$/;
+const EXT = /\.(ts|mjs|cjs|spore|md|json)$/;
 
 // Registered generated artifacts → the source trees/files they derive from.
 const ARTIFACTS = [
-  { name: "code-index", file: "build/code-index/code-index.json", prov: "build/code-index/provenance.json", sources: ["packages-logicn", "docs", "scripts"] },
-  { name: "code-registry", file: "build/code-registry/registry.json", prov: "build/code-registry/provenance.json", sources: ["packages-logicn", "scripts"] },
+  { name: "code-index", file: "build/code-index/code-index.json", prov: "build/code-index/provenance.json", sources: ["packages-galerina", "docs", "scripts"] },
+  { name: "code-registry", file: "build/code-registry/registry.json", prov: "build/code-registry/provenance.json", sources: ["packages-galerina", "scripts"] },
   { name: "kb-index", file: "build/kb-index/kb-index.json", prov: "build/kb-index/provenance.json", sources: ["docs/Knowledge-Bases", "README.md", "AGENTS.md"] },
 ];
 

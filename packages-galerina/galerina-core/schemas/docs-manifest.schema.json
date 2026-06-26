@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://Galerina.local/schemas/docs-manifest.schema.json",
+  "title": "Galerina Documentation Manifest Prototype",
+  "type": "object",
+  "required": [
+    "project",
+    "compiler",
+    "generatedFrom",
+    "outputs"
+  ],
+  "properties": {
+    "project": {
+      "type": "string"
+    },
+    "compiler": {
+      "type": "string"
+    },
+    "generatedFrom": {
+      "type": "object"
+    },
+    "documentationContract": {
+      "type": "object"
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "file",
+          "format"
+        ],
+        "properties": {
+          "file": {
+            "type": "string"
+          },
+          "format": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

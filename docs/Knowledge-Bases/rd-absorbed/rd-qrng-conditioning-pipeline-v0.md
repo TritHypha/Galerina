@@ -1,9 +1,9 @@
-<!-- ABSORBED R&D SOURCE — verbatim mirror. LogicN is the main library; the R&D repo is upstream/authoring.
-     Source: LogicN-R-AND-D/tmf/spec/qrng-conditioning-pipeline-v0.md (roadmap #3; bench 17/17)  ·  Pinned: R&D rnd-session 2026-06-17
-     Integrated LogicN view: logicn-quantum-resilience-roadmap.md (entropy.qrng interface)  ·  Catalog: logicn-rd-absorption-catalog.md
+<!-- ABSORBED R&D SOURCE — verbatim mirror. Galerina is the main library; the R&D repo is upstream/authoring.
+     Source: Galerina-R-AND-D/tmf/spec/qrng-conditioning-pipeline-v0.md (roadmap #3; bench 17/17)  ·  Pinned: R&D rnd-session 2026-06-17
+     Integrated Galerina view: galerina-quantum-resilience-roadmap.md (entropy.qrng interface)  ·  Catalog: galerina-rd-absorption-catalog.md
      Rule: edit the upstream source then re-vendor; do not fork this copy (feedback-auto-import-rd-docs). -->
 
-> **Absorbed R&D source (verbatim).** See `logicn-rd-absorption-catalog.md`. Internal links point at the upstream R&D tree.
+> **Absorbed R&D source (verbatim).** See `galerina-rd-absorption-catalog.md`. Internal links point at the upstream R&D tree.
 
 ---
 
@@ -34,7 +34,7 @@ not repeat them. Parent research: [`research/photonic-lane-D-qrng.md`](../resear
 Specify the **digital** stage of a NIST-conformant random-bit pipeline that turns a physical/quantum noise
 source into `rnd` (FIPS-204 hedged-signing nonce) or a key-generation seed `ξ`, **fail-closed**: any health
 fault, or a DRBG reseed-required condition, returns **no bytes** (`unknown → deny`, mirroring
-`LLN-ENTROPY-001/002`). The pipeline is the three SP 800-90 layers, of which a QRNG occupies only the first box:
+`SPORE-ENTROPY-001/002`). The pipeline is the three SP 800-90 layers, of which a QRNG occupies only the first box:
 
 ```
 [ noise source ] → [ 90B continuous health tests ] → [ 90A HMAC_DRBG(SHA-256) ] → rnd / keygen seed ξ
@@ -110,7 +110,7 @@ Internal state `{ K (32 B), V (32 B), reseed_counter }`. `reseed_interval = 2^48
   pre-`Update(additional_input)`; `V = HMAC(K, V)` repeatedly until `n` bytes; truncate to `n`;
   post-`Update(additional_input)`; `reseed_counter += 1`.
 
-## 5. Fail-closed rules (normative — mirrors `LLN-ENTROPY-001/002`)
+## 5. Fail-closed rules (normative — mirrors `SPORE-ENTROPY-001/002`)
 
 1. **Health-test failure → out of service.** On the first RCT or APT failure the source is latched failed and
    the pipeline returns **`null`** (no bytes). 90B §4.3: on a persistent failure "the entropy source **shall
@@ -162,13 +162,13 @@ The reference reproduces `ReturnedBits` **byte-exact**.
 | d | biased (run-capped 0.75 ones) | same | `APT_FAIL`, `bytes = null` |
 | f | fixed entropy | reseed + ceiling | reseed → counter=1, output changes; `counter > 2^48` → `null`; reseed → recovers |
 
-## 7. LogicN role (governance boundary)
+## 7. Galerina role (governance boundary)
 
-Crypto and entropy cannot live in `.lln` (`logicn check` rejects even bitwise ops; `signature-custody-v0` §7).
-This pipeline is a **host-side** SP 800-90 RBG invoked through the LogicN capability boundary (`entropy.qrng`).
-LogicN governs the **availability and admission** of the entropy capability: a failed 90B health test →
+Crypto and entropy cannot live in `.spore` (`galerina check` rejects even bitwise ops; `signature-custody-v0` §7).
+This pipeline is a **host-side** SP 800-90 RBG invoked through the Galerina capability boundary (`entropy.qrng`).
+Galerina governs the **availability and admission** of the entropy capability: a failed 90B health test →
 entropy source unavailable → `unknown → deny`, identical to how a missing vetted verifier makes the reader
-reject every signed file. LogicN does not generate or condition bits itself.
+reject every signed file. Galerina does not generate or condition bits itself.
 
 ## 8. Conformance
 

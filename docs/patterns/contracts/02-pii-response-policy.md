@@ -1,4 +1,4 @@
-Title: LogicN Contract Pattern — PII Response Policy
+Title: Galerina Contract Pattern — PII Response Policy
 
 ### When to use
 
@@ -6,7 +6,7 @@ Use this pattern when a flow returns data that contains personally identifiable 
 
 ### Correct example
 
-```logicn
+```galerina
 flow GetUserProfile(readonly request: Request) -> GetUserProfileResult {
 
   contract {
@@ -104,7 +104,7 @@ flow GetUserProfile(readonly request: Request) -> GetUserProfileResult {
 ### Common mistakes
 
 **Mistake 1 — Using `response.hides` instead of `response.denies`**
-```logicn
+```galerina
 response {
   hides result.email unless context.actor.grants contains "data:pii"
 }
@@ -112,7 +112,7 @@ response {
 `hides` is not a valid keyword. The correct keyword is `denies`. The compiler will reject `hides` with a syntax error.
 
 **Mistake 2 — Declaring PII fields as non-optional in `types`**
-```logicn
+```galerina
 types {
   GetUserProfileResult = { userId: String, email: String, dateOfBirth: String }
 }
@@ -120,7 +120,7 @@ types {
 When `response.denies` can withhold a field, that field must be typed as optional (`String?`). A non-optional field that may be absent causes a type mismatch at the call site.
 
 **Mistake 3 — Including PII fields in the audit `includes` list**
-```logicn
+```galerina
 effects {
   audit {
     includes: [result.email, result.dateOfBirth]
@@ -143,7 +143,7 @@ Including PII fields in audit records defeats the privacy contract. The audit bl
 
 If `E115 — field 'email' must be typed optional` is raised, change the `types` declaration:
 
-```logicn
+```galerina
 types {
   GetUserProfileResult = {
     userId: String,

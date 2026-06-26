@@ -1,9 +1,9 @@
-<!-- ABSORBED R&D SOURCE — verbatim mirror. LogicN is the main library; the R&D repo is upstream/authoring.
-     Source: LogicN-R-AND-D/tmf/spec/revocation-registry-v0.md (roadmap #2; bench 28/28)  ·  Pinned: R&D rnd-session 2026-06-17
-     Integrated LogicN view: logicn-key-custody-and-rotation.md + logicn-tmf-engine.md (engine Slice-5 conformance)  ·  Catalog: logicn-rd-absorption-catalog.md
+<!-- ABSORBED R&D SOURCE — verbatim mirror. Galerina is the main library; the R&D repo is upstream/authoring.
+     Source: Galerina-R-AND-D/tmf/spec/revocation-registry-v0.md (roadmap #2; bench 28/28)  ·  Pinned: R&D rnd-session 2026-06-17
+     Integrated Galerina view: galerina-key-custody-and-rotation.md + galerina-tmf-engine.md (engine Slice-5 conformance)  ·  Catalog: galerina-rd-absorption-catalog.md
      Rule: edit the upstream source then re-vendor; do not fork this copy (feedback-auto-import-rd-docs). -->
 
-> **Absorbed R&D source (verbatim).** See `logicn-rd-absorption-catalog.md`. Internal links point at the upstream R&D tree.
+> **Absorbed R&D source (verbatim).** See `galerina-rd-absorption-catalog.md`. Internal links point at the upstream R&D tree.
 
 ---
 
@@ -141,7 +141,7 @@ signature-custody §4, reused verbatim. Default profile is the #34 transition hy
 
 ## 4. What is signed — the canonical pre-image and the #34 digest
 
-The registry is a **non-COSE** surface (like the `.tmf` root and the LogicN-#34 manifest), so it follows the
+The registry is a **non-COSE** surface (like the `.tmf` root and the Galerina-#34 manifest), so it follows the
 signature-custody §2.1 construction **verbatim**, *not* the COSE/RFC-9964 empty-ctx form of the Trust Capsule:
 
 ```
@@ -158,7 +158,7 @@ sig_ml   = ML-DSA-65.Sign(sk_ml, digest, ctx="tmf-revocation-v0")   # pure ML-DS
   `next_update` are signed, so an attacker cannot roll the sequence back or extend freshness without re-signing.
 - **Per-surface domain separation** (#34 intent): the ML-DSA `ctx = "tmf-revocation-v0"` (a distinct surface
   label) ensures a registry signature cannot be cross-protocol-confused with a `.tmf`-root signature
-  (`ctx="tmf-root-v0"`) or a LogicN-manifest signature under the same key — empirically the binding holds
+  (`ctx="tmf-root-v0"`) or a Galerina-manifest signature under the same key — empirically the binding holds
   (signature-custody §2.1, `ctx-binding.mjs`). Ed25519 has no ctx parameter; its domain separation is the
   distinct `digest` (over a `MAGIC`-prefixed pre-image that no other surface produces).
 - **Why digest-then-sign here (vs the Trust Capsule's sign-`Sig_structure`-directly):** this surface is the

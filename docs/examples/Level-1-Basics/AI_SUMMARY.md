@@ -13,7 +13,7 @@
 
 ## Canonical patterns
 
-```lln
+```spore
 // pure flow: deterministic logic, no effects
 pure flow calculateVat(price: Money<GBP>) -> Money<GBP>
 contract {
@@ -24,7 +24,7 @@ contract {
 }
 ```
 
-```lln
+```spore
 // secure flow: trust-boundary entry point, validate before use
 secure flow createPatient(readonly request: Request) -> CreatePatientResult
 contract {
@@ -56,8 +56,8 @@ contract {
 
 | Code | Meaning |
 |------|---------|
-| `LLN-SYNTAX-005` | Top-level `fn` declaration is not permitted; use a flow qualifier instead |
-| `LLN-SYNTAX-006` (`LET_AT_TOP_LEVEL`) | `let` bindings are not allowed at top level; move inside a flow |
+| `SPORE-SYNTAX-005` | Top-level `fn` declaration is not permitted; use a flow qualifier instead |
+| `SPORE-SYNTAX-006` (`LET_AT_TOP_LEVEL`) | `let` bindings are not allowed at top level; move inside a flow |
 
 ## Example IDs at this level
 

@@ -6,12 +6,12 @@
 Status: Active — canonical beginner example
 Scope:  data / flow / permission / route / report pattern; v1 prefers explicit form
 Note:   Uses ctx: RequestContext — see request-context-keyword.md for naming convention
-See also: logicn-code-examples-full-flow.md, model-views-and-data-blocks.md, request-context-keyword.md
+See also: galerina-code-examples-full-flow.md, model-views-and-data-blocks.md, request-context-keyword.md
 ```
 
 ## Purpose
 
-The Hello World API pattern shows the beginner-facing LogicN model using:
+The Hello World API pattern shows the beginner-facing Galerina model using:
 
 ```text
 data
@@ -23,7 +23,7 @@ report
 
 ## Explicit Version
 
-```logicn
+```galerina
 data Hello {
   request get {
     // No request body needed
@@ -92,9 +92,9 @@ route GET "/hello"     = API entry point
 
 ## Shorter Future Form
 
-LogicN may later support a shorter beginner form after safe defaults are stable:
+Galerina may later support a shorter beginner form after safe defaults are stable:
 
-```logicn
+```galerina
 data Hello {
   view response {
     message: String view: public
@@ -115,7 +115,7 @@ route GET "/hello" {
 
 ## Safe Default Requirements
 
-The shorter form is only acceptable if LogicN applies safe defaults:
+The shorter form is only acceptable if Galerina applies safe defaults:
 
 ```text
 anonymous allowed only for public data

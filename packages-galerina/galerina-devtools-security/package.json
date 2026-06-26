@@ -1,0 +1,44 @@
+{
+  "name": "@galerina/devtools-security",
+  "version": "1.0.0-beta.2",
+  "description": "Security analysis, audit, and testing tools for Galerina programs. Runs all security checks (taint, profiles, governance, hardware, path sandbox, ReDoS guard) and produces structured audit reports. Designed for CI integration — lightweight, no runtime dependency.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "bin": {
+    "galerina-security": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test tests/*.test.mjs",
+    "typecheck": "tsc --noEmit",
+    "audit": "node dist/cli.js audit",
+    "audit:json": "node dist/cli.js audit --json"
+  },
+  "dependencies": {
+    "@galerina/core-compiler": "file:../galerina-core-compiler",
+    "@galerina/core-economics": "file:../galerina-core-economics",
+    "@galerina/devtools-pci": "file:../galerina-devtools-pci"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "typescript": "^5.5.0"
+  },
+  "private": true,
+  "keywords": [
+    "galerina",
+    "security",
+    "audit",
+    "devtools",
+    "taint",
+    "owasp"
+  ],
+  "note": "Security tooling ships independently of the compiler — patches can be released immediately without waiting for compiler release cycles."
+}

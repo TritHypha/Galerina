@@ -6,7 +6,7 @@ background processes or tasks.
 ## Why process.spawn must be declared
 
 Without a `process.spawn` declaration in the `effects` block, any attempt to call
-`Process.spawn()` or equivalent causes LLN-EFFECT-001. This makes covert background
+`Process.spawn()` or equivalent causes SPORE-EFFECT-001. This makes covert background
 execution impossible to hide — it is visible in source, audited, and governed.
 
 ## The governance pattern
@@ -30,9 +30,9 @@ execution impossible to hide — it is visible in source, audited, and governed.
 
 | Code | Fires when |
 |------|------------|
-| LLN-EFFECT-001 | process.spawn called without effects { process.spawn } declaration |
-| LLN-EFFECT-001 | worker.spawn called without effects { worker.spawn } declaration |
-| LLN-EFFECT-001 | event.schedule called without effects { event.schedule } declaration |
+| SPORE-EFFECT-001 | process.spawn called without effects { process.spawn } declaration |
+| SPORE-EFFECT-001 | worker.spawn called without effects { worker.spawn } declaration |
+| SPORE-EFFECT-001 | event.schedule called without effects { event.schedule } declaration |
 
 ## Added in
 

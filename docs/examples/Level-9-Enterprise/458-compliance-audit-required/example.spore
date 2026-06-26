@@ -1,0 +1,31 @@
+/// example: 458-compliance-audit-required
+/// test_status: stable
+/// level: 9
+/// concept: secure flow that declares audit.write but never calls AuditLog.write
+/// expected_diagnostics: SPORE-AUDIT-001
+/// ai_rule: AuditLog.write must be called on every return path in a flow that declares audit.write.
+
+secure flow deleteRecord(readonly request: Request) -> DeleteRecordResult
+
+contract {
+  // Result alias — audit.write declared but AuditLog.write never called triggers SPORE-AUDIT-001
+  types {
+    type DeleteRecordResult = Result<Response, RecordError>
+  }
+
+  intent {
+    "Delete a patient record with audit trail"
+  }
+
+  effects {
+    database.write
+    audit.write
+  }
+}
+{
+  unsafe let rawId: String = request.body.recordId
+  let recordId: protected RecordId = validate.recordId(rawId)?
+  RecordDB.delete(recordId)?
+  // SPORE-AUDIT-001: audit.write declared but AuditLog.write never called
+  return Ok(Response.ok({}))
+}

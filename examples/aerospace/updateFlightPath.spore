@@ -1,0 +1,61 @@
+/// updateFlightPath — safety_critical aerospace governance example
+/// Demonstrates: value.classification safety_critical, safety block,
+/// deterministic execution requirement, control boundary audit.
+///
+/// This example shows Galerina governance applied to High Consequence Systems
+/// beyond PII — aerospace, where failure costs lives not just data.
+
+secure flow updateFlightPath(readonly telemetry: TelemetryPacket) -> Result<FlightCommand, FlightError>
+contract {
+  intent {
+    "Update aircraft flight path using validated telemetry while preserving safety envelope."
+  }
+
+  effects {
+    telemetry.read
+    navigation.compute
+    flight_control.propose
+    audit.write
+  }
+
+  value {
+    classification safety_critical
+    domain aerospace
+    estimated_loss_per_incident 50000000
+    regulatory_exposure extreme
+  }
+
+  safety {
+    require deterministic_execution
+    require bounded_runtime
+    require validated_telemetry
+    require no_unbounded_loops
+    require fallback_mode_available
+  }
+
+  limits {
+    request_time 50ms
+    memory 8mb
+  }
+
+  audit {
+    require proof_graph
+    require runtime_attestation
+    require control_boundary_trace
+    require actor
+    require trace_id
+  }
+}
+{
+  let safeTelemetry   = validate.telemetry(telemetry)?
+  let proposedCommand = Navigation.computePath(safeTelemetry)?
+  let checkedCommand  = SafetyEnvelope.check(proposedCommand)?
+
+  AuditLog.write({
+    event: "FlightPathUpdated",
+    commandHash: hash(checkedCommand),
+    safetyEnvelope: "passed"
+  })
+
+  return Ok(checkedCommand)
+}

@@ -7,7 +7,7 @@ Planned for: Phase 17+
 
 ## Definition
 
-The **LogicN Securely Governed Runtime (LSGR)** execution pipeline consists of ordered components, each with a defined role in the governed execution chain.
+The **Galerina Securely Governed Runtime (LSGR)** execution pipeline consists of ordered components, each with a defined role in the governed execution chain.
 
 ```text
 Source
@@ -41,7 +41,7 @@ Never expose the runtime planner directly to raw untrusted input.
 
 ### Parser
 
-**Role:** Transforms LogicN source text into structured tokens and syntax trees.
+**Role:** Transforms Galerina source text into structured tokens and syntax trees.
 
 Responsibilities: lexical analysis, token generation, syntax parsing, structural validation.
 
@@ -177,8 +177,8 @@ and what is the safest and most efficient governed execution path?
 ## Final Principle
 
 ```text
-LogicN should not optimise executing instructions.
+Galerina should not optimise executing instructions.
 
-LogicN should optimise governed execution of intent
+Galerina should optimise governed execution of intent
 across heterogeneous compute systems.
 ```

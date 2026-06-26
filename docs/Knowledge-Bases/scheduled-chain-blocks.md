@@ -18,7 +18,7 @@ Explicit blocks, not hidden dispatch.
 
 Polymorphism can hide behaviour:
 
-```logicn
+```galerina
 process(data)
 ```
 
@@ -103,9 +103,9 @@ audit: required
 
 Now the Execution Coordination Scheduler can safely link blocks together.
 
-## LogicN Syntax Direction
+## Galerina Syntax Direction
 
-```logicn
+```galerina
 chain ProcessOrder {
   block ValidateInput {
     input: OrderRequest

@@ -1,13 +1,13 @@
-# LogicN Package Implementation and Runtime Gaps
+# Galerina Package Implementation and Runtime Gaps
 
 Status: Draft architecture and implementation guidance  
-Purpose: Define the remaining core package gaps required for the LogicN v0.1 runtime, compiler and governance baseline.
+Purpose: Define the remaining core package gaps required for the Galerina v0.1 runtime, compiler and governance baseline.
 
 ---
 
 # 1. Overview
 
-The LogicN repository already defines the high-level governance-first architecture, package boundaries and runtime direction.
+The Galerina repository already defines the high-level governance-first architecture, package boundaries and runtime direction.
 
 However, several core implementation areas remain partially specified or planning-only.
 
@@ -31,7 +31,7 @@ The goal is to complete the documentation contracts before full implementation.
 
 # 2. Current Remaining Gaps
 
-## 2.1 logicn-core-compiler
+## 2.1 galerina-core-compiler
 
 Remaining:
 
@@ -51,14 +51,14 @@ implementation pending
 
 ---
 
-## 2.2 logicn-core-cli
+## 2.2 galerina-core-cli
 
 Remaining commands:
 
 ```text
-logicn deploy
-logicn explain
-logicn plan
+galerina deploy
+galerina explain
+galerina plan
 ```
 
 Status:
@@ -70,7 +70,7 @@ not implemented
 
 ---
 
-## 2.3 logicn-core-reports
+## 2.3 galerina-core-reports
 
 Remaining:
 
@@ -89,7 +89,7 @@ schema not finalised
 
 ---
 
-## 2.4 logicn-core-compute
+## 2.4 galerina-core-compute
 
 Remaining:
 
@@ -108,7 +108,7 @@ planning only
 
 ---
 
-## 2.5 logicn-core-logic
+## 2.5 galerina-core-logic
 
 Remaining:
 
@@ -127,13 +127,13 @@ not implemented
 
 ---
 
-# 3. logicn-core-compiler
+# 3. galerina-core-compiler
 
 ---
 
 # 3.1 Compiler Responsibilities
 
-The LogicN compiler is not only a syntax compiler.
+The Galerina compiler is not only a syntax compiler.
 
 It is responsible for:
 
@@ -190,7 +190,7 @@ optical_io
 
 # 3.3 Example: Explicit Effect
 
-```logicn
+```galerina
 pub fn fetch_user(
     http: HttpClient,
     id: UserId
@@ -214,7 +214,7 @@ must appear in audit logs
 
 Bad:
 
-```logicn
+```galerina
 pub fn fetch_user(
     http: HttpClient,
     id: UserId
@@ -226,7 +226,7 @@ pub fn fetch_user(
 Compiler diagnostic:
 
 ```text
-LLN-EFFECT-001: undeclared effect
+SPORE-EFFECT-001: undeclared effect
 function: fetch_user
 required effect: network
 ```
@@ -239,7 +239,7 @@ Effects should propagate upward.
 
 Example:
 
-```logicn
+```galerina
 pub fn load_profile(
     http: HttpClient,
     id: UserId
@@ -272,14 +272,14 @@ module graph integrity
 
 Bad:
 
-```logicn
+```galerina
 import { InternalKey } from "app/auth/private-keys"
 ```
 
 Compiler error:
 
 ```text
-LLN-BOUNDARY-001: import crosses restricted package boundary
+SPORE-BOUNDARY-001: import crosses restricted package boundary
 module: app/auth/private-keys
 ```
 
@@ -289,7 +289,7 @@ module: app/auth/private-keys
 
 Bad:
 
-```logicn
+```galerina
 private type SecretToken = Text
 
 pub fn export_token() -> SecretToken {
@@ -300,7 +300,7 @@ pub fn export_token() -> SecretToken {
 Compiler error:
 
 ```text
-LLN-BOUNDARY-002: public API exposes private secret-bearing type
+SPORE-BOUNDARY-002: public API exposes private secret-bearing type
 ```
 
 ---
@@ -357,13 +357,13 @@ Recommended compiler pipeline:
 
 ---
 
-# 4. logicn-core-cli
+# 4. galerina-core-cli
 
 ---
 
 # 4.1 CLI Philosophy
 
-The LogicN CLI is not only a build tool.
+The Galerina CLI is not only a build tool.
 
 It is also:
 
@@ -378,7 +378,7 @@ compute planner
 
 ---
 
-# 4.2 `logicn deploy`
+# 4.2 `galerina deploy`
 
 Purpose:
 
@@ -403,7 +403,7 @@ produce deployment report
 # 4.3 Example Deploy Command
 
 ```bash
-logicn deploy production
+galerina deploy production
 ```
 
 Potential runtime output:
@@ -431,7 +431,7 @@ module: app/testing/debug-client
 
 ---
 
-# 4.5 `logicn explain`
+# 4.5 `galerina explain`
 
 Purpose:
 
@@ -454,7 +454,7 @@ why a scheduler decision occurred
 # 4.6 Example Explain Command
 
 ```bash
-logicn explain app/users/service
+galerina explain app/users/service
 ```
 
 Example output:
@@ -465,7 +465,7 @@ Module: app/users/service
 Imports:
 - app/users/types
 - app/users/repository
-- logicn-core-data/database
+- galerina-core-data/database
 
 Capabilities:
 - Database
@@ -480,7 +480,7 @@ The storage effect propagates into this module.
 
 ---
 
-# 4.7 `logicn plan`
+# 4.7 `galerina plan`
 
 Purpose:
 
@@ -506,7 +506,7 @@ runtime scheduling hints
 # 4.8 Example Plan Command
 
 ```bash
-logicn plan app/ai/inference
+galerina plan app/ai/inference
 ```
 
 Example output:
@@ -543,12 +543,12 @@ silent mode
 Example:
 
 ```bash
-logicn plan app/ai/inference --json
+galerina plan app/ai/inference --json
 ```
 
 ---
 
-# 5. logicn-core-reports
+# 5. galerina-core-reports
 
 ---
 
@@ -598,7 +598,7 @@ silent runtime failures
 ```json
 {
   "timestamp": "2026-01-01T12:00:00Z",
-  "runtime": "logicn-runtime",
+  "runtime": "galerina-runtime",
   "module": "app/users/service",
   "function": "get_profile",
   "effects": ["storage"],
@@ -669,13 +669,13 @@ Example:
 
 ---
 
-# 6. logicn-core-compute
+# 6. galerina-core-compute
 
 ---
 
 # 6.1 Compute Philosophy
 
-LogicN should remain:
+Galerina should remain:
 
 ```text
 hardware-neutral
@@ -688,13 +688,13 @@ The language should not hardcode vendor syntax.
 
 Bad:
 
-```logicn
+```galerina
 target nvidia
 ```
 
 Good:
 
-```logicn
+```galerina
 target gpu
 ```
 
@@ -745,7 +745,7 @@ Example planner output:
 
 # 6.4 Photonic Planning Layer
 
-LogicN should treat photonics primarily as:
+Galerina should treat photonics primarily as:
 
 ```text
 optical interconnect
@@ -760,7 +760,7 @@ Not as magical CPU replacement syntax.
 
 # 6.5 Example Optical I/O Planning
 
-```logicn
+```galerina
 fn distribute_training_batch(
     batch: TensorBatch
 ) effect optical_io, accelerator {
@@ -813,13 +813,13 @@ Coordinated under one governed execution planner.
 
 ---
 
-# 7. logicn-core-logic
+# 7. galerina-core-logic
 
 ---
 
 # 7.1 Omni Logic Philosophy
 
-LogicN should remain binary-safe by default.
+Galerina should remain binary-safe by default.
 
 However, future compute research may require:
 
@@ -868,7 +868,7 @@ CONFLICT
 
 Example:
 
-```logicn
+```galerina
 let verification = OmniState.UNKNOWN
 ```
 
@@ -878,7 +878,7 @@ This should remain isolated from core runtime safety.
 
 # 7.4 Example AI Reasoning Use Case
 
-```logicn
+```galerina
 fn evaluate_signal(signal: AISignal) -> OmniState {
     if signal.confidence > 0.95 {
         return OmniState.TRUE
@@ -942,7 +942,7 @@ these define governance correctness
 Next priority:
 
 ```text
-logicn explain
+galerina explain
 runtime audit schema
 runtime denial reports
 capability reports
@@ -961,7 +961,7 @@ these improve observability and auditability
 Then:
 
 ```text
-logicn deploy
+galerina deploy
 compute planner
 execution planner
 runtime balancing
@@ -1020,7 +1020,7 @@ silent fallback
 
 # 10. Final Recommendation
 
-LogicN should complete the governance and compiler correctness layers before advanced heterogeneous compute work.
+Galerina should complete the governance and compiler correctness layers before advanced heterogeneous compute work.
 
 Recommended stable foundation:
 

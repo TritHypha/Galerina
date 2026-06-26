@@ -1,6 +1,6 @@
 # Secure Fast Routing
 
-LogicN routing should be compiled, typed and policy-checked before the app runs.
+Galerina routing should be compiled, typed and policy-checked before the app runs.
 
 Core rule:
 
@@ -12,7 +12,7 @@ rules are known.
 Routes should not be loose strings handled by ad hoc middleware at runtime.
 They should become a compiled security graph and route manifest.
 
-Before deployment, LogicN should know:
+Before deployment, Galerina should know:
 
 ```text
 which route exists
@@ -37,9 +37,9 @@ Instead of this style:
 app.post("/orders/:id", handler)
 ```
 
-LogicN should prefer a typed route contract:
+Galerina should prefer a typed route contract:
 
-```LogicN
+```Galerina
 route POST "/orders/{orderId: UUID}" {
   auth required
   csrf required
@@ -71,7 +71,7 @@ route POST "/orders/{orderId: UUID}" {
 }
 ```
 
-This gives LogicN two advantages:
+This gives Galerina two advantages:
 
 ```text
 1. Security can be checked before deployment.
@@ -80,7 +80,7 @@ This gives LogicN two advantages:
 
 ## Fast Routing
 
-LogicN should compile routes into a method-indexed radix tree or trie.
+Galerina should compile routes into a method-indexed radix tree or trie.
 
 Example:
 
@@ -136,7 +136,7 @@ large global middleware chains
 
 ## Secure Routing Layers
 
-LogicN routing should apply explicit layers:
+Galerina routing should apply explicit layers:
 
 ```text
 Layer 1: Method and path match
@@ -153,14 +153,14 @@ Layer 11: Response filtering
 Layer 12: Audit/reporting
 ```
 
-CORS should be explicit per app, group or route. LogicN should not emit broad
+CORS should be explicit per app, group or route. Galerina should not emit broad
 CORS headers by default when cross-domain calls are not expected.
 
 ## Route Groups
 
 Group-level policy should compile into each route's final policy.
 
-```LogicN
+```Galerina
 route_group "/admin" {
   auth required
   roles ["admin"]
@@ -206,11 +206,11 @@ in route reports and reverse-proxy/server config where appropriate.
 
 ## Compile-Time Checks
 
-LogicN should fail route checks for dangerous routes.
+Galerina should fail route checks for dangerous routes.
 
 State-changing GET:
 
-```LogicN
+```Galerina
 GET "/delete-account" {
   handler deleteAccount
 }
@@ -219,7 +219,7 @@ GET "/delete-account" {
 Diagnostic:
 
 ```text
-LOGICN-ROUTE-SECURITY-001
+GALERINA-ROUTE-SECURITY-001
 GET route cannot perform a state-changing action.
 
 Route:
@@ -234,7 +234,7 @@ Use POST or DELETE with csrf required.
 
 Missing auth for financial state:
 
-```LogicN
+```Galerina
 POST "/payments" {
   body PaymentRequest
   handler createPayment
@@ -244,7 +244,7 @@ POST "/payments" {
 Diagnostic:
 
 ```text
-LOGICN-ROUTE-SECURITY-002
+GALERINA-ROUTE-SECURITY-002
 POST /payments changes financial state but has no auth rule.
 
 Required:
@@ -256,7 +256,7 @@ audit required
 
 Missing object-level authorization:
 
-```LogicN
+```Galerina
 GET "/orders/{orderId: UUID}" {
   auth required
   response OrderResponse
@@ -267,7 +267,7 @@ GET "/orders/{orderId: UUID}" {
 Diagnostic:
 
 ```text
-LOGICN-AUTHZ-OBJECT-001
+GALERINA-AUTHZ-OBJECT-001
 Route uses user-supplied object ID but has no object_access rule.
 
 Route:
@@ -279,10 +279,10 @@ Add object_access rule proving the user can access this order.
 
 ## Property-Level Response Security
 
-LogicN should check which fields a caller may see, not only whether the caller
+Galerina should check which fields a caller may see, not only whether the caller
 can access an object.
 
-```LogicN
+```Galerina
 response UserProfile {
   public id: UUID
   public displayName: String
@@ -295,7 +295,7 @@ response UserProfile {
 
 Route:
 
-```LogicN
+```Galerina
 GET "/users/{userId: UUID}" {
   auth required
 
@@ -316,11 +316,11 @@ policy so sensitive fields are not accidentally returned.
 
 ## Multiple Requests and Resource Limits
 
-LogicN should handle concurrent requests through the runtime and app-kernel
+Galerina should handle concurrent requests through the runtime and app-kernel
 scheduler. Developers should declare route limits, not manually manage
 asynchronous complexity.
 
-```LogicN
+```Galerina
 limits {
   timeout: 2s
   max_body_size: 128kb
@@ -376,7 +376,7 @@ parsing, database calls, network calls or paid-provider usage.
 
 Every route should declare its allowed effects.
 
-```LogicN
+```Galerina
 effects {
   database: ["orders.read", "orders.write"]
   network: ["payments.stripe"]
@@ -397,9 +397,9 @@ This protects against route handlers becoming hidden backdoors.
 
 ## Route Security Profiles
 
-LogicN may provide default route security profiles:
+Galerina may provide default route security profiles:
 
-```LogicN
+```Galerina
 security_profile public_read {
   auth optional
   csrf not_required
@@ -429,7 +429,7 @@ security_profile finance_action {
 
 Usage:
 
-```LogicN
+```Galerina
 POST "/trade/buy" uses finance_action {
   body BuyStockRequest
   response TradeResponse
@@ -521,28 +521,28 @@ audit logging
 ## Package Ownership
 
 ```text
-logicn-core
+galerina-core
   route syntax, typed path parameters, schema references and diagnostics
 
-logicn-core-compiler
+galerina-core-compiler
   route parsing, route graph checks, trie generation and manifest generation
 
-logicn-framework-app-kernel
+galerina-framework-app-kernel
   auth, CSRF, CORS, authorization, effects, limits, response filtering and audit policy
 
-logicn-framework-api-server
+galerina-framework-api-server
   HTTP method/path dispatch, request normalisation and server-level limits
 
-logicn-core-reports
+galerina-core-reports
   shared route manifest, security report and route audit report shapes
 ```
 
 ## Design Rule
 
 ```text
-LogicN should make secure routing the default.
-LogicN should make unsafe routing difficult.
-LogicN should make fast routing a compiler/runtime feature rather than a developer burden.
+Galerina should make secure routing the default.
+Galerina should make unsafe routing difficult.
+Galerina should make fast routing a compiler/runtime feature rather than a developer burden.
 ```
 
 ## References

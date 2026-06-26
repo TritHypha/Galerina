@@ -1,0 +1,74 @@
+;; trap-handler.spore — DSS.wasm Trap Handler (DRCM Phase 5, task #76)
+;; Converts raw Wasmtime TrapSignal into structured AuditEvent (CBOR Tag 410).
+;;
+;; Build order position: 2 of 5 (after audit-event.spore types)
+;; Depends on: types/audit-event.spore, types/trap-signal.spore, vdpm.spore
+;;
+;; SPORE-INV-000: The canonical runtime governance violation code.
+;; Every unreachable trap that fires produces exactly one AuditEvent.
+;; The AuditEvent is appended to the signed audit log before anything else.
+;;
+;; See: docs/Knowledge-Bases/galerina-governed-tower-specification.md §3E
+
+import "./types/audit-event.spore"
+import "./types/trap-signal.spore"
+import "./vdpm.spore"
+
+;; P5.2 IMPLEMENTED (Stage A) — #76
+;; Stage A: TypeScript interpreter routes traps → AuditEvent → emergency SM → audit log
+;; Stage B: This .spore compiles to WASM and runs as the real DSS handler
+
+governed floor_2 flow handleTrap(signal: TrapSignal) -> AuditEvent
+contract {
+  intent "Convert a Wasmtime unreachable trap into a structured AuditEvent"
+  effects { allow audit.write }
+  invariant {
+    ensure signal.flowId != ""
+    ensure signal.contractHash != ""
+  }
+}
+{
+  trap signal.flowId == "" : ERR_EMPTY_FLOW_ID        ;; validated
+  trap signal.contractHash == "" : ERR_EMPTY_CONTRACT ;; validated
+
+  ;; rollbackStatus is ALWAYS "clean"
+  ;; unreachable fires before the next CPU instruction — no partial mutation possible
+  let event = AuditEvent {
+    code:           "SPORE-INV-000"
+    flowId:         signal.flowId
+    contractHash:   signal.contractHash
+    meterSnapshot:  signal.meterSnapshot
+    trapKind:       signal.trapKind
+    vdpmAtTrap:     signal.vdpmSnapshot
+    rollbackStatus: ROLLBACK_ALWAYS_CLEAN
+    timestamp:      signal.timestamp
+  }
+
+  return event
+}
+
+;; Plugin eviction handler — fires on Tower.evict(alias)
+;; Sets PLUGIN_NOT_RESIDENT state in supervisor registry
+;; Future calls to evicted plugin → PLUGIN_NOT_RESIDENT trap → AuditEvent
+
+governed floor_2 flow handlePluginEviction(signal: PluginEvictionSignal) -> AuditEvent
+contract {
+  intent "Handle plugin eviction — emit AuditEvent, mark plugin as not resident"
+  effects { allow audit.write }
+}
+{
+  trap signal.pluginAlias == "" : ERR_EMPTY_PLUGIN_ALIAS
+
+  let event = AuditEvent {
+    code:           "SPORE-PLUGIN-001"
+    flowId:         "Tower.evict"
+    contractHash:   signal.pluginAlias
+    meterSnapshot:  0
+    trapKind:       TRAP_KIND_PLUGIN
+    vdpmAtTrap:     0
+    rollbackStatus: ROLLBACK_ALWAYS_CLEAN
+    timestamp:      signal.reason
+  }
+
+  return event
+}
