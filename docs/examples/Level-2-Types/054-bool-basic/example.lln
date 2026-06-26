@@ -5,4 +5,7 @@
 /// test_status: stable
 /// ai_rule: Bool values are true or false.
 
-let active: Bool = true
+pure flow example() -> Bool {
+  let active: Bool = true
+  return active
+}

@@ -5,4 +5,7 @@
 /// test_status: stable
 /// ai_rule: Use Decimal("...") constructor for exact decimal values. Avoids floating-point rounding.
 
-let vatRate: Decimal = Decimal("0.20")
+pure flow example() -> Decimal {
+  let vatRate: Decimal = Decimal("0.20")
+  return vatRate
+}

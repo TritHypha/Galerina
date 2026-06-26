@@ -439,9 +439,9 @@ class Parser {
           this.emit(
             "LLN-SYNTAX-006",
             "LET_AT_TOP_LEVEL",
-            `Top-level 'let' bindings are not allowed. Move this inside a flow, or declare a compile-time 'const' if the value is immutable.`,
+            `Top-level 'let' bindings are not allowed — a binding lives inside a flow. Move it into a flow body.`,
             this.loc(),
-            `Move into a flow: pure flow name() -> T { let ... }`,
+            `Move into a flow: pure flow example() -> Void { let ... }`,
           );
           this.skipTopLevelStatement();
           return undefined;

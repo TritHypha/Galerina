@@ -5,4 +5,7 @@
 /// test_status: stable
 /// ai_rule: Char holds a single Unicode character, written with single quotes.
 
-let initial: Char = 'L'
+pure flow example() -> Char {
+  let initial: Char = 'L'
+  return initial
+}

@@ -4,4 +4,7 @@
 /// expected_diagnostics: none
 /// test_status: stable
 
-readonly appName: String = "LogicN"
+pure flow example() -> String {
+  readonly appName: String = "LogicN"
+  return appName
+}

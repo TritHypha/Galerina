@@ -5,4 +5,7 @@
 /// test_status: stable
 /// ai_rule: Int is the standard integer type in LogicN.
 
-let count: Int = 42
+pure flow example() -> Int {
+  let count: Int = 42
+  return count
+}

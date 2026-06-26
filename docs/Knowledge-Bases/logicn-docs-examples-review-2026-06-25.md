@@ -42,3 +42,34 @@ corpus updates are secondary (BOM re-save + the P1 new-rule clauses).
 - **#33**: Decimal arithmetic (the 5 wrong-answer examples are the concrete driver).
 
 *Source: workflow `wf_9ca8f514-817` (2026-06-25), all 223 examples compile-checked against the live compiler.*
+
+---
+
+## RE-MEASURED 2026-06-26 (the 2026-06-25 numbers above are STALE — VALUESTATE-006 + BOM fixes landed)
+
+Re-ran `node logicn.mjs check` over all 223 `docs/examples/**/example.lln`, comparing each example's
+`expected_diagnostics` frontmatter to actual output. **TRUE state:** of the examples that declare
+`expected_diagnostics: none`, **66 are clean, 87 genuinely drift** (the other ~70 are negative examples that
+correctly emit their expected code). The VALUESTATE-006 record-redact false-positive is ALREADY FIXED (the
+discharge analysis recurses into record-literal field values — `checkArgForProtectedAtAuditLog`,
+value-state-checker.ts:1917-1929); 087/161 are clean. So that whole ~35 row is stale.
+
+**The 87 drift, by cause:** SYNTAX-006 = 26 (top-level `let`) · TIER-001 = 24 (tier floor) · VALUESTATE-008 = 6 ·
+HINT-COMPUTE-001 = 6 · GOV-002 = 6 · SYNTAX-008 = 4 · GOV-019 = 4 · PARSE-001 = 3 · GOV-007 = 3 · CONTEXT-001 = 2 ·
+VALUESTATE-006/GOV-010/GOV-001 = 1 each.
+
+**Root-cause finding (SYNTAX-006):** top-level `let` is (intentionally) disallowed, but the error's fix
+suggestion was BROKEN — it advised "declare a compile-time `const`", yet top-level `const` is NOT a parser
+feature (`LLN-PARSE-001: Unexpected keyword "const"`). **FIXED the message** (parser.ts:442 — now "a binding
+lives inside a flow; move it into a flow body"). The canonical idiom (per passing examples 060/065/068) is a
+`let` inside `pure flow example() -> T { … }`.
+
+**FIXED 2026-06-26 (9 self-contained literal examples, wrapped in a flow, each verified clean):** 005, 008, 051,
+052, 053, 054, 055, 056, 071.
+
+**REMAINING #37 work (ongoing):** the other ~17 SYNTAX-006 examples reference undefined identifiers
+(`user`/`price`/`email`) or have no initializer (tensors 079/080/082) — they need per-example reconstruction
+(supply the referenced value as a flow param / define a minimal type), not a mechanical wrap. Then the
+TIER-001 (24, bump the flow qualifier to the effect-required tier) + the smaller GOV/VALUESTATE/CONTEXT
+categories. A good candidate for a dedicated verified workflow (each agent: reconstruct one example to compile
+clean while preserving its `/// concept:`, gate on `node logicn.mjs check`).

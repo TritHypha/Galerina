@@ -5,4 +5,7 @@
 /// test_status: stable
 /// ai_rule: String holds UTF-8 text. Untrusted strings should be wrapped in unsafe let.
 
-let name: String = "LogicN"
+pure flow example() -> String {
+  let name: String = "LogicN"
+  return name
+}

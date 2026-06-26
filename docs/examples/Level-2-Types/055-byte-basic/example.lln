@@ -5,4 +5,7 @@
 /// test_status: stable
 /// ai_rule: Byte holds a single 8-bit unsigned integer, often written as a hex literal.
 
-let value: Byte = 0xFF
+pure flow example() -> Byte {
+  let value: Byte = 0xFF
+  return value
+}
