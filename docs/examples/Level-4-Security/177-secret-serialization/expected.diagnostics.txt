@@ -1,4 +1,5 @@
-none
-// LLN-SECRET-003 is the target diagnostic for this example.
-// SecureString serialization detection is tracked for a future compiler wave.
-// The example is stable: env.secret/json.encode are undeclared (LLN-NAME-001, suppressed).
+LLN-SECRET-003
+// SecureString serialization is now DETECTED: RD-0093b closed the false-negative where the
+// secret-serialization walker skipped record-field VALUES (`json.encode({ key: apiKey })`), so the
+// SecureString `apiKey` in the field value now correctly fires LLN-SECRET-003 — the example's stated target.
+// (env.secret/json.encode are undeclared → LLN-NAME-001, suppressed.)

@@ -436,8 +436,16 @@ function derivesFromSecret(
   node: AstNode,
   lookupBinding: (name: string) => BindingInfo | undefined,
 ): boolean {
-  // redact(...) is the sole declassifier — it breaks the chain.
+  // redact(...) is the sole declassifier to a SAFE placeholder — it breaks the chain.
   if (isRedactCall(node)) return false;
+  // constantTimeEquals(secret, x) DECLASSIFIES too: it is the SANCTIONED secret comparison (== on a secret is
+  // forbidden, Rule 4) and returns a public Bool (the match OUTCOME — the user inevitably learns it), not
+  // secret material. Without this, `let ok = Crypto.constantTimeEquals(pw, hash)` over-taints `ok` as
+  // SecureString, false-firing SECRET-001/003 when `ok` is later logged/audited (RD-0093b ripple). Shape
+  // mirrors isRedactCall: `Crypto.constantTimeEquals(...)` parses to callExpr value="constantTimeEquals".
+  if (node.kind === "callExpr" && node.value === "constantTimeEquals") return false;
+  if (node.kind === "errorPropagation" && node.children?.[0]?.kind === "callExpr"
+      && node.children[0].value === "constantTimeEquals") return false;
   // A direct secret accessor (secret.get / vault.read / kms.decrypt / secrets.get), incl. `?`.
   if (isSecretSourceExpression(node)) return true;
 
@@ -1741,6 +1749,15 @@ class ValueStateChecker {
     location: SourceLocation | undefined,
   ): void {
     if (node.kind === "identifier") {
+      // Field-name guard (RD-0093b, mirrors checkArgForProtectedAtAuditLog): a record-literal field
+      // `{ patientId: auditId }` / named arg `f(label: value)` is kind:"identifier" with value = the
+      // FIELD/LABEL name and children = the value expression. The label is NOT a value reference — recurse
+      // into the field VALUE, not the NAME, else a field whose name collides with a boundary-untrusted /
+      // unsafe / tainted binding false-fires VS-008/003/005.
+      if ((node.children?.length ?? 0) > 0) {
+        for (const child of node.children!) this.checkArgForUnsafeBinding(child, sinkName, location);
+        return;
+      }
       const binding = this.lookupBinding(node.value ?? "");
       if (binding?.safetyPrefix === "unsafe") {
         // Rust-style: show where the unsafe binding was declared AND where it reaches the sink
@@ -1832,6 +1849,12 @@ class ValueStateChecker {
     // sinks just as checkArgForSecretSerialization does (do not recurse into its child).
     if (node.kind === "callExpr" && isRedactCall(node)) return;
     if (node.kind === "identifier") {
+      // Field-name guard (RD-0093b): check the field VALUE, not the field NAME — else a record/arg field
+      // named after a SecureString binding false-fires SECRET-001.
+      if ((node.children?.length ?? 0) > 0) {
+        for (const child of node.children!) this.checkArgForSecretLogging(child, callName, location);
+        return;
+      }
       const binding = this.lookupBinding(node.value ?? "");
       if (binding?.typeName === "SecureString") {
         const related: DiagnosticRelatedLocation[] = [];
@@ -1876,6 +1899,14 @@ class ValueStateChecker {
     if (node.kind === "callExpr" && isRedactCall(node)) return;
 
     if (node.kind === "identifier") {
+      // Field-name guard (RD-0093b): check the field VALUE, not the field NAME. Without this a field named
+      // after a SecureString binding false-fired SECRET-003 AND — because the original code then `return`ed —
+      // a SecureString in a field VALUE was MISSED (a false negative: a real secret in
+      // `AuditLog.write({ x: secret })` escaped). Recursing into the value fixes both.
+      if ((node.children?.length ?? 0) > 0) {
+        for (const child of node.children!) this.checkArgForSecretSerialization(child, callName, location);
+        return;
+      }
       const binding = this.lookupBinding(node.value ?? "");
       if (binding?.typeName === "SecureString") {
         this.diagnostics.push(makeVSDiag(
