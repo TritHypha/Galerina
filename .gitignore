@@ -25,6 +25,10 @@ test-output.txt
 build/*.out
 # Ad-hoc audit scratch (tN.lln fixtures at repo root) — no tracked tool generates it; local-only.
 /_audit_tmp/
+# Ad-hoc probe scratch — throwaway .mjs repros a session writes to exercise the compiler/runtime, then
+# deletes. Named *.probe.mjs by convention so `git add -A` can never sweep one into a commit (a `cf-probe.mjs`
+# slipped in once, 2026-06-26). No tracked tool emits these; always local-only.
+**/*.probe.mjs
 # NOTE: native benchmark binaries (**/*.exe under logicn-devtools-benchmarks/) are deliberately TRACKED
 # (35 committed) so the cross-language benchmark compare runs without recompiling Rust — do NOT ignore *.exe.
 

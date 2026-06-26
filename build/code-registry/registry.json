@@ -1,12 +1,12 @@
 {
   "generatedFrom": "build/code-index/code-index.json",
-  "total": 956,
+  "total": 1002,
   "counts": {
-    "ref": 140,
-    "inline": 293,
-    "phantom": 475,
-    "live": 37,
-    "referenced": 11
+    "ref": 147,
+    "inline": 303,
+    "phantom": 498,
+    "live": 38,
+    "referenced": 16
   },
   "entries": [
     {
@@ -1054,6 +1054,18 @@
       "docs": 0
     },
     {
+      "code": "ERR_STRING_TOO_LONG",
+      "family": "ERR_*",
+      "namespace": "ERR",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
       "code": "ERR_SUBSPACE_TOO_LARGE",
       "family": "ERR_*",
       "namespace": "ERR",
@@ -1284,6 +1296,20 @@
       "emits": 1,
       "tests": 17,
       "docs": 5
+    },
+    {
+      "code": "LLN-AFFINE-001",
+      "family": "AFFINE",
+      "namespace": "LLN",
+      "status": "inline",
+      "names": [
+        "PassportConsumedTwice"
+      ],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 3,
+      "docs": 2
     },
     {
       "code": "LLN-AI-003",
@@ -1659,7 +1685,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 2,
-      "docs": 12
+      "docs": 13
     },
     {
       "code": "LLN-BACKEND-002",
@@ -2294,7 +2320,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 4,
-      "docs": 24
+      "docs": 25
     },
     {
       "code": "LLN-BUILD-005",
@@ -2621,6 +2647,18 @@
       "emits": 0,
       "tests": 0,
       "docs": 2
+    },
+    {
+      "code": "LLN-CLI-REDACT-001",
+      "family": "CLI",
+      "namespace": "LLN",
+      "status": "referenced",
+      "names": [],
+      "severities": [],
+      "defs": 1,
+      "emits": 0,
+      "tests": 1,
+      "docs": 3
     },
     {
       "code": "LLN-COMMAND-001",
@@ -3531,8 +3569,8 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 5,
-      "docs": 13
+      "tests": 6,
+      "docs": 15
     },
     {
       "code": "LLN-DAG-001",
@@ -3558,7 +3596,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 12
+      "docs": 13
     },
     {
       "code": "LLN-DECISION-001",
@@ -3966,8 +4004,8 @@
       ],
       "defs": 0,
       "emits": 2,
-      "tests": 64,
-      "docs": 98
+      "tests": 72,
+      "docs": 103
     },
     {
       "code": "LLN-EFFECT-002",
@@ -3984,7 +4022,7 @@
       ],
       "defs": 0,
       "emits": 3,
-      "tests": 18,
+      "tests": 21,
       "docs": 52
     },
     {
@@ -4001,7 +4039,7 @@
       "defs": 0,
       "emits": 3,
       "tests": 37,
-      "docs": 28
+      "docs": 29
     },
     {
       "code": "LLN-EFFECT-004",
@@ -4431,6 +4469,18 @@
       "docs": 7
     },
     {
+      "code": "LLN-FED-001",
+      "family": "FED",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
       "code": "LLN-FG-001",
       "family": "FG",
       "namespace": "LLN",
@@ -4440,6 +4490,18 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
+      "docs": 2
+    },
+    {
+      "code": "LLN-FLOAT-NAN-001",
+      "family": "FLOAT",
+      "namespace": "LLN",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 3,
       "docs": 2
     },
     {
@@ -4833,7 +4895,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 10,
-      "docs": 5
+      "docs": 6
     },
     {
       "code": "LLN-GOV-008",
@@ -4875,7 +4937,7 @@
       "defs": 0,
       "emits": 3,
       "tests": 31,
-      "docs": 15
+      "docs": 16
     },
     {
       "code": "LLN-GOV-011",
@@ -5053,8 +5115,32 @@
       "severities": [],
       "defs": 1,
       "emits": 1,
-      "tests": 31,
-      "docs": 70
+      "tests": 32,
+      "docs": 80
+    },
+    {
+      "code": "LLN-GOV-3VL-002",
+      "family": "GOV",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 2
+    },
+    {
+      "code": "LLN-GOV-DOMAIN-001",
+      "family": "GOV",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
     },
     {
       "code": "LLN-GOV-ERROR-001",
@@ -5094,6 +5180,18 @@
     },
     {
       "code": "LLN-GOV-HIPAA-001",
+      "family": "GOV",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
+      "code": "LLN-GOV-MONOTONE-MIN-001",
       "family": "GOV",
       "namespace": "LLN",
       "status": "phantom",
@@ -5345,6 +5443,18 @@
       "docs": 0
     },
     {
+      "code": "LLN-GRAPH-BORDER-001",
+      "family": "GRAPH",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 2
+    },
+    {
       "code": "LLN-HINT-COMPUTE-001",
       "family": "HINT",
       "namespace": "LLN",
@@ -5420,7 +5530,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 9,
-      "docs": 13
+      "docs": 17
     },
     {
       "code": "LLN-HW-101",
@@ -5605,7 +5715,7 @@
       ],
       "defs": 0,
       "emits": 2,
-      "tests": 11,
+      "tests": 14,
       "docs": 5
     },
     {
@@ -5649,6 +5759,34 @@
       "emits": 2,
       "tests": 11,
       "docs": 6
+    },
+    {
+      "code": "LLN-IMPORT-005",
+      "family": "IMPORT",
+      "namespace": "LLN",
+      "status": "inline",
+      "names": [],
+      "severities": [
+        "error"
+      ],
+      "defs": 0,
+      "emits": 1,
+      "tests": 9,
+      "docs": 3
+    },
+    {
+      "code": "LLN-IMPORT-006",
+      "family": "IMPORT",
+      "namespace": "LLN",
+      "status": "inline",
+      "names": [],
+      "severities": [
+        "error"
+      ],
+      "defs": 0,
+      "emits": 1,
+      "tests": 4,
+      "docs": 3
     },
     {
       "code": "LLN-INCR-001",
@@ -5725,6 +5863,30 @@
       "emits": 1,
       "tests": 6,
       "docs": 0
+    },
+    {
+      "code": "LLN-INTEL-001",
+      "family": "INTEL",
+      "namespace": "LLN",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 2
+    },
+    {
+      "code": "LLN-INTEL-002",
+      "family": "INTEL",
+      "namespace": "LLN",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 4,
+      "docs": 2
     },
     {
       "code": "LLN-INTENT-001",
@@ -5902,7 +6064,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 11,
-      "docs": 23
+      "docs": 28
     },
     {
       "code": "LLN-INV-002",
@@ -6090,7 +6252,7 @@
       "defs": 0,
       "emits": 3,
       "tests": 5,
-      "docs": 9
+      "docs": 10
     },
     {
       "code": "LLN-LEX-005",
@@ -6483,8 +6645,8 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 4,
-      "docs": 39
+      "tests": 1,
+      "docs": 42
     },
     {
       "code": "LLN-MEMORY-002",
@@ -6595,7 +6757,7 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 5,
+      "tests": 8,
       "docs": 10
     },
     {
@@ -6893,7 +7055,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 27,
-      "docs": 15
+      "docs": 17
     },
     {
       "code": "LLN-NAME-002",
@@ -6909,7 +7071,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 14,
-      "docs": 10
+      "docs": 11
     },
     {
       "code": "LLN-NAME-003",
@@ -7044,7 +7206,7 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 6,
+      "tests": 8,
       "docs": 14
     },
     {
@@ -7172,6 +7334,18 @@
       "docs": 6
     },
     {
+      "code": "LLN-NO-COERCION-001",
+      "family": "NO",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 3
+    },
+    {
       "code": "LLN-NPU-001",
       "family": "NPU",
       "namespace": "LLN",
@@ -7290,6 +7464,36 @@
       "emits": 0,
       "tests": 0,
       "docs": 2
+    },
+    {
+      "code": "LLN-NUMERIC-001",
+      "family": "NUMERIC",
+      "namespace": "LLN",
+      "status": "inline",
+      "names": [
+        "UnsupportedNumericWidth"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 0,
+      "emits": 1,
+      "tests": 25,
+      "docs": 11
+    },
+    {
+      "code": "LLN-NUMERIC-OP-001",
+      "family": "NUMERIC",
+      "namespace": "LLN",
+      "status": "inline",
+      "names": [
+        "PartialDecimalOperator"
+      ],
+      "severities": [],
+      "defs": 0,
+      "emits": 2,
+      "tests": 8,
+      "docs": 1
     },
     {
       "code": "LLN-OBS-001",
@@ -7498,8 +7702,8 @@
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 8,
-      "docs": 19
+      "tests": 9,
+      "docs": 21
     },
     {
       "code": "LLN-PARSE-002",
@@ -7523,7 +7727,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 3,
-      "docs": 2
+      "docs": 3
     },
     {
       "code": "LLN-PARSE-004",
@@ -7661,13 +7865,27 @@
       "code": "LLN-PARSE-DEPTH-001",
       "family": "PARSE",
       "namespace": "LLN",
-      "status": "phantom",
+      "status": "ref",
       "names": [],
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 0,
-      "docs": 1
+      "tests": 8,
+      "docs": 3
+    },
+    {
+      "code": "LLN-PASSPORT-002",
+      "family": "PASSPORT",
+      "namespace": "LLN",
+      "status": "inline",
+      "names": [
+        "PassportStateSkip"
+      ],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 3,
+      "docs": 2
     },
     {
       "code": "LLN-PAYMENTS-1000",
@@ -7680,6 +7898,18 @@
       "emits": 0,
       "tests": 0,
       "docs": 3
+    },
+    {
+      "code": "LLN-PCI-000",
+      "family": "PCI",
+      "namespace": "LLN",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 2,
+      "docs": 0
     },
     {
       "code": "LLN-PCI-001",
@@ -8493,9 +8723,9 @@
         "error"
       ],
       "defs": 0,
-      "emits": 1,
-      "tests": 1,
-      "docs": 5
+      "emits": 3,
+      "tests": 13,
+      "docs": 6
     },
     {
       "code": "LLN-PKG-003",
@@ -8510,7 +8740,7 @@
       ],
       "defs": 0,
       "emits": 2,
-      "tests": 12,
+      "tests": 32,
       "docs": 5
     },
     {
@@ -8527,7 +8757,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 9,
-      "docs": 5
+      "docs": 6
     },
     {
       "code": "LLN-PKG-005",
@@ -8542,7 +8772,7 @@
       ],
       "defs": 0,
       "emits": 2,
-      "tests": 10,
+      "tests": 17,
       "docs": 12
     },
     {
@@ -8558,7 +8788,7 @@
       ],
       "defs": 0,
       "emits": 2,
-      "tests": 11,
+      "tests": 12,
       "docs": 6
     },
     {
@@ -8642,13 +8872,11 @@
         "EmbeddingCrossesFlowBoundary",
         "EmbeddingEgressDenied"
       ],
-      "severities": [
-        "warning"
-      ],
+      "severities": [],
       "defs": 0,
       "emits": 3,
-      "tests": 39,
-      "docs": 59
+      "tests": 42,
+      "docs": 66
     },
     {
       "code": "LLN-PRIVACY-003",
@@ -8911,6 +9139,42 @@
       "docs": 4
     },
     {
+      "code": "LLN-PROOF-CERT-00",
+      "family": "PROOF",
+      "namespace": "LLN",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "LLN-PROOF-CERT-001",
+      "family": "PROOF",
+      "namespace": "LLN",
+      "status": "referenced",
+      "names": [],
+      "severities": [],
+      "defs": 1,
+      "emits": 0,
+      "tests": 4,
+      "docs": 1
+    },
+    {
+      "code": "LLN-PROOF-CERT-002",
+      "family": "PROOF",
+      "namespace": "LLN",
+      "status": "referenced",
+      "names": [],
+      "severities": [],
+      "defs": 1,
+      "emits": 0,
+      "tests": 3,
+      "docs": 1
+    },
+    {
       "code": "LLN-PROTECTED-001",
       "family": "PROTECTED",
       "namespace": "LLN",
@@ -8921,6 +9185,18 @@
       "emits": 0,
       "tests": 0,
       "docs": 1
+    },
+    {
+      "code": "LLN-PROV-001",
+      "family": "PROV",
+      "namespace": "LLN",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 1,
+      "docs": 0
     },
     {
       "code": "LLN-QUANT-001",
@@ -9089,6 +9365,18 @@
       "emits": 0,
       "tests": 0,
       "docs": 2
+    },
+    {
+      "code": "LLN-QUORUM-001",
+      "family": "QUORUM",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 3
     },
     {
       "code": "LLN-RAWPTR-001",
@@ -9300,7 +9588,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 7,
-      "docs": 11
+      "docs": 12
     },
     {
       "code": "LLN-RESOURCE-001",
@@ -9421,6 +9709,18 @@
       "emits": 0,
       "tests": 0,
       "docs": 1
+    },
+    {
+      "code": "LLN-RETAIN-001",
+      "family": "RETAIN",
+      "namespace": "LLN",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 3,
+      "docs": 24
     },
     {
       "code": "LLN-RETENTION-001",
@@ -9550,17 +9850,17 @@
       "code": "LLN-RUNTIME-006",
       "family": "RUNTIME",
       "namespace": "LLN",
-      "status": "inline",
+      "status": "live",
       "names": [
         "RateLimitExceeded"
       ],
       "severities": [
         "error"
       ],
-      "defs": 0,
+      "defs": 1,
       "emits": 4,
       "tests": 21,
-      "docs": 7
+      "docs": 10
     },
     {
       "code": "LLN-RUNTIME-007",
@@ -9573,6 +9873,18 @@
       "emits": 1,
       "tests": 3,
       "docs": 2
+    },
+    {
+      "code": "LLN-RUNTIME-009",
+      "family": "RUNTIME",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
     },
     {
       "code": "LLN-RUNTIME-010",
@@ -9827,6 +10139,20 @@
       "docs": 1
     },
     {
+      "code": "LLN-SBOM-001",
+      "family": "SBOM",
+      "namespace": "LLN",
+      "status": "inline",
+      "names": [],
+      "severities": [
+        "error"
+      ],
+      "defs": 0,
+      "emits": 1,
+      "tests": 4,
+      "docs": 3
+    },
+    {
       "code": "LLN-SEC-014",
       "family": "SEC",
       "namespace": "LLN",
@@ -9896,7 +10222,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 43,
-      "docs": 78
+      "docs": 79
     },
     {
       "code": "LLN-SECRET-002",
@@ -9908,13 +10234,11 @@
         "SecretSentToNetwork",
         "SecretComparisonDenied"
       ],
-      "severities": [
-        "warning"
-      ],
+      "severities": [],
       "defs": 0,
       "emits": 3,
-      "tests": 68,
-      "docs": 59
+      "tests": 74,
+      "docs": 65
     },
     {
       "code": "LLN-SECRET-003",
@@ -10112,7 +10436,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 34,
-      "docs": 8
+      "docs": 9
     },
     {
       "code": "LLN-STATE-001",
@@ -10228,7 +10552,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 16,
-      "docs": 25
+      "docs": 26
     },
     {
       "code": "LLN-STDLIB-002",
@@ -10241,8 +10565,8 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 14,
-      "docs": 2
+      "tests": 17,
+      "docs": 5
     },
     {
       "code": "LLN-STEP-001",
@@ -10477,8 +10801,8 @@
       ],
       "defs": 0,
       "emits": 2,
-      "tests": 17,
-      "docs": 122
+      "tests": 25,
+      "docs": 183
     },
     {
       "code": "LLN-SUBSTRATE-002",
@@ -10493,8 +10817,8 @@
       ],
       "defs": 0,
       "emits": 3,
-      "tests": 26,
-      "docs": 31
+      "tests": 32,
+      "docs": 38
     },
     {
       "code": "LLN-SUBSTRATE-003",
@@ -10510,7 +10834,7 @@
       "defs": 0,
       "emits": 3,
       "tests": 12,
-      "docs": 17
+      "docs": 22
     },
     {
       "code": "LLN-SUBSTRATE-004",
@@ -10526,7 +10850,23 @@
       "defs": 0,
       "emits": 2,
       "tests": 11,
-      "docs": 25
+      "docs": 26
+    },
+    {
+      "code": "LLN-SUBSTRATE-005",
+      "family": "SUBSTRATE",
+      "namespace": "LLN",
+      "status": "inline",
+      "names": [
+        "REACH_EFFECT_ON_COMPUTE_ONLY_LANE"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 0,
+      "emits": 2,
+      "tests": 10,
+      "docs": 4
     },
     {
       "code": "LLN-SUPPLY-001",
@@ -10797,7 +11137,7 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 19,
+      "tests": 20,
       "docs": 16
     },
     {
@@ -10965,7 +11305,7 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 8,
+      "tests": 9,
       "docs": 3
     },
     {
@@ -10981,7 +11321,7 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 16,
+      "tests": 20,
       "docs": 2
     },
     {
@@ -11130,7 +11470,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 11,
-      "docs": 9
+      "docs": 12
     },
     {
       "code": "LLN-TERM-002",
@@ -11204,7 +11544,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 26,
-      "docs": 23
+      "docs": 29
     },
     {
       "code": "LLN-TIER-002",
@@ -11221,6 +11561,18 @@
     {
       "code": "LLN-TIMEOUT-001",
       "family": "TIMEOUT",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
+      "code": "LLN-TOLERANCE-MONOTONE-001",
+      "family": "TOLERANCE",
       "namespace": "LLN",
       "status": "phantom",
       "names": [],
@@ -11401,7 +11753,7 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 207,
+      "tests": 208,
       "docs": 35
     },
     {
@@ -11452,7 +11804,7 @@
       "defs": 0,
       "emits": 11,
       "tests": 129,
-      "docs": 42
+      "docs": 45
     },
     {
       "code": "LLN-TYPE-005",
@@ -11507,7 +11859,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 24,
-      "docs": 7
+      "docs": 8
     },
     {
       "code": "LLN-TYPE-009",
@@ -11606,7 +11958,7 @@
       ],
       "defs": 1,
       "emits": 0,
-      "tests": 0,
+      "tests": 1,
       "docs": 2
     },
     {
@@ -11670,7 +12022,7 @@
       "defs": 1,
       "emits": 1,
       "tests": 9,
-      "docs": 4
+      "docs": 5
     },
     {
       "code": "LLN-TYPE-017",
@@ -12166,8 +12518,8 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 120,
-      "docs": 45
+      "tests": 124,
+      "docs": 46
     },
     {
       "code": "LLN-VALUESTATE-004",
@@ -12216,7 +12568,7 @@
       ],
       "defs": 0,
       "emits": 3,
-      "tests": 75,
+      "tests": 77,
       "docs": 16
     },
     {
@@ -12246,8 +12598,8 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 13,
-      "docs": 8
+      "tests": 21,
+      "docs": 17
     },
     {
       "code": "LLN-VAULT-001",
@@ -12466,6 +12818,174 @@
       "docs": 3
     },
     {
+      "code": "LLN-WEB-001",
+      "family": "WEB",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
+      "code": "LLN-WEB-002",
+      "family": "WEB",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
+      "code": "LLN-WEB-003",
+      "family": "WEB",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
+      "code": "LLN-WEB-010",
+      "family": "WEB",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
+      "code": "LLN-WEB-011",
+      "family": "WEB",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
+      "code": "LLN-WEB-020",
+      "family": "WEB",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
+      "code": "LLN-WEB-021",
+      "family": "WEB",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
+      "code": "LLN-WEB-022",
+      "family": "WEB",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
+      "code": "LLN-WEB-030",
+      "family": "WEB",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
+      "code": "LLN-WEB-031",
+      "family": "WEB",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
+      "code": "LLN-WEB-040",
+      "family": "WEB",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
+      "code": "LLN-WEB-041",
+      "family": "WEB",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
+      "code": "LLN-WEB-042",
+      "family": "WEB",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
+      "code": "LLN-WEB-050",
+      "family": "WEB",
+      "namespace": "LLN",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
       "code": "LLN-WORKFLOW-001",
       "family": "WORKFLOW",
       "namespace": "LLN",
@@ -12500,6 +13020,56 @@
       "emits": 0,
       "tests": 0,
       "docs": 1
+    },
+    {
+      "code": "LLN-X-001",
+      "family": "X",
+      "namespace": "LLN",
+      "status": "referenced",
+      "names": [
+        "Foo"
+      ],
+      "severities": [],
+      "defs": 1,
+      "emits": 0,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "LLN-X-002",
+      "family": "X",
+      "namespace": "LLN",
+      "status": "referenced",
+      "names": [],
+      "severities": [],
+      "defs": 1,
+      "emits": 0,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "LLN-X-1",
+      "family": "X",
+      "namespace": "LLN",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "LLN-Y-007",
+      "family": "Y",
+      "namespace": "LLN",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 0,
+      "docs": 0
     }
   ]
 }

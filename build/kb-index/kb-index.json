@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 537,
+  "docCount": 595,
   "docs": [
     {
       "rel": "docs/Knowledge-Bases/00-KB-INDEX.md",
@@ -1665,6 +1665,9 @@
         "Binding (canonical series: LLN-BINDING-*)",
         "Intent (canonical series: LLN-INTENT-*)",
         "Type Checker (canonical series: LLN-TYPE-*)",
+        "Numeric Lowering (canonical series: LLN-NUMERIC-*)",
+        "Web fail-closed contract (canonical series: LLN-WEB-*) — RESERVED, RD-0100",
+        "Affine passport typestate (canonical series: LLN-AFFINE-* / LLN-PASSPORT-*) — RD-0111",
         "Name Resolution (canonical series: LLN-NAME-*)",
         "Match Exhaustiveness (canonical series: LLN-MATCH-*)",
         "Value-State (canonical series: LLN-SAFETY-*, extended)",
@@ -1824,6 +1827,24 @@
         "LLN-TYPE-021",
         "LLN-TYPE-023",
         "LLN-TYPE-022",
+        "LLN-NUMERIC-001",
+        "LLN-NUMERIC-OP-001",
+        "LLN-WEB-001",
+        "LLN-WEB-002",
+        "LLN-WEB-003",
+        "LLN-WEB-010",
+        "LLN-WEB-011",
+        "LLN-WEB-020",
+        "LLN-WEB-021",
+        "LLN-WEB-022",
+        "LLN-WEB-030",
+        "LLN-WEB-031",
+        "LLN-WEB-040",
+        "LLN-WEB-041",
+        "LLN-WEB-042",
+        "LLN-WEB-050",
+        "LLN-AFFINE-001",
+        "LLN-PASSPORT-002",
         "LLN-NAME-001",
         "LLN-NAME-002",
         "LLN-NAME-003",
@@ -2005,6 +2026,7 @@
         "LLN-RUNTIME-005",
         "LLN-RUNTIME-006",
         "LLN-RUNTIME-007",
+        "LLN-RUNTIME-009",
         "LLN-GRAPH-001",
         "LLN-GRAPH-002",
         "LLN-GRAPH-003",
@@ -2085,35 +2107,37 @@
         "LLN-BUILD-001"
       ],
       "tasks": [
-        "#174"
+        "#174",
+        "#103",
+        "#104"
       ],
       "xrefs": [],
       "topTerms": [
         "canonical",
         "series",
         "text",
-        "type",
         "flow",
+        "type",
         "codes",
-        "profile",
+        "value",
         "effect",
+        "runtime",
+        "profile",
         "errors",
         "compiler",
-        "runtime",
-        "value",
         "required",
         "declared",
         "cannot",
+        "governance",
         "target",
-        "memory",
-        "match",
         "unsafe",
         "binding",
-        "governance",
+        "memory",
         "requires",
-        "package",
+        "without",
         "missing",
-        "capability"
+        "package",
+        "match"
       ]
     },
     {
@@ -4161,25 +4185,25 @@
         "layer",
         "build",
         "reference",
-        "phase",
         "syntax",
+        "phase",
         "contract",
         "governance",
-        "gate",
         "security",
+        "compiler",
+        "gate",
         "model",
         "shipped",
-        "compiler",
+        "roadmap",
         "complete",
         "rule",
         "test",
-        "roadmap",
         "code",
         "map",
         "tier",
         "audit",
-        "lln",
-        "document"
+        "wasm",
+        "lln"
       ]
     },
     {
@@ -5781,31 +5805,31 @@
       ],
       "xrefs": [],
       "topTerms": [
-        "coverage",
         "basis",
+        "coverage",
         "standards",
         "every",
         "gate",
         "code",
         "rule",
         "must",
+        "never",
         "registry",
         "audit",
         "provenance",
         "sec-002",
         "tests",
+        "fail-closed",
         "test",
         "diagnostic",
         "logicn",
-        "never",
-        "fail-closed",
+        "path",
         "docs",
         "bld-003",
+        "artifact",
         "build",
         "fails",
-        "mutation",
-        "doc-004",
-        "doc"
+        "mutation"
       ]
     },
     {
@@ -11638,19 +11662,19 @@
         "logicn-key-custody-and-rotation"
       ],
       "topTerms": [
-        "secrets",
         "rotation",
+        "secrets",
         "logicn",
         "epilogue",
         "host",
-        "proof",
         "contract",
+        "proof",
         "blocks",
         "taint",
+        "core",
         "governed",
         "economics",
         "key",
-        "core",
         "runtime",
         "kms",
         "receipt",
@@ -11901,8 +11925,8 @@
       "tasks": [],
       "xrefs": [],
       "topTerms": [
-        "capability",
         "logicn",
+        "capability",
         "test",
         "charge",
         "signatures",
@@ -11913,10 +11937,10 @@
         "payment",
         "generated",
         "required",
+        "tests",
         "authority",
         "database",
         "diagnostics",
-        "tests",
         "flow",
         "capabilities",
         "part",
@@ -12549,6 +12573,55 @@
         "secure",
         "minimal",
         "policy"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-docs-examples-review-2026-06-25.md",
+      "title": "Docs/examples review vs the current compiler — punch-list (2026-06-25)",
+      "headings": [
+        "P0 — broken NOW (ship-wrong or fail-to-compile)",
+        "P1 — genuinely stale vs new governance rules (example needs updating, not a bug)",
+        "The pattern worth noting",
+        "Actions"
+      ],
+      "codes": [
+        "LLN-PARSE-001",
+        "LLN-PARSE-003",
+        "LLN-GOV-007",
+        "LLN-TIER-001",
+        "LLN-GOV-010"
+      ],
+      "tasks": [
+        "#37",
+        "#33"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "examples",
+        "compiler",
+        "example",
+        "bom",
+        "review",
+        "stale",
+        "bug",
+        "genuinely",
+        "pattern",
+        "docs",
+        "current",
+        "updating",
+        "governance",
+        "rules",
+        "decimal",
+        "needs",
+        "punch-list",
+        "valuestate-006",
+        "lexer",
+        "wrong",
+        "broken",
+        "ship-wrong",
+        "fail-to-compile",
+        "worth",
+        "noting"
       ]
     },
     {
@@ -13264,7 +13337,9 @@
       ],
       "codes": [
         "LLN-VALUESTATE-003",
-        "LLN-TIER-001"
+        "LLN-TIER-001",
+        "LLN-EFFECT-001",
+        "LLN-STDLIB-001"
       ],
       "tasks": [
         "#163",
@@ -13273,30 +13348,30 @@
       "xrefs": [],
       "topTerms": [
         "test",
-        "mjs",
         "every",
+        "mjs",
         "gate",
         "class",
         "must",
+        "flow",
         "json",
         "detector",
         "tier",
         "logicn",
         "hardening",
         "native",
+        "already",
         "lint",
         "component-health",
-        "already",
         "build",
         "git",
         "add",
         "fail-open",
+        "call",
         "owner",
         "fail-closed",
         "path",
-        "check",
-        "call",
-        "taxonomy"
+        "check"
       ]
     },
     {
@@ -14603,7 +14678,12 @@
         "AS — Assimilation Rules (new in v2.1)",
         "AS-001 · assimilate plugins must be declared in boot.lln",
         "AS-002 · assimilation_memory_budget must be declared",
-        "AS-003 · assimilated plugin must have an access { grant } block"
+        "AS-003 · assimilated plugin must have an access { grant } block",
+        "CLI output redaction — fail-closed tripwire",
+        "Sound-erasure obligation for non-overwritable substrates",
+        "Workspace-index integrity (anti poisoned-index)",
+        "Declared-but-inert safety control must fail loud",
+        "SBOM integrity — never claim coverage you don't have"
       ],
       "codes": [
         "LLN-GOV-004",
@@ -14644,9 +14724,12 @@
         "LLN-FG-001",
         "LLN-CRYPTO-PQ-001",
         "LLN-SUBSTRATE-001",
+        "LLN-SUBSTRATE-005",
         "LLN-TENANT-001",
         "LLN-TENANT-002",
         "LLN-TENANT-003",
+        "LLN-PROOF-CERT-001",
+        "LLN-PROOF-CERT-002",
         "LLN-INV-001",
         "LLN-INV-002",
         "LLN-TERM-001",
@@ -14673,11 +14756,18 @@
         "LLN-IMPORT-002",
         "LLN-IMPORT-003",
         "LLN-IMPORT-004",
+        "LLN-IMPORT-005",
+        "LLN-IMPORT-006",
         "LLN-ACCESS-001",
         "LLN-ACCESS-002",
         "LLN-ASSIMILATE-001",
         "LLN-ASSIMILATE-002",
-        "LLN-ASSIMILATE-003"
+        "LLN-ASSIMILATE-003",
+        "LLN-CLI-REDACT-001",
+        "LLN-RETAIN-001",
+        "LLN-INTEL-001",
+        "LLN-INTEL-002",
+        "LLN-SBOM-001"
       ],
       "tasks": [
         "#61",
@@ -14689,7 +14779,8 @@
         "#76",
         "#36",
         "#73",
-        "#74"
+        "#74",
+        "#102"
       ],
       "xrefs": [
         "logicn-privacy-embedding-egress",
@@ -14702,15 +14793,15 @@
         "status",
         "contract",
         "drcm",
-        "flow",
         "phase",
+        "flow",
+        "enforced",
+        "diagnostic",
+        "effects",
         "block",
         "gate",
         "policy",
-        "effects",
-        "diagnostic",
         "capability",
-        "enforced",
         "access",
         "lln",
         "stage",
@@ -14720,7 +14811,7 @@
         "network",
         "declared",
         "governance",
-        "runtime"
+        "cannot"
       ]
     },
     {
@@ -16202,6 +16293,53 @@
       ]
     },
     {
+      "rel": "docs/Knowledge-Bases/logicn-hardware-protection-summary-2026-06-24.md",
+      "title": "Hardware protection in LogicN — what is BUILT vs R&D'd (2026-06-24)",
+      "headings": [
+        "1) BUILT + ENFORCED TODAY (digital, on bit-exact silicon)",
+        "2) R&D'd + DESIGNED (not built; gated on real silicon #102-106 or owner)",
+        "3) The honest hardware-threat boundary (no overclaim)"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-001",
+        "LLN-HW-004",
+        "LLN-RETAIN-001"
+      ],
+      "tasks": [
+        "#102",
+        "#30",
+        "#44"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "hardware",
+        "built",
+        "silicon",
+        "real",
+        "today",
+        "digital",
+        "photonic",
+        "protection",
+        "bit-exact",
+        "binary",
+        "design",
+        "never",
+        "signed",
+        "enforced",
+        "src",
+        "logicn",
+        "attestation",
+        "designed",
+        "gated",
+        "owner",
+        "honest",
+        "hardware-threat",
+        "boundary",
+        "overclaim",
+        "substrate"
+      ]
+    },
+    {
       "rel": "docs/Knowledge-Bases/logicn-hardware-targets.md",
       "title": "LogicN — Hardware Targets Reference",
       "headings": [
@@ -16254,6 +16392,54 @@
         "routing",
         "description",
         "sve2"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-high-value-compute-domains-2026-06-25.md",
+      "title": "High-value compute domains — can LogicN do anything? (2026-06-25)",
+      "headings": [
+        "The one honest thing, repeated",
+        "✅ Can do something",
+        "❌ Cannot (refuted — bit-exact required)",
+        "The fences (never move)",
+        "Build note (if pursued, owner-gated)"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-003",
+        "LLN-GOV-3VL-001",
+        "LLN-SUBSTRATE-001"
+      ],
+      "tasks": [
+        "#44",
+        "#199"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "lane",
+        "analog",
+        "bit-exact",
+        "digital",
+        "stays",
+        "never",
+        "domains",
+        "build",
+        "compute",
+        "logicn",
+        "cannot",
+        "high-value",
+        "fences",
+        "tolerant",
+        "degrade-only",
+        "anything",
+        "domain",
+        "mac",
+        "honest",
+        "thing",
+        "repeated",
+        "something",
+        "refuted",
+        "required",
+        "move"
       ]
     },
     {
@@ -16393,6 +16579,96 @@
       ]
     },
     {
+      "rel": "docs/Knowledge-Bases/logicn-i64-lowering-map-2026-06-25.md",
+      "title": "Faithful Int64 lowering — exhaustive site map + phased plan (2026-06-25)",
+      "headings": [
+        "Increment 2a — interpreter (tree-walker) faithful Int64",
+        "Increment 2b — WASM emitter faithful Int64",
+        "Increment 3 — gate lift + type-checker promotion"
+      ],
+      "codes": [
+        "LLN-NUMERIC-001"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "int64",
+        "i64",
+        "interpreter",
+        "faithful",
+        "increment",
+        "site",
+        "wat-emitter",
+        "gate",
+        "add",
+        "emitter",
+        "map",
+        "i32",
+        "lift",
+        "literal",
+        "plan",
+        "checked",
+        "wasm",
+        "type-checker",
+        "lowering",
+        "exhaustive",
+        "bigint",
+        "tag",
+        "promotion",
+        "phased",
+        "div"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-i64-lowering-plan-verified-2026-06-25.md",
+      "title": "Faithful Int64 lowering — VERIFIED implementation plan (2026-06-25)",
+      "headings": [
+        "1. Ordered build sequence",
+        "Step 0 — shared prerequisite (lands before everything)",
+        "Step 1 — interpreter literal-coercion (2a-pt2), the walker crux",
+        "Step 2 — type-checker tightening (lands with the emitter, before lift)",
+        "Step 3 — emitter structural valtypes + literal typing (2b structural)",
+        "Step 4 — emitter arithmetic / op routing (2b arithmetic)",
+        "Step 6 — gate lift (LAST, owner/integration-gated)",
+        "2. Residual-risk register (CRIT/HIGH = gate-lift blockers)",
+        "3. Literal-typing decision",
+        "4. Lift-criteria checklist (remove `Int64` only when ALL hold)",
+        "5. Test corpus (0014 walker===WASM differential — MUST include (2^53, 2^63) or it is vacuous)",
+        "Step 1 STATUS (built 2026-06-25, commits d986fa6/d4a8a8f) + Step 2b grounding",
+        "Bottom line"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "int64",
+        "i64",
+        "step",
+        "i32",
+        "local",
+        "emitter",
+        "literal",
+        "checked",
+        "interpreter",
+        "return",
+        "get",
+        "walker",
+        "before",
+        "int",
+        "const",
+        "add",
+        "high",
+        "min",
+        "let",
+        "param",
+        "lln",
+        "mul",
+        "arithmetic",
+        "type-checker",
+        "sub"
+      ]
+    },
+    {
       "rel": "docs/Knowledge-Bases/logicn-ide-tooling.md",
       "title": "LogicN — Excellent IDE Tooling",
       "headings": [
@@ -16461,6 +16737,55 @@
         "semantic",
         "privacy",
         "value-state"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-integer-types-and-lowering.md",
+      "title": "LogicN numeric types & integer lowering (i32 / i64) — reference + maths",
+      "headings": [
+        "1. The numeric type taxonomy → WASM value type",
+        "2. Fork A = TRAP — overflow is a security event, not a wrap",
+        "i32 — `packages-logicn/logicn-core-compiler/src/i32-arith.ts`",
+        "i64 — `packages-logicn/logicn-core-compiler/src/i64-arith.ts`",
+        "3. Three execution tiers — and which width each can carry",
+        "4. The WASM emitter — i64 checked helpers + the overflow maths",
+        "Mixed-width (the sign-extension rule)",
+        "Result / local value types",
+        "5. Literal origination — the exact-from-source rule",
+        "6. The fail-closed gate (`LLN-NUMERIC-001`) and the lift criteria",
+        "Appendix — honest performance context (incl. the photonic \"intuition check\")"
+      ],
+      "codes": [
+        "LLN-NUMERIC-001"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "i64",
+        "i32",
+        "int64",
+        "overflow",
+        "wasm",
+        "value",
+        "packages-logicn",
+        "logicn-core-compiler",
+        "src",
+        "gate",
+        "type",
+        "min",
+        "logicn",
+        "exact",
+        "checked",
+        "local",
+        "maths",
+        "tiers",
+        "result",
+        "rule",
+        "numeric",
+        "types",
+        "trap",
+        "fail-closed",
+        "check"
       ]
     },
     {
@@ -17158,6 +17483,50 @@
         "security",
         "audit",
         "before"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-maths-application-sweeps-2026-06-25.md",
+      "title": "Maths-application R&D sweeps — .tmf/db/TritMesh + expanded-scope (2026-06-25)",
+      "headings": [
+        "Sweep A — maths/virtual for .tmf, database, TritMesh (`wb7dqawdt`)",
+        "Sweep B — expanded-scope (16 areas: domains / internals / algebra) (`wdpcnecx4`)",
+        "Honest net"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-001"
+      ],
+      "tasks": [
+        "#40",
+        "#149"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "tmf",
+        "re-derivation",
+        "tritmesh",
+        "expanded-scope",
+        "sweep",
+        "maths",
+        "sweeps",
+        "database",
+        "algebra",
+        "wb7dqawdt",
+        "build",
+        "net",
+        "wdpcnecx4",
+        "domain",
+        "internal",
+        "maths-application",
+        "already",
+        "shipped",
+        "owner-gated",
+        "virtual",
+        "areas",
+        "domains",
+        "internals",
+        "honest",
+        "real"
       ]
     },
     {
@@ -18599,6 +18968,111 @@
       ]
     },
     {
+      "rel": "docs/Knowledge-Bases/logicn-percent-audit-and-benchmarks-2026-06-25.md",
+      "title": "% Completion audit + full benchmark table (2026-06-25, post security-hardening session)",
+      "headings": [
+        "% completion by module",
+        "Full benchmark table (production-ceiling scoreboard, 2026-06-25)",
+        "Honest read"
+      ],
+      "codes": [],
+      "tasks": [
+        "#36",
+        "#33",
+        "#102",
+        "#34",
+        "#149",
+        "#37"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "wasm",
+        "benchmark",
+        "full",
+        "table",
+        "rust",
+        "completion",
+        "session",
+        "audit",
+        "production",
+        "avx2",
+        "module",
+        "post",
+        "security-hardening",
+        "string",
+        "record",
+        "production-ceiling",
+        "scoreboard",
+        "honest",
+        "read",
+        "workloads",
+        "interpreter",
+        "bom",
+        "valuestate-006",
+        "real",
+        "interp"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-percent-audit-roadmap-2026-06-24-v2.md",
+      "title": "LogicN — % completion audit + roadmap (2026-06-24, v2, adversarially verified)",
+      "headings": [
+        "Headline",
+        "Per-area (shippable / full-vision, adversarially adjusted)",
+        "Must-asterisk — the honest caveats (truth-in-capability)",
+        "Roadmap",
+        "NOW (unblocked, highest zero-trust leverage)",
+        "NEXT",
+        "LATER",
+        "Single most important action"
+      ],
+      "codes": [
+        "LLN-MEMORY-001",
+        "LLN-SECRET-002",
+        "LLN-PRIVACY-002",
+        "LLN-VALUESTATE-008",
+        "LLN-TIER-001",
+        "LLN-DAG-002"
+      ],
+      "tasks": [
+        "#163",
+        "#102",
+        "#149",
+        "#34",
+        "#150",
+        "#170",
+        "#171"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "real",
+        "fail-closed",
+        "roadmap",
+        "adversarially",
+        "honest",
+        "false",
+        "production",
+        "tmf",
+        "single",
+        "headline",
+        "wasm",
+        "important",
+        "zero-trust",
+        "audit",
+        "verified",
+        "shippable",
+        "full-vision",
+        "tier",
+        "zero",
+        "inclusion",
+        "truth-in-capability",
+        "unblocked",
+        "wire",
+        "logicn",
+        "completion"
+      ]
+    },
+    {
       "rel": "docs/Knowledge-Bases/logicn-percent-audit-roadmap-2026-06-24.md",
       "title": "LogicN Completion Audit & Roadmap — 2026-06-24",
       "headings": [
@@ -18651,6 +19125,105 @@
         "three",
         "horizons",
         "hard"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-percent-audit-roadmap-2026-06-25-v2.md",
+      "title": "LogicN — % completion audit + roadmap (2026-06-25 **v2**)",
+      "headings": [
+        "Headline deltas since v1",
+        "Cross-language benchmark — the honest standing",
+        "Subsystem breakdown",
+        "Roadmap",
+        "NOW",
+        "NEXT",
+        "LATER (HW-gated / completeness)",
+        "Honesty-bar attestation"
+      ],
+      "codes": [
+        "LLN-NUMERIC-001"
+      ],
+      "tasks": [
+        "#34",
+        "#102"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "logicn",
+        "roadmap",
+        "int64",
+        "benchmark",
+        "last",
+        "governed",
+        "rust",
+        "audit",
+        "wasm",
+        "honest",
+        "cross-language",
+        "headline",
+        "subsystem",
+        "completion",
+        "deltas",
+        "since",
+        "literal",
+        "standing",
+        "fail-closed",
+        "tier",
+        "rustavx2",
+        "i32",
+        "breakdown",
+        "next",
+        "later"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-percent-audit-roadmap-2026-06-25.md",
+      "title": "LogicN — % completion audit + roadmap (2026-06-25)",
+      "headings": [
+        "Fresh full-sweep results (this date, all captured live)",
+        "Subsystem breakdown",
+        "Binding must-asterisk caveats (a buyer/auditor MUST be told)",
+        "Roadmap",
+        "NOW (close the loop on what already exists)",
+        "NEXT (the standing core-component builds)",
+        "LATER (completeness / HW-gated)",
+        "Honesty-bar attestation"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-001",
+        "LLN-NUMERIC-001"
+      ],
+      "tasks": [
+        "#34",
+        "#102"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "roadmap",
+        "int64",
+        "audit",
+        "fail-closed",
+        "subsystem",
+        "live",
+        "fresh",
+        "caveats",
+        "results",
+        "logicn",
+        "shippable",
+        "crypto",
+        "i32",
+        "binding",
+        "must-asterisk",
+        "standing",
+        "next",
+        "hw-gated",
+        "completion",
+        "full-sweep",
+        "date",
+        "captured",
+        "tests",
+        "mutation",
+        "breakdown"
       ]
     },
     {
@@ -19713,6 +20286,146 @@
       ]
     },
     {
+      "rel": "docs/Knowledge-Bases/logicn-photonic-maths-quality-self-check.md",
+      "title": "How LogicN guarantees the quality of maths run on `substrate { lane: photonic }`",
+      "headings": [
+        "The six layers (with the real code)",
+        "One sentence"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-002"
+      ],
+      "tasks": [
+        "#102"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "lane",
+        "photonic",
+        "maths",
+        "run",
+        "runs",
+        "result",
+        "digital",
+        "quality",
+        "real",
+        "exact",
+        "logicn",
+        "guarantees",
+        "substrate",
+        "never",
+        "six",
+        "layers",
+        "code",
+        "tolerance",
+        "sentence",
+        "guarantee",
+        "cheaper",
+        "tol",
+        "analog",
+        "self-check",
+        "src"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-photonic-noise-and-17-nos-2026-06-25.md",
+      "title": "Photonic-noise countering + the 17-NOs solutions + a prevention-rule set (2026-06-25)",
+      "headings": [
+        "Stream 1 — counter photonic noise, or work with it (`wf w33z54eq4`)",
+        "Stream 2 — the 17 \"cannot\": is each solvable? (`wf wvpc3yq6g`)",
+        "Prevention + graph rules proposed (error→tooling — candidate `LLN-*`)"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-001",
+        "LLN-NO-COERCION-001",
+        "LLN-GRAPH-BORDER-001",
+        "LLN-QUORUM-001",
+        "LLN-GOV-MONOTONE-MIN-001",
+        "LLN-GOV-3VL-002",
+        "LLN-TOLERANCE-MONOTONE-001",
+        "LLN-GOV-DOMAIN-001",
+        "LLN-FED-001"
+      ],
+      "tasks": [
+        "#40",
+        "#149"
+      ],
+      "xrefs": [
+        "logicn-rule-error-to-tooling"
+      ],
+      "topTerms": [
+        "counter",
+        "stream",
+        "noise",
+        "graph",
+        "rules",
+        "verdict",
+        "work-with",
+        "never",
+        "must",
+        "prevention",
+        "error",
+        "tooling",
+        "w33z54eq4",
+        "ships",
+        "degrade-only",
+        "cannot",
+        "wvpc3yq6g",
+        "photonic-noise",
+        "countering",
+        "nos",
+        "solutions",
+        "prevention-rule",
+        "set",
+        "photonic",
+        "work"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-photonic-real-world-applications.md",
+      "title": "Beyond \"maths in photonic\" — what the photonic lane does in the real world, and which sectors use it",
+      "headings": [
+        "What the lane actually does (one thing, very well)",
+        "The sectors",
+        "The honest part — LogicN's value is trust, not speed",
+        "Caveats held (the honesty bar)"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-001"
+      ],
+      "tasks": [
+        "#102"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "photonic",
+        "lane",
+        "sectors",
+        "maths",
+        "logicn",
+        "real",
+        "beyond",
+        "world",
+        "honest",
+        "thing",
+        "actually",
+        "very",
+        "well",
+        "part",
+        "value",
+        "trust",
+        "speed",
+        "caveats",
+        "held",
+        "honesty",
+        "bar",
+        "workload",
+        "result",
+        "regulated",
+        "untrusted-governed-lane"
+      ]
+    },
+    {
       "rel": "docs/Knowledge-Bases/logicn-photonic-ternary-bridge-spec.md",
       "title": "LogicN Photonic and Ternary Computing Spec",
       "headings": [
@@ -20075,6 +20788,50 @@
         "logicn",
         "spec",
         "status"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-pre-governance-threat-model-2026-06-25.md",
+      "title": "Pre-governance threat-model — the trust gap before any governance runs (2026-06-25)",
+      "headings": [
+        "Findings",
+        "Posture"
+      ],
+      "codes": [
+        "LLN-LEX-004",
+        "ERR_STRING_TOO_LONG",
+        "LLN-BACKEND-001"
+      ],
+      "tasks": [
+        "#38"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "before",
+        "governance",
+        "lln",
+        "threat-model",
+        "trust",
+        "gap",
+        "runs",
+        "pre-governance",
+        "read",
+        "fail-closed",
+        "findings",
+        "posture",
+        "traversal",
+        "lexer",
+        "guard",
+        "dos",
+        "fixed",
+        "path",
+        "governance-evasion",
+        "class",
+        "ascii-only",
+        "homoglyph",
+        "bom",
+        "ingest",
+        "untrusted"
       ]
     },
     {
@@ -20666,6 +21423,734 @@
       ]
     },
     {
+      "rel": "docs/Knowledge-Bases/logicn-rd-0110-photonic-matmul-refutation-deepened-2026-06-24.md",
+      "title": "R&D 0110 — Deepening the TritMesh \"O(1)-matmul\" refutation (2026-06-24)",
+      "headings": [
+        "1. Maths verdict — SOUND (re-ran PASS on the named machine), with two tighter bounds",
+        "2. The crux — the refutation partly attacks a STRAWMAN (unanimous, high-confidence)",
+        "Sharpened, defensible claim (adopt verbatim — replaces \"single pulse is false\")",
+        "3. Novelty verdict — NO paper. Every leg is already published (often with stronger evidence).",
+        "4. Improvement plan (the \"improve it\" deliverable) — ordered; all CPU-measurable except #10",
+        "5. Honest go/no-go"
+      ],
+      "codes": [],
+      "tasks": [
+        "#10"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "refutation",
+        "published",
+        "verdict",
+        "claim",
+        "tritmesh",
+        "real",
+        "single",
+        "already",
+        "logicn",
+        "paper",
+        "false",
+        "named",
+        "machine",
+        "pulse",
+        "defensible",
+        "sharpened",
+        "honest",
+        "stronger",
+        "matmul",
+        "maths",
+        "re-ran",
+        "every",
+        "leg",
+        "improvement",
+        "no-go"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-0111-photonic-3d-brief-rigorous-2026-06-24.md",
+      "title": "R&D 0111 — The 52-3D Brief, Rechecked: A Rigorous, Referenced Treatment of Tri-Wavelength Photonic / Ternary / Quantum Computing Claims and the LogicN Governance Layer",
+      "headings": [
+        "1. Claims Ledger",
+        "2. Tri-Wavelength Photonic Logic and Ternary Arithmetic",
+        "2.1 Synchronous and asynchronous all-optical execution (Claim 1 — SOUND)",
+        "2.2 Ternary half-adder mod-3 table (Claim 2 — SOUND, carry dropped)",
+        "2.3 \"Exponentially fewer gates\" (Claim 3 — REFUTED-as-stated / OVERSTATED)",
+        "2.4 MZI intensity law (Claim 4 — SOUND)",
+        "2.5 Three-wavelength superposition \"perfectly isolated\" (Claim 5 — OVERSTATED)",
+        "2.6 Photonic LIF neuron (Claim 6 — SOUND)",
+        "2.7 λ-encoded trits \"drastic\" footprint reduction (Claim 7 — OVERSTATED)",
+        "3. Volumetric 3D Tensor Computing and the O(1) Matmul",
+        "3.1 The metamaterial 3×3 transformation matrix (Claim 8 — SOUND, with closure caveat)",
+        "3.2 `t = L·n/c`, ~50 ps, N-independent latency (Claim 9 — SOUND)",
+        "3.3 \"Physical O(1) time complexity\" (Claim 10 — OVERSTATED) — cross-ref R&D 0110",
+        "3.4 \"Parallelism without any extra power\" (Claim 11 — OVERSTATED)",
+        "3.5 Reprogram-on-the-fly (Claim 13 — SOUND, understated cost)",
+        "4. MBQC / SPDC / Quantum Security",
+        "4.1 \"Instantaneous non-local logic\" (Claim 14 — REFUTED)",
+        "4.2 SPDC frequency lock (Claim 19 — SOUND)",
+        "4.3 No-cloning theorem (Claim 18 — SOUND)",
+        "4.4 QKD/QBER tri-state gate (Claim 17 — OVERSTATED)",
+        "4.5 Superdense coding \"doubles bandwidth\" (Claim 15 — OVERSTATED)",
+        "4.6 \"Drop the MAC\" (Claim 16 — REFUTED)",
+        "4.7 Grover DB search (Claim 20 — OVERSTATED → REFUTED as a DB engine)",
+        "5. Performance Claims (52-3D-2)",
+        "5.1 Holographic O(1)-read petabyte sugar-cube (Claim 12 — OVERSTATED)",
+        "5.2 The DAC/ADC bottleneck (Claim 21 — SOUND, the brief's best moment)",
+        "5.3 GC-free O(1) arena allocator (Claim 22 — SOUND, shipped)",
+        "5.4 Governance dead-code elimination = \"zero-time execution\" (Claim 23 — OVERSTATED)",
+        "6. The Genuinely-Sound LogicN Contribution (Real Today, on Binary Silicon)",
+        "6.1 K3 three-valued admission (Claim 24 — SOUND & SHIPPED)",
+        "6.2 No-Coercion `vAnd(T_digital, T_physical) = min` (Claim 25 — SOUND & SHIPPED)",
+        "6.3 Fail-closed analog→trit discretization (Claim — SOUND design rule)",
+        "6.4 NMR voting (Claim 27 — SOUND & SHIPPED)",
+        "6.5 Tower-Citizen \"Govern, Don't Absorb\" + signed-T passport (Claim 8/T-artifact — SOUND & SHIPPED)",
+        "6.6 LLN-SUBSTRATE-001 — crypto stays on bit-exact silicon (Claim 26 — SOUND & SHIPPED)",
+        "6.7 The \"impenetrable / un-tappable\" summary (Claim 28 — OVERSTATED)",
+        "7. What Would It Take To Be Real (Hardware & Measurement Gates)",
+        "8. References (deduplicated)"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-001",
+        "LLN-INV-001",
+        "LLN-SUBSTRATE-003",
+        "LLN-GOV-3VL-001"
+      ],
+      "tasks": [
+        "#16",
+        "#102"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "claim",
+        "sound",
+        "overstated",
+        "doi",
+        "shipped",
+        "quantum",
+        "real",
+        "logic",
+        "brief",
+        "verdict",
+        "photonic",
+        "logicn",
+        "ternary",
+        "min",
+        "refuted",
+        "optical",
+        "gate",
+        "governance",
+        "classical",
+        "computing",
+        "physical",
+        "gates",
+        "security",
+        "claims",
+        "energy"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-0112-treewalker-deepened-2026-06-24.md",
+      "title": "R&D 0112 — Tree-walker, deepened: maths recheck, compliance, and the 0110 cross-compare",
+      "headings": [
+        "1) MATHS RECHECK — verdict: SOUND, exact, complete for the expressible op set, byte-identical across all three tiers",
+        "2) ACTIONABLE FINDING — a latent fail-open in the sync-tier arithmetic fallback (now hardened)",
+        "3) COMPLIANCE / HONEST RESIDUALS (none is a live fail-open)",
+        "4) HIGHEST-VALUE EXTENSION — Z3 QF_BV cross-tier proof (the do-first item)",
+        "5) CROSS-COMPARE WITH 0110 (the O(1)-matmul refutation) — NOT orthogonal: same refutation, two workloads, plus a sharp synergy",
+        "6) BOTTOM LINE + paper / defensive-pub note"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-001"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "maths",
+        "refutation",
+        "fail-open",
+        "tree-walker",
+        "recheck",
+        "compliance",
+        "cross-compare",
+        "int",
+        "arithmetic",
+        "three",
+        "tiers",
+        "live",
+        "fallback",
+        "proof",
+        "matmul",
+        "sound",
+        "exact",
+        "interpreter",
+        "latent",
+        "cross-tier",
+        "work",
+        "verdict",
+        "complete",
+        "expressible",
+        "set"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-0113-tower-citizen-deepened-2026-06-24.md",
+      "title": "R&D 0113 — Tower-citizen, deepened: K3 maths recheck, compliance, and the 0110 cross-compare",
+      "headings": [
+        "1) MATHS RECHECK — verdict: SOUND, zero errors across four independent re-derivations; 145/145 tests pass on a clean build",
+        "2) WHAT IS GENUINELY DISTINCTIVE vs STANDARD (honestly bounded)",
+        "3) COMPLIANCE / HONEST LIMITS (expressivity, not soundness)",
+        "4) HIGHEST-VALUE EXTENSION — mechanize K3 soundness + No-Coercion + fail-closed in Z3/Lean (all four research fronts agree)",
+        "5) CROSS-COMPARE WITH 0110 — does the O(1)-matmul refutation HELP or HURT governance-as-T-MAC?",
+        "6) BOTTOM LINE + paper / defensive-pub note"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-001",
+        "LLN-GOV-3VL-001"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "maths",
+        "four",
+        "soundness",
+        "recheck",
+        "compliance",
+        "cross-compare",
+        "no-coercion",
+        "matmul",
+        "standard",
+        "fail-closed",
+        "verdict",
+        "reduction",
+        "build",
+        "sound",
+        "zero",
+        "errors",
+        "across",
+        "indeterminate",
+        "admission",
+        "gate",
+        "substrate",
+        "mjs",
+        "note",
+        "tower-citizen",
+        "refutation"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-0114-tmf-vs-db-comparison-2026-06-24.md",
+      "title": "R&D 0114 — What the photonic/quantum claims mean for the .tmf FORMAT vs the TritMesh DB — both outcomes, compared",
+      "headings": [
+        "1. Side-by-side",
+        "2. The .tmf OUTCOME  `[RD-0114-O1]`",
+        "3. The DB OUTCOME  `[RD-0114-O2]`",
+        "4. The COMPARISON — the decisive insight  `[RD-0114-O3]`",
+        "5. GUARDRAILS — two things that must NEVER be designed in"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-001",
+        "LLN-RETAIN-001",
+        "LLN-SECRET-002",
+        "LLN-PRIVACY-002"
+      ],
+      "tasks": [
+        "#102"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "tmf",
+        "digital",
+        "substrate",
+        "never",
+        "photonic",
+        "quantum",
+        "integrity",
+        "index",
+        "classical",
+        "outcome",
+        "both",
+        "tritmesh",
+        "must",
+        "claims",
+        "format",
+        "outcomes",
+        "comparison",
+        "engine",
+        "value",
+        "search",
+        "signed",
+        "passport",
+        "arena",
+        "storage",
+        "real"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-0115-hybrid-photonic-binary-placement-2026-06-24.md",
+      "title": "R&D 0115 — Optimal hybrid photonic/binary placement: joining 0110's cross-over math to the shipped ExecutionRouter",
+      "headings": [
+        "1) DIRECT ANSWER",
+        "2) THE SHIPPED SWITCH IS REAL, SOUND, AND FAIL-SAFE",
+        "3) THE PROMPT'S SUSPECTED GAP IS REFUTED — and the REAL gap identified",
+        "4) THE AMDAHL BITE (the headline negative)",
+        "5) WHAT 0115 ADDS (net-new) + ORDERED PLAN — all CPU-doable, no PIC",
+        "6) HONEST BOTTOM LINE"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-001",
+        "LLN-HW-004",
+        "LLN-SUBSTRATE-003"
+      ],
+      "tasks": [
+        "#10"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "photonic",
+        "shipped",
+        "digital",
+        "reuse",
+        "real",
+        "gap",
+        "hybrid",
+        "binary",
+        "cross-over",
+        "router",
+        "fail-safe",
+        "conversion",
+        "pic",
+        "optimal",
+        "executionrouter",
+        "switch",
+        "placement",
+        "math",
+        "never",
+        "rule",
+        "plan",
+        "src",
+        "line",
+        "regime",
+        "adds"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-0116-holographic-storage-2026-06-24.md",
+      "title": "R&D 0116 — Holographic \"O(1)-read petabyte\" storage: worth more R&D? + the sound-erasure finding",
+      "headings": [
+        "1) DIRECT ANSWER  `[RD-0116-O1]`",
+        "2) The honest SOTA picture  `[RD-0116-O2]`",
+        "3) The \"O(1)-read petabyte\" verdict  `[RD-0116-O3]`",
+        "4) The net-new finding + the build  `[RD-0116-O4]` → `LLN-RETAIN-001`",
+        "`LLN-RETAIN-001` (proposed) — \"Sound-erasure obligation for non-overwritable substrates\"",
+        "5) Reference ledger",
+        "6) Paper / defensive-pub note"
+      ],
+      "codes": [
+        "LLN-RETAIN-001",
+        "LLN-SUBSTRATE-001",
+        "LLN-PRIVACY-002",
+        "LLN-SECRET-002"
+      ],
+      "tasks": [
+        "#102"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "read",
+        "petabyte",
+        "lln-retain-001",
+        "storage",
+        "sound-erasure",
+        "finding",
+        "holographic",
+        "net-new",
+        "obligation",
+        "build",
+        "worth",
+        "demonstrated",
+        "optica",
+        "paper",
+        "sota",
+        "ledger",
+        "density",
+        "substrate",
+        "key",
+        "substrates",
+        "defensive-pub",
+        "note",
+        "page",
+        "direct",
+        "answer"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-0117-hybrid-join-2026-06-24.md",
+      "title": "R&D 0117 — The JOIN: 0110's reuse-crossover WHEN married to the shipped Tri-Pipe HOW, with a proved Safe-Floor Theorem",
+      "headings": [
+        "1) HEADLINE — the switch and the cross-over math are now JOINED  `[RD-0117-O1]`",
+        "2) THE SAFE-FLOOR THEOREM — proved + shipped as a runtime gate  `[RD-0117-O2]`",
+        "3) THE REUSE-CROSSOVER WIRING SPEC (CPU-doable, closes the named gap)  `[RD-0117-O3]`",
+        "4) THE REAL-WORKLOAD MEASUREMENT + the headline measured-negative  `[RD-0117-O4]`",
+        "5) ORDERED BUILDABLE PLAN — steps 1–7 CPU-now, only step 8 HW-gated",
+        "6) PAPER / DEFENSIVE-PUB NOTE (measured-negative only)"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-001",
+        "LLN-SUBSTRATE-003"
+      ],
+      "tasks": [
+        "#10"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "shipped",
+        "photonic",
+        "reuse",
+        "safe-floor",
+        "digital",
+        "theorem",
+        "measured-negative",
+        "reuse-crossover",
+        "proved",
+        "headline",
+        "tdigital",
+        "wiring",
+        "step",
+        "cross-over",
+        "tphotonic",
+        "floor",
+        "gate",
+        "tri-pipe",
+        "plan",
+        "math",
+        "named",
+        "constants",
+        "decide",
+        "join",
+        "proof"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-0118-retain-hardware-directive-2026-06-24.md",
+      "title": "R&D 0118 — LLN-RETAIN-001 Hardware Protection Directive (adversarially hardened)",
+      "headings": [
+        "1) VERDICT  `[RD-0118-O1]`",
+        "2) THE DISCOVERY ANSWER (the owner's question)  `[RD-0118-O2]`",
+        "3) THE HARDENED 3-STAGE ENFORCEMENT  `[RD-0118-O3]`",
+        "4) THE DECISION CORE (built + adversarially validated)  `[RD-0118 §4]`",
+        "5) THE CRYPTO-ERASE WITNESS — minimal sound structure  `[RD-0118-O3]`",
+        "6) BUILDABLE-NOW vs HW-GATED  `[RD-0118-O3]`",
+        "7) HONESTY NOTE"
+      ],
+      "codes": [
+        "LLN-RETAIN-001",
+        "LLN-SUBSTRATE-001",
+        "LLN-PRIVACY-002",
+        "LLN-SECRET-002",
+        "LLN-GOV-3VL-001"
+      ],
+      "tasks": [
+        "#102"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "hardware",
+        "crypto-only",
+        "signed",
+        "rd-0118-o3",
+        "erasemodel",
+        "hardened",
+        "built",
+        "overwrite",
+        "directive",
+        "adversarially",
+        "decision",
+        "core",
+        "hw-gated",
+        "true",
+        "witness",
+        "lln-retain-001",
+        "deny",
+        "drive",
+        "never",
+        "storage",
+        "medium",
+        "physical",
+        "stage",
+        "sink",
+        "fail-closed"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-0119-0121-findings-2026-06-24.md",
+      "title": "R&D 0119 / 0120 / 0121 — discovery, architecture-gap, and tooling-adequacy findings (2026-06-24)",
+      "headings": [
+        "RD-0119 — Unlock + small-wins discovery (`w4b5597yv`)",
+        "RD-0120 — Missing software-architecture (`wvc1efjl1`)",
+        "RD-0121 — Are graphs / tests / dev-tools still adequate? (`ws0znezws`)",
+        "The genuine OWNER DECISIONS (distilled)"
+      ],
+      "codes": [
+        "LLN-RUNTIME-006",
+        "LLN-SBOM-001"
+      ],
+      "tasks": [
+        "#34",
+        "#70",
+        "#103",
+        "#104",
+        "#67",
+        "#102"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "tests",
+        "discovery",
+        "owner",
+        "rd-0120",
+        "unlock",
+        "rd-0121",
+        "build-now",
+        "still",
+        "graphs",
+        "genuine",
+        "architecture-gap",
+        "tooling-adequacy",
+        "findings",
+        "rd-0119",
+        "small-wins",
+        "w4b5597yv",
+        "verify",
+        "tmf",
+        "owner-greenlight",
+        "run",
+        "missing",
+        "software-architecture",
+        "wvc1efjl1",
+        "full",
+        "dev-tools"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-0125-resolution-delivery-working-model-2026-06-24.md",
+      "title": "RD-0125 — a working model of the third logic-delivery paradigm (resolution/collapse), with security + a hybrid benchmark",
+      "headings": [
+        "1. The model — three delivery modes on two axes",
+        "2. How it works (the demo)",
+        "3. Security examination — 10/10 adversarial properties hold (incl. an independent review)",
+        "4. Hybrid benchmark — resolution-gate vs regular async",
+        "5. Model-vs-production gaps (honest disclosure)",
+        "6. Bottom line"
+      ],
+      "codes": [
+        "LLN-GOV-3VL-001"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "collapse",
+        "resolution",
+        "body",
+        "security",
+        "deny",
+        "model",
+        "async",
+        "denied",
+        "third",
+        "benchmark",
+        "hybrid",
+        "independent",
+        "regular",
+        "honest",
+        "allow",
+        "verdict",
+        "paradigm",
+        "constraint",
+        "constraints",
+        "real",
+        "three",
+        "delivery",
+        "hold",
+        "indeterminate",
+        "result"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-0126-photonic-crypto-virtualchip-minusone-2026-06-24.md",
+      "title": "RD-0126 — photonic-crypto bridge · alpha-sorting PDF · virtualized-binary-chip · \"-1 = recheck later\"",
+      "headings": [
+        "Thread A — the photonic-crypto hardware bridge — CONFIRMS-SHIPPED + 2 net-new",
+        "Thread B — the alpha-sorting PDF (`notes/tritmesh-rd-alpha-sorting.pdf`) — TRACK, re-scope hard",
+        "Thread C — virtualize a binary chip — CONFIRMS-SHIPPED (reshaped) + DO-NOT-BUILD a hypervisor",
+        "Thread E — \"-1 means recheck later (re-evaluate at the end)\" — REFUTE-the-build / TRACK-one-residual",
+        "Overclaims caught (re-verified against source — so they are not repeated)",
+        "Build queue from this batch"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-001",
+        "LLN-GOV-3VL-001"
+      ],
+      "tasks": [
+        "#102"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "pdf",
+        "thread",
+        "recheck",
+        "binary",
+        "chip",
+        "build",
+        "later",
+        "bridge",
+        "crypto",
+        "photonic",
+        "virtual",
+        "logicn",
+        "photonic-crypto",
+        "alpha-sorting",
+        "confirms-shipped",
+        "net-new",
+        "hardware",
+        "track",
+        "hypervisor",
+        "shipped",
+        "already",
+        "lane",
+        "wasm",
+        "against",
+        "source"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-0127-framework-friendly-runtime.md",
+      "title": "RD-0127 — Framework-Friendly Runtime (note 16) + retro proof/score of the contested notes 8–15 claims",
+      "headings": [
+        "Why this RD exists (the honest gap)",
+        "Results",
+        "Disposition"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-005",
+        "LLN-TYPE-016"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "runtime",
+        "honest",
+        "note",
+        "score",
+        "claims",
+        "gap",
+        "refuted",
+        "rd-0127",
+        "retro",
+        "proof",
+        "contested",
+        "notes",
+        "disposition",
+        "framework-friendly",
+        "build",
+        "why",
+        "exists",
+        "tcb",
+        "fail-open",
+        "win",
+        "refuse",
+        "results",
+        "layout",
+        "bit",
+        "real"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-0128-cicd-native-testgen.md",
+      "title": "RD-0128 — CI/CD-native auto-test-generation (owner note 67)",
+      "headings": [
+        "Verdict table",
+        "Highest-value honest build (task #57's first increment)",
+        "Refused / overclaim items — keep OUT of all docs and copy",
+        "Recommendation"
+      ],
+      "codes": [],
+      "tasks": [
+        "#57"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "shipped",
+        "verdict",
+        "signed",
+        "testwitness",
+        "table",
+        "logicn",
+        "note",
+        "test",
+        "honest",
+        "build",
+        "refused",
+        "owner",
+        "proof",
+        "first",
+        "increment",
+        "keep",
+        "rd-0128",
+        "cd-native",
+        "auto-test-generation",
+        "track",
+        "receipt",
+        "claim",
+        "lane",
+        "substrate",
+        "wasmsha256"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-34b-paramtaint-buildspec-2026-06-24.md",
+      "title": "R&D — Phase 34B boundary param auto-taint: verified state + build-ready spec",
+      "headings": [
+        "1) Verified SHIPPED state (do not rebuild)",
+        "2) The EXACT remaining gap",
+        "3) BUILD-READY DESIGN",
+        "4) Test plan",
+        "5) Status & recommendation"
+      ],
+      "codes": [
+        "LLN-VALUESTATE-003",
+        "LLN-VALUESTATE-008"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "flow",
+        "param",
+        "route",
+        "build-ready",
+        "shipped",
+        "verified",
+        "state",
+        "boundary",
+        "boundary-untrusted",
+        "gap",
+        "bare",
+        "warning",
+        "phase",
+        "auto-taint",
+        "spec",
+        "status",
+        "bench",
+        "exact",
+        "remaining",
+        "design",
+        "governed",
+        "trusted",
+        "secure",
+        "guarded",
+        "flowdecl"
+      ]
+    },
+    {
       "rel": "docs/Knowledge-Bases/logicn-rd-53-azt-selfcert-and-blackhole-protocol-2026-06-23.md",
       "title": "AZT Self-Certification & the Black-Hole Protocol (notes/53-blackhole) — Use/Don't-Use Ledger",
       "headings": [
@@ -20718,6 +22203,93 @@
         "aspirational",
         "runtime",
         "trigger"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-59-js-quirks-vs-logicn-2026-06-25.md",
+      "title": "R&D (notes/59) — the 10 classic JavaScript bad-design quirks vs LogicN (2026-06-25)",
+      "headings": [
+        "Owner-requested table",
+        "Genuine gaps worth acting on (only one is a real build)",
+        "Architecture note — why LogicN is better for devs + AI here"
+      ],
+      "codes": [
+        "LLN-TYPE-004",
+        "LLN-TYPE-008",
+        "LLN-NAME-001",
+        "LLN-NAME-002",
+        "LLN-FLOAT-NAN-001"
+      ],
+      "tasks": [
+        "#10"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "logicn",
+        "float",
+        "nan",
+        "real",
+        "build",
+        "int",
+        "no-by-design",
+        "already-safe",
+        "notes",
+        "classic",
+        "worth",
+        "devs",
+        "architecture",
+        "genuine",
+        "javascript",
+        "bad-design",
+        "quirks",
+        "null",
+        "owner-requested",
+        "table",
+        "lint",
+        "gaps",
+        "acting",
+        "note",
+        "why"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-62-maths-expansion-2026-06-25.md",
+      "title": "R&D — notes/62 \"expand maths to other areas\" (2026-06-25, `wf w9hj3oaf4`)",
+      "headings": [
+        "Ledger",
+        "Refuted / corrected from the raw notes",
+        "⚠️ The ZT-9 finding (theme 4)",
+        "Net-new (small, sound, buildable — all sit on shipped primitives)"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "notes",
+        "none",
+        "shipped",
+        "maths",
+        "other",
+        "w9hj3oaf4",
+        "small",
+        "buildable",
+        "theme",
+        "core",
+        "yet",
+        "min",
+        "expand",
+        "areas",
+        "ledger",
+        "refuted",
+        "corrected",
+        "raw",
+        "zt-9",
+        "finding",
+        "net-new",
+        "sound",
+        "sit",
+        "primitives",
+        "ternary"
       ]
     },
     {
@@ -20820,6 +22392,49 @@
         "logicn-tmf-engine",
         "nvfp4",
         "confidentiality"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-arrays-objects-2026-06-25.md",
+      "title": "Arrays & objects deep-dive (2026-06-25) — PARTIAL (3/6 probes; 3 rate-limited, to resume)",
+      "headings": [
+        "⚠️ Verification caveat",
+        "HIGH findings (verified by compile+run; fixes pending)",
+        "Medium findings — silent typos (the owner's \"what happens with typos/commas\")",
+        "What's solid (verified)",
+        "Next"
+      ],
+      "codes": [
+        "LLN-NAME-001"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "findings",
+        "field",
+        "typos",
+        "verified",
+        "probes",
+        "age",
+        "rate-limited",
+        "resume",
+        "owner",
+        "high",
+        "wasm",
+        "arrays",
+        "objects",
+        "partial",
+        "run",
+        "record",
+        "medium",
+        "deep-dive",
+        "works",
+        "memory",
+        "interpreter",
+        "verification",
+        "caveat",
+        "compile",
+        "fixes"
       ]
     },
     {
@@ -21000,6 +22615,48 @@
       ]
     },
     {
+      "rel": "docs/Knowledge-Bases/logicn-rd-devtools-observability-graph-2026-06-25.md",
+      "title": "R&D — a dev-tools (non-production) graph that visualises + logs + audits what each component does (2026-06-25)",
+      "headings": [
+        "Why \"dev-only\" flips refuse → build",
+        "What already ships (don't rebuild — ~70%)",
+        "Net-new (the actual ask)",
+        "The live version",
+        "The one rule that keeps it a tool, not a vulnerability",
+        "Recommendation (phased)"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "dev-only",
+        "already",
+        "graph",
+        "live",
+        "component",
+        "build",
+        "non-production",
+        "each",
+        "version",
+        "dev-tools",
+        "visualises",
+        "logs",
+        "audit",
+        "phased",
+        "ships",
+        "net-new",
+        "tool",
+        "audits",
+        "why",
+        "flips",
+        "refuse",
+        "don",
+        "rebuild",
+        "actual",
+        "ask"
+      ]
+    },
+    {
       "rel": "docs/Knowledge-Bases/logicn-rd-env-tmf-sealed-secrets-2026-06-23.md",
       "title": "env.tmf — Sealed Secrets on the .tmf Container (R&D)",
       "headings": [
@@ -21164,6 +22821,217 @@
       ]
     },
     {
+      "rel": "docs/Knowledge-Bases/logicn-rd-graph-per-component-realization-2026-06-25.md",
+      "title": "Boundary-Graph: per-component realization audit — is each component's graph an improvement lever + a ZT control? (2026-06-25)",
+      "headings": [
+        "The two answers (owner's literal sub-questions)",
+        "Per-class table",
+        "Cross-cutting actions (ordered)",
+        "Where the graph is NOT worth more effort (don't gold-plate)"
+      ],
+      "codes": [],
+      "tasks": [
+        "#149"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "graph",
+        "yes",
+        "component",
+        "don",
+        "lever",
+        "control",
+        "import",
+        "improvement",
+        "build",
+        "audit",
+        "each",
+        "owner",
+        "already",
+        "drift",
+        "high",
+        "scanner",
+        "cross-cutting",
+        "effort",
+        "boundary-graph",
+        "per-component",
+        "realization",
+        "class",
+        "every",
+        "classes",
+        "answers"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-graph-secrets-and-runtime-graph-2026-06-25.md",
+      "title": "Graph R&D — does the .graph expose secrets? + would a live runtime-updating graph help? (2026-06-25)",
+      "headings": [
+        "(A) Does the static `.graph` expose secrets? — **CLEAN, all classes, adversarially verified**",
+        "(B) Would a live, dynamically-updating-in-compute graph help? — three angles, one ZT rule",
+        "The unifying ZT rule for any runtime graph"
+      ],
+      "codes": [],
+      "tasks": [
+        "#102"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "graph",
+        "live",
+        "help",
+        "expose",
+        "runtime",
+        "secrets",
+        "rule",
+        "governance",
+        "runtime-updating",
+        "static",
+        "none",
+        "unifying",
+        "clean",
+        "classes",
+        "adversarially",
+        "verified",
+        "dynamically-updating-in-compute",
+        "three",
+        "angles",
+        "provenance",
+        "component",
+        "perf",
+        "already",
+        "values",
+        "never"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-graph-wasm-admission-benchmark-2026-06-25.md",
+      "title": "Benchmark — does \"supplying a graph alongside the WASM\" help in production? (2026-06-25)",
+      "headings": [
+        "The grounding correction that reframes the whole question",
+        "Results",
+        "H1 — admission/verification cost + H3 — the graph's own cost",
+        "Runtime gate anchor (what production pays per module today, graph or not)",
+        "H2 — out-of-allowlist / drift detection",
+        "Honest verdict",
+        "Security framing (most-secure lens)",
+        "Forward actions"
+      ],
+      "codes": [],
+      "tasks": [
+        "#149"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "graph",
+        "gate",
+        "production",
+        "cost",
+        "wasm",
+        "signed",
+        "precomputed",
+        "load",
+        "real",
+        "manifest",
+        "benchmark",
+        "detection",
+        "module",
+        "admission",
+        "verdict",
+        "already",
+        "source",
+        "out-of-allowlist",
+        "results",
+        "never",
+        "closure",
+        "today",
+        "runtime",
+        "pays",
+        "drift"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-graph-wasm-photonic-2026-06-25.md",
+      "title": "R&D — Does a graph (GraphCast-inspired) help WASM / photonic / virtual-3D? + the WASM test methodology (2026-06-25)",
+      "headings": [
+        "The load-bearing distinction (apply it to every \"graph\" claim)",
+        "Per-thread verdict",
+        "Would a graph with the WASM help production? — Yes, for *governance*, not speed",
+        "Could a graph improve the photonic / virtual-3D benchmark? — No (honestly)",
+        "The WASM test methodology — the gold-standard ladder (the highest-value action)",
+        "The hard honesty line"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "graph",
+        "wasm",
+        "photonic",
+        "virtual-3d",
+        "test",
+        "methodology",
+        "help",
+        "exact",
+        "verdict",
+        "speed",
+        "i64",
+        "honestly",
+        "claim",
+        "real",
+        "production",
+        "yes",
+        "governance",
+        "ladder",
+        "graphcast-inspired",
+        "gnn",
+        "load-bearing",
+        "distinction",
+        "apply",
+        "every",
+        "lane"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-honeypots-2026-06-25.md",
+      "title": "Honeypots / deception R&D — do they fit deny-by-default zero-trust? (2026-06-25)",
+      "headings": [
+        "The deciding line: \"does the decoy respond?\"",
+        "Why the passive form is sound (not just asserted)",
+        "Where (if built) — thin layer only",
+        "Honest risks (mostly redundancy, not danger)"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "canary",
+        "passive",
+        "deny-by-default",
+        "thin",
+        "decoy",
+        "form",
+        "must",
+        "honeypots",
+        "honest",
+        "line",
+        "respond",
+        "layer",
+        "deception",
+        "fit",
+        "zero-trust",
+        "verdict",
+        "trap",
+        "deciding",
+        "why",
+        "sound",
+        "just",
+        "asserted",
+        "never",
+        "built",
+        "risks"
+      ]
+    },
+    {
       "rel": "docs/Knowledge-Bases/logicn-rd-notes-46-47-50-51-apiserver-lln-2026-06-23.md",
       "title": "R&D — notes 46/47/50/51 + blueprint + //lln: cache + api-server (2026-06-23)",
       "headings": [
@@ -21222,6 +23090,97 @@
       ]
     },
     {
+      "rel": "docs/Knowledge-Bases/logicn-rd-outcomes-table-2026-06-24.md",
+      "title": "LogicN R&D — outcomes + science-paper check (2026-06-24 processing run)",
+      "headings": [
+        "R&D ledger",
+        "R&D-driven builds shipped this run (the \"R&D done\" → code)",
+        "Science-paper bottom line",
+        "Paper written + the later batch graded (2026-06-24 EOD)",
+        "Open todos (R&D-side, 2026-06-24 EOD)"
+      ],
+      "codes": [
+        "LLN-RETAIN-001",
+        "LLN-CLI-REDACT-001"
+      ],
+      "tasks": [
+        "#10",
+        "#102"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "paper",
+        "science-paper",
+        "run",
+        "eod",
+        "shipped",
+        "positive",
+        "photonic",
+        "check",
+        "d-driven",
+        "builds",
+        "negative",
+        "later",
+        "batch",
+        "open",
+        "logicn",
+        "outcomes",
+        "processing",
+        "sound",
+        "ledger",
+        "safe-floor",
+        "gate",
+        "code",
+        "bottom",
+        "line",
+        "written"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-paper-ranking-0100-0113-2026-06-25.md",
+      "title": "R&D Paper-Worthiness Ranking — 0100–0113 (2026-06-25)",
+      "headings": [
+        "Ranking table",
+        "Why 0 papers (the bar, applied)"
+      ],
+      "codes": [
+        "LLN-TIER-001",
+        "LLN-AFFINE-001",
+        "LLN-PASSPORT-002"
+      ],
+      "tasks": [
+        "#110"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "defensive-pub",
+        "ranking",
+        "shipped",
+        "papers",
+        "bar",
+        "grounding",
+        "design-only",
+        "paper-worthiness",
+        "measured",
+        "table",
+        "why",
+        "applied",
+        "arm",
+        "hybrid",
+        "secrets",
+        "against",
+        "novel",
+        "real",
+        "each",
+        "notes",
+        "fail-closed",
+        "model",
+        "wasm",
+        "fail-open",
+        "logicn"
+      ]
+    },
+    {
       "rel": "docs/Knowledge-Bases/logicn-rd-performance-and-boundary-opportunities.md",
       "title": "Can the absorbed R&D improve LogicN performance, boundary, or memory?",
       "headings": [
@@ -21267,6 +23226,110 @@
         "key",
         "bottom",
         "line"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-photonic-quantum-paging-graph-grounding-2026-06-25.md",
+      "title": "Honesty-bar grounding — photonic multiplexing · quantum threshold · \"Secure Cryptographic Paging\" · .graph hygiene (2026-06-25)",
+      "headings": [
+        "Thread 1 — \"more than 6 wave vectors / +1 wave\": photonic multiplexing scaling (ZT 94)",
+        "Thread 2 — quantum threshold (ZT 93)",
+        "Thread 3 — \"Have I invented Secure Cryptographic Paging?\" (ZT 88)",
+        "Thread 4 — .graph hygiene: are they a public security risk / should they be gitignored? (ZT 93)",
+        "Consolidated standing-format table"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-001",
+        "LLN-RETAIN-001"
+      ],
+      "tasks": [
+        "#21",
+        "#149"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "thread",
+        "quantum",
+        "photonic",
+        "cryptographic",
+        "graph",
+        "hygiene",
+        "multiplexing",
+        "threshold",
+        "secure",
+        "paging",
+        "overclaim",
+        "wave",
+        "public",
+        "policy",
+        "verdict",
+        "sound",
+        "never",
+        "security",
+        "shipped",
+        "real",
+        "already",
+        "risk",
+        "owner",
+        "carries",
+        "invented"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-reference-index.md",
+      "title": "LogicN R&D Reference Index — stable citation IDs for every study and outcome",
+      "headings": [
+        "ID scheme",
+        "Active studies (public KB docs) — the photonic/substrate series + this session",
+        "RD-0110 — Photonic O(1)-matmul refutation, deepened",
+        "RD-0111 — 52-3D photonic brief, rigorous recheck (28-claim ledger)",
+        "RD-0112 — Tree-walker, deepened",
+        "RD-0113 — Tower-citizen (K3 governance), deepened",
+        "RD-0114 — .tmf format vs TritMesh DB, compared",
+        "RD-0115 — Hybrid photonic/binary placement",
+        "RD-0116 — Holographic \"O(1)-read petabyte\" storage: worth more R&D?",
+        "RD-0117 — The 0115 join (formalize safe-floor + wire reuse-crossover + measure)",
+        "RD-0118 — LLN-RETAIN-001 Hardware Protection Directive, hardened",
+        "RD-0119 — Unlock + small-wins discovery sweep",
+        "RD-0120 — Missing software-architecture sweep",
+        "RD-0121 — Dev-tools adequacy (graphs/tests/other)",
+        "Hardware protection summary",
+        "RD-0122 — The third logic-delivery paradigm (async:sync :: ?:third)",
+        "Outcomes + paper ledger",
+        "Secret-hygiene audit",
+        "Notes"
+      ],
+      "codes": [
+        "LLN-RETAIN-001"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "photonic",
+        "doc",
+        "deepened",
+        "study",
+        "outcome",
+        "ledger",
+        "hardware",
+        "protection",
+        "third",
+        "claim",
+        "shipped",
+        "sweep",
+        "status",
+        "governance",
+        "read",
+        "safe-floor",
+        "lln-retain-001",
+        "index",
+        "holographic",
+        "tmf",
+        "reference",
+        "every",
+        "docs",
+        "substrate",
+        "reuse"
       ]
     },
     {
@@ -21320,6 +23383,53 @@
         "crypto",
         "gir",
         "notes"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-rd-syntax-7axis-sweep-2026-06-25.md",
+      "title": "LogicN syntax 7-axis sweep (2026-06-25) — PARTIAL (4/8 categories; 4 rate-limited, to resume)",
+      "headings": [
+        "🔴 HIGH — zero-trust fail-opens (verify, then fix)",
+        "🔴 HIGH — correctness / stability",
+        "🟢 Free wins (config/default only, no core rewrite) & compiler-intelligence",
+        "🟢 Confirmed exemplary (no action — deliberate-safe)",
+        "PCI-DSS / compliance note",
+        "Next"
+      ],
+      "codes": [
+        "LLN-EFFECT-001",
+        "LLN-VALUESTATE-008",
+        "LLN-FLOAT-NAN-001",
+        "LLN-NUMERIC-001"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "logicn",
+        "check",
+        "decimal",
+        "high",
+        "nan",
+        "gate",
+        "default",
+        "flow",
+        "fix",
+        "correctness",
+        "rate-limited",
+        "resume",
+        "wins",
+        "confirmed",
+        "numeric-001",
+        "syntax",
+        "partial",
+        "categories",
+        "zero-trust",
+        "pci-dss",
+        "free",
+        "stability",
+        "compiler-intelligence",
+        "verify",
+        "fail-opens"
       ]
     },
     {
@@ -21777,6 +23887,70 @@
         "gate",
         "always",
         "near"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-roadmap-2026-06-25.md",
+      "title": "LogicN roadmap (2026-06-25, post security-hardening session)",
+      "headings": [
+        "🔒 NOW — security hardening (most-secure-first, #36)",
+        "🛠 NEXT — correctness & coverage",
+        "🚀 NEXT — infrastructure",
+        "🧩 OWNER-GATED builds (R&D net-new, adversarially verified — pick by value)",
+        "🌅 LATER — HW / research / #34 gated",
+        "The through-line"
+      ],
+      "codes": [
+        "LLN-IMPORT-005",
+        "LLN-IMPORT-006",
+        "LLN-SUBSTRATE-005",
+        "LLN-CRYPTO-PQ-001",
+        "LLN-NO-COERCION-001",
+        "LLN-QUORUM-001",
+        "LLN-GRAPH-BORDER-001",
+        "LLN-GOV-3VL-002"
+      ],
+      "tasks": [
+        "#149",
+        "#38",
+        "#50",
+        "#34",
+        "#36",
+        "#45",
+        "#37",
+        "#32",
+        "#33",
+        "#39",
+        "#35",
+        "#102"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "session",
+        "next",
+        "owner-gated",
+        "logicn",
+        "roadmap",
+        "builds",
+        "build",
+        "verified",
+        "gated",
+        "post",
+        "security-hardening",
+        "fail-closed",
+        "manifest",
+        "signed",
+        "security",
+        "hardening",
+        "most-secure-first",
+        "correctness",
+        "coverage",
+        "infrastructure",
+        "net-new",
+        "adversarially",
+        "pick",
+        "value",
+        "later"
       ]
     },
     {
@@ -23218,6 +25392,50 @@
       ]
     },
     {
+      "rel": "docs/Knowledge-Bases/logicn-secret-hygiene-audit-2026-06-24.md",
+      "title": "Secret-hygiene audit — timing side-channels + secret-zeroing (2026-06-24)",
+      "headings": [
+        "1) Timing side-channels — AUDITED, sound (`0043-secret-hygiene` constant-time half = DONE)",
+        "2) Secret-zeroing — zero-on-exit covers the safe subset (`0055-secretzero`)",
+        "3) Most-secure-zero-trust verdict"
+      ],
+      "codes": [
+        "LLN-BUILD-001"
+      ],
+      "tasks": [
+        "#70",
+        "#149"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "secret-hygiene",
+        "constant-time",
+        "zero-on-exit",
+        "timing",
+        "side-channels",
+        "secret-zeroing",
+        "safe",
+        "audit",
+        "verdict",
+        "sound",
+        "single-exit",
+        "subset",
+        "secretzero",
+        "transform",
+        "path",
+        "non-secret",
+        "secret",
+        "return",
+        "remanence",
+        "window",
+        "audited",
+        "half",
+        "covers",
+        "flow",
+        "most-secure-zero-trust"
+      ]
+    },
+    {
       "rel": "docs/Knowledge-Bases/logicn-security-anti-abuse.md",
       "title": "LogicN — Security: Anti-Abuse Architecture",
       "headings": [
@@ -23641,6 +25859,54 @@
         "sensitive",
         "sql",
         "prevention"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-self-audit-ts-40-issues-2026-06-25.md",
+      "title": "LogicN Self-Audit — 40-Issue TypeScript Toolchain Threat Sweep (2026-06-25)",
+      "headings": [
+        "Findings table",
+        "Prioritized remediation (genuine BUILD / CI / CONFIG only — `already-safe`/`n/a`/`track` omitted)",
+        "A. Fix our own toolchain",
+        "B. Additive lint / regression locks (no live defect)",
+        "C. Track (no build now)",
+        "Honesty note"
+      ],
+      "codes": [
+        "LLN-SOURCE-ESCAPE-001",
+        "LLN-PKG-002",
+        "LLN-PKG-004"
+      ],
+      "tasks": [
+        "#174"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "build",
+        "already-safe",
+        "partial",
+        "config",
+        "logicn",
+        "track",
+        "toolchain",
+        "lint",
+        "yes",
+        "npm",
+        "node",
+        "live",
+        "locks",
+        "issue",
+        "typescript",
+        "compiler",
+        "real",
+        "fail-closed",
+        "http",
+        "fetch",
+        "mjs",
+        "self-audit",
+        "threat",
+        "sweep",
+        "parsers"
       ]
     },
     {
@@ -24290,6 +26556,48 @@
       ]
     },
     {
+      "rel": "docs/Knowledge-Bases/logicn-substrate-ergonomics-infer-vs-declare.md",
+      "title": "Substrate-clause ergonomics — infer the mechanism, declare the guarantee, never infer the spec",
+      "headings": [
+        "The principle that decides what's safe to auto-infer",
+        "The friendly form (the common case should be one line)"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-002"
+      ],
+      "tasks": [
+        "#58"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "infer",
+        "tolerance",
+        "mechanism",
+        "declare",
+        "guarantee",
+        "never",
+        "spec",
+        "auto-infer",
+        "ergonomics",
+        "safe",
+        "substrate-clause",
+        "already",
+        "principle",
+        "decides",
+        "friendly",
+        "form",
+        "common",
+        "case",
+        "line",
+        "substrate",
+        "redundancy",
+        "result",
+        "compiler",
+        "resilience",
+        "defaults"
+      ]
+    },
+    {
       "rel": "docs/Knowledge-Bases/logicn-substrate-failure-model.md",
       "title": "LogicN Substrate Failure-Mode Model — Direction C sub-spec (seeded, fail-closed)",
       "headings": [
@@ -24349,6 +26657,97 @@
         "tolerance",
         "fail-closed",
         "deterministic"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-substrate-lane-fail-opens-2026-06-25.md",
+      "title": "Substrate-lane fail-opens found + fixed (2026-06-25)",
+      "headings": [
+        "Fix 1 — PQ-suffixed crypto effects escaped the crypto-on-core matcher",
+        "Fix 2 — a malformed lane was silently inert (early-return before the malformed check)",
+        "Residual (tracked, not a security hole)",
+        "Verification"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-001",
+        "LLN-CRYPTO-PQ-001",
+        "LLN-SUBSTRATE-002"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "lane",
+        "crypto",
+        "malformed",
+        "fix",
+        "sign",
+        "photonic",
+        "digital",
+        "early-return",
+        "check",
+        "fail-opens",
+        "fixed",
+        "lln-substrate-001",
+        "crypto-on-core",
+        "silently",
+        "inert",
+        "before",
+        "substrate-lane",
+        "found",
+        "both",
+        "comment",
+        "pq-suffixed",
+        "effects",
+        "escaped",
+        "matcher",
+        "clean"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-substrate-worked-example.md",
+      "title": "A real governed flow, clause by clause — `substrate {}` and the rest of the contract",
+      "headings": [
+        "The full example",
+        "What each clause does (and why)",
+        "The four `substrate {}` guard rails (what stops you misusing the lane)",
+        "The one line that will not compile (and that's the point)"
+      ],
+      "codes": [
+        "LLN-EFFECT-001",
+        "LLN-TIER-001",
+        "LLN-SUBSTRATE-001",
+        "LLN-SUBSTRATE-002",
+        "LLN-SUBSTRATE-003",
+        "LLN-SUBSTRATE-004"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "lane",
+        "flow",
+        "substrate",
+        "clause",
+        "photonic",
+        "digital",
+        "result",
+        "contract",
+        "redundancy",
+        "why",
+        "effects",
+        "ensure",
+        "crypto",
+        "compile",
+        "governed",
+        "untrusted",
+        "decision",
+        "sign",
+        "exact",
+        "score",
+        "never",
+        "tolerance",
+        "receipt",
+        "real",
+        "test"
       ]
     },
     {
@@ -25009,6 +27408,51 @@
       ]
     },
     {
+      "rel": "docs/Knowledge-Bases/logicn-termination-and-death-loop-guards.md",
+      "title": "Termination guarantees — what stops a \"death loop\" (runaway computation) in LogicN",
+      "headings": [
+        "Compile-time — prove termination before it runs",
+        "Runtime — four independent fail-closed traps (defense-in-depth, all always-on during execution)",
+        "On the photonic lane — a loop can't even exist there",
+        "Honest nuance (consistent with the syntax-sweep finding)"
+      ],
+      "codes": [
+        "LLN-TERM-001",
+        "LLN-RUNTIME-006"
+      ],
+      "tasks": [
+        "#33"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "loop",
+        "termination",
+        "photonic",
+        "lane",
+        "runtime",
+        "fail-closed",
+        "death",
+        "runaway",
+        "four",
+        "traps",
+        "cap",
+        "stops",
+        "there",
+        "compile-time",
+        "prove",
+        "decreases",
+        "always-on",
+        "execution",
+        "guarantees",
+        "computation",
+        "logicn",
+        "before",
+        "runs",
+        "recursion",
+        "independent"
+      ]
+    },
+    {
       "rel": "docs/Knowledge-Bases/logicn-testing-model.md",
       "title": "LogicN — Testing Model",
       "headings": [
@@ -25048,6 +27492,60 @@
         "files",
         "flat",
         "structure"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-third-logic-delivery-and-governed-quantum-substrate-2026-06-24.md",
+      "title": "The Third Logic-Delivery Paradigm & the Governed Photonic/Quantum Substrate",
+      "headings": [
+        "0. The question",
+        "1. The answer (direct)",
+        "2. The photonic pass — spatial-propagation `[GROUNDED delivery · REFUTED standalone model]`",
+        "2b. The spectral / WDM pass — `[PARALLELISM, not a third]`",
+        "3. The quantum pass — measurement-driven / MBQC `[real principle · hype REFUTED]`",
+        "4. The genuinely-new software contribution — K3 as the resolution boundary",
+        "5. Most-secure governance — Govern, Don't Absorb",
+        "6. The DISMISSED / REFUTED ledger — with the maths for *why* each failed",
+        "7. Bottom line",
+        "8. DECISION — are we adding this technology? (owner-facing, 2026-06-24)"
+      ],
+      "codes": [
+        "LLN-RETAIN-001",
+        "LLN-SUBSTRATE-001",
+        "LLN-HW-004"
+      ],
+      "tasks": [
+        "#199",
+        "#0087",
+        "#102"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "third",
+        "refuted",
+        "boundary",
+        "photonic",
+        "substrate",
+        "quantum",
+        "mbqc",
+        "time",
+        "collapse",
+        "async",
+        "classical",
+        "model",
+        "pass",
+        "paradigm",
+        "delivery",
+        "each",
+        "trigger",
+        "resolution",
+        "fail-closed",
+        "real",
+        "governance",
+        "governed",
+        "readout",
+        "indeterminate",
+        "spatial"
       ]
     },
     {
@@ -25121,6 +27619,61 @@
         "border",
         "wasm",
         "why"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-threat-model-unleashed-2026-06-25.md",
+      "title": "Threat-model — \"what has this box unleashed\" (2026-06-25)",
+      "headings": [
+        "Exploitable findings (sorted by severity)",
+        "Confirmed well-defended (no action — credit the design)",
+        "The honest net answer",
+        "Fix queue",
+        "DevSecOps pentest of the session's own fixes (2026-06-25, `wf_8291890f`)"
+      ],
+      "codes": [
+        "LLN-TIER-001",
+        "LLN-VALUESTATE-008",
+        "LLN-STDLIB-002",
+        "LLN-PARSE-DEPTH-001",
+        "LLN-PARSE-001",
+        "LLN-EFFECT-003",
+        "LLN-IMPORT-005",
+        "LLN-IMPORT-006"
+      ],
+      "tasks": [
+        "#153",
+        "#49",
+        "#36",
+        "#38"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "fixed",
+        "fix",
+        "logicn",
+        "photonic",
+        "admission",
+        "gate",
+        "verified",
+        "manifest",
+        "high",
+        "fail-closed",
+        "effect",
+        "session",
+        "crypto",
+        "build",
+        "hybrid",
+        "real",
+        "exploitable",
+        "verifier",
+        "let",
+        "same",
+        "confirmed",
+        "fixes",
+        "threat-model",
+        "deny-by-default",
+        "findings"
       ]
     },
     {
@@ -26865,6 +29418,146 @@
         "build",
         "current",
         "self-hosted"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-why-no-resolve-construct-the-maths-2026-06-24.md",
+      "title": "Why we are NOT adding the `resolve … at boundary` construct (the maths in full)",
+      "headings": [
+        "A. The capability already ships — the K3 maths",
+        "A.1 The verdict lattice",
+        "A.2 The deliberate, safe-direction divergence on the empty fold",
+        "A.3 The collapse — `decideAtBoundary`",
+        "A.4 No-Coercion — why an untrusted operand can only lower trust",
+        "B. No substrate advantage justifies ABSORBING exotic compute — the refutation maths",
+        "B.1 \"Compute anything in O(1) by field propagation\" — latency O(1), **work Θ(N²)**",
+        "B.2 Governance branching is **non-linear** — a linear substrate cannot even represent it",
+        "B.3 MBQC is **not** instant/non-local — no-signaling makes it time-bound",
+        "B.4 Spectral/WDM is parallelism, not a new trigger — Holevo",
+        "B.5 Integrity still needs a keyed MAC — EUF-CMA, no quantum shortcut",
+        "C. Adding the construct now is pure attack surface — the security-economics argument",
+        "D. The one honest net-new — and why it's an *admission rail*, not a core change",
+        "Bottom line"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-001",
+        "LLN-GOV-3VL-001"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "substrate",
+        "maths",
+        "why",
+        "construct",
+        "adding",
+        "boundary",
+        "collapse",
+        "compute",
+        "core",
+        "capability",
+        "already",
+        "deny",
+        "surface",
+        "untrusted",
+        "linear",
+        "resolve",
+        "fail-closed",
+        "advantage",
+        "governance",
+        "quantum",
+        "exotic",
+        "pure",
+        "admission",
+        "rail",
+        "verdict"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-work-with-it-sweep-table-2026-06-25.md",
+      "title": "Work-with-it sweep — refused R&D reviewed for a govern-don't-absorb path (table)",
+      "headings": [
+        "A. WINNERS — buildable now (CPU-side, honest govern-don't-absorb)",
+        "B. TRACK-WHEN-CONSUMER — real governed path, gated on a consumer / hardware",
+        "C. STAYS-REFUTED-HARD — physics/math forbids it; the work-with-it IS the existing posture"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-001"
+      ],
+      "tasks": [
+        "#21"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "buildable",
+        "work-with-it",
+        "govern-don",
+        "t-absorb",
+        "path",
+        "stays",
+        "governed",
+        "real",
+        "sweep",
+        "refused",
+        "cpu-side",
+        "consumer",
+        "reviewed",
+        "table",
+        "refuted",
+        "winners",
+        "honest",
+        "binary",
+        "track-when-consumer",
+        "gated",
+        "hardware",
+        "track",
+        "stays-refuted-hard",
+        "physics",
+        "math"
+      ]
+    },
+    {
+      "rel": "docs/Knowledge-Bases/logicn-zero-trust-core-relaxation-analysis-2026-06-24.md",
+      "title": "Should we lower the zero-trust core to allow interesting new tech? — analysis",
+      "headings": [
+        "1. Where strict ZT genuinely costs something (steelman)",
+        "2. The tempting tech — and why lowering the core to get it is a net loss",
+        "3. The key realization — Govern-Don't-Absorb already gives the upside",
+        "4. Recommendation — expand the admission surface, not weaken the core",
+        "5. The line that must never move (non-negotiables)",
+        "Bottom line"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-001"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "core",
+        "tech",
+        "line",
+        "lower",
+        "never",
+        "allow",
+        "get",
+        "lowering",
+        "interesting",
+        "untrusted",
+        "loss",
+        "already",
+        "strict",
+        "must",
+        "admission",
+        "govern-don",
+        "t-absorb",
+        "costs",
+        "tempting",
+        "why",
+        "expand",
+        "surface",
+        "zero-trust",
+        "analysis",
+        "fail-closed"
       ]
     },
     {
@@ -29091,6 +31784,79 @@
       ]
     },
     {
+      "rel": "docs/Knowledge-Bases/rd-0114-virtual-3d-spatial-photonics-absorbed.md",
+      "title": "Virtual 3D-Spatial Photonics (\"Even 2 Waves\") for High-Value Compute — the Honest Maths, the Buildable Line, and the Hard Walls",
+      "headings": [
+        "Executive verdict (the one-paragraph answer)",
+        "§1 The question and the honest reframe",
+        "1.1 The question",
+        "1.2 The reframe, made precise — virtual-3D is a 3-index tensor",
+        "1.3 Why literal free-space-angle logic FAILS (the refutation that forces the reframe)",
+        "§2 The maths — the optical MAC, the WDM synthetic axis, the 2-wave minimal case",
+        "2.1 The 2×2 MZI transfer matrix (the atom)",
+        "2.2 Reck / Clements decomposition: any $U(N)$ from $O(N^2)$ MZIs",
+        "2.3 General (non-unitary) $W$ via SVD over two meshes + attenuators",
+        "2.4 The synthetic 3rd axis via WDM — $K$ wavelengths = $K$ parallel MACs",
+        "2.5 The 2-wave minimal case = a 2-site synthetic-frequency lattice",
+        "2.6 The full rank-3 contraction (real + synthetic together)",
+        "2.7 The semiring hard fence (load-bearing for §3/§4/§7)",
+        "2.8 Encoding and readout (the boundary where digits meet light)",
+        "§3 The I/O-tax, the crossover, and the precision floor",
+        "3.1 The category error, stated and refuted — latency-O(1) ≠ work-O(1)",
+        "3.2 The explicit cost model (absolute ns, anchored to the hub cost model 0053)",
+        "3.3 The crossover $N^\\*$, derived honestly from the matmul regime",
+        "3.4 The realized ceiling — the empirical anchor",
+        "3.5 Redundancy moves the crossover right (cost of buying back precision)",
+        "3.6 The precision floor — ~8-bit ENOB, unbeatable by voting",
+        "§4 WHY — the one genuinely buildable high-value-compute line",
+        "§5 WHY NOT — the hard walls (each with its physics reason)",
+        "§6 Worked numerical examples (concrete numbers a reader can check)",
+        "6(a) A 2-wavelength (K=2) 2×2 batched MAC",
+        "6(b) The minimal 2-site synthetic-frequency-lattice beamsplitter (the \"2 waves\" virtual dimension)",
+        "6(c) High-value-compute case study: one batched ML inference layer",
+        "§7 Governance & zero-trust — admitted, never trusted",
+        "7.1 The compute-only Tier-3 capability lane (deny-by-default)",
+        "7.2 Verify-before-decrypt on binary silicon FIRST — plaintext only after K3 ALLOW",
+        "7.3 The degrade-only operand under a signed `toleranceWitness`",
+        "7.4 Crypto-on-core (`LLN-SUBSTRATE-001`)",
+        "7.5 The honest emulator as the Rung-2 prove-it-CPU-side path",
+        "7.6 Mapping to the seven NIST SP 800-207 zero-trust tenets",
+        "§8 Verdict — the honest buildable line, the walls, and the next CPU-side step"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-001"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "text",
+        "never",
+        "synthetic",
+        "lane",
+        "digital",
+        "honest",
+        "photonic",
+        "pmatrix",
+        "mesh",
+        "mac",
+        "cost",
+        "crypto",
+        "verdict",
+        "crossover",
+        "theta",
+        "mzi",
+        "axis",
+        "optical",
+        "emulator",
+        "realized",
+        "phase",
+        "degrade-only",
+        "wdm",
+        "precision",
+        "floor"
+      ]
+    },
+    {
       "rel": "docs/Knowledge-Bases/release-keyword.md",
       "title": "release Keyword",
       "headings": [
@@ -31189,6 +33955,58 @@
       ]
     },
     {
+      "rel": "docs/Knowledge-Bases/untrusted-governed-lane.md",
+      "title": "The Untrusted Governed Lane",
+      "headings": [
+        "1. The split: Decision vs Work",
+        "2. The maths (three invariants that make it safe)",
+        "(a) Admission predicate — exact, in the core, fail-closed",
+        "(b) No-Coercion — the load-bearing invariant",
+        "(c) Cheap-verify — the core checks the work without redoing it",
+        "3. The line diagram",
+        "4. Worked examples",
+        "4.1 Photonic / analog co-processor (`logicn-ext-photonic-emulator`)",
+        "4.2 AI as an untrusted reasoning worker (`ai-as-untrusted-reasoning-worker.md`)",
+        "4.3 Untrusted storage substrate / file & asset processing (`untrusted-file-asset-processing.md`)",
+        "4.4 The non-negotiables (what never moves into the lane)",
+        "4.5 Worked example — how a developer actually uses the lane for maths",
+        "5. How the lane merges into the rest of LogicN",
+        "6. Diagram"
+      ],
+      "codes": [
+        "LLN-SUBSTRATE-001"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "lane",
+        "untrusted",
+        "core",
+        "work",
+        "never",
+        "decision",
+        "photonic",
+        "fail-closed",
+        "exact",
+        "digital",
+        "admission",
+        "substrate",
+        "governed",
+        "verdict",
+        "analog",
+        "maths",
+        "diagram",
+        "worked",
+        "result",
+        "crypto",
+        "without",
+        "storage",
+        "no-coercion",
+        "ai-as-untrusted-reasoning-worker",
+        "untrusted-file-asset-processing"
+      ]
+    },
+    {
       "rel": "docs/Knowledge-Bases/v1-reserved-keywords.md",
       "title": "LogicN V1 Reserved Keyword Table",
       "headings": [
@@ -31600,8 +34418,12 @@
       "headings": [
         "The Zero-Trust thesis",
         "What LogicN does",
+        "What LogicN can and cannot do (honest scope)",
+        "1) What the governance `contract {}` block is good for *(shipped, production-grade)*",
+        "2) What the \"can do something\" with maths / other compute is good for *(real, but emulated today + owner-gated)*",
+        "3) What it cannot do *(the hard boundary — by design)*",
         "Who it is for",
-        "Benchmarks (measured 2026-06-23 — honest numbers)",
+        "Benchmarks (honest numbers — core scoreboard 2026-06-23; Int64 + Tower-of-Hanoi added 2026-06-25)",
         "Build Progress",
         "What makes it different",
         "Code Examples",
@@ -31617,7 +34439,10 @@
         "Licence"
       ],
       "codes": [
+        "LLN-SUBSTRATE-002",
+        "LLN-SUBSTRATE-001",
         "LLN-FAULT-001",
+        "LLN-NUMERIC-001",
         "LLN-TIER-001",
         "LLN-VALUESTATE-008",
         "LLN-PKG-006",
@@ -31627,7 +34452,6 @@
         "LLN-EFFECT-001",
         "LLN-GOV-001",
         "LLN-TERM-001",
-        "LLN-SUBSTRATE-001",
         "LLN-PCI-001"
       ],
       "tasks": [
@@ -31640,30 +34464,30 @@
       "xrefs": [],
       "topTerms": [
         "logicn",
-        "governed",
         "docs",
+        "governed",
         "wasm",
         "knowledge-bases",
+        "core",
+        "shipped",
         "runtime",
+        "governance",
+        "audit",
+        "real",
         "package",
+        "contract",
+        "build",
         "architecture",
         "app",
-        "audit",
-        "build",
-        "shipped",
         "execution",
-        "governance",
-        "tests",
+        "design",
         "compiler",
         "signed",
-        "core",
-        "fail-closed",
-        "active",
-        "border",
-        "contract",
-        "intent",
+        "tests",
+        "honest",
         "flow",
-        "lln"
+        "fail-closed",
+        "gate"
       ]
     },
     {

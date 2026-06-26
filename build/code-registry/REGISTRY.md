@@ -8,12 +8,12 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 
 | status | count | meaning |
 |---|---|---|
-| live | 37 | emitted with an exported constant |
-| inline | 293 | emitted, NO exported constant (R4 — Stage F) |
-| referenced | 11 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
+| live | 38 | emitted with an exported constant |
+| inline | 303 | emitted, NO exported constant (R4 — Stage F) |
+| referenced | 16 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 0 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
-| phantom | 475 | doc-only mention, not in source (drift — DOC-004) |
-| ref | 140 | referenced only (no def/emit) |
+| phantom | 498 | doc-only mention, not in source (drift — DOC-004) |
+| ref | 147 | referenced only (no def/emit) |
 
 ## RESERVED — defined but not emitted (std #1: tag wire-or-retire)
 
@@ -27,6 +27,12 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 |---|---|---|---|
 | LLN-ACCESS-001 | inline | ACCESS_UNKNOWN_CAPABILITY | — |
 | LLN-ACCESS-002 | inline | ACCESS_GRANT_WITHOUT_EFFECT | — |
+
+### AFFINE (1)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| LLN-AFFINE-001 | inline | PassportConsumedTwice | — |
 
 ### AI (1)
 
@@ -253,6 +259,12 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | code | status | name(s) | severity |
 |---|---|---|---|
 | LLN-CHERI-001 | phantom | — | — |
+
+### CLI (1)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| LLN-CLI-REDACT-001 | referenced | — | — |
 
 ### COMMAND (2)
 
@@ -499,7 +511,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 |---|---|---|---|
 | LLN-ERROR-001 | phantom | — | — |
 
-### ERR_* (104)
+### ERR_* (105)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -590,6 +602,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | ERR_SHOTS_EXCEEDED | inline | — | — |
 | ERR_SIZE_EXCEEDED | ref | — | — |
 | ERR_SOME_CODE | ref | — | — |
+| ERR_STRING_TOO_LONG | phantom | — | — |
 | ERR_SUBSPACE_TOO_LARGE | inline | — | — |
 | ERR_TOKEN_LIMIT | phantom | — | — |
 | ERR_TOO_SHORT | ref | — | — |
@@ -657,11 +670,23 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-FAULT-004 | phantom | — | — |
 | LLN-FAULT-005 | phantom | — | — |
 
+### FED (1)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| LLN-FED-001 | phantom | — | — |
+
 ### FG (1)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
 | LLN-FG-001 | phantom | — | — |
+
+### FLOAT (1)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| LLN-FLOAT-NAN-001 | inline | — | — |
 
 ### FOO (1)
 
@@ -716,7 +741,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-GEN-TEST-006 | phantom | — | — |
 | LLN-GEN-TEST-007 | phantom | — | — |
 
-### GOV (33)
+### GOV (36)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -742,10 +767,13 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-GOV-020 | inline | AUTHORITY_OVERLY_BROAD | warning |
 | LLN-GOV-3V | phantom | — | — |
 | LLN-GOV-3VL-001 | live | INDETERMINATE_COLLAPSED_TO_DENY | — |
+| LLN-GOV-3VL-002 | phantom | — | — |
+| LLN-GOV-DOMAIN-001 | phantom | — | — |
 | LLN-GOV-ERROR-001 | phantom | — | — |
 | LLN-GOV-FEDERATED-001 | phantom | — | — |
 | LLN-GOV-FEDERATED-002 | phantom | — | — |
 | LLN-GOV-HIPAA-001 | phantom | — | — |
+| LLN-GOV-MONOTONE-MIN-001 | phantom | — | — |
 | LLN-GOV-PCI-001 | phantom | — | — |
 | LLN-GOV-SIG-001 | phantom | — | — |
 | LLN-GOV-SUMMARY-001 | phantom | — | — |
@@ -764,7 +792,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-GPU-SYNC-004 | phantom | — | — |
 | LLN-GPU-SYNC-005 | phantom | — | — |
 
-### GRAPH (6)
+### GRAPH (7)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -774,6 +802,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-GRAPH-004 | inline | PiiLeakagePath | error |
 | LLN-GRAPH-005 | inline | MissingAuditCoverage | warning |
 | LLN-GRAPH-006 | inline | UnboundedRetry | warning |
+| LLN-GRAPH-BORDER-001 | phantom | — | — |
 
 ### HINT (1)
 
@@ -808,7 +837,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-ID-002 | phantom | — | — |
 | LLN-ID-003 | phantom | — | — |
 
-### IMPORT (5)
+### IMPORT (7)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -817,6 +846,8 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-IMPORT-002 | inline | — | error |
 | LLN-IMPORT-003 | inline | — | error |
 | LLN-IMPORT-004 | inline | — | warning |
+| LLN-IMPORT-005 | inline | — | error |
+| LLN-IMPORT-006 | inline | — | error |
 
 ### INCR (4)
 
@@ -833,6 +864,13 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 |---|---|---|---|
 | LLN-INHERIT-001 | inline | PARENT_POLICY_NOT_FOUND | — |
 | LLN-INHERIT-002 | inline | CHILD_POLICY_EXCEEDS_PARENT | — |
+
+### INTEL (2)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| LLN-INTEL-001 | ref | — | — |
+| LLN-INTEL-002 | inline | — | — |
 
 ### INTENT (11)
 
@@ -1029,6 +1067,12 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-NETWORK-007 | phantom | — | — |
 | LLN-NETWORK-008 | phantom | — | — |
 
+### NO (1)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| LLN-NO-COERCION-001 | phantom | — | — |
+
 ### NPU (10)
 
 | code | status | name(s) | severity |
@@ -1043,6 +1087,13 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-NPU-008 | phantom | — | — |
 | LLN-NPU-009 | phantom | — | — |
 | LLN-NPU-010 | phantom | — | — |
+
+### NUMERIC (2)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| LLN-NUMERIC-001 | inline | UnsupportedNumericWidth | error |
+| LLN-NUMERIC-OP-001 | inline | PartialDecimalOperator | — |
 
 ### OBS (2)
 
@@ -1103,7 +1154,13 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-PARSE-012 | phantom | — | — |
 | LLN-PARSE-013 | phantom | — | — |
 | LLN-PARSE-014 | phantom | — | — |
-| LLN-PARSE-DEPTH-001 | phantom | — | — |
+| LLN-PARSE-DEPTH-001 | ref | — | — |
+
+### PASSPORT (1)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| LLN-PASSPORT-002 | inline | PassportStateSkip | — |
 
 ### PAYMENTS (1)
 
@@ -1111,10 +1168,11 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 |---|---|---|---|
 | LLN-PAYMENTS-1000 | phantom | — | — |
 
-### PCI (10)
+### PCI (11)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
+| LLN-PCI-000 | ref | — | — |
 | LLN-PCI-001 | ref | — | — |
 | LLN-PCI-002 | ref | — | — |
 | LLN-PCI-003 | ref | — | — |
@@ -1246,7 +1304,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 |---|---|---|---|
 | LLN-PRIVACY-00 | phantom | — | — |
 | LLN-PRIVACY-001 | phantom | — | — |
-| LLN-PRIVACY-002 | inline | EmbeddingCrossesFlowBoundary / EmbeddingEgressDenied | warning |
+| LLN-PRIVACY-002 | inline | EmbeddingCrossesFlowBoundary / EmbeddingEgressDenied | — |
 | LLN-PRIVACY-003 | phantom | — | — |
 | LLN-PRIVACY-005 | phantom | — | — |
 | LLN-PRIVACY-010 | phantom | — | — |
@@ -1267,7 +1325,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-PROFILE-006 | inline | MissingRuntimeBudget | warning |
 | LLN-PROFILE-007 | inline | DynamicRuntimeMutationProhibited | error |
 
-### PROOF (5)
+### PROOF (8)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -1276,12 +1334,21 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-PROOF-003 | phantom | — | — |
 | LLN-PROOF-004 | phantom | — | — |
 | LLN-PROOF-005 | phantom | — | — |
+| LLN-PROOF-CERT-00 | ref | — | — |
+| LLN-PROOF-CERT-001 | referenced | — | — |
+| LLN-PROOF-CERT-002 | referenced | — | — |
 
 ### PROTECTED (1)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
 | LLN-PROTECTED-001 | phantom | — | — |
+
+### PROV (1)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| LLN-PROV-001 | ref | — | — |
 
 ### QUANT (10)
 
@@ -1306,6 +1373,12 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-QUERY-002 | phantom | — | — |
 | LLN-QUERY-003 | phantom | — | — |
 | LLN-QUERY-004 | phantom | — | — |
+
+### QUORUM (1)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| LLN-QUORUM-001 | phantom | — | — |
 
 ### RAWPTR (1)
 
@@ -1364,6 +1437,12 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-RESOURCE-009 | phantom | — | — |
 | LLN-RESOURCE-010 | phantom | — | — |
 
+### RETAIN (1)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| LLN-RETAIN-001 | ref | — | — |
+
 ### RETENTION (1)
 
 | code | status | name(s) | severity |
@@ -1384,7 +1463,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-ROUTE-002 | phantom | — | — |
 | LLN-ROUTE-003 | phantom | — | — |
 
-### RUNTIME (14)
+### RUNTIME (15)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -1393,8 +1472,9 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-RUNTIME-003 | inline | — | — |
 | LLN-RUNTIME-004 | inline | — | — |
 | LLN-RUNTIME-005 | inline | UnauthorizedGovernedValueAccess | error |
-| LLN-RUNTIME-006 | inline | RateLimitExceeded | error |
+| LLN-RUNTIME-006 | live | RateLimitExceeded | error |
 | LLN-RUNTIME-007 | inline | — | — |
+| LLN-RUNTIME-009 | phantom | — | — |
 | LLN-RUNTIME-010 | phantom | — | — |
 | LLN-RUNTIME-201 | phantom | — | — |
 | LLN-RUNTIME-RESOURCE-001 | phantom | — | — |
@@ -1420,6 +1500,12 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-SAFETY-AGE-003 | phantom | — | — |
 | LLN-SAFETY-AUDIT-001 | phantom | — | — |
 
+### SBOM (1)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| LLN-SBOM-001 | inline | — | error |
+
 ### SEC (4)
 
 | code | status | name(s) | severity |
@@ -1434,7 +1520,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | code | status | name(s) | severity |
 |---|---|---|---|
 | LLN-SECRET-001 | inline | SecretValueLogged | — |
-| LLN-SECRET-002 | inline | SecretCrossesFlowBoundary / SecretSentToNetwork / SecretComparisonDenied | warning |
+| LLN-SECRET-002 | inline | SecretCrossesFlowBoundary / SecretSentToNetwork / SecretComparisonDenied | — |
 | LLN-SECRET-003 | inline | SecretSerializationDenied | — |
 | LLN-SECRET-004 | phantom | — | — |
 | LLN-SECRET-005 | phantom | — | — |
@@ -1523,7 +1609,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-STYLE-SEC-004 | phantom | — | — |
 | LLN-STYLE-SEC-005 | phantom | — | — |
 
-### SUBSTRATE (4)
+### SUBSTRATE (5)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -1531,6 +1617,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-SUBSTRATE-002 | inline | TOLERANCE_UNACHIEVABLE_UNDER_NOISE | error |
 | LLN-SUBSTRATE-003 | inline | REDUNDANCY_INSUFFICIENT | error |
 | LLN-SUBSTRATE-004 | inline | UNVOTED_ANALOG_INTO_DETERMINISTIC | error |
+| LLN-SUBSTRATE-005 | inline | REACH_EFFECT_ON_COMPUTE_ONLY_LANE | error |
 
 ### SUPPLY (5)
 
@@ -1634,6 +1721,12 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | code | status | name(s) | severity |
 |---|---|---|---|
 | LLN-TIMEOUT-001 | phantom | — | — |
+
+### TOLERANCE (1)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| LLN-TOLERANCE-MONOTONE-001 | phantom | — | — |
 
 ### TRACE (5)
 
@@ -1789,6 +1882,25 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-WASM-004 | phantom | — | — |
 | LLN-WASM-005 | phantom | — | — |
 
+### WEB (14)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| LLN-WEB-001 | phantom | — | — |
+| LLN-WEB-002 | phantom | — | — |
+| LLN-WEB-003 | phantom | — | — |
+| LLN-WEB-010 | phantom | — | — |
+| LLN-WEB-011 | phantom | — | — |
+| LLN-WEB-020 | phantom | — | — |
+| LLN-WEB-021 | phantom | — | — |
+| LLN-WEB-022 | phantom | — | — |
+| LLN-WEB-030 | phantom | — | — |
+| LLN-WEB-031 | phantom | — | — |
+| LLN-WEB-040 | phantom | — | — |
+| LLN-WEB-041 | phantom | — | — |
+| LLN-WEB-042 | phantom | — | — |
+| LLN-WEB-050 | phantom | — | — |
+
 ### WORKFLOW (3)
 
 | code | status | name(s) | severity |
@@ -1796,3 +1908,17 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | LLN-WORKFLOW-001 | phantom | — | — |
 | LLN-WORKFLOW-002 | phantom | — | — |
 | LLN-WORKFLOW-003 | phantom | — | — |
+
+### X (3)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| LLN-X-001 | referenced | Foo | — |
+| LLN-X-002 | referenced | — | — |
+| LLN-X-1 | ref | — | — |
+
+### Y (1)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| LLN-Y-007 | inline | — | — |
