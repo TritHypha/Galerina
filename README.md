@@ -93,7 +93,7 @@ Galerina can **govern a tolerant numeric sub-kernel** as a deny-by-default, untr
 
 A nine-axis self-assessment across the surfaces Galerina governs. Click any chart to open the full SVG.
 
-<table>
+<table width="100%" align="center">
   <tr>
     <td width="50%" align="center">
       <a href="docs/diagrams/radar-1-security-governance.svg"><img src="docs/diagrams/radar-1-security-governance.svg" alt="Security & Governance" width="100%"></a>
