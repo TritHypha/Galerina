@@ -209,17 +209,30 @@ export interface FusePackageOptions {
   readonly hybridVerifier?: HybridManifestVerifier;
 }
 
-/** Injected post-quantum (hybrid) manifest-signature verifier — see {@link FusePackageOptions.hybridVerifier}. */
+export type HybridManifestVerdict = "verified" | "invalid" | "unverifiable";
+
+/**
+ * Injected post-quantum (hybrid) manifest-signature verifier — see {@link FusePackageOptions.hybridVerifier}.
+ * MAY be async: the shipped reference verifier (`@logicn/core-compiler` `verifyGovernanceSignatureHybrid`)
+ * dynamically imports `@noble/post-quantum`, so the verdict can be a Promise — the loader awaits it.
+ *
+ * NOTE on `signingInput`: it is the RFC-8785 canonical manifest body. The v2 hybrid signature the LogicN CLI
+ * writes is over the ProofGraph ENVELOPE of `sha256(signingInput)` (compiler code), not over `signingInput`
+ * directly — so a faithful injected verifier recomputes `bodyHash = sha256(signingInput)`, rebuilds the
+ * envelope via `makeManifestEnvelope`, and calls `verifyGovernanceSignatureHybrid`. The loader hands over the
+ * canonical body (+ the signature + keyId + dirs to resolve the `signing-key-<keyId>.{pub.pem,mldsa.pub.b64}`
+ * key pair) and stays compiler-/PQ-crypto-free.
+ */
 export type HybridManifestVerifier = (input: {
   readonly keyId: string;
   readonly algorithm: string;
-  /** The exact bytes BOTH signature halves were computed over (the RFC-8785 canonical manifest body). */
+  /** The RFC-8785 canonical manifest body (the v2 signature is over the ProofGraph envelope of its sha256). */
   readonly signingInput: Uint8Array;
   /** The combined `<ed-b64>|<mldsa-b64>` signature string from `governanceSignature.signature`. */
   readonly signature: string;
   readonly governanceDir: string | undefined;
   readonly packageDir: string;
-}) => "verified" | "invalid" | "unverifiable";
+}) => HybridManifestVerdict | Promise<HybridManifestVerdict>;
 
 /**
  * Builds the host import group a single capability grants. Returns a namespace name
@@ -349,14 +362,14 @@ function extractFuse(manifest: Record<string, unknown>, source: string): FuseDes
  *
  * @returns "verified" | "unsigned"
  */
-function verifyManifestSignature(
+async function verifyManifestSignature(
   node: { crypto: NodeCrypto; fs: NodeFs; path: NodePath },
   manifestObj: Record<string, unknown>,
   governanceDir: string | undefined,
   packageDir: string,
   warn: (m: string) => void,
   hybridVerifier?: HybridManifestVerifier,
-): "verified" | "unsigned" {
+): Promise<"verified" | "unsigned"> {
   const { crypto, fs, path } = node;
   const sigField = manifestObj["governanceSignature"];
   if (sigField === undefined || sigField === null || typeof sigField !== "object") {
@@ -395,9 +408,9 @@ function verifyManifestSignature(
       if (hybridVerifier !== undefined && typeof keyId === "string" && typeof signature === "string") {
         const { governanceSignature: _omit, ...withoutSig } = manifestObj;
         const signingInput = utf8(manifestSigningInput(withoutSig, sig));
-        let verdict: "verified" | "invalid" | "unverifiable";
+        let verdict: HybridManifestVerdict;
         try {
-          verdict = hybridVerifier({ keyId, algorithm: String(algorithm), signingInput, signature, governanceDir, packageDir });
+          verdict = await hybridVerifier({ keyId, algorithm: String(algorithm), signingInput, signature, governanceDir, packageDir });
         } catch (e) {
           return fuseError("LLN-FUSE-HYBRID-ERROR", `injected hybrid verifier errored for keyId '${keyId}': ${(e as Error).message}`);
         }
@@ -579,7 +592,7 @@ async function loadAndVerifyPackage(
   }
 
   // ── Gate 2: signature state (caller decides the unsigned policy) ─────────────
-  const signature = verifyManifestSignature(node, manifestObj, opts.governanceDir, dir, warn, opts.hybridVerifier);
+  const signature = await verifyManifestSignature(node, manifestObj, opts.governanceDir, dir, warn, opts.hybridVerifier);
   const sigField = manifestObj["governanceSignature"];
   const keyId =
     sigField !== null && typeof sigField === "object" && typeof (sigField as Record<string, unknown>)["keyId"] === "string"

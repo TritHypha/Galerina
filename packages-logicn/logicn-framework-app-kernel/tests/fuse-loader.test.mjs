@@ -343,4 +343,16 @@ test("injected hybridVerifier is honored fail-closed for a HYBRID manifest", asy
       await assert.rejects(() => fusePackage(pkg, { requireSignature: true, warn }), /LLN-FUSE-UNSIGNED/);
       assert.ok(lines.some((l) => l.includes("LLN-FUSE-HYBRID-UNVERIFIED")), "must warn hybrid-unverified when no verifier is injected");
     } finally { rmSync(root, { recursive: true, force: true }); } }
+
+  // (f) an ASYNC verifier (the real reference verifier is async — verifyGovernanceSignatureHybrid dynamic-imports
+  //     @noble/post-quantum) is AWAITED: a Promise<"verified"> admits, a rejecting Promise fails closed.
+  { const { root, pkg } = mkHybrid();
+    try {
+      const c = await fusePackage(pkg, { warn: () => {}, hybridVerifier: async () => "verified" });
+      assert.equal(c.invoke("main"), 200);
+    } finally { rmSync(root, { recursive: true, force: true }); } }
+  { const { root, pkg } = mkHybrid();
+    try {
+      await assert.rejects(() => fusePackage(pkg, { warn: () => {}, hybridVerifier: () => Promise.reject(new Error("async boom")) }), /LLN-FUSE-HYBRID-ERROR/);
+    } finally { rmSync(root, { recursive: true, force: true }); } }
 });
