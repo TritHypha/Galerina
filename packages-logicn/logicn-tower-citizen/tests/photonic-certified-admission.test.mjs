@@ -138,6 +138,24 @@ test("H5 LANE-BINDING (RD-0129): a valid certified photonic coupon with NO decla
     `a coupon with no declared backend to bind to must keep photonic OFF; got ${JSON.stringify(r.bridgesUsed)}`);
 });
 
+test("0118 coupon-revocation: a REVOKED coupon (device-level) keeps photonic OFF, fail-closed", async () => {
+  // A validly-signed, lane-bound certified coupon is still refused if the deployment device-revokes it
+  // (e.g. the backend was decommissioned) — WITHOUT rotating the signing key. Parallel to key revocation.
+  const base = { router: createPhotonicRouterPort(), kernelFor: bigKernel, certifiedAttestation: GOOD_ATTESTATION, bridgeId: "photonic-certified" };
+  // revoked by bridgeId → OFF
+  const revoked = await certifiedEngine({ ...base, couponRevocationCheck: (c) => c.bridgeId === "photonic-certified" });
+  let r = await revoked.infer(CALL);
+  assert.ok(!r.bridgesUsed.some((b) => b.startsWith("photonic:")), `a revoked coupon must keep photonic OFF; got ${JSON.stringify(r.bridgesUsed)}`);
+  // a THROWING revocation registry → fail-closed (OFF)
+  const throwing = await certifiedEngine({ ...base, couponRevocationCheck: () => { throw new Error("registry untrusted"); } });
+  r = await throwing.infer(CALL);
+  assert.ok(!r.bridgesUsed.some((b) => b.startsWith("photonic:")), `a throwing revocation registry must fail closed; got ${JSON.stringify(r.bridgesUsed)}`);
+  // NOT revoked → admits (control)
+  const live = await certifiedEngine({ ...base, couponRevocationCheck: () => false });
+  r = await live.infer(CALL);
+  assert.ok(r.bridgesUsed.some((b) => b.startsWith("photonic:")), `a non-revoked coupon should still admit; got ${JSON.stringify(r.bridgesUsed)}`);
+});
+
 test("control: NON-certified mode runs photonic without any attestation (existing behaviour unchanged)", async () => {
   const eng = createHybridEngine({ auditInMemory: true, photonic: { router: createPhotonicRouterPort(), kernelFor: bigKernel } });
   const r = await eng.infer({ ...CALL, correlationId: "np" });

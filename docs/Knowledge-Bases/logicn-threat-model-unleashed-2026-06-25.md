@@ -29,6 +29,23 @@ strong but several gates have bypasses.**
 | P1 | Provenance | provenance signature attests **integrity, not source-fidelity** — it signs the exact emitter output, so any emit divergence is signed-as-correct | partial-high | gate signing on the faithful-compile check (C2); attest fidelity not just bytes | **◑ SCOPED 2026-06-26 (RD-0117), build deferred behind emitter-completeness.** Acute exploit bounded: P1-a (emitter) shut by C2's faithful-compile sign-gate; P1-b (a SECOND instance found by the RD-0117 H5 re-verify — `hardwareIdentity` is an advisory label, not substrate proof) bounded by trust-root possession + the load-bearing `bridgeId` binding (added an advisory code comment). The standing **integrity≠fidelity invariant** + the equivalence-attestation acceptance bar (tie the signed receipt to the 0014 differential corpus) are recorded in `docs/Knowledge-Bases/logicn-provenance-integrity-vs-fidelity.md`. Deep fix = the emitter-completeness workstream (per-construct walker≡WASM equivalence, then sign the verdict) — a large separate effort, deferred. |
 | P2 | check surfacing | `logicn check`/dev modes don't surface even correctly-detected **EFFECT-003 / STDLIB-002** violations as failures | partial-high | keep these integrity invariants as hard errors in ALL modes (same class as the 9043095 fix) | **✅ FIXED** — a shared `INTEGRITY_EFFECT_CODES = {LLN-EFFECT-003, LLN-STDLIB-002}` is now surfaced + folded into the exit code in BOTH `check` (logicn.mjs) and the dev-`build` branch, fail-closed at every profile (production already folded all errors). Verified: `check`/dev-`build` of a pure-flow effect breach (EFFECT-003) or a deny-by-default escape (STDLIB-002) now EXIT=1 (was "0 errors" EXIT=0); clean flows exit 0; e2e-fuse 4/0. The broader EFFECT-001/STDLIB-001 class stays dev-advisory by design. |
 
+## Capture-replay / coupon freshness (RD-0118, 2026-06-26) — distinct from P1
+
+The RD-0118 worker threat-model answered the hub's standing question (replay of a decommissioned-but-once-valid
+certified photonic coupon). **Findings (probe 5/5):** the signed coupon carries NO freshness field
+(timestamp/expiry/nonce/backendArtifactHash); revocation was KEY-level only; so a captured coupon replays on
+every `infer()` and across fresh engines (CWE-294 capture-replay, CWE-613 expiration, NIST IA-5/SC-23). Precondition
+is WEAKER than 5c (a captured coupon, not the signing key) but the end-to-end exploit is BOUNDED by deployment
+integrity (the operator must still declare the retired `bridgeId` AND point the router at a substituted backend).
+
+**Built (the worker's recommended cheap fix #1):** `PhotonicConfig.couponRevocationCheck` — DEVICE/coupon-level
+revocation **parallel to the engine's key-level revocation**, in `verifyPhotonicCertifiedAdmission`. The deployment
+revokes a SPECIFIC coupon (by `bridgeId`/`hardwareIdentity`) without rotating the signing key; fail-closed (revoked
+OR a throwing registry ⇒ deny). Restores ZT "trust re-evaluated, not permanent" (tenets 5-6). +1 test (revoked /
+throwing-registry / live-admits). **Deferred stronger options:** #2 `backendArtifactHash` pinning (the strong
+long-term answer, gated behind the photonic measurement seam, task 0019); #3 short-lived TTL (`issuedAt`/`notAfter`,
+needs trusted time); #4 freshness nonce / challenge-response (heaviest, only if a live-signer threat enters scope).
+
 ## Confirmed well-defended (no action — credit the design)
 - **WASM record/array bump-alloc**: no per-alloc bounds check, but the committed-pages ceiling (no `memory.grow`) makes an over-allocation a **fail-safe trap**, not host OOM; the per-loop cap bounds count. (defense-in-depth nice-to-have only.)
 - **Interpreter heap amplification**: bounded by the 1e9 global step budget (each alloc = a step); no host-exposed size-parameterized builder.

@@ -260,6 +260,12 @@ export interface PhotonicConfig {
    *  mode the verified signedManifest.bridgeId MUST equal this — it binds the coupon to THIS specific backend
    *  so a sibling certified coupon (even another photonic one) cannot stand in. Also stamps the audit trail. */
   readonly bridgeId?: string;
+  /** 0118 — optional coupon/DEVICE-level revocation, PARALLEL to the engine's key-level revocation (which
+   *  verifyAttestation already enforces). A certified coupon carries no freshness field, so a once-valid coupon
+   *  for a DECOMMISSIONED backend is replayable; this predicate lets the deployment revoke the SPECIFIC coupon
+   *  (by bridgeId / hardwareIdentity) WITHOUT rotating the whole signing key. Returns true ⇒ revoked ⇒ refused.
+   *  Fail-CLOSED: a throw is itself a denial (untrusted registry). Restores ZT "trust re-evaluated, not permanent". */
+  readonly couponRevocationCheck?: (coupon: { readonly bridgeId: string; readonly hardwareIdentity: string }) => boolean;
 }
 
 const defaultPhotonicKernelFor = (op: BridgeOp): PhotonicKernelCost => ({ n: op.count, lane: "photonic", tolerance: 0.05 });
@@ -439,6 +445,12 @@ export class HybridInferenceEngine {
     //       backends use "photonic-emulator-v0" / "photonic-certified-backend"); a CPU/quantum coupon is refused;
     //   (2) the coupon must match the deployment's DECLARED photonic backend id (PhotonicConfig.bridgeId), so a
     //       coupon for a *different* (even photonic) backend cannot stand in.
+    // NB (RD-0117 worker re-verify): `hardwareIdentity` is an ADVISORY label the signer vouched for, NOT a
+    // cryptographic or physical proof that the backend is actually photonic. The load-bearing binding is
+    // `bridgeId === declaredBridgeId` below, under a verified signature. This is a known instance of #36 P1
+    // (a verified signature attests authenticity/integrity, not source-/substrate-FIDELITY) — see
+    // docs/Knowledge-Bases/logicn-provenance-integrity-vs-fidelity.md. The residual (a trust-root holder
+    // mislabelling its own backend) is outside the confused-deputy model (requires the pinned signing key).
     const hwId = signed.manifest.hardwareIdentity;
     if (typeof hwId !== "string" || !hwId.startsWith("photonic")) {
       this.photonicCertifiedDenial = `certified coupon is not a photonic backend (hardwareIdentity="${String(hwId)}") — a non-photonic coupon cannot admit the photonic lane`;
@@ -452,6 +464,24 @@ export class HybridInferenceEngine {
     if (signed.manifest.bridgeId !== declaredBridgeId) {
       this.photonicCertifiedDenial = `certified coupon bridgeId "${signed.manifest.bridgeId}" != declared photonic backend "${declaredBridgeId}" (coupon reuse refused)`;
       return false;
+    }
+    // 0118 (capture-replay / ZT tenets 5-6): coupon/DEVICE-level revocation, parallel to the key-level
+    // revocation verifyAttestation already enforces. A once-valid coupon for a DECOMMISSIONED backend can be
+    // replayed (no freshness field); the deployment revokes the specific coupon (by bridgeId/hardwareIdentity)
+    // WITHOUT rotating the whole signing key. Fail-CLOSED: revoked OR a throwing registry ⇒ deny.
+    const couponRevoked = this.photonic?.couponRevocationCheck;
+    if (couponRevoked !== undefined) {
+      let revoked: boolean;
+      try {
+        revoked = couponRevoked({ bridgeId: declaredBridgeId, hardwareIdentity: hwId });
+      } catch (e) {
+        this.photonicCertifiedDenial = `coupon revocation check errored (fail-closed): ${(e as Error).message}`;
+        return false;
+      }
+      if (revoked) {
+        this.photonicCertifiedDenial = `certified coupon for backend "${declaredBridgeId}" (${hwId}) is REVOKED`;
+        return false;
+      }
     }
     this.photonicCertifiedVerified = true;
     return true;
