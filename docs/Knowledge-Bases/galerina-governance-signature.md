@@ -173,7 +173,7 @@ the key as hybrid; the caller therefore **refuses to persist** a result that is
 not a both-halves v2 (no silent post-quantum downgrade).
 
 **Domain separation.** The ML-DSA-65 half is signed under the FIPS-204
-domain-separation context `logicn.proofgraph.governance.v1`, distinct from the
+domain-separation context `galerina.proofgraph.governance.v1`, distinct from the
 audit-attestation and bridge-manifest contexts so one ML-DSA key cannot be
 cross-protocol-confused between the three signing surfaces.
 

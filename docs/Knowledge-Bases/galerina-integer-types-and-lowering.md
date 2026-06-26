@@ -14,7 +14,7 @@ Companion: the WASM-extension overview is summarised in [galerina-i64-lowering-p
 ## 1. The numeric type taxonomy → WASM value type
 
 Galerina scalar numerics map to a WebAssembly value type by a single function,
-`logicNTypeToWAT` — **`packages-galerina/galerina-core-compiler/src/wat-emitter.ts:210`**:
+`galerinaTypeToWAT` — **`packages-galerina/galerina-core-compiler/src/wat-emitter.ts:210`**:
 
 | Galerina type | WASM valtype | Range | Faithful end-to-end? |
 |---|---|---|---|

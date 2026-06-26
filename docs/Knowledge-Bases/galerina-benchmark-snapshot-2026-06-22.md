@@ -9,7 +9,7 @@ Machine: i9-9900K · win32 · Node v24.16.0.
 An earlier draft of this snapshot claimed Galerina was "~10³–10⁵× slower" — that was a **misread** (it compared
 Galerina's raw *calls/runs-per-second* against native *operations-per-second*, different units). On direct re-check the
 suite's cross-runtime `normThroughput` for Galerina is **unreliable in the OTHER direction**: it *over-counts*
-`logicnPassive` (e.g. it reports passive at **5,252M nodes/s** on binary-trees — 273× *faster* than Rust, which is
+`galerinaPassive` (e.g. it reports passive at **5,252M nodes/s** on binary-trees — 273× *faster* than Rust, which is
 not credible). So **no trustworthy Galerina-vs-native ×slower is presentable from this run.** Below: the reliable
 native scoreboard, then Galerina's raw measured rates separately. Fixing the Galerina unit-normalization is an open
 benchmark item (R&D 0039 unit-alignment; see [[galerina-benchmark-suite]] "was lying" fix).

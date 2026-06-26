@@ -21,7 +21,7 @@ dispatch → encode → audit.
   beats a Python gate chain and loses to native (Rust/Go) — report it straight.
 - The kernel is **async**; the `architecture` block in `node.mjs` output also reports a
   same-language **sync** breakdown so the async cost is visible:
-  `logicnAppKernel(async)` vs `handRolledMiddlewareChain(sync)` vs `rawNoGovernance(sync)`.
+  `galerinaAppKernel(async)` vs `handRolledMiddlewareChain(sync)` vs `rawNoGovernance(sync)`.
   In-language, a sync hand-rolled chain is *faster* than the async kernel — the kernel's
   cost is the audit/async machinery, not the gates.
 - **The real "remove middleware" win is structural, not throughput** — a scorecard the

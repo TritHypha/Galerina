@@ -376,7 +376,7 @@ Example host boundary violation diagnostic:
   "code": "SPORE-CONFIG-010",
   "severity": "error",
   "message": "Host package.json must not define Galerina runtime policy.",
-  "path": "package.json.logicnRuntime",
+  "path": "package.json.galerinaRuntime",
   "suggestedFix": "Move Galerina runtime policy into package-galerina.json when available."
 }
 ```

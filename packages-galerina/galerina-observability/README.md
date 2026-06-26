@@ -19,7 +19,7 @@ framework provides (cf. Spring Boot's `spring-boot-starter-actuator`):
 | Lens | **Operational** — the app operator's health/metrics/logs | **Governance** — the contract's structure |
 | Question it answers | "Is my app up? How fast? How many errors?" | "What does this app's governance state look like?" |
 | Emits | request counts, latencies, error rates, health, logs | governance flags, effect families, verdict counts, declared budgets |
-| Namespace | `app_*` (Prometheus opt-in) + JSON | `logicn_*` (Prometheus) |
+| Namespace | `app_*` (Prometheus opt-in) + JSON | `galerina_*` (Prometheus) |
 | Rule | counts/latencies, never request payloads | "log the contract, not the payload" |
 | Surface | **through the App Kernel** (routes + collector) | a separate read-only exporter port |
 

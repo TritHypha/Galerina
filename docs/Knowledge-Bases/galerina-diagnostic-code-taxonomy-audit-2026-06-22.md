@@ -218,7 +218,7 @@ Beyond §1-6, a sweep found every other "code-like" namespace. Verdicts:
   Honest split: (4) is a *legitimately different axis* (risk-rating ≠ diagnostic severity), but **(2)/(3) are
   genuine inconsistencies and the two risk scales in (4) disagree with each other.** Fix: `SECURITY_ALERT`→
   `error`; align AuditEvent severity case (or document the two axes); pick one risk-rating scale. Fold into #215.
-- **Prometheus metric names** (`galerina-governance-telemetry`) — **CLEAN ✅.** Consistent `logicn_` prefix,
+- **Prometheus metric names** (`galerina-governance-telemetry`) — **CLEAN ✅.** Consistent `galerina_` prefix,
   `_total` counter suffix, clear governance-native names. Well-factored; keep disciplined as #211 grows.
 - **Report-schema field labels** (lowercase `name:` like `protected_values_redacted`) — report fields, not
   diagnostics; out of scope, no action.

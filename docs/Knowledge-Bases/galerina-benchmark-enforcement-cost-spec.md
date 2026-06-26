@@ -12,15 +12,15 @@ Measures the *cost of enforcement at the hardened border*, not compute. The exis
 
 ## 1. `governance-tax` — tax per instruction
 - **Workload:** one `i32.add` (only compute) forced through **N policy checks** (allow-list / capability / manifest-signature, cycled), N ∈ {1,4,16,64} → a *slope*, not a point.
-- **Metrics:** `governanceTaxNsPerInstruction` (ns/instr, minus ungoverned-add baseline); `governanceTaxNsPerCheck` (ns/check); plus `logicnOpsPerSecond` for the existing `compare.mjs` extractor; expose `logicnGoverned` vs `logicnManifest` for the gov-overhead column.
-- **Slot-in:** `benchmarks/governance-tax/{benchmark.spore,node.mjs,python.py,bench-wasm.mjs}`; register `{ id:"governance-tax", dir:"governance-tax", logicnOpsPerRun:1, passiveCallCount:100 }`.
+- **Metrics:** `governanceTaxNsPerInstruction` (ns/instr, minus ungoverned-add baseline); `governanceTaxNsPerCheck` (ns/check); plus `galerinaOpsPerSecond` for the existing `compare.mjs` extractor; expose `galerinaGoverned` vs `galerinaManifest` for the gov-overhead column.
+- **Slot-in:** `benchmarks/governance-tax/{benchmark.spore,node.mjs,python.py,bench-wasm.mjs}`; register `{ id:"governance-tax", dir:"governance-tax", galerinaOpsPerRun:1, passiveCallCount:100 }`.
 - **Headline row:** `WASM ▶ production` (gates compiled in). `⟨interp⟩` tiers = diagnostic ceiling only.
 - **Honest framing:** N=1 is artificial (no real flow does one add behind one check); the point is the *slope* (ns/added-check) + the *fixed first-check floor* that amortises over real instruction counts. Only the WASM row may be quoted as "the governance tax".
 
 ## 2. `context-switch` — host↔WASM border latency
 - **Workload:** ~1e6 iterations, each crossing host→WASM (`__str_*`/`__array_*`) doing ~zero WASM work, returning a scalar. Record `borderStringRoundtrips` + `borderArrayRoundtrips` separately.
 - **Metrics:** `borderLatencyNsPerRoundtrip` (ns/crossing); `borderRoundtripsPerSecond` (emit as `operationsPerSecond`/`iterationsPerSecond` — already handled by `throughput()`); `marshalNsString` vs `marshalNsArray`.
-- **Slot-in:** `benchmarks/context-switch/{node.mjs,bench-wasm.mjs,benchmark.spore?}`; register `{ id:"context-switch", dir:"context-switch", logicnOpsPerRun:1000000, passiveCallCount:5 }`. `node.mjs` JS call round-trip = "no-border" baseline; delta vs WASM = border tax.
+- **Slot-in:** `benchmarks/context-switch/{node.mjs,bench-wasm.mjs,benchmark.spore?}`; register `{ id:"context-switch", dir:"context-switch", galerinaOpsPerRun:1000000, passiveCallCount:5 }`. `node.mjs` JS call round-trip = "no-border" baseline; delta vs WASM = border tax.
 - **Headline row:** `WASM ▶ production` (it's *about* the compiled ABI).
 - **Honest framing:** "~no WASM work" is the caveat — real flows amortise the shim; high ns/round-trip only alarms *chatty* patterns. Report next to a "crossings per real request" estimate; never read as a throughput verdict.
 
@@ -34,7 +34,7 @@ Measures the *cost of enforcement at the hardened border*, not compute. The exis
 - `src/runner.mjs` `BENCHMARKS` array — add `governance-tax` + `context-switch` (active), `memory-sanitizer` (commented, #147-gated, like the `http-throughput` exclusion precedent).
 - `src/compare.mjs` `GOV_COST_ONLY` — add `"governance-tax"` for the manifest-vs-governed % column.
 - `src/compare.mjs` glossary — one row each.
-- Result JSON shape unchanged: `{ benchmark, results: { nodejs, python, wasm, logicnGoverned, logicnManifest, logicnPassive } }` + benchmark-specific metric keys.
+- Result JSON shape unchanged: `{ benchmark, results: { nodejs, python, wasm, galerinaGoverned, galerinaManifest, galerinaPassive } }` + benchmark-specific metric keys.
 
 ## Why this proves the 58–59× tax is *efficient*, not just *secure*
 Decompose the single blended multiplier into: **(a)** fixed policy-decision floor [§1], **(b)** border-crossing latency [§2], **(c)** memory-isolation scrub [§3]. If (a) amortises to ~constant, (b) is small, and (c) is near `memset` speed, the 58–59× is **enforcement at or near its theoretical floor** — not interpreter waste a better runtime would erase. That turns "governance is expensive" into "governance is *as cheap as enforcement can be*."

@@ -116,7 +116,7 @@ Resolution:
 {
   "name": "@galerina/payments",
   "version": "1.4.0",
-  "logicnPackageVersion": "1",
+  "galerinaPackageVersion": "1",
   "exports": {
     "./charge": {
       "effects": ["network.external", "secret.read"],

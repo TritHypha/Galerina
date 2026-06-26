@@ -37,7 +37,7 @@ benchmark — **winner / runner-up / where Galerina's *governed* tier landed**:
 
 **Reading it honestly:** the WASM tier (`wasm`) sits above the governed tree-walker but still below
 native; the i64 work this session *extends* that WASM tier (it was i32/f64-only) but these benchmarks are
-i32/f64, so the numbers are unchanged. **The `logicnPassive`-mode "#1" rankings** (fibonacci, matrix,
+i32/f64, so the numbers are unchanged. **The `galerinaPassive`-mode "#1" rankings** (fibonacci, matrix,
 nbody, json-parse, crypto-ops, text-html) **are NOT real wins** — they are the incomparable-unit artifacts
 the truth-audit's unit-alignment flags (different workload/unit than the other runtimes), and presenting
 them as speed wins would be exactly the inflation the `overclaim-phrases` lint forbids. **Galerina's value is
@@ -77,6 +77,6 @@ accepted cost of the governance-first design.
 
 ## Honesty-bar attestation
 Held. Crypto stays digital; no overclaim phrases (lint enforcing + green); photonic/quantum mark
-non-native; the benchmark section above **refuses the `logicnPassive` "wins"** as incomparable artifacts and
+non-native; the benchmark section above **refuses the `galerinaPassive` "wins"** as incomparable artifacts and
 states plainly that native languages are orders of magnitude faster than Galerina's governed tier. **0 papers**
 across the full 0001–0113 corpus. `shippable` = wired + tested + fail-closed at build-production.

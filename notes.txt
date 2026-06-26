@@ -11,12 +11,12 @@ npm test
 
 ---------
 
-like some code call a new class -> function we should imitate this and benchmark the logicN equillivant ie a fn called in a flow called from a flow etc
+like some code call a new class -> function we should imitate this and benchmark the galerina equillivant ie a fn called in a flow called from a flow etc
 when everything is completed run benchmark again
 once everything has finished make a new phase roadmap to 100%
-lets keep an eye on how logicN as a compute language and be easy as possible to AI to understand read/concept/write make suggestions
+lets keep an eye on how galerina as a compute language and be easy as possible to AI to understand read/concept/write make suggestions
 ----------
-lets keep an eye on how logicN as a compute language and be easy as possible to AI to understand read/concept/write make suggestions
+lets keep an eye on how galerina as a compute language and be easy as possible to AI to understand read/concept/write make suggestions
 
 
 --------
@@ -86,7 +86,7 @@ Summary:
 6. All user messages:
    - "Continue from where you left off" (initial context resumption)
    - "For else if — what's the policy right now in v1-current?" User then explicitly stated: "Actually it should not be allowed. use match instead of else if. Do not copy TypeScript's unsafe parts" — this was the critical correction that changed else if from advisory to hard error.
-   - "show me some examples of logicN code how you think it now should look" — provided canonical examples using match, contract inside flow, no else if
+   - "show me some examples of galerina code how you think it now should look" — provided canonical examples using match, contract inside flow, no else if
    - "run another benchmark and plan the next 20 phases" — requested both immediate benchmark execution and comprehensive Phase 41-60 roadmap
    - "so in the 'Benchmark Results' the winner is written in ie Python/NodeJS etc. So Rust wone the 'six-digit-guess'? and Galerina passive wone the fibonacci" — user questioned accuracy of my benchmark summary, prompting verification
    - CRITICAL NEW REQUEST: Detailed syntax guidance including: "I'd make public result types top-level, not inside contract, unless the type is private to that one flow" + full TypeScript-Readable Syntax Proposal document + "once you have done this check and update C:\laragon\www\LO\examples also remove legacy notes in examples ie tidy it up. update docs and KB as well. after this keep on going until then end of 75. after you have finished all phases look into getting the 'gpu-compute' improved in the real world with, out effecting security, we could just a little more memory in return for being as fast as or faster etc"
@@ -219,7 +219,7 @@ Summary:
 6. All user messages:
    - "Continue from where you left off" (initial context resumption)
    - "For else if — what's the policy right now in v1-current?" User then explicitly stated: "Actually it should not be allowed. use match instead of else if. Do not copy TypeScript's unsafe parts" — this was the critical correction that changed else if from advisory to hard error.
-   - "show me some examples of logicN code how you think it now should look" — provided canonical examples using match, contract inside flow, no else if
+   - "show me some examples of galerina code how you think it now should look" — provided canonical examples using match, contract inside flow, no else if
    - "run another benchmark and plan the next 20 phases" — requested both immediate benchmark execution and comprehensive Phase 41-60 roadmap
    - "so in the 'Benchmark Results' the winner is written in ie Python/NodeJS etc. So Rust wone the 'six-digit-guess'? and Galerina passive wone the fibonacci" — user questioned accuracy of my benchmark summary, prompting verification
    - CRITICAL NEW REQUEST: Detailed syntax guidance including: "I'd make public result types top-level, not inside contract, unless the type is private to that one flow" + full TypeScript-Readable Syntax Proposal document + "once you have done this check and update C:\laragon\www\LO\examples also remove legacy notes in examples ie tidy it up. update docs and KB as well. after this keep on going until then end of 75. after you have finished all phases look into getting the 'gpu-compute' improved in the real world with, out effecting security, we could just a little more memory in return for being as fast as or faster etc"

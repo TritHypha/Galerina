@@ -1,13 +1,13 @@
 {
   "version": 1,
-  "builtAt": "2026-06-26T09:37:53.443Z",
+  "builtAt": "2026-06-26T11:44:26.283Z",
   "workspaceDir": "C:\\wwwprojects\\LogicN\\examples\\auth-service",
   "flows": [
     {
-      "id": "b174f2d7cb153dae8438bfa4f812f28e7a70af7f0ab0020358d79f10ef1b6eb7",
+      "id": "48b9a05dc669a5cc3396c2ed85d22c10a57dbe0d92f2659cb0eb097d9f41eab3",
       "flowName": "auditEventId",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\auditChainService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\auditChainService.spore",
       "lexicalTokens": [
         "audit",
         "event",
@@ -63,14 +63,14 @@
       "signatureText": "pure flow auditEventId(flowName: String, timestamp: String) -> String",
       "lineStart": 14,
       "lineEnd": 14,
-      "indexedAt": "2026-06-25T11:40:19.730Z",
-      "sourceMtime": 1780657372427.9446
+      "indexedAt": "2026-06-26T11:19:58.929Z",
+      "sourceMtime": 1782469910077.3489
     },
     {
-      "id": "37537048b9e5adccff5fd9b333723b79d46eaada147b95c20b0b0d9371d7a9b1",
+      "id": "e3319144f4b916dde11e2a422512daac442d5bae9f2498775056c4d0a0d64dec",
       "flowName": "isValidAuditStatus",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\auditChainService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\auditChainService.spore",
       "lexicalTokens": [
         "is",
         "valid",
@@ -125,14 +125,14 @@
       "signatureText": "pure flow isValidAuditStatus(status: String) -> Bool",
       "lineStart": 23,
       "lineEnd": 23,
-      "indexedAt": "2026-06-25T11:40:19.730Z",
-      "sourceMtime": 1780657372427.9446
+      "indexedAt": "2026-06-26T11:19:58.929Z",
+      "sourceMtime": 1782469910077.3489
     },
     {
-      "id": "960f7f3e22733ccae25f66a327c632d59fda3aadc5fc61b0e9c0ce048422f870",
+      "id": "4b15534dc8c0cc5ed714e92a44076f0743cba75e8cc5e9807d8433bf875ef504",
       "flowName": "chainAuditEntry",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\auditChainService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\auditChainService.spore",
       "lexicalTokens": [
         "chain",
         "audit",
@@ -344,14 +344,14 @@
       "signatureText": "secure flow chainAuditEntry(readonly request: Request) -> Response",
       "lineStart": 37,
       "lineEnd": 37,
-      "indexedAt": "2026-06-25T11:40:19.730Z",
-      "sourceMtime": 1780657372427.9446
+      "indexedAt": "2026-06-26T11:19:58.929Z",
+      "sourceMtime": 1782469910077.3489
     },
     {
-      "id": "cbfb2cd33daab1fa4bd39c3b53f70f21d4cc9f75dd10d8615ffbabf5473abc08",
+      "id": "a86be8de69b2704787d802b52086f1fb2c7b6a3685ccf21213889beadfc67c3f",
       "flowName": "classifyAuditSeverity",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\auditWriterService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\auditWriterService.spore",
       "lexicalTokens": [
         "classify",
         "audit",
@@ -427,14 +427,14 @@
       "signatureText": "pure flow classifyAuditSeverity(eventType: String) -> String",
       "lineStart": 8,
       "lineEnd": 8,
-      "indexedAt": "2026-06-25T11:40:19.735Z",
+      "indexedAt": "2026-06-26T11:19:58.934Z",
       "sourceMtime": 1780657403479.1143
     },
     {
-      "id": "b07db9e2f17993c9e757894c8e8e972376c21d29957f830c18a1f0132a588954",
+      "id": "b811dfaf817e43703b0a2378348b552be538b53f2e20579814369ea18274eebb",
       "flowName": "validateAuditEvent",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\auditWriterService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\auditWriterService.spore",
       "lexicalTokens": [
         "validate",
         "audit",
@@ -493,14 +493,14 @@
       "signatureText": "pure flow validateAuditEvent(eventName: String, level: String) -> Bool",
       "lineStart": 28,
       "lineEnd": 28,
-      "indexedAt": "2026-06-25T11:40:19.735Z",
+      "indexedAt": "2026-06-26T11:19:58.934Z",
       "sourceMtime": 1780657403479.1143
     },
     {
-      "id": "9c23984561d50cf13cb53a519a11030659797a84cd5f7cb0932ac7944a237707",
+      "id": "12011fc22ef46f7cce4203a9a39d7e01982ba87ae5ea01bc50f4eb792a5f0cc1",
       "flowName": "writeAuditEvent",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\auditWriterService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\auditWriterService.spore",
       "lexicalTokens": [
         "write",
         "audit",
@@ -709,14 +709,14 @@
       "signatureText": "secure flow writeAuditEvent(readonly request: Request) -> AuditWriteResult",
       "lineStart": 45,
       "lineEnd": 45,
-      "indexedAt": "2026-06-25T11:40:19.735Z",
+      "indexedAt": "2026-06-26T11:19:58.934Z",
       "sourceMtime": 1780657403479.1143
     },
     {
-      "id": "8928c32dff48ae12a94f53981fe1b00238d4b3a5123ff59115080fb179bd9c1a",
+      "id": "c4b142e455dd5c2f811bf517e06eb52993fee431930fd1b7a533466ac37ead13",
       "flowName": "selectExecutionTier",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\bytecodeRouterService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\bytecodeRouterService.spore",
       "lexicalTokens": [
         "select",
         "execution",
@@ -788,14 +788,14 @@
       "signatureText": "pure flow selectExecutionTier(qualifier: String, hasEffects: Bool, isIntegerOnly: Bool) -> String",
       "lineStart": 7,
       "lineEnd": 7,
-      "indexedAt": "2026-06-25T11:40:19.738Z",
+      "indexedAt": "2026-06-26T11:19:58.935Z",
       "sourceMtime": 1780651067496.179
     },
     {
-      "id": "31544818adba519c0e3f1909cb4b08f4ac1fc7bc5fe2bfe7f1bc7ce3dfd93554",
+      "id": "e0714d18c84cb7d94a1e3b8cbb5d2d77f2a3cde0fd2e7a44f82802267a628548",
       "flowName": "tierTrafficLight",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\bytecodeRouterService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\bytecodeRouterService.spore",
       "lexicalTokens": [
         "tier",
         "traffic",
@@ -847,14 +847,14 @@
       "signatureText": "pure flow tierTrafficLight(tier: String) -> String",
       "lineStart": 21,
       "lineEnd": 21,
-      "indexedAt": "2026-06-25T11:40:19.738Z",
+      "indexedAt": "2026-06-26T11:19:58.935Z",
       "sourceMtime": 1780651067496.179
     },
     {
-      "id": "19317bdefb4a8564705c507924a845cab98a2fba91bb6857e6bfc5069408ac2f",
+      "id": "eb0ab20426b72331e893e5fe46d2b171e815877db4cf7e604406ea6dee770d83",
       "flowName": "resolveBytecodeRoute",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\bytecodeRouterService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\bytecodeRouterService.spore",
       "lexicalTokens": [
         "resolve",
         "bytecode",
@@ -1058,14 +1058,14 @@
       "signatureText": "secure flow resolveBytecodeRoute(readonly request: Request) -> TierResult",
       "lineStart": 36,
       "lineEnd": 36,
-      "indexedAt": "2026-06-25T11:40:19.738Z",
+      "indexedAt": "2026-06-26T11:19:58.935Z",
       "sourceMtime": 1780651067496.179
     },
     {
-      "id": "b55d2ed6a30fef2b74e3023281b1592228ab75ed9332d7971410ed12f3132e7b",
+      "id": "fb4b66782012069688e33dd79654db2f53f709c0838dd522601217d744f55abd",
       "flowName": "isEffectAllowedInContext",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\capabilityHostService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\capabilityHostService.spore",
       "lexicalTokens": [
         "is",
         "effect",
@@ -1162,14 +1162,14 @@
       "signatureText": "pure flow isEffectAllowedInContext(effect: String, context: String) -> Bool",
       "lineStart": 14,
       "lineEnd": 14,
-      "indexedAt": "2026-06-25T11:40:19.741Z",
-      "sourceMtime": 1780657353193.0166
+      "indexedAt": "2026-06-26T11:19:58.937Z",
+      "sourceMtime": 1782469910079.3508
     },
     {
-      "id": "040b2823b142489ecd0390b9f60062c2bc6dc99b7294be43d69a282008a3dc0d",
+      "id": "6b7250e81cf382df35ac8a306d0d14f246205eb0df606b3c4bc75c76fa6cfc41",
       "flowName": "effectGovernanceClass",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\capabilityHostService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\capabilityHostService.spore",
       "lexicalTokens": [
         "effect",
         "governance",
@@ -1234,14 +1234,14 @@
       "signatureText": "pure flow effectGovernanceClass(effect: String) -> Int",
       "lineStart": 56,
       "lineEnd": 56,
-      "indexedAt": "2026-06-25T11:40:19.741Z",
-      "sourceMtime": 1780657353193.0166
+      "indexedAt": "2026-06-26T11:19:58.937Z",
+      "sourceMtime": 1782469910079.3508
     },
     {
-      "id": "8e9164d29818060fb11bf40927bc3bd6318c01f8d2967e7609ddcb4f12145ce6",
+      "id": "1b9b6d5530b68050c8e3798cc003f6eb688d81ca4b59c8f02f16c016ab1396be",
       "flowName": "checkCapability",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\capabilityHostService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\capabilityHostService.spore",
       "lexicalTokens": [
         "check",
         "capability",
@@ -1405,14 +1405,14 @@
       "signatureText": "secure flow checkCapability(readonly request: Request) -> Response",
       "lineStart": 72,
       "lineEnd": 72,
-      "indexedAt": "2026-06-25T11:40:19.741Z",
-      "sourceMtime": 1780657353193.0166
+      "indexedAt": "2026-06-26T11:19:58.937Z",
+      "sourceMtime": 1782469910079.3508
     },
     {
-      "id": "7eac60958ab117d8bcf2add9cd5d07e2344585bfb24e349e91a87e96ccf072c9",
+      "id": "aaf24c3321e74b096f463696e8d15f6478de2f1bc5cd06c80a9b424420f1f1c6",
       "flowName": "isEffectAvailable",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\capabilityResolverService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\capabilityResolverService.spore",
       "lexicalTokens": [
         "is",
         "effect",
@@ -1483,14 +1483,14 @@
       "signatureText": "pure flow isEffectAvailable(effectName: String) -> Bool",
       "lineStart": 8,
       "lineEnd": 8,
-      "indexedAt": "2026-06-25T11:40:19.743Z",
+      "indexedAt": "2026-06-26T11:19:58.939Z",
       "sourceMtime": 1780650672403.4978
     },
     {
-      "id": "ecbc0f070fbf5ccabfa16dc386a0159586c5f9ccff1a355a14099233aca87629",
+      "id": "f24fdb65b78df7a77bda5813b87c0b78d68a6dbdb6dfc41cbdb23da6056c18b4",
       "flowName": "effectTier",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\capabilityResolverService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\capabilityResolverService.spore",
       "lexicalTokens": [
         "effect",
         "tier",
@@ -1554,14 +1554,14 @@
       "signatureText": "pure flow effectTier(effectName: String) -> String",
       "lineStart": 26,
       "lineEnd": 26,
-      "indexedAt": "2026-06-25T11:40:19.743Z",
+      "indexedAt": "2026-06-26T11:19:58.939Z",
       "sourceMtime": 1780650672403.4978
     },
     {
-      "id": "c3fd1fc23a0308e12d217c46c759e8d9a07024d274756b3659916256710b54a2",
+      "id": "78ae752781548c8f64045023539af5f05cb4607dcacecbb68bfea63e98616f9d",
       "flowName": "resolveCapability",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\capabilityResolverService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\capabilityResolverService.spore",
       "lexicalTokens": [
         "resolve",
         "capability",
@@ -1731,14 +1731,14 @@
       "signatureText": "secure flow resolveCapability(readonly request: Request) -> CapabilityResolveResult",
       "lineStart": 42,
       "lineEnd": 42,
-      "indexedAt": "2026-06-25T11:40:19.743Z",
+      "indexedAt": "2026-06-26T11:19:58.939Z",
       "sourceMtime": 1780650672403.4978
     },
     {
-      "id": "52e569616bfe62299bc0d2938d9cae04a2f91478eafee78b001133fad23dd19f",
+      "id": "3c5114944d15ba976951a265bcae6fa3812f7e566d369d1c7cda2a3d87cc6d26",
       "flowName": "tokenizeSource",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\compilationService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\compilationService.spore",
       "lexicalTokens": [
         "tokenize",
         "source",
@@ -1762,7 +1762,7 @@
         "response",
         "tokenize",
         "submitted",
-        "logic",
+        "galerina",
         "source",
         "and",
         "summarise",
@@ -1770,7 +1770,6 @@
         "governed",
         "token",
         "stream",
-        "logicn",
         "effects",
         "block",
         "effect",
@@ -1887,9 +1886,8 @@
         "governance",
         "model",
         "governancemodel",
-        "logic",
-        "v1",
-        "logicn"
+        "galerina",
+        "v1"
       ],
       "declaredEffects": [
         "network.inbound",
@@ -1908,14 +1906,14 @@
       "signatureText": "secure flow tokenizeSource(readonly request: Request) -> Response",
       "lineStart": 13,
       "lineEnd": 13,
-      "indexedAt": "2026-06-25T11:40:19.745Z",
-      "sourceMtime": 1780571710842.7302
+      "indexedAt": "2026-06-26T11:19:58.941Z",
+      "sourceMtime": 1782469910080.9106
     },
     {
-      "id": "37c5b3a968eb0d63aaa2845fd4c7f462063ce9f82585b9877786d3c6122c4d94",
+      "id": "022857443c08456a311b39c1e1b11d3f5da59a8130551f1f6759327675d68a9c",
       "flowName": "createSession",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\createSession.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\createSession.spore",
       "lexicalTokens": [
         "create",
         "session",
@@ -2022,14 +2020,14 @@
       "signatureText": "secure flow createSession(readonly request: Request) -> CreateSessionResult",
       "lineStart": 9,
       "lineEnd": 9,
-      "indexedAt": "2026-06-25T11:40:19.746Z",
+      "indexedAt": "2026-06-26T11:19:58.942Z",
       "sourceMtime": 1780571621995.0786
     },
     {
-      "id": "a1eb0bb4c35012583cd8accb41b23c1a2350fc3e6707f4386a9c38d9f0daf0e2",
+      "id": "18d2af661744c352290b244d1140b99406268014dc2694651f4e8339c472dc6b",
       "flowName": "inferTarget",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsRouterService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsRouterService.spore",
       "lexicalTokens": [
         "infer",
         "target",
@@ -2106,14 +2104,14 @@
       "signatureText": "pure flow inferTarget(hasAI: Bool, isSafetyCritical: Bool, hasDBWrite: Bool) -> String",
       "lineStart": 7,
       "lineEnd": 7,
-      "indexedAt": "2026-06-25T11:40:19.748Z",
+      "indexedAt": "2026-06-26T11:19:58.943Z",
       "sourceMtime": 1780651672256.9133
     },
     {
-      "id": "17b26b621412de2e7b8f3c37abe204c30a322302247b88335e9f07f855a0c3aa",
+      "id": "4d74500f91e97d1db1d22aa57e9ad0873bc71472381725466a76213e5a21a94d",
       "flowName": "inferRiskTier",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsRouterService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsRouterService.spore",
       "lexicalTokens": [
         "infer",
         "risk",
@@ -2167,14 +2165,14 @@
       "signatureText": "pure flow inferRiskTier(execTarget: String) -> String",
       "lineStart": 19,
       "lineEnd": 19,
-      "indexedAt": "2026-06-25T11:40:19.748Z",
+      "indexedAt": "2026-06-26T11:19:58.943Z",
       "sourceMtime": 1780651672256.9133
     },
     {
-      "id": "3724916c95e757fa033014f4cb398cb36f82d3aae16c6b3a5cc34205762155f6",
+      "id": "f128b4343af9e7d8454d5929f603df481083fc0b3f435c522e60a4e34ea09d56",
       "flowName": "routeByEconomics",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsRouterService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsRouterService.spore",
       "lexicalTokens": [
         "route",
         "by",
@@ -2367,14 +2365,14 @@
       "signatureText": "secure flow routeByEconomics(readonly request: Request) -> EconomicsResult",
       "lineStart": 33,
       "lineEnd": 33,
-      "indexedAt": "2026-06-25T11:40:19.748Z",
+      "indexedAt": "2026-06-26T11:19:58.943Z",
       "sourceMtime": 1780651672256.9133
     },
     {
-      "id": "33b2aed0c92b94238d95d02b7169c3e66651044cc9805b021facde32fc290da0",
+      "id": "cd15fbb14108e3970cea9784e7c143ba46920bfa05e408e7192f68fec8d64b8b",
       "flowName": "estimateComputeCost",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsService.spore",
       "lexicalTokens": [
         "estimate",
         "compute",
@@ -2439,14 +2437,14 @@
       "signatureText": "pure flow estimateComputeCost(opCount: Int, targetClass: Int) -> Int",
       "lineStart": 4,
       "lineEnd": 4,
-      "indexedAt": "2026-06-25T11:40:19.750Z",
+      "indexedAt": "2026-06-26T11:19:58.946Z",
       "sourceMtime": 1780651582357.6702
     },
     {
-      "id": "6c33a7c1e940168d44e41c4225237c8d3c9cef55db2b1f7496430885edd514a1",
+      "id": "ec4482af033085f2d1e4f8e5497dd047c1ded207dc071b00b1fbc2596c8eaf2d",
       "flowName": "estimateRiskCost",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsService.spore",
       "lexicalTokens": [
         "estimate",
         "risk",
@@ -2514,14 +2512,14 @@
       "signatureText": "pure flow estimateRiskCost(recordCount: Int, classificationLevel: Int) -> Int",
       "lineStart": 12,
       "lineEnd": 12,
-      "indexedAt": "2026-06-25T11:40:19.750Z",
+      "indexedAt": "2026-06-26T11:19:58.946Z",
       "sourceMtime": 1780651582357.6702
     },
     {
-      "id": "27866a6b4920462329a37304b640073890cf476f98e74264279f71042586a24a",
+      "id": "4dbd2ade5a12519dfd5b139f6dd9779ff8e0035a8be3d334255139b143616258",
       "flowName": "totalCost",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsService.spore",
       "lexicalTokens": [
         "total",
         "cost",
@@ -2580,14 +2578,14 @@
       "signatureText": "pure flow totalCost(computeCost: Int, riskCost: Int, auditCost: Int) -> Int",
       "lineStart": 20,
       "lineEnd": 20,
-      "indexedAt": "2026-06-25T11:40:19.750Z",
+      "indexedAt": "2026-06-26T11:19:58.946Z",
       "sourceMtime": 1780651582357.6702
     },
     {
-      "id": "01421bda679c839d0f469b1eef30af5d2cf8ff50367af70b62b3073e2c97834d",
+      "id": "d714a1a0053c726d51d98e4f87ee0b5633ea9ef2f1d020b4f68fd457df850956",
       "flowName": "estimateCost",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsService.spore",
       "lexicalTokens": [
         "estimate",
         "cost",
@@ -2795,14 +2793,14 @@
       "signatureText": "secure flow estimateCost(readonly request: Request) -> Response",
       "lineStart": 25,
       "lineEnd": 25,
-      "indexedAt": "2026-06-25T11:40:19.750Z",
+      "indexedAt": "2026-06-26T11:19:58.946Z",
       "sourceMtime": 1780651582357.6702
     },
     {
-      "id": "2c23c410bf59b4116239ada3a50561b9c08d2377dcf16418475bfda58911bb90",
+      "id": "572c8b80e6cdde4c1130fd3d59200a9c1507ca751d88e8971cd8a4b8b22a999a",
       "flowName": "effectRequiresCapability",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\effectCheckerService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\effectCheckerService.spore",
       "lexicalTokens": [
         "effect",
         "requires",
@@ -2880,14 +2878,14 @@
       "signatureText": "pure flow effectRequiresCapability(effectName: String) -> String",
       "lineStart": 9,
       "lineEnd": 9,
-      "indexedAt": "2026-06-25T11:40:19.753Z",
-      "sourceMtime": 1780651031899.119
+      "indexedAt": "2026-06-26T11:19:58.948Z",
+      "sourceMtime": 1782469910085.9136
     },
     {
-      "id": "46b8ed45d9c4fc8fc9c890e26e63216c79d2dda9c23aa616c2fa54619cec1ac3",
+      "id": "3d5dc9960dd020bdb459091dcf6638cb057a213517e958051de62c80e2554b38",
       "flowName": "effectsAreComplete",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\effectCheckerService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\effectCheckerService.spore",
       "lexicalTokens": [
         "effects",
         "are",
@@ -2947,14 +2945,14 @@
       "signatureText": "pure flow effectsAreComplete(declaredEffect: String, qualifier: String) -> Bool",
       "lineStart": 30,
       "lineEnd": 30,
-      "indexedAt": "2026-06-25T11:40:19.753Z",
-      "sourceMtime": 1780651031899.119
+      "indexedAt": "2026-06-26T11:19:58.948Z",
+      "sourceMtime": 1782469910085.9136
     },
     {
-      "id": "327e04fabfe906eeea0f368960eaf6865348ed66218d13531dae021350574880",
+      "id": "4d6132e7238a8090cb9793bd434de164bbb2086a596abfb0ddfbb955749b0127",
       "flowName": "classifyEffectSeverity",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\effectCheckerService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\effectCheckerService.spore",
       "lexicalTokens": [
         "classify",
         "effect",
@@ -3011,14 +3009,14 @@
       "signatureText": "pure flow classifyEffectSeverity(capability: String) -> String",
       "lineStart": 42,
       "lineEnd": 42,
-      "indexedAt": "2026-06-25T11:40:19.753Z",
-      "sourceMtime": 1780651031899.119
+      "indexedAt": "2026-06-26T11:19:58.948Z",
+      "sourceMtime": 1782469910085.9136
     },
     {
-      "id": "456577e0cb9091d356172a413e9f7004e0333921e2e45f1dc7b0bf22dfa883a5",
+      "id": "dc9ed5258dc2af85b64af372700ea4c262382cea69bbf0e285fe3d5f72da54aa",
       "flowName": "checkEffectDeclaration",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\effectCheckerService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\effectCheckerService.spore",
       "lexicalTokens": [
         "check",
         "effect",
@@ -3074,9 +3072,8 @@
         "itself",
         "is",
         "governed",
-        "logic",
+        "galerina",
         "source",
-        "logicn",
         "unsafe",
         "raw",
         "effect",
@@ -3222,14 +3219,14 @@
       "signatureText": "secure flow checkEffectDeclaration(readonly request: Request) -> EffectCheckResult",
       "lineStart": 60,
       "lineEnd": 60,
-      "indexedAt": "2026-06-25T11:40:19.753Z",
-      "sourceMtime": 1780651031899.119
+      "indexedAt": "2026-06-26T11:19:58.948Z",
+      "sourceMtime": 1782469910085.9136
     },
     {
-      "id": "7ec6b3ad7571b874cd816f73acc68fbda775a9ed44f5c7e8ffd3ba4a1f3f4216",
+      "id": "71ed0144b055809a47a1162d8993f39e00a5d0f29eeaeb29f7d59c72f1ba7260",
       "flowName": "governanceLevel",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceService.spore",
       "lexicalTokens": [
         "governance",
         "level",
@@ -3289,14 +3286,14 @@
       "signatureText": "pure flow governanceLevel(effectTag: String) -> Int",
       "lineStart": 14,
       "lineEnd": 14,
-      "indexedAt": "2026-06-25T11:40:19.755Z",
-      "sourceMtime": 1780657328825.5408
+      "indexedAt": "2026-06-26T11:19:58.949Z",
+      "sourceMtime": 1782469910087.9116
     },
     {
-      "id": "c819de06a6929ec803d8abb24f64758f10c7393e2bf46a4b10bc4669b287ce23",
+      "id": "7d6a1ac900021f058439e4889dfe3958eebab48212f85e8279478d27e4c274de",
       "flowName": "requiresAuditForLevel",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceService.spore",
       "lexicalTokens": [
         "requires",
         "audit",
@@ -3343,14 +3340,14 @@
       "signatureText": "pure flow requiresAuditForLevel(level: Int) -> Bool",
       "lineStart": 29,
       "lineEnd": 29,
-      "indexedAt": "2026-06-25T11:40:19.755Z",
-      "sourceMtime": 1780657328825.5408
+      "indexedAt": "2026-06-26T11:19:58.949Z",
+      "sourceMtime": 1782469910087.9116
     },
     {
-      "id": "b92bbf9e73a70bb7ee7c4f0b274cf01cf2b460a2422358088de3ccadffdd0841",
+      "id": "6bfd78a36cbdd9dd92236ac274efc97a84a4f45e227be685f64c58960cbfd827",
       "flowName": "verifyGovernance",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceService.spore",
       "lexicalTokens": [
         "verify",
         "governance",
@@ -3520,14 +3517,14 @@
       "signatureText": "secure flow verifyGovernance(readonly request: Request) -> Response",
       "lineStart": 41,
       "lineEnd": 41,
-      "indexedAt": "2026-06-25T11:40:19.755Z",
-      "sourceMtime": 1780657328825.5408
+      "indexedAt": "2026-06-26T11:19:58.949Z",
+      "sourceMtime": 1782469910087.9116
     },
     {
-      "id": "aca5e52b25586bd000501ae5e57ec57410533b90dee87919d7f10a39af0d8a3c",
+      "id": "01010f2abe72cb04a2e6222cba03a236fec1466985be2696f226e072cd9680a2",
       "flowName": "isEffectPermittedInProfile",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceVerifierService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceVerifierService.spore",
       "lexicalTokens": [
         "is",
         "effect",
@@ -3612,14 +3609,14 @@
       "signatureText": "pure flow isEffectPermittedInProfile(effectName: String, profile: String) -> Bool",
       "lineStart": 8,
       "lineEnd": 8,
-      "indexedAt": "2026-06-25T11:40:19.757Z",
-      "sourceMtime": 1780657389611.6409
+      "indexedAt": "2026-06-26T11:19:58.951Z",
+      "sourceMtime": 1782469910088.9116
     },
     {
-      "id": "6999908e96f28309b67ea60cdf3a39b38fa09498d16a81fc9ec603816cb9e9e3",
+      "id": "20a5322cbb53eaaa3d4b80c57339d877bafe066eac3c402b9dccbd30d7b9c7dc",
       "flowName": "checkQualifierInvariants",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceVerifierService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceVerifierService.spore",
       "lexicalTokens": [
         "check",
         "qualifier",
@@ -3686,14 +3683,14 @@
       "signatureText": "pure flow checkQualifierInvariants(qualifier: String, hasAudit: Bool) -> Bool",
       "lineStart": 26,
       "lineEnd": 26,
-      "indexedAt": "2026-06-25T11:40:19.757Z",
-      "sourceMtime": 1780657389611.6409
+      "indexedAt": "2026-06-26T11:19:58.951Z",
+      "sourceMtime": 1782469910088.9116
     },
     {
-      "id": "b515fa153ddc44c6a555435a1745ad3c5dcb11dcf765b7bbbce085810d95238f",
+      "id": "2d001e32ca188c68baf9bb9ef423560a279df436ea9a7e59e5fb712da8b7a21c",
       "flowName": "classifyGovernanceOutcome",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceVerifierService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceVerifierService.spore",
       "lexicalTokens": [
         "classify",
         "governance",
@@ -3749,14 +3746,14 @@
       "signatureText": "pure flow classifyGovernanceOutcome(permitted: Bool, invariants: Bool) -> String",
       "lineStart": 43,
       "lineEnd": 43,
-      "indexedAt": "2026-06-25T11:40:19.757Z",
-      "sourceMtime": 1780657389611.6409
+      "indexedAt": "2026-06-26T11:19:58.951Z",
+      "sourceMtime": 1782469910088.9116
     },
     {
-      "id": "fc360c78d897662dcd9ed3bf61805371d988748b1ba4824ab83d0c9ee81d4469",
+      "id": "a2f80db23a93e12890b4507771b9f57b6a9ec3d6d4063aa75b1bc4c0d895a03d",
       "flowName": "verifyFlowGovernance",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceVerifierService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceVerifierService.spore",
       "lexicalTokens": [
         "verify",
         "flow",
@@ -3997,14 +3994,14 @@
       "signatureText": "secure flow verifyFlowGovernance(readonly request: Request) -> VerifyResult",
       "lineStart": 54,
       "lineEnd": 54,
-      "indexedAt": "2026-06-25T11:40:19.757Z",
-      "sourceMtime": 1780657389611.6409
+      "indexedAt": "2026-06-26T11:19:58.951Z",
+      "sourceMtime": 1782469910088.9116
     },
     {
-      "id": "b13cd59c1cefea1ed80bb35157cb21d60821499ac21d83f04419b01cfd83ab1f",
+      "id": "1d81a50cc899629334829b56cd297dec28d047b30e89f246e7a90ca32edee85e",
       "flowName": "healthCheck",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\healthCheck.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\healthCheck.spore",
       "lexicalTokens": [
         "health",
         "check",
@@ -4094,7 +4091,7 @@
         "status",
         "ok",
         "runtime",
-        "logicn",
+        "galerina",
         "stage",
         "governance",
         "verified",
@@ -4118,14 +4115,14 @@
       "signatureText": "secure flow healthCheck(readonly request: Request) -> HealthStatus",
       "lineStart": 7,
       "lineEnd": 7,
-      "indexedAt": "2026-06-25T11:40:19.759Z",
-      "sourceMtime": 1780571997378.1372
+      "indexedAt": "2026-06-26T11:19:58.952Z",
+      "sourceMtime": 1782469910092.9343
     },
     {
-      "id": "b3295a706a6c3d6b452fd53d6ff8c306bd235b12811716bba818904cde054110",
+      "id": "940fdd6b56d77a649280ec42b6392ad7e68f97f1613d89a445631c5e81ce0cc0",
       "flowName": "isValidManifestVersion",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\manifestVerificationService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\manifestVerificationService.spore",
       "lexicalTokens": [
         "is",
         "valid",
@@ -4146,7 +4143,7 @@
         "bool",
         "contains",
         "version",
-        "lln",
+        "spore",
         "contains",
         "version",
         "v1"
@@ -4163,14 +4160,14 @@
       "signatureText": "pure flow isValidManifestVersion(version: String) -> Bool",
       "lineStart": 4,
       "lineEnd": 4,
-      "indexedAt": "2026-06-25T11:40:19.760Z",
-      "sourceMtime": 1780651319121.3225
+      "indexedAt": "2026-06-26T11:19:58.953Z",
+      "sourceMtime": 1782469910094.9346
     },
     {
-      "id": "459c822df5f144e00efada5a53f61168aafe0fe1947584c283a8ad4e8983098e",
+      "id": "c188025798329ea8626e20ce66ffb3795e278f6b898635ec3955e593d7c279b7",
       "flowName": "isValidGovernanceFlags",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\manifestVerificationService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\manifestVerificationService.spore",
       "lexicalTokens": [
         "is",
         "valid",
@@ -4203,14 +4200,14 @@
       "signatureText": "pure flow isValidGovernanceFlags(flags: Int) -> Bool",
       "lineStart": 9,
       "lineEnd": 9,
-      "indexedAt": "2026-06-25T11:40:19.760Z",
-      "sourceMtime": 1780651319121.3225
+      "indexedAt": "2026-06-26T11:19:58.953Z",
+      "sourceMtime": 1782469910094.9346
     },
     {
-      "id": "71a25aaa176bd43dc985947bc1abbb8c24a3f5ace15117758f424954cf9d6838",
+      "id": "9d7d4d765bd0fc9b784169a79a7f5febab07f69179af884ff4425b550a606005",
       "flowName": "manifestTrustLevel",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\manifestVerificationService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\manifestVerificationService.spore",
       "lexicalTokens": [
         "manifest",
         "trust",
@@ -4270,14 +4267,14 @@
       "signatureText": "pure flow manifestTrustLevel(verified: Bool, hasSignature: Bool, flagsValid: Bool) -> Int",
       "lineStart": 14,
       "lineEnd": 14,
-      "indexedAt": "2026-06-25T11:40:19.760Z",
-      "sourceMtime": 1780651319121.3225
+      "indexedAt": "2026-06-26T11:19:58.953Z",
+      "sourceMtime": 1782469910094.9346
     },
     {
-      "id": "47162cc5e22cfcbcd8480a1c5999d073bd4cb1afaceea137c9047ff4d2b12aaa",
+      "id": "47807dc2e75c62c7cb29c4fed8c85b7121e0ce749712c79599ae51f336ca01b0",
       "flowName": "verifyManifest",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\manifestVerificationService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\manifestVerificationService.spore",
       "lexicalTokens": [
         "verify",
         "manifest",
@@ -4519,14 +4516,14 @@
       "signatureText": "secure flow verifyManifest(readonly request: Request) -> Response",
       "lineStart": 22,
       "lineEnd": 22,
-      "indexedAt": "2026-06-25T11:40:19.760Z",
-      "sourceMtime": 1780651319121.3225
+      "indexedAt": "2026-06-26T11:19:58.953Z",
+      "sourceMtime": 1782469910094.9346
     },
     {
-      "id": "954617c570287424628a0067f466009d631fb5630dcc85949830aeea04d80930",
+      "id": "fabd81d2c22ddf643bedfa0dd7f350299d38f2eb229e6af01a034a964054fef1",
       "flowName": "processStandardRequest",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\physicalHardeningAutoDefault.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\physicalHardeningAutoDefault.spore",
       "lexicalTokens": [
         "process",
         "standard",
@@ -4623,14 +4620,14 @@
       "signatureText": "secure flow processStandardRequest(readonly request: Request) -> Result<String,String>",
       "lineStart": 12,
       "lineEnd": 12,
-      "indexedAt": "2026-06-25T11:40:19.761Z",
-      "sourceMtime": 1780506822430.981
+      "indexedAt": "2026-06-26T11:19:58.954Z",
+      "sourceMtime": 1782469910095.9346
     },
     {
-      "id": "f8488025efa354f74e2ebea6e80197140d0096579672afb5e7bdb552fcdb1713",
+      "id": "4cbff4f3c645edd93d6ccab299212d043111b3b3f3ee71c046fa0a1f7cae0a81",
       "flowName": "settlementTier1",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\physicalHardeningTier1.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\physicalHardeningTier1.spore",
       "lexicalTokens": [
         "settlement",
         "tier1",
@@ -4763,14 +4760,14 @@
       "signatureText": "secure flow settlementTier1(readonly request: Request) -> Result<String,String>",
       "lineStart": 6,
       "lineEnd": 6,
-      "indexedAt": "2026-06-25T11:40:19.762Z",
+      "indexedAt": "2026-06-26T11:19:58.955Z",
       "sourceMtime": 1780584554128.6467
     },
     {
-      "id": "88395b9a52572248288b7957a08db91f9ad97c2837e953cc2f13478ffc298ca6",
+      "id": "8577c978d78a7c07b96f1f4593db112f41565ca853e5745c4414d1d91ec33f0b",
       "flowName": "processHighValueRecord",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\physicalHardeningTier2.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\physicalHardeningTier2.spore",
       "lexicalTokens": [
         "process",
         "high",
@@ -4933,14 +4930,14 @@
       "signatureText": "secure flow processHighValueRecord(readonly request: Request) -> Result<String,String>",
       "lineStart": 6,
       "lineEnd": 6,
-      "indexedAt": "2026-06-25T11:40:19.763Z",
+      "indexedAt": "2026-06-26T11:19:58.956Z",
       "sourceMtime": 1780584556199.1294
     },
     {
-      "id": "8165c281fc9029693aa49a880bb97cd125dba3558b0065a4f159c42bee2fe7b0",
+      "id": "8f00fa75426518c2d38d471930e1fb1c4fb581b1576b640c72e2b341512ede4a",
       "flowName": "qualifierToProofLevel",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\proofGraphService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\proofGraphService.spore",
       "lexicalTokens": [
         "qualifier",
         "to",
@@ -4987,14 +4984,14 @@
       "signatureText": "pure flow qualifierToProofLevel(qualifier: String) -> Int",
       "lineStart": 8,
       "lineEnd": 8,
-      "indexedAt": "2026-06-25T11:40:19.764Z",
+      "indexedAt": "2026-06-26T11:19:58.956Z",
       "sourceMtime": 1780650678795.0364
     },
     {
-      "id": "7913e65a9ccc33f08dc5145943495ca4fd5cbe58203736f097202820781e931b",
+      "id": "0a2cb2b0f10f705f706e34a161a1f623e9018205f5fb92ba489dc0f50c940800",
       "flowName": "proofLevelSufficient",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\proofGraphService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\proofGraphService.spore",
       "lexicalTokens": [
         "proof",
         "level",
@@ -5045,14 +5042,14 @@
       "signatureText": "pure flow proofLevelSufficient(actual: Int, required: Int) -> Bool",
       "lineStart": 22,
       "lineEnd": 22,
-      "indexedAt": "2026-06-25T11:40:19.764Z",
+      "indexedAt": "2026-06-26T11:19:58.956Z",
       "sourceMtime": 1780650678795.0364
     },
     {
-      "id": "503e231e602242d302e392a7bdad59c65f898fbfc11226d7396f6def9ba3fdb3",
+      "id": "243e47bd62dc51ed765992a12b82819eb23822218177d96519cdbc2d0479a1e2",
       "flowName": "generateProofSummary",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\proofGraphService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\proofGraphService.spore",
       "lexicalTokens": [
         "generate",
         "proof",
@@ -5208,14 +5205,14 @@
       "signatureText": "secure flow generateProofSummary(readonly request: Request) -> ProofResult",
       "lineStart": 32,
       "lineEnd": 32,
-      "indexedAt": "2026-06-25T11:40:19.764Z",
+      "indexedAt": "2026-06-26T11:19:58.956Z",
       "sourceMtime": 1780650678795.0364
     },
     {
-      "id": "aefe82d8b0a7b74982621b9730eb56bec15d8a7f010c22abc52ed52828dc162d",
+      "id": "52149c8747fe628047c8db7a7d299c42aedb4e25be7b137eaf57467b82f04f58",
       "flowName": "isValidAlgorithm",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\proofVerifierService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\proofVerifierService.spore",
       "lexicalTokens": [
         "is",
         "valid",
@@ -5266,14 +5263,14 @@
       "signatureText": "pure flow isValidAlgorithm(alg: String) -> Bool",
       "lineStart": 13,
       "lineEnd": 13,
-      "indexedAt": "2026-06-25T11:40:19.766Z",
-      "sourceMtime": 1780650680205.2844
+      "indexedAt": "2026-06-26T11:19:58.958Z",
+      "sourceMtime": 1782469910097.935
     },
     {
-      "id": "84aad5572ae721d6ef9590a59d4b4c1b94d865997794c97043ddc64828b46fe4",
+      "id": "f270c14b0f4efb795d16673b36d0778097bd92a7930cf66b4905dd73cda86abc",
       "flowName": "proofStrength",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\proofVerifierService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\proofVerifierService.spore",
       "lexicalTokens": [
         "proof",
         "strength",
@@ -5321,14 +5318,14 @@
       "signatureText": "pure flow proofStrength(algorithm: String) -> Int",
       "lineStart": 25,
       "lineEnd": 25,
-      "indexedAt": "2026-06-25T11:40:19.766Z",
-      "sourceMtime": 1780650680205.2844
+      "indexedAt": "2026-06-26T11:19:58.958Z",
+      "sourceMtime": 1782469910097.935
     },
     {
-      "id": "d7f0866c4e521f1f8254887ae06b3773d02777a567a45407ba1ff13fdac1bd47",
+      "id": "0cc4497555f7ffc7dda0783139b0f7f6fad9a91164a9e18fe549fc639a398d78",
       "flowName": "verifyProof",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\proofVerifierService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\proofVerifierService.spore",
       "lexicalTokens": [
         "verify",
         "proof",
@@ -5481,14 +5478,14 @@
       "signatureText": "secure flow verifyProof(readonly request: Request) -> Response",
       "lineStart": 37,
       "lineEnd": 37,
-      "indexedAt": "2026-06-25T11:40:19.766Z",
-      "sourceMtime": 1780650680205.2844
+      "indexedAt": "2026-06-26T11:19:58.958Z",
+      "sourceMtime": 1782469910097.935
     },
     {
-      "id": "1c98c9426c1e64d6e64049de4fc435a0761b4553df953673581778ecedd9ab52",
+      "id": "c8533c85aaf2ce4aec43256b1f4eac76b414b5fba5d61c9a07710a6d361db9f3",
       "flowName": "rateStatus",
       "qualifier": "guarded",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\rateStatus.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\rateStatus.spore",
       "lexicalTokens": [
         "rate",
         "status",
@@ -5620,14 +5617,14 @@
       "signatureText": "guarded flow rateStatus(readonly request: Request) -> RateStatusResult",
       "lineStart": 6,
       "lineEnd": 6,
-      "indexedAt": "2026-06-25T11:40:19.767Z",
+      "indexedAt": "2026-06-26T11:19:58.959Z",
       "sourceMtime": 1780572004873.2146
     },
     {
-      "id": "c63146297efca4295f923092665ef25625287eddbff4004f7611859963097560",
+      "id": "9775251c675cc4ed00764e72a127baa7de26931cf2dadf58c48be77fbf29d7ab",
       "flowName": "pathMatches",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routeDispatcherService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routeDispatcherService.spore",
       "lexicalTokens": [
         "path",
         "matches",
@@ -5688,14 +5685,14 @@
       "signatureText": "pure flow pathMatches(requestPath: String, routePath: String) -> Bool",
       "lineStart": 9,
       "lineEnd": 9,
-      "indexedAt": "2026-06-25T11:40:19.768Z",
-      "sourceMtime": 1780651588985.3838
+      "indexedAt": "2026-06-26T11:19:58.960Z",
+      "sourceMtime": 1782469910099.935
     },
     {
-      "id": "d5f62fafbb4edfc9c495e29f37a5e5ddf867f8e757dd7f9bd692e6b2d435d637",
+      "id": "183271778328aeec06c9bbee686c9b192461930e78c95db9f5d6e157cac52835",
       "flowName": "resolveRoute",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routeDispatcherService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routeDispatcherService.spore",
       "lexicalTokens": [
         "resolve",
         "route",
@@ -5788,14 +5785,14 @@
       "signatureText": "pure flow resolveRoute(method: String, path: String) -> String",
       "lineStart": 21,
       "lineEnd": 21,
-      "indexedAt": "2026-06-25T11:40:19.768Z",
-      "sourceMtime": 1780651588985.3838
+      "indexedAt": "2026-06-26T11:19:58.960Z",
+      "sourceMtime": 1782469910099.935
     },
     {
-      "id": "0a2b98e4926de0a990b38fdb3068731e128b103f53d82301b8039883abd57b88",
+      "id": "94945dd8e2ec7fbc9c53331df5e9097ae60b84a9cfe0bde0dac82564fd0cf125",
       "flowName": "flowGovernanceProfile",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routeDispatcherService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routeDispatcherService.spore",
       "lexicalTokens": [
         "flow",
         "governance",
@@ -5869,14 +5866,14 @@
       "signatureText": "pure flow flowGovernanceProfile(flowName: String) -> String",
       "lineStart": 52,
       "lineEnd": 52,
-      "indexedAt": "2026-06-25T11:40:19.768Z",
-      "sourceMtime": 1780651588985.3838
+      "indexedAt": "2026-06-26T11:19:58.960Z",
+      "sourceMtime": 1782469910099.935
     },
     {
-      "id": "aa39f3dee3135931afb07a0460cb08e9f420b50a625c51a2355277fd7790efd6",
+      "id": "c1a13bd4bdc97304ff9118d54c024775cff9682c12b9c78fd7798b19348421bd",
       "flowName": "dispatchRequest",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routeDispatcherService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routeDispatcherService.spore",
       "lexicalTokens": [
         "dispatch",
         "request",
@@ -5929,9 +5926,8 @@
         "dispatcher",
         "as",
         "governed",
-        "logic",
+        "galerina",
         "source",
-        "logicn",
         "response",
         "block",
         "body",
@@ -6160,14 +6156,14 @@
       "signatureText": "secure flow dispatchRequest(readonly request: Request) -> RouteResult",
       "lineStart": 69,
       "lineEnd": 69,
-      "indexedAt": "2026-06-25T11:40:19.768Z",
-      "sourceMtime": 1780651588985.3838
+      "indexedAt": "2026-06-26T11:19:58.960Z",
+      "sourceMtime": 1782469910099.935
     },
     {
-      "id": "8b69c3d703d51b4c57568b3e6c32ce66d590ec96b694f23a200d5ff1adcf52c9",
+      "id": "b57ba250f9b224a501ba2c9d4944d15eaafae89b36155b16a0524865440d5cdb",
       "flowName": "preferredTier",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routingPolicyService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routingPolicyService.spore",
       "lexicalTokens": [
         "preferred",
         "tier",
@@ -6242,14 +6238,14 @@
       "signatureText": "pure flow preferredTier(effectCount: Int, hasAI: Bool, isCritical: Bool) -> String",
       "lineStart": 4,
       "lineEnd": 4,
-      "indexedAt": "2026-06-25T11:40:19.769Z",
+      "indexedAt": "2026-06-26T11:19:58.962Z",
       "sourceMtime": 1780651676740.3132
     },
     {
-      "id": "392cd9e0f1200e75edbe7ab06e876ac6aac2acfcf2f115307da896e8d9824693",
+      "id": "da7f5292cec3d19108b891e31a7d991c86b11d227940803122831837c6f496e4",
       "flowName": "tierGovernanceClass",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routingPolicyService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routingPolicyService.spore",
       "lexicalTokens": [
         "tier",
         "governance",
@@ -6291,14 +6287,14 @@
       "signatureText": "pure flow tierGovernanceClass(tier: String) -> Int",
       "lineStart": 15,
       "lineEnd": 15,
-      "indexedAt": "2026-06-25T11:40:19.769Z",
+      "indexedAt": "2026-06-26T11:19:58.962Z",
       "sourceMtime": 1780651676740.3132
     },
     {
-      "id": "56e9cbdf256c381b34cbe04f8178de1ddaed312d66a3d84797eab03e38754fdd",
+      "id": "d471cb07ea8079d9c38855aa9d4e1864280ec84b8f933f517104ad49f8f51fca",
       "flowName": "resolveRoute",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routingPolicyService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routingPolicyService.spore",
       "lexicalTokens": [
         "resolve",
         "route",
@@ -6463,14 +6459,14 @@
       "signatureText": "secure flow resolveRoute(readonly request: Request) -> Response",
       "lineStart": 24,
       "lineEnd": 24,
-      "indexedAt": "2026-06-25T11:40:19.769Z",
+      "indexedAt": "2026-06-26T11:19:58.962Z",
       "sourceMtime": 1780651676740.3132
     },
     {
-      "id": "286f6ab3383c073399adc8acdfb0c41f23ea5cfe5dab9a93ede41b0fc0607ef9",
+      "id": "664f7bedab2d975d6e610868c70540e2e15c2c521087ce3ad465e2d69dbee275",
       "flowName": "profileAllowsRecursion",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\runtimeProfileService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\runtimeProfileService.spore",
       "lexicalTokens": [
         "profile",
         "allows",
@@ -6510,14 +6506,14 @@
       "signatureText": "pure flow profileAllowsRecursion(profile: String) -> Bool",
       "lineStart": 4,
       "lineEnd": 4,
-      "indexedAt": "2026-06-25T11:40:19.771Z",
+      "indexedAt": "2026-06-26T11:19:58.963Z",
       "sourceMtime": 1780651298831.9385
     },
     {
-      "id": "e3c543811d98fc173a7196039d786c2357f18f521c51a95e464286c8d55129c8",
+      "id": "f9576b817f0f81dd984198cefa0fc623fe7cc0cdba66a3bf0a5c88e9fa4b887b",
       "flowName": "profileAllowsUnboundedLoop",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\runtimeProfileService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\runtimeProfileService.spore",
       "lexicalTokens": [
         "profile",
         "allows",
@@ -6558,14 +6554,14 @@
       "signatureText": "pure flow profileAllowsUnboundedLoop(profile: String) -> Bool",
       "lineStart": 11,
       "lineEnd": 11,
-      "indexedAt": "2026-06-25T11:40:19.771Z",
+      "indexedAt": "2026-06-26T11:19:58.963Z",
       "sourceMtime": 1780651298831.9385
     },
     {
-      "id": "99f5cfda651899ce5c79ea19d6e56a355d99d87de832fcb1fbc47eaec0f0226f",
+      "id": "896cf34ec3492b9b4e67e04de423bf03d54a2bafc53f13676258cc6fb6a6d05b",
       "flowName": "profileRequiresBudget",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\runtimeProfileService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\runtimeProfileService.spore",
       "lexicalTokens": [
         "profile",
         "requires",
@@ -6605,14 +6601,14 @@
       "signatureText": "pure flow profileRequiresBudget(profile: String) -> Bool",
       "lineStart": 18,
       "lineEnd": 18,
-      "indexedAt": "2026-06-25T11:40:19.771Z",
+      "indexedAt": "2026-06-26T11:19:58.963Z",
       "sourceMtime": 1780651298831.9385
     },
     {
-      "id": "08f6cdf25858abc354c49b0f5ae3d07aa486b69c9df5e84bcb8b4ee77ef32391",
+      "id": "dcd35346491facd156c742a11ca8313a66154a8b2c690704cec3cacc633741f7",
       "flowName": "profileSecurityLevel",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\runtimeProfileService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\runtimeProfileService.spore",
       "lexicalTokens": [
         "profile",
         "security",
@@ -6655,14 +6651,14 @@
       "signatureText": "pure flow profileSecurityLevel(profile: String) -> Int",
       "lineStart": 25,
       "lineEnd": 25,
-      "indexedAt": "2026-06-25T11:40:19.771Z",
+      "indexedAt": "2026-06-26T11:19:58.963Z",
       "sourceMtime": 1780651298831.9385
     },
     {
-      "id": "b9c0ced9baaaff0eb30918914071bbe6d69c1caee8bd4479c51391de12a61e24",
+      "id": "235e2f3be63fcb05d6ef7084133097a5b8582134bb39e9ad26339e144b405415",
       "flowName": "checkProfile",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\runtimeProfileService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\runtimeProfileService.spore",
       "lexicalTokens": [
         "check",
         "profile",
@@ -6841,14 +6837,14 @@
       "signatureText": "secure flow checkProfile(readonly request: Request) -> Response",
       "lineStart": 34,
       "lineEnd": 34,
-      "indexedAt": "2026-06-25T11:40:19.771Z",
+      "indexedAt": "2026-06-26T11:19:58.963Z",
       "sourceMtime": 1780651298831.9385
     },
     {
-      "id": "39106beffab3235d89d088828d7b7cb36eddd956d70f7ec3c294bc49f298984b",
+      "id": "15cdb48cf33963717b71e41ee4ea0cbfab0bef5daf17f3e8bd1f16c6f26fb929",
       "flowName": "processSovereignTransaction",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\sovereignTransaction.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\sovereignTransaction.spore",
       "lexicalTokens": [
         "process",
         "sovereign",
@@ -7042,14 +7038,14 @@
       "signatureText": "secure flow processSovereignTransaction(readonly request: Request) -> TransactionResult",
       "lineStart": 15,
       "lineEnd": 15,
-      "indexedAt": "2026-06-25T11:40:19.774Z",
+      "indexedAt": "2026-06-26T11:19:58.966Z",
       "sourceMtime": 1780609945197.5305
     },
     {
-      "id": "d1534ed22dd8ad13fad30f2b6bec0a5ab9d3bf16ec096f13191d27d6bce1c9f1",
+      "id": "b0525d6239c35ecaee38c427f884d2836484c29ae3d91784b034170409280f50",
       "flowName": "strContains",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\stdlibCoreService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\stdlibCoreService.spore",
       "lexicalTokens": [
         "str",
         "contains",
@@ -7093,14 +7089,14 @@
       "signatureText": "pure flow strContains(text: String, sub: String) -> Bool",
       "lineStart": 8,
       "lineEnd": 8,
-      "indexedAt": "2026-06-25T11:40:19.776Z",
-      "sourceMtime": 1780651300878.7212
+      "indexedAt": "2026-06-26T11:19:58.968Z",
+      "sourceMtime": 1782469910104.9478
     },
     {
-      "id": "4f56fbf63c8f7ebf8444ed9d74252fed3f5d370f1678e41a6ea98c42527ab3f1",
+      "id": "dcef8686f72b3026f32a60acdf30314b9a619e4629c1771a872ba0e737631128",
       "flowName": "strStartsWith",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\stdlibCoreService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\stdlibCoreService.spore",
       "lexicalTokens": [
         "str",
         "starts",
@@ -7148,14 +7144,14 @@
       "signatureText": "pure flow strStartsWith(text: String, prefix: String) -> Bool",
       "lineStart": 16,
       "lineEnd": 16,
-      "indexedAt": "2026-06-25T11:40:19.776Z",
-      "sourceMtime": 1780651300878.7212
+      "indexedAt": "2026-06-26T11:19:58.968Z",
+      "sourceMtime": 1782469910104.9478
     },
     {
-      "id": "6cebebe17f645bd0065d3f511da06849cf7a1c06b7723bc4e89f0931bf842759",
+      "id": "e38926a9ca35a3db978e79247df9129bad48b9ef9f69a67a384c1a40c87362fe",
       "flowName": "strLength",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\stdlibCoreService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\stdlibCoreService.spore",
       "lexicalTokens": [
         "str",
         "length",
@@ -7193,14 +7189,14 @@
       "signatureText": "pure flow strLength(text: String) -> Int",
       "lineStart": 24,
       "lineEnd": 24,
-      "indexedAt": "2026-06-25T11:40:19.776Z",
-      "sourceMtime": 1780651300878.7212
+      "indexedAt": "2026-06-26T11:19:58.968Z",
+      "sourceMtime": 1782469910104.9478
     },
     {
-      "id": "125e32d8b356fc3ed5e7198a4e3aa4aa73e359e3a988a578a2e6d2981580a191",
+      "id": "70027b7b94ff528091f9dd7985333ef261668050098d91400c75e7611b2a9be4",
       "flowName": "mathMin",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\stdlibCoreService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\stdlibCoreService.spore",
       "lexicalTokens": [
         "math",
         "min",
@@ -7236,14 +7232,14 @@
       "signatureText": "pure flow mathMin(a: Int, b: Int) -> Int",
       "lineStart": 33,
       "lineEnd": 33,
-      "indexedAt": "2026-06-25T11:40:19.776Z",
-      "sourceMtime": 1780651300878.7212
+      "indexedAt": "2026-06-26T11:19:58.968Z",
+      "sourceMtime": 1782469910104.9478
     },
     {
-      "id": "7b5e7dc3e463afcb8593594ac7cb6471ffd3dac39a053ac005cacef815bc4602",
+      "id": "c262f039331fb5c0b87ccbd5512aedcb7ffb10362d6dcf6f862befd32bfc8c9d",
       "flowName": "mathMax",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\stdlibCoreService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\stdlibCoreService.spore",
       "lexicalTokens": [
         "math",
         "max",
@@ -7279,14 +7275,14 @@
       "signatureText": "pure flow mathMax(a: Int, b: Int) -> Int",
       "lineStart": 44,
       "lineEnd": 44,
-      "indexedAt": "2026-06-25T11:40:19.776Z",
-      "sourceMtime": 1780651300878.7212
+      "indexedAt": "2026-06-26T11:19:58.968Z",
+      "sourceMtime": 1782469910104.9478
     },
     {
-      "id": "7f1180cbf9ab14a46e9570cab4d9ba3ad1dbe6d2df64a71c85a5169d91d96c6e",
+      "id": "cf8f02fb20f9dbe419d05721ac5214f2c4614b3f357f0af0f268d147dff62aeb",
       "flowName": "mathClamp",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\stdlibCoreService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\stdlibCoreService.spore",
       "lexicalTokens": [
         "math",
         "clamp",
@@ -7334,14 +7330,14 @@
       "signatureText": "pure flow mathClamp(n: Int, lo: Int, hi: Int) -> Int",
       "lineStart": 55,
       "lineEnd": 55,
-      "indexedAt": "2026-06-25T11:40:19.776Z",
-      "sourceMtime": 1780651300878.7212
+      "indexedAt": "2026-06-26T11:19:58.968Z",
+      "sourceMtime": 1782469910104.9478
     },
     {
-      "id": "6700d47e8913a8d58522dc5a84bbbb33bb4777db32c83151c7422604398c4585",
+      "id": "3f92b01e3929e3ab8ef8192d2d49fbf23ad33b08f4ef99f7868539ae05cc5782",
       "flowName": "stdlibDemo",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\stdlibCoreService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\stdlibCoreService.spore",
       "lexicalTokens": [
         "stdlib",
         "demo",
@@ -7477,14 +7473,14 @@
       "signatureText": "secure flow stdlibDemo(readonly request: Request) -> StdlibResult",
       "lineStart": 70,
       "lineEnd": 70,
-      "indexedAt": "2026-06-25T11:40:19.776Z",
-      "sourceMtime": 1780651300878.7212
+      "indexedAt": "2026-06-26T11:19:58.968Z",
+      "sourceMtime": 1782469910104.9478
     },
     {
-      "id": "07a31ab9763bb2c6f92d4c6326a0842c862623a6eb9ae26f46c0920d3a1dc031",
+      "id": "2284fa0da79272748d96619db2c1396a4cb8de118d9bc52c6d0c876ff6ddca3e",
       "flowName": "isBuiltinType",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\typeRegistryService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\typeRegistryService.spore",
       "lexicalTokens": [
         "is",
         "builtin",
@@ -7509,11 +7505,10 @@
         "type",
         "name",
         "is",
-        "logic",
+        "galerina",
         "built",
         "in",
         "primitive",
-        "logicn",
         "name",
         "int",
         "true",
@@ -7550,14 +7545,14 @@
       "signatureText": "pure flow isBuiltinType(name: String) -> Bool",
       "lineStart": 13,
       "lineEnd": 13,
-      "indexedAt": "2026-06-25T11:40:19.779Z",
-      "sourceMtime": 1780651303685.704
+      "indexedAt": "2026-06-26T11:19:58.969Z",
+      "sourceMtime": 1782469910105.9473
     },
     {
-      "id": "c458430f99611b110c5337159108357daf33b6b6145b110b8eb5d3b4e2c4e141",
+      "id": "9f41e771e7851cf158ad1a6907b66f22b65e06c04aed07557d2df61c90e70459",
       "flowName": "typeCategory",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\typeRegistryService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\typeRegistryService.spore",
       "lexicalTokens": [
         "type",
         "category",
@@ -7634,14 +7629,14 @@
       "signatureText": "pure flow typeCategory(name: String) -> String",
       "lineStart": 30,
       "lineEnd": 30,
-      "indexedAt": "2026-06-25T11:40:19.779Z",
-      "sourceMtime": 1780651303685.704
+      "indexedAt": "2026-06-26T11:19:58.969Z",
+      "sourceMtime": 1782469910105.9473
     },
     {
-      "id": "cb16fbe88dc7fce6b0982e102d2ada48a3cffd79e54324b68cdd4bd5ed3ce7cb",
+      "id": "6bcfb5ccbd6dfffcad139ba78fbc080e9c3c51c0cce23a9da0a25e5ad9ff549f",
       "flowName": "resolveType",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\typeRegistryService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\typeRegistryService.spore",
       "lexicalTokens": [
         "resolve",
         "type",
@@ -7821,14 +7816,14 @@
       "signatureText": "secure flow resolveType(readonly request: Request) -> Response",
       "lineStart": 52,
       "lineEnd": 52,
-      "indexedAt": "2026-06-25T11:40:19.779Z",
-      "sourceMtime": 1780651303685.704
+      "indexedAt": "2026-06-26T11:19:58.969Z",
+      "sourceMtime": 1782469910105.9473
     },
     {
-      "id": "1b6338281e3f9612f0a2c3afe390e9638e4df40191c1503cbfd56c39c7c5a775",
+      "id": "3449332246be69d7a9bc997a1d28f24b5d14ccd9aea196e001d65dc9e941402e",
       "flowName": "countServices",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\v1RcStatusService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\v1RcStatusService.spore",
       "lexicalTokens": [
         "count",
         "services",
@@ -7844,7 +7839,7 @@
         "count",
         "of",
         "live",
-        "lln",
+        "spore",
         "governed",
         "http",
         "services",
@@ -7863,14 +7858,14 @@
       "signatureText": "pure flow countServices() -> Int",
       "lineStart": 8,
       "lineEnd": 8,
-      "indexedAt": "2026-06-25T11:40:19.781Z",
-      "sourceMtime": 1780571969329.2627
+      "indexedAt": "2026-06-26T11:19:58.971Z",
+      "sourceMtime": 1782469910107.465
     },
     {
-      "id": "260873ff4552b5680e2a9c1233275c674734fe1ec7900f2324f5dda74dcc7ca5",
+      "id": "463712cb9c0dd10d85f3020f348d0d6db80054c70540a133f8a089405b619abd",
       "flowName": "runtimePercent",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\v1RcStatusService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\v1RcStatusService.spore",
       "lexicalTokens": [
         "runtime",
         "percent",
@@ -7886,9 +7881,8 @@
         "current",
         "runtime",
         "in",
-        "logic",
+        "galerina",
         "percentage",
-        "logicn",
         "50"
       ],
       "declaredEffects": [],
@@ -7904,14 +7898,14 @@
       "signatureText": "pure flow runtimePercent() -> Int",
       "lineStart": 17,
       "lineEnd": 17,
-      "indexedAt": "2026-06-25T11:40:19.781Z",
-      "sourceMtime": 1780571969329.2627
+      "indexedAt": "2026-06-26T11:19:58.971Z",
+      "sourceMtime": 1782469910107.465
     },
     {
-      "id": "dc2f6ba8c04cc8687c6dd401a844fe2dc0ac0fffc3d6b059cc9134cb3807f400",
+      "id": "e4cc0caf3b5dfdf948ef11ff294aa0a04ceb97540c98a2ed6b44231d4c6fdd6b",
       "flowName": "currentPhase",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\v1RcStatusService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\v1RcStatusService.spore",
       "lexicalTokens": [
         "current",
         "phase",
@@ -7942,14 +7936,14 @@
       "signatureText": "pure flow currentPhase() -> Int",
       "lineStart": 26,
       "lineEnd": 26,
-      "indexedAt": "2026-06-25T11:40:19.781Z",
-      "sourceMtime": 1780571969329.2627
+      "indexedAt": "2026-06-26T11:19:58.971Z",
+      "sourceMtime": 1782469910107.465
     },
     {
-      "id": "4cbf549be0f9ca276066883c3f2b5ea956bb133d3a447e2ebf8b54d522d34bdb",
+      "id": "900573318fe9817bb516f97be701db72dd16b09effc5b6cb70eb89e290b0b336",
       "flowName": "v1RcStatus",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\v1RcStatusService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\v1RcStatusService.spore",
       "lexicalTokens": [
         "v1rc",
         "status",
@@ -7997,7 +7991,7 @@
         "are",
         "from",
         "governed",
-        "lln",
+        "spore",
         "source",
         "services",
         "int",
@@ -8061,9 +8055,8 @@
         "verifier",
         "all",
         "in",
-        "logic",
-        "source",
-        "logicn"
+        "galerina",
+        "source"
       ],
       "declaredEffects": [
         "network.inbound",
@@ -8082,14 +8075,14 @@
       "signatureText": "secure flow v1RcStatus(readonly request: Request) -> RcStatusResult",
       "lineStart": 34,
       "lineEnd": 34,
-      "indexedAt": "2026-06-25T11:40:19.781Z",
-      "sourceMtime": 1780571969329.2627
+      "indexedAt": "2026-06-26T11:19:58.971Z",
+      "sourceMtime": 1782469910107.465
     },
     {
-      "id": "2b9920cdaa5ae46974ac75272c7a30bfedce9d1e34a926e8f5269bdb48021307",
+      "id": "46e327b1a5c84216ed25d09a0f7f756f9178d82e84e2b6b645f16b0fc5948317",
       "flowName": "classifyValue",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\valueClassificationService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\valueClassificationService.spore",
       "lexicalTokens": [
         "classify",
         "value",
@@ -8146,14 +8139,14 @@
       "signatureText": "pure flow classifyValue(typeName: String) -> Int",
       "lineStart": 4,
       "lineEnd": 4,
-      "indexedAt": "2026-06-25T11:40:19.782Z",
+      "indexedAt": "2026-06-26T11:19:58.972Z",
       "sourceMtime": 1780651305388.8225
     },
     {
-      "id": "0eb9807df1c794bdce63cd97f1b025e5aed36e4ec77c28847123dbc99dc359c3",
+      "id": "8cc03fa87463e989df6d0b9320d56e1018fcde0d838d4fa2585dbb848e5a45eb",
       "flowName": "requiresRedaction",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\valueClassificationService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\valueClassificationService.spore",
       "lexicalTokens": [
         "requires",
         "redaction",
@@ -8182,14 +8175,14 @@
       "signatureText": "pure flow requiresRedaction(classification: Int) -> Bool",
       "lineStart": 14,
       "lineEnd": 14,
-      "indexedAt": "2026-06-25T11:40:19.782Z",
+      "indexedAt": "2026-06-26T11:19:58.972Z",
       "sourceMtime": 1780651305388.8225
     },
     {
-      "id": "35413337f04978ab8400a09f3bdcb2012cf1e220f5161860f4d7c1c38febc5a1",
+      "id": "fb1f93ada2c4d2ce140e8bf39cb6459330ab24db06ddf6ddb59ca9b162f5f95f",
       "flowName": "requiresEncryption",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\valueClassificationService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\valueClassificationService.spore",
       "lexicalTokens": [
         "requires",
         "encryption",
@@ -8218,14 +8211,14 @@
       "signatureText": "pure flow requiresEncryption(classification: Int) -> Bool",
       "lineStart": 19,
       "lineEnd": 19,
-      "indexedAt": "2026-06-25T11:40:19.782Z",
+      "indexedAt": "2026-06-26T11:19:58.972Z",
       "sourceMtime": 1780651305388.8225
     },
     {
-      "id": "6e0bb32f44280d87106d3e311ec2b85689c72082f0c831bcd99ebae26471cf4d",
+      "id": "57c3b32a63534bb0cd3f1fb4ba0a2bd2a27f53161950054a80620678726ae0f1",
       "flowName": "classifyData",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\valueClassificationService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\valueClassificationService.spore",
       "lexicalTokens": [
         "classify",
         "data",
@@ -8364,14 +8357,14 @@
       "signatureText": "secure flow classifyData(readonly request: Request) -> Response",
       "lineStart": 24,
       "lineEnd": 24,
-      "indexedAt": "2026-06-25T11:40:19.782Z",
+      "indexedAt": "2026-06-26T11:19:58.972Z",
       "sourceMtime": 1780651305388.8225
     },
     {
-      "id": "2b4b6ba7a26411abee54bc29eff15d355169121ef35f3f0301f9417a36b37196",
+      "id": "3851b26dae76889fd7e95070fe778850dc6b2f27a46f9bb7d0471d47a3768f8d",
       "flowName": "verifyPassword",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\verifyPassword.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\verifyPassword.spore",
       "lexicalTokens": [
         "verify",
         "password",
@@ -8569,14 +8562,14 @@
       "signatureText": "secure flow verifyPassword(readonly request: Request) -> VerifyPasswordResult",
       "lineStart": 9,
       "lineEnd": 9,
-      "indexedAt": "2026-06-25T11:40:19.784Z",
+      "indexedAt": "2026-06-26T11:19:58.973Z",
       "sourceMtime": 1780650804098.3777
     },
     {
-      "id": "df7709087e361b5b4afb89437460e8b01bcd3402dcbf07c51fd891741e29c1cd",
+      "id": "c5149bc6b0b740aaeb6d8461332383a27205460c8108b0cee0ef88dec28d1c0d",
       "flowName": "fixtureHash",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\verifyPasswordService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\verifyPasswordService.spore",
       "lexicalTokens": [
         "fixture",
         "hash",
@@ -8609,14 +8602,14 @@
       "signatureText": "pure flow fixtureHash() -> String",
       "lineStart": 18,
       "lineEnd": 18,
-      "indexedAt": "2026-06-25T11:40:19.785Z",
+      "indexedAt": "2026-06-26T11:19:58.974Z",
       "sourceMtime": 1780571699459.7202
     },
     {
-      "id": "a151b4e1be252cf246467994918d4a1776e6e4152c804c7c690c458e67df69dc",
+      "id": "ff5c7077529aa9c9cc3683b580e7897100446043e76476b974a345962488cb04",
       "flowName": "verifyPassword",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\verifyPasswordService.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\verifyPasswordService.spore",
       "lexicalTokens": [
         "verify",
         "password",
@@ -8712,14 +8705,14 @@
       "signatureText": "secure flow verifyPassword(readonly request: Request) -> Response",
       "lineStart": 25,
       "lineEnd": 25,
-      "indexedAt": "2026-06-25T11:40:19.785Z",
+      "indexedAt": "2026-06-26T11:19:58.974Z",
       "sourceMtime": 1780571699459.7202
     },
     {
-      "id": "cbb865b6b1846b0d0e7134370e0b4f637af08b9389a7fe29161f0d35736ca4b0",
+      "id": "9e02e20acf4915d7f49fd4d1cc8bd325558ba55916e518880328b4db9bf0fb15",
       "flowName": "verifyToken",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\verifyToken.lln",
+      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\verifyToken.spore",
       "lexicalTokens": [
         "verify",
         "token",
@@ -8770,43 +8763,43 @@
       "signatureText": "pure flow verifyToken(token: String) -> VerifyTokenResult",
       "lineStart": 5,
       "lineEnd": 5,
-      "indexedAt": "2026-06-25T11:40:19.786Z",
+      "indexedAt": "2026-06-26T11:19:58.975Z",
       "sourceMtime": 1780571638241.5642
     }
   ],
   "fileHashes": {
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\auditChainService.lln": "f9704f51e0dc0efaca9715e5f323a7109004243d275f19bfbec29e2cfd776a61",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\auditWriterService.lln": "209688bab8b35179321f41743b4ca66c81aaaa16745e24db5cd3a3ea70e85595",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\bytecodeRouterService.lln": "28413f72fc12fc146a766a362362568b321ea2448d46481d7f3063c93bcd5a98",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\capabilityHostService.lln": "2ba30f0061d4a05090e66ffe478bccd8dee598c10d43bb756054d75ea4919a5d",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\capabilityResolverService.lln": "a546fdda1af1a819aae91cdcc2e9926c6dcc0a49f31a3a16e94006aef6847444",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\compilationService.lln": "021a0ed517b180f548bd4350f3a3c114d1b46efff2bbe71626f06923abd38afa",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\createSession.lln": "fab62f72837751edff1e2ec76419ed9d98d0a7c500fe95bdb3e97603b9bef065",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsRouterService.lln": "e02104b1c89f5b5ed731908ea175964a83627ea28f16b00f4617e0fbe8638b1f",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsService.lln": "822b390bdbdbe66d798179f7c9f7f8c81dac679d8bed5458274e9b8fd7892424",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\effectCheckerService.lln": "b0d588cca249750f2e96185c14bd61bd524f38784ad4819ff1723d352a6aa048",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceService.lln": "5634e5b84ecf02940b696082210f52db6ca964a7d792632b51701361645c3780",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceVerifierService.lln": "c368926bd464eda28dbb5444262d958194ea035bf48eea030c22b065b8ac5f68",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\healthCheck.lln": "471051ca5794665ef3e1498640f56676ce8b4546d17412c60c068b6da4dcfcf2",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\manifestVerificationService.lln": "c0d5f35b3590211909f8052341c2935ceb1999c57648e967180b1947d8115bc6",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\physicalHardeningAutoDefault.lln": "a664c023930bc1cdd91b592bda3e6d1b2d7599a1a4cf96f9daf71eb28dc1ebdd",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\physicalHardeningTier1.lln": "1b062c8516dcde0fe6cbb1d36cc401d14270f9a7a4cd6709739222f68e27a3d7",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\physicalHardeningTier2.lln": "bfd762d85d5b422298afd332aa296a395db3d1544d43db53e569d16028a20618",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\proofGraphService.lln": "784eba4b7a7fd188e57235c8c40aa2cce37900d886ce0390550dde6c0596d8b8",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\proofVerifierService.lln": "636406abaaebaceecfe8f271bc12ab20969482d4c12449783505b874eb3e9ef9",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\rateStatus.lln": "0a4ec378f87f4ccbd22037af8255b9d61235017f201639cf41a5cbbfba850570",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routeDispatcherService.lln": "bb7cc3cdd74f76fdfc49e1e36b50cd88ce07ed6d385e5305ca32b210de33b710",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routingPolicyService.lln": "77c5bcde9d850b7a512dac6d75b09aa6bf53a169fab0d4c6b9e9b47194e49f73",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\runtimeProfileService.lln": "d3d31c23990829d214485b1fce24ba27f11eff58fd03f7b773c09c6f9c34c111",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\sovereignTransaction.lln": "d54a48df8d68bfaf572c06a00674c478b123866740b2e8463f8f7397d6dd28c0",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\stdlibCoreService.lln": "4341db1dd7bfd04175fc4b7f80ff11769e803319adfcdf971ca7dff25a01a08e",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\typeRegistryService.lln": "76e1180ac6c003e7046df1a635de334d2584f769128e6bfbbba7bbc5ab7cf043",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\v1RcStatusService.lln": "18e1115d8e9423cfef4cb6f36da6d2b9ab979a1007f44a06eac4613348b74895",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\valueClassificationService.lln": "af7aeca3a7348df8bce641f23dba39469b3decdffe11069428113186248391b2",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\verifyPassword.lln": "265c1188031dfc49289fe46817db24e63eb1c49083851242f49b77c3ebc152fd",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\verifyPasswordService.lln": "9d8c819600c47fd0cf2f783e5ab70e80acf30a7a57e3e89634fed599b2f9fea6",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\verifyToken.lln": "232098eea4eb3358b61c0a710686827551e62a9e37ec4a30f708b6afda76c391"
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\auditChainService.spore": "c2c1c94425fdb6963b267cf5e8574e38ad15b3fc460f692682838bd3fa0c01dd",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\auditWriterService.spore": "209688bab8b35179321f41743b4ca66c81aaaa16745e24db5cd3a3ea70e85595",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\bytecodeRouterService.spore": "28413f72fc12fc146a766a362362568b321ea2448d46481d7f3063c93bcd5a98",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\capabilityHostService.spore": "f81ec57c7e758bd58551ac2239e131ffd9218b53eecf3e778e37d4d35cd4e523",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\capabilityResolverService.spore": "a546fdda1af1a819aae91cdcc2e9926c6dcc0a49f31a3a16e94006aef6847444",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\compilationService.spore": "e479f65d5b81cb9d46158e591d504564572a5cf01094ab733bd2335ce28927e0",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\createSession.spore": "fab62f72837751edff1e2ec76419ed9d98d0a7c500fe95bdb3e97603b9bef065",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsRouterService.spore": "e02104b1c89f5b5ed731908ea175964a83627ea28f16b00f4617e0fbe8638b1f",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsService.spore": "822b390bdbdbe66d798179f7c9f7f8c81dac679d8bed5458274e9b8fd7892424",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\effectCheckerService.spore": "dce886bd038b0cc9d63243288cf9df08ffb1a365a09bf0df83b11899fd53c6a4",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceService.spore": "eec1c6c49e6ab9023710e52d8eb63a4c426af143a531c58b7f7b63dd3a82bee2",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceVerifierService.spore": "43d62aa3a904a3378ec122a3ab8cd519057ff6415e2fe2241b6d6d53669ece30",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\healthCheck.spore": "7346bbd4d85742c3a928232fc49b384c84cc6ccd16c27269120bda929564c143",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\manifestVerificationService.spore": "4c7d126aea307e7d55ece44d38f24c5ddf0793e0fd9f9722370e2e90173ca0e7",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\physicalHardeningAutoDefault.spore": "fc2248f683fd744a2a871ae88d320502bad521a6de8045e2f8215d6fdee84880",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\physicalHardeningTier1.spore": "1b062c8516dcde0fe6cbb1d36cc401d14270f9a7a4cd6709739222f68e27a3d7",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\physicalHardeningTier2.spore": "bfd762d85d5b422298afd332aa296a395db3d1544d43db53e569d16028a20618",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\proofGraphService.spore": "784eba4b7a7fd188e57235c8c40aa2cce37900d886ce0390550dde6c0596d8b8",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\proofVerifierService.spore": "fc90765259616b604c4516069ef6b96e8b9ca6d71c38cc614670ef693ec7b44c",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\rateStatus.spore": "0a4ec378f87f4ccbd22037af8255b9d61235017f201639cf41a5cbbfba850570",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routeDispatcherService.spore": "bc08a87552fa054d869f41198a0084caa054c25bba0cd8ee872f5b9d76115727",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routingPolicyService.spore": "77c5bcde9d850b7a512dac6d75b09aa6bf53a169fab0d4c6b9e9b47194e49f73",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\runtimeProfileService.spore": "d3d31c23990829d214485b1fce24ba27f11eff58fd03f7b773c09c6f9c34c111",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\sovereignTransaction.spore": "d54a48df8d68bfaf572c06a00674c478b123866740b2e8463f8f7397d6dd28c0",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\stdlibCoreService.spore": "06928b42620f0958ad7618084bb3d227f45ac2a66f72e38481e4886686e1640c",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\typeRegistryService.spore": "b1fd3fd869386721ec66f786800ba20068940835a91e549c1c02271b0a25e66b",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\v1RcStatusService.spore": "4cac9fd0d688e0dd40358628eef9a4ca86d46f6735390cc1bbf38f3fb0492eac",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\valueClassificationService.spore": "af7aeca3a7348df8bce641f23dba39469b3decdffe11069428113186248391b2",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\verifyPassword.spore": "265c1188031dfc49289fe46817db24e63eb1c49083851242f49b77c3ebc152fd",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\verifyPasswordService.spore": "9d8c819600c47fd0cf2f783e5ab70e80acf30a7a57e3e89634fed599b2f9fea6",
+    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\verifyToken.spore": "232098eea4eb3358b61c0a710686827551e62a9e37ec4a30f708b6afda76c391"
   },
   "skippedFiles": 31,
-  "integrity": "sha256:34a3b1aa4ca820e31b98b3d3acbf11249271a102ad4bd44e2de8819cb3006d74"
+  "integrity": "sha256:202ae776d1c5c61f7539a2fad6d63a4a0089ab6608d131d8592d7db8c61bcd69"
 }

@@ -4,17 +4,17 @@
 
 ## Overview
 
-`galerina check` reads `galerina.check.json` (or `.logicnrc.json`) from the project root
+`galerina check` reads `galerina.check.json` (or `.galerinarc.json`) from the project root
 and applies it as project-level configuration. All fields are optional — omitting
 a field inherits the built-in default.
 
 ## File locations searched (in order)
 
 1. `{targetDir}/galerina.check.json`
-2. `{targetDir}/.logicnrc.json`
+2. `{targetDir}/.galerinarc.json`
 3. `{targetDir}/galerina.config.json`
 4. `{cwd}/galerina.check.json`
-5. `{cwd}/.logicnrc.json`
+5. `{cwd}/.galerinarc.json`
 
 ## Full schema
 

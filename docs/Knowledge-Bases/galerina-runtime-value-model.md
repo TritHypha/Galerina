@@ -66,9 +66,9 @@ Absence is `None`. Failure is `Err`.
 | Galerina | TypeScript runtime representation |
 |---|---|
 | `unsafe let rawEmail: String` | Plain string, flagged in binding registry as `unsafe`. |
-| `let email: protected Email` | `{ __logicn_protected: true, __type: "Email", value: string }` |
-| `let audit: redacted Email` | `{ __logicn_redacted: true, __type: "Email", value: "[REDACTED]" }` |
-| `let key: SecureString` | `{ __logicn_secure: true, value: string }` with safe display behaviour. |
+| `let email: protected Email` | `{ __galerina_protected: true, __type: "Email", value: string }` |
+| `let audit: redacted Email` | `{ __galerina_redacted: true, __type: "Email", value: "[REDACTED]" }` |
+| `let key: SecureString` | `{ __galerina_secure: true, value: string }` with safe display behaviour. |
 
 `protected` and `redacted` are governance labels, not runtime type names. The
 base type remains the declared domain type, such as `Email` or `PatientId`.
@@ -125,9 +125,9 @@ source code.
 
 - Unsafe bindings are tracked in the binding registry and checked before
   governed sink calls.
-- Protected values use `__logicn_protected` wrappers to prevent accidental
+- Protected values use `__galerina_protected` wrappers to prevent accidental
   `console.log` and unsafe audit serialization.
-- SecureString uses `__logicn_secure` and must display as `[SECURE]`.
+- SecureString uses `__galerina_secure` and must display as `[SECURE]`.
 - Redacted values are safe for logs and audit, but still retain type metadata.
 - Runtime wrappers must never expose raw secret values through `toString()`,
   `valueOf()`, JSON serialization, error messages, or diagnostics.

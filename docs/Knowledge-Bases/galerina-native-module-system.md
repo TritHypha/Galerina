@@ -43,7 +43,7 @@ be accepted as stable:
 {
     "name": "@galerina/payments",
     "version": "1.4.0",
-    "logicnPackageVersion": "1",
+    "galerinaPackageVersion": "1",
     "exports": {
         "./types": {
             "effects": [],

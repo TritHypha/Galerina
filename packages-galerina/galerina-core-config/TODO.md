@@ -20,7 +20,7 @@
 [x] Define ConfigValue discriminated union: string|number|boolean|url|duration|bytes|region|semver|currency|mime-type|array (2026-05-26)
 [x] Define EnvironmentPolicy with allowSecretValuesInReports: false (always false — never expose secret values) (2026-05-26)
 [x] Implement defaultEnvironmentPolicy(mode): EnvironmentPolicy per mode — development/test allow .env; staging/production forbid it (2026-05-26)
-[ ] Upgrade EnvironmentConfig to v0.2: add schemaVersion "logicn.config.environment.v1", policy field
+[ ] Upgrade EnvironmentConfig to v0.2: add schemaVersion "galerina.config.environment.v1", policy field
 [ ] Upgrade SecretEnvironmentReference: add id, source (SecretConfigSource), category, provider, requiredIn[], allowedSinks, deniedSinks, redaction
 [x] Define SecretConfigSource discriminated union: env|vault|kms|runtime (2026-05-26)
 [ ] Define SecretEnvironmentReference.redacted: true marker (never the raw value)

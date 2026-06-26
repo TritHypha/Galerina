@@ -44,9 +44,9 @@ core of the work.
 
 | Site | File:line | Change |
 |------|-----------|--------|
-| return valtype | wat-emitter.ts:2996 | use `logicNTypeToWAT(declaredReturn)` (already maps Int64→i64) not the hardcoded i32 default |
+| return valtype | wat-emitter.ts:2996 | use `galerinaTypeToWAT(declaredReturn)` (already maps Int64→i64) not the hardcoded i32 default |
 | local valtype | wat-emitter.ts:1627 | Int64 annotation → `i64` local |
-| param valtype | wat-emitter.ts:2898-2901 | **already correct** (uses logicNTypeToWAT) ✓ |
+| param valtype | wat-emitter.ts:2898-2901 | **already correct** (uses galerinaTypeToWAT) ✓ |
 | binary-op routing | wat-emitter.ts:1120-1162 | add `INT64_WAT_TYPES` check before the float check; route to i64 ops |
 | i64 op maps | wat-emitter.ts:746-765 (sibling) | `INT64_ARITH_WAT` (+−* → `$spore_checked_*_i64`, / % → `i64.div_s`/`i64.rem_s`) + `INT64_CMP_WAT` (lt_s/…/eq/ne → result i32) |
 | integer literal | wat-emitter.ts:1103-1109 | Int64-typed literal → `i64.const` (needs the inferred/declared type at the node) |

@@ -412,8 +412,8 @@ The summary should include direct comparisons:
 ```json
 {
   "relativePerformance": {
-    "logicnVsNode": 0.8759,
-    "logicnVsPython": 82.51,
+    "galerinaVsNode": 0.8759,
+    "galerinaVsPython": 82.51,
     "nodeVsPython": 94.20
   }
 }

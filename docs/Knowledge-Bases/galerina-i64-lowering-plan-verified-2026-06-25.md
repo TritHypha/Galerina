@@ -21,7 +21,7 @@ not new arithmetic.
   edits reference it and do NOT compile as written). Move to a shared util or `export` + import into
   wat-emitter.ts. **Forbidden fallback:** never substitute a bare `=== 'Int64'` compare — it misses
   `protected Int64` / `redacted Int64` and silently emits i32 (CWE-704). Every type decision runs through
-  `numericBaseType(...)` → `logicNTypeToWAT(...)`.
+  `numericBaseType(...)` → `galerinaTypeToWAT(...)`.
 - **0b. Shared `parseI64Literal(rawText): bigint`** util — sign-descends `unaryExpr('-', numberLiteral)`,
   strips `_` separators, honors `0x/0b/0o`, range-checks `[I64_MIN, I64_MAX]`. Used by **interpreter (1a),
   emitter (3g), foldToInt (4d), and the type-checker** so all four agree on the I64_MIN/I64_MAX edges.
@@ -44,7 +44,7 @@ vacuously on small values).
 - **1e.** async `unaryExpr` int64 case (:1546-1558) → `i64NegChecked` (matches sync :595); makes `-INT64_MIN`
   trap exercisable.
 - **1f.** `matchPattern` int64 arm (:2319-2328) — `BigInt(pattern)`, not `parseInt`.
-- **1g.** `logicNValuesEqual` int64 branch (stdlib.ts:1341-1352) — `a.value === b.value` bigint compare; fixes
+- **1g.** `galerinaValuesEqual` int64 branch (stdlib.ts:1341-1352) — `a.value === b.value` bigint compare; fixes
   match-guard / `List.contains` / dedup fail-OPEN. (Owner decision: mixed int/int64 promote-and-compare vs
   same-tag-only.)
 - **1h.** static Int64 const folding (:903-929/:906-914) — fold to int64 tag from raw, or **fail closed**.
@@ -79,10 +79,10 @@ vacuously on small values).
   from annotated bindings/params (3b).
 - **3d.** `watStackType` i64-call rule (:783-792) — `if (/^\(call \$spore_checked_(add|sub|mul)_i64/...) return 'i64'`
   before the generic match (the existing regex needs a `.`, so `(call $…` defaults to i32).
-- **3e.** return valtype (:2996) — `declaredReturn !== undefined ? logicNTypeToWAT(declaredReturn) : 'i32'`
-  (logicNTypeToWAT:212 maps Int64→i64). WASM rejects i64-over-i32-result (fail-closed) but must land
+- **3e.** return valtype (:2996) — `declaredReturn !== undefined ? galerinaTypeToWAT(declaredReturn) : 'i32'`
+  (galerinaTypeToWAT:212 maps Int64→i64). WASM rejects i64-over-i32-result (fail-closed) but must land
   **atomically** with body lowering.
-- **3f.** `$logicn_result` single-exit local (:2170) — declare `(local $logicn_result i64)` when
+- **3f.** `$galerina_result` single-exit local (:2170) — declare `(local $galerina_result i64)` when
   `declaredReturn==='Int64'`. **Never fix 3e without 3f.**
 - **3g. literal `expectedType` threading (CRITICAL, R21)** — add `expectedType` to `emitWATExpr` (net-new;
   current signature :1032-1036 is 3-arg) and thread it through EVERY operand-emission site (binary operands
@@ -144,13 +144,13 @@ A validation-decline is fail-SAFE; a truncation that VALIDATES is fail-OPEN and 
 | R14 | wat-emitter.ts:509/513 helper injection loops | **HIGH** | new i64 helpers not injected → undefined func → silent walker fallback | 4b |
 | R15 | `$spore_checked_mul_i64` overflow check | **HIGH** | i32 trick / native wrapping mul → fail-OPEN | 4a |
 | R16 | return plumbing channel :1652+:2996 | MED | resultVal i64 but body returns `(i32.const)`: small literal validates & truncates siblings | 4f/3e |
-| R17 | wat-emitter.ts:2170 `$logicn_result` i32 | MED | Int64+postcondition captures i64 tail into i32 local | 3f |
+| R17 | wat-emitter.ts:2170 `$galerina_result` i32 | MED | Int64+postcondition captures i64 tail into i32 local | 3f |
 | R18 | interpreter return coercion block-tail vs EarlyReturn | MED | inconsistent coercion | 1d |
 | R19 | interpreter.ts:906-914 static Int64 const | MED | `static BIG:Int64=…` folded lossy via parseInt | 1h |
 | R20 | wat-emitter.ts:1146-1150 float mixed promotion | MED (latent) | `int64Val + 2.0` → i64 reaches `f64.convert_i32_s` once gate lifts | 4c |
 | R21 | wat-emitter.ts:1103-1109 literal w/o hint | **CRIT** | operand re-emit w/ no hint → `(i32.const)` truncate | 3g |
 | R22 | numberLiteral raw + `unaryExpr('-',num)` | MED | `BigInt(parseInt())` off-by-one at I64_MAX; top-level-only misses I64_MIN | 1a |
-| R23 | stdlib.ts:1341 `logicNValuesEqual` no int64 | MED | equal int64s → false → wrong match arm / failed membership | 1g |
+| R23 | stdlib.ts:1341 `galerinaValuesEqual` no int64 | MED | equal int64s → false → wrong match arm / failed membership | 1g |
 | R24 | interpreter.ts:2319-2328 matchPattern | LOW | int64 subject misses numeric arms (control-flow) | 1f |
 | R25 | interpreter.ts:1546-1558 async unary | LOW | hard-errors Int64 negation; tier asymmetry | 1e |
 | R26 | stdlib.ts:200-202 `numVal`→0 for int64 | LOW | Int64 into Statistics/Math silently → 0; NEVER `Number()` | defer |
@@ -169,11 +169,11 @@ base-type stripping and the I64_MIN/I64_MAX literal edges.
 - **Shared:** `numericBaseType` + `parseI64Literal` extracted; no bare `==='Int64'` anywhere (R6).
 - **Interpreter:** literal/param/return/assign/call-arg coercion lands, `let x:Int64=5` → int64 tag (R11);
   bytecode bails + cache never serves a truncated Int64 (R1, R27); async assign + async unary + matchPattern +
-  logicNValuesEqual + static-const int64-aware or fail-closed (R9, R23-25, R19); no Int64 flow reports
+  galerinaValuesEqual + static-const int64-aware or fail-closed (R9, R23-25, R19); no Int64 flow reports
   executionTier cache/bytecode/sync until proven faithful.
 - **Type-checker:** mixed Int+Int64→Int64 (R12); Int-bodied init rejected for Int64 binding (R13); all three
   tiers agree on every corpus program's type.
-- **Emitter:** params registered + inferExprType Int64-contagious (R5, R7); return valtype + `$logicn_result` +
+- **Emitter:** params registered + inferExprType Int64-contagious (R5, R7); return valtype + `$galerina_result` +
   return plumbing land atomically with `resultVal===watStackType` assert (R3, R16, R17); all FIVE local-set
   sites widen via `localValtypes` (R8); literal `expectedType` threaded everywhere, `>2^31` w/o hint →
   `(unreachable)` (R21); `foldToInt` Int64-aware/skips (R2); unary neg → `$spore_checked_sub_i64` (R4);
@@ -185,7 +185,7 @@ base-type stripping and the I64_MIN/I64_MAX literal edges.
   walker===WASM differential is GREEN including values in (2^53, 2^63)** (else it passes vacuously).
 - **Scope:** `"UInt64"` remains gated. No unsigned `u64-arith`/`div_u`/`rem_u`/`extend_i32_u` in scope.
 - **Owner/integration-gated** (not auto-cleared by tests): the final gate edit; the bytecode-bail strategy
-  (per-site throw vs :2958 pre-scan); the `logicNValuesEqual` mixed int/int64 policy.
+  (per-site throw vs :2958 pre-scan); the `galerinaValuesEqual` mixed int/int64 policy.
 
 ## 5. Test corpus (0014 walker===WASM differential — MUST include (2^53, 2^63) or it is vacuous)
 `I64_MAX=9223372036854775807`, `I64_MIN=-9223372036854775808`. Trap cases must trap identically (same trap,
@@ -229,7 +229,7 @@ analogues); `watStackType` :783 (add an i64-call rule before the generic match);
 numberLiteral :973 stays Int — no global change, would diverge tiers); `recordVarTypes` :350 (register
 annotated params at flow entry — R5); `foldToInt` call :1118 (R2 — Int64-aware or skip); binary-op float
 routing :1144-1145 (add the i64 branch + R20 Int64+Float→`unreachable` guard); local valtype :1627; return
-valtype + `$logicn_result` (find the function-signature emission — the `(result …)` site).
+valtype + `$galerina_result` (find the function-signature emission — the `(result …)` site).
 
 Ready-to-paste i64 checked helpers (mirror the i32 set at :803; add/sub use the sign-bit predicate, **mul
 uses divide-back since no type is wider than i64**, with the div guarded in a NESTED `if a!=0` so it is never

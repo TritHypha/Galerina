@@ -187,7 +187,7 @@ FLOAT_WAT_TYPES; new `watStackType` declares each local with its initialiser's s
 (safe-default i32 → invalid module → walker, never a mistyped valid store); `inferExprType` makes
 float arithmetic contagious. New `tests/wat-f64-runtime-165.test.mjs` (8 tests) instantiates and
 asserts computed results. Suite 53/53 · 4952. EDGE (walker-only, unchanged, no regression): a float
-flow with an `invariant { ensure result … }` output post-condition — `$logicn_result` is i32.
+flow with an `invariant { ensure result … }` output post-condition — `$galerina_result` is i32.
 Tri-Pipe verdict: **Binary-only** (exact IEEE-754 digital arithmetic; floats reach the photonic
 seam only as tensor kernels, a separate path).
 
@@ -441,7 +441,7 @@ aspirational (#102-106). **#211 listener hardening is now in-scope too.** Memory
     native = expected; 14 comparable unit-aligned, 3 flagged-incomparable). Graph re-run (3796 nodes); audit sweep
     clean (provenance green, coverage 0 holes, lint 178 `--soft` baseline). All committed + **pushed to origin/main**.
     Then PAUSED for shutdown.
-  - **Benchmark snapshot CORRECTED 2026-06-22 (`f60a0d9`):** the suite's `normThroughput` OVER-counts logicnPassive
+  - **Benchmark snapshot CORRECTED 2026-06-22 (`f60a0d9`):** the suite's `normThroughput` OVER-counts galerinaPassive
     on reduced-work benches (binary-trees count-only → shows Galerina 273× *faster* than Rust — not credible). Snapshot
     now uses native `operationsPerSecond` (reliable) + Galerina raw rates separately; clean Galerina-vs-native ×slower
     needs workload-equivalence (R&D 0039). See [[galerina-benchmark-suite]]. **All outstanding documents committed**

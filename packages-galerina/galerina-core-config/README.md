@@ -210,7 +210,7 @@ export function defaultEnvironmentPolicy(mode: EnvironmentMode): EnvironmentPoli
 
 ```ts
 export interface EnvironmentConfig {
-    schemaVersion: "logicn.config.environment.v1"
+    schemaVersion: "galerina.config.environment.v1"
     mode: EnvironmentMode
     variables: string[]    // names only, not values
     secrets: SecretEnvironmentReference[]

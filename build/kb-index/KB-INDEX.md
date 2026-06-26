@@ -395,7 +395,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: SPORE-SYNTAX-008, SPORE-SUBSTRATE-001
 - tasks: #34, #145
 - links: [[feedback-owner-gated-means-ask]] [[galerina-social-ecosystem-cloud-native]] [[galerina-wasm-compilation-granularity]] [[galerina-rd-corpus-closure-2026-06-18]]
-- terms: logicn, exporter, governance, owner, never, metrics, shipped, egress, inbound, total, network, gate, read-only, kernel
+- terms: galerina, exporter, governance, owner, never, metrics, shipped, egress, inbound, total, network, gate, read-only, kernel
 
 ## How a Galerina App Builds Today — Artifacts, the Single-`.wasm` Question, and Environment Secrets
 `docs/Knowledge-Bases/galerina-build-output-and-env-secrets.md`
@@ -1825,7 +1825,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: SPORE-PARSE-001, SPORE-HW-004, SPORE-ARCH-001, SPORE-ARCH-002, SPORE-VALUESTATE-003, SPORE-NAME-001, SPORE-INV-004, SPORE-INV-002, SPORE-SUBSTRATE-001
 - tasks: #126, #145, #102, #110, #149, #128, #70, #34
 - links: [[galerina-structured-engineering-metadata]] [[galerina-social-ecosystem-cloud-native]] [[galerina-aot-tricks-verdict]]
-- terms: shipped, worker, owner, wasm, build, aot, session, proven, galerina, real, fail-closed, owner-gated, production, benchmark
+- terms: shipped, worker, owner, wasm, build, galerina, aot, session, proven, real, fail-closed, owner-gated, production, benchmark
 
 ## R&D — a dev-tools (non-production) graph that visualises + logs + audits what each component does (2026-06-25)
 `docs/Knowledge-Bases/galerina-rd-devtools-observability-graph-2026-06-25.md`
@@ -1876,7 +1876,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `docs/Knowledge-Bases/galerina-rd-notes-46-47-50-51-apiserver-spore-2026-06-23.md`
 - codes: SPORE-PRIVACY-002, SPORE-MONO-001, SPORE-GOV-3VL-001, SPORE-INV-002, SPORE-PRIVACY-001
 - tasks: #194, #212, #102, #34
-- terms: notes, cache, spore, net-new, api-server, shipped, kernel, tls, hash, never, signed, digital, blueprint, fail-closed
+- terms: notes, cache, spore, net-new, api-server, shipped, kernel, tls, hash, never, signed, digital, galerina, blueprint
 
 ## Galerina R&D — outcomes + science-paper check (2026-06-24 processing run)
 `docs/Knowledge-Bases/galerina-rd-outcomes-table-2026-06-24.md`
@@ -2078,7 +2078,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 
 ## Galerina Runtime Value Model
 `docs/Knowledge-Bases/galerina-runtime-value-model.md`
-- terms: runtime, value, type, representations, error, galerina, string, status, rules, types, typescript, docs, knowledge-bases, model
+- terms: runtime, value, type, galerina, representations, error, string, status, rules, types, typescript, docs, knowledge-bases, model
 
 ## Secret-hygiene audit — timing side-channels + secret-zeroing (2026-06-24)
 `docs/Knowledge-Bases/galerina-secret-hygiene-audit-2026-06-24.md`
@@ -2143,7 +2143,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 
 ## Galerina Signed Attestation
 `docs/Knowledge-Bases/galerina-signed-attestation.md`
-- terms: attestation, signing, ed25519, stage, signed, runtime, galerina, artifact, hybrid, key, proof, signature, sha-256, algorithm
+- terms: attestation, signing, ed25519, stage, signed, galerina, runtime, artifact, hybrid, key, proof, signature, sha-256, algorithm
 
 ## Galerina Speed Improvements — Phase 8
 `docs/Knowledge-Bases/galerina-speed-improvements-phase-8.md`
@@ -2908,7 +2908,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## Galerina — Value-State Annotations
 `docs/Knowledge-Bases/value-state-annotations.md`
 - codes: SPORE-VALUESTATE-001, SPORE-VALUESTATE-003, SPORE-VALUESTATE-002, SPORE-SECRET-001, SPORE-SECRET-002, SPORE-SECRET-003, SPORE-VALUESTATE-004, SPORE-VALUESTATE-005
-- terms: unsafe, safe, gate, binding, let, mut, flow, value, dimension, rule, state, secret, phase, api
+- terms: unsafe, safe, gate, binding, let, mut, flow, value, dimension, rule, state, secret, galerina, phase
 
 ## Galerina — Value-State Checker
 `docs/Knowledge-Bases/value-state-checker.md`

@@ -638,7 +638,7 @@ Optional full benchmark:
 ```text
 logic.bool_branch_large
 logic.tri_match_large
-logic.logicN_match_large
+logic.galerina_match_large
 
 cpu.integer_large
 cpu.float_large

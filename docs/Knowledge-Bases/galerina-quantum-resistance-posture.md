@@ -46,7 +46,7 @@ proves round-trip + fail-closed + both-required).
 `bridge-attestation.ts` surfaces are now **hybrid Ed25519+ML-DSA-65** too (`signAttestationHybrid`/
 `verifyAttestationHybrid`; `signManifestHybrid`/`verifyAttestationHybrid`; `BridgeAttestation` gained an
 optional `mlDsaSignature`; tower-citizen took `@noble/post-quantum`). All three surfaces now bind a **per-surface
-FIPS-204 domain-separation context** (`logicn.proofgraph.governance.v1` / `.audit.attestation.v1` /
+FIPS-204 domain-separation context** (`galerina.proofgraph.governance.v1` / `.audit.attestation.v1` /
 `.bridge.manifest.v1`) so one ML-DSA key can't be cross-protocol-confused between them — empirically verified
 that a wrong/absent context fails verification. **Downgrade hardening DONE:** the sync `verifyGovernanceSignature`
 now **rejects v2 outright** (was validating only the Ed25519 half); all hybrid verifiers require BOTH halves and

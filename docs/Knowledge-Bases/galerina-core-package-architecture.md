@@ -41,7 +41,7 @@ graph TB
     end
 
     subgraph CLILayer["CLI Layer"]
-        cli["@galerina/core-cli\nlogicn check · galerina fmt · galerina build\nlogicn verify · galerina deploy\nlogicn explain · galerina plan"]
+        cli["@galerina/core-cli\ngalerina check · galerina fmt · galerina build\ngalerina verify · galerina deploy\ngalerina explain · galerina plan"]
     end
 
     core --> compiler

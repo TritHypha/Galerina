@@ -497,7 +497,7 @@ owned / borrowed / shared — ownership/access
 
 The `@state(Confirmed)` lifecycle annotation syntax and `state OrderState { ... }`
 declarations are also deferred. See the future design specification in
-`NOTES TO COVER/z` and `NOTES TO COVER/logicn_value_state_annotation_design.md`.
+`NOTES TO COVER/z` and `NOTES TO COVER/galerina_value_state_annotation_design.md`.
 
 ---
 

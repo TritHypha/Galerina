@@ -15,7 +15,7 @@ re-architecture:
    ONCE at boot/admission, **ATTESTED** (derived from `manifest.hardwareIdentity` behind
    `verifyAttestation`, not the self-asserted `nativeAvailable`), reused as a Passive Execution Plan input.
    Cache-invalidation = re-attestation. Deployment-stable (rides the `planHash` pre-image, `generatedAt`
-   stripped). Binds the **BRIDGE** attestation surface (`logicn.bridge.manifest.v1`), NOT the audit surface.
+   stripped). Binds the **BRIDGE** attestation surface (`galerina.bridge.manifest.v1`), NOT the audit surface.
 2. **D2 — per-tier package topology.** One interface (`InferenceBridge`), three peer packages per component
    (`-binary`/`-hybrid`/`-photonic`), each shipping a `BridgeRegistry`. A loader selects by cached
    `hardware()`: **photonic > hybrid > binary**, fall-through, binary the unconditional floor. Injected via

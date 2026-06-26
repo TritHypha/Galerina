@@ -100,8 +100,8 @@ Expected future systems backend outputs:
 
 ```text
 build/systems/app.runtime
-build/systems/logicn_runtime.runtime
-build/systems/logicn_runtime.interface
+build/systems/galerina_runtime.runtime
+build/systems/galerina_runtime.interface
 build/app.bin
 build/app.source-map.json
 build/app.security-report.json

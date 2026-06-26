@@ -74,7 +74,7 @@ condition → emit only the taken arm; dead arm + locals dropped; nested=true �
 anywhere; fidelity byte-identical interp≡WASM; +6 tests). **▶ Immediate next:** AOT #3 trap-tail simplify ·
 #4 small-pure-flow inlining · #5 cross-flow LTO · #6 PGO (defer). Build order from 0036.
 **0040 WASM single-exit — ✅ SHIPPED `71ec537`** (owner-authorised): straight-line post-condition flows now
-enforce on WASM (capture tail → `$logicn_result` → gate → trap on violation; WASM≡interp); nested/early-return
+enforce on WASM (capture tail → `$galerina_result` → gate → trap on violation; WASM≡interp); nested/early-return
 flows still decline to the interpreter (early-return `br` rewrite = remaining follow-up). Z3 discharge of
 decidable bounds = the 0024 python track (not yet production-wired). **Governance decision-path wiring
 (0025/0035) — concrete blocker IDENTIFIED:** the semantic reference tier IS decided (**WASM i32**, owner
@@ -90,7 +90,7 @@ already avoids it. Nothing to build unless/until the tensor-mask form is added (
 presence bit then).
 Also queued (owner-steer via AskUserQuestion per the new "owner-gated = ask" rule): 0037 separate-presence
 channel · 0031-34B route auto-taint · 0025/0035 governance decision-path wiring · the "Mesh" rename · 0040
-follow-ups (WASM single-exit `$logicn_result` lowering · Z3 discharge of decidable post-condition bounds).
+follow-ups (WASM single-exit `$galerina_result` lowering · Z3 discharge of decidable post-condition bounds).
 
 **R&D worker queue 0036–0044 — ALL DONE + ABSORBED (2026-06-19).** 0036/0037/0038/0039/0041 absorbed earlier
 (`4c2013c`); **0040/0042/0043/0044 absorbed this pass** (see the cont-section below). **0040 was BUILT**
@@ -218,7 +218,7 @@ least once (recorded). Nothing built into production (owner-gated). Summaries:
   → **the throw-at-op refactor is the recommended follow-up** to my value-propagation fix.
 - **0039 — benchmark alignment** (SPEC; production edit owner-gated). Unify matrix-multiply to **n=32 for ALL**
   (tree-walker cap; unit `mul-adds/s`, N=32768); tri-logic = every runtime `runBulkTri(100000)` (`trit-ops/s`);
-  data-query = one query `filterAndCount` at **N=2000** (fix the `logicnOpsPerRun=1000` undercount). Model
+  data-query = one query `filterAndCount` at **N=2000** (fix the `galerinaOpsPerRun=1000` undercount). Model
   harness proves the unit logic + that it introduces no nbody-class false win. **Ready for the hub/owner to apply.**
 - **0041 — memoization.** Win/loss envelope: **5.27× on repeated/pure**, **1.77× SLOWER + unbounded memory on
   unique**, cold = full price, content-addressed store 4.62× for hot static, pure-only/PII preserved (0 leaks).
@@ -256,7 +256,7 @@ bit-exact; photonics only at the calibrated T-MAC offload behind 0028's SNR gate
   single exit (SPORE-INV-002, value never escapes); post-condition flows are EXCLUDED from the bytecode/sync/
   ExecutionGraph/cache fast tiers (three-tier fidelity — they bypass the gate) and DECLINED on WASM (→ the
   governed interpreter). +9 tests incl. a fast-path fidelity check. **Follow-ups (now AskUserQuestion items,
-  not parked):** WASM single-exit `$logicn_result` lowering · Z3 discharge of decidable bounds (0024 track) ·
+  not parked):** WASM single-exit `$galerina_result` lowering · Z3 discharge of decidable bounds (0024 track) ·
   `result.taint`/`result.cardinality` as compile-time governance metadata.
 - **0042 — WDM tri-photonic.** MACHINE-PROVEN (re-ran `wdm-tri-photonic.mjs` exit 0): per-channel `T_k⊙(·)` ==
   shipped `decideAtBoundary`; cross-channel bank fold == `allOf` == `reduce(minTrit)` + K3 deny-annihilator

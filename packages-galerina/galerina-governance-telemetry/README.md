@@ -17,7 +17,7 @@ headroom. That's the unique, non-duplicable value.
 `renderPrometheus(snapshot)` is fenced by construction:
 - only metrics in the fixed schema are emitted;
 - every label **value** must pass a safe-token check (charset + length) or the series is **dropped**
-  and counted in `logicn_telemetry_dropped_series_total` — so a path, email, URL, or raw effect
+  and counted in `galerina_telemetry_dropped_series_total` — so a path, email, URL, or raw effect
   argument can never egress even if a caller passes one;
 - effects are reduced to their **family** (`network.outbound('https://…')` → `network`);
 - flag / status / tier labels outside the closed vocabularies are dropped.

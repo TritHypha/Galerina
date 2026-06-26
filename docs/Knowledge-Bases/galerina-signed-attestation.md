@@ -73,7 +73,7 @@ key-sorted before hashing. JSONL inputs preserve line order.
 The attestation is a YAML document with a stable schema version.
 
 ```yaml
-artifact: logicn.audit.attestation
+artifact: galerina.audit.attestation
 schema_version: "1.0"
 flow: createPatient
 timestamp: 2026-05-30T12:00:00.000Z

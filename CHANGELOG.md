@@ -108,11 +108,11 @@ verified**; the codebase is in a fail-closed, deterministic state. 48/48 package
   still raise `SPORE-NAME-001`/`SPORE-INV-004`). Enforcement holds on **every interpreter tier**: the async
   tree-walker enforces the gate, and a post-condition flow is excluded from the bytecode VM / sync
   fast-path / ExecutionGraph fast-path / pure-flow cache (which return early and would bypass it). On the
-  WASM tier, a **straight-line** post-condition flow now emits a **single-exit gate** (`$logicn_result`):
+  WASM tier, a **straight-line** post-condition flow now emits a **single-exit gate** (`$galerina_result`):
   the tail value is captured, each output post-condition is checked against it, and a violation **traps
   (`unreachable`)** — so output post-conditions are enforced on WASM too, byte-matched to the interpreter
   (WASM ≡ interp at the boundary). A flow with a **nested/early return** still declines to the governed
-  interpreter (the early-return → `br $logicn_exit` rewrite is the remaining follow-up). Previously
+  interpreter (the early-return → `br $galerina_exit` rewrite is the remaining follow-up). Previously
   `ensure result …` was hard-*rejected* at compile time — a fail-safe capability gap, now a working
   fail-closed contract. +14 tests (interpreter fail-closed, three-tier fast-path fidelity, two exported-tier
   bypass fixes, and WASM single-exit enforcement). Follow-ups: early-return single-exit rewrite, Z3 discharge

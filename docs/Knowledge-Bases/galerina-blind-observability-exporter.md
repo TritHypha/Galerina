@@ -25,16 +25,16 @@ counts), never data*. "Log the contract, not the payload" — zero-PII by constr
   sidecar container (shared Pod netns, reads app state via in-process `AuditSink`/localhost IPC) OR compiled into the App
   Kernel as a second listener — **sidecar-first** to keep blast radius separate.
 - **State→metric mapping (~24 rows, each cited to `file:line`).** Rule: where `InferredObservability` already names a
-  metric, reuse that exact name; everything else gets a `logicn_` prefix; counters end `_total`; governance dimensions are
+  metric, reuse that exact name; everything else gets a `galerina_` prefix; counters end `_total`; governance dimensions are
   **labels, never raw values**. Build-time/declared facts → near-static gauges; runtime facts → live counters. **Honesty
   rule:** never let a reader confuse a *declared budget* (promise) with a *runtime measurement* (outcome).
 - **The unique, non-duplicable value = governance-native metrics** (a service mesh already gives RED metrics + 503
-  shedding at HTTP granularity, so those are DEFERRED to the mesh): `logicn_governance_flag` (0/1 per RuntimeManifest mask
-  bit), `logicn_proof_obligations`/`logicn_allowed_effects`, `logicn_effects_observed_total` (by **effect_family**, never
-  args), `logicn_flow_execution_tier_total` (cache|bytecode|sync|egraph|tree), **`logicn_governance_indeterminate_total`**
-  (the K3-INDETERMINATE / unknown→deny stream), `logicn_audit_events_total` (Success|Denied|Failed|Unsafe|Warning),
-  `logicn_surface_unaudited_network_flows` (the risk gauge), `logicn_declared_*` budget gauges,
-  `logicn_inflight_requests`/`logicn_queue_depth`, `logicn_behavioral_fingerprint_info`. CBOR tag **407 ObservabilitySpan**
+  shedding at HTTP granularity, so those are DEFERRED to the mesh): `galerina_governance_flag` (0/1 per RuntimeManifest mask
+  bit), `galerina_proof_obligations`/`galerina_allowed_effects`, `galerina_effects_observed_total` (by **effect_family**, never
+  args), `galerina_flow_execution_tier_total` (cache|bytecode|sync|egraph|tree), **`galerina_governance_indeterminate_total`**
+  (the K3-INDETERMINATE / unknown→deny stream), `galerina_audit_events_total` (Success|Denied|Failed|Unsafe|Warning),
+  `galerina_surface_unaudited_network_flows` (the risk gauge), `galerina_declared_*` budget gauges,
+  `galerina_inflight_requests`/`galerina_queue_depth`, `galerina_behavioral_fingerprint_info`. CBOR tag **407 ObservabilitySpan**
   → OTLP trace span (reserved slot, structure only).
   - *Verifier correction:* `InferredObservability` ships metric **NAMES only** (no value field) — so `latency_p99 /
     error_rate / throughput` are **exporter-DERIVED** from `ExecutionAuditRecord` (start/complete deltas at FLOW
@@ -92,12 +92,12 @@ the name. "sidecar" → a deployment descriptor in the README/Helm chart, not th
 ## Slice 1 SHIPPED 2026-06-20 — read-only exporter (owner green-lit)
 New package **`@galerina/governance-telemetry`** (`packages-galerina/galerina-governance-telemetry/`):
 - **`renderPrometheus(snapshot)`** — PURE serializer of a `GovernanceSnapshot` → Prometheus/OpenMetrics text. Emits the
-  governance-native metrics (`logicn_governance_flag` per mask bit, `logicn_effects_observed_total{effect_family}`,
-  `logicn_flow_execution_tier_total`, **`logicn_governance_indeterminate_total`** = the unknown→deny stream,
-  `logicn_audit_events_total{status}`, `logicn_surface_*`, `logicn_declared_*` budgets,
-  `logicn_behavioral_fingerprint_info`).
+  governance-native metrics (`galerina_governance_flag` per mask bit, `galerina_effects_observed_total{effect_family}`,
+  `galerina_flow_execution_tier_total`, **`galerina_governance_indeterminate_total`** = the unknown→deny stream,
+  `galerina_audit_events_total{status}`, `galerina_surface_*`, `galerina_declared_*` budgets,
+  `galerina_behavioral_fingerprint_info`).
 - **The egress fence (the security heart, closed-by-construction):** every label value must pass a safe-token check
-  (charset + ≤80 len) or the series is **dropped and counted in `logicn_telemetry_dropped_series_total`**; effects are
+  (charset + ≤80 len) or the series is **dropped and counted in `galerina_telemetry_dropped_series_total`**; effects are
   reduced to their **family** (`network.outbound('https://customer-x/…')` → `network`); flag/status/tier labels outside
   the closed vocab are dropped; non-finite numbers dropped. So a path/email/URL/effect-arg can never egress.
 - **`startExporter({port, snapshot, ready})`** — thin read-only HTTP shell: `GET /metrics` (fenced text),

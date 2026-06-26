@@ -328,7 +328,7 @@ Example server file:
 
 ```Galerina
 server AppServer {
-  runtime logicn_native
+  runtime galerina_native
 
   port env "PORT"
 

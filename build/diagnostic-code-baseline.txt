@@ -1,4 +1,4 @@
-# LogicN diagnostic-code conformance baseline
+# Galerina diagnostic-code conformance baseline
 
 codes-with-names: 251 · names: 276
 
@@ -32,23 +32,23 @@ codes-with-names: 251 · names: 276
   INTENT_BEHAVIOR_MISMATCH  ->  LLN-GOV-001 | LLN-INTENT-001
 
 ## V3 SEVERITY-VOCAB — outside {error,warning,info} (17)
-  ERROR            logicn-tower-citizen/src/audit-logger.ts:158
-  INFO             logicn-tower-citizen/src/audit-logger.ts:140
-  INFO             logicn-tower-citizen/src/audit-logger.ts:149
-  INFO             logicn-tower-citizen/src/audit-logger.ts:20
-  INFO             logicn-tower-citizen/src/audit-logger.ts:212
-  INFO             logicn-tower-citizen/src/hybrid-engine.ts:682
-  Low              logicn-ai-agent/src/index.ts:43
-  SECURITY_ALERT   logicn-core-compiler/src/plugin-schema.ts:107
-  SECURITY_ALERT   logicn-core-compiler/src/plugin-schema.ts:115
-  SECURITY_ALERT   logicn-core-compiler/src/plugin-schema.ts:119
-  SECURITY_ALERT   logicn-core-compiler/src/plugin-schema.ts:133
-  SECURITY_ALERT   logicn-core-compiler/src/plugin-schema.ts:76
-  SECURITY_ALERT   logicn-core-compiler/src/plugin-schema.ts:92
-  WARNING          logicn-tower-citizen/src/tower-runtime.ts:131
-  critical         logicn-devtools-pci/src/pci-checker.ts:311
-  critical         logicn-devtools-pci/src/types.ts:26
-  high             logicn-devtools-security/src/audit-runner.ts:175
+  ERROR            galerina-tower-citizen/src/audit-logger.ts:158
+  INFO             galerina-tower-citizen/src/audit-logger.ts:140
+  INFO             galerina-tower-citizen/src/audit-logger.ts:149
+  INFO             galerina-tower-citizen/src/audit-logger.ts:20
+  INFO             galerina-tower-citizen/src/audit-logger.ts:212
+  INFO             galerina-tower-citizen/src/hybrid-engine.ts:682
+  Low              galerina-ai-agent/src/index.ts:43
+  SECURITY_ALERT   galerina-core-compiler/src/plugin-schema.ts:107
+  SECURITY_ALERT   galerina-core-compiler/src/plugin-schema.ts:115
+  SECURITY_ALERT   galerina-core-compiler/src/plugin-schema.ts:119
+  SECURITY_ALERT   galerina-core-compiler/src/plugin-schema.ts:133
+  SECURITY_ALERT   galerina-core-compiler/src/plugin-schema.ts:76
+  SECURITY_ALERT   galerina-core-compiler/src/plugin-schema.ts:92
+  WARNING          galerina-tower-citizen/src/tower-runtime.ts:131
+  critical         galerina-devtools-pci/src/pci-checker.ts:311
+  critical         galerina-devtools-pci/src/types.ts:26
+  high             galerina-devtools-security/src/audit-runner.ts:175
 
 ## V4 MULTI-SEVERITY — one code, >1 severity (7; review for legit dev/prod toggles)
   LLN-ASSUME-002  ->  error | warning

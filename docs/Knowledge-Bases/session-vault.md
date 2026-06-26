@@ -106,7 +106,7 @@ SessionVault.write(
 
 ```galerina
 let session = SessionVault.read(
-  key: request.cookie("__Host-logicn_session")
+  key: request.cookie("__Host-galerina_session")
 )
 
 require session.revoked == false

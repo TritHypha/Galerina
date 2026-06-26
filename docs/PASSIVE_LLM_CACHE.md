@@ -111,7 +111,7 @@ llm_cache PassiveLLMCache {
     include top_p
     include seed
     include context_hash
-    include logicn_version
+    include galerina_version
     include security_policy_hash
   }
 
@@ -201,7 +201,7 @@ Example key material:
   "temperature": 0,
   "topP": 1,
   "seed": 42,
-  "logicnVersion": "0.1.0"
+  "galerinaVersion": "0.1.0"
 }
 ```
 

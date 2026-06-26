@@ -17,7 +17,7 @@ need no runtime change; only NaN warrants a real build.**
 |---|----------|-------------------|----------------------------|-------------|----|
 | 1 | `0.1+0.2 !== 0.3` (one IEEE Number) | **PARTIAL** | Int/Int64 exact+trapping immune; Float is a thin JS-double wrapper (`float +,-,*,/` raw JS, interpreter.ts:176-179); **Decimal type distinct but 0 arithmetic dispatch entries** (declared-but-unwired) | CONSIDER | 78 |
 | 2 | `+` coercion (`"1"+1="11"`, `[]+{}`) | **NO-BY-DESIGN** | `+` not overloaded: SPORE-TYPE-004 rejects mixed String/non-String (type-checker.ts:1520-1584); BINARY_DISPATCH has no `string+int` key; no ToPrimitive | ALREADY-SAFE | 98 |
-| 3 | Loose `==` (`"0"==0`, non-transitive) | **NO-BY-DESIGN** | one typed strict `==`; `logicNValuesEqual` returns false on tag mismatch first (stdlib.ts:1342); no coercion → transitive. Compile-layer: cross-type `==` only warned (non-blocking) | CONSIDER (lint) | 90 |
+| 3 | Loose `==` (`"0"==0`, non-transitive) | **NO-BY-DESIGN** | one typed strict `==`; `galerinaValuesEqual` returns false on tag mismatch first (stdlib.ts:1342); no coercion → transitive. Compile-layer: cross-type `==` only warned (non-blocking) | CONSIDER (lint) | 90 |
 | 4 | NaN: `typeof NaN="number"`, `NaN!==NaN` | **YES** | the one inherited gap: Float `/` raw JS (no checked-div vs Int's i32DivChecked), `0.0/0.0`=NaN/no-trap; Float `==`=JS `===` so `nan==nan`=false survives; **value-state-checker has ZERO NaN/Infinity awareness** | **YES** | 38 |
 | 5 | `typeof null === "object"` | **NO-BY-DESIGN** | no `typeof`; `null`/`undefined` rejected at compile (SPORE-TYPE-008); absence = nominal `Option<T>/None` | ALREADY-SAFE | 98 |
 | 6 | `[1,2,10,21].sort()→[1,10,2,21]` | **NO-BY-DESIGN** | `sort` type-aware: both-string→localeCompare else `numVal(a)-numVal(b)` (stdlib.ts:606-612); ints stay numeric | ALREADY-SAFE | 95 |
@@ -55,4 +55,4 @@ need no runtime change; only NaN warrants a real build.**
   statically. Legible to a human reader and a model: no runtime context to lose, no semicolon to guess.
 
 *Source: workflow `wf_b9fd9ee5-11a` (2026-06-25), verify-before-build against the live compiler. Filed (not
-fixed): the int-vs-int64 `logicNValuesEqual` policy + the mixed-type sort comparator edge.*
+fixed): the int-vs-int64 `galerinaValuesEqual` policy + the mixed-type sort comparator edge.*

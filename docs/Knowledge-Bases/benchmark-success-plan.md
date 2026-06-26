@@ -138,8 +138,8 @@ Benchmark summaries should include:
     "officialScore": "median operations per second"
   },
   "relativePerformance": {
-    "logicnVsNode": 0.8759,
-    "logicnVsPython": 82.51,
+    "galerinaVsNode": 0.8759,
+    "galerinaVsPython": 82.51,
     "nodeVsPython": 94.2
   },
   "runOrder": [

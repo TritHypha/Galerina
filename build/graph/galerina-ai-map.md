@@ -1,8 +1,8 @@
-# LogicN AI Map
+# Galerina AI Map
 
-## logicn-core
+## galerina-core
 
-LogicN / LogicN language package, examples, schemas and prototype CLI.
+Galerina / Galerina language package, examples, schemas and prototype CLI.
 
 Provides:
 - OrderId
@@ -18,12 +18,12 @@ Provides:
 - inspectBuffer
 - ContactFormData
 
-## logicn-core-compiler
+## galerina-core-compiler
 
-LogicN compiler pipeline contracts for parsing, checking, IR, diagnostics and reports.
+Galerina compiler pipeline contracts for parsing, checking, IR, diagnostics and reports.
 
 Provides:
-- LogicNAttestation
+- GalerinaAttestation
 - AttestationInputs
 - AttestationKeyPair
 - signAttestation
@@ -36,9 +36,9 @@ Provides:
 - AuditWriter
 - createAuditWriter
 
-## logicn-core-runtime
+## galerina-core-runtime
 
-LogicN execution engine contracts for checked and compiled runtime execution.
+Galerina execution engine contracts for checked and compiled runtime execution.
 
 Provides:
 - RuntimeMode
@@ -54,9 +54,9 @@ Provides:
 - RuntimeEffectDecision
 - RuntimeReport
 
-## logicn-core-network
+## galerina-core-network
 
-LogicN core network I/O policy, profile, permission and report contracts.
+Galerina core network I/O policy, profile, permission and report contracts.
 
 Provides:
 - AdmissionHealth
@@ -72,9 +72,9 @@ Provides:
 - certVerdict
 - withSideSignal
 
-## logicn-core-security
+## galerina-core-security
 
-Reusable LogicN security primitives, redaction helpers, permission models and security report contracts.
+Reusable Galerina security primitives, redaction helpers, permission models and security report contracts.
 
 Provides:
 - DAGEdgeResult
@@ -90,9 +90,9 @@ Provides:
 - SecretClassification
 - PermissionEffect
 
-## logicn-core-config
+## galerina-core-config
 
-LogicN project configuration, environment mode and policy loading contracts.
+Galerina project configuration, environment mode and policy loading contracts.
 
 Provides:
 - GOVERNANCE_MODES
@@ -101,16 +101,16 @@ Provides:
 - isGovernanceMode
 - ResolvedProjectGovernance
 - resolveProjectGovernance
-- LOGICN_ENVIRONMENT_MODES
+- GALERINA_ENVIRONMENT_MODES
 - EnvironmentMode
 - ConfigDiagnosticSeverity
 - ConfigDiagnostic
 - ProjectPackageReference
 - ProductionPackageOverride
 
-## logicn-core-reports
+## galerina-core-reports
 
-Shared LogicN report schemas and report-writing contracts.
+Shared Galerina report schemas and report-writing contracts.
 
 Provides:
 - ReportSeverity
@@ -126,27 +126,27 @@ Provides:
 - SecurityReport
 - TargetReport
 
-## logicn-core-logic
+## galerina-core-logic
 
-LogicN multi-state logic concepts including Tri, Decision, BoolBoundary and Omni logic.
+Galerina multi-state logic concepts including Tri, Decision, BoolBoundary and Omni logic.
 
 Provides:
 - ComputeMixBenchmarkReport
 - ComputeMixBenchmarkError
 - BoolBoundaryContext
 - BoolBoundaryResult
-- LLN_BOOL_BOUNDARY_001_FAILED_CLOSED
-- LLN_BOOL_BOUNDARY_002_UNKNOWN_REASON
-- LLN_BOOL_BOUNDARY_003_INVALID_INPUT
-- LLN_BOOL_BOUNDARY_004_MISSING_BOUNDARY_NAME
-- LLN_BOOL_BOUNDARY_005_RESULT_MISUSED
+- SPORE_BOOL_BOUNDARY_001_FAILED_CLOSED
+- SPORE_BOOL_BOUNDARY_002_UNKNOWN_REASON
+- SPORE_BOOL_BOUNDARY_003_INVALID_INPUT
+- SPORE_BOOL_BOUNDARY_004_MISSING_BOUNDARY_NAME
+- SPORE_BOOL_BOUNDARY_005_RESULT_MISUSED
 - boolDiagnosticFailedClosed
 - boolDiagnosticUnknownReason
 - boolDiagnosticInvalidInput
 
-## logicn-core-vector
+## galerina-core-vector
 
-LogicN vector value, lane, operation and report concepts.
+Galerina vector value, lane, operation and report concepts.
 
 Provides:
 - VectorDimension
@@ -162,9 +162,9 @@ Provides:
 - VectorReport
 - VectorDiagnosticSeverity
 
-## logicn-core-compute
+## galerina-core-compute
 
-LogicN compute planning, capability and target selection concepts.
+Galerina compute planning, capability and target selection concepts.
 
 Provides:
 - ComputeTarget
@@ -180,9 +180,9 @@ Provides:
 - ComputeDataLocation
 - ComputeDataMovement
 
-## logicn-ai
+## galerina-ai
 
-LogicN AI inference contracts, model metadata, safety policy and reports.
+Galerina AI inference contracts, model metadata, safety policy and reports.
 
 Provides:
 - AiTaskKind
@@ -198,9 +198,9 @@ Provides:
 - AiModelRegistry
 - AiTargetSelection
 
-## logicn-ai-lowbit
+## galerina-ai-lowbit
 
-LogicN low-bit AI inference contracts with BitNet as an optional backend.
+Galerina low-bit AI inference contracts with BitNet as an optional backend.
 
 Provides:
 - LowBitAiTarget
@@ -216,9 +216,9 @@ Provides:
 - LowBitAiBackendAdapter
 - LowBitAiModelReference
 
-## logicn-ai-agent
+## galerina-ai-agent
 
-LogicN supervised AI agent, tool permission, task group and report contracts.
+Galerina supervised AI agent, tool permission, task group and report contracts.
 
 Provides:
 - AgentToolDecision
@@ -232,9 +232,9 @@ Provides:
 - AgentMergePolicy
 - AgentReport
 
-## logicn-ai-neural
+## galerina-ai-neural
 
-LogicN neural network model, layer, inference and training boundary contracts.
+Galerina neural network model, layer, inference and training boundary contracts.
 
 Provides:
 - NeuralTask
@@ -250,9 +250,9 @@ Provides:
 - NeuralReport
 - NeuralDiagnosticSeverity
 
-## logicn-ai-neuromorphic
+## galerina-ai-neuromorphic
 
-LogicN neuromorphic and spiking event model contracts.
+Galerina neuromorphic and spiking event model contracts.
 
 Provides:
 - Spike
@@ -262,101 +262,101 @@ Provides:
 - NeuromorphicPlan
 - NeuromorphicReport
 
-## logicn-data
+## galerina-data
 
-LogicN data processing package umbrella contracts.
+Galerina data processing package umbrella contracts.
 
-## logicn-data-html
+## galerina-data-html
 
-LogicN HTML parse, sanitize, render and search document contracts.
+Galerina HTML parse, sanitize, render and search document contracts.
 
-## logicn-data-search
+## galerina-data-search
 
-LogicN search document, indexing, query and search report contracts.
+Galerina search document, indexing, query and search report contracts.
 
-## logicn-data-archive
+## galerina-data-archive
 
-LogicN archive manifest, integrity and restore report contracts.
+Galerina archive manifest, integrity and restore report contracts.
 
-## logicn-data-db
+## galerina-data-db
 
-LogicN typed database boundary contracts for model, query, command, response, archive and report flows.
+Galerina typed database boundary contracts for model, query, command, response, archive and report flows.
 
-## logicn-data-model
+## galerina-data-model
 
-LogicN typed database model, field classification and storage mapping contracts.
+Galerina typed database model, field classification and storage mapping contracts.
 
-## logicn-data-query
+## galerina-data-query
 
-LogicN typed query, command, parameterisation and database access report contracts.
+Galerina typed query, command, parameterisation and database access report contracts.
 
-## logicn-data-response
+## galerina-data-response
 
-LogicN safe database-model-to-response mapping and response report contracts.
+Galerina safe database-model-to-response mapping and response report contracts.
 
-## logicn-data-json
+## galerina-data-json
 
-LogicN JSON streaming, validation, redaction and archive contracts.
+Galerina JSON streaming, validation, redaction and archive contracts.
 
-## logicn-data-database
+## galerina-data-database
 
-LogicN database export, snapshot, checksum and archive contracts.
+Galerina database export, snapshot, checksum and archive contracts.
 
-## logicn-data-pipeline
+## galerina-data-pipeline
 
-LogicN bounded streaming data pipeline, backpressure and checkpoint contracts.
+Galerina bounded streaming data pipeline, backpressure and checkpoint contracts.
 
-## logicn-data-reports
+## galerina-data-reports
 
-LogicN data processing, HTML, search, archive and pipeline report contracts.
+Galerina data processing, HTML, search, archive and pipeline report contracts.
 
-## logicn-web
+## galerina-web
 
-LogicN browser-safe web package umbrella contracts.
+Galerina browser-safe web package umbrella contracts.
 
-## logicn-web-render
+## galerina-web-render
 
-LogicN typed safe browser rendering pipeline contracts.
+Galerina typed safe browser rendering pipeline contracts.
 
-## logicn-web-state
+## galerina-web-state
 
-LogicN browser client state and state-diff contracts.
+Galerina browser client state and state-diff contracts.
 
-## logicn-web-components
+## galerina-web-components
 
-LogicN typed browser component boundary contracts.
+Galerina typed browser component boundary contracts.
 
-## logicn-web-router
+## galerina-web-router
 
-LogicN browser route and navigation contracts.
+Galerina browser route and navigation contracts.
 
-## logicn-web-events
+## galerina-web-events
 
-LogicN typed browser event contracts.
+Galerina typed browser event contracts.
 
-## logicn-db-postgres
+## galerina-db-postgres
 
-LogicN PostgreSQL adapter contract placeholder.
+Galerina PostgreSQL adapter contract placeholder.
 
-## logicn-db-mysql
+## galerina-db-mysql
 
-LogicN MySQL adapter contract placeholder.
+Galerina MySQL adapter contract placeholder.
 
-## logicn-db-sqlite
+## galerina-db-sqlite
 
-LogicN SQLite adapter contract placeholder.
+Galerina SQLite adapter contract placeholder.
 
-## logicn-db-opensearch
+## galerina-db-opensearch
 
-LogicN OpenSearch adapter contract placeholder.
+Galerina OpenSearch adapter contract placeholder.
 
-## logicn-db-firestore
+## galerina-db-firestore
 
-LogicN Firestore adapter contract placeholder.
+Galerina Firestore adapter contract placeholder.
 
-## logicn-core-photonic
+## galerina-core-photonic
 
-LogicN photonic and wavelength concepts, models, APIs and simulation contracts.
+Galerina photonic and wavelength concepts, models, APIs and simulation contracts.
 
 Provides:
 - Wavelength
@@ -372,9 +372,9 @@ Provides:
 - PhotonicReport
 - defineOpticalSignal
 
-## logicn-target-cpu
+## galerina-target-cpu
 
-LogicN CPU target capability, fallback and execution planning contracts.
+Galerina CPU target capability, fallback and execution planning contracts.
 
 Provides:
 - CpuArchitecture
@@ -390,9 +390,9 @@ Provides:
 - CpuCalibrationSample
 - CpuCalibrationReport
 
-## logicn-cpu-kernels
+## galerina-cpu-kernels
 
-LogicN optimized CPU kernel contracts for scalar, vector, matrix and low-bit workloads.
+Galerina optimized CPU kernel contracts for scalar, vector, matrix and low-bit workloads.
 
 Provides:
 - CpuKernelOperation
@@ -408,9 +408,9 @@ Provides:
 - CpuKernelDiagnosticSeverity
 - CpuKernelDiagnostic
 
-## logicn-target-native
+## galerina-target-native
 
-LogicN future native executable and ABI target planning concepts.
+Galerina future native executable and ABI target planning concepts.
 
 Provides:
 - NativeAbi
@@ -418,31 +418,31 @@ Provides:
 - NativeArtifact
 - NativeTargetReport
 
-## logicn-target-js
+## galerina-target-js
 
-LogicN JavaScript output target planning contracts.
+Galerina JavaScript output target planning contracts.
 
-## logicn-target-wasm
+## galerina-target-wasm
 
-LogicN WebAssembly target planning and output contracts.
+Galerina WebAssembly target planning and output contracts.
 
 Provides:
 - WasmTarget
 - WasmArtefact
 - WasmTargetReport
 
-## logicn-target-gpu
+## galerina-target-gpu
 
-LogicN GPU target planning and output contracts.
+Galerina GPU target planning and output contracts.
 
 Provides:
 - GpuTargetCapability
 - GpuKernelPlan
 - GpuTargetReport
 
-## logicn-target-ai-accelerator
+## galerina-target-ai-accelerator
 
-LogicN NPU, TPU and AI accelerator target planning contracts.
+Galerina NPU, TPU and AI accelerator target planning contracts.
 
 Provides:
 - AiAcceleratorKind
@@ -458,9 +458,9 @@ Provides:
 - AiAcceleratorBackendProfile
 - AiAcceleratorCapability
 
-## logicn-target-photonic
+## galerina-target-photonic
 
-LogicN photonic target backend planning concepts.
+Galerina photonic target backend planning concepts.
 
 Provides:
 - PhotonicActualTarget
@@ -476,9 +476,9 @@ Provides:
 - UnsupportedPhotonicOperation
 - PhotonicSimulationTarget
 
-## logicn-framework-app-kernel
+## galerina-framework-app-kernel
 
-Optional LogicN secure App Kernel: the fixed, non-bypassable governed request pipeline + secure-default route policy resolver. The fusion host for protocol/capability packages.
+Optional Galerina secure App Kernel: the fixed, non-bypassable governed request pipeline + secure-default route policy resolver. The fusion host for protocol/capability packages.
 
 Provides:
 - canonicalJson
@@ -494,9 +494,9 @@ Provides:
 - CapabilitySource
 - CompositionPlan
 
-## logicn-framework-api-server
+## galerina-framework-api-server
 
-LogicN HTTP API-server adapter: a thin node:http transport that buffers the request body under a hard DoS cap and hands every request to the non-bypassable App Kernel. It never pre-empts a kernel gate except the additive body cap.
+Galerina HTTP API-server adapter: a thin node:http transport that buffers the request body under a hard DoS cap and hands every request to the non-bypassable App Kernel. It never pre-empts a kernel gate except the additive body cap.
 
 Provides:
 - DEFAULT_MAX_BODY_BYTES
@@ -509,9 +509,9 @@ Provides:
 - createApiServer
 - listen
 
-## logicn-auth
+## galerina-auth
 
-Standalone LogicN authentication/authorization FACTOR provider: computes the K3 auth/identity verdicts (TLSTP S1 channel/identity via the shipped certGate, the tightened required-auth posture, and scope authorization) that the App Kernel folds at its fixed, non-bypassable admission gate. logicn-auth provides the FACTORS; the App Kernel still decides admission.
+Standalone Galerina authentication/authorization FACTOR provider: computes the K3 auth/identity verdicts (TLSTP S1 channel/identity via the shipped certGate, the tightened required-auth posture, and scope authorization) that the App Kernel folds at its fixed, non-bypassable admission gate. galerina-auth provides the FACTORS; the App Kernel still decides admission.
 
 Provides:
 - scopeVerdict
@@ -521,9 +521,9 @@ Provides:
 - HeaderPresenceOptions
 - headerPresenceVerdict
 
-## logicn-docs
+## galerina-docs
 
-LogicN API documentation generator: emits a valid OpenAPI 3.x document from the App Kernel's governed route table (EffectiveRoutePolicy / RouteDeclaration) and contract metadata. The generated spec documents exactly the gates the kernel enforces — auth, body limits, idempotency, rate limits, and the error contract — and fails closed rather than emit an invalid or misleading governance contract.
+Galerina API documentation generator: emits a valid OpenAPI 3.x document from the App Kernel's governed route table (EffectiveRoutePolicy / RouteDeclaration) and contract metadata. The generated spec documents exactly the gates the kernel enforces — auth, body limits, idempotency, rate limits, and the error contract — and fails closed rather than emit an invalid or misleading governance contract.
 
 Provides:
 - generateOpenApi
@@ -539,9 +539,9 @@ Provides:
 - SecurityRequirementObject
 - HttpOperationKey
 
-## logicn-core-cli
+## galerina-core-cli
 
-LogicN developer command-line interface for checking, building, serving, reporting and running safe tasks.
+Galerina developer command-line interface for checking, building, serving, reporting and running safe tasks.
 
 Provides:
 - parseEnvironment
@@ -557,9 +557,9 @@ Provides:
 - readFile
 - stat
 
-## logicn-core-tasks
+## galerina-core-tasks
 
-Safe typed task runner for LogicN project automation.
+Safe typed task runner for Galerina project automation.
 
 Provides:
 - checkTaskPermissions
@@ -575,9 +575,9 @@ Provides:
 - TaskReport
 - TaskRunReport
 
-## logicn-tools-benchmark
+## galerina-tools-benchmark
 
-LogicN benchmark and diagnostics contracts for logic, compute targets, fallback behaviour and safe reporting.
+Galerina benchmark and diagnostics contracts for logic, compute targets, fallback behaviour and safe reporting.
 
 Provides:
 - BenchmarkMode
@@ -593,9 +593,9 @@ Provides:
 - BenchmarkSubmitPayload
 - DEFAULT_BENCHMARK_CONFIG
 
-## logicn-test
+## galerina-test
 
-The consolidated LogicN test harness — one named, consumable package that runs unit, e2e, conformance (R6) and fidelity-differential (walker ≡ bytecode ≡ WASM) checks against a LogicN workspace.
+The consolidated Galerina test harness — one named, consumable package that runs unit, e2e, conformance (R6) and fidelity-differential (walker ≡ bytecode ≡ WASM) checks against a Galerina workspace.
 
 Provides:
 - parseCounts
@@ -611,9 +611,9 @@ Provides:
 - CheckScope
 - TestCounts
 
-## logicn-devtools-graph-project
+## galerina-devtools-graph-project
 
-LogicN project knowledge graph contracts for package, document, policy and report relationships.
+Galerina project knowledge graph contracts for package, document, policy and report relationships.
 
 Provides:
 - ProjectGraphNodeKind
@@ -629,9 +629,9 @@ Provides:
 - ProjectGraph
 - ProjectGraphWorkspacePackage
 
-## logicn-framework-example-app
+## galerina-framework-example-app
 
-The canonical runnable 'hello, governed world' LogicN app: a governed flow compiled to a signed .wasm, fused into the App Kernel at a route, and served over HTTP. This is the golden template `logicn new app` emits.
+The canonical runnable 'hello, governed world' Galerina app: a governed flow compiled to a signed .wasm, fused into the App Kernel at a route, and served over HTTP. This is the golden template `galerina new app` emits.
 
 Provides:
 - AppEnv
@@ -644,13 +644,13 @@ Provides:
 - createGreetingKernel
 - StartedServer
 
-## logicn-api-protocol-rest
+## galerina-api-protocol-rest
 
 Reference REST protocol-adapter (L3): /src governed flow → fusable .wasm, fused via the App Kernel. Proves the /src → .wasm → fused path end-to-end.
 
-## logicn-substrate-math
+## galerina-substrate-math
 
-Pure substrate-noise math shared by the governance layer: per-lane error probability + von Neumann NMR (N-modular-redundancy) closed form. Zero runtime deps. Single source of truth for the NMR calculus used by both logicn-tower-citizen (substrate-model) and logicn-core-compiler (substrate-inference).
+Pure substrate-noise math shared by the governance layer: per-lane error probability + von Neumann NMR (N-modular-redundancy) closed form. Zero runtime deps. Single source of truth for the NMR calculus used by both galerina-tower-citizen (substrate-model) and galerina-core-compiler (substrate-inference).
 
 Provides:
 - SubstrateMathError
@@ -659,9 +659,9 @@ Provides:
 - singleLaneErrorProbability
 - nmrFailureProbability
 
-## logicn-ext-bridge-quantum
+## galerina-ext-bridge-quantum
 
-LogicN governed bridge for IBM ffsim — out-of-process fermionic quantum simulation under contract, Tower audit lifecycle + attestation
+Galerina governed bridge for IBM ffsim — out-of-process fermionic quantum simulation under contract, Tower audit lifecycle + attestation
 
 Provides:
 - FfsimEnv
@@ -677,7 +677,7 @@ Provides:
 - QuantumOp
 - QUANTUM_OPS
 
-## logicn-inference-bridge-contract
+## galerina-inference-bridge-contract
 
 Neutral Brain/Brawn contract — InferenceBridge, BridgeOp/Result, packed-ternary + fixed-point layout metadata, bridge manifest schema, determinism oracle interface. Zero runtime deps.
 
@@ -695,9 +695,9 @@ Provides:
 - BridgeManifest
 - BridgeAttestation
 
-## logicn-core-economics
+## galerina-core-economics
 
-CostGraph, ValueGraph, and risk-adjusted execution routing for the LogicN platform. Economics is a constraint layer that sits below governance — it can pull the emergency brake on a safe path, but never press the gas pedal on an unsafe one.
+CostGraph, ValueGraph, and risk-adjusted execution routing for the Galerina platform. Economics is a constraint layer that sits below governance — it can pull the emergency brake on a safe path, but never press the gas pedal on an unsafe one.
 
 Provides:
 - ExecutionTarget
@@ -713,9 +713,9 @@ Provides:
 - RiskInputs
 - calculateRiskCost
 
-## logicn-core-sentinel-egress
+## galerina-core-sentinel-egress
 
-LogicN Sentinel Egress — governed audit egress: fixed ring buffer + batched HMAC-chained tamper-evident flush. Citizen Protocol v1.6.
+Galerina Sentinel Egress — governed audit egress: fixed ring buffer + batched HMAC-chained tamper-evident flush. Citizen Protocol v1.6.
 
 Provides:
 - AuditBatch
@@ -726,9 +726,9 @@ Provides:
 - SecurityTrap
 - RingBuffer
 
-## logicn-core-sentinel-io
+## galerina-core-sentinel-io
 
-LogicN Sentinel I/O (LSIO) — deterministic, governed, manifest-driven zero-copy data ingestion with HMAC-SHA256 integrity. Citizen Protocol v1.1.
+Galerina Sentinel I/O (LSIO) — deterministic, governed, manifest-driven zero-copy data ingestion with HMAC-SHA256 integrity. Citizen Protocol v1.1.
 
 Provides:
 - HardenedBorderViolation
@@ -744,9 +744,9 @@ Provides:
 - PhotonicBus
 - MappedBlock
 
-## logicn-core-sentinel-memory
+## galerina-core-sentinel-memory
 
-LogicN Sentinel Memory (LSM) — deterministic fixed-block pool, 128-bit alignment, Compute/Governance segmentation, ternary TPL state buffer. Citizen Protocol v1.2.
+Galerina Sentinel Memory (LSM) — deterministic fixed-block pool, 128-bit alignment, Compute/Governance segmentation, ternary TPL state buffer. Citizen Protocol v1.2.
 
 Provides:
 - SecurityTrap
@@ -762,9 +762,9 @@ Provides:
 - StaticMemoryPool
 - TPLStateBuffer
 
-## logicn-core-sentinel-power
+## galerina-core-sentinel-power
 
-LogicN Sentinel Power (LSP) — thermal/power envelope governor with deterministic kernel down-tiering. Citizen Protocol v1.4.
+Galerina Sentinel Power (LSP) — thermal/power envelope governor with deterministic kernel down-tiering. Citizen Protocol v1.4.
 
 Provides:
 - PowerFault
@@ -776,9 +776,9 @@ Provides:
 - validateEnvelope
 - AEROSPACE_ENVELOPE
 
-## logicn-core-sentinel-state
+## galerina-core-sentinel-state
 
-LogicN Sentinel State (LSS) — atomic, HMAC-verified state snapshots + cold-boot recovery. Citizen Protocol v1.5.
+Galerina Sentinel State (LSS) — atomic, HMAC-verified state snapshots + cold-boot recovery. Citizen Protocol v1.5.
 
 Provides:
 - AtomicWriter
@@ -788,9 +788,9 @@ Provides:
 - Snapshot
 - StateSerializer
 
-## logicn-core-sentinel-time
+## galerina-core-sentinel-time
 
-LogicN Sentinel Time (LST) — deterministic Logical Clock + drift monitor. Cycle-indexed audit timing. Citizen Protocol v1.3.
+Galerina Sentinel Time (LST) — deterministic Logical Clock + drift monitor. Cycle-indexed audit timing. Citizen Protocol v1.3.
 
 Provides:
 - PrecisionFault
@@ -798,9 +798,9 @@ Provides:
 - StabilityEnvelope
 - SynchronizationGate
 
-## logicn-tower-citizen
+## galerina-tower-citizen
 
-LogicN Tower Citizen — TowerRuntime + AuditLogger + PluginSandbox for governed AI inference
+Galerina Tower Citizen — TowerRuntime + AuditLogger + PluginSandbox for governed AI inference
 
 Provides:
 - AiActionProposal
@@ -816,7 +816,7 @@ Provides:
 - StubFp4Bridge
 - createStubRegistry
 
-## logicn-tri-pipe
+## galerina-tri-pipe
 
 The Tri-Pipe capstone: createTriPipeEngine() composes the hardware() capability directive + the photonic backend/router + the governed HybridInferenceEngine into one call, selecting the digital registry and photonic offload by the resolved {binary|hybrid|photonic} tier. Digital is the default; photonic only on a proven net win; fail-closed to binary.
 
@@ -830,9 +830,9 @@ Provides:
 - TriPipeEngine
 - createTriPipeEngine
 
-## logicn-ext-tmf
+## galerina-ext-tmf
 
-LogicN .tmf format engine (Phase 2 #6) — TMX-256 integrity (TriMerkle-XOF/SHAKE256), container, KEM-DEM confidentiality, ML-DSA-65 signing. Crypto-on-core: bit-exact, deterministic.
+Galerina .tmf format engine (Phase 2 #6) — TMX-256 integrity (TriMerkle-XOF/SHAKE256), container, KEM-DEM confidentiality, ML-DSA-65 signing. Crypto-on-core: bit-exact, deterministic.
 
 Provides:
 - MAGIC
@@ -848,9 +848,9 @@ Provides:
 - writeTmf
 - readTmf
 
-## logicn-ext-bridge-bitnet
+## galerina-ext-bridge-bitnet
 
-LogicN governed bridge for Microsoft BitNet.cpp — ternary CPU inference with Tower audit lifecycle
+Galerina governed bridge for Microsoft BitNet.cpp — ternary CPU inference with Tower audit lifecycle
 
 Provides:
 - BitNetModelSpec
@@ -859,7 +859,7 @@ Provides:
 - BitNetBridge
 - createBitNetBridge
 
-## logicn-ext-bridge-cpp
+## galerina-ext-bridge-cpp
 
 Native CPU/GPU execution bridges (BitNet ternary) implementing the Tower InferenceBridge contract — simulator fallback, native addon seam
 
@@ -876,9 +876,9 @@ Provides:
 - selectTernaryBridge
 - createCppBridgeRegistry
 
-## logicn-ext-photonic-emulator
+## galerina-ext-photonic-emulator
 
-LogicN photonic-PPU backend: a physics-faithful (Rung-2) MZI-mesh / micro-ring ternary-MAC emulator + the partition cost-model router behind the neutral Brain/Brawn bridge contract. Digital stays the default; photonic only on a proven net win; fail-closed to digital. EMULATED, not silicon (no measured speedup).
+Galerina photonic-PPU backend: a physics-faithful (Rung-2) MZI-mesh / micro-ring ternary-MAC emulator + the partition cost-model router behind the neutral Brain/Brawn bridge contract. Digital stays the default; photonic only on a proven net win; fail-closed to digital. EMULATED, not silicon (no measured speedup).
 
 Provides:
 - EccDecode
@@ -894,27 +894,27 @@ Provides:
 - NOISY
 - Xorshift32
 
-## logicn-ext-proof-snarkjs
+## galerina-ext-proof-snarkjs
 
-snarkjs Groth16 prover backend for LogicN epilogue { generate_proof zk_snark_receipt }. Phase 1: pure-JS Groth16 circuit over sha256(sourceText + contractHash). Non-core extension — the compiler core never imports this directly.
+snarkjs Groth16 prover backend for Galerina epilogue { generate_proof zk_snark_receipt }. Phase 1: pure-JS Groth16 circuit over sha256(sourceText + contractHash). Non-core extension — the compiler core never imports this directly.
 
 Provides:
 - CIRCUIT_ID
 - computePhase1Proof
 - verifyPhase1Proof
 - Sha256SealBackend
-- LogicNSnarkjsProver
+- GalerinaSnarkjsProver
 - createSnarkjsProver
 - ProverInput
 - ZkProof
 - ProverBackend
 
-## logicn-ext-secrets-vault
+## galerina-ext-secrets-vault
 
-HashiCorp Vault provider for LogicN contract.secrets {} blocks. Implements dual-token ephemeral rotation with zero-downtime handshake. Non-core: vault mechanics live outside the deterministic compiler core.
+HashiCorp Vault provider for Galerina contract.secrets {} blocks. Implements dual-token ephemeral rotation with zero-downtime handshake. Non-core: vault mechanics live outside the deterministic compiler core.
 
 Provides:
-- LogicNSecretsVault
+- GalerinaSecretsVault
 - SecretsRotationManager
 - SECRETS_GATEWAY_WIT
 - SecretCredential
@@ -923,9 +923,9 @@ Provides:
 - SecretHandle
 - VaultClient
 
-## logicn-ext-secrets-tmf
+## galerina-ext-secrets-tmf
 
-OPTIONAL sealed-secrets-on-.tmf layer for LogicN. env.tmf = an encrypted-at-rest replacement for plaintext .env, edited through a governed in-memory-only CLI (no temp file, no $EDITOR, no .swp). Thin orchestration over @logicn/ext-tmf (format/crypto) + the ext-secrets-vault store discipline. No new crypto, no new container bytes; crypto stays Binary (LLN-SUBSTRATE-001). Unsigned-but-encrypted (flags.signed=0); signed root gated on ext-tmf slice 4/#7.
+OPTIONAL sealed-secrets-on-.tmf layer for Galerina. env.tmf = an encrypted-at-rest replacement for plaintext .env, edited through a governed in-memory-only CLI (no temp file, no $EDITOR, no .swp). Thin orchestration over @galerina/ext-tmf (format/crypto) + the ext-secrets-vault store discipline. No new crypto, no new container bytes; crypto stays Binary (SPORE-SUBSTRATE-001). Unsigned-but-encrypted (flags.signed=0); signed root gated on ext-tmf slice 4/#7.
 
 Provides:
 - SecretConfigSource
@@ -941,9 +941,9 @@ Provides:
 - setMlockHook
 - tryMlock
 
-## logicn-governance-telemetry
+## galerina-governance-telemetry
 
-Blind-observability exporter: streams a LogicN app's governance + operational STATE (masks, verdicts, effect-families, counts, declared budgets) to Prometheus/OpenMetrics — never the data it processes. Log the contract, not the payload.
+Blind-observability exporter: streams a Galerina app's governance + operational STATE (masks, verdicts, effect-families, counts, declared budgets) to Prometheus/OpenMetrics — never the data it processes. Log the contract, not the payload.
 
 Provides:
 - GOVERNANCE_FLAGS
@@ -958,9 +958,9 @@ Provides:
 - ExporterOptions
 - ExporterHandle
 
-## logicn-observability
+## galerina-observability
 
-Actuator-style operational observability for a LogicN app: a health/liveness/readiness surface, app metrics (request counts, latencies, error rates), and structured app logs. The app-operator's ops view — distinct from @logicn/governance-telemetry (which exports governance STRUCTURE). Surfaces through the App Kernel as health routes + a metrics collector. Fail-closed, zero ambient authority.
+Actuator-style operational observability for a Galerina app: a health/liveness/readiness surface, app metrics (request counts, latencies, error rates), and structured app logs. The app-operator's ops view — distinct from @galerina/governance-telemetry (which exports governance STRUCTURE). Surfaces through the App Kernel as health routes + a metrics collector. Fail-closed, zero ambient authority.
 
 Provides:
 - HealthStatus
@@ -976,9 +976,9 @@ Provides:
 - instrumentDispatch
 - MetricsAuth
 
-## logicn-hardware-tier
+## galerina-hardware-tier
 
-LogicN Tri-Pipe topology: the cached, attested hardware() capability directive {binary|hybrid|photonic} + the per-tier package loader (photonic > hybrid > binary, fail-closed to binary). Capability preference picks the package; the 0053 per-kernel router still gates actual offload — worst case == binary == today.
+Galerina Tri-Pipe topology: the cached, attested hardware() capability directive {binary|hybrid|photonic} + the per-tier package loader (photonic > hybrid > binary, fail-closed to binary). Capability preference picks the package; the 0053 per-kernel router still gates actual offload — worst case == binary == today.
 
 Provides:
 - Tier
@@ -994,9 +994,9 @@ Provides:
 - GovernanceClass
 - TierProfile
 
-## logicn-devtools-context
+## galerina-devtools-context
 
-Context Receipt generator for LogicN: produces minimal AI-consumable structural summaries from .lln source. 98% token reduction vs raw source while preserving full architectural intent.
+Context Receipt generator for Galerina: produces minimal AI-consumable structural summaries from .spore source. 98% token reduction vs raw source while preserving full architectural intent.
 
 Provides:
 - DEVTOOLS_CONTEXT_VERSION
@@ -1008,9 +1008,9 @@ Provides:
 - FileContextReceipts
 - ReceiptOptions
 
-## logicn-devtools-flowgraph
+## galerina-devtools-flowgraph
 
-Flow graph analysis for LogicN — finds cycles, dead flows, authority escalation, PII leakage paths, and missing audit coverage.
+Flow graph analysis for Galerina — finds cycles, dead flows, authority escalation, PII leakage paths, and missing audit coverage.
 
 Provides:
 - GraphSeverity
@@ -1026,9 +1026,9 @@ Provides:
 - FlowEdge
 - FlowGraph
 
-## logicn-devtools-graph-algorithms
+## galerina-devtools-graph-algorithms
 
-Internal graph data structures and algorithms for the LogicN compiler. Designed for future extraction to lln-graph.
+Internal graph data structures and algorithms for the Galerina compiler. Designed for future extraction to spore-graph.
 
 Provides:
 - bfsPath
@@ -1044,9 +1044,9 @@ Provides:
 - NodeId
 - GraphNode
 
-## logicn-devtools-intelligence
+## galerina-devtools-intelligence
 
-Hybrid BM25 + structural code search for LogicN workspaces. Indexes flows by semantic tokens, effects, economics, and governance metadata. Zero external dependencies — runs fully local.
+Hybrid BM25 + structural code search for Galerina workspaces. Indexes flows by semantic tokens, effects, economics, and governance metadata. Zero external dependencies — runs fully local.
 
 Provides:
 - tokenize
@@ -1062,9 +1062,9 @@ Provides:
 - searchWithIndex
 - IndexedFlow
 
-## logicn-devtools-kb-graph
+## galerina-devtools-kb-graph
 
-Auto-index graph for LogicN Knowledge Base documents
+Auto-index graph for Galerina Knowledge Base documents
 
 Provides:
 - KBGraph
@@ -1077,9 +1077,9 @@ Provides:
 - ScanResult
 - scanKBDirectory
 
-## logicn-devtools-naming
+## galerina-devtools-naming
 
-Naming standard enforcer for LogicN: detects abbreviations, implicit types, missing intent. Promotes Zero-Ambiguity / Maximum-Semantics coding.
+Naming standard enforcer for Galerina: detects abbreviations, implicit types, missing intent. Promotes Zero-Ambiguity / Maximum-Semantics coding.
 
 Provides:
 - DEVTOOLS_NAMING_VERSION
@@ -1092,7 +1092,7 @@ Provides:
 - NamingAuditReport
 - runNamingAudit
 
-## logicn-devtools-package-graph
+## galerina-devtools-package-graph
 
 Per-package boundary-governance graph — internal edges, external-dependency surface, orphan detection, Hardened Border CI gate
 
@@ -1110,9 +1110,9 @@ Provides:
 - FileImport
 - ScannedFile
 
-## logicn-devtools-pci
+## galerina-devtools-pci
 
-PCI DSS 4.0.1 compliance audit for LogicN programs. Static analysis maps PCI requirements to LogicN contract patterns: cardholder data protection (Req 3), transit encryption (Req 4), access control (Req 7), audit logging (Req 10), secure development (Req 6). CI-runnable, no infrastructure needed.
+PCI DSS 4.0.1 compliance audit for Galerina programs. Static analysis maps PCI requirements to Galerina contract patterns: cardholder data protection (Req 3), transit encryption (Req 4), access control (Req 7), audit logging (Req 10), secure development (Req 6). CI-runnable, no infrastructure needed.
 
 Provides:
 - EgressBatch
@@ -1128,7 +1128,7 @@ Provides:
 - DEVTOOLS_PCI_VERSION
 - runPciAudit
 
-## logicn-devtools-project-graph
+## galerina-devtools-project-graph
 
 Graph data structures, algorithms, and runtime reporting for the LogicN platform
 
@@ -1146,9 +1146,9 @@ Provides:
 - reachableSubset
 - TopoResult
 
-## logicn-devtools-provenance
+## galerina-devtools-provenance
 
-Data lineage and provenance tracker for LogicN: maps data sources, transformations, and sinks across a workspace. Visualizes trust boundaries and PII flow paths for compliance and security review.
+Data lineage and provenance tracker for Galerina: maps data sources, transformations, and sinks across a workspace. Visualizes trust boundaries and PII flow paths for compliance and security review.
 
 Provides:
 - FileProvenanceResult
@@ -1164,9 +1164,9 @@ Provides:
 - DataSinkKind
 - TransformKind
 
-## logicn-devtools-security
+## galerina-devtools-security
 
-Security analysis, audit, and testing tools for LogicN programs. Runs all security checks (taint, profiles, governance, hardware, path sandbox, ReDoS guard) and produces structured audit reports. Designed for CI integration — lightweight, no runtime dependency.
+Security analysis, audit, and testing tools for Galerina programs. Runs all security checks (taint, profiles, governance, hardware, path sandbox, ReDoS guard) and produces structured audit reports. Designed for CI integration — lightweight, no runtime dependency.
 
 Provides:
 - SecuritySeverity

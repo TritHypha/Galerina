@@ -48,7 +48,7 @@
 | **crypto-ops** | **Galerina passive ⟨interp⟩** 🖥️ | **19.1K/s** | 274.0/s | 0.0143× (70× slower) | n/a (no Python) | LRU cache warm path (first-call winner: Galerina manifest ⟨interp⟩ at 2.0K/s) |
 | **text-html** | **Galerina passive ⟨interp⟩** 🖥️ | **75.7K/s** | 1.0K/s | 0.0132× (76× slower) | n/a (no Python) | LRU cache warm path (first-call winner: Galerina manifest ⟨interp⟩ at 3.2K/s) |
 | **tri-logic** | ⚠️ not unit-aligned | — | — | — | — | excluded — Galerina main()=runBulkTri(100000) (100k triples / 300k trit-ops) |
-| **data-query** | ⚠️ not unit-aligned | — | — | — | — | excluded — Galerina main()=filterAndCount(1000)+groupByCategory(1000)=2000 record-scans (but logicnOpsPerRun=1000 undercounts) |
+| **data-query** | ⚠️ not unit-aligned | — | — | — | — | excluded — Galerina main()=filterAndCount(1000)+groupByCategory(1000)=2000 record-scans (but galerinaOpsPerRun=1000 undercounts) |
 | **call-chain** | **Galerina passive ⟨interp⟩** 🖥️ | **4.99B/s** | 60.8K/s | 0.00001× (82.1K× slower) | ❌ 0.03× (34.4× slower) | LRU cache warm path (first-call winner: Node.js at 307.73M/s) |
 | **nbody** | **Galerina passive ⟨interp⟩** 🖥️ | **2.24B/s** | 58.5K/s | 0.00003× (38.3K× slower) | ❌ 0.04× (25.4× slower) | LRU cache warm path (first-call winner: Node.js at 123.09M/s) |
 | **json-parse** | **Galerina passive ⟨interp⟩** 🖥️ | **47.30M/s** | 7.4K/s | 0.00016× (6.4K× slower) | ❌ 0.01× (86.3× slower) | LRU cache warm path (first-call winner: Node.js at 3.32M/s) |
@@ -123,8 +123,8 @@
 | matrix-multiply | ⚠️ excluded | cells/s | workload SIZE differs by runtime — Galerina/WASM n=32 (1024 cells, 32³ mul-adds), node/python/rust n=64 (4096 cells, 64³), Deno n=128 (16384 cells). Per-cell work (dot-product length n) also differs, so no shared unit is apples-to-apples until n is unified. |
 | crypto-ops | — legacy | per-call | not centrally normalised (out of scope) |
 | text-html | — legacy | per-call | not centrally normalised (out of scope) |
-| tri-logic | ⚠️ excluded | trit-ops/s | incomparable workloads — Galerina main()=runBulkTri(100000) (100k triples / 300k trit-ops); node/python/rust run nested 9-element truth-table micro-benches plus a separate 10M bulk; logicnOpsPerRun=27000 (≈27 truth-table combos ×1000) corresponds to none of these. Needs a common bulk-N trit-op path on every runtime. |
-| data-query | ⚠️ excluded | records/s | incomparable — Galerina main()=filterAndCount(1000)+groupByCategory(1000)=2000 record-scans (but logicnOpsPerRun=1000 undercounts); node/python run 7 separate query micro-benches nested under results.* with no single representative. Needs a main() recount + a chosen representative query before the numbers compare. |
+| tri-logic | ⚠️ excluded | trit-ops/s | incomparable workloads — Galerina main()=runBulkTri(100000) (100k triples / 300k trit-ops); node/python/rust run nested 9-element truth-table micro-benches plus a separate 10M bulk; galerinaOpsPerRun=27000 (≈27 truth-table combos ×1000) corresponds to none of these. Needs a common bulk-N trit-op path on every runtime. |
+| data-query | ⚠️ excluded | records/s | incomparable — Galerina main()=filterAndCount(1000)+groupByCategory(1000)=2000 record-scans (but galerinaOpsPerRun=1000 undercounts); node/python run 7 separate query micro-benches nested under results.* with no single representative. Needs a main() recount + a chosen representative query before the numbers compare. |
 | call-chain | ✅ aligned | chains/s | all runtimes normalised to one unit |
 | nbody | ✅ aligned | force-evals/s | all runtimes normalised to one unit |
 | json-parse | ✅ aligned | records/s | all runtimes normalised to one unit |
@@ -694,7 +694,7 @@
 
 ### tri-logic ⚠️ (excluded — not unit-aligned)
 
-> incomparable workloads — Galerina main()=runBulkTri(100000) (100k triples / 300k trit-ops); node/python/rust run nested 9-element truth-table micro-benches plus a separate 10M bulk; logicnOpsPerRun=27000 (≈27 truth-table combos ×1000) corresponds to none of these. Needs a common bulk-N trit-op path on every runtime.
+> incomparable workloads — Galerina main()=runBulkTri(100000) (100k triples / 300k trit-ops); node/python/rust run nested 9-element truth-table micro-benches plus a separate 10M bulk; galerinaOpsPerRun=27000 (≈27 truth-table combos ×1000) corresponds to none of these. Needs a common bulk-N trit-op path on every runtime.
 
 | Runtime | Raw reported throughput (native unit — **NOT comparable**) | Wall |
 |---|---|---|
@@ -709,7 +709,7 @@
 
 ### data-query ⚠️ (excluded — not unit-aligned)
 
-> incomparable — Galerina main()=filterAndCount(1000)+groupByCategory(1000)=2000 record-scans (but logicnOpsPerRun=1000 undercounts); node/python run 7 separate query micro-benches nested under results.* with no single representative. Needs a main() recount + a chosen representative query before the numbers compare.
+> incomparable — Galerina main()=filterAndCount(1000)+groupByCategory(1000)=2000 record-scans (but galerinaOpsPerRun=1000 undercounts); node/python run 7 separate query micro-benches nested under results.* with no single representative. Needs a main() recount + a chosen representative query before the numbers compare.
 
 | Runtime | Raw reported throughput (native unit — **NOT comparable**) | Wall |
 |---|---|---|
@@ -910,7 +910,7 @@
 
 **governance-cost: measuring the governance tax:**
 - This benchmark isolates the overhead of the governance layer (ProofGraph + capability checking + audit).
-- Key metric: logicnGoverned/logicnManifest ratio. Current baseline: ~2-3× slower (37% of manifest speed).
+- Key metric: galerinaGoverned/galerinaManifest ratio. Current baseline: ~2-3× slower (37% of manifest speed).
 - Governance overhead sources: ProofGraph construction, GovernanceFlags bitmask, capability lookup, audit event.
 - Target (Phase 30): <1.2× overhead via compile-time governance caching and proof reuse.
 
