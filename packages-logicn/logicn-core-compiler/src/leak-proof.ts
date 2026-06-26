@@ -13,6 +13,8 @@
  */
 
 import type { EffectDiagnostic } from "./effect-checker.js";
+import type { ContractTestSuite } from "./test-generator.js";
+import { sha256Hex } from "./manifest-generator.js";
 
 export type LeakCategory =
   | "tenant-isolation"   // LLN-TENANT-*    — cross-tenant / IDOR (a capability reaching another tenant's scope)
@@ -157,4 +159,90 @@ export function canonicalLeakProof(p: CapabilityLeakProof): string {
     summary: { total: p.summary.total, denies: p.summary.denies, byCategory },
     leaks: [...p.leaks].sort((a, b) => (a.code + JSON.stringify(a.site)).localeCompare(b.code + JSON.stringify(b.site))).map(fld),
   });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────────────────────────
+// TestWitness (RD-0128, note 67) — a deterministic, signable receipt binding one wasm artifact to BOTH
+// its governance leak proof AND its generated contract-test-suite digest. This promotes the comment-only
+// `TestWitness` aspiration into a real type. SIGNING is performed OUT OF BAND by logicn-tower-citizen over
+// `canonicalTestWitness(w)` through the EXISTING hybrid Ed25519+ML-DSA attestation envelope — this module
+// owns only the type, the canonical signing pre-image, and the suite digest (NO crypto here, to keep the
+// dependency direction core-compiler → tower-citizen and never the reverse). First increment: type +
+// digest + canonical pre-image + a deny-by-default vouch predicate. CLI / fuse-loader admission policy /
+// TAP-body fill are deferred follow-on increments.
+// ─────────────────────────────────────────────────────────────────────────────────────────────────
+
+export interface TestWitness {
+  readonly schema: "lln.testwitness.v1";
+  /** The exact wasm artifact this witness vouches for — binds the receipt to one binary (sha256 hex). */
+  readonly wasmSha256: string;
+  /** The governance leak proof. Deny-by-default: a `leak` verdict means the witness records a KNOWN-leaking module — a verifier MUST refuse it (see witnessVouchesClean). */
+  readonly leakProof: CapabilityLeakProof;
+  /** sha256 over the canonical (order-independent) serialization of the generated contract-test obligations. */
+  readonly suiteDigest: string;
+}
+
+/**
+ * Deterministic digest of a ContractTestSuite. The suite's MEANING is the SET of obligations across all five
+ * dimensions, not their emit order, so obligations are sorted before hashing — a changed/added/removed
+ * obligation (id or asserted property) changes the digest; a mere reorder does not. NUL-separated to avoid
+ * id/assertion delimiter collisions.
+ */
+export function testSuiteDigest(suite: ContractTestSuite): string {
+  const ob: string[] = [];
+  for (const c of suite.faultInjection)     ob.push(`fault\0${c.id}\0${c.assertion}`);
+  for (const c of suite.effectEgress)       ob.push(`egress\0${c.id}\0${c.assertion}`);
+  for (const c of suite.capabilityDenial)   ob.push(`deny\0${c.id}\0${c.assertion}`);
+  for (const c of suite.boundary)           ob.push(`bound\0${c.id}\0${c.assertion}`);
+  for (const c of suite.substrateViolation) ob.push(`subst\0${c.id}\0${c.assertion}`);
+  ob.sort();
+  return sha256Hex(ob.join("\n"));
+}
+
+/** Assemble a TestWitness for a wasm artifact. Records the leak proof FAITHFULLY (a `leak` verdict is preserved, never laundered to `clean`). */
+export function buildTestWitness(wasmSha256: string, leakProof: CapabilityLeakProof, suite: ContractTestSuite): TestWitness {
+  return { schema: "lln.testwitness.v1", wasmSha256, leakProof, suiteDigest: testSuiteDigest(suite) };
+}
+
+/**
+ * The canonical signing pre-image — the exact bytes tower-citizen signs and verifies. Embeds the wasm id,
+ * the suite digest, AND the full canonical leak proof, so tampering with ANY of them invalidates the
+ * signature. Stable key order (same discipline as canonicalLeakProof).
+ */
+export function canonicalTestWitness(w: TestWitness): string {
+  return JSON.stringify({
+    schema: w.schema,
+    wasmSha256: w.wasmSha256,
+    suiteDigest: w.suiteDigest,
+    leakProof: canonicalTestWitness_leak(w.leakProof),
+  });
+}
+// Reuse canonicalLeakProof (its own internal sort) for the embedded proof so the pre-image is fully stable.
+function canonicalTestWitness_leak(p: CapabilityLeakProof): string {
+  return canonicalLeakProof(p);
+}
+
+/** sha256 of the canonical pre-image — a convenience digest (the value tower-citizen hashes-then-signs). */
+export function testWitnessDigest(w: TestWitness): string {
+  return sha256Hex(canonicalTestWitness(w));
+}
+
+/**
+ * Deny-by-default admission predicate: vouch for a witness ONLY when it is structurally consistent AND
+ * its leak proof is genuinely CLEAN for the given artifact. A witness whose verdict claims `clean` while
+ * its own summary/leaks show denies is TAMPERED → fail closed (do NOT vouch). This is the predicate the
+ * (deferred) fuse-loader admission policy will gate on; it never fails open.
+ */
+export function witnessVouchesClean(w: TestWitness, expectedWasmSha256: string): boolean {
+  if (!w || w.schema !== "lln.testwitness.v1") return false;
+  if (typeof w.wasmSha256 !== "string" || w.wasmSha256.length === 0) return false;
+  if (typeof expectedWasmSha256 !== "string" || expectedWasmSha256.length === 0) return false;
+  if (w.wasmSha256 !== expectedWasmSha256) return false;               // receipt must bind to THIS artifact
+  if (typeof w.suiteDigest !== "string" || w.suiteDigest.length === 0) return false;
+  const p = w.leakProof;
+  if (!p || p.schema !== "lln.leakproof.v1") return false;
+  if (p.verdict !== "clean") return false;                            // a known-leaking module never vouches
+  if (!p.summary || p.summary.denies !== 0) return false;             // verdict/summary inconsistency = tamper
+  if (!Array.isArray(p.leaks) || p.leaks.some((l) => l.severity === "deny")) return false; // verdict/leaks inconsistency = tamper
+  return true;
 }

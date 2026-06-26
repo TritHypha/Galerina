@@ -113,6 +113,9 @@ export {
 // read to self-patch the exact capability leak. Fail-closed (any deny → module verdict 'leak'); signable.
 export { buildLeakProof, canonicalLeakProof } from "./leak-proof.js";
 export type { CapabilityLeakProof, LeakFinding, LeakCategory, LeakFix, CodeAnchor } from "./leak-proof.js";
+// RD-0128 (note 67): signable TestWitness receipt binding a wasm artifact to its leak proof + test-suite digest.
+export { buildTestWitness, testSuiteDigest, canonicalTestWitness, testWitnessDigest, witnessVouchesClean } from "./leak-proof.js";
+export type { TestWitness } from "./leak-proof.js";
 
 // Execution Graph Kernel — ProofGraph, ExecutionSignature, GraphFingerprint
 // Phase 26B: ImmutableInputSeal, HardwareSealedDispatch, LLN-HW-001/002/003
