@@ -1,5 +1,8 @@
 {
   "packageName": "@logicn/framework-app-kernel",
-  "allowedExternal": [],
+  "allowedExternal": [
+    "@logicn/core-config",
+    "@logicn/tower-citizen"
+  ],
   "note": "Baseline auto-generated. Edit allowedExternal to widen/narrow the border. `--check` fails if an import appears that is not listed here."
 }

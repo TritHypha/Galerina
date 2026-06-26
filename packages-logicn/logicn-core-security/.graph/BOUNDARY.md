@@ -5,17 +5,19 @@
 
 **Status:** ✅ PASS
 
+**Scanned scope:** roots [`src`] · extensions [`.ts`, `.lln`]
+
 ## Summary
 
 | Metric | Count |
 |---|---|
-| Files | 1 |
-| Internal edges | 0 |
+| Files | 14 |
+| Internal edges | 22 |
 | External dependencies | 0 |
 | ├─ Node core | 0 |
 | ├─ Workspace (@logicn/*) | 0 |
 | └─ Third-party | 0 |
-| Orphan files | 0 |
+| Orphan files | 5 |
 
 ## External Dependencies (the Border)
 
@@ -32,7 +34,12 @@ _none_
 No boundary violations. All external imports are within the allowlist.
 
 ## Orphaned Files
-_none_ — every file is reachable from an internal import or entry point.
+- `src/dss/dag-validator.lln`
+- `src/dss/dss-supervisor.lln`
+- `src/dss/epilogue-receipt.lln`
+- `src/dss/mmcp-registry.lln`
+- `src/interim.lln`
 
 ## Entry Points
+- `src/dss/index.lln`
 - `src/index.ts`

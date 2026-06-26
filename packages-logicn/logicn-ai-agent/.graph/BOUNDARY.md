@@ -5,6 +5,8 @@
 
 **Status:** ✅ PASS
 
+**Scanned scope:** roots [`src`] · extensions [`.ts`, `.lln`]
+
 ## Summary
 
 | Metric | Count |

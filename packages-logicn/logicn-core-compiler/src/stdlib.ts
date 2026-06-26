@@ -591,6 +591,32 @@ async function listMethod(
       }
       return LLN_NONE;
     }
+    case "any": {
+      // existential quantifier: true iff the predicate holds for at least one item. A predicate that traps
+      // fails CLOSED (returns the trap), and a NON-bool predicate result fails closed too (never a silent false).
+      const fn = args[0];
+      if (fn === undefined) return { __tag: "bool", value: false };
+      for (const item of items) {
+        const r = await ctx.applyFn(fn, item);
+        if (r.__tag === "runtimeError") return r;
+        if (r.__tag !== "bool") return { __tag: "runtimeError", message: "any: predicate must return Bool" };
+        if (r.value) return { __tag: "bool", value: true };
+      }
+      return { __tag: "bool", value: false };
+    }
+    case "every": {
+      // universal quantifier: true iff the predicate holds for EVERY item (vacuously true for []). A predicate
+      // that traps / returns a non-bool fails CLOSED. (Named `every`, not `all` — `all` is Result.all.)
+      const fn = args[0];
+      if (fn === undefined) return { __tag: "bool", value: true };
+      for (const item of items) {
+        const r = await ctx.applyFn(fn, item);
+        if (r.__tag === "runtimeError") return r;
+        if (r.__tag !== "bool") return { __tag: "runtimeError", message: "every: predicate must return Bool" };
+        if (!r.value) return { __tag: "bool", value: false };
+      }
+      return { __tag: "bool", value: true };
+    }
     case "toList":
     case "toArray":
       return receiver;

@@ -803,6 +803,10 @@ Provides:
 LogicN Tower Citizen — TowerRuntime + AuditLogger + PluginSandbox for governed AI inference
 
 Provides:
+- AiActionProposal
+- AiActionDecision
+- AiGovernanceResult
+- governAiProposal
 - TowerAuditEvent
 - EgressSink
 - AuditFilter
@@ -811,10 +815,6 @@ Provides:
 - StubTernaryBridge
 - StubFp4Bridge
 - createStubRegistry
-- AttestationPolicy
-- AttestationResult
-- attestationHash
-- signManifest
 
 ## logicn-tri-pipe
 
@@ -881,18 +881,18 @@ Provides:
 LogicN photonic-PPU backend: a physics-faithful (Rung-2) MZI-mesh / micro-ring ternary-MAC emulator + the partition cost-model router behind the neutral Brain/Brawn bridge contract. Digital stays the default; photonic only on a proven net win; fail-closed to digital. EMULATED, not silicon (no measured speedup).
 
 Provides:
+- EccDecode
+- eccEncodeNibble
+- eccDecodeNibble
+- eccEncode
+- EccBlockResult
+- eccDecode
 - PhysParams
 - ACT_MAX
 - ENOB_CEILING
 - PHOTONIC
 - NOISY
 - Xorshift32
-- tmacExact
-- analogVarianceClosedForm
-- adcRange
-- quantStep
-- tmacPhotonic
-- N_MAX_VOTES
 
 ## logicn-ext-proof-snarkjs
 

@@ -5,6 +5,8 @@
 
 **Status:** ✅ PASS
 
+**Scanned scope:** roots [`src`] · extensions [`.ts`, `.lln`]
+
 ## Summary
 
 | Metric | Count |
@@ -36,3 +38,4 @@ _none_ — every file is reachable from an internal import or entry point.
 
 ## Entry Points
 - `src/index.ts`
+- `src/server.ts`

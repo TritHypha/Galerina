@@ -1,5 +1,10 @@
 {
   "packageName": "@logicn/tri-pipe",
-  "allowedExternal": [],
+  "allowedExternal": [
+    "@logicn/ext-photonic-emulator",
+    "@logicn/hardware-tier",
+    "@logicn/inference-bridge-contract",
+    "@logicn/tower-citizen"
+  ],
   "note": "Baseline auto-generated. Edit allowedExternal to widen/narrow the border. `--check` fails if an import appears that is not listed here."
 }

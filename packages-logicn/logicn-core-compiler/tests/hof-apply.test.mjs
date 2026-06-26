@@ -78,3 +78,10 @@ test("partition is method-wired: splits by predicate, and fails closed on a trap
   assert.deepEqual(r.items.map((s) => s.items.map((i) => i.value)), [[3, 4], [1, 2]]);
   assert.equal((await run("return xs.partition(boom)", "Array<Array<Int>>")).__tag, "runtimeError");
 });
+
+test("any/every quantifiers (#61): correct, vacuous-true for [], fail-closed on a trap", async () => {
+  assert.equal((await run("return xs.any(gt2)", "Bool")).value, true);    // some >2
+  assert.equal((await run("return xs.every(gt2)", "Bool")).value, false); // not all >2 (1,2 fail)
+  assert.equal((await run("let e: Array<Int> = []\n  return e.every(gt2)", "Bool")).value, true); // vacuous
+  assert.equal((await run("return xs.any(boom)", "Bool")).__tag, "runtimeError"); // a trapping predicate fails closed
+});

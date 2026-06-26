@@ -5,15 +5,17 @@
 
 **Status:** ✅ PASS
 
+**Scanned scope:** roots [`src`] · extensions [`.ts`, `.lln`]
+
 ## Summary
 
 | Metric | Count |
 |---|---|
 | Files | 8 |
 | Internal edges | 12 |
-| External dependencies | 2 |
+| External dependencies | 4 |
 | ├─ Node core | 2 |
-| ├─ Workspace (@logicn/*) | 0 |
+| ├─ Workspace (@logicn/*) | 2 |
 | └─ Third-party | 0 |
 | Orphan files | 0 |
 
@@ -24,7 +26,8 @@
 - `node:crypto`
 
 ### Workspace (@logicn/*)
-_none_
+- `@logicn/inference-bridge-contract`
+- `@logicn/tower-citizen`
 
 ### Third-party
 _none_

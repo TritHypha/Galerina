@@ -5,15 +5,17 @@
 
 **Status:** ✅ PASS
 
+**Scanned scope:** roots [`src`] · extensions [`.ts`, `.lln`]
+
 ## Summary
 
 | Metric | Count |
 |---|---|
 | Files | 1 |
 | Internal edges | 0 |
-| External dependencies | 4 |
+| External dependencies | 7 |
 | ├─ Node core | 4 |
-| ├─ Workspace (@logicn/*) | 0 |
+| ├─ Workspace (@logicn/*) | 3 |
 | └─ Third-party | 0 |
 | Orphan files | 0 |
 
@@ -26,7 +28,9 @@
 - `node:tls`
 
 ### Workspace (@logicn/*)
-_none_
+- `@logicn/core-network`
+- `@logicn/framework-app-kernel`
+- `@logicn/tower-citizen`
 
 ### Third-party
 _none_

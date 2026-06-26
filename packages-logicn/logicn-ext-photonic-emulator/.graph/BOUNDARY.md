@@ -5,15 +5,17 @@
 
 **Status:** ✅ PASS
 
+**Scanned scope:** roots [`src`] · extensions [`.ts`, `.lln`]
+
 ## Summary
 
 | Metric | Count |
 |---|---|
-| Files | 8 |
-| Internal edges | 18 |
-| External dependencies | 0 |
+| Files | 9 |
+| Internal edges | 19 |
+| External dependencies | 1 |
 | ├─ Node core | 0 |
-| ├─ Workspace (@logicn/*) | 0 |
+| ├─ Workspace (@logicn/*) | 1 |
 | └─ Third-party | 0 |
 | Orphan files | 0 |
 
@@ -23,7 +25,7 @@
 _none_
 
 ### Workspace (@logicn/*)
-_none_
+- `@logicn/inference-bridge-contract`
 
 ### Third-party
 _none_

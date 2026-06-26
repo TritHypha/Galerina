@@ -5,12 +5,14 @@
 
 **Status:** ✅ PASS
 
+**Scanned scope:** roots [`src`] · extensions [`.ts`, `.lln`]
+
 ## Summary
 
 | Metric | Count |
 |---|---|
-| Files | 20 |
-| Internal edges | 46 |
+| Files | 23 |
+| Internal edges | 53 |
 | External dependencies | 6 |
 | ├─ Node core | 3 |
 | ├─ Workspace (@logicn/*) | 2 |

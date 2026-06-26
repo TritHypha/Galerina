@@ -1,6 +1,8 @@
 {
   "packageName": "@logicn/ext-bridge-quantum",
   "allowedExternal": [
+    "@logicn/inference-bridge-contract",
+    "@logicn/tower-citizen",
     "node:child_process",
     "node:crypto"
   ],

@@ -5,15 +5,17 @@
 
 **Status:** ✅ PASS
 
+**Scanned scope:** roots [`src`] · extensions [`.ts`, `.lln`]
+
 ## Summary
 
 | Metric | Count |
 |---|---|
 | Files | 9 |
 | Internal edges | 16 |
-| External dependencies | 4 |
+| External dependencies | 6 |
 | ├─ Node core | 4 |
-| ├─ Workspace (@logicn/*) | 0 |
+| ├─ Workspace (@logicn/*) | 2 |
 | └─ Third-party | 0 |
 | Orphan files | 0 |
 
@@ -26,7 +28,8 @@
 - `node:url`
 
 ### Workspace (@logicn/*)
-_none_
+- `@logicn/core-tasks`
+- `@logicn/devtools-graph-project`
 
 ### Third-party
 _none_

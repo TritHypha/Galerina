@@ -5,15 +5,17 @@
 
 **Status:** ✅ PASS
 
+**Scanned scope:** roots [`src`] · extensions [`.ts`, `.lln`]
+
 ## Summary
 
 | Metric | Count |
 |---|---|
 | Files | 3 |
 | Internal edges | 2 |
-| External dependencies | 0 |
+| External dependencies | 4 |
 | ├─ Node core | 0 |
-| ├─ Workspace (@logicn/*) | 0 |
+| ├─ Workspace (@logicn/*) | 4 |
 | └─ Third-party | 0 |
 | Orphan files | 0 |
 
@@ -23,7 +25,10 @@
 _none_
 
 ### Workspace (@logicn/*)
-_none_
+- `@logicn/ext-photonic-emulator`
+- `@logicn/hardware-tier`
+- `@logicn/inference-bridge-contract`
+- `@logicn/tower-citizen`
 
 ### Third-party
 _none_

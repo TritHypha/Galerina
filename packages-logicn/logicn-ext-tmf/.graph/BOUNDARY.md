@@ -5,16 +5,18 @@
 
 **Status:** ✅ PASS
 
+**Scanned scope:** roots [`src`] · extensions [`.ts`, `.lln`]
+
 ## Summary
 
 | Metric | Count |
 |---|---|
 | Files | 6 |
 | Internal edges | 8 |
-| External dependencies | 1 |
+| External dependencies | 3 |
 | ├─ Node core | 1 |
 | ├─ Workspace (@logicn/*) | 0 |
-| └─ Third-party | 0 |
+| └─ Third-party | 2 |
 | Orphan files | 0 |
 
 ## External Dependencies (the Border)
@@ -26,7 +28,8 @@
 _none_
 
 ### Third-party
-_none_
+- `@noble/ciphers`
+- `@noble/post-quantum`
 
 ## Governance
 No boundary violations. All external imports are within the allowlist.

@@ -1,6 +1,9 @@
 {
   "packageName": "@logicn/framework-api-server",
   "allowedExternal": [
+    "@logicn/core-network",
+    "@logicn/framework-app-kernel",
+    "@logicn/tower-citizen",
     "node:crypto",
     "node:http",
     "node:https",
