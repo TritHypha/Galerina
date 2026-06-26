@@ -287,3 +287,60 @@ test("a .fuse.json whose wasmSha256 disagrees with the signed manifest is reject
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+// ── 6 — H3/H4 (#49): an injected hybridVerifier verifies a HYBRID (Ed25519+ML-DSA-65) manifest at load ──
+test("injected hybridVerifier is honored fail-closed for a HYBRID manifest", async () => {
+  // Build a demo whose manifest carries a HYBRID signature (algorithm Ed25519+ML-DSA-65, signature ed|mldsa).
+  // The verifier is INJECTED (the kernel stays PQ-crypto-free); the test drives the verdict it returns.
+  const mkHybrid = () => {
+    const { root, pkg } = copyDemo();
+    const keyId = "hybridkey0000001";
+    const manifestPath = join(pkg, "dist", "my-custom-api-rest.lmanifest.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+    const { governanceSignature: _drop, ...withoutSig } = manifest;
+    const governanceSignature = { algorithm: "Ed25519+ML-DSA-65", keyId, signature: "ZWQ=|bWxkc2E=", signedAt: new Date().toISOString() };
+    writeFileSync(manifestPath, JSON.stringify({ ...withoutSig, governanceSignature }, null, 2));
+    return { root, pkg, keyId, withoutSig };
+  };
+
+  // (a) "verified" → admitted as SIGNED without allowUnsigned; verifier gets the exact canonical bytes + sig.
+  { const { root, pkg, keyId, withoutSig } = mkHybrid();
+    try {
+      let seen;
+      const component = await fusePackage(pkg, { warn: () => {}, hybridVerifier: (inp) => { seen = inp; return "verified"; } });
+      assert.equal(component.invoke("main"), 200);
+      assert.equal(seen.keyId, keyId);
+      assert.equal(seen.signature, "ZWQ=|bWxkc2E=");
+      assert.match(seen.algorithm, /ML-DSA/i);
+      // BOTH halves signed the same RFC-8785 body — for an untagged sig that is the legacy pretty-JSON.
+      assert.equal(Buffer.from(seen.signingInput).toString("utf8"), JSON.stringify(withoutSig, null, 2));
+    } finally { rmSync(root, { recursive: true, force: true }); } }
+
+  // (b) "invalid" → the loader THROWS (tamper), fail-closed.
+  { const { root, pkg } = mkHybrid();
+    try {
+      await assert.rejects(() => fusePackage(pkg, { warn: () => {}, hybridVerifier: () => "invalid" }), /LLN-FUSE-HYBRID-INVALID/);
+    } finally { rmSync(root, { recursive: true, force: true }); } }
+
+  // (c) a THROWING verifier fails closed.
+  { const { root, pkg } = mkHybrid();
+    try {
+      await assert.rejects(() => fusePackage(pkg, { warn: () => {}, hybridVerifier: () => { throw new Error("boom"); } }), /LLN-FUSE-HYBRID-ERROR/);
+    } finally { rmSync(root, { recursive: true, force: true }); } }
+
+  // (d) "unverifiable" → treated as UNSIGNED: refused without allowUnsigned, admitted with it.
+  { const { root, pkg } = mkHybrid();
+    try {
+      await assert.rejects(() => fusePackage(pkg, { requireSignature: true, warn: () => {}, hybridVerifier: () => "unverifiable" }), /LLN-FUSE-UNSIGNED/);
+      const c = await fusePackage(pkg, { allowUnsigned: true, warn: () => {}, hybridVerifier: () => "unverifiable" });
+      assert.equal(c.invoke("main"), 200);
+    } finally { rmSync(root, { recursive: true, force: true }); } }
+
+  // (e) NO verifier injected → hybrid stays UNVERIFIED → unsigned (prior behaviour) + a loud warn.
+  { const { root, pkg } = mkHybrid();
+    try {
+      const { warn, lines } = capturingWarn();
+      await assert.rejects(() => fusePackage(pkg, { requireSignature: true, warn }), /LLN-FUSE-UNSIGNED/);
+      assert.ok(lines.some((l) => l.includes("LLN-FUSE-HYBRID-UNVERIFIED")), "must warn hybrid-unverified when no verifier is injected");
+    } finally { rmSync(root, { recursive: true, force: true }); } }
+});

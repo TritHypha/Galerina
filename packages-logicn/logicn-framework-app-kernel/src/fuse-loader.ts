@@ -191,7 +191,35 @@ export interface FusePackageOptions {
     readonly sourceHash: string;
     readonly keyId?: string | undefined;
   }) => { readonly ok: boolean; readonly code?: string; readonly reason?: string };
+
+  /**
+   * H3/H4 (#49) — INJECTED hybrid (Ed25519+ML-DSA-65) manifest-signature verifier. The kernel verifies the
+   * classical Ed25519 half itself but stays PQ-crypto-dependency-free (a lean load-bearing TCB), so a
+   * deployment injects the post-quantum half — same pattern as {@link revocationCheck}. Called ONLY for a
+   * manifest carrying a hybrid signature (algorithm `Ed25519+ML-DSA-65`, signature `<ed-b64>|<mldsa-b64>`).
+   * The injected verifier MUST verify BOTH halves over `signingInput` (the exact canonical bytes the signer
+   * covered — both halves sign the SAME RFC-8785 body, no ProofGraph envelope) against the trusted key(s) for
+   * `keyId`, returning:
+   *   - `"verified"`     — both halves verified ⇒ the manifest is admitted as signed;
+   *   - `"invalid"`      — a present hybrid signature FAILED to verify (tamper) ⇒ the loader THROWS (fail-closed);
+   *   - `"unverifiable"` — the verifier cannot decide (no key for keyId / malformed) ⇒ treated as UNSIGNED
+   *                        (refused under requireSignature, admitted only where unsigned is already permitted).
+   * When omitted, a hybrid signature stays UNVERIFIED-HERE → "unsigned" (the prior behaviour) with a loud warn.
+   */
+  readonly hybridVerifier?: HybridManifestVerifier;
 }
+
+/** Injected post-quantum (hybrid) manifest-signature verifier — see {@link FusePackageOptions.hybridVerifier}. */
+export type HybridManifestVerifier = (input: {
+  readonly keyId: string;
+  readonly algorithm: string;
+  /** The exact bytes BOTH signature halves were computed over (the RFC-8785 canonical manifest body). */
+  readonly signingInput: Uint8Array;
+  /** The combined `<ed-b64>|<mldsa-b64>` signature string from `governanceSignature.signature`. */
+  readonly signature: string;
+  readonly governanceDir: string | undefined;
+  readonly packageDir: string;
+}) => "verified" | "invalid" | "unverifiable";
 
 /**
  * Builds the host import group a single capability grants. Returns a namespace name
@@ -327,6 +355,7 @@ function verifyManifestSignature(
   governanceDir: string | undefined,
   packageDir: string,
   warn: (m: string) => void,
+  hybridVerifier?: HybridManifestVerifier,
 ): "verified" | "unsigned" {
   const { crypto, fs, path } = node;
   const sigField = manifestObj["governanceSignature"];
@@ -360,7 +389,25 @@ function verifyManifestSignature(
     const sigAlgo = typeof sig["sigAlgorithm"] === "string" ? (sig["sigAlgorithm"] as string).toLowerCase() : "";
     const looksHybrid = algoStr.includes("ml-dsa") || algoStr.includes("mldsa") || sigStr.includes("|") || sigAlgo.includes("v2");
     if (looksHybrid) {
-      warn(`LLN-FUSE-HYBRID-UNVERIFIED: manifest carries a HYBRID PQ signature (algorithm '${String(algorithm)}') that this loader cannot verify without an injected hybrid verifier — treating as UNVERIFIED (REFUSED under requireSignature; admitted only where unsigned packages are already permitted). Full hybrid verification at the fuse loader is TODO #36.`);
+      // H3/H4 (#49): if the host injected a hybrid verifier, USE it — verify both halves over the exact
+      // canonical bytes the signer covered (the same RFC-8785 body the Ed25519 path reconstructs). Fail-closed:
+      // a present-but-INVALID hybrid signature THROWS (tamper), an UNVERIFIABLE one falls through to unsigned.
+      if (hybridVerifier !== undefined && typeof keyId === "string" && typeof signature === "string") {
+        const { governanceSignature: _omit, ...withoutSig } = manifestObj;
+        const signingInput = utf8(manifestSigningInput(withoutSig, sig));
+        let verdict: "verified" | "invalid" | "unverifiable";
+        try {
+          verdict = hybridVerifier({ keyId, algorithm: String(algorithm), signingInput, signature, governanceDir, packageDir });
+        } catch (e) {
+          return fuseError("LLN-FUSE-HYBRID-ERROR", `injected hybrid verifier errored for keyId '${keyId}': ${(e as Error).message}`);
+        }
+        if (verdict === "verified") return "verified";
+        if (verdict === "invalid") {
+          return fuseError("LLN-FUSE-HYBRID-INVALID", `HYBRID manifest signature FAILED to verify (keyId '${keyId}') — manifest may be tampered`);
+        }
+        // "unverifiable" → fall through to the warn + "unsigned" path below (no key / undecidable).
+      }
+      warn(`LLN-FUSE-HYBRID-UNVERIFIED: manifest carries a HYBRID PQ signature (algorithm '${String(algorithm)}') that this loader cannot verify without an injected hybrid verifier — treating as UNVERIFIED (REFUSED under requireSignature; admitted only where unsigned packages are already permitted). Inject FusePackageOptions.hybridVerifier to verify it at load (#49).`);
     }
     return "unsigned";
   }
@@ -532,7 +579,7 @@ async function loadAndVerifyPackage(
   }
 
   // ── Gate 2: signature state (caller decides the unsigned policy) ─────────────
-  const signature = verifyManifestSignature(node, manifestObj, opts.governanceDir, dir, warn);
+  const signature = verifyManifestSignature(node, manifestObj, opts.governanceDir, dir, warn, opts.hybridVerifier);
   const sigField = manifestObj["governanceSignature"];
   const keyId =
     sigField !== null && typeof sigField === "object" && typeof (sigField as Record<string, unknown>)["keyId"] === "string"
