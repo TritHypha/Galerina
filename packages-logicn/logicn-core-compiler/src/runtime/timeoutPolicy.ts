@@ -49,7 +49,8 @@ export function parseTimeoutConfig(
 
   for (const child of timeoutsSection.children ?? []) {
     if (child.kind === "identifier" && child.value !== undefined) {
-      const v = child.value;
+      // Real ASTs encode each decl line as "decl:<text>"; synthetic nodes use the bare text.
+      const v = child.value.startsWith("decl:") ? child.value.slice("decl:".length) : child.value;
 
       // Match "deadline <N> seconds" or "deadline <N> ms" patterns
       if (v.startsWith("deadline")) {
@@ -104,7 +105,9 @@ function findContractSection(
   for (const child of contractNode.children ?? []) {
     if (
       (child.kind === "contractSetDecl" || child.kind === "identifier") &&
-      child.value === sectionName
+      // The parser emits sub-blocks as "<name>:block" (e.g. "timeouts:block"); older synthetic
+      // call sites use the bare name. Match both so real corpus ASTs are not silently dropped.
+      (child.value === sectionName || child.value === `${sectionName}:block`)
     ) {
       return child;
     }

@@ -54,9 +54,14 @@ export function parseRetryPolicy(
     if (child.kind !== "identifier" || child.value === undefined) {
       continue;
     }
+    // Real ASTs encode each decl line as "decl:<text>"; synthetic nodes use the bare text. The parser also
+    // tokenizes dotted effect names with spaces ("database . read"); collapse them back so the leading
+    // "<effect> attempts …" pattern matches (dots only occur in dotted effect names in this grammar).
+    const declText = (child.value.startsWith("decl:") ? child.value.slice("decl:".length) : child.value)
+      .replace(/\s*\.\s*/g, ".");
 
     // Encoded as "<effect> attempts <N> strategy <strategy> [delay <N> ms]"
-    const effectMatch = child.value.match(
+    const effectMatch = declText.match(
       /^(\w[\w.]*)\s+attempts\s+(\d+)(?:\s+strategy\s+(none|linear|exponential_backoff))?(?:\s+delay\s+(\d+(?:\.\d+)?)\s*(ms|seconds?))?/i,
     );
 
@@ -131,7 +136,9 @@ function findContractSection(
   for (const child of contractNode.children ?? []) {
     if (
       (child.kind === "contractSetDecl" || child.kind === "identifier") &&
-      child.value === sectionName
+      // The parser emits sub-blocks as "<name>:block" (e.g. "retries:block"); older synthetic
+      // call sites use the bare name. Match both so real corpus ASTs are not silently dropped.
+      (child.value === sectionName || child.value === `${sectionName}:block`)
     ) {
       return child;
     }

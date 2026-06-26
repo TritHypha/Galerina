@@ -75,7 +75,9 @@ export function parseLimitConfig(
     if (child.kind !== "identifier" || child.value === undefined) {
       continue;
     }
-    const v = child.value.toLowerCase();
+    // Real ASTs encode each decl line as "decl:<text>"; synthetic nodes use the bare text.
+    const raw = child.value.startsWith("decl:") ? child.value.slice("decl:".length) : child.value;
+    const v = raw.toLowerCase();
 
     // "max request size <N> <unit>"
     const reqMatch = v.match(LIMIT_REQUEST_SIZE_RE);
@@ -167,7 +169,9 @@ function findContractSection(
   for (const child of contractNode.children ?? []) {
     if (
       (child.kind === "contractSetDecl" || child.kind === "identifier") &&
-      child.value === sectionName
+      // The parser emits sub-blocks as "<name>:block" (e.g. "limits:block"); older synthetic
+      // call sites use the bare name. Match both so real corpus ASTs are not silently dropped.
+      (child.value === sectionName || child.value === `${sectionName}:block`)
     ) {
       return child;
     }
