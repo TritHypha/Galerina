@@ -1,6 +1,7 @@
 # RD-0135 — TritMesh database scaling limits (AZT honesty bar)
 
 - **Date:** 2026-06-26 · **Status:** ⏸ **DEFERRED (owner hold — do NOT action yet)**
+- **ZT score:** 6/10 (R&D-direction soundness under the AZT honesty bar — 7–10 sound · 5–7 doable-with-care · 3–5 risky · 0–3 fail-open). Honest analysis — enumerates real physical ceilings instead of claiming "infinite" (the AZT bar done right) — but out-of-Galerina-domain (TritMesh DB) and the RD-0132 taxonomy is forward-vision. Sound only while the scope fence holds: do NOT fold TritMesh scaling claims into Galerina positioning.
 - **Domain:** **TritMesh** (the separate DATABASE/umbrella brand — NOT Galerina the compiler; tracked here only
   because the owner grouped it with the deferred-R&D notes). · **Source:** `notes/72-tritmesh-limits.md`
 

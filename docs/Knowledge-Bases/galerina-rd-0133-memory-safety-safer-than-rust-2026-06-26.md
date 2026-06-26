@@ -1,6 +1,7 @@
 # RD-0133 — Galerina memory-safety: "as-safe-or-safer than Rust" positioning
 
 - **Date:** 2026-06-26 · **Status:** ⏸ **DEFERRED (owner hold — do NOT action yet)** · **Roadmap task:** #65
+- **ZT score:** 8/10 (R&D-direction soundness under the AZT honesty bar — 7–10 sound · 5–7 doable-with-care · 3–5 risky · 0–3 fail-open). Honesty fix, not a build: retiring the 4 emitter-less `SPORE-MEMORY-001/002/003/007` codes *removes* a false-gate (a fail-open appearance), and memory-safety-by-value-semantics is real (no raw pointers, WASM sandbox). Net ZT *improvement* — only drops if the story is documented without actually retiring the dead codes.
 - **Source:** owner note (2026-06-26) + `notes/70-beyond-1-bit.md` context · **TODO:** `notes/TODO-deferred-rd-memory-safety-and-beyond-1bit.md`
 
 ## Thesis (verified)

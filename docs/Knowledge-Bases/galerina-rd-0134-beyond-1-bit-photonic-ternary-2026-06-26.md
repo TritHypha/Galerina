@@ -1,6 +1,7 @@
 # RD-0134 — "Beyond 1-bit": photonic ternary {−1,0,+1} AI compute
 
 - **Date:** 2026-06-26 · **Status:** ⏸ **DEFERRED (owner hold — do NOT action yet)**
+- **ZT score:** 5/10 (R&D-direction soundness under the AZT honesty bar — 7–10 sound · 5–7 doable-with-care · 3–5 risky · 0–3 fail-open). ZT-positive core: the analog/photonic lane can only False-DENY, never False-ALLOW (fail-safe by construction). But the source's "millions-×/zero-electrical" claims are RD-0130-refuted overclaims that must be stripped, and it is hardware-gated/aspirational — sound only with the honesty fence applied.
 - **Source:** `notes/70-beyond-1-bit.md` + `notes/71.beyond-1bit.md`
 
 ## Summary

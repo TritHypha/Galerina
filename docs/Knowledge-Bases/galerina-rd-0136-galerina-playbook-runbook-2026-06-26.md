@@ -1,6 +1,7 @@
 # RD-0136 — Galerina Playbook + Runbook (operational docs design)
 
 - **Date:** 2026-06-26 · **Status:** ⏸ **DEFERRED (owner hold — do NOT action yet)**
+- **ZT score:** 4/10 (R&D-direction soundness under the AZT honesty bar — 7–10 sound · 5–7 doable-with-care · 3–5 risky · 0–3 fail-open). Risky as-framed: the Runbook half leans on RD-0130-refuted hardware ops (CHERI silicon bootstrapping, photonic MZI recalibration, lane −1 isolation) — aspirational, not buildable. Only the governance/compliance Playbook + *software* degrade-only fallback is real; rises to ~7 if the doc is fenced to that buildable half.
 - **Source:** `notes/74-playbook-runbook.md`
 
 ## Summary
