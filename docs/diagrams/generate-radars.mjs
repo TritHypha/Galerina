@@ -21,6 +21,9 @@ const SERIES_COLORS = {
   "Galerina + SQL":      "#e8590c",
   "Galerina + TritMesh": "#9c36b5",
   "Std ORM (Py/Node)": "#868e96",
+  "BitNet (Silicon)": "#0078d4",   // Microsoft blue — electronic 1.58-bit ternary
+  "GPU FP16": "#9c36b5",           // mainstream PyTorch/CUDA stack
+  "Python + PyTorch": "#0ca678",   // teal — DL framework tier (quantization, GPU)
 };
 
 const charts = [
@@ -127,11 +130,31 @@ const charts = [
     file: "radar-9-data-science.svg",
     title: "9 · Data Science",
     subtitle: "Galerina governs the data; Python/R crunch it",
-    axes: ["PII Protection", "Data Eng", "Data Analysis", "Machine Learning", "Data Viz", "Domain Expertise"],
+    // "Machine Learning" dropped (it lives on chart 10) → "Reproducibility": deterministic, contract-pinned
+    // pipelines are a governance strength; notebook-driven Python/R workflows are famously hard to reproduce.
+    axes: ["PII Protection", "Data Eng", "Data Analysis", "Reproducibility", "Data Viz", "Domain Expertise"],
     series: {
-      Galerina: [10, 4, 3, 4, 2, 9],   // governance/PII/domain-contracts strong; crunching/viz ecosystem thin
-      Python: [3, 9, 10, 10, 8, 5],
-      R:      [2, 5, 9, 6, 9, 4],
+      Galerina: [10, 4, 3, 9, 2, 9],   // governance/PII/domain-contracts/reproducibility strong; crunching/viz thin
+      Python: [3, 9, 10, 4, 8, 5],
+      R:      [2, 5, 9, 4, 9, 4],
+    },
+  },
+  {
+    // The BitNet chart (notes/71-beyond-1bit): Microsoft's "1-bit" LLM is really a 1.58-bit TERNARY net
+    // ({−1,0,+1}) — the exact substrate Galerina is built on. Galerina is deliberately WEAK on pure 1-bit
+    // binary (photonic Tri encodes phase/amplitude, not a single binary level) and ecosystem-thin, but
+    // native-strong on ternary logic, wavelength (WDM) parallelism, passive optical compute, and governed
+    // inference. Scores are positioning (the photonic axes are roadmap, like charts 4/6), shown honestly.
+    file: "radar-10-AI-ML-NuroNet.svg",
+    title: "10 · AI / ML / Neural Nets",
+    subtitle: "ternary-native AI · photonic axes (WDM, passive compute) are planned, not built yet",
+    axes: ["1-bit Binary", "Ternary Logic", "Photonic WDM*", "Passive Compute*", "Governed AI", "Model Ecosystem"],
+    series: {
+      Galerina:           [2, 10, 9, 8, 10, 2],   // can't do pure 1-bit; native ternary + optical + governed
+      "BitNet (Silicon)": [9, 9, 0, 6, 2, 5],      // king of low-bit ternary on electronic ALUs; no optics
+      "GPU FP16":         [5, 2, 0, 1, 2, 10],      // mature stack, power-hungry float matmul
+      Python:             [3, 2, 0, 1, 3, 10],      // native lang alone — ecosystem-rich, no low-bit/ternary on its own
+      "Python + PyTorch": [6, 3, 0, 1, 2, 10],      // DL framework adds int8/quant + GPU; ternary still research-only
     },
   },
 ];
@@ -151,7 +174,9 @@ const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 function svg(chart) {
   const n = chart.axes.length;
   const parts = [];
-  parts.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" font-family="system-ui,Segoe UI,Roboto,sans-serif">`);
+  // width/height="100%" + preserveAspectRatio: when the file is opened standalone it fills the
+  // viewport (no longer renders tiny); when embedded as <img> the viewBox ratio drives the size.
+  parts.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" font-family="system-ui,Segoe UI,Roboto,sans-serif">`);
   parts.push(`<rect width="${W}" height="${H}" fill="#ffffff"/>`);
   parts.push(`<text x="${CX}" y="34" text-anchor="middle" font-size="22" font-weight="700" fill="#1a1a1a">${esc(chart.title)}</text>`);
   parts.push(`<text x="${CX}" y="56" text-anchor="middle" font-size="13" fill="#666">${esc(chart.subtitle)}</text>`);
