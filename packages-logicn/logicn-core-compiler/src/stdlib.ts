@@ -510,8 +510,10 @@ async function listMethod(
   const items = receiver.items;
   switch (method) {
     case "length":
-    case "count":
       return { __tag: "int", value: items.length };
+    // NOTE: `count` is NOT aliased to length here — it falls through to the predicate-aware case below
+    // (count() = length, count(pred) = #matching). Aliasing it here made count(pred) silently return the
+    // TOTAL (the predicate ignored), and left the real count case dead/unreachable.
     case "isEmpty":
       return { __tag: "bool", value: items.length === 0 };
     case "first":
@@ -584,6 +586,7 @@ async function listMethod(
       if (fn === undefined) return LLN_NONE;
       for (const item of items) {
         const result = await ctx.applyFn(fn, item);
+        if (result.__tag === "runtimeError") return result;   // fail-closed: a predicate that traps aborts find (not a silent None)
         if (result.__tag === "bool" && result.value) return mkSome(item);
       }
       return LLN_NONE;
@@ -603,6 +606,7 @@ async function listMethod(
       const flat: LogicNValue[] = [];
       for (const item of items) {
         const r = await ctx.applyFn(fn, item);
+        if (r.__tag === "runtimeError") return r;   // fail-closed: a mapper that traps aborts (not a list of nulls)
         if (r.__tag === "list") flat.push(...r.items);
         else flat.push(r);
       }
@@ -625,8 +629,15 @@ async function listMethod(
     case "sortBy": {
       const fn = args[0];
       if (fn === undefined) return receiver;
-      // For sortBy, we need to resolve keys first then sort
-      const withKeys = await Promise.all(items.map(async (item) => ({ item, key: await ctx.applyFn(fn, item) })));
+      // Resolve keys SEQUENTIALLY — applyFn runs an inner fn on the shared interpreter scope stack, so a
+      // concurrent Promise.all would RACE (corrupting each other's scopes → garbage keys → no sort). A key
+      // fn that traps fails the sort closed (never a silent wrong order).
+      const withKeys: { item: LogicNValue; key: LogicNValue }[] = [];
+      for (const item of items) {
+        const key = await ctx.applyFn(fn, item);
+        if (key.__tag === "runtimeError") return key;
+        withKeys.push({ item, key });
+      }
       withKeys.sort((a, b) => numVal(a.key) - numVal(b.key));
       return { __tag: "list", items: withKeys.map((e) => e.item) };
     }
@@ -656,6 +667,7 @@ async function listMethod(
       let c = 0;
       for (const i of items) {
         const r = await ctx.applyFn(fn, i);
+        if (r.__tag === "runtimeError") return r;   // fail-closed: a predicate that traps aborts the count
         if (r.__tag === "bool" && r.value) c += 1;
       }
       return { __tag: "int", value: c };
@@ -678,7 +690,9 @@ async function listMethod(
       if (fn === undefined) return receiver;
       const groups = new Map<string, LogicNValue[]>();
       for (const item of items) {
-        const key = strVal(await ctx.applyFn(fn, item));
+        const keyVal = await ctx.applyFn(fn, item);
+        if (keyVal.__tag === "runtimeError") return keyVal;   // fail-closed: a key fn that traps aborts grouping
+        const key = strVal(keyVal);
         const g = groups.get(key) ?? [];
         g.push(item);
         groups.set(key, g);
@@ -713,6 +727,7 @@ async function listMethod(
       const failing: LogicNValue[] = [];
       for (const item of items) {
         const result = await ctx.applyFn(fn, item);
+        if (result.__tag === "runtimeError") return result;   // fail-closed: a predicate that traps aborts partition
         if (result.__tag === "bool" && result.value) passing.push(item);
         else failing.push(item);
       }

@@ -12,6 +12,8 @@ const FNS = `fn g(x: Int) -> Int { return x * 2 }
   fn h(y: Int) -> Bool { return y > 4 }
   fn add(a: Int, b: Int) -> Int { return a + b }
   fn boom(x: Int) -> Int { return x / 0 }
+  fn neg(x: Int) -> Int { return 100 - x }
+  fn gt2(z: Int) -> Bool { return z > 2 }
   let xs: Array<Int> = [1, 2, 3, 4]
 `;
 async function run(body, ret = "Int") {
@@ -52,4 +54,20 @@ test("FAIL-CLOSED: a mapper whose body traps propagates the trap (not a list of 
   // g2 divides by zero → a propagating trap; map must abort, not collect runtimeErrors.
   const r = await run("return xs.map(boom)", "Array<Int>");
   assert.equal(r.__tag, "runtimeError");
+});
+
+test("sortBy applies the key fn and SORTS (was: returned unchanged via a concurrent-apply race)", async () => {
+  // neg(x)=100-x → keys [99,98,97,96]; ascending by key → items [4,3,2,1].
+  assert.deepEqual(intsOf(await run("return xs.sortBy(neg)", "Array<Int>")), [4, 3, 2, 1]);
+});
+
+test("count(predicate) counts MATCHING; count() = length (was: count(pred) always returned the total)", async () => {
+  assert.equal((await run("return xs.count(gt2)")).value, 2);   // >2 ⇒ 3,4
+  assert.equal((await run("return xs.count()")).value, 4);
+});
+
+test("FAIL-CLOSED across the HOF family: a trapping fn aborts find / count / sortBy", async () => {
+  assert.equal((await run("return xs.find(boom)", "Option<Int>")).__tag, "runtimeError");
+  assert.equal((await run("return xs.count(boom)")).__tag, "runtimeError");
+  assert.equal((await run("return xs.sortBy(boom)", "Array<Int>")).__tag, "runtimeError");
 });
