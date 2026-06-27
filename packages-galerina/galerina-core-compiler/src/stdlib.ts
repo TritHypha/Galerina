@@ -1264,8 +1264,12 @@ async function networkAsync(fullName: string, args: readonly GalerinaValue[], ct
   // It is applied to the ORIGINAL url AND to EVERY redirect hop — a guard-approved public URL can return
   // `302 Location: http://169.254.169.254/`, and a guard that only checks the original URL is bypassed by the
   // redirect (DevSecOps pentest finding). Returns an error string, or null if the hop is permitted.
+  // Fail-secure dial posture: TLS required (no plaintext egress of payload/credentials) and the effective
+  // port locked to standard HTTPS (443) — egress filtering that blocks exfiltration to non-web service ports.
+  // `http` stays in the scheme list so a plaintext URL to an INTERNAL host is still reported as the SSRF
+  // finding (host-category denial runs first); only an otherwise-allowed PUBLIC plaintext host hits TLS_REQUIRED.
   const guardHop = async (u: string): Promise<string | null> => {
-    const eg = guardOutboundUrl(u, { allowedSchemes: ["http", "https"] });
+    const eg = guardOutboundUrl(u, { allowedSchemes: ["http", "https"], requireTls: true, allowedPorts: [443] });
     if (!eg.allowed) return `NetworkError: SSRF — ${eg.reason} (SPORE-NET-001 · ${eg.code})`;
     if (eg.requiresDnsRecheck) {
       let ips: string[];

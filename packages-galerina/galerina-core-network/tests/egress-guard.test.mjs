@@ -115,6 +115,47 @@ describe("guardOutboundUrl — scheme + credentials + host", () => {
   it("unparseable URL fails closed", () => assert.equal(guardOutboundUrl("http://[bad").allowed, false));
 });
 
+describe("guardOutboundUrl — requireTls (runtime half of TlsPolicy.requireTls)", () => {
+  it("an otherwise-allowed plaintext http host is denied when requireTls", () => {
+    const d = guardOutboundUrl("http://example.com/", { allowedSchemes: ["http", "https"], requireTls: true });
+    assert.equal(d.allowed, false);
+    assert.equal(d.code, "Galerina_NETWORK_EGRESS_TLS_REQUIRED");
+  });
+  it("https is allowed under requireTls", () => assert.equal(guardOutboundUrl("https://example.com/", { requireTls: true }).allowed, true));
+  it("requireTls does NOT mask an SSRF host denial — an internal plaintext host keeps the SSRF code", () => {
+    // ordering proof: host-category denial runs BEFORE the TLS check, so the finding is reported as SSRF, not TLS.
+    const d = guardOutboundUrl("http://10.0.0.1/", { allowedSchemes: ["http", "https"], requireTls: true });
+    assert.equal(d.allowed, false);
+    assert.equal(d.code, "Galerina_NETWORK_SSRF_NONPUBLIC_DENIED");
+  });
+});
+
+describe("guardOutboundUrl — allowedPorts (runtime half of NetworkEndpointRule.ports)", () => {
+  it("a non-listed port on a public host is denied (fail-secure egress filtering)", () => {
+    const d = guardOutboundUrl("https://example.com:8443/", { allowedPorts: [443] });
+    assert.equal(d.allowed, false);
+    assert.equal(d.code, "Galerina_NETWORK_EGRESS_PORT_DENIED");
+  });
+  it("the scheme-default port (implicit 443 for https) is matched", () => {
+    assert.equal(guardOutboundUrl("https://example.com/", { allowedPorts: [443] }).allowed, true);
+    assert.equal(guardOutboundUrl("https://example.com:443/", { allowedPorts: [443] }).allowed, true);
+  });
+  it("http default port 80 is matched when allow-listed", () => {
+    assert.equal(guardOutboundUrl("http://example.com/", { allowedSchemes: ["http", "https"], allowedPorts: [80] }).allowed, true);
+  });
+  it("allowedPorts does NOT mask an SSRF host denial — internal host on a bad port keeps the SSRF code", () => {
+    const d = guardOutboundUrl("https://10.0.0.1:8443/", { allowedPorts: [443] });
+    assert.equal(d.allowed, false);
+    assert.equal(d.code, "Galerina_NETWORK_SSRF_NONPUBLIC_DENIED");
+  });
+  it("the fail-secure dial posture (requireTls + ports:[443]) denies plaintext and odd ports, allows clean https", () => {
+    const posture = { allowedSchemes: ["http", "https"], requireTls: true, allowedPorts: [443] };
+    assert.equal(guardOutboundUrl("http://example.com/", posture).code, "Galerina_NETWORK_EGRESS_TLS_REQUIRED");
+    assert.equal(guardOutboundUrl("https://example.com:8443/", posture).code, "Galerina_NETWORK_EGRESS_PORT_DENIED");
+    assert.equal(guardOutboundUrl("https://example.com/", posture).allowed, true);
+  });
+});
+
 describe("guardResolvedAddresses — connect-time DNS-rebinding defence", () => {
   it("all-public resolution is allowed", () => assert.equal(guardResolvedAddresses("good.com", ["8.8.8.8", "1.1.1.1"]).allowed, true));
   it("a public+private MIX is denied (rebinding / mixed resolution)", () => {

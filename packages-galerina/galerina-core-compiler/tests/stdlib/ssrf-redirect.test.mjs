@@ -28,8 +28,10 @@ const resp = (status, location, body = "") => ({
 });
 
 // 8.8.8.8 is a public literal IP — guard-approved, no DNS recheck — so the ONLY thing under test is the
-// redirect re-guard (the original URL passes; the redirect target is what must be re-checked).
-const PUBLIC = "http://8.8.8.8/feed";
+// redirect re-guard (the original URL passes; the redirect target is what must be re-checked). https so it
+// satisfies the fail-secure dial posture (requireTls); the internal redirect TARGETS below stay http to
+// prove a plaintext internal redirect is still blocked by host-category denial (which runs before the TLS check).
+const PUBLIC = "https://8.8.8.8/feed";
 
 test("a 302 redirect to a loopback host is BLOCKED (not followed)", async () => {
   const r = await withFetch(() => resp(302, "http://127.0.0.1:9/secret"), () =>
@@ -55,13 +57,13 @@ test("a relative redirect resolving to a private host is BLOCKED", async () => {
 
 test("a redirect chain that stays public eventually returns the body", async () => {
   let n = 0;
-  const r = await withFetch(() => (n++ === 0 ? resp(302, "http://1.1.1.1/next") : resp(200, null, "OK-PUBLIC")), () =>
+  const r = await withFetch(() => (n++ === 0 ? resp(302, "https://1.1.1.1/next") : resp(200, null, "OK-PUBLIC")), () =>
     callStdlib("http.get", undefined, [str(PUBLIC)], ctx));
   assert.equal(r.__tag, "ok", `a public→public redirect should succeed, got: ${JSON.stringify(r.value)}`);
 });
 
 test("an infinite redirect loop is capped (does not hang)", async () => {
-  const r = await withFetch(() => resp(302, "http://2.2.2.2/loop"), () =>
+  const r = await withFetch(() => resp(302, "https://2.2.2.2/loop"), () =>
     callStdlib("http.get", undefined, [str(PUBLIC)], ctx));
   assert.equal(r.__tag, "err");
   assert.match(r.error?.value ?? "", /too many redirects/i);

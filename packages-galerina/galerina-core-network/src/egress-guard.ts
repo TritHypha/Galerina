@@ -232,6 +232,19 @@ export interface EgressPolicy {
   readonly allowedSchemes?: readonly string[];
   /** Permit credentials (userinfo) in the URL. Default false — userinfo enables parser-confusion SSRF. */
   readonly allowUrlCredentials?: boolean;
+  /**
+   * Require TLS — when true, an otherwise-allowed PLAINTEXT (http) host is denied so credentials and
+   * payload never leave the process in the clear. Default false (the scheme allow-list governs alone).
+   * This is the runtime half of `TlsPolicy.requireTls` (until now static-validator-only).
+   */
+  readonly requireTls?: boolean;
+  /**
+   * Effective-port allow-list (scheme default applied: https⇒443, http⇒80). When set, an otherwise-allowed
+   * host on any other port is denied — egress filtering that stops exfiltration/SSRF to non-web service
+   * ports (22/3306/6379/25/…) even on a public host. Undefined ⇒ no port restriction (back-compatible).
+   * This is the runtime half of `NetworkEndpointRule.ports` (until now static-validator-only).
+   */
+  readonly allowedPorts?: readonly number[];
 }
 
 export interface EgressDecision {
@@ -268,10 +281,10 @@ export function guardOutboundHost(rawHost: string, policy: EgressPolicy = {}): E
   return { allowed: true, code: "Galerina_NETWORK_EGRESS_ALLOWED", category: c.category, host, reason: c.reason, requiresDnsRecheck: c.requiresDnsRecheck };
 }
 
-/** Guard an outbound URL: scheme + credentials + host, fail-closed on any parse/category failure. */
+/** Guard an outbound URL: scheme + credentials + host (+ TLS/port), fail-closed on any parse/category failure. */
 export function guardOutboundUrl(url: string, policy: EgressPolicy = {}): EgressDecision {
   const schemes = new Set((policy.allowedSchemes ?? ["https"]).map((s) => s.toLowerCase().replace(/:$/, "")));
-  let parsed: { protocol: string; hostname: string; username: string; password: string };
+  let parsed: { protocol: string; hostname: string; username: string; password: string; port: string };
   try {
     parsed = new URL(url);
   } catch {
@@ -284,7 +297,20 @@ export function guardOutboundUrl(url: string, policy: EgressPolicy = {}): Egress
   if ((parsed.username !== "" || parsed.password !== "") && policy.allowUrlCredentials !== true) {
     return { allowed: false, code: "Galerina_NETWORK_SSRF_URL_CREDENTIALS_DENIED", category: "invalid", host: parsed.hostname, reason: "URL carries embedded credentials (userinfo) — parser-confusion SSRF vector, denied", requiresDnsRecheck: false };
   }
-  return guardOutboundHost(parsed.hostname, policy);
+  const hostDecision = guardOutboundHost(parsed.hostname, policy);
+  // TLS + port enforcement run ONLY on an otherwise-ALLOWED host, so SSRF/host-category denials keep their
+  // exact code+reason (a plaintext URL to an internal host is still reported as the SSRF finding, not a TLS one).
+  if (!hostDecision.allowed) return hostDecision;
+  if (policy.requireTls === true && scheme !== "https") {
+    return { allowed: false, code: "Galerina_NETWORK_EGRESS_TLS_REQUIRED", category: hostDecision.category, host: hostDecision.host, reason: `plaintext scheme "${scheme}" denied — TLS (https) required (fail-closed)`, requiresDnsRecheck: false };
+  }
+  if (policy.allowedPorts !== undefined) {
+    const effectivePort = parsed.port !== "" ? Number(parsed.port) : scheme === "https" ? 443 : scheme === "http" ? 80 : NaN;
+    if (!Number.isInteger(effectivePort) || !policy.allowedPorts.includes(effectivePort)) {
+      return { allowed: false, code: "Galerina_NETWORK_EGRESS_PORT_DENIED", category: hostDecision.category, host: hostDecision.host, reason: `port ${parsed.port !== "" ? parsed.port : effectivePort} not in allow-list [${policy.allowedPorts.join(",")}] (fail-closed)`, requiresDnsRecheck: false };
+    }
+  }
+  return hostDecision;
 }
 
 /** Validate a user-supplied WEBHOOK target — the prime SSRF vector. https + public-only, no overrides. */
