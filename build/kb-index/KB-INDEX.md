@@ -1,4 +1,4 @@
-# Galerina KB index (605 docs)
+# Galerina KB index (606 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code SPORE-...`
 
@@ -1799,6 +1799,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - links: [[feedback-rd-prove-own-maths]] [[feedback-rd-absorb-positive-and-negative]] [[feedback-rd-refusal-pairs-with-work-with-it]] [[logicn-fhe-encrypted-similarity-verdict]] [[logicn-owner-decisions-2026-06-26]] [[logicn-social-ecosystem-cloud-native]] [[logicn-notes-37-38-39-verdict]] [[logicn-auth-package]] [[logicn-secrets-management-rd-2026-06-23]]
 - terms: photonic, tower-citizen, tri-pipe, capability, auth, rd-0138, data, re-derives, lane, audit, refute, net-new, automate, defence
 
+## RD-0144..0149 — "Automate the defence" in Governed Chaos & Multi-Substrate
+`docs/Knowledge-Bases/galerina-rd-0144-0149-governed-chaos-multisubstrate.md`
+- links: [[galerina-rd-0138-0143-photonic-security-automation]]
+- terms: shipped, note, net-new, automate, defence, governed, chaos, multi-substrate, cross-cutting, rd-0144, per-note, verdicts, border, proved
+
 ## R&D — Phase 34B boundary param auto-taint: verified state + build-ready spec
 `docs/Knowledge-Bases/galerina-rd-34b-paramtaint-buildspec-2026-06-24.md`
 - codes: SPORE-VALUESTATE-003, SPORE-VALUESTATE-008
@@ -1942,7 +1947,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: SPORE-PERM-001, SPORE-GDCE-001, SPORE-PRIVACY-002
 - tasks: #102, #34, #0089, #212, #110, #194, #205
 - links: [[feedback-rd-absorb-positive-and-negative]]
-- terms: photonic, refuted, adopted, verdict, bridge, galerina, shipped, tri, governance, why, designed, design, owner, contract
+- terms: photonic, refuted, adopted, verdict, bridge, galerina, shipped, why, tri, governance, mixed, owner, designed, design
 
 ## Galerina syntax 7-axis sweep (2026-06-25) — PARTIAL (4/8 categories; 4 rate-limited, to resume)
 `docs/Knowledge-Bases/galerina-rd-syntax-7axis-sweep-2026-06-25.md`

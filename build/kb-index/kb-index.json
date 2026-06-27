@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 605,
+  "docCount": 606,
   "docs": [
     {
       "rel": "docs/Knowledge-Bases/00-KB-INDEX.md",
@@ -21429,6 +21429,48 @@
       ]
     },
     {
+      "rel": "docs/Knowledge-Bases/galerina-rd-0144-0149-governed-chaos-multisubstrate.md",
+      "title": "RD-0144..0149 — \"Automate the defence\" in Governed Chaos & Multi-Substrate",
+      "headings": [
+        "Per-note verdicts",
+        "What's proved (V1–V3)",
+        "Net-new + cross-cutting (owner-gated)",
+        "Guardrails held"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "galerina-rd-0138-0143-photonic-security-automation"
+      ],
+      "topTerms": [
+        "shipped",
+        "note",
+        "net-new",
+        "automate",
+        "defence",
+        "governed",
+        "chaos",
+        "multi-substrate",
+        "cross-cutting",
+        "rd-0144",
+        "per-note",
+        "verdicts",
+        "border",
+        "proved",
+        "owner-gated",
+        "guardrails",
+        "held",
+        "photonic",
+        "verdict",
+        "re-derives",
+        "note-54",
+        "notes",
+        "duplicate",
+        "degrade-only",
+        "hybrid"
+      ]
+    },
+    {
       "rel": "docs/Knowledge-Bases/galerina-rd-34b-paramtaint-buildspec-2026-06-24.md",
       "title": "R&D — Phase 34B boundary param auto-taint: verified state + build-ready spec",
       "headings": [
@@ -22661,6 +22703,7 @@
         "Pending (dispatched to the R&D bridge — awaiting `done/`)",
         "Adopted / Designed (recent)",
         "2026-06-27 — RD-0137..0143 (\"automate the defence\" with photonic/tri/Tower-Citizen/Tri-Pipe)",
+        "2026-06-27 — RD-0144..0149 (\"automate the defence\" in Governed Chaos & Multi-Substrate)",
         "Refuted — and WHY we did not adopt (the negative record)",
         "Complete R&D ledger — all bridge `done/` files (swept 95, 2026-06-23)"
       ],
@@ -22689,24 +22732,24 @@
         "bridge",
         "galerina",
         "shipped",
+        "why",
         "tri",
         "governance",
-        "why",
+        "mixed",
+        "owner",
         "designed",
         "design",
-        "owner",
-        "contract",
-        "full",
-        "fail-closed",
-        "invariant",
         "net-new",
-        "tri-pipe",
-        "pending",
+        "full",
+        "contract",
+        "automate",
+        "defence",
+        "fail-closed",
         "substrate",
+        "invariant",
         "notes",
-        "mixed",
-        "log",
-        "table"
+        "tri-pipe",
+        "governed"
       ]
     },
     {
@@ -24703,15 +24746,15 @@
         "dss",
         "tasks",
         "sot",
+        "verified",
         "full",
         "drcm",
         "added",
-        "verified",
+        "scripts",
         "body",
         "syntax",
         "tower-native",
-        "deployment",
-        "axis"
+        "deployment"
       ]
     },
     {

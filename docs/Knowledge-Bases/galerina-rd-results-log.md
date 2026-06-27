@@ -79,6 +79,25 @@ ZT score = how zero-trust-sound *as written* (0–10). Deep per-claim matrix han
 **Proved (V1–V3):** No-Coercion ⇒ photonic state can't be the gate/signature; Lane-0 mask-and-continue is fail-open
 vs the shipped fail-closed `maskByVerdict`; "0 CPU cycles" refuted (latency≠work).
 
+## 2026-06-27 — RD-0144..0149 ("automate the defence" in Governed Chaos & Multi-Substrate)
+
+Owner notes `75-improvments-r-d-7..12`. Proof `scripts/rd-0144-0149-governed-chaos-suite-proof.mjs` (6/6 V GREEN).
+Full doc: [governed-chaos-multisubstrate](galerina-rd-0144-0149-governed-chaos-multisubstrate.md). Same pattern as
+RD-0138-0143. **NB: RD-0148 (note 11) is a byte-identical DUPLICATE of RD-0147 (note 10) — delete candidate.**
+
+| RD | Topic | ZT | Verdict | Why (one line) |
+|---|---|---|---|---|
+| 0144 | Degrade-Only | 6 | 🔀 MIXED | Survival-Contract auto-degrade ✅ re-derives substrate{}/DRCM (safe direction); spectral-shredding ❌ (X1 + 0-cycle) |
+| 0145 | Substrate-Switch | 5 | 🔀 MIXED | intent-partition ✅; fluid blend ⚠️ needs Safe-Floor; phase-routing-as-switch ❌ (No-Coercion) |
+| 0146 | Verified-Approx | 6 | 🔀 MIXED | bound invariants ✅ re-derive DbC; Freivalds ✅; **K3-0-as-"proceed" ⚠️ availability-not-safety (V1)**; fuzzy-analog aspirational |
+| 0147 | Fault-Healing | 5 | 🔀 MIXED | telemetry+NMR ✅; predictive hot-swap aspirational; optical self-reverse 0-energy ❌ |
+| 0148 | *(dup of 0147)* | — | ❌ DUPLICATE | note 11 == note 10 byte-for-byte |
+| 0149 | AI-Proposal-Safety | 6 | 🔀 MIXED | abstract-interp + No-Coercion ✅; **shadow-sandbox net-new but data-exposure → behind note-54 border (V3)**; optical parallel aspirational |
+
+**Net-new (owner-gated):** shadow/canary deploy of AI proposals = note-54 border (D, shipped) + attenuated caps +
+Freivalds + the Lane-0 declassifier rail (RD-0138-0143). **Proved:** V1 K3-0=availability-not-safety; V2 substrate-
+blend Safe-Floor; V3 shadow-fork must run behind the note-54 border (ties to this session's D).
+
 ## Refuted — and WHY we did not adopt (the negative record)
 | Idea | Verdict | Why refuted |
 |---|---|---|
