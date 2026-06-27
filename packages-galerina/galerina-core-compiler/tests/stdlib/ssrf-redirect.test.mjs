@@ -13,6 +13,12 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { callStdlib } from "../../dist/index.js";
 
+// Redirect re-guard is asserted in the SECURE baseline — clear any ambient local-dev loopback signal so the
+// internal redirect TARGETS (loopback/private/metadata) stay denied regardless of the runner's environment.
+delete process.env.GALERINA_ALLOW_LOCALHOST;
+delete process.env.NODE_ENV;
+delete process.env.GALERINA_PROFILE;
+
 const ctx = { recordEffect: () => {}, resolveIdentifier: () => undefined, callFlow: async () => ({}), applyFn: async () => ({}) };
 const str = (value) => ({ __tag: "string", value });
 

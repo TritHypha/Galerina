@@ -156,6 +156,33 @@ describe("guardOutboundUrl — allowedPorts (runtime half of NetworkEndpointRule
   });
 });
 
+describe("guardOutboundUrl — allowLoopback (local-dev exception, loopback ONLY)", () => {
+  // a localhost dev server is http on an arbitrary port — admitted, and TLS/port checks skipped for it.
+  const dev = { allowedSchemes: ["http", "https"], requireTls: true, allowedPorts: [443], allowLoopback: true };
+  it("a localhost dev server (http, dev port) is allowed under allowLoopback", () => {
+    assert.equal(guardOutboundUrl("http://localhost:3000/api", dev).allowed, true);
+    assert.equal(guardOutboundUrl("http://127.0.0.1:8080/", dev).allowed, true);
+    assert.equal(guardOutboundUrl("http://[::1]:5173/", dev).allowed, true);
+    assert.equal(guardOutboundUrl("http://localhost:3000/api", dev).code, "Galerina_NETWORK_EGRESS_LOOPBACK_DEV");
+  });
+  it("allowLoopback opens ONLY loopback — private LAN / metadata / link-local stay SSRF-denied", () => {
+    assert.equal(guardOutboundUrl("http://10.0.0.5/", dev).allowed, false);
+    assert.equal(guardOutboundUrl("http://192.168.1.10/", dev).allowed, false);
+    assert.equal(guardOutboundUrl("http://169.254.169.254/latest/meta-data/", dev).allowed, false);
+    assert.equal(guardOutboundUrl("http://db.internal/", dev).allowed, false);
+  });
+  it("default (no allowLoopback): localhost is denied as loopback SSRF", () => {
+    const d = guardOutboundUrl("http://localhost:3000/", { allowedSchemes: ["http", "https"] });
+    assert.equal(d.allowed, false);
+    assert.equal(d.category, "loopback");
+  });
+  it("guardOutboundHost: loopback allowed with the flag, denied without", () => {
+    assert.equal(guardOutboundHost("127.0.0.1", { allowLoopback: true }).allowed, true);
+    assert.equal(guardOutboundHost("localhost", { allowLoopback: true }).allowed, true);
+    assert.equal(guardOutboundHost("127.0.0.1").allowed, false);
+  });
+});
+
 describe("guardResolvedAddresses — connect-time DNS-rebinding defence", () => {
   it("all-public resolution is allowed", () => assert.equal(guardResolvedAddresses("good.com", ["8.8.8.8", "1.1.1.1"]).allowed, true));
   it("a public+private MIX is denied (rebinding / mixed resolution)", () => {

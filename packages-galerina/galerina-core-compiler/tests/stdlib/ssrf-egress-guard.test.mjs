@@ -16,6 +16,12 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { callStdlib } from "../../dist/index.js";
 
+// SSRF protection is asserted in the SECURE baseline — clear any ambient local-dev loopback signal so the
+// loopback case below stays denied (loopback is only opened on an explicit dev signal; see force-https-egress.test.mjs).
+delete process.env.GALERINA_ALLOW_LOCALHOST;
+delete process.env.NODE_ENV;
+delete process.env.GALERINA_PROFILE;
+
 const ctx = {
   recordEffect: () => {},
   resolveIdentifier: () => undefined,

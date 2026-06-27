@@ -1,4 +1,4 @@
-# Galerina KB index (606 docs)
+# Galerina KB index (607 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code SPORE-...`
 
@@ -921,6 +921,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #201
 - terms: pii, phi, owner, category, write, classification, read, effect, map, brand, sub-step, audit, unlock, build
 
+## Outbound egress: force-HTTPS boot setting + local-dev loopback exception
+`docs/Knowledge-Bases/galerina-egress-tls-boot-setting.md`
+- terms: force-https, egress, loopback, ssrf, tests, outbound, plaintext, boot, exception, http, localhost, fail-secure, setting, local-dev
+
 ## Galerina — Engineering Goals & Master Plan
 `docs/Knowledge-Bases/galerina-engineering-goals.md`
 - codes: SPORE-RESOURCE-001, SPORE-CAP-003
@@ -1393,7 +1397,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `docs/Knowledge-Bases/galerina-outstanding-rd-and-todos-2026-06-23.md`
 - codes: SPORE-PERM-001, SPORE-GDCE-001
 - tasks: #13, #14, #15, #16, #163, #165, #161, #128, #34, #102, #11, #12, #149
-- terms: build, audit, arch-rd, galerina-architecture-rd-2026-06-23, phase, missing, packages, todo, status, photonic, doc, galerina, catalog, incomplete
+- terms: build, audit, arch-rd, galerina-architecture-rd-2026-06-23, todo, phase, status, photonic, missing, packages, doc, galerina, catalog, incomplete
 
 ## Galerina Package Manifest Specification
 `docs/Knowledge-Bases/galerina-package-manifest-spec.md`

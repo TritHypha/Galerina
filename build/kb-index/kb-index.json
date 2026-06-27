@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 606,
+  "docCount": 607,
   "docs": [
     {
       "rel": "docs/Knowledge-Bases/00-KB-INDEX.md",
@@ -11849,6 +11849,46 @@
       ]
     },
     {
+      "rel": "docs/Knowledge-Bases/galerina-egress-tls-boot-setting.md",
+      "title": "Outbound egress: force-HTTPS boot setting + local-dev loopback exception",
+      "headings": [
+        "Behaviour (fail-secure on every axis)",
+        "Why this shape",
+        "Tests",
+        "Follow-up (owner-gated)"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "force-https",
+        "egress",
+        "loopback",
+        "ssrf",
+        "tests",
+        "outbound",
+        "plaintext",
+        "boot",
+        "exception",
+        "http",
+        "localhost",
+        "fail-secure",
+        "setting",
+        "local-dev",
+        "development",
+        "galerina",
+        "behaviour",
+        "every",
+        "axis",
+        "port",
+        "why",
+        "shape",
+        "follow-up",
+        "owner-gated",
+        "public"
+      ]
+    },
+    {
       "rel": "docs/Knowledge-Bases/galerina-engineering-goals.md",
       "title": "Galerina — Engineering Goals & Master Plan",
       "headings": [
@@ -17447,6 +17487,7 @@
       "headings": [
         "A. R&D dispatched to the bridge (`C:\\wwwprojects\\Galerina-R-AND-D\\_session-bridge\\tasks\\`)",
         "B. R&D designed (in KB; build pending) — [galerina-architecture-rd-2026-06-23.md](galerina-architecture-rd-2026-06-23.md)",
+        "2026-06-27 — net-new ADOPTABLES from the \"automate the defence\" R&D (RD-0137..0149)",
         "C. Build items (engineering — no further R&D needed)",
         "D. Missing / incomplete packages (todo + R&D 0082)",
         "E. Carried doc/tooling work (Phase 3 / earlier batch)",
@@ -17477,17 +17518,18 @@
         "audit",
         "arch-rd",
         "galerina-architecture-rd-2026-06-23",
-        "phase",
-        "missing",
-        "packages",
         "todo",
+        "phase",
         "status",
         "photonic",
+        "missing",
+        "packages",
         "doc",
         "galerina",
         "catalog",
         "incomplete",
         "bridge",
+        "net-new",
         "outstanding",
         "dispatched",
         "designed",
@@ -17496,8 +17538,7 @@
         "needed",
         "session-bridge",
         "tasks",
-        "wj6vrjkmg",
-        "to-dos"
+        "items"
       ]
     },
     {

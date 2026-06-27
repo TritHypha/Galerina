@@ -56,3 +56,51 @@ test("https on 443 is unaffected (the normal path still works)", async () => {
     callStdlib("http.get", undefined, [str("https://example.com/x")], ctx));
   assert.equal(r.__tag, "ok", `expected ok, got ${JSON.stringify(r)}`);
 });
+
+// ── local-dev loopback exception ("be a bit smart and not block http://localhost") ──
+const clearDev = () => { delete process.env.GALERINA_ALLOW_LOCALHOST; delete process.env.NODE_ENV; delete process.env.GALERINA_PROFILE; };
+
+test("local dev: http://localhost is ALLOWED with GALERINA_ALLOW_LOCALHOST=true", async () => {
+  clearDev(); process.env.GALERINA_ALLOW_LOCALHOST = "true";
+  try {
+    const r = await withFetch(() => resp(200, "OK-LOCAL"), () =>
+      callStdlib("http.get", undefined, [str("http://localhost:3000/api")], ctx));
+    assert.equal(r.__tag, "ok", `expected ok, got ${JSON.stringify(r)}`);
+  } finally { clearDev(); }
+});
+
+test("local dev: http://127.0.0.1 is ALLOWED when NODE_ENV=development", async () => {
+  clearDev(); process.env.NODE_ENV = "development";
+  try {
+    const r = await withFetch(() => resp(200, "OK-LOCAL"), () =>
+      callStdlib("http.get", undefined, [str("http://127.0.0.1:8080/")], ctx));
+    assert.equal(r.__tag, "ok", `expected ok, got ${JSON.stringify(r)}`);
+  } finally { clearDev(); }
+});
+
+test("fail-secure: with NO dev signal, http://localhost stays SSRF-denied", async () => {
+  clearDev();
+  const r = await callStdlib("http.get", undefined, [str("http://localhost:3000/")], ctx);
+  assert.equal(r.__tag, "err");
+  assert.match(r.error?.value ?? "", /SSRF/);
+});
+
+test("production: localhost denied even with the dev flag (never open loopback in prod)", async () => {
+  clearDev(); process.env.GALERINA_ALLOW_LOCALHOST = "true"; process.env.NODE_ENV = "production";
+  try {
+    const r = await callStdlib("http.get", undefined, [str("http://localhost:3000/")], ctx);
+    assert.equal(r.__tag, "err");
+    assert.match(r.error?.value ?? "", /SSRF/);
+  } finally { clearDev(); }
+});
+
+test("loopback dev does NOT open metadata/private even with the dev signal", async () => {
+  clearDev(); process.env.GALERINA_ALLOW_LOCALHOST = "true";
+  try {
+    for (const u of ["http://169.254.169.254/latest/meta-data/", "http://10.0.0.5/"]) {
+      const r = await callStdlib("http.get", undefined, [str(u)], ctx);
+      assert.equal(r.__tag, "err", u);
+      assert.match(r.error?.value ?? "", /SSRF/, u);
+    }
+  } finally { clearDev(); }
+});

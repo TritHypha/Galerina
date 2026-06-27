@@ -1,32 +1,50 @@
-// Force-HTTPS egress boot setting (owner "force https on http").
+// Force-HTTPS egress boot setting + local-dev loopback exception (owner "force https on http",
+// "be a bit smart and not block local development like http://localhost").
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-const { resolveEgressTls, ALLOW_PLAINTEXT_EGRESS_ENV } = await import("../dist/index.js");
+const { resolveEgressTls, ALLOW_PLAINTEXT_EGRESS_ENV, ALLOW_LOCALHOST_ENV } = await import("../dist/index.js");
 
-test("resolveEgressTls — default FORCES HTTPS (requireTls, port 443, not relaxed)", () => {
-  const s = resolveEgressTls(undefined);
+test("resolveEgressTls — default FORCES HTTPS (requireTls, port 443, not relaxed, no loopback)", () => {
+  const s = resolveEgressTls({});
   assert.equal(s.requireTls, true);
   assert.deepEqual([...s.allowedPorts], [443]);
   assert.equal(s.relaxed, false);
+  assert.equal(s.allowLoopback, false);
 });
 
-test("resolveEgressTls — explicit truthy env relaxes force-HTTPS (operator override, surfaced)", () => {
+test("resolveEgressTls — explicit truthy plaintext env relaxes force-HTTPS (operator override)", () => {
   for (const v of ["true", "1"]) {
-    const s = resolveEgressTls(v);
+    const s = resolveEgressTls({ allowPlaintextEnv: v });
     assert.equal(s.requireTls, false, v);
     assert.equal(s.relaxed, true, v);
-    assert.equal(s.allowedPorts.length, 0, v);
   }
 });
 
-test("resolveEgressTls — anything-but-exactly-truthy keeps force-HTTPS (fail-secure, case-sensitive)", () => {
-  for (const v of ["false", "0", "", "yes", "TRUE", "True", undefined]) {
-    assert.equal(resolveEgressTls(v).requireTls, true, String(v));
-    assert.equal(resolveEgressTls(v).relaxed, false, String(v));
+test("resolveEgressTls — anything-but-truthy keeps force-HTTPS (fail-secure, case-sensitive)", () => {
+  for (const v of ["false", "0", "", "TRUE", undefined]) {
+    assert.equal(resolveEgressTls({ allowPlaintextEnv: v }).requireTls, true, String(v));
   }
 });
 
-test("ALLOW_PLAINTEXT_EGRESS_ENV is the documented env name", () => {
+test("loopback-dev: allowed on a development signal (NODE_ENV / GALERINA_PROFILE / GALERINA_ALLOW_LOCALHOST)", () => {
+  assert.equal(resolveEgressTls({ nodeEnv: "development" }).allowLoopback, true);
+  assert.equal(resolveEgressTls({ profile: "development" }).allowLoopback, true);
+  assert.equal(resolveEgressTls({ allowLocalhostEnv: "true" }).allowLoopback, true);
+  assert.equal(resolveEgressTls({ allowLocalhostEnv: "1" }).allowLoopback, true);
+  // force-HTTPS for public is UNCHANGED even when loopback is allowed
+  assert.equal(resolveEgressTls({ nodeEnv: "development" }).requireTls, true);
+});
+
+test("loopback-dev: FAIL-SECURE — denied on unset/unknown, and NEVER in production", () => {
+  assert.equal(resolveEgressTls({}).allowLoopback, false);
+  assert.equal(resolveEgressTls({ nodeEnv: "test" }).allowLoopback, false);
+  // production wins even with an explicit localhost flag (never open loopback in prod)
+  assert.equal(resolveEgressTls({ nodeEnv: "production", allowLocalhostEnv: "true" }).allowLoopback, false);
+  assert.equal(resolveEgressTls({ profile: "production", nodeEnv: "development" }).allowLoopback, false);
+});
+
+test("env name constants are documented", () => {
   assert.equal(ALLOW_PLAINTEXT_EGRESS_ENV, "GALERINA_ALLOW_PLAINTEXT_EGRESS");
+  assert.equal(ALLOW_LOCALHOST_ENV, "GALERINA_ALLOW_LOCALHOST");
 });

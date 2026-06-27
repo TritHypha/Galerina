@@ -1264,19 +1264,30 @@ async function networkAsync(fullName: string, args: readonly GalerinaValue[], ct
   // It is applied to the ORIGINAL url AND to EVERY redirect hop — a guard-approved public URL can return
   // `302 Location: http://169.254.169.254/`, and a guard that only checks the original URL is bypassed by the
   // redirect (DevSecOps pentest finding). Returns an error string, or null if the hop is permitted.
-  // Force-HTTPS boot setting (owner "force https on http"): the dial defaults to TLS required (no plaintext
-  // egress of payload/credentials) and the effective port locked to standard HTTPS (443) — egress filtering
-  // that also blocks exfiltration to non-web service ports. The canonical setting + accessor live in
-  // @galerina/core-config (`resolveEgressTls` / `ALLOW_PLAINTEXT_EGRESS_ENV`); the dial reads the same env
-  // opt-out inline (no extra package edge). FAIL-SECURE: only an explicit GALERINA_ALLOW_PLAINTEXT_EGRESS=true
-  // relaxes it (operator override). `http` stays in the scheme list either way so a plaintext URL to an
-  // INTERNAL host is still reported as the SSRF finding (host-category denial runs first); only an otherwise-
-  // allowed PUBLIC plaintext host hits TLS_REQUIRED when force-HTTPS is on.
-  const plaintext = process.env?.["GALERINA_ALLOW_PLAINTEXT_EGRESS"];
-  const allowPlaintextEgress = plaintext === "true" || plaintext === "1";
-  const dialPolicy = allowPlaintextEgress
-    ? { allowedSchemes: ["http", "https"] }
-    : { allowedSchemes: ["http", "https"], requireTls: true, allowedPorts: [443] };
+  // Force-HTTPS boot setting (owner "force https on http") + a smart LOCAL-DEV loopback exception. Canonical
+  // setting + accessor live in @galerina/core-config (`resolveEgressTls`); the dial mirrors the same env reads
+  // inline (no extra package edge). FAIL-SECURE on every axis:
+  //  - default DENIES plaintext public egress + locks the effective port to 443; only an explicit
+  //    GALERINA_ALLOW_PLAINTEXT_EGRESS=true relaxes it (operator override).
+  //  - `http://localhost` (LOOPBACK ONLY — 127/8, ::1, localhost) is permitted for LOCAL DEVELOPMENT so a
+  //    dev server "just works", but NEVER in production and only on a dev signal (NODE_ENV/GALERINA_PROFILE=
+  //    development, or GALERINA_ALLOW_LOCALHOST=true). Private LAN / metadata / link-local stay SSRF-denied.
+  //  - `http` stays in the scheme list so a plaintext URL to an INTERNAL host is still the SSRF finding
+  //    (host-category denial runs first); only an otherwise-allowed PUBLIC plaintext host hits TLS_REQUIRED.
+  const allowPlaintextEgress =
+    process.env?.["GALERINA_ALLOW_PLAINTEXT_EGRESS"] === "true" || process.env?.["GALERINA_ALLOW_PLAINTEXT_EGRESS"] === "1";
+  const profile = process.env?.["GALERINA_PROFILE"];
+  const nodeEnv = process.env?.["NODE_ENV"];
+  const isProd = profile === "production" || nodeEnv === "production";
+  const isDev = profile === "development" || nodeEnv === "development";
+  const allowLocalhost =
+    process.env?.["GALERINA_ALLOW_LOCALHOST"] === "true" || process.env?.["GALERINA_ALLOW_LOCALHOST"] === "1";
+  const allowLoopback = !isProd && (isDev || allowLocalhost);
+  const dialPolicy = {
+    allowedSchemes: ["http", "https"],
+    ...(allowPlaintextEgress ? {} : { requireTls: true, allowedPorts: [443] }),
+    ...(allowLoopback ? { allowLoopback: true } : {}),
+  };
   const guardHop = async (u: string): Promise<string | null> => {
     const eg = guardOutboundUrl(u, dialPolicy);
     if (!eg.allowed) return `NetworkError: SSRF — ${eg.reason} (SPORE-NET-001 · ${eg.code})`;

@@ -245,6 +245,14 @@ export interface EgressPolicy {
    * This is the runtime half of `NetworkEndpointRule.ports` (until now static-validator-only).
    */
   readonly allowedPorts?: readonly number[];
+  /**
+   * Permit LOOPBACK (localhost / 127.0.0.0/8 / ::1) for LOCAL DEVELOPMENT — and ONLY loopback, never private
+   * LAN / metadata / link-local (those stay SSRF-denied). When a loopback host is admitted this way, the TLS
+   * and port checks are also skipped for it (a localhost dev server is local IPC over http on an arbitrary
+   * port — nothing leaves the machine). Default false (fail-secure). The dial enables this only on an explicit
+   * development signal, never in production. Narrower + safer than `allowNonPublicHosts`.
+   */
+  readonly allowLoopback?: boolean;
 }
 
 export interface EgressDecision {
@@ -272,6 +280,12 @@ export function guardOutboundHost(rawHost: string, policy: EgressPolicy = {}): E
   if (c.category === "metadata") {
     const allowed = policy.allowMetadataEndpoint === true;
     return { allowed, code: allowed ? "Galerina_NETWORK_EGRESS_METADATA_ALLOWED" : "Galerina_NETWORK_SSRF_METADATA_DENIED", category: c.category, host, reason: allowed ? "metadata endpoint explicitly allowed (dangerous)" : `SSRF: ${c.reason} denied`, requiresDnsRecheck: c.requiresDnsRecheck };
+  }
+  // Local-development loopback exception — ONLY loopback (localhost / 127/8 / ::1), nothing else. Local IPC
+  // never leaves the machine, so a localhost dev server is admitted; private LAN / metadata / link-local stay
+  // SSRF-denied below. The dial enables this only on an explicit development signal, never in production.
+  if (c.category === "loopback" && policy.allowLoopback === true) {
+    return { allowed: true, code: "Galerina_NETWORK_EGRESS_LOOPBACK_DEV", category: c.category, host, reason: "loopback permitted for local development (non-production)", requiresDnsRecheck: false };
   }
   if (DENY_CATEGORIES.has(c.category)) {
     const allowed = policy.allowNonPublicHosts === true && c.category !== "invalid";
@@ -301,6 +315,8 @@ export function guardOutboundUrl(url: string, policy: EgressPolicy = {}): Egress
   // TLS + port enforcement run ONLY on an otherwise-ALLOWED host, so SSRF/host-category denials keep their
   // exact code+reason (a plaintext URL to an internal host is still reported as the SSRF finding, not a TLS one).
   if (!hostDecision.allowed) return hostDecision;
+  // Loopback admitted for local dev = local IPC: skip TLS/port (a localhost dev server is http on a dev port).
+  if (hostDecision.category === "loopback") return hostDecision;
   if (policy.requireTls === true && scheme !== "https") {
     return { allowed: false, code: "Galerina_NETWORK_EGRESS_TLS_REQUIRED", category: hostDecision.category, host: hostDecision.host, reason: `plaintext scheme "${scheme}" denied — TLS (https) required (fail-closed)`, requiresDnsRecheck: false };
   }

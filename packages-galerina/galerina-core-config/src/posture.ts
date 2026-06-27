@@ -160,6 +160,8 @@ export function deriveImportProfile(resolved: ResolvedPosture): ImportProfile {
 
 /** The env flag that relaxes force-HTTPS (operator override). Absent / anything-but-truthy ⇒ force HTTPS. */
 export const ALLOW_PLAINTEXT_EGRESS_ENV = "GALERINA_ALLOW_PLAINTEXT_EGRESS" as const;
+/** The env flag that permits LOOPBACK (localhost) egress for local development (explicit override). */
+export const ALLOW_LOCALHOST_ENV = "GALERINA_ALLOW_LOCALHOST" as const;
 
 /** The resolved outbound-egress TLS posture (the force-HTTPS boot setting). */
 export interface EgressTlsSetting {
@@ -169,27 +171,56 @@ export interface EgressTlsSetting {
   readonly allowedPorts: readonly number[];
   /** True iff force-HTTPS was relaxed by the explicit operator opt-out (surfaced, not silent). */
   readonly relaxed: boolean;
+  /**
+   * Permit LOOPBACK (localhost / 127/8 / ::1) for local development — and ONLY loopback. NEVER true in
+   * production; true only on a development signal (NODE_ENV / GALERINA_PROFILE = development) or the explicit
+   * GALERINA_ALLOW_LOCALHOST flag. Lets `http://localhost:3000` work in dev without opening any other host.
+   */
+  readonly allowLoopback: boolean;
   readonly rationale: string;
 }
 
+/** Inputs for {@link resolveEgressTls} — pass the relevant `process.env` values. */
+export interface EgressTlsInput {
+  /** GALERINA_ALLOW_PLAINTEXT_EGRESS — truthy relaxes force-HTTPS entirely (operator override). */
+  readonly allowPlaintextEnv?: string;
+  /** NODE_ENV — `development` enables loopback-dev; `production` forbids it. */
+  readonly nodeEnv?: string;
+  /** GALERINA_PROFILE — same role as NODE_ENV for the runtime. */
+  readonly profile?: string;
+  /** GALERINA_ALLOW_LOCALHOST — truthy enables loopback-dev explicitly (still denied in production). */
+  readonly allowLocalhostEnv?: string;
+}
+
 /**
- * Resolve the force-HTTPS egress boot setting. FAIL-SECURE: forces HTTPS (requireTls, port 443) by
- * default; relaxes ONLY when the operator EXPLICITLY sets `GALERINA_ALLOW_PLAINTEXT_EGRESS` to a truthy
- * value ("true"/"1"). Pass `process.env[ALLOW_PLAINTEXT_EGRESS_ENV]`.
+ * Resolve the force-HTTPS egress boot setting. FAIL-SECURE on every axis:
+ *  - forces HTTPS (requireTls, port 443) by default; relaxes ONLY on an explicit truthy
+ *    `GALERINA_ALLOW_PLAINTEXT_EGRESS`;
+ *  - permits LOOPBACK (localhost) for local dev ONLY when not production AND a development signal is present
+ *    (NODE_ENV/GALERINA_PROFILE=development, or an explicit GALERINA_ALLOW_LOCALHOST) — unknown/unset ⇒ denied,
+ *    production ⇒ denied. Only loopback is opened, never private LAN / metadata.
  */
-export function resolveEgressTls(allowPlaintextEnv?: string): EgressTlsSetting {
+export function resolveEgressTls(input: EgressTlsInput = {}): EgressTlsSetting {
+  const { allowPlaintextEnv, nodeEnv, profile, allowLocalhostEnv } = input;
   const relaxed = allowPlaintextEnv === "true" || allowPlaintextEnv === "1";
+  const isProd = profile === "production" || nodeEnv === "production";
+  const isDev = profile === "development" || nodeEnv === "development";
+  const explicitLocalhost = allowLocalhostEnv === "true" || allowLocalhostEnv === "1";
+  const allowLoopback = !isProd && (isDev || explicitLocalhost);
+  const loopNote = allowLoopback ? " Loopback (localhost) permitted for local development." : "";
   return relaxed
     ? {
         requireTls: false,
         allowedPorts: [],
         relaxed: true,
-        rationale: `Force-HTTPS relaxed by ${ALLOW_PLAINTEXT_EGRESS_ENV} — plaintext egress permitted (operator override; not for production).`,
+        allowLoopback,
+        rationale: `Force-HTTPS relaxed by ${ALLOW_PLAINTEXT_EGRESS_ENV} — plaintext egress permitted (operator override; not for production).${loopNote}`,
       }
     : {
         requireTls: true,
         allowedPorts: [443],
         relaxed: false,
-        rationale: "Force-HTTPS (default): plaintext public egress denied; effective port locked to 443.",
+        allowLoopback,
+        rationale: `Force-HTTPS (default): plaintext public egress denied; effective port locked to 443.${loopNote}`,
       };
 }
