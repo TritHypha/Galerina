@@ -1962,7 +1962,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: SPORE-PERM-001, SPORE-GDCE-001, SPORE-PRIVACY-002
 - tasks: #102, #34, #0089, #212, #110, #194, #205
 - links: [[feedback-rd-absorb-positive-and-negative]]
-- terms: photonic, refuted, verdict, adopted, mixed, bridge, galerina, why, notes, governed, shipped, tri, governance, net-new
+- terms: photonic, refuted, verdict, adopted, mixed, why, bridge, galerina, notes, governed, shipped, tri, governance, net-new
 
 ## Galerina syntax 7-axis sweep (2026-06-25) — PARTIAL (4/8 categories; 4 rate-limited, to resume)
 `docs/Knowledge-Bases/galerina-rd-syntax-7axis-sweep-2026-06-25.md`

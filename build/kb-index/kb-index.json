@@ -22836,6 +22836,7 @@
         "Adopted / Designed (recent)",
         "2026-06-27 — RD-0137..0143 (\"automate the defence\" with photonic/tri/Tower-Citizen/Tri-Pipe)",
         "2026-06-27 — RD-0144..0149 (\"automate the defence\" in Governed Chaos & Multi-Substrate)",
+        "2026-06-27 — RD-0150 (Graph as the data spine for API/DB I/O — per-tenant zero-trust border)",
         "2026-06-27 — RD-0151..0153 (Dynamic Assimilation · Tri-Logic Ambiguity · Governed AI, notes 13-15)",
         "Refuted — and WHY we did not adopt (the negative record)",
         "Complete R&D ledger — all bridge `done/` files (swept 95, 2026-06-23)"
@@ -22863,9 +22864,9 @@
         "verdict",
         "adopted",
         "mixed",
+        "why",
         "bridge",
         "galerina",
-        "why",
         "notes",
         "governed",
         "shipped",
@@ -22876,13 +22877,13 @@
         "designed",
         "design",
         "full",
+        "graph",
         "invariant",
+        "border",
+        "zero-trust",
         "contract",
-        "fail-closed",
-        "automate",
-        "defence",
-        "tri-logic",
-        "gate"
+        "gate",
+        "crypto"
       ]
     },
     {

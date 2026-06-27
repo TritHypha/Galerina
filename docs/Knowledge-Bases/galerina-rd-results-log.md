@@ -99,6 +99,15 @@ RD-0138-0143. **NB: RD-0148 (note 11) is a byte-identical DUPLICATE of RD-0147 (
 Freivalds + the Lane-0 declassifier rail (RD-0138-0143). **Proved:** V1 K3-0=availability-not-safety; V2 substrate-
 blend Safe-Floor; V3 shadow-fork must run behind the note-54 border (ties to this session's D).
 
+## 2026-06-27 — RD-0150 (Graph as the data spine for API/DB I/O — per-tenant zero-trust border)
+
+Worker-authored design-only concept (owner-assigned RD-0150; workflow `graph-as-data-border-concept`). Full doc:
+[graph-as-data-io-border](galerina-rd-0150-graph-as-data-io-border-concept.md). ZT **7** (hub-assigned).
+
+| RD | Topic | ZT | Verdict | Why (one line) |
+|---|---|---|---|---|
+| 0150 | Graph as the data spine (API/DB I/O border) | 7 | 🧪 DESIGN (hybrid) | **Win on SECURITY + ORGANISATION** (structural isolation: "no edge = no reach", IDOR structurally closed, one substrate), **mixed on SPEED** (graph wins reachability/lineage, SoA wins bulk scans) → **HYBRID property-graph** (graph SPINE + columnar PAYLOAD). Carries the 0037 separate-presence-channel discipline + a MANDATORY traversal-budget gate (else CWE-400 DoS). 3 open problems; hardest = cross-tenant edge crypto custody. No measured perf number; build owner-gated behind a RED/perf harness. |
+
 ## 2026-06-27 — RD-0151..0153 (Dynamic Assimilation · Tri-Logic Ambiguity · Governed AI, notes 13-15)
 
 Owner notes `75-improvments-r-d-13..15` (RD-0150 reserved in worker session). Proof
