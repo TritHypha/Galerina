@@ -118,3 +118,22 @@ auth (cert-gate unwired) → closed by C#1. Full detail: task output `wj6vrjkmg.
   ABSENT from any rules doc** (CONFIG/LOGIC/TYPE/TAINT/VAULT/VALUESTATE/FUSE/PKG/PCI/MEMORY/… families). The
   governance-rules registry is materially incomplete vs what the compiler actually enforces — worth a reconcile pass.
 - 📋 Rules exported to markdown: [governance rules](galerina-rules-master-registry.md) + [R&D rules](galerina-rnd-rules-and-standards.md).
+
+## 2026-06-28 (cont.) — dev-tooling housekeeping
+
+- ✅ **fuse-rebuild fix** (`c8343cd`): `scripts/rebuild-fusable-packages.mjs` now SKIPS packages with no `.spore`
+  source — an ext-bridge with a `.ts` entry (e.g. `galerina-ext-bridge-quantum`) carries a `package.spore.json`
+  descriptor but is not a fusable `.spore` module, so handing it to `galerina build` failed with SPORE-PARSE-001
+  ("Unexpected token }"). Reports "N skipped" instead of a false failure.
+- ✅ **Memory dangling `[[links]]` trimmed** 28→0 (2 real renames fixed: `parallel-worker-cadence`→
+  `feedback-parallel-worker-cadence`, `logicn-contract-authoring-guide`→`project-logicn-contract-authoring`;
+  26 dead forward-refs de-linked, text kept). memory-graph now 0 dangling / 0 orphan / 0 dangling-links.
+- 🔨 **New dev tool `scripts/audit-syntax.mjs`** (error→tooling rule) — scans ALL `.spore` + `.ts` for parse /
+  bad-syntax errors ("Unexpected token }" and kin) IN-PROCESS; `--summary` for the Stop cadence. Wire into the
+  Stop-hook dev-tools group + the devtools command registry on completion.
+- 📋 **Rebrand cruft:** stale `package.lln.json` (pre-rebrand) sits beside `package.spore.json` in
+  `galerina-ext-bridge-quantum` (possibly other packages) — a `.lln`→`.spore` cleanup candidate.
+- ⚠️ **Hook tree-churn (FYI):** the project Stop hooks (`rebuild-fusable-packages` + `lint-spore`/phase-close)
+  regenerate `dist/` and add `//spore: IMPACT/COMPLEXITY` metadata to example `src/index.spore` on every Stop, so
+  the working tree re-dirties by design. The regenerated `.lmanifest` (1270→5632 B = a signing/format change) is
+  NOT auto-committed — needs an owner call given the offline-key / re-sign-owed posture.
