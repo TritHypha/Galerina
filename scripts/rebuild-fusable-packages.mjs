@@ -66,7 +66,7 @@ const pkgDirs = [
   ...findDescriptors(join(ROOT, "examples")),
 ];
 
-let rebuilt = 0, fresh = 0, failed = 0;
+let rebuilt = 0, fresh = 0, failed = 0, skipped = 0;
 const details = [];
 
 for (const dir of pkgDirs) {
@@ -78,6 +78,12 @@ for (const dir of pkgDirs) {
   const srcRoot = existsSync(join(dir, "src")) ? join(dir, "src") : dir;
   const wasm = join(dir, "dist", `${name}.wasm`);
   const srcMtime = newestSpore(srcRoot);
+
+  // No .spore source to fuse — e.g. an ext-bridge with a `.ts` entry (galerina-ext-bridge-quantum) that carries a
+  // package.spore.json descriptor but is NOT a fusable .spore module. `galerina build --package` would try to parse
+  // a non-.spore entry and fail with SPORE-PARSE-001. Not a build failure — there is simply nothing to fuse. Skip.
+  if (srcMtime === 0) { skipped++; continue; }
+
   const wasmMtime = existsSync(wasm) ? statSync(wasm).mtimeMs : 0;
 
   if (wasmMtime > 0 && wasmMtime >= srcMtime) { fresh++; continue; } // up to date — skip
@@ -92,7 +98,7 @@ for (const dir of pkgDirs) {
   }
 }
 
-const head = `🔁 fuse-rebuild: ${rebuilt} rebuilt · ${fresh} fresh · ${failed} failed` +
+const head = `🔁 fuse-rebuild: ${rebuilt} rebuilt · ${fresh} fresh · ${skipped} skipped · ${failed} failed` +
   (pkgDirs.length === 0 ? " (no fusable packages)" : "");
 console.log(details.length ? `${head}\n   ${details.join("\n   ")}` : head);
 process.exit(0); // informational — never block
