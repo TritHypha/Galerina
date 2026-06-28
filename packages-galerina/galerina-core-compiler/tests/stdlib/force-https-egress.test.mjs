@@ -126,3 +126,45 @@ test("internal proxy: the allow-list opens ONLY the listed host (a sibling stays
     assert.match(r.error?.value ?? "", /SSRF/);
   } finally { delete process.env.GALERINA_EGRESS_ALLOWED_HOSTS; }
 });
+
+// ── allow-list AUDIT (security follow-up to b6033e1): the SSRF/force-HTTPS bypass leaves a trail ──
+async function withStderr(run) {
+  const real = process.stderr.write.bind(process.stderr);
+  const lines = [];
+  process.stderr.write = (s) => { lines.push(String(s)); return true; };
+  try { await run(); } finally { process.stderr.write = real; }
+  return lines.join("");
+}
+
+test("allow-list audit: an admitted bypass host is logged to the audit trail (stderr)", async () => {
+  clearDev();
+  process.env.NODE_ENV = "production";
+  process.env.GALERINA_EGRESS_ALLOWED_HOSTS = "audit-a.internal";
+  try {
+    const out = await withStderr(() => withFetch(() => resp(200, "OK"), () =>
+      callStdlib("http.get", undefined, [str("http://audit-a.internal:8080/x")], ctx)));
+    assert.match(out, /galerina:egress-audit/);
+    assert.match(out, /audit-a\.internal/);
+    assert.match(out, /GALERINA_EGRESS_ALLOWED_HOSTS/);
+  } finally { clearDev(); }
+});
+
+test("allow-list audit: a normal public host is NOT audited (only the bypass leaves a trail)", async () => {
+  clearDev();
+  const out = await withStderr(() => withFetch(() => resp(200, "OK"), () =>
+    callStdlib("http.get", undefined, [str("https://normal-not-audited.example.com/x")], ctx)));
+  assert.doesNotMatch(out, /egress-audit/);
+});
+
+test("allow-list audit: repeated dials of the same host log once per process (deduped)", async () => {
+  clearDev();
+  process.env.GALERINA_EGRESS_ALLOWED_HOSTS = "audit-dedupe.internal";
+  try {
+    const out = await withStderr(() => withFetch(() => resp(200, "OK"), async () => {
+      await callStdlib("http.get", undefined, [str("http://audit-dedupe.internal/1")], ctx);
+      await callStdlib("http.get", undefined, [str("http://audit-dedupe.internal/2")], ctx);
+    }));
+    const hits = (out.match(/audit-dedupe\.internal/g) ?? []).length;
+    assert.equal(hits, 1, `expected exactly one audit line, got ${hits}`);
+  } finally { clearDev(); }
+});

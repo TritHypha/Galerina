@@ -1250,6 +1250,27 @@ function serialization(fullName: string, args: readonly GalerinaValue[]): Galeri
   return undefined;
 }
 
+// Egress allow-list AUDIT (security follow-up to b6033e1). GALERINA_EGRESS_ALLOWED_HOSTS admits exact hosts in
+// EVERY env incl. production, bypassing the SSRF host-category denial + force-HTTPS for those hosts (CWE-918: the
+// trust then rests ENTIRELY on the operator's list — an abusable allow-listed host re-opens SSRF). We record each
+// host actually admitted through that bypass so an unexpected/abusable entry leaves a trail. First-use per host
+// per process (the audit answers WHICH listed hosts the bypass is serving, without per-request spam). stderr is
+// the only sink available at the dial — threading a structured AuditLogger through StdlibContext is the separate
+// owner-gated egress-policy follow-up. Auditing is best-effort: it must NEVER break an otherwise-permitted egress.
+const _auditedAllowlistEgress = new Set<string>();
+function auditAllowlistedEgress(host: string): void {
+  if (!host || _auditedAllowlistEgress.has(host)) return;
+  _auditedAllowlistEgress.add(host);
+  try {
+    (process as unknown as { stderr?: { write(s: string): void } }).stderr?.write(
+      `[galerina:egress-audit] SPORE-NET-001 host "${host}" admitted via GALERINA_EGRESS_ALLOWED_HOSTS — ` +
+        `SSRF host-guard + force-HTTPS bypassed for this exact host (operator-trusted allow-list)\n`,
+    );
+  } catch {
+    /* best-effort audit — swallow any sink failure */
+  }
+}
+
 async function networkAsync(fullName: string, args: readonly GalerinaValue[], ctx: StdlibContext): Promise<GalerinaValue | undefined> {
   if (!fullName.startsWith("http.")) return undefined;
   ctx.recordEffect("network.outbound");
@@ -1298,6 +1319,10 @@ async function networkAsync(fullName: string, args: readonly GalerinaValue[], ct
   const guardHop = async (u: string): Promise<string | null> => {
     const eg = guardOutboundUrl(u, dialPolicy);
     if (!eg.allowed) return `NetworkError: SSRF — ${eg.reason} (SPORE-NET-001 · ${eg.code})`;
+    // Audit the production SSRF/force-HTTPS bypass: this exact host was admitted only because the operator
+    // allow-listed it (covers redirect hops too — guardHop re-runs on each Location). Normal public hosts
+    // (code EGRESS_ALLOWED) are NOT audited; only the explicit bypass leaves a trail.
+    if (eg.code === "Galerina_NETWORK_EGRESS_ALLOWLISTED") auditAllowlistedEgress(eg.host);
     if (eg.requiresDnsRecheck) {
       let ips: string[];
       try {

@@ -183,6 +183,9 @@ export interface EgressTlsSetting {
    * Exact-host allow-list (e.g. an internal egress PROXY) trusted in EVERY environment, including production —
    * admitted over plaintext / any port, bypassing the SSRF host-category denial and force-HTTPS for those hosts
    * ONLY. Lets "even in production we work with an internal proxy" without relaxing the posture for anything else.
+   * ⚠ This is an SSRF bypass (CWE-918): trust rests entirely on the operator's list — keep it minimal (exact
+   * hosts, no wildcards). The outbound dial AUDITS each host it admits via this list (see
+   * docs/Knowledge-Bases/galerina-egress-tls-boot-setting.md → "Operator warning").
    */
   readonly allowedHosts: readonly string[];
   readonly rationale: string;

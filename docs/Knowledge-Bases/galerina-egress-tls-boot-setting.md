@@ -44,10 +44,30 @@ else. Allow-listed hosts also skip the DNS-rebind recheck (the allow-list IS the
   as the SSRF finding; force-HTTPS / port checks apply only to an otherwise-allowed PUBLIC host (loopback +
   allow-listed hosts short-circuit those checks).
 
+## ⚠ Operator warning — `GALERINA_EGRESS_ALLOWED_HOSTS` is an SSRF bypass (use sparingly)
+Every host on this list is admitted in **production** over plaintext / any port / internal address, with the SSRF
+host-guard, force-HTTPS, **and** the DNS-rebind recheck all skipped for that exact host. Deny-by-default for
+everything else is unchanged, but the security of a listed host now rests **entirely on the operator's trust in
+it** (CWE-918): if a listed host is attacker-controllable, internally redirectable, or later repurposed, it
+re-opens an egress/SSRF path. Therefore:
+- List the **fewest exact hosts** you must (a single corp egress proxy — there is no wildcard support, by design).
+- Prefer hosts you fully control; never list one that forwards to caller-controlled destinations.
+- Re-review the list every deploy; treat an unexpected entry as a security incident.
+
+### Audit trail (shipped — security follow-up to `b6033e1`)
+The outbound dial (`stdlib.ts` `auditAllowlistedEgress`) emits one **audit line to stderr the first time each
+host is admitted via the allow-list** (per process), tagged
+`[galerina:egress-audit] SPORE-NET-001 … admitted via GALERINA_EGRESS_ALLOWED_HOSTS`. It fires only on the
+bypass path (guard code `Galerina_NETWORK_EGRESS_ALLOWLISTED`, incl. redirect hops) — normal public-HTTPS egress
+(`EGRESS_ALLOWED`) is **not** audited — so an unexpected allow-listed host that actually gets dialed is visible
+in the logs. Collect stderr in production and alert on this tag. (A richer structured `AuditLogger` via
+`StdlibContext`→interpreter is the owner-gated egress-policy threading follow-up below.)
+
 ## Tests
 `galerina-core-network/tests/egress-guard.test.mjs` (guard + allowLoopback) · `galerina-core-config/tests/
 egress-tls.test.mjs` (resolveEgressTls) · `galerina-core-compiler/tests/stdlib/force-https-egress.test.mjs`
-(dial: force-HTTPS, loopback-dev, internal-proxy-in-production, fail-secure, production-denies-loopback). Full suite 60/60 · 5,945.
+(dial: force-HTTPS, loopback-dev, internal-proxy-in-production, fail-secure, production-denies-loopback, +
+allow-list **audit**: admitted-host logged, normal host not, deduped per process). Full suite 60/60 · 5,948.
 
 ## Follow-up (owner-gated)
 Thread the egress policy fully through `StdlibContext`→interpreter→cli for per-route / per-config control +
