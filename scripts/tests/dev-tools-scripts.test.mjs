@@ -271,3 +271,61 @@ test("overclaim-phrases: caught in a // comment but masked inside a string liter
 test("overclaim-phrases: the fixture yields exactly the two intended violations", () => {
   assert.equal(oc.violations, 2);
 });
+
+// ── FUNGI-EFFECT-CANON: effect-vocabulary single-source-of-truth gate ──────────
+// A crafted fixture with a deliberate `bitmask ⊄ canonical` drift proves the audit
+// DETECTS it; a consistent fixture proves no false-positive; and the REAL repo is
+// asserted internally consistent (regression guard for the 2026-07-01 reconciliation
+// — if anyone re-adds an effect to the bitmask/registry without CANONICAL_EFFECTS,
+// or vice-versa, this goes red).
+const tmp9 = mkdtempSync(join(tmpdir(), "fungi-effcanon-"));
+after(() => { try { rmSync(tmp9, { recursive: true, force: true }); } catch { /* best effort */ } });
+const ec9 = join(tmp9, "packages-galerina", "galerina-core-compiler", "src");
+mkdirSync(ec9, { recursive: true });
+const writeEffFixture = (canon, flagNames) => {
+  writeFileSync(join(ec9, "effect-checker.ts"), [
+    `const CANONICAL_EFFECTS = new Set([`,
+    ...canon.map((e) => `  "${e}",`),
+    `]);`,
+    `const EFFECT_NAME_ALIASES: ReadonlyMap<string, string> = new Map([`,
+    `  ["db.read", "database.read"],`,
+    `]);`,
+    `const BROAD_EFFECT_ALIASES: ReadonlySet<string> = new Set(["database"]);`,
+    `const SECURE_REQUIRED_EFFECTS = new Set(["database.write"]);`,
+    `const PURE_FORBIDDEN_EFFECTS = new Set(["database.read", "database.write"]);`,
+    `export const EFFECT_REGISTRY: Readonly<Record<string, readonly string[]>> = {`,
+    `  "database.find": ["database.read"],`,
+    `};`,
+  ].join("\n") + "\n");
+  writeFileSync(join(ec9, "type-registry.ts"), [
+    `const EFFECT_NAME_TO_FLAG: ReadonlyMap<string, number> = new Map([`,
+    ...flagNames.map((n) => `  ["${n}", 1],`),
+    `]);`,
+  ].join("\n") + "\n");
+};
+const runCanon = (root) => JSON.parse(spawnSync(process.execPath,
+  [join(SCRIPTS, "audit-effect-canonicality.mjs"), "--root", root, "--json"],
+  { encoding: "utf8" }).stdout);
+
+test("effect-canonicality: DETECTS a bitmask name absent from canonical (C1) and blocks", () => {
+  writeEffFixture(["database.read", "database.write"], ["database.read", "secret.access"]);
+  const j = runCanon(tmp9);
+  const c1 = j.internal.find((f) => f.check.startsWith("C1"));
+  assert.ok(c1, "C1 raised: secret.access is in the flag map but not canonical/aliased");
+  assert.ok(c1.items.includes("secret.access"), "the drifted name is reported");
+  assert.ok(j.blockingCount > 0, "an internal drift is blocking by default");
+});
+
+test("effect-canonicality: a consistent fixture has 0 internal findings (no false-positive)", () => {
+  writeEffFixture(["database.read", "database.write", "secret.access"], ["database.read", "secret.access"]);
+  const j = runCanon(tmp9);
+  assert.equal(j.internal.length, 0, "flag map ⊆ canonical ⇒ no internal drift");
+});
+
+test("effect-canonicality: the REAL repo effect tables are single-source consistent (regression guard)", () => {
+  const j = JSON.parse(spawnSync(process.execPath,
+    [join(SCRIPTS, "audit-effect-canonicality.mjs"), "--json"],
+    { cwd: SCRIPTS, encoding: "utf8" }).stdout);
+  assert.equal(j.internal.length, 0,
+    `internal effect tables have drifted: ${JSON.stringify(j.internal, null, 2)}`);
+});

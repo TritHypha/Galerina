@@ -213,6 +213,13 @@ run("lint:conventions", "node", ["scripts/lint-conventions.mjs", "--soft"]);
 // holes are triaged; emits build/coverage/coverage-codes.md. GRAPH THE AUDIT (owner 2026-06-22).
 run("coverage:codes", "node", ["scripts/audit-coverage.mjs", "codes", "--soft"]);
 
+// ── 5c-ii. Effect-vocabulary single source of truth (2026-07-01) ──
+// The compiler's effect tables (CANONICAL_EFFECTS · type-registry EFFECT_NAME_TO_FLAG · EFFECT_REGISTRY ·
+// SECURE_REQUIRED/PURE_FORBIDDEN) must agree: a name accepted by one but rejected by another is the drift
+// class that let an AI author non-compiling governed code (owner ask 2026-07-01). Blocks on INTERNAL drift;
+// KB/SPEC doc-drift is --strict only, pending the storage.*/ledger.* family work (Commit 2).
+run("effect:canonicality", "node", ["scripts/audit-effect-canonicality.mjs"]);
+
 // ── 5d. Dev-tool script tests (scripts/tests/) ──
 // These live OUTSIDE packages-galerina, so the package runner (run-all-tests.cjs) never sees them. Run them
 // here so the audit/index/registry tooling is regression-gated (e.g. the shared code-regex self-test).

@@ -178,6 +178,12 @@ const EFFECT_NAME_TO_FLAG: ReadonlyMap<string, EffectFlagsMask> = new Map([
   ["crypto.verify",              EffectFlags.CryptoVerify],
   ["crypto.password.verify",     EffectFlags.CryptoVerify],
   ["secret.access",              EffectFlags.SecretAccess],
+  // FUNGI-EFFECT reconciliation (2026-07-01): secret.read/secret.write are the
+  // canonical fine-grained names in effect-checker.ts, but were absent here, so
+  // effectsToFlags(["secret.read"]) returned 0 (mask-invisible) — a latent
+  // fail-open in the fast subset check. Map them to the SecretAccess bit.
+  ["secret.read",                EffectFlags.SecretAccess],
+  ["secret.write",               EffectFlags.SecretAccess],
   ["state.read",                 EffectFlags.StateRead],
   ["state.write",                EffectFlags.StateWrite],
   ["message.publish",            EffectFlags.MessagePublish],

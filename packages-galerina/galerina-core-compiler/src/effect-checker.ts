@@ -297,6 +297,10 @@ export type EffectCheckerMode = "development" | "production";
 
 const CANONICAL_EFFECTS = new Set([
   "database.read", "database.write",
+  // cache.* is already wired in EFFECT_REGISTRY (cache.get/set/delete → cache.read/write)
+  // but was missing here — a production compile would reject a declared cache effect that
+  // the op-registry produces. Promoted to canonical (reconciliation 2026-07-01).
+  "cache.read", "cache.write",
   "network.outbound", "network.inbound",
   "network.external", "network.internal",
   "secret.read", "secret.write",
@@ -332,6 +336,14 @@ const CANONICAL_EFFECTS = new Set([
   // Phase 25: random/clock non-deterministic effects
   "random.generate",
   "clock.read",
+  // FUNGI-EFFECT reconciliation (2026-07-01): these already had EffectFlags bits in
+  // type-registry.ts (EFFECT_NAME_TO_FLAG: StateRead/StateWrite/MessagePublish/ModelTrain)
+  // but were missing from CANONICAL_EFFECTS — so the bitmask accepted them while a
+  // production compile rejected them (FUNGI-EFFECT-004). Promoted to canonical so the
+  // effect vocabulary is single-source consistent (scripts/audit-effect-canonicality.mjs).
+  "state.read", "state.write",
+  "message.publish",
+  "ai.train",
 ]);
 
 const EFFECT_NAME_ALIASES: ReadonlyMap<string, string> = new Map([
@@ -353,6 +365,14 @@ const EFFECT_NAME_ALIASES: ReadonlyMap<string, string> = new Map([
   ["http.patch", "network.outbound"],
   ["file.read", "filesystem.read"],
   ["file.write", "filesystem.write"],
+  // FUNGI-EFFECT reconciliation (2026-07-01): variant names that resolve to an
+  // existing canonical effect (they already share its EffectFlags bit in
+  // type-registry.ts). ai.remoteInference→AiInference, crypto.password.verify→CryptoVerify.
+  ["ai.remoteInference", "ai.inference"],
+  ["crypto.password.verify", "crypto.verify"],
+  // secret.access is the coarse umbrella; nudge authors to the fine-grained
+  // secret.read/secret.write (emits FUNGI-EFFECT-005 broad-alias warning, below).
+  ["secret.access", "secret.read"],
 ]);
 
 // ---------------------------------------------------------------------------
@@ -418,6 +438,7 @@ export const LEGACY_EFFECT_CALL_PATTERNS_COUNT = EFFECT_CALL_PATTERNS.size;
 
 const PURE_FORBIDDEN_EFFECTS = new Set([
   "database.read", "database.write",
+  "cache.read", "cache.write",
   "network.outbound", "network.external", "network.inbound", "network.internal",
   "secret.read", "secret.write",
   "audit.write",
@@ -430,6 +451,10 @@ const PURE_FORBIDDEN_EFFECTS = new Set([
   "phi.read", "phi.write",
   // R4B: spawning background processes is forbidden in pure flows
   "process.spawn",
+  // FUNGI-EFFECT reconciliation (2026-07-01): promoted-to-canonical effects are
+  // also forbidden in a pure flow (a pure flow performs no state mutation, message
+  // publication, or model training).
+  "state.read", "state.write", "message.publish", "ai.train",
 ]);
 
 const PLAIN_FLOW_PRIVILEGED_EFFECTS = new Set([
@@ -683,6 +708,10 @@ export function checkFlowEffects(
 // Other non-canonical names emit FUNGI-EFFECT-004 (error).
 const BROAD_EFFECT_ALIASES: ReadonlySet<string> = new Set([
   "network", "database", "filesystem", "secret", "ai", "audit", "pii", "phi",
+  // secret.access is a coarse umbrella (access ⊇ read/write); treated as a broad
+  // alias so it is accepted with a nudge (FUNGI-EFFECT-005) toward secret.read /
+  // secret.write rather than a hard reject. Reconciliation 2026-07-01.
+  "secret.access",
 ]);
 
 function validateDeclaredEffectNames(flow: FlowMeta, diagnostics: EffectDiagnostic[]): void {
