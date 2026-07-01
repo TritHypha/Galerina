@@ -161,6 +161,7 @@ export const EffectFlags = {
   StateWrite:      1 << 11,  // state.write
   MessagePublish:  1 << 12,  // message.publish
   ModelTrain:      1 << 13,  // ai.train (privileged)
+  TelemetryRead:   1 << 14,  // telemetry.read (promoted canonical 2026-07-02 — aerospace corpus + Stage-B parity)
 } as const;
 
 export type EffectFlagsMask = number;
@@ -188,6 +189,7 @@ const EFFECT_NAME_TO_FLAG: ReadonlyMap<string, EffectFlagsMask> = new Map([
   ["state.write",                EffectFlags.StateWrite],
   ["message.publish",            EffectFlags.MessagePublish],
   ["ai.train",                   EffectFlags.ModelTrain],
+  ["telemetry.read",             EffectFlags.TelemetryRead],
 ]);
 
 /**

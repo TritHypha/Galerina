@@ -897,6 +897,23 @@ export const FUNGI_EFFECT_005 = {
   suggestedFix: "Replace 'network' with 'network.outbound', 'database' with 'database.read' or 'database.write', 'filesystem' with 'storage.read' or 'storage.write'.",
 } as const;
 
+/**
+ * FUNGI-EFFECT-006: a DENY-ONLY effect was declared (e.g. `eval.execute`).
+ *
+ * Deny-only names are part of the recognised vocabulary but can never be granted:
+ * no capability bit, no host import, no admission path carries them. Declaring one
+ * is an error at EVERY profile (dev included — galerina.mjs folds this code into
+ * the fail-closed integrity set); the flow must be restructured, not re-declared.
+ */
+export const FUNGI_EFFECT_006 = {
+  code: "FUNGI-EFFECT-006",
+  name: "DenyOnlyEffect",
+  severity: "error" as const,
+  message: "Effect is deny-only: recognised, never grantable. Remove it — no declaration makes this flow admissible.",
+  why: "Deny-only effects mark operations the platform refuses by construction (arbitrary dynamic evaluation). Accepting them anywhere would be a fail-open in the effect vocabulary itself.",
+  suggestedFix: "Remove the deny-only effect from the effects declaration and restructure the flow to avoid the operation.",
+} as const;
+
 // Phase 9B — Event Checker
 export {
   checkEvents,

@@ -60,7 +60,10 @@ contract {
     "storage.read", "storage.write",
     "audit.write", "telemetry.read",
     "crypto.verify", "secret.read",
-    "ai.infer", "process.spawn", "eval.execute",
+    // 2026-07-02 Stage-A reconcile: ai.infer renamed to the canonical ai.inference
+    // (Stage-A aliases ai.infer one-way). eval.execute stays KNOWN — it is the
+    // Stage-A DENY-ONLY name (FUNGI-EFFECT-006): recognised, never grantable.
+    "ai.inference", "process.spawn", "eval.execute",
     "pii.read", "pii.write"
   ]
 }

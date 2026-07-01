@@ -104,6 +104,8 @@ const ALIASES = new Map(
     .map((m) => [m[1], m[2]])
 );
 const BROAD_ALIASES = new Set(quoted(sliceBlock(ecSrc, "BROAD_EFFECT_ALIASES")));
+// Deny-only names (2026-07-02): recognised but NEVER grantable (FUNGI-EFFECT-006).
+const DENY_ONLY = new Set(quoted(sliceBlock(ecSrc, "DENY_ONLY_EFFECTS")));
 const SECURE_REQ = new Set(quoted(sliceBlock(ecSrc, "SECURE_REQUIRED_EFFECTS = new Set")));
 const PURE_FORBIDDEN = new Set(quoted(sliceBlock(ecSrc, "PURE_FORBIDDEN_EFFECTS = new Set")));
 const REGISTRY = objectEntries(sliceBlock(ecSrc, "EFFECT_REGISTRY"));
@@ -204,12 +206,23 @@ if (existsSync(GRAPH_SPEC)) {
   if (bad.length) add("C8 gir-emitter⊄canonical",
     "gir-emitter.ts EFFECT_TO_CAPABILITY maps a non-canonical effect key to a host capability", bad);
 }
-// C9 — Stage-B self-hosted knownEffects() should agree with Stage-A canonical (∪ alias). Self-hosted is
+// C9 — Stage-B self-hosted knownEffects() should agree with Stage-A canonical (∪ alias ∪ deny-only:
+//      a deny-only name is recognised vocabulary, just never grantable). Self-hosted is
 //      WIP, so this is INFORMATIONAL (never blocks) — it records the divergence (record-everything).
 {
-  const bad = STAGEB_EFFECTS.filter((e) => !isKnown(e));
+  const bad = STAGEB_EFFECTS.filter((e) => !isKnown(e) && !DENY_ONLY.has(e));
   if (bad.length) add("C9 stageB-drift",
     `Stage-B self-hosted/effect-checker.fungi knownEffects() lists effects Stage-A does not canonicalise — ${STAGE_B}`, bad);
+}
+// C10 — a DENY-ONLY name must not appear in ANY grantable table (canonical set, alias map,
+//       EffectFlags bitmask, gir-emitter capability map, V_DPM capability vocabulary). If one
+//       does, the vocabulary itself is fail-open: the "never grantable" name has a grant path.
+//       BLOCKING (internal).
+{
+  const grantable = new Set([...CANONICAL, ...ALIASES.keys(), ...FLAG_NAMES, ...GIR_KEYS, ...CAP_NAMES]);
+  const bad = [...DENY_ONLY].filter((e) => grantable.has(e));
+  if (bad.length) add("C10 deny-only-grantable",
+    "a DENY_ONLY_EFFECTS name appears in a grantable table — the deny-only fence is fail-open", bad);
 }
 
 // ── severity ─────────────────────────────────────────────────────────────────
@@ -218,7 +231,7 @@ if (existsSync(GRAPH_SPEC)) {
 // DOC drift (C5–C6): the KB registry / .graph SPEC name effects the compiler rejects
 //   — real, but resolved by the family work (Commit 2). Reported; blocks only under --strict.
 const STRICT = process.argv.includes("--strict");
-const sevOf = (f) => (/^(C[1-4]|C7|C8|BOOTSTRAP)\b/.test(f.check) ? "internal" : /^C9\b/.test(f.check) ? "stageb" : "docs");
+const sevOf = (f) => (/^(C[1-4]|C7|C8|C10|BOOTSTRAP)\b/.test(f.check) ? "internal" : /^C9\b/.test(f.check) ? "stageb" : "docs");
 const internal = findings.filter((f) => sevOf(f) === "internal");
 const docs = findings.filter((f) => sevOf(f) === "docs");
 const stageb = findings.filter((f) => sevOf(f) === "stageb");   // Stage-B WIP — informational, never blocks

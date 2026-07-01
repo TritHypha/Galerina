@@ -1,0 +1,89 @@
+// =============================================================================
+// Effect Checker — declared-name postures (2026-07-02 reconciliation)
+//
+// Locks the owner-decided "harden after proof" dispositions:
+//   - eval.execute is DENY-ONLY: FUNGI-EFFECT-006 error (recognised, never
+//     grantable) — NOT the generic UNKNOWN_EFFECT
+//   - ai.infer is a one-way deprecation alias of ai.inference: FUNGI-EFFECT-004
+//     NON_CANONICAL_EFFECT with the canonical suggestion
+//   - telemetry.read is canonical AND mask-visible (EffectFlags.TelemetryRead —
+//     CG-2: no canonical name may be mask-invisible)
+//   - pii.write keeps the pinned Wave-2 semantic: FUNGI-EFFECT-004 ERROR
+//     suggesting database.write (error > warning — no silent accept-surface widening)
+//   - a truly unknown name still gets FUNGI-EFFECT-004 UNKNOWN_EFFECT (error)
+// =============================================================================
+
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
+
+import {
+  parseProgram,
+  checkEffects,
+  effectsToFlags,
+  FUNGI_EFFECT_006,
+} from "../../dist/index.js";
+
+function diagnosticsFor(effectName) {
+  const src = `secure flow f(x: Int) -> Int contract { effects { ${effectName} } } { return x }`;
+  const p = parseProgram(src, "postures.fungi");
+  const results = checkEffects(p.flows, p.ast);
+  return results.flatMap(r => r.diagnostics ?? []);
+}
+
+describe("declared-name postures — deny-only", () => {
+  it("eval.execute → FUNGI-EFFECT-006 error (deny-only), not UNKNOWN_EFFECT", () => {
+    const diags = diagnosticsFor("eval.execute");
+    const d6 = diags.find(d => d.code === "FUNGI-EFFECT-006");
+    assert.ok(d6, "FUNGI-EFFECT-006 must fire");
+    assert.equal(d6.severity, "error");
+    assert.equal(d6.name, "DenyOnlyEffect");
+    assert.ok(!diags.some(d => d.code === "FUNGI-EFFECT-004"),
+      "deny-only must not double-report as unknown/non-canonical");
+  });
+
+  it("FUNGI_EFFECT_006 registry constant is exported with the right shape", () => {
+    assert.equal(FUNGI_EFFECT_006.code, "FUNGI-EFFECT-006");
+    assert.equal(FUNGI_EFFECT_006.severity, "error");
+    assert.equal(FUNGI_EFFECT_006.name, "DenyOnlyEffect");
+  });
+
+  it("eval.execute never resolves to a mask bit (no grant path)", () => {
+    assert.equal(effectsToFlags(["eval.execute"]), 0, "deny-only names are mask-invisible by design");
+  });
+});
+
+describe("declared-name postures — aliases and canonical", () => {
+  it("ai.infer → FUNGI-EFFECT-004 NON_CANONICAL_EFFECT suggesting ai.inference", () => {
+    const diags = diagnosticsFor("ai.infer");
+    const d = diags.find(x => x.code === "FUNGI-EFFECT-004");
+    assert.ok(d, "alias must be flagged non-canonical");
+    assert.equal(d.name, "NON_CANONICAL_EFFECT");
+    assert.equal(d.suggestedCode, "ai.inference");
+  });
+
+  it("telemetry.read is canonical: no name diagnostics", () => {
+    const diags = diagnosticsFor("telemetry.read");
+    assert.ok(!diags.some(d => d.code === "FUNGI-EFFECT-004" || d.code === "FUNGI-EFFECT-005" || d.code === "FUNGI-EFFECT-006"),
+      `expected no name diagnostics, got: ${diags.map(d => d.code).join(",")}`);
+  });
+
+  it("telemetry.read is mask-VISIBLE (CG-2: canonical names must map to a flag bit)", () => {
+    assert.notEqual(effectsToFlags(["telemetry.read"]), 0, "telemetry.read must have an EffectFlags bit");
+  });
+
+  it("pii.write → FUNGI-EFFECT-004 error suggesting database.write (pinned Wave-2 semantic)", () => {
+    const diags = diagnosticsFor("pii.write");
+    const d = diags.find(x => x.code === "FUNGI-EFFECT-004");
+    assert.ok(d, "pii.write must hard-error (error > warning; no silent widening)");
+    assert.equal(d.severity, "error");
+    assert.equal(d.suggestedCode, "database.write");
+  });
+
+  it("a truly unknown name still errors as UNKNOWN_EFFECT", () => {
+    const diags = diagnosticsFor("totally.fake.effect");
+    const d = diags.find(x => x.code === "FUNGI-EFFECT-004");
+    assert.ok(d, "unknown names must still be rejected");
+    assert.equal(d.name, "UNKNOWN_EFFECT");
+    assert.equal(d.severity, "error");
+  });
+});

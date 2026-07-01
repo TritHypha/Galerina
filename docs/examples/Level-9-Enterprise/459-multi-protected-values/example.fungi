@@ -19,7 +19,6 @@ contract {
 
   effects {
     pii.read
-    pii.write
     database.write
     audit.write
   }

@@ -18,7 +18,6 @@ contract {
   }
 
   effects {
-    pii.write
     phi.read
     ai.inference
     database.write

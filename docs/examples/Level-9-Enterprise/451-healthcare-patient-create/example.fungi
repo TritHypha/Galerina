@@ -3,7 +3,7 @@
 /// concept: healthcare PII governance pattern — create patient record with NHS number, protected types, and audit
 /// expected_diagnostics: none
 /// test_status: stable
-/// ai_rule: All healthcare flows must validate raw PII into protected types, declare pii.write and audit.write effects, and redact in audit.
+/// ai_rule: All healthcare flows must validate raw PII into protected types, declare database.write (the pii lane) and audit.write effects, and redact in audit.
 
 secure flow createPatient(readonly request: Request) -> CreatePatientResult
 
@@ -18,7 +18,6 @@ contract {
   }
 
   effects {
-    pii.write
     database.write
     audit.write
   }

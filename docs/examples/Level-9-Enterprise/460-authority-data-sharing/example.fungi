@@ -19,7 +19,7 @@ contract {
 
   effects {
     pii.read
-    pii.write
+    database.write  // pii payload — the pii intent lives in the protected types; write authority = the database.write lane
     database.read
     network.outbound
     audit.write

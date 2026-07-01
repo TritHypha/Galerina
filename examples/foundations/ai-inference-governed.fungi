@@ -15,8 +15,8 @@ contract {
   intent "Summarise a document using governed inference"
 
   ;; effects {} is Deny-by-default: only the listed effects are permitted.
-  ;; ai.infer authorises inference; audit.write authorises the AuditEvent.
-  effects { ai.infer, audit.write }
+  ;; ai.inference authorises inference; audit.write authorises the AuditEvent.
+  effects { ai.inference, audit.write }
 
   ;; invariant {} — proof obligations checked by the governance verifier.
   ;; These become WAT assertion gates (constant-proved ones cost zero at runtime).

@@ -22,8 +22,8 @@ contract {
   }
 
   effects {
-    medical.read
-    ai.infer
+    phi.read
+    ai.inference
     audit.write
   }
 
@@ -37,7 +37,7 @@ contract {
   privacy {
     pii { patientId dateOfBirth diagnosis treatmentHistory }
     require redaction before audit.write
-    require protected_boundary before ai.infer
+    require protected_boundary before ai.inference
   }
 
   hardware {

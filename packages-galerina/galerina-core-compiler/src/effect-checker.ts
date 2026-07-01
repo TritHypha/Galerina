@@ -347,6 +347,21 @@ const CANONICAL_EFFECTS = new Set([
   "state.read", "state.write",
   "message.publish",
   "ai.train",
+  // Declared-effect reconciliation (2026-07-02, owner-directed "harden after proof"):
+  // telemetry.read promoted from Stage-B-only to canonical (aerospace corpus uses it;
+  // EffectFlags.TelemetryRead bit 14 in type-registry.ts). eval.execute is deliberately
+  // NOT here — it is DENY-ONLY (see DENY_ONLY_EFFECTS below): recognised, never grantable.
+  "telemetry.read",
+]);
+
+// Effects that are RECOGNISED but NEVER grantable — declaring one is an error at
+// every profile (FUNGI-EFFECT-006, fail-closed; galerina.mjs folds it into the
+// dev-integrity set). eval.execute = arbitrary dynamic evaluation: no capability
+// bit, no host import, no admission path may ever carry it. Keeping the name in
+// the vocabulary (vs UNKNOWN) gives authors the real reason instead of a typo hint,
+// and reconciles Stage-B knownEffects (C9) without making the effect grantable.
+const DENY_ONLY_EFFECTS: ReadonlySet<string> = new Set([
+  "eval.execute",
 ]);
 
 const EFFECT_NAME_ALIASES: ReadonlyMap<string, string> = new Map([
@@ -373,6 +388,9 @@ const EFFECT_NAME_ALIASES: ReadonlyMap<string, string> = new Map([
   // type-registry.ts). ai.remoteInference→AiInference, crypto.password.verify→CryptoVerify.
   ["ai.remoteInference", "ai.inference"],
   ["crypto.password.verify", "crypto.verify"],
+  // Declared-effect reconciliation (2026-07-02): ai.infer was the Stage-B/corpus
+  // spelling — one-way deprecation alias onto the canonical ai.inference.
+  ["ai.infer", "ai.inference"],
   // secret.access is the coarse umbrella; nudge authors to the fine-grained
   // secret.read/secret.write (emits FUNGI-EFFECT-005 broad-alias warning, below).
   ["secret.access", "secret.read"],
@@ -458,6 +476,9 @@ const PURE_FORBIDDEN_EFFECTS = new Set([
   // also forbidden in a pure flow (a pure flow performs no state mutation, message
   // publication, or model training).
   "state.read", "state.write", "message.publish", "ai.train",
+  // 2026-07-02: telemetry.read is an observation of external state — an effect,
+  // so forbidden in pure flows like every other read family.
+  "telemetry.read",
 ]);
 
 const PLAIN_FLOW_PRIVILEGED_EFFECTS = new Set([
@@ -714,11 +735,28 @@ const BROAD_EFFECT_ALIASES: ReadonlySet<string> = new Set([
   // secret.access is a coarse umbrella (access ⊇ read/write); treated as a broad
   // alias so it is accepted with a nudge (FUNGI-EFFECT-005) toward secret.read /
   // secret.write rather than a hard reject. Reconciliation 2026-07-01.
+  // NOTE (2026-07-02): pii.write deliberately NOT here — the Wave-2 pinned semantic
+  // (regression-tested) is a hard FUNGI-EFFECT-004 error suggesting database.write;
+  // softening an error to a warning widens the accept surface. The teaching corpus
+  // declares database.write and carries the pii intent in privacy{}/protected params.
   "secret.access",
 ]);
 
 function validateDeclaredEffectNames(flow: FlowMeta, diagnostics: EffectDiagnostic[]): void {
   for (const effect of flow.declaredEffects) {
+    // Deny-only names are checked FIRST: recognised, never grantable, every profile.
+    if (DENY_ONLY_EFFECTS.has(effect)) {
+      diagnostics.push({
+        code: "FUNGI-EFFECT-006",
+        name: "DenyOnlyEffect",
+        severity: "error",
+        message: `Effect "${effect}" is deny-only: it is a recognised name but can never be granted (no capability, no host import, no admission path). Remove it — there is no declaration that makes this flow admissible.`,
+        location: flow.location,
+        suggestedFix: `Remove "${effect}" from the effects declaration and restructure the flow to avoid dynamic evaluation.`,
+        why: `Deny-only effects mark operations the platform refuses by construction. Declaring one is not an under-declaration to fix but a design boundary: the operation itself is not admissible.`,
+      });
+      continue;
+    }
     const canonical = EFFECT_NAME_ALIASES.get(effect);
     if (canonical !== undefined) {
       if (BROAD_EFFECT_ALIASES.has(effect)) {
