@@ -228,6 +228,12 @@ run("effect:canonicality", "node", ["scripts/audit-effect-canonicality.mjs"]);
 // can never happen silently again.
 run("muted:diagnostics", "node", ["scripts/audit-muted-diagnostics.mjs"]);
 
+// CG-6 corpus half (2026-07-02): the teaching corpus (examples/, docs/, packages src)
+// may declare only effect names a PRODUCTION compile accepts. audit-effect-canonicality
+// proves the TABLES agree; this proves the CODE CORPUS does (nothing else
+// production-compiles the examples, so a bad name would teach silently).
+run("effects:corpus", "node", ["scripts/audit-corpus-effect-names.mjs"]);
+
 // CG-7 (owner-directed 2026-07-01): a SIGNED fusable package must be git-clean.
 // Catches the annotation→re-fuse→unsigned cascade class regardless of which tool
 // dirties the src (the writer/rebuilder guards prevent the KNOWN paths; this

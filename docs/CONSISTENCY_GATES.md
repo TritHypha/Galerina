@@ -33,10 +33,12 @@ every gate here is wired into `scripts/run-phase-close.mjs`** so it runs on ever
 
 | Gate | Enforces | Command | Blocks on |
 |---|---|---|---|
-| `scripts/audit-effect-canonicality.mjs` | CG-1, CG-2, CG-6 | `node scripts/audit-effect-canonicality.mjs [--strict]` | internal table drift (C1–C4, C7 capability-types, C8 gir-emitter); docs drift under `--strict` (C5–C6); Stage-B drift (C9) informational |
+| `scripts/audit-effect-canonicality.mjs` | CG-1, CG-2, CG-6 | `node scripts/audit-effect-canonicality.mjs [--strict]` | internal table drift (C1–C4, C7 capability-types, C8 gir-emitter, C10 deny-only-in-grantable-table); docs drift under `--strict` (C5–C6); Stage-B drift (C9) informational |
+| `scripts/audit-corpus-effect-names.mjs` | CG-6 (corpus half) | `node scripts/audit-corpus-effect-names.mjs [--root <dir>]` | a teaching-corpus `.fungi` declaring an effect name a PRODUCTION compile rejects (unknown, non-broad alias, deny-only); broad aliases warn; `tests/` fixtures report-only; aspirational aerospace names on a reviewed allowlist (owner-gated additions) |
 | `scripts/audit-muted-diagnostics.mjs` | CG-3 | `node scripts/audit-muted-diagnostics.mjs` | a security/governance code muted without a reviewed allowlist entry |
 | `scripts/audit-signed-fixture-drift.mjs` | CG-7 | `node scripts/audit-signed-fixture-drift.mjs [--root <dir>]` | a signed fusable package with ANY local modification (src or dist); writer guard (`galerina.mjs` `//fungi:` refresh) + rebuild guard (`rebuild-fusable-packages.mjs`, `--force` to override) prevent the known paths |
 | compiler (`cli.ts`) production-strict signing gate | CG-4 | (in-compiler; regression-tested) | signing a plain-`build` artifact that fails production strictness |
+| bundled CLI (`galerina.mjs`) pre-signing gate | CG-4 | (in-CLI; `scripts/tests/cg4-signing-boundary.test.mjs`) | the SECOND minting site (`build` / `build --package`): a lenient build of a production-violating package emits `.wasm`/`.wat` but NO `.lmanifest`/`.fuse.json` — loudly, never silently (closed 2026-07-02; the cli.ts fix alone left this site signing) |
 | regression tests | all | `node --test scripts/tests/dev-tools-scripts.test.mjs` | a gate that stops detecting its own defect class |
 
 **How to run them all:** `node scripts/run-phase-close.mjs` (runs every gate + the dev-tool tests),
