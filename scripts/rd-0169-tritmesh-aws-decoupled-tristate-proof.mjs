@@ -335,7 +335,7 @@ const EXCLUDED = [
   ["X2", "the in-.fungi index / signed capability mechanics",
         "OWNED by RD-0167 (signed primary index, Ed25519-covered, ZT8). RD-0169 only CONSUMES that result (V5/V6 assume the capability is the real auth). The index-poisoning attack+fix is proven in scripts/rd-0166-0167-*-proof.mjs, not re-litigated here."],
   ["X3", "TLS / mTLS / transit-encryption on the DB-connection border",
-        "Real crypto, ASSUMED present and NOT replaceable by any tri_state value. The border is an egress/ingress surface -> SSRF + transit-encryption disciplines apply (logicn-session-2026-06-25 SSRF fix; feedback-http-transport K3 cert-gate). A ternary health value CANNOT substitute for TLS — re-confirms the RD-0162/0164/0165 load-bearing refute."],
+        "Real crypto, ASSUMED present and NOT replaceable by any tri_state value. The border is an egress/ingress surface -> SSRF + transit-encryption disciplines apply (galerina-session-2026-06-25 SSRF fix; feedback-http-transport K3 cert-gate). A ternary health value CANNOT substitute for TLS — re-confirms the RD-0162/0164/0165 load-bearing refute."],
   ["X4", "wall-clock latency / '504 eliminated' / 'zero latency' as a hardware guarantee",
         "MODEL-STRUCTURAL only. V1 proves a STRUCTURAL count (N misses -> 1 refetch) and V2 proves determinism; neither claims a nanosecond figure. The single refetch still costs Theta(payload). We never assert O(1) or 'zero work' (consistent with the RD-0166/0167 anti-O(1) guard)."],
   ["X5", "gRPC/Protobuf vs REST/JSON payload choice (note's closing question)",

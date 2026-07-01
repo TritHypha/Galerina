@@ -1,7 +1,7 @@
 // =============================================================================
 // fungi-graph — ExecutionProofChain
 //
-// Tamper-evident 5-hash chain for LogicN execution proofs.
+// Tamper-evident 5-hash chain for Galerina execution proofs.
 // schemaVersion: "fungi.execution.proof.v1" (canonical from NOTES TO COVER / c)
 // Uses Node.js crypto — no external dependency.
 // =============================================================================

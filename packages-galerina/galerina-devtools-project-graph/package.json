@@ -1,11 +1,11 @@
 {
   "name": "@galerina/devtools-project-graph",
   "version": "1.0.0-beta.2",
-  "description": "Graph data structures, algorithms, and runtime reporting for the LogicN platform",
+  "description": "Graph data structures, algorithms, and runtime reporting for the Galerina platform",
   "license": "Apache-2.0",
-  "author": "LogicN Contributors",
+  "author": "Galerina Contributors",
   "keywords": [
-    "logicn",
+    "galerina",
     "graph",
     "effect-graph",
     "boundary-graph",
@@ -41,6 +41,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/logicn/fungi-graph.git"
+    "url": "https://github.com/galerina/fungi-graph.git"
   }
 }

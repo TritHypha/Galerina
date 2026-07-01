@@ -284,7 +284,7 @@ console.log("\nV4  TRACK future-HW storage as a SIMULATABLE digital matrix (no s
 // ── EXCLUDED (settled elsewhere / out of scope for this runnable proof) ──
 const EXCLUDED = [
   ["X1", "Photorefractive / holographic VOLUME storage capacity & angular multiplexing physics",
-        "GENUINE future-HW research (lithium-niobate, DuPont photopolymers). Not runnable on a binary PC; cannot be benched here. TRACK as a storage substrate only — crypto/verdict stays digital (see V4). Same posture as the photonic-PPU virtualisation work (logicn-photonic-ppu-virtualisation)."],
+        "GENUINE future-HW research (lithium-niobate, DuPont photopolymers). Not runnable on a binary PC; cannot be benched here. TRACK as a storage substrate only — crypto/verdict stays digital (see V4). Same posture as the photonic-PPU virtualisation work (galerina-photonic-ppu-virtualisation)."],
   ["X2", "Transceiver / fiber->ternary-light bridge ('get light into the chip without a silicon CPU')",
         "Pure hardware (optical front-end). No software artifact to prove; the digital side is just the existing host bridge. HW-gated."],
   ["X3", "Slime-mold / Fermat 'least-time' instantaneous routing as an ALGORITHM",

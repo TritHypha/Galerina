@@ -4,6 +4,33 @@ All notable changes to Galerina are documented here (format: [Keep a Changelog](
 
 ## [Unreleased]
 
+### Changed
+- **Source-file rename `.spore` → `.fungi` and diagnostic codes `SPORE-` → `FUNGI-` completed and
+  verified.** The extension/code sweep was finished and audited end-to-end (full suite 60/60 · 5,903
+  tests · 0 fail; graph, security audit `0 critical/0 high`, benchmarks all green).
+- **Knowledge Base relocated out of the repo** to the sibling `../ZTF-Knowledge-Bases` (pre-release IP
+  protection). Tooling that reads the KB (`galerina-devtools-kb-graph`, the compiler
+  diagnostic-namespace conformance test) now resolves it via the **`GALERINA_KB_DIR`** environment
+  variable (default order: env → in-repo `docs/Knowledge-Bases/` if restored → sibling KB).
+
+### Fixed
+- **Residual `LogicN` → `Galerina` stragglers** the earlier brand sweep missed — 91 occurrences across
+  self-hosted `.fungi` sources, benchmark/example flows, and `devtools-project-graph` package metadata
+  (including the stale `@logicn/…` package identity in its lockfile). Fixed via an auditable codemod.
+- **Lexer generated-comment marker `//spore:` → `//fungi:`** — it was a char-by-char `peek()` check
+  invisible to a text find-replace.
+- **`app-kernel` `LogicnKernelRequest/Response` → `GalerinaKernelRequest/Response`** — the file carried a
+  legitimate NUL delimiter byte, so the codemod had skipped it as "binary".
+- **Restored the root-signed `greeting.lmanifest.json`** fixture whose signature the migration had
+  invalidated (the offline `ab46f4c7` re-sign to make it fungi-consistent is still owed).
+
+### Added
+- **`scripts/brand-audit.mjs`** — a binary-safe residual-brand + `@`-scope auditor. It reads every file
+  as raw bytes (so NUL-containing files that `grep`/`ripgrep` skip as "binary" are still scanned) and
+  substring-matches every form (`@spore`, `/spore`, `sporeX`, case variants), enumerating every
+  `@`-scope so a broken/renamed import scope cannot hide. CI-usable (exit 1 on any straggler).
+- **`scripts/fix-logicn-brand.mjs`** — the paired auditable codemod (dry-run by default).
+
 ## [1.0.0-beta.2] - 2026-06-24
 
 This beta packages the Stage-A production-hardened compiler/runtime, the governed admission

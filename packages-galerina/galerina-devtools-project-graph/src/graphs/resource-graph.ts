@@ -1,7 +1,7 @@
 // =============================================================================
 // fungi-graph — ResourceLifecycleGraph
 //
-// State machine graph for LogicN runtime resource lifecycle.
+// State machine graph for Galerina runtime resource lifecycle.
 // States: declared → planned → initializing → ready → failed → shutting_down → closed
 // =============================================================================
 

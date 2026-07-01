@@ -1,4 +1,4 @@
-;; LogicN — security::interim BoundaryProxy
+;; Galerina — security::interim BoundaryProxy
 ;;
 ;; PURPOSE:
 ;;   User-space validation proxy for cross-boundary calls.

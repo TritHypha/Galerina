@@ -10,7 +10,8 @@
   "scripts": {
     "test": "node scripts/run-all-tests.cjs",
     "test:core": "node scripts/run-all-tests.cjs --core",
-    "test:list": "node scripts/run-all-tests.cjs --list"
+    "test:list": "node scripts/run-all-tests.cjs --list",
+    "brand-audit": "node scripts/brand-audit.mjs ."
   },
   "engines": {
     "node": ">=18.0.0"

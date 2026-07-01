@@ -2,7 +2,7 @@
 // fungi-graph — Report section builders
 //
 // Convert graph instances into structured report sections that can be
-// embedded in LogicN's runtime reports (galerina-core-reports).
+// embedded in Galerina's runtime reports (galerina-core-reports).
 // =============================================================================
 
 import type { EffectGraph } from "../graphs/effect-graph.js";

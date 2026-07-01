@@ -1,7 +1,7 @@
 project "OrderRiskDemo"
 
 language {
-  name "LogicN"
+  name "Galerina"
   version "0.1"
   compatibility "prototype"
 }

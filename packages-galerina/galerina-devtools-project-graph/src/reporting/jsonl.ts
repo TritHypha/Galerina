@@ -1,7 +1,7 @@
 // =============================================================================
 // fungi-graph — JsonlWriter
 //
-// Append-only JSONL writer for LogicN runtime audit events.
+// Append-only JSONL writer for Galerina runtime audit events.
 // Enforces the 7-rule contract from NOTES TO COVER / c:
 //
 //   1. Writer appends only.

@@ -1,5 +1,5 @@
 {
-  "packageName": "@logicn/devtools-project-graph",
+  "packageName": "@galerina/devtools-project-graph",
   "allowedExternal": [
     "node:crypto",
     "node:fs/promises",

@@ -1,7 +1,7 @@
 // =============================================================================
 // fungi-graph — EffectGraph
 //
-// Models the flow call graph annotated with LogicN effect declarations.
+// Models the flow call graph annotated with Galerina effect declarations.
 // Effect propagation uses the fixpoint algorithm so transitive effects
 // (effects inherited from callees) are always computed correctly.
 //

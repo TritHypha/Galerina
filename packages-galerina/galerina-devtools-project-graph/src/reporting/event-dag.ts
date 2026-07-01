@@ -1,7 +1,7 @@
 // =============================================================================
 // fungi-graph — EventDAG
 //
-// Causality DAG built from LogicN RuntimeAuditEvents.
+// Causality DAG built from Galerina RuntimeAuditEvents.
 // Edges connect events via traceId / spanId / parentSpanId relationships.
 // =============================================================================
 

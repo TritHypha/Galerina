@@ -42,7 +42,7 @@ export type { FixpointResult } from "./algorithms/fixpoint.js";
 export { canReach, allReachable, canReachAll, reachableSubset } from "./algorithms/reach.js";
 
 // ---------------------------------------------------------------------------
-// LogicN graph types — EffectGraph
+// Galerina graph types — EffectGraph
 // ---------------------------------------------------------------------------
 
 export type {
@@ -66,7 +66,7 @@ export {
 } from "./graphs/effect-graph.js";
 
 // ---------------------------------------------------------------------------
-// LogicN graph types — BoundaryGraph
+// Galerina graph types — BoundaryGraph
 // ---------------------------------------------------------------------------
 
 export type {
@@ -90,7 +90,7 @@ export {
 } from "./graphs/boundary-graph.js";
 
 // ---------------------------------------------------------------------------
-// LogicN graph types — ProjectGraph
+// Galerina graph types — ProjectGraph
 // ---------------------------------------------------------------------------
 
 export type {
@@ -112,7 +112,7 @@ export {
 } from "./graphs/project-graph.js";
 
 // ---------------------------------------------------------------------------
-// LogicN graph types — DependencyGraph
+// Galerina graph types — DependencyGraph
 // ---------------------------------------------------------------------------
 
 export type {
@@ -129,7 +129,7 @@ export {
 } from "./graphs/dependency-graph.js";
 
 // ---------------------------------------------------------------------------
-// LogicN graph types — ResourceLifecycleGraph
+// Galerina graph types — ResourceLifecycleGraph
 // ---------------------------------------------------------------------------
 
 export type {
@@ -150,7 +150,7 @@ export {
 } from "./graphs/resource-graph.js";
 
 // ---------------------------------------------------------------------------
-// LogicN graph types — CapabilityGraph
+// Galerina graph types — CapabilityGraph
 // ---------------------------------------------------------------------------
 
 export type {

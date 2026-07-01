@@ -1,7 +1,7 @@
 // =============================================================================
 // fungi-graph — BoundaryGraph
 //
-// Models trust boundaries in a LogicN application and validates that
+// Models trust boundaries in a Galerina application and validates that
 // effects and secrets do not cross boundaries illegally.
 //
 // Diagnostic codes: FUNGI-PGRAPH-020..023 — project-graph-owned, the boundary-graph VIEW of trust

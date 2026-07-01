@@ -4,14 +4,14 @@
 /// @status: bootstrap stub — routes flow execution to the appropriate tier
 
 // ============================================================
-// LogicN Self-Hosted Runtime Dispatcher — Phase 69
+// Galerina Self-Hosted Runtime Dispatcher — Phase 69
 //
 // Decides which execution tier handles a given flow based on:
 //   1. Flow qualifier (pure/guarded/secure)
 //   2. Effect declarations
 //   3. Param types (integer-only = bytecode eligible)
 //
-// This IS the runtime tier router expressed in LogicN source.
+// This IS the runtime tier router expressed in Galerina source.
 // The TypeScript route-dispatcher.ts remains as the bootstrap.
 // ============================================================
 
@@ -66,11 +66,11 @@ contract {
 }
 
 // ════════════════════════════════════════════════════════════
-// GIR EVALUATOR (Milestone S7) — execute the emitted GIR in LogicN
+// GIR EVALUATOR (Milestone S7) — execute the emitted GIR in Galerina
 //
 // A small tree-walking interpreter over the GIR produced by
 // gir-emitter.fungi's emitBodyGIR. This is the LAST self-hosted stage:
-// source → lex → parse → emit GIR → EXECUTE, all in LogicN.
+// source → lex → parse → emit GIR → EXECUTE, all in Galerina.
 //
 // Supported GIR:
 //   GIRExpr op: "const" | "load" | "binop" | "unop" (call/unknown → 0)

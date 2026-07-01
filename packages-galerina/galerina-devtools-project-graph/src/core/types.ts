@@ -64,7 +64,7 @@ export interface GraphJSON<N, E> {
 
 /**
  * Shared diagnostic shape used by fungi-graph graph validators.
- * Structurally compatible with LogicN's CompilerDiagnostic / BaseDiagnostic.
+ * Structurally compatible with Galerina's CompilerDiagnostic / BaseDiagnostic.
  */
 export interface FungiDiagnostic {
   readonly code: string;
