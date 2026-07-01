@@ -42,20 +42,22 @@ contract {
 }
 
 ;; Apply quarantine transition:
-;; Clears ALL capability bits (0-12), sets quarantine_engaged (bit 30)
+;; Clears caps (0-7) + topology (8-12) + domain (20-23), sets quarantine_engaged (bit 30)
 pure flow applyQuarantine(vdpm: Int) -> EmergencyTransitionResult
 contract {
   intent "Quarantine: clear all capabilities, set quarantine flag"
   effects {}
 }
 {
-  ;; Clear bits 0-12, set bit 30 (quarantine_engaged = 1073741824)
-  let cleared = Int.bitAnd(vdpm, 4286578688)  ;; keep bits 13-29 and 31
+  ;; Clear caps (0-7) + topology (8-12) + domain (20-23); set bit 30 (quarantine_engaged).
+  ;; keep_mask 0xFF0FE000 keeps phase 13-19 + reserved 24-29 + flags 30-31 (aligned with vdpm.fungi;
+  ;; fixes the prior 0xFF800000 which over-cleared 13-22 and left bit 23 uncleared).
+  let cleared = Int.bitAnd(vdpm, 4279230464)
   let newVdpm = Int.bitOr(cleared, V_DPM.quarantine_engaged)
 
   return EmergencyTransitionResult {
     vdpmAfter:        newVdpm
-    bitsCleared:      8191
+    bitsCleared:      15736831
     quarantineSet:    true
     emergencyModeSet: false
     signalHandled:    true
@@ -63,19 +65,19 @@ contract {
 }
 
 ;; Apply emergency mode transition:
-;; Clears ALL capability bits (0-12), sets emergency_mode (bit 31)
+;; Clears caps (0-7) + topology (8-12) + domain (20-23), sets emergency_mode (bit 31)
 pure flow applyEmergencyMode(vdpm: Int) -> EmergencyTransitionResult
 contract {
   intent "Emergency mode: clear all capabilities, set emergency flag"
   effects {}
 }
 {
-  let cleared = Int.bitAnd(vdpm, 4286578688)
+  let cleared = Int.bitAnd(vdpm, 4279230464)  ;; clear caps+topology+domain (0xFF0FE000 keeps 13-19, 24-31)
   let newVdpm = Int.bitOr(cleared, V_DPM.emergency_mode)
 
   return EmergencyTransitionResult {
     vdpmAfter:        newVdpm
-    bitsCleared:      8191
+    bitsCleared:      15736831
     quarantineSet:    false
     emergencyModeSet: true
     signalHandled:    true

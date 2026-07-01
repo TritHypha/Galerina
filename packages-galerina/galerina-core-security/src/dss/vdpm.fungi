@@ -11,7 +11,8 @@
 //  Bits  0-7   Capability bits     (8 capabilities)
 //  Bits  8-15  Topology bits       (4 topology + 4 reserved)
 //  Bits 16-19  Phase tracking      (which ExecutionDAG phase is active)
-//  Bits 20-29  Reserved            (future capability families)
+//  Bits 20-23  Domain capabilities (payment.charge, pii.read, phi.read, phi.write — Commit 3)
+//  Bits 24-29  Reserved            (future capability families)
 //  Bit  30     quarantine_engaged  (any DWI quarantined)
 //  Bit  31     emergency_mode      (any emergency {} fired)
 //
@@ -54,6 +55,13 @@ bitfield V_DPM {
   mmcp_execute:     11   ;; bit 11 — isolate has active execute-capable MMCP
   mmcp_secret:      12   ;; bit 12 — isolate has a secret-access MMCP
 
+  ;; Domain-sensitive capability bits (20-23) — Commit 3: high-consequence effects made runtime
+  ;; bit-enforceable (were name-tracked only). Cleared by quarantine/emergency (see masks below).
+  payment_charge:   20   ;; bit 20 — payment / charge operations
+  pii_read:         21   ;; bit 21 — read personally-identifiable information
+  phi_read:         22   ;; bit 22 — read protected health information
+  phi_write:        23   ;; bit 23 — write protected health information
+
   ;; Containment / override bits (30-31)
   quarantine_engaged: 30  ;; bit 30 — any DWI is quarantined
   emergency_mode:     31  ;; bit 31 — emergency {} response active (monotonicity exception)
@@ -65,11 +73,11 @@ bitfield V_DPM {
 // DSS.wasm sets V_DPM to this value at isolate instantiation,
 // then CLEARS bits as capabilities are consumed or denied.
 //
-// Bit layout: 0b00000000_00000000_00000000_11111111 (bits 0-7 all set)
+// Bit layout: bits 0-7 (0xFF base caps) | bits 20-23 (0xF00000 domain caps) — Commit 3.
 // Plus bit 8 (dag_edge_valid) set immediately after DAG validation.
 // Topology bits (9-12) are set by MMCP allocation in DSS.wasm.
 
-static VDPM_INITIAL_CAPABILITIES = 255
+static VDPM_INITIAL_CAPABILITIES = 15728895
 
 // ── Capability → bitmask mapping ─────────────────────────────────────────────
 //
@@ -93,6 +101,10 @@ contract {
   if effect == "ai.inference" { return V_DPM.ai_inference }
   if effect == "shell.execute" { return V_DPM.shell_execute }
   if effect == "native.call" { return V_DPM.native_call }
+  if effect == "payment.charge" { return V_DPM.payment_charge }
+  if effect == "pii.read" { return V_DPM.pii_read }
+  if effect == "phi.read" { return V_DPM.phi_read }
+  if effect == "phi.write" { return V_DPM.phi_write }
   // Unknown effect -> 0 (no capability granted)
   return 0
 }
@@ -156,12 +168,11 @@ contract {
   effects {}
 }
 {
-  // Clear all capability bits (0-7) and topology bits (8-12)
-  // clear_bits = 8191 (bits 0-12 all set = 0x1FFF)
-  // keep_mask = 4294967295 - 8191 = 4294959104
-  // 4294959104 = 0xFFFFE000 = ~(bits 0-12): clears capability + topology bits
+  // Clear caps (0-7) + topology (8-12) + domain (20-23) — Commit 3.
+  // clear_bits = 0x1FFF (0-12) | 0xF00000 (20-23) = 0xF01FFF = 15736831
+  // keep_mask = 4294967295 - 15736831 = 4279230464 = 0xFF0FE000 (keeps phase 13-19, reserved 24-29, flags 30-31)
   // Sets bit 30 (quarantine_engaged = V_DPM.quarantine_engaged = 1073741824)
-  let keep_mask = 4294959104
+  let keep_mask = 4279230464
   let cleared = Int.bitAnd(vdpm, keep_mask)
   return Int.bitOr(cleared, V_DPM.quarantine_engaged)
 }
@@ -172,11 +183,10 @@ contract {
   effects {}
 }
 {
-  // Clear all capability and topology bits (0-12)
-  // keep_mask = 4294967295 - 8191 = 4294959104
-  // 4294959104 = 0xFFFFE000 = ~(bits 0-12): clears capability + topology bits
+  // Clear caps (0-7) + topology (8-12) + domain (20-23) — Commit 3.
+  // keep_mask = 4294967295 - 0xF01FFF = 4279230464 = 0xFF0FE000 (keeps phase 13-19, reserved 24-29, flags 30-31)
   // Set bit 31 (emergency_mode = V_DPM.emergency_mode = 2147483648)
-  let keep_mask = 4294959104
+  let keep_mask = 4279230464
   let cleared = Int.bitAnd(vdpm, keep_mask)
   return Int.bitOr(cleared, V_DPM.emergency_mode)
 }

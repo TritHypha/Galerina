@@ -12,6 +12,9 @@
  *   1 = storage.write      5 = ai.inference
  *   2 = secret.access      6 = shell.execute
  *   3 = audit.write        7 = native.call
+ * Domain-sensitive bits (reserved 20-29 range — Commit 3, runtime-enforceable governance):
+ *   20 = payment.charge    22 = phi.read
+ *   21 = pii.read          23 = phi.write
  */
 
 /** Canonical capability names — the typed enum for V_DPM bit positions. */
@@ -25,6 +28,12 @@ export const enum SystemCapabilityType {
   AiInference      = "ai.inference",
   ShellExecute     = "shell.execute",
   NativeCall       = "native.call",
+  // Domain-sensitive capabilities (V_DPM bits 20-23 — Commit 3): high-consequence effects made
+  // runtime bit-enforceable (were name-tracked only, vdpmBit -1). PII/PHI reads are gated too.
+  PaymentCharge    = "payment.charge",
+  PiiRead          = "pii.read",
+  PhiRead          = "phi.read",
+  PhiWrite         = "phi.write",
   // Composite families
   LedgerMutate     = "ledger.mutate",  // storage.write + audit.write
   NetworkInbound   = "network.inbound", // same bit as outbound
@@ -43,6 +52,11 @@ export const CAPABILITY_BIT_POSITION: Readonly<Record<string, number>> = {
   [SystemCapabilityType.AiInference]:     5,
   [SystemCapabilityType.ShellExecute]:    6,
   [SystemCapabilityType.NativeCall]:      7,
+  // Domain-sensitive bits (reserved 20-29 range) — Commit 3. JS `<<` is safe through bit 30.
+  [SystemCapabilityType.PaymentCharge]:  20,
+  [SystemCapabilityType.PiiRead]:        21,
+  [SystemCapabilityType.PhiRead]:        22,
+  [SystemCapabilityType.PhiWrite]:       23,
   [SystemCapabilityType.DatabaseRead]:   -1,  // read-only, no bit needed
 };
 
@@ -80,6 +94,10 @@ export const KNOWN_CAPABILITIES = new Set<string>([
   SystemCapabilityType.AiInference,
   SystemCapabilityType.ShellExecute,
   SystemCapabilityType.NativeCall,
+  SystemCapabilityType.PaymentCharge,
+  SystemCapabilityType.PiiRead,
+  SystemCapabilityType.PhiRead,
+  SystemCapabilityType.PhiWrite,
   SystemCapabilityType.LedgerMutate,
   SystemCapabilityType.DatabaseRead,
   // Wildcard roots (banned by FUNGI-CAP-001 but known)

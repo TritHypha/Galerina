@@ -31,6 +31,10 @@ contract {
   if effect == "ai.inference"      { return V_DPM.ai_inference }
   if effect == "shell.execute"     { return V_DPM.shell_execute }
   if effect == "native.call"       { return V_DPM.native_call }
+  if effect == "payment.charge"    { return V_DPM.payment_charge }
+  if effect == "pii.read"          { return V_DPM.pii_read }
+  if effect == "phi.read"          { return V_DPM.phi_read }
+  if effect == "phi.write"         { return V_DPM.phi_write }
   return 0
 }
 
