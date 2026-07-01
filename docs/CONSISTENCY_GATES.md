@@ -25,6 +25,7 @@ every gate here is wired into `scripts/run-phase-close.mjs`** so it runs on ever
 | **CG-4** | **A signed artifact must be production-strict.** The compiler must not emit a signed `.lmanifest` for an artifact that fails production-strict security/governance — even from a lenient `build`. | A signed manifest is an admission credential; signing a dev-lenient violating artifact is a fail-open at the boundary. |
 | **CG-5** | **Local effect/capability sets use only real names.** Any hand-maintained `Set` of effect/capability names (inference passes, tier sets, capability maps) must contain only canonical effects, registered aliases, `EFFECT_REGISTRY` operations, or known capabilities — never a name that matches nothing. | A dead name (`gateway.charge` vs `payment.charge`) silently disables the classification for real flows. |
 | **CG-6** | **Docs/specs teach only compilable vocabulary.** The KB registry and the `.graph` SPEC may name only canonical effects/families. | An AI (or human) authoring from the docs otherwise writes plausible-but-non-compiling governed code. |
+| **CG-7** | **A SIGNED fusable package is never modified or rebuilt locally.** A package whose `dist/<name>.lmanifest.json` carries a real (offline-ceremony) signature must stay git-clean; no tool may write into its `src` (generated `//fungi:` comments included) or regenerate its manifest. Re-signing is an offline ceremony. | Dirtying signed src bumps mtimes → the fuse-rebuild hook regenerates the `.lmanifest` UNSIGNED → the fuse loader fail-closes (`FUNGI-FUSE-UNSIGNED`) → the suite goes red from a "cosmetic" comment write (the annotation→re-fuse→unsigned cascade, hit 2026-07-01). |
 
 ---
 
@@ -34,6 +35,7 @@ every gate here is wired into `scripts/run-phase-close.mjs`** so it runs on ever
 |---|---|---|---|
 | `scripts/audit-effect-canonicality.mjs` | CG-1, CG-2, CG-6 | `node scripts/audit-effect-canonicality.mjs [--strict]` | internal table drift (C1–C4, C7 capability-types, C8 gir-emitter); docs drift under `--strict` (C5–C6); Stage-B drift (C9) informational |
 | `scripts/audit-muted-diagnostics.mjs` | CG-3 | `node scripts/audit-muted-diagnostics.mjs` | a security/governance code muted without a reviewed allowlist entry |
+| `scripts/audit-signed-fixture-drift.mjs` | CG-7 | `node scripts/audit-signed-fixture-drift.mjs [--root <dir>]` | a signed fusable package with ANY local modification (src or dist); writer guard (`galerina.mjs` `//fungi:` refresh) + rebuild guard (`rebuild-fusable-packages.mjs`, `--force` to override) prevent the known paths |
 | compiler (`cli.ts`) production-strict signing gate | CG-4 | (in-compiler; regression-tested) | signing a plain-`build` artifact that fails production strictness |
 | regression tests | all | `node --test scripts/tests/dev-tools-scripts.test.mjs` | a gate that stops detecting its own defect class |
 

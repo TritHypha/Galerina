@@ -812,6 +812,43 @@ Baseline comparison (governance-cost):
     } catch { /* missing root → no files */ }
     return out;
   };
+  // ── signed-package write guard (cascade fix, owner-directed 2026-07-01) ──────
+  // A fusable package whose dist/<name>.lmanifest.json carries a REAL signature
+  // (object governanceSignature with string keyId + signature — mirrors
+  // fuse-loader verifyManifestSignature and scripts/lib/signed-lmanifest.mjs) is
+  // owned by the OFFLINE signing ceremony. Dirtying its src (even a generated
+  // //fungi: comment) bumps mtimes, the fuse-rebuild hook re-fuses it, and the
+  // regenerated manifest is UNSIGNED → the fuse loader fail-closes
+  // (FUNGI-FUSE-UNSIGNED). So the comment writer must never write into a signed
+  // package. Deny-by-default: an existing-but-unreadable manifest counts as signed.
+  const signedPkgCache = new Map();
+  const isUnderSignedPackage = (file) => {
+    let dir = dirname(file);
+    const start = dir;
+    if (signedPkgCache.has(start)) return signedPkgCache.get(start);
+    let verdict = false;
+    for (let hops = 0; hops < 8; hops++) {
+      const desc = join(dir, "package.fungi.json");
+      if (existsSync(desc)) {
+        try {
+          const name = JSON.parse(readFileSync(desc, "utf8")).name;
+          const manPath = name ? join(dir, "dist", `${name}.lmanifest.json`) : null;
+          if (manPath && existsSync(manPath)) {
+            const sig = JSON.parse(readFileSync(manPath, "utf8")).governanceSignature;
+            verdict = sig !== null && typeof sig === "object" &&
+              typeof sig.keyId === "string" && typeof sig.signature === "string" &&
+              sig.signature.length > 0 && !sig.signature.startsWith("placeholder");
+          }
+        } catch { verdict = true; } // unreadable descriptor/manifest → protect
+        break;
+      }
+      const up = dirname(dir);
+      if (up === dir) break;
+      dir = up;
+    }
+    signedPkgCache.set(start, verdict);
+    return verdict;
+  };
   const refreshGeneratedComments = (root, { write }) => {
     const FK = new Set(["pureFlowDecl", "flowDecl", "secureFlowDecl", "guardedFlowDecl"]);
     const files = [];
@@ -841,8 +878,11 @@ Baseline comparison (governance-cost):
       const before = sources.get(file);
       const after = m.rewriteGeneratedComments(before, genMap);
       const changed = after !== before;
-      if (write && changed) writeFileSync(file, after);
-      results.push({ file, flows: genMap.size, changed, genMap });
+      // `blocked` = would change, but the file lives in a SIGNED fusable package
+      // (see guard above) — never written, reported instead.
+      const blocked = changed && isUnderSignedPackage(file);
+      if (write && changed && !blocked) writeFileSync(file, after);
+      results.push({ file, flows: genMap.size, changed, blocked, genMap });
     }
     return { results, parseErrors, parsedCount: files.length };
   };
@@ -884,7 +924,10 @@ Baseline comparison (governance-cost):
     if (check) {
       // A file whose generated block WOULD change is stale (the don't-trust-check rule applied to
       // the tool's own output). Exit non-zero so CI fails when someone forgot to refresh.
-      const stale = results.filter(r => r.changed);
+      // Signed-package files are excluded from the failure (--write can never fix them — the
+      // offline re-sign ceremony owns those artifacts); they are reported instead.
+      const stale = results.filter(r => r.changed && !r.blocked);
+      for (const r of results) if (r.blocked) console.log(`🔒 ${r.file}: //fungi: stale but src belongs to a SIGNED package (offline ceremony owns it)`);
       for (const r of stale) console.log(`✗ ${r.file}: //fungi: is STALE`);
       if (stale.length > 0) {
         console.log(`\n${stale.length}/${results.length} file(s) have stale //fungi: metadata — run: galerina deps --all --write`);
@@ -895,7 +938,10 @@ Baseline comparison (governance-cost):
     }
     if (write) {
       let changed = 0;
-      for (const r of results) if (r.changed) { changed++; console.log(`✅ ${r.file}: refreshed //fungi: on ${r.flows} flow(s)`); }
+      for (const r of results) {
+        if (r.blocked) { console.log(`🔒 ${r.file}: skipped — SIGNED package src is never rewritten (offline ceremony owns it)`); continue; }
+        if (r.changed) { changed++; console.log(`✅ ${r.file}: refreshed //fungi: on ${r.flows} flow(s)`); }
+      }
       console.log(`\n${changed}/${results.length} file(s) updated across ${parsedCount} parsed file(s)${parseErrors ? `, ${parseErrors} skipped (parse errors)` : ""}.`);
     } else {
       for (const r of results) {
@@ -2320,10 +2366,14 @@ Baseline comparison (governance-cost):
     // modified. Scoped to the package's own source tree, so it never rewrites files elsewhere.
     if (packageBuild && !rest.includes("--no-refresh")) {
       const { results } = refreshGeneratedComments(dirname(fungiFile), { write: true });
-      const changed = results.filter(r => r.changed);
+      const changed = results.filter(r => r.changed && !r.blocked);
+      const blocked = results.filter(r => r.blocked);
       if (changed.length > 0) {
         const flows = changed.reduce((n, r) => n + r.flows, 0);
         console.log(`   refreshed //fungi: metadata on ${flows} flow(s) in ${changed.length} file(s)  (--no-refresh to skip)`);
+      }
+      if (blocked.length > 0) {
+        console.log(`   🔒 //fungi: refresh skipped on ${blocked.length} file(s) — SIGNED package src is never rewritten`);
       }
     }
 

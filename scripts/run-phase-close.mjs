@@ -228,6 +228,12 @@ run("effect:canonicality", "node", ["scripts/audit-effect-canonicality.mjs"]);
 // can never happen silently again.
 run("muted:diagnostics", "node", ["scripts/audit-muted-diagnostics.mjs"]);
 
+// CG-7 (owner-directed 2026-07-01): a SIGNED fusable package must be git-clean.
+// Catches the annotation→re-fuse→unsigned cascade class regardless of which tool
+// dirties the src (the writer/rebuilder guards prevent the KNOWN paths; this
+// gate catches any path). Blocking.
+run("signed:fixtures", "node", ["scripts/audit-signed-fixture-drift.mjs"]);
+
 // ── 5d. Dev-tool script tests (scripts/tests/) ──
 // These live OUTSIDE packages-galerina, so the package runner (run-all-tests.cjs) never sees them. Run them
 // here so the audit/index/registry tooling is regression-gated (e.g. the shared code-regex self-test).

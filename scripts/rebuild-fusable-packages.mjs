@@ -19,9 +19,14 @@ import { spawnSync } from "node:child_process";
 import { readdirSync, readFileSync, statSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { isRealSignedManifest } from "./lib/signed-lmanifest.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const isWin = process.platform === "win32";
+// Cascade guard override (owner-directed 2026-07-01): a signed package is
+// NEVER auto-rebuilt — replacing its offline-ceremony .lmanifest with a locally
+// minted UNSIGNED one makes the fuse loader fail-close (FUNGI-FUSE-UNSIGNED).
+const FORCE = process.argv.includes("--force");
 
 if (process.env.GALERINA_SKIP_FUSE_REBUILD === "1") {
   console.log("⏭️  fuse-rebuild skipped (GALERINA_SKIP_FUSE_REBUILD=1)");
@@ -66,7 +71,7 @@ const pkgDirs = [
   ...findDescriptors(join(ROOT, "examples")),
 ];
 
-let rebuilt = 0, fresh = 0, failed = 0, skipped = 0;
+let rebuilt = 0, fresh = 0, failed = 0, skipped = 0, lockedSigned = 0;
 const details = [];
 
 for (const dir of pkgDirs) {
@@ -74,6 +79,14 @@ for (const dir of pkgDirs) {
   try { desc = JSON.parse(readFileSync(join(dir, "package.fungi.json"), "utf8")); } catch { continue; }
   const name = desc.name;
   if (!name) continue;
+
+  // Signed package → the committed dist artifacts ARE the signed build. Never
+  // regenerate locally (would be unsigned); the offline re-sign ceremony owns it.
+  if (!FORCE && isRealSignedManifest(join(dir, "dist", `${name}.lmanifest.json`))) {
+    lockedSigned++;
+    details.push(`🔒 ${name}: SIGNED .lmanifest — never auto-rebuilt (offline ceremony owns it; --force to override)`);
+    continue;
+  }
 
   const srcRoot = existsSync(join(dir, "src")) ? join(dir, "src") : dir;
   const wasm = join(dir, "dist", `${name}.wasm`);
@@ -98,7 +111,7 @@ for (const dir of pkgDirs) {
   }
 }
 
-const head = `🔁 fuse-rebuild: ${rebuilt} rebuilt · ${fresh} fresh · ${skipped} skipped · ${failed} failed` +
+const head = `🔁 fuse-rebuild: ${rebuilt} rebuilt · ${fresh} fresh · ${skipped} skipped · ${lockedSigned} signed-locked · ${failed} failed` +
   (pkgDirs.length === 0 ? " (no fusable packages)" : "");
 console.log(details.length ? `${head}\n   ${details.join("\n   ")}` : head);
 process.exit(0); // informational — never block
