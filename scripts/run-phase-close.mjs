@@ -235,6 +235,14 @@ const toolingTests = existsSync(join(ROOT, "scripts", "tests"))
   : [];
 if (toolingTests.length) run("tests:tooling", "node", ["--test", ...toolingTests]);
 
+// ── 5e. R&D proofs keep-green gate (2026-07-01) ──
+// POSTURE prove-own-maths: every RD claim (adopted AND refuted) carries a machine-checkable,
+// re-runnable proof — but nothing ran them in the cadence, so a proof could silently bit-rot.
+// This runs the CANONICAL proof set (ZTF-Knowledge-Bases/proofs/* — all green, incl. RD-0231).
+// Legacy scripts/*-proof.mjs run on-demand: `node scripts/run-proofs.mjs` (currently 1 known-red,
+// rd-0128 TestWitness-aspiration — tracked, not gated here).
+run("proofs:kb", "node", ["scripts/run-proofs.mjs", "--kb-only"]);
+
 // ── 6. Standing Governance Sanity Check — diff HEAD~1 ──
 // Transforms governance diff from a passive human-review step into an active quality gate.
 // Enforces the Monotonicity Rule at CI level: expansion requires explicit sign-off.
