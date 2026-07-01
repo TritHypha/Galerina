@@ -49,7 +49,9 @@ export interface InferredEconomics {
 // Helpers
 // ---------------------------------------------------------------------------
 
-const AI_EFFECTS = new Set(["ai.infer", "ai.inference", "ai.train", "ai.remoteInference"]);
+// 2026-07-01: dropped dead "ai.infer" (non-canonical, matched nothing; ai.inference is the
+// canonical name and is already present; ai.remoteInference is its alias).
+const AI_EFFECTS = new Set(["ai.inference", "ai.train", "ai.remoteInference"]);
 const HEAVY_EFFECTS = new Set(["database.write", "network.outbound", "filesystem.write"]);
 
 /** High-risk classifications that auto-escalate economics */

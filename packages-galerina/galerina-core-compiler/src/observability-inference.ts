@@ -57,7 +57,9 @@ const ERROR_RATE_METRIC: ObservabilityMetric = { name: "error_rate",   custom: f
 const THROUGHPUT_METRIC: ObservabilityMetric = { name: "throughput",   custom: false };
 
 const HIGH_TRUST_EFFECTS = new Set([
-  "ledger.mutate", "database.write", "gateway.charge",
+  // 2026-07-01: was "gateway.charge" (non-canonical → matched nothing; payment flows
+  // silently missed high-trust observability). Canonical payment effect is payment.charge.
+  "ledger.mutate", "database.write", "payment.charge",
   "network.outbound", "audit.write",
 ]);
 

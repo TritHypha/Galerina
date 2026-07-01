@@ -89,11 +89,15 @@ export interface InferredResilience {
 
 const MUTATION_EFFECTS = new Set([
   "database.write", "database.delete", "database.update",
-  "gateway.charge", "ledger.mutate",
+  // 2026-07-01: was "gateway.charge" (non-canonical → matched nothing; payment flows
+  // silently missed mutation classification). Canonical payment effect is payment.charge.
+  "payment.charge", "ledger.mutate",
 ]);
 
 const NETWORK_EFFECTS = new Set([
-  "network.outbound", "http.outbound", "http.post", "http.put",
+  // 2026-07-01: dropped dead "http.outbound" (neither canonical nor an alias — matched
+  // nothing; network.outbound already covers it). http.post/put are canonical aliases.
+  "network.outbound", "http.post", "http.put",
 ]);
 
 function hasExplicitResilience(flowNode: AstNode): boolean {
