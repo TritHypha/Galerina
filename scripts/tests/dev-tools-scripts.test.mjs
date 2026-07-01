@@ -186,7 +186,7 @@ writeFileSync(join(tmp6, "docs", "Knowledge-Bases", "alpha.md"),
   "# Alpha Transport\n## Morphing frames\nThe **morphing transport** layer governs FUNGI-FOO-001 per task #201.\n");
 writeFileSync(join(tmp6, "docs", "Knowledge-Bases", "beta.md"),
   "# Beta Storage\n## Arena allocator\nMonotone bump memory and zeroize on reset.\n");
-const kb = (a) => spawnSync(process.execPath, [join(SCRIPTS, "kb-index.mjs"), ...a], { cwd: tmp6, encoding: "utf8" });
+const kb = (a) => spawnSync(process.execPath, [join(SCRIPTS, "kb-index.mjs"), ...a], { cwd: tmp6, encoding: "utf8", env: { ...process.env, GALERINA_KB_DIR: join(tmp6, "docs", "Knowledge-Bases") } });
 kb([]); // build
 const kbIdx = JSON.parse(readFileSync(join(tmp6, "build", "kb-index", "kb-index.json"), "utf8"));
 

@@ -11,18 +11,16 @@
 // Per doc it indexes: title (first # heading), all sub-headings, bold terms, FUNGI-*/ERR_ codes, task #NNN refs,
 // [[kb-cross-refs]], and a term-frequency table (title+headings weighted). JSON for tools, MD for humans/AI.
 import { readdirSync, readFileSync, mkdirSync, writeFileSync, statSync } from "node:fs";
-import { join, relative, basename, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join, relative, basename } from "node:path";
 import { extractCodes } from "./lib/codes.mjs";
 import { writeProvenance } from "./lib/provenance.mjs"; // BLD-003 / #216 provenance sidecar
 
-const REPO = join(dirname(fileURLToPath(import.meta.url)), ".."); // Galerina repo root (this script lives in scripts/)
-const ROOT = REPO;                                                // anchor for relative() display + OUT dir
+const ROOT = process.cwd(); // repo root when run by phase-close (cwd=Galerina); the dev-tool test drives it with cwd=tmp
 // The KB was relocated OUT of this repo (IP separation) — same convention as audit-effect-canonicality.mjs.
 // Default to the sibling ZTF-Knowledge-Bases; override with GALERINA_KB_DIR. Recurse it: rd-absorbed/,
 // defensive-publications/, schemas/ … were silently dropped by the old flat scan of the now-removed
 // docs/Knowledge-Bases (a flat, non-recursive index reports a false "seen everything").
-const KB = process.env.GALERINA_KB_DIR || join(REPO, "..", "ZTF-Knowledge-Bases");
+const KB = process.env.GALERINA_KB_DIR || join(ROOT, "..", "ZTF-Knowledge-Bases");
 const KB_SKIP = new Set(["build", "node_modules", ".git"]);       // build/ = generated indexes (would self-pollute)
 const EXTRA = ["README.md", "AGENTS.md"]; // also index repo-root key docs if present
 const OUT = join(ROOT, "build", "kb-index");
