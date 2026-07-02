@@ -11,11 +11,11 @@
 
 | Metric | Count |
 |---|---|
-| Files | 92 |
-| Internal edges | 240 |
-| External dependencies | 13 |
+| Files | 95 |
+| Internal edges | 257 |
+| External dependencies | 14 |
 | ├─ Node core | 7 |
-| ├─ Workspace (@galerina/*) | 3 |
+| ├─ Workspace (@galerina/*) | 4 |
 | └─ Third-party | 3 |
 | Orphan files | 10 |
 
@@ -32,6 +32,7 @@
 
 ### Workspace (@galerina/*)
 - `@galerina/core-network`
+- `@galerina/core-security`
 - `@galerina/devtools-graph-algorithms`
 - `@galerina/substrate-math`
 

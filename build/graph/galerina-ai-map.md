@@ -32,9 +32,9 @@ Provides:
 - HybridAttestationKeyPair
 - attestationToYaml
 - attestationFromJson
-- AuditEvent
-- AuditWriter
-- createAuditWriter
+- AttributeDiagnostic
+- AttributeCheckResult
+- FUNGI_ATTR_001
 
 ## galerina-core-runtime
 
@@ -1130,7 +1130,7 @@ Provides:
 
 ## galerina-devtools-project-graph
 
-Graph data structures, algorithms, and runtime reporting for the LogicN platform
+Graph data structures, algorithms, and runtime reporting for the Galerina platform
 
 Provides:
 - bfsPath

@@ -4,9 +4,9 @@
     "packages": 93,
     "testBearing": 68,
     "tests": 5252,
-    "devTools": 45,
-    "auditTools": 23,
-    "toolsInCadence": 15,
+    "devTools": 46,
+    "auditTools": 24,
+    "toolsInCadence": 16,
     "proofs": 40
   },
   "packages": [
@@ -479,7 +479,7 @@
       "tests": 206,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 24,
+      "files": 26,
       "deps": [
         "@galerina/inference-bridge-contract",
         "@galerina/substrate-math"
@@ -1253,6 +1253,17 @@
       ]
     },
     {
+      "name": "audit-scratchdir-hygiene.mjs",
+      "category": "audit",
+      "purpose": "dev-tool detector for the test scratch-dir LEAK CLASS.",
+      "selfTest": false,
+      "inCadence": true,
+      "concerns": [
+        "diagnostics",
+        "source-hygiene"
+      ]
+    },
+    {
       "name": "audit-signed-fixture-drift.mjs",
       "category": "audit",
       "purpose": "detector for the annotation→re-fuse→unsigned",
@@ -1659,6 +1670,7 @@
       "audit-package-border.mjs",
       "audit-production-blockers.mjs",
       "audit-provenance.mjs",
+      "audit-scratchdir-hygiene.mjs",
       "audit-sink-canonicality.mjs",
       "audit-syntax.mjs",
       "audit-tier-boundary.mjs",
@@ -1825,6 +1837,7 @@
       "audit-corpus-effect-names.mjs",
       "audit-doc-drift.mjs",
       "audit-name-collisions.mjs",
+      "audit-scratchdir-hygiene.mjs",
       "audit-stray-docs.mjs",
       "audit-syntax.mjs",
       "audit-tier-boundary.mjs",

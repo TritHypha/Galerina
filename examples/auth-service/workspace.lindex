@@ -1,13 +1,13 @@
 {
   "version": 1,
-  "builtAt": "2026-06-26T23:43:03.467Z",
-  "workspaceDir": "C:\\wwwprojects\\LogicN\\examples\\auth-service",
+  "builtAt": "2026-07-02T19:06:37.280Z",
+  "workspaceDir": "C:\\wwwprojects\\Galerina\\examples\\auth-service",
   "flows": [
     {
-      "id": "48b9a05dc669a5cc3396c2ed85d22c10a57dbe0d92f2659cb0eb097d9f41eab3",
+      "id": "eb5f76db8eb854593b121111381f82e5696bad13fc6683b8de06f1724e41a98c",
       "flowName": "auditEventId",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\auditChainService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\auditChainService.fungi",
       "lexicalTokens": [
         "audit",
         "event",
@@ -63,14 +63,14 @@
       "signatureText": "pure flow auditEventId(flowName: String, timestamp: String) -> String",
       "lineStart": 14,
       "lineEnd": 14,
-      "indexedAt": "2026-06-26T18:30:26.537Z",
-      "sourceMtime": 1782479998671.9512
+      "indexedAt": "2026-07-01T13:11:19.847Z",
+      "sourceMtime": 1782669678354.3667
     },
     {
-      "id": "e3319144f4b916dde11e2a422512daac442d5bae9f2498775056c4d0a0d64dec",
+      "id": "d49aa1bb1e0b671b6fd12900e27557544668602e68de38be736ccf5c4dc04cf2",
       "flowName": "isValidAuditStatus",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\auditChainService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\auditChainService.fungi",
       "lexicalTokens": [
         "is",
         "valid",
@@ -125,14 +125,14 @@
       "signatureText": "pure flow isValidAuditStatus(status: String) -> Bool",
       "lineStart": 23,
       "lineEnd": 23,
-      "indexedAt": "2026-06-26T18:30:26.537Z",
-      "sourceMtime": 1782479998671.9512
+      "indexedAt": "2026-07-01T13:11:19.847Z",
+      "sourceMtime": 1782669678354.3667
     },
     {
-      "id": "4b15534dc8c0cc5ed714e92a44076f0743cba75e8cc5e9807d8433bf875ef504",
+      "id": "5d58e1d982f263e3c139a5f8e0ba547063136cc11157c59946015737addea6f7",
       "flowName": "chainAuditEntry",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\auditChainService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\auditChainService.fungi",
       "lexicalTokens": [
         "chain",
         "audit",
@@ -344,14 +344,14 @@
       "signatureText": "secure flow chainAuditEntry(readonly request: Request) -> Response",
       "lineStart": 37,
       "lineEnd": 37,
-      "indexedAt": "2026-06-26T18:30:26.537Z",
-      "sourceMtime": 1782479998671.9512
+      "indexedAt": "2026-07-01T13:11:19.847Z",
+      "sourceMtime": 1782669678354.3667
     },
     {
-      "id": "a86be8de69b2704787d802b52086f1fb2c7b6a3685ccf21213889beadfc67c3f",
+      "id": "9d86a431705247124e9d35d3352aa31c2571154ed2c11c6531696e9a2d0cb78f",
       "flowName": "classifyAuditSeverity",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\auditWriterService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\auditWriterService.fungi",
       "lexicalTokens": [
         "classify",
         "audit",
@@ -427,14 +427,14 @@
       "signatureText": "pure flow classifyAuditSeverity(eventType: String) -> String",
       "lineStart": 8,
       "lineEnd": 8,
-      "indexedAt": "2026-06-26T18:30:26.541Z",
+      "indexedAt": "2026-07-01T13:11:19.851Z",
       "sourceMtime": 1780657403479.1143
     },
     {
-      "id": "b811dfaf817e43703b0a2378348b552be538b53f2e20579814369ea18274eebb",
+      "id": "80204a1e3c1790aa02d5c5a18d05bb59e6dd46871ec99d9d3c7e97b2f35f346e",
       "flowName": "validateAuditEvent",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\auditWriterService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\auditWriterService.fungi",
       "lexicalTokens": [
         "validate",
         "audit",
@@ -493,14 +493,14 @@
       "signatureText": "pure flow validateAuditEvent(eventName: String, level: String) -> Bool",
       "lineStart": 28,
       "lineEnd": 28,
-      "indexedAt": "2026-06-26T18:30:26.541Z",
+      "indexedAt": "2026-07-01T13:11:19.851Z",
       "sourceMtime": 1780657403479.1143
     },
     {
-      "id": "12011fc22ef46f7cce4203a9a39d7e01982ba87ae5ea01bc50f4eb792a5f0cc1",
+      "id": "16bee12f8f5937bac1468a484017b63ab18ede94b75efcf63f4dc8c970cb0c2e",
       "flowName": "writeAuditEvent",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\auditWriterService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\auditWriterService.fungi",
       "lexicalTokens": [
         "write",
         "audit",
@@ -709,14 +709,14 @@
       "signatureText": "secure flow writeAuditEvent(readonly request: Request) -> AuditWriteResult",
       "lineStart": 45,
       "lineEnd": 45,
-      "indexedAt": "2026-06-26T18:30:26.541Z",
+      "indexedAt": "2026-07-01T13:11:19.851Z",
       "sourceMtime": 1780657403479.1143
     },
     {
-      "id": "c4b142e455dd5c2f811bf517e06eb52993fee431930fd1b7a533466ac37ead13",
+      "id": "125c873da7067f9009cd6deebba68464c5cc64015d50f719221e2f5353a41ae2",
       "flowName": "selectExecutionTier",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\bytecodeRouterService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\bytecodeRouterService.fungi",
       "lexicalTokens": [
         "select",
         "execution",
@@ -788,14 +788,14 @@
       "signatureText": "pure flow selectExecutionTier(qualifier: String, hasEffects: Bool, isIntegerOnly: Bool) -> String",
       "lineStart": 7,
       "lineEnd": 7,
-      "indexedAt": "2026-06-26T18:30:26.543Z",
+      "indexedAt": "2026-07-01T13:11:19.853Z",
       "sourceMtime": 1780651067496.179
     },
     {
-      "id": "e0714d18c84cb7d94a1e3b8cbb5d2d77f2a3cde0fd2e7a44f82802267a628548",
+      "id": "954dd69416f1983d5d1bb703726f9104b67448aa3a45a6eb80fc53b6632fc046",
       "flowName": "tierTrafficLight",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\bytecodeRouterService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\bytecodeRouterService.fungi",
       "lexicalTokens": [
         "tier",
         "traffic",
@@ -847,14 +847,14 @@
       "signatureText": "pure flow tierTrafficLight(tier: String) -> String",
       "lineStart": 21,
       "lineEnd": 21,
-      "indexedAt": "2026-06-26T18:30:26.543Z",
+      "indexedAt": "2026-07-01T13:11:19.853Z",
       "sourceMtime": 1780651067496.179
     },
     {
-      "id": "eb0ab20426b72331e893e5fe46d2b171e815877db4cf7e604406ea6dee770d83",
+      "id": "4c85b0df1338747566426648a266abb7af726fea2a3b7119c9be2089af96ceff",
       "flowName": "resolveBytecodeRoute",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\bytecodeRouterService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\bytecodeRouterService.fungi",
       "lexicalTokens": [
         "resolve",
         "bytecode",
@@ -1058,14 +1058,14 @@
       "signatureText": "secure flow resolveBytecodeRoute(readonly request: Request) -> TierResult",
       "lineStart": 36,
       "lineEnd": 36,
-      "indexedAt": "2026-06-26T18:30:26.543Z",
+      "indexedAt": "2026-07-01T13:11:19.853Z",
       "sourceMtime": 1780651067496.179
     },
     {
-      "id": "fb4b66782012069688e33dd79654db2f53f709c0838dd522601217d744f55abd",
+      "id": "cfaa2147842d98bc31df4da5997bad05703045dc4ea3ec006e2395e284d252b4",
       "flowName": "isEffectAllowedInContext",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\capabilityHostService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\capabilityHostService.fungi",
       "lexicalTokens": [
         "is",
         "effect",
@@ -1162,14 +1162,14 @@
       "signatureText": "pure flow isEffectAllowedInContext(effect: String, context: String) -> Bool",
       "lineStart": 14,
       "lineEnd": 14,
-      "indexedAt": "2026-06-26T18:30:26.545Z",
-      "sourceMtime": 1782479001151.885
+      "indexedAt": "2026-07-01T13:11:19.854Z",
+      "sourceMtime": 1782669678354.3667
     },
     {
-      "id": "6b7250e81cf382df35ac8a306d0d14f246205eb0df606b3c4bc75c76fa6cfc41",
+      "id": "38e68308232eef5134975c31c052497642f0fca683f90b46f9be10616372037c",
       "flowName": "effectGovernanceClass",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\capabilityHostService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\capabilityHostService.fungi",
       "lexicalTokens": [
         "effect",
         "governance",
@@ -1234,14 +1234,14 @@
       "signatureText": "pure flow effectGovernanceClass(effect: String) -> Int",
       "lineStart": 56,
       "lineEnd": 56,
-      "indexedAt": "2026-06-26T18:30:26.545Z",
-      "sourceMtime": 1782479001151.885
+      "indexedAt": "2026-07-01T13:11:19.854Z",
+      "sourceMtime": 1782669678354.3667
     },
     {
-      "id": "1b9b6d5530b68050c8e3798cc003f6eb688d81ca4b59c8f02f16c016ab1396be",
+      "id": "8b36d2c8616f8f463749e77c835a19be20a03d4547da13e73db3cf2b177368d7",
       "flowName": "checkCapability",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\capabilityHostService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\capabilityHostService.fungi",
       "lexicalTokens": [
         "check",
         "capability",
@@ -1405,14 +1405,14 @@
       "signatureText": "secure flow checkCapability(readonly request: Request) -> Response",
       "lineStart": 72,
       "lineEnd": 72,
-      "indexedAt": "2026-06-26T18:30:26.545Z",
-      "sourceMtime": 1782479001151.885
+      "indexedAt": "2026-07-01T13:11:19.854Z",
+      "sourceMtime": 1782669678354.3667
     },
     {
-      "id": "aaf24c3321e74b096f463696e8d15f6478de2f1bc5cd06c80a9b424420f1f1c6",
+      "id": "5e0b36a28361ed08f746f8f3e367d569eccd80125906b91bd47ae186442fe0d4",
       "flowName": "isEffectAvailable",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\capabilityResolverService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\capabilityResolverService.fungi",
       "lexicalTokens": [
         "is",
         "effect",
@@ -1483,14 +1483,14 @@
       "signatureText": "pure flow isEffectAvailable(effectName: String) -> Bool",
       "lineStart": 8,
       "lineEnd": 8,
-      "indexedAt": "2026-06-26T18:30:26.546Z",
+      "indexedAt": "2026-07-01T13:11:19.856Z",
       "sourceMtime": 1780650672403.4978
     },
     {
-      "id": "f24fdb65b78df7a77bda5813b87c0b78d68a6dbdb6dfc41cbdb23da6056c18b4",
+      "id": "cafbf9ac353af255e46e1b2f99860ce92ae82eeeb58855526e969c4fbbd084cf",
       "flowName": "effectTier",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\capabilityResolverService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\capabilityResolverService.fungi",
       "lexicalTokens": [
         "effect",
         "tier",
@@ -1554,14 +1554,14 @@
       "signatureText": "pure flow effectTier(effectName: String) -> String",
       "lineStart": 26,
       "lineEnd": 26,
-      "indexedAt": "2026-06-26T18:30:26.546Z",
+      "indexedAt": "2026-07-01T13:11:19.856Z",
       "sourceMtime": 1780650672403.4978
     },
     {
-      "id": "78ae752781548c8f64045023539af5f05cb4607dcacecbb68bfea63e98616f9d",
+      "id": "c4877c3e0954b2d53e7a4a12225420c09e8fbec92a5a0344a3ae36b9478125d3",
       "flowName": "resolveCapability",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\capabilityResolverService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\capabilityResolverService.fungi",
       "lexicalTokens": [
         "resolve",
         "capability",
@@ -1731,14 +1731,14 @@
       "signatureText": "secure flow resolveCapability(readonly request: Request) -> CapabilityResolveResult",
       "lineStart": 42,
       "lineEnd": 42,
-      "indexedAt": "2026-06-26T18:30:26.546Z",
+      "indexedAt": "2026-07-01T13:11:19.856Z",
       "sourceMtime": 1780650672403.4978
     },
     {
-      "id": "3c5114944d15ba976951a265bcae6fa3812f7e566d369d1c7cda2a3d87cc6d26",
+      "id": "d693ca10bf21da1d3d94fd71e2316a7a50408704cee5f33d962dd00ed84415ee",
       "flowName": "tokenizeSource",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\compilationService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\compilationService.fungi",
       "lexicalTokens": [
         "tokenize",
         "source",
@@ -1906,14 +1906,14 @@
       "signatureText": "secure flow tokenizeSource(readonly request: Request) -> Response",
       "lineStart": 13,
       "lineEnd": 13,
-      "indexedAt": "2026-06-26T18:30:26.548Z",
-      "sourceMtime": 1782469910080.9106
+      "indexedAt": "2026-07-01T13:11:19.858Z",
+      "sourceMtime": 1782669678354.3667
     },
     {
-      "id": "022857443c08456a311b39c1e1b11d3f5da59a8130551f1f6759327675d68a9c",
+      "id": "79eac2925dfa7fff394a8eb47c564ef5f201cf4555362de246c5c2e91b1d1b63",
       "flowName": "createSession",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\createSession.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\createSession.fungi",
       "lexicalTokens": [
         "create",
         "session",
@@ -2020,14 +2020,14 @@
       "signatureText": "secure flow createSession(readonly request: Request) -> CreateSessionResult",
       "lineStart": 9,
       "lineEnd": 9,
-      "indexedAt": "2026-06-26T18:30:26.549Z",
+      "indexedAt": "2026-07-01T13:11:19.859Z",
       "sourceMtime": 1780571621995.0786
     },
     {
-      "id": "18d2af661744c352290b244d1140b99406268014dc2694651f4e8339c472dc6b",
+      "id": "9a480eb17257991173ef71c844b2a2233d79d856bef136e5c3738a63d6ddb7d8",
       "flowName": "inferTarget",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsRouterService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\economicsRouterService.fungi",
       "lexicalTokens": [
         "infer",
         "target",
@@ -2104,14 +2104,14 @@
       "signatureText": "pure flow inferTarget(hasAI: Bool, isSafetyCritical: Bool, hasDBWrite: Bool) -> String",
       "lineStart": 7,
       "lineEnd": 7,
-      "indexedAt": "2026-06-26T18:30:26.550Z",
+      "indexedAt": "2026-07-01T13:11:19.860Z",
       "sourceMtime": 1780651672256.9133
     },
     {
-      "id": "4d74500f91e97d1db1d22aa57e9ad0873bc71472381725466a76213e5a21a94d",
+      "id": "93b72787a10546a948f48e5dd2f23afe24b98d3d2f5aa1cd40b061cdf2d64c2d",
       "flowName": "inferRiskTier",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsRouterService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\economicsRouterService.fungi",
       "lexicalTokens": [
         "infer",
         "risk",
@@ -2165,14 +2165,14 @@
       "signatureText": "pure flow inferRiskTier(execTarget: String) -> String",
       "lineStart": 19,
       "lineEnd": 19,
-      "indexedAt": "2026-06-26T18:30:26.550Z",
+      "indexedAt": "2026-07-01T13:11:19.860Z",
       "sourceMtime": 1780651672256.9133
     },
     {
-      "id": "f128b4343af9e7d8454d5929f603df481083fc0b3f435c522e60a4e34ea09d56",
+      "id": "c2a4f10dd47c120a2e9104a1968e616c11ef711d87afeea168892ba9061486a3",
       "flowName": "routeByEconomics",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsRouterService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\economicsRouterService.fungi",
       "lexicalTokens": [
         "route",
         "by",
@@ -2365,14 +2365,14 @@
       "signatureText": "secure flow routeByEconomics(readonly request: Request) -> EconomicsResult",
       "lineStart": 33,
       "lineEnd": 33,
-      "indexedAt": "2026-06-26T18:30:26.550Z",
+      "indexedAt": "2026-07-01T13:11:19.860Z",
       "sourceMtime": 1780651672256.9133
     },
     {
-      "id": "cd15fbb14108e3970cea9784e7c143ba46920bfa05e408e7192f68fec8d64b8b",
+      "id": "848476d67a85cc1d144b999261efb57e69a3da433233710e3cd1ec8719dc882b",
       "flowName": "estimateComputeCost",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\economicsService.fungi",
       "lexicalTokens": [
         "estimate",
         "compute",
@@ -2437,14 +2437,14 @@
       "signatureText": "pure flow estimateComputeCost(opCount: Int, targetClass: Int) -> Int",
       "lineStart": 4,
       "lineEnd": 4,
-      "indexedAt": "2026-06-26T18:30:26.553Z",
+      "indexedAt": "2026-07-01T13:11:19.862Z",
       "sourceMtime": 1780651582357.6702
     },
     {
-      "id": "ec4482af033085f2d1e4f8e5497dd047c1ded207dc071b00b1fbc2596c8eaf2d",
+      "id": "299d25c62b45cc8d8bee7c0ebe7b00093f17547ba30b82d6330a4985904682b7",
       "flowName": "estimateRiskCost",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\economicsService.fungi",
       "lexicalTokens": [
         "estimate",
         "risk",
@@ -2512,14 +2512,14 @@
       "signatureText": "pure flow estimateRiskCost(recordCount: Int, classificationLevel: Int) -> Int",
       "lineStart": 12,
       "lineEnd": 12,
-      "indexedAt": "2026-06-26T18:30:26.553Z",
+      "indexedAt": "2026-07-01T13:11:19.862Z",
       "sourceMtime": 1780651582357.6702
     },
     {
-      "id": "4dbd2ade5a12519dfd5b139f6dd9779ff8e0035a8be3d334255139b143616258",
+      "id": "6ac3fc091a6a2db2789e13df70d07f219746075ac3533dac5cec1c881e1c028c",
       "flowName": "totalCost",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\economicsService.fungi",
       "lexicalTokens": [
         "total",
         "cost",
@@ -2578,14 +2578,14 @@
       "signatureText": "pure flow totalCost(computeCost: Int, riskCost: Int, auditCost: Int) -> Int",
       "lineStart": 20,
       "lineEnd": 20,
-      "indexedAt": "2026-06-26T18:30:26.553Z",
+      "indexedAt": "2026-07-01T13:11:19.862Z",
       "sourceMtime": 1780651582357.6702
     },
     {
-      "id": "d714a1a0053c726d51d98e4f87ee0b5633ea9ef2f1d020b4f68fd457df850956",
+      "id": "79c55353b91b9695cf222051db621343158d857c4513474c7328e4c445ab0c6b",
       "flowName": "estimateCost",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\economicsService.fungi",
       "lexicalTokens": [
         "estimate",
         "cost",
@@ -2793,14 +2793,14 @@
       "signatureText": "secure flow estimateCost(readonly request: Request) -> Response",
       "lineStart": 25,
       "lineEnd": 25,
-      "indexedAt": "2026-06-26T18:30:26.553Z",
+      "indexedAt": "2026-07-01T13:11:19.862Z",
       "sourceMtime": 1780651582357.6702
     },
     {
-      "id": "572c8b80e6cdde4c1130fd3d59200a9c1507ca751d88e8971cd8a4b8b22a999a",
+      "id": "9a273240f95bbf12a568250599f42b90e54d417f3f7682ec7d6063138c855d92",
       "flowName": "effectRequiresCapability",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\effectCheckerService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\effectCheckerService.fungi",
       "lexicalTokens": [
         "effect",
         "requires",
@@ -2848,10 +2848,10 @@
         "database",
         "write",
         "database",
-        "filesystem",
+        "storage",
         "read",
         "filesystem",
-        "filesystem",
+        "storage",
         "write",
         "filesystem",
         "crypto",
@@ -2878,14 +2878,14 @@
       "signatureText": "pure flow effectRequiresCapability(effectName: String) -> String",
       "lineStart": 9,
       "lineEnd": 9,
-      "indexedAt": "2026-06-26T18:30:26.554Z",
-      "sourceMtime": 1782469910085.9136
+      "indexedAt": "2026-07-01T19:51:35.459Z",
+      "sourceMtime": 1782934552433.0278
     },
     {
-      "id": "3d5dc9960dd020bdb459091dcf6638cb057a213517e958051de62c80e2554b38",
+      "id": "cfab97a20f1ecd6127143de4964548583350e0d9e1a34b96448e441886be88a0",
       "flowName": "effectsAreComplete",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\effectCheckerService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\effectCheckerService.fungi",
       "lexicalTokens": [
         "effects",
         "are",
@@ -2945,14 +2945,14 @@
       "signatureText": "pure flow effectsAreComplete(declaredEffect: String, qualifier: String) -> Bool",
       "lineStart": 30,
       "lineEnd": 30,
-      "indexedAt": "2026-06-26T18:30:26.554Z",
-      "sourceMtime": 1782469910085.9136
+      "indexedAt": "2026-07-01T19:51:35.459Z",
+      "sourceMtime": 1782934552433.0278
     },
     {
-      "id": "4d6132e7238a8090cb9793bd434de164bbb2086a596abfb0ddfbb955749b0127",
+      "id": "2f6de4a15d4a20bf48597e86aff38ff0c128e53220935bd9574896c85153b12b",
       "flowName": "classifyEffectSeverity",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\effectCheckerService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\effectCheckerService.fungi",
       "lexicalTokens": [
         "classify",
         "effect",
@@ -3009,14 +3009,14 @@
       "signatureText": "pure flow classifyEffectSeverity(capability: String) -> String",
       "lineStart": 42,
       "lineEnd": 42,
-      "indexedAt": "2026-06-26T18:30:26.554Z",
-      "sourceMtime": 1782469910085.9136
+      "indexedAt": "2026-07-01T19:51:35.459Z",
+      "sourceMtime": 1782934552433.0278
     },
     {
-      "id": "dc9ed5258dc2af85b64af372700ea4c262382cea69bbf0e285fe3d5f72da54aa",
+      "id": "f0aba1af84d521a9efdd1553483584a38c9f069b19f18976ab8294e78bd5ece8",
       "flowName": "checkEffectDeclaration",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\effectCheckerService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\effectCheckerService.fungi",
       "lexicalTokens": [
         "check",
         "effect",
@@ -3219,14 +3219,14 @@
       "signatureText": "secure flow checkEffectDeclaration(readonly request: Request) -> EffectCheckResult",
       "lineStart": 60,
       "lineEnd": 60,
-      "indexedAt": "2026-06-26T18:30:26.554Z",
-      "sourceMtime": 1782469910085.9136
+      "indexedAt": "2026-07-01T19:51:35.459Z",
+      "sourceMtime": 1782934552433.0278
     },
     {
-      "id": "71ed0144b055809a47a1162d8993f39e00a5d0f29eeaeb29f7d59c72f1ba7260",
+      "id": "b2e44b81a173cdef49b4b0c050f5490edc7ea1f8f337ba67462f6356867fe19d",
       "flowName": "governanceLevel",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\governanceService.fungi",
       "lexicalTokens": [
         "governance",
         "level",
@@ -3286,14 +3286,14 @@
       "signatureText": "pure flow governanceLevel(effectTag: String) -> Int",
       "lineStart": 14,
       "lineEnd": 14,
-      "indexedAt": "2026-06-26T18:30:26.556Z",
-      "sourceMtime": 1782479001155.823
+      "indexedAt": "2026-07-01T13:11:19.865Z",
+      "sourceMtime": 1782669604851.8655
     },
     {
-      "id": "7d6a1ac900021f058439e4889dfe3958eebab48212f85e8279478d27e4c274de",
+      "id": "f3afb87d423c9442cc9720feb9e60f39d19f431a49f089323798840f55555c2e",
       "flowName": "requiresAuditForLevel",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\governanceService.fungi",
       "lexicalTokens": [
         "requires",
         "audit",
@@ -3340,14 +3340,14 @@
       "signatureText": "pure flow requiresAuditForLevel(level: Int) -> Bool",
       "lineStart": 29,
       "lineEnd": 29,
-      "indexedAt": "2026-06-26T18:30:26.556Z",
-      "sourceMtime": 1782479001155.823
+      "indexedAt": "2026-07-01T13:11:19.865Z",
+      "sourceMtime": 1782669604851.8655
     },
     {
-      "id": "6bfd78a36cbdd9dd92236ac274efc97a84a4f45e227be685f64c58960cbfd827",
+      "id": "d9d096a768afca142248b35089c65c4e911d31d1f84100e83bf11dc753fa98c3",
       "flowName": "verifyGovernance",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\governanceService.fungi",
       "lexicalTokens": [
         "verify",
         "governance",
@@ -3517,14 +3517,14 @@
       "signatureText": "secure flow verifyGovernance(readonly request: Request) -> Response",
       "lineStart": 41,
       "lineEnd": 41,
-      "indexedAt": "2026-06-26T18:30:26.556Z",
-      "sourceMtime": 1782479001155.823
+      "indexedAt": "2026-07-01T13:11:19.865Z",
+      "sourceMtime": 1782669604851.8655
     },
     {
-      "id": "01010f2abe72cb04a2e6222cba03a236fec1466985be2696f226e072cd9680a2",
+      "id": "e2395c04652faaa9d2cd2806792c5e9d129017239b256fc96b5daa6dcda6c62d",
       "flowName": "isEffectPermittedInProfile",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceVerifierService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\governanceVerifierService.fungi",
       "lexicalTokens": [
         "is",
         "effect",
@@ -3579,7 +3579,7 @@
         "effect",
         "name",
         "effectname",
-        "filesystem",
+        "storage",
         "write",
         "false",
         "effect",
@@ -3609,14 +3609,14 @@
       "signatureText": "pure flow isEffectPermittedInProfile(effectName: String, profile: String) -> Bool",
       "lineStart": 8,
       "lineEnd": 8,
-      "indexedAt": "2026-06-26T18:30:26.557Z",
-      "sourceMtime": 1782469910088.9116
+      "indexedAt": "2026-07-01T19:51:35.464Z",
+      "sourceMtime": 1782934552435.0276
     },
     {
-      "id": "20a5322cbb53eaaa3d4b80c57339d877bafe066eac3c402b9dccbd30d7b9c7dc",
+      "id": "e76934b73a29875426e2e1836d7e3ef00e66ebc555cda5ced4049819b740cdf0",
       "flowName": "checkQualifierInvariants",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceVerifierService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\governanceVerifierService.fungi",
       "lexicalTokens": [
         "check",
         "qualifier",
@@ -3683,14 +3683,14 @@
       "signatureText": "pure flow checkQualifierInvariants(qualifier: String, hasAudit: Bool) -> Bool",
       "lineStart": 26,
       "lineEnd": 26,
-      "indexedAt": "2026-06-26T18:30:26.557Z",
-      "sourceMtime": 1782469910088.9116
+      "indexedAt": "2026-07-01T19:51:35.464Z",
+      "sourceMtime": 1782934552435.0276
     },
     {
-      "id": "2d001e32ca188c68baf9bb9ef423560a279df436ea9a7e59e5fb712da8b7a21c",
+      "id": "5b52f82ab3ce4aa16cae043d27349444db12c7bac6effe230c8e338238facb77",
       "flowName": "classifyGovernanceOutcome",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceVerifierService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\governanceVerifierService.fungi",
       "lexicalTokens": [
         "classify",
         "governance",
@@ -3746,14 +3746,14 @@
       "signatureText": "pure flow classifyGovernanceOutcome(permitted: Bool, invariants: Bool) -> String",
       "lineStart": 43,
       "lineEnd": 43,
-      "indexedAt": "2026-06-26T18:30:26.557Z",
-      "sourceMtime": 1782469910088.9116
+      "indexedAt": "2026-07-01T19:51:35.464Z",
+      "sourceMtime": 1782934552435.0276
     },
     {
-      "id": "a2f80db23a93e12890b4507771b9f57b6a9ec3d6d4063aa75b1bc4c0d895a03d",
+      "id": "69b80471ad23aa318212cf5f7cff93943828cca6bea7d2335bc6337cd8410fc2",
       "flowName": "verifyFlowGovernance",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceVerifierService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\governanceVerifierService.fungi",
       "lexicalTokens": [
         "verify",
         "flow",
@@ -3994,14 +3994,14 @@
       "signatureText": "secure flow verifyFlowGovernance(readonly request: Request) -> VerifyResult",
       "lineStart": 54,
       "lineEnd": 54,
-      "indexedAt": "2026-06-26T18:30:26.557Z",
-      "sourceMtime": 1782469910088.9116
+      "indexedAt": "2026-07-01T19:51:35.464Z",
+      "sourceMtime": 1782934552435.0276
     },
     {
-      "id": "1d81a50cc899629334829b56cd297dec28d047b30e89f246e7a90ca32edee85e",
+      "id": "2e1cf93a6eec8a545bc618ba1c3b9db85bae924db6bffe880cff9bfa8ad76be5",
       "flowName": "healthCheck",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\healthCheck.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\healthCheck.fungi",
       "lexicalTokens": [
         "health",
         "check",
@@ -4115,14 +4115,14 @@
       "signatureText": "secure flow healthCheck(readonly request: Request) -> HealthStatus",
       "lineStart": 7,
       "lineEnd": 7,
-      "indexedAt": "2026-06-26T18:30:26.559Z",
-      "sourceMtime": 1782479252239.712
+      "indexedAt": "2026-07-01T13:11:19.868Z",
+      "sourceMtime": 1782509415646.6973
     },
     {
-      "id": "940fdd6b56d77a649280ec42b6392ad7e68f97f1613d89a445631c5e81ce0cc0",
+      "id": "1382c8198fd27f7e9e031d735aa4b695b21ffea0a5b85310dff7d7615f13b54f",
       "flowName": "isValidManifestVersion",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\manifestVerificationService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\manifestVerificationService.fungi",
       "lexicalTokens": [
         "is",
         "valid",
@@ -4160,14 +4160,14 @@
       "signatureText": "pure flow isValidManifestVersion(version: String) -> Bool",
       "lineStart": 4,
       "lineEnd": 4,
-      "indexedAt": "2026-06-26T18:30:26.560Z",
-      "sourceMtime": 1782469910094.9346
+      "indexedAt": "2026-07-01T13:11:19.869Z",
+      "sourceMtime": 1782669678354.3667
     },
     {
-      "id": "c188025798329ea8626e20ce66ffb3795e278f6b898635ec3955e593d7c279b7",
+      "id": "358a1fba1b5dc82d6005b126dd0e318976a9c8ad0aa4888f28a0bcd29bda0d23",
       "flowName": "isValidGovernanceFlags",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\manifestVerificationService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\manifestVerificationService.fungi",
       "lexicalTokens": [
         "is",
         "valid",
@@ -4200,14 +4200,14 @@
       "signatureText": "pure flow isValidGovernanceFlags(flags: Int) -> Bool",
       "lineStart": 9,
       "lineEnd": 9,
-      "indexedAt": "2026-06-26T18:30:26.560Z",
-      "sourceMtime": 1782469910094.9346
+      "indexedAt": "2026-07-01T13:11:19.869Z",
+      "sourceMtime": 1782669678354.3667
     },
     {
-      "id": "9d7d4d765bd0fc9b784169a79a7f5febab07f69179af884ff4425b550a606005",
+      "id": "8e249e7751b1ea42c9bf1321653c3028ca02c9a9feb03f3de7700c968dbfd112",
       "flowName": "manifestTrustLevel",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\manifestVerificationService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\manifestVerificationService.fungi",
       "lexicalTokens": [
         "manifest",
         "trust",
@@ -4267,14 +4267,14 @@
       "signatureText": "pure flow manifestTrustLevel(verified: Bool, hasSignature: Bool, flagsValid: Bool) -> Int",
       "lineStart": 14,
       "lineEnd": 14,
-      "indexedAt": "2026-06-26T18:30:26.560Z",
-      "sourceMtime": 1782469910094.9346
+      "indexedAt": "2026-07-01T13:11:19.869Z",
+      "sourceMtime": 1782669678354.3667
     },
     {
-      "id": "47807dc2e75c62c7cb29c4fed8c85b7121e0ce749712c79599ae51f336ca01b0",
+      "id": "6b02136f106e617a4d03ac19eead1c8a541d09269e759386d9da37a04b6f5e99",
       "flowName": "verifyManifest",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\manifestVerificationService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\manifestVerificationService.fungi",
       "lexicalTokens": [
         "verify",
         "manifest",
@@ -4516,14 +4516,14 @@
       "signatureText": "secure flow verifyManifest(readonly request: Request) -> Response",
       "lineStart": 22,
       "lineEnd": 22,
-      "indexedAt": "2026-06-26T18:30:26.560Z",
-      "sourceMtime": 1782469910094.9346
+      "indexedAt": "2026-07-01T13:11:19.869Z",
+      "sourceMtime": 1782669678354.3667
     },
     {
-      "id": "fabd81d2c22ddf643bedfa0dd7f350299d38f2eb229e6af01a034a964054fef1",
+      "id": "a581404654c43111438ce04d15b3a76d7fb3fdd2236e7c9ae78253277ee317ed",
       "flowName": "processStandardRequest",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\physicalHardeningAutoDefault.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\physicalHardeningAutoDefault.fungi",
       "lexicalTokens": [
         "process",
         "standard",
@@ -4620,14 +4620,14 @@
       "signatureText": "secure flow processStandardRequest(readonly request: Request) -> Result<String,String>",
       "lineStart": 12,
       "lineEnd": 12,
-      "indexedAt": "2026-06-26T18:30:26.561Z",
-      "sourceMtime": 1782469910095.9346
+      "indexedAt": "2026-07-01T13:11:19.870Z",
+      "sourceMtime": 1782669604706.633
     },
     {
-      "id": "4cbff4f3c645edd93d6ccab299212d043111b3b3f3ee71c046fa0a1f7cae0a81",
+      "id": "7f90b1c75164e0a7e4663d180d1567eee8d780843121742a183f461f422ddd4e",
       "flowName": "settlementTier1",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\physicalHardeningTier1.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\physicalHardeningTier1.fungi",
       "lexicalTokens": [
         "settlement",
         "tier1",
@@ -4760,14 +4760,14 @@
       "signatureText": "secure flow settlementTier1(readonly request: Request) -> Result<String,String>",
       "lineStart": 6,
       "lineEnd": 6,
-      "indexedAt": "2026-06-26T18:30:26.562Z",
+      "indexedAt": "2026-07-01T13:11:19.871Z",
       "sourceMtime": 1780584554128.6467
     },
     {
-      "id": "8577c978d78a7c07b96f1f4593db112f41565ca853e5745c4414d1d91ec33f0b",
+      "id": "6a28aa5537c8a14753265f84bd8bcab827ebae210182f2b983ba9851c8986a05",
       "flowName": "processHighValueRecord",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\physicalHardeningTier2.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\physicalHardeningTier2.fungi",
       "lexicalTokens": [
         "process",
         "high",
@@ -4930,14 +4930,14 @@
       "signatureText": "secure flow processHighValueRecord(readonly request: Request) -> Result<String,String>",
       "lineStart": 6,
       "lineEnd": 6,
-      "indexedAt": "2026-06-26T18:30:26.562Z",
+      "indexedAt": "2026-07-01T13:11:19.871Z",
       "sourceMtime": 1780584556199.1294
     },
     {
-      "id": "8f00fa75426518c2d38d471930e1fb1c4fb581b1576b640c72e2b341512ede4a",
+      "id": "8972ca1cc4c632b3485f375a9b8aabac1a687397b61304c248d9d41c985a4294",
       "flowName": "qualifierToProofLevel",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\proofGraphService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\proofGraphService.fungi",
       "lexicalTokens": [
         "qualifier",
         "to",
@@ -4984,14 +4984,14 @@
       "signatureText": "pure flow qualifierToProofLevel(qualifier: String) -> Int",
       "lineStart": 8,
       "lineEnd": 8,
-      "indexedAt": "2026-06-26T18:30:26.563Z",
+      "indexedAt": "2026-07-01T13:11:19.872Z",
       "sourceMtime": 1780650678795.0364
     },
     {
-      "id": "0a2cb2b0f10f705f706e34a161a1f623e9018205f5fb92ba489dc0f50c940800",
+      "id": "c5a012903915abd0dbc4159e4fbc12c83064aeda237fb3731054a07a58051177",
       "flowName": "proofLevelSufficient",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\proofGraphService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\proofGraphService.fungi",
       "lexicalTokens": [
         "proof",
         "level",
@@ -5042,14 +5042,14 @@
       "signatureText": "pure flow proofLevelSufficient(actual: Int, required: Int) -> Bool",
       "lineStart": 22,
       "lineEnd": 22,
-      "indexedAt": "2026-06-26T18:30:26.563Z",
+      "indexedAt": "2026-07-01T13:11:19.872Z",
       "sourceMtime": 1780650678795.0364
     },
     {
-      "id": "243e47bd62dc51ed765992a12b82819eb23822218177d96519cdbc2d0479a1e2",
+      "id": "27d3424d592288c90656b7bb81d95b66f5e616c69ca932fccd2ffc41ab1fd771",
       "flowName": "generateProofSummary",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\proofGraphService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\proofGraphService.fungi",
       "lexicalTokens": [
         "generate",
         "proof",
@@ -5205,14 +5205,14 @@
       "signatureText": "secure flow generateProofSummary(readonly request: Request) -> ProofResult",
       "lineStart": 32,
       "lineEnd": 32,
-      "indexedAt": "2026-06-26T18:30:26.563Z",
+      "indexedAt": "2026-07-01T13:11:19.872Z",
       "sourceMtime": 1780650678795.0364
     },
     {
-      "id": "52149c8747fe628047c8db7a7d299c42aedb4e25be7b137eaf57467b82f04f58",
+      "id": "ea60361883fbb551c7659aef8db1782fac094c1344d5de3fa09b5c740fef7e68",
       "flowName": "isValidAlgorithm",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\proofVerifierService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\proofVerifierService.fungi",
       "lexicalTokens": [
         "is",
         "valid",
@@ -5263,14 +5263,14 @@
       "signatureText": "pure flow isValidAlgorithm(alg: String) -> Bool",
       "lineStart": 13,
       "lineEnd": 13,
-      "indexedAt": "2026-06-26T18:30:26.564Z",
-      "sourceMtime": 1782479998671.9512
+      "indexedAt": "2026-07-01T13:11:19.873Z",
+      "sourceMtime": 1782669678354.3667
     },
     {
-      "id": "f270c14b0f4efb795d16673b36d0778097bd92a7930cf66b4905dd73cda86abc",
+      "id": "bae17b5f24f87f09d083cf1758d32fc497e1163fbf6361a23aae72cdde26c85b",
       "flowName": "proofStrength",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\proofVerifierService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\proofVerifierService.fungi",
       "lexicalTokens": [
         "proof",
         "strength",
@@ -5318,14 +5318,14 @@
       "signatureText": "pure flow proofStrength(algorithm: String) -> Int",
       "lineStart": 25,
       "lineEnd": 25,
-      "indexedAt": "2026-06-26T18:30:26.564Z",
-      "sourceMtime": 1782479998671.9512
+      "indexedAt": "2026-07-01T13:11:19.873Z",
+      "sourceMtime": 1782669678354.3667
     },
     {
-      "id": "0cc4497555f7ffc7dda0783139b0f7f6fad9a91164a9e18fe549fc639a398d78",
+      "id": "a06a827995b39f6df876504b7c61412dce67b4adc604ed4d11fdfa7e29a48613",
       "flowName": "verifyProof",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\proofVerifierService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\proofVerifierService.fungi",
       "lexicalTokens": [
         "verify",
         "proof",
@@ -5478,14 +5478,14 @@
       "signatureText": "secure flow verifyProof(readonly request: Request) -> Response",
       "lineStart": 37,
       "lineEnd": 37,
-      "indexedAt": "2026-06-26T18:30:26.564Z",
-      "sourceMtime": 1782479998671.9512
+      "indexedAt": "2026-07-01T13:11:19.873Z",
+      "sourceMtime": 1782669678354.3667
     },
     {
-      "id": "c8533c85aaf2ce4aec43256b1f4eac76b414b5fba5d61c9a07710a6d361db9f3",
+      "id": "f71aa51e12d81668fc0724ab21667cff995a52a942ed714a596ab058ec1c16d2",
       "flowName": "rateStatus",
       "qualifier": "guarded",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\rateStatus.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\rateStatus.fungi",
       "lexicalTokens": [
         "rate",
         "status",
@@ -5617,14 +5617,14 @@
       "signatureText": "guarded flow rateStatus(readonly request: Request) -> RateStatusResult",
       "lineStart": 6,
       "lineEnd": 6,
-      "indexedAt": "2026-06-26T18:30:26.566Z",
+      "indexedAt": "2026-07-01T13:11:19.875Z",
       "sourceMtime": 1780572004873.2146
     },
     {
-      "id": "9775251c675cc4ed00764e72a127baa7de26931cf2dadf58c48be77fbf29d7ab",
+      "id": "83262036b3de5fd0dad6a01a24b86aa0cdec6705ed2b17a9819d34ccfbb3710c",
       "flowName": "pathMatches",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routeDispatcherService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\routeDispatcherService.fungi",
       "lexicalTokens": [
         "path",
         "matches",
@@ -5685,14 +5685,14 @@
       "signatureText": "pure flow pathMatches(requestPath: String, routePath: String) -> Bool",
       "lineStart": 9,
       "lineEnd": 9,
-      "indexedAt": "2026-06-26T18:30:26.567Z",
+      "indexedAt": "2026-07-01T13:11:19.876Z",
       "sourceMtime": 1782479001159.82
     },
     {
-      "id": "183271778328aeec06c9bbee686c9b192461930e78c95db9f5d6e157cac52835",
+      "id": "f949b03b8a4c8f1e81cf0f0909d2a26b248aaeb482f72a27481418b387d01956",
       "flowName": "resolveRoute",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routeDispatcherService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\routeDispatcherService.fungi",
       "lexicalTokens": [
         "resolve",
         "route",
@@ -5785,14 +5785,14 @@
       "signatureText": "pure flow resolveRoute(method: String, path: String) -> String",
       "lineStart": 21,
       "lineEnd": 21,
-      "indexedAt": "2026-06-26T18:30:26.567Z",
+      "indexedAt": "2026-07-01T13:11:19.876Z",
       "sourceMtime": 1782479001159.82
     },
     {
-      "id": "94945dd8e2ec7fbc9c53331df5e9097ae60b84a9cfe0bde0dac82564fd0cf125",
+      "id": "4ee2b005d26364090735136cafb669f70e57e7bdb3fbb20ae8ffe885577b11ac",
       "flowName": "flowGovernanceProfile",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routeDispatcherService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\routeDispatcherService.fungi",
       "lexicalTokens": [
         "flow",
         "governance",
@@ -5866,14 +5866,14 @@
       "signatureText": "pure flow flowGovernanceProfile(flowName: String) -> String",
       "lineStart": 52,
       "lineEnd": 52,
-      "indexedAt": "2026-06-26T18:30:26.567Z",
+      "indexedAt": "2026-07-01T13:11:19.876Z",
       "sourceMtime": 1782479001159.82
     },
     {
-      "id": "c1a13bd4bdc97304ff9118d54c024775cff9682c12b9c78fd7798b19348421bd",
+      "id": "71a24d9e6c6b816a2a14a928b12db40c04e7428277e080bbe77fa46479b74058",
       "flowName": "dispatchRequest",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routeDispatcherService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\routeDispatcherService.fungi",
       "lexicalTokens": [
         "dispatch",
         "request",
@@ -6156,14 +6156,14 @@
       "signatureText": "secure flow dispatchRequest(readonly request: Request) -> RouteResult",
       "lineStart": 69,
       "lineEnd": 69,
-      "indexedAt": "2026-06-26T18:30:26.567Z",
+      "indexedAt": "2026-07-01T13:11:19.876Z",
       "sourceMtime": 1782479001159.82
     },
     {
-      "id": "b57ba250f9b224a501ba2c9d4944d15eaafae89b36155b16a0524865440d5cdb",
+      "id": "6786967906816c18f8d56a8fba23c9d12776dfc42c0ab832107f5d151f058be6",
       "flowName": "preferredTier",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routingPolicyService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\routingPolicyService.fungi",
       "lexicalTokens": [
         "preferred",
         "tier",
@@ -6238,14 +6238,14 @@
       "signatureText": "pure flow preferredTier(effectCount: Int, hasAI: Bool, isCritical: Bool) -> String",
       "lineStart": 4,
       "lineEnd": 4,
-      "indexedAt": "2026-06-26T18:30:26.569Z",
+      "indexedAt": "2026-07-01T13:11:19.879Z",
       "sourceMtime": 1780651676740.3132
     },
     {
-      "id": "da7f5292cec3d19108b891e31a7d991c86b11d227940803122831837c6f496e4",
+      "id": "7e57974bf6bb68b6059733dd0fbdcebdb93a558ccd25b7d70d09b905c62d0d03",
       "flowName": "tierGovernanceClass",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routingPolicyService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\routingPolicyService.fungi",
       "lexicalTokens": [
         "tier",
         "governance",
@@ -6287,14 +6287,14 @@
       "signatureText": "pure flow tierGovernanceClass(tier: String) -> Int",
       "lineStart": 15,
       "lineEnd": 15,
-      "indexedAt": "2026-06-26T18:30:26.569Z",
+      "indexedAt": "2026-07-01T13:11:19.879Z",
       "sourceMtime": 1780651676740.3132
     },
     {
-      "id": "d471cb07ea8079d9c38855aa9d4e1864280ec84b8f933f517104ad49f8f51fca",
+      "id": "8ba8f462f45a9e1fd4048e4f0b049289fbabcda02dfd3b694383ed9bb8cb4a87",
       "flowName": "resolveRoute",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routingPolicyService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\routingPolicyService.fungi",
       "lexicalTokens": [
         "resolve",
         "route",
@@ -6459,14 +6459,14 @@
       "signatureText": "secure flow resolveRoute(readonly request: Request) -> Response",
       "lineStart": 24,
       "lineEnd": 24,
-      "indexedAt": "2026-06-26T18:30:26.569Z",
+      "indexedAt": "2026-07-01T13:11:19.879Z",
       "sourceMtime": 1780651676740.3132
     },
     {
-      "id": "664f7bedab2d975d6e610868c70540e2e15c2c521087ce3ad465e2d69dbee275",
+      "id": "90c2df1526a6bef81d4c13085a48cdd4bc1c0c0890e521b87af0205209b1d678",
       "flowName": "profileAllowsRecursion",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\runtimeProfileService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\runtimeProfileService.fungi",
       "lexicalTokens": [
         "profile",
         "allows",
@@ -6506,14 +6506,14 @@
       "signatureText": "pure flow profileAllowsRecursion(profile: String) -> Bool",
       "lineStart": 4,
       "lineEnd": 4,
-      "indexedAt": "2026-06-26T18:30:26.571Z",
+      "indexedAt": "2026-07-01T13:11:19.880Z",
       "sourceMtime": 1780651298831.9385
     },
     {
-      "id": "f9576b817f0f81dd984198cefa0fc623fe7cc0cdba66a3bf0a5c88e9fa4b887b",
+      "id": "6bdc39aa9af8f24360b915bbbefe6fc97dcfc9af538acec54768b8dd79634e3c",
       "flowName": "profileAllowsUnboundedLoop",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\runtimeProfileService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\runtimeProfileService.fungi",
       "lexicalTokens": [
         "profile",
         "allows",
@@ -6554,14 +6554,14 @@
       "signatureText": "pure flow profileAllowsUnboundedLoop(profile: String) -> Bool",
       "lineStart": 11,
       "lineEnd": 11,
-      "indexedAt": "2026-06-26T18:30:26.571Z",
+      "indexedAt": "2026-07-01T13:11:19.880Z",
       "sourceMtime": 1780651298831.9385
     },
     {
-      "id": "896cf34ec3492b9b4e67e04de423bf03d54a2bafc53f13676258cc6fb6a6d05b",
+      "id": "3c229048a18a6c605826afa07cfe1a5882b82747d2c7013db4528ebc173d9eb0",
       "flowName": "profileRequiresBudget",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\runtimeProfileService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\runtimeProfileService.fungi",
       "lexicalTokens": [
         "profile",
         "requires",
@@ -6601,14 +6601,14 @@
       "signatureText": "pure flow profileRequiresBudget(profile: String) -> Bool",
       "lineStart": 18,
       "lineEnd": 18,
-      "indexedAt": "2026-06-26T18:30:26.571Z",
+      "indexedAt": "2026-07-01T13:11:19.880Z",
       "sourceMtime": 1780651298831.9385
     },
     {
-      "id": "dcd35346491facd156c742a11ca8313a66154a8b2c690704cec3cacc633741f7",
+      "id": "911e86dc47b63a9930fa23f55eaa7d092901d11f00f8347427dc571eb2654896",
       "flowName": "profileSecurityLevel",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\runtimeProfileService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\runtimeProfileService.fungi",
       "lexicalTokens": [
         "profile",
         "security",
@@ -6651,14 +6651,14 @@
       "signatureText": "pure flow profileSecurityLevel(profile: String) -> Int",
       "lineStart": 25,
       "lineEnd": 25,
-      "indexedAt": "2026-06-26T18:30:26.571Z",
+      "indexedAt": "2026-07-01T13:11:19.880Z",
       "sourceMtime": 1780651298831.9385
     },
     {
-      "id": "235e2f3be63fcb05d6ef7084133097a5b8582134bb39e9ad26339e144b405415",
+      "id": "9b4cebcad5d110e8c715adf99c53105b08194d6eafe58b4e82ada4e8c5709371",
       "flowName": "checkProfile",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\runtimeProfileService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\runtimeProfileService.fungi",
       "lexicalTokens": [
         "check",
         "profile",
@@ -6837,14 +6837,14 @@
       "signatureText": "secure flow checkProfile(readonly request: Request) -> Response",
       "lineStart": 34,
       "lineEnd": 34,
-      "indexedAt": "2026-06-26T18:30:26.571Z",
+      "indexedAt": "2026-07-01T13:11:19.880Z",
       "sourceMtime": 1780651298831.9385
     },
     {
-      "id": "15cdb48cf33963717b71e41ee4ea0cbfab0bef5daf17f3e8bd1f16c6f26fb929",
+      "id": "c70dedacf58fef23c6ec3e19665ad11e97aaeebdb9f9fb0f524ff7b3dc665e98",
       "flowName": "processSovereignTransaction",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\sovereignTransaction.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\sovereignTransaction.fungi",
       "lexicalTokens": [
         "process",
         "sovereign",
@@ -7038,14 +7038,14 @@
       "signatureText": "secure flow processSovereignTransaction(readonly request: Request) -> TransactionResult",
       "lineStart": 15,
       "lineEnd": 15,
-      "indexedAt": "2026-06-26T18:30:26.574Z",
+      "indexedAt": "2026-07-01T13:11:19.884Z",
       "sourceMtime": 1780609945197.5305
     },
     {
-      "id": "b0525d6239c35ecaee38c427f884d2836484c29ae3d91784b034170409280f50",
+      "id": "ed006327dd5b9d068f16eca95d79e1ca6b5935c5f7a9c0b49301fbbc62c104fa",
       "flowName": "strContains",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\stdlibCoreService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\stdlibCoreService.fungi",
       "lexicalTokens": [
         "str",
         "contains",
@@ -7089,14 +7089,14 @@
       "signatureText": "pure flow strContains(text: String, sub: String) -> Bool",
       "lineStart": 8,
       "lineEnd": 8,
-      "indexedAt": "2026-06-26T18:30:26.576Z",
+      "indexedAt": "2026-07-01T13:11:19.886Z",
       "sourceMtime": 1782469910104.9478
     },
     {
-      "id": "dcef8686f72b3026f32a60acdf30314b9a619e4629c1771a872ba0e737631128",
+      "id": "7bac7ff02e3cedcddcd4d86ccafe418a0b58a9e2436684bfdda9910f5fa2a049",
       "flowName": "strStartsWith",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\stdlibCoreService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\stdlibCoreService.fungi",
       "lexicalTokens": [
         "str",
         "starts",
@@ -7144,14 +7144,14 @@
       "signatureText": "pure flow strStartsWith(text: String, prefix: String) -> Bool",
       "lineStart": 16,
       "lineEnd": 16,
-      "indexedAt": "2026-06-26T18:30:26.576Z",
+      "indexedAt": "2026-07-01T13:11:19.886Z",
       "sourceMtime": 1782469910104.9478
     },
     {
-      "id": "e38926a9ca35a3db978e79247df9129bad48b9ef9f69a67a384c1a40c87362fe",
+      "id": "8913d383f5e97312661362abc5e6328b887c438ffb32eba6017ec466037b4631",
       "flowName": "strLength",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\stdlibCoreService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\stdlibCoreService.fungi",
       "lexicalTokens": [
         "str",
         "length",
@@ -7189,14 +7189,14 @@
       "signatureText": "pure flow strLength(text: String) -> Int",
       "lineStart": 24,
       "lineEnd": 24,
-      "indexedAt": "2026-06-26T18:30:26.576Z",
+      "indexedAt": "2026-07-01T13:11:19.886Z",
       "sourceMtime": 1782469910104.9478
     },
     {
-      "id": "70027b7b94ff528091f9dd7985333ef261668050098d91400c75e7611b2a9be4",
+      "id": "692a1a0a93e4a0369e306475ff835560d5d31ad0b064342bbed71b796e39b129",
       "flowName": "mathMin",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\stdlibCoreService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\stdlibCoreService.fungi",
       "lexicalTokens": [
         "math",
         "min",
@@ -7232,14 +7232,14 @@
       "signatureText": "pure flow mathMin(a: Int, b: Int) -> Int",
       "lineStart": 33,
       "lineEnd": 33,
-      "indexedAt": "2026-06-26T18:30:26.576Z",
+      "indexedAt": "2026-07-01T13:11:19.886Z",
       "sourceMtime": 1782469910104.9478
     },
     {
-      "id": "c262f039331fb5c0b87ccbd5512aedcb7ffb10362d6dcf6f862befd32bfc8c9d",
+      "id": "f37620b1ea290d922c6b414c58ef2ce4abbaf2dfeb16f511889bc8d1c805112e",
       "flowName": "mathMax",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\stdlibCoreService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\stdlibCoreService.fungi",
       "lexicalTokens": [
         "math",
         "max",
@@ -7275,14 +7275,14 @@
       "signatureText": "pure flow mathMax(a: Int, b: Int) -> Int",
       "lineStart": 44,
       "lineEnd": 44,
-      "indexedAt": "2026-06-26T18:30:26.576Z",
+      "indexedAt": "2026-07-01T13:11:19.886Z",
       "sourceMtime": 1782469910104.9478
     },
     {
-      "id": "cf8f02fb20f9dbe419d05721ac5214f2c4614b3f357f0af0f268d147dff62aeb",
+      "id": "dfe7b2a76c7d52378d503fd8895bb059106e8edfd33cc32f3b124059517cb2bf",
       "flowName": "mathClamp",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\stdlibCoreService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\stdlibCoreService.fungi",
       "lexicalTokens": [
         "math",
         "clamp",
@@ -7330,14 +7330,14 @@
       "signatureText": "pure flow mathClamp(n: Int, lo: Int, hi: Int) -> Int",
       "lineStart": 55,
       "lineEnd": 55,
-      "indexedAt": "2026-06-26T18:30:26.576Z",
+      "indexedAt": "2026-07-01T13:11:19.886Z",
       "sourceMtime": 1782469910104.9478
     },
     {
-      "id": "3f92b01e3929e3ab8ef8192d2d49fbf23ad33b08f4ef99f7868539ae05cc5782",
+      "id": "c40fcfc3a33a01afa2a0bc4847bd1b1b490f637caeca45a1eda60939e6974b55",
       "flowName": "stdlibDemo",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\stdlibCoreService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\stdlibCoreService.fungi",
       "lexicalTokens": [
         "stdlib",
         "demo",
@@ -7473,14 +7473,14 @@
       "signatureText": "secure flow stdlibDemo(readonly request: Request) -> StdlibResult",
       "lineStart": 70,
       "lineEnd": 70,
-      "indexedAt": "2026-06-26T18:30:26.576Z",
+      "indexedAt": "2026-07-01T13:11:19.886Z",
       "sourceMtime": 1782469910104.9478
     },
     {
-      "id": "2284fa0da79272748d96619db2c1396a4cb8de118d9bc52c6d0c876ff6ddca3e",
+      "id": "ed8745f2dd7f7c31b94e26410793a8974d782423b9b60bb9334c9d79aaa5ff18",
       "flowName": "isBuiltinType",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\typeRegistryService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\typeRegistryService.fungi",
       "lexicalTokens": [
         "is",
         "builtin",
@@ -7545,14 +7545,14 @@
       "signatureText": "pure flow isBuiltinType(name: String) -> Bool",
       "lineStart": 13,
       "lineEnd": 13,
-      "indexedAt": "2026-06-26T18:30:26.577Z",
+      "indexedAt": "2026-07-01T13:11:19.887Z",
       "sourceMtime": 1782479001164.9358
     },
     {
-      "id": "9f41e771e7851cf158ad1a6907b66f22b65e06c04aed07557d2df61c90e70459",
+      "id": "5a3ea9929156e225c4438321644a4e145ddc1e88c96fdbb08e6e71d95a9997f1",
       "flowName": "typeCategory",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\typeRegistryService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\typeRegistryService.fungi",
       "lexicalTokens": [
         "type",
         "category",
@@ -7629,14 +7629,14 @@
       "signatureText": "pure flow typeCategory(name: String) -> String",
       "lineStart": 30,
       "lineEnd": 30,
-      "indexedAt": "2026-06-26T18:30:26.577Z",
+      "indexedAt": "2026-07-01T13:11:19.887Z",
       "sourceMtime": 1782479001164.9358
     },
     {
-      "id": "6bcfb5ccbd6dfffcad139ba78fbc080e9c3c51c0cce23a9da0a25e5ad9ff549f",
+      "id": "16b962500d544cd4bd1de928b3ff4f9c7f7ff288ebc2ef0b35c1ad1524b6334c",
       "flowName": "resolveType",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\typeRegistryService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\typeRegistryService.fungi",
       "lexicalTokens": [
         "resolve",
         "type",
@@ -7816,14 +7816,14 @@
       "signatureText": "secure flow resolveType(readonly request: Request) -> Response",
       "lineStart": 52,
       "lineEnd": 52,
-      "indexedAt": "2026-06-26T18:30:26.577Z",
+      "indexedAt": "2026-07-01T13:11:19.887Z",
       "sourceMtime": 1782479001164.9358
     },
     {
-      "id": "3449332246be69d7a9bc997a1d28f24b5d14ccd9aea196e001d65dc9e941402e",
+      "id": "8b89747782e6eaa5f0a484f4c201e677168ffbae784e4b48c0a8f2acafa3f39e",
       "flowName": "countServices",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\v1RcStatusService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\v1RcStatusService.fungi",
       "lexicalTokens": [
         "count",
         "services",
@@ -7858,14 +7858,14 @@
       "signatureText": "pure flow countServices() -> Int",
       "lineStart": 8,
       "lineEnd": 8,
-      "indexedAt": "2026-06-26T18:30:26.578Z",
-      "sourceMtime": 1782479001166.9524
+      "indexedAt": "2026-07-01T13:11:19.889Z",
+      "sourceMtime": 1782669678354.3667
     },
     {
-      "id": "463712cb9c0dd10d85f3020f348d0d6db80054c70540a133f8a089405b619abd",
+      "id": "84470b7112b21a981f6b921fde6997a4712a9c5e7243f1460d36859c5f506b82",
       "flowName": "runtimePercent",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\v1RcStatusService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\v1RcStatusService.fungi",
       "lexicalTokens": [
         "runtime",
         "percent",
@@ -7898,14 +7898,14 @@
       "signatureText": "pure flow runtimePercent() -> Int",
       "lineStart": 17,
       "lineEnd": 17,
-      "indexedAt": "2026-06-26T18:30:26.578Z",
-      "sourceMtime": 1782479001166.9524
+      "indexedAt": "2026-07-01T13:11:19.889Z",
+      "sourceMtime": 1782669678354.3667
     },
     {
-      "id": "e4cc0caf3b5dfdf948ef11ff294aa0a04ceb97540c98a2ed6b44231d4c6fdd6b",
+      "id": "a466394ac3b12d5eeeb612731443fbaeb0c649556294f0c8a4ba82b844725627",
       "flowName": "currentPhase",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\v1RcStatusService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\v1RcStatusService.fungi",
       "lexicalTokens": [
         "current",
         "phase",
@@ -7936,14 +7936,14 @@
       "signatureText": "pure flow currentPhase() -> Int",
       "lineStart": 26,
       "lineEnd": 26,
-      "indexedAt": "2026-06-26T18:30:26.578Z",
-      "sourceMtime": 1782479001166.9524
+      "indexedAt": "2026-07-01T13:11:19.889Z",
+      "sourceMtime": 1782669678354.3667
     },
     {
-      "id": "900573318fe9817bb516f97be701db72dd16b09effc5b6cb70eb89e290b0b336",
+      "id": "8b68b4bc68a2e0e79ab888b8179a48a3b316e99cb2ef7c92d1b44b335259a0ce",
       "flowName": "v1RcStatus",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\v1RcStatusService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\v1RcStatusService.fungi",
       "lexicalTokens": [
         "v1rc",
         "status",
@@ -8075,14 +8075,14 @@
       "signatureText": "secure flow v1RcStatus(readonly request: Request) -> RcStatusResult",
       "lineStart": 34,
       "lineEnd": 34,
-      "indexedAt": "2026-06-26T18:30:26.578Z",
-      "sourceMtime": 1782479001166.9524
+      "indexedAt": "2026-07-01T13:11:19.889Z",
+      "sourceMtime": 1782669678354.3667
     },
     {
-      "id": "46e327b1a5c84216ed25d09a0f7f756f9178d82e84e2b6b645f16b0fc5948317",
+      "id": "42c9d6fe8ffa41e45b3aede73ad3bd1632f67724bc58405f6808a30720d4ce6a",
       "flowName": "classifyValue",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\valueClassificationService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\valueClassificationService.fungi",
       "lexicalTokens": [
         "classify",
         "value",
@@ -8139,14 +8139,14 @@
       "signatureText": "pure flow classifyValue(typeName: String) -> Int",
       "lineStart": 4,
       "lineEnd": 4,
-      "indexedAt": "2026-06-26T18:30:26.579Z",
+      "indexedAt": "2026-07-01T13:11:19.890Z",
       "sourceMtime": 1780651305388.8225
     },
     {
-      "id": "8cc03fa87463e989df6d0b9320d56e1018fcde0d838d4fa2585dbb848e5a45eb",
+      "id": "57a5f87d05b9fe4a3402dd88e9b514a057096814456447bac5cacfe228e5a0b7",
       "flowName": "requiresRedaction",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\valueClassificationService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\valueClassificationService.fungi",
       "lexicalTokens": [
         "requires",
         "redaction",
@@ -8175,14 +8175,14 @@
       "signatureText": "pure flow requiresRedaction(classification: Int) -> Bool",
       "lineStart": 14,
       "lineEnd": 14,
-      "indexedAt": "2026-06-26T18:30:26.579Z",
+      "indexedAt": "2026-07-01T13:11:19.890Z",
       "sourceMtime": 1780651305388.8225
     },
     {
-      "id": "fb1f93ada2c4d2ce140e8bf39cb6459330ab24db06ddf6ddb59ca9b162f5f95f",
+      "id": "1945646a5156ddb196adb153fd9e6c1969973437d6cb3ee2aee64cb10a1fe2f4",
       "flowName": "requiresEncryption",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\valueClassificationService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\valueClassificationService.fungi",
       "lexicalTokens": [
         "requires",
         "encryption",
@@ -8211,14 +8211,14 @@
       "signatureText": "pure flow requiresEncryption(classification: Int) -> Bool",
       "lineStart": 19,
       "lineEnd": 19,
-      "indexedAt": "2026-06-26T18:30:26.579Z",
+      "indexedAt": "2026-07-01T13:11:19.890Z",
       "sourceMtime": 1780651305388.8225
     },
     {
-      "id": "57c3b32a63534bb0cd3f1fb4ba0a2bd2a27f53161950054a80620678726ae0f1",
+      "id": "56cc621b9f776e94f5e7a8c942526a8935e9b8919bc2836d5e1d1b8560844e65",
       "flowName": "classifyData",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\valueClassificationService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\valueClassificationService.fungi",
       "lexicalTokens": [
         "classify",
         "data",
@@ -8357,14 +8357,14 @@
       "signatureText": "secure flow classifyData(readonly request: Request) -> Response",
       "lineStart": 24,
       "lineEnd": 24,
-      "indexedAt": "2026-06-26T18:30:26.579Z",
+      "indexedAt": "2026-07-01T13:11:19.890Z",
       "sourceMtime": 1780651305388.8225
     },
     {
-      "id": "3851b26dae76889fd7e95070fe778850dc6b2f27a46f9bb7d0471d47a3768f8d",
+      "id": "ed28cc815894d806791d94b00a432f2d581d54da5437da198a8970e50def1099",
       "flowName": "verifyPassword",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\verifyPassword.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\verifyPassword.fungi",
       "lexicalTokens": [
         "verify",
         "password",
@@ -8562,14 +8562,14 @@
       "signatureText": "secure flow verifyPassword(readonly request: Request) -> VerifyPasswordResult",
       "lineStart": 9,
       "lineEnd": 9,
-      "indexedAt": "2026-06-26T18:30:26.580Z",
+      "indexedAt": "2026-07-01T13:11:19.892Z",
       "sourceMtime": 1780650804098.3777
     },
     {
-      "id": "c5149bc6b0b740aaeb6d8461332383a27205460c8108b0cee0ef88dec28d1c0d",
+      "id": "daa6897fbfb81132300bc4182a69badc48784852dc0634815ef2a0aa6d4eae5b",
       "flowName": "fixtureHash",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\verifyPasswordService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\verifyPasswordService.fungi",
       "lexicalTokens": [
         "fixture",
         "hash",
@@ -8602,14 +8602,14 @@
       "signatureText": "pure flow fixtureHash() -> String",
       "lineStart": 18,
       "lineEnd": 18,
-      "indexedAt": "2026-06-26T18:30:26.581Z",
+      "indexedAt": "2026-07-01T13:11:19.892Z",
       "sourceMtime": 1780571699459.7202
     },
     {
-      "id": "ff5c7077529aa9c9cc3683b580e7897100446043e76476b974a345962488cb04",
+      "id": "b886446cd4f5a8e96fa2b2afec690705e6e779afd2c2a5b923e66af4a5ac6c54",
       "flowName": "verifyPassword",
       "qualifier": "secure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\verifyPasswordService.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\verifyPasswordService.fungi",
       "lexicalTokens": [
         "verify",
         "password",
@@ -8705,14 +8705,14 @@
       "signatureText": "secure flow verifyPassword(readonly request: Request) -> Response",
       "lineStart": 25,
       "lineEnd": 25,
-      "indexedAt": "2026-06-26T18:30:26.581Z",
+      "indexedAt": "2026-07-01T13:11:19.892Z",
       "sourceMtime": 1780571699459.7202
     },
     {
-      "id": "9e02e20acf4915d7f49fd4d1cc8bd325558ba55916e518880328b4db9bf0fb15",
+      "id": "709f8d37fc357a19560f806e40cef509655afedc81319487ffd7c1b9faad7588",
       "flowName": "verifyToken",
       "qualifier": "pure",
-      "filePath": "C:\\wwwprojects\\LogicN\\examples\\auth-service\\verifyToken.fungi",
+      "filePath": "C:\\wwwprojects\\Galerina\\examples\\auth-service\\verifyToken.fungi",
       "lexicalTokens": [
         "verify",
         "token",
@@ -8763,43 +8763,43 @@
       "signatureText": "pure flow verifyToken(token: String) -> VerifyTokenResult",
       "lineStart": 5,
       "lineEnd": 5,
-      "indexedAt": "2026-06-26T18:30:26.582Z",
+      "indexedAt": "2026-07-01T13:11:19.893Z",
       "sourceMtime": 1780571638241.5642
     }
   ],
   "fileHashes": {
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\auditChainService.fungi": "cfbb2ebdf11c72fc6b488324e855d20bd434d441f0130eb5c77bb911bf0c842f",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\auditWriterService.fungi": "209688bab8b35179321f41743b4ca66c81aaaa16745e24db5cd3a3ea70e85595",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\bytecodeRouterService.fungi": "28413f72fc12fc146a766a362362568b321ea2448d46481d7f3063c93bcd5a98",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\capabilityHostService.fungi": "14ad6e8d1f38d19a8d490117551388d8193e30f3877af1d5f0f9cc7781ce7b15",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\capabilityResolverService.fungi": "a546fdda1af1a819aae91cdcc2e9926c6dcc0a49f31a3a16e94006aef6847444",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\compilationService.fungi": "e479f65d5b81cb9d46158e591d504564572a5cf01094ab733bd2335ce28927e0",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\createSession.fungi": "fab62f72837751edff1e2ec76419ed9d98d0a7c500fe95bdb3e97603b9bef065",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsRouterService.fungi": "e02104b1c89f5b5ed731908ea175964a83627ea28f16b00f4617e0fbe8638b1f",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\economicsService.fungi": "822b390bdbdbe66d798179f7c9f7f8c81dac679d8bed5458274e9b8fd7892424",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\effectCheckerService.fungi": "dce886bd038b0cc9d63243288cf9df08ffb1a365a09bf0df83b11899fd53c6a4",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceService.fungi": "e99b202d58b95e6e8c6a0de197ab376de7d1ba1a62e82010d03c6258e500dd66",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\governanceVerifierService.fungi": "43d62aa3a904a3378ec122a3ab8cd519057ff6415e2fe2241b6d6d53669ece30",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\healthCheck.fungi": "7346bbd4d85742c3a928232fc49b384c84cc6ccd16c27269120bda929564c143",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\manifestVerificationService.fungi": "4c7d126aea307e7d55ece44d38f24c5ddf0793e0fd9f9722370e2e90173ca0e7",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\physicalHardeningAutoDefault.fungi": "fc2248f683fd744a2a871ae88d320502bad521a6de8045e2f8215d6fdee84880",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\physicalHardeningTier1.fungi": "1b062c8516dcde0fe6cbb1d36cc401d14270f9a7a4cd6709739222f68e27a3d7",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\physicalHardeningTier2.fungi": "bfd762d85d5b422298afd332aa296a395db3d1544d43db53e569d16028a20618",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\proofGraphService.fungi": "784eba4b7a7fd188e57235c8c40aa2cce37900d886ce0390550dde6c0596d8b8",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\proofVerifierService.fungi": "60e67c380a0470960c25cc126cf4f3ed76882fc211e576258ae6af87820a84cb",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\rateStatus.fungi": "0a4ec378f87f4ccbd22037af8255b9d61235017f201639cf41a5cbbfba850570",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routeDispatcherService.fungi": "5404ae4ff1a1c2272d7aad05aee7c4737c431d98309e8713d3d4a3e45d598b40",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\routingPolicyService.fungi": "77c5bcde9d850b7a512dac6d75b09aa6bf53a169fab0d4c6b9e9b47194e49f73",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\runtimeProfileService.fungi": "d3d31c23990829d214485b1fce24ba27f11eff58fd03f7b773c09c6f9c34c111",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\sovereignTransaction.fungi": "d54a48df8d68bfaf572c06a00674c478b123866740b2e8463f8f7397d6dd28c0",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\stdlibCoreService.fungi": "06928b42620f0958ad7618084bb3d227f45ac2a66f72e38481e4886686e1640c",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\typeRegistryService.fungi": "21e8076fd41f885ec2eb6942650a2ad22d295d3d21f104967845c07a973cd506",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\v1RcStatusService.fungi": "a79a28a31cb38fd8527443ca2b4094c7ea66802f9b04d688a0fc7ced58c96516",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\valueClassificationService.fungi": "af7aeca3a7348df8bce641f23dba39469b3decdffe11069428113186248391b2",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\verifyPassword.fungi": "265c1188031dfc49289fe46817db24e63eb1c49083851242f49b77c3ebc152fd",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\verifyPasswordService.fungi": "9d8c819600c47fd0cf2f783e5ab70e80acf30a7a57e3e89634fed599b2f9fea6",
-    "C:\\wwwprojects\\LogicN\\examples\\auth-service\\verifyToken.fungi": "232098eea4eb3358b61c0a710686827551e62a9e37ec4a30f708b6afda76c391"
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\auditChainService.fungi": "f1f56b26714bd1cd7857e3fac48b6e0cb9fe452352087307b808ecd66df5e6e7",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\auditWriterService.fungi": "209688bab8b35179321f41743b4ca66c81aaaa16745e24db5cd3a3ea70e85595",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\bytecodeRouterService.fungi": "28413f72fc12fc146a766a362362568b321ea2448d46481d7f3063c93bcd5a98",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\capabilityHostService.fungi": "eb85d75196c8b16c6ebb919735d10cf55a364c459f24a47bed5e32613cda611f",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\capabilityResolverService.fungi": "a546fdda1af1a819aae91cdcc2e9926c6dcc0a49f31a3a16e94006aef6847444",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\compilationService.fungi": "a847ad29dc29af9724976454bdeb9e45270510569aef7a7a2841e25a870451b8",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\createSession.fungi": "fab62f72837751edff1e2ec76419ed9d98d0a7c500fe95bdb3e97603b9bef065",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\economicsRouterService.fungi": "e02104b1c89f5b5ed731908ea175964a83627ea28f16b00f4617e0fbe8638b1f",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\economicsService.fungi": "822b390bdbdbe66d798179f7c9f7f8c81dac679d8bed5458274e9b8fd7892424",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\effectCheckerService.fungi": "37a9ed85eed55bca3b5f84e63571545929a94e9f712ea958ed36921197d6c4ae",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\governanceService.fungi": "f160811442a2a0cebc5eb5d2f6fa50763301502acd3d3d9ddcbefad396993b54",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\governanceVerifierService.fungi": "a7512789e8e57d0f9a9a339f076a6a5accc680aeb3977a52ef4d492daf433d7e",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\healthCheck.fungi": "7346bbd4d85742c3a928232fc49b384c84cc6ccd16c27269120bda929564c143",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\manifestVerificationService.fungi": "b7f0c95aeda5f6d60e770056173a720b02b286686b9252aeb6da836fbedf6dd7",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\physicalHardeningAutoDefault.fungi": "d62417ee7e850b15952d2d2a5764c31491c47abfd8992af58d1ad5d9fcfdd704",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\physicalHardeningTier1.fungi": "1b062c8516dcde0fe6cbb1d36cc401d14270f9a7a4cd6709739222f68e27a3d7",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\physicalHardeningTier2.fungi": "bfd762d85d5b422298afd332aa296a395db3d1544d43db53e569d16028a20618",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\proofGraphService.fungi": "784eba4b7a7fd188e57235c8c40aa2cce37900d886ce0390550dde6c0596d8b8",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\proofVerifierService.fungi": "baa7d0c5b3e9a93286facd858ae981f4426c11de471f431c95741aaa8eb05c44",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\rateStatus.fungi": "0a4ec378f87f4ccbd22037af8255b9d61235017f201639cf41a5cbbfba850570",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\routeDispatcherService.fungi": "5404ae4ff1a1c2272d7aad05aee7c4737c431d98309e8713d3d4a3e45d598b40",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\routingPolicyService.fungi": "77c5bcde9d850b7a512dac6d75b09aa6bf53a169fab0d4c6b9e9b47194e49f73",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\runtimeProfileService.fungi": "d3d31c23990829d214485b1fce24ba27f11eff58fd03f7b773c09c6f9c34c111",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\sovereignTransaction.fungi": "d54a48df8d68bfaf572c06a00674c478b123866740b2e8463f8f7397d6dd28c0",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\stdlibCoreService.fungi": "06928b42620f0958ad7618084bb3d227f45ac2a66f72e38481e4886686e1640c",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\typeRegistryService.fungi": "21e8076fd41f885ec2eb6942650a2ad22d295d3d21f104967845c07a973cd506",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\v1RcStatusService.fungi": "52f06ce6ae137f9b3619829dcfdc8762b134343f01ae75f94b2a0a69f8c23d69",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\valueClassificationService.fungi": "af7aeca3a7348df8bce641f23dba39469b3decdffe11069428113186248391b2",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\verifyPassword.fungi": "265c1188031dfc49289fe46817db24e63eb1c49083851242f49b77c3ebc152fd",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\verifyPasswordService.fungi": "9d8c819600c47fd0cf2f783e5ab70e80acf30a7a57e3e89634fed599b2f9fea6",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\verifyToken.fungi": "232098eea4eb3358b61c0a710686827551e62a9e37ec4a30f708b6afda76c391"
   },
   "skippedFiles": 31,
-  "integrity": "sha256:ec870c5e95f0cc3e7c5f6d6ad3b2352090b768703e2e6df3f668ea15188f664a"
+  "integrity": "sha256:bdb30ac13cf32173863b8a7a3af4199a814d9b5aca4bf3e4444b8854b1160a8b"
 }
