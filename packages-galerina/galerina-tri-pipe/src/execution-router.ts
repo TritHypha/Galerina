@@ -45,12 +45,17 @@ export interface ExecutionRouteInput {
    * route survives only if capCheck(lane) is true; otherwise it falls back to the digital safe default.
    * Omitted ⇒ no lane gate (backward-compatible: current availability-only behaviour). When both this
    * and `grantedLanes` are supplied, BOTH must allow the lane (deny-by-default, fail-closed).
+   *
+   * NOTE (RD-0236 #6): `lane` here is the lane actually DISPATCHED to (the `photonic` backend for an
+   * analog kernel), NOT the kernel's declared lane — grant the backend the op runs on, not its label.
    */
   readonly capCheck?: (lane: Lane) => boolean;
   /**
    * CAPABILITY operand (optional). Convenience allow-list of substrate lanes the flow is granted.
    * Equivalent to `capCheck = (l) => grantedLanes.includes(l)`, folded as an AND with `capCheck`.
    * Omitted ⇒ not constrained by an allow-list. `digital` is always implicitly granted (safe default).
+   * The lane checked against this list is the DISPATCHED backend (`decision.target`), not the declared
+   * `kernel.lane` (RD-0236 #6) — so a `noisy`-only grant does NOT authorise a `photonic` dispatch.
    */
   readonly grantedLanes?: readonly Lane[];
 }
@@ -67,9 +72,10 @@ export interface ExecutionDecision {
   /** True iff this op runs on the photonic backend (offloadTarget === "photonic"). */
   readonly photonic: boolean;
   /**
-   * AXIS-3 capability half: true iff the kernel's substrate lane was granted (or no cap operand was
-   * supplied, or the route stayed digital — digital is always granted). False means a non-digital lane
-   * the net-win router selected was DENIED by capability and the route fell back to digital.
+   * AXIS-3 capability half: true iff the DISPATCHED substrate lane (`decision.target`) was granted (or
+   * no cap operand was supplied, or the route stayed digital — digital is always granted). False means a
+   * non-digital backend the net-win router selected was DENIED by capability and the route fell back to
+   * digital. Checked against the dispatched target, not the declared `kernel.lane` (RD-0236 #6).
    */
   readonly laneGranted: boolean;
   /** Unified human-readable rationale across all three axes (→ audit trail). */
@@ -82,9 +88,16 @@ export class ExecutionRouter {
   constructor(decider: PartitionDecider = new PartitionDecider()) { this.decider = decider; }
 
   /**
-   * Deny-by-default capability fold for a single substrate lane. `digital` is never gated (the safe
-   * floor). When BOTH `capCheck` and `grantedLanes` are supplied, BOTH must allow the lane (AND).
+   * Deny-by-default capability fold for the DISPATCHED substrate lane. `digital` is never gated (the
+   * safe floor). When BOTH `capCheck` and `grantedLanes` are supplied, BOTH must allow the lane (AND).
    * No operand ⇒ granted (the availability-only legacy behaviour).
+   *
+   * SECURITY (RD-0236 #6, CWE-863): the argument MUST be the lane actually DISPATCHED to
+   * (`decision.target`), not the DECLARED `kernel.lane`. The two can differ — a `noisy` (analog)
+   * kernel dispatches to the `photonic` backend — and a grant for the declared lane must never be
+   * mistaken for a grant of the backend the op actually runs on. The lane operand is typed `Lane` so
+   * that a hostile/mismatched value that is neither `digital` nor a recognised grantable lane collapses
+   * to DENY here (both list- and predicate-checks fail closed on an unrecognised lane).
    */
   private laneIsGranted(input: ExecutionRouteInput, lane: Lane): boolean {
     if (lane === "digital") return true;
@@ -121,12 +134,18 @@ export class ExecutionRouter {
     // — where any non-TRUE collapses to the digital safe default. digital is always granted (the safe
     // floor); the gate is inert when no capability operand is supplied (backward-compatible). It NEVER
     // throws and NEVER routes to an ungranted lane.
-    const laneGranted = decision.target === "digital" || this.laneIsGranted(input, input.kernel.lane);
+    //
+    // SECURITY (RD-0236 #6, CWE-863 authority-vs-action): validate the grant against the lane actually
+    // DISPATCHED to (`decision.target`), NOT the DECLARED `kernel.lane`. The decider's target is the
+    // physical backend, so a `noisy` (analog) kernel dispatches to the `photonic` backend — checking the
+    // declared lane would let a `noisy`-only grant run on the ungranted `photonic` backend (the authority
+    // checked ≠ the action taken). Deny is always DOWN to the digital safe substrate, never open.
+    const laneGranted = decision.target === "digital" || this.laneIsGranted(input, decision.target);
     const gated = laneGranted
       ? decision
       : {
           target: "digital" as Target,
-          reason: `lane '${input.kernel.lane}' not granted — capability gate fell back to digital (net-win wanted ${decision.target})`,
+          reason: `dispatched lane '${decision.target}' not granted — capability gate fell back to digital (net-win wanted ${decision.target}; declared kernel.lane='${input.kernel.lane}')`,
         };
 
     return {

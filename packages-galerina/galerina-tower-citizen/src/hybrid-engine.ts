@@ -282,7 +282,12 @@ export class HybridInferenceEngine {
   private readonly attestationPolicy: AttestationPolicy | null;
   /** V_DPM authority this engine actually holds. Inference requires AI_INFERENCE_CAP;
    *  a granted mask lacking that bit traps ERR_CAPABILITY_DENIED before any compute. */
-  private readonly grantedCapabilityMask: number;
+  // RD-0236 #1: a real JS #private field — NOT `private readonly` (which TS erases at runtime,
+  // leaving `engine.grantedCapabilityMask = 0xFFFF` free to FORGE authority). `#`-private cannot be
+  // reassigned or read from outside the class, so the branchless capability gate below reads an
+  // untamperable value. (The deeper "bind the grant through verifyAttestation / signed capability"
+  // hardening is a follow-on that needs a signed-grant surface — tracked in the RD-0236 TODO.)
+  readonly #grantedCapabilityMask: number;
   /** Optional photonic offload (opt-in; off by default; in certified mode only with a verified attestation). */
   private readonly photonic: PhotonicConfig | null;
   /** Sync NECESSARY preconditions for certified photonic (declared intent + attestation infra). Not sufficient. */
@@ -340,7 +345,7 @@ export class HybridInferenceEngine {
     this.policy = compilePolicy(this.governance, certified); // pre-pay the proof once
     this.certified = certified;
     this.attestationPolicy = attestationPolicy;
-    this.grantedCapabilityMask = grantedCapabilityMask;
+    this.#grantedCapabilityMask = grantedCapabilityMask;
     this.photonic = photonic;
     // Certified-mode photonic admission — NECESSARY sync preconditions, computed once, fail-closed: the
     // deployment must declare intent (all three fields) AND the engine must have an attestation path
@@ -551,13 +556,13 @@ export class HybridInferenceEngine {
       // CF-3/CF-7: an unattested bridge in the registry is denied before any compute.
       // The branchless capability gate is the MOST fundamental authority question —
       // does this engine even hold the ai.inference V_DPM bit? — so it runs first.
-      const capabilityHeld = (AI_INFERENCE_CAP & this.grantedCapabilityMask) === AI_INFERENCE_CAP;
+      const capabilityHeld = (AI_INFERENCE_CAP & this.#grantedCapabilityMask) === AI_INFERENCE_CAP;
       const bridgeDenial = await this.checkBridgeAttestation();
       // H5: verify the certified-photonic SIGNED manifest once (fail-closed; sets photonicCertifiedVerified).
       // Cheap + cached; in non-certified mode the read site uses `!this.certified` so this is a no-op gate.
       if (this.photonic && this.certified) await this.verifyPhotonicCertifiedAdmission();
       const govTrap = !capabilityHeld
-        ? { code: "ERR_CAPABILITY_DENIED", details: { required: AI_INFERENCE_CAP, granted: this.grantedCapabilityMask } }
+        ? { code: "ERR_CAPABILITY_DENIED", details: { required: AI_INFERENCE_CAP, granted: this.#grantedCapabilityMask } }
         : bridgeDenial !== null
           ? { code: "ERR_BRIDGE_UNATTESTED", details: { bridge: bridgeDenial } }
           : !planPreflighted

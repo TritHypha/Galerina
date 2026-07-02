@@ -601,12 +601,20 @@ async function loadAndVerifyPackage(
       ? ((sigField as Record<string, unknown>)["keyId"] as string)
       : undefined;
 
-  // ── Gate 2b: REVOCATION — a validly-signed but REVOKED key must NOT be admitted (fail-closed) ──
+  // ── Gate 2b: REVOCATION — a manifest that NAMES a REVOKED key must NOT be admitted (fail-closed) ──
   // verifyManifestSignature only proves the signature is cryptographically valid against a discoverable
   // public key; the revoked key's public key is shipped in-repo, so a forgery signed with the leaked
   // private key would otherwise pass. Consult the host-injected registry-backed check and refuse a
   // revoked key. A throwing check (e.g. an untrustworthy/tampered revocation registry) is fail-closed.
-  if (signature === "verified" && keyId !== undefined && opts.revocationCheck !== undefined) {
+  //
+  // RD-0236 #8 — the revocation gate is deliberately INDEPENDENT of the verified/unverified verdict: it
+  // fires WHENEVER the manifest ASSERTS a keyId (`keyId !== undefined`), BEFORE and regardless of whether
+  // that signature actually verified. A signed-but-unverifiable manifest (a keyId with no shipped public
+  // key, or an undecidable hybrid) silently DEGRADES to "unsigned"; gating revocation on
+  // `signature === "verified"` would let such a manifest skip revocation and — combined with
+  // allowUnsigned — admit a manifest that NAMES a REVOKED key. A named-revoked key is refused even when
+  // its signature could not be verified and even under allowUnsigned; the security posture wins.
+  if (keyId !== undefined && opts.revocationCheck !== undefined) {
     let revoked: boolean;
     try {
       revoked = opts.revocationCheck(keyId) === true;
@@ -614,7 +622,7 @@ async function loadAndVerifyPackage(
       return fuseError("FUNGI-FUSE-REVOCATION-UNVERIFIABLE", `revocation status for keyId '${keyId}' could not be determined (${(e as Error).message}) — refusing to fuse (fail-closed)`);
     }
     if (revoked) {
-      return fuseError("FUNGI-FUSE-KEY-REVOKED", `keyId '${keyId}' is REVOKED — refusing to fuse (the signature is cryptographically valid but the signing key is revoked)`);
+      return fuseError("FUNGI-FUSE-KEY-REVOKED", `keyId '${keyId}' is REVOKED — refusing to fuse (the manifest names a revoked signing key; refused regardless of whether its signature verified, and even under allowUnsigned)`);
     }
   }
 

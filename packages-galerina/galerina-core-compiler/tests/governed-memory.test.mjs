@@ -120,15 +120,38 @@ describe("getAll", () => {
 });
 
 // ---------------------------------------------------------------------------
-// canAccess
+// canAccess — RD-0236 finding #9: fail-CLOSED capability check.
+//
+// The prior placeholder hard-coded `return true`, admitting EVERY accessor
+// including unknown ids and foreign flows (the fail-open a prior test locked in).
+// canAccess now enumerates the SAFE set and default-denies:
+//   - an unregistered value id is DENIED (you cannot access what was never governed);
+//   - only the value's registered owner flow is granted;
+//   - any other (foreign) accessor flow is DENIED.
 // ---------------------------------------------------------------------------
 
 describe("canAccess", () => {
-  it("returns true for any flow (Phase 11D placeholder)", () => {
+  it("grants the registered owner flow", () => {
     const mem = createGovernedMemory();
     const tag = mem.register("owner", "protected", "Email");
-    assert.equal(mem.canAccess(tag.id, "anyFlow"), true);
     assert.equal(mem.canAccess(tag.id, "owner"), true);
-    assert.equal(mem.canAccess("nonexistent", "flow"), true);
+  });
+
+  it("DENIES an unregistered / unknown value id (default-deny)", () => {
+    const mem = createGovernedMemory();
+    assert.equal(mem.canAccess("nonexistent", "owner"), false);
+  });
+
+  it("DENIES a foreign accessor flow that is not the owner", () => {
+    const mem = createGovernedMemory();
+    const tag = mem.register("owner", "protected", "Email");
+    assert.equal(mem.canAccess(tag.id, "attackerFlow"), false);
+    assert.equal(mem.canAccess(tag.id, "anyFlow"), false);
+  });
+
+  it("DENIES an empty / missing accessor flow", () => {
+    const mem = createGovernedMemory();
+    const tag = mem.register("owner", "protected", "Email");
+    assert.equal(mem.canAccess(tag.id, ""), false);
   });
 });

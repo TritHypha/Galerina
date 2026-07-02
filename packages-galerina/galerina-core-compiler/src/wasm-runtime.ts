@@ -101,20 +101,29 @@ export function signWasm(
 export function verifyWasm(
   wasm: Uint8Array, attestation: WasmAttestation | undefined, policy: AdmissionPolicy,
 ): AdmissionVerdict {
+  // RD-0236 finding #11 — a certified profile MUST require a verified signature, not
+  // just a matching string. `requireCertifiedProfile` used to be a bare string compare
+  // gated separately by `requireSigned`, so a "certified"-labelled attestation with NO
+  // signature was admitted whenever the caller forgot `requireSigned`. Since #173 binds
+  // the profile INTO the signature, an unsigned "certified" claim is unverifiable — force
+  // `requireSigned` here (mirrors bridge-attestation.ts verifyAttestationHybrid, which
+  // forces requireSigned even if the caller omitted it). Certified ⇒ signed, always.
+  const effectivePolicy: AdmissionPolicy =
+    policy.requireCertifiedProfile ? { ...policy, requireSigned: true } : policy;
   const hash = wasmHash(wasm);
   if (!attestation) return { ok: false, reason: "no attestation provided", hash };
   if (attestation.sha256 !== hash) {
     return { ok: false, reason: `attestation hash ${attestation.sha256} ≠ binary hash ${hash}`, hash };
   }
-  if (policy.requireCertifiedProfile && attestation.profile !== "certified") {
+  if (effectivePolicy.requireCertifiedProfile && attestation.profile !== "certified") {
     return { ok: false, reason: `certified profile required, attestation is "${attestation.profile}"`, hash };
   }
-  if (policy.allowedHashes && policy.allowedHashes.length > 0 && !policy.allowedHashes.includes(hash)) {
+  if (effectivePolicy.allowedHashes && effectivePolicy.allowedHashes.length > 0 && !effectivePolicy.allowedHashes.includes(hash)) {
     return { ok: false, reason: `binary hash not pinned: ${hash}`, hash };
   }
-  if (policy.requireSigned) {
+  if (effectivePolicy.requireSigned) {
     if (!attestation.signature) return { ok: false, reason: "signature required but absent", hash };
-    if (!policy.publicKeyPem) return { ok: false, reason: "no public key configured to verify signature", hash };
+    if (!effectivePolicy.publicKeyPem) return { ok: false, reason: "no public key configured to verify signature", hash };
     try {
       // #173: verify over (domain ∥ recomputed-hash ∥ attestation.profile). `hash` is the recomputed
       // binary hash (already checked === attestation.sha256 above), so a flipped profile changes the
@@ -122,7 +131,7 @@ export function verifyWasm(
       const ok = edVerify(
         null,
         admissionPreimage(hash, attestation.profile) as unknown as BufferSource,
-        { key: policy.publicKeyPem, dsaEncoding: "ieee-p1363" },
+        { key: effectivePolicy.publicKeyPem, dsaEncoding: "ieee-p1363" },
         Buffer.from(attestation.signature, "base64") as unknown as BufferSource,
       );
       if (!ok) return { ok: false, reason: "signature verification failed", hash };

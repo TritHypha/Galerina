@@ -75,6 +75,19 @@ export class TowerRuntime {
       throw new Error(`FUNGI-ASSIMILATE-002: Tower at capacity (${this.config.maxPlugins} plugins). Evict a plugin first.`);
     }
 
+    // RD-0236 #10: verify the plugin's artifact IDENTITY before it is sandboxed + executed. This
+    // method's header documented a "verify artifact hash + manifest" gate that did NOT exist — metadata
+    // was trusted verbatim, so a caller could load any plugin metadata unverified. Minimal fail-closed
+    // floor: a load MUST carry a well-formed artifactHash (a `sha256:`-prefixed, non-empty identity) and
+    // an engineId; unverifiable metadata is refused. (Full signed-manifest + hash-vs-bytes verification
+    // is a follow-on that needs the signed manifest + artifact bytes plumbed into load() — RD-0236 TODO.)
+    const ah = metadata.artifactHash;
+    if (typeof ah !== "string" || !/^sha256:.+/.test(ah) || typeof metadata.engineId !== "string" || metadata.engineId.length === 0) {
+      const ev = this.audit.trap(corrId, typeof ah === "string" && ah ? ah : "sha256:0", metadata.engineId ?? "?",
+        "ERR_UNVERIFIED_METADATA", { reason: "plugin metadata lacks a well-formed artifactHash / engineId", artifactHash: ah });
+      throw new Error(`FUNGI-ASSIMILATE-003: plugin metadata is unverifiable (artifactHash=${JSON.stringify(ah)}) — refusing to load (fail-closed). AuditEvent: ${ev.eventId}`);
+    }
+
     const sandbox = new PluginSandbox(metadata);
     this.sandboxes.set(corrId, sandbox);
     const loadEvent = this.audit.load(corrId, metadata.artifactHash, metadata.engineId);

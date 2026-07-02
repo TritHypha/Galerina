@@ -226,6 +226,71 @@ test("a validly-signed manifest whose signing key is REVOKED is refused (fail-cl
   }
 });
 
+// ── 5b′ — REVOCATION when the signature DEGRADES to "unsigned" (RD-0236 #8) ──────────────────────
+// The core audit gap: a manifest that ASSERTS a keyId but whose signature CANNOT be verified (no shipped
+// public key, or an unverifiable hybrid) silently degrades to "unsigned". The revocation gate must NOT be
+// gated on `signature === "verified"` — a manifest naming a REVOKED key must be refused EVEN under
+// allowUnsigned, because the degrade-to-unsigned path would otherwise skip the revocation check entirely.
+test("a manifest asserting a REVOKED keyId is refused even when its signature degrades to unsigned (allowUnsigned)", async () => {
+  // (a) DEGRADE-VIA-NO-PUBKEY: a real Ed25519 governanceSignature naming a keyId, but NO public key shipped
+  //     ⇒ verifyManifestSignature returns "unsigned" (FUNGI-FUSE-NO-PUBKEY). Under allowUnsigned this used to
+  //     be ADMITTED, skipping revocation. The asserted keyId is REVOKED → it must be REFUSED.
+  { const { root, pkg } = copyDemo();
+    try {
+      const keyId = "revokeddegraded1";
+      // NO governance dir / public key ⇒ the signature cannot be verified ⇒ degrades to "unsigned".
+      const manifestPath = join(pkg, "dist", "my-custom-api-rest.lmanifest.json");
+      const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+      const { governanceSignature: _drop, ...withoutSig } = manifest;
+      // A well-formed Ed25519 signature block (base64 gibberish is fine — we never reach verification: no pubkey).
+      const governanceSignature = { algorithm: "Ed25519", keyId, signature: "AA==", signedAt: new Date().toISOString() };
+      writeFileSync(manifestPath, JSON.stringify({ ...withoutSig, governanceSignature }, null, 2));
+
+      // Control: prove the degrade actually happens — without a revocationCheck, allowUnsigned admits it
+      // (and WARNS no-pubkey). This is the "unsigned" verdict the revocation gate must still act on.
+      { const { warn, lines } = capturingWarn();
+        const c = await fusePackage(pkg, { allowUnsigned: true, warn });
+        assert.equal(c.invoke("main"), 200);
+        assert.ok(lines.some((l) => l.includes("FUNGI-FUSE-NO-PUBKEY")), "degrade path must warn no-pubkey (signature became unsigned)");
+      }
+
+      // THE FIX: a REVOKED asserted keyId is refused despite the degrade-to-unsigned + allowUnsigned.
+      await assert.rejects(
+        () => fusePackage(pkg, { allowUnsigned: true, warn: () => {}, revocationCheck: (k) => k === keyId }),
+        /FUNGI-FUSE-KEY-REVOKED/,
+        "a manifest naming a REVOKED key must be refused even when its signature degraded to unsigned under allowUnsigned",
+      );
+
+      // A throwing revocation registry is still fail-closed on the degraded path too.
+      await assert.rejects(
+        () => fusePackage(pkg, { allowUnsigned: true, warn: () => {}, revocationCheck: () => { throw new Error("registry untrusted"); } }),
+        /FUNGI-FUSE-REVOCATION-UNVERIFIABLE/,
+      );
+
+      // A NON-revoked asserted keyId still fuses under allowUnsigned — the gate blocks ONLY revoked keys.
+      const ok = await fusePackage(pkg, { allowUnsigned: true, warn: () => {}, revocationCheck: () => false });
+      assert.equal(ok.invoke("main"), 200);
+    } finally { rmSync(root, { recursive: true, force: true }); } }
+
+  // (b) DEGRADE-VIA-HYBRID-UNVERIFIABLE: a HYBRID signature the injected verifier cannot decide also degrades
+  //     to "unsigned". A REVOKED asserted keyId on that path must ALSO be refused under allowUnsigned.
+  { const { root, pkg } = copyDemo();
+    try {
+      const keyId = "revokedhybrid001";
+      const manifestPath = join(pkg, "dist", "my-custom-api-rest.lmanifest.json");
+      const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+      const { governanceSignature: _drop, ...withoutSig } = manifest;
+      const governanceSignature = { algorithm: "Ed25519+ML-DSA-65", keyId, signature: "ZWQ=|bWxkc2E=", signedAt: new Date().toISOString() };
+      writeFileSync(manifestPath, JSON.stringify({ ...withoutSig, governanceSignature }, null, 2));
+
+      await assert.rejects(
+        () => fusePackage(pkg, { allowUnsigned: true, warn: () => {}, hybridVerifier: () => "unverifiable", revocationCheck: (k) => k === keyId }),
+        /FUNGI-FUSE-KEY-REVOKED/,
+        "a REVOKED key on the hybrid-unverifiable degrade path must also be refused under allowUnsigned",
+      );
+    } finally { rmSync(root, { recursive: true, force: true }); } }
+});
+
 // ── 5c — VERSIONED signing: a jcs (RFC 8785) signature verifies through the loader ──
 // This doubles as a CONFORMANCE check: the manifest is signed over CORE-compiler's canonicalJson, then
 // verified by the loader's OWN local canonicalJson. If the two implementations drifted by a single byte,

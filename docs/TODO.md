@@ -162,34 +162,39 @@ Consistency rules + gates: `docs/CONSISTENCY_GATES.md`.
 
 </details>
 
-## 🔒 RUNTIME SECURITY — RD-0236 (the disease reaches the RUNTIME too) — NEXT batch
-> `../ZTF-Knowledge-Bases/galerina-rd-0236-runtime-50yr-mistake-audit.md` — **11 distinct reproduced** runtime
-> governance fail-opens (33-agent audit), the SAME disease as RD-0234 (`.fungi` compiler) on the RUNTIME surface:
-> the runtime enumerates the DANGEROUS set and permits the rest, and verifies attestation on bridges/photonics but
-> NOT on the capability / profile / plugin-metadata authorities. **0 blockers** — ~half are LATENT (dead on today's
-> callers; go live when a data-driven/manifest surface is wired) and the live ones are bounded by certified mode.
-> Owner-gated (prod read-only, build-staging, RED-bench-first). RD-0237 (design re-exam) confirms fixing these is
-> the #1 priority; runtime stays pure `.fungi`. **#7 ALREADY FIXED this session** (`fuse --allow-unsigned` refused
-> under `GALERINA_PROFILE=production` — FUNGI-FUSE-UNSIGNED-DENIED). 10 remain:
-- [ ] **#1 forgeable capability mask** — `grantedCapabilityMask` unsigned/forgeable scalar (`hybrid-engine.ts:554`);
-      one field write forges authority. Bind through `verifyAttestation`; harden non-writable; unverified ⇒ zero-cap DENY.
-- [ ] **#2/#4 attestation + host-native fail-CLOSED by DEFAULT** (not only certified): absent attestationPolicy ⇒ DENY
-      the registry (#2); `deniedTechniques>0` ⇒ always trap `ERR_HOST_NATIVE_DENIED` (#4); make the fallback an audited opt-OUT.
-- [ ] **#3 `checkTransition` fall-through** (`governance-enforcer.ts:79/90`) — unknown `requires` ⇒ `allowed:true`; the
-      declared `defaultAction:-1` is dead. Wire defaultAction; enumerated requirement→verifier map; reject unknown kinds at load.
-- [ ] **#5 ai-by-absence** (`hybrid-engine.ts:660`) — no `ai{}` allow-list ⇒ any/unknown model admitted. Absence ⇒ DENY.
-- [ ] **#6 execution-router authority-vs-action mismatch** (`execution-router.ts:124`) — validates the DECLARED lane, not
-      the DISPATCHED target → a `noisy`-only grant runs on `photonic`. + sign the wasm-standalone binary + run-boundary import allowlist.
-- [ ] **#8 revocation skip** (`fuse-loader.ts:431/609`) — signed-but-unverifiable degrades to "unsigned", skipping the
-      revocation gate under allowUnsigned. Consult revocation whenever a manifest ASSERTS a keyId (partially mitigated by #7 done).
-- [ ] **#9 `canAccess` return true** (`runtime/governedMemory.ts:73`) — hard-coded true; a test ASSERTS the fail-open.
-      Replace with fail-closed (deny unknown id); delete the test.
-- [ ] **#10 `tower-runtime.load`** (`tower-runtime.ts:78`) admits any plugin metadata unverified (header documents a gate
-      that does not exist). Verify artifactHash + manifest before sandbox+execute.
-- [ ] **#11 `requireCertifiedProfile`** (`wasm-runtime.ts:109`) — non-crypto string compare; force `requireSigned` when
-      certified (mirror `bridge-attestation.ts:235`).
-> Systemic fix (same shape as RD-0234): verify-before-trust ANY authority scalar/label; enumerate-the-SAFE-set-default-DENY;
-> ONE attestation path for masks/metadata/profile. Owner: greenlight as the next RED-benched batch (like the ~29 `.fungi` fixes).
+## 🔒 RUNTIME SECURITY — RD-0236 — ✅ 8/11 FIXED 2026-07-02 (RED-benched, build-staging, NOT pushed); 3 POSTURE-gated
+> `../ZTF-Knowledge-Bases/galerina-rd-0236-runtime-50yr-mistake-audit.md` — 11 reproduced runtime governance
+> fail-opens, SAME disease as RD-0234 on the RUNTIME surface. Owner greenlit "fix all 10, RED-benched" (2026-07-02);
+> **8 fixed**, each RED-benched, full suite green, across 4 packages (tower-citizen · compiler · tri-pipe · app-kernel).
+
+**Fixed (RED-benched):**
+- [x] **#1 forgeable capability mask** — `grantedCapabilityMask` is now a real JS `#private` field (was `private
+      readonly` — erased at runtime → forgeable via `engine.grantedCapabilityMask = 0xFFFF`). `hybrid-engine.ts`.
+      *Follow-on:* bind the grant through verifyAttestation / a signed capability (needs a signed-grant surface).
+- [x] **#3 `checkTransition`** — an unknown `requires` is rejected at LOAD (FUNGI-GOV-TPL-001) + denied at check
+      (`defaultAction` wired, was dead). `governance-enforcer.ts`.
+- [x] **#6 execution-router** — validates the DISPATCHED `decision.target`, not the declared lane; a noisy-only grant
+      dispatched to photonic ⇒ denied-to-digital. `tri-pipe/execution-router.ts`.
+- [x] **#7 fuse `--allow-unsigned`** refused under `GALERINA_PROFILE=production` (done earlier this session).
+- [x] **#8 revocation** — consulted whenever a manifest ASSERTS a keyId (removed the `signature==="verified"`
+      precondition); a revoked key on the degrade-to-unsigned path is refused. `app-kernel/fuse-loader.ts`.
+- [x] **#9 `canAccess`** — enumerate-safe/default-deny (owner granted; unknown/foreign/empty denied); the
+      fail-open-asserting test was deleted. `compiler/runtime/governedMemory.ts`.
+- [x] **#10 `tower-runtime.load`** — refuses metadata with an unverifiable artifactHash/engineId (FUNGI-ASSIMILATE-003).
+      *Follow-on:* full signed-manifest + hash-vs-bytes verification needs the manifest plumbed into `load()`.
+- [x] **#11 `requireCertifiedProfile`** — forces `requireSigned` when certified (mirrors bridge-attestation). `compiler/wasm-runtime.ts`.
+
+**POSTURE decision needed — #2/#4/#5 (deliberately NOT auto-inverted):**
+> All three have the shape "ABSENCE of an explicit grant ⇒ ADMIT (permissive default)". Making them fail-secure
+> (absence ⇒ DENY) inverts the hybrid engine's DEFAULT posture, which the default in-package stub engine + its tests
+> rely on — a broader behavioural change than closing a specific exploit (it changes every non-certified engine, not
+> just an injected/misconfigured one). Certified mode ALREADY closes all three. Owner posture call:
+- [ ] **#2** absent `attestationPolicy` ⇒ DENY the bridge registry (today: null policy = "all attested"). Breaks the
+      default stub registry (its bridges carry no attestation) unless the trusted in-package default is exempted.
+- [ ] **#4** a routed precision with no bridge (→ host-native) ⇒ ALWAYS trap `ERR_HOST_NATIVE_DENIED` by default (today:
+      only under `POL_DENY_HOST_NATIVE`/certified). Inverts fp8/fp16 host-native fallback to deny-by-default.
+- [ ] **#5** a NAMED model with no `ai{}` allow-list ⇒ DENY (today: no allow-list = admit any model). Inverts permissive-by-absence.
+> Decision: invert the default to fail-secure (most-secure; requires updating the permissive-default tests) vs keep certified-bounded.
 
 ## ✅ `.gate` — UNLOCKED + hardened 2026-07-02 (owner PROMPT-main-session-gate-integration.md)
 > Naming corrected: `.gate` = light-ASCII AI app-authoring language (draw-don't-code); graph/GIR = the one

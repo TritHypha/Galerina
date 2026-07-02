@@ -130,3 +130,63 @@ test("cap gate is INERT when the route was already digital (binary tier) — lan
   assert.equal(d.offloadTarget, "digital");   // already digital — gate never downgrades further
   assert.equal(d.laneGranted, true);          // digital is always granted (safe floor)
 });
+
+// ── RD-0236 #6 — authority-vs-action mismatch (CWE-863): validate the DISPATCHED target, not the DECLARED lane ──
+//
+// The decider's Target is the PHYSICAL backend (digital|photonic); a `noisy` (analog) kernel with a
+// net-win n dispatches to the `photonic` backend. The old gate validated `kernel.lane` (the DECLARED
+// lane = "noisy"), which a noisy-only grant satisfies — so it ran on the UNGRANTED photonic backend.
+// The grant must be checked against `decision.target` (the lane actually dispatched to). Unknown or
+// mismatched target ⇒ DENY down to the always-safe digital substrate (fail-safe, never open).
+
+test("RD-0236 #6: noisy-only grant dispatched to photonic backend → DENIED to digital (not admitted)", () => {
+  // Flow granted ONLY the noisy (analog) lane. Kernel declares lane:noisy; big n ⇒ decider routes to
+  // the PHOTONIC backend. photonic is NOT in the grant → the authority taken ≠ the authority checked.
+  const noisyKernel = { n: 1024, lane: "noisy", tolerance: 0.05 };
+  const d = router.route({
+    opClass: "feedforward",
+    routing: cloud,
+    capability: { targetId: "photonic", attestationVerified: true, componentFullyEligible: true },
+    kernel: noisyKernel,
+    grantedLanes: ["noisy"],   // photonic backend is NOT granted
+  });
+  // Sanity: confirm the decider really wanted the photonic backend for this noisy kernel (the exploit setup).
+  assert.equal(decider.decide(noisyKernel).target, "photonic");
+  // Fail-CLOSED: the ungranted photonic dispatch must be denied DOWN to digital, never admitted.
+  assert.equal(d.offloadTarget, "digital");
+  assert.equal(d.photonic, false);
+  assert.equal(d.laneGranted, false);
+  assert.match(d.offloadReason, /not granted/);
+});
+
+test("RD-0236 #6: capCheck that grants noisy but NOT photonic → photonic dispatch denied to digital", () => {
+  // capCheck operand form of the same mismatch: predicate grants the declared lane (noisy) but not the
+  // dispatched backend (photonic). The gate must interrogate the dispatched target, so this DENIES.
+  const noisyKernel = { n: 1024, lane: "noisy", tolerance: 0.05 };
+  const d = router.route({
+    opClass: "feedforward",
+    routing: cloud,
+    capability: { targetId: "photonic", attestationVerified: true, componentFullyEligible: true },
+    kernel: noisyKernel,
+    capCheck: (l) => l === "noisy",   // grants noisy, denies photonic
+  });
+  assert.equal(d.offloadTarget, "digital");
+  assert.equal(d.photonic, false);
+  assert.equal(d.laneGranted, false);
+});
+
+test("RD-0236 #6: a grant that DOES cover the dispatched photonic backend still routes photonic (no over-denial)", () => {
+  // The fix must not weaken the legitimate path: when the grant covers the ACTUAL dispatched target
+  // (photonic), the photonic route survives exactly as before.
+  const noisyKernel = { n: 1024, lane: "noisy", tolerance: 0.05 };
+  const d = router.route({
+    opClass: "feedforward",
+    routing: cloud,
+    capability: { targetId: "photonic", attestationVerified: true, componentFullyEligible: true },
+    kernel: noisyKernel,
+    grantedLanes: ["noisy", "photonic"],   // dispatched backend (photonic) IS granted
+  });
+  assert.equal(d.offloadTarget, "photonic");
+  assert.equal(d.photonic, true);
+  assert.equal(d.laneGranted, true);
+});

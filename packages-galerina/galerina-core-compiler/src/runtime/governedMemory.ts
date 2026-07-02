@@ -68,9 +68,20 @@ export function createGovernedMemory(): GovernedMemory {
     store.set(id, updated);
   }
 
-  function canAccess(_id: string, _accessorFlow: string): boolean {
-    // Phase 11D placeholder — full capability checks in Phase 11D
-    return true;
+  function canAccess(id: string, accessorFlow: string): boolean {
+    // RD-0236 finding #9 — fail CLOSED. The prior placeholder returned `true`
+    // unconditionally, admitting EVERY accessor (incl. unknown ids and foreign
+    // flows). This enumerates the SAFE set and default-denies everything else:
+    //   1. an unregistered value id is DENIED — you cannot access what was never
+    //      placed under governance (default-deny foreign / unknown flows);
+    //   2. only the value's registered owner flow is granted the value it created;
+    //   3. any other accessor flow (or an empty/missing one) is DENIED.
+    // When a richer allow-list / delegation model lands it EXTENDS this enumerated
+    // grant set — it never reintroduces a blanket allow.
+    const tag = store.get(id);
+    if (tag === undefined) return false;              // (1) unknown id → deny
+    if (accessorFlow.length === 0) return false;      // no accessor identity → deny
+    return accessorFlow === tag.ownerFlow;            // (2)/(3) owner only
   }
 
   function getAll(): readonly GovernedValueTag[] {

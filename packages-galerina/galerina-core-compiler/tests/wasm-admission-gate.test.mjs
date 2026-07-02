@@ -15,7 +15,7 @@ import assert from "node:assert/strict";
 
 import {
   parseProgram, checkEffects, emitGIR, buildWATModuleFromGIR, renderWAT, assembleWAT,
-  generateRunnerKeypair, signWasm, verifyWasm, createHostRuntime, admitAndInstantiate,
+  generateRunnerKeypair, signWasm, verifyWasm, wasmHash, createHostRuntime, admitAndInstantiate,
 } from "../dist/index.js";
 
 // A flow that uses a host import: n.toStr() → host.__int_to_str
@@ -99,6 +99,40 @@ describe("#105 WASM admission gate", () => {
     // same binary signed as certified passes
     const certAtt = signWasm(wasm, privateKeyPem, "certified");
     assert.equal(verifyWasm(wasm, certAtt, { requireSigned: true, publicKeyPem, requireCertifiedProfile: true }).ok, true);
+  });
+
+  it("RD-0236 #11 REFUSES a certified profile with NO signature (certified forces requireSigned)", async () => {
+    // The fail-open: requireCertifiedProfile was a bare string compare; a "certified"-labelled
+    // attestation with NO signature was ADMITTED unless the caller ALSO set requireSigned. Since
+    // #173 binds the profile INTO the signature, an unsigned "certified" claim is unverifiable and
+    // must be rejected. requireCertifiedProfile now FORCES requireSigned internally.
+    const wasm = await compileToWasm(HOST_FLOW);
+    const { publicKeyPem } = generateRunnerKeypair();
+    // Attacker mints an UNSIGNED attestation that merely CLAIMS certified.
+    const unsignedCertified = { sha256: wasmHash(wasm), profile: "certified" };
+    const v = verifyWasm(wasm, unsignedCertified, { publicKeyPem, requireCertifiedProfile: true });
+    assert.equal(v.ok, false, "unsigned 'certified' attestation must be rejected");
+    assert.match(v.reason, /signature/i);
+  });
+
+  it("RD-0236 #11 REFUSES a certified profile whose signature does not verify (no requireSigned set)", async () => {
+    // A certified attestation carrying a bogus signature, policy does NOT set requireSigned.
+    // Certified must still force the signature to be verified → rejected.
+    const wasm = await compileToWasm(HOST_FLOW);
+    const { publicKeyPem, privateKeyPem } = generateRunnerKeypair();
+    const certAtt = signWasm(wasm, privateKeyPem, "certified");
+    const forgedSig = { ...certAtt, signature: Buffer.from("not-a-real-signature").toString("base64") };
+    const v = verifyWasm(wasm, forgedSig, { publicKeyPem, requireCertifiedProfile: true });
+    assert.equal(v.ok, false, "certified attestation with an invalid signature must be rejected even without explicit requireSigned");
+  });
+
+  it("RD-0236 #11 a properly SIGNED certified attestation still passes (no false positive)", async () => {
+    const wasm = await compileToWasm(HOST_FLOW);
+    const { publicKeyPem, privateKeyPem } = generateRunnerKeypair();
+    const certAtt = signWasm(wasm, privateKeyPem, "certified");
+    // Caller sets requireCertifiedProfile but NOT requireSigned — the fix supplies requireSigned.
+    const v = verifyWasm(wasm, certAtt, { publicKeyPem, requireCertifiedProfile: true });
+    assert.equal(v.ok, true, "a correctly-signed certified attestation is admitted");
   });
 
   it("#173 REFUSES a dev attestation re-labeled 'certified' — profile is bound into the signature", async () => {
