@@ -1,6 +1,8 @@
 type GetPatientResult = Result<PatientSummary, PatientError>
 type PatientId = Brand<String, "PatientId">
-type PatientSummary = record { patientId: PatientId, name: String, dob: String }
+// patientId in the RESPONSE is a redacted pseudonym, never the raw protected PatientId — the
+// contract.privacy `deny protected PatientId to response.body` rule is now ENFORCED (FUNGI-PRIVACY-001).
+type PatientSummary = record { patientId: redacted String, name: String, dob: String }
 type PatientError = enum { NotFound Unauthorized }
 
 secure flow getPatient(readonly request: Request) -> GetPatientResult
@@ -28,7 +30,7 @@ contract {
     actor: request.context.actor
   })
   return Ok({
-    patientId: patientId,
+    patientId: redact(patientId),
     name: redact(patient.name),
     dob: redact(patient.dob)
   })

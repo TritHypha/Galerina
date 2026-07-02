@@ -2098,6 +2098,25 @@ Baseline comparison (governance-cost):
       console.warn(`  ⛔ CG-4 signing boundary: NOT minting a .lmanifest for '${name}' — the artifact fails the production security gate. Run GALERINA_PROFILE=production galerina build to see the errors; an unminted manifest is inadmissible at fuse (FUNGI-FUSE-UNSIGNED, fail-closed).`);
     }
 
+    // ── Class E (RD-0234b): reconcile the SIGNED fuse ACL against the flows' PROVEN effects ──
+    // build --package embeds package.fungi.json "capabilities" into the SIGNED manifest verbatim, so a
+    // package could self-declare a NARROW ACL while its flows perform MORE — a host granting on that ACL
+    // would be deceived. Deny-by-default (owner 2026-07-02: "verify caps ⊇ proven effects"): every effect
+    // the flows declare MUST be covered by a declared capability, else refuse to sign (fail-closed). Pure
+    // packages (no effects) pass trivially; the seam grant (e.g. network.inbound) is a superset, not a lie.
+    if (packageBuild && mintManifest) {
+      const declaredCaps = new Set(packageDescriptor.capabilities ?? []);
+      const provenEffects = new Set();
+      for (const f of (parsed.flows ?? [])) for (const e of (f.declaredEffects ?? [])) provenEffects.add(e);
+      const uncovered = [...provenEffects].filter((e) => !declaredCaps.has(e));
+      if (uncovered.length > 0) {
+        mintManifest = false;
+        console.error(`  ⛔ FUNGI-FUSE-ACL-UNDERDECLARED: package '${packageDescriptor.name}' declares capabilities [${[...declaredCaps].join(", ")}] but its flows perform effect(s) NOT covered by the ACL: ${uncovered.join(", ")}. A signed fuse ACL must cover every effect the package performs (deny-by-default) — add them to package.fungi.json "capabilities", or remove the effect.`);
+        console.error(`\n❌ Refusing to sign package '${packageDescriptor.name}' — the fuse ACL under-declares its flows' effects (fail-closed).`);
+        process.exit(1);
+      }
+    }
+
     // .lmanifest generation (DRCM Phase 3 task #67 — binary CBOR RFC 8949)
     if (mintManifest) try {
       const { generateManifest, serializeManifest, serializeManifestCBOR, prettyManifest, verifyManifestRoundTrip, manifestSigningInput } = await import(

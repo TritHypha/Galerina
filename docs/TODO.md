@@ -75,18 +75,20 @@ Consistency rules + gates: `docs/CONSISTENCY_GATES.md`.
       ZT-tooling audit caught).
 - [x] **VD-2 (partial)**: `leak-proof.ts` CAPABILITY_RE gained the missing `telemetry`/`eval` namespaces.
 
-**Residual (owner input needed — deliberately NOT rushed onto the signing path):**
-- [ ] **Class E — fuse ACL reconciliation** (`build --package`, `galerina.mjs:2125` embeds
-      `packageDescriptor.capabilities` verbatim). Needs the owner's capability-model call: does the fuse ACL use
-      effect-vocabulary or seam-capability-vocabulary (api-protocol-rest declares `["network.inbound"]`)? A wrong
-      reconciliation false-positives (breaks builds) or under-enforces, and it touches the CG-7 signed-package
-      boundary. Spec: verify declared `capabilities` ⊇ union of the flows' proven effects, or derive from them.
-- [ ] **getPatient.fungi latent leak** — returns raw `protected patientId` to response.body, violating its own
-      `deny protected PatientId to response.body`. GNG-03/FUNGI-PRIVACY-001 now flags it, but the fix needs a
-      semantic call (PatientSummary type `patientId: PatientId` vs the deny rule conflict — redact / retype /
-      remove). Owner to decide the example's intent. (Doesn't build standalone today → no test regression.)
+**Resolved after owner decisions (2026-07-02):**
+- [x] **Class E — fuse ACL reconciliation** (owner: "verify caps ⊇ proven effects"). `build --package` now
+      refuses to sign when a flow performs an effect the declared `capabilities` doesn't cover
+      (FUNGI-FUSE-ACL-UNDERDECLARED, deny-by-default; `galerina.mjs`). Pure packages pass trivially
+      (api-protocol-rest = all pure flows); signed-fixture-guard 7/7; verified on an under-declaring probe.
+- [x] **getPatient.fungi** (owner: "redact + retype"). PatientSummary.patientId → `redacted String`; response
+      returns `redact(patientId)` — honours its own `deny protected PatientId to response.body`. FUNGI-PRIVACY-001
+      count now 0 (was 1).
+
+**Residual (NOW item):**
 - [ ] **VD-2 (full single-source)** — derive CAPABILITY_RE + the sink registries from ONE canonical source
       (export CANONICAL_EFFECTS); `scripts/audit-sink-canonicality.mjs` now guards drift in the interim.
+- [ ] **`.gate` front-end compiler** (PROMPT §5a-5d) — build gate GREEN (D5 re-scoped), backstop wired →
+      UNBLOCKED. Owner chose a DEDICATED session (large feature; hard locks demand care). Next chunk.
 
 <details><summary>Original RD-0234/0234b finding detail (all resolved above unless marked residual)</summary>
 
