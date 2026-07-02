@@ -29,6 +29,11 @@ import { checkEffects } from "./effect-checker.js";
 import { checkSourceEscapes } from "./source-escape-checker.js";
 import { verifyGovernance } from "./governance-verifier.js";
 import { checkNamingPolicy } from "./naming-policy-checker.js";
+import { checkTaint } from "./taint-checker.js";
+import { checkMonkeyPatching, checkMonkeyPatchingSource } from "./monkey-patch-checker.js";
+import { checkAttributeDirectives } from "./attribute-checker.js";
+import { checkProductionReadiness } from "./production-check.js";
+import { runProductionSecurityGate, productionGateBlocks } from "./security-gate.js";
 import { buildAiGraph, emitGIR } from "./gir-emitter.js";
 import { generateManifest, serializeManifest } from "./manifest-generator.js";
 import { buildWATModuleFromGIR, renderWAT } from "./wat-emitter.js";
@@ -463,6 +468,28 @@ function compileFile(
     );
   }
 
+  // ── RD-0234 / RD-0234b — previously DEAD / UN-WIRED security gates ─────────────
+  // checkTaint (OWASP injection → sink, GNG-01), checkMonkeyPatching (FUNGI-SEC-020/021,
+  // Class A) and checkAttributeDirectives (the @name{} escape hatch, Class D) each had
+  // ZERO pipeline call sites — a SQLi / runtime-patching / hidden-code file built clean
+  // AND minted a signed .lmanifest. Wired here so they surface in EVERY mode (check
+  // included) and, being errors, block the signing gate below. checkTaint returns a flat
+  // array (no `.diagnostics`, no location); the other two return `{ diagnostics }`.
+  for (const d of checkTaint(parseResult.ast, parseResult.flows)) {
+    pushDiag(diagnostics, d.code, d.severity as CliDiagnostic["severity"], d.message, filePath, undefined, undefined);
+  }
+  const monkeyAstLines = new Set<number>();
+  for (const d of checkMonkeyPatching(parseResult.ast).diagnostics) {
+    if (d.location?.line !== undefined) monkeyAstLines.add(d.location.line);
+    pushDiag(diagnostics, d.code, d.severity as CliDiagnostic["severity"], d.message, filePath, d.location?.line, d.location?.column);
+  }
+  for (const d of checkMonkeyPatchingSource(source, filePath, monkeyAstLines).diagnostics) {
+    pushDiag(diagnostics, d.code, d.severity as CliDiagnostic["severity"], d.message, filePath, d.location?.line, d.location?.column);
+  }
+  for (const d of checkAttributeDirectives(parseResult.ast).diagnostics) {
+    pushDiag(diagnostics, d.code, d.severity as CliDiagnostic["severity"], d.message, filePath, d.location?.line, d.location?.column);
+  }
+
   // Phase 17A: Naming policy checker
   // In check-strict and build-production modes, naming issues are informational (warnings).
   // enforceNamingPolicy=true means they are shown but do not block the build on their own
@@ -482,8 +509,15 @@ function compileFile(
     );
   }
 
-  // Governance verification (for build-production mode)
-  if (mode === "build-production") {
+  // Governance verification (for production AND deterministic builds).
+  // RD-0234b Class B: governance ran ONLY for build-production, so build-deterministic
+  // (which advertises itself as the STRICTEST reproducibility mode) fell through here
+  // AND through the plain-`build` re-check below (gated to mode==="build"), and minted a
+  // signed .lmanifest for FUNGI-GOV-003 / VAL-* / TENANT-002 IDOR that --production
+  // refuses. Deterministic already uses production effect strictness (effectCheckerMode
+  // above); running governance here aligns it, so its errors land in `diagnostics` and
+  // the signing gate below withholds the credential.
+  if (mode === "build-production" || mode === "build-deterministic") {
     const govResult = verifyGovernance(
       parseResult.ast,
       parseResult.flows,
@@ -504,6 +538,26 @@ function compileFile(
     }
   }
 
+  // RD-0234b Class A(ii): make the PRODUCTION_BLOCKERS list matter. Production/deterministic
+  // gated purely on error-COUNT, so a blocker code emitted below error severity was inert
+  // (checkProductionReadiness was exported + unit-tested but NEVER called in the pipeline).
+  // Wire it here: any production-blocker code present at a real build with no error already
+  // recorded becomes a hard error, so the signing gate below withholds the credential.
+  if (mode === "build-production" || mode === "build-deterministic") {
+    const readiness = checkProductionReadiness(diagnostics);
+    if (!readiness.ready && !diagnostics.some((d) => d.severity === "error")) {
+      pushDiag(
+        diagnostics,
+        "FUNGI-BUILD-002",
+        "error",
+        `Production readiness blocked: ${readiness.blockers.join("; ")}`,
+        filePath,
+        undefined,
+        undefined,
+      );
+    }
+  }
+
   // AI graph emission
   if (mode === "emit-ai-graph") {
     const aiGraph = buildAiGraph(parseResult.ast, parseResult.flows, filePath);
@@ -515,24 +569,20 @@ function compileFile(
   // Emitted for build modes when there are no errors.
   // Contains: source hash, derived constraints, proof obligations, governance signatures.
   if (mode === "build" || mode === "build-production" || mode === "build-deterministic") {
-    // SIGNING-BOUNDARY FAIL-OPEN FIX (2026-07-01): a plain `build` runs the effect/value-state/
-    // governance checks in DEVELOPMENT strictness, so a security/governance violation (SECRET-002,
-    // PRIVACY-002, GOV-002, EFFECT-004, …) is only a WARNING and would be silently SIGNED into a
-    // deployable .lmanifest — an artifact `build --production` would refuse. A signed manifest is an
-    // admission credential; it must NOT be issued for an artifact that fails production strictness.
-    // Production/deterministic builds already carry strict diagnostics, so only the lenient `build`
-    // mode needs the extra gate. (Manifest CONTENT stays dev-computed to avoid changing golden hashes;
-    // the gate only decides whether to sign a clean-in-production artifact.)
-    let strictBlocksSigning = false;
-    if (mode === "build") {
-      const strictEffects = checkEffects(parseResult.flows, parseResult.ast, "production", true);
-      strictBlocksSigning =
-        checkValueStates(parseResult.ast, "production").diagnostics.some(d => d.severity === "error") ||
-        strictEffects.some(r => r.diagnostics.some(d => d.severity === "error")) ||
-        verifyGovernance(parseResult.ast, parseResult.flows, strictEffects, "production", filePath)
-          .diagnostics.some(d => d.severity === "error");
-    }
-    if (!strictBlocksSigning && !diagnostics.some(d => d.severity === "error")) {
+    // SIGNING-BOUNDARY (single-sourced, RD-0234b): the decision to mint a .lmanifest routes through
+    // the ONE production security gate that the bundled galerina.mjs ALSO runs
+    // (runProductionSecurityGate) — not a hand-re-enumerated checker list that can silently drift
+    // thinner (the L6-B2 re-arming the ZT tooling audit flagged). A plain `build` runs the display
+    // pipeline in DEVELOPMENT strictness, so without this a production-violating artifact (SECRET-002,
+    // PRIVACY-001/002, GOV-*, TAINT-*, SEC-020, ATTR-*, …) would be silently SIGNED. A signed manifest
+    // is an admission credential; it must NOT be issued for an artifact this gate rejects. "Add a
+    // checker to the gate → every signing path enforces it"; security-gate-coverage.test.mjs asserts
+    // each PRODUCTION_BLOCKER code is caught here. (Manifest CONTENT stays dev-computed so golden
+    // hashes are unchanged; the gate only decides WHETHER to sign.)
+    const gateBlocksSigning = productionGateBlocks(
+      runProductionSecurityGate(parseResult.ast, parseResult.flows, source, filePath),
+    );
+    if (!gateBlocksSigning && !diagnostics.some(d => d.severity === "error")) {
       const govResultForManifest = verifyGovernance(
         parseResult.ast, parseResult.flows, effectResults, "dev", filePath
       );
@@ -1210,14 +1260,27 @@ function main(): void {
       directives = parseDisableDirectives(src);
     } catch { /* ignore read error -- file already compiled above */ }
 
-    for (const d of result.diagnostics) {
-      // 1. Per-file directive suppression (// galerina-disable)
-      if (isDisabledByDirective(d.code, (d as unknown as {location?:{line?:number}}).location?.line, directives)) continue;
+    // L4-F1/L4-F2 (RD-0234): under a STRICT verdict (build --production / --deterministic, or
+    // check --strict) the outcome is NON-SUPPRESSIBLE — a `// galerina-disable` directive or a
+    // galerina.check.json `rules:{…:"off"}` may quiet a warning, but MUST NOT silence a fail-closed
+    // ERROR. Otherwise `// galerina-disable FUNGI-TAINT-001` turns a production security gate into a
+    // suggestion, and check --strict ends up WEAKER than production. (The signing decision already
+    // routes through the unsuppressed runProductionSecurityGate; this keeps the CLI verdict + exit
+    // code honest too.) Warnings/info stay suppressible for noise control.
+    const strictVerdict =
+      mode === "build-production" || mode === "build-deterministic" || mode === "check-strict";
 
-      // 2. Config severity override (galerina.check.json "rules" section)
-      const effectiveSeverity = applySeverityOverride(
-        d.code, d.severity as "error" | "warning" | "info", checkConfig
-      );
+    for (const d of result.diagnostics) {
+      const isFailClosedError = (d.severity as string) === "error";
+      // 1. Per-file directive suppression (// galerina-disable) — not for errors under a strict verdict.
+      if (!(strictVerdict && isFailClosedError) &&
+          isDisabledByDirective(d.code, (d as unknown as {location?:{line?:number}}).location?.line, directives)) continue;
+
+      // 2. Config severity override (galerina.check.json "rules" section) — cannot downgrade/silence
+      //    an error under a strict verdict.
+      const effectiveSeverity = (strictVerdict && isFailClosedError)
+        ? "error"
+        : applySeverityOverride(d.code, d.severity as "error" | "warning" | "info", checkConfig);
       if (effectiveSeverity === "off") continue;
 
       // 3. Min-severity filter

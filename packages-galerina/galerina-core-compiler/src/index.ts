@@ -1879,6 +1879,25 @@ export {
   type MonkeyPatchCheckResult,
 } from "./monkey-patch-checker.js";
 
+// RD-0234b Class D — Attribute-directive governance gate (@name{} escape hatch).
+export {
+  checkAttributeDirectives,
+  ATTRIBUTE_DIAGNOSTICS,
+  FUNGI_ATTR_001,
+  FUNGI_ATTR_002,
+  type AttributeDiagnostic,
+  type AttributeCheckResult,
+} from "./attribute-checker.js";
+
+// RD-0234 / RD-0234b — the single authoritative production security gate that
+// EVERY manifest-emitting path (cli.ts build modes + bundled galerina.mjs) runs
+// before minting a signed .lmanifest. Wiring a checker here wires it everywhere.
+export {
+  runProductionSecurityGate,
+  productionGateBlocks,
+  type GateDiagnostic,
+} from "./security-gate.js";
+
 // ---------------------------------------------------------------------------
 // Security diagnostics — FUNGI-SEC-020..021
 //

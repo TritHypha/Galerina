@@ -191,6 +191,18 @@ export const FUNGI_GOV_003 = {
   message: "A field listed in contract.response.denies appears in the response body. Protected or sensitive data must not leak through the API surface.",
 } as const;
 
+/** FUNGI-PRIVACY-001 (RD-0234 GNG-03): a field named in a contract.privacy
+ *  `deny protected X to response.body` clause appears, unredacted, in the response body.
+ *  This code was RESERVED for the `privacy {}` deny clause (governance-rules P-001) but the
+ *  clause was PARSED AND NEVER ENFORCED (only the terser response.denies form fired GOV-003) —
+ *  so a raw protected field admitted. Now enforced (the sound backstop .gate posture-B defers to). */
+export const FUNGI_PRIVACY_001 = {
+  code: "FUNGI-PRIVACY-001",
+  name: "PROTECTED_DATA_IN_RESPONSE_PRIVACY_DENY",
+  severity: "error" as const,
+  message: "A field named in a contract.privacy `deny protected X to response.body` clause appears, unredacted, in the response body. A protected value must not leak through the API surface.",
+} as const;
+
 /** FUNGI-CONTEXT-001: A required context field declared in contract.context is never accessed. */
 export const FUNGI_CONTEXT_001 = {
   code: "FUNGI-CONTEXT-001",
@@ -709,6 +721,36 @@ function extractResponseDeniedFields(flowNode: AstNode): Set<string> {
         if (rc.kind === "identifier" && rc.value?.startsWith("denies:")) {
           denied.add(rc.value.slice("denies:".length));
         }
+      }
+    }
+  }
+  return denied;
+}
+
+/**
+ * RD-0234 GNG-03: extract field/type names named in a contract.privacy
+ * `deny protected <X> to response.body` rule. The parser lumps each privacy line into an
+ * `identifier { value: "decl:<raw text>" }` under `privacy:block` — a single decl string may
+ * concatenate several rules and spaces the dot ("response . body"). This declarative rule was
+ * PARSED BUT NEVER ENFORCED; only the terser response.denies form fired FUNGI-GOV-003, so a raw
+ * protected field returned to the response admitted (the "sound backstop" .gate posture-B defers to).
+ */
+function extractPrivacyDeniedResponseFields(flowNode: AstNode): Set<string> {
+  const denied = new Set<string>();
+  const contractNode = (flowNode.children ?? []).find((c) => c.kind === "contractDecl");
+  if (contractNode === undefined) return denied;
+  const privacyBlock = (contractNode.children ?? []).find(
+    (c) => c.kind === "identifier" && c.value === "privacy:block",
+  );
+  if (privacyBlock === undefined) return denied;
+  const re = /deny\s+protected\s+(\w+)\s+to\s+response\s*\.\s*body/gi;
+  for (const rc of privacyBlock.children ?? []) {
+    if (rc.kind === "identifier" && rc.value?.startsWith("decl:")) {
+      const text = rc.value.slice("decl:".length);
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(text)) !== null) {
+        const name = m[1];
+        if (name !== undefined) denied.add(name);
       }
     }
   }
@@ -1571,6 +1613,35 @@ class GovernanceVerifier {
               `Protected data must not leak through the API surface. Use redact(${field}) or remove the field.`,
               loc,
               `Remove '${field}' from the response or use: ${field}: redact(${field})`,
+            ));
+          }
+        }
+      }
+    }
+
+    // ── FUNGI-PRIVACY-003 (GNG-03): contract.privacy `deny protected X to response.body` ─────
+    // The declarative privacy deny rule was PARSED BUT NEVER ENFORCED — only response.denies fired
+    // GOV-003, so a raw protected field returned to the response admitted. Resolve the declared deny
+    // against the flow's return, reusing the GOV-003 body-field collector (which honours redact()/
+    // seal() discharge and alias-rename laundering). Case-insensitive so a brand TYPE name in the
+    // rule (PatientId) matches the response field label it guards (patientId). Same name-based
+    // reach as GOV-003 (a whole-record `return session` is not decomposed — a documented residual).
+    if (flowNode !== undefined) {
+      const privacyDenied = extractPrivacyDeniedResponseFields(flowNode);
+      if (privacyDenied.size > 0) {
+        const bodyFields = collectBodyFieldNames(flowNode);
+        const bodyLower = new Set([...bodyFields].map((f) => f.toLowerCase()));
+        for (const field of privacyDenied) {
+          if (bodyLower.has(field.toLowerCase())) {
+            this.diagnostics.push(makeGovDiag(
+              FUNGI_PRIVACY_001.code,
+              FUNGI_PRIVACY_001.name,
+              "error",
+              `Flow '${flow.name}': field '${field}' is returned to response.body in violation of the ` +
+              `contract.privacy rule 'deny protected ${field} to response.body'. A protected value must ` +
+              `not leak through the API surface — redact()/seal() it or remove it from the response.`,
+              loc,
+              `Use ${field}: redact(${field}) in the response, or remove the field.`,
             ));
           }
         }

@@ -221,6 +221,14 @@ run("coverage:codes", "node", ["scripts/audit-coverage.mjs", "codes", "--soft"])
 // KB/SPEC doc-drift is --strict only, pending the storage.*/ledger.* family work (Commit 2).
 run("effect:canonicality", "node", ["scripts/audit-effect-canonicality.mjs"]);
 
+// ── 5c-ii-bis. RD-0234b — the two dev-tools the ZT-tooling audit recommended (2026-07-02) ──
+// checker:wiring — every EXPORTED checker has a real pipeline call-site (the dead-gate class:
+//   checkTaint / checkMonkeyPatching / checkAttributeDirectives each had ZERO call-sites before the fix).
+// sink:canonicality — no stdlib egress/exec/write sink silently escapes the taint / value-state sink
+//   hand-lists (the sink-drift class). Both carry a --self-test + a reasoned allowlist. Blocking.
+run("checker:wiring", "node", ["scripts/audit-checker-wiring.mjs"]);
+run("sink:canonicality", "node", ["scripts/audit-sink-canonicality.mjs"]);
+
 // ── 5c-iii. Muted-diagnostics gate (2026-07-01) ──
 // Owner concern: "codes muted early to stop them alerting — could they still be off?" A silenced
 // security/governance check is a fail-open. This enumerates every mode-gated + SUPPRESS-set diagnostic

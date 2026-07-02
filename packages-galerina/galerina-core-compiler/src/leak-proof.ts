@@ -86,9 +86,14 @@ const CATEGORY_FIX_KIND: Readonly<Record<LeakCategory, LeakFix["kind"]>> = {
   other: "manual",
 };
 
-/** The canonical effect/capability vocabulary — used to extract the leaked capability from a message. */
+/** The canonical effect/capability vocabulary — used to extract the leaked capability from a message.
+ *  VD-2 (RD-0234): this hand-list drifted from CANONICAL_EFFECTS (effect-checker.ts) — `telemetry`
+ *  (bit 14) and the DENY-ONLY `eval` namespace were missing, so a telemetry/eval leak baked
+ *  capability:"unknown" into the SIGNED TestWitness. Kept a superset (extra prose prefixes like
+ *  file/http are harmless for message extraction); the missing canonical namespaces are added below.
+ *  scripts/audit-sink-canonicality.mjs now guards this list against future drift. */
 const CAPABILITY_RE =
-  /\b((?:network|database|filesystem|storage|file|secret|audit|crypto|http|https|pii|phi|email|payment|process|worker|event|desktop|unsafe|native|ledger|shell|state|message|random|clock|cache|ai|compute)\.[a-z][a-z.]*)\b/;
+  /\b((?:network|database|filesystem|storage|file|secret|audit|crypto|http|https|pii|phi|email|payment|process|worker|event|desktop|unsafe|native|ledger|shell|state|message|random|clock|cache|ai|compute|telemetry|eval)\.[a-z][a-z.]*)\b/;
 
 function categoryFor(code: string): LeakCategory | null {
   for (const [prefix, cat] of PREFIX_CATEGORY) if (code.startsWith(prefix)) return cat;

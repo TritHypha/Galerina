@@ -45,13 +45,143 @@ Consistency rules + gates: `docs/CONSISTENCY_GATES.md`.
       but no signed index is distributed and nothing wires it by default. Make default-on or ship an index.
 - [ ] Drive the `lint:conventions` umbrella (270 report-only findings) to 0, then drop `--soft`.
 
-## ⏸ PAUSED by owner (2026-07-01) — `.gate` / `.graph`
-- [ ] Do NOT build to a `.gate` compiler. Owner still finalizing the model (`.gate` = light-ASCII AI-authoring
-      surface; `.graph` = ASCII Topology ONLY; runtime pure `.fungi`; one IR; deny-only signed-capability
-      admission). R&D continues in-KB behind two open gates: **RD-0232b** (7 adversarial blockers → SPEC v0.2
-      gated), **RD-0232c** (ZT-1: hand-copied `sens_class` registry drifted from prod `type-registry.ts` — must
-      be machine-sourced; 7-tenet scorecard open). `.graph` A/B fair re-run is paused-coupled.
-      Record: `.claude` memory `galerina-gate-graph-owner-revision-2026-07-01`; KB results-log RD-0232/b/c.
+## 🔒 SECURITY — `.fungi` prod audit RD-0234/0234b — ✅ RESOLVED 2026-07-02 (owner greenlit "fix everything"; build-staging, RED-benched, NOT pushed)
+> The ~29 fail-opens are FIXED behind ONE shared production security gate `runProductionSecurityGate`
+> (`galerina-core-compiler/src/security-gate.ts`) that EVERY manifest-emitting path now clears before signing —
+> both CLIs (`cli.ts` + bundled `galerina.mjs`), all modes (build / --production / --deterministic / --package).
+> Each fix was RED-repro'd on the real CLI first; full suite **60/60 · 5,914+ · 0 fail**; a coverage-of-coverage
+> test pins the wiring so a checker can no longer silently un-wire. New codes registered (FUNGI-ATTR-001/002,
+> FUNGI-BUILD-002, FUNGI-PRIVACY-001 now ENFORCED).
+
+**Resolved (fix → code):**
+- [x] **Class A — dead gates WIRED**: `checkTaint` (GNG-01), `checkMonkeyPatching`+Source (SEC-020/021),
+      bundled-CLI `resolveSymbols`/FUNGI-NAME-001, `checkProductionReadiness`→FUNGI-BUILD-002. In the main
+      pipeline + the shared gate (`security-gate.ts`, `cli.ts`, `galerina.mjs`).
+- [x] **Class B — signing boundary UNIFIED**: `build --deterministic` runs governance + the full gate; the
+      bundled signing CLI runs the complete gate in EVERY profile; `fuse --allow-unsigned` refused under
+      `GALERINA_PROFILE=production` (posture override live → FUNGI-FUSE-UNSIGNED-DENIED). **cli.ts + galerina.mjs
+      both sign behind the SAME `runProductionSecurityGate`.**
+- [x] **Class C / VD-1**: VD-1 case-insensitive sink match (`getSinkRequirement`); `isNetworkSink` covers
+      NotificationService/PaymentService; VALUESTATE-006 protected-PII guard extended to network egress (was
+      AuditLog.write only); PASSPORT-002/AFFINE-001 recurse into wrapped (record/interp) args.
+- [x] **Class D — parse-time escape hatch CLOSED**: new `attribute-checker.ts` (FUNGI-ATTR-001/002) — an
+      attribute directive wrapping code, or an unknown `@name`, is deny-by-default. RED→GREEN on the real CLI.
+- [x] **GNG-03 / FUNGI-PRIVACY-001 ENFORCED**: `privacy { deny protected X to response.body }` resolved against
+      the flow return (`governance-verifier.ts`), honouring redact/seal. Was PLANNED-Phase-10C+, now ENFORCED.
+- [x] **L4-F1/F2 — verdict non-suppressible**: under build --production/--deterministic/check --strict a
+      `// galerina-disable` / check.json `"off"` cannot silence a fail-closed ERROR (`cli.ts`). check --strict ≥ prod.
+- [x] **L6-B2 — coverage-of-coverage**: `tests/security-gate-coverage.test.mjs` feeds a violating fixture per
+      gated checker through the SHARED gate; cli.ts now CALLS the gate (was hand-re-enumerating — the drift the
+      ZT-tooling audit caught).
+- [x] **VD-2 (partial)**: `leak-proof.ts` CAPABILITY_RE gained the missing `telemetry`/`eval` namespaces.
+
+**Residual (owner input needed — deliberately NOT rushed onto the signing path):**
+- [ ] **Class E — fuse ACL reconciliation** (`build --package`, `galerina.mjs:2125` embeds
+      `packageDescriptor.capabilities` verbatim). Needs the owner's capability-model call: does the fuse ACL use
+      effect-vocabulary or seam-capability-vocabulary (api-protocol-rest declares `["network.inbound"]`)? A wrong
+      reconciliation false-positives (breaks builds) or under-enforces, and it touches the CG-7 signed-package
+      boundary. Spec: verify declared `capabilities` ⊇ union of the flows' proven effects, or derive from them.
+- [ ] **getPatient.fungi latent leak** — returns raw `protected patientId` to response.body, violating its own
+      `deny protected PatientId to response.body`. GNG-03/FUNGI-PRIVACY-001 now flags it, but the fix needs a
+      semantic call (PatientSummary type `patientId: PatientId` vs the deny rule conflict — redact / retype /
+      remove). Owner to decide the example's intent. (Doesn't build standalone today → no test regression.)
+- [ ] **VD-2 (full single-source)** — derive CAPABILITY_RE + the sink registries from ONE canonical source
+      (export CANONICAL_EFFECTS); `scripts/audit-sink-canonicality.mjs` now guards drift in the interim.
+
+<details><summary>Original RD-0234/0234b finding detail (all resolved above unless marked residual)</summary>
+
+### RD-0234 — `.fungi` prod audit (owner-gated fixes; prod read-only; build-staging; RED-bench-first)
+> `../ZTF-Knowledge-Bases/galerina-rd-0234-fungi-50yr-mistake-audit.md` — 19 confirmed, 0 false; **`.fungi`
+> shares `.gate`'s core disease: a passing `build --production` does NOT currently mean the file honours its
+> guarantees.** GNG-01 + VD-1 **re-verified live on prod 2026-07-02** (root-cause below). These are the
+> highest-severity items in this file — a dead security pass mints SIGNED manifests for SQLi. All fixes
+> owner-gated (prod). Fix each behind a RED-bench (repro test) first.
+- [ ] **GNG-01 (BLOCKER): wire the DEAD OWASP taint pass.** `checkTaint` is imported (`index.ts:807`) + defined
+      (`taint-checker.ts:264`) but has **ZERO call sites** — SQLi/shell/XSS from `request` input builds
+      `--production` clean **+ mints a signed `.lmanifest`**. Invoke `checkTaint` in the compile/CLI pipeline;
+      reconcile its capitalized sink names (`Shell.exec`) with the wired lowercase value-state list (VD-4).
+- [ ] **VD-1 (MAJOR): case-drift fail-open.** `SINK_REQUIREMENTS`/`isGovernedSink` (`value-state-checker.ts:179+`)
+      hardlist **lowercase-exact** (`match:"exact"`), so tainted `req.body → Shell.exec(x)` PASSES+signs while
+      `shell.exec(x)` fires `FUNGI-VALUESTATE-003`. Case-normalize / single-source the sink match.
+- [ ] **GNG-03 (BLOCKER): `privacy { deny protected X to response.body }` is purely DECLARATIVE — enforces
+      NOTHING** (a raw `protected` PII return admits; the terser `response{denies}` IS enforced). Resolve the
+      declared deny against the typed flow, or reject the block as unimplemented — never silently accept a
+      security directive that does nothing. (This is the SOUND backstop `.gate` posture-B defers to.)
+- [ ] **L4-F1 (BLOCKER): make the production verdict non-suppressible from source.** `// galerina-disable`
+      silences any fail-closed gate at `build --production`; `galerina.check.json "rules":{…:"off"}` (L4-F2)
+      silences secret-exfil at `--strict`. `build --production` must honour (not bypass) the config and be
+      ≥ `--strict` (GNG-04 `check --strict` is currently WEAKER than production; FUNGI-VER-001/002 bypass).
+- [ ] **L6-B2 (BLOCKER): coverage-of-coverage.** SEC-002 exercises each gate via its UNIT call, so it CANNOT
+      see an UN-WIRED pass (why GNG-01 hid). Add a **wiring-mutant** class: re-hole a gate AND assert a
+      **CLI-level** probe kills it (not just a unit call).
+- [ ] **VD-2 (MAJOR): single-source the hand lists.** `leak-proof.ts` CAPABILITY_RE drifted from
+      `CANONICAL_EFFECTS` (missing `telemetry`/`eval`; stale `file/http/…`) → a real leak bakes
+      `capability:"unknown"` into the **signed TestWitness**. Derive CAPABILITY_RE + both sink registries from
+      one canonical source; add `audit-sink-canonicality.mjs` + a CAPABILITY_RE canonicality check.
+- [ ] SOUND (credit, no action): lexer ASCII-frozen (better than `.gate`), secret→net egress blocked (for the
+      hardlisted sinks only — see RD-0234b), C1–C10 closed, 23 SEC-002 mutants kill.
+
+### RD-0234b — second-pass hunt (2026-07-02): ~10 MORE confirmed fail-opens, CROSS-VALIDATED by two independent 12–14-agent hunts. Same disease, wider surface. Owner-gated; prod read-only. They cluster into 4 STRUCTURAL classes — fix the class, not each instance:
+- [ ] **CLASS A — MORE dead/unwired gates (like GNG-01).** (i) **Monkey-patch gate `FUNGI-SEC-020/021`**
+      (`checkMonkeyPatching`/`…Source`) is imported+re-exported+unit-tested but has **zero pipeline call-sites**
+      → `Runtime.patch(...)`/`adapter.override(...)` builds `--production` clean **+ signs** (BLOCKER, both
+      hunts). (ii) `checkProductionReadiness`/`PRODUCTION_BLOCKERS` (production-check.ts:70) **never called** —
+      the named blocker list is inert; production gates only on `error`-count. (iii) bundled `galerina.mjs`
+      never runs the `FUNGI-NAME-001` symbol-resolution gate → signs a hybrid manifest. **Fix:** wire every
+      declared gate + a **coverage-of-coverage** test asserting each `PRODUCTION_BLOCKER` code is emitted by a
+      WIRED pass at the CLI level (the L6-B2 wiring-mutant class).
+- [ ] **CLASS B — signing boundary incomplete across MODES & CLIs (CG-4 class).** (i) **`build --deterministic`
+      skips `verifyGovernance` entirely** and mints a signed `.lmanifest` for `FUNGI-GOV-003` leaks /
+      `VAL-001/002` / `TENANT-002` IDOR / `CRYPTO-PQ-001` that `build --production` refuses (BLOCKER, both hunts;
+      root: `cli.ts:486` gates governance to production-only, the 07-01 strict-recompute to plain-`build`-only,
+      deterministic falls through both). (ii) **`GALERINA_PROFILE=production galerina fuse --allow-unsigned`
+      admits an UNSIGNED package** — the posture-derived `requireSignature` fail-secure override is dead code
+      (MAJOR). **Fix:** ONE signing/admission gate running the FULL production gate set for EVERY
+      manifest-emitting mode (production/deterministic/package) and BOTH CLIs, + posture override live.
+- [ ] **CLASS C — sink/egress hand-list drift + partial enforcement.** (i) `isNetworkSink`
+      (value-state-checker.ts:312) omits prelude egress services `NotificationService`/`PaymentService` → raw
+      vault `SecureString` exfiltrated off-host, signed (`FUNGI-SECRET-002` fail-open — RD-0234 had called this
+      SOUND; it's sound only for the hardlisted receivers). (ii) `FUNGI-VALUESTATE-006` protected-PII sink guard
+      fires at **`AuditLog.write` only** — protected PII via `http.post`/`EmailService` egresses clean (MAJOR).
+      (iii) `FUNGI-PASSPORT-002`/`AFFINE-001` skipped for any **non-bare-identifier** sink arg (record/interp
+      wrapper mints a signed manifest). **Fix:** single-source the sink/egress lists; enforce at ALL sinks.
+- [ ] **CLASS D — parse-time governance ESCAPE HATCH (worst).** `@experimental_profile(...) { … }` — and any
+      `@name { }` attribute directive — has its wrapped block **erased from the AST** by `skipBalancedBraces`
+      BEFORE any checker runs → secret-exfil / `eval` / undeclared-effect inside it is unconditionally invisible
+      and the file signs (BLOCKER, both hunts). **Fix:** attribute directives must NOT drop governed code;
+      reject unknown attributes (unknown ⇒ REJECT).
+- [ ] **CLASS E (adjacent) — fuse ACL self-assertion.** `build --package` signs the capability ACL from
+      `package.fungi.json` **verbatim, with zero reconciliation** against the flows' proven effects (MAJOR).
+      **Fix:** derive/verify the fuse ACL from the compiled effects, don't trust the declared JSON.
+> Full detail + repros + cross-validation: `../ZTF-Knowledge-Bases/galerina-rd-0234b-fungi-second-pass-hunt.md`.
+> **The systemic takeaway:** `.fungi`'s `build --production` green is NOT a guarantee across ~29 findings
+> (19 RD-0234 + ~10 here) in ~5 classes — and this is the SOUND backstop `.gate` posture-B defers to. The
+> single highest-leverage prod-security work in the project is wiring + unifying these gates. **[DONE 2026-07-02.]**
+
+</details>
+
+## ✅ `.gate` — UNLOCKED + hardened 2026-07-02 (owner PROMPT-main-session-gate-integration.md)
+> Naming corrected: `.gate` = light-ASCII AI app-authoring language (draw-don't-code); graph/GIR = the one
+> ordinary-graph IR; **NO `.graph` language**. Pipeline `.fungi`+`.gate` → GIR → WASM; sign the IR; deny-only.
+> Owner ODs answered: ZT-1 dual-SoT machine-source · one `:cut` form (`@redact` removed) · XOR basename +
+> cross-calls · delete 8 old JSON-IR examples. Checker → v0.4. **Adversarial re-audit loop rounds 4–8 closed
+> 16 real holes** (self-test 94→129, corpus 21/21) — KB `galerina-rd-0232d-gate-checker-rounds-4-7-hardening.md`.
+> **Privacy posture DECIDED = B** (RD-0232d): un-named-egress → loud INTERIM warning + defer sound verdict to
+> compile-time `FUNGI-PRIVACY-002` (which RD-0234 GNG-03/GNG-01 shows is currently dead — see above).
+- [ ] **`.gate` build gate — OWNER DECISION (re-scope D5).** Adversarial rounds 4→9 closed **~20 real holes**
+      (self-test 94→135, corpus 21/21, posture-B), but the loop is **ASYMPTOTIC**: each round after a "green"
+      checker finds a NEW enumeration gap (source/egress omitted, suppressor position, walk-prune) because a
+      TOPOLOGICAL pre-filter approximates a typed field-level dataflow analysis — it will never be "provably
+      empty". **Recommendation (RD-0232d):** ship the checker as the hardened best-effort **authoring lint** it
+      is (incomplete-enumeration limit documented) and gate `.gate` COMPILER integration on the **SOUND layer**
+      — the signed capability at fuse + a WIRED compile-time `FUNGI-PRIVACY-002` (currently DEAD per RD-0234
+      GNG-01/03; see the 🔒 SECURITY section — this is the shared convergence path for BOTH `.gate` and
+      `.fungi`). Change D5 from "re-audit EMPTY" → "documented necessary-not-sufficient lint + sound backstop
+      wired+tested". **Until the owner accepts the re-scope, D5 stays RED and no `.gate` compiler is built.**
+- [ ] **`.gate` §5a–5d integration** (blocked on the D5 re-scope above): NEW separate `.gate` discovery at the
+      app layer only; lower via in-memory GIR; reuse shipped governance; + the **8 negative tests** proving the
+      hard locks.
+- [ ] `.graph` A/B fair re-run — paused-coupled; `.graph` = ASCII Topology ONLY (never a language).
 
 ## 🔲 NEXT / carried forward
 - [ ] App-kernel posture default (`kernel.ts:245` = `"off"`) — decide production-adaptive `"auto"` default.

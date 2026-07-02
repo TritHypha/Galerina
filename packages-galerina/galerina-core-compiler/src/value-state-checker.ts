@@ -187,6 +187,14 @@ export const SINK_REQUIREMENTS: ReadonlyMap<string, SinkRequirement> = new Map<s
   ["FileSystem.write",   { requiredState: "safe",      policyNote: "Filesystem writes require safe values.", match: "exact" }],
 ]);
 
+// VD-1 (RD-0234) case-drift fail-open: the exact-match keys above are a mix of effect-style
+// (shell.exec, database.write) and module-style (AuditLog.write) casings, so `Shell.exec(x)`
+// slipped past `shell.exec` and a tainted arg reached the sink unguarded while `shell.exec(x)`
+// fired. A case-insensitive fallback (below, in getSinkRequirement) matches BOTH forms.
+const SINK_REQUIREMENTS_LC: ReadonlyMap<string, SinkRequirement> = new Map(
+  [...SINK_REQUIREMENTS].map(([k, v]) => [k.toLowerCase(), v]),
+);
+
 /**
  * Returns the SinkRequirement for a given call name, or undefined if not a
  * governed sink. Checks exact-match registry first, then falls back to pattern
@@ -196,8 +204,17 @@ export function getSinkRequirement(fullCallName: string): SinkRequirement | unde
   const exact = SINK_REQUIREMENTS.get(fullCallName);
   if (exact !== undefined) return exact;
 
-  // Pattern-matched sinks — require validated state
-  if (/\w*DB\.(insert|update\w*|delete|write|query|find|select\w*)$/.test(fullCallName)) {
+  // VD-1 (RD-0234): case-drift fail-open — match the exact-list case-insensitively so a
+  // capitalised receiver (`Shell.exec`, `Database.write`, `Network.outbound`) is governed
+  // identically to its effect-style spelling. This is a strict superset (only ADDS matches).
+  const ci = SINK_REQUIREMENTS_LC.get(fullCallName.toLowerCase());
+  if (ci !== undefined) return ci;
+
+  // Pattern-matched sinks — require validated state.
+  // audit-sink-canonicality gap (RD-0234b tooling): the `\w*DB\.` receiver required a name ENDING
+  // in "DB", so the plain `database.insert/update/delete` module verbs slipped through governed only
+  // for the exact `database.write` key. Broadened to the `database` spelling too (still a superset).
+  if (/(?:\w*DB|[Dd]atabase)\.(insert|update\w*|delete|write|query|find|select\w*)$/.test(fullCallName)) {
     return { requiredState: "validated", policyNote: "Database operations require validated data.", match: "pattern" };
   }
   if (/^https?\.(post|put|patch|delete)$/.test(fullCallName)) {
@@ -211,6 +228,15 @@ export function getSinkRequirement(fullCallName: string): SinkRequirement | unde
   }
   if (/^fs\.write\w*$/.test(fullCallName)) {
     return { requiredState: "safe", policyNote: "Filesystem writes require safe values.", match: "pattern" };
+  }
+  // audit-sink-canonicality gap (RD-0234b tooling): `File.write*` module write methods were ungoverned
+  // (only `FileSystem.write` / `fs.write*` were). A filesystem write of unsafe data is a sink.
+  if (/^File\.write\w*$/.test(fullCallName)) {
+    return { requiredState: "safe", policyNote: "Filesystem writes require safe values.", match: "pattern" };
+  }
+  // audit-sink-canonicality gap: the `audit.write` short-form (vs the `AuditLog.write` exact key).
+  if (/^audit\.(write|log)$/.test(fullCallName)) {
+    return { requiredState: "redacted", policyNote: "Audit writes must not contain raw PII. Use redact() before logging.", match: "pattern" };
   }
 
   return undefined;
@@ -318,11 +344,19 @@ function isNetworkSink(node: AstNode): boolean {
   if (r === "") return false;
   if (r === "http" || r === "https" || r === "net" || r === "socket" || r === "ws" || r === "websocket") return true;
   if ((r === "email" || r === "emailservice") && methodName === "send") return true;
+  // Class C (RD-0234b): prelude egress SERVICES also ship data off-host — a raw vault
+  // SecureString handed to NotificationService.send / PaymentService.charge is an
+  // exfiltration path the receiver hand-list previously omitted (so it signed clean).
+  if (r === "notificationservice" && /^(send|push|notify|dispatch|deliver)/.test(methodName)) return true;
+  if (r === "paymentservice" && /^(charge|process|submit|send|authorize|capture)/.test(methodName)) return true;
   // Egress beyond raw network transport: the HTTP response body leaves the trust
   // boundary; remote inference ships the payload to a third-party model; a vector
   // store persists the (invertible) embedding. All are exfiltration paths.
   if (r === "response" && methodName === "body") return true;
-  if (r === "ai" && (methodName === "remoteInference" || methodName === "remote")) return true;
+  if (r === "ai" && (methodName === "remoteInference" || methodName === "remote" || methodName === "infer")) return true;
+  // audit-sink-canonicality gap (RD-0234b tooling): a `Model.run`/`Model.infer`/`Model.predict` call
+  // ships the payload to a model (a third-party egress), like ai.remoteInference — was ungoverned.
+  if (r === "model" && /^(run|infer|predict|generate|complete)$/.test(methodName)) return true;
   if (/vectordb$/.test(r) && /^(write|insert|upsert|add|index)$/.test(methodName)) return true;
   return false;
 }
@@ -1534,8 +1568,18 @@ class ValueStateChecker {
 
       // NET-NEW 0111 — affine consume-once + monotone stage-skip on Passport bindings at authority sinks.
       const need = requiredPassportStage(sinkName);
-      for (const arg of node.children ?? []) {
-        if (arg.kind !== "identifier") continue;
+      // Class C (RD-0234b): a passport WRAPPED in a record/interpolation arg (sink({ p }) /
+      // sink(`${p}`)) previously skipped the stage/consume gate (only BARE identifier args were
+      // checked) and minted a signed manifest. Collect leaf-identifier passport candidates from
+      // each arg subtree, not just the bare arg. redact()/seal() calls are a discharge boundary.
+      const passportCandidates: AstNode[] = [];
+      const collectLeafIdents = (n: AstNode): void => {
+        if (n.kind === "callExpr" && (n.value === "redact" || n.value === "seal")) return;
+        if (n.kind === "identifier" && (n.children ?? []).length === 0) passportCandidates.push(n);
+        for (const c of n.children ?? []) collectLeafIdents(c);
+      };
+      for (const arg of node.children ?? []) collectLeafIdents(arg);
+      for (const arg of passportCandidates) {
         const b = this.lookupBinding(arg.value ?? "");
         if (b?.passportStage === undefined) continue; // not a passport-typed value
         // (a) STATE-SKIP: the value's stage is below the sink's required stage → deny (Raw<Verified<Authorized<Sealed).
@@ -1589,6 +1633,10 @@ class ValueStateChecker {
       for (const child of node.children ?? []) {
         this.checkArgForSecretNetwork(child, callName, node.location);
         this.checkArgForEmbeddingNetwork(child, callName, node.location);
+        // Class C (RD-0234b): a PROTECTED (PII) value egressing off-host must also be
+        // redacted/sealed. VALUESTATE-006 fired at AuditLog.write ONLY, so protected PII
+        // via http.post / EmailService / NotificationService / response.body egressed clean.
+        this.checkArgForProtectedAtAuditLog(child, callName, node.location);
       }
     }
 

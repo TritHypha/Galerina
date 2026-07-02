@@ -1,0 +1,43 @@
+# checker-wiring-allowlist — intentionally-dormant exported checkers
+# =============================================================================
+# audit-checker-wiring.mjs FAILS on any exported checker (/^(check|verify|detect)[A-Z]/)
+# that has ZERO call-sites anywhere in the compiler src (the RD-0234 "dead gate"
+# fail-open class). A checker that is legitimately unused-yet — a stub, a predicate
+# only ever called via a re-exported alias, or a helper wired only from OUTSIDE src
+# (a host runtime, the bundled galerina.mjs, another package, or tests) — is recorded
+# HERE so the audit stays green while the drift stays visible.
+#
+# Format:  <exportedName>   # concrete reason it is legitimately uncalled within src
+# Add an entry ONLY after running `node scripts/audit-checker-wiring.mjs` and
+# confirming the flagged checker is dormant BY DESIGN, not an actual missing gate.
+#
+# NOTE (2026-07-02): every entry below was verified NOT to be the RD-0234 class. The
+# RD-0234 trio (checkTaint / checkMonkeyPatching / checkAttributeDirectives) is now
+# wired in src (cli.ts + security-gate.ts) and this audit correctly reports it as live
+# — it would have FAILED on all three before that fix. The names below are public-API
+# safety checks, signature/attestation VERIFICATION primitives, or devtools-surface
+# checks whose sole call-sites live outside the compiler src tree the audit scans.
+# =============================================================================
+
+# ── Public-API safety checkers (barrel-exported from index.ts; invoked by consumers
+#    and the compiler test-suite, not the internal compile pipeline). Not compile
+#    gates that mint manifests — they are library entry points. ──────────────────
+checkBindingReassignment   # public API (index.ts); exercised by tests/compiler-safety-contracts.test.mjs
+checkReadonlyMutation      # public API (index.ts); exercised by tests/compiler-safety-contracts.test.mjs
+checkMutInPureContext      # public API (index.ts, binding-level Phase 3); exercised by compiler-safety-contracts.test.mjs
+checkMethodChain           # deliberate STUB (returns [] — reserved API surface, Phase 3 placeholder); tested for stability only
+
+# ── Verification primitives — consumed at load/fuse/attest time by galerina.mjs,
+#    tri-pipe, tower-citizen, and tests. These VERIFY an already-produced artifact;
+#    they are not compile-time authoring gates, so they have no src call-site. ────
+verifyAttestation          # called by galerina.mjs + galerina-tri-pipe/tower-citizen at fuse/attest time; not a compile gate
+verifyManifestRoundTrip    # called by galerina.mjs (manifest emit path) + tests/governance/cbor-secure-parser.test.mjs
+verifyGovernanceSignature  # proof-graph signature verify; exercised by hybrid-pq-signature + phase35-39-features tests
+verifyProofChain           # proof-chain verify primitive; exercised by tests/proof-chain.test.mjs (host/verify-side)
+verifyRuntimeManifestHash  # runtime host binds GIR↔manifest at load; exercised by tests/runtime-manifest-r6.test.mjs
+
+# ── Checkers wired via a DIFFERENT entry (another package / resolver / devtools),
+#    not the single-file compile pipeline in cli.ts. ────────────────────────────
+checkProfiles                    # invoked by galerina-devtools-security/audit-runner.ts (profile-taint audit surface)
+checkFileSymbolCollisions        # module-registry API; invoked by tests/governance/import-resolution.test.mjs (resolver-side)
+checkPackageCapabilityExpansion  # package-resolver governance gate; invoked by tests/package-resolver/governed-resolver.test.mjs

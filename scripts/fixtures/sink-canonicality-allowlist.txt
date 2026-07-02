@@ -1,0 +1,56 @@
+# sink-canonicality-allowlist — sink-SHAPED stdlib entries that are NOT an
+# untracked egress/exec/write sink (or are governed by another path).
+# =============================================================================
+# audit-sink-canonicality.mjs FAILS when a STDLIB_CAPABILITY_MAP entry whose name/shape
+# denotes an egress / exec / filesystem-write / off-host-send sink is present in NONE of
+# the keyed sink hand-lists (taint-checker INJECTION_SINKS, value-state SINK_REQUIREMENTS
+# exact keys, source-escape BANNED_CALL_NAMES). That is the RD-0234 drift class: a
+# newly-added stdlib sink silently escapes taint / value-state tracking, so a tainted or
+# raw-secret value reaches it with no diagnostic and the artifact signs clean.
+#
+# The shape classifier is deliberately broad (better to over-flag than miss a sink). An
+# entry that is sink-SHAPED but is genuinely tracked by a DIFFERENT enforcement path than
+# the three keyed hand-lists — value-state's REGEX-pattern sinks or its receiver-segment
+# secret-egress guard (isNetworkSink) — is recorded HERE with the specific citation, so
+# the coverage knowledge stays auditable in one place.
+#
+# Format:  <StdlibName>   # concrete reason it need not appear in a keyed sink list
+# Add an entry ONLY after running `node scripts/audit-sink-canonicality.mjs` and
+# confirming (ideally by compiling a probe fixture) how the entry is governed.
+# =============================================================================
+
+# ── Covered by a value-state REGEX-pattern sink and/or its secret-egress guard ──
+#    (tracked — just not via an exact keyed-list entry). Verified: value-state
+#    getSinkRequirement() patterns + isNetworkSink() in value-state-checker.ts.
+email.send          # value-state pattern EmailService.(send|deliver)-class + isNetworkSink email.send (secret egress)
+EmailService.send   # value-state SINK_REQUIREMENTS pattern /^EmailService\.(send\w*|deliver)$/ + isNetworkSink
+http.post           # value-state pattern /^https?\.(post|put|patch|delete)$/ (unsafe) + isNetworkSink transport (secret)
+https.post          # value-state pattern /^https?\.(post|put|patch|delete)$/ (unsafe) + isNetworkSink transport (secret)
+fs.write            # value-state SINK_REQUIREMENTS pattern /^fs\.write\w*$/ (unsafe/tainted at governed sink)
+fs.writeText        # value-state SINK_REQUIREMENTS pattern /^fs\.write\w*$/ (unsafe/tainted at governed sink)
+
+# ── Capitalised Http.* transports: covered for SECRET/embedding egress via
+#    value-state isNetworkSink() (receiver lowercased Http->http). GET/read forms are
+#    SSRF/egress surface, not taint SINKS. NOTE: for the WRITE verbs the general-taint
+#    (non-secret) coverage flows through the lowercase /^https?\./ pattern above; the
+#    capitalised spelling is caught for secret egress. Recognised, not a silent escape. ─
+Http.get            # read/SSRF surface; secret-egress via isNetworkSink transport (Http->http)
+Http.post           # secret-egress via isNetworkSink transport; general-taint via lowercase https? pattern
+Http.put            # secret-egress via isNetworkSink transport; general-taint via lowercase https? pattern
+Http.patch          # secret-egress via isNetworkSink transport; general-taint via lowercase https? pattern
+Http.delete         # secret-egress via isNetworkSink transport; general-taint via lowercase https? pattern
+http.get            # read/SSRF surface; secret-egress via isNetworkSink transport
+https.get           # read/SSRF surface; secret-egress via isNetworkSink transport
+
+# =============================================================================
+# ── Formerly GAP — now FIXED in src (RD-0234b tooling → owner "fix everything", 2026-07-02) ──
+#    These were empirically-confirmed untracked sinks. The value-state hand-list patterns were
+#    broadened to cover them (value-state-checker.ts getSinkRequirement / isNetworkSink). Kept here
+#    with the covering pattern (like the http/fs entries above) so the audit records the coverage.
+database.insert     # value-state pattern /(?:\w*DB|[Dd]atabase)\.(insert|update\w*|delete|write|…)$/ (validated)
+database.update     # value-state pattern /(?:\w*DB|[Dd]atabase)\.(…|update\w*|…)$/ (validated)
+database.delete     # value-state pattern /(?:\w*DB|[Dd]atabase)\.(…|delete|…)$/ (validated)
+File.writeText      # value-state SINK_REQUIREMENTS pattern /^File\.write\w*$/ (safe required)
+File.writeBytes     # value-state SINK_REQUIREMENTS pattern /^File\.write\w*$/ (safe required)
+audit.write         # value-state SINK_REQUIREMENTS pattern /^audit\.(write|log)$/ (redacted required)
+Model.run           # value-state isNetworkSink r==="model" (run|infer|predict|generate|complete) — model egress (secret/protected)

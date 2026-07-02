@@ -994,6 +994,18 @@ Baseline comparison (governance-cost):
       else if (!a.startsWith("--")) dirs.push(a);
     }
     if (dirs.length === 0) { console.error("Error: galerina fuse needs one or more package directories"); process.exit(1); }
+    // RD-0234b Class B(ii): the production posture is fail-secure and OVERRIDES --allow-unsigned.
+    // Admitting an unsigned package into a production fuse would defeat signed-admission entirely, so the
+    // flag is REFUSED (not silently ignored) under GALERINA_PROFILE=production; dev/unset still honours it.
+    // (Previously the posture-derived requireSignature override was dead code — an unsigned package was
+    // admitted even under the production profile.)
+    if (allowUnsigned) {
+      const { resolveSigningProfileWarned } = await import("./governance/profile.mjs");
+      if (resolveSigningProfileWarned().profile === "production") {
+        console.error("❌ FUNGI-FUSE-UNSIGNED-DENIED: --allow-unsigned is refused under GALERINA_PROFILE=production (fail-secure) — a production fuse requires every package to carry a valid signed .lmanifest. Remove --allow-unsigned, or build+sign the package first.");
+        process.exit(1);
+      }
+    }
     const ak = await import(new URL("packages-galerina/galerina-framework-app-kernel/dist/index.js", import.meta.url).href);
     try {
       const opts = { allowUnsigned, warn: (msg) => console.warn(`  ⚠ ${msg}`) };
@@ -1994,6 +2006,19 @@ Baseline comparison (governance-cost):
   for (const d of valueStateResult.diagnostics ?? []) {
     if (d.severity === "error") govErrors.push(d);
   }
+  // RD-0234b Class A(iii): the bundled build path never ran symbol resolution, so a file
+  // referencing an UNRESOLVED symbol (typo'd flow / missing helper) still minted a hybrid-signed
+  // manifest. Mirror cli.ts and fail the BUILD closed on any unresolved-symbol (FUNGI-NAME-*) error.
+  // Scoped to `build` ONLY: this shared compile section is also reached by `run --invoke` (which needs
+  // the WASM), and name-resolution is a SIGNING concern — a `run` name issue surfaces at execution
+  // anyway, and gating it here would pre-empt run's own "not in the WASM --invoke surface" guidance.
+  if (command === "build") {
+    try {
+      for (const d of (m.resolveSymbols(parsed.ast).diagnostics ?? [])) {
+        if (d.severity === "error") govErrors.push(d);
+      }
+    } catch { /* resolver unavailable → the full security gate below still applies (fail-closed) */ }
+  }
   if (govErrors.length > 0) {
     for (const d of govErrors) {
       const loc = d.location?.line !== undefined ? ` (${fungiFile}:${d.location.line}:${d.location.column ?? 0})` : "";
@@ -2040,31 +2065,37 @@ Baseline comparison (governance-cost):
     writeFileSync(`${outDir}/${name}.wasm`, assembled.wasm);
     writeFileSync(`${outDir}/${name}.wat`, wat);
 
-    // ── CG-4 SIGNING-BOUNDARY GATE (mirror of cli.ts runOnFile, c2a260d) ──────────
-    // A lenient (dev-profile) build must NOT mint a signed .lmanifest for an artifact
-    // that production-strict governance rejects — a signed manifest is an admission
-    // credential. cli.ts got this gate 2026-07-01; THIS minting site (the bundled CLI,
-    // incl. `build --package`) was proven to still hybrid-sign a flow declaring a fake
-    // effect (verified 2026-07-02). Production builds already fail-closed earlier
-    // (govErrors gate), so only the lenient path re-checks. The .wasm/.wat still emit
-    // (local inspection); only the credential is withheld — and loudly, never silently.
+    // ── SIGNING-BOUNDARY GATE — the ONE production security gate (RD-0234/0234b) ──
+    // Formerly (CG-4, 2026-07-01) this re-ran ONLY value-state / effects / governance,
+    // and ONLY on the lenient (dev) path — so the bundled signing CLI still minted
+    // hybrid-signed .lmanifests for taint injection (GNG-01), runtime monkey-patching
+    // (Class A), and the @name{} escape hatch (Class D) in EVERY profile, because it ran
+    // NONE of those checks. It now runs m.runProductionSecurityGate — the SAME complete
+    // set cli.ts runs — in EVERY profile. Any error withholds the .lmanifest credential
+    // (loudly, never silently); a production build additionally fails closed. The
+    // .wasm/.wat still emit for local inspection.
     let mintManifest = true;
-    if (!buildIsProduction) {
-      try {
-        const strictEffectsForSigning = m.checkEffects(parsed.flows, parsed.ast, "production", true);
-        mintManifest = !(
-          m.checkValueStates(parsed.ast, "production").diagnostics.some((d) => d.severity === "error") ||
-          strictEffectsForSigning.some((r) => (r.diagnostics ?? []).some((d) => d.severity === "error")) ||
-          m.verifyGovernance(parsed.ast, parsed.flows, strictEffectsForSigning, "production", fungiFile)
-            .diagnostics.some((d) => d.severity === "error")
-        );
-      } catch (gateErr) {
-        mintManifest = false; // cannot prove production-clean → do not sign (fail-closed)
-        console.warn(`   ⚠️  CG-4 pre-signing check failed (${gateErr.message}) — refusing to mint a manifest it cannot vouch for.`);
+    try {
+      const gate = m.runProductionSecurityGate(parsed.ast, parsed.flows, source, fungiFile);
+      const gateErrors = gate.filter((d) => d.severity === "error");
+      if (gateErrors.length > 0) {
+        mintManifest = false;
+        for (const d of gateErrors) {
+          const loc = d.line !== undefined ? ` (${fungiFile}:${d.line}:${d.column ?? 0})` : "";
+          console.error(`  ⛔ ${d.code}: ${d.message}${loc}`);
+        }
+        if (buildIsProduction) {
+          console.error(`\n❌ Build of '${name}' FAILED (fail-closed under GALERINA_PROFILE=production) — ${gateErrors.length} security/governance violation(s) above. A signed .lmanifest is an admission credential; it is not minted for a violating artifact.`);
+          process.exit(1);
+        }
       }
+    } catch (gateErr) {
+      mintManifest = false; // cannot prove clean → do not sign (fail-closed)
+      console.warn(`   ⚠️  Security gate failed (${gateErr.message}) — refusing to mint a manifest it cannot vouch for.`);
+      if (buildIsProduction) process.exit(1);
     }
     if (!mintManifest) {
-      console.warn(`  ⛔ CG-4 signing boundary: NOT minting a .lmanifest for '${name}' — the artifact fails production-strict governance. Run GALERINA_PROFILE=production galerina build to see the errors; an unminted manifest is inadmissible at fuse (FUNGI-FUSE-UNSIGNED, fail-closed).`);
+      console.warn(`  ⛔ CG-4 signing boundary: NOT minting a .lmanifest for '${name}' — the artifact fails the production security gate. Run GALERINA_PROFILE=production galerina build to see the errors; an unminted manifest is inadmissible at fuse (FUNGI-FUSE-UNSIGNED, fail-closed).`);
     }
 
     // .lmanifest generation (DRCM Phase 3 task #67 — binary CBOR RFC 8949)
