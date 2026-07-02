@@ -36,7 +36,10 @@ const dir = () => {
   return d;
 };
 const realKey = Uint8Array.from({ length: 32 }, (_, i) => i + 1);
-const fullGov = { approvedModels: ["bitnet_b1_58_2b"], maxNewTokens: 256, maxTokenCost: "GBP0.05", denyHostNativeFallback: true };
+// RD-0236 #1: opt into the unsigned capability mask so the deny-by-default capability gate doesn't fire
+// first and mask the certified-photonic behaviour under test. (Follow-on: certified should require a
+// signed capability grant and forbid this opt-in — RD-0236 TODO.)
+const fullGov = { approvedModels: ["bitnet_b1_58_2b"], maxNewTokens: 256, maxTokenCost: "GBP0.05", denyHostNativeFallback: true, allowUnsignedCapabilityGrant: true };
 const { publicKeyPem, privateKeyPem, mlDsaPublicKey, mlDsaPrivateKey } = await generateHybridAttestationKeypair();
 const attPolicy = { requireSigned: true, publicKeyPem, mlDsaPublicKey };
 async function signedTernaryRegistry() {
@@ -179,7 +182,7 @@ test("0118 coupon-revocation: a REVOKED coupon (device-level) keeps photonic OFF
 });
 
 test("control: NON-certified mode runs photonic without any attestation (existing behaviour unchanged)", async () => {
-  const eng = createHybridEngine({ auditInMemory: true, governance: { allowUnattestedBridges: true, allowUnlistedModels: true }, photonic: { router: createPhotonicRouterPort(), kernelFor: bigKernel } });
+  const eng = createHybridEngine({ auditInMemory: true, governance: { allowUnattestedBridges: true, allowUnlistedModels: true, allowUnsignedCapabilityGrant: true }, photonic: { router: createPhotonicRouterPort(), kernelFor: bigKernel } });
   const r = await eng.infer({ ...CALL, correlationId: "np" });
   assert.ok(r.bridgesUsed.some((b) => b.startsWith("photonic:")), `non-certified photonic should run; got ${JSON.stringify(r.bridgesUsed)}`);
 });

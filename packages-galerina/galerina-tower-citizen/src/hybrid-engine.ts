@@ -38,6 +38,7 @@ import { createStubRegistry } from "./bridge/stub-provider.js";
 import { assertDeterminism, type BridgeRegistry, type BridgeOp, type BridgeResult, type BridgeAttestation } from "./bridge/interface.js";
 import type { EgressSink } from "./audit-logger.js";
 import { verifyAttestation, verifyAttestationHybrid, type AttestationPolicy } from "./bridge-attestation.js";
+import { verifyCapabilityGrant, type SignedCapabilityGrant } from "./capability-grant.js";
 import { compilePolicy, POL_HAS_ALLOWLIST, POL_HAS_CALL_BUDGET, POL_HAS_TOKEN_BUDGET, POL_DENY_HOST_NATIVE, type CompiledPolicy } from "./compiled-policy.js";
 
 // The canonical layer sequence of a transformer inference pass.
@@ -125,6 +126,16 @@ export interface AiGovernance {
    * no allow-list is configured. A request that names NO model is always fine (no implicit run).
    */
   readonly allowUnlistedModels?: boolean;
+
+  /**
+   * RD-0236 #1 opt-in. By default, the engine's V_DPM capability mask is DENY-BY-DEFAULT (0 = no
+   * authority) unless a `signedCapabilityGrant` cryptographically verifies against the engine's
+   * `attestationPolicy` — the plain constructor mask is no longer trusted on its own (a caller
+   * could otherwise self-grant `0xFFFFFFFF`). Set this true to trust the unsigned constructor mask
+   * (the pre-RD-0236 behaviour) for dev/simulator use. When a valid signed grant is present it is
+   * always honoured regardless of this flag.
+   */
+  readonly allowUnsignedCapabilityGrant?: boolean;
 }
 
 export interface HybridInferenceReceipt {
@@ -321,9 +332,18 @@ export class HybridInferenceEngine {
   // RD-0236 #1: a real JS #private field — NOT `private readonly` (which TS erases at runtime,
   // leaving `engine.grantedCapabilityMask = 0xFFFF` free to FORGE authority). `#`-private cannot be
   // reassigned or read from outside the class, so the branchless capability gate below reads an
-  // untamperable value. (The deeper "bind the grant through verifyAttestation / signed capability"
-  // hardening is a follow-on that needs a signed-grant surface — tracked in the RD-0236 TODO.)
-  readonly #grantedCapabilityMask: number;
+  // untamperable value. #1 follow-on (fail-secure INVERSION): it is now DENY-BY-DEFAULT (0). Real
+  // authority is derived ONLY from a `signedCapabilityGrant` that verifies against the attestation
+  // policy (resolveCapabilityGrant, async + cached, mirroring checkBridgeAttestation) — or, via the
+  // `allowUnsignedCapabilityGrant` opt-in, from the trusted plain constructor mask. The field is
+  // mutable so the async resolution can set it ONCE; still #private, so still unforgeable.
+  #grantedCapabilityMask: number;
+  /** The signed grant (if any) whose VERIFIED mask replaces the deny-by-default 0. */
+  readonly #capabilityGrant: SignedCapabilityGrant | undefined;
+  /** The unsigned constructor mask — honoured only under the allowUnsignedCapabilityGrant opt-in. */
+  readonly #unsignedCapabilityMask: number;
+  /** Grant resolution runs once (first infer), like bridge attestation. */
+  #capabilityResolved = false;
   /** Optional photonic offload (opt-in; off by default; in certified mode only with a verified attestation). */
   private readonly photonic: PhotonicConfig | null;
   /** Sync NECESSARY preconditions for certified photonic (declared intent + attestation infra). Not sufficient. */
@@ -354,6 +374,7 @@ export class HybridInferenceEngine {
     attestationPolicy: AttestationPolicy | null = null,
     grantedCapabilityMask: number = HYBRID_METADATA.capabilityMask,
     photonic: PhotonicConfig | null = null,
+    signedCapabilityGrant?: SignedCapabilityGrant,
   ) {
     this.ctx = {
       governanceTier: ctx.governanceTier ?? 1,
@@ -381,7 +402,14 @@ export class HybridInferenceEngine {
     this.policy = compilePolicy(this.governance, certified); // pre-pay the proof once
     this.certified = certified;
     this.attestationPolicy = attestationPolicy;
-    this.#grantedCapabilityMask = grantedCapabilityMask;
+    // RD-0236 #1 (fail-secure INVERSION): DENY-BY-DEFAULT. The plain constructor mask is trusted ONLY
+    // under the explicit `allowUnsignedCapabilityGrant` opt-in; otherwise authority starts at 0 and is
+    // conferred EXCLUSIVELY by a signed grant that verifies in resolveCapabilityGrant() (async, once,
+    // before the capability gate on first infer) — so a caller can no longer self-grant via a plain mask.
+    this.#capabilityGrant = signedCapabilityGrant;
+    this.#unsignedCapabilityMask = grantedCapabilityMask >>> 0;
+    this.#grantedCapabilityMask =
+      this.governance.allowUnsignedCapabilityGrant === true ? this.#unsignedCapabilityMask : 0;
     this.photonic = photonic;
     // Certified-mode photonic admission — NECESSARY sync preconditions, computed once, fail-closed: the
     // deployment must declare intent (all three fields) AND the engine must have an attestation path
@@ -395,6 +423,28 @@ export class HybridInferenceEngine {
       ca.certificationProfile === "certified" &&
       ca.toleranceWitnessed === true &&
       attestationPolicy !== null;
+  }
+
+  /**
+   * RD-0236 #1: resolve the engine's real capability authority ONCE, before the first capability gate.
+   * Deny-by-default — authority is 0 unless (a) the deployment opted into the unsigned mask (already
+   * applied at construction), or (b) a `signedCapabilityGrant` cryptographically VERIFIES against the
+   * attestation policy for THIS engine's id, in which case the granted mask is adopted. A missing policy,
+   * a missing/forged grant, or an engineId mismatch all leave authority at 0 (fail-closed). Mirrors
+   * checkBridgeAttestation: async, cached, no side effect beyond the one-time mask set.
+   */
+  private async resolveCapabilityGrant(): Promise<void> {
+    if (this.#capabilityResolved) return;
+    this.#capabilityResolved = true;
+    // Opt-in path: the unsigned mask was already trusted at construction — nothing to verify.
+    if (this.governance.allowUnsignedCapabilityGrant === true) return;
+    // Fail-secure: without BOTH an attestation policy AND a signed grant, no authority is conferred.
+    if (this.attestationPolicy === null || this.#capabilityGrant === undefined) return; // mask stays 0
+    const res = await verifyCapabilityGrant(this.#capabilityGrant, this.attestationPolicy, HYBRID_METADATA.engineId);
+    if (res.ok) {
+      this.#grantedCapabilityMask = this.#capabilityGrant.grant.capabilityMask >>> 0;
+    }
+    // else: authority stays 0 → the capability gate traps ERR_CAPABILITY_DENIED (audited).
   }
 
   /**
@@ -605,6 +655,8 @@ export class HybridInferenceEngine {
       // CF-3/CF-7: an unattested bridge in the registry is denied before any compute.
       // The branchless capability gate is the MOST fundamental authority question —
       // does this engine even hold the ai.inference V_DPM bit? — so it runs first.
+      // RD-0236 #1: resolve real authority from the signed grant (deny-by-default) before the gate reads it.
+      await this.resolveCapabilityGrant();
       const capabilityHeld = (AI_INFERENCE_CAP & this.#grantedCapabilityMask) === AI_INFERENCE_CAP;
       const bridgeDenial = await this.checkBridgeAttestation();
       // H5: verify the certified-photonic SIGNED manifest once (fail-closed; sets photonicCertifiedVerified).
@@ -981,6 +1033,13 @@ export function createHybridEngine(profile: {
    * `@galerina/ext-photonic-emulator`'s `createPhotonicRouterPort()` here.
    */
   photonic?: PhotonicConfig;
+  /**
+   * RD-0236 #1 signed capability grant. When present it is verified against `attestation` for this
+   * engine's id and its mask becomes the engine's authority. Absent (and without
+   * `governance.allowUnsignedCapabilityGrant`), authority is DENY-BY-DEFAULT (0) — inference traps
+   * ERR_CAPABILITY_DENIED. Mint one with `signCapabilityGrant` / `signCapabilityGrantHybrid`.
+   */
+  signedCapabilityGrant?: SignedCapabilityGrant;
 } = {}): HybridInferenceEngine {
   const certified = profile.certified ?? false;
 
@@ -1039,5 +1098,6 @@ export function createHybridEngine(profile: {
     profile.attestation ?? null,
     profile.capabilityMask ?? HYBRID_METADATA.capabilityMask,
     profile.photonic ?? null,
+    profile.signedCapabilityGrant,
   );
 }

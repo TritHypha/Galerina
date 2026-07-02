@@ -176,9 +176,14 @@ pre-session).
 > **11 fixed**, each RED-benched, full suite green, across 4 packages (tower-citizen · compiler · tri-pipe · app-kernel).
 
 **Fixed (RED-benched):**
-- [x] **#1 forgeable capability mask** — `grantedCapabilityMask` is now a real JS `#private` field (was `private
+- [x] **#1 forgeable capability mask** — `grantedCapabilityMask` is a real JS `#private` field (was `private
       readonly` — erased at runtime → forgeable via `engine.grantedCapabilityMask = 0xFFFF`). `hybrid-engine.ts`.
-      *Follow-on:* bind the grant through verifyAttestation / a signed capability (needs a signed-grant surface).
+      **Follow-on ✅ DONE (fail-secure INVERSION, owner posture 2026-07-02):** authority is now DENY-BY-DEFAULT (mask
+      0); real authority comes ONLY from a `signedCapabilityGrant` that verifies against the attestation policy for the
+      engine's id (`capability-grant.ts`, Ed25519+ML-DSA-65, own domain-separation context; `resolveCapabilityGrant`
+      async+cached), or via the audited `allowUnsignedCapabilityGrant` opt-in. RED-benched (deny-by-default · signed
+      grant admits · opt-in restores · wrong-key/wrong-engineId refused). *Follow-on²:* certified mode should FORBID the
+      unsigned opt-in and REQUIRE a signed grant (currently certified tests use the opt-in like non-certified).
 - [x] **#3 `checkTransition`** — an unknown `requires` is rejected at LOAD (FUNGI-GOV-TPL-001) + denied at check
       (`defaultAction` wired, was dead). `governance-enforcer.ts`.
 - [x] **#6 execution-router** — validates the DISPATCHED `decision.target`, not the declared lane; a noisy-only grant

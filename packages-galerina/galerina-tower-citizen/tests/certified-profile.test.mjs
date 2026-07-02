@@ -47,7 +47,10 @@ const dir = () => {
   return d;
 };
 const realKey = Uint8Array.from({ length: 32 }, (_, i) => i + 1);
-const fullGov = { approvedModels: ["bitnet_b1_58_2b"], maxNewTokens: 256, maxTokenCost: "GBP0.05", denyHostNativeFallback: true };
+// RD-0236 #1: certified infer tests opt into the unsigned capability mask so the deny-by-default
+// capability gate doesn't fire first and mask the certified behaviour under test. (Follow-on: certified
+// mode should REQUIRE a signed capability grant and FORBID this opt-in — tracked in the RD-0236 TODO.)
+const fullGov = { approvedModels: ["bitnet_b1_58_2b"], maxNewTokens: 256, maxTokenCost: "GBP0.05", denyHostNativeFallback: true, allowUnsignedCapabilityGrant: true };
 
 // Certified mode now mandates signed-bridge attestation AND the post-quantum half
 // (hybrid Ed25519+ML-DSA-65 — no PQ downgrade, audit CRYPTO-001). One hybrid keypair for
@@ -97,7 +100,7 @@ test("certified profile traps a call missing the model (allow-list mandatory)", 
 
 test("certified profile traps when max_tokens is absent from governance", async () => {
   const egress = new AuditEgress({ dir: dir(), batchSize: 8, hmacKey: realKey });
-  const eng = createHybridEngine({ certified: true, auditEgress: egress, governance: { approvedModels: ["m"], maxTokenCost: "GBP0.05", denyHostNativeFallback: true }, bridges: await signedTernaryRegistry(), attestation: attPolicy });
+  const eng = createHybridEngine({ certified: true, auditEgress: egress, governance: { approvedModels: ["m"], maxTokenCost: "GBP0.05", denyHostNativeFallback: true, allowUnsignedCapabilityGrant: true }, bridges: await signedTernaryRegistry(), attestation: attPolicy });
   const r = await eng.infer({ prompt: "x", correlationId: "c2", model: "m" });
   assert.equal(r.trapFired, true);
   assert.equal(r.trapCode, "ERR_CERTIFIED_NO_TOKEN_BUDGET");
@@ -131,7 +134,7 @@ test("certified profile: the STANDARD plan correctly traps (fp8/fp16 ops have no
 });
 
 test("max_tokens budget is enforced (over-budget request traps)", async () => {
-  const eng = createHybridEngine({ governance: { maxNewTokens: 100, allowUnattestedBridges: true, allowHostNativeFallback: true } });
+  const eng = createHybridEngine({ governance: { maxNewTokens: 100, allowUnattestedBridges: true, allowHostNativeFallback: true, allowUnsignedCapabilityGrant: true } });
   const r = await eng.infer({ prompt: "x", correlationId: "c4", maxNewTokens: 500 });
   assert.equal(r.trapFired, true);
   assert.equal(r.trapCode, "ERR_AI_TOKEN_BUDGET");

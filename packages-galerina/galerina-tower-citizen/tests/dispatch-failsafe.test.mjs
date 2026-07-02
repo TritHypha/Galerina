@@ -18,7 +18,7 @@ const bigKernel = () => ({ n: 1024, lane: "photonic", tolerance: 0.05 });
 
 test("a photonic port whose route() THROWS declines to the digital floor (fail-safe, no escape)", async () => {
   const throwingPort = { route: () => { throw new Error("corrupt trit 0b11 / native-handle fault"); } };
-  const eng = createHybridEngine({ auditInMemory: true, photonic: { router: throwingPort, kernelFor: bigKernel }, governance: { allowUnattestedBridges: true, allowHostNativeFallback: true } });
+  const eng = createHybridEngine({ auditInMemory: true, photonic: { router: throwingPort, kernelFor: bigKernel }, governance: { allowUnattestedBridges: true, allowHostNativeFallback: true, allowUnsignedCapabilityGrant: true } });
   // Resolving (not rejecting) is itself the proof the throw did not escape infer().
   const r = await eng.infer({ prompt: "hi", correlationId: "fs1" });
   assert.deepEqual(r.bridgesUsed, ["stub-ternary"], "a throwing photonic port must fall through to the digital dispatch");
@@ -31,7 +31,7 @@ test("a photonic port whose kernelFor() THROWS also declines to digital (whole p
   const eng = createHybridEngine({
     auditInMemory: true,
     photonic: { router: port, kernelFor: () => { throw new Error("kernel build fault"); } },
-    governance: { allowUnattestedBridges: true, allowHostNativeFallback: true },
+    governance: { allowUnattestedBridges: true, allowHostNativeFallback: true, allowUnsignedCapabilityGrant: true },
   });
   const r = await eng.infer({ prompt: "hi", correlationId: "fs2" });
   assert.deepEqual(r.bridgesUsed, ["stub-ternary"]);
@@ -46,7 +46,7 @@ test("a binary bridge fault becomes a GOVERNED trapFired receipt, never an escap
   const eng = createHybridEngine({
     auditInMemory: true,
     bridges: new Map([["ternary", new ThrowingBridge(new AuditLogger(null))]]),
-    governance: { allowUnattestedBridges: true, allowHostNativeFallback: true },
+    governance: { allowUnattestedBridges: true, allowHostNativeFallback: true, allowUnsignedCapabilityGrant: true },
   });
   // Must RESOLVE (not reject) — the fault is governed into a receipt, not thrown.
   const r = await eng.infer({ prompt: "hi", correlationId: "bf1" });
@@ -56,7 +56,7 @@ test("a binary bridge fault becomes a GOVERNED trapFired receipt, never an escap
 });
 
 test("the engine is still usable after a governed dispatch fault (no corrupted state)", async () => {
-  const eng = createHybridEngine({ auditInMemory: true, governance: { allowUnattestedBridges: true, allowHostNativeFallback: true } });
+  const eng = createHybridEngine({ auditInMemory: true, governance: { allowUnattestedBridges: true, allowHostNativeFallback: true, allowUnsignedCapabilityGrant: true } });
   const ok = await eng.infer({ prompt: "ok", correlationId: "bf2" });
   assert.equal(ok.trapFired, false, "a clean call still succeeds (the fault path did not poison the engine)");
   await eng.shutdown();

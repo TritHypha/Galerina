@@ -141,6 +141,12 @@ export {
 } from "./bridge-attestation.js";
 export type { AttestationPolicy, AttestationResult } from "./bridge-attestation.js";
 
+// ── Capability grant (RD-0236 #1) — signed V_DPM capability authority ──
+export {
+  canonicalGrantString, capabilityGrantHash, signCapabilityGrant, signCapabilityGrantHybrid, verifyCapabilityGrant,
+} from "./capability-grant.js";
+export type { CapabilityGrant, SignedCapabilityGrant } from "./capability-grant.js";
+
 // ── Numeric policy table — ai{} compiled once into packed flags + membership Set ──
 export {
   compilePolicy,

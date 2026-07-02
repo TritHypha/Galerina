@@ -49,7 +49,7 @@ test("compilePolicy: certified preconditions resolve ONCE, in order", () => {
 
 // ── End-to-end behaviour is preserved (same trap codes as the old path) ──
 test("engine: allow-list denies an unapproved model (O(1) membership)", async () => {
-  const eng = createHybridEngine({ governance: { approvedModels: ["bitnet_b1_58_2b"], allowUnattestedBridges: true } });
+  const eng = createHybridEngine({ governance: { approvedModels: ["bitnet_b1_58_2b"], allowUnattestedBridges: true, allowUnsignedCapabilityGrant: true } });
   const ok = await eng.infer({ prompt: "x", correlationId: cid("ok"), model: "bitnet_b1_58_2b", opClasses: ["feedforward"] });
   assert.equal(ok.trapFired, false);
   const bad = await eng.infer({ prompt: "x", correlationId: cid("bad"), model: "gpt-evil", opClasses: ["feedforward"] });
@@ -59,13 +59,13 @@ test("engine: allow-list denies an unapproved model (O(1) membership)", async ()
 });
 
 test("engine: call budget + token budget still enforced from the table", async () => {
-  const budgeted = createHybridEngine({ governance: { maxModelCalls: 1, allowUnattestedBridges: true } });
+  const budgeted = createHybridEngine({ governance: { maxModelCalls: 1, allowUnattestedBridges: true, allowUnsignedCapabilityGrant: true } });
   const first = await budgeted.infer({ prompt: "x", correlationId: cid("b1"), opClasses: ["feedforward"] });
   assert.equal(first.trapFired, false);
   const second = await budgeted.infer({ prompt: "x", correlationId: cid("b2"), opClasses: ["feedforward"] });
   assert.equal(second.trapCode, "ERR_AI_CALL_BUDGET");
 
-  const tok = createHybridEngine({ governance: { maxNewTokens: 100, allowUnattestedBridges: true } });
+  const tok = createHybridEngine({ governance: { maxNewTokens: 100, allowUnattestedBridges: true, allowUnsignedCapabilityGrant: true } });
   const over = await tok.infer({ prompt: "x", correlationId: cid("tok"), maxNewTokens: 500, opClasses: ["feedforward"] });
   assert.equal(over.trapCode, "ERR_AI_TOKEN_BUDGET");
 });

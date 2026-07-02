@@ -12,7 +12,7 @@ const big = () => ({ n: 1024, lane: "photonic", tolerance: 0.05 });
 // tests exercise HARDWARE-TIER SELECTION, not attestation, and use dev stub/emulator registries with
 // no signed manifest — so they opt into the permissive behaviour for both. The fail-secure DEFAULTS
 // are RED-benched in @galerina/tower-citizen (rd0236-runtime-hardening + bridge-attestation).
-const OPTIN = { allowUnattestedBridges: true, allowHostNativeFallback: true };
+const OPTIN = { allowUnattestedBridges: true, allowHostNativeFallback: true, allowUnsignedCapabilityGrant: true };
 
 async function run(opts) {
   const tp = createTriPipeEngine({ auditInMemory: true, kernelFor: big, governance: OPTIN, ...opts });

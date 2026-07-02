@@ -17,7 +17,7 @@ const bigKernel = () => ({ n: 1024, lane: "photonic", tolerance: 0.05 });
 // permissive behaviour for just those two so the default stub registry and the host-native
 // floor do not trap before the photonic path under test runs. (Attestation/host-native denial
 // have their own dedicated RED-benches in rd0236-runtime-hardening.test.mjs + bridge-attestation.)
-const OPTIN = { allowUnattestedBridges: true, allowHostNativeFallback: true };
+const OPTIN = { allowUnattestedBridges: true, allowHostNativeFallback: true, allowUnsignedCapabilityGrant: true };
 
 test("default (no photonic config) — the digital path is unchanged (stub-ternary, no trap)", async () => {
   const eng = createHybridEngine({ auditInMemory: true, governance: OPTIN });

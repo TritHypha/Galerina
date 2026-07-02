@@ -68,7 +68,7 @@ test("hash pinning: only a pinned manifest hash passes", () => {
 test("engine DENIES an unattested bridge under an attestation policy", async () => {
   const { publicKeyPem } = generateAttestationKeypair();
   // default stub registry — bridges have a manifest but NO signature.
-  const eng = createHybridEngine({ airGapped: true, governanceTier: 1, attestation: { requireSigned: true, publicKeyPem } });
+  const eng = createHybridEngine({ airGapped: true, governanceTier: 1, attestation: { requireSigned: true, publicKeyPem }, governance: { allowUnsignedCapabilityGrant: true } });
   const r = await eng.infer({ prompt: "x", correlationId: cid("deny"), opClasses: ["feedforward"] });
   assert.equal(r.trapFired, true);
   assert.equal(r.trapCode, "ERR_BRIDGE_UNATTESTED");
@@ -81,6 +81,7 @@ test("engine PERMITS an attested (signed) bridge registry", async () => {
   const eng = createHybridEngine({
     airGapped: true, governanceTier: 1, bridges: registry,
     attestation: { requireSigned: true, publicKeyPem },
+    governance: { allowUnsignedCapabilityGrant: true },
   });
   const r = await eng.infer({ prompt: "x", correlationId: cid("ok"), opClasses: ["feedforward"] });
   assert.equal(r.trapFired, false);
@@ -92,12 +93,12 @@ test("no attestation policy: unattested bridges are DENY-BY-DEFAULT; the opt-in 
   // "all bridges attested". The default stub registry carries ≥1 bridge that cannot be
   // cryptographically verified without a policy, so it is now DENIED (ERR_BRIDGE_UNATTESTED). A
   // deployment must explicitly opt IN via allowUnattestedBridges (dev/simulator use).
-  const denied = createHybridEngine({ airGapped: true, governanceTier: 1 });
+  const denied = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnsignedCapabilityGrant: true } });
   const d = await denied.infer({ prompt: "x", correlationId: cid("deny"), opClasses: ["feedforward"] });
   assert.equal(d.trapFired, true, "an unattested registry with no policy is now denied by default");
   assert.equal(d.trapCode, "ERR_BRIDGE_UNATTESTED");
 
-  const permitted = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true } });
+  const permitted = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true, allowUnsignedCapabilityGrant: true } });
   const p = await permitted.infer({ prompt: "x", correlationId: cid("compat"), opClasses: ["feedforward"] });
   assert.equal(p.trapFired, false, "the explicit opt-in restores the permissive (pre-RD-0236) behaviour");
 });

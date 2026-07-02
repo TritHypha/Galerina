@@ -62,6 +62,7 @@ test("engine ENFORCES hybrid: a hybrid bridge is permitted when mlDsaPublicKey i
     airGapped: true, governanceTier: 1,
     bridges: new Map([[hybridBridge.technique, hybridBridge]]),
     attestation: { requireSigned: true, publicKeyPem: k.publicKeyPem, mlDsaPublicKey: k.mlDsaPublicKey },
+    governance: { allowUnsignedCapabilityGrant: true }, // RD-0236 #1: past the capability gate so the hybrid-bridge admission is the real variable
   });
   const r = await eng.infer({ prompt: "x", correlationId: cid("ok"), opClasses: ["feedforward"] });
   assert.notEqual(r.trapCode, "ERR_BRIDGE_UNATTESTED");
@@ -74,6 +75,7 @@ test("engine DENIES an Ed25519-only bridge under a hybrid-requiring policy (no P
     airGapped: true, governanceTier: 1,
     bridges: new Map([[edOnly.technique, edOnly]]),
     attestation: { requireSigned: true, publicKeyPem: k.publicKeyPem, mlDsaPublicKey: k.mlDsaPublicKey },
+    governance: { allowUnsignedCapabilityGrant: true },
   });
   const r = await eng.infer({ prompt: "x", correlationId: cid("deny"), opClasses: ["feedforward"] });
   assert.equal(r.trapCode, "ERR_BRIDGE_UNATTESTED");

@@ -13,14 +13,16 @@ const AI_INFERENCE_CAP = 0b00100000;
 const cid = (s) => `CAP-${s}-${process.pid}-${Math.random().toString(36).slice(2, 7)}`;
 
 test("an engine granted the ai.inference bit runs (default)", async () => {
-  const eng = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true } });
+  const eng = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true, allowUnsignedCapabilityGrant: true } });
   const r = await eng.infer({ prompt: "x", correlationId: cid("ok"), opClasses: ["feedforward"] });
   assert.equal(r.trapFired, false);
 });
 
 test("an engine WITHOUT the ai.inference bit fails closed (ERR_CAPABILITY_DENIED)", async () => {
-  // Grant some other capability, but not ai.inference.
-  const eng = createHybridEngine({ airGapped: true, governanceTier: 1, capabilityMask: 0b00000001 });
+  // Grant some other capability, but not ai.inference. (RD-0236 #1: opt into the unsigned mask so
+  // the engine actually HONOURS this explicit mask — otherwise deny-by-default would zero it and the
+  // test would pass vacuously on mask 0 instead of proving 0b00000001 lacks ai.inference.)
+  const eng = createHybridEngine({ airGapped: true, governanceTier: 1, capabilityMask: 0b00000001, governance: { allowUnsignedCapabilityGrant: true } });
   const r = await eng.infer({ prompt: "x", correlationId: cid("deny"), opClasses: ["feedforward"] });
   assert.equal(r.trapFired, true);
   assert.equal(r.trapCode, "ERR_CAPABILITY_DENIED");
@@ -32,6 +34,7 @@ test("the capability gate is the FIRST authority check (precedes attestation)", 
   const eng = createHybridEngine({
     airGapped: true, governanceTier: 1,
     capabilityMask: 0,
+    governance: { allowUnsignedCapabilityGrant: true }, // honour the explicit mask 0 (else deny-by-default masks the intent)
     attestation: { requireSigned: true, publicKeyPem: "not-a-real-key" },
   });
   const r = await eng.infer({ prompt: "x", correlationId: cid("first"), opClasses: ["feedforward"] });
@@ -39,7 +42,7 @@ test("the capability gate is the FIRST authority check (precedes attestation)", 
 });
 
 test("a mask carrying ai.inference among other bits still passes", async () => {
-  const eng = createHybridEngine({ airGapped: true, governanceTier: 1, capabilityMask: AI_INFERENCE_CAP | 0b1, governance: { allowUnattestedBridges: true } });
+  const eng = createHybridEngine({ airGapped: true, governanceTier: 1, capabilityMask: AI_INFERENCE_CAP | 0b1, governance: { allowUnattestedBridges: true, allowUnsignedCapabilityGrant: true } });
   const r = await eng.infer({ prompt: "x", correlationId: cid("multi"), opClasses: ["feedforward"] });
   assert.equal(r.trapFired, false);
 });

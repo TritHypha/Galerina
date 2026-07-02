@@ -13,7 +13,7 @@ import { createHybridEngine, HybridInferenceEngine } from "../dist/index.js";
 const cid = (s) => `BB-${s}-${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
 
 test("Brain→Brawn: ternary ops execute through a real bridge (not a stub string)", async () => {
-  const eng = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true, allowHostNativeFallback: true } });
+  const eng = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true, allowHostNativeFallback: true, allowUnsignedCapabilityGrant: true } });
   const r = await eng.infer({ prompt: "Summarise this document.", correlationId: cid("exec") });
 
   assert.equal(r.trapFired, false);
@@ -33,7 +33,7 @@ test("Citizen Standard 1: ternary checksum is deterministic across engine instan
 });
 
 test("ai{} governance: an unapproved model traps before compute", async () => {
-  const eng = createHybridEngine({ governance: { approvedModels: ["bitnet_b1_58_2b"], allowUnattestedBridges: true } });
+  const eng = createHybridEngine({ governance: { approvedModels: ["bitnet_b1_58_2b"], allowUnattestedBridges: true, allowUnsignedCapabilityGrant: true } });
   const r = await eng.infer({ prompt: "x", correlationId: cid("model"), model: "gpt-untrusted" });
   assert.equal(r.trapFired, true);
   assert.equal(r.trapCode, "ERR_AI_MODEL_NOT_APPROVED");
@@ -41,14 +41,14 @@ test("ai{} governance: an unapproved model traps before compute", async () => {
 });
 
 test("ai{} governance: an approved model is permitted", async () => {
-  const eng = createHybridEngine({ governance: { approvedModels: ["bitnet_b1_58_2b"], allowUnattestedBridges: true, allowHostNativeFallback: true } });
+  const eng = createHybridEngine({ governance: { approvedModels: ["bitnet_b1_58_2b"], allowUnattestedBridges: true, allowHostNativeFallback: true, allowUnsignedCapabilityGrant: true } });
   const r = await eng.infer({ prompt: "x", correlationId: cid("ok"), model: "bitnet_b1_58_2b" });
   assert.equal(r.trapFired, false);
   assert.ok(r.bridgesUsed.length > 0);
 });
 
 test("ai{} governance: max_model_calls budget traps the over-limit call", async () => {
-  const eng = createHybridEngine({ governance: { maxModelCalls: 1, allowUnattestedBridges: true, allowHostNativeFallback: true } });
+  const eng = createHybridEngine({ governance: { maxModelCalls: 1, allowUnattestedBridges: true, allowHostNativeFallback: true, allowUnsignedCapabilityGrant: true } });
   const first = await eng.infer({ prompt: "a", correlationId: cid("budget-1") });
   const second = await eng.infer({ prompt: "b", correlationId: cid("budget-2") });
   assert.equal(first.trapFired, false, "first call within budget");
@@ -59,7 +59,7 @@ test("ai{} governance: max_model_calls budget traps the over-limit call", async 
 test("the precision-decision audit trail records Brawn provenance", async () => {
   // Governance is the 4th positional constructor arg (ctx, tower, bridges, governance, ...);
   // leave tower/bridges undefined so their fail-secure defaults apply.
-  const eng = new HybridInferenceEngine({ airGapped: true, governanceTier: 1 }, undefined, undefined, { allowUnattestedBridges: true, allowHostNativeFallback: true });
+  const eng = new HybridInferenceEngine({ airGapped: true, governanceTier: 1 }, undefined, undefined, { allowUnattestedBridges: true, allowHostNativeFallback: true, allowUnsignedCapabilityGrant: true });
   const corr = cid("audit");
   await eng.infer({ prompt: "trail", correlationId: corr });
   const decisions = eng.getAudit().query({ correlationId: corr })

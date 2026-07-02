@@ -9,6 +9,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   HybridInferenceEngine, TowerRuntime, GovernanceEnforcer, TPL_DEFAULT_POLICY, createHybridEngine,
+  signCapabilityGrant, generateAttestationKeypair, attestBridge, StubTernaryBridge, AuditLogger,
 } from "../dist/index.js";
 
 // ── #1 — the capability mask is a real #private field; a runtime field-write cannot forge it ──
@@ -56,13 +57,15 @@ test("RD-0236 #2: with NO attestation policy, a registry carrying ≥1 bridge is
   // Pre-fix: attestationPolicy === null short-circuited checkBridgeAttestation to "all attested", so
   // the default stub registry (2 cryptographically-unverifiable bridges) ran with zero proof.
   // Post-fix: a null policy + ≥1 bridge traps ERR_BRIDGE_UNATTESTED unless the deployment opts in.
-  const eng = createHybridEngine({ airGapped: true, governanceTier: 1 });
+  // (allowUnsignedCapabilityGrant opts past the #1 capability gate, which now fires FIRST, so this
+  // isolates the #2 bridge-attestation gate under test.)
+  const eng = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnsignedCapabilityGrant: true } });
   const denied = await eng.infer({ prompt: "x", correlationId: "RD0236-2-deny", opClasses: ["feedforward"] });
   assert.equal(denied.trapFired, true, "an unverifiable bridge must not run without an attestation policy");
   assert.equal(denied.trapCode, "ERR_BRIDGE_UNATTESTED");
 
   // The audited opt-in (dev/simulator use) restores the permissive path — no over-blocking.
-  const optedIn = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true } });
+  const optedIn = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true, allowUnsignedCapabilityGrant: true } });
   const ok = await optedIn.infer({ prompt: "x", correlationId: "RD0236-2-optin", opClasses: ["feedforward"] });
   assert.equal(ok.trapFired, false, "the explicit allowUnattestedBridges opt-in re-admits the registry");
 });
@@ -72,12 +75,12 @@ test("RD-0236 #4: a routed precision with no bridge is DENIED by default (no sil
   // The default transformer plan routes some ops to a precision with no registered bridge. Pre-fix
   // those silently ran host-native (an uncontrolled state change) unless denyHostNativeFallback was set;
   // post-fix the deny is the DEFAULT. (allowUnattestedBridges opts past the unrelated #2 gate to isolate #4.)
-  const eng = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true } });
+  const eng = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true, allowUnsignedCapabilityGrant: true } });
   const denied = await eng.infer({ prompt: "x", correlationId: "RD0236-4-deny" });
   assert.equal(denied.trapFired, true, "a no-bridge precision must not silently run host-native");
   assert.equal(denied.trapCode, "ERR_HOST_NATIVE_DENIED");
 
-  const optedIn = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true, allowHostNativeFallback: true } });
+  const optedIn = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true, allowHostNativeFallback: true, allowUnsignedCapabilityGrant: true } });
   const ok = await optedIn.infer({ prompt: "x", correlationId: "RD0236-4-optin" });
   assert.equal(ok.trapFired, false, "the explicit allowHostNativeFallback opt-in restores the fallback");
 });
@@ -88,12 +91,61 @@ test("RD-0236 #5: a request naming a model with NO ai{} allow-list is DENIED by 
   // model and run. Post-fix: naming a model with no allow-list traps ERR_AI_MODEL_NOT_APPROVED unless the
   // deployment opts in. The two engines below differ by EXACTLY allowUnlistedModels — the flag under test.
   // (Bridges + host-native are opted in on both so the model gate, which fires first, is the only variable.)
-  const eng = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true, allowHostNativeFallback: true } });
+  const eng = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true, allowHostNativeFallback: true, allowUnsignedCapabilityGrant: true } });
   const denied = await eng.infer({ prompt: "x", correlationId: "RD0236-5-deny", model: "unlisted_model_x" });
   assert.equal(denied.trapFired, true, "an unlisted model must not be admitted by mere absence of an allow-list");
   assert.equal(denied.trapCode, "ERR_AI_MODEL_NOT_APPROVED");
 
-  const optedIn = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true, allowHostNativeFallback: true, allowUnlistedModels: true } });
+  const optedIn = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true, allowHostNativeFallback: true, allowUnlistedModels: true, allowUnsignedCapabilityGrant: true } });
   const ok = await optedIn.infer({ prompt: "x", correlationId: "RD0236-5-optin", model: "unlisted_model_x" });
   assert.equal(ok.trapFired, false, "the explicit allowUnlistedModels opt-in admits the unlisted model");
+});
+
+// ── #1 follow-on — capability authority is bound to a SIGNED grant (fail-secure INVERSION) ──
+test("RD-0236 #1 (follow-on): capability authority requires a SIGNED grant — deny-by-default", async () => {
+  // Pre-follow-on: the #private field stopped a runtime FORGE, but the plain constructor mask was still
+  // trusted — a caller could construct with any mask and self-grant authority. Post: authority is 0 unless
+  // a `signedCapabilityGrant` cryptographically verifies against the attestation policy for THIS engine's id
+  // (or the audited allowUnsignedCapabilityGrant opt-in trusts the plain mask). The capability gate runs
+  // FIRST, so the deny cases below trap ERR_CAPABILITY_DENIED regardless of bridge/host-native state.
+  const ENGINE_ID = "galerina-hybrid-uhie-v1"; // HYBRID_METADATA.engineId
+  const AI_INFERENCE_CAP = 0b00100000;
+  const { publicKeyPem, privateKeyPem } = generateAttestationKeypair();
+  const policy = { requireSigned: true, publicKeyPem };
+  const permissive = { allowUnattestedBridges: true, allowHostNativeFallback: true };
+
+  // (a) DEFAULT: no signed grant, no opt-in ⇒ authority 0 ⇒ ERR_CAPABILITY_DENIED.
+  const bare = createHybridEngine({ airGapped: true, governanceTier: 1, attestation: policy, governance: permissive });
+  const d = await bare.infer({ prompt: "x", correlationId: "RD0236-1-deny", opClasses: ["feedforward"] });
+  assert.equal(d.trapFired, true, "no signed grant + no opt-in ⇒ no authority");
+  assert.equal(d.trapCode, "ERR_CAPABILITY_DENIED");
+
+  // (b) a VALID signed grant for THIS engine ⇒ authority conferred ⇒ runs (bridges attested with the same key).
+  const signedBridge = attestBridge(new StubTernaryBridge(new AuditLogger(null)), privateKeyPem);
+  const attestedRegistry = new Map([[signedBridge.technique, signedBridge]]);
+  const grant = signCapabilityGrant({ engineId: ENGINE_ID, capabilityMask: AI_INFERENCE_CAP }, privateKeyPem);
+  const granted = createHybridEngine({
+    airGapped: true, governanceTier: 1, attestation: policy, bridges: attestedRegistry,
+    governance: { allowHostNativeFallback: true }, signedCapabilityGrant: grant,
+  });
+  const g = await granted.infer({ prompt: "x", correlationId: "RD0236-1-grant", opClasses: ["feedforward"] });
+  assert.equal(g.trapFired, false, "a valid signed grant confers ai.inference authority");
+
+  // (c) the audited opt-in restores the pre-#1 unsigned-mask behaviour.
+  const optedIn = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { ...permissive, allowUnsignedCapabilityGrant: true } });
+  const o = await optedIn.infer({ prompt: "x", correlationId: "RD0236-1-optin", opClasses: ["feedforward"] });
+  assert.equal(o.trapFired, false, "the explicit allowUnsignedCapabilityGrant opt-in trusts the plain mask");
+
+  // (d) a FORGED grant (signed by the WRONG key) confers no authority ⇒ still denied.
+  const other = generateAttestationKeypair();
+  const forged = signCapabilityGrant({ engineId: ENGINE_ID, capabilityMask: AI_INFERENCE_CAP }, other.privateKeyPem);
+  const forgedEng = createHybridEngine({ airGapped: true, governanceTier: 1, attestation: policy, governance: permissive, signedCapabilityGrant: forged });
+  const f = await forgedEng.infer({ prompt: "x", correlationId: "RD0236-1-forged", opClasses: ["feedforward"] });
+  assert.equal(f.trapCode, "ERR_CAPABILITY_DENIED", "a grant signed by the wrong key confers no authority");
+
+  // (e) a grant minted for a DIFFERENT engineId is refused (no cross-engine replay).
+  const wrongId = signCapabilityGrant({ engineId: "some-other-engine", capabilityMask: AI_INFERENCE_CAP }, privateKeyPem);
+  const wrongIdEng = createHybridEngine({ airGapped: true, governanceTier: 1, attestation: policy, governance: permissive, signedCapabilityGrant: wrongId });
+  const w = await wrongIdEng.infer({ prompt: "x", correlationId: "RD0236-1-wrongid", opClasses: ["feedforward"] });
+  assert.equal(w.trapCode, "ERR_CAPABILITY_DENIED", "a grant minted for another engineId is refused");
 });

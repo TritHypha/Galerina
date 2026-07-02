@@ -17,7 +17,7 @@ const cid = (s) => `CPP-${s}-${process.pid}-${Math.random().toString(36).slice(2
 // exercise BRIDGE ROUTING, not attestation, so they opt into the permissive behaviour for both
 // (a dev/simulator registry carries no signed manifest). The fail-secure DEFAULTS have their own
 // RED-benches in @galerina/tower-citizen's rd0236-runtime-hardening + bridge-attestation suites.
-const OPTIN = { allowUnattestedBridges: true, allowHostNativeFallback: true };
+const OPTIN = { allowUnattestedBridges: true, allowHostNativeFallback: true, allowUnsignedCapabilityGrant: true };
 
 test("createCppBridgeRegistry exposes the ternary bridge to the engine", () => {
   const reg = createCppBridgeRegistry();

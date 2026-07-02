@@ -13,7 +13,7 @@ function caught(fn) { try { fn(); return null; } catch (e) { return e; } }
 
 test("approvedModels: omitting model is DENIED, not an implicit pass", async () => {
   // #2 opt-in only: the model-required gate fires before host-native dispatch, so no #4 opt-in needed.
-  const eng = createHybridEngine({ governance: { approvedModels: ["bitnet_b1_58_2b"], allowUnattestedBridges: true } });
+  const eng = createHybridEngine({ governance: { approvedModels: ["bitnet_b1_58_2b"], allowUnattestedBridges: true, allowUnsignedCapabilityGrant: true } });
   const r = await eng.infer({ prompt: "x", correlationId: cid("nomodel") }); // no model
   assert.equal(r.trapFired, true);
   assert.equal(r.trapCode, "ERR_AI_MODEL_REQUIRED");
@@ -22,7 +22,7 @@ test("approvedModels: omitting model is DENIED, not an implicit pass", async () 
 
 test("approvedModels: a listed model still passes", async () => {
   // Default plan reaches host-native dispatch after AI-gov passes, so opt into both #2 and #4.
-  const eng = createHybridEngine({ governance: { approvedModels: ["bitnet_b1_58_2b"], allowUnattestedBridges: true, allowHostNativeFallback: true } });
+  const eng = createHybridEngine({ governance: { approvedModels: ["bitnet_b1_58_2b"], allowUnattestedBridges: true, allowHostNativeFallback: true, allowUnsignedCapabilityGrant: true } });
   const r = await eng.infer({ prompt: "x", correlationId: cid("ok"), model: "bitnet_b1_58_2b" });
   assert.equal(r.trapFired, false);
 });
@@ -32,7 +32,7 @@ test("aerospace mode: a precision with no bridge traps ERR_HOST_NATIVE_DENIED (n
   // routes normalization/output_head to fp8/fp16 → those would silently run host-native.
   // Opt into #2 (unattested bridges) so the attestation gate doesn't trap first; the host-native
   // denial under test is FORCED by denyHostNativeFallback (certified-strictness), not the #4 default.
-  const eng = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { denyHostNativeFallback: true, allowUnattestedBridges: true } });
+  const eng = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { denyHostNativeFallback: true, allowUnattestedBridges: true, allowUnsignedCapabilityGrant: true } });
   const r = await eng.infer({ prompt: "x", correlationId: cid("aero") });
   assert.equal(r.trapFired, true);
   assert.equal(r.trapCode, "ERR_HOST_NATIVE_DENIED");
@@ -43,12 +43,12 @@ test("host-native fallback is DENY-BY-DEFAULT; the explicit opt-in restores it (
   // the default. A routed precision with no bridge now traps ERR_HOST_NATIVE_DENIED; a deployment must
   // explicitly opt IN via allowHostNativeFallback. (allowUnattestedBridges opts past the unrelated #2
   // attestation gate so this test isolates the #4 behaviour.)
-  const denied = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true } });
+  const denied = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true, allowUnsignedCapabilityGrant: true } });
   const d = await denied.infer({ prompt: "x", correlationId: cid("deny") });
   assert.equal(d.trapFired, true, "the silent host-native fallback is now denied by default");
   assert.equal(d.trapCode, "ERR_HOST_NATIVE_DENIED");
 
-  const permitted = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true, allowHostNativeFallback: true } });
+  const permitted = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true, allowHostNativeFallback: true, allowUnsignedCapabilityGrant: true } });
   const p = await permitted.infer({ prompt: "x", correlationId: cid("perm") });
   assert.equal(p.trapFired, false, "the explicit opt-in restores the host-native path");
 });
@@ -65,7 +65,7 @@ test("stub bridge TRAPS the illegal 0b11 trit encoding (no corruption masking)",
 });
 
 test("engine.shutdown() releases bridges once (not per-infer)", async () => {
-  const eng = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true, allowHostNativeFallback: true } });
+  const eng = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true, allowHostNativeFallback: true, allowUnsignedCapabilityGrant: true } });
   await eng.infer({ prompt: "x", correlationId: cid("s1") });
   await eng.shutdown(); // should not throw; idempotent enough to re-run
   const r = await eng.infer({ prompt: "y", correlationId: cid("s2") }); // re-initializes bridges
