@@ -12,7 +12,7 @@
  * so it can be signed into a TestWitness and diffed in a PR.
  */
 
-import type { EffectDiagnostic } from "./effect-checker.js";
+import { type EffectDiagnostic, CANONICAL_EFFECTS, DENY_ONLY_EFFECTS } from "./effect-checker.js";
 import type { ContractTestSuite } from "./test-generator.js";
 import { sha256Hex } from "./manifest-generator.js";
 
@@ -87,13 +87,21 @@ const CATEGORY_FIX_KIND: Readonly<Record<LeakCategory, LeakFix["kind"]>> = {
 };
 
 /** The canonical effect/capability vocabulary — used to extract the leaked capability from a message.
- *  VD-2 (RD-0234): this hand-list drifted from CANONICAL_EFFECTS (effect-checker.ts) — `telemetry`
- *  (bit 14) and the DENY-ONLY `eval` namespace were missing, so a telemetry/eval leak baked
- *  capability:"unknown" into the SIGNED TestWitness. Kept a superset (extra prose prefixes like
- *  file/http are harmless for message extraction); the missing canonical namespaces are added below.
- *  scripts/audit-sink-canonicality.mjs now guards this list against future drift. */
-const CAPABILITY_RE =
-  /\b((?:network|database|filesystem|storage|file|secret|audit|crypto|http|https|pii|phi|email|payment|process|worker|event|desktop|unsafe|native|ledger|shell|state|message|random|clock|cache|ai|compute|telemetry|eval)\.[a-z][a-z.]*)\b/;
+ *  VD-2 (RD-0234) SINGLE-SOURCE: the namespace alternation is now DERIVED from CANONICAL_EFFECTS (+ the
+ *  DENY-ONLY `eval` namespace) in effect-checker.ts, so a namespace can no longer DRIFT out of this regex
+ *  — adding a canonical effect automatically extends capability extraction. Previously a hand-list that
+ *  had silently dropped `telemetry`/`eval`, baking capability:"unknown" into the SIGNED TestWitness.
+ *  PROSE_EXTRAS are non-canonical prefixes that only ever appear in diagnostic message PROSE
+ *  (file/filesystem/http/https/unsafe) — a harmless superset for message extraction, listed explicitly. */
+const nsOf = (effect: string): string => {
+  const dot = effect.indexOf(".");
+  return dot < 0 ? effect : effect.slice(0, dot);
+};
+const PROSE_EXTRAS = ["file", "filesystem", "http", "https", "unsafe"];
+const CAPABILITY_NAMESPACES = [
+  ...new Set([...CANONICAL_EFFECTS, ...DENY_ONLY_EFFECTS].map(nsOf).concat(PROSE_EXTRAS)),
+].sort((a, b) => b.length - a.length || (a < b ? -1 : 1)); // longest-first: a prefix never shadows a longer namespace
+const CAPABILITY_RE = new RegExp(`\\b((?:${CAPABILITY_NAMESPACES.join("|")})\\.[a-z][a-z.]*)\\b`);
 
 function categoryFor(code: string): LeakCategory | null {
   for (const [prefix, cat] of PREFIX_CATEGORY) if (code.startsWith(prefix)) return cat;

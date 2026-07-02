@@ -295,7 +295,7 @@ export interface EffectCheckResult {
  */
 export type EffectCheckerMode = "development" | "production";
 
-const CANONICAL_EFFECTS = new Set([
+export const CANONICAL_EFFECTS = new Set([
   "database.read", "database.write",
   // cache.* is already wired in EFFECT_REGISTRY (cache.get/set/delete → cache.read/write)
   // but was missing here — a production compile would reject a declared cache effect that
@@ -360,7 +360,7 @@ const CANONICAL_EFFECTS = new Set([
 // bit, no host import, no admission path may ever carry it. Keeping the name in
 // the vocabulary (vs UNKNOWN) gives authors the real reason instead of a typo hint,
 // and reconciles Stage-B knownEffects (C9) without making the effect grantable.
-const DENY_ONLY_EFFECTS: ReadonlySet<string> = new Set([
+export const DENY_ONLY_EFFECTS: ReadonlySet<string> = new Set([
   "eval.execute",
 ]);
 

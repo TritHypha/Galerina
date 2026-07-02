@@ -93,8 +93,11 @@ SIGN its self-descriptor (#10); `.gate` front-end compiler (§5a–5d, own sessi
       count now 0 (was 1).
 
 **Residual (NOW item):**
-- [ ] **VD-2 (full single-source)** — derive CAPABILITY_RE + the sink registries from ONE canonical source
-      (export CANONICAL_EFFECTS); `scripts/audit-sink-canonicality.mjs` now guards drift in the interim.
+- [~] **VD-2 (full single-source)** — `CAPABILITY_RE` ✅ DONE: `effect-checker.ts` now EXPORTS `CANONICAL_EFFECTS` +
+      `DENY_ONLY_EFFECTS`, and `leak-proof.ts` DERIVES the namespace alternation from them (+ an explicit `PROSE_EXTRAS`
+      list) — a canonical namespace can no longer drift out of the regex. Behaviour-preserving (derived set == the old
+      31-entry hand-list, verified). **Remaining:** derive the SINK registries (`taint-checker.ts` / `value-state-checker.ts`)
+      from the same canonical source; `scripts/audit-sink-canonicality.mjs` guards sink drift in the interim.
       *In-flight (uncommitted):* `type-registry.ts` now single-sources the type-QUALIFIER vocab as `TYPE_QUALIFIERS`
       (`protected|redacted|unsafe|safe|secret`) and derives the strip-regex from it — first step of the SoT pattern.
 - [ ] **`.gate` front-end compiler** (PROMPT §5a-5d) — build gate GREEN (D5 re-scoped), backstop wired →
