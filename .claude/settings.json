@@ -29,6 +29,11 @@
             "type": "command",
             "command": "node packages-galerina/galerina-devtools-pci/dist/cli.js audit examples/auth-service >/dev/null 2>&1; c=$?; if [ \"$c\" = \"0\" ]; then echo \"{\\\"systemMessage\\\":\\\"PCI/DSS auth-service: PASS\\\",\\\"suppressOutput\\\":true}\"; else echo \"{\\\"systemMessage\\\":\\\"PCI/DSS auth-service: findings - run galerina-pci audit for detail\\\",\\\"suppressOutput\\\":true}\"; fi; exit 0",
             "description": "PCI/DSS compliance heartbeat (RD-0168 context): galerina-pci audit over examples/auth-service. Informational, always exits 0 — surfaces PASS/findings via systemMessage. CLI is non-recursive (audits a dir with .fungi files directly); broaden the target as the surface grows."
+          },
+          {
+            "type": "command",
+            "command": "f=packages-galerina/galerina-devtools-keepgreen/src/cli.mjs; [ -f \"$f\" ] || f=../Galerina-R-AND-D/build-staging/galerina-devtools-keepgreen/src/cli.mjs; node \"$f\" --hook; exit 0",
+            "description": "Keep-green heartbeat (RD-0232/0232c): re-runs proofs + gate-check self-test + .gate corpus + zero-trust vocabulary drift guards (effect + sensitivity vocab machine-extracted from effect-checker.ts / type-registry.ts, fail-closed; W7 = the ZT-1 sens-drift check). Informational, --hook mode always exits 0 — surfaces 'N pass / N red / N skip' via systemMessage. Prefers the absorbed packages-galerina location, falls back to build-staging while unabsorbed. NOTE: plain node path on purpose — never invoke via the scoped package name (an at-sign-prefixed token is a PowerShell splatting hazard). Full detail: run the same path without --hook, or --json/--strict for CI."
           }
         ]
       }
@@ -39,10 +44,12 @@
     "GALERINA_DEVTOOLS_CONTEXT_CLI": "packages-galerina/galerina-devtools-context/dist/cli.js",
     "GALERINA_DEVTOOLS_INTELLIGENCE_CLI": "packages-galerina/galerina-devtools-intelligence/dist/cli.js",
     "GALERINA_DEVTOOLS_PROVENANCE_CLI": "packages-galerina/galerina-devtools-provenance/dist/cli.js",
-    "GALERINA_DEVTOOLS_SECURITY_CLI": "packages-galerina/galerina-devtools-security/dist/cli.js"
+    "GALERINA_DEVTOOLS_SECURITY_CLI": "packages-galerina/galerina-devtools-security/dist/cli.js",
+    "GALERINA_DEVTOOLS_KEEPGREEN_CLI": "packages-galerina/galerina-devtools-keepgreen/src/cli.mjs"
   },
   "notes": {
     "devtools-standard-commands": {
+      "keepgreen": "node packages-galerina/galerina-devtools-keepgreen/src/cli.mjs [--json|--strict|--hook]   (RE-RUN EVERYTHING, TRUST NOTHING: proofs incl. KB copies + gate-check self-test + .gate corpus + vocab drift guards K1/K2/W7; sibling-defaults find ../ZT-Galerina-GRAPH-ASCII-v2 + ../ZTF-Knowledge-Bases; while unabsorbed use ../Galerina-R-AND-D/build-staging/galerina-devtools-keepgreen/src/cli.mjs; NEVER invoke via the scoped name — at-sign token = PowerShell splatting hazard)",
       "naming-check": "node packages-galerina/galerina-devtools-naming/dist/cli.js check <file.fungi>",
       "context-receipt": "node packages-galerina/galerina-devtools-context/dist/cli.js receipt <file.fungi> [--markdown]",
       "intelligence": "node packages-galerina/galerina-devtools-intelligence/dist/cli.js search \"<query>\" [--effects <effect>]",
@@ -80,6 +87,9 @@
       "galerina-devtools-context      — Context Receipt generator: 51-97% token reduction for AI code windows",
       "galerina-devtools-intelligence — BM25 hybrid code search: indexes .fungi files, queries by semantic tokens + structural filters",
       "galerina-devtools-provenance   — Data lineage tracker: maps source→transform→sink with trust boundary visualization"
+    ],
+    "devtools-added-2026-07-02": [
+      "galerina-devtools-keepgreen    — Keep-green runner (STAGED at ../Galerina-R-AND-D/build-staging/galerina-devtools-keepgreen, drop-in per its handoff/README.handover.md): one command re-runs proofs, gate-check self-test, .gate example corpus, and the zero-trust vocabulary drift guards; effect + sensitivity vocab machine-extracted from their single prod sources (fail-closed, never hand-copied); SKIP visible never silent; --strict = full-coverage CI; --hook = Stop-heartbeat mode (always exit 0). Provenance: RD-0232/0232b/0232c."
     ],
     "devtools-added-2026-06-05": [
       "galerina-devtools-package-graph — Per-package boundary governance: internal edges, external-dependency surface, orphan detection. Writes .graph/BOUNDARY.md inside each scanned package. `--check` = Hardened Border CI gate (fails on new external deps). Run: package-graph --scope <pkg>",
