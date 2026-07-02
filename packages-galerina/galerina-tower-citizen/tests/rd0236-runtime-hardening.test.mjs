@@ -10,6 +10,7 @@ import assert from "node:assert/strict";
 import {
   HybridInferenceEngine, TowerRuntime, GovernanceEnforcer, TPL_DEFAULT_POLICY, createHybridEngine,
   signCapabilityGrant, generateAttestationKeypair, attestBridge, StubTernaryBridge, AuditLogger,
+  signPluginManifest, artifactBytesHash,
 } from "../dist/index.js";
 
 // ── #1 — the capability mask is a real #private field; a runtime field-write cannot forge it ──
@@ -42,14 +43,45 @@ test("RD-0236 #3: a transition policy naming an UNKNOWN requirement is rejected 
   assert.doesNotThrow(() => new GovernanceEnforcer(TPL_DEFAULT_POLICY));
 });
 
-// ── #10 — load refuses metadata with an unverifiable artifact identity ──
+// ── #10 — the well-formed floor still stands under the opt-in (a malformed hash is refused) ──
 test("RD-0236 #10: TowerRuntime.load refuses metadata with an unverifiable artifactHash", async () => {
-  const rt = new TowerRuntime({ auditInMemory: true });
+  // allowUnsignedLoad selects the floor-only path (the first #10 fix); the follow-on's stricter default
+  // is exercised below. A malformed hash is refused even under the floor; a well-formed one loads.
+  const rt = new TowerRuntime({ auditInMemory: true, allowUnsignedLoad: true });
   const bad = { engineId: "e", artifactPath: "p", artifactHash: "not-a-hash", governanceTier: 1, license: "Apache-2.0", maxMemoryMB: 1, capabilityMask: 0 };
   await assert.rejects(() => rt.load(bad), /FUNGI-ASSIMILATE-003/, "unverifiable artifactHash must be refused (fail-closed)");
-  // A well-formed sha256: identity loads normally (no over-rejection).
   const ok = await rt.load({ ...bad, artifactHash: "sha256:abc123" });
-  assert.ok(ok.sandbox, "valid metadata loads");
+  assert.ok(ok.sandbox, "a well-formed identity loads under the floor opt-in");
+});
+
+// ── #10 follow-on — load is DENY-BY-DEFAULT: requires a verified signed manifest + honours hash-vs-bytes ──
+test("RD-0236 #10 (follow-on): load requires a SIGNED plugin manifest (deny-by-default) + hash-vs-bytes", async () => {
+  const { publicKeyPem, privateKeyPem } = generateAttestationKeypair();
+  const meta = { engineId: "plugin-x", artifactPath: "p", artifactHash: "sha256:abc123", governanceTier: 1, license: "Apache-2.0", maxMemoryMB: 1, capabilityMask: 0 };
+
+  // (a) DEFAULT (no opt-out, no policy) ⇒ a load with no verifiable signed manifest is REFUSED.
+  const bare = new TowerRuntime({ auditInMemory: true });
+  await assert.rejects(() => bare.load(meta), /FUNGI-ASSIMILATE-003/, "no signed manifest ⇒ refused by default");
+
+  // (b) with a policy but NO signed manifest ⇒ still refused (absence is not admission).
+  const strict = new TowerRuntime({ auditInMemory: true, attestationPolicy: { requireSigned: true, publicKeyPem } });
+  await assert.rejects(() => strict.load(meta), /FUNGI-ASSIMILATE-003/, "policy set but no manifest ⇒ refused");
+
+  // (c) a VALID signed manifest bound to THIS metadata ⇒ loads.
+  const signed = signPluginManifest(meta, privateKeyPem);
+  const ok = await strict.load(meta, undefined, { signedManifest: signed });
+  assert.ok(ok.sandbox, "a valid signed manifest admits the plugin");
+
+  // (d) a manifest signed for a DIFFERENT plugin ⇒ refused (no cross-plugin replay).
+  const wrongManifest = signPluginManifest({ ...meta, engineId: "plugin-y", artifactHash: "sha256:def456" }, privateKeyPem);
+  await assert.rejects(() => strict.load(meta, undefined, { signedManifest: wrongManifest }), /FUNGI-ASSIMILATE-003/, "a manifest for another plugin must not admit this one");
+
+  // (e) hash-vs-bytes: supplied bytes whose sha256 ≠ artifactHash ⇒ refused, even under the floor opt-in.
+  const floor = new TowerRuntime({ auditInMemory: true, allowUnsignedLoad: true });
+  await assert.rejects(() => floor.load(meta, undefined, { artifactBytes: new Uint8Array([1, 2, 3]) }), /FUNGI-ASSIMILATE-004/, "tampered bytes (hash mismatch) must be refused");
+  const realBytes = new Uint8Array([9, 9, 9]);
+  const okBytes = await floor.load({ ...meta, artifactHash: artifactBytesHash(realBytes) }, undefined, { artifactBytes: realBytes });
+  assert.ok(okBytes.sandbox, "bytes matching the declared hash load");
 });
 
 // ── #2 — a null attestation policy no longer trusts unattested bridges (fail-secure INVERSION) ──

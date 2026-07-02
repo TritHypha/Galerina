@@ -4,14 +4,16 @@ Living task list. Authoritative forward view: `../ZTF-Knowledge-Bases/galerina-r
 % audit: `../ZTF-Knowledge-Bases/galerina-percent-audit-roadmap-2026-07-02.md` (**~90% shippable / ~64% full-vision**).
 Consistency rules + gates: `docs/CONSISTENCY_GATES.md`.
 
-**State (2026-07-02):** RD-0236 **#2/#4/#5 fail-secure inversion COMPLETE + gated GREEN** (60/60 packages · 5,954
-tests · 0 fail · phase-close ALL green · `governance:diff` NEUTRAL) and committed on top of `a927e4b` this session.
-`main` **NOT pushed (owner HOLD)**. This turn's commit bundles: (1) `hybrid-engine.ts` (the three inversions + opt-in
-flags); (2) the inverted tower-citizen tests + 3 RED-benches; (3) downstream consumer fixes (`ext-bridge-cpp` tests,
-`tri-pipe` src `governance` passthrough + tests); (4) `galerina-core-compiler/src/type-registry.ts` = VD-2 qualifier
-**single-source** refactor (`TYPE_QUALIFIERS`, behaviour-preserving); (5) `docs/TODO.md` + `scripts/memory-graph.mjs`.
-Generated `build/*` indexes + benchmark/`.lindex` artifacts were left uncommitted (regenerate-on-demand; already dirty
-pre-session).
+**State (2026-07-02):** RD-0236 **runtime hardening COMPLETE + gated GREEN** — all 11 findings + the #1/#10 signed-surface
+follow-ons landed (60/60 packages · 5,956 tests · 0 fail · phase-close ALL green · `governance:diff` NEUTRAL). `main` **NOT
+pushed (owner HOLD)**. This session's commits on top of `a927e4b`: `69c59d3` (#2/#4/#5 fail-secure inversion + downstream
++ VD-2 type-registry) · `f107301`+`0b29cc6` (test scratch-dir LEAK CLASS resolved + `audit-scratchdir-hygiene` detector
+gate) · `559e6e6` (#1 — capability authority bound to a SIGNED grant, `capability-grant.ts`) · `<this>` (#10 — `load()`
+requires a SIGNED plugin manifest + hash-vs-bytes, `plugin-manifest.ts`; engine + `ext-bridge-bitnet` self-loads exempt
+via `allowUnsignedLoad`). Three signed surfaces now share ONE pattern (Ed25519+ML-DSA-65, per-surface FIPS-204 domain
+separation): bridge-attestation · capability-grant · plugin-manifest. Generated `build/*` + benchmark/`.lindex` artifacts
+left uncommitted (regenerate-on-demand). **Open follow-ons:** certified mode should FORBID the unsigned opt-ins (#1) and
+SIGN its self-descriptor (#10); `.gate` front-end compiler (§5a–5d, own session).
 
 ## ✅ Done — 2026-07-01/02 (local, unpushed)
 - [x] governance:diff fixture noise — gitignored `build/*.fungi` no longer phantom "added" — `941ec41`
@@ -194,7 +196,14 @@ pre-session).
 - [x] **#9 `canAccess`** — enumerate-safe/default-deny (owner granted; unknown/foreign/empty denied); the
       fail-open-asserting test was deleted. `compiler/runtime/governedMemory.ts`.
 - [x] **#10 `tower-runtime.load`** — refuses metadata with an unverifiable artifactHash/engineId (FUNGI-ASSIMILATE-003).
-      *Follow-on:* full signed-manifest + hash-vs-bytes verification needs the manifest plumbed into `load()`.
+      **Follow-on ✅ DONE (fail-secure INVERSION, owner posture 2026-07-02):** `load()` now (a) ALWAYS verifies
+      hash-vs-bytes when artifact bytes are supplied (`FUNGI-ASSIMILATE-004`), and (b) is DENY-BY-DEFAULT for the
+      signed-manifest check — a plugin must present a `signedManifest` (new `plugin-manifest.ts`: Ed25519+ML-DSA-65,
+      own domain-separation context) that verifies against the tower's `attestationPolicy` AND binds to the metadata's
+      engineId+artifactHash (no cross-plugin replay), unless the `allowUnsignedLoad` opt-in selects the floor. The
+      engine + `ext-bridge-bitnet` self-load their OWN hardcoded descriptor, so their internal towers opt into the
+      floor (self-load is bootstrap, not external-plugin admission). RED-benched. *Follow-on²:* the engine/bridge
+      self-descriptors could be SIGNED to drop the self-load exemption entirely.
 - [x] **#11 `requireCertifiedProfile`** — forces `requireSigned` when certified (mirrors bridge-attestation). `compiler/wasm-runtime.ts`.
 
 **#2/#4/#5 — owner DECIDED: INVERT the default to fail-secure (2026-07-02). ✅ DONE this session (UNCOMMITTED; NO push — HOLD): source + inverted tests + RED-benches + downstream fixes; full suite 60/60 (5,954 tests) + phase-close ALL green, `governance:diff` NEUTRAL.**

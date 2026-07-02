@@ -385,7 +385,10 @@ export class HybridInferenceEngine {
       // tolerant non-sensitive op to the low-bit lane. Absent ⇒ tight/default (no relaxation).
       ...(ctx.tolerance !== undefined ? { tolerance: ctx.tolerance } : {}),
     };
-    this.tower = tower ?? new TowerRuntime({ assimilationMemoryBudgetMB: 512, auditDepth: "full" });
+    // RD-0236 #10: the engine self-loads its OWN hardcoded HYBRID_METADATA descriptor on every infer — an
+    // internal bootstrap, NOT an external-plugin admission — so its default tower opts into the well-formed
+    // floor (allowUnsignedLoad). External plugin loads go through a tower configured WITHOUT this opt-out.
+    this.tower = tower ?? new TowerRuntime({ assimilationMemoryBudgetMB: 512, auditDepth: "full", allowUnsignedLoad: true });
     // The Brain→Brawn seam: default to the in-package stub registry (the real
     // TPLSimulator for ternary), which runs on ANY machine. A deployment with
     // native silicon passes a registry built from galerina-ext-bridge-* instead.
@@ -1076,6 +1079,8 @@ export function createHybridEngine(profile: {
         auditBatchSize: profile.auditBatchSize ?? 0,
         ...(profile.auditEgress ? { auditEgress: profile.auditEgress } : {}),
         ...(profile.auditTickSource ? { auditTickSource: profile.auditTickSource } : {}),
+        // RD-0236 #10: the engine only ever self-loads its own hardcoded descriptor — opt into the floor.
+        allowUnsignedLoad: true,
       })
     : undefined;
 

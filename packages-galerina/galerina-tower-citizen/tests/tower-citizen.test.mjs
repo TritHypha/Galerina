@@ -124,7 +124,7 @@ describe("PluginSandbox: lifecycle and validation", () => {
 
 describe("TowerRuntime: Load→Execute→Erase lifecycle", () => {
   it("loads a plugin within budget", async () => {
-    const tower = new TowerRuntime({ assimilationMemoryBudgetMB: 256 });
+    const tower = new TowerRuntime({ assimilationMemoryBudgetMB: 256, allowUnsignedLoad: true });
     const { sandbox, correlationId, loadEvent } = await tower.load(TEST_METADATA);
     assert.ok(correlationId.startsWith("CORR-"));
     assert.equal(loadEvent.phase, "LOAD");
@@ -134,7 +134,7 @@ describe("TowerRuntime: Load→Execute→Erase lifecycle", () => {
   });
 
   it("rejects plugin exceeding assimilation_memory_budget", async () => {
-    const tower = new TowerRuntime({ assimilationMemoryBudgetMB: 32 });
+    const tower = new TowerRuntime({ assimilationMemoryBudgetMB: 32, allowUnsignedLoad: true });
     await assert.rejects(
       () => tower.load(TEST_METADATA),
       /FUNGI-ASSIMILATE-002/
@@ -142,7 +142,7 @@ describe("TowerRuntime: Load→Execute→Erase lifecycle", () => {
   });
 
   it("execute() runs successfully on valid input", async () => {
-    const tower = new TowerRuntime({ assimilationMemoryBudgetMB: 256 });
+    const tower = new TowerRuntime({ assimilationMemoryBudgetMB: 256, allowUnsignedLoad: true });
     const { sandbox, correlationId } = await tower.load(TEST_METADATA);
     const result = await tower.execute(sandbox, { prompt: "test" }, correlationId);
     assert.equal(result.success, true);
@@ -152,7 +152,7 @@ describe("TowerRuntime: Load→Execute→Erase lifecycle", () => {
   });
 
   it("execute() traps on null input", async () => {
-    const tower = new TowerRuntime({ assimilationMemoryBudgetMB: 256 });
+    const tower = new TowerRuntime({ assimilationMemoryBudgetMB: 256, allowUnsignedLoad: true });
     const { sandbox, correlationId } = await tower.load(TEST_METADATA);
     const result = await tower.execute(sandbox, null, correlationId);
     assert.equal(result.success, false);
@@ -161,7 +161,7 @@ describe("TowerRuntime: Load→Execute→Erase lifecycle", () => {
   });
 
   it("execute() throws on erased sandbox", async () => {
-    const tower = new TowerRuntime({ assimilationMemoryBudgetMB: 256 });
+    const tower = new TowerRuntime({ assimilationMemoryBudgetMB: 256, allowUnsignedLoad: true });
     const { sandbox, correlationId } = await tower.load(TEST_METADATA);
     await tower.erase(sandbox, correlationId);
     await assert.rejects(
@@ -171,7 +171,7 @@ describe("TowerRuntime: Load→Execute→Erase lifecycle", () => {
   });
 
   it("evict() removes sandbox and emits ERASE audit event", async () => {
-    const tower = new TowerRuntime({ assimilationMemoryBudgetMB: 256 });
+    const tower = new TowerRuntime({ assimilationMemoryBudgetMB: 256, allowUnsignedLoad: true });
     const { correlationId } = await tower.load(TEST_METADATA);
     assert.equal(tower.getActiveSandboxCount(), 1);
     const evicted = tower.evict(correlationId);
@@ -180,7 +180,7 @@ describe("TowerRuntime: Load→Execute→Erase lifecycle", () => {
   });
 
   it("getLifecycle() returns complete lifecycle after Load→Execute→Erase", async () => {
-    const tower = new TowerRuntime({ assimilationMemoryBudgetMB: 256 });
+    const tower = new TowerRuntime({ assimilationMemoryBudgetMB: 256, allowUnsignedLoad: true });
     const { sandbox, correlationId } = await tower.load(TEST_METADATA);
     const result = await tower.execute(sandbox, { prompt: "lifecycle test" }, correlationId);
     await tower.erase(sandbox, correlationId, result);

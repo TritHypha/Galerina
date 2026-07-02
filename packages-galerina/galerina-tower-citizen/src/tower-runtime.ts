@@ -12,6 +12,8 @@
 
 import { AuditLogger, TowerAuditEvent, type AuditLoggerOptions, type EgressSink } from "./audit-logger.js";
 import { PluginSandbox, ExecutionResult, PluginMetadata } from "./plugin-sandbox.js";
+import { verifyPluginManifest, artifactBytesHash, type SignedPluginManifest } from "./plugin-manifest.js";
+import type { AttestationPolicy } from "./bridge-attestation.js";
 
 export type { TowerAuditEvent } from "./audit-logger.js";
 export type { PluginMetadata, ExecutionResult } from "./plugin-sandbox.js";
@@ -29,6 +31,20 @@ export interface TowerConfig {
   readonly auditTickSource?: () => number;
   /** Governed egress sink (Sentinel-Egress) — all ledger writes pass through it. */
   readonly auditEgress?: EgressSink;
+  /**
+   * RD-0236 #10: attestation policy used to verify a SIGNED plugin manifest at load(). When load() is
+   * not opted out (see allowUnsignedLoad), a plugin MUST present a signedManifest that verifies against
+   * this key (binding to the metadata's engineId + artifactHash) or it is refused before sandboxing.
+   */
+  readonly attestationPolicy?: AttestationPolicy;
+  /**
+   * RD-0236 #10 opt-in. load()'s signed-manifest check is DENY-BY-DEFAULT: a plugin presenting no
+   * verifiable signed manifest is refused (ERR_UNVERIFIED_METADATA). Set this true to fall back to the
+   * well-formed-hash floor only (the pre-follow-on behaviour) — used by the hybrid engine's own internal
+   * tower, whose only load is its OWN hardcoded self-descriptor, not an external-plugin admission.
+   * Hash-vs-bytes is ALWAYS enforced when artifact bytes are supplied, opt-in or not.
+   */
+  readonly allowUnsignedLoad?: boolean;
 }
 
 export class TowerRuntime {
@@ -45,6 +61,8 @@ export class TowerRuntime {
       auditBatchSize: config.auditBatchSize ?? 0,
       ...(config.auditTickSource ? { auditTickSource: config.auditTickSource } : {}),
       ...(config.auditEgress ? { auditEgress: config.auditEgress } : {}),
+      ...(config.attestationPolicy ? { attestationPolicy: config.attestationPolicy } : {}),
+      allowUnsignedLoad: config.allowUnsignedLoad ?? false,
     };
     const auditOpts: AuditLoggerOptions = {
       batchSize: this.config.auditBatchSize,
@@ -58,7 +76,11 @@ export class TowerRuntime {
 
   // ── LOAD ──────────────────────────────────────────────────────────────────
 
-  async load(metadata: PluginMetadata, correlationId?: string): Promise<{ sandbox: PluginSandbox; correlationId: string; loadEvent: TowerAuditEvent }> {
+  async load(
+    metadata: PluginMetadata,
+    correlationId?: string,
+    evidence?: { artifactBytes?: Uint8Array; signedManifest?: SignedPluginManifest },
+  ): Promise<{ sandbox: PluginSandbox; correlationId: string; loadEvent: TowerAuditEvent }> {
     const corrId = correlationId ?? `CORR-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
     // Check assimilation budget
@@ -86,6 +108,36 @@ export class TowerRuntime {
       const ev = this.audit.trap(corrId, typeof ah === "string" && ah ? ah : "sha256:0", metadata.engineId ?? "?",
         "ERR_UNVERIFIED_METADATA", { reason: "plugin metadata lacks a well-formed artifactHash / engineId", artifactHash: ah });
       throw new Error(`FUNGI-ASSIMILATE-003: plugin metadata is unverifiable (artifactHash=${JSON.stringify(ah)}) — refusing to load (fail-closed). AuditEvent: ${ev.eventId}`);
+    }
+
+    // RD-0236 #10 follow-on: the REAL artifact verification the header always claimed (was: not implemented).
+    // (a) hash-vs-bytes — ALWAYS enforced when bytes are supplied (opt-in or not): the declared artifactHash
+    //     MUST equal the sha256 of the actual bytes, so a truthful-looking hash cannot cover tampered bytes.
+    if (evidence?.artifactBytes !== undefined) {
+      const actual = artifactBytesHash(evidence.artifactBytes);
+      if (actual !== metadata.artifactHash) {
+        const ev = this.audit.trap(corrId, metadata.artifactHash, metadata.engineId,
+          "ERR_ARTIFACT_HASH_MISMATCH", { declared: metadata.artifactHash, actual });
+        throw new Error(`FUNGI-ASSIMILATE-004: artifact bytes do not match the declared artifactHash (declared=${metadata.artifactHash}, actual=${actual}) — refusing to load (fail-closed). AuditEvent: ${ev.eventId}`);
+      }
+    }
+    // (b) signed manifest — DENY-BY-DEFAULT: unless the deployment opts out via allowUnsignedLoad (e.g. the
+    //     engine's own internal self-descriptor load), the plugin MUST present a signedManifest that verifies
+    //     against the tower's attestationPolicy AND binds to THIS metadata's engineId + artifactHash (so a
+    //     manifest signed for plugin A cannot admit plugin B).
+    if (this.config.allowUnsignedLoad !== true) {
+      if (!this.config.attestationPolicy) {
+        const ev = this.audit.trap(corrId, metadata.artifactHash, metadata.engineId,
+          "ERR_UNVERIFIED_METADATA", { reason: "no attestation policy configured to verify the plugin manifest (fail-secure; set allowUnsignedLoad to opt out)" });
+        throw new Error(`FUNGI-ASSIMILATE-003: plugin load requires a signed manifest but no attestation policy is configured — refusing (fail-closed). AuditEvent: ${ev.eventId}`);
+      }
+      const res = await verifyPluginManifest(evidence?.signedManifest, this.config.attestationPolicy,
+        { engineId: metadata.engineId, artifactHash: metadata.artifactHash });
+      if (!res.ok) {
+        const ev = this.audit.trap(corrId, metadata.artifactHash, metadata.engineId,
+          "ERR_UNVERIFIED_METADATA", { reason: res.reason ?? "plugin manifest failed verification" });
+        throw new Error(`FUNGI-ASSIMILATE-003: plugin manifest failed signature verification (${res.reason}) — refusing to load (fail-closed). AuditEvent: ${ev.eventId}`);
+      }
     }
 
     const sandbox = new PluginSandbox(metadata);

@@ -80,9 +80,13 @@ export class BitNetBridge {
 
   constructor(modelSpec: BitNetModelSpec, tower?: TowerRuntime) {
     this.modelSpec = modelSpec;
+    // RD-0236 #10: the bridge self-loads its OWN hardcoded BITNET_METADATA descriptor (internal
+    // bootstrap, not an external-plugin admission), so its default tower opts into the well-formed
+    // floor (allowUnsignedLoad). A deployment loading real external plugins uses a tower without it.
     this.tower = tower ?? new TowerRuntime({
       assimilationMemoryBudgetMB: 512,
       auditDepth: "full",
+      allowUnsignedLoad: true,
     });
   }
 

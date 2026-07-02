@@ -147,6 +147,13 @@ export {
 } from "./capability-grant.js";
 export type { CapabilityGrant, SignedCapabilityGrant } from "./capability-grant.js";
 
+// ── Plugin manifest (RD-0236 #10) — signed plugin-metadata + hash-vs-bytes verification at load ──
+export {
+  canonicalPluginManifestString, pluginManifestHash, artifactBytesHash,
+  signPluginManifest, signPluginManifestHybrid, verifyPluginManifest,
+} from "./plugin-manifest.js";
+export type { SignedPluginManifest } from "./plugin-manifest.js";
+
 // ── Numeric policy table — ai{} compiled once into packed flags + membership Set ──
 export {
   compilePolicy,
