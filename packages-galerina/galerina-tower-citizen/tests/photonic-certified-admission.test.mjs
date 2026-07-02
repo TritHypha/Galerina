@@ -2,8 +2,10 @@
 // unattested tolerance backend). H5 fix (threat-model 2026-06-25): it is admitted ONLY when a SIGNED certified
 // BridgeManifest cryptographically VERIFIES through the same hybrid path registry bridges use (Ed25519+ML-DSA)
 // AND the sync preconditions hold. The self-declared booleans alone NEVER admit (closes the confused-deputy).
-import { test } from "node:test";
+import { test, after } from "node:test";
 import assert from "node:assert/strict";
+import { rmSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 import {
   createHybridEngine, generateHybridAttestationKeypair, attestBridgeHybrid, StubTernaryBridge,
   signManifestHybrid,
@@ -11,8 +13,28 @@ import {
 import { createPhotonicRouterPort } from "../../galerina-ext-photonic-emulator/dist/index.js";
 import { AuditEgress } from "../../galerina-core-sentinel-egress/dist/index.js";
 
+// Test hygiene: sweep this file's egress scratch dirs, scoped to THIS process's own PID
+// (build/cert-photonic-<pid>-*) so a parallel `node --test` sibling's live dir is never
+// deleted mid-run. Clears a prior same-PID run's leftovers at load + this run's via after();
+// dir() hard-resets its target under PID reuse. (See f107301 for the class rationale.)
+const SCRATCH_ROOT = "build";
+const OWN_PREFIX = `cert-photonic-${process.pid}-`;
+const sweepScratchDirs = () => {
+  let entries;
+  try { entries = readdirSync(SCRATCH_ROOT, { withFileTypes: true }); } catch { return; }
+  for (const e of entries) {
+    if (e.isDirectory() && e.name.startsWith(OWN_PREFIX)) rmSync(join(SCRATCH_ROOT, e.name), { recursive: true, force: true });
+  }
+};
+sweepScratchDirs();
+after(sweepScratchDirs);
+
 let c = 0;
-const dir = () => `build/cert-photonic-${process.pid}-${++c}`;
+const dir = () => {
+  const d = `${SCRATCH_ROOT}/${OWN_PREFIX}${++c}`;
+  rmSync(d, { recursive: true, force: true });
+  return d;
+};
 const realKey = Uint8Array.from({ length: 32 }, (_, i) => i + 1);
 const fullGov = { approvedModels: ["bitnet_b1_58_2b"], maxNewTokens: 256, maxTokenCost: "GBP0.05", denyHostNativeFallback: true };
 const { publicKeyPem, privateKeyPem, mlDsaPublicKey, mlDsaPrivateKey } = await generateHybridAttestationKeypair();

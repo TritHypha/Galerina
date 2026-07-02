@@ -3,13 +3,49 @@
 // Converts scattered optional governance into one mandatory mode. In certified
 // mode the engine refuses to run unless every safety invariant is satisfied.
 
-import { test } from "node:test";
+import { test, after } from "node:test";
 import assert from "node:assert/strict";
+import { rmSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 import { createHybridEngine, AuditLogger, generateHybridAttestationKeypair, attestBridgeHybrid, StubTernaryBridge } from "../dist/index.js";
 import { AuditEgress } from "../../galerina-core-sentinel-egress/dist/index.js";
 
+// ── Test hygiene (mirrors f107301's egress fix): the certified-profile tests wire
+// AuditEgress at build/cert-<pid>-<n>. The OS recycles PIDs across `node --test`
+// runs, so without cleanup those dirs accumulate without bound (~4363 observed) and
+// a fresh run could inherit a prior run's ledger. The sweep is scoped to THIS
+// process's own PID (build/cert-<pid>-*): `node --test` runs test files in PARALLEL,
+// so a global cert-* sweep could delete a concurrent sibling's live dir mid-write.
+// Own-PID scoping is race-free (live processes never share a PID) yet still clears a
+// prior SAME-PID run's leftovers at load, cleans this run's dirs via after(), and
+// self-heals crashed-run dirs when the OS recycles the PID. dir() also hard-resets
+// its specific target so each test starts clean under PID reuse.
+const SCRATCH_ROOT = "build";
+const OWN_PREFIX = `cert-${process.pid}-`; // only ever touch THIS process's dirs
+
+const sweepScratchDirs = () => {
+  let entries;
+  try {
+    entries = readdirSync(SCRATCH_ROOT, { withFileTypes: true });
+  } catch {
+    return; // build/ not created yet — nothing to sweep
+  }
+  for (const e of entries) {
+    if (e.isDirectory() && e.name.startsWith(OWN_PREFIX)) {
+      rmSync(join(SCRATCH_ROOT, e.name), { recursive: true, force: true });
+    }
+  }
+};
+
+sweepScratchDirs();       // clear this PID's stale dirs from a prior (possibly crashed) run
+after(sweepScratchDirs);  // don't leak this run's dirs
+
 let c = 0;
-const dir = () => `build/cert-${process.pid}-${++c}`;
+const dir = () => {
+  const d = `${SCRATCH_ROOT}/${OWN_PREFIX}${++c}`;
+  rmSync(d, { recursive: true, force: true }); // PID reuse: never inherit a prior run's ledger
+  return d;
+};
 const realKey = Uint8Array.from({ length: 32 }, (_, i) => i + 1);
 const fullGov = { approvedModels: ["bitnet_b1_58_2b"], maxNewTokens: 256, maxTokenCost: "GBP0.05", denyHostNativeFallback: true };
 

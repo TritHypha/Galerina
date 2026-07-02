@@ -10,8 +10,10 @@
 //
 // This is the "Triple-Lock" extended to the full aerospace stack.
 
-import { test } from "node:test";
+import { test, after } from "node:test";
 import assert from "node:assert/strict";
+import { rmSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 import { StubTernaryBridge, AuditLogger } from "../dist/index.js";
 import { StaticMemoryPool, TPLStateBuffer, SegmentationController } from "../../galerina-core-sentinel-memory/dist/index.js";
 import { buildManifest, IntegrityMonitor, ZeroCopyMapper } from "../../galerina-core-sentinel-io/dist/index.js";
@@ -20,9 +22,29 @@ import { PowerGovernor, AEROSPACE_ENVELOPE } from "../../galerina-core-sentinel-
 import { AuditEgress, readEgressLedger } from "../../galerina-core-sentinel-egress/dist/index.js";
 import { StateSerializer, AtomicWriter, ColdBootOrchestrator } from "../../galerina-core-sentinel-state/dist/index.js";
 
+// Test hygiene: sweep this file's flight scratch dirs, scoped to THIS process's own PID
+// (build/full-flight-<pid>-*) so a parallel `node --test` sibling's live dir is never deleted
+// mid-run. Clears a prior same-PID run's leftovers at load + this run's via after(); dir()
+// hard-resets its target under PID reuse. (See f107301 for the class rationale.)
+const SCRATCH_ROOT = "build";
+const OWN_PREFIX = `full-flight-${process.pid}-`;
+const sweepScratchDirs = () => {
+  let entries;
+  try { entries = readdirSync(SCRATCH_ROOT, { withFileTypes: true }); } catch { return; }
+  for (const e of entries) {
+    if (e.isDirectory() && e.name.startsWith(OWN_PREFIX)) rmSync(join(SCRATCH_ROOT, e.name), { recursive: true, force: true });
+  }
+};
+sweepScratchDirs();
+after(sweepScratchDirs);
+
 const TRITS = 256;
 let counter = 0;
-const dir = () => `build/full-flight-${process.pid}-${++counter}`;
+const dir = () => {
+  const d = `${SCRATCH_ROOT}/${OWN_PREFIX}${++counter}`;
+  rmSync(d, { recursive: true, force: true });
+  return d;
+};
 function makeTrits(n) { const o = []; let r = 0x9e3779b9 >>> 0; for (let i = 0; i < n; i++) { r ^= (r << 13); r >>>= 0; r ^= (r >>> 17); r ^= (r << 5); r >>>= 0; o.push((r % 3) - 1); } return o; }
 
 test("all six sentinels compose into one governed, recoverable flight", () => {

@@ -229,6 +229,10 @@ run("effect:canonicality", "node", ["scripts/audit-effect-canonicality.mjs"]);
 //   hand-lists (the sink-drift class). Both carry a --self-test + a reasoned allowlist. Blocking.
 run("checker:wiring", "node", ["scripts/audit-checker-wiring.mjs"]);
 run("sink:canonicality", "node", ["scripts/audit-sink-canonicality.mjs"]);
+// scratch-dir:hygiene — no test file creates build/<prefix>-${process.pid} scratch dirs without
+//   rmSync cleanup (the flaky-gate + unbounded-disk-leak class; a hand-list missed 2 instances, so
+//   this enforces the class instead of a list). Own-pid sweep is parallel-safe. Blocking.
+run("scratch-dir:hygiene", "node", ["scripts/audit-scratchdir-hygiene.mjs"]);
 
 // ── 5c-iii. Muted-diagnostics gate (2026-07-01) ──
 // Owner concern: "codes muted early to stop them alerting — could they still be off?" A silenced
