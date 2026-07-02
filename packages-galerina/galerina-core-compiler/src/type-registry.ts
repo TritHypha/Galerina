@@ -124,12 +124,21 @@ export const TYPE_NAME_TO_ID: ReadonlyMap<string, TypeIdValue> = new Map(
 );
 
 /**
+ * Type-qualifier vocabulary — the single source of truth (ZT-1 qualifier SoT,
+ * owner 2026-07-02). `.gate` tooling machine-extracts this list for sens_class
+ * validation; never duplicate it in a regex literal — derive, like
+ * QUALIFIER_STRIP below.
+ */
+export const TYPE_QUALIFIERS = ["protected", "redacted", "unsafe", "safe", "secret"] as const;
+const QUALIFIER_STRIP = new RegExp(`^(${TYPE_QUALIFIERS.join("|")})\\s+`);
+
+/**
  * Look up a TypeId by name. Returns TypeId.Unknown for unrecognised types.
  * Handles qualifier stripping (e.g. "protected Email" → "Email").
  */
 export function resolveTypeId(typeName: string): TypeIdValue {
   // Strip qualifiers: "protected Email" → "Email", "redacted String" → "String"
-  const bare = typeName.replace(/^(protected|redacted|unsafe|safe|secret)\s+/, "").trim();
+  const bare = typeName.replace(QUALIFIER_STRIP, "").trim();
   // Strip generic args: "Array<Int>" → "Array", "Tensor<Float32, [768]>" → "Tensor"
   const base = bare.indexOf("<") >= 0 ? bare.slice(0, bare.indexOf("<")).trim() : bare;
   return (TYPE_NAME_TO_ID.get(base) ?? TypeId.Unknown) as TypeIdValue;

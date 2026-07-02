@@ -13,7 +13,7 @@ const AI_INFERENCE_CAP = 0b00100000;
 const cid = (s) => `CAP-${s}-${process.pid}-${Math.random().toString(36).slice(2, 7)}`;
 
 test("an engine granted the ai.inference bit runs (default)", async () => {
-  const eng = createHybridEngine({ airGapped: true, governanceTier: 1 });
+  const eng = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true } });
   const r = await eng.infer({ prompt: "x", correlationId: cid("ok"), opClasses: ["feedforward"] });
   assert.equal(r.trapFired, false);
 });
@@ -39,7 +39,7 @@ test("the capability gate is the FIRST authority check (precedes attestation)", 
 });
 
 test("a mask carrying ai.inference among other bits still passes", async () => {
-  const eng = createHybridEngine({ airGapped: true, governanceTier: 1, capabilityMask: AI_INFERENCE_CAP | 0b1 });
+  const eng = createHybridEngine({ airGapped: true, governanceTier: 1, capabilityMask: AI_INFERENCE_CAP | 0b1, governance: { allowUnattestedBridges: true } });
   const r = await eng.infer({ prompt: "x", correlationId: cid("multi"), opClasses: ["feedforward"] });
   assert.equal(r.trapFired, false);
 });

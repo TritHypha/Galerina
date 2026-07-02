@@ -7,8 +7,15 @@ import { resolveHardware } from "../../galerina-hardware-tier/dist/index.js";
 
 const big = () => ({ n: 1024, lane: "photonic", tolerance: 0.05 });
 
+// RD-0236 #2/#4 (owner decision 2026-07-02): the underlying hybrid engine now fail-secures
+// unattested bridges (#2) and the silent host-native fallback (#4) by default. These tier-routing
+// tests exercise HARDWARE-TIER SELECTION, not attestation, and use dev stub/emulator registries with
+// no signed manifest — so they opt into the permissive behaviour for both. The fail-secure DEFAULTS
+// are RED-benched in @galerina/tower-citizen (rd0236-runtime-hardening + bridge-attestation).
+const OPTIN = { allowUnattestedBridges: true, allowHostNativeFallback: true };
+
 async function run(opts) {
-  const tp = createTriPipeEngine({ auditInMemory: true, kernelFor: big, ...opts });
+  const tp = createTriPipeEngine({ auditInMemory: true, kernelFor: big, governance: OPTIN, ...opts });
   const r = await tp.engine.infer({ prompt: "hi", correlationId: "t" });
   await tp.engine.shutdown();
   return { tp, r };
@@ -57,7 +64,7 @@ test("the resolved tier matches the hardware() directive exactly", () => {
 
 test("photonic offload still gated per-kernel: a sub-crossover kernel (default n=16) stays digital even on a photonic tier", async () => {
   // No kernelFor → default n = op.count (16, below the crossover) → the router declines → digital.
-  const tp = createTriPipeEngine({ auditInMemory: true, targetId: "photonic", attestationVerified: true, componentFullyEligible: true });
+  const tp = createTriPipeEngine({ auditInMemory: true, targetId: "photonic", attestationVerified: true, componentFullyEligible: true, governance: OPTIN });
   const r = await tp.engine.infer({ prompt: "hi", correlationId: "small" });
   assert.equal(tp.photonicEnabled, true);             // the port IS wired (hybrid/photonic tier)
   assert.deepEqual(r.bridgesUsed, ["stub-ternary"]);  // …but the per-kernel net-win router declined

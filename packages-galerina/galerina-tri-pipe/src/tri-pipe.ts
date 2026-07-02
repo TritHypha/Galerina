@@ -13,7 +13,7 @@
 // Dependencies imported by relative dist path (the repo convention; resolves offline). This is the
 // composition/application layer — the one package allowed to depend on the Tower runtime.
 
-import { createHybridEngine, type HybridInferenceEngine, type PhotonicConfig, type PhotonicKernelCost } from "../../galerina-tower-citizen/dist/index.js";
+import { createHybridEngine, type HybridInferenceEngine, type PhotonicConfig, type PhotonicKernelCost, type AiGovernance } from "../../galerina-tower-citizen/dist/index.js";
 import { resolveHardware, type Tier } from "../../galerina-hardware-tier/dist/index.js";
 import { createPhotonicRouterPort } from "../../galerina-ext-photonic-emulator/dist/index.js";
 import type { BridgeRegistry, BridgeOp } from "../../galerina-inference-bridge-contract/dist/index.js";
@@ -35,6 +35,10 @@ export interface TriPipeOptions {
   readonly kernelFor?: (op: BridgeOp) => PhotonicKernelCost;
   /** Use an in-memory audit ledger (ephemeral / benchmark contexts). */
   readonly auditInMemory?: boolean;
+  /** `ai {}` governance for the underlying hybrid engine (approved models, budgets, and the RD-0236
+   *  fail-secure opt-in flags). Forwarded verbatim to createHybridEngine; omitted ⇒ the engine's own
+   *  fail-secure defaults apply (unattested bridges and silent host-native fallback are DENIED). */
+  readonly governance?: AiGovernance;
 }
 
 export interface TriPipeEngine {
@@ -70,6 +74,7 @@ export function createTriPipeEngine(opts: TriPipeOptions): TriPipeEngine {
     ...(opts.auditInMemory !== undefined ? { auditInMemory: opts.auditInMemory } : {}),
     ...(bridges !== undefined ? { bridges } : {}),
     ...(photonic !== undefined ? { photonic } : {}),
+    ...(opts.governance !== undefined ? { governance: opts.governance } : {}),
   });
 
   return { tier, photonicEnabled, engine };

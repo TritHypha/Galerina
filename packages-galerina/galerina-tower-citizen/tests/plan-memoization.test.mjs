@@ -12,7 +12,7 @@ import { createHybridEngine } from "../dist/index.js";
 const cid = (s) => `PLAN-${s}-${process.pid}-${Math.random().toString(36).slice(2, 7)}`;
 
 test("the plan is memoized — repeated infers reuse one plan, identical result", async () => {
-  const eng = createHybridEngine({ airGapped: true, governanceTier: 1 });
+  const eng = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true, allowHostNativeFallback: true } });
   const a = await eng.infer({ prompt: "x", correlationId: cid("a") });
   const b = await eng.infer({ prompt: "y", correlationId: cid("b") });
   assert.equal(a.trapFired, false);
@@ -29,7 +29,7 @@ test("seal() preflights the standard plan and reports it", () => {
 });
 
 test("a sealed deployment DENIES an op-set that was never preflighted", async () => {
-  const eng = createHybridEngine({ airGapped: true, governanceTier: 1 });
+  const eng = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true } });
   eng.seal(); // only the standard pass is preflighted
   // A custom op-set the deployment never preflighted → denied in flight.
   const r = await eng.infer({ prompt: "x", correlationId: cid("deny"), opClasses: ["attention"] });
@@ -38,7 +38,7 @@ test("a sealed deployment DENIES an op-set that was never preflighted", async ()
 });
 
 test("a sealed deployment PERMITS a preflighted op-set", async () => {
-  const eng = createHybridEngine({ airGapped: true, governanceTier: 1 });
+  const eng = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true } });
   eng.seal([["embedding", "feedforward"]]); // preflight this exact set
   const r = await eng.infer({ prompt: "x", correlationId: cid("ok"), opClasses: ["embedding", "feedforward"] });
   assert.equal(r.trapFired, false);

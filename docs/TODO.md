@@ -4,8 +4,14 @@ Living task list. Authoritative forward view: `../ZTF-Knowledge-Bases/galerina-r
 % audit: `../ZTF-Knowledge-Bases/galerina-percent-audit-roadmap-2026-07-02.md` (**~90% shippable / ~64% full-vision**).
 Consistency rules + gates: `docs/CONSISTENCY_GATES.md`.
 
-**State (2026-07-02, verified by running):** 60/60 packages · 5,914 tests · 0 fail · phase-close ALL green ·
-`audit-effect-canonicality --strict` 0 findings · `governance:diff` NEUTRAL · border 93/0. `main` **ahead 5, NOT pushed**.
+**State (2026-07-02):** RD-0236 **#2/#4/#5 fail-secure inversion COMPLETE + gated GREEN** (60/60 packages · 5,954
+tests · 0 fail · phase-close ALL green · `governance:diff` NEUTRAL) and committed on top of `a927e4b` this session.
+`main` **NOT pushed (owner HOLD)**. This turn's commit bundles: (1) `hybrid-engine.ts` (the three inversions + opt-in
+flags); (2) the inverted tower-citizen tests + 3 RED-benches; (3) downstream consumer fixes (`ext-bridge-cpp` tests,
+`tri-pipe` src `governance` passthrough + tests); (4) `galerina-core-compiler/src/type-registry.ts` = VD-2 qualifier
+**single-source** refactor (`TYPE_QUALIFIERS`, behaviour-preserving); (5) `docs/TODO.md` + `scripts/memory-graph.mjs`.
+Generated `build/*` indexes + benchmark/`.lindex` artifacts were left uncommitted (regenerate-on-demand; already dirty
+pre-session).
 
 ## ✅ Done — 2026-07-01/02 (local, unpushed)
 - [x] governance:diff fixture noise — gitignored `build/*.fungi` no longer phantom "added" — `941ec41`
@@ -87,6 +93,8 @@ Consistency rules + gates: `docs/CONSISTENCY_GATES.md`.
 **Residual (NOW item):**
 - [ ] **VD-2 (full single-source)** — derive CAPABILITY_RE + the sink registries from ONE canonical source
       (export CANONICAL_EFFECTS); `scripts/audit-sink-canonicality.mjs` now guards drift in the interim.
+      *In-flight (uncommitted):* `type-registry.ts` now single-sources the type-QUALIFIER vocab as `TYPE_QUALIFIERS`
+      (`protected|redacted|unsafe|safe|secret`) and derives the strip-regex from it — first step of the SoT pattern.
 - [ ] **`.gate` front-end compiler** (PROMPT §5a-5d) — build gate GREEN (D5 re-scoped), backstop wired →
       UNBLOCKED. Owner chose a DEDICATED session (large feature; hard locks demand care). Next chunk.
 
@@ -162,10 +170,10 @@ Consistency rules + gates: `docs/CONSISTENCY_GATES.md`.
 
 </details>
 
-## 🔒 RUNTIME SECURITY — RD-0236 — ✅ 8/11 FIXED 2026-07-02 (RED-benched, build-staging, NOT pushed); 3 POSTURE-gated
+## 🔒 RUNTIME SECURITY — RD-0236 — ✅ 11/11 FIXED + RED-benched (#1/#3/#6–#11 committed `a927e4b`; #2/#4/#5 done this session, UNCOMMITTED — gates green)
 > `../ZTF-Knowledge-Bases/galerina-rd-0236-runtime-50yr-mistake-audit.md` — 11 reproduced runtime governance
-> fail-opens, SAME disease as RD-0234 on the RUNTIME surface. Owner greenlit "fix all 10, RED-benched" (2026-07-02);
-> **8 fixed**, each RED-benched, full suite green, across 4 packages (tower-citizen · compiler · tri-pipe · app-kernel).
+> fail-opens, SAME disease as RD-0234 on the RUNTIME surface. Owner greenlit "fix all 11, RED-benched" (2026-07-02);
+> **11 fixed**, each RED-benched, full suite green, across 4 packages (tower-citizen · compiler · tri-pipe · app-kernel).
 
 **Fixed (RED-benched):**
 - [x] **#1 forgeable capability mask** — `grantedCapabilityMask` is now a real JS `#private` field (was `private
@@ -184,17 +192,34 @@ Consistency rules + gates: `docs/CONSISTENCY_GATES.md`.
       *Follow-on:* full signed-manifest + hash-vs-bytes verification needs the manifest plumbed into `load()`.
 - [x] **#11 `requireCertifiedProfile`** — forces `requireSigned` when certified (mirrors bridge-attestation). `compiler/wasm-runtime.ts`.
 
-**POSTURE decision needed — #2/#4/#5 (deliberately NOT auto-inverted):**
-> All three have the shape "ABSENCE of an explicit grant ⇒ ADMIT (permissive default)". Making them fail-secure
-> (absence ⇒ DENY) inverts the hybrid engine's DEFAULT posture, which the default in-package stub engine + its tests
-> rely on — a broader behavioural change than closing a specific exploit (it changes every non-certified engine, not
-> just an injected/misconfigured one). Certified mode ALREADY closes all three. Owner posture call:
-- [ ] **#2** absent `attestationPolicy` ⇒ DENY the bridge registry (today: null policy = "all attested"). Breaks the
-      default stub registry (its bridges carry no attestation) unless the trusted in-package default is exempted.
-- [ ] **#4** a routed precision with no bridge (→ host-native) ⇒ ALWAYS trap `ERR_HOST_NATIVE_DENIED` by default (today:
-      only under `POL_DENY_HOST_NATIVE`/certified). Inverts fp8/fp16 host-native fallback to deny-by-default.
-- [ ] **#5** a NAMED model with no `ai{}` allow-list ⇒ DENY (today: no allow-list = admit any model). Inverts permissive-by-absence.
-> Decision: invert the default to fail-secure (most-secure; requires updating the permissive-default tests) vs keep certified-bounded.
+**#2/#4/#5 — owner DECIDED: INVERT the default to fail-secure (2026-07-02). ✅ DONE this session (UNCOMMITTED; NO push — HOLD): source + inverted tests + RED-benches + downstream fixes; full suite 60/60 (5,954 tests) + phase-close ALL green, `governance:diff` NEUTRAL.**
+> All three had the shape "ABSENCE of an explicit grant ⇒ ADMIT (permissive default)". Owner chose the most-secure
+> path: invert to "absence ⇒ DENY", with an explicit **audited opt-IN flag** per finding on the `AiGovernance`
+> interface (default `false` = secure). Implemented in `galerina-tower-citizen/src/hybrid-engine.ts`:
+- [x] **#2 source** — `checkBridgeAttestation`: a `null` attestationPolicy with ≥1 registered bridge now DENIES
+      (`ERR_BRIDGE_UNATTESTED`) unless `allowUnattestedBridges === true`. An EMPTY registry with no policy stays fine.
+- [x] **#4 source** — host-native fallback is DENY-BY-DEFAULT: any denied technique traps `ERR_HOST_NATIVE_DENIED`
+      unless `allowHostNativeFallback === true`. Certified / `denyHostNativeFallback` still FORCE the deny.
+- [x] **#5 source** — a request that NAMES a model with no `ai{}` allow-list is DENIED (`ERR_AI_MODEL_NOT_APPROVED`)
+      unless `allowUnlistedModels === true`. A request naming no model is unaffected.
+- [x] **tests inverted + RED-benched** — the tower-citizen permissive-default tests now pass the minimal opt-in
+      flags (per-plan: default plan needs `allowUnattestedBridges`+`allowHostNativeFallback`; feedforward-only needs
+      just `allowUnattestedBridges`; a named model with no allow-list adds `allowUnlistedModels`). Three RED-benches
+      added to `rd0236-runtime-hardening.test.mjs` (each asserts the DEFAULT DENIES **and** the opt-in restores the
+      path — no over-blocking). Two permissive-default assertions (`bridge-attestation` back-compat, `governance-hardening`
+      host-native) were rewritten as paired deny-by-default + opt-in-restores benches.
+- [x] **downstream blast radius (fix the CLASS)** — the inversion also reddened two CONSUMERS of the hybrid engine:
+      `galerina-ext-bridge-cpp` (cpp BitNet registry unattested) and `galerina-tri-pipe` (tier-routing over stub/emulator
+      registries). Fixed both by opting in; `tri-pipe` needed a small behaviour-preserving SOURCE passthrough
+      (`TriPipeOptions.governance` → forwarded to `createHybridEngine`, since the wrapper couldn't express `ai{}`
+      governance at all). Also fixed a **masked** vacuous pass in the cpp determinism-oracle test (both sides had been
+      trapping to checksum 0 → `0===0`).
+- [x] **GREEN-gated** — `run-all-tests.cjs` = 60/60 packages · 5,954 tests · 0 fail; `run-phase-close.mjs` = ALL gates
+      green, `governance:diff` **NEUTRAL — no authority widening**. Commit PENDING with explicit pathspecs (NO push — HOLD).
+      Folds in the `type-registry.ts` VD-2 SoT refactor.
+> ⚠️ Note (unrelated, discovered during the gate): `tower-citizen/tests/sentinel-egress-time.test.mjs` never cleans its
+> on-disk `build/egress-it-<pid>-N` scratch dir, so PID reuse across runs double-counts (12→24) — a flaky-gate + disk-leak
+> landmine (999 stale dirs found + cleaned). Spun off as a separate task (NOT in this commit).
 
 ## ✅ `.gate` — UNLOCKED + hardened 2026-07-02 (owner PROMPT-main-session-gate-integration.md)
 > Naming corrected: `.gate` = light-ASCII AI app-authoring language (draw-don't-code); graph/GIR = the one

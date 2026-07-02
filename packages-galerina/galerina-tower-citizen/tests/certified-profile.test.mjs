@@ -95,7 +95,7 @@ test("certified profile: the STANDARD plan correctly traps (fp8/fp16 ops have no
 });
 
 test("max_tokens budget is enforced (over-budget request traps)", async () => {
-  const eng = createHybridEngine({ governance: { maxNewTokens: 100 } });
+  const eng = createHybridEngine({ governance: { maxNewTokens: 100, allowUnattestedBridges: true, allowHostNativeFallback: true } });
   const r = await eng.infer({ prompt: "x", correlationId: "c4", maxNewTokens: 500 });
   assert.equal(r.trapFired, true);
   assert.equal(r.trapCode, "ERR_AI_TOKEN_BUDGET");

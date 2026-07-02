@@ -12,8 +12,15 @@ import { createPhotonicRouterPort } from "../../galerina-ext-photonic-emulator/d
 
 const bigKernel = () => ({ n: 1024, lane: "photonic", tolerance: 0.05 });
 
+// RD-0236 #2/#4: these tests exercise the PHOTONIC offload path, not the bridge-attestation
+// (#2) or host-native (#4) gates — both of which now fail-secure by default. Opt into the
+// permissive behaviour for just those two so the default stub registry and the host-native
+// floor do not trap before the photonic path under test runs. (Attestation/host-native denial
+// have their own dedicated RED-benches in rd0236-runtime-hardening.test.mjs + bridge-attestation.)
+const OPTIN = { allowUnattestedBridges: true, allowHostNativeFallback: true };
+
 test("default (no photonic config) — the digital path is unchanged (stub-ternary, no trap)", async () => {
-  const eng = createHybridEngine({ auditInMemory: true });
+  const eng = createHybridEngine({ auditInMemory: true, governance: OPTIN });
   const r = await eng.infer({ prompt: "hi", correlationId: "d0" });
   assert.deepEqual(r.bridgesUsed, ["stub-ternary"]);
   assert.equal(r.trapFired, false);
@@ -25,6 +32,7 @@ test("default (no photonic config) — the digital path is unchanged (stub-terna
 test("photonic configured + net-win kernel → the photonic backend runs the op", async () => {
   const eng = createHybridEngine({
     auditInMemory: true,
+    governance: OPTIN,
     photonic: { router: createPhotonicRouterPort(), kernelFor: bigKernel },
   });
   const r = await eng.infer({ prompt: "hi", correlationId: "p1" });
@@ -37,6 +45,7 @@ test("photonic configured + net-win kernel → the photonic backend runs the op"
 test("photonic configured but NO net win (tiny kernel) → declines to the digital path (fail-closed)", async () => {
   const eng = createHybridEngine({
     auditInMemory: true,
+    governance: OPTIN,
     photonic: { router: createPhotonicRouterPort(), kernelFor: () => ({ n: 4, lane: "photonic" }) },
   });
   const r = await eng.infer({ prompt: "hi", correlationId: "p2" });
@@ -46,7 +55,7 @@ test("photonic configured but NO net win (tiny kernel) → declines to the digit
 
 test("a router that DECLINES (returns null) → the engine runs the unchanged digital dispatch", async () => {
   const declining = { route: () => null };
-  const eng = createHybridEngine({ auditInMemory: true, photonic: { router: declining, kernelFor: bigKernel } });
+  const eng = createHybridEngine({ auditInMemory: true, governance: OPTIN, photonic: { router: declining, kernelFor: bigKernel } });
   const r = await eng.infer({ prompt: "hi", correlationId: "p3" });
   assert.deepEqual(r.bridgesUsed, ["stub-ternary"]);
   assert.equal(r.trapFired, false);
@@ -57,7 +66,7 @@ test("a router that returns a hit → photonic value committed but EXCLUDED from
   // A custom port returning a value WITHOUT being a real deterministic ternary result. The engine
   // accepts it (trusting the port's own re-verify) — this is exactly the tolerance-path substitution.
   const fixed = { route: () => ({ value: 7, bridgeId: "test-photonic" }) };
-  const eng = createHybridEngine({ auditInMemory: true, photonic: { router: fixed, kernelFor: bigKernel } });
+  const eng = createHybridEngine({ auditInMemory: true, governance: OPTIN, photonic: { router: fixed, kernelFor: bigKernel } });
   const r = await eng.infer({ prompt: "hi", correlationId: "p4" });
   assert.deepEqual(r.bridgesUsed, ["photonic:test-photonic"]); // recorded under the reserved namespace
   assert.equal(r.trapFired, false);
@@ -75,7 +84,7 @@ test("anti-spoof: an injected port CANNOT impersonate an attested registry bridg
   // A malicious/buggy port claims to be the trusted "stub-ternary" bridge. The engine records it under
   // the reserved `photonic:` namespace, so provenance can never attribute the analog value to a trusted id.
   const impersonator = { route: () => ({ value: 3, bridgeId: "stub-ternary" }) };
-  const eng = createHybridEngine({ auditInMemory: true, photonic: { router: impersonator, kernelFor: bigKernel } });
+  const eng = createHybridEngine({ auditInMemory: true, governance: OPTIN, photonic: { router: impersonator, kernelFor: bigKernel } });
   const r = await eng.infer({ prompt: "hi", correlationId: "p6" });
   assert.deepEqual(r.bridgesUsed, ["photonic:stub-ternary"]); // NOT "stub-ternary"
   assert.ok(!r.bridgesUsed.includes("stub-ternary"), "the unattested port must not shadow an attested bridge id");
@@ -85,7 +94,7 @@ test("anti-spoof: an injected port CANNOT impersonate an attested registry bridg
 test("fail-closed: a port returning a non-finite value is rejected → the engine runs the digital dispatch", async () => {
   for (const bad of [NaN, Infinity, -Infinity]) {
     const evil = { route: () => ({ value: bad, bridgeId: "evil" }) };
-    const eng = createHybridEngine({ auditInMemory: true, photonic: { router: evil, kernelFor: bigKernel } });
+    const eng = createHybridEngine({ auditInMemory: true, governance: OPTIN, photonic: { router: evil, kernelFor: bigKernel } });
     const r = await eng.infer({ prompt: "hi", correlationId: `pf-${bad}` });
     assert.deepEqual(r.bridgesUsed, ["stub-ternary"], `non-finite ${bad} must fall through to digital, not commit garbage`);
     await eng.shutdown();
@@ -93,7 +102,7 @@ test("fail-closed: a port returning a non-finite value is rejected → the engin
 });
 
 test("the photonic config does not affect the receipt shape consumers depend on", async () => {
-  const eng = createHybridEngine({ auditInMemory: true, photonic: { router: createPhotonicRouterPort(), kernelFor: bigKernel } });
+  const eng = createHybridEngine({ auditInMemory: true, governance: OPTIN, photonic: { router: createPhotonicRouterPort(), kernelFor: bigKernel } });
   const r = await eng.infer({ prompt: "hi", correlationId: "p5" });
   for (const k of ["correlationId", "text", "tokenCount", "latencyMs", "plan", "outputHash", "enginesBlended", "avgBitsPerWeight", "deterministic", "trapFired", "bridgesUsed", "executedNatively", "ternaryChecksum", "valuesReproducible"]) {
     assert.ok(k in r, `receipt has ${k}`);

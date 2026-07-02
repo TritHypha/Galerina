@@ -86,9 +86,45 @@ export interface AiGovernance {
    * Aerospace / Tier-1 strictness. When true, a routed op whose precision has NO
    * registered bridge is NOT allowed to fall through to the host-native float path
    * — it traps `ERR_HOST_NATIVE_DENIED`. Silent host-native execution is an
-   * uncontrolled state change in a hardened deployment. Default false (permissive).
+   * uncontrolled state change in a hardened deployment.
+   *
+   * RD-0236 #4: host-native fallback is now DENY-BY-DEFAULT — a denied technique traps
+   * `ERR_HOST_NATIVE_DENIED` unless `allowHostNativeFallback` is set. This flag remains as
+   * the certified/aerospace hard override: when true it FORCES the deny on regardless of any
+   * opt-out (certified mode sets it). See `allowHostNativeFallback` for the audited opt-OUT.
    */
   readonly denyHostNativeFallback?: boolean;
+
+  // ── RD-0236 fail-secure opt-INs (owner decision 2026-07-02) ──────────────────────────
+  // The runtime's permissive defaults for findings #2/#4/#5 are INVERTED to fail-secure.
+  // Each of the three flags below defaults to `false` = the SECURE denial; a deployment
+  // must explicitly opt IN to the old permissive behaviour, and that intent is audited.
+
+  /**
+   * RD-0236 #2 opt-in. By default, a NON-certified engine with NO `attestationPolicy`
+   * configured DENIES a bridge registry that carries ≥1 bridge (`ERR_BRIDGE_UNATTESTED`) —
+   * bridges cannot be cryptographically verified without a policy, so trusting them is the
+   * "null policy ⇒ all attested" fail-open the audit found. Set this true to permit an
+   * unattested registry on a non-certified path (dev/simulator use). An EMPTY registry
+   * (no bridges) with no policy is always fine and does not require this flag.
+   */
+  readonly allowUnattestedBridges?: boolean;
+
+  /**
+   * RD-0236 #4 opt-in. By default, a routed precision with NO registered bridge is DENIED
+   * (`ERR_HOST_NATIVE_DENIED`) rather than silently running host-native. Set this true to
+   * permit the silent host-native fallback (the old permissive default). NOTE: certified mode
+   * and `denyHostNativeFallback` still FORCE the deny regardless of this opt-out.
+   */
+  readonly allowHostNativeFallback?: boolean;
+
+  /**
+   * RD-0236 #5 opt-in. By default, when NO `ai{}` allow-list is in force, a request that
+   * NAMES a model is DENIED (`ERR_AI_MODEL_NOT_APPROVED`) — an unlisted model must not be
+   * admitted by mere absence of an allow-list. Set this true to permit an unlisted model when
+   * no allow-list is configured. A request that names NO model is always fine (no implicit run).
+   */
+  readonly allowUnlistedModels?: boolean;
 }
 
 export interface HybridInferenceReceipt {
@@ -367,9 +403,22 @@ export class HybridInferenceEngine {
    * reason via the audit) or null when all bridges are attested.
    */
   private async checkBridgeAttestation(): Promise<string | null> {
-    if (this.attestationPolicy === null) return null;
     if (this.bridgeAttestationChecked) return this.bridgeAttestationDenial;
     this.bridgeAttestationChecked = true;
+    // RD-0236 #2 (fail-secure INVERSION): a null attestation policy no longer means "all bridges
+    // attested". Without a policy the engine has NO way to cryptographically verify a bridge, so a
+    // registry carrying ≥1 bridge is DENIED unless the deployment explicitly opts in. An EMPTY
+    // registry (nothing to verify) with no policy stays fine — there is no unverified authority.
+    if (this.attestationPolicy === null) {
+      const hasBridges = this.bridges.size > 0;
+      if (hasBridges && this.governance.allowUnattestedBridges !== true) {
+        this.bridgeAttestationDenial =
+          "no attestation policy configured — bridges cannot be verified (fail-secure; set allowUnattestedBridges to opt out)";
+        return this.bridgeAttestationDenial;
+      }
+      this.bridgeAttestationDenial = null;
+      return null;
+    }
     const policy = this.attestationPolicy;
     // #34: a configured ML-DSA public key escalates admission to the hybrid verifier —
     // BOTH the Ed25519 and the ML-DSA-65 half must verify (no PQ downgrade). Absent ⇒
@@ -589,9 +638,14 @@ export class HybridInferenceEngine {
         // (the Brain→Brawn seam), then record the decision + its provenance.
         const dispatch = this.dispatchPlan(plan, correlationId);
 
-        // Hardened Border: in aerospace mode, a routed precision with no bridge must
-        // NOT silently run host-native — trap it as an uncontrolled state change.
-        if ((this.policy.flags & POL_DENY_HOST_NATIVE) && dispatch.deniedTechniques.length > 0) {
+        // Hardened Border (RD-0236 #4, fail-secure INVERSION): a routed precision with no bridge
+        // must NOT silently run host-native — that is an uncontrolled state change. It is now DENIED
+        // BY DEFAULT: any denied technique traps `ERR_HOST_NATIVE_DENIED` unless the deployment
+        // explicitly opts in via `allowHostNativeFallback`. Certified mode / `denyHostNativeFallback`
+        // (POL_DENY_HOST_NATIVE) still FORCE the deny regardless of the opt-out.
+        const denyHostNative =
+          (this.policy.flags & POL_DENY_HOST_NATIVE) !== 0 || this.governance.allowHostNativeFallback !== true;
+        if (denyHostNative && dispatch.deniedTechniques.length > 0) {
           audit.trap(correlationId, HYBRID_METADATA.artifactHash, HYBRID_METADATA.engineId,
             "ERR_HOST_NATIVE_DENIED", { deniedTechniques: dispatch.deniedTechniques });
           const latencyMs = Date.now() - t0;
@@ -672,6 +726,13 @@ export class HybridInferenceEngine {
       if (!p.approvedModels.has(request.model)) {
         return { code: "ERR_AI_MODEL_NOT_APPROVED", details: { requested: request.model, approved: [...p.approvedModels] } };
       }
+    } else if (request.model !== undefined && this.governance.allowUnlistedModels !== true) {
+      // RD-0236 #5 (fail-secure INVERSION / ai-by-absence): NO allow-list is in force, yet the
+      // request NAMES a model. Absence of an `ai{}` allow-list must NOT implicitly admit an unlisted
+      // model — that is the permissive-by-absence fail-open the audit found. Refuse it unless the
+      // deployment explicitly opts in via `allowUnlistedModels`. A request naming NO model is
+      // unaffected (it already runs the engine's own default model with no external selection).
+      return { code: "ERR_AI_MODEL_NOT_APPROVED", details: { requested: request.model, approved: [], reason: "no ai{} allow-list configured — an unlisted model is refused (fail-secure)" } };
     }
     if ((p.flags & POL_HAS_CALL_BUDGET) && this.callCount >= p.maxModelCalls) {
       return { code: "ERR_AI_CALL_BUDGET", details: { used: this.callCount, budget: p.maxModelCalls } };

@@ -109,7 +109,7 @@ test("the allow/deny DECISION is computed fresh per evaluation — a HIT-shaped 
   // the engine cached the DECISION, the first call's "allow" would wrongly persist.
   // Instead each infer() re-evaluates the (constant) policy against live state, so a
   // call budget of 1 yields allow → then deny on the SAME compiled policy.
-  const eng = createHybridEngine({ governance: { maxModelCalls: 1 } });
+  const eng = createHybridEngine({ governance: { maxModelCalls: 1, allowUnattestedBridges: true } });
   const first = await eng.infer({ prompt: "x", correlationId: cid("d1"), opClasses: ["feedforward"] });
   assert.equal(first.trapFired, false, "first call within budget → allow");
   const second = await eng.infer({ prompt: "x", correlationId: cid("d2"), opClasses: ["feedforward"] });

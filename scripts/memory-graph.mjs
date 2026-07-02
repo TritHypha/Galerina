@@ -75,11 +75,17 @@ function parseTopic(text) {
 }
 
 // ── scan ──────────────────────────────────────────────────────────────────────
-const files = readdirSync(dir).filter((f) => f.endsWith(".md") && f !== "MEMORY.md");
+// The index is SPLIT (owner 2026-07-02): MEMORY.md = HOT set (auto-loaded into every session, kept tiny);
+// MEMORY-ARCHIVE.md = COLD overflow (NOT auto-loaded, recall by query). Both are authoritative index files —
+// a topic file listed in EITHER is "indexed". Neither is itself a topic file.
+const INDEX_FILES = ["MEMORY.md", "MEMORY-ARCHIVE.md"];
+const files = readdirSync(dir).filter((f) => f.endsWith(".md") && !INDEX_FILES.includes(f));
 const fileSlugs = new Set(files.map((f) => basename(f, ".md")));
-const indexEntries = existsSync(join(dir, "MEMORY.md"))
-  ? parseIndex(readFileSync(join(dir, "MEMORY.md"), "utf8"))
-  : new Map();
+const readIndex = (name) =>
+  existsSync(join(dir, name)) ? parseIndex(readFileSync(join(dir, name), "utf8")) : new Map();
+const hotEntries = readIndex("MEMORY.md");
+const coldEntries = readIndex("MEMORY-ARCHIVE.md");
+const indexEntries = new Map([...coldEntries, ...hotEntries]); // union; hot wins on any overlap
 
 const nodes = {}; // slug -> node
 for (const f of files) {
@@ -153,7 +159,7 @@ if (terms.length || tagFilter) {
 // ── BUILD mode ──────────────────────────────────────────────────────────────────
 const graph = {
   generatedFrom: dir,
-  counts: { files: files.length, indexed: indexEntries.size, nodes: Object.keys(nodes).length },
+  counts: { files: files.length, indexed: indexEntries.size, hot: hotEntries.size, cold: coldEntries.size, nodes: Object.keys(nodes).length },
   tags: Object.fromEntries(Object.entries(tagMap).map(([t, a]) => [t, a.length]).sort((a, b) => b[1] - a[1])),
   tagMap,
   nodes,
@@ -169,8 +175,12 @@ writeFileSync(join(dir, "MEMORY-GRAPH.json"), JSON.stringify(graph, null, 2));
 const topTags = Object.entries(graph.tags).slice(0, 12).map(([t, c]) => `#${t}(${c})`).join(" ");
 console.log(`\nmemory-graph: ${graph.counts.files} files · ${graph.counts.indexed} indexed · ${Object.keys(graph.tags).length} tags`);
 console.log(`  -> ${join(dir, "MEMORY-GRAPH.json")}`);
+console.log(`  TIERS: ${graph.counts.hot} hot (MEMORY.md, auto-loaded) · ${graph.counts.cold} cold (MEMORY-ARCHIVE.md, recall by query)`);
 console.log(`  top tags: ${topTags}`);
-console.log(`  HEALTH: ${danglingIndex.length} dangling index, ${orphans.length} orphan files, ${danglingLinks.length} dangling [[links]], ${dupes.length} dup-description clusters`);
+// "unindexed" = a topic file in NEITHER index (genuinely undiscoverable → add a line or delete). Being COLD
+// (in the archive, not in MEMORY.md) is EXPECTED and healthy — that is how the hot set is kept tiny.
+console.log(`  HEALTH: ${danglingIndex.length} dangling index, ${orphans.length} unindexed files, ${danglingLinks.length} dangling [[links]], ${dupes.length} dup-description clusters`);
 if (danglingIndex.length) console.log(`    dangling index (prune or create the file): ${danglingIndex.slice(0, 20).join(", ")}`);
-if (orphans.length) console.log(`    orphan files (add to MEMORY.md or delete): ${orphans.slice(0, 20).join(", ")}`);
+if (orphans.length) console.log(`    unindexed (add to MEMORY.md or MEMORY-ARCHIVE.md, or delete): ${orphans.slice(0, 20).join(", ")}`);
+if (danglingLinks.length) console.log(`    dangling [[links]] (fix or write target): ${danglingLinks.slice(0, 20).map((d) => `${d.from}→${d.to}`).join(", ")}`);
 console.log(`  query: node scripts/memory-graph.mjs <terms>   |   --tag <tag>\n`);

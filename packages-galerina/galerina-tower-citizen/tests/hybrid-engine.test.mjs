@@ -86,7 +86,7 @@ test("plan reports a blended average bits-per-weight", () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 test("hybrid engine produces a governed receipt with audit trail", async () => {
-  const engine = createHybridEngine({ airGapped: true, governanceTier: 1 });
+  const engine = createHybridEngine({ airGapped: true, governanceTier: 1, governance: { allowUnattestedBridges: true, allowHostNativeFallback: true } });
   const receipt = await engine.infer({
     prompt: "test prompt",
     correlationId: "TEST-HYBRID-001",
@@ -110,7 +110,7 @@ test("hybrid engine audit trail records per-op precision decisions", async () =>
 });
 
 test("latency invariant breach fires a governed trap", async () => {
-  const engine = createHybridEngine({ airGapped: true, governanceTier: 1, maxLatencyMs: 0.0001 });
+  const engine = createHybridEngine({ airGapped: true, governanceTier: 1, maxLatencyMs: 0.0001, governance: { allowUnattestedBridges: true, allowHostNativeFallback: true } });
   const receipt = await engine.infer({ prompt: "x", correlationId: "TEST-HYBRID-LAT", maxNewTokens: 10 });
   // An impossibly tight latency bound should trip the invariant
   assert.equal(receipt.trapFired, true);

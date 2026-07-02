@@ -157,7 +157,7 @@ test("0118 coupon-revocation: a REVOKED coupon (device-level) keeps photonic OFF
 });
 
 test("control: NON-certified mode runs photonic without any attestation (existing behaviour unchanged)", async () => {
-  const eng = createHybridEngine({ auditInMemory: true, photonic: { router: createPhotonicRouterPort(), kernelFor: bigKernel } });
+  const eng = createHybridEngine({ auditInMemory: true, governance: { allowUnattestedBridges: true, allowUnlistedModels: true }, photonic: { router: createPhotonicRouterPort(), kernelFor: bigKernel } });
   const r = await eng.infer({ ...CALL, correlationId: "np" });
   assert.ok(r.bridgesUsed.some((b) => b.startsWith("photonic:")), `non-certified photonic should run; got ${JSON.stringify(r.bridgesUsed)}`);
 });
