@@ -259,10 +259,10 @@ if (toolingTests.length) run("tests:tooling", "node", ["--test", ...toolingTests
 // ── 5e. R&D proofs keep-green gate (2026-07-01) ──
 // POSTURE prove-own-maths: every RD claim (adopted AND refuted) carries a machine-checkable,
 // re-runnable proof — but nothing ran them in the cadence, so a proof could silently bit-rot.
-// This runs the CANONICAL proof set (ZTF-Knowledge-Bases/proofs/* — all green, incl. RD-0231).
+// This runs the CANONICAL proof set (Galerina/proofs/* — relocated from the KB 2026-07-02, all green).
 // Legacy scripts/*-proof.mjs run on-demand: `node scripts/run-proofs.mjs` (currently 1 known-red,
 // rd-0128 TestWitness-aspiration — tracked, not gated here).
-run("proofs:kb", "node", ["scripts/run-proofs.mjs", "--kb-only"]);
+run("proofs:canonical", "node", ["scripts/run-proofs.mjs", "--canonical-only"]);
 
 // ── 6. Standing Governance Sanity Check — diff HEAD~1 ──
 // Transforms governance diff from a passive human-review step into an active quality gate.

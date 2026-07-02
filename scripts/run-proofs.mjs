@@ -9,11 +9,13 @@
 // notice. This runner discovers every proof and runs it; a red proof fails CI.
 //
 // Discovers:
-//   • this repo's        scripts/*-proof.mjs
-//   • the KB proofs dir  $GALERINA_KB_DIR/proofs/*.mjs  (default ../ZTF-Knowledge-Bases/proofs)
+//   • this repo's script-level proofs   scripts/*-proof.mjs
+//   • this repo's canonical proof set   proofs/*.mjs
+//     (RELOCATED from the KB 2026-07-02 — proofs are runnable CODE and belong in the code repo,
+//      not the docs KB; the KB `ZTF-Knowledge-Bases/proofs/` set is retired.)
 //
 // A proof is GREEN iff it exits 0 AND prints no "<n> fail" with n>0.
-// Usage:  node scripts/run-proofs.mjs [--json] [--kb-only]
+// Usage:  node scripts/run-proofs.mjs [--json] [--canonical-only]
 // Exit 1 if any proof fails or errors (CI-usable), else 0.
 // =============================================================================
 import { readdirSync, existsSync } from "node:fs";
@@ -23,13 +25,14 @@ import { execFileSync } from "node:child_process";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..");
-const KB_DIR = process.env.GALERINA_KB_DIR || join(ROOT, "../ZTF-Knowledge-Bases");
+const PROOFS_DIR = join(ROOT, "proofs"); // in-repo canonical proof set (relocated from the KB)
 const JSON_OUT = process.argv.includes("--json");
-const KB_ONLY = process.argv.includes("--kb-only");
+// --canonical-only runs ONLY the proofs/ set (the phase-close cadence gate); --kb-only is a back-compat alias.
+const CANONICAL_ONLY = process.argv.includes("--canonical-only") || process.argv.includes("--kb-only");
 
 const sources = [
-  { label: "scripts", dir: HERE, match: (f) => /-proof\.mjs$/.test(f), skip: KB_ONLY },
-  { label: "kb-proofs", dir: join(KB_DIR, "proofs"), match: (f) => /\.mjs$/.test(f), skip: false },
+  { label: "scripts", dir: HERE, match: (f) => /-proof\.mjs$/.test(f), skip: CANONICAL_ONLY },
+  { label: "proofs", dir: PROOFS_DIR, match: (f) => /\.mjs$/.test(f), skip: false },
 ];
 
 const proofs = [];
@@ -68,7 +71,7 @@ if (JSON_OUT) {
   console.log(JSON.stringify({ total: results.length, failed: failed.length, results }, null, 2));
   process.exit(failed.length ? 1 : 0);
 }
-console.log(`\n=== run-proofs — ${results.length} proof(s) (${KB_ONLY ? "kb-only" : "scripts + kb"}) ===`);
+console.log(`\n=== run-proofs — ${results.length} proof(s) (${CANONICAL_ONLY ? "canonical-only" : "scripts + proofs"}) ===`);
 for (const r of results) {
   console.log(`  ${r.ok ? "PASS" : "FAIL"}  ${r.group}/${r.name}${r.ok ? "" : "  <- " + err_(r)}`);
   if (r.tail) console.log(`        ${r.tail}`);
