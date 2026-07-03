@@ -225,6 +225,13 @@ run("coverage:codes", "node", ["scripts/audit-coverage.mjs", "codes", "--soft"])
 // KB/SPEC doc-drift is --strict only, pending the storage.*/ledger.* family work (Commit 2).
 run("effect:canonicality", "node", ["scripts/audit-effect-canonicality.mjs"]);
 
+// ── 5c-iii. Performance hot-path audit (2026-07-03) ──
+// The perf sibling of the security/bug audits: high-confidence hot-path anti-patterns (O(n²) `.find` inside
+// a loop, blocking sync I/O in a loop, re-sort / re-parse per iteration, the reduce-spread accumulator).
+// Report-only (--soft) — perf findings are optimisation opportunities, not correctness gates. The advisory
+// tier (membership / sequential-await) is counted but never printed here. Owner ask 2026-07-03.
+run("perf:hotpath", "node", ["scripts/audit-perf-hotpath.mjs", "--soft"]);
+
 // ── 5c-ii-bis. RD-0234b — the two dev-tools the ZT-tooling audit recommended (2026-07-02) ──
 // checker:wiring — every EXPORTED checker has a real pipeline call-site (the dead-gate class:
 //   checkTaint / checkMonkeyPatching / checkAttributeDirectives each had ZERO call-sites before the fix).

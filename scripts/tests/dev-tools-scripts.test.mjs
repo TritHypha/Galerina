@@ -441,3 +441,33 @@ test("rd-absorb: finds the migrated results-log (sibling KB) — logExists, not 
   assert.equal(ra.loggedCount, 1, "0001 recognized as already-logged from the real log");
   assert.equal(ra.unabsorbedCount, 1, "0002 correctly still unabsorbed");
 });
+
+// ── audit-perf-hotpath: static performance auditor — HIGH tier gates, advisory tier informs ──
+const tmp13 = mkdtempSync(join(tmpdir(), "fungi-perf-"));
+after(() => { try { rmSync(tmp13, { recursive: true, force: true }); } catch { /* best effort */ } });
+const perfSrc = join(tmp13, "pkg", "src"); // walk only scans files under a src/ dir
+mkdirSync(perfSrc, { recursive: true });
+writeFileSync(join(perfSrc, "hot.ts"), [
+  `export function scan(xs, ys, s) {`,
+  `  for (const x of xs) {`,
+  `    const hit = ys.find((y) => y.k === x);   // loop-array-find -> HIGH (O(n^2))`,
+  `    if (s.includes("literal")) continue;     // string LITERAL arg -> not flagged at all`,
+  `    if (ys.includes(x)) drop(hit);           // membership, VARIABLE arg -> ADVISORY, never HIGH`,
+  `  }`,
+  `}`,
+].join("\n") + "\n");
+const perf = JSON.parse(spawnSync(process.execPath, [join(SCRIPTS, "audit-perf-hotpath.mjs"), "--root", tmp13, "--json"], { encoding: "utf8" }).stdout);
+
+test("perf-hotpath: --self-test passes (every check fires on its anti-pattern, silent on the good form)", () => {
+  assert.equal(spawnSync(process.execPath, [join(SCRIPTS, "audit-perf-hotpath.mjs"), "--self-test"], { encoding: "utf8" }).status, 0);
+});
+test("perf-hotpath: a `.find` inside a loop is a HIGH finding (O(n^2))", () => {
+  assert.ok((perf.byCheck["loop-array-find"] ?? 0) >= 1, "ys.find(...) inside the for-loop is flagged HIGH");
+});
+test("perf-hotpath: string.includes(\"literal\") is NOT flagged (literal arg is a substring check, not membership)", () => {
+  assert.ok(!perf.advisoryResults.some((f) => f.snippet.includes('"literal"')), "the string-literal includes is not even advisory");
+});
+test("perf-hotpath: array membership with a variable arg is ADVISORY, never HIGH (never gates)", () => {
+  assert.equal(perf.byCheck["loop-membership"] ?? 0, 0, "membership never appears in the HIGH tier / exit code");
+  assert.ok(perf.advisoryResults.some((f) => f.check === "loop-membership"), "ys.includes(x) surfaces in the advisory tier");
+});
