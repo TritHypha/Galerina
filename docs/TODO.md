@@ -18,6 +18,26 @@ certified authority/admission require a signed grant/manifest. RESIDUAL: signing
 to drop even the internal self-load exemption stays coupled to the committed-pubkey custody chain (LATER). `.gate`
 front-end compiler (§5a–5d, own session, still owner-paused).
 
+## ✅ Done — 2026-07-03 (main session — now owns Galerina prod; local, push HELD)
+> The R&D worker handed the main session FULL CONTROL of Galerina prod (apply staged fixes / push / ODs /
+> §5a–5d unpause / releases). Pushes still gated on explicit owner OK. Staged fixes live in
+> `../Galerina-R-AND-D/build-staging/`.
+- [x] **★ RD-0238 P0 — native-addon RCE CLOSED** (`c40273f`). `galerina-ext-bridge-cpp/src/addon-loader.ts`
+      was fail-OPEN: the SHA-256 pin check at `:66` fired only when `expectedHash !== undefined`, so `loadNativeAddon()`
+      (the sole caller `bitnet-cpu-bridge.ts:54`, no pin) `require()`d ANY `.node` at a candidate path unverified =
+      arbitrary native code execution (CWE-494/-347). Verified live at prod file:line (DON'T-TRUST-CHECK) + staged bench
+      7/7 incl. mutation. Applied the staged **fail-closed** loader: no pin ⇒ `ERR_ADDON_UNPINNED` → simulator fallback;
+      pin-mismatch ⇒ `ERR_ADDON_HASH_MISMATCH`; `allowUnverified:true` = audited dev opt-out (reported `verified:false`);
+      +`verified` result flag. New prod SEC-mutant test `addon-loader.test.mjs` (4/4; present-but-unpinned ⇒ refuse, so
+      an un-fix can't silently merge). Package 21/21, no regression (clean checkout has no `.node` → simulator path
+      untouched). **Follow-ups (owner/next):** thread the signed `nativeAddonHash` pin into `bitnet-cpu-bridge.ts:54`
+      (from `galerina bridge-attest`, NOT a self-computed hash) to restore native speed safely; forbid `allowUnverified`
+      under `certificationProfile != "dev"` (RD-0236 certified⇒signed tie-in).
+- [x] **H1 wasm-lane fail-open + H3-named + numeric doc-drift** — see the RD-0234 residual block + NOW section below
+      (`2aa0edb`, `68632a7`, `9224348`, `464a5f9`; all local, push HELD).
+- [ ] **My build-staging queue** (now owned): anchor-GCM short-tag LOW (`build-staging/anchor-gcm-taglen-fix/`),
+      privacy-001, + others in `../Galerina-R-AND-D/build-staging/` — reconcile + apply each behind its RED-bench.
+
 ## ✅ Done — 2026-07-01/02 (local, unpushed)
 - [x] governance:diff fixture noise — gitignored `build/*.fungi` no longer phantom "added" — `941ec41`
 - [x] **CG-7** annotation→re-fuse→unsigned cascade closed (both ends + detector) — `4190287`
