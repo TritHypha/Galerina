@@ -110,8 +110,11 @@ for (const p of ["naming", "context", "intelligence", "provenance", "pci"]) {
   const dir = join(ROOT, "packages-galerina", `galerina-devtools-${p}`);
   if (existsSync(join(dir, "tests"))) run(`tests:devtools-${p}`, "npm", ["test", "--silent"], { cwd: dir });
 }
-// Non-core extension packages
-for (const p of ["galerina-ext-secrets-vault", "galerina-ext-proof-snarkjs"]) {
+// Non-core extension packages. ext-bridge-cpp is gated HERE (not just in the full suite) because it
+// carries the RD-0238 P0 SEC-mutant (addon-loader.test.mjs): a present-but-unpinned native `.node` must
+// be REFUSED before require() — so a regression that re-opens the native-load fail-open (arbitrary code
+// execution, CWE-494/-347) fails the phase-close gate, not only the full run.
+for (const p of ["galerina-ext-secrets-vault", "galerina-ext-proof-snarkjs", "galerina-ext-bridge-cpp"]) {
   const dir = join(ROOT, "packages-galerina", p);
   const label = p.replace("galerina-ext-", "");
   if (existsSync(join(dir, "tests"))) run(`tests:ext-${label}`, "npm", ["test", "--silent"], { cwd: dir });
