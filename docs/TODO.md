@@ -49,16 +49,15 @@ front-end compiler (§5a–5d, own session, still owner-paused).
 - [ ] Offline re-sign ceremony owed: `greeting.lmanifest` (old-brand `lln.manifest.v1` schema).
 
 ## 🔲 NOW (buildable, no hard blocker; value-ordered)
-- [~] **Numeric doc-drift sweep** — **partial (`9224348`, local):** the two SOURCE comments FIXED —
-      `numeric-lowering.ts` `BACKEND_UNLOWERABLE_SCALAR` block (self-contradicted: "only UInt64 remains" vs
-      "NOW EMPTY") + `u64-arith.ts` ("reachable from nothing yet / stays fail-closed until … land") both
-      reconciled to the landed UInt64 lift (#52; verified `interpreter.ts:20/149` dispatches UInt64, gate set
-      empty). (`value-state-checker.ts:2166` in the old note was a mis-cited line — it's a FUNGI-SECRET-002
-      diag, no numeric drift.) **Remaining:** (a) `cli-numeric-gate.test.mjs` header still says "UInt64 stays
-      gated" — reconcile with the test's ACTUAL assertions (deeper than a comment: the suite passes, so confirm
-      what it now asserts before editing); (b) extend `audit-doc-drift`/`diagnostic-doc-drift` to catch the
-      "gated / not-yet-emitted / fail-closed-until" phrase class near numeric-gate code (error→tooling, so it
-      can't recur).
+- [~] **Numeric doc-drift sweep** — **comment sweep DONE (`9224348` + test-header, local):** all 3 real drift
+      sites reconciled to the landed UInt64 lift (#52; verified — a UInt64 flow builds CLEAN, `interpreter.ts:20/149`
+      dispatches it, `BACKEND_UNLOWERABLE_SCALAR` empty): `numeric-lowering.ts` block (self-contradicted "only
+      UInt64 remains" vs "NOW EMPTY") · `u64-arith.ts` ("reachable from nothing yet / fail-closed until … land") ·
+      `cli-numeric-gate.test.mjs` header ("only UInt64 stays gated" — contradicted its OWN 4 assertions, which
+      assert UInt64/Int64 ADMITTED). (`value-state-checker.ts:2166` in the old note was mis-cited — a
+      FUNGI-SECRET-002 diag, no drift.) **Remaining (tooling, error→tooling rule):** extend
+      `audit-doc-drift`/`diagnostic-doc-drift` to catch the "gated / not-yet-emitted / fail-closed-until" phrase
+      class near numeric-gate code so it can't recur.
 - [x] **`FUNGI-LIMIT-001`** ✅ DONE + PUSHED (`cb68494`) — `enforced_limits{}` ceiling check now enforced in
       `governance-verifier.ts` (`verifyDomainGuardConformance`): `canonicalLimitName` token-strips max/ceiling,
       `parseLimitValue` normalizes bytes/time/count families, and a flow whose `limits{}` declares a value above the

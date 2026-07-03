@@ -1,18 +1,20 @@
 /**
- * CLI regression — the FUNGI-NUMERIC-001 numeric-truncation gate at the `galerina check` / `galerina build`
- * surface (the two verified holes + the Int64 lift), driven through the REAL CLI (spawn `node galerina.mjs`).
+ * CLI regression — the FUNGI-NUMERIC-001 numeric gate at the `galerina check` / `galerina build` surface,
+ * driven through the REAL CLI (spawn `node galerina.mjs`). Pins the #52 lift: both 64-bit scalars are now
+ * ADMITTED at the CLI in the default/unset GALERINA_PROFILE (the everyday local path).
  *
- * Holes this pins (default/unset GALERINA_PROFILE — the everyday local path):
- *   HOLE #2 (`check`): it filtered checkValueStates() to FUNGI-VALUESTATE-008 ALONE, so a fail-closed
- *     FUNGI-NUMERIC-001 error for a still-gated width (UInt64) was discarded → `check` printed "0 errors"
- *     on a file the production build rejects. Now `check` surfaces ALL error-severity value-state
- *     diagnostics and exits non-zero.
- *   HOLE #1 (`build`): the dev/unset branch never ran checkValueStates, so an unlowerable 64-bit scalar
- *     was emitted as a silently-truncating module. Now the value-state gate runs UNCONDITIONALLY and
- *     rejects a still-gated width REGARDLESS of profile.
+ * Background — two holes this path once had (both fixed; kept here as the regression they pin):
+ *   HOLE #2 (`check`): it filtered checkValueStates() to FUNGI-VALUESTATE-008 ALONE, so any OTHER
+ *     fail-closed value-state error was discarded → `check` printed "0 errors" on a file the production
+ *     build rejects. Now `check` surfaces ALL error-severity value-state diagnostics and exits non-zero.
+ *   HOLE #1 (`build`): the dev/unset branch never ran checkValueStates, so an unlowerable numeric value
+ *     was emitted as a silently-truncating module. Now the value-state gate runs UNCONDITIONALLY,
+ *     regardless of profile.
  *
- * And the lift: Int64 is now faithfully lowered (i64, walker ≡ WASM byte-exact), so a scalar Int64 flow
- * is ADMITTED by both `check` and a default `build` — only UInt64 stays gated until u64-arith lands.
+ * The lift (#52): Int64 (faithful i64, walker ≡ WASM byte-exact) AND UInt64 (carried on the walker via the
+ * exact-trapping u64-arith layer; WASM declines) are BOTH lowered now, so the FUNGI-NUMERIC-001 scalar-width
+ * gate set (`BACKEND_UNLOWERABLE_SCALAR`) is empty — a scalar Int64/UInt64 flow is ADMITTED by both `check`
+ * and a default `build`. The four tests below assert exactly that (no FUNGI-NUMERIC-001, exit 0).
  *
  * Spawns the root galerina.mjs (cwd = repo root) so it exercises the exact dist + CLI wiring a user hits.
  */
