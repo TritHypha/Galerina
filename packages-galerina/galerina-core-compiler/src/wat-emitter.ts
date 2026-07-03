@@ -223,7 +223,20 @@ export function galerinaTypeToWAT(typeName: string): WATValType {
     // all local variables as (local $x i32), so parameters must match.
     // Phase 22B (full linear-memory string layout) will revisit this when the host
     // string table and char-access intrinsics are wired into the WASM import table.
-    default: return "i32"; // opaque handle — Stage B: all non-numeric types as i32
+    default: {
+      // BK-2 (50yr "no implicit coercion on unknown"): String / Char / a user record or enum / a generic
+      // (Array<…>/Option<…>/Result<…>/Tensor<…>) all lower to an opaque i32 handle — valid, and guaranteed
+      // valid once type-checking has run. But an EMPTY or non-identifier-shaped name means a MALFORMED type
+      // reached codegen (an upstream gap — e.g. the WASM-standalone path skipping checkTypes, BK-5). Fail
+      // CLOSED rather than silently coerce garbage to a 32-bit handle.
+      if (typeName.trim() === "" || !/^[A-Za-z_]/.test(typeName)) {
+        throw new Error(
+          `galerinaTypeToWAT: refusing to lower malformed type name ${JSON.stringify(typeName)} to i32 — ` +
+          `FAIL CLOSED (BK-2; a malformed type reached codegen — ensure type-checking ran before emit).`,
+        );
+      }
+      return "i32"; // opaque handle — String/Char/record/enum/generic (post-checkTypes: guaranteed valid)
+    }
   }
 }
 
