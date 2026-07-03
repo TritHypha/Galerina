@@ -948,11 +948,43 @@ function runWasmStandaloneBuild(targetDir: string, files: string[]): void {
 
     const parseResult = parseProgram(source, filePath);
     const effectResults = checkEffects(parseResult.flows, parseResult.ast);
-    const girResult = emitGIR(parseResult.ast, parseResult.flows, effectResults);
 
+    // BK-5 / H1 / M1 (fail-closed): the WASM target MUST NOT skip the front-end. Run the full gate —
+    // type-check + production governance verify + the ONE authoritative production security gate
+    // (runProductionSecurityGate, the same gate the signing path uses) — and REFUSE to lower/emit an
+    // ungoverned or type-unsafe binary. A whole build target silently skipping the governance verifier
+    // was the H1 total-bypass; emitting a .wasm after a gate failure was M1; reaching codegen without
+    // checkTypes was BK-5. Any error, or a gate block, drops the file — no artifact is written.
+    const gateErrors: string[] = [];
+    for (const d of checkTypes(parseResult.ast).diagnostics) {
+      if (d.severity === "error") gateErrors.push(`${d.code}: ${d.message}`);
+    }
+    for (const d of verifyGovernance(parseResult.ast, parseResult.flows, effectResults, "production", filePath).diagnostics) {
+      if (d.severity === "error") gateErrors.push(`${d.code}: ${d.message}`);
+    }
+    const gateBlocks = productionGateBlocks(
+      runProductionSecurityGate(parseResult.ast, parseResult.flows, source, filePath),
+    );
+    if (gateErrors.length > 0 || gateBlocks) {
+      process.stderr.write(
+        `[error] ${filePath}: refusing to emit WASM — the production gate blocked it (BK-5/H1/M1 fail-closed).\n` +
+        (gateBlocks ? "  - production security gate: BLOCKED\n" : "") +
+        gateErrors.map((e) => `  - ${e}\n`).join(""),
+      );
+      continue; // do NOT lower / write an ungoverned artifact
+    }
+
+    const girResult = emitGIR(parseResult.ast, parseResult.flows, effectResults);
     const watModule = buildWATModuleFromGIR(girResult.gir, STDLIB_CAPABILITY_MAP, "wasm-standalone");
     const watText = renderWAT(watModule);
     watParts.push(`\n;; === ${filePath} ===\n${watText}`);
+  }
+
+  // M1: if every input was blocked (or none were readable), write NOTHING — a gate failure must not
+  // leave a runnable .wasm behind.
+  if (watParts.length === 0) {
+    process.stderr.write(`[error] no WASM emitted — all inputs were blocked by the production gate or unreadable (fail-closed).\n`);
+    return;
   }
 
   // For wasm-standalone, we emit a single combined WAT. If there are multiple
