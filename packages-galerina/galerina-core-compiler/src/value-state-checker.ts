@@ -332,9 +332,23 @@ function isLogCall(node: AstNode): boolean {
   return seg === "log" || seg === "logger" || seg === "console";
 }
 
+// H3 (RD-0234c): known off-host egress SERVICES a raw secret must never reach. AUDIT-NAMED gap-closure —
+// Slack/S3/Kafka/… were omitted from the receiver hand-list, so a SecureString handed to them signed
+// clean (exfiltration). NOT exhaustive — the SOUND fix is a safelist (unknown receiver ⇒ deny-by-default),
+// tracked as RD-0234c H3 (deferred for its over-block scoping); this closes the named + common paths.
+const EXTERNAL_EGRESS_SERVICES = new Set([
+  "slack", "discord", "telegram", "s3", "gcs", "azureblob", "blobstore", "cloudstorage",
+  "kafka", "sns", "sqs", "pubsub", "eventbus", "eventbridge", "messagequeue", "rabbitmq",
+  "sms", "smsservice", "twilio", "sendgrid", "mailgun", "stripe", "paypal", "braintree",
+  "webhook", "webhookservice", "firebase", "firestore", "fcm", "apns", "pushnotification",
+  "datadog", "segment", "mixpanel", "amplitude", "pagerduty", "opsgenie", "elasticsearch",
+]);
+// Egress-shaped method verbs (transmit/persist off-host). A read-only getter (get/list/describe/read) is NOT.
+const EGRESS_METHOD_VERB = /^(send|post|put|publish|push|notify|dispatch|deliver|upload|charge|emit|track|capture|submit|forward|index|write|append|enqueue|produce|ingest|report|export|sync|store)/i;
+
 // Network / egress sinks — a raw secret transmitted off-host is an exfiltration path.
 // Recognised: http.* / https.* / net.* / socket.* / ws.* / websocket.* method calls,
-// standalone fetch(...), and email/EmailService.send.
+// standalone fetch(...), email/EmailService.send, and (H3) the named external egress services above.
 function isNetworkSink(node: AstNode): boolean {
   const methodName = node.value ?? "";
   if (methodName === "fetch") return true;
@@ -358,6 +372,9 @@ function isNetworkSink(node: AstNode): boolean {
   // ships the payload to a model (a third-party egress), like ai.remoteInference — was ungoverned.
   if (r === "model" && /^(run|infer|predict|generate|complete)$/.test(methodName)) return true;
   if (/vectordb$/.test(r) && /^(write|insert|upsert|add|index)$/.test(methodName)) return true;
+  // H3: a raw secret handed to a named external egress service (Slack/S3/Kafka/…) with an egress-shaped
+  // method ships it off-host, exactly like http.*/email.send. (See EXTERNAL_EGRESS_SERVICES above.)
+  if (EXTERNAL_EGRESS_SERVICES.has(r) && EGRESS_METHOD_VERB.test(methodName)) return true;
   return false;
 }
 

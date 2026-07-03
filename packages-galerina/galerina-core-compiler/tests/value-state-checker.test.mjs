@@ -1355,3 +1355,35 @@ contract { effects { database.write } }
     );
   });
 });
+
+// ── H3 (RD-0234c): named external-egress services close the secret-exfil receiver hand-list gap ──
+// Before this fix, a raw SecureString handed to Slack.send / S3.put / Kafka.publish / … was NOT a
+// recognised network sink, so it signed clean (exfiltration). Now those named off-host services are
+// recognised. (The SOUND denylist→safelist inversion — unknown receiver ⇒ deny — is tracked as RD-0234c.)
+describe("Value-state checker — H3 secret egress to named external services (FUNGI-SECRET-002)", () => {
+  const flow = (stmt) => `
+secure flow test() -> Result<String, Error>
+contract { effects { secret.read, network.outbound } }
+{
+  let apiKey: SecureString = env.secret("API_KEY")
+  ${stmt}
+  return Ok("done")
+}
+`;
+  for (const sink of ["Slack.send(apiKey)", "S3.put(apiKey)", "Kafka.publish(apiKey)", "Sns.publish(apiKey)", "Webhook.post(apiKey)", "Twilio.send(apiKey)"]) {
+    it(`FIRES FUNGI-SECRET-002 — a raw secret egresses via ${sink}`, () => {
+      const r = parseAndCheck(flow(sink));
+      assert.ok(hasDiag(r, "FUNGI-SECRET-002"), `expected exfil flag for ${sink}, got: ${r.diagnostics.map((d) => d.code).join(", ")}`);
+    });
+  }
+
+  it("does NOT fire for a read-only getter on an egress service (no data leaves)", () => {
+    const r = parseAndCheck(flow('let cfg: String = Slack.getChannel(apiKey)'));
+    assert.ok(!hasDiag(r, "FUNGI-SECRET-002"), "Slack.getChannel is a getter (get*), not an egress verb");
+  });
+
+  it("does NOT fire for a non-egress-service call (no over-block)", () => {
+    const r = parseAndCheck(flow('let h: String = Crypto.hashSecret(apiKey)'));
+    assert.ok(!hasDiag(r, "FUNGI-SECRET-002"), "Crypto is not an external egress service");
+  });
+});
