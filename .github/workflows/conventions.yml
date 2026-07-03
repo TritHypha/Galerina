@@ -27,7 +27,21 @@ jobs:
         with:
           node-version: "20"
 
+      # The KB corpus (docs incl. compiler-diagnostics.md + the count-authority docs the doc-drift
+      # enforcers read) migrated to the sibling ZTF-Knowledge-Bases repo. Check it out so the umbrella's
+      # doc-drift / diagnostic-doc-drift members see it. If ZTF-KB is private, set a read-only
+      # ZTF_KB_READ_TOKEN secret; if public, github.token suffices. A failed checkout fails the job
+      # (fail-closed) rather than silently scanning an empty corpus.
+      - name: Check out the KB corpus (sibling repo)
+        uses: actions/checkout@v4
+        with:
+          repository: zero-trust-framework/ZTF-Knowledge-Bases
+          path: ZTF-Knowledge-Bases
+          token: ${{ secrets.ZTF_KB_READ_TOKEN || github.token }}
+
       - name: Convention gate (report-only — STAGE 1 of #6)
+        env:
+          GALERINA_KB_DIR: ${{ github.workspace }}/ZTF-Knowledge-Bases
         run: |
           echo '## Convention / quality gate (lint-conventions --soft)' >> "$GITHUB_STEP_SUMMARY"
           echo '' >> "$GITHUB_STEP_SUMMARY"
@@ -128,7 +142,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+      # The canonical diagnostic reference (compiler-diagnostics.md) migrated to the sibling
+      # ZTF-Knowledge-Bases repo, so this cross-repo gate needs it checked out. Without it the enforcing
+      # scan fail-closes (exit 1) — which is why this job went RED after the migration. If ZTF-KB is
+      # private, set a read-only ZTF_KB_READ_TOKEN secret; if public, github.token suffices.
+      - name: Check out the KB corpus (sibling repo — holds compiler-diagnostics.md)
+        uses: actions/checkout@v4
+        with:
+          repository: zero-trust-framework/ZTF-Knowledge-Bases
+          path: ZTF-Knowledge-Bases
+          token: ${{ secrets.ZTF_KB_READ_TOKEN || github.token }}
       - name: Diagnostic doc↔source drift (self-test, then enforcing)
+        env:
+          GALERINA_KB_DIR: ${{ github.workspace }}/ZTF-Knowledge-Bases
         run: |
           node scripts/audit-diagnostic-doc-drift.mjs --self-test
           node scripts/audit-diagnostic-doc-drift.mjs
@@ -227,3 +253,56 @@ jobs:
           node-version: "20"
       - name: Runtime operator-coverage gate (self-test, then enforcing)
         run: node scripts/audit-runtime-coverage.mjs
+
+  # phase-close gates (build-free, ENFORCING) — mirror the BLOCKING gates in scripts/run-phase-close.mjs
+  # that previously ran ONLY on a developer's machine ("NO CI exists — every gate is manually enforced"
+  # was version.json's #1 ops risk; this closes most of it). Each reads git-tracked SOURCE directly (no
+  # build, no package-tree install) and is zero-baseline green today; a --self-test runs first where the
+  # tool ships one (a neutered audit is itself a fail-open). Grouped in ONE job so a single checkout+setup
+  # covers all; each step fails the job independently so the Actions UI shows which invariant broke.
+  phase-close-gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      # checker:wiring — every EXPORTED checker has a real pipeline call-site (the dead-gate class:
+      # checkTaint / checkMonkeyPatching / checkAttributeDirectives each had ZERO call-sites before the fix).
+      - name: Dead-gate / checker-wiring guard (self-test, then enforcing)
+        run: |
+          node scripts/audit-checker-wiring.mjs --self-test
+          node scripts/audit-checker-wiring.mjs
+      # sink:canonicality — no stdlib egress/exec/write sink silently escapes the taint / value-state sink
+      # hand-lists (the sink-drift class). Ships a --self-test + a reasoned allowlist.
+      - name: Sink/source canonicality guard (self-test, then enforcing)
+        run: |
+          node scripts/audit-sink-canonicality.mjs --self-test
+          node scripts/audit-sink-canonicality.mjs
+      # effect:canonicality — the compiler's effect tables (CANONICAL_EFFECTS · EFFECT_NAME_TO_FLAG ·
+      # EFFECT_REGISTRY · SECURE_REQUIRED/PURE_FORBIDDEN) must agree; a name accepted by one table but
+      # rejected by another let an AI author non-compiling governed code. Blocks on INTERNAL drift.
+      - name: Effect-vocabulary single-source-of-truth (enforcing)
+        run: node scripts/audit-effect-canonicality.mjs
+      # effects:corpus — the teaching corpus (examples/, docs/, package src) may declare only effect names
+      # a PRODUCTION compile accepts (nothing else production-compiles the examples, so a bad name teaches
+      # silently).
+      - name: Corpus effect-name conformance (enforcing)
+        run: node scripts/audit-corpus-effect-names.mjs
+      # muted:diagnostics — a silenced security/governance diagnostic is a fail-open. FAILS if such a code
+      # is muted WITHOUT being on the reviewed allowlist, so muting can never happen silently again.
+      - name: Muted security/governance diagnostics guard (enforcing)
+        run: node scripts/audit-muted-diagnostics.mjs
+      # scratch-dir:hygiene — no test creates build/<prefix>-${process.pid} scratch dirs without rmSync
+      # cleanup (the flaky-gate + unbounded-disk-leak class). Own-pid sweep is parallel-safe.
+      - name: Test scratch-dir hygiene (enforcing)
+        run: node scripts/audit-scratchdir-hygiene.mjs
+      # signed:fixtures — a SIGNED fusable package must be git-clean (the annotation→re-fuse→unsigned
+      # cascade class). On a clean CI checkout this proves no signed artifact was committed dirty.
+      - name: Signed-fixture drift guard (enforcing)
+        run: node scripts/audit-signed-fixture-drift.mjs
+      # dev-tool script tests — the audit/index/registry tooling itself (scripts/tests/) lives OUTSIDE
+      # packages-galerina, so the package runner never sees it. Run here so the gates that guard the repo
+      # are themselves regression-gated (incl. the doc-drift KB-resolution + fail-closed benches).
+      - name: Dev-tool script tests (build-free)
+        run: node --test scripts/tests/*.test.mjs
