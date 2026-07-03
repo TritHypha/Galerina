@@ -9,7 +9,10 @@ import { type AstNode } from "../parser.js";
 import { type RuntimeContext, createContext } from "./runtimeContext.js";
 import { type TimeoutConfig, parseTimeoutConfig, checkDeadline } from "./timeoutPolicy.js";
 import { type EffectRetryPolicy, parseRetryPolicy, withRetry } from "./retryPolicy.js";
-import { type LimitConfig, parseLimitConfig, checkRequestSize, checkBatchSize } from "./limitPolicy.js";
+import {
+  type LimitConfig, parseLimitConfig, checkRequestSize, checkBatchSize,
+  checkResultCount, checkQueryLength, checkAmount, checkConcurrentTasks, checkRate,
+} from "./limitPolicy.js";
 import {
   type ContractEnforcementRecord,
   createEnforcementRecord,
@@ -32,6 +35,17 @@ export interface ContractEnforcer {
    * Throws a RangeError with a descriptive message if the limit is exceeded.
    */
   checkBatchSize(count: number): void;
+
+  /**
+   * BUG B (RD-0234c): the previously-inert limit kinds. Each throws a RangeError ([FUNGI-LIMIT])
+   * when the supplied value exceeds the configured limit, and is a no-op when that limit is not
+   * declared. concurrent_tasks/rate take a host-supplied live count (the config holds the threshold).
+   */
+  checkResultCount(count: number): void;
+  checkQueryLength(chars: number): void;
+  checkAmount(amount: number): void;
+  checkConcurrentTasks(current: number): void;
+  checkRate(observedInWindow: number): void;
 
   /**
    * Checks whether the flow deadline has been exceeded.
@@ -122,6 +136,49 @@ export function createContractEnforcer(
         throw new RangeError(
           `[FUNGI-LIMIT] batch size ${count} exceeds contract limit ${violation.limit}`,
         );
+      }
+    },
+
+    // BUG B (RD-0234c): enforcer methods for the previously-inert kinds. Same throw-on-violation
+    // shape as checkRequestSize/checkBatchSize; the bare identifier resolves to the imported check
+    // function (module scope), not this object property (mirrors the existing methods above).
+    checkResultCount(count: number): void {
+      const violation = checkResultCount(count, limitConfig);
+      if (violation !== null) {
+        cell.record = recordLimitViolation(cell.record, violation);
+        throw new RangeError(`[FUNGI-LIMIT] result count ${count} exceeds contract limit ${violation.limit}`);
+      }
+    },
+
+    checkQueryLength(chars: number): void {
+      const violation = checkQueryLength(chars, limitConfig);
+      if (violation !== null) {
+        cell.record = recordLimitViolation(cell.record, violation);
+        throw new RangeError(`[FUNGI-LIMIT] query length ${chars} exceeds contract limit ${violation.limit}`);
+      }
+    },
+
+    checkAmount(amount: number): void {
+      const violation = checkAmount(amount, limitConfig);
+      if (violation !== null) {
+        cell.record = recordLimitViolation(cell.record, violation);
+        throw new RangeError(`[FUNGI-LIMIT] amount ${amount} exceeds contract limit ${violation.limit}`);
+      }
+    },
+
+    checkConcurrentTasks(current: number): void {
+      const violation = checkConcurrentTasks(current, limitConfig);
+      if (violation !== null) {
+        cell.record = recordLimitViolation(cell.record, violation);
+        throw new RangeError(`[FUNGI-LIMIT] concurrent tasks ${current} exceeds contract limit ${violation.limit}`);
+      }
+    },
+
+    checkRate(observedInWindow: number): void {
+      const violation = checkRate(observedInWindow, limitConfig);
+      if (violation !== null) {
+        cell.record = recordLimitViolation(cell.record, violation);
+        throw new RangeError(`[FUNGI-LIMIT] rate ${observedInWindow} exceeds contract limit ${violation.limit}`);
       }
     },
 

@@ -118,6 +118,18 @@ function formatViolationMessage(v: LimitViolation): string {
       return `memory: actual=${v.actual} exceeded limit=${v.limit}`;
     case "prompt_size":
       return `prompt_size: actual=${v.actual} exceeded limit=${v.limit}`;
+    // BUG B (RD-0234c): previously-inert kinds — same shape, listed so the switch stays exhaustive
+    // over the LimitViolation union (strict TS errors on a missing arm — the guardrail that forced this).
+    case "results":
+      return `results: actual=${v.actual} exceeded limit=${v.limit}`;
+    case "query_length":
+      return `query_length: actual=${v.actual} exceeded limit=${v.limit}`;
+    case "amount":
+      return `amount: actual=${v.actual} exceeded limit=${v.limit}`;
+    case "concurrent_tasks":
+      return `concurrent_tasks: actual=${v.actual} exceeded limit=${v.limit}`;
+    case "rate":
+      return `rate: actual=${v.actual} exceeded limit=${v.limit}`;
   }
 }
 
