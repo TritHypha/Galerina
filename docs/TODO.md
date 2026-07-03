@@ -54,7 +54,7 @@ front-end compiler (§5a–5d, own session, still owner-paused).
         (rate / concurrent_tasks / max amount / max query length / max results) now recognised (registered in
         ALL_LIMIT_PATTERNS) + parsed into LimitConfig + have check fns + throwing enforcer methods. Removes 6 spurious
         FUNGI-GOV-019 warnings on shipped examples. Recognition + check-layer ONLY (no call sites ⇒ no flow-behaviour
-        change). Re-authored vs prod HEAD (the staged patch was stale — targeted old `LogicN`/`KNOWN_LIMITS_PHRASES`).
+        change). Re-authored vs prod HEAD (the staged patch was stale — targeted old-brand `LogicN`/`KNOWN_LIMITS_PHRASES`).
   - [x] **`f2fe5ef`** scratch-leak: own-PID sweep in `sentinel-egress-time.test.mjs` (last broad-sweep straggler) + the
         `audit-scratchdir-hygiene` phase-close detector now flags the BROAD_SWEEP sub-class it was blind to (error→tooling).
 - [ ] **OWNER-GATED from this session (R&D done, plans ready in `../Galerina-R-AND-D/build-staging/` + R&D scratch — do NOT self-land):**

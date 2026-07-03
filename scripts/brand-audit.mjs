@@ -53,7 +53,18 @@ const ALLOW = [
   /(^|[\\/])CHANGELOG\.md$/i,
   /(^|[\\/])notes[\\/]/i,        // historical R&D scratch (note 77 documents the rename itself)
   /RESTART-PROMPT|RESUME-|HANDOFF|REBOOT/i,
+  // TritMesh-domain examples: `.spore` is the CURRENT TritMesh DB-container name (owner rename
+  // .tmf->.spore, notes/77-mesh-r-d-00.md:15; KB naming-audit 2026-07-03: "source stays .fungi").
+  /(^|[\\/])docs[\\/]examples[\\/]hypha[\\/]/i,
+  // R&D proof scripts: verbatim-quote the note claims they refute + use TritMesh-current `.spore`
+  // (passport vector / DB / RD-0231 A4 artifact row), and rd-0218 carries a FUNCTIONAL bio-morpheme
+  // regex (naming-philosophy R5 detector) — a brand-edit would falsify quotes or change behaviour.
+  /proofs[\\/]rd-(0204|0206|0218|0231-applicability-zt)-proof\.mjs$/i,
 ];
+// Line-level historical marker — a line that explicitly self-marks a deliberate old-brand
+// reference stays ALLOWED even in a non-allowlisted file (convention: docs/TODO.md:107).
+// Downgrade-only (STRAGGLER -> ALLOWED): marked lines remain visible in the ALLOWED listing.
+const HISTORICAL_LINE = /old-brand/i;
 // Generated / regenerable — reported separately, not a hard failure.
 const GENERATED = [/(^|[\\/])(dist|build|results|coverage|_audit_tmp)[\\/]/i, /\.lindex$/i, /\.jsonl$/i, /-GRAPH_REPORT\.md$/i, /galerina-ai-map\.md$/i,
   // compiled / regenerable binaries + logs (embed the OLD build path; rebuild to refresh)
@@ -108,7 +119,8 @@ for (const full of files) {
       t.re.lastIndex = 0;
       let m;
       while ((m = t.re.exec(line)) !== null) {
-        findings[cls].push({
+        const lineCls = cls === "STRAGGLER" && HISTORICAL_LINE.test(line) ? "ALLOWED" : cls;
+        findings[lineCls].push({
           file: rel, line: i + 1, token: t.key, becomes: t.becomes,
           match: m[0], nul: hasNul,
           ctx: line.trim().slice(0, 120),
