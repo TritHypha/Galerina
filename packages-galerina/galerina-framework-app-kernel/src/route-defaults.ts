@@ -8,7 +8,7 @@
  */
 import type {
   HttpMethod, RouteDeclaration, EffectiveRoutePolicy,
-  AuthPolicy, BodyPolicy, IdempotencyPolicy, LimitsPolicy, AuditPolicy,
+  AuthPolicy, BodyPolicy, IdempotencyPolicy, LimitsPolicy, AuditPolicy, SecretsPolicy,
 } from "./types.js";
 import { MUTATING_METHODS } from "./types.js";
 
@@ -141,13 +141,19 @@ export function resolveEffectiveRoutePolicy(
     if (!audit.runtimeReport) relaxations.push("audit:off");
   }
 
+  // ── secrets — default is an EMPTY require list (a strict no-op → non-breaking for every existing
+  // route). A required secret only ever TIGHTENS admission (gate 9.5), so it is NOT a relaxation and
+  // is never recorded in `relaxations[]`. The list is copied to keep the resolved policy immutable. ──
+  const secrets: SecretsPolicy =
+    route.secrets?.require === undefined ? { require: [] } : { require: [...route.secrets.require] };
+
   return {
     method: route.method,
     path: route.path,
     handler: route.handler,
     requestType: route.requestType,
     responseType: route.responseType,
-    auth, body, idempotency, limits, audit,
+    auth, body, idempotency, limits, audit, secrets,
     appliedDefaults,
     relaxations,
   };

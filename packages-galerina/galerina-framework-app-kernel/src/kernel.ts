@@ -18,12 +18,18 @@
  *   7  decode JSON        (invalid → 422)
  *   8  idempotency        (enabled + duplicate key → 409)
  *   9  concurrency        (> maxConcurrent → 429)
+ *   9.5 secrets           (a required secret absent/faulted/unresolved → 503, fail-closed)
  *   10 dispatch handler   (ONLY now is developer code reached)
  *   11 encode response
  *   12 audit placeholder
  */
 import type { HttpMethod, RouteDeclaration, EffectiveRoutePolicy } from "./types.js";
 import { resolveEffectiveRoutePolicy, type EffectivePosture } from "./route-defaults.js";
+// Gate 9.5 — the fail-closed secrets seam. The kernel depends only on the structural
+// SecretsProvider shape (no hard compile dependency on @galerina/ext-secrets-tmf); a
+// boot-resolved SealArena satisfies it by shape and is passed via CreateAppKernelOptions.
+import { createSecretGate } from "./secret-gate.js";
+import type { SecretsProvider } from "./secret-gate.js";
 // #195/#179 — resolve OS/HW posture via @galerina/core-config (single source of truth for the
 // fail-secure logic). Relative-dist import: this path resolves identically from src/ and dist/
 // (each sits two levels under packages-galerina/). Swap to the bare specifier once workspaces land (#155).
@@ -64,6 +70,10 @@ export interface HandlerContext {
   readonly policy: EffectiveRoutePolicy;
   /** Parsed JSON body, or `undefined` when the request carried no body. */
   readonly json: unknown;
+  /** Fail-closed secret accessor. Runs `fn` with a short-lived view; returns `undefined` for an
+   *  absent/faulted secret (or absent provider). Any secret this route DECLARES via
+   *  `secrets.require` is already guaranteed present-and-not-faulted by gate 9.5 before dispatch. */
+  readonly getSecret: (name: string, fn: (value: Uint8Array) => unknown) => unknown;
 }
 
 /** A dispatched handler returns the response payload; the kernel encodes it. */
@@ -184,6 +194,10 @@ export interface CreateAppKernelOptions {
   readonly idempotencyStore?: IdempotencyStore;
   /** Override the audit sink (default: in-memory async). Emitted off the critical path. */
   readonly auditSink?: AuditSink;
+  /** Boot-resolved secrets provider (a SealArena from ext-secrets-tmf `loadAll`). Absent → every
+   *  route that DECLARES a required secret fails closed at gate 9.5 (503); secret-free routes are
+   *  unaffected. The host owns the provider's lifecycle and MUST `dispose()` it on shutdown. */
+  readonly secretsProvider?: SecretsProvider;
 }
 
 export interface AppKernel {
@@ -200,6 +214,7 @@ export type KernelErrorCode =
   | "unprocessable_entity"
   | "conflict"
   | "too_many_requests"
+  | "secret_unavailable"
   | "internal_error";
 
 const JSON_HEADERS: Readonly<Record<string, string>> = Object.freeze({
@@ -250,17 +265,33 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     : (requestedPosture === "on" ? "on" : "off");
   const idempotencyStore: IdempotencyStore = opts.idempotencyStore ?? new InMemoryIdempotencyStore();
   const auditSink: AuditSink = opts.auditSink ?? new InMemoryAuditSink();
+  // Build the gate-9.5 secrets seam ONCE (off the request path). No provider → `admit` refuses any
+  // route that DECLARES a required secret, but is a strict no-op for secret-free routes (see gate 9.5).
+  const secretGate = createSecretGate(opts.secretsProvider);
 
   // Pre-resolve the routing table once. path → (method → resolved policy).
   const byPath = new Map<string, Map<HttpMethod, EffectiveRoutePolicy>>();
+  let anyRouteRequiresSecret = false;
   for (const route of opts.routes) {
     const policy = resolveEffectiveRoutePolicy(route, { posture });
+    if (policy.secrets.require.length > 0) anyRouteRequiresSecret = true;
     let methods = byPath.get(route.path);
     if (methods === undefined) {
       methods = new Map<HttpMethod, EffectiveRoutePolicy>();
       byPath.set(route.path, methods);
     }
     methods.set(route.method, policy);
+  }
+
+  // Fail-closed surfacing: if any route declares a required secret but NO provider was wired, those
+  // routes will 503 (dark) at gate 9.5 by design. Surface it loudly ONCE at boot so a forgotten
+  // provider is not silently swallowed. Not a gate change — just an operability warning.
+  if (anyRouteRequiresSecret && opts.secretsProvider === undefined) {
+    console.warn(
+      "[galerina-app-kernel] gate 9.5: one or more routes declare secrets.require but no " +
+        "secretsProvider was supplied — every secret-requiring route will fail closed (503 " +
+        "secret_unavailable). Wire a boot-resolved SecretsProvider (ext-secrets-tmf loadAll arena).",
+    );
   }
 
   // Live concurrency counters, keyed per route. Reset as handlers settle.
@@ -383,6 +414,16 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     inFlight.set(rk, current + 1);
 
     try {
+      // ── 9.5 secrets ── (fail-closed; MUST sit inside this try so the finally still releases the
+      // concurrency slot on a refusal — otherwise a storm of secret-missing requests would leak
+      // `inFlight` counters and self-DoS via gate 9). A route with no required secret is a no-op.
+      const secretRefusal = secretGate.admit(policy.secrets.require);
+      if (secretRefusal !== null) {
+        // 503: an absent/faulted/unresolvable secret is a server-side UNAVAILABILITY, not a client
+        // error. The handler is NEVER reached (gate 9.5 < gate 10), so no side effect can occur.
+        return { response: errorResponse(503, secretRefusal, "A required secret is unavailable."), policy };
+      }
+
       // ── 10 dispatch handler ── (ONLY now is developer code reached)
       const fn = opts.dispatch[policy.handler];
       if (fn === undefined) {
@@ -392,7 +433,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
 
       let result: HandlerResult;
       try {
-        result = await fn({ request: req, policy, json });
+        result = await fn({ request: req, policy, json, getSecret: secretGate.getSecret });
       } catch {
         // Handler faults fail closed: a safe 500, no internal detail leaks.
         return { response: errorResponse(500, "internal_error", "Handler failed."), policy };

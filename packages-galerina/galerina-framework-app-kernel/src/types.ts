@@ -56,6 +56,16 @@ export interface AuditPolicy {
   readonly runtimeReport: boolean;
 }
 
+/**
+ * Secrets a route requires resolved-and-not-faulted BEFORE its handler is dispatched.
+ * A required secret only ever TIGHTENS admission (it never relaxes) — see gate 9.5.
+ * Empty `require` (the default) is a strict no-op, so every existing route is unaffected.
+ */
+export interface SecretsPolicy {
+  /** Secret NAMES this route requires present-and-not-faulted before dispatch. */
+  readonly require: readonly string[];
+}
+
 /** What a developer writes — only the deltas from the secure defaults. */
 export interface RouteDeclaration {
   readonly method: HttpMethod;
@@ -69,6 +79,8 @@ export interface RouteDeclaration {
   readonly idempotency?: Partial<IdempotencyPolicy> | false;
   readonly limits?: Partial<LimitsPolicy>;
   readonly audit?: Partial<AuditPolicy>;
+  /** Secret names this route requires (present-and-not-faulted) before dispatch. Omitted → none. */
+  readonly secrets?: Partial<SecretsPolicy>;
 }
 
 /** The fully-resolved policy the kernel enforces (defaults + overrides). */
@@ -83,6 +95,8 @@ export interface EffectiveRoutePolicy {
   readonly idempotency: IdempotencyPolicy;
   readonly limits: LimitsPolicy;
   readonly audit: AuditPolicy;
+  /** Secrets required before dispatch (gate 9.5). Empty `require` = no-op (non-breaking default). */
+  readonly secrets: SecretsPolicy;
   /** Blocks that came from the secure defaults (not declared by the developer). */
   readonly appliedDefaults: readonly string[];
   /** Explicit security relaxations — recorded for the security report. */
