@@ -243,6 +243,26 @@ type CliMode =
   | "cost-analysis"
   | "governance-diff";
 
+/**
+ * Modes that emit a DISTRIBUTABLE, independently-runnable artifact — a signed `.lmanifest`
+ * (`build-production` / `build-deterministic`) or a runtime-less `.wasm` (both wasm targets).
+ * Each MUST clear the FULL production security gate at production strictness before its
+ * artifact is written: once the artifact leaves the compiler there is no runtime left to
+ * enforce anything, so compile time is the only gate. Single-sourced HERE so a new
+ * artifact-emitting mode cannot silently inherit dev strictness — the exact drift that let
+ * `build --deterministic` (RD-0234b Class B) and then both wasm targets (RD-0234c H1) skip
+ * `verifyGovernance` / `checkProductionReadiness` while still emitting a runnable file
+ * (a denied-field leak / cross-tenant IDOR shipped a clean `.wasm`; RED-benched).
+ * NOTE: plain `build` is deliberately NOT here — it does not emit a distributable artifact
+ * (its `.lmanifest` mint is gated separately, below, and stays dev-strictness for display).
+ */
+const PRODUCTION_STRICTNESS_MODES: ReadonlySet<CliMode> = new Set([
+  "build-production",
+  "build-deterministic",
+  "build-wasm-standalone",
+  "build-wasm-hybrid",
+]);
+
 // ---------------------------------------------------------------------------
 // File discovery
 // ---------------------------------------------------------------------------
@@ -409,15 +429,14 @@ function compileFile(
   // Determine compile mode: production/deterministic builds enforce errors; dev/check/build
   // downgrade migration-stage diagnostics (FUNGI-VALUESTATE-008, FUNGI-STDLIB-001) to warnings.
   const effectCheckerMode: "production" | "development" =
-    (mode === "build-production" || mode === "build-deterministic")
+    PRODUCTION_STRICTNESS_MODES.has(mode)
       ? "production"
       : "development";
 
   // FUNGI-TIER-001 (landing B): the flow-kind tier floor is enforced ONLY on real production
   // builds (build-production / build-deterministic), never on check/dev. Default-off everywhere
   // else, so all other checkEffects call sites are unaffected.
-  const enforceTierFloor =
-    (mode === "build-production" || mode === "build-deterministic");
+  const enforceTierFloor = PRODUCTION_STRICTNESS_MODES.has(mode);
 
   const valueStateResult = checkValueStates(parseResult.ast, effectCheckerMode);
   for (const d of valueStateResult.diagnostics) {
@@ -517,7 +536,7 @@ function compileFile(
   // refuses. Deterministic already uses production effect strictness (effectCheckerMode
   // above); running governance here aligns it, so its errors land in `diagnostics` and
   // the signing gate below withholds the credential.
-  if (mode === "build-production" || mode === "build-deterministic") {
+  if (PRODUCTION_STRICTNESS_MODES.has(mode)) {
     const govResult = verifyGovernance(
       parseResult.ast,
       parseResult.flows,
@@ -543,7 +562,7 @@ function compileFile(
   // (checkProductionReadiness was exported + unit-tested but NEVER called in the pipeline).
   // Wire it here: any production-blocker code present at a real build with no error already
   // recorded becomes a hard error, so the signing gate below withholds the credential.
-  if (mode === "build-production" || mode === "build-deterministic") {
+  if (PRODUCTION_STRICTNESS_MODES.has(mode)) {
     const readiness = checkProductionReadiness(diagnostics);
     if (!readiness.ready && !diagnostics.some((d) => d.severity === "error")) {
       pushDiag(
@@ -1268,7 +1287,7 @@ function main(): void {
     // routes through the unsuppressed runProductionSecurityGate; this keeps the CLI verdict + exit
     // code honest too.) Warnings/info stay suppressible for noise control.
     const strictVerdict =
-      mode === "build-production" || mode === "build-deterministic" || mode === "check-strict";
+      PRODUCTION_STRICTNESS_MODES.has(mode) || mode === "check-strict";
 
     for (const d of result.diagnostics) {
       const isFailClosedError = (d.severity as string) === "error";
