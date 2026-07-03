@@ -375,11 +375,17 @@ export function checkTaint(ast: AstNode, flows: readonly FlowMeta[]): TaintDiagn
 
     const bindings = new Map<string, TaintState>();
 
-    // Parameters: by default trusted unless named like a taint source.
-    // (Phase 28B will read `tainted` qualifier from param declarations.)
+    // Parameters: by default trusted unless DECLARED `tainted` (Phase 28B / RD-0234c H2-b) or named
+    // like a taint source. The parser writes qualifiers as a value PREFIX ("tainted data: T",
+    // "readonly req: T" — parser.ts parseParams), so the identifier is the LAST word of the head;
+    // a bare split(":") would read "tainted data" and silently defeat BOTH carriers. `tainted` is
+    // opt-in provenance: a bare param stays trusted (zero over-block on undeclared code).
     for (const p of (flowNode.children ?? []).filter(c => c.kind === "paramDecl")) {
-      const pname = ((p.value ?? "").split(":")[0] ?? "").trim();
-      if (TAINT_SOURCES.has(pname)) bindings.set(pname, { kind: "tainted" });
+      const head = (((p.value ?? "").split(":")[0]) ?? "").trim();
+      const words = head.split(/\s+/);
+      const pname = words[words.length - 1] ?? "";
+      const declaredTainted = words.slice(0, -1).includes("tainted");
+      if (declaredTainted || TAINT_SOURCES.has(pname)) bindings.set(pname, { kind: "tainted" });
     }
 
     const body = (flowNode.children ?? []).find(c => c.kind === "block");
