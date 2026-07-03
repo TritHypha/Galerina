@@ -185,6 +185,15 @@ function sinkRequirementOf(
 const TAINT_SOURCES = new Set([
   "request", "req", "input", "params", "query", "body", "headers",
   "env", "stdin", "argv",
+  // H2-a (RD-0234c): clearly-untrusted web-boundary source names. These carry untrusted input by
+  // provenance, so auto-tainting them is sound (a flow passing one to a sink now needs an untaint
+  // boundary). Match is case-sensitive (taintOf :307/:321 + checkTaint :373 — no toLowerCase), so
+  // these use the conventional casing developers write (the camelCase Web-API spellings for
+  // sessionStorage/localStorage/formData/searchParams). AMBIGUOUS names (url/payload/message/event/
+  // data/value/content) are DELIBERATELY EXCLUDED — an internally-constructed value of those would
+  // false-fire; the sound fix for those is the owner-gated H2-b `tainted`/`untrusted` param qualifier.
+  "cookies", "session", "sessionStorage", "localStorage",
+  "formData", "searchParams", "queryString", "querystring",
 ]);
 
 // ---------------------------------------------------------------------------
