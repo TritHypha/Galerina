@@ -25,13 +25,16 @@ import { AuditEgress, readEgressLedger } from "../../galerina-core-sentinel-egre
 // then counts stale 12 + fresh 12 = 24 and the `total === 12` assertion fails — a
 // flaky, code-change-free gate failure. Left unchecked these dirs also accumulate
 // without bound (999+ observed). Two guards keep this border deterministic:
-//   1. sweepScratchDirs() removes EVERY egress-it-* dir. Run once at load (clears
-//      stale leftovers from prior/crashed runs) and again via after() (so a clean
-//      run leaves nothing behind — no disk leak).
+//   1. sweepScratchDirs() removes only THIS process's egress-it-<pid>-* dirs (OWN_PREFIX). Run once
+//      at load (clears a recycled PID's stale leftovers from a prior/crashed run of the SAME pid) and
+//      again via after() (so a clean run leaves nothing behind — no disk leak). Scoped to own pid so a
+//      parallel `node --test` sibling's LIVE egress-it-<otherpid>-* dir is never deleted mid-run — a
+//      broad-prefix sweep raced siblings (the 50-year-mistake broad match; audit-scratchdir-hygiene flags it).
 //   2. uniqueDir() hard-resets its specific target dir before handing it out, so
 //      each test starts from a clean slate even when the PID has been recycled.
 const SCRATCH_ROOT = "build";
 const SCRATCH_PREFIX = "egress-it-";
+const OWN_PREFIX = `${SCRATCH_PREFIX}${process.pid}-`; // own-PID: never touch a concurrent sibling's dirs
 
 const sweepScratchDirs = () => {
   let entries;
@@ -41,7 +44,7 @@ const sweepScratchDirs = () => {
     return; // build/ not created yet — nothing to sweep
   }
   for (const e of entries) {
-    if (e.isDirectory() && e.name.startsWith(SCRATCH_PREFIX)) {
+    if (e.isDirectory() && e.name.startsWith(OWN_PREFIX)) {
       rmSync(join(SCRATCH_ROOT, e.name), { recursive: true, force: true });
     }
   }
@@ -52,7 +55,7 @@ after(sweepScratchDirs);  // don't leak this run's dirs
 
 let counter = 0;
 const uniqueDir = () => {
-  const dir = `${SCRATCH_ROOT}/${SCRATCH_PREFIX}${process.pid}-${++counter}`;
+  const dir = `${SCRATCH_ROOT}/${OWN_PREFIX}${++counter}`;
   rmSync(dir, { recursive: true, force: true }); // PID reuse: never inherit a prior run's records
   return dir;
 };
