@@ -471,3 +471,24 @@ test("perf-hotpath: array membership with a variable arg is ADVISORY, never HIGH
   assert.equal(perf.byCheck["loop-membership"] ?? 0, 0, "membership never appears in the HIGH tier / exit code");
   assert.ok(perf.advisoryResults.some((f) => f.check === "loop-membership"), "ys.includes(x) surfaces in the advisory tier");
 });
+
+// ── audit-fungi-runtime: runtime .fungi corpus auditor (RD-0240 match-exhaustiveness + BK-3 no-? + coverage) ──
+const tmp14 = mkdtempSync(join(tmpdir(), "fungi-rt-"));
+after(() => { try { rmSync(tmp14, { recursive: true, force: true }); } catch { /* best effort */ } });
+const shDir = join(tmp14, "self-hosted");
+mkdirSync(shDir, { recursive: true });
+mkdirSync(join(tmp14, "tests"), { recursive: true }); // tool derives tDir = <root>/../tests
+writeFileSync(join(shDir, "bad.fungi"), "flow f(x: T) -> Int {\n  match x {\n    A => return 1\n    B => return 2\n  }\n}\n");   // non-exhaustive (no _)
+writeFileSync(join(shDir, "good.fungi"), "flow g(x: T) -> Int {\n  match x {\n    A => return 1\n    _ => return 0\n  }\n}\n");   // exhaustive
+const rt = JSON.parse(spawnSync(process.execPath, [join(SCRIPTS, "audit-fungi-runtime.mjs"), "--root", shDir, "--json"], { encoding: "utf8" }).stdout);
+
+test("fungi-runtime: --self-test passes (RD-0240 match + BK-3 ? + masking)", () => {
+  assert.equal(spawnSync(process.execPath, [join(SCRIPTS, "audit-fungi-runtime.mjs"), "--self-test"], { encoding: "utf8" }).status, 0);
+});
+test("fungi-runtime: a non-exhaustive match in a runtime .fungi is flagged (RD-0240)", () => {
+  assert.ok(rt.results.some((f) => f.check === "match-exhaustive" && f.file.includes("bad.fungi")), "bad.fungi non-exhaustive match flagged");
+  assert.ok(!rt.results.some((f) => f.check === "match-exhaustive" && f.file.includes("good.fungi")), "good.fungi (has _) is clean");
+});
+test("fungi-runtime: a missing kernel→GIR→WASM parity/pipeline test is fail-closed", () => {
+  assert.ok(rt.results.some((f) => f.check === "pipeline-coverage"), "the P9 parity/pipeline harness absence is a finding");
+});

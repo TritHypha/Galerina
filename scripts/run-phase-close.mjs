@@ -232,6 +232,12 @@ run("effect:canonicality", "node", ["scripts/audit-effect-canonicality.mjs"]);
 // tier (membership / sequential-await) is counted but never printed here. Owner ask 2026-07-03.
 run("perf:hotpath", "node", ["scripts/audit-perf-hotpath.mjs", "--soft"]);
 
+// ── 5c-iv. Runtime `.fungi` audit (2026-07-03) ──
+// The self-hosted `.fungi` runtime corpus must stay WASM-lowerable + test-covered before it lowers
+// kernel → GIR → WASM: every `match` exhaustive (RD-0240), no `?` error-prop (BK-3, doesn't lower), each
+// file has an executing test, and the P9 parity/pipeline harness exists. Report-only (--soft). Owner ask 2026-07-03.
+run("fungi:runtime", "node", ["scripts/audit-fungi-runtime.mjs", "--soft"]);
+
 // ── 5c-ii-bis. RD-0234b — the two dev-tools the ZT-tooling audit recommended (2026-07-02) ──
 // checker:wiring — every EXPORTED checker has a real pipeline call-site (the dead-gate class:
 //   checkTaint / checkMonkeyPatching / checkAttributeDirectives each had ZERO call-sites before the fix).
