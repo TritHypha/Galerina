@@ -35,8 +35,45 @@ front-end compiler (§5a–5d, own session, still owner-paused).
       under `certificationProfile != "dev"` (RD-0236 certified⇒signed tie-in).
 - [x] **H1 wasm-lane fail-open + H3-named + numeric doc-drift** — see the RD-0234 residual block + NOW section below
       (`2aa0edb`, `68632a7`, `9224348`, `464a5f9`; all local, push HELD).
-- [ ] **My build-staging queue** (now owned): anchor-GCM short-tag LOW (`build-staging/anchor-gcm-taglen-fix/`),
-      privacy-001, + others in `../Galerina-R-AND-D/build-staging/` — reconcile + apply each behind its RED-bench.
+- [x] **Autonomous session 2026-07-03 (owner away, full-auto) — 7 fixes landed LOCAL, each RED→GREEN + full-suite (60/60)
+      + phase-close green, explicit-pathspec, push HELD.** Build-staging queue reconciled vs HEAD by 2 read-only workers
+      (22 dirs → 12 already-applied/superseded/obsolete; rest triaged). Commits (oldest→newest):
+  - [x] **`342e005`** build(phase-close): gate ext-bridge-cpp so the RD-0238 native-load SEC-mutant runs every phase close.
+  - [x] **`dad569c`** anchor-GCM (LOW): fail-closed GCM auth-tag length + `authTagLength:16` in `ext-secrets-tmf/anchor.ts`
+        unwrap (short-tag downgrade, DEP0182); 3 real-wrap RED benches.
+  - [x] **`d8ee37a`** privacy-001 (RD-0234c): FUNGI-PRIVACY-001 now enforces the documented bare `to response` grammar
+        (was `.body`-only → protected PII/PAN/NHS leaked to the response and signed clean on every Level-9 example).
+        +anti-drift canonicality guard. PCI Req 3/4, OWASP A01/A04, CWE-693.
+  - [x] **`83ffe50`** H2-a (RD-0234c): `taint-checker` TAINT_SOURCES extended with clearly-untrusted web-boundary names
+        (cookies/session/sessionStorage/localStorage/formData/searchParams/queryString/querystring — conventional casing;
+        the match is case-SENSITIVE; ambiguous url/payload/message/event/data/value/content EXCLUDED → sound fix = H2-b qualifier, owner-gated).
+  - [x] **`eac3af7`** M2-a (RD-0234c): privacy-deny broadened to the `secret` qualifier on the response family. SOUND
+        SUBSET only — did NOT add log/network/audit sinks to the regex (would recognise `to logs` yet enforce vs the
+        response body = the WYSIWYG sin reversed). Real per-sink enforcement = the deferred RD below.
+  - [x] **`c18d6ec`** limit-enforcement BUG B (OWASP API4:2023 / CWE-770): the 5 previously-inert `limits{}` kinds
+        (rate / concurrent_tasks / max amount / max query length / max results) now recognised (registered in
+        ALL_LIMIT_PATTERNS) + parsed into LimitConfig + have check fns + throwing enforcer methods. Removes 6 spurious
+        FUNGI-GOV-019 warnings on shipped examples. Recognition + check-layer ONLY (no call sites ⇒ no flow-behaviour
+        change). Re-authored vs prod HEAD (the staged patch was stale — targeted old `LogicN`/`KNOWN_LIMITS_PHRASES`).
+  - [x] **`f2fe5ef`** scratch-leak: own-PID sweep in `sentinel-egress-time.test.mjs` (last broad-sweep straggler) + the
+        `audit-scratchdir-hygiene` phase-close detector now flags the BROAD_SWEEP sub-class it was blind to (error→tooling).
+- [ ] **OWNER-GATED from this session (R&D done, plans ready in `../Galerina-R-AND-D/build-staging/` + R&D scratch — do NOT self-land):**
+  - **kernel-secrets seam** (fail-closed `ctx.getSecret` / kernel gate 9.5): net-new gate on 100% of request traffic +
+    changes the stable public kernel surface + 2 product decisions (503 status; provider-absent ⇒ secret routes dark).
+    Full one-pass build plan ready. Needs explicit GO (same class as the owner-decided auth tightening).
+  - **limit-enforcement BUG C** (runtime call-site wiring): Option B (throwing `[FUNGI-LIMIT]` + a host counter store for
+    rate/concurrent_tasks) can redden payment (`max amount 1000000`) / healthcare-search (`max query length 200`,
+    `max results 50`) fixtures — needs a fixture-value audit + sign-off. Option A (advisory max-results at flow exit)
+    ALSO deferred: flow-exit `returnValue` is a wrapped GalerinaValue, so a reliable result-count is a fragile heuristic;
+    the sound wiring is a per-effect-boundary hook = a design call. BUG B (above) leaves it ready for that wiring.
+  - **RD-0234c H3-safelist inversion**: NOT 0-corpus-safe — 3 `EXPECT:ACCEPT` false-positives (`EmailGateway.send(secret)`
+    ×2, `Auth.sign(secret)`); the gateway-driver credential-egress pattern is a product decision (AskUserQuestion first).
+    **M2-b** (unresolvable⇒hard error) reddens ~12 shipped directives / ≥10 files — needs a shipped-example sweep first.
+    **H2-b** `tainted`/`untrusted` param qualifier = a language-surface addition.
+- [ ] **Deferred RD (new this session):** real per-sink privacy-deny enforcement — `deny protected X to log.write /
+      network.outbound / audit.write` ACTUALLY enforced at those sinks (resolve X against the value-state log/egress
+      paths, not the response body). = the PCI `deny protected CardNumber to logs` sibling fail-open privacy-001 Part C
+      flagged. Needs its own RED-benches + over-block analysis at those sinks. NOT a regex tweak.
 
 ## ✅ Done — 2026-07-01/02 (local, unpushed)
 - [x] governance:diff fixture noise — gitignored `build/*.fungi` no longer phantom "added" — `941ec41`
@@ -63,9 +100,10 @@ front-end compiler (§5a–5d, own session, still owner-paused).
       recorded in the KB note).
 - [ ] **Push** the local commits to `origin/main` — **owner chose HOLD (2026-07-02)**; stays local until an
       explicit push OK. Until pushed, remote CI is blind to CG-4/CG-6/CG-7.
-      **Update 2026-07-03:** origin/main has since advanced to `cb68494` (VD-2/C1 · §5a-5d 1/2a/2b · FUNGI-LIMIT-001
-      all pushed). One commit is now local-only: `68632a7` (H3 egress-sink close) — a push attempt was **auto-denied
-      by the mode classifier** ("no push without OK", owner-away → most-secure). Held for the owner's explicit push OK.
+      **Update 2026-07-03 (autonomous session):** origin/main = `5b47d46`; **7 commits now local-unpushed**
+      (`342e005`·`dad569c`·`d8ee37a`·`83ffe50`·`eac3af7`·`c18d6ec`·`f2fe5ef` — see the session block near the top).
+      Every push attempt is **auto-denied by the mode classifier** ("no push without OK in the current message");
+      held for the owner's explicit "push". All 7 are green (60/60 + phase-close) and fast-forward-clean vs origin.
 - [ ] Offline re-sign ceremony owed: `greeting.lmanifest` (old-brand `lln.manifest.v1` schema).
 
 ## 🔲 NOW (buildable, no hard blocker; value-ordered)
