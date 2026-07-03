@@ -97,6 +97,8 @@ export {
   parseGateFlow,
   parseGateNode,
   parseGateEdge,
+  lowerGate,
+  gateFlowName,
   FUNGI_GATELANG_001,
   FUNGI_GATELANG_002,
   type GateHeader,

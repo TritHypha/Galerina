@@ -7,6 +7,7 @@ import assert from "node:assert/strict";
 import {
   parseGate, parseGateHeader, parseGateFlow, parseGateNode, parseGateEdge,
   FUNGI_GATELANG_001, FUNGI_GATELANG_002,
+  parseProgram, checkEffects, emitGIR,
 } from "../dist/index.js";
 
 const VALID = [
@@ -36,11 +37,14 @@ test("gate-parser: parseGate returns the parseProgram-compatible ParseResult sha
   assert.ok(Array.isArray(r.diagnostics), "has diagnostics[]");
 });
 
-test("gate-parser: FAIL-CLOSED — a clean-header .gate refuses (FUNGI-GATELANG-002) with ZERO flows", () => {
+test("gate-parser: a clean-header .gate LOWERS (1 flow), production gated by FUNGI-GATELANG-002 (error)", () => {
   const r = parseGate(VALID, "customer.gate");
-  assert.ok(codesOf(r).includes(FUNGI_GATELANG_002.code), "FLOW lowering not yet implemented ⇒ refuse");
-  assert.equal(r.flows.length, 0, "no flows lowered ⇒ nothing downstream can mis-lower");
-  assert.ok(r.diagnostics.some((d) => d.severity === "error"), "the refusal is an error, not a warning");
+  assert.equal(r.flows.length, 1, "the flow lowers to its capability surface");
+  assert.equal(r.flows[0].name, "customer", "flow name = file basename (OD-1 basename identity)");
+  assert.equal(r.flows[0].qualifier, "secure");
+  assert.deepEqual([...r.flows[0].declaredEffects].sort(), ["audit.write", "database.read"], "EFFECTS{} → declaredEffects");
+  assert.ok(codesOf(r).includes(FUNGI_GATELANG_002.code), "production signing gated on the RD-0234c backstop");
+  assert.ok(r.diagnostics.some((d) => d.severity === "error"), "the production gate is an error — a prod build refuses to sign");
 });
 
 test("gate-parser: missing #gate pragma ⇒ FUNGI-GATELANG-001 (not a .gate file, refuse)", () => {
@@ -103,9 +107,34 @@ test("parseGateEdge: parses `[src] -> [dst] @effect` with the via tag", () => {
   assert.deepEqual(g.tag, { kind: "guard", value: "isAuthorised" });
 });
 
-test("parseGate: fail-closed message now reports the parsed FLOW surface (still refuses)", () => {
+test("parseGate: production-gate message reports the parsed FLOW surface; the flow is lowered", () => {
   const r = parseGate(FLOW_GATE, "customer.gate");
   const m = r.diagnostics.find((d) => d.code === FUNGI_GATELANG_002.code)?.message ?? "";
-  assert.match(m, /FLOW parsed — entry in, 4 edge\(s\), 2 @via effect\(s\), 1 :cut, 2 :fu/);
-  assert.equal(r.flows.length, 0, "still fail-closed — no AST lowered until 2b");
+  assert.match(m, /FLOW parsed \(4 edge\(s\), 2 @via, 1 :cut, 2 :fu\)/);
+  assert.equal(r.flows.length, 1, "lowered — production is gated by the GATELANG-002 error, not by dropping the flow");
+});
+
+// ── Increment 2b — GIR-identity: `.gate` lowers to the SAME signed capability surface as `.fungi` ──
+test("2b GIR-identity: a .gate flow lowers to the SAME signed capability surface as the equivalent .fungi", () => {
+  const g = parseGate(VALID, "customer.gate");
+  const gGir = emitGIR(g.ast, g.flows, checkEffects(g.flows, g.ast));
+  const gFlow = gGir.gir.flows[0];
+
+  const fungi = [
+    "secure flow customer() -> Response contract { effects { database.read, audit.write } }",
+    '{ let r: String = Database.query("x")  return r }',
+  ].join("\n");
+  const p = parseProgram(fungi, "customer.fungi");
+  const pGir = emitGIR(p.ast, p.flows, checkEffects(p.flows, p.ast));
+  const pFlow = pGir.gir.flows[0];
+
+  // The SIGNED surface the .lmanifest covers — declared effects, capabilities, mask, qualifier — must match.
+  assert.deepEqual([...gFlow.effects.declared].sort(), [...pFlow.effects.declared].sort(), "declared effects");
+  assert.deepEqual(
+    [...gFlow.capabilities.entries()].sort(),
+    [...pFlow.capabilities.entries()].sort(),
+    "capabilities (effect → host.* capability id)",
+  );
+  assert.equal(gFlow.allowedEffectsMask, pFlow.allowedEffectsMask, "allowedEffectsMask");
+  assert.equal(gFlow.qualifier, pFlow.qualifier, "both are secure flows");
 });

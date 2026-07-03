@@ -21,7 +21,7 @@
 // guards, `:cut`/`:fu` nodes) into the same AstNode/FlowMeta kinds the `.fungi` parser emits.
 // =============================================================================
 
-import type { AstNode, ParseDiagnostic, ParseResult } from "./parser.js";
+import type { AstNode, FlowMeta, ParseDiagnostic, ParseResult, SourceLocation } from "./parser.js";
 
 /** FUNGI-GATELANG-001: the `.gate` declarative header is malformed (missing `#gate` pragma / INTENT / EFFECTS). */
 export const FUNGI_GATELANG_001 = {
@@ -32,15 +32,17 @@ export const FUNGI_GATELANG_001 = {
 } as const;
 
 /**
- * FUNGI-GATELANG-002: the `.gate` FLOW graph was recognised but its lowering to GIR is not yet
- * implemented — the build FAILS CLOSED (it never emits a partial/unsigned artifact for a `.gate`
- * source the compiler cannot yet fully lower). Use `.fungi` until the FLOW lowering increment lands.
+ * FUNGI-GATELANG-002: a `.gate` flow LOWERS to GIR (its capability surface is complete from EFFECTS{}),
+ * but PRODUCTION signing is GATED on the sound compile-time backstop the `.gate` lint defers to —
+ * FUNGI-PRIVACY-002 (RD-0234c) — which is not yet wired. So the build refuses to SIGN a `.gate` artifact
+ * (fail-closed) even though the lowering is produced + verifiable. Removed by the build-wiring increment
+ * once RD-0234c confirms the backstop. (The `.gate` checker is necessary-not-sufficient by design.)
  */
 export const FUNGI_GATELANG_002 = {
   code: "FUNGI-GATELANG-002",
-  name: "GateFlowLoweringNotImplemented",
+  name: "GateProductionEmitGatedOnBackstop",
   severity: "error" as const,
-  message: "The `.gate` FLOW → GIR lowering is not yet implemented; this build is refused (fail-closed). The declarative header parsed cleanly.",
+  message: "`.gate` production signing is gated on the sound compile-time backstop (FUNGI-PRIVACY-002 / RD-0234c), not yet wired — the build refuses to sign a `.gate` artifact until then (fail-closed).",
 } as const;
 
 /** Parsed `.gate` declarative header (increment 1). The FLOW graph is lowered in increment 2. */
@@ -193,13 +195,46 @@ export function parseGateFlow(source: string): GateFlow {
   };
 }
 
+/** Derive the flow name from a `.gate` file path — the basename without extension (OD-1 basename identity). */
+export function gateFlowName(file: string): string {
+  const base = file.replace(/\\/g, "/").split("/").pop() ?? file;
+  return base.replace(/\.gate$/i, "") || "main";
+}
+
+/**
+ * Lower a validated `.gate` header into the `.fungi`-shaped `FlowMeta` + a flowDecl `AstNode` that
+ * `emitGIR`/`checkEffects` consume UNCHANGED (increment 2b — the SIGNED CAPABILITY SURFACE).
+ *
+ * The flow's declared effects (`EFFECTS{}`) become `FlowMeta.declaredEffects`, which `emitGIR` turns
+ * into `capabilities` (via EFFECT_TO_CAPABILITY) + `allowedEffectsMask` — byte-identical to the
+ * equivalent `.fungi` flow's capability surface, which is exactly what the `.lmanifest` SIGNS. The FLOW
+ * graph is parsed (2a) for the governance surface; lowering its full control flow into body statements
+ * is later work, but the capability surface — the enforcement-critical part — is complete from here.
+ */
+export function lowerGate(header: GateHeader, file: string): { flows: FlowMeta[]; ast: AstNode } {
+  const name = gateFlowName(file);
+  const loc: SourceLocation = { file, line: 1, column: 1 };
+  const flowMeta: FlowMeta = {
+    name,
+    qualifier: "secure",          // `.gate` apps are governed flows
+    params: [],
+    returnType: "Response",
+    declaredEffects: [...header.effects],
+    location: loc,
+  };
+  const flowNode: AstNode = { kind: "flowDecl", value: name, location: loc, children: [] };
+  return { flows: [flowMeta], ast: { kind: "program", children: [flowNode] } };
+}
+
 /**
  * Parse a `.gate` source into a `ParseResult`, matching `parseProgram`'s contract so the
  * language-agnostic pipeline (checkEffects → emitGIR → manifest → fuse) can consume it unchanged.
  *
- * Increment 1: validates the mandatory declarative header (`#gate` pragma + INTENT + EFFECTS), then
- * FAILS CLOSED on the FLOW-graph lowering (FUNGI-GATELANG-002) with ZERO flows — a `.gate` build refuses
- * rather than emit a partially-lowered, would-be-signed artifact. Increment 2 lowers the FLOW.
+ * Increment 1: validate the mandatory header (`#gate` + INTENT + EFFECTS) — a malformed header is
+ * FUNGI-GATELANG-001 with ZERO flows. Increment 2a: parse the FLOW graph. Increment 2b: LOWER a valid
+ * `.gate` to the real FlowMeta + flowDecl AST (the signed capability surface). PRODUCTION emit stays
+ * FAIL-CLOSED via FUNGI-GATELANG-002 (an error) until the sound backstop (FUNGI-PRIVACY-002 / RD-0234c)
+ * is wired — the lowering is produced + verifiable, but a production build refuses to sign until then.
  */
 export function parseGate(source: string, file: string): ParseResult {
   const diagnostics: ParseDiagnostic[] = [];
@@ -220,19 +255,25 @@ export function parseGate(source: string, file: string): ParseResult {
     diagnostics.push({ ...FUNGI_GATELANG_001, message: `${file}: a \`.gate\` file must declare a mandatory EFFECTS { } block.` });
   }
 
-  // FAIL-CLOSED: the FLOW-graph → GIR lowering (2b) is the next increment. Even with a clean header +
-  // a fully-parsed FLOW graph (2a), we emit ZERO flows so nothing downstream can mis-lower, and surface
-  // FUNGI-GATELANG-002 so the build refuses (never signs a `.gate` artifact the compiler cannot yet
-  // fully lower). The parsed graph's governance surface is reported for visibility.
-  if (header.intent !== null && header.effectsDeclared) {
-    const flow = parseGateFlow(source);
-    diagnostics.push({
-      ...FUNGI_GATELANG_002,
-      message: `${file}: ${FUNGI_GATELANG_002.message} (header OK — intent + ${header.effects.length} declared effect(s); ` +
-        `FLOW parsed — entry ${flow.entry ?? "none"}, ${flow.edges.length} edge(s), ${flow.viaEffects.length} @via effect(s), ` +
-        `${flow.cutNodes.length} :cut, ${flow.fuOps.length} :fu).`,
-    });
+  // A malformed header is fatal — refuse with ZERO flows (FUNGI-GATELANG-001 already surfaced).
+  if (header.intent === null || !header.effectsDeclared) {
+    return { ast: EMPTY_PROGRAM, diagnostics, flows: [] };
   }
 
-  return { ast: EMPTY_PROGRAM, diagnostics, flows: [] };
+  // Increment 2b: LOWER the valid `.gate` to the real FlowMeta + flowDecl AST — the signed capability
+  // surface (declared effects → capabilities/mask). The FLOW graph is parsed (2a) for the governance
+  // surface reported below.
+  const { flows, ast } = lowerGate(header, file);
+  const flow = parseGateFlow(source);
+
+  // PRODUCTION FAIL-CLOSED (RD-0234c gate): the lowering is produced + verifiable, but SIGNING a `.gate`
+  // artifact is withheld until the sound backstop (FUNGI-PRIVACY-002) is wired. A production build sees
+  // this error and refuses to sign; a caller that only needs the lowering (dev/check/tests) reads `flows`.
+  diagnostics.push({
+    ...FUNGI_GATELANG_002,
+    message: `${file}: .gate lowering complete — flow '${flows[0]?.name ?? "?"}', ${header.effects.length} declared effect(s) → capability surface; ` +
+      `FLOW parsed (${flow.edges.length} edge(s), ${flow.viaEffects.length} @via, ${flow.cutNodes.length} :cut, ${flow.fuOps.length} :fu). ${FUNGI_GATELANG_002.message}`,
+  });
+
+  return { ast, diagnostics, flows };
 }
