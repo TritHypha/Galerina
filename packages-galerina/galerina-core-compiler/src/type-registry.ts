@@ -171,6 +171,13 @@ export const EffectFlags = {
   MessagePublish:  1 << 12,  // message.publish
   ModelTrain:      1 << 13,  // ai.train (privileged)
   TelemetryRead:   1 << 14,  // telemetry.read (promoted canonical 2026-07-02 — aerospace corpus + Stage-B parity)
+  // BK-1 (2026-07-03) FAIL-CLOSED sentinel. JS bitwise is 32-bit signed, so the mask cannot give all
+  // ~44 canonical effects a distinct bit (and coarse buckets would WIDEN authority in the subset check).
+  // Rather than SILENTLY SKIP an effect with no bit — the old fail-open, where an unmapped effect
+  // contributed bit 0 = "no authority required" — effectsToFlags sets this sentinel. A subset check then
+  // fails CLOSED: a required-but-unmapped effect is NOT satisfied by a declared mask that lacks the
+  // sentinel. Per-effect precision for unmapped effects is the AUTHORITATIVE string-name check's job.
+  UnmappedEffect:  1 << 30,
 } as const;
 
 export type EffectFlagsMask = number;
@@ -203,7 +210,10 @@ const EFFECT_NAME_TO_FLAG: ReadonlyMap<string, EffectFlagsMask> = new Map([
 
 /**
  * Converts an array of effect name strings to a combined EffectFlagsMask.
- * Unknown effects are silently skipped — they are tracked in the full name array.
+ * BK-1 (2026-07-03): an effect with no distinct bit sets the UnmappedEffect SENTINEL rather than being
+ * silently skipped — so the fast subset check fails CLOSED on an unmapped-but-required effect instead of
+ * treating it as authority-free (the old bit-0 fail-open). Per-effect precision for unmapped effects is the
+ * AUTHORITATIVE string-name check's job (FUNGI-EFFECT-001/004); this mask is only a conservative pre-filter.
  *
  * Fast check: (effectsToFlags(required) & declared) === effectsToFlags(required)
  */
@@ -211,7 +221,7 @@ export function effectsToFlags(effects: readonly string[]): EffectFlagsMask {
   let mask = EffectFlags.None;
   for (const effect of effects) {
     const flag = EFFECT_NAME_TO_FLAG.get(effect);
-    if (flag !== undefined) mask |= flag;
+    mask |= flag !== undefined ? flag : EffectFlags.UnmappedEffect;
   }
   return mask;
 }
