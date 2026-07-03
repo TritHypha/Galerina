@@ -409,10 +409,14 @@ export class HybridInferenceEngine {
     // under the explicit `allowUnsignedCapabilityGrant` opt-in; otherwise authority starts at 0 and is
     // conferred EXCLUSIVELY by a signed grant that verifies in resolveCapabilityGrant() (async, once,
     // before the capability gate on first infer) — so a caller can no longer self-grant via a plain mask.
+    // #1 follow-on² (certified hard override): certified mode NEVER honours the unsigned opt-in. The
+    // createHybridEngine factory throws ERR_CERTIFIED_UNSIGNED_CAP_FORBIDDEN on it; here — defense-in-depth
+    // for a direct construction that bypasses the factory — certified forces it inert, so a certified
+    // engine's authority can come ONLY from a signed grant that verifies in resolveCapabilityGrant().
     this.#capabilityGrant = signedCapabilityGrant;
     this.#unsignedCapabilityMask = grantedCapabilityMask >>> 0;
-    this.#grantedCapabilityMask =
-      this.governance.allowUnsignedCapabilityGrant === true ? this.#unsignedCapabilityMask : 0;
+    const unsignedCapOptIn = this.governance.allowUnsignedCapabilityGrant === true && !certified;
+    this.#grantedCapabilityMask = unsignedCapOptIn ? this.#unsignedCapabilityMask : 0;
     this.photonic = photonic;
     // Certified-mode photonic admission — NECESSARY sync preconditions, computed once, fail-closed: the
     // deployment must declare intent (all three fields) AND the engine must have an attestation path
@@ -440,7 +444,9 @@ export class HybridInferenceEngine {
     if (this.#capabilityResolved) return;
     this.#capabilityResolved = true;
     // Opt-in path: the unsigned mask was already trusted at construction — nothing to verify.
-    if (this.governance.allowUnsignedCapabilityGrant === true) return;
+    // certified strips the opt-in (see the constructor), so this never short-circuits a certified engine —
+    // it MUST proceed to verify a signed grant below or hold no authority (#1 follow-on²).
+    if (this.governance.allowUnsignedCapabilityGrant === true && !this.certified) return;
     // Fail-secure: without BOTH an attestation policy AND a signed grant, no authority is conferred.
     if (this.attestationPolicy === null || this.#capabilityGrant === undefined) return; // mask stays 0
     const res = await verifyCapabilityGrant(this.#capabilityGrant, this.attestationPolicy, HYBRID_METADATA.engineId);
@@ -1067,6 +1073,16 @@ export function createHybridEngine(profile: {
   // Certified deployments must verify BOTH halves: no post-quantum downgrade.
   if (certified && !profile.attestation?.mlDsaPublicKey) {
     throw new Error("ERR_CERTIFIED_NO_PQ_KEY: certified profile requires attestation.mlDsaPublicKey — hybrid Ed25519+ML-DSA-65 verification is mandatory (no post-quantum downgrade)");
+  }
+
+  // Fail closed at construction: certified mode FORBIDS the unsigned-capability opt-in (RD-0236 #1 follow-on²).
+  // Certified authority must come from a signedCapabilityGrant that cryptographically verifies against the
+  // attestation policy — allowing allowUnsignedCapabilityGrant here would reopen the exact plain-mask
+  // self-grant the #1 inversion closed. Mirrors the host-native override below (certified forces the secure
+  // posture regardless of caller governance), but LOUDLY: a certified deployment asking for an unsigned mask
+  // is a contradiction, not a silent downgrade.
+  if (certified && profile.governance?.allowUnsignedCapabilityGrant === true) {
+    throw new Error("ERR_CERTIFIED_UNSIGNED_CAP_FORBIDDEN: certified profile forbids allowUnsignedCapabilityGrant — capability authority must come from a signedCapabilityGrant that verifies against the attestation policy (no plain-mask self-grant)");
   }
 
   const needTower = certified || profile.auditInMemory || (profile.auditBatchSize ?? 0) > 0 ||

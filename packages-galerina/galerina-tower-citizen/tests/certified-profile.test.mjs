@@ -7,7 +7,7 @@ import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import { rmSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { createHybridEngine, AuditLogger, generateHybridAttestationKeypair, attestBridgeHybrid, StubTernaryBridge } from "../dist/index.js";
+import { createHybridEngine, AuditLogger, generateHybridAttestationKeypair, attestBridgeHybrid, StubTernaryBridge, signCapabilityGrantHybrid } from "../dist/index.js";
 import { AuditEgress } from "../../galerina-core-sentinel-egress/dist/index.js";
 
 // ── Test hygiene (mirrors f107301's egress fix): the certified-profile tests wire
@@ -47,10 +47,11 @@ const dir = () => {
   return d;
 };
 const realKey = Uint8Array.from({ length: 32 }, (_, i) => i + 1);
-// RD-0236 #1: certified infer tests opt into the unsigned capability mask so the deny-by-default
-// capability gate doesn't fire first and mask the certified behaviour under test. (Follow-on: certified
-// mode should REQUIRE a signed capability grant and FORBID this opt-in — tracked in the RD-0236 TODO.)
-const fullGov = { approvedModels: ["bitnet_b1_58_2b"], maxNewTokens: 256, maxTokenCost: "GBP0.05", denyHostNativeFallback: true, allowUnsignedCapabilityGrant: true };
+// RD-0236 #1 follow-on² (DONE): certified mode FORBIDS the unsigned-capability opt-in and REQUIRES a signed
+// grant. So the certified infer tests below confer authority the certified way — a hybrid-signed capability
+// grant bound to THIS engine id (see `capGrant`) — rather than the now-refused allowUnsignedCapabilityGrant
+// escape hatch. A certified engine constructed WITH that opt-in throws ERR_CERTIFIED_UNSIGNED_CAP_FORBIDDEN.
+const fullGov = { approvedModels: ["bitnet_b1_58_2b"], maxNewTokens: 256, maxTokenCost: "GBP0.05", denyHostNativeFallback: true };
 
 // Certified mode now mandates signed-bridge attestation AND the post-quantum half
 // (hybrid Ed25519+ML-DSA-65 — no PQ downgrade, audit CRYPTO-001). One hybrid keypair for
@@ -61,6 +62,16 @@ async function signedTernaryRegistry() {
   const b = await attestBridgeHybrid(new StubTernaryBridge(), privateKeyPem, mlDsaPrivateKey);
   return new Map([[b.technique, b]]);
 }
+
+// A hybrid-signed capability grant bound to THIS engine's id — the certified way to confer authority now that
+// the unsigned opt-in is forbidden. The deny-by-default capability gate holds 0 until this verifies against
+// attPolicy (Ed25519 + ML-DSA-65). Reused across the certified infer tests. (RD-0236 #1 follow-on².)
+// engineId/mask mirror the engine's internal HYBRID_METADATA (galerina-hybrid-uhie-v1 / V_DPM bit 5 ai.inference),
+// hardcoded here as in rd0236-runtime-hardening.test.mjs rather than widening the package's public surface.
+const capGrant = await signCapabilityGrantHybrid(
+  { engineId: "galerina-hybrid-uhie-v1", capabilityMask: 0b00100000 },
+  privateKeyPem, mlDsaPrivateKey,
+);
 
 function caught(fn) { try { fn(); return null; } catch (e) { return e; } }
 
@@ -90,9 +101,32 @@ test("certified profile fails CLOSED without the post-quantum (ML-DSA) public ke
   assert.match(String(err.message), /ERR_CERTIFIED_NO_PQ_KEY/);
 });
 
+test("certified profile FORBIDS allowUnsignedCapabilityGrant at construction (RD-0236 #1 follow-on²)", () => {
+  const egress = new AuditEgress({ dir: dir(), batchSize: 8, hmacKey: realKey });
+  // egress + full hybrid attestation present, so the earlier certified gates pass; the ONLY defect is the
+  // unsigned-capability opt-in. Certified must refuse it LOUDLY — authority may come only from a signed grant.
+  const err = caught(() => createHybridEngine({
+    certified: true, auditEgress: egress, attestation: attPolicy,
+    governance: { ...fullGov, allowUnsignedCapabilityGrant: true },
+  }));
+  assert.ok(err, "certified mode must refuse the unsigned-capability opt-in");
+  assert.match(String(err.message), /ERR_CERTIFIED_UNSIGNED_CAP_FORBIDDEN/);
+});
+
+test("certified profile DENIES inference with no signed capability grant (deny-by-default, RD-0236 #1 follow-on²)", async () => {
+  const egress = new AuditEgress({ dir: dir(), batchSize: 8, hmacKey: realKey });
+  // No signedCapabilityGrant and no (now-forbidden) opt-in ⇒ authority stays 0 ⇒ the capability gate traps
+  // FIRST, before any bridge/model logic. This is the certified deny-by-default the follow-on² enforces:
+  // dropping the escape hatch does not silently admit — it withholds authority until a grant verifies.
+  const eng = createHybridEngine({ certified: true, auditEgress: egress, governance: fullGov, bridges: await signedTernaryRegistry(), attestation: attPolicy });
+  const r = await eng.infer({ prompt: "x", correlationId: "c-nogrant", model: "bitnet_b1_58_2b", maxNewTokens: 128, opClasses: ["embedding", "feedforward"] });
+  assert.equal(r.trapFired, true, "no signed grant ⇒ no authority in certified mode");
+  assert.equal(r.trapCode, "ERR_CAPABILITY_DENIED");
+});
+
 test("certified profile traps a call missing the model (allow-list mandatory)", async () => {
   const egress = new AuditEgress({ dir: dir(), batchSize: 8, hmacKey: realKey });
-  const eng = createHybridEngine({ certified: true, auditEgress: egress, governance: fullGov, bridges: await signedTernaryRegistry(), attestation: attPolicy });
+  const eng = createHybridEngine({ certified: true, auditEgress: egress, governance: fullGov, bridges: await signedTernaryRegistry(), attestation: attPolicy, signedCapabilityGrant: capGrant });
   const r = await eng.infer({ prompt: "x", correlationId: "c1", maxNewTokens: 10 }); // no model
   assert.equal(r.trapFired, true);
   assert.equal(r.trapCode, "ERR_AI_MODEL_REQUIRED");
@@ -100,7 +134,7 @@ test("certified profile traps a call missing the model (allow-list mandatory)", 
 
 test("certified profile traps when max_tokens is absent from governance", async () => {
   const egress = new AuditEgress({ dir: dir(), batchSize: 8, hmacKey: realKey });
-  const eng = createHybridEngine({ certified: true, auditEgress: egress, governance: { approvedModels: ["m"], maxTokenCost: "GBP0.05", denyHostNativeFallback: true, allowUnsignedCapabilityGrant: true }, bridges: await signedTernaryRegistry(), attestation: attPolicy });
+  const eng = createHybridEngine({ certified: true, auditEgress: egress, governance: { approvedModels: ["m"], maxTokenCost: "GBP0.05", denyHostNativeFallback: true }, bridges: await signedTernaryRegistry(), attestation: attPolicy, signedCapabilityGrant: capGrant });
   const r = await eng.infer({ prompt: "x", correlationId: "c2", model: "m" });
   assert.equal(r.trapFired, true);
   assert.equal(r.trapCode, "ERR_CERTIFIED_NO_TOKEN_BUDGET");
@@ -108,7 +142,7 @@ test("certified profile traps when max_tokens is absent from governance", async 
 
 test("certified profile: a fully-specified ternary-only call is permitted", async () => {
   const egress = new AuditEgress({ dir: dir(), batchSize: 8, hmacKey: realKey });
-  const eng = createHybridEngine({ certified: true, auditEgress: egress, governance: fullGov, bridges: await signedTernaryRegistry(), attestation: attPolicy });
+  const eng = createHybridEngine({ certified: true, auditEgress: egress, governance: fullGov, bridges: await signedTernaryRegistry(), attestation: attPolicy, signedCapabilityGrant: capGrant });
   // Only ternary-routed ops (a bridge exists for them) — no host-native needed.
   const r = await eng.infer({ prompt: "x", correlationId: "c3", model: "bitnet_b1_58_2b", maxNewTokens: 128, opClasses: ["embedding", "feedforward"] });
   assert.equal(r.trapFired, false);
@@ -118,7 +152,7 @@ test("certified profile: a fully-specified ternary-only call is permitted", asyn
 test("certified profile traps an UNATTESTED bridge in the registry (ERR_BRIDGE_UNATTESTED)", async () => {
   const egress = new AuditEgress({ dir: dir(), batchSize: 8, hmacKey: realKey });
   // default stub registry — bridges carry a manifest but no signature.
-  const eng = createHybridEngine({ certified: true, auditEgress: egress, governance: fullGov, attestation: attPolicy });
+  const eng = createHybridEngine({ certified: true, auditEgress: egress, governance: fullGov, attestation: attPolicy, signedCapabilityGrant: capGrant });
   const r = await eng.infer({ prompt: "x", correlationId: "c3u", model: "bitnet_b1_58_2b", maxNewTokens: 128, opClasses: ["embedding", "feedforward"] });
   assert.equal(r.trapFired, true);
   assert.equal(r.trapCode, "ERR_BRIDGE_UNATTESTED");
@@ -126,7 +160,7 @@ test("certified profile traps an UNATTESTED bridge in the registry (ERR_BRIDGE_U
 
 test("certified profile: the STANDARD plan correctly traps (fp8/fp16 ops have no bridge)", async () => {
   const egress = new AuditEgress({ dir: dir(), batchSize: 8, hmacKey: realKey });
-  const eng = createHybridEngine({ certified: true, auditEgress: egress, governance: fullGov, bridges: await signedTernaryRegistry(), attestation: attPolicy });
+  const eng = createHybridEngine({ certified: true, auditEgress: egress, governance: fullGov, bridges: await signedTernaryRegistry(), attestation: attPolicy, signedCapabilityGrant: capGrant });
   // Standard transformer plan routes normalization/output_head → fp16/fp8 (no bridge).
   const r = await eng.infer({ prompt: "x", correlationId: "c3b", model: "bitnet_b1_58_2b", maxNewTokens: 128 });
   assert.equal(r.trapFired, true);

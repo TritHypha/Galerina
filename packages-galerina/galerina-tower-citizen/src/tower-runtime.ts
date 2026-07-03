@@ -45,6 +45,16 @@ export interface TowerConfig {
    * Hash-vs-bytes is ALWAYS enforced when artifact bytes are supplied, opt-in or not.
    */
   readonly allowUnsignedLoad?: boolean;
+  /**
+   * RD-0236 #10 follow-on²: the P9 certified profile FORBIDS allowUnsignedLoad. A certified tower must verify
+   * a signed plugin manifest for every external load (deny-by-default) — the unsigned well-formed-hash floor
+   * is not an acceptable admission bar under certification. Construction throws
+   * ERR_CERTIFIED_UNSIGNED_LOAD_FORBIDDEN when both are set. (The hybrid engine's INTERNAL self-load tower is
+   * a NON-certified bootstrap — it loads only its own hardcoded self-descriptor, not external plugins — so it
+   * keeps the floor opt-in. Signing that self-descriptor to drop even the bootstrap exemption is coupled to
+   * the committed-pubkey custody chain and tracked separately.)
+   */
+  readonly certified?: boolean;
 }
 
 export class TowerRuntime {
@@ -63,7 +73,13 @@ export class TowerRuntime {
       ...(config.auditEgress ? { auditEgress: config.auditEgress } : {}),
       ...(config.attestationPolicy ? { attestationPolicy: config.attestationPolicy } : {}),
       allowUnsignedLoad: config.allowUnsignedLoad ?? false,
+      certified: config.certified ?? false,
     };
+    // Fail closed at construction: a certified tower cannot fall back to the unsigned-hash floor — every
+    // external load must present a signed manifest that verifies (RD-0236 #10 follow-on²). Loud, not silent.
+    if (this.config.certified && this.config.allowUnsignedLoad) {
+      throw new Error("ERR_CERTIFIED_UNSIGNED_LOAD_FORBIDDEN: certified tower forbids allowUnsignedLoad — every external plugin load must present a signed manifest that verifies against the attestation policy");
+    }
     const auditOpts: AuditLoggerOptions = {
       batchSize: this.config.auditBatchSize,
       ...(config.auditTickSource ? { tickSource: config.auditTickSource } : {}),

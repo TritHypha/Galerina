@@ -84,6 +84,29 @@ test("RD-0236 #10 (follow-on): load requires a SIGNED plugin manifest (deny-by-d
   assert.ok(okBytes.sandbox, "bytes matching the declared hash load");
 });
 
+// ── #10 follow-on² — a CERTIFIED tower forbids the unsigned-load floor (fail-secure at the load surface) ──
+test("RD-0236 #10 (follow-on²): a certified TowerRuntime forbids allowUnsignedLoad", async () => {
+  const { publicKeyPem, privateKeyPem } = generateAttestationKeypair();
+  const meta = { engineId: "plugin-c", artifactPath: "p", artifactHash: "sha256:abc123", governanceTier: 1, license: "Apache-2.0", maxMemoryMB: 1, capabilityMask: 0 };
+
+  // (a) certified + allowUnsignedLoad is a contradiction — refused LOUDLY at construction (mirrors the
+  //     certified capability-grant refusal on the authority surface).
+  assert.throws(
+    () => new TowerRuntime({ auditInMemory: true, certified: true, allowUnsignedLoad: true }),
+    /ERR_CERTIFIED_UNSIGNED_LOAD_FORBIDDEN/,
+    "a certified tower must not fall back to the unsigned well-formed-hash floor",
+  );
+
+  // (b) a certified tower with a policy + a valid signed manifest loads (the signed path still works).
+  const certTower = new TowerRuntime({ auditInMemory: true, certified: true, attestationPolicy: { requireSigned: true, publicKeyPem } });
+  const signed = signPluginManifest(meta, privateKeyPem);
+  const ok = await certTower.load(meta, undefined, { signedManifest: signed });
+  assert.ok(ok.sandbox, "a certified tower admits a plugin with a valid signed manifest");
+
+  // (c) the same certified tower still refuses an unsigned load — deny-by-default holds (no floor escape).
+  await assert.rejects(() => certTower.load(meta), /FUNGI-ASSIMILATE-003/, "certified tower refuses a load with no signed manifest");
+});
+
 // ── #2 — a null attestation policy no longer trusts unattested bridges (fail-secure INVERSION) ──
 test("RD-0236 #2: with NO attestation policy, a registry carrying ≥1 bridge is DENIED by default", async () => {
   // Pre-fix: attestationPolicy === null short-circuited checkBridgeAttestation to "all attested", so

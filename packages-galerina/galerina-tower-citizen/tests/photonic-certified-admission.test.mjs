@@ -8,7 +8,7 @@ import { rmSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import {
   createHybridEngine, generateHybridAttestationKeypair, attestBridgeHybrid, StubTernaryBridge,
-  signManifestHybrid,
+  signManifestHybrid, signCapabilityGrantHybrid,
 } from "../dist/index.js";
 import { createPhotonicRouterPort } from "../../galerina-ext-photonic-emulator/dist/index.js";
 import { AuditEgress } from "../../galerina-core-sentinel-egress/dist/index.js";
@@ -36,16 +36,21 @@ const dir = () => {
   return d;
 };
 const realKey = Uint8Array.from({ length: 32 }, (_, i) => i + 1);
-// RD-0236 #1: opt into the unsigned capability mask so the deny-by-default capability gate doesn't fire
-// first and mask the certified-photonic behaviour under test. (Follow-on: certified should require a
-// signed capability grant and forbid this opt-in — RD-0236 TODO.)
-const fullGov = { approvedModels: ["bitnet_b1_58_2b"], maxNewTokens: 256, maxTokenCost: "GBP0.05", denyHostNativeFallback: true, allowUnsignedCapabilityGrant: true };
+// RD-0236 #1 follow-on² (DONE): certified forbids the unsigned opt-in and requires a signed grant, so the
+// certified-photonic engine confers authority via a hybrid-signed capability grant (capGrant) instead.
+const fullGov = { approvedModels: ["bitnet_b1_58_2b"], maxNewTokens: 256, maxTokenCost: "GBP0.05", denyHostNativeFallback: true };
 const { publicKeyPem, privateKeyPem, mlDsaPublicKey, mlDsaPrivateKey } = await generateHybridAttestationKeypair();
 const attPolicy = { requireSigned: true, publicKeyPem, mlDsaPublicKey };
 async function signedTernaryRegistry() {
   const b = await attestBridgeHybrid(new StubTernaryBridge(), privateKeyPem, mlDsaPrivateKey);
   return new Map([[b.technique, b]]);
 }
+// Certified authority via a hybrid-signed grant (the unsigned opt-in is now forbidden in certified mode).
+// engineId/mask mirror the engine's internal HYBRID_METADATA (galerina-hybrid-uhie-v1 / ai.inference bit 5).
+const capGrant = await signCapabilityGrantHybrid(
+  { engineId: "galerina-hybrid-uhie-v1", capabilityMask: 0b00100000 },
+  privateKeyPem, mlDsaPrivateKey,
+);
 const bigKernel = () => ({ n: 1024, lane: "photonic", tolerance: 0.05 });
 const CALL = { prompt: "x", correlationId: "cp", model: "bitnet_b1_58_2b", maxNewTokens: 128, opClasses: ["embedding", "feedforward"] };
 
@@ -66,6 +71,7 @@ async function certifiedEngine(photonic) {
   return createHybridEngine({
     certified: true, auditEgress: new AuditEgress({ dir: dir(), batchSize: 8, hmacKey: realKey }),
     governance: fullGov, bridges: await signedTernaryRegistry(), attestation: attPolicy, photonic,
+    signedCapabilityGrant: capGrant,
   });
 }
 
