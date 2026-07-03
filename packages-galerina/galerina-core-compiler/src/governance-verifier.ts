@@ -1092,6 +1092,54 @@ function extractLimitsFields(flowNode: AstNode): Array<{ field: string; decl: st
 }
 
 // ---------------------------------------------------------------------------
+// FUNGI-LIMIT-001: enforced_limits ceiling comparison (Domain Guard, task #56 Phase 2)
+//
+// A flow's `limits {}` decls are space-separated PHRASES ("max memory 256 MB"); a guard's
+// `enforced_limits {}` are KEY:VALUE ("max_memory_ceiling: 16MB"). Both normalise to a canonical
+// limit name so the flow's declared value can be compared against the guard's ceiling. CONSERVATIVE:
+// compared ONLY when both sides map to the same canonical name AND both values parse to the same unit
+// family — any ambiguity is SKIPPED, so this never emits a FALSE ceiling violation.
+// ---------------------------------------------------------------------------
+
+/** Normalise a flow phrase ("max memory") or a guard key ("max_memory_ceiling") to one canonical limit name.
+ *  Tokenises on whitespace/underscore and drops the `max`/`ceiling` framing words so both forms coincide
+ *  (`max_memory_ceiling` and `max memory` → `memory`; `max request size` → `request_size`). */
+function canonicalLimitName(raw: string): string {
+  return raw.toLowerCase()
+    .split(/[\s_]+/)
+    .filter((t) => t !== "" && t !== "max" && t !== "ceiling")
+    .join("_");
+}
+
+type LimitFamily = "bytes" | "time" | "count";
+const LIMIT_BYTE_UNITS: Record<string, number> = { b: 1, kb: 1e3, mb: 1e6, gb: 1e9 };
+const LIMIT_TIME_UNITS: Record<string, number> = { ms: 1, s: 1000, m: 60000, min: 60000, h: 3_600_000 };
+
+/** Parse a limit value ("4MB", "256 MB", "5_000_000", "30 s") to a normalised magnitude + unit family, or null. */
+function parseLimitValue(raw: string): { n: number; family: LimitFamily } | null {
+  const m = raw.trim().replace(/_/g, "").match(/^(\d+(?:\.\d+)?)\s*([a-zA-Z]*)$/);
+  if (m === null) return null;
+  const num = Number(m[1]);
+  if (!Number.isFinite(num)) return null;
+  const unit = (m[2] ?? "").toLowerCase();
+  if (unit === "") return { n: num, family: "count" };
+  const bytes = LIMIT_BYTE_UNITS[unit];
+  if (bytes !== undefined) return { n: num * bytes, family: "bytes" };
+  const time = LIMIT_TIME_UNITS[unit];
+  if (time !== undefined) return { n: num * time, family: "time" };
+  return null; // unknown unit — skip rather than mis-compare
+}
+
+/** Split a flow limit decl ("max memory 256 MB") into its canonical name + parsed value, or null when ambiguous. */
+function parseFlowLimitDecl(decl: string): { canonical: string; value: { n: number; family: LimitFamily } } | null {
+  const m = decl.trim().match(/^(.+?)\s+(\d[\d_]*(?:\.\d+)?\s*[a-zA-Z]*)$/);
+  if (m === null) return null;
+  const value = parseLimitValue(m[2] ?? "");
+  if (value === null) return null;
+  return { canonical: canonicalLimitName(m[1] ?? ""), value };
+}
+
+// ---------------------------------------------------------------------------
 // Phase 2 — FUNGI-GOV-020: authority overly-broad detection
 // ---------------------------------------------------------------------------
 
@@ -2762,12 +2810,42 @@ class GovernanceVerifier {
       }
     }
 
-    // ── FUNGI-LIMIT-001: enforced_limits ceiling check ─────────────────────────
-    // TODO (task #56 Phase 2): Full structured limit comparison.
-    // parseLimitMB() and per-field comparison pending implementation.
-    // When implemented: compare contract limits {} values against policy enforced_limits {}
-    // ceilings and emit FUNGI-LIMIT-001 on violation.
-    // No diagnostic emitted here until structured parsing is in place.
+    // ── FUNGI-LIMIT-001: enforced_limits ceiling check (task #56 Phase 2) ──────────────────────
+    // A guard's `enforced_limits {}` sets ceilings; a conforming flow's declared `limits {}` value must
+    // not EXCEED the guard's ceiling for the same canonical limit. CONSERVATIVE (see the helpers): only
+    // compared when both map to the same canonical name AND the same unit family; ambiguity is skipped.
+    const enforcedLimitsBlock = (policyNode.children ?? []).find(
+      (c) => c.kind === "identifier" && c.value === "enforced_limits",
+    );
+    if (enforcedLimitsBlock !== undefined) {
+      // Guard ceilings: each entry is `identifier { value: "<key>", children: [stringLiteral("<val>")] }`.
+      const ceilings = new Map<string, { n: number; family: LimitFamily }>();
+      for (const entry of enforcedLimitsBlock.children ?? []) {
+        if (entry.kind !== "identifier" || entry.value === undefined) continue;
+        const valueChild = (entry.children ?? []).find(
+          (c) => c.kind === "stringLiteral" || c.kind === "numberLiteral",
+        ) ?? entry.children?.[0];
+        const parsed = parseLimitValue(String(valueChild?.value ?? ""));
+        if (parsed !== null) ceilings.set(canonicalLimitName(entry.value), parsed);
+      }
+      for (const { decl, location } of extractLimitsFields(flowNode)) {
+        const flowLimit = parseFlowLimitDecl(decl);
+        if (flowLimit === null) continue;
+        const ceiling = ceilings.get(flowLimit.canonical);
+        if (ceiling === undefined || ceiling.family !== flowLimit.value.family) continue;
+        if (flowLimit.value.n > ceiling.n) {
+          this.diagnostics.push(makeGovDiag(
+            "FUNGI-LIMIT-001",
+            "ENFORCED_LIMIT_EXCEEDED",
+            "error",
+            `Policy Violation in flow '${flow.name}': the declared limit '${decl}' exceeds the ` +
+            `'${policyName}' policy's enforced_limits ceiling for '${flowLimit.canonical}'.`,
+            location ?? contractNode.location ?? flowNode.location,
+            `Lower the '${flowLimit.canonical}' limit to at or below the '${policyName}' policy ceiling.`,
+          ));
+        }
+      }
+    }
   }
 
   /**

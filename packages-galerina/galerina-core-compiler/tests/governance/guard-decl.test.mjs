@@ -358,3 +358,43 @@ contract [conforms_to: MissingPolicy] {
     assert.ok(d !== undefined && d.severity === "error", `production: expected a fatal error, got: ${d?.severity}`);
   });
 });
+
+// ---------------------------------------------------------------------------
+// FUNGI-LIMIT-001 (task #56 Phase 2): a conforming flow's declared `limits {}` value must not
+// EXCEED the guard's `enforced_limits {}` ceiling for the same canonical limit. Previously the
+// enforced_limits ceiling was a declared-but-unenforced governance surface (stub emitted nothing).
+// ---------------------------------------------------------------------------
+
+describe("FUNGI-LIMIT-001: enforced_limits ceiling", () => {
+  const guard = `
+guard MemCap {
+  enforced_limits {
+    max_memory_ceiling: 16MB
+  }
+}
+`;
+  const flowWith = (limits) => `${guard}
+secure flow worker(id: String) -> Result<String, String>
+contract [conforms_to: MemCap] {
+  intent { "memory-bounded worker" }
+  effects { database.read }
+  limits { ${limits} }
+}
+{ return Ok(id) }
+`;
+
+  it("a declared limit EXCEEDING the guard ceiling fires FUNGI-LIMIT-001", () => {
+    const r = parseAndVerify(flowWith("max memory 256 MB")); // 256 MB > 16 MB ceiling
+    assert.ok(hasDiag(r, "FUNGI-LIMIT-001"), `expected ceiling violation, got: ${r.diagnostics.map((d) => d.code).join(", ")}`);
+  });
+
+  it("a declared limit AT or BELOW the ceiling does NOT fire (no false positive)", () => {
+    assert.ok(!hasDiag(parseAndVerify(flowWith("max memory 8 MB")), "FUNGI-LIMIT-001"), "8 MB < 16 MB ceiling");
+    assert.ok(!hasDiag(parseAndVerify(flowWith("max memory 16 MB")), "FUNGI-LIMIT-001"), "16 MB == ceiling (not exceeded)");
+  });
+
+  it("a flow limit with NO matching guard ceiling is skipped (conservative — no false fire)", () => {
+    // MemCap caps memory only; a request-size limit has no ceiling to compare against ⇒ skip.
+    assert.ok(!hasDiag(parseAndVerify(flowWith("max request size 999 MB")), "FUNGI-LIMIT-001"), "no ceiling for request size ⇒ skip");
+  });
+});
