@@ -54,7 +54,7 @@ export function wrapRecipientSecret(recipientSec: Uint8Array, passphrase: Uint8A
   const iv = new Uint8Array(randomBytes(12));
   const wrapKey = deriveWrapKey(passphrase, salt);
   try {
-    const cipher = createCipheriv("aes-256-gcm", wrapKey, iv);
+    const cipher = createCipheriv("aes-256-gcm", wrapKey, iv, { authTagLength: 16 });
     const enc = Buffer.concat([cipher.update(Buffer.from(recipientSec)), cipher.final()]);
     const tag = cipher.getAuthTag();
     return { salt, iv, ct: new Uint8Array(Buffer.concat([enc, tag])) };
@@ -71,9 +71,16 @@ export function unwrapRecipientSecret<T>(wrapped: WrappedKey, passphrase: Uint8A
   const wrapKey = deriveWrapKey(passphrase, wrapped.salt);
   try {
     const ct = wrapped.ct;
+    // FAIL-CLOSED (pentest 2026-07-02, RD-anchor-GCM-taglen): the GCM auth tag is a FIXED 16 bytes. A
+    // truncated/corrupt wrap whose ct is shorter than the tag would otherwise be handed to setAuthTag as a
+    // SHORT tag, which Node accepts (DEP0182) — downgrading auth from 128-bit to as low as 32-bit. Reject any
+    // structurally-invalid ct before decrypt, and pin authTagLength so Node enforces a full tag.
+    if (ct.length < 16 + 1) {
+      throw new Error("unwrapRecipientSecret: malformed wrap (ct shorter than GCM tag + body); refusing (fail-closed)");
+    }
     const tag = ct.subarray(ct.length - 16);
     const body = ct.subarray(0, ct.length - 16);
-    const decipher = createDecipheriv("aes-256-gcm", wrapKey, wrapped.iv);
+    const decipher = createDecipheriv("aes-256-gcm", wrapKey, wrapped.iv, { authTagLength: 16 });
     decipher.setAuthTag(Buffer.from(tag));
     // createDecipheriv's update()/final() each allocate an internal output Buffer holding the
     // most-sensitive material (the anchor secret key). We capture both, wipe each explicitly,
