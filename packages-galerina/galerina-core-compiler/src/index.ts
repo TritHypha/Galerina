@@ -94,9 +94,18 @@ export {
 export {
   parseGate,
   parseGateHeader,
+  parseGateFlow,
+  parseGateNode,
+  parseGateEdge,
   FUNGI_GATELANG_001,
   FUNGI_GATELANG_002,
   type GateHeader,
+  type GateFlow,
+  type GateNode,
+  type GateEdge,
+  type GateTag,
+  type GateNodeKind,
+  type GateTagKind,
 } from "./gate-parser.js";
 
 // Phase 5 / 18E / 18H / 19A — Effect Checker
