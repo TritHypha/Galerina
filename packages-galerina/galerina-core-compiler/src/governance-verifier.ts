@@ -729,11 +729,21 @@ function extractResponseDeniedFields(flowNode: AstNode): Set<string> {
 
 /**
  * RD-0234 GNG-03: extract field/type names named in a contract.privacy
- * `deny protected <X> to response.body` rule. The parser lumps each privacy line into an
+ * `deny protected <X> to response[.body]` rule. The parser lumps each privacy line into an
  * `identifier { value: "decl:<raw text>" }` under `privacy:block` — a single decl string may
  * concatenate several rules and spaces the dot ("response . body"). This declarative rule was
  * PARSED BUT NEVER ENFORCED; only the terser response.denies form fired FUNGI-GOV-003, so a raw
  * protected field returned to the response admitted (the "sound backstop" .gate posture-B defers to).
+ *
+ * FUNGI-PRIVACY-001 response-target drift fix (RD-0234c / privacy-001): the prior regex hard-required
+ * the literal `.body` suffix, but the documented + shipped grammar writes the BARE form
+ * `deny protected X to response` (docs/examples 222/224, every Level-9 enterprise example) — which
+ * matched NOTHING, so the exact directive a developer copies enforced nothing. We now match the whole
+ * `response` SURFACE FAMILY: `to response`, `to response.body`, `to response . body`, and
+ * `to response.<path>` (.headers, …). The trailing `.<path>` is OPTIONAL and over-approximated toward
+ * the response body — fail-closed: catch a leak we are unsure of, never miss the documented one.
+ * `\bresponse\b` anchors the word so `responseBody` (no dot) and non-response sinks (`to logs`,
+ * `to remote.execution`) are NOT captured here (separate enforcement domains).
  */
 function extractPrivacyDeniedResponseFields(flowNode: AstNode): Set<string> {
   const denied = new Set<string>();
@@ -743,7 +753,7 @@ function extractPrivacyDeniedResponseFields(flowNode: AstNode): Set<string> {
     (c) => c.kind === "identifier" && c.value === "privacy:block",
   );
   if (privacyBlock === undefined) return denied;
-  const re = /deny\s+protected\s+(\w+)\s+to\s+response\s*\.\s*body/gi;
+  const re = /deny\s+protected\s+(\w+)\s+to\s+response\b(?:\s*\.\s*\w+)*/gi;
   for (const rc of privacyBlock.children ?? []) {
     if (rc.kind === "identifier" && rc.value?.startsWith("decl:")) {
       const text = rc.value.slice("decl:".length);
