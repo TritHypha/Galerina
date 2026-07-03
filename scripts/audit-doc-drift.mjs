@@ -22,9 +22,12 @@ const HISTORICAL = /change.?log|history|snapshot|superseded|deprecated|\bprior\b
 // a "X tests" count is only treated as the GLOBAL count when its line is global-context (else it's per-package)
 const GLOBAL_CTX = /packages|full suite|whole suite|\btotal\b|all tests|aggregate/i;
 
-// A doc whose FILENAME carries a date (galerina-*-YYYY-MM-DD.md) is a point-in-time SNAPSHOT — its counts are
-// historical by construction, so it is exempt. Only LIVING docs (no date in the name) must stay current.
-const DATED = /-\d{4}-\d{2}-\d{2}\.md$/;
+// A doc whose FILENAME carries a date (galerina-*-YYYY-MM-DD.md, incl. a suffix like …-2026-06-23-eod.md)
+// is a point-in-time SNAPSHOT — its counts are historical by construction, so it is exempt. Likewise a
+// *-log.md file (rd-results-log …) is an append-only record: every entry states the counts AT ITS date.
+// Only LIVING docs must stay current.
+const DATED = /-\d{4}-\d{2}-\d{2}(?:-[a-z0-9]+)*\.md$/i;
+const LOG = /-log\.md$/i;
 // The KB corpus lives in the sibling ZTF-Knowledge-Bases repo (docs/Knowledge-Bases migrated there) —
 // resolve like kb-index.mjs (GALERINA_KB_DIR override first). Scan its ROOT flat: the living SOT docs
 // sit there; subdirs (rd-absorbed/ …) are historical by construction. A missing corpus is a VIOLATION,
@@ -32,7 +35,7 @@ const DATED = /-\d{4}-\d{2}-\d{2}\.md$/;
 const KB = process.env.GALERINA_KB_DIR || join(ROOT, "..", "ZTF-Knowledge-Bases");
 const files = [];
 let kbUnreadable = false;
-try { for (const f of readdirSync(KB)) if (f.endsWith(".md") && !DATED.test(f)) files.push({ p: join(KB, f), rel: `KB/${f}` }); } catch { kbUnreadable = true; }
+try { for (const f of readdirSync(KB)) if (f.endsWith(".md") && !DATED.test(f) && !LOG.test(f)) files.push({ p: join(KB, f), rel: `KB/${f}` }); } catch { kbUnreadable = true; }
 for (const f of ["README.md", "AGENTS.md", "CHANGELOG.md"]) files.push({ p: join(ROOT, f), rel: f });
 
 const hits = [];

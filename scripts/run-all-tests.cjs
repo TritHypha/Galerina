@@ -197,7 +197,10 @@ function writeVersionJson(total, pkgCount, perPackage) {
 }
 
 function writeSotDoc(total, pkgCount) {
-  const file = path.join(ROOT, 'docs', 'Knowledge-Bases', 'galerina-runtime-status-SOT.md');
+  // The SOT doc migrated to the sibling ZTF-Knowledge-Bases repo — resolve like kb-index.mjs
+  // (GALERINA_KB_DIR override, sibling default). Absence stays non-fatal (optional target).
+  const kbDir = process.env.GALERINA_KB_DIR || path.join(ROOT, '..', 'ZTF-Knowledge-Bases');
+  const file = path.join(kbDir, 'galerina-runtime-status-SOT.md');
   let raw;
   try {
     raw = fs.readFileSync(file, 'utf8');

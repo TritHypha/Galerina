@@ -111,6 +111,9 @@ writeFileSync(join(tmp2, "docs", "Knowledge-Bases", "living.md"), [
 ].join("\n") + "\n");
 // dated-FILENAME snapshot — counts are historical by construction → whole file exempt
 writeFileSync(join(tmp2, "docs", "Knowledge-Bases", "snap-2026-06-01.md"), `Snapshot: 40/40 packages, 3,000 tests.\n`);
+// dated-with-SUFFIX snapshot (…-eod.md) + append-only -log.md — both exempt classes
+writeFileSync(join(tmp2, "docs", "Knowledge-Bases", "audit-2026-06-02-eod.md"), `EOD: full suite 41/41 packages, 3,100 tests.\n`);
+writeFileSync(join(tmp2, "docs", "Knowledge-Bases", "results-log.md"), `Entry: full suite 42/42 packages, 3,200 tests.\n`);
 
 // The tool resolves the KB corpus via GALERINA_KB_DIR (sibling ZTF-Knowledge-Bases by default) —
 // point it at the fixture's docs dir so the harness stays hermetic.
@@ -134,6 +137,14 @@ test("doc-drift: historical lines (superseded / verified:) are exempt", () => {
 
 test("doc-drift: a dated-FILENAME snapshot is fully exempt", () => {
   assert.ok(!drift.drift.some((d) => d.rel.includes("snap-2026-06-01")), "dated snapshot not scanned");
+});
+
+test("doc-drift: a dated-with-suffix filename (…-2026-06-02-eod.md) is exempt", () => {
+  assert.ok(!drift.drift.some((d) => d.rel.includes("audit-2026-06-02-eod")), "dated+suffix snapshot not scanned");
+});
+
+test("doc-drift: an append-only -log.md file is exempt", () => {
+  assert.ok(!drift.drift.some((d) => d.rel.includes("results-log")), "-log.md record not scanned");
 });
 
 test("doc-drift: a MISSING KB corpus is a VIOLATION (fail-closed), not silence", () => {

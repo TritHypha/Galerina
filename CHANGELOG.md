@@ -37,7 +37,7 @@ This beta packages the Stage-A production-hardened compiler/runtime, the governe
 border, and the post-quantum signing surfaces for full testing. Scope is stated honestly in
 [KNOWN-ISSUES.md](KNOWN-ISSUES.md): what is production-grade (compiler, governance verifier,
 admission gate) vs simulated/aspirational (DSS.wasm isolation, photonic Tower, Stage-B
-self-hosting beyond `tokenize`). 60/60 packages · 5,243 tests · 0 fail.
+self-hosting beyond `tokenize`). 60/60 packages · 6,056 tests · 0 fail.
 
 ### Added (this beta)
 - **Opt-in hybrid Ed25519+ML-DSA-65 `.lmanifest` signing (#34).** `galerina build`/`verify`/`run`
@@ -54,7 +54,7 @@ self-hosting beyond `tokenize`). 60/60 packages · 5,243 tests · 0 fail.
 
 ### Security — Phase 1 Audit (2026-06-16): 8/8 criticals + highs cleared
 Adversarial Gate-6 audit (37 raised · 32 confirmed). **All Critical and High findings are patched and
-verified**; the codebase is in a fail-closed, deterministic state. 48/48 packages · 4,481 tests · 0 fail.
+verified**; the codebase is in a fail-closed, deterministic state — 48/48 packages · 4,481 tests · 0 fail at that snapshot.
 
 - **VSC-001 (critical)** — closed a taint-escape: `isGovernedSink` is now a strict superset of the
   authoritative `SINK_REQUIREMENTS`, so unsafe/tainted values no longer reach `response.body` /

@@ -30,7 +30,7 @@ intent → governed execution plan → coordinated compute → audit proof
 | 6 | IR (GIR) + Target Planner + WAT emitter | Complete (Stage-A) |
 
 > **Stage-A status (2026-06-23):** the full pipeline lexer→parser→type/effect/value-state→governance-verifier→GIR→WAT
-> is shipped and green (`galerina-core-compiler` at 3,731; whole suite 60/60 · 5,345 tests · 0 fail on a clean checkout). The remaining
+> is shipped and green (`galerina-core-compiler` at 4,237; whole suite 60/60 · 6,056 tests · 0 fail on a clean checkout). The remaining
 > frontier is **Stage-B self-hosting WASM byte-parity** (only `tokenize` reaches it today) and the **real
 > `DSS.wasm`** Wasmtime runtime (#102–106, still a stub). See `docs/Knowledge-Bases/galerina-roadmap-and-percent-audit-2026-06-23.md`.
 
