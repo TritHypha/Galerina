@@ -21,9 +21,11 @@
  * which is the precise fail-open (silent precision loss) that gating scalar UInt64 behind FUNGI-NUMERIC-001
  * guards against. Callers MUST hold in-range, NON-NEGATIVE u64 operands.
  *
- * NOTE (sequencing): this is the arithmetic layer only. It is additive and reachable from nothing yet —
- * UInt64 stays fail-closed under FUNGI-NUMERIC-001 until the interpreter dispatch + gate-lift land. Building
- * and proving the math BEFORE admitting the type is the most-secure order (prove, then lift the gate).
+ * NOTE (sequencing): this is the arithmetic layer only. It was built additive-and-reachable-from-nothing
+ * FIRST — UInt64 stayed fail-closed under FUNGI-NUMERIC-001 while this math was proven. Both the interpreter
+ * dispatch and the gate-lift have SINCE landed (#52): `interpreter.ts` now dispatches UInt64 through this
+ * layer (u64*Checked) and the FUNGI-NUMERIC-001 gate set (`BACKEND_UNLOWERABLE_SCALAR`) is empty. Building
+ * and proving the math BEFORE admitting the type was the most-secure order (prove, then lift the gate).
  */
 
 export const U64_MIN = 0n;

@@ -23,9 +23,10 @@ import { type AstNode } from "./parser.js";
  * Int64 has been LIFTED (owner-gated, 2026-06-25): the WASM emitter now lowers it faithfully (i64.const /
  * checked $fungi_*_i64 / native i64.div_s|rem_s / i64 comparisons) and the tree-walker carries it as a
  * bigint — proven byte-exact, walker ≡ WASM, over the full (2^53,2^63) corpus (wat-i64-differential). So
- * the gate no longer rejects Int64; only UInt64 remains, because faithful *unsigned* 64-bit arithmetic
- * (u64 div/compare/overflow differ from the signed i64.* ops) has no layer yet. Int8/Int16 widen to i32
- * and Float32 widens to f64 (no value loss) — deliberately NOT here.
+ * the gate no longer rejects Int64. UInt64 was held back next (faithful *unsigned* 64-bit arithmetic —
+ * u64 div/compare/overflow differ from the signed i64.* ops — had no layer yet) but has SINCE been lifted
+ * too — see "NOW EMPTY" below, so the gate set is empty. Int8/Int16 widen to i32 and Float32 widens to f64
+ * (no value loss) — deliberately NOT here.
  *
  * DELIBERATELY SPLIT from FAST_TIER_UNLOWERABLE_SCALAR below: the two concerns diverged at the lift. The
  * GATE asks "can the pipeline as a whole carry this width?" The fast-tier bail asks "can the *i32-only* fast
