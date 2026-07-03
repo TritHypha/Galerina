@@ -25,15 +25,21 @@ const GLOBAL_CTX = /packages|full suite|whole suite|\btotal\b|all tests|aggregat
 // A doc whose FILENAME carries a date (galerina-*-YYYY-MM-DD.md) is a point-in-time SNAPSHOT — its counts are
 // historical by construction, so it is exempt. Only LIVING docs (no date in the name) must stay current.
 const DATED = /-\d{4}-\d{2}-\d{2}\.md$/;
+// The KB corpus lives in the sibling ZTF-Knowledge-Bases repo (docs/Knowledge-Bases migrated there) —
+// resolve like kb-index.mjs (GALERINA_KB_DIR override first). Scan its ROOT flat: the living SOT docs
+// sit there; subdirs (rd-absorbed/ …) are historical by construction. A missing corpus is a VIOLATION,
+// not silence — this audit once silently lost its whole corpus to a fail-open catch{} here.
+const KB = process.env.GALERINA_KB_DIR || join(ROOT, "..", "ZTF-Knowledge-Bases");
 const files = [];
-const KB = join(ROOT, "docs", "Knowledge-Bases");
-try { for (const f of readdirSync(KB)) if (f.endsWith(".md") && !DATED.test(f)) files.push(join("docs", "Knowledge-Bases", f)); } catch { /* none */ }
-for (const f of ["README.md", "AGENTS.md", "CHANGELOG.md"]) files.push(f);
+let kbUnreadable = false;
+try { for (const f of readdirSync(KB)) if (f.endsWith(".md") && !DATED.test(f)) files.push({ p: join(KB, f), rel: `KB/${f}` }); } catch { kbUnreadable = true; }
+for (const f of ["README.md", "AGENTS.md", "CHANGELOG.md"]) files.push({ p: join(ROOT, f), rel: f });
 
 const hits = [];
-for (const rel of files) {
+if (kbUnreadable) hits.push({ rel: KB, line: 0, kind: "kb-corpus", claim: "KB corpus missing/unreadable", authoritative: "sibling ZTF-Knowledge-Bases (or GALERINA_KB_DIR) must be scannable — fail-closed" });
+for (const { p, rel } of files) {
   let lines;
-  try { lines = readFileSync(join(ROOT, rel), "utf8").split(/\r?\n/); } catch { continue; }
+  try { lines = readFileSync(p, "utf8").split(/\r?\n/); } catch { continue; }
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (HISTORICAL.test(line)) continue;

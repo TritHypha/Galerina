@@ -112,8 +112,10 @@ writeFileSync(join(tmp2, "docs", "Knowledge-Bases", "living.md"), [
 // dated-FILENAME snapshot — counts are historical by construction → whole file exempt
 writeFileSync(join(tmp2, "docs", "Knowledge-Bases", "snap-2026-06-01.md"), `Snapshot: 40/40 packages, 3,000 tests.\n`);
 
+// The tool resolves the KB corpus via GALERINA_KB_DIR (sibling ZTF-Knowledge-Bases by default) —
+// point it at the fixture's docs dir so the harness stays hermetic.
 const drift = JSON.parse(run2("audit-doc-drift.mjs", ["--json"]).stdout);
-function run2(script, args = []) { return spawnSync(process.execPath, [join(SCRIPTS, script), ...args], { cwd: tmp2, encoding: "utf8" }); }
+function run2(script, args = [], env = { GALERINA_KB_DIR: join(tmp2, "docs", "Knowledge-Bases") }) { return spawnSync(process.execPath, [join(SCRIPTS, script), ...args], { cwd: tmp2, encoding: "utf8", env: { ...process.env, ...env } }); }
 
 test("doc-drift: a living doc's stale CURRENT count is flagged (packages + tests)", () => {
   const inLiving = drift.drift.filter((d) => d.rel.includes("living.md"));
@@ -132,6 +134,11 @@ test("doc-drift: historical lines (superseded / verified:) are exempt", () => {
 
 test("doc-drift: a dated-FILENAME snapshot is fully exempt", () => {
   assert.ok(!drift.drift.some((d) => d.rel.includes("snap-2026-06-01")), "dated snapshot not scanned");
+});
+
+test("doc-drift: a MISSING KB corpus is a VIOLATION (fail-closed), not silence", () => {
+  const r = JSON.parse(run2("audit-doc-drift.mjs", ["--json"], { GALERINA_KB_DIR: join(tmp2, "no-such-kb") }).stdout);
+  assert.ok(r.drift.some((d) => d.kind === "kb-corpus"), "missing corpus surfaces as a kb-corpus violation");
 });
 
 // ── SEC-002 mutation gate: a hermetic tmp git repo proves KILL + SURVIVE + git-safety (no production touched) ──
