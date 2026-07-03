@@ -36,6 +36,21 @@ describe("egress hardening — A1 bare assignment (assignStmt) re-derives flags"
   });
 });
 
+describe("egress hardening — H3 safelist inversion (unknown receiver ⇒ deny-by-default)", () => {
+  it("a raw secret to an UNKNOWN egress service (in no denylist) → FUNGI-SECRET-002", () => {
+    const r = chk(wrap('  let kk = secret.get("api")\n  let x = AcmeCloudThing.upload(kk)'));
+    assert.ok(has(r, "FUNGI-SECRET-002"), codes(r));
+  });
+  it("a raw secret to another unlisted service via .submit → FUNGI-SECRET-002", () => {
+    const r = chk(wrap('  let kk = secret.get("api")\n  let x = WeirdSink.submit(kk)'));
+    assert.ok(has(r, "FUNGI-SECRET-002"), codes(r));
+  });
+  it("a raw secret to an ON-HOST secret-safe primitive (vault.store) is exempt → clean", () => {
+    const r = chk(wrap('  let kk = secret.get("api")\n  let x = vault.store(kk)'));
+    assert.ok(!has(r, "FUNGI-SECRET-002"), codes(r));
+  });
+});
+
 describe("egress hardening — A2 record spread/update keeps the flag", () => {
   it("a secret in a { ...base, tok } spread → FUNGI-SECRET-002", () => {
     const r = chk(wrap('  let base = mkRec()\n  let kk = secret.get("api")\n  let rec = { ...base, tok: kk }\n  let x = http.post("u", rec)'));

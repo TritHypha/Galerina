@@ -332,16 +332,17 @@ function isLogCall(node: AstNode): boolean {
   return seg === "log" || seg === "logger" || seg === "console";
 }
 
-// H3 (RD-0234c): known off-host egress SERVICES a raw secret must never reach. AUDIT-NAMED gap-closure —
-// Slack/S3/Kafka/… were omitted from the receiver hand-list, so a SecureString handed to them signed
-// clean (exfiltration). NOT exhaustive — the SOUND fix is a safelist (unknown receiver ⇒ deny-by-default),
-// tracked as RD-0234c H3 (deferred for its over-block scoping); this closes the named + common paths.
-const EXTERNAL_EGRESS_SERVICES = new Set([
-  "slack", "discord", "telegram", "s3", "gcs", "azureblob", "blobstore", "cloudstorage",
-  "kafka", "sns", "sqs", "pubsub", "eventbus", "eventbridge", "messagequeue", "rabbitmq",
-  "sms", "smsservice", "twilio", "sendgrid", "mailgun", "stripe", "paypal", "braintree",
-  "webhook", "webhookservice", "firebase", "firestore", "fcm", "apns", "pushnotification",
-  "datadog", "segment", "mixpanel", "amplitude", "pagerduty", "opsgenie", "elasticsearch",
+// H3 (RD-0234c) SAFELIST INVERSION — deny-by-default. The previous receiver DENYLIST (Slack/S3/Kafka/…)
+// admitted any UNKNOWN receiver: a raw SecureString handed to an unlisted egress service signed clean
+// (CWE-183 fail-open). The sound fix is a SAFELIST — a raw secret/protected value handed to an egress-shaped
+// method is a potential exfiltration path on ANY receiver EXCEPT the known ON-HOST secret-handling primitives
+// below (crypto/custody/redaction, where a raw secret legitimately lives without leaving the host). An unknown
+// receiver is now treated as egress (fail-closed). This only affects values that are STILL raw-secret/protected
+// at the call site — a redacted/sealed value is not a raw secret, so it is unaffected.
+const EGRESS_SAFE_RECEIVERS = new Set([
+  "crypto", "cipher", "hash", "hmac", "signer", "verifier", "kdf", "mac", "digest",
+  "vault", "keystore", "keyring", "hsm", "kms", "secretmanager", "secretstore",
+  "sealer", "secretbox", "redactor", "redact",
 ]);
 // Egress-shaped method verbs (transmit/persist off-host). A read-only getter (get/list/describe/read) is NOT.
 const EGRESS_METHOD_VERB = /^(send|post|put|publish|push|notify|dispatch|deliver|upload|charge|emit|track|capture|submit|forward|index|write|append|enqueue|produce|ingest|report|export|sync|store)/i;
@@ -372,9 +373,10 @@ function isNetworkSink(node: AstNode): boolean {
   // ships the payload to a model (a third-party egress), like ai.remoteInference — was ungoverned.
   if (r === "model" && /^(run|infer|predict|generate|complete)$/.test(methodName)) return true;
   if (/vectordb$/.test(r) && /^(write|insert|upsert|add|index)$/.test(methodName)) return true;
-  // H3: a raw secret handed to a named external egress service (Slack/S3/Kafka/…) with an egress-shaped
-  // method ships it off-host, exactly like http.*/email.send. (See EXTERNAL_EGRESS_SERVICES above.)
-  if (EXTERNAL_EGRESS_SERVICES.has(r) && EGRESS_METHOD_VERB.test(methodName)) return true;
+  // H3 (RD-0234c SAFELIST inversion): a raw secret handed to ANY receiver via an egress-shaped method is a
+  // potential off-host exfiltration path — deny by default. Only the known ON-HOST secret-handling primitives
+  // (EGRESS_SAFE_RECEIVERS) are exempt. This closes the denylist gap where an UNKNOWN egress service admitted.
+  if (EGRESS_METHOD_VERB.test(methodName) && !EGRESS_SAFE_RECEIVERS.has(r)) return true;
   return false;
 }
 
