@@ -99,8 +99,13 @@ front-end compiler (§5a–5d, own session, still owner-paused).
 - [~] **VD-2 (full single-source)** — `CAPABILITY_RE` ✅ DONE: `effect-checker.ts` now EXPORTS `CANONICAL_EFFECTS` +
       `DENY_ONLY_EFFECTS`, and `leak-proof.ts` DERIVES the namespace alternation from them (+ an explicit `PROSE_EXTRAS`
       list) — a canonical namespace can no longer drift out of the regex. Behaviour-preserving (derived set == the old
-      31-entry hand-list, verified). **Remaining:** derive the SINK registries (`taint-checker.ts` / `value-state-checker.ts`)
-      from the same canonical source; `scripts/audit-sink-canonicality.mjs` guards sink drift in the interim.
+      31-entry hand-list, verified). **C1 taint fail-open ✅ CLOSED (`a9b8372`, pushed):** `taint-checker.ts` now matches
+      injection sinks (b) case-insensitively + (c) by narrow sink-SHAPE pattern (SQL/command/XSS families) + (d)
+      deny-by-default for an unknown sink-shaped call with a tainted arg, and `calleeNameOf` uses the parser's `callStyle`
+      marker (not the A–Z guess) — `db.query`/`pg.query`/`knex.raw`/`child_process.exec`/bare `exec(tainted)` no longer sign
+      `--production` clean; 8 RED-benches, 0 over-blocking. **Remaining:** (a) single-source BOTH SINK registries from a
+      canonical `stdlib-gates.yaml` SoT (anti-drift; `scripts/audit-sink-canonicality.mjs` guards drift in the interim); the
+      broader egress/URL/header/FS deny-by-default + H2/H3 (taint-source 10-name / net-receiver allowlists) are separate.
       *In-flight (uncommitted):* `type-registry.ts` now single-sources the type-QUALIFIER vocab as `TYPE_QUALIFIERS`
       (`protected|redacted|unsafe|safe|secret`) and derives the strip-regex from it — first step of the SoT pattern.
 - [ ] **`.gate` front-end compiler** (PROMPT §5a-5d) — build gate GREEN (D5 re-scoped), backstop wired →
