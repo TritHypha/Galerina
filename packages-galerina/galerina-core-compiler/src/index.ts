@@ -90,6 +90,15 @@ export {
   type SourceLocation as ParserSourceLocation,
 } from "./parser.js";
 
+// §5a–5d — `.gate` front-end parser (NEW, separate from the `.fungi` parser; same ParseResult shape)
+export {
+  parseGate,
+  parseGateHeader,
+  FUNGI_GATELANG_001,
+  FUNGI_GATELANG_002,
+  type GateHeader,
+} from "./gate-parser.js";
+
 // Phase 5 / 18E / 18H / 19A — Effect Checker
 export {
   checkEffects,
