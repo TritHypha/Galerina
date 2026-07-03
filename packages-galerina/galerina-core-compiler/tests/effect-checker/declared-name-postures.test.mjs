@@ -20,6 +20,8 @@ import {
   parseProgram,
   checkEffects,
   effectsToFlags,
+  effectsSubset,
+  EffectFlags,
   FUNGI_EFFECT_006,
 } from "../../dist/index.js";
 
@@ -47,8 +49,13 @@ describe("declared-name postures — deny-only", () => {
     assert.equal(FUNGI_EFFECT_006.name, "DenyOnlyEffect");
   });
 
-  it("eval.execute never resolves to a mask bit (no grant path)", () => {
-    assert.equal(effectsToFlags(["eval.execute"]), 0, "deny-only names are mask-invisible by design");
+  it("eval.execute (deny-only) sets the fail-closed sentinel, never bit 0 — never satisfiable", () => {
+    // BK-1 (2026-07-03): eval.execute → 0 was itself a fail-open — `[eval.execute] ⊆ []` returned true, i.e.
+    // a deny-only requirement read as authority-free. It now sets the UnmappedEffect sentinel so the subset
+    // check fails CLOSED: a requirement for a deny-only (or any unmapped) effect is never satisfiable.
+    const flags = effectsToFlags(["eval.execute"]);
+    assert.equal(flags, EffectFlags.UnmappedEffect, "deny-only / unmapped → sentinel (fail-closed), not bit 0");
+    assert.equal(effectsSubset(flags, effectsToFlags([])), false, "eval.execute ⊄ [] — never grantable");
   });
 });
 

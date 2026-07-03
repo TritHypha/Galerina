@@ -145,9 +145,13 @@ describe("effectsToFlags: effect name arrays to bitset", () => {
     assert.ok(flags & EffectFlags.AiInference, "ai.remoteInference must set AiInference");
   });
 
-  it("unknown effects are silently skipped", () => {
+  it("unknown effects set the fail-closed UnmappedEffect sentinel (BK-1), never bit 0", () => {
     const flags = effectsToFlags(["completely.unknown.effect"]);
-    assert.equal(flags, EffectFlags.None, "Unknown effects must not set any bit");
+    // BK-1 (2026-07-03): an unmapped effect must NOT silently skip to bit 0 (= "no authority required",
+    // a latent privilege-escalation fail-open). It sets the UnmappedEffect sentinel so a subset check
+    // fails CLOSED; per-effect precision is the authoritative string-name check's job.
+    assert.equal(flags, EffectFlags.UnmappedEffect, "unmapped effect sets the sentinel (fail-closed)");
+    assert.notEqual(flags, EffectFlags.None, "must never be bit 0 / authority-free");
   });
 });
 
