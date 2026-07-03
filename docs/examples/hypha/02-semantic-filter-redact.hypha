@@ -1,0 +1,10 @@
+# expect: PASS
+# Zone split + egress redaction. The opaque coordinate `x` pushes down PRE-Gate; the semantic
+# predicate `label` is a POST-Gate residual (it never touches the untrusted index). Multiple FILTER:
+# lines conjoin (implicit AND). REDACT compiles to a .gate `:cut` that dominates egress, so the PII
+# field `ssn` leaves redacted.
+RETURN  doc_id, ssn
+FROM    patients
+FILTER: [where x = 3]
+FILTER: [where label = "report"]
+REDACT  ssn

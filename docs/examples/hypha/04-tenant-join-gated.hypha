@@ -1,0 +1,11 @@
+# expect: GATED
+# Cross-collection traversal — the reachability-as-authorization moat. This is VALID v2 syntax but the
+# checker returns GATED, not PASS: a JOIN cannot ship until the SIGNED graph-spine (RD-0150/0167) lands
+# and cross-tenant edge-key custody is solved. Topology proves REACH; the Gate proves AUTHORIZATION.
+# The traversal is fully typed — endpoints [patient]->[visit], edge (had), and target collection
+# `visits` must all match the signed edge, or the checker REJECTs it (try changing `had` to `placed`).
+RETURN  doc_id, v.notes
+FROM    patients
+JOIN    visits ON [patient]-(had)->[visit] AS v
+FILTER: [where x = 3]
+REDACT  v.notes

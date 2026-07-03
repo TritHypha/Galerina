@@ -1,0 +1,12 @@
+# expect: PASS
+# In-line OR drawing + vector similarity + ordering/pagination. `OR` stays an explicit drawing
+# ([where] -> [or] -> [where]) so composition is visible and injection-proof. NEAREST is trusted-zone
+# ANN (embeddings invert to plaintext, so similarity runs POST-Gate on decrypted vectors).
+RETURN   doc_id
+FROM     patients
+FILTER:  [where z RANGE (0, 9)]
+FILTER:  [where label = "report"] -> [or] -> [where label = "summary"]
+NEAREST  [0.1, 0.2, 0.3] K 5
+ORDER BY y DESC
+LIMIT    10
+OFFSET   0

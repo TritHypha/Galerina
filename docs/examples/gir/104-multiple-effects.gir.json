@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "fungi.gir.v1",
+  "sourceFile": "docs/examples/Level-3-Effects/104-multiple-effects/example.fungi",
+  "sourceHash": "sha256:a76ca0a915cfa3c7b699fc293b2ab8fbc3190f9c96eb7773ee68a34b3e36db12",
+  "flows": [
+    {
+      "name": "syncOrder",
+      "qualifier": "secure",
+      "effects": {
+        "declared": [
+          "database.write",
+          "network.outbound",
+          "audit.write"
+        ],
+        "observed": [
+          "database.write",
+          "network.outbound",
+          "audit.write"
+        ],
+        "status": "compliant"
+      },
+      "intent": {
+        "declared": "Insert a validated order into the database, sync it to an external service, and write an audit record.",
+        "status": "satisfied"
+      },
+      "protected_values": [
+        {
+          "name": "safeOrder",
+          "type": "Order"
+        }
+      ],
+      "audit": {
+        "protected_values_redacted": false
+      },
+      "execution": {
+        "preferred": [
+          "cpu"
+        ],
+        "denied": [],
+        "fallback": null
+      },
+      "proofs": [
+        {
+          "name": "effects_declared",
+          "status": "satisfied"
+        },
+        {
+          "name": "intent_matches_behavior",
+          "status": "satisfied"
+        },
+        {
+          "name": "protected_values_redacted",
+          "status": "missing"
+        }
+      ],
+      "tensors": [],
+      "capabilities": {},
+      "contract": {
+        "hasIntent": true,
+        "hasPrivacy": false,
+        "hasAuditRequirements": false,
+        "hasSensitivityQualifiers": false,
+        "effectCount": 0
+      },
+      "allowedEffectsMask": 14,
+      "paramTypes": [
+        "Order"
+      ]
+    }
+  ],
+  "entryPoints": []
+}

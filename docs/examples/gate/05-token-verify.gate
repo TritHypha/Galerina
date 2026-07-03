@@ -1,0 +1,30 @@
+#gate 0.3
+# Pattern (advanced): secret handling + tri-state verdict + re-auth on a non-happy path.
+# Shows:
+#   - a SecureString input and secret.read, with the raw token cut before any egress,
+#   - a PANIC drain [!] on an invalid/unknown signature (fail-closed),
+#   - a FRESH ? guard re-authorising the "expired" verdict (a legitimate ×-arm continuation),
+#   - two paths (valid + expired) converging on the SAME :cut, so no token bytes ever leave.
+GATE verifyToken(token: SecureString) -> TokenVerdict:
+  INTENT  "Verify a token signature and return a valid/expired/invalid verdict; the raw token never leaves in the verdict."
+  EFFECTS { secret.read }
+  PRIVACY deny secret token -> response.body
+  AUDIT   off
+  FLOW:
+    [in] := IN
+    [in]                    -> [key:fu loadVerifyKey]    @secret.read  # load signing key material
+    [key:fu loadVerifyKey]  -> [check:fu verifySig]                    # constant-time signature check over the token
+    [check:fu verifySig]    -> [state]                   ? tokenState
+    [state]                 -> [✓]                                     # signature valid and unexpired
+    [state]                 -> [×expired]                              # signature valid but expired
+    [state]                 -> [!]                                     # invalid / unknown signature -> panic drain (distinct, fail-closed)
+    [×expired]              -> [reemit]                  ? emitExpired  # FRESH guard re-authorises the expired verdict egress
+    [reemit]                -> [✓expiredOk]                            # expired is a returnable verdict
+    [reemit]                -> [×suppress]                             # verdict suppressed by policy
+    [reemit]                -> [-]                                     # emit policy unknown -> deny drain (distinct)
+    [×suppress]             -> [-]                                     # suppressed -> deny (drains)
+    [✓]                     -> [redacted:cut fu redactToken]          # EXPLICIT CUT (:cut) — strip raw token before verdict egress
+    [✓expiredOk]            -> [redacted:cut fu redactToken]          # EXPLICIT CUT (:cut) — expired path also strips the token
+    [redacted:cut fu redactToken] -> [verdict:fu emitVerdict]         # verdict carries no token bytes
+    [verdict:fu emitVerdict] -> [+]                                   # egress: signature verdict only
+END

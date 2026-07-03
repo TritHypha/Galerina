@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "fungi.gir.v1",
+  "sourceFile": "docs/examples/Level-5-Governance/224-contract-best-practices/example.fungi",
+  "sourceHash": "sha256:8a85d2386a8505a21f781154a3283bda00f446de7014c0bde13009cb8bbcf0dc",
+  "flows": [
+    {
+      "name": "getPatientProfile",
+      "qualifier": "secure",
+      "effects": {
+        "declared": [
+          "database.read",
+          "audit.write"
+        ],
+        "observed": [
+          "database.read",
+          "audit.write"
+        ],
+        "status": "compliant"
+      },
+      "intent": {
+        "declared": "Return a patient profile to an authorised clinical actor. Protect email and NHS number.",
+        "status": "satisfied"
+      },
+      "protected_values": [
+        {
+          "name": "patientId",
+          "type": "PatientId"
+        }
+      ],
+      "audit": {
+        "protected_values_redacted": true
+      },
+      "execution": {
+        "preferred": [
+          "cpu"
+        ],
+        "denied": [],
+        "fallback": null
+      },
+      "proofs": [
+        {
+          "name": "effects_declared",
+          "status": "satisfied"
+        },
+        {
+          "name": "intent_matches_behavior",
+          "status": "satisfied"
+        },
+        {
+          "name": "protected_values_redacted",
+          "status": "satisfied"
+        }
+      ],
+      "tensors": [],
+      "capabilities": {},
+      "contract": {
+        "hasIntent": true,
+        "hasPrivacy": false,
+        "hasAuditRequirements": false,
+        "hasSensitivityQualifiers": false,
+        "effectCount": 0
+      },
+      "allowedEffectsMask": 9,
+      "paramTypes": [
+        "Request"
+      ]
+    }
+  ],
+  "entryPoints": []
+}

@@ -1,0 +1,7 @@
+# expect: PASS
+# Basic read: project opaque fields, filter on an opaque coordinate. Everything here runs in the
+# UNTRUSTED coordinate index (pre-Gate pushdown) — no decrypted content is touched. The simplest
+# valid .hypha query.
+RETURN  doc_id, UUID
+FROM    patients
+FILTER: [where x = 3]

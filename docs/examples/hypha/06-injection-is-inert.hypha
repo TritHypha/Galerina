@@ -1,0 +1,8 @@
+# expect: PASS
+# INJECTION-PROOF BY CONSTRUCTION. A classic SQL-injection payload placed in a VALUE position is just
+# an inert string leaf — it can never become a clause, a second statement, or query structure. This
+# query is SAFE and PASSES: the entire payload is compared, as data, against `label`. There is no
+# string->query construction step for a quote to escape. (See 07/08 for what is structurally rejected.)
+RETURN  doc_id
+FROM    patients
+FILTER: [where label = "'; DROP TABLE patients; --"]

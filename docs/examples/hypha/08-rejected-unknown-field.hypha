@@ -1,0 +1,5 @@
+# expect: REJECT
+# FAIL-CLOSED resolution. Every field/collection/edge must resolve against the (signed) schema; an
+# unknown identifier -> REJECT. This closes field-name injection: a user value can be smuggled only as
+# inert data (see 06), never as an identifier — identifiers are bare tokens checked against the schema.
+RETURN bogus FROM patients

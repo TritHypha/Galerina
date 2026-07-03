@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "fungi.gir.v1",
+  "sourceFile": "docs/examples/Level-5-Governance/208-audit-proof-required/example.fungi",
+  "sourceHash": "sha256:149ec9a556a4c6557c8a5cfff94177b67398380ae0d8ade0870d410150267622",
+  "flows": [
+    {
+      "name": "deletePatient",
+      "qualifier": "secure",
+      "effects": {
+        "declared": [
+          "database.write",
+          "audit.write"
+        ],
+        "observed": [
+          "database.write",
+          "audit.write"
+        ],
+        "status": "compliant"
+      },
+      "intent": {
+        "declared": "Delete a patient record with a mandatory full audit trail including timestamp.",
+        "status": "satisfied"
+      },
+      "protected_values": [
+        {
+          "name": "safeId",
+          "type": "PatientId"
+        }
+      ],
+      "audit": {
+        "protected_values_redacted": true
+      },
+      "execution": {
+        "preferred": [
+          "cpu"
+        ],
+        "denied": [],
+        "fallback": null
+      },
+      "proofs": [
+        {
+          "name": "effects_declared",
+          "status": "satisfied"
+        },
+        {
+          "name": "intent_matches_behavior",
+          "status": "satisfied"
+        },
+        {
+          "name": "protected_values_redacted",
+          "status": "satisfied"
+        }
+      ],
+      "tensors": [],
+      "capabilities": {},
+      "contract": {
+        "hasIntent": true,
+        "hasPrivacy": false,
+        "hasAuditRequirements": false,
+        "hasSensitivityQualifiers": false,
+        "effectCount": 0
+      },
+      "allowedEffectsMask": 10,
+      "paramTypes": [
+        "protected PatientId"
+      ]
+    }
+  ],
+  "entryPoints": []
+}

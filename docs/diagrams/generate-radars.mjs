@@ -118,11 +118,15 @@ const charts = [
   {
     file: "radar-8-databasing.svg",
     title: "8 · Databasing — over SQL vs native TritMesh",
-    subtitle: "governed data access: Galerina+SQL, Galerina+TritMesh, vs a standard ORM",
+    subtitle: "governed data access: Galerina+SQL, Galerina+TritMesh (R&D-stage design), vs a standard ORM",
     axes: ["Injection-safe", "Tenant Isolation", "Audit Trail", "Capability-gated", "Schema Safety", "Ecosystem"],
     series: {
       "Galerina + SQL":      [9, 9, 9, 9, 7, 6],   // governed access over mature SQL
-      "Galerina + TritMesh": [10, 9, 9, 9, 8, 2],  // no SQL injection surface; ternary mesh is R&D-stage ecosystem
+      // Injection-safe=10 is now MACHINE-BACKED by the .hypha reference checker (injection-proof-by-construction;
+      // RD-0246, 51/51, 3 adversarial rounds) — evidence, not assertion. Tenant-Isolation=9 is the
+      // reachability-as-authorization DESIGN, GATED on the still-unbuilt signed graph-spine + unsolved cross-tenant
+      // edge custody (RD-0150 #3) — a design target, not shipped. Ecosystem=2 = R&D-stage, honest.
+      "Galerina + TritMesh": [10, 9, 9, 9, 8, 2],
       "Std ORM (Py/Node)": [6, 3, 4, 2, 6, 10],
     },
   },

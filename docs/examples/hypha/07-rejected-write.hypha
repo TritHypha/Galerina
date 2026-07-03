@@ -1,0 +1,6 @@
+# expect: REJECT
+# READ-ONLY by SAFE-SET (not a denylist). A .hypha statement MUST begin with RETURN/SELECT (query) or
+# SHOW/DESCRIBE/LIST (schema). A write verb is simply not in the grammar, so it fails to parse ->
+# REJECT — INSERT/UPDATE/DELETE/DROP are never named in a blocklist, they just aren't in the safe set.
+# Data mutations go through the separate governed write path, never the query language.
+INSERT INTO patients VALUES (1)

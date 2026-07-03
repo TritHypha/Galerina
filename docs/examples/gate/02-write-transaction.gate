@@ -1,0 +1,20 @@
+#gate 0.3
+# Pattern: governed write (transaction). Draw-don't-code: the deduction and the
+# masking are dense compute delegated to .fungi `fu` bodies; the map is the shape.
+GATE processRefund(client: CallerId, amount: Money<GBP>) -> RefundReceipt:
+  INTENT  "Issue a client refund and append it to the immutable audit log."
+  EFFECTS { database.write, audit.write }
+  PRIVACY deny protected Amount -> response.body
+  AUDIT   on
+  FLOW:
+    [in] := IN                                                     # client + amount enter here
+    [in]                     -> [authz]  ? eligible                # K3 gate: verified AND funds sufficient
+    [authz]                  -> [✓]                                # eligible -> continue
+    [authz]                  -> [×]                                # ineligible -> reject arm (distinct False)
+    [authz]                  -> [-]                                # unknown -> deny drain (distinct default)
+    [×]                      -> [-]                                # ineligible client drains to deny
+    [✓]                      -> [posted:fu ledgerDeduct] @database.write   # dense compute in a .fungi fu
+    [posted:fu ledgerDeduct] -> [receipt:cut fu maskAmount]        # EXPLICIT CUT — masks the raw amount
+    [receipt:cut fu maskAmount] -> [logged:fu audit] @audit.write  # audit trail
+    [logged:fu audit]        -> [+]                                # egress: only the masked receipt leaves
+END

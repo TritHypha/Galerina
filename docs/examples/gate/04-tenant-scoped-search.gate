@@ -1,0 +1,41 @@
+#gate 0.3
+# Pattern (advanced): tenant isolation + bounded loop + re-authorised egress.
+# Shows four things 01-03 don't:
+#   - a PANIC drain [!] on cross-tenant reach (fail-closed, distinct from a deny drain),
+#   - a BOUNDED cycle ([✓more] -> [page…] decreases budget) so the loop must terminate (R11),
+#   - a FRESH ? guard re-authorising egress after the loop (the R7 deny-arm carve-out),
+#   - two explicit :cut vertices (tenant-scope the query, then strip any cross-tenant records).
+# This is the IDOR / per-tenant-scope shape — reachability = authorization.
+GATE searchRecords(caller: CallerId, query: Query, tenantId: TenantId) -> RecordPage:
+  INTENT  "Search records within the caller's tenant only, paging through a bounded number of hops."
+  EFFECTS { database.read }
+  PRIVACY deny protected Records -> response.body
+  AUDIT   on
+  FLOW:
+    [in] := IN
+    [in]                    -> [authz]              ? authorised       # branch on the capability check (the signed capability authorizes, not this glyph)
+    [authz]                 -> [✓]                                     # caller may search
+    [authz]                 -> [×]                                     # caller may not
+    [authz]                 -> [-]                                     # undecidable -> deny drain (distinct)
+    [×]                     -> [-]                                     # rejected caller -> deny (drains)
+    [✓]                     -> [scope:cut fu tenantFilter]            # EXPLICIT CUT (:cut) — constrain query to caller's tenant
+    [scope:cut fu tenantFilter] -> [tenant]         ? tenantReachable  # tenant reachability test
+    [tenant]                -> [✓tenant]                               # only same-tenant shards reachable
+    [tenant]                -> [×tenant]                               # a cross-tenant shard is reachable
+    [tenant]                -> [-]                                     # reachability unknown -> deny drain (distinct)
+    [×tenant]               -> [!]                                     # cross-tenant reach -> panic drain (fail-closed)
+    [✓tenant]               -> [budget:fu initHopBudget]              # establish the hop budget BEFORE the loop
+    [budget:fu initHopBudget] -> [page:fu scanShard] @database.read    # read the first page of same-tenant records
+    [page:fu scanShard]     -> [more]               ? hasNextHop       # bounded loop control (exhaustive)
+    [more]                  -> [✓more]                                 # more pages remain
+    [more]                  -> [×more]                                 # no more pages -> assemble result
+    [more]                  -> [-]                                     # cursor undecidable -> deny drain (distinct)
+    [✓more]                 -> [page:fu scanShard]  decreases budget   # bounded cycle: hop budget decreases each pass
+    [×more]                 -> [done]               ? pageAssembled    # FRESH guard re-authorises egress after the loop
+    [done]                  -> [✓done]                                 # page assembled cleanly
+    [done]                  -> [×incomplete]                           # assembly incomplete
+    [done]                  -> [-]                                     # assembly state unknown -> deny drain (distinct)
+    [×incomplete]           -> [-]                                     # incomplete -> deny (drains)
+    [✓done]                 -> [safe:cut fu redactCrossTenant]        # EXPLICIT CUT (:cut) — strip any cross-tenant records
+    [safe:cut fu redactCrossTenant] -> [+]                            # egress: assembled, tenant-clean record page
+END

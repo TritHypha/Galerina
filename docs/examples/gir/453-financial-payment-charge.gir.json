@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "fungi.gir.v1",
+  "sourceFile": "docs/examples/Level-9-Enterprise/453-financial-payment-charge/example.fungi",
+  "sourceHash": "sha256:e4a66468006703be95429dcf6ed09b733e1663ed327ec7469a43d2648d70f474",
+  "flows": [
+    {
+      "name": "chargePayment",
+      "qualifier": "secure",
+      "effects": {
+        "declared": [
+          "payment.charge",
+          "audit.write"
+        ],
+        "observed": [
+          "audit.write"
+        ],
+        "status": "compliant"
+      },
+      "intent": {
+        "declared": "Process card payment for approved merchant",
+        "status": "satisfied"
+      },
+      "protected_values": [
+        {
+          "name": "merchantId",
+          "type": "MerchantId"
+        }
+      ],
+      "audit": {
+        "protected_values_redacted": true
+      },
+      "execution": {
+        "preferred": [
+          "cpu"
+        ],
+        "denied": [],
+        "fallback": null
+      },
+      "proofs": [
+        {
+          "name": "effects_declared",
+          "status": "satisfied"
+        },
+        {
+          "name": "intent_matches_behavior",
+          "status": "satisfied"
+        },
+        {
+          "name": "protected_values_redacted",
+          "status": "satisfied"
+        }
+      ],
+      "tensors": [],
+      "capabilities": {},
+      "contract": {
+        "hasIntent": true,
+        "hasPrivacy": false,
+        "hasAuditRequirements": false,
+        "hasSensitivityQualifiers": false,
+        "effectCount": 0
+      },
+      "allowedEffectsMask": 8,
+      "paramTypes": [
+        "PaymentRequest"
+      ]
+    }
+  ],
+  "entryPoints": []
+}

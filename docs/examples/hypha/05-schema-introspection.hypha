@@ -1,0 +1,5 @@
+# expect: PASS
+# Schema introspection — essential for the low-schema `.spore` (discover fields without a fixed
+# schema). A read-only metaquery over the index/schema. Also: `DESCRIBE patients`, `LIST COLLECTIONS`,
+# `LIST EDGES` (one statement per `.hypha` file).
+SHOW FIELDS OF patients

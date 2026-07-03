@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "fungi.gir.v1",
+  "sourceFile": "docs/examples/Level-1-Basics/001-pure-flow/example.fungi",
+  "sourceHash": "sha256:68323426070b6d319039ecabf3165b3841775b47c5f4bc9fc28d1298a1a79ee3",
+  "flows": [
+    {
+      "name": "calculateVat",
+      "qualifier": "pure",
+      "effects": {
+        "declared": [],
+        "observed": [],
+        "status": "compliant"
+      },
+      "intent": {
+        "declared": "Calculate the VAT amount for a given price at the standard 20% rate.",
+        "status": "satisfied"
+      },
+      "protected_values": [],
+      "audit": {
+        "protected_values_redacted": true
+      },
+      "execution": {
+        "preferred": [
+          "cpu"
+        ],
+        "denied": [],
+        "fallback": null
+      },
+      "proofs": [
+        {
+          "name": "effects_declared",
+          "status": "satisfied"
+        },
+        {
+          "name": "intent_matches_behavior",
+          "status": "satisfied"
+        },
+        {
+          "name": "protected_values_redacted",
+          "status": "satisfied"
+        }
+      ],
+      "tensors": [],
+      "capabilities": {},
+      "contract": {
+        "hasIntent": true,
+        "hasPrivacy": false,
+        "hasAuditRequirements": false,
+        "hasSensitivityQualifiers": false,
+        "effectCount": 0
+      },
+      "allowedEffectsMask": 0,
+      "paramTypes": [
+        "Money<GBP>"
+      ]
+    }
+  ],
+  "entryPoints": []
+}

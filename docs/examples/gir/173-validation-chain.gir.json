@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "fungi.gir.v1",
+  "sourceFile": "docs/examples/Level-4-Security/173-validation-chain/example.fungi",
+  "sourceHash": "sha256:6431f71010f3580a9cf7846b8ef52297cb7a604b5ecdfb75d6a76db8ae6bc37a",
+  "flows": [
+    {
+      "name": "processUserEmail",
+      "qualifier": "secure",
+      "effects": {
+        "declared": [
+          "database.write",
+          "audit.write"
+        ],
+        "observed": [
+          "audit.write"
+        ],
+        "status": "compliant"
+      },
+      "intent": {
+        "declared": "Demonstrate the canonical unsafe -> validate -> protected -> redact -> audit trust chain.",
+        "status": "satisfied"
+      },
+      "protected_values": [
+        {
+          "name": "email",
+          "type": "Email"
+        }
+      ],
+      "audit": {
+        "protected_values_redacted": true
+      },
+      "execution": {
+        "preferred": [
+          "cpu"
+        ],
+        "denied": [],
+        "fallback": null
+      },
+      "proofs": [
+        {
+          "name": "effects_declared",
+          "status": "satisfied"
+        },
+        {
+          "name": "intent_matches_behavior",
+          "status": "satisfied"
+        },
+        {
+          "name": "protected_values_redacted",
+          "status": "satisfied"
+        }
+      ],
+      "tensors": [],
+      "capabilities": {},
+      "contract": {
+        "hasIntent": true,
+        "hasPrivacy": false,
+        "hasAuditRequirements": false,
+        "hasSensitivityQualifiers": false,
+        "effectCount": 0
+      },
+      "allowedEffectsMask": 10,
+      "paramTypes": [
+        "Request"
+      ]
+    }
+  ],
+  "entryPoints": []
+}

@@ -1,0 +1,120 @@
+{
+  "schemaVersion": "fungi.gir.v1",
+  "sourceFile": "docs/examples/Level-9-Enterprise/465-enterprise-summary/example.fungi",
+  "sourceHash": "sha256:8ba9a48aa1cd7818c7d8990053ac76169cc4531fd05e17396dcd80ebd9336e9b",
+  "flows": [
+    {
+      "name": "createAndScorePatient",
+      "qualifier": "secure",
+      "effects": {
+        "declared": [
+          "phi.read",
+          "ai.inference",
+          "database.write",
+          "audit.write"
+        ],
+        "observed": [
+          "database.write",
+          "ai.inference",
+          "audit.write"
+        ],
+        "status": "compliant"
+      },
+      "intent": {
+        "declared": "Create patient record and compute initial risk score on local hardware",
+        "status": "satisfied"
+      },
+      "protected_values": [
+        {
+          "name": "nhsNumber",
+          "type": "NhsNumber"
+        },
+        {
+          "name": "fullName",
+          "type": "PatientName"
+        },
+        {
+          "name": "dateOfBirth",
+          "type": "DateOfBirth"
+        },
+        {
+          "name": "patientId",
+          "type": "PatientId"
+        }
+      ],
+      "audit": {
+        "protected_values_redacted": false
+      },
+      "execution": {
+        "preferred": [
+          "cpu"
+        ],
+        "denied": [],
+        "fallback": null
+      },
+      "proofs": [
+        {
+          "name": "effects_declared",
+          "status": "satisfied"
+        },
+        {
+          "name": "intent_matches_behavior",
+          "status": "satisfied"
+        },
+        {
+          "name": "protected_values_redacted",
+          "status": "missing"
+        }
+      ],
+      "tensors": [
+        {
+          "name": "features",
+          "type": "Tensor<Float32,[1,128]>",
+          "elementType": "Float32",
+          "shape": "[1,128]",
+          "photonic_compatible": true,
+          "wasmSimdCompatible": true,
+          "gpuCompatible": true,
+          "npuCompatible": true,
+          "apuSharedMemoryCandidate": true,
+          "fixedShape": true,
+          "quantized": false
+        }
+      ],
+      "target_affinity": {
+        "suggested": [
+          "photonic",
+          "npu",
+          "gpu",
+          "cpu"
+        ],
+        "reason": "photonic-compatible tensors detected; ai.inference effect benefits from NPU or GPU acceleration"
+      },
+      "capabilities": {},
+      "contract": {
+        "hasIntent": true,
+        "hasPrivacy": false,
+        "hasAuditRequirements": false,
+        "hasSensitivityQualifiers": false,
+        "effectCount": 0
+      },
+      "allowedEffectsMask": 26,
+      "typedArrayLoweringPlan": {
+        "schemaVersion": "fungi.lowering.v1",
+        "flowName": "createAndScorePatient",
+        "entries": [
+          {
+            "bindingName": "features",
+            "elementType": "Float32",
+            "lengthExpression": "[1,128]",
+            "jsTypedArray": "Float32Array"
+          }
+        ]
+      },
+      "paramTypes": [
+        "Request"
+      ]
+    }
+  ],
+  "entryPoints": []
+}

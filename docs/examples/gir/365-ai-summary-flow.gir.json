@@ -1,0 +1,105 @@
+{
+  "schemaVersion": "fungi.gir.v1",
+  "sourceFile": "docs/examples/Level-7-AI/365-ai-summary-flow/example.fungi",
+  "sourceHash": "sha256:8513486dabf222e4fa2a99656d06da9cfb455a1e951a173bfb0f99d774a55ac6",
+  "flows": [
+    {
+      "name": "scoreHealthRisk",
+      "qualifier": "secure",
+      "effects": {
+        "declared": [
+          "ai.inference",
+          "audit.write"
+        ],
+        "observed": [
+          "ai.inference",
+          "audit.write"
+        ],
+        "status": "compliant"
+      },
+      "intent": {
+        "declared": "Score patient health risk on local hardware without remote execution",
+        "status": "satisfied"
+      },
+      "protected_values": [
+        {
+          "name": "patientId",
+          "type": "PatientId"
+        }
+      ],
+      "audit": {
+        "protected_values_redacted": true
+      },
+      "execution": {
+        "preferred": [
+          "cpu"
+        ],
+        "denied": [],
+        "fallback": null
+      },
+      "proofs": [
+        {
+          "name": "effects_declared",
+          "status": "satisfied"
+        },
+        {
+          "name": "intent_matches_behavior",
+          "status": "satisfied"
+        },
+        {
+          "name": "protected_values_redacted",
+          "status": "satisfied"
+        }
+      ],
+      "tensors": [
+        {
+          "name": "features",
+          "type": "Tensor<Float32,[1,128]>",
+          "elementType": "Float32",
+          "shape": "[1,128]",
+          "photonic_compatible": true,
+          "wasmSimdCompatible": true,
+          "gpuCompatible": true,
+          "npuCompatible": true,
+          "apuSharedMemoryCandidate": true,
+          "fixedShape": true,
+          "quantized": false
+        }
+      ],
+      "target_affinity": {
+        "suggested": [
+          "photonic",
+          "npu",
+          "gpu",
+          "cpu"
+        ],
+        "reason": "photonic-compatible tensors detected; ai.inference effect benefits from NPU or GPU acceleration"
+      },
+      "capabilities": {},
+      "contract": {
+        "hasIntent": true,
+        "hasPrivacy": false,
+        "hasAuditRequirements": false,
+        "hasSensitivityQualifiers": false,
+        "effectCount": 0
+      },
+      "allowedEffectsMask": 24,
+      "typedArrayLoweringPlan": {
+        "schemaVersion": "fungi.lowering.v1",
+        "flowName": "scoreHealthRisk",
+        "entries": [
+          {
+            "bindingName": "features",
+            "elementType": "Float32",
+            "lengthExpression": "[1,128]",
+            "jsTypedArray": "Float32Array"
+          }
+        ]
+      },
+      "paramTypes": [
+        "Request"
+      ]
+    }
+  ],
+  "entryPoints": []
+}
