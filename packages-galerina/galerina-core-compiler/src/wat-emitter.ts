@@ -3436,6 +3436,7 @@ export function buildWATModuleFromGIR(
     readonly entryPoints: readonly string[];
     readonly girHash?: string;
     readonly sourceHash?: string;
+    readonly schemaVersion?: string;
   },
   capabilityMap: ReadonlyMap<string, { readonly wasmImport?: string; readonly requiredEffects: readonly string[] }>,
   target: "wasm-standalone" | "wasm-hybrid" = "wasm-standalone",
@@ -3444,6 +3445,16 @@ export function buildWATModuleFromGIR(
   /** Phase 27: export all pure flows for WebAssembly.instantiate callers. */
   exportAllPure?: boolean,
 ): WATModule {
+  // BK-4 (50yr "unknown version ⇒ REJECT, never best-effort"): the GIR schema is versioned; a consumer must
+  // REJECT an unrecognised version rather than structurally best-effort-parse a future/foreign GIR (the C++
+  // "old tool eats new format" trap). emitGIR always stamps "fungi.gir.v1"; any other value means a version
+  // boundary the emitter was not built for — fail closed. (Absent = an internal partial-GIR builder; allowed.)
+  if (gir.schemaVersion !== undefined && gir.schemaVersion !== "fungi.gir.v1") {
+    throw new Error(
+      `buildWATModuleFromGIR: unsupported GIR schemaVersion ${JSON.stringify(gir.schemaVersion)} — ` +
+      `expected "fungi.gir.v1" (BK-4 fail-closed; refuse to lower an unrecognised GIR version).`,
+    );
+  }
   const watInput: WATGIRInput = {
     flows: gir.flows.map((f) => {
       const base: WATFlowInput = {
