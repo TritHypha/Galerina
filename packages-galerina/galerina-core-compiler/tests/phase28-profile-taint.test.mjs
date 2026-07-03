@@ -135,3 +135,55 @@ describe("Phase 28: taint tracking", () => {
     assert.equal(INJECTION_SINKS.get("Shell.exec"), "ShellArg");
   });
 });
+
+// ---------------------------------------------------------------------------
+// C1 / RD-0234c (VD-2) — lowercase + unknown-shaped injection sinks now fail CLOSED.
+// Before this fix every case below returned [] — `calleeNameOf` treated only first-char-A–Z
+// receivers as modules and INJECTION_SINKS was exact-case, so `db.query`/`pg.query`/`knex.raw`/
+// `child_process.exec`/bare `exec()` on tainted input built `--production` clean and SIGNED a
+// `.lmanifest` (SQLi/cmd-injection). Now: (b) case-insensitive, (c) sink-SHAPE pattern by method
+// name, (d) unknown sink-shaped + tainted ⇒ deny-by-default. Scope stays narrow (SQL/command/XSS
+// families) so generic methods do NOT false-positive.
+// ---------------------------------------------------------------------------
+
+describe("Phase 28: C1/RD-0234c — case-insensitive + shape + deny-by-default injection sinks", () => {
+  const flow = (body) => [
+    "secure flow q(req: Request) -> Response contract { effects { database.read } }",
+    `{ let userId: String = req.body  ${body}  return "" }`,
+  ].join("\n");
+
+  it("lowercase receiver db.query(tainted) FIRES (was [] — case drift)", () => {
+    assert.ok(taintCodes(flow("let r: String = db.query(userId)")).includes("FUNGI-TAINT-001"));
+  });
+
+  it("unknown receiver pg.query(tainted) FIRES by shape (deny-by-default)", () => {
+    assert.ok(taintCodes(flow("let r: String = pg.query(userId)")).includes("FUNGI-TAINT-001"));
+  });
+
+  it("knex.raw(tainted) FIRES by shape (deny-by-default)", () => {
+    assert.ok(taintCodes(flow("let r: String = knex.raw(userId)")).includes("FUNGI-TAINT-001"));
+  });
+
+  it("multi-segment receiver child_process.exec(tainted) FIRES by shape", () => {
+    assert.ok(taintCodes(flow("let r: String = child_process.exec(userId)")).includes("FUNGI-TAINT-001"));
+  });
+
+  it("bare exec(tainted) FIRES by shape (deny-by-default)", () => {
+    assert.ok(taintCodes(flow("let r: String = exec(userId)")).includes("FUNGI-TAINT-001"));
+  });
+
+  it("sanitised value into unknown-shaped pg.query stays CLEAN (untaint boundary honoured)", () => {
+    assert.deepEqual(
+      taintCodes(flow("let safe: String = Sql.parameterize(userId)  let r: String = pg.query(safe)")),
+      [],
+    );
+  });
+
+  it("tainted value into a NON-sink method log.info stays CLEAN (no false positive)", () => {
+    assert.deepEqual(taintCodes(flow("let r: String = log.info(userId)")), []);
+  });
+
+  it("literal into lowercase db.query stays CLEAN", () => {
+    assert.deepEqual(taintCodes(flow('let r: String = db.query("SELECT 1")')), []);
+  });
+});

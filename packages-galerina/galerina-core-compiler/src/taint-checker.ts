@@ -73,7 +73,15 @@ export const UNTAINT_BOUNDARIES: readonly UntaintBoundary[] = [
 
 const BOUNDARY_BY_FN = new Map(UNTAINT_BOUNDARIES.map(b => [b.fn, b]));
 
-/** Injection sinks: function name → required SafeFor context. */
+/** Injection sinks: function name → required SafeFor context.
+ *
+ * NOTE (C1 / RD-0234c VD-2): this exact-name map is retained (it names the CANONICAL
+ * boundary each sink needs, and the sink-canonicality audit extracts its keys) but it is
+ * NO LONGER the sole recognizer. It was an EXACT-CASE, name-exact denylist matched only when
+ * the receiver's first char was A–Z, so `db.query`, `pg.query`, `knex.raw`, `child_process.exec`
+ * and bare `exec(tainted)` all produced ZERO diagnostics and an SQLi/cmd-injection signed clean.
+ * Matching is now (b) case-insensitive and (c) shape/pattern-based via `sinkShapeOf` below, and
+ * (d) deny-by-default for an unknown sink-SHAPED call carrying a tainted arg. See `sinkRequirementOf`. */
 export const INJECTION_SINKS: ReadonlyMap<string, SinkContext> = new Map([
   ["Database.query",   "SqlValue"],
   ["Db.query",         "SqlValue"],
@@ -94,6 +102,84 @@ export const INJECTION_SINKS: ReadonlyMap<string, SinkContext> = new Map([
   ["Http.request",         "SafeUrl"],
   ["Network.call",         "SafeUrl"],
 ]);
+
+/** Case-insensitive view of INJECTION_SINKS — (b) `Database.query` and `db.query` match identically.
+ *  A capitalised effect-style receiver and its lowercase instance-var spelling both resolve here. */
+const INJECTION_SINKS_LC: ReadonlyMap<string, SinkContext> = new Map(
+  [...INJECTION_SINKS].map(([k, v]) => [k.toLowerCase(), v]),
+);
+
+// ---------------------------------------------------------------------------
+// (c)+(d) Sink SHAPE classifier — recognize a sink by METHOD NAME regardless of
+// receiver casing (`db`, `pg`, `knex`, `child_process`, `Database`, `Shell`, …).
+//
+// This is the fail-open→fail-closed inversion: a tainted value reaching a call whose
+// METHOD matches one of these shapes but which is not a known untaint boundary requires
+// an untaint boundary (deny-by-default) and emits FUNGI-TAINT-001.
+//
+// Scope guard (CRITICAL): this MUST stay narrow to genuine injection-sink method families.
+// A tainted value flowing into log.info(x) / myHelper(x) / arbitrary non-sink methods must
+// NOT flag. Keyed on the METHOD name (the call's `value`), matched case-insensitively, so it is
+// receiver-casing-agnostic (db.query ≡ Database.query). Each entry maps to the SafeFor context
+// that sink family needs, so a value already SafeFor<that context> passes and a mismatched-context
+// value is caught by the existing FUNGI-TAINT-003 path. Scope is justified below the array.
+// ---------------------------------------------------------------------------
+
+interface SinkShapePattern {
+  readonly re: RegExp;            // matches the METHOD name (case-insensitive)
+  readonly context: SinkContext; // the SafeFor context this sink family requires
+}
+
+// Deliberately NARROW: only injection-critical method families where a tainted arg on ANY
+// receiver is almost always a real vulnerability and a false positive is rare. Generic verbs
+// (get/set/send/write/call/run/post/put/open/find/header/render/fetch) are DELIBERATELY EXCLUDED
+// from deny-by-default — on an unknown receiver they over-flag (`map.get`, `list.send`, `job.run`,
+// `component.render`). Those still fire when they hit a KNOWN INJECTION_SINKS entry (exact/CI);
+// broadening deny-by-default to the egress/URL/header/FS families is an H-class hardening tracked
+// as a separate follow-on with its own false-positive analysis.
+const SINK_SHAPES: readonly SinkShapePattern[] = [
+  // SQL family — query/raw/prepare on ANY receiver (db.query, pg.query, knex.raw, store.query).
+  { re: /^(query|raw|prepare)$/i,                                 context: "SqlValue" },
+  // Command / dynamic-execution family — exec/execute/spawn/system/command/popen/fork/eval.
+  { re: /^(exec|execute|spawn|system|command|popen|fork|eval)$/i, context: "ShellArg" },
+  // Unambiguous XSS DOM-write family — setHtml/innerHtml (NOT generic "render", often a safe template).
+  { re: /^(sethtml|innerhtml|dangerouslysetinnerhtml)$/i,         context: "HtmlContent" },
+];
+
+/**
+ * (c) Returns the sink family a METHOD name matches by SHAPE, or undefined if the method is not
+ * sink-shaped. Keyed on the bare method name (case-insensitive) so it is receiver-casing-agnostic.
+ * Deliberately narrow: only genuine injection-sink method families are listed, so non-sink methods
+ * (log.info, myHelper, String.trim, …) return undefined and are never deny-by-default flagged.
+ */
+function sinkShapeOf(method: string): SinkContext | undefined {
+  for (const s of SINK_SHAPES) if (s.re.test(method)) return s.context;
+  return undefined;
+}
+
+/**
+ * Resolve the SafeFor context required at a call, combining all three recognizers:
+ *   (a exact) INJECTION_SINKS by full `Receiver.method` name,
+ *   (b case-insensitive) the lowercased view of the same map,
+ *   (c pattern) the sink-SHAPE classifier keyed on the bare method name.
+ * Returns the required context and whether the match was an EXACT/known sink (`known`) or an
+ * UNKNOWN sink-shaped call (`known:false` → deny-by-default). Undefined = not a sink at all.
+ */
+function sinkRequirementOf(
+  fullName: string | null,
+  method: string,
+): { context: SinkContext; known: boolean } | undefined {
+  if (fullName !== null) {
+    const exact = INJECTION_SINKS.get(fullName);
+    if (exact !== undefined) return { context: exact, known: true };
+    const ci = INJECTION_SINKS_LC.get(fullName.toLowerCase());
+    if (ci !== undefined) return { context: ci, known: true };
+  }
+  // (c)+(d) unknown-but-sink-shaped by method name → deny-by-default.
+  const shape = sinkShapeOf(method);
+  if (shape !== undefined) return { context: shape, known: false };
+  return undefined;
+}
 
 /** Sources that introduce taint. */
 const TAINT_SOURCES = new Set([
@@ -158,47 +244,57 @@ type TaintState =
   | { kind: "clean" };
 
 /**
- * Extract the callee name from a callExpr or memberExpr node.
- *
- * `Database.query(userId)` parses as:
- *   callExpr [query]
- *     identifier [Database]   ← receiver (first child, capitalised = module)
- *     identifier [userId]     ← actual argument(s)
- *
- * Returns e.g. "Sql.parameterize", "Database.query", or a bare flow name.
+ * Render a receiver EXPRESSION to a dotted name: `db` → "db", `this.db` → "this.db".
+ * Returns null for a receiver shape we can't name (e.g. a call result); callers fall back
+ * to the bare method name.
  */
-function calleeNameOf(node: AstNode): string | null {
-  if (node.kind === "callExpr") {
-    const method = node.value ?? "";
-    const first = node.children?.[0];
-    // Module-qualified call: first child is a capitalised identifier (receiver)
-    if (first?.kind === "identifier" && (first.value?.[0] ?? "") >= "A" && (first.value?.[0] ?? "") <= "Z") {
-      return `${first.value}.${method}`;
-    }
-    return method.length > 0 ? method : null;
-  }
-  if (node.kind === "memberExpr") {
-    const receiver = node.children?.[0];
-    const method = node.value ?? "";
-    if (receiver?.kind === "identifier") {
-      return `${receiver.value}.${method}`;
-    }
+function receiverNameOf(recv: AstNode | undefined): string | null {
+  if (recv === undefined) return null;
+  if (recv.kind === "identifier") return recv.value ?? null;
+  if (recv.kind === "memberExpr") {
+    const inner = receiverNameOf(recv.children?.[0]);
+    const seg = recv.value ?? "";
+    return inner !== null ? `${inner}.${seg}` : (seg.length > 0 ? seg : null);
   }
   return null;
 }
 
 /**
- * Returns the actual argument nodes of a callExpr, excluding the module receiver.
- * For `Database.query(userId)`: children = [Database, userId] → args = [userId].
- * For `add(a, b)`: children = [a, b] → args = [a, b].
+ * Extract the full callee name from a callExpr / memberExpr node.
+ *
+ * C1 / RD-0234c fix: the receiver is identified by the parser's `callStyle === "method"` marker
+ * (a `receiver.method(args)` call sets it and puts the receiver at children[0]), NOT the old
+ * first-char-A–Z heuristic — which mis-named a lowercase-receiver sink `db.query(q)` as the bare
+ * `query` (missing the injection sink) AND mis-named a bare call `Foo(Bar)` as `Bar.Foo`.
+ *
+ * `db.query(userId)` → callStyle "method", children [db, userId] → "db.query".
+ * `add(a, b)`        → no callStyle,       children [a, b]       → "add".
+ */
+function calleeNameOf(node: AstNode): string | null {
+  if (node.kind === "callExpr") {
+    const method = node.value ?? "";
+    if (node.callStyle === "method") {
+      const recvName = receiverNameOf(node.children?.[0]);
+      if (recvName !== null) return `${recvName}.${method}`;
+    }
+    return method.length > 0 ? method : null;
+  }
+  if (node.kind === "memberExpr") {
+    const recvName = receiverNameOf(node.children?.[0]);
+    const method = node.value ?? "";
+    if (recvName !== null) return `${recvName}.${method}`;
+  }
+  return null;
+}
+
+/**
+ * Returns the actual argument nodes of a call, excluding a method-call receiver.
+ * `db.query(userId)` (callStyle "method"): children = [db, userId] → args = [userId].
+ * `add(a, b)`        (bare call):          children = [a, b]        → args = [a, b].
  */
 function callArgsOf(node: AstNode): readonly AstNode[] {
   const children = node.children ?? [];
-  const first = children[0];
-  // If first child is a capitalised identifier (module receiver), skip it
-  if (first?.kind === "identifier" && (first.value?.[0] ?? "") >= "A" && (first.value?.[0] ?? "") <= "Z") {
-    return children.slice(1);
-  }
+  if (node.callStyle === "method") return children.slice(1); // drop the receiver expression
   return children;
 }
 
@@ -346,26 +442,33 @@ function checkSinkCalls(
   diagnostics: TaintDiagnostic[],
 ): void {
   const callee = calleeNameOf(node);
-  if (callee !== null) {
-    const requiredContext = INJECTION_SINKS.get(callee);
-    if (requiredContext !== undefined) {
-      // Check each argument's taint state (excluding the module receiver)
-      for (const arg of callArgsOf(node)) {
-        if (arg.kind === "identifier" && bindings.has(arg.value ?? "")) {
-          const state = bindings.get(arg.value ?? "")!;
-          if (state.kind === "tainted") {
-            diagnostics.push({ ...FUNGI_TAINT_001, flowName,
-              message: `Flow '${flowName}': tainted value '${arg.value}' reaches sink '${callee}' (needs SafeFor<${requiredContext}>). ${FUNGI_TAINT_001.message}` });
-          } else if (state.kind === "safeFor" && state.context !== requiredContext) {
-            diagnostics.push({ ...FUNGI_TAINT_003, flowName,
-              message: `Flow '${flowName}': value '${arg.value}' is SafeFor<${state.context}> but sink '${callee}' needs SafeFor<${requiredContext}>. ${FUNGI_TAINT_003.message}` });
-          }
-        } else {
-          const t = taintOf(arg, bindings);
-          if (t.kind === "tainted") {
-            diagnostics.push({ ...FUNGI_TAINT_001, flowName,
-              message: `Flow '${flowName}': tainted expression reaches sink '${callee}'. ${FUNGI_TAINT_001.message}` });
-          }
+  // C1 fix: resolve the sink requirement via all three recognizers — (a) exact, (b) case-insensitive,
+  // and (c) the sink-SHAPE classifier. `method` is the bare method name (node.value) of a call/member
+  // node, used for the shape match. An unknown sink-shaped call (d) resolves with known:false → the
+  // tainted-arg branch below still fires (deny-by-default).
+  const method = (node.kind === "callExpr" || node.kind === "memberExpr") ? (node.value ?? "") : "";
+  const req = sinkRequirementOf(callee, method);
+  if (req !== undefined) {
+    const requiredContext = req.context;
+    const sinkLabel = callee ?? method;
+    // Unknown sink-shaped call (pg.query, knex.raw, child_process.exec, bare exec, …): deny-by-default.
+    const denyNote = req.known ? "" : " [unknown sink-shaped call — an untaint boundary is required by default]";
+    // Check each argument's taint state (excluding a method-call receiver)
+    for (const arg of callArgsOf(node)) {
+      if (arg.kind === "identifier" && bindings.has(arg.value ?? "")) {
+        const state = bindings.get(arg.value ?? "")!;
+        if (state.kind === "tainted") {
+          diagnostics.push({ ...FUNGI_TAINT_001, flowName,
+            message: `Flow '${flowName}': tainted value '${arg.value}' reaches sink '${sinkLabel}'${denyNote} (needs SafeFor<${requiredContext}>). ${FUNGI_TAINT_001.message}` });
+        } else if (state.kind === "safeFor" && state.context !== requiredContext) {
+          diagnostics.push({ ...FUNGI_TAINT_003, flowName,
+            message: `Flow '${flowName}': value '${arg.value}' is SafeFor<${state.context}> but sink '${sinkLabel}' needs SafeFor<${requiredContext}>. ${FUNGI_TAINT_003.message}` });
+        }
+      } else {
+        const t = taintOf(arg, bindings);
+        if (t.kind === "tainted") {
+          diagnostics.push({ ...FUNGI_TAINT_001, flowName,
+            message: `Flow '${flowName}': tainted expression reaches sink '${sinkLabel}'${denyNote}. ${FUNGI_TAINT_001.message}` });
         }
       }
     }
