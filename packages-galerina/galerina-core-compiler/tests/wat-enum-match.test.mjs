@@ -34,6 +34,12 @@ pure flow rankDefault(c: Color) -> Int {
     _ => return 999
   }
 }
+
+pure flow rankPartial(c: Color) -> Int {
+  match c {
+    Red => return 10
+  }
+}
 `;
 
 async function instantiate() {
@@ -65,5 +71,14 @@ describe("#168 enum-variant match dispatch in WASM (statement form)", () => {
     assert.equal(inst.exports.rankDefault(0), 100, "Red → its arm");
     assert.equal(inst.exports.rankDefault(1), 999, "Green → default");
     assert.equal(inst.exports.rankDefault(2), 999, "Blue → default");
+  });
+
+  it("RD-0240: a non-exhaustive match TRAPS on the unmatched subject (fail-closed, not silent 0)", async () => {
+    const inst = await instantiate();
+    assert.equal(inst.exports.rankPartial(0), 10, "Red (listed) → its arm");
+    assert.throws(() => inst.exports.rankPartial(1), (e) => e instanceof WebAssembly.RuntimeError,
+      "Green (unmatched, no default) must TRAP — never silently return 0");
+    assert.throws(() => inst.exports.rankPartial(2), (e) => e instanceof WebAssembly.RuntimeError,
+      "Blue (unmatched, no default) must TRAP");
   });
 });

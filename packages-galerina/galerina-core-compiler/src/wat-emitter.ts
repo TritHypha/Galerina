@@ -1777,7 +1777,7 @@ export function emitWATExpr(
       // The last wildcard/default arm provides the else value.
       // Emit innermost-first so the default wraps the chain.
       const buildMatchChain = (armIdx: number): string => {
-        if (armIdx >= arms.length) return "(i32.const 0) ;; no default arm";
+        if (armIdx >= arms.length) return "(unreachable) (; RD-0240: non-exhaustive match — fail-closed (no arm matched, no default) ;)";
         const arm = arms[armIdx]!;
         const pattern = arm.value ?? "_";
         const body = armBodyExpr(arm);
@@ -2247,6 +2247,12 @@ function emitBlockStatements(
         // dropped the 3rd+ arm and imbalanced parens) and called emitBlockStatements on a
         // bare one-liner arm body (emitting its value child as an "unhandled stmt"). This
         // recurses correctly and wraps one-liner bodies in a synthetic block.
+        // RD-0240: a match with NO wildcard/default arm must FAIL CLOSED on an unmatched subject —
+        // a silent statement fall-through is the same fail-open as the expression form's `i32.const 0`.
+        const hasDefaultArm = matchArms.some((a) => {
+          const p = a.value ?? "_";
+          return p === "_" || p === "else" || p === "None" || p === "default";
+        });
         const emitMatchArmStmt = (armIdx: number): void => {
           if (armIdx >= matchArms.length) return;
           const arm = matchArms[armIdx]!;
@@ -2289,6 +2295,10 @@ function emitBlockStatements(
             bodyLines.push(`  (else`);
             emitMatchArmStmt(armIdx + 1); // nested chain appended in order between (else …)
             bodyLines.push(`  )`);
+          } else if (!hasDefaultArm) {
+            // RD-0240: last arm, no default anywhere ⇒ an unmatched subject TRAPS (fail-closed),
+            // never silently falls through to the flow's implicit tail.
+            bodyLines.push(`  (else (unreachable) (; RD-0240: non-exhaustive match — fail-closed ;))`);
           }
           bodyLines.push(`)`);
         };
