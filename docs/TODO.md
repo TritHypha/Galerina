@@ -24,6 +24,35 @@ certified authority/admission require a signed grant/manifest. RESIDUAL: signing
 to drop even the internal self-load exemption stays coupled to the committed-pubkey custody chain (LATER). `.gate`
 front-end compiler (§5a–5d, own session, still owner-paused).
 
+## 🔬 Stage-B / `.gate` quality — pre-flight audit (2026-07-03) — RECORDED BEFORE FIXES
+
+Owner picked track: **runtime in `.fungi` (Stage-B self-hosting)**; `.gate` = production-app authoring only.
+Owner asked for a full bug + security audit of **kernel / GIR / WASM** + a "50-year-mistake" rules pass BEFORE
+writing `.fungi`, and: *"what guarantees `.gate` quality through kernel → GIR → WASM?"* Ran 2 coverage scouts + 4
+adversarial auditors + own file:line verification. New session commits (local, push HELD): `b792c06` (dev-tool KB-migration
+fix-the-class) · `5aa1bd9` (README count refresh) · `3578432` (`audit-perf-hotpath.mjs` — perf audit dev tool, phase-close `--soft`).
+
+**The `.gate` quality-assurance chain (verified) — `.gate` and `.fungi` CONVERGE at GIR, same backend:**
+1. **`.gate` front-end** ✅ — `gate-check.mjs` reference checker (fail-closed, self-test, non-vacuous after RD-0232 rounds 4–7) + `gate-parser.ts` (`FUNGI-GATELANG-001` malformed-header error). Anti-hallucination: RD-0242 template blocks.
+2. **`.gate` → GIR** ✅ — `lowerGate` → `FlowMeta.declaredEffects` → **`emitGIR` UNCHANGED** (the real TS emitter, full signed surface — GIR-identity vs `.fungi`).
+3. **GIR → WASM (shared backend)** ❌ — **THE gap: RD-0240 + BK-1..5 live here and `.gate` inherits them.**
+4. **WASM → kernel admission** ✅ — 3 fuse gates (hash-pin · Ed25519+revocation · closed-caps) audited fail-closed.
+5. **Current posture** ✅ fail-closed OFF — `.gate` production signing REFUSED via `FUNGI-GATELANG-002` until the RD-0234c/`FUNGI-PRIVACY-002` backstop lands; `parseGate` not wired to `cli.ts`. **Missing:** an e2e `.gate`→GIR→WASM→run conformance test.
+
+**⇒ Fixing the 6 blockers serves BOTH goals (runtime-in-`.fungi` AND `.gate`-app quality) — one fix set, two payoffs.**
+
+**Kernel (TCB): audited CLEAN** — all 3 fuse gates + gate-9.5 secrets seam + S1 auth gate genuinely fail-closed (no fail-open admission/auth/secret path). Residual = DoS (`limits.timeoutMs` advertised-not-enforced, `kernel.ts:435`) + error-message leak (`kernel.ts:317+`) — separate hardening track, NOT a Stage-B blocker.
+
+**The 6 fail-closed blockers (must precede writing runtime `.fungi` / wiring `.gate` to prod):**
+1. **RD-0240** — non-exhaustive `match` → `(i32.const 0)` not trap (`wat-emitter.ts:1780`); `FUNGI-MATCH-001` is a WARNING (`governance-verifier.ts:3778`). `.gate` checker enforces it; `.fungi`→WASM does not. Corpus match-heavy ⇒ FIRST. Spec: `../ZTF-Knowledge-Bases/galerina-rd-0240-match-exhaustiveness-failclosed.md`.
+2. **BK-2** — `galerinaTypeToWAT` `default→i32` (`type-registry.ts:226`): unknown type silently a 32-bit handle.
+3. **BK-1** — `effectsToFlags` drops ~30 canonical effects → `allowedEffectsMask` bit 0 (`type-registry.ts:214`; comment at :191 admits it).
+4. **BK-3** — `?` operator dropped to `void` at GIR (`gir-emitter.ts` emitExpr) — latent (corpus 0 uses); implement or hard-reject.
+5. **BK-4** — GIR + `.lmanifest` versions written-not-read (`gir-emitter.ts:132`, `manifest-generator.ts:345`) — reject-on-unknown-version.
+6. **BK-5** — WASM-standalone skips `checkTypes` + writes UNSIGNED `.wasm` (`cli.ts:927/949`) + host `readRecordField` unbounded (`wasm-runtime.ts:323`).
+
+Suggested order: RD-0240 → BK-2 → BK-1 → BK-3 → BK-4 → BK-5, each RED→GREEN + committed, then extend WASM parity to `parser.fungi`. Full findings register (CWE + NIST SP 800-207 tenet + [V]/[L] grading): `../ZTF-Knowledge-Bases/galerina-fungi-gate-security-findings-register.md` (KB `39ff5d9`). **Owner-gated language-policy 5 (C2/H1/H3-safelist/M1/M2) remain in the RD-0234c programme — separate approval.**
+
 ## ✅ Done — 2026-07-03 (main session — now owns Galerina prod; local, push HELD)
 > The R&D worker handed the main session FULL CONTROL of Galerina prod (apply staged fixes / push / ODs /
 > §5a–5d unpause / releases). Pushes still gated on explicit owner OK. Staged fixes live in
