@@ -753,7 +753,14 @@ function extractPrivacyDeniedResponseFields(flowNode: AstNode): Set<string> {
     (c) => c.kind === "identifier" && c.value === "privacy:block",
   );
   if (privacyBlock === undefined) return denied;
-  const re = /deny\s+protected\s+(\w+)\s+to\s+response\b(?:\s*\.\s*\w+)*/gi;
+  // M2-a (RD-0234c): qualifier alternation broadened protected -> (protected|secret). `secret` is a
+  // TYPE_QUALIFIER (type-registry.ts:132) and denying it to the response is a real directive that
+  // previously no-opped. SOUND SUBSET only: the SINK stays the response family (enforcement below is
+  // collectBodyFieldNames = the response body). Broadening to log.write/network.outbound/audit.write
+  // needs real per-sink resolution (a separate RD item) — a regex that RECOGNISED `to logs` while
+  // still enforcing against the response body would be a directive that reads as log-enforced but
+  // isn't (the same WYSIWYG-inversion this whole class exists to close). "sensitive" is NOT a qualifier.
+  const re = /deny\s+(?:protected|secret)\s+(\w+)\s+to\s+response\b(?:\s*\.\s*\w+)*/gi;
   for (const rc of privacyBlock.children ?? []) {
     if (rc.kind === "identifier" && rc.value?.startsWith("decl:")) {
       const text = rc.value.slice("decl:".length);
