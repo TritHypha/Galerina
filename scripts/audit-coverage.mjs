@@ -35,10 +35,23 @@ try {
 }
 
 // ── load the audit registry ──────────────────────────────────────────────────
+// The governance-rules registry migrated to the sibling ZTF-Knowledge-Bases repo (resolve like
+// kb-index.mjs / audit-doc-drift.mjs). Its absence is NOT "optional": a curated cross-check against an
+// empty registry silently reports "0 phantoms / clean" — a fail-OPEN. Fail CLOSED so the blind spot is loud
+// (mirrors the exit(2) on a missing code-index above; --soft governs VIOLATIONS, not a missing corpus).
+const KB_DIR = process.env.GALERINA_KB_DIR || join(ROOT, "..", "ZTF-Knowledge-Bases");
+const REGISTRY = join(KB_DIR, "galerina-governance-rules.md");
 let registryText = "";
 try {
-  registryText = readFileSync(join(ROOT, "docs/Knowledge-Bases/galerina-governance-rules.md"), "utf8");
-} catch { /* registry optional — absence = total registry blind spot, reported below */ }
+  registryText = readFileSync(REGISTRY, "utf8");
+} catch {
+  console.error(
+    `audit-coverage: governance-rules registry unreadable at ${REGISTRY} — the curated cross-check would ` +
+    `falsely report 0 phantoms/clean. Check out the sibling ZTF-Knowledge-Bases repo or set GALERINA_KB_DIR. ` +
+    `Failing closed.`,
+  );
+  process.exit(2);
+}
 // Shared regex (scripts/lib/codes.mjs) — the old /FUNGI-…-[0-9]+/ dropped multi-segment + suffixed codes
 // (FUNGI-CRYPTO-PQ-001, FUNGI-GOV-3VL-001, FUNGI-PROFILE-005B), falsely flagging curated entries as phantom.
 const registryCodes = new Set(extractCodes(registryText).filter((c) => c.startsWith("FUNGI-")));

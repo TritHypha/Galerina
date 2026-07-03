@@ -34,20 +34,29 @@ if (v.packageCount != null && v.testCount != null) {
   testLine = v.testCountNote;
 }
 
-// ── overall % : newest roadmap-and-percent-audit-*.md by filename date ─────────
-const KB = join(ROOT, "docs", "Knowledge-Bases");
+// ── overall % : newest *percent-audit* doc in the KB ──────────────────────────
+// The KB corpus migrated to the sibling ZTF-Knowledge-Bases repo — resolve like kb-index.mjs /
+// audit-doc-drift.mjs (GALERINA_KB_DIR override first), NOT the retired local docs/Knowledge-Bases.
+const KB = process.env.GALERINA_KB_DIR || join(ROOT, "..", "ZTF-Knowledge-Bases");
 let overall = NA;
 let roadmapDoc = null;
 const kbFiles = listDir(KB) || [];
+// Match ANY percent-audit doc across the historical naming variants (roadmap-and-percent-audit-*,
+// percent-audit-roadmap-*, percent-audit-and-*) and pick the newest by the ISO date embedded in the name.
+const dateOf = (f) => (f.match(/(\d{4}-\d{2}-\d{2})/) || [])[1] || "";
 const audits = kbFiles
-  .filter((f) => /^galerina-roadmap-and-percent-audit-.*\.md$/.test(f))
-  .sort(); // ISO-date filenames sort chronologically
+  // GALERINA-framework audits only — exclude sibling products (tritmeshql-percent-audit-*, etc.).
+  .filter((f) => /^galerina-.*percent-audit.*\.md$/i.test(f))
+  .sort((a, b) => (dateOf(a) < dateOf(b) ? -1 : dateOf(a) > dateOf(b) ? 1 : a.localeCompare(b)));
 if (audits.length) {
   const newest = audits[audits.length - 1];
-  roadmapDoc = `docs/Knowledge-Bases/${newest}`;
+  roadmapDoc = newest; // KB-relative (sibling ZTF-Knowledge-Bases)
   const txt = readText(join(KB, newest)) || "";
-  const line = txt.split(/\r?\n/).find((l) => /overall/i.test(l));
-  if (line) overall = line.replace(/^#+\s*/, "").replace(/\s+/g, " ").trim();
+  const line = txt.split(/\r?\n/).find((l) => /shippable|overall/i.test(l));
+  if (line) {
+    overall = line.replace(/^#+\s*/, "").replace(/\*\*/g, "").replace(/\s+/g, " ").trim();
+    overall = overall.split(/\s+[—–-]\s+/)[0].trim(); // keep the leading headline clause only
+  }
 }
 
 // ── R&D bridge queue : queued tasks vs matching done records ──────────────────
@@ -69,13 +78,11 @@ if (tasks) {
   rndLine = `${queued.length} queued, ${doneCount} done`;
 }
 
-// ── pointers (print only if present) ──────────────────────────────────────────
-const pointerCandidates = [
-  roadmapDoc,
-  "docs/Knowledge-Bases/galerina-outstanding-rd-and-todos-2026-06-23.md",
-  "docs/Knowledge-Bases/galerina-rd-results-log.md",
-].filter(Boolean);
-const pointers = pointerCandidates.filter((p) => existsSync(join(ROOT, p)));
+// ── pointers (print only if present in the sibling KB) ────────────────────────
+const pointerCandidates = [roadmapDoc, "galerina-rd-results-log.md", "galerina-roadmap.md"].filter(Boolean);
+const pointers = pointerCandidates
+  .filter((p) => existsSync(join(KB, p)))
+  .map((p) => `ZTF-Knowledge-Bases/${p}`);
 
 // ── print compact status block ────────────────────────────────────────────────
 const out = [];

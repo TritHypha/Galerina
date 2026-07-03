@@ -90,10 +90,24 @@ test("gen-code-registry: const-emitted codes are LIVE, not dead (ERR_FX_THING/TH
   assert.notEqual(status["ERR_FX_THROWN"], "dead");
 });
 
-test("audit-coverage: a clean fixture has 0 coverage holes (no phantom)", () => {
-  const r = run("audit-coverage.mjs", ["codes", "--json"]);
-  const j = JSON.parse(r.stdout);
-  assert.equal(j.holes, 0, "no registry phantoms on a fixture with no curated registry");
+// audit-coverage resolves the governance-rules registry from GALERINA_KB_DIR (sibling ZTF-Knowledge-Bases by
+// default — the KB migrated out of docs/Knowledge-Bases). A present-but-empty registry makes the cross-check
+// RUN and find no phantom → 0 holes; an ABSENT registry must FAIL CLOSED, not silently report "0 phantom / clean".
+const covKb = join(tmp, "kb-fixture");
+mkdirSync(covKb, { recursive: true });
+writeFileSync(join(covKb, "galerina-governance-rules.md"), "# Governance rules\n(no curated FUNGI codes yet)\n");
+const runCov = (env) => spawnSync(process.execPath, [join(SCRIPTS, "audit-coverage.mjs"), "codes", "--json"],
+  { cwd: tmp, encoding: "utf8", env: { ...process.env, ...env } });
+
+test("audit-coverage: with a curated registry present, a clean fixture has 0 phantoms", () => {
+  const j = JSON.parse(runCov({ GALERINA_KB_DIR: covKb }).stdout);
+  assert.equal(j.holes, 0, "no registry phantoms when the curated registry lists no absent codes");
+});
+
+test("audit-coverage: FAIL-CLOSED (exit 2) when the governance-rules registry is absent (no silent 0-phantom)", () => {
+  const r = runCov({ GALERINA_KB_DIR: join(tmp, "no-such-kb") });
+  assert.equal(r.status, 2, "a missing registry fails closed — must NOT fail-open to 0 holes");
+  assert.match(r.stderr, /registry unreadable|Failing closed/i, "the blind spot is loud on stderr");
 });
 
 // ── DOC-004 doc↔source drift: a second fixture (version.json authority + crafted docs) ──
@@ -226,23 +240,27 @@ test("kb-index: --code lists only the doc mentioning the code", () => {
 // ── BLD-003 audit-provenance: a tmp tree proves stamped+fresh vs STALE vs UNSTAMPED (kb-index artifact) ──
 const tmp7 = mkdtempSync(join(tmpdir(), "fungi-prov-"));
 after(() => { try { rmSync(tmp7, { recursive: true, force: true }); } catch { /* best effort */ } });
-mkdirSync(join(tmp7, "docs", "Knowledge-Bases"), { recursive: true });
-mkdirSync(join(tmp7, "build", "kb-index"), { recursive: true });
-writeFileSync(join(tmp7, "docs", "Knowledge-Bases", "a.md"), "# A\n");
-writeFileSync(join(tmp7, "build", "kb-index", "kb-index.json"), JSON.stringify({ docs: [] }));
-writeFileSync(join(tmp7, "build", "kb-index", "provenance.json"), JSON.stringify({ tool: "kb-index", gitCommit: "abc1234", builtAt: "x" }));
-const prov = () => JSON.parse(spawnSync(process.execPath, [join(SCRIPTS, "audit-provenance.mjs"), "--json"], { cwd: tmp7, encoding: "utf8" }).stdout);
+// kb-index tracks freshness against the sibling ../ZTF-Knowledge-Bases (KB migrated out of docs/Knowledge-Bases).
+// Model that layout hermetically: a repo dir (the cwd) whose sibling is the KB, both inside tmp7.
+const provRepo = join(tmp7, "repo");
+const provKb = join(tmp7, "ZTF-Knowledge-Bases");
+mkdirSync(provKb, { recursive: true });
+mkdirSync(join(provRepo, "build", "kb-index"), { recursive: true });
+writeFileSync(join(provKb, "a.md"), "# A\n");
+writeFileSync(join(provRepo, "build", "kb-index", "kb-index.json"), JSON.stringify({ docs: [] }));
+writeFileSync(join(provRepo, "build", "kb-index", "provenance.json"), JSON.stringify({ tool: "kb-index", gitCommit: "abc1234", builtAt: "x" }));
+const prov = () => JSON.parse(spawnSync(process.execPath, [join(SCRIPTS, "audit-provenance.mjs"), "--json"], { cwd: provRepo, encoding: "utf8" }).stdout);
 const kbFindings = (j) => j.findings.filter((f) => f.name === "kb-index");
 
 test("provenance: a stamped + fresh artifact has no finding", () => {
   assert.equal(kbFindings(prov()).length, 0);
 });
 test("provenance: a source newer than the artifact → STALE", () => {
-  utimesSync(join(tmp7, "docs", "Knowledge-Bases", "a.md"), new Date(Date.now() + 1e6), new Date(Date.now() + 1e6));
+  utimesSync(join(provKb, "a.md"), new Date(Date.now() + 1e6), new Date(Date.now() + 1e6));
   assert.ok(kbFindings(prov()).some((f) => f.issue === "STALE"));
 });
 test("provenance: a missing sidecar → UNSTAMPED", () => {
-  rmSync(join(tmp7, "build", "kb-index", "provenance.json"));
+  rmSync(join(provRepo, "build", "kb-index", "provenance.json"));
   assert.ok(kbFindings(prov()).some((f) => f.issue === "UNSTAMPED"));
 });
 
@@ -380,4 +398,46 @@ test("muted-diagnostics: the REAL repo has NO silently-muted security/governance
     { cwd: SCRIPTS, encoding: "utf8" }).stdout);
   assert.equal(j.blocking, 0,
     `security/governance codes muted without review: ${JSON.stringify([...j.violations, ...j.suppressViolations], null, 2)}`);
+});
+
+// ── KB-migration regression guards ─────────────────────────────────────────────
+// The KB corpus moved from docs/Knowledge-Bases to the sibling ZTF-Knowledge-Bases repo. status.mjs (the % tool)
+// and rd-absorb.mjs must resolve it via GALERINA_KB_DIR || ../ZTF-Knowledge-Bases — like kb-index.mjs /
+// audit-doc-drift.mjs. Before the fix, status showed `overall: n/a` and rd-absorb reported EVERYTHING unabsorbed
+// (log MISSING). These fixtures lock the class so the migration can't silently re-orphan a tool.
+const tmp11 = mkdtempSync(join(tmpdir(), "fungi-status-"));
+after(() => { try { rmSync(tmp11, { recursive: true, force: true }); } catch { /* best effort */ } });
+const stKb = join(tmp11, "kb");
+mkdirSync(stKb, { recursive: true });
+writeFileSync(join(stKb, "galerina-percent-audit-2026-07-01.md"), "## Headline\n**~50% shippable / ~10% full-vision** — older galerina audit.\n");
+writeFileSync(join(stKb, "galerina-percent-audit-and-posture-2026-07-03.md"), "## Headline\n**~99% shippable / ~44% full-vision** — newest galerina audit.\n");
+writeFileSync(join(stKb, "tritmeshql-percent-audit-2026-07-03.md"), "## Headline\n**~88% shippable, product-scope** — a sibling product, must be excluded.\n");
+const stOut = spawnSync(process.execPath, [join(SCRIPTS, "status.mjs")],
+  { cwd: tmp11, encoding: "utf8", env: { ...process.env, GALERINA_KB_DIR: stKb } }).stdout;
+
+test("status: overall % is read from the NEWEST galerina percent-audit in the sibling KB (not n/a)", () => {
+  const line = stOut.split(/\r?\n/).find((l) => /overall/i.test(l)) || "";
+  assert.match(line, /~99% shippable/, `picked the newest galerina audit (got: ${line.trim()})`);
+});
+test("status: a sibling PRODUCT audit (tritmeshql-*) is excluded from the galerina % pick", () => {
+  assert.ok(!/product-scope/.test(stOut), "tritmeshql audit is not selected as the galerina overall %");
+});
+
+const tmp12 = mkdtempSync(join(tmpdir(), "fungi-rdabsorb-"));
+after(() => { try { rmSync(tmp12, { recursive: true, force: true }); } catch { /* best effort */ } });
+const raDone = join(tmp12, "rnd", "_session-bridge", "done");
+mkdirSync(raDone, { recursive: true });
+writeFileSync(join(raDone, "0001-alpha.done.md"), "# 0001 — Alpha finding\nADOPTED.\n");
+writeFileSync(join(raDone, "0002-beta.done.md"), "# 0002 — Beta finding\nADOPTED.\n");
+const raKb = join(tmp12, "kb");
+mkdirSync(raKb, { recursive: true });
+writeFileSync(join(raKb, "galerina-rd-results-log.md"), "# R&D results log\n| 0001 | alpha | ADOPTED |\n"); // 0001 logged, 0002 not
+const ra = JSON.parse(spawnSync(process.execPath, [join(SCRIPTS, "rd-absorb.mjs"), "--json"],
+  { cwd: tmp12, encoding: "utf8", env: { ...process.env, GALERINA_RND_DIR: join(tmp12, "rnd"), GALERINA_KB_DIR: raKb } }).stdout);
+
+test("rd-absorb: finds the migrated results-log (sibling KB) — logExists, not everything-unabsorbed", () => {
+  assert.equal(ra.logExists, true, "the migrated results-log at GALERINA_KB_DIR is found (not the dead local path)");
+  assert.equal(ra.doneFiles, 2);
+  assert.equal(ra.loggedCount, 1, "0001 recognized as already-logged from the real log");
+  assert.equal(ra.unabsorbedCount, 1, "0002 correctly still unabsorbed");
 });

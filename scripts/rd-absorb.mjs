@@ -19,7 +19,10 @@ const ROOT = process.cwd();
 // R&D repo is a sibling of the Galerina repo; allow override via env for non-standard checkouts.
 const RND = process.env.GALERINA_RND_DIR || join(ROOT, "..", "Galerina-R-AND-D");
 const DONE_DIR = join(RND, "_session-bridge", "done");
-const LOG = join(ROOT, "docs", "Knowledge-Bases", "galerina-rd-results-log.md");
+// The results-log migrated to the sibling ZTF-Knowledge-Bases repo — resolve like kb-index.mjs
+// (GALERINA_KB_DIR override first), NOT the retired local docs/Knowledge-Bases path.
+const KB = process.env.GALERINA_KB_DIR || join(ROOT, "..", "ZTF-Knowledge-Bases");
+const LOG = join(KB, "galerina-rd-results-log.md");
 
 const args = process.argv.slice(2);
 const asJson = args.includes("--json");
