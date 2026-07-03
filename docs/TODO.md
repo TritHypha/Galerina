@@ -43,6 +43,9 @@ front-end compiler (§5a–5d, own session, still owner-paused).
       recorded in the KB note).
 - [ ] **Push** the local commits to `origin/main` — **owner chose HOLD (2026-07-02)**; stays local until an
       explicit push OK. Until pushed, remote CI is blind to CG-4/CG-6/CG-7.
+      **Update 2026-07-03:** origin/main has since advanced to `cb68494` (VD-2/C1 · §5a-5d 1/2a/2b · FUNGI-LIMIT-001
+      all pushed). One commit is now local-only: `68632a7` (H3 egress-sink close) — a push attempt was **auto-denied
+      by the mode classifier** ("no push without OK", owner-away → most-secure). Held for the owner's explicit push OK.
 - [ ] Offline re-sign ceremony owed: `greeting.lmanifest` (old-brand `lln.manifest.v1` schema).
 
 ## 🔲 NOW (buildable, no hard blocker; value-ordered)
@@ -50,8 +53,11 @@ front-end compiler (§5a–5d, own session, still owner-paused).
       `value-state-checker.ts:2166`, `u64-arith.ts:25`, `numeric-lowering.ts:26`, `cli-numeric-gate.test.mjs`
       header. Then extend `audit-doc-drift`/`diagnostic-doc-drift` to catch the "gated/not-yet-emitted" phrase
       class (error→tooling rule) so it can't recur.
-- [ ] **`FUNGI-LIMIT-001`** — implement the `enforced_limits{}` ceiling check (`governance-verifier.ts:2694-2699`
-      emits no diagnostic today; a declared-but-unenforced governance surface).
+- [x] **`FUNGI-LIMIT-001`** ✅ DONE + PUSHED (`cb68494`) — `enforced_limits{}` ceiling check now enforced in
+      `governance-verifier.ts` (`verifyDomainGuardConformance`): `canonicalLimitName` token-strips max/ceiling,
+      `parseLimitValue` normalizes bytes/time/count families, and a flow whose `limits{}` declares a value above the
+      guard's `enforced_limits{}` ceiling (same canonical name + unit family) fails closed. Conservative (unknown
+      unit family → no false fire). +tests `tests/governance/guard-decl.test.mjs`.
 - [ ] **B5a signed registry index** — module is real + fail-closed *when injected* (`fuse-loader.ts:694/951`),
       but no signed index is distributed and nothing wires it by default. Make default-on or ship an index.
 - [ ] Drive the `lint:conventions` umbrella (270 report-only findings) to 0, then drop `--soft`.
@@ -103,9 +109,17 @@ front-end compiler (§5a–5d, own session, still owner-paused).
       injection sinks (b) case-insensitively + (c) by narrow sink-SHAPE pattern (SQL/command/XSS families) + (d)
       deny-by-default for an unknown sink-shaped call with a tainted arg, and `calleeNameOf` uses the parser's `callStyle`
       marker (not the A–Z guess) — `db.query`/`pg.query`/`knex.raw`/`child_process.exec`/bare `exec(tainted)` no longer sign
-      `--production` clean; 8 RED-benches, 0 over-blocking. **Remaining:** (a) single-source BOTH SINK registries from a
-      canonical `stdlib-gates.yaml` SoT (anti-drift; `scripts/audit-sink-canonicality.mjs` guards drift in the interim); the
-      broader egress/URL/header/FS deny-by-default + H2/H3 (taint-source 10-name / net-receiver allowlists) are separate.
+      `--production` clean; 8 RED-benches, 0 over-blocking. **H3-named ✅ CLOSED (`68632a7`, local-unpushed)** +
+      **H1 wasm-lane ✅ CLOSED (`2aa0edb`, local-unpushed):** both wasm targets joined a single-sourced
+      `PRODUCTION_STRICTNESS_MODES` set so `verifyGovernance` + the production gate run before emitting — a `FUNGI-GOV-003`
+      denied-field-leak now emits NO `output.wasm` (was a 100-byte runnable module); regression
+      `tests/wasm-lane-governance-gate.test.mjs`; 60/60·5,991, governance:diff NEUTRAL. **Remaining (delicate → R&D):**
+      (a) single-source BOTH SINK registries from a canonical `stdlib-gates.yaml` SoT (anti-drift;
+      `scripts/audit-sink-canonicality.mjs` guards drift in the interim); the SOUND deny-by-default inversions — H2
+      (taint-source→qualifier + 2nd-order), H3-safelist (net-receiver denylist→host-internal safelist), M2/GNG-03 breadth
+      (privacy-deny regex→egress-graph) — are over-block-delicate + touch the language surface; analyzed with phased scopes +
+      machine-checkable proof plans in
+      `../ZTF-Knowledge-Bases/galerina-rd-0234c-remaining-failopen-inversions-2026-07-03.md` (owner to approve inversion scope).
       *In-flight (uncommitted):* `type-registry.ts` now single-sources the type-QUALIFIER vocab as `TYPE_QUALIFIERS`
       (`protected|redacted|unsafe|safe|secret`) and derives the strip-regex from it — first step of the SoT pattern.
 - [ ] **`.gate` front-end compiler** (PROMPT §5a-5d) — build gate GREEN (D5 re-scoped), backstop wired →
