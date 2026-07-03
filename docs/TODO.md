@@ -24,6 +24,22 @@ certified authority/admission require a signed grant/manifest. RESIDUAL: signing
 to drop even the internal self-load exemption stays coupled to the committed-pubkey custody chain (LATER). `.gate`
 front-end compiler (§5a–5d, own session, still owner-paused).
 
+## ★ Stage-B / `.gate` fail-closed remediation — LANDED (2026-07-04); owner unlocked the full set
+
+All 11 items from the pre-flight audit below are CLOSED (local, push HELD) — the 6 backend blockers + the 5
+language-policy items the owner unlocked. Recursive compiler suite **4256/4256**; full suite **60/60 · 6,075**.
+- **RD-0240** `dcf97e1` (match traps, not `i32.const 0`) · **BK-2** `0ef331b` (type default fail-closed) ·
+  **BK-5/H1/M1** `591c92a` (wasm-standalone runs the full gate) · **BK-1** `ee2faf3`+`20e68c4` (effect-mask
+  fail-closed sentinel) · **BK-4** `ef7c33e` (GIR version reject) · **BK-3** downgraded (verified already
+  fail-closed — feature-gap).
+- **H3-safelist** `13d4820` (egress deny-by-default) · **M2** already-landed (`d8ee37a`/`eac3af7`) · **C2**
+  `.gate` privacy no-longer-opt-in (in-tree; `ZT-Galerina-GRAPH-ASCII-v2` isn't a git repo — self-test 136/136).
+- **2 new dev tools, wired `--soft` into run-phase-close (5c-iii/iv) + `.claude/settings.json` (run at Stop):**
+  `audit-fungi-runtime.mjs` (runtime `.fungi`: match-exhaustive/no-`?`/test-coverage/parity — **corpus 0 findings**)
+  + `audit-perf-hotpath.mjs`. Full register: `../ZTF-Knowledge-Bases/galerina-fungi-gate-security-findings-register.md` §0.
+- Lesson: `tests/*.test.mjs` misses ~630 **subdir** tests — always run `tests/**` / the package `npm test`; a
+  relative `GALERINA_KB_DIR` breaks per-package KB tests under run-all-tests (use the default or an absolute path).
+
 ## 🔬 Stage-B / `.gate` quality — pre-flight audit (2026-07-03) — RECORDED BEFORE FIXES
 
 Owner picked track: **runtime in `.fungi` (Stage-B self-hosting)**; `.gate` = production-app authoring only.
