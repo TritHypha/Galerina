@@ -14,6 +14,8 @@
 
 ;; Processes flight telemetry into a proposed flight decision on ARM SVE2 with hardware-enforced memory safety; permitted because telemetry is validated and the command passes the safety envelope before the audit write, under deterministic bounded-runtime safety.
 ;; V_DPM capability required: telemetry.read, navigation.compute, flight_control.propose, audit.write
+// @cause  [Avionics telemetry stream] -> each TelemetryPacket arriving from the flight-data bus invokes one processing pass.
+// @effect [AuditLog + caller] -> a safety-envelope-checked FlightDecision is proposed to the caller and one FlightTelemetryProcessed audit entry is written; flight_control is propose-only, no actuation.
 secure flow processFlightTelemetry(readonly telemetry: TelemetryPacket) -> Result<FlightDecision, FlightError>
 contract {
   intent {

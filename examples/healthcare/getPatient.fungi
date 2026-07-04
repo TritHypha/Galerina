@@ -7,6 +7,8 @@ type PatientError = enum { NotFound Unauthorized }
 
 ;; Retrieves a patient summary for clinical display, returning only redacted fields; permitted because the raw protected PatientId is denied to the response body and the audit write is redaction-gated.
 ;; V_DPM capability required: database.read, phi.read, audit.write
+// @cause  [Clinical patient-record route] -> a clinician's UI requests a patient summary by id (request.params.id).
+// @effect [AuditLog + response body] -> one redacted PatientAccessed audit entry is written and the caller receives a redacted PatientSummary; the database is only read.
 secure flow getPatient(readonly request: Request) -> GetPatientResult
 contract {
   intent { "Retrieve a patient summary for clinical display." }

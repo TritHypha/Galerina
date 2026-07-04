@@ -3,6 +3,8 @@
 
 ;; Estimates compute cost by scaling op count against the target class weight — pure arithmetic, safe with no authority.
 ;; Pure — no runtime authority / no effects.
+// @cause  [Called by estimateCost] -> prices the compute component of each estimate.
+// @effect [Output only] -> returns the compute cost Int; no state is mutated.
 pure flow estimateComputeCost(opCount: Int, targetClass: Int) -> Int
 {
   if targetClass == 4 { return opCount * 10 }
@@ -13,6 +15,8 @@ pure flow estimateComputeCost(opCount: Int, targetClass: Int) -> Int
 
 ;; Estimates risk cost by scaling record count against the data classification level — pure arithmetic, safe with no authority.
 ;; Pure — no runtime authority / no effects.
+// @cause  [Called by estimateCost] -> prices the risk component of each estimate.
+// @effect [Output only] -> returns the risk cost Int; no state is mutated.
 pure flow estimateRiskCost(recordCount: Int, classificationLevel: Int) -> Int
 {
   if classificationLevel >= 4 { return recordCount * 160 }
@@ -23,6 +27,8 @@ pure flow estimateRiskCost(recordCount: Int, classificationLevel: Int) -> Int
 
 ;; Sums the compute, risk, and audit cost components into a total — pure arithmetic, safe with no authority.
 ;; Pure — no runtime authority / no effects.
+// @cause  [Called by estimateCost] -> sums the component costs into the final total.
+// @effect [Output only] -> returns the summed total Int; no state is mutated.
 pure flow totalCost(computeCost: Int, riskCost: Int, auditCost: Int) -> Int
 {
   return computeCost + riskCost + auditCost
@@ -30,6 +36,8 @@ pure flow totalCost(computeCost: Int, riskCost: Int, auditCost: Int) -> Int
 
 ;; Accepts untrusted cost inputs over HTTP, traps negatives, and returns a cost breakdown, writing a redacted audit entry — permitted because the tainted total is redacted before the write.
 ;; V_DPM capability required: network.inbound, audit.write
+// @cause  [Auth service route POST /economics/estimate] -> invoked for each cost estimation request.
+// @effect [Audit log] -> one redacted CostEstimate entry written via AuditLog.write; response returns the cost breakdown.
 secure flow estimateCost(readonly request: Request) -> Response
 contract {
   intent { "Estimate the economic cost of an operation to inform routing decisions." }

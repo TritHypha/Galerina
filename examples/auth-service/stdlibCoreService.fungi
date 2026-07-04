@@ -7,6 +7,8 @@ type StdlibResult = Result<Response, String>
 // String operations (Galerina stdlib canonical forms)
 ;; Returns whether text contains the substring sub; safe as a pure string operation with no side effects.
 ;; Pure — no runtime authority / no effects.
+// @cause  [Library helper] -> called by flows needing substring checks.
+// @effect [Verdict only] -> returns Bool; no state mutated.
 pure flow strContains(text: String, sub: String) -> Bool
 contract {
   intent { "Check if text contains substring sub." }
@@ -17,6 +19,8 @@ contract {
 
 ;; Returns whether text starts with the given prefix; safe as a pure string operation with no side effects.
 ;; Pure — no runtime authority / no effects.
+// @cause  [Library helper] -> called by flows needing prefix checks.
+// @effect [Verdict only] -> returns Bool; no state mutated.
 pure flow strStartsWith(text: String, prefix: String) -> Bool
 contract {
   intent { "Check if text starts with prefix." }
@@ -27,6 +31,8 @@ contract {
 
 ;; Returns the character length of text; safe as a pure string operation with no side effects.
 ;; Pure — no runtime authority / no effects.
+// @cause  [stdlibDemo] -> called to measure the request input's length.
+// @effect [Verdict only] -> returns the character-count Int; no state mutated.
 pure flow strLength(text: String) -> Int
 contract {
   intent { "Return the character length of text." }
@@ -38,6 +44,8 @@ contract {
 // Math operations
 ;; Returns the minimum of a and b; safe as a pure arithmetic comparison with no side effects.
 ;; Pure — no runtime authority / no effects.
+// @cause  [Library helper] -> called by flows needing the smaller of two Ints.
+// @effect [Verdict only] -> returns the smaller Int; no state mutated.
 pure flow mathMin(a: Int, b: Int) -> Int
 contract {
   intent { "Return the minimum of a and b." }
@@ -51,6 +59,8 @@ contract {
 
 ;; Returns the maximum of a and b; safe as a pure arithmetic comparison with no side effects.
 ;; Pure — no runtime authority / no effects.
+// @cause  [Library helper] -> called by flows needing the larger of two Ints.
+// @effect [Verdict only] -> returns the larger Int; no state mutated.
 pure flow mathMax(a: Int, b: Int) -> Int
 contract {
   intent { "Return the maximum of a and b." }
@@ -64,6 +74,8 @@ contract {
 
 ;; Clamps n to the range [lo, hi]; safe as a pure arithmetic operation with no side effects.
 ;; Pure — no runtime authority / no effects.
+// @cause  [stdlibDemo] -> called to clamp the measured input length into [0, 100].
+// @effect [Verdict only] -> returns the clamped Int; no state mutated.
 pure flow mathClamp(n: Int, lo: Int, hi: Int) -> Int
 contract {
   intent { "Clamp n to the range [lo, hi]." }
@@ -81,6 +93,8 @@ contract {
 // HTTP service endpoint for stdlib exploration
 ;; Demonstrates stdlib string/math operations over request input in a governed context; permitted because the untrusted input is trapped-on-empty and the derived length redacted before the audit write.
 ;; V_DPM capability required: network.inbound, audit.write
+// @cause  [POST /stdlib/demo] -> HTTP route invokes this governed endpoint with a demo input string.
+// @effect [Audit log] -> appends a "StdlibDemo" event (length redacted); returns the input-length summary.
 secure flow stdlibDemo(readonly request: Request) -> StdlibResult
 contract {
   effects {

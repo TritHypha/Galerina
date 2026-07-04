@@ -10,6 +10,8 @@
 // not stripped; it pollutes the value and the compiler fails it closed (FUNGI-SUBSTRATE-002).
 ;; Advances the NPC crowd simulation one tick on a photonic lane; permitted because it is error-tolerant gameplay physics with a declared tolerance and a TMR vote making the committed frame deterministic — never score or anti-cheat.
 ;; No effects declared — no runtime authority / no governed effects.
+// @cause  [Game-loop physics tick] -> each simulation tick invokes one crowd-physics step for the frame.
+// @effect [Frame output only] -> returns the TMR-voted deterministic committed frame Response; no governed effects, nothing outside the frame is mutated.
 flow stepCrowdPhysics(request: Request) -> Result<Response, ApiError>
 contract {
   intent { "Advance the NPC crowd simulation one tick; positions may drift within tolerance and a TMR vote makes the committed frame deterministic." }

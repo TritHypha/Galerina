@@ -4,9 +4,9 @@
     "packages": 93,
     "testBearing": 68,
     "tests": 6075,
-    "devTools": 49,
-    "auditTools": 27,
-    "toolsInCadence": 19,
+    "devTools": 50,
+    "auditTools": 28,
+    "toolsInCadence": 20,
     "proofs": 40
   },
   "packages": [
@@ -1154,6 +1154,23 @@
       ]
     },
     {
+      "name": "audit-gscm.mjs",
+      "category": "audit",
+      "purpose": "GSCM comment-coverage auditor (RD-0265, 2026-07-04).",
+      "selfTest": true,
+      "inCadence": true,
+      "concerns": [
+        "effects",
+        "signing/fusion",
+        "governance",
+        "gate-wiring",
+        "coverage",
+        "diagnostics",
+        "tier-floor",
+        "teaching-corpus"
+      ]
+    },
+    {
       "name": "audit-mutation.mjs",
       "category": "audit",
       "purpose": "TASK-SEC-002 (#219 standard \"mutation / red-team test per gate\", Stryker-style).",
@@ -1697,6 +1714,7 @@
       "audit-allowlist-sensitive.mjs",
       "audit-coverage.mjs",
       "audit-fungi-runtime.mjs",
+      "audit-gscm.mjs",
       "audit-name-collisions.mjs",
       "audit-production-blockers.mjs",
       "audit-runtime-coverage.mjs",
@@ -1717,6 +1735,7 @@
       "audit-diagnostic-doc-drift.mjs",
       "audit-effect-canonicality.mjs",
       "audit-graph-integrity.mjs",
+      "audit-gscm.mjs",
       "audit-muted-diagnostics.mjs",
       "audit-name-collisions.mjs",
       "audit-oblivious.mjs",
@@ -1810,6 +1829,7 @@
       "audit-checker-wiring.mjs",
       "audit-diagnostic-doc-drift.mjs",
       "audit-effect-canonicality.mjs",
+      "audit-gscm.mjs",
       "audit-muted-diagnostics.mjs",
       "audit-name-collisions.mjs",
       "audit-oblivious.mjs",
@@ -1836,6 +1856,7 @@
       "audit-diagnostic-doc-drift.mjs",
       "audit-effect-canonicality.mjs",
       "audit-graph-integrity.mjs",
+      "audit-gscm.mjs",
       "audit-muted-diagnostics.mjs",
       "audit-name-collisions.mjs",
       "audit-tier-boundary.mjs",
@@ -1854,6 +1875,7 @@
       "audit-coverage.mjs",
       "audit-effect-canonicality.mjs",
       "audit-fungi-runtime.mjs",
+      "audit-gscm.mjs",
       "audit-oblivious.mjs",
       "audit-perf-hotpath.mjs",
       "audit-runtime-coverage.mjs",
@@ -1890,6 +1912,7 @@
     "effects": [
       "audit-corpus-effect-names.mjs",
       "audit-effect-canonicality.mjs",
+      "audit-gscm.mjs",
       "audit-muted-diagnostics.mjs",
       "audit-sink-canonicality.mjs",
       "galerina-new.mjs",
@@ -1900,6 +1923,7 @@
       "audit-coverage.mjs",
       "audit-doc-drift.mjs",
       "audit-fungi-runtime.mjs",
+      "audit-gscm.mjs",
       "audit-oblivious.mjs",
       "audit-provenance.mjs",
       "lint-conventions.mjs",
@@ -1936,15 +1960,16 @@
       "check-gate-injection.mjs",
       "fungi-astshape.mjs"
     ],
-    "mutation-testing": [
-      "audit-mutation.mjs",
-      "lint-conventions.mjs"
-    ],
     "tier-floor": [
+      "audit-gscm.mjs",
       "audit-muted-diagnostics.mjs",
       "audit-oblivious.mjs",
       "audit-perf-hotpath.mjs",
       "audit-tier-boundary.mjs",
+      "lint-conventions.mjs"
+    ],
+    "mutation-testing": [
+      "audit-mutation.mjs",
       "lint-conventions.mjs"
     ],
     "muted-diagnostics": [

@@ -10,6 +10,8 @@
 // a single domain spans multiple lanes.
 ;; Signs the authoritative match result for the leaderboard on a bit-exact digital lane; permitted because the crypto effect requires integrity that cannot be tolerance-bounded, so it stays digital (a photonic lane would be denied FUNGI-SUBSTRATE-001).
 ;; V_DPM capability required: crypto.sign.hybrid, audit.write
+// @cause  [Match-end anti-cheat pipeline] -> the authoritative match result is submitted for leaderboard signing when a match completes.
+// @effect [Leaderboard-bound response + AuditLog] -> the match result is signed bit-exactly on the digital lane and an audit entry is written; the signed Response returns to the caller.
 secure flow signMatchResult(request: Request) -> Result<Response, ApiError>
 contract {
   intent { "Sign the authoritative match result for the leaderboard; bit-exact, digital lane only." }

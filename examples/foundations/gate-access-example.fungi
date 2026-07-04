@@ -36,6 +36,8 @@ gate(AdminOperationsGuard) {
   ;; Deletes a record; admin-only and audited, reachable only after clearing the gate.
   ;; V_DPM capability required: database.write, audit.write
   ;; Proof obligation: recordId != ""
+  // @cause  [Admin caller] -> admitted through the AdminOperationsGuard gate to delete a record.
+  // @effect [Database] -> record deleted and an AuditEvent written on ALLOW.
   secure flow deleteRecord(recordId: String) -> Result<Bool, Error>
   contract {
     intent "Delete a record — admin-only, audit-required"
@@ -55,6 +57,8 @@ gate(AdminOperationsGuard) {
 ;; access {} with Default Deny — this flow accepts callers generally, but only
 ;; the two listed capabilities may cross the boundary into it. Anything not
 ;; granted (filesystem, shell, secret.access, ...) is denied with no exception.
+// @cause  [Incoming request pipeline] -> submits a payload; access {} bounds what may cross in.
+// @effect [Database] -> request outcome persisted and audited on ALLOW (database.write, audit.write).
 secure flow processRequest(payload: String) -> Result<Bool, Error>
 contract {
   intent "Process an incoming request"

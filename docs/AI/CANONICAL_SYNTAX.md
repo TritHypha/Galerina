@@ -384,4 +384,34 @@ database.write(rawRequest)   // diagnostic: FUNGI-GOV-003 unsafe escape
 
 ---
 
-*See also: `GALERINA_5_MINUTE_PRIMER.md`, `DO_NOT_USE_YET.md`, `COMMON_FIXES.md`*
+## 9. Comments — the four forms + the GSCM tags
+
+| Syntax | Survives parse? | Use for |
+|---|---|---|
+| `;; text` | **yes — signed into the `.lmanifest`** | WHY the code is safe/permitted, V_DPM capability, proof obligation |
+| `// text` | no | how-it-works notes |
+| `/* text */` | no | multi-line notes / headers |
+| `/// text` | extracted by doc tooling | API documentation |
+
+Every flow gets a `;;` govComment block, then the **GSCM** structured tags as `// @` line comments
+(agreed standard, `notes/77-mesh-r-d-11.md` — `@` makes them machine-greppable; `//` keeps them OUT of
+the signed manifest and the API docs):
+
+```galerina
+;; Validates the payment amount before any charge; nothing mutated on any path.
+;; V_DPM capability required: audit.write
+// @cause  [Checkout pipeline] -> invoked before any charge is attempted.
+// @effect [Verdict only] -> returns Bool; no state mutated.
+// @todo   [AI] -> reject payloads older than 60s (replay prevention).   ← only if GENUINELY unfinished
+guarded flow validatePaymentAmount(readonly request: ValidateAmountRequest) -> ValidateAmountResult
+```
+
+- `@effect` narrates the **outcome** — it is NOT the `effects {}` contract clause (which grants
+  capabilities and is enforced). Never let an `@effect` comment claim more than the contract permits.
+- `@todo` only for real unfinished work — never fabricate one.
+- `.gate` files: `#` comments only (stripped before the verdict — no authority); `# @todo` ok;
+  don't restate `INTENT`/`EFFECTS` in comments.
+
+---
+
+*See also: `GALERINA_5_MINUTE_PRIMER.md`, `DO_NOT_USE_YET.md`, `COMMON_FIXES.md`, `docs/language/fungi/01-flows-and-functions.md` (full comment model)*

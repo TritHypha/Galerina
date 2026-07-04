@@ -13,6 +13,8 @@
 ;; Pure — no runtime authority / no effects.
 // Produces an audit event identifier by concatenating the flow name and timestamp.
 // This is the stable canonical identifier for an audit entry.
+// @cause  [Called by chainAuditEntry] -> composes the canonical ID for every entry admitted to the chain.
+// @effect [Output only] -> returns the flowName:timestamp ID string; no state is mutated.
 pure flow auditEventId(flowName: String, timestamp: String) -> String
 contract {
   intent { "Produce a canonical audit event ID from flowName and timestamp." }
@@ -24,6 +26,8 @@ contract {
 ;; Accepts only the three recognised audit statuses (Success|Denied|Failed); rejects anything else — pure predicate, safe with no authority.
 ;; Pure — no runtime authority / no effects.
 // Returns true when the status string is one of the three valid audit statuses.
+// @cause  [Called by chainAuditEntry] -> screens the submitted status before an entry is chained.
+// @effect [Verdict only] -> returns Bool (Success|Denied|Failed accepted); no state is mutated.
 pure flow isValidAuditStatus(status: String) -> Bool
 contract {
   intent { "Return true when status is a recognised audit status (Success|Denied|Failed)." }
@@ -40,6 +44,8 @@ contract {
 ;; Ingests an untrusted request, traps empty fields, then chains a redacted audit entry — permitted because every tainted value is redacted before it reaches the ledger.
 ;; V_DPM capability required: network.inbound, audit.write
 // HTTP endpoint: chain a governed audit entry from { flowName, status, timestamp }
+// @cause  [Auth service route POST /audit/chain] -> invoked for each audit-chain submission.
+// @effect [Audit ledger] -> one redacted AuditChain entry written via AuditLog.write; response returns the event ID + status validity.
 secure flow chainAuditEntry(readonly request: Request) -> Response
 contract {
   intent { "Chain a governed audit entry from the request's flowName, status, and timestamp." }

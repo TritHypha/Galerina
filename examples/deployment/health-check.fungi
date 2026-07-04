@@ -7,6 +7,8 @@
 
 ;; Returns a static liveness string for load-balancer health checks.
 ;; Pure — no runtime authority / no effects.
+// @cause  [Load balancer] -> liveness probe polls the health endpoint.
+// @effect [Verdict only] -> returns the static String "healthy"; no state is mutated.
 pure flow getHealthStatus() -> String
 contract {
   intent { "Return runtime health status — used by load balancer health checks." }
@@ -19,6 +21,8 @@ contract {
 ;; Returns detailed health incl. manifest status; GET-only, emits an audit entry.
 ;; V_DPM capability required: network.inbound, audit.write
 ;; Proof obligation: request.method == "GET"
+// @cause  [Deployment infrastructure] -> GET probe requesting detailed runtime health.
+// @effect [Audit ledger] -> one info-level AuditEvent written; returns health incl. manifest status.
 secure flow getDetailedHealth(readonly request: Request) -> Result<String, String>
 contract {
   intent { "Return detailed health including manifest verification status. Emits an info-level audit entry." }

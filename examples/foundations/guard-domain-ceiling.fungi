@@ -53,6 +53,8 @@ guard InvoiceReadGuard {
 ;; Processes a payment within the PaymentServiceGuard ceiling; effects proven ⊆ the guard.
 ;; V_DPM capability required: database.write, audit.write
 ;; Proof obligation: amount > 0 and amount <= 1000000
+// @cause  [Payment service caller] -> requests payment processing under the service ceiling.
+// @effect [Database] -> payment recorded and audited on ALLOW, within PaymentServiceGuard's ceiling.
 secure flow processPayment(amount: Int) -> Result<Bool, Error>
 contract [conforms_to: PaymentServiceGuard] {
   intent "Process a payment within the payment service ceiling"
@@ -75,6 +77,8 @@ contract [conforms_to: PaymentServiceGuard] {
 ;; against InvoiceReadGuard even though the grandparent permits writes.
 ;; Reads an invoice total; read-only, conforms to the narrower InvoiceReadGuard ceiling.
 ;; V_DPM capability required: database.read
+// @cause  [Invoice reporting caller] -> requests a read-only invoice total.
+// @effect [Read-only query] -> returns the invoice total via database.read; no state is mutated.
 secure flow getInvoiceTotal(invoiceId: String) -> Int
 contract [conforms_to: InvoiceReadGuard] {
   intent "Read invoice total — read-only, no mutations"

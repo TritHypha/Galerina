@@ -9,6 +9,8 @@
 // mandatory post-quantum form (crypto.sign.hybrid) is gated just the same.
 ;; Intentionally WRONG: attempts to sign a match result on a photonic lane; NOT permitted — integrity needs bit-exactness, so the crypto effect on a photonic lane is denied FUNGI-SUBSTRATE-001 regardless of tolerance or redundancy.
 ;; V_DPM capability required: crypto.sign.hybrid, audit.write
+// @cause  [Match-end anti-cheat pipeline (deliberately misrouted)] -> the same match-result signing trigger as 02, wrongly targeted at the photonic lane.
+// @effect [None — REFUSED at compile time] -> FUNGI-SUBSTRATE-001 denies the crypto effect on a photonic lane; no signature and no audit write ever occur.
 secure flow signMatchResultWrong(request: Request) -> Result<Response, ApiError>
 contract {
   intent { "Attempt to sign a match result on a photonic lane — denied: integrity needs bit-exactness." }

@@ -12,6 +12,9 @@
 
 ;; Minimal fusable entry proving the /src -> governed .wasm pipeline for the REST adapter.
 ;; Pure — no runtime authority / no effects.
+// @cause  [Host App Kernel] -> fused entrypoint invoked at the protocol.inbound seam.
+// @effect [Verdict only] -> returns Int 200; no state is mutated.
+// @todo   [B3] -> full REST wire mapping; this entry is the minimal B1 stand-in.
 pure flow main() -> Int
 contract {
   intent { "Demo fusable entry for the my-custom-api-rest REST adapter." }

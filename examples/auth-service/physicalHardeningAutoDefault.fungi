@@ -11,6 +11,8 @@
 
 ;; Processes a standard API request under runtime-auto-selected shielding; safe because it only records an audit entry and returns a fixed acceptance result — no untrusted data is acted upon.
 ;; V_DPM capability required: audit.write, network.inbound
+// @cause  [Inbound API request] -> service host invokes this standard entry flow; runtime auto-selects standard_fabric shielding.
+// @effect [Audit log] -> appends one "Standard request processed" entry; returns Ok("request_accepted").
 secure flow processStandardRequest(readonly request: Request) -> Result<String, String>
 contract {
   intent { "Standard API request processing under default runtime-selected shielding." }

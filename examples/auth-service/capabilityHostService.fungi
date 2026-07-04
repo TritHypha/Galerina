@@ -13,6 +13,8 @@
 ;; Decides whether an effect is permitted in a given context (denies network/db/secret/fs in deterministic or production contexts) — pure policy, safe with no authority.
 ;; Pure — no runtime authority / no effects.
 // Capability policy: which effects are allowed in which contexts
+// @cause  [Called by checkCapability] -> evaluates the allow policy for each effect/context pair.
+// @effect [Verdict only] -> returns Bool (effect allowed in context); no state is mutated.
 pure flow isEffectAllowedInContext(effect: String, context: String) -> Bool
 contract {
   intent { "Check if an effect is allowed in the given execution context." }
@@ -57,6 +59,8 @@ contract {
 ;; Classifies an effect into a governance class (denied/read/write/compute/external) — pure lookup, safe with no authority.
 ;; Pure — no runtime authority / no effects.
 // Returns the governance class for an effect
+// @cause  [Called by checkCapability] -> classifies each requested effect for the response.
+// @effect [Verdict only] -> returns the governance class Int (0=denied..4=external); no state is mutated.
 pure flow effectGovernanceClass(effect: String) -> Int
 contract {
   intent { "Return the governance class for an effect. 0=denied, 1=read, 2=write, 3=compute, 4=external" }
@@ -75,6 +79,8 @@ contract {
 ;; Resolves an untrusted effect/context request into an allow decision and governance class, writing a redacted audit entry — permitted because tainted inputs are redacted before the write.
 ;; V_DPM capability required: network.inbound, audit.write
 // HTTP endpoint: check whether an effect is allowed in the caller's context
+// @cause  [Auth service route POST /capability/check] -> invoked for each capability policy check.
+// @effect [Audit log] -> one redacted CapabilityCheck entry written via AuditLog.write; response returns the allow decision + governance class.
 secure flow checkCapability(readonly request: Request) -> Response
 contract {
   intent { "Resolve whether a requested effect is permitted in the caller's capability context." }

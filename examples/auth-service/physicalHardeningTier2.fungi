@@ -5,6 +5,8 @@
 
 ;; Processes a high-value record under Deep Trench Isolation side-channel protection; safe because it only records an audit entry and returns a fixed result, with patient_id masked and tamper response set to quarantine_core.
 ;; V_DPM capability required: audit.write, network.inbound, database.write
+// @cause  [Inbound record request] -> service host invokes this Tier 2 high-value record entry under deep_trench shielding.
+// @effect [Audit log] -> appends one Tier 2 processing entry; returns Ok("record_processed"); database.write is granted but unused in this demo body.
 secure flow processHighValueRecord(readonly request: Request) -> Result<String, String>
 contract {
   intent { "Process a high-value record with Deep Trench Isolation side-channel protection." }

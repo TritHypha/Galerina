@@ -91,7 +91,7 @@ Galerina can **govern a tolerant numeric sub-kernel** as a deny-by-default, untr
 
 ### Capability radars
 
-A ten-axis capability self-assessment across the surfaces Galerina governs, plus a TritMesh cache / `.spore`-passport vs. legacy-caching comparison. Click any chart to open the full SVG.
+A ten-axis capability self-assessment across the surfaces Galerina governs, plus the Galerina governance-first pipeline and a TritMesh cache / `.spore`-passport vs. legacy-caching comparison. Click any chart to open the full SVG.
 
 
 <table align="center">
@@ -116,7 +116,10 @@ A ten-axis capability self-assessment across the surfaces Galerina governs, plus
     <td width="50%" align="center"><a href="docs/diagrams/radar-10-AI-ML-NuroNet.svg"><img src="docs/diagrams/radar-10-AI-ML-NuroNet.svg" alt="AI / ML / Neural Nets" width="100%"></a><br><sub><b>10 · AI / ML / Neural Nets</b></sub></td>
   </tr>
   <tr>
-    <td colspan="2" align="center"><a href="docs/diagrams/galerina-tritmesh-cache-passport-vs-legacy.svg"><img src="docs/diagrams/galerina-tritmesh-cache-passport-vs-legacy.svg" alt="TritMesh — cache + .spore passport vs legacy caching" width="90%"></a><br><sub><b>11 · TritMesh — cache &amp; <code>.spore</code> passport vs legacy caching</b></sub></td>
+    <td colspan="2" align="center"><a href="docs/diagrams/galerina-mechanics.svg"><img src="docs/diagrams/galerina-mechanics.svg" alt="Galerina — governance-first compute pipeline" width="100%"></a><br><sub><b>11 · Galerina — governance-first compute pipeline</b></sub></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><a href="docs/diagrams/galerina-tritmesh-cache-passport-vs-legacy.svg"><img src="docs/diagrams/galerina-tritmesh-cache-passport-vs-legacy.svg" alt="TritMesh — cache + .spore passport vs legacy caching" width="100%"></a><br><sub><b>12 · TritMesh — cache &amp; <code>.spore</code> passport vs legacy caching</b></sub></td>
   </tr>
 </table>
 
@@ -206,6 +209,8 @@ intent  →  governed execution plan  →  coordinated compute  →  audit proof
 ;; before it can reach the audit log; raw PII never crosses the audit boundary.
 ;; V_DPM capability required: database.write, audit.write
 ;; Proof obligation: PII is redacted before audit.write (enforced by the privacy contract).
+// @cause  [HTTP route POST /patients] -> clinician submits the new-patient form.
+// @effect [Patients DB + audit log] -> new patient row; PII-redacted audit event appended.
 secure flow createPatient(readonly request: CreatePatientRequest) -> CreatePatientResult
 contract {
   types   { type CreatePatientResult = Result<Response, ApiError> }
@@ -247,7 +252,10 @@ contract { intent { "Map a status enum to a display string." } }
 
 > **Comments carry governance.** The `;;` lines above each flow are **govComments** — preserved into the signed
 > `.lmanifest` as the security record (what the flow does, the capability it needs, the proof it owes). `//` and
-> `/* */` are ordinary code notes, discarded after parse. Full language reference:
+> `/* */` are ordinary code notes, discarded after parse — including the structured **GSCM tags**
+> (`// @cause [Trigger] -> …` · `// @effect [Outcome] -> …` · `// @todo [Assignee] -> …`, only for genuinely
+> unfinished work) that document each flow's trigger and outcome for humans and AI without ever entering the
+> signed record. Full language reference:
 > [`docs/language/fungi/`](docs/language/fungi/README.md) · [`docs/language/gate/`](docs/language/gate/README.md).
 
 ---

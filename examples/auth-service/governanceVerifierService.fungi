@@ -7,6 +7,8 @@ type VerifyResult = Result<Response, String>
 ;; Decides whether an effect is permitted under a deployment profile (denies non-reproducible effects in deterministic, always denies eval.execute) — pure policy, safe with no authority.
 ;; Pure — no runtime authority / no effects.
 // Check if a declared effect is valid for the given deployment profile
+// @cause  [Called by verifyFlowGovernance] -> gates each declared effect against the deployment profile.
+// @effect [Verdict only] -> returns Bool (effect permitted); no state is mutated.
 pure flow isEffectPermittedInProfile(effectName: String, profile: String) -> Bool
 contract {
   intent { "Return true if effectName is allowed under the given deployment profile." }
@@ -27,6 +29,8 @@ contract {
 ;; Enforces that secure and guarded qualifiers declare audit.write (FUNGI-GOV-010) — pure predicate, safe with no authority.
 ;; Pure — no runtime authority / no effects.
 // Check if required governance invariants hold for a given qualifier
+// @cause  [Called by verifyFlowGovernance] -> enforces the FUNGI-GOV-010 audit invariant per qualifier.
+// @effect [Verdict only] -> returns Bool (invariants hold); no state is mutated.
 pure flow checkQualifierInvariants(qualifier: String, hasAudit: Bool) -> Bool
 contract {
   intent { "Return true if a flow with this qualifier satisfies the governance invariants." }
@@ -46,6 +50,8 @@ contract {
 ;; Maps effect-gate and invariant check results to a structured APPROVED/DENIED outcome label — pure classification, safe with no authority.
 ;; Pure — no runtime authority / no effects.
 // Classify the governance outcome for a flow
+// @cause  [Called by verifyFlowGovernance] -> labels the combined check results for the response.
+// @effect [Verdict only] -> returns APPROVED or a DENIED_* label; no state is mutated.
 pure flow classifyGovernanceOutcome(permitted: Bool, invariants: Bool) -> String
 contract {
   intent { "Map governance check results to a structured outcome label." }
@@ -59,6 +65,8 @@ contract {
 ;; Verifies an untrusted flow's effects and qualifier invariants against a profile and returns APPROVED/DENIED, writing a redacted audit entry — permitted because tainted inputs are redacted before the write.
 ;; V_DPM capability required: network.inbound, audit.write
 // HTTP endpoint: verify governance for a flow
+// @cause  [Auth service route POST /governance/verify] -> invoked for each flow governance verification.
+// @effect [Audit log] -> one redacted GovernanceVerified entry written via AuditLog.write; response returns the APPROVED/DENIED outcome.
 secure flow verifyFlowGovernance(readonly request: Request) -> VerifyResult
 contract {
   effects {

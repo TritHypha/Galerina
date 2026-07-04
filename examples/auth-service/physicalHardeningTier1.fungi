@@ -5,6 +5,8 @@
 
 ;; Initiates a Tier 1 sovereign settlement under Active Shielding Mesh ASIC protection; permitted because it only writes a cryptographic-state-hash audit entry and returns a fixed result, with tamper response set to zeroize.
 ;; V_DPM capability required: audit.write, network.inbound
+// @cause  [Inbound settlement request] -> service host invokes this Tier 1 sovereign settlement entry under active_mesh ASIC shielding.
+// @effect [Audit log] -> appends one "Tier 1 settlement initiated" entry (TPM-backed, state-hash level); returns Ok("settlement_accepted").
 secure flow settlementTier1(readonly request: Request) -> Result<String, String>
 contract {
   intent { "Tier 1 sovereign settlement requiring Active Shielding Mesh ASIC protection." }

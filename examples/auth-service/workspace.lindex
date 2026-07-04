@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "builtAt": "2026-07-04T14:02:14.819Z",
+  "builtAt": "2026-07-04T15:29:38.011Z",
   "workspaceDir": "C:\\wwwprojects\\Galerina\\examples\\auth-service",
   "flows": [
     {
@@ -61,10 +61,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow auditEventId(flowName: String, timestamp: String) -> String",
-      "lineStart": 14,
-      "lineEnd": 14,
-      "indexedAt": "2026-07-01T13:11:19.847Z",
-      "sourceMtime": 1782669678354.3667
+      "lineStart": 18,
+      "lineEnd": 18,
+      "indexedAt": "2026-07-04T15:29:37.749Z",
+      "sourceMtime": 1783178490104.6484
     },
     {
       "id": "d49aa1bb1e0b671b6fd12900e27557544668602e68de38be736ccf5c4dc04cf2",
@@ -123,10 +123,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow isValidAuditStatus(status: String) -> Bool",
-      "lineStart": 23,
-      "lineEnd": 23,
-      "indexedAt": "2026-07-01T13:11:19.847Z",
-      "sourceMtime": 1782669678354.3667
+      "lineStart": 31,
+      "lineEnd": 31,
+      "indexedAt": "2026-07-04T15:29:37.749Z",
+      "sourceMtime": 1783178490104.6484
     },
     {
       "id": "5d58e1d982f263e3c139a5f8e0ba547063136cc11157c59946015737addea6f7",
@@ -342,10 +342,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow chainAuditEntry(readonly request: Request) -> Response",
-      "lineStart": 37,
-      "lineEnd": 37,
-      "indexedAt": "2026-07-01T13:11:19.847Z",
-      "sourceMtime": 1782669678354.3667
+      "lineStart": 49,
+      "lineEnd": 49,
+      "indexedAt": "2026-07-04T15:29:37.749Z",
+      "sourceMtime": 1783178490104.6484
     },
     {
       "id": "9d86a431705247124e9d35d3352aa31c2571154ed2c11c6531696e9a2d0cb78f",
@@ -425,10 +425,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow classifyAuditSeverity(eventType: String) -> String",
-      "lineStart": 8,
-      "lineEnd": 8,
-      "indexedAt": "2026-07-01T13:11:19.851Z",
-      "sourceMtime": 1780657403479.1143
+      "lineStart": 12,
+      "lineEnd": 12,
+      "indexedAt": "2026-07-04T15:29:37.753Z",
+      "sourceMtime": 1783178495351.6943
     },
     {
       "id": "80204a1e3c1790aa02d5c5a18d05bb59e6dd46871ec99d9d3c7e97b2f35f346e",
@@ -491,10 +491,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow validateAuditEvent(eventName: String, level: String) -> Bool",
-      "lineStart": 28,
-      "lineEnd": 28,
-      "indexedAt": "2026-07-01T13:11:19.851Z",
-      "sourceMtime": 1780657403479.1143
+      "lineStart": 36,
+      "lineEnd": 36,
+      "indexedAt": "2026-07-04T15:29:37.753Z",
+      "sourceMtime": 1783178495351.6943
     },
     {
       "id": "16bee12f8f5937bac1468a484017b63ab18ede94b75efcf63f4dc8c970cb0c2e",
@@ -707,10 +707,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow writeAuditEvent(readonly request: Request) -> AuditWriteResult",
-      "lineStart": 45,
-      "lineEnd": 45,
-      "indexedAt": "2026-07-01T13:11:19.851Z",
-      "sourceMtime": 1780657403479.1143
+      "lineStart": 57,
+      "lineEnd": 57,
+      "indexedAt": "2026-07-04T15:29:37.753Z",
+      "sourceMtime": 1783178495351.6943
     },
     {
       "id": "125c873da7067f9009cd6deebba68464c5cc64015d50f719221e2f5353a41ae2",
@@ -786,10 +786,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow selectExecutionTier(qualifier: String, hasEffects: Bool, isIntegerOnly: Bool) -> String",
-      "lineStart": 7,
-      "lineEnd": 7,
-      "indexedAt": "2026-07-01T13:11:19.853Z",
-      "sourceMtime": 1780651067496.179
+      "lineStart": 11,
+      "lineEnd": 11,
+      "indexedAt": "2026-07-04T15:29:37.755Z",
+      "sourceMtime": 1783178501566.2898
     },
     {
       "id": "954dd69416f1983d5d1bb703726f9104b67448aa3a45a6eb80fc53b6632fc046",
@@ -845,10 +845,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow tierTrafficLight(tier: String) -> String",
-      "lineStart": 21,
-      "lineEnd": 21,
-      "indexedAt": "2026-07-01T13:11:19.853Z",
-      "sourceMtime": 1780651067496.179
+      "lineStart": 29,
+      "lineEnd": 29,
+      "indexedAt": "2026-07-04T15:29:37.755Z",
+      "sourceMtime": 1783178501566.2898
     },
     {
       "id": "4c85b0df1338747566426648a266abb7af726fea2a3b7119c9be2089af96ceff",
@@ -1056,10 +1056,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow resolveBytecodeRoute(readonly request: Request) -> TierResult",
-      "lineStart": 36,
-      "lineEnd": 36,
-      "indexedAt": "2026-07-01T13:11:19.853Z",
-      "sourceMtime": 1780651067496.179
+      "lineStart": 48,
+      "lineEnd": 48,
+      "indexedAt": "2026-07-04T15:29:37.755Z",
+      "sourceMtime": 1783178501566.2898
     },
     {
       "id": "cfaa2147842d98bc31df4da5997bad05703045dc4ea3ec006e2395e284d252b4",
@@ -1160,10 +1160,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow isEffectAllowedInContext(effect: String, context: String) -> Bool",
-      "lineStart": 14,
-      "lineEnd": 14,
-      "indexedAt": "2026-07-01T13:11:19.854Z",
-      "sourceMtime": 1782669678354.3667
+      "lineStart": 18,
+      "lineEnd": 18,
+      "indexedAt": "2026-07-04T15:29:37.757Z",
+      "sourceMtime": 1783178506587.8682
     },
     {
       "id": "38e68308232eef5134975c31c052497642f0fca683f90b46f9be10616372037c",
@@ -1232,10 +1232,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow effectGovernanceClass(effect: String) -> Int",
-      "lineStart": 56,
-      "lineEnd": 56,
-      "indexedAt": "2026-07-01T13:11:19.854Z",
-      "sourceMtime": 1782669678354.3667
+      "lineStart": 64,
+      "lineEnd": 64,
+      "indexedAt": "2026-07-04T15:29:37.757Z",
+      "sourceMtime": 1783178506587.8682
     },
     {
       "id": "8b36d2c8616f8f463749e77c835a19be20a03d4547da13e73db3cf2b177368d7",
@@ -1403,10 +1403,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow checkCapability(readonly request: Request) -> Response",
-      "lineStart": 72,
-      "lineEnd": 72,
-      "indexedAt": "2026-07-01T13:11:19.854Z",
-      "sourceMtime": 1782669678354.3667
+      "lineStart": 84,
+      "lineEnd": 84,
+      "indexedAt": "2026-07-04T15:29:37.757Z",
+      "sourceMtime": 1783178506587.8682
     },
     {
       "id": "5e0b36a28361ed08f746f8f3e367d569eccd80125906b91bd47ae186442fe0d4",
@@ -1481,10 +1481,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow isEffectAvailable(effectName: String) -> Bool",
-      "lineStart": 8,
-      "lineEnd": 8,
-      "indexedAt": "2026-07-01T13:11:19.856Z",
-      "sourceMtime": 1780650672403.4978
+      "lineStart": 12,
+      "lineEnd": 12,
+      "indexedAt": "2026-07-04T15:29:37.759Z",
+      "sourceMtime": 1783178520679.5796
     },
     {
       "id": "cafbf9ac353af255e46e1b2f99860ce92ae82eeeb58855526e969c4fbbd084cf",
@@ -1552,10 +1552,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow effectTier(effectName: String) -> String",
-      "lineStart": 26,
-      "lineEnd": 26,
-      "indexedAt": "2026-07-01T13:11:19.856Z",
-      "sourceMtime": 1780650672403.4978
+      "lineStart": 34,
+      "lineEnd": 34,
+      "indexedAt": "2026-07-04T15:29:37.759Z",
+      "sourceMtime": 1783178520679.5796
     },
     {
       "id": "c4877c3e0954b2d53e7a4a12225420c09e8fbec92a5a0344a3ae36b9478125d3",
@@ -1729,10 +1729,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow resolveCapability(readonly request: Request) -> CapabilityResolveResult",
-      "lineStart": 42,
-      "lineEnd": 42,
-      "indexedAt": "2026-07-01T13:11:19.856Z",
-      "sourceMtime": 1780650672403.4978
+      "lineStart": 54,
+      "lineEnd": 54,
+      "indexedAt": "2026-07-04T15:29:37.759Z",
+      "sourceMtime": 1783178520679.5796
     },
     {
       "id": "d693ca10bf21da1d3d94fd71e2316a7a50408704cee5f33d962dd00ed84415ee",
@@ -1904,10 +1904,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow tokenizeSource(readonly request: Request) -> Response",
-      "lineStart": 13,
-      "lineEnd": 13,
-      "indexedAt": "2026-07-01T13:11:19.858Z",
-      "sourceMtime": 1782669678354.3667
+      "lineStart": 17,
+      "lineEnd": 17,
+      "indexedAt": "2026-07-04T15:29:37.760Z",
+      "sourceMtime": 1783178522223.5647
     },
     {
       "id": "79eac2925dfa7fff394a8eb47c564ef5f201cf4555362de246c5c2e91b1d1b63",
@@ -2018,10 +2018,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow createSession(readonly request: Request) -> CreateSessionResult",
-      "lineStart": 9,
-      "lineEnd": 9,
-      "indexedAt": "2026-07-01T13:11:19.859Z",
-      "sourceMtime": 1780571621995.0786
+      "lineStart": 13,
+      "lineEnd": 13,
+      "indexedAt": "2026-07-04T15:29:37.761Z",
+      "sourceMtime": 1783178524374.9958
     },
     {
       "id": "9a480eb17257991173ef71c844b2a2233d79d856bef136e5c3738a63d6ddb7d8",
@@ -2102,10 +2102,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow inferTarget(hasAI: Bool, isSafetyCritical: Bool, hasDBWrite: Bool) -> String",
-      "lineStart": 7,
-      "lineEnd": 7,
-      "indexedAt": "2026-07-01T13:11:19.860Z",
-      "sourceMtime": 1780651672256.9133
+      "lineStart": 11,
+      "lineEnd": 11,
+      "indexedAt": "2026-07-04T15:29:37.763Z",
+      "sourceMtime": 1783178530795.1208
     },
     {
       "id": "93b72787a10546a948f48e5dd2f23afe24b98d3d2f5aa1cd40b061cdf2d64c2d",
@@ -2163,10 +2163,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow inferRiskTier(execTarget: String) -> String",
-      "lineStart": 19,
-      "lineEnd": 19,
-      "indexedAt": "2026-07-01T13:11:19.860Z",
-      "sourceMtime": 1780651672256.9133
+      "lineStart": 27,
+      "lineEnd": 27,
+      "indexedAt": "2026-07-04T15:29:37.763Z",
+      "sourceMtime": 1783178530795.1208
     },
     {
       "id": "c2a4f10dd47c120a2e9104a1968e616c11ef711d87afeea168892ba9061486a3",
@@ -2363,10 +2363,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow routeByEconomics(readonly request: Request) -> EconomicsResult",
-      "lineStart": 33,
-      "lineEnd": 33,
-      "indexedAt": "2026-07-01T13:11:19.860Z",
-      "sourceMtime": 1780651672256.9133
+      "lineStart": 45,
+      "lineEnd": 45,
+      "indexedAt": "2026-07-04T15:29:37.763Z",
+      "sourceMtime": 1783178530795.1208
     },
     {
       "id": "848476d67a85cc1d144b999261efb57e69a3da433233710e3cd1ec8719dc882b",
@@ -2435,10 +2435,10 @@
       ],
       "contractText": "",
       "signatureText": "pure flow estimateComputeCost(opCount: Int, targetClass: Int) -> Int",
-      "lineStart": 4,
-      "lineEnd": 4,
-      "indexedAt": "2026-07-01T13:11:19.862Z",
-      "sourceMtime": 1780651582357.6702
+      "lineStart": 8,
+      "lineEnd": 8,
+      "indexedAt": "2026-07-04T15:29:37.764Z",
+      "sourceMtime": 1783178538694.3267
     },
     {
       "id": "299d25c62b45cc8d8bee7c0ebe7b00093f17547ba30b82d6330a4985904682b7",
@@ -2510,10 +2510,10 @@
       ],
       "contractText": "",
       "signatureText": "pure flow estimateRiskCost(recordCount: Int, classificationLevel: Int) -> Int",
-      "lineStart": 12,
-      "lineEnd": 12,
-      "indexedAt": "2026-07-01T13:11:19.862Z",
-      "sourceMtime": 1780651582357.6702
+      "lineStart": 20,
+      "lineEnd": 20,
+      "indexedAt": "2026-07-04T15:29:37.764Z",
+      "sourceMtime": 1783178538694.3267
     },
     {
       "id": "6ac3fc091a6a2db2789e13df70d07f219746075ac3533dac5cec1c881e1c028c",
@@ -2576,10 +2576,10 @@
       ],
       "contractText": "",
       "signatureText": "pure flow totalCost(computeCost: Int, riskCost: Int, auditCost: Int) -> Int",
-      "lineStart": 20,
-      "lineEnd": 20,
-      "indexedAt": "2026-07-01T13:11:19.862Z",
-      "sourceMtime": 1780651582357.6702
+      "lineStart": 32,
+      "lineEnd": 32,
+      "indexedAt": "2026-07-04T15:29:37.764Z",
+      "sourceMtime": 1783178538694.3267
     },
     {
       "id": "79c55353b91b9695cf222051db621343158d857c4513474c7328e4c445ab0c6b",
@@ -2791,10 +2791,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow estimateCost(readonly request: Request) -> Response",
-      "lineStart": 25,
-      "lineEnd": 25,
-      "indexedAt": "2026-07-01T13:11:19.862Z",
-      "sourceMtime": 1780651582357.6702
+      "lineStart": 41,
+      "lineEnd": 41,
+      "indexedAt": "2026-07-04T15:29:37.764Z",
+      "sourceMtime": 1783178538694.3267
     },
     {
       "id": "9a273240f95bbf12a568250599f42b90e54d417f3f7682ec7d6063138c855d92",
@@ -2876,10 +2876,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow effectRequiresCapability(effectName: String) -> String",
-      "lineStart": 9,
-      "lineEnd": 9,
-      "indexedAt": "2026-07-01T19:51:35.459Z",
-      "sourceMtime": 1782934552433.0278
+      "lineStart": 13,
+      "lineEnd": 13,
+      "indexedAt": "2026-07-04T15:29:37.766Z",
+      "sourceMtime": 1783178555098.719
     },
     {
       "id": "cfab97a20f1ecd6127143de4964548583350e0d9e1a34b96448e441886be88a0",
@@ -2943,10 +2943,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow effectsAreComplete(declaredEffect: String, qualifier: String) -> Bool",
-      "lineStart": 30,
-      "lineEnd": 30,
-      "indexedAt": "2026-07-01T19:51:35.459Z",
-      "sourceMtime": 1782934552433.0278
+      "lineStart": 38,
+      "lineEnd": 38,
+      "indexedAt": "2026-07-04T15:29:37.766Z",
+      "sourceMtime": 1783178555098.719
     },
     {
       "id": "2f6de4a15d4a20bf48597e86aff38ff0c128e53220935bd9574896c85153b12b",
@@ -3007,10 +3007,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow classifyEffectSeverity(capability: String) -> String",
-      "lineStart": 42,
-      "lineEnd": 42,
-      "indexedAt": "2026-07-01T19:51:35.459Z",
-      "sourceMtime": 1782934552433.0278
+      "lineStart": 54,
+      "lineEnd": 54,
+      "indexedAt": "2026-07-04T15:29:37.766Z",
+      "sourceMtime": 1783178555098.719
     },
     {
       "id": "f0aba1af84d521a9efdd1553483584a38c9f069b19f18976ab8294e78bd5ece8",
@@ -3217,10 +3217,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow checkEffectDeclaration(readonly request: Request) -> EffectCheckResult",
-      "lineStart": 60,
-      "lineEnd": 60,
-      "indexedAt": "2026-07-01T19:51:35.459Z",
-      "sourceMtime": 1782934552433.0278
+      "lineStart": 76,
+      "lineEnd": 76,
+      "indexedAt": "2026-07-04T15:29:37.766Z",
+      "sourceMtime": 1783178555098.719
     },
     {
       "id": "b2e44b81a173cdef49b4b0c050f5490edc7ea1f8f337ba67462f6356867fe19d",
@@ -3284,10 +3284,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow governanceLevel(effectTag: String) -> Int",
-      "lineStart": 14,
-      "lineEnd": 14,
-      "indexedAt": "2026-07-01T13:11:19.865Z",
-      "sourceMtime": 1782669604851.8655
+      "lineStart": 18,
+      "lineEnd": 18,
+      "indexedAt": "2026-07-04T15:29:37.768Z",
+      "sourceMtime": 1783178564750.2727
     },
     {
       "id": "f3afb87d423c9442cc9720feb9e60f39d19f431a49f089323798840f55555c2e",
@@ -3338,10 +3338,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow requiresAuditForLevel(level: Int) -> Bool",
-      "lineStart": 29,
-      "lineEnd": 29,
-      "indexedAt": "2026-07-01T13:11:19.865Z",
-      "sourceMtime": 1782669604851.8655
+      "lineStart": 37,
+      "lineEnd": 37,
+      "indexedAt": "2026-07-04T15:29:37.768Z",
+      "sourceMtime": 1783178564750.2727
     },
     {
       "id": "d9d096a768afca142248b35089c65c4e911d31d1f84100e83bf11dc753fa98c3",
@@ -3515,10 +3515,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow verifyGovernance(readonly request: Request) -> Response",
-      "lineStart": 41,
-      "lineEnd": 41,
-      "indexedAt": "2026-07-01T13:11:19.865Z",
-      "sourceMtime": 1782669604851.8655
+      "lineStart": 53,
+      "lineEnd": 53,
+      "indexedAt": "2026-07-04T15:29:37.768Z",
+      "sourceMtime": 1783178564750.2727
     },
     {
       "id": "e2395c04652faaa9d2cd2806792c5e9d129017239b256fc96b5daa6dcda6c62d",
@@ -3607,10 +3607,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow isEffectPermittedInProfile(effectName: String, profile: String) -> Bool",
-      "lineStart": 8,
-      "lineEnd": 8,
-      "indexedAt": "2026-07-01T19:51:35.464Z",
-      "sourceMtime": 1782934552435.0276
+      "lineStart": 12,
+      "lineEnd": 12,
+      "indexedAt": "2026-07-04T15:29:37.769Z",
+      "sourceMtime": 1783178571179.9016
     },
     {
       "id": "e76934b73a29875426e2e1836d7e3ef00e66ebc555cda5ced4049819b740cdf0",
@@ -3681,10 +3681,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow checkQualifierInvariants(qualifier: String, hasAudit: Bool) -> Bool",
-      "lineStart": 26,
-      "lineEnd": 26,
-      "indexedAt": "2026-07-01T19:51:35.464Z",
-      "sourceMtime": 1782934552435.0276
+      "lineStart": 34,
+      "lineEnd": 34,
+      "indexedAt": "2026-07-04T15:29:37.769Z",
+      "sourceMtime": 1783178571179.9016
     },
     {
       "id": "5b52f82ab3ce4aa16cae043d27349444db12c7bac6effe230c8e338238facb77",
@@ -3744,10 +3744,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow classifyGovernanceOutcome(permitted: Bool, invariants: Bool) -> String",
-      "lineStart": 43,
-      "lineEnd": 43,
-      "indexedAt": "2026-07-01T19:51:35.464Z",
-      "sourceMtime": 1782934552435.0276
+      "lineStart": 55,
+      "lineEnd": 55,
+      "indexedAt": "2026-07-04T15:29:37.769Z",
+      "sourceMtime": 1783178571179.9016
     },
     {
       "id": "69b80471ad23aa318212cf5f7cff93943828cca6bea7d2335bc6337cd8410fc2",
@@ -3992,10 +3992,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow verifyFlowGovernance(readonly request: Request) -> VerifyResult",
-      "lineStart": 54,
-      "lineEnd": 54,
-      "indexedAt": "2026-07-01T19:51:35.464Z",
-      "sourceMtime": 1782934552435.0276
+      "lineStart": 70,
+      "lineEnd": 70,
+      "indexedAt": "2026-07-04T15:29:37.769Z",
+      "sourceMtime": 1783178571179.9016
     },
     {
       "id": "2e1cf93a6eec8a545bc618ba1c3b9db85bae924db6bffe880cff9bfa8ad76be5",
@@ -4113,10 +4113,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow healthCheck(readonly request: Request) -> HealthStatus",
-      "lineStart": 7,
-      "lineEnd": 7,
-      "indexedAt": "2026-07-01T13:11:19.868Z",
-      "sourceMtime": 1782509415646.6973
+      "lineStart": 11,
+      "lineEnd": 11,
+      "indexedAt": "2026-07-04T15:29:37.771Z",
+      "sourceMtime": 1783178572542.7732
     },
     {
       "id": "1382c8198fd27f7e9e031d735aa4b695b21ffea0a5b85310dff7d7615f13b54f",
@@ -4158,10 +4158,10 @@
       ],
       "contractText": "",
       "signatureText": "pure flow isValidManifestVersion(version: String) -> Bool",
-      "lineStart": 4,
-      "lineEnd": 4,
-      "indexedAt": "2026-07-01T13:11:19.869Z",
-      "sourceMtime": 1782669678354.3667
+      "lineStart": 8,
+      "lineEnd": 8,
+      "indexedAt": "2026-07-04T15:29:37.772Z",
+      "sourceMtime": 1783178580184.4114
     },
     {
       "id": "358a1fba1b5dc82d6005b126dd0e318976a9c8ad0aa4888f28a0bcd29bda0d23",
@@ -4198,10 +4198,10 @@
       ],
       "contractText": "",
       "signatureText": "pure flow isValidGovernanceFlags(flags: Int) -> Bool",
-      "lineStart": 9,
-      "lineEnd": 9,
-      "indexedAt": "2026-07-01T13:11:19.869Z",
-      "sourceMtime": 1782669678354.3667
+      "lineStart": 17,
+      "lineEnd": 17,
+      "indexedAt": "2026-07-04T15:29:37.772Z",
+      "sourceMtime": 1783178580184.4114
     },
     {
       "id": "8e249e7751b1ea42c9bf1321653c3028ca02c9a9feb03f3de7700c968dbfd112",
@@ -4265,10 +4265,10 @@
       ],
       "contractText": "",
       "signatureText": "pure flow manifestTrustLevel(verified: Bool, hasSignature: Bool, flagsValid: Bool) -> Int",
-      "lineStart": 14,
-      "lineEnd": 14,
-      "indexedAt": "2026-07-01T13:11:19.869Z",
-      "sourceMtime": 1782669678354.3667
+      "lineStart": 26,
+      "lineEnd": 26,
+      "indexedAt": "2026-07-04T15:29:37.772Z",
+      "sourceMtime": 1783178580184.4114
     },
     {
       "id": "6b02136f106e617a4d03ac19eead1c8a541d09269e759386d9da37a04b6f5e99",
@@ -4514,10 +4514,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow verifyManifest(readonly request: Request) -> Response",
-      "lineStart": 22,
-      "lineEnd": 22,
-      "indexedAt": "2026-07-01T13:11:19.869Z",
-      "sourceMtime": 1782669678354.3667
+      "lineStart": 38,
+      "lineEnd": 38,
+      "indexedAt": "2026-07-04T15:29:37.772Z",
+      "sourceMtime": 1783178580184.4114
     },
     {
       "id": "a581404654c43111438ce04d15b3a76d7fb3fdd2236e7c9ae78253277ee317ed",
@@ -4618,10 +4618,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow processStandardRequest(readonly request: Request) -> Result<String,String>",
-      "lineStart": 12,
-      "lineEnd": 12,
-      "indexedAt": "2026-07-01T13:11:19.870Z",
-      "sourceMtime": 1782669604706.633
+      "lineStart": 16,
+      "lineEnd": 16,
+      "indexedAt": "2026-07-04T15:29:37.773Z",
+      "sourceMtime": 1783178534388.9558
     },
     {
       "id": "7f90b1c75164e0a7e4663d180d1567eee8d780843121742a183f461f422ddd4e",
@@ -4758,10 +4758,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow settlementTier1(readonly request: Request) -> Result<String,String>",
-      "lineStart": 6,
-      "lineEnd": 6,
-      "indexedAt": "2026-07-01T13:11:19.871Z",
-      "sourceMtime": 1780584554128.6467
+      "lineStart": 10,
+      "lineEnd": 10,
+      "indexedAt": "2026-07-04T15:29:37.774Z",
+      "sourceMtime": 1783178536053.2993
     },
     {
       "id": "6a28aa5537c8a14753265f84bd8bcab827ebae210182f2b983ba9851c8986a05",
@@ -4928,10 +4928,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow processHighValueRecord(readonly request: Request) -> Result<String,String>",
-      "lineStart": 6,
-      "lineEnd": 6,
-      "indexedAt": "2026-07-01T13:11:19.871Z",
-      "sourceMtime": 1780584556199.1294
+      "lineStart": 10,
+      "lineEnd": 10,
+      "indexedAt": "2026-07-04T15:29:37.775Z",
+      "sourceMtime": 1783178538269.284
     },
     {
       "id": "8972ca1cc4c632b3485f375a9b8aabac1a687397b61304c248d9d41c985a4294",
@@ -4982,10 +4982,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow qualifierToProofLevel(qualifier: String) -> Int",
-      "lineStart": 8,
-      "lineEnd": 8,
-      "indexedAt": "2026-07-01T13:11:19.872Z",
-      "sourceMtime": 1780650678795.0364
+      "lineStart": 12,
+      "lineEnd": 12,
+      "indexedAt": "2026-07-04T15:29:37.777Z",
+      "sourceMtime": 1783178553461.097
     },
     {
       "id": "c5a012903915abd0dbc4159e4fbc12c83064aeda237fb3731054a07a58051177",
@@ -5040,10 +5040,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow proofLevelSufficient(actual: Int, required: Int) -> Bool",
-      "lineStart": 22,
-      "lineEnd": 22,
-      "indexedAt": "2026-07-01T13:11:19.872Z",
-      "sourceMtime": 1780650678795.0364
+      "lineStart": 30,
+      "lineEnd": 30,
+      "indexedAt": "2026-07-04T15:29:37.777Z",
+      "sourceMtime": 1783178553461.097
     },
     {
       "id": "27d3424d592288c90656b7bb81d95b66f5e616c69ca932fccd2ffc41ab1fd771",
@@ -5203,10 +5203,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow generateProofSummary(readonly request: Request) -> ProofResult",
-      "lineStart": 32,
-      "lineEnd": 32,
-      "indexedAt": "2026-07-01T13:11:19.872Z",
-      "sourceMtime": 1780650678795.0364
+      "lineStart": 44,
+      "lineEnd": 44,
+      "indexedAt": "2026-07-04T15:29:37.777Z",
+      "sourceMtime": 1783178553461.097
     },
     {
       "id": "ea60361883fbb551c7659aef8db1782fac094c1344d5de3fa09b5c740fef7e68",
@@ -5261,10 +5261,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow isValidAlgorithm(alg: String) -> Bool",
-      "lineStart": 13,
-      "lineEnd": 13,
-      "indexedAt": "2026-07-01T13:11:19.873Z",
-      "sourceMtime": 1782669678354.3667
+      "lineStart": 17,
+      "lineEnd": 17,
+      "indexedAt": "2026-07-04T15:29:37.778Z",
+      "sourceMtime": 1783178563176.6455
     },
     {
       "id": "bae17b5f24f87f09d083cf1758d32fc497e1163fbf6361a23aae72cdde26c85b",
@@ -5316,10 +5316,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow proofStrength(algorithm: String) -> Int",
-      "lineStart": 25,
-      "lineEnd": 25,
-      "indexedAt": "2026-07-01T13:11:19.873Z",
-      "sourceMtime": 1782669678354.3667
+      "lineStart": 33,
+      "lineEnd": 33,
+      "indexedAt": "2026-07-04T15:29:37.778Z",
+      "sourceMtime": 1783178563176.6455
     },
     {
       "id": "a06a827995b39f6df876504b7c61412dce67b4adc604ed4d11fdfa7e29a48613",
@@ -5476,10 +5476,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow verifyProof(readonly request: Request) -> Response",
-      "lineStart": 37,
-      "lineEnd": 37,
-      "indexedAt": "2026-07-01T13:11:19.873Z",
-      "sourceMtime": 1782669678354.3667
+      "lineStart": 49,
+      "lineEnd": 49,
+      "indexedAt": "2026-07-04T15:29:37.778Z",
+      "sourceMtime": 1783178563176.6455
     },
     {
       "id": "f71aa51e12d81668fc0724ab21667cff995a52a942ed714a596ab058ec1c16d2",
@@ -5615,10 +5615,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "guarded flow rateStatus(readonly request: Request) -> RateStatusResult",
-      "lineStart": 6,
-      "lineEnd": 6,
-      "indexedAt": "2026-07-01T13:11:19.875Z",
-      "sourceMtime": 1780572004873.2146
+      "lineStart": 10,
+      "lineEnd": 10,
+      "indexedAt": "2026-07-04T15:29:37.780Z",
+      "sourceMtime": 1783178572394.198
     },
     {
       "id": "83262036b3de5fd0dad6a01a24b86aa0cdec6705ed2b17a9819d34ccfbb3710c",
@@ -5683,10 +5683,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow pathMatches(requestPath: String, routePath: String) -> Bool",
-      "lineStart": 9,
-      "lineEnd": 9,
-      "indexedAt": "2026-07-01T13:11:19.876Z",
-      "sourceMtime": 1782479001159.82
+      "lineStart": 13,
+      "lineEnd": 13,
+      "indexedAt": "2026-07-04T15:29:37.781Z",
+      "sourceMtime": 1783178581640.245
     },
     {
       "id": "f949b03b8a4c8f1e81cf0f0909d2a26b248aaeb482f72a27481418b387d01956",
@@ -5783,10 +5783,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow resolveRoute(method: String, path: String) -> String",
-      "lineStart": 21,
-      "lineEnd": 21,
-      "indexedAt": "2026-07-01T13:11:19.876Z",
-      "sourceMtime": 1782479001159.82
+      "lineStart": 29,
+      "lineEnd": 29,
+      "indexedAt": "2026-07-04T15:29:37.781Z",
+      "sourceMtime": 1783178581640.245
     },
     {
       "id": "4ee2b005d26364090735136cafb669f70e57e7bdb3fbb20ae8ffe885577b11ac",
@@ -5864,10 +5864,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow flowGovernanceProfile(flowName: String) -> String",
-      "lineStart": 52,
-      "lineEnd": 52,
-      "indexedAt": "2026-07-01T13:11:19.876Z",
-      "sourceMtime": 1782479001159.82
+      "lineStart": 64,
+      "lineEnd": 64,
+      "indexedAt": "2026-07-04T15:29:37.781Z",
+      "sourceMtime": 1783178581640.245
     },
     {
       "id": "71a24d9e6c6b816a2a14a928b12db40c04e7428277e080bbe77fa46479b74058",
@@ -6154,10 +6154,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow dispatchRequest(readonly request: Request) -> RouteResult",
-      "lineStart": 69,
-      "lineEnd": 69,
-      "indexedAt": "2026-07-01T13:11:19.876Z",
-      "sourceMtime": 1782479001159.82
+      "lineStart": 85,
+      "lineEnd": 85,
+      "indexedAt": "2026-07-04T15:29:37.781Z",
+      "sourceMtime": 1783178581640.245
     },
     {
       "id": "6786967906816c18f8d56a8fba23c9d12776dfc42c0ab832107f5d151f058be6",
@@ -6236,10 +6236,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow preferredTier(effectCount: Int, hasAI: Bool, isCritical: Bool) -> String",
-      "lineStart": 4,
-      "lineEnd": 4,
-      "indexedAt": "2026-07-01T13:11:19.879Z",
-      "sourceMtime": 1780651676740.3132
+      "lineStart": 8,
+      "lineEnd": 8,
+      "indexedAt": "2026-07-04T15:29:37.784Z",
+      "sourceMtime": 1783178596658.089
     },
     {
       "id": "7e57974bf6bb68b6059733dd0fbdcebdb93a558ccd25b7d70d09b905c62d0d03",
@@ -6285,10 +6285,10 @@
       ],
       "contractText": "",
       "signatureText": "pure flow tierGovernanceClass(tier: String) -> Int",
-      "lineStart": 15,
-      "lineEnd": 15,
-      "indexedAt": "2026-07-01T13:11:19.879Z",
-      "sourceMtime": 1780651676740.3132
+      "lineStart": 23,
+      "lineEnd": 23,
+      "indexedAt": "2026-07-04T15:29:37.784Z",
+      "sourceMtime": 1783178596658.089
     },
     {
       "id": "8ba8f462f45a9e1fd4048e4f0b049289fbabcda02dfd3b694383ed9bb8cb4a87",
@@ -6457,10 +6457,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow resolveRoute(readonly request: Request) -> Response",
-      "lineStart": 24,
-      "lineEnd": 24,
-      "indexedAt": "2026-07-01T13:11:19.879Z",
-      "sourceMtime": 1780651676740.3132
+      "lineStart": 36,
+      "lineEnd": 36,
+      "indexedAt": "2026-07-04T15:29:37.784Z",
+      "sourceMtime": 1783178596658.089
     },
     {
       "id": "90c2df1526a6bef81d4c13085a48cdd4bc1c0c0890e521b87af0205209b1d678",
@@ -6504,10 +6504,10 @@
       ],
       "contractText": "",
       "signatureText": "pure flow profileAllowsRecursion(profile: String) -> Bool",
-      "lineStart": 4,
-      "lineEnd": 4,
-      "indexedAt": "2026-07-01T13:11:19.880Z",
-      "sourceMtime": 1780651298831.9385
+      "lineStart": 8,
+      "lineEnd": 8,
+      "indexedAt": "2026-07-04T15:29:37.786Z",
+      "sourceMtime": 1783178607506.704
     },
     {
       "id": "6bdc39aa9af8f24360b915bbbefe6fc97dcfc9af538acec54768b8dd79634e3c",
@@ -6552,10 +6552,10 @@
       ],
       "contractText": "",
       "signatureText": "pure flow profileAllowsUnboundedLoop(profile: String) -> Bool",
-      "lineStart": 11,
-      "lineEnd": 11,
-      "indexedAt": "2026-07-01T13:11:19.880Z",
-      "sourceMtime": 1780651298831.9385
+      "lineStart": 19,
+      "lineEnd": 19,
+      "indexedAt": "2026-07-04T15:29:37.786Z",
+      "sourceMtime": 1783178607506.704
     },
     {
       "id": "3c229048a18a6c605826afa07cfe1a5882b82747d2c7013db4528ebc173d9eb0",
@@ -6599,10 +6599,10 @@
       ],
       "contractText": "",
       "signatureText": "pure flow profileRequiresBudget(profile: String) -> Bool",
-      "lineStart": 18,
-      "lineEnd": 18,
-      "indexedAt": "2026-07-01T13:11:19.880Z",
-      "sourceMtime": 1780651298831.9385
+      "lineStart": 30,
+      "lineEnd": 30,
+      "indexedAt": "2026-07-04T15:29:37.786Z",
+      "sourceMtime": 1783178607506.704
     },
     {
       "id": "911e86dc47b63a9930fa23f55eaa7d092901d11f00f8347427dc571eb2654896",
@@ -6649,10 +6649,10 @@
       ],
       "contractText": "",
       "signatureText": "pure flow profileSecurityLevel(profile: String) -> Int",
-      "lineStart": 25,
-      "lineEnd": 25,
-      "indexedAt": "2026-07-01T13:11:19.880Z",
-      "sourceMtime": 1780651298831.9385
+      "lineStart": 41,
+      "lineEnd": 41,
+      "indexedAt": "2026-07-04T15:29:37.786Z",
+      "sourceMtime": 1783178607506.704
     },
     {
       "id": "9b4cebcad5d110e8c715adf99c53105b08194d6eafe58b4e82ada4e8c5709371",
@@ -6835,10 +6835,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow checkProfile(readonly request: Request) -> Response",
-      "lineStart": 34,
-      "lineEnd": 34,
-      "indexedAt": "2026-07-01T13:11:19.880Z",
-      "sourceMtime": 1780651298831.9385
+      "lineStart": 54,
+      "lineEnd": 54,
+      "indexedAt": "2026-07-04T15:29:37.786Z",
+      "sourceMtime": 1783178607506.704
     },
     {
       "id": "c70dedacf58fef23c6ec3e19665ad11e97aaeebdb9f9fb0f524ff7b3dc665e98",
@@ -7036,10 +7036,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow processSovereignTransaction(readonly request: Request) -> TransactionResult",
-      "lineStart": 15,
-      "lineEnd": 15,
-      "indexedAt": "2026-07-01T13:11:19.884Z",
-      "sourceMtime": 1780609945197.5305
+      "lineStart": 21,
+      "lineEnd": 21,
+      "indexedAt": "2026-07-04T15:29:37.787Z",
+      "sourceMtime": 1783178618587.4712
     },
     {
       "id": "ed006327dd5b9d068f16eca95d79e1ca6b5935c5f7a9c0b49301fbbc62c104fa",
@@ -7087,10 +7087,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow strContains(text: String, sub: String) -> Bool",
-      "lineStart": 8,
-      "lineEnd": 8,
-      "indexedAt": "2026-07-01T13:11:19.886Z",
-      "sourceMtime": 1782469910104.9478
+      "lineStart": 12,
+      "lineEnd": 12,
+      "indexedAt": "2026-07-04T15:29:37.789Z",
+      "sourceMtime": 1783178634001.9238
     },
     {
       "id": "7bac7ff02e3cedcddcd4d86ccafe418a0b58a9e2436684bfdda9910f5fa2a049",
@@ -7142,10 +7142,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow strStartsWith(text: String, prefix: String) -> Bool",
-      "lineStart": 16,
-      "lineEnd": 16,
-      "indexedAt": "2026-07-01T13:11:19.886Z",
-      "sourceMtime": 1782469910104.9478
+      "lineStart": 24,
+      "lineEnd": 24,
+      "indexedAt": "2026-07-04T15:29:37.789Z",
+      "sourceMtime": 1783178634001.9238
     },
     {
       "id": "8913d383f5e97312661362abc5e6328b887c438ffb32eba6017ec466037b4631",
@@ -7187,10 +7187,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow strLength(text: String) -> Int",
-      "lineStart": 24,
-      "lineEnd": 24,
-      "indexedAt": "2026-07-01T13:11:19.886Z",
-      "sourceMtime": 1782469910104.9478
+      "lineStart": 36,
+      "lineEnd": 36,
+      "indexedAt": "2026-07-04T15:29:37.789Z",
+      "sourceMtime": 1783178634001.9238
     },
     {
       "id": "692a1a0a93e4a0369e306475ff835560d5d31ad0b064342bbed71b796e39b129",
@@ -7230,10 +7230,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow mathMin(a: Int, b: Int) -> Int",
-      "lineStart": 33,
-      "lineEnd": 33,
-      "indexedAt": "2026-07-01T13:11:19.886Z",
-      "sourceMtime": 1782469910104.9478
+      "lineStart": 49,
+      "lineEnd": 49,
+      "indexedAt": "2026-07-04T15:29:37.789Z",
+      "sourceMtime": 1783178634001.9238
     },
     {
       "id": "f37620b1ea290d922c6b414c58ef2ce4abbaf2dfeb16f511889bc8d1c805112e",
@@ -7273,10 +7273,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow mathMax(a: Int, b: Int) -> Int",
-      "lineStart": 44,
-      "lineEnd": 44,
-      "indexedAt": "2026-07-01T13:11:19.886Z",
-      "sourceMtime": 1782469910104.9478
+      "lineStart": 64,
+      "lineEnd": 64,
+      "indexedAt": "2026-07-04T15:29:37.789Z",
+      "sourceMtime": 1783178634001.9238
     },
     {
       "id": "dfe7b2a76c7d52378d503fd8895bb059106e8edfd33cc32f3b124059517cb2bf",
@@ -7328,10 +7328,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow mathClamp(n: Int, lo: Int, hi: Int) -> Int",
-      "lineStart": 55,
-      "lineEnd": 55,
-      "indexedAt": "2026-07-01T13:11:19.886Z",
-      "sourceMtime": 1782469910104.9478
+      "lineStart": 79,
+      "lineEnd": 79,
+      "indexedAt": "2026-07-04T15:29:37.789Z",
+      "sourceMtime": 1783178634001.9238
     },
     {
       "id": "c40fcfc3a33a01afa2a0bc4847bd1b1b490f637caeca45a1eda60939e6974b55",
@@ -7471,10 +7471,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow stdlibDemo(readonly request: Request) -> StdlibResult",
-      "lineStart": 70,
-      "lineEnd": 70,
-      "indexedAt": "2026-07-01T13:11:19.886Z",
-      "sourceMtime": 1782469910104.9478
+      "lineStart": 98,
+      "lineEnd": 98,
+      "indexedAt": "2026-07-04T15:29:37.789Z",
+      "sourceMtime": 1783178634001.9238
     },
     {
       "id": "ed8745f2dd7f7c31b94e26410793a8974d782423b9b60bb9334c9d79aaa5ff18",
@@ -7543,10 +7543,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow isBuiltinType(name: String) -> Bool",
-      "lineStart": 13,
-      "lineEnd": 13,
-      "indexedAt": "2026-07-01T13:11:19.887Z",
-      "sourceMtime": 1782479001164.9358
+      "lineStart": 17,
+      "lineEnd": 17,
+      "indexedAt": "2026-07-04T15:29:37.790Z",
+      "sourceMtime": 1783178646705.8552
     },
     {
       "id": "5a3ea9929156e225c4438321644a4e145ddc1e88c96fdbb08e6e71d95a9997f1",
@@ -7627,10 +7627,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow typeCategory(name: String) -> String",
-      "lineStart": 30,
-      "lineEnd": 30,
-      "indexedAt": "2026-07-01T13:11:19.887Z",
-      "sourceMtime": 1782479001164.9358
+      "lineStart": 38,
+      "lineEnd": 38,
+      "indexedAt": "2026-07-04T15:29:37.790Z",
+      "sourceMtime": 1783178646705.8552
     },
     {
       "id": "16b962500d544cd4bd1de928b3ff4f9c7f7ff288ebc2ef0b35c1ad1524b6334c",
@@ -7814,10 +7814,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow resolveType(readonly request: Request) -> Response",
-      "lineStart": 52,
-      "lineEnd": 52,
-      "indexedAt": "2026-07-01T13:11:19.887Z",
-      "sourceMtime": 1782479001164.9358
+      "lineStart": 64,
+      "lineEnd": 64,
+      "indexedAt": "2026-07-04T15:29:37.790Z",
+      "sourceMtime": 1783178646705.8552
     },
     {
       "id": "8b89747782e6eaa5f0a484f4c201e677168ffbae784e4b48c0a8f2acafa3f39e",
@@ -7856,10 +7856,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow countServices() -> Int",
-      "lineStart": 8,
-      "lineEnd": 8,
-      "indexedAt": "2026-07-01T13:11:19.889Z",
-      "sourceMtime": 1782669678354.3667
+      "lineStart": 12,
+      "lineEnd": 12,
+      "indexedAt": "2026-07-04T15:29:37.792Z",
+      "sourceMtime": 1783178655424.2834
     },
     {
       "id": "84470b7112b21a981f6b921fde6997a4712a9c5e7243f1460d36859c5f506b82",
@@ -7896,10 +7896,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow runtimePercent() -> Int",
-      "lineStart": 17,
-      "lineEnd": 17,
-      "indexedAt": "2026-07-01T13:11:19.889Z",
-      "sourceMtime": 1782669678354.3667
+      "lineStart": 25,
+      "lineEnd": 25,
+      "indexedAt": "2026-07-04T15:29:37.792Z",
+      "sourceMtime": 1783178655424.2834
     },
     {
       "id": "a466394ac3b12d5eeeb612731443fbaeb0c649556294f0c8a4ba82b844725627",
@@ -7934,10 +7934,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow currentPhase() -> Int",
-      "lineStart": 26,
-      "lineEnd": 26,
-      "indexedAt": "2026-07-01T13:11:19.889Z",
-      "sourceMtime": 1782669678354.3667
+      "lineStart": 38,
+      "lineEnd": 38,
+      "indexedAt": "2026-07-04T15:29:37.792Z",
+      "sourceMtime": 1783178655424.2834
     },
     {
       "id": "8b68b4bc68a2e0e79ab888b8179a48a3b316e99cb2ef7c92d1b44b335259a0ce",
@@ -8073,10 +8073,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow v1RcStatus(readonly request: Request) -> RcStatusResult",
-      "lineStart": 34,
-      "lineEnd": 34,
-      "indexedAt": "2026-07-01T13:11:19.889Z",
-      "sourceMtime": 1782669678354.3667
+      "lineStart": 50,
+      "lineEnd": 50,
+      "indexedAt": "2026-07-04T15:29:37.792Z",
+      "sourceMtime": 1783178655424.2834
     },
     {
       "id": "42c9d6fe8ffa41e45b3aede73ad3bd1632f67724bc58405f6808a30720d4ce6a",
@@ -8137,10 +8137,10 @@
       ],
       "contractText": "",
       "signatureText": "pure flow classifyValue(typeName: String) -> Int",
-      "lineStart": 4,
-      "lineEnd": 4,
-      "indexedAt": "2026-07-01T13:11:19.890Z",
-      "sourceMtime": 1780651305388.8225
+      "lineStart": 8,
+      "lineEnd": 8,
+      "indexedAt": "2026-07-04T15:29:37.793Z",
+      "sourceMtime": 1783178673858.2397
     },
     {
       "id": "57a5f87d05b9fe4a3402dd88e9b514a057096814456447bac5cacfe228e5a0b7",
@@ -8173,10 +8173,10 @@
       ],
       "contractText": "",
       "signatureText": "pure flow requiresRedaction(classification: Int) -> Bool",
-      "lineStart": 14,
-      "lineEnd": 14,
-      "indexedAt": "2026-07-01T13:11:19.890Z",
-      "sourceMtime": 1780651305388.8225
+      "lineStart": 22,
+      "lineEnd": 22,
+      "indexedAt": "2026-07-04T15:29:37.793Z",
+      "sourceMtime": 1783178673858.2397
     },
     {
       "id": "1945646a5156ddb196adb153fd9e6c1969973437d6cb3ee2aee64cb10a1fe2f4",
@@ -8209,10 +8209,10 @@
       ],
       "contractText": "",
       "signatureText": "pure flow requiresEncryption(classification: Int) -> Bool",
-      "lineStart": 19,
-      "lineEnd": 19,
-      "indexedAt": "2026-07-01T13:11:19.890Z",
-      "sourceMtime": 1780651305388.8225
+      "lineStart": 31,
+      "lineEnd": 31,
+      "indexedAt": "2026-07-04T15:29:37.793Z",
+      "sourceMtime": 1783178673858.2397
     },
     {
       "id": "56cc621b9f776e94f5e7a8c942526a8935e9b8919bc2836d5e1d1b8560844e65",
@@ -8355,10 +8355,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow classifyData(readonly request: Request) -> Response",
-      "lineStart": 24,
-      "lineEnd": 24,
-      "indexedAt": "2026-07-01T13:11:19.890Z",
-      "sourceMtime": 1780651305388.8225
+      "lineStart": 40,
+      "lineEnd": 40,
+      "indexedAt": "2026-07-04T15:29:37.793Z",
+      "sourceMtime": 1783178673858.2397
     },
     {
       "id": "ed28cc815894d806791d94b00a432f2d581d54da5437da198a8970e50def1099",
@@ -8560,10 +8560,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow verifyPassword(readonly request: Request) -> VerifyPasswordResult",
-      "lineStart": 9,
-      "lineEnd": 9,
-      "indexedAt": "2026-07-01T13:11:19.892Z",
-      "sourceMtime": 1780650804098.3777
+      "lineStart": 13,
+      "lineEnd": 13,
+      "indexedAt": "2026-07-04T15:29:37.794Z",
+      "sourceMtime": 1783178676198.698
     },
     {
       "id": "daa6897fbfb81132300bc4182a69badc48784852dc0634815ef2a0aa6d4eae5b",
@@ -8600,10 +8600,10 @@
       ],
       "contractText": "",
       "signatureText": "pure flow fixtureHash() -> String",
-      "lineStart": 18,
-      "lineEnd": 18,
-      "indexedAt": "2026-07-01T13:11:19.892Z",
-      "sourceMtime": 1780571699459.7202
+      "lineStart": 23,
+      "lineEnd": 23,
+      "indexedAt": "2026-07-04T15:29:37.795Z",
+      "sourceMtime": 1783178680852.7366
     },
     {
       "id": "b886446cd4f5a8e96fa2b2afec690705e6e779afd2c2a5b923e66af4a5ac6c54",
@@ -8703,10 +8703,10 @@
       ],
       "contractText": "contract {",
       "signatureText": "secure flow verifyPassword(readonly request: Request) -> Response",
-      "lineStart": 25,
-      "lineEnd": 25,
-      "indexedAt": "2026-07-01T13:11:19.892Z",
-      "sourceMtime": 1780571699459.7202
+      "lineStart": 34,
+      "lineEnd": 34,
+      "indexedAt": "2026-07-04T15:29:37.795Z",
+      "sourceMtime": 1783178680852.7366
     },
     {
       "id": "709f8d37fc357a19560f806e40cef509655afedc81319487ffd7c1b9faad7588",
@@ -8761,45 +8761,45 @@
       ],
       "contractText": "contract {",
       "signatureText": "pure flow verifyToken(token: String) -> VerifyTokenResult",
-      "lineStart": 5,
-      "lineEnd": 5,
-      "indexedAt": "2026-07-01T13:11:19.893Z",
-      "sourceMtime": 1780571638241.5642
+      "lineStart": 9,
+      "lineEnd": 9,
+      "indexedAt": "2026-07-04T15:29:37.796Z",
+      "sourceMtime": 1783178682587.7422
     }
   ],
   "fileHashes": {
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\auditChainService.fungi": "f1f56b26714bd1cd7857e3fac48b6e0cb9fe452352087307b808ecd66df5e6e7",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\auditWriterService.fungi": "209688bab8b35179321f41743b4ca66c81aaaa16745e24db5cd3a3ea70e85595",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\bytecodeRouterService.fungi": "28413f72fc12fc146a766a362362568b321ea2448d46481d7f3063c93bcd5a98",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\capabilityHostService.fungi": "eb85d75196c8b16c6ebb919735d10cf55a364c459f24a47bed5e32613cda611f",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\capabilityResolverService.fungi": "a546fdda1af1a819aae91cdcc2e9926c6dcc0a49f31a3a16e94006aef6847444",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\compilationService.fungi": "a847ad29dc29af9724976454bdeb9e45270510569aef7a7a2841e25a870451b8",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\createSession.fungi": "fab62f72837751edff1e2ec76419ed9d98d0a7c500fe95bdb3e97603b9bef065",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\economicsRouterService.fungi": "e02104b1c89f5b5ed731908ea175964a83627ea28f16b00f4617e0fbe8638b1f",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\economicsService.fungi": "822b390bdbdbe66d798179f7c9f7f8c81dac679d8bed5458274e9b8fd7892424",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\effectCheckerService.fungi": "37a9ed85eed55bca3b5f84e63571545929a94e9f712ea958ed36921197d6c4ae",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\governanceService.fungi": "f160811442a2a0cebc5eb5d2f6fa50763301502acd3d3d9ddcbefad396993b54",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\governanceVerifierService.fungi": "a7512789e8e57d0f9a9a339f076a6a5accc680aeb3977a52ef4d492daf433d7e",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\healthCheck.fungi": "7346bbd4d85742c3a928232fc49b384c84cc6ccd16c27269120bda929564c143",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\manifestVerificationService.fungi": "b7f0c95aeda5f6d60e770056173a720b02b286686b9252aeb6da836fbedf6dd7",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\physicalHardeningAutoDefault.fungi": "d62417ee7e850b15952d2d2a5764c31491c47abfd8992af58d1ad5d9fcfdd704",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\physicalHardeningTier1.fungi": "1b062c8516dcde0fe6cbb1d36cc401d14270f9a7a4cd6709739222f68e27a3d7",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\physicalHardeningTier2.fungi": "bfd762d85d5b422298afd332aa296a395db3d1544d43db53e569d16028a20618",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\proofGraphService.fungi": "784eba4b7a7fd188e57235c8c40aa2cce37900d886ce0390550dde6c0596d8b8",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\proofVerifierService.fungi": "baa7d0c5b3e9a93286facd858ae981f4426c11de471f431c95741aaa8eb05c44",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\rateStatus.fungi": "0a4ec378f87f4ccbd22037af8255b9d61235017f201639cf41a5cbbfba850570",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\routeDispatcherService.fungi": "5404ae4ff1a1c2272d7aad05aee7c4737c431d98309e8713d3d4a3e45d598b40",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\routingPolicyService.fungi": "77c5bcde9d850b7a512dac6d75b09aa6bf53a169fab0d4c6b9e9b47194e49f73",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\runtimeProfileService.fungi": "d3d31c23990829d214485b1fce24ba27f11eff58fd03f7b773c09c6f9c34c111",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\sovereignTransaction.fungi": "d54a48df8d68bfaf572c06a00674c478b123866740b2e8463f8f7397d6dd28c0",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\stdlibCoreService.fungi": "06928b42620f0958ad7618084bb3d227f45ac2a66f72e38481e4886686e1640c",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\typeRegistryService.fungi": "21e8076fd41f885ec2eb6942650a2ad22d295d3d21f104967845c07a973cd506",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\v1RcStatusService.fungi": "52f06ce6ae137f9b3619829dcfdc8762b134343f01ae75f94b2a0a69f8c23d69",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\valueClassificationService.fungi": "af7aeca3a7348df8bce641f23dba39469b3decdffe11069428113186248391b2",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\verifyPassword.fungi": "265c1188031dfc49289fe46817db24e63eb1c49083851242f49b77c3ebc152fd",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\verifyPasswordService.fungi": "9d8c819600c47fd0cf2f783e5ab70e80acf30a7a57e3e89634fed599b2f9fea6",
-    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\verifyToken.fungi": "232098eea4eb3358b61c0a710686827551e62a9e37ec4a30f708b6afda76c391"
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\auditChainService.fungi": "81e807cc3866b8d99b70af8ba9224199dc6ce5913cdacbc0c5472be8bc0a4412",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\auditWriterService.fungi": "889a93934e2a4aa6e8f793982b1e17dfa8b7437aa7209dabe2998a0aa241b480",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\bytecodeRouterService.fungi": "9ed76e7b9d4dc5e911f1a0f9d28133ca42d0528ed27d61dd9ac3f6c70f6c9f19",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\capabilityHostService.fungi": "f1ececd605e58e9e5d0be61deecb5fe2f2d86e53d94a4f4448e7b2802220b2df",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\capabilityResolverService.fungi": "37c6a004e3f4f005ea8960ce615fc9dec2299126e6672f20f445c0b947ffd229",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\compilationService.fungi": "8ac85938cb292831437c7ba9c089c6fc8fefdfaf43ca4e8fcf0241eafd754ed8",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\createSession.fungi": "12787d7c9ce077fb26e6ce39b2cb3653963865ed2fba8c9689c9d271c70425a7",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\economicsRouterService.fungi": "2563ae20e5b1af690f68bd288afe8ac251e1efe74705e4d0c21e814a75997eec",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\economicsService.fungi": "b6dfab82da6d048e9806b91e04abac43fb0bc32bf7df0af1ee65562b5d07b33a",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\effectCheckerService.fungi": "848e3bf6d138aea146215ef37fe00bc69de94f08213f6b06efddc549ef125415",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\governanceService.fungi": "0f32a78330734925a34887b75cc4d07e9b02792848dd5010331f5cdb87fdb70f",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\governanceVerifierService.fungi": "1529ea0ed8fbc9f2f804658fef507a7f7a7c312b9d76c86afc09eb61993a141d",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\healthCheck.fungi": "68b86729214495b3b1d0d5235d79199e031c33ebd9f68094f5d3cc8b894edbb0",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\manifestVerificationService.fungi": "bc1c93cdcec762ecd1f0826815fe6c579615eb4f7a226744bcd6b6cc061a7ebb",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\physicalHardeningAutoDefault.fungi": "5a761a9b5b16b98c5b5708e53a177b3231689cacba1e67467875f33d7eb464c2",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\physicalHardeningTier1.fungi": "ea4cdd3a40607062a94335b4806d8293c0caf568d48d7ec047170b9942ab151c",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\physicalHardeningTier2.fungi": "c200bd8b1669d25572ca00eec0676a59487a2e62555a067c33ff7480d068d2fd",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\proofGraphService.fungi": "b5090cffe86611cbf40f64e14906e48f99d6dc788b57685e1888898232fe5f29",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\proofVerifierService.fungi": "64f9afec8e0828012dcbcb1e772698a79fedd3177a0990aef89cb4ebe2e863e1",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\rateStatus.fungi": "9a57d013f2e2d4d4cce61e65b9a00b38b4708f0176b2ac5f9fd3ad015811b9de",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\routeDispatcherService.fungi": "b288f3e6fc76c12ac8ed5536f862358d22355a53d317bc8a610df040b447e0c6",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\routingPolicyService.fungi": "ed93c1ee38f824ee28f70942bc02af64c9023d93406c6154f58d46bd087067a4",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\runtimeProfileService.fungi": "56bc8088251208cf3890c7b19735ec7e70ed7c84ce1d47d28fdcef9073ce8539",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\sovereignTransaction.fungi": "db88d1eaee9de2b1e8ee264f34edbdc74649a43d3e5802b82d9220c35c601a91",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\stdlibCoreService.fungi": "e4bb7b3702035b6ad8207e38489787e7b84718b683880800ceb7115de4806bb3",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\typeRegistryService.fungi": "9175936ad83c95656695b3e852c3580674118a29096a64ce0dc0ae3f00f779e7",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\v1RcStatusService.fungi": "0a55503f95ba053f1b637e32f51066479914eba843991baf5e5b54f55ca4adaf",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\valueClassificationService.fungi": "36c5c2b2994384727c83889232b2c9a8d983b9528cd93fb37924af9afa0b1ea1",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\verifyPassword.fungi": "79954e2a6ff76d1bc9dd6e76d73c163776bb02cde4010131564b6580f8836d69",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\verifyPasswordService.fungi": "50cb50d271c1dc866518ee0540adc6afed3748461b6c618a9ad4316783fa73ce",
+    "C:\\wwwprojects\\Galerina\\examples\\auth-service\\verifyToken.fungi": "40b24b35bcb67fb790fbfb6869d1f93731f87143b5c5e58d81af6a2a81458f5a"
   },
   "skippedFiles": 31,
-  "integrity": "sha256:f2cf1c487937fb1af0d23374ae3e6482fa934466b77f1ee95a28dc244541d167"
+  "integrity": "sha256:76bacf17d9c0e486f7614543e446a750b07ba745173b9ea4057a123fb679cae2"
 }

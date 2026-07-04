@@ -5,6 +5,8 @@
 
 ;; Checks that an email is well-formed (Stage A: non-empty); safe to import anywhere.
 ;; Pure — no runtime authority / no effects.
+// @cause  [registerUser flow (multi-file-import.fungi)] -> called via the DAG-merged import.
+// @effect [Verdict only] -> returns Bool; no state is mutated.
 pure flow validateEmail(email: String) -> Bool
 contract {
   intent "Check email format is valid"
@@ -20,6 +22,8 @@ contract {
 ;; Checks an age falls within the acceptable range; safe to import anywhere.
 ;; Pure — no runtime authority / no effects.
 ;; Proof obligation: age >= 0 and age <= 150
+// @cause  [registerUser flow (multi-file-import.fungi)] -> called via the DAG-merged import.
+// @effect [Verdict only] -> returns Bool; no state is mutated.
 pure flow validateAge(age: Int) -> Bool
 contract {
   intent "Check age is within acceptable range"

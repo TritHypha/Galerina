@@ -20,11 +20,27 @@
  *
  * Rule of thumb: if the note explains WHY the code is safe/permitted, use ;;.
  * If it explains HOW the code works, use // or a block comment.
+ *
+ * On top of these, the Galerina Standard Comment Model (GSCM, notes/77-mesh-r-d-11.md)
+ * adds three STRUCTURED tags, written as line comments with an @ tag, placed between
+ * the ;; block and the flow keyword:
+ *
+ *   // @cause  [Trigger System/Event] -> what invokes this flow.
+ *   // @effect [Target State/System]  -> the final modified state/outcome on ALLOW.
+ *   // @todo   [Assignee/Context]     -> genuinely unfinished work ONLY — never fabricate.
+ *
+ * They are deliberately // (not ;; and not ///): machine-greppable via the @ prefix,
+ * but DISCARDED at parse — a @todo must never enter the signed manifest or the API docs.
+ * NOTE: @effect narrates the OUTCOME; it is not the effects{} contract clause (which
+ * grants capabilities and is compiler-enforced). Never let an @effect comment claim
+ * more than the contract permits.
  */
 
 ;; This flow handles payment validation for the Tower's Floor 3 (Proof Zone)
 ;; V_DPM capability required: audit.write (bit 3)
 ;; Proof obligation: amount > 0 must be statically verified
+// @cause  [Checkout pipeline] -> invoked before any charge is attempted.
+// @effect [Verdict only] -> returns Bool; no state is mutated on any path.
 governed floor_3 flow validatePaymentAmount(amount: Int, currency: String) -> Bool
 contract {
   intent "Validate payment amount in the Proof Zone"

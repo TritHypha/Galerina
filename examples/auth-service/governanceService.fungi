@@ -13,6 +13,8 @@
 ;; Pure — no runtime authority / no effects.
 // Maps an effect qualifier string to a governance level integer.
 // 0 = none (unknown), 1 = guarded, 2 = secure, 3 = critical
+// @cause  [Called by verifyGovernance] -> grades each submitted effect qualifier.
+// @effect [Verdict only] -> returns the governance level Int (0=none..3=critical); no state is mutated.
 pure flow governanceLevel(effectTag: String) -> Int
 contract {
   intent { "Map an effect qualifier to a governance level (0=none,1=guarded,2=secure,3=critical)." }
@@ -30,6 +32,8 @@ contract {
 ;; Returns true when a governance level (>= 2) mandates an audit trail — pure predicate, safe with no authority.
 ;; Pure — no runtime authority / no effects.
 // Returns true if the given governance level requires an audit trail.
+// @cause  [Called by verifyGovernance] -> decides the audit mandate for the computed level.
+// @effect [Verdict only] -> returns Bool (audit trail required at level >= 2); no state is mutated.
 pure flow requiresAuditForLevel(level: Int) -> Bool
 contract {
   intent { "Return true when the governance level mandates audit logging (level >= 2)." }
@@ -44,6 +48,8 @@ contract {
 ;; Verifies an untrusted flow's governance level against its declared qualifier, writing a redacted audit entry — permitted because tainted inputs are redacted before the write.
 ;; V_DPM capability required: network.inbound, audit.write
 // HTTP endpoint: verify a flow's governance level against its declared qualifier
+// @cause  [Auth service route POST /governance/verify] -> invoked for each governance verification request.
+// @effect [Audit log] -> one redacted GovernanceVerify entry written via AuditLog.write; response returns level + audit mandate.
 secure flow verifyGovernance(readonly request: Request) -> Response
 contract {
   intent { "Verify a flow's governance level against its declared effect qualifier." }

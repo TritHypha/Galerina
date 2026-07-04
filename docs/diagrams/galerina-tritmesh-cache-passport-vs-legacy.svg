@@ -1,0 +1,94 @@
+<svg width="100%" viewBox="0 0 760 540" xmlns="http://www.w3.org/2000/svg" role="img" font-family="ui-sans-serif, system-ui, sans-serif">
+<title>TritMesh — the .spore-passport cache vs. legacy caching</title>
+<desc>How a SECOND user's request is handled on a cache HIT. Redis/Memcached cache the answer, so a co-user of the key sees the first user's data (ambient authority, RLS bypassed). SQL row-level security re-checks per query but the cache sits outside RLS. TritMesh caches only the graph TOPOLOGY (the 0-state, no answer) and RE-AUTHORIZES every request by intersecting it with the requester's .spore capability matrix via the K3 min-fold (S⊗C=min), so a cache hit never bypasses the gate. The honest guarantee is cache-transparency (verdict identical cache-on vs cache-off), NOT "impossible to leak": the cached topology is metadata and hit/miss is a presence oracle, both mitigated (constant-time, per-tenant cache-colouring, zero-wipe, TTL/per-tenant-LRU) but not eliminated (ORAM-hard). Reference-proven, not wired; HMAC stand-in.</desc>
+<defs>
+  <marker id="qa" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+</defs>
+
+<text x="28" y="28" font-size="16" font-weight="700" fill="#1c2128">TritMesh — the <tspan font-family="ui-monospace, monospace">.spore</tspan> passport cache vs. legacy caching</text>
+<text x="28" y="47" font-size="11" fill="#5a6470">What a SECOND user gets on a cache HIT · red = leak · amber = bypass/slow · teal = re-authorized every request</text>
+
+<!-- ===================== COLUMN A — Redis / Memcached ===================== -->
+<rect x="28" y="60" width="226" height="34" rx="8" fill="#fbe9e7" stroke="#c0392b" stroke-width="1.6"/>
+<text x="141" y="78" text-anchor="middle" font-size="12.5" font-weight="700" fill="#922b21">Redis / Memcached</text>
+<text x="141" y="90" text-anchor="middle" font-size="9" fill="#a13a2c">cache the ANSWER (flat bytes)</text>
+
+<rect x="28" y="100" width="226" height="36" rx="7" fill="#fdf3f2" stroke="#c0392b" stroke-width="1.1"/>
+<text x="141" y="122" text-anchor="middle" font-size="10" fill="#922b21">① query runs → result computed</text>
+
+<rect x="28" y="140" width="226" height="40" rx="7" fill="#fdf3f2" stroke="#c0392b" stroke-width="1.1"/>
+<text x="141" y="158" text-anchor="middle" font-size="10" fill="#922b21">② key holds the flat answer</text>
+<text x="141" y="173" text-anchor="middle" font-size="9.5" fill="#a13a2c" font-family="ui-monospace, monospace">A → { ssn, billing }</text>
+
+<rect x="28" y="184" width="226" height="62" rx="7" fill="#f7d9d5" stroke="#c0392b" stroke-width="1.6"/>
+<text x="141" y="205" text-anchor="middle" font-size="10.5" font-weight="700" fill="#922b21">③ user B hits the SAME key</text>
+<text x="141" y="223" text-anchor="middle" font-size="11" font-weight="700" fill="#922b21">B sees A's data</text>
+<text x="141" y="239" text-anchor="middle" font-size="9" fill="#a13a2c">RLS never consulted</text>
+
+<rect x="28" y="270" width="226" height="46" rx="8" fill="#fbe9e7" stroke="#c0392b" stroke-width="1.6"/>
+<text x="141" y="290" text-anchor="middle" font-size="11" font-weight="700" fill="#922b21">✗ Ambient authority</text>
+<text x="141" y="306" text-anchor="middle" font-size="9.5" fill="#a13a2c">the cache bypasses the security check</text>
+
+<!-- ===================== COLUMN B — SQL + RLS ===================== -->
+<rect x="267" y="60" width="226" height="34" rx="8" fill="#fcf0d9" stroke="#c08a2e" stroke-width="1.6"/>
+<text x="380" y="78" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6b4e15">SQL DB + Row-Level Security</text>
+<text x="380" y="90" text-anchor="middle" font-size="9" fill="#7d5e1d">RLS re-checks — but the cache doesn't</text>
+
+<rect x="267" y="100" width="226" height="36" rx="7" fill="#fbf4e6" stroke="#c08a2e" stroke-width="1.1"/>
+<text x="380" y="122" text-anchor="middle" font-size="10" fill="#6b4e15">① RLS re-checks identity per query ✓</text>
+
+<rect x="267" y="140" width="226" height="40" rx="7" fill="#fbf4e6" stroke="#c08a2e" stroke-width="1.1"/>
+<text x="380" y="158" text-anchor="middle" font-size="10" fill="#6b4e15">② …but the cache sits OUTSIDE RLS</text>
+<text x="380" y="173" text-anchor="middle" font-size="9.5" fill="#7d5e1d">the answer is cached post-check</text>
+
+<rect x="267" y="184" width="226" height="62" rx="7" fill="#f8e4bf" stroke="#c08a2e" stroke-width="1.4"/>
+<text x="380" y="206" text-anchor="middle" font-size="10.5" font-weight="700" fill="#6b4e15">③ hit ⇒ RLS skipped</text>
+<text x="380" y="223" text-anchor="middle" font-size="10.5" font-weight="700" fill="#6b4e15">miss ⇒ full re-scan (slow)</text>
+<text x="380" y="239" text-anchor="middle" font-size="9" fill="#7d5e1d">pick one</text>
+
+<rect x="267" y="270" width="226" height="46" rx="8" fill="#fcf0d9" stroke="#c08a2e" stroke-width="1.6"/>
+<text x="380" y="290" text-anchor="middle" font-size="11" font-weight="700" fill="#6b4e15">◑ Fast-but-bypassed</text>
+<text x="380" y="306" text-anchor="middle" font-size="9.5" fill="#7d5e1d">…or secure-but-slow</text>
+
+<!-- ===================== COLUMN C — TritMesh ===================== -->
+<rect x="506" y="60" width="226" height="34" rx="8" fill="#e3f5f2" stroke="#2b8a7e" stroke-width="1.8"/>
+<text x="619" y="78" text-anchor="middle" font-size="12.5" font-weight="700" fill="#14534b">TritMesh — <tspan font-family="ui-monospace, monospace">.spore</tspan> passport</text>
+<text x="619" y="90" text-anchor="middle" font-size="9" fill="#1f6b60">cache the TOPOLOGY, re-authorize each hit</text>
+
+<rect x="506" y="100" width="226" height="36" rx="7" fill="#eef7f5" stroke="#2b8a7e" stroke-width="1.1"/>
+<text x="619" y="116" text-anchor="middle" font-size="10" fill="#14534b">① <tspan font-family="ui-monospace, monospace">.spore</tspan> verify — Ed25519 ‖ ML-DSA</text>
+<text x="619" y="130" text-anchor="middle" font-size="9" fill="#1f6b60">invalid ⇒ −1 (annihilate)</text>
+
+<rect x="506" y="140" width="226" height="40" rx="7" fill="#eef7f5" stroke="#2b8a7e" stroke-width="1.1"/>
+<text x="619" y="158" text-anchor="middle" font-size="10" fill="#14534b">② cache holds TOPOLOGY only (0-state)</text>
+<text x="619" y="173" text-anchor="middle" font-size="9.5" fill="#1f6b60">geometry, never the answer</text>
+
+<rect x="506" y="184" width="226" height="62" rx="7" fill="#d3ede8" stroke="#2b8a7e" stroke-width="1.6"/>
+<text x="619" y="204" text-anchor="middle" font-size="10.5" font-weight="700" fill="#14534b">③ re-authorize per request</text>
+<text x="619" y="221" text-anchor="middle" font-size="10.5" font-weight="700" fill="#14534b" font-family="ui-monospace, monospace">S ⊗ C = min</text>
+<text x="619" y="238" text-anchor="middle" font-size="9" fill="#1f6b60">B's capability carves away denied nodes</text>
+
+<rect x="506" y="270" width="226" height="46" rx="8" fill="#e3f5f2" stroke="#2b8a7e" stroke-width="1.8"/>
+<text x="619" y="290" text-anchor="middle" font-size="11" font-weight="700" fill="#14534b">✓ No ambient bypass</text>
+<text x="619" y="306" text-anchor="middle" font-size="9.5" fill="#1f6b60">the cache re-authorizes EVERY request</text>
+
+<!-- down-arrows into verdicts -->
+<path d="M141 250 L141 266" fill="none" stroke="#c0392b" stroke-width="1.8" marker-end="url(#qa)"/>
+<path d="M380 250 L380 266" fill="none" stroke="#c08a2e" stroke-width="1.8" marker-end="url(#qa)"/>
+<path d="M619 250 L619 266" fill="none" stroke="#2b8a7e" stroke-width="1.8" marker-end="url(#qa)"/>
+
+<!-- ===================== GUARANTEE bar ===================== -->
+<rect x="28" y="332" width="704" height="44" rx="10" fill="#e8effb" stroke="#3b6fd4" stroke-width="1.6"/>
+<text x="380" y="352" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1f3a6b">The guarantee — cache-transparency (RD-0254 C2): the verdict is IDENTICAL cache-on vs cache-off.</text>
+<text x="380" y="368" text-anchor="middle" font-size="10" fill="#3a5285">The cache changes the speed, never the security · GateCache #194: cache the rules, never the ruling · operator = K3 <tspan font-weight="700">min</tspan>, not multiply (RD-0253)</text>
+
+<!-- ===================== HONEST BOUND bar ===================== -->
+<rect x="28" y="384" width="704" height="60" rx="10" fill="#f3eefa" stroke="#7a5bb0" stroke-width="1.6"/>
+<text x="380" y="404" text-anchor="middle" font-size="11.5" font-weight="700" fill="#43306b">Honest bound (RD-0255) — this is NOT "side-channel proof"</text>
+<text x="380" y="421" text-anchor="middle" font-size="10" fill="#5a4584">the cached topology is metadata · hit/miss is a presence oracle — both MITIGATED, not eliminated:</text>
+<text x="380" y="437" text-anchor="middle" font-size="10" fill="#5a4584">constant-time (FUNGI-SECRET-004) · per-tenant cache-colouring (RD-0170) · zero-wipe · TTL / per-tenant-LRU (never a global spore-LRU) · full hiding is ORAM-hard</text>
+
+<!-- ===================== footer ===================== -->
+<text x="380" y="466" text-anchor="middle" font-size="10" font-weight="600" fill="#14534b">Reachability-as-authorization: no edge = no reach (RD-0150) · sign the graph (RD-0167) · topology ≠ authority — the keyed capability decides (RD-0169)</text>
+<text x="380" y="485" text-anchor="middle" font-size="9.5" fill="#8a94a0">[DESIGN] reference-proven — graph-spine 26/26 · tritmesh-cache 28/28 · keep-green 0 RED. NOT wired to a running engine; crypto is an HMAC stand-in (Ed25519 = production).</text>
+</svg>

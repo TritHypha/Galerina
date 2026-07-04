@@ -10,6 +10,8 @@
 
 ;; This flow calls an AI model under full governance.
 ;; Every call produces an AuditEvent (CBOR Tag 410) in the Tower ledger.
+// @cause  [galerina infer CLI] -> governed inference request for a document summary.
+// @effect [Tower audit ledger] -> inference runs under ai.inference and an AuditEvent is recorded; returns the summary.
 secure flow summariseDocument(documentText: String, maxLength: Int) -> Result<String, Error>
 contract {
   intent "Summarise a document using governed inference"

@@ -7,6 +7,8 @@
 
 ;; Computes a satellite maneuver plan within mission, fuel, timing and orbital constraints; permitted because inputs are validated and the maneuver is constraint-verified before the audit write, under deterministic bounded-runtime safety.
 ;; V_DPM capability required: mission.read, orbit.compute, propulsion.plan, audit.write
+// @cause  [Mission-control planning cycle] -> ground operations submits a MissionPlan for the next maneuver window.
+// @effect [AuditLog + caller] -> a constraint-verified ManeuverPlan is returned and one SatelliteManeuverPlanned audit entry is written; propulsion is planned only, no burn is commanded.
 secure flow planSatelliteManeuver(readonly mission: MissionPlan) -> Result<ManeuverPlan, MissionError>
 contract {
   intent {

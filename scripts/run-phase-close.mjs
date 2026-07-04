@@ -245,6 +245,13 @@ run("fungi:runtime", "node", ["scripts/audit-fungi-runtime.mjs", "--soft"]);
 // compiler-enforced `@oblivious` lowering stays OWNER-GATED. Report-only (--soft).
 run("oblivious", "node", ["scripts/audit-oblivious.mjs", "--soft"]);
 
+// ── 5c-vi. GSCM comment-coverage audit (RD-0265, 2026-07-04) ──
+// Proves every example flow carries the agreed comment model: the `;;` govComment block (signed →
+// .lmanifest) + the GSCM tags `// @cause` / `// @effect` (`// @todo` counted, never required — never
+// fabricated). Scans examples/ only — the byte-locked self-hosted corpus retrofit stays owner-gated
+// (task #12). Report-only (--soft) so coverage can't silently regress unnoticed.
+run("gscm", "node", ["scripts/audit-gscm.mjs", "--soft"]);
+
 // ── 5c-ii-bis. RD-0234b — the two dev-tools the ZT-tooling audit recommended (2026-07-02) ──
 // checker:wiring — every EXPORTED checker has a real pipeline call-site (the dead-gate class:
 //   checkTaint / checkMonkeyPatching / checkAttributeDirectives each had ZERO call-sites before the fix).

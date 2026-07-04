@@ -8,6 +8,8 @@ type SessionError = enum { InvalidToken SessionLimitReached }
 
 ;; Creates a session for a verified user from the request token, denying the sessionId as PII in the response and reporting to audit — permitted because the sessionId is redacted before it is logged.
 ;; V_DPM capability required: database.write, audit.write
+// @cause  [Auth service login pipeline] -> invoked for a verified user after token verification; no route is bound in this example corpus.
+// @effect [Session store + audit log] -> persists the new session (database.write) and writes a SessionCreated entry with the sessionId redacted.
 secure flow createSession(readonly request: Request) -> CreateSessionResult
 contract {
   intent { "Create a new session for a verified user." }

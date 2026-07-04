@@ -3,6 +3,8 @@
 
 ;; Chooses the best execution tier for a flow from its effect count, AI use, and criticality; safe as a pure decision over booleans and an integer.
 ;; Pure — no runtime authority / no effects.
+// @cause  [resolveRoute] -> called to pick the execution tier from the flow's properties.
+// @effect [Verdict only] -> returns the tier name String; no state mutated.
 pure flow preferredTier(effectCount: Int, hasAI: Bool, isCritical: Bool) -> String
 contract {
   intent { "Choose the best execution tier for a flow given its properties." }
@@ -16,6 +18,8 @@ contract {
 
 ;; Maps a tier name to its governance class rank (enclave highest, 0 unknown); safe as a pure lookup with no side effects.
 ;; Pure — no runtime authority / no effects.
+// @cause  [resolveRoute] -> called to rank the chosen tier's governance class.
+// @effect [Verdict only] -> returns the class rank Int (4..0); no state mutated.
 pure flow tierGovernanceClass(tier: String) -> Int
 {
   if tier.contains("enclave") { return 4 }
@@ -27,6 +31,8 @@ pure flow tierGovernanceClass(tier: String) -> Int
 
 ;; Resolves the execution route and tier for a flow from its routing policy; permitted because the untrusted effect count is trapped-on-negative and the derived tier redacted before the audit write.
 ;; V_DPM capability required: network.inbound, audit.write
+// @cause  [POST /routing/resolve] -> HTTP route invokes this governed endpoint with flow routing properties.
+// @effect [Audit log] -> appends a "RouteDecision" event (tier redacted); returns the tier and governance-class decision.
 secure flow resolveRoute(readonly request: Request) -> Response
 contract {
   intent { "Resolve the execution route and tier for a flow from its routing policy." }

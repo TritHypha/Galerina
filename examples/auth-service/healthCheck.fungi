@@ -6,6 +6,8 @@ type HealthStatus = Result<HealthReport,String>
 
 ;; Liveness probe returning fixed runtime/governance status with a lightweight info-level audit entry — safe because it reads no request data and exposes only constant status fields.
 ;; V_DPM capability required: network.inbound, audit.write
+// @cause  [Auth service route GET /health] -> invoked by liveness probes; safe at high frequency.
+// @effect [Audit log] -> one info-level HealthCheck entry written via AuditLog.write; response returns constant status fields.
 secure flow healthCheck(readonly request: Request) -> HealthStatus
 contract {
   intent "Liveness probe — returns runtime version, governance status, and uptime. Safe to call at high frequency. No authentication required. Audit is lightweight (info level)."

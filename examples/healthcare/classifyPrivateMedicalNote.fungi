@@ -12,6 +12,8 @@
 
 ;; Classifies a protected medical note on-device via the Apple Neural Engine so PHI never leaves the device; permitted because the note is boundary-protected before inference and the audit record is redacted.
 ;; V_DPM capability required: phi.read, ai.inference, audit.write
+// @cause  [On-device clinical-notes workflow] -> a clinician requests local tag classification of a protected medical note.
+// @effect [Device-local AuditLog + caller] -> one redacted PrivateMedicalNoteClassified audit entry is written and the caller receives a ClinicalTagReport; nothing leaves the device.
 secure flow classifyPrivateMedicalNote(
   readonly note: Protected<MedicalNote>
 ) -> Result<ClinicalTagReport, ClinicalInferenceError>

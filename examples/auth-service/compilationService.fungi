@@ -12,6 +12,8 @@
 
 ;; Routes untrusted submitted source through the Stage B tokenizer and returns a redacted summary, writing a redacted audit entry — permitted because tainted derived values are redacted before the write.
 ;; V_DPM capability required: network.inbound, audit.write
+// @cause  [Auth service route POST /compile/tokenize] -> invoked for each source tokenization request.
+// @effect [Audit log] -> one redacted CompileRequest entry written via AuditLog.write; response returns the token-stream summary.
 secure flow tokenizeSource(readonly request: Request) -> Response
 contract {
   intent { "Tokenize submitted Galerina source and summarise the governed token stream." }

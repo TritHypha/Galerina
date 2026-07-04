@@ -7,6 +7,8 @@ type CapabilityResolveResult = Result<Response, String>
 ;; Reports whether a named effect capability is available in this deployment — pure lookup, safe with no authority.
 ;; Pure — no runtime authority / no effects.
 // Check if a named effect is available in the current deployment
+// @cause  [Called by resolveCapability] -> checks deployment availability of each requested effect.
+// @effect [Verdict only] -> returns Bool (capability available); no state is mutated.
 pure flow isEffectAvailable(effectName: String) -> Bool
 contract {
   intent { "Check if a declared effect capability is available in this deployment." }
@@ -27,6 +29,8 @@ contract {
 ;; Returns the execution tier (cpu/enclave/denied) where a given effect is permitted to run — pure lookup, safe with no authority.
 ;; Pure — no runtime authority / no effects.
 // Return the deployment tier for a given effect (governs where it runs)
+// @cause  [Called by resolveCapability] -> maps each requested effect to its execution tier.
+// @effect [Verdict only] -> returns a tier label (cpu|enclave|denied); no state is mutated.
 pure flow effectTier(effectName: String) -> String
 contract {
   intent { "Return the execution tier for a given effect. Governance decides. Economics optimises." }
@@ -45,6 +49,8 @@ contract {
 ;; Resolves an untrusted capability-name request into availability and tier, writing a redacted audit entry — permitted because the tainted effect name is redacted before the write.
 ;; V_DPM capability required: network.inbound, audit.write
 // HTTP endpoint: resolve a capability by name
+// @cause  [Auth service route POST /capability/resolve] -> invoked for each capability resolution request.
+// @effect [Audit log] -> one redacted CapabilityResolved entry written via AuditLog.write; response returns availability + tier.
 secure flow resolveCapability(readonly request: Request) -> CapabilityResolveResult
 contract {
   effects {

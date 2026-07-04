@@ -84,6 +84,15 @@ flowchart LR
   T_audit_graph_integrity_mjs --> C_governance
   T_audit_graph_integrity_mjs --> C_diagnostics
   T_audit_graph_integrity_mjs --> C_graph_index
+  T_audit_gscm_mjs["audit-gscm.mjs"]
+  T_audit_gscm_mjs --> C_effects
+  T_audit_gscm_mjs --> C_signing_fusion
+  T_audit_gscm_mjs --> C_governance
+  T_audit_gscm_mjs --> C_gate_wiring
+  T_audit_gscm_mjs --> C_coverage
+  T_audit_gscm_mjs --> C_diagnostics
+  T_audit_gscm_mjs --> C_tier_floor
+  T_audit_gscm_mjs --> C_teaching_corpus
   T_audit_mutation_mjs["audit-mutation.mjs"]
   T_audit_mutation_mjs --> C_mutation_testing
   T_audit_mutation_mjs --> C_graph_index

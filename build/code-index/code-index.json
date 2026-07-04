@@ -6671,7 +6671,7 @@
       "ref packages-galerina/galerina-core-compiler/src/gate-parser.ts:236",
       "test packages-galerina/galerina-core-compiler/tests/gate-parser.test.mjs:4",
       "test packages-galerina/galerina-core-compiler/tests/gate-parser.test.mjs:40",
-      "doc docs/language/gate/07-cheatsheet-and-gotchas.md:169",
+      "doc docs/language/gate/07-cheatsheet-and-gotchas.md:183",
       "doc docs/language/gate/README.md:33",
       "doc docs/language/gate/README.md:164",
       "doc docs/TODO.md:84"
@@ -12622,7 +12622,7 @@
       "doc docs/language/gate/05-fungi-delegation.md:150",
       "doc docs/language/gate/06-worked-examples.md:198",
       "doc docs/language/gate/06-worked-examples.md:205",
-      "doc docs/language/gate/07-cheatsheet-and-gotchas.md:136",
+      "doc docs/language/gate/07-cheatsheet-and-gotchas.md:150",
       "doc docs/language/gate/README.md:34",
       "doc docs/language/gate/README.md:55",
       "doc docs/TODO.md:84",
@@ -15302,7 +15302,7 @@
       "doc docs/examples/Level-1-Basics/AI_SUMMARY.md:59",
       "doc docs/examples/README.md:166",
       "doc docs/language/fungi/01-flows-and-functions.md:127",
-      "doc docs/language/fungi/01-flows-and-functions.md:210"
+      "doc docs/language/fungi/01-flows-and-functions.md:237"
     ]
   },
   {
@@ -15342,7 +15342,7 @@
       "fungi docs/examples/Level-1-Basics/022-no-toplevel-let/example.fungi:4",
       "doc docs/examples/Level-1-Basics/AI_SUMMARY.md:60",
       "doc docs/examples/README.md:167",
-      "doc docs/language/fungi/01-flows-and-functions.md:211"
+      "doc docs/language/fungi/01-flows-and-functions.md:238"
     ]
   },
   {
@@ -15509,7 +15509,7 @@
       "test packages-galerina/galerina-core-compiler/tests/parser/spans-and-recovery.test.mjs:149",
       "fungi docs/examples/Level-3-Effects/112-local-fn-cannot-declare-effects/example.fungi:4",
       "fungi docs/examples/Level-3-Effects/112-local-fn-cannot-declare-effects/example.fungi:18",
-      "doc docs/language/fungi/01-flows-and-functions.md:212"
+      "doc docs/language/fungi/01-flows-and-functions.md:239"
     ]
   },
   {

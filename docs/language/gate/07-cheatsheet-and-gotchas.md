@@ -25,6 +25,20 @@ END                                                # (8) terminator; nothing but
 
 ---
 
+## Comments — `#` only, and they carry NO authority
+
+`.gate` has exactly **one** comment form: `#` to end-of-line (spec §1, rule **m2** — comments are stripped
+before the verdict, so nothing written in a comment can ever grant or deny anything). Box-drawing characters
+are rejected **even inside comments**. There is no `//`, `/* */`, or `;;` in `.gate` — the `;;` govComment is
+a `.fungi` construct; in `.gate` the *signed* trigger/outcome story is carried declaratively by the
+`INTENT` and `EFFECTS` clauses instead.
+
+House convention (GSCM, shared with `.fungi`): `# @todo [Assignee] -> …` is fine for genuinely unfinished
+work; `@cause`/`@effect` tags are **usually redundant here** — don't restate `INTENT`/`EFFECTS` in comments,
+because a comment paraphrase of the clauses can silently drift from the signed truth.
+
+---
+
 ## The eight glyphs (exact codepoints)
 
 | Glyph | Codepoint | Role | Polarity |

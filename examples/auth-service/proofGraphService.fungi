@@ -7,6 +7,8 @@ type ProofResult = Result<Response, String>
 // Map a qualifier to its proof level
 ;; Maps a flow qualifier string to its minimum required proof level; safe as a total pure function over a fixed match table.
 ;; Pure — no runtime authority / no effects.
+// @cause  [generateProofSummary] -> called to grade the requested qualifier.
+// @effect [Verdict only] -> returns the minimum proof level Int; no state mutated.
 pure flow qualifierToProofLevel(qualifier: String) -> Int
 contract {
   intent { "Map a flow qualifier to the minimum proof level required." }
@@ -23,6 +25,8 @@ contract {
 // Check if proof level meets the policy minimum
 ;; Returns whether an actual proof level meets or exceeds the required minimum; safe as a pure comparison with no side effects.
 ;; Pure — no runtime authority / no effects.
+// @cause  [generateProofSummary] -> called to compare the graded level against the policy minimum.
+// @effect [Verdict only] -> returns Bool; no state mutated.
 pure flow proofLevelSufficient(actual: Int, required: Int) -> Bool
 contract {
   intent { "Return true if actual proof level meets or exceeds required." }
@@ -35,6 +39,8 @@ contract {
 // HTTP endpoint: generate a proof graph summary
 ;; Accepts a flow-metadata request and returns a governance proof summary; permitted because the untrusted qualifier is trapped-on-empty and redacted before the audit write.
 ;; V_DPM capability required: network.inbound, audit.write
+// @cause  [POST /proof/generate] -> HTTP route invokes this governed endpoint with flow metadata.
+// @effect [Audit log] -> appends a "ProofGenerated" event (qualifier redacted); returns the proof summary response.
 secure flow generateProofSummary(readonly request: Request) -> ProofResult
 contract {
   effects { network.inbound audit.write }

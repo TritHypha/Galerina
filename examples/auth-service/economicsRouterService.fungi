@@ -6,6 +6,8 @@ type EconomicsResult = Result<Response, String>
 ;; Infers the preferred execution target from a flow's AI/safety/db properties — pure decision logic, safe with no authority.
 ;; Pure — no runtime authority / no effects.
 // Infer preferred target from effects
+// @cause  [Called by routeByEconomics] -> picks the execution target for each routing request.
+// @effect [Verdict only] -> returns a target label (enclave|gpu|cpu|wasm); no state is mutated.
 pure flow inferTarget(hasAI: Bool, isSafetyCritical: Bool, hasDBWrite: Bool) -> String
 contract {
   intent { "Auto-infer the preferred execution target from flow properties." }
@@ -20,6 +22,8 @@ contract {
 ;; Maps an execution target to a risk classification tier — pure lookup, safe with no authority.
 ;; Pure — no runtime authority / no effects.
 // Classify risk tier from execution target
+// @cause  [Called by routeByEconomics] -> classifies the risk of the chosen target.
+// @effect [Verdict only] -> returns a risk tier label (critical|elevated|standard); no state is mutated.
 pure flow inferRiskTier(execTarget: String) -> String
 contract {
   intent { "Map execution target to risk classification." }
@@ -36,6 +40,8 @@ contract {
 
 ;; Accepts untrusted economics metadata over HTTP and returns a routing decision, writing a redacted audit entry — permitted because the tainted target is redacted before the write.
 ;; V_DPM capability required: network.inbound, audit.write
+// @cause  [Auth service route POST /economics/route] -> invoked for each economics routing request.
+// @effect [Audit log] -> one redacted EconomicsRouted entry written via AuditLog.write; response returns target + risk tier.
 secure flow routeByEconomics(readonly request: Request) -> EconomicsResult
 contract {
   effects { network.inbound audit.write }

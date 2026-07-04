@@ -12,6 +12,8 @@ type ClassifyMessageResult = Result<Response, ApiError>
 
 ;; Classifies a message locally via governed AI inference on the NPU control/data-plane split; permitted because the untrusted body text is validated to protected MessageText that is denied to remote.execution, and the audit write is redaction-gated.
 ;; V_DPM capability required: ai.inference, audit.write
+// @cause  [Calling message service] -> a service submits an untrusted message body (request.body.text) for local classification.
+// @effect [AuditLog + JSON response] -> one redacted MessageClassified audit entry is written and the caller receives the label; inference stays local (remote.execution is denied).
 guarded flow classifyMessage(
   readonly request: Request
 ) -> ClassifyMessageResult

@@ -7,6 +7,8 @@ type RcStatusResult = Result<Response, String>
 // Count services (known at compile time — updated each phase)
 ;; Returns the compile-time count of live governed HTTP services; safe as a pure constant with no side effects.
 ;; Pure — no runtime authority / no effects.
+// @cause  [v1RcStatus] -> called to report the live governed-service count.
+// @effect [Verdict only] -> returns the compile-time count Int; no state mutated.
 pure flow countServices() -> Int
 contract {
   intent { "Return the count of live .fungi governed HTTP services." }
@@ -18,6 +20,8 @@ contract {
 // Return the runtime percentage
 ;; Returns the current Runtime-in-Galerina percentage; safe as a pure constant with no side effects.
 ;; Pure — no runtime authority / no effects.
+// @cause  [v1RcStatus] -> called to report the Runtime-in-Galerina percentage.
+// @effect [Verdict only] -> returns the percentage Int; no state mutated.
 pure flow runtimePercent() -> Int
 contract {
   intent { "Return the current Runtime-in-Galerina percentage." }
@@ -29,6 +33,8 @@ contract {
 // Return the phase we are on
 ;; Returns the current implementation phase number; safe as a pure constant with no side effects.
 ;; Pure — no runtime authority / no effects.
+// @cause  [v1RcStatus] -> called to report the current implementation phase.
+// @effect [Verdict only] -> returns the phase Int; no state mutated.
 pure flow currentPhase() -> Int
 contract {
   intent { "Return the current implementation phase." }
@@ -39,6 +45,8 @@ contract {
 
 ;; Returns the current v1.0 RC readiness status assembled from governed constants; safe because it takes no untrusted input and writes only a benign audit event.
 ;; V_DPM capability required: network.inbound, audit.write
+// @cause  [GET /v1/rc-status] -> HTTP route invokes this governed status endpoint.
+// @effect [Audit log] -> appends a "V1RcStatusChecked" event; returns the RC readiness summary.
 secure flow v1RcStatus(readonly request: Request) -> RcStatusResult
 contract {
   effects { network.inbound audit.write }

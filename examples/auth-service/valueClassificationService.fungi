@@ -3,6 +3,8 @@
 
 ;; Maps a type name to its value-sensitivity class (medical highest, public lowest); safe as a pure classification with no side effects.
 ;; Pure — no runtime authority / no effects.
+// @cause  [classifyData] -> called to grade the type name's value sensitivity.
+// @effect [Verdict only] -> returns the sensitivity class Int (4..0); no state mutated.
 pure flow classifyValue(typeName: String) -> Int
 {
   if typeName.contains("medical") { return 4 }
@@ -15,6 +17,8 @@ pure flow classifyValue(typeName: String) -> Int
 
 ;; Returns whether a sensitivity classification requires redaction (level >= 3); safe as a pure comparison with no side effects.
 ;; Pure — no runtime authority / no effects.
+// @cause  [classifyData] -> called to decide whether the class mandates redaction.
+// @effect [Verdict only] -> returns Bool; no state mutated.
 pure flow requiresRedaction(classification: Int) -> Bool
 {
   return classification >= 3
@@ -22,6 +26,8 @@ pure flow requiresRedaction(classification: Int) -> Bool
 
 ;; Returns whether a sensitivity classification requires encryption (level >= 2); safe as a pure comparison with no side effects.
 ;; Pure — no runtime authority / no effects.
+// @cause  [classifyData] -> called to decide whether the class mandates encryption.
+// @effect [Verdict only] -> returns Bool; no state mutated.
 pure flow requiresEncryption(classification: Int) -> Bool
 {
   return classification >= 2
@@ -29,6 +35,8 @@ pure flow requiresEncryption(classification: Int) -> Bool
 
 ;; Classifies request data into a governed value-sensitivity class and its redaction/encryption needs; permitted because the untrusted type name is trapped-on-empty and the derived classification redacted before the audit write.
 ;; V_DPM capability required: network.inbound, audit.write
+// @cause  [POST /value/classify] -> HTTP route invokes this governed endpoint with a type name.
+// @effect [Audit log] -> appends a "ValueClassification" event (class redacted); returns the classification and its handling needs.
 secure flow classifyData(readonly request: Request) -> Response
 contract {
   intent { "Classify request data into a governed value-sensitivity class." }

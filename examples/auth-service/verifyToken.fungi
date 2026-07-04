@@ -4,6 +4,8 @@ type TokenError = enum { Expired Invalid Malformed }
 
 ;; Verifies a JWT and extracts its claims without side effects; safe because it is pure and propagates verification failure via the Result error arm.
 ;; Pure — no runtime authority / no effects.
+// @cause  [Library helper] -> called by auth flows needing JWT claim extraction.
+// @effect [Verdict only] -> returns Ok(TokenClaims) or the token error; no state mutated.
 pure flow verifyToken(token: String) -> VerifyTokenResult
 contract {
   intent { "Verify a JWT token and extract claims without side effects." }

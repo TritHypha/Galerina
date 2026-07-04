@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 761,
+  "docCount": 764,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -6264,6 +6264,48 @@
         "network",
         "unvalidated",
         "email"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/galerina-comment-annotation-convention-gscm-2026-07-04.md",
+      "title": "RD-0265 — The Galerina comment model finalized: `;;` + GSCM `// @cause/@effect/@todo` (+ `.gate` `#`)",
+      "headings": [
+        "The decided model (complete)",
+        "The decision & why (owner asked \"`// @` or `//`?\") — **`// @` wins**",
+        "`.gate` — needs NO new comment syntax",
+        "Honesty rules (binding)",
+        "Landed 2026-07-04",
+        "Follow-on (not built — surface when wanted)"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "gate",
+        "comment",
+        "effect",
+        "todo",
+        "gscm",
+        "cause",
+        "model",
+        "note",
+        "galerina",
+        "syntax",
+        "owner",
+        "docs",
+        "form",
+        "text",
+        "why",
+        "block",
+        "flow",
+        "landed",
+        "discarded",
+        "wins",
+        "rd-0265",
+        "finalized",
+        "notes",
+        "comments",
+        "decided"
       ]
     },
     {
@@ -13648,7 +13690,7 @@
         "2a. Value-state / taint typestate  [SHIPPED — `value-state-checker.ts`]",
         "2b. Passport typestate ladder  [SHIPPED — `value-state-checker.ts:112-124`]  ← **the session P0**",
         "2c. Effects system + cache invalidation  [SHIPPED grammar; correction OWNER-GATED]",
-        "2d. MATCH exhaustiveness  [SHIPPED intent; **◑ live fail-open in `.fungi`→WASM**]",
+        "2d. MATCH exhaustiveness  [SHIPPED — `.fungi`→WASM fail-open **FIXED 2026-07-04**]",
         "2e. Privacy / redaction  [SHIPPED]",
         "2f. The K3 gate operator  ← **the core session correction (RD-0253)**  [SHIPPED code correct; NOTE text wrong]",
         "3. `.hypha` (query) security constructs  [reference-proven `hypha-check.mjs` 51/51; NOT wired to a prod engine]",
@@ -13675,25 +13717,25 @@
         "security",
         "cache",
         "passport",
-        "gate",
+        "match",
         "hypha",
         "fix",
+        "gate",
         "effects",
-        "match",
-        "fail-open",
         "reference-proven",
         "note",
-        "intent",
         "flow",
         "typestate",
         "write",
         "session",
+        "fail-open",
         "spore",
         "logic",
         "correction",
         "body",
         "sink",
-        "prod"
+        "prod",
+        "value-state-checker"
       ]
     },
     {
@@ -24491,6 +24533,68 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/galerina-rd-0257-bend-interaction-combinators-hvm2-note83.md",
+      "title": "RD-0257 — Bend / Interaction Combinators (HVM2) for Galerina/TritMesh: assessment (note 83)",
+      "headings": [
+        "1. TL;DR + headline verdict",
+        "2. What Bend / HVM2 / Interaction Combinators actually are",
+        "2.1 Lafont's Interaction Combinators (1997) — the real maths",
+        "2.2 HVM2 / Bend — architecture, runtimes, license",
+        "2.3 The honest performance reality (HVM2 paper, Nov 2024)",
+        "3. Maths check — verdict table of the note's claims",
+        "Throughline restated",
+        "4. Fit for Galerina",
+        "4.1 The tree-walker reality (correcting the note's premise)",
+        "4.2 The RD-0231 bridge (the sound core)",
+        "4.3 The substrate fence — accelerate, don't decide",
+        "4.4 The three keywords mapped",
+        "5. The tree-walker verdict (the owner's direct question)",
+        "6. Adoptable list (strict)",
+        "DESIGN / TRACK (owner-gated — real items)",
+        "REFUTED overreach (do NOT adopt as stated)",
+        "Are we USING / adopting anything now?",
+        "7. Paper potential",
+        "7.1 NEGATIVE / measured-negative (RECOMMEND — extends the latency-is-not-work bundle)",
+        "7.2 DEFENSIVE (RECOMMEND — affine-capability ↔ IC-linearity)",
+        "8. Zero-trust scoring + standing-check tags",
+        "ZT — two scales (report both)",
+        "Standing-check tags",
+        "Provenance & files"
+      ],
+      "codes": [
+        "FUNGI-SUBSTRATE-001"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "note",
+        "hvm2",
+        "bend",
+        "galerina",
+        "verdict",
+        "span",
+        "work",
+        "real",
+        "tree-walker",
+        "interaction",
+        "reduction",
+        "rd-0231",
+        "combinators",
+        "sound",
+        "graph",
+        "never",
+        "engine",
+        "maths",
+        "parallel",
+        "min",
+        "track",
+        "design",
+        "core",
+        "governance",
+        "must"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/galerina-rd-0257-prismatic-tensor-syntax-2026-07-04.md",
       "title": "RD-0257…0264 — Prismatic Tensor Syntax (PTS) / \"Wavefront Execution\"",
       "headings": [
@@ -26039,7 +26143,8 @@
         "FUNGI-GOV-003",
         "ERR_ADDON_UNPINNED",
         "FUNGI-SECRET-004",
-        "FUNGI-RETAIN-001"
+        "FUNGI-RETAIN-001",
+        "FUNGI-SUBSTRATE-001"
       ],
       "tasks": [
         "#102",
@@ -26080,17 +26185,17 @@
         "verdict",
         "design",
         "audit",
-        "mixed",
         "proof",
+        "mixed",
         "fail-closed",
-        "runtime",
         "owner-gated",
+        "runtime",
         "prod",
         "photonic",
+        "never",
         "refuted",
-        "security",
-        "tritmesh",
-        "fixed"
+        "fixed",
+        "tritmesh"
       ]
     },
     {
@@ -32034,6 +32139,57 @@
         "invariant",
         "zero-copy",
         "mathematical"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/galerina-tritmesh-zt-score-le6-technologies-2026-07-04.md",
+      "title": "Galerina / TritMesh — technologies with ZT (AZT /10) score ≤ 6",
+      "headings": [
+        "Scale note (read first)",
+        "1) TL;DR + three-bucket split",
+        "2) The main table",
+        "CLASS A — ACTUAL-WEAKNESS / tenet-cost + enforcement-gap (the ones that matter)",
+        "CLASS B — REFUTED as security / science (fenced, not used; do NOT resurrect as security)",
+        "CLASS C — PERF / ORG (ZT is not its axis; gates no access decision — expected-low, benign)",
+        "3) What to actually act on — the genuine weaknesses only",
+        "4) Honest note"
+      ],
+      "codes": [
+        "FUNGI-GATELANG-002",
+        "FUNGI-SUBSTRATE-001",
+        "ERR_ADDON_HASH_MISMATCH"
+      ],
+      "tasks": [
+        "#102",
+        "#107"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "galerina",
+        "org",
+        "perf",
+        "refuted",
+        "fence",
+        "perf-org",
+        "class",
+        "tritmesh",
+        "axis",
+        "access",
+        "both",
+        "gates",
+        "security",
+        "fenced",
+        "gate",
+        "owner-gated",
+        "enforcement-gap",
+        "reference-only",
+        "note",
+        "read",
+        "proposed",
+        "packing",
+        "costs",
+        "shipped",
+        "fail-closed"
       ]
     },
     {
@@ -43087,26 +43243,26 @@
         "governed",
         "wasm",
         "knowledge-bases",
-        "div",
-        "governance",
-        "core",
-        "shipped",
-        "runtime",
         "audit",
+        "runtime",
+        "governance",
         "svg",
+        "core",
+        "diagrams",
+        "sub",
+        "shipped",
         "width",
         "real",
         "package",
-        "diagrams",
-        "sub",
         "contract",
+        "signed",
         "build",
+        "capability",
         "architecture",
         "app",
+        "flow",
         "execution",
-        "design",
-        "compiler",
-        "signed"
+        "design"
       ]
     },
     {

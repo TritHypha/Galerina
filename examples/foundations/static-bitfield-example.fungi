@@ -41,6 +41,8 @@ bitfield ServiceCapabilities {
 ;; Validates a payload size against the compile-time MAX_PAYLOAD_SIZE_KB constant.
 ;; Pure — no runtime authority / no effects.
 ;; Proof obligation: sizeKb > 0
+// @cause  [Library helper] -> called by flows needing payload-size limits enforced.
+// @effect [Verdict only] -> returns Bool against the folded MAX_PAYLOAD_SIZE_KB limit; no state is mutated.
 pure flow validatePayloadSize(sizeKb: Int) -> Bool
 contract {
   intent "Validate payload is within configured limits"
@@ -59,6 +61,8 @@ contract {
 
 ;; Returns the pre-computed V_DPM capability bitmask, folded at compile time.
 ;; Pure — no runtime authority / no effects.
+// @cause  [Library helper] -> called by flows needing this service's V_DPM capability mask.
+// @effect [Verdict only] -> returns the compile-time-folded Int mask; no state is mutated.
 pure flow getCapabilityMask() -> Int
 contract {
   intent "Return the pre-computed bitmask for this service"

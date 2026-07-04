@@ -15,6 +15,8 @@
 
 ;; Runs governed medical risk inference on Google Cloud TPU without exposing raw patient data to the model; permitted because the batch crosses a protected boundary before ai.inference and the audit write is redaction-gated under no_ambient_cloud_authority.
 ;; V_DPM capability required: phi.read, ai.inference, audit.write
+// @cause  [Clinical risk-scoring batch job] -> a governed batch of protected patient records is submitted for risk inference.
+// @effect [AuditLog + caller] -> one redacted MedicalRiskInferenceCompleted audit entry is written and the caller receives a RiskReport; raw patient data never reaches the model.
 secure flow runMedicalRiskInference(
   readonly patientBatch: Protected<PatientBatch>
 ) -> Result<RiskReport, InferenceError>

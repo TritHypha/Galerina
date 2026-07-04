@@ -193,12 +193,39 @@ comment forms (`examples/foundations/comment-styles-example.fungi`, and the lexe
 Rule of thumb from the example file: **if the note explains WHY the code is safe/permitted, use
 `;;`.** If it explains HOW it works, use `//` or a block comment.
 
+### The GSCM annotation tags — `// @cause` · `// @effect` · `// @todo`
+
+On top of the four forms, the house standard (the **Galerina Standard Comment Model**, agreed in
+`notes/77-mesh-r-d-11.md`) adds three structured tags for every public/critical flow, written as **line
+comments with an `@` tag** and placed between the `;;` govComment block and the flow keyword:
+
+| Tag | States | Example |
+|---|---|---|
+| `// @cause  [Trigger] -> …` | the system event / hook / user interaction that **invokes** this flow | `// @cause  [HTTP route /login] -> user submits the login form.` |
+| `// @effect [Target] -> …` | the mutations / outputs produced on a successful **ALLOW** | `// @effect [sessions DB] -> new session row; audit event appended.` |
+| `// @todo   [Assignee] -> …` | genuinely unfinished work — **only when something IS unfinished; never fabricate** | `// @todo   [AI] -> reject payloads whose timestamp is older than 60s (replay prevention).` |
+
+Why `// @` and not `;;` or `///`: the tags are **maintenance/AI-context metadata** — they must be
+machine-greppable (the `@` prefix is what makes a future lint rule possible) but must **not** enter the
+signed `.lmanifest` (a `@todo` in a signed governance record would be wrong) and not the extracted API
+docs either. `//` is discarded at parse — exactly right. `@effect` narrates the **outcome**; it is *not*
+the `effects {}` contract clause (which *grants capabilities* and is compiler-enforced) — don't confuse
+the two, and never let an `@effect` comment claim something the contract doesn't permit.
+
+The full stack above a flow:
+
 ```fungi
 ;; This flow handles payment validation for Floor 3 (Proof Zone)
 ;; V_DPM capability required: audit.write (bit 3)
 ;; Proof obligation: amount > 0 must be statically verified
+// @cause  [Checkout pipeline] -> called before any charge is attempted.
+// @effect [Verdict only] -> returns Bool; no state mutated on any path.
 governed floor_3 flow validatePaymentAmount(amount: Int, currency: String) -> Bool
 ```
+
+(`.gate` files have their own single comment form — `#`, which the spec strips before the verdict
+("comments carry NO authority", m2). `# @todo …` is fine there; `@cause`/`@effect` are usually redundant
+in `.gate` because the `INTENT`/`EFFECTS` clauses already state trigger and outcome declaratively.)
 
 ## Common mistakes (flows)
 

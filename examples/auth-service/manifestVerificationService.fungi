@@ -3,6 +3,8 @@
 
 ;; Checks that a manifest schema version carries the expected fungi/v1 markers — pure string check, safe with no authority.
 ;; Pure — no runtime authority / no effects.
+// @cause  [Called by verifyManifest] -> validates the schema version of each submitted manifest.
+// @effect [Verdict only] -> returns Bool (fungi. and .v1 markers present); no state is mutated.
 pure flow isValidManifestVersion(version: String) -> Bool
 {
   return version.contains("fungi.") and version.contains(".v1")
@@ -10,6 +12,8 @@ pure flow isValidManifestVersion(version: String) -> Bool
 
 ;; Returns true when the governance flags mask is non-zero (at least one flag set) — pure predicate, safe with no authority.
 ;; Pure — no runtime authority / no effects.
+// @cause  [Called by verifyManifest] -> checks the governance flags mask of each manifest.
+// @effect [Verdict only] -> returns Bool (mask non-zero); no state is mutated.
 pure flow isValidGovernanceFlags(flags: Int) -> Bool
 {
   return flags > 0
@@ -17,6 +21,8 @@ pure flow isValidGovernanceFlags(flags: Int) -> Bool
 
 ;; Derives a manifest trust level from verified/signature/flags-valid combination — pure decision logic, safe with no authority.
 ;; Pure — no runtime authority / no effects.
+// @cause  [Called by verifyManifest] -> combines the verification checks into a trust level.
+// @effect [Verdict only] -> returns the trust level Int (0..4); no state is mutated.
 pure flow manifestTrustLevel(verified: Bool, hasSignature: Bool, flagsValid: Bool) -> Int
 {
   if verified and hasSignature and flagsValid { return 4 }
@@ -27,6 +33,8 @@ pure flow manifestTrustLevel(verified: Bool, hasSignature: Bool, flagsValid: Boo
 
 ;; Verifies an untrusted manifest's schema version and signature status into a trust level and accept decision, writing a redacted audit entry — permitted because tainted derived values are redacted before the write.
 ;; V_DPM capability required: network.inbound, audit.write
+// @cause  [Auth service route POST /manifest/verify] -> invoked for each manifest verification request.
+// @effect [Audit log] -> one redacted ManifestVerification entry written via AuditLog.write; response returns trust level + accept decision.
 secure flow verifyManifest(readonly request: Request) -> Response
 contract {
   intent { "Verify a runtime manifest's schema version and signature status." }
