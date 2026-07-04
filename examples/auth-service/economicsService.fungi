@@ -1,6 +1,8 @@
 // Phase 48 — Economics Service
 // Cost estimation for governed execution paths
 
+;; Estimates compute cost by scaling op count against the target class weight — pure arithmetic, safe with no authority.
+;; Pure — no runtime authority / no effects.
 pure flow estimateComputeCost(opCount: Int, targetClass: Int) -> Int
 {
   if targetClass == 4 { return opCount * 10 }
@@ -9,6 +11,8 @@ pure flow estimateComputeCost(opCount: Int, targetClass: Int) -> Int
   return opCount * 2
 }
 
+;; Estimates risk cost by scaling record count against the data classification level — pure arithmetic, safe with no authority.
+;; Pure — no runtime authority / no effects.
 pure flow estimateRiskCost(recordCount: Int, classificationLevel: Int) -> Int
 {
   if classificationLevel >= 4 { return recordCount * 160 }
@@ -17,11 +21,15 @@ pure flow estimateRiskCost(recordCount: Int, classificationLevel: Int) -> Int
   return recordCount * 10
 }
 
+;; Sums the compute, risk, and audit cost components into a total — pure arithmetic, safe with no authority.
+;; Pure — no runtime authority / no effects.
 pure flow totalCost(computeCost: Int, riskCost: Int, auditCost: Int) -> Int
 {
   return computeCost + riskCost + auditCost
 }
 
+;; Accepts untrusted cost inputs over HTTP, traps negatives, and returns a cost breakdown, writing a redacted audit entry — permitted because the tainted total is redacted before the write.
+;; V_DPM capability required: network.inbound, audit.write
 secure flow estimateCost(readonly request: Request) -> Response
 contract {
   intent { "Estimate the economic cost of an operation to inform routing decisions." }

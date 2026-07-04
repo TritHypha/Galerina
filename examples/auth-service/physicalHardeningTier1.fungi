@@ -3,6 +3,8 @@
 // REMINDER: The runtime auto-selects shielding from ValueGraph risk tier.
 // Only write this block with Tier 1 ASIC hardware + regulatory mandate.
 
+;; Initiates a Tier 1 sovereign settlement under Active Shielding Mesh ASIC protection; permitted because it only writes a cryptographic-state-hash audit entry and returns a fixed result, with tamper response set to zeroize.
+;; V_DPM capability required: audit.write, network.inbound
 secure flow settlementTier1(readonly request: Request) -> Result<String, String>
 contract {
   intent { "Tier 1 sovereign settlement requiring Active Shielding Mesh ASIC protection." }

@@ -50,6 +50,9 @@ guard InvoiceReadGuard {
 ;; Flow that conforms to the full ceiling.
 ;; [conforms_to: PaymentServiceGuard] triggers the Differential Proof:
 ;; the verifier proves { database.write, audit.write } ⊆ PaymentServiceGuard.
+;; Processes a payment within the PaymentServiceGuard ceiling; effects proven ⊆ the guard.
+;; V_DPM capability required: database.write, audit.write
+;; Proof obligation: amount > 0 and amount <= 1000000
 secure flow processPayment(amount: Int) -> Result<Bool, Error>
 contract [conforms_to: PaymentServiceGuard] {
   intent "Process a payment within the payment service ceiling"
@@ -70,6 +73,8 @@ contract [conforms_to: PaymentServiceGuard] {
 ;; Flow that conforms to the NARROWER child guard.
 ;; It may only read — requesting database.write here would fail conformance
 ;; against InvoiceReadGuard even though the grandparent permits writes.
+;; Reads an invoice total; read-only, conforms to the narrower InvoiceReadGuard ceiling.
+;; V_DPM capability required: database.read
 secure flow getInvoiceTotal(invoiceId: String) -> Int
 contract [conforms_to: InvoiceReadGuard] {
   intent "Read invoice total — read-only, no mutations"

@@ -6,6 +6,8 @@
 type RouteResult = Result<Response, String>
 
 // Check if a path matches a known route pattern
+;; Returns whether an HTTP request path matches a registered route path; safe as a pure string comparison with no side effects.
+;; Pure — no runtime authority / no effects.
 pure flow pathMatches(requestPath: String, routePath: String) -> Bool
 contract {
   intent { "Determine if an HTTP request path matches a registered route path." }
@@ -18,6 +20,8 @@ contract {
 }
 
 // Determine which flow handles a given HTTP method + path
+;; Maps an HTTP method+path pair to the governing flow name via the dispatch table; safe as a pure lookup returning "" for unknown routes.
+;; Pure — no runtime authority / no effects.
 pure flow resolveRoute(method: String, path: String) -> String
 contract {
   intent { "Map an HTTP method+path pair to the governing flow name. Core dispatch table driven by route registry." }
@@ -49,6 +53,8 @@ contract {
 }
 
 // Determine the governance profile for a given flow
+;; Returns the deployment profile for a flow name, defaulting to "denied" for unknown flows; safe as a pure match over a fixed table.
+;; Pure — no runtime authority / no effects.
 pure flow flowGovernanceProfile(flowName: String) -> String
 contract {
   intent { "Return the deployment profile for a flow (strict/production/deterministic)." }
@@ -66,6 +72,8 @@ contract {
 }
 
 // The governed route dispatcher -- makes routing decisions and audits them
+;; Accepts an incoming HTTP request, resolves the route, and returns a dispatch decision; permitted because the untrusted method and path are trapped-on-empty and redacted before the audit write.
+;; V_DPM capability required: network.inbound, audit.write
 secure flow dispatchRequest(readonly request: Request) -> RouteResult
 contract {
   effects {

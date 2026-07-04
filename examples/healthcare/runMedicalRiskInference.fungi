@@ -13,6 +13,8 @@
 /// while maintaining full privacy, capability, and audit requirements.
 /// no_ambient_cloud_authority: Google Cloud IAM does not grant Galerina authority.
 
+;; Runs governed medical risk inference on Google Cloud TPU without exposing raw patient data to the model; permitted because the batch crosses a protected boundary before ai.inference and the audit write is redaction-gated under no_ambient_cloud_authority.
+;; V_DPM capability required: phi.read, ai.inference, audit.write
 secure flow runMedicalRiskInference(
   readonly patientBatch: Protected<PatientBatch>
 ) -> Result<RiskReport, InferenceError>

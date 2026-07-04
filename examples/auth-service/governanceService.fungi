@@ -9,6 +9,8 @@
 ;; It answers: "what level of governance does this effect qualifier require?"
 ;; and "does this level mandate audit logging?"
 
+;; Maps an effect qualifier string to a governance level integer (none/guarded/secure/critical) — pure classification, safe with no authority.
+;; Pure — no runtime authority / no effects.
 // Maps an effect qualifier string to a governance level integer.
 // 0 = none (unknown), 1 = guarded, 2 = secure, 3 = critical
 pure flow governanceLevel(effectTag: String) -> Int
@@ -25,6 +27,8 @@ contract {
   return 0
 }
 
+;; Returns true when a governance level (>= 2) mandates an audit trail — pure predicate, safe with no authority.
+;; Pure — no runtime authority / no effects.
 // Returns true if the given governance level requires an audit trail.
 pure flow requiresAuditForLevel(level: Int) -> Bool
 contract {
@@ -37,6 +41,8 @@ contract {
   return false
 }
 
+;; Verifies an untrusted flow's governance level against its declared qualifier, writing a redacted audit entry — permitted because tainted inputs are redacted before the write.
+;; V_DPM capability required: network.inbound, audit.write
 // HTTP endpoint: verify a flow's governance level against its declared qualifier
 secure flow verifyGovernance(readonly request: Request) -> Response
 contract {

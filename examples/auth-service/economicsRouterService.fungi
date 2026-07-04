@@ -3,6 +3,8 @@
 
 type EconomicsResult = Result<Response, String>
 
+;; Infers the preferred execution target from a flow's AI/safety/db properties — pure decision logic, safe with no authority.
+;; Pure — no runtime authority / no effects.
 // Infer preferred target from effects
 pure flow inferTarget(hasAI: Bool, isSafetyCritical: Bool, hasDBWrite: Bool) -> String
 contract {
@@ -15,6 +17,8 @@ contract {
   return "wasm"
 }
 
+;; Maps an execution target to a risk classification tier — pure lookup, safe with no authority.
+;; Pure — no runtime authority / no effects.
 // Classify risk tier from execution target
 pure flow inferRiskTier(execTarget: String) -> String
 contract {
@@ -30,6 +34,8 @@ contract {
   }
 }
 
+;; Accepts untrusted economics metadata over HTTP and returns a routing decision, writing a redacted audit entry — permitted because the tainted target is redacted before the write.
+;; V_DPM capability required: network.inbound, audit.write
 secure flow routeByEconomics(readonly request: Request) -> EconomicsResult
 contract {
   effects { network.inbound audit.write }

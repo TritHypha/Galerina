@@ -8,6 +8,8 @@
 // per-flow hardware choice — gameplay physics (01) and anti-cheat (here) live in one game
 // yet sit on different substrate lanes. That is exactly why "lane: gaming" makes no sense:
 // a single domain spans multiple lanes.
+;; Signs the authoritative match result for the leaderboard on a bit-exact digital lane; permitted because the crypto effect requires integrity that cannot be tolerance-bounded, so it stays digital (a photonic lane would be denied FUNGI-SUBSTRATE-001).
+;; V_DPM capability required: crypto.sign.hybrid, audit.write
 secure flow signMatchResult(request: Request) -> Result<Response, ApiError>
 contract {
   intent { "Sign the authoritative match result for the leaderboard; bit-exact, digital lane only." }

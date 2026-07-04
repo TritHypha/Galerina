@@ -12,6 +12,9 @@
 // For standard APIs, healthcare flows, and financial reporting:
 // omit cyber_physical_hardening entirely. The runtime handles it.
 
+;; Processes a high-value sovereign financial transaction under Tier 1 ASIC shielding and certified-agent authority; permitted because it only writes an audit entry and echoes the request, with PAN/account masked and a zk-SNARK epilogue proof required.
+;; V_DPM capability required: network.inbound, audit.write
+;; Proof obligation: ensure true (statically proved by constant-fold; zero WAT gate emitted).
 secure flow processSovereignTransaction(readonly request: Request) -> TransactionResult
 contract {
   intent { "Process a high-value sovereign financial transaction requiring Tier 1 ASIC shielding." }

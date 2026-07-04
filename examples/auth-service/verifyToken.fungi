@@ -2,6 +2,8 @@ type VerifyTokenResult = Result<TokenClaims, TokenError>
 type TokenClaims = record { readonly sub: String readonly exp: Timestamp }
 type TokenError = enum { Expired Invalid Malformed }
 
+;; Verifies a JWT and extracts its claims without side effects; safe because it is pure and propagates verification failure via the Result error arm.
+;; Pure — no runtime authority / no effects.
 pure flow verifyToken(token: String) -> VerifyTokenResult
 contract {
   intent { "Verify a JWT token and extract claims without side effects." }

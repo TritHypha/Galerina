@@ -9,6 +9,8 @@
 ;; Tamper evidence: each entry is chained — a missing or reordered entry
 ;; is detectable as a gap in the CBOR-serialised ledger.
 
+;; Builds the canonical audit event ID by joining flowName and timestamp — pure string composition, safe with no authority.
+;; Pure — no runtime authority / no effects.
 // Produces an audit event identifier by concatenating the flow name and timestamp.
 // This is the stable canonical identifier for an audit entry.
 pure flow auditEventId(flowName: String, timestamp: String) -> String
@@ -19,6 +21,8 @@ contract {
   return flowName + ":" + timestamp
 }
 
+;; Accepts only the three recognised audit statuses (Success|Denied|Failed); rejects anything else — pure predicate, safe with no authority.
+;; Pure — no runtime authority / no effects.
 // Returns true when the status string is one of the three valid audit statuses.
 pure flow isValidAuditStatus(status: String) -> Bool
 contract {
@@ -33,6 +37,8 @@ contract {
   return false
 }
 
+;; Ingests an untrusted request, traps empty fields, then chains a redacted audit entry — permitted because every tainted value is redacted before it reaches the ledger.
+;; V_DPM capability required: network.inbound, audit.write
 // HTTP endpoint: chain a governed audit entry from { flowName, status, timestamp }
 secure flow chainAuditEntry(readonly request: Request) -> Response
 contract {

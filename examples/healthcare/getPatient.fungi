@@ -5,6 +5,8 @@ type PatientId = Brand<String, "PatientId">
 type PatientSummary = record { patientId: redacted String, name: String, dob: String }
 type PatientError = enum { NotFound Unauthorized }
 
+;; Retrieves a patient summary for clinical display, returning only redacted fields; permitted because the raw protected PatientId is denied to the response body and the audit write is redaction-gated.
+;; V_DPM capability required: database.read, phi.read, audit.write
 secure flow getPatient(readonly request: Request) -> GetPatientResult
 contract {
   intent { "Retrieve a patient summary for clinical display." }

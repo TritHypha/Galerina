@@ -35,6 +35,9 @@ import plugin safe "./plugins/payment-gateway.fungi" as Pay {
 }
 
 ;; A flow that calls the assimilated plugin through the governed boundary.
+;; Processes a payment via the bridged plugin; inputs interrogated at the Toxic Border.
+;; V_DPM capability required: network.outbound, audit.write
+;; Proof obligation: amount > 0 and currency != ""
 secure flow processPayment(amount: Int, currency: String) -> Result<Bool, Error>
 contract {
   intent "Process a payment via the assimilated gateway"
@@ -62,6 +65,8 @@ contract {
 
 ;; Inner computation invoked across the DWI boundary by `step` above.
 ;; In a full build this would dispatch into the assimilated Pay plugin.
+;; Runs the inner payment computation inside a shared-nothing DWI isolate.
+;; Pure — no runtime authority / no effects.
 pure flow processPaymentInner(amount: Int) -> Bool
 contract {
   intent "Inner payment computation executed inside a DWI isolate"

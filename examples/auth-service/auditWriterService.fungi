@@ -4,6 +4,8 @@
 
 type AuditWriteResult = Result<Response, String>
 
+;; Maps an event type to a severity level for routing and retention — pure lookup, safe with no authority.
+;; Pure — no runtime authority / no effects.
 // Classify an audit event severity
 pure flow classifyAuditSeverity(eventType: String) -> String
 contract {
@@ -24,6 +26,8 @@ contract {
   }
 }
 
+;; Rejects audit events missing eventName or level so only complete entries reach the log — pure predicate, safe with no authority.
+;; Pure — no runtime authority / no effects.
 // Validate that an audit event has required fields before writing to the log
 pure flow validateAuditEvent(eventName: String, level: String) -> Bool
 contract {
@@ -41,6 +45,8 @@ contract {
   return true
 }
 
+;; Accepts an untrusted audit event over HTTP, validates required fields, then writes a redacted entry to the governed log — permitted because tainted inputs are redacted before the write.
+;; V_DPM capability required: network.inbound, audit.write
 // HTTP endpoint: accept and write an audit event
 secure flow writeAuditEvent(readonly request: Request) -> AuditWriteResult
 contract {

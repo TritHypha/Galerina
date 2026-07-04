@@ -4,6 +4,8 @@
 
 type CapabilityResolveResult = Result<Response, String>
 
+;; Reports whether a named effect capability is available in this deployment — pure lookup, safe with no authority.
+;; Pure — no runtime authority / no effects.
 // Check if a named effect is available in the current deployment
 pure flow isEffectAvailable(effectName: String) -> Bool
 contract {
@@ -22,6 +24,8 @@ contract {
   }
 }
 
+;; Returns the execution tier (cpu/enclave/denied) where a given effect is permitted to run — pure lookup, safe with no authority.
+;; Pure — no runtime authority / no effects.
 // Return the deployment tier for a given effect (governs where it runs)
 pure flow effectTier(effectName: String) -> String
 contract {
@@ -38,6 +42,8 @@ contract {
   }
 }
 
+;; Resolves an untrusted capability-name request into availability and tier, writing a redacted audit entry — permitted because the tainted effect name is redacted before the write.
+;; V_DPM capability required: network.inbound, audit.write
 // HTTP endpoint: resolve a capability by name
 secure flow resolveCapability(readonly request: Request) -> CapabilityResolveResult
 contract {

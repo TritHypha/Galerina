@@ -33,6 +33,9 @@ guard AdminOperationsGuard {
 ;; admitted to ANY flow inside. The condition references a declared guard; the
 ;; compiler records the admission requirement and the runtime checks V_DPM bit 8.
 gate(AdminOperationsGuard) {
+  ;; Deletes a record; admin-only and audited, reachable only after clearing the gate.
+  ;; V_DPM capability required: database.write, audit.write
+  ;; Proof obligation: recordId != ""
   secure flow deleteRecord(recordId: String) -> Result<Bool, Error>
   contract {
     intent "Delete a record — admin-only, audit-required"

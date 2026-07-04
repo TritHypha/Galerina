@@ -9,6 +9,8 @@
 // explicitly would trigger FUNGI-GOV-017:warning ("the runtime handles this;
 // remove the block").
 
+;; Processes a standard API request under runtime-auto-selected shielding; safe because it only records an audit entry and returns a fixed acceptance result — no untrusted data is acted upon.
+;; V_DPM capability required: audit.write, network.inbound
 secure flow processStandardRequest(readonly request: Request) -> Result<String, String>
 contract {
   intent { "Standard API request processing under default runtime-selected shielding." }

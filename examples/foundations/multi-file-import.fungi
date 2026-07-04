@@ -20,6 +20,9 @@
 
 import "./validation-utils.fungi"  // merge validation-utils' flows into this scope via the DAG
 
+;; Registers a new user after validating email and age via the merged DAG flows.
+;; V_DPM capability required: database.write, audit.write
+;; Proof obligation: age >= 18
 secure flow registerUser(email: String, age: Int) -> Result<Bool, Error>
 contract {
   intent "Register a new user after validation"

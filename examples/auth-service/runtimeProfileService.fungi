@@ -1,6 +1,8 @@
 // Phase 50 — Runtime Profile Service
 // Governs which execution profiles are allowed and what they permit
 
+;; Returns whether a runtime profile permits recursion (denied for strict/high_integrity); safe as a pure predicate over the profile string.
+;; Pure — no runtime authority / no effects.
 pure flow profileAllowsRecursion(profile: String) -> Bool
 {
   if profile.contains("strict") { return false }
@@ -8,6 +10,8 @@ pure flow profileAllowsRecursion(profile: String) -> Bool
   return true
 }
 
+;; Returns whether a runtime profile permits unbounded loops (denied for strict/deterministic); safe as a pure predicate over the profile string.
+;; Pure — no runtime authority / no effects.
 pure flow profileAllowsUnboundedLoop(profile: String) -> Bool
 {
   if profile.contains("strict") { return false }
@@ -15,6 +19,8 @@ pure flow profileAllowsUnboundedLoop(profile: String) -> Bool
   return true
 }
 
+;; Returns whether a runtime profile requires an execution budget (true for high_integrity/deterministic); safe as a pure predicate over the profile string.
+;; Pure — no runtime authority / no effects.
 pure flow profileRequiresBudget(profile: String) -> Bool
 {
   if profile.contains("high_integrity") { return true }
@@ -22,6 +28,8 @@ pure flow profileRequiresBudget(profile: String) -> Bool
   return false
 }
 
+;; Returns the security level rank for a runtime profile (deterministic highest, 1 default); safe as a pure lookup with no side effects.
+;; Pure — no runtime authority / no effects.
 pure flow profileSecurityLevel(profile: String) -> Int
 {
   if profile.contains("deterministic") { return 4 }
@@ -31,6 +39,8 @@ pure flow profileSecurityLevel(profile: String) -> Int
   return 1
 }
 
+;; Checks a runtime-profile request against the governed profile rules and returns its permissions; permitted because the untrusted profile name is trapped-on-empty and redacted before the audit write.
+;; V_DPM capability required: network.inbound, audit.write
 secure flow checkProfile(readonly request: Request) -> Response
 contract {
   intent { "Check a runtime profile request against the governed profile rules." }

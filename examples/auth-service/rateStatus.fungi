@@ -3,6 +3,8 @@
 
 type RateStatusResult = Result<RateReport,String>
 
+;; Returns the current rate-limit counters for the requesting IP so clients can back off before hitting 429; safe because it only reads the client IP header and writes a benign audit event.
+;; V_DPM capability required: network.inbound, audit.write
 guarded flow rateStatus(readonly request: Request) -> RateStatusResult
 contract {
   intent "Return current rate-limit counters for the requesting IP. Helps clients back off gracefully before hitting 429."

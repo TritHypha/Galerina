@@ -12,6 +12,8 @@
 /// Governance requirements (safety, audit, effects) are enforced regardless
 /// of which hardware target is ultimately selected.
 
+;; Processes flight telemetry into a proposed flight decision on ARM SVE2 with hardware-enforced memory safety; permitted because telemetry is validated and the command passes the safety envelope before the audit write, under deterministic bounded-runtime safety.
+;; V_DPM capability required: telemetry.read, navigation.compute, flight_control.propose, audit.write
 secure flow processFlightTelemetry(readonly telemetry: TelemetryPacket) -> Result<FlightDecision, FlightError>
 contract {
   intent {

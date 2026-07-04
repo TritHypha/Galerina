@@ -10,6 +10,8 @@
 
 // Returns true when the algorithm string is a recognised proof algorithm.
 // Recognised algorithms: "fungi.gov.sig.v1" (native governance) and "sha256".
+;; Returns whether a signing-algorithm string is one of the recognised proof algorithms; safe as a pure whitelist check over fixed constants.
+;; Pure — no runtime authority / no effects.
 pure flow isValidAlgorithm(alg: String) -> Bool
 contract {
   intent { "Return true when the algorithm is a recognised proof algorithm." }
@@ -22,6 +24,8 @@ contract {
 
 // Returns a strength score for the proof algorithm.
 // fungi.gov.sig.v1 = 3 (native governance sig), sha256 = 2, unknown = 0.
+;; Returns a fixed strength score for a proof algorithm (3 strongest, 0 unknown); safe as a pure lookup with no side effects.
+;; Pure — no runtime authority / no effects.
 pure flow proofStrength(algorithm: String) -> Int
 contract {
   intent { "Return the proof strength score for the given algorithm (3=strongest, 0=unknown)." }
@@ -34,6 +38,8 @@ contract {
 
 // The governed proof verification endpoint.
 // Accepts { algorithm, signaturePresent } and returns proof metadata.
+;; Verifies a governance proof by its declared algorithm and returns proof metadata; permitted because the untrusted algorithm is trapped-on-empty and redacted before the audit write.
+;; V_DPM capability required: network.inbound, audit.write
 secure flow verifyProof(readonly request: Request) -> Response
 contract {
   intent { "Verify a governance proof using its declared proof algorithm." }

@@ -6,6 +6,8 @@ type Session {
 type SessionId = Brand<String, "SessionId">
 type SessionError = enum { InvalidToken SessionLimitReached }
 
+;; Creates a session for a verified user from the request token, denying the sessionId as PII in the response and reporting to audit — permitted because the sessionId is redacted before it is logged.
+;; V_DPM capability required: database.write, audit.write
 secure flow createSession(readonly request: Request) -> CreateSessionResult
 contract {
   intent { "Create a new session for a verified user." }

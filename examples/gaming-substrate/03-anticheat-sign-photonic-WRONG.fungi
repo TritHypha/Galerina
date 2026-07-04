@@ -7,6 +7,8 @@
 // photonic lane." Anti-cheat signing CANNOT be approximated. No tolerance and no amount of
 // redundancy admits this — FUNGI-SUBSTRATE-001 fires at every deployment profile, and the
 // mandatory post-quantum form (crypto.sign.hybrid) is gated just the same.
+;; Intentionally WRONG: attempts to sign a match result on a photonic lane; NOT permitted — integrity needs bit-exactness, so the crypto effect on a photonic lane is denied FUNGI-SUBSTRATE-001 regardless of tolerance or redundancy.
+;; V_DPM capability required: crypto.sign.hybrid, audit.write
 secure flow signMatchResultWrong(request: Request) -> Result<Response, ApiError>
 contract {
   intent { "Attempt to sign a match result on a photonic lane — denied: integrity needs bit-exactness." }

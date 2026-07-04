@@ -5,6 +5,8 @@
 /// This example shows Galerina governance applied to High Consequence Systems
 /// beyond PII — aerospace, where failure costs lives not just data.
 
+;; Updates the aircraft flight path from validated telemetry while preserving the safety envelope; permitted because telemetry is validated and the command is safety-checked before the audit write, under deterministic bounded-runtime safety.
+;; V_DPM capability required: telemetry.read, navigation.compute, flight_control.propose, audit.write
 secure flow updateFlightPath(readonly telemetry: TelemetryPacket) -> Result<FlightCommand, FlightError>
 contract {
   intent {

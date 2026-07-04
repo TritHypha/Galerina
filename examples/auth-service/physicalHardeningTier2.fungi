@@ -3,6 +3,8 @@
 // REMINDER: The runtime auto-selects shielding from ValueGraph risk tier.
 // Only write this block when deep_trench hardware is confirmed available.
 
+;; Processes a high-value record under Deep Trench Isolation side-channel protection; safe because it only records an audit entry and returns a fixed result, with patient_id masked and tamper response set to quarantine_core.
+;; V_DPM capability required: audit.write, network.inbound, database.write
 secure flow processHighValueRecord(readonly request: Request) -> Result<String, String>
 contract {
   intent { "Process a high-value record with Deep Trench Isolation side-channel protection." }

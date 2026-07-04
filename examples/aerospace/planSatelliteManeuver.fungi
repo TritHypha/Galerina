@@ -5,6 +5,8 @@
 /// Shows the distinction: safety_critical (risk to people/physical systems)
 /// vs mission_critical (risk to mission/asset/strategic objective).
 
+;; Computes a satellite maneuver plan within mission, fuel, timing and orbital constraints; permitted because inputs are validated and the maneuver is constraint-verified before the audit write, under deterministic bounded-runtime safety.
+;; V_DPM capability required: mission.read, orbit.compute, propulsion.plan, audit.write
 secure flow planSatelliteManeuver(readonly mission: MissionPlan) -> Result<ManeuverPlan, MissionError>
 contract {
   intent {

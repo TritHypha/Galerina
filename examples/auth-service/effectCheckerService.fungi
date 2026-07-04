@@ -5,6 +5,8 @@
 
 type EffectCheckResult = Result<Response, String>
 
+;; Returns the capability an effect requires by matching against the known stdlib effect table — pure lookup, safe with no authority.
+;; Pure — no runtime authority / no effects.
 // Known stdlib effects and the capabilities they require
 pure flow effectRequiresCapability(effectName: String) -> String
 contract {
@@ -26,6 +28,8 @@ contract {
   }
 }
 
+;; Checks that a pure flow declares no effects, enforcing qualifier/effect consistency — pure predicate, safe with no authority.
+;; Pure — no runtime authority / no effects.
 // Check if a flow's declared effects are complete
 pure flow effectsAreComplete(declaredEffect: String, qualifier: String) -> Bool
 contract {
@@ -38,6 +42,8 @@ contract {
   return true
 }
 
+;; Maps a capability to its audit severity for compliance tracking — pure lookup, safe with no authority.
+;; Pure — no runtime authority / no effects.
 // Classify the effect check severity
 pure flow classifyEffectSeverity(capability: String) -> String
 contract {
@@ -56,6 +62,8 @@ contract {
   }
 }
 
+;; Verifies an untrusted flow's declared effects are valid and complete, writing a redacted audit entry — permitted because tainted inputs are redacted before the write.
+;; V_DPM capability required: network.inbound, audit.write
 // HTTP endpoint: check effect declarations
 secure flow checkEffectDeclaration(readonly request: Request) -> EffectCheckResult
 contract {

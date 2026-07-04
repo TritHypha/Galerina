@@ -3,6 +3,8 @@
 
 type TierResult = Result<Response, String>
 
+;; Chooses the optimal execution tier from a flow's qualifier and effect/integer properties — pure decision logic, safe with no authority.
+;; Pure — no runtime authority / no effects.
 // Select the best execution tier for a flow based on its properties
 pure flow selectExecutionTier(qualifier: String, hasEffects: Bool, isIntegerOnly: Bool) -> String
 contract {
@@ -17,6 +19,8 @@ contract {
   return "sync"
 }
 
+;; Maps an execution tier to a traffic-light colour for display — pure lookup, safe with no authority.
+;; Pure — no runtime authority / no effects.
 // Map tier to a traffic light color for display
 pure flow tierTrafficLight(tier: String) -> String
 contract {
@@ -33,6 +37,8 @@ contract {
   }
 }
 
+;; Accepts untrusted flow metadata over HTTP, traps empty fields, and returns the selected tier while writing a redacted audit entry — permitted because the tainted tier is redacted before the write.
+;; V_DPM capability required: network.inbound, audit.write
 secure flow resolveBytecodeRoute(readonly request: Request) -> TierResult
 contract {
   effects { network.inbound audit.write }

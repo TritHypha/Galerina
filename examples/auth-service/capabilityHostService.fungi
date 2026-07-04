@@ -10,6 +10,8 @@
 ;; every side-effectful call routes through this governed layer before execution.
 ;; This is the runtime-in-Galerina foundation for Phase 42-44 (75% milestone).
 
+;; Decides whether an effect is permitted in a given context (denies network/db/secret/fs in deterministic or production contexts) — pure policy, safe with no authority.
+;; Pure — no runtime authority / no effects.
 // Capability policy: which effects are allowed in which contexts
 pure flow isEffectAllowedInContext(effect: String, context: String) -> Bool
 contract {
@@ -52,6 +54,8 @@ contract {
   return false
 }
 
+;; Classifies an effect into a governance class (denied/read/write/compute/external) — pure lookup, safe with no authority.
+;; Pure — no runtime authority / no effects.
 // Returns the governance class for an effect
 pure flow effectGovernanceClass(effect: String) -> Int
 contract {
@@ -68,6 +72,8 @@ contract {
   return 0
 }
 
+;; Resolves an untrusted effect/context request into an allow decision and governance class, writing a redacted audit entry — permitted because tainted inputs are redacted before the write.
+;; V_DPM capability required: network.inbound, audit.write
 // HTTP endpoint: check whether an effect is allowed in the caller's context
 secure flow checkCapability(readonly request: Request) -> Response
 contract {

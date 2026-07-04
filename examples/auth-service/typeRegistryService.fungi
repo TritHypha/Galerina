@@ -10,6 +10,8 @@
 
 // Returns true when the type name is one of the Galerina primitive built-ins.
 // Built-ins: Int, Bool, String, Float, Bytes, Unit, Void.
+;; Returns whether a type name is one of the Galerina primitive built-ins; safe as a pure whitelist check over fixed constants.
+;; Pure — no runtime authority / no effects.
 pure flow isBuiltinType(name: String) -> Bool
 contract {
   intent { "Return true when the type name is a Galerina built-in primitive." }
@@ -27,6 +29,8 @@ contract {
 
 // Returns the category string for the given type name.
 // Categories: "primitive", "collection", "effect", "governance", "unknown".
+;; Returns the category for a type name (primitive/collection/effect/governance/unknown); safe as a pure classification with no side effects.
+;; Pure — no runtime authority / no effects.
 pure flow typeCategory(name: String) -> String
 contract {
   intent { "Return the category for the given type name." }
@@ -49,6 +53,8 @@ contract {
 
 // The governed type resolution endpoint.
 // Accepts { typeName } and returns the resolved type metadata.
+;; Resolves a type name against the governed type registry and returns its metadata; permitted because the untrusted type name is trapped-on-empty and redacted before the audit write.
+;; V_DPM capability required: network.inbound, audit.write
 secure flow resolveType(readonly request: Request) -> Response
 contract {
   intent { "Resolve a type name against the governed type registry." }

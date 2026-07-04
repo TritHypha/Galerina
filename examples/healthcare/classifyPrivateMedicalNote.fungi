@@ -10,6 +10,8 @@
 /// Key principle: patient data never leaves the device.
 /// Apple Silicon provides the performance of cloud AI with device-local sovereignty.
 
+;; Classifies a protected medical note on-device via the Apple Neural Engine so PHI never leaves the device; permitted because the note is boundary-protected before inference and the audit record is redacted.
+;; V_DPM capability required: phi.read, ai.inference, audit.write
 secure flow classifyPrivateMedicalNote(
   readonly note: Protected<MedicalNote>
 ) -> Result<ClinicalTagReport, ClinicalInferenceError>

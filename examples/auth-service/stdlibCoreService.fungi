@@ -5,6 +5,8 @@
 type StdlibResult = Result<Response, String>
 
 // String operations (Galerina stdlib canonical forms)
+;; Returns whether text contains the substring sub; safe as a pure string operation with no side effects.
+;; Pure — no runtime authority / no effects.
 pure flow strContains(text: String, sub: String) -> Bool
 contract {
   intent { "Check if text contains substring sub." }
@@ -13,6 +15,8 @@ contract {
   return text.contains(sub)
 }
 
+;; Returns whether text starts with the given prefix; safe as a pure string operation with no side effects.
+;; Pure — no runtime authority / no effects.
 pure flow strStartsWith(text: String, prefix: String) -> Bool
 contract {
   intent { "Check if text starts with prefix." }
@@ -21,6 +25,8 @@ contract {
   return text.startsWith(prefix)
 }
 
+;; Returns the character length of text; safe as a pure string operation with no side effects.
+;; Pure — no runtime authority / no effects.
 pure flow strLength(text: String) -> Int
 contract {
   intent { "Return the character length of text." }
@@ -30,6 +36,8 @@ contract {
 }
 
 // Math operations
+;; Returns the minimum of a and b; safe as a pure arithmetic comparison with no side effects.
+;; Pure — no runtime authority / no effects.
 pure flow mathMin(a: Int, b: Int) -> Int
 contract {
   intent { "Return the minimum of a and b." }
@@ -41,6 +49,8 @@ contract {
   return b
 }
 
+;; Returns the maximum of a and b; safe as a pure arithmetic comparison with no side effects.
+;; Pure — no runtime authority / no effects.
 pure flow mathMax(a: Int, b: Int) -> Int
 contract {
   intent { "Return the maximum of a and b." }
@@ -52,6 +62,8 @@ contract {
   return b
 }
 
+;; Clamps n to the range [lo, hi]; safe as a pure arithmetic operation with no side effects.
+;; Pure — no runtime authority / no effects.
 pure flow mathClamp(n: Int, lo: Int, hi: Int) -> Int
 contract {
   intent { "Clamp n to the range [lo, hi]." }
@@ -67,6 +79,8 @@ contract {
 }
 
 // HTTP service endpoint for stdlib exploration
+;; Demonstrates stdlib string/math operations over request input in a governed context; permitted because the untrusted input is trapped-on-empty and the derived length redacted before the audit write.
+;; V_DPM capability required: network.inbound, audit.write
 secure flow stdlibDemo(readonly request: Request) -> StdlibResult
 contract {
   effects {

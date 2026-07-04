@@ -1,6 +1,8 @@
 // Phase 49 — Value Classification Service
 // Classifies data values for privacy/risk governance
 
+;; Maps a type name to its value-sensitivity class (medical highest, public lowest); safe as a pure classification with no side effects.
+;; Pure — no runtime authority / no effects.
 pure flow classifyValue(typeName: String) -> Int
 {
   if typeName.contains("medical") { return 4 }
@@ -11,16 +13,22 @@ pure flow classifyValue(typeName: String) -> Int
   return 1
 }
 
+;; Returns whether a sensitivity classification requires redaction (level >= 3); safe as a pure comparison with no side effects.
+;; Pure — no runtime authority / no effects.
 pure flow requiresRedaction(classification: Int) -> Bool
 {
   return classification >= 3
 }
 
+;; Returns whether a sensitivity classification requires encryption (level >= 2); safe as a pure comparison with no side effects.
+;; Pure — no runtime authority / no effects.
 pure flow requiresEncryption(classification: Int) -> Bool
 {
   return classification >= 2
 }
 
+;; Classifies request data into a governed value-sensitivity class and its redaction/encryption needs; permitted because the untrusted type name is trapped-on-empty and the derived classification redacted before the audit write.
+;; V_DPM capability required: network.inbound, audit.write
 secure flow classifyData(readonly request: Request) -> Response
 contract {
   intent { "Classify request data into a governed value-sensitivity class." }

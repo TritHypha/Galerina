@@ -1,16 +1,22 @@
 // Phase 51 — Manifest Verification Service (v1.0 RC)
 // The runtime manifest verification endpoint — validates the production deployment contract
 
+;; Checks that a manifest schema version carries the expected fungi/v1 markers — pure string check, safe with no authority.
+;; Pure — no runtime authority / no effects.
 pure flow isValidManifestVersion(version: String) -> Bool
 {
   return version.contains("fungi.") and version.contains(".v1")
 }
 
+;; Returns true when the governance flags mask is non-zero (at least one flag set) — pure predicate, safe with no authority.
+;; Pure — no runtime authority / no effects.
 pure flow isValidGovernanceFlags(flags: Int) -> Bool
 {
   return flags > 0
 }
 
+;; Derives a manifest trust level from verified/signature/flags-valid combination — pure decision logic, safe with no authority.
+;; Pure — no runtime authority / no effects.
 pure flow manifestTrustLevel(verified: Bool, hasSignature: Bool, flagsValid: Bool) -> Int
 {
   if verified and hasSignature and flagsValid { return 4 }
@@ -19,6 +25,8 @@ pure flow manifestTrustLevel(verified: Bool, hasSignature: Bool, flagsValid: Boo
   return 0
 }
 
+;; Verifies an untrusted manifest's schema version and signature status into a trust level and accept decision, writing a redacted audit entry — permitted because tainted derived values are redacted before the write.
+;; V_DPM capability required: network.inbound, audit.write
 secure flow verifyManifest(readonly request: Request) -> Response
 contract {
   intent { "Verify a runtime manifest's schema version and signature status." }

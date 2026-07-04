@@ -5,6 +5,8 @@
 // Pattern: Pure Internal Transform (r6-01 gate — zero effects, pure)
 // Pattern: Governed API Route (secure probe with audit trail)
 
+;; Returns a static liveness string for load-balancer health checks.
+;; Pure — no runtime authority / no effects.
 pure flow getHealthStatus() -> String
 contract {
   intent { "Return runtime health status — used by load balancer health checks." }
@@ -14,6 +16,9 @@ contract {
   return "healthy"
 }
 
+;; Returns detailed health incl. manifest status; GET-only, emits an audit entry.
+;; V_DPM capability required: network.inbound, audit.write
+;; Proof obligation: request.method == "GET"
 secure flow getDetailedHealth(readonly request: Request) -> Result<String, String>
 contract {
   intent { "Return detailed health including manifest verification status. Emits an info-level audit entry." }

@@ -1,6 +1,8 @@
 // Phase 47 — Routing Policy Service
 // Governed decision: which execution tier should a flow use?
 
+;; Chooses the best execution tier for a flow from its effect count, AI use, and criticality; safe as a pure decision over booleans and an integer.
+;; Pure — no runtime authority / no effects.
 pure flow preferredTier(effectCount: Int, hasAI: Bool, isCritical: Bool) -> String
 contract {
   intent { "Choose the best execution tier for a flow given its properties." }
@@ -12,6 +14,8 @@ contract {
   return "cpu"
 }
 
+;; Maps a tier name to its governance class rank (enclave highest, 0 unknown); safe as a pure lookup with no side effects.
+;; Pure — no runtime authority / no effects.
 pure flow tierGovernanceClass(tier: String) -> Int
 {
   if tier.contains("enclave") { return 4 }
@@ -21,6 +25,8 @@ pure flow tierGovernanceClass(tier: String) -> Int
   return 0
 }
 
+;; Resolves the execution route and tier for a flow from its routing policy; permitted because the untrusted effect count is trapped-on-negative and the derived tier redacted before the audit write.
+;; V_DPM capability required: network.inbound, audit.write
 secure flow resolveRoute(readonly request: Request) -> Response
 contract {
   intent { "Resolve the execution route and tier for a flow from its routing policy." }
