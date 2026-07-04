@@ -121,7 +121,7 @@ Marks a value that must never appear in logs, audit events, or serialized respon
 Use `redact(value)` to produce a safe audit-safe token before writing to AuditLog.
 
 ```galerina
-redacted let secret = vault.read("api-key")
+redacted let secret = secret.read("api-key")
 AuditLog.write(AuditEvent { secret: redact(secret) })
 ```
 
@@ -283,7 +283,7 @@ These two rules apply to every flow, without exception.
 | Mutable value | `mut x = 0` |
 | Immutable param | `readonly request: T` |
 | Access-controlled | `protected let x = record.field` |
-| Must not log | `redacted let x = vault.read(k)` |
+| Must not log | `redacted let x = secret.read(k)` |
 | Safe audit token | `redact(x)` |
 | Effects block | `effects { database.write\naudit.write }` |
 | Named result | `-> CreatePatientResult` (declared in contract.types) |

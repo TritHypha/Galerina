@@ -3,6 +3,11 @@
 This document is the definitive reference for current canonical Galerina syntax.
 Use it when generating code. Do not invent syntax not listed here.
 
+> **New (2026-07-04):** a full, example-grounded learning library now lives in
+> [`docs/language/fungi/`](../language/fungi/README.md) (and [`docs/language/gate/`](../language/gate/README.md)
+> for `.gate`). This file stays the quick codegen reference; the library is the comprehensive one, grounded
+> file-by-file in the real parser + passing examples.
+
 ---
 
 ## 1. Flow Signatures
@@ -84,7 +89,7 @@ contract ExampleContract {
         database.read
         database.write
         audit.write
-        network.egress
+        network.outbound
         cache.read
         cache.write
     }
@@ -249,12 +254,22 @@ Available effect names:
 | `database.read` | May query the database |
 | `database.write` | May mutate the database |
 | `audit.write` | May write to the audit log |
-| `network.egress` | May make outbound network calls |
+| `network.outbound` | May make outbound network calls |
+| `network.inbound` | May accept inbound network traffic |
 | `cache.read` | May read from cache |
 | `cache.write` | May write to cache |
-| `vault.read` | May read secrets from the vault |
-| `queue.publish` | May publish to a message queue |
-| `queue.subscribe` | May consume from a message queue |
+| `secret.read` | May read a secret |
+| `storage.read` / `storage.write` | May read / write object storage |
+| `message.publish` | May publish to a message queue |
+| `ledger.mutate` | The `storage.write` + `audit.write` composite |
+
+> **Authoritative set (corrected 2026-07-04):** the full canonical effect vocabulary is `CANONICAL_EFFECTS` in
+> `packages-galerina/galerina-core-compiler/src/effect-checker.ts` (single-source, validated by
+> `scripts/audit-effect-canonicality.mjs`). A declared effect **outside** that set fails a production compile
+> (`FUNGI-EFFECT-004`). This table previously listed `network.egress` / `vault.read` / `queue.publish`, which the
+> compiler does **not** accept — the real names are `network.outbound` / `secret.read` / `message.publish`. See
+> [`docs/language/fungi/03-effects-and-capabilities.md`](../language/fungi/03-effects-and-capabilities.md) for the
+> full annotated list.
 
 ---
 
@@ -312,11 +327,11 @@ return PatientResult { ssn: ssn }   // missing gate
 
 ```galerina
 // CORRECT — redact before audit
-redacted let apiKey = vault.read("service-key")
+redacted let apiKey = secret.read("service-key")
 AuditLog.write(AuditEvent { key: redact(apiKey) })
 
 // AVOID — logging redacted value directly
-redacted let apiKey = vault.read("service-key")
+redacted let apiKey = secret.read("service-key")
 AuditLog.write(AuditEvent { key: apiKey })   // runtime error
 ```
 
