@@ -12,7 +12,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | inline | 147 | emitted, NO exported constant (R4 — Stage F) |
 | referenced | 97 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 8 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
-| phantom | 103 | doc-only mention, not in source (drift — DOC-004) |
+| phantom | 109 | doc-only mention, not in source (drift — DOC-004) |
 | ref | 156 | referenced only (no def/emit) |
 
 ## RESERVED — defined but not emitted (std #1: tag wire-or-retire)
@@ -354,7 +354,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-EFFECT-005 | live | BroadAliasUsed | warning |
 | FUNGI-EFFECT-006 | live | DenyOnlyEffect | error |
 
-### ERR_* (101)
+### ERR_* (107)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -366,6 +366,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | ERR_AI_MODEL_REQUIRED | inline | — | — |
 | ERR_AI_TOKEN_BUDGET | inline | — | — |
 | ERR_AMOUNT_EXCEEDS_LIMIT | ref | — | — |
+| ERR_AMOUNT_TOO_LARGE | phantom | — | — |
 | ERR_ANONYMOUS_DENIED | ref | — | — |
 | ERR_ARTIFACT_HASH_MISMATCH | ref | — | — |
 | ERR_BRIDGE_DISPATCH_FAULT | inline | — | — |
@@ -395,6 +396,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | ERR_EMPTY_OPERATION | ref | — | — |
 | ERR_EMPTY_PAYLOAD | ref | — | — |
 | ERR_EMPTY_PLUGIN_ALIAS | ref | — | — |
+| ERR_EMPTY_RECORD_ID | phantom | — | — |
 | ERR_EMPTY_SEAL | ref | — | — |
 | ERR_EMPTY_SOURCE_HASH | ref | — | — |
 | ERR_EMPTY_USER_ID | ref | — | — |
@@ -417,6 +419,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | ERR_MEMORY_EXCEEDED | inline | — | — |
 | ERR_MISSING_CORRELATION_ID | ref | — | — |
 | ERR_NEGATIVE | ref | — | — |
+| ERR_NEGATIVE_AGE | phantom | — | — |
 | ERR_NEGATIVE_AMOUNT | ref | — | — |
 | ERR_NEGATIVE_INPUT | ref | — | — |
 | ERR_NEGATIVE_SIZE | ref | — | — |
@@ -425,6 +428,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | ERR_NON_POSITIVE | ref | — | — |
 | ERR_ORBITALS_EXCEEDED | inline | — | — |
 | ERR_PAYLOAD_EXCEEDS_DWI_CEILING | ref | — | — |
+| ERR_PAYLOAD_TOO_LARGE | phantom | — | — |
 | ERR_PLAN_NOT_PREFLIGHTED | inline | — | — |
 | ERR_QUANTUM_PQ_REQUIRED | ref | — | — |
 | ERR_REGISTRY | ref | — | — |
@@ -450,12 +454,14 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | ERR_TRAP | ref | — | — |
 | ERR_TROTTER_STEPS_EXCEEDED | inline | — | — |
 | ERR_UNKNOWN_OP | inline | — | — |
+| ERR_UNREALISTIC_AGE | phantom | — | — |
 | ERR_UNVERIFIED_METADATA | ref | — | — |
 | ERR_VALID_CODE | ref | — | — |
 | ERR_VALIDATION_FAILURE | ref | — | — |
 | ERR_X | ref | — | — |
 | ERR_X_Y | ref | — | — |
 | ERR_ZERO | ref | — | — |
+| ERR_ZERO_AMOUNT | phantom | — | — |
 | ERR_ZERO_FUEL | ref | — | — |
 | ERR_ZERO_ITERATIONS | ref | — | — |
 | ERR_ZERO_PAYLOAD | ref | — | — |

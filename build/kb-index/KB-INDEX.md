@@ -1,4 +1,4 @@
-# Galerina KB index (748 docs)
+# Galerina KB index (761 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -986,7 +986,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: ERR_SECRET_MISSING
 - tasks: #34
 - links: [[fail-closed-no-50yr-mistake-rule]] [[galerina-tritmesh-layering-and-formats]]
-- terms: env, galerina, spore, component, tritmesh, fail-closed, arena, step, design, plaintext, shipped, build, anchor, container
+- terms: env, galerina, spore, component, step, tritmesh, fail-closed, arena, design, plaintext, shipped, build, anchor, container
 
 ## Galerina — Execution Graph Kernel Architecture
 `../ZTF-Knowledge-Bases/galerina-execution-graph-kernel-architecture.md`
@@ -1080,6 +1080,19 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #214, #40, #41, #102
 - terms: admission, tri-pipe, fault, re-r, binary, build, never, signed, photonic, tests, galerina, framework, built, tolerance
 
+## Galerina `.fungi` / `.gate` — security findings register (consolidated)
+`../ZTF-Knowledge-Bases/galerina-fungi-gate-security-findings-register.md`
+- codes: FUNGI-MATCH-001, FUNGI-GATELANG-001, FUNGI-GATELANG-002, FUNGI-PRIVACY-002
+- tasks: #34
+- terms: gate, wasm, fungi, gir, kernel, audit, rd-0240, findings, fix, fail-closed, closed, fail-open, status, set
+
+## `.fungi` / `.hypha` security syntax & logic — consolidated + corrected (2026-07-04)
+`../ZTF-Knowledge-Bases/galerina-fungi-security-syntax-and-logic-2026-07-04.md`
+- codes: FUNGI-MATCH-001, FUNGI-PRIVACY-001
+- tasks: #194
+- links: [[gate-fungi-language-audit-state]] [[tritmeshql-project-state]]
+- terms: shipped, fungi, owner-gated, security, cache, passport, gate, hypha, fix, effects, match, fail-open, reference-proven, note
+
 ## `.gate` docs/examples embody the SUPERSEDED v1 model (naming collision) — 2026-07-02
 `../ZTF-Knowledge-Bases/galerina-gate-docs-examples-model-collision-2026-07-02.md`
 - tasks: #34
@@ -1103,7 +1116,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 
 ## GitHub org `zero-trust-framework` — naming convention & release architecture (2026-07-01)
 `../ZTF-Knowledge-Bases/galerina-github-org-naming-release-architecture.md`
-- terms: repo, org, zero-trust-framework, tier, name, repos, packages, php, zt-, prefix, says, tritmesh, webhooks, function
+- terms: repo, org, zero-trust-framework, tier, name, repos, packages, php, zt-, prefix, says, galerina, tritmesh, webhooks
 
 ## Galerina — Glossary and Definition Index
 `../ZTF-Knowledge-Bases/galerina-glossary.md`
@@ -1494,10 +1507,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 
 ## Galerina — Outstanding R&D + To-Dos catalog (2026-06-23)
 `../ZTF-Knowledge-Bases/galerina-outstanding-rd-and-todos-2026-06-23.md`
-- codes: FUNGI-PRIVACY-001, FUNGI-MATCH-001, FUNGI-PRIVACY-002, FUNGI-RESIDENCY-001, FUNGI-CACHE-001, FUNGI-PERM-001, FUNGI-GDCE-001, FUNGI-PARSE-001, FUNGI-VER-001, ERR_HOST_NATIVE_DENIED, FUNGI-RUNTIME-006, FUNGI-SUBSTRATE-001
-- tasks: #34, #13, #14, #15, #16, #102, #163, #165, #161, #128, #11, #12, #149, #103, #104
+- codes: FUNGI-PRIVACY-001, FUNGI-MATCH-001, FUNGI-PRIVACY-002, FUNGI-RESIDENCY-001, FUNGI-CACHE-001, FUNGI-PERM-001, FUNGI-GDCE-001, FUNGI-PARSE-001, FUNGI-VER-001, ERR_HOST_NATIVE_DENIED, FUNGI-RUNTIME-006, FUNGI-SUBSTRATE-001, FUNGI-SECRET-004
+- tasks: #34, #13, #14, #15, #16, #102, #163, #165, #161, #128, #11, #12, #149, #103, #104, #194
 - links: [[links]]
-- terms: gate, owner-gated, build, signed, fungi, audit, galerina, design, mjs, fix, fail-closed, prod, graph, shipped
+- terms: gate, owner-gated, build, signed, fungi, galerina, audit, mjs, design, prod, fix, fail-closed, graph, tritmesh
 
 ## Galerina Package Manifest Specification
 `../ZTF-Knowledge-Bases/galerina-package-manifest-spec.md`
@@ -1932,7 +1945,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/galerina-rd-0138-0143-photonic-security-automation.md`
 - codes: FUNGI-SUBSTRATE-001, FUNGI-PRIVACY-002
 - tasks: #110
-- links: [[feedback-rd-prove-own-maths]] [[feedback-rd-absorb-positive-and-negative]] [[feedback-rd-refusal-pairs-with-work-with-it]] [[logicn-fhe-encrypted-similarity-verdict]] [[logicn-owner-decisions-2026-06-26]] [[logicn-social-ecosystem-cloud-native]] [[logicn-notes-37-38-39-verdict]] [[logicn-auth-package]] [[logicn-secrets-management-rd-2026-06-23]]
+- links: [[feedback-rd-prove-own-maths]] [[feedback-rd-absorb-positive-and-negative]] [[feedback-rd-refusal-pairs-with-work-with-it]] [[galerina-fhe-encrypted-similarity-verdict]] [[galerina-owner-decisions-2026-06-26]] [[galerina-social-ecosystem-cloud-native]] [[galerina-notes-37-38-39-verdict]] [[galerina-auth-package]] [[galerina-secrets-management-rd-2026-06-23]]
 - terms: photonic, tower-citizen, tri-pipe, capability, auth, rd-0138, data, re-derives, lane, audit, refute, net-new, automate, defence
 
 ## RD-0144..0149 — "Automate the defence" in Governed Chaos & Multi-Substrate
@@ -1954,7 +1967,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## RD-0154..0167 — TritMesh / `.fungi` mesh-database architecture
 `../ZTF-Knowledge-Bases/galerina-rd-0154-0167-tritmesh-mesh-database.md`
 - codes: FUNGI-SUBSTRATE-001
-- links: [[galerina-rd-0150-graph-as-data-spine]] [[logicn-compute-only-fence-and-wasm-verdict]] [[logicn-photonic-tri-rd]] [[feedback-most-secure-default-when-unsure]] [[galerina-rd-audit-76mesh-recheck-2026-07-01]] [[galerina-rd-audit-76mesh-recheck-2026-07-01|RD-0170]]
+- links: [[galerina-rd-0150-graph-as-data-spine]] [[galerina-compute-only-fence-and-wasm-verdict]] [[galerina-photonic-tri-rd]] [[feedback-most-secure-default-when-unsure]] [[galerina-rd-audit-76mesh-recheck-2026-07-01]] [[galerina-rd-audit-76mesh-recheck-2026-07-01|RD-0170]]
 - terms: fungi, tritmesh, index, adopt, zero-copy, architecture, mjs, real, rd-0154, sound, per-branch, verdicts, graph, future-hw
 
 ## RD-0168 — Graph-driven PCI/DSS + security compliance scanner
@@ -2071,6 +2084,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - links: [[fail-closed-no-50yr-mistake-rule]] [[question-the-choice-posture]] [[honest-no-overreach-posture]]
 - terms: match, must, trap, same, overflow, deny, real, checked-math, audit, owner, proposal, reject, governed, gate
 
+## RD-0240 — MATCH exhaustiveness must fail CLOSED (compiler-enforced `_ =>` default arm)
+`../ZTF-Knowledge-Bases/galerina-rd-0240-match-exhaustiveness-failclosed.md`
+- codes: FUNGI-MATCH-001
+- terms: match, arm, default, fungi, rd-0240, must, fail-open, deny, rule, wasm, trap, fail, enforcement, gate
+
 ## RD-0241 — "Predestination paradox" → the three-tier future-contract model (forward design) — 2026-07-02
 `../ZTF-Knowledge-Bases/galerina-rd-0241-predestination-future-contract-2026-07-02.md`
 - codes: FUNGI-PRIVACY-002
@@ -2088,6 +2106,30 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/galerina-rd-0245-gate-catchall-glyph-decision-2026-07-03.md`
 - links: [[galerina-gate-graph-pipeline-decided]] [[fail-closed-no-50yr-mistake-rule]]
 - terms: gate, glyph, catch-all, adopt, omission, keep, why, fix, rd-0245, decision, deny, lower, right, measured
+
+## RD-0254 — TritMesh Cache recheck
+`../ZTF-Knowledge-Bases/galerina-rd-0254-tritmesh-cache-recheck-2026-07-03.md`
+- codes: FUNGI-SUBSTRATE-001, FUNGI-RETAIN-001
+- tasks: #194
+- terms: cache, note, proof, rd-0170, security, cached, key, boundary, claim, speed, verdict, core, never, leak
+
+## RD-0255 — TritMesh cache side-channel hardening
+`../ZTF-Knowledge-Bases/galerina-rd-0255-tritmesh-cache-side-channel-hardening.md`
+- codes: FUNGI-SECRET-004, FUNGI-RETAIN-001, FUNGI-SECRET-001, FUNGI-MEMORY-001, FUNGI-AFFINE-001, FUNGI-SUBSTRATE-001
+- terms: cache, design, rd-0170, tenant, oracle, green, before, key, structural, hit, miss, cross-tenant, side-channel, personally-verified
+
+## RD-0256 — Optional Serverless for Galerina + TritMesh
+`../ZTF-Knowledge-Bases/galerina-rd-0256-optional-serverless-2026-07-04.md`
+- tasks: #194
+- terms: serverless, external, cache, galerina, design, tritmesh, rd-0254, epoch, audit, never, optional, wasm, model, edge
+
+## RD-0257…0264 — Prismatic Tensor Syntax (PTS) / "Wavefront Execution"
+`../ZTF-Knowledge-Bases/galerina-rd-0257-prismatic-tensor-syntax-2026-07-04.md`
+- terms: tensor, gate, note, rd-0257, syntax, pts, execution, next, photonic, proof, min, already, prismatic, wavefront
+
+## RD-0258 — Data-oblivious / constant-time secure-flow execution: detector shipped, lowering owner-gated
+`../ZTF-Knowledge-Bases/galerina-rd-0258-data-oblivious-detector-and-design-2026-07-04.md`
+- terms: secret, detector, shipped, owner-gated, data-oblivious, lowering, constant-time, mjs, mask, execution, class, compare, select, min
 
 ## R&D — Phase 34B boundary param auto-taint: verified state + build-ready spec
 `../ZTF-Knowledge-Bases/galerina-rd-34b-paramtaint-buildspec-2026-06-24.md`
@@ -2227,6 +2269,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #110
 - terms: defensive-pub, ranking, shipped, papers, bar, grounding, design-only, paper-worthiness, measured, table, why, applied, arm, hybrid
 
+## Paper-Worthiness Review — RD-0114 → RD-0256
+`../ZTF-Knowledge-Bases/galerina-rd-paper-worthiness-review-0114-0256-2026-07-04.md`
+- codes: FUNGI-SECRET-004, FUNGI-RETAIN-001, FUNGI-PRIVACY-001
+- terms: negative, defensive, draft, scientific, class, existing, review, candidates, first, rd-0114, dp-rd-, rd-0117, already-disclosed, these
+
 ## Can the absorbed R&D improve Galerina performance, boundary, or memory?
 `../ZTF-Knowledge-Bases/galerina-rd-performance-and-boundary-opportunities.md`
 - codes: FUNGI-ENTROPY-001
@@ -2246,10 +2293,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 
 ## Galerina — R&D Results Log (quick-lookup verdict table)
 `../ZTF-Knowledge-Bases/galerina-rd-results-log.md`
-- codes: FUNGI-PERM-001, FUNGI-GDCE-001, FUNGI-PRIVACY-002, FUNGI-PCI-G-000, FUNGI-ASSIMILATE-004, ERR_BRIDGE_UNATTESTED, ERR_HOST_NATIVE_DENIED, ERR_AI_MODEL_NOT_APPROVED, FUNGI-GOV-TPL-001, FUNGI-ASSIMILATE-003, FUNGI-BUILD-002, FUNGI-ATTR-001, FUNGI-PRIVACY-001, FUNGI-EFFECT-006, FUNGI-SEC-020, FUNGI-NAME-001, ERR_CERTIFIED, FUNGI-MATCH-001, FUNGI-GOV-003, ERR_ADDON_UNPINNED
+- codes: FUNGI-PERM-001, FUNGI-GDCE-001, FUNGI-PRIVACY-002, FUNGI-PCI-G-000, FUNGI-ASSIMILATE-004, ERR_BRIDGE_UNATTESTED, ERR_HOST_NATIVE_DENIED, ERR_AI_MODEL_NOT_APPROVED, FUNGI-GOV-TPL-001, FUNGI-ASSIMILATE-003, FUNGI-BUILD-002, FUNGI-ATTR-001, FUNGI-PRIVACY-001, FUNGI-EFFECT-006, FUNGI-SEC-020, FUNGI-NAME-001, ERR_CERTIFIED, FUNGI-MATCH-001, FUNGI-GOV-003, ERR_ADDON_UNPINNED, FUNGI-SECRET-004, FUNGI-RETAIN-001
 - tasks: #102, #34, #0089, #212, #110, #10, #11, #194, #205, #155
 - links: [[feedback-rd-absorb-positive-and-negative]] [[galerina-ci-state-and-cross-repo-gates]] [[galerina-kernel-ts-vs-fungi-rationale]] [[galerina-graph-ascii-outcome-and-gate-pipeline-2026-07-01]] [[galerina-graph-ascii-spec-and-ab-benchmark-2026-07-01]] [[galerina-rd-0236-runtime-50yr-mistake-audit]] [[galerina-rd-0237-runtime-governance-in-gate-reexamination]] [[galerina-rd-0234-fungi-50yr-mistake-audit]] [[galerina-rd-0234b-fungi-second-pass-hunt]] [[fail-closed-no-50yr-mistake-rule]]
-- terms: gate, owner, fungi, mjs, graph, galerina, signed, green, real, build, mixed, audit, verdict, runtime
+- terms: gate, owner, fungi, mjs, galerina, graph, signed, green, real, shipped, build, verdict, design, audit
 
 ## Galerina syntax 7-axis sweep (2026-06-25) — PARTIAL (4/8 categories; 4 rate-limited, to resume)
 `../ZTF-Knowledge-Bases/galerina-rd-syntax-7axis-sweep-2026-06-25.md`
@@ -2298,7 +2345,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## Galerina — R&D rules & standards
 `../ZTF-Knowledge-Bases/galerina-rnd-rules-and-standards.md`
 - codes: FUNGI-SUBSTRATE-001
-- links: [[logicn-ip-paper-strategy]]
+- links: [[galerina-ip-paper-strategy]]
 - terms: verdict, results-log, refusal, galerina, rules, memory, never, prove, score, crypto, most-secure, default, paper-worthiness, absorb
 
 ## Galerina Roadmap — phase-close snapshot 2026-06-21
@@ -2921,6 +2968,13 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/HANDOVER-rnd-research-session-2026-07-01.md`
 - terms: session, hub, prompt, graph, copy-paste, gate, research, build, fungi, design, pre-filter, decision, wwwprojects, rd-0162
 
+## HANDOVER — TritMesh / Galerina R&D session close (2026-07-04)
+`../ZTF-Knowledge-Bases/HANDOVER-tritmesh-session-2026-07-04.md`
+- codes: FUNGI-SECRET-004, FUNGI-SUBSTRATE-001
+- tasks: #194
+- links: [[zt-scoring-two-scales]] [[reboot-prompt-location]] [[tritmeshql-project-state]] [[github-org-naming-convention]] [[org-licensing-and-ip-posture]]
+- terms: session, tritmesh, galerina, prod, shipped, verified, published, trithypha, gap, mjs, pushed, without, proven, cache
+
 ## Hello World API Pattern
 `../ZTF-Knowledge-Bases/hello-world-api-pattern.md`
 - terms: hello, response, public, world, form, api, pattern, data, flow, explicit, get, shorter, safe, status
@@ -3075,6 +3129,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-PARSE-001, FUNGI-PARSE-002
 - terms: errornode, parser, phase, flow, recovery, token, next, tokens, synchronisation, skip, diagnostic, galerina, error, secure
 
+## PASTE-TO-START-tritmesh-2026-07-04.md
+`../ZTF-Knowledge-Bases/PASTE-TO-START-tritmesh-2026-07-04.md`
+- terms: prod, build, galerina, zero-trust, wwwprojects, keep-green, owner, never, cache, paste-to-start-tritmesh-2026-07-04, tritmesh, don, ztf-knowledge-bases, real
+
 ## Pattern Matching
 `../ZTF-Knowledge-Bases/pattern-matching.md`
 - terms: matching, match, order, galerina, patterns, pattern, api, enum, validation, err, future, let, payment, binding
@@ -3177,10 +3235,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-SUBSTRATE-001
 - terms: text, never, synthetic, lane, digital, honest, photonic, pmatrix, mesh, mac, cost, crypto, verdict, crossover
 
-## LogicN AI-Friendliness — R&D Spec (2026-06-23)
+## Galerina AI-Friendliness — R&D Spec (2026-06-23)
 `../ZTF-Knowledge-Bases/rd-absorbed/from-galerina-r-and-d/AI-FRIENDLINESS-SPEC-2026-06-23.md`
 - tasks: #215, #218
-- terms: logicn, agents, docs, mjs, examples, build, txt, llms, root, claude, index, layer, decisions, paths
+- terms: agents, galerina, docs, mjs, examples, build, txt, llms, root, claude, index, layer, decisions, paths
 
 ## Owner-notes corpus — R&D coverage map (104 notes, 2026-06-26)
 `../ZTF-Knowledge-Bases/rd-absorbed/from-galerina-r-and-d/NOTES-CORPUS-COVERAGE-MAP-2026-06-26.md`
@@ -3189,7 +3247,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## ORG & LICENSING — decision map (draft for `zero-trust-framework/governance`)
 `../ZTF-Knowledge-Bases/rd-absorbed/from-galerina-r-and-d/ORG-AND-LICENSING.md`
 - tasks: #149
-- terms: license, tmf, logicn, org, map, governance, free, tritmesh, trust, decision, zero-trust-framework, gate, core, adoption
+- terms: license, tmf, galerina, org, map, governance, free, tritmesh, trust, decision, zero-trust-framework, gate, core, adoption
 
 ## R&D forward roadmap — 2026-06-17
 `../ZTF-Knowledge-Bases/rd-absorbed/from-galerina-r-and-d/RD-ROADMAP-2026-06-17.md`
@@ -3199,7 +3257,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## Reconciliation — external "08-review" security assessment vs. the real codebase + hub work
 `../ZTF-Knowledge-Bases/rd-absorbed/from-galerina-r-and-d/SECURITY-REVIEW-08-RECONCILIATION-2026-06-26.md`
 - tasks: #102, #106
-- terms: residual, hub, egress, update, prod, host, gap, dial, operator, real, stdlib, shipped, contract, honest
+- terms: residual, hub, egress, update, prod, host, galerina, gap, dial, operator, real, stdlib, shipped, contract
 
 ## Verification-Coverage Index — every flagged concern + what we have NOT checked
 `../ZTF-Knowledge-Bases/rd-absorbed/from-galerina-r-and-d/VERIFICATION-COVERAGE-INDEX.md`
@@ -3554,6 +3612,13 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - links: [[fail-closed-no-50yr-mistake-rule]]
 - terms: door, spore, file, write, fail-closed, container, deny, doors, residual, query, set, model, mutation, enumerated
 
+## RD-0253 — Note-81 `.spore` passport: maths recheck, corrections & expansion (2026-07-03)
+`../ZTF-Knowledge-Bases/spore-passport-note81-maths-recheck-rd0253-2026-07-03.md`
+- codes: FUNGI-SUBSTRATE-001
+- tasks: #34
+- links: [[record-everything-for-papers]] [[zt-scoring-two-scales]] [[github-org-naming-convention]]
+- terms: note, shipped, passport, maths, min, proven, bar, recheck, design, proof, spore, corrections, expansion, corrected
+
 ## `.spore` / TritMesh — security reality check + honest roadmap (2026-07-02)
 `../ZTF-Knowledge-Bases/spore-tritmesh-security-reality-check-2026-07-02.md`
 - codes: FUNGI-SUBSTRATE-001
@@ -3568,6 +3633,13 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## Startup And Boot Warmup
 `../ZTF-Knowledge-Bases/startup-and-boot-warmup.md`
 - terms: galerina, startup, boot, profile, production, json, safe, build, cache, warmup, minimal, artefacts, runtime, generated
+
+## STARTUP — TritMesh R&D + build brief (2026-07-04)
+`../ZTF-Knowledge-Bases/STARTUP-tritmesh-rnd-and-build-2026-07-04.md`
+- codes: FUNGI-SECRET-004
+- tasks: #194
+- links: [[zt-scoring-two-scales]] [[graph-not-manual-search-rule]] [[reboot-prompt-location]] [[tritmeshql-project-state]] [[org-licensing-and-ip-posture]]
+- terms: tritmesh, prod, build, don, without, hold, state, forward, push, owner-gated, gap, galerina, building, rules
 
 ## Terminology And Naming Philosophy
 `../ZTF-Knowledge-Bases/terminology-naming-philosophy.md`

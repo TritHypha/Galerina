@@ -3,10 +3,10 @@
   "totals": {
     "packages": 93,
     "testBearing": 68,
-    "tests": 6056,
-    "devTools": 46,
-    "auditTools": 24,
-    "toolsInCadence": 16,
+    "tests": 6075,
+    "devTools": 49,
+    "auditTools": 27,
+    "toolsInCadence": 19,
     "proofs": 40
   },
   "packages": [
@@ -287,7 +287,7 @@
       "name": "galerina-core-compiler",
       "kind": "core",
       "description": "Galerina compiler pipeline contracts for parsing, checking, IR, diagnostics and reports.",
-      "tests": 4237,
+      "tests": 4256,
       "hasTestScript": true,
       "border": "PASS",
       "files": 96,
@@ -1070,6 +1070,7 @@
         "gate-wiring",
         "coverage",
         "diagnostics",
+        "teaching-corpus",
         "doc-drift",
         "graph/index"
       ]
@@ -1126,6 +1127,18 @@
         "secrets/privacy",
         "doc-drift",
         "graph/index"
+      ]
+    },
+    {
+      "name": "audit-fungi-runtime.mjs",
+      "category": "audit",
+      "purpose": "audit the SELF-HOSTED `.fungi` runtime corpus (the files the compiler/runtime is",
+      "selfTest": true,
+      "inCadence": true,
+      "concerns": [
+        "gate-wiring",
+        "coverage",
+        "teaching-corpus"
       ]
     },
     {
@@ -1190,6 +1203,23 @@
       ]
     },
     {
+      "name": "audit-oblivious.mjs",
+      "category": "audit",
+      "purpose": "RD-0258 data-oblivious / constant-time DETECTOR for .fungi (2026-07-04).",
+      "selfTest": true,
+      "inCadence": true,
+      "concerns": [
+        "sinks/taint",
+        "signing/fusion",
+        "gate-wiring",
+        "diagnostics",
+        "secrets/privacy",
+        "tier-floor",
+        "teaching-corpus",
+        "sensitive-allowlist"
+      ]
+    },
+    {
       "name": "audit-overclaim-phrases.mjs",
       "category": "audit",
       "purpose": "kill the recurring \"O(1) / single-clock / constant-time zero-wipe\"",
@@ -1216,6 +1246,21 @@
       ]
     },
     {
+      "name": "audit-perf-hotpath.mjs",
+      "category": "audit",
+      "purpose": "static PERFORMANCE / optimisation auditor for the production source",
+      "selfTest": true,
+      "inCadence": true,
+      "concerns": [
+        "signing/fusion",
+        "gate-wiring",
+        "diagnostics",
+        "tier-floor",
+        "graph/index",
+        "muted-diagnostics"
+      ]
+    },
+    {
       "name": "audit-production-blockers.mjs",
       "category": "audit",
       "purpose": "every PRODUCTION_BLOCKER must have a real emitter (RD-0124 NOW-1 follow-up).",
@@ -1236,6 +1281,7 @@
       "concerns": [
         "provenance",
         "diagnostics",
+        "teaching-corpus",
         "doc-drift",
         "graph/index"
       ]
@@ -1550,8 +1596,11 @@
       "selfTest": false,
       "inCadence": false,
       "concerns": [
+        "naming",
+        "teaching-corpus",
         "source-hygiene",
-        "doc-drift"
+        "doc-drift",
+        "graph/index"
       ]
     },
     {
@@ -1612,7 +1661,8 @@
       "inCadence": false,
       "concerns": [
         "source-hygiene",
-        "doc-drift"
+        "doc-drift",
+        "graph/index"
       ]
     },
     {
@@ -1646,6 +1696,7 @@
     "coverage": [
       "audit-allowlist-sensitive.mjs",
       "audit-coverage.mjs",
+      "audit-fungi-runtime.mjs",
       "audit-name-collisions.mjs",
       "audit-production-blockers.mjs",
       "audit-runtime-coverage.mjs",
@@ -1668,8 +1719,10 @@
       "audit-graph-integrity.mjs",
       "audit-muted-diagnostics.mjs",
       "audit-name-collisions.mjs",
+      "audit-oblivious.mjs",
       "audit-overclaim-phrases.mjs",
       "audit-package-border.mjs",
+      "audit-perf-hotpath.mjs",
       "audit-production-blockers.mjs",
       "audit-provenance.mjs",
       "audit-scratchdir-hygiene.mjs",
@@ -1709,6 +1762,7 @@
       "audit-name-collisions.mjs",
       "audit-overclaim-phrases.mjs",
       "audit-package-border.mjs",
+      "audit-perf-hotpath.mjs",
       "audit-production-blockers.mjs",
       "audit-provenance.mjs",
       "audit-signed-fixture-drift.mjs",
@@ -1727,9 +1781,11 @@
       "run-all-tests.cjs",
       "run-core-tests.cjs",
       "run-phase-close.mjs",
+      "status.mjs",
       "check-gate-injection.mjs",
       "fungi-astshape.mjs",
       "mark-core-change.cjs",
+      "rd-absorb.mjs",
       "rebuild-fusable-packages.mjs",
       "verify-artifacts.mjs"
     ],
@@ -1738,6 +1794,7 @@
       "audit-checker-wiring.mjs",
       "audit-muted-diagnostics.mjs",
       "audit-name-collisions.mjs",
+      "audit-oblivious.mjs",
       "audit-package-border.mjs",
       "audit-runtime-coverage.mjs",
       "audit-sink-canonicality.mjs"
@@ -1745,6 +1802,7 @@
     "sinks/taint": [
       "audit-checker-wiring.mjs",
       "audit-muted-diagnostics.mjs",
+      "audit-oblivious.mjs",
       "audit-sink-canonicality.mjs",
       "check-gate-injection.mjs"
     ],
@@ -1754,7 +1812,9 @@
       "audit-effect-canonicality.mjs",
       "audit-muted-diagnostics.mjs",
       "audit-name-collisions.mjs",
+      "audit-oblivious.mjs",
       "audit-overclaim-phrases.mjs",
+      "audit-perf-hotpath.mjs",
       "audit-runtime-coverage.mjs",
       "audit-signed-fixture-drift.mjs",
       "audit-sink-canonicality.mjs",
@@ -1793,6 +1853,9 @@
       "audit-corpus-effect-names.mjs",
       "audit-coverage.mjs",
       "audit-effect-canonicality.mjs",
+      "audit-fungi-runtime.mjs",
+      "audit-oblivious.mjs",
+      "audit-perf-hotpath.mjs",
       "audit-runtime-coverage.mjs",
       "audit-sink-canonicality.mjs",
       "audit-syntax.mjs",
@@ -1834,9 +1897,14 @@
     ],
     "teaching-corpus": [
       "audit-corpus-effect-names.mjs",
+      "audit-coverage.mjs",
       "audit-doc-drift.mjs",
+      "audit-fungi-runtime.mjs",
+      "audit-oblivious.mjs",
+      "audit-provenance.mjs",
       "lint-conventions.mjs",
-      "run-phase-close.mjs"
+      "run-phase-close.mjs",
+      "status.mjs"
     ],
     "source-hygiene": [
       "audit-corpus-effect-names.mjs",
@@ -1860,6 +1928,7 @@
     "secrets/privacy": [
       "audit-effect-canonicality.mjs",
       "audit-muted-diagnostics.mjs",
+      "audit-oblivious.mjs",
       "audit-sink-canonicality.mjs",
       "audit-tier-boundary.mjs",
       "kb-index.mjs",
@@ -1873,16 +1942,20 @@
     ],
     "tier-floor": [
       "audit-muted-diagnostics.mjs",
+      "audit-oblivious.mjs",
+      "audit-perf-hotpath.mjs",
       "audit-tier-boundary.mjs",
       "lint-conventions.mjs"
     ],
     "muted-diagnostics": [
-      "audit-muted-diagnostics.mjs"
+      "audit-muted-diagnostics.mjs",
+      "audit-perf-hotpath.mjs"
     ],
     "naming": [
       "audit-name-collisions.mjs",
       "audit-web-stub-guard.mjs",
-      "run-phase-close.mjs"
+      "run-phase-close.mjs",
+      "status.mjs"
     ],
     "provenance": [
       "audit-provenance.mjs",
