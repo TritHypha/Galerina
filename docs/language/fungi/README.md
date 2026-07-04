@@ -113,6 +113,9 @@ shows the **common mistake(s)**, and points at a **real example file** you can o
 8. **[Worked examples](08-worked-examples.md)** — three real files read end-to-end (a healthcare
    read flow, a governance gate/guard file, and a piece of the self-hosted lexer), annotated line by
    line, plus a tour of the corpus.
+9. **[Data-oblivious secrets](09-data-oblivious-secrets.md)** — constant-time compares and no
+   secret-dependent branches (the timing / Spectre class): how to write it, and the `audit-oblivious`
+   detector that flags violations. (RD-0258.)
 
 ---
 

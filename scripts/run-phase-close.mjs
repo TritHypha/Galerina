@@ -238,6 +238,13 @@ run("perf:hotpath", "node", ["scripts/audit-perf-hotpath.mjs", "--soft"]);
 // file has an executing test, and the P9 parity/pipeline harness exists. Report-only (--soft). Owner ask 2026-07-03.
 run("fungi:runtime", "node", ["scripts/audit-fungi-runtime.mjs", "--soft"]);
 
+// ── 5c-v. Data-oblivious / constant-time audit (RD-0258, 2026-07-04) ──
+// Flags SECRET-dependent control flow / comparison in `.fungi` (the timing + speculative-execution
+// side-channel class): `secretX == y` (non-constant-time compare, HIGH) and if/while/match on a
+// `protected`/`redacted`/`secret.read` value (advisory). The DETECTOR half of RD-0258 — the
+// compiler-enforced `@oblivious` lowering stays OWNER-GATED. Report-only (--soft).
+run("oblivious", "node", ["scripts/audit-oblivious.mjs", "--soft"]);
+
 // ── 5c-ii-bis. RD-0234b — the two dev-tools the ZT-tooling audit recommended (2026-07-02) ──
 // checker:wiring — every EXPORTED checker has a real pipeline call-site (the dead-gate class:
 //   checkTaint / checkMonkeyPatching / checkAttributeDirectives each had ZERO call-sites before the fix).
