@@ -8,9 +8,9 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 
 | status | count | meaning |
 |---|---|---|
-| live | 116 | emitted with an exported constant |
-| inline | 145 | emitted, NO exported constant (R4 — Stage F) |
-| referenced | 95 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
+| live | 117 | emitted with an exported constant |
+| inline | 147 | emitted, NO exported constant (R4 — Stage F) |
+| referenced | 97 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 8 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
 | phantom | 103 | doc-only mention, not in source (drift — DOC-004) |
 | ref | 156 | referenced only (no def/emit) |
@@ -354,11 +354,12 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-EFFECT-005 | live | BroadAliasUsed | warning |
 | FUNGI-EFFECT-006 | live | DenyOnlyEffect | error |
 
-### ERR_* (98)
+### ERR_* (101)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
 | ERR_ADDON_HASH_MISMATCH | ref | — | — |
+| ERR_ADDON_UNPINNED | ref | — | — |
 | ERR_AI | ref | — | — |
 | ERR_AI_CALL_BUDGET | inline | — | — |
 | ERR_AI_MODEL_NOT_APPROVED | inline | — | — |
@@ -379,6 +380,8 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | ERR_CERTIFIED_NO_EGRESS | inline | — | — |
 | ERR_CERTIFIED_NO_PQ_KEY | inline | — | — |
 | ERR_CERTIFIED_NO_TOKEN_BUDGET | inline | — | — |
+| ERR_CERTIFIED_UNSIGNED_CAP_FORBIDDEN | inline | — | — |
+| ERR_CERTIFIED_UNSIGNED_LOAD_FORBIDDEN | inline | — | — |
 | ERR_CODE | ref | — | — |
 | ERR_COMPUTE_BUDGET_EXCEEDED | ref | — | — |
 | ERR_DIV_BY_ZERO | ref | — | — |
@@ -524,6 +527,13 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-GATE-001 | live | GATE_UNKNOWN_CONDITION / GateAnnotationRequired | error |
 | FUNGI-GATE-002 | inline | GATE_WRAPS_PURE_FLOW | — |
 
+### GATELANG (2)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-GATELANG-001 | referenced | MalformedGateHeader | error |
+| FUNGI-GATELANG-002 | referenced | GateProductionEmitGatedOnBackstop | error |
+
 ### GEN (1)
 
 | code | status | name(s) | severity |
@@ -650,7 +660,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-LIMIT-001 | ref | — | — |
+| FUNGI-LIMIT-001 | inline | ENFORCED_LIMIT_EXCEEDED | — |
 
 ### LOGIC (14)
 
@@ -909,7 +919,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-PRIVACY-001 | live | PROTECTED_DATA_IN_RESPONSE_PRIVACY_DENY | error |
-| FUNGI-PRIVACY-002 | inline | EmbeddingCrossesFlowBoundary / EmbeddingEgressDenied | — |
+| FUNGI-PRIVACY-002 | live | EmbeddingCrossesFlowBoundary / EmbeddingEgressDenied | — |
 | FUNGI-PRIVACY-003 | ref | — | — |
 
 ### PROFILE (8)

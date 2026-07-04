@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "builtAt": "2026-07-03T14:03:13.785Z",
+  "builtAt": "2026-07-03T23:08:00.477Z",
   "workspaceDir": "C:\\wwwprojects\\Galerina\\examples\\auth-service",
   "flows": [
     {
@@ -8801,5 +8801,5 @@
     "C:\\wwwprojects\\Galerina\\examples\\auth-service\\verifyToken.fungi": "232098eea4eb3358b61c0a710686827551e62a9e37ec4a30f708b6afda76c391"
   },
   "skippedFiles": 31,
-  "integrity": "sha256:5e2a3609ae0930ec16482a39d703a8da61abb6c0f0d5b402b0f4b54b8d289058"
+  "integrity": "sha256:0816baba03f4c273c2de16a77ee7858b2ec6bc1ecf8a45c261c0ca03185ad1b3"
 }
