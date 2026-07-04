@@ -93,3 +93,6 @@ build/lss-test-*/
 # .mcp.json registers per-project MCP servers (e.g. codebase-memory-mcp) whose `command` is an
 # ABSOLUTE path on THIS machine — committing it would break every other checkout. Keep it local.
 /.mcp.json
+
+# codebase-memory-mcp per-machine code index (rebuild via index_repository; never commit the blob)
+.codebase-memory/
