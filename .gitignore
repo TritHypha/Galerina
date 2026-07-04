@@ -94,5 +94,13 @@ build/lss-test-*/
 # ABSOLUTE path on THIS machine — committing it would break every other checkout. Keep it local.
 /.mcp.json
 
-# codebase-memory-mcp per-machine code index (rebuild via index_repository; never commit the blob)
-.codebase-memory/
+# ── Local retrieval / index MCP artifacts (per-machine; rebuildable; NEVER commit) ──
+# Machine-local caches built by local MCP servers (codebase-memory-mcp's code index). Large binary
+# blobs, rebuilt on demand via index_repository — they must never enter history. An accidental
+# `git add -A` once swept a 9.7 MB .codebase-memory/graph.db.zst (a root copy AND a nested per-package
+# copy) up to origin (commit ae55016 "u", 2026-07-04). `**/` ignores the dir at ANY depth — do NOT
+# anchor it with a leading slash, that would miss the nested packages-galerina/.../src/ copy.
+# (The rnd-docs chroma vector store lives under %LOCALAPPDATA%, outside this repo, so needs no rule.)
+**/.codebase-memory/
+# Name-based backstop for the heavy sqlite index dump, in case the directory rule above is ever narrowed.
+**/graph.db.zst
