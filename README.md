@@ -91,60 +91,33 @@ Galerina can **govern a tolerant numeric sub-kernel** as a deny-by-default, untr
 
 ### Capability radars
 
-A nine-axis self-assessment across the surfaces Galerina governs. Click any chart to open the full SVG.
+A ten-axis capability self-assessment across the surfaces Galerina governs, plus a TritMesh cache / `.spore`-passport vs. legacy-caching comparison. Click any chart to open the full SVG.
 
 
-<div width="100%" align="center">
-  <div>
-    <div width="50%" align="center">
-      <a href="docs/diagrams/radar-1-security-governance.svg"><img src="docs/diagrams/radar-1-security-governance.svg" alt="Security & Governance" width="100%"></a>
-      <br><sub><b>1 · Security &amp; Governance</b></sub>
-    </div>
-    <div width="50%" align="center">
-      <a href="docs/diagrams/radar-2-performance-systems.svg"><img src="docs/diagrams/radar-2-performance-systems.svg" alt="Performance & Systems" width="100%"></a>
-      <br><sub><b>2 · Performance &amp; Systems</b></sub>
-    </div>
- 
-  </div>
-    <div width="50%" align="center">
-      <a href="docs/diagrams/radar-3-devx-ecosystem.svg"><img src="docs/diagrams/radar-3-devx-ecosystem.svg" alt="DevX & Ecosystem" width="100%"></a>
-      <br><sub><b>3 · DevX &amp; Ecosystem</b></sub>
-    </div>
-    <div width="50%" align="center">
-      <a href="docs/diagrams/radar-4-governed-chaos.svg"><img src="docs/diagrams/radar-4-governed-chaos.svg" alt="Governed Chaos" width="100%"></a>
-      <br><sub><b>4 · Governed Chaos</b></sub>
-    </div>
-  </div>
-  </div>
-    <div width="50%" align="center">
-      <a href="docs/diagrams/radar-5-cicd-devsupport.svg"><img src="docs/diagrams/radar-5-cicd-devsupport.svg" alt="CI/CD & Dev Support" width="100%"></a>
-      <br><sub><b>5 · CI/CD &amp; Dev Support</b></sub>
-    </div>
-    <div width="50%" align="center">
-      <a href="docs/diagrams/radar-6-tri-ternary.svg"><img src="docs/diagrams/radar-6-tri-ternary.svg" alt="Tri / Ternary" width="100%"></a>
-      <br><sub><b>6 · Tri / Ternary</b></sub>
-    </div>
-  </div>
-  </div>
-    <div width="50%" align="center">
-      <a href="docs/diagrams/radar-7-web-api-secure.svg"><img src="docs/diagrams/radar-7-web-api-secure.svg" alt="Web & API Secure" width="100%"></a>
-      <br><sub><b>7 · Web &amp; API Secure</b></sub>
-    </div>
-    <div width="50%" align="center">
-      <a href="docs/diagrams/radar-8-databasing.svg"><img src="docs/diagrams/radar-8-databasing.svg" alt="Databasing" width="100%"></a>
-      <br><sub><b>8 · Databasing</b></sub>
-    </div>
-  </div>
-  </div>
-    <div width="50%" align="center">
-      <a href="docs/diagrams/radar-9-data-science.svg"><img src="docs/diagrams/radar-9-data-science.svg" alt="Data Science" width="100%"></a>
-      <br><sub><b>9 · Data Science</b></sub>
-    </div>
-    <div width="50%" align="center">
-      <a href="docs/diagrams/radar-10-AI-ML-NuroNet.svg"><img src="docs/diagrams/radar-10-AI-ML-NuroNet.svg" alt="AI / ML / Neural Nets" width="100%"></a>
-      <br><sub><b>10 · AI/ML/Nuro Nets</b></sub>
-    </div>
-  </div>
+<table align="center">
+  <tr>
+    <td width="50%" align="center"><a href="docs/diagrams/radar-1-security-governance.svg"><img src="docs/diagrams/radar-1-security-governance.svg" alt="Security & Governance" width="100%"></a><br><sub><b>1 · Security &amp; Governance</b></sub></td>
+    <td width="50%" align="center"><a href="docs/diagrams/radar-2-performance-systems.svg"><img src="docs/diagrams/radar-2-performance-systems.svg" alt="Performance & Systems" width="100%"></a><br><sub><b>2 · Performance &amp; Systems</b></sub></td>
+  </tr>
+  <tr>
+    <td width="50%" align="center"><a href="docs/diagrams/radar-3-devx-ecosystem.svg"><img src="docs/diagrams/radar-3-devx-ecosystem.svg" alt="DevX & Ecosystem" width="100%"></a><br><sub><b>3 · DevX &amp; Ecosystem</b></sub></td>
+    <td width="50%" align="center"><a href="docs/diagrams/radar-4-governed-chaos.svg"><img src="docs/diagrams/radar-4-governed-chaos.svg" alt="Governed Chaos" width="100%"></a><br><sub><b>4 · Governed Chaos</b></sub></td>
+  </tr>
+  <tr>
+    <td width="50%" align="center"><a href="docs/diagrams/radar-5-cicd-devsupport.svg"><img src="docs/diagrams/radar-5-cicd-devsupport.svg" alt="CI/CD & Dev Support" width="100%"></a><br><sub><b>5 · CI/CD &amp; Dev Support</b></sub></td>
+    <td width="50%" align="center"><a href="docs/diagrams/radar-6-tri-ternary.svg"><img src="docs/diagrams/radar-6-tri-ternary.svg" alt="Tri / Ternary" width="100%"></a><br><sub><b>6 · Tri / Ternary</b></sub></td>
+  </tr>
+  <tr>
+    <td width="50%" align="center"><a href="docs/diagrams/radar-7-web-api-secure.svg"><img src="docs/diagrams/radar-7-web-api-secure.svg" alt="Web & API Secure" width="100%"></a><br><sub><b>7 · Web &amp; API Secure</b></sub></td>
+    <td width="50%" align="center"><a href="docs/diagrams/radar-8-databasing.svg"><img src="docs/diagrams/radar-8-databasing.svg" alt="Databasing" width="100%"></a><br><sub><b>8 · Databasing</b></sub></td>
+  </tr>
+  <tr>
+    <td width="50%" align="center"><a href="docs/diagrams/radar-9-data-science.svg"><img src="docs/diagrams/radar-9-data-science.svg" alt="Data Science" width="100%"></a><br><sub><b>9 · Data Science</b></sub></td>
+    <td width="50%" align="center"><a href="docs/diagrams/radar-10-AI-ML-NuroNet.svg"><img src="docs/diagrams/radar-10-AI-ML-NuroNet.svg" alt="AI / ML / Neural Nets" width="100%"></a><br><sub><b>10 · AI / ML / Neural Nets</b></sub></td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center"><a href="docs/diagrams/galerina-tritmesh-cache-passport-vs-legacy.svg"><img src="docs/diagrams/galerina-tritmesh-cache-passport-vs-legacy.svg" alt="TritMesh — cache + .spore passport vs legacy caching" width="90%"></a><br><sub><b>11 · TritMesh — cache &amp; <code>.spore</code> passport vs legacy caching</b></sub></td>
+  </tr>
 </table>
 
 > **New here?** → [**SETUP.md**](SETUP.md) — install · run your first benchmark · Hello World with full governance comments
@@ -229,7 +202,11 @@ intent  →  governed execution plan  →  coordinated compute  →  audit proof
 
 ```galerina
 // ── Governed secure flow: PII handling ───────────────────────────────────────
-secure flow createPatient(readonly request: Request) -> CreatePatientResult
+;; Creates a patient record with protected PII — email is validated, stored, then REDACTED
+;; before it can reach the audit log; raw PII never crosses the audit boundary.
+;; V_DPM capability required: database.write, audit.write
+;; Proof obligation: PII is redacted before audit.write (enforced by the privacy contract).
+secure flow createPatient(readonly request: CreatePatientRequest) -> CreatePatientResult
 contract {
   types   { type CreatePatientResult = Result<Response, ApiError> }
   intent  { "Create a patient record with protected PII handling." }
@@ -245,6 +222,8 @@ contract {
 }
 
 // ── Pure flow: zero side effects, compiler-proved ────────────────────────────
+;; Computes 20% GBP VAT — a pure calculation with no runtime authority.
+;; Pure — no runtime authority / no effects.
 pure flow calculateVat(price: Money<GBP>) -> Money<GBP>
 contract { intent { "Calculate 20% VAT on a GBP price." } }
 {
@@ -252,6 +231,8 @@ contract { intent { "Calculate 20% VAT on a GBP price." } }
 }
 
 // ── Match: exhaustive by default ─────────────────────────────────────────────
+;; Maps a Status enum to a display string — total over the enum; the wildcard is fail-closed.
+;; Pure — no runtime authority / no effects.
 pure flow describeStatus(s: Status) -> String
 contract { intent { "Map a status enum to a display string." } }
 {
@@ -263,6 +244,11 @@ contract { intent { "Map a status enum to a display string." } }
   }
 }
 ```
+
+> **Comments carry governance.** The `;;` lines above each flow are **govComments** — preserved into the signed
+> `.lmanifest` as the security record (what the flow does, the capability it needs, the proof it owes). `//` and
+> `/* */` are ordinary code notes, discarded after parse. Full language reference:
+> [`docs/language/fungi/`](docs/language/fungi/README.md) · [`docs/language/gate/`](docs/language/gate/README.md).
 
 ---
 
