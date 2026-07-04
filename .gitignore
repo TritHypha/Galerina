@@ -88,3 +88,8 @@ build/lss-test-*/
 # into commits/KB/memory and then ARCHIVED to ../Galerina-R-AND-D/_session-bridge/handovers-archive/.
 # Ignore them at the root so a stray brief can't clutter the tree or be committed by accident.
 /HANDOVER-*.md
+
+# ── Personal MCP server config (machine-specific; not shared) ──
+# .mcp.json registers per-project MCP servers (e.g. codebase-memory-mcp) whose `command` is an
+# ABSOLUTE path on THIS machine — committing it would break every other checkout. Keep it local.
+/.mcp.json
