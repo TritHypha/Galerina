@@ -1,12 +1,12 @@
 {
   "generatedFrom": "build/code-index/code-index.json",
-  "total": 623,
+  "total": 628,
   "counts": {
     "ref": 156,
-    "inline": 145,
-    "live": 116,
+    "inline": 147,
+    "live": 117,
     "phantom": 103,
-    "referenced": 95,
+    "referenced": 97,
     "dead": 8
   },
   "entries": [
@@ -19,7 +19,19 @@
       "severities": [],
       "defs": 0,
       "emits": 0,
-      "tests": 0,
+      "tests": 2,
+      "docs": 2
+    },
+    {
+      "code": "ERR_ADDON_UNPINNED",
+      "family": "ERR_*",
+      "namespace": "ERR",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 4,
       "docs": 1
     },
     {
@@ -163,7 +175,7 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 10,
+      "tests": 11,
       "docs": 0
     },
     {
@@ -261,6 +273,30 @@
       "emits": 1,
       "tests": 2,
       "docs": 0
+    },
+    {
+      "code": "ERR_CERTIFIED_UNSIGNED_CAP_FORBIDDEN",
+      "family": "ERR_*",
+      "namespace": "ERR",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 2,
+      "docs": 2
+    },
+    {
+      "code": "ERR_CERTIFIED_UNSIGNED_LOAD_FORBIDDEN",
+      "family": "ERR_*",
+      "namespace": "ERR",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 1,
+      "docs": 2
     },
     {
       "code": "ERR_CODE",
@@ -1321,7 +1357,7 @@
       "severities": [],
       "defs": 0,
       "emits": 4,
-      "tests": 4,
+      "tests": 5,
       "docs": 1
     },
     {
@@ -3373,6 +3409,38 @@
       "docs": 0
     },
     {
+      "code": "FUNGI-GATELANG-001",
+      "family": "GATELANG",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [
+        "MalformedGateHeader"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 0,
+      "tests": 2,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-GATELANG-002",
+      "family": "GATELANG",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [
+        "GateProductionEmitGatedOnBackstop"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 0,
+      "tests": 2,
+      "docs": 0
+    },
+    {
       "code": "FUNGI-GEN-TEST-005",
       "family": "GEN",
       "namespace": "FUNGI",
@@ -3427,8 +3495,8 @@
       ],
       "defs": 1,
       "emits": 1,
-      "tests": 53,
-      "docs": 20
+      "tests": 60,
+      "docs": 21
     },
     {
       "code": "FUNGI-GOV-004",
@@ -3670,8 +3738,8 @@
       ],
       "defs": 1,
       "emits": 1,
-      "tests": 11,
-      "docs": 0
+      "tests": 18,
+      "docs": 1
     },
     {
       "code": "FUNGI-GOV-020",
@@ -4299,12 +4367,14 @@
       "code": "FUNGI-LIMIT-001",
       "family": "LIMIT",
       "namespace": "FUNGI",
-      "status": "ref",
-      "names": [],
+      "status": "inline",
+      "names": [
+        "ENFORCED_LIMIT_EXCEEDED"
+      ],
       "severities": [],
       "defs": 0,
-      "emits": 0,
-      "tests": 0,
+      "emits": 1,
+      "tests": 7,
       "docs": 1
     },
     {
@@ -5127,7 +5197,7 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 25,
+      "tests": 26,
       "docs": 0
     },
     {
@@ -6033,23 +6103,23 @@
       ],
       "defs": 1,
       "emits": 1,
-      "tests": 1,
-      "docs": 3
+      "tests": 23,
+      "docs": 4
     },
     {
       "code": "FUNGI-PRIVACY-002",
       "family": "PRIVACY",
       "namespace": "FUNGI",
-      "status": "inline",
+      "status": "live",
       "names": [
         "EmbeddingCrossesFlowBoundary",
         "EmbeddingEgressDenied"
       ],
       "severities": [],
-      "defs": 0,
+      "defs": 1,
       "emits": 3,
-      "tests": 42,
-      "docs": 2
+      "tests": 43,
+      "docs": 4
     },
     {
       "code": "FUNGI-PRIVACY-003",
@@ -6714,8 +6784,8 @@
       "severities": [],
       "defs": 0,
       "emits": 3,
-      "tests": 74,
-      "docs": 15
+      "tests": 79,
+      "docs": 16
     },
     {
       "code": "FUNGI-SECRET-003",
@@ -7306,7 +7376,7 @@
       ],
       "defs": 1,
       "emits": 0,
-      "tests": 22,
+      "tests": 40,
       "docs": 1
     },
     {

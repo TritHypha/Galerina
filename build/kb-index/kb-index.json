@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 719,
+  "docCount": 748,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -1660,6 +1660,7 @@
         "Syntax (canonical series: FUNGI-SYNTAX-*)",
         "Style (canonical series: FUNGI-STYLE-*)",
         "Taint (canonical series: FUNGI-TAINT-*)",
+        "`.gate` front-end language (canonical series: FUNGI-GATELANG-*)",
         "Profile (canonical series: FUNGI-PROFILE-*)",
         "Hardware Trust (canonical series: FUNGI-HW-*)",
         "Binding (canonical series: FUNGI-BINDING-*)",
@@ -1789,6 +1790,9 @@
         "FUNGI-TAINT-005",
         "FUNGI-TAINT-006",
         "FUNGI-TAINT-007",
+        "FUNGI-GATELANG-001",
+        "FUNGI-GATELANG-002",
+        "FUNGI-PRIVACY-002",
         "FUNGI-PROFILE-001",
         "FUNGI-PROFILE-002",
         "FUNGI-PROFILE-003",
@@ -2132,16 +2136,16 @@
         "declared",
         "required",
         "cannot",
+        "unsafe",
         "governance",
         "target",
-        "unsafe",
         "binding",
         "memory",
         "requires",
         "without",
         "missing",
         "package",
-        "match"
+        "source"
       ]
     },
     {
@@ -13585,6 +13589,110 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/galerina-gate-docs-examples-model-collision-2026-07-02.md",
+      "title": "`.gate` docs/examples embody the SUPERSEDED v1 model (naming collision) — 2026-07-02",
+      "headings": [
+        "Finding (machine-verified)",
+        "Root cause — two contradictory definitions of `.gate`",
+        "Honest note: the content is GOOD, just mis-named",
+        "Recommended fix (aligns to the authoritative model) — owner to pick, changes unlocked"
+      ],
+      "codes": [],
+      "tasks": [
+        "#34"
+      ],
+      "xrefs": [
+        "galerina-gate-graph-pipeline-decided",
+        "fail-closed-no-50yr-mistake-rule"
+      ],
+      "topTerms": [
+        "gate",
+        "examples",
+        "docs",
+        "gir",
+        "model",
+        "json",
+        "fungi",
+        "superseded",
+        "authoritative",
+        "owner",
+        "source",
+        "language",
+        "note",
+        "collision",
+        "readme",
+        "root",
+        "cause",
+        "graph",
+        "good",
+        "fix",
+        "changes",
+        "unlocked",
+        "embody",
+        "naming",
+        "finding"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/galerina-gate-fungi-language-security-audit-2026-07-02.md",
+      "title": "`.gate` + `.fungi`/flow — Language Security & Compliance Audit (Absolute Zero Trust) — 2026-07-02",
+      "headings": [
+        "1. Scope correction + verdict",
+        "Is the LANGUAGE fail-closed-by-construction? **NO — neither surface is.**",
+        "2. Concerns (ranked; every row REPRODUCED or CODE-TRACED)",
+        "CRITICAL",
+        "HIGH",
+        "MEDIUM",
+        "LOW / CLOSED (consolidated for provenance — do not re-derive)",
+        "3. Rulebook × Language compliance + CVE classes the language fails to enforce",
+        "3a. Graded rules",
+        "3b. CVE classes NOT enforced at language level (real gaps, not stubs)",
+        "3c. The one genuinely fail-closed default",
+        "4. Vacuous-greens & escape-hatches (the most dangerous class — a green that *certifies* a leak)",
+        "5. Prioritized fail-closed remediation (owner-gated; prod read-only ⇒ build-staging + handover)",
+        "6. Bottom line"
+      ],
+      "codes": [
+        "FUNGI-ATTR-001",
+        "FUNGI-VALUESTATE-003",
+        "FUNGI-PRIVACY-001"
+      ],
+      "tasks": [],
+      "xrefs": [
+        "fail-closed-no-50yr-mistake-rule",
+        "dont-trust-check-posture",
+        "galerina-gate-graph-pipeline-decided",
+        "tritmeshql-project-state"
+      ],
+      "topTerms": [
+        "gate",
+        "language",
+        "fungi",
+        "fail-closed",
+        "wasm",
+        "real",
+        "every",
+        "prod",
+        "query",
+        "taint",
+        "flow",
+        "reproduced",
+        "mjs",
+        "zero",
+        "surface",
+        "production",
+        "closed",
+        "compliance",
+        "green",
+        "leak",
+        "verdict",
+        "exec",
+        "privacy",
+        "cve",
+        "classes"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/galerina-gir-emitter-architecture.md",
       "title": "Galerina — GIR Emitter Architecture",
       "headings": [
@@ -17628,6 +17736,48 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/galerina-naming-audit-2026-07-03.md",
+      "title": "Naming-convention audit — KB + prod docs (TritMesh / `.gate` / `.fungi` / `.spore` / `.hypha`) — 2026-07-03",
+      "headings": [
+        "Verdict",
+        "Fixed this session (4, high-confidence)",
+        "Remaining — for the owner/hub to apply",
+        "Owner-awareness (not drift)"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "galerina-gate-graph-pipeline-decided"
+      ],
+      "topTerms": [
+        "gate",
+        "spore",
+        "tmf",
+        "docs",
+        "fungi",
+        "drift",
+        "prod",
+        "owner",
+        "audit",
+        "tritmesh",
+        "hypha",
+        "naming-convention",
+        "verdict",
+        "graph",
+        "fixed",
+        "session",
+        "high-confidence",
+        "remaining",
+        "hub",
+        "apply",
+        "owner-awareness",
+        "dated",
+        "meshql",
+        "tritmeshql",
+        "stays"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/galerina-naming-conventions-enforcement.md",
       "title": "Galerina — Naming Convention Enforcement (FUNGI-STYLE-*)",
       "headings": [
@@ -18375,18 +18525,22 @@
         "2026-06-28 (cont.) — dev-tooling housekeeping",
         "2026-07-01 — RD-0226..0230 (ASCII/`.graph`/GATE + Tri-Pipe) + defensive publications",
         "2026-07-01 — RECHECK of 76-mesh-r-d (RD-0154..0169) + RD-0170",
-        "2026-07-01 — RD-0200..0225 absorbed (77-mesh-r-d 01-17)"
+        "2026-07-01 — RD-0200..0225 absorbed (77-mesh-r-d 01-17)",
+        "2026-07-03 — TritMesh QL (`.hypha`) R&D COMPLETE (RD-0246..0252) + graph-spine 4-round hardening"
       ],
       "codes": [
+        "FUNGI-PRIVACY-001",
+        "FUNGI-MATCH-001",
+        "FUNGI-PRIVACY-002",
         "FUNGI-RESIDENCY-001",
         "FUNGI-CACHE-001",
-        "FUNGI-PRIVACY-002",
         "FUNGI-PERM-001",
         "FUNGI-GDCE-001",
         "FUNGI-PARSE-001",
         "FUNGI-VER-001",
         "ERR_HOST_NATIVE_DENIED",
-        "FUNGI-RUNTIME-006"
+        "FUNGI-RUNTIME-006",
+        "FUNGI-SUBSTRATE-001"
       ],
       "tasks": [
         "#34",
@@ -18410,30 +18564,30 @@
       ],
       "topTerms": [
         "gate",
-        "build",
         "owner-gated",
+        "build",
         "signed",
         "fungi",
+        "audit",
         "galerina",
         "design",
-        "audit",
+        "mjs",
+        "fix",
+        "fail-closed",
+        "prod",
         "graph",
         "shipped",
-        "fail-closed",
-        "fix",
-        "todo",
-        "net-new",
-        "mjs",
-        "doc",
-        "status",
-        "fixes",
-        "tritmesh",
         "owner",
-        "prod",
+        "tritmesh",
+        "net-new",
+        "doc",
+        "todo",
+        "read-only",
         "before",
-        "proof",
-        "arch-rd",
-        "runtime"
+        "status",
+        "deny",
+        "real",
+        "verified"
       ]
     },
     {
@@ -18943,6 +19097,61 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/galerina-percent-audit-and-security-posture-2026-07-03.md",
+      "title": "Galerina production framework — % completion audit + security-posture refresh (2026-07-03)",
+      "headings": [
+        "Headline",
+        "Per-module table",
+        "Benchmark",
+        "Honest read",
+        "Provenance"
+      ],
+      "codes": [
+        "FUNGI-EFFECT-006",
+        "FUNGI-PRIVACY-001",
+        "FUNGI-PRIVACY-002"
+      ],
+      "tasks": [
+        "#36",
+        "#34",
+        "#102",
+        "#149"
+      ],
+      "xrefs": [
+        "production-readonly-build-staging-pattern",
+        "fail-closed-no-50yr-mistake-rule",
+        "honest-no-overreach-posture",
+        "pentest-stage-and-toolchain"
+      ],
+      "topTerms": [
+        "prod",
+        "fixed",
+        "production",
+        "read",
+        "still",
+        "security-posture",
+        "benchmark",
+        "galerina",
+        "audit",
+        "delta",
+        "wasm",
+        "refresh",
+        "doc",
+        "compiler",
+        "real",
+        "honest",
+        "table",
+        "framework",
+        "completion",
+        "verified",
+        "headline",
+        "flat",
+        "runtime",
+        "gate",
+        "rd-0238"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/galerina-percent-audit-roadmap-2026-06-24-v2.md",
       "title": "Galerina — % completion audit + roadmap (2026-06-24, v2, adversarially verified)",
       "headings": [
@@ -19176,6 +19385,7 @@
         "FUNGI-MEMORY-001"
       ],
       "tasks": [
+        "#10",
         "#149",
         "#102",
         "#143",
@@ -19186,17 +19396,20 @@
       "topTerms": [
         "real",
         "honest",
+        "galerina",
         "gate",
         "still",
         "roadmap",
         "gates",
-        "galerina",
+        "wasm",
         "audit",
         "subsystem",
         "border",
+        "benchmark",
         "critic",
         "file",
         "line",
+        "governance",
         "cg-7",
         "fail-closed",
         "admission",
@@ -19205,9 +19418,6 @@
         "three",
         "must",
         "owner-gated",
-        "benchmark",
-        "governance",
-        "wasm",
         "ml-dsa"
       ]
     },
@@ -23566,6 +23776,53 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/galerina-rd-0234c-remaining-failopen-inversions-2026-07-03.md",
+      "title": "RD-0234c — Remaining `.fungi` fail-open inversions (H2 · H3-safelist · M2)",
+      "headings": [
+        "§0 — Where the five RD-0234 taint/egress/governance fail-opens stand (2026-07-03)",
+        "§0.1 — H1 fix as landed (reference for the pattern the three below should follow)",
+        "§1 — H2: taint SOURCE is a 10-name param allowlist (deny-by-omission)",
+        "§2 — H3-safelist: egress receiver denylist → host-internal safelist",
+        "§3 — M2 / GNG-03: `deny <qualifier> <field> to <sink>` breadth (WYSIWYG inversion)",
+        "§4 — Recommendation to owner"
+      ],
+      "codes": [
+        "FUNGI-GOV-003",
+        "FUNGI-PRIVACY-001",
+        "FUNGI-TAINT-001",
+        "FUNGI-PRIVACY-002"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "sink",
+        "egress",
+        "deny",
+        "taint",
+        "name",
+        "qualifier",
+        "h3-safelist",
+        "fix",
+        "body",
+        "receiver",
+        "param",
+        "host-internal",
+        "secret",
+        "sound",
+        "over-block",
+        "protected",
+        "field",
+        "landed",
+        "proof",
+        "each",
+        "every",
+        "audit",
+        "source",
+        "safelist",
+        "response"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/galerina-rd-0236-runtime-50yr-mistake-audit.md",
       "title": "RD-0236 — Runtime fail-closed / 50-year-mistake audit (does the disease reach the runtime too?)",
       "headings": [
@@ -23708,6 +23965,200 @@
         "outward-facing",
         "edges",
         "hits"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/galerina-rd-0239-overflow-trap-governed-rejection-2026-07-02.md",
+      "title": "RD-0239 — Overflow trap → governed K3 rejection (checked-math): design + adversarial review — 2026-07-02",
+      "headings": [
+        "1. The finding (what the 2 trapping benchmarks actually are)",
+        "2. The real problem — and a correction to the framing (DON'T-TRUST-CHECK)",
+        "3. The three proposed mechanisms — graded",
+        "4. The closing question is a false binary (QUESTION-THE-CHOICE)",
+        "5. Connection to the language audit (same disease, same cure)",
+        "6. Verdict & disposition",
+        "7. Update (owner, 2026-07-02) — syntax caveat + the real MATCH rule (RD-0240)"
+      ],
+      "codes": [
+        "FUNGI-MATCH-001"
+      ],
+      "tasks": [],
+      "xrefs": [
+        "fail-closed-no-50yr-mistake-rule",
+        "question-the-choice-posture",
+        "honest-no-overreach-posture"
+      ],
+      "topTerms": [
+        "match",
+        "must",
+        "trap",
+        "same",
+        "overflow",
+        "deny",
+        "real",
+        "checked-math",
+        "audit",
+        "owner",
+        "proposal",
+        "reject",
+        "governed",
+        "gate",
+        "host",
+        "right",
+        "question",
+        "language",
+        "syntax",
+        "rd-0239",
+        "design",
+        "benchmarks",
+        "three",
+        "correction",
+        "don"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/galerina-rd-0241-predestination-future-contract-2026-07-02.md",
+      "title": "RD-0241 — \"Predestination paradox\" → the three-tier future-contract model (forward design) — 2026-07-02",
+      "headings": [
+        "1. The reduction (what the idea actually is)",
+        "2. The three-tier future ledger (verify as early as decidable; DEFER, never fake, the undecidable)",
+        "3. The buildable net-new (the concept's genuine contribution)",
+        "4. Honest limits — recorded so the frame cannot smuggle a false guarantee",
+        "5. Verdict & disposition"
+      ],
+      "codes": [
+        "FUNGI-PRIVACY-002"
+      ],
+      "tasks": [
+        "#34"
+      ],
+      "xrefs": [
+        "rnd-goal-best-line-to-photonic-language",
+        "photonic-sha256-verdict",
+        "gate-fungi-language-audit-state",
+        "fail-closed-no-50yr-mistake-rule",
+        "question-the-choice-posture",
+        "honest-no-overreach-posture",
+        "prove-own-maths-posture"
+      ],
+      "topTerms": [
+        "three-tier",
+        "future",
+        "cannot",
+        "paradox",
+        "decidable",
+        "predestination",
+        "forward",
+        "design",
+        "frame",
+        "honest",
+        "undecidable",
+        "future-contract",
+        "model",
+        "runtime",
+        "ledger",
+        "buildable",
+        "verify",
+        "never",
+        "declared",
+        "net-new",
+        "false",
+        "rd-0241",
+        "reduction",
+        "idea",
+        "actually"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/galerina-rd-0242-gate-template-block-library-2026-07-02.md",
+      "title": "RD-0242 — `.gate` template-block library (AI composes from verified blocks) — 2026-07-02",
+      "headings": [
+        "1. Why this is the right fix (motivation is machine-proven)",
+        "2. Block anatomy",
+        "3. Tier 1 — small blocks (sub-graphs the AI inserts into a `FLOW:`)",
+        "4. Tier 2 — full-file blocks (complete parameterized GATEs)",
+        "5. The hard problem: composition safety (green + green ≠ green)",
+        "6. Fail-closed + anti-50-year-mistake properties",
+        "7. What to build first (MVP) + verdict"
+      ],
+      "codes": [
+        "FUNGI-PRIVACY-002"
+      ],
+      "tasks": [],
+      "xrefs": [
+        "fail-closed-no-50yr-mistake-rule",
+        "galerina-gate-graph-pipeline-decided",
+        "prove-own-maths-posture"
+      ],
+      "topTerms": [
+        "blocks",
+        "gate",
+        "green",
+        "block",
+        "library",
+        "verified",
+        "small",
+        "tier",
+        "audit",
+        "full-file",
+        "fail-closed",
+        "fix",
+        "authz",
+        "flow",
+        "node",
+        "mvp",
+        "write",
+        "composition",
+        "composes",
+        "build",
+        "rd-0242",
+        "template-block",
+        "why",
+        "right",
+        "motivation"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/galerina-rd-0245-gate-catchall-glyph-decision-2026-07-03.md",
+      "title": "RD-0245 — `.gate` catch-all glyph: KEEP `[-]`/`[!]`, do NOT adopt `[_]` — 2026-07-03",
+      "headings": [
+        "Decision",
+        "Why",
+        "The right fix for the omission (the measured top AI-authoring failure — 1/6 guide-only)",
+        "O1 to-do (low-cost)"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "galerina-gate-graph-pipeline-decided",
+        "fail-closed-no-50yr-mistake-rule"
+      ],
+      "topTerms": [
+        "gate",
+        "glyph",
+        "catch-all",
+        "adopt",
+        "omission",
+        "keep",
+        "why",
+        "fix",
+        "rd-0245",
+        "decision",
+        "deny",
+        "lower",
+        "right",
+        "measured",
+        "top",
+        "ai-authoring",
+        "failure",
+        "guide-only",
+        "to-do",
+        "low-cost",
+        "fungi",
+        "mjs",
+        "drain",
+        "node",
+        "polarity"
       ]
     },
     {
@@ -24519,6 +24970,54 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/galerina-rd-fungi-privacy-001-response-target-drift-2026-07-02.md",
+      "title": "FUNGI-PRIVACY-001 response-target drift — a live fail-open in the shipped `.fungi` governance verifier",
+      "headings": [
+        "Finding",
+        "Provenance / verification (DON'T-TRUST-CHECK)",
+        "Blast radius (wider than the reported 222/224)",
+        "Root cause = coverage, not logic",
+        "Fix (one functional line; Part A, ready to apply)",
+        "Proof ledger (all re-runnable)",
+        "Open follow-ups (recorded, owner-gated)"
+      ],
+      "codes": [
+        "FUNGI-PRIVACY-001",
+        "FUNGI-PRIVACY-004"
+      ],
+      "tasks": [],
+      "xrefs": [
+        "fail-closed-no-50yr-mistake-rule"
+      ],
+      "topTerms": [
+        "response",
+        "body",
+        "shipped",
+        "email",
+        "protected",
+        "fix",
+        "drift",
+        "re-runnable",
+        "deny",
+        "fungi-privacy-001",
+        "governance",
+        "enforced",
+        "finding",
+        "form",
+        "don",
+        "blast",
+        "radius",
+        "owner-gated",
+        "response-target",
+        "live",
+        "fail-open",
+        "fungi",
+        "verifier",
+        "bare",
+        "provenance"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/galerina-rd-graph-per-component-realization-2026-06-25.md",
       "title": "Boundary-Graph: per-component realization audit — is each component's graph an improvement lever + a ZT control? (2026-06-25)",
       "headings": [
@@ -25075,7 +25574,10 @@
         "FUNGI-EFFECT-006",
         "FUNGI-SEC-020",
         "FUNGI-NAME-001",
-        "ERR_CERTIFIED"
+        "ERR_CERTIFIED",
+        "FUNGI-MATCH-001",
+        "FUNGI-GOV-003",
+        "ERR_ADDON_UNPINNED"
       ],
       "tasks": [
         "#102",
@@ -25086,43 +25588,47 @@
         "#10",
         "#11",
         "#194",
-        "#205"
+        "#205",
+        "#155"
       ],
       "xrefs": [
         "feedback-rd-absorb-positive-and-negative",
+        "galerina-ci-state-and-cross-repo-gates",
+        "galerina-kernel-ts-vs-fungi-rationale",
         "galerina-graph-ascii-outcome-and-gate-pipeline-2026-07-01",
         "galerina-graph-ascii-spec-and-ab-benchmark-2026-07-01",
         "galerina-rd-0236-runtime-50yr-mistake-audit",
         "galerina-rd-0237-runtime-governance-in-gate-reexamination",
         "galerina-rd-0234-fungi-50yr-mistake-audit",
-        "galerina-rd-0234b-fungi-second-pass-hunt"
+        "galerina-rd-0234b-fungi-second-pass-hunt",
+        "fail-closed-no-50yr-mistake-rule"
       ],
       "topTerms": [
         "gate",
         "owner",
         "fungi",
+        "mjs",
         "graph",
         "galerina",
-        "mixed",
-        "verdict",
         "signed",
-        "runtime",
-        "photonic",
-        "mjs",
-        "build",
-        "refuted",
         "green",
+        "real",
+        "build",
+        "mixed",
+        "audit",
+        "verdict",
+        "runtime",
         "shipped",
-        "governance",
-        "proof",
-        "executed",
-        "full",
-        "notes",
-        "owner-gated",
-        "fixed",
-        "design",
         "fail-closed",
-        "real"
+        "proof",
+        "photonic",
+        "owner-gated",
+        "refuted",
+        "design",
+        "fixed",
+        "prod",
+        "examples",
+        "governance"
       ]
     },
     {
@@ -26618,7 +27124,7 @@
       "title": "Galerina — Roadmap (authoritative forward view)",
       "headings": [
         "0. Honest status line (lead with this)",
-        "0.1 What the critical path IS now (2026-07-02)",
+        "0.1 What the critical path IS now (2026-07-03)",
         "1. Self-hosting (P9) — tokenize byte-parity ✅; deeper stages carried forward",
         "2. Security & integrity (refreshed 2026-07-02)",
         "3. Post-P9 — real DSS.wasm (DRCM Phase 4) — HW/TCB-gated, carried forward",
@@ -26635,10 +27141,12 @@
       "codes": [
         "FUNGI-NUMERIC-001",
         "FUNGI-EFFECT-006",
+        "FUNGI-PRIVACY-002",
         "FUNGI-LIMIT-001",
         "FUNGI-PKG-006"
       ],
       "tasks": [
+        "#10",
         "#105",
         "#143",
         "#34",
@@ -26662,27 +27170,27 @@
       "xrefs": [],
       "topTerms": [
         "forward",
-        "carried",
         "gate",
+        "carried",
         "galerina",
-        "owner",
-        "real",
         "audit",
-        "graph",
-        "post-p9",
-        "gates",
-        "line",
+        "real",
+        "owner",
         "wasm",
-        "still",
         "open",
+        "post-p9",
+        "line",
+        "still",
         "build",
         "dss",
-        "compiler",
+        "gates",
         "self-hosting",
         "tokenize",
         "hygiene",
-        "border",
+        "graph",
+        "security",
         "status",
+        "compiler",
         "admission",
         "byte-parity",
         "governance"
@@ -27449,6 +27957,7 @@
         "11. Supersedes / corrects"
       ],
       "codes": [
+        "FUNGI-GATELANG-002",
         "FUNGI-PKG-006",
         "ERR_BRIDGE_UNATTESTED",
         "ERR_CERTIFIED_NO_ATTESTATION",
@@ -27457,6 +27966,7 @@
         "FUNGI-MATCH-001"
       ],
       "tasks": [
+        "#10",
         "#150",
         "#143",
         "#105",
@@ -27497,21 +28007,21 @@
         "galerina",
         "fungi",
         "real",
-        "test",
         "session",
+        "test",
+        "gate",
         "phase",
         "wasm",
-        "gate",
         "governed",
+        "verified",
         "prior",
+        "full",
         "dss",
         "tasks",
         "sot",
-        "verified",
-        "full",
+        "production",
         "drcm",
         "added",
-        "scripts",
         "governance",
         "body",
         "syntax",
@@ -32441,6 +32951,308 @@
         "unit",
         "database",
         "role"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOFF-2026-07-02-eod-night.md",
+      "title": "COLD-START RECOVERY PROMPT — Galerina/TritMesh R&D — end of 2026-07-02",
+      "headings": [
+        "Who you are / the world (verify, don't trust — these were true 2026-07-02)",
+        "The binding rules (do not drop these)",
+        "What shipped today (durable records — all local, uncommitted)",
+        "In-flight / do NOT duplicate",
+        "Open decisions / next actions (owner to triage)",
+        "Roadmap flags (review-only, 2026-07-02 — the hub owns the NOW list; I did NOT touch it)",
+        "To fully reload"
+      ],
+      "codes": [],
+      "tasks": [
+        "#10",
+        "#155",
+        "#34"
+      ],
+      "xrefs": [
+        "links"
+      ],
+      "topTerms": [
+        "verify",
+        "these",
+        "galerina",
+        "memory",
+        "trust",
+        "owner",
+        "durable",
+        "records",
+        "every",
+        "local",
+        "fix",
+        "roadmap",
+        "prompt",
+        "tritmesh",
+        "rules",
+        "world",
+        "don",
+        "index",
+        "hub",
+        "deny",
+        "uncommitted",
+        "owns",
+        "open",
+        "cold-start",
+        "recovery"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOFF-main-gate-compiler-5a-5d-2026-07-03.md",
+      "title": "HANDOFF → main session: `.gate` / `.graph` §5a–5d compiler — can it proceed? — 2026-07-03",
+      "headings": [
+        "1. The model the compiler builds on is now correct + documented",
+        "2. The D5 re-scope — ACCEPT the bar (this is the unblock)",
+        "3. Empirical evidence — is `.gate` still \"easy for AI without hallucination\"? (measured, not asserted)",
+        "4. Recommendation",
+        "5. Language notes + OPEN items (2026-07-03 update)"
+      ],
+      "codes": [
+        "FUNGI-PRIVACY-002"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "gate",
+        "compiler",
+        "examples",
+        "bar",
+        "checker",
+        "model",
+        "accept",
+        "language",
+        "graph",
+        "still",
+        "easy",
+        "without",
+        "session",
+        "proceed",
+        "empirical",
+        "evidence",
+        "documented",
+        "gir",
+        "measured",
+        "handoff",
+        "main",
+        "docs",
+        "builds",
+        "correct",
+        "authoring"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOFF-main-od-status-and-tritmeshql-v2-2026-07-03.md",
+      "title": "HANDOFF → main session — OD status (provenance-checked), decisions taken, TritMeshQL v2 landed — 2026-07-03",
+      "headings": [
+        "1. OD status — provenance-checked (fail-closed)",
+        "2. ⚠ §5a–5d unpause — held for your explicit confirmation",
+        "3. TritMeshQL v2 — ADOPTED into the repo (the grammar fork, done)",
+        "4. Also done (docs + diagrams)",
+        "5. Open (owner)"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "tritmeshql",
+        "status",
+        "provenance-checked",
+        "owner",
+        "od-1",
+        "open",
+        "docs",
+        "unpause",
+        "grammar",
+        "fail-closed",
+        "decisions",
+        "examples",
+        "galerina",
+        "diagrams",
+        "handoff",
+        "landed",
+        "od-4",
+        "adopted",
+        "main",
+        "session",
+        "taken",
+        "resolved",
+        "gate",
+        "coexistence",
+        "held"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOFF-main-od5-graph-not-a-language-2026-07-03.md",
+      "title": "HANDOFF → main session: OD-5 — \"graph\" is not a language; file-location indexing stays the existing index tooling — 2026-07-03",
+      "headings": [
+        "1. The `.gate` vs `.graph` confusion — what \"graph\" actually is",
+        "2. OD-5 — machine-verified (6-agent workflow `wnnet0mzd`, 2026-07-03, all read-only)",
+        "3. Two honest caveats (not blockers)",
+        "4. What the compiler (§5a–5d) must carry"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "graph",
+        "language",
+        "index",
+        "od-5",
+        "gate",
+        "file-location",
+        "never",
+        "file",
+        "live",
+        "mjs",
+        "stays",
+        "tooling",
+        "gir",
+        "workflow",
+        "session",
+        "indexing",
+        "existing",
+        "machine-verified",
+        "confusion",
+        "drift",
+        "galerina",
+        "proof",
+        "wnnet0mzd",
+        "read-only",
+        "compiler"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOFF-main-od5-review-and-tritmeshql-2026-07-03.md",
+      "title": "HANDOFF → main session — OD-5 understanding-review + TritMeshQL `.hypha` checker + open decisions — 2026-07-03",
+      "headings": [
+        "1. OD-5 — you understood it; three over-reaches to rein in",
+        "2. TritMeshQL `.hypha` v2 reference checker — BUILT + hardened (RD-0246)",
+        "3. `.hypha` examples shipped to `Galerina/docs/examples/hypha/`",
+        "4. Database diagram (radar-8) — checked, no score change warranted",
+        "5. Open decisions (consolidated, all owner-gated)"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "hypha",
+        "od-5",
+        "checker",
+        "tritmeshql",
+        "examples",
+        "owner",
+        "decisions",
+        "open",
+        "galerina",
+        "docs",
+        "handoff",
+        "reference",
+        "diagram",
+        "three",
+        "mjs",
+        "owner-gated",
+        "change",
+        "rein",
+        "rd-0246",
+        "database",
+        "radar-8",
+        "score",
+        "main",
+        "session",
+        "understanding-review"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOFF-main-stoppers-and-questions-2026-07-03.md",
+      "title": "HANDOFF → main session: stoppers + questions — R&D-side response — 2026-07-03",
+      "headings": [
+        "Stoppers — the R&D angle on what lifts each",
+        "Questions — recommendation + whose call"
+      ],
+      "codes": [
+        "FUNGI-LIMIT-001"
+      ],
+      "tasks": [
+        "#10",
+        "#155",
+        "#102",
+        "#34"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "stoppers",
+        "questions",
+        "signed",
+        "d-side",
+        "hub",
+        "handoff",
+        "main",
+        "session",
+        "response",
+        "angle",
+        "lifts",
+        "each",
+        "recommendation",
+        "whose",
+        "call",
+        "key",
+        "ceremony",
+        "vd-2",
+        "default",
+        "index",
+        "auto",
+        "companion",
+        "until",
+        "schedule",
+        "gates"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-main-full-control-of-galerina-2026-07-03.md",
+      "title": "HANDOVER — Main session takes FULL CONTROL of Galerina (2026-07-03)",
+      "headings": [
+        "Posture change (the point of this handover)",
+        "★ #1 ACTION — apply the RD-0238 P0 (native-addon RCE)",
+        "Other open items you now own",
+        "Galerina audit snapshot (read-only, 2026-07-03)",
+        "TritMesh QL state (R&D-complete; owner-gated to wire — stays with R&D)",
+        "Where things live",
+        "Standing rules (unchanged, binding on you too)"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "galerina",
+        "handover",
+        "session",
+        "own",
+        "main",
+        "rd-0238",
+        "tritmesh",
+        "full",
+        "prod",
+        "apply",
+        "live",
+        "control",
+        "posture",
+        "read-only",
+        "open",
+        "audit",
+        "rules",
+        "takes",
+        "change",
+        "point",
+        "galerina-r-and-d",
+        "action",
+        "native-addon",
+        "rce",
+        "build-staging"
       ]
     },
     {
@@ -38143,6 +38955,41 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/REBOOT-PROMPT-from-main-2026-07-03.md",
+      "title": "REBOOT / GET-STARTED PROMPT — paste after a /clear or a fresh start (from the `main` branch)",
+      "headings": [],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "main",
+        "branch",
+        "wwwprojects",
+        "fresh",
+        "start",
+        "reboot",
+        "get-started",
+        "prompt",
+        "paste",
+        "after",
+        "clear",
+        "galerina",
+        "ztf-knowledge-bases",
+        "galerina-r-and-d",
+        "session",
+        "work",
+        "tritmesh",
+        "own",
+        "green",
+        "everything",
+        "order",
+        "read",
+        "don",
+        "rules",
+        "live"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/release-keyword.md",
       "title": "release Keyword",
       "headings": [
@@ -39677,6 +40524,58 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/spore-five-doors-injection-threat-model-2026-07-03.md",
+      "title": "`.spore` — the \"5 DOORS\" NON-QL injection threat model (2026-07-03)",
+      "headings": [
+        "Why \"5 doors\" is the right question (QUESTION-THE-CHOICE)",
+        "DOOR 1 — BYTE-TAMPER of the `.spore` file",
+        "DOOR 2 — the WRITE-PATH (a malicious write) — cross-ref workstream 2",
+        "DOOR 3 — SECOND-ORDER (stored value re-serialized into a query/context) — the RD-0244 §2 residual",
+        "DOOR 4 — the PARSER (a malformed/hostile `.spore` container)",
+        "DOOR 5 — `env.spore` (the sealed CREDS file)",
+        "Fail-closed set (enumerated) + anti-vacuity outcome",
+        "Honest residuals (NOT claimed solved)",
+        "Design rationale (QUESTION-THE-CHOICE)",
+        "Standing-check tags"
+      ],
+      "codes": [
+        "FUNGI-SUBSTRATE-001"
+      ],
+      "tasks": [
+        "#34"
+      ],
+      "xrefs": [
+        "fail-closed-no-50yr-mistake-rule"
+      ],
+      "topTerms": [
+        "door",
+        "spore",
+        "file",
+        "write",
+        "fail-closed",
+        "container",
+        "deny",
+        "doors",
+        "residual",
+        "query",
+        "set",
+        "model",
+        "mutation",
+        "enumerated",
+        "stored",
+        "editor",
+        "threat",
+        "safe",
+        "rd-0244",
+        "question-the-choice",
+        "custody",
+        "value",
+        "parser",
+        "hypha",
+        "admit"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/spore-tritmesh-security-reality-check-2026-07-02.md",
       "title": "`.spore` / TritMesh — security reality check + honest roadmap (2026-07-02)",
       "headings": [
@@ -40013,6 +40912,513 @@
         "engine",
         "untrusted",
         "log"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/tritmeshql-coexistence-and-grammar-v2-2026-07-02.md",
+      "title": "RD-0243 — TritMeshQL (`.hypha`): co-existence in `.fungi`/`.gate`, graph-index fit, grammar-v2 decisions — 2026-07-02",
+      "headings": [
+        "1. Co-existence — the QL is not a separate island; it merges into the ONE graph",
+        "2. Graph-indexing fit (RD-0150 / RD-0167) — OK, with one hard gate",
+        "3. Construct decisions",
+        "4. Updated `.hypha` sketch (v2)"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "fail-closed-no-50yr-mistake-rule",
+        "tritmeshql-project-state",
+        "galerina-gate-graph-pipeline-decided"
+      ],
+      "topTerms": [
+        "gate",
+        "decisions",
+        "hypha",
+        "join",
+        "filter",
+        "co-existence",
+        "fungi",
+        "fit",
+        "graph",
+        "rd-0150",
+        "signed",
+        "graph-indexing",
+        "construct",
+        "order",
+        "merges",
+        "query",
+        "opaque",
+        "semantic",
+        "rd-0167",
+        "hard",
+        "field",
+        "rd-0243",
+        "tritmeshql",
+        "graph-index",
+        "grammar-v2"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/tritmeshql-forward-rd-roadmap-to-100pct-ref-2026-07-03.md",
+      "title": "TritMesh QL (`.hypha`) + `.spore` — forward R&D roadmap: closing each capability to 100% Ref-design (2026-07-03)",
+      "headings": [
+        "1. Per-capability roadmap table",
+        "2. Sequencing — what unblocks the most",
+        "2.1 The single highest-leverage R&D step",
+        "2.2 Recommended order (by unblock-count, cheapest-first within a tier)",
+        "2.3 The cross-cutting shared control: RD-0208 `BOUND: MAX_DEPTH`",
+        "2.4 Shared blockers — owner-gated, NOT R&D-closable (named so the roadmap is honest)",
+        "3. Honest limits — where 100% Ref-design is NOT reachable by design+proof alone",
+        "4. One-line honest headline"
+      ],
+      "codes": [
+        "FUNGI-SUBSTRATE-001"
+      ],
+      "tasks": [
+        "#34"
+      ],
+      "xrefs": [
+        "tritmeshql-project-state",
+        "galerina-tritmesh-layering-and-formats",
+        "honest-no-overreach-posture",
+        "fail-closed-no-50yr-mistake-rule",
+        "prove-own-maths-posture",
+        "question-the-choice-posture",
+        "rnd-goal-best-line-to-photonic-language"
+      ],
+      "topTerms": [
+        "proof",
+        "design",
+        "mjs",
+        "roadmap",
+        "asserts",
+        "model",
+        "proven",
+        "real",
+        "named",
+        "residual",
+        "mutation",
+        "red",
+        "ref",
+        "authority",
+        "engine",
+        "each",
+        "ref-design",
+        "shared",
+        "order",
+        "honest",
+        "spore",
+        "capability",
+        "ann",
+        "streaming",
+        "bound"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/tritmeshql-governed-write-path-rd0234c-2026-07-03.md",
+      "title": "TritMeshQL — the fail-closed GOVERNED WRITE PATH (RD-0234c, 2026-07-03)",
+      "headings": [
+        "1. The question + the key design choice (QUESTION-THE-CHOICE)",
+        "2. The write model (typed operation)",
+        "3. The Gate — verify-before-write (fail-closed order)",
+        "4. What it prevents (attack → closure)",
+        "5. Honestly OPEN (not solved — enumerated per honest-no-overreach)",
+        "6. Anti-vacuity (PROVE-OWN-MATHS) — explicit outcome",
+        "7. Reproduce"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "galerina-rd-0234-fungi-50yr-mistake-audit",
+        "tritmeshql-hypha-reference-checker-and-redteam-2026-07-03",
+        "tritmeshql-capability-vs-terminology-maths-audit-2026-07-02",
+        "galerina-rd-0150-graph-as-data-io-border-concept"
+      ],
+      "topTerms": [
+        "write",
+        "capability",
+        "fail-closed",
+        "epoch",
+        "typed",
+        "monotone",
+        "gate",
+        "path",
+        "rd-0234c",
+        "signed",
+        "verify-before-write",
+        "tritmeshql",
+        "design",
+        "unknown",
+        "check",
+        "open",
+        "governed",
+        "checker",
+        "key",
+        "append",
+        "never",
+        "field",
+        "explicit",
+        "prove-own-maths",
+        "honest-no-overreach"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/tritmeshql-hypha-reference-checker-and-redteam-2026-07-03.md",
+      "title": "RD-0246 — TritMeshQL `.hypha` v2 reference checker: build + 3-round adversarial hardening — 2026-07-03",
+      "headings": [
+        "1. What was built",
+        "2. The adversarial hardening — 3 rounds (the result)",
+        "3. Two lessons for the papers",
+        "4. Reconciliation (owner-gated) + status"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "fail-closed-no-50yr-mistake-rule",
+        "tritmeshql-project-state",
+        "galerina-gate-graph-pipeline-decided"
+      ],
+      "topTerms": [
+        "checker",
+        "round",
+        "adversarial",
+        "hardening",
+        "tritmeshql",
+        "rounds",
+        "reference",
+        "real",
+        "hypha",
+        "built",
+        "never",
+        "result",
+        "green",
+        "public",
+        "invariant",
+        "papers",
+        "grammar",
+        "test",
+        "cls",
+        "reconciliation",
+        "owner-gated",
+        "status",
+        "rd-0246",
+        "build",
+        "mjs"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/tritmeshql-partial-gradual-schema-2026-07-03.md",
+      "title": "TritMeshQL — the partial / gradual-schema design (field→axis binding) — 2026-07-03",
+      "headings": [
+        "Why this exists (the open piece the maths audit flagged)",
+        "The design in one line",
+        "Three tiers (each fail-closed)",
+        "TIER 0 — ZONE-TAG (opaque | semantic): MANDATORY, but absence ≠ REJECT — absence = SEMANTIC",
+        "TIER 1 — FIELD EXISTENCE: closed-schema fail-closed, open-world opt-in (still zone-bound)",
+        "TIER 2 — TYPE / CONSTRAINTS: OPTIONAL, ENUMERATED, unknown ⇒ REJECT",
+        "The cross-tier invariant (carried from the checker, evaluated at compile)",
+        "Resolving a field with NO declared type (the explicit WS3b case)",
+        "Schema SIGNING (RD-0167) — the schema is a signed artifact",
+        "What is MANDATORY vs OPTIONAL (the summary table)",
+        "Runnable proof + anti-vacuity (PROVE-OWN-MATHS)",
+        "Honest caveats / what is NOT solved here",
+        "Zero-trust / standards tags",
+        "Provenance"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "fail-closed-no-50yr-mistake-rule",
+        "tritmeshql-capability-vs-terminology-maths-audit-2026-07-02",
+        "tritmeshql-coexistence-and-grammar-v2-2026-07-02",
+        "tritmeshql-hypha-reference-checker-and-redteam-2026-07-03",
+        "galerina-rd-0150-graph-as-data-io-border-concept",
+        "tritmeshql-project-state"
+      ],
+      "topTerms": [
+        "field",
+        "schema",
+        "reject",
+        "semantic",
+        "fail-closed",
+        "zone",
+        "opaque",
+        "type",
+        "optional",
+        "design",
+        "unknown",
+        "signed",
+        "tier",
+        "mandatory",
+        "default",
+        "safe",
+        "absence",
+        "declared",
+        "open-world",
+        "still",
+        "explicit",
+        "checker",
+        "case",
+        "enumerated",
+        "tritmeshql"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/tritmeshql-percent-audit-and-benchmark-2026-07-03.md",
+      "title": "TritMesh QL (`.hypha`) + `.spore` — % audit + reference-artifact benchmark (2026-07-03)",
+      "headings": [
+        "% completion by capability",
+        "Reference-artifact benchmark (R&D, NO performance claim, reproducible)",
+        "What this audit is NOT"
+      ],
+      "codes": [
+        "FUNGI-SUBSTRATE-001"
+      ],
+      "tasks": [],
+      "xrefs": [
+        "tritmeshql-project-state",
+        "galerina-tritmesh-layering-and-formats",
+        "honest-no-overreach-posture",
+        "rnd-goal-best-line-to-photonic-language"
+      ],
+      "topTerms": [
+        "engine",
+        "spore",
+        "audit",
+        "benchmark",
+        "real",
+        "reference-artifact",
+        "mjs",
+        "capability",
+        "claim",
+        "tritmesh",
+        "hypha",
+        "reference",
+        "product",
+        "completion",
+        "custody",
+        "performance",
+        "node",
+        "query",
+        "proven",
+        "re-runnable",
+        "open",
+        "authority",
+        "crypto",
+        "payload",
+        "graph-spine"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/tritmeshql-query-shapes-history-agg-streaming-2026-07-03.md",
+      "title": "RD-0244 — TritMeshQL unfinished query shapes: HISTORY / AS OF, AGGREGATION, STREAMING — 2026-07-03",
+      "headings": [
+        "1. HISTORY / TEMPORAL — reads over the SIGNED history-chain",
+        "1.1 Shapes",
+        "1.2 Security laws added (why a naive temporal read is dangerous)",
+        "1.3 Plan (emitted)",
+        "2. AGGREGATION — COUNT/SUM/AVG/MIN/MAX … GROUP BY … HAVING",
+        "2.1 Shape",
+        "2.2 ZONE RULES (the heart of this workstream)",
+        "2.3 Plan (emitted)",
+        "2.4 Honest limits of A-3 (recorded, not hidden)",
+        "3. STREAMING / SUBSCRIBE — notify-on-change (DESIGN-ONLY, GATED)",
+        "4. The checker extension — what it enforces (fail-closed, 3-state)",
+        "4.1 Anti-vacuity (PROVE-OWN-MATHS — the tests are load-bearing)",
+        "5. Disposition & open items"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "fail-closed-no-50yr-mistake-rule",
+        "prove-own-maths-posture",
+        "dont-trust-check-posture",
+        "record-everything-for-papers",
+        "honest-no-overreach-posture"
+      ],
+      "topTerms": [
+        "group",
+        "semantic",
+        "epoch",
+        "field",
+        "having",
+        "history",
+        "floor",
+        "aggregate",
+        "streaming",
+        "count",
+        "fail-closed",
+        "aggregation",
+        "gated",
+        "signed",
+        "emitted",
+        "shapes",
+        "checker",
+        "plan",
+        "temporal",
+        "read",
+        "query",
+        "history-chain",
+        "min",
+        "max",
+        "rules"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/tritmeshql-query-taxonomy-injection-safety-2026-07-02.md",
+      "title": "RD-0244 — TritMeshQL: query-type taxonomy, injection-safety of quotes, v2 decisions — 2026-07-02",
+      "headings": [
+        "1. Owner decisions (locked)",
+        "2. Injection-safety of quotes — SAFE by construction",
+        "3. Query-type taxonomy (what the QL must accommodate) — the R&D map"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "tritmeshql-project-state",
+        "fail-closed-no-50yr-mistake-rule"
+      ],
+      "topTerms": [
+        "quotes",
+        "decisions",
+        "query-type",
+        "taxonomy",
+        "injection-safety",
+        "must",
+        "filter",
+        "construction",
+        "map",
+        "accommodate",
+        "owner",
+        "locked",
+        "query",
+        "safe",
+        "rd-0244",
+        "tritmeshql",
+        "return",
+        "path",
+        "value",
+        "select",
+        "signed",
+        "injection",
+        "redact",
+        "hypha",
+        "separate"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/tritmeshql-security-threat-taxonomy-and-zt-scorecard-2026-07-03.md",
+      "title": "TritMeshQL `.hypha` — security threat taxonomy + per-construct zero-trust scorecard — 2026-07-03",
+      "headings": [
+        "1. Threat taxonomy — 7 families",
+        "F1 — Query injection (SQL/NoSQL/operator injection · CWE-89/943 · OWASP A03)",
+        "F2 — Field-name / identifier injection (CWE-89 identifier variant)",
+        "F3 — Second-order / stacked-query injection",
+        "F4 — Zone violation / semantic-pre-Gate leak (the novel TritMesh family)",
+        "F5 — Traversal / cross-tenant IDOR (CWE-639 · CWE-285 · OWASP A01 / API1 BOLA)",
+        "F6 — Schema poisoning / mis-authored sensitivity (defense-in-depth)",
+        "F7 — Egress / exfiltration (CWE-200/532 · OWASP A09 · GDPR Art.5/25/32)",
+        "2. Per-construct ZERO-TRUST scorecard (NIST SP 800-207, 7 tenets)",
+        "Cross-cutting tenet verdict (whole QL)",
+        "3. What NOT to claim (auditor honesty)",
+        "4. Anti-vacuity outcome (PROVE-OWN-MATHS)",
+        "5. The one OPEN problem — cross-tenant edge-key custody (F5) — candidates, not a solution",
+        "6. Provenance + status"
+      ],
+      "codes": [],
+      "tasks": [
+        "#34"
+      ],
+      "xrefs": [
+        "zero-trust-scorecard-rule",
+        "security-standards-compliance-check-rule",
+        "fail-closed-no-50yr-mistake-rule",
+        "honest-no-overreach-posture",
+        "tritmeshql-standards-compliance-mapping",
+        "galerina-rd-0150-graph-as-data-io-border-concept",
+        "tritmeshql-hypha-reference-checker-and-redteam",
+        "tritmeshql-project-state",
+        "tritmeshql-coexistence-and-grammar-v2-2026-07-02",
+        "tritmeshql-query-taxonomy-injection-safety-2026-07-02"
+      ],
+      "topTerms": [
+        "traversal",
+        "scorecard",
+        "injection",
+        "cross-tenant",
+        "threat",
+        "checker",
+        "field",
+        "owasp",
+        "residual",
+        "custody",
+        "identifier",
+        "schema",
+        "egress",
+        "construction",
+        "hypha",
+        "taxonomy",
+        "zero-trust",
+        "reject",
+        "edge",
+        "semantic",
+        "open",
+        "per-construct",
+        "mjs",
+        "gated",
+        "tenets"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/tritmeshql-signed-graph-spine-rd0150-2026-07-03.md",
+      "title": "TritMeshQL SIGNED graph-spine — RD-0150 / RD-0167 / RD-0169 design + reference proof — 2026-07-03",
+      "headings": [
+        "1. The gap, precisely",
+        "2. Property 1 — REACHABILITY-AS-AUTHORIZATION (RD-0150 §2)",
+        "3. Property 2 — SIGN THE GRAPH (RD-0167)",
+        "4. Property 3 — TOPOLOGY ≠ AUTHORITY (RD-0169)",
+        "5. Anti-vacuity — the mutation battery (empirically flipped)",
+        "6. Cross-tenant edge-key custody — the UNSOLVED problem (honest, not fake-solved)",
+        "7. Compliance tags",
+        "8. Status + what this unblocks"
+      ],
+      "codes": [
+        "FUNGI-SUBSTRATE-001"
+      ],
+      "tasks": [],
+      "xrefs": [
+        "fail-closed-no-50yr-mistake-rule",
+        "dont-trust-check-posture",
+        "prove-own-maths-posture",
+        "tritmeshql-project-state",
+        "galerina-rd-0231-fungi-graph-lowering"
+      ],
+      "topTerms": [
+        "edge",
+        "rd-0150",
+        "graph",
+        "authority",
+        "signed",
+        "cross-tenant",
+        "property",
+        "key",
+        "rd-0167",
+        "rd-0169",
+        "spine",
+        "tenant",
+        "root",
+        "custody",
+        "each",
+        "topology",
+        "capability",
+        "graph-spine",
+        "proof",
+        "clean",
+        "design",
+        "mjs",
+        "tritmeshql",
+        "reference",
+        "traversal"
       ]
     },
     {
