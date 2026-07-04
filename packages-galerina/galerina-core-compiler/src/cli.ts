@@ -90,10 +90,10 @@ function loadCheckConfig(startDir: string): CheckConfig {
     join(process.cwd(), ".galerinarc.json"),
   ];
   for (const path of candidates) {
-    if (existsSync(path)) {
+    if (existsSync(path)) { // perf-allow: loop-sync-io — one read/write per file in a per-file CLI build/scan loop (or one-shot startup config resolution) — distinct path per iteration, not hoistable, not O(n²)
       try {
-        const raw = readFileSync(path, "utf8");
-        const cfg = JSON.parse(raw) as CheckConfig;
+        const raw = readFileSync(path, "utf8"); // perf-allow: loop-sync-io — one read/write per file in a per-file CLI build/scan loop (or one-shot startup config resolution) — distinct path per iteration, not hoistable, not O(n²)
+        const cfg = JSON.parse(raw) as CheckConfig; // perf-allow: loop-json-parse — one-shot check-config parse at CLI startup (bounded candidate list)
         process.stderr.write(`[galerina check] Using config: ${path}\n`);
         return cfg;
       } catch {
@@ -710,7 +710,7 @@ function runVerifySelfhost(): void {
   for (const filePath of fungiFiles) {
     let source: string;
     try {
-      source = readFileSync(filePath, "utf8");
+      source = readFileSync(filePath, "utf8"); // perf-allow: loop-sync-io — one read/write per file in a per-file CLI build/scan loop (or one-shot startup config resolution) — distinct path per iteration, not hoistable, not O(n²)
     } catch {
       continue;
     }
@@ -766,7 +766,7 @@ function runFixEffects(targetDir: string): void {
   for (const filePath of files) {
     let source: string;
     try {
-      source = readFileSync(filePath, "utf8");
+      source = readFileSync(filePath, "utf8"); // perf-allow: loop-sync-io — one read/write per file in a per-file CLI build/scan loop (or one-shot startup config resolution) — distinct path per iteration, not hoistable, not O(n²)
     } catch {
       continue;
     }
@@ -941,7 +941,7 @@ function runWasmStandaloneBuild(targetDir: string, files: string[]): void {
   for (const filePath of files) {
     let source: string;
     try {
-      source = readFileSync(filePath, "utf8");
+      source = readFileSync(filePath, "utf8"); // perf-allow: loop-sync-io — one read/write per file in a per-file CLI build/scan loop (or one-shot startup config resolution) — distinct path per iteration, not hoistable, not O(n²)
     } catch {
       continue;
     }
@@ -1072,7 +1072,7 @@ function runGovernanceDiff(baseRefArg: string): void {
     const rel = file.replace(process.cwd() + "\\", "").replace(process.cwd() + "/", "").replace(/\\/g, "/");
     // After = working tree
     try {
-      const afterSrc = readFileSync(file, "utf8");
+      const afterSrc = readFileSync(file, "utf8"); // perf-allow: loop-sync-io — one read/write per file in a per-file CLI build/scan loop (or one-shot startup config resolution) — distinct path per iteration, not hoistable, not O(n²)
       afterFlows.push(...parseProgram(afterSrc, file).flows);
     } catch { /* skip unreadable */ }
     // Before = the file at baseRef (git show)
@@ -1137,7 +1137,7 @@ function runCostAnalysis(targetDir: string): void {
   for (const filePath of files) {
     let source: string;
     try {
-      source = readFileSync(filePath, "utf8");
+      source = readFileSync(filePath, "utf8"); // perf-allow: loop-sync-io — one read/write per file in a per-file CLI build/scan loop (or one-shot startup config resolution) — distinct path per iteration, not hoistable, not O(n²)
     } catch {
       continue;
     }
@@ -1307,7 +1307,7 @@ function main(): void {
     // Parse per-file disable directives from the source
     let directives: DisableDirectives = { fileDisabled: new Set(), lineDisabled: new Map() };
     try {
-      const src = readFileSync(filePath, "utf8");
+      const src = readFileSync(filePath, "utf8"); // perf-allow: loop-sync-io — one read/write per file in a per-file CLI build/scan loop (or one-shot startup config resolution) — distinct path per iteration, not hoistable, not O(n²)
       directives = parseDisableDirectives(src);
     } catch { /* ignore read error -- file already compiled above */ }
 
@@ -1361,7 +1361,7 @@ function main(): void {
       try { mkdirSync(outDir, { recursive: true }); } catch { /* already exists */ }
       const baseName = basename(filePath, ".fungi");
       const manifestPath = join(outDir, `${baseName}.lmanifest`);
-      writeFileSync(manifestPath, result.manifestJson, "utf8");
+      writeFileSync(manifestPath, result.manifestJson, "utf8"); // perf-allow: loop-sync-io — one read/write per file in a per-file CLI build/scan loop (or one-shot startup config resolution) — distinct path per iteration, not hoistable, not O(n²)
       process.stdout.write(`[manifest] ${manifestPath}\n`);
     }
   }

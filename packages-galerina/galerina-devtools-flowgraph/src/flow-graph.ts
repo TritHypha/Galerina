@@ -81,7 +81,7 @@ export function buildFlowGraph(
     if (child.kind === "routeDecl" && child.value) {
       const parts = child.value.split(" ");
       const pathPart = parts.slice(1).join(" ").trim();
-      const flowChild = (child.children ?? []).find(c =>
+      const flowChild = (child.children ?? []).find(c => // perf-allow: loop-array-find — per-route AST children (bounded, rebuilt each iteration), multi-condition predicate
         c.kind === "identifier" && c.value?.startsWith("flow:"));
       if (flowChild?.value) {
         routes.set(pathPart, flowChild.value.slice("flow:".length));

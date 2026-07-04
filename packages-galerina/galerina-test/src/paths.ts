@@ -20,7 +20,7 @@ export const WORKSPACE_MARKER = "galerina.workspace.json";
 function findUp(start: string, marker: string): string | null {
   let dir = resolve(start);
   for (;;) {
-    if (existsSync(resolve(dir, marker))) return dir;
+    if (existsSync(resolve(dir, marker))) return dir; // perf-allow: loop-sync-io — one-shot workspace-root walk-up; distinct dir per iteration, returns on first hit
     const parent = dirname(dir);
     if (parent === dir) return null; // hit the filesystem root
     dir = parent;

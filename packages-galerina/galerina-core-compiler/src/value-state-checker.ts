@@ -2252,7 +2252,7 @@ function scanUnlowerableNumerics(root: AstNode): ValueStateDiagnostic[] {
       }
       for (const c of children) {
         if (c.kind !== "paramDecl") continue;
-        const tr = (c.children ?? []).find((t) => t.kind === "typeRef");
+        const tr = (c.children ?? []).find((t) => t.kind === "typeRef"); // perf-allow: loop-array-find — bounded N over a paramDecl's children (typeRef lookup)
         if (typeof tr?.value === "string") {
           const base = numericBaseType(tr.value);
           if (BACKEND_UNLOWERABLE_SCALAR.has(base)) out.push(unlowerableNumericDiag(base, tr.location ?? c.location));

@@ -103,7 +103,7 @@ export function buildGraph(scan: ScanResult): PackageGraph {
   const orphans = nodes.filter((n) => (inbound.get(n) ?? 0) === 0 && !entrySet.has(n));
 
   const externalDeps: ExternalDep[] = [...extMap.entries()]
-    .map(([specifier, v]) => ({ specifier, kind: v.kind, importedBy: [...v.importedBy].sort() }))
+    .map(([specifier, v]) => ({ specifier, kind: v.kind, importedBy: [...v.importedBy].sort() })) // perf-allow: loop-sort — sorts this dep's own importedBy set, distinct per entry (not loop-invariant)
     .sort((a, b) => a.specifier.localeCompare(b.specifier));
 
   const nodeCoreCount = externalDeps.filter((d) => d.kind === "node_core").length;

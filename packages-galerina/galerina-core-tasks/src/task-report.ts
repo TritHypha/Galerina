@@ -48,6 +48,12 @@ export interface CreateTaskRunReportInput {
 export function createTaskRunReport(input: CreateTaskRunReportInput): TaskRunReport {
   const status = summarizeTaskRunStatus(input.results);
 
+  // Index results by task name once (first-match-wins, preserving .find semantics) to avoid an O(n²) scan.
+  const resultByTask = new Map<string, TaskResult>();
+  for (const candidate of input.results) {
+    if (!resultByTask.has(candidate.task)) resultByTask.set(candidate.task, candidate);
+  }
+
   return {
     generatedAt: input.generatedAt ?? new Date().toISOString(),
     taskFile: input.taskFile,
@@ -56,7 +62,7 @@ export function createTaskRunReport(input: CreateTaskRunReportInput): TaskRunRep
     status,
     dependencyOrder: input.dependencyOrder.map((task) => task.name),
     tasks: input.dependencyOrder.map((task) => {
-      const result = input.results.find((candidate) => candidate.task === task.name);
+      const result = resultByTask.get(task.name);
 
       return createTaskReport(
         task,

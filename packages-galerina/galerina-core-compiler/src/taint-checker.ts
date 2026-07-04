@@ -369,8 +369,13 @@ function taintPropagate(expr: AstNode, bindings: Map<string, TaintState>): Taint
 export function checkTaint(ast: AstNode, flows: readonly FlowMeta[]): TaintDiagnostic[] {
   const diagnostics: TaintDiagnostic[] = [];
 
+  // Index top-level flow nodes by name once — the per-flow .find scanned all of ast.children (O(flows²)).
+  const flowNodeByName = new Map<string, AstNode>();
+  for (const c of ast.children ?? []) {
+    if (FLOW_KINDS.has(c.kind) && typeof c.value === "string" && !flowNodeByName.has(c.value)) flowNodeByName.set(c.value, c);
+  }
   for (const flow of flows) {
-    const flowNode = (ast.children ?? []).find(c => FLOW_KINDS.has(c.kind) && c.value === flow.name);
+    const flowNode = flowNodeByName.get(flow.name);
     if (flowNode === undefined) continue;
 
     const bindings = new Map<string, TaintState>();
@@ -388,7 +393,7 @@ export function checkTaint(ast: AstNode, flows: readonly FlowMeta[]): TaintDiagn
       if (declaredTainted || TAINT_SOURCES.has(pname)) bindings.set(pname, { kind: "tainted" });
     }
 
-    const body = (flowNode.children ?? []).find(c => c.kind === "block");
+    const body = (flowNode.children ?? []).find(c => c.kind === "block"); // perf-allow: loop-array-find — bounded N over a flow node's children (find body block)
     if (body === undefined) continue;
 
     walkBody(body, bindings, flow.name, diagnostics);

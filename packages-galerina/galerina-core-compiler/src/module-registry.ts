@@ -268,7 +268,7 @@ export function resolveFileImports(
     }
 
     // FUNGI-IMPORT-001: File not found
-    if (!existsSync(resolvedPath)) {
+    if (!existsSync(resolvedPath)) { // perf-allow: loop-sync-io — one existsSync/statSync/readFileSync per resolved import — distinct file per iteration; the statSync is the deliberate FUNGI-IMPORT-006 pre-read size guard
       results.push({
         filePath: resolvedPath,
         symbols: [],
@@ -307,7 +307,7 @@ export function resolveFileImports(
     // being slurped whole into memory (compile-time OOM/DoS). The lexer's own 10 MB ceiling runs only
     // AFTER the bytes are already resident, so this pre-read check is the one that prevents the spike.
     try {
-      const bytes = statSync(resolvedPath).size;
+      const bytes = statSync(resolvedPath).size; // perf-allow: loop-sync-io — one existsSync/statSync/readFileSync per resolved import — distinct file per iteration; the statSync is the deliberate FUNGI-IMPORT-006 pre-read size guard
       if (bytes > MAX_IMPORT_BYTES) {
         results.push({
           filePath: resolvedPath,
@@ -331,7 +331,7 @@ export function resolveFileImports(
     // Read the imported file
     let importedSource: string;
     try {
-      importedSource = readFileSync(resolvedPath, "utf8");
+      importedSource = readFileSync(resolvedPath, "utf8"); // perf-allow: loop-sync-io — one existsSync/statSync/readFileSync per resolved import — distinct file per iteration; the statSync is the deliberate FUNGI-IMPORT-006 pre-read size guard
     } catch (e) {
       results.push({
         filePath: resolvedPath,

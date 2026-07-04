@@ -805,7 +805,7 @@ class Parser {
     if (effectNames.length === 0) {
       for (const clause of flowClauses) {
         if (clause.kind !== "contractDecl") continue;
-        const effectsSubBlock = (clause.children ?? []).find(
+        const effectsSubBlock = (clause.children ?? []).find( // perf-allow: loop-array-find — bounded N over a contractDecl's children (effects sub-block lookup)
           (c) => c.kind === "identifier" && typeof c.value === "string" &&
             (c.value === "effects:block" || c.value === "effects:"),
         );

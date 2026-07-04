@@ -73,7 +73,7 @@ export function readEgressBatches(dir: string): EgressBatch[] {
   for (const line of text.split("\n")) {
     const trimmed = line.trim();
     if (trimmed.length === 0) continue;
-    out.push(JSON.parse(trimmed) as EgressBatch);
+    out.push(JSON.parse(trimmed) as EgressBatch); // perf-allow: loop-json-parse — hash-linked egress-ledger replay; each line is distinct, no behavior-change refactor
   }
   return out;
 }
@@ -340,7 +340,7 @@ export function readComplianceLedger(dir: string): ComplianceEntry[] {
   for (const line of text.split("\n")) {
     const trimmed = line.trim();
     if (trimmed.length === 0) continue;
-    out.push(JSON.parse(trimmed) as ComplianceEntry);
+    out.push(JSON.parse(trimmed) as ComplianceEntry); // perf-allow: loop-json-parse — hash-linked compliance-ledger replay; each line is distinct, no behavior-change refactor
   }
   return out;
 }

@@ -91,8 +91,8 @@ export function scanKBDirectory(kbDir: string): ScanResult {
     let stat: ReturnType<typeof statSync>;
 
     try {
-      content = readFileSync(filePath, "utf8");
-      stat = statSync(filePath);
+      content = readFileSync(filePath, "utf8"); // perf-allow: loop-sync-io — one-shot KB .md dir scan, reads a different file each iteration (N = doc count)
+      stat = statSync(filePath); // perf-allow: loop-sync-io — one-shot KB .md dir scan, stats a different file each iteration (N = doc count)
     } catch {
       continue;
     }
@@ -121,7 +121,7 @@ export function scanKBDirectory(kbDir: string): ScanResult {
     for (const m of content.matchAll(FUNGI_CODE_RE)) {
       lnlCodesSet.add(m[0]);
     }
-    const lnlCodes = [...lnlCodesSet].sort();
+    const lnlCodes = [...lnlCodesSet].sort(); // perf-allow: loop-sort — sorts this document's own FUNGI-code set, distinct per iteration (not loop-invariant)
 
     // Last modified
     const lastModified = stat.mtime;

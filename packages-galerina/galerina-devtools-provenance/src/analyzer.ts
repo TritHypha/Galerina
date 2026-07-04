@@ -600,7 +600,7 @@ export function analyzeFile(
 
     // Determine line range for this flow's body
     // We need the index in the original flows array for range calculation
-    const origIndex = parsed.flows.findIndex(f => f.name === flow.name && f.location.line === flow.location.line);
+    const origIndex = parsed.flows.findIndex(f => f.name === flow.name && f.location.line === flow.location.line); // perf-allow: loop-array-find — composite name+line predicate; flows per file are bounded/small
     const [startLine, endLine] = flowLineRange(parsed.flows, origIndex, totalLines);
 
     // Scope scanning to this flow's line range
@@ -698,7 +698,7 @@ export function analyzeFile(
       let linkedSomething = false;
       for (const arg of sc.args) {
         const txId = [...transformNodeMap.entries()]
-          .find(([k]) => k.includes(arg))?.[1];
+          .find(([k]) => k.includes(arg))?.[1]; // perf-allow: loop-array-find — substring match (not key equality), can't be a Map lookup; transforms per flow are few
         if (txId !== undefined) {
           flowEdges.push({ from: txId, to: sinkId });
           linkedSomething = true;
@@ -784,7 +784,7 @@ export function collectFungiFiles(dir: string): string[] {
   for (const entry of entries) {
     const full = join(dir, entry);
     try {
-      const stat = statSync(full);
+      const stat = statSync(full); // perf-allow: loop-sync-io — one-shot recursive directory scan, distinct path each entry
       if (stat.isDirectory()) {
         files.push(...collectFungiFiles(full));
       } else if (extname(entry) === ".fungi") {
@@ -811,7 +811,7 @@ export function buildProvenanceGraph(
   for (const filePath of filePaths) {
     let source: string;
     try {
-      source = readFileSync(filePath, "utf8");
+      source = readFileSync(filePath, "utf8"); // perf-allow: loop-sync-io — one-shot build scan, distinct file path each iteration
     } catch {
       continue;
     }

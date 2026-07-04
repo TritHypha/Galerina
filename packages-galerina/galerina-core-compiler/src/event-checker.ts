@@ -244,7 +244,7 @@ export function checkEvents(ast: AstNode): EventCheckResult {
     }
 
     // Find the flow body (block node — last child or first block-kind child)
-    const bodyNode = flowChildren.find((c) => c.kind === "block");
+    const bodyNode = flowChildren.find((c) => c.kind === "block"); // perf-allow: loop-array-find — bounded N over a flow's children (find body block)
     if (bodyNode === undefined) continue;
 
     // Collect emits directly in this flow body (not nested flows)

@@ -59,11 +59,11 @@ export function topoSort<N, E>(graph: Graph<N, E>): TopoResult {
       if (deg === 0) newlyReady.push(edge.to);
     }
     // Insert in sorted order to keep the queue deterministic.
-    newlyReady.sort();
+    newlyReady.sort(); // perf-allow: loop-sort — sorts the current node's own newly-freed successors, distinct per iteration (not loop-invariant)
     ready.push(...newlyReady);
     // Re-sort because we may have inserted in the middle semantically;
     // since we always shift from the front and insert sorted, this keeps it correct.
-    ready.sort();
+    ready.sort(); // perf-allow: loop-sort — Kahn's queue mutates each iteration; the sort is load-bearing for deterministic lexicographic scheduling, not re-sorting a constant
   }
 
   if (order.length === graph.nodeCount) {

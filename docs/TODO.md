@@ -40,6 +40,34 @@ language-policy items the owner unlocked. Recursive compiler suite **4256/4256**
 - Lesson: `tests/*.test.mjs` misses ~630 **subdir** tests — always run `tests/**` / the package `npm test`; a
   relative `GALERINA_KB_DIR` breaks per-package KB tests under run-all-tests (use the default or an absolute path).
 
+## ⚡ Perf / optimisation sweep — `audit-perf-hotpath` 116 → 0 HIGH (2026-07-04)
+
+Owner: *"get it sorted now"* (the perf/optimisation findings). Full suite **60/60 · 6,075** unchanged; auditor
+self-test PASS. Every HIGH finding either FIXED (genuine O(n²)) or `perf-allow`-adjudicated with a concrete reason.
+- **9 real O(n²) → Map fixes** (behavior-preserving, first-match-wins): compiler — `governance-verifier`
+  (effect-results by flow name), `taint-checker` (flow-nodes by name), `wat-assembler` (WASM-type dedup by
+  signature key); devtools — graph-project (node/package indices ×2), provenance (`cli` trust-boundary ×2,
+  `reporter` riskFlow), core-tasks (task-report). Validated by the 4256/4256 compiler suite + per-package suites.
+- **Tool scope fix:** excluded the non-shipped benchmark harness (`galerina-devtools-benchmarks`) from the auditor
+  (116→100) — measurement harness, not shipped runtime.
+- **~90 findings adjudicated** via `perf-allow: <check> — <reason>` (4 parallel workers + hub): bounded AST-children,
+  per-file read loops, one-shot config/import resolution, per-node sorts.
+- Open (deferred, NOT done): `R3 env-perf` (runtime.fungi O(n²) envLookup → scoped map) still open in `version.json`.
+
+## 🔬 R&D — Prismatic Tensor Syntax / "Wavefront Execution" (RD-0257…0264, 2026-07-04)
+
+Owner: *"do R&D on `notes/82-logic-optimisation.md`."* Machine-checked — `Galerina-R-AND-D/tritmeshql/
+rd-0257-prismatic-tensor-syntax-check.mjs` **15/15 GREEN**. KB: `../ZTF-Knowledge-Bases/galerina-rd-0257-prismatic-
+tensor-syntax-2026-07-04.md`; results-log rows RD-0257…0264.
+- **REFUSED (as stated):** RD-0257 O(1)/"speed of light" (K⊗D is Θ(dim²); RD-0166/0117 class) · RD-0260 "same-ms for
+  10k" broadcast (Θ(N/W), constant-factor only) · RD-0261 full-state precompute (3ⁿ) · the `⊗`/`TRI_MULTIPLY` gate
+  (forges ALLOW from double-DENY → must be `min`; RD-0259/RD-0253).
+- **ADOPT / NEXT:** ▸ **RD-0258 data-oblivious / branchless `secure`-flow lowering** (kills timing + Spectre;
+  defensive-paper candidate; AZT ~8/10 PURSUE) — design an `@oblivious`/constant-time attribute. ▸ RD-0260 bounded
+  vector stdlib map/filter. ▸ RD-0263 loop→bounded-vector lowering. ▸ RD-0259 min-gate already shipped (`vAnd`).
+- The note's one silicon-real insight ("collapse the logic, don't re-walk it") = the perf sweep above (precompute
+  Maps, not O(n²) re-scans). The sound kernel needs **no new syntax**.
+
 ## 🔬 Stage-B / `.gate` quality — pre-flight audit (2026-07-03) — RECORDED BEFORE FIXES
 
 Owner picked track: **runtime in `.fungi` (Stage-B self-hosting)**; `.gate` = production-app authoring only.

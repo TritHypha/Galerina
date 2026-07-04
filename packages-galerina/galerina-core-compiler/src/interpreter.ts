@@ -2568,7 +2568,7 @@ class Interpreter {
             this.declare(child.value ?? "_", match.bound);
           }
         }
-        const body = [...children].reverse().find((child) => child.kind !== "identifier");
+        const body = [...children].reverse().find((child) => child.kind !== "identifier"); // perf-allow: loop-array-find — bounded N over a match arm's children (find arm body)
         return body === undefined ? FUNGI_VOID : await this.evalExpr(body);
       } finally {
         this.popScope();

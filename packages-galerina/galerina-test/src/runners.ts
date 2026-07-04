@@ -127,7 +127,7 @@ export async function runE2e(opts: E2eOptions = {}): Promise<CheckResult> {
   let failures = 0;
   for (const entry of entries) {
     const abs = resolveTarget(root, entry);
-    if (!existsSync(abs)) {
+    if (!existsSync(abs)) { // perf-allow: loop-sync-io — one-shot e2e corpus existence scan; distinct example path per iteration
       failures++;
       if (opts.onOutput) opts.onOutput(`MISSING ${entry}\n`);
       continue;

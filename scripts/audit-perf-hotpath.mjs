@@ -150,7 +150,10 @@ export function findFindings(masked, orig = masked) {
 
 // ── file walk: production src only (shipped runtime/compiler), skip tests/fixtures/dist/build/deps ──
 const CODE_EXT = new Set([".ts", ".tsx", ".mjs", ".cjs", ".js", ".jsx"]);
-const SKIP_DIR = new Set(["node_modules", "dist", "build", ".graph", ".git", "coverage", "test-fixtures", "tests", "examples", "benchmarks"]);
+// galerina-devtools-benchmarks is a non-shipped MEASUREMENT harness (one-shot build/compare/runner dev
+// scripts) — its own sync-IO-in-a-loop / sort-in-map is irrelevant to shipped runtime perf, so skip the
+// whole package the same way we skip a bare `benchmarks/` dir (its /src/ path defeats the plain name match).
+const SKIP_DIR = new Set(["node_modules", "dist", "build", ".graph", ".git", "coverage", "test-fixtures", "tests", "examples", "benchmarks", "galerina-devtools-benchmarks"]);
 const SKIP_FILE = ["audit-perf-hotpath", ".test.", ".spec.", ".d.ts"];
 
 function walk(dir, acc) {

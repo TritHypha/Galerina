@@ -674,7 +674,7 @@ function validateProductionStrictness(
   );
 
   for (const packageRef of project.packages) {
-    const matchedPattern = policy.disabledPackagePatterns.find((pattern) =>
+    const matchedPattern = policy.disabledPackagePatterns.find((pattern) => // perf-allow: loop-array-find — substring-match predicate (not key equality), not Map-indexable; bounded disabled-pattern list
       packageRef.path.includes(pattern),
     );
 

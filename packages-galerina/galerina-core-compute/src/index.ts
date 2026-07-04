@@ -180,7 +180,7 @@ export function selectComputeTarget(
   capabilities: readonly ComputeCapability[],
 ): ComputeTargetSelection {
   for (const target of policy.prefer) {
-    const capability = capabilities.find((item) => item.target === target);
+    const capability = capabilities.find((item) => item.target === target); // perf-allow: loop-array-find — bounded by the small fixed set of hardware compute targets
     if (capability?.available === true) {
       return {
         requested: "compute auto",

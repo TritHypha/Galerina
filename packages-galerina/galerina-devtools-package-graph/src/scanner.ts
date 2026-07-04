@@ -198,10 +198,10 @@ function resolveOwningPackage(
     }
     visited.push(dir);
     const pj = join(dir, "package.json");
-    if (existsSync(pj)) {
+    if (existsSync(pj)) { // perf-allow: loop-sync-io — package.json walk-up probes a different ancestor dir each iteration (bounded, memoised by dir)
       let result: OwningPackage | null = null;
       try {
-        const name = JSON.parse(readFileSync(pj, "utf-8")).name;
+        const name = JSON.parse(readFileSync(pj, "utf-8")).name; // perf-allow — loop-sync-io + loop-json-parse: reads & parses each ancestor's own package.json once (distinct file per iteration, not a constant)
         if (typeof name === "string" && name.length > 0) {
           result = { name, kind: name.startsWith("@galerina/") ? "workspace" : "thirdparty" };
         }
@@ -232,7 +232,7 @@ export function scanPackage(scopePath: string): ScanResult {
 
   const files: ScannedFile[] = sourceFiles.map((abs) => {
     const isFungi = abs.endsWith(".fungi");
-    const raw = stripComments(readFileSync(abs, "utf-8"), isFungi);
+    const raw = stripComments(readFileSync(abs, "utf-8"), isFungi); // perf-allow: loop-sync-io — one-shot package source-tree scan, reads a different file each iteration (N = source file count)
     const relPath = relative(scopePath, abs).split(sep).join("/");
 
     const imports: FileImport[] = [];

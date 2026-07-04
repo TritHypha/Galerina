@@ -49,7 +49,7 @@ export function checkTaskPermissions(task: TaskDefinition): TaskError | undefine
   }
 
   for (const permission of filesystemPermissions) {
-    const invalidPath = permission.values.find((value) => !isSafeRelativePath(value));
+    const invalidPath = permission.values.find((value) => !isSafeRelativePath(value)); // perf-allow: loop-array-find — security permission check; validation predicate (not key equality), first-invalid scan over a small values list
 
     if (permission.values.length === 0 || invalidPath !== undefined) {
       return {
@@ -73,7 +73,7 @@ export function checkTaskPermissions(task: TaskDefinition): TaskError | undefine
   }
 
   for (const permission of environmentPermissions) {
-    const invalidName = permission.values.find((value) => !isSafeEnvironmentName(value));
+    const invalidName = permission.values.find((value) => !isSafeEnvironmentName(value)); // perf-allow: loop-array-find — security permission check; validation predicate (not key equality), first-invalid scan over a small values list
 
     if (permission.values.length === 0 || invalidName !== undefined) {
       return {

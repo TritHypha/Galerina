@@ -473,7 +473,7 @@ function resolvePublicKey(
     dir = parent;
   }
   for (const c of candidates) {
-    if (fs.existsSync(c)) return c;
+    if (fs.existsSync(c)) return c; // perf-allow: loop-sync-io — app-fusion signing-key discovery, one-shot boot path; distinct candidate path per iteration
   }
   return undefined;
 }
@@ -496,7 +496,7 @@ function governanceKeysPresent(
   }
   for (const d of dirs) {
     try {
-      if (fs.existsSync(d) && fs.readdirSync(d).some((f) => /^signing-key-.*\.pub\.pem$/.test(f))) return true;
+      if (fs.existsSync(d) && fs.readdirSync(d).some((f) => /^signing-key-.*\.pub\.pem$/.test(f))) return true; // perf-allow: loop-sync-io — app-fusion key-file discovery, one-shot boot scan; distinct dir per iteration
     } catch {
       // unreadable dir — keep looking
     }

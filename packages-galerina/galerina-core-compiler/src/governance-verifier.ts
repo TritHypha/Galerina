@@ -1466,9 +1466,12 @@ class GovernanceVerifier {
       this.knownFlows.set(flow.name, flowNode !== undefined ? { node: flowNode } : {});
     }
 
+    // Index effect results by flow name once — the per-flow linear .find was O(flows²).
+    const effectResultByName = new Map<string, (typeof effectResults)[number]>();
+    for (const r of effectResults) if (!effectResultByName.has(r.flowName)) effectResultByName.set(r.flowName, r);
     for (const flow of flows) {
       const flowNode = findFlowNode(ast, flow.name);
-      const effectResult = effectResults.find((r) => r.flowName === flow.name);
+      const effectResult = effectResultByName.get(flow.name);
       this.verifyFlow(flow, flowNode, effectResult, profile, flows, effectResults);
     }
 
@@ -1806,11 +1809,11 @@ class GovernanceVerifier {
         const calleeName = callNode.value ?? "";
         if (calleeName === "") continue;
         // Check if calleeName matches a guarded or secure flow in the program
-        const calleeEffectResult = allEffectResults.find(
+        const calleeEffectResult = allEffectResults.find( // perf-allow: loop-array-find — program-wide flow lookup per pure-flow callsite; a real fix threads a name→meta index through verifyFlow (deferred); bounded pure-flow callsites; security pass — no behavior-change refactor
           (r) => r.flowName === calleeName,
         );
         // Also check the flows list for qualifier
-        const calleeFlowMeta = allFlows.find((f) => f.name === calleeName);
+        const calleeFlowMeta = allFlows.find((f) => f.name === calleeName); // perf-allow: loop-array-find — program-wide flow lookup per pure-flow callsite; a real fix threads a name→meta index through verifyFlow (deferred); bounded pure-flow callsites; security pass — no behavior-change refactor
         const isGoverned =
           calleeFlowMeta?.qualifier === "guarded" ||
           calleeFlowMeta?.qualifier === "secure" ||
@@ -1853,7 +1856,7 @@ class GovernanceVerifier {
             } else {
               // FUNGI-GOV-012: check audit requirements
               // Find audit:block child in the contractSetDecl
-              const auditBlock = (contractSetNode.children ?? []).find(
+              const auditBlock = (contractSetNode.children ?? []).find( // perf-allow: loop-array-find — bounded N over a single AST node's children (contract-set / policy / limits / assimilate node) — not a hot path
                 (c) => c.kind === "identifier" && c.value === "audit:block",
               );
               if (auditBlock !== undefined && (auditBlock.children ?? []).length > 0) {
@@ -2409,7 +2412,7 @@ class GovernanceVerifier {
 
       // The flow exists in this compilation unit — check if it has the claimed proof obligation.
       // We check the flow's contract invariant {} blocks for a matching ensure expression.
-      const refFlowContract = (refFlow.node?.children ?? []).find(c => c.kind === "contractDecl");
+      const refFlowContract = (refFlow.node?.children ?? []).find(c => c.kind === "contractDecl"); // perf-allow: loop-array-find — bounded N over a single AST node's children (contract-set / policy / limits / assimilate node) — not a hot path
       if (refFlowContract === undefined) {
         this.diagnostics.push(makeGovDiag(
           "FUNGI-ASSUME-002",
@@ -2839,7 +2842,7 @@ class GovernanceVerifier {
       const ceilings = new Map<string, { n: number; family: LimitFamily }>();
       for (const entry of enforcedLimitsBlock.children ?? []) {
         if (entry.kind !== "identifier" || entry.value === undefined) continue;
-        const valueChild = (entry.children ?? []).find(
+        const valueChild = (entry.children ?? []).find( // perf-allow: loop-array-find — bounded N over a single AST node's children (contract-set / policy / limits / assimilate node) — not a hot path
           (c) => c.kind === "stringLiteral" || c.kind === "numberLiteral",
         ) ?? entry.children?.[0];
         const parsed = parseLimitValue(String(valueChild?.value ?? ""));
@@ -3134,7 +3137,7 @@ class GovernanceVerifier {
       const loc = node.location ?? { file: "", line: 0, column: 0 };
 
       // Look for parent_policy: annotation
-      const parentClause = (node.children ?? []).find(
+      const parentClause = (node.children ?? []).find( // perf-allow: loop-array-find — bounded N over a single AST node's children (contract-set / policy / limits / assimilate node) — not a hot path
         c => c.kind === "identifier" && (c.value ?? "").startsWith("parent_policy:"),
       );
       if (parentClause === undefined) continue;
@@ -3201,7 +3204,7 @@ class GovernanceVerifier {
       const loc = node.location ?? { file: "", line: 0, column: 0 };
 
       // Find the emergency:block child (if any)
-      const emergencyBlock = (node.children ?? []).find(
+      const emergencyBlock = (node.children ?? []).find( // perf-allow: loop-array-find — bounded N over a single AST node's children (contract-set / policy / limits / assimilate node) — not a hot path
         c => c.kind === "identifier" && c.value === "emergency:block"
       );
       if (emergencyBlock === undefined) continue;
@@ -3607,7 +3610,7 @@ class GovernanceVerifier {
       }
 
       // FUNGI-ASSIMILATE-003: require contract {} with at least one grant
-      const contractNode = (node.children ?? []).find(c => c.kind === "contractDecl");
+      const contractNode = (node.children ?? []).find(c => c.kind === "contractDecl"); // perf-allow: loop-array-find — bounded N over a single AST node's children (contract-set / policy / limits / assimilate node) — not a hot path
       let hasGrant = false;
       if (contractNode !== undefined) {
         // Walk all children of the contract looking for accessDecl or identifier nodes

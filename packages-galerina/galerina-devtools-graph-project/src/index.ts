@@ -332,7 +332,7 @@ export function selectProjectGraphBackend(
     requested === "auto" ? policy.preferred : [requested, ...policy.preferred];
 
   for (const backendId of preference) {
-    const adapter = adapters.find((item) => item.id === backendId);
+    const adapter = adapters.find((item) => item.id === backendId); // perf-allow: loop-array-find — tiny fixed set of registered backend adapters, not a hot path
 
     if (adapter !== undefined) {
       return {
@@ -782,6 +782,12 @@ export function renderProjectGraphMarkdownReport(
 export function renderProjectGraphAiMap(graph: ProjectGraph): string {
   const lines = ["# Galerina AI Map", ""];
 
+  // Index nodes by id once (first-match-wins, preserving .find semantics) — avoids an O(n²) scan below.
+  const nodeById = new Map<string, ProjectGraphNode>();
+  for (const candidate of graph.nodes) {
+    if (!nodeById.has(candidate.id)) nodeById.set(candidate.id, candidate);
+  }
+
   for (const node of graph.nodes) {
     if (node.kind !== "Package") {
       continue;
@@ -789,7 +795,7 @@ export function renderProjectGraphAiMap(graph: ProjectGraph): string {
 
     const provides = graph.edges
       .filter((edge) => edge.from === node.id && edge.kind === "provides")
-      .map((edge) => graph.nodes.find((candidate) => candidate.id === edge.to))
+      .map((edge) => nodeById.get(edge.to))
       .filter((candidate): candidate is ProjectGraphNode => candidate !== undefined)
       .slice(0, 12);
 
@@ -1068,10 +1074,15 @@ function addPackageDependencyEdges(
 ): void {
   const dependencies = readPackageDependencies(file.text);
 
+  // Index packages by their derived @galerina/<short> spec once (first-match-wins, preserving .find semantics).
+  const packageBySpec = new Map<string, (typeof packages)[number]>();
+  for (const item of packages) {
+    const spec = `@galerina/${item.name.replace(/^galerina-/, "")}`;
+    if (!packageBySpec.has(spec)) packageBySpec.set(spec, item);
+  }
+
   for (const dependency of dependencies) {
-    const targetPackage = packages.find(
-      (item) => `@galerina/${item.name.replace(/^galerina-/, "")}` === dependency,
-    );
+    const targetPackage = packageBySpec.get(dependency);
     if (targetPackage === undefined) {
       continue;
     }
@@ -1216,7 +1227,7 @@ function findGraphNode(
   idOrLabel: string,
 ): ProjectGraphNode | undefined {
   const query = normalizeQuery(idOrLabel);
-  return graph.nodes.find(
+  return graph.nodes.find( // perf-allow: loop-array-find — multi-condition predicate (id/label/suffix), called O(1) times per request not in a loop
     (node) =>
       node.id.toLowerCase() === query ||
       node.label.toLowerCase() === query ||
@@ -1233,7 +1244,7 @@ function edgesForPath(
   for (let index = 0; index < path.length - 1; index += 1) {
     const from = path[index];
     const to = path[index + 1];
-    const edge = graph.edges.find((item) => item.from === from && item.to === to);
+    const edge = graph.edges.find((item) => item.from === from && item.to === to); // perf-allow: loop-array-find — composite from+to predicate over a short bounded path (node count), not a hot path
     if (edge !== undefined) {
       edges.push(edge);
     }

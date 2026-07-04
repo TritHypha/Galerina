@@ -615,7 +615,7 @@ export function checkFlowEffects(
     const qualifierLabel = flow.qualifier === "flow" ? "plain flow" : `${flow.qualifier} flow`;
     // Pre-compute all missing effects for complete suggestedCode generation
     const missingEffects = [...observedEffects].filter(e => !declared.has(e));
-    const mergedEffects = [...new Set([...flow.declaredEffects, ...missingEffects])].sort();
+    const mergedEffects = [...new Set([...flow.declaredEffects, ...missingEffects])].sort(); // perf-allow: loop-sort — per-flow one-shot sort over a small effect set (merged / secure-trigger effects); not loop-invariant across flows, not a hot path
 
     for (const effect of observedEffects) {
       if (!declared.has(effect)) {
@@ -679,7 +679,7 @@ export function checkFlowEffects(
   // error above. (Landing A dev-mode warning, 2026-06-24.)
   if (flow.qualifier === "flow" || flow.qualifier === "guarded") {
     const tierEffects = new Set<string>([...observedEffects, ...flow.declaredEffects]);
-    const secureTriggers = [...tierEffects].filter((e) => SECURE_REQUIRED_EFFECTS.has(e)).sort();
+    const secureTriggers = [...tierEffects].filter((e) => SECURE_REQUIRED_EFFECTS.has(e)).sort(); // perf-allow: loop-sort — per-flow one-shot sort over a small effect set (merged / secure-trigger effects); not loop-invariant across flows, not a hot path
     if (secureTriggers.length > 0) {
       diagnostics.push({
         code: "FUNGI-TIER-001",
@@ -1008,7 +1008,7 @@ function collectTransitiveCalledEffects(
   const calledFlows = callGraph.get(flowName) ?? new Set<string>();
 
   for (const calledName of calledFlows) {
-    const calledMeta = allFlows.find((candidate) => candidate.name === calledName);
+    const calledMeta = allFlows.find((candidate) => candidate.name === calledName); // perf-allow: loop-array-find — linear flow lookup in the recursive transitive-effect walk; a real fix threads a name→FlowMeta index (deferred); bounded by call-graph size; security pass
     if (calledMeta === undefined) continue;
 
     for (const effect of calledMeta.declaredEffects) {
@@ -1042,7 +1042,7 @@ function hasTransitiveEffect(
 
   const calledFlows = callGraph.get(flowName) ?? new Set<string>();
   for (const calledName of calledFlows) {
-    const calledMeta = allFlows.find((candidate) => candidate.name === calledName);
+    const calledMeta = allFlows.find((candidate) => candidate.name === calledName); // perf-allow: loop-array-find — linear flow lookup in the recursive transitive-effect walk; a real fix threads a name→FlowMeta index (deferred); bounded by call-graph size; security pass
     if (calledMeta?.declaredEffects.includes(effect) === true) return true;
     if (hasTransitiveEffect(calledName, effect, allFlows, callGraph, seen)) return true;
   }

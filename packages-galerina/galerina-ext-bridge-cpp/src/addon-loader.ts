@@ -74,9 +74,9 @@ export function loadNativeAddon(opts: { expectedHash?: string; allowUnverified?:
   const searched: string[] = [];
   for (const p of CANDIDATE_PATHS) {
     searched.push(p);
-    if (!existsSync(p)) continue;
+    if (!existsSync(p)) continue; // perf-allow: loop-sync-io — one-shot native-addon discovery over 3 fixed candidate paths (distinct per iteration)
     // CF-7: hash the binary BEFORE loading it.
-    const addonHash = createHash("sha256").update(readFileSync(p)).digest("hex");
+    const addonHash = createHash("sha256").update(readFileSync(p)).digest("hex"); // perf-allow: loop-sync-io — one-shot addon-discovery scan; reads the first present candidate then returns
 
     // RD-0238 FAIL-CLOSED GATE. Enumerate the SAFE ways to run native code; default-DENY everything else.
     if (opts.expectedHash === undefined) {

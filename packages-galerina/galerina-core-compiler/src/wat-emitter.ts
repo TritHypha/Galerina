@@ -2138,8 +2138,8 @@ function emitBlockStatements(
         // Previously `None` was mis-treated as an unconditional default arm, so the
         // None body fired every iteration (tokenize emitted a lone Eof). The `Some`
         // binding is the arm's leading identifier child; the body is the LAST child.
-        const noneArm = matchArms.find(a => a.value === "None");
-        const someArm = matchArms.find(a => a.value === "Some");
+        const noneArm = matchArms.find(a => a.value === "None"); // perf-allow: loop-array-find — bounded N over a match expression's arms (None/Some/Ok/Err, 2–4) — not a hot path
+        const someArm = matchArms.find(a => a.value === "Some"); // perf-allow: loop-array-find — bounded N over a match expression's arms (None/Some/Ok/Err, 2–4) — not a hot path
         if (noneArm !== undefined || someArm !== undefined) {
           const armBodyNode = (arm: AstNode): AstNode | undefined =>
             arm.children?.[arm.children.length - 1];
@@ -2201,8 +2201,8 @@ function emitBlockStatements(
         // A Result is an opaque registry handle. Read its tag (Ok→0/Err→1) and unwrap
         // the payload via host imports; bind v/e to the unwrapped value (one scratch
         // holds the subject, one holds the unwrapped payload — only one arm executes).
-        const okArm = matchArms.find(a => a.value === "Ok");
-        const errArm = matchArms.find(a => a.value === "Err");
+        const okArm = matchArms.find(a => a.value === "Ok"); // perf-allow: loop-array-find — bounded N over a match expression's arms (None/Some/Ok/Err, 2–4) — not a hot path
+        const errArm = matchArms.find(a => a.value === "Err"); // perf-allow: loop-array-find — bounded N over a match expression's arms (None/Some/Ok/Err, 2–4) — not a hot path
         if (okArm !== undefined || errArm !== undefined) {
           const resBindOf = (arm: AstNode | undefined): string | undefined => {
             const ch = arm?.children ?? [];
@@ -2479,7 +2479,7 @@ export function emitWATFromFlowAST(
   }
 
   // Find the block body of the flow.
-  const blockNode = (flowNode.children ?? []).find((c) => c.kind === "block");
+  const blockNode = (flowNode.children ?? []).find((c) => c.kind === "block"); // perf-allow: loop-array-find — bounded N over a flow node's children (find body block)
   if (blockNode === undefined) {
     recordLayouts = prevLayouts; recordVarTypes = prevVarTypes; enumVariants = prevEnums; currentReturnBase = prevReturnBase; // restore on early exit
     return null;
@@ -2627,9 +2627,9 @@ function bodyTailIsUnreachable(blockNode: AstNode): boolean {
  * `statically_verified` invariants (constant-fold = true) are excluded — no WAT gate needed.
  */
 function extractInvariantEnsures(flowNode: AstNode): AstNode[] {
-  const contractNode = (flowNode.children ?? []).find(c => c.kind === "contractDecl");
+  const contractNode = (flowNode.children ?? []).find(c => c.kind === "contractDecl"); // perf-allow: loop-array-find — bounded N over a flow node's children (flow contractDecl)
   if (contractNode === undefined) return [];
-  const invariantBlock = (contractNode.children ?? []).find(
+  const invariantBlock = (contractNode.children ?? []).find( // perf-allow: loop-array-find — bounded N over a contractDecl's children (invariant block lookup)
     c => c.kind === "identifier" && c.value === "invariant:block"
   );
   if (invariantBlock === undefined) return [];

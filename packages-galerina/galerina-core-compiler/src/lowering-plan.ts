@@ -58,11 +58,11 @@ export function buildTypedArrayLoweringPlan(
     }
 
     const validElementTypes = ["Float32", "Float64", "Int8", "Int16", "Int32"] as const;
-    const elementType = validElementTypes.find((t) => t === tensor.elementType);
+    const elementType = validElementTypes.find((t) => t === tensor.elementType); // perf-allow: loop-array-find — membership over a fixed 5-element literal type list (Float32/64, Int8/16/32)
     if (elementType === undefined) continue;
 
     const validTypedArrays = ["Float32Array", "Float64Array", "Int8Array", "Int16Array", "Int32Array"] as const;
-    const typed = validTypedArrays.find((t) => t === jsTypedArray);
+    const typed = validTypedArrays.find((t) => t === jsTypedArray); // perf-allow: loop-array-find — membership over a fixed 5-element literal type list (Float32/64, Int8/16/32)
     if (typed === undefined) continue;
 
     entries.push({

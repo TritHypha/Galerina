@@ -69,8 +69,8 @@ export function analyzeFlowDependencies(ast: AstNode): Map<string, FlowDependenc
       }
     }
     out.set(name, {
-      uses: [...uses.get(name)!].sort(),
-      usedBy: [...usedBy.get(name)!].sort(),
+      uses: [...uses.get(name)!].sort(), // perf-allow: loop-sort — per-node sort over its own (small) uses/usedBy set — not loop-invariant, not a hot path
+      usedBy: [...usedBy.get(name)!].sort(), // perf-allow: loop-sort — per-node sort over its own (small) uses/usedBy set — not loop-invariant, not a hot path
       impact: seen.size,
     });
   }

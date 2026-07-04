@@ -52,6 +52,11 @@ async function main(): Promise<number> {
       }
 
       const result = analyzeFile(source, filePath, options);
+      // Index nodes by id once (first-match-wins, preserving .find semantics) for the trust-boundary scan below.
+      const nodeById = new Map<string, (typeof result.nodes)[number]>();
+      for (const n of result.nodes) {
+        if (!nodeById.has(n.id)) nodeById.set(n.id, n);
+      }
       // FUNGI-PROV-001: a blind (parse-failed) analysis is non-clean -> flag high-risk.
       const highRisk = result.ungatedSinkReached || result.analyzerBlind;
       const riskFlows = highRisk
@@ -77,8 +82,8 @@ async function main(): Promise<number> {
           flowsWithTaintedData: result.hasTaintedData ? 1 : 0,
           flowsWithUngatedSinks: highRisk ? 1 : 0,
           trustBoundaryCrossings: result.edges.filter(e => {
-            const fromNode = result.nodes.find(n => n.id === e.from);
-            const toNode   = result.nodes.find(n => n.id === e.to);
+            const fromNode = nodeById.get(e.from);
+            const toNode   = nodeById.get(e.to);
             return fromNode?.isTrusted === false && toNode?.isTrusted === true;
           }).length,
         },

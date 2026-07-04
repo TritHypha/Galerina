@@ -233,7 +233,7 @@ export function readEgressLedger(dir: string): AuditBatch[] {
     if (trimmed.length === 0) {
       continue;
     }
-    out.push(JSON.parse(trimmed) as AuditBatch);
+    out.push(JSON.parse(trimmed) as AuditBatch); // perf-allow: loop-json-parse — HMAC-chained audit-ledger replay; each line is distinct, no behavior-change refactor
   }
   return out;
 }

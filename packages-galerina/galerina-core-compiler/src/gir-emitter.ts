@@ -247,7 +247,7 @@ export function emitGIR(
   for (const child of ast.children ?? []) {
     if (child.kind === "routeDecl" && child.value !== undefined) {
       // routeDecl.value encodes method:path; extract the flow name from children
-      const flowChild = (child.children ?? []).find(
+      const flowChild = (child.children ?? []).find( // perf-allow: loop-array-find — bounded N over an AST node's children (routeDecl flow ident / flow contractDecl)
         (c) => c.kind === "identifier" && c.value?.startsWith("flow:"),
       );
       if (flowChild?.value !== undefined) {
@@ -978,7 +978,7 @@ export function buildAiGraph(
     // Contract — governance declarations only
     let contract: AiGraphContract | undefined;
     if (flowNode !== undefined) {
-      const contractNode = (flowNode.children ?? []).find((c) => c.kind === "contractDecl");
+      const contractNode = (flowNode.children ?? []).find((c) => c.kind === "contractDecl"); // perf-allow: loop-array-find — bounded N over an AST node's children (routeDecl flow ident / flow contractDecl)
       if (contractNode !== undefined) {
         contract = {
           effects: extractContractSection(contractNode, "effects"),

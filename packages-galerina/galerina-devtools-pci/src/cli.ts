@@ -119,7 +119,7 @@ function auditDirectory(dirPath: string, wantJson: boolean): number {
 
   for (const filePath of fungiFiles) {
     let source: string;
-    try { source = readFileSync(filePath, "utf8"); }
+    try { source = readFileSync(filePath, "utf8"); } // perf-allow: loop-sync-io — one-shot directory audit; distinct .fungi path per iteration, nothing to hoist
     catch { process.stderr.write(`Cannot read '${filePath}'\n`); continue; }
     const report = runPciAudit(source, filePath);
     reports.push(report);

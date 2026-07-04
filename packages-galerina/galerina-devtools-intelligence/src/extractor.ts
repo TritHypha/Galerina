@@ -64,7 +64,7 @@ function findFlowNode(ast: AstNode, meta: FlowMeta): AstNode | undefined {
 
   for (const node of candidates) {
     // The first identifier child of a flow decl is the name
-    const nameNode = (node.children ?? []).find(c => c.kind === "identifier");
+    const nameNode = (node.children ?? []).find(c => c.kind === "identifier"); // perf-allow: loop-array-find — per-candidate AST children (small, bounded), array differs each iteration
     if (nameNode?.value === meta.name) return node;
 
     // Fallback: check by location line

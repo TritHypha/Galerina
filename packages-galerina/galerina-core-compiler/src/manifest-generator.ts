@@ -507,9 +507,9 @@ export function generateManifest(
     if (node.kind !== "assimilatedPluginDecl") continue;
     const alias = (node.value as string | undefined) ?? "";
     const children = (node.children as readonly { kind: string; value?: string; children?: readonly unknown[] }[] | undefined) ?? [];
-    const pathNode = children.find(c => typeof c.value === "string" && (c.value as string).startsWith("path:"));
+    const pathNode = children.find(c => typeof c.value === "string" && (c.value as string).startsWith("path:")); // perf-allow: loop-array-find — bounded N over a single AST node's children (assimilated-plugin / secrets+rotation block) — distinct small array per iteration, not a hot path
     const path = ((pathNode?.value as string | undefined) ?? "").replace("path:", "");
-    const contractNode = children.find(c => c.kind === "contractDecl");
+    const contractNode = children.find(c => c.kind === "contractDecl"); // perf-allow: loop-array-find — bounded N over a single AST node's children (assimilated-plugin / secrets+rotation block) — distinct small array per iteration, not a hot path
     const grantedCapabilities: string[] = [];
     // Walk contract children looking for grant: prefixed values
     function extractGrants(n: { kind?: string; value?: string; children?: readonly unknown[] }): void {
@@ -583,16 +583,16 @@ export function generateManifest(
   for (const node of (ast?.children ?? []) as unknown as readonly RotAstNode[]) {
     if (!SECRET_FLOW_KINDS.has(node.kind)) continue;
     const flowName = node.value ?? "";
-    const contractNode = (node.children ?? []).find((c) => c.kind === "contractDecl");
+    const contractNode = (node.children ?? []).find((c) => c.kind === "contractDecl"); // perf-allow: loop-array-find — bounded N over a single AST node's children (assimilated-plugin / secrets+rotation block) — distinct small array per iteration, not a hot path
     if (contractNode === undefined) continue;
-    const secretsNode = (contractNode.children ?? []).find((c) => c.kind === "secretsBlock");
+    const secretsNode = (contractNode.children ?? []).find((c) => c.kind === "secretsBlock"); // perf-allow: loop-array-find — bounded N over a single AST node's children (assimilated-plugin / secrets+rotation block) — distinct small array per iteration, not a hot path
     if (secretsNode === undefined) continue;
     const secretsChildren = secretsNode.children ?? [];
-    const rotationNode = secretsChildren.find((c) => c.kind === "rotationDecl");
+    const rotationNode = secretsChildren.find((c) => c.kind === "rotationDecl"); // perf-allow: loop-array-find — bounded N over a single AST node's children (assimilated-plugin / secrets+rotation block) — distinct small array per iteration, not a hot path
     if (rotationNode === undefined) continue; // secrets{} without a rotation policy → no obligation
     const rotKids = rotationNode.children ?? [];
-    const interval = (rotKids.find((c) => (c.value ?? "").startsWith("interval:"))?.value ?? "").replace("interval:", "");
-    const onFault = (rotKids.find((c) => (c.value ?? "").startsWith("on_rotation_fault:"))?.value ?? "").replace("on_rotation_fault:", "");
+    const interval = (rotKids.find((c) => (c.value ?? "").startsWith("interval:"))?.value ?? "").replace("interval:", ""); // perf-allow: loop-array-find — bounded N over a single AST node's children (assimilated-plugin / secrets+rotation block) — distinct small array per iteration, not a hot path
+    const onFault = (rotKids.find((c) => (c.value ?? "").startsWith("on_rotation_fault:"))?.value ?? "").replace("on_rotation_fault:", ""); // perf-allow: loop-array-find — bounded N over a single AST node's children (assimilated-plugin / secrets+rotation block) — distinct small array per iteration, not a hot path
     // One obligation per credential declared in the block (or a single placeholder if none named).
     const credentials = secretsChildren.filter((c) => c.kind === "credentialDecl");
     const credNames = credentials.length > 0 ? credentials.map((c) => c.value ?? "") : [""];

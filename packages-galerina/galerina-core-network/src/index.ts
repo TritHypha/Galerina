@@ -219,7 +219,7 @@ export function selectNetworkBackend(
   capabilities: readonly NetworkBackendCapability[],
 ): NetworkBackendSelection {
   for (const backend of policy.prefer) {
-    const capability = capabilities.find((item) => item.backend === backend);
+    const capability = capabilities.find((item) => item.backend === backend); // perf-allow: loop-array-find — bounded by the small fixed set of network backends
     if (capability?.available === true && !isUnsafeNetworkBackend(capability)) {
       return {
         selected: backend,

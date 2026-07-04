@@ -527,7 +527,7 @@ class TypeChecker {
       const paramTypes = children
         .filter((c) => c.kind === "paramDecl")
         .map((c) => {
-          const typeRef = c.children?.find((t) => t.kind === "typeRef");
+          const typeRef = c.children?.find((t) => t.kind === "typeRef"); // perf-allow: loop-array-find — bounded N over a paramDecl's children (typeRef lookup)
           return typeRef?.value ? parseTypeString(typeRef.value).base : "";
         });
       this.flowParamTypes.set(node.value, paramTypes);
@@ -955,7 +955,7 @@ class TypeChecker {
             // Register param type for inference.
             // Use the full type string (including generic args) so that Money<GBP>
             // parameters carry their currency parameter through to cross-currency checks.
-            const typeRef = child.children?.find((c) => c.kind === "typeRef");
+            const typeRef = child.children?.find((c) => c.kind === "typeRef"); // perf-allow: loop-array-find — bounded N over a paramDecl's children (typeRef lookup)
             if (typeRef?.value) {
               const parsed = parseTypeString(typeRef.value);
               // Preserve generic args for Money (cross-currency checks) and other
@@ -995,7 +995,7 @@ class TypeChecker {
             this.registerBinding(paramName);
             // Phase 11A.2: fn parameters are also immutable (readonly)
             this.registerBindingKind(paramName, "readonly");
-            const typeRef = child.children?.find((c) => c.kind === "typeRef");
+            const typeRef = child.children?.find((c) => c.kind === "typeRef"); // perf-allow: loop-array-find — bounded N over a paramDecl's children (typeRef lookup)
             if (typeRef?.value) {
               this.registerBindingType(paramName, parseTypeString(typeRef.value).base);
             }

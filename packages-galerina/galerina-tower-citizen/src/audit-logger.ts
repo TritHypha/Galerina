@@ -177,7 +177,7 @@ export class AuditLogger {
     } else {
       if (!existsSync(this.logPath!)) return [];
       const lines = readFileSync(this.logPath!, "utf-8").trim().split("\n").filter(Boolean);
-      events = lines.map(l => { try { return JSON.parse(l) as TowerAuditEvent; } catch { return null; } }).filter((e): e is TowerAuditEvent => e !== null);
+      events = lines.map(l => { try { return JSON.parse(l) as TowerAuditEvent; } catch { return null; } }).filter((e): e is TowerAuditEvent => e !== null); // perf-allow: loop-json-parse — audit-ledger replay; each line is distinct, no behavior-change refactor
     }
     if (filter.correlationId) events = events.filter(e => e.correlationId === filter.correlationId);
     if (filter.phase) events = events.filter(e => e.phase === filter.phase);

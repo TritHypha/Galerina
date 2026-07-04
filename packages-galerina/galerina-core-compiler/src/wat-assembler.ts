@@ -454,19 +454,19 @@ function encodeMinimalWASM(wat: string): Uint8Array {
   // ---------------------------------------------------------------------------
   const typeEntries: { paramTypes: readonly number[]; resultTypes: readonly number[] }[] = [];
   const funcTypeIndices: number[] = [];
+  // Dedup type entries via a signature-keyed index — the old structural findIndex was
+  // O(funcs × distinct-types). The key encodes both type-byte lists (numbers, comma-joined,
+  // `|`-separated) so it is 1:1 with the (paramTypes, resultTypes) pair the findIndex compared.
+  const typeIdxByKey = new Map<string, number>();
 
   for (const f of funcs) {
-    // Find or create a matching type entry.
-    let typeIdx = typeEntries.findIndex(
-      (t) =>
-        t.paramTypes.length === f.paramTypes.length &&
-        t.resultTypes.length === f.resultTypes.length &&
-        t.paramTypes.every((p, i) => p === f.paramTypes[i]) &&
-        t.resultTypes.every((r, i) => r === f.resultTypes[i]),
-    );
-    if (typeIdx === -1) {
+    // Find or create a matching type entry (keyed by its param/result type lists).
+    const key = `${f.paramTypes.join(",")}|${f.resultTypes.join(",")}`;
+    let typeIdx = typeIdxByKey.get(key);
+    if (typeIdx === undefined) {
       typeIdx = typeEntries.length;
       typeEntries.push({ paramTypes: f.paramTypes, resultTypes: f.resultTypes });
+      typeIdxByKey.set(key, typeIdx);
     }
     funcTypeIndices.push(typeIdx);
   }

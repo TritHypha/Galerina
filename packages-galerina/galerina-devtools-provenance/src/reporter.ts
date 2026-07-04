@@ -80,6 +80,12 @@ export function renderTextReport(graph: ProvenanceGraph, fileCount: number): str
   const riskFlowKeys = new Set(
     graph.riskFlows.map(r => `${r.flowName}:::${r.filePath}`)
   );
+  // Index risk flows by composite key once (first-match-wins, preserving .find semantics)
+  const riskFlowByKey = new Map<string, ProvenanceGraph["riskFlows"][number]>();
+  for (const r of graph.riskFlows) {
+    const rk = `${r.flowName}:::${r.filePath}`;
+    if (!riskFlowByKey.has(rk)) riskFlowByKey.set(rk, r);
+  }
   const sortedKeys = [...flowGroups.keys()].sort((a, b) => {
     const aRisk = riskFlowKeys.has(a) ? 0 : 1;
     const bRisk = riskFlowKeys.has(b) ? 0 : 1;
@@ -94,7 +100,7 @@ export function renderTextReport(graph: ProvenanceGraph, fileCount: number): str
     lines.push(`FLOW: ${flowName} (${shortPath})`);
 
     // Sort: sources first, then transforms, then sinks
-    const ordered = [...group.nodes].sort((a, b) => {
+    const ordered = [...group.nodes].sort((a, b) => { // perf-allow: loop-sort — sorts this flow-group's own nodes; array differs each iteration, not loop-invariant
       const order = { source: 0, transform: 1, sink: 2 } as const;
       return order[a.kind] - order[b.kind];
     });
@@ -107,7 +113,7 @@ export function renderTextReport(graph: ProvenanceGraph, fileCount: number): str
 
     // Show risk warning if applicable
     if (riskFlowKeys.has(key)) {
-      const riskEntry = graph.riskFlows.find(r => `${r.flowName}:::${r.filePath}` === key);
+      const riskEntry = riskFlowByKey.get(key);
       if (riskEntry !== undefined) {
         lines.push(`  !! ${riskEntry.description}`);
       }

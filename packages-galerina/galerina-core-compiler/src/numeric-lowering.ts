@@ -188,7 +188,7 @@ function scanFlowFor64(flowNode: AstNode): boolean {
     if (c.kind === "typeRef" && typeof c.value === "string" && FAST_TIER_UNLOWERABLE_SCALAR.has(numericBaseType(c.value))) return true;
     // Param type = the typeRef nested in a paramDecl.
     if (c.kind === "paramDecl") {
-      const tr = (c.children ?? []).find((t) => t.kind === "typeRef");
+      const tr = (c.children ?? []).find((t) => t.kind === "typeRef"); // perf-allow: loop-array-find — bounded N over a paramDecl's children (typeRef lookup)
       if (typeof tr?.value === "string" && FAST_TIER_UNLOWERABLE_SCALAR.has(numericBaseType(tr.value))) return true;
     }
   }
