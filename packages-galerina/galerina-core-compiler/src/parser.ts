@@ -54,6 +54,8 @@ export type AstNodeKind =
   | "forEachStmt"
   | "matchExpr"
   | "matchArm"
+  | "checkExpr"   // W5b T2.2: check(v){ if:/deny:/ambig: } — K3 tri-branch
+  | "checkArm"    // one arm of a checkExpr (value = "if"|"deny"|"ambig")
   // Expressions
   | "callExpr"
   | "memberExpr"
@@ -1337,6 +1339,7 @@ class Parser {
         case "if":       return this.parseIfStmt();
         case "unless":   return this.parseUnlessStmt();
         case "match":    return this.parseMatchExpr();
+        case "check":    return this.parseCheckStmt();
         case "compute":  return this.parseComputeTarget();
         case "fn":       return this.parseFnDecl();
         case "emit":     return this.parseEmitStmt();
@@ -1735,6 +1738,80 @@ class Parser {
 
     this.expect("symbol", "}");
     return { kind: "matchExpr", location: loc, children: [subject, ...arms] };
+  }
+
+  /**
+   * W5b T2.2: `check(subject) { if: <body> deny: <body> ambig: <body> }` — the
+   * K3 tri-branch. `subject` is a Verdict; the arms dispatch on the lattice
+   * DENY(-1)=`deny` / UNKNOWN(0)=`ambig` / ALLOW(+1)=`if`. Exhaustiveness over the
+   * closed 3-value set (all three arms REQUIRED, no silent fallthrough) is enforced
+   * by the governance verifier (FUNGI-CHECK-001, RD-0240 fail-closed). Structure
+   * only here: `{ kind: "checkExpr", children: [subject, ...checkArm] }`.
+   */
+  private parseCheckStmt(): AstNode {
+    const loc = this.loc();
+    this.advance(); // consume "check"
+    this.expect("symbol", "(");
+    const subject = this.parseExpression();
+    this.expect("symbol", ")");
+    this.skipNewlines();
+    this.expect("symbol", "{");
+    this.skipNewlines();
+
+    const arms: AstNode[] = [];
+    const seen = new Set<string>();
+    while (!this.currentIs("symbol", "}") && !this.isEof()) {
+      const arm = this.parseCheckArm(seen);
+      if (arm !== undefined) arms.push(arm);
+      this.skipNewlines();
+    }
+    this.expect("symbol", "}");
+    // Exhaustiveness (RD-0240 fail-closed): all THREE K3 arms are required. A
+    // missing arm is not a silent fallthrough — the verdict it would route has
+    // nowhere to go, which for a governance branch is an unrouted fail-open.
+    for (const required of ["if", "deny", "ambig"]) {
+      if (!seen.has(required)) {
+        this.emit(
+          "FUNGI-CHECK-001",
+          "NON_EXHAUSTIVE_CHECK",
+          `check(...) is missing the '${required}:' arm. All three K3 arms (if/deny/ambig) are required — a verdict with no arm is an unrouted fail-open (RD-0240).`,
+          loc,
+          `Add an '${required}:' arm.`,
+        );
+      }
+    }
+    return { kind: "checkExpr", location: loc, children: [subject, ...arms] };
+  }
+
+  /**
+   * One `check` arm: `<label>: <block | single-statement>` where label is
+   * `if` (a keyword) or `deny`/`ambig` (accepted contextually as arm labels —
+   * they are ordinary identifiers elsewhere; check-arm position is the only
+   * place they are special, so no keyword reservation is needed for them).
+   */
+  private parseCheckArm(seen: Set<string>): AstNode | undefined {
+    const loc = this.loc();
+    const labelTok = this.current();
+    const label = labelTok.value;
+    const isArmLabel =
+      (labelTok.kind === "keyword" && label === "if") ||
+      (labelTok.kind === "identifier" && (label === "deny" || label === "ambig"));
+    if (!isArmLabel) {
+      this.emitUnexpected(`Expected a check arm label (if:/deny:/ambig:), got "${label}".`);
+      this.advance();
+      return undefined;
+    }
+    if (seen.has(label)) {
+      this.emitUnexpected(`Duplicate check arm "${label}:" — each of if/deny/ambig may appear at most once.`);
+    }
+    seen.add(label);
+    this.advance(); // consume the label
+    this.expect("symbol", ":");
+    this.skipNewlines();
+    const body = this.currentIs("symbol", "{")
+      ? this.parseBlock()
+      : (this.parseStatement() ?? { kind: "block", location: loc });
+    return { kind: "checkArm", value: label, location: loc, children: [body] };
   }
 
   private parseMatchArm(): AstNode | undefined {

@@ -958,6 +958,9 @@ class TypeChecker {
     // RD-0277 §4: a decimal integer literal outside i32 wraps SILENTLY in WASM
     // lowering — surface it here (warning; the runtime trap is the hard backstop).
     if (node.kind === "numberLiteral") this.checkIntLiteralRange(node);
+    // W5b T2.2: check(subject){…} dispatches on the K3 lattice — the subject MUST
+    // be a Verdict (a Bool/Int coerced into a verdict branch is the A9 fail-open).
+    if (node.kind === "checkExpr") this.checkCheckSubject(node);
     switch (node.kind) {
       case "flowDecl":
       case "secureFlowDecl":
@@ -1749,6 +1752,28 @@ class TypeChecker {
    * the fix hint offers the `.0` form. Hex/bin/oct (Byte) and decimals (Float) are
    * different lanes and skipped.
    */
+  /**
+   * W5b T2.2: `check(subject){ if:/deny:/ambig: }` dispatches on the K3 verdict
+   * lattice, so its subject must be a `Verdict`. A Bool/Int subject would coerce
+   * a value into a governance branch (the A9 coercion fail-open) — reject it and
+   * point non-verdict dispatch at `match` instead.
+   */
+  private checkCheckSubject(node: AstNode): void {
+    const subject = node.children?.[0];
+    if (subject === undefined) return;
+    const t = this.inferType(subject);
+    if (t !== undefined && t !== "Verdict") {
+      this.diagnostics.push(makeTCDiag(
+        "FUNGI-CHECK-002",
+        "CHECK_SUBJECT_NOT_VERDICT",
+        `check(...) dispatches on a Verdict (the K3 DENY/UNKNOWN/ALLOW lattice), but its subject is '${t}'. ` +
+        `check is verdict-only; use 'match' for '${t}' values.`,
+        subject.location ?? node.location,
+        `Make the subject a Verdict, or use 'match' for '${t}'.`,
+      ));
+    }
+  }
+
   private checkIntLiteralRange(node: AstNode): void {
     const v = node.value ?? "";
     if (v.includes(".") || v.startsWith("0x") || v.startsWith("0b") || v.startsWith("0o")) return;
