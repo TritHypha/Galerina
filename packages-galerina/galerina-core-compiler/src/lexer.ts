@@ -173,6 +173,12 @@ export const V1_ACTIVE_KEYWORDS: ReadonlySet<string> = new Set([
   // Readable Logic Forms (Phase 9C) — promoted from future-reserved
   // See: docs/Knowledge-Bases/galerina-readable-logic-forms.md
   "and", "or", "unless", "is",
+  // K3 verdict operators (W5a, 2026-07-08 syntax update — owner: hard-reserve).
+  // Lattice DENY(-1) < UNKNOWN(0) < ALLOW(+1) (Q2). `flip` = K3 negation
+  // (Verdict-only; `not`/`!` stays Bool-only, A9); `all{}` = min-fold
+  // (empty => UNKNOWN, never the vacuous-ALLOW min identity); `any{}` =
+  // max-fold (empty => DENY, the max identity — zero-trust).
+  "flip", "all", "any",
   // Guard match arms (Phase 41 syntax) — `when condition => body`
   "when",
   // Tower-native syntax primitives (task #76/#77 foundation)

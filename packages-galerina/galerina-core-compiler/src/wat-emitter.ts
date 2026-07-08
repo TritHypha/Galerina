@@ -209,7 +209,8 @@ export interface WATEmitResult {
  */
 export function galerinaTypeToWAT(typeName: string): WATValType {
   switch (typeName) {
-    case "Bool": case "Int": case "Int8": case "Int16": case "Int32": case "Byte": return "i32";
+    // W5a K3: Verdict is an i32 trit {-1,0,+1} (DENY < UNKNOWN < ALLOW).
+    case "Bool": case "Verdict": case "Int": case "Int8": case "Int16": case "Int32": case "Byte": return "i32";
     case "Int64": case "UInt64": return "i64";
     case "Float16": case "Float32": return "f32";
     // #165: scalar `Float` is f64 (double) — matches the f64.const literal emission; the old
@@ -994,9 +995,25 @@ const FLOAT_CHECKED_HELPERS: Readonly<Record<string, string>> = {
   ].join("\n"),
 };
 
+// W5a K3 verdict helpers (2026-07-08): lattice min/max over i32 trits — a helper
+// function so each operand is evaluated exactly ONCE (an inline `select` would
+// duplicate the operand expressions). Lattice: DENY(-1) < UNKNOWN(0) < ALLOW(+1).
+const K3_HELPERS: Readonly<Record<string, string>> = {
+  $fungi_k3_min: [
+    "(func $fungi_k3_min (param $a i32) (param $b i32) (result i32)",
+    "  ;; K3 `and`/all{}: lattice min — DENY absorbs, UNKNOWN never upgrades",
+    "  (select (local.get $a) (local.get $b) (i32.lt_s (local.get $a) (local.get $b))))",
+  ].join("\n"),
+  $fungi_k3_max: [
+    "(func $fungi_k3_max (param $a i32) (param $b i32) (result i32)",
+    "  ;; K3 `or`/any{}: lattice max — ALLOW absorbs; two non-allows never manufacture one",
+    "  (select (local.get $a) (local.get $b) (i32.gt_s (local.get $a) (local.get $b))))",
+  ].join("\n"),
+};
+
 // All strict-trapping checked helpers (i32 + i64 overflow, f64 non-finite), injected on-demand when a flow
 // body references one.
-const ALL_CHECKED_HELPERS: Readonly<Record<string, string>> = { ...I32_CHECKED_HELPERS, ...INT64_CHECKED_HELPERS, ...UINT64_CHECKED_HELPERS, ...FLOAT_CHECKED_HELPERS };
+const ALL_CHECKED_HELPERS: Readonly<Record<string, string>> = { ...I32_CHECKED_HELPERS, ...INT64_CHECKED_HELPERS, ...UINT64_CHECKED_HELPERS, ...FLOAT_CHECKED_HELPERS, ...K3_HELPERS };
 
 // ---------------------------------------------------------------------------
 // P9.3 — Stdlib method → host import bridge
@@ -1147,8 +1164,32 @@ function inferExprType(node: AstNode | undefined): string | undefined {
     }
     case "boolLiteral": return "Bool";
     case "identifier":  return recordVarTypes?.get(node.value ?? "");
+    // W5a K3: Verdict producers/operators. LOAD-BEARING for soundness — without
+    // these, `Verdict.Deny && Verdict.Allow` would fall to the Bool lane and lower
+    // as bitwise i32.and(-1,1)=1 = ALLOW (a fail-open); K3 min is DENY.
+    case "memberExpr": {
+      const recv = node.children?.[0];
+      if (recv?.kind === "identifier" && recv.value === "Verdict" &&
+          (node.value === "Deny" || node.value === "Unknown" || node.value === "Allow")) {
+        return "Verdict";
+      }
+      return undefined;
+    }
+    case "k3FoldExpr": return "Verdict";
+    case "unaryExpr": {
+      if (node.value === "flip") return "Verdict"; // K3 negation is Verdict-only
+      if (node.value === "!") return "Bool";
+      return inferExprType(node.children?.[0]);
+    }
     case "binaryExpr": {
       const op = node.value ?? "";
+      // K3 lane FIRST: &&/|| (and their and/or spellings) over a Verdict operand
+      // stay Verdict — checked before the Bool default below.
+      if (["&&", "||", "and", "or"].includes(op)) {
+        const lv = inferExprType(node.children?.[0]);
+        const rv = inferExprType(node.children?.[1]);
+        if (lv === "Verdict" || rv === "Verdict") return "Verdict";
+      }
       if (["==", "!=", "<", ">", "<=", ">=", "and", "or", "&&", "||"].includes(op)) return "Bool";
       const l = inferExprType(node.children?.[0]);
       const r = inferExprType(node.children?.[1]);
@@ -1243,6 +1284,14 @@ export function emitWATExpr(
         // this `(i32.const N)` is spliced inline, so a `;;` would swallow the enclosing `)`.
         if (constVal !== undefined) return `(i32.const ${constVal}) (; bitfield ${dottedKey} ;)`;
 
+        // W5a K3: the Verdict member-constants — inline i32 trits (block comment, inline-safe).
+        if (receiverName === "Verdict") {
+          if (memberName === "Deny")    return `(i32.const -1) (; Verdict.Deny ;)`;
+          if (memberName === "Unknown") return `(i32.const 0) (; Verdict.Unknown ;)`;
+          if (memberName === "Allow")   return `(i32.const 1) (; Verdict.Allow ;)`;
+          return `(unreachable) (; unknown Verdict member '${memberName}' — fail-closed ;)`;
+        }
+
         // P9.4d (#144): enum-variant access — EnumType.Variant → its declaration-order
         // i32 tag. NO trailing ;; comment — this is used INLINE (e.g. inside i32.store),
         // and a line comment would swallow the enclosing S-expression's closing paren.
@@ -1332,6 +1381,15 @@ export function emitWATExpr(
       }
       if (op === "!=" && stringOperand) {
         return `(i32.eqz (call $host___str_eq ${left} ${right}))`;
+      }
+      // W5a K3: type-directed verdict lane — && = lattice min, || = lattice max,
+      // via the single-evaluation helpers. MUST come before the generic i32 map:
+      // bitwise i32.and(-1,1)=1 would turn Deny&&Allow into ALLOW (fail-open).
+      const verdictOperand = lty === "Verdict" || rty === "Verdict";
+      if ((op === "&&" || op === "||") && verdictOperand) {
+        return op === "&&"
+          ? `(call $fungi_k3_min ${left} ${right})`
+          : `(call $fungi_k3_max ${left} ${right})`;
       }
       // #165: native f64 lowering for float operands. Float literals already emit f64.const, but the
       // binary-op map is i32-only — so without this a float `+ - * /` or comparison emitted an i32
@@ -1447,7 +1505,30 @@ export function emitWATExpr(
       const operand = child ? emitWATExpr(child, vars, staticConsts) : "(i32.const 0)";
       if (op === "-") return `(call $fungi_checked_sub_i32 (i32.const 0) ${operand})`; // -INT32_MIN overflows → trap
       if (op === "!")  return `(i32.eqz ${operand})`;
+      // W5a K3 negation: flip(x) = -x on the trit lattice (flip(-1)=+1, flip(0)=0,
+      // flip(+1)=-1). Plain i32.sub — trits can never overflow, no checked helper needed.
+      if (op === "flip") return `(i32.sub (i32.const 0) ${operand})`;
       return `(unreachable) (; unknown unary: ${op} — fail-closed (emitter cannot lower; #128-sibling) ;)`;
+    }
+
+    case "k3FoldExpr": {
+      // W5a K3 folds — all{} = chained lattice min, any{} = chained lattice max.
+      // Empty-fold identities (machine-checked in proofs/k3-truth-tables-proof.mjs):
+      //   all{} ⇒ UNKNOWN(0) — spec override of min's vacuous-ALLOW identity;
+      //   any{} ⇒ DENY(-1)  — max's true identity and the zero-trust choice.
+      // NOTE the WASM lane evaluates every operand (no short-circuit) — the same
+      // pre-existing discipline as Bool &&/|| lowering to i32.and/or; the
+      // tree-walker short-circuits on the absorbing element. Verdict operands
+      // are pure trits, so the RESULTS agree (the truth-table proof pins this).
+      const isAll = node.value !== "any";
+      const kids = node.children ?? [];
+      if (kids.length === 0) return isAll ? `(i32.const 0) (; all{} => UNKNOWN ;)` : `(i32.const -1) (; any{} => DENY ;)`;
+      let acc = emitWATExpr(kids[0]!, vars, staticConsts);
+      for (let i = 1; i < kids.length; i++) {
+        const next = emitWATExpr(kids[i]!, vars, staticConsts);
+        acc = isAll ? `(call $fungi_k3_min ${acc} ${next})` : `(call $fungi_k3_max ${acc} ${next})`;
+      }
+      return acc;
     }
 
     case "callExpr": {

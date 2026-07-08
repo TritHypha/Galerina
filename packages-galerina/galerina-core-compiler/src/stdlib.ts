@@ -171,6 +171,9 @@ function safeDisplay(v: GalerinaValue): string {
       return String(v.value);
     case "bool":
       return v.value ? "true" : "false";
+    // W5a K3: display the lattice name, never the raw trit
+    case "verdict":
+      return v.value === 1 ? "Allow" : v.value === -1 ? "Deny" : "Unknown";
     case "bytes":
       return `[${v.value.byteLength} bytes]`;
     case "none":

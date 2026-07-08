@@ -31,6 +31,9 @@ export type GalerinaValue =
   | { readonly __tag: "decimal";   readonly value: string }
   | { readonly __tag: "string";    readonly value: string }
   | { readonly __tag: "bool";      readonly value: boolean }
+  // W5a K3 verdict (2026-07-08): value ∈ {-1 (Deny), 0 (Unknown), +1 (Allow)} —
+  // the Q2 lattice. && = min, || = max, flip = negation (flip(0)=0).
+  | { readonly __tag: "verdict";   readonly value: -1 | 0 | 1 }
   | { readonly __tag: "char";      readonly value: string }
   | { readonly __tag: "byte";      readonly value: number }
   | { readonly __tag: "bytes";     readonly value: Uint8Array }
@@ -185,6 +188,9 @@ function coerceToDeclaredNumeric(declaredBase: string, value: GalerinaValue, ini
 const BOOL_TRUE:  GalerinaValue = { __tag: "bool", value: true };
 const BOOL_FALSE: GalerinaValue = { __tag: "bool", value: false };
 const boolVal = (b: boolean): GalerinaValue => b ? BOOL_TRUE : BOOL_FALSE;
+// W5a K3: clamp to the lattice {-1,0,1} so an arithmetic slip can never mint an
+// out-of-range verdict (defense-in-depth; Math.min/max over valid trits stays exact).
+const verdictVal = (v: number): GalerinaValue => ({ __tag: "verdict", value: v < 0 ? -1 : v > 0 ? 1 : 0 });
 
 /**
  * FUNGI-FLOAT-NAN-001 — the fail-closed trap message a non-finite float construction or comparison yields.
@@ -307,6 +313,14 @@ export const BINARY_DISPATCH = new Map<number, _DispatchFn>([
   [dispatchKey("bool", "||", "bool"), (a, b) => boolVal((a.value as boolean) || (b.value as boolean))],
   [dispatchKey("bool", "==", "bool"), (a, b) => boolVal(a.value === b.value)],
   [dispatchKey("bool", "!=", "bool"), (a, b) => boolVal(a.value !== b.value)],
+  // --- K3 Verdict ops (W5a): && = lattice min, || = lattice max (Q2:
+  // DENY(-1) < UNKNOWN(0) < ALLOW(+1)). NO verdict×bool entries — mixed
+  // operands are a COMPILE error (A9/FUNGI-K3-001) and, defense-in-depth,
+  // an unhandled-dispatch runtime error here rather than a silent coercion.
+  [dispatchKey("verdict", "&&", "verdict"), (a, b) => verdictVal(Math.min(a.value as number, b.value as number))],
+  [dispatchKey("verdict", "||", "verdict"), (a, b) => verdictVal(Math.max(a.value as number, b.value as number))],
+  [dispatchKey("verdict", "==", "verdict"), (a, b) => boolVal(a.value === b.value)],
+  [dispatchKey("verdict", "!=", "verdict"), (a, b) => boolVal(a.value !== b.value)],
   // --- Int64 × Int64 ---
   // Strict-trapping i64 (Fork A=TRAP) via the checked bigint layer; exact above 2^53, no silent wrap.
   // Shared source of truth = i64-arith.ts. (Created only once Int64 is lifted from FUNGI-NUMERIC-001;
@@ -1929,7 +1943,12 @@ class Interpreter {
         if (operandNode === undefined) return FUNGI_VOID;
         const operand = await this.evalExpr(operandNode);
         const op = node.value ?? "";
+        if (operand.__tag === "runtimeError") return operand; // fail closed through unaries
         if (op === "!" && operand.__tag === "bool") return { __tag: "bool", value: !operand.value };
+        // W5a K3 negation: flip(-1)=+1, flip(0)=0, flip(+1)=-1 — arithmetic negation
+        // on the lattice. Verdict-ONLY: flip(bool) and !(verdict) both land on the
+        // fail-closed error below (compile-time FUNGI-K3-002 is the primary gate).
+        if (op === "flip" && operand.__tag === "verdict") return verdictVal(-operand.value);
         // #0021: route i32 unary-minus through the CHECKED negation so -INT32_MIN TRAPS
         // (overflow) and -0 canonicalizes to +0 — byte-identical to the VM (Op.NEG) and WASM,
         // instead of the raw `-x` that silently returned an out-of-i32-range value.
@@ -1956,6 +1975,33 @@ class Interpreter {
       case "memberExpr":
         return await this.evalMember(node);
 
+      // W5a K3 folds: all{…} = min-fold, any{…} = max-fold over the Q2 lattice.
+      // Empty-fold identities (machine-checked in proofs/k3-truth-tables-proof.mjs):
+      //   all{}  ⇒ UNKNOWN(0) — the SPEC override of min's vacuous-ALLOW identity
+      //            (an empty conjunction must never manufacture an allow);
+      //   any{}  ⇒ DENY(-1)  — max's true mathematical identity AND the stricter
+      //            zero-trust choice (an empty disjunction grants nothing).
+      // Absorption short-circuits mirror &&/||: DENY absorbs all{}, ALLOW absorbs any{}.
+      case "k3FoldExpr": {
+        const fold = node.value === "any" ? "any" : "all";
+        let acc: -1 | 0 | 1 | undefined = undefined;
+        for (const child of node.children ?? []) {
+          const v = await this.evalExpr(child);
+          if (v.__tag === "runtimeError") return v;
+          if (isCheckedTrap(v)) return v;
+          if (v.__tag !== "verdict") {
+            return { __tag: "runtimeError", message: `K3 '${fold}{ }' operand is '${v.__tag}', not a Verdict (FUNGI-K3-003 class)` };
+          }
+          acc = acc === undefined
+            ? v.value
+            : (fold === "all" ? Math.min(acc, v.value) : Math.max(acc, v.value)) as -1 | 0 | 1;
+          if (fold === "all" && acc === -1) return { __tag: "verdict", value: -1 }; // DENY absorbs
+          if (fold === "any" && acc === 1)  return { __tag: "verdict", value: 1 };  // ALLOW absorbs
+        }
+        if (acc === undefined) return { __tag: "verdict", value: fold === "all" ? 0 : -1 };
+        return { __tag: "verdict", value: acc };
+      }
+
       case "matchExpr":
         return await this.evalMatch(node);
 
@@ -1979,6 +2025,20 @@ class Interpreter {
       // short-circuit. Fail-closed by construction, not by relying on checkTypes to block such operands.
       if (left.__tag === "runtimeError") return left;
       if (left.__tag === "bool" && !left.value) return { __tag: "bool", value: false };
+      // W5a K3 min-fold: DENY(-1) is the lattice bottom and ABSORBS (short-circuit,
+      // same discipline as Bool false). Otherwise min(left, right). A non-verdict
+      // right operand is a fail-closed runtime error — never a silent coercion
+      // (compile-time A9/FUNGI-K3-001 is the primary gate; this is defense-in-depth).
+      if (left.__tag === "verdict") {
+        if (left.value === -1) return left;
+        const right = await this.evalExpr(rightNode);
+        if (right.__tag === "runtimeError") return right;
+        if (isCheckedTrap(right)) return right;
+        if (right.__tag !== "verdict") {
+          return { __tag: "runtimeError", message: `K3 '&&' requires Verdict operands on both sides; right operand is '${right.__tag}' (FUNGI-K3-001 class)` };
+        }
+        return verdictVal(Math.min(left.value, right.value));
+      }
       return await this.evalExpr(rightNode); // a trap in `right` propagates to the binding
     }
 
@@ -1986,6 +2046,17 @@ class Interpreter {
       const left = await this.evalExpr(leftNode);
       if (left.__tag === "runtimeError") return left; // RD-0129: any error in a bool operand fails closed
       if (left.__tag === "bool" && left.value) return { __tag: "bool", value: true };
+      // W5a K3 max-fold: ALLOW(+1) is the lattice top and ABSORBS. Otherwise max(left, right).
+      if (left.__tag === "verdict") {
+        if (left.value === 1) return left;
+        const right = await this.evalExpr(rightNode);
+        if (right.__tag === "runtimeError") return right;
+        if (isCheckedTrap(right)) return right;
+        if (right.__tag !== "verdict") {
+          return { __tag: "runtimeError", message: `K3 '||' requires Verdict operands on both sides; right operand is '${right.__tag}' (FUNGI-K3-001 class)` };
+        }
+        return verdictVal(Math.max(left.value, right.value));
+      }
       return await this.evalExpr(rightNode);
     }
 
@@ -2582,6 +2653,13 @@ class Interpreter {
     const receiver = node.children?.[0];
     const memberName = node.value ?? "";
     if (receiver === undefined) return FUNGI_VOID;
+    // W5a K3: the Verdict member-constants (the language's verdict producers).
+    if (receiver.kind === "identifier" && receiver.value === "Verdict") {
+      if (memberName === "Deny")    return { __tag: "verdict", value: -1 };
+      if (memberName === "Unknown") return { __tag: "verdict", value: 0 };
+      if (memberName === "Allow")   return { __tag: "verdict", value: 1 };
+      return { __tag: "runtimeError", message: `Unknown Verdict member '${memberName}' — the K3 lattice is Deny(-1) < Unknown(0) < Allow(+1)` };
+    }
     // Check if this is a bitfield dotted access: REGISTER.field
     // e.g. V_DPM.network_outbound → look up "V_DPM.network_outbound" in staticConstants
     if (receiver.kind === "identifier") {
@@ -2791,6 +2869,8 @@ function safeDisplay(value: GalerinaValue): string {
     case "bytes": return `[${value.value.byteLength} bytes]`;
     case "decimal": return value.value;
     case "bool": return value.value ? "true" : "false";
+    // W5a K3: display the lattice name, never the raw trit (an integer would invite arithmetic)
+    case "verdict": return value.value === 1 ? "Allow" : value.value === -1 ? "Deny" : "Unknown";
     case "secure": return "[SECURE]";
     case "protected": return "[PROTECTED]";
     case "redacted": return "[REDACTED]";

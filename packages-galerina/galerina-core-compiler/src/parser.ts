@@ -59,6 +59,7 @@ export type AstNodeKind =
   | "memberExpr"
   | "binaryExpr"
   | "unaryExpr"
+  | "k3FoldExpr"   // W5a: all{…} (K3 min-fold) / any{…} (K3 max-fold) — value = "all"|"any"
   | "identifier"
   | "stringLiteral"
   | "numberLiteral"
@@ -2066,7 +2067,44 @@ class Parser {
       const operand = this.parsePrefixExpression();
       return { kind: "unaryExpr", value: op, location: loc, children: [operand] };
     }
+    // W5a K3 (2026-07-08): `flip(expr)` — K3 negation, Verdict-only (A9: `!` stays
+    // Bool-only; the type-checker rejects cross-application). Parentheses REQUIRED —
+    // flip is an operator with exactly one governed operand, never a bare prefix.
+    if (this.currentIs("keyword", "flip")) {
+      const loc = this.loc();
+      this.advance(); // consume flip
+      this.expect("symbol", "(");
+      const operand = this.parseExpression();
+      this.expect("symbol", ")");
+      return { kind: "unaryExpr", value: "flip", location: loc, children: [operand] };
+    }
+    // W5a K3: `all { e1 e2 … }` (min-fold; empty ⇒ UNKNOWN, never the vacuous-ALLOW
+    // min identity) and `any { e1 e2 … }` (max-fold; empty ⇒ DENY, the max identity —
+    // zero-trust). Children are newline/whitespace-separated Verdict expressions.
+    if ((this.currentIs("keyword", "all") || this.currentIs("keyword", "any")) &&
+        this.peekNonNewline(1)?.value === "{") {
+      const loc = this.loc();
+      const fold = this.current().value; // "all" | "any"
+      this.advance(); // consume all/any
+      this.skipNewlines();
+      this.expect("symbol", "{");
+      this.skipNewlines();
+      const operands: AstNode[] = [];
+      while (!this.currentIs("symbol", "}") && !this.isEof()) {
+        operands.push(this.parseExpression());
+        this.skipNewlines();
+      }
+      this.expect("symbol", "}");
+      return { kind: "k3FoldExpr", value: fold, location: loc, children: operands };
+    }
     return this.parsePostfix();
+  }
+
+  /** Peek past newline tokens (for `all {` / `any {` lookahead). */
+  private peekNonNewline(offset: number): Token | undefined {
+    let i = this.pos + offset;
+    while (this.tokens[i]?.kind === "newline") i++;
+    return this.tokens[i];
   }
 
   /** Handles postfix `?` (error propagation) and method chains. */

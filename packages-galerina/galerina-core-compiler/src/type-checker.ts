@@ -149,6 +149,8 @@ const INFERENCE_MARKERS: ReadonlySet<string> = new Set([
 const BUILT_IN_TYPES: ReadonlySet<string> = new Set([
   // Primitive
   "Bool", "Boolean", "Char", "Void",
+  // K3 verdict (W5a, 2026-07-08): lattice DENY(-1) < UNKNOWN(0) < ALLOW(+1); lowers to WAT i32.
+  "Verdict",
   // Numeric
   "Int", "Int8", "Int16", "Int32", "Int64",
   "UInt8", "UInt16", "UInt32", "UInt64",
@@ -677,6 +679,16 @@ class TypeChecker {
         // If receiver type is "unknown" or not in scope → return undefined (don't crash).
         const receiverNode = node.children?.[0];
         if (receiverNode === undefined) return undefined;
+
+        // W5a K3: the Verdict member-constants — Verdict.Deny / Verdict.Unknown /
+        // Verdict.Allow — are the language's verdict PRODUCERS (until check/prefilter
+        // land in W5b). Checked on the RAW receiver identifier, before type inference.
+        if (receiverNode.kind === "identifier" && receiverNode.value === "Verdict") {
+          const member = node.value ?? "";
+          if (member === "Deny" || member === "Unknown" || member === "Allow") return "Verdict";
+          return undefined; // Verdict.<anything-else> — left to FUNGI-K3 checks
+        }
+
         const receiverType = this.inferType(receiverNode);
         const field = node.value ?? "";
 
@@ -877,6 +889,13 @@ class TypeChecker {
         if (!leftType || !rightType) return undefined;
         // String concatenation
         if (op === "+" && leftType === "String" && rightType === "String") return "String";
+        // W5a K3: && / || (and the `and`/`or` spellings that desugar to them) are
+        // OVERLOADED ON TYPE — Verdict×Verdict ⇒ K3 min/max ⇒ Verdict. Mixed
+        // Verdict/Bool is a compile error (A9, enforced in checkBinaryOperatorTypes);
+        // inference still reports Verdict so downstream sees the governed type.
+        if ((op === "&&" || op === "||") && (leftType === "Verdict" || rightType === "Verdict")) {
+          return "Verdict";
+        }
         // Comparison and logical → Bool
         if (["==","!=","<","<=",">",">=","&&","||"].includes(op)) return "Bool";
         // Numeric arithmetic → numeric result
@@ -895,9 +914,15 @@ class TypeChecker {
 
       case "unaryExpr": {
         const op = node.value ?? "";
+        if (op === "flip") return "Verdict"; // W5a K3 negation — Verdict-only (A9 checked in the walker)
         if (op === "!")  return "Bool";
         const operand = node.children?.[0];
         return operand ? this.inferType(operand) : undefined;
+      }
+
+      case "k3FoldExpr": {
+        // W5a: all{…} (min-fold) / any{…} (max-fold) — always Verdict-typed.
+        return "Verdict";
       }
 
       case "matchExpr": {
@@ -1094,6 +1119,14 @@ class TypeChecker {
             this.checkBinaryOperatorTypes(op, leftType, rightType, node.location);
           }
         }
+        for (const child of node.children ?? []) this.walkNode(child);
+        return;
+      }
+
+      // W5a K3 (A9): flip is Verdict-only, ! is Bool-only, fold operands all-Verdict.
+      case "unaryExpr":
+      case "k3FoldExpr": {
+        this.checkK3UnaryAndFolds(node);
         for (const child of node.children ?? []) this.walkNode(child);
         return;
       }
@@ -1660,8 +1693,27 @@ class TypeChecker {
       return;
     }
 
-    // Logical operators
+    // Logical operators — W5a K3 (2026-07-08): overloaded ON TYPE.
+    //   Verdict × Verdict ⇒ K3 min (&&/and) / max (||/or)  — the governed lane
+    //   Bool    × Bool    ⇒ boolean                         — the classic lane
+    //   MIXED             ⇒ compile ERROR (A9) — an UNKNOWN(0) verdict silently
+    //   coerced to a truthy Bool is the BK-2-class fail-open; never coerce.
     if (op === "&&" || op === "||") {
+      const leftIsVerdict = leftType === "Verdict";
+      const rightIsVerdict = rightType === "Verdict";
+      if (leftIsVerdict && rightIsVerdict) return; // K3 lane — sound
+      if (leftIsVerdict !== rightIsVerdict) {
+        this.diagnostics.push(makeTCDiag(
+          "FUNGI-K3-001",
+          "MixedVerdictBoolOperands",
+          `Operator '${op}' cannot mix Verdict and Bool operands ('${leftType}' ${op} '${rightType}'). ` +
+          `A verdict coerced to a boolean silently turns UNKNOWN into a decision (fail-open). ` +
+          `Compare explicitly (e.g. x == Verdict.Allow) or keep both sides Verdict.`,
+          location,
+          `Make both operands Verdict (K3 min/max) or both Bool.`,
+        ));
+        return;
+      }
       if (leftType !== "Bool") {
         this.diagnostics.push(makeTCDiag(
           "FUNGI-TYPE-004",
@@ -1671,7 +1723,65 @@ class TypeChecker {
           `Ensure both operands are Bool.`,
         ));
       }
+      if (rightType !== "Bool") {
+        this.diagnostics.push(makeTCDiag(
+          "FUNGI-TYPE-004",
+          "InvalidBinaryOperation",
+          `Logical operator '${op}' requires Bool operands, but right operand is '${rightType}'.`,
+          location,
+          `Ensure both operands are Bool.`,
+        ));
+      }
       return;
+    }
+  }
+
+  /**
+   * W5a K3 (A9): `flip` is Verdict-only K3 negation; `!` stays Bool-only.
+   * Cross-application is a compile ERROR — `!verdict` would boolean-negate a
+   * trit (UNKNOWN becomes a decision), and `flip(bool)` would smuggle a Bool
+   * into the governed lane. k3FoldExpr operands must ALL be Verdict.
+   */
+  private checkK3UnaryAndFolds(node: AstNode): void {
+    if (node.kind === "unaryExpr") {
+      const op = node.value ?? "";
+      const operand = node.children?.[0];
+      const operandType = operand ? this.inferType(operand) : undefined;
+      if (op === "flip" && operandType !== undefined && operandType !== "Verdict") {
+        this.diagnostics.push(makeTCDiag(
+          "FUNGI-K3-002",
+          "FlipNotVerdict",
+          `'flip' is K3 negation and applies ONLY to Verdict operands, got '${operandType}'. ` +
+          `Use '!' for Bool negation.`,
+          node.location,
+          `flip(Verdict) only; for Bool use !x.`,
+        ));
+      }
+      if (op === "!" && operandType === "Verdict") {
+        this.diagnostics.push(makeTCDiag(
+          "FUNGI-K3-002",
+          "BangOnVerdict",
+          `'!' is Bool negation and cannot apply to a Verdict — boolean-negating a trit turns ` +
+          `UNKNOWN into a decision (fail-open). Use flip(x) (K3: flip(UNKNOWN)=UNKNOWN).`,
+          node.location,
+          `Use flip(x) for verdicts.`,
+        ));
+      }
+    }
+    if (node.kind === "k3FoldExpr") {
+      for (const child of node.children ?? []) {
+        const t = this.inferType(child);
+        if (t !== undefined && t !== "Verdict") {
+          this.diagnostics.push(makeTCDiag(
+            "FUNGI-K3-003",
+            "FoldOperandNotVerdict",
+            `'${node.value}{ }' folds Verdicts (K3 ${node.value === "all" ? "min" : "max"}), but an operand is '${t}'. ` +
+            `Every operand must be a Verdict.`,
+            child.location ?? node.location,
+            `Ensure every ${node.value}{} operand is Verdict-typed.`,
+          ));
+        }
+      }
     }
   }
 
