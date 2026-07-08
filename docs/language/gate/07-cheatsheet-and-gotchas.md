@@ -9,7 +9,7 @@ the spec could be read one way and the checker enforces another, **the checker w
 ## File skeleton
 
 ```gate
-#gate 0.3                                        # (1) pragma — REQUIRED, first non-blank line
+@version 1.0.0                                        # (1) version header — REQUIRED, first non-blank line
 GATE name(p: Type, q: Type) -> ReturnType:       # (2) one GATE per file, typed signature, colon
   INTENT  "what this does"                        # (3) mandatory
   EFFECTS { effect.a, effect.b }                  # (4) mandatory (empty {} only if zero effect edges)
@@ -98,14 +98,15 @@ unwind, must terminate in `[-]`).
 Each row is enforced by `gate-check.mjs` (self-test id in brackets where applicable).
 
 ### Header / structure
-- **No `#gate` pragma first** → rejected. Pragma is `integer.integer`, numeric compare; unsupported ⇒
-  REJECT (never best-effort). `#gate 9.9`/`#gate 0.10` rejected today. `[B7]`
+- **No `@version 1.0.0` header first** → rejected. Closed accept set `{1.0.0}`, exact match; unknown/
+  absent ⇒ REJECT (never best-effort). `@version 2.0.0`, the `.fungi` form `@version 1`, and the
+  retired `#gate` marker are all rejected today (the last with a migration pointer). `[B7]`
 - **Two `GATE`s in one file** → rejected. `[B5]`
 - **A second `:= IN`** → rejected (single source). `[m1]`
 - **Any section after `END`** (or a declarative section *inside* `FLOW`) → rejected (smuggled
   whitelist / spoofed mandatory section). `[ROUND-6/7]`
 - **A second `EFFECTS` block** → rejected (silent whitelist widening). `[R9-3]`
-- **BOM / NBSP / Unicode space in the pragma region** → rejected. `[H5]`
+- **BOM / NBSP / Unicode space in the version-header region** → rejected. `[H5]`
 
 ### Clauses
 - **Missing `INTENT`** or **missing `EFFECTS`** → rejected (M2). `[M2]`
@@ -159,7 +160,7 @@ node tools/gate-check.mjs <file.gate | dir>     # check one file or a directory
 node tools/gate-check.mjs <dir> --json          # machine-readable
 node tools/gate-check.mjs --self-test           # probe every construct + audit case
 ```
-(From `C:\wwwprojects\ZT-Galerina-GRAPH-ASCII-v2`.) Exit 0 iff every file passes every check. The
+(From `C:\Users\phill\Documents\GitHub\ZT-Galerina-GRAPH-ASCII-v2`.) Exit 0 iff every file passes every check. The
 final line reminds you: *a passing map NEVER authorizes — admission is the SIGNED capability at fuse
 time.*
 
@@ -177,8 +178,10 @@ These are places where the honest behaviour differs from a naive reading of the 
    that the checker is a *necessary-not-sufficient* pre-filter and warns rather than hard-rejects the
    undecidable privacy cases. So "passes `gate-check.mjs`" ≠ "safe". (Source: `SPEC` privacy-posture
    note; `gate-check.mjs` `privacy_cut`.)
-3. **The corpus is `#gate 0.3`; the checker's version is `0.4`.** Both are accepted. New files may
-   use either; a 0.3 file is a valid 0.4 input unless it uses `@redact` or a dead sensitivity alias.
+3. **The file header (`@version 1.0.0`) and the checker's internal spec axis (`0.4`) are different
+   things.** The file is at a stable 1.0.0; the `0.4` is the RD-0232b hardening-round detail. The
+   retired `#gate` marker and the `@redact` edge tag both REJECT — migrate with
+   `scripts/migrate-fungi.mjs --gate-stamp`.
 4. **Production is OFF regardless of a green lint.** `gate-check.mjs` passing says nothing about
    shippability — the production compiler refuses to sign `.gate` via `FUNGI-GATELANG-002`. See the
    [README status section](README.md#read-this-first--honest-status-of-gate).
@@ -187,7 +190,7 @@ These are places where the honest behaviour differs from a naive reading of the 
 
 ## Where to go next
 
-- The full grammar + Rosetta stone: `C:\wwwprojects\ZT-Galerina-GRAPH-ASCII-v2\SPEC-gate-language.md`.
+- The full grammar + Rosetta stone: `C:\Users\phill\Documents\GitHub\ZT-Galerina-GRAPH-ASCII-v2\SPEC-gate-language.md`.
 - The validator (the real acceptance rules): `…\tools\gate-check.mjs`.
 - Real source to imitate: `…\examples\*.gate` (all pass the checker).
 - The design rationale: `…\DESIGN-BRIEF-gate-language.md` and `…\README.md`.

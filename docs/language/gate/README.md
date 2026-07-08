@@ -90,7 +90,7 @@ example (cited), shows a common mistake to avoid, and names its source.
 
 | # | Page | What you learn |
 |---|------|----------------|
-| 1 | [The header & signature](01-header-and-signature.md) | `#gate <version>` pragma, `GATE name(params) -> ReturnType:`, one gate per file, `END`. |
+| 1 | [The header & signature](01-header-and-signature.md) | `@version 1.0.0` header (replaced `#gate` 2026-07-08), `GATE name(params) -> ReturnType:`, one gate per file, `END`. |
 | 2 | [The clause block](02-clauses.md) | `INTENT`, `EFFECTS { }`, `PRIVACY deny …`, `AUDIT on/off` — the declarative contract. |
 | 3 | [The `FLOW:` graph](03-flow-graph-syntax.md) | Nodes `[..]`, arrows `->`, entry `[x] := IN`, `? guard`, `@effect`, `decreases`/`hops`. |
 | 4 | [Nodes, verdicts & drains](04-nodes-verdicts-drains.md) | The eight glyphs; `✓`/`×`/`-`/`+`/`!`/`?`; the ALLOW / HOLD / DENY tri-logic mapping. |
@@ -110,7 +110,7 @@ This is `demo-getCustomerById.gate` from the example corpus — a real, checker-
 part is explained across pages 1–5.
 
 ```gate
-#gate 0.3
+@version 1.0.0
 # Demo: request a database query for one customer record (e.g. customerID 1234).
 # The literal value 1234 is DATA — it arrives through IN at call time; the map is the shape.
 GATE getCustomerById(caller: CallerId, customerId: CustomerRef) -> CustomerView:
@@ -143,7 +143,7 @@ node, and that node **dominates** the `[+]` egress — so by *shape*, the raw PI
 ## Sources of truth & how these docs were verified
 
 Per the accuracy discipline for this library, everything here is grounded in the `.gate` design
-workspace `C:\wwwprojects\ZT-Galerina-GRAPH-ASCII-v2` (read-only; not a git repo):
+workspace `C:\Users\phill\Documents\GitHub\ZT-Galerina-GRAPH-ASCII-v2` (read-only; not a git repo):
 
 1. **The spec** — `SPEC-gate-language.md` (v0.4). The normative grammar + Rosetta stone + compiler-gate spec.
 2. **The checker** — `tools/gate-check.mjs` (the v0.4 reference validator). **This is what actually

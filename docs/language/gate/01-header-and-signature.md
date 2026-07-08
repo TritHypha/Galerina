@@ -17,42 +17,43 @@ param   = ident , ":" , ws , type ;
 
 ---
 
-## 1. The `#gate` version pragma
+## 1. The `@version` header
 
-The **first non-blank line must be** `#gate <major>.<minor>`, where each part is an integer.
+The **first non-blank line must be** `@version 1.0.0` (Q1, owner LOCKED 2026-07-08 — this replaced the
+retired `#gate <major>.<minor>` pragma, giving `.fungi` and `.gate` ONE version story).
 
 ```gate
-#gate 0.3
+@version 1.0.0
 ```
 *Source: `examples/flow01.gate:1` (and every example).*
 
 Rules the checker enforces:
 
-- **Mandatory and first.** A missing pragma is rejected ("missing `#gate` version pragma on first
-  line"). (`gate-check.mjs` `parse` / `CHECKS.pragma`.)
-- **Integer.integer, compared NUMERICALLY.** `0.10` is a *valid* version and is strictly newer than
-  `0.9` (numeric, not string, compare). This is deliberate — the anti-versioning-mistake mechanism
-  must not itself be capped at one digit.
-- **Unsupported ⇒ REJECT, never "best effort".** The current checker supports major `0`, minor `≤ 4`.
-  `#gate 9.9` is rejected as unsupported; `#gate 0.10` is rejected as *future-of-this-checker*
-  (0.10 > 0.4). An older minor like `#gate 0.2` is accepted.
-- **Pure ASCII pragma region.** No BOM (U+FEFF), no NBSP (U+00A0), no Unicode spaces anywhere in the
-  leading region or on the `#gate` line — they fail closed.
+- **Mandatory and first.** A missing header is rejected ("missing `@version 1.0.0` header on the first
+  non-blank line"). (`gate-check.mjs` `parse` / `CHECKS.pragma`.)
+- **Closed accept set, exact match.** The current set is `{1.0.0}`. There is no numeric-range
+  comparison — the version either is on the list or it is not. This is the strongest fail-closed
+  shape: unknown ⇒ REJECT.
+- **Unknown/absent/retired ⇒ REJECT, never "best effort".** `@version 2.0.0` is rejected as
+  unsupported; the `.fungi` integer form `@version 1` is rejected in a `.gate` (the dual-format
+  trap fails closed); the retired `#gate` marker is rejected **with a migration pointer**
+  (`scripts/migrate-fungi.mjs --gate-stamp`).
+- **Pure ASCII header region.** No BOM (U+FEFF), no NBSP (U+00A0), no Unicode spaces anywhere in the
+  leading region or on the `@version` line — they fail closed.
 
-> **Version note.** The example corpus is written `#gate 0.3`; the checker's spec version is `0.4`.
-> Both are accepted (0.3 ≤ 0.4). v0.3 files are valid v0.4 inputs **provided** they use neither the
-> removed `@redact` edge tag nor a dead sensitivity alias (see page [02](02-clauses.md) and
-> [05](05-fungi-delegation.md)). When you author new files, either version is fine today; prefer the
-> version your toolchain declares.
-> *(Source: `SPEC-gate-language.md` §0 pragma-compatibility note, §4.1.)*
+> **Version note.** The file header (`@version 1.0.0`) and the checker's internal spec-hardening axis
+> (`0.4`, from the RD-0232b audit rounds) are **different axes** — the file is at a stable 1.0.0; the
+> `0.4` is an implementation detail. The reference checker (`tools/gate-check.mjs`) and the Galerina
+> compiler's `gate-parser.ts` enforce the same closed set, so the verify-loop and the compiler agree.
+> *(Source: `SPEC-gate-language.md` §0 version-header note, §4.1.)*
 
 ### Mistake to avoid
 
 ```gate
-GATE ping(caller: CallerId) -> Pong:     # ← WRONG: no #gate pragma on the first line
+GATE ping(caller: CallerId) -> Pong:     # ← WRONG: no @version header on the first line
   ...
 ```
-The file is rejected before anything else is checked. Always open with `#gate 0.3` (or `0.4`).
+The file is rejected before anything else is checked. Always open with `@version 1.0.0`.
 
 ---
 
@@ -149,7 +150,7 @@ This minimal, **checker-passing** file shows only the frame (clauses/flow are co
 run through `gate-check.mjs` while writing this page and passes (`1/1 .gate files pass ALL checks`):
 
 ```gate
-#gate 0.4
+@version 1.0.0
 GATE ping(caller: CallerId) -> Pong:
   INTENT  "A minimal pure gate: authorise, then return a result with no effects."
   EFFECTS { }

@@ -192,7 +192,7 @@ Whether the operation is audited. Value is `on`, `off`, or a string.
 ## Full clause block (verified, real file)
 
 ```gate
-#gate 0.3
+@version 1.0.0
 GATE getCustomerById(caller: CallerId, customerId: CustomerRef) -> CustomerView:
   INTENT  "Return one customer record for an authorised caller; PII is redacted before egress."
   EFFECTS { database.read, audit.write }

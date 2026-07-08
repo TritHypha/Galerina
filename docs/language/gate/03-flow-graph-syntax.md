@@ -62,7 +62,8 @@ An edge is a directed vector from one node to another. The arrow is `->` (exact 
 
 ### Inline comments
 
-A `#` that is not the leading `#gate` pragma starts a comment to end of line. Comments **carry no
+A `#` starts a comment to end of line (the leading version marker is now `@version`, not `#gate`, so
+`#` is always a comment). Comments **carry no
 authority** (m2) — they are stripped before the verdict. A comment that narrates the opposite of the
 edges is simply ignored; the edges win.
 

@@ -4,7 +4,7 @@ Four complete, **real** `.gate` files from the example corpus, read end to end. 
 `gate-check.mjs` (`21/21` corpus run, verified while writing these docs). Each shows a different core
 pattern. Read them as *maps*, tracing every path to a terminal.
 
-Sources: all files under `C:\wwwprojects\ZT-Galerina-GRAPH-ASCII-v2\examples\`.
+Sources: all files under `C:\Users\phill\Documents\GitHub\ZT-Galerina-GRAPH-ASCII-v2\examples\`.
 
 ---
 
@@ -14,7 +14,7 @@ The canonical "read sensitive data, redact before egress" shape. This is the spe
 stone (`SPEC-gate-language.md` §2b).
 
 ```gate
-#gate 0.3
+@version 1.0.0
 GATE getPatient(caller: CallerId, patientRef: PatientRef) -> PatientView:
   INTENT  "Return a patient record to an authorised caller; PatientId and SSN are redacted before egress."
   EFFECTS { database.read, audit.write }
@@ -37,7 +37,7 @@ END
 *Source: `examples/flow01.gate` (verbatim).*
 
 **How to read it:**
-- **Header**: `#gate 0.3`, one `GATE`, typed signature, `END`.
+- **Header**: `@version 1.0.0`, one `GATE`, typed signature, `END`.
 - **Clauses**: mandatory `INTENT` + `EFFECTS { database.read, audit.write }`; two `PRIVACY` deny
   rules; `AUDIT on`.
 - **Authorization**: `? authorised` fans into `✓` (ALLOW) / `×` (DENY-False) / `-` (HOLD-Unknown) —
@@ -54,7 +54,7 @@ A multi-stage financial flow: authorise → check funds → AML screen → post 
 audit. Note the AML test uses `!` (panic) for its undecidable arm, and the PAN is cut before audit.
 
 ```gate
-#gate 0.3
+@version 1.0.0
 GATE transferMoney(from: AccountId, to: AccountId, amount: Money<GBP>) -> TransferReceipt:
   INTENT  "Move funds between two accounts after balance and AML checks; the account PAN is redacted before it is audited."
   EFFECTS { database.read, database.write, ledger.mutate, audit.write }
@@ -106,7 +106,7 @@ The reference example for `[!]` panic used as **fail-closed compensation**. A pa
 unwound by a rollback that then drains to `[-]`.
 
 ```gate
-#gate 0.3
+@version 1.0.0
 GATE provisionTenant(caller: CallerId, tenantName: TenantName) -> TenantHandle:
   INTENT  "Provision a new tenant for an admin caller; a partial provision is unwound by rollback on failure."
   EFFECTS { database.write, audit.write }
@@ -151,7 +151,7 @@ re-authorising** a low-confidence review path — and it is the honest example o
 **passes but carries a posture-B INTERIM warning**.
 
 ```gate
-#gate 0.3
+@version 1.0.0
 GATE classifyMessage(caller: CallerId, text: Message) -> Label:
   INTENT  "Classify a caller message with an AI model; text may be PII so it is sealed before leaving to the provider."
   EFFECTS { ai.inference, audit.write }

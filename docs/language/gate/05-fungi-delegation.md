@@ -138,8 +138,8 @@ Rejected: *""@redact" was removed in v0.4 — the ONE canonical cut form is a [n
 (owner 2026-07-02)"*. (Source: `SPEC-gate-language.md` §1 grammar note + changelog B2; `gate-check.mjs`
 `@redact` tombstone; self-test `[v0.4] @redact edge tag is REMOVED`.)
 
-> This is the one place a v0.3-era file could fail under the v0.4 checker: a `#gate 0.3` file is a
-> valid v0.4 input *unless* it uses `@redact` or a dead sensitivity alias.
+> The `@redact` edge tag is REMOVED — a file using it REJECTS (use the `[name:cut fu op]` node form).
+> This is independent of the version header; `@version 1.0.0` files still reject `@redact`.
 
 ---
 
