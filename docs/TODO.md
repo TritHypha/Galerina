@@ -1,6 +1,38 @@
 # TODO
 
 Living task list. Authoritative forward view: `../ZTF-Knowledge-Bases/galerina-roadmap.md`.
+
+## ⚡ ACTIVE — 2026-07-08 syntax/logic update → 100% beta-shippable (owner PROMPT, full-auto session)
+> Work order: `../ZTF-Knowledge-Bases/PROMPT-syntax-update-beta-shippable-2026-07-08.md` (+ RD-0266c, security
+> review A1–A27). **Plan: `docs/SYNTAX_UPDATE_PLAN.md` · live status: `docs/SYNTAX_UPDATE_TRACKER.md`** — that
+> tracker is the single source for per-item state; this block is the pointer.
+- [x] W1 plan + tracker + todo ledgers updated (this block).
+- [x] W2 **`galerina-devtools-fungi-scan`** (new devtools pkg, 17/17): whole-corpus `.fungi`/`.gate` scanner on
+      the REAL lexer (not regex — `@`/`/` forms). Baseline: **414 files · @version 0/414 · &&/|| 5 files ·
+      match-without-`_` 0/213 · keyword collisions tiny (check 6f · project 4f · any 1f · authorize 1f)**.
+- [x] W3 Phase-0 remainder DONE: FUNGI-MATCH-001 → **ERROR, structural** (heuristic+arm-count gates removed) ·
+      A23 **FUNGI-SYNTAX-011** reject at 14 governance drain sites + collect-don't-drop in known sub-blocks +
+      **FUNGI-SYNTAX-013** inert `governance {}` reject (**caught 2 real latent bugs**: example 465's
+      contract-nested policy{} was never verified; PCI fixtures' `target{}` s/b `targets{}`) · A20
+      **FUNGI-ACCESS-001** resolve-or-deny (dotted bypass removed, alias-aware, error in prod). (A1 → W5b.)
+- [x] W4 CORE GREEN (62/62 · 6,134): `@version 1` grammar (FUNGI-SYNTAX-014/015, registered) · **409/409 .fungi
+      stamped** · require-on-disk at both CLIs (8 sites) · GIR absent-reject (A4) · fuse-loader closed version set
+      ({fungi.fuse.v1, lln.fuse.v1-alias for the ceremony-frozen greeting fixture}) · codemod signed-frozen guard ·
+      scanner signed-frozen class · drift auditor prints ceremony scope. ALSO DONE: `.gate` `#gate <int>.<int>` pragma version now READ+gated
+      (closed {0.3}, spec R1; fixtures' non-spec `v0.4` fixed). Final: **62/62 · 6,136**. REMAINING W4:
+      `.lmanifest` CBOR reader gate (ceremony-coupled — pair with the offline re-sign ceremony).
+- [ ] W5 new syntax: K3 ops (`flip`/`all{}`/`any{}` + A9/A12) · `check`/`fault` · `sealed auto schema`+inject ·
+      deny-only `prefilter` (A8) · taint surface (A2/A11/A17) · alias desugar (positional, not identifier-stealing).
+- [ ] W6 `scripts/migrate-fungi.mjs` codemod + **H2-a taint flip (owner LOCK: with codemod)** + corpus+`.gate`
+      migration + kernel/GIR/compiler rebuild. W7 detectors + `.gate`→GIR→WASM e2e + anti-vacuous deny suite.
+- Deferred (tracked in plan §2): **A18 tenant scope = owner BETA BLOCKER (next package)** · `.hypha` A3/A16 ·
+  A13/A14/A15/A24/A25/A26/A19 · RD-0238 P0 follow-through · C2 upgrade.
+- **Structural (owner, 2026-07-08): `galerina-ext-bridge-quantum` MOVED OUT of this repo** →
+  `C:\Users\phill\Documents\GitHub\galerina-ext-bridge-quantum` (to become its own project). Its file:/import
+  deps now point INTO this checkout (`../Galerina/packages-galerina/{tower-citizen,inference-bridge-contract}`);
+  21/21 green standalone. Galerina side: workspace.json/version.json/README updated; suite **61/61 · 6,115**
+  (exactly −21). Removal is uncommitted (git shows deletions; commit/push held). Name-only refs in
+  inference-bridge-contract tests are fixtures — intentionally kept.
 % audit: `../ZTF-Knowledge-Bases/galerina-percent-audit-roadmap-2026-07-02.md` (**~90% shippable / ~64% full-vision**).
 Consistency rules + gates: `docs/CONSISTENCY_GATES.md`.
 
