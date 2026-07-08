@@ -64,7 +64,7 @@ console.log("N2 ✅ production-strict compile rejects every invented name (FUNGI
     mkdirSync(join(dir, "src"), { recursive: true });
     writeFileSync(join(dir, "package.fungi.json"), JSON.stringify({ name: "ns-pkg", entry: "src/index.fungi" }));
     writeFileSync(join(dir, "src", "index.fungi"),
-      `secure flow f(x: Int) -> Int\ncontract {\n  intent "ns proof"\n  effects { mission.read }\n}\n{\n  return x\n}\n`);
+      `@version 1\nsecure flow f(x: Int) -> Int\ncontract {\n  intent "ns proof"\n  effects { mission.read }\n}\n{\n  return x\n}\n`);
     const r = spawnSync("node", [join(ROOT, "galerina.mjs"), "build", "--package", dir],
       { cwd: ROOT, encoding: "utf8", timeout: 120_000, shell: process.platform === "win32" });
     assert.equal(r.status, 0, "N3: lenient build still compiles");
@@ -88,7 +88,7 @@ console.log("N3 ✅ lenient build mints NO signed manifest for an invented-name 
     ].join("\n"));
     mkdirSync(join(tmp, "examples", "aerospace"), { recursive: true });
     writeFileSync(join(tmp, "examples", "aerospace", "planSatelliteManeuver.fungi"),
-      `secure flow f(x: Int) -> Int\ncontract {\n  intent "n4"\n  effects { brand.new.invented }\n}\n{ return x }\n`);
+      `@version 1\nsecure flow f(x: Int) -> Int\ncontract {\n  intent "n4"\n  effects { brand.new.invented }\n}\n{ return x }\n`);
     const r = spawnSync("node", [join(ROOT, "scripts", "audit-corpus-effect-names.mjs"), "--root", tmp],
       { encoding: "utf8", timeout: 60_000, shell: process.platform === "win32" });
     assert.equal(r.status, 1, "N4: a NEW invented name must BLOCK even in an allowlisted file path");

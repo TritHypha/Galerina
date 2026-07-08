@@ -78,7 +78,7 @@ const diagsFor = (name) => {
       mkdirSync(join(dir, "src"), { recursive: true });
       writeFileSync(join(dir, "package.fungi.json"), JSON.stringify({ name, entry: "src/index.fungi" }));
       writeFileSync(join(dir, "src", "index.fungi"),
-        `secure flow f(x: Int) -> Int\ncontract {\n  intent "proof fixture"\n  effects { ${effects} }\n}\n{\n  return x\n}\n`);
+        `@version 1\nsecure flow f(x: Int) -> Int\ncontract {\n  intent "proof fixture"\n  effects { ${effects} }\n}\n{\n  return x\n}\n`);
       return dir;
     };
     const build = (dir) => spawnSync("node", [join(ROOT, "galerina.mjs"), "build", "--package", dir],
