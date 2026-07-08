@@ -352,7 +352,6 @@ packages-galerina/
 ├── galerina-core-logic/        ACTIVE — Tri, Decision, RiskLevel
 ├── galerina-tower-citizen/     ACTIVE — governed ternary/BitNet simulator + K3 + bridge attestation + revocation (338 tests)
 ├── galerina-ext-spore/           ACTIVE — .spore trust engine: TMX-256 + container + KEM-DEM (slices 1–3)
-├── galerina-ext-bridge-quantum/ ACTIVE — governed ffsim bridge (Phase 1.5; real exec deferred to Phase 2)
 ├── galerina-devtools-security/ ACTIVE — runSecurityAudit, PCI DSS 4.0.1
 ├── galerina-devtools-pci/      ACTIVE — PCI DSS 4.0.1 (FUNGI-PCI-001..010)
 ├── galerina-devtools-benchmarks/ ACTIVE — 23 benchmarks across all runtimes
