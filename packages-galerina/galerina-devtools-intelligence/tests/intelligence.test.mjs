@@ -4,7 +4,7 @@
 // Uses node:test + assert.
 // Requires:
 //   - The package to be built (npm run build)
-//   - Auth-service examples at C:\wwwprojects\Galerina\examples\auth-service\
+//   - Auth-service examples at C:\Users\phill\Documents\GitHub\Galerina\examples\auth-service\
 // =============================================================================
 
 import { test, describe } from "node:test";

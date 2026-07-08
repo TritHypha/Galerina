@@ -2,7 +2,7 @@
  * bitnet-gpu-bridge.ts — governed GPU ternary bridge (detection + CUDA seam)
  *
  * Detects an NVIDIA GPU (real, via nvidia-smi) and reports it. The actual CUDA
- * BitNet kernel (C:\wwwprojects\BitNet\gpu\) is a documented seam — until it is
+ * BitNet kernel (C:\Users\phill\Documents\GitHub\BitNet\gpu\) is a documented seam — until it is
  * compiled into the native addon, this bridge runs the simulator reference and
  * reports executedNatively=false with the detected GPU recorded, so callers know
  * the hardware exists but the kernel is pending.

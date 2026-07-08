@@ -19,10 +19,33 @@
 
 import { readdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join, basename } from "node:path";
+import { homedir } from "node:os";
+
+// Resolve the auto-memory dir ROBUSTLY. A hardcoded C:\Users\<name>\... path breaks on any machine
+// reinstall / username change (it did: the old `desig` default 404'd after the box was rebuilt as `phill`).
+// Precedence: --dir (parsed below) > MEMORY_DIR env > autodetect the populated memory/ under
+// ~/.claude/projects (the folder that actually holds MEMORY.md) > a last-resort guess.
+function autodetectMemoryDir() {
+  const projects = join(homedir(), ".claude", "projects");
+  let entries;
+  try { entries = readdirSync(projects, { withFileTypes: true }); } catch { return null; }
+  let best = null, bestScore = -1;
+  for (const e of entries) {
+    if (!e.isDirectory()) continue;
+    const mem = join(projects, e.name, "memory");
+    let mds;
+    try { mds = readdirSync(mem).filter((f) => f.endsWith(".md")); } catch { continue; }
+    // Strongly prefer the dir carrying the MEMORY.md index; tie-break on note count.
+    const score = mds.length + (mds.includes("MEMORY.md") ? 1_000_000 : 0);
+    if (score > bestScore) { bestScore = score; best = mem; }
+  }
+  return best;
+}
 
 const DEFAULT_DIR =
   process.env.MEMORY_DIR ??
-  "C:\\Users\\desig\\.claude\\projects\\C--Users-desig\\memory";
+  autodetectMemoryDir() ??
+  join(homedir(), ".claude", "projects", "C--Users-phill", "memory");
 
 // ── args ─────────────────────────────────────────────────────────────────────
 const argv = process.argv.slice(2);

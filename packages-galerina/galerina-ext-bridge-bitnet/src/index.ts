@@ -2,7 +2,7 @@
  * galerina-ext-bridge-bitnet — Governed BitNet CPU inference bridge
  *
  * Wraps the official Microsoft BitNet.cpp library (MIT License) with Galerina governance.
- * Source: C:\wwwprojects\BitNet (local clone of github.com/microsoft/BitNet)
+ * Source: C:\Users\phill\Documents\GitHub\BitNet (local clone of github.com/microsoft/BitNet)
  *
  * C API surface (from ggml-bitnet.h):
  *   ggml_bitnet_init()                    — initialize the BitNet backend

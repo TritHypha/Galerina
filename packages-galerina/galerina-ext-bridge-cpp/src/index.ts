@@ -2,7 +2,7 @@
  * @galerina/ext-bridge-cpp — native CPU/GPU execution bridges for the Tower
  *
  * The first real implementations of the InferenceBridge contract defined in
- * @galerina/tower-citizen. Brings BitNet ternary kernels (MIT, C:\wwwprojects\BitNet)
+ * @galerina/tower-citizen. Brings BitNet ternary kernels (MIT, C:\Users\phill\Documents\GitHub\BitNet)
  * to the governed runtime, with the native addon as a documented seam and the
  * TPLSimulator as the deterministic fallback.
  */

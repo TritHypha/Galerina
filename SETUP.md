@@ -51,7 +51,7 @@ galerina --help
 You should see the Galerina CLI help. If PowerShell still blocks it, use **Command Prompt** (`cmd.exe`) instead — it has no script restrictions:
 
 ```cmd
-cd C:\wwwprojects\Galerina
+cd C:\Users\phill\Documents\GitHub\Galerina
 npm link
 galerina --help
 ```

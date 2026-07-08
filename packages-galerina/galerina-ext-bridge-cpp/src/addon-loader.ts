@@ -1,7 +1,7 @@
 /**
  * addon-loader.ts — load the native BitNet N-API addon, or report its absence
  *
- * The real ternary kernels live in C:\wwwprojects\BitNet (ggml-bitnet-mad.cpp).
+ * The real ternary kernels live in C:\Users\phill\Documents\GitHub\BitNet (ggml-bitnet-mad.cpp).
  * A future build step (node-gyp / cmake-js) compiles them into a `.node` addon
  * exposing the contract documented in native/README.md. This loader tries to
  * require that addon and reports whether it is present.
