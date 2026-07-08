@@ -22,6 +22,7 @@ export interface KBEdge {
   from: string;        // doc id
   to: string;          // doc id
   linkText: string;    // the markdown link text
+  kind: "link" | "mention";  // real [](…) hyperlink vs a prose `file.md` / "See: file.md" mention
 }
 
 export interface ScanResult {
@@ -46,47 +47,64 @@ function extractEdges(fromId: string, content: string): KBEdge[] {
   const edges: KBEdge[] = [];
   const seen = new Set<string>();
 
-  function addEdge(toFile: string, linkText: string): void {
+  function addEdge(toFile: string, linkText: string, kind: "link" | "mention"): void {
     // Normalise to id (strip .md, strip paths)
     const toId = basename(toFile, ".md");
     if (toId === fromId) return; // skip self-links
     const key = `${fromId}→${toId}`;
     if (seen.has(key)) return;
     seen.add(key);
-    edges.push({ from: fromId, to: toId, linkText: linkText.trim() });
+    edges.push({ from: fromId, to: toId, linkText: linkText.trim(), kind });
   }
 
-  // [link text](filename.md)
+  // [link text](filename.md) — but SKIP external urls (http/https): a link to
+  // github.com/TritHypha/Galerina/…/SECURITY.md is a CROSS-REPO reference, not an
+  // internal KB doc edge, so it must never be counted as a stale internal link.
   for (const m of content.matchAll(MD_LINK_RE)) {
     const linkText = m[1] ?? "";
     const target = m[2] ?? "";
-    if (target.endsWith(".md")) addEdge(target, linkText || target);
+    if (target.startsWith("http://") || target.startsWith("https://")) continue;
+    if (target.endsWith(".md")) addEdge(target, linkText || target, "link");
   }
 
-  // `filename.md`
+  // `filename.md` — a prose/code MENTION, not a hyperlink (must not count as broken)
   for (const m of content.matchAll(BACKTICK_MD_RE)) {
-    addEdge(m[1] ?? "", m[1] ?? "");
+    addEdge(m[1] ?? "", m[1] ?? "", "mention");
   }
 
-  // See: filename.md
+  // See: filename.md — a soft MENTION, not a hyperlink
   for (const m of content.matchAll(SEE_MD_RE)) {
-    addEdge(m[1] ?? "", `See: ${m[1]}`);
+    addEdge(m[1] ?? "", `See: ${m[1]}`, "mention");
   }
 
   return edges;
 }
 
+const SKIP_DIRS = new Set(["node_modules", ".git", "build"]);
+
+// RECURSIVE walk. A FLAT readdir silently dropped 55 docs in rd-absorbed/ +
+// defensive-publications/, so every link INTO those subdirs was falsely reported
+// "broken" (the target basename was never in the known-doc set). Recurse so the
+// full KB corpus is indexed and cross-subdir links resolve. build/ is generated.
+function collectMarkdownFiles(dir: string): string[] {
+  const out: string[] = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (SKIP_DIRS.has(entry.name) || (entry.isDirectory() && entry.name.startsWith("."))) continue;
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...collectMarkdownFiles(full));
+    else if (entry.name.endsWith(".md")) out.push(full);
+  }
+  return out;
+}
+
 export function scanKBDirectory(kbDir: string): ScanResult {
-  const files = readdirSync(kbDir)
-    .filter(f => f.endsWith(".md"))
-    .sort();
+  const files = collectMarkdownFiles(kbDir).sort();
 
   const docs: KBDocNode[] = [];
   const edges: KBEdge[] = [];
 
-  for (const file of files) {
-    const filePath = join(kbDir, file);
-    const id = extractId(file);
+  for (const filePath of files) {
+    const id = extractId(filePath);
     let content: string;
     let stat: ReturnType<typeof statSync>;
 

@@ -67,7 +67,8 @@ async function main(): Promise<void> {
   } else {
     console.log(`Orphans: 0`);
   }
-  console.log(`Stale:   ${stats.staleLinkCount} broken link${stats.staleLinkCount !== 1 ? "s" : ""}`);
+  console.log(`Stale:   ${stats.staleLinkCount} broken link${stats.staleLinkCount !== 1 ? "s" : ""} (curated)`);
+  console.log(`  archival (rd-absorbed/ + defensive-publications/): ${stats.rawOrphanCount} orphans, ${stats.rawStaleLinkCount} dangling refs — indexed as targets, not scored`);
   console.log(`FUNGI codes: ${stats.totalFungiCodes} unique`);
 
   // ── Staleness report ───────────────────────────────────────────────────────
