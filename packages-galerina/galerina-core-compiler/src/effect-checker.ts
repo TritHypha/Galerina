@@ -742,6 +742,50 @@ const BROAD_EFFECT_ALIASES: ReadonlySet<string> = new Set([
   "secret.access",
 ]);
 
+// Levenshtein (small, local) — used ONLY to nudge a LIKELY TYPO of a real
+// effect name toward its canonical spelling. It never changes WHAT is rejected
+// (unknown names stay FUNGI-EFFECT-004 errors); it only adds a "did you mean"
+// suggestion. A wild invention (e.g. totally.fake.effect) lands far from every
+// canonical name and correctly gets NO suggestion — the generic list instead.
+function effectEditDistance(a: string, b: string): number {
+  if (a.length === 0) return b.length;
+  if (b.length === 0) return a.length;
+  const m = a.length;
+  const n = b.length;
+  const row: number[] = Array.from({ length: n + 1 }, (_, i) => i);
+  for (let i = 1; i <= m; i++) {
+    let prev = i;
+    for (let j = 1; j <= n; j++) {
+      const val =
+        a[i - 1] === b[j - 1]
+          ? (row[j - 1] ?? j - 1)
+          : 1 + Math.min(row[j] ?? j, prev, row[j - 1] ?? j - 1);
+      row[j - 1] = prev;
+      prev = val;
+    }
+    row[n] = prev;
+  }
+  return row[n] ?? 0;
+}
+
+function nearestCanonicalEffect(name: string): string | undefined {
+  let best: string | undefined;
+  let bestDist = Infinity;
+  // Consider canonical names AND alias keys (a typo of a known alias should
+  // still resolve to the alias's canonical spelling, not be left dangling).
+  for (const cand of CANONICAL_EFFECTS) {
+    const d = effectEditDistance(name, cand);
+    if (d < bestDist) { bestDist = d; best = cand; }
+  }
+  for (const [alias, canonical] of EFFECT_NAME_ALIASES) {
+    const d = effectEditDistance(name, alias);
+    if (d < bestDist) { bestDist = d; best = canonical; }
+  }
+  // Only nudge when the miss is plausibly a typo: within max(2, len/4) edits.
+  const threshold = Math.max(2, Math.floor(name.length / 4));
+  return best !== undefined && bestDist <= threshold ? best : undefined;
+}
+
 function validateDeclaredEffectNames(flow: FlowMeta, diagnostics: EffectDiagnostic[]): void {
   for (const effect of flow.declaredEffects) {
     // Deny-only names are checked FIRST: recognised, never grantable, every profile.
@@ -784,13 +828,19 @@ function validateDeclaredEffectNames(flow: FlowMeta, diagnostics: EffectDiagnost
         });
       }
     } else if (!CANONICAL_EFFECTS.has(effect)) {
+      const near = nearestCanonicalEffect(effect);
       diagnostics.push({
         code: "FUNGI-EFFECT-004",
         name: "UNKNOWN_EFFECT",
         severity: "error",
-        message: `Effect "${effect}" is not a recognised Galerina effect name.`,
+        message: near
+          ? `Effect "${effect}" is not a recognised Galerina effect name. Did you mean "${near}"?`
+          : `Effect "${effect}" is not a recognised Galerina effect name.`,
         location: flow.location,
-        suggestedFix: `Use a canonical effect name such as: network.outbound, database.write, audit.write, secret.read, storage.read`,
+        ...(near ? { suggestedCode: near } : {}),
+        suggestedFix: near
+          ? `Replace "${effect}" with "${near}", or use a canonical effect name (network.outbound, database.write, audit.write, secret.read, storage.read).`
+          : `Use a canonical effect name such as: network.outbound, database.write, audit.write, secret.read, storage.read`,
       });
     }
   }

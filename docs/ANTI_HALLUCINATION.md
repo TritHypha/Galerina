@@ -133,11 +133,19 @@ instead*, which is what actually closes the loop cheaply. Status:
 
 - Known aliases already resolve with a canonical suggestion (`FUNGI-EFFECT-004`:
   `Effect "db.read" … Use "database.read"`).
-- A **nearest-name** suggestion for *truly* invented names (Levenshtein ≤ 2 against the live
-  registry) is the highest-leverage remaining affordance — the helper already exists in
-  `type-checker.ts`. Tracked as a follow-on; it also satisfies the R&D-locked
-  version-format mitigation (a did-you-mean + lint auto-fix rather than collapsing the
-  `.fungi` `@version 1` / `.gate` `@version 1.0.0` distinction).
+- **DONE for effect names.** `FUNGI-EFFECT-004` now nudges a *likely typo* toward the
+  nearest canonical name — `database.wrote` → `database.write`, `secret.raed` →
+  `secret.read` — via a local Levenshtein within `max(2, len/4)` edits. A *wild* invention
+  (`totally.fake.effect`) lands far from every canonical name and correctly gets **no**
+  suggestion (a misleading nudge is worse than none). Fail-closed is unchanged: every
+  unknown name is still an error; this only *adds* the suggestion. Guard:
+  `tests/effect-did-you-mean.test.mjs`.
+- **Remaining.** Extend the same nearest-name nudge to capability / type / sink names, and
+  add the R&D-locked **version-format** did-you-mean (`@version 1.0.0` written on a `.fungi`
+  → *"did you mean `@version 1`?"*, and vice-versa on a `.gate`) plus a lint auto-fix —
+  which mitigates the dual-format confusion surface *without* collapsing the deliberate
+  `.fungi` `@version 1` (grammar version) / `.gate` `@version 1.0.0` (signed-artifact compat
+  floor) distinction.
 
 ---
 
