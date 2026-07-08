@@ -955,6 +955,9 @@ class TypeChecker {
   // ── AST walker ────────────────────────────────────────────────────────────
 
   private walkNode(node: AstNode): void {
+    // RD-0277 §4: a decimal integer literal outside i32 wraps SILENTLY in WASM
+    // lowering — surface it here (warning; the runtime trap is the hard backstop).
+    if (node.kind === "numberLiteral") this.checkIntLiteralRange(node);
     switch (node.kind) {
       case "flowDecl":
       case "secureFlowDecl":
@@ -1733,6 +1736,36 @@ class TypeChecker {
         ));
       }
       return;
+    }
+  }
+
+  /**
+   * RD-0277 §4: Galerina `Int` lowers to WASM i32. A decimal integer literal
+   * outside the i32 range wraps SILENTLY in lowering (2654435761 -> -1640531535).
+   * The runtime overflow trap is the fail-closed backstop for COMPUTED overflow,
+   * but a constant that cannot be represented is a silent correctness footgun —
+   * surface it. WARNING (not error): a bare integer literal is ALSO accepted in
+   * Float context, so an error would false-reject a legitimate 2654435761-as-Float;
+   * the fix hint offers the `.0` form. Hex/bin/oct (Byte) and decimals (Float) are
+   * different lanes and skipped.
+   */
+  private checkIntLiteralRange(node: AstNode): void {
+    const v = node.value ?? "";
+    if (v.includes(".") || v.startsWith("0x") || v.startsWith("0b") || v.startsWith("0o")) return;
+    const n = Number(v);
+    if (!Number.isFinite(n)) return;
+    if (n > 2147483647 || n < -2147483648) {
+      const d = makeTCDiag(
+        "FUNGI-TYPE-024",
+        "INT_LITERAL_I32_OVERFLOW",
+        `Integer literal ${v} is outside the 32-bit Int range [-2147483648, 2147483647]. ` +
+        `Galerina Int lowers to WASM i32, so used as an Int this constant WRAPS silently ` +
+        `(e.g. 2654435761 -> -1640531535). Keep it within range, restructure to stay < 2^31, ` +
+        `or write it as a Float literal (add '.0') if a Float was intended.`,
+        node.location,
+        `Use a value in -2147483648..2147483647, or make it a Float (add '.0').`,
+      );
+      this.diagnostics.push({ ...d, severity: "warning" });
     }
   }
 
