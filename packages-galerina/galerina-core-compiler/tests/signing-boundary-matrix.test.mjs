@@ -122,7 +122,10 @@ const VIOLATING = [
 function stage(label, src) {
   const dir = join(tmpRoot, label + "-" + Math.random().toString(36).slice(2, 8));
   mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, "case.fungi"), src);
+  // W4 versioning: every on-disk .fungi artifact carries the header — including
+  // test-authored ones (stamped here so every matrix fixture clears the version gate
+  // and still exercises its NAMED checker, not FUNGI-SYNTAX-015).
+  writeFileSync(join(dir, "case.fungi"), src.startsWith("@version") ? src : "@version 1\n" + src);
   return dir;
 }
 

@@ -54,6 +54,13 @@ before(() => {
   let parserSrc = readFileSync(PARSER_PATH, "utf8");
   if (parserSrc.charCodeAt(0) === 0xFEFF) parserSrc = parserSrc.slice(1);
 
+  // W4 versioning: each file carries its own `@version` FIRST line; when combining
+  // into one compilation unit, strip the per-file headers (parseProgram only blanks
+  // line 1 — a mid-source header is not grammar).
+  const stripHeader = (s) => s.replace(/^@version[^\n]*\n/, "");
+  lexerSrc = stripHeader(lexerSrc);
+  parserSrc = stripHeader(parserSrc);
+
   // Combine into one compilation unit so lexer types are visible to the parser
   const combined = lexerSrc + "\n" + parserSrc;
   const parsed = parseProgram(combined, "lexer+parser.fungi");
@@ -203,7 +210,9 @@ describe("Self-Hosted Parser (parser.fungi) — parse-time sanity", () => {
     if (lexerSrc.charCodeAt(0) === 0xFEFF) lexerSrc = lexerSrc.slice(1);
     let parserSrc = readFileSync(PARSER_PATH, "utf8");
     if (parserSrc.charCodeAt(0) === 0xFEFF) parserSrc = parserSrc.slice(1);
-    const parsed = parseProgram(lexerSrc + "\n" + parserSrc, "combined.fungi");
+    // W4: strip each file's own @version first line before combining (see `before`)
+    const stripHeader = (s) => s.replace(/^@version[^\n]*\n/, "");
+    const parsed = parseProgram(stripHeader(lexerSrc) + "\n" + stripHeader(parserSrc), "combined.fungi");
     const errors = parsed.diagnostics.filter((d) => d.severity === "error");
     assert.equal(
       errors.length,

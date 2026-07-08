@@ -128,7 +128,7 @@ describe("Compliant payment flow: no findings", () => {
       "  intent { \"Process a payment securely with full audit trail and access control.\" }",
       "  effects { database.write  audit.write }",
       "  privacy { mask cardNumber  mask cvv }",
-      "  target { tls: \"1.3\" }",
+      "  targets { tls: \"1.3\" }",
       "}",
       "authority { requires role: \"payment-processor\"  sharing protected CardData to \"payment-gateway\"  approved_by \"security-board\" }",
       "{",

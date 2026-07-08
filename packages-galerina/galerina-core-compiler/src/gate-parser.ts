@@ -247,6 +247,23 @@ export function parseGate(source: string, file: string): ParseResult {
     return { ast: EMPTY_PROGRAM, diagnostics, flows: [] };
   }
 
+  // BK-4/A4 (2026-07-08): the pragma VERSIONS the file (SPEC §1) — so the version must be
+  // READ and gated, not just present. Before this, `#gate` alone passed and the value was
+  // ignored: a future `#gate 0.4` (new semantics) or a bare `#gate` would be best-effort
+  // parsed by a 0.3 parser — the "old tool eats new format" trap. Closed accept set;
+  // absent/unknown ⇒ refuse with ZERO flows.
+  const GATE_SUPPORTED_VERSIONS: ReadonlySet<string> = new Set(["0.3"]);
+  const pragmaVersion = firstNonBlank.slice("#gate".length).trim().split(/\s+/)[0] ?? "";
+  if (!GATE_SUPPORTED_VERSIONS.has(pragmaVersion)) {
+    diagnostics.push({
+      ...FUNGI_GATELANG_001,
+      message: `${file}: \`#gate\` pragma version ${pragmaVersion === "" ? "is MISSING" : `${JSON.stringify(pragmaVersion)} is not supported`} ` +
+        `(supported: ${[...GATE_SUPPORTED_VERSIONS].join(", ")}) — an absent or unrecognised .gate version is refused, ` +
+        `never best-effort parsed (BK-4/A4).`,
+    });
+    return { ast: EMPTY_PROGRAM, diagnostics, flows: [] };
+  }
+
   const header = parseGateHeader(source);
   if (header.intent === null) {
     diagnostics.push({ ...FUNGI_GATELANG_001, message: `${file}: a \`.gate\` file must declare a mandatory INTENT.` });

@@ -31,7 +31,8 @@ const out = (r) => (r.stdout ?? "") + (r.stderr ?? "");
 // A PURE flow: returns an Int, declares no effects → the compute body fuses cleanly and the manifest
 // signs over the governance facts (no `unreachable` effect stubs needed). Keeps the round-trip about
 // the SIGNATURE, not about compute lowering.
-const PURE_FLOW = `flow answer() -> Int {
+const PURE_FLOW = `@version 1
+flow answer() -> Int {
   return 42
 }
 `;

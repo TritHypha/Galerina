@@ -32,7 +32,8 @@ const run = (args, env, dir) =>
 const out = (r) => (r.stdout ?? "") + (r.stderr ?? "");
 
 // A PURE Int flow: no effects → fuses cleanly, manifest signs over the governance facts.
-const PURE_FLOW = `flow answer() -> Int {
+const PURE_FLOW = `@version 1
+flow answer() -> Int {
   return 42
 }
 `;

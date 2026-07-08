@@ -37,7 +37,11 @@
 // =============================================================================
 
 import { type AstNode, type AstNodeKind, type FlowMeta, type SourceLocation } from "./parser.js";
-import { KNOWN_SIGNALS, KNOWN_FLOORS, normaliseFloor, KNOWN_CAPABILITIES } from "./capability-types.js";
+import {
+  KNOWN_SIGNALS, KNOWN_FLOORS, normaliseFloor, KNOWN_CAPABILITIES,
+  ADMISSION_CAPABILITIES, normalizeCapability,
+} from "./capability-types.js";
+import { CANONICAL_EFFECTS } from "./effect-checker.js";
 import { type EffectCheckResult } from "./effect-checker.js";
 import { GovernanceFlags, type GovernanceFlagsMask, type RuntimeManifest } from "./type-registry.js";
 import { buildProofGraphCached, computeExecutionSignature, generateEpilogueReceipt, type EpilogueFailureAction, type EpilogueProofStrategy, type ProofGraph, type ProofObligation, FUNGI_HW_001, FUNGI_HW_002, FUNGI_HW_003, FUNGI_HW_004, TAMPER_RESPONSE_STRATEGIES } from "./proof-graph.js";
@@ -572,10 +576,12 @@ export const FUNGI_OBS_001 = {
 
 // ── FUNGI-MATCH codes ───────────────────────────────────────────────────────────────────
 //
-// FUNGI-MATCH-001  match expression on a known enum type has no wildcard (_) arm
-//                and does not cover all known variants. Missing arms create "governance holes"
-//                where a V_DPM signal or capability could pass unchecked.
-//                Only fires when the match target type is known to the compiler.
+// FUNGI-MATCH-001  match expression has no wildcard (_) arm (guard matches exempt).
+//                ERROR since 2026-07-08 (RD-0240): missing arms create "governance holes"
+//                where a V_DPM signal or capability could pass unchecked; the WASM
+//                backend traps the unmatched case at runtime, and the compiler now
+//                rejects it at compile time — fail-closed by construction.
+//                Structural rule: no name-heuristic, no arm-count gate.
 
 /** FUNGI-EC-001 (PLANNED Phase 5): static cost overflow — max_aggregate_flow_budget exceeded by estimated loop. */
 export const FUNGI_EC_001 = {
@@ -3735,16 +3741,27 @@ class GovernanceVerifier {
       const capName = (grant.value ?? "").replace("grant:", "").trim();
       if (capName === "") continue;
 
-      // FUNGI-ACCESS-001: unknown capability name
-      if (!KNOWN_CAPABILITIES.has(capName) && !capName.includes(".")) {
+      // FUNGI-ACCESS-001 (A20 hardening 2026-07-08): a grant must RESOLVE against the
+      // canonical vocabularies — ADMISSION_CAPABILITIES ∪ CANONICAL_EFFECTS, alias-aware
+      // (single-sourced; no hand list). The old check skipped ANY dotted name, so
+      // `grant totally.fake.capability` was admitted silently, and it only WARNED —
+      // name-based authority that fails open by absence (audit H5 / LN-048 / A20).
+      // Unknown ⇒ ERROR in production/deterministic (fail-closed); warning in dev
+      // (the GOV-004 house pattern: cross-file authoring stays workable).
+      const resolved = normalizeCapability(capName);
+      if (!ADMISSION_CAPABILITIES.has(resolved) && !CANONICAL_EFFECTS.has(resolved)) {
+        const isProduction = this.currentProfile === "production" || this.currentProfile === "deterministic";
         this.diagnostics.push(makeGovDiag(
           "FUNGI-ACCESS-001",
           "ACCESS_UNKNOWN_CAPABILITY",
-          "warning",
-          `Flow '${flow.name}': access {} grants unknown capability '${capName}'. ` +
-          `Known capabilities: ${[...KNOWN_CAPABILITIES].filter(c => !c.includes("*")).join(", ")}.`,
+          isProduction ? "error" : "warning",
+          `Flow '${flow.name}': access {} grants unresolvable capability '${capName}' — not a ` +
+          `registered capability or canonical effect (alias-aware). An authority reference that ` +
+          `does not resolve fails closed: a mistyped or invented grant must never satisfy an ` +
+          `admission check.` +
+          (isProduction ? ` A production/deterministic build refuses an unresolvable grant.` : ``),
           grant.location ?? loc,
-          `Check the capability name spelling. Valid capabilities match V_DPM bit positions.`,
+          `Use a canonical capability/effect name (e.g. network.outbound, database.write, secret.read); check the spelling.`,
         ));
       }
 
@@ -3774,11 +3791,18 @@ class GovernanceVerifier {
   // ── FUNGI-MATCH-001: match exhaustiveness checking ─────────────────────────────
 
   /**
-   * Scan the flow body for matchExpr nodes that:
-   *  - Have no wildcard (_) arm
-   *  - Target a known enum-like type (SystemCapabilityType or EmergencySignalType)
-   *    identified by: <6 arms AND subject is a field access or local var on a known type
-   *  - Emits FUNGI-MATCH-001 WARNING (not error) — conservative approach
+   * Scan the flow body for matchExpr nodes with no wildcard (_) arm.
+   *
+   * RD-0240 (2026-07-08 escalation): FUNGI-MATCH-001 is an ERROR, not a warning,
+   * and fires STRUCTURALLY on every `match` lacking a `_` arm — the old
+   * name-heuristic gate (subject contains "signal"/"cap"/"mode", <6 arms) was
+   * itself a fail-open: renaming the subject made the check vanish. The WAT
+   * emitter already traps `(unreachable)` on a non-exhaustive match at runtime;
+   * this makes the same rule fail-closed at compile time.
+   *
+   * Exemption: guard matches (`when cond => …`) are boolean chains, not enum
+   * dispatch — they lower to if/else with the RD-0240 trap tail. (Documented
+   * residual: W5b `check` work revisits requiring a default on guard chains.)
    */
   private checkMatchExhaustiveness(flow: FlowMeta, flowNode: AstNode, loc: SourceLocation): void {
     const blockNode = (flowNode.children ?? []).find(c => c.kind === "block");
@@ -3812,37 +3836,22 @@ class GovernanceVerifier {
     const hasGuardArm = arms.some(arm => arm.value === "__guard__");
     if (hasGuardArm) return; // guard arms are boolean, not enum-exhaustive
 
-    // Only fire when arm count < 6 (conservative: likely incomplete enum coverage)
-    if (arms.length >= 6) return;
-
-    // Check if the subject looks like a known enum type (field access, or known signal/capability)
+    // RD-0240: no name-heuristic, no arm-count gate — a match without `_` is
+    // structurally non-exhaustive. The subject description is for the message only.
     const subject = children[0];
-    if (subject === undefined) return;
-    const subjectDesc = this.describeExpr(subject);
-    const looksLikeKnownEnum =
-      subjectDesc.includes("signal") ||
-      subjectDesc.includes("capability") ||
-      subjectDesc.includes("Signal") ||
-      subjectDesc.includes("Capability") ||
-      (subject.kind === "memberExpr") ||
-      (subject.kind === "identifier" && (
-        (subject.value ?? "").toLowerCase().includes("signal") ||
-        (subject.value ?? "").toLowerCase().includes("cap") ||
-        (subject.value ?? "").toLowerCase().includes("mode")
-      ));
-
-    if (!looksLikeKnownEnum) return;
+    const subjectDesc = subject === undefined ? "<subject>" : this.describeExpr(subject);
 
     this.diagnostics.push(makeGovDiag(
       "FUNGI-MATCH-001",
       "MATCH_NON_EXHAUSTIVE",
-      "warning",
+      "error",
       `Flow '${flow.name}': match expression on '${subjectDesc}' has no wildcard (_) arm ` +
-      `and only ${arms.length} arm(s). Missing arms create governance holes where a ` +
-      `V_DPM signal or capability could pass unchecked. ` +
-      `Add a wildcard arm: _ => { /* handle unexpected */ }`,
+      `(${arms.length} arm(s)). A non-exhaustive match is a governance hole; at runtime ` +
+      `the WASM backend traps on the unmatched case (RD-0240), so this is an ERROR at ` +
+      `compile time — fail-closed by construction, not by warning. ` +
+      `Add a wildcard arm routed to an audited sink: _ => { /* audit + deny */ }`,
       matchNode.location ?? loc,
-      `Add a wildcard arm: _ => { /* govern unexpected variants */ }`,
+      `Add a wildcard arm: _ => { /* audit + govern unexpected variants */ }`,
     ));
   }
 }

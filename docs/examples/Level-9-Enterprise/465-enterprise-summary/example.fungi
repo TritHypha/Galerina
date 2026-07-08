@@ -1,3 +1,4 @@
+@version 1
 /// example: 465-enterprise-summary
 /// level: 9
 /// concept: complete enterprise-grade healthcare flow — patient create with PII, NHS number, AI risk scoring, audit, and governance proof
@@ -23,12 +24,13 @@ contract {
     database.write
     audit.write
   }
-
-  policy {
-    purpose "clinical_intake"
-    lawfulBasis "vital_interests"
-    retentionDays 3650
-  }
+}
+// policy {} sits at FLOW level (like 462/463) — inside contract {} it was silently
+// drained by the old parser and NEVER verified (caught by FUNGI-SYNTAX-011, 2026-07-08).
+policy {
+  purpose "clinical_intake"
+  lawfulBasis "vital_interests"
+  retentionDays 3650
 }
 {
   compute target best { prefer [npu, gpu, cpu] fallback cpu deny [remote.execution] }

@@ -81,6 +81,9 @@ export const FUNGI_LEX_006 = {
 export {
   parseProgram,
   NodeFlags,
+  FUNGI_MIN_SUPPORTED_VERSION,
+  FUNGI_CURRENT_VERSION,
+  type ParseOptions,
   type NodeFlagsMask,
   type AstNode,
   type AstNodeKind,

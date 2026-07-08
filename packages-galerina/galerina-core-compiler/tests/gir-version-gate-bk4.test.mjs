@@ -26,9 +26,14 @@ describe("BK-4 GIR schemaVersion reject-on-unknown", () => {
     );
   });
 
-  it("an absent schemaVersion (internal partial-GIR builder) is tolerated", () => {
-    assert.doesNotThrow(
+  it("an ABSENT schemaVersion is REJECTED too (A4 completion, 2026-07-08)", () => {
+    // The old tolerance ("absent = internal partial-GIR builder") was an
+    // unauthenticated bypass: ANY caller could omit the field and skip the
+    // version gate entirely. An internal builder stamps the version like
+    // everyone else — absent fails closed.
+    assert.throws(
       () => L.buildWATModuleFromGIR({ flows: [], entryPoints: [] }, emptyCaps, "wasm-standalone"),
+      /MISSING GIR schemaVersion/,
     );
   });
 });

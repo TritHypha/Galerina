@@ -11,7 +11,7 @@ import {
 } from "../dist/index.js";
 
 const VALID = [
-  "#gate v0.4",
+  "#gate 0.3",
   'INTENT "Return one customer record for an authorised caller; PII is redacted before egress."',
   "EFFECTS { database.read, audit.write }",
   "PRIVACY deny protected CustomerId -> response.body",
@@ -54,7 +54,7 @@ test("gate-parser: missing #gate pragma ⇒ FUNGI-GATELANG-001 (not a .gate file
 });
 
 test("gate-parser: #gate present but INTENT missing ⇒ FUNGI-GATELANG-001", () => {
-  const r = parseGate("#gate v0.4\nEFFECTS { database.read }\nFLOW:\n  [a] -> [b]\n", "no-intent.gate");
+  const r = parseGate("#gate 0.3\nEFFECTS { database.read }\nFLOW:\n  [a] -> [b]\n", "no-intent.gate");
   assert.ok(codesOf(r).includes(FUNGI_GATELANG_001.code), "mandatory INTENT missing");
 });
 
@@ -66,7 +66,7 @@ test("gate-parser: does NOT touch the .fungi parser — a .fungi source is NOT a
 
 // ── Increment 2a — FLOW-graph parsing (the governance surface for the GIR lowering) ──────────────
 const FLOW_GATE = [
-  "#gate v0.4",
+  "#gate 0.3",
   'INTENT "Return one redacted customer record for an authorised caller."',
   "EFFECTS { database.read, audit.write }",
   "PRIVACY deny protected CustomerId -> response.body",
@@ -137,4 +137,17 @@ test("2b GIR-identity: a .gate flow lowers to the SAME signed capability surface
   );
   assert.equal(gFlow.allowedEffectsMask, pFlow.allowedEffectsMask, "allowedEffectsMask");
   assert.equal(gFlow.qualifier, pFlow.qualifier, "both are secure flows");
+});
+
+// ── BK-4/A4 (2026-07-08): the pragma VERSION is read + gated (RULES.md R1) ──
+test("gate-parser: bare `#gate` (no version) ⇒ FUNGI-GATELANG-001 refuse (absent version fails closed)", () => {
+  const r = parseGate("#gate\nINTENT: x\nEFFECTS { database.read }\nFLOW:\n  [a] -> [b]\n", "bare.gate");
+  assert.equal(r.flows.length, 0);
+  assert.ok(r.diagnostics.some((d) => d.code === "FUNGI-GATELANG-001" && /MISSING/.test(d.message)));
+});
+
+test("gate-parser: a FUTURE `#gate 0.4` ⇒ FUNGI-GATELANG-001 refuse (unknown version never best-effort parsed)", () => {
+  const r = parseGate("#gate 0.4\nINTENT: x\nEFFECTS { database.read }\nFLOW:\n  [a] -> [b]\n", "future.gate");
+  assert.equal(r.flows.length, 0);
+  assert.ok(r.diagnostics.some((d) => d.code === "FUNGI-GATELANG-001" && /not supported/.test(d.message)));
 });

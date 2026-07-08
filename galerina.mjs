@@ -307,7 +307,7 @@ Baseline comparison (governance-cost):
     for (const file of flowFiles) {
       try {
         const src = readFileSync(file, "utf8");
-        const p = m2.parseProgram(src, file);
+        const p = m2.parseProgram(src, file, { requireVersionHeader: true });
         // H8 (threat-model) — a file that does not PARSE cleanly cannot be fully analyzed, so its parse
         // errors ARE violations (unknown → deny). init-env previously inspected only GOVERNANCE
         // diagnostics, so a truncated/garbage/half-parsed flow (parse errors but 0 governance errors on
@@ -857,7 +857,7 @@ Baseline comparison (governance-cost):
     for (const f of collectFungiFiles(root)) {
       try {
         const src = readFileSync(f, "utf8");
-        const p = m.parseProgram(src, f);
+        const p = m.parseProgram(src, f, { requireVersionHeader: true });
         // Fail-closed: never rewrite a file whose program does not parse cleanly.
         if ((p.diagnostics ?? []).some(d => d.severity === "error")) { parseErrors++; continue; }
         files.push({ file: f, ast: p.ast });
@@ -1054,7 +1054,7 @@ Baseline comparison (governance-cost):
 
   const source = readUntrustedSource(fungiFile);
   if (source === null) process.exit(1); // fail-closed: oversized/unreadable .fungi rejected before parse
-  const parsed = m.parseProgram(source, fungiFile);
+  const parsed = m.parseProgram(source, fungiFile, { requireVersionHeader: true });
   const errors = (parsed.diagnostics ?? []).filter(d => d.severity === "error");
 
   // ── galerina infer — run a governed AI inference from a flow's ai {} contract ──

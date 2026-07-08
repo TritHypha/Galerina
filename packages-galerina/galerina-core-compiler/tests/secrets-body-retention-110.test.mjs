@@ -95,9 +95,12 @@ describe("BUILD #110: no false obligations / edge cases", () => {
     assert.equal((m.proofObligations ?? []).filter((o) => o.kind === "secret-rotation").length, 0);
   });
 
-  it("an unknown NESTED block inside the body does not desync the parser (downstream flow intact)", () => {
-    // Adversarial: a provider config or strategy with a nested {…} must be drained as a unit, not
-    // token-by-token (which would consume the wrong } and swallow the next flow's governance).
+  it("an unknown NESTED block is REJECTED (A23) and still does not desync the parser (downstream flow intact)", () => {
+    // 2026-07-08 A23/M4: an unknown block inside secrets credential/rotation is a compile ERROR —
+    // an uninterpreted `strategy { mode smooth }` would be a silent security no-op (the author
+    // believes rotation strategy is configured; the runtime ignores it). The RECOVERY property
+    // this test originally pinned still holds: the block is skipped as a unit, never
+    // token-by-token, so the next flow's governance is not swallowed.
     const src = `secure flow a(x: Int) -> Int effects [secret.read] {
   contract { secrets { credential db { provider vault aws { region useast1 } } rotation { interval 1h strategy { mode smooth } } } }
   return x
@@ -107,8 +110,10 @@ secure flow b(y: Int) -> Int effects [database.write] {
   return y
 }`;
     const { flows, diagnostics } = parseProgram(src, "t.fungi");
-    assert.equal((diagnostics ?? []).filter((d) => d.severity === "error").length, 0);
-    assert.equal(flows.length, 2, "both flows parse despite the nested unknown blocks");
+    const rejected = (diagnostics ?? []).filter((d) => d.code === "FUNGI-SYNTAX-011");
+    assert.equal(rejected.length, 2, "aws{} (credential) and strategy{} (rotation) must BOTH be rejected");
+    assert.ok(rejected.every((d) => d.severity === "error"));
+    assert.equal(flows.length, 2, "both flows parse despite the rejected blocks (recovery, no desync)");
     const b = flows.find((f) => f.name === "b");
     assert.ok(b?.declaredEffects?.includes("database.write"), "downstream flow b's effects survived (no desync)");
   });

@@ -30,6 +30,8 @@ const BUILD = join(ROOT, "build");
 const fixtures = [];
 
 function fixture(name, src) {
+  // W4 versioning: every on-disk .fungi artifact carries the header — including test-authored ones
+  if (!src.startsWith("@version")) src = "@version 1\n" + src;
   mkdirSync(BUILD, { recursive: true });
   const p = join(BUILD, name);
   writeFileSync(p, src);

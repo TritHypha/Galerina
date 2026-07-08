@@ -21,7 +21,8 @@ const CLI = join(REPO, "galerina.mjs");
 // A guarded flow that performs an outbound HTTP POST (network.outbound, a secure-required effect)
 // but is declared `guarded`, not `secure` — the canonical FUNGI-TIER-001 under-declaration. The bare
 // boundary param `order` reaching http.post is the FUNGI-VALUESTATE-008 trigger.
-const UNDER_DECLARED = `guarded flow pushOrder(order: Order) -> Result<Unit, Error>
+const UNDER_DECLARED = `@version 1
+guarded flow pushOrder(order: Order) -> Result<Unit, Error>
   contract { effects { network.outbound } }
 {
   let r = http.post("https://api.example.com/orders", order)?

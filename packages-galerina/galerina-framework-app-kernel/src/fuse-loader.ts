@@ -335,8 +335,24 @@ function extractFuse(manifest: Record<string, unknown>, source: string): FuseDes
   const capabilities: string[] = Array.isArray(caps) ? caps.filter((c): c is string => typeof c === "string") : [];
   const provides = typeof f["provides"] === "string" ? (f["provides"] as string) : null;
   const seam = typeof f["seam"] === "string" ? (f["seam"] as string) : null;
+  // BK-4/A4 (2026-07-08): the fuse descriptor version must be READ and gated — the old
+  // `?? "fungi.fuse.v1"` default treated an ABSENT version as v1 (assume-on-absence), and an
+  // unknown future version flowed through unchecked. Reject both, never best-effort admit.
+  // The accepted set is CLOSED and enumerable: "lln.fuse.v1" is the pre-rename (LogicN-era)
+  // spelling of the SAME v1 layout — carried by the committed REAL-SIGNED greeting fixture,
+  // whose offline re-sign ceremony is an owned TODO (docs/TODO.md). It normalizes to v1 here;
+  // retire the alias when the ceremony re-signs the fixture. Anything else is refused.
+  const rawSchemaVersion = f["schemaVersion"];
+  const FUSE_V1_SPELLINGS = new Set(["fungi.fuse.v1", "lln.fuse.v1"]);
+  if (typeof rawSchemaVersion !== "string" || !FUSE_V1_SPELLINGS.has(rawSchemaVersion)) {
+    return fuseError(
+      "FUNGI-FUSE-VERSION",
+      `embedded fuse block in ${source} has ${rawSchemaVersion === undefined ? "NO" : "unsupported"} schemaVersion ` +
+      `${JSON.stringify(rawSchemaVersion)} — expected "fungi.fuse.v1" (an absent or unrecognised descriptor version is refused).`,
+    );
+  }
   return {
-    schemaVersion: typeof f["schemaVersion"] === "string" ? (f["schemaVersion"] as string) : "fungi.fuse.v1",
+    schemaVersion: "fungi.fuse.v1",
     name,
     version: typeof f["version"] === "string" ? (f["version"] as string) : "0.0.0",
     kind: typeof f["kind"] === "string" ? (f["kind"] as string) : "capability",

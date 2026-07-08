@@ -249,7 +249,28 @@ export interface ParseResult {
   readonly diagnostics: readonly ParseDiagnostic[];
   /** Extracted flow metadata — available even with partial parse errors. */
   readonly flows: readonly FlowMeta[];
+  /** `@version` first-line header state (BK-4/A4, 2026-07-08). Absent on
+   *  producers that predate the header (e.g. gate-parser results). */
+  readonly versionHeader?: { readonly present: boolean; readonly value: number | null };
 }
+
+/** Options for parseProgram (2026-07-08 versioning, BK-4/A4). */
+export interface ParseOptions {
+  /**
+   * When true, a MISSING `@version` first line is a compile ERROR
+   * (FUNGI-SYNTAX-015). Set by every path that compiles a `.fungi` ARTIFACT
+   * FROM DISK (both CLIs). In-memory callers (tests, tooling probes) default
+   * to false during the migration window — the corpus gate is
+   * `galerina-fungi-scan --strict`, and a malformed or unsupported header is
+   * an ERROR everywhere regardless of this flag.
+   */
+  readonly requireVersionHeader?: boolean;
+}
+
+/** Oldest `.fungi` language version this compiler still accepts (anti-downgrade floor, A4). */
+export const FUNGI_MIN_SUPPORTED_VERSION = 1;
+/** Newest `.fungi` language version this compiler understands (unknown-future ⇒ reject, BK-4). */
+export const FUNGI_CURRENT_VERSION = 1;
 
 // ---------------------------------------------------------------------------
 // Pratt operator table
@@ -2567,6 +2588,23 @@ class Parser {
     }
 
     if (this.currentIs("symbol", "{")) {
+      // GNG-03 doctrine (2026-07-08): a top-level `governance { … }` block has ZERO
+      // consumers anywhere in the compiler — it parses to a stub and enforces nothing.
+      // Never silently accept a security directive that does nothing: reject it.
+      // (`api { … }` keeps the historical drain for now — tracked as a follow-up;
+      // its content is a typed-boundary SPEC consumed by docs/examples, not authority.)
+      if (kind === "governanceDecl") {
+        this.emit(
+          "FUNGI-SYNTAX-013",
+          "INERT_GOVERNANCE_BLOCK",
+          `Top-level 'governance { … }' is not an enforced construct — nothing in the ` +
+          `compiler or verifier consumes it, so it would document governance that does ` +
+          `not exist (the GNG-03 declarative-only fail-open). Use contract/authority/` +
+          `policy/guard blocks, which ARE verified.`,
+          loc,
+          `Move the rules into a verified construct: contract { … } / authority { … } / policy { … }.`,
+        );
+      }
       this.skipBalancedBraces();
     }
 
@@ -2719,9 +2757,9 @@ class Parser {
         continue;
       }
 
-      // Skip unrecognised content
+      // A23: an unknown BLOCK inside authority {} is rejected, never drained
       if (this.currentIs("symbol", "{")) {
-        this.skipBalancedBraces();
+        this.rejectUnknownBlockIn("authority { }");
       } else {
         this.advance();
       }
@@ -2906,9 +2944,9 @@ class Parser {
         continue;
       }
 
-      // Skip unrecognised content
+      // A23: an unknown BLOCK inside policy {} is rejected, never drained
       if (this.currentIs("symbol", "{")) {
-        this.skipBalancedBraces();
+        this.rejectUnknownBlockIn("policy { }");
       } else {
         this.advance();
       }
@@ -2990,7 +3028,8 @@ class Parser {
         continue;
       }
 
-      if (this.currentIs("symbol", "{")) this.skipBalancedBraces();
+      // A23: an unknown BLOCK inside guard {} is rejected, never drained
+      if (this.currentIs("symbol", "{")) this.rejectUnknownBlockIn("guard { }");
       else this.advance();
       this.skipNewlines();
     }
@@ -3130,9 +3169,9 @@ class Parser {
         continue;
       }
 
-      // Skip unrecognised content
+      // A23: an unknown BLOCK inside access {} (capability grants) is rejected, never drained
       if (this.currentIs("symbol", "{")) {
-        this.skipBalancedBraces();
+        this.rejectUnknownBlockIn("access { }");
       } else {
         this.advance();
       }
@@ -3335,8 +3374,8 @@ class Parser {
         this.skipNewlines();
         continue;
       }
-      // Unknown — skip
-      if (this.currentIs("symbol", "{")) this.skipBalancedBraces();
+      // A23: an unknown BLOCK inside gate(){} (admission guard) is rejected, never drained
+      if (this.currentIs("symbol", "{")) this.rejectUnknownBlockIn("gate(…) { }");
       else this.advance();
       this.skipNewlines();
     }
@@ -3498,8 +3537,8 @@ class Parser {
         continue;
       }
 
-      // Unknown content — skip
-      if (this.currentIs("symbol", "{")) this.skipBalancedBraces();
+      // A23: an unknown BLOCK inside emergency {} is rejected, never drained
+      if (this.currentIs("symbol", "{")) this.rejectUnknownBlockIn("emergency { }");
       else this.advance();
       this.skipNewlines();
     }
@@ -3651,6 +3690,71 @@ class Parser {
         this.advance();
       }
     }
+  }
+
+  /**
+   * A23/M4 (2026-07-08, PROMPT-syntax-update §8): an unrecognized `{ … }` block
+   * inside a governance-bearing context (contract / secrets / authority / policy /
+   * guard / access / gate / emergency / contract-set / import-assimilate) is a
+   * compile ERROR — then the block is skipped purely as RECOVERY so later
+   * diagnostics still surface. The old behaviour silently DRAINED the block,
+   * which made a future or mistyped governance directive invisible to every
+   * verifier while the file still signed (CWE-693; RD-0234b Class-D shape, and
+   * the version-skew trap: a v2 block inside a v1 parser must fail closed).
+   *
+   * Call this ONLY where the current token is the opening `{` of a block the
+   * caller's grammar does not recognise. Plain unknown WORD tokens may still be
+   * advanced over by callers (grammar breadth) — the deny-by-default boundary
+   * here is the BLOCK, whose contents would otherwise vanish wholesale.
+   */
+  private rejectUnknownBlockIn(context: string): void {
+    const prev = this.peek(-1);
+    const blockName =
+      prev.kind === "identifier" || prev.kind === "keyword" || prev.kind === "string"
+        ? prev.value
+        : "<anonymous>";
+    this.emit(
+      "FUNGI-SYNTAX-011",
+      "UNKNOWN_GOVERNANCE_BLOCK",
+      `Unrecognized block '${blockName} { … }' inside ${context} — rejected (deny-by-default). ` +
+      `Unknown governance content cannot be silently ignored: a drained block is invisible to ` +
+      `every verifier, so a future or mistyped directive would be neutered while the build ` +
+      `still signs. Remove the block, fix the spelling, or upgrade the compiler.`,
+      this.loc(),
+      `Check the spelling of '${blockName}' against the documented ${context} grammar, or remove the block.`,
+    );
+    this.skipBalancedBraces(); // recovery only — the error above already fails the build
+  }
+
+  /**
+   * Consume a balanced `{ … }` block and return its token text (space-joined).
+   * Used inside KNOWN contract sub-blocks where a nested block is legitimate
+   * structured content (`retries { network.outbound { attempts 3 } }`,
+   * `types { PaymentResult { … } }`): the content is COLLECTED into the AST
+   * value instead of being dropped, so verifiers and audits can still see it.
+   * (A23 companion: reject at unknown-section boundaries, collect inside known
+   * sections — never silently drop either way.)
+   */
+  private collectBalancedText(): string {
+    const parts: string[] = [];
+    let depth = 0;
+    while (!this.isEof()) {
+      const tok = this.current();
+      if (tok.kind === "symbol" && tok.value === "{") {
+        depth++;
+        parts.push("{");
+        this.advance();
+      } else if (tok.kind === "symbol" && tok.value === "}") {
+        depth--;
+        parts.push("}");
+        this.advance();
+        if (depth <= 0) break;
+      } else {
+        if (tok.kind !== "newline") parts.push(tok.value);
+        this.advance();
+      }
+    }
+    return parts.join(" ");
   }
 
   // ── Compute target block ──────────────────────────────────────────────────
@@ -4287,9 +4391,9 @@ class Parser {
         continue;
       }
 
-      // Skip unrecognised content gracefully
+      // A23: an unknown BLOCK inside contract {} is rejected, never drained (the #1 M4 site)
       if (this.currentIs("symbol", "{")) {
-        this.skipBalancedBraces();
+        this.rejectUnknownBlockIn("contract { }");
       } else {
         this.advance();
       }
@@ -4440,7 +4544,7 @@ class Parser {
               if (path !== "") this.advance();
               credChildren.push({ kind: "identifier", value: `path:${path}`, location: this.loc() });
             } else if (this.currentIs("symbol", "{")) {
-              this.skipBalancedBraces(); // drain an unknown NESTED block (e.g. aws { region … }) as a unit — no desync
+              this.rejectUnknownBlockIn("secrets credential { }"); // A23: reject, never drain (corpus uses only provider/path keys)
             } else {
               this.advance(); // drain unknown credential-body tokens (forward-compatible: id/arn/region/etc.)
             }
@@ -4490,7 +4594,7 @@ class Parser {
               if (handler !== "") this.advance();
               rotChildren.push({ kind: "identifier", value: `on_rotation_fault:${handler}`, location: this.loc() });
             } else if (this.currentIs("symbol", "{")) {
-              this.skipBalancedBraces(); // drain an unknown NESTED block as a unit — no desync
+              this.rejectUnknownBlockIn("secrets rotation { }"); // A23: reject, never drain
             } else {
               this.advance(); // drain unknown rotation-body tokens (forward-compatible: strategy/trigger/etc.)
             }
@@ -4503,9 +4607,9 @@ class Parser {
         continue;
       }
 
-      // Unknown top-level secrets content: drain gracefully (mirrors the generic handler's fallback).
+      // A23: an unknown BLOCK inside secrets {} is rejected, never drained (secrets are governance-critical).
       if (this.currentIs("symbol", "{")) {
-        this.skipBalancedBraces();
+        this.rejectUnknownBlockIn("secrets { }");
       } else {
         this.advance();
       }
@@ -4848,8 +4952,8 @@ class Parser {
               const lineParts: string[] = [];
               while (!this.isEof() && this.current().kind !== "newline" && !this.currentIs("symbol", "}")) {
                 if (this.currentIs("symbol", "{")) {
-                  // Nested further — skip balanced
-                  this.skipBalancedBraces();
+                  // A23: nested content inside a KNOWN sub-block is COLLECTED (visible), never dropped
+                  lineParts.push(this.collectBalancedText());
                   break;
                 }
                 lineParts.push(this.current().value);
@@ -4873,8 +4977,8 @@ class Parser {
         const parts: string[] = [];
         while (!this.isEof() && this.current().kind !== "newline" && !this.currentIs("symbol", "}")) {
           if (this.currentIs("symbol", "{")) {
-            // Nested block mid-line — skip it and stop
-            this.skipBalancedBraces();
+            // A23: nested content inside a KNOWN sub-block is COLLECTED (visible), never dropped
+            parts.push(this.collectBalancedText());
             break;
           }
           parts.push(this.current().value);
@@ -4930,7 +5034,8 @@ class Parser {
             (v === "rules" || v === "events" || v === "audit" || v === "types")) {
           children.push(this.parseContractSubBlock(v));
         } else if (this.currentIs("symbol", "{")) {
-          this.skipBalancedBraces();
+          // A23: an unknown BLOCK inside a contract set {} is rejected, never drained
+          this.rejectUnknownBlockIn("contract set { }");
         } else {
           this.advance();
         }
@@ -5295,8 +5400,8 @@ class Parser {
           this.skipNewlines();
           continue;
         }
-        // Skip unknown content
-        if (this.currentIs("symbol", "{")) this.skipBalancedBraces();
+        // A23: an unknown BLOCK inside import { } (assimilate-contract wrapper) is rejected, never drained
+        if (this.currentIs("symbol", "{")) this.rejectUnknownBlockIn("import { }");
         else this.advance();
         this.skipNewlines();
       }
@@ -5732,8 +5837,72 @@ class Parser {
  * @param file    File path used in diagnostic locations.
  * @returns       ParseResult containing the AST, diagnostics, and flow metadata.
  */
-export function parseProgram(source: string, file: string): ParseResult {
-  const lexResult = lex(source, file);
+export function parseProgram(source: string, file: string, options?: ParseOptions): ParseResult {
+  // ── `@version` first-line header (BK-4/A4, 2026-07-08) ─────────────────────
+  // Validated BEFORE lexing: the header is a FILE-FORMAT gate, not a language
+  // token (an `@version` reaching the attribute machinery would be rejected as
+  // an unknown attribute). The header line is blanked — not removed — so every
+  // downstream line number and byte offset stays exact. A leading UTF-8 BOM is
+  // tolerated (much of the corpus carries one).
+  const headerDiagnostics: ParseDiagnostic[] = [];
+  const bomLen = source.charCodeAt(0) === 0xfeff ? 1 : 0;
+  const noBom = bomLen === 1 ? source.slice(1) : source;
+  const nlIdx = noBom.indexOf("\n");
+  const rawFirstLine = nlIdx === -1 ? noBom : noBom.slice(0, nlIdx);
+  const firstLine = rawFirstLine.trim();
+  let versionHeader: { present: boolean; value: number | null } = { present: false, value: null };
+  let lexSource = source;
+  const headerLoc: SourceLocation = { file, line: 1, column: 1 };
+
+  if (firstLine.startsWith("@version")) {
+    const m = /^@version[ \t]+([0-9]+)[ \t]*(?:\/\/.*)?$/.exec(firstLine);
+    const value = m === null ? null : Number(m[1]);
+    if (m === null || value === null || !Number.isSafeInteger(value)) {
+      versionHeader = { present: true, value: null };
+      headerDiagnostics.push({
+        code: "FUNGI-SYNTAX-014",
+        name: "VERSION_HEADER_MALFORMED",
+        severity: "error",
+        message: `${file}: malformed @version header ${JSON.stringify(firstLine)} — expected \`@version <integer>\` ` +
+          `as the first line. A version that cannot be read is rejected, never best-effort parsed (BK-4).`,
+        location: headerLoc,
+        suggestedFix: `Use: @version ${FUNGI_CURRENT_VERSION}`,
+      });
+    } else if (value < FUNGI_MIN_SUPPORTED_VERSION || value > FUNGI_CURRENT_VERSION) {
+      versionHeader = { present: true, value };
+      const tooOld = value < FUNGI_MIN_SUPPORTED_VERSION;
+      headerDiagnostics.push({
+        code: "FUNGI-SYNTAX-014",
+        name: "VERSION_UNSUPPORTED",
+        severity: "error",
+        message: `${file}: @version ${value} is ${tooOld ? "below the minimum-supported floor" : "newer than this compiler understands"} ` +
+          `(supported: ${FUNGI_MIN_SUPPORTED_VERSION}..${FUNGI_CURRENT_VERSION}). ` +
+          (tooOld
+            ? `Rejecting old versions is the anti-downgrade gate (A4).`
+            : `An unknown future version is rejected, never best-effort parsed (BK-4 — the "old tool eats new format" trap).`),
+        location: headerLoc,
+        suggestedFix: tooOld ? `Migrate the file forward (scripts/migrate-fungi.mjs).` : `Upgrade the compiler.`,
+      });
+    } else {
+      versionHeader = { present: true, value };
+    }
+    // Blank the header (keep its newline) — line numbers + offsets preserved.
+    const headerEnd = bomLen + rawFirstLine.length;
+    lexSource = source.slice(0, bomLen) + " ".repeat(rawFirstLine.length) + source.slice(headerEnd);
+  } else if (options?.requireVersionHeader === true) {
+    headerDiagnostics.push({
+      code: "FUNGI-SYNTAX-015",
+      name: "VERSION_HEADER_MISSING",
+      severity: "error",
+      message: `${file}: missing @version header — every on-disk .fungi artifact must carry ` +
+        `\`@version <integer>\` as its first line, and every consumer rejects an absent version ` +
+        `(BK-4: writing the tag without the read-gate is itself a fail-open).`,
+      location: headerLoc,
+      suggestedFix: `Add \`@version ${FUNGI_CURRENT_VERSION}\` as line 1 (scripts/migrate-fungi.mjs --stamp).`,
+    });
+  }
+
+  const lexResult = lex(lexSource, file);
 
   // Convert lexer diagnostics to parser diagnostics (structurally compatible)
   const lexDiagnostics: ParseDiagnostic[] = lexResult.diagnostics.map((d: LexerDiagnostic) => ({
@@ -5752,7 +5921,8 @@ export function parseProgram(source: string, file: string): ParseResult {
 
   return {
     ast: result.ast,
-    diagnostics: [...lexDiagnostics, ...result.diagnostics],
+    diagnostics: [...headerDiagnostics, ...lexDiagnostics, ...result.diagnostics],
     flows: result.flows,
+    versionHeader,
   };
 }

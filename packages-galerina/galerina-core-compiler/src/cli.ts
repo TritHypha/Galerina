@@ -356,7 +356,7 @@ function compileFile(
 
   const diagnostics: CliDiagnostic[] = [];
 
-  const parseResult = parseProgram(source, filePath);
+  const parseResult = parseProgram(source, filePath, { requireVersionHeader: true });
   for (const d of parseResult.diagnostics) {
     pushDiag(
       diagnostics,
@@ -660,7 +660,7 @@ pure flow verifySample(x: Int) -> Int {
  */
 function doubleCompileGirHash(source: string, fileName: string): { hash1: string; hash2: string } {
   function compileOnce(): string {
-    const parseResult = parseProgram(source, fileName);
+    const parseResult = parseProgram(source, fileName, { requireVersionHeader: true });
     const effectResults = checkEffects(parseResult.flows, parseResult.ast);
     const girResult = emitGIR(parseResult.ast, parseResult.flows, effectResults);
     return hashGIR(girResult.gir);
@@ -771,7 +771,7 @@ function runFixEffects(targetDir: string): void {
       continue;
     }
 
-    const parseResult = parseProgram(source, filePath);
+    const parseResult = parseProgram(source, filePath, { requireVersionHeader: true });
     const effectResults = checkEffects(parseResult.flows, parseResult.ast);
 
     for (const result of effectResults) {
@@ -946,7 +946,7 @@ function runWasmStandaloneBuild(targetDir: string, files: string[]): void {
       continue;
     }
 
-    const parseResult = parseProgram(source, filePath);
+    const parseResult = parseProgram(source, filePath, { requireVersionHeader: true });
     const effectResults = checkEffects(parseResult.flows, parseResult.ast);
 
     // BK-5 / H1 / M1 (fail-closed): the WASM target MUST NOT skip the front-end. Run the full gate —
@@ -1142,7 +1142,7 @@ function runCostAnalysis(targetDir: string): void {
       continue;
     }
 
-    const parseResult = parseProgram(source, filePath);
+    const parseResult = parseProgram(source, filePath, { requireVersionHeader: true });
 
     for (const flow of parseResult.flows) {
       // Find the contract node for this flow in the AST by scanning children

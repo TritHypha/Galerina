@@ -72,7 +72,9 @@ const CLEAN = [
 function stage(label, src) {
   const dir = join(tmpRoot, label + "-" + label.length + "x");
   mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, "case.fungi"), src);
+  // W4 versioning: on-disk .fungi artifacts (incl. test-authored) carry the header,
+  // so the CLEAN case exercises the governance gate — not FUNGI-SYNTAX-015.
+  writeFileSync(join(dir, "case.fungi"), src.startsWith("@version") ? src : "@version 1\n" + src);
   return dir;
 }
 
