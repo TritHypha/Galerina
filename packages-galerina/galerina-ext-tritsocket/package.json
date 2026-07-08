@@ -1,0 +1,22 @@
+{
+  "name": "@galerina/ext-tritsocket",
+  "version": "1.0.0-beta.2",
+  "description": "TritSocket: a deny-only ternary (Kleene-3) admission pre-filter. Emits Deny | Maybe — never Allow. A cheap, cache-dense necessary-condition check that runs IN FRONT OF a real keyed PQ gate (ML-DSA/Ed25519/HMAC), cutting load without ever weakening the real gate. The public mask makes the score forgeable, which is exactly why Maybe is never an Allow.",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": { ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" } },
+  "scripts": {
+    "build": "tsc",
+    "test": "npm run build && node --test tests/*.test.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.5.0"
+  },
+  "keywords": ["galerina", "tritsocket", "pre-filter", "deny-only", "kleene-3", "ternary", "zero-trust", "fail-closed", "admission"],
+  "note": "Deny-only pre-filter — NOT a security boundary; it NEVER emits Allow. An allow must come from a real keyed PQ gate downstream (e.g. the galerina-core-network webhook HMAC verifier). Provenance: RD-0162/0163 sound half. The Rust/C-ABI/WASM implementation lives in the INDEPENDENT ZT-tritsocket repo and is NOT vendored here — this is a self-contained TS-native port with ABI-compatible verdict values."
+}
