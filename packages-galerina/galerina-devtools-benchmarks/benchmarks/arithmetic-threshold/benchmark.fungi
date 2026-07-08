@@ -23,10 +23,15 @@ contract { effects {} }
     i = i + 1
     additions = additions + 1
 
-    /// Modular multiply + XOR checksum (same as v2)
+    /// Modular multiply checksum — same cost class as v2's imul+XOR mix
+    /// (add + mod + mul + add). WASM Int is i32 with a FAIL-CLOSED overflow
+    /// trap, and >i32 literals wrap — so every constant and intermediate here
+    /// is provably i32-safe: base < 2^16, 65535 * 31741 ≈ 2.08e9 < 2^31-1.
+    /// (Exact uint32-wrap parity with node's imul/>>>0 isn't expressible without
+    /// wrapping ops; checksum is anti-DCE side-work — `additions` is the unit.)
     let ui: Int = i
-    let prod: Int = (checksum + ui) * 2654435761
-    checksum = prod + ui
+    let base: Int = (checksum + ui) % 65536
+    checksum = base * 31741 + ui
   }
 
   return additions

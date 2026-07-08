@@ -92,6 +92,16 @@ const SPECS = {
     N: 50000, unit: "chains/s", comparable: true,
     native: (_rt, r) => num(r.iterationsPerSecond),          // 1 iteration = 1 chain
   },
+  // tower-of-hanoi (RD-0277 §3a): one op = one disk MOVE. All three native
+  // reference impls (node/python/rust) already emit movesPerSecond; the Galerina
+  // row reports moves/s via runner.mjs galerinaOpsPerRun=65535 (= 2^16-1 moves for
+  // hanoi(16)). Without this entry hanoi was ABSENT from the unit-alignment audit,
+  // so a moves/s (Galerina) vs calls/s (native) mismatch would silently crown a
+  // false winner once its WASM row lands.
+  "tower-of-hanoi": {
+    N: 65535, unit: "moves/s", comparable: true,
+    native: (_rt, r) => num(r.movesPerSecond),               // native impls emit moves/sec directly
+  },
 
   // ── misaligned (fixed here): native runners report WHOLE-CALL/sec ─────────
   "collection-pipeline": {

@@ -24,8 +24,14 @@ contract { effects {} }
   if depth <= 0 {
     return 1
   }
-  let sub: Int = treeNodes(depth - 1)
-  return 1 + sub + sub
+  /// TWO recursive calls — exactly what the header comment promises
+  /// (`1 + treeNodes(d-1) + treeNodes(d-1)`) and what node.mjs/python.py/bench.rs
+  /// do via bottomUpTree's l/r double recursion. The drifted `let sub = ...;
+  /// 1 + sub + sub` form made ONE call per level (O(depth) work, not O(2^depth)),
+  /// eliding ~99.5% of the 135,854 calls and inflating WASM throughput ~2000x.
+  let l: Int = treeNodes(depth - 1)
+  let r: Int = treeNodes(depth - 1)
+  return 1 + l + r
 }
 
 pure flow checksum() -> Int

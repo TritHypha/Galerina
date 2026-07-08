@@ -38,7 +38,10 @@ contract { effects {} }
   mut i:        Int = 0
 
   while i < 50000 {
-    checksum = checksum + serviceLayer(i, i)
+    /// Bounded mod 2^16: the raw sum reaches ~2e10, past the i32 ceiling —
+    /// the WASM path's fail-closed overflow trap fired on the unbounded form.
+    /// serviceLayer(i,i) < ~8e5 for i < 50k, so every intermediate stays i32-safe.
+    checksum = (checksum + serviceLayer(i, i)) % 65536
     i = i + 1
   }
 

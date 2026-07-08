@@ -10,19 +10,25 @@
 pure flow main() -> Int
 contract { effects {} }
 {
-  mut seed:     Int = 123456789
+  /// seed = 123456789 % 65536 — pre-reduced so the first multiply is i32-safe.
+  mut seed:     Int = 52501
   mut checksum: Int = 0
   mut i:        Int = 0
 
   while i < 50000 {
-    /// Step 1: LCG advance
-    seed = seed * 1664525 + 1013904223
+    /// WASM Int is i32 with a FAIL-CLOSED overflow trap (the big-constant v2
+    /// form trapped `unreachable`), and >i32 literals silently wrap — so this
+    /// keeps the SAME op mix per iteration (2x LCG + 2x mul-mix + 4-way branch)
+    /// with 16-bit-bounded state: every product is provably < 2^31.
 
-    /// Step 2: first xorshift mix (approximate — Galerina uses Int not UInt32)
-    let mix1: Int = (seed + (seed / 8192)) * 2246822519
+    /// Step 1: LCG advance (65535 * 25173 ≈ 1.65e9 < 2^31-1 — safe)
+    seed = (seed * 25173 + 13849) % 65536
 
-    /// Step 3: second xorshift mix
-    let mix2: Int = (mix1 + (mix1 / 131072)) * 3266489917
+    /// Step 2: first mul-mix (66558 * 2749 ≈ 1.83e8 — safe)
+    let mix1: Int = ((seed + (seed / 64)) * 2749) % 65536
+
+    /// Step 3: second mul-mix (66046 * 3163 ≈ 2.09e8 — safe)
+    let mix2: Int = ((mix1 + (mix1 / 128)) * 3163) % 65536
 
     /// Step 4: 4-way branch on last 2 bits
     let branch: Int = mix2 - (mix2 / 4) * 4
@@ -32,9 +38,9 @@ contract { effects {} }
     if branch == 2 { checksum = checksum + mix1 + mix2 }
     if branch == 3 { checksum = checksum - mix2 + mix1 }
 
-    /// Step 5: second LCG
-    seed = seed * 2891336453 + 1442695041
-    checksum = checksum + seed
+    /// Step 5: second LCG (65535 * 30323 ≈ 1.99e9 < 2^31-1 — safe)
+    seed = (seed * 30323 + 9781) % 65536
+    checksum = (checksum + seed) % 65536
 
     i = i + 1
   }
