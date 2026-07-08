@@ -75,6 +75,7 @@
         "packages-galerina/galerina-ext-tmf",
         "packages-galerina/galerina-ext-bridge-bitnet",
         "packages-galerina/galerina-ext-bridge-cpp",
+        "packages-galerina/galerina-ext-bridge-quantum",
         "packages-galerina/galerina-ext-photonic-emulator",
         "packages-galerina/galerina-ext-proof-snarkjs",
         "packages-galerina/galerina-ext-secrets-vault",
