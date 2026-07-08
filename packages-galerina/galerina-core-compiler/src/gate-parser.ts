@@ -15,7 +15,7 @@
 //     REFUSES — this parser validates the declarative header, then emits FUNGI-GATELANG-002 (error) and
 //     returns ZERO flows, so nothing downstream can mis-lower a partially-understood `.gate` file.
 //
-// INCREMENT 1 (this file): the declarative header — the mandatory `#gate` pragma, `INTENT`, and
+// INCREMENT 1 (this file): the declarative header — the mandatory `@version 1.0.0` header (Q1: replaced the retired `#gate` pragma, 2026-07-08), `INTENT`, and
 // `EFFECTS { }` block — is parsed and validated; the FLOW graph is recognised but its lowering is
 // deferred (fail-closed). INCREMENT 2 will lower the FLOW edges (`[node] -> [node]` with K3 `?`
 // guards, `:cut`/`:fu` nodes) into the same AstNode/FlowMeta kinds the `.fungi` parser emits.
@@ -23,12 +23,12 @@
 
 import type { AstNode, FlowMeta, ParseDiagnostic, ParseResult, SourceLocation } from "./parser.js";
 
-/** FUNGI-GATELANG-001: the `.gate` declarative header is malformed (missing `#gate` pragma / INTENT / EFFECTS). */
+/** FUNGI-GATELANG-001: the `.gate` declarative header is malformed (missing `@version 1.0.0` header / INTENT / EFFECTS). */
 export const FUNGI_GATELANG_001 = {
   code: "FUNGI-GATELANG-001",
   name: "MalformedGateHeader",
   severity: "error" as const,
-  message: "A `.gate` file must open with the `#gate` pragma and declare a mandatory INTENT and EFFECTS { } block.",
+  message: "A `.gate` file must open with the `@version 1.0.0` header and declare a mandatory INTENT and EFFECTS { } block.",
 } as const;
 
 /**
@@ -239,25 +239,31 @@ export function lowerGate(header: GateHeader, file: string): { flows: FlowMeta[]
 export function parseGate(source: string, file: string): ParseResult {
   const diagnostics: ParseDiagnostic[] = [];
 
-  // The `#gate` pragma is mandatory and must be the first non-blank line (SPEC §1: `#gate` versions
-  // the file and anchors the ASCII-frozen surface). Missing pragma ⇒ not a `.gate` file ⇒ refuse.
+  // Q1 (owner LOCKED 2026-07-08): `@version 1.0.0` REPLACES the old `#gate 0.3` pragma —
+  // ONE version story across `.fungi` and `.gate` (BK-4/A4). The header must be the first
+  // non-blank line, is READ and gated against a CLOSED set, and absent/malformed/unknown/
+  // below-floor ⇒ refuse with ZERO flows (never best-effort parse — the "old tool eats new
+  // format" trap). The retired `#gate` spelling is rejected with a migration pointer:
+  // an old marker is UNKNOWN to this parser, and unknown ⇒ deny (LN-048).
+  const GATE_SUPPORTED_VERSIONS: ReadonlySet<string> = new Set(["1.0.0"]);
   const firstNonBlank = source.split(/\r?\n/).map((l) => l.trim()).find((l) => l.length > 0) ?? "";
-  if (!firstNonBlank.startsWith("#gate")) {
-    diagnostics.push({ ...FUNGI_GATELANG_001, message: `${file}: ${FUNGI_GATELANG_001.message} (missing the leading \`#gate\` pragma).` });
-    return { ast: EMPTY_PROGRAM, diagnostics, flows: [] };
-  }
-
-  // BK-4/A4 (2026-07-08): the pragma VERSIONS the file (SPEC §1) — so the version must be
-  // READ and gated, not just present. Before this, `#gate` alone passed and the value was
-  // ignored: a future `#gate 0.4` (new semantics) or a bare `#gate` would be best-effort
-  // parsed by a 0.3 parser — the "old tool eats new format" trap. Closed accept set;
-  // absent/unknown ⇒ refuse with ZERO flows.
-  const GATE_SUPPORTED_VERSIONS: ReadonlySet<string> = new Set(["0.3"]);
-  const pragmaVersion = firstNonBlank.slice("#gate".length).trim().split(/\s+/)[0] ?? "";
-  if (!GATE_SUPPORTED_VERSIONS.has(pragmaVersion)) {
+  if (firstNonBlank.startsWith("#gate")) {
     diagnostics.push({
       ...FUNGI_GATELANG_001,
-      message: `${file}: \`#gate\` pragma version ${pragmaVersion === "" ? "is MISSING" : `${JSON.stringify(pragmaVersion)} is not supported`} ` +
+      message: `${file}: the \`#gate\` pragma is RETIRED (owner decision 2026-07-08) — a .gate file now begins with ` +
+        `\`@version 1.0.0\`. Migrate the header (scripts/migrate-fungi.mjs --gate-stamp).`,
+    });
+    return { ast: EMPTY_PROGRAM, diagnostics, flows: [] };
+  }
+  if (!firstNonBlank.startsWith("@version")) {
+    diagnostics.push({ ...FUNGI_GATELANG_001, message: `${file}: ${FUNGI_GATELANG_001.message} (missing the leading \`@version 1.0.0\` header).` });
+    return { ast: EMPTY_PROGRAM, diagnostics, flows: [] };
+  }
+  const gateVersion = firstNonBlank.slice("@version".length).trim().split(/\s+/)[0] ?? "";
+  if (!GATE_SUPPORTED_VERSIONS.has(gateVersion)) {
+    diagnostics.push({
+      ...FUNGI_GATELANG_001,
+      message: `${file}: \`@version\` ${gateVersion === "" ? "value is MISSING" : `${JSON.stringify(gateVersion)} is not supported`} ` +
         `(supported: ${[...GATE_SUPPORTED_VERSIONS].join(", ")}) — an absent or unrecognised .gate version is refused, ` +
         `never best-effort parsed (BK-4/A4).`,
     });

@@ -1,4 +1,4 @@
-#gate 0.3
+@version 1.0.0
 # Pattern: governed write (transaction). Draw-don't-code: the deduction and the
 # masking are dense compute delegated to .fungi `fu` bodies; the map is the shape.
 GATE processRefund(client: CallerId, amount: Money<GBP>) -> RefundReceipt:

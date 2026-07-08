@@ -6,7 +6,7 @@ prevents (the audit id from the RD-0232b adversarial hardening).
 
 | # | Rule | Why / what it prevents |
 |---|---|---|
-| **R1** | **Version pragma first** — `#gate <int>.<int>` on the first non-blank line; unsupported version ⇒ REJECT. | No "best-effort" parse of an unknown dialect (B7). |
+| **R1** | **Version pragma first** — `@version 1.0.0` on the first non-blank line (Q1 2026-07-08: replaces the retired `#gate <int>.<int>`); unsupported/absent version ⇒ REJECT. | No "best-effort" parse of an unknown dialect (B7). |
 | **R2** | **Exactly one `GATE` per file**, ending in `END`, with a single `[in] := IN` entry. | A 2nd GATE / 2nd entry was silently mangled (B5 / m1). |
 | **R3** | **INTENT + EFFECTS mandatory.** | A gate omitting them used to pass (M2). |
 | **R4** | **The 8 glyphs at EXACT codepoints** (`-> [] ✓ × ? ! + -`); look-alikes (✗ U+2717, fullwidth, homoglyphs) REJECT; identifiers/labels ASCII only. | `✗` was parsed as a node; Cyrillic `а` ≠ `a` (B4). |

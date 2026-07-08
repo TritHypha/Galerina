@@ -1,4 +1,4 @@
-#gate 0.3
+@version 1.0.0
 # Pattern (advanced): tenant isolation + bounded loop + re-authorised egress.
 # Shows four things 01-03 don't:
 #   - a PANIC drain [!] on cross-tenant reach (fail-closed, distinct from a deny drain),

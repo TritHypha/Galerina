@@ -1,4 +1,4 @@
-#gate 0.3
+@version 1.0.0
 # Pattern (advanced): secret handling + tri-state verdict + re-auth on a non-happy path.
 # Shows:
 #   - a SecureString input and secret.read, with the raw token cut before any egress,

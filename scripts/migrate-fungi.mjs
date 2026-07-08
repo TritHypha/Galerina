@@ -10,6 +10,9 @@
 //             Preserves a leading UTF-8 BOM and the file's own EOL convention.
 //   --ops     rewrite legacy `&&` → `and`, `||` → `or` (token-guided via the
 //             real lexer offsets — NEVER regex; strings/comments untouched).
+//   --gate-stamp  Q1 (owner LOCKED 2026-07-08): replace the retired `#gate <v>`
+//             first line of every .gate with `@version 1.0.0` (one version
+//             story across .fungi+.gate; gate-parser rejects `#gate` now).
 //   --check   report only (same as running with neither mode and no --apply).
 //
 // Scope control: skips node_modules/.git/dist/build/.graph. Test corpora are
@@ -69,14 +72,15 @@ const args = process.argv.slice(2);
 const APPLY = args.includes("--apply");
 const DO_STAMP = args.includes("--stamp");
 const DO_OPS = args.includes("--ops");
+const DO_GATE = args.includes("--gate-stamp");
 const BOM = "﻿";
 
-if (!DO_STAMP && !DO_OPS && !args.includes("--check")) {
-  console.log("migrate-fungi: pick a mode: --stamp | --ops | --check   (dry-run unless --apply)");
+if (!DO_STAMP && !DO_OPS && !DO_GATE && !args.includes("--check")) {
+  console.log("migrate-fungi: pick a mode: --stamp | --ops | --gate-stamp | --check   (dry-run unless --apply)");
   process.exit(2);
 }
 
-const { fungi } = discoverCorpus(ROOT);
+const { fungi, gate } = discoverCorpus(ROOT);
 const rel = (p) => relative(ROOT, p).replace(/\\/g, "/");
 
 const eolOf = (s) => (s.includes("\r\n") ? "\r\n" : "\n");
@@ -150,10 +154,44 @@ for (const abs of fungi) {
   }
 }
 
+// ── --gate-stamp: retire `#gate <v>` → `@version 1.0.0` on every .gate (Q1) ──
+let gateStamped = 0;
+if (DO_GATE) {
+  for (const abs of gate) {
+    if (isSignedFrozen(abs)) {
+      signedFrozen++;
+      console.log(`  ⛔ signed-frozen .gate (ceremony only): ${rel(abs)}`);
+      continue;
+    }
+    let src;
+    try {
+      src = readFileSync(abs, "utf8");
+    } catch (err) {
+      console.error(`  ! unreadable (finding, not skipped): ${rel(abs)} — ${err.message}`);
+      continue;
+    }
+    const bom = src.charCodeAt(0) === 0xfeff ? BOM : "";
+    const body = stripBom(src);
+    const eol = eolOf(body);
+    let next = body;
+    if (/^#gate\b[^\n]*/.test(body)) {
+      next = body.replace(/^#gate\b[^\n]*/, "@version 1.0.0");
+    } else if (!body.startsWith("@version")) {
+      next = `@version 1.0.0${eol}${body}`;
+    }
+    if (next !== body) {
+      gateStamped++;
+      console.log(`  ${APPLY ? "✍" : "·"} ${rel(abs)} — #gate → @version 1.0.0`);
+      if (APPLY) writeFileSync(abs, bom + next, "utf8");
+    }
+  }
+}
+
 console.log(
   `migrate-fungi${APPLY ? " (APPLIED)" : " (dry-run)"}: ${fungi.length} .fungi scanned · ` +
   `${stamped} to stamp · ${opsFiles} files / ${opsCount} ops to migrate · ${kept} keep-marked · ` +
-  `${signedFrozen} signed-frozen (ceremony-owed)`,
+  `${signedFrozen} signed-frozen (ceremony-owed)` +
+  (DO_GATE ? ` · ${gateStamped}/${gate.length} .gate → @version 1.0.0` : ""),
 );
 if (!APPLY && (stamped > 0 || opsFiles > 0)) {
   console.log("  re-run with --apply to write. Verify after with: node packages-galerina/galerina-devtools-fungi-scan/dist/cli.js");

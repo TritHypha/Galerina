@@ -1,4 +1,4 @@
-#gate 0.3
+@version 1.0.0
 # Pattern: healthcare PHI. TWO protected fields (PatientId + SSN) are cut before egress.
 # The security property is visible in the shape: there is NO drawn edge from the raw
 # read to [+]; the only path to egress passes through the :cut, which dominates it.

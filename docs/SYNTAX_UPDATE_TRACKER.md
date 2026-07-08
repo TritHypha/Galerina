@@ -6,6 +6,11 @@
 3. **A18 tenant scope stays sequenced AFTER W5–W7** (rides the new schema/taint surface), then its own focused package.
 4. **Commit at milestones** — LOCAL commits with explicit pathspecs at each green gate; push stays HELD for explicit owner GO.
 
+**R&D-session decisions LOCKED 2026-07-08 (KB `f233723`), implemented here:**
+- **Q1: `@version 1.0.0` REPLACES `#gate`** — gate-parser reads+gates it (closed {1.0.0}; retired `#gate` rejected with a migration pointer); 5 corpus `.gate` migrated via codemod `--gate-stamp`; RULES.md R1 + AI-AUTHORING-GUIDE updated; 14/14 gate tests. Corpus now **413/414 headers valid** (the 1 absent = the ceremony-frozen greeting source, by design).
+- **Q2: `UNKNOWN` is the canonical K3 middle state** (DENY(−1) < UNKNOWN(0) < ALLOW(+1)); HOLD/INDETERMINATE = eradicate-aliases; `ambig:` keyword unchanged. W5a implements on this naming.
+- **Q3 (was open) — RECONCILED, maths checked:** 409 `.fungi` = 407 in the stamps commit + example-465 in the compiler commit + api-protocol-rest… all 408 stampable stamped + 1 ceremony-frozen (greeting) = 409 ✓; +5 `.gate` = 413/414 present ✓. The R&D session's "275" was a mid-migration observation.
+
 **Plan:** [SYNTAX_UPDATE_PLAN.md](SYNTAX_UPDATE_PLAN.md) · **Legend:** ☐ not started · ◐ in progress/partial · ☑ done+verified (evidence required) · ✖ blocked/deferred
 **Updated:** 2026-07-08 (session start — baseline)
 

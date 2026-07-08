@@ -11,7 +11,7 @@ import {
 } from "../dist/index.js";
 
 const VALID = [
-  "#gate 0.3",
+  "@version 1.0.0",
   'INTENT "Return one customer record for an authorised caller; PII is redacted before egress."',
   "EFFECTS { database.read, audit.write }",
   "PRIVACY deny protected CustomerId -> response.body",
@@ -54,7 +54,7 @@ test("gate-parser: missing #gate pragma ⇒ FUNGI-GATELANG-001 (not a .gate file
 });
 
 test("gate-parser: #gate present but INTENT missing ⇒ FUNGI-GATELANG-001", () => {
-  const r = parseGate("#gate 0.3\nEFFECTS { database.read }\nFLOW:\n  [a] -> [b]\n", "no-intent.gate");
+  const r = parseGate("@version 1.0.0\nEFFECTS { database.read }\nFLOW:\n  [a] -> [b]\n", "no-intent.gate");
   assert.ok(codesOf(r).includes(FUNGI_GATELANG_001.code), "mandatory INTENT missing");
 });
 
@@ -66,7 +66,7 @@ test("gate-parser: does NOT touch the .fungi parser — a .fungi source is NOT a
 
 // ── Increment 2a — FLOW-graph parsing (the governance surface for the GIR lowering) ──────────────
 const FLOW_GATE = [
-  "#gate 0.3",
+  "@version 1.0.0",
   'INTENT "Return one redacted customer record for an authorised caller."',
   "EFFECTS { database.read, audit.write }",
   "PRIVACY deny protected CustomerId -> response.body",
@@ -139,15 +139,21 @@ test("2b GIR-identity: a .gate flow lowers to the SAME signed capability surface
   assert.equal(gFlow.qualifier, pFlow.qualifier, "both are secure flows");
 });
 
-// ── BK-4/A4 (2026-07-08): the pragma VERSION is read + gated (RULES.md R1) ──
-test("gate-parser: bare `#gate` (no version) ⇒ FUNGI-GATELANG-001 refuse (absent version fails closed)", () => {
-  const r = parseGate("#gate\nINTENT: x\nEFFECTS { database.read }\nFLOW:\n  [a] -> [b]\n", "bare.gate");
+// ── BK-4/A4 + Q1 (owner LOCKED 2026-07-08): `@version 1.0.0` REPLACES `#gate`; read + gated ──
+test("gate-parser: the RETIRED `#gate` pragma ⇒ FUNGI-GATELANG-001 refuse with a migration pointer", () => {
+  const r = parseGate("#gate 0.3\nINTENT: x\nEFFECTS { database.read }\nFLOW:\n  [a] -> [b]\n", "old.gate");
+  assert.equal(r.flows.length, 0);
+  assert.ok(r.diagnostics.some((d) => d.code === "FUNGI-GATELANG-001" && /RETIRED/.test(d.message)));
+});
+
+test("gate-parser: bare `@version` (no value) ⇒ FUNGI-GATELANG-001 refuse (absent version fails closed)", () => {
+  const r = parseGate("@version\nINTENT: x\nEFFECTS { database.read }\nFLOW:\n  [a] -> [b]\n", "bare.gate");
   assert.equal(r.flows.length, 0);
   assert.ok(r.diagnostics.some((d) => d.code === "FUNGI-GATELANG-001" && /MISSING/.test(d.message)));
 });
 
-test("gate-parser: a FUTURE `#gate 0.4` ⇒ FUNGI-GATELANG-001 refuse (unknown version never best-effort parsed)", () => {
-  const r = parseGate("#gate 0.4\nINTENT: x\nEFFECTS { database.read }\nFLOW:\n  [a] -> [b]\n", "future.gate");
+test("gate-parser: a FUTURE `@version 2.0.0` ⇒ FUNGI-GATELANG-001 refuse (unknown version never best-effort parsed)", () => {
+  const r = parseGate("@version 2.0.0\nINTENT: x\nEFFECTS { database.read }\nFLOW:\n  [a] -> [b]\n", "future.gate");
   assert.equal(r.flows.length, 0);
   assert.ok(r.diagnostics.some((d) => d.code === "FUNGI-GATELANG-001" && /not supported/.test(d.message)));
 });

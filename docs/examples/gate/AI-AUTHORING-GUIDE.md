@@ -13,7 +13,7 @@ data flows and where it is gated/cut* — not writing statements. Dense compute 
 
 ## Anatomy (in order)
 ```
-#gate 0.3                                  ← version pragma (REQUIRED, first non-blank line)
+@version 1.0.0                             ← version header (REQUIRED, first non-blank line; replaced `#gate` 2026-07-08)
 GATE name(param: Type, ...) -> ReturnType: ← the callable signature (parens, one return type)
   INTENT  "one sentence of purpose"        ← REQUIRED
   EFFECTS { effect.name, ... }             ← REQUIRED (canonical names only)
@@ -104,7 +104,7 @@ An out-of-date model *invents* syntax. These are the traps (all rejected by the 
 - ❌ Name a cut by convention (`[view:fu redact]`) — a cut is ONLY `[name:cut fu op]`.
 
 **DO**
-- ✅ `#gate 0.3` first; exactly one `GATE` per file; end with `END`.
+- ✅ `@version 1.0.0` first; exactly one `GATE` per file; end with `END`.
 - ✅ INTENT + EFFECTS always.
 - ✅ Give every `?` three distinct arms (✓ / × / drain).
 - ✅ Route every sensitive read through a `:cut` before `[+]`.

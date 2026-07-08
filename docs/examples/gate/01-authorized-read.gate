@@ -1,4 +1,4 @@
-#gate 0.3
+@version 1.0.0
 # Pattern: authorised read with PII redaction.
 # Gate the caller (K3), read on the ALLOW arm, cut the protected field, audit, egress.
 GATE getCustomer(caller: CallerId, customerId: CustomerRef) -> CustomerView:
