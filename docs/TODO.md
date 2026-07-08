@@ -21,8 +21,10 @@ Living task list. Authoritative forward view: `../ZTF-Knowledge-Bases/galerina-r
       scanner signed-frozen class · drift auditor prints ceremony scope. ALSO DONE: `.gate` `#gate <int>.<int>` pragma version now READ+gated
       (closed {0.3}, spec R1; fixtures' non-spec `v0.4` fixed). Final: **62/62 · 6,136**. REMAINING W4:
       `.lmanifest` CBOR reader gate (ceremony-coupled — pair with the offline re-sign ceremony).
-- [ ] W5 new syntax: K3 ops (`flip`/`all{}`/`any{}` + A9/A12) · `check`/`fault` · `sealed auto schema`+inject ·
-      deny-only `prefilter` (A8) · taint surface (A2/A11/A17) · alias desugar (positional, not identifier-stealing).
+- [~] W5 new syntax: **W5a DONE `02252fc7`** — Verdict type + `flip`/`all{}`/`any{}` + type-directed `and`/`or`
+      (A9 errors FUNGI-K3-001/002/003; truth tables machine-checked on BOTH tiers, 15/15; empty all{}=UNKNOWN,
+      empty any{}=DENY). W5b next: `check`/`fault` · `sealed auto schema`+inject · deny-only `prefilter` (A8) ·
+      taint surface (A2/A11/A17) · aliases (owner: hard-reserve + codemod renames) · A12 lint.
 - [ ] W6 `scripts/migrate-fungi.mjs` codemod + **H2-a taint flip (owner LOCK: with codemod)** + corpus+`.gate`
       migration + kernel/GIR/compiler rebuild. W7 detectors + `.gate`→GIR→WASM e2e + anti-vacuous deny suite.
 - Deferred (tracked in plan §2): **A18 tenant scope = owner BETA BLOCKER (next package)** · `.hypha` A3/A16 ·
