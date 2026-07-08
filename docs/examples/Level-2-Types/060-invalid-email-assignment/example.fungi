@@ -1,3 +1,4 @@
+@version 1
 /// example: 060-invalid-email-assignment
 /// test_status: stable
 /// level: 2

@@ -1,4 +1,5 @@
-﻿/// example: 367-ai-inference-without-effect
+﻿@version 1
+/// example: 367-ai-inference-without-effect
 /// test_status: stable
 /// level: 7
 /// concept: ai.inference effect must be declared

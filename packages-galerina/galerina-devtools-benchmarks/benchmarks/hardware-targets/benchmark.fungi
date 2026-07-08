@@ -1,3 +1,4 @@
+@version 1
 /// hardware-targets — Float32 vector dot product in Galerina
 ///
 /// Tests: Galerina tree-walker performance on a tight inner loop

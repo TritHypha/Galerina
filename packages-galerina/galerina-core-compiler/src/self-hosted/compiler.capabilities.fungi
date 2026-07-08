@@ -1,3 +1,4 @@
+@version 1
 /// @milestone: Stage-B-Root-Capability
 /// @description: The Galerina compiler declares its own capabilities in Galerina source.
 /// Phase 40: flows now have real executable bodies (not just stubs).

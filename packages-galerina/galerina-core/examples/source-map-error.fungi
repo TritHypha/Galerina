@@ -1,3 +1,4 @@
+@version 1
 pure flow unsafePhotonicRead(path: String) -> Result<Float, Error> {
   compute target photonic {
     fallback cpu

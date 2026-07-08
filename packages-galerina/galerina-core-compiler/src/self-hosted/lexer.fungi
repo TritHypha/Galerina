@@ -1,3 +1,4 @@
+@version 1
 /// @file: lexer.fungi
 /// @purpose: Galerina lexer written in Galerina â€” Phase 16 milestone
 /// @status: executable â€” Phase 12A loops active; Phase 16 adds endLine/endColumn, unicode escapes, depth limits

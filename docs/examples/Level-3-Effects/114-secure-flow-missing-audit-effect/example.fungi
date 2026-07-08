@@ -1,3 +1,4 @@
+@version 1
 /// example: 114-secure-flow-missing-audit-effect
 /// level: 3
 /// concept: secure flow calls AuditLog.write but does not declare audit.write

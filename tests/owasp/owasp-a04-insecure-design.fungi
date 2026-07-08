@@ -1,3 +1,4 @@
+@version 1
 // OWASP A04 — Insecure Design
 // EXPECT: ACCEPT
 //

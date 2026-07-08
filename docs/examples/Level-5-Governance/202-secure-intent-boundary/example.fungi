@@ -1,3 +1,4 @@
+@version 1
 /// example: 202-secure-intent-boundary
 /// level: 5
 /// concept: secure flow with full intent declaration

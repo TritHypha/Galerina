@@ -1,3 +1,4 @@
+@version 1
 ;; TrapSignal — the inbound signal received by the DSS trap handler
 ;; Produced by Wasmtime when an unreachable instruction fires in a guest DWI.
 ;; The trap handler (trap-handler.fungi) converts this into an AuditEvent.

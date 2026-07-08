@@ -1,3 +1,4 @@
+@version 1
 /// example: 162-invalid-audit-log
 /// level: 4
 /// concept: unsafe value reaches audit sink without validation

@@ -1,3 +1,4 @@
+@version 1
 /// example: 406-target-quantum
 /// level: 8
 /// concept: quantum compute target with classical CPU fallback

@@ -1,3 +1,4 @@
+@version 1
 /// example: 010-readable-equality (PROPOSED)
 /// status: proposed - not yet in grammar
 /// concept: readable equality alias

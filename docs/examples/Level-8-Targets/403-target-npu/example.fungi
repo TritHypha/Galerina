@@ -1,3 +1,4 @@
+@version 1
 /// example: 403-target-npu
 /// level: 8
 /// concept: explicit NPU compute target with GPU fallback

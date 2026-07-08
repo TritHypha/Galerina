@@ -1,3 +1,4 @@
+@version 1
 /// example: 463-policy-mismatch
 /// level: 9
 /// concept: declared purpose does not match the template used in the flow body

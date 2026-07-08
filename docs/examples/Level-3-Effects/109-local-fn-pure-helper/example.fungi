@@ -1,3 +1,4 @@
+@version 1
 /// example: 109-local-fn-pure-helper
 /// level: 3
 /// concept: local fn as a pure helper inside a flow

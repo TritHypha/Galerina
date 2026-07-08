@@ -1,3 +1,4 @@
+@version 1
 /// example: 062-invalid-redacted-email
 /// test_status: stable
 /// level: 2

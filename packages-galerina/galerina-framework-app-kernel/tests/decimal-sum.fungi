@@ -1,3 +1,4 @@
+@version 1
 pure flow addDecimal(a: Decimal, b: Decimal) -> Decimal {
   return a + b
 }

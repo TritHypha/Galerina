@@ -1,3 +1,4 @@
+@version 1
 /// example: 209-audit-proof-missing
 /// level: 5
 /// concept: intent requires audit but no audit.write sink used

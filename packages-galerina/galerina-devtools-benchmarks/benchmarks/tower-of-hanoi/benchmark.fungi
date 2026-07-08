@@ -1,3 +1,4 @@
+@version 1
 /// tower-of-hanoi benchmark — Galerina governed runtime
 /// 3-peg Tower of Hanoi with a THREADED move-checksum. Unlike the trivial 2^n-1 closed form, every one of
 /// the 2^n-1 moves is actually executed and folded into a rolling checksum:

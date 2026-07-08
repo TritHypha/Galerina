@@ -1,3 +1,4 @@
+@version 1
 ;; emergency-sm.fungi — Emergency State Machine transitions
 ;; DRCM Phase 5.4 — DSS Supervisor Core (#41)
 ;;

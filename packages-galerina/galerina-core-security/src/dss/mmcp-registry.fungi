@@ -1,3 +1,4 @@
+@version 1
 ;; mmcp-registry.fungi — Memory-Mapped Capability Pointer registry
 ;; DRCM Phase 5.5 (#78)
 ;;

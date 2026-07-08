@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: ACCEPT
 // Pattern 3 — High-Trust Mutation (drcm_stable_v0 + invariant {} LIVE as of DRCM Phase 2)
 // Reference: docs/Knowledge-Bases/galerina-architecture-patterns.md

@@ -1,3 +1,4 @@
+@version 1
 /// example: 461-authority-missing
 /// level: 9
 /// concept: sharing protected data across a trust boundary without an authority block

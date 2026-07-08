@@ -1,3 +1,4 @@
+@version 1
 /// low-memory benchmark — allocation pressure measurement
 ///
 /// Tests: how many heap bytes does each runtime allocate per operation?

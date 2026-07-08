@@ -1,3 +1,4 @@
+@version 1
 /// example: 223-observability
 /// level: 5
 /// concept: contract observability block — trace, measure, count, deny patterns

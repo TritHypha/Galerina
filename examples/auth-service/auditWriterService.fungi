@@ -1,3 +1,4 @@
+@version 1
 /// @service: audit writer — governed audit event ingestion endpoint
 /// @phase: 52
 /// @runtime-component: audit layer (stub — full in Phase 57)

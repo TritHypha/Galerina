@@ -1,3 +1,4 @@
+@version 1
 /// example: 118-filesystem-read-guarded
 /// level: 3
 /// concept: guarded flow with storage.read effect

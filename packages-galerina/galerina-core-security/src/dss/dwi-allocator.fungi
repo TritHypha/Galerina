@@ -1,3 +1,4 @@
+@version 1
 ;; DWI Allocator — DRCM Phase 5 (#40)
 ;; Deterministic WASM Isolate allocation, fuel injection, and lifecycle management.
 ;;

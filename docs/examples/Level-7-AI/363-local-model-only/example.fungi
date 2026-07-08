@@ -1,3 +1,4 @@
+@version 1
 /// example: 363-local-model-only
 /// level: 7
 /// concept: local-only AI classification denying both remote execution and network outbound

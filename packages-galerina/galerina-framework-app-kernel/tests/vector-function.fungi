@@ -1,3 +1,4 @@
+@version 1
 pure vector flow vectorTotal(input: Int) -> Int {
   return input
 }

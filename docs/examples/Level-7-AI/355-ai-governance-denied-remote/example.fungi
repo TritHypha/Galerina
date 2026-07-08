@@ -1,3 +1,4 @@
+@version 1
 /// example: 355-ai-governance-denied-remote
 /// level: 7
 /// concept: AI inference with remote execution denied for patient data governance

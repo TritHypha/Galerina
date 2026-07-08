@@ -1,3 +1,4 @@
+@version 1
 /// example: 453-financial-payment-charge
 /// level: 9
 /// concept: payment governance flow with approved merchant, Money type, and audit

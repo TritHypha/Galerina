@@ -1,3 +1,4 @@
+@version 1
 /// example: 302-compute-deny-remote
 /// level: 6
 /// concept: denying remote execution in a secure credit-scoring flow

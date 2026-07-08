@@ -1,3 +1,4 @@
+@version 1
 ;; dss-supervisor.fungi — Deterministic Security Supervisor Core Loop
 ;; DRCM Phase 5.4 — DSS Supervisor Core (#41)
 ;;

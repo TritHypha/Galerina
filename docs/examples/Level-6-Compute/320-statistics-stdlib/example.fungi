@@ -1,3 +1,4 @@
+@version 1
 /// example: 320-statistics-stdlib
 /// level: 6
 /// concept: pure statistical computation using Array.reduce and map

@@ -1,3 +1,4 @@
+@version 1
 /// example: 316-invalid-tensor-add
 /// level: 6
 /// concept: Tensor arithmetic requires shape compatibility

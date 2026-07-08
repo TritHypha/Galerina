@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: ACCEPT
 // R6 corpus 04 — flow with invariant {} block + trap on violation
 // Exercises: invariant {}, trap keyword, ensure, Int bounds

@@ -1,3 +1,4 @@
+@version 1
 /// classifyPrivateMedicalNote — Apple Silicon sovereign compute example
 ///
 /// Demonstrates: Apple Neural Engine for private on-device AI inference,

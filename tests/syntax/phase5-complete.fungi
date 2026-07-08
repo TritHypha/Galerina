@@ -1,3 +1,4 @@
+@version 1
 /*
  * Phase 5 completion test
  * Tests all Phase 5 features together: step, view(), governed, trap, evict

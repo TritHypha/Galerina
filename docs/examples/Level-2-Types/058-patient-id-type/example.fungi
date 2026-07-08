@@ -1,3 +1,4 @@
+@version 1
 /// example: 058-patient-id-type
 /// level: 2
 /// concept: protected PatientId domain type

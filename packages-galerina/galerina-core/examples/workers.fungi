@@ -1,3 +1,4 @@
+@version 1
 type OrderEvent {
   id: String
   type: String

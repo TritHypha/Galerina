@@ -1,3 +1,4 @@
+@version 1
 /// example: 472-physics-simulation
 /// level: 9
 /// concept: scientific domain — Mass, Force, Energy domain record types, pure kinetic energy calculation

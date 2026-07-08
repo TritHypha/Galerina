@@ -1,3 +1,4 @@
+@version 1
 // Task #90: policy {} State Mutation Governance
 // Demonstrates governed mut variable transitions
 //

@@ -1,3 +1,4 @@
+@version 1
 /// example: 204-remote-execution-denied
 /// level: 5
 /// concept: compute target with remote.execution denied

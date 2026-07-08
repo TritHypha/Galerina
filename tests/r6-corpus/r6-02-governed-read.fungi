@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: ACCEPT
 // R6 corpus 02 — governed flow with database.read effect
 // Exercises: secure qualifier, effects { database.read }, Result return

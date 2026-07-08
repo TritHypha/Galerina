@@ -1,3 +1,4 @@
+@version 1
 /// example: 009-unsafe-let-boundary
 /// level: 1
 /// concept: unsafe let — boundary input

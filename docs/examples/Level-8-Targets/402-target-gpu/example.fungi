@@ -1,3 +1,4 @@
+@version 1
 /// example: 402-target-gpu
 /// level: 8
 /// concept: explicit GPU compute target with CPU fallback

@@ -1,3 +1,4 @@
+@version 1
 /// example: 119-effect-name-invalid
 /// level: 3
 /// concept: broad alias effect name triggers FUNGI-EFFECT-005 warning

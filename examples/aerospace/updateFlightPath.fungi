@@ -1,3 +1,4 @@
+@version 1
 /// updateFlightPath — safety_critical aerospace governance example
 /// Demonstrates: value.classification safety_critical, safety block,
 /// deterministic execution requirement, control boundary audit.

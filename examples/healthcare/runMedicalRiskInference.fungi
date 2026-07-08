@@ -1,3 +1,4 @@
+@version 1
 /// runMedicalRiskInference — Google Axion + TPU + Titanium Audit example
 ///
 /// Demonstrates: Google silicon targets in contract.hardware,

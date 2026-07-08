@@ -1,3 +1,4 @@
+@version 1
 /// example: 357-tensor-model-input-output
 /// level: 7
 /// concept: shape-typed model input and output tensors using a batch dimension

@@ -1,3 +1,4 @@
+@version 1
 // Galerina governed health check endpoint
 // Used by deployment infrastructure to verify the governed runtime is running
 // and the manifest is valid.

@@ -1,3 +1,4 @@
+@version 1
 /// example: 020-invalid-fn-top-level
 /// level: 1
 /// concept: fn cannot be declared at top level

@@ -1,3 +1,4 @@
+@version 1
 /// example: 164-safe-database-write
 /// level: 4
 /// concept: protected value is safe to write to database

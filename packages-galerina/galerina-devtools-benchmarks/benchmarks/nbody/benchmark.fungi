@@ -1,3 +1,4 @@
+@version 1
 /// N-body physics benchmark — pairwise gravitational force (scaled-integer).
 /// Deterministic integer kernel: positions are derived by index math (no arrays),
 /// force ∝ 1/r in 2D using a softened inverse-distance law with G scaled to 1e5.

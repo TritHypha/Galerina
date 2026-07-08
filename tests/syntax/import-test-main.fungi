@@ -1,3 +1,4 @@
+@version 1
 ;; Main file — imports from import-test-lib.fungi
 
 import "./import-test-lib.fungi"

@@ -1,3 +1,4 @@
+@version 1
 /// example: gaming-substrate / 01-physics-step
 /// concept: approximate game physics MAY run on a photonic substrate lane (tolerant + voted)
 /// expected_diagnostics: none

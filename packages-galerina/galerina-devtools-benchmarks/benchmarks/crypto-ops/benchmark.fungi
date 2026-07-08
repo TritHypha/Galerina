@@ -1,3 +1,4 @@
+@version 1
 /// crypto-ops benchmark — demonstrates Galerina crypto effects
 /// Crypto operations require the crypto.verify effect and run on the CPU governed path.
 /// WASM does not handle crypto — it delegates to the host capability.

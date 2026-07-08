@@ -1,3 +1,4 @@
+@version 1
 /// example: 410-adaptive-runtime
 /// level: 8
 /// concept: adaptive runtime block that learns from workload to optimise batching and warmup

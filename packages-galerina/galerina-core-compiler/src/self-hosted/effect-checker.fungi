@@ -1,3 +1,4 @@
+@version 1
 /// @file: effect-checker.fungi
 /// @purpose: Stage B effect checker — declared-vs-used reconciliation (Phase S2)
 /// @phase: 66

@@ -1,3 +1,4 @@
+@version 1
 /// example: 303-compute-gpu-explicit
 /// level: 6
 /// concept: explicit GPU targeting with CPU fallback

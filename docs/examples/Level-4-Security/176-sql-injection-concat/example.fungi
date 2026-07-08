@@ -1,4 +1,5 @@
-﻿/// example: 176-sql-injection-concat
+﻿@version 1
+/// example: 176-sql-injection-concat
 /// level: 4
 /// concept: string taint propagation (SQL injection pattern)
 /// expected_diagnostics: FUNGI-VALUESTATE-004

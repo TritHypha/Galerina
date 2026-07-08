@@ -1,4 +1,5 @@
-﻿/// example: 011-readable-comparison (PROPOSED)
+﻿@version 1
+/// example: 011-readable-comparison (PROPOSED)
 /// concept: readable numeric comparison alias
 /// readable_form: amount is greater than limit
 /// canonical_form: amount > limit

@@ -1,3 +1,4 @@
+@version 1
 ;; P5.3 test: step keyword for cross-boundary DWI calls
 
 pure flow innerComputation(x: Int) -> Int

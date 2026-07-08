@@ -1,3 +1,4 @@
+@version 1
 /// example: 301-compute-target-best
 /// level: 6
 /// concept: compute target selection with ordered preference and fallback

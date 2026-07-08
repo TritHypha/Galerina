@@ -1,3 +1,4 @@
+@version 1
 /// example: 154-validate-email
 /// level: 4
 /// concept: validating unsafe email to protected Email

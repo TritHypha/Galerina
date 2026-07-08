@@ -1,3 +1,4 @@
+@version 1
 /// example: 314-compute-npu-ai-inference
 /// level: 6
 /// concept: full AI text classification flow with NPU targeting and governance

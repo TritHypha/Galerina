@@ -1,3 +1,4 @@
+@version 1
 /// record-allocation benchmark — Galerina governed runtime
 /// Creates N records with integer fields, sums two fields.
 /// Directly measures {__tag,value} object creation overhead.

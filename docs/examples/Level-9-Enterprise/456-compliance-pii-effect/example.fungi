@@ -1,3 +1,4 @@
+@version 1
 /// example: 456-compliance-pii-effect
 /// level: 9
 /// concept: accessing PII without declaring the pii.read effect

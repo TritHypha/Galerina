@@ -1,3 +1,4 @@
+@version 1
 /// example: 369-ai-classification-flow
 /// level: 7
 /// concept: full AI classify flow — ClassifierModel, compute target, protected input, redacted audit

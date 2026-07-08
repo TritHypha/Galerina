@@ -1,3 +1,4 @@
+@version 1
 /// @service: proof graph service — governed proof chain generation
 /// @phase: 59
 /// @runtime-component: proof/attestation layer

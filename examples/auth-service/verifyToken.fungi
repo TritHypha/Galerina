@@ -1,3 +1,4 @@
+@version 1
 type VerifyTokenResult = Result<TokenClaims, TokenError>
 type TokenClaims = record { readonly sub: String readonly exp: Timestamp }
 type TokenError = enum { Expired Invalid Malformed }

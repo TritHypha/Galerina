@@ -1,3 +1,4 @@
+@version 1
 /// example: 361-ai-any-tensor
 /// level: 7
 /// concept: AnyTensor for dynamically loaded models with unknown shape

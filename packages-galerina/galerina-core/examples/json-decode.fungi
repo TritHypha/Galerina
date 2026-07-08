@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: ACCEPT
 // AREA: type-system
 // PURPOSE: typed JSON decode with generics and explicit error propagation

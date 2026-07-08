@@ -1,3 +1,4 @@
+@version 1
 type GetPatientResult = Result<PatientSummary, PatientError>
 type PatientId = Brand<String, "PatientId">
 // patientId in the RESPONSE is a redacted pseudonym, never the raw protected PatientId — the

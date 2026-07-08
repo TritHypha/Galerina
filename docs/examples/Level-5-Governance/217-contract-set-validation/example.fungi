@@ -1,4 +1,5 @@
-﻿/// example: 217-contract-set-validation
+﻿@version 1
+/// example: 217-contract-set-validation
 /// level: 5
 /// concept: contract set use resolution — FUNGI-GOV-011 and FUNGI-GOV-012
 /// expected_diagnostics: FUNGI-GOV-011

@@ -1,3 +1,4 @@
+@version 1
 /// example: 312-money-invalid-cross-currency
 /// test_status: stable
 /// level: 6

@@ -1,3 +1,4 @@
+@version 1
 ;; epilogue-receipt.fungi — Epilogue Receipt generation and verification
 ;; DRCM Phase 6 (#42)
 ;;

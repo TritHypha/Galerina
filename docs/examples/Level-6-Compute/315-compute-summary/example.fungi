@@ -1,3 +1,4 @@
+@version 1
 /// example: 315-compute-summary
 /// level: 6
 /// concept: complete governed AI inference flow with audit, hardware targeting, and deny clause

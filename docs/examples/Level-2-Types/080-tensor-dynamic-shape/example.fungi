@@ -1,3 +1,4 @@
+@version 1
 /// example: 080-tensor-dynamic-shape
 /// level: 2
 /// concept: Tensor<Dtype, DynamicShape>

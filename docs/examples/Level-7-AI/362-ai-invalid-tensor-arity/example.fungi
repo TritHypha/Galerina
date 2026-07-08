@@ -1,3 +1,4 @@
+@version 1
 /// example: 362-ai-invalid-tensor-arity
 /// test_status: stable
 /// level: 7

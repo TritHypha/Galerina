@@ -1,3 +1,4 @@
+@version 1
 // my-custom-api-rest — demo Level-3 protocol-adapter package.
 //
 // A developer authors this package; `galerina build --package <dir>` compiles its

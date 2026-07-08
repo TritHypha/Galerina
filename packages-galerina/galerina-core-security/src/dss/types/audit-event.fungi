@@ -1,3 +1,4 @@
+@version 1
 ;; AuditEvent — Governance-as-Evidence schema (DRCM Phase 5, task #75)
 ;; CBOR Tag 410 — every unreachable trap emits one of these
 ;; "A runtime failure is not a crash — it is structured evidence."

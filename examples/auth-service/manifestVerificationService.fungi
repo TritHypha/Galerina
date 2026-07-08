@@ -1,3 +1,4 @@
+@version 1
 // Phase 51 — Manifest Verification Service (v1.0 RC)
 // The runtime manifest verification endpoint — validates the production deployment contract
 

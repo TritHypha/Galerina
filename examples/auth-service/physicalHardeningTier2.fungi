@@ -1,3 +1,4 @@
+@version 1
 // Tier 2 Physical Hardening — Governed Execution Engine (Deep Trench Isolation)
 // USE CASE: Healthcare record processing, high-value financial APIs, PCI-DSS Tier 1
 // REMINDER: The runtime auto-selects shielding from ValueGraph risk tier.

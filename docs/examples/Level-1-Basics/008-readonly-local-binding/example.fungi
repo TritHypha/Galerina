@@ -1,3 +1,4 @@
+@version 1
 /// example: 008-readonly-local-binding
 /// level: 1
 /// concept: readonly local binding

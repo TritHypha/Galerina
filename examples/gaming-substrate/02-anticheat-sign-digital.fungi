@@ -1,3 +1,4 @@
+@version 1
 /// example: gaming-substrate / 02-anticheat-sign-digital
 /// concept: authoritative score / anti-cheat signing MUST stay on a digital lane (bit-exact crypto)
 /// expected_diagnostics: none

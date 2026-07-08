@@ -1,3 +1,4 @@
+@version 1
 security {
   api_methods {
     allow [GET, POST]

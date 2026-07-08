@@ -1,3 +1,4 @@
+@version 1
 /// example: 359-embedding-with-fallback
 /// level: 7
 /// concept: embedding flow with NPU/GPU preference and CPU fallback

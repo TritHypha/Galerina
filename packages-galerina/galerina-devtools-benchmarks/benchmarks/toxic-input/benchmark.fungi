@@ -1,3 +1,4 @@
+@version 1
 /*
  * Diagnostic: Toxic Input Detection
  * Measures: trap detection speed, AuditEvent completeness

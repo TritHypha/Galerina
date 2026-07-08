@@ -1,3 +1,4 @@
+@version 1
 // Style 1: canonical line comment (TypeScript/JS devs)
 
 ;; Style 2: assembly/Lisp line comment

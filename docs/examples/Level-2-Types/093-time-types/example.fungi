@@ -1,3 +1,4 @@
+@version 1
 /// example: 093-time-types
 /// level: 2
 /// concept: Duration, Timestamp, Duration.ofSeconds, add/subtract

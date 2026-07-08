@@ -1,3 +1,4 @@
+@version 1
 /// example: 115-effect-propagation-through-call
 /// level: 3
 /// concept: effect propagation through a flow call chain

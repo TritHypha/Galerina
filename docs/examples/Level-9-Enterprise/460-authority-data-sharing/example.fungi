@@ -1,3 +1,4 @@
+@version 1
 /// example: 460-authority-data-sharing
 /// level: 9
 /// concept: authority block authorises sharing protected PatientData with an external service

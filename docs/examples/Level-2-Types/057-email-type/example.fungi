@@ -1,3 +1,4 @@
+@version 1
 /// example: 057-email-type
 /// level: 2
 /// concept: protected Email domain type

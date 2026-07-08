@@ -1,3 +1,4 @@
+@version 1
 // Phase 41 — Stage B Compilation Service
 //
 // This is the governed HTTP service that proves Stage B can process Galerina source.

@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: ACCEPT
 // Pattern 6 — Multi-Tier Governed Service (drcm_stable_v0 stable portions)
 // Reference: docs/Knowledge-Bases/galerina-architecture-patterns.md

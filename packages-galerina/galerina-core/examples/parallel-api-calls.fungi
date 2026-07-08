@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: ACCEPT
 // AREA: concurrency
 // PURPOSE: structured await — parallel calls with timeout policy

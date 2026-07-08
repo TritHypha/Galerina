@@ -1,3 +1,4 @@
+@version 1
 /// example: 451-healthcare-patient-create
 /// level: 9
 /// concept: healthcare PII governance pattern — create patient record with NHS number, protected types, and audit

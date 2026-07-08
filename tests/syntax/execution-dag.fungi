@@ -1,3 +1,4 @@
+@version 1
 ;; ExecutionDAG test — CBOR Tag 414
 
 pure flow helperA(x: Int) -> Int

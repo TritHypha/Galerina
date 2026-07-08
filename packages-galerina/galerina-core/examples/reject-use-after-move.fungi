@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: REJECT
 // ERROR: FUNGI-MEMORY-001
 // AREA: memory

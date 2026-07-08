@@ -1,3 +1,4 @@
+@version 1
 /// @file: parser.fungi
 /// @purpose: Galerina parser â€” Milestone 2: flow declaration headers + body stmts
 /// @status: Stage B milestone â€” parses pure/guarded/secure/flow declarations + body stmts

@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: ACCEPT
 // AREA: memory
 // PURPOSE: resource is moved to a handler; handler holds sole ownership and performs cleanup

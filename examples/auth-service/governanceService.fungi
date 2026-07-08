@@ -1,3 +1,4 @@
+@version 1
 // Phase 43 — Governance Verification Service
 //
 // Verifies governance metadata: maps effect qualifiers to governance levels

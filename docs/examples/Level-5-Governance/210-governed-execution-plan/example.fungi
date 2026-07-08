@@ -1,3 +1,4 @@
+@version 1
 /// example: 210-governed-execution-plan
 /// level: 5
 /// concept: full governed execution plan for a ML inference flow

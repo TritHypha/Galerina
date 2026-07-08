@@ -1,3 +1,4 @@
+@version 1
 // Negative test: child policy exceeds parent — should fire FUNGI-INHERIT-002
 
 guard FinanceDomainGuard {

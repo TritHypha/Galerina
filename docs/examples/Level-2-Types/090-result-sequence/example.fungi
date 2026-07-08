@@ -1,3 +1,4 @@
+@version 1
 /// example: 090-result-sequence
 /// level: 2
 /// concept: Result.sequence converts Array<Result<T,E>> to Result<Array<T>, E>

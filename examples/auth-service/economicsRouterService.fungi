@@ -1,3 +1,4 @@
+@version 1
 /// @service: economics router service — cost-based routing decisions
 /// @phase: 59
 

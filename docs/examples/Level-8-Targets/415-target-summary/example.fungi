@@ -1,3 +1,4 @@
+@version 1
 /// example: 415-target-summary
 /// level: 8
 /// concept: complete compute target governance — prefer, deny, fallback, adaptive runtime, and audit

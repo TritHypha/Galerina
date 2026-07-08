@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: ACCEPT
 // AREA: basic
 // PURPOSE: Result type with enum errors and exhaustive match

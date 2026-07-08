@@ -1,3 +1,4 @@
+@version 1
 // Phase 44 — Audit Chain Service
 //
 // Constructs and validates audit chain entries for the governed runtime.

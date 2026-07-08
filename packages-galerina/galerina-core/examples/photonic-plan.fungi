@@ -1,3 +1,4 @@
+@version 1
 pure flow opticalSignalScore(input: Vector<8, Float32>) -> Vector<8, Float32> {
   compute target photonic {
     fallback gpu

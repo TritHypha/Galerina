@@ -1,3 +1,4 @@
+@version 1
 // galerina-api-protocol-rest — reference REST protocol adapter (Level-3 fusable package).
 //
 // A developer authors this package; `galerina build --package <dir>` compiles its

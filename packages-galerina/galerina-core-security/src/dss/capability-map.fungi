@@ -1,3 +1,4 @@
+@version 1
 ;; capability-map.fungi — SystemCapabilityType → V_DPM bit mapping
 ;; DRCM Phase 5.4 — DSS Supervisor Core (#41)
 ;;

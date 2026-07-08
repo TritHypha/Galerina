@@ -1,3 +1,4 @@
+@version 1
 /// example: 117-effectful-operation-in-pure-flow
 /// level: 3
 /// concept: storage.read in a pure flow is forbidden

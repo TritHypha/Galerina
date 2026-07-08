@@ -1,3 +1,4 @@
+@version 1
 /// example: 103-guarded-network-outbound
 /// level: 3
 /// concept: guarded flow declaring network.outbound effect

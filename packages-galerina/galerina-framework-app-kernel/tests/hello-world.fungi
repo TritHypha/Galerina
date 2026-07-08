@@ -1,3 +1,4 @@
+@version 1
 secure flow main() -> Result<Void, Error> {
   console.log("hello from Galerina app kernel test")
   return Ok()

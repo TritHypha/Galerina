@@ -1,3 +1,4 @@
+@version 1
 /// call-chain benchmark — Galerina governed runtime
 /// Imitates an OOP call stack: controller → service.method() → util function.
 /// In Galerina every layer is a flow, so this measures flow-call DISPATCH overhead

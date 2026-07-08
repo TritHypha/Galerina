@@ -1,3 +1,4 @@
+@version 1
 ;; payment-stub.fungi — Stub plugin for Phase 5 completion test
 ;; Simulates a payment gateway assimilated into the DSS hot pool.
 

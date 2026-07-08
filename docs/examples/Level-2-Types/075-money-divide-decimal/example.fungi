@@ -1,3 +1,4 @@
+@version 1
 /// example: 075-money-divide-decimal
 /// level: 2
 /// concept: Money<GBP> divided by Decimal

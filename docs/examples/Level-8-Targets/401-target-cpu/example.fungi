@@ -1,3 +1,4 @@
+@version 1
 /// example: 401-target-cpu
 /// level: 8
 /// concept: explicit CPU compute target

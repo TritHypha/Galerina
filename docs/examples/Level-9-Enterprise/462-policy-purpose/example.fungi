@@ -1,3 +1,4 @@
+@version 1
 /// example: 462-policy-purpose
 /// level: 9
 /// concept: policy block declares the permitted purpose for data use in a communication flow

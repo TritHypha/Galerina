@@ -1,3 +1,4 @@
+@version 1
 /// example: 107-pure-flow-calls-effectful-flow
 /// test_status: stable
 /// level: 3

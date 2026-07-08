@@ -1,3 +1,4 @@
+@version 1
 /// example: gaming-substrate / 03-anticheat-sign-photonic-WRONG
 /// concept: WRONG — crypto on a photonic lane is denied; this is the category error to avoid
 /// expected_diagnostics: FUNGI-SUBSTRATE-001

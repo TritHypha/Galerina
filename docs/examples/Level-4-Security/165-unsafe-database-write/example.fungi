@@ -1,3 +1,4 @@
+@version 1
 /// example: 165-unsafe-database-write
 /// level: 4
 /// concept: unsafe value cannot be written to a database sink

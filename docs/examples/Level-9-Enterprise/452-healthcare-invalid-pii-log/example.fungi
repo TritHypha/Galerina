@@ -1,3 +1,4 @@
+@version 1
 /// example: 452-healthcare-invalid-pii-log
 /// test_status: stable
 /// level: 9

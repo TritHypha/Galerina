@@ -1,3 +1,4 @@
+@version 1
 /// example: 351-embedding-flow
 /// level: 7
 /// concept: basic AI embedding flow returning a typed tensor

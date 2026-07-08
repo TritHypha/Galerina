@@ -1,3 +1,4 @@
+@version 1
 /// example: 102-guarded-database-write
 /// level: 3
 /// concept: guarded flow declaring database.write effect

@@ -1,3 +1,4 @@
+@version 1
 /// example: 318-compute-hint-missing
 /// level: 6
 /// concept: ai.inference without compute target preference

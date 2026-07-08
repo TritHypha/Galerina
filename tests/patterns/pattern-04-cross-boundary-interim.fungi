@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: ACCEPT
 // Pattern 4 — Cross-Boundary Workflow, Interim BoundaryProxy (drcm_stable_v0)
 // Reference: docs/Knowledge-Bases/galerina-architecture-patterns.md

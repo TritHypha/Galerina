@@ -1,3 +1,4 @@
+@version 1
 /// example: 205-remote-execution-violation
 /// level: 5
 /// concept: compute target remote violates governance policy

@@ -1,3 +1,4 @@
+@version 1
 /* Assimilate plugin test — Hot-Code Residency directive */
 
 import plugin assimilate "./plugins/payments.fungi" as Pay {

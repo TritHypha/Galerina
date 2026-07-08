@@ -1,3 +1,4 @@
+@version 1
 /// example: 212-policy-purpose-mismatch
 /// level: 5
 /// concept: declared purpose does not match observed template use

@@ -1,3 +1,4 @@
+@version 1
 /// planSatelliteManeuver — mission_critical aerospace governance example
 /// Demonstrates: value.classification mission_critical, economics block
 /// alongside safety block, WASM preferred execution, orbital constraints.

@@ -1,3 +1,4 @@
+@version 1
 /// example: 113-secure-flow-with-effects
 /// level: 3
 /// concept: secure flow with full effects pattern

@@ -1,3 +1,4 @@
+@version 1
 /// example: 171-protected-console-log
 /// level: 4
 /// concept: secret value sent to console sink is forbidden

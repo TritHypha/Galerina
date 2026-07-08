@@ -1,3 +1,4 @@
+@version 1
 /// example: 413-target-quantum-simulation
 /// level: 8
 /// concept: quantum preference with GPU simulation and CPU fallback

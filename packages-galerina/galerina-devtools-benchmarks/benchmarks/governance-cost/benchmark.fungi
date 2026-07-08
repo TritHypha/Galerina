@@ -1,3 +1,4 @@
+@version 1
 /// governance-cost — Measures governed vs manifest execution overhead
 ///
 /// Purpose: Demonstrate the cost of governance (capability checking, audit

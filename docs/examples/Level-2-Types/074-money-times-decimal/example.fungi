@@ -1,3 +1,4 @@
+@version 1
 /// example: 074-money-times-decimal
 /// level: 2
 /// concept: Money<GBP> multiplied by Decimal

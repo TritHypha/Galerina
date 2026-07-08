@@ -1,3 +1,4 @@
+@version 1
 /// example: 307-vector-type
 /// level: 6
 /// concept: fixed-length vector type for embeddings

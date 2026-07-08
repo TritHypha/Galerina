@@ -1,3 +1,4 @@
+@version 1
 /// processFlightTelemetry — ARM SVE2 + MTE + PAC + Realm Isolation example
 ///
 /// Demonstrates: ARM security features in contract.hardware,

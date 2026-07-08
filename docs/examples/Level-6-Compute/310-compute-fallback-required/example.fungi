@@ -1,3 +1,4 @@
+@version 1
 /// example: 310-compute-fallback-required
 /// level: 6
 /// concept: mandatory fallback declaration when targeting npu or gpu

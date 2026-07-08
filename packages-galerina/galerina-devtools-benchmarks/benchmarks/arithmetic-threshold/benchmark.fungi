@@ -1,3 +1,4 @@
+@version 1
 /// arithmetic-threshold benchmark — Galerina governed runtime
 /// SAME algorithm as node.mjs and python.py v2:
 ///   double-add per cycle + modular-multiply + XOR checksum

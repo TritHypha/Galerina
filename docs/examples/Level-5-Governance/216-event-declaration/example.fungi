@@ -1,3 +1,4 @@
+@version 1
 /// example: 216-event-declaration
 /// level: 5
 /// concept: global event declaration + flow emission + FUNGI-EVENT-001

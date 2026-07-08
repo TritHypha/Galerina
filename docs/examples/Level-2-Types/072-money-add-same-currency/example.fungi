@@ -1,3 +1,4 @@
+@version 1
 /// example: 072-money-add-same-currency
 /// level: 2
 /// concept: Money<GBP> addition with same currency

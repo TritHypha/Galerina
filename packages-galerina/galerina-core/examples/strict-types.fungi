@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: ACCEPT
 // AREA: basic
 // PURPOSE: type aliases, record declaration, and typed field access

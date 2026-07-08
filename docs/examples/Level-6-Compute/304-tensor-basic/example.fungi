@@ -1,3 +1,4 @@
+@version 1
 /// example: 304-tensor-basic
 /// level: 6
 /// concept: tensor shape encoded in the type signature

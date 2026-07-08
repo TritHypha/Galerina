@@ -1,3 +1,4 @@
+@version 1
 /// example: 201-intent-basic
 /// level: 5
 /// concept: intent declaration on a guarded flow

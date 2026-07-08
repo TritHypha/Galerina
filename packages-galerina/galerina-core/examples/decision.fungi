@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: ACCEPT
 // AREA: basic
 // PURPOSE: multi-variant enum with exhaustive match on all cases

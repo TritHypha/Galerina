@@ -1,3 +1,4 @@
+@version 1
 /// @service: effect checker — validates declared effects match observed effects
 /// @phase: 57
 /// @runtime-component: effect checking layer (stub — full in Phase 60)

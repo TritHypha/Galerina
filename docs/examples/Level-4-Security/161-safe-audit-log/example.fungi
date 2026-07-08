@@ -1,3 +1,4 @@
+@version 1
 /// example: 161-safe-audit-log
 /// level: 4
 /// concept: safe audit log write with redacted value

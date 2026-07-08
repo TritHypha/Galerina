@@ -1,3 +1,4 @@
+@version 1
 /// example: 409-target-deny-list
 /// level: 8
 /// concept: multiple denied target categories in a single deny clause

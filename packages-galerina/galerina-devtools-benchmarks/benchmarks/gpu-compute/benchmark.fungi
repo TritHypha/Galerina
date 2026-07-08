@@ -1,3 +1,4 @@
+@version 1
 /// gpu-compute benchmark — parallel map-reduce kernel
 ///
 /// This is a GPU-SHAPED workload: a per-element kernel f(i) applied across a

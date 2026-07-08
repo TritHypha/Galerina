@@ -1,3 +1,4 @@
+@version 1
 /*
  * Diagnostic: Governance Violation Detection
  * Measures: V_DPM trap latency, AuditEvent trail fidelity

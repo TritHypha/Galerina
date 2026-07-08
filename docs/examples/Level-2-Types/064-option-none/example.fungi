@@ -1,3 +1,4 @@
+@version 1
 /// example: 064-option-none
 /// level: 2
 /// concept: Option<T> with None value

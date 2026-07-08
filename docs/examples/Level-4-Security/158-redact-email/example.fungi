@@ -1,3 +1,4 @@
+@version 1
 /// example: 158-redact-email
 /// level: 4
 /// concept: redact() converts protected Email to redacted Email

@@ -1,3 +1,4 @@
+@version 1
 /// example: 221-timeouts-retries
 /// level: 5
 /// concept: contract timeouts and retries blocks

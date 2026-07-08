@@ -1,3 +1,4 @@
+@version 1
 job ProcessVideoFile {
   input videoId: VideoId
   queue "video_jobs"

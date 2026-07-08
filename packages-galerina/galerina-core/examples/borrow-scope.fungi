@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: ACCEPT
 // AREA: memory
 // PURPOSE: scoped borrow keeps owner valid after borrow ends

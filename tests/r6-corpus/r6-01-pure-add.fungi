@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: ACCEPT
 // R6 corpus 01 — pure flow, gauss sum (simplest Stage A == Stage B parity gate)
 // Exercises: pure qualifier, Int arithmetic, return

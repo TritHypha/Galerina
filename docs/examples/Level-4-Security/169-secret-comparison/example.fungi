@@ -1,3 +1,4 @@
+@version 1
 /// example: 169-secret-comparison
 /// level: 4
 /// concept: direct equality comparison on secrets is forbidden

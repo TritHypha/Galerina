@@ -1,3 +1,4 @@
+@version 1
 // Tier 1 Physical Hardening — Sovereign Core (Active Shielding Mesh)
 // USE CASE: Military, central bank settlement, intelligence-grade crypto
 // REMINDER: The runtime auto-selects shielding from ValueGraph risk tier.

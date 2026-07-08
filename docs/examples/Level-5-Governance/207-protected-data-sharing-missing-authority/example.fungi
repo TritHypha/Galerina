@@ -1,4 +1,5 @@
-﻿/// example: 207-protected-data-sharing-missing-authority
+﻿@version 1
+/// example: 207-protected-data-sharing-missing-authority
 /// test_status: stable
 /// level: 5
 /// concept: sending protected data externally without authority block

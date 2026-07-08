@@ -1,3 +1,4 @@
+@version 1
 // Standard Production Flow — cyber_physical_hardening AUTO-SELECTED by runtime
 //
 // This is the CORRECT pattern for the vast majority of flows.

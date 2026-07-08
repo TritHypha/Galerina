@@ -1,3 +1,4 @@
+@version 1
 // Phase 46 — Type Registry Service
 //
 // Resolves type names against the Galerina built-in type registry.

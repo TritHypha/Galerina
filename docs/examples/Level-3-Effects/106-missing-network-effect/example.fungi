@@ -1,3 +1,4 @@
+@version 1
 /// example: 106-missing-network-effect
 /// level: 3
 /// concept: undeclared network.outbound effect

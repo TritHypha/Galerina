@@ -1,3 +1,4 @@
+@version 1
 /// example: 353-protected-ai-input
 /// level: 7
 /// concept: protected PII validated and passed through an AI risk model with redacted audit

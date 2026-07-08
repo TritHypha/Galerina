@@ -1,3 +1,4 @@
+@version 1
 /// example: 412-target-photonic-with-fallback
 /// level: 8
 /// concept: photonic preference with full classical fallback chain

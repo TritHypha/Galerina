@@ -1,3 +1,4 @@
+@version 1
 ;; trap-handler.fungi — DSS.wasm Trap Handler (DRCM Phase 5, task #76)
 ;; Converts raw Wasmtime TrapSignal into structured AuditEvent (CBOR Tag 410).
 ;;

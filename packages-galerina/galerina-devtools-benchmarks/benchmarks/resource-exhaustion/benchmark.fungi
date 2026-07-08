@@ -1,3 +1,4 @@
+@version 1
 /*
  * Diagnostic: Resource Exhaustion Detection
  * Measures: limit enforcement speed, recovery after boundary hit

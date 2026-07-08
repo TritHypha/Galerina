@@ -1,3 +1,4 @@
+@version 1
 /// example: 227-process-spawn-governance
 /// level: 5
 /// concept: process.spawn declared effect — correct governance of background task spawning

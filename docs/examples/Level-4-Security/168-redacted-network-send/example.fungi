@@ -1,3 +1,4 @@
+@version 1
 /// example: 168-redacted-network-send
 /// level: 4
 /// concept: redacted value is safe to send to audit endpoints

@@ -1,3 +1,4 @@
+@version 1
 /// @service: stdlib core reference -- demonstrates Galerina stdlib pure functions
 /// @phase: 53
 /// @runtime-component: stdlib documentation + runtime pure flow coverage

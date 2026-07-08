@@ -1,3 +1,4 @@
+@version 1
 /// example: 087-protected-email-audit
 /// level: 2
 /// concept: full protected -> redacted -> audit pattern

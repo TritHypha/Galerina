@@ -1,3 +1,4 @@
+@version 1
 /// example: 159-redact-patient-id
 /// level: 4
 /// concept: redact() converts protected PatientId to redacted PatientId

@@ -1,3 +1,4 @@
+@version 1
 /// example: 470-contract-healthcare-search
 /// level: 9
 /// concept: healthcare patient search with complete privacy, observability, errors, and context contract sections

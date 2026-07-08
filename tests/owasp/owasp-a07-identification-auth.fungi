@@ -1,3 +1,4 @@
+@version 1
 // OWASP A07 — Identification and Authentication Failures
 // EXPECT: ACCEPT
 //

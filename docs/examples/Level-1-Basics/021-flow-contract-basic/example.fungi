@@ -1,3 +1,4 @@
+@version 1
 /// example: 021-flow-contract-basic
 /// level: 1
 /// concept: flow contract block with types, intent, and events

@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: ACCEPT
 // Pattern 10 — Verify-Before-Decrypt Key-Release Gate (drcm_stable_v0)
 // Reference: docs/Knowledge-Bases/galerina-rd-adoption-2026-06-16.md (U1 — adopted from the tri-encryption R&D)

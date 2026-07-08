@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: ACCEPT
 // R6 corpus 05 — flow with full contract: intent, effects, invariant, resilience, guard
 // Exercises: secure qualifier, effects { database.write audit.write }, invariant {}, resilience {}

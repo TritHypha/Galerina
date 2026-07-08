@@ -1,3 +1,4 @@
+@version 1
 // Policy hierarchy test — task #72
 
 guard FinanceDomainGuard {

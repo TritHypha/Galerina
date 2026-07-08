@@ -1,3 +1,4 @@
+@version 1
 /// example: 071-money-gbp
 /// level: 2
 /// concept: Money<GBP> type

@@ -1,3 +1,4 @@
+@version 1
 /// example: 079-tensor-basic
 /// level: 2
 /// concept: Tensor<Dtype, Shape> with static shape

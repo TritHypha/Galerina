@@ -1,3 +1,4 @@
+@version 1
 /// @file: gir-emitter.fungi
 /// @purpose: Stage B GIR emitter — expression-level subset, executing (Phase S3)
 /// @phase: 68

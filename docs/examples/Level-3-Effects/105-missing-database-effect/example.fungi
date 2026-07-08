@@ -1,3 +1,4 @@
+@version 1
 /// example: 105-missing-database-effect
 /// level: 3
 /// concept: undeclared database.write effect

@@ -1,3 +1,4 @@
+@version 1
 /// example: 088-array-range
 /// level: 2
 /// concept: Array.range static constructor

@@ -1,4 +1,5 @@
-﻿/// example: 466-pii-without-pii-effect
+﻿@version 1
+/// example: 466-pii-without-pii-effect
 /// test_status: stable
 /// level: 9
 /// concept: PII access requires pii.read effect

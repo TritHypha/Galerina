@@ -1,3 +1,4 @@
+@version 1
 /// example: 153-environment-boundary
 /// level: 4
 /// concept: environment variables enter as unsafe

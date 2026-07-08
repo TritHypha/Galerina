@@ -1,3 +1,4 @@
+@version 1
 governed floor_3 flow validateAmount(amount: Int, maxLimit: Int) -> Bool
 contract {
   intent "Validate amount is within governance limits"

@@ -1,3 +1,4 @@
+@version 1
 /// example: 108-guarded-flow-calls-effectful-flow
 /// level: 3
 /// concept: guarded flow can call effectful flow when it declares the same effects

@@ -1,3 +1,4 @@
+@version 1
 /// example: 110-local-fn-uses-parent-effect
 /// level: 3
 /// concept: local fn may use effects declared by the containing flow

@@ -1,3 +1,4 @@
+@version 1
 /// example: 319-money-times-decimal
 /// level: 6
 /// concept: Money<C> * Decimal is valid scaling

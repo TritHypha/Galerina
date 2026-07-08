@@ -1,3 +1,4 @@
+@version 1
 /*
  * Diagnostic Benchmark Suite — Governance Fidelity Tests
  * Measures: trap detection, AuditEvent completeness, recovery time, audit overhead

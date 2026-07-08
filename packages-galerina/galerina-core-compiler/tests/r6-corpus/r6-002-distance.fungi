@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: ACCEPT
 // R6 corpus 002 — R2: records (field access on a record param)
 record Point {

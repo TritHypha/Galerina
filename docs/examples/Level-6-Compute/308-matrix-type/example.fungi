@@ -1,3 +1,4 @@
+@version 1
 /// example: 308-matrix-type
 /// level: 6
 /// concept: matrix type for weight tensors

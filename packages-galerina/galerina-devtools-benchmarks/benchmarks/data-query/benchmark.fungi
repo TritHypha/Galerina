@@ -1,3 +1,4 @@
+@version 1
 /// data-query benchmark — Galerina version of SQL-like data filtering.
 /// In Galerina, all query inputs are Tainted<String> until validated.
 /// This stub shows how a governed query pipeline would be structured.

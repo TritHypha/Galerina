@@ -1,3 +1,4 @@
+@version 1
 // Phase 26B+ / DRCM Phase 2 - Sovereign Financial Transaction
 // Demonstrates: cyber_physical_hardening {} (Tier 1 ASIC shielding)
 //               invariant {} — first real-world contract with WAT assertion gates

@@ -1,3 +1,4 @@
+@version 1
 // App.fungi — composition root for galerina-framework-example-app.
 //
 // flow main() is the entry the host App Kernel invokes AFTER admission (the Kernel
@@ -13,7 +14,7 @@
 //   - Deny-by-default: this entry is `pure` with NO `effects {}` block, so it cannot
 //     reach the network, storage, secrets, the database, or inference. Opt into a
 //     capability by adding it to a flow's effects AND App.manifest's `capabilities`;
-//     the build folds that into the SIGNED .lmanifest fuse{} block, never a .tmf.
+//     the build folds that into the SIGNED .lmanifest fuse{} block, never a .spore.
 //   - Fail-closed: the match keeps its mandatory `_ =>` wildcard (FUNGI-TYPE-023) — an
 //     unrecognised state exits non-zero, never falls through.
 pure flow main() -> Int

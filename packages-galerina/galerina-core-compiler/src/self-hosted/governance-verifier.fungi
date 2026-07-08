@@ -1,3 +1,4 @@
+@version 1
 /// @file: governance-verifier.fungi
 /// @purpose: Stage B governance verifier — real subset, executing
 /// @phase: 67

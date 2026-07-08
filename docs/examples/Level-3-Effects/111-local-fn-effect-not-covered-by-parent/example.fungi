@@ -1,3 +1,4 @@
+@version 1
 /// example: 111-local-fn-effect-not-covered-by-parent
 /// level: 3
 /// concept: local fn cannot use effects not declared by the containing flow

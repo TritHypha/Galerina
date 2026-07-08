@@ -1,3 +1,4 @@
+@version 1
 /// example: 354-ai-batch-inference
 /// level: 7
 /// concept: batch AI inference over an array of inputs

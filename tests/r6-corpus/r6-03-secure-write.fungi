@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: ACCEPT
 // R6 corpus 03 — secure flow with database.write + audit.write
 // Exercises: secure qualifier, effects { database.write audit.write }, AuditLog.write

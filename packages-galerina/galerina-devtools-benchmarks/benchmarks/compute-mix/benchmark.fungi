@@ -1,3 +1,4 @@
+@version 1
 /// compute-mix benchmark — Galerina governed runtime
 /// SAME algorithm as node.mjs and python.py v2:
 ///   2x LCG + 2x xorshift mix + 4-way branch (no float sqrt — Galerina Math.sqrt pending)

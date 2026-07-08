@@ -1,3 +1,4 @@
+@version 1
 /// @service: route dispatcher -- governs HTTP routing decisions
 /// @phase: 54
 /// @runtime-component: HTTP route dispatch layer (the 50% Runtime-in-Galerina milestone)

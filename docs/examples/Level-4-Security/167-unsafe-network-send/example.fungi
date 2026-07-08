@@ -1,3 +1,4 @@
+@version 1
 /// example: 167-unsafe-network-send
 /// level: 4
 /// concept: unsafe value crossing a trust boundary via network

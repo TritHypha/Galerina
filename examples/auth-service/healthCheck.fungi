@@ -1,3 +1,4 @@
+@version 1
 /// @service: health check — GET /health
 /// @phase: 41
 /// @runtime-pct: 27

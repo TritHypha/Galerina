@@ -1,3 +1,4 @@
+@version 1
 /// collection-pipeline benchmark — Galerina governed runtime
 /// filter(isEven) -> map(*2) -> sum over integers 0..9999
 /// Implemented as a while loop because filter/map/reduce chaining

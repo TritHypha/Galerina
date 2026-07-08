@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: ACCEPT
 // AREA: type-system
 // PURPOSE: Tri enum with pure flow and guard-clause match

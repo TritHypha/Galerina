@@ -1,3 +1,4 @@
+@version 1
 /// example: 101-pure-no-effects
 /// level: 3
 /// concept: pure flow has no effects

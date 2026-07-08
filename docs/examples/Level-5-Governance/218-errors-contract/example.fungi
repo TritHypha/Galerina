@@ -1,3 +1,4 @@
+@version 1
 /// example: 218-errors-contract
 /// level: 5
 /// concept: contract errors block — returns, map, expose, redact, audit

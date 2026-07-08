@@ -1,3 +1,4 @@
+@version 1
 /// example: 208-audit-proof-required
 /// level: 5
 /// concept: delete flow with full audit evidence

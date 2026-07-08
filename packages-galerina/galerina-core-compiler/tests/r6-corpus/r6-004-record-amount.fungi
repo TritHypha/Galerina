@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: ACCEPT
 // R6 corpus 004 — R4: effects{} block + member call (audit)
 secure flow recordAmount(amount: Int) -> Result<Int, String>

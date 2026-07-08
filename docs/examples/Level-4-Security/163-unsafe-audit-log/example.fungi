@@ -1,3 +1,4 @@
+@version 1
 /// example: 163-unsafe-audit-log
 /// level: 4
 /// concept: passing unsafe value to audit sink

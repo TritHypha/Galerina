@@ -1,3 +1,4 @@
+@version 1
 /// example: 170-constant-time-comparison
 /// level: 4
 /// concept: constantTimeEquals for safe secret comparison

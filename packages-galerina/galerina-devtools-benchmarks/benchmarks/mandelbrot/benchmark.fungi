@@ -1,3 +1,4 @@
+@version 1
 /// Mandelbrot escape-time benchmark (Computer Language Benchmarks Game) — scaled-integer.
 /// Deterministic integer kernel over a 128×128 grid: for each pixel (px,py) it maps to a
 /// complex constant c = cr + ci·i (fixed-point, ×SCALE) and counts escape iterations of

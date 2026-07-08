@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: ACCEPT
 // AREA: type-system
 // PURPOSE: explicit governed contract with database write and audit evidence

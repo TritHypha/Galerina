@@ -1,3 +1,4 @@
+@version 1
 /// example: 066-result-success
 /// level: 2
 /// concept: Result<T,E> Ok variant

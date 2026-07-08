@@ -1,3 +1,4 @@
+@version 1
 /*
  * Validation utilities — imported by multi-file-import.fungi
  * Pure functions with no side effects — safe to import into any context.

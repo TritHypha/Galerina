@@ -1,4 +1,5 @@
-﻿/// example: 467-protected-response-body
+﻿@version 1
+/// example: 467-protected-response-body
 /// test_status: stable
 /// level: 9
 /// concept: Protected value in response body requires policy

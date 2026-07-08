@@ -1,3 +1,4 @@
+@version 1
 /// example: 455-financial-money-calculation
 /// level: 9
 /// concept: financial tax calculation using Money and Decimal

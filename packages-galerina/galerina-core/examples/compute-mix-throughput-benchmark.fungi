@@ -1,3 +1,4 @@
+@version 1
 /// Harder benchmark v2:
 /// Per operation: 2 LCG steps, 2 xorshift mixing rounds,
 /// float sqrt, float-to-int conversion, 4-way conditional branch.

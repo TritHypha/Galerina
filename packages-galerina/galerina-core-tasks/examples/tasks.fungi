@@ -1,3 +1,4 @@
+@version 1
 task generateReports {
   effects [filesystem, reports]
 

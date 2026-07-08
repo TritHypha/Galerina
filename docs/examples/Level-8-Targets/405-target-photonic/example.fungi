@@ -1,3 +1,4 @@
+@version 1
 /// example: 405-target-photonic
 /// level: 8
 /// concept: photonic (optical) compute target with GPU fallback

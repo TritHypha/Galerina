@@ -1,3 +1,4 @@
+@version 1
 /// example: 313-decimal-precision
 /// level: 6
 /// concept: dividing Money by a Decimal value for precise splitting

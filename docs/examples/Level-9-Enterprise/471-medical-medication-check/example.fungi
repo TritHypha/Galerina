@@ -1,3 +1,4 @@
+@version 1
 /// example: 471-medical-medication-check
 /// level: 9
 /// concept: medical domain — record types Patient and Medication, interaction validation pattern

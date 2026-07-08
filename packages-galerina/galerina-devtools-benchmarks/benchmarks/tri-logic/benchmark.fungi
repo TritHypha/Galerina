@@ -1,3 +1,4 @@
+@version 1
 /// tri-logic benchmark — Kleene ternary logic using the min/max equivalence.
 /// True=1, False=-1, Unknown=0 (Int8 encoding).
 ///

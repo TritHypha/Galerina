@@ -1,3 +1,4 @@
+@version 1
 /// example: 411-deterministic-runtime
 /// level: 8
 /// concept: deterministic runtime for regulated environments requiring identical execution planning

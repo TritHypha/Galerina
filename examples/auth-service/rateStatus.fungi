@@ -1,3 +1,4 @@
+@version 1
 /// @service: rate limit status — GET /rate-status
 /// @phase: 41
 

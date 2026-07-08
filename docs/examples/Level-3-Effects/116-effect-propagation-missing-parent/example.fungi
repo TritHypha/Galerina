@@ -1,3 +1,4 @@
+@version 1
 /// example: 116-effect-propagation-missing-parent
 /// level: 3
 /// concept: caller missing effect required by callee

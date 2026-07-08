@@ -1,3 +1,4 @@
+@version 1
 secure flow responsePayload() -> Json {
   return {
     "items": [

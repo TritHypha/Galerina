@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: ACCEPT
 // AREA: basic
 // PURPOSE: simplest possible flow — print and return Ok

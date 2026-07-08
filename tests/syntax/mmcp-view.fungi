@@ -1,3 +1,4 @@
+@version 1
 ;; P5.5 test: view() MMCP capability-masked pointer enforcement
 
 secure flow accessSecretData(key: String) -> String

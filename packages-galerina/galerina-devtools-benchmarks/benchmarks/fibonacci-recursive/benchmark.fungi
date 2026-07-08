@@ -1,3 +1,4 @@
+@version 1
 /// fibonacci-recursive benchmark — Galerina governed runtime
 /// Naive recursive Fibonacci — no memoization.
 /// Tests recursive flow call overhead (each call allocates a stack frame + tagged values).

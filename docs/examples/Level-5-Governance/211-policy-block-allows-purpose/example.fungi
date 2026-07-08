@@ -1,3 +1,4 @@
+@version 1
 /// example: 211-policy-block-allows-purpose
 /// level: 5
 /// concept: policy block declaring allowed purpose for data sharing

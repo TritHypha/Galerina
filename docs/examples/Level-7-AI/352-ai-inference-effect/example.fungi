@@ -1,4 +1,5 @@
-﻿/// example: 352-ai-inference-effect
+﻿@version 1
+/// example: 352-ai-inference-effect
 /// test_status: stable
 /// level: 7
 /// concept: calling an AI model without declaring the required ai.inference effect

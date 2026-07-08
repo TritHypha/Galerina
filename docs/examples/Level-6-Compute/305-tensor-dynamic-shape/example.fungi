@@ -1,3 +1,4 @@
+@version 1
 /// example: 305-tensor-dynamic-shape
 /// level: 6
 /// concept: dynamic shape tensor for variable-length inference

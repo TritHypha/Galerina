@@ -1,3 +1,4 @@
+@version 1
 /// example: 069-auto-inference
 /// level: 2
 /// concept: Auto type inference

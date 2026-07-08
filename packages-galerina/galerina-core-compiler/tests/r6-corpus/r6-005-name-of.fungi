@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: ACCEPT
 // R6 corpus 005 — R5: match + Option
 pure flow nameOf(code: Int) -> Option<String>

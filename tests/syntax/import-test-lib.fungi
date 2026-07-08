@@ -1,3 +1,4 @@
+@version 1
 ;; Library file — imported by import-test-main.fungi
 
 pure flow addTwo(x: Int) -> Int

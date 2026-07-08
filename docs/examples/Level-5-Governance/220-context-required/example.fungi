@@ -1,3 +1,4 @@
+@version 1
 /// example: 220-context-required
 /// level: 5
 /// concept: contract context block — require actor, require trace_id, correct usage

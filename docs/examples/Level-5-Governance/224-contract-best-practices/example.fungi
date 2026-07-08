@@ -1,3 +1,4 @@
+@version 1
 /// example: 224-contract-best-practices
 /// level: 5
 /// concept: gold standard contract — named result type, full contract, raw→protected→redact→audit

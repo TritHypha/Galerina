@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: ACCEPT
 // AREA: api
 // PURPOSE: webhook declaration with HMAC security, JSON decode, and typed handler

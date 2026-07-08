@@ -1,3 +1,4 @@
+@version 1
 /// @service: capability resolver — resolves runtime capabilities for governed flows
 /// @phase: 51
 /// @runtime-component: HTTP capability host (stub — full in Phase 59)

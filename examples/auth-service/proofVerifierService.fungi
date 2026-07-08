@@ -1,3 +1,4 @@
+@version 1
 // Phase 45 — Proof Verifier Service
 //
 // Verifies cryptographic proof metadata for governed runtime attestation.

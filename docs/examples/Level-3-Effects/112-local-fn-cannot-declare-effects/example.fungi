@@ -1,3 +1,4 @@
+@version 1
 /// example: 112-local-fn-cannot-declare-effects
 /// level: 3
 /// concept: local fn cannot declare its own effects

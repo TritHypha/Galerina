@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: ACCEPT
 // R6 corpus 003 — R2: lists (array literal + .count())
 pure flow listLen() -> Int

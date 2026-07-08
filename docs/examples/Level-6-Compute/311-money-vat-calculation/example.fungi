@@ -1,3 +1,4 @@
+@version 1
 /// example: 311-money-vat-calculation
 /// level: 6
 /// concept: multiplying Money by a Decimal rate

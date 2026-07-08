@@ -1,3 +1,4 @@
+@version 1
 /// example: 077-money-ratio
 /// level: 2
 /// concept: Money<GBP> / Money<GBP> yields Decimal

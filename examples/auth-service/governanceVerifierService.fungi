@@ -1,3 +1,4 @@
+@version 1
 /// @service: governance verifier — verifies flow contracts against deployment profiles
 /// @phase: 56
 /// @runtime-component: governance verification layer (stub — full in Phase 60)

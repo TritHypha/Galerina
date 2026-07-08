@@ -1,3 +1,4 @@
+@version 1
 /// six-digit-guess benchmark — Galerina governed runtime
 /// SAME algorithm as node.mjs and python.py v2:
 ///   sequential search for code 42069 with bulls+cows scoring per attempt.

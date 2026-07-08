@@ -1,3 +1,4 @@
+@version 1
 /// example: 404-target-wasm
 /// level: 8
 /// concept: WebAssembly compute target for browser or sandboxed execution

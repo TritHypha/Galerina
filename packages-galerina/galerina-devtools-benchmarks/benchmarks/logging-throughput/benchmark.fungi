@@ -1,3 +1,4 @@
+@version 1
 /*
  * Diagnostic: Logging Throughput (The "Audit Tax")
  * Measures: latency overhead of full audit trail vs clean execution

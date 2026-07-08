@@ -1,3 +1,4 @@
+@version 1
 /// example: 082-readonly-view
 /// level: 2
 /// concept: ReadOnlyView<T> generic type

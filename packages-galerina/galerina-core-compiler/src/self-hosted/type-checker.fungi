@@ -1,3 +1,4 @@
+@version 1
 /// @file: type-checker.fungi
 /// @purpose: Stage B type checker — real subset, executing
 /// @phase: 47

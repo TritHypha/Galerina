@@ -1,3 +1,4 @@
+@version 1
 /// example: 174-multiple-protected-values
 /// level: 4
 /// concept: multiple protected values all validated and redacted in audit

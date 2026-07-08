@@ -1,3 +1,4 @@
+@version 1
 /// example: 063-option-some
 /// level: 2
 /// concept: Option<T> with Some value

@@ -1,3 +1,4 @@
+@version 1
 /// example: 081-tensor-invalid-arity
 /// test_status: stable
 /// level: 2

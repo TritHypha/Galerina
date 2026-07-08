@@ -1,3 +1,4 @@
+@version 1
 /// example: 309-compute-photonic
 /// level: 6
 /// concept: photonic compute target with classical fallback chain

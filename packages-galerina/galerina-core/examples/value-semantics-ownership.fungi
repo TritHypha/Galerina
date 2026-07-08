@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: ACCEPT
 // AREA: memory
 // PURPOSE: value semantics — a value passed to a flow is NOT invalidated; Galerina has no

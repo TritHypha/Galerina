@@ -1,3 +1,4 @@
+@version 1
 // greeting — the app's governed flow for the GET /hello route.
 //
 // This is the human-authored source of the greeting. packages/greeting/ is its

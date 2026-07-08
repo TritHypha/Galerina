@@ -1,4 +1,5 @@
-﻿/// example: 020-readable-boolean (PROPOSED)
+﻿@version 1
+/// example: 020-readable-boolean (PROPOSED)
 /// concept: readable boolean operators
 /// test_status: stable
 

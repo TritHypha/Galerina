@@ -1,3 +1,4 @@
+@version 1
 api OrdersApi {
   POST "/orders" {
     request CreateOrderRequest

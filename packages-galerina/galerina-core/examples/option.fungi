@@ -1,3 +1,4 @@
+@version 1
 // EXPECT: ACCEPT
 // AREA: basic
 // PURPOSE: Option type with Some/None match and error propagation

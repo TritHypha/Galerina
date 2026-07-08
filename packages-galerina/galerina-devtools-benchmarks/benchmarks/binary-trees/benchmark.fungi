@@ -1,3 +1,4 @@
+@version 1
 /// binary-trees benchmark — Galerina governed runtime (Computer Language Benchmarks Game).
 /// THE allocation/GC benchmark. minDepth=4, maxDepth=10 → 135854 nodes per run.
 ///

@@ -1,3 +1,4 @@
+@version 1
 type CreateSessionResult = Result<Session, SessionError>
 type Session {
   readonly sessionId: SessionId

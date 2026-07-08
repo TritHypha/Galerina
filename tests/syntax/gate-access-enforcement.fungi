@@ -1,3 +1,4 @@
+@version 1
 ;; Foundation test: gate {} verifier + access {} grant enforcement
 
 guard AdminGuard {

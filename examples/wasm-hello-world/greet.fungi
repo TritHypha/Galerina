@@ -1,3 +1,4 @@
+@version 1
 // Hello World — minimal governed flow compiled to WASM
 // Demonstrates: outside-contract syntax, pure qualifier, zero side effects
 ;; Returns a personalised greeting for the given name; minimal governed WASM flow.

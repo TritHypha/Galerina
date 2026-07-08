@@ -1,3 +1,4 @@
+@version 1
 ;; dag-validator.fungi — ExecutionDAG edge validation
 ;; DRCM Phase 5.6 — V_DPM Bit 8 (dag_edge_valid) enforcement
 ;;

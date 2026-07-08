@@ -1,3 +1,4 @@
+@version 1
 /// Matrix multiply benchmark — Phase 45+ (float via scaled integers)
 /// Computes C = A × B where A, B are NxN matrices.
 /// Values are stored as scaled integers (× 1000) to use the integer WASM path.

@@ -1,3 +1,4 @@
+@version 1
 ;; Foundation test: static compile-time constants and bitfield registers
 
 static MAX_CONNECTIONS = 100
