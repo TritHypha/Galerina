@@ -1705,7 +1705,7 @@ class TypeChecker {
       if (leftIsVerdict !== rightIsVerdict) {
         this.diagnostics.push(makeTCDiag(
           "FUNGI-K3-001",
-          "MixedVerdictBoolOperands",
+          "MIXED_VERDICT_BOOL_OPERANDS",
           `Operator '${op}' cannot mix Verdict and Bool operands ('${leftType}' ${op} '${rightType}'). ` +
           `A verdict coerced to a boolean silently turns UNKNOWN into a decision (fail-open). ` +
           `Compare explicitly (e.g. x == Verdict.Allow) or keep both sides Verdict.`,
@@ -1750,7 +1750,7 @@ class TypeChecker {
       if (op === "flip" && operandType !== undefined && operandType !== "Verdict") {
         this.diagnostics.push(makeTCDiag(
           "FUNGI-K3-002",
-          "FlipNotVerdict",
+          "VERDICT_UNARY_MISMATCH",
           `'flip' is K3 negation and applies ONLY to Verdict operands, got '${operandType}'. ` +
           `Use '!' for Bool negation.`,
           node.location,
@@ -1760,7 +1760,7 @@ class TypeChecker {
       if (op === "!" && operandType === "Verdict") {
         this.diagnostics.push(makeTCDiag(
           "FUNGI-K3-002",
-          "BangOnVerdict",
+          "VERDICT_UNARY_MISMATCH",
           `'!' is Bool negation and cannot apply to a Verdict — boolean-negating a trit turns ` +
           `UNKNOWN into a decision (fail-open). Use flip(x) (K3: flip(UNKNOWN)=UNKNOWN).`,
           node.location,
@@ -1774,7 +1774,7 @@ class TypeChecker {
         if (t !== undefined && t !== "Verdict") {
           this.diagnostics.push(makeTCDiag(
             "FUNGI-K3-003",
-            "FoldOperandNotVerdict",
+            "FOLD_OPERAND_NOT_VERDICT",
             `'${node.value}{ }' folds Verdicts (K3 ${node.value === "all" ? "min" : "max"}), but an operand is '${t}'. ` +
             `Every operand must be a Verdict.`,
             child.location ?? node.location,

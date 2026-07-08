@@ -5899,7 +5899,7 @@ export function parseProgram(source: string, file: string, options?: ParseOption
       versionHeader = { present: true, value: null };
       headerDiagnostics.push({
         code: "FUNGI-SYNTAX-014",
-        name: "VERSION_HEADER_MALFORMED",
+        name: "VERSION_HEADER_INVALID",
         severity: "error",
         message: `${file}: malformed @version header ${JSON.stringify(firstLine)} — expected \`@version <integer>\` ` +
           `as the first line. A version that cannot be read is rejected, never best-effort parsed (BK-4).`,
@@ -5911,7 +5911,7 @@ export function parseProgram(source: string, file: string, options?: ParseOption
       const tooOld = value < FUNGI_MIN_SUPPORTED_VERSION;
       headerDiagnostics.push({
         code: "FUNGI-SYNTAX-014",
-        name: "VERSION_UNSUPPORTED",
+        name: "VERSION_HEADER_INVALID",
         severity: "error",
         message: `${file}: @version ${value} is ${tooOld ? "below the minimum-supported floor" : "newer than this compiler understands"} ` +
           `(supported: ${FUNGI_MIN_SUPPORTED_VERSION}..${FUNGI_CURRENT_VERSION}). ` +
