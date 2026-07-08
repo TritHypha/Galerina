@@ -22,14 +22,14 @@ CWT/COSE is the CBOR-native, IETF-standard signed-claims stack (the binary analo
 - **inherits ecosystem trust** (RFC-defined structures, existing verifiers, the CBOR deterministic-encoding
   rules) — the brief's "adopt standards, don't invent" posture;
 - **is binary + length-prefixed by construction** (CBOR major types encode length), which removes JWT's
-  base64url/JSON canonicalization ambiguity *for free* — the same property `.tmf`'s `LP()` gives, native to CBOR;
+  base64url/JSON canonicalization ambiguity *for free* — the same property `.spore`'s `LP()` gives, native to CBOR;
 - leaves room for the fixes below as a **profile** (constraints + claim/header conventions), not a fork.
 
 ### JWT flaw → Trust Capsule fix
 | JWT flaw | Trust Capsule fix |
 |---|---|
 | `alg:none`; RS256↔HS256 alg-confusion (verifier dispatches on attacker-controlled `alg`) | **Verifier fixes the algorithm by policy/key metadata**; `alg` lives in the COSE *protected* header (signed) and the verifier rejects any token whose `alg` ≠ the key's bound alg. `none` is not in the profile registry (§4). |
-| JSON/base64url canonicalization ambiguity | **CBOR deterministic encoding** (RFC 8949 §4.2 / CTAP2 canonical) — definite-length, sorted keys, smallest-int — length-prefixed by nature (≡ `.tmf` `LP()`). |
+| JSON/base64url canonicalization ambiguity | **CBOR deterministic encoding** (RFC 8949 §4.2 / CTAP2 canonical) — definite-length, sorted keys, smallest-int — length-prefixed by nature (≡ `.spore` `LP()`). |
 | No post-quantum | **Hybrid Ed25519 + ML-DSA-65**, AND-verified, per-surface FIPS-204 ctx (#34, built + verified). |
 | No channel/replay binding | **`external_aad` = the 36-byte AAD context** (audience ‖ epoch ‖ channel ‖ purpose), signed-but-not-transmitted (§5). |
 | Coarse ambient claims | **Capability-scoped, deny-by-default** claims + macaroon-style **attenuable caveats** (§6). |
@@ -72,9 +72,9 @@ sig_mldsa     = ML-DSA.Sign(M, sk_mldsa, ctx="")         ; pure ML-DSA, EMPTY ct
 ML-DSA `ctx` parameter cannot carry the per-surface label #34 used. Instead the Capsule binds the surface into
 the **signed `body_protected` header** (a `surface` label = `"tmf-trust-capsule-v0"`) **and** the `external_aad`
 (§5) — both sit inside the `Sig_structure`, hence are signed — so a Capsule signature still cannot be
-cross-protocol-confused with a `.tmf`-root or Galerina-manifest signature under the same key. This achieves #34's
+cross-protocol-confused with a `.spore`-root or Galerina-manifest signature under the same key. This achieves #34's
 domain-separation goal while staying RFC-9964-interoperable.
-**Relation to #34 / `.tmf`.** The `.tmf`-root and Galerina-#34-manifest surfaces are *not* COSE objects and keep
+**Relation to #34 / `.spore`.** The `.spore`-root and Galerina-#34-manifest surfaces are *not* COSE objects and keep
 the #34 construction verbatim (pure ML-DSA over a 32-byte digest with a per-surface `ctx`, signature-custody
 §2.1). The Capsule is the **COSE surface** of the same `{Ed25519, ML-DSA-65}` AND-hybrid, encoded per RFC 9964
 (direct `Sig_structure`, empty ctx). Signing the `Sig_structure` directly (not a SHA-256 pre-hash) means there
@@ -86,7 +86,7 @@ Ed25519's, exactly as RFC 9964 intends.
 ## 3. Canonical encoding
 All CBOR is **deterministically encoded** (RFC 8949 §4.2): definite-length items, map keys sorted by encoded
 bytes, integers in shortest form, no indefinite-length, no duplicate keys. A verifier MUST re-encode and
-compare (reject non-canonical input) — this is the CBOR-native equivalent of `.tmf`'s length-prefixed `LP()`
+compare (reject non-canonical input) — this is the CBOR-native equivalent of `.spore`'s length-prefixed `LP()`
 canonicalization and is what kills JWT's "two parsers disagree on the bytes" class of attack.
 
 ---
@@ -109,7 +109,7 @@ canonicalization and is what kills JWT's "two parsers disagree on the bytes" cla
 
 ## 5. Channel / replay binding (`external_aad` = the 36-byte AAD context)
 The COSE `external_aad` is **signed but not transmitted** — the verifier reconstructs it from its own context
-and a mismatch fails the signature. The Capsule sets it to the `.tmf` **36-byte AAD context**
+and a mismatch fails the signature. The Capsule sets it to the `.spore` **36-byte AAD context**
 (tmf-encryption §4): `section_id ‖ coord ‖ modality ‖ kem/aead/dem/flags ‖ epoch ‖ reserved`, re-purposed as
 `audience ‖ channel-coord ‖ purpose ‖ profile ‖ epoch`. Effect: a stolen Capsule replayed to a different
 audience / channel / epoch / purpose reconstructs a different `external_aad` ⇒ `M` differs ⇒ both signatures

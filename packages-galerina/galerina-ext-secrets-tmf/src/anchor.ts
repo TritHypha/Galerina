@@ -3,7 +3,7 @@
 // open() takes recipientSec as a CALLER-supplied Uint8Array (kemdem.ts:190) — the engine has
 // ZERO custody logic. KEM-DEM RELOCATES the bootstrap secret to this recipient KEM secret key.
 //
-// HONEST POSTURE (also stated in the README + done-report): env.tmf moves secret-zero from
+// HONEST POSTURE (also stated in the README + done-report): env.spore moves secret-zero from
 // N app secrets -> 1 anchored key and reduces blast radius; it does NOT eliminate the external
 // root of trust. If the recipient secret key co-locates on the same disk as the ciphertext the
 // at-rest win EVAPORATES (the same LFI/traversal reads both). The anchor MUST be external.
@@ -39,8 +39,8 @@ export function deriveWrapKey(passphrase: Uint8Array, salt: Uint8Array): Uint8Ar
 
 /**
  * A wrapped recipient secret key: salt ‖ iv ‖ ciphertext+tag. Stored on disk (e.g. a
- * key.tmf-wrap file). The plaintext recipient secret NEVER touches disk; only this AES-256-GCM
- * wrap does. Anchoring this wrap file ELSEWHERE than the env.tmf disk is the operator's job.
+ * key.spore-wrap file). The plaintext recipient secret NEVER touches disk; only this AES-256-GCM
+ * wrap does. Anchoring this wrap file ELSEWHERE than the env.spore disk is the operator's job.
  */
 export interface WrappedKey {
   readonly salt: Uint8Array;   // 16 B

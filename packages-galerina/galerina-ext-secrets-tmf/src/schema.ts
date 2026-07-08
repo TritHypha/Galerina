@@ -1,6 +1,6 @@
-// schema.ts — env.tmf v0 schema (Part 1 of the R&D design doc §3).
+// schema.ts — env.spore v0 schema (Part 1 of the R&D design doc §3).
 //
-// env.tmf = the shipped v0 .tmf container (writeTmf/readTmf as-is), flags.signed=0
+// env.spore = the shipped v0 .spore container (writeTmf/readTmf as-is), flags.signed=0
 // (UNSIGNED-but-ENCRYPTED — the ML-DSA signed root is GATED on ext-tmf slice 4 / #7;
 // we NEVER fake a signature). Confidentiality is KEM-DEM single-shot under hybrid
 // X25519+ML-KEM-768 (KEM_PROFILE 0x02) with commit_mode=CTX (CMT-4, key-committing).
@@ -25,7 +25,7 @@ export const SECTION_KIND_SECRET = 0;
 export const SECTION_KIND_MANIFEST = 1;
 /** codec 0x0601 = JSON (Structured leaf). */
 export const CODEC_JSON = 0x0601;
-/** env.tmf schema version (independent of container version). */
+/** env.spore schema version (independent of container version). */
 export const ENV_TMF_SCHEMA_VERSION = 0;
 
 /** Domain-separated SHAKE for the coord derivation. Keeps the cleartext name off the table. */
@@ -99,7 +99,7 @@ export interface UnpackedSeal {
 }
 
 export function unpackSeal(payload: Uint8Array): UnpackedSeal {
-  if (payload.length < 5 || payload[0] !== SEAL_MAGIC) throw new Error("env.tmf: bad seal payload magic");
+  if (payload.length < 5 || payload[0] !== SEAL_MAGIC) throw new Error("env.spore: bad seal payload magic");
   let o = 1;
   o += 1; // schemaVer
   const kemProfile = payload[o++]!;
@@ -111,7 +111,7 @@ export function unpackSeal(payload: Uint8Array): UnpackedSeal {
   const nonce = payload.subarray(o, o + nonceLen); o += nonceLen;
   const bodyLen = rdU32(payload, o); o += 4;
   const body = payload.subarray(o, o + bodyLen); o += bodyLen;
-  if (o !== payload.length) throw new Error("env.tmf: trailing bytes in seal payload");
+  if (o !== payload.length) throw new Error("env.spore: trailing bytes in seal payload");
   return { kemProfile, ctKem, nonce, body };
 }
 

@@ -1,4 +1,4 @@
-# The `.tmf` Trust-Capsule Format
+# The `.spore` Trust-Capsule Format
 
 ### A content-addressed, integrity-verified, **quantum-resilient** universal file and communications container
 
@@ -8,7 +8,7 @@
 
 ## ⚠️ Novelty disclaimer — read first
 
-**This is a defensive-publication note, not a flagship or workshop paper, and it makes no claim of novel science or novel cryptography.** Every cryptographic and codec primitive used by `.tmf` is **borrowed and standard** (FIPS / NIST / RFC / peer-reviewed): SHAKE256 (FIPS 202), ML-DSA-65 (FIPS 204), ML-KEM (FIPS 203), AES-GCM (NIST SP 800-38D) / AEAD (RFC 5116), Merkle hash trees (Merkle, 1987), and standard media/document codecs (PNG, JPEG, AVIF, Opus, H.264, JSON, XML, …). What `.tmf` contributes is **engineering composition and byte-precise specification** — a deterministic, fail-closed wrapping order around bytes the format never interprets. Per the Galerina/TritMesh publishing standard ("no new cryptography and no new science"), `.tmf`/TMX-256/KEM-DEM are **pre-graded as engineering composition, not a flagship paper**. This note exists to (a) document the construction precisely and (b) serve as a **timestamped prior-art record** that keeps the composition free.
+**This is a defensive-publication note, not a flagship or workshop paper, and it makes no claim of novel science or novel cryptography.** Every cryptographic and codec primitive used by `.spore` is **borrowed and standard** (FIPS / NIST / RFC / peer-reviewed): SHAKE256 (FIPS 202), ML-DSA-65 (FIPS 204), ML-KEM (FIPS 203), AES-GCM (NIST SP 800-38D) / AEAD (RFC 5116), Merkle hash trees (Merkle, 1987), and standard media/document codecs (PNG, JPEG, AVIF, Opus, H.264, JSON, XML, …). What `.spore` contributes is **engineering composition and byte-precise specification** — a deterministic, fail-closed wrapping order around bytes the format never interprets. Per the Galerina/TritMesh publishing standard ("no new cryptography and no new science"), `.spore`/TMX-256/KEM-DEM are **pre-graded as engineering composition, not a flagship paper**. This note exists to (a) document the construction precisely and (b) serve as a **timestamped prior-art record** that keeps the composition free.
 
 > This is engineering triage informed by training knowledge, **not** a filed legal prior-art search or a freedom-to-operate opinion. Confirm novelty/clearance with a qualified professional before any external submission.
 
@@ -16,31 +16,31 @@
 
 ## Abstract
 
-`.tmf` ("trust-capsule" file) is a container format that binds an ordered set of payload sections to a single 256-bit cryptographic root via **TMX-256**, a 3-ary Merkle tree built on the FIPS-202 XOF SHAKE256, and (optionally) signs that root with the **quantum-resilient** post-quantum signature **ML-DSA-65** (FIPS 204). Payloads may be confidentiality-sealed with a **KEM-DEM** scheme — a **quantum-resilient** ML-KEM (FIPS 203) key encapsulation plus an AEAD data-encryption mode. The authenticity and confidentiality layers are therefore **quantum-resilient by construction** (NIST PQC standards), with a hybrid Ed25519 + ML-DSA-65 transition form recommended during migration; the integrity hash (SHAKE256, 256-bit) retains a 128-bit security margin against Grover-style quantum search. Crucially, the integrity layer is **codec-agnostic**: TMX-256 hashes a section's bytes opaquely, so `.tmf` is **not only a database substrate** — it is a **universal file format and communications container** that carries images, audio, video (with seekable streaming framing), documents (including mathematical and chemical markup), and structured data (JSON/XML/CBOR) under one integrity, authenticity, and confidentiality envelope. This note specifies the construction, its mathematics, its usage, and its security properties, and maps every primitive to its authoritative source.
+`.spore` ("trust-capsule" file) is a container format that binds an ordered set of payload sections to a single 256-bit cryptographic root via **TMX-256**, a 3-ary Merkle tree built on the FIPS-202 XOF SHAKE256, and (optionally) signs that root with the **quantum-resilient** post-quantum signature **ML-DSA-65** (FIPS 204). Payloads may be confidentiality-sealed with a **KEM-DEM** scheme — a **quantum-resilient** ML-KEM (FIPS 203) key encapsulation plus an AEAD data-encryption mode. The authenticity and confidentiality layers are therefore **quantum-resilient by construction** (NIST PQC standards), with a hybrid Ed25519 + ML-DSA-65 transition form recommended during migration; the integrity hash (SHAKE256, 256-bit) retains a 128-bit security margin against Grover-style quantum search. Crucially, the integrity layer is **codec-agnostic**: TMX-256 hashes a section's bytes opaquely, so `.spore` is **not only a database substrate** — it is a **universal file format and communications container** that carries images, audio, video (with seekable streaming framing), documents (including mathematical and chemical markup), and structured data (JSON/XML/CBOR) under one integrity, authenticity, and confidentiality envelope. This note specifies the construction, its mathematics, its usage, and its security properties, and maps every primitive to its authoritative source.
 
 ---
 
-## 1. Introduction — what `.tmf` is (and is not)
+## 1. Introduction — what `.spore` is (and is not)
 
-A `.tmf` file is a **trust capsule**: a self-describing container whose entire content collapses to one 256-bit root, so that "are these exactly these bytes, in this order, at these coordinates?" is answerable by a single hash comparison, and "did the right party vouch for them?" is answerable by a single post-quantum signature check.
+A `.spore` file is a **trust capsule**: a self-describing container whose entire content collapses to one 256-bit root, so that "are these exactly these bytes, in this order, at these coordinates?" is answerable by a single hash comparison, and "did the right party vouch for them?" is answerable by a single post-quantum signature check.
 
-**`.tmf` is three things at once:**
+**`.spore` is three things at once:**
 
 1. **A storage/database substrate** — the original TritMesh use: content-addressed, integrity-verified cells on a logical mesh.
-2. **A universal file format** — like an image or document on disk/web, but with built-in tamper-evidence, selective-disclosure proofs, and optional confidentiality. A `.tmf` can *be* a photo, an audio clip, a video, a PDF-like document, or a JSON record — wrapped so its integrity and authenticity travel with it.
-3. **A communications container** — large payloads (audio/video/bulk data) use a segmented, seekable, anti-truncation streaming mode, so `.tmf` can frame a *transmitted* stream the same way it frames a *stored* file. A relay sees opaque ciphertext plus a codec tag; it never sees decoded content.
+2. **A universal file format** — like an image or document on disk/web, but with built-in tamper-evidence, selective-disclosure proofs, and optional confidentiality. A `.spore` can *be* a photo, an audio clip, a video, a PDF-like document, or a JSON record — wrapped so its integrity and authenticity travel with it.
+3. **A communications container** — large payloads (audio/video/bulk data) use a segmented, seekable, anti-truncation streaming mode, so `.spore` can frame a *transmitted* stream the same way it frames a *stored* file. A relay sees opaque ciphertext plus a codec tag; it never sees decoded content.
 
-**What `.tmf` is NOT.** It is **not a new image/video/audio codec**: a photo stays JPEG/PNG/AVIF *bytes* and a video stays H.264/AV1 *bytes*; `.tmf` adds coordinate-bound integrity, authenticity, and confidentiality **around** those bytes (§6). It is **not** a database engine, query language, or transport protocol. It introduces **no new cryptography** (§"Novelty disclaimer").
+**What `.spore` is NOT.** It is **not a new image/video/audio codec**: a photo stays JPEG/PNG/AVIF *bytes* and a video stays H.264/AV1 *bytes*; `.spore` adds coordinate-bound integrity, authenticity, and confidentiality **around** those bytes (§6). It is **not** a database engine, query language, or transport protocol. It introduces **no new cryptography** (§"Novelty disclaimer").
 
-> **Positioning — an honest aspiration, not a claim.** Combining *all* of {content-addressed integrity, quantum-resilient post-quantum authenticity, confidentiality, selective-disclosure inclusion proofs, universal media/document/structured modality, and seekable streaming for communications} in **one fail-closed format** is unusual — most real systems assemble these from several *separate* formats and layers stacked by hand. In that sense `.tmf` aims to be a "unicorn" format: the rare single capsule that does all of it at once. **Whether it earns that status is for adoption and independent measurement to decide — not this note.** Consistent with the novelty disclaimer above, this document claims only the construction and its stated properties; it does **not** claim `.tmf` is the best, fastest, or a uniquely novel format. The engineering value is the *composition discipline* (a deterministic, byte-precise, fail-closed wrapping order over borrowed standards), not an invention.
+> **Positioning — an honest aspiration, not a claim.** Combining *all* of {content-addressed integrity, quantum-resilient post-quantum authenticity, confidentiality, selective-disclosure inclusion proofs, universal media/document/structured modality, and seekable streaming for communications} in **one fail-closed format** is unusual — most real systems assemble these from several *separate* formats and layers stacked by hand. In that sense `.spore` aims to be a "unicorn" format: the rare single capsule that does all of it at once. **Whether it earns that status is for adoption and independent measurement to decide — not this note.** Consistent with the novelty disclaimer above, this document claims only the construction and its stated properties; it does **not** claim `.spore` is the best, fastest, or a uniquely novel format. The engineering value is the *composition discipline* (a deterministic, byte-precise, fail-closed wrapping order over borrowed standards), not an invention.
 
-> **Crypto-on-core boundary (FUNGI-SUBSTRATE-001).** Every cryptographic operation in `.tmf` — the SHAKE256 hashing, the ML-DSA signature, the KEM-DEM seal — runs on the **digital/binary** substrate and is **bit-exact and reproducible**. The "ternary" in TMX (the 3-ary tree shape) is a *data-structure modelling choice*, **not** a use of analog/photonic/ternary hardware in the cryptographic path, and carries **no performance claim** (§5.3). This separation is a hard line: analog/probabilistic substrates never carry a cryptographic operation.
+> **Crypto-on-core boundary (FUNGI-SUBSTRATE-001).** Every cryptographic operation in `.spore` — the SHAKE256 hashing, the ML-DSA signature, the KEM-DEM seal — runs on the **digital/binary** substrate and is **bit-exact and reproducible**. The "ternary" in TMX (the 3-ary tree shape) is a *data-structure modelling choice*, **not** a use of analog/photonic/ternary hardware in the cryptographic path, and carries **no performance claim** (§5.3). This separation is a hard line: analog/probabilistic substrates never carry a cryptographic operation.
 
 ---
 
 ## 2. The grounded stack
 
-`.tmf` composes four independent, standard layers. A change at one layer does not disturb the others — this is what lets the format carry arbitrary media without touching its security core.
+`.spore` composes four independent, standard layers. A change at one layer does not disturb the others — this is what lets the format carry arbitrary media without touching its security core.
 
 ```
   payload bytes (any modality/codec — image, audio, video, document, JSON, tensor, …)
@@ -108,7 +108,7 @@ signature = ML-DSA-65.Sign(sk, root)            // input IS the 32-byte root
 ok        = ML-DSA-65.Verify(pk, root, signature)
 ```
 
-Hash and signature are **distinct** and combined in the NIST-recommended order — **sign over the hash; never replace the hash with a signature.** An *unsigned* `.tmf` detects accidental corruption and supports inclusion proofs but gives no protection against an adversary who rewrites the whole file (they recompute a consistent root). A *signed* `.tmf` gives **post-quantum authenticity**: the trust chain is `signature → root → top_node → … → leaf_hash(i) → recompute from (kind, modality, coord, payload)`; break any link and verification fails closed. A **hybrid Ed25519 + ML-DSA-65** dual signature is the recommended transition form during PQ migration.
+Hash and signature are **distinct** and combined in the NIST-recommended order — **sign over the hash; never replace the hash with a signature.** An *unsigned* `.spore` detects accidental corruption and supports inclusion proofs but gives no protection against an adversary who rewrites the whole file (they recompute a consistent root). A *signed* `.spore` gives **post-quantum authenticity**: the trust chain is `signature → root → top_node → … → leaf_hash(i) → recompute from (kind, modality, coord, payload)`; break any link and verification fails closed. A **hybrid Ed25519 + ML-DSA-65** dual signature is the recommended transition form during PQ migration.
 
 ### 3.7 Confidentiality — KEM-DEM
 
@@ -120,7 +120,7 @@ To prove section `i` is in a signed file without shipping the whole file, the ve
 
 ---
 
-## 4. Modalities and codecs — why `.tmf` is a *universal* file and comms format
+## 4. Modalities and codecs — why `.spore` is a *universal* file and comms format
 
 Because TMX-256 hashes payload bytes **opaquely**, every modality and codec is integrity-protected and signable *identically*, and adding a codec changes **nothing** in the TMX / ML-DSA / KEM-DEM layers. The `modality` plane (u16, bound into the leaf) and a `codec` discriminator (u16, bound into the AEAD context) say *how to interpret* bytes — not *how they are protected*.
 
@@ -133,7 +133,7 @@ Because TMX-256 hashes payload bytes **opaquely**, every modality and codec is i
 | 9 Structured | machine-readable trees | JSON (RFC 8259), NDJSON, XML (W3C), CBOR (RFC 8949), Protobuf, YAML |
 | 0,3,7 Tensor/Blob | embeddings / opaque bytes | NVFP4, f32/f16/bf16, raw |
 
-Three honesty points govern this: **(a)** `.tmf` *wraps* codecs, it does not replace them — a photo stays JPEG bytes; **(b)** "lossless" refers to the cryptographic path only (the AEAD decrypts to the exact stored bytes and TMX verifies them bit-for-bit) — upstream encoder lossiness (JPEG, Opus) happened *before* `.tmf` and is out of scope; **(c)** parsing/rendering/validating a payload (decoding a video, evaluating an equation, querying JSON) happens at **trusted endpoints only** — a relay sees opaque ciphertext + a codec tag, never decoded content (metadata minimisation).
+Three honesty points govern this: **(a)** `.spore` *wraps* codecs, it does not replace them — a photo stays JPEG bytes; **(b)** "lossless" refers to the cryptographic path only (the AEAD decrypts to the exact stored bytes and TMX verifies them bit-for-bit) — upstream encoder lossiness (JPEG, Opus) happened *before* `.spore` and is out of scope; **(c)** parsing/rendering/validating a payload (decoding a video, evaluating an equation, querying JSON) happens at **trusted endpoints only** — a relay sees opaque ciphertext + a codec tag, never decoded content (metadata minimisation).
 
 **Communications / streaming.** Audio, video, and any payload above the chunk size use a **segmented STREAM AEAD** (fixed chunks, default 1 MB; each sealed with a position-derived nonce `prefix8 ∥ BE-u32((index<<1)|last)`). This gives transmitted media exactly what it needs: **seekable** to chunk *N* (O(1) offset from the fixed chunk size); **anti-truncation / anti-reorder / anti-splice** (the 1-bit last-flag + monotone index make a dropped or shuffled chunk fail its tag); and **progressive verify-before-render** (each chunk is integrity- and AEAD-checked before the decoder sees it, so a forged chunk never reaches the media pipeline). The codec is unchanged by streaming — STREAM frames the *encoded* bytes.
 
@@ -141,9 +141,9 @@ Three honesty points govern this: **(a)** `.tmf` *wraps* codecs, it does not rep
 
 ## 5. Usage
 
-**Producing a `.tmf`.** (1) Encode each payload with its native codec (JPEG, Opus, JSON, …). (2) Optionally KEM-DEM-seal each section. (3) Compute each leaf (§3.2) over the stored (cipher)text bytes with its `(kind, modality, coord)`. (4) Build the 3-ary tree (§3.4) → `top_node` → `root` (§3.5). (5) Optionally sign the root with ML-DSA-65 (§3.6). (6) Write the container: header (`header_core` + `integrity_root`), section table (one 56-byte descriptor per section, carrying `kind/modality/coord_len/blob_off/blob_len/leaf_hash`), payload region, and signature block.
+**Producing a `.spore`.** (1) Encode each payload with its native codec (JPEG, Opus, JSON, …). (2) Optionally KEM-DEM-seal each section. (3) Compute each leaf (§3.2) over the stored (cipher)text bytes with its `(kind, modality, coord)`. (4) Build the 3-ary tree (§3.4) → `top_node` → `root` (§3.5). (5) Optionally sign the root with ML-DSA-65 (§3.6). (6) Write the container: header (`header_core` + `integrity_root`), section table (one 56-byte descriptor per section, carrying `kind/modality/coord_len/blob_off/blob_len/leaf_hash`), payload region, and signature block.
 
-**Verifying a `.tmf` (fail-closed reader).**
+**Verifying a `.spore` (fail-closed reader).**
 
 ```
 1. Check MAGIC (0x89 'T' 'M' 'F' 0x0D 0x0A 0x1A 0x0A — a PNG-style guard that detects CRLF/text-mode mangling); else BadMagic.
@@ -154,7 +154,7 @@ Three honesty points govern this: **(a)** `.tmf` *wraps* codecs, it does not rep
 6. Accept.
 ```
 
-Every mismatch is a **hard, fail-closed error**; there is **no self-healing in the trust path**. (Availability-oriented repair, if any, is for non-trust data only and must re-verify against the signed root or be rejected.) **Web/comms usage** is the same pipeline with the STREAM mode (§4): a browser or relay verifies each chunk before rendering, and a signed `.tmf` proves both integrity and origin without trusting the transport.
+Every mismatch is a **hard, fail-closed error**; there is **no self-healing in the trust path**. (Availability-oriented repair, if any, is for non-trust data only and must re-verify against the signed root or be rejected.) **Web/comms usage** is the same pipeline with the STREAM mode (§4): a browser or relay verifies each chunk before rendering, and a signed `.spore` proves both integrity and origin without trusting the transport.
 
 ---
 
@@ -170,7 +170,7 @@ Every mismatch is a **hard, fail-closed error**; there is **no self-healing in t
 | **Selective disclosure** | Merkle inclusion proofs (§3.8) | same hash assumption |
 | **Anti-truncation / reorder / splice (streams)** | position-derived nonce + last-flag + monotone index | AEAD nonce-uniqueness |
 
-**Honest limits.** An *unsigned* `.tmf` does not resist a whole-file rewrite. The root does not bind physical byte layout (by design). Endpoint security (key custody, decoder hardening) is out of the format's scope. The signing layer is **Blocked** until a vetted FIPS-204 library is wired; do not infer shipped PQ authenticity from this spec alone.
+**Honest limits.** An *unsigned* `.spore` does not resist a whole-file rewrite. The root does not bind physical byte layout (by design). Endpoint security (key custody, decoder hardening) is out of the format's scope. The signing layer is **Blocked** until a vetted FIPS-204 library is wired; do not infer shipped PQ authenticity from this spec alone.
 
 ---
 
@@ -180,7 +180,7 @@ TMX-256-SHAKE v0 ships **golden test vectors** generated with only Python's stan
 
 ---
 
-## 8. Prior art `.tmf` composes (cited, and disclaimed as the basis — no novelty claimed over these)
+## 8. Prior art `.spore` composes (cited, and disclaimed as the basis — no novelty claimed over these)
 
 - **Merkle, R. C.** "A Digital Signature Based on a Conventional Encryption Function." *CRYPTO '87*, LNCS 293, 1988 — hash trees / inclusion proofs.
 - **NIST FIPS 202**, *SHA-3 Standard: Permutation-Based Hash and Extendable-Output Functions* (SHAKE256). https://csrc.nist.gov/pubs/fips/202/final
@@ -205,7 +205,7 @@ No `ntt_mul`, no "O(1) single clock cycle," no systolic/photonic path, no NVFP4 
 ## 10. Declarations (research-integrity compliance)
 
 - **Type:** Defensive-publication note / timestamped prior-art record. **Not** a flagship/workshop paper; no novelty claimed (see disclaimer).
-- **Authorship & AI assistance:** drafted with AI assistance (Claude) under human direction, grounded line-by-line in the vendored `.tmf` v0 specification; all cryptographic claims trace to the cited FIPS/RFC/peer-reviewed sources.
+- **Authorship & AI assistance:** drafted with AI assistance (Claude) under human direction, grounded line-by-line in the vendored `.spore` v0 specification; all cryptographic claims trace to the cited FIPS/RFC/peer-reviewed sources.
 - **Funding:** none. **Competing interests:** none declared.
 - **Data / artifact availability:** the byte-precise specification, reference generators, and golden vectors are in `packages-galerina/galerina-ext-tmf/spec/`; results reproduce with stdlib SHAKE256.
 - **Licence:** Apache-2.0 (consistent with the project's defensive-publication + patent-grant strategy).

@@ -23,7 +23,7 @@
  *     (FUNGI-TYPE-023); an unrecognised state exits non-zero, never falls through.
  *   - VERIFY BEFORE BUILD: the entry compiles as-is (`galerina build`).
  *   - Capability binding lives in the SIGNED `.lmanifest` fuse{} block produced by
- *     the build — NEVER in a `.tmf` (which is integrity/confidentiality only).
+ *     the build — NEVER in a `.spore` (which is integrity/confidentiality only).
  *
  * This is a STANDALONE script and deliberately does NOT touch galerina.mjs.
  */

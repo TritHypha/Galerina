@@ -1,4 +1,4 @@
-# `.tmf` encryption (confidentiality) layer — v0 (byte-precise, buildable)
+# `.spore` encryption (confidentiality) layer — v0 (byte-precise, buildable)
 
 **Status:** Draft, buildable + **partially verified** (the deterministic key-schedule / framing bytes are
 reproduced by a stdlib generator; the KEM/AEAD ciphertext bytes are **Blocked on a vetted lib** and shown as
@@ -63,7 +63,7 @@ runtime (1120 B). The 32-byte hybrid shared secret is the KEM's own combiner out
 (`SHA3-256(ss_mlkem ‖ ss_x25519 ‖ ct_x25519 ‖ pk_x25519 ‖ label)`); this layer treats it as an opaque
 32-byte secret and derives from it in §3. The combiner is the vetted library's, not re-specified here.
 
-**Level-5 tier (`0x03`/`0x04`) — Path B, long-lived data.** For presumptively decades-lived `.tmf` archives
+**Level-5 tier (`0x03`/`0x04`) — Path B, long-lived data.** For presumptively decades-lived `.spore` archives
 where harvest-now-decrypt-later wants the larger margin, the level-5 KEM is **ML-KEM-1024** (NIST Category 5) —
 this PQ half carries the level-5 guarantee. Its hybrid partner (`@noble` `ml_kem1024_p384`) is **P-384**, *not*
 X25519: P-384 is NIST **Category 3** (~192-bit, SP 800-57) — a materially stronger *classical hedge* than
@@ -88,7 +88,7 @@ XChaCha20-Poly1305 (`0x04`), whose 24-byte nonce is built via HChaCha20 sub-keyi
 nonce width is a function of `aead_suite`, fixed by the table above (and `aead_suite` is bound into the AAD
 context §4, so a suite/nonce-width swap fails the tag).
 
-Default AES-256-GCM rationale: `.tmf` is a data fabric on commodity/server hardware holding presumptively
+Default AES-256-GCM rationale: `.spore` is a data fabric on commodity/server hardware holding presumptively
 **long-lived** confidential data — harvest-now-decrypt-later wants the 256-bit margin, and AES-NI is
 measured at **1,273 MB/s** on the i9-9900K (34× the pure-JS floor — `bench/aes-native-vs-purejs.mjs`), so
 the AEAD is not the bottleneck.
@@ -107,7 +107,7 @@ valid tag, and they are also part of the container section metadata bound into t
 
 ## 3. DEM key schedule — SHAKE256 (suite-consistent, ratified)
 
-The whole `.tmf` crypto stack is Keccak: TMX-256 = SHAKE256, ML-KEM/ML-DSA use Keccak internally, and the
+The whole `.spore` crypto stack is Keccak: TMX-256 = SHAKE256, ML-KEM/ML-DSA use Keccak internally, and the
 hybrid KEM combiner is SHA3-256/SHAKE256. The DEM KDF is therefore **SHAKE256** (ratified —
 `encryption-architecture.md` §0 #2; KMAC256 is the FIPS-friendly alternate), keeping **one hash family**
 across the format. All variable-length inputs are length-prefixed (`LP(x) = u32le(len(x)) ‖ x`, the TMX
@@ -332,7 +332,7 @@ STREAM compose, **and the no-silent-downgrade test** — `commit_mode` 01→00 s
 `commit_mode` lives in the **`conf_flags` byte** (`aead_context` offset 29, §4), so it is already bound into
 every AEAD tag and into the signed root — **no silent downgrade** (an attacker cannot strip CTX to `00` without
 changing the AAD and failing the tag). This supersedes the old "bits 1–7 reserved MUST be 0": **bits 1–2 are now
-`commit_mode`; bits 3–7 remain reserved (MUST be 0)**. Default `.tmf` writers SHOULD emit `commit_mode=01` (CTX)
+`commit_mode`; bits 3–7 remain reserved (MUST be 0)**. Default `.spore` writers SHOULD emit `commit_mode=01` (CTX)
 for new long-lived sections; `00` remains valid for compatibility with the §4 baseline.
 
 ---

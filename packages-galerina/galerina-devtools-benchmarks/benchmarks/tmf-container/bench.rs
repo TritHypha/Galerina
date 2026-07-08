@@ -1,4 +1,4 @@
-// tmf-container — Rust reference implementation of the .tmf v0 trust-container.
+// tmf-container — Rust reference implementation of the .spore v0 trust-container.
 // Self-contained SHAKE256 (FIPS-202 Keccak-f[1600]) — no external crates, so it
 // builds with the suite's plain `rustc -O` harness. Byte-identical to the Galerina
 // @galerina/ext-tmf engine: it asserts the SAME published golden root before timing,

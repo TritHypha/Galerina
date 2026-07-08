@@ -164,10 +164,10 @@ ok        = ML-DSA-65.Verify(pk, root, signature)
 - The signature input **is the 32-byte root**. We never use the signature as an address or a
   content hash (it isn't derivable from content, isn't stable across signers).
 - **Integrity vs. authenticity, stated precisely:**
-  - *Unsigned* `.tmf`: the root detects **accidental corruption** and supports Merkle
+  - *Unsigned* `.spore`: the root detects **accidental corruption** and supports Merkle
     inclusion proofs, but gives **no protection against an adversary who can rewrite the whole
     file** (they recompute a consistent root). This is expected.
-  - *Signed* `.tmf`: ML-DSA-65 over the root gives **post-quantum authenticity**. The trust
+  - *Signed* `.spore`: ML-DSA-65 over the root gives **post-quantum authenticity**. The trust
     chain is: `signature → root → top_node → … → leaf_hash(i) → recompute from
     (kind, modality, coord, payload)`. Break any link and verification fails closed.
 - **v0 status:** the construction is specified and test-vectored for the *hash*; the *signature*

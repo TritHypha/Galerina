@@ -1,4 +1,4 @@
-// history.ts — .tmf append-only history chain (`+1`), v0 (slice 5, G4). Spec (frozen):
+// history.ts — .spore append-only history chain (`+1`), v0 (slice 5, G4). Spec (frozen):
 // spec/tmf-history-chain-v0.md. Byte-precise, deterministic SHAKE256 — crypto-on-core
 // (FUNGI-SUBSTRATE-001): no photonic crypto, bit-exact digital.
 //

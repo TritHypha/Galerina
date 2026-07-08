@@ -1,4 +1,4 @@
-// .tmf KEM-DEM confidentiality (slice 3). DETERMINISTIC parts verified byte-for-byte against the frozen
+// .spore KEM-DEM confidentiality (slice 3). DETERMINISTIC parts verified byte-for-byte against the frozen
 // golden vectors (Galerina-R-AND-D/tmf/spec/_vectors/gen_tmf_encryption.py + gen_cmt_ctx.py); the REAL
 // hybrid-KEM + AES-256-GCM seal/open verified by round-trip + every fail-closed tamper case (spec §7.1).
 import { test } from "node:test";
@@ -70,7 +70,7 @@ test("commitModeOf reads conf_flags bits 1-2", () => {
 
 // ── real hybrid-KEM + AES-256-GCM (round-trip + fail-closed) ─────────────────
 const ctx = (confFlags) => buildContext({ sectionId: 7, coord: coordGolden, modality: 0, kemProfile: 0x02, aeadSuite: 0x01, demMode: 0x01, confFlags, epoch: 1 });
-const PLAINTEXT = new TextEncoder().encode("hello .tmf confidentiality");
+const PLAINTEXT = new TextEncoder().encode("hello .spore confidentiality");
 
 test("hybrid KEM ct_kem is the spec size (1120 B) and single-shot round-trips (commit_mode 00)", () => {
   const { publicKey, secretKey } = keygen(KEM_PROFILE.HYBRID_X25519_ML_KEM_768);
@@ -79,7 +79,7 @@ test("hybrid KEM ct_kem is the spec size (1120 B) and single-shot round-trips (c
   assert.equal(s.ctKem.length, 1120);
   assert.equal(s.nonce.length, 12);
   const out = open(KEM_PROFILE.HYBRID_X25519_ML_KEM_768, secretKey, s.ctKem, s.nonce, s.body, a);
-  assert.equal(Buffer.from(out).toString(), "hello .tmf confidentiality");
+  assert.equal(Buffer.from(out).toString(), "hello .spore confidentiality");
 });
 
 test("tampered ciphertext → CryptoError (fail-closed)", () => {
@@ -112,7 +112,7 @@ test("CTX (commit_mode 01) round-trips and adds 32 B; commit tamper → CryptoEr
   const s01 = seal(KEM_PROFILE.HYBRID_X25519_ML_KEM_768, publicKey, PLAINTEXT, a01);
   assert.equal(s01.body.length - s00.body.length, 32); // CTX adds a 32-B commit_tag
   const out = open(KEM_PROFILE.HYBRID_X25519_ML_KEM_768, secretKey, s01.ctKem, s01.nonce, s01.body, a01);
-  assert.equal(Buffer.from(out).toString(), "hello .tmf confidentiality");
+  assert.equal(Buffer.from(out).toString(), "hello .spore confidentiality");
   const t = s01.body.slice(); t[t.length - 1] ^= 0x01; // tamper the commit_tag
   assert.throws(() => open(KEM_PROFILE.HYBRID_X25519_ML_KEM_768, secretKey, s01.ctKem, s01.nonce, t, a01), isCryptoCode("CryptoError"));
 });

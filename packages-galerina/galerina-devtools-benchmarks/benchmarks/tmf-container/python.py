@@ -6,7 +6,7 @@ import hashlib
 import struct
 import tracemalloc
 
-# tmf-container — Python reference implementation of the .tmf v0 trust-container.
+# tmf-container — Python reference implementation of the .spore v0 trust-container.
 # Byte-identical to @galerina/ext-tmf (Python stdlib `hashlib.shake_256` IS the spec's
 # reference oracle), so it asserts the SAME golden root and does identical work.
 # Spec: TMX-256 = 3-ary SHAKE256 Merkle over coord-bound leaves; container = LE packing.

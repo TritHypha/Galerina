@@ -1,6 +1,6 @@
 // inclusion.ts — TMX-256 inclusion (Merkle) proofs, v0.
 //
-// Selective disclosure / streaming verification: prove ONE section is bound under the signed `.tmf`
+// Selective disclosure / streaming verification: prove ONE section is bound under the signed `.spore`
 // root WITHOUT shipping the whole file. A verifier receives only header_core (24 B), the section's
 // leaf_hash, and the sibling digests on the path to the root; it recomputes the root and checks it
 // against a TRUSTED root (a pinned root, or the root the ML-DSA-65 signature verifies — that step is

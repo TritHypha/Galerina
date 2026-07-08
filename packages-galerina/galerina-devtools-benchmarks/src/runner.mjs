@@ -58,7 +58,9 @@ const BENCHMARKS = [
   { id: "tri-logic", dir: "tri-logic", galerinaOpsPerRun: 27000, passiveCallCount: 100 },
   // Data-query: SQL-like data filtering on arrays of JSON records — a core web service workload.
   // Galerina governed path validates query inputs as Tainted<String> before execution.
-  { id: "data-query", dir: "data-query", galerinaOpsPerRun: 1000, passiveCallCount: 50 },
+  // main() = filterAndCount(1000) + groupByCategory(1000) = 2000 record-scans per call
+  // (was 1000 — undercounted; flagged by the unit-alignment audit, fixed 2026-07-08).
+  { id: "data-query", dir: "data-query", galerinaOpsPerRun: 2000, passiveCallCount: 50 },
   // Call-chain: layered call-dispatch overhead — controller → service.method → util fn.
   // In Galerina: main → serviceLayer → domainLayer → leafCompute (7 flow calls per chain).
   // One op = one outer chain; 50,000 chains per run. Isolates flow-call cost (arg binding
@@ -84,10 +86,10 @@ const BENCHMARKS = [
   // binary-trees: THE allocation/GC benchmark. minDepth 4, maxDepth 10 → 135854 nodes
   // allocated per run. One op = one node allocated. Read the bytes/op column here.
   { id: "binary-trees", dir: "binary-trees", galerinaOpsPerRun: 135854, passiveCallCount: 3 },
-  // ── .tmf trust-container CREATION — TMX-256 SHAKE Merkle + LE container packing ──
+  // ── .spore trust-container CREATION — TMX-256 SHAKE Merkle + LE container packing ──
   // The Node.js column IS the shipped @galerina/ext-tmf engine (pure TS/Node — no .fungi
   // path exists); python.py / bench.rs are byte-identical reference writers that assert
-  // the SAME golden root. Honest "can other languages create a .tmf, and how fast?".
+  // the SAME golden root. Honest "can other languages create a .spore, and how fast?".
   { id: "tmf-container", dir: "tmf-container" },
   // ── Native framework vs middleware — Galerina App Kernel's fixed 12-gate pipeline ──
   // The Node.js column IS the Galerina App Kernel (no middleware chain); python.py is an
@@ -198,7 +200,8 @@ async function runBenchmark(bench) {
       const { spawnSync: _sp } = await import("node:child_process");
       const denoBin = resolveDenoBin();
       // Quote the executable path (it may contain spaces / be a full path) for shell:true.
-      const dr = _sp(`"${denoBin}"`, ["run", "--unstable-webgpu", `"${denoWebGpuRunner}"`], {
+      // Single command string, no args array — args+shell:true triggers Node DEP0190.
+      const dr = _sp(`"${denoBin}" run --unstable-webgpu "${denoWebGpuRunner}"`, {
         encoding: "utf8", timeout: 60000, shell: true,
       });
       res.denoWebGpu = (dr.status === 0 && dr.stdout?.trim())

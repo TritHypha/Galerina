@@ -5,7 +5,7 @@
 //     ps/proc/cmdline/history). The CLI never accepts a value as a positional/flag arg.
 //   - the atomic replace writes a CIPHERTEXT-ONLY temp in the SAME dir, fsyncs, then renames.
 //     The temp holds sealed bytes only — NEVER plaintext (the SOPS #624 leak class). We use a
-//     dot-prefixed ".<name>.tmf.tmp-<rand>" temp and rename over the target.
+//     dot-prefixed ".<name>.spore.tmp-<rand>" temp and rename over the target.
 import { writeFileSync, renameSync, openSync, fsyncSync, closeSync, readSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 import { dirname, basename, join } from "node:path";

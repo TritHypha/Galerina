@@ -1,13 +1,13 @@
 import { performance } from "node:perf_hooks";
 import { writeTmf } from "../../../galerina-ext-tmf/dist/index.js";
 
-// tmf-container — ".tmf trust-container CREATION" throughput.
+// tmf-container — ".spore trust-container CREATION" throughput.
 //
 // THE NODE.JS COLUMN IS LITERALLY GALERINA'S SHIPPED ENGINE. `@galerina/ext-tmf` is
 // pure TypeScript-on-Node (no `.fungi` execution path exists), so its creation
 // throughput *is* the Node.js row. python.py and bench.rs are independent,
 // byte-identical reference implementations of the same v0 format — that is the
-// honest "can other languages create a .tmf, and how fast?" comparison.
+// honest "can other languages create a .spore, and how fast?" comparison.
 //
 // One operation = build the canonical golden container (spec tmf-container-v0 §,
 // 2 sections → exactly 203 bytes). Every runtime asserts the SAME published root,
@@ -62,7 +62,7 @@ function runBench(iterations) {
       heapUsedBefore: memBefore.heapUsed, heapUsedDelta: heapDelta,
       bytesPerOperation: Number((heapDelta / iterations).toFixed(2)),  // per container
     },
-    notes: ["One op = build the canonical golden .tmf (203 bytes, root asserted): SHAKE256 leaf/node/root + LE packing"],
+    notes: ["One op = build the canonical golden .spore (203 bytes, root asserted): SHAKE256 leaf/node/root + LE packing"],
   };
 }
 

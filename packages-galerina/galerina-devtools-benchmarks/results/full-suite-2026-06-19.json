@@ -4405,7 +4405,7 @@
           "bytesPerOperation": 11.82
         },
         "notes": [
-          "One op = build the canonical golden .tmf (203 bytes, root asserted): SHAKE256 leaf/node/root + LE packing"
+          "One op = build the canonical golden .spore (203 bytes, root asserted): SHAKE256 leaf/node/root + LE packing"
         ],
         "normThroughput": 47364,
         "throughputUnit": "containers/s"

@@ -1,7 +1,7 @@
 // envtmf.test.mjs — node:test suite for @galerina/ext-secrets-tmf.
 //
 // Proves the security properties the design doc requires:
-//   - env.tmf seal/open round-trip
+//   - env.spore seal/open round-trip
 //   - set-from-stdin (never argv) — CLI rejects a value passed as argv
 //   - list shows names-not-values
 //   - get refuses on a TTY (CLI) without --force
@@ -42,7 +42,7 @@ function freshFile(name, ...kvs) {
   return buf;
 }
 
-test("env.tmf seal/open round-trip", () => {
+test("env.spore seal/open round-trip", () => {
   const buf = freshFile("rt", "DB_PASSWORD", "p@ss-123", "API_KEY", "ak_live_9");
   const v = openValue(buf, KP.secretKey, K3.ALLOW, "DB_PASSWORD", dec);
   assert.equal(v, "p@ss-123");
@@ -222,7 +222,7 @@ test("CLI get REFUSES on a TTY without --force (simulated via no piped input + i
 test("in-arena edit -> re-seal leaves NO temp file (no /tmp, no .swp) and writes ciphertext-only", () => {
   const dir = mkdtempSync(join(tmpdir(), "envtmf-"));
   try {
-    const file = join(dir, "env.tmf");
+    const file = join(dir, "env.spore");
     // simulate the CLI mutate path WITHOUT spawning (deterministic): init + set + atomic write
     let buf = initEnvTmf(KP.publicKey);
     buf = setSecret(buf, KP.secretKey, KP.publicKey, K3.ALLOW, "DB", enc("plaintext-never-on-disk")).bytes;
@@ -233,10 +233,10 @@ test("in-arena edit -> re-seal leaves NO temp file (no /tmp, no .swp) and writes
     buf = setSecret(buf, KP.secretKey, KP.publicKey, K3.ALLOW, "DB2", enc("also-never")).bytes;
     writeFileSync(file, Buffer.from(buf), { mode: 0o600 });
     const after = readdirSync(dir);
-    // NO .swp, NO FIFO, NO leftover temp (only the env.tmf itself + any in-flight atomic temp gone)
+    // NO .swp, NO FIFO, NO leftover temp (only the env.spore itself + any in-flight atomic temp gone)
     const leftovers = after.filter((f) => /\.swp$|\.tmp-|\.fifo$/i.test(f));
     assert.equal(leftovers.length, 0, `unexpected temp artifacts: ${leftovers.join(",")}`);
-    assert.ok(after.includes("env.tmf"));
+    assert.ok(after.includes("env.spore"));
     // the on-disk bytes are sealed: plaintext must not appear in ANY file in the dir
     const onDisk = readdirSync(dir).map((f) => readFileSync(join(dir, f)).toString("latin1")).join("");
     assert.ok(!onDisk.includes("plaintext-never-on-disk") && !onDisk.includes("also-never"),

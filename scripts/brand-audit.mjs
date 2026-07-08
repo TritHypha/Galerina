@@ -54,7 +54,7 @@ const ALLOW = [
   /(^|[\\/])notes[\\/]/i,        // historical R&D scratch (note 77 documents the rename itself)
   /RESTART-PROMPT|RESUME-|HANDOFF|REBOOT/i,
   // TritMesh-domain examples: `.spore` is the CURRENT TritMesh DB-container name (owner rename
-  // .tmf->.spore, notes/77-mesh-r-d-00.md:15; KB naming-audit 2026-07-03: "source stays .fungi").
+  // .spore->.spore, notes/77-mesh-r-d-00.md:15; KB naming-audit 2026-07-03: "source stays .fungi").
   /(^|[\\/])docs[\\/]examples[\\/]hypha[\\/]/i,
   // R&D proof scripts: verbatim-quote the note claims they refute + use TritMesh-current `.spore`
   // (passport vector / DB / RD-0231 A4 artifact row), and rd-0218 carries a FUNCTIONAL bio-morpheme

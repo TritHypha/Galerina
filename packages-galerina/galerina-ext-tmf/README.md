@@ -1,6 +1,6 @@
 # `@galerina/ext-tmf`
 
-The **`.tmf` (TritMesh Format) engine** for Galerina — an *ext* package (not core). It provides the
+The **`.spore` (TritMesh Format) engine** for Galerina — an *ext* package (not core). It provides the
 **integrity, authenticity, and confidentiality** layer that Galerina governs: a fail-closed container
 whose integrity root is a 3-ary SHAKE256 Merkle tree, signed by the hybrid Ed25519 + ML-DSA-65 signer,
 with KEM-DEM confidentiality.

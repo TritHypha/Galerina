@@ -1,4 +1,4 @@
-// @galerina/ext-tmf — the .tmf format engine (Phase 2, roadmap #6).
+// @galerina/ext-tmf — the .spore format engine (Phase 2, roadmap #6).
 //
 // Build order (specs frozen in Galerina-R-AND-D/tmf/spec/*):
 //   ✅ Slice 1 — TMX-256 integrity core (TriMerkle-XOF / SHAKE256)
@@ -25,7 +25,7 @@ export {
   streamNonce12, streamNonce24, ctxCommitTag, keygen, seal, open, streamSeal, streamOpen,
 } from "./kemdem.js";
 export type { TmfCryptoCode, AeadContextFields, SealResult, StreamSealResult } from "./kemdem.js";
-// Slice 5 (G4) — .tmf append-only history chain + §5 monotone-epoch / trusted-head freshness + §8 pack.
+// Slice 5 (G4) — .spore append-only history chain + §5 monotone-epoch / trusted-head freshness + §8 pack.
 // Integrity/order/freshness layer (deterministic SHAKE256); the KEM/AEAD ratchet (slice 3) and the
 // ML-DSA head signature (slice 4, FIPS-204-blocked) are out of scope — head_signed packs fail-close.
 export {

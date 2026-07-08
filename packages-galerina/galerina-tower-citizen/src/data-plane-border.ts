@@ -6,7 +6,7 @@
  *     Qexecuted = Q ∩ S_user
  *
  *   Q          — the developer's declared query scope (the rows the flow asks for)
- *   S_user     — the caller's CRYPTOGRAPHICALLY-PROVEN tenant scope (from the .tmf passport)
+ *   S_user     — the caller's CRYPTOGRAPHICALLY-PROVEN tenant scope (from the .spore passport)
  *   Qexecuted  — the rows actually returned: Q narrowed to what the caller may see
  *
  * The load-bearing rule that defeats `?user_id=victim` (IDOR / CWE-639): S_user is taken ONLY from the
@@ -62,7 +62,7 @@ export interface DataRow {
   readonly vaultId: string;
 }
 
-/** The caller's cryptographically-proven tenant scope (from the .tmf passport). NEVER a query parameter. */
+/** The caller's cryptographically-proven tenant scope (from the .spore passport). NEVER a query parameter. */
 export type UserScope = ReadonlySet<string>;
 
 /** The data-plane border policy: the signed vault registry + the (signed) set of world-shared scopes. */

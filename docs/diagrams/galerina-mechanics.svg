@@ -40,7 +40,7 @@
 
 <text x="40" y="343" font-size="11" fill="#5a6470">⑤ Governed ext packages (not core)</text>
 <rect x="40" y="349" width="190" height="52" rx="8" fill="#fcf0d9" stroke="#c08a2e" stroke-width="1.5"/>
-<text x="135" y="374" text-anchor="middle" font-size="12.5" font-weight="600" fill="#6b4e15">.tmf engine</text>
+<text x="135" y="374" text-anchor="middle" font-size="12.5" font-weight="600" fill="#6b4e15">.spore engine</text>
 <text x="135" y="391" text-anchor="middle" font-size="10" fill="#7d5e1d">TMX-256 · container · KEM-DEM</text>
 <rect x="245" y="349" width="190" height="52" rx="8" fill="#fcf0d9" stroke="#c08a2e" stroke-width="1.5"/>
 <text x="340" y="374" text-anchor="middle" font-size="12.5" font-weight="600" fill="#6b4e15">Quantum bridge</text>

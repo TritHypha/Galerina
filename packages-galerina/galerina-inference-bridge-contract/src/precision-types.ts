@@ -6,7 +6,7 @@
 export type PrecisionTechnique =
   | "ternary"    // BitNet b1.58 {-1,0,+1}
   | "fp4_block"  // NVFP4: 16×E2M1 (4-bit) + 1-byte E4M3 per-block scale = 9 B/block; LOSSY; NOT ternary
-                 // (E2M1 has 8 magnitudes {0,½,1,1½,2,3,4,6}) — verified facts from the .tmf R&D
+                 // (E2M1 has 8 magnitudes {0,½,1,1½,2,3,4,6}) — verified facts from the .spore R&D
   | "fp8"        // intermediate fallback
   | "fp16";      // full precision (sensitivity-critical layers)
 

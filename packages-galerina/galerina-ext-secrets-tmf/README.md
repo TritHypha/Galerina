@@ -2,12 +2,12 @@
 
 OPTIONAL, SEPARATE (`private:true`, `ext` tier, not auto-loaded) sealed-secrets layer for Galerina.
 
-`env.tmf` is an **encrypted-at-rest replacement for a plaintext `.env`**, edited through a governed
+`env.spore` is an **encrypted-at-rest replacement for a plaintext `.env`**, edited through a governed
 **in-memory-only** CLI. It is a THIN orchestration layer over the shipped `@galerina/ext-tmf`
 (format/crypto) and the `@galerina/ext-secrets-vault` store **discipline**. It adds **NO new crypto**
 and **NO new container bytes**; crypto stays Binary (FUNGI-SUBSTRATE-001).
 
-This is the SOPS / Bitnami-Sealed-Secrets / age pattern applied to the `.tmf` container, with one
+This is the SOPS / Bitnami-Sealed-Secrets / age pattern applied to the `.spore` container, with one
 genuine hardening: **the decrypt-strictly-in-memory editor that structurally avoids the documented
 `sops edit` temp-file leak** (getsops #624/#1044). It is **not new cryptography or science** —
 paper verdict is defensive-pub (or none).
@@ -15,8 +15,8 @@ paper verdict is defensive-pub (or none).
 ## What it gives you over a plaintext `.env`
 
 - **Ciphertext at rest** — an LFI / path-traversal / accidental-commit / backup-leak that reads
-  `env.tmf` gets KEM-DEM (hybrid X25519+ML-KEM-768 → AES-256-GCM) ciphertext, not credentials.
-- **Authenticated integrity / tamper-evidence** — the `.tmf` TMX-256 root is recomputed over the
+  `env.spore` gets KEM-DEM (hybrid X25519+ML-KEM-768 → AES-256-GCM) ciphertext, not credentials.
+- **Authenticated integrity / tamper-evidence** — the `.spore` TMX-256 root is recomputed over the
   ciphertext leaves and fail-closes on any tamper (a `.env` has zero integrity).
 - **Names off the table** — each secret's `coord` is `SHAKE256("env-tmf-coord-v0" ‖ name)[:16]`, so
   the cleartext **name never appears** in the section table. Names + metadata live ONLY inside a
@@ -45,9 +45,9 @@ paper verdict is defensive-pub (or none).
 ## CLI
 
 ```
-galerina-secrets-tmf <cmd> [--file ./env.tmf]
+galerina-secrets-tmf <cmd> [--file ./env.spore]
   keygen                              # print a fresh recipient keypair (anchor SEC externally!)
-  init --pub HEX                      # create an empty encrypted env.tmf
+  init --pub HEX                      # create an empty encrypted env.spore
   set NAME --pub HEX                  # value from STDIN or no-echo prompt — NEVER argv
   get NAME [--force]                  # in-arena -> stdout for piping; REFUSE on a TTY without --force
   list                               # manifest only -> names + metadata, NEVER values
@@ -74,7 +74,7 @@ The recipient secret key is supplied to the CLI as a **passphrase-wrapped** blob
 
 ## Schema (v0, unsigned-but-encrypted)
 
-- Container = the shipped v0 `.tmf` (`writeTmf`/`readTmf` as-is). `flags.signed = 0`.
+- Container = the shipped v0 `.spore` (`writeTmf`/`readTmf` as-is). `flags.signed = 0`.
 - One secret = one `TmfSection`: `modality = 9` (Structured), `coord = SHAKE(name)[:16]`,
   `payload = seal(0x02, recipientPub, valueBytes, aeadContext)` with `commit_mode = CTX` (CMT-4,
   key-committing). The 36-byte AEAD context binds `section_id + coord + modality + conf_flags`.
@@ -82,22 +82,22 @@ The recipient secret key is supplied to the CLI as a **passphrase-wrapped** blob
   directory + per-secret metadata (`created`/`rotated`/`category`/`environment`/`kem_profile`).
 
 **Signed root is DEFERRED.** ML-DSA-65 over the TMX root is `@galerina/ext-tmf` slice 4 / #7
-(unbuilt); `readTmf` rejects any signed file today. v0 `env.tmf` ships **unsigned-but-encrypted**
+(unbuilt); `readTmf` rejects any signed file today. v0 `env.spore` ships **unsigned-but-encrypted**
 and **never fakes a signature**. The bench (P7) confirms a signed-flag file is rejected.
 
 **Epoch binding (v0):** the AEAD context binds `epoch = 0` deterministically (section identity is
 already pinned by `section_id + coord`); the human-facing `created`/`rotated` timestamps live in the
 sealed manifest. This keeps the v0 schema free of a new container field.
 
-## Key anchor — env.tmf RELOCATES secret-zero, it does NOT remove it
+## Key anchor — env.spore RELOCATES secret-zero, it does NOT remove it
 
 This is the most important honesty note. `open()` takes `recipientSec` as a **caller-supplied**
 key (`kemdem.ts:190`); the engine has zero custody logic. KEM-DEM moves the bootstrap secret to this
 **one** recipient KEM secret key.
 
-> `env.tmf` moves secret-zero from **N app secrets → 1 anchored key** and reduces blast radius. It
+> `env.spore` moves secret-zero from **N app secrets → 1 anchored key** and reduces blast radius. It
 > does **NOT** eliminate the external root of trust. **If the recipient secret key co-locates on the
-> same disk as the `env.tmf`, the at-rest win EVAPORATES** — the same LFI/traversal reads both. The
+> same disk as the `env.spore`, the at-rest win EVAPORATES** — the same LFI/traversal reads both. The
 > anchor **MUST** be external. This is unavoidable by design; the package cannot solve secret-zero.
 
 - **Local dev:** operator passphrase → Argon2id (`anchor.ts`, `wrapRecipientSecret`/

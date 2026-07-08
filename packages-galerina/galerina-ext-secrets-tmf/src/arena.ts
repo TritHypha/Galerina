@@ -3,7 +3,7 @@
 // Mirrors the @galerina/ext-secrets-vault SecretsRotationManager zero-wipe + atomic-swap
 // discipline (rotation-manager.ts:45-49 replace-wipe, :90-95 stage->swap->wipe,
 // :108-110 fail-closed getActive, :212-220 dispose), but is SOURCE-AGNOSTIC: it holds
-// raw plaintext Buffers fed from the env.tmf decrypt path — it does NOT import VaultClient
+// raw plaintext Buffers fed from the env.spore decrypt path — it does NOT import VaultClient
 // or do any HTTP. This is the "store + swap + wipe + fail-closed" pattern reuse the design
 // doc calls for, NOT a drop-in of the Vault-coupled manager.
 //
@@ -68,7 +68,7 @@ export class SealArena {
 
   /**
    * Atomic-swap rotation of a single value (rotation-manager.ts:84-95 choreography,
-   * minus the network fetch + 50ms quiesce — env.tmf re-seal is synchronous in-arena).
+   * minus the network fetch + 50ms quiesce — env.spore re-seal is synchronous in-arena).
    * stage -> swap -> zero-wipe old buffer.
    */
   rotateValue(name: string, newValue: Uint8Array): void {

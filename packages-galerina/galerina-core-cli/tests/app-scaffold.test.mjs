@@ -116,7 +116,7 @@ test("galerina new app — App.fungi is pure (no effects) and fail-closed (manda
       .join("\n");
     assert.doesNotMatch(code, /\beffects\s*\{/, "scaffold must declare NO effects (deny-by-default)");
     assert.match(code, /_\s*=>/, "match must keep its mandatory fail-closed wildcard");
-    // Capability binding lives in the signed manifest, never in a .tmf — the
+    // Capability binding lives in the signed manifest, never in a .spore — the
     // scaffold teaches that explicitly.
     assert.match(app, /\.lmanifest/, "App.fungi should point at the signed .lmanifest");
 

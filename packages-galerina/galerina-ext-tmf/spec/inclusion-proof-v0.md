@@ -1,4 +1,4 @@
-# `.tmf` TMX-256 inclusion (Merkle) proof — v0
+# `.spore` TMX-256 inclusion (Merkle) proof — v0
 
 **Status:** Draft, buildable + **verified**. Makes [`tmx-256-construction-v0.md`](tmx-256-construction-v0.md)
 §9 byte-precise: a self-contained proof that **one section is bound under the signed root**, without
@@ -16,7 +16,7 @@ container vectors by construction.
 
 ## 1. Purpose
 
-To let a verifier confirm section `i`'s `(kind, modality, coord, payload)` is part of a signed `.tmf` while
+To let a verifier confirm section `i`'s `(kind, modality, coord, payload)` is part of a signed `.spore` while
 receiving only: `header_core` (24 B), the section's `leaf_hash` (or the data to recompute it), and the
 sibling digests on the path from leaf `i` to the root. The verifier recomputes `top_node`, then `root`, then
 checks the signature. Enables selective disclosure (reveal one section, prove it belongs) and streaming

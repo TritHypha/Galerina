@@ -576,15 +576,15 @@ It was not sent to an LLM.
 It was not compiled into the build.
 ```
 
-## Encrypted-at-Rest Secrets: `env.tmf`
+## Encrypted-at-Rest Secrets: `env.spore`
 
 Everything above governs how `.env` *values* flow through the app once loaded.
 But a plaintext `.env` file is still readable by anyone who can read the file on
 disk. For the cases where the secrets file itself must be encrypted at rest,
-Galerina ships an **optional** drop-in replacement: `env.tmf`, provided by the
+Galerina ships an **optional** drop-in replacement: `env.spore`, provided by the
 `@galerina/ext-secrets-tmf` package.
 
-`env.tmf` is the SOPS / Sealed-Secrets / age pattern built on the `.tmf`
+`env.spore` is the SOPS / Sealed-Secrets / age pattern built on the `.spore`
 container. It is a **thin layer** over `@galerina/ext-tmf` (it owns no crypto and
 no container bytes of its own — every byte primitive comes from the engine's
 `writeTmf`/`readTmf` and KEM-DEM `seal`/`open`). Each secret is sealed under a
@@ -592,23 +592,23 @@ recipient public key; the file on disk is ciphertext only.
 
 ```text
 .env       -> plaintext key=value, readable by anyone with file access
-env.tmf    -> per-secret KEM-DEM sealed sections, encrypted at rest,
+env.spore    -> per-secret KEM-DEM sealed sections, encrypted at rest,
               opened only in-memory under the recipient key
 ```
 
-`env.tmf` is **opt-in**. Plain `.env` (with all the taint, scope, sink and
-report rules above) remains the default. Reach for `env.tmf` when the secrets
+`env.spore` is **opt-in**. Plain `.env` (with all the taint, scope, sink and
+report rules above) remains the default. Reach for `env.spore` when the secrets
 file must survive on shared disk, in a repo, or in a backup without exposing
 values.
 
 ### Governed In-Memory CLI
 
-Secrets in `env.tmf` are managed through a governed CRUD/shell CLI
+Secrets in `env.spore` are managed through a governed CRUD/shell CLI
 (`galerina secrets-tmf` / `galerina-secrets-tmf`) that decrypts only into an arena
 buffer and never leaves plaintext where it can be scraped:
 
 ```text
-galerina-secrets-tmf init  --pub HEX        create an empty encrypted env.tmf
+galerina-secrets-tmf init  --pub HEX        create an empty encrypted env.spore
 galerina-secrets-tmf set   NAME --pub HEX   value from STDIN or no-echo prompt
 galerina-secrets-tmf get   NAME             in-arena -> stdout (piped only)
 galerina-secrets-tmf list                   names + metadata, NEVER values
@@ -634,10 +634,10 @@ arena-only          the recipient secret and decrypted values live only in
 
 ### Fail-Closed Reading
 
-Reading an `env.tmf` verifies before it decrypts: the engine recomputes the
+Reading an `env.spore` verifies before it decrypts: the engine recomputes the
 container's integrity root over the **ciphertext** leaves and fail-closes on any
 tamper or bounds violation *before* any section is opened. A signed-v0 file is
-rejected. There is no path where a corrupted or partial `env.tmf` yields a
+rejected. There is no path where a corrupted or partial `env.spore` yields a
 secret.
 
 ### Production Read-Back

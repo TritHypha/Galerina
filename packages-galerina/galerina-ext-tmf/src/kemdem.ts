@@ -1,4 +1,4 @@
-// kemdem.ts — .tmf confidentiality layer (KEM-DEM), v0 (slice 3). Spec (frozen): spec/tmf-encryption-v0.md.
+// kemdem.ts — .spore confidentiality layer (KEM-DEM), v0 (slice 3). Spec (frozen): spec/tmf-encryption-v0.md.
 //
 // Two halves, by design:
 //   1. DETERMINISTIC key schedule / AAD / STREAM nonces / CTX commit — pure SHAKE256 byte-math (node:crypto),

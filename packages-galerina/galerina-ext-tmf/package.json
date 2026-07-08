@@ -1,7 +1,7 @@
 {
   "name": "@galerina/ext-tmf",
   "version": "1.0.0-beta.2",
-  "description": "Galerina .tmf format engine (Phase 2 #6) — TMX-256 integrity (TriMerkle-XOF/SHAKE256), container, KEM-DEM confidentiality, ML-DSA-65 signing. Crypto-on-core: bit-exact, deterministic.",
+  "description": "Galerina .spore format engine (Phase 2 #6) — TMX-256 integrity (TriMerkle-XOF/SHAKE256), container, KEM-DEM confidentiality, ML-DSA-65 signing. Crypto-on-core: bit-exact, deterministic.",
   "license": "Apache-2.0",
   "private": true,
   "type": "module",

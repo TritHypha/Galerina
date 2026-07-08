@@ -1,12 +1,12 @@
-# `.tmf` engine specs — provenance & sync
+# `.spore` engine specs — provenance & sync
 
-These specs are **vendored copies** of the frozen `.tmf` format specs authored in the R&D repo.
+These specs are **vendored copies** of the frozen `.spore` format specs authored in the R&D repo.
 They live here so the engine package is **self-contained**: the spec the code implements is versioned
 with the code and the golden-vector conformance survives any cleanup of the scratch R&D repo.
 
 | | |
 |---|---|
-| **Upstream (authoring repo)** | `C:\wwwprojects\Galerina-R-AND-D\tmf\spec\` |
+| **Upstream (authoring repo)** | `C:\Users\phill\Documents\GitHub\Galerina-R-AND-D\tmf\spec\` |
 | **Pinned at R&D commit** | `fb68d06` — "threshold (M-of-N) custody spec + reference; absorb hub handoff into state" (2026-06-16) |
 | **Direction of truth** | R&D **authors** the spec; Galerina **consumes** it. Edit upstream, then re-vendor here — do **not** fork these copies. |
 | **Binding conformance** | the inline golden vectors in `../tests/*.test.mjs` (e.g. the 203-byte container `89544d46…`, root `43386e64…685212`). The TS engine is verified byte-for-byte against them. |

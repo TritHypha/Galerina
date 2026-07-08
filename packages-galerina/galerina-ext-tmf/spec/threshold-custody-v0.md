@@ -1,4 +1,4 @@
-# `.tmf` threshold (M-of-N) custody — v0 (multi-vector locking)
+# `.spore` threshold (M-of-N) custody — v0 (multi-vector locking)
 
 **Status:** Draft, buildable. Adds **k-of-n** ("M-of-N") locking on **two orthogonal axes** — authorization
 and decryption — so no single key (or single key-holder) is a single point of unlock. Generalizes

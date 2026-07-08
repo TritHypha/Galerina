@@ -48,7 +48,7 @@ export type { ConfidenceVerdict } from "./three-valued-governance.js";
 export type { GovernanceDiagnostic, BoundaryDecision } from "./three-valued-governance.js";
 
 // ── Per-user data hard border — Qexecuted = Q ∩ S_user (owner note 54 / IDOR, CWE-639) ──
-// K3 set-intersection at the query boundary: caller scope comes ONLY from the proven .tmf passport, never a
+// K3 set-intersection at the query boundary: caller scope comes ONLY from the proven .spore passport, never a
 // `?user_id=` param; a developer `where` may only narrow. Visibility is fail-closed PRIVATE by default —
 // only an exact attested `"public"` widens, so a forgotten/typo'd marker over-denies, never leaks.
 export {

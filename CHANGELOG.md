@@ -44,7 +44,7 @@ self-hosting beyond `tokenize`). 60/60 packages · 6,075 tests · 0 fail.
   sign + verify the admission manifest with a post-quantum hybrid signature when a `keygen --hybrid`
   key is present; `GALERINA_MANIFEST_PROFILE=certified` mandates it (fail-secure, no PQ downgrade).
   Default Ed25519 path unchanged.
-- **`@galerina/ext-secrets-tmf` — env.tmf sealed secrets.** Optional, encrypted-at-rest replacement
+- **`@galerina/ext-secrets-tmf` — env.spore sealed secrets.** Optional, encrypted-at-rest replacement
   for plaintext `.env`, edited through a governed in-memory-only CLI (never argv, no temp file,
   no `$EDITOR`, in-arena zero-wipe). Thin orchestration over `@galerina/ext-tmf`; not auto-loaded.
 - **`FUNGI-TIER-001` flow-kind tier floor (production-gated).** A `flow`/`guarded` flow that touches a

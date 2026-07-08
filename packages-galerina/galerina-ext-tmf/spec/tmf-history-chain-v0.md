@@ -1,4 +1,4 @@
-# `.tmf` append-only history chain (`+1`) — v0 (byte-precise)
+# `.spore` append-only history chain (`+1`) — v0 (byte-precise)
 
 **Status:** Draft, buildable. Specifies the **append-only `+1` timeline** deferred by
 [`tmf-encryption-v0.md`](tmf-encryption-v0.md) §8 and described in the charter (`..\..\RD-DIRECTION.md` §3.3):
@@ -18,7 +18,7 @@ hash-linked chain) — tamper-evident order — with a per-epoch **key-erasure r
 ---
 
 ## 1. Segments, the chain header, and the hash-link
-A history is an ordered list of **segments** `S₀, S₁, …, Sₙ`. Each `Sₖ` is a normal encrypted `.tmf` section
+A history is an ordered list of **segments** `S₀, S₁, …, Sₙ`. Each `Sₖ` is a normal encrypted `.spore` section
 group (its own TMX-256 leaves over ciphertext, sealed via KEM-DEM, encryption §2–4) with a **24-byte chain
 header** bound into its root as `header_core`, plus a **link-leaf** carrying `prev_root`:
 

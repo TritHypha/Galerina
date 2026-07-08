@@ -1,4 +1,4 @@
-// container.ts — .tmf container reader/writer, v0 (byte-precise).
+// container.ts — .spore container reader/writer, v0 (byte-precise).
 //
 // On-disk layout: HEADER(56) ∥ SECTION TABLE(count×56) ∥ PAYLOAD REGION ∥ [SIGNATURE BLOCK].
 // header_core = bytes[0:24) (magic/version/profile/flags/section_count) is bound into the TMX-256
@@ -71,11 +71,11 @@ export function headerCore(profile: number, flags: number, sectionCount: number 
 }
 
 /**
- * Write an UNSIGNED v0 .tmf container. Reproduces the spec's golden bytes for the golden input.
+ * Write an UNSIGNED v0 .spore container. Reproduces the spec's golden bytes for the golden input.
  * (flags.signed stays 0 — real signing is slice 4 / #7; v0 never writes a fake signature.)
  */
 export function writeTmf(sections: readonly TmfSection[]): Uint8Array {
-  if (sections.length === 0) throw new TmfError("MalformedTable", "a .tmf must have at least one section (TMX requires ≥1 leaf)");
+  if (sections.length === 0) throw new TmfError("MalformedTable", "a .spore must have at least one section (TMX requires ≥1 leaf)");
   const leaves: Uint8Array[] = [];
   const entries: Uint8Array[] = [];
   const region: Uint8Array[] = [];
@@ -160,7 +160,7 @@ export function readTmf(buf: Uint8Array): TmfReadResult {
   if (signed) {
     // §6 step 5: a reader with no vetted FIPS-204/Ed25519 verifier MUST reject every signed file —
     // never silently downgrade to unsigned. Real verification arrives in slice 4 (#7).
-    throw new TmfError("AuthError", "signed .tmf rejected: no vetted signature verifier wired in v0 (no silent downgrade)");
+    throw new TmfError("AuthError", "signed .spore rejected: no vetted signature verifier wired in v0 (no silent downgrade)");
   }
   return { versionMajor, versionMinor, profile, flags, integrityRoot, sections };
 }

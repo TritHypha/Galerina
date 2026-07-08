@@ -1,7 +1,7 @@
-# `.tmf` modalities & codec registry — v0 (rich media + structured data)
+# `.spore` modalities & codec registry — v0 (rich media + structured data)
 
 **Status:** Draft, buildable. Extends [`tmf-container-v0.md`](tmf-container-v0.md) §4 (the `modality` plane +
-codec note) into a full **codec registry** so a `.tmf` section can carry images, audio, video, streamed media,
+codec note) into a full **codec registry** so a `.spore` section can carry images, audio, video, streamed media,
 mathematical equations, chemical structures, JSON and XML — without changing the integrity, authenticity, or
 confidentiality layers. Companion to [`tmf-encryption-v0.md`](tmf-encryption-v0.md) (the STREAM mode large
 media uses) and [`nvfp4-codec-v0.md`](nvfp4-codec-v0.md) (one tensor codec). Reference generator:
@@ -15,12 +15,12 @@ media uses) and [`nvfp4-codec-v0.md`](nvfp4-codec-v0.md) (one tensor codec). Ref
 ---
 
 ## 1. Three honesty points up front
-- **`.tmf` wraps codecs; it does not replace them.** A photo stays JPEG/PNG/AVIF *bytes*; a video stays
-  H.264/AV1 *bytes*. `.tmf` adds coordinate-bound integrity, authenticity, confidentiality, and (optionally)
+- **`.spore` wraps codecs; it does not replace them.** A photo stays JPEG/PNG/AVIF *bytes*; a video stays
+  H.264/AV1 *bytes*. `.spore` adds coordinate-bound integrity, authenticity, confidentiality, and (optionally)
   streaming framing **around** those bytes. It is not a new image/video codec.
 - **"Lossless" is about the cryptographic path, not the codec.** The AEAD decrypts to the *exact* stored
-  bytes and TMX verifies them bit-for-bit, so the `.tmf` path is lossless. If the *encoder* upstream was lossy
-  (JPEG, Opus, H.264, NVFP4), that lossiness happened **before** `.tmf` and is out of scope — `.tmf` stores
+  bytes and TMX verifies them bit-for-bit, so the `.spore` path is lossless. If the *encoder* upstream was lossy
+  (JPEG, Opus, H.264, NVFP4), that lossiness happened **before** `.spore` and is out of scope — `.spore` stores
   and returns whatever encoded bytes it was given, exactly.
 - **No in-network semantic interpretation.** Parsing/rendering/validating a payload (decoding a video,
   evaluating an equation, canonicalizing a molecule, querying JSON) happens at **trusted endpoints only** —
@@ -126,4 +126,4 @@ separation. It also prints the modality + codec registries. Stdlib SHAKE256 only
 PNG/JPEG/WebP/AVIF/TIFF/GIF; Opus (RFC 6716), AAC, FLAC, WAV, MP3; H.264 (ITU-T H.264), HEVC (H.265), AV1
 (AOMedia), VP9, ISO-BMFF/MP4, Matroska/WebM; MathML (W3C), LaTeX, OMML; SMILES (Daylight), InChI (IUPAC),
 MOL/SDF & CTfile (BIOVIA), CML, PDB (wwPDB), MOL2; JSON (RFC 8259), NDJSON, XML (W3C), CBOR (RFC 8949),
-Protocol Buffers, YAML. `.tmf` carries these as opaque payloads; it neither modifies nor re-specifies them.
+Protocol Buffers, YAML. `.spore` carries these as opaque payloads; it neither modifies nor re-specifies them.

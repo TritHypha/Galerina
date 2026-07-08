@@ -67,7 +67,7 @@ tests/e2e.test.mjs          the scaffold→fuse→kernel→serve proof
 - **Least-capability, opt-in.** To let a flow reach a capability, add an `effects { … }`
   clause to its contract **and** the matching name to `App.manifest`'s `capabilities` —
   never one without the other. The build folds the grant into the **signed `.lmanifest`
-  fuse{} block** (never a `.tmf`, which carries integrity/confidentiality only).
+  fuse{} block** (never a `.spore`, which carries integrity/confidentiality only).
 - **Fail-closed.** Every `match` keeps its mandatory `_ =>` wildcard (FUNGI-TYPE-023). The
   kernel's secure defaults 404 an unknown path and 401 an auth-required route that has no
   channel/identity verdict — the `GET /hello` route is `public` only as an **explicit,

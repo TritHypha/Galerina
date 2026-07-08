@@ -1,4 +1,4 @@
-# `.tmf` signature block + key custody — v0
+# `.spore` signature block + key custody — v0
 
 **Status:** Spec **FROZEN v0** (byte format + custody + FIPS-204 verification semantics); structural golden
 vector reproduces (`gen_sig_block.py`, confirmed byte-for-byte); real signing/verification **impl Blocked**
@@ -40,12 +40,12 @@ do not reimplement it — a vetted library does (that's the Blocked dependency).
 
 ### 2.1 The construction is generic: "hybrid Ed25519 + ML-DSA-65 over a 32-byte digest" (= Galerina #34)
 
-This block is **not `.tmf`-specific**. It signs a **32-byte digest** with the hybrid pair; only *which* digest
+This block is **not `.spore`-specific**. It signs a **32-byte digest** with the hybrid pair; only *which* digest
 changes per use:
 
 | Use | 32-byte signing input | Digest function |
 |---|---|---|
-| `.tmf` (this spec) | `integrity_root` | TMX-256 (SHAKE256 tree) |
+| `.spore` (this spec) | `integrity_root` | TMX-256 (SHAKE256 tree) |
 | **Galerina task #34** | `.lmanifest` body digest | **SHA-256** |
 
 Freezing this spec therefore **directly unblocks Galerina #34** (ML-DSA-65 over the SHA-256 digest, hybrid with
@@ -56,7 +56,7 @@ Ed25519): #34 is the *same* construction with `digest = SHA-256(canonical_body)`
   *HashML-DSA* (the pre-hash variant is for large messages; here the message *is* already a digest).
 - **MUST pass a distinct per-surface domain-separation context** `ctx` (FIPS-204 binds `ctx` into `μ`), one per
   digest-type, so a key signing one surface cannot be cross-protocol-confused with another: e.g.
-  `ctx = "tmf-root-v0"` for a `.tmf` TMX root vs a distinct `ctx` (e.g. `"galerina-manifest-v0"`) for a Galerina
+  `ctx = "tmf-root-v0"` for a `.spore` TMX root vs a distinct `ctx` (e.g. `"galerina-manifest-v0"`) for a Galerina
   manifest's SHA-256 digest. A bare 32-byte value is otherwise ambiguous between the two; the per-surface `ctx`
   removes the ambiguity. (A distinct *key* per surface is also acceptable; a distinct `ctx` is the cheaper
   default.)
@@ -136,7 +136,7 @@ verify (no lib, either profile) -> AuthError: no vetted verifier wired -> reject
   and pairs it with k-of-n Shamir secret-sharing of the data key — so no single key/holder is a single point of
   unlock.
 - **Level-5 long-lived profile (Path B, owner-ratified 2026-06-16): `{ML-DSA-87, SLH-DSA-SHA2-256s}`, AND-verified.**
-  For decades-lived `.tmf` archives, pair the level-5 lattice signature (ML-DSA-87) with the **hash-based**
+  For decades-lived `.spore` archives, pair the level-5 lattice signature (ML-DSA-87) with the **hash-based**
   SLH-DSA — whose security rests *only* on the hash, not on any lattice assumption. AND-verification means a
   future cryptanalytic break of one family still leaves the artifact authentic under the other. This is the
   cold-path signature half of the level-5 tier (its KEM half is `kem_profile` 0x03/0x04, tmf-encryption-v0 §2.1).
@@ -165,11 +165,11 @@ carries the key only so the verifier knows *which* key to check against the trus
 ## 7. Key custody lifecycle (reuse `BridgeManifest` / `BridgeAttestation`)
 
 Custody is the genuinely hard part (it is Galerina's open blocker #34/#107-109 too). v0 reuses the existing
-attestation idiom rather than inventing a `.tmf`-specific PKI.
+attestation idiom rather than inventing a `.spore`-specific PKI.
 
 - **Identity:** every signing key has a `key_id`, e.g. `tmf-key-YYYY-MM` (one active signing key per period;
   finer granularity allowed). The `key_id` is recorded in the `BridgeManifest`/attestation, not invented per-file.
-- **Private-key custody:** signing keys live in an **HSM/KMS**, never in the repo, never in a `.tmf`, never
+- **Private-key custody:** signing keys live in an **HSM/KMS**, never in the repo, never in a `.spore`, never
   in source. (Matches the "no secrets/private keys committed" rule.) The signer is a **vetted FIPS-204/Ed25519
   library invoked through the Galerina governance/capability boundary** (a host call — crypto cannot live in
   `.fungi`: `galerina check` rejects even bitwise `^`, see `..\..\tri-encription\fungi\probe-no-bitwise.fungi`); the key
@@ -181,7 +181,7 @@ attestation idiom rather than inventing a `.tmf`-specific PKI.
   - **Working reference (owner-deployed):** the shipped **hybrid bridge attestation + opt-in `mlDsaPublicKey`
     admission policy** is the concrete enforcement point of this model — the bridge attestation carries the
     `{Ed25519, ML-DSA-65}` key material, and the admission policy decides *which* `mlDsaPublicKey` is admitted
-    to the trusted registry (opt-in, not trust-on-first-use). That is exactly the `.tmf`-custody "resolve
+    to the trusted registry (opt-in, not trust-on-first-use). That is exactly the `.spore`-custody "resolve
     against the Trust Capsule, never trust the file's own key" rule, already running.
 - **Rotation:** new `key_id` per period. Overlap window: during rotation, accept signatures from the
   previous and current `key_id`; re-signing of long-lived artifacts is optional (old signatures stay valid
@@ -204,7 +204,7 @@ attestation idiom rather than inventing a `.tmf`-specific PKI.
 ## 9. Threats addressed
 | Threat | Mitigation |
 |---|---|
-| Forge a `.tmf` | ML-DSA-65 (PQ) over the root; hybrid adds Ed25519 |
+| Forge a `.spore` | ML-DSA-65 (PQ) over the root; hybrid adds Ed25519 |
 | Quantum break of classical sig | ML-DSA-65 half of the hybrid holds |
 | Downgrade (drop the PQ half) | `flags.signed` + algs bound under the signed root; AND verification |
 | Stolen signing key | rotation (new `key_id`) + **revocation** (revoked `key_id` → `AuthError`) |

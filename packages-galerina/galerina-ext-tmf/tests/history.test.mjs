@@ -1,4 +1,4 @@
-// .tmf append-only history chain (slice 5, G4). Verifies the deterministic SHAKE256 chain layer:
+// .spore append-only history chain (slice 5, G4). Verifies the deterministic SHAKE256 chain layer:
 // §1 chain header + LINK leaf, §3 append/verify (hash-linked, fail-closed), §5 monotone-epoch /
 // trusted-head freshness, and the §8 on-wire pack (recompute-by-root, link walk, strict membership).
 // Mirrors the inline-self-check style of tmx256.test.mjs / kemdem.test.mjs (no external golden vectors

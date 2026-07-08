@@ -2,10 +2,10 @@
 // cli.ts — the `galerina secrets-tmf` CRUD/shell CLI (design doc Part 2).
 //
 // bin: galerina-secrets-tmf  (also surfaced as `galerina secrets-tmf <cmd>`)
-// default --file ./env.tmf
+// default --file ./env.spore
 //
 // Commands:
-//   init                      create an empty encrypted env.tmf for a recipient pubkey
+//   init                      create an empty encrypted env.spore for a recipient pubkey
 //   set NAME                  value from STDIN or no-echo prompt — NEVER argv
 //   get NAME                  in-arena -> stdout (for piping); REFUSE on a TTY without --force
 //   list                      manifest only -> names + metadata, NEVER values
@@ -42,7 +42,7 @@ interface Args {
 }
 
 function parseArgs(argv: string[]): Args {
-  const out: Args = { cmd: argv[0] ?? "help", file: "./env.tmf", force: false, rest: [] };
+  const out: Args = { cmd: argv[0] ?? "help", file: "./env.spore", force: false, rest: [] };
   for (let i = 1; i < argv.length; i++) {
     const a = argv[i]!;
     if (a === "--file") { out.file = argv[++i]!; }
@@ -206,7 +206,7 @@ async function main(): Promise<void> {
         }
         // raw secret-key bytes through a Buffer view we OWN and wipe in finally — no hex string.
         const sec = Buffer.from(kp.secretKey.buffer, kp.secretKey.byteOffset, kp.secretKey.length);
-        process.stderr.write("SEC-RAW (anchor externally, do NOT co-locate with env.tmf):");
+        process.stderr.write("SEC-RAW (anchor externally, do NOT co-locate with env.spore):");
         let off = 0;
         while (off < sec.length) off += writeSync(2, sec, off, sec.length - off);
         process.stderr.write("\n");
@@ -224,7 +224,7 @@ async function main(): Promise<void> {
 
     default:
       process.stderr.write(
-        "galerina-secrets-tmf <cmd> [--file ./env.tmf]\n" +
+        "galerina-secrets-tmf <cmd> [--file ./env.spore]\n" +
         "  init --pub HEX | set NAME --pub HEX | get NAME [--force] | list | rm NAME --pub HEX\n" +
         "  rotate-recipient --new-pub HEX | keygen | shell --pub HEX\n" +
         "  (secret values: STDIN or no-echo prompt — NEVER argv)\n",

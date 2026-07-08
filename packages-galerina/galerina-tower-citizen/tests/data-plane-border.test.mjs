@@ -41,8 +41,8 @@ const ROWS = [
   { id: 99, ownerScope: "scope.bob",   vaultId: "vault.catalog",  trueOwner: "scope.bob",   sharedOK: false },
 ];
 
-const ALICE = new Set(["scope.alice"]); // proven from Alice's .tmf passport
-const BOB = new Set(["scope.bob"]);     // proven from Bob's .tmf passport
+const ALICE = new Set(["scope.alice"]); // proven from Alice's .spore passport
+const BOB = new Set(["scope.bob"]);     // proven from Bob's .spore passport
 
 const trueLeak = (rows, sUser) => rows.filter((r) => r.sharedOK === false && !sUser.has(r.trueOwner));
 const ids = (rows) => rows.map((r) => r.id).sort((a, b) => a - b);

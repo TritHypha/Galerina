@@ -1,4 +1,4 @@
-# `.tmf` container format — v0 (byte-precise, buildable)
+# `.spore` container format — v0 (byte-precise, buildable)
 
 **Status:** Draft, buildable + **verified**. Companion to
 [`tmx-256-construction-v0.md`](tmx-256-construction-v0.md) (the integrity/hash core). This file
@@ -88,7 +88,7 @@ verifies them) but their semantics are application-defined. `kind` is bound into
   per-block scale = 9 bytes** (verified against NVIDIA `modelopt`/`TransformerEngine` — see the external-repos
   analysis). NVFP4 is **lossy** → fine for embeddings/tensors, **never** for integrity-bearing bytes, and
   **never mandatory**. A `Vector` section MAY instead carry raw `f32`/`f16`, or any other codec.
-- `Blob` is opaque bytes (may itself wrap JPEG/MP4/etc. — `.tmf` *wraps*, it does not obsolete codecs).
+- `Blob` is opaque bytes (may itself wrap JPEG/MP4/etc. — `.spore` *wraps*, it does not obsolete codecs).
 - `Graph`/`Relation`/`Attribute` codecs are application-defined in v0.
 
 The integrity layer is **codec-agnostic**: changing a modality's codec never changes how TMX hashes it.

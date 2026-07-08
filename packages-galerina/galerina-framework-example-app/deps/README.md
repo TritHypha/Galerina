@@ -22,7 +22,7 @@ capability the host explicitly provides at the seam. An unresolved import is a
 link-time `LinkError`, not a silent fallthrough.
 
 > Capability binding lives in the **signed `.lmanifest` fuse{} block**, never in a
-> `.tmf`. `.tmf` carries integrity/confidentiality only.
+> `.spore`. `.spore` carries integrity/confidentiality only.
 
 ## Declaring a dep
 

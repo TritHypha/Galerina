@@ -1,4 +1,4 @@
-// store.ts — the env.tmf store: open/seal sections, the encrypted-container compose-reader,
+// store.ts — the env.spore store: open/seal sections, the encrypted-container compose-reader,
 // and the in-arena edit -> re-seal flow (design doc Parts 1 + 4).
 //
 // This is the THIN orchestration over the engine. It owns NO crypto bytes:
@@ -214,7 +214,7 @@ export function assertKemProfile(profile: number, ctx: Uint8Array): void {
   }
 }
 
-/** Create an empty env.tmf bytes for a recipient pub (manifest-only). */
+/** Create an empty env.spore bytes for a recipient pub (manifest-only). */
 export function initEnvTmf(recipientPub: Uint8Array): Uint8Array {
   assertCryptoLib();
   const m = emptyManifest(recipientPub);
@@ -237,7 +237,7 @@ export function composeRead(buf: Uint8Array, recipientSec: Uint8Array, token: K3
   // 1. verify-before-decrypt — readTmf fail-closes on any tamper/bounds and REJECTS signed v0.
   const r = readTmf(buf);
   // (2. ML-DSA signature verify is GATED on ext-tmf slice 4 / #7 — readTmf already rejects any
-  //  signed file with AuthError, so a v0 env.tmf is unsigned-but-encrypted; no fake sig.)
+  //  signed file with AuthError, so a v0 env.spore is unsigned-but-encrypted; no fake sig.)
   // 3. K3 ALLOW(+1) gate.
   assertAllow(token);
   // 4. NoCryptoLib reject.
@@ -254,7 +254,7 @@ export function composeRead(buf: Uint8Array, recipientSec: Uint8Array, token: K3
     }
   });
   if (manifestPayload === null) {
-    throw new TmfCryptoError("MalformedCrypto", "env.tmf has no manifest section (fail-closed)");
+    throw new TmfCryptoError("MalformedCrypto", "env.spore has no manifest section (fail-closed)");
   }
   const mp = manifestPayload as { id: number; coord: Uint8Array; payload: Uint8Array };
   const manifestPlain = openSection(mp.id, mp.coord, mp.payload, recipientSec);
@@ -284,7 +284,7 @@ export function openValue<T>(
   return withWiped(plain, (b) => fn(b));
 }
 
-/** Read an env.tmf from disk (sync) — convenience for the CLI. */
+/** Read an env.spore from disk (sync) — convenience for the CLI. */
 export function readFile(path: string): Uint8Array {
   return new Uint8Array(readFileSync(path));
 }
@@ -295,7 +295,7 @@ export function readFile(path: string): Uint8Array {
 // wiped buffers; NO temp file is ever written.
 
 export interface MutationResult {
-  readonly bytes: Uint8Array;       // the new env.tmf bytes to atomic-write
+  readonly bytes: Uint8Array;       // the new env.spore bytes to atomic-write
   readonly manifest: Manifest;      // the updated (in-RAM) manifest
 }
 
