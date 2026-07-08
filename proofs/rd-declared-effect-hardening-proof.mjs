@@ -49,7 +49,11 @@ const diagsFor = (name) => {
 {
   const d = diagsFor("eval.execute").find((x) => x.code === "FUNGI-EFFECT-006");
   assert.ok(d && d.severity === "error", "P2: deny-only must ERROR with its own code");
-  assert.equal(effectsToFlags(["eval.execute"]), 0, "P2: deny-only must be mask-invisible");
+  // BK-1 (2026-07-03, POST-DATES this proof): an unmapped/deny-only effect sets the
+  // UnmappedEffect SENTINEL (1<<30), NOT 0 — that is the fail-CLOSED hardening (the old
+  // `=== 0` was the bit-0 fail-open). The security property is unchanged: eval.execute
+  // carries NO GRANTABLE capability bit, i.e. nothing survives masking out the sentinel.
+  assert.equal(effectsToFlags(["eval.execute"]) & ~(1 << 30), 0, "P2: deny-only carries no grantable capability bit (UnmappedEffect sentinel only)");
   console.log("P2 ✅ eval.execute is deny-only (FUNGI-EFFECT-006) with no grant path");
 }
 // P3 — deprecated alias points at the canonical name

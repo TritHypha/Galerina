@@ -39,7 +39,10 @@ const INVENTED = ["mission.read", "orbit.compute", "propulsion.plan", "navigatio
 
 // N1 — mask-invisible: no bit can carry an invented name
 for (const name of INVENTED) {
-  assert.equal(effectsToFlags([name]), 0, `N1: ${name} must have no EffectFlags bit`);
+  // BK-1 (2026-07-03, POST-DATES this proof): an unmapped name sets the UnmappedEffect
+  // SENTINEL (1<<30), not 0 (fail-CLOSED hardening). Property is unchanged: no GRANTABLE
+  // capability bit survives masking out the sentinel.
+  assert.equal(effectsToFlags([name]) & ~(1 << 30), 0, `N1: ${name} carries no grantable EffectFlags bit (UnmappedEffect sentinel only)`);
 }
 console.log("N1 ✅ every invented aerospace name is mask-invisible (no grant bit exists)");
 
