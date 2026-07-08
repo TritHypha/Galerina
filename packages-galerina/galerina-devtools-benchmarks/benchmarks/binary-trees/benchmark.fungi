@@ -40,10 +40,10 @@ contract { effects {} }
   let minDepth: Int = 4
   let maxDepth: Int = 10
 
-  mut check: Int = 0
+  mut acc: Int = 0
 
   let stretchDepth: Int = maxDepth + 1
-  check = check + treeNodes(stretchDepth)
+  acc = acc + treeNodes(stretchDepth)
 
   let longLived: Int = treeNodes(maxDepth)
 
@@ -61,12 +61,12 @@ contract { effects {} }
       sum = sum + treeNodes(depth)
       i = i + 1
     }
-    check = check + sum
+    acc = acc + sum
     depth = depth + 2
   }
 
-  check = check + longLived
-  return check
+  acc = acc + longLived
+  return acc
 }
 
 pure flow main() -> Int

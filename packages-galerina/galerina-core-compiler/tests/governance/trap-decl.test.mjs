@@ -143,7 +143,7 @@ contract { effects {} }
 describe("FUNGI-TRAP-001: trap error code must be a valid identifier", () => {
   it("valid ALL_CAPS error code — no FUNGI-TRAP-001", () => {
     const source = `
-secure flow check(amount: Int) -> Void
+secure flow checkFlow(amount: Int) -> Void
 contract {
   intent { "Check amount." }
   effects { audit.write }

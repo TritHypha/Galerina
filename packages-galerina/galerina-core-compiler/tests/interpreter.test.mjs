@@ -76,7 +76,7 @@ pure flow concat() -> String {
 
   it("executes if branches", async () => {
     const source = `
-pure flow check(x: Int) -> String {
+pure flow checkFlow(x: Int) -> String {
   if x == 0 {
     return "zero"
   }
@@ -84,8 +84,8 @@ pure flow check(x: Int) -> String {
 }
 `;
 
-    const zero = await parseAndRun(source, "check", new Map([["x", { __tag: "int", value: 0 }]]));
-    const nonzero = await parseAndRun(source, "check", new Map([["x", { __tag: "int", value: 1 }]]));
+    const zero = await parseAndRun(source, "checkFlow", new Map([["x", { __tag: "int", value: 0 }]]));
+    const nonzero = await parseAndRun(source, "checkFlow", new Map([["x", { __tag: "int", value: 1 }]]));
 
     assert.equal(zero.value.__tag, "string");
     assert.equal(zero.value.value, "zero");

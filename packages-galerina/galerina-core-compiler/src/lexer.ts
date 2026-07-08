@@ -190,6 +190,15 @@ export const V1_ACTIVE_KEYWORDS: ReadonlySet<string> = new Set([
   // common as identifier names and are handled contextually in the contract parser.
   // import plugin assimilate — Hot-Code Residency directive
   "assimilate",
+  // W5b T2.2 (2026-07-08 syntax update — owner: hard-reserve + codemod).
+  // `check(x) { if: / deny: / ambig: }` = the K3 tri-branch construct (RD-0240
+  // exhaustive; maps the verdict lattice DENY(-1) < UNKNOWN(0) < ALLOW(+1) to the
+  // deny/ambig/if arms). `fault` = the AUDITED fault channel (A10 — a fault routes
+  // to a handler that RECORDS it, then halt+deny; never a silent drop, never
+  // auto-retry, never collapses into ambig/_). Corpus + test-fixture collisions
+  // were renamed first (binary-trees var check→acc; six `flow check(...)` fixtures
+  // → checkFlow). `authorize` stays for T2.3 (schema); `project` stays a declaration.
+  "check", "fault",
 ]);
 
 /** Words reserved for post-v1 grammar — produce FUNGI-SYNTAX-003 if used as identifiers. */

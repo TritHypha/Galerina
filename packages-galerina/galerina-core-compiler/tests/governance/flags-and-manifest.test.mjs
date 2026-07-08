@@ -244,7 +244,7 @@ contract {
 
   it("RuntimeManifest governanceFlagsMask matches governanceFlagsByFlow", () => {
     const result = verifySource(`
-secure flow check(readonly request: Request) -> Response
+secure flow checkFlow(readonly request: Request) -> Response
 contract {
   intent { "Check action." }
   effects { network.outbound }
@@ -253,8 +253,8 @@ contract {
   return Response.ok({})
 }
 `, "production");
-    const manifest = result.runtimeManifests.find((m) => m.flow === "check");
-    const flags = result.governanceFlagsByFlow.get("check");
+    const manifest = result.runtimeManifests.find((m) => m.flow === "checkFlow");
+    const flags = result.governanceFlagsByFlow.get("checkFlow");
     assert.ok(manifest !== undefined, "Manifest must exist");
     assert.ok(flags !== undefined, "Flags must exist");
     assert.equal(manifest.governanceFlagsMask, flags,

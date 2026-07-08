@@ -115,7 +115,7 @@ describe("Bool — basic literals and type annotation", () => {
 
   it("Bool is accepted as a parameter type without type errors", () => {
     assertNoTypeErrors(
-      `pure flow check(isActive: Bool) -> Bool {
+      `pure flow checkFlow(isActive: Bool) -> Bool {
   return isActive
 }`,
       "Bool parameter type",

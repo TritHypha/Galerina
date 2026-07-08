@@ -55,7 +55,7 @@ describe("galerina-core-compiler syntax safety contracts", () => {
     const result = validateCoreSyntaxSafety({
       file: "branch.fungi",
       text: `
-pure flow check(signal: Tri) -> Bool {
+pure flow checkFlow(signal: Tri) -> Bool {
   if signal {
     return true
   }

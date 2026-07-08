@@ -475,7 +475,7 @@ pure flow unwrap(x: Option<String>) -> String {
 
   it("wildcard _ arm has no binding child", () => {
     const result = parseOk(`
-pure flow check(x: Option<String>) -> String {
+pure flow checkFlow(x: Option<String>) -> String {
   match x {
     Some(v) => v
     _ => "none"
