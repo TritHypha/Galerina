@@ -6,6 +6,19 @@ timestamped here as prior art; **no implementation exists yet**. Checker-rule ca
 (`bus_conservation`, `field_conservation`); proof-script candidates are named in the source RDs. This
 document will gain a status line when either rule lands.
 
+> **Status (2026-07-09, added when the rules landed):** BOTH named checker rules now SHIP in the
+> `.gate` v0.5 **reference checker** (`ZT-Galerina-GRAPH-ASCII-v2/tools/gate-check.mjs`, self-test
+> 164/164) under the owner-unlocked `@version 1.1.0` grammar — `bus N×T` bounded-lane edges
+> (`bus_conservation`: no manufacture, no silent drop, plane lanes cover worst-case, re-shape
+> compute-only) and `SHAPE` field-ports (`field_conservation`: **sealed-by-default per the RD-0286a
+> owner answer, 2026-07-09** — undeclared port / unrouted field / nested path / vacuous shape all
+> REJECT). Teaching examples: `examples/flow21.gate` (bus) + `flow22.gate` (field-ports); corpus
+> 23/23. **Honest tier: the laws are enforced at the AUTHORING pre-filter only** — the production
+> compiler's `gate-parser.ts` accept set deliberately stays `{1.0.0}` until bus/field LOWERING lands
+> (a 1.1.0 file is compiler-rejected, fail-closed), and the dynamic drain-counter reconciliation
+> remains future work with that lowering. §1's "compile gate / editor refuses export" claims stay
+> design-stage until then.
+
 ## 1. What is disclosed
 
 Two mechanical **conservation laws** for a line-oriented, drawn governance-graph language (the Galerina
