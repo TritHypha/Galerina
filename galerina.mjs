@@ -1247,7 +1247,16 @@ Baseline comparison (governance-cost):
     const vsDiags = m.checkValueStates(parsed.ast).diagnostics ?? [];
     const valueStateErrors = vsDiags.filter(d => d.severity === "error");
     const boundaryWarnings = vsDiags.filter(d => d.code === "FUNGI-VALUESTATE-008" && d.severity !== "error");
-    const allDiags = [...errors, ...gov.diagnostics, ...tierWarnings, ...valueStateErrors, ...boundaryWarnings, ...integrityEffectErrors];
+    // Finding-(ii) closure (2026-07-10): `check` never ran the TYPE-CHECKER, so a file could be
+    // check-clean yet REJECTED fail-closed at `run --governed` on FUNGI-TYPE-* (runtime.fungi was
+    // the repro). Surface type ERRORS here in every mode so the divergence is visible at check
+    // time. Exit behavior follows the house staged-enforcement pattern (lint-conventions --soft
+    // precedent): an unconditional flip would red ~150 repo files including the DELIBERATE
+    // negative examples under docs/examples, so hard-fail is opt-in via --strict-types while the
+    // baseline burns down. The self-hosted corpus is 8/8 type-clean and must stay so.
+    const strictTypes = rest.includes("--strict-types");
+    const typeErrors = (m.checkTypes(parsed.ast).diagnostics ?? []).filter(d => d.severity === "error");
+    const allDiags = [...errors, ...gov.diagnostics, ...tierWarnings, ...valueStateErrors, ...boundaryWarnings, ...integrityEffectErrors, ...typeErrors];
     if (allDiags.length === 0) {
       // We're building the language — distinguish "compiled real content" from "found nothing". A clean
       // parse with ZERO top-level declarations (an empty or comment-only file) must NOT report a blanket
@@ -1262,6 +1271,9 @@ Baseline comparison (governance-cost):
       }
     } else {
       allDiags.forEach(d => console.log(`${d.severity === "error" ? "❌" : "⚠️"} ${d.code}: ${d.message}`));
+      if (!strictTypes && typeErrors.length > 0) {
+        console.log(`ℹ️  ${typeErrors.length} FUNGI-TYPE-* error(s) above are ADVISORY in plain check while the repo baseline burns down — they FAIL a governed run today; enforce here with --strict-types.`);
+      }
     }
 
     // ── --diff flag: show change class vs HEAD~1 before pushing (#64) ─────────
@@ -1298,7 +1310,8 @@ Baseline comparison (governance-cost):
     // Exit non-zero on parse errors OR fail-closed value-state errors (e.g. FUNGI-NUMERIC-001 for a
     // still-gated width) — these are unconditional correctness failures the build/run path also rejects.
     // Tier/boundary findings stay display-only WARNINGS in check mode and do NOT affect the exit code.
-    process.exit(errors.length > 0 || valueStateErrors.length > 0 || integrityEffectErrors.length > 0 ? 1 : 0);
+    process.exit(errors.length > 0 || valueStateErrors.length > 0 || integrityEffectErrors.length > 0
+      || (strictTypes && typeErrors.length > 0) ? 1 : 0);
   }
 
   // ── galerina generate tests <file.fungi> [--tap] — contract-driven test obligations (0016) ──

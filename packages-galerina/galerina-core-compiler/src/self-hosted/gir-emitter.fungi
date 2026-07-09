@@ -362,7 +362,7 @@ record GIRStmt {
 }
 
 // Read the single carried expression off a statement, if present.
-pure flow firstExprOf(stmt: Auto) -> Option
+pure flow firstExprOf(stmt: Auto) -> Option<Auto>
 contract { intent { "Return Some(expr) for the statement's lone carried expr, else None." } }
 {
   if stmt.expr.count() > 0 {

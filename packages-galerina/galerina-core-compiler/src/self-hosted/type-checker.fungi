@@ -197,7 +197,7 @@ contract {
 // and recurse into `if`/`while` bodies so nested bindings are checked too.
 
 // Read the single initializer/condition expression off a statement, if present.
-pure flow firstExpr(stmt: Stmt) -> Option
+pure flow firstExpr(stmt: Auto) -> Option<Auto>
 contract {
   intent { "Return Some(expr) for the statement's lone expr (RHS/condition), else None." }
 }
@@ -209,7 +209,7 @@ contract {
 }
 
 // Check one statement, recursing into if/while bodies, returning its diagnostics.
-pure flow checkStmt(flowName: String, stmt: Stmt) -> Array<Auto>
+pure flow checkStmt(flowName: String, stmt: Auto) -> Array<Auto>
 contract {
   intent { "Type-check a single body statement (let/mut bindings + nested if/while)." }
 }
@@ -234,7 +234,7 @@ contract {
 }
 
 // Validate a let/mut binding's declared type against a single literal initializer.
-pure flow checkBinding(flowName: String, stmt: Stmt) -> Array<Auto>
+pure flow checkBinding(flowName: String, stmt: Auto) -> Array<Auto>
 contract {
   intent { "FUNGI-TYPE-001/002 for a let/mut binding with a declared type and literal RHS." }
 }
