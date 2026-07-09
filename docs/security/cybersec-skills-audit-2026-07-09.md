@@ -169,6 +169,11 @@ terminator nonce (anti-truncation). No nonce-reuse footgun.
 suite — the tag fails and the code refuses (CWE-757 downgrade prevented). *Minor GAP:* the **format version**
 itself is not in the AAD (only the suite selectors) — fold it in (RD-0294n).
 
+> **Follow-on passes (2026-07-09 evening):** the deferred items are now covered in companion docs — MCP
+> tool-poisoning → [`mcp-tool-poisoning-pass-2026-07-09.md`](mcp-tool-poisoning-pass-2026-07-09.md); SLSA
+> supply-chain + deep-BOLA (F14) → [`slsa-deep-bola-pass-2026-07-09.md`](slsa-deep-bola-pass-2026-07-09.md)
+> (F14 re-stated from PARTIAL to layered-CONFIRMED with a runtime boundary; CI actions SHA-pinned).
+
 ### F10 — AAD file-binding (0294o) · GAP
 The AAD binds section-local identity (`section_id`, `coord`, `modality`), the suite, `commit_mode`, and `epoch`
 — but **not an explicit whole-file identifier**. Cross-file section splicing (moving a section between two files

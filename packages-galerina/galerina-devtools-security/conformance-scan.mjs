@@ -171,9 +171,31 @@ function checkSporeKeyCommitment(get) {
       : `REGRESSED — key-commitment missing: ${missing.join(", ")} (without CMT-4 committing, one ciphertext could open under two keys — partitioning oracle, F11/CWE-354)` };
 }
 
+/** actions-pinned (RD-0294w / SLSA source-track): every workflow `uses:` references an IMMUTABLE 40-hex
+ *  commit SHA, never a movable tag (`@v4`) — a moved tag on a third-party action is arbitrary code with
+ *  the workflow's token (the tj-actions/changed-files compromise class). RED if a tag-pin reappears. */
+function checkActionsPinned(get, listWorkflows) {
+  const base = { check: "actions-pinned", owasp: "A08:2021", cwe: "CWE-829", rd: "RD-0294w", target: ".github/workflows/*.yml" };
+  const files = listWorkflows();
+  if (files.length === 0) return { ...base, tier: "OPEN-RISK", ok: false, severity: "high", message: "no workflow files found to scan — fail-closed (cannot confirm action pinning)" };
+  const hits = [];
+  for (const rel of files) {
+    const t = get(rel);
+    if (t === null) { hits.push(`${rel}: unreadable (fail-closed)`); continue; }
+    for (const m of t.matchAll(/uses:\s*([\w.-]+\/[\w.\/-]+)@([^\s#]+)/g)) {
+      if (!/^[0-9a-f]{40}$/.test(m[2])) hits.push(`${rel}: ${m[1]}@${m[2]} (tag/branch pin — movable)`);
+    }
+  }
+  const ok = hits.length === 0;
+  return { ...base, tier: ok ? "CONFIRMED" : "OPEN-RISK", ok, severity: "high",
+    message: ok
+      ? `every workflow action is pinned to an immutable 40-hex commit SHA across ${files.length} workflow(s) — a moved tag cannot inject code (SLSA source-track, RD-0294w)`
+      : `unpinned action reference(s): ${hits.join("; ")} — a movable tag on an action is arbitrary code with the workflow token (tj-actions class, CWE-829)` };
+}
+
 function runAll(get, listWorkflows) {
   return [checkSigVerifyPinned(get), checkSporeSigningState(get), checkFailOpenGate(get, listWorkflows), checkBridgeAttestationFailClosed(get),
-    checkSporeNonceFreshness(get), checkSporeSuitePinning(get), checkSporeKeyCommitment(get)];
+    checkSporeNonceFreshness(get), checkSporeSuitePinning(get), checkSporeKeyCommitment(get), checkActionsPinned(get, listWorkflows)];
 }
 
 // ── self-test: prove each detector fires on a synthetic regression (a neutered detector is a fail-open) ──────
@@ -185,7 +207,7 @@ function selfTest() {
     [BA]: 'const ok = edVerify(\n  null,\n  msg, pub, sig);\nreturn { ok: false, reason: "ML-DSA signature required but absent (hybrid)" };\nconst CTX = enc("galerina.bridge.manifest.v2");',
     [HE]: "if (policy.requireHybrid === true && mlDsaPublicKey === undefined) { return deny; }",
     [KEMDEM]: 'const nonce = new Uint8Array(randomBytes(12));\nconst prefix8 = new Uint8Array(randomBytes(8));\nconst n = streamNonce12(prefix8, i, i === segments.length - 1);\nif (aeadSuite !== AEAD_SUITE.AES_256_GCM) throw x;\nrequireAesGcm(aeadContext[27]!);\nenc.encode("spore-dem-commit-v0"); enc.encode("spore-cmt-ctx-v0");\nconst caad = committedAad(aeadContext, kaead);\nif (!bytesEqual(ctxCommitTag(kaead, nonce, caad, T), received)) throw y;',
-    ".github/workflows/conventions.yml": "jobs:\n  x:\n    steps:\n      - run: node scripts/audit.mjs",
+    ".github/workflows/conventions.yml": "jobs:\n  x:\n    steps:\n      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4\n      - run: node scripts/audit.mjs",
   };
   const bad = {
     [FL]: "const verifier = createVerify(sig.algorithm); const valid = verifier.verify(pub, tag);", // alg-selected: regressed
@@ -194,7 +216,7 @@ function selfTest() {
     [BA]: "const ok = edVerify(sig.algorithm, msg, pub, sig); // alg read from artifact — pin regressed, no hybrid guard",
     [HE]: "const result = verifyAttestation(bridge.attestation, policy); // requireHybrid gate dropped — silent downgrade",
     [KEMDEM]: "const nonce = deriveNonce(sectionId); gcm(kaead, nonce, aeadContext).encrypt(payload); // fixed nonce, no suite pin, no committing tag",
-    ".github/workflows/conventions.yml": "jobs:\n  x:\n    steps:\n      - run: node scripts/audit.mjs\n        continue-on-error: true",
+    ".github/workflows/conventions.yml": "jobs:\n  x:\n    steps:\n      - uses: gitleaks/gitleaks-action@v2\n      - run: node scripts/audit.mjs\n        continue-on-error: true",
   };
   const from = (m) => (rel) => (rel in m ? m[rel] : null);
   const lw = () => [".github/workflows/conventions.yml"];
@@ -221,6 +243,9 @@ function selfTest() {
     ["spore-key-commitment CONFIRMED on the real construction", (() => { const r = checkSporeKeyCommitment(from(good)); return r.ok && r.tier === "CONFIRMED"; })()],
     ["spore-key-commitment RED when the committing tag is gone", checkSporeKeyCommitment(from(bad)).ok === false],
     ["spore-key-commitment FAIL-CLOSED on an unreadable target", checkSporeKeyCommitment(() => null).ok === false],
+    ["actions-pinned CONFIRMED on SHA-pinned workflows", (() => { const r = checkActionsPinned(from(good), lw); return r.ok && r.tier === "CONFIRMED"; })()],
+    ["actions-pinned RED on a movable tag pin (@v2)", checkActionsPinned(from(bad), lw).ok === false],
+    ["actions-pinned FAIL-CLOSED when no workflows found", checkActionsPinned(from(good), () => []).ok === false],
   ];
   let allOk = true;
   for (const [name, pass] of checks) { console.log(`  ${pass ? "✅" : "❌"} ${name}`); if (!pass) allOk = false; }
