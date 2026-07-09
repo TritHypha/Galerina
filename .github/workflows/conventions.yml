@@ -117,6 +117,23 @@ jobs:
           node scripts/audit-route-overlap.mjs --self-test
           node scripts/audit-route-overlap.mjs
 
+  # conformance (build-free, ENFORCING, RD-0296): the by-construction conformance gate in
+  # @galerina/devtools-security — machine-asserts that each VERIFIED design construction is STILL present, so
+  # it goes RED the moment a refactor removes it (algorithm-pinned verification 0294t; .spore fail-closed
+  # signed-reject 0294m; no fail-open CI gate RD-0290a). Operationalises the cybersec audit's CONFIRMED rows.
+  # Fail-closed: a check that cannot read its target FAILS. The --self-test proves every detector fires first.
+  conformance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: By-construction conformance gate (self-test, then enforcing)
+        run: |
+          node packages-galerina/galerina-devtools-security/conformance-scan.mjs --self-test
+          node packages-galerina/galerina-devtools-security/conformance-scan.mjs
+
   # A green, build-free, zero-baseline OPEN-CORE invariant (0056-ci-lint): no NON-Apache license
   # declaration may contaminate the Apache-2.0 package tree (PD-spec↛Apache), and no core package may
   # import an enterprise-tier package (core↛enterprise, via governance/tier-manifest.json). The lint's
