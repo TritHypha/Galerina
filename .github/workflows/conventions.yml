@@ -65,6 +65,23 @@ jobs:
       - name: No NUL bytes in source (enforcing)
         run: node --test packages-galerina/galerina-core-compiler/tests/source-hygiene-no-nul.test.mjs
 
+  # path-leak (build-free, zero-baseline, ENFORCING): no committed file may contain an ABSOLUTE LOCAL path
+  # that leaks the developer's machine (C:\Users\<name>\... or a wwwprojects\ root). Galerina is PUBLIC — such
+  # a path discloses the OS username + on-disk layout to the world AND breaks on every other checkout. The
+  # --self-test proves the detectors fire on a leak and stay silent on a <placeholder> (a neutered guard is a
+  # fail-open); then the scan runs ENFORCING against every git-tracked file. Baseline is 0.
+  path-leak:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Absolute-local-path leak guard (self-test, then enforcing)
+        run: |
+          node scripts/audit-path-leak.mjs --self-test
+          node scripts/audit-path-leak.mjs
+
   # A green, build-free, zero-baseline OPEN-CORE invariant (0056-ci-lint): no NON-Apache license
   # declaration may contaminate the Apache-2.0 package tree (PD-spec↛Apache), and no core package may
   # import an enterprise-tier package (core↛enterprise, via governance/tier-manifest.json). The lint's

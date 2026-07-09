@@ -30,7 +30,7 @@ Living task list. Authoritative forward view: `../ZTF-Knowledge-Bases/galerina-r
 - Deferred (tracked in plan §2): **A18 tenant scope = owner BETA BLOCKER (next package)** · `.hypha` A3/A16 ·
   A13/A14/A15/A24/A25/A26/A19 · RD-0238 P0 follow-through · C2 upgrade.
 - **Structural (owner, 2026-07-08): `galerina-ext-bridge-quantum` MOVED OUT of this repo** →
-  `C:\Users\phill\Documents\GitHub\galerina-ext-bridge-quantum` (to become its own project). Its file:/import
+  `<GitHub>\galerina-ext-bridge-quantum` (to become its own project). Its file:/import
   deps now point INTO this checkout (`../Galerina/packages-galerina/{tower-citizen,inference-bridge-contract}`);
   21/21 green standalone. Galerina side: workspace.json/version.json/README updated; suite **61/61 · 6,115**
   (exactly −21). Removal is uncommitted (git shows deletions; commit/push held). Name-only refs in

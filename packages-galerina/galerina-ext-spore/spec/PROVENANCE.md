@@ -6,7 +6,7 @@ with the code and the golden-vector conformance survives any cleanup of the scra
 
 | | |
 |---|---|
-| **Upstream (authoring repo)** | `C:\Users\phill\Documents\GitHub\Galerina-R-AND-D\tmf\spec\` |
+| **Upstream (authoring repo)** | `<GitHub>\Galerina-R-AND-D\tmf\spec\` |
 | **Pinned at R&D commit** | `fb68d06` — "threshold (M-of-N) custody spec + reference; absorb hub handoff into state" (2026-06-16) |
 | **Direction of truth** | R&D **authors** the spec; Galerina **consumes** it. Edit upstream, then re-vendor here — do **not** fork these copies. |
 | **Binding conformance** | the inline golden vectors in `../tests/*.test.mjs` (e.g. the 203-byte container `89544d46…`, root `43386e64…685212`). The TS engine is verified byte-for-byte against them. |

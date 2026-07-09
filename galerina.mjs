@@ -176,8 +176,8 @@ Examples:
   wasmtime --invoke main build/governance-cost.wasm
 
 Install (if galerina not yet on PATH):
-  cd C:\\wwwprojects\\Galerina && npm link       (Windows cmd.exe)
-  cd /c/wwwprojects/Galerina && npm link        (Git Bash / Linux)
+  cd <projects>\\Galerina && npm link       (Windows cmd.exe)
+  cd <projects>/Galerina && npm link        (Git Bash / Linux)
 
 Baseline comparison (governance-cost):
   Stage-A tree-walker (governed):  3,200 ops/sec

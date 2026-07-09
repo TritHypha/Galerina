@@ -12895,7 +12895,7 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/galerina-external-idea-mining-2026-06-23.md",
-      "title": "External Idea Mining — `C:\\Users\\phill\\Documents\\GitHub\\x` (fresh pass, 2026-06-23)",
+      "title": "External Idea Mining — `<GitHub>\\x` (fresh pass, 2026-06-23)",
       "headings": [
         "The 5 HIGH-value net-new ideas",
         "Net-new MEDIUM / LOW (13)",
@@ -18664,7 +18664,7 @@
         "⚠️ 2026-07-02 — 50-YEAR-MISTAKE SWEEP (5 surfaces) + DEPENDENCY CVE + SALVAGE (all owner-gated, prod read-only, findings-only)",
         "2026-07-02 — ZT 7+ improvement backlog (net-new only; full specs in `galerina-zt-7plus-improvement-specs-2026-07-02.md`)",
         "2026-07-02 — Galerina → TritMesh forward-design (TritMesh = SEPARATE product consuming Galerina, Laravel:PHP/Zend)",
-        "A. R&D dispatched to the bridge (`C:\\Users\\phill\\Documents\\GitHub\\Galerina-R-AND-D\\_session-bridge\\tasks\\`)",
+        "A. R&D dispatched to the bridge (`<GitHub>\\Galerina-R-AND-D\\_session-bridge\\tasks\\`)",
         "B. R&D designed (in KB; build pending) — [galerina-architecture-rd-2026-06-23.md](galerina-architecture-rd-2026-06-23.md)",
         "2026-06-27 — net-new ADOPTABLES from the \"automate the defence\" R&D (RD-0137..0153)",
         "C. Build items (engineering — no further R&D needed)",
@@ -36878,7 +36878,7 @@
       "title": "PROMPT — main session: token-manage with the graph/index dev tools",
       "headings": [
         "The principle",
-        "The dev tools (already built — in `C:\\Users\\phill\\Documents\\GitHub\\Galerina\\scripts\\`)",
+        "The dev tools (already built — in `<GitHub>\\Galerina\\scripts\\`)",
         "memory-graph.mjs — the one for active MEMORY",
         "kb-index.mjs — caveat, FIX BEFORE RELYING ON IT",
         "The discipline (do this every task)",
@@ -36962,7 +36962,7 @@
       "title": "PROMPT — resume the OSS-package build (Tier A/B + 2 new candidates)",
       "headings": [
         "Role",
-        "Read first (authoritative — in `C:\\Users\\phill\\Documents\\GitHub\\ZTF-Knowledge-Bases\\`)",
+        "Read first (authoritative — in `<GitHub>\\ZTF-Knowledge-Bases\\`)",
         "The build set (each = one repo, owner-gated)",
         "How to build each",
         "Gates (per package)",
@@ -37671,8 +37671,8 @@
         "2. Verification status (cross-checked 2026-06-16)",
         "3. Consolidated findings (merged)",
         "4. Hard-path index — every R&D document (both tracks)",
-        "`.spore` spec track — `C:\\Users\\phill\\Documents\\GitHub\\Galerina-R-AND-D\\tmf\\`",
-        "tri-encryption track — `C:\\Users\\phill\\Documents\\GitHub\\Galerina-R-AND-D\\tri-encription\\`",
+        "`.spore` spec track — `<GitHub>\\Galerina-R-AND-D\\tmf\\`",
+        "tri-encryption track — `<GitHub>\\Galerina-R-AND-D\\tri-encription\\`",
         "Adjacent (not merged here)",
         "5. Reconciliation — alignments, divergences, gaps",
         "Alignments (independently re-derived → high confidence)",
@@ -37848,7 +37848,7 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-external-repos-grounding-ledger.md",
-      "title": "External repositories analysis — `C:\\Users\\phill\\Documents\\GitHub\\x`",
+      "title": "External repositories analysis — `<GitHub>\\x`",
       "headings": [
         "The 8 repos at a glance",
         "1. Bottom line",

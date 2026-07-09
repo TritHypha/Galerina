@@ -143,7 +143,7 @@ node, and that node **dominates** the `[+]` egress — so by *shape*, the raw PI
 ## Sources of truth & how these docs were verified
 
 Per the accuracy discipline for this library, everything here is grounded in the `.gate` design
-workspace `C:\Users\phill\Documents\GitHub\ZT-Galerina-GRAPH-ASCII-v2` (read-only; not a git repo):
+workspace `<GitHub>\ZT-Galerina-GRAPH-ASCII-v2` (read-only; not a git repo):
 
 1. **The spec** — `SPEC-gate-language.md` (v0.4). The normative grammar + Rosetta stone + compiler-gate spec.
 2. **The checker** — `tools/gate-check.mjs` (the v0.4 reference validator). **This is what actually

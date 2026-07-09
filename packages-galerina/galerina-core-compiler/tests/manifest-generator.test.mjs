@@ -61,8 +61,8 @@ const FLOWS = [
 const GENERATED_AT = "2026-06-15T00:00:00.000Z";
 
 // Windows-style path (backslashes) and its expected normalized form.
-const WIN_PATH = "C:\\wwwprojects\\Galerina\\examples\\vat.fungi";
-const POSIX_PATH = "C:/wwwprojects/Galerina/examples/vat.fungi";
+const WIN_PATH = "C:\\project\\examples\\vat.fungi";
+const POSIX_PATH = "C:/project/examples/vat.fungi";
 
 const PLACEHOLDER_PREFIX = "placeholder:sha256:";
 
@@ -147,8 +147,8 @@ describe("manifest-generator: sourceFile is bound inside the signed body hash", 
   });
 
   it("two manifests differing ONLY by sourceFile produce different signatures (anti-swap, end-to-end)", () => {
-    const a = makeManifest("C:/wwwprojects/Galerina/examples/vat.fungi");
-    const b = makeManifest("C:/wwwprojects/Galerina/examples/other.fungi");
+    const a = makeManifest("C:/project/examples/vat.fungi");
+    const b = makeManifest("C:/project/examples/other.fungi");
 
     // Control: identical SOURCE ⇒ identical sourceHash. The ONLY varying input is the path.
     assert.equal(a.sourceHash, b.sourceHash, "control: same source content ⇒ same sourceHash");

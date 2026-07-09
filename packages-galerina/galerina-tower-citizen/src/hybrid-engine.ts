@@ -638,8 +638,8 @@ export class HybridInferenceEngine {
    * Run a governed hybrid inference pass.
    *
    * FFI seam — in production each precision technique dispatches to its kernel:
-   *   ternary   → ggml_bitnet_mul_mat_task_compute()   (C:\Users\phill\Documents\GitHub\BitNet)
-   *   fp4_block → te_fp4_gemm()                         (C:\Users\phill\Documents\GitHub\TransformerEngine)
+   *   ternary   → ggml_bitnet_mul_mat_task_compute()   (<GitHub>\BitNet)
+   *   fp4_block → te_fp4_gemm()                         (<GitHub>\TransformerEngine)
    *   scheduled → static plan replay                    (Groq-derived scheduler)
    * Stage A returns a governed stub; the governance/audit path is fully real.
    */

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // RD-0227 — Light-ASCII symbolic control-flow + topological FILTER
-// Source note: C:\wwwprojects\Galerina\notes\77-mesh-r-d-07.md (lines 259-390, 1240-1607)
+// Source note: <projects>\Galerina\notes\77-mesh-r-d-07.md (lines 259-390, 1240-1607)
 //
 // Self-contained (node built-ins + assert). Proves/refutes FOUR claims:
 //   (a) light-ASCII (no 2D boxes) parses O(N) single-pass: CONFIRMED linear.

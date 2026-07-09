@@ -544,7 +544,7 @@ Generated: 2026-07-08
 | galerina-third-party-plugin-authoring-guide.md | — | — | — | FUNGI-EFFECT-001, FUNGI-EFFECT-005, FUNGI-EFFECT-006, FUNGI-PARSE-001, FUNGI-PKG-001 …+3 |
 | galerina-threat-model-unleashed-2026-06-25.md | — | — | — | FUNGI-EFFECT-003, FUNGI-IMPORT-005, FUNGI-IMPORT-006, FUNGI-PARSE-001, FUNGI-STDLIB-002 …+2 |
 | galerina-three-valued-governance.md | — | — | spike sub-spec + implementation (Direction **A** of the photonic/ternary R&D agenda). | FUNGI-GOV-004, FUNGI-GOV-3, FUNGI-SAFETY-003 |
-| galerina-tlstp-0069-dtm-degrade-only.md | — | — | BUILD-GUIDE for an adopted 0065–0070 transport/auth R&D survivor. Design/spec passed the bar; build is hub/owner-gated (the 0050 exporter it depends on is net-new and owner-gated). **Read-only citations** resolve against `C:\Users\phill\Documents\GitHub\Galerina` as `file:line`. | FUNGI-GOV-3, FUNGI-SUBSTRATE-001 |
+| galerina-tlstp-0069-dtm-degrade-only.md | — | — | BUILD-GUIDE for an adopted 0065–0070 transport/auth R&D survivor. Design/spec passed the bar; build is hub/owner-gated (the 0050 exporter it depends on is net-new and owner-gated). **Read-only citations** resolve against `<GitHub>\Galerina` as `file:line`. | FUNGI-GOV-3, FUNGI-SUBSTRATE-001 |
 | galerina-tlstp-0070-tampertrust.md | — | — | — | FUNGI-GOV-3, FUNGI-SUBSTRATE-001, FUNGI-SUBSTRATE-002, FUNGI-SUBSTRATE-003, FUNGI-SUBSTRATE-004 |
 | galerina-tlstp-build-guide-index.md | — | — | — | FUNGI-PRIVACY-002 |
 | galerina-tlstp-s1-cert-gate.md | — | — | — | FUNGI-GOV-3 |
@@ -941,4 +941,4 @@ Docs with no inbound links from other KB docs:
 ## Stale Links
 Links pointing to missing files:
 
-- galerina-oss-extraction-candidates-2026-07-01 → README ("`C:\Users\phill\Documents\GitHub\ZT-tritsocket`")
+- galerina-oss-extraction-candidates-2026-07-01 → README ("`<GitHub>\ZT-tritsocket`")

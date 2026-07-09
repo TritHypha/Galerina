@@ -1017,7 +1017,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - links: [[galerina-photonic-tri-rd]] [[galerina-substrate-contracts]] [[galerina-ext-bridge-quantum]] [[galerina-quantum-resistance-posture]]
 - terms: precision, tolerance, measured, gate, contract, declared, source, grounded, manifest, state, accuracy, deny-by-default, galerina, whole
 
-## External Idea Mining — `C:\Users\phill\Documents\GitHub\x` (fresh pass, 2026-06-23)
+## External Idea Mining — `<GitHub>\x` (fresh pass, 2026-06-23)
 `../ZTF-Knowledge-Bases/galerina-external-idea-mining-2026-06-23.md`
 - codes: FUNGI-PRIVACY-002, FUNGI-SUBSTRATE-001
 - terms: net-new, med, degrade-only, pass, ideas, out-of-bounds, substrate, low, idea, users, phill, documents, github, verify-before-build
@@ -3312,7 +3312,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #34, #199
 - terms: fungi, galerina, governance, tmf, root, crypto, spec, gate, integrity, real, bench, key, aead, full
 
-## External repositories analysis — `C:\Users\phill\Documents\GitHub\x`
+## External repositories analysis — `<GitHub>\x`
 `../ZTF-Knowledge-Bases/rd-absorbed/rd-external-repos-grounding-ledger.md`
 - terms: nvfp4, ternary, crypto, real, photonic, tmf, minicpm, block, external, linear, scale, ledger, open, source
 

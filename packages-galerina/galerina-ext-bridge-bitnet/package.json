@@ -33,5 +33,5 @@
     "governance",
     "ternary"
   ],
-  "note": "Stage A: governance wrapper + stub. Stage B: wire ggml_bitnet_mul_mat_task_compute() via Node.js native addon (node-gyp / cmake-js). BitNet source: C:/wwwprojects/BitNet (MIT License)."
+  "note": "Stage A: governance wrapper + stub. Stage B: wire ggml_bitnet_mul_mat_task_compute() via Node.js native addon (node-gyp / cmake-js). BitNet source: <projects>/BitNet (MIT License)."
 }
