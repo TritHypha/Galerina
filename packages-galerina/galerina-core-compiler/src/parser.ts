@@ -57,6 +57,8 @@ export type AstNodeKind =
   | "checkExpr"   // W5b T2.2: check(v){ if:/deny:/ambig: } — K3 tri-branch
   | "checkArm"    // one arm of a checkExpr (value = "if"|"deny"|"ambig")
   | "faultStmt"   // W5b T2.2: fault <expr> — raise an audited, terminal, fail-closed fault (A10)
+  | "prefilterExpr" // W5b T2.4: prefilter(v){ deny:/maybe: } — the DENY-ONLY gate (can never ALLOW)
+  | "prefilterArm"  // one arm of a prefilterExpr (value = "deny"|"maybe")
   // Expressions
   | "callExpr"
   | "memberExpr"
@@ -1342,6 +1344,7 @@ class Parser {
         case "match":    return this.parseMatchExpr();
         case "check":    return this.parseCheckStmt();
         case "fault":    return this.parseFaultStmt();
+        case "prefilter": return this.parsePrefilterStmt();
         case "compute":  return this.parseComputeTarget();
         case "fn":       return this.parseFnDecl();
         case "emit":     return this.parseEmitStmt();
@@ -1837,6 +1840,96 @@ class Parser {
       children.push(this.parseExpression());
     }
     return { kind: "faultStmt", location: loc, children };
+  }
+
+  /**
+   * W5b T2.4: `prefilter(subject) { deny: <body> maybe: <body> }` — the DENY-ONLY
+   * gate. A prefilter is an early rejection stage that runs BEFORE the real
+   * authorize. Its defining zero-trust property: it can only DENY or DEFER, NEVER
+   * ALLOW (A8) — so there is no `if:`/allow arm, and at runtime an ALLOW subject
+   * is DOWNGRADED to the `maybe` (defer) path (a prefilter refuses to honour an
+   * early allow). Both arms are REQUIRED (FUNGI-PREFILTER-001); the subject must
+   * be a Verdict (FUNGI-PREFILTER-002, enforced in the type-checker); an `if:` arm
+   * is a hard error (FUNGI-PREFILTER-003). Structure:
+   * `{ kind: "prefilterExpr", children: [subject, ...prefilterArm] }`.
+   */
+  private parsePrefilterStmt(): AstNode {
+    const loc = this.loc();
+    this.advance(); // consume "prefilter"
+    this.expect("symbol", "(");
+    const subject = this.parseExpression();
+    this.expect("symbol", ")");
+    this.skipNewlines();
+    this.expect("symbol", "{");
+    this.skipNewlines();
+
+    const arms: AstNode[] = [];
+    const seen = new Set<string>();
+    while (!this.currentIs("symbol", "}") && !this.isEof()) {
+      const arm = this.parsePrefilterArm(seen);
+      if (arm !== undefined) arms.push(arm);
+      this.skipNewlines();
+    }
+    this.expect("symbol", "}");
+    // Exhaustive over the deny-only lattice {deny, maybe}. A missing arm is an
+    // unrouted verdict = fail-open, same rule as check (RD-0240).
+    for (const required of ["deny", "maybe"]) {
+      if (!seen.has(required)) {
+        this.emit(
+          "FUNGI-PREFILTER-001",
+          "NON_EXHAUSTIVE_PREFILTER",
+          `prefilter(...) is missing the '${required}:' arm. Both deny/maybe arms are required — a verdict with no arm is an unrouted fail-open (RD-0240).`,
+          loc,
+          `Add a '${required}:' arm.`,
+        );
+      }
+    }
+    return { kind: "prefilterExpr", location: loc, children: [subject, ...arms] };
+  }
+
+  /**
+   * One `prefilter` arm: `deny:` or `maybe:` (both CONTEXTUAL identifiers, special
+   * only here — never reserved). An `if:`/allow arm is rejected: a prefilter may
+   * only deny or defer, never allow — the allow decision belongs to the authorize
+   * that follows (FUNGI-PREFILTER-003, A8 zero-trust).
+   */
+  private parsePrefilterArm(seen: Set<string>): AstNode | undefined {
+    const loc = this.loc();
+    const labelTok = this.current();
+    const label = labelTok.value;
+    // An explicit allow arm is the one thing a prefilter must never have.
+    if (label === "if" || label === "allow") {
+      this.emit(
+        "FUNGI-PREFILTER-003",
+        "PREFILTER_CANNOT_ALLOW",
+        `prefilter(...) may not have an '${label}:'/allow arm — a prefilter can only DENY or DEFER, never ALLOW (A8). Move the allow decision to the authorize that follows the prefilter.`,
+        loc,
+        `Remove the allow arm; use deny:/maybe: only.`,
+      );
+      this.advance();
+      // best-effort skip of the arm body so parsing can continue
+      this.expect("symbol", ":");
+      this.skipNewlines();
+      if (this.currentIs("symbol", "{")) this.parseBlock(); else this.parseStatement();
+      return undefined;
+    }
+    const isArmLabel = labelTok.kind === "identifier" && (label === "deny" || label === "maybe");
+    if (!isArmLabel) {
+      this.emitUnexpected(`Expected a prefilter arm label (deny:/maybe:), got "${label}".`);
+      this.advance();
+      return undefined;
+    }
+    if (seen.has(label)) {
+      this.emitUnexpected(`Duplicate prefilter arm "${label}:" — each of deny/maybe may appear at most once.`);
+    }
+    seen.add(label);
+    this.advance(); // consume the label
+    this.expect("symbol", ":");
+    this.skipNewlines();
+    const body = this.currentIs("symbol", "{")
+      ? this.parseBlock()
+      : (this.parseStatement() ?? { kind: "block", location: loc });
+    return { kind: "prefilterArm", value: label, location: loc, children: [body] };
   }
 
   private parseMatchArm(): AstNode | undefined {

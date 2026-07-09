@@ -961,6 +961,8 @@ class TypeChecker {
     // W5b T2.2: check(subject){…} dispatches on the K3 lattice — the subject MUST
     // be a Verdict (a Bool/Int coerced into a verdict branch is the A9 fail-open).
     if (node.kind === "checkExpr") this.checkCheckSubject(node);
+    // W5b T2.4: prefilter(subject){…} is also verdict-only (same A9 rationale).
+    if (node.kind === "prefilterExpr") this.checkPrefilterSubject(node);
     switch (node.kind) {
       case "flowDecl":
       case "secureFlowDecl":
@@ -1768,6 +1770,22 @@ class TypeChecker {
         "CHECK_SUBJECT_NOT_VERDICT",
         `check(...) dispatches on a Verdict (the K3 DENY/UNKNOWN/ALLOW lattice), but its subject is '${t}'. ` +
         `check is verdict-only; use 'match' for '${t}' values.`,
+        subject.location ?? node.location,
+        `Make the subject a Verdict, or use 'match' for '${t}'.`,
+      ));
+    }
+  }
+
+  private checkPrefilterSubject(node: AstNode): void {
+    const subject = node.children?.[0];
+    if (subject === undefined) return;
+    const t = this.inferType(subject);
+    if (t !== undefined && t !== "Verdict") {
+      this.diagnostics.push(makeTCDiag(
+        "FUNGI-PREFILTER-002",
+        "PREFILTER_SUBJECT_NOT_VERDICT",
+        `prefilter(...) dispatches on a Verdict (the deny-only gate over the K3 lattice), but its subject is '${t}'. ` +
+        `prefilter is verdict-only; use 'match' for '${t}' values.`,
         subject.location ?? node.location,
         `Make the subject a Verdict, or use 'match' for '${t}'.`,
       ));

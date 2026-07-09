@@ -199,6 +199,11 @@ export const V1_ACTIVE_KEYWORDS: ReadonlySet<string> = new Set([
   // were renamed first (binary-trees var check→acc; six `flow check(...)` fixtures
   // → checkFlow). `authorize` stays for T2.3 (schema); `project` stays a declaration.
   "check", "fault",
+  // W5b T2.4: `prefilter(v){ deny:/maybe: }` — the deny-only gate. 0 corpus
+  // collisions (fungi-scan incl. inline fixtures, 2026-07-09). `maybe`/`deny`
+  // stay CONTEXTUAL arm labels (not reserved), special only in prefilter-arm
+  // position — like check's deny/ambig.
+  "prefilter",
 ]);
 
 /** Words reserved for post-v1 grammar — produce FUNGI-SYNTAX-003 if used as identifiers. */

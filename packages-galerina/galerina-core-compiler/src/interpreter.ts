@@ -1800,6 +1800,31 @@ class Interpreter {
         throw new FaultSignal(faultReasonText(reasonVal), reasonVal);
       }
 
+      // W5b T2.4: prefilter(subject){ deny:/maybe: } — the DENY-ONLY gate. It can
+      // only DENY or DEFER, never ALLOW (A8). Runtime: DENY(-1) → deny arm;
+      // anything >= 0 (UNKNOWN or ALLOW) → maybe arm — an early ALLOW is
+      // DOWNGRADED to defer (the zero-trust core: a prefilter never honours an
+      // early allow). FAIL-CLOSED: a non-verdict subject TRAPS (belt for the
+      // FUNGI-PREFILTER-002 compile guarantee).
+      case "prefilterExpr": {
+        const subject = node.children?.[0];
+        if (subject === undefined) return undefined;
+        const subjVal = await this.evalExpr(subject);
+        if (subjVal.__tag !== "verdict") {
+          throw new Error(`prefilter(...) subject must be a Verdict, got '${subjVal.__tag}' — fail-closed`);
+        }
+        const label = subjVal.value < 0 ? "deny" : "maybe"; // ALLOW is downgraded to maybe (never honoured)
+        const arm = (node.children ?? []).slice(1).find((c) => c.kind === "prefilterArm" && c.value === label);
+        if (arm === undefined) {
+          throw new Error(`prefilter(...) has no '${label}' arm for verdict ${subjVal.value} — fail-closed`);
+        }
+        const body = arm.children?.[0];
+        if (body === undefined) return undefined;
+        return body.kind === "block"
+          ? await this.executeBlock(body)
+          : await this.executeStatement(body);
+      }
+
       case "assignStmt": {
         const targetName = node.value ?? "";
         const rhsNode = node.children?.[0];
