@@ -462,12 +462,68 @@ class TypeChecker {
   private readonly flowParamTypes = new Map<string, readonly string[]>();
   /** Flow declared effects registry, built during collectDeclarations. */
   private readonly flowDeclaredEffects = new Map<string, readonly string[]>();
+  /** record NAME → (field name → declared field type, "" when unannotated).
+   *  Built during collectDeclarations so a `#record` literal can be STRUCTURALLY
+   *  checked against a declared record type instead of collapsing to the opaque
+   *  'Record' (the check↔governed finding-(ii) divergence class). */
+  private readonly recordFieldTypes = new Map<string, Map<string, string>>();
   /** Declared return type of the flow currently being walked. */
   private currentReturnType = "";
   /** Effects declared on the flow currently being walked (for TYPE-014). */
   private currentFlowEffects: readonly string[] = [];
   /** Name of the flow currently being walked (for TYPE-014 messages). */
   private currentFlowName = "";
+
+  /** Structural record-literal adoption (shared by the return- and let-positions).
+   *  When a `#record` literal meets a DECLARED record type: field-check it against the
+   *  declaration. Full match → the literal IS that record type (returns true, no diagnostic).
+   *  Mismatch → emits ONE precise diagnostic (missing/unknown/badly-typed fields) under the
+   *  caller's code/name and returns true (handled). Not a record literal, or not a declared
+   *  record → returns false (caller falls back to its generic diagnostic). */
+  private tryRecordLiteralAdoption(
+    declaredBase: string,
+    expr: AstNode | undefined,
+    location: AstNode["location"],
+    diagCode: string,
+    diagName: string,
+    contextLabel: string,
+  ): boolean {
+    if (expr === undefined || expr.kind !== "callExpr" || expr.value !== "#record") return false;
+    const declFields = this.recordFieldTypes.get(declaredBase);
+    if (declFields === undefined) return false;
+    const litFields = new Map<string, AstNode | undefined>();
+    for (const f of expr.children ?? []) {
+      if (f.kind === "identifier" && f.value) litFields.set(f.value, f.children?.[0]);
+    }
+    const missing = [...declFields.keys()].filter((k) => !litFields.has(k));
+    const unknown = [...litFields.keys()].filter((k) => !declFields.has(k));
+    const badTypes: string[] = [];
+    for (const [fname, fval] of litFields) {
+      const declType = declFields.get(fname);
+      if (declType === undefined || declType === "" || fval === undefined) continue;
+      const fInferred = this.inferType(fval);
+      const fDeclBase = declType.split("<")[0]?.trim() ?? declType;
+      if (fInferred !== undefined && fInferred !== "Record" &&
+          !isAssignmentCompatible(fDeclBase, fInferred)) {
+        badTypes.push(`${fname}: declared '${declType}', got '${fInferred}'`);
+      }
+    }
+    if (missing.length > 0 || unknown.length > 0 || badTypes.length > 0) {
+      const detail = [
+        missing.length ? `missing field(s): ${missing.join(", ")}` : "",
+        unknown.length ? `unknown field(s): ${unknown.join(", ")}` : "",
+        ...badTypes,
+      ].filter(Boolean).join("; ");
+      this.diagnostics.push(makeTCDiag(
+        diagCode,
+        diagName,
+        `Record literal does not match ${contextLabel}: ${detail}.`,
+        location,
+        `Make the literal's fields match the 'record ${declaredBase}' declaration exactly.`,
+      ));
+    }
+    return true; // handled: adopted silently, or the precise diagnostic above
+  }
 
   check(ast: AstNode): void {
     // Pass 1: Collect all user-defined type, enum, and flow signature names
@@ -489,6 +545,23 @@ class TypeChecker {
   private collectDeclarations(node: AstNode): void {
     if ((node.kind === "typeDecl" || node.kind === "recordDecl" || node.kind === "enumDecl") && node.value) {
       this.userDefinedTypes.add(node.value.trim());
+    }
+
+    // Harvest record FIELDS (not just the name) so record literals can be structurally
+    // checked. Parser shape: recordDecl children are paramDecl nodes valued "name: Type"
+    // (or bare "name" when unannotated — stored as type "").
+    if (node.kind === "recordDecl" && node.value) {
+      const fields = new Map<string, string>();
+      for (const child of node.children ?? []) {
+        if (child.kind !== "paramDecl" || !child.value) continue;
+        const colon = child.value.indexOf(":");
+        if (colon >= 0) {
+          fields.set(child.value.slice(0, colon).trim(), child.value.slice(colon + 1).trim());
+        } else {
+          fields.set(child.value.trim(), "");
+        }
+      }
+      this.recordFieldTypes.set(node.value.trim(), fields);
     }
 
     // Phase 9A-2: detect Brand<T, "Name"> aliases → register as branded type
@@ -694,6 +767,22 @@ class TypeChecker {
 
         // Graceful fallback: undefined receiver type or explicit "unknown" → unknown field
         if (receiverType === undefined || receiverType === "unknown" || receiverType === "") return undefined;
+
+        // An Auto-typed receiver is DEFERRED, not String-ish: guessing here is what mis-typed
+        // `entry.body` (GIR statement Array) as String via the field-name heuristics below and
+        // mis-fired TYPE-002/005 on the self-hosted corpus (finding ii). Unknown means unknown.
+        const receiverBase = receiverType.split("<")[0]?.trim() ?? receiverType;
+        if (receiverBase === "Auto") return undefined;
+
+        // REAL record schema lookup (the "Phase 11B" this comment block promised): a receiver
+        // whose type is a DECLARED record answers field accesses from its declaration — the
+        // declared field type, or undefined for a field the record does not declare. Takes
+        // precedence over every name-based heuristic below.
+        const schema = this.recordFieldTypes.get(receiverBase);
+        if (schema !== undefined) {
+          const declared = schema.get(node.value ?? "");
+          return declared === undefined || declared === "" ? undefined : declared;
+        }
 
         // Request object fields — any field access on Request → String
         // This is the common case: request.body.email, request.params.id, etc.
@@ -1069,13 +1158,25 @@ class TypeChecker {
               (returnExpr.value === "Ok" || returnExpr.value === "Err" || returnExpr.value === "Some");
             const declaredBase = this.currentReturnType.split("<")[0]?.trim() ?? this.currentReturnType;
             if (!isOkErrReturn && !isAssignmentCompatible(declaredBase, inferredType)) {
-              this.diagnostics.push(makeTCDiag(
-                "FUNGI-TYPE-008",
-                "InvalidReturnType",
-                `Flow declares return type '${this.currentReturnType}' but this return expression has type '${inferredType}'.`,
-                node.location,
-                `Return a value of type '${this.currentReturnType}', or correct the flow return type declaration.`,
-              ));
+              // A `#record` LITERAL where a DECLARED record type is expected adopts that
+              // record type STRUCTURALLY (fields checked against the declaration) instead of
+              // collapsing to the opaque 'Record' — the corpus-wide `return { ty: "Int", … }
+              // -> RtValue` idiom (finding-(ii) divergence class). Mismatches still error
+              // with precise field detail: stronger than the string compare, never a mute.
+              const adopted = this.tryRecordLiteralAdoption(
+                declaredBase, returnExpr, node.location,
+                "FUNGI-TYPE-008", "InvalidReturnType",
+                `declared return type '${this.currentReturnType}'`,
+              );
+              if (!adopted) {
+                this.diagnostics.push(makeTCDiag(
+                  "FUNGI-TYPE-008",
+                  "InvalidReturnType",
+                  `Flow declares return type '${this.currentReturnType}' but this return expression has type '${inferredType}'.`,
+                  node.location,
+                  `Return a value of type '${this.currentReturnType}', or correct the flow return type declaration.`,
+                ));
+              }
             } else if (!isOkErrReturn && declaredBase === "Auto") {
               // Surface the deferral: isAssignmentCompatible() treats an `Auto`-declared
               // target as universally compatible, which silently mutes the return-type
@@ -1342,16 +1443,26 @@ class TypeChecker {
         if (!hasGovernanceQualifier && !isViewType && initNode !== undefined) {
           const inferredType = this.inferType(initNode);
           if (inferredType !== undefined && !isAssignmentCompatible(declaredBase, inferredType)) {
-            this.diagnostics.push(makeTCDiag(
-              "FUNGI-TYPE-002",
-              "TypeMismatch",
-              `Cannot assign '${inferredType}' to '${declaredBase}'. The declared type and the value type are incompatible.`,
-              node.location,
-              `Change the value to a '${declaredBase}' expression, or update the type annotation.`,
-              inferredType === "Int" && NUMERIC_TYPES.has(declaredBase)
-                ? undefined  // numeric widening — no code suggestion needed
-                : undefined,
-            ));
+            // `let x: SomeRecord = { … }` — same structural adoption as the return position
+            // (finding ii): a matching literal IS the declared record; a mismatch gets the
+            // precise field diagnostic from the helper instead of the generic one below.
+            const adopted = this.tryRecordLiteralAdoption(
+              declaredBase, initNode, node.location,
+              "FUNGI-TYPE-002", "TypeMismatch",
+              `declared type '${declaredBase}'`,
+            );
+            if (!adopted) {
+              this.diagnostics.push(makeTCDiag(
+                "FUNGI-TYPE-002",
+                "TypeMismatch",
+                `Cannot assign '${inferredType}' to '${declaredBase}'. The declared type and the value type are incompatible.`,
+                node.location,
+                `Change the value to a '${declaredBase}' expression, or update the type annotation.`,
+                inferredType === "Int" && NUMERIC_TYPES.has(declaredBase)
+                  ? undefined  // numeric widening — no code suggestion needed
+                  : undefined,
+              ));
+            }
           }
         }
 

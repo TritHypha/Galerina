@@ -5701,7 +5701,10 @@ class Parser {
       this.advance(); // consume {
       this.skipNewlines();
       while (!this.currentIs("symbol", "}") && !this.isEof()) {
-        if (this.current().kind === "identifier") {
+        // A field name may lex as a KEYWORD (e.g. `reason`, lexer.ts) — accept it exactly
+        // like parseRecordLiteral does, or the name token is skipped and the TYPE token is
+        // mis-read as an untyped field name ("reason: String" became a field named "String").
+        if (this.current().kind === "identifier" || this.current().kind === "keyword") {
           const fLoc = this.loc();
           const fName = this.current().value;
           this.advance();
