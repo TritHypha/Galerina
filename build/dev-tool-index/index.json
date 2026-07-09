@@ -1308,7 +1308,8 @@
       "inCadence": false,
       "concerns": [
         "sinks/taint",
-        "doc-drift",
+        "diagnostics",
+        "graph/index",
         "sensitive-allowlist"
       ]
     },
@@ -1886,6 +1887,7 @@
       "audit-oblivious.mjs",
       "audit-overclaim-phrases.mjs",
       "audit-package-border.mjs",
+      "audit-path-leak.mjs",
       "audit-perf-hotpath.mjs",
       "audit-production-blockers.mjs",
       "audit-provenance.mjs",
@@ -1935,6 +1937,7 @@
       "audit-overclaim-phrases.mjs",
       "audit-package-border.mjs",
       "audit-papers-index.mjs",
+      "audit-path-leak.mjs",
       "audit-perf-hotpath.mjs",
       "audit-production-blockers.mjs",
       "audit-provenance.mjs",
@@ -2034,7 +2037,6 @@
       "audit-name-collisions.mjs",
       "audit-overclaim-phrases.mjs",
       "audit-papers-index.mjs",
-      "audit-path-leak.mjs",
       "audit-provenance.mjs",
       "audit-stray-docs.mjs",
       "audit-syntax.mjs",

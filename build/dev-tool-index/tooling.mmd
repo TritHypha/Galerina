@@ -152,7 +152,8 @@ flowchart LR
   T_audit_papers_index_mjs --> C_graph_index
   T_audit_path_leak_mjs["audit-path-leak.mjs"]
   T_audit_path_leak_mjs --> C_sinks_taint
-  T_audit_path_leak_mjs --> C_doc_drift
+  T_audit_path_leak_mjs --> C_diagnostics
+  T_audit_path_leak_mjs --> C_graph_index
   T_audit_path_leak_mjs --> C_sensitive_allowlist
   T_audit_perf_hotpath_mjs["audit-perf-hotpath.mjs"]
   T_audit_perf_hotpath_mjs --> C_signing_fusion
