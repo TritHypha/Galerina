@@ -4,8 +4,8 @@
     "packages": 94,
     "testBearing": 69,
     "tests": 6054,
-    "devTools": 59,
-    "auditTools": 31,
+    "devTools": 61,
+    "auditTools": 33,
     "toolsInCadence": 20,
     "proofs": 40
   },
@@ -1035,6 +1035,20 @@
       ]
     },
     {
+      "name": "audit-brand-keys.mjs",
+      "category": "audit",
+      "purpose": "Brand-everywhere BOLA lint (RD-0286 §5.3; OWASP API1:2023, CWE-639).",
+      "selfTest": true,
+      "inCadence": false,
+      "concerns": [
+        "signing/fusion",
+        "gate-wiring",
+        "diagnostics",
+        "doc-drift",
+        "brand"
+      ]
+    },
+    {
       "name": "audit-checker-wiring.mjs",
       "category": "audit",
       "purpose": "\"dead gate\" detector (generalises check-gate-injection.mjs)",
@@ -1374,6 +1388,17 @@
       "concerns": [
         "diagnostics",
         "source-hygiene"
+      ]
+    },
+    {
+      "name": "audit-selfhost-readiness.mjs",
+      "category": "audit",
+      "purpose": "the honest self-hosting map: per package, how far toward",
+      "selfTest": false,
+      "inCadence": false,
+      "concerns": [
+        "effects",
+        "graph/index"
       ]
     },
     {
@@ -1847,6 +1872,7 @@
     ],
     "diagnostics": [
       "audit-allowlist-sensitive.mjs",
+      "audit-brand-keys.mjs",
       "audit-checker-wiring.mjs",
       "audit-corpus-effect-names.mjs",
       "audit-coverage.mjs",
@@ -1912,6 +1938,7 @@
       "audit-perf-hotpath.mjs",
       "audit-production-blockers.mjs",
       "audit-provenance.mjs",
+      "audit-selfhost-readiness.mjs",
       "audit-signed-fixture-drift.mjs",
       "audit-sink-canonicality.mjs",
       "audit-stray-docs.mjs",
@@ -1949,16 +1976,8 @@
       "audit-runtime-coverage.mjs",
       "audit-sink-canonicality.mjs"
     ],
-    "sinks/taint": [
-      "audit-checker-wiring.mjs",
-      "audit-muted-diagnostics.mjs",
-      "audit-oblivious.mjs",
-      "audit-papers-index.mjs",
-      "audit-path-leak.mjs",
-      "audit-sink-canonicality.mjs",
-      "check-gate-injection.mjs"
-    ],
     "signing/fusion": [
+      "audit-brand-keys.mjs",
       "audit-checker-wiring.mjs",
       "audit-diagnostic-doc-drift.mjs",
       "audit-effect-canonicality.mjs",
@@ -1986,28 +2005,8 @@
       "rebuild-fusable-packages.mjs",
       "verify-artifacts.mjs"
     ],
-    "governance": [
-      "audit-checker-wiring.mjs",
-      "audit-coverage.mjs",
-      "audit-diagnostic-doc-drift.mjs",
-      "audit-effect-canonicality.mjs",
-      "audit-graph-integrity.mjs",
-      "audit-gscm.mjs",
-      "audit-muted-diagnostics.mjs",
-      "audit-name-collisions.mjs",
-      "audit-papers-index.mjs",
-      "audit-route-overlap.mjs",
-      "audit-tier-boundary.mjs",
-      "audit-web-stub-guard.mjs",
-      "galerina-new.mjs",
-      "gen-code-registry.mjs",
-      "lint-conventions.mjs",
-      "lint-fungi.mjs",
-      "component-health.mjs",
-      "rebuild-fusable-packages.mjs",
-      "verify-artifacts.mjs"
-    ],
     "gate-wiring": [
+      "audit-brand-keys.mjs",
       "audit-checker-wiring.mjs",
       "audit-corpus-effect-names.mjs",
       "audit-coverage.mjs",
@@ -2024,6 +2023,7 @@
       "check-gate-injection.mjs"
     ],
     "doc-drift": [
+      "audit-brand-keys.mjs",
       "audit-checker-wiring.mjs",
       "audit-corpus-effect-names.mjs",
       "audit-coverage.mjs",
@@ -2052,11 +2052,49 @@
       "rd-absorb.mjs",
       "rebrand-tmf-to-spore.mjs"
     ],
+    "brand": [
+      "audit-brand-keys.mjs",
+      "fix-logicn-brand.mjs",
+      "brand-audit.mjs",
+      "rebrand-tmf-to-spore.mjs",
+      "verify-artifacts.mjs"
+    ],
+    "sinks/taint": [
+      "audit-checker-wiring.mjs",
+      "audit-muted-diagnostics.mjs",
+      "audit-oblivious.mjs",
+      "audit-papers-index.mjs",
+      "audit-path-leak.mjs",
+      "audit-sink-canonicality.mjs",
+      "check-gate-injection.mjs"
+    ],
+    "governance": [
+      "audit-checker-wiring.mjs",
+      "audit-coverage.mjs",
+      "audit-diagnostic-doc-drift.mjs",
+      "audit-effect-canonicality.mjs",
+      "audit-graph-integrity.mjs",
+      "audit-gscm.mjs",
+      "audit-muted-diagnostics.mjs",
+      "audit-name-collisions.mjs",
+      "audit-papers-index.mjs",
+      "audit-route-overlap.mjs",
+      "audit-tier-boundary.mjs",
+      "audit-web-stub-guard.mjs",
+      "galerina-new.mjs",
+      "gen-code-registry.mjs",
+      "lint-conventions.mjs",
+      "lint-fungi.mjs",
+      "component-health.mjs",
+      "rebuild-fusable-packages.mjs",
+      "verify-artifacts.mjs"
+    ],
     "effects": [
       "audit-corpus-effect-names.mjs",
       "audit-effect-canonicality.mjs",
       "audit-gscm.mjs",
       "audit-muted-diagnostics.mjs",
+      "audit-selfhost-readiness.mjs",
       "audit-sink-canonicality.mjs",
       "galerina-new.mjs",
       "kb-index.mjs"
@@ -2144,12 +2182,6 @@
     "web-stub": [
       "audit-web-stub-guard.mjs",
       "component-health.mjs"
-    ],
-    "brand": [
-      "fix-logicn-brand.mjs",
-      "brand-audit.mjs",
-      "rebrand-tmf-to-spore.mjs",
-      "verify-artifacts.mjs"
     ]
   },
   "gaps": {
@@ -2168,6 +2200,7 @@
     "concernsNoTool": [],
     "toolsNotInCadence": [
       "audit-allowlist-sensitive.mjs",
+      "audit-brand-keys.mjs",
       "audit-diagnostic-codes.mjs",
       "audit-diagnostic-doc-drift.mjs",
       "audit-doc-drift.mjs",
@@ -2182,6 +2215,7 @@
       "audit-provenance.mjs",
       "audit-route-overlap.mjs",
       "audit-runtime-coverage.mjs",
+      "audit-selfhost-readiness.mjs",
       "audit-stray-docs.mjs",
       "audit-syntax.mjs",
       "audit-tier-boundary.mjs",

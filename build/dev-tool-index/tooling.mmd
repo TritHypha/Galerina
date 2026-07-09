@@ -28,6 +28,12 @@ flowchart LR
   T_audit_allowlist_sensitive_mjs --> C_package_border
   T_audit_allowlist_sensitive_mjs --> C_graph_index
   T_audit_allowlist_sensitive_mjs --> C_sensitive_allowlist
+  T_audit_brand_keys_mjs["audit-brand-keys.mjs"]
+  T_audit_brand_keys_mjs --> C_signing_fusion
+  T_audit_brand_keys_mjs --> C_gate_wiring
+  T_audit_brand_keys_mjs --> C_diagnostics
+  T_audit_brand_keys_mjs --> C_doc_drift
+  T_audit_brand_keys_mjs --> C_brand
   T_audit_checker_wiring_mjs["audit-checker-wiring.mjs"]
   T_audit_checker_wiring_mjs --> C_sinks_taint
   T_audit_checker_wiring_mjs --> C_signing_fusion
@@ -178,6 +184,9 @@ flowchart LR
   T_audit_scratchdir_hygiene_mjs["audit-scratchdir-hygiene.mjs"]
   T_audit_scratchdir_hygiene_mjs --> C_diagnostics
   T_audit_scratchdir_hygiene_mjs --> C_source_hygiene
+  T_audit_selfhost_readiness_mjs["audit-selfhost-readiness.mjs"]
+  T_audit_selfhost_readiness_mjs --> C_effects
+  T_audit_selfhost_readiness_mjs --> C_graph_index
   T_audit_signed_fixture_drift_mjs["audit-signed-fixture-drift.mjs"]
   T_audit_signed_fixture_drift_mjs --> C_signing_fusion
   T_audit_signed_fixture_drift_mjs --> C_graph_index
