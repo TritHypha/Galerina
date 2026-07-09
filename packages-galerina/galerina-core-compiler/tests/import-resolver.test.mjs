@@ -224,6 +224,107 @@ flow test(x: MyCustomType) -> String {
   });
 });
 
+// ── Symbol resolver — match-arm pattern bindings ─────────────────────────────
+// The parser stores a constructor pattern's binding (`Some(user)`, `Ok(v)`, `Err(e)`) as a
+// leading identifier child of the matchArm "so downstream passes can register it in scope",
+// and the interpreter declares it before the arm body runs. Before 2026-07-09 the resolver
+// never did — every corpus-shaped `Some(v) => { … v … }` false-positived FUNGI-NAME-001 when
+// the resolver ran (the governed-run pipeline), while `check` passed. These pin BOTH
+// directions: bindings resolve inside their arm, and everything else still flags.
+
+describe("Symbol resolver — match-arm pattern bindings", () => {
+  it("Some(v) binding resolves inside its arm body (no FUNGI-NAME-001)", () => {
+    const { ast } = parse(`
+pure flow firstOr(xs: Array<Int>) -> Int {
+  let vOpt = xs.get(0)
+  mut out: Int = 0
+  match vOpt {
+    Some(v) => { out = v }
+    None => {}
+    _ => {}
+  }
+  return out
+}
+`);
+    const result = resolveSymbols(ast);
+    assert.ok(
+      !hasDiag(result.diagnostics, "FUNGI-NAME-001"),
+      `expected clean, got: ${result.diagnostics.map((d) => d.message).join("; ")}`,
+    );
+  });
+
+  it("Ok/Err bindings both resolve in their own arms", () => {
+    const { ast } = parse(`
+pure flow unwrapOr(r: Result<Int, String>) -> Int {
+  mut out: Int = 0
+  match r {
+    Ok(v) => { out = v }
+    Err(e) => { out = 0 - 1 }
+    _ => {}
+  }
+  return out
+}
+`);
+    const result = resolveSymbols(ast);
+    assert.ok(
+      !hasDiag(result.diagnostics, "FUNGI-NAME-001"),
+      `expected clean, got: ${result.diagnostics.map((d) => d.message).join("; ")}`,
+    );
+  });
+
+  it("a binding is scoped to its OWN arm — use after the match still flags", () => {
+    const { ast } = parse(`
+pure flow leaky(xs: Array<Int>) -> Int {
+  match xs.get(0) {
+    Some(v) => {}
+    _ => {}
+  }
+  return v
+}
+`);
+    const result = resolveSymbols(ast);
+    assert.ok(
+      hasDiag(result.diagnostics, "FUNGI-NAME-001"),
+      "the arm binding must NOT leak past its arm",
+    );
+  });
+
+  it("a genuine typo inside an arm body still flags FUNGI-NAME-001", () => {
+    const { ast } = parse(`
+pure flow typo(xs: Array<Int>) -> Int {
+  mut out: Int = 0
+  match xs.get(0) {
+    Some(v) => { out = vTypo }
+    _ => {}
+  }
+  return out
+}
+`);
+    const result = resolveSymbols(ast);
+    assert.ok(
+      hasDiag(result.diagnostics, "FUNGI-NAME-001"),
+      "typos in arm bodies must still be caught",
+    );
+  });
+
+  it("a guard arm's bare-identifier guard is USE-checked (undeclared → flags)", () => {
+    const { ast } = parse(`
+pure flow guarded(score: Int) -> Int {
+  match score {
+    when notDeclared => { return 1 }
+    _ => { return 0 }
+  }
+  return 0
+}
+`);
+    const result = resolveSymbols(ast);
+    assert.ok(
+      hasDiag(result.diagnostics, "FUNGI-NAME-001"),
+      "guard expressions bind nothing — an undeclared guard identifier must flag",
+    );
+  });
+});
+
 // ── Symbol resolver integration ───────────────────────────────────────────────
 
 describe("Symbol resolver — imported value names do not emit FUNGI-NAME-001", () => {

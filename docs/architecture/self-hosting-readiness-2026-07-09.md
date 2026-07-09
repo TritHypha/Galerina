@@ -55,6 +55,20 @@ Run `node scripts/audit-selfhost-readiness.mjs` for the full per-package table +
 1. **Complete `.fungi` → WASM lowering** — `?` error-prop + non-exhaustive-`match` (the two `audit-fungi-runtime`
    floors) + the W5b `check`/`fault`/`prefilter` lowering (currently trap-fail-closed). Until this, no `.fungi`
    component runs as standalone WASM.
+   **PRECISION UPDATE (2026-07-09 late, all verified by running probes):** the standalone raw-WASM surface is
+   RICHER than previously written — scalar Int/Bool flows fully compile and run correctly (`arith`, `let`/`mut`,
+   `if`/`else`, `while`, `match`-with-`_` on Int, cross-flow calls; 9/9 probe values correct via
+   `galerina run --invoke`). The REAL remaining floor is the **ADT ABI**: `Ok`/`Err`/`Some`/`String`-returning
+   code lowers to host imports (`host.__result_ok`, …) that the standalone runner does not provide — the module
+   fails at `WebAssembly.instantiate`. `?` remains unlowered (drops at the gir-emitter's `emitExpr` fallthrough),
+   but it is GATED behind that same ADT ABI anyway (its desugaring is Result-shaped by definition). The
+   non-exhaustive-`match` half is CLOSED at the language level: `FUNGI-MATCH-001` is a compile-time ERROR
+   (RD-0240) + the corpus gate requires `_` arms; the WAT trap is defense-in-depth behind an unreachable state.
+   On the **governed tree tier**, ADT matches AND `?` now run with correct values end-to-end (verified: Ok-unwrap,
+   Err-arm, Some-arm, `?`-Ok-continue, `?`-Err-early-return) after the match-arm resolver fix below. So step 1
+   reduces to: **decide + build the standalone Result/Option/String ABI** (host-shim vs linear-memory tagging —
+   an owner design decision; it is wire-format-defining and is the #102-106 DSS.wasm groundwork), then desugar
+   `?` onto it.
 2. **Green the self-hosted compiler corpus** — ✅ **`check`-clean 2026-07-09** (all 8 files;
    `runtime.fungi`'s false positive cured by the compiler fix below, `effect-checker.fungi`'s
    non-exhaustive `match` given its `_` arm). Remaining half: actually LOWER + run the compiler on
@@ -113,3 +127,13 @@ stdlib-module shadowing"; suite 4,385/4,385). The fail-open concern was retired 
 tree-walker: `env.get(0)` on a local Array value-dispatches (returns the element, records **no** effect),
 so suppressing the static flag matches runtime truth. Corpus outcome: **8/8 `check`-clean**,
 `audit-fungi-runtime` 0 findings; `runtime.fungi` keeps its natural `env` name — no rename needed.
+
+**SECOND FIX (same session): match-arm pattern bindings in the symbol resolver.** Probing the lowering
+surface exposed that `check` and `run --governed` DISAGREED on corpus-shaped code: the parser stores a
+constructor pattern's binding (`Some(v)`, `Ok(x)`, `Err(e)`) as an identifier child *"so downstream passes
+can register it in scope"*, the interpreter does — but `symbol-resolver.ts`'s `matchArm` case never did, so
+every ADT match false-positived `FUNGI-NAME-001` whenever the resolver ran (the governed pipeline), blocking
+governed runs of any Option/Result-matching flow. Fixed by mirroring the interpreter (per-arm nested scope;
+guard arms exempt — their identifier is a USE); pinned by 5 tests in `tests/import-resolver.test.mjs`
+(binding resolves; scoped to its arm; typos still flag; guard identifiers still use-checked). Governed
+probes now execute ADT matches and `?` with correct values.
