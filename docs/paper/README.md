@@ -3,7 +3,7 @@
 This folder holds Galerina's publishable scholarly artifacts, consolidated 2026-07-09 from
 `docs/scientific-papers/`, the ZTF KB `defensive-publications/`, and the root `Galerina-ScientificPapers/` stray:
 
-- [`defensive-papers/`](defensive-papers/) — all **22** defensive-publication notes (timestamped prior-art records, novelty *disclaimed*; 3 are design-stage disclosures, marked as such)
+- [`defensive-papers/`](defensive-papers/) — all **25** defensive-publication notes (timestamped prior-art records, novelty *disclaimed*; 6 are design-stage disclosures, marked as such)
 - [`scientific-papers/`](scientific-papers/) — eprint-shaped drafts / measured-negative candidates (currently **1**, superseded-draft status)
 
 **Read the standard before adding anything here.**
@@ -93,10 +93,14 @@ lines when the mechanisms land.
 | [`dp-rd-0283-0286-conservation-checked-buses-and-field-routed-objects.md`](defensive-papers/dp-rd-0283-0286-conservation-checked-buses-and-field-routed-objects.md) | 2026-07-09 | Conservation laws for drawn governance graphs: Σin = Σout + Σdrained buses + every-field-routed objects (silent drop / mass assignment unrepresentable) |
 | [`dp-rd-0285-tristate-route-resolution-ambiguity-refusal.md`](defensive-papers/dp-rd-0285-tristate-route-resolution-ambiguity-refusal.md) | 2026-07-09 | K3 route dispatch over signed manifests: ambiguous match = governed hold (never first-match-wins) + `route_overlap` build lint + materialise-once requests |
 | [`dp-rd-0285b-signed-capability-bounded-mcp-tool-manifests.md`](defensive-papers/dp-rd-0285b-signed-capability-bounded-mcp-tool-manifests.md) | 2026-07-09 | AI tool manifests derived from compiler-checked effect/budget contracts and bound into the signed artifact (anti tool-poisoning / rug-pull) |
+| [`dp-rd-0295a-construction-first-security-coverage-scorecard.md`](defensive-papers/dp-rd-0295a-construction-first-security-coverage-scorecard.md) | 2026-07-09 | **Methodology** — scoring a construction-first language against a public attack taxonomy with *unrepresentable-by-construction* as a category distinct from detect/prevent + a mandatory residuals column (not a measured paper) |
+| [`dp-rd-0295b-k3-governed-ai-toxic-flow-lattice.md`](defensive-papers/dp-rd-0295b-k3-governed-ai-toxic-flow-lattice.md) | 2026-07-09 | K3 three-valued verdict on the **composition** of AI tool calls over a sensitivity-label lattice (kills toxic-flow: individually-safe tools composing into exfiltration); extends dp-rd-0285b per-tool → per-flow |
+| [`dp-rd-0295c-spore-at-rest-integrity-rollback-and-key-commitment.md`](defensive-papers/dp-rd-0295c-spore-at-rest-integrity-rollback-and-key-commitment.md) | 2026-07-09 | At-rest integrity for an encrypted **database file**: monotone-epoch rollback resistance (external anchor) + CMT-4 partitioning-oracle resistance + version-pinned suite; honest gating on deferred ML-DSA signing |
 
-> **Scientific papers from the 2026-07-09 R&D batch: NONE.** Nothing in RD-0283..0289 carries a fresh
-> named-machine measurement, so per §1 nothing qualifies beyond defensive-pub tier. The first candidate to
-> change that is the RD-0285j dispatch benchmark (numbers before speed claims).
+> **Scientific papers from the 2026-07-09 R&D batch (RD-0283..0296): NONE.** Nothing carries a fresh
+> named-machine measurement, so per §1 nothing qualifies beyond defensive-pub tier — including the RD-0295a
+> coverage scorecard, which is a **methodology** disclosure (a coverage enumeration is not a measurement). The
+> first candidate to change that remains the RD-0285j dispatch benchmark (numbers before speed claims).
 
 ### Eprint drafts (`scientific-papers/`)
 
