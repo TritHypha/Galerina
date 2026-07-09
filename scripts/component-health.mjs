@@ -12,6 +12,7 @@
 //   node scripts/component-health.mjs --gaps     # only rows with a readiness gap
 //   node scripts/component-health.mjs --json     # machine-readable
 //   node scripts/component-health.mjs --strict   # exit 1 if any gap/orphan (CI gate)
+//   node scripts/component-health.mjs --table    # per-family readiness table with a TOTAL row
 import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { join, dirname, basename } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -24,6 +25,7 @@ const argv = new Set(process.argv.slice(2));
 const ONLY_GAPS = argv.has("--gaps");
 const AS_JSON = argv.has("--json");
 const STRICT = argv.has("--strict");
+const TABLE = argv.has("--table");
 
 const readJSON = (p) => { try { return JSON.parse(readFileSync(p, "utf8")); } catch { return null; } };
 const listDir = (p) => { try { return readdirSync(p); } catch { return null; } };
@@ -138,6 +140,31 @@ summary.readinessPct = summary.components ? (summary.green / summary.components)
 
 if (AS_JSON) {
   console.log(JSON.stringify({ provenance, summary, rows, orphans }, null, 2));
+  process.exit(STRICT && summary.totalGaps > 0 ? 1 : 0);
+}
+
+if (TABLE) {
+  // Per-family readiness table with a TOTAL row — the honest ship-readiness % broken out,
+  // ranked most-ready first. Orphans are their own row (0 green / N) and count in the TOTAL,
+  // so the TOTAL equals the SHIP-READINESS headline exactly (no masked denominator).
+  const fams = {};
+  for (const r of rows) {
+    if (!fams[r.family]) fams[r.family] = { g: 0, t: 0 };
+    fams[r.family].t += 1;
+    if (r.gaps.length === 0) fams[r.family].g += 1;
+  }
+  const ranked = Object.keys(fams)
+    .map((f) => ({ f, g: fams[f].g, t: fams[f].t, pct: (100 * fams[f].g) / fams[f].t }))
+    .sort((a, b) => b.pct - a.pct || a.f.localeCompare(b.f));
+  const L = (s, n) => String(s).padEnd(n);
+  const R = (s, n) => String(s).padStart(n);
+  const out = [];
+  if (provenance.available) out.push(`  ${provenance.branch} @ ${provenance.sha} · ${provenance.dirty ? "dirty" : "clean"}`);
+  out.push(`  ${L("FAMILY", 12)} ${R("GREEN", 6)} ${R("TOTAL", 6)} ${R("%", 7)}`);
+  for (const r of ranked) out.push(`  ${L(r.f, 12)} ${R(r.g, 6)} ${R(r.t, 6)} ${R(r.pct.toFixed(0) + "%", 7)}`);
+  out.push(`  ${L("(orphans)", 12)} ${R(0, 6)} ${R(orphans.length, 6)} ${R("0%", 7)}`);
+  out.push(`  ${L("TOTAL", 12)} ${R(summary.green, 6)} ${R(summary.components, 6)} ${R(summary.readinessPct.toFixed(1) + "%", 7)}`);
+  console.log(out.join("\n"));
   process.exit(STRICT && summary.totalGaps > 0 ? 1 : 0);
 }
 
