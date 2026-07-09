@@ -12,6 +12,9 @@ import {
   discoverCorpus,
   scanCorpus,
   strictFindings,
+  extractFungiFixtures,
+  looksLikeFungi,
+  scanInlineFixtures,
 } from "../dist/index.js";
 
 // ── version header ───────────────────────────────────────────────────────────
@@ -202,6 +205,95 @@ test("anti-vacuous: a fully-migrated runtime corpus yields ZERO strict findings"
     writeFileSync(join(root, "a.fungi"), "@version 1\nflow f() {\n  let a = x and y\n}\n");
     const scan = scanCorpus(root);
     assert.equal(strictFindings(scan).length, 0);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+// ── inline .fungi fixtures embedded in .mjs/.cjs harness files ────────────────
+// The disk scan only sees *.fungi FILES; much of the corpus lives as backtick
+// fixtures inside test/proof .mjs. That blind spot bit W4 (@version proofs) and
+// W5b (reserving `check`/`fault` broke fixtures the scan reported as 0 collisions).
+
+test("inline: extracts a backtick .fungi fixture and unescapes \\n into real newlines", () => {
+  const host = 'import x;\nconst src = `@version 1\\nflow f(v: Int) -> Int\\ncontract { effects {} }\\n{ return v }`;\ntest();\n';
+  const fx = extractFungiFixtures(host);
+  assert.equal(fx.length, 1);
+  assert.match(fx[0].content, /^@version 1\nflow f\(/); // \n resolved to a newline
+  assert.equal(fx[0].line, 2); // the template opens on host line 2
+});
+
+test("inline: looksLikeFungi accepts header/flow/contract, rejects ordinary templates (anti-vacuous)", () => {
+  assert.equal(looksLikeFungi("@version 1\nflow f() {}"), true);
+  assert.equal(looksLikeFungi("secure flow guard(x: Int) -> Void {}"), true);
+  assert.equal(looksLikeFungi("contract { intent { \"x\" } }"), true);
+  assert.equal(looksLikeFungi("SELECT * FROM users WHERE id = 1"), false);
+  assert.equal(looksLikeFungi("hello ${name}, welcome"), false);
+});
+
+test("inline: a backtick inside a // comment or a quoted string does NOT start a fixture", () => {
+  const host = [
+    "// example: `flow ghost(x) -> Int` should be ignored",
+    "const note = 'a `flow phantom()` in a string is ignored too';",
+    "const real = `@version 1\\nflow only(v: Int) -> Int\\ncontract { effects {} }\\n{ return v }`;",
+  ].join("\n");
+  const fx = extractFungiFixtures(host);
+  assert.equal(fx.length, 1);
+  assert.match(fx[0].content, /flow only\(/);
+});
+
+test("inline: ${…} interpolation becomes an identifier placeholder so the .fungi still lexes", () => {
+  const host = "const t = `@version 1\\nflow ${flowName}(v: Int) -> Int\\ncontract { effects {} }\\n{ return v }`;\n";
+  const fx = extractFungiFixtures(host);
+  assert.equal(fx.length, 1);
+  assert.ok(fx[0].content.includes("_INTERP_"), "interpolation replaced by a placeholder ident");
+  const s = scanFungiSource(fx[0].content, "t.fungi");
+  assert.equal(s.lexErrors, 0, "the placeholder keeps the fixture lexable");
+});
+
+test("inline: nested template inside ${…} does not end the outer fixture early", () => {
+  const host = "const t = `@version 1\\nflow f(v: Int) -> Int\\ncontract { effects {} }\\n{ return ${cond ? `a` : `b`} }`;\n";
+  const fx = extractFungiFixtures(host);
+  assert.equal(fx.length, 1); // one .fungi fixture; the inner `a`/`b` are not fungi
+  assert.match(fx[0].content, /return  ?_INTERP_/);
+});
+
+test("inline: THE W5b regression — a `check`/`fault` fixture in a .test.mjs now surfaces as a collision", () => {
+  const root = mkdtempSync(join(tmpdir(), "fungi-scan-inline-"));
+  try {
+    mkdirSync(join(root, "pkg", "tests"), { recursive: true });
+    // a fixture that USES the planned keywords as identifiers — the exact shape
+    // that broke six fixtures when `check`/`fault` were reserved, yet the disk
+    // scan reported ZERO because these tokens live inside a .mjs string.
+    writeFileSync(
+      join(root, "pkg", "tests", "legacy.test.mjs"),
+      "import { test } from 'node:test';\n" +
+        "const src = `@version 1\\nflow check(v: Int) -> Int\\ncontract { effects {} }\\n{ let fault = v\\n  return fault }`;\n" +
+        "test('x', () => {});\n",
+    );
+    const inline = scanInlineFixtures(root);
+    assert.equal(inline.length, 1);
+    const f = inline[0];
+    assert.equal(f.source, "inline");
+    assert.equal(f.corpus, "test");
+    assert.equal(f.file, "pkg/tests/legacy.test.mjs#L2");
+    assert.ok(f.usage.check >= 1, "the `check` identifier collision is now visible");
+    assert.ok(f.usage.fault >= 1, "the `fault` identifier collision is now visible");
+
+    // …and via the full corpus scan, still strict-exempt (test-corpus can hold anything)
+    const scan = scanCorpus(root);
+    assert.ok(scan.files.some((x) => x.source === "inline" && x.file.includes("legacy.test.mjs")));
+    assert.equal(strictFindings(scan).filter((s) => s.file.includes("legacy.test.mjs")).length, 0);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("inline: a host with no .fungi fixtures contributes nothing (no false positives)", () => {
+  const root = mkdtempSync(join(tmpdir(), "fungi-scan-inline-empty-"));
+  try {
+    writeFileSync(join(root, "plain.mjs"), "export const greeting = `hello ${who}`;\nconst sql = `SELECT 1`;\n");
+    assert.equal(scanInlineFixtures(root).length, 0);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

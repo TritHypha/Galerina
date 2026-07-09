@@ -16,4 +16,11 @@ export {
   type VersionHeader,
   type StrictFinding,
 } from "./scanner.js";
+export {
+  discoverInlineHosts,
+  extractFungiFixtures,
+  scanInlineFixtures,
+  looksLikeFungi,
+  type InlineFixture,
+} from "./inline-fixtures.js";
 export { buildRollup, renderMarkdown, renderConsole, type Rollup, type WordRollup } from "./report.js";

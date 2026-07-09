@@ -18,6 +18,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { lex, type Token } from "@galerina/core-compiler";
+import { scanInlineFixtures } from "./inline-fixtures.js";
 
 // ── planned-word tables (docs/SYNTAX_UPDATE_PLAN.md §2 W5) ──────────────────
 
@@ -59,9 +60,16 @@ export interface MatchStats {
 }
 
 export interface FileScan {
-  /** Repo-relative path with forward slashes. */
+  /** Repo-relative path with forward slashes. Inline fixtures append `#L<line>`
+   *  to name the host file + the line the fixture opens on. */
   readonly file: string;
   readonly kind: "fungi" | "gate";
+  /** "disk" = a real .fungi/.gate file. "inline" = a backtick `.fungi` fixture
+   *  extracted from a .mjs/.cjs harness file (test/proof). Absent ⇒ "disk".
+   *  Inline fixtures are always test-corpus (strict-exempt) but their planned-word
+   *  usage feeds the collision table — the blind spot this closes (see
+   *  inline-fixtures.ts; it bit W4 @version proofs and the W5b keyword reserve). */
+  readonly source?: "disk" | "inline";
   /** "test" = under a tests/ or fixtures/ path segment (negative fixtures allowed
    *  to hold old syntax). "signed-frozen" = inside a REAL-SIGNED fusable package
    *  (CG-7: the .lmanifest binds the source hash, so the file is byte-frozen until
@@ -361,9 +369,13 @@ export function scanCorpus(root: string): CorpusScan {
         continue;
       }
       const base = kind === "fungi" ? scanFungiSource(source, relPath) : scanGateSource(source, relPath);
-      files.push({ ...base, corpus });
+      files.push({ ...base, corpus, source: "disk" });
     }
   }
+  // Close the disk-only blind spot: also scan .fungi fixtures embedded as backtick
+  // strings inside .mjs/.cjs harness files. Always test-corpus, so strict-exempt —
+  // but their planned-word usage now feeds the collision table (W6 must see it).
+  files.push(...scanInlineFixtures(root));
   return { root, files };
 }
 

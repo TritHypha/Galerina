@@ -19,6 +19,11 @@ export interface Rollup {
   readonly testFiles: number;
   /** Byte-frozen inside REAL-SIGNED packages (CG-7) — strict-exempt, ceremony-owed. */
   readonly signedFrozenFiles: number;
+  /** .fungi fixtures extracted from .mjs/.cjs harness files (source="inline") and
+   *  the number of distinct host files they came from — the disk-blind-spot the
+   *  inline scanner closes (bit W4 @version proofs + the W5b keyword reserve). */
+  readonly inlineFixtureFiles: number;
+  readonly inlineFixtureHosts: number;
   readonly readErrors: number;
   readonly lexErrorFiles: number;
   readonly versionPresent: number;
@@ -57,6 +62,7 @@ function rollupWords(files: readonly FileScan[], words: readonly string[]): Word
 export function buildRollup(scan: CorpusScan): Rollup {
   const fs = scan.files;
   const fungi = fs.filter((f) => f.kind === "fungi");
+  const inline = fs.filter((f) => f.source === "inline");
   return {
     totalFiles: fs.length,
     fungiFiles: fungi.length,
@@ -64,6 +70,8 @@ export function buildRollup(scan: CorpusScan): Rollup {
     runtimeFiles: fs.filter((f) => f.corpus === "runtime").length,
     testFiles: fs.filter((f) => f.corpus === "test").length,
     signedFrozenFiles: fs.filter((f) => f.corpus === "signed-frozen").length,
+    inlineFixtureFiles: inline.length,
+    inlineFixtureHosts: new Set(inline.map((f) => f.file.split("#")[0])).size,
     readErrors: fs.filter((f) => f.readError !== null).length,
     lexErrorFiles: fs.filter((f) => f.lexErrors > 0).length,
     versionPresent: fs.filter((f) => f.version.present).length,
@@ -99,6 +107,7 @@ export function renderMarkdown(scan: CorpusScan, r: Rollup): string {
   let md = `# FUNGI-SCAN — syntax-migration corpus report
 
 Scanned **${r.totalFiles}** files (${r.fungiFiles} \`.fungi\` · ${r.gateFiles} \`.gate\`) — ${r.runtimeFiles} runtime-corpus, ${r.testFiles} test-corpus.
+Of those, **${r.inlineFixtureFiles}** are inline \`.fungi\` fixtures extracted from ${r.inlineFixtureHosts} \`.mjs\`/\`.cjs\` harness files (test-corpus, strict-exempt) — the disk-scan blind spot this closes.
 Detection = REAL compiler lexer token stream (see package note; regex misses \`@\`-headers and no-space operator forms).
 
 ## Migration gap summary
@@ -137,7 +146,8 @@ Full per-file detail: \`fungi-scan.json\` next to this report.
 export function renderConsole(r: Rollup): string {
   const lines = [
     `fungi-scan: ${r.totalFiles} files (${r.fungiFiles} .fungi · ${r.gateFiles} .gate) — ${r.runtimeFiles} runtime / ${r.testFiles} test` +
-    (r.signedFrozenFiles > 0 ? ` / ${r.signedFrozenFiles} SIGNED-FROZEN (CG-7, re-sign ceremony owed)` : ""),
+    (r.signedFrozenFiles > 0 ? ` / ${r.signedFrozenFiles} SIGNED-FROZEN (CG-7, re-sign ceremony owed)` : "") +
+    (r.inlineFixtureFiles > 0 ? ` · incl. ${r.inlineFixtureFiles} inline fixtures from ${r.inlineFixtureHosts} .mjs/.cjs` : ""),
     `  @version: ${r.versionPresent}/${r.totalFiles} present (${r.versionValid} valid) · legacy &&/||: ${r.filesWithLegacyOps} files (${r.legacyOpOccurrences}x) · vAnd/vOr/vNot: ${r.filesWithLegacyIdents} files`,
     `  match without _: ${r.matchWithoutWildcard}/${r.matchTotal} (in ${r.filesWithMatchGap} files) · secure flow: ${r.secureFlowCount} · unreadable: ${r.readErrors} · lex-error files: ${r.lexErrorFiles}`,
   ];
