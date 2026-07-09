@@ -81,16 +81,25 @@ export function isAllowlisted(group, knownCollisions) {
 }
 
 // ── load live package names ──────────────────────────────────────────────────────────────────────
+// Returns { names, unreadable }. An unreadable package root or an unparseable package.json is NOT silently
+// skipped — that would be a fail-open (a malformed manifest could hide a dependency-confusion name from the
+// collision guard, F7/RD-0290a). The caller turns every `unreadable` entry into a hard violation.
 function livePackageNames(root = PKG_ROOT) {
   const names = [];
+  const unreadable = [];
   let dirs;
-  try { dirs = readdirSync(root); } catch { return names; }
+  try { dirs = readdirSync(root); } catch (e) { unreadable.push(`${root}/ — package root unreadable (${e.message})`); return { names, unreadable }; }
   for (const d of dirs) {
     const pj = join(root, d, "package.json");
     if (!existsSync(pj)) continue;
-    try { const n = JSON.parse(readFileSync(pj, "utf8")).name; if (typeof n === "string") names.push(n); } catch { /* skip unparseable */ }
+    try {
+      const n = JSON.parse(readFileSync(pj, "utf8")).name;
+      if (typeof n === "string") names.push(n);
+    } catch (e) {
+      unreadable.push(`${pj} — unparseable package.json (${e.message})`);
+    }
   }
-  return names;
+  return { names, unreadable };
 }
 
 // ── self-test: prove the detectors fire (a neutered audit is itself a fail-open) ──────────────────
@@ -124,7 +133,8 @@ if (isMain) {
     }
   }
   const extra = (() => { try { return JSON.parse(readFileSync(REGISTRY, "utf8")).otherGuardedNames?.entries ?? []; } catch { return []; } })();
-  const names = [...livePackageNames(), ...extra];
+  const live = livePackageNames();
+  const names = [...live.names, ...extra];
 
   const violations = [];
   const knownReported = [];
@@ -136,8 +146,13 @@ if (isMain) {
     if (isAllowlisted([a, b], known)) { knownReported.push(`${a} ~ ${b}`); continue; }
     violations.push(`typo-twin (Levenshtein 1): ${a}  ~  ${b} — confirm both are intended; allowlist if so`);
   }
+  for (const u of live.unreadable) {
+    // Fail-closed (F7 / RD-0290a): an unreadable manifest cannot be checked, so it is a hard violation —
+    // never a silent skip that would let a malformed package.json evade the name-collision guard.
+    violations.push(`unreadable package manifest: ${u} — fix the manifest (fail-closed: cannot verify it is collision-free)`);
+  }
 
-  console.log(`name-collisions: checked ${names.length} name(s) (${livePackageNames().length} live packages + ${extra.length} registry extras)`);
+  console.log(`name-collisions: checked ${names.length} name(s) (${live.names.length} live packages + ${extra.length} registry extras)`);
   for (const k of knownReported) console.log(`  • known/allowlisted (resolution pending): ${k}`);
   for (const v of violations) console.log(`  ✖ ${v}`);
   console.log(violations.length === 0 ? "name-collisions: no unresolved name collisions." : `name-collisions: ${violations.length} unresolved collision(s).`);
