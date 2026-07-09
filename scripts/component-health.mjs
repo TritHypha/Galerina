@@ -137,6 +137,12 @@ summary.green = rows.filter((r) => r.gaps.length === 0).length;
 summary.components = rows.length + orphans.length;
 summary.totalGaps = summary.withGaps + orphans.length;
 summary.readinessPct = summary.components ? (summary.green / summary.components) * 100 : 0;
+// ── scope declaration: this % measures WORKSPACE PACKAGES ONLY (galerina.workspace.json +
+//    packages-galerina/ orphans). It does NOT cover the root CLI (galerina.mjs), root tests/,
+//    the scripts/ dev-tool suite, examples/, docs/, or the self-hosted .fungi corpus — those
+//    have their own gates (phase-close, lint-conventions, keep-green). Say so in EVERY output
+//    mode, so the headline % can never silently read as whole-project readiness. ──────────────
+summary.scope = "workspace packages only (not the full project: root CLI/scripts/examples/docs/corpus have their own gates)";
 
 if (AS_JSON) {
   console.log(JSON.stringify({ provenance, summary, rows, orphans }, null, 2));
@@ -164,6 +170,7 @@ if (TABLE) {
   for (const r of ranked) out.push(`  ${L(r.f, 12)} ${R(r.g, 6)} ${R(r.t, 6)} ${R(r.pct.toFixed(0) + "%", 7)}`);
   out.push(`  ${L("(orphans)", 12)} ${R(0, 6)} ${R(orphans.length, 6)} ${R("0%", 7)}`);
   out.push(`  ${L("TOTAL", 12)} ${R(summary.green, 6)} ${R(summary.components, 6)} ${R(summary.readinessPct.toFixed(1) + "%", 7)}`);
+  out.push(`  scope: ${summary.scope}`);
   console.log(out.join("\n"));
   process.exit(STRICT && summary.totalGaps > 0 ? 1 : 0);
 }
@@ -181,6 +188,7 @@ if (provenance.available) {
   out.push("  provenance: unavailable (not a git work tree)");
 }
 out.push(`  SHIP-READINESS: ${summary.readinessPct.toFixed(1)}% (${summary.green}/${summary.components} components green) · ${summary.totalGaps} gap(s)`);
+out.push(`  scope: ${summary.scope}`);
 out.push("");
 for (const fam of [...new Set(rows.map((r) => r.family))].sort()) {
   const famRows = rows.filter((r) => r.family === fam).sort((a, b) => a.dir.localeCompare(b.dir));
