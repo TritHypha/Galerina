@@ -27,7 +27,7 @@ npm run snapshot -- <label> # e.g. extended | baseline | post-wasm | post-gateCa
 ## Saved runs
 | Folder | Date | Machine | Note |
 |---|---|---|---|
-| `2026-06-17_extended/` | 2026-06-17 | i9-9900K 16c | **First truth-audited full run.** Unit-normalized + heap/op memory dimension; 24 cross-language benchmarks (incl. new mandelbrot/binary-trees/spectral-norm/tmf-container/framework-pipeline) + devtools. `npm run audit` PASS. |
+| `2026-06-17_extended/` | 2026-06-17 | i9-9900K 16c | **First truth-audited full run.** Unit-normalized + heap/op memory dimension; 24 cross-language benchmarks (incl. new mandelbrot/binary-trees/spectral-norm/spore-container/framework-pipeline) + devtools. `npm run audit` PASS. |
 
 ## Legacy flat snapshots (pre-archive, in `../`)
 - `../full-suite-2026-06-16.json` — full run **BEFORE the unit-normalization fix**. Its Galerina throughput numbers are **inflated** (the "Galerina wins" bug); do not trust/compare its Galerina rows. Kept only for historical reference.

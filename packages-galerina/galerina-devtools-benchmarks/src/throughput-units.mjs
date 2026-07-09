@@ -132,7 +132,7 @@ const SPECS = {
   // ── new (2026-06-17): one op = one whole unit, already inner-ops/sec ─────────
   // .spore creation — Node column = the @galerina/ext-spore engine; python/rust = byte-exact
   // reference writers (all assert the same golden root). Fair SHAKE256+packing race.
-  "tmf-container": {
+  "spore-container": {
     N: 1, unit: "containers/s", comparable: true,
     native: (_rt, r) => num(r.operationsPerSecond),
   },

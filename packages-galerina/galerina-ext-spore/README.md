@@ -48,6 +48,6 @@ The suite is also auto-discovered by the repo runner `scripts/run-all-tests.cjs`
 
 This engine is the thing Galerina **governs**, not part of Galerina core. The governance side (verify-before-decrypt
 key release, the K3 gate, data-exposure rules) lives in the compiler + `tests/patterns/`. See the KB doc
-`docs/Knowledge-Bases/galerina-tmf-engine.md` and the adoption ledger `galerina-rd-adoption-2026-06-16.md`.
+`docs/Knowledge-Bases/galerina-spore-engine.md` and the adoption ledger `galerina-rd-adoption-2026-06-16.md`.
 
 Apache-2.0. No new cryptography by design (defensive-publication posture, not patents).

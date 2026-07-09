@@ -13,7 +13,7 @@
 | tri | 1 | 24 | tri-pipe |
 | framework | 3 | 126 | framework-api-server, framework-app-kernel, framework-example-app |
 | devtools | 13 | 426 | devtools-benchmarks, devtools-context, devtools-flowgraph, devtools-graph-algorithms, devtools-graph-project, devtools-intelligence, devtools-kb-graph, devtools-naming, devtools-package-graph, devtools-pci, devtools-project-graph, devtools-provenance, devtools-security |
-| ext | 8 | 217 | ext-bridge-bitnet, ext-bridge-cpp, ext-bridge-quantum, ext-photonic-emulator, ext-proof-snarkjs, ext-secrets-tmf, ext-secrets-vault, ext-tmf |
+| ext | 8 | 217 | ext-bridge-bitnet, ext-bridge-cpp, ext-bridge-quantum, ext-photonic-emulator, ext-proof-snarkjs, ext-secrets-spore, ext-secrets-vault, ext-spore |
 | target | 7 | 8 | target-ai-accelerator, target-cpu, target-gpu, target-js, target-native, target-photonic, target-wasm |
 | governance | 1 | 21 | governance-telemetry |
 | inference | 1 | 12 | inference-bridge-contract |

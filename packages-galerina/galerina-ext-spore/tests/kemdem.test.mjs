@@ -1,12 +1,12 @@
 // .spore KEM-DEM confidentiality (slice 3). DETERMINISTIC parts verified byte-for-byte against the frozen
-// golden vectors (Galerina-R-AND-D/tmf/spec/_vectors/gen_tmf_encryption.py + gen_cmt_ctx.py); the REAL
+// golden vectors (Galerina-R-AND-D/spore/spec/_vectors/gen_spore_encryption.py + gen_cmt_ctx.py); the REAL
 // hybrid-KEM + AES-256-GCM seal/open verified by round-trip + every fail-closed tamper case (spec §7.1).
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   buildContext, deriveKaead, keyCommit, committedAad, streamNonce12, streamNonce24, ctxCommitTag,
   commitModeOf, keygen, seal, open, streamSeal, streamOpen,
-  KEM_PROFILE, AEAD_SUITE, DEM_MODE, COMMIT_MODE, TmfCryptoError,
+  KEM_PROFILE, AEAD_SUITE, DEM_MODE, COMMIT_MODE, SporeCryptoError,
 } from "../dist/index.js";
 
 const hex = (u) => Buffer.from(u).toString("hex");
@@ -14,7 +14,7 @@ const range = (a, b) => Uint8Array.from({ length: b - a }, (_, i) => a + i);
 const le32 = (x) => { const b = new Uint8Array(4); new DataView(b.buffer).setUint32(0, x >>> 0, true); return b; };
 const cat = (...ps) => { const t = ps.reduce((n, p) => n + p.length, 0); const o = new Uint8Array(t); let k = 0; for (const p of ps) { o.set(p, k); k += p.length; } return o; };
 const coordGolden = cat(le32(3), le32(5), le32(7), le32(0)); // i32le 3,5,7,0
-const isCryptoCode = (code) => (e) => e instanceof TmfCryptoError && e.code === code;
+const isCryptoCode = (code) => (e) => e instanceof SporeCryptoError && e.code === code;
 
 // flags 0x01 = encrypted, commit_mode 00 ; flags 0x03 = encrypted + commit_mode 01 (CTX)
 const CTX_GOLDEN = buildContext({ sectionId: 7, coord: coordGolden, modality: 0, kemProfile: 0x02, aeadSuite: 0x01, demMode: 0x01, confFlags: 0x01, epoch: 1 });
@@ -27,8 +27,8 @@ test("aead_context (36 B) reproduces the golden", () => {
 test("DEM key schedule K_aead + key_commit reproduce the golden (SHAKE256)", () => {
   const ss = range(0, 32); // 000102…1f
   const kaead = deriveKaead(ss, CTX_GOLDEN);
-  assert.equal(hex(kaead), "9b4fdce2fa64e0bd431f7d5d075cf18c423ef756101080d5fc15618d63dac4c5");
-  assert.equal(hex(keyCommit(kaead)), "bc8eee3b4561d7de4396b25921929816e5c536468568c4e481c51018ecc4a488");
+  assert.equal(hex(kaead), "c6e54ff42b1454777f4c463bd0d7c14c7077e3f250d85ea12badd46e97166603");
+  assert.equal(hex(keyCommit(kaead)), "ed7c191e4144f675ea3983e5ccfb713d02638027f581ac715dc2b65fca697130");
   assert.equal(committedAad(CTX_GOLDEN, kaead).length, 68);
 });
 
@@ -56,7 +56,7 @@ test("24-byte STREAM nonces reproduce the golden (prefix16 ‖ BE-u64); reject i
 
 test("CTX commit_tag reproduces the golden (CMT-4: bound to K/nonce/AAD/T)", () => {
   const K = range(0, 32), nonce = range(0x40, 0x4c), aad = range(0, 68), T = range(0x90, 0xa0);
-  assert.equal(hex(ctxCommitTag(K, nonce, aad, T)), "ca22f4f5a0e3679e6b86540d6b72542e09997b0109e9401dbf0ca1b7dbd42979");
+  assert.equal(hex(ctxCommitTag(K, nonce, aad, T)), "f8e1ccb50bc1e4e771ea7efee3df238c5a0757e566d646c70764752c8466a574");
   // each input is bound (changing any changes the tag)
   assert.notEqual(hex(ctxCommitTag(new Uint8Array(32), nonce, aad, T)), hex(ctxCommitTag(K, nonce, aad, T)));
   assert.notEqual(hex(ctxCommitTag(K, nonce, aad, new Uint8Array(16))), hex(ctxCommitTag(K, nonce, aad, T)));

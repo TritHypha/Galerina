@@ -1,7 +1,7 @@
-// tmf.ts — single import seam onto the shipped @galerina/ext-spore engine.
+// spore.ts — single import seam onto the shipped @galerina/ext-spore engine.
 //
 // The whole package is a THIN orchestration layer: it owns NO crypto and NO container
-// bytes. Every byte primitive comes from @galerina/ext-spore (writeTmf/readTmf, seal/open,
+// bytes. Every byte primitive comes from @galerina/ext-spore (writeSpore/readSpore, seal/open,
 // buildContext, KEM_PROFILE 0x02, COMMIT_MODE.CTX). We re-export only what the
 // orchestration needs so there is exactly ONE place that names the engine.
 //
@@ -10,8 +10,8 @@
 // test we resolve the same dist through a path alias (see tsconfig paths / the test
 // loader shim). NO new crypto dependency is introduced here.
 export {
-  writeTmf,
-  readTmf,
+  writeSpore,
+  readSpore,
   seal,
   open,
   buildContext,
@@ -20,7 +20,7 @@ export {
   AEAD_SUITE,
   DEM_MODE,
   COMMIT_MODE,
-  TmfError,
-  TmfCryptoError,
+  SporeError,
+  SporeCryptoError,
 } from "@galerina/ext-spore";
-export type { TmfSection, TmfReadResult, SealResult, AeadContextFields } from "@galerina/ext-spore";
+export type { SporeSection, SporeReadResult, SealResult, AeadContextFields } from "@galerina/ext-spore";

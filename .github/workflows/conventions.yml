@@ -66,7 +66,7 @@ jobs:
         run: node --test packages-galerina/galerina-core-compiler/tests/source-hygiene-no-nul.test.mjs
 
   # path-leak (build-free, zero-baseline, ENFORCING): no committed file may contain an ABSOLUTE LOCAL path
-  # that leaks the developer's machine (C:\Users\<name>\... or a wwwprojects\ root). Galerina is PUBLIC — such
+  # that leaks the developer's machine (a `C:\Users\<name>` home or a legacy wwwprojects root). Galerina is PUBLIC — such
   # a path discloses the OS username + on-disk layout to the world AND breaks on every other checkout. The
   # --self-test proves the detectors fire on a leak and stay silent on a <placeholder> (a neutered guard is a
   # fail-open); then the scan runs ENFORCING against every git-tracked file. Baseline is 0.

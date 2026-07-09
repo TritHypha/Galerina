@@ -14,7 +14,7 @@ import { composeRead, assertKemProfile, K3 } from "./store.js";
 import type { K3Token } from "./store.js";
 import { SealArena } from "./arena.js";
 import { unpackSeal, contextFor } from "./schema.js";
-import { open, TmfCryptoError } from "./tmf.js";
+import { open, SporeCryptoError } from "./spore.js";
 
 const SECTION_EPOCH = 0;
 
@@ -32,7 +32,7 @@ export function loadAll(buf: Uint8Array, recipientSec: Uint8Array, token: K3Toke
     for (const [name, meta] of Object.entries(manifest.entries)) {
       const sec = sectionByCoord.get(meta.coordHex);
       if (sec === undefined) {
-        throw new TmfCryptoError("MalformedCrypto", `manifest references missing section for ${name} (fail-closed)`);
+        throw new SporeCryptoError("MalformedCrypto", `manifest references missing section for ${name} (fail-closed)`);
       }
       const u = unpackSeal(sec.payload);
       const ctx = contextFor(sec.sectionId, sec.coord, SECTION_EPOCH);

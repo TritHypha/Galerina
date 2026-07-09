@@ -1,8 +1,8 @@
-// kemdem.ts — .spore confidentiality layer (KEM-DEM), v0 (slice 3). Spec (frozen): spec/tmf-encryption-v0.md.
+// kemdem.ts — .spore confidentiality layer (KEM-DEM), v0 (slice 3). Spec (frozen): spec/spore-encryption-v0.md.
 //
 // Two halves, by design:
 //   1. DETERMINISTIC key schedule / AAD / STREAM nonces / CTX commit — pure SHAKE256 byte-math (node:crypto),
-//      verified BYTE-FOR-BYTE against the frozen golden vectors (gen_tmf_encryption.py / gen_cmt_ctx.py).
+//      verified BYTE-FOR-BYTE against the frozen golden vectors (gen_spore_encryption.py / gen_cmt_ctx.py).
 //      This half is the cross-language conformance contract and has NO @noble dependency.
 //   2. REAL KEM/AEAD seal+open — hybrid X25519+ML-KEM-768 → SHAKE256 KDF → AES-256-GCM, with the §4
 //      committing-AAD and the §8.5 CTX (CMT-4) committing tag. Verified by round-trip + tamper (no fixed
@@ -34,15 +34,15 @@ export const DEM_MODE = { SINGLE_SHOT: 0x01, STREAM: 0x02 } as const;
 /** conf_flags (§4 offset 29): bit0 encrypted; bits1-2 commit_mode (00 none / 01 CTX); bits3-7 reserved=0. */
 export const COMMIT_MODE = { NONE: 0b00, CTX: 0b01 } as const;
 
-export type TmfCryptoCode = "CryptoError" | "MalformedCrypto" | "NoCryptoLib" | "GovDeny";
+export type SporeCryptoCode = "CryptoError" | "MalformedCrypto" | "NoCryptoLib" | "GovDeny";
 
 /** Typed, fail-closed confidentiality error (spec §7.1). */
-export class TmfCryptoError extends Error {
-  readonly code: TmfCryptoCode;
-  constructor(code: TmfCryptoCode, message: string) {
+export class SporeCryptoError extends Error {
+  readonly code: SporeCryptoCode;
+  constructor(code: SporeCryptoCode, message: string) {
     super(`${code}: ${message}`);
     this.code = code;
-    this.name = "TmfCryptoError";
+    this.name = "SporeCryptoError";
   }
 }
 
@@ -66,9 +66,9 @@ function bytesEqual(a: Uint8Array, b: Uint8Array): boolean {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 const enc = new TextEncoder();
-const DOM_KDF = enc.encode("tmf-dem-kdf-v0");
-const DOM_COMMIT = enc.encode("tmf-dem-commit-v0");
-const DOM_CTX = enc.encode("tmf-cmt-ctx-v0");
+const DOM_KDF = enc.encode("spore-dem-kdf-v0");
+const DOM_COMMIT = enc.encode("spore-dem-commit-v0");
+const DOM_CTX = enc.encode("spore-cmt-ctx-v0");
 
 // ── §4: 36-byte AEAD context descriptor ─────────────────────────────────────
 export interface AeadContextFields {
@@ -83,7 +83,7 @@ export interface AeadContextFields {
 }
 /** Build the 36-byte AEAD context (§4). Reproduces the golden 070000…0000. */
 export function buildContext(f: AeadContextFields): Uint8Array {
-  if (f.coord.length !== 16) throw new TmfCryptoError("MalformedCrypto", "coord must be 16 bytes (128-bit)");
+  if (f.coord.length !== 16) throw new SporeCryptoError("MalformedCrypto", "coord must be 16 bytes (128-bit)");
   const ctx = new Uint8Array(AEAD_CONTEXT_SIZE);
   const dv = new DataView(ctx.buffer);
   dv.setBigUint64(0, BigInt(f.sectionId), true);   // [0:8]   section_id u64 LE
@@ -101,11 +101,11 @@ export function buildContext(f: AeadContextFields): Uint8Array {
 export function commitModeOf(aeadContext: Uint8Array): number { return (aeadContext[29]! >> 1) & 0b11; }
 
 // ── §3: DEM key schedule (SHAKE256) ─────────────────────────────────────────
-/** K_aead = SHAKE256(LP("tmf-dem-kdf-v0") ‖ LP(shared_secret) ‖ LP(aead_context))[:32]. */
+/** K_aead = SHAKE256(LP("spore-dem-kdf-v0") ‖ LP(shared_secret) ‖ LP(aead_context))[:32]. */
 export function deriveKaead(sharedSecret: Uint8Array, aeadContext: Uint8Array): Uint8Array {
   return shake256(concat([lp(DOM_KDF), lp(sharedSecret), lp(aeadContext)]), 32);
 }
-/** key_commit = SHAKE256(LP("tmf-dem-commit-v0") ‖ LP(K_aead))[:32]. */
+/** key_commit = SHAKE256(LP("spore-dem-commit-v0") ‖ LP(K_aead))[:32]. */
 export function keyCommit(kaead: Uint8Array): Uint8Array {
   return shake256(concat([lp(DOM_COMMIT), lp(kaead)]), 32);
 }
@@ -117,24 +117,24 @@ export function committedAad(aeadContext: Uint8Array, kaead: Uint8Array): Uint8A
 // ── §6 / §6.1: position-derived STREAM nonces ───────────────────────────────
 /** 12-byte STREAM nonce: prefix8 ‖ BE-u32((index<<1)|last) (§6; suites 0x01-0x03). */
 export function streamNonce12(prefix8: Uint8Array, index: number, last: boolean): Uint8Array {
-  if (prefix8.length !== 8) throw new TmfCryptoError("MalformedCrypto", "prefix8 must be 8 bytes");
-  if (!Number.isInteger(index) || index < 0 || index >= 2 ** 31) throw new TmfCryptoError("MalformedCrypto", "stream index out of 31-bit range");
+  if (prefix8.length !== 8) throw new SporeCryptoError("MalformedCrypto", "prefix8 must be 8 bytes");
+  if (!Number.isInteger(index) || index < 0 || index >= 2 ** 31) throw new SporeCryptoError("MalformedCrypto", "stream index out of 31-bit range");
   const n = new Uint8Array(12); n.set(prefix8, 0);
   new DataView(n.buffer).setUint32(8, ((index << 1) | (last ? 1 : 0)) >>> 0, false); // big-endian
   return n;
 }
 /** 24-byte STREAM nonce: prefix16 ‖ BE-u64((index<<1)|last) (§6.1; XChaCha 0x04). Rejects index ≥ 2^63 (nonce wrap). */
 export function streamNonce24(prefix16: Uint8Array, index: number | bigint, last: boolean): Uint8Array {
-  if (prefix16.length !== 16) throw new TmfCryptoError("MalformedCrypto", "prefix16 must be 16 bytes");
+  if (prefix16.length !== 16) throw new SporeCryptoError("MalformedCrypto", "prefix16 must be 16 bytes");
   const idx = BigInt(index);
-  if (idx < 0n || idx >= (1n << 63n)) throw new TmfCryptoError("MalformedCrypto", "stream index ≥ 2^63 (nonce wrap)");
+  if (idx < 0n || idx >= (1n << 63n)) throw new SporeCryptoError("MalformedCrypto", "stream index ≥ 2^63 (nonce wrap)");
   const n = new Uint8Array(24); n.set(prefix16, 0);
   new DataView(n.buffer).setBigUint64(16, (idx << 1n) | (last ? 1n : 0n), false); // big-endian
   return n;
 }
 
 // ── §8.5: CTX (Chan–Rogaway) committing tag, H = SHAKE256 (CMT-4) ───────────
-/** commit_tag = SHAKE256(LP("tmf-cmt-ctx-v0") ‖ LP(K) ‖ LP(nonce) ‖ LP(aad) ‖ LP(T))[:32]. */
+/** commit_tag = SHAKE256(LP("spore-cmt-ctx-v0") ‖ LP(K) ‖ LP(nonce) ‖ LP(aad) ‖ LP(T))[:32]. */
 export function ctxCommitTag(kaead: Uint8Array, nonce: Uint8Array, committed: Uint8Array, baseTag: Uint8Array): Uint8Array {
   return shake256(concat([lp(DOM_CTX), lp(kaead), lp(nonce), lp(committed), lp(baseTag)]), 32);
 }
@@ -143,7 +143,7 @@ export function ctxCommitTag(kaead: Uint8Array, nonce: Uint8Array, committed: Ui
 function kemFor(profile: number): any {
   if (profile === KEM_PROFILE.ML_KEM_768) return ml_kem768;
   if (profile === KEM_PROFILE.HYBRID_X25519_ML_KEM_768) return (hybrid as any).ml_kem768_x25519;
-  throw new TmfCryptoError("MalformedCrypto", `kem_profile 0x${profile.toString(16)} not implemented in v0 (slice 3 = 0x01/0x02)`);
+  throw new SporeCryptoError("MalformedCrypto", `kem_profile 0x${profile.toString(16)} not implemented in v0 (slice 3 = 0x01/0x02)`);
 }
 export function keygen(profile: number): { publicKey: Uint8Array; secretKey: Uint8Array } {
   return kemFor(profile).keygen();
@@ -158,7 +158,7 @@ export interface SealResult {
 }
 function requireAesGcm(aeadSuite: number): void {
   if (aeadSuite !== AEAD_SUITE.AES_256_GCM)
-    throw new TmfCryptoError("MalformedCrypto", `slice 3 seal/open is AES-256-GCM (0x01) only; suite 0x${aeadSuite.toString(16)} is a follow-on`);
+    throw new SporeCryptoError("MalformedCrypto", `slice 3 seal/open is AES-256-GCM (0x01) only; suite 0x${aeadSuite.toString(16)} is a follow-on`);
 }
 /**
  * Encrypt a single-shot section. `aeadContext` (36 B, §4) carries the profile selectors + commit_mode; the
@@ -168,7 +168,7 @@ function requireAesGcm(aeadSuite: number): void {
 export function seal(profile: number, recipientPub: Uint8Array, payload: Uint8Array, aeadContext: Uint8Array): SealResult {
   requireAesGcm(aeadContext[27]!);
   const mode = commitModeOf(aeadContext);
-  if (mode !== COMMIT_MODE.NONE && mode !== COMMIT_MODE.CTX) throw new TmfCryptoError("MalformedCrypto", "reserved commit_mode");
+  if (mode !== COMMIT_MODE.NONE && mode !== COMMIT_MODE.CTX) throw new SporeCryptoError("MalformedCrypto", "reserved commit_mode");
   const { cipherText, sharedSecret } = kemFor(profile).encapsulate(recipientPub);
   const kaead = deriveKaead(sharedSecret, aeadContext);
   const caad = committedAad(aeadContext, kaead);
@@ -186,28 +186,28 @@ export function seal(profile: number, recipientPub: Uint8Array, payload: Uint8Ar
     kaead.fill(0); sharedSecret.fill(0); caad.fill(0);
   }
 }
-/** Decrypt a single-shot section (fail-closed). Throws TmfCryptoError on any auth failure. */
+/** Decrypt a single-shot section (fail-closed). Throws SporeCryptoError on any auth failure. */
 export function open(profile: number, recipientSec: Uint8Array, ctKem: Uint8Array, nonce: Uint8Array, body: Uint8Array, aeadContext: Uint8Array): Uint8Array {
   requireAesGcm(aeadContext[27]!);
   const mode = commitModeOf(aeadContext);
-  if (mode !== COMMIT_MODE.NONE && mode !== COMMIT_MODE.CTX) throw new TmfCryptoError("MalformedCrypto", "reserved commit_mode");
+  if (mode !== COMMIT_MODE.NONE && mode !== COMMIT_MODE.CTX) throw new SporeCryptoError("MalformedCrypto", "reserved commit_mode");
   let sharedSecret: Uint8Array;
   try { sharedSecret = kemFor(profile).decapsulate(ctKem, recipientSec); }
-  catch (e) { throw new TmfCryptoError("CryptoError", `KEM decapsulation failed: ${(e as Error).message}`); }
+  catch (e) { throw new SporeCryptoError("CryptoError", `KEM decapsulation failed: ${(e as Error).message}`); }
   const kaead = deriveKaead(sharedSecret, aeadContext);
   const caad = committedAad(aeadContext, kaead);
   try {
     let ctTag = body;
     if (mode === COMMIT_MODE.CTX) {
-      if (body.length < 16 + COMMIT_SIZE) throw new TmfCryptoError("MalformedCrypto", "CTX body shorter than tag+commit_tag");
+      if (body.length < 16 + COMMIT_SIZE) throw new SporeCryptoError("MalformedCrypto", "CTX body shorter than tag+commit_tag");
       ctTag = body.subarray(0, body.length - COMMIT_SIZE);
       const received = body.subarray(body.length - COMMIT_SIZE);
       const T = ctTag.subarray(ctTag.length - 16);
       // recompute + constant-time compare BEFORE running the AEAD (§8.5 reader)
-      if (!bytesEqual(ctxCommitTag(kaead, nonce, caad, T), received)) throw new TmfCryptoError("CryptoError", "CTX commit_tag mismatch");
+      if (!bytesEqual(ctxCommitTag(kaead, nonce, caad, T), received)) throw new SporeCryptoError("CryptoError", "CTX commit_tag mismatch");
     }
     try { return Uint8Array.from(gcm(kaead, nonce, caad).decrypt(ctTag)); }
-    catch (e) { throw new TmfCryptoError("CryptoError", `AEAD open failed: ${(e as Error).message}`); }
+    catch (e) { throw new SporeCryptoError("CryptoError", `AEAD open failed: ${(e as Error).message}`); }
   } finally {
     kaead.fill(0); sharedSecret.fill(0); caad.fill(0); // 0033 zeroize (best-effort, GC VM)
   }
@@ -223,7 +223,7 @@ export interface StreamSealResult {
 /** Seal a multi-segment payload. Each chunk gets a position-derived nonce; the final carries last_flag=1. */
 export function streamSeal(profile: number, recipientPub: Uint8Array, segments: readonly Uint8Array[], aeadContext: Uint8Array): StreamSealResult {
   requireAesGcm(aeadContext[27]!);
-  if (segments.length === 0) throw new TmfCryptoError("MalformedCrypto", "STREAM needs ≥ 1 segment");
+  if (segments.length === 0) throw new SporeCryptoError("MalformedCrypto", "STREAM needs ≥ 1 segment");
   const { cipherText, sharedSecret } = kemFor(profile).encapsulate(recipientPub);
   const kaead = deriveKaead(sharedSecret, aeadContext);
   const caad = committedAad(aeadContext, kaead);
@@ -246,10 +246,10 @@ export function streamSeal(profile: number, recipientPub: Uint8Array, segments: 
  */
 export function streamOpen(profile: number, recipientSec: Uint8Array, ctKem: Uint8Array, prefix8: Uint8Array, frames: readonly Uint8Array[], aeadContext: Uint8Array): Uint8Array {
   requireAesGcm(aeadContext[27]!);
-  if (frames.length === 0) throw new TmfCryptoError("CryptoError", "empty STREAM (no terminator)");
+  if (frames.length === 0) throw new SporeCryptoError("CryptoError", "empty STREAM (no terminator)");
   let sharedSecret: Uint8Array;
   try { sharedSecret = kemFor(profile).decapsulate(ctKem, recipientSec); }
-  catch (e) { throw new TmfCryptoError("CryptoError", `KEM decapsulation failed: ${(e as Error).message}`); }
+  catch (e) { throw new SporeCryptoError("CryptoError", `KEM decapsulation failed: ${(e as Error).message}`); }
   const kaead = deriveKaead(sharedSecret, aeadContext);
   const caad = committedAad(aeadContext, kaead);
   try {
@@ -257,7 +257,7 @@ export function streamOpen(profile: number, recipientSec: Uint8Array, ctKem: Uin
     for (let i = 0; i < frames.length; i++) {
       const nonce = streamNonce12(prefix8, i, i === frames.length - 1);
       try { out.push(Uint8Array.from(gcm(kaead, nonce, caad).decrypt(frames[i]!))); }
-      catch (e) { throw new TmfCryptoError("CryptoError", `STREAM frame ${i} open failed (drop/reorder/tamper/terminator): ${(e as Error).message}`); }
+      catch (e) { throw new SporeCryptoError("CryptoError", `STREAM frame ${i} open failed (drop/reorder/tamper/terminator): ${(e as Error).message}`); }
     }
     return concat(out);
   } finally {

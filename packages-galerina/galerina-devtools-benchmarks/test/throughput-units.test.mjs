@@ -57,7 +57,7 @@ ok(normalizeThroughput("wasm", { callsPerSecond: 1 }, "matrix-multiply").ops ===
 const EXPECT_UNITS = {
   "compute-mix": "mix-ops/s", "record-allocation": "records/s", "collection-pipeline": "elements/s",
   "low-memory": "items/s", "gpu-compute": "kernel-evals/s", "call-chain": "chains/s",
-  "nbody": "force-evals/s", "json-parse": "records/s", "tmf-container": "containers/s",
+  "nbody": "force-evals/s", "json-parse": "records/s", "spore-container": "containers/s",
   "framework-pipeline": "requests/s", "mandelbrot": "pixels/s", "spectral-norm": "A-evals/s",
   "binary-trees": "nodes/s", "matrix-multiply": "mul-adds/s",
 };

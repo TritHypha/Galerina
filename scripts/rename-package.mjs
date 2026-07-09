@@ -3,11 +3,11 @@
 // Renames packages-galerina/<oldDir> -> <newDir> (git mv) and rewrites every tracked TEXT file,
 // replacing the directory token and the derived @galerina/<...> package-name token. Exact-substring
 // replacement — monorepo package/dir names are unique, so there is no word-boundary hazard (e.g.
-// `galerina-ext-tmf` is NOT a substring of `galerina-ext-secrets-tmf`). Binary files (NUL sniff) are
+// `galerina-ext-spore` is NOT a substring of `galerina-ext-secrets-spore`). Binary files (NUL sniff) are
 // skipped. Prints a per-file summary. Does NOT commit or push — review `git diff`, rebuild, verify, commit.
 //
 // Usage: node scripts/rename-package.mjs <old-dir-name> <new-dir-name>
-//   e.g. node scripts/rename-package.mjs galerina-ext-tmf galerina-ext-spore
+//   e.g. node scripts/rename-package.mjs galerina-ext-spore galerina-ext-spore
 import { readFileSync, writeFileSync, existsSync, rmSync, readdirSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { join, dirname, resolve } from "node:path";
@@ -17,7 +17,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const [oldDir, newDir] = process.argv.slice(2);
 if (!oldDir || !newDir) { console.error("usage: rename-package.mjs <old-dir> <new-dir>"); process.exit(1); }
 
-// dir `galerina-ext-tmf` -> package name `@galerina/ext-tmf` (drop the leading `galerina-`, scope it).
+// dir `galerina-ext-spore` -> package name `@galerina/ext-spore` (drop the leading `galerina-`, scope it).
 const toPkg = (d) => "@galerina/" + d.replace(/^galerina-/, "");
 const pkgOld = toPkg(oldDir), pkgNew = toPkg(newDir);
 // Replace the longer token first (defensive — the two are disjoint here, but longest-first is a safe rule).

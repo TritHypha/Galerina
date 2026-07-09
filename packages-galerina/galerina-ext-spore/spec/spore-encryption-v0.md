@@ -3,13 +3,13 @@
 **Status:** Draft, buildable + **partially verified** (the deterministic key-schedule / framing bytes are
 reproduced by a stdlib generator; the KEM/AEAD ciphertext bytes are **Blocked on a vetted lib** and shown as
 labelled placeholders — same posture as [`signature-custody-v0.md`](signature-custody-v0.md)). This is the
-**v1 confidentiality layer** deferred by [`tmf-container-v0.md`](tmf-container-v0.md) §10, now promoted from
-the [`FUNGI-AMD-024`](../../tri-encription/research/FUNGI-AMD-024-tmf-confidentiality.md) blueprint into the
+**v1 confidentiality layer** deferred by [`spore-container-v0.md`](spore-container-v0.md) §10, now promoted from
+the [`FUNGI-AMD-024`](../../tri-encription/research/FUNGI-AMD-024-spore-confidentiality.md) blueprint into the
 oracle-backed spec track. Companion: the integrity core [`tmx-256-construction-v0.md`](tmx-256-construction-v0.md)
 and authenticity [`signature-custody-v0.md`](signature-custody-v0.md) (the gate this layer sits **under**).
 
 A reference generator + golden vector are produced by
-[`_vectors/gen_tmf_encryption.py`](_vectors/gen_tmf_encryption.py) (stdlib SHAKE256 + struct only).
+[`_vectors/gen_spore_encryption.py`](_vectors/gen_spore_encryption.py) (stdlib SHAKE256 + struct only).
 
 > **The one rule (verify-before-decrypt).** Confidentiality is added **under** the existing TMX-256 +
 > ML-DSA-65 gate, never beside it. The integrity root is recomputed from the **ciphertext** leaves, the
@@ -41,7 +41,7 @@ only the *payload* a section carries. This layer therefore composes cleanly as a
 
 ## 2. Three orthogonal selector axes (the sketch's `0x01/0x02` collision, resolved)
 
-The [`FUNGI-AMD-024`](../../tri-encription/research/FUNGI-AMD-024-tmf-confidentiality.md) sketch overloaded
+The [`FUNGI-AMD-024`](../../tri-encription/research/FUNGI-AMD-024-spore-confidentiality.md) sketch overloaded
 `0x01`/`0x02` across **three different axes** — KEM profile (§2.1), DEM single-shot-vs-STREAM (§2.3), and
 (after the 2026-06-16 ratification) the AEAD suite. A byte-precise format cannot keep them collapsed. v0
 splits them into **three independent selector bytes**, each with its own registry:
@@ -114,14 +114,14 @@ across the format. All variable-length inputs are length-prefixed (`LP(x) = u32l
 house convention) so the concatenation is unambiguous.
 
 ```
-K_aead    = SHAKE256( LP("tmf-dem-kdf-v0")    ‖ LP(shared_secret) ‖ LP(aead_context) ) [:32]
-key_commit= SHAKE256( LP("tmf-dem-commit-v0") ‖ LP(K_aead) )                            [:32]
+K_aead    = SHAKE256( LP("spore-dem-kdf-v0")    ‖ LP(shared_secret) ‖ LP(aead_context) ) [:32]
+key_commit= SHAKE256( LP("spore-dem-commit-v0") ‖ LP(K_aead) )                            [:32]
 ```
 
 - `shared_secret` = the 32-byte KEM output (§2.1).
 - `aead_context` = the 36-byte section descriptor (§4) — binding it into the KDF means a key derived for one
   section/epoch/profile cannot open another even before the AEAD tag is checked.
-- The two domain-separation tags (`tmf-dem-kdf-v0`, `tmf-dem-commit-v0`) prevent the KDF and the commitment
+- The two domain-separation tags (`spore-dem-kdf-v0`, `spore-dem-commit-v0`) prevent the KDF and the commitment
   from ever colliding on the same SHAKE input.
 
 ---
@@ -223,7 +223,7 @@ History append (`+1`, RD-DIRECTION §3.3): each appended segment is its own seal
 `aead_context.epoch` advances and whose AAD hash-links the previous segment's root; per-epoch key rotation
 gives forward secrecy, and dropping a segment key is crypto-erasure without breaking the chain. (On-wire
 multi-segment packaging — the segment offset table — is now specced in
-[`tmf-history-chain-v0.md`](tmf-history-chain-v0.md) §8; reference `bench/history-pack.mjs` 9/9.)
+[`spore-history-chain-v0.md`](spore-history-chain-v0.md) §8; reference `bench/history-pack.mjs` 9/9.)
 
 ---
 
@@ -237,8 +237,8 @@ PRE: integrity + authenticity already pass (container §6 steps 1–5 over the C
 6.  K3 GOVERNANCE: verdict = collapse(key_release(...));  authorize(verdict) == ALLOW(+1)   else DENY (deny on 0/-1)
 7.  reconstruct aead_context (36 B) from the section metadata
 8.  shared_secret = KEM.Decapsulate(ct_kem, recipient_sk)        # 0x02 splits ct_kem -> ML-KEM ct ‖ X25519 pub
-9.  K_aead       = SHAKE256(LP("tmf-dem-kdf-v0") ‖ LP(shared_secret) ‖ LP(aead_context))[:32]
-10. committed_aad = aead_context ‖ SHAKE256(LP("tmf-dem-commit-v0") ‖ LP(K_aead))[:32]
+9.  K_aead       = SHAKE256(LP("spore-dem-kdf-v0") ‖ LP(shared_secret) ‖ LP(aead_context))[:32]
+10. committed_aad = aead_context ‖ SHAKE256(LP("spore-dem-commit-v0") ‖ LP(K_aead))[:32]
 11. single-shot:  plaintext = AEAD.Open(K_aead, nonce, ct ‖ tag, committed_aad)            else CryptoError
     STREAM:       for i: chunk_i = AEAD.Open(K_aead, nonce_i, frame_i, committed_aad)       else CryptoError
                   (nonce_i recomputed from prefix8/index/last; any drop/reorder/tamper -> CryptoError)
@@ -268,7 +268,7 @@ Steps 6–12 run **only after** integrity+authenticity (container §6). Decapsul
   §2.1) + the level-5 signature profile (ML-DSA-87 + SLH-DSA, signature-custody §2–3) — owner-ratified
   2026-06-16.
 - **Now specced (was deferred):** the `+1` **append-only history chain** —
-  [`tmf-history-chain-v0.md`](tmf-history-chain-v0.md) (hash-linked segments, key-erasure ratchet,
+  [`spore-history-chain-v0.md`](spore-history-chain-v0.md) (hash-linked segments, key-erasure ratchet,
   crypto-erasure, anti-rollback via verifier monotone-epoch state).
 - **Now sketched (was deferred):** the fully key-committing **CMT-1/CMT-4 profile** — §8.5 (`commit_mode=01`,
   CTX transform over `H = SHAKE256`; reference `bench/cmt-ctx.mjs` 10/10); and **`aead_suite=0x04`
@@ -290,7 +290,7 @@ Replace the meaning of the tag region with a collision-resistant commitment over
 
 ```
 (C ‖ T)    = aead_suite.Seal(K_aead, nonce, plaintext, committed_aad)     # any §2.2 suite; T = 16-B tag
-commit_tag = SHAKE256( LP("tmf-cmt-ctx-v0") ‖ LP(K_aead) ‖ LP(nonce) ‖ LP(committed_aad) ‖ LP(T) )[:32]
+commit_tag = SHAKE256( LP("spore-cmt-ctx-v0") ‖ LP(K_aead) ‖ LP(nonce) ‖ LP(committed_aad) ‖ LP(T) )[:32]
 on the wire: C ‖ T(16 B) ‖ commit_tag(32 B)              # +32 B/frame vs §4, INDEPENDENT of message size
 ```
 
@@ -339,7 +339,7 @@ for new long-lived sections; `00` remains valid for compatibility with the §4 b
 
 ## 9. Golden vector + reconciliation note
 
-### Golden vector (`python spec/_vectors/gen_tmf_encryption.py`)
+### Golden vector (`python spec/_vectors/gen_spore_encryption.py`)
 Deterministic parts (KDF, commitment, 36-byte context, committed AAD, STREAM nonces) are **real SHAKE256 /
 byte math** — reproducible by anyone in any language. `ct_kem` and the AEAD ciphertext+tag are **zero-filled
 placeholders of the correct standard sizes** (no vetted KEM/AEAD in Python stdlib; we do not hand-roll
@@ -364,7 +364,7 @@ self-checks          = KDF deterministic + context/epoch/secret-bound; STREAM no
 The bench [`bench/lib/kemdem.mjs`](../../tri-encription/bench/lib/kemdem.mjs) originally derived `K_aead` with
 **HKDF-SHA256** + SHA-256 commitment (predating the SHAKE256 ratification). It is now **reconciled to the
 SHAKE256 schedule above** (suite-consistent — one Keccak family across TMX-256/ML-KEM/ML-DSA/DEM), and
-`tmf-crypto.test.mjs` still passes **11/11** (the round-trip/tamper/AAD invariants don't pin derived key bytes).
+`spore-crypto.test.mjs` still passes **11/11** (the round-trip/tamper/AAD invariants don't pin derived key bytes).
 The reconciliation is cross-checked by
 [`bench/oracle-check.mjs`](../../tri-encription/bench/oracle-check.mjs): the **JS (`@noble`) and Python (stdlib)
 DEM key schedules are now byte-identical** — for `shared_secret = bytes(0..31)` and the 36-byte context, both
@@ -400,5 +400,5 @@ committing/nonce layers; the generator count is **9**.
   https://www.usenix.org/conference/usenixsecurity21/presentation/len (why non-committing AEAD is exploitable.)
 - Yevgeniy Dodis, Paul Grubbs, Thomas Ristenpart, Joanne Woodage, *Fast Message Franking: From Invisible
   Salamanders to Encryptment*, CRYPTO 2018 — https://eprint.iacr.org/2019/016 (the original two-key GCM collision.)
-- Blueprint: [`FUNGI-AMD-024-tmf-confidentiality.md`](../../tri-encription/research/FUNGI-AMD-024-tmf-confidentiality.md) ·
+- Blueprint: [`FUNGI-AMD-024-spore-confidentiality.md`](../../tri-encription/research/FUNGI-AMD-024-spore-confidentiality.md) ·
   measured bench: [`tri-encription/bench/README.md`](../../tri-encription/bench/README.md)

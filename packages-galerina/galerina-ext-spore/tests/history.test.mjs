@@ -4,18 +4,18 @@
 // Mirrors the inline-self-check style of tmx256.test.mjs / kemdem.test.mjs (no external golden vectors
 // are vendored for the history chain, so — exactly as kemdem.test.mjs does for KEM/AEAD — conformance
 // is pinned by deterministic re-derivation + every fail-closed tamper/rollback case). Spec (frozen):
-// spec/tmf-history-chain-v0.md.
+// spec/spore-history-chain-v0.md.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   chainHeader, parseChainHeader, linkLeaf, segmentRoot, appendSegment, verifyChain,
-  enforceFreshness, encodePack, verifyPack, TmfHistoryError,
+  enforceFreshness, encodePack, verifyPack, SporeHistoryError,
   CHAIN_HEADER_SIZE, GENESIS_PREV_ROOT, HIST_FLAG,
   leafHash,
 } from "../dist/index.js";
 
 const enc = new TextEncoder();
-const isCode = (code) => (e) => e instanceof TmfHistoryError && e.code === code;
+const isCode = (code) => (e) => e instanceof SporeHistoryError && e.code === code;
 const CHAIN_ID = Uint8Array.from({ length: 16 }, (_, i) => 0xc0 + i);
 const leaf = (s) => leafHash(1, 0, new Uint8Array(0), enc.encode(s));
 

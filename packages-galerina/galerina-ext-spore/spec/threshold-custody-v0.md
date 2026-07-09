@@ -3,7 +3,7 @@
 **Status:** Draft, buildable. Adds **k-of-n** ("M-of-N") locking on **two orthogonal axes** — authorization
 and decryption — so no single key (or single key-holder) is a single point of unlock. Generalizes
 [`signature-custody-v0.md`](signature-custody-v0.md) §5 (whose hybrid **AND** rule is exactly the `k = n`
-special case) and reuses [`tmf-encryption-v0.md`](tmf-encryption-v0.md) §3 (the symmetric key it shares).
+special case) and reuses [`spore-encryption-v0.md`](spore-encryption-v0.md) §3 (the symmetric key it shares).
 Reference: [`../../tri-encription/bench/threshold-custody.mjs`](../../tri-encription/bench/threshold-custody.mjs).
 **No invented crypto:** standard signatures + Shamir Secret Sharing (1979) only; threshold *lattice* signatures
 are explicitly **out of scope** (§4).
@@ -29,7 +29,7 @@ single-signer / single-key default. Both axes are **fail-closed** (< k ⇒ deny 
 ---
 
 ## 2. Axis A — k-of-n signature quorum (authorization)
-The signature block ([`tmf-container-v0.md`](tmf-container-v0.md) §5 / `signature-custody-v0` §4) already carries
+The signature block ([`spore-container-v0.md`](spore-container-v0.md) §5 / `signature-custody-v0` §4) already carries
 `n` entries `{alg, pubkey, sig}` over the `integrity_root`. The **AND** rule ("all `n` must verify") becomes a
 **threshold** rule:
 
@@ -58,7 +58,7 @@ This is **quorum multi-signature** (k distinct standard signatures + a counting 
 ---
 
 ## 3. Axis B — k-of-n Shamir secret-sharing of the data key (decryption)
-The symmetric section key — `K_aead` (`tmf-encryption-v0` §3), or a separately generated data-encryption key
+The symmetric section key — `K_aead` (`spore-encryption-v0` §3), or a separately generated data-encryption key
 (DEK) that `K_aead` wraps — is split into `n` shares via **Shamir Secret Sharing over GF(2⁸)** (the same field
 as the §7 Reed–Solomon), threshold `k`:
 
@@ -70,11 +70,11 @@ SSS.combine(any k shares): Lagrange-interpolate f(0) per byte → K.   (< k shar
 ```
 
 - **Decryption requires `k` of `n` share-holders** to combine shares → reconstruct `K` → then the **unchanged**
-  verify-before-decrypt path runs (integrity → authenticity/quorum → K3 allow → AEAD-open, `tmf-encryption-v0`
+  verify-before-decrypt path runs (integrity → authenticity/quorum → K3 allow → AEAD-open, `spore-encryption-v0`
   §7). Fewer than `k` shares ⇒ the key cannot be formed ⇒ **cannot decrypt** (no oracle, no partial leak).
 - **Information-theoretic for the *sharing*** (Shamir): `k−1` shares reveal *nothing* about `K`. (This is a
   property of the split, not of the AEAD.) A **wrong/forged share** yields a wrong `K`; the committing AEAD
-  (`tmf-encryption-v0` §4/§8.5) then fails the tag — **fail-closed**, no silent wrong-plaintext.
+  (`spore-encryption-v0` §4/§8.5) then fails the tag — **fail-closed**, no silent wrong-plaintext.
 - **Share delivery is out of band / orthogonal:** shares are distributed to `n` holders (e.g. each holder's KEM
   public key encapsulates one share, or shares are pre-provisioned). This spec pins the *sharing*, not the
   delivery channel.

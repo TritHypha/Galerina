@@ -387,7 +387,7 @@ Generated: 2026-07-08
 | galerina-rd-0111-photonic-3d-brief-rigorous-2026-06-24.md | — | — | — | FUNGI-GOV-3, FUNGI-INV-001, FUNGI-SUBSTRATE-001, FUNGI-SUBSTRATE-003 |
 | galerina-rd-0112-treewalker-deepened-2026-06-24.md | — | — | R&D record (one build action taken — see §6) | FUNGI-SUBSTRATE-001 |
 | galerina-rd-0113-tower-citizen-deepened-2026-06-24.md | — | — | R&D record (no build; one rename recommendation — see §5) | FUNGI-GOV-3, FUNGI-SUBSTRATE-001 |
-| galerina-rd-0114-tmf-vs-db-comparison-2026-06-24.md | — | — | R&D record (design/positioning; no build) | FUNGI-PRIVACY-002, FUNGI-RETAIN-001, FUNGI-SECRET-002, FUNGI-SUBSTRATE-001 |
+| galerina-rd-0114-spore-vs-db-comparison-2026-06-24.md | — | — | R&D record (design/positioning; no build) | FUNGI-PRIVACY-002, FUNGI-RETAIN-001, FUNGI-SECRET-002, FUNGI-SUBSTRATE-001 |
 | galerina-rd-0115-hybrid-photonic-binary-placement-2026-06-24.md | — | — | R&D record (design/measurement plan; no build) | FUNGI-HW-004, FUNGI-SUBSTRATE-001, FUNGI-SUBSTRATE-003 |
 | galerina-rd-0116-holographic-storage-2026-06-24.md | — | — | R&D record + one net-new normative invariant (`FUNGI-RETAIN-001`, build gated on a storage-substrate path) | FUNGI-PRIVACY-002, FUNGI-RETAIN-001, FUNGI-SECRET-002, FUNGI-SUBSTRATE-001 |
 | galerina-rd-0117-hybrid-join-2026-06-24.md | — | — | R&D record + **one build shipped** (the safe-floor proof, plan step 1) | FUNGI-SUBSTRATE-001, FUNGI-SUBSTRATE-003 |
@@ -451,7 +451,7 @@ Generated: 2026-07-08
 | galerina-rd-corpus-closure-2026-06-18.md | — | — | — | FUNGI-ARCH-001, FUNGI-ARCH-002, FUNGI-HW-004, FUNGI-INV-002, FUNGI-INV-004 …+4 |
 | galerina-rd-devtools-observability-graph-2026-06-25.md | — | — | — | — |
 | galerina-rd-domain-effect-namespaces-2026-07-02.md | — | — | — | FUNGI-EFFECT-004 |
-| galerina-rd-env-tmf-sealed-secrets-2026-06-23.md | — | — | — | FUNGI-SUBSTRATE-001 |
+| galerina-rd-env-spore-sealed-secrets-2026-06-23.md | — | — | — | FUNGI-SUBSTRATE-001 |
 | galerina-rd-ephemeral-secret-ingestion-2026-06-23.md | — | — | — | FUNGI-SECRET-001 |
 | galerina-rd-flow-kind-tier-inference-2026-06-23.md | — | — | — | FUNGI-DAG-002, FUNGI-EFFECT-001, FUNGI-EFFECT-002, FUNGI-EFFECT-003, FUNGI-INHERIT-001 …+3 |
 | galerina-rd-fungi-privacy-001-response-target-drift-2026-07-02.md | — | — | — | FUNGI-PRIVACY-001, FUNGI-PRIVACY-004 |
@@ -553,7 +553,7 @@ Generated: 2026-07-08
 | galerina-tlstp-s4-recovering-fsm.md | — | — | — | FUNGI-GOV-3 |
 | galerina-tlstp-s5-morphing-frames.md | — | — | — | FUNGI-GOV-3, FUNGI-PRIVACY-002 |
 | galerina-tlstp-transport-auth-rnd-2026-06-22.md | — | — | — | FUNGI-ENTROPY-002, FUNGI-GOV-3, FUNGI-HW-004, FUNGI-MONO-001, FUNGI-PRIVACY-002 …+1 |
-| galerina-tmf-engine.md | — | — | — | FUNGI-GOV-3, FUNGI-SUBSTRATE-001 |
+| galerina-spore-engine.md | — | — | — | FUNGI-GOV-3, FUNGI-SUBSTRATE-001 |
 | galerina-topological-graph-engine.md | — | 1.1 | Can be implemented now (Task #79). Builds on existing domain guard infrastructure. | FUNGI-GATE-001, FUNGI-GATE-002, FUNGI-INV-000 |
 | galerina-tower-native-syntax.md | — | 1.2 | Implemented — Stage A compiler + governance verifier (§1–§10) | FUNGI-ACCESS-001, FUNGI-ACCESS-002, FUNGI-ASSIMILATE-001, FUNGI-ASSIMILATE-002, FUNGI-ASSIMILATE-003 …+16 |
 | galerina-tpl-bitnet-fidelity-audit.md | — | — | verification record. Every claim below is a **direct quote from current source** (Galerina | — |
@@ -690,12 +690,12 @@ Generated: 2026-07-08
 | rd-selective-disclosure-ann-v0.md | — | — | Draft, buildable + **verified** (the deterministic key-schedule / framing bytes are reproduced by | — |
 | rd-tlstp-closure-0071-0077-2026-06-22.md | — | — | — | — |
 | rd-tlstp-transport-auth-cluster-2026-06-22.md | — | — | — | FUNGI-PRIVACY-002 |
-| rd-tmf-confidentiality-layout.md | — | — | R&D Reference Blueprint / Approved Architecture | FUNGI-AMD-024, FUNGI-SUBSTRATE-001 |
-| rd-tmf-real-vs-aspirational-ledger.md | — | — | — | — |
-| rd-tmf-research-encryption-architecture.md | — | — | — | FUNGI-CRYPTO-001, FUNGI-SUBSTRATE-001 |
-| rd-tmf-research-open-questions.md | — | — | — | FUNGI-SUBSTRATE-001 |
-| rd-tmf-research-ternary-in-cryptography.md | — | — | — | FUNGI-SUBSTRATE-001 |
-| rd-tmf-storage-and-query.md | — | — | R&D design. The `.spore` trust layer (integrity/authenticity/confidentiality/modalities) is the | — |
+| rd-spore-confidentiality-layout.md | — | — | R&D Reference Blueprint / Approved Architecture | FUNGI-AMD-024, FUNGI-SUBSTRATE-001 |
+| rd-spore-real-vs-aspirational-ledger.md | — | — | — | — |
+| rd-spore-research-encryption-architecture.md | — | — | — | FUNGI-CRYPTO-001, FUNGI-SUBSTRATE-001 |
+| rd-spore-research-open-questions.md | — | — | — | FUNGI-SUBSTRATE-001 |
+| rd-spore-research-ternary-in-cryptography.md | — | — | — | FUNGI-SUBSTRATE-001 |
+| rd-spore-storage-and-query.md | — | — | R&D design. The `.spore` trust layer (integrity/authenticity/confidentiality/modalities) is the | — |
 | rd-tri-encription-findings-and-roadmap.md | — | — | Consolidated checkpoint. **Date:** 2026-06-16. **Posture:** grounded, cited, adversarially | FUNGI-AMD-024, FUNGI-SUBSTRATE-001 |
 | rd-tri-encription-fungi-readme.md | — | — | — | FUNGI-AMD-024 |
 | rd-tri-encription-research-metadata-confidentiality.md | — | — | Research note (grounded, cited, adversarially verified). **Date:** 2026-06-16. | FUNGI-AMD-024 |

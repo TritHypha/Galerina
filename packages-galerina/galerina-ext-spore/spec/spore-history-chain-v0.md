@@ -1,12 +1,12 @@
 # `.spore` append-only history chain (`+1`) — v0 (byte-precise)
 
 **Status:** Draft, buildable. Specifies the **append-only `+1` timeline** deferred by
-[`tmf-encryption-v0.md`](tmf-encryption-v0.md) §8 and described in the charter (`..\..\RD-DIRECTION.md` §3.3):
+[`spore-encryption-v0.md`](spore-encryption-v0.md) §8 and described in the charter (`..\..\RD-DIRECTION.md` §3.3):
 each append is its own AEAD-sealed, signed **segment** whose root binds the **previous segment's root** (a
 hash-linked chain) — tamper-evident order — with a per-epoch **key-erasure ratchet** and **crypto-erasure**
 (drop a segment key) for right-to-be-forgotten. Reuses the encryption layer's key schedule + AEAD **unchanged**
 (it only substitutes the secret input). Reference generator:
-[`_vectors/gen_tmf_history_chain.py`](_vectors/gen_tmf_history_chain.py).
+[`_vectors/gen_spore_history_chain.py`](_vectors/gen_spore_history_chain.py).
 
 > **What the chain guarantees, precisely.** The links make the chain's **contents and interior order**
 > tamper-evident: insert, drop-from-the-middle, reorder, or splice ⇒ a root mismatch ⇒ fail closed.
@@ -58,8 +58,8 @@ erased*. All Keccak (suite-consistent), `LP(x) = u32le(len(x)) ‖ x`:
 
 ```
 CK₀         = the chain key established once at creation (e.g. from the recipient KEM secret, encryption §2.1)
-MK_k        = SHAKE256( LP("tmf-hist-msg-v0")  ‖ LP(CK_k) ) [:32]      # this epoch's message key
-CK_{k+1}    = SHAKE256( LP("tmf-hist-step-v0") ‖ LP(CK_k) ) [:32]      # ratchet forward
+MK_k        = SHAKE256( LP("spore-hist-msg-v0")  ‖ LP(CK_k) ) [:32]      # this epoch's message key
+CK_{k+1}    = SHAKE256( LP("spore-hist-step-v0") ‖ LP(CK_k) ) [:32]      # ratchet forward
   -- the writer MUST securely DELETE CK_k and MK_k once segment k is sealed --
 ```
 
@@ -76,8 +76,8 @@ CK_{k+1}    = SHAKE256( LP("tmf-hist-step-v0") ‖ LP(CK_k) ) [:32]      # ratch
 The segment is sealed by the **unchanged** encryption key schedule, substituting the ratchet output for the
 KEM shared secret:
 ```
-K_aead[k]      = SHAKE256( LP("tmf-dem-kdf-v0")    ‖ LP(MK_k) ‖ LP(aead_context_k) ) [:32]   # encryption §3, verbatim
-key_commit[k]  = SHAKE256( LP("tmf-dem-commit-v0") ‖ LP(K_aead[k]) ) [:32]                    # encryption §4, verbatim
+K_aead[k]      = SHAKE256( LP("spore-dem-kdf-v0")    ‖ LP(MK_k) ‖ LP(aead_context_k) ) [:32]   # encryption §3, verbatim
+key_commit[k]  = SHAKE256( LP("spore-dem-commit-v0") ‖ LP(K_aead[k]) ) [:32]                    # encryption §4, verbatim
 committed_aad  = aead_context_k (36 B) ‖ key_commit[k] (32 B)                                  # encryption §4, verbatim
 ```
 with `aead_context_k.epoch = k`. The **committing-AEAD construction is preserved** (the base layer added it to
@@ -136,9 +136,9 @@ rewritten); only the *key* is destroyed.
 
 ---
 
-## 7. Golden vector (`gen_tmf_history_chain.py`)
+## 7. Golden vector (`gen_spore_history_chain.py`)
 Deterministic parts are **real SHAKE256** (KEM/AEAD ciphertext is structural placeholder, as in
-`gen_tmf_encryption.py`). It proves: (a) the ratchet is deterministic and evolving (`CK_{k+1} ≠ CK_k`, distinct
+`gen_spore_encryption.py`). It proves: (a) the ratchet is deterministic and evolving (`CK_{k+1} ≠ CK_k`, distinct
 `MK_k`); (b) **`epoch` and `flags` are bound** — flipping `flags.erased` changes `rₖ` (so the erased bit is
 authenticated, §6); (c) the **hash-link chains** (`Sₖ.prev_root == rₖ₋₁`, genesis `0³²`); (d) **interior
 tamper** (reorder) changes a root; (e) **crypto-erasure** preserves the chain (`S₂.prev_root == r₁` after
@@ -156,7 +156,7 @@ exactly the container's philosophy (container §6: offsets bounds-checked, leave
 ### Pack header — 48 bytes (all integers little-endian)
 | Off | Size | Field | Notes |
 |---|---|---|---|
-| 0 | 8 | `MAGIC` | `0x89 'T' 'M' 'H' 0x0D 0x0A 0x1A 0x0A` — history pack (distinct from the container's `'TMF'`) |
+| 0 | 8 | `MAGIC` | `0x89 'T' 'M' 'H' 0x0D 0x0A 0x1A 0x0A` — history pack (distinct from the container's `'SPORE'`) |
 | 8 | 2 | `version_major` u16 | `0`; reader rejects unknown major |
 | 10 | 2 | `version_minor` u16 | `0` |
 | 12 | 2 | `pack_flags` u16 | bit0 = `head_signed`; bits 1–15 reserved (MUST be 0) |
@@ -223,5 +223,5 @@ KEM/AEAD + head-signature bytes remain Blocked on a vetted lib.
 Symmetric hash ratchet (Signal double-ratchet's *symmetric* chain; TLS 1.3 key schedule) — adapted, not
 reimplemented; the asymmetric ratchet that would give full FS is explicitly out of scope (§2). Committing AEAD:
 Albertini et al., USENIX Security 2022 (via encryption §4). Companions:
-[`tmf-encryption-v0.md`](tmf-encryption-v0.md), [`signature-custody-v0.md`](signature-custody-v0.md),
+[`spore-encryption-v0.md`](spore-encryption-v0.md), [`signature-custody-v0.md`](signature-custody-v0.md),
 [`tmx-256-construction-v0.md`](tmx-256-construction-v0.md), charter `..\..\RD-DIRECTION.md` §3.3.

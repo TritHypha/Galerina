@@ -18,7 +18,7 @@ paper verdict is defensive-pub (or none).
   `env.spore` gets KEM-DEM (hybrid X25519+ML-KEM-768 → AES-256-GCM) ciphertext, not credentials.
 - **Authenticated integrity / tamper-evidence** — the `.spore` TMX-256 root is recomputed over the
   ciphertext leaves and fail-closes on any tamper (a `.env` has zero integrity).
-- **Names off the table** — each secret's `coord` is `SHAKE256("env-tmf-coord-v0" ‖ name)[:16]`, so
+- **Names off the table** — each secret's `coord` is `SHAKE256("env-spore-coord-v0" ‖ name)[:16]`, so
   the cleartext **name never appears** in the section table. Names + metadata live ONLY inside a
   sealed manifest section.
 - **Governed in-memory editor** — `set`/`rm`/`shell` decrypt strictly into a `SealTaint` arena,
@@ -69,20 +69,20 @@ galerina-secrets-spore get DB_PASSWORD | my-app --stdin-secret
 ```
 
 The recipient secret key is supplied to the CLI as a **passphrase-wrapped** blob via the
-`GALERINA_ENVTMF_WRAP` env var (a *pointer* to anchored material, hex of `salt|iv|ct`), unlocked by a
+`GALERINA_ENVSPORE_WRAP` env var (a *pointer* to anchored material, hex of `salt|iv|ct`), unlocked by a
 **no-echo passphrase prompt**. The plaintext key lives ONLY in an arena buffer.
 
 ## Schema (v0, unsigned-but-encrypted)
 
-- Container = the shipped v0 `.spore` (`writeTmf`/`readTmf` as-is). `flags.signed = 0`.
-- One secret = one `TmfSection`: `modality = 9` (Structured), `coord = SHAKE(name)[:16]`,
+- Container = the shipped v0 `.spore` (`writeSpore`/`readSpore` as-is). `flags.signed = 0`.
+- One secret = one `SporeSection`: `modality = 9` (Structured), `coord = SHAKE(name)[:16]`,
   `payload = seal(0x02, recipientPub, valueBytes, aeadContext)` with `commit_mode = CTX` (CMT-4,
   key-committing). The 36-byte AEAD context binds `section_id + coord + modality + conf_flags`.
 - One reserved **manifest** section (fixed-sentinel coord) holds the sealed `{ name → coord }`
   directory + per-secret metadata (`created`/`rotated`/`category`/`environment`/`kem_profile`).
 
 **Signed root is DEFERRED.** ML-DSA-65 over the TMX root is `@galerina/ext-spore` slice 4 / #7
-(unbuilt); `readTmf` rejects any signed file today. v0 `env.spore` ships **unsigned-but-encrypted**
+(unbuilt); `readSpore` rejects any signed file today. v0 `env.spore` ships **unsigned-but-encrypted**
 and **never fakes a signature**. The bench (P7) confirms a signed-flag file is rejected.
 
 **Epoch binding (v0):** the AEAD context binds `epoch = 0` deterministically (section identity is
@@ -111,7 +111,7 @@ key (`kemdem.ts:190`); the engine has zero custody logic. KEM-DEM moves the boot
 
 `runtime.ts` `loadAll(buf, recipientSec, K3.ALLOW)`:
 1. fetch the recipient KEM secret from the external anchor (`anchor.ts`),
-2. encrypted-container compose-reader (`store.composeRead`): `readTmf` recomputes TMX over the
+2. encrypted-container compose-reader (`store.composeRead`): `readSpore` recomputes TMX over the
    ciphertext leaves fail-closed → K3 ALLOW(+1) gate → NoCryptoLib reject → per-section `open()`,
 3. decrypt into the `SealArena` (zero-wiped, source-agnostic store),
 4. **decrypt fault → FAIL CLOSED**: the arena is disposed (wiped) and nothing is served.
@@ -153,7 +153,7 @@ documented honestly (audited, accepted — not value leaks):
 npm run build           # vendored tsc -> dist/
 npm test                # build + node --test tests/*.test.mjs
 npm run lint:secrets    # the no-egress CI gate
-node ../../tri-encription/bench/rd-0104-env-tmf-secrets-security.mjs   # the load-bearing security bench
+node ../../tri-encription/bench/rd-0104-env-spore-secrets-security.mjs   # the load-bearing security bench
 ```
 
 `@galerina/ext-spore` is resolved during in-staging build via a `paths` alias (tsconfig) and a local

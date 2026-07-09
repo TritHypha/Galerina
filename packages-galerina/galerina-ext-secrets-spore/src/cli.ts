@@ -23,9 +23,9 @@
 import { existsSync, writeSync } from "node:fs";
 import { createInterface } from "node:readline";
 import {
-  initEnvTmf, setSecret, rmSecret, rotateRecipient, listSecrets, openValue, readFile, K3,
+  initEnvSpore, setSecret, rmSecret, rotateRecipient, listSecrets, openValue, readFile, K3,
 } from "./store.js";
-import { keygen, KEM_PROFILE } from "./tmf.js";
+import { keygen, KEM_PROFILE } from "./spore.js";
 import { fromHex, toHex } from "./schema.js";
 import { readStdinBytes, promptNoEcho, atomicWriteCiphertext } from "./io.js";
 import { unwrapRecipientSecret } from "./anchor.js";
@@ -78,10 +78,10 @@ function rejectValueInArgv(a: Args): void {
  * unwrapped secret in an arena buffer.
  */
 function getWrappedKey(): WrappedKey {
-  // The wrapped key is provided out-of-band via env GALERINA_ENVTMF_WRAP (hex of salt|iv|ct) — a
+  // The wrapped key is provided out-of-band via env GALERINA_ENVSPORE_WRAP (hex of salt|iv|ct) — a
   // POINTER to anchored material, NOT a plaintext secret. We never read a plaintext key from argv.
-  const hex = process.env.GALERINA_ENVTMF_WRAP;
-  if (hex === undefined) die("set GALERINA_ENVTMF_WRAP to the wrapped recipient key (salt|iv|ct hex)");
+  const hex = process.env.GALERINA_ENVSPORE_WRAP;
+  if (hex === undefined) die("set GALERINA_ENVSPORE_WRAP to the wrapped recipient key (salt|iv|ct hex)");
   const raw = fromHex(hex as string);
   return { salt: raw.subarray(0, 16), iv: raw.subarray(16, 28), ct: raw.subarray(28) };
 }
@@ -103,7 +103,7 @@ async function main(): Promise<void> {
     case "init": {
       const pub = fromHex(a.pub ?? die("init requires --pub <recipient-pubkey-hex>"));
       if (existsSync(a.file)) die(`refusing to overwrite existing ${a.file}`);
-      const bytes = initEnvTmf(pub);
+      const bytes = initEnvSpore(pub);
       atomicWriteCiphertext(a.file, bytes);
       process.stderr.write(`initialised ${a.file} (manifest-only, unsigned-but-encrypted)\n`);
       break;

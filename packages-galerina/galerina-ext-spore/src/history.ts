@@ -1,5 +1,5 @@
 // history.ts — .spore append-only history chain (`+1`), v0 (slice 5, G4). Spec (frozen):
-// spec/tmf-history-chain-v0.md. Byte-precise, deterministic SHAKE256 — crypto-on-core
+// spec/spore-history-chain-v0.md. Byte-precise, deterministic SHAKE256 — crypto-on-core
 // (FUNGI-SUBSTRATE-001): no photonic crypto, bit-exact digital.
 //
 // SCOPE (what this file builds, exactly per the spec's separation of concerns):
@@ -46,7 +46,7 @@ export const HIST_FLAG = {
 const HIST_FLAG_DEFINED = HIST_FLAG.SEALED | HIST_FLAG.SIGNED | HIST_FLAG.ERASED;
 
 // ── §8 pack constants ───────────────────────────────────────────────────────
-/** History-pack magic: 0x89 'T' 'M' 'H' 0x0D 0x0A 0x1A 0x0A (distinct from the container's 'TMF'). */
+/** History-pack magic: 0x89 'T' 'M' 'H' 0x0D 0x0A 0x1A 0x0A (distinct from the container's 'SPORE'). */
 export const PACK_MAGIC = Uint8Array.from([0x89, 0x54, 0x4d, 0x48, 0x0d, 0x0a, 0x1a, 0x0a]);
 /** §8 pack header size (bytes). */
 export const PACK_HEADER_SIZE = 48;
@@ -56,7 +56,7 @@ export const PACK_ENTRY_SIZE = 56;
 export const PACK_FLAG = { HEAD_SIGNED: 1 << 0 } as const;
 
 // ── error taxonomy (§3 fail-closed) ─────────────────────────────────────────
-export type TmfHistoryCode =
+export type SporeHistoryCode =
   | "MalformedChain"     // bad shape / arguments / reserved-bit violation
   | "IntegrityError"     // broken hash-link, root mismatch, orphan/fork, chain_id relabel
   | "RollbackError"      // §5 freshness: non-monotone epoch or head does not extend the trusted head
@@ -66,12 +66,12 @@ export type TmfHistoryCode =
   | "AuthError";         // §8 head_signed but no vetted verifier wired (no silent downgrade)
 
 /** Typed, fail-closed history-chain error (§3 taxonomy). */
-export class TmfHistoryError extends Error {
-  readonly code: TmfHistoryCode;
-  constructor(code: TmfHistoryCode, message: string) {
+export class SporeHistoryError extends Error {
+  readonly code: SporeHistoryCode;
+  constructor(code: SporeHistoryCode, message: string) {
     super(`${code}: ${message}`);
     this.code = code;
-    this.name = "TmfHistoryError";
+    this.name = "SporeHistoryError";
   }
 }
 
@@ -95,13 +95,13 @@ function bytesEqual(a: Uint8Array, b: Uint8Array): boolean {
 
 /** Reject anything that is not a valid u32 (epoch / flags are u32 fields, §1). */
 function assertU32(v: number, what: string): void {
-  if (!Number.isInteger(v) || v < 0 || v > 0xffffffff) throw new TmfHistoryError("MalformedChain", `${what} out of u32 range`);
+  if (!Number.isInteger(v) || v < 0 || v > 0xffffffff) throw new SporeHistoryError("MalformedChain", `${what} out of u32 range`);
 }
 
 /** A 16-byte chain_id (default = all-zero for a standalone segment, §1). Validates length, fail-closed. */
 function normalizeChainId(chainId?: Uint8Array): Uint8Array {
   if (chainId === undefined) return new Uint8Array(CHAIN_ID_SIZE);
-  if (chainId.length !== CHAIN_ID_SIZE) throw new TmfHistoryError("MalformedChain", `chain_id must be ${CHAIN_ID_SIZE} bytes`);
+  if (chainId.length !== CHAIN_ID_SIZE) throw new SporeHistoryError("MalformedChain", `chain_id must be ${CHAIN_ID_SIZE} bytes`);
   return chainId.slice();
 }
 
@@ -116,17 +116,17 @@ function normalizeChainId(chainId?: Uint8Array): Uint8Array {
 export function chainHeader(epoch: number, flags: number, chainId?: Uint8Array): Uint8Array {
   assertU32(epoch, "epoch");
   assertU32(flags, "flags");
-  if ((flags & ~HIST_FLAG_DEFINED) !== 0) throw new TmfHistoryError("MalformedChain", "reserved flags bits 3-31 must be 0");
+  if ((flags & ~HIST_FLAG_DEFINED) !== 0) throw new SporeHistoryError("MalformedChain", "reserved flags bits 3-31 must be 0");
   return concat([wU32(epoch), wU32(flags), normalizeChainId(chainId)]);
 }
 
 /** Parse a 24-byte chain header (fail-closed on reserved-bit violations). */
 export function parseChainHeader(hdr: Uint8Array): { epoch: number; flags: number; chainId: Uint8Array } {
-  if (hdr.length !== CHAIN_HEADER_SIZE) throw new TmfHistoryError("MalformedChain", `chain header must be ${CHAIN_HEADER_SIZE} bytes`);
+  if (hdr.length !== CHAIN_HEADER_SIZE) throw new SporeHistoryError("MalformedChain", `chain header must be ${CHAIN_HEADER_SIZE} bytes`);
   const dv = new DataView(hdr.buffer, hdr.byteOffset, hdr.byteLength);
   const epoch = dv.getUint32(0, true);
   const flags = dv.getUint32(4, true);
-  if ((flags & ~HIST_FLAG_DEFINED) !== 0) throw new TmfHistoryError("MalformedChain", "reserved flags bits 3-31 must be 0");
+  if ((flags & ~HIST_FLAG_DEFINED) !== 0) throw new SporeHistoryError("MalformedChain", "reserved flags bits 3-31 must be 0");
   return { epoch, flags, chainId: hdr.slice(8, 24) };
 }
 
@@ -137,7 +137,7 @@ export function parseChainHeader(hdr: Uint8Array): { epoch: number; flags: numbe
  */
 export function linkLeaf(epoch: number, prevRoot: Uint8Array): Uint8Array {
   assertU32(epoch, "epoch");
-  if (prevRoot.length !== H) throw new TmfHistoryError("MalformedChain", `prev_root must be ${H} bytes`);
+  if (prevRoot.length !== H) throw new SporeHistoryError("MalformedChain", `prev_root must be ${H} bytes`);
   return leafHash(HISTORY_LINK_KIND, HISTORY_LINK_MODALITY, wU32(epoch), prevRoot);
 }
 
@@ -160,12 +160,12 @@ export interface HistorySegment {
  */
 export function segmentRoot(seg: HistorySegment): Uint8Array {
   assertU32(seg.epoch, "epoch");
-  if (seg.prevRoot.length !== H) throw new TmfHistoryError("MalformedChain", `prev_root must be ${H} bytes`);
+  if (seg.prevRoot.length !== H) throw new SporeHistoryError("MalformedChain", `prev_root must be ${H} bytes`);
   if (seg.epoch === 0 && !bytesEqual(seg.prevRoot, GENESIS_PREV_ROOT)) {
-    throw new TmfHistoryError("IntegrityError", "genesis segment (epoch 0) must have prev_root = 0^32");
+    throw new SporeHistoryError("IntegrityError", "genesis segment (epoch 0) must have prev_root = 0^32");
   }
   for (const d of seg.contentLeaves) {
-    if (d.length !== H) throw new TmfHistoryError("MalformedChain", `content leaf must be ${H} bytes`);
+    if (d.length !== H) throw new SporeHistoryError("MalformedChain", `content leaf must be ${H} bytes`);
   }
   const hc = chainHeader(seg.epoch, seg.flags, seg.chainId);
   const leaves = [...seg.contentLeaves, linkLeaf(seg.epoch, seg.prevRoot)];
@@ -201,9 +201,9 @@ export function appendSegment(
     prevRoot = GENESIS_PREV_ROOT;
   } else {
     assertU32(prev.segment.epoch, "prev.epoch");
-    if (prev.segment.epoch === 0xffffffff) throw new TmfHistoryError("MalformedChain", "epoch would overflow u32");
+    if (prev.segment.epoch === 0xffffffff) throw new SporeHistoryError("MalformedChain", "epoch would overflow u32");
     // chain_id continuity: a child cannot silently switch chains.
-    if (!bytesEqual(prev.segment.chainId, chainId)) throw new TmfHistoryError("IntegrityError", "chain_id must match the predecessor");
+    if (!bytesEqual(prev.segment.chainId, chainId)) throw new SporeHistoryError("IntegrityError", "chain_id must match the predecessor");
     epoch = prev.segment.epoch + 1;
     prevRoot = prev.root;
   }
@@ -249,21 +249,21 @@ export interface VerifyChainResult {
  * Order/freshness are checked WITHOUT touching plaintext (decapsulation is the KEM-DEM slice).
  */
 export function verifyChain(segments: readonly HistorySegment[], policy?: FreshnessPolicy): VerifyChainResult {
-  if (segments.length === 0) throw new TmfHistoryError("MalformedChain", "empty chain");
+  if (segments.length === 0) throw new SporeHistoryError("MalformedChain", "empty chain");
   const first = segments[0]!;
-  if (first.epoch !== 0) throw new TmfHistoryError("IntegrityError", "first segment must be genesis (epoch 0)");
-  if (!bytesEqual(first.prevRoot, GENESIS_PREV_ROOT)) throw new TmfHistoryError("IntegrityError", "genesis prev_root must be 0^32");
+  if (first.epoch !== 0) throw new SporeHistoryError("IntegrityError", "first segment must be genesis (epoch 0)");
+  if (!bytesEqual(first.prevRoot, GENESIS_PREV_ROOT)) throw new SporeHistoryError("IntegrityError", "genesis prev_root must be 0^32");
   const chainId = first.chainId.slice();
-  if (chainId.length !== CHAIN_ID_SIZE) throw new TmfHistoryError("MalformedChain", `chain_id must be ${CHAIN_ID_SIZE} bytes`);
+  if (chainId.length !== CHAIN_ID_SIZE) throw new SporeHistoryError("MalformedChain", `chain_id must be ${CHAIN_ID_SIZE} bytes`);
 
   let prevRootComputed: Uint8Array = GENESIS_PREV_ROOT;
   let lastRoot: Uint8Array = GENESIS_PREV_ROOT;
   for (let k = 0; k < segments.length; k++) {
     const s = segments[k]!;
-    if (s.epoch !== k) throw new TmfHistoryError("IntegrityError", `epoch not strictly monotone at index ${k} (got ${s.epoch})`);
-    if (!bytesEqual(s.chainId, chainId)) throw new TmfHistoryError("IntegrityError", `chain_id mismatch at index ${k}`);
+    if (s.epoch !== k) throw new SporeHistoryError("IntegrityError", `epoch not strictly monotone at index ${k} (got ${s.epoch})`);
+    if (!bytesEqual(s.chainId, chainId)) throw new SporeHistoryError("IntegrityError", `chain_id mismatch at index ${k}`);
     // hash-link: this segment's claimed prev_root must equal the predecessor's recomputed root.
-    if (!bytesEqual(s.prevRoot, prevRootComputed)) throw new TmfHistoryError("IntegrityError", `broken hash-link at index ${k}`);
+    if (!bytesEqual(s.prevRoot, prevRootComputed)) throw new SporeHistoryError("IntegrityError", `broken hash-link at index ${k}`);
     const r = segmentRoot(s); // recompute rₖ (binds header_core + content leaves + link-leaf)
     prevRootComputed = r;
     lastRoot = r;
@@ -288,24 +288,24 @@ export function enforceFreshness(
   if (policy.minEpoch !== undefined) {
     assertU32(policy.minEpoch, "minEpoch");
     if (head.epoch < policy.minEpoch) {
-      throw new TmfHistoryError("RollbackError", `head epoch ${head.epoch} below monotone floor ${policy.minEpoch} (rollback)`);
+      throw new SporeHistoryError("RollbackError", `head epoch ${head.epoch} below monotone floor ${policy.minEpoch} (rollback)`);
     }
   }
   if (policy.trustedHead !== undefined) {
     const th = policy.trustedHead;
     if (th.chainId.length !== CHAIN_ID_SIZE || th.root.length !== H) {
-      throw new TmfHistoryError("MalformedChain", "trusted head malformed");
+      throw new SporeHistoryError("MalformedChain", "trusted head malformed");
     }
     if (!bytesEqual(th.chainId, head.chainId)) {
-      throw new TmfHistoryError("RollbackError", "head chain_id does not match the trusted head");
+      throw new SporeHistoryError("RollbackError", "head chain_id does not match the trusted head");
     }
     // The presented head must BE the trusted head: same authoritative epoch AND same root. An old,
     // validly-signed shorter head has a lower epoch / different root ⇒ rejected (§5 truncation).
     if (head.epoch !== th.latestEpoch) {
-      throw new TmfHistoryError("RollbackError", `head epoch ${head.epoch} != trusted latest_epoch ${th.latestEpoch}`);
+      throw new SporeHistoryError("RollbackError", `head epoch ${head.epoch} != trusted latest_epoch ${th.latestEpoch}`);
     }
     if (!bytesEqual(head.root, th.root)) {
-      throw new TmfHistoryError("RollbackError", "head root does not match the trusted head pointer");
+      throw new SporeHistoryError("RollbackError", "head root does not match the trusted head pointer");
     }
   }
 }
@@ -329,12 +329,12 @@ export interface PackSegment {
  * binds), matching the container's "leaves/roots recomputed, hints re-verified" philosophy (spec §8).
  */
 function encodeSegmentBody(chainId: Uint8Array, s: PackSegment): Uint8Array {
-  if (s.prevRoot.length !== H) throw new TmfHistoryError("MalformedChain", `prev_root must be ${H} bytes`);
+  if (s.prevRoot.length !== H) throw new SporeHistoryError("MalformedChain", `prev_root must be ${H} bytes`);
   const hc = chainHeader(s.epoch, s.flags, chainId);
   const leaves = [...s.contentLeaves, linkLeaf(s.epoch, s.prevRoot)];
   const parts: Uint8Array[] = [hc, wU32(leaves.length)];
   for (const d of leaves) {
-    if (d.length !== H) throw new TmfHistoryError("MalformedChain", `leaf must be ${H} bytes`);
+    if (d.length !== H) throw new SporeHistoryError("MalformedChain", `leaf must be ${H} bytes`);
     parts.push(d);
   }
   parts.push(s.prevRoot.slice());
@@ -346,24 +346,24 @@ interface DecodedSeg { epoch: number; flags: number; chainId: Uint8Array; root: 
 /** Decode + recompute a §8 segment body, fail-closed on every shape/bounds error (used by verifyPack). */
 function decodeSegmentBody(body: Uint8Array, packChainId: Uint8Array): DecodedSeg {
   // minimum: header(24) + count(4) + 1 leaf(32) + prev_root(32)
-  if (body.length < CHAIN_HEADER_SIZE + 4 + H + H) throw new TmfHistoryError("MalformedTable", "segment body too short");
+  if (body.length < CHAIN_HEADER_SIZE + 4 + H + H) throw new SporeHistoryError("MalformedTable", "segment body too short");
   const hdr = body.slice(0, CHAIN_HEADER_SIZE);
   const { epoch, flags, chainId } = parseChainHeader(hdr);
-  if (!bytesEqual(chainId, packChainId)) throw new TmfHistoryError("IntegrityError", "segment chain_id != pack chain_id");
+  if (!bytesEqual(chainId, packChainId)) throw new SporeHistoryError("IntegrityError", "segment chain_id != pack chain_id");
   const dv = new DataView(body.buffer, body.byteOffset, body.byteLength);
   const count = dv.getUint32(CHAIN_HEADER_SIZE, true);
-  if (count < 1) throw new TmfHistoryError("MalformedTable", "segment body needs ≥ 1 leaf (the LINK leaf)");
+  if (count < 1) throw new SporeHistoryError("MalformedTable", "segment body needs ≥ 1 leaf (the LINK leaf)");
   const needed = CHAIN_HEADER_SIZE + 4 + count * H + H; // + trailing prev_root
-  if (body.length !== needed) throw new TmfHistoryError("MalformedTable", "segment body length does not match leaf count");
+  if (body.length !== needed) throw new SporeHistoryError("MalformedTable", "segment body length does not match leaf count");
   const leaves: Uint8Array[] = [];
   let off = CHAIN_HEADER_SIZE + 4;
   for (let i = 0; i < count; i++) { leaves.push(body.slice(off, off + H)); off += H; }
   const prevRoot = body.slice(off, off + H);
   // bind: the final leaf MUST be linkLeaf(epoch, prevRoot) — otherwise prev_root is forged.
   if (!bytesEqual(leaves[leaves.length - 1]!, linkLeaf(epoch, prevRoot))) {
-    throw new TmfHistoryError("IntegrityError", "LINK leaf does not bind the stated prev_root");
+    throw new SporeHistoryError("IntegrityError", "LINK leaf does not bind the stated prev_root");
   }
-  if (epoch === 0 && !bytesEqual(prevRoot, GENESIS_PREV_ROOT)) throw new TmfHistoryError("IntegrityError", "genesis prev_root must be 0^32");
+  if (epoch === 0 && !bytesEqual(prevRoot, GENESIS_PREV_ROOT)) throw new SporeHistoryError("IntegrityError", "genesis prev_root must be 0^32");
   const root = tmxRoot(hdr, leaves);
   return { epoch, flags, chainId, root, prevRoot };
 }
@@ -375,7 +375,7 @@ function decodeSegmentBody(body: Uint8Array, packChainId: Uint8Array): DecodedSe
  */
 export function encodePack(chainIdIn: Uint8Array, segments: readonly PackSegment[]): Uint8Array {
   const chainId = normalizeChainId(chainIdIn);
-  if (segments.length === 0) throw new TmfHistoryError("MalformedChain", "pack needs ≥ 1 segment");
+  if (segments.length === 0) throw new SporeHistoryError("MalformedChain", "pack needs ≥ 1 segment");
   const bodies: Uint8Array[] = [];
   let headIndex = 0;
   let headEpoch = -1;
@@ -440,28 +440,28 @@ export interface PackVerifyResult {
 export function verifyPack(buf: Uint8Array, policy?: FreshnessPolicy): PackVerifyResult {
   const len = buf.length;
   // 1. magic + version
-  if (len < PACK_HEADER_SIZE) throw new TmfHistoryError("MalformedTable", "pack shorter than the 48-byte header");
-  if (!bytesEqual(buf.subarray(0, 8), PACK_MAGIC)) throw new TmfHistoryError("BadMagic", "pack magic mismatch");
+  if (len < PACK_HEADER_SIZE) throw new SporeHistoryError("MalformedTable", "pack shorter than the 48-byte header");
+  if (!bytesEqual(buf.subarray(0, 8), PACK_MAGIC)) throw new SporeHistoryError("BadMagic", "pack magic mismatch");
   const dv = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
   const versionMajor = dv.getUint16(8, true);
-  if (versionMajor !== 0) throw new TmfHistoryError("UnsupportedVersion", `version_major ${versionMajor} unsupported`);
+  if (versionMajor !== 0) throw new SporeHistoryError("UnsupportedVersion", `version_major ${versionMajor} unsupported`);
   const packFlags = dv.getUint16(12, true);
-  if ((packFlags & ~PACK_FLAG.HEAD_SIGNED) !== 0) throw new TmfHistoryError("MalformedTable", "reserved pack_flags bits must be 0");
+  if ((packFlags & ~PACK_FLAG.HEAD_SIGNED) !== 0) throw new SporeHistoryError("MalformedTable", "reserved pack_flags bits must be 0");
   const reserved = dv.getUint16(14, true);
-  if (reserved !== 0) throw new TmfHistoryError("MalformedTable", "reserved u16 must be 0");
+  if (reserved !== 0) throw new SporeHistoryError("MalformedTable", "reserved u16 must be 0");
   const packChainId = buf.slice(16, 32);
   const segCountBig = dv.getBigUint64(32, true);
   const headIndex = dv.getUint32(40, true);
   const headEpochHint = dv.getUint32(44, true);
 
   // 2. BOUNDS — overflow-safe in BigInt, BEFORE any hashing.
-  if (segCountBig === 0n) throw new TmfHistoryError("MalformedTable", "segment_count must be ≥ 1");
+  if (segCountBig === 0n) throw new SporeHistoryError("MalformedTable", "segment_count must be ≥ 1");
   const lenBig = BigInt(len);
   const regionOffBig = 48n + segCountBig * 56n;
-  if (regionOffBig > lenBig) throw new TmfHistoryError("MalformedTable", "segment table extends past EOF");
+  if (regionOffBig > lenBig) throw new SporeHistoryError("MalformedTable", "segment table extends past EOF");
   const segmentCount = Number(segCountBig);
   const regionOff = Number(regionOffBig);
-  if (headIndex >= segmentCount) throw new TmfHistoryError("MalformedTable", "head_index out of range");
+  if (headIndex >= segmentCount) throw new SporeHistoryError("MalformedTable", "head_index out of range");
 
   interface Tbl { epoch: number; flags: number; segOff: bigint; segLen: bigint; rootHint: Uint8Array; }
   const table: Tbl[] = [];
@@ -469,7 +469,7 @@ export function verifyPack(buf: Uint8Array, policy?: FreshnessPolicy): PackVerif
     const e = 48 + i * 56;
     const segOff = dv.getBigUint64(e + 8, true);
     const segLen = dv.getBigUint64(e + 16, true);
-    if (regionOffBig + segOff + segLen > lenBig) throw new TmfHistoryError("MalformedTable", `segment ${i} body extends past EOF`);
+    if (regionOffBig + segOff + segLen > lenBig) throw new SporeHistoryError("MalformedTable", `segment ${i} body extends past EOF`);
     table.push({ epoch: dv.getUint32(e, true), flags: dv.getUint32(e + 4, true), segOff, segLen, rootHint: buf.slice(e + 24, e + 56) });
   }
 
@@ -480,15 +480,15 @@ export function verifyPack(buf: Uint8Array, policy?: FreshnessPolicy): PackVerif
     const start = regionOff + Number(t.segOff);
     const body = buf.subarray(start, start + Number(t.segLen));
     const dec = decodeSegmentBody(body, packChainId);
-    if (!bytesEqual(dec.root, t.rootHint)) throw new TmfHistoryError("IntegrityError", `segment ${i} root hint does not match recomputed root`);
+    if (!bytesEqual(dec.root, t.rootHint)) throw new SporeHistoryError("IntegrityError", `segment ${i} root hint does not match recomputed root`);
     segs.push(dec);
   }
 
   // 4. head
   const head = segs[headIndex]!;
-  if (head.epoch !== headEpochHint) throw new TmfHistoryError("IntegrityError", "head_epoch hint does not match head body epoch");
+  if (head.epoch !== headEpochHint) throw new SporeHistoryError("IntegrityError", "head_epoch hint does not match head body epoch");
   if ((packFlags & PACK_FLAG.HEAD_SIGNED) !== 0) {
-    throw new TmfHistoryError("AuthError", "head_signed pack rejected: no vetted FIPS-204 verifier wired in v0 (no silent downgrade)");
+    throw new SporeHistoryError("AuthError", "head_signed pack rejected: no vetted FIPS-204 verifier wired in v0 (no silent downgrade)");
   }
 
   // 5. freshness (§5)
@@ -498,7 +498,7 @@ export function verifyPack(buf: Uint8Array, policy?: FreshnessPolicy): PackVerif
   const byRoot = new Map<string, number>();
   for (let i = 0; i < segs.length; i++) {
     const key = Buffer.from(segs[i]!.root).toString("hex");
-    if (byRoot.has(key)) throw new TmfHistoryError("IntegrityError", "duplicate segment root (fork/replay)");
+    if (byRoot.has(key)) throw new SporeHistoryError("IntegrityError", "duplicate segment root (fork/replay)");
     byRoot.set(key, i);
   }
 
@@ -506,22 +506,22 @@ export function verifyPack(buf: Uint8Array, policy?: FreshnessPolicy): PackVerif
   const visited = new Set<number>();
   let curIndex = headIndex;
   for (;;) {
-    if (visited.has(curIndex)) throw new TmfHistoryError("IntegrityError", "cycle in link walk");
+    if (visited.has(curIndex)) throw new SporeHistoryError("IntegrityError", "cycle in link walk");
     visited.add(curIndex);
     const cur = segs[curIndex]!;
     if (cur.epoch === 0) {
-      if (!bytesEqual(cur.prevRoot, GENESIS_PREV_ROOT)) throw new TmfHistoryError("IntegrityError", "genesis prev_root must be 0^32");
+      if (!bytesEqual(cur.prevRoot, GENESIS_PREV_ROOT)) throw new SporeHistoryError("IntegrityError", "genesis prev_root must be 0^32");
       break;
     }
     const predIdx = byRoot.get(Buffer.from(cur.prevRoot).toString("hex"));
-    if (predIdx === undefined) throw new TmfHistoryError("IntegrityError", `broken link: predecessor root not present for epoch ${cur.epoch}`);
+    if (predIdx === undefined) throw new SporeHistoryError("IntegrityError", `broken link: predecessor root not present for epoch ${cur.epoch}`);
     const pred = segs[predIdx]!;
-    if (pred.epoch !== cur.epoch - 1) throw new TmfHistoryError("IntegrityError", `predecessor epoch ${pred.epoch} != ${cur.epoch - 1}`);
+    if (pred.epoch !== cur.epoch - 1) throw new SporeHistoryError("IntegrityError", `predecessor epoch ${pred.epoch} != ${cur.epoch - 1}`);
     curIndex = predIdx;
   }
 
   // 6b. strict membership — no orphans / off-path insertion / fork branch.
-  if (visited.size !== segmentCount) throw new TmfHistoryError("IntegrityError", `orphan segment(s): walked ${visited.size} of ${segmentCount}`);
+  if (visited.size !== segmentCount) throw new SporeHistoryError("IntegrityError", `orphan segment(s): walked ${visited.size} of ${segmentCount}`);
 
   return { chainId: packChainId, headEpoch: head.epoch, headRoot: head.root, segmentCount };
 }

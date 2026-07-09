@@ -88,9 +88,9 @@ flowchart LR
     galerina_ext_bridge_quantum["ext-bridge-quantum"]
     galerina_ext_photonic_emulator["ext-photonic-emulator"]
     galerina_ext_proof_snarkjs["ext-proof-snarkjs"]
-    galerina_ext_secrets_tmf["ext-secrets-tmf"]
+    galerina_ext_secrets_spore["ext-secrets-spore"]
     galerina_ext_secrets_vault["ext-secrets-vault"]
-    galerina_ext_tmf["ext-tmf"]
+    galerina_ext_spore["ext-spore"]
   }
   subgraph target["target"]
     galerina_target_ai_accelerator["target-ai-accelerator"]
@@ -175,7 +175,7 @@ flowchart LR
   galerina_ext_bridge_quantum --> galerina_inference_bridge_contract
   galerina_ext_bridge_quantum --> galerina_tower_citizen
   galerina_ext_photonic_emulator --> galerina_inference_bridge_contract
-  galerina_ext_secrets_tmf --> galerina_ext_tmf
+  galerina_ext_secrets_spore --> galerina_ext_spore
   galerina_observability --> galerina_framework_app_kernel
   galerina_hardware_tier --> galerina_inference_bridge_contract
   galerina_auth --> galerina_core_network

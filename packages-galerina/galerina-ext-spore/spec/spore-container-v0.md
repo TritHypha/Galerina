@@ -4,7 +4,7 @@
 [`tmx-256-construction-v0.md`](tmx-256-construction-v0.md) (the integrity/hash core). This file
 defines the **on-disk/on-wire byte layout**; TMX-256 defines how the integrity root over that layout
 is computed and signed. A reference writer/reader and the golden container vector below are produced by
-[`_vectors/gen_tmf_container.py`](_vectors/gen_tmf_container.py) — its `integrity_root` is **identical**
+[`_vectors/gen_spore_container.py`](_vectors/gen_spore_container.py) — its `integrity_root` is **identical**
 to the TMX construction's golden root, so the two specs are provably consistent.
 
 Grounded only; nothing here depends on photonic/ternary hardware or any performance number. NVFP4 appears
@@ -75,7 +75,7 @@ Section **order is bound** into the root (it determines leaf order in the tree),
 
 ### 4.1 `kind` (section kind) — opaque u16, with a small reserved registry
 `0`=RESERVED · `1`=DATA · `2`=INDEX · `3`=SCHEMA · `4`=META · `7`=LINK (history-chain link-leaf,
-[`tmf-history-chain-v0.md`](tmf-history-chain-v0.md) §1). Unknown kinds are *readable* (the reader
+[`spore-history-chain-v0.md`](spore-history-chain-v0.md) §1). Unknown kinds are *readable* (the reader
 verifies them) but their semantics are application-defined. `kind` is bound into the leaf, so a
 `DATA→INDEX` relabel breaks verification.
 
@@ -177,7 +177,7 @@ bytes (`region_off + payload_region_len == EOF`); a **signed** file's signature 
 
 ## 8. Golden container vector (2 sections, unsigned)
 
-Produced by `python spec/_vectors/gen_tmf_container.py`. `integrity_root` equals the TMX golden root,
+Produced by `python spec/_vectors/gen_spore_container.py`. `integrity_root` equals the TMX golden root,
 proving the two specs agree. Any conforming writer MUST produce these exact bytes for this input.
 
 ```
@@ -203,7 +203,7 @@ layout         = header[0:56]  table[56:168]  region[168:203]
 000000b0  07 00 00 00 68 65 6c 6c 6f 03 00 00 00 05 00 00   …7) "hello" | coord1=i32le(3,5,…
 000000c0  00 08 00 00 00 77 6f 72 6c 64 21                  …8) "world!"
 
-read_tmf(buf) -> (n=2, profile=0, flags=0)                 verified OK
+read_spore(buf) -> (n=2, profile=0, flags=0)                 verified OK
 tamper(payload 'h'->'H')   -> IntegrityError: leaf mismatch at entry 0
 signed-without-verifier    -> AuthError (refuses to downgrade a signed file)
 trailing-bytes (unsigned)  -> MalformedTable
@@ -221,7 +221,7 @@ truncated-header           -> MalformedTable
 ## 10. Not in v0
 - Streaming/mmap reads, append-log/compaction, encryption-at-rest (confidentiality is **deferred** to v1 —
   see the ratified decisions). **The v1 layer is now byte-precise specced in
-  [`tmf-encryption-v0.md`](tmf-encryption-v0.md):** KEM-DEM via three orthogonal selector bytes
+  [`spore-encryption-v0.md`](spore-encryption-v0.md):** KEM-DEM via three orthogonal selector bytes
   (`kem_profile` default hybrid X25519+ML-KEM-768; `aead_suite` default **AES-256-GCM**, Ascon-AEAD128
   constrained, ChaCha20-Poly1305 alt; `dem_mode` single-shot/STREAM), a SHAKE256 DEM KDF, an AAD-committing
   AEAD, with the **Vector/Attribute (embedding) sections encrypted** (never a cleartext in-network routing

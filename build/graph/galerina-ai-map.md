@@ -822,13 +822,13 @@ Provides:
 - HEADER_CORE_SIZE
 - ENTRY_SIZE
 - TMX_PROFILE_SHAKE
-- TmfErrorCode
-- TmfError
-- TmfSection
-- TmfReadResult
+- SporeErrorCode
+- SporeError
+- SporeSection
+- SporeReadResult
 - headerCore
-- writeTmf
-- readTmf
+- writeSpore
+- readSpore
 
 ## galerina-ext-bridge-bitnet
 
@@ -907,7 +907,7 @@ Provides:
 
 ## galerina-ext-secrets-spore
 
-OPTIONAL sealed-secrets-on-.spore layer for Galerina. env.spore = an encrypted-at-rest replacement for plaintext .env, edited through a governed in-memory-only CLI (no temp file, no $EDITOR, no .swp). Thin orchestration over @galerina/ext-spore (format/crypto) + the ext-secrets-vault store discipline. No new crypto, no new container bytes; crypto stays Binary (FUNGI-SUBSTRATE-001). Unsigned-but-encrypted (flags.signed=0); signed root gated on ext-tmf slice 4/#7.
+OPTIONAL sealed-secrets-on-.spore layer for Galerina. env.spore = an encrypted-at-rest replacement for plaintext .env, edited through a governed in-memory-only CLI (no temp file, no $EDITOR, no .swp). Thin orchestration over @galerina/ext-spore (format/crypto) + the ext-secrets-vault store discipline. No new crypto, no new container bytes; crypto stays Binary (FUNGI-SUBSTRATE-001). Unsigned-but-encrypted (flags.signed=0); signed root gated on ext-spore slice 4/#7.
 
 Provides:
 - SecretConfigSource

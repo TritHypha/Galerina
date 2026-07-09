@@ -1,11 +1,11 @@
 // schema.ts — env.spore v0 schema (Part 1 of the R&D design doc §3).
 //
-// env.spore = the shipped v0 .spore container (writeTmf/readTmf as-is), flags.signed=0
+// env.spore = the shipped v0 .spore container (writeSpore/readSpore as-is), flags.signed=0
 // (UNSIGNED-but-ENCRYPTED — the ML-DSA signed root is GATED on ext-spore slice 4 / #7;
 // we NEVER fake a signature). Confidentiality is KEM-DEM single-shot under hybrid
 // X25519+ML-KEM-768 (KEM_PROFILE 0x02) with commit_mode=CTX (CMT-4, key-committing).
 //
-// Layout (one secret = one TmfSection):
+// Layout (one secret = one SporeSection):
 //   - modality = 9 (Structured)
 //   - coord    = HKDF/SHAKE(name) truncated to 16 B  -> the cleartext NAME is NOT in the
 //                section table (only an opaque, non-semantic 128-bit id).
@@ -15,10 +15,10 @@
 // One reserved MANIFEST section (fixed-sentinel coord) carries the sealed directory
 // { name -> coordHex } + per-secret metadata. Names live ONLY inside ciphertext.
 import { createHash } from "node:crypto";
-import { buildContext, KEM_PROFILE, AEAD_SUITE, DEM_MODE, COMMIT_MODE } from "./tmf.js";
-import type { TmfSection, SealResult } from "./tmf.js";
+import { buildContext, KEM_PROFILE, AEAD_SUITE, DEM_MODE, COMMIT_MODE } from "./spore.js";
+import type { SporeSection, SealResult } from "./spore.js";
 
-/** Structured modality (spec/tmf-modalities-v0.md:47). */
+/** Structured modality (spec/spore-modalities-v0.md:47). */
 export const MODALITY_STRUCTURED = 9;
 /** kind discriminators: 0 = secret value section, 1 = the reserved manifest section. */
 export const SECTION_KIND_SECRET = 0;
@@ -26,10 +26,10 @@ export const SECTION_KIND_MANIFEST = 1;
 /** codec 0x0601 = JSON (Structured leaf). */
 export const CODEC_JSON = 0x0601;
 /** env.spore schema version (independent of container version). */
-export const ENV_TMF_SCHEMA_VERSION = 0;
+export const ENV_SPORE_SCHEMA_VERSION = 0;
 
 /** Domain-separated SHAKE for the coord derivation. Keeps the cleartext name off the table. */
-const COORD_DOMAIN = new TextEncoder().encode("env-tmf-coord-v0");
+const COORD_DOMAIN = new TextEncoder().encode("env-spore-coord-v0");
 
 /**
  * coord(name) = SHAKE256(domain ‖ utf8(name))[:16]. Opaque, non-semantic, collision-resistant
@@ -46,7 +46,7 @@ export function coordForName(name: string): Uint8Array {
 /** Fixed-sentinel coord for the reserved manifest section (16 B). */
 export const MANIFEST_COORD: Uint8Array = (() => {
   const h = createHash("shake256", { outputLength: 16 });
-  h.update(new TextEncoder().encode("env-tmf-manifest-sentinel-v0"));
+  h.update(new TextEncoder().encode("env-spore-manifest-sentinel-v0"));
   return new Uint8Array(h.digest());
 })();
 
@@ -62,13 +62,13 @@ export interface SecretMeta {
 
 /** The decrypted manifest: name -> metadata. Lives ONLY inside the sealed manifest section. */
 export interface Manifest {
-  readonly schema: number;                 // ENV_TMF_SCHEMA_VERSION
+  readonly schema: number;                 // ENV_SPORE_SCHEMA_VERSION
   readonly recipientPubHex: string;        // current recipient KEM public key (NOT secret)
   readonly entries: Record<string, SecretMeta>;
 }
 
 export function emptyManifest(recipientPub: Uint8Array): Manifest {
-  return { schema: ENV_TMF_SCHEMA_VERSION, recipientPubHex: toHex(recipientPub), entries: {} };
+  return { schema: ENV_SPORE_SCHEMA_VERSION, recipientPubHex: toHex(recipientPub), entries: {} };
 }
 
 // ── serialisation of a SealResult into a single opaque section payload ──────────
@@ -76,12 +76,12 @@ export function emptyManifest(recipientPub: Uint8Array): Manifest {
 //           ‖ u16le ctKemLen ‖ ctKem ‖ u8 nonceLen ‖ nonce ‖ u32le bodyLen ‖ body
 // This is a packaging convention OWNED by this package — it carries the engine's
 // SealResult fields verbatim; it adds NO new crypto and NO new container bytes (it lives
-// INSIDE a normal TmfSection.payload that readTmf already integrity-checks via the TMX leaf).
-const SEAL_MAGIC = 0xe7; // "env-tmf seal" marker
+// INSIDE a normal SporeSection.payload that readSpore already integrity-checks via the TMX leaf).
+const SEAL_MAGIC = 0xe7; // "env-spore seal" marker
 
 export function packSeal(s: SealResult): Uint8Array {
   const head = Uint8Array.from([
-    SEAL_MAGIC, ENV_TMF_SCHEMA_VERSION, s.kemProfile & 0xff, DEM_MODE.SINGLE_SHOT & 0xff, COMMIT_MODE.CTX & 0xff,
+    SEAL_MAGIC, ENV_SPORE_SCHEMA_VERSION, s.kemProfile & 0xff, DEM_MODE.SINGLE_SHOT & 0xff, COMMIT_MODE.CTX & 0xff,
   ]);
   return concat([
     head,
@@ -130,13 +130,13 @@ export function contextFor(sectionId: number, coord: Uint8Array, epoch: number):
   });
 }
 
-/** Assemble a secret TmfSection from a packed seal payload. */
-export function secretSection(coord: Uint8Array, packed: Uint8Array): TmfSection {
+/** Assemble a secret SporeSection from a packed seal payload. */
+export function secretSection(coord: Uint8Array, packed: Uint8Array): SporeSection {
   return { kind: SECTION_KIND_SECRET, modality: MODALITY_STRUCTURED, coord, payload: packed };
 }
 
-/** Assemble the reserved manifest TmfSection from a packed seal payload. */
-export function manifestSection(packed: Uint8Array): TmfSection {
+/** Assemble the reserved manifest SporeSection from a packed seal payload. */
+export function manifestSection(packed: Uint8Array): SporeSection {
   return { kind: SECTION_KIND_MANIFEST, modality: MODALITY_STRUCTURED, coord: MANIFEST_COORD, payload: packed };
 }
 

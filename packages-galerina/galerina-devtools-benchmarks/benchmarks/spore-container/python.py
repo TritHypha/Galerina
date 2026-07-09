@@ -6,7 +6,7 @@ import hashlib
 import struct
 import tracemalloc
 
-# tmf-container — Python reference implementation of the .spore v0 trust-container.
+# spore-container — Python reference implementation of the .spore v0 trust-container.
 # Byte-identical to @galerina/ext-spore (Python stdlib `hashlib.shake_256` IS the spec's
 # reference oracle), so it asserts the SAME golden root and does identical work.
 # Spec: TMX-256 = 3-ary SHAKE256 Merkle over coord-bound leaves; container = LE packing.
@@ -74,7 +74,7 @@ def tmx_root(hc, leaves):
     return shake256(lp(TAG_ROOT) + lp(hc) + top_node(leaves))
 
 
-def write_tmf(sections):
+def write_spore(sections):
     leaves, entries, region = [], [], []
     blob_off = 0
     for s in sections:
@@ -112,19 +112,19 @@ def int_flag(name, fb):
 def main():
     iterations = int_flag("--iterations", int_flag("--operations", 100000))
 
-    sample = write_tmf(SECTIONS)
+    sample = write_spore(SECTIONS)
     root = sample[24:56].hex()
     if len(sample) != 203 or root != GOLDEN_ROOT:
-        sys.stderr.write(f"tmf-container correctness check failed: len={len(sample)} root={root}\n")
+        sys.stderr.write(f"spore-container correctness check failed: len={len(sample)} root={root}\n")
         sys.exit(1)
 
     for _ in range(1000):
-        write_tmf(SECTIONS)
+        write_spore(SECTIONS)
 
     t0 = time.perf_counter()
     acc = 0
     for _ in range(iterations):
-        acc += len(write_tmf(SECTIONS))
+        acc += len(write_spore(SECTIONS))
     elapsed_ms = (time.perf_counter() - t0) * 1000.0
 
     # ── memory pass (separate from the timed loop so tracemalloc never skews throughput) ──
@@ -133,14 +133,14 @@ def main():
     tracemalloc.start()
     base = tracemalloc.get_traced_memory()[0]
     for _ in range(mem_iters):
-        write_tmf(SECTIONS)
+        write_spore(SECTIONS)
     cur, peak = tracemalloc.get_traced_memory()
     tracemalloc.stop()
     heap_delta = cur - base
 
     print(json.dumps({
         "runtime": "python",
-        "benchmark": "tmf-container-v1",
+        "benchmark": "spore-container-v1",
         "iterations": iterations,
         "containerBytes": len(sample),
         "integrityRoot": root,

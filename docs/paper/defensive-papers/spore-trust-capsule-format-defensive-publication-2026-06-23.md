@@ -50,7 +50,7 @@ A `.spore` file is a **trust capsule**: a self-describing container whose entire
                     └─ governance : a fail-closed verify-before-release gate (Galerina `.fungi`)                    → release
 ```
 
-**Spec-vs-shipped honesty (v0).** The integrity core (TMX-256) and container are **specified with reproducible test vectors and buildable today on commodity hardware**. The ML-DSA-65 signature requires a *vetted* FIPS-204 implementation — a hand-rolled signer must never ship; until a vetted library is wired the signing step is marked **Blocked**, and any placeholder must be explicitly labelled non-cryptographic and rejected outside test profiles. KEM-DEM confidentiality and the custody/threshold features are specified (`tmf-encryption-v0.md`, `signature-custody-v0.md`, `threshold-custody-v0.md`) with parts in progress. This note specifies the format; it does not claim more than the engine ships.
+**Spec-vs-shipped honesty (v0).** The integrity core (TMX-256) and container are **specified with reproducible test vectors and buildable today on commodity hardware**. The ML-DSA-65 signature requires a *vetted* FIPS-204 implementation — a hand-rolled signer must never ship; until a vetted library is wired the signing step is marked **Blocked**, and any placeholder must be explicitly labelled non-cryptographic and rejected outside test profiles. KEM-DEM confidentiality and the custody/threshold features are specified (`spore-encryption-v0.md`, `signature-custody-v0.md`, `threshold-custody-v0.md`) with parts in progress. This note specifies the format; it does not claim more than the engine ships.
 
 ---
 
@@ -176,7 +176,7 @@ Every mismatch is a **hard, fail-closed error**; there is **no self-healing in t
 
 ## 7. Reproducibility
 
-TMX-256-SHAKE v0 ships **golden test vectors** generated with only Python's standard-library `hashlib.shake_256` (FIPS 202); any conforming implementation in any language must match them (e.g. `ABSENT = 1758f20e…d563`; a 2-section worked example with `integrity_root = 43386e64…5212`; a tamper case where flipping `modality 0→1` changes the root and fails verification). Reproduce with the vendored generator (`spec/_vectors/gen_tmx_vectors.py`); the inclusion-proof and modality-codec generators reconstruct the same root. The full byte-precise spec lives in `packages-galerina/galerina-ext-spore/spec/` (`tmx-256-construction-v0.md`, `tmf-container-v0.md`, `tmf-encryption-v0.md`, `tmf-modalities-v0.md`, `inclusion-proof-v0.md`, custody specs).
+TMX-256-SHAKE v0 ships **golden test vectors** generated with only Python's standard-library `hashlib.shake_256` (FIPS 202); any conforming implementation in any language must match them (e.g. `ABSENT = 1758f20e…d563`; a 2-section worked example with `integrity_root = 43386e64…5212`; a tamper case where flipping `modality 0→1` changes the root and fails verification). Reproduce with the vendored generator (`spec/_vectors/gen_tmx_vectors.py`); the inclusion-proof and modality-codec generators reconstruct the same root. The full byte-precise spec lives in `packages-galerina/galerina-ext-spore/spec/` (`tmx-256-construction-v0.md`, `spore-container-v0.md`, `spore-encryption-v0.md`, `spore-modalities-v0.md`, `inclusion-proof-v0.md`, custody specs).
 
 ---
 

@@ -1,4 +1,4 @@
-// tmf-container — Rust reference implementation of the .spore v0 trust-container.
+// spore-container — Rust reference implementation of the .spore v0 trust-container.
 // Self-contained SHAKE256 (FIPS-202 Keccak-f[1600]) — no external crates, so it
 // builds with the suite's plain `rustc -O` harness. Byte-identical to the Galerina
 // @galerina/ext-spore engine: it asserts the SAME published golden root before timing,
@@ -106,7 +106,7 @@ fn header_core(profile: u16, flags: u16, count: u64) -> Vec<u8> {
     cat(&[&[0x89, 0x54, 0x4d, 0x46, 0x0d, 0x0a, 0x1a, 0x0a],
         &0u16.to_le_bytes(), &0u16.to_le_bytes(), &profile.to_le_bytes(), &flags.to_le_bytes(), &count.to_le_bytes()])
 }
-fn write_tmf(sections: &[Section], absent: &[u8]) -> Vec<u8> {
+fn write_spore(sections: &[Section], absent: &[u8]) -> Vec<u8> {
     let mut leaves: Vec<Vec<u8>> = Vec::new();
     let mut entries: Vec<u8> = Vec::new();
     let mut region: Vec<u8> = Vec::new();
@@ -150,22 +150,22 @@ fn main() {
         Section { kind: 1, modality: 2, coord: i32le3(3, 5, 8), payload: b"world!".to_vec() },
     ];
 
-    let sample = write_tmf(&sections, &absent);
+    let sample = write_spore(&sections, &absent);
     let root = to_hex(&sample[24..56]);
     if sample.len() != 203 || root != GOLDEN_ROOT {
-        eprintln!("tmf-container correctness check failed: len={} root={}", sample.len(), root);
+        eprintln!("spore-container correctness check failed: len={} root={}", sample.len(), root);
         std::process::exit(1);
     }
 
     let iterations: u64 = std::env::args().nth(1).and_then(|a| a.parse().ok()).unwrap_or(300_000);
-    for _ in 0..1000 { let _ = write_tmf(&sections, &absent); }
+    for _ in 0..1000 { let _ = write_spore(&sections, &absent); }
 
     let t0 = Instant::now();
     let mut acc: u64 = 0;
-    for _ in 0..iterations { acc += write_tmf(&sections, &absent).len() as u64; }
+    for _ in 0..iterations { acc += write_spore(&sections, &absent).len() as u64; }
     let elapsed_ms = t0.elapsed().as_secs_f64() * 1000.0;
     let ops = (iterations as f64) / (elapsed_ms / 1000.0);
 
-    println!("{{\"runtime\":\"rust\",\"benchmark\":\"tmf-container-v1\",\"iterations\":{},\"containerBytes\":{},\"integrityRoot\":\"{}\",\"checksum\":{},\"elapsedMs\":{:.3},\"operationsPerSecond\":{:.0}}}",
+    println!("{{\"runtime\":\"rust\",\"benchmark\":\"spore-container-v1\",\"iterations\":{},\"containerBytes\":{},\"integrityRoot\":\"{}\",\"checksum\":{},\"elapsedMs\":{:.3},\"operationsPerSecond\":{:.0}}}",
         iterations, sample.len(), root, acc, elapsed_ms, ops);
 }

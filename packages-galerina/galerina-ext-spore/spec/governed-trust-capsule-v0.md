@@ -12,7 +12,7 @@ appears only where it is real (Lanes C/D/ANN), always *around* the digital signa
 > computation is the signature. PUF/QRNG/ANN are bound *around* it (§9), under it, never replacing it.
 
 Builds on: [`signature-custody-v0.md`](signature-custody-v0.md) (the #34 hybrid sig + per-surface ctx),
-[`tmf-encryption-v0.md`](tmf-encryption-v0.md) §4 (the 36-byte AAD context),
+[`spore-encryption-v0.md`](spore-encryption-v0.md) §4 (the 36-byte AAD context),
 [`inclusion-proof-v0.md`](inclusion-proof-v0.md) (selective disclosure), `ENCRYPTION-RND-FULL-BRIEF.md` §3.
 
 ---
@@ -70,7 +70,7 @@ sig_mldsa     = ML-DSA.Sign(M, sk_mldsa, ctx="")         ; pure ML-DSA, EMPTY ct
 ```
 **Per-surface domain separation (the #34 intent), done the COSE way.** RFC 9964's empty-ctx rule means the
 ML-DSA `ctx` parameter cannot carry the per-surface label #34 used. Instead the Capsule binds the surface into
-the **signed `body_protected` header** (a `surface` label = `"tmf-trust-capsule-v0"`) **and** the `external_aad`
+the **signed `body_protected` header** (a `surface` label = `"spore-trust-capsule-v0"`) **and** the `external_aad`
 (§5) — both sit inside the `Sig_structure`, hence are signed — so a Capsule signature still cannot be
 cross-protocol-confused with a `.spore`-root or Galerina-manifest signature under the same key. This achieves #34's
 domain-separation goal while staying RFC-9964-interoperable.
@@ -110,7 +110,7 @@ canonicalization and is what kills JWT's "two parsers disagree on the bytes" cla
 ## 5. Channel / replay binding (`external_aad` = the 36-byte AAD context)
 The COSE `external_aad` is **signed but not transmitted** — the verifier reconstructs it from its own context
 and a mismatch fails the signature. The Capsule sets it to the `.spore` **36-byte AAD context**
-(tmf-encryption §4): `section_id ‖ coord ‖ modality ‖ kem/aead/dem/flags ‖ epoch ‖ reserved`, re-purposed as
+(spore-encryption §4): `section_id ‖ coord ‖ modality ‖ kem/aead/dem/flags ‖ epoch ‖ reserved`, re-purposed as
 `audience ‖ channel-coord ‖ purpose ‖ profile ‖ epoch`. Effect: a stolen Capsule replayed to a different
 audience / channel / epoch / purpose reconstructs a different `external_aad` ⇒ `M` differs ⇒ both signatures
 fail ⇒ replay denied, **without** the binding ever appearing in the payload (no extra disclosure).
@@ -204,7 +204,7 @@ not wired here.
   RFC-9964-conformant): a fixed CWT claims set → deterministic CBOR → `Sig_structure` → **signed directly** (no
   pre-hash; ML-DSA empty ctx) → a **real, byte-reproducible** Ed25519 signature (deterministic) + a real
   ML-DSA-65 (`-49`) verify round-trip. Confirmed bytes: `body_protected = a1677375726661636574746d662d74727573742d63617073756c652d7630`
-  (`{surface: "tmf-trust-capsule-v0"}`); `Sig_structure[-8]` = 164 B (sha256 `e2aa876d…`); Ed25519 pubkey
+  (`{surface: "spore-trust-capsule-v0"}`); `Sig_structure[-8]` = 164 B (sha256 `e2aa876d…`); Ed25519 pubkey
   `e4030998…`, sig `a109484c…` (64 B, `verify=true`); ML-DSA-65 pubkey 1952 / sig 3309 (`verify=true`; hedged ⇒
   length pinned, bytes vary). Seeded keys for reproducibility.
 
@@ -228,4 +228,4 @@ RFC 8747 (CWT `cnf`) · FIPS 204 (ML-DSA) · RFC 8032 (Ed25519) · **RFC 9964** 
 Proposed Standard 2026 — ML-DSA-65 = COSE `-49`, empty ctx, signs `Sig_structure` directly;
 https://www.rfc-editor.org/info/rfc9964) · `draft-ietf-cose-sphincs-plus` (SLH-DSA COSE binding, **draft**) ·
 Birgisson et al., *Macaroons* (NDSS 2014) · SD-JWT (`draft-ietf-oauth-selective-disclosure-jwt`, for comparison)
-· companions: signature-custody-v0, tmf-encryption-v0 §4, inclusion-proof-v0.
+· companions: signature-custody-v0, spore-encryption-v0 §4, inclusion-proof-v0.

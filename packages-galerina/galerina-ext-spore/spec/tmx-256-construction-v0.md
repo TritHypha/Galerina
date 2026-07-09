@@ -135,11 +135,11 @@ root = SHAKE256( LP(TAG_ROOT) ∥ LP(header_core) ∥ top_node , 32 )
 ```
 
 where **`header_core = file[0 .. 24)`** — the first 24 bytes of the container, i.e. everything
-*before* the `integrity_root` field (see [`tmf-container-v0.md`](tmf-container-v0.md) once
+*before* the `integrity_root` field (see [`spore-container-v0.md`](spore-container-v0.md) once
 written; layout summarized below).
 
 > **Fix vs. notes/1.md and the earlier TritMesh ARCHITECTURE (the load-bearing bug).** Both
-> wrote `root = XOF(… ∥ TmfHeader ∥ …)` while *also* storing the root **inside** the header.
+> wrote `root = XOF(… ∥ SporeHeader ∥ …)` while *also* storing the root **inside** the header.
 > That is circular: the root would depend on a header field that contains the root. v0 defines
 > `header_core` as the header bytes **excluding** the `integrity_root` (and excluding the
 > signature block), so the root binds profile/version/flags/section-count without binding

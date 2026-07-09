@@ -2,12 +2,12 @@
 // and the in-arena edit -> re-seal flow (design doc Parts 1 + 4).
 //
 // This is the THIN orchestration over the engine. It owns NO crypto bytes:
-//   write = writeTmf(sections)            (engine)
-//   read  = readTmf(buf) + per-section open()   (engine), wrapped in the §7 fail-closed order
+//   write = writeSpore(sections)            (engine)
+//   read  = readSpore(buf) + per-section open()   (engine), wrapped in the §7 fail-closed order
 //   seal/open of each section value = seal()/open()  (engine, KEM 0x02, commit_mode CTX)
 //
 // HARD posture:
-//   - verify-before-decrypt: readTmf recomputes the TMX root over the CIPHERTEXT leaves and
+//   - verify-before-decrypt: readSpore recomputes the TMX root over the CIPHERTEXT leaves and
 //     fail-closes on any tamper/bounds BEFORE we call open() on any section (§7 ordering).
 //   - K3 ALLOW(+1) gate: the decrypt is GATED behind an explicit positive authorization
 //     token. Absent/!==ALLOW => reject. (Ternary-K3: -1 deny / 0 unknown / +1 allow; ONLY +1
@@ -23,13 +23,13 @@
 // the manifest (which is itself sealed). See README "epoch binding".
 import { readFileSync } from "node:fs";
 import {
-  writeTmf, readTmf, seal, open, TmfCryptoError, KEM_PROFILE, COMMIT_MODE,
-} from "./tmf.js";
-import type { TmfSection } from "./tmf.js";
+  writeSpore, readSpore, seal, open, SporeCryptoError, KEM_PROFILE, COMMIT_MODE,
+} from "./spore.js";
+import type { SporeSection } from "./spore.js";
 import {
   MANIFEST_COORD, SECTION_KIND_MANIFEST, coordForName, contextFor,
   packSeal, unpackSeal, secretSection, manifestSection, emptyManifest, toHex, fromHex,
-  ENV_TMF_SCHEMA_VERSION,
+  ENV_SPORE_SCHEMA_VERSION,
 } from "./schema.js";
 import type { Manifest, SecretMeta } from "./schema.js";
 import { withWiped } from "./arena.js";
@@ -47,14 +47,14 @@ export type K3Token = (typeof K3)[keyof typeof K3];
 /** Self-check that the engine's KEM/AEAD primitives loaded. NoCryptoLib reject if not. */
 function assertCryptoLib(): void {
   if (typeof seal !== "function" || typeof open !== "function") {
-    throw new TmfCryptoError("NoCryptoLib", "ext-spore seal/open unavailable (fail-closed, no downgrade)");
+    throw new SporeCryptoError("NoCryptoLib", "ext-spore seal/open unavailable (fail-closed, no downgrade)");
   }
 }
 
 /** Gate the decrypt path on an explicit ALLOW(+1). Anything else fails closed. */
 function assertAllow(token: K3Token): void {
   if (token !== K3.ALLOW) {
-    throw new TmfCryptoError("GovDeny", `K3 gate: decrypt requires ALLOW(+1), got ${token} (unknown/deny => fail-closed)`);
+    throw new SporeCryptoError("GovDeny", `K3 gate: decrypt requires ALLOW(+1), got ${token} (unknown/deny => fail-closed)`);
   }
 }
 
@@ -88,7 +88,7 @@ function isNonNegInt(n: unknown): n is number {
 }
 
 function malformedManifest(detail: string): never {
-  throw new TmfCryptoError("MalformedCrypto", `manifest validation: ${detail} (fail-closed)`);
+  throw new SporeCryptoError("MalformedCrypto", `manifest validation: ${detail} (fail-closed)`);
 }
 
 /** Validate one decoded entry into a well-formed SecretMeta. Throws MalformedCrypto otherwise. */
@@ -128,7 +128,7 @@ function validateSecretMeta(name: string, raw: unknown): SecretMeta {
 
 /**
  * Fail-closed structural validator for an already-decoded manifest object. Rejects anything
- * that does not match the v0 schema with TmfCryptoError("MalformedCrypto"). Rebuilds `entries`
+ * that does not match the v0 schema with SporeCryptoError("MalformedCrypto"). Rebuilds `entries`
  * on a prototype-free object and rejects __proto__/constructor/prototype keys.
  */
 export function validateManifest(obj: unknown): Manifest {
@@ -137,8 +137,8 @@ export function validateManifest(obj: unknown): Manifest {
   }
   const m = obj as Record<string, unknown>;
 
-  if (m["schema"] !== ENV_TMF_SCHEMA_VERSION) {
-    malformedManifest(`schema must be the v0 schema version ${ENV_TMF_SCHEMA_VERSION}`);
+  if (m["schema"] !== ENV_SPORE_SCHEMA_VERSION) {
+    malformedManifest(`schema must be the v0 schema version ${ENV_SPORE_SCHEMA_VERSION}`);
   }
   if (typeof m["recipientPubHex"] !== "string" || m["recipientPubHex"].length === 0 || !HEX_RE.test(m["recipientPubHex"])) {
     malformedManifest("recipientPubHex must be a non-empty lowercase-hex string");
@@ -156,7 +156,7 @@ export function validateManifest(obj: unknown): Manifest {
     entries[name] = validateSecretMeta(name, raw);
   }
 
-  return { schema: ENV_TMF_SCHEMA_VERSION, recipientPubHex: m["recipientPubHex"] as string, entries };
+  return { schema: ENV_SPORE_SCHEMA_VERSION, recipientPubHex: m["recipientPubHex"] as string, entries };
 }
 
 /** Decode + fully validate manifest bytes into a typed Manifest (fail-closed). */
@@ -177,7 +177,7 @@ function sealSection(
   sectionId: number,
   recipientPub: Uint8Array,
   valueBytes: Uint8Array,
-): TmfSection {
+): SporeSection {
   const ctx = contextFor(sectionId, coord, SECTION_EPOCH);
   const sr = seal(KEM_PROFILE.HYBRID_X25519_ML_KEM_768, recipientPub, valueBytes, ctx);
   // The profile we seal under, the profile bound into the AEAD context (ctx[26]), and the profile
@@ -185,7 +185,7 @@ function sealSection(
   // HYBRID_X25519_ML_KEM_768 at ctx[26]; assert seal agrees, closing the crypto-failclosed #2
   // latent foot-gun (seal under one profile while binding another into the context).
   if (sr.kemProfile !== KEM_PROFILE.HYBRID_X25519_ML_KEM_768 || ctx[CTX_KEMPROFILE_OFFSET] !== KEM_PROFILE.HYBRID_X25519_ML_KEM_768) {
-    throw new TmfCryptoError("MalformedCrypto", "kem_profile mismatch between seal, context and the v0 schema profile");
+    throw new SporeCryptoError("MalformedCrypto", "kem_profile mismatch between seal, context and the v0 schema profile");
   }
   void COMMIT_MODE; // commit_mode CTX is bound in ctx (asserted by the round-trip)
   const packed = packSeal(sr);
@@ -207,7 +207,7 @@ function openSection(sectionId: number, coord: Uint8Array, payload: Uint8Array, 
 /** Reject unless `profile` is the single v0 KEM profile AND equals the profile bound at ctx[26]. */
 export function assertKemProfile(profile: number, ctx: Uint8Array): void {
   if (profile !== KEM_PROFILE.HYBRID_X25519_ML_KEM_768 || ctx[CTX_KEMPROFILE_OFFSET] !== KEM_PROFILE.HYBRID_X25519_ML_KEM_768) {
-    throw new TmfCryptoError(
+    throw new SporeCryptoError(
       "MalformedCrypto",
       `kem_profile not the v0 hybrid profile or disagrees with the bound context (got ${profile}, ctx[26]=${ctx[CTX_KEMPROFILE_OFFSET]}) — fail-closed`,
     );
@@ -215,11 +215,11 @@ export function assertKemProfile(profile: number, ctx: Uint8Array): void {
 }
 
 /** Create an empty env.spore bytes for a recipient pub (manifest-only). */
-export function initEnvTmf(recipientPub: Uint8Array): Uint8Array {
+export function initEnvSpore(recipientPub: Uint8Array): Uint8Array {
   assertCryptoLib();
   const m = emptyManifest(recipientPub);
   const mSec = sealSection("manifest", MANIFEST_COORD, 0, recipientPub, manifestBytes(m));
-  return writeTmf([mSec]);
+  return writeSpore([mSec]);
 }
 
 export interface ComposeResult {
@@ -229,14 +229,14 @@ export interface ComposeResult {
 
 /**
  * The encrypted-container COMPOSE-READER (design doc Part 4 / encryption-spec §7).
- * Order: readTmf (recompute TMX over ciphertext leaves, fail-closed; signed v0 rejected) ->
+ * Order: readSpore (recompute TMX over ciphertext leaves, fail-closed; signed v0 rejected) ->
  * K3 ALLOW(+1) gate -> NoCryptoLib check -> per-section open() of the manifest into a wiped
  * transient buffer. `token` MUST be K3.ALLOW. recipientSec is the caller-supplied anchor key.
  */
 export function composeRead(buf: Uint8Array, recipientSec: Uint8Array, token: K3Token): ComposeResult {
-  // 1. verify-before-decrypt — readTmf fail-closes on any tamper/bounds and REJECTS signed v0.
-  const r = readTmf(buf);
-  // (2. ML-DSA signature verify is GATED on ext-spore slice 4 / #7 — readTmf already rejects any
+  // 1. verify-before-decrypt — readSpore fail-closes on any tamper/bounds and REJECTS signed v0.
+  const r = readSpore(buf);
+  // (2. ML-DSA signature verify is GATED on ext-spore slice 4 / #7 — readSpore already rejects any
   //  signed file with AuthError, so a v0 env.spore is unsigned-but-encrypted; no fake sig.)
   // 3. K3 ALLOW(+1) gate.
   assertAllow(token);
@@ -254,7 +254,7 @@ export function composeRead(buf: Uint8Array, recipientSec: Uint8Array, token: K3
     }
   });
   if (manifestPayload === null) {
-    throw new TmfCryptoError("MalformedCrypto", "env.spore has no manifest section (fail-closed)");
+    throw new SporeCryptoError("MalformedCrypto", "env.spore has no manifest section (fail-closed)");
   }
   const mp = manifestPayload as { id: number; coord: Uint8Array; payload: Uint8Array };
   const manifestPlain = openSection(mp.id, mp.coord, mp.payload, recipientSec);
@@ -277,9 +277,9 @@ export function openValue<T>(
 ): T {
   const { manifest, sectionByCoord } = composeRead(buf, recipientSec, token);
   const meta = manifest.entries[name];
-  if (meta === undefined) throw new TmfCryptoError("MalformedCrypto", `no such secret: ${name} (fail-closed)`);
+  if (meta === undefined) throw new SporeCryptoError("MalformedCrypto", `no such secret: ${name} (fail-closed)`);
   const sec = sectionByCoord.get(meta.coordHex);
-  if (sec === undefined) throw new TmfCryptoError("MalformedCrypto", `manifest/section mismatch for ${name} (fail-closed)`);
+  if (sec === undefined) throw new SporeCryptoError("MalformedCrypto", `manifest/section mismatch for ${name} (fail-closed)`);
   const plain = openSection(sec.sectionId, sec.coord, sec.payload, recipientSec);
   return withWiped(plain, (b) => fn(b));
 }
@@ -291,7 +291,7 @@ export function readFile(path: string): Uint8Array {
 
 // ── the in-arena edit -> re-seal flow (set / rm / rotate-recipient) ───────────
 // Each mutator: composeRead (verify+decrypt manifest) -> mutate in RAM -> re-seal every
-// section -> writeTmf -> caller atomic-replaces the file. Plaintext lives ONLY in transient
+// section -> writeSpore -> caller atomic-replaces the file. Plaintext lives ONLY in transient
 // wiped buffers; NO temp file is ever written.
 
 export interface MutationResult {
@@ -301,7 +301,7 @@ export interface MutationResult {
 
 /** Re-seal the whole file from a manifest + a map of coordHex->plaintext-value-bytes. */
 function reseal(recipientPub: Uint8Array, manifest: Manifest, values: Map<string, Uint8Array>): Uint8Array {
-  const sections: TmfSection[] = [];
+  const sections: SporeSection[] = [];
   sections.push(sealSection("manifest", MANIFEST_COORD, 0, recipientPub, manifestBytes(manifest)));
   let id = 1;
   for (const [coordHex, valueBytes] of values) {
@@ -309,7 +309,7 @@ function reseal(recipientPub: Uint8Array, manifest: Manifest, values: Map<string
     sections.push(sealSection("secret", coord, id, recipientPub, valueBytes));
     id += 1;
   }
-  return writeTmf(sections);
+  return writeSpore(sections);
 }
 
 /**
@@ -367,7 +367,7 @@ export function rmSecret(
 ): MutationResult {
   return editInArena(buf, recipientSec, recipientPub, token, (manifest, values) => {
     const meta = manifest.entries[name];
-    if (meta === undefined) throw new TmfCryptoError("MalformedCrypto", `no such secret: ${name}`);
+    if (meta === undefined) throw new SporeCryptoError("MalformedCrypto", `no such secret: ${name}`);
     const v = values.get(meta.coordHex);
     if (v !== undefined) { v.fill(0); values.delete(meta.coordHex); }
     const entries = { ...manifest.entries };

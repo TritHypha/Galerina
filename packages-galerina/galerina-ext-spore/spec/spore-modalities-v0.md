@@ -1,9 +1,9 @@
 # `.spore` modalities & codec registry — v0 (rich media + structured data)
 
-**Status:** Draft, buildable. Extends [`tmf-container-v0.md`](tmf-container-v0.md) §4 (the `modality` plane +
+**Status:** Draft, buildable. Extends [`spore-container-v0.md`](spore-container-v0.md) §4 (the `modality` plane +
 codec note) into a full **codec registry** so a `.spore` section can carry images, audio, video, streamed media,
 mathematical equations, chemical structures, JSON and XML — without changing the integrity, authenticity, or
-confidentiality layers. Companion to [`tmf-encryption-v0.md`](tmf-encryption-v0.md) (the STREAM mode large
+confidentiality layers. Companion to [`spore-encryption-v0.md`](spore-encryption-v0.md) (the STREAM mode large
 media uses) and [`nvfp4-codec-v0.md`](nvfp4-codec-v0.md) (one tensor codec). Reference generator:
 [`_vectors/gen_modality_codecs.py`](_vectors/gen_modality_codecs.py).
 
@@ -24,7 +24,7 @@ media uses) and [`nvfp4-codec-v0.md`](nvfp4-codec-v0.md) (one tensor codec). Ref
   and returns whatever encoded bytes it was given, exactly.
 - **No in-network semantic interpretation.** Parsing/rendering/validating a payload (decoding a video,
   evaluating an equation, canonicalizing a molecule, querying JSON) happens at **trusted endpoints only** —
-  the same metadata-minimization rule as [`tmf-encryption-v0.md`](tmf-encryption-v0.md) §5 (verdict 5). A
+  the same metadata-minimization rule as [`spore-encryption-v0.md`](spore-encryption-v0.md) §5 (verdict 5). A
   router sees opaque ciphertext + the codec tag, never the decoded content.
 
 ---
@@ -52,7 +52,7 @@ media/document/structured planes:
 
 ## 3. `codec` registry (u16) — the specific format within a modality
 v0 container said codec was "application-defined." This pins a **codec discriminator** carried in the v1
-section descriptor (alongside the `tmf-encryption-v0.md` §4 crypto descriptor), grouped by range. Unknown
+section descriptor (alongside the `spore-encryption-v0.md` §4 crypto descriptor), grouped by range. Unknown
 codecs remain *readable and verifiable* (TMX is codec-agnostic); only interpretation needs the codec.
 
 | Range | Group | Codecs (`codec` value → format) |
@@ -73,7 +73,7 @@ bytes. It is bound into the AEAD AAD context (encryption §4) so it cannot be sw
 
 ## 4. Large media & streaming — reuse, don't reinvent
 Audio/video (and any payload over the chunk size) use the **segmented STREAM AEAD** already specified in
-[`tmf-encryption-v0.md`](tmf-encryption-v0.md) §6 (`dem_mode=0x02`): fixed chunks (default 1 MB), each sealed
+[`spore-encryption-v0.md`](spore-encryption-v0.md) §6 (`dem_mode=0x02`): fixed chunks (default 1 MB), each sealed
 with a position-derived nonce (`prefix8 ‖ BE-u32((index<<1)|last)`). This gives media exactly what it needs:
 - **seekable** to chunk *N* (fixed chunk size ⇒ O(1) offset);
 - **anti-truncation / anti-reorder / anti-splice** (the 1-bit last-flag + monotone index make a dropped or

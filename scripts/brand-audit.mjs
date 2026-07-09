@@ -32,7 +32,7 @@ const SKIP_DIRS = new Set(["node_modules", ".git"]);
 // `lln` (matches fullName/fullNode/…), which uses targeted forms only.
 //
 // NB `.spore` is DELIBERATELY NOT a token: it is the CURRENT TritMesh DATABASE
-// container format (renamed from .tmf), a valid in-use extension — NOT old
+// container format (renamed from .spore), a valid in-use extension — NOT old
 // branding. Only the OLD Galerina SOURCE extension `.lln` retires (-> .fungi).
 // The pre-.fungi transient source-name `.spore` is history; do not chase it here
 // or it false-flags every real TritMesh DB reference (owner note 2026-07-09).

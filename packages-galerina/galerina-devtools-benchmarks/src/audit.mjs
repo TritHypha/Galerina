@@ -43,7 +43,7 @@ const tput = (r) => (r && !r.error && r.normThroughput !== undefined) ? r.normTh
 const CHECKSUM_FIELD = {
   "nbody": "checksum", "json-parse": "checksum",
   "mandelbrot": "checksum", "binary-trees": "checksum", "spectral-norm": "checksum",
-  "tmf-container": "integrityRoot",
+  "spore-container": "integrityRoot",
 };
 console.log("\n1. Cross-language checksum identity");
 for (const [id, field] of Object.entries(CHECKSUM_FIELD)) {

@@ -55,7 +55,7 @@
 | **mandelbrot** | **Galerina passive ⟨interp⟩** 🖥️ | **1.20B/s** | 7.9K/s | 0.00001× (150.6K× slower) | ❌ 0.03× (31.8× slower) | LRU cache warm path (first-call winner: Rust (generic) at 23.39M/s) |
 | **spectral-norm** | **Rust (generic)** 🖥️ | **371.32M/s** | — | — | — | Native compiled — LLVM optimised, may auto-vectorise |
 | **binary-trees** | **Galerina passive ⟨interp⟩** 🖥️ | **10.90B/s** | 3.75M/s | 0.00034× (2.9K× slower) | ❌ 0.70× (1.4× slower) | LRU cache warm path (first-call winner: Node.js at 75.95M/s) |
-| **tmf-container** | **Rust (generic)** 🖥️ | **182.3K/s** | — | — | — | Native compiled — LLVM optimised, may auto-vectorise |
+| **spore-container** | **Rust (generic)** 🖥️ | **182.3K/s** | — | — | — | Native compiled — LLVM optimised, may auto-vectorise |
 | **framework-pipeline** | **Node.js** 🖥️ | **394.1K/s** | — | — | — | V8 JIT — wins when WASM N/A or string/async workload |
 | http-throughput | — | — | — | — | — | No data |
 | naming-check | — | — | — | — | — | No data |
@@ -90,7 +90,7 @@
 | mandelbrot | — | — | 23.39M/s | — | 6.23M/s | 252.7K/s | **1.20B/s** | 7.2K/s | 7.9K/s | — | — | 784.2× |
 | spectral-norm | — | — | **371.32M/s** | — | 213.17M/s | 2.68M/s | — | — | — | — | — | — |
 | binary-trees | — | — | 20.36M/s | — | 75.95M/s | 5.34M/s | **10.90B/s** | 4.18M/s | 3.75M/s | — | — | 20.2× |
-| tmf-container | — | — | **182.3K/s** | — | 47.3K/s | 88.1K/s | — | — | — | — | — | — |
+| spore-container | — | — | **182.3K/s** | — | 47.3K/s | 88.1K/s | — | — | — | — | — | — |
 | framework-pipeline | — | — | — | — | **394.1K/s** | 120.4K/s | — | — | — | — | — | — |
 | http-throughput | — | — | — | — | — | — | — | — | — | — | — | — |
 | naming-check | — | — | — | — | — | — | — | — | — | — | — | — |
@@ -131,7 +131,7 @@
 | mandelbrot | ✅ aligned | pixels/s | all runtimes normalised to one unit |
 | spectral-norm | ✅ aligned | A-evals/s | all runtimes normalised to one unit |
 | binary-trees | ✅ aligned | nodes/s | all runtimes normalised to one unit |
-| tmf-container | ✅ aligned | containers/s | all runtimes normalised to one unit |
+| spore-container | ✅ aligned | containers/s | all runtimes normalised to one unit |
 | framework-pipeline | ✅ aligned | requests/s | all runtimes normalised to one unit |
 | http-throughput | — legacy | per-call | not centrally normalised (out of scope) |
 | naming-check | — legacy | per-call | not centrally normalised (out of scope) |
@@ -338,9 +338,9 @@
 | binary-trees | Galerina passive ⟨interp⟩ | 93.7MB | 93.7MB | 17.6MB | 14KB |
 | binary-trees | Galerina manifest ⟨interp⟩ | 93.7MB | 93.7MB | 18.3MB | 1.1MB |
 | binary-trees | Galerina governed ⟨interp⟩ | 93.7MB | 93.7MB | 19.3MB | 2.1MB |
-| tmf-container | Rust (generic) | — | — | — | — |
-| tmf-container | Node.js | 63.8MB | 63.8MB | 10.5MB | 3.5MB |
-| tmf-container | Python | — | — | 5KB | 5KB |
+| spore-container | Rust (generic) | — | — | — | — |
+| spore-container | Node.js | 63.8MB | 63.8MB | 10.5MB | 3.5MB |
+| spore-container | Python | — | — | 5KB | 5KB |
 | framework-pipeline | Node.js | 69.7MB | 69.7MB | 11.6MB | 6.3MB |
 | framework-pipeline | Python | — | — | 2KB | 2KB |
 | http-throughput | Node.js | — | — | — | — |
@@ -486,9 +486,9 @@
 | binary-trees | Galerina passive ⟨interp⟩ | 0.0ms | 0.0ms | 0% | — |
 | binary-trees | Galerina manifest ⟨interp⟩ | 32.5ms | 63.0ms | 194% | 2.2K ops/CPU-ms |
 | binary-trees | Galerina governed ⟨interp⟩ | 36.2ms | 47.0ms | 130% | 2.9K ops/CPU-ms |
-| tmf-container | Rust (generic) | 1.65s | — | — | — |
-| tmf-container | Node.js | 6.34s | 7.73s | 122% | 38.79 ops/CPU-ms |
-| tmf-container | Python | 1.13s | — | — | — |
+| spore-container | Rust (generic) | 1.65s | — | — | — |
+| spore-container | Node.js | 6.34s | 7.73s | 122% | 38.79 ops/CPU-ms |
+| spore-container | Python | 1.13s | — | — | — |
 | framework-pipeline | Node.js | 507.5ms | 1.13s | 222% | 177.78 ops/CPU-ms |
 | framework-pipeline | Python | 1.66s | — | — | — |
 | http-throughput | Node.js | 80.0ms | — | — | — |
@@ -791,7 +791,7 @@
 
 > 🧠 **Lowest heap/op:** Python (~0) · **highest:** Galerina governed ⟨interp⟩ (15 B/op). Native Rust/C++ allocate ~0 (no GC heap); a positive figure is GC-managed allocation pressure.
 
-### tmf-container
+### spore-container
 
 | # | 🚦 | Runtime | Throughput | Wall | CPU | RSS | Heap/op | vs Python | vs Node |
 |---|---|---|---|---|---|---|---|---|---|
@@ -944,7 +944,7 @@
 | **mandelbrot** | Galerina passive ⟨interp⟩ | — | **51× slower** | **192× slower** | **4.7K× slower** | **🏆 winner** | **165.0K× slower** | **150.6K× slower** | — | — |
 | **spectral-norm** | Rust (generic) | — | **🏆 winner** | 2× slower | **139× slower** | — | — | — | — | — |
 | **binary-trees** | Galerina passive ⟨interp⟩ | — | **535× slower** | **143× slower** | **2.0K× slower** | **🏆 winner** | **2.6K× slower** | **2.9K× slower** | — | — |
-| **tmf-container** | Rust (generic) | — | **🏆 winner** | 4× slower | 2× slower | — | — | — | — | — |
+| **spore-container** | Rust (generic) | — | **🏆 winner** | 4× slower | 2× slower | — | — | — | — | — |
 | **framework-pipeline** | Node.js | — | — | **🏆 winner** | 3× slower | — | — | — | — | — |
 
 > Bold = significantly behind (>10×). Blanks = benchmark not run for this runtime.
@@ -969,7 +969,7 @@
 | **hardware-targets** | Dispatch to 5 hardware targets: CPU/GPU/NPU/WASM/fallback | Route decision overhead when contract.targets{} selects execution path |
 | **http-throughput** | Sequential HTTP requests/sec to a governed localhost endpoint | Server throughput — how fast Galerina can handle real HTTP requests |
 | **json-parse** | Parse 500 JSON records: split on comma, split on colon, accumulate | Real I/O parsing workload — string-heavy, cache-friendly on repeat calls |
-| **tmf-container** | Create the canonical .spore trust-container (TMX-256 SHAKE Merkle + LE packing). **The "Node.js" column IS Galerina's `@galerina/ext-spore` engine** (pure TS/Node); Python/Rust are byte-identical reference writers — all assert the same golden root | Can other languages create a .spore, and how fast? Honest SHAKE256+packing race (the engine is pure Node, so it has no separate interpreter column) |
+| **spore-container** | Create the canonical .spore trust-container (TMX-256 SHAKE Merkle + LE packing). **The "Node.js" column IS Galerina's `@galerina/ext-spore` engine** (pure TS/Node); Python/Rust are byte-identical reference writers — all assert the same golden root | Can other languages create a .spore, and how fast? Honest SHAKE256+packing race (the engine is pure Node, so it has no separate interpreter column) |
 | **framework-pipeline** | One full governed request through the **Galerina App Kernel's fixed 12-gate pipeline** (route→policy→size→content-type→auth→decode→idempotency→concurrency→dispatch→encode→audit). **The "Node.js" column IS the App Kernel** (no middleware chain); Python is an equivalent sync gate chain | "Native framework, no middleware" vs a middleware chain — measures pipeline cost in-process (no sockets). The structural win is fewer deps + non-reorderable gates, not raw speed |
 | **low-memory** | Process 10K items with strict heap budget (measures bytes/op) | Memory efficiency — critical for edge/embedded deployment targets |
 | **matrix-multiply** | 32×32 integer GEMM (matrix multiplication) | Scientific / ML workload: dense arithmetic, benefits from SIMD/GPU |

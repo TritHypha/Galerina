@@ -7412,7 +7412,7 @@
         "#69"
       ],
       "xrefs": [
-        "galerina-tmf-tri-encryption-rd"
+        "galerina-spore-tri-encryption-rd"
       ],
       "topTerms": [
         "session",
@@ -17463,7 +17463,7 @@
       ],
       "xrefs": [],
       "topTerms": [
-        "tmf",
+        "spore",
         "re-derivation",
         "tritmesh",
         "expanded-scope",
@@ -17902,7 +17902,7 @@
       "topTerms": [
         "gate",
         "spore",
-        "tmf",
+        "spore",
         "docs",
         "fungi",
         "drift",
@@ -19345,7 +19345,7 @@
         "honest",
         "false",
         "production",
-        "tmf",
+        "spore",
         "single",
         "headline",
         "wasm",
@@ -21612,7 +21612,7 @@
         "hybrid",
         "interface",
         "roadmap",
-        "tmf",
+        "spore",
         "qrng",
         "gap",
         "confidentiality",
@@ -22071,7 +22071,7 @@
       ]
     },
     {
-      "rel": "../ZTF-Knowledge-Bases/galerina-rd-0114-tmf-vs-db-comparison-2026-06-24.md",
+      "rel": "../ZTF-Knowledge-Bases/galerina-rd-0114-spore-vs-db-comparison-2026-06-24.md",
       "title": "R&D 0114 — What the photonic/quantum claims mean for the .spore FORMAT vs the TritMesh DB — both outcomes, compared",
       "headings": [
         "1. Side-by-side",
@@ -22091,7 +22091,7 @@
       ],
       "xrefs": [],
       "topTerms": [
-        "tmf",
+        "spore",
         "digital",
         "substrate",
         "never",
@@ -22354,7 +22354,7 @@
         "small-wins",
         "w4b5597yv",
         "verify",
-        "tmf",
+        "spore",
         "owner-greenlight",
         "run",
         "missing",
@@ -22706,7 +22706,7 @@
       ],
       "topTerms": [
         "fungi",
-        "tmf",
+        "spore",
         "galerina",
         "notes",
         "brand",
@@ -24894,11 +24894,11 @@
       "topTerms": [
         "rd-absorbed",
         "docs",
-        "tmf",
+        "spore",
         "research",
         "curated",
         "mirrored",
-        "galerina-tmf-engine",
+        "galerina-spore-engine",
         "doc",
         "tritmesh",
         "spec",
@@ -24938,11 +24938,11 @@
         "#34"
       ],
       "xrefs": [
-        "galerina-tmf-tri-encryption-rd"
+        "galerina-spore-tri-encryption-rd"
       ],
       "topTerms": [
         "galerina",
-        "tmf",
+        "spore",
         "crypto",
         "engine",
         "usable",
@@ -24963,7 +24963,7 @@
         "pull",
         "re-confirmed",
         "sharpened",
-        "galerina-tmf-engine",
+        "galerina-spore-engine",
         "nvfp4",
         "confidentiality"
       ]
@@ -25325,7 +25325,7 @@
       ]
     },
     {
-      "rel": "../ZTF-Knowledge-Bases/galerina-rd-env-tmf-sealed-secrets-2026-06-23.md",
+      "rel": "../ZTF-Knowledge-Bases/galerina-rd-env-spore-sealed-secrets-2026-06-23.md",
       "title": "env.spore — Sealed Secrets on the .spore Container (R&D)",
       "headings": [
         "1. Hub verdict (up front — strict honesty)",
@@ -25354,7 +25354,7 @@
       ],
       "xrefs": [],
       "topTerms": [
-        "tmf",
+        "spore",
         "env",
         "galerina",
         "key",
@@ -26085,7 +26085,7 @@
         "fungi-retain-001",
         "index",
         "holographic",
-        "tmf",
+        "spore",
         "reference",
         "every",
         "docs",
@@ -26293,7 +26293,7 @@
         "art",
         "fail-closed",
         "net-new",
-        "tmf",
+        "spore",
         "isolation",
         "intersection",
         "lease"
@@ -26332,7 +26332,7 @@
         "tritmesh-only",
         "galerina",
         "governance",
-        "tmf",
+        "spore",
         "tm-1",
         "shipped",
         "combo",
@@ -26911,7 +26911,7 @@
         "verified",
         "runtime",
         "tier",
-        "tmf",
+        "spore",
         "priority",
         "remediation",
         "key"
@@ -31297,7 +31297,7 @@
         "asymmetric",
         "shake256",
         "chain",
-        "tmf-history-chain-v0",
+        "spore-history-chain-v0",
         "fresh",
         "fail-closed",
         "hard",
@@ -31532,7 +31532,7 @@
         "crypto",
         "hard",
         "digital",
-        "tmf",
+        "spore",
         "note",
         "substrate",
         "crypto-on-core",
@@ -31542,7 +31542,7 @@
       ]
     },
     {
-      "rel": "../ZTF-Knowledge-Bases/galerina-tmf-engine.md",
+      "rel": "../ZTF-Knowledge-Bases/galerina-spore-engine.md",
       "title": "The `.spore` Engine (`@galerina/ext-spore`)",
       "headings": [
         "Where it sits — core vs ext vs R&D",
@@ -31567,7 +31567,7 @@
       "topTerms": [
         "galerina",
         "core",
-        "tmf",
+        "spore",
         "engine",
         "ext",
         "integrity",
@@ -31580,7 +31580,7 @@
         "governs",
         "hard",
         "byte",
-        "ext-tmf",
+        "ext-spore",
         "sits",
         "crypto-on-core",
         "fungi-substrate-001",
@@ -32014,7 +32014,7 @@
       ],
       "xrefs": [
         "galerina-rd-tritmesh-1-5-and-52-3d-2026-06-23",
-        "galerina-tmf-engine",
+        "galerina-spore-engine",
         "galerina-b8-governed-transport"
       ],
       "topTerms": [
@@ -32032,7 +32032,7 @@
         "claims",
         "azt",
         "worth",
-        "tmf",
+        "spore",
         "memory",
         "database",
         "feature-list",
@@ -32115,7 +32115,7 @@
       "xrefs": [],
       "topTerms": [
         "shipped",
-        "tmf",
+        "spore",
         "arena",
         "net-new",
         "data",
@@ -32934,7 +32934,7 @@
         "zero-trust",
         "galerina",
         "residuals",
-        "tmf",
+        "spore",
         "src",
         "narrative",
         "genuine",
@@ -37376,7 +37376,7 @@
       "xrefs": [],
       "topTerms": [
         "license",
-        "tmf",
+        "spore",
         "galerina",
         "org",
         "map",
@@ -37671,7 +37671,7 @@
         "2. Verification status (cross-checked 2026-06-16)",
         "3. Consolidated findings (merged)",
         "4. Hard-path index — every R&D document (both tracks)",
-        "`.spore` spec track — `<GitHub>\\Galerina-R-AND-D\\tmf\\`",
+        "`.spore` spec track — `<GitHub>\\Galerina-R-AND-D\\spore\\`",
         "tri-encryption track — `<GitHub>\\Galerina-R-AND-D\\tri-encription\\`",
         "Adjacent (not merged here)",
         "5. Reconciliation — alignments, divergences, gaps",
@@ -37681,7 +37681,7 @@
         "6. Unified roadmap",
         "Phase 0 — Foundations  ✅ DONE & VERIFIED",
         "Phase 1 — Reconcile & complete the spec  🔜 (R&D folder)",
-        "Phase 2 — Engine build: Rust `libtmf_core`  🚦 (production repo; gated on D3)",
+        "Phase 2 — Engine build: Rust `libspore_core`  🚦 (production repo; gated on D3)",
         "Phase 3 — Assurance & profiles  ✅ DONE (2026-06-16)",
         "Phase 4 — Storage & query (the DB half)  ✅ DESIGN DONE (2026-06-16)",
         "`+1` append-only history chain  ✅ DONE (2026-06-16)",
@@ -37704,7 +37704,7 @@
       ],
       "xrefs": [],
       "topTerms": [
-        "tmf",
+        "spore",
         "spec",
         "users",
         "phill",
@@ -37788,10 +37788,10 @@
         "4. Consolidated findings (the verdicts, explained)",
         "5. The architecture — the four jobs + the governance gate",
         "5.1 Integrity — TMX-256 (`tmx-256-construction-v0.md`) — SHIP",
-        "5.2 The container — `tmf-container-v0.md`",
+        "5.2 The container — `spore-container-v0.md`",
         "5.3 Authenticity — `signature-custody-v0.md` — **TASK 2, FROZEN, #34-ready**",
         "5.4 Inclusion proof — `inclusion-proof-v0.md` (Phase 1c)",
-        "5.5 Confidentiality — `tmf-encryption-v0.md` (NEW this session; the v1 layer)",
+        "5.5 Confidentiality — `spore-encryption-v0.md` (NEW this session; the v1 layer)",
         "5.6 Governance — the K3 gate (`tri-encription/fungi/k3-gate.fungi`)",
         "6. The conformance oracle — 5 generators + golden vectors",
         "7. What's measured (the bench) — honest numbers, attributed",
@@ -37822,7 +37822,7 @@
         "fungi",
         "galerina",
         "governance",
-        "tmf",
+        "spore",
         "root",
         "crypto",
         "spec",
@@ -37869,7 +37869,7 @@
         "crypto",
         "real",
         "photonic",
-        "tmf",
+        "spore",
         "minicpm",
         "block",
         "external",
@@ -38019,7 +38019,7 @@
         "model",
         "eprint",
         "org",
-        "tmf",
+        "spore",
         "ann",
         "trusted",
         "seal",
@@ -38110,7 +38110,7 @@
         "format",
         "spec",
         "results",
-        "tmf",
+        "spore",
         "governance",
         "citable",
         "defensive",
@@ -38282,7 +38282,7 @@
         "interface",
         "bits",
         "rejected",
-        "tmf"
+        "spore"
       ]
     },
     {
@@ -38886,7 +38886,7 @@
         "qkd",
         "quantum",
         "pqc",
-        "tmf",
+        "spore",
         "key",
         "honest",
         "lane",
@@ -38932,7 +38932,7 @@
       "topTerms": [
         "galerina",
         "crypto",
-        "tmf",
+        "spore",
         "path",
         "owner-set",
         "rust",
@@ -39006,7 +39006,7 @@
         "policy",
         "entries",
         "ml-dsa-65",
-        "tmf",
+        "spore",
         "fresh"
       ]
     },
@@ -39159,7 +39159,7 @@
       ]
     },
     {
-      "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-tmf-confidentiality-layout.md",
+      "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-spore-confidentiality-layout.md",
       "title": "Engineering Amendment: Sovereign Confidentiality & Geometric Integrity Layout for `.spore`",
       "headings": [
         "1. Core Invariants & Mathematical Alignment",
@@ -39187,7 +39187,7 @@
         "chunk",
         "bits",
         "bit",
-        "tmf",
+        "spore",
         "ciphertext",
         "root",
         "profile",
@@ -39211,7 +39211,7 @@
       ]
     },
     {
-      "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-tmf-real-vs-aspirational-ledger.md",
+      "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-spore-real-vs-aspirational-ledger.md",
       "title": "`.spore` / TritMesh crypto — real vs. aspirational ledger",
       "headings": [
         "A. Cryptography",
@@ -39244,7 +39244,7 @@
         "data",
         "byte",
         "signing",
-        "tmf",
+        "spore",
         "see",
         "proposal",
         "photonic",
@@ -39256,7 +39256,7 @@
       ]
     },
     {
-      "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-tmf-research-encryption-architecture.md",
+      "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-spore-research-encryption-architecture.md",
       "title": "Encryption architecture for `.spore` / TritMesh on a (photonic) Galerina substrate",
       "headings": [
         "0. Amendments ratified on takeover (2026-06-16)",
@@ -39287,7 +39287,7 @@
         "root",
         "fips",
         "fail-closed",
-        "tmf",
+        "spore",
         "architecture",
         "don",
         "confidentiality",
@@ -39306,7 +39306,7 @@
       ]
     },
     {
-      "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-tmf-research-open-questions.md",
+      "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-spore-research-open-questions.md",
       "title": "Open questions & decision forks — `.spore` encryption R&D",
       "headings": [
         "✅ Ratified 2026-06-15 (resolved — no longer open)",
@@ -39327,7 +39327,7 @@
       "xrefs": [],
       "topTerms": [
         "default",
-        "tmf",
+        "spore",
         "open",
         "crypto",
         "galerina",
@@ -39354,7 +39354,7 @@
       ]
     },
     {
-      "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-tmf-research-ternary-in-cryptography.md",
+      "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-spore-research-ternary-in-cryptography.md",
       "title": "Ternary in cryptography — what's real, what's not, and how to actually use \"tri-logic\"",
       "headings": [
         "1. Three different \"ternaries\" — don't conflate them",
@@ -39399,7 +39399,7 @@
       ]
     },
     {
-      "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-tmf-storage-and-query.md",
+      "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-spore-storage-and-query.md",
       "title": "`.spore` storage & query (the DB half) — design v0",
       "headings": [
         "1. Two indexes, two zones",
@@ -39437,7 +39437,7 @@
         "hnsw",
         "gate",
         "zone-aware",
-        "tmf",
+        "spore",
         "number",
         "field",
         "mesh-coordinate",
@@ -39485,7 +39485,7 @@
         "bench",
         "photonic",
         "confidentiality",
-        "tmf",
+        "spore",
         "findings",
         "roadmap",
         "sha-256",
@@ -39597,7 +39597,7 @@
         "embedding",
         "leaks",
         "https",
-        "tmf",
+        "spore",
         "metadata",
         "org",
         "encrypted",
@@ -39690,7 +39690,7 @@
         "galerina",
         "encryption",
         "aead",
-        "tmf",
+        "spore",
         "kem",
         "zero-trust",
         "gate",
@@ -41713,7 +41713,7 @@
       "tasks": [],
       "xrefs": [],
       "topTerms": [
-        "tmf",
+        "spore",
         "lost",
         "tritmesh",
         "dead",

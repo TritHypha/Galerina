@@ -1,7 +1,7 @@
 import { performance } from "node:perf_hooks";
-import { writeTmf } from "../../../galerina-ext-spore/dist/index.js";
+import { writeSpore } from "../../../galerina-ext-spore/dist/index.js";
 
-// tmf-container — ".spore trust-container CREATION" throughput.
+// spore-container — ".spore trust-container CREATION" throughput.
 //
 // THE NODE.JS COLUMN IS LITERALLY GALERINA'S SHIPPED ENGINE. `@galerina/ext-spore` is
 // pure TypeScript-on-Node (no `.fungi` execution path exists), so its creation
@@ -9,7 +9,7 @@ import { writeTmf } from "../../../galerina-ext-spore/dist/index.js";
 // byte-identical reference implementations of the same v0 format — that is the
 // honest "can other languages create a .spore, and how fast?" comparison.
 //
-// One operation = build the canonical golden container (spec tmf-container-v0 §,
+// One operation = build the canonical golden container (spec spore-container-v0 §,
 // 2 sections → exactly 203 bytes). Every runtime asserts the SAME published root,
 // so all three provably do identical work (SHAKE256 leaf/node/root + LE packing).
 const GOLDEN_ROOT = "43386e644c7b53aa0900cda21c15acd15f30b3fdf997950e39e7dd3dbc685212";
@@ -27,14 +27,14 @@ const SECTIONS = [
 
 const hex = (u) => Buffer.from(u).toString("hex");
 
-function buildOnce() { return writeTmf(SECTIONS); }
+function buildOnce() { return writeSpore(SECTIONS); }
 
 function runBench(iterations) {
   // Correctness gate: a wrong build must NOT be reported as a benchmark result.
   const sample = buildOnce();
   const root = hex(sample.subarray(24, 56));
   if (sample.length !== 203 || root !== GOLDEN_ROOT) {
-    throw new Error(`tmf-container correctness check failed: len=${sample.length} root=${root}`);
+    throw new Error(`spore-container correctness check failed: len=${sample.length} root=${root}`);
   }
 
   for (let i = 0; i < 1000; i++) buildOnce(); // warmup
@@ -51,7 +51,7 @@ function runBench(iterations) {
   const heapDelta = mem.heapUsed - memBefore.heapUsed;
 
   return {
-    runtime: "nodejs", benchmark: "tmf-container-v1",
+    runtime: "nodejs", benchmark: "spore-container-v1",
     note: "Node.js column = @galerina/ext-spore engine (the shipped Galerina artifact)",
     iterations, containerBytes: sample.length, integrityRoot: root, checksum: acc,
     elapsedMs: Number(elapsedMs.toFixed(3)),

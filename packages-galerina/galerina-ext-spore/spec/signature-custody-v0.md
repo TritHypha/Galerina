@@ -4,7 +4,7 @@
 vector reproduces (`gen_sig_block.py`, confirmed byte-for-byte); real signing/verification **impl Blocked**
 (needs a vetted FIPS-204/Ed25519 library — we do **not** hand-roll or fake crypto). **Directly consumable by
 Galerina task #34** — see §2.1. This fully specifies the signature block from
-[`tmf-container-v0.md`](tmf-container-v0.md) §5 and the key-custody lifecycle, reusing the Galerina
+[`spore-container-v0.md`](spore-container-v0.md) §5 and the key-custody lifecycle, reusing the Galerina
 `BridgeManifest` / `BridgeAttestation` idiom. A **structural** golden vector (placeholder keys, real sizes)
 is in [`_vectors/gen_sig_block.py`](_vectors/gen_sig_block.py).
 
@@ -56,12 +56,12 @@ Ed25519): #34 is the *same* construction with `digest = SHA-256(canonical_body)`
   *HashML-DSA* (the pre-hash variant is for large messages; here the message *is* already a digest).
 - **MUST pass a distinct per-surface domain-separation context** `ctx` (FIPS-204 binds `ctx` into `μ`), one per
   digest-type, so a key signing one surface cannot be cross-protocol-confused with another: e.g.
-  `ctx = "tmf-root-v0"` for a `.spore` TMX root vs a distinct `ctx` (e.g. `"galerina-manifest-v0"`) for a Galerina
+  `ctx = "spore-root-v0"` for a `.spore` TMX root vs a distinct `ctx` (e.g. `"galerina-manifest-v0"`) for a Galerina
   manifest's SHA-256 digest. A bare 32-byte value is otherwise ambiguous between the two; the per-surface `ctx`
   removes the ambiguity. (A distinct *key* per surface is also acceptable; a distinct `ctx` is the cheaper
   default.)
   - **Empirically verified** (`..\..\tri-encription\bench\ctx-binding.mjs`): with `@noble` ML-DSA-65, a
-    signature made under `ctx="tmf-root-v0"` verifies `true` under the same ctx but `false` under a different
+    signature made under `ctx="spore-root-v0"` verifies `true` under the same ctx but `false` under a different
     ctx **and** `false` under no ctx — the context genuinely binds. The **working reference implementation** is
     the deployed per-surface-`ctx` signer in the Galerina attestation surface (owner's flow #6).
 - Verification is the two-check form above (norm bound **and** `c̃ == H(μ ‖ w₁')`), with `μ` binding `M` and `ctx`.
@@ -139,7 +139,7 @@ verify (no lib, either profile) -> AuthError: no vetted verifier wired -> reject
   For decades-lived `.spore` archives, pair the level-5 lattice signature (ML-DSA-87) with the **hash-based**
   SLH-DSA — whose security rests *only* on the hash, not on any lattice assumption. AND-verification means a
   future cryptanalytic break of one family still leaves the artifact authentic under the other. This is the
-  cold-path signature half of the level-5 tier (its KEM half is `kem_profile` 0x03/0x04, tmf-encryption-v0 §2.1).
+  cold-path signature half of the level-5 tier (its KEM half is `kem_profile` 0x03/0x04, spore-encryption-v0 §2.1).
   No classical curve is needed here: unlike the KEM transition hedge, both halves are PQ and SLH-DSA *is* the
   conservative hedge. (Sign latency is irrelevant — once per artifact.)
 
@@ -167,7 +167,7 @@ carries the key only so the verifier knows *which* key to check against the trus
 Custody is the genuinely hard part (it is Galerina's open blocker #34/#107-109 too). v0 reuses the existing
 attestation idiom rather than inventing a `.spore`-specific PKI.
 
-- **Identity:** every signing key has a `key_id`, e.g. `tmf-key-YYYY-MM` (one active signing key per period;
+- **Identity:** every signing key has a `key_id`, e.g. `spore-key-YYYY-MM` (one active signing key per period;
   finer granularity allowed). The `key_id` is recorded in the `BridgeManifest`/attestation, not invented per-file.
 - **Private-key custody:** signing keys live in an **HSM/KMS**, never in the repo, never in a `.spore`, never
   in source. (Matches the "no secrets/private keys committed" rule.) The signer is a **vetted FIPS-204/Ed25519
@@ -176,7 +176,7 @@ attestation idiom rather than inventing a `.spore`-specific PKI.
   never enters governed `.fungi` code, and the engine language is **not** assumed to be Rust (directive: prefer
   Galerina + a host crypto lib over a Rust engine, which is unusable in the main project).
 - **Public-key distribution:** published via the **Trust Capsule** (the SPIFFE/Sigstore-style attestation
-  surface) or a keys endpoint (e.g. `keys.../tmf/{key_id}`). Verifiers resolve `key_id → trusted pubkey`
+  surface) or a keys endpoint (e.g. `keys.../spore/{key_id}`). Verifiers resolve `key_id → trusted pubkey`
   there; the in-file pubkey must match the registry entry.
   - **Working reference (owner-deployed):** the shipped **hybrid bridge attestation + opt-in `mlDsaPublicKey`
     admission policy** is the concrete enforcement point of this model — the bridge attestation carries the

@@ -90,7 +90,7 @@ const BENCHMARKS = [
   // The Node.js column IS the shipped @galerina/ext-spore engine (pure TS/Node — no .fungi
   // path exists); python.py / bench.rs are byte-identical reference writers that assert
   // the SAME golden root. Honest "can other languages create a .spore, and how fast?".
-  { id: "tmf-container", dir: "tmf-container" },
+  { id: "spore-container", dir: "spore-container" },
   // ── Native framework vs middleware — Galerina App Kernel's fixed 12-gate pipeline ──
   // The Node.js column IS the Galerina App Kernel (no middleware chain); python.py is an
   // equivalent SYNC gate chain (the "middleware" approach) doing the SAME gates. In-process

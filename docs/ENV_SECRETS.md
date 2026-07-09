@@ -587,7 +587,7 @@ Galerina ships an **optional** drop-in replacement: `env.spore`, provided by the
 `env.spore` is the SOPS / Sealed-Secrets / age pattern built on the `.spore`
 container. It is a **thin layer** over `@galerina/ext-spore` (it owns no crypto and
 no container bytes of its own — every byte primitive comes from the engine's
-`writeTmf`/`readTmf` and KEM-DEM `seal`/`open`). Each secret is sealed under a
+`writeSpore`/`readSpore` and KEM-DEM `seal`/`open`). Each secret is sealed under a
 recipient public key; the file on disk is ciphertext only.
 
 ```text

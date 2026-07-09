@@ -1,7 +1,7 @@
 # NVFP4 `Vector`-modality codec — v0
 
 **Status:** Draft, buildable + **verified** (executable reference + golden vector). This defines **one
-opt-in payload codec** for `modality = Vector` (§4.2 of [`tmf-container-v0.md`](tmf-container-v0.md)). It
+opt-in payload codec** for `modality = Vector` (§4.2 of [`spore-container-v0.md`](spore-container-v0.md)). It
 is grounded against the **verified** NVFP4 structure in NVIDIA Model-Optimizer / TransformerEngine (see
 [`../research/external-repos-analysis.md`](../research/external-repos-analysis.md) §2).
 

@@ -2050,11 +2050,11 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "doc packages-galerina/galerina-ext-spore/spec/tmf-encryption-v0.md:7",
-      "doc packages-galerina/galerina-ext-spore/spec/tmf-encryption-v0.md:44",
-      "doc packages-galerina/galerina-ext-spore/spec/tmf-encryption-v0.md:129",
-      "doc packages-galerina/galerina-ext-spore/spec/tmf-encryption-v0.md:163",
-      "doc packages-galerina/galerina-ext-spore/spec/tmf-encryption-v0.md:403"
+      "doc packages-galerina/galerina-ext-spore/spec/spore-encryption-v0.md:7",
+      "doc packages-galerina/galerina-ext-spore/spec/spore-encryption-v0.md:44",
+      "doc packages-galerina/galerina-ext-spore/spec/spore-encryption-v0.md:129",
+      "doc packages-galerina/galerina-ext-spore/spec/spore-encryption-v0.md:163",
+      "doc packages-galerina/galerina-ext-spore/spec/spore-encryption-v0.md:403"
     ]
   },
   {
@@ -14763,7 +14763,7 @@
       "test packages-galerina/galerina-tower-citizen/tests/substrate-model.test.mjs:209",
       "test packages-galerina/galerina-tower-citizen/tests/substrate-model.test.mjs:218",
       "test packages-galerina/galerina-tower-citizen/tests/substrate-model.test.mjs:221",
-      "doc docs/scientific-papers/tmf-trust-capsule-format-defensive-publication-2026-06-23.md:37",
+      "doc docs/scientific-papers/spore-trust-capsule-format-defensive-publication-2026-06-23.md:37",
       "ref scripts/rd-0156-photonic-wavefront-db-proof.mjs:16",
       "ref scripts/rd-0156-photonic-wavefront-db-proof.mjs:293",
       "ref scripts/rd-0157-0159-virtual-wavefront-silicon-proof.mjs:514"

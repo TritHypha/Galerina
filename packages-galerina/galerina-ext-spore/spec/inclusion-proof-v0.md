@@ -107,5 +107,5 @@ Any conforming implementation, in any language, MUST reproduce these bytes and t
 ## 7. Sources & cross-references
 - [`tmx-256-construction-v0.md`](tmx-256-construction-v0.md) §2–§5, §9 (the tree this proves over) ·
   [`signature-custody-v0.md`](signature-custody-v0.md) (the ML-DSA-65 signature the proof is checked against) ·
-  [`tmf-container-v0.md`](tmf-container-v0.md) §2 (`header_core`).
+  [`spore-container-v0.md`](spore-container-v0.md) §2 (`header_core`).
 - FIPS 202 SHAKE256 — https://csrc.nist.gov/pubs/fips/202/final · FIPS 204 ML-DSA — https://csrc.nist.gov/pubs/fips/204/final

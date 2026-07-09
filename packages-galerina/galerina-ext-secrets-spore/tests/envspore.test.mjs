@@ -1,4 +1,4 @@
-// envtmf.test.mjs — node:test suite for @galerina/ext-secrets-spore.
+// envspore.test.mjs — node:test suite for @galerina/ext-secrets-spore.
 //
 // Proves the security properties the design doc requires:
 //   - env.spore seal/open round-trip
@@ -18,9 +18,9 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { keygen, KEM_PROFILE, TmfCryptoError } from "../dist/tmf.js";
+import { keygen, KEM_PROFILE, SporeCryptoError } from "../dist/spore.js";
 import {
-  initEnvTmf, setSecret, rmSecret, rotateRecipient, listSecrets, openValue, assertKemProfile, validateManifest, K3,
+  initEnvSpore, setSecret, rmSecret, rotateRecipient, listSecrets, openValue, assertKemProfile, validateManifest, K3,
 } from "../dist/store.js";
 import { contextFor } from "../dist/schema.js";
 import { loadAll } from "../dist/runtime.js";
@@ -35,7 +35,7 @@ const enc = (s) => new TextEncoder().encode(s);
 const dec = (b) => Buffer.from(b).toString();
 
 function freshFile(name, ...kvs) {
-  let buf = initEnvTmf(KP.publicKey);
+  let buf = initEnvSpore(KP.publicKey);
   for (let i = 0; i < kvs.length; i += 2) {
     buf = setSecret(buf, KP.secretKey, KP.publicKey, K3.ALLOW, kvs[i], enc(kvs[i + 1])).bytes;
   }
@@ -72,14 +72,14 @@ test("list shows names + metadata, NEVER values", () => {
 test("fail-closed: K3 not ALLOW is denied (unknown collapses to deny)", () => {
   const buf = freshFile("k3", "X", "y");
   for (const tok of [K3.UNKNOWN, K3.DENY]) {
-    assert.throws(() => listSecrets(buf, KP.secretKey, tok), (e) => e instanceof TmfCryptoError && e.code === "GovDeny");
+    assert.throws(() => listSecrets(buf, KP.secretKey, tok), (e) => e instanceof SporeCryptoError && e.code === "GovDeny");
   }
 });
 
 test("fail-closed: bad recipient key is rejected", () => {
   const buf = freshFile("bad", "X", "y");
   const wrong = keygen(KEM_PROFILE.HYBRID_X25519_ML_KEM_768);
-  assert.throws(() => listSecrets(buf, wrong.secretKey, K3.ALLOW), (e) => e instanceof TmfCryptoError);
+  assert.throws(() => listSecrets(buf, wrong.secretKey, K3.ALLOW), (e) => e instanceof SporeCryptoError);
 });
 
 test("fail-closed: a tampered ciphertext byte is rejected (verify-before-decrypt)", () => {
@@ -94,7 +94,7 @@ test("rotate-recipient re-keys: new key opens, OLD key rejected", () => {
   const np = keygen(KEM_PROFILE.HYBRID_X25519_ML_KEM_768);
   const rr = rotateRecipient(buf, KP.secretKey, K3.ALLOW, np.publicKey);
   assert.equal(openValue(rr.bytes, np.secretKey, K3.ALLOW, "DB_PASSWORD", dec), "rotate-me");
-  assert.throws(() => listSecrets(rr.bytes, KP.secretKey, K3.ALLOW), (e) => e instanceof TmfCryptoError);
+  assert.throws(() => listSecrets(rr.bytes, KP.secretKey, K3.ALLOW), (e) => e instanceof SporeCryptoError);
 });
 
 test("rm removes the section + manifest entry", () => {
@@ -117,7 +117,7 @@ test("runtime loadAll fills a fail-closed arena; dispose wipes; use-after-dispos
 test("loadAll fails closed on a bad key (arena disposed, nothing served)", () => {
   const buf = freshFile("rtb", "A", "alpha");
   const wrong = keygen(KEM_PROFILE.HYBRID_X25519_ML_KEM_768);
-  assert.throws(() => loadAll(buf, wrong.secretKey, K3.ALLOW), (e) => e instanceof TmfCryptoError);
+  assert.throws(() => loadAll(buf, wrong.secretKey, K3.ALLOW), (e) => e instanceof SporeCryptoError);
 });
 
 test("SealArena zero-wipes the backing buffer on remove", () => {
@@ -143,10 +143,10 @@ test("anchor: Argon2id wrap/unwrap round-trips; wrong passphrase fails closed", 
 test("fail-closed: KEM-profile substitution is rejected before open() (crypto-failclosed hardening)", () => {
   const ctx = contextFor(1, coordForName("DB_PASSWORD"), 0); // ctx[26] == HYBRID(0x02)
   // a forced non-v0 profile must throw
-  assert.throws(() => assertKemProfile(0x01, ctx), (e) => e instanceof TmfCryptoError);
+  assert.throws(() => assertKemProfile(0x01, ctx), (e) => e instanceof SporeCryptoError);
   // a v0 profile that disagrees with the bound ctx[26] must throw
   const ctx2 = Uint8Array.from(ctx); ctx2[26] = 0x01;
-  assert.throws(() => assertKemProfile(KEM_PROFILE.HYBRID_X25519_ML_KEM_768, ctx2), (e) => e instanceof TmfCryptoError);
+  assert.throws(() => assertKemProfile(KEM_PROFILE.HYBRID_X25519_ML_KEM_768, ctx2), (e) => e instanceof SporeCryptoError);
   // the legitimate profile + ctx must NOT throw (no false positive)
   assert.doesNotThrow(() => assertKemProfile(KEM_PROFILE.HYBRID_X25519_ML_KEM_768, ctx));
 });
@@ -168,7 +168,7 @@ test("manifest validation: hostile __proto__ entry and malformed SecretMeta are 
     coordHex: toHex(coordForName("GOOD")), created: 1, rotated: 2,
     kemProfile: KEM_PROFILE.HYBRID_X25519_ML_KEM_768,
   };
-  const isMalformed = (e) => e instanceof TmfCryptoError && e.code === "MalformedCrypto";
+  const isMalformed = (e) => e instanceof SporeCryptoError && e.code === "MalformedCrypto";
 
   // baseline: a well-formed manifest validates (no false positive)
   assert.doesNotThrow(() =>
@@ -220,11 +220,11 @@ test("CLI get REFUSES on a TTY without --force (simulated via no piped input + i
 });
 
 test("in-arena edit -> re-seal leaves NO temp file (no /tmp, no .swp) and writes ciphertext-only", () => {
-  const dir = mkdtempSync(join(tmpdir(), "envtmf-"));
+  const dir = mkdtempSync(join(tmpdir(), "envspore-"));
   try {
     const file = join(dir, "env.spore");
     // simulate the CLI mutate path WITHOUT spawning (deterministic): init + set + atomic write
-    let buf = initEnvTmf(KP.publicKey);
+    let buf = initEnvSpore(KP.publicKey);
     buf = setSecret(buf, KP.secretKey, KP.publicKey, K3.ALLOW, "DB", enc("plaintext-never-on-disk")).bytes;
     // write via the package's atomic ciphertext writer
     writeFileSync(file, Buffer.from(buf), { mode: 0o600 });
