@@ -1,3 +1,4 @@
+@version 1
 // greeting — the governed compute the App Kernel fuses and invokes for GET /hello.
 //
 // This is the compiled, signed, fusable form of the app's greeting flow

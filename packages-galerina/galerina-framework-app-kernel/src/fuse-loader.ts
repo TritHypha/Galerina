@@ -338,12 +338,11 @@ function extractFuse(manifest: Record<string, unknown>, source: string): FuseDes
   // BK-4/A4 (2026-07-08): the fuse descriptor version must be READ and gated — the old
   // `?? "fungi.fuse.v1"` default treated an ABSENT version as v1 (assume-on-absence), and an
   // unknown future version flowed through unchecked. Reject both, never best-effort admit.
-  // The accepted set is CLOSED and enumerable: "lln.fuse.v1" is the pre-rename (LogicN-era)
-  // spelling of the SAME v1 layout — carried by the committed REAL-SIGNED greeting fixture,
-  // whose offline re-sign ceremony is an owned TODO (docs/TODO.md). It normalizes to v1 here;
-  // retire the alias when the ceremony re-signs the fixture. Anything else is refused.
+  // The accepted set is CLOSED and enumerable — only "fungi.fuse.v1". (A pre-rename
+  // alias was retired 2026-07-09 when the greeting fixture was re-signed.) Anything
+  // absent or unrecognised is refused.
   const rawSchemaVersion = f["schemaVersion"];
-  const FUSE_V1_SPELLINGS = new Set(["fungi.fuse.v1", "lln.fuse.v1"]);
+  const FUSE_V1_SPELLINGS = new Set(["fungi.fuse.v1"]);
   if (typeof rawSchemaVersion !== "string" || !FUSE_V1_SPELLINGS.has(rawSchemaVersion)) {
     return fuseError(
       "FUNGI-FUSE-VERSION",

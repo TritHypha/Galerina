@@ -17,7 +17,7 @@ Living task list. Authoritative forward view: `../ZTF-Knowledge-Bases/galerina-r
       **FUNGI-ACCESS-001** resolve-or-deny (dotted bypass removed, alias-aware, error in prod). (A1 → W5b.)
 - [x] W4 CORE GREEN (62/62 · 6,134): `@version 1` grammar (FUNGI-SYNTAX-014/015, registered) · **409/409 .fungi
       stamped** · require-on-disk at both CLIs (8 sites) · GIR absent-reject (A4) · fuse-loader closed version set
-      ({fungi.fuse.v1, lln.fuse.v1-alias for the ceremony-frozen greeting fixture}) · codemod signed-frozen guard ·
+      ({fungi.fuse.v1}) · codemod signed-frozen guard ·
       scanner signed-frozen class · drift auditor prints ceremony scope. ALSO DONE: `.gate` `#gate <int>.<int>` pragma version now READ+gated
       (closed {0.3}, spec R1; fixtures' non-spec `v0.4` fixed). Final: **62/62 · 6,136**. REMAINING W4:
       `.lmanifest` CBOR reader gate (ceremony-coupled — pair with the offline re-sign ceremony).
@@ -258,7 +258,7 @@ Suggested order: RD-0240 → BK-2 → BK-1 → BK-3 → BK-4 → BK-5, each RED�
       (`b8f6ae0`·`3926ae0`·`2d0b296`·`f41992a`·`2710c10`·`55d44c4`). All green (60/60 · 6,064 + phase-close),
       fast-forward-clean vs origin. Held for an explicit "push" **or a PR** (the new CI would gate a PR). ZTF-KB:
       1 local-unpushed (`298fe36`).
-- [ ] Offline re-sign ceremony owed: `greeting.lmanifest` (old-brand `lln.manifest.v1` schema).
+- [x] Offline re-sign ceremony **DONE 2026-07-09**: `greeting` re-signed to `fungi.manifest.v1`/`fungi.fuse.v1` with a fresh local key (`cd01346961d88e94`; the original `ab46f4c7` ceremony key is gone). Source `@version 1` added; wasmSha unchanged; example-app 7/7. old-brand `lln.*` schema retired from the fuse-loader + drift auditor.
 
 ## 🔲 NOW (buildable, no hard blocker; value-ordered)
 - [~] **Numeric doc-drift sweep** — **comment sweep DONE (`9224348` + test-header, local):** all 3 real drift

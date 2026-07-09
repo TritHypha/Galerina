@@ -45,16 +45,13 @@ console.log(`   fusable packages: ${packages.length} | signed: ${signed.length}`
 let drifted = 0;
 for (const pkg of signed) {
   const rel = relative(ROOT, pkg.dir).replace(/\\/g, "/");
-  // 2026-07-08 (W4 versioning): surface each signed manifest's schema spellings so the
-  // re-sign-ceremony scope stays visible. "lln.*" = pre-rename spelling of the same v1
-  // layout — tolerated by a CLOSED alias in fuse-loader/verifiers until the ceremony
-  // re-signs; a spelling outside the known set is flagged loudly here.
+  // Surface each signed manifest's schema spellings. Only "fungi.*" is recognised;
+  // anything else is flagged loudly. (A pre-rename alias was retired 2026-07-09 when
+  // the greeting fixture was re-signed — no longer tolerated.)
   try {
     const m = JSON.parse(readFileSync(pkg.manifestPath, "utf8"));
     const spellings = [m.schemaVersion, m.fuse?.schemaVersion].filter(v => typeof v === "string");
-    const legacy = spellings.filter(v => v.startsWith("lln."));
-    const foreign = spellings.filter(v => !v.startsWith("lln.") && !v.startsWith("fungi."));
-    if (legacy.length > 0) console.log(`   ⏳ ${pkg.name}: OLD-BRAND schema spelling(s) ${legacy.join(", ")} — re-sign ceremony owed (closed alias in force)`);
+    const foreign = spellings.filter(v => !v.startsWith("fungi."));
     if (foreign.length > 0) console.log(`   ❌ ${pkg.name}: UNRECOGNISED schema spelling(s) ${foreign.join(", ")} — outside the known set (investigate)`);
   } catch { /* unreadable manifest — the signed check above already treats that fail-closed */ }
   // OWASP F1: array args, no shell interpolation of paths.

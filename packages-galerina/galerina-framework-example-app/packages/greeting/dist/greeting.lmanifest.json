@@ -1,13 +1,13 @@
 {
-  "schemaVersion": "lln.manifest.v1",
-  "sourceHash": "sha256:83c9763865d0bbf02be0843c3035b305e286082f17c54aa1a76e0e4fa8f55ba3",
-  "sourceFile": "packages-logicn/logicn-framework-example-app/packages/greeting/src/index.lln",
+  "schemaVersion": "fungi.manifest.v1",
+  "sourceHash": "sha256:1ddc23cf9d736a8ffbc608a137064a18fd7c7b7f8567588085c412d5c609ac62",
+  "sourceFile": "packages-galerina/galerina-framework-example-app/packages/greeting/src/index.fungi",
   "flowCount": 1,
   "policyResolutionDag": {
     "allowedEffects": 0,
     "deniedEffects": 0,
     "conflictsResolved": 0,
-    "resolvedAt": "2026-06-23T19:52:38.091Z"
+    "resolvedAt": "2026-07-09T07:50:51.201Z"
   },
   "behavioralFingerprint": "sha256:0b634eb7be2a1ad02da52d8c56c79c045598d675521a54ac821b5e023c7c7667",
   "derivedConstraints": [
@@ -21,16 +21,16 @@
       "verified": "static"
     }
   ],
-  "generatedAt": "2026-06-23T19:52:38.091Z",
+  "generatedAt": "2026-07-09T07:50:51.201Z",
   "governanceSignature": {
     "algorithm": "Ed25519",
-    "keyId": "ab46f4c7e2797b9b",
-    "signature": "oAiRsRpfkKwpzlQx9w9v5VcdGtlZqUxjm/mUdEkYUenbcpsInZLRLYG1g0VbdLuDUzxjPkdho2spKitNHoCVCQ==",
+    "keyId": "cd01346961d88e94",
+    "signature": "qGkTpJ0HwrB2NsJLU40teSUrg9XsrJVGr7h91V1w+ky3HELQkES+BFKdgn1/fGJI7VXN19GpM5msA32K8zDjAg==",
     "canon": "jcs",
-    "signedAt": "2026-06-23T19:52:38.103Z"
+    "signedAt": "2026-07-09T07:50:51.209Z"
   },
   "fuse": {
-    "schemaVersion": "lln.fuse.v1",
+    "schemaVersion": "fungi.fuse.v1",
     "name": "greeting",
     "version": "0.1.0",
     "kind": "pure-transform",
