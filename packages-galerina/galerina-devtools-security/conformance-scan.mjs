@@ -40,6 +40,8 @@ const readText = (rel) => {
 const FL = "packages-galerina/galerina-framework-app-kernel/src/fuse-loader.ts";
 const HV = "packages-galerina/galerina-core-compiler/src/lmanifest-hybrid-verifier.ts";
 const CONTAINER = "packages-galerina/galerina-ext-spore/src/container.ts";
+const BA = "packages-galerina/galerina-tower-citizen/src/bridge-attestation.ts";
+const HE = "packages-galerina/galerina-tower-citizen/src/hybrid-engine.ts";
 
 /** sig-verify-pinned (0294t): the verifier pins Ed25519 AND ML-DSA-65 as constants; it never selects the
  *  primitive from the artifact's `alg`. RED if either pin is gone (a refactor may be reading alg). */
@@ -90,8 +92,32 @@ function checkFailOpenGate(get, listWorkflows) {
       : `fail-open detected: ${hits.join("; ")}` };
 }
 
+/** bridge-attestation-failclosed (DP-RD-0285b / M3-M4 of the MCP tool-poisoning pass, docs/security/
+ *  mcp-tool-poisoning-pass-2026-07-09.md): the SHIPPED signed-manifest admission surface (bridges + plugins —
+ *  the exact pattern the future MCP adapter must reuse) stays fail-closed. Ed25519 is algorithm-PINNED
+ *  (edVerify(null,…), not read from the artifact); the hybrid verifier refuses a stripped PQ half; the ML-DSA
+ *  half is FIPS-204 domain-separated; and the admission gate denies `requireHybrid` without an ML-DSA key
+ *  (no silent downgrade). RED if any of these constructions is removed — a poisoned/rug-pulled/downgraded
+ *  manifest could then be admitted. */
+function checkBridgeAttestationFailClosed(get) {
+  const base = { check: "bridge-attestation-failclosed", owasp: "A08:2021", cwe: "CWE-347", rd: "DP-RD-0285b", target: BA + " + hybrid-engine.ts" };
+  const ba = get(BA), he = get(HE);
+  if (ba === null || he === null) return { ...base, tier: "OPEN-RISK", ok: false, severity: "critical", message: "cannot read bridge-attestation.ts / hybrid-engine.ts — fail-closed (cannot confirm the attestation admission stays fail-closed)" };
+  const nBA = ba.replace(/\s+/g, " "), nHE = he.replace(/\s+/g, " ");
+  const edPinned = nBA.includes("edVerify( null,");                                   // pure Ed25519 — primitive not selected from the artifact
+  const hybridBothSigs = ba.includes("ML-DSA signature required but absent");         // hybrid verifier refuses a stripped PQ half (no downgrade)
+  const domainSep = ba.includes("galerina.bridge.manifest.v2");                       // FIPS-204 cross-surface confusion guard
+  const noDowngradeGate = nHE.includes("requireHybrid === true && mlDsaPublicKey === undefined"); // admission gate denies before routing
+  const ok = edPinned && hybridBothSigs && domainSep && noDowngradeGate;
+  const missing = [!edPinned && "Ed25519 edVerify(null,…) pin", !hybridBothSigs && "hybrid stripped-PQ-half reject", !domainSep && "FIPS-204 domain-sep context", !noDowngradeGate && "requireHybrid no-downgrade gate"].filter(Boolean);
+  return { ...base, tier: ok ? "CONFIRMED" : "OPEN-RISK", ok, severity: "critical",
+    message: ok
+      ? "signed-manifest admission stays fail-closed: Ed25519 algorithm-pinned (edVerify(null,…)), hybrid requires BOTH signatures, FIPS-204 domain-separated, and the gate denies requireHybrid without an ML-DSA key (no PQ downgrade) — the shipped DP-RD-0285b pattern (bridges/plugins) cannot silently regress"
+      : `attestation admission REGRESSED — missing: ${missing.join(", ")} (a poisoned / rug-pulled / downgraded manifest could be admitted — DP-RD-0285b M3/M4)` };
+}
+
 function runAll(get, listWorkflows) {
-  return [checkSigVerifyPinned(get), checkSporeSigningState(get), checkFailOpenGate(get, listWorkflows)];
+  return [checkSigVerifyPinned(get), checkSporeSigningState(get), checkFailOpenGate(get, listWorkflows), checkBridgeAttestationFailClosed(get)];
 }
 
 // ── self-test: prove each detector fires on a synthetic regression (a neutered detector is a fail-open) ──────
@@ -100,12 +126,16 @@ function selfTest() {
     [FL]: "… valid = crypto.verify(null, bytesForVerification, publicKey, sig); …",
     [HV]: "const ML_DSA_65_PUBKEY_BYTES = 1952;\nawait verifyGovernanceSignatureHybrid(env, ed, ml);",
     [CONTAINER]: 'throw new SporeError("AuthError", "signed .spore rejected: no vetted verifier"); // never writes a fake signature',
+    [BA]: 'const ok = edVerify(\n  null,\n  msg, pub, sig);\nreturn { ok: false, reason: "ML-DSA signature required but absent (hybrid)" };\nconst CTX = enc("galerina.bridge.manifest.v2");',
+    [HE]: "if (policy.requireHybrid === true && mlDsaPublicKey === undefined) { return deny; }",
     ".github/workflows/conventions.yml": "jobs:\n  x:\n    steps:\n      - run: node scripts/audit.mjs",
   };
   const bad = {
     [FL]: "const verifier = createVerify(sig.algorithm); const valid = verifier.verify(pub, tag);", // alg-selected: regressed
     [HV]: "// hybrid verification removed in refactor",
     [CONTAINER]: "return result; // signed files now pass through unverified",
+    [BA]: "const ok = edVerify(sig.algorithm, msg, pub, sig); // alg read from artifact — pin regressed, no hybrid guard",
+    [HE]: "const result = verifyAttestation(bridge.attestation, policy); // requireHybrid gate dropped — silent downgrade",
     ".github/workflows/conventions.yml": "jobs:\n  x:\n    steps:\n      - run: node scripts/audit.mjs\n        continue-on-error: true",
   };
   const from = (m) => (rel) => (rel in m ? m[rel] : null);
@@ -121,6 +151,9 @@ function selfTest() {
     ["fail-open-gate CONFIRMED on a clean workflow", checkFailOpenGate(from(good), lw).ok === true],
     ["fail-open-gate RED on continue-on-error: true", checkFailOpenGate(from(bad), lw).ok === false],
     ["fail-open-gate FAIL-CLOSED when no workflows found", checkFailOpenGate(from(good), () => []).ok === false],
+    ["bridge-attestation-failclosed CONFIRMED on the real constructions", (() => { const r = checkBridgeAttestationFailClosed(from(good)); return r.ok && r.tier === "CONFIRMED"; })()],
+    ["bridge-attestation-failclosed RED when the Ed25519 pin / no-downgrade gate is gone", checkBridgeAttestationFailClosed(from(bad)).ok === false],
+    ["bridge-attestation-failclosed FAIL-CLOSED on an unreadable target", checkBridgeAttestationFailClosed(() => null).ok === false],
   ];
   let allOk = true;
   for (const [name, pass] of checks) { console.log(`  ${pass ? "✅" : "❌"} ${name}`); if (!pass) allOk = false; }
