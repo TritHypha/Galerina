@@ -209,8 +209,8 @@ No `ntt_mul`, no "O(1) single clock cycle," no systolic/photonic path, no NVFP4 
 - **Funding:** none. **Competing interests:** none declared.
 - **Data / artifact availability:** the byte-precise specification, reference generators, and golden vectors are in `packages-galerina/galerina-ext-spore/spec/`; results reproduce with stdlib SHAKE256.
 - **Licence:** Apache-2.0 (consistent with the project's defensive-publication + patent-grant strategy).
-- **Standards alignment:** see `docs/scientific-papers/README.md` for the UK (UKRI / Concordat to Support Research Integrity), US (OSTP 2022 public-access; NSF reproducibility), and EU (ALLEA European Code of Conduct; Horizon Europe open science; FAIR) checklist this note follows.
+- **Standards alignment:** see `docs/paper/README.md` for the UK (UKRI / Concordat to Support Research Integrity), US (OSTP 2022 public-access; NSF reproducibility), and EU (ALLEA European Code of Conduct; Horizon Europe open science; FAIR) checklist this note follows.
 
 ---
 
-*Companion: the three defensive-publication notes in `Galerina-Patens/` (No-Coercion K3 composition; prove-own-maths + measured negatives; crypto-on-core rejected paths). Index and publishing standard: `docs/scientific-papers/README.md`.*
+*Companion: the three defensive-publication notes in `Galerina-Patens/` (No-Coercion K3 composition; prove-own-maths + measured negatives; crypto-on-core rejected paths). Index and publishing standard: `docs/paper/README.md`.*

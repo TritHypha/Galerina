@@ -71,6 +71,6 @@ The five results are one statement: **a parallel/exotic substrate buys depth, no
 - **Authorship & AI assistance:** drafted with AI assistance (Claude) under human direction, grounded in the named in-repo scripts/specs and the cited primary sources; all measurements are from the named scripts on the named machine.
 - **Funding:** none.
 - **Competing interests:** none.
-- **Data / artifact availability:** all scripts, specs, and proofs are in-repo (`Galerina-R-AND-D`) and re-runnable on the named machine; this note and its companions live in `docs/scientific-papers/`. Apache-2.0.
+- **Data / artifact availability:** all scripts, specs, and proofs are in-repo (`Galerina-R-AND-D`) and re-runnable on the named machine; this note and its companions live in `docs/paper/defensive-papers/`. Apache-2.0.
 - **Licence:** Apache-2.0.
 - **Caveat:** triage informed by training knowledge, **not** a filed prior-art search; confirm clearance before any external submission.

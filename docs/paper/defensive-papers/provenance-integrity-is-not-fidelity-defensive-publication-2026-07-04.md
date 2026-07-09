@@ -104,7 +104,7 @@ Disclosed embodiments, stated as broadly-but-truthfully as the evidence supports
 **(a) The acceptance-bar substrate — the 0014 differential harnesses (confirmed present on disk 2026-07-04):**
 
 ```
-C:/wwwprojects/Galerina/packages-galerina/galerina-core-compiler/tests/
+packages-galerina/galerina-core-compiler/tests/   (repo-relative)
     fidelity-differential.test.mjs        (308 lines)
     wat-i64-differential.test.mjs         (105 lines)
     u64-wasm-differential.test.mjs         (83 lines)
