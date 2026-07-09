@@ -6,7 +6,7 @@ each append is its own AEAD-sealed, signed **segment** whose root binds the **pr
 hash-linked chain) — tamper-evident order — with a per-epoch **key-erasure ratchet** and **crypto-erasure**
 (drop a segment key) for right-to-be-forgotten. Reuses the encryption layer's key schedule + AEAD **unchanged**
 (it only substitutes the secret input). Reference generator:
-[`_vectors/gen_spore_history_chain.py`](_vectors/gen_spore_history_chain.py).
+[`_vectors/gen_tmf_history_chain.py`](_vectors/gen_tmf_history_chain.py).
 
 > **What the chain guarantees, precisely.** The links make the chain's **contents and interior order**
 > tamper-evident: insert, drop-from-the-middle, reorder, or splice ⇒ a root mismatch ⇒ fail closed.
@@ -136,9 +136,9 @@ rewritten); only the *key* is destroyed.
 
 ---
 
-## 7. Golden vector (`gen_spore_history_chain.py`)
+## 7. Golden vector (`gen_tmf_history_chain.py`)
 Deterministic parts are **real SHAKE256** (KEM/AEAD ciphertext is structural placeholder, as in
-`gen_spore_encryption.py`). It proves: (a) the ratchet is deterministic and evolving (`CK_{k+1} ≠ CK_k`, distinct
+`gen_tmf_encryption.py`). It proves: (a) the ratchet is deterministic and evolving (`CK_{k+1} ≠ CK_k`, distinct
 `MK_k`); (b) **`epoch` and `flags` are bound** — flipping `flags.erased` changes `rₖ` (so the erased bit is
 authenticated, §6); (c) the **hash-link chains** (`Sₖ.prev_root == rₖ₋₁`, genesis `0³²`); (d) **interior
 tamper** (reorder) changes a root; (e) **crypto-erasure** preserves the chain (`S₂.prev_root == r₁` after

@@ -4,7 +4,7 @@
 // header_core = bytes[0:24) (magic/version/profile/flags/section_count) is bound into the TMX-256
 // root; integrity_root = bytes[24:56) is the root itself (never self-bound). All ints little-endian.
 //
-// Spec (frozen): Galerina-R-AND-D/spore/spec/spore-container-v0.md. Verified byte-for-byte against its
+// Spec (frozen): Galerina-R-AND-D/tmf/spec/tmf-container-v0.md. Verified byte-for-byte against its
 // golden container vector (tests/container.test.mjs) — writeSpore reproduces the exact 203 bytes, and
 // the §6 fail-closed reader round-trips + rejects every tamper/bounds case.
 import { timingSafeEqual } from "node:crypto";

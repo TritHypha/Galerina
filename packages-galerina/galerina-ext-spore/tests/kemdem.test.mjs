@@ -1,5 +1,5 @@
 // .spore KEM-DEM confidentiality (slice 3). DETERMINISTIC parts verified byte-for-byte against the frozen
-// golden vectors (Galerina-R-AND-D/spore/spec/_vectors/gen_spore_encryption.py + gen_cmt_ctx.py); the REAL
+// golden vectors (Galerina-R-AND-D/tmf/spec/_vectors/gen_tmf_encryption.py + gen_cmt_ctx.py); the REAL
 // hybrid-KEM + AES-256-GCM seal/open verified by round-trip + every fail-closed tamper case (spec §7.1).
 import { test } from "node:test";
 import assert from "node:assert/strict";

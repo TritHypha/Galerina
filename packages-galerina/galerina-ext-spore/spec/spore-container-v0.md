@@ -4,7 +4,7 @@
 [`tmx-256-construction-v0.md`](tmx-256-construction-v0.md) (the integrity/hash core). This file
 defines the **on-disk/on-wire byte layout**; TMX-256 defines how the integrity root over that layout
 is computed and signed. A reference writer/reader and the golden container vector below are produced by
-[`_vectors/gen_spore_container.py`](_vectors/gen_spore_container.py) — its `integrity_root` is **identical**
+[`_vectors/gen_tmf_container.py`](_vectors/gen_tmf_container.py) — its `integrity_root` is **identical**
 to the TMX construction's golden root, so the two specs are provably consistent.
 
 Grounded only; nothing here depends on photonic/ternary hardware or any performance number. NVFP4 appears
@@ -177,7 +177,7 @@ bytes (`region_off + payload_region_len == EOF`); a **signed** file's signature 
 
 ## 8. Golden container vector (2 sections, unsigned)
 
-Produced by `python spec/_vectors/gen_spore_container.py`. `integrity_root` equals the TMX golden root,
+Produced by `python spec/_vectors/gen_tmf_container.py`. `integrity_root` equals the TMX golden root,
 proving the two specs agree. Any conforming writer MUST produce these exact bytes for this input.
 
 ```

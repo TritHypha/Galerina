@@ -2,7 +2,7 @@
 //
 // Two halves, by design:
 //   1. DETERMINISTIC key schedule / AAD / STREAM nonces / CTX commit — pure SHAKE256 byte-math (node:crypto),
-//      verified BYTE-FOR-BYTE against the frozen golden vectors (gen_spore_encryption.py / gen_cmt_ctx.py).
+//      verified BYTE-FOR-BYTE against the frozen golden vectors (gen_tmf_encryption.py / gen_cmt_ctx.py).
 //      This half is the cross-language conformance contract and has NO @noble dependency.
 //   2. REAL KEM/AEAD seal+open — hybrid X25519+ML-KEM-768 → SHAKE256 KDF → AES-256-GCM, with the §4
 //      committing-AAD and the §8.5 CTX (CMT-4) committing tag. Verified by round-trip + tamper (no fixed

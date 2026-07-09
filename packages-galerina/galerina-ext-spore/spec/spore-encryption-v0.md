@@ -9,7 +9,7 @@ oracle-backed spec track. Companion: the integrity core [`tmx-256-construction-v
 and authenticity [`signature-custody-v0.md`](signature-custody-v0.md) (the gate this layer sits **under**).
 
 A reference generator + golden vector are produced by
-[`_vectors/gen_spore_encryption.py`](_vectors/gen_spore_encryption.py) (stdlib SHAKE256 + struct only).
+[`_vectors/gen_tmf_encryption.py`](_vectors/gen_tmf_encryption.py) (stdlib SHAKE256 + struct only).
 
 > **The one rule (verify-before-decrypt).** Confidentiality is added **under** the existing TMX-256 +
 > ML-DSA-65 gate, never beside it. The integrity root is recomputed from the **ciphertext** leaves, the
@@ -339,7 +339,7 @@ for new long-lived sections; `00` remains valid for compatibility with the §4 b
 
 ## 9. Golden vector + reconciliation note
 
-### Golden vector (`python spec/_vectors/gen_spore_encryption.py`)
+### Golden vector (`python spec/_vectors/gen_tmf_encryption.py`)
 Deterministic parts (KDF, commitment, 36-byte context, committed AAD, STREAM nonces) are **real SHAKE256 /
 byte math** — reproducible by anyone in any language. `ct_kem` and the AEAD ciphertext+tag are **zero-filled
 placeholders of the correct standard sizes** (no vetted KEM/AEAD in Python stdlib; we do not hand-roll

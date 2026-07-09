@@ -1,6 +1,6 @@
 // @galerina/ext-spore — the .spore format engine (Phase 2, roadmap #6).
 //
-// Build order (specs frozen in Galerina-R-AND-D/spore/spec/*):
+// Build order (specs frozen in Galerina-R-AND-D/tmf/spec/*):
 //   ✅ Slice 1 — TMX-256 integrity core (TriMerkle-XOF / SHAKE256)
 //   ✅ Slice 2 — container reader/writer (header + 56-byte section table; §6 fail-closed reader)
 //   ✅ Slice 3 — KEM-DEM confidentiality (hybrid X25519+ML-KEM-768 → SHAKE256 KDF → AES-256-GCM + CTX commit)
