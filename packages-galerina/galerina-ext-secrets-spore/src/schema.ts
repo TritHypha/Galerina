@@ -1,7 +1,7 @@
 // schema.ts — env.spore v0 schema (Part 1 of the R&D design doc §3).
 //
 // env.spore = the shipped v0 .spore container (writeTmf/readTmf as-is), flags.signed=0
-// (UNSIGNED-but-ENCRYPTED — the ML-DSA signed root is GATED on ext-tmf slice 4 / #7;
+// (UNSIGNED-but-ENCRYPTED — the ML-DSA signed root is GATED on ext-spore slice 4 / #7;
 // we NEVER fake a signature). Confidentiality is KEM-DEM single-shot under hybrid
 // X25519+ML-KEM-768 (KEM_PROFILE 0x02) with commit_mode=CTX (CMT-4, key-committing).
 //

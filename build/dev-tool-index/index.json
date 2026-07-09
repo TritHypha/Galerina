@@ -4,7 +4,7 @@
     "packages": 93,
     "testBearing": 68,
     "tests": 6075,
-    "devTools": 50,
+    "devTools": 51,
     "auditTools": 28,
     "toolsInCadence": 20,
     "proofs": 40
@@ -749,15 +749,15 @@
       "deps": []
     },
     {
-      "name": "galerina-ext-secrets-tmf",
+      "name": "galerina-ext-secrets-spore",
       "kind": "ext",
-      "description": "OPTIONAL sealed-secrets-on-.tmf layer for Galerina. env.tmf = an encrypted-at-rest replacement for plaintext .",
+      "description": "OPTIONAL sealed-secrets-on-.spore layer for Galerina. env.spore = an encrypted-at-rest replacement for plaintext .",
       "tests": 21,
       "hasTestScript": true,
       "border": "PASS",
       "files": 10,
       "deps": [
-        "@galerina/ext-tmf"
+        "@galerina/ext-spore"
       ]
     },
     {
@@ -771,9 +771,9 @@
       "deps": []
     },
     {
-      "name": "galerina-ext-tmf",
+      "name": "galerina-ext-spore",
       "kind": "ext",
-      "description": "Galerina .tmf format engine (Phase 2 #6) — TMX-256 integrity (TriMerkle-XOF/SHAKE256), container, KEM-DEM conf",
+      "description": "Galerina .spore format engine (Phase 2 #6) — TMX-256 integrity (TriMerkle-XOF/SHAKE256), container, KEM-DEM conf",
       "tests": 61,
       "hasTestScript": true,
       "border": "PASS",
@@ -1463,6 +1463,7 @@
       "selfTest": false,
       "inCadence": true,
       "concerns": [
+        "diagnostics",
         "source-hygiene",
         "graph/index"
       ]
@@ -1540,8 +1541,7 @@
         "governance",
         "provenance",
         "diagnostics",
-        "secrets/privacy",
-        "graph/index"
+        "secrets/privacy"
       ]
     },
     {
@@ -1656,8 +1656,7 @@
       "selfTest": false,
       "inCadence": false,
       "concerns": [
-        "secrets/privacy",
-        "graph/index"
+        "secrets/privacy"
       ]
     },
     {
@@ -1691,6 +1690,16 @@
       "concerns": [
         "signing/fusion",
         "governance",
+        "graph/index"
+      ]
+    },
+    {
+      "name": "relink-workspace.mjs",
+      "category": "util",
+      "purpose": "repair broken intra-workspace `file:` dependency links",
+      "selfTest": false,
+      "inCadence": false,
+      "concerns": [
         "graph/index"
       ]
     },
@@ -1748,6 +1757,7 @@
       "audit-sink-canonicality.mjs",
       "audit-syntax.mjs",
       "audit-tier-boundary.mjs",
+      "memory-graph.mjs",
       "code-index.mjs",
       "gen-code-registry.mjs",
       "kb-index.mjs",
@@ -1796,16 +1806,15 @@
       "gen-code-registry.mjs",
       "kb-index.mjs",
       "lint-conventions.mjs",
-      "lint-fungi.mjs",
       "run-all-tests.cjs",
       "run-core-tests.cjs",
       "run-phase-close.mjs",
       "status.mjs",
       "check-gate-injection.mjs",
-      "fungi-astshape.mjs",
       "mark-core-change.cjs",
       "rd-absorb.mjs",
       "rebuild-fusable-packages.mjs",
+      "relink-workspace.mjs",
       "verify-artifacts.mjs"
     ],
     "sensitive-allowlist": [

@@ -659,24 +659,6 @@ Provides:
 - singleLaneErrorProbability
 - nmrFailureProbability
 
-## galerina-ext-bridge-quantum
-
-Galerina governed bridge for IBM ffsim — out-of-process fermionic quantum simulation under contract, Tower audit lifecycle + attestation
-
-Provides:
-- FfsimEnv
-- detectFfsim
-- FfsimBackend
-- selectQuantumBackend
-- createQuantumBridgeRegistry
-- LimitVerdict
-- checkJobLimits
-- FfsimManifestInputs
-- buildFfsimManifest
-- validateFfsimManifest
-- QuantumOp
-- QUANTUM_OPS
-
 ## galerina-inference-bridge-contract
 
 Neutral Brain/Brawn contract — InferenceBridge, BridgeOp/Result, packed-ternary + fixed-point layout metadata, bridge manifest schema, determinism oracle interface. Zero runtime deps.
@@ -830,9 +812,9 @@ Provides:
 - TriPipeEngine
 - createTriPipeEngine
 
-## galerina-ext-tmf
+## galerina-ext-spore
 
-Galerina .tmf format engine (Phase 2 #6) — TMX-256 integrity (TriMerkle-XOF/SHAKE256), container, KEM-DEM confidentiality, ML-DSA-65 signing. Crypto-on-core: bit-exact, deterministic.
+Galerina .spore format engine (Phase 2 #6) — TMX-256 integrity (TriMerkle-XOF/SHAKE256), container, KEM-DEM confidentiality, ML-DSA-65 signing. Crypto-on-core: bit-exact, deterministic.
 
 Provides:
 - MAGIC
@@ -923,9 +905,9 @@ Provides:
 - SecretHandle
 - VaultClient
 
-## galerina-ext-secrets-tmf
+## galerina-ext-secrets-spore
 
-OPTIONAL sealed-secrets-on-.tmf layer for Galerina. env.tmf = an encrypted-at-rest replacement for plaintext .env, edited through a governed in-memory-only CLI (no temp file, no $EDITOR, no .swp). Thin orchestration over @galerina/ext-tmf (format/crypto) + the ext-secrets-vault store discipline. No new crypto, no new container bytes; crypto stays Binary (FUNGI-SUBSTRATE-001). Unsigned-but-encrypted (flags.signed=0); signed root gated on ext-tmf slice 4/#7.
+OPTIONAL sealed-secrets-on-.spore layer for Galerina. env.spore = an encrypted-at-rest replacement for plaintext .env, edited through a governed in-memory-only CLI (no temp file, no $EDITOR, no .swp). Thin orchestration over @galerina/ext-spore (format/crypto) + the ext-secrets-vault store discipline. No new crypto, no new container bytes; crypto stays Binary (FUNGI-SUBSTRATE-001). Unsigned-but-encrypted (flags.signed=0); signed root gated on ext-tmf slice 4/#7.
 
 Provides:
 - SecretConfigSource
@@ -940,6 +922,23 @@ Provides:
 - atomicWriteCiphertext
 - setMlockHook
 - tryMlock
+
+## galerina-ext-tritsocket
+
+TritSocket: a deny-only ternary (Kleene-3) admission pre-filter. Emits Deny | Maybe — never Allow. A cheap, cache-dense necessary-condition check that runs IN FRONT OF a real keyed PQ gate (ML-DSA/Ed25519/HMAC), cutting load without ever weakening the real gate. The public mask makes the score forgeable, which is exactly why Maybe is never an Allow.
+
+Provides:
+- RealKeyedGate
+- admitSync
+- Verdict
+- Trit
+- packedLen
+- pack
+- unpack
+- prefilter
+- dot
+- prefilterBatch
+- ABI_VERSION
 
 ## galerina-governance-telemetry
 
@@ -1061,6 +1060,24 @@ Provides:
 - search
 - searchWithIndex
 - IndexedFlow
+
+## galerina-devtools-fungi-scan
+
+Syntax-migration corpus scanner: walks every .fungi/.gate file and reports old-form usage, @version headers, match exhaustiveness and planned-keyword collisions — via the REAL compiler lexer, never regex.
+
+Provides:
+- discoverInlineHosts
+- InlineFixture
+- looksLikeFungi
+- extractFungiFixtures
+- scanInlineFixtures
+- WordRollup
+- Rollup
+- buildRollup
+- renderMarkdown
+- renderConsole
+- PLANNED_CONSTRUCT_WORDS
+- PLANNED_ALIAS_WORDS
 
 ## galerina-devtools-kb-graph
 

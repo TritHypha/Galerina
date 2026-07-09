@@ -1,5 +1,5 @@
 {
-  "packageName": "@galerina/ext-tmf",
+  "packageName": "@galerina/ext-spore",
   "allowedExternal": [
     "@noble/ciphers/aes.js",
     "@noble/post-quantum/hybrid.js",

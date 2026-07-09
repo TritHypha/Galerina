@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// cli.ts — the `galerina secrets-tmf` CRUD/shell CLI (design doc Part 2).
+// cli.ts — the `galerina secrets-spore` CRUD/shell CLI (design doc Part 2).
 //
-// bin: galerina-secrets-tmf  (also surfaced as `galerina secrets-tmf <cmd>`)
+// bin: galerina-secrets-spore  (also surfaced as `galerina secrets-spore <cmd>`)
 // default --file ./env.spore
 //
 // Commands:
@@ -66,7 +66,7 @@ function rejectValueInArgv(a: Args): void {
   if (a.rest.length > 0) {
     die(
       "REFUSED: a secret value must come from STDIN or the no-echo prompt, never argv " +
-      "(argv leaks via ps/proc/cmdline/history). Pipe the value: `printf %s \"$V\" | galerina-secrets-tmf set NAME`.",
+      "(argv leaks via ps/proc/cmdline/history). Pipe the value: `printf %s \"$V\" | galerina-secrets-spore set NAME`.",
     );
   }
 }
@@ -201,7 +201,7 @@ async function main(): Promise<void> {
           die(
             "REFUSED: keygen would emit the recipient SECRET KEY to a TTY (scrollback/shoulder-surf). " +
             "This is secret-zero — anchor it externally, never on screen. Pipe stderr to a 0600 sink " +
-            "(e.g. `galerina-secrets-tmf keygen 2>key.sec` then wrap+wipe), or pass --force to override.",
+            "(e.g. `galerina-secrets-spore keygen 2>key.sec` then wrap+wipe), or pass --force to override.",
           );
         }
         // raw secret-key bytes through a Buffer view we OWN and wipe in finally — no hex string.
@@ -224,7 +224,7 @@ async function main(): Promise<void> {
 
     default:
       process.stderr.write(
-        "galerina-secrets-tmf <cmd> [--file ./env.spore]\n" +
+        "galerina-secrets-spore <cmd> [--file ./env.spore]\n" +
         "  init --pub HEX | set NAME --pub HEX | get NAME [--force] | list | rm NAME --pub HEX\n" +
         "  rotate-recipient --new-pub HEX | keygen | shell --pub HEX\n" +
         "  (secret values: STDIN or no-echo prompt — NEVER argv)\n",
@@ -238,7 +238,7 @@ async function main(): Promise<void> {
  */
 async function runShell(file: string, pub: Uint8Array): Promise<void> {
   const rl = createInterface({ input: process.stdin, output: process.stderr });
-  const prompt = (): void => { process.stderr.write("secrets-tmf> "); };
+  const prompt = (): void => { process.stderr.write("secrets-spore> "); };
   process.stderr.write("in-arena REPL. commands: set NAME | get NAME | list | rm NAME | .save | .quit\n");
   prompt();
   for await (const line of rl) {

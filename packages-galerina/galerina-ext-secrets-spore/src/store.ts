@@ -47,7 +47,7 @@ export type K3Token = (typeof K3)[keyof typeof K3];
 /** Self-check that the engine's KEM/AEAD primitives loaded. NoCryptoLib reject if not. */
 function assertCryptoLib(): void {
   if (typeof seal !== "function" || typeof open !== "function") {
-    throw new TmfCryptoError("NoCryptoLib", "ext-tmf seal/open unavailable (fail-closed, no downgrade)");
+    throw new TmfCryptoError("NoCryptoLib", "ext-spore seal/open unavailable (fail-closed, no downgrade)");
   }
 }
 
@@ -236,7 +236,7 @@ export interface ComposeResult {
 export function composeRead(buf: Uint8Array, recipientSec: Uint8Array, token: K3Token): ComposeResult {
   // 1. verify-before-decrypt — readTmf fail-closes on any tamper/bounds and REJECTS signed v0.
   const r = readTmf(buf);
-  // (2. ML-DSA signature verify is GATED on ext-tmf slice 4 / #7 — readTmf already rejects any
+  // (2. ML-DSA signature verify is GATED on ext-spore slice 4 / #7 — readTmf already rejects any
   //  signed file with AuthError, so a v0 env.spore is unsigned-but-encrypted; no fake sig.)
   // 3. K3 ALLOW(+1) gate.
   assertAllow(token);

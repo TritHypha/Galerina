@@ -152,7 +152,7 @@ Suggested order: RD-0240 → BK-2 → BK-1 → BK-3 → BK-4 → BK-5, each RED�
       + phase-close green, explicit-pathspec, push HELD.** Build-staging queue reconciled vs HEAD by 2 read-only workers
       (22 dirs → 12 already-applied/superseded/obsolete; rest triaged). Commits (oldest→newest):
   - [x] **`342e005`** build(phase-close): gate ext-bridge-cpp so the RD-0238 native-load SEC-mutant runs every phase close.
-  - [x] **`dad569c`** anchor-GCM (LOW): fail-closed GCM auth-tag length + `authTagLength:16` in `ext-secrets-tmf/anchor.ts`
+  - [x] **`dad569c`** anchor-GCM (LOW): fail-closed GCM auth-tag length + `authTagLength:16` in `ext-secrets-spore/anchor.ts`
         unwrap (short-tag downgrade, DEP0182); 3 real-wrap RED benches.
   - [x] **`d8ee37a`** privacy-001 (RD-0234c): FUNGI-PRIVACY-001 now enforces the documented bare `to response` grammar
         (was `.body`-only → protected PII/PAN/NHS leaked to the response and signed clean on every Level-9 example).
@@ -197,7 +197,7 @@ Suggested order: RD-0240 → BK-2 → BK-1 → BK-3 → BK-4 → BK-5, each RED�
 - [x] **`b8f6ae0`** kernel-secrets seam (was owner-gated; TAKEN ON under "unlock and go"). Fail-closed **gate 9.5**
       in the app-kernel: a route that DECLARES `secrets.require` is refused (503 `secret_unavailable`) before any
       handler side effect when a required secret is absent/faulted/unresolved. New `secret-gate.ts` (structural
-      `SecretsProvider`, no hard dep on ext-secrets-tmf) + `ctx.getSecret` short-lived view; empty-require = strict
+      `SecretsProvider`, no hard dep on ext-secrets-spore) + `ctx.getSecret` short-lived view; empty-require = strict
       no-op (non-breaking). Worker-built, main-session reviewed + full-gate-verified. 7 files, +370.
 - [x] **`2710c10`** RD-0234c **H2-b** — `checkTaint` now honors the DECLARED `tainted` param qualifier (provenance,
       not name); closes the H2 second half. Design read found the PREFIX bug: the old `split(":")[0]` read

@@ -14,11 +14,11 @@
     "skipLibCheck": true,
     "typeRoots": ["../galerina-tower-citizen/node_modules/@types", "../galerina-core-compiler/node_modules/@types"],
     "paths": {
-      "@galerina/ext-tmf": ["../galerina-ext-tmf/dist/index.d.ts"]
+      "@galerina/ext-spore": ["../galerina-ext-spore/dist/index.d.ts"]
     },
     "baseUrl": "."
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist", "tests", "scripts"],
-  "//note": "The `paths` alias resolves @galerina/ext-tmf to its SHIPPED dist during in-staging build/typecheck. Once the hub ABSORBS this package into packages-galerina/galerina-ext-secrets-tmf the workspace resolves @galerina/ext-tmf natively (sibling package) and this alias becomes a harmless fallback. The @noble argon2 import in anchor.ts uses a relative path into the compiler's vendored node_modules — same borrow pattern as ext-tmf/kemdem.ts; the hub re-points it if the absorbed layout differs."
+  "//note": "The `paths` alias resolves @galerina/ext-spore to its SHIPPED dist during in-staging build/typecheck. Once the hub ABSORBS this package into packages-galerina/galerina-ext-secrets-spore the workspace resolves @galerina/ext-spore natively (sibling package) and this alias becomes a harmless fallback. The @noble argon2 import in anchor.ts uses a relative path into the compiler's vendored node_modules — same borrow pattern as ext-spore/kemdem.ts; the hub re-points it if the absorbed layout differs."
 }

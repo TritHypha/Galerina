@@ -1,4 +1,4 @@
-// @galerina/ext-tmf — the .spore format engine (Phase 2, roadmap #6).
+// @galerina/ext-spore — the .spore format engine (Phase 2, roadmap #6).
 //
 // Build order (specs frozen in Galerina-R-AND-D/tmf/spec/*):
 //   ✅ Slice 1 — TMX-256 integrity core (TriMerkle-XOF / SHAKE256)

@@ -1040,85 +1040,6 @@
     ]
   },
   {
-    "code": "ERR_INVALID_NELEC",
-    "namespace": "ERR",
-    "family": "ERR_*",
-    "occurrences": 2,
-    "docOnly": false,
-    "defs": [],
-    "emits": [
-      "packages-galerina/galerina-ext-bridge-quantum/src/limits.ts:24"
-    ],
-    "tests": 1,
-    "refs": 0,
-    "docs": 0,
-    "names": [],
-    "severities": [],
-    "allSites": [
-      "emit packages-galerina/galerina-ext-bridge-quantum/src/limits.ts:24",
-      "test packages-galerina/galerina-ext-bridge-quantum/tests/quantum-bridge.test.mjs:24"
-    ]
-  },
-  {
-    "code": "ERR_INVALID_ORBITALS",
-    "namespace": "ERR",
-    "family": "ERR_*",
-    "occurrences": 1,
-    "docOnly": false,
-    "defs": [],
-    "emits": [
-      "packages-galerina/galerina-ext-bridge-quantum/src/limits.ts:17"
-    ],
-    "tests": 0,
-    "refs": 0,
-    "docs": 0,
-    "names": [],
-    "severities": [],
-    "allSites": [
-      "emit packages-galerina/galerina-ext-bridge-quantum/src/limits.ts:17"
-    ]
-  },
-  {
-    "code": "ERR_INVALID_PARAMS",
-    "namespace": "ERR",
-    "family": "ERR_*",
-    "occurrences": 2,
-    "docOnly": false,
-    "defs": [],
-    "emits": [
-      "packages-galerina/galerina-ext-bridge-quantum/src/limits.ts:43"
-    ],
-    "tests": 1,
-    "refs": 0,
-    "docs": 0,
-    "names": [],
-    "severities": [],
-    "allSites": [
-      "emit packages-galerina/galerina-ext-bridge-quantum/src/limits.ts:43",
-      "test packages-galerina/galerina-ext-bridge-quantum/tests/quantum-bridge.test.mjs:26"
-    ]
-  },
-  {
-    "code": "ERR_INVALID_SEED",
-    "namespace": "ERR",
-    "family": "ERR_*",
-    "occurrences": 2,
-    "docOnly": false,
-    "defs": [],
-    "emits": [
-      "packages-galerina/galerina-ext-bridge-quantum/src/limits.ts:27"
-    ],
-    "tests": 1,
-    "refs": 0,
-    "docs": 0,
-    "names": [],
-    "severities": [],
-    "allSites": [
-      "emit packages-galerina/galerina-ext-bridge-quantum/src/limits.ts:27",
-      "test packages-galerina/galerina-ext-bridge-quantum/tests/quantum-bridge.test.mjs:25"
-    ]
-  },
-  {
     "code": "ERR_ITERATIONS_EXCEEDED",
     "namespace": "ERR",
     "family": "ERR_*",
@@ -1152,42 +1073,6 @@
       "ref packages-galerina/galerina-tower-citizen/src/hybrid-engine.ts:742",
       "ref packages-galerina/galerina-tower-citizen/src/hybrid-engine.ts:744",
       "test packages-galerina/galerina-tower-citizen/tests/hybrid-engine.test.mjs:119"
-    ]
-  },
-  {
-    "code": "ERR_LIMIT",
-    "namespace": "ERR",
-    "family": "ERR_*",
-    "occurrences": 1,
-    "docOnly": false,
-    "defs": [],
-    "emits": [],
-    "tests": 0,
-    "refs": 1,
-    "docs": 0,
-    "names": [],
-    "severities": [],
-    "allSites": [
-      "ref packages-galerina/galerina-ext-bridge-quantum/src/ffsim-backend.ts:55"
-    ]
-  },
-  {
-    "code": "ERR_MEMORY_EXCEEDED",
-    "namespace": "ERR",
-    "family": "ERR_*",
-    "occurrences": 1,
-    "docOnly": false,
-    "defs": [],
-    "emits": [
-      "packages-galerina/galerina-ext-bridge-quantum/src/limits.ts:36"
-    ],
-    "tests": 0,
-    "refs": 0,
-    "docs": 0,
-    "names": [],
-    "severities": [],
-    "allSites": [
-      "emit packages-galerina/galerina-ext-bridge-quantum/src/limits.ts:36"
     ]
   },
   {
@@ -1352,26 +1237,6 @@
     ]
   },
   {
-    "code": "ERR_ORBITALS_EXCEEDED",
-    "namespace": "ERR",
-    "family": "ERR_*",
-    "occurrences": 2,
-    "docOnly": false,
-    "defs": [],
-    "emits": [
-      "packages-galerina/galerina-ext-bridge-quantum/src/limits.ts:20"
-    ],
-    "tests": 1,
-    "refs": 0,
-    "docs": 0,
-    "names": [],
-    "severities": [],
-    "allSites": [
-      "emit packages-galerina/galerina-ext-bridge-quantum/src/limits.ts:20",
-      "test packages-galerina/galerina-ext-bridge-quantum/tests/quantum-bridge.test.mjs:22"
-    ]
-  },
-  {
     "code": "ERR_PAYLOAD_EXCEEDS_DWI_CEILING",
     "namespace": "ERR",
     "family": "ERR_*",
@@ -1424,24 +1289,6 @@
     "allSites": [
       "emit packages-galerina/galerina-tower-citizen/src/hybrid-engine.ts:679",
       "test packages-galerina/galerina-tower-citizen/tests/plan-memoization.test.mjs:37"
-    ]
-  },
-  {
-    "code": "ERR_QUANTUM_PQ_REQUIRED",
-    "namespace": "ERR",
-    "family": "ERR_*",
-    "occurrences": 2,
-    "docOnly": false,
-    "defs": [],
-    "emits": [],
-    "tests": 1,
-    "refs": 1,
-    "docs": 0,
-    "names": [],
-    "severities": [],
-    "allSites": [
-      "ref packages-galerina/galerina-ext-bridge-quantum/src/attestation.ts:41",
-      "test packages-galerina/galerina-ext-bridge-quantum/tests/attestation.test.mjs:19"
     ]
   },
   {
@@ -1770,26 +1617,6 @@
     ]
   },
   {
-    "code": "ERR_SHOTS_EXCEEDED",
-    "namespace": "ERR",
-    "family": "ERR_*",
-    "occurrences": 2,
-    "docOnly": false,
-    "defs": [],
-    "emits": [
-      "packages-galerina/galerina-ext-bridge-quantum/src/limits.ts:53"
-    ],
-    "tests": 1,
-    "refs": 0,
-    "docs": 0,
-    "names": [],
-    "severities": [],
-    "allSites": [
-      "emit packages-galerina/galerina-ext-bridge-quantum/src/limits.ts:53",
-      "test packages-galerina/galerina-ext-bridge-quantum/tests/quantum-bridge.test.mjs:28"
-    ]
-  },
-  {
     "code": "ERR_SIZE_EXCEEDED",
     "namespace": "ERR",
     "family": "ERR_*",
@@ -1821,27 +1648,6 @@
     "severities": [],
     "allSites": [
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:3424"
-    ]
-  },
-  {
-    "code": "ERR_SUBSPACE_TOO_LARGE",
-    "namespace": "ERR",
-    "family": "ERR_*",
-    "occurrences": 3,
-    "docOnly": false,
-    "defs": [],
-    "emits": [
-      "packages-galerina/galerina-ext-bridge-quantum/src/limits.ts:32"
-    ],
-    "tests": 2,
-    "refs": 0,
-    "docs": 0,
-    "names": [],
-    "severities": [],
-    "allSites": [
-      "emit packages-galerina/galerina-ext-bridge-quantum/src/limits.ts:32",
-      "test packages-galerina/galerina-ext-bridge-quantum/tests/quantum-bridge.test.mjs:23",
-      "test packages-galerina/galerina-ext-bridge-quantum/tests/quantum-bridge.test.mjs:36"
     ]
   },
   {
@@ -1914,46 +1720,6 @@
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:3412",
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:1653",
       "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2329"
-    ]
-  },
-  {
-    "code": "ERR_TROTTER_STEPS_EXCEEDED",
-    "namespace": "ERR",
-    "family": "ERR_*",
-    "occurrences": 2,
-    "docOnly": false,
-    "defs": [],
-    "emits": [
-      "packages-galerina/galerina-ext-bridge-quantum/src/limits.ts:49"
-    ],
-    "tests": 1,
-    "refs": 0,
-    "docs": 0,
-    "names": [],
-    "severities": [],
-    "allSites": [
-      "emit packages-galerina/galerina-ext-bridge-quantum/src/limits.ts:49",
-      "test packages-galerina/galerina-ext-bridge-quantum/tests/quantum-bridge.test.mjs:27"
-    ]
-  },
-  {
-    "code": "ERR_UNKNOWN_OP",
-    "namespace": "ERR",
-    "family": "ERR_*",
-    "occurrences": 2,
-    "docOnly": false,
-    "defs": [],
-    "emits": [
-      "packages-galerina/galerina-ext-bridge-quantum/src/limits.ts:14"
-    ],
-    "tests": 1,
-    "refs": 0,
-    "docs": 0,
-    "names": [],
-    "severities": [],
-    "allSites": [
-      "emit packages-galerina/galerina-ext-bridge-quantum/src/limits.ts:14",
-      "test packages-galerina/galerina-ext-bridge-quantum/tests/quantum-bridge.test.mjs:21"
     ]
   },
   {
@@ -2284,11 +2050,11 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "doc packages-galerina/galerina-ext-tmf/spec/tmf-encryption-v0.md:7",
-      "doc packages-galerina/galerina-ext-tmf/spec/tmf-encryption-v0.md:44",
-      "doc packages-galerina/galerina-ext-tmf/spec/tmf-encryption-v0.md:129",
-      "doc packages-galerina/galerina-ext-tmf/spec/tmf-encryption-v0.md:163",
-      "doc packages-galerina/galerina-ext-tmf/spec/tmf-encryption-v0.md:403"
+      "doc packages-galerina/galerina-ext-spore/spec/tmf-encryption-v0.md:7",
+      "doc packages-galerina/galerina-ext-spore/spec/tmf-encryption-v0.md:44",
+      "doc packages-galerina/galerina-ext-spore/spec/tmf-encryption-v0.md:129",
+      "doc packages-galerina/galerina-ext-spore/spec/tmf-encryption-v0.md:163",
+      "doc packages-galerina/galerina-ext-spore/spec/tmf-encryption-v0.md:403"
     ]
   },
   {
@@ -14983,13 +14749,13 @@
       "test packages-galerina/galerina-core-compiler/tests/test-generator-0016.test.mjs:200",
       "ref packages-galerina/galerina-ext-photonic-emulator/src/digital-ecc.ts:12",
       "ref packages-galerina/galerina-ext-photonic-emulator/src/partition-decider.ts:128",
-      "doc packages-galerina/galerina-ext-secrets-tmf/README.md:8",
-      "ref packages-galerina/galerina-ext-secrets-tmf/src/mlock.ts:5",
-      "doc packages-galerina/galerina-ext-tmf/README.md:8",
-      "ref packages-galerina/galerina-ext-tmf/src/history.ts:3",
-      "ref packages-galerina/galerina-ext-tmf/src/inclusion.ts:10",
-      "ref packages-galerina/galerina-ext-tmf/src/kemdem.ts:12",
-      "ref packages-galerina/galerina-ext-tmf/src/tmx256.ts:6",
+      "doc packages-galerina/galerina-ext-secrets-spore/README.md:8",
+      "ref packages-galerina/galerina-ext-secrets-spore/src/mlock.ts:5",
+      "doc packages-galerina/galerina-ext-spore/README.md:8",
+      "ref packages-galerina/galerina-ext-spore/src/history.ts:3",
+      "ref packages-galerina/galerina-ext-spore/src/inclusion.ts:10",
+      "ref packages-galerina/galerina-ext-spore/src/kemdem.ts:12",
+      "ref packages-galerina/galerina-ext-spore/src/tmx256.ts:6",
       "ref packages-galerina/galerina-governance-telemetry/src/exposition.ts:15",
       "ref packages-galerina/galerina-tower-citizen/src/index.ts:116",
       "ref packages-galerina/galerina-tower-citizen/src/quorum.ts:15",

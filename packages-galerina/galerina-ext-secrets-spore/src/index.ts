@@ -1,9 +1,9 @@
-// @galerina/ext-secrets-tmf — sealed secrets on the .spore container (OPTIONAL, ext tier).
+// @galerina/ext-secrets-spore — sealed secrets on the .spore container (OPTIONAL, ext tier).
 //
-// A THIN orchestration layer over @galerina/ext-tmf (format/crypto) + the
+// A THIN orchestration layer over @galerina/ext-spore (format/crypto) + the
 // @galerina/ext-secrets-vault store DISCIPLINE. NO new crypto, NO new container bytes.
 // env.spore = a v0 .spore with flags.signed=0 (unsigned-but-ENCRYPTED). The signed root is GATED
-// on ext-tmf slice 4 / #7 — we never fake a signature.
+// on ext-spore slice 4 / #7 — we never fake a signature.
 //
 // Public surface:
 //   schema  — env.spore v0 layout (coord = SHAKE(name)[:16], one section/secret, sealed manifest)

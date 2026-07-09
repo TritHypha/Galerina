@@ -41,13 +41,13 @@ function errorOf(res) {
   return JSON.parse(dec.decode(res.body)).error;
 }
 
-// ── makeArena(): prefer the REAL ext-secrets-tmf SealArena (proves the real arena satisfies the
+// ── makeArena(): prefer the REAL ext-secrets-spore SealArena (proves the real arena satisfies the
 // SecretsProvider shape by structure). Fall back to a local RefArena stub mirroring the exact
 // has/use/put/fault/dispose contract (arena.ts:33-115) if that package's dist is unavailable, so
 // this bench stays runnable stand-alone. ──
 let SealArena;
 try {
-  ({ SealArena } = await import("../../galerina-ext-secrets-tmf/dist/arena.js"));
+  ({ SealArena } = await import("../../galerina-ext-secrets-spore/dist/arena.js"));
 } catch {
   SealArena = undefined;
 }
@@ -86,7 +86,7 @@ function makeArena() {
 }
 
 // Record which backing the run used (surfaces in the test output for the report).
-test(`secrets: arena backing in use = ${SealArena !== undefined ? "REAL SealArena (ext-secrets-tmf/dist)" : "local RefArena fallback"}`, () => {
+test(`secrets: arena backing in use = ${SealArena !== undefined ? "REAL SealArena (ext-secrets-spore/dist)" : "local RefArena fallback"}`, () => {
   assert.ok(typeof makeArena().has === "function");
 });
 

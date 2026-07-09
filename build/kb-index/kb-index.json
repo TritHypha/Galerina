@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 764,
+  "docCount": 765,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -5614,7 +5614,7 @@
         "🔏 2026-06-20 — #180: the authoritative CBOR `.lmanifest` is now really Ed25519-signed (owner-unblocked)",
         "🏁 Phase 1 Security Audit — COMPLETE (2026-06-16)",
         "Parked backlog (deliberate — nothing falls through the cracks)",
-        "🏗️ Phase 2 — `.tmf` engine build (#6) — IN PROGRESS (2026-06-16)",
+        "🏗️ Phase 2 — `.spore` engine build (#6) — IN PROGRESS (2026-06-16)",
         "🔐 2026-06-16 cycle — security audit · PQ benchmark · R&D adjudication",
         "📍 Current snapshot (2026-06-06)",
         "Next up (ordered)",
@@ -6077,7 +6077,7 @@
         "8.4 \"Zig-ready\" — ❌ REJECTED (2026-06-06 user directive)",
         "8.6 Framework / \"remove middleware\" (notes-2 §3686–3971) — ❌ DISCUSSION ONLY, NOT adopted",
         "8.7 Zero Trust Framework — umbrella + security bar  ✅ user directive",
-        "8.5 `.tmf` / TritMesh — separate project (awareness only)",
+        "8.5 `.spore` / TritMesh — separate project (awareness only)",
         "9. KB-documentation completeness check"
       ],
       "codes": [],
@@ -12895,7 +12895,7 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/galerina-external-idea-mining-2026-06-23.md",
-      "title": "External Idea Mining — `C:\\wwwprojects\\x` (fresh pass, 2026-06-23)",
+      "title": "External Idea Mining — `C:\\Users\\phill\\Documents\\GitHub\\x` (fresh pass, 2026-06-23)",
       "headings": [
         "The 5 HIGH-value net-new ideas",
         "Net-new MEDIUM / LOW (13)",
@@ -12918,7 +12918,10 @@
         "substrate",
         "low",
         "idea",
-        "wwwprojects",
+        "users",
+        "phill",
+        "documents",
+        "github",
         "verify-before-build",
         "binary",
         "owner",
@@ -12930,10 +12933,7 @@
         "fresh",
         "bitnet",
         "high-value",
-        "gate",
-        "medium",
-        "re-derived",
-        "worked"
+        "gate"
       ]
     },
     {
@@ -17448,9 +17448,9 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/galerina-maths-application-sweeps-2026-06-25.md",
-      "title": "Maths-application R&D sweeps — .tmf/db/TritMesh + expanded-scope (2026-06-25)",
+      "title": "Maths-application R&D sweeps — .spore/db/TritMesh + expanded-scope (2026-06-25)",
       "headings": [
-        "Sweep A — maths/virtual for .tmf, database, TritMesh (`wb7dqawdt`)",
+        "Sweep A — maths/virtual for .spore, database, TritMesh (`wb7dqawdt`)",
         "Sweep B — expanded-scope (16 areas: domains / internals / algebra) (`wdpcnecx4`)",
         "Honest net"
       ],
@@ -18664,7 +18664,7 @@
         "⚠️ 2026-07-02 — 50-YEAR-MISTAKE SWEEP (5 surfaces) + DEPENDENCY CVE + SALVAGE (all owner-gated, prod read-only, findings-only)",
         "2026-07-02 — ZT 7+ improvement backlog (net-new only; full specs in `galerina-zt-7plus-improvement-specs-2026-07-02.md`)",
         "2026-07-02 — Galerina → TritMesh forward-design (TritMesh = SEPARATE product consuming Galerina, Laravel:PHP/Zend)",
-        "A. R&D dispatched to the bridge (`C:\\wwwprojects\\Galerina-R-AND-D\\_session-bridge\\tasks\\`)",
+        "A. R&D dispatched to the bridge (`C:\\Users\\phill\\Documents\\GitHub\\Galerina-R-AND-D\\_session-bridge\\tasks\\`)",
         "B. R&D designed (in KB; build pending) — [galerina-architecture-rd-2026-06-23.md](galerina-architecture-rd-2026-06-23.md)",
         "2026-06-27 — net-new ADOPTABLES from the \"automate the defence\" R&D (RD-0137..0153)",
         "C. Build items (engineering — no further R&D needed)",
@@ -21584,7 +21584,7 @@
       "headings": [
         "Bottom line",
         "The resilience ladder",
-        "What `.tmf` has (L1–L2) and the gap",
+        "What `.spore` has (L1–L2) and the gap",
         "ITS primitives and their non-negotiable conditions",
         "The photonic lanes",
         "The hybrid key-establishment combiner (Lane E shape)",
@@ -22072,10 +22072,10 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/galerina-rd-0114-tmf-vs-db-comparison-2026-06-24.md",
-      "title": "R&D 0114 — What the photonic/quantum claims mean for the .tmf FORMAT vs the TritMesh DB — both outcomes, compared",
+      "title": "R&D 0114 — What the photonic/quantum claims mean for the .spore FORMAT vs the TritMesh DB — both outcomes, compared",
       "headings": [
         "1. Side-by-side",
-        "2. The .tmf OUTCOME  `[RD-0114-O1]`",
+        "2. The .spore OUTCOME  `[RD-0114-O1]`",
         "3. The DB OUTCOME  `[RD-0114-O2]`",
         "4. The COMPARISON — the decisive insight  `[RD-0114-O3]`",
         "5. GUARDRAILS — two things that must NEVER be designed in"
@@ -24527,9 +24527,9 @@
         "adapter",
         "verdict",
         "app",
+        "github",
         "passport",
-        "fail-closed",
-        "cold-start"
+        "fail-closed"
       ]
     },
     {
@@ -24871,7 +24871,7 @@
       "title": "R&D Absorption Catalog — the complete ledger",
       "headings": [
         "How absorption works (the four dispositions)",
-        "1. Specs — vendored into `galerina-ext-tmf/spec/`",
+        "1. Specs — vendored into `galerina-ext-spore/spec/`",
         "2. Mirrored verbatim into `rd-absorbed/` (32 docs)",
         "3. catalog_only (19 docs — not imported; disposition + reason)",
         "3b. Bridge prove-own-maths reports — **curated, not mirrored** (2026-06-18)",
@@ -24921,7 +24921,7 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/galerina-rd-adoption-2026-06-16.md",
-      "title": "What Galerina Adopts from the `.tmf` / tri-encryption R&D (2026-06-16)",
+      "title": "What Galerina Adopts from the `.spore` / tri-encryption R&D (2026-06-16)",
       "headings": [
         "1. Achievements (what the R&D established + adversarially verified)",
         "2. USABLE in Galerina NOW (govern-don't-absorb — no crypto, no engine)",
@@ -25326,20 +25326,20 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/galerina-rd-env-tmf-sealed-secrets-2026-06-23.md",
-      "title": "env.tmf — Sealed Secrets on the .tmf Container (R&D)",
+      "title": "env.spore — Sealed Secrets on the .spore Container (R&D)",
       "headings": [
         "1. Hub verdict (up front — strict honesty)",
         "2. Verify-vs-shipped — what reuses, what is net-new",
-        "Reuses the .tmf engine (@galerina/ext-tmf) essentially as-is",
+        "Reuses the .spore engine (@galerina/ext-spore) essentially as-is",
         "Reuses the secrets-vault store DISCIPLINE (@galerina/ext-secrets-vault) — as a PATTERN, not a drop-in",
         "Net-new (what neither package provides)",
-        "3. Design — @galerina/ext-secrets-tmf (optional, separate, thin)",
-        "Part 1 — env.tmf schema",
+        "3. Design — @galerina/ext-secrets-spore (optional, separate, thin)",
+        "Part 1 — env.spore schema",
         "Part 2 — CRUD CLI (SQL-mode style, in-memory only)",
         "Part 3 — Key anchor (the recipient KEM secret key) — does NOT remove secret-zero",
         "Part 4 — Production runtime path",
         "4. Local-edit (fine) vs production read-back (regression) — enforced by construction",
-        "5. What env.tmf does NOT solve (no overclaiming)",
+        "5. What env.spore does NOT solve (no overclaiming)",
         "6. Prior art + paper verdict",
         "7. Effort / sequencing",
         "8. Relation to neighbours"
@@ -26046,7 +26046,7 @@
         "RD-0111 — 52-3D photonic brief, rigorous recheck (28-claim ledger)",
         "RD-0112 — Tree-walker, deepened",
         "RD-0113 — Tower-citizen (K3 governance), deepened",
-        "RD-0114 — .tmf format vs TritMesh DB, compared",
+        "RD-0114 — .spore format vs TritMesh DB, compared",
         "RD-0115 — Hybrid photonic/binary placement",
         "RD-0116 — Holographic \"O(1)-read petabyte\" storage: worth more R&D?",
         "RD-0117 — The 0115 join (formalize safe-floor + wire reuse-crossover + measure)",
@@ -26173,8 +26173,8 @@
       "topTerms": [
         "gate",
         "owner",
-        "fungi",
         "mjs",
+        "fungi",
         "galerina",
         "graph",
         "signed",
@@ -30378,7 +30378,7 @@
         "6. Session continuation (2026-06-15 cont.) — #201 lane opened + audit-fix landings",
         "8. R&D 0059–0064 triage → proposed tasks #201–#210 (2026-06-22)",
         "9. Tracker reconciliation (2026-06-22) — corrections + new tasks #211–#212",
-        "7. R&D adoption — `.tmf` / tri-encryption (2026-06-16)",
+        "7. R&D adoption — `.spore` / tri-encryption (2026-06-16)",
         "10. Outstanding R&D + To-Dos catalog (2026-06-23)"
       ],
       "codes": [
@@ -31543,13 +31543,13 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/galerina-tmf-engine.md",
-      "title": "The `.tmf` Engine (`@galerina/ext-tmf`)",
+      "title": "The `.spore` Engine (`@galerina/ext-spore`)",
       "headings": [
         "Where it sits — core vs ext vs R&D",
         "Crypto-on-core (`FUNGI-SUBSTRATE-001`) — the hard line",
         "The grounded stack",
         "TMX-256 (the integrity core)",
-        "`.tmf` container (byte layout)",
+        "`.spore` container (byte layout)",
         "Build slices",
         "What Galerina governs (not absorbs)",
         "See also"
@@ -32102,7 +32102,7 @@
         "3.1 The argument + its maths",
         "3.2 Tiers",
         "4. Tree-walker-into-WASM — the one concrete forward-design (NET-NEW, #125)",
-        "5. `.tmf` metadata + P2P (Any-Sync) — engine shipped, mesh unbuilt",
+        "5. `.spore` metadata + P2P (Any-Sync) — engine shipped, mesh unbuilt",
         "The hard path to go through (note 41)"
       ],
       "codes": [
@@ -33831,6 +33831,53 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-main-bend-interaction-combinators-rd0257-2026-07-04.md",
+      "title": "HANDOVER → main session — Bend / Interaction Combinators (RD-0257) — 2026-07-04",
+      "headings": [
+        "1. One-paragraph verdict",
+        "2. KB references (read these)",
+        "3. The maths, in one line",
+        "4. Adoptable items (all TRACK/DESIGN — **owner-gated, nothing wired**)",
+        "5. TODO update instructions (for `galerina-outstanding-rd-and-todos-2026-06-23.md`)",
+        "6. Boundaries"
+      ],
+      "codes": [
+        "FUNGI-SUBSTRATE-001"
+      ],
+      "tasks": [],
+      "xrefs": [
+        "tritmeshql-project-state",
+        "zt-scoring-two-scales"
+      ],
+      "topTerms": [
+        "bend",
+        "rd-0257",
+        "verdict",
+        "owner-gated",
+        "design",
+        "interaction",
+        "combinators",
+        "galerina",
+        "maths",
+        "track",
+        "session",
+        "main",
+        "adoptable",
+        "nothing",
+        "wired",
+        "handover",
+        "prod",
+        "note",
+        "hvm2",
+        "paper",
+        "one-paragraph",
+        "tree-walker",
+        "references",
+        "read",
+        "these"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/HANDOVER-main-full-control-of-galerina-2026-07-03.md",
       "title": "HANDOVER — Main session takes FULL CONTROL of Galerina (2026-07-03)",
       "headings": [
@@ -33903,7 +33950,10 @@
         "design",
         "pre-filter",
         "decision",
-        "wwwprojects",
+        "users",
+        "phill",
+        "documents",
+        "github",
         "rd-0162",
         "owner",
         "tritsocket",
@@ -33912,10 +33962,7 @@
         "results-log",
         "net-new",
         "leads",
-        "language",
-        "before",
-        "handover",
-        "main"
+        "language"
       ]
     },
     {
@@ -33970,10 +34017,10 @@
         "rules",
         "owner",
         "keep-green",
+        "github",
         "next",
         "hub",
-        "passport",
-        "branding"
+        "passport"
       ]
     },
     {
@@ -35976,10 +36023,13 @@
       "xrefs": [],
       "topTerms": [
         "prod",
+        "users",
+        "github",
         "build",
         "galerina",
         "zero-trust",
-        "wwwprojects",
+        "phill",
+        "documents",
         "keep-green",
         "owner",
         "never",
@@ -35996,10 +36046,7 @@
         "ecosystem",
         "org",
         "trithypha",
-        "continue",
-        "read",
-        "handover",
-        "state"
+        "continue"
       ]
     },
     {
@@ -36690,11 +36737,11 @@
         "both",
         "groups",
         "language",
-        "wwwprojects",
-        "source",
-        "self-check",
-        "work",
-        "every"
+        "users",
+        "phill",
+        "documents",
+        "github",
+        "source"
       ]
     },
     {
@@ -36757,9 +36804,12 @@
       "topTerms": [
         "rules",
         "graph",
+        "github",
         "index",
         "mjs",
-        "wwwprojects",
+        "users",
+        "phill",
+        "documents",
         "memory",
         "source",
         "keep",
@@ -36776,10 +36826,7 @@
         "search",
         "large",
         "task",
-        "kb-index",
-        "against",
-        "truth",
-        "obey"
+        "kb-index"
       ]
     },
     {
@@ -36831,7 +36878,7 @@
       "title": "PROMPT — main session: token-manage with the graph/index dev tools",
       "headings": [
         "The principle",
-        "The dev tools (already built — in `C:\\wwwprojects\\Galerina\\scripts\\`)",
+        "The dev tools (already built — in `C:\\Users\\phill\\Documents\\GitHub\\Galerina\\scripts\\`)",
         "memory-graph.mjs — the one for active MEMORY",
         "kb-index.mjs — caveat, FIX BEFORE RELYING ON IT",
         "The discipline (do this every task)",
@@ -36861,13 +36908,13 @@
         "session",
         "active",
         "context",
-        "wwwprojects",
+        "users",
+        "phill",
+        "documents",
+        "github",
         "fix",
         "before",
-        "prompt",
-        "token-manage",
-        "topic",
-        "large"
+        "prompt"
       ]
     },
     {
@@ -36915,7 +36962,7 @@
       "title": "PROMPT — resume the OSS-package build (Tier A/B + 2 new candidates)",
       "headings": [
         "Role",
-        "Read first (authoritative — in `C:\\wwwprojects\\ZTF-Knowledge-Bases\\`)",
+        "Read first (authoritative — in `C:\\Users\\phill\\Documents\\GitHub\\ZTF-Knowledge-Bases\\`)",
         "The build set (each = one repo, owner-gated)",
         "How to build each",
         "Gates (per package)",
@@ -36930,10 +36977,13 @@
         "first",
         "repo",
         "each",
+        "github",
         "rust",
         "tier",
         "package",
-        "wwwprojects",
+        "users",
+        "phill",
+        "documents",
         "candidates",
         "owner-gated",
         "authoritative",
@@ -36947,10 +36997,7 @@
         "galerina",
         "role",
         "zt-tritsocket",
-        "read",
-        "ztf-knowledge-bases",
-        "set",
-        "gates"
+        "read"
       ]
     },
     {
@@ -37264,9 +37311,9 @@
         "already",
         "json",
         "spec",
-        "wwwprojects",
         "package",
-        "fix"
+        "fix",
+        "laragon"
       ]
     },
     {
@@ -37319,7 +37366,7 @@
         "2. Per-repo license map",
         "3. IP posture (matches the existing assessment)",
         "4. The Galerina-1.0 gate (what \"other projects wait for Galerina\" means)",
-        "5. `.tmf` adoption plumbing (the \"vendors add it / browsers + Photoshop display it\" goal)",
+        "5. `.spore` adoption plumbing (the \"vendors add it / browsers + Photoshop display it\" goal)",
         "6. Open decisions for the owner"
       ],
       "codes": [],
@@ -37618,14 +37665,14 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-crossover-encryption-rnd.md",
-      "title": "CROSSOVER — Encryption R&D (merged): `.tmf` spec track ⊕ tri-encryption track",
+      "title": "CROSSOVER — Encryption R&D (merged): `.spore` spec track ⊕ tri-encryption track",
       "headings": [
         "1. The two tracks, and how they relate",
         "2. Verification status (cross-checked 2026-06-16)",
         "3. Consolidated findings (merged)",
         "4. Hard-path index — every R&D document (both tracks)",
-        "`.tmf` spec track — `C:\\wwwprojects\\Galerina-R-AND-D\\tmf\\`",
-        "tri-encryption track — `C:\\wwwprojects\\Galerina-R-AND-D\\tri-encription\\`",
+        "`.spore` spec track — `C:\\Users\\phill\\Documents\\GitHub\\Galerina-R-AND-D\\tmf\\`",
+        "tri-encryption track — `C:\\Users\\phill\\Documents\\GitHub\\Galerina-R-AND-D\\tri-encription\\`",
         "Adjacent (not merged here)",
         "5. Reconciliation — alignments, divergences, gaps",
         "Alignments (independently re-derived → high confidence)",
@@ -37638,7 +37685,7 @@
         "Phase 3 — Assurance & profiles  ✅ DONE (2026-06-16)",
         "Phase 4 — Storage & query (the DB half)  ✅ DESIGN DONE (2026-06-16)",
         "`+1` append-only history chain  ✅ DONE (2026-06-16)",
-        "Phase 5 — `.tmf` rich media & structured data  ✅ DONE (2026-06-16)",
+        "Phase 5 — `.spore` rich media & structured data  ✅ DONE (2026-06-16)",
         "Research / later (labelled, not promised)",
         "Parallel / deferred",
         "Cross-cutting (every phase)",
@@ -37659,7 +37706,10 @@
       "topTerms": [
         "tmf",
         "spec",
-        "wwwprojects",
+        "users",
+        "phill",
+        "documents",
+        "github",
         "track",
         "galerina-r-and-d",
         "phase",
@@ -37678,10 +37728,7 @@
         "gaps",
         "shake256",
         "owner",
-        "deferred",
-        "core",
-        "default",
-        "source"
+        "deferred"
       ]
     },
     {
@@ -37732,7 +37779,7 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-encryption-rnd-full-brief.md",
-      "title": "TritMesh `.tmf` Encryption R&D — Full Brief (resume-from-cold)",
+      "title": "TritMesh `.spore` Encryption R&D — Full Brief (resume-from-cold)",
       "headings": [
         "0. Orientation — the 60-second version",
         "1. The mission, and the source material",
@@ -37801,7 +37848,7 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-external-repos-grounding-ledger.md",
-      "title": "External repositories analysis — `C:\\wwwprojects\\x`",
+      "title": "External repositories analysis — `C:\\Users\\phill\\Documents\\GitHub\\x`",
       "headings": [
         "The 8 repos at a glance",
         "1. Bottom line",
@@ -37810,7 +37857,7 @@
         "4. Photonic compute — maturity verdict: simulation/lab only, and *noisy*",
         "5. Efficient models (MiniCPM, linear_open_lm) — honestly tangential",
         "6. Honesty flags (over-reaches in the automated pass — corrected)",
-        "7. Impact on the `.tmf` design (ledger updates applied)",
+        "7. Impact on the `.spore` design (ledger updates applied)",
         "8. Sources (verified in-repo + external)"
       ],
       "codes": [],
@@ -37945,9 +37992,9 @@
         "2. The cost reality (cited apparatus only)",
         "3. Threat-model fit vs the alternatives",
         "Head-to-head vs the shipped trusted-zone selective-disclosure ANN",
-        "4. Fit to `.tmf`/Galerina + crypto-on-core, and the verdict",
+        "4. Fit to `.spore`/Galerina + crypto-on-core, and the verdict",
         "Does FHE violate crypto-on-core? No — but it isn't the cipher",
-        "Where it could slot in `.tmf`",
+        "Where it could slot in `.spore`",
         "Head-to-head: the shipped answer for Galerina's actual threat model",
         "Verdict: TRACK-NOT-BUILD",
         "Verdict",
@@ -38044,7 +38091,7 @@
         "3. Findings / negative results — the only genuinely citable material",
         "4. Paper vs Patent vs Defensive Publication — the actual guidance",
         "5. Recommendation",
-        "Appendix A — Case study: why the external \"`.tmf` patentability spec\" must NOT be used"
+        "Appendix A — Case study: why the external \"`.spore` patentability spec\" must NOT be used"
       ],
       "codes": [],
       "tasks": [],
@@ -38198,7 +38245,7 @@
         "3. The four blockers — why track-not-build (mirrors Lane B §7)",
         "4. Galerina's role — the governed hybrid-KEM interface (define, do **not** build)",
         "4.1 The combiner (standards-grounded)",
-        "4.2 How it appears to `.tmf` (governed, fail-closed)",
+        "4.2 How it appears to `.spore` (governed, fail-closed)",
         "5. Deployment architecture — answering `notes/36-qtcripto`'s question",
         "6. R&D without hardware — what we can and cannot test",
         "7. Honest ledger",
@@ -38818,12 +38865,12 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-quantum-resilience-standard-and-roadmap.md",
-      "title": "`.tmf` quantum resilience — what we have, the TRUE-resilience standard, and the roadmap",
+      "title": "`.spore` quantum resilience — what we have, the TRUE-resilience standard, and the roadmap",
       "headings": [
         "0. Bottom line up front",
         "1. The resilience ladder (define the levels)",
-        "2. What `.tmf` HAS today (L1–L2) — and the honest caveat",
-        "3. What `.tmf` does NOT have (the gap to TRUE / information-theoretic)",
+        "2. What `.spore` HAS today (L1–L2) — and the honest caveat",
+        "3. What `.spore` does NOT have (the gap to TRUE / information-theoretic)",
         "4. The standard for TRUE quantum resilience (what must be achieved)",
         "5. The honest photonic landscape (what photonics gives — and can't)",
         "6. Roadmap — raising the standard (and the honest constraints at each step)",
@@ -38872,8 +38919,8 @@
         "3. Framing directives (captured)",
         "3.1 Prefer Galerina over Rust",
         "3.2 Two crypto paths (honestly mapped onto crypto-on-core)",
-        "3.3 `.tmf` format requirements",
-        "3.4 `.tmf` in communications (DB connection, API-to-API)",
+        "3.3 `.spore` format requirements",
+        "3.4 `.spore` in communications (DB connection, API-to-API)",
         "4. Cross-cutting (every phase)"
       ],
       "codes": [],
@@ -38912,7 +38959,7 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-revocation-registry-v0.md",
-      "title": "`.tmf` revocation registry / trust-registry wire format + fail-closed verifier — v0",
+      "title": "`.spore` revocation registry / trust-registry wire format + fail-closed verifier — v0",
       "headings": [
         "1. Where this sits",
         "2. House framing (inherited, not invented)",
@@ -38965,7 +39012,7 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-selective-disclosure-ann-v0.md",
-      "title": "`.tmf` selective embedding disclosure → trusted-zone ANN — v0 (byte-precise, buildable)",
+      "title": "`.spore` selective embedding disclosure → trusted-zone ANN — v0 (byte-precise, buildable)",
       "headings": [
         "1. What this layer adds, and what it reuses",
         "2. Record shape — two independently-keyed sections",
@@ -39113,12 +39160,12 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-tmf-confidentiality-layout.md",
-      "title": "Engineering Amendment: Sovereign Confidentiality & Geometric Integrity Layout for `.tmf`",
+      "title": "Engineering Amendment: Sovereign Confidentiality & Geometric Integrity Layout for `.spore`",
       "headings": [
         "1. Core Invariants & Mathematical Alignment",
         "1.1 Lattice Coefficient Precision",
         "1.2 Software Governance-Verifier Enforcement",
-        "2. Proposed `.tmf` Container Layout (Non-Ratified ABI Sketch)",
+        "2. Proposed `.spore` Container Layout (Non-Ratified ABI Sketch)",
         "2.1 Segment Metadata Layout (32 bytes)",
         "2.2 Encapsulated Key Block (`ct_kem` Allocation)",
         "2.3 Symmetric DEM Sub-Layout Configurations",
@@ -39165,7 +39212,7 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-tmf-real-vs-aspirational-ledger.md",
-      "title": "`.tmf` / TritMesh crypto — real vs. aspirational ledger",
+      "title": "`.spore` / TritMesh crypto — real vs. aspirational ledger",
       "headings": [
         "A. Cryptography",
         "B. Performance & hardware",
@@ -39210,7 +39257,7 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-tmf-research-encryption-architecture.md",
-      "title": "Encryption architecture for `.tmf` / TritMesh on a (photonic) Galerina substrate",
+      "title": "Encryption architecture for `.spore` / TritMesh on a (photonic) Galerina substrate",
       "headings": [
         "0. Amendments ratified on takeover (2026-06-16)",
         "1. The three jobs (don't blur them)",
@@ -39260,7 +39307,7 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-tmf-research-open-questions.md",
-      "title": "Open questions & decision forks — `.tmf` encryption R&D",
+      "title": "Open questions & decision forks — `.spore` encryption R&D",
       "headings": [
         "✅ Ratified 2026-06-15 (resolved — no longer open)",
         "Crypto / PQC",
@@ -39353,7 +39400,7 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-tmf-storage-and-query.md",
-      "title": "`.tmf` storage & query (the DB half) — design v0",
+      "title": "`.spore` storage & query (the DB half) — design v0",
       "headings": [
         "1. Two indexes, two zones",
         "2. Mesh-coordinate index",
@@ -39503,7 +39550,7 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-tri-encription-research-metadata-confidentiality.md",
-      "title": "Metadata confidentiality vs. in-network semantic routing for `.tmf` (R&D)",
+      "title": "Metadata confidentiality vs. in-network semantic routing for `.spore` (R&D)",
       "headings": [
         "0. Verdict (TL;DR)",
         "1. The tension",
@@ -39511,7 +39558,7 @@
         "3. Finding 2 — \"filter on encrypted data instead\" leaks, and isn't line-rate",
         "4. Finding 3 — FHE / FE / PIR / PSI: impractical *and* zero-trust-breaking",
         "5. Finding 4 — metadata minimization is the established (and opposite) pattern",
-        "6. The recommendation for `.tmf`",
+        "6. The recommendation for `.spore`",
         "7. Adversarial verification — we tried to prove this wrong",
         "8. Open questions / residual",
         "9. Sources"
@@ -39576,16 +39623,16 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-tri-encription-research-quantum-resilient-tri-encryption.md",
-      "title": "Quantum-Resilient, Zero-Trust, Tri-Logic Encryption for the `.tmf` / photonic-Galerina ecosystem",
+      "title": "Quantum-Resilient, Zero-Trust, Tri-Logic Encryption for the `.spore` / photonic-Galerina ecosystem",
       "headings": [
         "0. Verdict (TL;DR)",
         "Verdict-at-a-glance",
         "1. Scope & method",
         "2. What the ecosystem already has — and the confidentiality gap (the \"check\")",
         "2.1 Galerina today: integrity + authenticity + strong custody, **no encryption**",
-        "2.2 The `.tmf` notes today: integrity + authenticity, **payload in clear**",
+        "2.2 The `.spore` notes today: integrity + authenticity, **payload in clear**",
         "3. The quantum threat model, stated precisely (requirement #2)",
-        "4. The design — zero-trust, quantum-resilient `.tmf` encryption (KEM-DEM / HPKE)",
+        "4. The design — zero-trust, quantum-resilient `.spore` encryption (KEM-DEM / HPKE)",
         "4.1 The construction: KEM-DEM, instantiated as HPKE",
         "4.2 Per-modality DEM (DB comms, images, photo, video, audio, API packets)",
         "4.3 Layering with the existing gate — verify *before* decrypt, fail-closed",
@@ -39603,7 +39650,7 @@
         "8.1 Why the notes' self-heal is unsafe",
         "8.2 The honest self-heal: erasure coding *outside* the gate + re-verify against the signed root",
         "9. The notes, checked and dispositioned (skeptic's ledger)",
-        "10. Concrete recommendation — how to *extend* the `.tmf` spec",
+        "10. Concrete recommendation — how to *extend* the `.spore` spec",
         "11. Open questions",
         "12. The answer, in one paragraph",
         "13. Sources"
@@ -39675,7 +39722,10 @@
       "topTerms": [
         "main",
         "branch",
-        "wwwprojects",
+        "users",
+        "phill",
+        "documents",
+        "github",
         "fresh",
         "start",
         "reboot",
@@ -39694,10 +39744,7 @@
         "green",
         "everything",
         "order",
-        "read",
-        "don",
-        "rules",
-        "live"
+        "read"
       ]
     },
     {
@@ -39842,7 +39889,10 @@
         "session",
         "prompt",
         "research",
-        "wwwprojects",
+        "users",
+        "phill",
+        "documents",
+        "github",
         "tritmesh",
         "clear",
         "gate",
@@ -39859,10 +39909,7 @@
         "re-run",
         "maths",
         "right",
-        "state",
-        "before",
-        "stays",
-        "signed"
+        "state"
       ]
     },
     {
@@ -41030,6 +41077,8 @@
         "autonomy",
         "preferred",
         "order",
+        "documents",
+        "github",
         "zt-galerina-graph-ascii",
         "mjs",
         "don",
@@ -41041,10 +41090,8 @@
         "constraint",
         "registry",
         "locations",
-        "wwwprojects",
-        "orient",
-        "run",
-        "standing"
+        "users",
+        "phill"
       ]
     },
     {
@@ -41528,6 +41575,7 @@
         "rules",
         "gate",
         "shipped",
+        "github",
         "scales",
         "both",
         "cold",
@@ -41535,8 +41583,7 @@
         "list",
         "postures",
         "design",
-        "line",
-        "build-staging"
+        "line"
       ]
     },
     {
@@ -41654,7 +41701,7 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/tritmesh-spore-rnd-absorption-audit-2026-07-02.md",
-      "title": "TritMesh / `.spore` (`.tmf`) R&D — absorption completeness audit (2026-07-02)",
+      "title": "TritMesh / `.spore` (`.spore`) R&D — absorption completeness audit (2026-07-02)",
       "headings": [
         "Headline",
         "Coverage (the corpus is there)",

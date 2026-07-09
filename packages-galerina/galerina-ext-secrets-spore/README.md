@@ -1,9 +1,9 @@
-# @galerina/ext-secrets-tmf
+# @galerina/ext-secrets-spore
 
 OPTIONAL, SEPARATE (`private:true`, `ext` tier, not auto-loaded) sealed-secrets layer for Galerina.
 
 `env.spore` is an **encrypted-at-rest replacement for a plaintext `.env`**, edited through a governed
-**in-memory-only** CLI. It is a THIN orchestration layer over the shipped `@galerina/ext-tmf`
+**in-memory-only** CLI. It is a THIN orchestration layer over the shipped `@galerina/ext-spore`
 (format/crypto) and the `@galerina/ext-secrets-vault` store **discipline**. It adds **NO new crypto**
 and **NO new container bytes**; crypto stays Binary (FUNGI-SUBSTRATE-001).
 
@@ -45,7 +45,7 @@ paper verdict is defensive-pub (or none).
 ## CLI
 
 ```
-galerina-secrets-tmf <cmd> [--file ./env.spore]
+galerina-secrets-spore <cmd> [--file ./env.spore]
   keygen                              # print a fresh recipient keypair (anchor SEC externally!)
   init --pub HEX                      # create an empty encrypted env.spore
   set NAME --pub HEX                  # value from STDIN or no-echo prompt — NEVER argv
@@ -59,13 +59,13 @@ galerina-secrets-tmf <cmd> [--file ./env.spore]
 Set a value (note: the value is **piped**, never an argument):
 
 ```sh
-printf %s "$DB_PASSWORD" | galerina-secrets-tmf set DB_PASSWORD --pub "$PUB"
+printf %s "$DB_PASSWORD" | galerina-secrets-spore set DB_PASSWORD --pub "$PUB"
 ```
 
 Get a value for a process (local-only, piped — refuses to echo to a TTY):
 
 ```sh
-galerina-secrets-tmf get DB_PASSWORD | my-app --stdin-secret
+galerina-secrets-spore get DB_PASSWORD | my-app --stdin-secret
 ```
 
 The recipient secret key is supplied to the CLI as a **passphrase-wrapped** blob via the
@@ -81,7 +81,7 @@ The recipient secret key is supplied to the CLI as a **passphrase-wrapped** blob
 - One reserved **manifest** section (fixed-sentinel coord) holds the sealed `{ name → coord }`
   directory + per-secret metadata (`created`/`rotated`/`category`/`environment`/`kem_profile`).
 
-**Signed root is DEFERRED.** ML-DSA-65 over the TMX root is `@galerina/ext-tmf` slice 4 / #7
+**Signed root is DEFERRED.** ML-DSA-65 over the TMX root is `@galerina/ext-spore` slice 4 / #7
 (unbuilt); `readTmf` rejects any signed file today. v0 `env.spore` ships **unsigned-but-encrypted**
 and **never fakes a signature**. The bench (P7) confirms a signed-flag file is rejected.
 
@@ -156,6 +156,6 @@ npm run lint:secrets    # the no-egress CI gate
 node ../../tri-encription/bench/rd-0104-env-tmf-secrets-security.mjs   # the load-bearing security bench
 ```
 
-`@galerina/ext-tmf` is resolved during in-staging build via a `paths` alias (tsconfig) and a local
-`node_modules/@galerina/ext-tmf` junction to the shipped package. Once the hub absorbs this package
+`@galerina/ext-spore` is resolved during in-staging build via a `paths` alias (tsconfig) and a local
+`node_modules/@galerina/ext-spore` junction to the shipped package. Once the hub absorbs this package
 into `packages-galerina/`, the workspace resolves it natively.

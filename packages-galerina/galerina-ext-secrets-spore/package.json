@@ -1,7 +1,7 @@
 {
-  "name": "@galerina/ext-secrets-tmf",
+  "name": "@galerina/ext-secrets-spore",
   "version": "1.0.0-beta.2",
-  "description": "OPTIONAL sealed-secrets-on-.spore layer for Galerina. env.spore = an encrypted-at-rest replacement for plaintext .env, edited through a governed in-memory-only CLI (no temp file, no $EDITOR, no .swp). Thin orchestration over @galerina/ext-tmf (format/crypto) + the ext-secrets-vault store discipline. No new crypto, no new container bytes; crypto stays Binary (FUNGI-SUBSTRATE-001). Unsigned-but-encrypted (flags.signed=0); signed root gated on ext-tmf slice 4/#7.",
+  "description": "OPTIONAL sealed-secrets-on-.spore layer for Galerina. env.spore = an encrypted-at-rest replacement for plaintext .env, edited through a governed in-memory-only CLI (no temp file, no $EDITOR, no .swp). Thin orchestration over @galerina/ext-spore (format/crypto) + the ext-secrets-vault store discipline. No new crypto, no new container bytes; crypto stays Binary (FUNGI-SUBSTRATE-001). Unsigned-but-encrypted (flags.signed=0); signed root gated on ext-spore slice 4/#7.",
   "license": "Apache-2.0",
   "private": true,
   "type": "module",
@@ -10,7 +10,7 @@
   "exports": {
     ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" }
   },
-  "bin": { "galerina-secrets-tmf": "./dist/cli.js" },
+  "bin": { "galerina-secrets-spore": "./dist/cli.js" },
   "scripts": {
     "build": "tsc",
     "test": "npm run build && node --test tests/*.test.mjs",
@@ -18,7 +18,7 @@
     "lint:secrets": "node scripts/lint-no-secret-egress.mjs"
   },
   "dependencies": {
-    "@galerina/ext-tmf": "file:../galerina-ext-tmf",
+    "@galerina/ext-spore": "file:../galerina-ext-spore",
     "@noble/hashes": "^2.2.0"
   },
   "devDependencies": {

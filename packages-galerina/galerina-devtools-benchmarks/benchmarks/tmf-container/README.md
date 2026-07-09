@@ -11,7 +11,7 @@ sections → exactly **203 bytes**). Every runtime asserts the **same published 
 
 | Column | What it actually is |
 |---|---|
-| **Node.js** | **Galerina's shipped `@galerina/ext-tmf` engine** (`dist/index.js`, `writeTmf`). The engine is pure TypeScript-on-Node — there is **no `.fungi` execution path** for `.spore` creation — so the engine's throughput *is* the Node.js row. There is deliberately no Galerina-interpreter column here. |
+| **Node.js** | **Galerina's shipped `@galerina/ext-spore` engine** (`dist/index.js`, `writeTmf`). The engine is pure TypeScript-on-Node — there is **no `.fungi` execution path** for `.spore` creation — so the engine's throughput *is* the Node.js row. There is deliberately no Galerina-interpreter column here. |
 | **Python** | Independent reference writer using stdlib `hashlib.shake_256` (the spec's own conformance oracle). |
 | **Rust** | Independent reference writer with a self-contained SHAKE256 (FIPS-202 Keccak-f[1600]), no external crates (builds with the suite's plain `rustc`). |
 

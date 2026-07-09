@@ -87,7 +87,7 @@ const BENCHMARKS = [
   // allocated per run. One op = one node allocated. Read the bytes/op column here.
   { id: "binary-trees", dir: "binary-trees", galerinaOpsPerRun: 135854, passiveCallCount: 3 },
   // ── .spore trust-container CREATION — TMX-256 SHAKE Merkle + LE container packing ──
-  // The Node.js column IS the shipped @galerina/ext-tmf engine (pure TS/Node — no .fungi
+  // The Node.js column IS the shipped @galerina/ext-spore engine (pure TS/Node — no .fungi
   // path exists); python.py / bench.rs are byte-identical reference writers that assert
   // the SAME golden root. Honest "can other languages create a .spore, and how fast?".
   { id: "tmf-container", dir: "tmf-container" },

@@ -176,7 +176,7 @@ Every mismatch is a **hard, fail-closed error**; there is **no self-healing in t
 
 ## 7. Reproducibility
 
-TMX-256-SHAKE v0 ships **golden test vectors** generated with only Python's standard-library `hashlib.shake_256` (FIPS 202); any conforming implementation in any language must match them (e.g. `ABSENT = 1758f20e…d563`; a 2-section worked example with `integrity_root = 43386e64…5212`; a tamper case where flipping `modality 0→1` changes the root and fails verification). Reproduce with the vendored generator (`spec/_vectors/gen_tmx_vectors.py`); the inclusion-proof and modality-codec generators reconstruct the same root. The full byte-precise spec lives in `packages-galerina/galerina-ext-tmf/spec/` (`tmx-256-construction-v0.md`, `tmf-container-v0.md`, `tmf-encryption-v0.md`, `tmf-modalities-v0.md`, `inclusion-proof-v0.md`, custody specs).
+TMX-256-SHAKE v0 ships **golden test vectors** generated with only Python's standard-library `hashlib.shake_256` (FIPS 202); any conforming implementation in any language must match them (e.g. `ABSENT = 1758f20e…d563`; a 2-section worked example with `integrity_root = 43386e64…5212`; a tamper case where flipping `modality 0→1` changes the root and fails verification). Reproduce with the vendored generator (`spec/_vectors/gen_tmx_vectors.py`); the inclusion-proof and modality-codec generators reconstruct the same root. The full byte-precise spec lives in `packages-galerina/galerina-ext-spore/spec/` (`tmx-256-construction-v0.md`, `tmf-container-v0.md`, `tmf-encryption-v0.md`, `tmf-modalities-v0.md`, `inclusion-proof-v0.md`, custody specs).
 
 ---
 
@@ -207,7 +207,7 @@ No `ntt_mul`, no "O(1) single clock cycle," no systolic/photonic path, no NVFP4 
 - **Type:** Defensive-publication note / timestamped prior-art record. **Not** a flagship/workshop paper; no novelty claimed (see disclaimer).
 - **Authorship & AI assistance:** drafted with AI assistance (Claude) under human direction, grounded line-by-line in the vendored `.spore` v0 specification; all cryptographic claims trace to the cited FIPS/RFC/peer-reviewed sources.
 - **Funding:** none. **Competing interests:** none declared.
-- **Data / artifact availability:** the byte-precise specification, reference generators, and golden vectors are in `packages-galerina/galerina-ext-tmf/spec/`; results reproduce with stdlib SHAKE256.
+- **Data / artifact availability:** the byte-precise specification, reference generators, and golden vectors are in `packages-galerina/galerina-ext-spore/spec/`; results reproduce with stdlib SHAKE256.
 - **Licence:** Apache-2.0 (consistent with the project's defensive-publication + patent-grant strategy).
 - **Standards alignment:** see `docs/scientific-papers/README.md` for the UK (UKRI / Concordat to Support Research Integrity), US (OSTP 2022 public-access; NSF reproducibility), and EU (ALLEA European Code of Conduct; Horizon Europe open science; FAIR) checklist this note follows.
 

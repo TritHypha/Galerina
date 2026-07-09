@@ -4425,7 +4425,7 @@
       "nodejs": {
         "runtime": "nodejs",
         "benchmark": "tmf-container-v1",
-        "note": "Node.js column = @galerina/ext-tmf engine (the shipped Galerina artifact)",
+        "note": "Node.js column = @galerina/ext-spore engine (the shipped Galerina artifact)",
         "iterations": 300000,
         "containerBytes": 203,
         "integrityRoot": "43386e644c7b53aa0900cda21c15acd15f30b3fdf997950e39e7dd3dbc685212",

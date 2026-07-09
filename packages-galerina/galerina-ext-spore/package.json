@@ -1,5 +1,5 @@
 {
-  "name": "@galerina/ext-tmf",
+  "name": "@galerina/ext-spore",
   "version": "1.0.0-beta.2",
   "description": "Galerina .spore format engine (Phase 2 #6) — TMX-256 integrity (TriMerkle-XOF/SHAKE256), container, KEM-DEM confidentiality, ML-DSA-65 signing. Crypto-on-core: bit-exact, deterministic.",
   "license": "Apache-2.0",

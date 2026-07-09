@@ -1,15 +1,15 @@
 # Galerina Graph Report
 
 Workspace: Galerina-app
-Generated: 2026-07-04T15:29:48.983Z
+Generated: 2026-07-09T07:12:25.456Z
 
 ## Summary
 
-- Packages: 91
-- Documents: 1873
-- Types/interfaces: 2007
-- Functions: 977
-- Relationships: 5276
+- Packages: 92
+- Documents: 1887
+- Types/interfaces: 2012
+- Functions: 989
+- Relationships: 5310
 
 ## Package Nodes
 
@@ -72,7 +72,6 @@ Generated: 2026-07-04T15:29:48.983Z
 - galerina-framework-example-app (packages-galerina/galerina-framework-example-app/README.md)
 - galerina-api-protocol-rest (packages-galerina/galerina-api-protocol-rest/README.md)
 - galerina-substrate-math (packages-galerina/galerina-substrate-math/package.json)
-- galerina-ext-bridge-quantum (packages-galerina/galerina-ext-bridge-quantum/package.json)
 - galerina-inference-bridge-contract (packages-galerina/galerina-inference-bridge-contract/package.json)
 - galerina-core-economics (packages-galerina/galerina-core-economics/package.json)
 - galerina-core-sentinel-egress (packages-galerina/galerina-core-sentinel-egress/package.json)
@@ -83,13 +82,14 @@ Generated: 2026-07-04T15:29:48.983Z
 - galerina-core-sentinel-time (packages-galerina/galerina-core-sentinel-time/package.json)
 - galerina-tower-citizen (packages-galerina/galerina-tower-citizen/package.json)
 - galerina-tri-pipe (packages-galerina/galerina-tri-pipe/README.md)
-- galerina-ext-tmf (packages-galerina/galerina-ext-tmf/README.md)
+- galerina-ext-spore (packages-galerina/galerina-ext-spore/README.md)
 - galerina-ext-bridge-bitnet (packages-galerina/galerina-ext-bridge-bitnet/package.json)
 - galerina-ext-bridge-cpp (packages-galerina/galerina-ext-bridge-cpp/package.json)
 - galerina-ext-photonic-emulator (packages-galerina/galerina-ext-photonic-emulator/README.md)
 - galerina-ext-proof-snarkjs (packages-galerina/galerina-ext-proof-snarkjs/package.json)
 - galerina-ext-secrets-vault (packages-galerina/galerina-ext-secrets-vault/package.json)
-- galerina-ext-secrets-tmf (packages-galerina/galerina-ext-secrets-tmf/README.md)
+- galerina-ext-secrets-spore (packages-galerina/galerina-ext-secrets-spore/README.md)
+- galerina-ext-tritsocket (packages-galerina/galerina-ext-tritsocket/README.md)
 - galerina-governance-telemetry (packages-galerina/galerina-governance-telemetry/README.md)
 - galerina-observability (packages-galerina/galerina-observability/README.md)
 - galerina-hardware-tier (packages-galerina/galerina-hardware-tier/README.md)
@@ -97,6 +97,7 @@ Generated: 2026-07-04T15:29:48.983Z
 - galerina-devtools-flowgraph (packages-galerina/galerina-devtools-flowgraph/package.json)
 - galerina-devtools-graph-algorithms (packages-galerina/galerina-devtools-graph-algorithms/README.md)
 - galerina-devtools-intelligence (packages-galerina/galerina-devtools-intelligence/package.json)
+- galerina-devtools-fungi-scan (packages-galerina/galerina-devtools-fungi-scan/README.md)
 - galerina-devtools-kb-graph (packages-galerina/galerina-devtools-kb-graph/package.json)
 - galerina-devtools-naming (packages-galerina/galerina-devtools-naming/package.json)
 - galerina-devtools-package-graph (packages-galerina/galerina-devtools-package-graph/package.json)

@@ -1,4 +1,4 @@
-// envtmf.test.mjs — node:test suite for @galerina/ext-secrets-tmf.
+// envtmf.test.mjs — node:test suite for @galerina/ext-secrets-spore.
 //
 // Proves the security properties the design doc requires:
 //   - env.spore seal/open round-trip

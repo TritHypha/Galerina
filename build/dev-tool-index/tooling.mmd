@@ -220,6 +220,7 @@ flowchart LR
   T_graph_all_mjs --> C_doc_drift
   T_graph_all_mjs --> C_graph_index
   T_memory_graph_mjs["memory-graph.mjs"]
+  T_memory_graph_mjs --> C_diagnostics
   T_memory_graph_mjs --> C_source_hygiene
   T_memory_graph_mjs --> C_graph_index
   T_code_index_mjs["code-index.mjs"]
@@ -258,7 +259,6 @@ flowchart LR
   T_lint_fungi_mjs --> C_provenance
   T_lint_fungi_mjs --> C_diagnostics
   T_lint_fungi_mjs --> C_secrets_privacy
-  T_lint_fungi_mjs --> C_graph_index
   T_component_health_mjs["component-health.mjs"]
   T_component_health_mjs --> C_governance
   T_component_health_mjs --> C_source_hygiene
@@ -302,7 +302,6 @@ flowchart LR
   T_check_gate_injection_mjs --> C_graph_index
   T_fungi_astshape_mjs["fungi-astshape.mjs"]
   T_fungi_astshape_mjs --> C_secrets_privacy
-  T_fungi_astshape_mjs --> C_graph_index
   T_mark_core_change_cjs["mark-core-change.cjs"]
   T_mark_core_change_cjs --> C_graph_index
   T_rd_absorb_mjs["rd-absorb.mjs"]
@@ -313,6 +312,8 @@ flowchart LR
   T_rebuild_fusable_packages_mjs --> C_signing_fusion
   T_rebuild_fusable_packages_mjs --> C_governance
   T_rebuild_fusable_packages_mjs --> C_graph_index
+  T_relink_workspace_mjs["relink-workspace.mjs"]
+  T_relink_workspace_mjs --> C_graph_index
   T_verify_artifacts_mjs["verify-artifacts.mjs"]
   T_verify_artifacts_mjs --> C_signing_fusion
   T_verify_artifacts_mjs --> C_governance
