@@ -178,6 +178,14 @@ signature. For **unsigned-v0** the root is recomputable, so it leans on `coord` 
 `coord` is guaranteed globally-unique (spec §5) and/or fold an explicit file identity into the AAD (RD-0294o).
 Zero-trust framing: splice-resistance is **not provable from `kemdem.ts` alone**.
 
+> **Owner decision (2026-07-09): COUPLED TO THE ML-DSA SIGNING CEREMONY** (approval #4). F10 lands in the
+> same **v1 format bump** as `.spore` signing — the signed root binds the section set AND an explicit
+> `file_id` is folded into the AAD (one spec change, not two; the append-only `#201`-style extension keeps
+> v0 golden vectors byte-identical). Until the ceremony, the cross-file splice residual **stays OPEN and is
+> tracked** by the `spore-signing-state` conformance check (`@galerina/devtools-security`), whose OPEN-RISK
+> message names both residuals. Files sealed before v1 remain splice-prone under unsigned-v0 — do not treat
+> a v0 `.spore` as file-splice-resistant.
+
 ### F11 — key-commitment (CMT-4) · CONFIRMED
 AES-GCM is **not** key-committing (the partitioning-oracle / one-ciphertext-two-keys weakness). This layer adds
 `key_commit = SHAKE256(…‖K_aead)` folded into the AAD and a §8.5 **Chan–Rogaway CTX committing tag** recomputed

@@ -59,9 +59,11 @@ function checkSigVerifyPinned(get) {
       : `algorithm-pin REGRESSED — ${!edPinned ? "Ed25519 crypto.verify(null,…) pin missing in fuse-loader" : "ML-DSA-65 hybrid pin missing in lmanifest-hybrid-verifier"} (the verifier may be reading 'alg' from the artifact — 0294t OPEN-RISK)` };
 }
 
-/** spore-signing-state (0294m): TRACKED OPEN-RISK — .spore is unsigned-v0 while ML-DSA signing is deferred.
- *  The load-bearing construction that must HOLD is the reader's fail-closed reject of any signed file (no
- *  silent downgrade). ok stays true while that reject is present; RED if it is removed. */
+/** spore-signing-state (0294m + 0294o/F10): TRACKED OPEN-RISK — .spore is unsigned-v0 while ML-DSA signing
+ *  is deferred, AND (owner decision 2026-07-09) the F10 file-identity AAD fold is COUPLED to that same
+ *  ceremony (one v1 bump: signed root + file_id in AAD), so the cross-file splice residual rides this check
+ *  until v1 lands. The load-bearing construction that must HOLD is the reader's fail-closed reject of any
+ *  signed file (no silent downgrade). ok stays true while that reject is present; RED if it is removed. */
 function checkSporeSigningState(get) {
   const base = { check: "spore-signing-state", owasp: "A08:2021", cwe: "CWE-345", rd: "0294m", target: CONTAINER, tier: "OPEN-RISK", severity: "high" };
   const c = get(CONTAINER);
@@ -69,7 +71,7 @@ function checkSporeSigningState(get) {
   const rejectsSigned = c.includes('"AuthError"') && c.includes("signed .spore rejected");
   return { ...base, ok: rejectsSigned,
     message: rejectsSigned
-      ? "TRACKED origin-UNVERIFIED: .spore is unsigned-v0 (ML-DSA signing deferred); the reader fail-closed REJECTS any signed file (no silent downgrade). Integrity ≠ origin — do not rely on .spore for authenticity until signing lands."
+      ? "TRACKED origin-UNVERIFIED: .spore is unsigned-v0 (ML-DSA signing deferred); the reader fail-closed REJECTS any signed file (no silent downgrade). Integrity ≠ origin — do not rely on .spore for authenticity until signing lands. ALSO RIDING THIS MILESTONE (owner 2026-07-09): F10/RD-0294o — no file-identity in the AEAD AAD yet, so a v0 file is NOT cross-file-splice-resistant; the file_id AAD fold lands in the same v1 bump as signing."
       : "REGRESSED: container.ts no longer fail-closed-rejects a signed .spore — a signed file could be silently downgraded / accepted unverified (0294m)" };
 }
 
