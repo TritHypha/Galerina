@@ -22,7 +22,7 @@ function run(...args) {
 before(() => {
   mkdirSync(dirname(FIXTURE), { recursive: true });
   // Distinct, unlikely return values so the marshalled bool is unambiguous in the output.
-  writeFileSync(FIXTURE, `pure flow boolToInt(b: Bool) -> Int {\n  if b { return 777 }\n  return 333\n}\n`);
+  writeFileSync(FIXTURE, `@version 1\npure flow boolToInt(b: Bool) -> Int {\n  if b { return 777 }\n  return 333\n}\n`);
 });
 after(() => { try { rmSync(FIXTURE, { force: true }); } catch { /* ignore */ } });
 
@@ -47,7 +47,7 @@ test("an un-parseable invoke arg fails LOUDLY (exit 2 + clear message), never si
 test("a secure/effectful flow gives a CLEAR 'not in the WASM surface' diagnostic, not 'not found'", () => {
   const f2 = join(ROOT, "build", "__cli_marshal_secure.fungi");
   writeFileSync(f2,
-    `pure flow collapse(v: Int) -> Int { if v == 1 { return 1 } return -1 }\n\n` +
+    `@version 1\npure flow collapse(v: Int) -> Int { if v == 1 { return 1 } return -1 }\n\n` +
     `secure flow main() -> Result<Void, Error>\ncontract { intent { "demo" } }\n{\n` +
     `  console.log("x = " . collapse(1))\n  return Ok()\n}\n`);
   try {
@@ -71,7 +71,7 @@ test("a secure/effectful flow gives a CLEAR 'not in the WASM surface' diagnostic
 // raw WASM --invoke surface. It is the path for secure/effectful flows the WASM surface rejects.
 test("--governed runs a flow through the governed runtime and prints its value (exit 0)", () => {
   const f = join(ROOT, "build", "__g_clean.fungi");
-  writeFileSync(f, `pure flow answer() -> Int { return 42 }\n`);
+  writeFileSync(f, `@version 1\npure flow answer() -> Int { return 42 }\n`);
   try {
     const r = spawnSync(process.execPath, ["galerina.mjs", "run", f, "--invoke", "answer", "--governed"],
       { cwd: ROOT, encoding: "utf-8", timeout: 60000 });
@@ -87,7 +87,7 @@ test("--governed runs a flow through the governed runtime and prints its value (
 test("--governed is FAIL-CLOSED: a governance violation refuses to run (exit 1 + FUNGI diagnostic)", () => {
   const f = join(ROOT, "build", "__g_violation.fungi");
   // console.log without an import → FUNGI-NAME-001; the governed run must refuse, not execute.
-  writeFileSync(f, `flow leaky() -> Int {\n  console.log("hi")\n  return 1\n}\n`);
+  writeFileSync(f, `@version 1\nflow leaky() -> Int {\n  console.log("hi")\n  return 1\n}\n`);
   try {
     const r = spawnSync(process.execPath, ["galerina.mjs", "run", f, "--invoke", "leaky", "--governed"],
       { cwd: ROOT, encoding: "utf-8", timeout: 60000 });
