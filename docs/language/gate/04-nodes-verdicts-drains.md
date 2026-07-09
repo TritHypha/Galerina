@@ -225,7 +225,27 @@ a fresh `? guard` first).
 
 ---
 
-## 7. Reading a map as a proof (summary)
+## 7. Junction adjudication — what `-{or}-` means for verdicts
+
+Fan-in already exists: two edges into one node (`[a] -> [j]`, `[b] -> [j]`) *is* the junction — **no new
+syntax**. The only open question is what a junction *means* for verdicts, and K3 answers it (MIN, never MAX;
+RD-0259 / RD-0287d). The adjudication is fixed:
+
+| Junction form | K3 reading | Verdict |
+|---|---|---|
+| `{or}` of **deny** signals | "any reason to deny ⇒ deny" ≡ **min** on the verdict plane | **SOUND** — exactly what `×`/`-` arms draining to `[-]` already do; deny-side convergence is fail-closed by construction |
+| `{or}` of **ALLOW** arms | `vOr = max` — one lane could *manufacture* ALLOW past the others | **REFUSED — "ALLOW-side wired-OR"** (the RD-0259 forgery shape; violates B1: a junction whose meaning contradicts its safest reading) |
+| `{not}` on a **verdict** | polarity inversion (deny ↔ allow) | **REFUSED on the verdict plane** — an operator-level polarity spoof; negation stays in `.fungi` *data* logic, never on a verdict |
+
+**Rule.** Deny-side convergence is free (fail-closed by construction). Two or more **positive**-polarity arms
+converging and then proceeding to effects/egress *without a fresh `? guard`* is an ALLOW-side wired-OR and is
+**rejected** — the `join_polarity` check (roadmap) enforces it in one linear pass, the same class as
+exhaustiveness (§4). This is a written answer, not new grammar: the `.gate` v0.4 accept set is unchanged.
+
+> **EE drafting lesson (RD-0287f).** A junction must be drawn explicitly (the dot convention — a junction is
+> not a crossing), and **4-way junctions are banned**: stagger into two 3-ways. A 50-year schematic-error import.
+
+## 8. Reading a map as a proof (summary)
 
 Given the glyph semantics, a reviewer can read a `.gate` file as a mechanical argument:
 
