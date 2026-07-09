@@ -1839,9 +1839,20 @@ export function emitWATExpr(
           const ch = someArm?.children ?? [];
           return ch.length >= 2 && ch[0]?.kind === "identifier" ? ch[0]!.value : undefined;
         })();
-        const noneBody = noneArm ? armBodyExpr(noneArm) : undefined;
-        const someBody = someArm ? armBodyExpr(someArm) : undefined;
-        const noneWat = noneBody ? emitWATExpr(noneBody, vars, staticConsts) : "(i32.const 0)";
+        // A missing constructor arm falls to the match's wildcard (`_`/`else`) arm —
+        // for Option the wildcard IS the complement (`Some(x) + _` ⇒ `_` ≡ None). A
+        // missing side with NO wildcard is non-exhaustive (FUNGI-MATCH-001 rejects it
+        // upstream); emit a trap, never a silent 0 (RD-0240: fail-closed, not fail-open).
+        const wildcardArm = arms.find(a => {
+          const p = a.value ?? "_";
+          return p === "_" || p === "else" || p === "default";
+        });
+        const noneSrc = noneArm ?? wildcardArm;
+        const someSrc = someArm ?? wildcardArm;
+        const noneBody = noneSrc !== undefined ? armBodyExpr(noneSrc) : undefined;
+        const someBody = someSrc !== undefined ? armBodyExpr(someSrc) : undefined;
+        const noneWat = noneBody !== undefined ? emitWATExpr(noneBody, vars, staticConsts)
+          : "(unreachable) (; RD-0240: Option match missing None arm and wildcard — fail-closed ;)";
         const someVars: ReadonlyMap<string, string> = someBind !== undefined
           ? new Map([...vars, [someBind, scratch]]) : vars;
         // #160: scope the Some binding's type (Option<T> inner) while emitting the arm.
@@ -1851,7 +1862,8 @@ export function emitWATExpr(
         if (someBind !== undefined && recordVarTypes !== null && someBindType !== undefined) {
           recordVarTypes.set(someBind, someBindType);
         }
-        const someWat = someBody ? emitWATExpr(someBody, someVars, staticConsts) : "(i32.const 0)";
+        const someWat = someBody !== undefined ? emitWATExpr(someBody, someVars, staticConsts)
+          : "(unreachable) (; RD-0240: Option match missing Some arm and wildcard — fail-closed ;)";
         if (someBind !== undefined && recordVarTypes !== null) {
           if (hadType) recordVarTypes.set(someBind, prevType!);
           else recordVarTypes.delete(someBind);
@@ -2210,6 +2222,16 @@ function emitBlockStatements(
 
         const subjectWat = emitWATExpr(matchSubject, vars, staticConsts);
 
+        // Shared by the Option and Result dispatches below: a missing constructor arm
+        // falls to the match's wildcard (`_`/`else`) arm (`Some(x) + _` ⇒ `_` ≡ None;
+        // `Ok(v) + _` ⇒ `_` ≡ Err). Missing side + no wildcard = non-exhaustive
+        // (FUNGI-MATCH-001 upstream) — trap, never an EMPTY branch (a silent no-op is
+        // the statement form of the fail-open this case's RD-0240 note already bans).
+        const ctorWildcardArm = matchArms.find(a => {
+          const p = a.value ?? "_";
+          return p === "_" || p === "else" || p === "default";
+        });
+
         // ── Option<T> match: None / Some(x) sentinel dispatch (#160) ──────────
         // Host convention (P9): None is encoded as a negative i32 sentinel (-1);
         // Some(v) as the value itself (v >= 0). String.charAt() returns this
@@ -2264,8 +2286,12 @@ function emitBlockStatements(
             return lines;
           };
 
-          const noneLines = emitArm(noneArm);
-          const someLines = emitArm(someArm, someBind);
+          const noneSrc = noneArm ?? ctorWildcardArm;
+          const someSrc = someArm ?? ctorWildcardArm;
+          const noneLines = noneSrc !== undefined ? emitArm(noneSrc)
+            : ["(unreachable) (; RD-0240: Option match missing None arm and wildcard — fail-closed ;)"];
+          const someLines = someSrc !== undefined ? emitArm(someSrc, someBind)
+            : ["(unreachable) (; RD-0240: Option match missing Some arm and wildcard — fail-closed ;)"];
 
           bodyLines.push(`(if (i32.lt_s (local.get ${scratch}) (i32.const 0))`);
           bodyLines.push(`  (then`);
@@ -2320,8 +2346,12 @@ function emitBlockStatements(
             }
             return lines;
           };
-          const okLines = emitResArm(okArm, resBindOf(okArm), okBindType);
-          const errLines = emitResArm(errArm, resBindOf(errArm), undefined);
+          const okSrc = okArm ?? ctorWildcardArm;
+          const errSrc = errArm ?? ctorWildcardArm;
+          const okLines = okSrc !== undefined ? emitResArm(okSrc, resBindOf(okArm), okBindType)
+            : ["(unreachable) (; RD-0240: Result match missing Ok arm and wildcard — fail-closed ;)"];
+          const errLines = errSrc !== undefined ? emitResArm(errSrc, resBindOf(errArm), undefined)
+            : ["(unreachable) (; RD-0240: Result match missing Err arm and wildcard — fail-closed ;)"];
 
           bodyLines.push(`(if (i32.eq (call $host___result_tag (local.get ${scratch})) (i32.const 0))`);
           bodyLines.push(`  (then`);
