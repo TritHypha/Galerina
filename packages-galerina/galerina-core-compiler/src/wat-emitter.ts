@@ -1916,6 +1916,52 @@ export function emitWATExpr(
       return buildMatchChain(0);
     }
 
+    case "errorPropagation": {
+      // `expr?` — Rust-style error propagation onto the ADT ABI. Governed semantics
+      // (interpreter.ts errorPropagation): Result — Err ⇒ early-return the Err handle
+      // UNCHANGED (the flow's own return type is that same Result<T,E>); Ok(v) ⇒ v.
+      // Option — None ⇒ early-return None; Some(v) ⇒ v. The subject is evaluated ONCE
+      // into a scratch (a call subject like `half(n)?` must never be evaluated twice —
+      // that would double any effect and re-roll any nondeterminism), then dispatched.
+      //
+      // Needs an active flow-body scratch context (recordCtx) for the local. Outside one,
+      // with no operand, or on an inner type whose ADT ABI we cannot prove, FAIL CLOSED
+      // with a trap rather than guess (RD-0240) — the prior behaviour was this same trap
+      // for every `?`; now the Result/Option cases actually lower.
+      const inner = node.children?.[0];
+      if (inner === undefined || recordCtx === null) {
+        return `(unreachable) (; RD-0240: '?' with no operand or outside a flow-body scratch context — fail-closed ;)`;
+      }
+      const innerWat = emitWATExpr(inner, vars, staticConsts);
+      const innerType = inferExprType(inner);
+      const scratch = `$__fungi_try_${recordCtx.counter.n++}`;
+      recordCtx.localDecls.push(`(local ${scratch} i32)`);
+      if (innerType === "Result" || innerType?.startsWith("Result<")) {
+        // tag 1 = Err ⇒ (return <the Err handle>); tag 0 = Ok ⇒ unwrap via __result_value.
+        return [
+          `(block (result i32)`,
+          `  (local.set ${scratch} ${innerWat})`,
+          `  (if (i32.eq (call $host___result_tag (local.get ${scratch})) (i32.const 1))`,
+          `    (then (return (local.get ${scratch}))))`,
+          `  (call $host___result_value (local.get ${scratch}))`,
+          `)`,
+        ].join("\n");
+      }
+      if (innerType === "Option" || innerType?.startsWith("Option<")) {
+        // Sentinel ABI (wasm-runtime.ts): None = negative, Some(v) = v (>= 0). None ⇒
+        // (return -1) [the None sentinel]; Some ⇒ the scratch value itself.
+        return [
+          `(block (result i32)`,
+          `  (local.set ${scratch} ${innerWat})`,
+          `  (if (i32.lt_s (local.get ${scratch}) (i32.const 0))`,
+          `    (then (return (i32.const -1))))`,
+          `  (local.get ${scratch})`,
+          `)`,
+        ].join("\n");
+      }
+      return `(unreachable) (; RD-0240: '?' on non-Result/Option inner type '${innerType ?? "unknown"}' — fail-closed ;)`;
+    }
+
     default:
       return `(unreachable) (; unhandled: ${node.kind} — fail-closed (emitter cannot lower; #128-sibling) ;)`;
   }
