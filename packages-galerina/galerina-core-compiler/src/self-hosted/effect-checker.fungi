@@ -11,8 +11,8 @@
 // declarations against the effects the body actually uses.
 //
 // Each flow record carries:
-//   name: String, kind: String, effects: Array (declared),
-//   usedEffects: Array (effects the parser decomposed from the body).
+//   name: String, kind: String, effects: Array<Auto> (declared),
+//   usedEffects: Array<Auto> (effects the parser decomposed from the body).
 //
 // Checks implemented:
 //   1. Undeclared-effect use — an effect in usedEffects not in the
@@ -43,14 +43,14 @@ record EffectDiagnostic {
 }
 
 record EffectCheckResult {
-  diagnostics: Array
+  diagnostics: Array<Auto>
   flowCount: Int
   cleanFlows: Int
 }
 
 // ── Known effects registry ───────────────────────────────────
 
-pure flow knownEffects() -> Array
+pure flow knownEffects() -> Array<Auto>
 contract {
   intent { "Return all valid Galerina declared effects." }
 }
@@ -71,7 +71,7 @@ contract {
 
 // ── Membership helper ─────────────────────────────────────────
 
-pure flow contains(xs: Array, needle: String) -> Bool
+pure flow contains(xs: Array<Auto>, needle: String) -> Bool
 contract {
   intent { "Return true when needle equals some string element of xs." }
 }
@@ -96,10 +96,10 @@ contract {
 
 // Return xs with duplicate strings removed (first occurrence kept). Reconciliation
 // is per-effect, so a repeated used effect must not produce duplicate diagnostics.
-pure flow dedup(xs: Array) -> Array
+pure flow dedup(xs: Array<Auto>) -> Array<Auto>
 contract { intent { "Remove duplicate string elements, preserving first occurrence." } }
 {
-  mut out: Array = Array.empty()
+  mut out: Array<Auto> = Array.empty()
   mut i: Int = 0
   while i < xs.count() {
     let xOpt = xs.get(i)
@@ -119,12 +119,12 @@ contract { intent { "Remove duplicate string elements, preserving first occurren
 
 // ── Per-flow effect checks ────────────────────────────────────
 
-pure flow checkPureFlowEffects(flowName: String, effectCount: Int) -> Array
+pure flow checkPureFlowEffects(flowName: String, effectCount: Int) -> Array<Auto>
 contract {
   intent { "Pure flows must declare zero effects. Emit FUNGI-EFFECT-003 (EFFECT_BOUNDARY_VIOLATION) if any declared." }
 }
 {
-  mut diags: Array = Array.empty()
+  mut diags: Array<Auto> = Array.empty()
   if effectCount > 0 {
     let msg: String = "Pure flow '" + flowName + "' declares effects — pure flows must be effect-free"
     diags = diags.append({ code: "FUNGI-EFFECT-003", message: msg, flowName: flowName, severity: "error" })
@@ -132,12 +132,12 @@ contract {
   return diags
 }
 
-pure flow checkSecureFlowEffects(flowName: String, effectCount: Int) -> Array
+pure flow checkSecureFlowEffects(flowName: String, effectCount: Int) -> Array<Auto>
 contract {
   intent { "Secure/guarded flows should declare at least audit.write for traceability." }
 }
 {
-  mut diags: Array = Array.empty()
+  mut diags: Array<Auto> = Array.empty()
   if effectCount == 0 {
     let msg: String = "Secure/guarded flow '" + flowName + "' declares no effects — consider declaring audit.write"
     // FUNGI-EFFECT-005 carried from prior stub: no canonical code for this advisory.
@@ -147,14 +147,14 @@ contract {
 }
 
 // Reconcile what a flow USES against what it DECLARES.
-pure flow checkUsedVsDeclared(flowName: String, kind: String, declared: Array, usedEffects: Array) -> Array
+pure flow checkUsedVsDeclared(flowName: String, kind: String, declared: Array<Auto>, usedEffects: Array<Auto>) -> Array<Auto>
 contract {
   intent { "Reconcile usedEffects against declared effects: undeclared use, unknown effects, pure violations." }
 }
 {
-  mut diags: Array = Array.empty()
-  let known: Array = knownEffects()
-  let uniqueUsed: Array = dedup(usedEffects)
+  mut diags: Array<Auto> = Array.empty()
+  let known: Array<Auto> = knownEffects()
+  let uniqueUsed: Array<Auto> = dedup(usedEffects)
 
   // Check #1 — undeclared-effect use: any used effect not in declared.
   // Check #3 — pure-flow violation: a pure flow that uses any effect at all.
@@ -237,12 +237,12 @@ contract {
 }
 
 // Collect effects from a single Expr, recursing into children.
-pure flow collectCallEffectsExpr(expr: Any) -> Array
+pure flow collectCallEffectsExpr(expr: Auto) -> Array<Auto>
 contract {
   intent { "Walk an Expr: a call contributes effectOfCall(value); recurse into children for binary/call." }
 }
 {
-  mut out: Array = Array.empty()
+  mut out: Array<Auto> = Array.empty()
   let kind: String = expr.kind
   if kind == "call" {
     let eff: String = effectOfCall(expr.value)
@@ -250,13 +250,13 @@ contract {
       out = out.append(eff)
     }
   }
-  let children: Array = expr.children
+  let children: Array<Auto> = expr.children
   mut i: Int = 0
   while i < children.count() {
     let cOpt = children.get(i)
     match cOpt {
       Some(child) => {
-        let childEffs: Array = collectCallEffectsExpr(child)
+        let childEffs: Array<Auto> = collectCallEffectsExpr(child)
         mut j: Int = 0
         while j < childEffs.count() {
           let eOpt = childEffs.get(j)
@@ -277,25 +277,25 @@ contract {
 }
 
 // Collect effects from a list of statements, recursing into nested blocks.
-pure flow collectBodyEffects(stmts: Array) -> Array
+pure flow collectBodyEffects(stmts: Array<Auto>) -> Array<Auto>
 contract {
   intent { "Walk a statement list: each stmt's expr(s) and nested if/while bodies contribute call effects." }
 }
 {
-  mut out: Array = Array.empty()
+  mut out: Array<Auto> = Array.empty()
   mut i: Int = 0
   while i < stmts.count() {
     let sOpt = stmts.get(i)
     match sOpt {
       Some(stmt) => {
         // Expressions carried directly by this statement (RHS / return / condition).
-        let exprs: Array = stmt.expr
+        let exprs: Array<Auto> = stmt.expr
         mut e: Int = 0
         while e < exprs.count() {
           let exOpt = exprs.get(e)
           match exOpt {
             Some(ex) => {
-              let exEffs: Array = collectCallEffectsExpr(ex)
+              let exEffs: Array<Auto> = collectCallEffectsExpr(ex)
               mut k: Int = 0
               while k < exEffs.count() {
                 let eeOpt = exEffs.get(k)
@@ -313,8 +313,8 @@ contract {
           e = e + 1
         }
         // Nested block (if/while body) — recurse.
-        let nested: Array = stmt.body
-        let nestedEffs: Array = collectBodyEffects(nested)
+        let nested: Array<Auto> = stmt.body
+        let nestedEffs: Array<Auto> = collectBodyEffects(nested)
         mut n: Int = 0
         while n < nestedEffs.count() {
           let neOpt = nestedEffs.get(n)
@@ -326,8 +326,8 @@ contract {
           n = n + 1
         }
         // Else block (if elseBody) — recurse.
-        let elseNested: Array = stmt.elseBody
-        let elseEffs: Array = collectBodyEffects(elseNested)
+        let elseNested: Array<Auto> = stmt.elseBody
+        let elseEffs: Array<Auto> = collectBodyEffects(elseNested)
         mut m: Int = 0
         while m < elseEffs.count() {
           let eeOpt2 = elseEffs.get(m)
@@ -348,12 +348,12 @@ contract {
 }
 
 // Derive used effects from the body AST, then reconcile against declared.
-pure flow checkBodyEffects(flows: Array) -> EffectCheckResult
+pure flow checkBodyEffects(flows: Array<Auto>) -> EffectCheckResult
 contract {
   intent { "Derive each flow's used effects from its body AST and reconcile against declared effects." }
 }
 {
-  mut allDiags: Array = Array.empty()
+  mut allDiags: Array<Auto> = Array.empty()
   mut flowCount: Int = 0
   mut cleanFlows: Int = 0
   mut i: Int = 0
@@ -363,9 +363,9 @@ contract {
       Some(fd) => {
         let name: String = fd.name
         let kind: String = fd.kind
-        let declared: Array = fd.effects
-        let used: Array = dedup(collectBodyEffects(fd.body))
-        mut flowDiags: Array = Array.empty()
+        let declared: Array<Auto> = fd.effects
+        let used: Array<Auto> = dedup(collectBodyEffects(fd.body))
+        mut flowDiags: Array<Auto> = Array.empty()
 
         mut u: Int = 0
         while u < used.count() {
@@ -414,12 +414,12 @@ contract {
 
 // ── Full effect check pass ────────────────────────────────────
 
-pure flow checkFlowEffects(flows: Array) -> EffectCheckResult
+pure flow checkFlowEffects(flows: Array<Auto>) -> EffectCheckResult
 contract {
   intent { "Run effect checks across all flows from the Stage B ParseResult." }
 }
 {
-  mut allDiags: Array = Array.empty()
+  mut allDiags: Array<Auto> = Array.empty()
   mut flowCount: Int = 0
   mut cleanFlows: Int = 0
   mut i: Int = 0
@@ -429,13 +429,13 @@ contract {
       Some(fd) => {
         let name: String = fd.name
         let kind: String = fd.kind
-        let effects: Array = fd.effects
-        let usedEffects: Array = fd.usedEffects
+        let effects: Array<Auto> = fd.effects
+        let usedEffects: Array<Auto> = fd.usedEffects
         let effectCount: Int = effects.count()
-        mut flowDiags: Array = Array.empty()
+        mut flowDiags: Array<Auto> = Array.empty()
 
         if kind == "pure" {
-          let pureDiags: Array = checkPureFlowEffects(name, effectCount)
+          let pureDiags: Array<Auto> = checkPureFlowEffects(name, effectCount)
           mut p: Int = 0
           while p < pureDiags.count() {
             let pdOpt = pureDiags.get(p)
@@ -448,7 +448,7 @@ contract {
           }
         }
         if kind == "secure" or kind == "guarded" {
-          let secDiags: Array = checkSecureFlowEffects(name, effectCount)
+          let secDiags: Array<Auto> = checkSecureFlowEffects(name, effectCount)
           mut s: Int = 0
           while s < secDiags.count() {
             let sdOpt = secDiags.get(s)
@@ -461,7 +461,7 @@ contract {
           }
         }
 
-        let reconDiags: Array = checkUsedVsDeclared(name, kind, effects, usedEffects)
+        let reconDiags: Array<Auto> = checkUsedVsDeclared(name, kind, effects, usedEffects)
         mut r: Int = 0
         while r < reconDiags.count() {
           let rdOpt = reconDiags.get(r)

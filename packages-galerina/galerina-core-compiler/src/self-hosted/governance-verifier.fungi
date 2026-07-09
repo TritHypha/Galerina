@@ -30,7 +30,7 @@ record GovDiagnostic {
 }
 
 record GovResult {
-  diagnostics: Array
+  diagnostics: Array<Auto>
   passed: Int
   failed: Int
 }
@@ -38,7 +38,7 @@ record GovResult {
 // ── Helpers ───────────────────────────────────────────────────
 
 // True if `target` appears in the effects array.
-pure flow hasEffect(effectList: Array, wanted: String) -> Bool
+pure flow hasEffect(effectList: Array<Auto>, wanted: String) -> Bool
 contract {
   intent { "Return true when the flow's declared effects include the target effect." }
 }
@@ -59,12 +59,12 @@ contract {
 }
 
 // Append every element of `src` onto `dst` and return the result.
-pure flow appendAll(dst: Array, src: Array) -> Array
+pure flow appendAll(dst: Array<Auto>, src: Array<Auto>) -> Array<Auto>
 contract {
   intent { "Concatenate src onto dst (Stage B arrays are append-only)." }
 }
 {
-  mut out: Array = dst
+  mut out: Array<Auto> = dst
   mut i: Int = 0
   while i < src.count() {
     let xOpt = src.get(i)
@@ -80,12 +80,12 @@ contract {
 
 // ── Per-flow governance checks ────────────────────────────────
 
-pure flow checkSafetyCritical(flowName: String, hasAudit: Bool, hasDeterministic: Bool) -> Array
+pure flow checkSafetyCritical(flowName: String, hasAudit: Bool, hasDeterministic: Bool) -> Array<Auto>
 contract {
   intent { "FUNGI-VAL-001/002: safety_critical flows must have audit.write and deterministic_execution." }
 }
 {
-  mut diags: Array = Array.empty()
+  mut diags: Array<Auto> = Array.empty()
   if hasAudit == false {
     let msg: String = "safety_critical flow '" + flowName + "' must declare audit.write (FUNGI-VAL-001)"
     diags = diags.append({ code: "FUNGI-VAL-001", message: msg, flowName: flowName })
@@ -97,12 +97,12 @@ contract {
   return diags
 }
 
-pure flow checkSecureFlowGovernance(flowName: String, effectCount: Int) -> Array
+pure flow checkSecureFlowGovernance(flowName: String, effectCount: Int) -> Array<Auto>
 contract {
   intent { "Secure flows should declare governance effects for traceability." }
 }
 {
-  mut diags: Array = Array.empty()
+  mut diags: Array<Auto> = Array.empty()
   if effectCount == 0 {
     let msg: String = "secure flow '" + flowName + "' declares no effects — governance cannot be verified"
     diags = diags.append({ code: "FUNGI-GOV-002", message: msg, flowName: flowName })
@@ -112,12 +112,12 @@ contract {
 
 // ── Full governance verification pass ─────────────────────────
 
-pure flow verifyGovernance(flows: Array) -> GovResult
+pure flow verifyGovernance(flows: Array<Auto>) -> GovResult
 contract {
   intent { "Run all governance checks across flows from the Stage B ParseResult." }
 }
 {
-  mut allDiags: Array = Array.empty()
+  mut allDiags: Array<Auto> = Array.empty()
   mut passed: Int = 0
   mut failed: Int = 0
   mut i: Int = 0
@@ -128,7 +128,7 @@ contract {
         let name: String = fd.name
         let kind: String = fd.kind
         let effectCount: Int = fd.effects.count()
-        mut flowDiags: Array = Array.empty()
+        mut flowDiags: Array<Auto> = Array.empty()
         if kind == "secure" {
           flowDiags = appendAll(flowDiags, checkSecureFlowGovernance(name, effectCount))
         }
@@ -172,7 +172,7 @@ contract {
 // if/while `body`, and Expr `children` (call args, binary operands).
 
 // True if ANY call Expr reachable from `e` calls "auditWrite".
-pure flow exprCallsAudit(e: Array) -> Bool
+pure flow exprCallsAudit(e: Array<Auto>) -> Bool
 contract {
   intent { "Return true when the expression (0/1-element array) contains an auditWrite call." }
 }
@@ -208,7 +208,7 @@ contract {
 }
 
 // True if ANY call Expr in the statement list calls "auditWrite".
-pure flow flowCallsAudit(stmts: Array) -> Bool
+pure flow flowCallsAudit(stmts: Array<Auto>) -> Bool
 contract {
   intent { "Recursively detect whether the flow body performs an auditWrite call." }
 }
@@ -238,7 +238,7 @@ contract {
 // The canonical .fungi implementation of FUNGI-GOV-004.
 // Stage A TypeScript in governance-verifier.ts is a bootstrap mirror of this logic.
 
-pure flow findPolicyExists(policies: Array, name: String) -> Bool
+pure flow findPolicyExists(policies: Array<Auto>, name: String) -> Bool
 contract {
   intent { "Return true if a policy with the given name exists in the policies array." }
 }
@@ -256,7 +256,7 @@ contract {
   return false
 }
 
-pure flow effectIsPermitted(policies: Array, policyName: String, effect: String) -> Bool
+pure flow effectIsPermitted(policies: Array<Auto>, policyName: String, effect: String) -> Bool
 contract {
   intent { "Return true if the given effect is in the named policy's permitted_effects." }
 }
@@ -288,12 +288,12 @@ contract {
   return false
 }
 
-pure flow verifyDomainGuardConformance(flows: Array, policies: Array) -> GovResult
+pure flow verifyDomainGuardConformance(flows: Array<Auto>, policies: Array<Auto>) -> GovResult
 contract {
   intent { "FUNGI-GOV-004: verify declared effects ⊆ permitted_effects for each [conforms_to: X] contract." }
 }
 {
-  mut allDiags: Array = Array.empty()
+  mut allDiags: Array<Auto> = Array.empty()
   mut passed: Int = 0
   mut failed: Int = 0
   mut i: Int = 0
@@ -309,7 +309,7 @@ contract {
             allDiags = allDiags.append({ code: "FUNGI-GOV-004", message: msg, flowName: fd.name })
             failed = failed + 1
           } else {
-            mut flowDiags: Array = Array.empty()
+            mut flowDiags: Array<Auto> = Array.empty()
             mut j: Int = 0
             while j < fd.effects.count() {
               let effOpt = fd.effects.get(j)
@@ -344,12 +344,12 @@ contract {
 
 // ── Body-governance verification pass ─────────────────────────
 
-pure flow checkBodyGovernance(flows: Array) -> GovResult
+pure flow checkBodyGovernance(flows: Array<Auto>) -> GovResult
 contract {
   intent { "A secure flow must perform an audit call in its body (FUNGI-VAL-001)." }
 }
 {
-  mut allDiags: Array = Array.empty()
+  mut allDiags: Array<Auto> = Array.empty()
   mut passed: Int = 0
   mut failed: Int = 0
   mut i: Int = 0
@@ -359,7 +359,7 @@ contract {
       Some(fd) => {
         let name: String = fd.name
         let kind: String = fd.kind
-        mut flowDiags: Array = Array.empty()
+        mut flowDiags: Array<Auto> = Array.empty()
         if kind == "secure" {
           if flowCallsAudit(fd.body) == false {
             let msg: String = "secure flow '" + name + "' performs no audit call in its body"
@@ -428,12 +428,12 @@ contract {
 // Verify a single guard {} declaration.
 // guardDecls shape: Array<{ name: String, permittedEffects: Array<String> }>
 // FUNGI-GOV-005: every permitted_effect must be a known capability token.
-pure flow verifyGuardDecl(guardDecls: Array) -> GovResult
+pure flow verifyGuardDecl(guardDecls: Array<Auto>) -> GovResult
 contract {
   intent { "FUNGI-GOV-005: guard permitted_effects must all be known capability tokens." }
 }
 {
-  mut allDiags: Array = Array.empty()
+  mut allDiags: Array<Auto> = Array.empty()
   mut passed: Int = 0
   mut failed: Int = 0
   mut i: Int = 0
@@ -441,7 +441,7 @@ contract {
     let gOpt = guardDecls.get(i)
     match gOpt {
       Some(g) => {
-        mut guardDiags: Array = Array.empty()
+        mut guardDiags: Array<Auto> = Array.empty()
         mut j: Int = 0
         while j < g.permittedEffects.count() {
           let eOpt = g.permittedEffects.get(j)
@@ -474,15 +474,15 @@ contract {
 // ── 2. Policy Hierarchy (FUNGI-INHERIT-001/002) ─────────────────
 
 // Verify parent_policy references resolve and child effects ⊆ parent effects.
-// Each element in guards: { name: String, parentPolicy: String, permittedEffects: Array }
+// Each element in guards: { name: String, parentPolicy: String, permittedEffects: Array<Auto> }
 // FUNGI-INHERIT-001: parentPolicy must resolve to an existing guard name.
 // FUNGI-INHERIT-002: child permittedEffects must be a subset of parent permittedEffects.
-pure flow verifyPolicyHierarchy(guards: Array) -> GovResult
+pure flow verifyPolicyHierarchy(guards: Array<Auto>) -> GovResult
 contract {
   intent { "FUNGI-INHERIT-001/002: parent_policy references resolve; child effects ⊆ parent effects." }
 }
 {
-  mut allDiags: Array = Array.empty()
+  mut allDiags: Array<Auto> = Array.empty()
   mut passed: Int = 0
   mut failed: Int = 0
   mut i: Int = 0
@@ -500,7 +500,7 @@ contract {
             failed = failed + 1
           } else {
             // FUNGI-INHERIT-002: every child effect must appear in parent's permittedEffects.
-            mut hierDiags: Array = Array.empty()
+            mut hierDiags: Array<Auto> = Array.empty()
             mut j: Int = 0
             while j < g.permittedEffects.count() {
               let ceOpt = g.permittedEffects.get(j)
@@ -541,12 +541,12 @@ contract {
 // guardDecl: Array<{ name: String, emergencyTransitions: Array<{ action: String, capability: String }> }>
 // FUNGI-MONO-001: emergency transition action must be "DENY".
 // FUNGI-MONO-002: no emergency transition may use action "GRANT".
-pure flow verifyEmergencyTransitions(guardDecl: Array) -> GovResult
+pure flow verifyEmergencyTransitions(guardDecl: Array<Auto>) -> GovResult
 contract {
   intent { "FUNGI-MONO-001/002: emergency transitions must only DENY capabilities, never grant them." }
 }
 {
-  mut allDiags: Array = Array.empty()
+  mut allDiags: Array<Auto> = Array.empty()
   mut passed: Int = 0
   mut failed: Int = 0
   mut i: Int = 0
@@ -554,7 +554,7 @@ contract {
     let gOpt = guardDecl.get(i)
     match gOpt {
       Some(g) => {
-        mut emDiags: Array = Array.empty()
+        mut emDiags: Array<Auto> = Array.empty()
         mut j: Int = 0
         while j < g.emergencyTransitions.count() {
           let tOpt = g.emergencyTransitions.get(j)
@@ -595,12 +595,12 @@ contract {
 // flowParams: Array<{ name: String }> — visible parameter names in the enclosing flow.
 // FUNGI-TRAP-001: errorCode must be non-empty (non-blank identifier).
 // FUNGI-TRAP-002: errorCode must not shadow a flow parameter name.
-pure flow verifyTrapDecl(trapDecl: Array, flowParams: Array) -> GovResult
+pure flow verifyTrapDecl(trapDecl: Array<Auto>, flowParams: Array<Auto>) -> GovResult
 contract {
   intent { "FUNGI-TRAP-001/002: trap error code must be a non-blank identifier and must not shadow a flow parameter." }
 }
 {
-  mut allDiags: Array = Array.empty()
+  mut allDiags: Array<Auto> = Array.empty()
   mut passed: Int = 0
   mut failed: Int = 0
   mut i: Int = 0
@@ -609,7 +609,7 @@ contract {
     match tOpt {
       Some(t) => {
         if t.kind == "trap" {
-          mut trapDiags: Array = Array.empty()
+          mut trapDiags: Array<Auto> = Array.empty()
           // FUNGI-TRAP-001: error code must be non-empty.
           if t.errorCode == "" {
             let msg1: String = "trap statement has no error code identifier (FUNGI-TRAP-001)"
@@ -652,12 +652,12 @@ contract {
 // stepExpr: Array<{ kind: String, target: { kind: String, value: String } }>
 // flowQualifier: "pure" | "governed" | "secure" | "flow"
 // FUNGI-STEP-001: step in a pure flow is not permitted.
-pure flow verifyStepExpr(stepExpr: Array, flowQualifier: String) -> GovResult
+pure flow verifyStepExpr(stepExpr: Array<Auto>, flowQualifier: String) -> GovResult
 contract {
   intent { "FUNGI-STEP-001: warn when a step expression is used inside a pure flow." }
 }
 {
-  mut allDiags: Array = Array.empty()
+  mut allDiags: Array<Auto> = Array.empty()
   mut passed: Int = 0
   mut failed: Int = 0
   mut i: Int = 0
@@ -687,15 +687,15 @@ contract {
 
 // Verify only_decrease and max_change constraints in policy {} blocks.
 // policyBlock: Array<{ name: String, onlyDecrease: Bool, maxChange: Int }>
-// flowBody: Array of assignment statements with { kind: "assign", varName: String, delta: Int }
+// flowBody: Array<Auto> of assignment statements with { kind: "assign", varName: String, delta: Int }
 // FUNGI-MUTATION-001: when onlyDecrease is true, no assignment may increase the variable.
 // FUNGI-MUTATION-002: when maxChange > 0, no single assignment delta may exceed maxChange.
-pure flow verifyMutationPolicy(policyBlock: Array, flowBody: Array) -> GovResult
+pure flow verifyMutationPolicy(policyBlock: Array<Auto>, flowBody: Array<Auto>) -> GovResult
 contract {
   intent { "FUNGI-MUTATION-001/002: enforce only_decrease and max_change mutation constraints from policy blocks." }
 }
 {
-  mut allDiags: Array = Array.empty()
+  mut allDiags: Array<Auto> = Array.empty()
   mut passed: Int = 0
   mut failed: Int = 0
   mut i: Int = 0
@@ -703,7 +703,7 @@ contract {
     let pOpt = policyBlock.get(i)
     match pOpt {
       Some(pol) => {
-        mut polDiags: Array = Array.empty()
+        mut polDiags: Array<Auto> = Array.empty()
         mut j: Int = 0
         while j < flowBody.count() {
           let sOpt = flowBody.get(j)

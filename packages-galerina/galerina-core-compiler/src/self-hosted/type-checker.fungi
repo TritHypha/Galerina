@@ -32,7 +32,7 @@ record TypeDiagnostic {
 }
 
 record TypeCheckResult {
-  diagnostics: Array
+  diagnostics: Array<Auto>
   flowCount: Int
   checkedAt: String
 }
@@ -73,12 +73,12 @@ contract {
 }
 
 // Append every element of `src` onto `dst` and return the result.
-pure flow appendAll(dst: Array, src: Array) -> Array
+pure flow appendAll(dst: Array<Auto>, src: Array<Auto>) -> Array<Auto>
 contract {
   intent { "Concatenate src onto dst (Stage B arrays are append-only)." }
 }
 {
-  mut out: Array = dst
+  mut out: Array<Auto> = dst
   mut i: Int = 0
   while i < src.count() {
     let xOpt = src.get(i)
@@ -94,12 +94,12 @@ contract {
 
 // ── Per-flow checks ───────────────────────────────────────────
 
-pure flow checkParams(flowName: String, params: Array) -> Array
+pure flow checkParams(flowName: String, params: Array<Auto>) -> Array<Auto>
 contract {
   intent { "FUNGI-TYPE-001: every parameter must name a known type." }
 }
 {
-  mut diags: Array = Array.empty()
+  mut diags: Array<Auto> = Array.empty()
   mut i: Int = 0
   while i < params.count() {
     let pOpt = params.get(i)
@@ -121,12 +121,12 @@ contract {
 
 // ── Full type-check pass ──────────────────────────────────────
 
-pure flow checkFlows(flows: Array) -> TypeCheckResult
+pure flow checkFlows(flows: Array<Auto>) -> TypeCheckResult
 contract {
   intent { "Run Stage B type checks across all flows from the ParseResult." }
 }
 {
-  mut allDiags: Array = Array.empty()
+  mut allDiags: Array<Auto> = Array.empty()
   mut flowCount: Int = 0
   mut i: Int = 0
   while i < flows.count() {
@@ -135,7 +135,7 @@ contract {
       Some(fd) => {
         let name: String = fd.name
         let retType: String = fd.returnType
-        mut flowDiags: Array = Array.empty()
+        mut flowDiags: Array<Auto> = Array.empty()
 
         // FUNGI-TYPE-001: declared return type must be a known type.
         let retKnown: Bool = isKnownType(retType)
@@ -209,12 +209,12 @@ contract {
 }
 
 // Check one statement, recursing into if/while bodies, returning its diagnostics.
-pure flow checkStmt(flowName: String, stmt: Stmt) -> Array
+pure flow checkStmt(flowName: String, stmt: Stmt) -> Array<Auto>
 contract {
   intent { "Type-check a single body statement (let/mut bindings + nested if/while)." }
 }
 {
-  mut diags: Array = Array.empty()
+  mut diags: Array<Auto> = Array.empty()
   let kind: String = stmt.kind
 
   if kind == "let" {
@@ -234,12 +234,12 @@ contract {
 }
 
 // Validate a let/mut binding's declared type against a single literal initializer.
-pure flow checkBinding(flowName: String, stmt: Stmt) -> Array
+pure flow checkBinding(flowName: String, stmt: Stmt) -> Array<Auto>
 contract {
   intent { "FUNGI-TYPE-001/002 for a let/mut binding with a declared type and literal RHS." }
 }
 {
-  mut diags: Array = Array.empty()
+  mut diags: Array<Auto> = Array.empty()
   let typeName: String = stmt.typeName
   if typeName == "" {
     return diags
@@ -272,12 +272,12 @@ contract {
 }
 
 // Check a list of statements (a flow body or a nested if/while block).
-pure flow checkStmtList(flowName: String, stmts: Array) -> Array
+pure flow checkStmtList(flowName: String, stmts: Array<Auto>) -> Array<Auto>
 contract {
   intent { "Walk a statement list, accumulating diagnostics for each statement." }
 }
 {
-  mut diags: Array = Array.empty()
+  mut diags: Array<Auto> = Array.empty()
   mut i: Int = 0
   while i < stmts.count() {
     let sOpt = stmts.get(i)
@@ -292,12 +292,12 @@ contract {
 }
 
 // Walk every flow's full statement body, emitting binding diagnostics.
-pure flow checkFlowBodies(flows: Array) -> TypeCheckResult
+pure flow checkFlowBodies(flows: Array<Auto>) -> TypeCheckResult
 contract {
   intent { "Stage B body-level type checks: validate each flow's statement body AST." }
 }
 {
-  mut allDiags: Array = Array.empty()
+  mut allDiags: Array<Auto> = Array.empty()
   mut flowCount: Int = 0
   mut i: Int = 0
   while i < flows.count() {
@@ -327,19 +327,19 @@ contract {
 // ── 1. Static Constants ───────────────────────────────────────
 
 record StaticEnv {
-  entries: Array
+  entries: Array<Auto>
 }
 
 // entries element shape: { name: String, value: String, typeName: String }
 
 // Build a StaticEnv from an array of StaticDecl AST nodes.
 // Each StaticDecl: { kind: "static", name: String, typeName: String, value: String }
-pure flow buildStaticEnv(decls: Array) -> StaticEnv
+pure flow buildStaticEnv(decls: Array<Auto>) -> StaticEnv
 contract {
   intent { "Collect StaticDecl nodes into a name→value lookup table (StaticEnv)." }
 }
 {
-  mut entries: Array = Array.empty()
+  mut entries: Array<Auto> = Array.empty()
   mut i: Int = 0
   while i < decls.count() {
     let dOpt = decls.get(i)
@@ -379,12 +379,12 @@ contract {
 }
 
 // Type-check all StaticDecl nodes: declared type must be a known type.
-pure flow checkStaticDecls(decls: Array) -> Array
+pure flow checkStaticDecls(decls: Array<Auto>) -> Array<Auto>
 contract {
   intent { "FUNGI-TYPE-001: static constant declarations must name a known type." }
 }
 {
-  mut diags: Array = Array.empty()
+  mut diags: Array<Auto> = Array.empty()
   mut i: Int = 0
   while i < decls.count() {
     let dOpt = decls.get(i)
@@ -409,7 +409,7 @@ contract {
 // ── 2. Bitfield Registers ─────────────────────────────────────
 
 record BitfieldEnv {
-  entries: Array
+  entries: Array<Auto>
 }
 
 // entries element shape: { register: String, field: String, mask: Int }
@@ -417,12 +417,12 @@ record BitfieldEnv {
 // Build a BitfieldEnv from an array of BitfieldDecl AST nodes.
 // Each BitfieldDecl: { kind: "bitfield", register: String,
 //                      fields: Array<{ name: String, mask: Int }> }
-pure flow buildBitfieldEnv(decls: Array) -> BitfieldEnv
+pure flow buildBitfieldEnv(decls: Array<Auto>) -> BitfieldEnv
 contract {
   intent { "Collect BitfieldDecl nodes into a REGISTER.field→mask lookup table (BitfieldEnv)." }
 }
 {
-  mut entries: Array = Array.empty()
+  mut entries: Array<Auto> = Array.empty()
   mut i: Int = 0
   while i < decls.count() {
     let dOpt = decls.get(i)
@@ -483,12 +483,12 @@ contract {
 
 // Type-check a view(cap) type annotation; returns diagnostics on the binding name.
 // capSpec is the raw capability list string — e.g. "CAP_A|CAP_B".
-pure flow checkViewType(bindingName: String, capSpec: String) -> Array
+pure flow checkViewType(bindingName: String, capSpec: String) -> Array<Auto>
 contract {
   intent { "Validate that a view(cap) annotation contains well-formed capability names." }
 }
 {
-  mut diags: Array = Array.empty()
+  mut diags: Array<Auto> = Array.empty()
   if capSpec == "" {
     let msg: String = "view() annotation on '" + bindingName + "' is empty — at least one capability name is required (FUNGI-TYPE-005)"
     diags = diags.append({ code: "FUNGI-TYPE-005", message: msg, flowName: bindingName })
@@ -500,12 +500,12 @@ contract {
 // Walk a list of binding declarations and type-check any view(cap) annotations.
 // Each binding: { kind: String, name: String, typeName: String }
 // typeName may be "view(CAP_A|CAP_B)" — extract the inner spec and validate it.
-pure flow checkViewBindings(flowName: String, bindings: Array) -> Array
+pure flow checkViewBindings(flowName: String, bindings: Array<Auto>) -> Array<Auto>
 contract {
   intent { "FUNGI-TYPE-005: every view(cap) binding must carry at least one named capability." }
 }
 {
-  mut diags: Array = Array.empty()
+  mut diags: Array<Auto> = Array.empty()
   mut i: Int = 0
   while i < bindings.count() {
     let bOpt = bindings.get(i)
@@ -533,12 +533,12 @@ contract {
 //   FUNGI-TYPE-006a — the condition expression must be Bool
 //   FUNGI-TYPE-006b — errorCode must be a non-empty identifier
 
-pure flow checkTrapDecl(decl: Array, env: Array) -> Array
+pure flow checkTrapDecl(decl: Array<Auto>, env: Array<Auto>) -> Array<Auto>
 contract {
   intent { "FUNGI-TYPE-006: trap condition must be Bool and error code must be a non-empty identifier." }
 }
 {
-  mut diags: Array = Array.empty()
+  mut diags: Array<Auto> = Array.empty()
   mut i: Int = 0
   while i < decl.count() {
     let tOpt = decl.get(i)
@@ -572,12 +572,12 @@ contract {
 // where target.kind must be "call" and target.value must be non-empty.
 // FUNGI-TYPE-007 — step target must be a valid flow call (not a literal/param).
 
-pure flow checkStepExpr(expr: Array, env: Array) -> Array
+pure flow checkStepExpr(expr: Array<Auto>, env: Array<Auto>) -> Array<Auto>
 contract {
   intent { "FUNGI-TYPE-007: step target must be a flow call expression, not a literal or parameter reference." }
 }
 {
-  mut diags: Array = Array.empty()
+  mut diags: Array<Auto> = Array.empty()
   mut i: Int = 0
   while i < expr.count() {
     let eOpt = expr.get(i)
