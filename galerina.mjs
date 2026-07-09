@@ -2513,70 +2513,83 @@ Baseline comparison (governance-cost):
       return n;
     });
 
-    // ── Host Runtime (P9.3) — array manager + string intern table ──────────────
-    // Provides the bridge between WASM i32 opaque handles and host JS types.
-    // The string intern table is reconstructed from WAT comment annotations.
-    const _hostArrays = new Map();   // i32 ID → Array
-    let _nextArrId = 1;
-    const _hostStrings = new Map();  // i32 ID → string
-    let _nextStrId = 1;
-    _hostStrings.set(0, "");         // 0 = empty string (reserved)
+    // ── Host runtime (P9.3) — the CANONICAL closed import object ───────────────
+    // Single source of truth: createHostRuntime() (wasm-runtime.ts) — the registry the
+    // emitter's HOST_RUNTIME_IMPORTS declares against and wat-host-runtime-completeness
+    // pins. An inline copy here drifted twice (#169 char classifiers, then the whole
+    // Result/Option surface — every ADT-touching module failed at instantiate) and
+    // diverged semantically (None 0 vs the -1 sentinel, void __array_append, UTF-16
+    // charAt vs code points, ASCII-only isLetter). Do not re-inline it.
+    // No admission gate on this path: the module was compiled from source in-process
+    // above — there is no foreign binary to attest. Foreign/persisted binaries are
+    // admitted via admitAndInstantiate (attestation-first, fail-closed).
+    const host = m.createHostRuntime();
+    // Seed the emitter's string-literal handles from the structured intern table (#145),
+    // not by re-parsing the `;; ID = "value"` WAT comments.
+    for (const { handle, value } of m.getInternedStrings()) host.seedString(handle, value);
 
-    // Reconstruct string intern table from WAT ;; ID = "value" comments
-    for (const line of (assembled.wat ?? "").split("\n")) {
-      const m = line.match(/^;;\s+(\d+)\s*=\s*"(.*)"$/);
-      if (m) { const id = parseInt(m[1]); if (id > 0) { _hostStrings.set(id, m[2]); if (id >= _nextStrId) _nextStrId = id + 1; } }
-    }
-
-    function _strFromId(id) { return _hostStrings.get(id) ?? ""; }
-    function _strIntern(s) {
-      for (const [id, v] of _hostStrings) { if (v === s) return id; }
-      const id = _nextStrId++;
-      _hostStrings.set(id, s);
-      return id;
-    }
-
-    const hostRuntime = {
-      host: {
-        __array_create:   () => { const id = _nextArrId++; _hostArrays.set(id, []); return id; },
-        __array_append:   (arr, item) => { _hostArrays.get(arr)?.push(item); },
-        __array_get:      (arr, i) => _hostArrays.get(arr)?.[i] ?? 0,
-        __array_length:   (arr) => _hostArrays.get(arr)?.length ?? 0,
-        __array_contains: (arr, item) => (_hostArrays.get(arr)?.includes(item) ? 1 : 0),
-        __array_first:    (arr) => _hostArrays.get(arr)?.[0] ?? 0,
-        __array_last:     (arr) => { const a = _hostArrays.get(arr); return a?.length ? a[a.length-1] : 0; },
-        __str_concat:     (a, b) => _strIntern(_strFromId(a) + _strFromId(b)),
-        __str_length:     (id) => _strFromId(id).length,
-        __str_char_at:    (id, pos) => _strFromId(id).charCodeAt(pos) || 0,
-        __str_to_int:     (id) => parseInt(_strFromId(id), 10) || 0,
-        __int_to_str:     (n) => _strIntern(String(n)),
-        __str_eq:         (a, b) => (_strFromId(a) === _strFromId(b) ? 1 : 0),
-        __char_is_letter: (c) => (/[a-zA-Z_]/.test(String.fromCharCode(c)) ? 1 : 0),
-        __char_is_digit:  (c) => (c >= 48 && c <= 57 ? 1 : 0),
-        // #169: Char classifiers — mirror createHostRuntime / interpreter (stdlib.ts:1814-1816) truth tables.
-        // The emitter maps c.isUpper()/isLower()/isWhitespace() to these host imports (wat-emitter.ts:858-860)
-        // and declares them (wat-emitter.ts:2811-2813), but this inline run-host had drifted behind the
-        // canonical createHostRuntime — so `galerina run --wasm` on a flow using them failed at instantiate.
-        __char_is_upper:  (c) => { const ch = String.fromCharCode(c); return ch === ch.toUpperCase() && ch !== ch.toLowerCase() ? 1 : 0; },
-        __char_is_lower:  (c) => { const ch = String.fromCharCode(c); return ch === ch.toLowerCase() && ch !== ch.toUpperCase() ? 1 : 0; },
-        __char_is_whitespace: (c) => (/\s/.test(String.fromCharCode(c)) ? 1 : 0),
-        __char_to_string: (c) => _strIntern(String.fromCharCode(c)),
-        __unwrap_or:      (val, def) => val === 0 ? def : val,
-        __option_some:    (val) => val,
-        __option_none:    () => 0,
+    // Resolve an i32 return by the flow's DECLARED type — string/array/result handles
+    // are registry indices, so the type is the only sound disambiguator (an Int that
+    // happens to equal an interned-string handle must still print as the Int; the old
+    // registry-membership probe got that wrong). One generic level is enough here.
+    function splitGenericArgs(t) {
+      const inner = t.slice(t.indexOf("<") + 1, t.lastIndexOf(">"));
+      const parts = []; let depth = 0, cur = "";
+      for (const ch of inner) {
+        if (ch === "<") depth += 1;
+        else if (ch === ">") depth -= 1;
+        if (ch === "," && depth === 0) { parts.push(cur.trim()); cur = ""; continue; }
+        cur += ch;
       }
-    };
+      if (cur.trim() !== "") parts.push(cur.trim());
+      return parts;
+    }
+    function formatRunOutput(raw, declaredType) {
+      if (typeof raw !== "number") return raw;
+      const t = String(declaredType).trim();
+      if (t === "String") {
+        const s = host.readString(raw);
+        return s === undefined ? raw : `"${s}"`;
+      }
+      if (t.startsWith("Result<")) {
+        const r = host.readResult(raw);
+        if (r === undefined) return raw;
+        const [okT = "", errT = ""] = splitGenericArgs(t);
+        return `${r.tag === "ok" ? "Ok" : "Err"}(${formatRunOutput(r.value, r.tag === "ok" ? okT : errT)})`;
+      }
+      if (t.startsWith("Option<")) {
+        // Sentinel convention at the WASM boundary (wasm-runtime.ts): None = -1, Some(v) = v.
+        if (raw === -1) return "None";
+        return `Some(${formatRunOutput(raw, splitGenericArgs(t)[0] ?? "")})`;
+      }
+      if (t.startsWith("Array<") || t.startsWith("List<")) {
+        const a = host.readArray(raw);
+        if (a === undefined) return raw;
+        const elemT = splitGenericArgs(t)[0] ?? "";
+        return "[" + a.map((x) => formatRunOutput(x, elemT)).join(", ") + "]";
+      }
+      // No declared type: legacy heuristic (array, then string) for un-annotated flows.
+      if (t === "") {
+        const a = host.readArray(raw);
+        if (a !== undefined) return "[" + a.map((x) => formatRunOutput(x, "")).join(", ") + "]";
+        const s = raw > 0 ? host.readString(raw) : undefined;
+        if (s !== undefined) return `"${s}"`;
+      }
+      return raw;
+    }
 
-    const result = await WebAssembly.instantiate(assembled.wasm, hostRuntime);
+    const result = await WebAssembly.instantiate(assembled.wasm, host.imports);
+    const memExport = result.instance.exports.memory;
+    if (memExport instanceof WebAssembly.Memory) host.bindMemory(memExport);
     const fn = result.instance.exports[flowName];
     if (typeof fn !== "function") {
       const exported = Object.keys(result.instance.exports).filter(k => k !== "memory");
       const declared = (parsed.flows ?? []).some(f => f.name === flowName);
       if (declared) {
-        // The flow EXISTS in the source but is not a WASM export. Only pure flows that return a
-        // primitive are exported (exportAllPure); effectful/secure flows (e.g. `console.log`, returning
-        // Result/Void) run in the governed runtime, not the raw WASM --invoke surface (dogfooding #2).
-        console.error(`Flow '${flowName}' exists but is NOT in the WASM --invoke surface — only pure flows returning a primitive (Int/Bool) are exported.`);
+        // The flow EXISTS in the source but is not a WASM export. Only pure flows (and effect-free
+        // guarded flows, P9.4c) are exported (exportAllPure); effectful/secure flows (e.g. `console.log`)
+        // run in the governed runtime, not the raw WASM --invoke surface (dogfooding #2).
+        console.error(`Flow '${flowName}' exists but is NOT in the WASM --invoke surface — only pure flows (and effect-free guarded flows) are exported.`);
         console.error(`('${flowName}' is likely a secure/effectful flow; those run in the governed runtime, not raw WASM --invoke.)`);
         console.error(`→ Run it under governance:  galerina run ${fungiFile} --invoke ${flowName} --governed`);
         console.error(`Invokable here (raw WASM, pure only): ${exported.join(", ") || "(none)"}`);
@@ -2586,15 +2599,8 @@ Baseline comparison (governance-cost):
       process.exit(1);
     }
     const rawOutput = fn(...args);
-    // If output is an array ID, resolve it to a readable form
-    let output = rawOutput;
-    if (typeof rawOutput === "number" && _hostArrays.has(rawOutput)) {
-      const arr = _hostArrays.get(rawOutput);
-      output = "[" + arr.map(id => typeof id === "number" && _hostStrings.has(id) ? `"${_hostStrings.get(id)}"` : id).join(", ") + "]";
-    } else if (typeof rawOutput === "number" && _hostStrings.has(rawOutput) && rawOutput > 0) {
-      output = `"${_hostStrings.get(rawOutput)}"`;
-    }
-    console.log(output);
+    const declaredReturn = (parsed.flows ?? []).find((f) => f.name === flowName)?.returnType ?? "";
+    console.log(formatRunOutput(rawOutput, declaredReturn));
     return;
   }
 
