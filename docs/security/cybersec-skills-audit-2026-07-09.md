@@ -31,7 +31,11 @@ only; defensive, find-and-fix.
 | F4 | current signing is **Ed25519-only** (PQ not default) | post-quantum-cryptography-migration | A02 / CWE-327 | 0294 PQ residual | **GAP** |
 | F5 | `kb-preflight` **skips** two drift gates on an absent KB token | detecting-supply-chain-attacks-in-ci-cd | A05 / **CWE-636** | **RD-0290a** | **GAP** (fail-open-on-absent; owner-config, not attacker-exploitable) |
 | F6 | historical `audit-doc-drift` fail-open `catch{}` | detecting-supply-chain-attacks-in-ci-cd | CWE-636 | RD-0290a | **CONFIRMED-fixed** |
-| F7 | `audit-name-collisions` silently skips an unparseable `package.json` | detecting-dependency-confusion | CWE-636 | 0294 supply-chain | **OPEN-RISK (minor)** |
+| F7 | `audit-name-collisions` silently skipped an unparseable `package.json` | detecting-dependency-confusion | CWE-636 | 0294 supply-chain | **OPEN-RISK → FIXED** |
+| F8 | `.spore` DEM nonce derivation (fresh per-section KEM key; stream nonces position-derived + anti-truncation) | cryptographic-audit | A02 / CWE-323 | 0294p | **CONFIRMED** |
+| F9 | `.spore` AEAD binds `kem_profile`+`aead_suite`+`dem_mode` + `requireAesGcm` pin (suite-downgrade prevented) | cryptographic-audit | A02 / CWE-757 | 0294n | **CONFIRMED** (minor GAP: format version not in AAD) |
+| F10 | `.spore` AAD binds section identity but not an explicit whole-file identity | cryptographic-audit | A02 / CWE-345 | 0294o | **GAP** (confirm `coord` uniqueness vs spec §5) |
+| F11 | `.spore` key-commitment: `key_commit` + Chan-Rogaway CTX tag (CMT-4) over AES-GCM | cryptographic-audit | A02 / CWE-327 | 0294 CMT-4 | **CONFIRMED** |
 
 ---
 
@@ -144,25 +148,65 @@ unparseable `package.json` instead of skipping it (an unreadable manifest is its
 
 ---
 
-## Not yet run (scoped for the next pass — priorities 3-5)
+## Priority 4 — `.spore` crypto footguns (`galerina-ext-spore/src/kemdem.ts`)
 
-Recorded so coverage is honest — these clusters are **not** audited in this pass:
+*Skill:* `performing-cryptographic-audit-of-application`. The KEM-DEM layer is hybrid X25519+ML-KEM-768 →
+SHAKE256 KDF → AES-256-GCM, with a §4 committing-AAD and a §8.5 CMT-4 committing tag.
 
-- **P3 · `.hypha` by-construction (0294a/b/i/k/l):** confirm second-order SQLi, depth/complexity DoS,
-  SSRF-from-query, insecure-deserialization, XXE are unrepresentable in the real query/data-engine
-  (`galerina-data-query`, `galerina-data-database`, `galerina-db-*`). Skills: graphql-security-assessment,
-  second-order-sql-injection, insecure-deserialization, xxe-injection.
-- **P4 · `.spore` crypto footguns (0294p/o/n):** nonce derivation, AAD file-binding, suite-pinning, size
-  padding, rollback epoch in `kemdem.ts`.
+### F8 — nonce derivation (0294p) · CONFIRMED
+Every `seal`/`streamSeal` does a **fresh KEM encapsulation → fresh `K_aead`** per section/stream, so the DEM
+key is per-message. Single-shot uses a random 96-bit nonce — with one message per key the GCM birthday bound
+(nonce reuse) does not apply (CWE-323 N/A). STREAM nonces are **position-derived** (`prefix8 ‖ BE-u32((i<<1)|last)`,
+index < 2³¹) — unique within a key — and the `last`-flag makes a dropped trailing frame recompute an invalid
+terminator nonce (anti-truncation). No nonce-reuse footgun.
+
+### F9 — suite-pinning (0294n) · CONFIRMED (minor GAP)
+`kem_profile`, `aead_suite`, `dem_mode` are folded into the 36-byte AEAD context that IS the AAD, and
+`requireAesGcm` throws on any suite ≠ AES-256-GCM. A ciphertext cannot be opened under a different (weaker)
+suite — the tag fails and the code refuses (CWE-757 downgrade prevented). *Minor GAP:* the **format version**
+itself is not in the AAD (only the suite selectors) — fold it in (RD-0294n).
+
+### F10 — AAD file-binding (0294o) · GAP
+The AAD binds section-local identity (`section_id`, `coord`, `modality`), the suite, `commit_mode`, and `epoch`
+— but **not an explicit whole-file identifier**. Cross-file section splicing (moving a section between two files
+for the same recipient) is resisted only by (a) the caller-supplied opaque 128-bit `coord` being unique per
+section — a **spec §5 / caller obligation not enforced in `kemdem.ts`** — and (b) the container TMX-256 root +
+signature. For **unsigned-v0** the root is recomputable, so it leans on `coord` uniqueness alone. **GAP:** confirm
+`coord` is guaranteed globally-unique (spec §5) and/or fold an explicit file identity into the AAD (RD-0294o).
+Zero-trust framing: splice-resistance is **not provable from `kemdem.ts` alone**.
+
+### F11 — key-commitment (CMT-4) · CONFIRMED
+AES-GCM is **not** key-committing (the partitioning-oracle / one-ciphertext-two-keys weakness). This layer adds
+`key_commit = SHAKE256(…‖K_aead)` folded into the AAD and a §8.5 **Chan–Rogaway CTX committing tag** recomputed
+and **constant-time compared before the AEAD runs**. That closes the non-committing-AEAD footgun (the CMT-4 §2
+win). Plus `timingSafeEqual` throughout, best-effort key zeroization in `finally`, CSPRNG (`randomBytes`) nonces,
+and **verify-before-decrypt** (open() only after the container + signature gate proves integrity/authenticity/
+ALLOW) — fail-closed. *Not verified in P4:* size-bucket padding + constant section table, and the rollback
+**freshness anchor** (`epoch` is AAD-bound, but proving it is the *latest* epoch needs the external anchor —
+RD-0294p residual).
+
+## Not yet run (scoped — priorities 3, 5)
+
+Recorded so coverage is honest — these are **not** audited here:
+
+- **P3 · `.hypha` by-construction (0294a/b/i/k/l):** second-order SQLi, depth/complexity DoS, SSRF-from-query
+  (`egress_free_operators`), deserialization, XXE. **Blocked from code-verification in Galerina:** the `.hypha`
+  runtime (TritMeshQL) is **not in this tree** — `galerina-data-query` ships only a `.graph/boundary-policy.json`
+  stub, and the engine/operator vocabulary lives in a sibling (TritMesh) repo. In-repo evidence is the
+  `docs/examples/hypha/*.hypha` corpus (e.g. `06-injection-is-inert` — an injection payload stays an inert value
+  leaf, no string→query construction to escape), which is **suggestive, not code-proof**. Per zero-trust these
+  stay **PLAUSIBLE** until the engine is audited where it lives.
 - **P5 · API/authz (0294e/f), MCP tool-poisoning (0294x/y/z), supply-chain (0294r-w):** BOLA/BOPLA on
   `galerina-framework-api-server` / `galerina-web-router`, JWT alg-confusion on `galerina-auth`, MCP manifest
   binding (DP-RD-0285b), SLSA/in-toto provenance on the `.lmanifest` pipeline.
 
 ## Honest frame
 
-The CONFIRMED rows (F1, F2-integrity, F3) are defensible as *"this attack class is unrepresentable at
-runtime,"* bounded by the open residuals: **F2** (.spore authenticity/signing deferred → integrity, not
-origin), **F4** (Ed25519-only default, PQ opt-in), **F5** (CI drift-coverage gated on a pending KB token), and
-the unaudited P3-P5 clusters. Nothing here supports an "unhackable" claim; each CONFIRMED is a class boundary,
-not a guarantee. CONFIRMED-by-construction rows are candidate defensive-publication material, held until a
+The CONFIRMED rows (F1, F2-integrity, F3, **F8, F9, F11**) are defensible as *"this attack class is
+unrepresentable at runtime,"* bounded by the open residuals: **F2** (.spore authenticity/signing deferred →
+integrity, not origin), **F4** (Ed25519-only default, PQ opt-in), **F5** (CI drift-coverage gated on a pending
+KB token), **F10** (AAD binds section-, not file-identity — confirm `coord` uniqueness / RD-0294o), the P4
+size-padding + rollback-freshness residuals, and the unaudited **P5** cluster. **P3 (`.hypha`) is
+engine-external** — PLAUSIBLE, not code-verified in this tree. Nothing here supports an "unhackable" claim;
+each CONFIRMED is a class boundary, not a guarantee. CONFIRMED-by-construction rows are candidate defensive-publication material, held until a
 0285j-class measurement backs any performance claim (papers README rule).
