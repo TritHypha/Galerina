@@ -74,7 +74,6 @@
     "galerina-docs": 27,
     "galerina-ext-bridge-bitnet": 7,
     "galerina-ext-bridge-cpp": 21,
-    "galerina-ext-bridge-quantum": 1,
     "galerina-ext-photonic-emulator": 60,
     "galerina-ext-proof-snarkjs": 10,
     "galerina-ext-secrets-tmf": 21,
