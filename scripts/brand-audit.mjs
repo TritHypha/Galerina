@@ -30,11 +30,18 @@ const SHOW_ALL = process.argv.includes("--all");
 const SKIP_DIRS = new Set(["node_modules", ".git"]);
 // Old brand -> what it should have become. Distinctive enough for substring, EXCEPT
 // `lln` (matches fullName/fullNode/…), which uses targeted forms only.
+//
+// NB `.spore` is DELIBERATELY NOT a token: it is the CURRENT TritMesh DATABASE
+// container format (renamed from .tmf), a valid in-use extension — NOT old
+// branding. Only the OLD Galerina SOURCE extension `.lln` retires (-> .fungi).
+// The pre-.fungi transient source-name `.spore` is history; do not chase it here
+// or it false-flags every real TritMesh DB reference (owner note 2026-07-09).
 const TOKENS = [
-  { key: "logicn", becomes: "galerina", re: /logicn/gi },
-  { key: "spore",  becomes: "fungi",    re: /spore/gi },
-  // lln only in brand forms: .lln, lln.<x>, LLN-CODE, @lln, /lln, lln/, _lln, lln_, standalone
-  { key: "lln",    becomes: "fungi",    re: /\.lln\b|\blln\.[a-z]|\bLLN-[A-Z0-9]|@lln|\blln\/|\/lln\b|[_-]lln\b|\blln[_-]|\blln\b/gi },
+  { key: "logicn",   becomes: "galerina", re: /logicn/gi },
+  // diagnostic codes: LLN-TYPE-024 -> FUNGI-TYPE-024 (uppercase, code shape)
+  { key: "lln-code", becomes: "FUNGI-",   re: /\bLLN-[A-Z0-9]/g },
+  // old SOURCE extension + brand forms: .lln, lln.<x>, @lln, /lln, lln/, _lln, lln_, standalone -> .fungi/galerina
+  { key: "lln",      becomes: "fungi",    re: /\.lln\b|\blln\.[a-z]|@lln|\blln\/|\/lln\b|[_-]lln\b|\blln[_-]|\blln\b/gi },
 ];
 
 // Occurrences here are EXPECTED old-brand and must NOT be "fixed":
@@ -49,6 +56,7 @@ const ALLOW = [
   /verify-artifacts\.mjs$/i,
   /brand-audit\.mjs$/i,          // this tool contains the search tokens by definition
   /fix-logicn-brand\.mjs$/i,     // the paired codemod, likewise
+  /audit-signed-fixture-drift\.mjs$/i, // FUNCTIONAL: detects the ceremony-frozen legacy `lln.` manifest spellings
   // documentation/history that legitimately QUOTES the old brand to record the rename:
   /(^|[\\/])CHANGELOG\.md$/i,
   /(^|[\\/])notes[\\/]/i,        // historical R&D scratch (note 77 documents the rename itself)
@@ -65,6 +73,11 @@ const ALLOW = [
 // reference stays ALLOWED even in a non-allowlisted file (convention: docs/TODO.md:107).
 // Downgrade-only (STRAGGLER -> ALLOWED): marked lines remain visible in the ALLOWED listing.
 const HISTORICAL_LINE = /old-brand/i;
+// Ceremony-frozen signed-manifest format IDs: `lln.fuse.v1` / `lln.manifest.v1` are
+// the pre-rename spellings BOUND INTO the signed `greeting` fixture — the fuse-loader
+// must ACCEPT them and docs must document them until the offline re-sign ceremony.
+// A line naming a frozen ID stays ALLOWED (renaming it fails the signature closed).
+const CEREMONY_FROZEN_LINE = /lln\.(fuse|manifest)\.v1/i;
 // Generated / regenerable — reported separately, not a hard failure.
 const GENERATED = [/(^|[\\/])(dist|build|results|coverage|_audit_tmp)[\\/]/i, /\.lindex$/i, /\.jsonl$/i, /-GRAPH_REPORT\.md$/i, /galerina-ai-map\.md$/i,
   // compiled / regenerable binaries + logs (embed the OLD build path; rebuild to refresh)
@@ -119,7 +132,7 @@ for (const full of files) {
       t.re.lastIndex = 0;
       let m;
       while ((m = t.re.exec(line)) !== null) {
-        const lineCls = cls === "STRAGGLER" && HISTORICAL_LINE.test(line) ? "ALLOWED" : cls;
+        const lineCls = cls === "STRAGGLER" && (HISTORICAL_LINE.test(line) || CEREMONY_FROZEN_LINE.test(line)) ? "ALLOWED" : cls;
         findings[lineCls].push({
           file: rel, line: i + 1, token: t.key, becomes: t.becomes,
           match: m[0], nul: hasNul,

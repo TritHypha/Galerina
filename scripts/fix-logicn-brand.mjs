@@ -26,9 +26,14 @@ for (const rel of files) {
     .replace(/LogicN/g, "Galerina")
     .replace(/LOGICN/g, "GALERINA")
     .replace(/Logicn/g, "Galerina")
-    .replace(/logicn/g, "galerina");
+    .replace(/logicn/g, "galerina")
+    .replace(/\bLLN-([A-Z0-9])/g, "FUNGI-$1")       // diagnostic codes LLN-* -> FUNGI-* (preserve the code)
+    .replace(/\.lln\b/g, ".fungi");                 // old SOURCE ext refs -> .fungi
+    // NB: .spore is INTENTIONALLY untouched — it is the current TritMesh DB format, not old branding.
   if (next !== orig) {
-    const c = (orig.match(/logicn/gi) || []).length;
+    const c = (orig.match(/logicn/gi) || []).length
+      + (orig.match(/\bLLN-[A-Z0-9]/g) || []).length
+      + (orig.match(/\.lln\b/g) || []).length;
     total += c; changed++;
     console.log(`${WRITE ? "FIXED " : "would fix"}  ${String(c).padStart(2)}  ${rel}`);
     if (WRITE) writeFileSync(rel, Buffer.from(next, "latin1"));
