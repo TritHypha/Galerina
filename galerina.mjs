@@ -1939,6 +1939,13 @@ Baseline comparison (governance-cost):
           case "string": return JSON.stringify(val.value);
           case "void": return "(void)";
           case "runtimeError": case "error": return `<error: ${val.message ?? "runtime error"}>`;
+          // Result::Err carries its payload under `.error`, NOT `.value` (interpreter.ts GalerinaValue:
+          // `{ __tag: "err", error: GalerinaValue }`; the Err ctor is at interpreter.ts ~2290). Without an
+          // explicit case an err value fell through to `default` below, where `val.value` is undefined so
+          // the `?? val.__tag` fallback printed the bare tag "err" instead of the payload. Render it
+          // recursively as `Err(<payload>)` to mirror the standalone raw-WASM formatRunOutput() display
+          // (e.g. Err("not positive")). Display-only — the interpreter value is untouched.
+          case "err": return `Err(${render(val.error)})`;
           default: return JSON.stringify(val.value ?? val.__tag);
         }
       };
