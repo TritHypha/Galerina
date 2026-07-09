@@ -2,9 +2,11 @@
 // audit-path-leak.mjs — fail-CLOSED guard: no committed file may contain an ABSOLUTE LOCAL path that
 // leaks the developer's machine. Galerina is a PUBLIC repo; a path like `C:\Users\<name>\...` or a
 // `wwwprojects\...` root discloses the OS username + on-disk layout to the world AND breaks on every
-// other machine. Scans git-tracked text files (skips binaries), honors an allowlist (this tool + any
-// line that must quote the pattern to explain the rule, via an inline marker). `--self-test` proves the
-// detectors still fire before the enforcing scan — a neutered guard is itself a fail-open.
+// other machine. Two passes: (1) STRUCTURAL — paths that must never be tracked at all (machine-local
+// index artifacts; catches binaries the text scan skips), (2) CONTENT — scans git-tracked text files
+// (skips binaries), honors an allowlist (this tool + any line that must quote the pattern to explain
+// the rule, via an inline marker). `--self-test` proves the detectors still fire before the enforcing
+// scan — a neutered guard is itself a fail-open.
 //
 // Usage:
 //   node scripts/audit-path-leak.mjs --self-test   # prove the detectors fire (run first in CI)
@@ -26,7 +28,31 @@ const PATTERNS = [
   { name: "windows-user-home", re: /[A-Za-z]:[\\/]{1,2}Users[\\/]{1,2}(?!<)[^\\/\s"'`,;<]+/g },
   // The retired `wwwprojects` projects root, in path position (drive-prefixed or followed by a separator).
   { name: "wwwprojects-path", re: /(?:[A-Za-z]:[\\/]{1,2}wwwprojects|wwwprojects[\\/])/g },
+  // Dash-encoded machine slug: `C-Users-<name>-...` — the SAME username+layout leak as
+  // windows-user-home with the separators flattened to dashes (how the local index MCP derives its
+  // project ids; one sat in a tracked artifact.json until 2026-07-09). Anchored on a lone drive
+  // letter so prose like "Power-Users-Guide" stays silent; (?!<) keeps `<name>` placeholders legal.
+  { name: "dash-encoded-user-home", re: /(?<![A-Za-z0-9])[A-Za-z]-Users-(?!<)[A-Za-z0-9_.]+-[A-Za-z0-9]/g },
 ];
+
+// Paths that must NEVER be tracked at all, whatever they contain — mirrors the .gitignore policy for
+// machine-local index artifacts. This is the BINARY-blind-spot fix: the content scan below skips
+// binaries, which is exactly how a 10 MB graph.db.zst (embedded machine slug and all) sat invisible
+// at HEAD from the `git add -A` accident (ae55016e, 2026-07-04) until 2026-07-09. An ignore rule
+// cannot evict what is already in the index; this check can.
+const NEVER_TRACKED = [
+  { name: "codebase-memory-dir", re: /(^|\/)\.codebase-memory\// },
+  { name: "graph-db-blob", re: /(^|\/)graph\.db\.zst$/ },
+];
+
+function scanTrackedList(files) {
+  const hits = [];
+  for (const rel of files) {
+    const names = NEVER_TRACKED.filter((p) => p.re.test(rel)).map((p) => p.name);
+    if (names.length) hits.push({ rel, pattern: names.join("+") }); // one hit per file, all reasons
+  }
+  return hits;
+}
 
 // Files permitted to contain the pattern (this tool defines it). Exact repo-relative paths.
 const ALLOW_FILES = new Set(["scripts/audit-path-leak.mjs"]);
@@ -60,6 +86,13 @@ function selfTest() {
     ["bare 'wwwprojects' word in prose does NOT fire", !fires("migrated the wwwprojects layout")],
     ["'C:\\Users\\<name>' placeholder does NOT fire", !fires("a hardcoded C:\\Users\\<name>\\x breaks")],
     ["allow-marker suppresses", !fires("example C:\\Users\\x  (path-leak-audit:allow)")],
+    ["dash-encoded slug fires", fires('"project": "C-Users-someone-Documents-GitHub-Galerina"')],
+    ["dash-encoded placeholder does NOT fire", !fires("the slug looks like C-Users-<name>-Documents")],
+    ["prose 'Power-Users-Guide' does NOT fire", !fires("see the Power-Users-Guide-2026 appendix")],
+    ["tracked .codebase-memory dir fires", scanTrackedList([".codebase-memory/graph.db.zst"]).length === 1],
+    ["tracked NESTED .codebase-memory fires", scanTrackedList(["packages-galerina/x/src/.codebase-memory/artifact.json"]).length === 1],
+    ["tracked graph.db.zst anywhere fires", scanTrackedList(["some/dir/graph.db.zst"]).length === 1],
+    ["ordinary tracked paths are silent", scanTrackedList(["docs/a.md", "build/kb-graph/foo.json", "src/codebase-memory-notes.md"]).length === 0],
   ];
   let ok = true;
   for (const [name, pass] of checks) { console.log(`  ${pass ? "✅" : "❌"} ${name}`); if (!pass) ok = false; }
@@ -73,6 +106,11 @@ const isBinary = (buf) => buf.subarray(0, 8000).includes(0);
 const files = git("ls-files").split("\n").map((s) => s.trim()).filter(Boolean);
 let leakFiles = 0, leakCount = 0;
 const report = [];
+// Structural pass FIRST: forbidden-to-track paths (content-independent, catches binaries).
+for (const h of scanTrackedList(files)) {
+  leakFiles++; leakCount++;
+  report.push(`  ${h.rel}  [tracked-forbidden:${h.pattern}]  machine-local index artifact must not be tracked — git rm --cached it`);
+}
 for (const rel of files) {
   if (ALLOW_FILES.has(rel)) continue;
   const abs = join(ROOT, rel);
