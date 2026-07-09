@@ -2,7 +2,7 @@
  * tpl-simulator.ts — Virtual Photonic Processor (VPP) core
  *
  * A bespoke, governance-wrapped take on Microsoft BitNet's I2_S ternary kernel
- * (C:\wwwprojects\BitNet\src\ggml-bitnet-mad.cpp, MIT). It reproduces BitNet's
+ * (C:\Users\phill\Documents\GitHub\BitNet\src\ggml-bitnet-mad.cpp, MIT). It reproduces BitNet's
  * exact on-the-wire representation so a buffer packed here is byte-compatible
  * with bitnet.cpp, then adds the Galerina "Hardened Border": guard pages,
  * corruption sentinels, Epistemic-Hold governance, and a vector-level audit trail.

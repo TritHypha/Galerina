@@ -10,7 +10,7 @@ not implemented**. Each needs a decision before it can land in the wider project
 
 - **Status:** The `TPLSimulator` is a byte-faithful CPU reimplementation of BitNet's
   I2_S ternary kernel — the encoding, packing, and T-MAC match
-  `C:\wwwprojects\BitNet\src\ggml-bitnet-mad.cpp` exactly. But it executes the dot
+  `C:\Users\phill\Documents\GitHub\BitNet\src\ggml-bitnet-mad.cpp` exactly. But it executes the dot
   product in scalar TypeScript, not via BitNet's SIMD kernels (`ggml_vec_dot_i2_i8_s`,
   AVX2/NEON `vdotq_s32`).
 - **Need:** For production throughput (the BitNet 5–7 tok/s benchmark), the T-MAC must
@@ -38,7 +38,7 @@ not implemented**. Each needs a decision before it can land in the wider project
 
 - **Status:** `precision-strategy.ts` routes bandwidth-bound ops to `fp4_block`
   (NVIDIA NVFP4), but the technique currently has no execution backend — only routing
-  and audit attribution. The source is available at `C:\wwwprojects\TransformerEngine`.
+  and audit attribution. The source is available at `C:\Users\phill\Documents\GitHub\TransformerEngine`.
 - **Need:** An FP4 block-scaled GEMM backend (E2M1 + 16-element block scale) reached via
   the same FFI bridge, gated on Blackwell hardware detection.
 - **TODO:** `galerina-ext-bridge-nvfp4` (roadmap task #122, hardware-gated). The hybrid
