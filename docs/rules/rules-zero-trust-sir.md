@@ -1,8 +1,9 @@
-# Rules: Zero Trust, Sir (house rules ZT-01–ZT-50)
+# Rules: Zero Trust, Sir (house rules ZT-01–ZT-51)
 
 Canonical source: <https://github.com/TritHypha/Claude-Zero-Trust-Rules-Sir> (`CLAUDE.md`,
 adopted 2026-07-09 at commit `db6ff92`). This copy exists so the repo carries its own
-operating rules (ZT-22); the canonical repo wins on conflict. Verbatim below the rule.
+operating rules (ZT-22); the canonical repo wins on conflict. Verbatim below the rule,
+plus one owner-direct amendment (ZT-51, declared in place).
 
 ---
 
@@ -159,6 +160,13 @@ Grace. The rule is the consistency, not the title.)*
 - **ZT-43 — Every gate ships a self-test.** Prove the detectors still fire; a guard that
   cannot go red is not a guard. Prove your own maths — every check needs a known case that
   fails it.
+- **ZT-51 — Finished means verified, not written.** The moment you finish editing a file,
+  prove it: run its tests and the audit/lints over it, then read the *whole* file back as an
+  independent reviewer hunting for errors and slop. An edit you have not re-run and re-read is
+  a draft, not a delivery — quality is self-checked, never assumed.
+  *(Owner-direct amendment, 2026-07-09 — not yet in the canonical repo, which ends at ZT-50
+  as of `db6ff92`; numbered here to continue the sequence, filed under Quality where it
+  belongs. Canonical wins on conflict once it lands there.)*
 
 ## 10 · Memory & sessions
 
