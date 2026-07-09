@@ -43,6 +43,7 @@ const CONTAINER = "packages-galerina/galerina-ext-spore/src/container.ts";
 const BA = "packages-galerina/galerina-tower-citizen/src/bridge-attestation.ts";
 const HE = "packages-galerina/galerina-tower-citizen/src/hybrid-engine.ts";
 const KEMDEM = "packages-galerina/galerina-ext-spore/src/kemdem.ts";
+const ARENA = "packages-galerina/galerina-ext-secrets-spore/src/arena.ts";
 
 /** sig-verify-pinned (0294t): the verifier pins Ed25519 AND ML-DSA-65 as constants; it never selects the
  *  primitive from the artifact's `alg`. RED if either pin is gone (a refactor may be reading alg). */
@@ -193,9 +194,30 @@ function checkActionsPinned(get, listWorkflows) {
       : `unpinned action reference(s): ${hits.join("; ")} — a movable tag on an action is arbitrary code with the workflow token (tj-actions class, CWE-829)` };
 }
 
+/** secrets-arena (0292 / CWE-316): decrypted secret plaintext lives ONLY in the SealArena and is
+ *  ZERO-WIPED (fill(0)) on replace/fault/remove/dispose; a FAULTED entry is never served (fail-closed);
+ *  use after dispose is guarded (assertLive). RED if the zeroization or the fail-closed guard is gone —
+ *  either would leave decrypted secret cleartext resident in memory past its lifetime. */
+function checkSecretsArena(get) {
+  const base = { check: "secrets-arena", owasp: "A02:2021", cwe: "CWE-316", rd: "0292", target: ARENA };
+  const a = get(ARENA);
+  if (a === null) return { ...base, tier: "OPEN-RISK", ok: false, severity: "high", message: "cannot read arena.ts — fail-closed (cannot confirm secret zeroization)" };
+  const nA = a.replace(/\s+/g, " ");
+  const hasArena = a.includes("class SealArena");
+  const zeroWipe = (a.match(/\.fill\(0\)/g) || []).length >= 3;                      // replace + fault + remove + dispose
+  const failClosedFault = a.includes("faulted") && nA.includes("e.faulted) return undefined");
+  const disposeGuard = a.includes("assertLive");
+  const ok = hasArena && zeroWipe && failClosedFault && disposeGuard;
+  const missing = [!hasArena && "SealArena class", !zeroWipe && "fill(0) zero-wipe (≥3 sites)", !failClosedFault && "faulted→fail-closed guard", !disposeGuard && "assertLive disposed-guard"].filter(Boolean);
+  return { ...base, tier: ok ? "CONFIRMED" : "OPEN-RISK", ok, severity: "high",
+    message: ok
+      ? "decrypted secret plaintext lives only in the SealArena, zero-wiped (fill(0)) on replace/fault/remove/dispose, a faulted entry is never served (fail-closed), use-after-dispose guarded (assertLive) — no cleartext remanence past its lifetime"
+      : `REGRESSED — secret-arena hygiene missing: ${missing.join(", ")} (decrypted secret plaintext could persist in memory or a faulted entry be served — 0292/CWE-316)` };
+}
+
 function runAll(get, listWorkflows) {
   return [checkSigVerifyPinned(get), checkSporeSigningState(get), checkFailOpenGate(get, listWorkflows), checkBridgeAttestationFailClosed(get),
-    checkSporeNonceFreshness(get), checkSporeSuitePinning(get), checkSporeKeyCommitment(get), checkActionsPinned(get, listWorkflows)];
+    checkSporeNonceFreshness(get), checkSporeSuitePinning(get), checkSporeKeyCommitment(get), checkActionsPinned(get, listWorkflows), checkSecretsArena(get)];
 }
 
 // ── self-test: prove each detector fires on a synthetic regression (a neutered detector is a fail-open) ──────
@@ -207,6 +229,7 @@ function selfTest() {
     [BA]: 'const ok = edVerify(\n  null,\n  msg, pub, sig);\nreturn { ok: false, reason: "ML-DSA signature required but absent (hybrid)" };\nconst CTX = enc("galerina.bridge.manifest.v2");',
     [HE]: "if (policy.requireHybrid === true && mlDsaPublicKey === undefined) { return deny; }",
     [KEMDEM]: 'const nonce = new Uint8Array(randomBytes(12));\nconst prefix8 = new Uint8Array(randomBytes(8));\nconst n = streamNonce12(prefix8, i, i === segments.length - 1);\nif (aeadSuite !== AEAD_SUITE.AES_256_GCM) throw x;\nrequireAesGcm(aeadContext[27]!);\nenc.encode("spore-dem-commit-v0"); enc.encode("spore-cmt-ctx-v0");\nconst caad = committedAad(aeadContext, kaead);\nif (!bytesEqual(ctxCommitTag(kaead, nonce, caad, T), received)) throw y;',
+    [ARENA]: 'class SealArena {\n  private assertLive() {}\n  put() { existing.value.fill(0); }\n  fault() { e.value.fill(0); e.faulted = true; }\n  remove() { e.value.fill(0); }\n  dispose() { e.value.fill(0); }\n  use() { if (e === undefined || e.faulted) return undefined; }\n}',
     ".github/workflows/conventions.yml": "jobs:\n  x:\n    steps:\n      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4\n      - run: node scripts/audit.mjs",
   };
   const bad = {
@@ -216,6 +239,7 @@ function selfTest() {
     [BA]: "const ok = edVerify(sig.algorithm, msg, pub, sig); // alg read from artifact — pin regressed, no hybrid guard",
     [HE]: "const result = verifyAttestation(bridge.attestation, policy); // requireHybrid gate dropped — silent downgrade",
     [KEMDEM]: "const nonce = deriveNonce(sectionId); gcm(kaead, nonce, aeadContext).encrypt(payload); // fixed nonce, no suite pin, no committing tag",
+    [ARENA]: "class SecretStore { put(name, v) { this.map.set(name, v); } use(name) { return this.map.get(name); } // no wipe, no fault guard, no dispose guard",
     ".github/workflows/conventions.yml": "jobs:\n  x:\n    steps:\n      - uses: gitleaks/gitleaks-action@v2\n      - run: node scripts/audit.mjs\n        continue-on-error: true",
   };
   const from = (m) => (rel) => (rel in m ? m[rel] : null);
@@ -246,6 +270,9 @@ function selfTest() {
     ["actions-pinned CONFIRMED on SHA-pinned workflows", (() => { const r = checkActionsPinned(from(good), lw); return r.ok && r.tier === "CONFIRMED"; })()],
     ["actions-pinned RED on a movable tag pin (@v2)", checkActionsPinned(from(bad), lw).ok === false],
     ["actions-pinned FAIL-CLOSED when no workflows found", checkActionsPinned(from(good), () => []).ok === false],
+    ["secrets-arena CONFIRMED on the real construction", (() => { const r = checkSecretsArena(from(good)); return r.ok && r.tier === "CONFIRMED"; })()],
+    ["secrets-arena RED when the zero-wipe / fault-guard is gone", checkSecretsArena(from(bad)).ok === false],
+    ["secrets-arena FAIL-CLOSED on an unreadable target", checkSecretsArena(() => null).ok === false],
   ];
   let allOk = true;
   for (const [name, pass] of checks) { console.log(`  ${pass ? "✅" : "❌"} ${name}`); if (!pass) allOk = false; }
