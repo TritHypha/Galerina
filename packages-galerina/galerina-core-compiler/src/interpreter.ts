@@ -888,6 +888,27 @@ class EarlyReturn {
   constructor(readonly value: GalerinaValue) {}
 }
 
+/**
+ * W5b T2.2: the signal thrown by a `fault <expr>` raise. A fault is a governed,
+ * terminal, fail-closed control-flow signal (RD-0266 A10): runFlow catches it,
+ * records it as an AUDITED fault (FUNGI-FAULT-001 — distinct from an anonymous
+ * runtime crash), halts the flow, and denies (no value is produced). It is never
+ * swallowed by intermediate blocks (executeBlock is try/finally, no catch) and
+ * never auto-retried. `reason` is the human-facing text; `value` is the raised
+ * payload for a future handler tier (handlers are deferred in the raise-only MVP).
+ */
+class FaultSignal {
+  constructor(readonly reason: string, readonly value: GalerinaValue) {}
+}
+
+/** Best-effort human-facing text for a fault reason value (String → its text). */
+function faultReasonText(v: GalerinaValue): string {
+  if (v.__tag === "string") return v.value;
+  if (v.__tag === "int" || v.__tag === "float" || v.__tag === "bool") return String(v.value);
+  if (v.__tag === "void") return "(no reason)";
+  return `(${v.__tag})`;
+}
+
 export interface RuntimeAuditEntry {
   readonly event: string;
   readonly fields: Readonly<Record<string, string>>;
@@ -1342,6 +1363,18 @@ class Interpreter {
     } catch (error: unknown) {
       if (error instanceof EarlyReturn) {
         returnValue = error.value;
+      } else if (error instanceof FaultSignal) {
+        // W5b T2.2 (RD-0266 A10): an unhandled fault HALTS + AUDITS + DENIES.
+        // Fail-closed — no value is produced (returnValue is a runtimeError, so
+        // the flow does not "succeed" and nothing downstream is authorized), the
+        // audit records result="error" with the fault reason, and a distinct
+        // FUNGI-FAULT-001 marks it as a GOVERNED fault (an audited channel), not
+        // an anonymous crash. Never auto-retried, never collapsed into a Verdict.
+        const message = `[Flow '${flowName}'] fault: ${error.reason}`;
+        runtimeError = message;
+        this.auditEntries.push({ event: "fault", fields: { reason: error.reason }, timestamp: new Date().toISOString() });
+        this.diagnostics.push({ code: "FUNGI-FAULT-001", message: `Audited fault raised in flow '${flowName}': ${error.reason}` });
+        returnValue = { __tag: "runtimeError", message };
       } else {
         const causeMessage = error instanceof Error ? error.message : String(error);
         // Task 2: Include flow name and original error in the message
@@ -1755,6 +1788,16 @@ class Interpreter {
         return body.kind === "block"
           ? await this.executeBlock(body)
           : await this.executeStatement(body);
+      }
+
+      // W5b T2.2: fault <expr> — raise an AUDITED, terminal, fail-closed fault.
+      // Evaluate the reason (so effects inside it still run + are observed), then
+      // THROW a FaultSignal that unwinds to runFlow, which records the audited
+      // fault (FUNGI-FAULT-001), halts, and denies. Never swallowed, never a value.
+      case "faultStmt": {
+        const reasonNode = node.children?.[0];
+        const reasonVal = reasonNode === undefined ? FUNGI_VOID : await this.evalExpr(reasonNode);
+        throw new FaultSignal(faultReasonText(reasonVal), reasonVal);
       }
 
       case "assignStmt": {

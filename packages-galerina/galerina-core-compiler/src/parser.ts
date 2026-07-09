@@ -56,6 +56,7 @@ export type AstNodeKind =
   | "matchArm"
   | "checkExpr"   // W5b T2.2: check(v){ if:/deny:/ambig: } — K3 tri-branch
   | "checkArm"    // one arm of a checkExpr (value = "if"|"deny"|"ambig")
+  | "faultStmt"   // W5b T2.2: fault <expr> — raise an audited, terminal, fail-closed fault (A10)
   // Expressions
   | "callExpr"
   | "memberExpr"
@@ -1340,6 +1341,7 @@ class Parser {
         case "unless":   return this.parseUnlessStmt();
         case "match":    return this.parseMatchExpr();
         case "check":    return this.parseCheckStmt();
+        case "fault":    return this.parseFaultStmt();
         case "compute":  return this.parseComputeTarget();
         case "fn":       return this.parseFnDecl();
         case "emit":     return this.parseEmitStmt();
@@ -1812,6 +1814,29 @@ class Parser {
       ? this.parseBlock()
       : (this.parseStatement() ?? { kind: "block", location: loc });
     return { kind: "checkArm", value: label, location: loc, children: [body] };
+  }
+
+  /**
+   * W5b T2.2: `fault <expr>` — raise an AUDITED fault. Semantics (RD-0266 A10):
+   * a fault is terminal and fail-closed — it HALTS the flow, records the raise in
+   * the audit trail (as a governed fault, FUNGI-FAULT-001, distinct from an
+   * anonymous runtime crash), and DENIES (produces no value). It is never
+   * auto-retried and never collapses into a Verdict arm. Handler syntax is
+   * deferred (raise-only MVP, owner lock 2026-07-09): every fault today is
+   * unhandled, so a fault can never be swallowed. `<expr>` is the reason/payload
+   * (any type; a String reason is the common form). Structure:
+   * `{ kind: "faultStmt", children: [reasonExpr?] }`.
+   */
+  private parseFaultStmt(): AstNode {
+    const loc = this.loc();
+    this.advance(); // consume "fault"
+    const children: AstNode[] = [];
+    // `fault` MAY carry a reason expression; a bare `fault` (newline/`}` next) is
+    // an unspecified-reason raise — still terminal + audited + deny (fail-closed).
+    if (!this.currentIs("newline", "\n") && !this.currentIs("symbol", "}") && !this.isEof()) {
+      children.push(this.parseExpression());
+    }
+    return { kind: "faultStmt", location: loc, children };
   }
 
   private parseMatchArm(): AstNode | undefined {
