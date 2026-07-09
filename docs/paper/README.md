@@ -3,7 +3,7 @@
 This folder holds Galerina's publishable scholarly artifacts, consolidated 2026-07-09 from
 `docs/scientific-papers/`, the ZTF KB `defensive-publications/`, and the root `Galerina-ScientificPapers/` stray:
 
-- [`defensive-papers/`](defensive-papers/) — all **19** defensive-publication notes (timestamped prior-art records, novelty *disclaimed*)
+- [`defensive-papers/`](defensive-papers/) — all **22** defensive-publication notes (timestamped prior-art records, novelty *disclaimed*; 3 are design-stage disclosures, marked as such)
 - [`scientific-papers/`](scientific-papers/) — eprint-shaped drafts / measured-negative candidates (currently **1**, superseded-draft status)
 
 **Read the standard before adding anything here.**
@@ -82,6 +82,21 @@ KB location (`ZTF-Knowledge-Bases/defensive-publications/README.md`).
 | [`dp-rd-0229-graph-aot-gate-unreachability-proof-hallucination-block.md`](defensive-papers/dp-rd-0229-graph-aot-gate-unreachability-proof-hallucination-block.md) | 2026-07-01 | AI-authored graph-topology language compiled by an AOT governance gate proving data-flow unreachability |
 | [`dp-rd-0271-secure-by-omission-contract-field-defaults.md`](defensive-papers/dp-rd-0271-secure-by-omission-contract-field-defaults.md) | 2026-07-08 | Secure-by-omission governance contracts: fail-closed injected defaults + declare-only-to-override |
 | [`dp-rd-0272-schema-lock-and-deny-only-prefilter.md`](defensive-papers/dp-rd-0272-schema-lock-and-deny-only-prefilter.md) | 2026-07-08 | Schema-lock with co-located keyed contract + deny-only prefilter: "a schema match is never an ALLOW" |
+
+### Design-stage defensive publications (filed 2026-07-09 — mechanisms specified, not yet implemented)
+
+Each states its DESIGN-STAGE status in its header and cites the KB RD doc it timestamps; update their status
+lines when the mechanisms land.
+
+| Document | Disclosed | Subject |
+|---|---|---|
+| [`dp-rd-0283-0286-conservation-checked-buses-and-field-routed-objects.md`](defensive-papers/dp-rd-0283-0286-conservation-checked-buses-and-field-routed-objects.md) | 2026-07-09 | Conservation laws for drawn governance graphs: Σin = Σout + Σdrained buses + every-field-routed objects (silent drop / mass assignment unrepresentable) |
+| [`dp-rd-0285-tristate-route-resolution-ambiguity-refusal.md`](defensive-papers/dp-rd-0285-tristate-route-resolution-ambiguity-refusal.md) | 2026-07-09 | K3 route dispatch over signed manifests: ambiguous match = governed hold (never first-match-wins) + `route_overlap` build lint + materialise-once requests |
+| [`dp-rd-0285b-signed-capability-bounded-mcp-tool-manifests.md`](defensive-papers/dp-rd-0285b-signed-capability-bounded-mcp-tool-manifests.md) | 2026-07-09 | AI tool manifests derived from compiler-checked effect/budget contracts and bound into the signed artifact (anti tool-poisoning / rug-pull) |
+
+> **Scientific papers from the 2026-07-09 R&D batch: NONE.** Nothing in RD-0283..0289 carries a fresh
+> named-machine measurement, so per §1 nothing qualifies beyond defensive-pub tier. The first candidate to
+> change that is the RD-0285j dispatch benchmark (numbers before speed claims).
 
 ### Eprint drafts (`scientific-papers/`)
 

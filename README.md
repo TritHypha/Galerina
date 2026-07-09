@@ -416,7 +416,7 @@ node packages-galerina/galerina-devtools-pci/dist/cli.js audit examples/auth-ser
 |---|---|
 | [SETUP.md](SETUP.md) | Install on Windows / Linux / macOS, benchmarks, Hello World |
 | [`docs/Knowledge-Bases/KNOWLEDGE-BASE-INDEX.md`](docs/Knowledge-Bases/KNOWLEDGE-BASE-INDEX.md) | Master navigation — 4-layer KB hierarchy, conflict resolution |
-| [`docs/paper/`](docs/paper/) | Publishing standard (defensive-pub + measured-negative only, **no flagship by design**) + all 19 defensive-publication notes (`defensive-papers/`) + the eprint draft (`scientific-papers/`) + UK/US/EU compliance checklist |
+| [`docs/paper/`](docs/paper/) | Publishing standard (defensive-pub + measured-negative only, **no flagship by design**) + all 22 defensive-publication notes (`defensive-papers/`) + the eprint draft (`scientific-papers/`) + UK/US/EU compliance checklist |
 | [`docs/Knowledge-Bases/galerina-fail-open-taxonomy.md`](docs/Knowledge-Bases/galerina-fail-open-taxonomy.md) | The 10 recurring fail-open classes + mechanical detectors + the security-first hardening list |
 | [`AGENTS.md`](AGENTS.md) | The AI-agent entry point — authoritative sources, package map, conventions |
 | [`docs/Knowledge-Bases/galerina-build-roadmap.md`](docs/Knowledge-Bases/galerina-build-roadmap.md) | Forward roadmap, P9 critical path, audit remediation |
