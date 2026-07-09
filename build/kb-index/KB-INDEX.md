@@ -1,4 +1,4 @@
-# Galerina KB index (802 docs)
+# Galerina KB index (805 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -2242,6 +2242,16 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/galerina-rd-0296-devtools-security-by-construction-conformance-scanner.md`
 - terms: verdict, package, checks, conformance, scanner, galerina, already, audit, worth, extend, don, dev-tool, owasp, neither
 
+## RD-0297 — API-taxonomy coverage map: dev / senior / security / audit + the apifunctions.* helper namespace · 2026-07-09
+`../ZTF-Knowledge-Bases/galerina-rd-0297-api-taxonomy-coverage-map.md`
+- codes: FUNGI-EFFECT-004
+- tasks: #149
+- terms: confirmed, security, gap, gate, lens, helper, namespace, galerina, apifunctions, graphql, spec, exist, org, real
+
+## RD-0298 — YouTube API-video mine (chatter 9-24): what the industry validates, what to adopt · 2026-07-09
+`../ZTF-Knowledge-Bases/galerina-rd-0298-youtube-api-video-mine.md`
+- terms: chatter, mine, youtube, gap, adopt, galerina, api, candidate, rd-0297, industry, validates, row, graphql, com
+
 ## R&D — Phase 34B boundary param auto-taint: verified state + build-ready spec
 `../ZTF-Knowledge-Bases/galerina-rd-34b-paramtaint-buildspec-2026-06-24.md`
 - codes: FUNGI-VALUESTATE-003, FUNGI-VALUESTATE-008
@@ -2405,9 +2415,9 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## Galerina — R&D Results Log (quick-lookup verdict table)
 `../ZTF-Knowledge-Bases/galerina-rd-results-log.md`
 - codes: FUNGI-PERM-001, FUNGI-GDCE-001, FUNGI-PRIVACY-002, FUNGI-PCI-G-000, FUNGI-ASSIMILATE-004, ERR_BRIDGE_UNATTESTED, ERR_HOST_NATIVE_DENIED, ERR_AI_MODEL_NOT_APPROVED, FUNGI-GOV-TPL-001, FUNGI-ASSIMILATE-003, FUNGI-BUILD-002, FUNGI-ATTR-001, FUNGI-PRIVACY-001, FUNGI-EFFECT-006, FUNGI-SEC-020, FUNGI-NAME-001, ERR_CERTIFIED, FUNGI-MATCH-001, FUNGI-GOV-003, ERR_ADDON_UNPINNED, FUNGI-SECRET-004, FUNGI-RETAIN-001, FUNGI-SUBSTRATE-001
-- tasks: #102, #34, #0089, #212, #110, #10, #11, #194, #205, #155
+- tasks: #149, #102, #34, #0089, #212, #110, #10, #11, #194, #205, #155
 - links: [[feedback-rd-absorb-positive-and-negative]] [[galerina-ci-state-and-cross-repo-gates]] [[galerina-kernel-ts-vs-fungi-rationale]] [[galerina-graph-ascii-outcome-and-gate-pipeline-2026-07-01]] [[galerina-graph-ascii-spec-and-ab-benchmark-2026-07-01]] [[galerina-rd-0236-runtime-50yr-mistake-audit]] [[galerina-rd-0237-runtime-governance-in-gate-reexamination]] [[galerina-rd-0234-fungi-50yr-mistake-audit]] [[galerina-rd-0234b-fungi-second-pass-hunt]] [[fail-closed-no-50yr-mistake-rule]]
-- terms: gate, owner, mjs, fungi, galerina, graph, signed, green, real, shipped, build, verdict, audit, design
+- terms: gate, owner, fungi, mjs, galerina, graph, signed, shipped, real, green, build, verdict, audit, design
 
 ## Galerina syntax 7-axis sweep (2026-06-25) — PARTIAL (4/8 categories; 4 rate-limited, to resume)
 `../ZTF-Knowledge-Bases/galerina-rd-syntax-7axis-sweep-2026-06-25.md`
@@ -2479,8 +2489,8 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## Galerina — % audit + roadmap · 2026-07-09
 `../ZTF-Knowledge-Bases/galerina-roadmap-2026-07-09.md`
 - codes: FUNGI-MEMORY-001, FUNGI-CHECK-001, FUNGI-CHECK-002, FUNGI-FAULT-001, FUNGI-PREFILTER-001
-- tasks: #34, #102, #149
-- terms: galerina, session, audit, spore, owner, tmf, rebrand, w5b, rename, compiler, mjs, roadmap, later, green
+- tasks: #201, #34, #102, #149
+- terms: galerina, owner, spore, audit, repo, session, gate, green, rename, tmf, still, token, rebrand, w5b
 
 ## Galerina — Completion % Audit + Roadmap (2026-06-17)
 `../ZTF-Knowledge-Bases/galerina-roadmap-and-audit-2026-06-17.md`
@@ -3353,6 +3363,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/PROMPT-main-session-rd-0290-0294-implementation-2026-07-09.md`
 - tasks: #34, #10, #14, #15
 - terms: tier, rd-0294, residuals, grammar, don, register, design, session, rd-0290, batch, graph, spore, owner-gated, name
+
+## PROMPT — main session: RD-0297 API-coverage audit + owner-gated build queue · 2026-07-09
+`../ZTF-Knowledge-Bases/PROMPT-main-session-rd-0297-api-coverage-build-queue-2026-07-09.md`
+- codes: FUNGI-EFFECT-004
+- tasks: #149
+- terms: build, main, gate, confirmed, owner, audit, galerina, action, owner-gated, queue, gap, galerina-buildable-now, apifunctions, scope
 
 ## PROMPT — R&D update for the main session (2026-07-01)
 `../ZTF-Knowledge-Bases/PROMPT-main-session-rnd-update-2026-07-01.md`
