@@ -82,6 +82,23 @@ jobs:
           node scripts/audit-path-leak.mjs --self-test
           node scripts/audit-path-leak.mjs
 
+  # papers-index (build-free, zero-baseline, ENFORCING): the papers corpus index (docs/paper/README.md)
+  # must link EVERY tracked paper under docs/paper/{defensive,scientific}-papers/, every index link must
+  # resolve, and the intro corpus counts must match reality. A silently-unindexed defensive-publication is
+  # a governance gap (a timestamped prior-art record the corpus index omits); a dangling link is a broken
+  # published record. The --self-test proves the gap detectors fire before the enforcing scan. Baseline is 0.
+  papers-index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Papers-index coverage guard (self-test, then enforcing)
+        run: |
+          node scripts/audit-papers-index.mjs --self-test
+          node scripts/audit-papers-index.mjs
+
   # A green, build-free, zero-baseline OPEN-CORE invariant (0056-ci-lint): no NON-Apache license
   # declaration may contaminate the Apache-2.0 package tree (PD-spec↛Apache), and no core package may
   # import an enterprise-tier package (core↛enterprise, via governance/tier-manifest.json). The lint's
