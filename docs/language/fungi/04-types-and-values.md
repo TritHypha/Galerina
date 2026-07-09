@@ -71,6 +71,25 @@ Form 3 (`type Name { ... }` with no `= record`) is the short spelling the parser
 record-style body (`parser.ts:5326`). Note that fields can carry qualifiers: `redacted String`,
 `readonly sessionId: SessionId`.
 
+### Record guarantees — fixed shape & canonical encoding
+
+Two properties hold for every record *by construction* and are worth stating as named guarantees (RD-0286a/g):
+
+- **Fixed shape.** A record's field set is closed at declaration. There is no syntax to add, remove, or
+  mutate a field — or to attach a prototype / dynamic key — at runtime: shape mutation is **unrepresentable,
+  not merely forbidden** (the same discipline that makes bounded cycles unrepresentable). You can read a
+  record declaration and know everything the value is — no hidden state, no shape mutation, no hidden-class
+  transition — so field access is a static offset, never a key lookup.
+- **Canonical encoding.** Each record *value* has exactly one byte-form — a single canonical serialization
+  (RFC 8785 / JCS discipline; materialise-once). This is what lets a record be hashed and signed without
+  ambiguity, and it underpins the signed inclusion / Merkle proofs over `.spore` (ext-spore).
+
+> **`sealed` surface — owner-gated.** Because there is no *unsealed* record semantics to opt into, a record
+> is already fixed-shape ("sealed") by nature; this section states the guarantee, it adds no grammar.
+> Whether to surface an explicit `sealed` keyword vs. leave the guarantee implicit-by-default is an **owner
+> decision** (RD-0266 §8.3 / RD-0286a) — deferred, not assumed. The `.gate` v0.4 accept set stays closed;
+> any new keyword lands only as a v0.5 proposal.
+
 ### Enum — `enum Name { A B C }`
 
 Variants are **space/newline-separated** (commas optional); `parser.ts:5394-5426`.
