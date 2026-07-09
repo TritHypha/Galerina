@@ -1,18 +1,28 @@
 #!/usr/bin/env node
-// graph-all.mjs — run ALL THREE Galerina graph generators in one shot (RD-0124 follow-up).
+// graph-all.mjs — run EVERY Galerina graph-related dev tool in one shot. THIS is "run graph".
 //
-// "run graph" / the `graph` command historically ran ONLY the project graph. There are in fact three
-// distinct graph generators, and the per-package Hardened Border + the KB cross-reference graph were
-// never in the regular cadence. This runs all three so "the graphs" stay current together:
-//   1. PROJECT graph  -> build/graph/      (the project knowledge graph; node cli graph)
-//   2. KB graph       -> build/kb-graph/   (doc cross-refs; the orphan/broken-link signal the
-//                                           stray-docs audit reads — must be fresh for that audit)
-//   3. PACKAGE graph  -> per-package .graph/ + the Hardened Border `--check` across EVERY package
-//                        (catches a new external dependency / border drift — a security gate)
+// "run graph" / the `graph` command historically ran ONLY the project graph. There are in fact
+// SIX distinct graph tools; this runs them all so "the graphs" stay current together, and it is the
+// SINGLE SOURCE OF TRUTH for what "run graph" means — run-phase-close §5 delegates its whole graph
+// phase to this script, so the on-demand command and the Stop cadence can never drift apart again:
+//   1. PROJECT graph       -> build/graph/          (the project knowledge graph; the `graph` CLI)
+//   2. GRAPH INTEGRITY     -> validates the graph (1) just generated (RD-0121: generate-then-VALIDATE
+//                             — dangling edges / cycles / corruption fail-closed; skips cleanly when
+//                             the generated artifact is absent, e.g. a build-free checkout)
+//   3. KB graph            -> build/kb-graph/        (doc cross-refs; the orphan/broken-link signal the
+//                             stray-docs audit reads — must be fresh for that audit)
+//   4. PACKAGE graph       -> per-package .graph/ + the Hardened Border `--check` across EVERY package
+//                             (catches a new external dependency / border drift — a security gate)
+//   5. MEMORY graph        -> .claude memory health   (dangling [[links]] / orphans / dupes)
+//   6. DEV-TOOL index/graph-> build/dev-tool-index/   (packages + dev tools: coverage + gaps)
 //
-// Informational: ALWAYS exits 0 (like run-phase-close). The Hardened-Border drift count is REPORTED,
-// not fatal — committing the regenerated .graph/ evidence is what makes the drift diff-visible.
-//   node scripts/graph-all.mjs           run all three
+// Pure INDEXES (code-index, code-registry, kb-index) are a DIFFERENT family — token-saver indexes the
+// audits read, not graphs — and stay in run-phase-close's own §5a step, NOT here.
+//
+// Informational: ALWAYS exits 0 (like run-phase-close). Drift/violation counts are REPORTED, not fatal
+// — committing the regenerated build/graph + .graph/ evidence is what makes drift diff-visible; the
+// ENFORCING graph-integrity + Hardened-Border gates live in lint-conventions / CI.
+//   node scripts/graph-all.mjs           run all six graph tools
 //   node scripts/graph-all.mjs --quiet   summary only
 import { spawnSync } from "node:child_process";
 import { readdirSync, existsSync } from "node:fs";
@@ -22,23 +32,32 @@ const quiet = process.argv.includes("--quiet");
 const node = process.execPath;
 const run = (args) => spawnSync(node, args, { encoding: "utf8" });
 const log = (s) => { if (!quiet) console.log(s); };
+const first = (out, re, dflt = "?") => ((out ?? "").match(re) ?? [])[1] ?? dflt;
 
 // 1. project graph
-log("── 1/3 project graph (build/graph/) ──");
+log("── 1/6 project graph (build/graph/) ──");
 const g1 = run(["packages-galerina/galerina-core-cli/dist/index.js", "graph", "--out", "build/graph"]);
-const nodes = (g1.stdout.match(/Nodes:\s*(\d+)/) ?? [])[1] ?? "?";
-const edges = (g1.stdout.match(/Edges:\s*(\d+)/) ?? [])[1] ?? "?";
+const nodes = first(g1.stdout, /Nodes:\s*(\d+)/);
+const edges = first(g1.stdout, /Edges:\s*(\d+)/);
 log(`   project graph: ${nodes} nodes / ${edges} edges (exit ${g1.status})`);
 
-// 2. kb graph
-log("── 2/3 kb graph (build/kb-graph/) ──");
-const g2 = run(["packages-galerina/galerina-devtools-kb-graph/dist/cli.js", "--out", "build/kb-graph"]);
-const orphans = (g2.stdout.match(/Orphans:\s*(\d+)/) ?? [])[1] ?? "?";
-const broken = (g2.stdout.match(/Stale:\s*(\d+)/) ?? [])[1] ?? "?";
-log(`   kb graph: ${orphans} orphans / ${broken} broken links (exit ${g2.status})`);
+// 2. graph integrity — validate what (1) just generated (RD-0121: generate then VALIDATE)
+log("── 2/6 graph integrity (validate build/graph/) ──");
+const g2 = run(["scripts/audit-graph-integrity.mjs"]);
+const integrity = /nothing to validate|not present/.test(g2.stdout ?? "")
+  ? "skipped (no generated graph)"
+  : `${first(g2.stdout, /TOTAL:\s*(\d+)/)} violation(s)`;
+log(`   graph integrity: ${integrity} (exit ${g2.status})`);
 
-// 3. package graph — Hardened Border --check across every package
-log("── 3/3 package graph — Hardened Border --check (all packages) ──");
+// 3. kb graph
+log("── 3/6 kb graph (build/kb-graph/) ──");
+const g3 = run(["packages-galerina/galerina-devtools-kb-graph/dist/cli.js", "--out", "build/kb-graph"]);
+const orphans = first(g3.stdout, /Orphans:\s*(\d+)/);
+const broken = first(g3.stdout, /Stale:\s*(\d+)/);
+log(`   kb graph: ${orphans} orphans / ${broken} broken links (exit ${g3.status})`);
+
+// 4. package graph — Hardened Border --check across every package
+log("── 4/6 package graph — Hardened Border --check (all packages) ──");
 let pass = 0, fail = 0;
 const drifted = [];
 const root = "packages-galerina";
@@ -51,5 +70,17 @@ for (const name of readdirSync(root)) {
 }
 log(`   Hardened Border: ${pass} PASS / ${fail} FAIL${fail ? " (border drift): " + drifted.join(", ") : ""}`);
 
-console.log(`graph-all: project ${nodes}n/${edges}e · kb ${orphans} orphans/${broken} broken · border ${pass} pass/${fail} drift${fail ? " [" + drifted.join(",") + "]" : ""}`);
+// 5. memory graph — .claude memory health
+log("── 5/6 memory graph (.claude memory health) ──");
+const g5 = run(["scripts/memory-graph.mjs"]);
+const memory = first(g5.stdout, /HEALTH:\s*(.+)/).trim();
+log(`   memory graph: ${memory} (exit ${g5.status})`);
+
+// 6. dev-tool index/graph — packages + dev tools coverage
+log("── 6/6 dev-tool index/graph (build/dev-tool-index/) ──");
+const g6 = run(["scripts/dev-tool-index.mjs"]);
+const devtools = first(g6.stdout, /dev-tool-index:\s*(.+?)(?:\s+→|\s+->|\n|$)/).trim();
+log(`   dev-tool index: ${devtools} (exit ${g6.status})`);
+
+console.log(`graph-all: project ${nodes}n/${edges}e · integrity ${integrity} · kb ${orphans} orphans/${broken} broken · border ${pass} pass/${fail} drift${fail ? " [" + drifted.join(",") + "]" : ""} · memory ${memory} · dev-tools ${devtools}`);
 process.exit(0); // informational — never fatal
