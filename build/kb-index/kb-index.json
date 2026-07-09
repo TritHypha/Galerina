@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 805,
+  "docCount": 807,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -25779,6 +25779,54 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/galerina-rd-0299-galerina-connect-lane-maths-photonic.md",
+      "title": "RD-0299 — the Galerina↔Galerina connect lane: honest tiers, per-part maths & photonic/tri · 2026-07-09",
+      "headings": [
+        "0. Headline",
+        "0b. Canonical R&D verdict table (house format per RD-0257; letters = sub-items; detail in §1–§5)",
+        "1. Connect-lane architecture (Worker A, code-verified)",
+        "2. Maths per part (Worker B, source-verified)",
+        "3. Photonic/tri per part (Worker B)",
+        "4. Notable new findings",
+        "5. Gaps / open-risks (merge both workers; honest) + ⏳ benchmark-needed",
+        "5a. Connect-lane gaps / open-risks (Worker A)",
+        "5b. Maths ⏳ benchmark-needed (Worker B)",
+        "6. Honesty & provenance"
+      ],
+      "codes": [
+        "FUNGI-SUBSTRATE-001"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "worker",
+        "lane",
+        "real",
+        "connect",
+        "maths",
+        "tri",
+        "spore",
+        "photonic",
+        "galerina",
+        "neither",
+        "shipped",
+        "today",
+        "stub",
+        "confirmed",
+        "transport-auth",
+        "honest",
+        "verdict",
+        "connect-lane",
+        "document",
+        "never",
+        "part",
+        "gaps",
+        "cert-gate",
+        "src",
+        "nothing"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/galerina-rd-34b-paramtaint-buildspec-2026-06-24.md",
       "title": "R&D — Phase 34B boundary param auto-taint: verified state + build-ready spec",
       "headings": [
@@ -27272,29 +27320,29 @@
       "topTerms": [
         "gate",
         "owner",
+        "galerina",
         "fungi",
         "mjs",
-        "galerina",
         "graph",
         "signed",
         "shipped",
         "real",
         "green",
-        "build",
         "verdict",
+        "build",
         "audit",
         "design",
+        "fail-closed",
         "proof",
         "runtime",
-        "fail-closed",
-        "mixed",
         "photonic",
+        "mixed",
         "owner-gated",
         "never",
         "prod",
-        "refuted",
         "security",
-        "governance"
+        "spore",
+        "refuted"
       ]
     },
     {
@@ -27978,7 +28026,8 @@
         "NEXT (W-plan + rebrand completion)",
         "LATER (gated)",
         "5. Owner decisions locked (2026-07-09)",
-        "6. Kernel / GIR / Compiler — W5b completeness audit (2026-07-09)"
+        "6. Kernel / GIR / Compiler — W5b completeness audit (2026-07-09)",
+        "7. Self-hosting priority sprint (2026-07-09 late — owner: \"priority\" + ZT-51 adopted)"
       ],
       "codes": [
         "FUNGI-MEMORY-001",
@@ -27995,31 +28044,31 @@
       ],
       "xrefs": [],
       "topTerms": [
-        "galerina",
         "owner",
+        "galerina",
         "spore",
         "audit",
         "repo",
         "session",
         "gate",
+        "still",
         "green",
         "rename",
         "tmf",
-        "still",
         "token",
         "rebrand",
         "w5b",
         "roadmap",
         "mjs",
         "compiler",
-        "later",
         "fix",
+        "later",
+        "check",
         "read",
         "completeness",
-        "every",
-        "fail-closed",
-        "kernel",
-        "gir"
+        "gir",
+        "priority",
+        "every"
       ]
     },
     {
@@ -37994,6 +38043,58 @@
         "json",
         "human",
         "approval"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/PROMPT-main-session-API-consolidated-handover-2026-07-09.md",
+      "title": "PROMPT — main session: API consolidated handover (RD-0285 / RD-0297 / RD-0298 / RD-0299) · 2026-07-09",
+      "headings": [
+        "1. 30-second state — the 10-lane coverage snapshot",
+        "2. OPEN-RISKS — action these first, before any new build",
+        "3. Consolidated owner-gated BUILD QUEUE",
+        "3a. Ranked (top 10)",
+        "3b. Owner-decision candidate rows (unranked — each already tagged \"owner call\" at its source)",
+        "3c. Also carried forward from the superseded queue (scope/track, not ranked)",
+        "4. The `apifunctions.*` design",
+        "5. The connect lane — honest tiers (RD-0299)",
+        "6. Non-API findings surfaced along the way",
+        "7. Rules main must honour",
+        "Cross-links / provenance"
+      ],
+      "codes": [
+        "FUNGI-EFFECT-004"
+      ],
+      "tasks": [
+        "#149",
+        "#10"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "lane",
+        "galerina",
+        "build",
+        "confirmed",
+        "real",
+        "gate",
+        "never",
+        "scope",
+        "rd-0299",
+        "connect",
+        "apifunctions",
+        "today",
+        "owner",
+        "packages-galerina",
+        "design",
+        "admission",
+        "call",
+        "src",
+        "shipped",
+        "signed",
+        "spore",
+        "main",
+        "rd-0298",
+        "queue",
+        "open-risk"
       ]
     },
     {

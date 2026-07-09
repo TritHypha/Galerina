@@ -1,4 +1,4 @@
-# Galerina KB index (805 docs)
+# Galerina KB index (807 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -2252,6 +2252,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/galerina-rd-0298-youtube-api-video-mine.md`
 - terms: chatter, mine, youtube, gap, adopt, galerina, api, candidate, rd-0297, industry, validates, row, graphql, com
 
+## RD-0299 — the Galerina↔Galerina connect lane: honest tiers, per-part maths & photonic/tri · 2026-07-09
+`../ZTF-Knowledge-Bases/galerina-rd-0299-galerina-connect-lane-maths-photonic.md`
+- codes: FUNGI-SUBSTRATE-001
+- terms: worker, lane, real, connect, maths, tri, spore, photonic, galerina, neither, shipped, today, stub, confirmed
+
 ## R&D — Phase 34B boundary param auto-taint: verified state + build-ready spec
 `../ZTF-Knowledge-Bases/galerina-rd-34b-paramtaint-buildspec-2026-06-24.md`
 - codes: FUNGI-VALUESTATE-003, FUNGI-VALUESTATE-008
@@ -2417,7 +2422,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-PERM-001, FUNGI-GDCE-001, FUNGI-PRIVACY-002, FUNGI-PCI-G-000, FUNGI-ASSIMILATE-004, ERR_BRIDGE_UNATTESTED, ERR_HOST_NATIVE_DENIED, ERR_AI_MODEL_NOT_APPROVED, FUNGI-GOV-TPL-001, FUNGI-ASSIMILATE-003, FUNGI-BUILD-002, FUNGI-ATTR-001, FUNGI-PRIVACY-001, FUNGI-EFFECT-006, FUNGI-SEC-020, FUNGI-NAME-001, ERR_CERTIFIED, FUNGI-MATCH-001, FUNGI-GOV-003, ERR_ADDON_UNPINNED, FUNGI-SECRET-004, FUNGI-RETAIN-001, FUNGI-SUBSTRATE-001
 - tasks: #149, #102, #34, #0089, #212, #110, #10, #11, #194, #205, #155
 - links: [[feedback-rd-absorb-positive-and-negative]] [[galerina-ci-state-and-cross-repo-gates]] [[galerina-kernel-ts-vs-fungi-rationale]] [[galerina-graph-ascii-outcome-and-gate-pipeline-2026-07-01]] [[galerina-graph-ascii-spec-and-ab-benchmark-2026-07-01]] [[galerina-rd-0236-runtime-50yr-mistake-audit]] [[galerina-rd-0237-runtime-governance-in-gate-reexamination]] [[galerina-rd-0234-fungi-50yr-mistake-audit]] [[galerina-rd-0234b-fungi-second-pass-hunt]] [[fail-closed-no-50yr-mistake-rule]]
-- terms: gate, owner, fungi, mjs, galerina, graph, signed, shipped, real, green, build, verdict, audit, design
+- terms: gate, owner, galerina, fungi, mjs, graph, signed, shipped, real, green, verdict, build, audit, design
 
 ## Galerina syntax 7-axis sweep (2026-06-25) — PARTIAL (4/8 categories; 4 rate-limited, to resume)
 `../ZTF-Knowledge-Bases/galerina-rd-syntax-7axis-sweep-2026-06-25.md`
@@ -2490,7 +2495,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/galerina-roadmap-2026-07-09.md`
 - codes: FUNGI-MEMORY-001, FUNGI-CHECK-001, FUNGI-CHECK-002, FUNGI-FAULT-001, FUNGI-PREFILTER-001
 - tasks: #201, #34, #102, #149
-- terms: galerina, owner, spore, audit, repo, session, gate, green, rename, tmf, still, token, rebrand, w5b
+- terms: owner, galerina, spore, audit, repo, session, gate, still, green, rename, tmf, token, rebrand, w5b
 
 ## Galerina — Completion % Audit + Roadmap (2026-06-17)
 `../ZTF-Knowledge-Bases/galerina-roadmap-and-audit-2026-06-17.md`
@@ -3333,6 +3338,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## Prompt Injection Defense
 `../ZTF-Knowledge-Bases/prompt-injection-defense.md`
 - terms: text, authority, prompt, galerina, tools, memory, untrusted, secrets, run, tool, injection, defense, instruction, content
+
+## PROMPT — main session: API consolidated handover (RD-0285 / RD-0297 / RD-0298 / RD-0299) · 2026-07-09
+`../ZTF-Knowledge-Bases/PROMPT-main-session-API-consolidated-handover-2026-07-09.md`
+- codes: FUNGI-EFFECT-004
+- tasks: #149, #10
+- terms: lane, galerina, build, confirmed, real, gate, never, scope, rd-0299, connect, apifunctions, today, owner, packages-galerina
 
 ## PROMPT — main session: build the by-construction conformance scanner (extend `@galerina/devtools-security`) · 2026-07-09
 `../ZTF-Knowledge-Bases/PROMPT-main-session-build-by-construction-conformance-scanner-2026-07-09.md`
