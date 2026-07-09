@@ -65,3 +65,37 @@ Run `node scripts/audit-selfhost-readiness.mjs` for the full per-package table +
 Steps 1–3 are the gated `#102-106` / `#34` roadmap items — substantial, security-critical, and (rightly)
 owner-sequenced. This document + the audit tool make each component's status visible so the migration is driven
 by evidence, and so "is the runtime `.fungi` yet?" has a re-runnable, honest answer instead of a hopeful one.
+
+## Concrete blocker found (2026-07-09) — scope-unaware effect inference on a local `env`
+
+Root-caused the self-hosted `runtime.fungi` `check` failure to a **precise, reproducible compiler bug**, and
+— importantly — a naive fix would be a **fail-open**, so it is documented here rather than hastily patched.
+
+**Repro (minimal):**
+```fungi
+pure flow lookupEnv(env: Array, name: String) -> Int { let x = env.get(0)  return 0 }   // ❌ FUNGI-EFFECT-003 secret.read
+pure flow lookupBag(bag: Array, name: String) -> Int { let x = bag.get(0)  return 0 }   // ✅ clean
+```
+Identical bodies; only the one whose param is named `env` is flagged. Cause: effect inference is **text-regex**,
+not scope-aware — `effect-checker.ts` maps `/\benv\.get\b/ → "secret.read"` (and `stdlib.ts environmentFn`
+treats `env.get`/`Env.get` as a `process.env` read). The self-hosted interpreter names its variable-environment
+`Array` `env` and calls the ordinary `.get(i)` Array method — syntactically identical to the stdlib env read.
+
+**Why the naive fix is WRONG (fail-open).** Lowercase `env.get` is a *real* stdlib env-read function
+(`stdlib.ts:1466-1473`, `process.env[key]`, records `secret.read`). Simply deleting the `env.get → secret.read`
+heuristic would let a genuine `env.get("SECRET")` escape the pure-flow gate — a fail-open in a security checker.
+So the heuristic must stay; the discrimination must improve.
+
+**The two correct fixes (owner-sequenced; neither rushed autonomously):**
+- **Compiler (the cure):** make module-prefixed effect inference **scope-aware** — skip the `env.*`/`Env.*`/
+  `fs.*`/… heuristics when the leading identifier is a **locally-bound variable/param** (shadowing the stdlib
+  module). Must be verified fail-closed: a real `Env.get`/`env.get` on the *unshadowed* stdlib module still
+  flags `secret.read`. This threads scope/symbol-table info into the regex-inference pass.
+- **Corpus (a safe band-aid, not the cure):** rename the self-hosted interpreter's local `env` `Array` to
+  `bindings`/`scope` so it no longer collides with the stdlib `env` module. Unblocks `runtime.fungi` without
+  touching the security checker — but every *user* naming a local `env` still hits the false positive until the
+  compiler fix lands.
+
+This turns "the self-hosted corpus isn't clean" into a one-line, correctly-scoped, fail-open-aware bug — the
+kind of precise blocker that lets the owner sequence the fix safely rather than an AI loosening a security
+checker unattended.
