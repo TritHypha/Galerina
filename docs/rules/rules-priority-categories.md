@@ -25,6 +25,10 @@ Examples include memory safety by default, security-first execution, explicit
 errors, secret-safe reports, declared effects, `Bool`-only conditions and no
 public raw model output.
 
+See [Governance Doctrine](rules-governance-doctrine.md) for the fail-closed-gate,
+least-privilege-credential, no-premature-reference and dated-artifact rules
+(RD-0290) that govern the gates and CI themselves.
+
 ### Core Language Rules
 
 Rules in this category should become compiler or runtime behaviour.
