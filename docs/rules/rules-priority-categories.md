@@ -56,6 +56,10 @@ Examples include preferring composition over inheritance, contracts over hidden
 dispatch, typed views over raw model output and bounded caches over unbounded
 runtime state.
 
+See [Design Principles](rules-design-principles.md) for the rules that sit at the
+top of this category — the identity sentence as a feature gate, coherency over
+consistency, the grug test and the dual-audience rule.
+
 ### Future / Research Concepts
 
 Concepts in this category are long-term planning or research.
