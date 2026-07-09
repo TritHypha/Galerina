@@ -117,6 +117,25 @@ jobs:
           node scripts/audit-route-overlap.mjs --self-test
           node scripts/audit-route-overlap.mjs
 
+  # brand-keys (build-free, zero-baseline, ENFORCING, RD-0286 §5.3): BOLA's cheapest structural counter
+  # (OWASP API1:2023 / CWE-639). No raw String/Int/Number — parameter or literal — may reach a KEYED
+  # database./storage./ledger. verb as the object key: a raw key lets any caller-supplied value address
+  # any object (the /users/{id} IDOR shape). A Brand<T,"Name"> nominal identity proves the identifier
+  # passed a constructor/validation site. Write-shaped verbs are out of scope (payloads, not addresses);
+  # the sound authority stays the compiler's type-checker + the signed capability — this lint makes the
+  # regression VISIBLE at authoring time. The --self-test proves the detectors fire before the scan.
+  brand-keys:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Brand-everywhere BOLA key guard (self-test, then enforcing)
+        run: |
+          node scripts/audit-brand-keys.mjs --self-test
+          node scripts/audit-brand-keys.mjs
+
   # conformance (build-free, ENFORCING, RD-0296): the by-construction conformance gate in
   # @galerina/devtools-security — machine-asserts that each VERIFIED design construction is STILL present, so
   # it goes RED the moment a refactor removes it (algorithm-pinned verification 0294t; .spore fail-closed
