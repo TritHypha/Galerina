@@ -36,6 +36,9 @@ only; defensive, find-and-fix.
 | F9 | `.spore` AEAD binds `kem_profile`+`aead_suite`+`dem_mode` + `requireAesGcm` pin (suite-downgrade prevented) | cryptographic-audit | A02 / CWE-757 | 0294n | **CONFIRMED** (minor GAP: format version not in AAD) |
 | F10 | `.spore` AAD binds section identity but not an explicit whole-file identity | cryptographic-audit | A02 / CWE-345 | 0294o | **GAP** (confirm `coord` uniqueness vs spec §5) |
 | F11 | `.spore` key-commitment: `key_commit` + Chan-Rogaway CTX tag (CMT-4) over AES-GCM | cryptographic-audit | A02 / CWE-327 | 0294 CMT-4 | **CONFIRMED** |
+| F12 | authorization is capability + K3-verdict, **not JWT** — alg-confusion class does not apply | jwt-algorithm-confusion | A02 / CWE-347 | 0294 API | **N/A** |
+| F13 | capability-bounded fusion: deny-by-default closed frozen registry, per-cap namespaces, fail-closed on unknown cap | broken-function-level-authorization | API5:2023 / CWE-862 | 0294e | **CONFIRMED** (BFLA-structural) |
+| F14 | object-level authz (BOLA): stated non-negotiable (data≠authority, ownership runtime-verified); enforced via value-state/effect checkers | broken-object-level-authorization | API1:2023 / CWE-639 | 0294 API | **PARTIAL** (deep verify deferred) |
 
 ---
 
@@ -185,28 +188,56 @@ ALLOW) — fail-closed. *Not verified in P4:* size-bucket padding + constant sec
 **freshness anchor** (`epoch` is AAD-bound, but proving it is the *latest* epoch needs the external anchor —
 RD-0294p residual).
 
-## Not yet run (scoped — priorities 3, 5)
+## Priority 5 — API authorization, JWT, MCP, supply-chain (partial)
 
-Recorded so coverage is honest — these are **not** audited here:
+### F12 — JWT algorithm-confusion · N/A (auth is not JWT-based)
+`galerina-auth` implements **no JWT** (zero `jwt`/`alg`/`HS256`/`none` matches); authorization is a
+**capability + K3-verdict** model (`authorization.ts`, `verdict.ts`, `credential.ts`). The JWT-alg-confusion
+class therefore does not apply to Galerina's authorization path. (Repo-wide, `jwt` appears ~5× only in
+`stdlib.ts` / `devtools-provenance/analyzer.ts` — a helper + a detector — not audited this pass.)
+
+### F13 — function-level authorization is structural (0294e) · CONFIRMED
+`buildCapabilityImports` (`fuse-loader.ts`) builds a **closed, capability-bounded** host-import object:
+**deny-by-default — only declared capabilities contribute a namespace, everything else is absent**; an
+undeclared/unknown capability **refuses fusion** (`FUNGI-FUSE-UNKNOWN-CAP`, fail-closed); the
+`BUILTIN_CAPABILITY_REGISTRY` is `Object.freeze`d and each capability maps to a **narrow** namespace
+(`network.inbound` grants accept-side only — *"no outbound reach — that is a different capability"*). A fused
+WASM component therefore **physically cannot invoke a host function it was not granted** — the import does not
+exist in its instantiation. That makes broken-function-level-authorization (API5:2023 / CWE-862) **structural**,
+not a runtime check to forget. **BFLA-structural** — a defensive-pub candidate.
+
+### F14 — object-level authorization (BOLA) · PARTIAL
+Object-level authz (API1:2023 / CWE-639) is **stated** as a non-negotiable — *"Data cannot grant authority;
+roles, permissions, ownership and capability claims from input must be verified by runtime identity, policy and
+capability checks"* (`rules-non-negotiable.md`) — and partially enforced by the value-state / effect / taint
+checkers. But **full BOLA-structural verification** (per-object ownership at the data-access boundary) needs the
+runtime data-access model and is **deferred** to a deeper pass. Verdict: PARTIAL (stated + partly enforced; not
+fully code-proven).
+
+*Deferred in P5:* MCP tool-poisoning (DP-RD-0285b manifest-digest pinning) and SLSA/in-toto supply-chain on the
+`.lmanifest` builder (RD-0294w) — each needs a dedicated pass.
+
+## Not yet run (priority 3)
+
+Recorded so coverage is honest — this is **not** audited here:
 
 - **P3 · `.hypha` by-construction (0294a/b/i/k/l):** second-order SQLi, depth/complexity DoS, SSRF-from-query
-  (`egress_free_operators`), deserialization, XXE. **Blocked from code-verification in Galerina:** the `.hypha`
-  runtime (TritMeshQL) is **not in this tree** — `galerina-data-query` ships only a `.graph/boundary-policy.json`
-  stub, and the engine/operator vocabulary lives in a sibling (TritMesh) repo. In-repo evidence is the
-  `docs/examples/hypha/*.hypha` corpus (e.g. `06-injection-is-inert` — an injection payload stays an inert value
-  leaf, no string→query construction to escape), which is **suggestive, not code-proof**. Per zero-trust these
-  stay **PLAUSIBLE** until the engine is audited where it lives.
-- **P5 · API/authz (0294e/f), MCP tool-poisoning (0294x/y/z), supply-chain (0294r-w):** BOLA/BOPLA on
-  `galerina-framework-api-server` / `galerina-web-router`, JWT alg-confusion on `galerina-auth`, MCP manifest
-  binding (DP-RD-0285b), SLSA/in-toto provenance on the `.lmanifest` pipeline.
+  (`egress_free_operators`), deserialization, XXE. **Not code-verifiable — the engine does not exist yet.**
+  `.hypha` is the query-language *file* (the SQL-equivalent); its runtime engine is **TritMesh Database, the
+  next project** — to be built *using* Galerina once Galerina reaches production. `galerina-data-query` is only a
+  `.graph/boundary-policy.json` boundary stub today. In-repo evidence is the `docs/examples/hypha/*.hypha` corpus
+  (e.g. `06-injection-is-inert` — an injection payload stays an inert value leaf, no string→query construction to
+  escape), which is **design-stage evidence, not code-proof**. Per zero-trust these stay **PLAUSIBLE** until the
+  engine is built and audited (it is **TritMesh Database, the next project**, built on Galerina).
 
 ## Honest frame
 
-The CONFIRMED rows (F1, F2-integrity, F3, **F8, F9, F11**) are defensible as *"this attack class is
+The CONFIRMED rows (F1, F2-integrity, F3, **F8, F9, F11, F13**) are defensible as *"this attack class is
 unrepresentable at runtime,"* bounded by the open residuals: **F2** (.spore authenticity/signing deferred →
 integrity, not origin), **F4** (Ed25519-only default, PQ opt-in), **F5** (CI drift-coverage gated on a pending
-KB token), **F10** (AAD binds section-, not file-identity — confirm `coord` uniqueness / RD-0294o), the P4
-size-padding + rollback-freshness residuals, and the unaudited **P5** cluster. **P3 (`.hypha`) is
-engine-external** — PLAUSIBLE, not code-verified in this tree. Nothing here supports an "unhackable" claim;
+KB token), **F10** (AAD binds section-, not file-identity — confirm `coord` uniqueness / RD-0294o), **F14**
+(object-level BOLA — deep verify deferred), and the P4/P5 deferrals (MCP tool-poisoning, SLSA supply-chain,
+`.spore` size-padding + rollback-freshness). **P3 (`.hypha`) is not code-verifiable — the engine does not exist
+yet** (TritMesh Database, the next project); those claims are PLAUSIBLE by design. Nothing here supports an "unhackable" claim;
 each CONFIRMED is a class boundary, not a guarantee. CONFIRMED-by-construction rows are candidate defensive-publication material, held until a
 0285j-class measurement backs any performance claim (papers README rule).
