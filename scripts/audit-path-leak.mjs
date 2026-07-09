@@ -15,8 +15,9 @@ import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const IS_WIN = process.platform === "win32";
-const git = (...a) => execFileSync("git", a, { cwd: ROOT, encoding: "utf8", shell: IS_WIN });
+// Spawn git directly, NO shell: args pass as an array (no shell-injection surface, no DEP0190). On
+// Windows, CreateProcess resolves `git` -> `git.exe` on PATH without a shell; windowsHide avoids a flash.
+const git = (...a) => execFileSync("git", a, { cwd: ROOT, encoding: "utf8", windowsHide: true });
 
 // Each detector handles a single OR double backslash (paths are often JSON-escaped as `C:\\Users\\...`).
 const PATTERNS = [
