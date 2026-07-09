@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 // component-health.mjs — Galerina per-COMPONENT readiness matrix for v1.0 "full testing".
-// Pure-read, zero-dep (node:fs/node:path only), never throws, exit 0 (1 only with --strict on gaps).
+// Pure-read, zero-dep (node builtins only: fs/path/url/child_process), never throws, exit 0 (1 only with --strict on gaps).
+// Prints a git PROVENANCE header (branch/SHA/dirty) so a report can never silently describe the wrong tree —
+// a detached HEAD is called out LOUDLY, because a detached-HEAD run once measured a stale pre-rename tree unnoticed.
+// Surfaces one honest SHIP-READINESS % over the FULL component set (orphans counted in, no gap class masked).
 // Complements status.mjs (headline counts) with a per-package breakdown + gap detector:
 //   which workspace packages have a test script, a tests/ dir + test files, a recorded test count,
 //   and which packages-galerina/ dirs are ORPHANS (a package.json on disk but absent from the workspace).
@@ -12,6 +15,7 @@
 import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { join, dirname, basename } from "node:path";
 import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PKG_DIR = join(ROOT, "packages-galerina");
@@ -25,6 +29,25 @@ const readJSON = (p) => { try { return JSON.parse(readFileSync(p, "utf8")); } ca
 const listDir = (p) => { try { return readdirSync(p); } catch { return null; } };
 const isDir = (p) => { try { return statSync(p).isDirectory(); } catch { return false; } };
 const fmt = (n) => (typeof n === "number" ? n.toLocaleString("en-US") : String(n));
+
+// ── git provenance (read-only; names the exact tree these numbers describe) ────
+// Runs only reporting git subcommands; ROOT-anchored; never throws (returns null on any failure).
+const git = (args) => {
+  try {
+    return execFileSync("git", args, { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+  } catch { return null; }
+};
+const provenance = (() => {
+  if (git(["rev-parse", "--is-inside-work-tree"]) !== "true") return { available: false };
+  const branch = git(["rev-parse", "--abbrev-ref", "HEAD"]); // literal "HEAD" when detached
+  const sha = git(["rev-parse", "--short", "HEAD"]);
+  const porcelain = git(["status", "--porcelain"]); // "" ⇒ clean, any content ⇒ dirty
+  return {
+    available: true, branch, sha,
+    detached: branch === "HEAD",
+    dirty: porcelain == null ? null : porcelain.length > 0,
+  };
+})();
 
 // ── inputs ───────────────────────────────────────────────────────────────────
 const workspace = readJSON(join(ROOT, "galerina.workspace.json")) || {};
@@ -105,16 +128,32 @@ const summary = {
   withGaps: rows.filter((r) => r.gaps.length).length,
   orphans: orphans.length,
 };
+// ── honest ship-readiness: GREEN components over the FULL set. Orphans are un-shippable
+//    components (a package.json on disk, absent from the workspace) so they count against the
+//    denominator and toward the gap total — never masked out to flatter the headline. ────────────
+summary.green = rows.filter((r) => r.gaps.length === 0).length;
+summary.components = rows.length + orphans.length;
+summary.totalGaps = summary.withGaps + orphans.length;
+summary.readinessPct = summary.components ? (summary.green / summary.components) * 100 : 0;
 
 if (AS_JSON) {
-  console.log(JSON.stringify({ summary, rows, orphans }, null, 2));
-  process.exit(STRICT && (summary.withGaps + summary.orphans) > 0 ? 1 : 0);
+  console.log(JSON.stringify({ provenance, summary, rows, orphans }, null, 2));
+  process.exit(STRICT && summary.totalGaps > 0 ? 1 : 0);
 }
 
 // ── render ───────────────────────────────────────────────────────────────────
 const pad = (s, n) => String(s).padEnd(n);
 const out = [];
 out.push(`Galerina component health — ${summary.workspacePackages} workspace packages · ${summary.withTestScript} test-bearing · ${fmt(summary.recordedTotal)} recorded tests`);
+// ── provenance header: which git tree produced these numbers (top of report) ──
+if (provenance.available) {
+  const state = provenance.dirty == null ? "dirty state unknown" : provenance.dirty ? "dirty (uncommitted changes)" : "clean";
+  out.push(`  provenance: ${provenance.branch} @ ${provenance.sha} · ${state}`);
+  if (provenance.detached) out.push("  ⚠ DETACHED HEAD — report may reflect a stale tree; confirm the SHA above is the tree you meant to measure");
+} else {
+  out.push("  provenance: unavailable (not a git work tree)");
+}
+out.push(`  SHIP-READINESS: ${summary.readinessPct.toFixed(1)}% (${summary.green}/${summary.components} components green) · ${summary.totalGaps} gap(s)`);
 out.push("");
 for (const fam of [...new Set(rows.map((r) => r.family))].sort()) {
   const famRows = rows.filter((r) => r.family === fam).sort((a, b) => a.dir.localeCompare(b.dir));
@@ -130,5 +169,6 @@ for (const fam of [...new Set(rows.map((r) => r.family))].sort()) {
 out.push("");
 out.push(`  gaps    : ${summary.withGaps} package(s) with a readiness gap${ONLY_GAPS ? "" : "  (--gaps to isolate)"}`);
 out.push(`  orphans : ${summary.orphans}${orphans.length ? "  -> " + orphans.sort().join(", ") : ""}`);
+out.push(`  ship    : ${summary.readinessPct.toFixed(1)}% ship-ready · ${summary.totalGaps} total gap(s) = ${summary.withGaps} package + ${summary.orphans} orphan`);
 console.log(out.join("\n"));
-process.exit(STRICT && (summary.withGaps + orphans.length) > 0 ? 1 : 0);
+process.exit(STRICT && summary.totalGaps > 0 ? 1 : 0);
