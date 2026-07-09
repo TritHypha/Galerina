@@ -13,6 +13,10 @@
     "test": "npm run build && node --test tests/*.test.mjs",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@noble/ciphers": "^2.2.0",
+    "@noble/post-quantum": "^0.6.1"
+  },
   "devDependencies": { "@types/node": "^22.10.0", "typescript": "^5.5.0" },
   "keywords": ["galerina", "tmf", "tmx-256", "trimerkle", "shake256", "integrity", "crypto-on-core"],
   "note": "Phase 2 engine (#6). Specs frozen in Galerina-R-AND-D/tmf/spec/*. Crypto runs bit-exact on the deterministic core (SHAKE256 via node:crypto; ML-DSA-65 via @noble/post-quantum, already a Galerina dep). No Rust, no photonic crypto (crypto-on-core / FUNGI-SUBSTRATE-001). Slice 1 = TMX-256; next: container, KEM-DEM, signing, inclusion proofs."

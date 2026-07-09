@@ -19,6 +19,8 @@ permissions:
 
 jobs:
   lint-conventions:
+    needs: kb-preflight
+    if: needs.kb-preflight.outputs.has_kb_token == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,9 +37,9 @@ jobs:
       - name: Check out the KB corpus (sibling repo)
         uses: actions/checkout@v4
         with:
-          repository: zero-trust-framework/ZTF-Knowledge-Bases
+          repository: TritHypha/ZTF-Knowledge-Bases
           path: ZTF-Knowledge-Bases
-          token: ${{ secrets.ZTF_KB_READ_TOKEN || github.token }}
+          token: ${{ secrets.ZTF_KB_READ_TOKEN }}
 
       - name: Convention gate (report-only — STAGE 1 of #6)
         env:
@@ -136,6 +138,8 @@ jobs:
   # "Audit event stream write failed" / really RateLimitExceeded class). The --self-test proves the
   # detector fires; then the scan runs ENFORCING (reads .ts source + the .md doc directly — no build).
   diagnostic-doc-drift:
+    needs: kb-preflight
+    if: needs.kb-preflight.outputs.has_kb_token == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -149,9 +153,9 @@ jobs:
       - name: Check out the KB corpus (sibling repo — holds compiler-diagnostics.md)
         uses: actions/checkout@v4
         with:
-          repository: zero-trust-framework/ZTF-Knowledge-Bases
+          repository: TritHypha/ZTF-Knowledge-Bases
           path: ZTF-Knowledge-Bases
-          token: ${{ secrets.ZTF_KB_READ_TOKEN || github.token }}
+          token: ${{ secrets.ZTF_KB_READ_TOKEN }}
       - name: Diagnostic doc↔source drift (self-test, then enforcing)
         env:
           GALERINA_KB_DIR: ${{ github.workspace }}/ZTF-Knowledge-Bases
@@ -304,5 +308,46 @@ jobs:
       # dev-tool script tests — the audit/index/registry tooling itself (scripts/tests/) lives OUTSIDE
       # packages-galerina, so the package runner never sees it. Run here so the gates that guard the repo
       # are themselves regression-gated (incl. the doc-drift KB-resolution + fail-closed benches).
+      # The two BUILD-dependent script tests (cg4-signing-boundary + signed-fixture-guard — they drive
+      # `galerina.mjs build`, which imports galerina-core-compiler/dist) run in the separate build-cli-gates
+      # job below; exclude them here so THIS job stays build-free. A new build-free test is auto-included
+      # (the glob minus the two known build-dependent files) — no silent under-coverage.
       - name: Dev-tool script tests (build-free)
-        run: node --test scripts/tests/*.test.mjs
+        run: |
+          files=$(ls scripts/tests/*.test.mjs | grep -vE '/(cg4-signing-boundary|signed-fixture-guard)\.test\.mjs$')
+          echo "build-free script tests:"; echo "$files"
+          node --test $files
+
+  # build-cli gates (BUILD-FULL, ENFORCING) — the two script tests that drive `galerina.mjs build`
+  # (CG-4 signing-boundary + the CG-7 signed-fixture guard) need galerina-core-compiler/dist, which is
+  # gitignored. They passed only on a dev box (dist present) and errored "Cannot find module .../dist" in
+  # CI — the "green locally, red in CI" class these gates exist to prevent. Build the compiler's file: dep
+  # closure first (scripts/build-core-chain.mjs — topological, fail-closed) so the gates ACTUALLY enforce
+  # in CI instead of being silently skipped. Isolated in its own job so the fast build-free gates stay fast.
+  build-cli-gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Build galerina-core-compiler + its file-dep closure (topological)
+        run: node scripts/build-core-chain.mjs
+      - name: CG-4 signing-boundary + CG-7 signed-fixture guard (build-dependent, enforcing)
+        run: node --test scripts/tests/cg4-signing-boundary.test.mjs scripts/tests/signed-fixture-guard.test.mjs
+
+  # KB-availability preflight — the two doc-drift gates (lint-conventions, diagnostic-doc-drift) read the
+  # canonical diagnostics / count-authority docs from the PRIVATE sibling repo ZTF-Knowledge-Bases. The
+  # default github.token cannot read a *separate* private repo, so they need a read-only ZTF_KB_READ_TOKEN
+  # secret (a fine-grained PAT or deploy key, read-only, scoped to TritHypha/ZTF-Knowledge-Bases). Until that
+  # secret exists they are SKIPPED (visibly grey, not red) rather than failing every push at the checkout
+  # step — a failed checkout enforces nothing AND emails a failure on every push. They still run ENFORCING
+  # locally / pre-commit (run-phase-close, where the KB is present), and auto-enable the moment the token is
+  # added:  gh secret set ZTF_KB_READ_TOKEN --repo TritHypha/Galerina  (paste a read-only KB-scoped PAT).
+  kb-preflight:
+    runs-on: ubuntu-latest
+    outputs:
+      has_kb_token: ${{ steps.probe.outputs.has }}
+    steps:
+      - id: probe
+        run: echo "has=${{ secrets.ZTF_KB_READ_TOKEN != '' }}" >> "$GITHUB_OUTPUT"

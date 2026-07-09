@@ -35,7 +35,7 @@ function makePkg(base, name, { signature } = {}) {
   mkdirSync(join(dir, "dist"), { recursive: true });
   writeFileSync(join(dir, "package.fungi.json"), JSON.stringify({ name, entry: "src/index.fungi" }, null, 2));
   writeFileSync(join(dir, "src", "index.fungi"),
-    "pure flow lonely(x: Int) -> Int contract { effects {} } { return x }\n");
+    "@version 1\npure flow lonely(x: Int) -> Int contract { effects {} } { return x }\n");
   if (signature !== undefined) {
     writeFileSync(join(dir, "dist", `${name}.lmanifest.json`),
       JSON.stringify({ schemaVersion: "fungi.lmanifest.v1", governanceSignature: signature }, null, 2));

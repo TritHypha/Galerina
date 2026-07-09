@@ -6,8 +6,8 @@
 //      This half is the cross-language conformance contract and has NO @noble dependency.
 //   2. REAL KEM/AEAD seal+open — hybrid X25519+ML-KEM-768 → SHAKE256 KDF → AES-256-GCM, with the §4
 //      committing-AAD and the §8.5 CTX (CMT-4) committing tag. Verified by round-trip + tamper (no fixed
-//      golden, since KEM/AEAD carry randomness). @noble is borrowed from the compiler's node_modules (no local
-//      install — same pattern as the crypto-ops bench); @noble's own bare imports resolve from there.
+//      golden, since KEM/AEAD carry randomness). @noble/post-quantum + @noble/ciphers are this package's OWN
+//      declared dependencies (bare imports) — no cross-package node_modules reach-through (Hardened Border #149).
 //
 // Crypto-on-core (FUNGI-SUBSTRATE-001): every primitive is bit-exact digital. No photonic crypto.
 // Verify-before-decrypt (§7): this layer sits UNDER the TMX-256 + signature gate; the caller proves
@@ -16,9 +16,9 @@
 // Follow-on (not in slice 3): aead_suite 0x03/0x04 (ChaCha/XChaCha) round-trip seal+open and kem_profile
 // 0x03/0x04 (L5) — their deterministic goldens (streamNonce24, ctxCommitTag, registries) are already covered here.
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
-import { ml_kem768 } from "../../galerina-core-compiler/node_modules/@noble/post-quantum/ml-kem.js";
-import * as hybrid from "../../galerina-core-compiler/node_modules/@noble/post-quantum/hybrid.js";
-import { gcm } from "../../galerina-core-compiler/node_modules/@noble/ciphers/aes.js";
+import { ml_kem768 } from "@noble/post-quantum/ml-kem.js";
+import * as hybrid from "@noble/post-quantum/hybrid.js";
+import { gcm } from "@noble/ciphers/aes.js";
 
 // ── constants / registries (spec §2) ───────────────────────────────────────
 export const AEAD_CONTEXT_SIZE = 36;
