@@ -42,6 +42,7 @@ const HV = "packages-galerina/galerina-core-compiler/src/lmanifest-hybrid-verifi
 const CONTAINER = "packages-galerina/galerina-ext-spore/src/container.ts";
 const BA = "packages-galerina/galerina-tower-citizen/src/bridge-attestation.ts";
 const HE = "packages-galerina/galerina-tower-citizen/src/hybrid-engine.ts";
+const KEMDEM = "packages-galerina/galerina-ext-spore/src/kemdem.ts";
 
 /** sig-verify-pinned (0294t): the verifier pins Ed25519 AND ML-DSA-65 as constants; it never selects the
  *  primitive from the artifact's `alg`. RED if either pin is gone (a refactor may be reading alg). */
@@ -116,8 +117,61 @@ function checkBridgeAttestationFailClosed(get) {
       : `attestation admission REGRESSED — missing: ${missing.join(", ")} (a poisoned / rug-pulled / downgraded manifest could be admitted — DP-RD-0285b M3/M4)` };
 }
 
+/** spore-nonce-freshness (F8 / CWE-323): AEAD nonces are FRESH-random per seal — randomBytes(12) for a
+ *  single-shot section, a fresh randomBytes(8) prefix for a STREAM (each frame's 12-B nonce then position+
+ *  last-flag derived via streamNonce12) — over a fresh per-section KEM key, so no (key,nonce) pair is ever
+ *  reused (catastrophic for AES-GCM). RED if the fresh-nonce derivation is gone. */
+function checkSporeNonceFreshness(get) {
+  const base = { check: "spore-nonce-freshness", owasp: "A02:2021", cwe: "CWE-323", rd: "0294-F8", target: KEMDEM };
+  const k = get(KEMDEM);
+  if (k === null) return { ...base, tier: "OPEN-RISK", ok: false, severity: "high", message: "cannot read kemdem.ts — fail-closed (cannot confirm nonce freshness)" };
+  const singleShot = k.includes("randomBytes(12)"), streamPrefix = k.includes("randomBytes(8)"), posDerived = k.includes("streamNonce12(");
+  const ok = singleShot && streamPrefix && posDerived;
+  const missing = [!singleShot && "randomBytes(12) single-shot nonce", !streamPrefix && "randomBytes(8) stream prefix", !posDerived && "streamNonce12 position-derived nonce"].filter(Boolean);
+  return { ...base, tier: ok ? "CONFIRMED" : "OPEN-RISK", ok, severity: "high",
+    message: ok
+      ? "AEAD nonces are fresh per seal: randomBytes(12) single-shot + a fresh randomBytes(8) STREAM prefix with position+last-flag streamNonce12 frames, over a fresh per-section KEM key — no (key,nonce) reuse"
+      : `REGRESSED — fresh-nonce derivation missing: ${missing.join(", ")} (a fixed/derived nonce risks AES-GCM (key,nonce) reuse — F8/CWE-323)` };
+}
+
+/** spore-suite-pinning (F9 / CWE-757): the DEM is PINNED to AES-256-GCM — requireAesGcm throws on any other
+ *  aead_suite and runs on the AAD-bound suite byte (aeadContext[27]) at the top of every seal/open/stream, so
+ *  an attacker-chosen suite cannot downgrade the primitive (the suite is also bound into the committed AAD).
+ *  RED if the pin is removed. */
+function checkSporeSuitePinning(get) {
+  const base = { check: "spore-suite-pinning", owasp: "A02:2021", cwe: "CWE-757", rd: "0294-F9", target: KEMDEM };
+  const k = get(KEMDEM);
+  if (k === null) return { ...base, tier: "OPEN-RISK", ok: false, severity: "high", message: "cannot read kemdem.ts — fail-closed (cannot confirm suite pinning)" };
+  const pin = k.includes("aeadSuite !== AEAD_SUITE.AES_256_GCM"), invoked = k.includes("requireAesGcm(aeadContext[27]");
+  const ok = pin && invoked;
+  const missing = [!pin && "requireAesGcm AES-256-GCM pin", !invoked && "requireAesGcm(aeadContext[27]) invocation"].filter(Boolean);
+  return { ...base, tier: ok ? "CONFIRMED" : "OPEN-RISK", ok, severity: "high",
+    message: ok
+      ? "the DEM is pinned to AES-256-GCM: requireAesGcm throws on any other aead_suite and runs on the AAD-bound suite byte [27] at the top of seal/open/stream — no silent suite downgrade"
+      : `REGRESSED — AES-256-GCM suite pin missing: ${missing.join(", ")} (an attacker-chosen aead_suite could downgrade the primitive — F9/CWE-757)` };
+}
+
+/** spore-key-commitment (F11 / CWE-354): the DEM is a COMMITTING AEAD — key_commit (SHAKE256, spore-dem-
+ *  commit-v0) folded into the committed AAD, and the §8.5 CTX Chan-Rogaway tag (spore-cmt-ctx-v0) recomputed
+ *  and CONSTANT-TIME compared (bytesEqual) BEFORE the AEAD open, so one ciphertext cannot bind to two
+ *  keys/plaintexts (CMT-4 partitioning-resistance). RED if the committing construction is removed. */
+function checkSporeKeyCommitment(get) {
+  const base = { check: "spore-key-commitment", owasp: "A02:2021", cwe: "CWE-354", rd: "0294-F11", target: KEMDEM };
+  const k = get(KEMDEM);
+  if (k === null) return { ...base, tier: "OPEN-RISK", ok: false, severity: "high", message: "cannot read kemdem.ts — fail-closed (cannot confirm key-commitment)" };
+  const keyCommitDom = k.includes("spore-dem-commit-v0"), ctxDom = k.includes("spore-cmt-ctx-v0");
+  const committedAadFolded = k.includes("committedAad("), verifyBeforeOpen = k.includes("bytesEqual(ctxCommitTag(");
+  const ok = keyCommitDom && ctxDom && committedAadFolded && verifyBeforeOpen;
+  const missing = [!keyCommitDom && "key_commit domain (spore-dem-commit-v0)", !ctxDom && "CTX domain (spore-cmt-ctx-v0)", !committedAadFolded && "committedAad fold", !verifyBeforeOpen && "constant-time ctxCommitTag verify-before-open"].filter(Boolean);
+  return { ...base, tier: ok ? "CONFIRMED" : "OPEN-RISK", ok, severity: "high",
+    message: ok
+      ? "committing AEAD (CMT-4) holds: key_commit (spore-dem-commit-v0) folded into the committed AAD + the §8.5 CTX tag (spore-cmt-ctx-v0) recomputed and constant-time compared (bytesEqual) BEFORE open — a ciphertext cannot open under two keys (partitioning-resistant)"
+      : `REGRESSED — key-commitment missing: ${missing.join(", ")} (without CMT-4 committing, one ciphertext could open under two keys — partitioning oracle, F11/CWE-354)` };
+}
+
 function runAll(get, listWorkflows) {
-  return [checkSigVerifyPinned(get), checkSporeSigningState(get), checkFailOpenGate(get, listWorkflows), checkBridgeAttestationFailClosed(get)];
+  return [checkSigVerifyPinned(get), checkSporeSigningState(get), checkFailOpenGate(get, listWorkflows), checkBridgeAttestationFailClosed(get),
+    checkSporeNonceFreshness(get), checkSporeSuitePinning(get), checkSporeKeyCommitment(get)];
 }
 
 // ── self-test: prove each detector fires on a synthetic regression (a neutered detector is a fail-open) ──────
@@ -128,6 +182,7 @@ function selfTest() {
     [CONTAINER]: 'throw new SporeError("AuthError", "signed .spore rejected: no vetted verifier"); // never writes a fake signature',
     [BA]: 'const ok = edVerify(\n  null,\n  msg, pub, sig);\nreturn { ok: false, reason: "ML-DSA signature required but absent (hybrid)" };\nconst CTX = enc("galerina.bridge.manifest.v2");',
     [HE]: "if (policy.requireHybrid === true && mlDsaPublicKey === undefined) { return deny; }",
+    [KEMDEM]: 'const nonce = new Uint8Array(randomBytes(12));\nconst prefix8 = new Uint8Array(randomBytes(8));\nconst n = streamNonce12(prefix8, i, i === segments.length - 1);\nif (aeadSuite !== AEAD_SUITE.AES_256_GCM) throw x;\nrequireAesGcm(aeadContext[27]!);\nenc.encode("spore-dem-commit-v0"); enc.encode("spore-cmt-ctx-v0");\nconst caad = committedAad(aeadContext, kaead);\nif (!bytesEqual(ctxCommitTag(kaead, nonce, caad, T), received)) throw y;',
     ".github/workflows/conventions.yml": "jobs:\n  x:\n    steps:\n      - run: node scripts/audit.mjs",
   };
   const bad = {
@@ -136,6 +191,7 @@ function selfTest() {
     [CONTAINER]: "return result; // signed files now pass through unverified",
     [BA]: "const ok = edVerify(sig.algorithm, msg, pub, sig); // alg read from artifact — pin regressed, no hybrid guard",
     [HE]: "const result = verifyAttestation(bridge.attestation, policy); // requireHybrid gate dropped — silent downgrade",
+    [KEMDEM]: "const nonce = deriveNonce(sectionId); gcm(kaead, nonce, aeadContext).encrypt(payload); // fixed nonce, no suite pin, no committing tag",
     ".github/workflows/conventions.yml": "jobs:\n  x:\n    steps:\n      - run: node scripts/audit.mjs\n        continue-on-error: true",
   };
   const from = (m) => (rel) => (rel in m ? m[rel] : null);
@@ -154,6 +210,15 @@ function selfTest() {
     ["bridge-attestation-failclosed CONFIRMED on the real constructions", (() => { const r = checkBridgeAttestationFailClosed(from(good)); return r.ok && r.tier === "CONFIRMED"; })()],
     ["bridge-attestation-failclosed RED when the Ed25519 pin / no-downgrade gate is gone", checkBridgeAttestationFailClosed(from(bad)).ok === false],
     ["bridge-attestation-failclosed FAIL-CLOSED on an unreadable target", checkBridgeAttestationFailClosed(() => null).ok === false],
+    ["spore-nonce-freshness CONFIRMED on the real construction", (() => { const r = checkSporeNonceFreshness(from(good)); return r.ok && r.tier === "CONFIRMED"; })()],
+    ["spore-nonce-freshness RED when fresh-nonce derivation is gone", checkSporeNonceFreshness(from(bad)).ok === false],
+    ["spore-nonce-freshness FAIL-CLOSED on an unreadable target", checkSporeNonceFreshness(() => null).ok === false],
+    ["spore-suite-pinning CONFIRMED on the real construction", (() => { const r = checkSporeSuitePinning(from(good)); return r.ok && r.tier === "CONFIRMED"; })()],
+    ["spore-suite-pinning RED when the AES-256-GCM pin is gone", checkSporeSuitePinning(from(bad)).ok === false],
+    ["spore-suite-pinning FAIL-CLOSED on an unreadable target", checkSporeSuitePinning(() => null).ok === false],
+    ["spore-key-commitment CONFIRMED on the real construction", (() => { const r = checkSporeKeyCommitment(from(good)); return r.ok && r.tier === "CONFIRMED"; })()],
+    ["spore-key-commitment RED when the committing tag is gone", checkSporeKeyCommitment(from(bad)).ok === false],
+    ["spore-key-commitment FAIL-CLOSED on an unreadable target", checkSporeKeyCommitment(() => null).ok === false],
   ];
   let allOk = true;
   for (const [name, pass] of checks) { console.log(`  ${pass ? "✅" : "❌"} ${name}`); if (!pass) allOk = false; }
