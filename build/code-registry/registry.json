@@ -1,10 +1,10 @@
 {
   "generatedFrom": "build/code-index/code-index.json",
-  "total": 634,
+  "total": 636,
   "counts": {
-    "ref": 156,
-    "inline": 147,
-    "phantom": 109,
+    "ref": 159,
+    "inline": 145,
+    "phantom": 110,
     "live": 117,
     "referenced": 97,
     "dead": 8
@@ -623,54 +623,6 @@
       "docs": 0
     },
     {
-      "code": "ERR_INVALID_NELEC",
-      "family": "ERR_*",
-      "namespace": "ERR",
-      "status": "inline",
-      "names": [],
-      "severities": [],
-      "defs": 0,
-      "emits": 1,
-      "tests": 1,
-      "docs": 0
-    },
-    {
-      "code": "ERR_INVALID_ORBITALS",
-      "family": "ERR_*",
-      "namespace": "ERR",
-      "status": "inline",
-      "names": [],
-      "severities": [],
-      "defs": 0,
-      "emits": 1,
-      "tests": 0,
-      "docs": 0
-    },
-    {
-      "code": "ERR_INVALID_PARAMS",
-      "family": "ERR_*",
-      "namespace": "ERR",
-      "status": "inline",
-      "names": [],
-      "severities": [],
-      "defs": 0,
-      "emits": 1,
-      "tests": 1,
-      "docs": 0
-    },
-    {
-      "code": "ERR_INVALID_SEED",
-      "family": "ERR_*",
-      "namespace": "ERR",
-      "status": "inline",
-      "names": [],
-      "severities": [],
-      "defs": 0,
-      "emits": 1,
-      "tests": 1,
-      "docs": 0
-    },
-    {
       "code": "ERR_ITERATIONS_EXCEEDED",
       "family": "ERR_*",
       "namespace": "ERR",
@@ -695,30 +647,6 @@
       "docs": 0
     },
     {
-      "code": "ERR_LIMIT",
-      "family": "ERR_*",
-      "namespace": "ERR",
-      "status": "ref",
-      "names": [],
-      "severities": [],
-      "defs": 0,
-      "emits": 0,
-      "tests": 0,
-      "docs": 0
-    },
-    {
-      "code": "ERR_MEMORY_EXCEEDED",
-      "family": "ERR_*",
-      "namespace": "ERR",
-      "status": "inline",
-      "names": [],
-      "severities": [],
-      "defs": 0,
-      "emits": 1,
-      "tests": 0,
-      "docs": 0
-    },
-    {
       "code": "ERR_MISSING_CORRELATION_ID",
       "family": "ERR_*",
       "namespace": "ERR",
@@ -729,6 +657,18 @@
       "emits": 0,
       "tests": 0,
       "docs": 0
+    },
+    {
+      "code": "ERR_MODULE_NOT_FOUND",
+      "family": "ERR_*",
+      "namespace": "ERR",
+      "status": "phantom",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
     },
     {
       "code": "ERR_NEGATIVE",
@@ -827,18 +767,6 @@
       "docs": 0
     },
     {
-      "code": "ERR_ORBITALS_EXCEEDED",
-      "family": "ERR_*",
-      "namespace": "ERR",
-      "status": "inline",
-      "names": [],
-      "severities": [],
-      "defs": 0,
-      "emits": 1,
-      "tests": 1,
-      "docs": 0
-    },
-    {
       "code": "ERR_PAYLOAD_EXCEEDS_DWI_CEILING",
       "family": "ERR_*",
       "namespace": "ERR",
@@ -871,18 +799,6 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 1,
-      "docs": 0
-    },
-    {
-      "code": "ERR_QUANTUM_PQ_REQUIRED",
-      "family": "ERR_*",
-      "namespace": "ERR",
-      "status": "ref",
-      "names": [],
-      "severities": [],
-      "defs": 0,
-      "emits": 0,
       "tests": 1,
       "docs": 0
     },
@@ -1043,18 +959,6 @@
       "docs": 0
     },
     {
-      "code": "ERR_SHOTS_EXCEEDED",
-      "family": "ERR_*",
-      "namespace": "ERR",
-      "status": "inline",
-      "names": [],
-      "severities": [],
-      "defs": 0,
-      "emits": 1,
-      "tests": 1,
-      "docs": 0
-    },
-    {
       "code": "ERR_SIZE_EXCEEDED",
       "family": "ERR_*",
       "namespace": "ERR",
@@ -1076,18 +980,6 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 0
-    },
-    {
-      "code": "ERR_SUBSPACE_TOO_LARGE",
-      "family": "ERR_*",
-      "namespace": "ERR",
-      "status": "inline",
-      "names": [],
-      "severities": [],
-      "defs": 0,
-      "emits": 1,
-      "tests": 2,
       "docs": 0
     },
     {
@@ -1136,30 +1028,6 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 0
-    },
-    {
-      "code": "ERR_TROTTER_STEPS_EXCEEDED",
-      "family": "ERR_*",
-      "namespace": "ERR",
-      "status": "inline",
-      "names": [],
-      "severities": [],
-      "defs": 0,
-      "emits": 1,
-      "tests": 1,
-      "docs": 0
-    },
-    {
-      "code": "ERR_UNKNOWN_OP",
-      "family": "ERR_*",
-      "namespace": "ERR",
-      "status": "inline",
-      "names": [],
-      "severities": [],
-      "defs": 0,
-      "emits": 1,
-      "tests": 1,
       "docs": 0
     },
     {
@@ -1305,8 +1173,8 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 16,
-      "docs": 0
+      "tests": 22,
+      "docs": 5
     },
     {
       "code": "FUNGI-ACCESS-002",
@@ -2298,6 +2166,32 @@
       "docs": 0
     },
     {
+      "code": "FUNGI-CHECK-001",
+      "family": "CHECK",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 6,
+      "docs": 2
+    },
+    {
+      "code": "FUNGI-CHECK-002",
+      "family": "CHECK",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [
+        "CHECK_SUBJECT_NOT_VERDICT"
+      ],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 5,
+      "docs": 2
+    },
+    {
       "code": "FUNGI-CLI-REDACT-001",
       "family": "CLI",
       "namespace": "FUNGI",
@@ -3152,8 +3046,8 @@
       ],
       "defs": 0,
       "emits": 2,
-      "tests": 57,
-      "docs": 13
+      "tests": 63,
+      "docs": 18
     },
     {
       "code": "FUNGI-EFFECT-005",
@@ -3335,9 +3229,9 @@
       "names": [],
       "severities": [],
       "defs": 0,
-      "emits": 1,
-      "tests": 4,
-      "docs": 0
+      "emits": 2,
+      "tests": 7,
+      "docs": 1
     },
     {
       "code": "FUNGI-FAULT-003",
@@ -3493,7 +3387,7 @@
       ],
       "defs": 1,
       "emits": 0,
-      "tests": 2,
+      "tests": 8,
       "docs": 1
     },
     {
@@ -3510,7 +3404,7 @@
       "defs": 1,
       "emits": 0,
       "tests": 2,
-      "docs": 4
+      "docs": 5
     },
     {
       "code": "FUNGI-GEN-TEST-005",
@@ -4340,6 +4234,48 @@
       "docs": 0
     },
     {
+      "code": "FUNGI-K3-001",
+      "family": "K3",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [
+        "MIXED_VERDICT_BOOL_OPERANDS"
+      ],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 5,
+      "docs": 3
+    },
+    {
+      "code": "FUNGI-K3-002",
+      "family": "K3",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [
+        "VERDICT_UNARY_MISMATCH"
+      ],
+      "severities": [],
+      "defs": 0,
+      "emits": 2,
+      "tests": 4,
+      "docs": 1
+    },
+    {
+      "code": "FUNGI-K3-003",
+      "family": "K3",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [
+        "FOLD_OPERAND_NOT_VERDICT"
+      ],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 2,
+      "docs": 1
+    },
+    {
       "code": "FUNGI-LEX-001",
       "family": "LEX",
       "namespace": "FUNGI",
@@ -4744,8 +4680,8 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 0,
-      "docs": 3
+      "tests": 4,
+      "docs": 8
     },
     {
       "code": "FUNGI-MEMORY-001",
@@ -6163,6 +6099,44 @@
       "docs": 1
     },
     {
+      "code": "FUNGI-PREFILTER-001",
+      "family": "PREFILTER",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 6,
+      "docs": 1
+    },
+    {
+      "code": "FUNGI-PREFILTER-002",
+      "family": "PREFILTER",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [
+        "PREFILTER_SUBJECT_NOT_VERDICT"
+      ],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 5,
+      "docs": 1
+    },
+    {
+      "code": "FUNGI-PREFILTER-003",
+      "family": "PREFILTER",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 4,
+      "docs": 1
+    },
+    {
       "code": "FUNGI-PRIVACY-001",
       "family": "PRIVACY",
       "namespace": "FUNGI",
@@ -6191,7 +6165,7 @@
       "defs": 1,
       "emits": 3,
       "tests": 43,
-      "docs": 14
+      "docs": 17
     },
     {
       "code": "FUNGI-PRIVACY-003",
@@ -6887,7 +6861,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 10,
-      "docs": 0
+      "docs": 3
     },
     {
       "code": "FUNGI-SECRET-999",
@@ -7185,7 +7159,7 @@
       "defs": 1,
       "emits": 1,
       "tests": 25,
-      "docs": 3
+      "docs": 6
     },
     {
       "code": "FUNGI-SUBSTRATE-002",
@@ -7320,7 +7294,7 @@
       ],
       "defs": 1,
       "emits": 0,
-      "tests": 1,
+      "tests": 3,
       "docs": 6
     },
     {
@@ -7382,6 +7356,62 @@
       "emits": 0,
       "tests": 0,
       "docs": 3
+    },
+    {
+      "code": "FUNGI-SYNTAX-011",
+      "family": "SYNTAX",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 10,
+      "docs": 3
+    },
+    {
+      "code": "FUNGI-SYNTAX-013",
+      "family": "SYNTAX",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 3,
+      "docs": 2
+    },
+    {
+      "code": "FUNGI-SYNTAX-014",
+      "family": "SYNTAX",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [
+        "VERSION_HEADER_INVALID"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 0,
+      "emits": 2,
+      "tests": 6,
+      "docs": 2
+    },
+    {
+      "code": "FUNGI-SYNTAX-015",
+      "family": "SYNTAX",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [
+        "VERSION_HEADER_MISSING"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 0,
+      "emits": 1,
+      "tests": 8,
+      "docs": 0
     },
     {
       "code": "FUNGI-SYNTAX-LEGACY-001",
@@ -7651,7 +7681,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 26,
-      "docs": 0
+      "docs": 1
     },
     {
       "code": "FUNGI-TRACE-001",
@@ -7825,7 +7855,7 @@
       ],
       "severities": [],
       "defs": 0,
-      "emits": 11,
+      "emits": 12,
       "tests": 129,
       "docs": 14
     },
@@ -8157,6 +8187,20 @@
       "emits": 3,
       "tests": 24,
       "docs": 3
+    },
+    {
+      "code": "FUNGI-TYPE-024",
+      "family": "TYPE",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [
+        "INT_LITERAL_I32_OVERFLOW"
+      ],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 3,
+      "docs": 1
     },
     {
       "code": "FUNGI-TYPE-030",

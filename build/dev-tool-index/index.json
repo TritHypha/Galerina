@@ -580,8 +580,8 @@
       "description": "Syntax-migration corpus scanner: walks every .fungi/.gate file and reports old-form usage, @version headers, m",
       "tests": null,
       "hasTestScript": true,
-      "border": "check",
-      "files": 4,
+      "border": "PASS",
+      "files": 5,
       "deps": [
         "@galerina/core-compiler"
       ]

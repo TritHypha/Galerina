@@ -89,7 +89,7 @@
 | `galerina-devtools-benchmarks` | devtools | — | PASS | 0 | Runtime comparison benchmarks: Python · Node.js · C++ · Rust · Galerina (governed + manifest) |
 | `galerina-devtools-context` | devtools | 35 | PASS | 1 | Context Receipt generator for Galerina: produces minimal AI-consumable structural summaries from .fungi source |
 | `galerina-devtools-flowgraph` | devtools | 36 | PASS | 1 | Flow graph analysis for Galerina — finds cycles, dead flows, authority escalation, PII leakage paths, and miss |
-| `galerina-devtools-fungi-scan` | devtools | — | check | 1 | Syntax-migration corpus scanner: walks every .fungi/.gate file and reports old-form usage, @version headers, m |
+| `galerina-devtools-fungi-scan` | devtools | — | PASS | 1 | Syntax-migration corpus scanner: walks every .fungi/.gate file and reports old-form usage, @version headers, m |
 | `galerina-devtools-graph-algorithms` | devtools | 95 | PASS | 0 | Internal graph data structures and algorithms for the Galerina compiler. Designed for future extraction to fun |
 | `galerina-devtools-graph-project` | devtools | 7 | PASS | 1 | Galerina project knowledge graph contracts for package, document, policy and report relationships. |
 | `galerina-devtools-intelligence` | devtools | 21 | PASS | 1 | Hybrid BM25 + structural code search for Galerina workspaces. Indexes flows by semantic tokens, effects, econo |

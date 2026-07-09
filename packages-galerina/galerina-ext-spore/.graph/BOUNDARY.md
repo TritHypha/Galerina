@@ -13,10 +13,10 @@
 |---|---|
 | Files | 6 |
 | Internal edges | 8 |
-| External dependencies | 3 |
+| External dependencies | 4 |
 | ├─ Node core | 1 |
 | ├─ Workspace (@galerina/*) | 0 |
-| └─ Third-party | 2 |
+| └─ Third-party | 3 |
 | Orphan files | 0 |
 
 ## External Dependencies (the Border)
@@ -28,8 +28,9 @@
 _none_
 
 ### Third-party
-- `@noble/ciphers`
-- `@noble/post-quantum`
+- `@noble/ciphers/aes.js`
+- `@noble/post-quantum/hybrid.js`
+- `@noble/post-quantum/ml-kem.js`
 
 ## Governance
 No boundary violations. All external imports are within the allowlist.
