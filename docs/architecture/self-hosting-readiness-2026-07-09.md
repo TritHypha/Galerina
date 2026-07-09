@@ -25,8 +25,9 @@ to delete `.ts`.
 2. **Incomplete `.fungi` → WASM lowering.** `audit-fungi-runtime.mjs` gates the self-hosted corpus on
    properties *"before they lower kernel → GIR → WASM"*: `?` error-prop does **not** lower (BK-3), a
    non-exhaustive `match` **traps** (RD-0240). Full `.fungi` runs on the `.ts` tree-walker; WASM is
-   tokenize-byte-parity + partial. And the self-hosted `runtime.fungi` does not yet pass `check` (a
-   `FUNGI-EFFECT-003` pure-flow/`secret.read` violation) — the corpus is in-progress.
+   tokenize-byte-parity + partial. ~~And the self-hosted `runtime.fungi` does not yet pass `check`~~
+   **RESOLVED 2026-07-09 (late):** the whole self-hosted corpus is now **8/8 `check`-clean** and
+   `audit-fungi-runtime` reports 0 findings — see the resolution note at the bottom of this doc.
 3. **The interpreter is `.ts`.** `.fungi` executes by being interpreted/hosted by the `.ts` runtime. "No `.ts`"
    is circular until the self-hosted compiler+runtime fully lowers to WASM **and** a non-`.ts` WASM host runs it.
 4. **Host-object interop floor.** `tri-pipe` is pure composition but *instantiates `.ts` runtime objects*
@@ -54,8 +55,10 @@ Run `node scripts/audit-selfhost-readiness.mjs` for the full per-package table +
 1. **Complete `.fungi` → WASM lowering** — `?` error-prop + non-exhaustive-`match` (the two `audit-fungi-runtime`
    floors) + the W5b `check`/`fault`/`prefilter` lowering (currently trap-fail-closed). Until this, no `.fungi`
    component runs as standalone WASM.
-2. **Green the self-hosted compiler corpus** — fix `runtime.fungi`'s `check` failure and get `src/self-hosted/*`
-   to pass `check` + lower, so the compiler can run on its own `.fungi`.
+2. **Green the self-hosted compiler corpus** — ✅ **`check`-clean 2026-07-09** (all 8 files;
+   `runtime.fungi`'s false positive cured by the compiler fix below, `effect-checker.fungi`'s
+   non-exhaustive `match` given its `_` arm). Remaining half: actually LOWER + run the compiler on
+   its own `.fungi` (gated on step 1).
 3. **Self-host the crypto substrate** (`#102-106` DSS.wasm / `#34` PQ-custody) — a WASM implementation of the
    hash/signature primitives so `tower-citizen`/`ext-spore` have a non-`.ts` floor to stand on.
 4. **Build the `.fungi`↔runtime consumption path** — so a compiled `.fungi` package can replace a `.ts` `dist/`
@@ -99,3 +102,14 @@ So the heuristic must stay; the discrimination must improve.
 This turns "the self-hosted corpus isn't clean" into a one-line, correctly-scoped, fail-open-aware bug — the
 kind of precise blocker that lets the owner sequence the fix safely rather than an AI loosening a security
 checker unattended.
+
+**RESOLUTION (2026-07-09, late — owner prioritised the self-hosting path):** the **compiler cure landed**,
+not the band-aid. Effect inference is now scope-aware at all four attribution sites (regex walks ×3 +
+`checkStdlibEffects`; also `inferDirectEffectsForFlow`): a local param/`let` that rebinds a stdlib module
+name is treated as DATA, while module ALIASES (`let env = Env`), unshadowed `Env.get`/`env.get`, the
+`\w+DB`-style convention receivers, and record-literal fields (which parse as `paramDecl` but bind nothing)
+all still flag — each direction pinned by a test (`tests/effect-checker.test.mjs`, "scope-aware
+stdlib-module shadowing"; suite 4,385/4,385). The fail-open concern was retired by **running** the governed
+tree-walker: `env.get(0)` on a local Array value-dispatches (returns the element, records **no** effect),
+so suppressing the static flag matches runtime truth. Corpus outcome: **8/8 `check`-clean**,
+`audit-fungi-runtime` 0 findings; `runtime.fungi` keeps its natural `env` name — no rename needed.

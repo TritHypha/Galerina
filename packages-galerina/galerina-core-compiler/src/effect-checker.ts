@@ -177,11 +177,78 @@ export function buildModuleAliasMap(flowNode: AstNode): ReadonlyMap<string, stri
   return resolved;
 }
 
+/**
+ * Scope-aware receiver shadowing (2026-07-09) — the C1 alias resolver's dual. A LOCAL binding that
+ * REUSES a stdlib module's name (`pure flow f(env: Array<Int>)`, `let env = [1, 2, 3]`) makes
+ * `env.get(0)` a call on the LOCAL VALUE, not the stdlib env module: the governed tree-walker
+ * value-dispatches (verified by running — a shadowed `env.get(0)` returns the array element and
+ * records NO effect), so attributing the module's effect (`secret.read`) to it is a false positive.
+ * This is the FUNGI-EFFECT-003 blocker on the self-hosted corpus, whose interpreter names its
+ * variable-environment Array `env` (runtime.fungi).
+ *
+ * FAIL-CLOSED boundaries (each pinned by a test in tests/effect-checker.test.mjs):
+ *  - Only names that ARE stdlib module names (STDLIB_MODULE_KIND) can ever be suppressed — the
+ *    convention patterns (`\w+DB.*`, `\w+Api.*`, ...) that DELIBERATELY match user/local receivers
+ *    (`usersDB.insert`) are untouched.
+ *  - A module ALIAS (`let env = Env`) is NOT a shadow — buildModuleAliasMap resolves it first and
+ *    the effect still fires through the resolved module name.
+ *  - Bindings are collected ONLY from flow/fn signature paramDecls and letDecls. Record-literal
+ *    fields ALSO parse as paramDecl nodes, but they bind nothing — collecting them would let
+ *    `let cfg = { env: 1 }` suppress a real unshadowed stdlib `env.get(...)` (a fail-open).
+ *  - Granularity is flow-wide, matching the C1 alias map: a flow that both locally binds `env`
+ *    AND calls the stdlib `env.get` unshadowed elsewhere resolves toward suppression. Accepted:
+ *    the capitalised `Env.get` house spelling is never suppressed by a lowercase local, and
+ *    binding a stdlib name while also calling that module in one flow is pathological.
+ */
+const BINDING_DECL_KINDS = new Set<string>(["flowDecl", "secureFlowDecl", "pureFlowDecl", "guardedFlowDecl", "fnDecl"]);
+
+export function collectLocalBindings(flowNode: AstNode): ReadonlySet<string> {
+  const names = new Set<string>();
+  function walk(node: AstNode): void {
+    if (BINDING_DECL_KINDS.has(node.kind)) {
+      for (const child of node.children ?? []) {
+        if (child.kind === "paramDecl" && typeof child.value === "string") {
+          // paramDecl.value is signature text "name: Type" (optionally modifier-prefixed);
+          // the bound name is the last identifier before the colon.
+          const beforeColon = child.value.split(":")[0] ?? "";
+          const name = beforeColon.trim().split(/\s+/).pop() ?? "";
+          if (name !== "") names.add(name);
+        }
+      }
+    }
+    if (node.kind === "letDecl" && node.value) names.add(node.value);
+    for (const child of node.children ?? []) walk(child);
+  }
+  walk(flowNode);
+  return names;
+}
+
+/** True when `raw` names a stdlib module but is locally REBOUND to data (param/let, not a module alias). */
+function isShadowedStdlibReceiver(
+  raw: string,
+  localBindings: ReadonlySet<string>,
+  aliasMap: ReadonlyMap<string, string>,
+): boolean {
+  return raw !== "" && localBindings.has(raw) && !aliasMap.has(raw) && getStdlibModuleKind(raw) !== undefined;
+}
+
+/**
+ * Leftmost identifier of a call/member chain (`env.items.get` → `env`). For a bare call the first
+ * child may be an argument identifier — harmless here, because every EFFECT_CALL_PATTERNS entry is
+ * dotted and a bare call's callText is a single token that can never match one anyway.
+ */
+function rootReceiverRaw(node: AstNode): string {
+  let cur = node.children?.[0];
+  while (cur !== undefined && cur.kind !== "identifier") cur = cur.children?.[0];
+  return cur?.kind === "identifier" ? (cur.value ?? "") : "";
+}
+
 export function inferDirectEffectsForFlow(
   flowNode: AstNode,
 ): readonly string[] {
   const effects = new Set<string>();
   const aliasMap = buildModuleAliasMap(flowNode);
+  const localBindings = collectLocalBindings(flowNode);
 
   function walk(node: AstNode): void {
     if (node.kind === "callExpr") {
@@ -190,7 +257,10 @@ export function inferDirectEffectsForFlow(
       const receiver = node.children?.[0];
       const rawReceiver = receiver?.kind === "identifier" ? (receiver.value ?? "") : "";
       // C1: resolve a module alias (`let x = AuditLog; x.write()` → `AuditLog.write`) before matching.
-      const receiverName = aliasMap.get(rawReceiver) ?? rawReceiver;
+      // Shadow-aware: a local rebinding of a stdlib module name is DATA — suppress module attribution.
+      const receiverName = isShadowedStdlibReceiver(rawReceiver, localBindings, aliasMap)
+        ? ""
+        : (aliasMap.get(rawReceiver) ?? rawReceiver);
       const fullName = receiverName !== "" ? `${receiverName}.${methodName}` : methodName;
 
       for (const effect of inferEffectsForOperation(fullName)) {
@@ -980,6 +1050,7 @@ export function checkStdlibEffects(
   const declared = new Set(flow.declaredEffects);
   const severity: "error" | "warning" = mode === "production" ? "error" : "warning";
   const aliasMap = buildModuleAliasMap(flowNode); // C1: resolve `let x = Module` aliases
+  const localBindings = collectLocalBindings(flowNode); // shadow-aware receiver resolution
 
   function walk(node: AstNode): void {
     if (node.kind === "callExpr") {
@@ -990,7 +1061,12 @@ export function checkStdlibEffects(
       // C1: resolve a module alias (`let x = AuditLog; x.someMethod()` → AuditLog) so an UNREGISTERED
       // method on an aliased effectful module still requires the module's broad effect (#153 deny-by-
       // default). The alias resolves a lowercase `x` to the capitalised module name the gate expects.
-      const receiverName = aliasMap.get(rawReceiver) ?? rawReceiver;
+      // Shadow-aware: a local rebinding of a stdlib module name is DATA — clearing the receiver
+      // suppresses the module-keyed fullName lookup AND the broad-effect gate (empty receiver returns
+      // undefined there); the bare methodName fallback below still runs unchanged.
+      const receiverName = isShadowedStdlibReceiver(rawReceiver, localBindings, aliasMap)
+        ? ""
+        : (aliasMap.get(rawReceiver) ?? rawReceiver);
       const fullName =
         receiverName !== "" ? `${receiverName}.${methodName}` : methodName;
 
@@ -1207,17 +1283,20 @@ function findCallsToEffectfulFlows(
 function inferEffectsFromNode(node: AstNode): Set<string> {
   const effects = new Set<string>();
   const aliasMap = buildModuleAliasMap(node); // C1: resolve `let x = Module` aliases before matching
+  const localBindings = collectLocalBindings(node); // shadow-aware: local rebind of a module name is data
 
   function walk(n: AstNode): void {
     // Task 3: skip fnDecl bodies — their effects are handled separately via
     // collectFnHelperEffects / validateInterFlowPropagation to emit EFFECT-002
     if (n.kind === "fnDecl") return;
     if (n.kind === "callExpr" || n.kind === "memberExpr") {
-      const callText = buildCallText(n, aliasMap);
-      for (const [pattern, effect] of EFFECT_CALL_PATTERNS) {
-        if (pattern.test(callText)) {
-          effects.add(effect);
-          break;
+      if (!isShadowedStdlibReceiver(rootReceiverRaw(n), localBindings, aliasMap)) {
+        const callText = buildCallText(n, aliasMap);
+        for (const [pattern, effect] of EFFECT_CALL_PATTERNS) {
+          if (pattern.test(callText)) {
+            effects.add(effect);
+            break;
+          }
         }
       }
     }
@@ -1238,18 +1317,21 @@ function inferEffectsFromNode(node: AstNode): Set<string> {
 function inferEffectCallLocations(node: AstNode): Map<string, SourceLocation> {
   const locations = new Map<string, SourceLocation>();
   const aliasMap = buildModuleAliasMap(node); // C1: alias-aware, consistent with inferEffectsFromNode
+  const localBindings = collectLocalBindings(node); // shadow-aware, consistent with inferEffectsFromNode
 
   function walk(n: AstNode): void {
     // Skip fnDecl bodies — consistent with inferEffectsFromNode
     if (n.kind === "fnDecl") return;
     if (n.kind === "callExpr" || n.kind === "memberExpr") {
-      const callText = buildCallText(n, aliasMap);
-      for (const [pattern, effect] of EFFECT_CALL_PATTERNS) {
-        if (pattern.test(callText)) {
-          if (!locations.has(effect) && n.location !== undefined) {
-            locations.set(effect, n.location);
+      if (!isShadowedStdlibReceiver(rootReceiverRaw(n), localBindings, aliasMap)) {
+        const callText = buildCallText(n, aliasMap);
+        for (const [pattern, effect] of EFFECT_CALL_PATTERNS) {
+          if (pattern.test(callText)) {
+            if (!locations.has(effect) && n.location !== undefined) {
+              locations.set(effect, n.location);
+            }
+            break;
           }
-          break;
         }
       }
     }
@@ -1271,6 +1353,11 @@ function inferEffectCallLocations(node: AstNode): Map<string, SourceLocation> {
  */
 function collectFnHelperEffects(flowNode: AstNode): Map<string, SourceLocation | undefined> {
   const effects = new Map<string, SourceLocation | undefined>();
+  // Shadow-aware, consistent with inferEffectsFromNode. Collected flow-wide (fn helper paramDecls
+  // are fnDecl children, so BINDING_DECL_KINDS picks them up); no aliasMap here — this walk never
+  // alias-resolved (buildCallText is called bare), so an empty map keeps behaviour identical.
+  const localBindings = collectLocalBindings(flowNode);
+  const noAliases: ReadonlyMap<string, string> = new Map();
 
   function walkForFns(n: AstNode): void {
     if (n.kind === "fnDecl") {
@@ -1287,13 +1374,15 @@ function collectFnHelperEffects(flowNode: AstNode): Map<string, SourceLocation |
 
   function walkForEffects(n: AstNode): void {
     if (n.kind === "callExpr" || n.kind === "memberExpr") {
-      const callText = buildCallText(n);
-      for (const [pattern, effect] of EFFECT_CALL_PATTERNS) {
-        if (pattern.test(callText)) {
-          if (!effects.has(effect)) {
-            effects.set(effect, n.location);
+      if (!isShadowedStdlibReceiver(rootReceiverRaw(n), localBindings, noAliases)) {
+        const callText = buildCallText(n);
+        for (const [pattern, effect] of EFFECT_CALL_PATTERNS) {
+          if (pattern.test(callText)) {
+            if (!effects.has(effect)) {
+              effects.set(effect, n.location);
+            }
+            break;
           }
-          break;
         }
       }
     }

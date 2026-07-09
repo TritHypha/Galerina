@@ -231,7 +231,7 @@ contract {
     "readFile" => { eff = "storage.read" }
     "writeFile" => { eff = "storage.write" }
     "auditWrite" => { eff = "audit.write" }
-    else => {}
+    _ => {}
   }
   return eff
 }
