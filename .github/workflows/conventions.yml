@@ -99,6 +99,24 @@ jobs:
           node scripts/audit-papers-index.mjs --self-test
           node scripts/audit-papers-index.mjs
 
+  # route-overlap (build-free, ENFORCING, DP-RD-0285): no two same-method routes in ONE .fungi file may have
+  # overlapping match sets. Galerina refuses ambiguous HTTP dispatch as a governed HOLD instead of the
+  # first-match-wins / precedence rules mainstream routers ship (route-confusion: path-normalisation
+  # shadowing, method-override bypass). Static overlap analysis over the closed {param}=([^/]+) pattern
+  # language of route-registry.ts, scoped per-file (one parsed program = one registry) so it stays SOUND.
+  # The --self-test proves the overlap detector fires before the enforcing scan.
+  route-overlap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Route-overlap ambiguity guard (self-test, then enforcing)
+        run: |
+          node scripts/audit-route-overlap.mjs --self-test
+          node scripts/audit-route-overlap.mjs
+
   # A green, build-free, zero-baseline OPEN-CORE invariant (0056-ci-lint): no NON-Apache license
   # declaration may contaminate the Apache-2.0 package tree (PD-spec↛Apache), and no core package may
   # import an enterprise-tier package (core↛enterprise, via governance/tier-manifest.json). The lint's
