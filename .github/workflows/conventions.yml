@@ -366,5 +366,18 @@ jobs:
     outputs:
       has_kb_token: ${{ steps.probe.outputs.has }}
     steps:
+      # Enable the KB doc-drift gates ONLY when the token can ACTUALLY read the private KB — not merely when a
+      # secret is set. A present-but-wrong-scoped token 404s the checkout and turns the 2 gates RED on every
+      # run; verifying read access here makes them SKIP cleanly (with a clear message) instead — zero-trust:
+      # verify the credential works, don't trust that it exists.
       - id: probe
-        run: echo "has=${{ secrets.ZTF_KB_READ_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+        env:
+          KB_TOKEN: ${{ secrets.ZTF_KB_READ_TOKEN }}
+        run: |
+          if [ -z "$KB_TOKEN" ]; then echo "has=false" >> "$GITHUB_OUTPUT"; echo "no ZTF_KB_READ_TOKEN — KB gates skip"; exit 0; fi
+          code=$(curl -sS -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $KB_TOKEN" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/TritHypha/ZTF-Knowledge-Bases" || echo 000)
+          if [ "$code" = "200" ]; then
+            echo "has=true" >> "$GITHUB_OUTPUT"; echo "KB readable — doc-drift gates ENFORCE"
+          else
+            echo "has=false" >> "$GITHUB_OUTPUT"; echo "ZTF_KB_READ_TOKEN present but cannot read TritHypha/ZTF-Knowledge-Bases (HTTP $code) — gates SKIP; widen the token to Contents:Read on that repo to enforce"
+          fi
