@@ -42,14 +42,28 @@ GALERINA_SIGNING_MLDSA_PRIVATE_KEY_B64=<ml-dsa-65 private, base64>
 2. **Confirm `.env.galerina-signing` is gitignored** (it is, repo root `.gitignore`) — verify with
    `git check-ignore .env.galerina-signing`. Never disable that ignore.
 3. **Mint the key:**  `galerina keygen --hybrid`
-4. **Custody the private key:** move `.env.galerina-signing` off the host into offline secret
-   storage (hardware token / encrypted offline media / a secrets manager). Do **not** leave it in
-   the working tree longer than the ceremony. On Windows the `0600` is best-effort — additionally
-   restrict the NTFS ACL to your user, or store only the two `*_PRIVATE_KEY_B64` values in your
-   secret manager and shred the file.
-5. **Publish the public half:** commit `governance/signing-key-<id>.pub.pem` and
-   `governance/signing-key-<id>.mldsa.pub.b64`. Record the **key fingerprint / key-id** in the
-   change description so verifiers can pin it.
+4. **Custody the private key — COPY first, destroy second (in that order):** the private key has
+   no backup. **Copy** `.env.galerina-signing` into offline secret storage (hardware token /
+   encrypted offline media / a secrets manager), **verify the copy is readable**, and only THEN
+   shred the working-tree file. A destroy-only step (`Remove-Item` + `cipher /w`) **without a
+   prior copy loses the key permanently** — you would have to regenerate a new `<id>` and re-pin.
+   On Windows the `0600` is best-effort — restrict the NTFS ACL to your user
+   (`icacls .env.galerina-signing /inheritance:r /grant:r "$($env:USERNAME):F"`) on **both** the
+   working copy and the custody copy, and prefer an encrypted/offline volume over a plain folder.
+5. **Publish BOTH public halves:** `governance/signing-key-<id>.pub.pem` **and**
+   `governance/signing-key-<id>.mldsa.pub.b64` are the committed trust anchor.
+   The `.pub.pem` is caught by the dev-pubkey ignore in `.gitignore`, so **first un-ignore this
+   anchor** by adding a negation line next to the existing ones:
+   `!**/governance/signing-key-<id>.pub.pem` (the `.mldsa.pub.b64` is never ignored). Then:
+   ```
+   git add governance/signing-key-<id>.pub.pem governance/signing-key-<id>.mldsa.pub.b64 .gitignore
+   git commit -m "governance: signing key <id> (Ed25519 + ML-DSA-65) — public anchor
+   pin pub.pem sha256:<sha256 of the .pub.pem>
+   pin mldsa  sha256:<sha256 of the .mldsa.pub.b64>"
+   ```
+   Record the **key-id and both SHA-256 pins** so verifiers pin the bytes, not just the id.
+   *(Quick path without editing `.gitignore`: `git add -f` the two files — but the negation line
+   is preferred so the anchor stays committable on later touches.)*
 
 ## 3. Signing with the key
 
