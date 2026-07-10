@@ -2053,6 +2053,10 @@ class TypeChecker {
     for (const arg of args) {
       const trimmed = arg.trim();
       if (trimmed === "" || /^\d/.test(trimmed)) continue; // skip numeric dimension args
+      // Skip string-literal args: a quoted arg is a nominal TAG, not a type name —
+      // e.g. the second parameter of Brand<T, "Name"> is the brand tag, never a
+      // type reference. Recursing into it produced a false FUNGI-TYPE-001 (#17).
+      if (/^["']/.test(trimmed)) continue;
       // Pass parent location; source locations for nested args are Phase 7
       this.checkTypeRef(trimmed, location);
     }
