@@ -1,4 +1,4 @@
-# Galerina KB index (848 docs)
+# Galerina KB index (850 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -2367,6 +2367,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #24
 - terms: default, already, tier, auth, safe, secure, contract, exists, opt-in, additions, nothing, secure-by-default, developer, posture
 
+## RD-0323 — XML · XSS · YAML (and similar formats) × Galerina / TritMesh, incl. QL save/retrieve of XML/JSON · 2026-07-10
+`../ZTF-Knowledge-Bases/galerina-rd-0323-xml-xss-yaml-and-cross-format-data-safety.md`
+- terms: xml, json, yaml, retrieve, xss, galerina, safe, tritmesh, save, spec, round-trip, taint, gate, gap
+
 ## R&D — Phase 34B boundary param auto-taint: verified state + build-ready spec
 `../ZTF-Knowledge-Bases/galerina-rd-34b-paramtaint-buildspec-2026-06-24.md`
 - codes: FUNGI-VALUESTATE-003, FUNGI-VALUESTATE-008
@@ -3236,7 +3240,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 
 ## HANDOVER — everything after RD-0320 · 2026-07-10
 `../ZTF-Knowledge-Bases/HANDOVER-post-RD-0320-2026-07-10.md`
-- terms: handover, security, directive-2, docs, doc, examples, rd-0321, rd-0322, already, rd-0320, contract, api, fix, after
+- terms: docs, handover, security, directive-2, doc, xml, fix, examples, rd-0321, rd-0322, yaml, already, rd-0320, contract
 
 ## HANDOVER — RD-0302 KEM-once/DEM-stream streaming: completion plan + schematics · 2026-07-09
 `../ZTF-Knowledge-Bases/HANDOVER-RD-0302-streaming-completion-2026-07-09.md`
@@ -3515,6 +3519,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-TAINT-001, FUNGI-NET-001, FUNGI-EFFECT-004, FUNGI-SUBSTRATE-001
 - tasks: #149, #14, #13, #15, #16, #10
 - terms: real, galerina, api, lane, spore, gate, never, streaming, scope, gap, build, rd-0302, honest, code
+
+## PROMPT — main session: branch rename (tmf→spore) + SECURITY.md contact · 2026-07-10
+`../ZTF-Knowledge-Bases/PROMPT-main-session-branch-rename-and-security-contact-2026-07-10.md`
+- terms: security, branch, action, contact, rename, owner, tmf, main, refactor, spore, git, project, email, session
 
 ## PROMPT — main session: build the by-construction conformance scanner (extend `@galerina/devtools-security`) · 2026-07-09
 `../ZTF-Knowledge-Bases/PROMPT-main-session-build-by-construction-conformance-scanner-2026-07-09.md`

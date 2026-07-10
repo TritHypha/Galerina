@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 848,
+  "docCount": 850,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -26942,6 +26942,48 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/galerina-rd-0323-xml-xss-yaml-and-cross-format-data-safety.md",
+      "title": "RD-0323 — XML · XSS · YAML (and similar formats) × Galerina / TritMesh, incl. QL save/retrieve of XML/JSON · 2026-07-10",
+      "headings": [
+        "1. Per-format / per-vector coverage",
+        "2. The QL (TritMeshQL / `.hypha`) save/retrieve of XML/JSON \"without issues\"",
+        "3. TritMesh angle",
+        "4. Photonic / tri-logic",
+        "5. Findings + recommendations",
+        "6. Honest verdict"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "xml",
+        "json",
+        "yaml",
+        "retrieve",
+        "xss",
+        "galerina",
+        "safe",
+        "tritmesh",
+        "save",
+        "spec",
+        "round-trip",
+        "taint",
+        "gate",
+        "gap",
+        "built",
+        "tritmeshql",
+        "csv",
+        "input",
+        "must",
+        "similar",
+        "formats",
+        "coverage",
+        "docs",
+        "covered",
+        "hypha"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/galerina-rd-34b-paramtaint-buildspec-2026-06-24.md",
       "title": "R&D — Phase 34B boundary param auto-taint: verified state + build-ready spec",
       "headings": [
@@ -28449,17 +28491,17 @@
         "build",
         "spore",
         "verdict",
-        "audit",
         "photonic",
+        "audit",
         "fail-closed",
         "proof",
         "green",
         "security",
         "fix",
+        "gap",
         "owner-gated",
         "runtime",
-        "gap",
-        "already"
+        "tritmesh"
       ]
     },
     {
@@ -36402,6 +36444,7 @@
         "1. Directive-2 — docs/examples/governance/security/tests corrections",
         "2. RD-0321 — capability coverage-map",
         "3. RD-0322 — contract secure-defaults & dev ergonomics",
+        "3b. RD-0323 — XML / XSS / YAML + cross-format data safety",
         "4. Tooling-attack-surface observation (security-relevant)",
         "5. New actionable-for-main items (not already in the super handover's fix table)",
         "6. Queue state"
@@ -36410,31 +36453,31 @@
       "tasks": [],
       "xrefs": [],
       "topTerms": [
+        "docs",
         "handover",
         "security",
         "directive-2",
-        "docs",
         "doc",
+        "xml",
+        "fix",
         "examples",
         "rd-0321",
         "rd-0322",
+        "yaml",
         "already",
         "rd-0320",
         "contract",
         "api",
-        "fix",
+        "xss",
         "after",
+        "galerina",
         "observation",
         "tests",
+        "real",
         "dev",
         "super",
         "everything",
-        "galerina",
-        "corrections",
-        "governance",
-        "capability",
-        "coverage-map",
-        "tooling-attack-surface"
+        "corrections"
       ]
     },
     {
@@ -39837,6 +39880,45 @@
         "already",
         "owner",
         "apifunctions"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/PROMPT-main-session-branch-rename-and-security-contact-2026-07-10.md",
+      "title": "PROMPT — main session: branch rename (tmf→spore) + SECURITY.md contact · 2026-07-10",
+      "headings": [
+        "Action 1 — rename the working branch to drop the retired \"tmf\" brand",
+        "Action 2 — set the SECURITY.md security contact (disclosure intake is broken now)",
+        "Action 3 — purge the owner's personal account email from the project (privacy)"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "security",
+        "branch",
+        "action",
+        "contact",
+        "rename",
+        "owner",
+        "tmf",
+        "main",
+        "refactor",
+        "spore",
+        "git",
+        "project",
+        "email",
+        "session",
+        "name",
+        "personal",
+        "account",
+        "working",
+        "retired",
+        "brand",
+        "tmf-format-to-spore",
+        "origin",
+        "docs",
+        "broken",
+        "set"
       ]
     },
     {
