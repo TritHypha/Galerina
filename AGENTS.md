@@ -22,12 +22,33 @@ them BEFORE any raw grep or file-crawl:
 
 Raw `grep` is the LAST resort, for literal-string sweeps the graph does not
 model (absolute-path leaks, count-claim strings). Subagent/worker prompts must
-carry this protocol. After a commit that adds or moves packages, refresh the
-MCP index (`index_repository`, mode `moderate`) so the next agent queries
-current truth — `index_status`'s `head_sha` mirrors the repo, NOT the index
-build point, so probe a new symbol when in doubt. If the lookup you need is
-missing: UPDATE or BUILD a dev tool (house pattern, committed) instead of
-grepping around the gap.
+carry this protocol. If the lookup you need is missing: UPDATE or BUILD a dev
+tool (house pattern, committed) instead of grepping around the gap.
+
+### Post-commit index refresh (after adding/moving packages or landing code)
+
+Refresh the MCP index AND verify the refresh committed — never trust
+`status: "indexed"` alone on servers older than the 2026-07-10 dump-swap fix:
+
+1. Run `index_repository` (repo_path = this repo, mode `moderate`).
+2. In the response, check all three: `status` is `"indexed"`; `nodes` is close
+   to `expected_nodes` (a large shortfall = files extracted but not
+   committed); `indexed_head_sha` equals the commit you just made.
+3. Or ask `index_status`: `indexed_head_sha` is the BUILD POINT of the graph,
+   `git.head_sha` is the repo's current HEAD (always fresh, useless alone),
+   and `stale: false` confirms they match. `indexed_at` timestamps the build.
+4. Belt-and-braces: `search_graph` for one symbol introduced by the commit.
+
+Multiple concurrent agent sessions are safe: when sibling server processes
+hold the graph DB open, the server swaps content through SQLite/WAL instead
+of replacing the file. If the response says `status: "error"`, the previous
+graph is intact and no bookkeeping advanced — re-run after checking the
+server log; do NOT keep working against the stale graph as if it were fresh.
+Known failure mode on pre-fix servers: a reindex under concurrent sessions
+reports `"indexed"` while committing nothing, then freezes the index
+permanently (hash bookkeeping outruns the graph). If `search_graph` cannot
+find a symbol that `git ls-files` + grep prove exists, that freeze is the
+cause: upgrade the server, then reindex.
 
 ## Project Type
 
@@ -55,7 +76,7 @@ intent → governed execution plan → coordinated compute → audit proof
 | 6 | IR (GIR) + Target Planner + WAT emitter | Complete (Stage-A) |
 
 > **Stage-A status (2026-07-10):** the full pipeline lexer→parser→type/effect/value-state→governance-verifier→GIR→WAT
-> is shipped and green (`galerina-core-compiler` at 4,413; whole suite 86/86 · 6,673 tests · 0 fail on a clean checkout). The remaining
+> is shipped and green (`galerina-core-compiler` at 4,413; whole suite 92/92 · 6,804 tests · 0 fail on a clean checkout). The remaining
 > frontier is **Stage-B self-hosting WASM byte-parity** (only `tokenize` reaches it today) and the **real
 > `DSS.wasm`** Wasmtime runtime (#102–106, still a stub). See `docs/Knowledge-Bases/galerina-roadmap-and-percent-audit-2026-06-23.md`.
 
