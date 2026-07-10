@@ -1,0 +1,40 @@
+# Dockerfile.dockerignore — default-deny build context for the root production Dockerfile.
+#
+# BuildKit sidecar form ("<Dockerfile-name>.dockerignore") on purpose: it scopes ONLY to the
+# root Dockerfile, so builds of the separate CLI tooling image (scripts/Dockerfile.galerina,
+# which COPYes build/ and dist/ trees this file excludes) are untouched.
+#
+# Zero-trust shape: exclude EVERYTHING, then re-include exactly the paths the Dockerfile
+# COPYes. Anything new must be allowlisted here on purpose — a stray file at the repo root
+# (e.g. .env.galerina-signing, live on dev machines) can never ride into a layer by default.
+*
+!packages-galerina
+!scripts
+!governance
+!version.json
+!package.json
+!package-lock.json
+!LICENSE
+!THIRD-PARTY-NOTICES.md
+
+# Inside the re-included trees, re-exclude what must never reach the daemon:
+# host-platform installs (wrong OS, rebuilt in-image from lockfiles) …
+**/node_modules
+# … secret-shaped files — a real .env.galerina-signing has been observed INSIDE
+# packages-galerina on dev machines; the Dockerfile's in-build gate is the second layer
+# for builders that silently ignore this sidecar file (legacy, pre-BuildKit) …
+**/.env*
+**/*.signing
+**/*.key
+**/*private*.pem
+# … per-machine caches/scratch that would poison determinism or leak local layout …
+**/.codebase-memory
+**/graph.db.zst
+**/.fungi-cache
+**/*.probe.mjs
+# … and stale host-built TypeScript output: dist/ is compiled in-image from source so the
+# image never trusts a dev machine's artifacts. The one exception is the app's COMMITTED,
+# SIGNED wasm package (nested one level deeper, so this depth-2 pattern does not match it:
+# packages-galerina/galerina-framework-example-app/packages/greeting/dist survives, and the
+# in-build fuse gate verifies it before the image is accepted).
+packages-galerina/*/dist
