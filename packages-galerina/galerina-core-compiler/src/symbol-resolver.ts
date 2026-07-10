@@ -596,8 +596,15 @@ class SymbolResolver {
 }
 
 function isReceiverCall(node: AstNode): boolean {
-  const first = node.children?.[0];
-  return first?.kind === "identifier" || first?.kind === "memberExpr" || first?.kind === "callExpr";
+  // The parser marks every `receiver.method(args)` callExpr with callStyle: "method"
+  // (children[0] = the receiver expression) — parser.ts §parsePostfix. Use that marker,
+  // not a receiver-kind heuristic: the old kind list (identifier|memberExpr|callExpr)
+  // BOTH false-flagged method calls on any other receiver shape — `(pos + 1).toString()`
+  // raised FUNGI-NAME-001 on `toString` (check↔build divergence, found building the
+  // self-hosted lexer) — AND over-suppressed bare calls whose first ARGUMENT happened
+  // to be an identifier (`foo(bar)` never NAME-checked `foo`). The marker is exact in
+  // both directions; bare-call targets are now always checked.
+  return node.callStyle === "method";
 }
 
 function parseParamName(value: string): string {

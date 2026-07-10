@@ -147,7 +147,11 @@ contract {
       }
     }
     _ => {
-      return [single, (pos + 1).toString(), "false"]
+      // Unreachable for Option (None + Some are exhaustive) — but the arm must be
+      // self-contained: `single` is bound inside the Some(ca) arm and is NOT in scope
+      // here (the old body referenced it out-of-scope — FUNGI-NAME-001, caught when the
+      // build-path resolver got the exact callStyle receiver marker). Mirror None.
+      return ["", pos.toString(), "false"]
     }
   }
 }
