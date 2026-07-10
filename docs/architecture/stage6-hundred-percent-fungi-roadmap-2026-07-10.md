@@ -21,9 +21,14 @@ Suite 92/92 · 6,929 · 0 fail; self-hosted corpus 294/294; all gates green (kno
 
 **The honest pacing fact:** the Stage-B twin checks **what its input shape carries**. Its ParseResult flow-records carry `{name, returnType, params[{name,typeName}], returnExpr{kind,litType,leftType,rightType}}` (+ v2.2 static/bitfield/view/trap/step). So the 17 codes split:
 
-- **Tranche A — expressible on (or near) the current shape:** 008 (null literal), 019 (unknown symbol in the param/expr subset), 020 (duplicate/shadowed binding), 011 (Array element in the literal subset). Start here.
-- **Tranche B — needs a Stage-B parser-shape extension first** (each = parser.fungi emits the new fields → type-checker.fungi checks them → differential tests): 003 brands · 009/010 generics · 012 Result · 021/022 match arms · 023/024 Auto.
+- **Tranche A — REVISED after source verification (2026-07-10):** the naive candidates do not survive a Stage-A semantics check:
+  - **008 is NOT "SilentNullDenied"** — the `type-checker.ts` header comment is stale; the actual emission (line ~1168) is `InvalidReturnType` ("declares return type X but return expression has type Y") — **semantically the same check the twin already emits as 002**. The two checkers use *different codes for the same check*: a code-mapping divergence, not a missing check.
+  - **020 ShadowedBinding** = *outer-scope* shadowing (same-scope duplicate = `FUNGI-NAME-002`); the Stage-B shape has no scopes yet → mapping duplicate-params to 020 would *create* a divergence. Tranche B.
+  - 019/011 need shape extensions as suspected. Tranche B.
+  - **⇒ THE REAL FRONT BLOCKER IS #20 (diagnostic-code taxonomy, 165 baseline: V1 overloads / V2 collisions).** Burning the 17 codes into the twin against Stage-A's *current* overloaded registry risks renumbering everything after the taxonomy lands. **Sequence: owner reviews the decision-ready #20 proposal (in the KB) → registry settles → the twin burns down against the settled registry.** The 006 reconcile (twin-only trap checks) folds into the same decision.
+- **Tranche B — needs a Stage-B parser-shape extension first** (each = parser.fungi emits the new fields → type-checker.fungi checks them → differential tests): 003 brands · 009/010 generics · 012 Result · 019 symbols · 020 scopes · 011 elements · 021/022 match arms · 023/024 Auto.
 - **Tranche C — needs the tensor/effect sub-shapes:** 014 (declared-effects, mirrors the effect-checker's shape) · 016/017/030 tensors · 018 runtime-target.
+- **Not blocked by #20:** the kernel behavioral twins (§2) are diag-code-independent — they proceed regardless.
 
 **The proven loop (per code, from the FUNGI-EFFECT-002 pilot):** read the Stage-A check semantics → (if needed) extend parser.fungi's record shape → implement in type-checker.fungi → `galerina check` clean → reconcile/extend `self-hosted-type-checker.test.mjs` differential blocks → full self-hosted corpus green → commit. **One code (or one shape-extension cluster) per commit; never fan-out.**
 
