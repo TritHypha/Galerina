@@ -1,4 +1,4 @@
-# Galerina KB index (834 docs)
+# Galerina KB index (837 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -192,6 +192,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## Developer-Friendly Permission Model
 `../ZTF-Knowledge-Bases/developer-friendly-permission-model.md`
 - terms: permission, short, definition, audit, user, model, effects, internal, read, allow, advanced, galerina, flow, data
+
+## Diagnostic-code naming taxonomy — decision-ready proposal (burn-down task #20)
+`../ZTF-Knowledge-Bases/diag-code-taxonomy-proposal-2026-07-10.md`
+- codes: FUNGI-INTENT-001, FUNGI-GOV-001, FUNGI-BORDER-002, FUNGI-EFFECT-001, FUNGI-EFFECT-002, FUNGI-SECRET-002, FUNGI-ASSUME-001, FUNGI-ASSUME-002, FUNGI-ASSUME-005, FUNGI-BORDER-004, FUNGI-EFFECT-007, FUNGI-EFFECT-004, FUNGI-EFFECT-009, FUNGI-GATE-001, FUNGI-GATE-003, FUNGI-GOV-004, FUNGI-GOV-021, FUNGI-GOV-022, FUNGI-GOV-017, FUNGI-GOV-023, FUNGI-MONO-001, FUNGI-MONO-003, FUNGI-PRIVACY-002, FUNGI-PRIVACY-004
+- tasks: #20, #174
+- terms: packages-galerina, galerina-core-compiler, src, tests, mjs, test, low, generated, artifacts, name, index, type-checker, governance-verifier, error
 
 ## Documentation Layer Model
 `../ZTF-Knowledge-Bases/documentation-layer-model.md`
@@ -2313,6 +2319,15 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #195
 - terms: galerina, host, code, confirmed, key, phase, zero, galerina-specific, posture, linux, dockerfile, real, tritmesh, firewall
 
+## RD-0313 — identifier/token-aware search + rename-audit tool (`tokenscan` / `morphgrep`) · 2026-07-10
+`../ZTF-Knowledge-Bases/galerina-rd-0313-identifier-aware-search-tokenscan-morphgrep.md`
+- terms: mjs, galerina, tmf, morphgrep, matcher, design, audit, scripts, miss, tool, real, dual-pass, silently, search
+
+## RD-0314 — ADT/WASM host-shim security pass (Result/Option/`?` lowering) · 2026-07-10
+`../ZTF-Knowledge-Bases/galerina-rd-0314-adt-wasm-host-shim-security-pass.md`
+- codes: FUNGI-RUNTIME-003
+- terms: adt, wasm, galerina, run, result, option, host, lowering, fix, rd-0314, fail-closed, security, pass, live
+
 ## R&D — Phase 34B boundary param auto-taint: verified state + build-ready spec
 `../ZTF-Knowledge-Bases/galerina-rd-34b-paramtaint-buildspec-2026-06-24.md`
 - codes: FUNGI-VALUESTATE-003, FUNGI-VALUESTATE-008
@@ -2475,10 +2490,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 
 ## Galerina — R&D Results Log (quick-lookup verdict table)
 `../ZTF-Knowledge-Bases/galerina-rd-results-log.md`
-- codes: FUNGI-PERM-001, FUNGI-GDCE-001, FUNGI-PRIVACY-002, FUNGI-PCI-G-000, FUNGI-ASSIMILATE-004, ERR_BRIDGE_UNATTESTED, ERR_HOST_NATIVE_DENIED, ERR_AI_MODEL_NOT_APPROVED, FUNGI-GOV-TPL-001, FUNGI-ASSIMILATE-003, FUNGI-BUILD-002, FUNGI-ATTR-001, FUNGI-PRIVACY-001, FUNGI-EFFECT-006, FUNGI-SEC-020, FUNGI-NAME-001, ERR_CERTIFIED, FUNGI-MATCH-001, FUNGI-GOV-003, ERR_ADDON_UNPINNED, FUNGI-SECRET-004, FUNGI-RETAIN-001, FUNGI-SUBSTRATE-001
+- codes: FUNGI-RUNTIME-003, FUNGI-PERM-001, FUNGI-GDCE-001, FUNGI-PRIVACY-002, FUNGI-PCI-G-000, FUNGI-ASSIMILATE-004, ERR_BRIDGE_UNATTESTED, ERR_HOST_NATIVE_DENIED, ERR_AI_MODEL_NOT_APPROVED, FUNGI-GOV-TPL-001, FUNGI-ASSIMILATE-003, FUNGI-BUILD-002, FUNGI-ATTR-001, FUNGI-PRIVACY-001, FUNGI-EFFECT-006, FUNGI-SEC-020, FUNGI-NAME-001, ERR_CERTIFIED, FUNGI-MATCH-001, FUNGI-GOV-003, ERR_ADDON_UNPINNED, FUNGI-SECRET-004, FUNGI-RETAIN-001, FUNGI-SUBSTRATE-001
 - tasks: #195, #149, #102, #34, #0089, #212, #110, #10, #11, #194, #205, #155
 - links: [[feedback-rd-absorb-positive-and-negative]] [[galerina-ci-state-and-cross-repo-gates]] [[galerina-kernel-ts-vs-fungi-rationale]] [[galerina-graph-ascii-outcome-and-gate-pipeline-2026-07-01]] [[galerina-graph-ascii-spec-and-ab-benchmark-2026-07-01]] [[galerina-rd-0236-runtime-50yr-mistake-audit]] [[galerina-rd-0237-runtime-governance-in-gate-reexamination]] [[galerina-rd-0234-fungi-50yr-mistake-audit]] [[galerina-rd-0234b-fungi-second-pass-hunt]] [[fail-closed-no-50yr-mistake-rule]]
-- terms: gate, owner, galerina, mjs, fungi, real, signed, graph, shipped, never, spore, verdict, photonic, design
+- terms: gate, owner, galerina, mjs, real, fungi, never, signed, graph, shipped, spore, design, build, verdict
 
 ## Galerina syntax 7-axis sweep (2026-06-25) — PARTIAL (4/8 categories; 4 rate-limited, to resume)
 `../ZTF-Knowledge-Bases/galerina-rd-syntax-7axis-sweep-2026-06-25.md`
@@ -2556,7 +2571,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## Galerina — Roadmap 2026-07-10 (post component-completion + full-cadence pass)
 `../ZTF-Knowledge-Bases/galerina-roadmap-2026-07-10.md`
 - tasks: #34, #20, #21, #13, #10, #11, #12
-- terms: track, unchanged, pass, session, main, galerina, roadmap, component, owner-side, implement, scaffolds, standing, post, component-completion
+- terms: track, unchanged, pass, session, main, galerina, roadmap, component, owner-side, implement, scaffolds, standing, contracts, post
 
 ## Galerina — Completion % Audit + Roadmap (2026-06-17)
 `../ZTF-Knowledge-Bases/galerina-roadmap-and-audit-2026-06-17.md`
@@ -3181,7 +3196,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## HANDOVER — R&D session master index (all deliverables) · 2026-07-09
 `../ZTF-Knowledge-Bases/HANDOVER-RnD-master-index-2026-07-09.md`
 - tasks: #149
-- terms: handover, index, internal, owner, session, bridge, deliverables, main, none, api, gap, tritmesh, photonic, run
+- terms: internal, handover, index, owner, session, bridge, deliverables, main, none, api, security, gap, live, tritmesh
 
 ## Handover — R&D research session, 2026-07-01 (for the main/hub session)
 `../ZTF-Knowledge-Bases/HANDOVER-rnd-research-session-2026-07-01.md`
@@ -3546,7 +3561,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## PUBLICATION-CONTROL — the do-not-publish register (authoritative) · 2026-07-10
 `../ZTF-Knowledge-Bases/PUBLICATION-CONTROL-do-not-publish-register.md`
 - tasks: #149
-- terms: internal, public, fix, lands, allow-list, weakness, attacker, register, galerina, deny, whole, file, public-safe, publishable
+- terms: internal, public, fix, lands, allow-list, weakness, galerina, attacker, register, deny, whole, file, public-safe, publishable
 
 ## Quantum Readiness
 `../ZTF-Knowledge-Bases/quantum-readiness.md`
@@ -4135,7 +4150,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## AGENTS.md
 `AGENTS.md`
 - tasks: #102, #215, #218
-- terms: flow, rules, graph, build, code, docs, tools, project, packages-galerina, type, galerina, knowledge-bases, package, pipeline
+- terms: graph, flow, build, code, rules, docs, tools, index, project, packages-galerina, galerina, package, type, grep
 
 ## Galerina
 `README.md`

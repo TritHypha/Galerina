@@ -511,21 +511,91 @@ Galerina typed browser event contracts.
 
 Galerina PostgreSQL adapter contract placeholder.
 
+Provides:
+- PostgresDiagnosticSeverity
+- PostgresDiagnostic
+- PostgresAdapterRequirements
+- PostgresContractRefs
+- PostgresCredentialRef
+- PostgresPlaceholderStyle
+- PostgresSslMode
+- PostgresConnectionContract
+- PostgresAdapterDeclaration
+- PostgresAdapterCheck
+- PostgresAdapterCheckOutcome
+- PostgresAdapterReportStatus
+
 ## galerina-db-mysql
 
 Galerina MySQL adapter contract placeholder.
+
+Provides:
+- MysqlDiagnosticSeverity
+- MysqlDiagnostic
+- MysqlAdapterRequirements
+- MysqlContractRefs
+- MysqlCredentialRef
+- MysqlPlaceholderStyle
+- MysqlTlsMode
+- MysqlConnectionContract
+- MysqlAdapterDeclaration
+- MysqlAdapterCheck
+- MysqlAdapterCheckOutcome
+- MysqlAdapterReportStatus
 
 ## galerina-db-sqlite
 
 Galerina SQLite adapter contract placeholder.
 
+Provides:
+- SqliteDiagnosticSeverity
+- SqliteDiagnostic
+- SqliteAdapterRequirements
+- SqliteContractRefs
+- SqliteCredentialRef
+- SqlitePlaceholderStyle
+- SqliteJournalMode
+- SqliteAdapterDeclaration
+- SqliteAdapterCheck
+- SqliteAdapterCheckOutcome
+- SqliteAdapterReportStatus
+- SqliteAdapterReport
+
 ## galerina-db-opensearch
 
 Galerina OpenSearch adapter contract placeholder.
 
+Provides:
+- OpenSearchDiagnosticSeverity
+- OpenSearchDiagnostic
+- OpenSearchAdapterRequirements
+- OpenSearchContractRefs
+- OpenSearchCredentialRef
+- OpenSearchConnectionContract
+- OpenSearchIndexOperationKind
+- OpenSearchIndexOperation
+- OpenSearchQueryContract
+- OpenSearchAdapterDeclaration
+- OpenSearchAdapterCheck
+- OpenSearchAdapterCheckOutcome
+
 ## galerina-db-firestore
 
 Galerina Firestore adapter contract placeholder.
+
+Provides:
+- FirestoreDiagnosticSeverity
+- FirestoreDiagnostic
+- FirestoreAdapterRequirements
+- FirestoreContractRefs
+- FirestoreCredentialRef
+- FirestorePathKind
+- FirestorePathContract
+- FirestoreIndexFieldOrder
+- FirestoreIndexField
+- FirestoreCompositeIndex
+- FirestoreAdapterDeclaration
+- FirestoreAdapterCheck
 
 ## galerina-core-photonic
 

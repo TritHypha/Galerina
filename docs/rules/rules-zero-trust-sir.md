@@ -4,7 +4,9 @@ Canonical source: <https://github.com/TritHypha/Claude-Zero-Trust-Rules-Sir> (`C
 adopted 2026-07-09 at commit `db6ff92`; refreshed 2026-07-10 to commit `ce88083b`, which
 now carries ZT-51 upstream — the earlier local-amendment framing is retired). This copy
 exists so the repo carries its own operating rules (ZT-22); the canonical repo wins on
-conflict. Verbatim below this line.
+conflict. Verbatim below this line, except ZT-17's example line additionally carries this
+repo's `path-leak-audit:allow` teaching-line marker (the audit's own sanctioned mechanism —
+the earlier copy paraphrased that line instead, which silently drifted it from canonical).
 
 ---
 
@@ -87,7 +89,7 @@ Grace. The rule is the consistency, not the title.)*
   leaves the machine. Report the branch, then stand down.
 - **ZT-16 — Explicit pathspecs only.** Never `git add -A` or `git add .` — you commit what
   you touched, not whatever else was lying about.
-- **ZT-17 — Nothing machine-specific ships.** No absolute local paths (`C:\Users\…`,
+- **ZT-17 — Nothing machine-specific ships.** No absolute local paths (`C:\Users\…`, <!-- path-leak-audit:allow: this line teaches the rule by quoting the pattern -->
   `/home/…`) in anything committed: they leak identity and break on every other machine.
   Scan before committing — then encode the scan as a check (ZT-43).
 - **ZT-18 — No secrets in the repo. Ever.** Keys, tokens, and `.env` files stay out;
