@@ -1,4 +1,4 @@
-# Galerina KB index (807 docs)
+# Galerina KB index (827 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -1712,6 +1712,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-HW-101, FUNGI-HW-102, FUNGI-HW-103, FUNGI-HW-104, FUNGI-HW-201, FUNGI-HW-301, FUNGI-HW-302, FUNGI-HW-401, FUNGI-HW-402, FUNGI-HW-403
 - terms: policy, hardware, trust, attestation, readonly, post-quantum, mte, profile, evidence, must, cheri, arm, proof, security
 
+## Galerina PR & positioning — "what it means for Galerina" · 2026-07-09
+`../ZTF-Knowledge-Bases/galerina-pr-positioning-what-it-means-2026-07-09.md`
+- terms: galerina, never, claim, tritsocket, talk, shipped, cannot, tested, outcome, audience, confirmed, about, honest, auth
+
 ## Pre-governance threat-model — the trust gap before any governance runs (2026-06-25)
 `../ZTF-Knowledge-Bases/galerina-pre-governance-threat-model-2026-06-25.md`
 - codes: FUNGI-LEX-004, ERR_STRING_TOO_LONG, FUNGI-BACKEND-001
@@ -2257,6 +2261,48 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-SUBSTRATE-001
 - terms: worker, lane, real, connect, maths, tri, spore, photonic, galerina, neither, shipped, today, stub, confirmed
 
+## RD-0300 — chatter/26–34 API-security video mine · 2026-07-09
+`../ZTF-Knowledge-Bases/galerina-rd-0300-chatter-api-security-video-mine.md`
+- terms: api, youtube, none, base64, photonic, rd-0297, chatter, verdict, com, watch, video, tri, name, jwt
+
+## RD-0301 — zero-trust API deny-list (legacy-to-drop + too-insecure-to-support) · 2026-07-09
+`../ZTF-Knowledge-Bases/galerina-rd-0301-zero-trust-api-deny-list.md`
+- codes: FUNGI-TAINT-001, FUNGI-NET-001
+- terms: gap, refuse, confirmed-enforced, code, too-insecure-to-support, table, galerina, policy, none, api, deny-list, kernel, wired, never
+
+## RD-0302 — trit/photonic streaming API + `.spore` streaming · 2026-07-09
+`../ZTF-Knowledge-Bases/galerina-rd-0302-trit-photonic-streaming-api-spore-streaming.md`
+- terms: streaming, spore, honest, stream, photonic, frames, built, confirmed, api, streamseal, live, per-frame, wow, already
+
+## RD-0303 — data-as-image API protocol: the maths, and where (if anywhere) it pays · 2026-07-09
+`../ZTF-Knowledge-Bases/galerina-rd-0303-data-as-image-api-protocol-maths.md`
+- terms: spore, maths, honest, framing, overhead, real, seal, crossover, refuted, api, already, never, ecc, risk
+
+## RD-0303a — fibre-optic / WDM / SDM reconsideration of the "data-as-image" transport verdict · 2026-07-09
+`../ZTF-Knowledge-Bases/galerina-rd-0303a-fibre-optic-wdm-sdm-reconsideration.md`
+- terms: optical, rd-0303, wdm, owner, genuinely, transport, constant-factor, row, conversion-cost-free, fibre, sdm, verdict, already, argument
+
+## RD-0304 — OWASP API Security Top 10 (2023) × Galerina coverage crosswalk · 2026-07-10
+`../ZTF-Knowledge-Bases/galerina-rd-0304-owasp-api-top10-crosswalk-INTERNAL.md`
+- terms: gap, crosswalk, kernel, path, coverage, galerina, live, handler, gate, never, partial, security, real, rd-0298
+
+## RD-0305 — tritsocket × new-API-R&D (RD-0300..0304) cross-compare + security re-check · 2026-07-10
+`../ZTF-Knowledge-Bases/galerina-rd-0305-tritsocket-x-new-api-rnd-cross-compare.md`
+- terms: tritsocket, security, prefilter, rd-0300, re-check, confirmed, zero, public, cross-compare, allow, same, rd-0304, deny, paper
+
+## RD-0306 — Cross-applying the API R&D (RD-0300..0305) onto TritMeshQL / `.spore` / TritMesh · 2026-07-10
+`../ZTF-Knowledge-Bases/galerina-rd-0306-api-learnings-to-tritmeshql-spore.md`
+- terms: tritmeshql, spore, spec, confirmed, design, security, hypha-check, mjs, api, rd-0300, gap, rd-0304, readme, real
+
+## RD-0307 — the reverse-proxy / web-server border in front of Galerina (Apache / Nginx / Express) · 2026-07-10
+`../ZTF-Knowledge-Bases/galerina-rd-0307-reverse-proxy-border-apache-nginx-express.md`
+- terms: proxy, galerina, header, real, set, kernel, client, node, nginx, host, confirmed, border, phase, impact
+
+## RD-0308 — R&D backlog: under-explored areas (what we should R&D but haven't / not thoroughly) · 2026-07-10
+`../ZTF-Knowledge-Bases/galerina-rd-0308-rnd-backlog-under-explored-areas-INTERNAL.md`
+- tasks: #149, #12
+- terms: surface, never, shallow, named, backlog, never-started, class, border, area, spore, pass, gap, bridge, why
+
 ## R&D — Phase 34B boundary param auto-taint: verified state + build-ready spec
 `../ZTF-Knowledge-Bases/galerina-rd-34b-paramtaint-buildspec-2026-06-24.md`
 - codes: FUNGI-VALUESTATE-003, FUNGI-VALUESTATE-008
@@ -2422,7 +2468,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-PERM-001, FUNGI-GDCE-001, FUNGI-PRIVACY-002, FUNGI-PCI-G-000, FUNGI-ASSIMILATE-004, ERR_BRIDGE_UNATTESTED, ERR_HOST_NATIVE_DENIED, ERR_AI_MODEL_NOT_APPROVED, FUNGI-GOV-TPL-001, FUNGI-ASSIMILATE-003, FUNGI-BUILD-002, FUNGI-ATTR-001, FUNGI-PRIVACY-001, FUNGI-EFFECT-006, FUNGI-SEC-020, FUNGI-NAME-001, ERR_CERTIFIED, FUNGI-MATCH-001, FUNGI-GOV-003, ERR_ADDON_UNPINNED, FUNGI-SECRET-004, FUNGI-RETAIN-001, FUNGI-SUBSTRATE-001
 - tasks: #149, #102, #34, #0089, #212, #110, #10, #11, #194, #205, #155
 - links: [[feedback-rd-absorb-positive-and-negative]] [[galerina-ci-state-and-cross-repo-gates]] [[galerina-kernel-ts-vs-fungi-rationale]] [[galerina-graph-ascii-outcome-and-gate-pipeline-2026-07-01]] [[galerina-graph-ascii-spec-and-ab-benchmark-2026-07-01]] [[galerina-rd-0236-runtime-50yr-mistake-audit]] [[galerina-rd-0237-runtime-governance-in-gate-reexamination]] [[galerina-rd-0234-fungi-50yr-mistake-audit]] [[galerina-rd-0234b-fungi-second-pass-hunt]] [[fail-closed-no-50yr-mistake-rule]]
-- terms: gate, owner, galerina, fungi, mjs, graph, signed, shipped, real, green, verdict, build, audit, design
+- terms: gate, owner, galerina, mjs, fungi, real, signed, graph, shipped, never, spore, verdict, design, build
 
 ## Galerina syntax 7-axis sweep (2026-06-25) — PARTIAL (4/8 categories; 4 rate-limited, to resume)
 `../ZTF-Knowledge-Bases/galerina-rd-syntax-7axis-sweep-2026-06-25.md`
@@ -3098,6 +3144,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #10, #155, #102, #34
 - terms: stoppers, questions, signed, d-side, hub, handoff, main, session, response, angle, lifts, each, recommendation, whose
 
+## HANDOVER — `galerina-framework-api-server` Architecture Schematic (as-built, 2026-07-09)
+`../ZTF-Knowledge-Bases/HANDOVER-galerina-framework-api-server-schematic-2026-07-09.md`
+- links: [["413 Payload Too Large - kernel never reached"]] [["404 route_not_found"]] [["405 method_not_allowed"]] [["413 payload_too_large"]] [["415 unsupported_media_type"]] [["401 unauthorized"]] [["422 unprocessable_entity"]] [["409 conflict"]] [["429 too_many_requests"]] [["503 secret_unavailable"]]
+- terms: confirmed, src, kernel, gate, real, galerina-framework-api-server, test, package, fuse-loader, gap, tested, path, http, tests
+
 ## HANDOVER → main session — Bend / Interaction Combinators (RD-0257) — 2026-07-04
 `../ZTF-Knowledge-Bases/HANDOVER-main-bend-interaction-combinators-rd0257-2026-07-04.md`
 - codes: FUNGI-SUBSTRATE-001
@@ -3108,9 +3159,22 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/HANDOVER-main-full-control-of-galerina-2026-07-03.md`
 - terms: galerina, handover, session, own, main, rd-0238, tritmesh, full, prod, apply, live, control, posture, read-only
 
+## HANDOVER — RD-0302 KEM-once/DEM-stream streaming: completion plan + schematics · 2026-07-09
+`../ZTF-Knowledge-Bases/HANDOVER-RD-0302-streaming-completion-2026-07-09.md`
+- terms: rd-0302, stream, shipped, streaming, confirmed, prefilter, completion, schematic, gap, frames, kem-once, streamseal, frame, must
+
+## HANDOVER — R&D session master index (all deliverables) · 2026-07-09
+`../ZTF-Knowledge-Bases/HANDOVER-RnD-master-index-2026-07-09.md`
+- tasks: #149
+- terms: index, handover, owner, session, deliverables, none, api, bridge, internal, main, paper, security, gap, owner-gated
+
 ## Handover — R&D research session, 2026-07-01 (for the main/hub session)
 `../ZTF-Knowledge-Bases/HANDOVER-rnd-research-session-2026-07-01.md`
 - terms: session, hub, prompt, graph, copy-paste, gate, research, build, fungi, design, pre-filter, decision, users, phill
+
+## HANDOVER — R&D session → main Galerina session: response to your 2026-07-09 handover
+`../ZTF-Knowledge-Bases/HANDOVER-RnD-response-to-main-2026-07-09.md`
+- terms: handover, session, galerina, owner, schematic, main, response, authority, locks, listener, verification, transcript, did, push
 
 ## HANDOVER — TritMesh / Galerina R&D session close (2026-07-04)
 `../ZTF-Knowledge-Bases/HANDOVER-tritmesh-session-2026-07-04.md`
@@ -3272,6 +3336,19 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/package-resolver.md`
 - terms: resolver, package, loading, policy, check, checks, dynamic, governed, runtime, galerina, execution, text, verified, version
 
+## Defensive Publication — Deny-by-default SSRF egress guard: numeric/IPv6-embedded-IPv4 obfuscation normalization + connect-time per-resolved-address DNS-rebind recheck
+`../ZTF-Knowledge-Bases/papers/dp-rd-0301a-egress-ssrf-numeric-ip-and-dns-rebind-guard.md`
+- terms: address, ssrf, egress, metadata, classification, every, check, public, claims, deny-by-default, recheck, url, numeric, own
+
+## Defensive Publication — A four-factor K3 channel-trust fold for TLS/PKI admission: revocation-unknown collapses the channel, by algebra not by flag
+`../ZTF-Knowledge-Bases/papers/dp-rd-0301b-cert-gate-k3-revocation-unknown-deny-fold.md`
+- codes: FUNGI-GOV-3VL-001
+- terms: indeterminate, allow, fold, four, never, channel, tls, claims, pki, disclosure, revocation, cadence, side-signal, named
+
+## KB papers — defensive-publication drafts (R&D session)
+`../ZTF-Knowledge-Bases/papers/README.md`
+- terms: paper, session, here, papers, drafts, directive, before, defensive-publication, galerina, lives, harm, filter, owner, read
+
 ## Galerina — Parser Error Recovery Policy
 `../ZTF-Knowledge-Bases/parser-error-recovery.md`
 - codes: FUNGI-PARSE-001, FUNGI-PARSE-002
@@ -3345,6 +3422,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #149, #10
 - terms: lane, galerina, build, confirmed, real, gate, never, scope, rd-0299, connect, apifunctions, today, owner, packages-galerina
 
+## PROMPT — main session: API handover, RD-0285 → RD-0303 (consolidated) · 2026-07-09
+`../ZTF-Knowledge-Bases/PROMPT-main-session-API-handover-RD0285-0303-2026-07-09.md`
+- codes: FUNGI-TAINT-001, FUNGI-NET-001, FUNGI-EFFECT-004, FUNGI-SUBSTRATE-001
+- tasks: #149, #14, #13, #15, #16, #10
+- terms: real, galerina, api, lane, spore, gate, never, streaming, scope, gap, build, rd-0302, honest, code
+
 ## PROMPT — main session: build the by-construction conformance scanner (extend `@galerina/devtools-security`) · 2026-07-09
 `../ZTF-Knowledge-Bases/PROMPT-main-session-build-by-construction-conformance-scanner-2026-07-09.md`
 - terms: galerina, devtools-security, check, engine, build, prompt, conformance, tritmeshql, hypha, session, scanner, read, rule, main
@@ -3365,6 +3448,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/PROMPT-main-session-MASTER-onboarding-2026-07-01.md`
 - links: [[memory-name]]
 - terms: rules, graph, github, index, mjs, users, phill, documents, memory, source, keep, galerina, every, rule
+
+## PROMPT — main session pickup: all R&D handovers (2026-07-09)
+`../ZTF-Knowledge-Bases/PROMPT-main-session-pickup-all-handovers-2026-07-09.md`
+- terms: session, main, handovers, prompt, pickup, listener, ztf-knowledge-bases, read, build, api, schematic, src, corrected, handover
 
 ## PROMPT — main session: implement the adopted R&D from RD-0283..0289 · 2026-07-09
 `../ZTF-Knowledge-Bases/PROMPT-main-session-rd-0283-0289-implementation-2026-07-09.md`
