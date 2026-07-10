@@ -59,7 +59,7 @@
 //
 // PATH-LEAK DISCIPLINE (house rule: no absolute local paths in a public repo)
 //   Every path this script PRINTS is repo-relative (POSIX `/`). It never prints the
-//   absolute repo root or any `C:\Users\…` path. File rewrites likewise only ever
+//   absolute repo root or any user-home path. File rewrites likewise only ever
 //   emit repo-relative `../ZTF-Knowledge-Bases/…` strings — never an absolute path.
 //
 // USAGE
