@@ -27,6 +27,43 @@
  *   4. optimistic-then-verify — an approximate value typed UNKNOWN until an exact oracle discharges it
  *   +  3-axis type            — ⟨what × whether-proven × classification⟩, fail-closed via allOf at the boundary
  *
+ * ── ZERO-TRUST INVARIANTS (owner-ratified 2026-07-10) ────────────────────────
+ * K3 ABSTAIN is the OPPOSITE of C++26 `observe`: observe = detect + PROCEED
+ * (fail-OPEN); ABSTAIN = defer + DENY at the boundary (fail-CLOSED). The
+ * abstaining contract is zero-trust safe IFF ALL FOUR invariants hold — miss any
+ * one and it fails open:
+ *   I1  Only +1 authorizes. ABSTAIN and DENY both deny at a boundary. The moment
+ *       anything reads "not a DENY ⇒ proceed", it is fail-open.
+ *   I2  No-Coercion in composition. allOf: an abstention is contagious-down
+ *       (allOf([ALLOW, ABSTAIN]) = ABSTAIN → deny). anyOf: an abstention can
+ *       defer but never upgrade to allow. Abstention only lowers or defers.
+ *   I3  Abstention is LOUD. Every ABSTAIN→deny emits FUNGI-GOV-3VL-001, and the
+ *       audit sink fires in EVERY enforcement mode — a mode gates `proceed`,
+ *       NEVER the audit. "Denied by policy" (DENY, no diagnostic) is always
+ *       distinguishable from "denied because a check could not run" (ABSTAIN,
+ *       diagnostic). A silently-swallowed abstain is a latent fail-open.
+ *   I4  An abstention is never cached/persisted as a grant. Authorization is
+ *       read ONLY from the explicit `authorized`/`proceed` booleans — "has a
+ *       verdict ⇒ go" is fail-open. (House rule #194: memoize the compiled
+ *       evaluator, never the decision.)
+ * Accepted hazard (named, conscious): an adversary who can force abstention
+ * (crash a verifier, feed ambiguous input) turns ALLOWs into ABSTAINs and
+ * everything denies — a decision-DoS. That is fail-CLOSED (availability
+ * sacrificed to integrity/confidentiality), the correct zero-trust tradeoff; an
+ * ABSTAIN spike is an anomaly SIGNAL, not noise. The observe/ignore modes exist
+ * for functional-safety surfaces (where stopping is worse) and are NEVER valid
+ * at a trust boundary — requireTrusted/releaseTo take no mode and always fail
+ * closed.
+ *
+ * ── The two governed axes propagate by DIFFERENT algebras, each in its own safe
+ * direction (and both fail-close independently from one combine):
+ *   axis 2 proven  (trust trit)  : min-trit (vAnd)  — LEAST-trusted wins   · unlabeled → UNKNOWN → deny
+ *   axis 3 class   (sensitivity) : join ⊔ (max)     — MOST-restrictive wins · unlabeled → SECRET
+ * JIF flow rule (§103): safe to REDUCE access, illegal to EXPAND. secret→public
+ * sink = DENY; the only way DOWN the lattice is the explicit audited
+ * {@link declassify} gate (an encode/redact step — RD-0327 …⇒encoder / RD-0323
+ * encode-on-egress), exactly as the only way UP the trust axis is {@link discharge}.
+ *
  * Spec: ../../../ZTF-Knowledge-Bases/galerina-rd-0337-beyond-rust-tri-typesafety-and-a-ternary-native-safety-primitive.md
  * Honesty: this is Kleene/Łukasiewicz 3-valued CLASSICAL logic (epistemic "we-don't-know"), NOT a qubit.
  */
@@ -271,10 +308,15 @@ export interface ContractOutcome {
 /**
  * Evaluate a contract under an enforcement mode:
  *   enforce → proceed IFF ALLOW; ABSTAIN and DENY both stop (fail-closed); ABSTAIN audited.
- *   observe → detect + record the violation, but PROCEED (C++26 "observe" = detected-but-continue).
- *   ignore  → proceed regardless (the escape hatch) — still reports the verdict for audit.
- * ABSTAIN never forces a wrong guess: it fail-closes under enforce, is recorded under observe,
- * and composes via allOf/anyOf when clauses are combined.
+ *   observe → detect + record the violation, but PROCEED (functional-safety: stopping is worse).
+ *   ignore  → proceed regardless (the escape hatch) — the verdict is still reported.
+ *
+ * Invariant I3 — the mode gates `proceed`, NEVER the audit: the diagnostic sink fires in
+ * EVERY mode (a silently-swallowed abstain is a latent fail-open — someone later "cleans
+ * up the noise" by defaulting it to allow). ABSTAIN never forces a wrong guess: it
+ * fail-closes under enforce, is recorded under observe/ignore, and composes via
+ * allOf/anyOf. observe/ignore are for FUNCTIONAL-SAFETY surfaces only — never valid at a
+ * trust boundary (requireTrusted/releaseTo take no mode).
  */
 export function evaluateContract<T>(
   value: T,
@@ -283,8 +325,8 @@ export function evaluateContract<T>(
   onDiagnostic?: (d: GovernanceDiagnostic) => void,
 ): ContractOutcome {
   const verdict = contract(value);
-  // Compute the boundary decision; only forward the audit sink when we are not ignoring.
-  const bd = decideAtBoundary(verdict, mode === "ignore" ? undefined : onDiagnostic);
+  // I3: the sink is forwarded UNCONDITIONALLY — no mode may silence the audit trail.
+  const bd = decideAtBoundary(verdict, onDiagnostic);
   const violated = verdict !== Verdict.ALLOW;
   const proceed = mode === "enforce" ? bd.authorized : true;
   return { verdict, mode, proceed, violated, diagnostic: bd.diagnostic };
@@ -382,16 +424,22 @@ export function validateTriSchema<R extends Record<string, unknown>>(
 // ════════════════════════════════════════════════════════════════════════════
 
 /**
- * Axis 3 — the security classification, a trit-lattice ordered by restrictiveness.
+ * Axis 3 — the security classification, a trit-lattice `public ⊑ internal ⊑ secret`.
  * JIF rule (§103): safe to REDUCE access (value ≤ sink), illegal to EXPAND it. An unknown
- * classification is treated as the most-restrictive (SECRET) — fail-closed meet.
+ * classification is treated as the most-restrictive (SECRET) — the sensitivity axis's
+ * deny-by-default.
  */
 export type Classification = "public" | "internal" | "secret";
 
 const CLASS_ORDER: Record<Classification, number> = { public: 0, internal: 1, secret: 2 };
 
-/** Most-restrictive meet — combining classifications takes the higher (contagion on Axis 3). */
-export function classMeet(a: Classification, b: Classification): Classification {
+/**
+ * The lattice JOIN ⊔ (least upper bound = max = most-restrictive wins) — combining
+ * classifications is contagious UPWARD: mix any secret in, the result is secret. This is
+ * axis 3's own algebra (join/max), deliberately the mirror of axis 2's min-trit — each
+ * axis propagates in its own safe direction.
+ */
+export function classJoin(a: Classification, b: Classification): Classification {
   return CLASS_ORDER[a] >= CLASS_ORDER[b] ? a : b;
 }
 
@@ -423,7 +471,11 @@ export function triTyped<T>(
   };
 }
 
-/** Combine two 3-axis values — contagious on BOTH governed axes: proven via vAnd (min), class via classMeet (most-restrictive). */
+/**
+ * Combine two 3-axis values — contagious on BOTH governed axes, each by its own algebra:
+ * proven via vAnd (min — least-trusted wins), class via classJoin (⊔/max — most-restrictive
+ * wins). One combine, two independent fail-closes.
+ */
 export function combineTriTyped<A, B, C>(
   a: TriTyped<A>,
   b: TriTyped<B>,
@@ -432,8 +484,40 @@ export function combineTriTyped<A, B, C>(
   return {
     value: f(a.value, b.value),
     proven: vAnd(a.proven, b.proven),
-    classification: classMeet(a.classification, b.classification),
+    classification: classJoin(a.classification, b.classification),
     provenance: [...a.provenance, ...b.provenance, "combine-3axis"],
+  };
+}
+
+/**
+ * The ONLY sanctioned way DOWN the classification lattice — the axis-3 counterpart of
+ * {@link discharge} (axis-2's only way up). Declassification (e.g. secret→public) is legal
+ * only through this explicit, audited gate, and it REQUIRES an encode/redact transform
+ * (RD-0327 …⇒encoder / RD-0323 encode-on-egress): the payload that leaves is the ENCODED
+ * one, never the original. Trust (axis 2) rides along unchanged — the axes stay orthogonal,
+ * each with its own gate in its own safe direction.
+ *
+ * Fail-closed: a non-lowering target is a HARD error (raising is classJoin's job — calling
+ * it "declassify" would mislabel an escalation); a throwing encoder aborts the
+ * declassification entirely (nothing is released).
+ */
+export function declassify<T, U>(
+  v: TriTyped<T>,
+  to: Classification,
+  encode: (value: T) => U,
+  reason: string,
+): TriTyped<U> {
+  if (CLASS_ORDER[to] >= CLASS_ORDER[v.classification]) {
+    throw new Error(
+      `declassify: target "${to}" is not below "${v.classification}" — not a declassification (fail-closed; raising is classJoin's job)`,
+    );
+  }
+  const value = encode(v.value); // a throw here propagates — nothing is released
+  return {
+    value,
+    proven: v.proven,
+    classification: to,
+    provenance: [...v.provenance, `declassified:${v.classification}→${to}:${reason}`],
   };
 }
 

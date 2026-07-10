@@ -62,7 +62,7 @@ export {
   optimistic, reconcile,
   allContracts, anyContract, evaluateContract,
   validateTriSchema,
-  classMeet, triTyped, combineTriTyped, releaseTo,
+  classJoin, triTyped, combineTriTyped, declassify, releaseTo,
 } from "./epistemic-type-state.js";
 export type {
   Epistemic, Trusted, Unverified, Refuted, TrustBoundaryResult,

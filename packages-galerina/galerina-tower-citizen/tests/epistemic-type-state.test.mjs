@@ -17,7 +17,7 @@ import {
   optimistic, reconcile,
   allContracts, anyContract, evaluateContract,
   validateTriSchema,
-  classMeet, triTyped, combineTriTyped, releaseTo,
+  classJoin, triTyped, combineTriTyped, declassify, releaseTo,
 } from "../dist/index.js";
 
 const TRITS = [Trust.REFUTED, Trust.UNKNOWN, Trust.PROVEN]; // -1, 0, 1
@@ -239,10 +239,10 @@ describe("+ 3-axis type ⟨what × proven × classification⟩", () => {
     assert.equal(v.proven, Trust.UNKNOWN);
     assert.equal(v.classification, "secret");
   });
-  it("classMeet takes the most-restrictive", () => {
-    assert.equal(classMeet("public", "secret"), "secret");
-    assert.equal(classMeet("internal", "public"), "internal");
-    assert.equal(classMeet("public", "public"), "public");
+  it("classJoin ⊔ takes the most-restrictive (contagious UPWARD)", () => {
+    assert.equal(classJoin("public", "secret"), "secret");
+    assert.equal(classJoin("internal", "public"), "internal");
+    assert.equal(classJoin("public", "public"), "public");
   });
   it("combineTriTyped is contagious on BOTH axes (proven=min, class=most-restrictive)", () => {
     const out = combineTriTyped(
@@ -274,5 +274,70 @@ describe("+ 3-axis type ⟨what × proven × classification⟩", () => {
     // proven ALLOW, class ALLOW → ALLOW ; proven ALLOW, class DENY → DENY
     assert.equal(releaseTo(triTyped(1, { proven: Trust.PROVEN, classification: "public" }), "public").composite, Verdict.ALLOW);
     assert.equal(releaseTo(triTyped(1, { proven: Trust.PROVEN, classification: "secret" }), "public").composite, Verdict.DENY);
+  });
+});
+
+describe("ZERO-TRUST INVARIANTS I1–I4 (owner-ratified 2026-07-10)", () => {
+  const abstain = () => Verdict.INDETERMINATE;
+
+  it("I1: only +1 authorizes — ABSTAIN and DENY both deny at every boundary", () => {
+    for (const t of [Trust.REFUTED, Trust.UNKNOWN]) {
+      assert.equal(requireTrusted({ value: 1, trust: t, provenance: [] }).authorized, false, `trust ${t}`);
+    }
+    assert.equal(evaluateContract(0, abstain, "enforce").proceed, false);
+    assert.equal(evaluateContract(0, () => Verdict.DENY, "enforce").proceed, false);
+  });
+
+  it("I2: composition only lowers/defers — allOf([ALLOW,ABSTAIN]) defers→deny; anyOf never upgrades ABSTAIN to ALLOW", () => {
+    assert.equal(allContracts([() => Verdict.ALLOW, abstain])(0), Verdict.INDETERMINATE);
+    assert.equal(anyContract([() => Verdict.DENY, abstain])(0), Verdict.INDETERMINATE);
+  });
+
+  it("I3: abstention is LOUD in EVERY mode — the audit sink fires under enforce, observe AND ignore", () => {
+    for (const mode of ["enforce", "observe", "ignore"]) {
+      let heard = null;
+      evaluateContract(0, abstain, mode, (d) => { heard = d; });
+      assert.equal(heard?.code, GOV_3VL_DIAGNOSTIC, `mode ${mode} must not silence the audit`);
+    }
+  });
+
+  it("I3b: 'denied by policy' (DENY, no diagnostic) is distinguishable from 'check could not run' (ABSTAIN, diagnostic)", () => {
+    assert.equal(evaluateContract(0, () => Verdict.DENY, "enforce").diagnostic, null);
+    assert.equal(evaluateContract(0, abstain, "enforce").diagnostic?.code, GOV_3VL_DIAGNOSTIC);
+  });
+
+  it("I4: an outcome existing is NOT a grant — authorization only via explicit booleans", () => {
+    const o = evaluateContract(0, abstain, "ignore");
+    assert.equal(o.proceed, true); // functional-safety escape hatch…
+    assert.equal(o.violated, true); // …but explicitly NOT a clean pass
+    assert.notEqual(o.verdict, Verdict.ALLOW); // a consumer reading "has outcome ⇒ go" has both flags against it
+  });
+});
+
+describe("declassify — the audited gate DOWN the classification lattice (axis-3 discharge)", () => {
+  it("lowers only through an encode/redact transform + records provenance; trust (axis 2) rides unchanged", () => {
+    const v = triTyped({ email: "a@b.com" }, { proven: Trust.UNKNOWN, classification: "secret" });
+    const out = declassify(v, "public", () => ({ email: "***redacted***" }), "redact-pii");
+    assert.equal(out.classification, "public");
+    assert.deepEqual(out.value, { email: "***redacted***" });
+    assert.equal(out.proven, Trust.UNKNOWN); // orthogonal: declassify never touches trust
+    assert.ok(out.provenance.some((p) => p.includes("declassified:secret→public:redact-pii")));
+  });
+  it("a non-lowering target is a HARD error (raising is classJoin's job)", () => {
+    assert.throws(() => declassify(triTyped(1, { classification: "public" }), "secret", (x) => x, "nope"));
+    assert.throws(() => declassify(triTyped(1, { classification: "internal" }), "internal", (x) => x, "same"));
+  });
+  it("a throwing encoder aborts — nothing is released", () => {
+    assert.throws(
+      () => declassify(triTyped(1, { classification: "secret" }), "public", () => { throw new Error("encoder down"); }, "x"),
+      /encoder down/,
+    );
+  });
+  it("declassified output passes releaseTo where the original was a leak-DENY", () => {
+    const secret = triTyped("raw-pii", { proven: Trust.PROVEN, classification: "secret" });
+    assert.equal(releaseTo(secret, "public").authorized, false); // leak → deny
+    const pub = declassify(secret, "public", () => "redacted", "egress-encode");
+    assert.equal(releaseTo(pub, "public").authorized, true);
+    assert.equal(releaseTo(pub, "public").value, "redacted"); // the ENCODED payload leaves, never the original
   });
 });
