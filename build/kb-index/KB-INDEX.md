@@ -1,4 +1,4 @@
-# Galerina KB index (828 docs)
+# Galerina KB index (834 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -2308,6 +2308,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-SUBSTRATE-001, FUNGI-GOV-3VL-001
 - terms: border, tritmesh, rd-0307, photonic, gate, fix, already, tri, logic, bypass, discipline, cert-gate, problem, tritsocket
 
+## RD-0310 — the Linux / host / OS / kernel-network layer beneath Galerina & TritMesh (Phase 2) · 2026-07-10
+`../ZTF-Knowledge-Bases/galerina-rd-0310-linux-os-host-layer-beneath-galerina-tritmesh.md`
+- tasks: #195
+- terms: galerina, host, code, confirmed, key, phase, zero, galerina-specific, posture, linux, dockerfile, real, tritmesh, firewall
+
 ## R&D — Phase 34B boundary param auto-taint: verified state + build-ready spec
 `../ZTF-Knowledge-Bases/galerina-rd-34b-paramtaint-buildspec-2026-06-24.md`
 - codes: FUNGI-VALUESTATE-003, FUNGI-VALUESTATE-008
@@ -2471,7 +2476,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## Galerina — R&D Results Log (quick-lookup verdict table)
 `../ZTF-Knowledge-Bases/galerina-rd-results-log.md`
 - codes: FUNGI-PERM-001, FUNGI-GDCE-001, FUNGI-PRIVACY-002, FUNGI-PCI-G-000, FUNGI-ASSIMILATE-004, ERR_BRIDGE_UNATTESTED, ERR_HOST_NATIVE_DENIED, ERR_AI_MODEL_NOT_APPROVED, FUNGI-GOV-TPL-001, FUNGI-ASSIMILATE-003, FUNGI-BUILD-002, FUNGI-ATTR-001, FUNGI-PRIVACY-001, FUNGI-EFFECT-006, FUNGI-SEC-020, FUNGI-NAME-001, ERR_CERTIFIED, FUNGI-MATCH-001, FUNGI-GOV-003, ERR_ADDON_UNPINNED, FUNGI-SECRET-004, FUNGI-RETAIN-001, FUNGI-SUBSTRATE-001
-- tasks: #149, #102, #34, #0089, #212, #110, #10, #11, #194, #205, #155
+- tasks: #195, #149, #102, #34, #0089, #212, #110, #10, #11, #194, #205, #155
 - links: [[feedback-rd-absorb-positive-and-negative]] [[galerina-ci-state-and-cross-repo-gates]] [[galerina-kernel-ts-vs-fungi-rationale]] [[galerina-graph-ascii-outcome-and-gate-pipeline-2026-07-01]] [[galerina-graph-ascii-spec-and-ab-benchmark-2026-07-01]] [[galerina-rd-0236-runtime-50yr-mistake-audit]] [[galerina-rd-0237-runtime-governance-in-gate-reexamination]] [[galerina-rd-0234-fungi-50yr-mistake-audit]] [[galerina-rd-0234b-fungi-second-pass-hunt]] [[fail-closed-no-50yr-mistake-rule]]
 - terms: gate, owner, galerina, mjs, fungi, real, signed, graph, shipped, never, spore, verdict, photonic, design
 
@@ -2548,6 +2553,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #201, #34, #102, #149
 - terms: owner, galerina, spore, audit, repo, session, gate, still, green, rename, tmf, token, rebrand, w5b
 
+## Galerina — Roadmap 2026-07-10 (post component-completion + full-cadence pass)
+`../ZTF-Knowledge-Bases/galerina-roadmap-2026-07-10.md`
+- tasks: #34, #20, #21, #13, #10, #11, #12
+- terms: track, unchanged, pass, session, main, galerina, roadmap, component, owner-side, implement, scaffolds, standing, post, component-completion
+
 ## Galerina — Completion % Audit + Roadmap (2026-06-17)
 `../ZTF-Knowledge-Bases/galerina-roadmap-and-audit-2026-06-17.md`
 - tasks: #128, #194, #127, #110, #34, #149, #199
@@ -2615,8 +2625,8 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## Galerina — Roadmap (authoritative forward view)
 `../ZTF-Knowledge-Bases/galerina-roadmap.md`
 - codes: FUNGI-NUMERIC-001, FUNGI-EFFECT-006, FUNGI-PRIVACY-002, FUNGI-LIMIT-001, FUNGI-PKG-006
-- tasks: #10, #105, #143, #34, #155, #102, #103, #104, #106, #146, #147, #148, #156, #157, #158, #69, #110, #161, #191, #150
-- terms: forward, gate, carried, galerina, audit, real, owner, wasm, open, post-p9, line, still, build, dss
+- tasks: #34, #10, #105, #143, #155, #102, #103, #104, #106, #146, #147, #148, #156, #157, #158, #69, #110, #161, #191, #150
+- terms: forward, gate, carried, galerina, audit, real, wasm, owner, open, post-p9, line, still, build, dss
 
 ## Galerina Route Runtime Specification
 `../ZTF-Knowledge-Bases/galerina-route-runtime-spec.md`
@@ -2672,7 +2682,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/galerina-runtime-status-SOT.md`
 - codes: FUNGI-GATELANG-002, FUNGI-PKG-006, ERR_BRIDGE_UNATTESTED, ERR_CERTIFIED_NO_ATTESTATION, ERR_CAPABILITY_DENIED, ERR_ADDON_HASH_MISMATCH, FUNGI-MATCH-001
 - tasks: #10, #150, #143, #105, #144, #145, #160, #113, #97, #98, #93, #89, #88, #86, #87, #82, #83, #81, #40, #92, #90, #102, #106, #112
-- terms: stage, tests, status, galerina, fungi, real, session, test, gate, phase, wasm, governed, verified, prior
+- terms: stage, tests, status, galerina, fungi, real, session, test, gate, phase, wasm, prior, governed, verified
 
 ## Galerina Runtime Value Model
 `../ZTF-Knowledge-Bases/galerina-runtime-value-model.md`
@@ -3171,7 +3181,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## HANDOVER — R&D session master index (all deliverables) · 2026-07-09
 `../ZTF-Knowledge-Bases/HANDOVER-RnD-master-index-2026-07-09.md`
 - tasks: #149
-- terms: index, handover, owner, internal, session, deliverables, bridge, none, api, main, photonic, paper, security, gap
+- terms: handover, index, internal, owner, session, bridge, deliverables, main, none, api, gap, tritmesh, photonic, run
 
 ## Handover — R&D research session, 2026-07-01 (for the main/hub session)
 `../ZTF-Knowledge-Bases/HANDOVER-rnd-research-session-2026-07-01.md`
@@ -3350,9 +3360,13 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-GOV-3VL-001
 - terms: indeterminate, allow, fold, four, never, channel, tls, claims, pki, disclosure, revocation, cadence, side-signal, named
 
+## DP-RD-0309 — Photonic and analog substrates cannot host post-quantum cryptographic authentication: three independent arguments
+`../ZTF-Knowledge-Bases/papers/dp-rd-0309-photonic-substrate-cannot-host-pq-authentication.md`
+- terms: analog, physical, argument, cannot, three, arguments, decision, authentication, exact, photonic, framing, construction, hardware, cryptographic
+
 ## KB papers — defensive-publication drafts (R&D session)
 `../ZTF-Knowledge-Bases/papers/README.md`
-- terms: paper, session, here, papers, drafts, directive, before, defensive-publication, galerina, lives, harm, filter, owner, read
+- terms: paper, drafts, session, here, papers, harm, filter, staged, directive, before, defensive-publication, galerina, lives, construction
 
 ## Galerina — Parser Error Recovery Policy
 `../ZTF-Knowledge-Bases/parser-error-recovery.md`
@@ -3456,7 +3470,13 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 
 ## PROMPT — main session pickup: all R&D handovers (2026-07-09)
 `../ZTF-Knowledge-Bases/PROMPT-main-session-pickup-all-handovers-2026-07-09.md`
-- terms: session, main, handovers, prompt, pickup, listener, ztf-knowledge-bases, read, build, api, schematic, src, corrected, handover
+- tasks: #149
+- terms: session, main, handovers, prompt, pickup, listener, read, ztf-knowledge-bases, owner-gated, build, api, schematic, src, corrected
+
+## PROMPT — main session pickup: all R&D since RD-0303 (2026-07-10)
+`../ZTF-Knowledge-Bases/PROMPT-main-session-pickup-all-handovers-2026-07-10.md`
+- tasks: #149
+- terms: bridge, live, rd-0303, read, queue, since, branch, code, security, key, main, session, commit-only, ran
 
 ## PROMPT — main session: implement the adopted R&D from RD-0283..0289 · 2026-07-09
 `../ZTF-Knowledge-Bases/PROMPT-main-session-rd-0283-0289-implementation-2026-07-09.md`
@@ -3512,11 +3532,21 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/PROMPT-rd-logicn-to-galerina-rebrand-handover-2026-07-09.md`
 - terms: galerina, tier, logicn, owner, mjs, lln, fungi, rename, structural, mechanical, rebrand, old, files, main
 
+## R&D PROMPT — target-planning capability provenance: wire target-* to tower-citizen / tri-pipe
+`../ZTF-Knowledge-Bases/PROMPT-rnd-target-capability-provenance-2026-07-10.md`
+- codes: ERR_BRIDGE_UNATTESTED
+- terms: capability, prompt, tower-citizen, owner, tri-pipe, provenance, code, target-, tower, findings, wire, research, why, instead
+
 ## PROMPT — Galerina logic/syntax update → 100% beta-shippable (2026-07-08)
 `../ZTF-Knowledge-Bases/PROMPT-syntax-update-beta-shippable-2026-07-08.md`
 - codes: FUNGI-MATCH-001, FUNGI-SUBSTRATE-001, FUNGI-MEMORY-001, FUNGI-K3-001
 - tasks: #34, #102, #150, #149
 - terms: gate, fungi, version, contract, syntax, every, docs, error, deny, owner, security, flip, schema, never
+
+## PUBLICATION-CONTROL — the do-not-publish register (authoritative) · 2026-07-10
+`../ZTF-Knowledge-Bases/PUBLICATION-CONTROL-do-not-publish-register.md`
+- tasks: #149
+- terms: internal, public, fix, lands, allow-list, weakness, attacker, register, galerina, deny, whole, file, public-safe, publishable
 
 ## Quantum Readiness
 `../ZTF-Knowledge-Bases/quantum-readiness.md`

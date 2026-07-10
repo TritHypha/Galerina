@@ -274,49 +274,214 @@ Provides:
 
 Galerina data processing package umbrella contracts.
 
+Provides:
+- DataFamilyPackage
+- DATA_FAMILY_PACKAGES
+- DataMemoryLimits
+- DataSecurityBoundary
+- DataBoundaryDeclaration
+- DataChecksumAlgorithm
+- ArchiveIntegrityRef
+- DataReportStatus
+- DataFamilyReportEntry
+- DataFamilyReportIndex
+- DataDiagnosticSeverity
+- DataDiagnostic
+
 ## galerina-data-html
 
 Galerina HTML parse, sanitize, render and search document contracts.
+
+Provides:
+- HtmlParseMode
+- HtmlParsePlan
+- HtmlSanitizePolicy
+- HtmlRenderPlan
+- HtmlExtractionTarget
+- HtmlExtractionPlan
+- HtmlSearchField
+- HtmlSearchDocumentPlan
+- HtmlUnsafeFindingKind
+- HtmlUnsafeAction
+- HtmlUnsafeFinding
+- HtmlProcessingReport
 
 ## galerina-data-search
 
 Galerina search document, indexing, query and search report contracts.
 
+Provides:
+- SearchFieldKind
+- SearchDocumentField
+- SearchDocumentContract
+- SearchIndexPolicy
+- SearchIndexInput
+- SearchFilterOperator
+- SearchFilter
+- SearchQueryContract
+- SearchRankingStrategy
+- SearchFieldBoost
+- SearchRankingMetadata
+- SearchIndexReport
+
 ## galerina-data-archive
 
 Galerina archive manifest, integrity and restore report contracts.
+
+Provides:
+- ChecksumAlgorithm
+- ChecksumRef
+- ContentAddressedRef
+- ArchiveItem
+- SignatureAlgorithm
+- SignatureRef
+- RetentionPolicyRef
+- ArchiveManifest
+- ArchiveVerificationStatus
+- ArchiveIntegrityReport
+- ArchiveRestoreReport
+- ArchiveDiagnosticSeverity
 
 ## galerina-data-db
 
 Galerina typed database boundary contracts for model, query, command, response, archive and report flows.
 
+Provides:
+- DbBoundaryOperationKind
+- DbBoundaryOperation
+- DbBoundaryRequirements
+- DbModelFlow
+- DbReportIndexEntry
+- DbReportIndex
+- DbBoundaryReport
+- DbDiagnosticSeverity
+- DbDiagnostic
+- KNOWN_DB_OPERATION_KINDS
+- validateDbBoundaryOperation
+- validateDbBoundaryRequirements
+
 ## galerina-data-model
 
 Galerina typed database model, field classification and storage mapping contracts.
+
+Provides:
+- ModelFieldClassification
+- ModelFieldType
+- SecretStorageMode
+- ModelField
+- ModelKeyKind
+- ModelKey
+- ModelPermissionAction
+- ModelPermission
+- StorageKind
+- StorageMapping
+- DataModelContract
+- DataModelDiagnosticSeverity
 
 ## galerina-data-query
 
 Galerina typed query, command, parameterisation and database access report contracts.
 
+Provides:
+- QueryParameterType
+- QueryParameter
+- QueryCardinality
+- TypedQueryDeclaration
+- CommandEffect
+- TypedCommandDeclaration
+- RawSqlException
+- DatabaseAccessPolicy
+- QueryOption
+- optionSome
+- optionNone
+- isSome
+
 ## galerina-data-response
 
 Galerina safe database-model-to-response mapping and response report contracts.
+
+Provides:
+- ResponseFieldClassification
+- SourceModelField
+- ResponseFieldMapping
+- ModelToResponseMapping
+- ResponseFlowDeclaration
+- ResponseReportKind
+- ResponseReport
+- ResponseDiagnosticSeverity
+- ResponseDiagnostic
+- validateResponseMapping
+- validateResponseFlow
+- applyResponseMapping
 
 ## galerina-data-json
 
 Galerina JSON streaming, validation, redaction and archive contracts.
 
+Provides:
+- JsonDecodeMode
+- JsonMemoryPolicy
+- JsonDecodePlan
+- JsonSchemaKind
+- JsonSchemaField
+- JsonSchemaContract
+- JsonExtractionPlan
+- JsonRedactionPolicy
+- JsonArchiveReport
+- JsonDiagnosticSeverity
+- JsonDiagnostic
+- validateJsonMemoryPolicy
+
 ## galerina-data-database
 
 Galerina database export, snapshot, checksum and archive contracts.
+
+Provides:
+- DatabaseChecksumAlgorithm
+- DatabaseChecksum
+- SchemaVersionMetadata
+- DatabaseSnapshotMetadata
+- TableExportContract
+- DatabaseExportContract
+- DatabaseVerificationStatus
+- DatabaseExportReport
+- DatabaseRestoreValidationReport
+- DatabaseDiagnosticSeverity
+- DatabaseDiagnostic
+- validateDatabaseChecksum
 
 ## galerina-data-pipeline
 
 Galerina bounded streaming data pipeline, backpressure and checkpoint contracts.
 
+Provides:
+- PipelineSourceKind
+- PipelineSource
+- PipelineTransform
+- BatchWindow
+- SaturationBehaviour
+- BackpressurePolicy
+- CheckpointPolicy
+- RetryPolicy
+- QuarantinePolicy
+- PipelineBudgets
+- PipelineStage
+- PipelineDefinition
+
 ## galerina-data-reports
 
 Galerina data processing, HTML, search, archive and pipeline report contracts.
+
+Provides:
+- DataReportKind
+- DataReportStatus
+- DataReportDiagnosticSeverity
+- DataReportDiagnostic
+- DataReportEnvelope
+- KNOWN_DATA_REPORT_KINDS
+- deriveDataReportStatus
+- validateDataReportEnvelope
+- createDataReportEnvelope
 
 ## galerina-web
 
@@ -434,6 +599,20 @@ Provides:
 ## galerina-target-js
 
 Galerina JavaScript output target planning contracts.
+
+Provides:
+- JsRuntime
+- JsModuleFormat
+- SourceMapMode
+- SourceMapRule
+- JsOutputPlan
+- EsModuleMetadata
+- FrameworkAdapterMetadata
+- JsBundleCheckOutcome
+- JsBundleReport
+- JsTargetDiagnosticSeverity
+- JsTargetDiagnostic
+- isServerOnlyImport
 
 ## galerina-target-wasm
 

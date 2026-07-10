@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 828,
+  "docCount": 834,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -26363,6 +26363,50 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/galerina-rd-0310-linux-os-host-layer-beneath-galerina-tritmesh.md",
+      "title": "RD-0310 — the Linux / host / OS / kernel-network layer beneath Galerina & TritMesh (Phase 2) · 2026-07-10",
+      "headings": [
+        "1. Two corrected framings (CONFIRMED)",
+        "2. Finding→OS-control mapping (the Galerina-specific spine)",
+        "3. Phase 2 answers by domain (generic control · what Galerina does · code-vs-ops · tier)",
+        "4. ⛔ INTERNAL — Galerina-specific residuals (owner-only; do NOT publish)",
+        "5. Ranked checklist (fail-closed, owner-gated, propose-only)",
+        "6. Honest headline"
+      ],
+      "codes": [],
+      "tasks": [
+        "#195"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "galerina",
+        "host",
+        "code",
+        "confirmed",
+        "key",
+        "phase",
+        "zero",
+        "galerina-specific",
+        "posture",
+        "linux",
+        "dockerfile",
+        "real",
+        "tritmesh",
+        "firewall",
+        "default",
+        "control",
+        "gap",
+        "dead",
+        "ops",
+        "layer",
+        "beneath",
+        "never",
+        "user",
+        "node",
+        "finding"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/galerina-rd-34b-paramtaint-buildspec-2026-06-24.md",
       "title": "R&D — Phase 34B boundary param auto-taint: verified state + build-ready spec",
       "headings": [
@@ -27829,6 +27873,7 @@
         "FUNGI-SUBSTRATE-001"
       ],
       "tasks": [
+        "#195",
         "#149",
         "#102",
         "#34",
@@ -27868,8 +27913,8 @@
         "verdict",
         "photonic",
         "design",
-        "build",
         "audit",
+        "build",
         "green",
         "fail-closed",
         "proof",
@@ -27877,7 +27922,7 @@
         "runtime",
         "security",
         "mixed",
-        "refuted",
+        "tritmesh",
         "fix"
       ]
     },
@@ -28605,6 +28650,55 @@
         "gir",
         "priority",
         "every"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/galerina-roadmap-2026-07-10.md",
+      "title": "Galerina — Roadmap 2026-07-10 (post component-completion + full-cadence pass)",
+      "headings": [
+        "Track A — Component completion to 100% (owner-ordered 2026-07-10: IMPLEMENT the scaffolds)",
+        "Track B — R&D research (parallel, propose-and-land)",
+        "Track C — Standing tasks (main session)",
+        "Track D — Owner-side gates (unchanged unless noted)",
+        "Self-hosting (Track E — unchanged)"
+      ],
+      "codes": [],
+      "tasks": [
+        "#34",
+        "#20",
+        "#21",
+        "#13",
+        "#10",
+        "#11",
+        "#12"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "track",
+        "unchanged",
+        "pass",
+        "session",
+        "main",
+        "galerina",
+        "roadmap",
+        "component",
+        "owner-side",
+        "implement",
+        "scaffolds",
+        "standing",
+        "post",
+        "component-completion",
+        "full-cadence",
+        "owner",
+        "completion",
+        "owner-ordered",
+        "validators",
+        "contracts",
+        "research",
+        "parallel",
+        "propose-and-land",
+        "tasks",
+        "gates"
       ]
     },
     {
@@ -29455,10 +29549,10 @@
         "FUNGI-PKG-006"
       ],
       "tasks": [
+        "#34",
         "#10",
         "#105",
         "#143",
-        "#34",
         "#155",
         "#102",
         "#103",
@@ -29484,8 +29578,8 @@
         "galerina",
         "audit",
         "real",
-        "owner",
         "wasm",
+        "owner",
         "open",
         "post-p9",
         "line",
@@ -29502,7 +29596,7 @@
         "compiler",
         "admission",
         "byte-parity",
-        "roadmap"
+        "view"
       ]
     },
     {
@@ -30321,9 +30415,9 @@
         "gate",
         "phase",
         "wasm",
+        "prior",
         "governed",
         "verified",
-        "prior",
         "full",
         "dss",
         "tasks",
@@ -35776,31 +35870,31 @@
       ],
       "xrefs": [],
       "topTerms": [
-        "index",
         "handover",
-        "owner",
+        "index",
         "internal",
+        "owner",
         "session",
-        "deliverables",
         "bridge",
+        "deliverables",
+        "main",
         "none",
         "api",
-        "main",
+        "gap",
+        "tritmesh",
         "photonic",
+        "run",
         "paper",
         "security",
-        "gap",
+        "kernel",
+        "live",
+        "galerina",
         "owner-gated",
+        "real",
         "name",
         "detailed",
         "science",
-        "kernel",
-        "streaming",
-        "spore",
-        "live",
-        "tritsocket",
-        "tritmesh",
-        "commit-only"
+        "code"
       ]
     },
     {
@@ -38025,11 +38119,56 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/papers/dp-rd-0309-photonic-substrate-cannot-host-pq-authentication.md",
+      "title": "DP-RD-0309 — Photonic and analog substrates cannot host post-quantum cryptographic authentication: three independent arguments",
+      "headings": [
+        "Abstract",
+        "1. The claim, precisely",
+        "2. Argument I — hardware precision (exact modular arithmetic vs analog dynamic range)",
+        "3. Argument II — information framing (encoding is not encryption)",
+        "4. Argument III — physical forgeability (a public observable cannot authenticate)",
+        "5. What the three arguments share, and why convergence matters",
+        "6. The sound role that remains, and a safe construction",
+        "7. Conclusion"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "analog",
+        "physical",
+        "argument",
+        "cannot",
+        "three",
+        "arguments",
+        "decision",
+        "authentication",
+        "exact",
+        "photonic",
+        "framing",
+        "construction",
+        "hardware",
+        "cryptographic",
+        "independent",
+        "safe",
+        "host",
+        "conclusion",
+        "role",
+        "remains",
+        "optical",
+        "modular",
+        "encryption",
+        "public",
+        "observable"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/papers/README.md",
       "title": "KB papers — defensive-publication drafts (R&D session)",
       "headings": [
         "What lives here",
         "The harm filter (owner directive, 2026-07-09) — READ BEFORE ADDING A PAPER",
+        "Drafts currently staged",
         "Numbering",
         "Provenance"
       ],
@@ -38038,30 +38177,30 @@
       "xrefs": [],
       "topTerms": [
         "paper",
+        "drafts",
         "session",
         "here",
         "papers",
-        "drafts",
+        "harm",
+        "filter",
+        "staged",
         "directive",
         "before",
         "defensive-publication",
         "galerina",
         "lives",
-        "harm",
-        "filter",
+        "construction",
         "owner",
         "read",
         "adding",
+        "currently",
         "numbering",
         "provenance",
         "docs",
-        "defensive",
-        "disclosures",
-        "construction",
-        "prior",
-        "art",
         "galerina-specific",
-        "bypass"
+        "safe",
+        "defensive",
+        "disclosures"
       ]
     },
     {
@@ -39236,7 +39375,9 @@
       "title": "PROMPT — main session pickup: all R&D handovers (2026-07-09)",
       "headings": [],
       "codes": [],
-      "tasks": [],
+      "tasks": [
+        "#149"
+      ],
       "xrefs": [],
       "topTerms": [
         "session",
@@ -39245,8 +39386,9 @@
         "prompt",
         "pickup",
         "listener",
-        "ztf-knowledge-bases",
         "read",
+        "ztf-knowledge-bases",
+        "owner-gated",
         "build",
         "api",
         "schematic",
@@ -39254,16 +39396,59 @@
         "corrected",
         "handover",
         "session-bridge",
+        "prompt-main-session-pickup-all-handovers-2026-07-10",
+        "everything",
+        "queue",
         "galerina",
         "single",
         "entry",
         "point",
         "left",
+        "commit-only"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/PROMPT-main-session-pickup-all-handovers-2026-07-10.md",
+      "title": "PROMPT — main session pickup: all R&D since RD-0303 (2026-07-10)",
+      "headings": [
+        "① Read first — the single entry point",
+        "② The findings that most change the security picture (read before the queue)",
+        "③ The full R&D set since RD-0303",
+        "④ Live comms bridge — `_session-bridge/to-main/` (poll each turn)",
+        "⑤ One code branch awaiting your review (commit-only, NOT pushed)",
+        "⑥ Owner-gated action queue (refreshed; security-first; R&D ran none)"
+      ],
+      "codes": [],
+      "tasks": [
+        "#149"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "bridge",
+        "live",
+        "rd-0303",
+        "read",
+        "queue",
+        "since",
+        "branch",
+        "code",
+        "security",
+        "key",
+        "main",
+        "session",
         "commit-only",
-        "owner",
-        "pushes",
-        "every",
-        "index"
+        "ran",
+        "pushed",
+        "first",
+        "owner-gated",
+        "findings",
+        "zero",
+        "gap",
+        "session-bridge",
+        "prompt",
+        "pickup",
+        "galerina",
+        "owner"
       ]
     },
     {
@@ -39805,6 +39990,50 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/PROMPT-rnd-target-capability-provenance-2026-07-10.md",
+      "title": "R&D PROMPT — target-planning capability provenance: wire target-* to tower-citizen / tri-pipe",
+      "headings": [
+        "Why this prompt exists (owner's question, verbatim intent)",
+        "Verified code facts (2026-07-10 — do not re-derive, spot-check instead)",
+        "The gap, stated precisely",
+        "Research questions (produce RD-0304+ numbered findings)",
+        "Constraints (house rules — binding)",
+        "Deliverables"
+      ],
+      "codes": [
+        "ERR_BRIDGE_UNATTESTED"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "capability",
+        "prompt",
+        "tower-citizen",
+        "owner",
+        "tri-pipe",
+        "provenance",
+        "code",
+        "target-",
+        "tower",
+        "findings",
+        "wire",
+        "research",
+        "why",
+        "instead",
+        "house",
+        "target-planning",
+        "exists",
+        "question",
+        "verbatim",
+        "intent",
+        "target",
+        "fail-closed",
+        "plan",
+        "verified",
+        "facts"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/PROMPT-syntax-update-beta-shippable-2026-07-08.md",
       "title": "PROMPT — Galerina logic/syntax update → 100% beta-shippable (2026-07-08)",
       "headings": [
@@ -39864,6 +40093,50 @@
         "wasm",
         "gir",
         "must"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/PUBLICATION-CONTROL-do-not-publish-register.md",
+      "title": "PUBLICATION-CONTROL — the do-not-publish register (authoritative) · 2026-07-10",
+      "headings": [
+        "0. The default: DENY (this is the whole point)",
+        "1. ✅ PUBLIC-SAFE allow-list (the ONLY things that may become public)",
+        "2. ⏳ HOLD-UNTIL-FIXED (publishable only after the named fix lands + is verified)",
+        "3. ⛔ NEVER-PUBLIC (attacker roadmaps — guard these hardest)",
+        "4. Enforcement (how to actually prevent the leak)",
+        "5. Maintenance"
+      ],
+      "codes": [],
+      "tasks": [
+        "#149"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "internal",
+        "public",
+        "fix",
+        "lands",
+        "allow-list",
+        "weakness",
+        "attacker",
+        "register",
+        "galerina",
+        "deny",
+        "whole",
+        "file",
+        "public-safe",
+        "publishable",
+        "after",
+        "named",
+        "verified",
+        "authoritative",
+        "papers",
+        "default",
+        "point",
+        "construction",
+        "hold-until-fixed",
+        "become",
+        "never-public"
       ]
     },
     {

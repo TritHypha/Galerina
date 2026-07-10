@@ -3053,7 +3053,7 @@
     ],
     "emits": [
       "packages-galerina/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:35",
-      "scripts/audit-coverage.mjs:105"
+      "scripts/audit-coverage.mjs:116"
     ],
     "tests": 2,
     "refs": 1,
@@ -3068,7 +3068,7 @@
       "test packages-galerina/galerina-core-logic/tests/logic-v02-contracts.test.mjs:522",
       "doc packages-galerina/galerina-core-logic/TODO.md:35",
       "doc docs/COVERAGE.md:460",
-      "emit scripts/audit-coverage.mjs:105",
+      "emit scripts/audit-coverage.mjs:116",
       "test scripts/tests/codes.test.mjs:14"
     ]
   },
@@ -10124,15 +10124,15 @@
     "code": "FUNGI-NAME-001",
     "namespace": "FUNGI",
     "family": "NAME",
-    "occurrences": 52,
+    "occurrences": 56,
     "docOnly": false,
     "defs": [],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/symbol-resolver.ts:404",
       "packages-galerina/galerina-core-compiler/src/symbol-resolver.ts:582"
     ],
-    "tests": 35,
-    "refs": 10,
+    "tests": 37,
+    "refs": 11,
     "docs": 5,
     "names": [
       "UndeclaredName"
@@ -10147,11 +10147,13 @@
       "ref packages-galerina/galerina-core-compiler/scripts/cec-promotion-pass.mjs:28",
       "ref packages-galerina/galerina-core-compiler/scripts/cec-test-003.mjs:16",
       "ref packages-galerina/galerina-core-compiler/src/security-gate.ts:22",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/lexer.fungi:152",
       "ref packages-galerina/galerina-core-compiler/src/symbol-resolver.ts:7",
       "emit packages-galerina/galerina-core-compiler/src/symbol-resolver.ts:404",
       "ref packages-galerina/galerina-core-compiler/src/symbol-resolver.ts:497",
       "ref packages-galerina/galerina-core-compiler/src/symbol-resolver.ts:517",
       "emit packages-galerina/galerina-core-compiler/src/symbol-resolver.ts:582",
+      "ref packages-galerina/galerina-core-compiler/src/symbol-resolver.ts:603",
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:39",
       "test packages-galerina/galerina-core-compiler/tests/cec-integration.test.mjs:46",
       "test packages-galerina/galerina-core-compiler/tests/import-resolver.test.mjs:7",
@@ -10179,6 +10181,8 @@
       "test packages-galerina/galerina-core-compiler/tests/output-postconditions.test.mjs:104",
       "test packages-galerina/galerina-core-compiler/tests/output-postconditions.test.mjs:108",
       "test packages-galerina/galerina-core-compiler/tests/output-postconditions.test.mjs:116",
+      "test packages-galerina/galerina-core-compiler/tests/symbol-resolver-receiver-marker.test.mjs:7",
+      "test packages-galerina/galerina-core-compiler/tests/symbol-resolver-receiver-marker.test.mjs:21",
       "test packages-galerina/galerina-core-compiler/tests/symbol-resolver.test.mjs:15",
       "test packages-galerina/galerina-core-compiler/tests/symbol-resolver.test.mjs:16",
       "test packages-galerina/galerina-core-compiler/tests/symbol-resolver.test.mjs:22",
@@ -11047,7 +11051,7 @@
       "doc docs/language/fungi/07-control-flow.md:231",
       "doc docs/language/fungi/07-control-flow.md:272",
       "ref scripts/audit-syntax.mjs:4",
-      "ref scripts/rebuild-fusable-packages.mjs:97"
+      "ref scripts/rebuild-fusable-packages.mjs:100"
     ]
   },
   {
