@@ -13,7 +13,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | referenced | 97 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 8 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
 | phantom | 110 | doc-only mention, not in source (drift — DOC-004) |
-| ref | 159 | referenced only (no def/emit) |
+| ref | 173 | referenced only (no def/emit) |
 
 ## RESERVED — defined but not emitted (std #1: tag wire-or-retire)
 
@@ -1336,6 +1336,25 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-WASM-001 | phantom | — | — |
 | FUNGI-WASM-004 | phantom | — | — |
 | FUNGI-WASM-005 | phantom | — | — |
+
+### WEB (14)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-WEB-001 | ref | — | — |
+| FUNGI-WEB-002 | ref | — | — |
+| FUNGI-WEB-003 | ref | — | — |
+| FUNGI-WEB-010 | ref | — | — |
+| FUNGI-WEB-011 | ref | — | — |
+| FUNGI-WEB-020 | ref | — | — |
+| FUNGI-WEB-021 | ref | — | — |
+| FUNGI-WEB-022 | ref | — | — |
+| FUNGI-WEB-030 | ref | — | — |
+| FUNGI-WEB-031 | ref | — | — |
+| FUNGI-WEB-040 | ref | — | — |
+| FUNGI-WEB-041 | ref | — | — |
+| FUNGI-WEB-042 | ref | — | — |
+| FUNGI-WEB-050 | ref | — | — |
 
 ### WORKFLOW (3)
 

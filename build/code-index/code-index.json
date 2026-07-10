@@ -19538,6 +19538,252 @@
     ]
   },
   {
+    "code": "FUNGI-WEB-001",
+    "namespace": "FUNGI",
+    "family": "WEB",
+    "occurrences": 2,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 2,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "test packages-galerina/galerina-web-render/tests/web-render.failclosed.test.mjs:19",
+      "test packages-galerina/galerina-web-render/tests/web-render.failclosed.test.mjs:35"
+    ]
+  },
+  {
+    "code": "FUNGI-WEB-002",
+    "namespace": "FUNGI",
+    "family": "WEB",
+    "occurrences": 1,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 1,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "test packages-galerina/galerina-web-render/tests/web-render.failclosed.test.mjs:22"
+    ]
+  },
+  {
+    "code": "FUNGI-WEB-003",
+    "namespace": "FUNGI",
+    "family": "WEB",
+    "occurrences": 1,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 1,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "test packages-galerina/galerina-web-render/tests/web-render.failclosed.test.mjs:46"
+    ]
+  },
+  {
+    "code": "FUNGI-WEB-010",
+    "namespace": "FUNGI",
+    "family": "WEB",
+    "occurrences": 2,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 2,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "test packages-galerina/galerina-web-state/tests/web-state.failclosed.test.mjs:19",
+      "test packages-galerina/galerina-web-state/tests/web-state.failclosed.test.mjs:20"
+    ]
+  },
+  {
+    "code": "FUNGI-WEB-011",
+    "namespace": "FUNGI",
+    "family": "WEB",
+    "occurrences": 1,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 1,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "test packages-galerina/galerina-web-state/tests/web-state.failclosed.test.mjs:50"
+    ]
+  },
+  {
+    "code": "FUNGI-WEB-020",
+    "namespace": "FUNGI",
+    "family": "WEB",
+    "occurrences": 2,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 2,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "test packages-galerina/galerina-web-router/tests/web-router.failclosed.test.mjs:30",
+      "test packages-galerina/galerina-web-router/tests/web-router.failclosed.test.mjs:31"
+    ]
+  },
+  {
+    "code": "FUNGI-WEB-021",
+    "namespace": "FUNGI",
+    "family": "WEB",
+    "occurrences": 1,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 1,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "test packages-galerina/galerina-web-router/tests/web-router.failclosed.test.mjs:56"
+    ]
+  },
+  {
+    "code": "FUNGI-WEB-022",
+    "namespace": "FUNGI",
+    "family": "WEB",
+    "occurrences": 1,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 1,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "test packages-galerina/galerina-web-router/tests/web-router.failclosed.test.mjs:69"
+    ]
+  },
+  {
+    "code": "FUNGI-WEB-030",
+    "namespace": "FUNGI",
+    "family": "WEB",
+    "occurrences": 2,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 2,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "test packages-galerina/galerina-web-events/tests/web-events.failclosed.test.mjs:27",
+      "test packages-galerina/galerina-web-events/tests/web-events.failclosed.test.mjs:28"
+    ]
+  },
+  {
+    "code": "FUNGI-WEB-031",
+    "namespace": "FUNGI",
+    "family": "WEB",
+    "occurrences": 1,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 1,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "test packages-galerina/galerina-web-events/tests/web-events.failclosed.test.mjs:38"
+    ]
+  },
+  {
+    "code": "FUNGI-WEB-040",
+    "namespace": "FUNGI",
+    "family": "WEB",
+    "occurrences": 2,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 2,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "test packages-galerina/galerina-web-components/tests/web-components.failclosed.test.mjs:27",
+      "test packages-galerina/galerina-web-components/tests/web-components.failclosed.test.mjs:28"
+    ]
+  },
+  {
+    "code": "FUNGI-WEB-041",
+    "namespace": "FUNGI",
+    "family": "WEB",
+    "occurrences": 1,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 1,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "test packages-galerina/galerina-web-components/tests/web-components.failclosed.test.mjs:46"
+    ]
+  },
+  {
+    "code": "FUNGI-WEB-042",
+    "namespace": "FUNGI",
+    "family": "WEB",
+    "occurrences": 1,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 1,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "test packages-galerina/galerina-web-components/tests/web-components.failclosed.test.mjs:53"
+    ]
+  },
+  {
+    "code": "FUNGI-WEB-050",
+    "namespace": "FUNGI",
+    "family": "WEB",
+    "occurrences": 4,
+    "docOnly": false,
+    "defs": [],
+    "emits": [],
+    "tests": 4,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "test packages-galerina/galerina-web/tests/web.failclosed.test.mjs:39",
+      "test packages-galerina/galerina-web/tests/web.failclosed.test.mjs:40",
+      "test packages-galerina/galerina-web/tests/web.failclosed.test.mjs:49",
+      "test packages-galerina/galerina-web/tests/web.failclosed.test.mjs:60"
+    ]
+  },
+  {
     "code": "FUNGI-WORKFLOW-001",
     "namespace": "FUNGI",
     "family": "WORKFLOW",

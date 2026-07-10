@@ -487,25 +487,109 @@ Provides:
 
 Galerina browser-safe web package umbrella contracts.
 
+Provides:
+- WebFamilyPackage
+- WEB_FAMILY_PACKAGES
+- WebDiagnosticSeverity
+- WebDiagnostic
+- BrowserRuntimeProfile
+- WebRuntimeCheck
+- WebRuntimeCheckOutcome
+- WebReportStatus
+- BrowserRuntimeReport
+- WEB_RUNTIME_CHECKS
+- WebFamilyReportEntry
+- WebFamilyReportIndex
+
 ## galerina-web-render
 
 Galerina typed safe browser rendering pipeline contracts.
+
+Provides:
+- WebRenderDiagnosticSeverity
+- WebRenderDiagnostic
+- TextRenderContent
+- SafeHtmlRenderContent
+- RenderableContent
+- KNOWN_RENDERABLE_CONTENT_KINDS
+- StateDiffRenderPlan
+- StreamingBatchRenderPlan
+- DomUpdateCounts
+- WebRenderCheck
+- WebRenderCheckOutcome
+- WebRenderReportStatus
 
 ## galerina-web-state
 
 Galerina browser client state and state-diff contracts.
 
+Provides:
+- WebStateDiagnosticSeverity
+- WebStateDiagnostic
+- PageStatePhase
+- KNOWN_PAGE_STATE_PHASES
+- PageStateFieldKind
+- KNOWN_PAGE_STATE_FIELD_KINDS
+- PageStateField
+- PageStateContract
+- ApiToStateConversion
+- HydrationFieldClassification
+- KNOWN_HYDRATION_CLASSIFICATIONS
+- HydrationPayloadField
+
 ## galerina-web-components
 
 Galerina typed browser component boundary contracts.
+
+Provides:
+- WebComponentsDiagnosticSeverity
+- WebComponentsDiagnostic
+- ComponentPropKind
+- KNOWN_COMPONENT_PROP_KINDS
+- ComponentProp
+- ComponentTextChild
+- ComponentSafeHtmlChild
+- ComponentChildContent
+- KNOWN_COMPONENT_CHILD_KINDS
+- ComponentSlotContent
+- ComponentEffect
+- KNOWN_COMPONENT_EFFECTS
 
 ## galerina-web-router
 
 Galerina browser route and navigation contracts.
 
+Provides:
+- WebRouterDiagnosticSeverity
+- WebRouterDiagnostic
+- RouteParamValidatorKind
+- KNOWN_ROUTE_PARAM_VALIDATORS
+- RouteParamDeclaration
+- RouteDataFetchContract
+- RouteContract
+- RoutePreloadPolicy
+- WebRouterCheck
+- WebRouterCheckOutcome
+- WebRouterReportStatus
+- WebRouteReport
+
 ## galerina-web-events
 
 Galerina typed browser event contracts.
+
+Provides:
+- WebEventsDiagnosticSeverity
+- WebEventsDiagnostic
+- WebEventKind
+- KNOWN_WEB_EVENT_KINDS
+- EventPayloadFieldKind
+- KNOWN_EVENT_PAYLOAD_FIELD_KINDS
+- EventPayloadField
+- EventPropagationPolicy
+- KNOWN_EVENT_PROPAGATION_POLICIES
+- EventRatePolicy
+- SensitiveCapability
+- KNOWN_SENSITIVE_CAPABILITIES
 
 ## galerina-db-postgres
 

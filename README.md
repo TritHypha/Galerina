@@ -149,7 +149,7 @@ Run on an **Intel i9-9900K (8C/16T) + NVIDIA RTX 2060**, across Rust (native, ge
 | **Lexer / Parser / Governance Verifier / Contract blocks / Value-state checker** | 100% | full pipeline |
 | **DRCM Phases 1–7 (Governed Tower — Stage-A simulation)** | 100% | real `DSS.wasm` is Post-P9 (#102–106) |
 | **CBOR Manifests (RFC 8949)** | 100% | |
-| **Tests — full suite** | 100% | **92/92 packages · 6,804 tests · 0 failures** |
+| **Tests — full suite** | 100% | **92/92 packages · 6,827 tests · 0 failures** |
 | **Resilience — first-class fault handlers (0017)** | shipped | `on_*_fault` → fail-closed `halt` default + FUNGI-FAULT-001/003 + `GIRFlow.faultHandlers` |
 | **Contract-driven test generation (0016)** | 5/5 vector dimensions | fault-injection · effect-egress · capability-denial · boundary/fuzz · substrate-violation (over GIR) |
 | **Type checker / Effect checker** | ~90% | |
@@ -382,7 +382,7 @@ Layer 5: ProofGraph + .lmanifest      — cryptographic audit proof (Ed25519 def
 ## Running the Tools
 
 ```bash
-# Tests — core suite (4 packages) / full suite (92 packages, 6,804 tests)
+# Tests — core suite (4 packages) / full suite (92 packages, 6,827 tests)
 node scripts/run-all-tests.cjs --core
 npm test
 
