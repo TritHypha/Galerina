@@ -920,28 +920,54 @@ Baseline comparison (governance-cost):
       if (!packageDescriptor.name) { console.error('Error: package.fungi.json must declare a "name"'); process.exit(1); }
       packageBuild = pkgDir;
       fungiFile = join(pkgDir, packageDescriptor.entry || "src/index.fungi");
-      // ── CG-7 third end (owner-approved 2026-07-02): refuse to locally rebuild a SIGNED
-      // fusable package via direct `build --package` when its manifest is a COMMITTED
-      // (git-tracked) artifact — the committed dist/<name>.wasm + .lmanifest ARE the signed
+      // ── CG-7 third end (owner-approved 2026-07-02; committed-state refinement
+      // 2026-07-10, #21): refuse to locally rebuild a SIGNED fusable package via direct
+      // `build --package` when its manifest is a COMMITTED ceremony artifact — git-tracked
+      // AND real-signed IN HEAD. The committed dist/<name>.wasm + .lmanifest ARE the signed
       // artifacts, owned by the OFFLINE re-sign ceremony; a local rebuild mints an UNSIGNED
-      // manifest → the fuse loader fail-closes (FUNGI-FUSE-UNSIGNED). A real-signed but
-      // git-IGNORED/untracked manifest is a LOCAL dev artifact (e.g. api-protocol-rest
-      // regenerates its own dist inside its tests) — no committed fixture is at risk, so it
-      // rebuilds freely. Fail direction: outside a git repo (or on any git error) we cannot
-      // tell a dev artifact from a downloaded ceremony artifact → protect (most-secure
-      // default; matches isUnderSignedPackage's unreadable→protect stance). `--force`
-      // overrides for the deliberate pre-re-sign rebuild (rebuild-fusable-packages forwards
-      // it). The rebuild-hook guard + the `signed:fixtures` drift gate cover the automated
-      // paths; this closes the DIRECT-invocation path.
-      if (!rest.includes("--force") && isUnderSignedPackage(fungiFile)) {
+      // manifest → the fuse loader fail-closes (FUNGI-FUSE-UNSIGNED). Protection is decided
+      // from GIT, not disk shape (mirrors scripts/lib/signed-lmanifest.mjs
+      // isCommittedSignedManifest — keep the two in step):
+      //   untracked manifest            → a LOCAL dev artifact (api-protocol-rest's
+      //                                   test-regenerated dist) — rebuilds freely
+      //   tracked + HEAD real-signed    → refuse (the ceremony's)
+      //   tracked + HEAD placeholder    → rebuilds freely (regenerable; e.g. the fuse-demo
+      //                                   fixture until its ceremony — a locally minted
+      //                                   dev-key manifest sitting over it must NOT refuse)
+      //   tracked + HEAD unreadable     → refuse (cannot prove regenerable)
+      //   git errors / not a repo       → fall back to the DISK predicate (most-secure
+      //                                   default; matches isUnderSignedPackage's stance)
+      // `--force` overrides for the deliberate pre-re-sign rebuild
+      // (rebuild-fusable-packages forwards it). The rebuild-hook guard + the
+      // `signed:fixtures` drift gate cover the automated paths; this closes the
+      // DIRECT-invocation path with the SAME predicate they use.
+      if (!rest.includes("--force")) {
         const manRel = join("dist", `${packageDescriptor.name}.lmanifest.json`);
-        const tracked = spawnSync("git", ["ls-files", "--error-unmatch", manRel],
+        const manRelFwd = manRel.replace(/\\/g, "/");
+        let committedFixture;
+        const tracked = spawnSync("git", ["ls-files", "--error-unmatch", "--", manRelFwd],
           { cwd: packageBuild, encoding: "utf8", timeout: 15000 });
-        // 0 = tracked (committed fixture) · 1 = untracked (local dev artifact) · anything
-        // else (128 not-a-repo, spawn failure, timeout) → protect.
-        const committedFixture = tracked.status !== 1;
+        if (tracked.status === 1) {
+          committedFixture = false;                       // untracked → dev-local
+        } else if (tracked.status !== 0) {
+          committedFixture = isUnderSignedPackage(fungiFile); // git can't answer → disk floor
+        } else {
+          // `HEAD:./path` resolves relative to cwd (the package dir).
+          const show = spawnSync("git", ["show", `HEAD:./${manRelFwd}`],
+            { cwd: packageBuild, encoding: "utf8", timeout: 15000 });
+          if (show.status !== 0) {
+            committedFixture = true;                      // tracked but no HEAD blob → protect
+          } else {
+            try {
+              const sig = JSON.parse(show.stdout).governanceSignature;
+              committedFixture = sig !== null && typeof sig === "object" &&
+                typeof sig.keyId === "string" && typeof sig.signature === "string" &&
+                sig.signature.length > 0 && !sig.signature.startsWith("placeholder");
+            } catch { committedFixture = true; }          // tracked + unparseable → protect
+          }
+        }
         if (committedFixture) {
-          console.error(`⛔ Refusing to locally rebuild SIGNED package "${packageDescriptor.name}" — dist/${packageDescriptor.name}.lmanifest is a git-tracked signed artifact owned by the offline re-sign ceremony. A local rebuild would mint an UNSIGNED manifest and the fuse loader would fail-close. Pass --force only if you are deliberately rebuilding ahead of an offline re-sign.`);
+          console.error(`⛔ Refusing to locally rebuild SIGNED package "${packageDescriptor.name}" — dist/${packageDescriptor.name}.lmanifest is a git-tracked ceremony-signed artifact (signed in HEAD) owned by the offline re-sign ceremony. A local rebuild would mint an UNSIGNED manifest and the fuse loader would fail-close. Pass --force only if you are deliberately rebuilding ahead of an offline re-sign.`);
           process.exit(1);
         }
       }

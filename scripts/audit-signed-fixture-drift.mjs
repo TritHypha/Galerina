@@ -3,9 +3,11 @@
 // audit-signed-fixture-drift.mjs — detector for the annotation→re-fuse→unsigned
 // cascade class (CG-7; owner-directed "both ends + detector", 2026-07-01)
 // =============================================================================
-// RULE: a fusable package whose dist/<name>.lmanifest.json carries a REAL
-// (offline-ceremony) signature must be git-CLEAN — its src and dist are the
-// signed truth. Any local modification is the first domino of the cascade:
+// RULE: a fusable package whose dist/<name>.lmanifest.json is git-TRACKED and
+// carries a REAL (offline-ceremony) signature IN HEAD must be git-CLEAN — its
+// committed src and dist are the signed truth (disk state is what drifts, so
+// protection is decided from git, never from disk shape). Any local
+// modification is the first domino of the cascade:
 //   tool dirties src → mtime bump → fuse-rebuild regenerates the .lmanifest
 //   UNSIGNED → fuse loader fail-closes (FUNGI-FUSE-UNSIGNED) → suite red.
 // The writer guard (galerina.mjs) and rebuild guard (rebuild-fusable-packages)
@@ -36,11 +38,16 @@ const baseDirs = rootIdx >= 0
   ? [ROOT]
   : [join(ROOT, "packages-galerina"), join(ROOT, "examples")].filter(existsSync);
 
-const packages = findFusablePackages(baseDirs);
-const signed = packages.filter(p => p.signed);
+// Protection comes from the COMMITTED state (#21 unification, 2026-07-10):
+// tracked + real-signed in HEAD — the same predicate rebuild-fusable-packages
+// skips on. Deciding from DISK had both failure modes: a locally minted
+// dev-key signature raised a false red on an unprotected fixture, and a
+// locally CLOBBERED ceremony manifest silently demoted itself out of the gate.
+const packages = findFusablePackages(baseDirs, { gitRoot: ROOT });
+const signed = packages.filter(p => p.committedSigned);
 
-console.log(`=== signed-fixture drift audit (CG-7: a SIGNED fusable package must be git-clean) ===`);
-console.log(`   fusable packages: ${packages.length} | signed: ${signed.length}`);
+console.log(`=== signed-fixture drift audit (CG-7: a committed ceremony-SIGNED fusable package must be git-clean) ===`);
+console.log(`   fusable packages: ${packages.length} | committed-signed: ${signed.length}`);
 
 let drifted = 0;
 for (const pkg of signed) {
