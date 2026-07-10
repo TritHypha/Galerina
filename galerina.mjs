@@ -1256,7 +1256,12 @@ Baseline comparison (governance-cost):
     // baseline burns down. The self-hosted corpus is 8/8 type-clean and must stay so.
     const strictTypes = rest.includes("--strict-types");
     const typeErrors = (m.checkTypes(parsed.ast).diagnostics ?? []).filter(d => d.severity === "error");
-    const allDiags = [...errors, ...gov.diagnostics, ...tierWarnings, ...valueStateErrors, ...boundaryWarnings, ...integrityEffectErrors, ...typeErrors];
+    // Advisory in plain check: type errors must NOT suppress the ✅ clean line — they are a separate
+    // NOTE below it. Otherwise every one of the ~150 baseline files with an unmigrated type error (or a
+    // checkTypeRef false positive) loses its ✅, and the canonical clean example verifyPassword.fungi —
+    // which trips two false positives on Brand<String,"tag"> + enum — reads as failing. Only
+    // --strict-types folds them into the hard, ✅-suppressing, exit-failing set.
+    const allDiags = [...errors, ...gov.diagnostics, ...tierWarnings, ...valueStateErrors, ...boundaryWarnings, ...integrityEffectErrors, ...(strictTypes ? typeErrors : [])];
     if (allDiags.length === 0) {
       // We're building the language — distinguish "compiled real content" from "found nothing". A clean
       // parse with ZERO top-level declarations (an empty or comment-only file) must NOT report a blanket
@@ -1271,9 +1276,12 @@ Baseline comparison (governance-cost):
       }
     } else {
       allDiags.forEach(d => console.log(`${d.severity === "error" ? "❌" : "⚠️"} ${d.code}: ${d.message}`));
-      if (!strictTypes && typeErrors.length > 0) {
-        console.log(`ℹ️  ${typeErrors.length} FUNGI-TYPE-* error(s) above are ADVISORY in plain check while the repo baseline burns down — they FAIL a governed run today; enforce here with --strict-types.`);
-      }
+    }
+    // Advisory type-error NOTE — printed AFTER the ✅/diagnostics in plain mode (a COUNT, not the full
+    // list, to keep clean output readable) so the check↔governed divergence stays visible without
+    // suppressing ✅. --strict-types instead surfaces each as ❌ above and exits non-zero.
+    if (!strictTypes && typeErrors.length > 0) {
+      console.log(`ℹ️  +${typeErrors.length} FUNGI-TYPE-* advisory (not counted in plain check; they FAIL a governed run — run 'galerina check ${fungiFile} --strict-types' to see + enforce).`);
     }
 
     // ── --diff flag: show change class vs HEAD~1 before pushing (#64) ─────────
