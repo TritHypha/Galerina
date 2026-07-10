@@ -51,7 +51,11 @@ log(`   graph integrity: ${integrity} (exit ${g2.status})`);
 
 // 3. kb graph
 log("── 3/6 kb graph (build/kb-graph/) ──");
-const g3 = run(["packages-galerina/galerina-devtools-kb-graph/dist/cli.js", "--out", "build/kb-graph"]);
+// --all writes json+dot+report to the CLI's hardcoded build/kb-graph/. The CLI writes NOTHING
+// without an output flag (cli.ts: `if (!doJson && !doDot && !doReport) return`), so the prior
+// "--out build/kb-graph" (an unrecognised arg) printed the summary but silently regenerated NO
+// artifacts — leaving kb-report.md + the stray-docs audit's input stale for days.
+const g3 = run(["packages-galerina/galerina-devtools-kb-graph/dist/cli.js", "--all"]);
 const orphans = first(g3.stdout, /Orphans:\s*(\d+)/);
 const broken = first(g3.stdout, /Stale:\s*(\d+)/);
 log(`   kb graph: ${orphans} orphans / ${broken} broken links (exit ${g3.status})`);
