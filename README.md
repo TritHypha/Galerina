@@ -4,7 +4,7 @@
 
 Galerina is built for organisations where software failure is not acceptable — financial platforms, healthcare systems, government services, and regulated enterprise. Every execution is **declared, verified, and audited** by design, not by convention.
 
-> **Maturity (honest status, 2026-07-10 · v1.0.0-beta.2).** Galerina is an **advanced prototype with several hardened zero-trust subsystems** — *not* yet a production-complete platform. The **compiler, security, and governance core are production-grade** (92/92 packages, 6,838 tests, fail-closed border check). The **application-framework layer is now substantially real**: the deny-by-default admission/fusion border (3 gates + multi-module linker + revocation), the `galerina new app` scaffolder, and the governed package resolver are shipped and tested (104 App-Kernel tests). The **governed HTTP transport (B8) is unlocked and in progress** — the TLSTP **S1 K3 cert/channel-validation gate** landed (`galerina-core-network`, 160 tests, fail-closed `revocation-unknown → DENY`), though it is not yet wired into the live kernel auth path; the *servable api-server / example-app* and the *signed registry index* are the remaining framework gaps. Stage-B self-hosting is in progress (≈80%), and the "Tower" compute layer is a **governed software simulator + bridge-attestation runtime, not real photonic-CPU virtualisation**. See [the 2026-06-23 EOD roadmap + % audit](docs/Knowledge-Bases/galerina-roadmap-and-percent-audit-2026-06-23-eod.md) and [the framework plan](docs/Knowledge-Bases/galerina-framework-plan-2026-06-21.md).
+> **Maturity (honest status, 2026-07-10 · v1.0.0-beta.2).** Galerina is an **advanced prototype with several hardened zero-trust subsystems** — *not* yet a production-complete platform. The **compiler, security, and governance core are production-grade** (92/92 packages, 6,838 tests, fail-closed border check). The **application-framework layer is now substantially real**: the deny-by-default admission/fusion border (3 gates + multi-module linker + revocation), the `galerina new app` scaffolder, and the governed package resolver are shipped and tested (104 App-Kernel tests). The **governed HTTP transport (B8) is unlocked and in progress** — the TLSTP **S1 K3 cert/channel-validation gate** landed (`galerina-core-network`, 160 tests, fail-closed `revocation-unknown → DENY`) — the kernel's gate 6 now fail-closes on absent/empty auth headers (the mTLS presence-bypass fix), though the full S1 cert/channel verdict is not yet wired into live kernel admission; the *servable api-server / example-app* and the *signed registry index* are the remaining framework gaps. Stage-B self-hosting is in progress (≈80%), and the "Tower" compute layer is a **governed software simulator + bridge-attestation runtime, not real photonic-CPU virtualisation**. See [the component-readiness honest audit (2026-07-10)](docs/architecture/component-readiness-honest-audit-2026-07-10.md); the full roadmap, % audit, and framework plan are maintained in the internal engineering KB.
 
 ---
 
@@ -155,7 +155,7 @@ Run on an **Intel i9-9900K (8C/16T) + NVIDIA RTX 2060**, across Rust (native, ge
 
 | Layer | % | Note |
 |---|---|---|
-| **Specification / KB** | 100% | 748 documents |
+| **Specification / KB** | 100% | 867 documents (internal engineering KB, maintained in a separate private repository) |
 | **Lexer / Parser / Governance Verifier / Contract blocks / Value-state checker** | 100% | full pipeline |
 | **DRCM Phases 1–7 (Governed Tower — Stage-A simulation)** | 100% | real `DSS.wasm` is Post-P9 (#102–106) |
 | **CBOR Manifests (RFC 8949)** | 100% | |
@@ -164,7 +164,7 @@ Run on an **Intel i9-9900K (8C/16T) + NVIDIA RTX 2060**, across Rust (native, ge
 | **Contract-driven test generation (0016)** | 5/5 vector dimensions | fault-injection · effect-egress · capability-denial · boundary/fuzz · substrate-violation (over GIR) |
 | **Type checker / Effect checker** | ~90% | |
 | **WAT emitter** | ~89% | #128(a) fail-closed fix landed (unhandled stmt → `unreachable` trap); #128(b)/GAP-4 `forEachStmt` lowering landed (for-in → counted loop over the host array bridge); `for…where` filtered iteration lowers as a guarded loop — all execution + interpreter-fidelity tested |
-| **Faithful Int64 (i64) lowering** | lift-ready | exact 64-bit integers end-to-end — interpreter `bigint` ≡ WASM `i64`, overflow **traps** (Fork-A, no silent wrap), the walker≡WASM differential passes non-vacuously over (2⁵³,2⁶³). The `FUNGI-NUMERIC-001` gate stays **closed by design** (declaring a scalar `Int64` errors today); the lift is one owner-gated line + a final cross-flow check. `UInt64` still gated. Throughput i64 ≈ i32. See [integer-types](docs/Knowledge-Bases/galerina-integer-types-and-lowering.md) |
+| **Faithful Int64 (i64) lowering** | lift-ready | exact 64-bit integers end-to-end — interpreter `bigint` ≡ WASM `i64`, overflow **traps** (Fork-A, no silent wrap), the walker≡WASM differential passes non-vacuously over (2⁵³,2⁶³). The `FUNGI-NUMERIC-001` gate stays **closed by design** (declaring a scalar `Int64` errors today); the lift is one owner-gated line + a final cross-flow check. `UInt64` still gated. Throughput i64 ≈ i32. (Integer-types spec: internal engineering KB) |
 | **Runtime interpreter** | ~87% | diagnostic tier (see Benchmarks) |
 | **Stage-B self-hosting — interpreter parity** | 100% | R6 corpus: Stage-A == Stage-B |
 | **Stage-B self-hosting — WASM execution (P9)** | in progress | `tokenize` byte-parity achieved (#143); parser/checker/verifier flows remain |
@@ -179,7 +179,7 @@ Run on an **Intel i9-9900K (8C/16T) + NVIDIA RTX 2060**, across Rust (native, ge
 | **B8 governed HTTP transport (TLSTP)** | in progress | **S1 K3 cert/channel-validation gate shipped** (`galerina-core-network`, 160 tests, fail-closed `revocation-unknown → DENY`, SEC-002 mutation-guarded) — wiring into live kernel auth + 0066 first-3 (handshake-bind · raw-byte shim · ECH/OHTTP) are next |
 | **Tri-Pipe fault tolerance (binary/hybrid/photonic)** | re-R&D | shipped: fail-closed core · arena + overflow traps · DbC post-conditions · K3 fail-safe · NMR tolerance · Freivalds verify · DRCM containment. A multi-agent stability re-R&D is in flight |
 
-**Roadmap (security-first)** → [galerina-roadmap-2026-06-23.md](docs/Knowledge-Bases/galerina-roadmap-2026-06-23.md) · **% audit** → [galerina-percent-audit-roadmap-2026-06-25-v2.md](docs/Knowledge-Bases/galerina-percent-audit-roadmap-2026-06-25-v2.md) (~88% shippable) · [build-roadmap](docs/Knowledge-Bases/galerina-build-roadmap.md). *2026-06-25: faithful Int64 WASM lowering is lift-ready (gate closed by design); the Untrusted Governed Lane is documented; the Tower-of-Hanoi cross-language benchmark + the JS-quirks-vs-Galerina R&D (notes/59) landed.* *Latest (2026-06-24, v1.0.0-beta.2): `FUNGI-TIER-001` + `FUNGI-VALUESTATE-008` are now enforced on the `galerina.mjs` production build path, opt-in hybrid Ed25519+ML-DSA-65 `.lmanifest` signing shipped (certified profile), and `@galerina/ext-secrets-spore` (`env.spore` sealed secrets) landed; the next security fix is wiring the S1 cert-gate into live kernel admission (run `node scripts/status.mjs`).*
+**Roadmap (security-first)** + **% audit** (~88% shippable) + build-roadmap are maintained in the internal engineering KB; the in-repo status view is [component-readiness-honest-audit-2026-07-10.md](docs/architecture/component-readiness-honest-audit-2026-07-10.md). *2026-06-25: faithful Int64 WASM lowering is lift-ready (gate closed by design); the Untrusted Governed Lane is documented; the Tower-of-Hanoi cross-language benchmark + the JS-quirks-vs-Galerina R&D (notes/59) landed.* *Latest (2026-06-24, v1.0.0-beta.2): `FUNGI-TIER-001` + `FUNGI-VALUESTATE-008` are now enforced on the `galerina.mjs` production build path, opt-in hybrid Ed25519+ML-DSA-65 `.lmanifest` signing shipped (certified profile), and `@galerina/ext-secrets-spore` (`env.spore` sealed secrets) landed; the next security fix is wiring the S1 cert-gate into live kernel admission (run `node scripts/status.mjs`).*
 
 ---
 
@@ -187,10 +187,10 @@ Run on an **Intel i9-9900K (8C/16T) + NVIDIA RTX 2060**, across Rust (native, ge
 intent  →  governed execution plan  →  coordinated compute  →  audit proof
 ```
 
-**[Intent](docs/Knowledge-Bases/galerina-concept-intent.md)** — what a flow is *for*: purpose, allowed effects, boundaries. Intent guides optimisation; authority is granted through `contract.effects` and capability declarations.
-**[Governed Execution Plan](docs/Knowledge-Bases/galerina-concept-governed-execution-plan.md)** — the compiler-generated operational contract: capabilities granted, effects allowed, targets approved, behaviours denied.
-**[Coordinated Compute](docs/Knowledge-Bases/galerina-concept-coordinated-compute.md)** — runtime orchestration across CPU/GPU/NPU/WASM and future targets, within declared authority.
-**[Audit Proof](docs/Knowledge-Bases/galerina-concept-audit-proof.md)** — structured, cryptographically signed runtime evidence that execution stayed within declared authority.
+**Intent** — what a flow is *for*: purpose, allowed effects, boundaries. Intent guides optimisation; authority is granted through `contract.effects` and capability declarations.
+**Governed Execution Plan** — the compiler-generated operational contract: capabilities granted, effects allowed, targets approved, behaviours denied.
+**Coordinated Compute** — runtime orchestration across CPU/GPU/NPU/WASM and future targets, within declared authority.
+**Audit Proof** — structured, cryptographically signed runtime evidence that execution stayed within declared authority. *(Concept specs: internal engineering KB.)*
 
 ---
 
@@ -286,7 +286,7 @@ Nine canonical patterns. Patterns 1–6 compile today (`drcm_stable_v0`); 7–9 
 | 8 | Emergency Policy Overlay | `drcm_core_v1` | DRCM Phase 4 — auto-tightening `policy {}` |
 | 9 | .lmanifest Compliance | `drcm_core_v1` | DRCM Phase 3 — PCI DSS / SOC 2 artifact |
 
-> Full reference: [`docs/Knowledge-Bases/galerina-architecture-patterns.md`](docs/Knowledge-Bases/galerina-architecture-patterns.md)
+> Full reference: the architecture-patterns spec (internal engineering KB) · in-repo pattern examples: [`docs/patterns/`](docs/patterns/) + `tests/patterns/`
 
 ---
 
@@ -312,7 +312,7 @@ my-orders-app/
 
 At runtime the app reaches the world **only** through the deny-by-default **Capability Host** (network · db · secrets), with governance — K3, contracts, fail-closed, audit — **compiled into** the wasm rather than wrapped around it. Capability binding lives in the signed `.lmanifest fuse{}` block; `.env` secrets are injected at runtime, never compiled in.
 
-> Detailed plan + flowchart: [`docs/Knowledge-Bases/galerina-framework-plan-2026-06-21.md`](docs/Knowledge-Bases/galerina-framework-plan-2026-06-21.md)
+> Detailed plan + flowchart: the framework plan (internal engineering KB) · in-repo framework designs: [`docs/framework/`](docs/framework/)
 
 ---
 
@@ -334,17 +334,17 @@ At runtime the app reaches the world **only** through the deny-by-default **Capa
 
 ### Package architecture
 
-The ~94 package directories (**60 active and test-bearing**; the rest are planned data/web/target scaffolds) are organised into **families by prefix**, with two hard rules governing the boundaries between them.
+The 94 package directories (**92 active and test-bearing**; the 2 remaining — the benchmark harness and the signed registry — are deliberately test-exempt) are organised into **families by prefix**, with two hard rules governing the boundaries between them.
 
 | Family | Role | Trust |
 |---|---|---|
-| `galerina-core-*` (20) | The governance/compiler/runtime **core** — compiler, security (taint · redaction · OWASP), network (TLSTP S1 cert-gate), economics, logic. | **TCB** (production-grade) |
+| `galerina-core-*` (19) | The governance/compiler/runtime **core** — compiler, security (taint · redaction · OWASP), network (TLSTP S1 cert-gate), economics, logic. | **TCB** (production-grade) |
 | `galerina-tower-citizen` | The **governed runtime** — K3 verdict algebra, bridge attestation, revocation registry, substrate model. | **TCB** |
 | `galerina-framework-*` (3) | The **application layer** — the app-kernel admission/fusion border, the api-server REST adapter, the example-app golden template. | governed host |
-| `galerina-ext-*` (7) | **Govern-Don't-Absorb border extensions** — the `.spore` trust engine (TMX-256 · KEM-DEM), the secrets-vault rotation engine, the native bridges (BitNet · quantum · C++). | governed at the border |
-| `galerina-devtools-*` (13) | Dev/audit **tooling** — the security + PCI auditors, the benchmark suite, the project/code/KB graph generators. | host-side tools |
-| `galerina-target-*` (7) | **Target adapters** — cpu · wasm · gpu · native · js, each deny-by-default capability-gated. | mostly planned |
-| `galerina-data-*` · `galerina-web-*` · `galerina-registry` | The data engine, web-governance stubs, and the signed package registry. | planned/partial |
+| `galerina-ext-*` (8) | **Govern-Don't-Absorb border extensions** — the `.spore` trust engine (TMX-256 · KEM-DEM), the secrets-vault rotation engine, the native bridges (BitNet · quantum · C++). | governed at the border |
+| `galerina-devtools-*` (14) | Dev/audit **tooling** — the security + PCI auditors, the benchmark suite, the project/code/KB graph generators. | host-side tools |
+| `galerina-target-*` (7) | **Target adapters** — cpu · wasm · gpu · native · js, each deny-by-default capability-gated. | governed contract packages — all 7 test-bearing |
+| `galerina-data-*` · `galerina-db-*` · `galerina-web-*` · `galerina-registry` | The data engine, database adapters, web governance, and the signed package registry. | data/db/web shipped + test-bearing · registry planned |
 
 **Two rules hold the architecture together:**
 
@@ -368,10 +368,10 @@ packages-galerina/
 ├── galerina-core-network/      ACTIVE — network I/O policy + egress/inbound guards + TLSTP S1 K3 cert-validation gate (160 tests)
 ├── galerina-framework-app-kernel/ ACTIVE — admission/fusion host: fuse-loader 3 gates + planComposition multi-module linker + revocation + fail-closed secrets seam (104 tests)
 ├── galerina-framework-{example-app,api-server}/  REFERENCE — REST adapter (e2e-fused) + worked-example scaffolds
-└── galerina-target-*, data/db/web/registry  PLANNED/PARTIAL — several documentation-only
+└── galerina-target-*, data/db/web  ACTIVE — governed contract packages, all test-bearing; galerina-registry PLANNED
 
 examples/auth-service/        31 governed flows (verifyPassword, charge, sovereign...)
-docs/Knowledge-Bases/         748 specification documents
+docs/                         language · framework · security · patterns docs (the 867-doc specification KB is maintained in a separate private repository)
 ```
 
 ### Five-layer execution stack
@@ -425,24 +425,17 @@ node packages-galerina/galerina-devtools-pci/dist/cli.js audit examples/auth-ser
 | Document | What it covers |
 |---|---|
 | [SETUP.md](SETUP.md) | Install on Windows / Linux / macOS, benchmarks, Hello World |
-| [`docs/Knowledge-Bases/KNOWLEDGE-BASE-INDEX.md`](docs/Knowledge-Bases/KNOWLEDGE-BASE-INDEX.md) | Master navigation — 4-layer KB hierarchy, conflict resolution |
-| [`docs/paper/`](docs/paper/) | Publishing standard (defensive-pub + measured-negative only, **no flagship by design**) + all 22 defensive-publication notes (`defensive-papers/`) + the eprint draft (`scientific-papers/`) + UK/US/EU compliance checklist |
-| [`docs/Knowledge-Bases/galerina-fail-open-taxonomy.md`](docs/Knowledge-Bases/galerina-fail-open-taxonomy.md) | The 10 recurring fail-open classes + mechanical detectors + the security-first hardening list |
+| [`docs/paper/`](docs/paper/) | Publishing standard (defensive-pub + measured-negative only, **no flagship by design**) + all 25 defensive-publication notes (`defensive-papers/`) + the eprint draft (`scientific-papers/`) + UK/US/EU compliance checklist |
 | [`AGENTS.md`](AGENTS.md) | The AI-agent entry point — authoritative sources, package map, conventions |
-| [`docs/Knowledge-Bases/galerina-build-roadmap.md`](docs/Knowledge-Bases/galerina-build-roadmap.md) | Forward roadmap, P9 critical path, audit remediation |
-| `docs/Knowledge-Bases/galerina-governance-rules.md` | Numbered rule registry — FUNGI codes, enforce status, examples |
-| `docs/Knowledge-Bases/galerina-architecture-patterns.md` | 9 canonical patterns with feature gates |
-| `docs/Knowledge-Bases/galerina-zero-trust-engine.md` | "Galerina as a zero-trust engine" — the 4 border mandates + status |
-| `docs/Knowledge-Bases/galerina-engineering-goals.md` | 3 architectural goals — native speed, single-cycle bitmask, no system crash |
-| [`docs/Knowledge-Bases/untrusted-governed-lane.md`](docs/Knowledge-Bases/untrusted-governed-lane.md) | **Govern-Don't-Absorb** — running fast/exotic/external work *without trusting it* (decision in the core, work in the lane, No-Coercion `vAnd=min`); worked `substrate{ lane: photonic }` flow example + diagram |
-| [`docs/Knowledge-Bases/galerina-integer-types-and-lowering.md`](docs/Knowledge-Bases/galerina-integer-types-and-lowering.md) | The numeric type system + i32/i64 WASM lowering + the trapping-arithmetic maths (hard file paths) |
-| [`docs/Knowledge-Bases/galerina-rd-59-js-quirks-vs-galerina-2026-06-25.md`](docs/Knowledge-Bases/galerina-rd-59-js-quirks-vs-galerina-2026-06-25.md) | The 10 classic JavaScript bad-design quirks vs Galerina (7/10 avoided by design; the one real gap = NaN on Float) |
-| [`docs/Knowledge-Bases/galerina-percent-audit-roadmap-2026-06-25-v2.md`](docs/Knowledge-Bases/galerina-percent-audit-roadmap-2026-06-25-v2.md) | Latest %-completion audit + roadmap (~88% shippable) + the honest cross-language benchmark standing |
-| `docs/Knowledge-Bases/galerina-deterministic-runtime-containment.md` | DRCM — DSS, DWI, V_DPM, `.lmanifest`, 7-module architecture |
+| [`docs/architecture/component-readiness-honest-audit-2026-07-10.md`](docs/architecture/component-readiness-honest-audit-2026-07-10.md) | Per-component readiness — the in-repo honest status view |
+| [`docs/rules/`](docs/rules/) | In-repo rule set — design principles, boundary safety, governance doctrine, non-negotiables |
+| [`docs/framework/`](docs/framework/) | Framework designs — app kernel, HTTP transport, MCP/AI tool boundaries |
+| [`docs/security/`](docs/security/) | Security passes + runbooks — key ceremony, MCP tool-poisoning, SLSA/BOLA |
 | [notes/2026-06-17-zero-trust-senior-developer-project-audit.md](notes/2026-06-17-zero-trust-senior-developer-project-audit.md) | Latest independent audit (advanced-prototype verdict) |
+| Internal engineering KB *(separate private repository, 867 docs)* | Master KB index · roadmaps + % audits · concept specs · numbered FUNGI rule registry · fail-open taxonomy · zero-trust engine · DRCM · integer types · architecture patterns |
 
 ---
 
 ## Licence
 
-Galerina is licensed under the Apache License 2.0. See [`LICENSE`](LICENSE), [`LICENCE.md`](LICENCE.md), [`NOTICE.md`](packages-galerina/galerina-core/NOTICE.md), and [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md) (all third-party dependencies are permissively licensed and free for commercial use).
+Galerina is licensed under the Apache License 2.0. See [`LICENSE`](LICENSE), [`NOTICE.md`](packages-galerina/galerina-core/NOTICE.md), and [`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md) (all third-party dependencies are permissively licensed and free for commercial use).
