@@ -179,9 +179,126 @@ export interface PhotonicTargetReport {
   readonly channelLayoutReports: readonly OpticalChannelLayoutReport[];
   readonly matrixMappingReports: readonly MatrixOperationMappingReport[];
   readonly warnings: readonly string[];
-  readonly diagnostics: readonly {
-    readonly code: string;
-    readonly safeMessage: string;
-    readonly suggestedFix?: string;
-  }[];
+  readonly diagnostics: readonly PhotonicDiagnostic[];
+}
+
+// ── runtime contract helpers ──────────────────────────────────────────────────
+// The interfaces above are the type contract; the helpers below enforce it at
+// runtime for lowering plans that arrive as untrusted parsed JSON. The diagnostic
+// shape matches PhotonicTargetReport.diagnostics ({code, safeMessage, suggestedFix})
+// — a "safe" message never leaks vendor/host detail. Fail-closed: physically
+// impossible channels and silently-dropped operations are rejected.
+
+export interface PhotonicDiagnostic {
+  readonly code: string;
+  readonly safeMessage: string;
+  readonly suggestedFix?: string;
+}
+
+const PHOTONIC_STATUSES: readonly PhotonicTargetStatus[] = [
+  "photonic-compatible",
+  "photonic-simulation-only",
+  "optical-io-only",
+  "fallback-required",
+  "unsupported",
+];
+
+function photonicDiagnostic(
+  code: string,
+  safeMessage: string,
+  suggestedFix?: string,
+): PhotonicDiagnostic {
+  return { code, safeMessage, ...(suggestedFix === undefined ? {} : { suggestedFix }) };
+}
+
+// An optical channel must sit at a physical wavelength (> 0 nm), and — when
+// declared — a finite phase and a normalised amplitude in (0, 1].
+export function validateOpticalChannelLayout(
+  channel: OpticalChannelLayout,
+  path = "channel",
+): readonly PhotonicDiagnostic[] {
+  const diagnostics: PhotonicDiagnostic[] = [];
+
+  if (channel.channelId.trim().length === 0) {
+    diagnostics.push(photonicDiagnostic(
+      "Galerina_PHOTONIC_CHANNEL_ID_REQUIRED",
+      "An optical channel requires an identifier.",
+      `Set ${path}.channelId to a non-empty value.`,
+    ));
+  }
+
+  if (!Number.isFinite(channel.wavelengthNm) || channel.wavelengthNm <= 0) {
+    diagnostics.push(photonicDiagnostic(
+      "Galerina_PHOTONIC_WAVELENGTH_INVALID",
+      "An optical channel wavelength must be a positive number of nanometres.",
+      `Set ${path}.wavelengthNm to a finite value greater than 0.`,
+    ));
+  }
+
+  if (channel.phaseDegrees !== undefined && !Number.isFinite(channel.phaseDegrees)) {
+    diagnostics.push(photonicDiagnostic(
+      "Galerina_PHOTONIC_PHASE_INVALID",
+      "An optical channel phase, when set, must be a finite number of degrees.",
+      `Set ${path}.phaseDegrees to a finite value.`,
+    ));
+  }
+
+  if (channel.amplitude !== undefined &&
+      (!Number.isFinite(channel.amplitude) || channel.amplitude <= 0 || channel.amplitude > 1)) {
+    diagnostics.push(photonicDiagnostic(
+      "Galerina_PHOTONIC_AMPLITUDE_INVALID",
+      "An optical channel amplitude, when set, must be normalised within (0, 1].",
+      `Set ${path}.amplitude to a value greater than 0 and at most 1.`,
+    ));
+  }
+
+  return diagnostics;
+}
+
+// A lowering plan must carry a known status, explain every unsupported operation
+// (a reason AND a concrete fallback — never a silent drop), and actually do
+// something (map at least one operation unless it is explicitly unsupported).
+export function validatePhotonicLoweringPlan(
+  plan: PhotonicLoweringPlan,
+  path = "plan",
+): readonly PhotonicDiagnostic[] {
+  const diagnostics: PhotonicDiagnostic[] = [];
+
+  if (!PHOTONIC_STATUSES.includes(plan.status)) {
+    diagnostics.push(photonicDiagnostic(
+      "Galerina_PHOTONIC_STATUS_INVALID",
+      "A lowering plan status must be one of the known photonic target statuses.",
+      `Set ${path}.status to one of: ${PHOTONIC_STATUSES.join(", ")}.`,
+    ));
+  }
+
+  plan.unsupportedOperations.forEach((op, index) => {
+    if (op.reason.trim().length === 0 || op.suggestedFallback.trim().length === 0) {
+      diagnostics.push(photonicDiagnostic(
+        "Galerina_PHOTONIC_UNSUPPORTED_OP_UNEXPLAINED",
+        "An unsupported operation must carry both a reason and a suggested fallback.",
+        `Populate ${path}.unsupportedOperations.${index}.reason and .suggestedFallback.`,
+      ));
+    }
+  });
+
+  if (plan.status === "photonic-compatible" && plan.unsupportedOperations.length > 0) {
+    diagnostics.push(photonicDiagnostic(
+      "Galerina_PHOTONIC_STATUS_INCONSISTENT",
+      "A plan marked photonic-compatible must not carry unsupported operations.",
+      `Either map the unsupported operations or set ${path}.status to fallback-required.`,
+    ));
+  }
+
+  if (plan.mappedOperations.length === 0 &&
+      plan.unsupportedOperations.length === 0 &&
+      plan.status !== "unsupported") {
+    diagnostics.push(photonicDiagnostic(
+      "Galerina_PHOTONIC_PLAN_EMPTY",
+      "A lowering plan maps no operations and reports none unsupported.",
+      `Populate ${path}.mappedOperations or mark ${path}.status as unsupported.`,
+    ));
+  }
+
+  return diagnostics;
 }
