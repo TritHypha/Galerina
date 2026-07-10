@@ -4,7 +4,7 @@
 
 Galerina is built for organisations where software failure is not acceptable — financial platforms, healthcare systems, government services, and regulated enterprise. Every execution is **declared, verified, and audited** by design, not by convention.
 
-> **Maturity (honest status, 2026-07-10 · v1.0.0-beta.2).** Galerina is an **advanced prototype with several hardened zero-trust subsystems** — *not* yet a production-complete platform. The **compiler, security, and governance core are production-grade** (92/92 packages, 6,832 tests, fail-closed border check). The **application-framework layer is now substantially real**: the deny-by-default admission/fusion border (3 gates + multi-module linker + revocation), the `galerina new app` scaffolder, and the governed package resolver are shipped and tested (104 App-Kernel tests). The **governed HTTP transport (B8) is unlocked and in progress** — the TLSTP **S1 K3 cert/channel-validation gate** landed (`galerina-core-network`, 160 tests, fail-closed `revocation-unknown → DENY`), though it is not yet wired into the live kernel auth path; the *servable api-server / example-app* and the *signed registry index* are the remaining framework gaps. Stage-B self-hosting is in progress (≈80%), and the "Tower" compute layer is a **governed software simulator + bridge-attestation runtime, not real photonic-CPU virtualisation**. See [the 2026-06-23 EOD roadmap + % audit](docs/Knowledge-Bases/galerina-roadmap-and-percent-audit-2026-06-23-eod.md) and [the framework plan](docs/Knowledge-Bases/galerina-framework-plan-2026-06-21.md).
+> **Maturity (honest status, 2026-07-10 · v1.0.0-beta.2).** Galerina is an **advanced prototype with several hardened zero-trust subsystems** — *not* yet a production-complete platform. The **compiler, security, and governance core are production-grade** (92/92 packages, 6,838 tests, fail-closed border check). The **application-framework layer is now substantially real**: the deny-by-default admission/fusion border (3 gates + multi-module linker + revocation), the `galerina new app` scaffolder, and the governed package resolver are shipped and tested (104 App-Kernel tests). The **governed HTTP transport (B8) is unlocked and in progress** — the TLSTP **S1 K3 cert/channel-validation gate** landed (`galerina-core-network`, 160 tests, fail-closed `revocation-unknown → DENY`), though it is not yet wired into the live kernel auth path; the *servable api-server / example-app* and the *signed registry index* are the remaining framework gaps. Stage-B self-hosting is in progress (≈80%), and the "Tower" compute layer is a **governed software simulator + bridge-attestation runtime, not real photonic-CPU virtualisation**. See [the 2026-06-23 EOD roadmap + % audit](docs/Knowledge-Bases/galerina-roadmap-and-percent-audit-2026-06-23-eod.md) and [the framework plan](docs/Knowledge-Bases/galerina-framework-plan-2026-06-21.md).
 
 ---
 
@@ -96,30 +96,40 @@ A ten-axis capability self-assessment across the surfaces Galerina governs, plus
 
 <table align="center">
   <tr>
-    <td width="50%" align="center"><a href="docs/diagrams/radar-1-security-governance.svg"><img src="docs/diagrams/radar-1-security-governance.svg" alt="Security & Governance" width="100%"></a><br><sub><b>1 · Security &amp; Governance</b></sub></td>
-    <td width="50%" align="center"><a href="docs/diagrams/radar-2-performance-systems.svg"><img src="docs/diagrams/radar-2-performance-systems.svg" alt="Performance & Systems" width="100%"></a><br><sub><b>2 · Performance &amp; Systems</b></sub></td>
+    <td align="center" width="100%"><a href="docs/diagrams/radar-1-security-governance.svg"><img src="docs/diagrams/radar-1-security-governance.svg" alt="Security & Governance" width="100%"></a><br><sub><b>1 · Security &amp; Governance</b></sub></td>
   </tr>
   <tr>
-    <td width="50%" align="center"><a href="docs/diagrams/radar-3-devx-ecosystem.svg"><img src="docs/diagrams/radar-3-devx-ecosystem.svg" alt="DevX & Ecosystem" width="100%"></a><br><sub><b>3 · DevX &amp; Ecosystem</b></sub></td>
-    <td width="50%" align="center"><a href="docs/diagrams/radar-4-governed-chaos.svg"><img src="docs/diagrams/radar-4-governed-chaos.svg" alt="Governed Chaos" width="100%"></a><br><sub><b>4 · Governed Chaos</b></sub></td>
+    <td align="center" width="100%"><a href="docs/diagrams/radar-2-performance-systems.svg"><img src="docs/diagrams/radar-2-performance-systems.svg" alt="Performance & Systems" width="100%"></a><br><sub><b>2 · Performance &amp; Systems</b></sub></td>
   </tr>
   <tr>
-    <td width="50%" align="center"><a href="docs/diagrams/radar-5-cicd-devsupport.svg"><img src="docs/diagrams/radar-5-cicd-devsupport.svg" alt="CI/CD & Dev Support" width="100%"></a><br><sub><b>5 · CI/CD &amp; Dev Support</b></sub></td>
-    <td width="50%" align="center"><a href="docs/diagrams/radar-6-tri-ternary.svg"><img src="docs/diagrams/radar-6-tri-ternary.svg" alt="Tri / Ternary" width="100%"></a><br><sub><b>6 · Tri / Ternary</b></sub></td>
+    <td align="center" width="100%"><a href="docs/diagrams/radar-3-devx-ecosystem.svg"><img src="docs/diagrams/radar-3-devx-ecosystem.svg" alt="DevX & Ecosystem" width="100%"></a><br><sub><b>3 · DevX &amp; Ecosystem</b></sub></td>
   </tr>
   <tr>
-    <td width="50%" align="center"><a href="docs/diagrams/radar-7-web-api-secure.svg"><img src="docs/diagrams/radar-7-web-api-secure.svg" alt="Web & API Secure" width="100%"></a><br><sub><b>7 · Web &amp; API Secure</b></sub></td>
-    <td width="50%" align="center"><a href="docs/diagrams/radar-8-databasing.svg"><img src="docs/diagrams/radar-8-databasing.svg" alt="Databasing" width="100%"></a><br><sub><b>8 · Databasing</b></sub></td>
+    <td align="center" width="100%"><a href="docs/diagrams/radar-4-governed-chaos.svg"><img src="docs/diagrams/radar-4-governed-chaos.svg" alt="Governed Chaos" width="100%"></a><br><sub><b>4 · Governed Chaos</b></sub></td>
   </tr>
   <tr>
-    <td width="50%" align="center"><a href="docs/diagrams/radar-9-data-science.svg"><img src="docs/diagrams/radar-9-data-science.svg" alt="Data Science" width="100%"></a><br><sub><b>9 · Data Science</b></sub></td>
-    <td width="50%" align="center"><a href="docs/diagrams/radar-10-AI-ML-NuroNet.svg"><img src="docs/diagrams/radar-10-AI-ML-NuroNet.svg" alt="AI / ML / Neural Nets" width="100%"></a><br><sub><b>10 · AI / ML / Neural Nets</b></sub></td>
+    <td align="center" width="100%"><a href="docs/diagrams/radar-5-cicd-devsupport.svg"><img src="docs/diagrams/radar-5-cicd-devsupport.svg" alt="CI/CD & Dev Support" width="100%"></a><br><sub><b>5 · CI/CD &amp; Dev Support</b></sub></td>
   </tr>
   <tr>
-    <td colspan="2" align="center"><a href="docs/diagrams/galerina-mechanics.svg"><img src="docs/diagrams/galerina-mechanics.svg" alt="Galerina — governance-first compute pipeline" width="100%"></a><br><sub><b>11 · Galerina — governance-first compute pipeline</b></sub></td>
+    <td align="center" width="100%"><a href="docs/diagrams/radar-6-tri-ternary.svg"><img src="docs/diagrams/radar-6-tri-ternary.svg" alt="Tri / Ternary" width="100%"></a><br><sub><b>6 · Tri / Ternary</b></sub></td>
   </tr>
   <tr>
-    <td colspan="2" align="center"><a href="docs/diagrams/galerina-tritmesh-cache-passport-vs-legacy.svg"><img src="docs/diagrams/galerina-tritmesh-cache-passport-vs-legacy.svg" alt="TritMesh — cache + .spore passport vs legacy caching" width="100%"></a><br><sub><b>12 · TritMesh — cache &amp; <code>.spore</code> passport vs legacy caching</b></sub></td>
+    <td align="center" width="100%"><a href="docs/diagrams/radar-7-web-api-secure.svg"><img src="docs/diagrams/radar-7-web-api-secure.svg" alt="Web & API Secure" width="100%"></a><br><sub><b>7 · Web &amp; API Secure</b></sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="100%"><a href="docs/diagrams/radar-8-databasing.svg"><img src="docs/diagrams/radar-8-databasing.svg" alt="Databasing" width="100%"></a><br><sub><b>8 · Databasing</b></sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="100%"><a href="docs/diagrams/radar-9-data-science.svg"><img src="docs/diagrams/radar-9-data-science.svg" alt="Data Science" width="100%"></a><br><sub><b>9 · Data Science</b></sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="100%"><a href="docs/diagrams/radar-10-AI-ML-NuroNet.svg"><img src="docs/diagrams/radar-10-AI-ML-NuroNet.svg" alt="AI / ML / Neural Nets" width="100%"></a><br><sub><b>10 · AI / ML / Neural Nets</b></sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="100%"><a href="docs/diagrams/galerina-mechanics.svg"><img src="docs/diagrams/galerina-mechanics.svg" alt="Galerina — governance-first compute pipeline" width="100%"></a><br><sub><b>11 · Galerina — governance-first compute pipeline</b></sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="100%"><a href="docs/diagrams/galerina-tritmesh-cache-passport-vs-legacy.svg"><img src="docs/diagrams/galerina-tritmesh-cache-passport-vs-legacy.svg" alt="TritMesh — cache + .spore passport vs legacy caching" width="100%"></a><br><sub><b>12 · TritMesh — cache &amp; <code>.spore</code> passport vs legacy caching</b></sub></td>
   </tr>
 </table>
 
@@ -149,7 +159,7 @@ Run on an **Intel i9-9900K (8C/16T) + NVIDIA RTX 2060**, across Rust (native, ge
 | **Lexer / Parser / Governance Verifier / Contract blocks / Value-state checker** | 100% | full pipeline |
 | **DRCM Phases 1–7 (Governed Tower — Stage-A simulation)** | 100% | real `DSS.wasm` is Post-P9 (#102–106) |
 | **CBOR Manifests (RFC 8949)** | 100% | |
-| **Tests — full suite** | 100% | **92/92 packages · 6,832 tests · 0 failures** |
+| **Tests — full suite** | 100% | **92/92 packages · 6,838 tests · 0 failures** |
 | **Resilience — first-class fault handlers (0017)** | shipped | `on_*_fault` → fail-closed `halt` default + FUNGI-FAULT-001/003 + `GIRFlow.faultHandlers` |
 | **Contract-driven test generation (0016)** | 5/5 vector dimensions | fault-injection · effect-egress · capability-denial · boundary/fuzz · substrate-violation (over GIR) |
 | **Type checker / Effect checker** | ~90% | |
@@ -346,7 +356,7 @@ The ~94 package directories (**60 active and test-bearing**; the rest are planne
 ### Package layout (status-labelled)
 ```
 packages-galerina/
-├── galerina-core-compiler/     ACTIVE — full pipeline, 4,413 tests
+├── galerina-core-compiler/     ACTIVE — full pipeline, 4,419 tests
 ├── galerina-core-security/     ACTIVE — taint profiles, redaction, OWASP boundaries
 ├── galerina-core-economics/    ACTIVE — CostGraph, ValueGraph, breach-risk matrix
 ├── galerina-core-logic/        ACTIVE — Tri, Decision, RiskLevel
@@ -382,7 +392,7 @@ Layer 5: ProofGraph + .lmanifest      — cryptographic audit proof (Ed25519 def
 ## Running the Tools
 
 ```bash
-# Tests — core suite (4 packages) / full suite (92 packages, 6,832 tests)
+# Tests — core suite (4 packages) / full suite (92 packages, 6,838 tests)
 node scripts/run-all-tests.cjs --core
 npm test
 
