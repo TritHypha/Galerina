@@ -507,3 +507,11 @@ export {
   withTelemetryFeedback,
   certGateWithTelemetry,
 } from "./admission-feedback.js";
+
+// Deny-by-default CORS admission — the browser cross-origin complement to the inbound guard.
+export {
+  type CorsPolicy,
+  type CorsRequest,
+  type CorsDecision,
+  guardCorsRequest,
+} from "./cors-policy.js";
