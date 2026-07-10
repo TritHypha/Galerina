@@ -54,6 +54,32 @@ An MCP boundary should declare:
 - Tool outputs must pass through response/view contracts before exposure.
 - Risky effects require permission, audit and optional human approval.
 
+### Client-Side Rules — consuming an untrusted MCP server
+
+The rules above govern Galerina exposing its own tools. When Galerina, a
+subagent or a bridge consumes an external MCP server, that server is untrusted.
+Future MCP client support must also satisfy:
+
+- Tool and agent output is untrusted data, not instructions. The orchestrating
+  agent must not execute directives found in tool results; results must enter
+  the model as quoted, non-authoritative data. This content/instruction
+  separation is distinct from the response/view exposure rule above and
+  addresses the lethal-trifecta risk of private-data access, untrusted content
+  and an exfiltration path.
+- Approved tool definitions must be pinned by hash and re-validated before each
+  call. Allow and deny lists gate unknown tools; a changed schema or description
+  on an already-approved tool forces re-approval, never silent trust.
+- MCP sampling is an admission decision, not an implicit capability. A server
+  request to invoke the client model is denied by default and requires
+  permission, audit and optional human approval.
+- Tool integrity must be verified, not assumed. A tool may return wrong or stale
+  data with no error, so MCP tools must carry a freshness or integrity signal
+  such as a staleness flag or content hash, and the consumer must verify it
+  rather than trust a status field alone.
+- External MCP servers are third-party supply chain. Provenance, a pinned
+  version and a binary checksum are required before trust, as for any
+  third-party dependency.
+
 ## Syntax Example
 
 ```galerina
@@ -93,6 +119,10 @@ mcp-effective-permissions.json
 mcp-resource-exposure.json
 mcp-token-boundary-report.json
 mcp-vault-access-report.json
+mcp-tool-definition-pinning-report.json
+mcp-sampling-admission-report.json
+mcp-tool-integrity-report.json
+mcp-server-supplychain-report.json
 mcp-ai-summary.json
 ```
 
