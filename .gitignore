@@ -53,6 +53,7 @@ build/*.log
 build/*.txt
 build/_*.json
 build/*.snap
+build/sbom/
 # Workspace intelligence index (galerina-devtools-intelligence): a GENERATED per-workspace cache that
 # embeds ABSOLUTE machine paths (workspaceDir + per-flow filePath) — committing it leaks the OS
 # username/layout (see scripts/audit-path-leak.mjs) and it is rebuilt on demand by buildIndex() and the
