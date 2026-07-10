@@ -869,6 +869,9 @@ Standalone Galerina authentication/authorization FACTOR provider: computes the K
 
 Provides:
 - scopeVerdict
+- JwtAlg
+- BearerVerifyOptions
+- bearerTokenVerdict
 - channelIdentityVerdict
 - composeAuthVerdict
 - previewAdmission

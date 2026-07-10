@@ -2,7 +2,8 @@
   "packageName": "@galerina/auth",
   "allowedExternal": [
     "@galerina/core-network",
-    "@galerina/tower-citizen"
+    "@galerina/tower-citizen",
+    "node:crypto"
   ],
-  "note": "Baseline auto-generated. Edit allowedExternal to widen/narrow the border. `--check` fails if an import appears that is not listed here."
+  "note": "Baseline auto-generated. Edit allowedExternal to widen/narrow the border. `--check` fails if an import appears that is not listed here. DELIBERATE WIDENING 2026-07-10: node:crypto for bearer.ts JWT signature verification (timingSafeEqual/createHmac/createVerify) — auth is a crypto-bearing capability package; the kernel still never imports auth (Hardened Border)."
 }

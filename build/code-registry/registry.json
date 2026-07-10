@@ -3013,7 +3013,7 @@
       ],
       "defs": 0,
       "emits": 3,
-      "tests": 21,
+      "tests": 29,
       "docs": 16
     },
     {
@@ -3029,7 +3029,7 @@
       ],
       "defs": 0,
       "emits": 3,
-      "tests": 43,
+      "tests": 44,
       "docs": 16
     },
     {
@@ -3046,7 +3046,7 @@
       ],
       "defs": 0,
       "emits": 2,
-      "tests": 63,
+      "tests": 64,
       "docs": 18
     },
     {
@@ -3734,8 +3734,8 @@
       "severities": [],
       "defs": 1,
       "emits": 1,
-      "tests": 32,
-      "docs": 0
+      "tests": 34,
+      "docs": 5
     },
     {
       "code": "FUNGI-GOV-TPL-001",
@@ -5077,7 +5077,7 @@
       ],
       "defs": 1,
       "emits": 0,
-      "tests": 8,
+      "tests": 9,
       "docs": 2
     },
     {
@@ -6743,7 +6743,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 4,
-      "docs": 0
+      "docs": 1
     },
     {
       "code": "FUNGI-SEC-014",
