@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node packages-galerina/galerina-core-compiler/node_modules/typescript/bin/tsc -p packages-galerina/galerina-tower-citizen/tsconfig.json)",
+      "Bash(node --test tests/tpl-bitnet-fidelity.test.mjs)",
+      "Bash(node scripts/run-all-tests.cjs)",
+      "Bash(node scripts/run-all-tests.cjs galerina-core-sentinel-egress)"
+    ]
+  }
+}
