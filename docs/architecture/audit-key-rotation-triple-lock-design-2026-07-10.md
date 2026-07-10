@@ -1,6 +1,6 @@
 # DESIGN — Key rotation: the triple-lock, fail-closed, phased, append-only design (#28 / D2)
 
-**Status:** Proposed (2026-07-10) — design for owner review BEFORE any live key-material code is built.
+**Status:** Proposed (2026-07-10) — design for owner review BEFORE any live key-material code is built. **Code build HELD pending the owner's read-through.** Decision-1 (which key) **RESOLVED → both, sequenced** (attestation key first, then the HMAC-ledger asymmetric anchor); §6 Decisions 2–5 open.
 
 **Owner constraints (verbatim intent):**
 1. *"Key rotation must be very carefully planned, designed and built. We cannot afford key corruption — not one but several independent checks at each stage: a triple lock against failure, and stability."*
@@ -182,7 +182,7 @@ Each step is a pure module + an exhaustive test suite (every failure mode → ab
 
 ## 6. Open decisions for the owner (before build)
 
-1. **Confirm the key identity.** Is the 30-minute key the **asymmetric attestation key** (hybrid Ed25519 + ML-DSA-65 / an L5 profile), as the mint cost implies? This is the one that governs whether "safely remove" may *destroy* (asymmetric private ✓) or must *cold-retain* (symmetric HMAC ✗). If you actually mean rotating the **audit HMAC** ledger key, "remove" becomes cold-retain-only unless we add step 6 first.
+1. **~~Confirm the key identity.~~ RESOLVED (2026-07-10) → BOTH, sequenced.** The design targets *both* key systems, in order: **(1) the asymmetric attestation key first** (hybrid Ed25519 + ML-DSA-65 — the ~30-min mint; destroy-safe: destroy the old private half after drain, keep the public half forever), then **(2) the symmetric audit-HMAC ledger** via build-plan **step 6** (the asymmetric anchor over each epoch's chain-head, which gives even the HMAC ledger a destroy-safe "remove the old key" story). Until that anchor exists, the HMAC key is **cold-retained, never destroyed**. Attestation rotation ships first because it is destroy-safe today; the HMAC-ledger anchor follows.
 2. **Quorum M** for Lock C / the drain witness (default M=2: you + one independent re-verifier). Second signer = a second custody holder, or a separately-implemented re-verification module?
 3. **Rotation trigger cadence** for "automatic" — time (per N days), volume (per N batches), or on-demand only? (The trigger only proposes; the **readiness gate** decides *when* — deferring until quiescent — and the phase gates decide *whether*.) What counts as a "good time to rotate" for R1/R3 — is there a maintenance window, and how do we detect an audit run is mid-flight vs at a safe checkpoint?
 4. **Placement** — decision module in `tower-citizen` (alongside `quorum.ts`/`lease.ts`) vs a new `core-sentinel-*`; key-material execution in a new owner-gated `galerina-ext-key-custody`?
