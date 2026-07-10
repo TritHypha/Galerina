@@ -54,7 +54,18 @@ try {
 }
 // Shared regex (scripts/lib/codes.mjs) — the old /FUNGI-…-[0-9]+/ dropped multi-segment + suffixed codes
 // (FUNGI-CRYPTO-PQ-001, FUNGI-GOV-3VL-001, FUNGI-PROFILE-005B), falsely flagging curated entries as phantom.
-const registryCodes = new Set(extractCodes(registryText).filter((c) => c.startsWith("FUNGI-")));
+// Status-aware (2026-07-10): a curated entry explicitly marked PLANNED (Status: PLANNED …, a PLANNED
+// table row, or a "— PLANNED" bullet) is a FORWARD-DECLARATION — it declares intent, not existence —
+// so it is exempt from the phantom (stale-entry) check. A code counts as a CURRENT claim only if it
+// appears on at least one line NOT carrying PLANNED, so genuine rot (an unmarked entry whose code
+// left the source) is still caught. DRCM Phase 4/5 + 0017 follow-on entries were false-flagged as stale.
+const registryCodes = new Set(
+  registryText
+    .split(/\r?\n/)
+    .filter((line) => !/\bPLANNED\b/.test(line))
+    .flatMap((line) => extractCodes(line))
+    .filter((c) => c.startsWith("FUNGI-")),
+);
 
 // ── classify each code (from the graph) ──────────────────────────────────────
 const entry = (c) => ({

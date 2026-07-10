@@ -18,7 +18,7 @@ import { buildRollup, renderConsole, renderMarkdown } from "./report.js";
 function findRepoRoot(start: string): string {
   let dir = resolve(start);
   for (let i = 0; i < 12; i++) {
-    if (existsSync(join(dir, "galerina.workspace.json"))) return dir;
+    if (existsSync(join(dir, "galerina.workspace.json"))) return dir; // perf-allow: loop-sync-io — one-shot workspace-root walk-up at CLI startup (bounded 12 levels), distinct path per iteration
     const parent = dirname(dir);
     if (parent === dir) break;
     dir = parent;

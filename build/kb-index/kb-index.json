@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 827,
+  "docCount": 828,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -26316,6 +26316,53 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/galerina-rd-0309-border-x-photonic-tri-x-tritmesh.md",
+      "title": "RD-0309 — reverse-proxy border (RD-0307) × photonic/tri logic × TritMesh · 2026-07-10",
+      "headings": [
+        "1. Coverage confirmation",
+        "2. H1 — Photonic at the border → **REFUTED for security**",
+        "3. H2 — Tri logic (K3) **is** the border's discipline; the bypass is a K3 break — with a fix already built",
+        "3a. The K3-at-every-layer table",
+        "3b. The bypass reframed — worse than \"not K3\", and the fix is already in the tree",
+        "4. ⛔ INTERNAL — H3: what TritMesh inherits + its unique border problem",
+        "5. Ranked owner-gated takeaways (propose-only)",
+        "6. Honest headline"
+      ],
+      "codes": [
+        "FUNGI-SUBSTRATE-001",
+        "FUNGI-GOV-3VL-001"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "border",
+        "tritmesh",
+        "rd-0307",
+        "photonic",
+        "gate",
+        "fix",
+        "already",
+        "tri",
+        "logic",
+        "bypass",
+        "discipline",
+        "cert-gate",
+        "problem",
+        "tritsocket",
+        "inherits",
+        "honest",
+        "built",
+        "spore",
+        "tritmeshql",
+        "kernel",
+        "real",
+        "same",
+        "shape",
+        "deny",
+        "headline"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/galerina-rd-34b-paramtaint-buildspec-2026-06-24.md",
       "title": "R&D — Phase 34B boundary param auto-taint: verified state + build-ready spec",
       "headings": [
@@ -27819,11 +27866,11 @@
         "never",
         "spore",
         "verdict",
+        "photonic",
         "design",
         "build",
         "audit",
         "green",
-        "photonic",
         "fail-closed",
         "proof",
         "owner-gated",
@@ -27831,7 +27878,7 @@
         "security",
         "mixed",
         "refuted",
-        "prod"
+        "fix"
       ]
     },
     {
@@ -35732,13 +35779,14 @@
         "index",
         "handover",
         "owner",
+        "internal",
         "session",
         "deliverables",
+        "bridge",
         "none",
         "api",
-        "bridge",
-        "internal",
         "main",
+        "photonic",
         "paper",
         "security",
         "gap",
@@ -35750,10 +35798,9 @@
         "streaming",
         "spore",
         "live",
-        "commit-only",
-        "master",
-        "listener",
-        "corrected"
+        "tritsocket",
+        "tritmesh",
+        "commit-only"
       ]
     },
     {

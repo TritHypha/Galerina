@@ -37,7 +37,7 @@ This beta packages the Stage-A production-hardened compiler/runtime, the governe
 border, and the post-quantum signing surfaces for full testing. Scope is stated honestly in
 [KNOWN-ISSUES.md](KNOWN-ISSUES.md): what is production-grade (compiler, governance verifier,
 admission gate) vs simulated/aspirational (DSS.wasm isolation, photonic Tower, Stage-B
-self-hosting beyond `tokenize`). 60/60 packages · 6,075 tests · 0 fail.
+self-hosting beyond `tokenize`). 60/60 packages · 6,075 tests · 0 fail — snapshot at this beta's date.
 
 ### Added (this beta)
 - **Opt-in hybrid Ed25519+ML-DSA-65 `.lmanifest` signing (#34).** `galerina build`/`verify`/`run`

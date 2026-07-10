@@ -1843,7 +1843,7 @@ export function emitWATExpr(
         // for Option the wildcard IS the complement (`Some(x) + _` ⇒ `_` ≡ None). A
         // missing side with NO wildcard is non-exhaustive (FUNGI-MATCH-001 rejects it
         // upstream); emit a trap, never a silent 0 (RD-0240: fail-closed, not fail-open).
-        const wildcardArm = arms.find(a => {
+        const wildcardArm = arms.find(a => { // perf-allow: loop-array-find — bounded N over a match expression's arms (None/Some/Ok/Err + wildcard, 2–4) — not a hot path
           const p = a.value ?? "_";
           return p === "_" || p === "else" || p === "default";
         });
@@ -2273,7 +2273,7 @@ function emitBlockStatements(
         // `Ok(v) + _` ⇒ `_` ≡ Err). Missing side + no wildcard = non-exhaustive
         // (FUNGI-MATCH-001 upstream) — trap, never an EMPTY branch (a silent no-op is
         // the statement form of the fail-open this case's RD-0240 note already bans).
-        const ctorWildcardArm = matchArms.find(a => {
+        const ctorWildcardArm = matchArms.find(a => { // perf-allow: loop-array-find — bounded N over a match expression's arms (None/Some/Ok/Err + wildcard, 2–4) — not a hot path
           const p = a.value ?? "_";
           return p === "_" || p === "else" || p === "default";
         });
