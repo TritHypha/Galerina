@@ -4,6 +4,31 @@
 
 This file gives guidance to AI coding tools working on this repository.
 
+## Discovery protocol — graph first, grep last (owner rule, 2026-07-10)
+
+Token-cheap, reliable lookups exist for almost everything in this repo; use
+them BEFORE any raw grep or file-crawl:
+
+| Need | Use |
+|---|---|
+| Find a function/class/route/symbol | codebase-memory MCP `search_graph` (BM25 `query` or `name_pattern`), then `get_code_snippet` for the exact source |
+| Text pattern, with code context | MCP `search_code` (graph-augmented grep: deduped into containing functions, ranked, compact mode) |
+| Call chains / data flow | MCP `trace_path` |
+| Architecture overview | MCP `get_architecture`; `build/graph/Galerina_GRAPH_REPORT.md` |
+| A diagnostic code's def/emit/test/doc sites | `build/code-index/CODE_INDEX.md` (regen: `node scripts/code-index.mjs`) |
+| Which dev tool does X | `build/dev-tool-index/INDEX.md` (61 tools, categorised) |
+| Knowledge-base docs (sibling repo) | `node scripts/kb-index.mjs <terms>` (ranked query mode) |
+| A package's boundary/surface facts | its `.graph/BOUNDARY.md` |
+
+Raw `grep` is the LAST resort, for literal-string sweeps the graph does not
+model (absolute-path leaks, count-claim strings). Subagent/worker prompts must
+carry this protocol. After a commit that adds or moves packages, refresh the
+MCP index (`index_repository`, mode `moderate`) so the next agent queries
+current truth — `index_status`'s `head_sha` mirrors the repo, NOT the index
+build point, so probe a new symbol when in doubt. If the lookup you need is
+missing: UPDATE or BUILD a dev tool (house pattern, committed) instead of
+grepping around the gap.
+
 ## Project Type
 
 This is the Galerina governance-first programming language — implementation,
