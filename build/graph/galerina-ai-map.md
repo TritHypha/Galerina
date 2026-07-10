@@ -231,6 +231,8 @@ Provides:
 - AgentResult
 - AgentMergePolicy
 - AgentReport
+- AgentDiagnosticSeverity
+- AgentDiagnostic
 
 ## galerina-ai-neural
 
@@ -261,6 +263,12 @@ Provides:
 - SpikingModel
 - NeuromorphicPlan
 - NeuromorphicReport
+- NeuromorphicDiagnosticSeverity
+- NeuromorphicDiagnostic
+- validateSpikeTrain
+- validateSpikingModel
+- validateNeuromorphicPlan
+- createNeuromorphicReport
 
 ## galerina-data
 
@@ -417,6 +425,11 @@ Provides:
 - NativeTarget
 - NativeArtifact
 - NativeTargetReport
+- NativeDiagnosticSeverity
+- NativeDiagnostic
+- validateNativeTarget
+- validateNativeArtifact
+- createNativeTargetReport
 
 ## galerina-target-js
 
@@ -430,6 +443,10 @@ Provides:
 - WasmTarget
 - WasmArtefact
 - WasmTargetReport
+- WasmDiagnosticSeverity
+- WasmDiagnostic
+- validateWasmArtefact
+- createWasmTargetReport
 
 ## galerina-target-gpu
 
@@ -439,6 +456,10 @@ Provides:
 - GpuTargetCapability
 - GpuKernelPlan
 - GpuTargetReport
+- GpuDiagnosticSeverity
+- GpuDiagnostic
+- validateGpuKernelPlan
+- createGpuTargetReport
 
 ## galerina-target-ai-accelerator
 

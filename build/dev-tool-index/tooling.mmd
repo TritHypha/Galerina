@@ -241,6 +241,8 @@ flowchart LR
   T_galerina_new_mjs --> C_governance
   T_graph_all_mjs["graph-all.mjs"]
   T_graph_all_mjs --> C_signing_fusion
+  T_graph_all_mjs --> C_coverage
+  T_graph_all_mjs --> C_diagnostics
   T_graph_all_mjs --> C_package_border
   T_graph_all_mjs --> C_source_hygiene
   T_graph_all_mjs --> C_doc_drift
@@ -286,10 +288,8 @@ flowchart LR
   T_lint_fungi_mjs --> C_diagnostics
   T_lint_fungi_mjs --> C_secrets_privacy
   T_component_health_mjs["component-health.mjs"]
-  T_component_health_mjs --> C_governance
+  T_component_health_mjs --> C_provenance
   T_component_health_mjs --> C_source_hygiene
-  T_component_health_mjs --> C_doc_drift
-  T_component_health_mjs --> C_web_stub
   T_run_all_tests_cjs["run-all-tests.cjs"]
   T_run_all_tests_cjs --> C_diagnostics
   T_run_all_tests_cjs --> C_doc_drift

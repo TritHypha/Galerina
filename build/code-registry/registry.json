@@ -2995,7 +2995,7 @@
       ],
       "defs": 0,
       "emits": 2,
-      "tests": 72,
+      "tests": 73,
       "docs": 36
     },
     {
@@ -3029,8 +3029,8 @@
       ],
       "defs": 0,
       "emits": 3,
-      "tests": 37,
-      "docs": 15
+      "tests": 43,
+      "docs": 16
     },
     {
       "code": "FUNGI-EFFECT-004",
@@ -4680,8 +4680,8 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 4,
-      "docs": 8
+      "tests": 5,
+      "docs": 9
     },
     {
       "code": "FUNGI-MEMORY-001",
@@ -4949,8 +4949,8 @@
       ],
       "defs": 0,
       "emits": 2,
-      "tests": 27,
-      "docs": 3
+      "tests": 35,
+      "docs": 5
     },
     {
       "code": "FUNGI-NAME-002",
@@ -6992,7 +6992,7 @@
       ],
       "defs": 1,
       "emits": 1,
-      "tests": 16,
+      "tests": 18,
       "docs": 1
     },
     {
@@ -7411,7 +7411,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 8,
-      "docs": 0
+      "docs": 2
     },
     {
       "code": "FUNGI-SYNTAX-LEGACY-001",
@@ -7826,7 +7826,7 @@
       ],
       "defs": 1,
       "emits": 1,
-      "tests": 86,
+      "tests": 87,
       "docs": 9
     },
     {
@@ -7870,8 +7870,8 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 23,
-      "docs": 0
+      "tests": 24,
+      "docs": 1
     },
     {
       "code": "FUNGI-TYPE-006",
@@ -7911,7 +7911,7 @@
       "severities": [],
       "defs": 0,
       "emits": 2,
-      "tests": 24,
+      "tests": 25,
       "docs": 1
     },
     {
@@ -8420,7 +8420,7 @@
       "defs": 1,
       "emits": 2,
       "tests": 77,
-      "docs": 4
+      "docs": 5
     },
     {
       "code": "FUNGI-VALUESTATE-007",

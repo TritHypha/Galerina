@@ -3,10 +3,10 @@
   "totals": {
     "packages": 94,
     "testBearing": 69,
-    "tests": 6054,
+    "tests": 6307,
     "devTools": 61,
     "auditTools": 33,
-    "toolsInCadence": 20,
+    "toolsInCadence": 19,
     "proofs": 40
   },
   "packages": [
@@ -194,7 +194,7 @@
       "name": "galerina-tools-benchmark",
       "kind": "tools",
       "description": "Galerina benchmark and diagnostics contracts for logic, compute targets, fallback behaviour and safe reporting",
-      "tests": null,
+      "tests": 9,
       "hasTestScript": true,
       "border": "PASS",
       "files": 1,
@@ -287,7 +287,7 @@
       "name": "galerina-core-compiler",
       "kind": "core",
       "description": "Galerina compiler pipeline contracts for parsing, checking, IR, diagnostics and reports.",
-      "tests": 4256,
+      "tests": 4405,
       "hasTestScript": true,
       "border": "PASS",
       "files": 96,
@@ -578,7 +578,7 @@
       "name": "galerina-devtools-fungi-scan",
       "kind": "devtools",
       "description": "Syntax-migration corpus scanner: walks every .fungi/.gate file and reports old-form usage, @version headers, m",
-      "tests": null,
+      "tests": 25,
       "hasTestScript": true,
       "border": "PASS",
       "files": 5,
@@ -783,7 +783,7 @@
       "name": "galerina-ext-tritsocket",
       "kind": "ext",
       "description": "TritSocket: a deny-only ternary (Kleene-3) admission pre-filter. Emits Deny | Maybe — never Allow. A cheap, ca",
-      "tests": null,
+      "tests": 11,
       "hasTestScript": true,
       "border": "PASS",
       "files": 3,
@@ -813,7 +813,7 @@
       "name": "galerina-target-gpu",
       "kind": "target",
       "description": "Galerina GPU target planning and output contracts.",
-      "tests": null,
+      "tests": 5,
       "hasTestScript": true,
       "border": "PASS",
       "files": 1,
@@ -833,7 +833,7 @@
       "name": "galerina-target-native",
       "kind": "target",
       "description": "Galerina future native executable and ABI target planning concepts.",
-      "tests": null,
+      "tests": 7,
       "hasTestScript": true,
       "border": "PASS",
       "files": 1,
@@ -843,7 +843,7 @@
       "name": "galerina-target-photonic",
       "kind": "target",
       "description": "Galerina photonic target backend planning concepts.",
-      "tests": null,
+      "tests": 8,
       "hasTestScript": true,
       "border": "PASS",
       "files": 1,
@@ -853,7 +853,7 @@
       "name": "galerina-target-wasm",
       "kind": "target",
       "description": "Galerina WebAssembly target planning and output contracts.",
-      "tests": null,
+      "tests": 4,
       "hasTestScript": true,
       "border": "PASS",
       "files": 1,
@@ -960,7 +960,7 @@
       "name": "galerina-ai-agent",
       "kind": "ai",
       "description": "Galerina supervised AI agent, tool permission, task group and report contracts.",
-      "tests": null,
+      "tests": 21,
       "hasTestScript": true,
       "border": "PASS",
       "files": 1,
@@ -990,7 +990,7 @@
       "name": "galerina-ai-neuromorphic",
       "kind": "ai",
       "description": "Galerina neuromorphic and spiking event model contracts.",
-      "tests": null,
+      "tests": 14,
       "hasTestScript": true,
       "border": "PASS",
       "files": 1,
@@ -1520,11 +1520,13 @@
     {
       "name": "graph-all.mjs",
       "category": "graph",
-      "purpose": "run ALL THREE Galerina graph generators in one shot (RD-0124 follow-up).",
+      "purpose": "run EVERY Galerina graph-related dev tool in one shot. THIS is \"run graph\".",
       "selfTest": false,
       "inCadence": true,
       "concerns": [
         "signing/fusion",
+        "coverage",
+        "diagnostics",
         "package-border",
         "source-hygiene",
         "doc-drift",
@@ -1536,7 +1538,7 @@
       "category": "graph",
       "purpose": "index the auto-memory (MEMORY.md + topic files) as a tag/link GRAPH.",
       "selfTest": false,
-      "inCadence": true,
+      "inCadence": false,
       "concerns": [
         "diagnostics",
         "source-hygiene",
@@ -1626,10 +1628,8 @@
       "selfTest": false,
       "inCadence": false,
       "concerns": [
-        "governance",
-        "source-hygiene",
-        "doc-drift",
-        "web-stub"
+        "provenance",
+        "source-hygiene"
       ]
     },
     {
@@ -1867,6 +1867,7 @@
       "audit-syntax.mjs",
       "audit-tier-boundary.mjs",
       "audit-web-stub-guard.mjs",
+      "graph-all.mjs",
       "gen-code-registry.mjs",
       "lint-conventions.mjs",
       "check-gate-injection.mjs"
@@ -1896,6 +1897,7 @@
       "audit-syntax.mjs",
       "audit-tier-boundary.mjs",
       "fix-logicn-brand.mjs",
+      "graph-all.mjs",
       "memory-graph.mjs",
       "code-index.mjs",
       "gen-code-registry.mjs",
@@ -2046,7 +2048,6 @@
       "gen-code-registry.mjs",
       "kb-index.mjs",
       "lint-conventions.mjs",
-      "component-health.mjs",
       "run-all-tests.cjs",
       "run-proofs.mjs",
       "status.mjs",
@@ -2087,7 +2088,6 @@
       "gen-code-registry.mjs",
       "lint-conventions.mjs",
       "lint-fungi.mjs",
-      "component-health.mjs",
       "rebuild-fusable-packages.mjs",
       "verify-artifacts.mjs"
     ],
@@ -2176,28 +2176,19 @@
       "kb-index.mjs",
       "lint-conventions.mjs",
       "lint-fungi.mjs",
+      "component-health.mjs",
       "run-phase-close.mjs"
     ],
     "runtime-coverage": [
       "audit-runtime-coverage.mjs"
     ],
     "web-stub": [
-      "audit-web-stub-guard.mjs",
-      "component-health.mjs"
+      "audit-web-stub-guard.mjs"
     ]
   },
   "gaps": {
     "packagesNoTests": [
-      "galerina-tools-benchmark",
-      "galerina-devtools-benchmarks",
-      "galerina-devtools-fungi-scan",
-      "galerina-ext-tritsocket",
-      "galerina-target-gpu",
-      "galerina-target-native",
-      "galerina-target-photonic",
-      "galerina-target-wasm",
-      "galerina-ai-agent",
-      "galerina-ai-neuromorphic"
+      "galerina-devtools-benchmarks"
     ],
     "concernsNoTool": [],
     "toolsNotInCadence": [
