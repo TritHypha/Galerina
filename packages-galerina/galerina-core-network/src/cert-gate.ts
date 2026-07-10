@@ -25,7 +25,7 @@
  * (`withSideSignal`): by No-Coercion (`min(t*, r) ≤ t*`) it can only LOWER the
  * verdict, never lift a `0 → +1`, so it may contribute without ever becoming a key.
  *
- * Build guide: docs/Knowledge-Bases/galerina-tlstp-s1-cert-gate.md
+ * Build guide: ../ZTF-Knowledge-Bases/galerina-tlstp-s1-cert-gate.md
  */
 
 import {
@@ -266,7 +266,7 @@ export function certGate(
 // unknown->DENY — at worst it forces MORE re-checks. Fail-closed: the default is
 // chunk_boundary, and ANY absent/invalid config degrades to chunk_boundary (re-check
 // every chunk). There is deliberately NO encoding meaning "never". See
-// docs/Knowledge-Bases/galerina-tlstp-s4-recovering-fsm.md + galerina-b8-governed-transport.md.
+// ../ZTF-Knowledge-Bases/galerina-tlstp-s4-recovering-fsm.md + galerina-b8-governed-transport.md.
 
 /**
  * How often a long-lived governed stream re-runs its signing-key/revocation re-check.

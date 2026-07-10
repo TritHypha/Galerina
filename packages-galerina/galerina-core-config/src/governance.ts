@@ -16,7 +16,7 @@
  * Fail-closed: an invalid or unknown value resolves to `full` (the strictest mode), never to a
  * laxer one. A missing value defaults to `full` silently.
  *
- * Design: docs/Knowledge-Bases/galerina-governance-mode-ladder.md.
+ * Design: ../ZTF-Knowledge-Bases/galerina-governance-mode-ladder.md.
  */
 
 export const GOVERNANCE_MODES = ["full", "auto", "lean"] as const;

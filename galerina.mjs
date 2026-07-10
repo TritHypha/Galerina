@@ -175,7 +175,7 @@ Commands:
   galerina version                                      show version and runtime status
   galerina diagnostic                                    run diagnostic fault-injection benchmark suite
   galerina border-check                                  validate all plugin schemas in governance/plugins/
-  galerina kb-graph [--all]                              scan docs/Knowledge-Bases/ cross-reference graph
+  galerina kb-graph [--all]                              scan ../ZTF-Knowledge-Bases/ cross-reference graph
   galerina ledger <egress-dir> [--json]                  build hash-linked compliance report from audit-egress
   galerina new <target-dir> [--name <pkg>]               scaffold an opinionated secure governed package
   galerina new app <target-dir> [--name <app>]           scaffold a governed app (App.fungi + App.manifest + flows/ deps/ proofs/)
@@ -676,7 +676,7 @@ Baseline comparison (governance-cost):
     process.exit(denied > 0 ? 1 : 0);
   }
 
-  // ── galerina kb-graph — scan docs/Knowledge-Bases/ cross-reference graph ──────
+  // ── galerina kb-graph — scan ../ZTF-Knowledge-Bases/ cross-reference graph ──────
   if (command === "kb-graph") {
     // #174: pass argv as an array with shell:false — never interpolate user input
     // into a shell string (the prior execSync concatenation was a command-injection sink).

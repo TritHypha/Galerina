@@ -9,7 +9,7 @@
 // the natural way to express tight error envelopes. The lexer tokenizes these as a single
 // numeric literal; malformed/split exponents fail closed (FUNGI-SUBSTRATE-002).
 //
-// Spec: docs/Knowledge-Bases/galerina-substrate-contracts.md
+// Spec: ../ZTF-Knowledge-Bases/galerina-substrate-contracts.md
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {

@@ -48,9 +48,9 @@ Evidence:
 - `build/_fulltest4.log:18`
 - `build/_fulltest4.log:44`
 - `build/_fulltest4.log:93`
-- `docs/Knowledge-Bases/galerina-runtime-status-SOT.md:15`
-- `docs/Knowledge-Bases/galerina-runtime-status-SOT.md:26`
-- `docs/Knowledge-Bases/galerina-runtime-status-SOT.md:36`
+- `../../../ZTF-Knowledge-Bases/galerina-runtime-status-SOT.md:15`
+- `../../../ZTF-Knowledge-Bases/galerina-runtime-status-SOT.md:26`
+- `../../../ZTF-Knowledge-Bases/galerina-runtime-status-SOT.md:36`
 
 Passing tests establish prototype health. They do not establish certification
 properties such as worst-case execution time, radiation tolerance, kernel
@@ -318,24 +318,24 @@ The governed inference path is real:
 The Tower master specification claims hardware-level atomic enforcement and
 runtime non-decision semantics:
 
-- `docs/Knowledge-Bases/galerina-governed-tower-specification.md:15`
-- `docs/Knowledge-Bases/galerina-governed-tower-specification.md:22`
-- `docs/Knowledge-Bases/galerina-governed-tower-specification.md:57`
-- `docs/Knowledge-Bases/galerina-governed-tower-specification.md:127`
+- `../../../ZTF-Knowledge-Bases/galerina-governed-tower-specification.md:15`
+- `../../../ZTF-Knowledge-Bases/galerina-governed-tower-specification.md:22`
+- `../../../ZTF-Knowledge-Bases/galerina-governed-tower-specification.md:57`
+- `../../../ZTF-Knowledge-Bases/galerina-governed-tower-specification.md:127`
 
 The same document later marks V_DPM and DSS.wasm items as not yet implemented:
 
-- `docs/Knowledge-Bases/galerina-governed-tower-specification.md:229`
-- `docs/Knowledge-Bases/galerina-governed-tower-specification.md:230`
+- `../../../ZTF-Knowledge-Bases/galerina-governed-tower-specification.md:229`
+- `../../../ZTF-Knowledge-Bases/galerina-governed-tower-specification.md:230`
 
 The inference tower document is more accurate: it states that in-WASM
 `AI.infer(...)` is still a follow-up and that `governance_tier` boot mapping and
 `audit_depth` fields remain tasks:
 
-- `docs/Knowledge-Bases/galerina-governed-inference-tower.md:215`
-- `docs/Knowledge-Bases/galerina-governed-inference-tower.md:231`
-- `docs/Knowledge-Bases/galerina-governed-inference-tower.md:242`
-- `docs/Knowledge-Bases/galerina-governed-inference-tower.md:243`
+- `../../../ZTF-Knowledge-Bases/galerina-governed-inference-tower.md:215`
+- `../../../ZTF-Knowledge-Bases/galerina-governed-inference-tower.md:231`
+- `../../../ZTF-Knowledge-Bases/galerina-governed-inference-tower.md:242`
+- `../../../ZTF-Knowledge-Bases/galerina-governed-inference-tower.md:243`
 
 Conclusion: use `galerina-runtime-status-SOT.md` and implementation evidence as the
 operational truth. Treat the master specification as target architecture unless

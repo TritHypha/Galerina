@@ -6,7 +6,7 @@
 // Bad patterns are in comments with the FUNGI diagnostic they trigger.
 // Correct patterns are live compilable code.
 //
-// Reference: docs/Knowledge-Bases/galerina-governance-rules.md
+// Reference: ../ZTF-Knowledge-Bases/galerina-governance-rules.md
 // Rules: K-004 (SecureString sink guards), FUNGI-SECRET-001/002/003,
 //        FUNGI-VALUESTATE-006 (protected PII / redaction before audit)
 

@@ -152,4 +152,4 @@ tests/                node --test suites, incl. the kernel-integration proof
 - `packages-galerina/galerina-framework-app-kernel` — the kernel that folds these factors
 - `packages-galerina/galerina-core-network` — the shipped `certGate` (TLSTP S1)
 - `packages-galerina/galerina-tower-citizen` — the K3 verdict algebra
-- `docs/Knowledge-Bases/galerina-tlstp-s1-cert-gate.md` — the cert-gate spec
+- `../../../ZTF-Knowledge-Bases/galerina-tlstp-s1-cert-gate.md` — the cert-gate spec

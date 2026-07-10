@@ -81,5 +81,5 @@ Capability names, route/flow/package links and effective capability reports.
 
 ## Knowledge Base
 
-See [Capabilities](../Knowledge-Bases/capabilities.md) and
-[Permission, Capability And Actor Model](../Knowledge-Bases/permission-capability-actor-model.md).
+See [Capabilities](../../../ZTF-Knowledge-Bases/capabilities.md) and
+[Permission, Capability And Actor Model](../../../ZTF-Knowledge-Bases/permission-capability-actor-model.md).

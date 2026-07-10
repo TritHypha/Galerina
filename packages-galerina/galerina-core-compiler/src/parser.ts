@@ -2,7 +2,7 @@
 // Galerina Phase 4 — Recursive Descent Parser
 //
 // Parses Galerina .fungi source text into an AstNode tree.
-// Grammar: docs/Knowledge-Bases/phase-4-parser-ast-plan.md
+// Grammar: ../ZTF-Knowledge-Bases/phase-4-parser-ast-plan.md
 //
 // Entry point: parseProgram(source, file)
 //
@@ -283,7 +283,7 @@ export const FUNGI_CURRENT_VERSION = 1;
 //
 // Each infix operator maps to its binding precedence and associativity.
 // Higher precedence binds tighter: * (60) > + (50) > == (30) > && (20) > || (10).
-// Ref: docs/Knowledge-Bases/operator-precedence.md
+// Ref: ../ZTF-Knowledge-Bases/operator-precedence.md
 // ---------------------------------------------------------------------------
 
 interface InfixEntry {
@@ -2068,7 +2068,7 @@ class Parser {
    * chain with a table-driven precedence-climbing loop.
    *
    * Precedence table: INFIX_OPERATOR_TABLE (module level)
-   * Ref: docs/Knowledge-Bases/operator-precedence.md
+   * Ref: ../ZTF-Knowledge-Bases/operator-precedence.md
    *
    * @param minPrecedence  Minimum precedence for the next infix operator.
    *                       Callers pass 0 (the default) to parse a full expression.
@@ -4001,7 +4001,7 @@ class Parser {
    * that Galerina source files with compute blocks can be parsed without errors.
    * Semantic enforcement (effect routing, tensor type checking) is Phase 7+.
    *
-   * Ref: docs/Knowledge-Bases/governed-compute-chain.md
+   * Ref: ../ZTF-Knowledge-Bases/governed-compute-chain.md
    */
   private parseComputeTarget(): AstNode {
     const loc = this.loc();

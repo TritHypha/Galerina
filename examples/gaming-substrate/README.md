@@ -39,7 +39,7 @@ the lane choice.
 ## Two fail-opens this example surfaced (both fixed 2026-06-25)
 
 Building it found two real holes in the substrate gate, both letting a crypto effect run on a
-noisy lane undetected. See `docs/Knowledge-Bases/galerina-substrate-lane-fail-opens-2026-06-25.md`.
+noisy lane undetected. See `../../../ZTF-Knowledge-Bases/galerina-substrate-lane-fail-opens-2026-06-25.md`.
 
 1. **PQ-suffixed crypto escaped the gate.** The crypto-on-core matcher was `$`-anchored, so
    `crypto.sign.hybrid` (the form a *certified* profile **mandates**) didn't match and slipped

@@ -1,6 +1,6 @@
 # auth-service example
 
-> **✍️ Writing or AI-generating contracts? Follow the [Contract Authoring Guide](../../docs/Knowledge-Bases/galerina-contract-authoring-guide.md).**
+> **✍️ Writing or AI-generating contracts? Follow the [Contract Authoring Guide](../../../ZTF-Knowledge-Bases/galerina-contract-authoring-guide.md).**
 > These route services correctly put `request`/`response` on the **secure route flow** (external
 > ingress/egress) while their `pure` helper flows omit them. `effects` is deny-by-default. An AI
 > may only **propose** widening `authority`/`effects`/`secrets`, never apply it.

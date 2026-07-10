@@ -134,4 +134,4 @@ Galerina permissions, effects, classification, vault rules or audit requirements
 
 ## Knowledge Base
 
-See [MCP AI Tool Boundaries](../Knowledge-Bases/mcp-ai-tool-boundaries.md).
+See [MCP AI Tool Boundaries](../../../ZTF-Knowledge-Bases/mcp-ai-tool-boundaries.md).

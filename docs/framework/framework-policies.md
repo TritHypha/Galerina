@@ -70,4 +70,4 @@ Declare and report core app, route, flow, response and package policy.
 
 ## Knowledge Base
 
-See [Policy Architecture](../Knowledge-Bases/policy-architecture.md).
+See [Policy Architecture](../../../ZTF-Knowledge-Bases/policy-architecture.md).

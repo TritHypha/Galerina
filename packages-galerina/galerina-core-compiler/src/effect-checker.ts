@@ -2,7 +2,7 @@
 // Galerina Phase 5 — Effect Checker
 //
 // Validates that effects declared on flows are consistent with their content.
-// Spec: docs/Knowledge-Bases/effect-checker-and-boundary-checker.md
+// Spec: ../ZTF-Knowledge-Bases/effect-checker-and-boundary-checker.md
 //
 // Diagnostic codes: FUNGI-EFFECT-001..004 (compiler-diagnostics.md)
 // =============================================================================

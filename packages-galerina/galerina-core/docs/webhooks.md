@@ -8,7 +8,7 @@ runtime when an application uses a kernel-backed adapter.
 ## Current Canonical Package Contract
 
 The package-owned v0.2 webhook contract lives in
-`../../../docs/Knowledge-Bases/galerina-core-network-webhook.md` and
+`../../../../ZTF-Knowledge-Bases/galerina-core-network-webhook.md` and
 `../../galerina-core-network/README.md`.
 
 Use these canonical names unless an adapter explicitly maps local names:

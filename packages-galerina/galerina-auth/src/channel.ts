@@ -3,7 +3,7 @@
  *
  * This is the auth factor that establishes WHO is on the other end of the
  * transport: the certificate/channel-validation verdict. It is the recently-shipped
- * cert-gate (@galerina/core-network, docs/Knowledge-Bases/galerina-tlstp-s1-cert-gate.md)
+ * cert-gate (@galerina/core-network, ../ZTF-Knowledge-Bases/galerina-tlstp-s1-cert-gate.md)
  * surfaced as a first-class authentication factor. We DELEGATE to that gate verbatim
  * — there is exactly one cert-gate implementation, and this module does not re-derive
  * a byte of it.

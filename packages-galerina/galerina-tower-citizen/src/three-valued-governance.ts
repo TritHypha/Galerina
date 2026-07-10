@@ -21,7 +21,7 @@
  *   authorize(v) ⇔ v = +1
  * An INDETERMINATE collapsed to deny emits FUNGI-GOV-3VL-001 — never silent.
  *
- * See docs/Knowledge-Bases/galerina-three-valued-governance.md for the spec, the
+ * See ../ZTF-Knowledge-Bases/galerina-three-valued-governance.md for the spec, the
  * fail-closed soundness theorem, and the no-coercion proof.
  */
 

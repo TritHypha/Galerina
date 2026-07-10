@@ -5,7 +5,7 @@
 > (it is not part of the language or compiler) and is **not** the workspace default
 > build target. Copy it, rename it, and grow it. For what the framework layer is — and
 > is explicitly NOT — see
-> [`docs/Knowledge-Bases/galerina-framework-layer-design.md`](../../docs/Knowledge-Bases/galerina-framework-layer-design.md).
+> [`../../../ZTF-Knowledge-Bases/galerina-framework-layer-design.md`](../../../ZTF-Knowledge-Bases/galerina-framework-layer-design.md).
 
 This app is the smallest **complete** governed service: a real governed flow, compiled
 to a **signed** `.wasm`, **fused** into the App Kernel at a route, and **served** over

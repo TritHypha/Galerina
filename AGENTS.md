@@ -78,7 +78,7 @@ intent → governed execution plan → coordinated compute → audit proof
 > **Stage-A status (2026-07-10):** the full pipeline lexer→parser→type/effect/value-state→governance-verifier→GIR→WAT
 > is shipped and green (`galerina-core-compiler` at 4,419; whole suite 92/92 · 6,838 tests · 0 fail on a clean checkout). The remaining
 > frontier is **Stage-B self-hosting WASM byte-parity** (only `tokenize` reaches it today) and the **real
-> `DSS.wasm`** Wasmtime runtime (#102–106, still a stub). See `docs/Knowledge-Bases/galerina-roadmap-and-percent-audit-2026-06-23.md`.
+> `DSS.wasm`** Wasmtime runtime (#102–106, still a stub). See `../ZTF-Knowledge-Bases/galerina-roadmap-and-percent-audit-2026-06-23.md`.
 
 ## Grammar — Current v0.1 Flow Forms
 
@@ -108,16 +108,16 @@ pure flow calculateVat(amount: Money<GBP>) -> Money<GBP> { ... }
 
 | What | File |
 |---|---|
-| Keyword table (lexer source of truth) | `docs/Knowledge-Bases/v1-reserved-keywords.md` |
-| Diagnostic codes — spec catalog | `docs/Knowledge-Bases/compiler-diagnostics.md` (forward-spec; includes unbuilt codes) |
+| Keyword table (lexer source of truth) | `../ZTF-Knowledge-Bases/v1-reserved-keywords.md` |
+| Diagnostic codes — spec catalog | `../ZTF-Knowledge-Bases/compiler-diagnostics.md` (forward-spec; includes unbuilt codes) |
 | Diagnostic codes — LIVE catalog (generated, every real code) | `build/code-registry/REGISTRY.md` (regen: `node scripts/gen-code-registry.mjs`) |
 | Code INDEX — every code → def/emit/test/doc sites (query instead of grep) | `build/code-index/CODE_INDEX.md` (regen: `node scripts/code-index.mjs`) |
-| Diagnostic-code CONVENTIONS (binding) | `docs/Knowledge-Bases/galerina-diagnostic-code-conventions.md` |
-| Audit Coverage & R&D Standards (20, research-grounded) | `docs/Knowledge-Bases/galerina-audit-coverage-and-rd-standards.md` |
+| Diagnostic-code CONVENTIONS (binding) | `../ZTF-Knowledge-Bases/galerina-diagnostic-code-conventions.md` |
+| Audit Coverage & R&D Standards (20, research-grounded) | `../ZTF-Knowledge-Bases/galerina-audit-coverage-and-rd-standards.md` |
 | AST contract (AstNodeKind, Token, etc.) | `packages-galerina/galerina-core/src/index.ts` |
-| Phase 4 plan | `docs/Knowledge-Bases/phase-4-parser-ast-plan.md` |
-| Concept model | `docs/Knowledge-Bases/galerina-concept-map.md` |
-| Code examples (corrected) | `docs/Knowledge-Bases/galerina-code-examples-full-flow.md` |
+| Phase 4 plan | `../ZTF-Knowledge-Bases/phase-4-parser-ast-plan.md` |
+| Concept model | `../ZTF-Knowledge-Bases/galerina-concept-map.md` |
+| Code examples (corrected) | `../ZTF-Knowledge-Bases/galerina-code-examples-full-flow.md` |
 
 ## Package Map
 
@@ -146,7 +146,7 @@ FUNGI-BINDING-*   binding mutability (001–004 defined)
 FUNGI-MEMORY-*    memory model (001–008 defined)
 ```
 
-See `docs/Knowledge-Bases/compiler-diagnostics.md` for the spec catalog, and `build/code-registry/REGISTRY.md`
+See `../ZTF-Knowledge-Bases/compiler-diagnostics.md` for the spec catalog, and `build/code-registry/REGISTRY.md`
 for the LIVE generated catalog (every real code + status). **Conventions are binding**
 (`galerina-diagnostic-code-conventions.md`): `name` is `UPPER_SNAKE`, `severity` is lowercase `error|warning|info`,
 one-code-one-fault, one owner per code, emit via an exported constant. Enforced by the umbrella gate

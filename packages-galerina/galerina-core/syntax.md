@@ -1763,7 +1763,7 @@ Option<String secure>    // contained String is secure when present
 Array<String unsafe>     // array of untrusted strings
 ```
 
-Full specification: `docs/Knowledge-Bases/postfix-type-state-syntax.md`.
+Full specification: `../../../ZTF-Knowledge-Bases/postfix-type-state-syntax.md`.
 
 ---
 
@@ -1795,7 +1795,7 @@ Explicit unbranding:
 let raw: String = customerId.value()
 ```
 
-Full specification: `docs/Knowledge-Bases/generic-types.md`.
+Full specification: `../../../ZTF-Knowledge-Bases/generic-types.md`.
 
 ---
 
@@ -1820,7 +1820,7 @@ Enum names and cases: PascalCase.
 Enums are closed by default. Unknown external values fail closed at governed
 boundaries. `match` over enums must be exhaustive.
 
-Full specification: `docs/Knowledge-Bases/type-and-enum-declarations.md`.
+Full specification: `../../../ZTF-Knowledge-Bases/type-and-enum-declarations.md`.
 
 ---
 

@@ -14,7 +14,7 @@ Rendered SVG architecture diagrams. All use a shared palette so the set reads as
 | [galerina-framework.svg](galerina-framework.svg) | the Zero-Trust application framework | `galerina-post-framework-architecture.md` |
 | [galerina-tower-citizen.svg](galerina-tower-citizen.svg) | the DRCM / Tower-citizen containment model | `galerina-drcm.md` |
 | [galerina-tri-pipe.svg](galerina-tri-pipe.svg) | the Tri-Pipe execution router (binary / hybrid / photonic) | `galerina-photonic-ppu-virtualisation.md` |
-| **[galerina-untrusted-governed-lane.svg](galerina-untrusted-governed-lane.svg)** | **Govern-Don't-Absorb — the decision stays in the trusted core, the work runs in an untrusted lane admitted by a signed predicate and combined back by No-Coercion `min`** | **[`untrusted-governed-lane.md`](../Knowledge-Bases/untrusted-governed-lane.md)** |
+| **[galerina-untrusted-governed-lane.svg](galerina-untrusted-governed-lane.svg)** | **Govern-Don't-Absorb — the decision stays in the trusted core, the work runs in an untrusted lane admitted by a signed predicate and combined back by No-Coercion `min`** | **[`untrusted-governed-lane.md`](../../../ZTF-Knowledge-Bases/untrusted-governed-lane.md)** |
 | [galerina-tritmesh-query-lane.svg](galerina-tritmesh-query-lane.svg) | the `.hypha` (TritMeshQL) query lane — the T-ZONE split (opaque pushdown pre-Gate / semantic post-Gate), the Gate, and the GATED cross-collection traversal | [`../examples/hypha/README.md`](../examples/hypha/README.md) |
 
 ## How they fit together

@@ -1380,7 +1380,7 @@ the active v1 build graph.
   `wait all`.
 - Build and runtime reports should expose async behaviour through deterministic
   task, wait, concurrency, timeout and queue report entries.
-- The concept is documented in `docs/Knowledge-Bases/async-task-model.md`.
+- The concept is documented in `../../ZTF-Knowledge-Bases/async-task-model.md`.
 
 ## Resilient Flow Requirements
 
@@ -1930,7 +1930,7 @@ the active v1 build graph.
 - Third-party plugins must be signed, version-pinned, permission-manifest
   declared, dependency-scanned, and security-scored.
 - The full plugin security specification is in
-  `docs/Knowledge-Bases/plugin-security-architecture.md`.
+  `../../ZTF-Knowledge-Bases/plugin-security-architecture.md`.
 
 ## Out of Scope
 

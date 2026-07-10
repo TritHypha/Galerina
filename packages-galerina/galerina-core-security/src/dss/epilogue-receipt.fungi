@@ -17,7 +17,7 @@
 ;;
 ;; Build order position: 7 of 7 (final DSS file)
 ;;
-;; See: docs/Knowledge-Bases/galerina-governed-tower-specification.md §3D
+;; See: ../ZTF-Knowledge-Bases/galerina-governed-tower-specification.md §3D
 
 import "./types/audit-event.fungi"
 import "./vdpm.fungi"

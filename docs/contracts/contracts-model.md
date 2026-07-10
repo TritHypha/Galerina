@@ -49,4 +49,4 @@ Typed records, field views and exposure reports.
 
 ## Knowledge Base
 
-See [Model Security Contracts](../Knowledge-Bases/model-security-contracts.md).
+See [Model Security Contracts](../../../ZTF-Knowledge-Bases/model-security-contracts.md).

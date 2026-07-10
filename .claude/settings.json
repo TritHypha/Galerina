@@ -18,7 +18,7 @@
           {
             "type": "command",
             "command": "node scripts/rd-absorb.mjs --summary",
-            "description": "Periodic drift heartbeat (informational, exit 0): one-line count of R&D done-files in ../Galerina-R-AND-D/_session-bridge/done/ not yet recorded in docs/Knowledge-Bases/galerina-rd-results-log.md — the absorption backlog the owner's standing process (feedback-rd-absorb-positive-and-negative) clears. Drop --summary for the actionable list."
+            "description": "Periodic drift heartbeat (informational, exit 0): one-line count of R&D done-files in ../Galerina-R-AND-D/_session-bridge/done/ not yet recorded in ../ZTF-Knowledge-Bases/galerina-rd-results-log.md — the absorption backlog the owner's standing process (feedback-rd-absorb-positive-and-negative) clears. Drop --summary for the actionable list."
           },
           {
             "type": "command",

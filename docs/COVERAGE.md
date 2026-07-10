@@ -896,7 +896,7 @@ Status of documentation for `galerina-core` and the `galerina-core-*` family of 
 
 Each entry below lists the KB references, the package status, and any blocking conflicts.
 
-KB references in this section are under `docs/Knowledge-Bases/`. Manual source
+KB references in this section are under `../../ZTF-Knowledge-Bases/`. Manual source
 check performed against the referenced KB files plus package README/TODO files
 on 2026-05-25. Where package docs and KB files disagree, the entry calls that
 out before implementation.

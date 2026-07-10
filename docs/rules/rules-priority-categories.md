@@ -81,4 +81,4 @@ AI tools must reject or redesign suggestions that violate non-negotiable rules.
 
 ## Knowledge Base
 
-See [Priority Categories](../Knowledge-Bases/priority-categories.md).
+See [Priority Categories](../../../ZTF-Knowledge-Bases/priority-categories.md).

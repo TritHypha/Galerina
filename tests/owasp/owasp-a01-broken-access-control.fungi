@@ -6,7 +6,7 @@
 // Each "bad pattern" section is shown as a comment with the FUNGI code it would trigger.
 // The CORRECT pattern follows each bad pattern as live compilable code.
 //
-// Reference: docs/Knowledge-Bases/galerina-governance-rules.md
+// Reference: ../ZTF-Knowledge-Bases/galerina-governance-rules.md
 // Rules: E-001 (declared effects), C-001 (no wildcard caps), FUNGI-GOV-004, FUNGI-INHERIT-002
 
 // ── Types ─────────────────────────────────────────────────────────────────────

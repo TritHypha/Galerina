@@ -26,5 +26,5 @@ The goal is not to claim that Galerina is automatically faster than mature
 runtimes. The goal is to make safe startup behaviour predictable, explainable,
 measurable and reportable.
 
-See [Startup And Boot Warmup](Knowledge-Bases/startup-and-boot-warmup.md) and
-[Preplanned Startup And Fast Response](Knowledge-Bases/preplanned-startup-and-fast-response.md).
+See [Startup And Boot Warmup](../../ZTF-Knowledge-Bases/startup-and-boot-warmup.md) and
+[Preplanned Startup And Fast Response](../../ZTF-Knowledge-Bases/preplanned-startup-and-fast-response.md).

@@ -1673,7 +1673,7 @@ export const FUNGI_BYTE_DIAGNOSTICS = [
 // Re-classify one as live ONLY if Galerina ever gains shared mutable references AND
 // a real detector is wired. They stay defined (namespace stability — the
 // catalog/registry/expected-diagnostics reference them), not deleted. Canonical
-// stance: docs/Knowledge-Bases/galerina-memory-safety-model.md.
+// stance: ../ZTF-Knowledge-Bases/galerina-memory-safety-model.md.
 // ---------------------------------------------------------------------------
 
 // --- FUNGI-MEMORY-001..007: RESERVED / NOT-EMITTED (value-semantics; see family header) ---

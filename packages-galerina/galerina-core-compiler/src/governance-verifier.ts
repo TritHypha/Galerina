@@ -4,7 +4,7 @@
 // Confirms that declared intent, effects, policy, and compute governance match
 // observed program behaviour. Runs after all checker passes.
 //
-// Spec: docs/Knowledge-Bases/galerina-governance-verifier-spec.md
+// Spec: ../ZTF-Knowledge-Bases/galerina-governance-verifier-spec.md
 //
 // Implemented diagnostics (Stage A / Phase 10C):
 //   FUNGI-GOV-002      MISSING_AUDIT_FOR_GOVERNED_SINK
@@ -238,7 +238,7 @@ export const FUNGI_GOV_012 = {
 // access (effect ending `.tenant_scoped`) that is not paired with the caller-scope proof
 // (the sibling marker effect `tenant.scope`) is a FAIL-CLOSED compile error — it kills
 // IDOR / OWASP-A01 (Broken Access Control) at compile time. Spec:
-// docs/Knowledge-Bases/galerina-tritmesh-feature-gap-analysis-2026-06-24.md §"6 reusable mechanics" #1.
+// ../ZTF-Knowledge-Bases/galerina-tritmesh-feature-gap-analysis-2026-06-24.md §"6 reusable mechanics" #1.
 //
 // SCOPE HONESTY (calibrated, R&D 0109): this is a per-flow effect-SURFACE intersection —
 // it proves the flow DECLARED the caller-scope binding alongside its tenant-scoped access.
@@ -288,7 +288,7 @@ export const FUNGI_TENANT_002 = {
 // The substrate {} contract block's three invariants, fail-closed. Codes are shared
 // with Direction C's SUBSTRATE_DIAGNOSTICS (galerina-tower-citizen/src/substrate-model.ts);
 // the strings must match byte-for-byte. Implemented in substrate-inference.ts.
-// Spec: docs/Knowledge-Bases/galerina-substrate-contracts.md.
+// Spec: ../ZTF-Knowledge-Bases/galerina-substrate-contracts.md.
 
 /** FUNGI-CRYPTO-PQ-001: a crypto.sign effect in a certified profile must declare a PQ/hybrid algorithm. */
 export const FUNGI_CRYPTO_PQ_001 = {

@@ -9,7 +9,7 @@
 // modifies them. The RouteDecision type carries governanceApproved: true as a
 // literal — it is structurally impossible to produce an unapproved route here.
 //
-// Calibration: docs/Knowledge-Bases/galerina-calibration-data.md
+// Calibration: ../ZTF-Knowledge-Bases/galerina-calibration-data.md
 //   Hardware: i9-9900K (AVX2), i5-11400H (AVX2) — no AVX-512
 //   Cloud:    DigitalOcean per-second billing
 //   AI:       OpenAI per-1M-token pricing

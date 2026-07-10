@@ -4,7 +4,7 @@
 // Enforces value-state annotation rules on the parsed AST.
 // Runs after the parser, before the effect checker.
 //
-// Spec: docs/Knowledge-Bases/value-state-checker.md
+// Spec: ../ZTF-Knowledge-Bases/value-state-checker.md
 //
 // Implemented rules:
 //   Rule 1/3 — unsafe bindings cannot reach governed sinks
@@ -158,7 +158,7 @@ export type ValueStateFlagsMask = number;
 // This is the authoritative machine-readable sink registry. Diagnostics,
 // AI tooling, and the SemanticGraph all consume this directly.
 //
-// Canonical source: docs/Knowledge-Bases/stdlib-gates.yaml §sinks
+// Canonical source: ../ZTF-Knowledge-Bases/stdlib-gates.yaml §sinks
 // When adding a sink, update stdlib-gates.yaml first, then mirror here.
 // ---------------------------------------------------------------------------
 
@@ -249,7 +249,7 @@ export function getSinkRequirement(fullCallName: string): SinkRequirement | unde
 // Matched on the reconstructed full call name (receiver.method or method).
 //
 // Canonical registry (source of truth):
-//   docs/Knowledge-Bases/stdlib-gates.yaml  §sinks
+//   ../ZTF-Knowledge-Bases/stdlib-gates.yaml  §sinks
 //
 // When adding a new sink, update stdlib-gates.yaml first, then mirror here.
 // ---------------------------------------------------------------------------
@@ -292,7 +292,7 @@ function isGovernedSink(node: AstNode, aliasMap?: ReadonlyMap<string, string>): 
 // Calls whose arguments must not include SecureString bindings.
 //
 // Canonical registry (source of truth):
-//   docs/Knowledge-Bases/stdlib-gates.yaml  §sinks  (log_receiver, print_output)
+//   ../ZTF-Knowledge-Bases/stdlib-gates.yaml  §sinks  (log_receiver, print_output)
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
@@ -636,7 +636,7 @@ function derivesFromEmbedding(
 // The right-hand side of `safe mut name = gate(name)?` must match one of these.
 //
 // Canonical registry (source of truth):
-//   docs/Knowledge-Bases/stdlib-gates.yaml  §gates
+//   ../ZTF-Knowledge-Bases/stdlib-gates.yaml  §gates
 //
 // Phase 6 uses prefix-based matching. Phase 7+ should load from the registry.
 // When adding a new gate, update stdlib-gates.yaml first, then mirror here.

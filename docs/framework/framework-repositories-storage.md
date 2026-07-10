@@ -95,4 +95,4 @@ model-exposure-report.json
 
 ## Knowledge Base
 
-See [Boundary Extension Concepts](../Knowledge-Bases/boundary-extension-concepts.md).
+See [Boundary Extension Concepts](../../../ZTF-Knowledge-Bases/boundary-extension-concepts.md).

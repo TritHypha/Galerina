@@ -9,7 +9,7 @@
 //   Stage 2 will replace with arbitrary-precision decimal arithmetic before
 //   Money<C> arithmetic is considered production-valid.
 //
-//   Decision: docs/Knowledge-Bases/galerina-architecture-layers.md
+//   Decision: ../ZTF-Knowledge-Bases/galerina-architecture-layers.md
 // =============================================================================
 
 import { FUNGI_NONE, FUNGI_VOID, type GalerinaValue } from "./interpreter.js";

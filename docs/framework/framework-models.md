@@ -83,5 +83,5 @@ implementations may remain later work until the parser/checker is mature.
 
 ## Knowledge Base
 
-See [Model Security Contracts](../Knowledge-Bases/model-security-contracts.md).
-See also [Field Read Rules](../Knowledge-Bases/field-read-rules.md).
+See [Model Security Contracts](../../../ZTF-Knowledge-Bases/model-security-contracts.md).
+See also [Field Read Rules](../../../ZTF-Knowledge-Bases/field-read-rules.md).

@@ -1,7 +1,7 @@
 @version 1
 // EXPECT: ACCEPT
 // Pattern 2 — Governed API Route (drcm_stable_v0)
-// Reference: docs/Knowledge-Bases/galerina-architecture-patterns.md
+// Reference: ../ZTF-Knowledge-Bases/galerina-architecture-patterns.md
 //
 // Use when: a flow handles external HTTP/webhook/event ingress.
 // Rules: S-001, S-002, S-003, S-004, C-001, E-001

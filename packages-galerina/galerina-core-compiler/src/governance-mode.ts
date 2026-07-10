@@ -17,7 +17,7 @@
  * `lean ⊆ EffectFree ∧ taint-clean`, and the floors are defined on effects/taint, so the
  * intersection of "nothing to enforce" with "the floors" is empty.
  *
- * Design: docs/Knowledge-Bases/galerina-governance-mode-ladder.md (R&D job 0011).
+ * Design: ../ZTF-Knowledge-Bases/galerina-governance-mode-ladder.md (R&D job 0011).
  */
 
 export type GovernanceMode = "full" | "auto" | "lean";

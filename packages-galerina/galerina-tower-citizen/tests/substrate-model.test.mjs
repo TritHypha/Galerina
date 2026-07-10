@@ -3,7 +3,7 @@
 // is cross-checked against it. The central result (§4): noise can cost availability,
 // never safety — effectiveVerdict = vAnd(ideal, reading) can never upgrade 0/-1 → +1.
 //
-// Spec + proofs: docs/Knowledge-Bases/galerina-substrate-failure-model.md
+// Spec + proofs: ../ZTF-Knowledge-Bases/galerina-substrate-failure-model.md
 import assert from "node:assert/strict";
 import { describe, it, test } from "node:test";
 import {

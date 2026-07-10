@@ -27,7 +27,7 @@ export type BridgeDomain = "inference" | "quantum";
  * Binds the DECLARED `tolerance` to an empirically-measured (N, ε, std) curve and the
  * noise model it was measured under, so `tolerance` stops being an author-asserted
  * constant. (idea-mining #3 / SPDNN shot-budget precedent — see
- * docs/Knowledge-Bases/galerina-external-idea-mining-2026-06-15.md.)
+ * ../ZTF-Knowledge-Bases/galerina-external-idea-mining-2026-06-15.md.)
  */
 export interface ToleranceWitness {
   readonly redundancyN:     number; // votes / shots / runs the measurement averaged over (>= 1)

@@ -1,6 +1,6 @@
 # Galerina Canonical Example Corpus (CEC)
 
-> **✍️ Writing or AI-generating contracts? Follow the [Contract Authoring Guide](../Knowledge-Bases/galerina-contract-authoring-guide.md).**
+> **✍️ Writing or AI-generating contracts? Follow the [Contract Authoring Guide](../../../ZTF-Knowledge-Bases/galerina-contract-authoring-guide.md).**
 > `types` / `request` / `response` are **not** globally mandatory — omit on pure/internal flows
 > (only API/route flows need `request`/`response`). `effects` is **deny-by-default** (omitted ⇒
 > strictly pure). An AI may only **propose** widening `authority` / `effects` / `secrets`, never
@@ -233,10 +233,10 @@ Negative examples are identified by their name:
 
 ## See Also
 
-- `docs/Knowledge-Bases/galerina-glossary.md` — canonical term definitions
-- `docs/Knowledge-Bases/formal-type-system-spec.md` — type rules
-- `docs/Knowledge-Bases/value-state-annotations.md` — unsafe/protected/redacted rules
-- `docs/Knowledge-Bases/operator-type-rules.md` — operator compatibility (Money cross-currency)
-- `docs/Knowledge-Bases/stdlib-gates.yaml` — gate and sink registry
-- `docs/Knowledge-Bases/schemas/diagnostics/` — machine-readable diagnostic schemas
-- `docs/Knowledge-Bases/galerina-language-lessons.md` — why/risk fields on diagnostics
+- `../../../ZTF-Knowledge-Bases/galerina-glossary.md` — canonical term definitions
+- `../../../ZTF-Knowledge-Bases/formal-type-system-spec.md` — type rules
+- `../../../ZTF-Knowledge-Bases/value-state-annotations.md` — unsafe/protected/redacted rules
+- `../../../ZTF-Knowledge-Bases/operator-type-rules.md` — operator compatibility (Money cross-currency)
+- `../../../ZTF-Knowledge-Bases/stdlib-gates.yaml` — gate and sink registry
+- `../../../ZTF-Knowledge-Bases/schemas/diagnostics/` — machine-readable diagnostic schemas
+- `../../../ZTF-Knowledge-Bases/galerina-language-lessons.md` — why/risk fields on diagnostics

@@ -4,7 +4,7 @@
  * Two pure helpers consulted across the value-state gate, the interpreter, the WASM emitter, and the
  * type-checker so every tier agrees on (a) the BASE type of an annotation string and (b) the exact
  * bigint value + range edges of an integer LITERAL. Per the verified i64-lowering plan
- * (docs/Knowledge-Bases/galerina-i64-lowering-plan-verified-2026-06-25.md) Step 0: ONE `numericBaseType`
+ * (../ZTF-Knowledge-Bases/galerina-i64-lowering-plan-verified-2026-06-25.md) Step 0: ONE `numericBaseType`
  * + ONE `parseI64Literal` feeding two tier-specific origination hooks, so the I64_MIN/I64_MAX literal
  * edges can never DIVERGE between tiers — a divergence is a silent 64→32 truncation fail-open (CWE-704),
  * exactly what `FUNGI-NUMERIC-001` gates against.

@@ -6,7 +6,7 @@
 // contract model. "Design-time" failures — missing intent, missing audit trail,
 // undocumented high-risk mutations — are caught at compile time, not at runtime.
 //
-// Reference: docs/Knowledge-Bases/galerina-governance-rules.md
+// Reference: ../ZTF-Knowledge-Bases/galerina-governance-rules.md
 // Rules: FUNGI-GOV-010 (missing intent on governed flows), A-001 (audit.write
 //        required alongside database mutations in high-trust flows)
 

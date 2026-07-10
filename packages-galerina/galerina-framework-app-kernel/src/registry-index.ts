@@ -2,7 +2,7 @@
 // Galerina App Kernel — Signed Central Registry Index (Framework B5a)
 //
 // A tamper-evident catalog of certified packages that sits BEFORE the package
-// resolver (see docs/Knowledge-Bases/certified-package-registry.md). A package is
+// resolver (see ../ZTF-Knowledge-Bases/certified-package-registry.md). A package is
 // admissible only if it appears in a VALIDLY-SIGNED index, its sourceHash matches the
 // PINNED hash, and it satisfies registry policy. Fail-closed at every step: missing or
 // forged index signature, unknown package/version, hash mismatch, keyId mismatch, or
@@ -14,7 +14,7 @@
 // `issuedAt` is supplied by the caller.
 //
 // Diagnostic codes: ERR_REGISTRY_* (one code = one failure mode — conventions §1/§2,
-// docs/Knowledge-Bases/galerina-diagnostic-code-conventions.md).
+// ../ZTF-Knowledge-Bases/galerina-diagnostic-code-conventions.md).
 // =============================================================================
 
 import { canonicalJson } from "./fuse-loader.js";

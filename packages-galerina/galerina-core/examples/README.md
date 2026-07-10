@@ -1,6 +1,6 @@
 # Galerina Examples
 
-> **✍️ Writing or AI-generating contracts? Follow the [Contract Authoring Guide](../../../docs/Knowledge-Bases/galerina-contract-authoring-guide.md).**
+> **✍️ Writing or AI-generating contracts? Follow the [Contract Authoring Guide](../../../../ZTF-Knowledge-Bases/galerina-contract-authoring-guide.md).**
 > `types` / `request` / `response` are **not** globally mandatory — omit on pure/internal flows
 > (only API/route flows need `request`/`response`). `effects` is **deny-by-default** (omitted ⇒
 > strictly pure). An AI may only **propose** widening `authority` / `effects` / `secrets`, never

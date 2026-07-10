@@ -4,7 +4,7 @@
  * Validates that capability authorization resolves via a single bitwise AND
  * against the V_DPM register — no string parsing, no policy engine lookups.
  *
- * Reference: docs/Knowledge-Bases/galerina-engineering-goals.md Goal B
+ * Reference: ../ZTF-Knowledge-Bases/galerina-engineering-goals.md Goal B
  *
  * Acceptance criterion:
  *   - DWI guest with V_DPM = 0b11111110 (network bit cleared) attempts network.outbound

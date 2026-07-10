@@ -317,7 +317,7 @@ audit evidence generation
 
 ## Webhook Security Contracts
 
-See full specification: `docs/Knowledge-Bases/galerina-core-network-webhook.md`
+See full specification: `../../../ZTF-Knowledge-Bases/galerina-core-network-webhook.md`
 
 ### WebhookVerificationConfig (v0.2)
 

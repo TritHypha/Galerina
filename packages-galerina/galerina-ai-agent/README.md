@@ -195,7 +195,7 @@ different capabilities.
 Reports should include AI authority requests, code quarantine status, approval
 decisions, changed files, tests run, granted capabilities and lease expiry.
 
-See `../../docs/Knowledge-Bases/ai-self-modification-governance.md`.
+See `../../../ZTF-Knowledge-Bases/ai-self-modification-governance.md`.
 
 Final rule:
 

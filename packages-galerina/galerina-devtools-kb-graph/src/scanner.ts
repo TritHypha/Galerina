@@ -1,5 +1,5 @@
 // =============================================================================
-// scanner.ts — scans .md files in docs/Knowledge-Bases/, extracts metadata
+// scanner.ts — scans .md files in ../ZTF-Knowledge-Bases/, extracts metadata
 // and cross-references between documents.
 // =============================================================================
 

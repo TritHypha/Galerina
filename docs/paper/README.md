@@ -144,4 +144,4 @@ lines when the mechanisms land.
 
 ---
 
-*Maintained as part of the Galerina KB. The patents-decision rationale lives in `Galerina-Patens/README.md` (zero patents, on purpose); the full paper-worthiness assessments live in `docs/Knowledge-Bases/galerina-paper-worthiness-assessment-2026-06-23.md` and the IP/paper strategy memory.*
+*Maintained as part of the Galerina KB. The patents-decision rationale lives in `Galerina-Patens/README.md` (zero patents, on purpose); the full paper-worthiness assessments live in `../../../ZTF-Knowledge-Bases/galerina-paper-worthiness-assessment-2026-06-23.md` and the IP/paper strategy memory.*

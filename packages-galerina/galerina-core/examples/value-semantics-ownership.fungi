@@ -6,7 +6,7 @@
 //          pointers). The genuine "use exactly once" guarantee for linear resources (e.g. a
 //          single-use credential/passport) is enforced by FUNGI-AFFINE-001 in the production
 //          value-state checker — NOT by a Rust-style borrow checker.
-//          See #65 / RD-0130 and docs/Knowledge-Bases/galerina-memory-safety-model.md.
+//          See #65 / RD-0130 and ../ZTF-Knowledge-Bases/galerina-memory-safety-model.md.
 //
 // History: this file was formerly `reject-use-after-move.fungi`, an aspirational REJECT fixture
 // for FUNGI-MEMORY-001. That borrow-checker code was retired as RESERVED / NOT-EMITTED in #65 once

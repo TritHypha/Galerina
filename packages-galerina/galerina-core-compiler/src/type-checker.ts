@@ -3,7 +3,7 @@
 //
 // Validates type references and structural rules in the parsed AST.
 //
-// Spec: docs/Knowledge-Bases/formal-type-system-spec.md
+// Spec: ../ZTF-Knowledge-Bases/formal-type-system-spec.md
 //
 // Implemented diagnostics:
 //   FUNGI-TYPE-001  UnknownType                — type name not in scope
@@ -134,7 +134,7 @@ function makeTCDiag(
 // These are NOT types — they are compile-time keywords that tell the type
 // checker to defer resolution to the inference pass.
 // Do NOT emit FUNGI-TYPE-001 for these names.
-// Canonical source: docs/Knowledge-Bases/formal-type-system-spec.md §Auto
+// Canonical source: ../ZTF-Knowledge-Bases/formal-type-system-spec.md §Auto
 // ---------------------------------------------------------------------------
 
 const INFERENCE_MARKERS: ReadonlySet<string> = new Set([
@@ -143,7 +143,7 @@ const INFERENCE_MARKERS: ReadonlySet<string> = new Set([
 
 // ---------------------------------------------------------------------------
 // Built-in type registry
-// Canonical source: docs/Knowledge-Bases/formal-type-system-spec.md Section 2
+// Canonical source: ../ZTF-Knowledge-Bases/formal-type-system-spec.md Section 2
 // ---------------------------------------------------------------------------
 
 const BUILT_IN_TYPES: ReadonlySet<string> = new Set([
@@ -233,7 +233,7 @@ const STRING_BASED_TYPES: ReadonlySet<string> = new Set([
 
 // ---------------------------------------------------------------------------
 // Generic arity rules
-// Canonical source: docs/Knowledge-Bases/formal-type-system-spec.md Section 3
+// Canonical source: ../ZTF-Knowledge-Bases/formal-type-system-spec.md Section 3
 // ---------------------------------------------------------------------------
 
 const GENERIC_ARITY: ReadonlyMap<string, number> = new Map([

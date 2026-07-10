@@ -1,7 +1,7 @@
 /**
  * tpl-bitnet-fidelity.test.mjs — pins tpl-simulator's BitNet I2_S fidelity.
  *
- * Companion to docs/Knowledge-Bases/galerina-tpl-bitnet-fidelity-audit.md (2026-06-15).
+ * Companion to ../ZTF-Knowledge-Bases/galerina-tpl-bitnet-fidelity-audit.md (2026-06-15).
  * These golden vectors are hand-computed against Microsoft BitNet's reference kernel
  * (<GitHub>\BitNet\src\ggml-bitnet-mad.cpp, MIT) and re-derived here by an
  * INDEPENDENT re-implementation of BitNet's packing math (bitnetPackByte below) — no

@@ -121,7 +121,7 @@ Deliverables:
   - bounds checks
   - raw pointer ban in normal code
   - explicit unsafe boundary for future FFI
-- Authoritative v1 reserved keyword table (`docs/Knowledge-Bases/v1-reserved-keywords.md`).
+- Authoritative v1 reserved keyword table (`../../ZTF-Knowledge-Bases/v1-reserved-keywords.md`).
 - Memory AST node vocabulary committed to `AstNodeKind` (`borrowExpr`, `moveExpr`,
   `pinnedDecl`, `borrowMutExpr`, `ownershipTransfer`, `configMemoryBlock`, `borrowScopeBlock`).
 - Canonical diagnostic series confirmed: `FUNGI-MEMORY-*` for memory, `FUNGI-SAFETY-*`

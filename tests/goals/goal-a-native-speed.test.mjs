@@ -4,7 +4,7 @@
  * Validates that a compiled .fungi flow with all invariants statically proved
  * executes with ≤ 5% overhead compared to equivalent hand-written WAT.
  *
- * Reference: docs/Knowledge-Bases/galerina-engineering-goals.md Goal A
+ * Reference: ../ZTF-Knowledge-Bases/galerina-engineering-goals.md Goal A
  *
  * Acceptance criterion:
  *   performance delta ≤ 5% vs equivalent hand-written WAT (same algorithm, no governance)

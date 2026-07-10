@@ -29,7 +29,7 @@ with the code and the golden-vector conformance survives any cleanup of the scra
 ## Deliberately **not** vendored (stay R&D-only)
 
 - `research/*`, `notes/*`, `storage-and-query-v0.md` (DB/MeshQL — gated), and the photonic-lane research.
-  These are absorbed into the KB instead — see `docs/Knowledge-Bases/galerina-rd-absorption-catalog.md`.
+  These are absorbed into the KB instead — see `../../../../ZTF-Knowledge-Bases/galerina-rd-absorption-catalog.md`.
 - `spec/_vectors/*.py` — the Python reference generators. They remain the upstream **authoring oracle**;
   the binding conformance for this package is the inline golden hex in `../tests/`. (Known residual: if
   the R&D repo is removed you cannot *re-derive* the vectors from scratch, but the pinned hex + the TS

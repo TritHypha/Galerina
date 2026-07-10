@@ -6,7 +6,7 @@
 // copy-and-drift risk the golden-value oracle previously guarded. This thin shim
 // keeps substrate-inference.ts's `./substrate-math.js` import path stable.
 //
-// Spec: docs/Knowledge-Bases/galerina-substrate-contracts.md §6.
+// Spec: ../ZTF-Knowledge-Bases/galerina-substrate-contracts.md §6.
 // =============================================================================
 
 export type { SubstrateNoiseParams } from "@galerina/substrate-math";

@@ -1,6 +1,6 @@
 # Benchmark suite — handover to the hub/main session (2026-06-17)
 
-Worktree session deliverable. Authoritative roadmap entry: `docs/Knowledge-Bases/galerina-roadmap-and-audit-2026-06-17.md` §8. Memories: `galerina-benchmark-suite`, `feedback-benchmark-full-run`.
+Worktree session deliverable. Authoritative roadmap entry: `../../../ZTF-Knowledge-Bases/galerina-roadmap-and-audit-2026-06-17.md` §8. Memories: `galerina-benchmark-suite`, `feedback-benchmark-full-run`.
 
 ## OWNER POLICY (do this in the main session)
 When the owner asks for benchmarks: run the **FULL** suite (no `--quick`), tables **ordered by winners**, plus the audit.

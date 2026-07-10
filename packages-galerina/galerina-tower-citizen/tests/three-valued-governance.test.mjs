@@ -3,7 +3,7 @@
 // against an INDEPENDENT Kleene K3 reference written out by hand (not derived from
 // min/max/neg), so a bug in the delegation can't hide behind a self-consistent check.
 //
-// Spec + proofs: docs/Knowledge-Bases/galerina-three-valued-governance.md
+// Spec + proofs: ../ZTF-Knowledge-Bases/galerina-three-valued-governance.md
 import assert from "node:assert/strict";
 import { describe, it, test } from "node:test";
 import {

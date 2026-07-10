@@ -1,7 +1,7 @@
 @version 1
 // EXPECT: ACCEPT
 // Pattern 4 — Cross-Boundary Workflow, Interim BoundaryProxy (drcm_stable_v0)
-// Reference: docs/Knowledge-Bases/galerina-architecture-patterns.md
+// Reference: ../ZTF-Knowledge-Bases/galerina-architecture-patterns.md
 //            packages-galerina/galerina-core-security/src/interim.fungi
 //
 // Use when: a flow calls external services, third-party APIs, or code in a different trust context.

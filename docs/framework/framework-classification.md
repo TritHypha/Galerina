@@ -56,5 +56,5 @@ responses/views.
 
 ## Knowledge Base
 
-See [Data Visibility View Terminology](../Knowledge-Bases/data-visibility-view-terminology.md).
-See [Built-In View Levels](../Knowledge-Bases/builtin-view-levels.md).
+See [Data Visibility View Terminology](../../../ZTF-Knowledge-Bases/data-visibility-view-terminology.md).
+See [Built-In View Levels](../../../ZTF-Knowledge-Bases/builtin-view-levels.md).

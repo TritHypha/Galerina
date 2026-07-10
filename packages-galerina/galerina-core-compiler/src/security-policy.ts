@@ -2,7 +2,7 @@
 // Galerina — Security Policy Constants and Anti-Abuse Architecture
 //
 // Implements the anti-abuse protections from:
-//   docs/Knowledge-Bases/galerina-security-anti-abuse.md
+//   ../ZTF-Knowledge-Bases/galerina-security-anti-abuse.md
 //
 // Key protections:
 //   process.spawn as a declared effect (ungoverned background workers → blocked)

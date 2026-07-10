@@ -8,7 +8,7 @@
 > is **not** part of the Galerina language or compiler, and it is **not** the
 > workspace default build target. The single source of truth for what this layer
 > is, is explicitly NOT, and the phased build order is the layer design doc:
-> [`docs/Knowledge-Bases/galerina-framework-layer-design.md`](../../docs/Knowledge-Bases/galerina-framework-layer-design.md).
+> [`../../../ZTF-Knowledge-Bases/galerina-framework-layer-design.md`](../../../ZTF-Knowledge-Bases/galerina-framework-layer-design.md).
 > Anything here may change as the design doc's phases (P1+) are approved and built.
 
 The Galerina Secure App Kernel is the optional partial framework layer for Galerina

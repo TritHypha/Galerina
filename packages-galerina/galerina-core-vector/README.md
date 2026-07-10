@@ -90,12 +90,12 @@ This **conflicts with the boundary rule above** which states photonic representa
 belongs in `galerina-core-photonic`.
 
 The existing `galerina-core-photonic` package already has these types fully specified in:
-- `docs/Knowledge-Bases/galerina-core-photonic-backend-architecture.md`
-- `docs/Knowledge-Bases/galerina-core-photonic-v02.md`
-- `docs/Knowledge-Bases/galerina-core-photonic-governance-architecture.md`
-- `docs/Knowledge-Bases/galerina-core-vector-photonic-governance.md` (conflict documented)
+- `../../../ZTF-Knowledge-Bases/galerina-core-photonic-backend-architecture.md`
+- `../../../ZTF-Knowledge-Bases/galerina-core-photonic-v02.md`
+- `../../../ZTF-Knowledge-Bases/galerina-core-photonic-governance-architecture.md`
+- `../../../ZTF-Knowledge-Bases/galerina-core-vector-photonic-governance.md` (conflict documented)
 
 **Resolution required before implementation.**
 
-See `docs/Knowledge-Bases/galerina-core-vector-photonic-governance.md` for the full
+See `../../../ZTF-Knowledge-Bases/galerina-core-vector-photonic-governance.md` for the full
 photonic governance spec and boundary conflict details.

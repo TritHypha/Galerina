@@ -2,8 +2,8 @@
 
 > A lightweight, append-only record of the project's major decisions and pivots.
 > For verified test counts and runtime status, see
-> `docs/Knowledge-Bases/galerina-runtime-status-SOT.md` (the source of truth).
-> For the build roadmap, see `docs/Knowledge-Bases/galerina-build-roadmap.md`.
+> `../ZTF-Knowledge-Bases/galerina-runtime-status-SOT.md` (the source of truth).
+> For the build roadmap, see `../ZTF-Knowledge-Bases/galerina-build-roadmap.md`.
 
 ## Overview
 This document records the conceptual origins, evolution, and architectural pivots
