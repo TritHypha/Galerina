@@ -98,7 +98,8 @@ Phase 4  DRAIN GATE     confirm NOTHING still needs the old key to SIGN (§3.3):
 
 Phase 5  RETIRE         the ONLY irreversible act, and it is scoped to SIGNING power only:
                           symmetric (HMAC)  → mark retired, move to cold offline vault, RETAIN forever (never destroy)
-                          asymmetric        → destroy the old PRIVATE half; KEEP the public half in the ring forever
+                          asymmetric        → RETIRE POLICY (§3.4): DESTROY the old private half (default, safest;
+                                              public half kept forever) — or REVOKE-then-ARCHIVE as an owner-selected hedge
                         Gated behind Phase 4 draining clean + a final allOf re-check.  [IRREVERSIBLE — but verify-capability is provably preserved]
 ```
 
@@ -136,6 +137,15 @@ Computed by **independent code paths / independent evidence** so no single bug o
 
 > Retire never removes verify capability, so an audit that only reads/verifies against the old key is unaffected even mid-run; the drain gate guards only the *signing* handle and any live reference a retire would invalidate.
 
+### 3.4 Retire policy for the asymmetric private key — destroy, or revoke-then-archive? ("can we just archive it?")
+
+Two safe options; **revocation, not storage, is what makes archiving safe**:
+
+- **Policy DESTROY (default, most secure).** Cryptographically destroy the old **private** half at retire. You lose nothing — verification needs only the **public** half, retained in the ring forever. A retired private signing key has **no legitimate use** (you never verify with it; you never re-sign history under a dead identity — re-signing is under the *current* key); its only remaining power is **forgery**, so destroying it removes a latent liability.
+- **Policy REVOKE-THEN-ARCHIVE (hedge against the ~30-min re-mint).** If you want the *option* to retrieve the old key, you may archive it **only if you first REVOKE its key_id** — so a resurfaced archived key produces signatures verifiers **reject** (revoked key_id → AuthError, `signature-custody-v0` §7). The archive must be **air-gapped + encrypted + Shamir k-of-n split** (`threshold-custody-v0`) so no single holder can reconstitute it, and retrieval is a **fresh quorum ceremony, fully audited**. Revocation is mandatory: it is what neuters the archived bytes at the verification layer.
+
+**Archiving is not needed for rollback.** The only time you'd want the old key back as an *active signer* is if the new key proved bad — but that is caught in Phases 2–4 **while the old key is still active**, so rollback there is free. By Phase 5 the drain gate + canary have already proven the new key sound and the old one unneeded. DESTROY is therefore safe; ARCHIVE is belt-and-braces, not correctness. **For the symmetric HMAC key, archive (cold-retain) is the ONLY option** — you need it to verify.
+
 **Commit rule (atomic, all-or-nothing) at every phase boundary:**
 ```
 if gate == ALLOW:  advance one phase; append (never overwrite); persist the ring's new MAC'd head
@@ -163,6 +173,7 @@ else:              STAY on the current phase; EVERY key retained; ledger untouch
 | A single compromised checker green-lights a bad rotation | **Triple lock `allOf`** + **quorum M-of-N**; three independent locks must all pass |
 | Rotating during an active audit run (epoch-split / disruption) | **Phase R readiness gate** defers until quiescent; an ongoing run finishes on the key it started with |
 | Ongoing audit needs the old key to VERIFY | **Verify capability retained forever** — never removed by rotation or retire (structural); only *signing* power is ever retired |
+| "Just archive the old private key in case we need it" | Safe **only as revoke-then-archive** (§3.4) — a bare archived signing key is a latent forgery liability; **revocation** makes verifiers refuse it. DESTROY is the default (verification needs only the retained public half) |
 | "Automatic" rotation bypassing safety, or firing at a bad time | Scheduler only **PROPOSES**; the **readiness gate** decides *when* (defers until quiescent), the phase gates decide *whether*. An ill-timed or failing auto-rotation simply doesn't happen (stays on current epoch) + alerts |
 
 ---
@@ -187,5 +198,6 @@ Each step is a pure module + an exhaustive test suite (every failure mode → ab
 3. **Rotation trigger cadence** for "automatic" — time (per N days), volume (per N batches), or on-demand only? (The trigger only proposes; the **readiness gate** decides *when* — deferring until quiescent — and the phase gates decide *whether*.) What counts as a "good time to rotate" for R1/R3 — is there a maintenance window, and how do we detect an audit run is mid-flight vs at a safe checkpoint?
 4. **Placement** — decision module in `tower-citizen` (alongside `quorum.ts`/`lease.ts`) vs a new `core-sentinel-*`; key-material execution in a new owner-gated `galerina-ext-key-custody`?
 5. **Canary window size** N for Phase 3 (default: a small fixed N clean batches before drain is allowed to start).
+6. **Retire policy** (§3.4) — **DESTROY** the old private half (default, safest) or **REVOKE-then-ARCHIVE** it (a hedge against the ~30-min re-mint, safe *only with* revocation)?
 
 **Recommendation:** confirm asymmetric-attestation as the rotating key (destroy-safe); M=2 with a separately-implemented re-verifier as the second signer; trigger = on-demand + a conservative time cadence; decision module in `tower-citizen`, execution in a new owner-gated `ext` package; N small and configurable. On your go I build steps 1–4 (pure, no key material, heavily tested) and hold step 5 (and the improvement, step 6) for your review of the working decision core.
