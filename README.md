@@ -4,7 +4,7 @@
 
 Galerina is built for organisations where software failure is not acceptable — financial platforms, healthcare systems, government services, and regulated enterprise. Every execution is **declared, verified, and audited** by design, not by convention.
 
-> **Maturity (honest status, 2026-07-10 · v1.0.0-beta.2).** Galerina is an **advanced prototype with several hardened zero-trust subsystems** — *not* yet a production-complete platform. The **compiler, security, and governance core are production-grade** (86/86 packages, 6,673 tests, fail-closed border check). The **application-framework layer is now substantially real**: the deny-by-default admission/fusion border (3 gates + multi-module linker + revocation), the `galerina new app` scaffolder, and the governed package resolver are shipped and tested (102 App-Kernel tests). The **governed HTTP transport (B8) is unlocked and in progress** — the TLSTP **S1 K3 cert/channel-validation gate** landed (`galerina-core-network`, 160 tests, fail-closed `revocation-unknown → DENY`), though it is not yet wired into the live kernel auth path; the *servable api-server / example-app* and the *signed registry index* are the remaining framework gaps. Stage-B self-hosting is in progress (≈80%), and the "Tower" compute layer is a **governed software simulator + bridge-attestation runtime, not real photonic-CPU virtualisation**. See [the 2026-06-23 EOD roadmap + % audit](docs/Knowledge-Bases/galerina-roadmap-and-percent-audit-2026-06-23-eod.md) and [the framework plan](docs/Knowledge-Bases/galerina-framework-plan-2026-06-21.md).
+> **Maturity (honest status, 2026-07-10 · v1.0.0-beta.2).** Galerina is an **advanced prototype with several hardened zero-trust subsystems** — *not* yet a production-complete platform. The **compiler, security, and governance core are production-grade** (92/92 packages, 6,829 tests, fail-closed border check). The **application-framework layer is now substantially real**: the deny-by-default admission/fusion border (3 gates + multi-module linker + revocation), the `galerina new app` scaffolder, and the governed package resolver are shipped and tested (104 App-Kernel tests). The **governed HTTP transport (B8) is unlocked and in progress** — the TLSTP **S1 K3 cert/channel-validation gate** landed (`galerina-core-network`, 160 tests, fail-closed `revocation-unknown → DENY`), though it is not yet wired into the live kernel auth path; the *servable api-server / example-app* and the *signed registry index* are the remaining framework gaps. Stage-B self-hosting is in progress (≈80%), and the "Tower" compute layer is a **governed software simulator + bridge-attestation runtime, not real photonic-CPU virtualisation**. See [the 2026-06-23 EOD roadmap + % audit](docs/Knowledge-Bases/galerina-roadmap-and-percent-audit-2026-06-23-eod.md) and [the framework plan](docs/Knowledge-Bases/galerina-framework-plan-2026-06-21.md).
 
 ---
 
@@ -160,12 +160,12 @@ Run on an **Intel i9-9900K (8C/16T) + NVIDIA RTX 2060**, across Rust (native, ge
 | **Stage-B self-hosting — WASM execution (P9)** | in progress | `tokenize` byte-parity achieved (#143); parser/checker/verifier flows remain |
 | **Post-Quantum & Hardware Security** | ~38% | hybrid Ed25519+ML-DSA-65 shipped on attestation/proof/bridge; **opt-in `.lmanifest` hybrid shipped** (default Ed25519; `GALERINA_MANIFEST_PROFILE=certified` mandates hybrid, both-halves fail-closed via `FUNGI-MANIFEST-PQ-REQUIRED`) |
 | **`.spore` trust-capsule format (`galerina-ext-spore`)** | slices 1–3 done | A **quantum-resilient universal file & communications format** (not just a database): TMX-256 (3-ary SHAKE256 Merkle-XOF) + container + KEM-DEM golden-verified; codec-agnostic modalities (image/audio/video/document/structured) + seekable anti-truncation streaming. ML-DSA-65 root signing (slice 4) next. **Defensive-publication paper:** [`docs/paper/defensive-papers/`](docs/paper/defensive-papers/) |
-| **`env.spore` sealed secrets (`@galerina/ext-secrets-spore`)** | shipped | An **optional encrypted-at-rest `.env` replacement** — sealed credentials in the `.spore` capsule format instead of a plaintext dotenv file; opt-in package, 17 tests |
+| **`env.spore` sealed secrets (`@galerina/ext-secrets-spore`)** | shipped | An **optional encrypted-at-rest `.env` replacement** — sealed credentials in the `.spore` capsule format instead of a plaintext dotenv file; opt-in package, 21 tests |
 | **Security hardening — fail-open class taxonomy** | shipped today | 10 recurring fail-open classes named + mechanically detected; **SEC-002 mutation: all gates killed** (every fail-closed gate genuinely guarded); `lint-wat-inline-comments` + the #163/#165/guarded-flow codegen+value-state fixes landed; **the `FUNGI-TIER-001` flow-kind tier-floor is shipped and now enforced on the user-facing `galerina.mjs` production build path** (under `GALERINA_PROFILE=production` an under-declared guarded/plain flow fails the build; `FUNGI-VALUESTATE-008` likewise enforced there — dev/check stay permissive); the value-state 34B-hole + `canCommit` deny-by-default are the next approved items |
 | **Passive Execution Plans & Target Bridges** | ~22% | |
 | **AI Inference Tower (BitNet / GroqCloud / NVFP4)** | ~12% | default bridges are governed dev stubs/simulators |
 | **Photonic / Ternary Computing** | ~3% | software simulation only (not hardware) |
-| **Application-framework layer** | ~72% | admission/fusion border (3 gates + `planComposition` multi-module linker + revocation, 102 tests) · `galerina new app` scaffolder · governed resolver (hash/sig/registry/install-deny + FUNGI-PKG-006) — all real + tested. **B8 HTTP transport unlocked + in progress** (S1 cert-gate landed, kernel-wiring pending). Servable api-server/example-app + signed registry index are the remaining gaps |
+| **Application-framework layer** | ~72% | admission/fusion border (3 gates + `planComposition` multi-module linker + revocation, 104 tests) · `galerina new app` scaffolder · governed resolver (hash/sig/registry/install-deny + FUNGI-PKG-006) — all real + tested. **B8 HTTP transport unlocked + in progress** (S1 cert-gate landed, kernel-wiring pending). Servable api-server/example-app + signed registry index are the remaining gaps |
 | **B8 governed HTTP transport (TLSTP)** | in progress | **S1 K3 cert/channel-validation gate shipped** (`galerina-core-network`, 160 tests, fail-closed `revocation-unknown → DENY`, SEC-002 mutation-guarded) — wiring into live kernel auth + 0066 first-3 (handshake-bind · raw-byte shim · ECH/OHTTP) are next |
 | **Tri-Pipe fault tolerance (binary/hybrid/photonic)** | re-R&D | shipped: fail-closed core · arena + overflow traps · DbC post-conditions · K3 fail-safe · NMR tolerance · Freivalds verify · DRCM containment. A multi-agent stability re-R&D is in flight |
 
@@ -346,7 +346,7 @@ The ~94 package directories (**60 active and test-bearing**; the rest are planne
 ### Package layout (status-labelled)
 ```
 packages-galerina/
-├── galerina-core-compiler/     ACTIVE — full pipeline, 4,256 tests
+├── galerina-core-compiler/     ACTIVE — full pipeline, 4,413 tests
 ├── galerina-core-security/     ACTIVE — taint profiles, redaction, OWASP boundaries
 ├── galerina-core-economics/    ACTIVE — CostGraph, ValueGraph, breach-risk matrix
 ├── galerina-core-logic/        ACTIVE — Tri, Decision, RiskLevel
@@ -356,7 +356,7 @@ packages-galerina/
 ├── galerina-devtools-pci/      ACTIVE — PCI DSS 4.0.1 (FUNGI-PCI-001..010)
 ├── galerina-devtools-benchmarks/ ACTIVE — 23 benchmarks across all runtimes
 ├── galerina-core-network/      ACTIVE — network I/O policy + egress/inbound guards + TLSTP S1 K3 cert-validation gate (160 tests)
-├── galerina-framework-app-kernel/ ACTIVE — admission/fusion host: fuse-loader 3 gates + planComposition multi-module linker + revocation + fail-closed secrets seam (102 tests)
+├── galerina-framework-app-kernel/ ACTIVE — admission/fusion host: fuse-loader 3 gates + planComposition multi-module linker + revocation + fail-closed secrets seam (104 tests)
 ├── galerina-framework-{example-app,api-server}/  REFERENCE — REST adapter (e2e-fused) + worked-example scaffolds
 └── galerina-target-*, data/db/web/registry  PLANNED/PARTIAL — several documentation-only
 
