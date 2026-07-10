@@ -129,6 +129,17 @@ for (const e of listDir(PKG_DIR) || []) {
   if (isDir(ep) && existsSync(join(ep, "package.json")) && !wsDirs.has(e)) orphans.push(e);
 }
 
+// #32 annotated exemption allowlist — documents WHY each orphan is a deliberate non-workspace package (so the
+// sub-100% ship-readiness is explained, not an open question), WITHOUT masking the denominator: exempt orphans
+// still count against the ship-readiness %. An orphan ABSENT from this list is UNEXPECTED and is flagged loudly —
+// the allowlist is a fail-closed signal (a new un-annotated orphan means "explain it or enlist it", never silent).
+const EXEMPT_ORPHANS = {
+  "galerina-devtools-benchmarks": "benchmark harness — not a shippable unit-tested package (run via its own npm scripts)",
+  "galerina-registry": "signed registry index — planned; joins the workspace when the index ships",
+};
+const orphanRows = orphans.slice().sort().map((o) => ({ dir: o, exemptReason: EXEMPT_ORPHANS[o] ?? null }));
+const unexpectedOrphans = orphanRows.filter((o) => o.exemptReason === null).map((o) => o.dir);
+
 // ── .ts→.fungi conversion inventory (Stage-6 self-hosting metric) ─────────────
 // Tracked files only (git ls-files) so gitignored build/ output can never inflate the counts.
 // Fail-honest: if git is unavailable the section reports itself unavailable instead of guessing.
@@ -248,7 +259,7 @@ const extraSections = () => {
 };
 
 if (AS_JSON) {
-  console.log(JSON.stringify({ provenance, summary, rows, orphans }, null, 2));
+  console.log(JSON.stringify({ provenance, summary, rows, orphans, orphanExemptions: orphanRows, unexpectedOrphans }, null, 2));
   process.exit(STRICT && summary.totalGaps > 0 ? 1 : 0);
 }
 
@@ -271,7 +282,7 @@ if (TABLE) {
   if (provenance.available) out.push(`  ${provenance.branch} @ ${provenance.sha} · ${provenance.dirty ? "dirty" : "clean"}`);
   out.push(`  ${L("FAMILY", 12)} ${R("GREEN", 6)} ${R("TOTAL", 6)} ${R("%", 7)}`);
   for (const r of ranked) out.push(`  ${L(r.f, 12)} ${R(r.g, 6)} ${R(r.t, 6)} ${R(r.pct.toFixed(0) + "%", 7)}`);
-  out.push(`  ${L("(orphans)", 12)} ${R(0, 6)} ${R(orphans.length, 6)} ${R("0%", 7)}`);
+  out.push(`  ${L("(orphans)", 12)} ${R(0, 6)} ${R(orphans.length, 6)} ${R("0%", 7)}  ${unexpectedOrphans.length ? `⚠ ${unexpectedOrphans.length} UNEXPECTED (not on #32 allowlist)` : "all exempt (#32 documented)"}`);
   out.push(`  ${L("TOTAL", 12)} ${R(summary.green, 6)} ${R(summary.components, 6)} ${R(summary.readinessPct.toFixed(1) + "%", 7)}`);
   out.push(`  scope: ${summary.scope}`);
   out.push(...extraSections());
