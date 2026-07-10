@@ -155,6 +155,13 @@ export interface StdlibContext {
   readonly resolveIdentifier: (name: string) => GalerinaValue | undefined;
   readonly callFlow: (name: string, args: ReadonlyMap<string, GalerinaValue>) => Promise<GalerinaValue>;
   readonly applyFn: (fn: GalerinaValue, arg: GalerinaValue) => Promise<GalerinaValue>;
+  // ── Outbound-HTTP injection seams (http.* / networkAsync) — OPTIONAL, fail-secure defaults ──────────
+  // Narrow seams so tests can drive the dial hermetically WITHOUT real network/DNS. They do NOT widen the
+  // trust surface: the SSRF egress guard (guardOutboundUrl + guardResolvedAddresses) ALWAYS runs on what
+  // `resolveHost` returns and BEFORE `dial` is ever called, so an injected resolver/dialer cannot bypass
+  // the deny-by-default host-category check. Production leaves both undefined (real DNS + pinned node dial).
+  readonly resolveHost?: (host: string) => Promise<readonly string[]>;
+  readonly dial?: (url: string, req: NetDialRequest) => Promise<NetDialResponse>;
 }
 
 function safeDisplay(v: GalerinaValue): string {
@@ -1274,6 +1281,129 @@ function auditAllowlistedEgress(host: string): void {
   }
 }
 
+// ── Outbound HTTP dial (DNS-rebind–safe): pin the pre-validated IP through connect (RD-0310) ──────────
+// The SSRF guard resolves + validates a hostname's addresses, but a NAME-based fetch RE-RESOLVES at
+// connect time — a DNS-rebinding TOCTOU: public at check, private/metadata at connect. Node's global
+// fetch (undici) cannot pin the resolved address without the undici module (a package edge this minimal
+// package refuses), so http.* dials via node:http/node:https with a connect-time `lookup` LOCKED to the
+// addresses the guard already cleared. TLS is unaffected: Host + servername stay the ORIGINAL hostname
+// (cert validated against the name); only the dialled IP is pinned. `pinnedIps` is null for an IP-literal
+// / loopback-dev / operator-allow-listed host — no name to rebind, so the socket connects normally.
+export interface NetDialRequest {
+  readonly method: string;
+  readonly body?:
+    | { readonly kind: "bytes"; readonly value: Uint8Array }
+    | { readonly kind: "string"; readonly value: string };
+  /** The guard-cleared addresses to pin the socket to; null ⇒ no pin (IP-literal / loopback / allow-listed). */
+  readonly pinnedIps: readonly string[] | null;
+}
+export interface NetDialResponse {
+  readonly status: number;
+  readonly ok: boolean;
+  readonly location: string | null;
+  readonly bytes: Uint8Array;
+}
+
+function concatChunks(chunks: readonly Uint8Array[]): Uint8Array {
+  let total = 0;
+  for (const c of chunks) total += c.length;
+  const out = new Uint8Array(total);
+  let off = 0;
+  for (const c of chunks) { out.set(c, off); off += c.length; }
+  return out;
+}
+
+// Minimal structural types for the node:http/https slice used (this package ships no @types/node).
+type NetIncoming = {
+  statusCode?: number;
+  headers: Record<string, string | string[] | undefined>;
+  on(event: "data", cb: (chunk: Uint8Array) => void): void;
+  on(event: "end", cb: () => void): void;
+  on(event: "error", cb: (err: unknown) => void): void;
+};
+type NetClientRequest = {
+  on(event: "error", cb: (err: unknown) => void): void;
+  setTimeout(ms: number, cb: () => void): void;
+  write(chunk: Uint8Array | string): void;
+  destroy(err?: unknown): void;
+  end(): void;
+};
+type NetHttpModule = { request(options: unknown, cb: (res: NetIncoming) => void): NetClientRequest };
+type NetLookupCb = (
+  err: Error | null,
+  address?: string | ReadonlyArray<{ address: string; family: number }>,
+  family?: number,
+) => void;
+
+const NET_TIMEOUT_MS = 30_000;
+
+// Production transport: ONE request over node:http/https, connect pinned to `pinnedIps` (the rebind fix).
+async function pinnedDial(url: string, req: NetDialRequest): Promise<NetDialResponse> {
+  const { URL: NodeURL } = require("node:url") as {
+    URL: new (input: string) => { protocol: string; hostname: string; port: string; pathname: string; search: string };
+  };
+  const u = new NodeURL(url);
+  const isHttps = u.protocol === "https:";
+  const mod = require(isHttps ? "node:https" : "node:http") as NetHttpModule;
+  const port = u.port !== "" ? Number(u.port) : isHttps ? 443 : 80;
+
+  const pin = req.pinnedIps;
+  const famOf = (a: string): number => (a.includes(":") ? 6 : 4);
+  // Connect-time lookup LOCKED to the pre-validated addresses — the name is never re-resolved (the pin).
+  const lookup = pin && pin.length > 0
+    ? (_host: string, options: { family?: number; all?: boolean } | undefined, cb: NetLookupCb): void => {
+        const want = options?.family ?? 0;
+        const cands = want === 4 ? pin.filter((a) => !a.includes(":"))
+          : want === 6 ? pin.filter((a) => a.includes(":"))
+          : pin;
+        if (cands.length === 0) { cb(new Error("no pinned address for the requested family (fail-closed)")); return; }
+        if (options?.all) cb(null, cands.map((a) => ({ address: a, family: famOf(a) })));
+        else cb(null, cands[0]!, famOf(cands[0]!));
+      }
+    : undefined;
+
+  const headers: Record<string, string> = {};
+  let bodyOut: Uint8Array | string | undefined;
+  if (req.body) {
+    if (req.body.kind === "bytes") bodyOut = req.body.value;
+    else { bodyOut = req.body.value; headers["Content-Type"] = "application/json"; }
+  }
+
+  return await new Promise<NetDialResponse>((resolve, reject) => {
+    let settled = false;
+    const fail = (e: unknown): void => {
+      if (settled) return;
+      settled = true;
+      reject(e instanceof Error ? e : new Error(String(e)));
+    };
+    const options = {
+      method: req.method,
+      hostname: u.hostname,               // Host header + TLS servername/validation use the NAME, not the IP
+      port,
+      path: (u.pathname || "/") + (u.search || ""),
+      headers,
+      ...(lookup ? { lookup } : {}),
+    };
+    const request = mod.request(options, (res) => {
+      const chunks: Uint8Array[] = [];
+      res.on("data", (c) => chunks.push(c));
+      res.on("error", fail);
+      res.on("end", () => {
+        if (settled) return;
+        settled = true;
+        const status = res.statusCode ?? 0;
+        const locRaw = res.headers["location"];
+        const location = Array.isArray(locRaw) ? (locRaw[0] ?? null) : (locRaw ?? null);
+        resolve({ status, ok: status >= 200 && status < 300, location, bytes: concatChunks(chunks) });
+      });
+    });
+    request.on("error", fail);
+    request.setTimeout(NET_TIMEOUT_MS, () => request.destroy(new Error(`network timeout after ${NET_TIMEOUT_MS}ms`)));
+    if (bodyOut !== undefined) request.write(bodyOut);
+    request.end();
+  });
+}
+
 async function networkAsync(fullName: string, args: readonly GalerinaValue[], ctx: StdlibContext): Promise<GalerinaValue | undefined> {
   if (!fullName.startsWith("http.")) return undefined;
   ctx.recordEffect("network.outbound");
@@ -1287,7 +1417,8 @@ async function networkAsync(fullName: string, args: readonly GalerinaValue[], ct
   // numeric-IP / IPv4-in-IPv6 / CGNAT / *.internal / embedded-credential bypasses, plus a DNS-rebind recheck.
   // It is applied to the ORIGINAL url AND to EVERY redirect hop — a guard-approved public URL can return
   // `302 Location: http://169.254.169.254/`, and a guard that only checks the original URL is bypassed by the
-  // redirect (DevSecOps pentest finding). Returns an error string, or null if the hop is permitted.
+  // redirect (DevSecOps pentest finding). guardHop returns an SSRF error, or the addresses to PIN through
+  // connect (RD-0310 DNS-rebind fix): the exact address validated is the exact address the dial connects to.
   // Force-HTTPS boot setting (owner "force https on http") + a smart LOCAL-DEV loopback exception. Canonical
   // setting + accessor live in @galerina/core-config (`resolveEgressTls`); the dial mirrors the same env reads
   // inline (no extra package edge). FAIL-SECURE on every axis:
@@ -1319,70 +1450,75 @@ async function networkAsync(fullName: string, args: readonly GalerinaValue[], ct
     ...(allowLoopback ? { allowLoopback: true } : {}),
     ...(allowedHosts.length ? { allowedHosts } : {}),
   };
-  const guardHop = async (u: string): Promise<string | null> => {
+  // Resolver seam (default: node:dns/promises, all addresses). The guard re-classifies EVERY address it
+  // returns, so an injected resolver cannot smuggle a private/metadata answer past the deny-by-default check.
+  const resolveHost = ctx.resolveHost ?? (async (host: string): Promise<readonly string[]> => {
+    // require (not import) — the compiler intentionally ships no @types/node; mirror the node:crypto pattern.
+    const dns = require("node:dns/promises") as {
+      lookup(host: string, opts: { all: true }): Promise<ReadonlyArray<{ address: string }>>;
+    };
+    return (await dns.lookup(host, { all: true })).map((r) => r.address);
+  });
+  // guardHop validates ONE hop. Returns the SSRF error string, OR the addresses to PIN through connect
+  // (pin=null ⇒ no name to rebind: an IP-literal, a loopback-dev host, or an operator-allow-listed host).
+  const guardHop = async (u: string): Promise<{ error: string } | { pin: readonly string[] | null }> => {
     const eg = guardOutboundUrl(u, dialPolicy);
-    if (!eg.allowed) return `NetworkError: SSRF — ${eg.reason} (FUNGI-NET-001 · ${eg.code})`;
+    if (!eg.allowed) return { error: `NetworkError: SSRF — ${eg.reason} (FUNGI-NET-001 · ${eg.code})` };
     // Audit the production SSRF/force-HTTPS bypass: this exact host was admitted only because the operator
     // allow-listed it (covers redirect hops too — guardHop re-runs on each Location). Normal public hosts
     // (code EGRESS_ALLOWED) are NOT audited; only the explicit bypass leaves a trail.
     if (eg.code === "Galerina_NETWORK_EGRESS_ALLOWLISTED") auditAllowlistedEgress(eg.host);
     if (eg.requiresDnsRecheck) {
-      let ips: string[];
+      let ips: readonly string[];
       try {
-        // require (not import) — the compiler intentionally ships no @types/node; mirror the existing
-        // node:crypto require pattern in this file and type the slice we use.
-        const dns = require("node:dns/promises") as {
-          lookup(host: string, opts: { all: true }): Promise<ReadonlyArray<{ address: string }>>;
-        };
-        ips = (await dns.lookup(eg.host, { all: true })).map((r) => r.address);
+        ips = await resolveHost(eg.host);
       } catch {
-        return `NetworkError: SSRF — DNS resolution failed for '${eg.host}' (FUNGI-NET-001, fail-closed)`;
+        return { error: `NetworkError: SSRF — DNS resolution failed for '${eg.host}' (FUNGI-NET-001, fail-closed)` };
       }
       const rebind = guardResolvedAddresses(eg.host, ips);
-      if (!rebind.allowed) return `NetworkError: SSRF — ${rebind.reason} (FUNGI-NET-001 · ${rebind.code})`;
+      if (!rebind.allowed) return { error: `NetworkError: SSRF — ${rebind.reason} (FUNGI-NET-001 · ${rebind.code})` };
+      // PIN the cleared addresses — the dialer connects to THESE, never re-resolving the name (RD-0310 fix).
+      return { pin: ips };
     }
-    return null;
+    return { pin: null };
   };
 
-  const firstGuard = await guardHop(url);
-  if (firstGuard !== null) return err(firstGuard);
+  // Parse the optional request body ONCE — re-sent verbatim on each hop (preserves prior behaviour).
+  let body: NetDialRequest["body"];
+  const bodyArg = args[1];
+  if (bodyArg !== undefined && bodyArg.__tag !== "void") {
+    if (bodyArg.__tag === "bytes") body = { kind: "bytes", value: bodyArg.value as Uint8Array };
+    else if (bodyArg.__tag === "string") body = { kind: "string", value: bodyArg.value };
+  }
+  // Transport seam (default: pinnedDial — node:http/https, connect pinned to the guard-cleared IP). The
+  // guard ALWAYS runs before dial below, so an injected dialer never sees an unvalidated host.
+  const dial = ctx.dial ?? pinnedDial;
 
   try {
-    const bodyArg = args[1];
-    // redirect: "manual" — NEVER let fetch auto-follow. fetch/undici defaults to redirect:"follow", which
-    // would transparently follow a 302 to an internal/metadata host the guard never saw. We re-guard each
-    // Location ourselves before following, with a hop cap.
-    const init: RequestInit = { method, redirect: "manual" };
-    if (bodyArg !== undefined && bodyArg.__tag !== "void") {
-      if (bodyArg.__tag === "bytes") {
-        init.body = bodyArg.value as unknown as BodyInit;
-      } else if (bodyArg.__tag === "string") {
-        init.body = bodyArg.value;
-        (init.headers as Record<string, string>) = { "Content-Type": "application/json" };
-      }
-    }
     const { URL: NodeURL } = require("node:url") as { URL: new (input: string, base?: string) => { href: string } };
     const MAX_REDIRECTS = 5;
     let currentUrl = url;
     for (let hop = 0; ; hop++) {
-      const response = await fetch(currentUrl, init);
+      // Re-guard AND re-pin EVERY hop before dialling — the original URL and each redirect Location. This is
+      // the DNS-rebind fix: the exact address validated here is the exact address the dial connects to.
+      const guard = await guardHop(currentUrl);
+      if ("error" in guard) return err(guard.error);
+      // Omit `body` when absent (exactOptionalPropertyTypes: a present-but-undefined prop is a type error).
+      const response = await dial(currentUrl, { method, pinnedIps: guard.pin, ...(body ? { body } : {}) });
       if (response.status >= 300 && response.status < 400) {
         if (hop >= MAX_REDIRECTS) return err(`NetworkError: too many redirects (>${MAX_REDIRECTS}) from ${url}`);
-        const loc = response.headers.get("location");
+        const loc = response.location;
         if (!loc) return err(`NetworkError: HTTP ${response.status} redirect with no Location from ${currentUrl}`);
         let nextUrl: string;
         try { nextUrl = new NodeURL(loc, currentUrl).href; } // resolve a relative Location against the current URL
         catch { return err(`NetworkError: SSRF — invalid redirect target '${loc}' (FUNGI-NET-001)`); }
-        const hopErr = await guardHop(nextUrl); // RE-GUARD the redirect destination before following
-        if (hopErr !== null) return err(hopErr);
-        currentUrl = nextUrl;
+        currentUrl = nextUrl; // the next iteration re-guards + re-pins this destination before dialling
         continue;
       }
       if (!response.ok) {
         return err(`NetworkError: HTTP ${response.status} from ${currentUrl}`);
       }
-      const bytes = new Uint8Array(await response.arrayBuffer());
-      return ok({ __tag: "bytes", value: bytes });
+      return ok({ __tag: "bytes", value: response.bytes });
     }
   } catch (e) {
     return err(`NetworkError: ${e instanceof Error ? e.message : String(e)}`);

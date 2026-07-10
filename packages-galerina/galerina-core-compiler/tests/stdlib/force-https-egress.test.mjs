@@ -3,6 +3,10 @@
 //
 // Default: plaintext PUBLIC http egress is DENIED (TLS required). An explicit operator opt-out
 // (GALERINA_ALLOW_PLAINTEXT_EGRESS=true) relaxes it — but never relaxes the SSRF host guard.
+//
+// http.* dials through the injectable seams: `ctx.dial` (fake transport, no real network) and
+// `ctx.resolveHost` (fake DNS → a public literal so FQDN success paths stay hermetic). Denial cases
+// need neither — they deny at the guard, before any resolve or dial.
 // =============================================================================
 
 import { test } from "node:test";
@@ -11,15 +15,12 @@ import { callStdlib } from "../../dist/index.js";
 
 const ctx = { recordEffect: () => {}, resolveIdentifier: () => undefined, callFlow: async () => ({}), applyFn: async () => ({}) };
 const str = (v) => ({ __tag: "string", value: v });
-async function withFetch(fn, run) {
-  const real = globalThis.fetch;
-  globalThis.fetch = fn;
-  try { return await run(); } finally { globalThis.fetch = real; }
-}
-const resp = (status, body = "OK") => ({
-  status, ok: status >= 200 && status < 300,
-  headers: { get: () => null }, arrayBuffer: async () => new TextEncoder().encode(body).buffer,
-});
+
+// A fake transport: one NetDialResponse per dial. Paired with a fake resolver returning a PUBLIC literal so
+// FQDN success paths clear the rebind guard without touching real DNS. Injected seams never bypass the guard.
+const dresp = (status, body = "OK") => ({ status, ok: status >= 200 && status < 300, location: null, bytes: new TextEncoder().encode(body) });
+const PUBLIC_IP = "93.184.216.34";
+const getPinned = (url, dial) => callStdlib("http.get", undefined, [str(url)], { ...ctx, dial, resolveHost: async () => [PUBLIC_IP] });
 
 test("default (no env): plaintext PUBLIC http egress is denied (force-HTTPS)", async () => {
   delete process.env.GALERINA_ALLOW_PLAINTEXT_EGRESS;
@@ -31,8 +32,7 @@ test("default (no env): plaintext PUBLIC http egress is denied (force-HTTPS)", a
 test("operator opt-out (=true): plaintext public http egress is permitted", async () => {
   process.env.GALERINA_ALLOW_PLAINTEXT_EGRESS = "true";
   try {
-    const r = await withFetch(() => resp(200, "OK-PLAINTEXT"), () =>
-      callStdlib("http.get", undefined, [str("http://example.com/x")], ctx));
+    const r = await getPinned("http://example.com/x", () => dresp(200, "OK-PLAINTEXT"));
     assert.equal(r.__tag, "ok", `expected ok, got ${JSON.stringify(r)}`);
   } finally {
     delete process.env.GALERINA_ALLOW_PLAINTEXT_EGRESS;
@@ -52,8 +52,7 @@ test("the opt-out does NOT relax SSRF — an internal plaintext host is still de
 
 test("https on 443 is unaffected (the normal path still works)", async () => {
   delete process.env.GALERINA_ALLOW_PLAINTEXT_EGRESS;
-  const r = await withFetch(() => resp(200, "OK-TLS"), () =>
-    callStdlib("http.get", undefined, [str("https://example.com/x")], ctx));
+  const r = await getPinned("https://example.com/x", () => dresp(200, "OK-TLS"));
   assert.equal(r.__tag, "ok", `expected ok, got ${JSON.stringify(r)}`);
 });
 
@@ -63,8 +62,7 @@ const clearDev = () => { delete process.env.GALERINA_ALLOW_LOCALHOST; delete pro
 test("local dev: http://localhost is ALLOWED with GALERINA_ALLOW_LOCALHOST=true", async () => {
   clearDev(); process.env.GALERINA_ALLOW_LOCALHOST = "true";
   try {
-    const r = await withFetch(() => resp(200, "OK-LOCAL"), () =>
-      callStdlib("http.get", undefined, [str("http://localhost:3000/api")], ctx));
+    const r = await getPinned("http://localhost:3000/api", () => dresp(200, "OK-LOCAL"));
     assert.equal(r.__tag, "ok", `expected ok, got ${JSON.stringify(r)}`);
   } finally { clearDev(); }
 });
@@ -72,8 +70,7 @@ test("local dev: http://localhost is ALLOWED with GALERINA_ALLOW_LOCALHOST=true"
 test("local dev: http://127.0.0.1 is ALLOWED when NODE_ENV=development", async () => {
   clearDev(); process.env.NODE_ENV = "development";
   try {
-    const r = await withFetch(() => resp(200, "OK-LOCAL"), () =>
-      callStdlib("http.get", undefined, [str("http://127.0.0.1:8080/")], ctx));
+    const r = await getPinned("http://127.0.0.1:8080/", () => dresp(200, "OK-LOCAL"));
     assert.equal(r.__tag, "ok", `expected ok, got ${JSON.stringify(r)}`);
   } finally { clearDev(); }
 });
@@ -111,10 +108,9 @@ test("internal proxy: an allow-listed host works in PRODUCTION (http, odd port, 
   process.env.NODE_ENV = "production";
   process.env.GALERINA_EGRESS_ALLOWED_HOSTS = "proxy.internal";
   try {
-    const r = await withFetch(() => resp(200, "OK-PROXY"), () =>
-      callStdlib("http.get", undefined, [str("http://proxy.internal:8080/fetch")], ctx));
+    const r = await getPinned("http://proxy.internal:8080/fetch", () => dresp(200, "OK-PROXY"));
     assert.equal(r.__tag, "ok", `expected ok, got ${JSON.stringify(r)}`);
-  } finally { clearDev(); delete process.env.GALERINA_EGRESS_ALLOWED_HOSTS; }
+  } finally { clearDev(); }
 });
 
 test("internal proxy: the allow-list opens ONLY the listed host (a sibling stays SSRF-denied)", async () => {
@@ -141,8 +137,7 @@ test("allow-list audit: an admitted bypass host is logged to the audit trail (st
   process.env.NODE_ENV = "production";
   process.env.GALERINA_EGRESS_ALLOWED_HOSTS = "audit-a.internal";
   try {
-    const out = await withStderr(() => withFetch(() => resp(200, "OK"), () =>
-      callStdlib("http.get", undefined, [str("http://audit-a.internal:8080/x")], ctx)));
+    const out = await withStderr(() => getPinned("http://audit-a.internal:8080/x", () => dresp(200, "OK")));
     assert.match(out, /galerina:egress-audit/);
     assert.match(out, /audit-a\.internal/);
     assert.match(out, /GALERINA_EGRESS_ALLOWED_HOSTS/);
@@ -151,8 +146,7 @@ test("allow-list audit: an admitted bypass host is logged to the audit trail (st
 
 test("allow-list audit: a normal public host is NOT audited (only the bypass leaves a trail)", async () => {
   clearDev();
-  const out = await withStderr(() => withFetch(() => resp(200, "OK"), () =>
-    callStdlib("http.get", undefined, [str("https://normal-not-audited.example.com/x")], ctx)));
+  const out = await withStderr(() => getPinned("https://normal-not-audited.example.com/x", () => dresp(200, "OK")));
   assert.doesNotMatch(out, /egress-audit/);
 });
 
@@ -160,10 +154,10 @@ test("allow-list audit: repeated dials of the same host log once per process (de
   clearDev();
   process.env.GALERINA_EGRESS_ALLOWED_HOSTS = "audit-dedupe.internal";
   try {
-    const out = await withStderr(() => withFetch(() => resp(200, "OK"), async () => {
-      await callStdlib("http.get", undefined, [str("http://audit-dedupe.internal/1")], ctx);
-      await callStdlib("http.get", undefined, [str("http://audit-dedupe.internal/2")], ctx);
-    }));
+    const out = await withStderr(async () => {
+      await getPinned("http://audit-dedupe.internal/1", () => dresp(200, "OK"));
+      await getPinned("http://audit-dedupe.internal/2", () => dresp(200, "OK"));
+    });
     const hits = (out.match(/audit-dedupe\.internal/g) ?? []).length;
     assert.equal(hits, 1, `expected exactly one audit line, got ${hits}`);
   } finally { clearDev(); }
