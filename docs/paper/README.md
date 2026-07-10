@@ -3,7 +3,7 @@
 This folder holds Galerina's publishable scholarly artifacts, consolidated 2026-07-09 from
 `docs/scientific-papers/`, the ZTF KB `defensive-publications/`, and the root `Galerina-ScientificPapers/` stray:
 
-- [`defensive-papers/`](defensive-papers/) — all **25** defensive-publication notes (timestamped prior-art records, novelty *disclaimed*; 6 are design-stage disclosures, marked as such)
+- [`defensive-papers/`](defensive-papers/) — all **28** defensive-publication notes (timestamped prior-art records, novelty *disclaimed*; 6 are design-stage disclosures, marked as such)
 - [`scientific-papers/`](scientific-papers/) — eprint-shaped drafts / measured-negative candidates (currently **1**, superseded-draft status)
 
 **Read the standard before adding anything here.**
@@ -82,6 +82,18 @@ KB location (`ZTF-Knowledge-Bases/defensive-publications/README.md`).
 | [`dp-rd-0229-graph-aot-gate-unreachability-proof-hallucination-block.md`](defensive-papers/dp-rd-0229-graph-aot-gate-unreachability-proof-hallucination-block.md) | 2026-07-01 | AI-authored graph-topology language compiled by an AOT governance gate proving data-flow unreachability |
 | [`dp-rd-0271-secure-by-omission-contract-field-defaults.md`](defensive-papers/dp-rd-0271-secure-by-omission-contract-field-defaults.md) | 2026-07-08 | Secure-by-omission governance contracts: fail-closed injected defaults + declare-only-to-override |
 | [`dp-rd-0272-schema-lock-and-deny-only-prefilter.md`](defensive-papers/dp-rd-0272-schema-lock-and-deny-only-prefilter.md) | 2026-07-08 | Schema-lock with co-located keyed contract + deny-only prefilter: "a schema match is never an ALLOW" |
+
+### Defensive publications added 2026-07-10 (RD-0301 / RD-0309 — landed via main after the gate-6 + SSRF fixes)
+
+These trace to shipped, tested constructions in `galerina-core-network`; the SSRF note's Galerina-specific
+socket-pinning residual is **redacted** per the harm filter. Cleared for publication by the R&D do-not-publish
+register (§1 allow-list).
+
+| Document | Disclosed | Subject |
+|---|---|---|
+| [`dp-rd-0301a-egress-ssrf-numeric-ip-and-dns-rebind-guard.md`](defensive-papers/dp-rd-0301a-egress-ssrf-numeric-ip-and-dns-rebind-guard.md) | 2026-07-10 | Deny-by-default SSRF egress guard: all IPv4-numeric + four IPv6-embedded-v4 encodings normalised to one canonical-octet range table (incl. the WHATWG-URL hex-hextet canonicalization bypass) + a connect-time per-resolved-address DNS-rebind recheck; metadata gated independently. Construction + honest limits; socket-pin residual redacted. |
+| [`dp-rd-0301b-cert-gate-k3-revocation-unknown-deny-fold.md`](defensive-papers/dp-rd-0301b-cert-gate-k3-revocation-unknown-deny-fold.md) | 2026-07-10 | A four-factor K3 channel-trust fold (pin · chain · validity-window · revocation) where every un-provable factor defaults to INDETERMINATE and a `min`-fold denies the channel — revocation-unknown collapses **by algebra, not a flag** (freshness-required-for-ALLOW), countering the web's documented revocation soft-fail (CWE-299). Fail-closed posture disclosure. |
+| [`dp-rd-0309-photonic-substrate-cannot-host-pq-authentication.md`](defensive-papers/dp-rd-0309-photonic-substrate-cannot-host-pq-authentication.md) | 2026-07-10 | **Refutation (negative result):** three independent arguments (hardware precision · encoding≠encryption · public-observable forgeability) that a photonic/analog substrate cannot host a PQ-crypto trust *decision*, only bulk error-tolerant compute outside the gate + the degrade-only `min(digital, physical)` fold. Only standard NIST params cited; discloses no weakness. |
 
 ### Design-stage defensive publications (filed 2026-07-09 — mechanisms specified, not yet implemented)
 
