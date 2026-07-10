@@ -162,6 +162,8 @@ export interface StdlibContext {
   // the deny-by-default host-category check. Production leaves both undefined (real DNS + pinned node dial).
   readonly resolveHost?: (host: string) => Promise<readonly string[]>;
   readonly dial?: (url: string, req: NetDialRequest) => Promise<NetDialResponse>;
+  /** Egress allow-list audit sink (default: stderr). A seam so tests capture the trail without monkeypatching. */
+  readonly auditSink?: (line: string) => void;
 }
 
 function safeDisplay(v: GalerinaValue): string {
@@ -1264,18 +1266,21 @@ function serialization(fullName: string, args: readonly GalerinaValue[]): Galeri
 // EVERY env incl. production, bypassing the SSRF host-category denial + force-HTTPS for those hosts (CWE-918: the
 // trust then rests ENTIRELY on the operator's list — an abusable allow-listed host re-opens SSRF). We record each
 // host actually admitted through that bypass so an unexpected/abusable entry leaves a trail. First-use per host
-// per process (the audit answers WHICH listed hosts the bypass is serving, without per-request spam). stderr is
-// the only sink available at the dial — threading a structured AuditLogger through StdlibContext is the separate
-// owner-gated egress-policy follow-up. Auditing is best-effort: it must NEVER break an otherwise-permitted egress.
+// per process (the audit answers WHICH listed hosts the bypass is serving, without per-request spam). The default
+// sink is stderr, redirectable via StdlibContext.auditSink — a minimal seam so tests capture the trail WITHOUT
+// monkeypatching process.stderr (Galerina forbids monkeypatching; see monkey-patch-checker.ts). A full structured
+// AuditLogger remains the separate owner-gated egress-policy follow-up. Auditing is best-effort: it must NEVER
+// break an otherwise-permitted egress.
 const _auditedAllowlistEgress = new Set<string>();
-function auditAllowlistedEgress(host: string): void {
+function auditAllowlistedEgress(host: string, sink?: (line: string) => void): void {
   if (!host || _auditedAllowlistEgress.has(host)) return;
   _auditedAllowlistEgress.add(host);
+  const line =
+    `[galerina:egress-audit] FUNGI-NET-001 host "${host}" admitted via GALERINA_EGRESS_ALLOWED_HOSTS — ` +
+    `SSRF host-guard + force-HTTPS bypassed for this exact host (operator-trusted allow-list)\n`;
   try {
-    (process as unknown as { stderr?: { write(s: string): void } }).stderr?.write(
-      `[galerina:egress-audit] FUNGI-NET-001 host "${host}" admitted via GALERINA_EGRESS_ALLOWED_HOSTS — ` +
-        `SSRF host-guard + force-HTTPS bypassed for this exact host (operator-trusted allow-list)\n`,
-    );
+    if (sink) sink(line);
+    else (process as unknown as { stderr?: { write(s: string): void } }).stderr?.write(line);
   } catch {
     /* best-effort audit — swallow any sink failure */
   }
@@ -1467,7 +1472,7 @@ async function networkAsync(fullName: string, args: readonly GalerinaValue[], ct
     // Audit the production SSRF/force-HTTPS bypass: this exact host was admitted only because the operator
     // allow-listed it (covers redirect hops too — guardHop re-runs on each Location). Normal public hosts
     // (code EGRESS_ALLOWED) are NOT audited; only the explicit bypass leaves a trail.
-    if (eg.code === "Galerina_NETWORK_EGRESS_ALLOWLISTED") auditAllowlistedEgress(eg.host);
+    if (eg.code === "Galerina_NETWORK_EGRESS_ALLOWLISTED") auditAllowlistedEgress(eg.host, ctx.auditSink);
     if (eg.requiresDnsRecheck) {
       let ips: readonly string[];
       try {

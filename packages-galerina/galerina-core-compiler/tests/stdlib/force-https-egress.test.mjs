@@ -124,20 +124,24 @@ test("internal proxy: the allow-list opens ONLY the listed host (a sibling stays
 });
 
 // ── allow-list AUDIT (security follow-up to b6033e1): the SSRF/force-HTTPS bypass leaves a trail ──
-async function withStderr(run) {
-  const real = process.stderr.write.bind(process.stderr);
+// Capture the audit trail via the injected sink (ctx.auditSink) — NOT by monkeypatching process.stderr. Galerina
+// forbids monkeypatching (see monkey-patch-checker.ts); the transport + resolver here are already DI seams, so the
+// audit sink follows the same discipline.
+function captureAudit() {
   const lines = [];
-  process.stderr.write = (s) => { lines.push(String(s)); return true; };
-  try { await run(); } finally { process.stderr.write = real; }
-  return lines.join("");
+  return { sink: (line) => { lines.push(String(line)); }, text: () => lines.join("") };
 }
+const getAudited = (url, cap, dial) =>
+  callStdlib("http.get", undefined, [str(url)], { ...ctx, dial, resolveHost: async () => [PUBLIC_IP], auditSink: cap.sink });
 
-test("allow-list audit: an admitted bypass host is logged to the audit trail (stderr)", async () => {
+test("allow-list audit: an admitted bypass host is logged to the audit trail", async () => {
   clearDev();
   process.env.NODE_ENV = "production";
   process.env.GALERINA_EGRESS_ALLOWED_HOSTS = "audit-a.internal";
   try {
-    const out = await withStderr(() => getPinned("http://audit-a.internal:8080/x", () => dresp(200, "OK")));
+    const cap = captureAudit();
+    await getAudited("http://audit-a.internal:8080/x", cap, () => dresp(200, "OK"));
+    const out = cap.text();
     assert.match(out, /galerina:egress-audit/);
     assert.match(out, /audit-a\.internal/);
     assert.match(out, /GALERINA_EGRESS_ALLOWED_HOSTS/);
@@ -146,19 +150,19 @@ test("allow-list audit: an admitted bypass host is logged to the audit trail (st
 
 test("allow-list audit: a normal public host is NOT audited (only the bypass leaves a trail)", async () => {
   clearDev();
-  const out = await withStderr(() => getPinned("https://normal-not-audited.example.com/x", () => dresp(200, "OK")));
-  assert.doesNotMatch(out, /egress-audit/);
+  const cap = captureAudit();
+  await getAudited("https://normal-not-audited.example.com/x", cap, () => dresp(200, "OK"));
+  assert.doesNotMatch(cap.text(), /egress-audit/);
 });
 
 test("allow-list audit: repeated dials of the same host log once per process (deduped)", async () => {
   clearDev();
   process.env.GALERINA_EGRESS_ALLOWED_HOSTS = "audit-dedupe.internal";
   try {
-    const out = await withStderr(async () => {
-      await getPinned("http://audit-dedupe.internal/1", () => dresp(200, "OK"));
-      await getPinned("http://audit-dedupe.internal/2", () => dresp(200, "OK"));
-    });
-    const hits = (out.match(/audit-dedupe\.internal/g) ?? []).length;
+    const cap = captureAudit();
+    await getAudited("http://audit-dedupe.internal/1", cap, () => dresp(200, "OK"));
+    await getAudited("http://audit-dedupe.internal/2", cap, () => dresp(200, "OK"));
+    const hits = (cap.text().match(/audit-dedupe\.internal/g) ?? []).length;
     assert.equal(hits, 1, `expected exactly one audit line, got ${hits}`);
   } finally { clearDev(); }
 });
