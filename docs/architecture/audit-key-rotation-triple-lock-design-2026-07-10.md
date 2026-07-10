@@ -71,6 +71,13 @@ The key **bytes** never enter the ring, the ledger, or the decision module — o
 Each phase is independently gated; **every gate fails closed**; nothing irreversible happens until the last phase, which is gated hardest. This is the direct answer to *"several independent checks at each stage."*
 
 ```
+TRIGGER                 auto (time / volume) or on-demand — only PROPOSES a rotation; it never rotates by itself.
+
+Phase R  READINESS      "is it a GOOD TIME to rotate?" (§3.0) — the three-check quiescence gate: no audit run is
+         GATE           mid-flight (ongoing audits still hold the old key), the current chain is healthy, the system
+                        is quiescent. NOT READY ⇒ DEFER and re-check later; never force a rotation into live audit
+                        work.                                                       [reversible: nothing started]
+
 Phase 0  STAGE          mint the new key AHEAD of time (offline, ~30 min) into its OWN file; commit its
                         keyCommit to the ring as status:"staged".  CURRENT KEY STAYS ACTIVE throughout —
                         there is never a window with no active key.                 [reversible: discard the staged file]
@@ -97,6 +104,16 @@ Phase 5  RETIRE         the ONLY irreversible act, and it is scoped to SIGNING p
 
 **Reversibility invariant:** everything before Phase 5 is reversible — the old key stays fully active until drain completes, so a bad new key is caught (Phase 3) and rolled back with zero loss. The single irreversible act (Phase 5) can only ever remove *signing* capability, never *verify* capability — so it is incapable of orphaning the ledger by construction.
 
+### 3.0 The READINESS GATE (Phase R — "is it a good time?"). Three checks; any fail ⇒ DEFER, do not rotate.
+
+The owner's insight: *ongoing audits may still hold the old key* — so we do not even **begin** a rotation at a disruptive moment. Note this is defense-in-depth, not a correctness crutch: because the ring **retains every old key's verify capability forever**, an ongoing audit that *verifies* against old batches is **never** broken by a rotation. The readiness gate exists so a rotation does not **epoch-split an in-progress audit run** or land in the middle of heavy activity.
+
+1. **R1 — Audit quiescence:** no audit run is mid-flight against the current epoch at a non-checkpoint position (all active runs are at a safe boundary). An in-progress run finishes on the key it started with.
+2. **R2 — Chain health:** the current chain verifies end-to-end under the current key — never *plan* a rotation off a broken chain (Lock B.1 re-checks this at commit time; R2 refuses to even start).
+3. **R3 — System quiescence / window:** signing + processing + message-queue depth below threshold, and (optional) within an approved maintenance window. "A good time" = low in-flight.
+
+`readinessVerdict = allOf([R1, R2, R3])`. **NOT READY ⇒ DEFER** — reschedule a re-check; the current epoch keeps running untouched. This is what makes *automatic* rotation safe: the trigger proposes, the readiness gate decides **when** — so auto-rotation only ever fires at a quiescent boundary, never into live audit work.
+
 ### 3.1 The TRIPLE LOCK (Phase 1 — pre-switch). `allOf([A,B,C])`; any failure ⇒ abort.
 
 Computed by **independent code paths / independent evidence** so no single bug or compromise satisfies more than one lock:
@@ -114,8 +131,10 @@ Computed by **independent code paths / independent evidence** so no single bug o
 ### 3.3 The DRAIN GATE (Phase 4 — pre-retire; itself triple-checked). All three, else do not retire.
 
 1. **Queue empty:** no pending signing work is tagged for the old epoch (processing queue + message queue).
-2. **No in-flight:** no batch currently being sealed references the old epoch.
+2. **No in-flight:** no batch currently being sealed, and **no ongoing audit run**, still needs the old epoch to **sign** — verification against the old key is always safe, since its verify capability is retained forever.
 3. **Witness:** a `checkQuorum` witness attests drain-complete — we never retire on a single "looks empty" read.
+
+> Retire never removes verify capability, so an audit that only reads/verifies against the old key is unaffected even mid-run; the drain gate guards only the *signing* handle and any live reference a retire would invalidate.
 
 **Commit rule (atomic, all-or-nothing) at every phase boundary:**
 ```
@@ -142,7 +161,9 @@ else:              STAY on the current phase; EVERY key retained; ledger untouch
 | Retiring a key still needed in-flight | **Phase 4 drain gate** (queue-empty + no-in-flight + witness) |
 | Replay / rollback / skip of a rotation | **monotone epochId** + anti-rollback ring head; Lock A.4 |
 | A single compromised checker green-lights a bad rotation | **Triple lock `allOf`** + **quorum M-of-N**; three independent locks must all pass |
-| "Automatic" rotation bypassing safety | Scheduler only **PROPOSES**; the gates **DECIDE**. A failing auto-rotation simply doesn't happen (stays on current epoch) + alerts |
+| Rotating during an active audit run (epoch-split / disruption) | **Phase R readiness gate** defers until quiescent; an ongoing run finishes on the key it started with |
+| Ongoing audit needs the old key to VERIFY | **Verify capability retained forever** — never removed by rotation or retire (structural); only *signing* power is ever retired |
+| "Automatic" rotation bypassing safety, or firing at a bad time | Scheduler only **PROPOSES**; the **readiness gate** decides *when* (defers until quiescent), the phase gates decide *whether*. An ill-timed or failing auto-rotation simply doesn't happen (stays on current epoch) + alerts |
 
 ---
 
@@ -151,8 +172,8 @@ else:              STAY on the current phase; EVERY key retained; ledger untouch
 Each step is a pure module + an exhaustive test suite (every failure mode → abort), differential-/property-tested, before the next. **Reuses, does not reinvent:** `quorum.ts` (`checkQuorum`), `three-valued-governance.ts` (`allOf`, `decideAtBoundary`), `isWeakKey` + `timingSafeEqual`, the append-only MAC'd-head pattern from `governance/revocation-registry.mjs`.
 
 1. **Key-ring + epoch model** — append-only, monotone, MAC'd head, `keyCommit` distinctness, `fileRef` separation. Pure. Tests: append-monotone-only, reject reuse/rollback, unknown-epoch fail-closed.
-2. **Locks A/B/C + Verify + Drain as pure verdict functions.** Tests: each check's every failure path → DENY; only the all-good path → ALLOW.
-3. **Phase machine** = `allOf([A,B,C])` → switch → triple-verify → drain → retire, with atomic per-phase commit/abort. Tests: abort at any phase ⇒ state byte-identical to phase-entry (the anti-corruption invariant, asserted); Phase-5 asserts verify-capability preserved.
+2. **Readiness (R1/R2/R3) + Locks A/B/C + Verify + Drain as pure verdict functions.** Tests: each check's every failure path → DENY/DEFER; only the all-good path → ALLOW.
+3. **Phase machine** = readiness → `allOf([A,B,C])` → switch → triple-verify → drain → retire, with atomic per-phase commit/abort. Tests: abort at any phase ⇒ state byte-identical to phase-entry (the anti-corruption invariant, asserted); Phase-5 asserts verify-capability preserved.
 4. **Epoch-aware verification** — extend `AuditEgress.verifyChain` / `StateSerializer.verify` to select the verify key by `batch.epochId`; unknown epoch → fail-closed; default `strictKey` on in production.
 5. **(Owner-gated, ext/custody) key-material execution** — mint/store/apply/retire real bytes (offline vault → HSM). The ONLY part that touches a real key; built last, reviewed hardest.
 6. **(Improvement, later) asymmetric anchor for the HMAC ledger** — sign each epoch's chain-head with the attestation key so even the symmetric ledger gains a destroy-safe "remove the old key" story.
@@ -163,7 +184,7 @@ Each step is a pure module + an exhaustive test suite (every failure mode → ab
 
 1. **Confirm the key identity.** Is the 30-minute key the **asymmetric attestation key** (hybrid Ed25519 + ML-DSA-65 / an L5 profile), as the mint cost implies? This is the one that governs whether "safely remove" may *destroy* (asymmetric private ✓) or must *cold-retain* (symmetric HMAC ✗). If you actually mean rotating the **audit HMAC** ledger key, "remove" becomes cold-retain-only unless we add step 6 first.
 2. **Quorum M** for Lock C / the drain witness (default M=2: you + one independent re-verifier). Second signer = a second custody holder, or a separately-implemented re-verification module?
-3. **Rotation trigger cadence** for "automatic" — time (per N days), volume (per N batches), or on-demand only? (The trigger only proposes; the gates decide.)
+3. **Rotation trigger cadence** for "automatic" — time (per N days), volume (per N batches), or on-demand only? (The trigger only proposes; the **readiness gate** decides *when* — deferring until quiescent — and the phase gates decide *whether*.) What counts as a "good time to rotate" for R1/R3 — is there a maintenance window, and how do we detect an audit run is mid-flight vs at a safe checkpoint?
 4. **Placement** — decision module in `tower-citizen` (alongside `quorum.ts`/`lease.ts`) vs a new `core-sentinel-*`; key-material execution in a new owner-gated `galerina-ext-key-custody`?
 5. **Canary window size** N for Phase 3 (default: a small fixed N clean batches before drain is allowed to start).
 
