@@ -387,7 +387,7 @@ Baseline comparison (governance-cost):
       console.log(`                ${mldsaPubPath}  (safe to commit)`);
       console.log(`   Private keys: ${envPath}      (NEVER COMMIT — keep in OFFLINE custody)`);
       console.log(`\n   #34 offline ceremony: run on an air-gapped host; keep ${envPath} in offline custody.`);
-      console.log(`   Runbook: docs/Knowledge-Bases/galerina-34-offline-key-ceremony-runbook.md\n`);
+      console.log(`   Runbook: docs/security/galerina-34-offline-key-ceremony-runbook.md\n`);
       process.exit(0);
     }
 
