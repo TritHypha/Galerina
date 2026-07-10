@@ -5,6 +5,23 @@
 import type { KBGraph } from "./graph.js";
 import type { KBDocNode } from "./scanner.js";
 
+// ── Path-leak redaction (ZT-17) ───────────────────────────────────────────────
+// KB source docs occasionally quote absolute local paths in prose, and the KB carries a
+// known, owner-gated path-leak backlog. kb-report.md is git-TRACKED and scanned by
+// audit-path-leak, so every generated output is sanitised here at emit time: the committed
+// report stays leak-clean regardless of KB hygiene, and a regeneration can never surface a
+// leak that a hand-edit would only temporarily remove. The `<local-path>` placeholder is
+// treated as a placeholder (not a leak) by the audit's own `(?!<)` rule.
+function redactLocalPaths(s: string): string {
+  return s
+    // Windows user home — the raw drive-letter form and DOT's doubled-backslash form.
+    .replace(/[A-Za-z]:\\{1,2}Users\\{1,2}[^\s"'`|)\]]+/gi, "<local-path>")
+    // POSIX / git-bash user homes — mounted-drive, Linux home, and macOS forms.
+    .replace(/\/(?:[a-z]\/Users|home|Users)\/[^\s"'`|)\]]+/gi, "<local-path>")
+    // legacy project-root marker
+    .replace(/wwwprojects[^\s"'`|)\]]*/gi, "<local-path>");
+}
+
 // ── Layer colour map ──────────────────────────────────────────────────────────
 
 const LAYER_FILL: Record<string, string> = {
@@ -53,14 +70,14 @@ export function generateDOT(graph: KBGraph): string {
   }
 
   lines.push("}");
-  return lines.join("\n");
+  return redactLocalPaths(lines.join("\n"));
 }
 
 export function generateJSON(graph: KBGraph): string {
-  return JSON.stringify(graph, (_key, value) => {
+  return redactLocalPaths(JSON.stringify(graph, (_key, value) => {
     if (value instanceof Date) return value.toISOString();
     return value;
-  }, 2);
+  }, 2));
 }
 
 export function generateMarkdownReport(graph: KBGraph, generatedAt: string): string {
@@ -126,5 +143,5 @@ export function generateMarkdownReport(graph: KBGraph, generatedAt: string): str
   }
 
   lines.push("");
-  return lines.join("\n");
+  return redactLocalPaths(lines.join("\n"));
 }

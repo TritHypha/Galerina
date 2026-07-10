@@ -2,7 +2,7 @@
 Generated: 2026-07-10
 
 ## Stats
-- Docs: 850 | Edges: 2049 | Orphans: 180 | Stale links: 4 | FUNGI codes: 712
+- Docs: 851 | Edges: 2897 | Orphans: 1 | Stale links: 4 | FUNGI codes: 712
 
 ## Document Registry (auto-generated)
 
@@ -598,7 +598,7 @@ Generated: 2026-07-10
 | galerina-third-party-plugin-authoring-guide.md | — | — | — | FUNGI-EFFECT-001, FUNGI-EFFECT-005, FUNGI-EFFECT-006, FUNGI-PARSE-001, FUNGI-PKG-001 …+3 |
 | galerina-threat-model-unleashed-2026-06-25.md | — | — | — | FUNGI-EFFECT-003, FUNGI-IMPORT-005, FUNGI-IMPORT-006, FUNGI-PARSE-001, FUNGI-STDLIB-002 …+2 |
 | galerina-three-valued-governance.md | — | — | spike sub-spec + implementation (Direction **A** of the photonic/ternary R&D agenda). | FUNGI-GOV-004, FUNGI-GOV-3, FUNGI-SAFETY-003 |
-| galerina-tlstp-0069-dtm-degrade-only.md | — | — | BUILD-GUIDE for an adopted 0065–0070 transport/auth R&D survivor. Design/spec passed the bar; build is hub/owner-gated (the 0050 exporter it depends on is net-new and owner-gated). **Read-only citations** resolve against `C:\Users\phill\Documents\GitHub\Galerina` as `file:line`. | FUNGI-GOV-3, FUNGI-SUBSTRATE-001 |
+| galerina-tlstp-0069-dtm-degrade-only.md | — | — | BUILD-GUIDE for an adopted 0065–0070 transport/auth R&D survivor. Design/spec passed the bar; build is hub/owner-gated (the 0050 exporter it depends on is net-new and owner-gated). **Read-only citations** resolve against `<local-path>` as `file:line`. | FUNGI-GOV-3, FUNGI-SUBSTRATE-001 |
 | galerina-tlstp-0070-tampertrust.md | — | — | — | FUNGI-GOV-3, FUNGI-SUBSTRATE-001, FUNGI-SUBSTRATE-002, FUNGI-SUBSTRATE-003, FUNGI-SUBSTRATE-004 |
 | galerina-tlstp-build-guide-index.md | — | — | — | FUNGI-PRIVACY-002 |
 | galerina-tlstp-s1-cert-gate.md | — | — | — | FUNGI-GOV-3 |
@@ -664,6 +664,7 @@ Generated: 2026-07-10
 | http-method-declarations.md | — | — | — | — |
 | hybrid-electronic-optical-compute.md | — | — | — | — |
 | ihsa-storage-policy.md | — | — | — | FUNGI-EFFECT-001, FUNGI-STORAGE-001, FUNGI-VALUESTATE-003 |
+| KB-CATEGORY-INDEX.md | — | — | — | FUNGI-EFFECT-006, FUNGI-PRIVACY-001, FUNGI-PRIVACY-002, FUNGI-RETAIN-001 |
 | legacy-pattern-restrictions.md | — | — | — | — |
 | lifecycle-state-system.md | — | — | — | FUNGI-STATE-001, FUNGI-STATE-002, FUNGI-STATE-003, FUNGI-STATE-004, FUNGI-STATE-005 …+1 |
 | list-operations.md | — | — | — | — |
@@ -862,186 +863,7 @@ Generated: 2026-07-10
 ## Orphaned Documents
 Docs with no inbound links from other KB docs:
 
-- `HANDOFF-2026-07-02-eod-night.md` — COLD-START RECOVERY PROMPT — Galerina/TritMesh R&D — end of 2026-07-02
-- `HANDOFF-main-od5-graph-not-a-language-2026-07-03.md` — HANDOFF → main session: OD-5 — "graph" is not a language; file-location indexing stays the existing index tooling — 2026-07-03
-- `HANDOVER-main-bend-interaction-combinators-rd0257-2026-07-04.md` — HANDOVER → main session — Bend / Interaction Combinators (RD-0257) — 2026-07-04
-- `HANDOVER-main-full-control-of-galerina-2026-07-03.md` — HANDOVER — Main session takes FULL CONTROL of Galerina (2026-07-03)
-- `PASTE-TO-START-tritmesh-2026-07-04.md` — PASTE-TO-START-tritmesh-2026-07-04
-- `PLAYBOOK-zt-tritsocket-community-launch-2026-07-08.md` — PLAYBOOK — getting the GitHub community (and beyond) interested in tritsocket · 2026-07-08
-- `PROMPT-main-session-full-auto-work-directive-2026-07-01.md` — PROMPT — main session: full-auto work directive
-- `PROMPT-main-session-privacy-redaction-and-correct-securitymd-2026-07-10.md` — PROMPT — main session: privacy redaction (account email → project email) + the correct SECURITY.md · 2026-07-10
-- `PROMPT-main-session-rd-0283-0289-implementation-2026-07-09.md` — PROMPT — main session: implement the adopted R&D from RD-0283..0289 · 2026-07-09
-- `PROMPT-main-session-rnd-update-2026-07-01.md` — PROMPT — R&D update for the main session (2026-07-01)
-- `PROMPT-main-session-working-discipline-rules-and-graph-2026-07-01.md` — PROMPT — main session: standing working discipline (obey the rules · find via graph, not manual search)
-- `PROMPT-oss-build-resume-2026-07-01.md` — PROMPT — resume the OSS-package build (Tier A/B + 2 new candidates)
-- `PROMPT-rnd-FYI-main-session-status-2026-07-10.md` — PROMPT (FYI / NO-ACTION) — R&D session: what the MAIN Galerina session is doing · 2026-07-10 (late)
-- `SELF-PROMPT-galerina-hub-2026-07-01.md` — SELF-PROMPT — Galerina hub, full-auto continuation (paste after `/clear`, 2026-07-01)
-- `architecture-good-taste-principles.md` — Architecture Good-Taste Principles
-- `architecture-self-verification-questions.md` — Architecture Self-Verification Questions
-- `async-task-model.md` — Async Task Model
-- `benchmark-success-plan.md` — Benchmark Success Plan
-- `boot-main-startup-defaults.md` — Boot/Main Startup Defaults
-- `boundary-safety-proof.md` — Boundary Safety Proof
-- `branching-model.md` — Branching Model
-- `cicd-integration-and-provenance.md` — CI/CD Integration and Provenance
-- `controlled-mutation-model.md` — Controlled Mutation Model
-- `controlled-parallelism.md` — Controlled Parallelism
-- `critical-and-deferred-compute-paths.md` — Critical and Deferred Compute Paths
-- `design-patterns-for-galerina.md` — Design Patterns for Galerina
-- `diag-code-taxonomy-proposal-2026-07-10.md` — Diagnostic-code naming taxonomy — decision-ready proposal (burn-down task #20)
-- `documentation-layer-model.md` — Documentation Layer Model
-- `encapsulation-model.md` — Encapsulation Model
-- `error-propagation-chains.md` — Error Propagation Through Call Chains
-- `excluded-features.md` — Excluded Features
-- `fast-response-and-keep-alive.md` — Fast Response And Keep-Alive
-- `flat-flow-style.md` — Flat Flow Style
-- `galerina-ai-neural-npu-targets.md` — Galerina — AI Neural IR, Quantization and NPU Compute Targets
-- `galerina-app-framework-build-2026-06-21.md` — App-Framework Build (B1–B6) — outcome 2026-06-21
-- `galerina-architecture-direction-v2.md` — Galerina Architecture Review & Future Direction
-- `galerina-architecture-layers.md` — Galerina Architecture Layers
-- `galerina-ast-to-gir.md` — Galerina AST to GIR Transformation
-- `galerina-benchmark-enforcement-cost-spec.md` — Benchmark Spec — Hardened-Border Enforcement-Cost Suite
-- `galerina-benchmark-situation-prompt.md` — Galerina Benchmark Situation — Full Context Prompt
-- `galerina-benchmark-snapshot-2026-06-24.md` — Galerina Benchmark Snapshot — 2026-06-24 (v1.0.0-beta.2)
-- `galerina-check-config.md` — Galerina Check Configuration — `galerina.check.json`
-- `galerina-code-examples-full-flow.md` — Galerina — Full Flow Code Examples
-- `galerina-compiler-enforcement-compute.md` — Galerina — Compiler Enforcement Gaps for Compute Targets
-- `galerina-compiler-optimizations.md` — Galerina — Compiler Optimizations and Backend Architecture
-- `galerina-completion-roadmap-2026-06-03.md` — Galerina — Completion Roadmap (2026-06-03)
-- `galerina-concurrency-synchronisation-compute.md` — Galerina — Concurrency and Synchronisation for Heterogeneous Compute
-- `galerina-contract-sets.md` — galerina-contract-sets
-- `galerina-contracts-as-meaning-layer.md` — galerina-contracts-as-meaning-layer
-- `galerina-core-flow-trace.md` — Galerina Flow Trace API
-- `galerina-core-package-architecture.md` — Galerina Core Package Architecture
-- `galerina-core-policy-online-safety-act.md` — Galerina Core — Online Safety Act Age Assurance Policy Model
-- `galerina-core-runtime-resources.md` — Galerina Runtime-Owned Single-Instance Resources
-- `galerina-core-syntax-typed-content-blocks.md` — Galerina Standard Syntax: Typed Content Blocks
-- `galerina-core-vector-photonic-governance.md` — Galerina Core Vector: Photonic Governance Architecture
-- `galerina-design-primitive-obsession.md` — Galerina Design Principle: Primitive Obsession
-- `galerina-developer-ux-phase-8.md` — Galerina Developer Experience Improvements — Phase 8
-- `galerina-devtools-for-production-2026-06-24.md` — Dev-Tools for Production — map + prioritized proposal (2026-06-24)
-- `galerina-diagnostic-numbering-strategy.md` — Galerina — Diagnostic Numbering Strategy
-- `galerina-for-where-tensor-mask-rd.md` — R&D — `for`/`where` tree-walker overhead → ternary tensor-mask (predicated execution)
-- `galerina-fungi-security-syntax-and-logic-2026-07-04.md` — `.fungi` / `.hypha` security syntax & logic — consolidated + corrected (2026-07-04)
-- `galerina-granular-roadmap-2026-06-24.md` — Galerina Granular Roadmap — sub-100% modules by child node (2026-06-24)
-- `galerina-graph-ascii-spec-and-ab-benchmark-2026-07-01.md` — `.graph` spec + deciding A/B benchmark — execution verdict (2026-07-01)
-- `galerina-high-value-compute-domains-2026-06-25.md` — High-value compute domains — can Galerina do anything? (2026-06-25)
-- `galerina-i64-lowering-map-2026-06-25.md` — Faithful Int64 lowering — exhaustive site map + phased plan (2026-06-25)
-- `galerina-language-lessons.md` — Galerina — Lessons From Other Languages
-- `galerina-maths-application-sweeps-2026-06-25.md` — Maths-application R&D sweeps — .spore/db/TritMesh + expanded-scope (2026-06-25)
-- `galerina-memory-request-scope-arenas.md` — Galerina Memory — Request-Scope Arenas
-- `galerina-missing-syntax-keywords.md` — Galerina — Missing Syntax Keywords and Parser Gaps
-- `galerina-naming-conventions-enforcement.md` — Galerina — Naming Convention Enforcement (FUNGI-STYLE-*)
-- `galerina-naming-philosophy.md` — Galerina Terminology and Naming Philosophy
-- `galerina-native-runtime-roadmap.md` — Galerina — Native Self-Hosted Runtime Roadmap
-- `galerina-natural-language-governance-summary.md` — Galerina — Natural-Language Governance Summary
-- `galerina-nested-quantum-future-module.md` — TODO (FUTURE / parked) — Nested quantum simulation as an optional Galerina app module
-- `galerina-no-monkey-patching.md` — Galerina — No Monkey Patching
-- `galerina-no-variables-outside-flows.md` — galerina-no-variables-outside-flows
-- `galerina-nvidia-n1x-target.md` — galerina-nvidia-n1x-target
-- `galerina-paper-worthiness-assessment-2026-06-22.md` — Paper-Worthiness Assessment — R&D 0065–0070 (2026-06-22)
-- `galerina-pentest-rules-of-engagement.md` — Galerina penetration-testing — Rules of Engagement (what to do / what NOT to do)
-- `galerina-percent-audit-roadmap-2026-06-25.md` — Galerina — % completion audit + roadmap (2026-06-25)
-- `galerina-phase-11-mut-reassignment.md` — galerina-phase-11-mut-reassignment
-- `galerina-phase-11-taint-propagation.md` — galerina-phase-11-taint-propagation
-- `galerina-phase-18-23-summary.md` — Galerina — Phase 18–23 Comprehensive Summary
-- `galerina-phase-26-healthcare.md` — Phase 26 — Wasmtime Standalone Target + Healthcare Governance
-- `galerina-phase40-review.md` — Galerina — Phase 40 Review Checkpoint
-- `galerina-phase40-vision.md` — Galerina 1.0 — Vision Statement
-- `galerina-phase44-economics-routing.md` — Galerina Phase 44 — ValueGraph Risk-Adjusted Routing
-- `galerina-phase58-cuda-gpu-backend.md` — Galerina Phase 58 — CUDA GPU Backend
-- `galerina-phase59-60-rc-summary.md` — Galerina — Phase 59-60 RC Summary
-- `galerina-photonic-crossover-analysis.md` — Galerina Photonic Compute Crossover Analysis
-- `galerina-photonic-noise-and-17-nos-2026-06-25.md` — Photonic-noise countering + the 17-NOs solutions + a prevention-rule set (2026-06-25)
-- `galerina-pr-positioning-what-it-means-2026-07-09.md` — Galerina PR & positioning — "what it means for Galerina" · 2026-07-09
-- `galerina-provenance-integrity-vs-fidelity.md` — Provenance: integrity ≠ fidelity (#36 P1 scoping)
-- `galerina-quantum-target-bridge.md` — Galerina Architecture: Quantum Computing Support Through Target Bridges
-- `galerina-rd-0125-resolution-delivery-working-model-2026-06-24.md` — RD-0125 — a working model of the third logic-delivery paradigm (resolution/collapse), with security + a hybrid benchmark
-- `galerina-rd-0126-photonic-crypto-virtualchip-minusone-2026-06-24.md` — RD-0126 — photonic-crypto bridge · alpha-sorting PDF · virtualized-binary-chip · "-1 = recheck later"
-- `galerina-rd-0127-framework-friendly-runtime.md` — RD-0127 — Framework-Friendly Runtime (note 16) + retro proof/score of the contested notes 8–15 claims
-- `galerina-rd-0130-frontier-domains-positioning-2026-06-26.md` — RD-0130 — Frontier-domains positioning sweep (notes/63-recap-1..8)
-- `galerina-rd-0131-rebrand-galerina-fungi-2026-06-26.md` — RD-0131 — Rebrand Galerina→Galerina, .fungi→.fungi (R&D ONLY — DO NOT EXECUTE)
-- `galerina-rd-0133-memory-safety-safer-than-rust-2026-06-26.md` — RD-0133 — Galerina memory-safety: "as-safe-or-safer than Rust" positioning
-- `galerina-rd-0134-beyond-1-bit-photonic-ternary-2026-06-26.md` — RD-0134 — "Beyond 1-bit": photonic ternary {−1,0,+1} AI compute
-- `galerina-rd-0136-galerina-playbook-runbook-2026-06-26.md` — RD-0136 — Galerina Playbook + Runbook (operational docs design)
-- `galerina-rd-0266b-embedded-questions-answered.md` — RD-0266b — every embedded question in the 85-SYNTAX cluster, answered
-- `galerina-rd-0266c-zt-scorecard-and-20yr-legacy-checklist.md` — RD-0266c — Gemini concession · schema-vs-contract · ZT scorecard · 20-year legacy checklist
-- `galerina-rd-0267-oss-project-candidates-84-projects.md` — RD-0267 — OSS-project candidate triage (the 84-PROJECTS cluster) · 2026-07-08
-- `galerina-rd-0268-version-lifter-chain-and-paper-candidates.md` — RD-0268 — Version compilation: one main compiler + micro-lifters · paper/defensive-pub sweep · 2026-07-08
-- `galerina-rd-0273-quantum-bridge-innovate-uk-funding-fit.md` — RD-0273 — galerina-ext-bridge-quantum vs the Innovate UK "£33M fault-tolerant quantum" call · 2026-07-08
-- `galerina-rd-0275-flowchart-editor-draw-to-gate-concept.md` — RD-0275 — "Draw-the-program" flow-chart editor → `.gate`/`.fungi` (concept assessment) · 2026-07-08
-- `galerina-rd-0276-voltage-lowering-claim-verdict.md` — RD-0276 — "Can we lower voltage by implementing certain things?" — claim verdict · 2026-07-08
-- `galerina-rd-0278-quantum-bridge-unique-value-vs-nisq.md` — RD-0278 — What the governed quantum bridge uniquely offers vs noisy (NISQ) hardware · 2026-07-08
-- `galerina-rd-0279-quantum-cascade-and-compile-wasm-verdict.md` — RD-0279 — The Quantum→Photonic→Binary "cascade" + "a better compile/WASM via the quantum method?" — verdicts · 2026-07-08
-- `galerina-rd-0280-compiler-api-gir-surface-for-editor-tooling.md` — RD-0280 — Compiler API / GIR surface for editor tooling (read-only investigation) · 2026-07-08
-- `galerina-rd-0282-logicn-galerina-rebrand-execution-non-galerina-tree.md` — RD-0282 — LogicN → Galerina rebrand: tool + execution record (non-Galerina tree) · 2026-07-09
-- `galerina-rd-59-js-quirks-vs-galerina-2026-06-25.md` — R&D (notes/59) — the 10 classic JavaScript bad-design quirks vs Galerina (2026-06-25)
-- `galerina-readable-logic-forms.md` — Galerina Language Proposal — Readable Logic Forms
-- `galerina-resource-governance.md` — galerina-resource-governance
-- `galerina-roadmap-2026-06-21.md` — Galerina Roadmap — phase-close snapshot 2026-06-21
-- `galerina-roadmap-2026-06-25.md` — Galerina roadmap (2026-06-25, post security-hardening session)
-- `galerina-roadmap-phase16-20.md` — Galerina — Phase 16–20 Implementation Roadmap
-- `galerina-runtime-governance-actors.md` — Galerina — Runtime Governance Actors (naming map + flow protocol)
-- `galerina-runtime-value-model.md` — Galerina Runtime Value Model
-- `galerina-security-improvements-phase-8.md` — Galerina Security Improvements — Phase 8
-- `galerina-shipped-defects-found-2026-06-18.md` — Shipped-Code Defects Found by Adversarial R&D — hub-verified ledger (2026-06-18)
-- `galerina-speed-improvements-phase-8.md` — Galerina Speed Improvements — Phase 8
-- `galerina-structured-engineering-metadata-roadmap.md` — Structured-Engineering Metadata — Roadmap + %-Shipped Audit (2026-06-19)
-- `galerina-substrate-lane-fail-opens-2026-06-25.md` — Substrate-lane fail-opens found + fixed (2026-06-25)
-- `galerina-supply-chain-package-governance.md` — Galerina Supply Chain Attestation and Package Governance
-- `galerina-symbol-resolver-spec.md` — Galerina Symbol Resolver Specification
-- `galerina-testing-model.md` — Galerina — Testing Model
-- `galerina-tritmesh-monolith-data-architecture.md` — TritMesh Monolith + Data Architecture — Build Guide (note 41)
-- `galerina-type-improvements-phase-8.md` — Galerina Type System Improvements — Phase 8
-- `galerina-unified-syntax-governance-and-target-bridge-plan.md` — Galerina Unified Syntax, Governance, and Target Bridge Plan
-- `galerina-value-state-checker-architecture.md` — Galerina — Value-State Checker Architecture
-- `galerina-work-with-it-sweep-table-2026-06-25.md` — Work-with-it sweep — refused R&D reviewed for a govern-don't-absorb path (table)
-- `governed-compute-chain.md` — Galerina — Governed Compute Chain
-- `governed-event-driven-execution.md` — Governed Event-Driven Execution
-- `governed-worker-pools.md` — Governed Worker Pools
-- `ihsa-storage-policy.md` — Galerina — IHSA Governed Storage Policy
-- `README-galerina-signing-key.md` — Galerina governance signing key — custody (PRIVATE)
-- `layered-rate-limits.md` — Layered Rate Limits
-- `legacy-pattern-restrictions.md` — Legacy Pattern Restrictions
-- `local-ai-review.md` — Local AI Review
-- `lsgr-runtime-components.md` — LSGR Runtime Components
-- `module-system-and-visibility.md` — Module System and Visibility
-- `operator-precedence.md` — Galerina — Operator Precedence
-- `parser-error-recovery.md` — Galerina — Parser Error Recovery Policy
-- `pattern-matching.md` — Pattern Matching
-- `plugin-security-architecture.md` — Plugin Security Architecture
-- `preplanned-startup-and-fast-response.md` — Preplanned Startup And Fast Response
-- `priority-categories.md` — Priority Categories
-- `production-scaling-model.md` — Production Scaling Model
-- `prompt-injection-defense.md` — Prompt Injection Defense
-- `quantum-readiness.md` — Quantum Readiness
-- `query-type-and-database-access.md` — Query Type and Database Access
-- `quiet-runtime-secure-defaults.md` — Quiet Runtime and Secure Defaults
-- `release-keyword.md` — release Keyword
-- `request-lifecycle.md` — Request Lifecycle
-- `restricted-native-boundary.md` — Restricted Native Boundary (FFI)
-- `runtime-boundary-declarations.md` — Runtime Boundary Declarations
-- `runtime-context-not-superglobals.md` — Runtime Context (Not Superglobals)
-- `runtime-identity-model.md` — Runtime Identity Model
-- `runtime-package-structure.md` — Runtime Package Structure
-- `runtime-scheduler.md` — Runtime Scheduler (Execution Coordination Scheduler)
-- `scheduled-actions.md` — Scheduled Actions
-- `scheduled-chain-blocks.md` — Scheduled Chain Blocks
-- `secure-channels-and-portals.md` — Secure Channels and Portals
-- `server-platform-support.md` — Server Platform Support
-- `startup-and-boot-warmup.md` — Startup And Boot Warmup
-- `terminology-naming-philosophy.md` — Terminology And Naming Philosophy
-- `rebrand-report.md` — Rebrand scan — LogicN → Galerina (non-Galerina tree) · report
-- `triggers.md` — Triggers
-- `tritmeshql-governed-write-path-rd0234c-2026-07-03.md` — TritMeshQL — the fail-closed GOVERNED WRITE PATH (RD-0234c, 2026-07-03)
-- `tritmeshql-partial-gradual-schema-2026-07-03.md` — TritMeshQL — the partial / gradual-schema design (field→axis binding) — 2026-07-03
-- `tritmeshql-query-shapes-history-agg-streaming-2026-07-03.md` — RD-0244 — TritMeshQL unfinished query shapes: HISTORY / AS OF, AGGREGATION, STREAMING — 2026-07-03
-- `tritmeshql-security-threat-taxonomy-and-zt-scorecard-2026-07-03.md` — TritMeshQL `.hypha` — security threat taxonomy + per-construct zero-trust scorecard — 2026-07-03
-- `trusted-boot-preload-graph.md` — Trusted Boot Preload Graph
-- `type-manifest.md` — Type Manifest
-- `type-qualifiers.md` — Type Qualifiers
-- `vault-write-syntax.md` — Vault Write Syntax
-- `what-galerina-refuses-to-become.md` — What Galerina Refuses to Become
+- `KB-CATEGORY-INDEX.md` — KB Category Index — 851 docs, grouped by topic & type
 
 ## Stale Links
 Links pointing to missing files:
@@ -1079,7 +901,7 @@ Links pointing to missing files:
 - L10: `//   6. @logicn/compute-types registry includes expected types`
 
 ### `bin\Galerina-R-AND-D\tri-encription\FINDINGS-AND-ROADMAP.md` — 51 (LogicN, LLN-diag, logicn, ext-lln)
-- L7: `> photonic-LogicN ecosystem. This is R&D scratch ('C:\Users\phill\Documents\GitHub\LogicN-R-AND-D\tri-encription\'), not a`
+- L7: `> photonic-LogicN ecosystem. This is R&D scratch ('<local-path>'), not a`
 - L8: `> production repo and not the LogicN/TritMesh monorepos.`
 - L16: `The question driving this work: *given the LogicN governance lessons, what can encryption actually look like`
 
@@ -1099,8 +921,8 @@ Links pointing to missing files:
 - L18: `> and op-catalog depth docs remain valid Phase-2 references. This is LogicN task **#199**.`
 
 ### `bin\Galerina-R-AND-D\ecosystem-positioning\ECOSYSTEM-LANGUAGE-POSITIONING-0051.md` — 48 (LogicN, logicn, LLN-diag)
-- L3: `> **Citation base:** the LogicN production repo ('C:\Users\phill\Documents\GitHub\LogicN'), STRICTLY READ-ONLY in this lane.`
-- L5: `> '.mjs' bench cites resolve in this R&D repo ('C:\Users\phill\Documents\GitHub\LogicN-R-AND-D').`
+- L3: `> **Citation base:** the LogicN production repo ('<local-path>'), STRICTLY READ-ONLY in this lane.`
+- L5: `> '.mjs' bench cites resolve in this R&D repo ('<local-path>').`
 - L7: `> **⚠ logicn.mjs is being actively edited by the owner during this session** — its line cites are point-in-time`
 
 ### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\lln-val-enforcement.test.mjs` — 47 (LLN-diag, ext-lln)
@@ -1120,11 +942,11 @@ Links pointing to missing files:
 
 ### `bin\Galerina-R-AND-D\photonic-tri-governance\tri-pipe-per-tier-packages-and-hardware-directive-spec.md` — 47 (LogicN, logicn, ext-lln, LLN-diag, scope-logicn)
 - L3: `> **Citation base.** 'file.ext:line' references in this spec resolve against the **LogicN language`
-- L4: `> repo** ('C:\Users\phill\Documents\GitHub\LogicN'; search 'packages-logicn\*\src\'), **not** the '.lln'-only TritMesh`
-- L5: `> repo. '.mjs' proof cites resolve in the R&D repo ('C:\Users\phill\Documents\GitHub\LogicN-R-AND-D\scripts\').`
+- L4: `> repo** ('<local-path>'; search 'packages-logicn\*\src\'), **not** the '.lln'-only TritMesh`
+- L5: `> repo. '.mjs' proof cites resolve in the R&D repo ('<local-path>').`
 
 ### `bin\Galerina-R-AND-D\testing-strategy\TESTING-STRATEGY-RND-0048.md` — 47 (LogicN, logicn, ext-lln, LLN-diag)
-- L4: `> **LogicN language repo** ('C:\Users\phill\Documents\GitHub\LogicN'; search 'packages-logicn\*\src\' and '\tests\',`
+- L4: `> **LogicN language repo** ('<local-path>'; search 'packages-logicn\*\src\' and '\tests\',`
 - L5: `> root 'logicn.mjs'), **not** the '.lln'-only TritMesh repo. Convention + verifier:`
 - L12: `> LogicN — the production tree is READ-ONLY; this note designs and ranks, it does not implement.`
 
@@ -1141,7 +963,7 @@ Links pointing to missing files:
 ### `bin\Galerina-R-AND-D\tri-encription\PATCH-SPEC-guarded-flow-valuestate-paramtaint-2026-06-23.md` — 44 (LLN-diag, logicn, LogicN)
 - L1: `# PATCH SPEC — guarded-flow value-state param-taint fail-OPEN (LLN-VALUESTATE)`
 - L5: `- **Component:** 'logicn-core-compiler' → 'src/value-state-checker.ts'`
-- L6: `- **Status of this doc:** R&D-side **advisory + patch spec**. The production tree is treated **READ-ONLY** from R&D — nothing in 'C:\Users\phill\Documents\GitHub\LogicN' was modified. The hub applies `
+- L6: `- **Status of this doc:** R&D-side **advisory + patch spec**. The production tree is treated **READ-ONLY** from R&D — nothing in '<local-path>' was modified. The hub applies `
 
 ### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\governance-conformance.test.mjs` — 43 (ext-lln, LLN-diag)
 - L28: `const parsed = parseProgram(source, "test.lln");`
