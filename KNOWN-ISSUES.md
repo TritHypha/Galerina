@@ -27,12 +27,14 @@ disclosed below. Read this before relying on any guarantee. Last reconciled: 202
 
 ## Security disclosures
 
-- **Compromised signing key in git history (#149).** A signing *private* key (`8eecf4187ebc9341`)
-  was committed early in history (commit `cb5036d`) and **remains in the public git history**. It has
-  been **rotated** (to `ab46f4c7e2797b9b`), **revoked** (published in
+- **Compromised signing key — rotated + revoked (#149).** A signing *private* key (`8eecf4187ebc9341`)
+  is **COMPROMISED**. It has been **rotated** (to `ab46f4c7e2797b9b`), **revoked** (published in
   `security/revocations/REV-2026-06.md` and enforced by the revocation registry — the key evaluates
-  to **Deny**), and **no in-tree artifact is signed by it**. A history rewrite was deliberately
-  avoided because it would rebase every commit SHA and break the verifiable trust chain. Treat any
+  to **Deny**), and **no in-tree artifact is signed by it** (the key id appears here only in revocation
+  records, never as key material). **Provenance (2026-07-10):** the exposure does **not** resolve to a
+  commit in this repository — `cb5036d` is not a valid object here and `.env.galerina-signing` was never
+  tracked (git-ignored since the initial commit); the historical exposure is attributed to the separate
+  Galerina-Production repository. The revocation stands **unconditionally** regardless. Treat any
   signature from `8eecf4187ebc9341` as permanently distrusted.
 - **`FUNGI-VALUESTATE-008` is production-gated.** The boundary-input cleanliness floor (an unmarked bare
   parameter reaching a governed sink) escalates to an *error* only in production builds, and is now
