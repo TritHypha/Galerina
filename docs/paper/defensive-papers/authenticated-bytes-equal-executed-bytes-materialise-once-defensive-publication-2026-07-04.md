@@ -168,4 +168,4 @@ Disclosed to the public domain as prior art:
 - **Funding:** None.
 - **Competing interests:** None.
 - **Data / artifact availability:** All artifacts are in-repo and re-runnable at the paths named in §8.
-- **Licence:** Apache-2.0. Owner / copyright holder: Phillip Booth (hello@consumerthoughts.co.uk).
+- **Licence:** Apache-2.0. Owner / copyright holder: Phillip Booth (hello@trithypha.dev).

@@ -30,7 +30,7 @@ commit SHAs and break the verifiable trust chain); the key lineage is permanentl
 advisory instead. Remaining: CI secret scan + re-signing of any exclusively-old-key-signed artifacts (#149).
 
 ## Reporting a vulnerability
-Please report security issues **privately** to the maintainer — `<SET SECURITY CONTACT BEFORE PUBLISHING>` —
+Please report security issues **privately** to the maintainer, Phillip Booth <hello@trithypha.dev>,
 and do **not** open a public issue for an unpatched vulnerability. You can expect an acknowledgement and a
 remediation timeline.
 

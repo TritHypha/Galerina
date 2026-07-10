@@ -128,4 +128,4 @@ The source characterizes these as establishing walker (`interpreter.ts`) ≡ emi
 - **Funding:** None.
 - **Competing interests:** None.
 - **Data / artifact availability:** All artifacts are in-repo and re-runnable at the paths named in §8 (`galerina-core-compiler/tests/*.test.mjs`; `galerina-tower-citizen/src/hybrid-engine.ts`); the source invariant and cross-referenced docs are in `ZTF-Knowledge-Bases`. No dedicated RD-0129 proof script exists (build deferred) — this is disclosed rather than concealed.
-- **Licence:** Apache-2.0. Owner / copyright: **Phillip Booth** (hello@consumerthoughts.co.uk).
+- **Licence:** Apache-2.0. Owner / copyright: **Phillip Booth** (hello@trithypha.dev).

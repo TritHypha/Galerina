@@ -80,6 +80,6 @@ These are prior-art disclosures, not patent claims, stated broadly-but-truthfull
 - **Authorship & AI assistance:** drafted with AI assistance under human direction (owner: Phillip Booth). Grounding: the cited primary literature (Lafont 1997; Lévy 1978; Lamping 1990; Asperti–Mairson 1998; Brent 1974; Amdahl 1967), the RD-0257 assessment, and the re-runnable proof above. Prior-art triage is informed by training knowledge, **not** a filed legal search.
 - **Funding:** none. **Competing interests:** none.
 - **Data / artifact availability:** in-repo, re-runnable (`bend-interaction-combinators-check.mjs`); assessment in `ZTF-Knowledge-Bases`.
-- **Licence:** Apache-2.0. Owner / copyright holder: **Phillip Booth** (hello@consumerthoughts.co.uk).
+- **Licence:** Apache-2.0. Owner / copyright holder: **Phillip Booth** (hello@trithypha.dev).
 
 *Cross-references:* `latency-is-not-work-measured-negatives-defensive-publication-2026-06-25.md` (the sibling note); RD-0253 (`⊗ = min`, machine-proven); RD-0117 (Amdahl measured-negative); RD-0231 (`.fungi` → Graph IR — the bridge under which an interaction-net backend would be a governed, benchmark-gated option).

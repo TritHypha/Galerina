@@ -1,8 +1,8 @@
 # Galerina KB Graph Report
-Generated: 2026-07-08
+Generated: 2026-07-10
 
 ## Stats
-- Docs: 763 | Edges: 1786 | Orphans: 162 | Stale links: 1 | FUNGI codes: 689
+- Docs: 850 | Edges: 2049 | Orphans: 180 | Stale links: 4 | FUNGI codes: 712
 
 ## Document Registry (auto-generated)
 
@@ -17,6 +17,7 @@ Generated: 2026-07-08
 | galerina-github-org-naming-release-architecture.md | Layer 1 | — | — | — |
 | galerina-governance-hierarchy.md | Layer 1 | — | — | FUNGI-EFFECT-001, FUNGI-GOV-002, FUNGI-NET-001, FUNGI-PKG-005, FUNGI-SEC-020 …+2 |
 | galerina-logical-planning-target-emission.md | Layer 1 | — | Phase 13 — Core architecture principle | — |
+| galerina-rd-0318-formal-verification-k3-smt-approach.md | Layer 1 | — | — | — |
 | galerina-security-model-layers.md | Layer 1 | — | — | FUNGI-BACKEND-001, FUNGI-BUILD-001, FUNGI-EFFECT-001, FUNGI-EFFECT-002, FUNGI-GOV-002 …+10 |
 | layered-rate-limits.md | Layer 1 | — | — | — |
 | rd-qrng-q1-entropy-capability-grounding-survey.md | Layer 1 | — | research grounding survey (2026-06-17). **Bridge task:** 0005. **Feeds:** the hub's **Q1 QRNG | FUNGI-ENTROPY-001 |
@@ -57,7 +58,7 @@ Generated: 2026-07-08
 | cicd-integration-and-provenance.md | — | — | — | — |
 | compile-time-metadata-reflection.md | — | — | — | — |
 | compile-time-vs-runtime-authority.md | — | — | — | FUNGI-SYNTAX-002 |
-| compiler-diagnostics.md | — | — | — | FUNGI-AFFINE-001, FUNGI-ARCH-001, FUNGI-ARCH-002, FUNGI-AST-001, FUNGI-AST-002 …+349 |
+| compiler-diagnostics.md | — | — | — | FUNGI-AFFINE-001, FUNGI-ARCH-001, FUNGI-ARCH-002, FUNGI-AST-001, FUNGI-AST-002 …+360 |
 | compute-balancer.md | — | — | — | — |
 | context-tagged-verified-execution-cache.md | — | — | — | — |
 | controlled-mutation-model.md | — | — | — | — |
@@ -70,16 +71,11 @@ Generated: 2026-07-08
 | deny-by-default-risk-features.md | — | — | — | — |
 | design-patterns-for-galerina.md | — | — | — | — |
 | developer-friendly-permission-model.md | — | — | — | — |
+| diag-code-taxonomy-proposal-2026-07-10.md | — | — | ANALYSIS ONLY — no repo file was touched. **Date:** 2026-07-10. | FUNGI-ASSUME-001, FUNGI-ASSUME-002, FUNGI-ASSUME-005, FUNGI-BORDER-002, FUNGI-BORDER-004 …+37 |
 | documentation-layer-model.md | — | — | — | — |
-| dp-rd-0170-l3-cache-colouring-auth-isolation.md | — | — | — | FUNGI-SECRET-004, FUNGI-SUBSTRATE-001 |
-| dp-rd-0202-arm-pointer-tag-tri-state-honest-bounds.md | — | — | — | — |
-| dp-rd-0203-arm-sve2-sme-constant-factor-honesty.md | — | — | — | — |
-| dp-rd-0204-ast-parameterised-graph-query-injection-safety.md | — | — | — | — |
-| dp-rd-0209-tri-state-z-partition-layout-and-o1-slice-refutation.md | — | — | — | — |
-| dp-rd-0216-cross-language-ternary-prefilter-forgery-caveat.md | — | — | — | — |
-| dp-rd-0225-rowhammer-signed-hash-detection-detect-not-prevent.md | — | — | — | — |
-| dp-rd-0227-light-ascii-exhaustive-drain-structural-injection-guard.md | — | — | — | — |
-| dp-rd-0229-graph-aot-gate-unreachability-proof-hallucination-block.md | — | — | — | FUNGI-PRIVACY-002 |
+| dp-rd-0301a-egress-ssrf-numeric-ip-and-dns-rebind-guard.md | — | — | — | — |
+| dp-rd-0301b-cert-gate-k3-revocation-unknown-deny-fold.md | — | — | — | FUNGI-GOV-3 |
+| dp-rd-0309-photonic-substrate-cannot-host-pq-authentication.md | — | — | — | — |
 | effect-checker-and-boundary-checker.md | — | — | — | FUNGI-BOUNDARY-001, FUNGI-BOUNDARY-002, FUNGI-BOUNDARY-003, FUNGI-BOUNDARY-004, FUNGI-EFFECT-001 …+3 |
 | encapsulation-model.md | — | — | — | FUNGI-ENCAP-001 |
 | error-propagation-chains.md | — | — | — | — |
@@ -296,7 +292,7 @@ Generated: 2026-07-08
 | galerina-intent-guided-optimisation.md | — | — | — | — |
 | galerina-interpreter-speedup-and-json-rd.md | — | — | — | FUNGI-GOV-3, FUNGI-PRIVACY-002 |
 | galerina-javascript-escape-hatch.md | — | — | Phase 13 — Compiler backend rule | FUNGI-BACKEND-001 |
-| galerina-key-custody-and-rotation.md | — | — | design (2026-06-17), grounded against the working tree (verify-before-build). Answers the owner's question: *"should key rotation be brought into the core packages?"* **Verdict: a split — govern in core, execute in ext — plus two concrete core gaps to close.** Decided by Galerina's own invariants: **crypto-on-core** (bit-exact verify on the deterministic core) and **govern-don't-absorb** (core governs mechanisms, ext implements them — the same call that put TMX-256 in `galerina-ext-spore` and Vault in `galerina-ext-secrets-vault`, not core). | FUNGI-SECRET-002 |
+| galerina-key-custody-and-rotation.md | — | — | design (2026-06-17), grounded against the working tree (verify-before-build). Answers the owner's question: *"should key rotation be brought into the core packages?"* **Verdict: a split — govern in core, execute in ext — plus two concrete core gaps to close.** Decided by Galerina's own invariants: **crypto-on-core** (bit-exact verify on the deterministic core) and **govern-don't-absorb** (core governs mechanisms, ext implements them — the same call that put TMX-256 in `galerina-ext-tmf` and Vault in `galerina-ext-secrets-vault`, not core). | FUNGI-SECRET-002 |
 | galerina-key-lifecycle-diagnostics.md | — | — | shipped 2026-06-17 (`governance/key-lifecycle.mjs`). Implements the principle | FUNGI-KEY-001, FUNGI-KEY-002, FUNGI-KEY-004, FUNGI-KEY-005, FUNGI-KEY-010 |
 | galerina-language-lessons.md | — | — | — | FUNGI-SECRET-001, FUNGI-TYPE-002, FUNGI-TYPE-003, FUNGI-TYPE-004, FUNGI-VALUESTATE-003 |
 | galerina-lexer-fungi.md | — | — | — | FUNGI-BINDING-005, FUNGI-LEX-001, FUNGI-LEX-002, FUNGI-LEX-003, FUNGI-LEX-004 …+2 |
@@ -369,6 +365,7 @@ Generated: 2026-07-08
 | galerina-pipeline-security-posture.md | — | — | — | FUNGI-PARSE-001 |
 | galerina-platform-infographic-concept.md | — | 1.0 | CONCEPT — to be rendered as a poster/visual map when the platform is complete. | FUNGI-CAP-001, FUNGI-EFFECT-001, FUNGI-SECRET-001, FUNGI-TYPE-001 |
 | galerina-post-quantum-hardware-security.md | — | — | — | FUNGI-HW-101, FUNGI-HW-102, FUNGI-HW-103, FUNGI-HW-104, FUNGI-HW-201 …+5 |
+| galerina-pr-positioning-what-it-means-2026-07-09.md | — | — | — | — |
 | galerina-pre-governance-threat-model-2026-06-25.md | — | — | — | FUNGI-BACKEND-001, FUNGI-LEX-004 |
 | galerina-prebuild-due-diligence-checklist.md | — | — | — | — |
 | galerina-precision-attestation.md | — | — | — | FUNGI-SUBSTRATE-004 |
@@ -387,7 +384,7 @@ Generated: 2026-07-08
 | galerina-rd-0111-photonic-3d-brief-rigorous-2026-06-24.md | — | — | — | FUNGI-GOV-3, FUNGI-INV-001, FUNGI-SUBSTRATE-001, FUNGI-SUBSTRATE-003 |
 | galerina-rd-0112-treewalker-deepened-2026-06-24.md | — | — | R&D record (one build action taken — see §6) | FUNGI-SUBSTRATE-001 |
 | galerina-rd-0113-tower-citizen-deepened-2026-06-24.md | — | — | R&D record (no build; one rename recommendation — see §5) | FUNGI-GOV-3, FUNGI-SUBSTRATE-001 |
-| galerina-rd-0114-spore-vs-db-comparison-2026-06-24.md | — | — | R&D record (design/positioning; no build) | FUNGI-PRIVACY-002, FUNGI-RETAIN-001, FUNGI-SECRET-002, FUNGI-SUBSTRATE-001 |
+| galerina-rd-0114-tmf-vs-db-comparison-2026-06-24.md | — | — | R&D record (design/positioning; no build) | FUNGI-PRIVACY-002, FUNGI-RETAIN-001, FUNGI-SECRET-002, FUNGI-SUBSTRATE-001 |
 | galerina-rd-0115-hybrid-photonic-binary-placement-2026-06-24.md | — | — | R&D record (design/measurement plan; no build) | FUNGI-HW-004, FUNGI-SUBSTRATE-001, FUNGI-SUBSTRATE-003 |
 | galerina-rd-0116-holographic-storage-2026-06-24.md | — | — | R&D record + one net-new normative invariant (`FUNGI-RETAIN-001`, build gated on a storage-substrate path) | FUNGI-PRIVACY-002, FUNGI-RETAIN-001, FUNGI-SECRET-002, FUNGI-SUBSTRATE-001 |
 | galerina-rd-0117-hybrid-join-2026-06-24.md | — | — | R&D record + **one build shipped** (the safe-floor proof, plan step 1) | FUNGI-SUBSTRATE-001, FUNGI-SUBSTRATE-003 |
@@ -434,10 +431,65 @@ Generated: 2026-07-08
 | galerina-rd-0242-gate-template-block-library-2026-07-02.md | — | — | — | FUNGI-PRIVACY-002 |
 | galerina-rd-0245-gate-catchall-glyph-decision-2026-07-03.md | — | — | — | — |
 | galerina-rd-0254-tritmesh-cache-recheck-2026-07-03.md | — | — | RECHECK COMPLETE · proof **v2 21/21 green** (re-run, exit 0; v1 11/11 was adversarially found SOUND-but-INCOMPLETE → v2 rewrites the C5b/C8 tautology mutations as genuine toggles + closes B1/B2/B3b/B6) · owner-gated corrections pending | FUNGI-RETAIN-001, FUNGI-SUBSTRATE-001 |
-| galerina-rd-0255-tritmesh-cache-side-channel-hardening.md | — | — | design (composed) · **Date:** 2026-07-04 · **Owner:** Phillip Booth (hello@consumerthoughts.co.uk) | FUNGI-AFFINE-001, FUNGI-MEMORY-001, FUNGI-RETAIN-001, FUNGI-SECRET-001, FUNGI-SECRET-004 …+1 |
+| galerina-rd-0255-tritmesh-cache-side-channel-hardening.md | — | — | design (composed) · **Date:** 2026-07-04 · **Owner:** Phillip Booth (hello@trithypha.dev) | FUNGI-AFFINE-001, FUNGI-MEMORY-001, FUNGI-RETAIN-001, FUNGI-SECRET-001, FUNGI-SECRET-004 …+1 |
 | galerina-rd-0257-bend-interaction-combinators-hvm2-note83.md | — | — | — | FUNGI-SUBSTRATE-001 |
 | galerina-rd-0257-prismatic-tensor-syntax-2026-07-04.md | — | — | — | — |
 | galerina-rd-0258-data-oblivious-detector-and-design-2026-07-04.md | — | — | — | — |
+| galerina-rd-0266-photonic-syntax-aop-cluster.md | — | — | R&D · CHECK + PROVE + REPORT · **owner-gated, nothing built, no product code changed.** | FUNGI-SUBSTRATE-001, FUNGI-SUBSTRATE-002 |
+| galerina-rd-0266-syntax-security-review-2026-07-08.md | — | — | security check **CONTINUED** — deeper than the first-pass table in | FUNGI-GATELANG-002 |
+| galerina-rd-0266b-embedded-questions-answered.md | — | — | — | — |
+| galerina-rd-0266c-zt-scorecard-and-20yr-legacy-checklist.md | — | — | — | FUNGI-SUBSTRATE-001, FUNGI-SUBSTRATE-002, FUNGI-TIER-001 |
+| galerina-rd-0267-oss-project-candidates-84-projects.md | — | — | R&D · CHECK + TRIAGE · owner-gated, nothing built, no code changed. | FUNGI-SUBSTRATE-001 |
+| galerina-rd-0268-version-lifter-chain-and-paper-candidates.md | — | — | R&D · design decision + sweep · nothing built, no code changed. Owner Qs answered: (1) where is the | — |
+| galerina-rd-0273-quantum-bridge-innovate-uk-funding-fit.md | — | — | R&D · CHECK + MATHS + FUNDING-FIT · owner-gated, nothing built, no code changed. | — |
+| galerina-rd-0274-docs-examples-readme-syntax-audit.md | — | — | R&D · AUDIT ONLY · nothing changed in Galerina. **Method:** background worker over `Galerina/docs` (90 tool | FUNGI-SYNTAX-010, FUNGI-SYNTAX-011 |
+| galerina-rd-0275-flowchart-editor-draw-to-gate-concept.md | — | — | R&D concept — FEASIBLE and architecturally cheap, because **`.gate` already IS a flow-graph language**; | — |
+| galerina-rd-0276-voltage-lowering-claim-verdict.md | — | — | — | — |
+| galerina-rd-0277-benchmarks-package-working-tree-handover.md | — | — | — | FUNGI-TYPE-024 |
+| galerina-rd-0278-quantum-bridge-unique-value-vs-nisq.md | — | — | — | — |
+| galerina-rd-0279-quantum-cascade-and-compile-wasm-verdict.md | — | — | — | — |
+| galerina-rd-0280-compiler-api-gir-surface-for-editor-tooling.md | — | — | — | FUNGI-GATE-001, FUNGI-PARSE-001 |
+| galerina-rd-0281-stale-path-link-audit-post-migration.md | — | — | — | — |
+| galerina-rd-0282-logicn-galerina-rebrand-execution-non-galerina-tree.md | — | — | — | — |
+| galerina-rd-0283-array-types-fixed-capacity-photonic-draw-gate.md | — | — | R&D · CHECK + MATHS + REPORT · **nothing built, no code changed** (standing code-stop). Grammar or | — |
+| galerina-rd-0284-simplicity-lessons-odin-go-transcripts.md | — | — | R&D · lessons + gap-map · nothing built; syntax/tooling changes owner-gated. | FUNGI-TIER-001 |
+| galerina-rd-0285-api-routing-in-depth-go-killer.md | — | — | R&D · research + gap-map + proposals · **nothing built**; all build items owner-gated. | — |
+| galerina-rd-0286-object-types-fixed-shape-photonic-draw-gate.md | — | — | R&D · CHECK + MATHS + REPORT · **nothing built, no code changed**; grammar/stdlib items | FUNGI-RETAIN-001 |
+| galerina-rd-0287-gate-multidimensional-circuits.md | — | — | R&D · adjudication + design routes · **nothing built**; any grammar change is version-gated | — |
+| galerina-rd-0288-wave-native-containers-beyond-arrays-objects.md | — | — | R&D · concepts + maths · **nothing built**; all owner-gated. Same refutation discipline as | — |
+| galerina-rd-0289-graphql-lessons-for-tritmeshql-hypha.md | — | — | R&D · adjudication · nothing built. **Grounding:** TritMesh-Query-Language README (self-described | — |
+| galerina-rd-0290-fail-open-gate-dangling-ref-dated-artifact-doctrine.md | — | — | doctrine · no code · already-shipped mechanisms cited. Cross-cutting; binds CI, rename tooling, | — |
+| galerina-rd-0291-combo-array-object-graph-container.md | — | — | R&D · concepts + maths · **nothing built**; spec-level (Tier 5 — no engine). Same refutation | — |
+| galerina-rd-0292-pii-redact-array-and-env-key-encrypted-array.md | — | — | R&D · concepts + maths + honest "is it needed?" verdicts · owner-gated. **Revised 2026-07-09** | — |
+| galerina-rd-0293-hypha-spore-database-security-hardening.md | — | — | R&D · attack-class → defence mapping · **nothing built**; most defences are already the `.hypha`/ | — |
+| galerina-rd-0294-hypha-spore-deep-threat-model.md | — | — | R&D · threat model · **nothing built**; owner-gated. No "unhackable" claim (DP-RD-0270). Extends RD-0293. | — |
+| galerina-rd-0295-cybersec-skills-library-vs-photonic-tri-paper-scan.md | — | — | R&D · cross-comparison + honest paper verdicts · **nothing built**. Uses the library as an | — |
+| galerina-rd-0296-devtools-security-by-construction-conformance-scanner.md | — | — | R&D · design verdict + candidate-checks table · **nothing built** (this recommends *what* to build | — |
+| galerina-rd-0297-api-taxonomy-coverage-map.md | — | — | R&D · coverage map + four-lens readiness + owner-gated build queue · **nothing built** — every | FUNGI-EFFECT-004 |
+| galerina-rd-0298-youtube-api-video-mine.md | — | — | R&D · transcript mine + adopt-list + candidate gap rows · **nothing built** — every adopt item | — |
+| galerina-rd-0299-galerina-connect-lane-maths-photonic.md | — | — | R&D · connect-lane honest-tier audit + per-part maths + photonic/tri bounds · **nothing built** — | FUNGI-SUBSTRATE-001 |
+| galerina-rd-0300-chatter-api-security-video-mine.md | — | — | — | — |
+| galerina-rd-0301-zero-trust-api-deny-list.md | — | — | — | FUNGI-NET-001, FUNGI-TAINT-001 |
+| galerina-rd-0302-trit-photonic-streaming-api-spore-streaming.md | — | — | — | — |
+| galerina-rd-0303-data-as-image-api-protocol-maths.md | — | — | — | — |
+| galerina-rd-0303a-fibre-optic-wdm-sdm-reconsideration.md | — | — | — | — |
+| galerina-rd-0304-owasp-api-top10-crosswalk-INTERNAL.md | — | — | — | — |
+| galerina-rd-0305-tritsocket-x-new-api-rnd-cross-compare.md | — | — | — | — |
+| galerina-rd-0306-api-learnings-to-tritmeshql-spore.md | — | — | — | — |
+| galerina-rd-0307-reverse-proxy-border-apache-nginx-express.md | — | — | — | — |
+| galerina-rd-0308-rnd-backlog-under-explored-areas-INTERNAL.md | — | — | — | — |
+| galerina-rd-0309-border-x-photonic-tri-x-tritmesh.md | — | — | — | FUNGI-GOV-3, FUNGI-SUBSTRATE-001 |
+| galerina-rd-0310-linux-os-host-layer-beneath-galerina-tritmesh.md | — | — | — | — |
+| galerina-rd-0313-identifier-aware-search-tokenscan-morphgrep.md | — | — | — | — |
+| galerina-rd-0314-adt-wasm-host-shim-security-pass.md | — | — | — | FUNGI-RUNTIME-003 |
+| galerina-rd-0315-tritmeshql-residual-design-egress-asof-k3reuse.md | — | — | — | — |
+| galerina-rd-0316-fuzzing-strategy-harness-design.md | — | — | — | — |
+| galerina-rd-0317-supply-chain-hardening-design.md | — | — | — | FUNGI-SBOM-001 |
+| galerina-rd-0319-ir-key-compromise-runbook-key149-plan.md | — | — | — | FUNGI-KEY-004 |
+| galerina-rd-0320-api-hardening-consolidation.md | — | — | — | — |
+| galerina-rd-0321-production-readiness-capability-coverage-map.md | — | — | — | — |
+| galerina-rd-0322-contract-secure-defaults-and-dev-ergonomics.md | — | — | — | FUNGI-EFFECT-004 |
+| galerina-rd-0323-xml-xss-yaml-and-cross-format-data-safety.md | — | — | — | — |
 | galerina-rd-34b-paramtaint-buildspec-2026-06-24.md | — | — | verify-before-build — **build-ready spec; the strict-profile escalation is owner-gated** | FUNGI-VALUESTATE-003, FUNGI-VALUESTATE-008 |
 | galerina-rd-53-azt-selfcert-and-blackhole-protocol-2026-06-23.md | — | — | — | FUNGI-GOV-3, FUNGI-MATCH-001, FUNGI-PCI-001, FUNGI-PRIVACY-013, FUNGI-SUBSTRATE-001 |
 | galerina-rd-59-js-quirks-vs-galerina-2026-06-25.md | — | — | — | FUNGI-NAME-001, FUNGI-NAME-002, FUNGI-TYPE-004, FUNGI-TYPE-008 |
@@ -451,7 +503,7 @@ Generated: 2026-07-08
 | galerina-rd-corpus-closure-2026-06-18.md | — | — | — | FUNGI-ARCH-001, FUNGI-ARCH-002, FUNGI-HW-004, FUNGI-INV-002, FUNGI-INV-004 …+4 |
 | galerina-rd-devtools-observability-graph-2026-06-25.md | — | — | — | — |
 | galerina-rd-domain-effect-namespaces-2026-07-02.md | — | — | — | FUNGI-EFFECT-004 |
-| galerina-rd-env-spore-sealed-secrets-2026-06-23.md | — | — | — | FUNGI-SUBSTRATE-001 |
+| galerina-rd-env-tmf-sealed-secrets-2026-06-23.md | — | — | — | FUNGI-SUBSTRATE-001 |
 | galerina-rd-ephemeral-secret-ingestion-2026-06-23.md | — | — | — | FUNGI-SECRET-001 |
 | galerina-rd-flow-kind-tier-inference-2026-06-23.md | — | — | — | FUNGI-DAG-002, FUNGI-EFFECT-001, FUNGI-EFFECT-002, FUNGI-EFFECT-003, FUNGI-INHERIT-001 …+3 |
 | galerina-rd-fungi-privacy-001-response-target-drift-2026-07-02.md | — | — | — | FUNGI-PRIVACY-001, FUNGI-PRIVACY-004 |
@@ -467,7 +519,7 @@ Generated: 2026-07-08
 | galerina-rd-performance-and-boundary-opportunities.md | — | — | — | FUNGI-ENTROPY-001 |
 | galerina-rd-photonic-quantum-paging-graph-grounding-2026-06-25.md | — | — | — | FUNGI-RETAIN-001, FUNGI-SUBSTRATE-001 |
 | galerina-rd-reference-index.md | — | — | — | FUNGI-RETAIN-001 |
-| galerina-rd-results-log.md | — | — | — | FUNGI-ASSIMILATE-003, FUNGI-ASSIMILATE-004, FUNGI-ATTR-001, FUNGI-BUILD-002, FUNGI-EFFECT-006 …+11 |
+| galerina-rd-results-log.md | — | — | — | FUNGI-ASSIMILATE-003, FUNGI-ASSIMILATE-004, FUNGI-ATTR-001, FUNGI-BUILD-002, FUNGI-EFFECT-006 …+12 |
 | galerina-rd-syntax-7axis-sweep-2026-06-25.md | — | — | — | FUNGI-EFFECT-001, FUNGI-NUMERIC-001, FUNGI-VALUESTATE-008 |
 | galerina-rd-tenant-isolation-and-meshview-2026-06-24.md | — | 1.0 | — | FUNGI-GOV-3, FUNGI-PRIVACY-002, FUNGI-SUBSTRATE-001, FUNGI-TENANT-001, FUNGI-TENANT-002 |
 | galerina-rd-tritmesh-1-5-and-52-3d-2026-06-23.md | — | — | — | FUNGI-GOV-019, FUNGI-GOV-3, FUNGI-PRIVACY-002, FUNGI-SUBSTRATE-001, FUNGI-SUBSTRATE-002 …+1 |
@@ -481,6 +533,8 @@ Generated: 2026-07-08
 | galerina-roadmap-2026-06-21.md | — | — | — | — |
 | galerina-roadmap-2026-06-23.md | — | — | — | FUNGI-GDCE-001, FUNGI-PERM-001, FUNGI-TIER-001, FUNGI-VALUESTATE-003, FUNGI-VALUESTATE-008 |
 | galerina-roadmap-2026-06-25.md | — | — | v1.0.0-beta.2 · **~88% shippable / ~63% full-vision** · 60 packages · compiler suite 3,916/0. | FUNGI-GOV-3, FUNGI-IMPORT-005, FUNGI-IMPORT-006, FUNGI-QUORUM-001, FUNGI-SUBSTRATE-005 |
+| galerina-roadmap-2026-07-09.md | — | — | — | FUNGI-CHECK-001, FUNGI-CHECK-002, FUNGI-FAULT-001, FUNGI-MEMORY-001, FUNGI-PREFILTER-001 |
+| galerina-roadmap-2026-07-10.md | — | — | — | — |
 | galerina-roadmap-and-audit-2026-06-17.md | — | — | — | — |
 | galerina-roadmap-and-percent-audit-2026-06-21.md | — | — | — | FUNGI-PKG-006 |
 | galerina-roadmap-and-percent-audit-2026-06-22.md | — | — | — | — |
@@ -544,7 +598,7 @@ Generated: 2026-07-08
 | galerina-third-party-plugin-authoring-guide.md | — | — | — | FUNGI-EFFECT-001, FUNGI-EFFECT-005, FUNGI-EFFECT-006, FUNGI-PARSE-001, FUNGI-PKG-001 …+3 |
 | galerina-threat-model-unleashed-2026-06-25.md | — | — | — | FUNGI-EFFECT-003, FUNGI-IMPORT-005, FUNGI-IMPORT-006, FUNGI-PARSE-001, FUNGI-STDLIB-002 …+2 |
 | galerina-three-valued-governance.md | — | — | spike sub-spec + implementation (Direction **A** of the photonic/ternary R&D agenda). | FUNGI-GOV-004, FUNGI-GOV-3, FUNGI-SAFETY-003 |
-| galerina-tlstp-0069-dtm-degrade-only.md | — | — | BUILD-GUIDE for an adopted 0065–0070 transport/auth R&D survivor. Design/spec passed the bar; build is hub/owner-gated (the 0050 exporter it depends on is net-new and owner-gated). **Read-only citations** resolve against `<GitHub>\Galerina` as `file:line`. | FUNGI-GOV-3, FUNGI-SUBSTRATE-001 |
+| galerina-tlstp-0069-dtm-degrade-only.md | — | — | BUILD-GUIDE for an adopted 0065–0070 transport/auth R&D survivor. Design/spec passed the bar; build is hub/owner-gated (the 0050 exporter it depends on is net-new and owner-gated). **Read-only citations** resolve against `C:\Users\phill\Documents\GitHub\Galerina` as `file:line`. | FUNGI-GOV-3, FUNGI-SUBSTRATE-001 |
 | galerina-tlstp-0070-tampertrust.md | — | — | — | FUNGI-GOV-3, FUNGI-SUBSTRATE-001, FUNGI-SUBSTRATE-002, FUNGI-SUBSTRATE-003, FUNGI-SUBSTRATE-004 |
 | galerina-tlstp-build-guide-index.md | — | — | — | FUNGI-PRIVACY-002 |
 | galerina-tlstp-s1-cert-gate.md | — | — | — | FUNGI-GOV-3 |
@@ -553,7 +607,7 @@ Generated: 2026-07-08
 | galerina-tlstp-s4-recovering-fsm.md | — | — | — | FUNGI-GOV-3 |
 | galerina-tlstp-s5-morphing-frames.md | — | — | — | FUNGI-GOV-3, FUNGI-PRIVACY-002 |
 | galerina-tlstp-transport-auth-rnd-2026-06-22.md | — | — | — | FUNGI-ENTROPY-002, FUNGI-GOV-3, FUNGI-HW-004, FUNGI-MONO-001, FUNGI-PRIVACY-002 …+1 |
-| galerina-spore-engine.md | — | — | — | FUNGI-GOV-3, FUNGI-SUBSTRATE-001 |
+| galerina-tmf-engine.md | — | — | — | FUNGI-GOV-3, FUNGI-SUBSTRATE-001 |
 | galerina-topological-graph-engine.md | — | 1.1 | Can be implemented now (Task #79). Builds on existing domain guard infrastructure. | FUNGI-GATE-001, FUNGI-GATE-002, FUNGI-INV-000 |
 | galerina-tower-native-syntax.md | — | 1.2 | Implemented — Stage A compiler + governance verifier (§1–§10) | FUNGI-ACCESS-001, FUNGI-ACCESS-002, FUNGI-ASSIMILATE-001, FUNGI-ASSIMILATE-002, FUNGI-ASSIMILATE-003 …+16 |
 | galerina-tpl-bitnet-fidelity-audit.md | — | — | verification record. Every claim below is a **direct quote from current source** (Galerina | — |
@@ -595,9 +649,16 @@ Generated: 2026-07-08
 | HANDOFF-main-od5-graph-not-a-language-2026-07-03.md | — | — | — | — |
 | HANDOFF-main-od5-review-and-tritmeshql-2026-07-03.md | — | — | — | — |
 | HANDOFF-main-stoppers-and-questions-2026-07-03.md | — | — | — | FUNGI-LIMIT-001 |
+| HANDOVER-galerina-docs-examples-corrections-2026-07-10.md | — | — | — | FUNGI-SYNTAX-014 |
+| HANDOVER-galerina-framework-api-server-schematic-2026-07-09.md | — | — | decision-ready for the MAIN Galerina session. **Scope:** read-only source verification against the live tree; nothing in the Galerina repo was modified to produce this document. | — |
 | HANDOVER-main-bend-interaction-combinators-rd0257-2026-07-04.md | — | — | — | FUNGI-SUBSTRATE-001 |
 | HANDOVER-main-full-control-of-galerina-2026-07-03.md | — | — | — | — |
+| HANDOVER-post-RD-0320-2026-07-10.md | — | — | — | — |
+| HANDOVER-RD-0302-streaming-completion-2026-07-09.md | — | — | — | — |
+| HANDOVER-RnD-master-index-2026-07-09.md | — | — | — | — |
 | HANDOVER-rnd-research-session-2026-07-01.md | — | — | — | — |
+| HANDOVER-RnD-response-to-main-2026-07-09.md | — | — | — | — |
+| HANDOVER-super-RD-0303-to-RD-0320-2026-07-10.md | — | — | — | — |
 | HANDOVER-tritmesh-session-2026-07-04.md | — | — | — | FUNGI-SECRET-004, FUNGI-SUBSTRATE-001 |
 | hello-world-api-pattern.md | — | — | — | — |
 | http-method-declarations.md | — | — | — | — |
@@ -640,6 +701,7 @@ Generated: 2026-07-08
 | permission-capability-actor-model.md | — | — | — | — |
 | phase-4-parser-ast-plan.md | — | — | — | FUNGI-AST-001, FUNGI-PARSE-001, FUNGI-PARSE-002, FUNGI-PARSE-003, FUNGI-PARSE-004 …+10 |
 | photonic-resolution-boundary.md | — | — | — | — |
+| PLAYBOOK-zt-tritsocket-community-launch-2026-07-08.md | — | — | — | — |
 | plugin-security-architecture.md | — | — | — | — |
 | policy-architecture.md | — | — | — | — |
 | polymorphism.md | — | — | — | — |
@@ -647,15 +709,35 @@ Generated: 2026-07-08
 | preplanned-startup-and-fast-response.md | — | — | — | — |
 | priority-categories.md | — | — | — | — |
 | production-scaling-model.md | — | — | — | — |
+| PROMPT-gemini-rebuttal-photonic-overclaims-2026-07-08.md | — | — | — | FUNGI-SUBSTRATE-001 |
 | prompt-injection-defense.md | — | — | — | — |
+| PROMPT-main-session-API-consolidated-handover-2026-07-09.md | — | — | — | FUNGI-EFFECT-004 |
+| PROMPT-main-session-API-handover-RD0285-0303-2026-07-09.md | — | — | — | FUNGI-EFFECT-004, FUNGI-NET-001, FUNGI-SUBSTRATE-001, FUNGI-TAINT-001 |
+| PROMPT-main-session-branch-rename-and-security-contact-2026-07-10.md | — | — | — | — |
+| PROMPT-main-session-build-by-construction-conformance-scanner-2026-07-09.md | — | — | — | — |
 | PROMPT-main-session-familiarise-with-rules-2026-07-01.md | — | — | — | — |
 | PROMPT-main-session-full-auto-work-directive-2026-07-01.md | — | — | — | — |
+| PROMPT-main-session-hypha-engine-external-audit-rescope-2026-07-09.md | — | — | — | — |
 | PROMPT-main-session-MASTER-onboarding-2026-07-01.md | — | — | — | — |
+| PROMPT-main-session-pickup-all-handovers-2026-07-09.md | — | — | — | — |
+| PROMPT-main-session-pickup-all-handovers-2026-07-10.md | — | — | — | — |
+| PROMPT-main-session-privacy-redaction-and-correct-securitymd-2026-07-10.md | — | — | — | — |
+| PROMPT-main-session-rd-0283-0289-implementation-2026-07-09.md | — | — | — | — |
+| PROMPT-main-session-rd-0290-0294-implementation-2026-07-09.md | — | — | — | — |
+| PROMPT-main-session-rd-0297-api-coverage-build-queue-2026-07-09.md | — | — | — | FUNGI-EFFECT-004 |
 | PROMPT-main-session-rnd-update-2026-07-01.md | — | — | — | — |
+| PROMPT-main-session-run-cybersec-skills-audit-on-galerina-2026-07-09.md | — | — | — | — |
 | PROMPT-main-session-token-management-graph-2026-07-01.md | — | — | — | — |
 | PROMPT-main-session-working-discipline-rules-and-graph-2026-07-01.md | — | — | — | — |
 | PROMPT-oss-build-resume-2026-07-01.md | — | — | — | — |
+| PROMPT-oss-build-resume-2026-07-08.md | — | — | — | — |
 | PROMPT-oss-extraction-rnd-2026-07-01.md | — | — | — | — |
+| PROMPT-rd-code-edit-ledger-2026-07-08.md | — | — | — | — |
+| PROMPT-rd-logicn-to-galerina-rebrand-handover-2026-07-09.md | — | — | — | — |
+| PROMPT-rnd-FYI-main-session-status-2026-07-10.md | — | — | — | — |
+| PROMPT-rnd-target-capability-provenance-2026-07-10.md | — | — | — | — |
+| PROMPT-syntax-update-beta-shippable-2026-07-08.md | — | — | prompt **UN-HELD** — ready to hand to the main session on owner GO. **R&D pauses after handover** until 100% | FUNGI-MATCH-001, FUNGI-MEMORY-001, FUNGI-SUBSTRATE-001 |
+| PUBLICATION-CONTROL-do-not-publish-register.md | — | — | — | — |
 | quantum-readiness.md | — | — | — | FUNGI-CRYPTO-001 |
 | query-type-and-database-access.md | — | — | — | — |
 | quiet-runtime-secure-defaults.md | — | — | — | — |
@@ -690,16 +772,21 @@ Generated: 2026-07-08
 | rd-selective-disclosure-ann-v0.md | — | — | Draft, buildable + **verified** (the deterministic key-schedule / framing bytes are reproduced by | — |
 | rd-tlstp-closure-0071-0077-2026-06-22.md | — | — | — | — |
 | rd-tlstp-transport-auth-cluster-2026-06-22.md | — | — | — | FUNGI-PRIVACY-002 |
-| rd-spore-confidentiality-layout.md | — | — | R&D Reference Blueprint / Approved Architecture | FUNGI-AMD-024, FUNGI-SUBSTRATE-001 |
-| rd-spore-real-vs-aspirational-ledger.md | — | — | — | — |
-| rd-spore-research-encryption-architecture.md | — | — | — | FUNGI-CRYPTO-001, FUNGI-SUBSTRATE-001 |
-| rd-spore-research-open-questions.md | — | — | — | FUNGI-SUBSTRATE-001 |
-| rd-spore-research-ternary-in-cryptography.md | — | — | — | FUNGI-SUBSTRATE-001 |
-| rd-spore-storage-and-query.md | — | — | R&D design. The `.spore` trust layer (integrity/authenticity/confidentiality/modalities) is the | — |
+| rd-tmf-confidentiality-layout.md | — | — | R&D Reference Blueprint / Approved Architecture | FUNGI-AMD-024, FUNGI-SUBSTRATE-001 |
+| rd-tmf-real-vs-aspirational-ledger.md | — | — | — | — |
+| rd-tmf-research-encryption-architecture.md | — | — | — | FUNGI-CRYPTO-001, FUNGI-SUBSTRATE-001 |
+| rd-tmf-research-open-questions.md | — | — | — | FUNGI-SUBSTRATE-001 |
+| rd-tmf-research-ternary-in-cryptography.md | — | — | — | FUNGI-SUBSTRATE-001 |
+| rd-tmf-storage-and-query.md | — | — | R&D design. The `.spore` trust layer (integrity/authenticity/confidentiality/modalities) is the | — |
 | rd-tri-encription-findings-and-roadmap.md | — | — | Consolidated checkpoint. **Date:** 2026-06-16. **Posture:** grounded, cited, adversarially | FUNGI-AMD-024, FUNGI-SUBSTRATE-001 |
 | rd-tri-encription-fungi-readme.md | — | — | — | FUNGI-AMD-024 |
 | rd-tri-encription-research-metadata-confidentiality.md | — | — | Research note (grounded, cited, adversarially verified). **Date:** 2026-06-16. | FUNGI-AMD-024 |
+| README.md | — | — | — | — |
+| README.md | — | — | — | — |
+| README.md | — | — | — | — |
+| README-galerina-signing-key.md | — | — | — | — |
 | REBOOT-PROMPT-from-main-2026-07-03.md | — | — | — | — |
+| rebrand-report.md | — | — | R&D response (2026-06-16). **Subject:** 'LogicN/docs/Knowledge-Bases/logicn-diagnostic-namespace-ownership.md'` | FUNGI-AMD-024 |
 | release-keyword.md | — | — | — | — |
 | request-context-keyword.md | — | — | — | — |
 | request-lifecycle.md | — | — | — | — |
@@ -780,10 +867,14 @@ Docs with no inbound links from other KB docs:
 - `HANDOVER-main-bend-interaction-combinators-rd0257-2026-07-04.md` — HANDOVER → main session — Bend / Interaction Combinators (RD-0257) — 2026-07-04
 - `HANDOVER-main-full-control-of-galerina-2026-07-03.md` — HANDOVER — Main session takes FULL CONTROL of Galerina (2026-07-03)
 - `PASTE-TO-START-tritmesh-2026-07-04.md` — PASTE-TO-START-tritmesh-2026-07-04
+- `PLAYBOOK-zt-tritsocket-community-launch-2026-07-08.md` — PLAYBOOK — getting the GitHub community (and beyond) interested in tritsocket · 2026-07-08
 - `PROMPT-main-session-full-auto-work-directive-2026-07-01.md` — PROMPT — main session: full-auto work directive
+- `PROMPT-main-session-privacy-redaction-and-correct-securitymd-2026-07-10.md` — PROMPT — main session: privacy redaction (account email → project email) + the correct SECURITY.md · 2026-07-10
+- `PROMPT-main-session-rd-0283-0289-implementation-2026-07-09.md` — PROMPT — main session: implement the adopted R&D from RD-0283..0289 · 2026-07-09
 - `PROMPT-main-session-rnd-update-2026-07-01.md` — PROMPT — R&D update for the main session (2026-07-01)
 - `PROMPT-main-session-working-discipline-rules-and-graph-2026-07-01.md` — PROMPT — main session: standing working discipline (obey the rules · find via graph, not manual search)
 - `PROMPT-oss-build-resume-2026-07-01.md` — PROMPT — resume the OSS-package build (Tier A/B + 2 new candidates)
+- `PROMPT-rnd-FYI-main-session-status-2026-07-10.md` — PROMPT (FYI / NO-ACTION) — R&D session: what the MAIN Galerina session is doing · 2026-07-10 (late)
 - `SELF-PROMPT-galerina-hub-2026-07-01.md` — SELF-PROMPT — Galerina hub, full-auto continuation (paste after `/clear`, 2026-07-01)
 - `architecture-good-taste-principles.md` — Architecture Good-Taste Principles
 - `architecture-self-verification-questions.md` — Architecture Self-Verification Questions
@@ -797,6 +888,7 @@ Docs with no inbound links from other KB docs:
 - `controlled-parallelism.md` — Controlled Parallelism
 - `critical-and-deferred-compute-paths.md` — Critical and Deferred Compute Paths
 - `design-patterns-for-galerina.md` — Design Patterns for Galerina
+- `diag-code-taxonomy-proposal-2026-07-10.md` — Diagnostic-code naming taxonomy — decision-ready proposal (burn-down task #20)
 - `documentation-layer-model.md` — Documentation Layer Model
 - `encapsulation-model.md` — Encapsulation Model
 - `error-propagation-chains.md` — Error Propagation Through Call Chains
@@ -819,7 +911,6 @@ Docs with no inbound links from other KB docs:
 - `galerina-concurrency-synchronisation-compute.md` — Galerina — Concurrency and Synchronisation for Heterogeneous Compute
 - `galerina-contract-sets.md` — galerina-contract-sets
 - `galerina-contracts-as-meaning-layer.md` — galerina-contracts-as-meaning-layer
-- `galerina-core-config-vault.md` — Galerina Config Vault
 - `galerina-core-flow-trace.md` — Galerina Flow Trace API
 - `galerina-core-package-architecture.md` — Galerina Core Package Architecture
 - `galerina-core-policy-online-safety-act.md` — Galerina Core — Online Safety Act Age Assurance Policy Model
@@ -862,6 +953,7 @@ Docs with no inbound links from other KB docs:
 - `galerina-phase59-60-rc-summary.md` — Galerina — Phase 59-60 RC Summary
 - `galerina-photonic-crossover-analysis.md` — Galerina Photonic Compute Crossover Analysis
 - `galerina-photonic-noise-and-17-nos-2026-06-25.md` — Photonic-noise countering + the 17-NOs solutions + a prevention-rule set (2026-06-25)
+- `galerina-pr-positioning-what-it-means-2026-07-09.md` — Galerina PR & positioning — "what it means for Galerina" · 2026-07-09
 - `galerina-provenance-integrity-vs-fidelity.md` — Provenance: integrity ≠ fidelity (#36 P1 scoping)
 - `galerina-quantum-target-bridge.md` — Galerina Architecture: Quantum Computing Support Through Target Bridges
 - `galerina-rd-0125-resolution-delivery-working-model-2026-06-24.md` — RD-0125 — a working model of the third logic-delivery paradigm (resolution/collapse), with security + a hybrid benchmark
@@ -872,6 +964,17 @@ Docs with no inbound links from other KB docs:
 - `galerina-rd-0133-memory-safety-safer-than-rust-2026-06-26.md` — RD-0133 — Galerina memory-safety: "as-safe-or-safer than Rust" positioning
 - `galerina-rd-0134-beyond-1-bit-photonic-ternary-2026-06-26.md` — RD-0134 — "Beyond 1-bit": photonic ternary {−1,0,+1} AI compute
 - `galerina-rd-0136-galerina-playbook-runbook-2026-06-26.md` — RD-0136 — Galerina Playbook + Runbook (operational docs design)
+- `galerina-rd-0266b-embedded-questions-answered.md` — RD-0266b — every embedded question in the 85-SYNTAX cluster, answered
+- `galerina-rd-0266c-zt-scorecard-and-20yr-legacy-checklist.md` — RD-0266c — Gemini concession · schema-vs-contract · ZT scorecard · 20-year legacy checklist
+- `galerina-rd-0267-oss-project-candidates-84-projects.md` — RD-0267 — OSS-project candidate triage (the 84-PROJECTS cluster) · 2026-07-08
+- `galerina-rd-0268-version-lifter-chain-and-paper-candidates.md` — RD-0268 — Version compilation: one main compiler + micro-lifters · paper/defensive-pub sweep · 2026-07-08
+- `galerina-rd-0273-quantum-bridge-innovate-uk-funding-fit.md` — RD-0273 — galerina-ext-bridge-quantum vs the Innovate UK "£33M fault-tolerant quantum" call · 2026-07-08
+- `galerina-rd-0275-flowchart-editor-draw-to-gate-concept.md` — RD-0275 — "Draw-the-program" flow-chart editor → `.gate`/`.fungi` (concept assessment) · 2026-07-08
+- `galerina-rd-0276-voltage-lowering-claim-verdict.md` — RD-0276 — "Can we lower voltage by implementing certain things?" — claim verdict · 2026-07-08
+- `galerina-rd-0278-quantum-bridge-unique-value-vs-nisq.md` — RD-0278 — What the governed quantum bridge uniquely offers vs noisy (NISQ) hardware · 2026-07-08
+- `galerina-rd-0279-quantum-cascade-and-compile-wasm-verdict.md` — RD-0279 — The Quantum→Photonic→Binary "cascade" + "a better compile/WASM via the quantum method?" — verdicts · 2026-07-08
+- `galerina-rd-0280-compiler-api-gir-surface-for-editor-tooling.md` — RD-0280 — Compiler API / GIR surface for editor tooling (read-only investigation) · 2026-07-08
+- `galerina-rd-0282-logicn-galerina-rebrand-execution-non-galerina-tree.md` — RD-0282 — LogicN → Galerina rebrand: tool + execution record (non-Galerina tree) · 2026-07-09
 - `galerina-rd-59-js-quirks-vs-galerina-2026-06-25.md` — R&D (notes/59) — the 10 classic JavaScript bad-design quirks vs Galerina (2026-06-25)
 - `galerina-readable-logic-forms.md` — Galerina Language Proposal — Readable Logic Forms
 - `galerina-resource-governance.md` — galerina-resource-governance
@@ -897,6 +1000,7 @@ Docs with no inbound links from other KB docs:
 - `governed-event-driven-execution.md` — Governed Event-Driven Execution
 - `governed-worker-pools.md` — Governed Worker Pools
 - `ihsa-storage-policy.md` — Galerina — IHSA Governed Storage Policy
+- `README-galerina-signing-key.md` — Galerina governance signing key — custody (PRIVATE)
 - `layered-rate-limits.md` — Layered Rate Limits
 - `legacy-pattern-restrictions.md` — Legacy Pattern Restrictions
 - `local-ai-review.md` — Local AI Review
@@ -927,6 +1031,7 @@ Docs with no inbound links from other KB docs:
 - `server-platform-support.md` — Server Platform Support
 - `startup-and-boot-warmup.md` — Startup And Boot Warmup
 - `terminology-naming-philosophy.md` — Terminology And Naming Philosophy
+- `rebrand-report.md` — Rebrand scan — LogicN → Galerina (non-Galerina tree) · report
 - `triggers.md` — Triggers
 - `tritmeshql-governed-write-path-rd0234c-2026-07-03.md` — TritMeshQL — the fail-closed GOVERNED WRITE PATH (RD-0234c, 2026-07-03)
 - `tritmeshql-partial-gradual-schema-2026-07-03.md` — TritMeshQL — the partial / gradual-schema design (field→axis binding) — 2026-07-03
@@ -941,4 +1046,147 @@ Docs with no inbound links from other KB docs:
 ## Stale Links
 Links pointing to missing files:
 
-- galerina-oss-extraction-candidates-2026-07-01 → README ("`<GitHub>\ZT-tritsocket`")
+- rebrand-report → LLN-AMD-024-tmf-confidentiality ("{"path":"docs/examples/Level-2-Types/058-patient-id-type/example.lln","code":"LLN-SYNTAX-008"},{"path":"docs/examples/Level-2-Types/059-nhs-number-type/example.lln","code":"LLN-SYNTAX-008"},{"path":"`
+
+### `bin\Galerina-R-AND-D\build-staging\limit-enforcement-teeth\overlay\src\lexer.ts` — 58 (LogicN, ext-lln, scope-logicn, LLN-diag, logicn)
+- L2: `// LogicN Phase 4 — Lexer`
+- L4: `// Tokenises LogicN .lln source text using the v1 keyword table.`
+- L7: `// Types declared locally mirror @logicn/core — structurally compatible.`
+
+### `bin\Galerina-R-AND-D\build-staging\vs008-verify\src\lexer.ts` — 58 (LogicN, ext-lln, scope-logicn, LLN-diag, logicn)
+- L2: `// LogicN Phase 4 — Lexer`
+- L4: `// Tokenises LogicN .lln source text using the v1 keyword table.`
+- L7: `// Types declared locally mirror @logicn/core — structurally compatible.`
+
+### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\import-resolver.test.mjs` — 56 (scope-logicn, LLN-diag, ext-lln)
+- L6: `//   2. Names from @logicn/* packages are correctly classified as type/value`
+- L7: `//   3. Symbol resolver accepts imported value names without LLN-NAME-001`
+- L8: `//   4. Type checker accepts imported type names without LLN-TYPE-001`
+
+### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\effect-checker\flags-and-mode.test.mjs` — 54 (LLN-diag, ext-lln)
+- L2: `// Effect Checker — EffectCheckerFlags, LLN-EFFECT-005, EffectCheckerMode (Phase 18E)`
+- L7: `//   - LLN-EFFECT-005 BroadAliasUsed fires for 'network', 'database', 'ai', etc.`
+- L8: `//   - LLN-EFFECT-004 still fires for completely unknown effect names`
+
+### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\self-hosted-effect-checker.test.mjs` — 54 (ext-lln, LLN-diag)
+- L2: `* Self-hosted effect checker (effect-checker.lln) — execution tests.`
+- L5: `* the .lln flows through the production interpreter and asserting their`
+- L7: `*   - LLN-EFFECT-001 (UNDECLARED_EFFECT)          — used effect not declared`
+
+### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\package-resolver.test.mjs` — 51 (scope-logicn, logicn, ext-lln)
+- L8: `//   4. @logicn/domain-types registry includes "Email" and "UserId"`
+- L9: `//   5. @logicn/enterprise-types registry includes expected types`
+- L10: `//   6. @logicn/compute-types registry includes expected types`
+
+### `bin\Galerina-R-AND-D\tri-encription\FINDINGS-AND-ROADMAP.md` — 51 (LogicN, LLN-diag, logicn, ext-lln)
+- L7: `> photonic-LogicN ecosystem. This is R&D scratch ('C:\Users\phill\Documents\GitHub\LogicN-R-AND-D\tri-encription\'), not a`
+- L8: `> production repo and not the LogicN/TritMesh monorepos.`
+- L16: `The question driving this work: *given the LogicN governance lessons, what can encryption actually look like`
+
+### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\domain-ai.test.mjs` — 50 (ext-lln, LLN-diag, LogicN)
+- L14: `return parseProgram(source, "test.lln");`
+- L18: `const parsed = parseProgram(source, "test.lln");`
+- L24: `const parsed = parseProgram(source, "test.lln");`
+
+### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\type-checker-phase11-wave2.test.mjs` — 50 (ext-lln, LLN-diag)
+- L9: `const parsed = parseProgram(source, "test.lln");`
+- L21: `// ── Task 1: LLN-TYPE-005 — call argument type mismatch ───────────────────────`
+- L23: `describe("Type checker — LLN-TYPE-005 InvalidCallArgType", () => {`
+
+### `bin\Galerina-R-AND-D\FFSM\SESSION-HANDOFF.md` — 50 (logicn, LogicN, LLN-diag, ext-lln)
+- L7: `> 'packages-logicn/logicn-inference-bridge-contract/src/manifest.ts' (DeterminismMode +="tolerance",`
+- L9: `> fail-closed all-three-pins rule), and 'packages-logicn/logicn-ext-bridge-quantum/' exists with`
+- L18: `> and op-catalog depth docs remain valid Phase-2 references. This is LogicN task **#199**.`
+
+### `bin\Galerina-R-AND-D\ecosystem-positioning\ECOSYSTEM-LANGUAGE-POSITIONING-0051.md` — 48 (LogicN, logicn, LLN-diag)
+- L3: `> **Citation base:** the LogicN production repo ('C:\Users\phill\Documents\GitHub\LogicN'), STRICTLY READ-ONLY in this lane.`
+- L5: `> '.mjs' bench cites resolve in this R&D repo ('C:\Users\phill\Documents\GitHub\LogicN-R-AND-D').`
+- L7: `> **⚠ logicn.mjs is being actively edited by the owner during this session** — its line cites are point-in-time`
+
+### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\lln-val-enforcement.test.mjs` — 47 (LLN-diag, ext-lln)
+- L2: `* LLN-VAL-001 / LLN-VAL-002 / LLN-VAL-003 — Value/Safety Governance Enforcement`
+- L4: `* Tests the live enforcement of the three LLN-VAL diagnostic rules:`
+- L6: `*   LLN-VAL-001  SafetyCriticalMissingAudit       — safety_critical needs audit.write`
+
+### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\value-state-egress-hardening.test.mjs` — 47 (LLN-diag, ext-lln)
+- L3: `* 2026-06-16 adversarial audit of LLN-SECRET-002 / LLN-PRIVACY-002. Each was empirically`
+- L20: `const chk = (src) => checkValueStates(parseProgram(src, "test.lln").ast);`
+- L25: `it("a secret assigned into a mut binding then egressed → LLN-SECRET-002", () => {`
+
+### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\wat-phase26.test.mjs` — 47 (ext-lln, LLN-diag)
+- L7: `//   26B. getPatient.lln governance: PHI effects, requiresAudit, allowedEffects`
+- L8: `//   26B. getPatient.lln: parses with 0 errors`
+- L9: `//   26B. getPatient.lln: governance verifier produces runtimeManifests`
+
+### `bin\Galerina-R-AND-D\photonic-tri-governance\tri-pipe-per-tier-packages-and-hardware-directive-spec.md` — 47 (LogicN, logicn, ext-lln, LLN-diag, scope-logicn)
+- L3: `> **Citation base.** 'file.ext:line' references in this spec resolve against the **LogicN language`
+- L4: `> repo** ('C:\Users\phill\Documents\GitHub\LogicN'; search 'packages-logicn\*\src\'), **not** the '.lln'-only TritMesh`
+- L5: `> repo. '.mjs' proof cites resolve in the R&D repo ('C:\Users\phill\Documents\GitHub\LogicN-R-AND-D\scripts\').`
+
+### `bin\Galerina-R-AND-D\testing-strategy\TESTING-STRATEGY-RND-0048.md` — 47 (LogicN, logicn, ext-lln, LLN-diag)
+- L4: `> **LogicN language repo** ('C:\Users\phill\Documents\GitHub\LogicN'; search 'packages-logicn\*\src\' and '\tests\',`
+- L5: `> root 'logicn.mjs'), **not** the '.lln'-only TritMesh repo. Convention + verifier:`
+- L12: `> LogicN — the production tree is READ-ONLY; this note designs and ranks, it does not implement.`
+
+### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\binding-checker.test.mjs` — 46 (LLN-diag, ext-lln)
+- L4: `// Tests for LLN-BINDING-005: immutable binding reassignment enforcement.`
+- L7: `//   - let binding reassignment → LLN-BINDING-005`
+- L9: `//   - flow parameter reassignment → LLN-BINDING-005`
+
+### `bin\Galerina-R-AND-D\NOTES-CORPUS-COVERAGE-MAP-RAW.json` — 46 (LogicN, logicn, LLN-diag, ext-lln)
+- L18: `"clusters": "**Cluster A — DRCM / Deterministic Runtime Containment (DEFER — hub-churning).** Notes '01'-'09' modules, '08-review', '09-review-of-review', and the DRCM-derivative '45-invariant', '47-n`
+- L26: `"evidence": "0101-dss-wasm-tcb-design-spec.done.md (lines 1-100; entire specification grounded in DRCM decisions); build-staging/vs008-verify/src/governance-verifier.ts (capability vector implementati`
+- L47: `"evidence": "0015-mid-compute-capability-revocation.done.md (per-op revocation re-eval enforcing monotonic decay); 0083-closed-capabilities-photonic-tri.done.md (monotonic capability narrowing); 0110-`
+
+### `bin\Galerina-R-AND-D\tri-encription\PATCH-SPEC-guarded-flow-valuestate-paramtaint-2026-06-23.md` — 44 (LLN-diag, logicn, LogicN)
+- L1: `# PATCH SPEC — guarded-flow value-state param-taint fail-OPEN (LLN-VALUESTATE)`
+- L5: `- **Component:** 'logicn-core-compiler' → 'src/value-state-checker.ts'`
+- L6: `- **Status of this doc:** R&D-side **advisory + patch spec**. The production tree is treated **READ-ONLY** from R&D — nothing in 'C:\Users\phill\Documents\GitHub\LogicN' was modified. The hub applies `
+
+### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\governance-conformance.test.mjs` — 43 (ext-lln, LLN-diag)
+- L28: `const parsed = parseProgram(source, "test.lln");`
+- L55: `it("declared database.read only but body calls AuditLog.write emits LLN-EFFECT-001 or LLN-EFFECT-002", () => {`
+- L66: `const hasEffectError = hasDiag(diags, "LLN-EFFECT-001") || hasDiag(diags, "LLN-EFFECT-002");`
+
+### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\lln-hw-enforcement.test.mjs` — 43 (LLN-diag, ext-lln)
+- L2: `* LLN-HW-001 / LLN-HW-002 / LLN-HW-003 — Hardware Governance Enforcement`
+- L6: `*   LLN-HW-001  QuantumTargetRequiresFormalProof    — quantum target → FormalRequired`
+- L7: `*   LLN-HW-002  SealedTargetRequiresAuditTrace      — NPU/TPU/ANE without audit.write`
+
+### `bin\Galerina-R-AND-D\build-staging\limit-enforcement-teeth\overlay\src\self-hosted\type-checker.lln` — 42 (ext-lln, LogicN, LLN-diag)
+- L1: `/// @file: type-checker.lln`
+- L15: `// LogicN Self-Hosted Type Checker — Phase 47`
+- L20: `//   LLN-TYPE-001  UnknownType            — return/param type not a known type`
+
+### `bin\Galerina-R-AND-D\build-staging\vs008-verify\src\self-hosted\type-checker.lln` — 42 (ext-lln, LogicN, LLN-diag)
+- L1: `/// @file: type-checker.lln`
+- L15: `// LogicN Self-Hosted Type Checker — Phase 47`
+- L20: `//   LLN-TYPE-001  UnknownType            — return/param type not a known type`
+
+### `bin\Galerina-R-AND-D\FFSM\app-project\S1-product-use-cases.md` — 42 (LogicN, logicn, LLN-diag, ext-lln)
+- L4: `> LogicN quantum-bridge would be **as a product**, grounded in the SHIPPED Phase-1.5 governance`
+- L9: `> edits are **owner-gated**; this doc lives only under 'LogicN-R-AND-D/FFSM/app-project/'.`
+- L27: `('logicn-ext-bridge-quantum-design.md:40-49').`
+
+### `bin\Galerina-R-AND-D\build-staging\limit-enforcement-teeth\overlay\src\wat-emitter.ts` — 41 (LogicN, LLN-diag, ext-lln, logicn)
+- L2: `// LogicN Phase 19 / Phase 22 — WAT Emitter (WebAssembly Text Format)`
+- L60: `* All WASM SIMD instructions that the LogicN compiler may emit.`
+- L121: `/** The LogicN effect this import corresponds to. */`
+
+### `bin\Galerina-R-AND-D\build-staging\vs008-verify\src\wat-emitter.ts` — 41 (LogicN, LLN-diag, ext-lln, logicn)
+- L2: `// LogicN Phase 19 / Phase 22 — WAT Emitter (WebAssembly Text Format)`
+- L60: `* All WASM SIMD instructions that the LogicN compiler may emit.`
+- L121: `/** The LogicN effect this import corresponds to. */`
+
+### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\security-boundary.test.mjs` — 41 (LogicN, ext-lln, LLN-diag)
+- L2: `* Security Boundary Tests — LogicN Phase 33`
+- L31: `function taintCodes(src)   { const p = parseProgram(src, "t.lln"); return checkTaint(p.ast, p.flows).map(d=>d.code); }`
+- L32: `function profileCodes(src, profiles) { const p = parseProgram(src, "t.lln"); return checkProfiles(p.ast, p.flows, profiles).map(d=>d.code); }`
+
+### `bin\Galerina-R-AND-D\tri-encription\lln\README.md` — 41 (LogicN, ext-lln, LLN-diag, logicn, LOGICN)
+- L1: `# 'tri-encription/lln' — the governance layer, cloned in real LogicN ('.lln')`
+- L3: `A working LogicN clone of the part of the bench that LogicN is *actually for*: the **K3`
+- L5: `['../research/LLN-AMD-024-tmf-confidentiality.md'")
+- rebrand-report → tmf-container-v0 ("'tmf-container-v0.md'")
+- rebrand-report → signature-custody-v0 ("'spec/signature-custody-v0.md'")
+- rebrand-report → rd-3d-spatial-photonics-tower-spatial-mesh-2026-06-25 ("'rd-3d-spatial-photonics-tower-spatial-mesh-2026-06-25.md'")

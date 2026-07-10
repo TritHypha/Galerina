@@ -136,4 +136,4 @@ Disclosed publicly as prior art:
 - **Funding:** none.
 - **Competing interests:** none.
 - **Data / artifact availability:** in-repo, re-runnable paths as named in §8; `Galerina/proofs/rd-0233-proof.mjs` re-run **13/13 GREEN** 2026-07-04.
-- **Licence:** Apache-2.0. Owner / copyright holder: Phillip Booth (hello@consumerthoughts.co.uk).
+- **Licence:** Apache-2.0. Owner / copyright holder: Phillip Booth (hello@trithypha.dev).
