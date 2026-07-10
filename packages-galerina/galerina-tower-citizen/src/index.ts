@@ -47,6 +47,30 @@ export {
 export type { ConfidenceVerdict } from "./three-valued-governance.js";
 export type { GovernanceDiagnostic, BoundaryDecision } from "./three-valued-governance.js";
 
+// ── Epistemic type-state — the trust trit lifted from verdict to value (RD-0337) ──
+// The four tri-native safety primitives + the 3-axis type, all a thin proven lift over
+// three-valued-governance: values carry a first-class CONTAGIOUS, FAIL-CLOSED epistemic
+// trit (proven/unknown/refuted); the only lift to PROVEN is an explicit discharge; a
+// non-proven value deny-collapses at the boundary (FUNGI-GOV-3VL-001). Safety under
+// REPRESENTED (not eliminated) uncertainty — the tri-native element binary cannot express.
+export {
+  Trust,
+  unverified, trustedRoot, refute, discharge,
+  map, combine, combineAll,
+  isTrusted, isUnverified, isRefuted, trustOf,
+  requireTrusted,
+  optimistic, reconcile,
+  allContracts, anyContract, evaluateContract,
+  validateTriSchema,
+  classMeet, triTyped, combineTriTyped, releaseTo,
+} from "./epistemic-type-state.js";
+export type {
+  Epistemic, Trusted, Unverified, Refuted, TrustBoundaryResult,
+  Contract, EnforcementMode, ContractOutcome,
+  FieldRequirement, TriFieldSpec, TriSchema, TriFieldResult, TriSchemaResult,
+  Classification, TriTyped, ReleaseResult,
+} from "./epistemic-type-state.js";
+
 // ── Per-user data hard border — Qexecuted = Q ∩ S_user (owner note 54 / IDOR, CWE-639) ──
 // K3 set-intersection at the query boundary: caller scope comes ONLY from the proven .spore passport, never a
 // `?user_id=` param; a developer `where` may only narrow. Visibility is fail-closed PRIVATE by default —
