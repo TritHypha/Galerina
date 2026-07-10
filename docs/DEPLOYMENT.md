@@ -50,13 +50,13 @@ Deployment reports may include secret names and availability metadata:
 Git should contain portable deployment intent:
 
 ```text
-boot.ln
-main.ln
-galerina.deploy.ln
+boot.fungi
+main.fungi
+galerina.deploy.fungi
 galerina.lock.json
-galerina.security-policy.ln
-galerina.memory-policy.ln
-galerina.compute-policy.ln
+galerina.security-policy.fungi
+galerina.memory-policy.fungi
+galerina.compute-policy.fungi
 ```
 
 Git should not contain local/runtime machine facts:

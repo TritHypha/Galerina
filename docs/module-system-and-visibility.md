@@ -87,16 +87,16 @@ Example package layout:
 packages-galerina/
   galerina-core/
     src/
-      string.ln
-      result.ln
-      module.ln
+      string.fungi
+      result.fungi
+      module.fungi
 
 app/
   src/
     users/
-      types.ln
-      repository.ln
-      service.ln
+      types.fungi
+      repository.fungi
+      service.fungi
 ```
 
 Example import:
@@ -293,7 +293,7 @@ Example:
 
 ```text
 File path:
-app/src/users/service.ln
+app/src/users/service.fungi
 
 Declared module:
 module app/users/service
@@ -304,7 +304,7 @@ If the declaration and path disagree, the compiler should fail.
 Bad:
 
 ```galerina
-// File: app/src/users/service.ln
+// File: app/src/users/service.fungi
 module app/payments/service
 ```
 
@@ -312,7 +312,7 @@ Compiler diagnostic:
 
 ```text
 FUNGI-MODULE-001: module declaration does not match source location
-file: app/src/users/service.ln
+file: app/src/users/service.fungi
 found: app/payments/service
 expected: app/users/service
 ```
@@ -497,13 +497,13 @@ However, the compiler may generate an export map for tooling:
 
 ```text
 app/src/users/
-  types.ln
-  repository.ln
-  service.ln
-  routes.ln
+  types.fungi
+  repository.fungi
+  service.fungi
+  routes.fungi
 ```
 
-### 8.2 `types.ln`
+### 8.2 `types.fungi`
 
 ```galerina
 module app/users/types
@@ -535,7 +535,7 @@ UserRecord is package-only because routes should not expose password hashes.
 UserError is public because API callers may need to handle it.
 ```
 
-### 8.3 `repository.ln`
+### 8.3 `repository.fungi`
 
 ```galerina
 module app/users/repository
@@ -567,7 +567,7 @@ The storage effect is explicit.
 Importing Database does not grant a database connection.
 ```
 
-### 8.4 `service.ln`
+### 8.4 `service.fungi`
 
 ```galerina
 module app/users/service
@@ -607,7 +607,7 @@ The public function returns safe data only.
 The storage effect remains visible to the compiler and runtime.
 ```
 
-### 8.5 `routes.ln`
+### 8.5 `routes.fungi`
 
 ```galerina
 module app/users/routes

@@ -234,7 +234,7 @@ Example:
 ```galerina
 visibility_scope PublicProjectContext {
   include [
-    "src/**/*.ln",
+    "src/**/*.fungi",
     "docs/**/*.md",
     "reports/compiler-report.json"
   ]
@@ -552,12 +552,12 @@ Example shape:
       "DiffPropose"
     ],
     "filesRead": [
-      "api/payment-webhook.ln",
-      "domain/payments.ln"
+      "api/payment-webhook.fungi",
+      "domain/payments.fungi"
     ],
     "filesWritten": [],
     "patchesProposed": [
-      "api/payment-webhook.ln"
+      "api/payment-webhook.fungi"
     ],
     "messagesSent": [
       "CodePatch"
