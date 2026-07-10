@@ -35,6 +35,20 @@ import { totalmem, freemem } from "node:os";
 // caller exits on a main path, continues on a batch path), so an oversized/unreadable file is rejected
 // before the allocation it would otherwise exhaust the host with.
 const MAX_SOURCE_BYTES = 10 * 1024 * 1024; // 10MB — mirrors the lexer's FUNGI-LEX-004 constant
+
+// ── Repo-relative source paths in COMMITTED artifacts (no-absolute-local-paths) ──
+// .lmanifest{,.json} + governance-impact.json record sourceFile. An absolute input
+// path (rebuild-fusable-packages passes one) would leak the local user home into a
+// tracked artifact (audit-path-leak windows-user-home class — leaked 2026-07-10).
+// Record repo-relative (POSIX) whenever the source sits under the working dir;
+// paths OUTSIDE the repo (scratch/temp builds) stay as given — their artifacts
+// land outside the tree and are never committed.
+function toRepoRelative(p) {
+  const norm = String(p).replace(/\\/g, "/");
+  const root = process.cwd().replace(/\\/g, "/").replace(/\/+$/, "") + "/";
+  return norm.startsWith(root) ? norm.slice(root.length) : norm;
+}
+
 function readUntrustedSource(path) {
   try {
     const st = statSync(path);
@@ -2154,7 +2168,7 @@ Baseline comparison (governance-cost):
         m.checkEffects(parsed.flows, parsed.ast), "dev");
       const source = readUntrustedSource(fungiFile);
       if (source === null) process.exit(1); // fail-closed: oversized/unreadable .fungi rejected
-      const baseManifest = generateManifest(source, fungiFile, parsed.flows, govResult);
+      const baseManifest = generateManifest(source, toRepoRelative(fungiFile), parsed.flows, govResult);
 
       // ── Net a: embed the fusion descriptor INTO the manifest BEFORE signing ──────
       // (Fuse B2 STEP A) The fuse fields (kind/provides/seam/capabilities) and the
@@ -2438,7 +2452,7 @@ Baseline comparison (governance-cost):
         );
         const impactArtifact = {
           schemaVersion: "fungi.governance-impact.v1",
-          sourceFile: fungiFile.replace(/\\/g, "/"),
+          sourceFile: toRepoRelative(fungiFile),
           sourceHash: manifest.sourceHash,
           generatedAt: manifest.generatedAt,
           flowCount: parsed.flows.length,
