@@ -40,6 +40,15 @@ is no warn-and-continue path outside an explicit, logged development override.
 - **Which key is authoritative is not stated in prose.** The single source of truth is the
   pin in `governance/trust-anchor.json`; verify against the file, not against
   documentation (including this one).
+- **Production custody — an offline, air-gapped removable-media vault.** The private signing
+  halves are held on **offline removable media (an air-gapped USB token)** — never on a networked
+  host, never in a cloud KMS, and never in a tracked file. At signing time the operator mounts the
+  vault and points the signer at it: `GALERINA_SIGNING_ENV=<vault-path> node governance/sign-revocations.mjs`
+  (and the equivalent for the build signer). The key is read for that one operation and does not
+  persist to the repository, the server, shell history, or process env beyond the run. The in-tree
+  `.env.galerina-signing` is a **dev stopgap only**; a production signing run points
+  `GALERINA_SIGNING_ENV` at the vault and **fails closed if the vault is absent** — the signer already
+  exits non-zero when no key is found, and must never silently fall back to an in-tree key.
 - **Compromise lifecycle**: a compromised key is revoked by appending to
   `governance/revocations.json` (append-only — entries are never removed) and re-signing
   the registry via `governance/sign-revocations.mjs`, which itself refuses to sign with a
