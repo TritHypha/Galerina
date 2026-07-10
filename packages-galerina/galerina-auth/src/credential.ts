@@ -24,9 +24,10 @@
  *     validation genuinely lives upstream.
  *
  * Hardening note: this factor treats a present-but-EMPTY header value as NOT present
- * (→ `0`), which is intentionally STRICTER than the kernel's legacy branch (which
- * checks key presence only and would admit an empty `Authorization:` under the
- * opt-in). A factor library must not reproduce that latent weakness.
+ * (→ `0`). The kernel's legacy opt-in branch was hardened to match (RD-0307/0309): it
+ * now also denies an absent, empty, or whitespace-only `Authorization:` header, so the
+ * two agree and neither admits presence-of-an-empty-value. A factor library must not
+ * reproduce a latent weakness; this one keeps the strict definition of "present".
  *
  * This module performs no token parsing, signature checks, or secret handling — it
  * is a posture factor over header SHAPE only. Real credential verification belongs

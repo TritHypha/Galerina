@@ -352,10 +352,15 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
           return { response: errorResponse(401, "unauthorized", "Channel/identity verdict denied admission."), policy };
         }
       } else if (policy.auth.allowHeaderPresenceFallback === true) {
-        // OPT-IN legacy fallback: header-PRESENCE check only. This is NOT a real verification of the
-        // token — it admits any non-empty Authorization header — so it is gated behind an explicit
-        // per-route opt-in (default off). Only reachable when a route sets allowHeaderPresenceFallback.
-        if (header(req.headers, "authorization") === undefined) {
+        // OPT-IN legacy fallback: header-PRESENCE only — NOT a real token verification (it admits any
+        // non-empty Authorization header), so it is gated behind an explicit per-route opt-in (default
+        // off). "Presence" means a NON-EMPTY value: an absent, empty, or whitespace-only Authorization
+        // header is not presence and is denied — this closes the empty-header admission the prior
+        // `=== undefined` check let through (RD-0307/0309). Mirrors galerina-auth `headerPresenceVerdict`
+        // (the reusable posture factor), kept INLINE so the kernel takes no capability-package compile
+        // dependency — the same structural-seam stance as gate 9.5 (Hardened Border: core-config + tower-citizen only).
+        const authz = header(req.headers, "authorization");
+        if (authz === undefined || authz.trim().length === 0) {
           return { response: errorResponse(401, "unauthorized", "Authorization header required."), policy };
         }
       } else {
