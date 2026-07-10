@@ -4,7 +4,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createHmac, generateKeyPairSync, sign as cryptoSign } from "node:crypto";
-import { Verdict, bearerTokenVerdict } from "../dist/index.js";
+import { Verdict, bearerTokenVerdict, composeAuthVerdict } from "../dist/index.js";
 
 // ── JWT builder helpers ──────────────────────────────────────────────────────
 const b64url = (obj) => Buffer.from(JSON.stringify(obj)).toString("base64url");
@@ -155,4 +155,17 @@ test("ES256 listed but unsupported → DENY (fail-closed, never silent pass)", (
   // A structurally-plausible ES256 token; our verifier does not implement ES* → must DENY.
   const t = jwt({ alg: "ES256" }, { sub: "u1", exp: NOW + 100 }, (input) => cryptoSign("sha256", Buffer.from(input), es.privateKey));
   assert.equal(bearerTokenVerdict(bearer(t), { key: es.publicKey, algorithms: ["ES256"], now }), Verdict.DENY);
+});
+
+// ── composition: the bearer factor folds into composeAuthVerdict with NO change to compose.ts ──
+test("compose: a valid bearer + an ALLOW channel factor folds to ALLOW", () => {
+  const t = jwt({ alg: "HS256" }, { sub: "u1", exp: NOW + 100 }, hsSign(HS_SECRET));
+  const bv = bearerTokenVerdict(bearer(t), { key: HS_SECRET, algorithms: ["HS256"], now });
+  assert.equal(composeAuthVerdict([Verdict.ALLOW, bv]), Verdict.ALLOW);
+});
+
+test("compose: a bearer DENY annihilates the fold even alongside an ALLOW channel", () => {
+  const expired = jwt({ alg: "HS256" }, { sub: "u1", exp: NOW - 1 }, hsSign(HS_SECRET));
+  const bv = bearerTokenVerdict(bearer(expired), { key: HS_SECRET, algorithms: ["HS256"], now });
+  assert.equal(composeAuthVerdict([Verdict.ALLOW, bv]), Verdict.DENY);
 });
