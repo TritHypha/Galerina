@@ -168,27 +168,27 @@ describe("reporter — path-leak redaction (ZT-17)", () => {
   const leakyGraph = {
     nodes: [{
       id: "leaky-doc",
-      title: "Leaky C:\\Users\\phill\\Documents title",
-      status: "READ-ONLY; nothing in 'C:\\Users\\phill\\Documents\\GitHub' is writable",
+      title: "Leaky C:\\Users\\example\\Documents title", // path-leak-audit:allow — redaction-test fixture
+      status: "READ-ONLY; nothing in 'C:\\Users\\example\\Documents\\GitHub' is writable", // path-leak-audit:allow
       lnlCodes: [],
     }],
     edges: [],
     orphans: [],
-    staleLinks: ["from -> /home/phill/secret/roadmap.md"],
+    staleLinks: ["from -> /home/example/secret/roadmap.md"],
     stats: { totalDocs: 1, totalEdges: 0, totalFungiCodes: 0, orphanCount: 0, staleLinkCount: 1 },
   };
 
   test("markdown report redacts Windows + POSIX local paths and keeps the placeholder", () => {
     const md = generateMarkdownReport(leakyGraph, "2026-01-01");
     assert.ok(!/[A-Za-z]:\\+Users\\+/i.test(md), "Windows user-home path leaked into the report");
-    assert.ok(!/\/home\/phill/i.test(md),        "POSIX home path leaked into the report");
+    assert.ok(!/\/home\/example/i.test(md),      "POSIX home path leaked into the report");
     assert.ok(md.includes("<local-path>"),       "redaction placeholder missing — redaction did not fire");
   });
 
   test("JSON output redacts local paths too", () => {
     const json = generateJSON(leakyGraph);
     assert.ok(!/[A-Za-z]:\\+Users\\+/i.test(json), "Windows path leaked into JSON");
-    assert.ok(!/\/home\/phill/i.test(json),         "POSIX path leaked into JSON");
+    assert.ok(!/\/home\/example/i.test(json),       "POSIX path leaked into JSON");
   });
 
   test("clean input is left untouched (no over-redaction)", () => {
