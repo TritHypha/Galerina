@@ -1,0 +1,47 @@
+@version 1
+/// admission-feedback twin — the telemetry → K3 admission side-signal decision surface of
+/// admission-feedback.ts (the closed runtime self-throttle). It maps a LIVE telemetry reading to a
+/// DEGRADE-ONLY Verdict: ALLOW = 1, INDETERMINATE = 0, DENY = -1.
+///
+/// The single safety property (inherited from the K3 algebra): the signal is at most +1, so folding
+/// it via vAnd (= min) can only LOWER an admission verdict, never lift it — telemetry can throttle a
+/// channel toward DENY but can NEVER manufacture an ALLOW. Governance side-signal only, never a key/
+/// cipher byte.
+///
+/// Host floor (stays .ts): reading the health probe + the metrics snapshot, resolving the numeric
+/// thresholds (throttle default 0.5, opt-in deny), the [0,1] range checks. This twin is the fold.
+
+/// vAnd — the K3 conjunction = numeric min. The worst (most-restrictive) operand wins (No-Coercion).
+pure flow vAnd(a: Int, b: Int) -> Int
+{
+  contract { intent "K3 conjunction: min(a, b) — the worst operand wins, fail-closed." }
+  if a < b { return a }
+  return b
+}
+
+/// Fold a telemetry reading to a degrade-only side-signal. Starts at ALLOW (+1, the conjunctive
+/// identity — a no-op when there is nothing to report), then vAnd's in each factor. The score factor
+/// mirrors the .ts else-if order (garbage, then opt-in hard-deny, then throttle), so exactly one score
+/// branch degrades. The result is always <= +1, so it can only lower an admission verdict.
+pure flow telemetrySideSignal(healthDegrades: Bool, scorePresent: Bool, scoreGarbage: Bool, scoreHardDeny: Bool, scoreThrottle: Bool) -> Int
+{
+  contract { intent "Map telemetry to a degrade-only K3 side-signal (<= +1): the worst of health and anomaly." }
+  mut v: Int = 1
+  if healthDegrades == true {
+    v = vAnd(v, 0)
+  }
+  if scorePresent == true {
+    if scoreGarbage == true {
+      v = vAnd(v, 0)
+    } else {
+      if scoreHardDeny == true {
+        v = vAnd(v, 0 - 1)
+      } else {
+        if scoreThrottle == true {
+          v = vAnd(v, 0)
+        }
+      }
+    }
+  }
+  return v
+}
