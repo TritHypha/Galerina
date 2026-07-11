@@ -1,5 +1,12 @@
 {
   "packageName": "@galerina/devtools-benchmarks",
-  "allowedExternal": [],
-  "note": "Baseline auto-generated. Edit allowedExternal to widen/narrow the border. `--check` fails if an import appears that is not listed here."
+  "allowedExternal": [
+    "node:child_process",
+    "node:fs",
+    "node:os",
+    "node:path",
+    "node:perf_hooks",
+    "node:url"
+  ],
+  "note": "Reviewed baseline (RD-0348 .mjs scanner-coverage fix). This package's source is .mjs, which the scanner's default extensions ([.ts,.fungi]) did not match — so the prior baseline was auto-generated over ZERO scanned files (an empty allowlist that passed vacuously). A packageGraph.extensions override in package.json now scans the .mjs, and this allowlist is the reviewed surface: node builtins only (child_process spawns the compared runtimes; fs/os/path/url/perf_hooks do I/O, platform detection, and timing) — no third-party, no @galerina reach-through. `--check` fails if a new external import appears."
 }

@@ -9,9 +9,12 @@
  *   • an external import not in allowedExternal           (drift past the Hardened Border)
  *   • a missing boundary-policy.json under enforcement    (delete-to-launder defence — see reporter.js)
  *   • a malformed/non-array allowlist                     (unknown → deny, never allow-all)
+ *   • a VACUOUS scan — 0 files matched but a source root holds code (the .mjs blind-spot class: a green
+ *                                                          border over an UNSCANNED package; the fix is a
+ *                                                          packageGraph.extensions override in package.json)
  *
- * Anti-neuter: a `--self-test` proves the gate still FIRES (on an unlisted external AND a missing policy)
- * before the enforcing sweep — a border gate that has been silently defanged is itself a fail-open.
+ * Anti-neuter: a `--self-test` proves the gate still FIRES (on an unlisted external, a missing policy, AND a
+ * vacuous scan) before the enforcing sweep — a border gate that has been silently defanged is itself a fail-open.
  *
  * Requires the scanner to be BUILT first (`tsc` on galerina-devtools-package-graph — it is pure TS with no
  * third-party deps, so the CI build is just tsc, no `npm install` of package deps). If the scanner dist is
@@ -35,6 +38,32 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const DIST = join(ROOT, "packages-galerina", "galerina-devtools-package-graph", "dist");
 const PKG_ROOT = join(ROOT, "packages-galerina");
 
+// A "vacuous PASS" is a green border over an UNSCANNED package: the scanner matched ZERO files, yet the
+// package's source roots DO contain code — the extension just isn't in the scan set (the .mjs blind-spot
+// class, RD-0348). Recognised code extensions (excluding .d.ts, which carries no import surface).
+const CODE_EXT = [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs", ".fungi"];
+
+/** True iff `dir` (recursively, skipping dist/node_modules) holds a real code file. */
+function dirHasCode(dir) {
+  let entries;
+  try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return false; }
+  for (const e of entries) {
+    if (e.isDirectory()) {
+      if (e.name === "node_modules" || e.name === "dist") continue;
+      if (dirHasCode(join(dir, e.name))) return true;
+    } else if (!e.name.endsWith(".d.ts") && CODE_EXT.some((x) => e.name.endsWith(x))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/** A scan that matched 0 files while one of its (existing) source roots holds code is a vacuous border. */
+function isVacuousScan(scan) {
+  if (scan.files.length > 0) return false;
+  return scan.roots.some((r) => dirHasCode(join(scan.scopePath, r)));
+}
+
 async function loadScanner() {
   for (const f of ["scanner.js", "graph.js", "reporter.js"]) {
     if (!existsSync(join(DIST, f))) {
@@ -54,8 +83,23 @@ async function loadScanner() {
 
 /** Re-scan a package from source and enforce its committed policy (check=true → never auto-baselines). */
 function checkPkg(S, pkgPath) {
-  const graph = S.buildGraph(S.scanPackage(pkgPath));
-  return S.runBoundaryGate(pkgPath, graph, /* check */ true);
+  const scan = S.scanPackage(pkgPath);
+  const graph = S.buildGraph(scan);
+  const gate = S.runBoundaryGate(pkgPath, graph, /* check */ true);
+  // Vacuous-PASS guard (RD-0348): a 0-file scan over a package that DOES have source code is a green
+  // border over an unscanned package — fail-closed rather than let it pass silently, and name the fix.
+  if (gate.status !== "FAIL" && isVacuousScan(scan)) {
+    return {
+      status: "FAIL",
+      violations: [
+        "vacuous border — 0 files matched this package's scan extensions, but its source roots contain " +
+        "code files. The border is green over an UNSCANNED package. Add a `packageGraph`.extensions " +
+        "override to package.json covering the real source extension(s) so its imports are gated.",
+      ],
+      orphanWarnings: gate.orphanWarnings ?? [],
+    };
+  }
+  return gate;
 }
 
 /** The gate must FIRE on (A) an unlisted external and (B) a missing policy. Else it is neutered. */
@@ -84,7 +128,20 @@ function selfTest(S) {
       console.error("SELF-TEST FAIL: a missing policy did not fail-closed (delete-to-launder hole):", JSON.stringify(rb));
       process.exit(2);
     }
-    console.log("  self-test: gate fires on unlisted-external AND missing-policy ✅");
+    // (C) source is a code file whose extension the DEFAULT scan misses (.mjs) with NO packageGraph override
+    // → the scan matches 0 files while a root holds code → the vacuous-border guard must FIRE (RD-0348).
+    const c = join(base, "pkgC");
+    mkdirSync(join(c, "src"), { recursive: true });
+    mkdirSync(join(c, ".graph"), { recursive: true });
+    writeFileSync(join(c, "package.json"), JSON.stringify({ name: "@selftest/c" }));
+    writeFileSync(join(c, "src", "bench.mjs"), 'import cp from "node:child_process";\nexport const r = cp;\n');
+    writeFileSync(join(c, ".graph", "boundary-policy.json"), JSON.stringify({ packageName: "@selftest/c", allowedExternal: [] }));
+    const rc = checkPkg(S, c);
+    if (rc.status !== "FAIL" || !rc.violations.some((v) => String(v).includes("vacuous"))) {
+      console.error("SELF-TEST FAIL: a 0-file scan over a package WITH .mjs source did not fail-closed (vacuous-border hole):", JSON.stringify(rc));
+      process.exit(2);
+    }
+    console.log("  self-test: gate fires on unlisted-external, missing-policy AND vacuous-scan ✅");
   } finally {
     rmSync(base, { recursive: true, force: true });
   }

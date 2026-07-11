@@ -5,26 +5,29 @@
 
 **Status:** ✅ PASS
 
-> ⚠️ **Zero source files scanned.** The roots/extensions below matched nothing — this border is empty because nothing was inspected, NOT because the package has no dependencies. Check the package's source layout against `packageGraph.roots`/`extensions` in its package.json.
-
-**Scanned scope:** roots [`src`] · extensions [`.ts`, `.fungi`]
+**Scanned scope:** roots [`src`] · extensions [`.ts`, `.fungi`, `.mjs`, `.js`]
 
 ## Summary
 
 | Metric | Count |
 |---|---|
-| Files | 0 |
+| Files | 11 |
 | Internal edges | 0 |
-| External dependencies | 0 |
-| ├─ Node core | 0 |
+| External dependencies | 6 |
+| ├─ Node core | 6 |
 | ├─ Workspace (@galerina/*) | 0 |
 | └─ Third-party | 0 |
-| Orphan files | 0 |
+| Orphan files | 11 |
 
 ## External Dependencies (the Border)
 
 ### Node core
-_none_
+- `node:child_process`
+- `node:fs`
+- `node:os`
+- `node:path`
+- `node:perf_hooks`
+- `node:url`
 
 ### Workspace (@galerina/*)
 _none_
@@ -36,7 +39,17 @@ _none_
 No boundary violations. All external imports are within the allowlist.
 
 ## Orphaned Files
-_none_ — every file is reachable from an internal import or entry point.
+- `src/audit.mjs`
+- `src/build-native.mjs`
+- `src/compare.mjs`
+- `src/diagnostic-runner.mjs`
+- `src/galerina-runner.mjs`
+- `src/gpu-detect.mjs`
+- `src/mem-sampler.mjs`
+- `src/runner.mjs`
+- `src/snapshot.mjs`
+- `src/throughput-units.mjs`
+- `src/wasm-runner.mjs`
 
 ## Entry Points
 _none detected_
