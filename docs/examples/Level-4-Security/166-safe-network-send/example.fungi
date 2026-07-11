@@ -1,16 +1,16 @@
 @version 1
 /// example: 166-safe-network-send
 /// level: 4
-/// concept: protected value may be sent over network (policy dependent)
+/// concept: protected value sent over the network — redact before the egress sink
 /// expected_diagnostics: none
-/// ai_rule: Protected values are not automatically forbidden from network sends. Governance policy decides.
+/// ai_rule: Protected values MUST be redacted before ANY egress sink (network included); the raw send is FUNGI-VALUESTATE-006. Bind the redacted value to a let so the boundary is gated too.
 /// test_status: stable
 
-guarded flow notifyService(email: protected Email) -> NotifyServiceResult
+secure flow notifyService(email: protected Email) -> NotifyServiceResult
 
 contract {
-  // Security intent: protected values may cross network boundaries only to approved services.
-  // Governance policy (authority block) must authorise external protected data sharing.
+  // Security intent: protected values crossing a network boundary MUST be redacted first —
+  // an un-redacted protected value to any egress sink is FUNGI-VALUESTATE-006 (fail-closed).
   types {
     type NotifyServiceResult = Result<Unit, NotifyError>
   }
@@ -24,6 +24,10 @@ contract {
   }
 }
 {
-  http.post("/approved-service", email)?
+  ;; Protected values MUST be redacted before ANY egress sink — network included.
+  ;; Sending `email` un-redacted is FUNGI-VALUESTATE-006. Bind the redacted value
+  ;; first (the 161 pattern) so the boundary is gated too (no FUNGI-VALUESTATE-008).
+  let safeEmail: redacted Email = redact(email)
+  http.post("/approved-service", safeEmail)?
   return Ok(unit)
 }
