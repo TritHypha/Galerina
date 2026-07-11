@@ -52,8 +52,8 @@ Full suite (`--emit-counts`) → sync counts (README/AGENTS/version.json) → al
 | 2 — type-checker twin advance | ⚠️ **GATED — deferred (verify-don't-trust).** Verified: the current Stage-B ParseResult shape carries only `{name,returnType,params,returnExpr{kind,litType,leftType,rightType}}`, so all 17 remaining codes need a parser-shape extension FIRST, and their numbering is entangled with the #20 taxonomy (your decision). Forcing a deep, corpus-churning parser extract against a registry that may renumber is not sound in a 55-min slot. **Parked with Block-2 note; not forced.** Effect-checker stays 6/6 complete. |
 | 3 — #22 fuel cap | ✅ **DONE** (`36e22d9e`) — WAT while-loop emits a per-loop i32 counter that TRAPS past 100k (matches interpreter/bytecode-VM); authoritative suite 92/92 · 6997 green; signed-fixture-drift GREEN (not owner-gated). |
 | RD-0340 (owner: read first) | ✅ **read + recorded** — §5 owner-gated (enforcer in a workspace not on disk); §6 verified finding (governed-match fail-closed-default residual) → owner-gated RD-0341. See section below. |
-| 4 — #41 defensive controls | ⏳ starting |
-| 5 — F3 verify + tc twins | ⏸ |
+| 4 — #41 defensive controls | ✅ **DONE** — `galerina-core-network/src/defensive-controls.ts`: verified-trusted-proxy (`proxyIsTrusted`/`resolveClientAddress` — XFF trusted only under verified+pinned mTLS or verified gateway token), uniform responses (`uniformResourceResponse`/`uniformAuthResponse` — not-found≡forbidden, user-unknown≡bad-credentials), `boundPageLimit`, `isOpaqueId`. Both prompt test classes (hostile-direct-access + enumeration). core-network 185/185, tsc clean. **Follow-up (noted, not done):** wire these into route-defaults/kernel per-request + `posture.ts` hostile-host controls. |
+| 5 — F3 verify + tc twins | ⏳ starting |
 | 6 — battery + close | ⏸ |
 
 ## RD-0340 (owner: "read first") — outcomes
