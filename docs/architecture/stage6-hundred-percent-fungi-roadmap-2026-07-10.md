@@ -27,6 +27,8 @@ Checked from source this session — the deciding facts:
 
 ## 1. Objective 1 — Type checker to 22/22 codes (the burn-down)
 
+> **UPDATE 2026-07-11 — 4 codes landed, twin now at 10** `{001,002,004,005,006,007,008,019,NAME-002,TYPE-020}` (was 6). Done: **008** (return-mismatch parity — distinct from **002** let-binding `TypeMismatch`, matching Stage-A); **NAME-002** (duplicate binding, same block); **TYPE-020** (shadowed binding, outer scope); **019** (unknown symbol on a name initializer; params seed the body scope). These added a real symbol-table + scope-tracking + param-seed capability. Path chosen: burn down against **current** Stage-A codes (the #20 proposal keeps 008/002 unchanged → no remap). **The "current-shape" vein is now exhausted** — every remaining code needs a parser-shape extension (see the tranche below). Commits `504e2286`, `7a6e6c64`, `c7142dcf`, `4172d657`. Current consolidated plan: [`roadmap-2026-07-11.md`](roadmap-2026-07-11.md).
+
 **Missing codes (17):** 003 (nominal/brand gate) · 008 (null denied) · 009/010 (generic arity/constraint) · 011 (collection element) · 012 (Result) · 014 (missing effect) · 016/017/030 (tensor shape/precision/element) · 018 (runtime-target) · 019 (unknown symbol) · 020 (shadowing) · 021/022 (match exhaustive/unreachable) · 023/024 (Auto deferral).
 **Divergence to reconcile:** the `.fungi` emits **FUNGI-TYPE-006** (trap-statement checks) which Stage-A does not — decide retire-vs-adopt against the Stage-A registry, differential tests updated to the parity answer (the effect-checker pilot did exactly this for its 4 subset-encoding tests).
 
