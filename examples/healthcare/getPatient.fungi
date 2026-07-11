@@ -3,8 +3,8 @@ type GetPatientResult = Result<PatientSummary, PatientError>
 type PatientId = Brand<String, "PatientId">
 // patientId in the RESPONSE is a redacted pseudonym, never the raw protected PatientId — the
 // contract.privacy `deny protected PatientId to response.body` rule is now ENFORCED (FUNGI-PRIVACY-001).
-type PatientSummary = record { patientId: redacted String, name: String, dob: String }
-type PatientError = enum { NotFound Unauthorized }
+record PatientSummary { patientId: redacted String, name: String, dob: String }
+enum PatientError { NotFound Unauthorized }
 
 ;; Retrieves a patient summary for clinical display, returning only redacted fields; permitted because the raw protected PatientId is denied to the response body and the audit write is redaction-gated.
 ;; V_DPM capability required: database.read, phi.read, audit.write
@@ -29,10 +29,14 @@ contract {
   let patientId: protected PatientId = validate.patientId(request.params.id)?
   let patient = PatientsDB.find(patientId)?
   let redactedPatientId: redacted String = redact(patientId)
+  ;; Gate the raw boundary actor BEFORE the audit sink — a raw request.context.* into a
+  ;; governed sink is FUNGI-VALUESTATE-008 (a migration-stage warning in plain check that
+  ;; ESCALATES to an ERROR in a governed/production build). Redacting binds a trusted value.
+  let actorRef: redacted String = redact(request.context.actor)
   AuditLog.write({
     event: "PatientAccessed",
     patient_ref: redactedPatientId,
-    actor: request.context.actor
+    actor: actorRef
   })
   return Ok({
     patientId: redact(patientId),
