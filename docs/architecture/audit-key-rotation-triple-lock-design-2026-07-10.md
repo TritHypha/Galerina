@@ -1,6 +1,6 @@
 # DESIGN — Key rotation: the triple-lock, fail-closed, phased, append-only design (#28 / D2)
 
-**Status:** Proposed (2026-07-10) — design for owner review BEFORE any live key-material code is built. **Code build HELD pending the owner's read-through.** Decision-1 (which key) **RESOLVED → both, sequenced** (attestation key first, then the HMAC-ledger asymmetric anchor); §6 Decisions 2–5 open.
+**Status:** **BUILDING (owner-unlocked 2026-07-10: "unlock this now and build as priority").** Steps 1–3 BUILT (`tower-citizen/src/key-rotation.ts`, commit `456c3120`, 55 tests — ring + all gates + phase machine, zero key material, DI seams fail-closed) with the ratified defaults: M=2 quorum floor · readiness-gated trigger · decision core in tower-citizen · DESTROY-default retire policy (revoke-then-archive selectable, revocation-first enforced). Step 4a BUILT (`sentinel-egress`, commit `9bfdeccc`, 13 tests — epoch MAC-bound into batches, `adoptEpoch` forward-only switch, `verifyChainEpochAware` per-epoch keys, revoked refused, old epochs verify forever). **Step 4b (StateSerializer epoch-awareness) next. Step 5 (custody execution — real key bytes) remains OWNER-GATED.** Decision-1 resolved → both keys, sequenced (attestation first, then the HMAC-ledger asymmetric anchor, §5 step 6).
 
 **Owner constraints (verbatim intent):**
 1. *"Key rotation must be very carefully planned, designed and built. We cannot afford key corruption — not one but several independent checks at each stage: a triple lock against failure, and stability."*
