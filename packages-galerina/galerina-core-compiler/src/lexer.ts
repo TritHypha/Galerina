@@ -168,6 +168,10 @@ export const V1_ACTIVE_KEYWORDS: ReadonlySet<string> = new Set([
   "contract", "emit", "emits", "event", "types",
   // Resource declarations (Phase 17)
   "resource",
+  // Hallmark open types (RD-0353) — `hallmark X of T { gate: flow f }`: a
+  // developer-minted nominal type over a carrier, constructed only through a
+  // mandatory assay gate. Greenfield keyword; the token lives in this one place.
+  "hallmark",
   // Compile-time constants (allowed at top level; ordinary let/mut are not)
   "const",
   // Readable Logic Forms (Phase 9C) — promoted from future-reserved

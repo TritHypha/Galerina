@@ -1,0 +1,5 @@
+FUNGI-HALLMARK-005
+
+Operator '/' needs the 'ratio' operation, which 'LoyaltyPoints' does not declare
+(ops { add, subtract, scale, compare }). Undeclared operations are denied by default —
+add 'ratio' to the ops {} schema, or avoid '/' on that type.

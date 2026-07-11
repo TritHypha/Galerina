@@ -1,0 +1,6 @@
+none
+
+A well-formed hallmark declaration type-checks clean under both `galerina check` and
+`--strict-types`. Two hallmarks are minted (CustomerRef over String, LoyaltyPoints over
+Decimal), each with a mandatory gate that can fail, and the using flow touches only the
+declared `add` operation.

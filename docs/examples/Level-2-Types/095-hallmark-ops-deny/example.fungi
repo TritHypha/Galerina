@@ -1,0 +1,26 @@
+@version 1
+/// example: 095-hallmark-ops-deny
+/// level: 2
+/// concept: a hallmark's ops schema is deny-by-default — an undeclared operation does not compile
+/// expected_diagnostics: FUNGI-HALLMARK-005
+/// test_status: stable
+/// ai_rule: Only operations listed in a hallmark's ops {} exist for that type; ratio (/) must be declared to divide.
+
+// LoyaltyPoints declares add, subtract, scale and compare — but NOT ratio. A ratio
+// (points / points → a dimensionless number) is therefore undeclared, and dividing two
+// LoyaltyPoints values does not compile. The schema is the algebra: deny-by-default.
+hallmark LoyaltyPoints of Decimal {
+  ops:  { add, subtract, scale, compare }
+  gate: flow assayPoints
+}
+
+pure flow assayPoints(raw: Decimal) -> Result<LoyaltyPoints, ValidationError> {
+  contract { intent "assay a loyalty-points balance" }
+  return Ok(LoyaltyPoints(raw))
+}
+
+pure flow pointsRatio(base: LoyaltyPoints, bonus: LoyaltyPoints) -> Decimal {
+  contract { intent "points / points — a ratio that was never declared" }
+  let r = base / bonus     // REJECT FUNGI-HALLMARK-005: 'ratio' not declared in ops {}
+  return r
+}

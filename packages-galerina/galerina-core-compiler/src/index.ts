@@ -318,6 +318,62 @@ export const FUNGI_TYPE_031 = {
   suggestedFix: "Use Tensor.unsqueeze() to add a batch dimension, or Tensor.squeeze() to remove one.",
 } as const;
 
+// ── RD-0353 — Hallmark open types ───────────────────────────────────────────
+// `hallmark X of T { gate: flow f, ops { … } }` mints a developer-defined nominal
+// type over a carrier T. A hallmark is the assay-office mark: the compiler is the
+// assay, the gate is the mandatory test that must be able to fail, and the name is
+// a protected mark. These codes close the RD-0353 threat model (T1–T10) at compile
+// time, fail-closed. They live in their own namespace so they never collide with the
+// FUNGI-TYPE-NNN taxonomy. Construction-only (§2c#5) reuses FUNGI-TYPE-003 and
+// cross-type non-unification (§2c#4) reuses FUNGI-TYPE-004.
+
+/** FUNGI-HALLMARK-001: a hallmark tried to mint a reserved name — a built-in type, a currency/unit tag, or a governance/epistemic term (T1/T9). */
+export const FUNGI_HALLMARK_001 = {
+  code: "FUNGI-HALLMARK-001",
+  name: "RESERVED_TYPE_NAME",
+  severity: "error" as const,
+  message: "This name is reserved (a built-in type, a currency/unit tag, or a governance term) and cannot be minted as a hallmark type.",
+  why: "Reserved names carry built-in or governance meaning; minting over them would let a developer intercept or impersonate that meaning (the protected-marks rule).",
+  suggestedFix: "Choose a name that is not a built-in type, keyword, currency/unit tag, or governance term — or use a `unit` declaration for a quantity.",
+} as const;
+
+/** FUNGI-HALLMARK-002: a hallmark name is not a plain ASCII identifier — non-ASCII or mixed-script names are refused (homoglyph protection, T2). */
+export const FUNGI_HALLMARK_002 = {
+  code: "FUNGI-HALLMARK-002",
+  name: "NON_ASCII_HALLMARK_NAME",
+  severity: "error" as const,
+  message: "A hallmark name must be a plain ASCII identifier. Non-ASCII or mixed-script names are refused so a homoglyph cannot mint a look-alike of an existing type.",
+  suggestedFix: "Rename using ASCII letters, digits and underscore only.",
+} as const;
+
+/** FUNGI-HALLMARK-003: a hallmark was declared without a gate — a hallmark you can construct from its raw carrier is just an alias (gate mandatory). */
+export const FUNGI_HALLMARK_003 = {
+  code: "FUNGI-HALLMARK-003",
+  name: "HALLMARK_GATE_REQUIRED",
+  severity: "error" as const,
+  message: "A hallmark type must declare a mandatory gate (the assay). Add `gate: flow <parseFn>` returning Result<Name, Error>.",
+  why: "Without a gate the type is a transparent alias — anyone could construct it from the raw carrier, which defeats the point of a nominal minted type.",
+  suggestedFix: "Add a gate: gate: flow parseName",
+} as const;
+
+/** FUNGI-HALLMARK-004: a hallmark schema `ops {}` names an operation outside the closed algebra vocabulary — schemas subtract capability, never grant an effect (T3/T7). */
+export const FUNGI_HALLMARK_004 = {
+  code: "FUNGI-HALLMARK-004",
+  name: "UNKNOWN_HALLMARK_OP",
+  severity: "error" as const,
+  message: "A hallmark `ops {}` schema draws only from the closed algebra vocabulary (add, subtract, scale, ratio, compare). A schema can subtract capability, never grant an effect.",
+  suggestedFix: "Remove the unknown op, or replace it with one of: add, subtract, scale, ratio, compare.",
+} as const;
+
+/** FUNGI-HALLMARK-005: an operator was applied to a hallmark value whose algebra op is not declared in the type's `ops {}` schema (deny-by-default, T3). */
+export const FUNGI_HALLMARK_005 = {
+  code: "FUNGI-HALLMARK-005",
+  name: "UNDECLARED_HALLMARK_OP",
+  severity: "error" as const,
+  message: "This operator needs an algebra operation that the hallmark type's ops {} schema does not declare. Undeclared operations are denied by default.",
+  suggestedFix: "Add the operation to the hallmark's ops {} schema, or avoid this operator on that type.",
+} as const;
+
 /** FUNGI-VALUESTATE-006: A protected value was assigned to a plain (unprotected) binding. */
 export const FUNGI_VALUESTATE_006 = {
   code: "FUNGI-VALUESTATE-006",

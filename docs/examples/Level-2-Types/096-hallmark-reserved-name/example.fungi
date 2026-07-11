@@ -1,0 +1,19 @@
+@version 1
+/// example: 096-hallmark-reserved-name
+/// level: 2
+/// concept: a hallmark cannot mint a reserved name — a built-in type, a currency/unit tag, or a governance term
+/// expected_diagnostics: FUNGI-HALLMARK-001
+/// test_status: stable
+/// ai_rule: Names carry no authority; Money/Verdict/GBP and other reserved names cannot be minted as hallmarks.
+
+// Minting 'Money' would let a developer shadow the built-in financial type and confuse
+// its semantics — the protected-marks rule refuses it. The targeted hint steers you to
+// Money<GBP> or a 'unit' declaration. (GBP, Verdict, Trusted, Secret, … are refused too.)
+hallmark Money of Decimal {
+  gate: flow assayMoney
+}
+
+pure flow assayMoney(raw: Decimal) -> Result<Decimal, ValidationError> {
+  contract { intent "the mint is refused before this gate ever matters" }
+  return Ok(raw)
+}

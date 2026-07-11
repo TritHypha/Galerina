@@ -232,6 +232,23 @@ const STRING_BASED_TYPES: ReadonlySet<string> = new Set([
 ]);
 
 // ---------------------------------------------------------------------------
+// RD-0353 — Hallmark open types
+// `hallmark X of T { gate: flow f, ops { … } }` mints a nominal type over a
+// carrier. The schema's ops {} is the CLOSED algebra vocabulary a hallmark may
+// participate in — deny-by-default, and a schema can never grant an effect (T3/T7).
+// The epistemic/security governance vocabulary is reserved from minting (T1): a
+// name carries no authority, so it may not be impersonated by a developer type.
+// ---------------------------------------------------------------------------
+
+const HALLMARK_ALGEBRA_OPS: ReadonlySet<string> = new Set([
+  "add", "subtract", "scale", "ratio", "compare",
+]);
+
+const EPISTEMIC_RESERVED: ReadonlySet<string> = new Set([
+  "Trusted", "Unverified", "Refuted", "Tainted", "SafeFor", "Secret", "Decision", "Verdict",
+]);
+
+// ---------------------------------------------------------------------------
 // Generic arity rules
 // Canonical source: ../ZTF-Knowledge-Bases/formal-type-system-spec.md Section 3
 // ---------------------------------------------------------------------------
@@ -471,6 +488,15 @@ class TypeChecker {
    */
   private readonly brandedTypes = new Set<string>();
 
+  /**
+   * RD-0353: hallmark open types — `hallmark X of T { gate: flow f, ops { … } }`.
+   * name → { carrier, gate-flow, declared ops }. A hallmark is ALSO registered in
+   * brandedTypes (construction-only → FUNGI-TYPE-003) and userDefinedTypes
+   * (declare-or-reject → FUNGI-TYPE-001); this map adds the schema so the closed
+   * ops vocabulary and cross-type non-unification can be enforced.
+   */
+  private readonly hallmarkSchemas = new Map<string, { carrier: string; gate: string; ops: Set<string> }>();
+
   // ── Phase 11A.2: binding kind tracking (let / mut / readonly) ────────────
   /** Per-scope map from binding name → declaration kind (for reassignment checks). */
   private readonly bindingKindScopes: Array<Map<string, "let" | "mut" | "readonly">> = [];
@@ -596,6 +622,32 @@ class TypeChecker {
           this.brandedTypes.add(node.value.trim());
         }
       }
+    }
+
+    // RD-0353: hallmark X of T { … } — a declared, gated nominal type. Register it
+    // as a user type (declare-or-reject) AND a branded type (construction only
+    // through its gate → FUNGI-TYPE-003), and capture its schema for op checks. The
+    // mint-time gates (reserved name, ASCII, gate-mandatory, closed ops) fire in
+    // walkNode → checkHallmarkDecl.
+    if (node.kind === "hallmarkDecl" && node.value) {
+      const hmName = node.value.trim();
+      this.userDefinedTypes.add(hmName);
+      this.brandedTypes.add(hmName);
+      let carrier = "";
+      let gate = "";
+      const ops = new Set<string>();
+      for (const c of node.children ?? []) {
+        if (c.kind === "typeRef") carrier = (c.value ?? "").trim();
+        else if (c.kind === "identifier" && c.value?.startsWith("gate:")) {
+          gate = c.value.slice("gate:".length).trim();
+        } else if (c.kind === "identifier" && c.value?.startsWith("ops:")) {
+          for (const o of c.value.slice("ops:".length).split(",")) {
+            const t = o.trim();
+            if (t !== "") ops.add(t);
+          }
+        }
+      }
+      this.hallmarkSchemas.set(hmName, { carrier, gate, ops });
     }
     if (node.kind === "enumDecl" && node.value) {
       const variants = new Set<string>();
@@ -1009,6 +1061,23 @@ class TypeChecker {
         }
         // Comparison and logical → Bool
         if (["==","!=","<","<=",">",">=","&&","||"].includes(op)) return "Bool";
+        // RD-0353: hallmark algebra composes to the hallmark type. H (+|-) H → H;
+        // H (*|/) scalar → H (scale); H / H → the carrier (ratio, dimensionless).
+        // Operator LEGALITY is enforced in checkBinaryOperatorTypes; here we only
+        // propagate the resulting type so a bound `let total = base + bonus` keeps
+        // its hallmark identity. No-op for all non-hallmark programs.
+        {
+          const lB = leftType.split("<")[0] ?? leftType;
+          const rB = rightType.split("<")[0] ?? rightType;
+          const lHm = this.hallmarkSchemas.get(lB);
+          const rHm = this.hallmarkSchemas.get(rB);
+          if (lHm !== undefined && rHm !== undefined && lB === rB) {
+            if (op === "/") return lHm.carrier !== "" ? lHm.carrier : undefined; // ratio → carrier
+            return lB;                                                            // add/subtract → same hallmark
+          }
+          if (lHm !== undefined && rHm === undefined && NUMERIC_TYPES.has(rB)) return lB; // H * scalar → H
+          if (rHm !== undefined && lHm === undefined && NUMERIC_TYPES.has(lB)) return rB; // scalar * H → H
+        }
         // Numeric arithmetic → numeric result
         if (NUMERIC_TYPES.has(leftType) && NUMERIC_TYPES.has(rightType)) {
           if (leftType === "Decimal" || rightType === "Decimal") return "Decimal";
@@ -1158,6 +1227,11 @@ class TypeChecker {
         this.currentReturnType = prevReturnTypeFn;
         return;
       }
+
+      // ── RD-0353: hallmark mint-time gates ────────────────────────────────
+      case "hallmarkDecl":
+        this.checkHallmarkDecl(node);
+        return;
 
       case "block":
         this.pushBindingScope();
@@ -1633,6 +1707,118 @@ class TypeChecker {
     }
   }
 
+  // ── RD-0353 — Hallmark open types (mint-time gates) ──────────────────────
+
+  /** A hallmark may not mint a reserved name: a built-in type or currency/unit tag
+   *  (both covered by BUILT_IN_TYPES) or the epistemic/security governance vocabulary. */
+  private isReservedHallmarkName(name: string): boolean {
+    return isBuiltInType(name) || EPISTEMIC_RESERVED.has(name);
+  }
+
+  private reservedHallmarkMessage(name: string): string {
+    const CURRENCY = new Set(["GBP", "USD", "EUR", "JPY", "CHF", "CAD", "AUD"]);
+    if (name === "Money") {
+      return `'Money' is a reserved built-in type. For a currency amount use Money<GBP>; for a new quantity use a 'unit' declaration.`;
+    }
+    if (CURRENCY.has(name)) {
+      return `'${name}' is a currency/unit tag, not a mintable name — did you want Money<${name}> or a 'unit' declaration?`;
+    }
+    if (EPISTEMIC_RESERVED.has(name)) {
+      return `'${name}' is a reserved governance/epistemic term. Names carry no authority in Galerina, so it cannot be minted as a hallmark type.`;
+    }
+    return `'${name}' is a reserved built-in name and cannot be minted as a hallmark type.`;
+  }
+
+  private emitHallmarkOpDenied(
+    typeName: string, algebraOp: string, operator: string,
+    ops: ReadonlySet<string>, location: SourceLocation | undefined,
+  ): void {
+    const declared = ops.size > 0 ? [...ops].join(", ") : "(none)";
+    this.diagnostics.push(makeTCDiag(
+      "FUNGI-HALLMARK-005",
+      "UNDECLARED_HALLMARK_OP",
+      `Operator '${operator}' needs the '${algebraOp}' operation, which '${typeName}' does not declare (ops { ${declared} }). Undeclared operations are denied by default.`,
+      location,
+      `Add '${algebraOp}' to the '${typeName}' ops { } schema, or avoid '${operator}' on '${typeName}'.`,
+    ));
+  }
+
+  /** Mint-time enforcement for a `hallmark X of T { … }` declaration: ASCII-only
+   *  name (T2), reserved-name gate (T1/T9), mandatory gate, and the closed ops
+   *  vocabulary (T3/T7). Construction-only and cross-type non-unification are
+   *  enforced at use sites via brandedTypes/FUNGI-TYPE-003 and
+   *  checkBinaryOperatorTypes/FUNGI-TYPE-004. */
+  private checkHallmarkDecl(node: AstNode): void {
+    const name = (node.value ?? "").trim();
+    const loc = node.location;
+    let carrier = "";
+    let gate = "";
+    let opsRaw: string | undefined;
+    for (const c of node.children ?? []) {
+      if (c.kind === "typeRef") carrier = (c.value ?? "").trim();
+      else if (c.kind === "identifier" && c.value) {
+        if (c.value.startsWith("gate:")) gate = c.value.slice("gate:".length).trim();
+        else if (c.value.startsWith("ops:")) opsRaw = c.value.slice("ops:".length);
+      }
+    }
+    const hasName = name !== "" && name !== "<unknown>";
+
+    // T2 — ASCII-only identifier (homoglyph / mixed-script protection).
+    if (hasName && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) {
+      this.diagnostics.push(makeTCDiag(
+        "FUNGI-HALLMARK-002",
+        "NON_ASCII_HALLMARK_NAME",
+        `Hallmark name '${name}' must be a plain ASCII identifier. Non-ASCII or mixed-script names are refused so a homoglyph cannot mint a look-alike of an existing type.`,
+        loc,
+        `Rename using ASCII letters, digits and underscore only.`,
+      ));
+    }
+
+    // T1 / T9 — reserved-name gate.
+    if (hasName && this.isReservedHallmarkName(name)) {
+      this.diagnostics.push(makeTCDiag(
+        "FUNGI-HALLMARK-001",
+        "RESERVED_TYPE_NAME",
+        this.reservedHallmarkMessage(name),
+        loc,
+        `Choose a name that is not a built-in type, currency/unit tag, or governance term.`,
+      ));
+    }
+
+    // Gate mandatory — a hallmark without an assay is just an alias.
+    if (gate === "") {
+      const suffix = hasName ? name : "Name";
+      this.diagnostics.push(makeTCDiag(
+        "FUNGI-HALLMARK-003",
+        "HALLMARK_GATE_REQUIRED",
+        `Hallmark '${name}' has no gate. A hallmark is minted only through a mandatory assay: declare 'gate: flow <parseFn>' returning Result<${suffix}, Error>.`,
+        loc,
+        `Add a gate: gate: flow parse${suffix}`,
+        `gate: flow parse${suffix}`,
+      ));
+    }
+
+    // T3 / T7 — ops must be drawn from the closed algebra vocabulary (never effects).
+    if (opsRaw !== undefined) {
+      for (const raw of opsRaw.split(",")) {
+        const opTok = raw.trim();
+        if (opTok === "") continue;
+        if (!HALLMARK_ALGEBRA_OPS.has(opTok)) {
+          this.diagnostics.push(makeTCDiag(
+            "FUNGI-HALLMARK-004",
+            "UNKNOWN_HALLMARK_OP",
+            `'${opTok}' is not a hallmark algebra operation. ops {} draws only from the closed set { ${[...HALLMARK_ALGEBRA_OPS].join(", ")} } — a schema can subtract capability, never grant an effect.`,
+            loc,
+            `Remove '${opTok}', or use one of: ${[...HALLMARK_ALGEBRA_OPS].join(", ")}.`,
+          ));
+        }
+      }
+    }
+
+    // The carrier must resolve (a bogus carrier is FUNGI-TYPE-001).
+    if (carrier !== "") this.checkTypeRef(carrier, loc);
+  }
+
   /**
    * Phase 8A: check binary operator type compatibility.
    * Emits FUNGI-TYPE-004 for incompatible operand types.
@@ -1686,6 +1872,84 @@ class TypeChecker {
         return;
       }
       return; // Money<C> / Money<C> → Decimal ratio, valid
+    }
+
+    // ── RD-0353 — Hallmark open types: nominal, closed-algebra operands ───────
+    // A hallmark type is nominal over a carrier; its schema's ops {} is the CLOSED
+    // set of algebra operations it participates in (deny-by-default). Distinct
+    // hallmark types never unify (FUNGI-TYPE-004); an operator whose algebra op is
+    // undeclared is FUNGI-HALLMARK-005.
+    {
+      const leftHm = this.hallmarkSchemas.get(leftBase);
+      const rightHm = this.hallmarkSchemas.get(rightBase);
+      if (leftHm !== undefined || rightHm !== undefined) {
+        const COMPARISONS = new Set(["<", ">", "<=", ">=", "==", "!="]);
+        // Two DIFFERENT hallmark types never unify.
+        if (leftHm !== undefined && rightHm !== undefined && leftBase !== rightBase) {
+          this.diagnostics.push(makeTCDiag(
+            "FUNGI-TYPE-004",
+            "InvalidBinaryOperation",
+            `'${leftBase}' and '${rightBase}' are distinct hallmark types and never unify under '${op}'.`,
+            location,
+            `Hallmark types are nominal — operate on values of the same type, or convert through an explicit gate.`,
+          ));
+          return;
+        }
+        // Same hallmark type on both sides — same-type algebra.
+        if (leftHm !== undefined && rightHm !== undefined) {
+          if (op === "*") {
+            this.diagnostics.push(makeTCDiag(
+              "FUNGI-TYPE-004",
+              "InvalidBinaryOperation",
+              `Operator '*' cannot be applied to two '${leftBase}' values (that would be '${leftBase}²'). Scale by a dimensionless number instead.`,
+              location,
+              `Scale by a number: value * 2.`,
+            ));
+            return;
+          }
+          const need = op === "+" ? "add"
+            : op === "-" ? "subtract"
+            : op === "/" ? "ratio"
+            : COMPARISONS.has(op) ? "compare"
+            : undefined;
+          if (need !== undefined && !leftHm.ops.has(need)) {
+            this.emitHallmarkOpDenied(leftBase, need, op, leftHm.ops, location);
+          }
+          return;
+        }
+        // Hallmark <op> non-hallmark: scalar scaling/comparison, else non-unification.
+        const schema = (leftHm ?? rightHm)!;
+        const hmName = leftHm !== undefined ? leftBase : rightBase;
+        const otherBase = leftHm !== undefined ? rightBase : leftBase;
+        if (NUMERIC_TYPES.has(otherBase)) {
+          if (op === "*" || op === "/") {
+            if (!schema.ops.has("scale")) this.emitHallmarkOpDenied(hmName, "scale", op, schema.ops, location);
+            return;
+          }
+          if (COMPARISONS.has(op)) {
+            if (!schema.ops.has("compare")) this.emitHallmarkOpDenied(hmName, "compare", op, schema.ops, location);
+            return;
+          }
+          // + or - with a bare number: a hallmark is not a raw number.
+          this.diagnostics.push(makeTCDiag(
+            "FUNGI-TYPE-004",
+            "InvalidBinaryOperation",
+            `Operator '${op}' cannot combine hallmark type '${hmName}' with a bare '${otherBase}'. Add/subtract two '${hmName}' values, or scale (*) by a number.`,
+            location,
+            `Use '${hmName}' ${op} '${hmName}', or scale by a number.`,
+          ));
+          return;
+        }
+        // Hallmark vs an unrelated built-in (Money, String, …) → never unify.
+        this.diagnostics.push(makeTCDiag(
+          "FUNGI-TYPE-004",
+          "InvalidBinaryOperation",
+          `'${leftBase}' and '${rightBase}' never unify under '${op}' — a hallmark type is nominal and shares no algebra with other types.`,
+          location,
+          `Operate on values of the same hallmark type.`,
+        ));
+        return;
+      }
     }
 
     // ── Decimal partial-operator REDIRECT (#53/#54) ──────────────────────────
