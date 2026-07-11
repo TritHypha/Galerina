@@ -53,8 +53,8 @@ Full suite (`--emit-counts`) → sync counts (README/AGENTS/version.json) → al
 | 3 — #22 fuel cap | ✅ **DONE** (`36e22d9e`) — WAT while-loop emits a per-loop i32 counter that TRAPS past 100k (matches interpreter/bytecode-VM); authoritative suite 92/92 · 6997 green; signed-fixture-drift GREEN (not owner-gated). |
 | RD-0340 (owner: read first) | ✅ **read + recorded** — §5 owner-gated (enforcer in a workspace not on disk); §6 verified finding (governed-match fail-closed-default residual) → owner-gated RD-0341. See section below. |
 | 4 — #41 defensive controls | ✅ **DONE** — `galerina-core-network/src/defensive-controls.ts`: verified-trusted-proxy (`proxyIsTrusted`/`resolveClientAddress` — XFF trusted only under verified+pinned mTLS or verified gateway token), uniform responses (`uniformResourceResponse`/`uniformAuthResponse` — not-found≡forbidden, user-unknown≡bad-credentials), `boundPageLimit`, `isOpaqueId`. Both prompt test classes (hostile-direct-access + enumeration). core-network 185/185, tsc clean. **Follow-up (noted, not done):** wire these into route-defaults/kernel per-request + `posture.ts` hostile-host controls. |
-| 5 — F3 verify + tc twins | ⏳ starting |
-| 6 — battery + close | ⏸ |
+| 5 — F3 verify + tc twins | ✅ **F3 DONE** (`58cec2cc`) — verified from source the kernel releases the concurrency slot on ALL paths (success, gate-9.5 refusal, handler throw) via `finally`; no leak. Pinned with a throwing-handler-releases-slot regression (21/21). `lease`/`substrate-erasure`/`RateLimiter` are pure decisions with no held permit. **tower-citizen twin-seeding: deferred** (pattern already proven 4× on the kernel; budget). |
+| 6 — battery + close | ✅ **DONE** (`67ecfdf5`) — 92/92 · 7,008 · 0 fail; counts synced (README/AGENTS/version.json); graph-all 5,684n/0-violations; indexes regenerated LAST → provenance GREEN; path-leak + kernel-fungi-twins(4/4) GREEN. Only #20 diagnostic baseline stays red (owner-gated). Foreign dev-tool-index cluster excluded. |
 
 ## RD-0340 (owner: "read first") — outcomes
 
