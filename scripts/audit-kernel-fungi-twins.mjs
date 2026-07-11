@@ -29,6 +29,7 @@ const TWIN_DIRS = [
   "packages-galerina/galerina-core-sentinel-memory/src/self-hosted",
   "packages-galerina/galerina-core-sentinel-io/src/self-hosted",
   "packages-galerina/galerina-core-network/src/self-hosted",
+  "packages-galerina/galerina-core-sentinel-time/src/self-hosted",
 ];
 
 let failed = 0;
