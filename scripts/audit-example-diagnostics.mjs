@@ -10,7 +10,11 @@
 // The reference-link audit only covers the handful of LINKED examples; this covers ALL.
 //
 // CONTRACT (fail-closed):
-//   expected_diagnostics: none   -> `galerina check` MUST be clean (0 errors).
+//   expected_diagnostics: none   -> `galerina check` MUST be clean under BOTH plain AND
+//                                   --strict-types (a GOVERNED run). A plain-clean example
+//                                   that fails strict is the 104 class: a protected-leak or
+//                                   undefined-type hidden in plain that breaks a production
+//                                   build. `none` therefore means "clean when it matters".
 //   expected_diagnostics: <CODE> -> check MUST emit every listed code (negatives are
 //                                   re-run under --strict-types since TYPE-family codes
 //                                   are strict-only advisories in plain mode).
@@ -54,6 +58,7 @@ function categorize(why) {
     if (why.includes('VALUESTATE-006')) return 'redact-006';
     if (why.includes('VALUESTATE-008')) return 'untaint-008';
     if (why.includes('CONTEXT-001')) return 'context-001';
+    if (/FUNGI-TYPE-\d/.test(why)) return 'hidden-type-governed'; // clean in plain, fails a governed run
     return 'none-emits-other';
   }
   if (why.includes('did NOT emit')) {
@@ -154,12 +159,14 @@ if (selfTest) {
     ['none+clean passes', verdict({ kind: 'none', codes: S([]) }, S([]), true).ok === true],
     ['none-that-errors CAUGHT', verdict({ kind: 'none', codes: S([]) }, S(['FUNGI-VALUESTATE-006']), false).ok === false],
     ['none-not-clean CAUGHT', verdict({ kind: 'none', codes: S([]) }, S([]), false).ok === false],
+    ['none-fails-governed CAUGHT', verdict({ kind: 'none', codes: S([]) }, S(['FUNGI-TYPE-001']), false).ok === false],
     ['neg-that-emits passes', verdict({ kind: 'codes', codes: S(['FUNGI-TYPE-001']) }, S(['FUNGI-TYPE-001']), false).ok === true],
     ['neg-gone-silent CAUGHT', verdict({ kind: 'codes', codes: S(['FUNGI-TYPE-001']) }, S([]), true).ok === false],
     ['neg-wrong-code CAUGHT', verdict({ kind: 'codes', codes: S(['FUNGI-PII-001']) }, S(['FUNGI-TIER-001']), false).ok === false],
     ['missing-header CAUGHT', verdict({ kind: 'missing', codes: S([]) }, S([]), true).ok === false],
     ['categorize tier-drift', categorize('declares `none` but emitted FUNGI-TIER-001') === 'tier-drift'],
     ['categorize not-fired', categorize('expected X but did NOT emit X (got clean)') === 'diagnostic-not-fired'],
+    ['categorize hidden-type', categorize('declares `none` but emitted FUNGI-TYPE-001') === 'hidden-type-governed'],
   ];
   let bad = 0;
   for (const [name, pass] of cases) {
@@ -173,7 +180,6 @@ if (selfTest) {
 const files = EXAMPLE_ROOTS.flatMap((r) => collectFungi(join(root, r))).sort();
 
 const failures = [];
-const strictGap = []; // `none` examples that pass plain but carry strict advisories
 const excluded = []; // pre-curriculum proposal drafts, logged not gated
 let okCount = 0;
 
@@ -186,18 +192,24 @@ for (const abs of files) {
   const exp = parseExpectedText(readFileSync(abs, 'utf8'));
   const res = check(rel, false);
 
-  // Negative examples: TYPE-family codes are strict-only advisories in plain mode (the
-  // suppression that hid 104), so union a --strict-types pass when plain falls short.
   let emitted = res.codes;
+  let clean = res.clean;
   if (exp.kind === 'codes' && [...exp.codes].some((c) => !emitted.has(c))) {
+    // Negative examples: TYPE-family codes are strict-only advisories in plain mode
+    // (the suppression that hid 104), so union a --strict-types pass when plain is short.
     emitted = new Set([...emitted, ...check(rel, true).codes]);
+  } else if (exp.kind === 'none' && res.clean && res.codes.size === 0) {
+    // `none` must survive a GOVERNED run too — a plain-clean example that fails
+    // --strict-types is the 104 class (protected-leak / undefined-type hidden in plain).
+    const strict = check(rel, true);
+    emitted = new Set([...emitted, ...strict.codes]);
+    clean = clean && strict.clean;
   }
 
-  const v = verdict(exp, emitted, res.clean);
+  const v = verdict(exp, emitted, clean);
   if (v.ok) {
     okCount++;
-    if (exp.kind === 'none' && res.advisory > 0) strictGap.push({ rel, advisory: res.advisory });
-    console.log(`  OK   ${rel}  (${exp.kind === 'none' ? 'clean' : `emits ${[...exp.codes].join(', ')}`})`);
+    console.log(`  OK   ${rel}  (${exp.kind === 'none' ? 'clean + governed' : `emits ${[...exp.codes].join(', ')}`})`);
   } else {
     failures.push({ rel, why: v.why });
   }
@@ -221,12 +233,6 @@ const gated = okCount + failures.length;
 console.log('');
 if (excluded.length) {
   console.log(`note: ${excluded.length} pre-curriculum proposal draft(s) logged-but-not-gated (Proposed-*).`);
-}
-if (strictGap.length && !withStrict) {
-  console.log(
-    `note: ${strictGap.length} \`none\` example(s) pass plain but carry hidden TYPE advisories ` +
-      `(would fail a governed run) — run with --with-strict to enumerate.`,
-  );
 }
 
 // ── baseline-aware gating ──────────────────────────────────────────────────────
