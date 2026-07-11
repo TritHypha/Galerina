@@ -295,6 +295,27 @@ test("over concurrency limit -> 429", async () => {
   assert.equal(r3.status, 200);
 });
 
+// RD-0333 F3 — release-on-failure: a handler that THROWS must still release the concurrency slot
+// (the `finally` at gate 9/10), or leaked slots accumulate and self-DoS the route via gate 9.
+test("F3: a THROWING handler releases the concurrency slot (no phantom-slot self-DoS)", async () => {
+  let calls = 0;
+  const k = createAppKernel({
+    routes: [{
+      method: "GET", path: "/boom", handler: "boom", auth: { mode: "public" },
+      limits: { maxConcurrent: 1 },
+    }],
+    dispatch: { boom: () => { calls += 1; throw new Error("handler fault"); } },
+  });
+  // First request: the handler throws -> fail-closed 500, and the `finally` must release the slot.
+  const r1 = await k.handle(req({ method: "GET", path: "/boom" }));
+  assert.equal(r1.status, 500);
+  assert.equal(errorOf(r1), "internal_error");
+  // If the slot had leaked, this would 429 forever. It must reach the handler again (slot was freed).
+  const r2 = await k.handle(req({ method: "GET", path: "/boom" }));
+  assert.equal(r2.status, 500);
+  assert.equal(calls, 2); // handler reached BOTH times => the slot was released after the throw.
+});
+
 test("the pipeline order is fixed: there is no way to register middleware", async () => {
   const k = createAppKernel({
     routes: [{ method: "GET", path: "/x", handler: "x", auth: { mode: "public" } }],
