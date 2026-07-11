@@ -1,0 +1,64 @@
+<svg width="100%" viewBox="0 0 760 500" xmlns="http://www.w3.org/2000/svg" role="img" font-family="ui-sans-serif, system-ui, sans-serif">
+<title>Galerina — the K3 verdict lattice (deny-by-default, No-Coercion min)</title>
+<desc>Governance verdicts are three-valued Kleene-K3: ALLOW, INDETERMINATE, DENY, ordered DENY below INDETERMINATE below ALLOW. The vAnd gate combines predicates by taking the minimum — one DENY denies the whole gate, one unknown yields INDETERMINATE. An empty or absent gate is INDETERMINATE, not ALLOW (deny-by-default). At the trust boundary INDETERMINATE collapses to DENY (fail-closed); only a proven ALLOW proceeds. No-Coercion: INDETERMINATE is never silently promoted to ALLOW — the only lift is a proof, the only collapse is to DENY.</desc>
+<defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+</defs>
+
+<text x="34" y="30" font-size="16" font-weight="700" fill="#1c2128">Galerina — the K3 verdict lattice</text>
+<text x="34" y="49" font-size="11" fill="#5a6470">Three-valued Kleene governance · vAnd = min (most-restrictive wins) · deny-by-default · teal = ALLOW · amber = INDETERMINATE · red = DENY</text>
+
+<!-- the lattice -->
+<text x="150" y="82" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1c2128">the ordering (min goes down)</text>
+<rect x="70" y="94" width="160" height="52" rx="9" fill="#e3f5f2" stroke="#2b8a7e" stroke-width="1.8"/>
+<text x="150" y="115" text-anchor="middle" font-size="12.5" font-weight="700" fill="#14534b">ALLOW</text>
+<text x="150" y="132" text-anchor="middle" font-size="9.3" fill="#1f6b60">proven true · proceed</text>
+<path d="M150 146 L150 172" fill="none" stroke="#888780" stroke-width="2" marker-end="url(#ar)"/>
+<rect x="70" y="172" width="160" height="52" rx="9" fill="#fcf0d9" stroke="#c08a2e" stroke-width="1.8"/>
+<text x="150" y="193" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6b4e15">INDETERMINATE</text>
+<text x="150" y="210" text-anchor="middle" font-size="9.3" fill="#7d5e1d">unknown · not yet proven</text>
+<path d="M150 224 L150 250" fill="none" stroke="#888780" stroke-width="2" marker-end="url(#ar)"/>
+<rect x="70" y="250" width="160" height="52" rx="9" fill="#fbe6e2" stroke="#c0392b" stroke-width="1.8"/>
+<text x="150" y="271" text-anchor="middle" font-size="12.5" font-weight="700" fill="#8f2519">DENY</text>
+<text x="150" y="288" text-anchor="middle" font-size="9.3" fill="#a5382b">refused · fail-closed floor</text>
+<text x="150" y="326" text-anchor="middle" font-size="9.5" fill="#5a6470">min(a, b) = whichever is lower — a single DENY sinks the gate</text>
+
+<!-- vAnd gate -->
+<rect x="300" y="94" width="200" height="120" rx="10" fill="#e8effb" stroke="#3b6fd4" stroke-width="1.8"/>
+<text x="400" y="116" text-anchor="middle" font-size="12" font-weight="700" fill="#1f3a6b">vAnd — the gate</text>
+<text x="400" y="136" text-anchor="middle" font-size="9.6" fill="#3a5285">verdict = min(p1, p2, … pn)</text>
+<text x="400" y="156" text-anchor="middle" font-size="9.6" fill="#3a5285">one DENY → DENY</text>
+<text x="400" y="172" text-anchor="middle" font-size="9.6" fill="#3a5285">one unknown → INDETERMINATE</text>
+<text x="400" y="188" text-anchor="middle" font-size="9.6" fill="#3a5285">all ALLOW → ALLOW</text>
+<text x="400" y="205" text-anchor="middle" font-size="9" fill="#3a5285">Kleene ∧ · aliases the tpl-simulator gates</text>
+<path d="M236 200 C 268 200, 270 154, 298 154" fill="none" stroke="#3b6fd4" stroke-width="1.8" marker-end="url(#ar)"/>
+
+<!-- deny-by-default -->
+<rect x="300" y="234" width="200" height="68" rx="9" fill="#fcf0d9" stroke="#c08a2e" stroke-width="1.6" stroke-dasharray="5 4"/>
+<text x="400" y="256" text-anchor="middle" font-size="10.8" font-weight="700" fill="#6b4e15">deny-by-default</text>
+<text x="400" y="274" text-anchor="middle" font-size="9.3" fill="#7d5e1d">an empty / absent gate is</text>
+<text x="400" y="288" text-anchor="middle" font-size="9.3" fill="#7d5e1d">INDETERMINATE — never ALLOW</text>
+
+<!-- boundary collapse -->
+<rect x="540" y="94" width="186" height="120" rx="10" fill="#eef7f5" stroke="#2b8a7e" stroke-width="1.8"/>
+<text x="633" y="116" text-anchor="middle" font-size="12" font-weight="700" fill="#14534b">the boundary</text>
+<text x="633" y="137" text-anchor="middle" font-size="9.6" fill="#1f6b60">collapse to binary — the</text>
+<text x="633" y="151" text-anchor="middle" font-size="9.6" fill="#1f6b60">ONLY place K3 becomes 2-valued</text>
+<text x="633" y="173" text-anchor="middle" font-size="10" font-weight="600" fill="#14534b">ALLOW → proceed</text>
+<text x="633" y="192" text-anchor="middle" font-size="10" font-weight="600" fill="#8f2519">INDETERMINATE → DENY</text>
+<text x="633" y="207" text-anchor="middle" font-size="9" fill="#1f6b60">fail-closed · absence never proceeds</text>
+<path d="M500 154 L538 154" fill="none" stroke="#2b8a7e" stroke-width="2" marker-end="url(#ar)"/>
+<path d="M500 268 C 522 268, 560 232, 590 216" fill="none" stroke="#c0392b" stroke-width="1.8" stroke-dasharray="4 3" marker-end="url(#ar)"/>
+
+<!-- No-Coercion invariant -->
+<rect x="300" y="326" width="426" height="46" rx="9" fill="#f3eefa" stroke="#7a5bb0" stroke-width="1.5"/>
+<text x="513" y="346" text-anchor="middle" font-size="11" font-weight="700" fill="#43306b">No-Coercion — INDETERMINATE is never silently promoted to ALLOW</text>
+<text x="513" y="363" text-anchor="middle" font-size="9.5" fill="#5a4584">the only lift is a proof · the only collapse is to DENY · K3 ≠ a qubit (it is a fail-closed governance calculus)</text>
+
+<!-- footer invariant -->
+<rect x="34" y="392" width="692" height="82" rx="9" fill="#f7f4fb" stroke="#7a5bb0" stroke-width="1.2" stroke-dasharray="5 4"/>
+<text x="380" y="414" text-anchor="middle" font-size="11.5" font-weight="700" fill="#43306b">Why three values — absence must be distinguishable from denial</text>
+<text x="380" y="434" text-anchor="middle" font-size="10" fill="#5a4584">a two-valued gate must guess when a predicate is missing; K3 records "unknown" honestly, then fails it closed at the boundary</text>
+<text x="380" y="452" text-anchor="middle" font-size="9.5" fill="#5a4584">shipped in galerina-tower-citizen/src/three-valued-governance.ts · FUNGI-GOV-3VL-001 · the runtime diagram's fail-closed gate is this lattice</text>
+<text x="380" y="467" text-anchor="middle" font-size="9" fill="#5a4584">read with galerina-runtime.svg (the gate) and galerina-tri-pipe.svg (the router the verdict governs)</text>
+</svg>

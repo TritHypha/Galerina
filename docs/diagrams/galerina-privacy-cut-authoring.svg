@@ -1,0 +1,63 @@
+<svg width="100%" viewBox="0 0 760 520" xmlns="http://www.w3.org/2000/svg" role="img" font-family="ui-sans-serif, system-ui, sans-serif">
+<title>Galerina — the privacy-cut authoring surface (RD-0340 field↔cut rung-3)</title>
+<desc>A .gate privacy cut declares which field it strips: [name:cut(Field,...) fu op]. This hoists the field-to-cut binding from convention to the authoring surface (rung-3). A dominating cut that declares the wrong field is REJECT; an un-annotated privacy cut is a loud WARN (the Option-2 on-ramp). The cut-set annotation is gated to @version 1.2.0 on a capability ladder (1.0.0 base, 1.1.0 bus/SHAPE, 1.2.0 cut-set); the production parser stays at 1.0.0 and rejects a higher version wholesale, so the checker leads and the compiler rejects — fail-closed.</desc>
+<defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+</defs>
+
+<text x="34" y="30" font-size="16" font-weight="700" fill="#1c2128">Galerina — the privacy-cut authoring surface</text>
+<text x="34" y="49" font-size="11" fill="#5a6470">RD-0340: a privacy cut DECLARES its field · rung-3 binding · teal = ACCEPT · amber = WARN on-ramp · red = REJECT · blue = version gate</text>
+
+<!-- the annotation -->
+<rect x="34" y="66" width="692" height="82" rx="10" fill="#e8effb" stroke="#3b6fd4" stroke-width="1.8"/>
+<text x="380" y="90" text-anchor="middle" font-size="12" font-weight="700" fill="#1f3a6b">the .gate node annotation</text>
+<text x="380" y="120" text-anchor="middle" font-size="16" font-weight="700" fill="#1f3a6b" font-family="ui-monospace, monospace">[ phi : cut(PatientId, SSN) fu redact ]</text>
+<text x="150" y="140" text-anchor="middle" font-size="9" fill="#3a5285">name</text>
+<text x="360" y="140" text-anchor="middle" font-size="9" fill="#3a5285">the cut-SET — the fields this cut strips</text>
+<text x="560" y="140" text-anchor="middle" font-size="9" fill="#3a5285">effect · op</text>
+
+<!-- rung-3 outcomes -->
+<text x="380" y="176" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1c2128">rung-3: the cut must declare the field its PRIVACY rule strips</text>
+
+<rect x="34" y="188" width="224" height="118" rx="9" fill="#e3f5f2" stroke="#2b8a7e" stroke-width="1.7"/>
+<text x="146" y="210" text-anchor="middle" font-size="11" font-weight="700" fill="#14534b">✓ field declared &amp; correct</text>
+<text x="146" y="232" text-anchor="middle" font-size="9.6" fill="#1f6b60" font-family="ui-monospace, monospace">cut(PatientId)</text>
+<text x="146" y="250" text-anchor="middle" font-size="9.6" fill="#1f6b60" font-family="ui-monospace, monospace">deny phi PatientId -&gt; sink</text>
+<text x="146" y="272" text-anchor="middle" font-size="9.5" fill="#1f6b60">the cut dominates the rule's field</text>
+<text x="146" y="292" text-anchor="middle" font-size="10.5" font-weight="700" fill="#14534b">ACCEPT</text>
+
+<rect x="268" y="188" width="224" height="118" rx="9" fill="#fbe6e2" stroke="#c0392b" stroke-width="1.7"/>
+<text x="380" y="210" text-anchor="middle" font-size="11" font-weight="700" fill="#8f2519">✗ wrong field</text>
+<text x="380" y="232" text-anchor="middle" font-size="9.6" fill="#a5382b" font-family="ui-monospace, monospace">cut(SSN)</text>
+<text x="380" y="250" text-anchor="middle" font-size="9.6" fill="#a5382b" font-family="ui-monospace, monospace">deny phi PatientId -&gt; sink</text>
+<text x="380" y="272" text-anchor="middle" font-size="9.5" fill="#a5382b">the declared cut can't satisfy the rule</text>
+<text x="380" y="292" text-anchor="middle" font-size="10.5" font-weight="700" fill="#8f2519">REJECT</text>
+
+<rect x="502" y="188" width="224" height="118" rx="9" fill="#fcf0d9" stroke="#c08a2e" stroke-width="1.7" stroke-dasharray="5 4"/>
+<text x="614" y="210" text-anchor="middle" font-size="11" font-weight="700" fill="#6b4e15">? un-annotated cut</text>
+<text x="614" y="232" text-anchor="middle" font-size="9.6" fill="#7d5e1d" font-family="ui-monospace, monospace">cut  (no field)</text>
+<text x="614" y="250" text-anchor="middle" font-size="9.6" fill="#7d5e1d" font-family="ui-monospace, monospace">on a privacy path</text>
+<text x="614" y="272" text-anchor="middle" font-size="9.5" fill="#7d5e1d">binding falls back to convention</text>
+<text x="614" y="292" text-anchor="middle" font-size="10.5" font-weight="700" fill="#6b4e15">WARN — Option-2 on-ramp</text>
+
+<!-- version ladder -->
+<text x="380" y="342" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1c2128">the capability ladder — the annotation is gated to @version 1.2.0</text>
+<rect x="70" y="354" width="150" height="46" rx="8" fill="#f1efe8" stroke="#888780" stroke-width="1.4"/>
+<text x="145" y="374" text-anchor="middle" font-size="10.5" font-weight="600" fill="#2c2c2a">@version 1.0.0</text>
+<text x="145" y="390" text-anchor="middle" font-size="9" fill="#5f5e5a">v0.4 base glyphs</text>
+<path d="M220 377 L252 377" fill="none" stroke="#888780" stroke-width="1.8" marker-end="url(#ar)"/>
+<rect x="252" y="354" width="150" height="46" rx="8" fill="#f1efe8" stroke="#888780" stroke-width="1.4"/>
+<text x="327" y="374" text-anchor="middle" font-size="10.5" font-weight="600" fill="#2c2c2a">@version 1.1.0</text>
+<text x="327" y="390" text-anchor="middle" font-size="9" fill="#5f5e5a">+ bus / SHAPE</text>
+<path d="M402 377 L434 377" fill="none" stroke="#888780" stroke-width="1.8" marker-end="url(#ar)"/>
+<rect x="434" y="354" width="160" height="46" rx="8" fill="#e8effb" stroke="#3b6fd4" stroke-width="1.8"/>
+<text x="514" y="374" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1f3a6b">@version 1.2.0</text>
+<text x="514" y="390" text-anchor="middle" font-size="9" fill="#3a5285">+ cut(&lt;field&gt;) — HERE</text>
+
+<!-- checker-leads note -->
+<rect x="34" y="418" width="692" height="88" rx="9" fill="#f3eefa" stroke="#7a5bb0" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="380" y="440" text-anchor="middle" font-size="11.5" font-weight="700" fill="#43306b">checker leads · compiler rejects — the key fallout decision</text>
+<text x="380" y="459" text-anchor="middle" font-size="10" fill="#5a4584">the production gate-parser stays at {1.0.0} and rejects a 1.2.0 file WHOLESALE (it would otherwise silently downgrade cut(field) to a plain node — fail-OPEN)</text>
+<text x="380" y="476" text-anchor="middle" font-size="10" fill="#5a4584">so the field↔cut binding is hoisted from convention + FUNGI-PRIVACY-002 to the authoring surface (rung-3), fail-CLOSED</text>
+<text x="380" y="494" text-anchor="middle" font-size="9.5" fill="#5a4584">enforced by ZT-Galerina-GRAPH-ASCII-v2/tools/gate-check.mjs (self-test 172) · SPEC v0.6 · examples 01–05 migrated · Option-1 flip owner-gated</text>
+</svg>

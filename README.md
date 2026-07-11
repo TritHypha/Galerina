@@ -143,6 +143,18 @@ A ten-axis capability self-assessment across the surfaces Galerina governs, plus
   <tr>
     <td align="center" width="100%"><a href="docs/diagrams/galerina-ungoverned-vs-governed-breach.svg"><img src="docs/diagrams/galerina-ungoverned-vs-governed-breach.svg" alt="Galerina — the breach that can't compile" width="100%"></a><br><sub><b>16 · Galerina — the breach that can't compile (ungoverned vs governed)</b></sub></td>
   </tr>
+  <tr>
+    <td align="center" width="100%"><a href="docs/diagrams/galerina-k3-verdict-lattice.svg"><img src="docs/diagrams/galerina-k3-verdict-lattice.svg" alt="Galerina — the K3 verdict lattice" width="100%"></a><br><sub><b>17 · Galerina — the K3 verdict lattice (deny-by-default, No-Coercion min)</b></sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="100%"><a href="docs/diagrams/galerina-privacy-cut-authoring.svg"><img src="docs/diagrams/galerina-privacy-cut-authoring.svg" alt="Galerina — the privacy-cut authoring surface" width="100%"></a><br><sub><b>18 · Galerina — the privacy-cut authoring surface (RD-0340 field↔cut)</b></sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="100%"><a href="docs/diagrams/galerina-healthcare-getpatient-flow.svg"><img src="docs/diagrams/galerina-healthcare-getpatient-flow.svg" alt="Galerina — a governed healthcare flow" width="100%"></a><br><sub><b>19 · Galerina — a governed healthcare flow (getPatient)</b></sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="100%"><a href="docs/diagrams/galerina-payments-money-lane.svg"><img src="docs/diagrams/galerina-payments-money-lane.svg" alt="Galerina — a governed payment lane" width="100%"></a><br><sub><b>20 · Galerina — a governed payment lane (Money&lt;GBP&gt;)</b></sub></td>
+  </tr>
 </table>
 
 > **New here?** → [**SETUP.md**](SETUP.md) — install · run your first benchmark · Hello World with full governance comments
