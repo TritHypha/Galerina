@@ -1,6 +1,7 @@
 {
   "name": "@galerina/devtools-pci",
   "version": "1.0.0-beta.2",
+  "license": "Apache-2.0",
   "description": "PCI DSS 4.0.1 compliance audit for Galerina programs. Static analysis maps PCI requirements to Galerina contract patterns: cardholder data protection (Req 3), transit encryption (Req 4), access control (Req 7), audit logging (Req 10), secure development (Req 6). CI-runnable, no infrastructure needed.",
   "type": "module",
   "main": "./dist/index.js",
