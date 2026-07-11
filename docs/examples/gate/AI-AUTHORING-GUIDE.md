@@ -32,7 +32,8 @@ END                                        ← REQUIRED
 | `->` | directed flow (data / control) |
 | `[name]` | a node = a sandbox boundary |
 | `[name:fu op]` | node delegating dense compute to a `.fungi` `fu` body |
-| `[name:cut fu op]` | an **explicit privacy cut** (redaction vertex) |
+| `[name:cut fu op]` | an **explicit privacy cut** (redaction vertex; bare / unannotated) |
+| `[name:cut(field) fu op]` | a cut that **declares the field it strips** (`@version 1.2.0`; binds the `PRIVACY` field — RD-0340) |
 | `✓` (U+2713) | True / continue arm |
 | `×` (U+00D7) | False / reject arm |
 | `?` | tri-state guard (True / False / Unknown — K3) |
@@ -66,16 +67,20 @@ arm and the default (K3 forbids collapsing False into Unknown):
 [authz] -> [-]        # unknown -> deny drain (DISTINCT from ×)
 [×]     -> [-]        # denied drains to deny
 ```
-**2. Privacy-cut-before-egress** — a sensitive read reaches `[+]` ONLY through an explicit `:cut` that dominates it:
+**2. Privacy-cut-before-egress** — a sensitive read reaches `[+]` ONLY through an explicit `:cut` that dominates it, and the cut
+**declares the field it strips** (`@version 1.2.0`):
 ```
 [✓]             -> [raw:fu dbRead] @database.read
-[raw:fu dbRead] -> [view:cut fu redactX]              # THE cut
-[view:cut fu redactX] -> [logged:fu audit] @audit.write
-[logged:fu audit]     -> [+]                          # only the cut view leaves
+[raw:fu dbRead] -> [view:cut(X) fu redactX]           # THE cut — DECLARES it strips field X
+[view:cut(X) fu redactX] -> [logged:fu audit] @audit.write
+[logged:fu audit]     -> [+]                           # only the cut view leaves
 ```
-> **Caveat — the checker is field-blind:** it proves a `:cut` *dominates* egress; it does **not** prove the cut strips the field your
-> `PRIVACY` rule *names* (that field↔cut binding is checked at compile time by `FUNGI-PRIVACY-002`). **A green `:cut` over the wrong
-> field still leaks** — name the cut for the field it strips, and keep the `PRIVACY` field and the cut in sync.
+> **The field↔cut rule (RD-0340 — now enforced at authoring time):** the cut must **declare the field your `PRIVACY` rule names** —
+> `deny <class> X -> <sink>` requires a dominating `cut(X)` (a superset like `cut(X,Y)` also passes). The checker **REJECTS** a cut
+> that declares the *wrong* field (`cut(email)` for a `deny ... ssn` rule — *a green cut over the wrong field still leaks*), and
+> **WARNS** loudly on an *un-annotated* privacy cut, deferring only the "does the `.fungi` body actually strip it?" soundness to
+> compile-time `FUNGI-PRIVACY-002`. Keep the `PRIVACY` field and the `cut(...)` in sync — the mistake now fails at the surface, not
+> silently downstream. (The annotation needs `@version 1.2.0`; a bare `:cut` still parses under any version but warns on a privacy path.)
 
 **3. Deny-drain** — a `×`/`-` arm terminates in a drain (`[-]`/`[!]`), with no `[+]` and no privileged effect (only `audit.write` is
 allowed on a deny arm).
@@ -108,6 +113,7 @@ An out-of-date model *invents* syntax. These are the traps (all rejected by the 
 - ✅ INTENT + EFFECTS always.
 - ✅ Give every `?` three distinct arms (✓ / × / drain).
 - ✅ Route every sensitive read through a `:cut` before `[+]`.
+- ✅ **Declare the field on a privacy cut** — `[view:cut(CustomerId) fu redactCustomerId]` for a `deny ... CustomerId` rule (`@version 1.2.0`); the checker rejects a cut over the wrong field.
 - ✅ Use canonical effect names (`database.read`, `database.write`, `audit.write`, `network.outbound`, …).
 
 ## The verify loop — what makes this safe

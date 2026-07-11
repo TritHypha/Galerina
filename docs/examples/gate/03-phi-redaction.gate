@@ -1,4 +1,4 @@
-@version 1.0.0
+@version 1.2.0
 # Pattern: healthcare PHI. TWO protected fields (PatientId + SSN) are cut before egress.
 # The security property is visible in the shape: there is NO drawn edge from the raw
 # read to [+]; the only path to egress passes through the :cut, which dominates it.
@@ -16,7 +16,7 @@ GATE getPatient(caller: CallerId, patientRef: PatientRef) -> PatientView:
     [authz]           -> [-]
     [×]               -> [-]
     [✓]               -> [raw:fu dbRead]      @database.read
-    [raw:fu dbRead]   -> [view:cut fu redactPatientIdAndSSN]        # cuts BOTH PatientId and SSN
-    [view:cut fu redactPatientIdAndSSN] -> [logged:fu audit] @audit.write
+    [raw:fu dbRead]   -> [view:cut(PatientId,SSN) fu redactPatientIdAndSSN]        # cuts BOTH PatientId and SSN
+    [view:cut(PatientId,SSN) fu redactPatientIdAndSSN] -> [logged:fu audit] @audit.write
     [logged:fu audit] -> [+]
 END

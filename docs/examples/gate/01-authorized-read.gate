@@ -1,4 +1,4 @@
-@version 1.0.0
+@version 1.2.0
 # Pattern: authorised read with PII redaction.
 # Gate the caller (K3), read on the ALLOW arm, cut the protected field, audit, egress.
 GATE getCustomer(caller: CallerId, customerId: CustomerRef) -> CustomerView:
@@ -14,7 +14,7 @@ GATE getCustomer(caller: CallerId, customerId: CustomerRef) -> CustomerView:
     [authz]             -> [-]                                   # unknown -> deny drain (distinct default)
     [×]                 -> [-]                                   # denied caller drains to deny (deny-by-default)
     [✓]                 -> [record:fu dbQuery]  @database.read   # dense read delegated to a .fungi fu
-    [record:fu dbQuery] -> [view:cut fu redactCustomerId]       # EXPLICIT CUT (:cut) — strips CustomerId
-    [view:cut fu redactCustomerId] -> [logged:fu audit] @audit.write   # access is audited
+    [record:fu dbQuery] -> [view:cut(CustomerId) fu redactCustomerId]       # EXPLICIT CUT (:cut) — strips CustomerId
+    [view:cut(CustomerId) fu redactCustomerId] -> [logged:fu audit] @audit.write   # access is audited
     [logged:fu audit]   -> [+]                                  # egress: only the redacted view leaves
 END
