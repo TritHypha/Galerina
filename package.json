@@ -11,7 +11,9 @@
     "test": "node scripts/run-all-tests.cjs",
     "test:core": "node scripts/run-all-tests.cjs --core",
     "test:list": "node scripts/run-all-tests.cjs --list",
-    "brand-audit": "node scripts/brand-audit.mjs ."
+    "brand-audit": "node scripts/brand-audit.mjs .",
+    "audit:examples": "node scripts/audit-example-diagnostics.mjs",
+    "audit:examples:selftest": "node scripts/audit-example-diagnostics.mjs --self-test"
   },
   "engines": {
     "node": ">=18.0.0"

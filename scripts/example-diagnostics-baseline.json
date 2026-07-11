@@ -1,0 +1,286 @@
+{
+  "docs/examples/Level-2-Types/062-invalid-redacted-email/example.fungi": {
+    "category": "diagnostic-other-code",
+    "why": "expected FUNGI-TYPE-002 but did NOT emit FUNGI-TYPE-002 (got FUNGI-SYNTAX-006)"
+  },
+  "docs/examples/Level-2-Types/070-auto-invalid/example.fungi": {
+    "category": "diagnostic-other-code",
+    "why": "expected FUNGI-TYPE-002 but did NOT emit FUNGI-TYPE-002 (got FUNGI-SYNTAX-006)"
+  },
+  "docs/examples/Level-2-Types/086-protected-not-redacted/example.fungi": {
+    "category": "diagnostic-other-code",
+    "why": "expected FUNGI-TYPE-002 but did NOT emit FUNGI-TYPE-002 (got FUNGI-SYNTAX-006)"
+  },
+  "docs/examples/Level-3-Effects/102-guarded-database-write/example.fungi": {
+    "category": "tier-drift",
+    "why": "declares `none` but emitted FUNGI-GOV-002, FUNGI-TIER-001, FUNGI-VALUESTATE-008"
+  },
+  "docs/examples/Level-3-Effects/103-guarded-network-outbound/example.fungi": {
+    "category": "tier-drift",
+    "why": "declares `none` but emitted FUNGI-TIER-001"
+  },
+  "docs/examples/Level-3-Effects/105-missing-database-effect/example.fungi": {
+    "category": "diagnostic-other-code",
+    "why": "expected FUNGI-EFFECT-001 but did NOT emit FUNGI-EFFECT-001 (got FUNGI-TIER-001, FUNGI-VALUESTATE-008, FUNGI-TYPE-001)"
+  },
+  "docs/examples/Level-3-Effects/106-missing-network-effect/example.fungi": {
+    "category": "diagnostic-other-code",
+    "why": "expected FUNGI-EFFECT-001 but did NOT emit FUNGI-EFFECT-001 (got FUNGI-TIER-001)"
+  },
+  "docs/examples/Level-3-Effects/107-pure-flow-calls-effectful-flow/example.fungi": {
+    "category": "diagnostic-not-fired",
+    "why": "expected FUNGI-EFFECT-003 but did NOT emit FUNGI-EFFECT-003 (got clean)"
+  },
+  "docs/examples/Level-3-Effects/108-guarded-flow-calls-effectful-flow/example.fungi": {
+    "category": "tier-drift",
+    "why": "declares `none` but emitted FUNGI-TIER-001"
+  },
+  "docs/examples/Level-3-Effects/111-local-fn-effect-not-covered-by-parent/example.fungi": {
+    "category": "diagnostic-other-code",
+    "why": "expected FUNGI-EFFECT-001 but did NOT emit FUNGI-EFFECT-001 (got FUNGI-GOV-002, FUNGI-TIER-001, FUNGI-VALUESTATE-008, FUNGI-TYPE-001)"
+  },
+  "docs/examples/Level-3-Effects/112-local-fn-cannot-declare-effects/example.fungi": {
+    "category": "missing-header",
+    "why": "no `expected_diagnostics` header (every example must declare its contract)"
+  },
+  "docs/examples/Level-3-Effects/114-secure-flow-missing-audit-effect/example.fungi": {
+    "category": "diagnostic-not-fired",
+    "why": "expected FUNGI-EFFECT-001 but did NOT emit FUNGI-EFFECT-001 (got clean)"
+  },
+  "docs/examples/Level-3-Effects/115-effect-propagation-through-call/example.fungi": {
+    "category": "tier-drift",
+    "why": "declares `none` but emitted FUNGI-GOV-002, FUNGI-TIER-001, FUNGI-VALUESTATE-008"
+  },
+  "docs/examples/Level-3-Effects/116-effect-propagation-missing-parent/example.fungi": {
+    "category": "diagnostic-other-code",
+    "why": "expected FUNGI-EFFECT-002 but did NOT emit FUNGI-EFFECT-002 (got FUNGI-GOV-002, FUNGI-TIER-001, FUNGI-VALUESTATE-008, FUNGI-TYPE-001, FUNGI-TYPE-014)"
+  },
+  "docs/examples/Level-3-Effects/119-effect-name-invalid/example.fungi": {
+    "category": "diagnostic-other-code",
+    "why": "expected FUNGI-EFFECT-005 but did NOT emit FUNGI-EFFECT-005 (got FUNGI-TIER-001)"
+  },
+  "docs/examples/Level-4-Security/160-protected-not-redacted/example.fungi": {
+    "category": "diagnostic-other-code",
+    "why": "expected FUNGI-TYPE-002 but did NOT emit FUNGI-TYPE-002 (got FUNGI-SYNTAX-006)"
+  },
+  "docs/examples/Level-4-Security/175-security-summary-example/example.fungi": {
+    "category": "redact-006",
+    "why": "declares `none` but emitted FUNGI-VALUESTATE-006"
+  },
+  "docs/examples/Level-5-Governance/201-intent-basic/example.fungi": {
+    "category": "tier-drift",
+    "why": "declares `none` but emitted FUNGI-GOV-002, FUNGI-TIER-001, FUNGI-VALUESTATE-008"
+  },
+  "docs/examples/Level-5-Governance/203-intent-mismatch-invalid/example.fungi": {
+    "category": "diagnostic-other-code",
+    "why": "expected FUNGI-INTENT-001 but did NOT emit FUNGI-INTENT-001 (got FUNGI-GOV-001, FUNGI-TIER-001)"
+  },
+  "docs/examples/Level-5-Governance/205-remote-execution-violation/example.fungi": {
+    "category": "diagnostic-other-code",
+    "why": "expected FUNGI-GOV-004 but did NOT emit FUNGI-GOV-004 (got FUNGI-TYPE-001)"
+  },
+  "docs/examples/Level-5-Governance/206-protected-data-sharing-authority/example.fungi": {
+    "category": "untaint-008",
+    "why": "declares `none` but emitted FUNGI-VALUESTATE-008"
+  },
+  "docs/examples/Level-5-Governance/207-protected-data-sharing-missing-authority/example.fungi": {
+    "category": "diagnostic-other-code",
+    "why": "expected FUNGI-GOV-003 but did NOT emit FUNGI-GOV-003 (got FUNGI-VALUESTATE-008)"
+  },
+  "docs/examples/Level-5-Governance/211-policy-block-allows-purpose/example.fungi": {
+    "category": "redact-006",
+    "why": "declares `none` but emitted FUNGI-VALUESTATE-006"
+  },
+  "docs/examples/Level-5-Governance/212-policy-purpose-mismatch/example.fungi": {
+    "category": "diagnostic-other-code",
+    "why": "expected FUNGI-GOV-005 but did NOT emit FUNGI-GOV-005 (got FUNGI-VALUESTATE-006, FUNGI-TYPE-001)"
+  },
+  "docs/examples/Level-5-Governance/213-governance-summary-example/example.fungi": {
+    "category": "redact-006",
+    "why": "declares `none` but emitted FUNGI-VALUESTATE-006"
+  },
+  "docs/examples/Level-5-Governance/216-event-declaration/example.fungi": {
+    "category": "diagnostic-other-code",
+    "why": "expected FUNGI-EVENT-001 but did NOT emit FUNGI-EVENT-001 (got FUNGI-VALUESTATE-008)"
+  },
+  "docs/examples/Level-5-Governance/222-limits-privacy/example.fungi": {
+    "category": "untaint-008",
+    "why": "declares `none` but emitted FUNGI-VALUESTATE-008"
+  },
+  "docs/examples/Level-6-Compute/305-tensor-dynamic-shape/example.fungi": {
+    "category": "tier-drift",
+    "why": "declares `none` but emitted FUNGI-TIER-001"
+  },
+  "docs/examples/Level-6-Compute/314-compute-npu-ai-inference/example.fungi": {
+    "category": "tier-drift",
+    "why": "declares `none` but emitted FUNGI-TIER-001"
+  },
+  "docs/examples/Level-6-Compute/318-compute-hint-missing/example.fungi": {
+    "category": "missing-header",
+    "why": "no `expected_diagnostics` header (every example must declare its contract)"
+  },
+  "docs/examples/Level-7-AI/351-embedding-flow/example.fungi": {
+    "category": "tier-drift",
+    "why": "declares `none` but emitted FUNGI-TIER-001"
+  },
+  "docs/examples/Level-7-AI/352-ai-inference-effect/example.fungi": {
+    "category": "diagnostic-not-fired",
+    "why": "expected FUNGI-EFFECT-001 but did NOT emit FUNGI-EFFECT-001 (got clean)"
+  },
+  "docs/examples/Level-7-AI/353-protected-ai-input/example.fungi": {
+    "category": "none-emits-other",
+    "why": "declares `none` but emitted errors"
+  },
+  "docs/examples/Level-7-AI/354-ai-batch-inference/example.fungi": {
+    "category": "tier-drift",
+    "why": "declares `none` but emitted FUNGI-TIER-001"
+  },
+  "docs/examples/Level-7-AI/356-ai-missing-audit/example.fungi": {
+    "category": "diagnostic-other-code",
+    "why": "expected FUNGI-GOV-002 but did NOT emit FUNGI-GOV-002 (got FUNGI-TYPE-001)"
+  },
+  "docs/examples/Level-7-AI/357-tensor-model-input-output/example.fungi": {
+    "category": "tier-drift",
+    "why": "declares `none` but emitted FUNGI-TIER-001"
+  },
+  "docs/examples/Level-7-AI/358-ai-secure-string-in-ai/example.fungi": {
+    "category": "diagnostic-other-code",
+    "why": "expected FUNGI-SECRET-001 but did NOT emit FUNGI-SECRET-001 (got FUNGI-TIER-001)"
+  },
+  "docs/examples/Level-7-AI/359-embedding-with-fallback/example.fungi": {
+    "category": "tier-drift",
+    "why": "declares `none` but emitted FUNGI-TIER-001"
+  },
+  "docs/examples/Level-7-AI/361-ai-any-tensor/example.fungi": {
+    "category": "tier-drift",
+    "why": "declares `none` but emitted FUNGI-TIER-001"
+  },
+  "docs/examples/Level-7-AI/364-ai-effect-propagation/example.fungi": {
+    "category": "diagnostic-not-fired",
+    "why": "expected FUNGI-EFFECT-002 but did NOT emit FUNGI-EFFECT-002 (got clean)"
+  },
+  "docs/examples/Level-7-AI/366-ai-unsafe-input-to-model/example.fungi": {
+    "category": "diagnostic-not-fired",
+    "why": "expected FUNGI-VALUESTATE-003 but did NOT emit FUNGI-VALUESTATE-003 (got clean)"
+  },
+  "docs/examples/Level-7-AI/367-ai-inference-without-effect/example.fungi": {
+    "category": "diagnostic-not-fired",
+    "why": "expected FUNGI-EFFECT-001 but did NOT emit FUNGI-EFFECT-001 (got clean)"
+  },
+  "docs/examples/Level-7-AI/368-contract-ai-flow/example.fungi": {
+    "category": "missing-header",
+    "why": "no `expected_diagnostics` header (every example must declare its contract)"
+  },
+  "docs/examples/Level-7-AI/368-signed-attestation/example.fungi": {
+    "category": "tier-drift",
+    "why": "declares `none` but emitted FUNGI-TIER-001"
+  },
+  "docs/examples/Level-7-AI/369-ai-classification-flow/example.fungi": {
+    "category": "tier-drift",
+    "why": "declares `none` but emitted FUNGI-TIER-001"
+  },
+  "docs/examples/Level-8-Targets/401-target-cpu/example.fungi": {
+    "category": "tier-drift",
+    "why": "declares `none` but emitted FUNGI-TIER-001"
+  },
+  "docs/examples/Level-8-Targets/402-target-gpu/example.fungi": {
+    "category": "tier-drift",
+    "why": "declares `none` but emitted FUNGI-TIER-001"
+  },
+  "docs/examples/Level-8-Targets/403-target-npu/example.fungi": {
+    "category": "tier-drift",
+    "why": "declares `none` but emitted FUNGI-TIER-001"
+  },
+  "docs/examples/Level-8-Targets/405-target-photonic/example.fungi": {
+    "category": "tier-drift",
+    "why": "declares `none` but emitted FUNGI-TIER-001"
+  },
+  "docs/examples/Level-8-Targets/406-target-quantum/example.fungi": {
+    "category": "tier-drift",
+    "why": "declares `none` but emitted FUNGI-TIER-001"
+  },
+  "docs/examples/Level-8-Targets/407-target-best-prefer/example.fungi": {
+    "category": "tier-drift",
+    "why": "declares `none` but emitted FUNGI-TIER-001"
+  },
+  "docs/examples/Level-8-Targets/408-target-deny-remote/example.fungi": {
+    "category": "tier-drift",
+    "why": "declares `none` but emitted FUNGI-TIER-001"
+  },
+  "docs/examples/Level-8-Targets/409-target-deny-list/example.fungi": {
+    "category": "tier-drift",
+    "why": "declares `none` but emitted FUNGI-TIER-001"
+  },
+  "docs/examples/Level-8-Targets/410-adaptive-runtime/example.fungi": {
+    "category": "tier-drift",
+    "why": "declares `none` but emitted FUNGI-TIER-001"
+  },
+  "docs/examples/Level-8-Targets/412-target-photonic-with-fallback/example.fungi": {
+    "category": "tier-drift",
+    "why": "declares `none` but emitted FUNGI-TIER-001"
+  },
+  "docs/examples/Level-8-Targets/413-target-quantum-simulation/example.fungi": {
+    "category": "tier-drift",
+    "why": "declares `none` but emitted FUNGI-TIER-001"
+  },
+  "docs/examples/Level-8-Targets/414-target-no-fallback-invalid/example.fungi": {
+    "category": "diagnostic-other-code",
+    "why": "expected FUNGI-TARGET-001 but did NOT emit FUNGI-TARGET-001 (got FUNGI-TIER-001, FUNGI-TYPE-009, FUNGI-TYPE-001)"
+  },
+  "docs/examples/Level-8-Targets/416-target-fallback-missing/example.fungi": {
+    "category": "missing-header",
+    "why": "no `expected_diagnostics` header (every example must declare its contract)"
+  },
+  "docs/examples/Level-9-Enterprise/452-healthcare-invalid-pii-log/example.fungi": {
+    "category": "diagnostic-other-code",
+    "why": "expected FUNGI-SECRET-001 but did NOT emit FUNGI-SECRET-001 (got FUNGI-VALUESTATE-006)"
+  },
+  "docs/examples/Level-9-Enterprise/453-financial-payment-charge/example.fungi": {
+    "category": "redact-006",
+    "why": "declares `none` but emitted FUNGI-VALUESTATE-006"
+  },
+  "docs/examples/Level-9-Enterprise/456-compliance-pii-effect/example.fungi": {
+    "category": "diagnostic-not-fired",
+    "why": "expected FUNGI-PII-001 but did NOT emit FUNGI-PII-001 (got clean)"
+  },
+  "docs/examples/Level-9-Enterprise/457-compliance-phi-effect/example.fungi": {
+    "category": "diagnostic-other-code",
+    "why": "expected FUNGI-PHI-001 but did NOT emit FUNGI-PHI-001 (got FUNGI-TYPE-001)"
+  },
+  "docs/examples/Level-9-Enterprise/458-compliance-audit-required/example.fungi": {
+    "category": "diagnostic-other-code",
+    "why": "expected FUNGI-AUDIT-001 but did NOT emit FUNGI-AUDIT-001 (got FUNGI-TYPE-001)"
+  },
+  "docs/examples/Level-9-Enterprise/461-authority-missing/example.fungi": {
+    "category": "diagnostic-other-code",
+    "why": "expected FUNGI-GOV-003 but did NOT emit FUNGI-GOV-003 (got FUNGI-TYPE-001)"
+  },
+  "docs/examples/Level-9-Enterprise/462-policy-purpose/example.fungi": {
+    "category": "redact-006",
+    "why": "declares `none` but emitted FUNGI-VALUESTATE-006"
+  },
+  "docs/examples/Level-9-Enterprise/463-policy-mismatch/example.fungi": {
+    "category": "diagnostic-other-code",
+    "why": "expected FUNGI-GOV-005 but did NOT emit FUNGI-GOV-005 (got FUNGI-VALUESTATE-006)"
+  },
+  "docs/examples/Level-9-Enterprise/464-enterprise-supply-chain/example.fungi": {
+    "category": "diagnostic-other-code",
+    "why": "expected FUNGI-MODULE-005 but did NOT emit FUNGI-MODULE-005 (got FUNGI-VALUESTATE-008)"
+  },
+  "docs/examples/Level-9-Enterprise/466-pii-without-pii-effect/example.fungi": {
+    "category": "diagnostic-not-fired",
+    "why": "expected FUNGI-PII-001 but did NOT emit FUNGI-PII-001 (got clean)"
+  },
+  "docs/examples/Level-9-Enterprise/467-protected-response-body/example.fungi": {
+    "category": "diagnostic-not-fired",
+    "why": "expected FUNGI-GOV-003 but did NOT emit FUNGI-GOV-003 (got clean)"
+  },
+  "docs/examples/Level-9-Enterprise/468-full-contract-model/example.fungi": {
+    "category": "context-001",
+    "why": "declares `none` but emitted FUNGI-CONTEXT-001"
+  },
+  "docs/examples/Level-9-Enterprise/469-contract-financial-payment/example.fungi": {
+    "category": "context-001",
+    "why": "declares `none` but emitted FUNGI-CONTEXT-001"
+  }
+}
