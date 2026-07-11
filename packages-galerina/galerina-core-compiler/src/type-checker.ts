@@ -2050,13 +2050,19 @@ class TypeChecker {
     }
 
     // Recursively check each type argument
-    for (const arg of args) {
-      const trimmed = arg.trim();
+    for (let i = 0; i < args.length; i++) {
+      const trimmed = (args[i] ?? "").trim();
       if (trimmed === "" || /^\d/.test(trimmed)) continue; // skip numeric dimension args
       // Skip string-literal args: a quoted arg is a nominal TAG, not a type name —
       // e.g. the second parameter of Brand<T, "Name"> is the brand tag, never a
       // type reference. Recursing into it produced a false FUNGI-TYPE-001 (#17).
       if (/^["']/.test(trimmed)) continue;
+      // Skip a Brand's tag argument (Brand<T, Tag>): the 2nd parameter is a nominal
+      // brand tag conferring nominal identity, NOT a type reference — whether quoted OR
+      // a bare identifier. The canonical form in SYNTAX-REFERENCE uses a bare tag
+      // (`Brand<String, EmailTag>`), so recursing into it raised a false FUNGI-TYPE-001
+      // under --strict-types — the strict-path sibling of the #17 quoted-tag fix.
+      if (base === "Brand" && i === 1) continue;
       // Pass parent location; source locations for nested args are Phase 7
       this.checkTypeRef(trimmed, location);
     }

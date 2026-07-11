@@ -1,25 +1,9 @@
 {
-  "docs/examples/Level-1-Basics/003-secure-flow/example.fungi": {
-    "category": "hidden-type-governed",
-    "why": "declares `none` but emitted FUNGI-TYPE-001"
-  },
   "docs/examples/Level-1-Basics/011-option-return/example.fungi": {
     "category": "hidden-type-governed",
     "why": "declares `none` but emitted FUNGI-TYPE-001"
   },
   "docs/examples/Level-1-Basics/013-match-option/example.fungi": {
-    "category": "hidden-type-governed",
-    "why": "declares `none` but emitted FUNGI-TYPE-001"
-  },
-  "docs/examples/Level-1-Basics/017-domain-brand-type/example.fungi": {
-    "category": "hidden-type-governed",
-    "why": "declares `none` but emitted FUNGI-TYPE-001"
-  },
-  "docs/examples/Level-2-Types/057-email-type/example.fungi": {
-    "category": "hidden-type-governed",
-    "why": "declares `none` but emitted FUNGI-TYPE-001"
-  },
-  "docs/examples/Level-2-Types/061-redacted-email/example.fungi": {
     "category": "hidden-type-governed",
     "why": "declares `none` but emitted FUNGI-TYPE-001"
   },
@@ -58,10 +42,6 @@
   "docs/examples/Level-2-Types/086-protected-not-redacted/example.fungi": {
     "category": "diagnostic-other-code",
     "why": "expected FUNGI-TYPE-002 but did NOT emit FUNGI-TYPE-002 (got FUNGI-SYNTAX-006)"
-  },
-  "docs/examples/Level-2-Types/087-protected-email-audit/example.fungi": {
-    "category": "hidden-type-governed",
-    "why": "declares `none` but emitted FUNGI-TYPE-001"
   },
   "docs/examples/Level-2-Types/091-trust-sensitivity-independent/example.fungi": {
     "category": "hidden-type-governed",
@@ -123,25 +103,9 @@
     "category": "diagnostic-other-code",
     "why": "expected FUNGI-EFFECT-005 but did NOT emit FUNGI-EFFECT-005 (got FUNGI-TIER-001)"
   },
-  "docs/examples/Level-4-Security/151-http-request-boundary/example.fungi": {
-    "category": "hidden-type-governed",
-    "why": "declares `none` but emitted FUNGI-TYPE-001"
-  },
-  "docs/examples/Level-4-Security/158-redact-email/example.fungi": {
-    "category": "hidden-type-governed",
-    "why": "declares `none` but emitted FUNGI-TYPE-001"
-  },
-  "docs/examples/Level-4-Security/159-redact-patient-id/example.fungi": {
-    "category": "hidden-type-governed",
-    "why": "declares `none` but emitted FUNGI-TYPE-001"
-  },
   "docs/examples/Level-4-Security/160-protected-not-redacted/example.fungi": {
     "category": "diagnostic-other-code",
     "why": "expected FUNGI-TYPE-002 but did NOT emit FUNGI-TYPE-002 (got FUNGI-SYNTAX-006)"
-  },
-  "docs/examples/Level-4-Security/161-safe-audit-log/example.fungi": {
-    "category": "hidden-type-governed",
-    "why": "declares `none` but emitted FUNGI-TYPE-001"
   },
   "docs/examples/Level-5-Governance/201-intent-basic/example.fungi": {
     "category": "tier-drift",
