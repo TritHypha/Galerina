@@ -17,6 +17,7 @@ Every ✅ example in the table is verified `galerina check`-clean (plain, and �
 | `const` for constants (KB-rejected / lexer drift) | `static NAME = …` | [05-bindings-taint-privacy.md](05-bindings-taint-privacy.md) |
 | Return a `protected`/PII value directly in the response | Gate / `redact()` / omit; `deny protected T to response.body` | `FUNGI-GOV-003`; [getPatient](../../../examples/healthcare/getPatient.fungi) `privacy {}` |
 | `type X = record {…}` / `type X = enum {…}` | `record X {…}` / `enum X {…}` decl (or contract-`types { Name {…} }`) | [015-record-basic](../../examples/Level-1-Basics/015-record-basic/example.fungi), [014-enum-basic](../../examples/Level-1-Basics/014-enum-basic/example.fungi) — **F2 resolved** (below) |
+| A raw `String` (or an inline `Brand<String,Tag>` re-declared at every use) for a repeated domain identity | `hallmark X of T { gate: flow f }` — mint the name once; construct it **only** through the assay gate (a gate proves *shape*, it does not sanitize *trust*) | [094-hallmark-declaration](../../examples/Level-2-Types/094-hallmark-declaration/example.fungi); `FUNGI-HALLMARK-*` / `FUNGI-TYPE-003` (RD-0353) |
 
 ## F2 resolved (compiler-verified 2026-07-11)
 
@@ -28,3 +29,4 @@ Every ✅ example in the table is verified `galerina check`-clean (plain, and �
 - **Errors are values.** `Result<T,E>` + `?` + exhaustive `match`; `trap cond : ERR` for fail-closed refusal. No catch-and-continue.
 - **Defaults fail closed.** A `_ =>` arm on a Verdict/Decision `match` must `deny`/`trap`, never proceed (RD-0341).
 - **Untrusted data is proven, then used.** `unsafe let` → `validate.*(...)?` (untaint) → bound value → sink; `redact()` before any egress sink (audit *or* network), bound to a `let` so the boundary is gated too.
+- **A minted type is assayed, not asserted.** A repeated domain identity is a `hallmark X of T { gate: flow f }` — the *declaration is the mint*, construction goes only through a gate that can fail, and `ops {}` is deny-by-default (an undeclared operation does not compile). Minting is **not** sanitizing: a tainted value stays tainted through the gate (`FUNGI-VALUESTATE-004`), so a hallmark proves *shape/identity*, never *trust* ([RD-0353](../../../packages-galerina/galerina-core-compiler/tests/hallmark.test.mjs); [094–098](../../examples/Level-2-Types/094-hallmark-declaration/example.fungi)).

@@ -51,7 +51,8 @@ One table per construct family. Every **Example** links a curriculum example tha
 | Construct | Meaning | Example | Ref |
 |---|---|---|---|
 | `Int` · `Decimal` · `String` · `Bool` · `Byte` · `Char` | primitives | [051-int-basic](../../examples/Level-2-Types/051-int-basic/example.fungi), [053-string-basic](../../examples/Level-2-Types/053-string-basic/example.fungi) | — |
-| `type X = Brand<String, Tag>` | domain-branded newtype | [017-domain-brand-type](../../examples/Level-1-Basics/017-domain-brand-type/example.fungi), [057-email-type](../../examples/Level-2-Types/057-email-type/example.fungi) | `FUNGI-TYPE-001` |
+| `type X = Brand<String, Tag>` | domain-branded newtype (inline one-off) | [017-domain-brand-type](../../examples/Level-1-Basics/017-domain-brand-type/example.fungi), [057-email-type](../../examples/Level-2-Types/057-email-type/example.fungi) | `FUNGI-TYPE-001` |
+| `hallmark X of T { gate: flow f }` | developer-minted nominal type — a *declared* brand, constructed **only** through its mandatory assay gate; schema `ops {}` is deny-by-default | [094-hallmark-declaration](../../examples/Level-2-Types/094-hallmark-declaration/example.fungi) | `FUNGI-HALLMARK-001..005`, `FUNGI-TYPE-003` |
 | `type X = Y` | type alias | [016-type-alias](../../examples/Level-1-Basics/016-type-alias/example.fungi) | — |
 | `record X { field: T, … }` | record **declaration** (NOT `type X = record {…}` — fails strict, see F2) | [015-record-basic](../../examples/Level-1-Basics/015-record-basic/example.fungi) | `FUNGI-TYPE-001` |
 | `enum X { A B }` | enum **declaration** (NOT `type X = enum {…}`) | [014-enum-basic](../../examples/Level-1-Basics/014-enum-basic/example.fungi) | `FUNGI-TYPE-001` |

@@ -50,8 +50,9 @@ function throughput(r) {
       ?? r.iterationsPerSecond ?? r.callsPerSecond ?? r.runsPerSecond ?? null;
 }
 
-// Is this benchmark unit-comparable across runtimes? Non-comparable benchmarks
-// (matrix-multiply, tri-logic, data-query) are excluded from winner / floor claims.
+// Is this benchmark unit-comparable across runtimes? Any benchmark the spec marks
+// comparable:false is excluded from winner / floor claims. (matrix-multiply, tri-logic
+// and data-query were realigned to a common bulk-N path 2026-07-11 and are now included.)
 function comparable(bench) {
   return bench?.units ? bench.units.comparable !== false : specComparable(bench?.benchmark);
 }
@@ -874,7 +875,7 @@ console.log(`
 | **collection-pipeline** | Functional pipeline: filter → map → reduce over 10K integer records | Data transformation throughput — the bread-and-butter of governed APIs |
 | **compute-mix** | Mixed workload: string ops, conditionals, arithmetic, object creation | Closest to real-world application code; no single hot path |
 | **crypto-ops** | SHA-256 hashing, HMAC, Ed25519 sign+verify (via stdlib) | Performance of governed cryptographic operations (used in every secure flow) |
-| **data-query** | Filter + sort + aggregate over 1K records with governance checks | ⚠️ excluded — not unit-aligned (Galerina main() ≠ the 7 native query micro-benches) |
+| **data-query** | `scanRecords(10K)`: one pass — filter (WHERE amount>threshold) + GROUP BY category — the same bulk-N scan on every runtime | Governed data-query throughput in record-scans/sec (aligned 2026-07-11); the `Tainted<String>` query path is a compile-time cost layered on top |
 | **fibonacci-recursive** | Recursive fib(20): tail-call and LRU cache warm path | Tests recursion overhead + caching benefit across governed/passive/WASM tiers |
 | **governance-cost** | Sum 1..100 (triangle number) with full governance verification overhead | Directly measures the cost of Galerina's contract{} checking vs raw arithmetic |
 | **gpu-compute** | Parallel map-reduce kernel (100K elements) via Deno WebGPU | GPU dispatch throughput on RTX 2060 — the WASM/GPU crossover point |
