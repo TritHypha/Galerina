@@ -112,6 +112,26 @@ export type {
 export { checkLease, isLeaseValid, leaseVerdict } from "./lease.js";
 export type { CapabilityLease, LeaseDecision, LeaseDenyReason } from "./lease.js";
 
+// ── Triple-lock key-rotation DECISION core (#28/D2, steps 1–3) — owner-unlocked 2026-07-10 ──
+// Append-only MAC'd-head KeyRing (epochs never deleted → verify capability retained forever);
+// gates: readiness R1-R3 → triple lock allOf([A,B,C]) → switch → triple-verify → drain → retire
+// (signing power only; symmetric destroy = structural DENY). Atomic by immutability: abort
+// returns the SAME process object. DI seams fail-closed; key BYTES never enter this module —
+// custody execution (step 5) is a separate owner-gated package.
+export {
+  createKeyRing, verifyRing, activeEpoch, epochForVerification,
+  stageEpoch, switchActive, fallbackSwitch, markRevoked,
+  readinessVerdict, lockAVerdict, lockBVerdict, lockCVerdict, tripleLockVerdict,
+  tripleVerifyVerdict, drainVerdict, retireVerdict,
+  beginRotation, checkReadiness, stageCandidate, commitTripleLock, switchEpoch,
+  confirmTripleVerify, fallbackToOldEpoch, confirmDrain, retireOldEpoch,
+} from "./key-rotation.js";
+export type {
+  KeyKind, KeyEpochStatus, KeyEpoch, KeyRing, Transition,
+  RotationCtx, GateResult, ReadinessEvidence, VerifyEvidence, DrainEvidence,
+  RetirePolicyMode, RetirePolicy, RotationPhase, RotationProcess, PhaseOutcome,
+} from "./key-rotation.js";
+
 // ── Distinct-signer M-of-N threshold quorum (R&D 0109 G2, core half) — K3 custody DECISION ──
 // checkQuorum folds per-signer verdicts: ALLOW iff >= M DISTINCT signers approve (anti-Sybil,
 // no equivocation); clean shortfall -> DENY; malformed/equivocation -> INDETERMINATE/FUNGI-GOV-3VL-001.
