@@ -1,0 +1,74 @@
+@version 1
+/// @file: manifest-validator.fungi
+/// @purpose: Stage-6 CHECKER-VERIFIED twin of ManifestLoader.fromObject (manifest.ts) — the strict
+///   STRUCTURAL gate (LSIO-MANIFEST-001) a byte-source manifest MUST pass before any block reaches the
+///   integrity / mapping stages (hardened-border.fungi). The host does JSON.parse + the typeof / hex-regex /
+///   Number.isInteger checks; this pure surface folds the resulting EVIDENCE fail-closed into a valid/refuse
+///   verdict — the same inject-evidence / fold-verdict discipline as hardened-border.fungi. Completes
+///   sentinel-io's governed decision surface (integrity · zero-copy mapping · manifest structure).
+/// @status: checker-verified twin (galerina check clean); NOT build-wired (execution switch #143).
+
+// Top-level manifest shape: version + source are non-empty strings, totalBytes is a non-negative integer,
+// blocks is an array. The host supplies each as a folded Bool (typeof / Number.isInteger / Array.isArray).
+pure flow headerVerdict(versionNonEmpty: Bool, sourceNonEmpty: Bool, totalBytesNonNegInt: Bool, blocksIsArray: Bool) -> String
+contract {
+  intent { "Fail-closed manifest-header gate: a missing/empty version or source, a non-integer/negative totalBytes, or a non-array blocks field is a malformed manifest (LSIO-MANIFEST-001); all well-formed -> 'ok'." }
+}
+{
+  if versionNonEmpty == false { return "LSIO-MANIFEST-001" }
+  if sourceNonEmpty == false { return "LSIO-MANIFEST-001" }
+  if totalBytesNonNegInt == false { return "LSIO-MANIFEST-001" }
+  if blocksIsArray == false { return "LSIO-MANIFEST-001" }
+  return "ok"
+}
+
+// Per-block field validity: id a non-empty string, offset + length non-negative integers, sha256 a non-empty
+// hex string (host runs the HEX regex; the digest computation itself is host floor).
+pure flow blockShapeVerdict(idNonEmpty: Bool, offsetNonNegInt: Bool, lengthNonNegInt: Bool, sha256NonEmptyHex: Bool) -> String
+contract {
+  intent { "Fail-closed per-block shape gate: a malformed id / offset / length / sha256 is LSIO-MANIFEST-001; a well-formed block -> 'ok'." }
+}
+{
+  if idNonEmpty == false { return "LSIO-MANIFEST-001" }
+  if offsetNonNegInt == false { return "LSIO-MANIFEST-001" }
+  if lengthNonNegInt == false { return "LSIO-MANIFEST-001" }
+  if sha256NonEmptyHex == false { return "LSIO-MANIFEST-001" }
+  return "ok"
+}
+
+// Per-block layout: the block must lie within totalBytes and must not overlap its predecessor. `end` =
+// offset+length (host-computed). Mirrors `offset+length > totalBytes` (out of range) and `offset < prevEnd`
+// (overlap / non-ascending). Zero-trust addition: a negative-width block (end < offset) is also refused.
+pure flow blockLayoutVerdict(offset: Int, end: Int, totalBytes: Int, prevEnd: Int) -> String
+contract {
+  intent { "Fail-closed block-layout gate: a block past totalBytes, overlapping the previous block, or with end<offset is LSIO-MANIFEST-001; a contiguous in-range block -> 'ok'." }
+}
+{
+  if end < offset { return "LSIO-MANIFEST-001" }
+  if end > totalBytes { return "LSIO-MANIFEST-001" }
+  if offset < prevEnd { return "LSIO-MANIFEST-001" }
+  return "ok"
+}
+
+// Compose one block's verdict: shape THEN layout; the first non-ok wins.
+pure flow blockVerdict(shape: String, layout: String) -> String
+contract {
+  intent { "Compose a block's gates: the first failing verdict wins; both pass -> 'ok'." }
+}
+{
+  if shape != "ok" { return shape }
+  if layout != "ok" { return layout }
+  return "ok"
+}
+
+// Compose the whole manifest: header THEN every block (the host AND-folds all per-block verdicts into
+// allBlocksOk). A malformed header or any bad block denies; else the manifest is structurally valid.
+pure flow manifestVerdict(header: String, allBlocksOk: Bool) -> String
+contract {
+  intent { "Compose the manifest gate: a bad header or any bad block denies (LSIO-MANIFEST-001); a well-formed manifest -> 'valid'." }
+}
+{
+  if header != "ok" { return header }
+  if allBlocksOk == false { return "LSIO-MANIFEST-001" }
+  return "valid"
+}
