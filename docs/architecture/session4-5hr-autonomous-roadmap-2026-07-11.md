@@ -49,11 +49,17 @@ Full suite (`--emit-counts`) → sync counts (README/AGENTS/version.json) → al
 | Block | State |
 |---|---|
 | 1 — kernel decision-surface twins | ✅ **DONE** — 4/4 governed decision surfaces (`secret-gate`, `route-defaults`, `registry-index`, `kernel` gate-6 auth) are checker-verified `.fungi` + gated (`902d0eae`, `bedc5ff4`, `517c8fa2`, + this). `types.ts`=declarations-only, `index.ts`=barrel — no decision surface (correctly NOT force-twinned). Milestone: **100% of the kernel's governed decision surface in checker-verified `.fungi`**; `.ts` retained as executed (switch-gated). |
-| 2 — type-checker twin advance | ⏳ starting |
-| 3 — #22 fuel cap | ⏸ |
-| 4 — #41 defensive controls | ⏸ |
+| 2 — type-checker twin advance | ⚠️ **GATED — deferred (verify-don't-trust).** Verified: the current Stage-B ParseResult shape carries only `{name,returnType,params,returnExpr{kind,litType,leftType,rightType}}`, so all 17 remaining codes need a parser-shape extension FIRST, and their numbering is entangled with the #20 taxonomy (your decision). Forcing a deep, corpus-churning parser extract against a registry that may renumber is not sound in a 55-min slot. **Parked with Block-2 note; not forced.** Effect-checker stays 6/6 complete. |
+| 3 — #22 fuel cap | ✅ **DONE** (`36e22d9e`) — WAT while-loop emits a per-loop i32 counter that TRAPS past 100k (matches interpreter/bytecode-VM); authoritative suite 92/92 · 6997 green; signed-fixture-drift GREEN (not owner-gated). |
+| RD-0340 (owner: read first) | ✅ **read + recorded** — §5 owner-gated (enforcer in a workspace not on disk); §6 verified finding (governed-match fail-closed-default residual) → owner-gated RD-0341. See section below. |
+| 4 — #41 defensive controls | ⏳ starting |
 | 5 — F3 verify + tc twins | ⏸ |
 | 6 — battery + close | ⏸ |
+
+## RD-0340 (owner: "read first") — outcomes
+
+- **§5 field↔cut rung-3 hoist → OWNER-GATED, not landable here.** The enforcer `gate-check.mjs` lives in the separate `ZT-Galerina-GRAPH-ASCII-v2` workspace, which is **not on this disk** (Glob: no match). Changing only the Galerina `docs/examples/gate/*` to describe the field-token grammar would **falsely claim enforcement** the checker can't provide — a false-green, refused. The §5 spec (grammar `[name:cut(<field>…) fu op]`, extended R8 = dominating-cut-set ⊇ PRIVACY field else REJECT, 4 pinned tests, Option-2 warn-first rollout) is ready for whoever holds that workspace.
+- **§6 proceeding-`_ =>` in governed matches → VERIFIED (graph, not grep): a real, narrow residual.** `governance-verifier.verifyMatchExhaustiveness` (governance-verifier.ts:3800) returns clean as soon as **any** `_` arm exists ("wildcard covers all cases"); a match *without* `_` is `FUNGI-MATCH-001`. So the checker enforces **exhaustiveness** but **not a fail-closed default arm** — a `_ => <proceed-with-success>` is permitted. For a **closed** sum (Result Ok/Err) the `_` is dead (FUNGI-TYPE-022 territory); for an **open/growable** sum in a governance/effect-scoped flow it is a latent **open-sum fail-open** (a new variant is silently handled as success). RD-0340 §2's "`_ => deny/trap` lower fail-closed" covers only *author-written* deny/trap, not auto-conversion. **Fix is a policy/semantics change with breaking risk** (would also flag benign closed-sum `_ => proceed`) → **owner-gated RD-0341 decision.** Recommended shape: a **non-breaking WARNING** when a governance/effect-scoped match's `_` arm body is neither `deny` nor `trap` and the subject is an open sum (the posture-B warn-first on-ramp), later flippable to an error. NOT changed autonomously.
 
 ## PARKED — awaiting you (not touched on auto)
 - **D2 rotation build** — needs §6 answers (quorum M, cadence, placement, canary N, retire policy). Design complete at `1ebec1e2`.
