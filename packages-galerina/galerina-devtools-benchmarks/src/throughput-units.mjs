@@ -17,11 +17,12 @@
  * each result; `compare.mjs` reads only `normThroughput`. `assertBenchmarkUnits`
  * guards that all runtimes share one unit and that none silently drop out.
  *
- * ── Three benchmarks are NON-COMPARABLE (flagged & excluded) ────────────────
- * matrix-multiply, tri-logic and data-query run different-sized / different-shaped
- * workloads per language, so no unit makes them apples-to-apples without first
- * realigning the workloads. They are marked `comparable: false` with a reason and
- * excluded from winner / Python-floor claims (see each spec's `reason`).
+ * ── Workload alignment ──────────────────────────────────────────────────────
+ * matrix-multiply normalizes to size-invariant MUL-ADDS/s (n differs per runtime).
+ * tri-logic and data-query were realigned 2026-07-11 to a common bulk-N path (one
+ * runBulkTri / scanRecords loop on every runtime), so they are now `comparable: true`.
+ * Any future non-comparable benchmark is marked `comparable: false` with a `reason`
+ * and excluded from winner / Python-floor claims.
  *
  * NOTE: the canonical inner-ops-per-call (`N`) values here mirror
  * `BENCHMARKS[].galerinaOpsPerRun` in runner.mjs; THIS file is authoritative for
@@ -171,20 +172,22 @@ const SPECS = {
     },
   },
   "tri-logic": {
-    N: 27000, unit: "trit-ops/s", comparable: false,
-    reason: "incomparable workloads — Galerina main()=runBulkTri(100000) (100k triples / 300k trit-ops); " +
-            "node/python/rust run nested 9-element truth-table micro-benches plus a separate 10M bulk; " +
-            "galerinaOpsPerRun=27000 (≈27 truth-table combos ×1000) corresponds to none of these. " +
-            "Needs a common bulk-N trit-op path on every runtime.",
-    native: () => null,
+    // Aligned 2026-07-11: every runtime runs runBulkTri(100000) = 100k elements ×
+    // 3 trit-ops (and=min | or=max | not=neg) = 300000 trit-ops/call. node/python/
+    // rust report operationsPerSecond = trit-ops/sec for that SAME loop; WASM =
+    // N × callsPerSecond; Galerina interp = N / execMs. One op = one Kleene trit-op.
+    N: 300000, unit: "trit-ops/s", comparable: true,
+    native: (_rt, r) => num(r.operationsPerSecond),
   },
   "data-query": {
-    N: 1000, unit: "records/s", comparable: false,
-    reason: "incomparable — Galerina main()=filterAndCount(1000)+groupByCategory(1000)=2000 record-scans " +
-            "(but galerinaOpsPerRun=1000 undercounts); node/python run 7 separate query micro-benches " +
-            "nested under results.* with no single representative. Needs a main() recount + a chosen " +
-            "representative query before the numbers compare.",
-    native: () => null,
+    // Aligned 2026-07-11: every runtime runs scanRecords(10000) = one pass over
+    // 10000 records (WHERE amount>threshold + GROUP BY category) = 10000
+    // record-scans/call. node/python report operationsPerSecond = record-scans/sec
+    // for that SAME scan; Galerina interp = N / execMs. (No native rust/wasm ships.)
+    // One op = one record-scan; the governed Tainted<String> query path is a
+    // compile-time cost layered on top, not part of this throughput core.
+    N: 10000, unit: "record-scans/s", comparable: true,
+    native: (_rt, r) => num(r.operationsPerSecond),
   },
 };
 

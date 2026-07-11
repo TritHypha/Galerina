@@ -37,12 +37,25 @@ ok(assertBenchmarkUnits("json-parse", jp).status === "PASS", "json-parse unit as
 const drop = { nodejs: { iterationsPerSecond: 3700 } }; // nbody needs forceEvalsPerSecond
 ok(assertBenchmarkUnits("nbody", drop).status === "FAIL", "dropout (nbody node w/o forceEvalsPerSecond) → FAIL");
 
-// ── non-comparable benchmarks must be excluded, never silently compared ──────
-for (const b of ["tri-logic", "data-query"]) {
-  ok(isComparable(b) === false, `${b} is non-comparable (excluded)`);
-  ok(assertBenchmarkUnits(b, { nodejs: { iterationsPerSecond: 1 } }).status === "FLAGGED", `${b} → FLAGGED`);
-  ok(normalizeThroughput("nodejs", { iterationsPerSecond: 1 }, b).ops === null, `${b} produces no comparable number`);
-}
+// ── tri-logic + data-query: realigned 2026-07-11 to a common bulk-N path → comparable ──
+// Every runtime now runs the SAME loop (runBulkTri / scanRecords) and reports a top-level
+// operationsPerSecond = inner-ops/sec; native() reads it directly, and the Galerina/WASM
+// path scales N per call.
+ok(isComparable("tri-logic") === true, "tri-logic is now comparable (trit-ops/s)");
+ok(normalizeThroughput("nodejs", { operationsPerSecond: 5000 }, "tri-logic").ops === 5000,
+  "tri-logic node: operationsPerSecond read directly as trit-ops/s");
+ok(normalizeThroughput("wasm", { callsPerSecond: 10 }, "tri-logic").ops === 300000 * 10,
+  "tri-logic WASM: callsPerSecond × N(300000) = trit-ops/s");
+ok(assertBenchmarkUnits("tri-logic", { nodejs: { operationsPerSecond: 5000 }, wasm: { callsPerSecond: 10 } }).status === "PASS",
+  "tri-logic unit assertion PASS (one matching unit)");
+
+ok(isComparable("data-query") === true, "data-query is now comparable (record-scans/s)");
+ok(normalizeThroughput("nodejs", { operationsPerSecond: 7000 }, "data-query").ops === 7000,
+  "data-query node: operationsPerSecond read directly as record-scans/s");
+ok(normalizeThroughput("galerinaGoverned", { execMs: 10 }, "data-query").ops === Math.round(10000 / 10 * 1000),
+  "data-query governed: N(10000) / execMs → record-scans/s");
+ok(assertBenchmarkUnits("data-query", { nodejs: { operationsPerSecond: 7000 }, python: { operationsPerSecond: 500 } }).status === "PASS",
+  "data-query unit assertion PASS (one matching unit)");
 
 // ── matrix-multiply: un-excluded 2026-06-23 → mul-adds/s (= matmuls/s × n³, n per runtime) ──
 ok(isComparable("matrix-multiply") === true, "matrix-multiply is now comparable (mul-adds/s)");
@@ -60,6 +73,7 @@ const EXPECT_UNITS = {
   "nbody": "force-evals/s", "json-parse": "records/s", "spore-container": "containers/s",
   "framework-pipeline": "requests/s", "mandelbrot": "pixels/s", "spectral-norm": "A-evals/s",
   "binary-trees": "nodes/s", "matrix-multiply": "mul-adds/s",
+  "tri-logic": "trit-ops/s", "data-query": "record-scans/s",
 };
 for (const [b, u] of Object.entries(EXPECT_UNITS)) {
   ok(benchmarkSpec(b)?.unit === u, `${b} unit = ${u}`);

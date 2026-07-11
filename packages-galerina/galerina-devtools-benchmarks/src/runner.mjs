@@ -55,12 +55,12 @@ const BENCHMARKS = [
   // so it is intentionally NOT in this array. Run it standalone: `npm run run:http`.
   // Tri-logic: 3-valued ternary logic (True=1, False=-1, Unknown=0) — all 27 truth table combinations.
   // Relevant for future photonic compute substrates; validates correctness and shows CPU overhead today.
-  { id: "tri-logic", dir: "tri-logic", galerinaOpsPerRun: 27000, passiveCallCount: 100 },
+  { id: "tri-logic", dir: "tri-logic", galerinaOpsPerRun: 300000, passiveCallCount: 100 },
   // Data-query: SQL-like data filtering on arrays of JSON records — a core web service workload.
   // Galerina governed path validates query inputs as Tainted<String> before execution.
   // main() = filterAndCount(1000) + groupByCategory(1000) = 2000 record-scans per call
   // (was 1000 — undercounted; flagged by the unit-alignment audit, fixed 2026-07-08).
-  { id: "data-query", dir: "data-query", galerinaOpsPerRun: 2000, passiveCallCount: 50 },
+  { id: "data-query", dir: "data-query", galerinaOpsPerRun: 10000, passiveCallCount: 50 },
   // Call-chain: layered call-dispatch overhead — controller → service.method → util fn.
   // In Galerina: main → serviceLayer → domainLayer → leafCompute (7 flow calls per chain).
   // One op = one outer chain; 50,000 chains per run. Isolates flow-call cost (arg binding

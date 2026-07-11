@@ -50,10 +50,18 @@ The runner probes for each of these per benchmark and includes whichever are pre
 |---|---|---|
 | **Python 3** | Python | `winget install Python.Python.3.12` (or python.org) |
 | **Rust** (`rustc` + `cargo`) | Rust native (+ AVX2/AVX-512 where the CPU supports it) | `winget install Rustlang.Rustup`, then `rustup default stable` |
-| **C++** (`g++` / `clang++`) | C++ native | LLVM: `winget install LLVM.LLVM`, or MSYS2/MinGW |
+| **C++** (`g++` / `clang++`) | C++ native | MSYS2/MinGW (real GCC) — see the note below · or `winget install LLVM.LLVM` for `clang++` |
 | **Deno** | WebGPU (`bench-deno-webgpu.ts`) | `winget install DenoLand.Deno` |
 
 **WASM needs no extra install.** The Galerina→WASM column compiles `.fungi → WAT → binary WASM` using the **`wat-wasm` / `wabt` npm packages** (pulled in by `npm install`) and runs it on Node's built-in `WebAssembly` engine. You do **not** need the standalone `wat2wasm` / WABT CLI — nothing in the build or the benchmark calls it. (See *Installing the WABT CLI* below only if you want it for hand-assembling `.wat` at the terminal.)
+
+**Installing g++ on Windows (MSYS2 — the real GCC toolchain, for the C++ column).**
+
+1. `winget install MSYS2.MSYS2`
+2. Open **Start menu → "MSYS2 UCRT64"** (or run `C:\msys64\ucrt64.exe`), then run `pacman -S mingw-w64-ucrt-x86_64-gcc`. Note: `pacman` is **not** on the Windows PATH — run it from that shell, or invoke `C:\msys64\usr\bin\pacman.exe` directly from PowerShell.
+3. Add `C:\msys64\ucrt64\bin` to your PATH (System → Environment Variables), open a fresh terminal, and `g++ --version` should work. `npm run build:native` also accepts `clang++` (LLVM) if you prefer.
+
+> **Dev-box note (2026-07-11):** g++ is installed on this machine at `C:\msys64\ucrt64\bin\g++.exe` but is **not yet on PATH** — add `C:\msys64\ucrt64\bin` (or run the benchmark from the *MSYS2 UCRT64* shell) so the **next benchmark run picks up the C++ column**. The standalone `wat2wasm` (WABT CLI) is also available now for hand-assembling `.wat`, though the Galerina→WASM column already assembles via the `wat-wasm`/`wabt` npm packages and needs nothing extra.
 
 ### Install dependencies
 
