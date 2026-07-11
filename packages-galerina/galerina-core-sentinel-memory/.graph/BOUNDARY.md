@@ -11,13 +11,13 @@
 
 | Metric | Count |
 |---|---|
-| Files | 7 |
+| Files | 9 |
 | Internal edges | 17 |
 | External dependencies | 0 |
 | ├─ Node core | 0 |
 | ├─ Workspace (@galerina/*) | 0 |
 | └─ Third-party | 0 |
-| Orphan files | 0 |
+| Orphan files | 2 |
 
 ## External Dependencies (the Border)
 
@@ -34,7 +34,8 @@ _none_
 No boundary violations. All external imports are within the allowlist.
 
 ## Orphaned Files
-_none_ — every file is reachable from an internal import or entry point.
+- `src/self-hosted/memory-validator.fungi`
+- `src/self-hosted/pool-policy.fungi`
 
 ## Entry Points
 - `src/index.ts`

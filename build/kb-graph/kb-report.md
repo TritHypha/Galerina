@@ -2,7 +2,7 @@
 Generated: 2026-07-11
 
 ## Stats
-- Docs: 879 | Edges: 2970 | Orphans: 0 | Stale links: 4 | FUNGI codes: 714
+- Docs: 908 | Edges: 3014 | Orphans: 5 | Stale links: 4 | FUNGI codes: 715
 
 ## Document Registry (auto-generated)
 
@@ -25,6 +25,7 @@ Generated: 2026-07-11
 | galerina-ext-bridge-quantum-design.md | Layer 2A | — | 🟢 **PHASE 0 + PHASE 1 IMPLEMENTED (2026-06-15).** The package | FUNGI-BORDER-001, FUNGI-BORDER-005, FUNGI-SUBSTRATE-001, FUNGI-SUBSTRATE-002, FUNGI-SUBSTRATE-004 |
 | galerina-contract-clause-reference.md | Layer 2B | 1.1 | Living document — updated as DRCM phases ship. | FUNGI-AU-001, FUNGI-BF-001, FUNGI-BF-002, FUNGI-CAP-001, FUNGI-CAP-002 …+32 |
 | galerina-rd-0256-optional-serverless-2026-07-04.md | Layer 3 | — | DESIGN (AZT ~8/10 PURSUE · NIST ~3/7 HOLD-from-prod) · **Owner-gated** · **READ-ONLY R&D — prod untouched, no source written** | — |
+| _TEMPLATE.md | — | — | — | — |
 | 00-KB-INDEX.md | — | — | — | FUNGI-BACKEND-001, FUNGI-GATE-001, FUNGI-NET-001, FUNGI-STDLIB-001, FUNGI-SUPPLY-001 …+2 |
 | AI_INDEX.md | — | — | — | FUNGI-HW-101, FUNGI-PHOTONIC-001, FUNGI-SEC-014, FUNGI-SYNTAX-010, FUNGI-TYPE-031 |
 | ai-as-untrusted-reasoning-worker.md | — | — | — | — |
@@ -69,9 +70,10 @@ Generated: 2026-07-11
 | data-in-motion-security.md | — | — | — | — |
 | data-visibility-view-terminology.md | — | — | — | — |
 | deny-by-default-risk-features.md | — | — | — | — |
+| DEPENDENCY-USAGE.md | — | — | — | — |
 | design-patterns-for-galerina.md | — | — | — | — |
 | developer-friendly-permission-model.md | — | — | — | — |
-| diag-code-taxonomy-proposal-2026-07-10.md | — | — | ANALYSIS ONLY — no repo file was touched. **Date:** 2026-07-10. | FUNGI-ASSUME-001, FUNGI-ASSUME-002, FUNGI-ASSUME-005, FUNGI-BORDER-002, FUNGI-BORDER-004 …+37 |
+| diag-code-taxonomy-proposal-2026-07-10.md | — | — | ANALYSIS ONLY — no repo file was touched. **Date:** 2026-07-10. | FUNGI-ASSUME-001, FUNGI-ASSUME-002, FUNGI-ASSUME-005, FUNGI-BORDER-002, FUNGI-BORDER-004 …+40 |
 | documentation-layer-model.md | — | — | — | — |
 | dp-rd-0301a-egress-ssrf-numeric-ip-and-dns-rebind-guard.md | — | — | — | — |
 | dp-rd-0301b-cert-gate-k3-revocation-unknown-deny-fold.md | — | — | — | FUNGI-GOV-3 |
@@ -157,8 +159,10 @@ Generated: 2026-07-11
 | galerina-contract-privacy-observability.md | — | — | — | FUNGI-OBSERVE-001, FUNGI-PRIVACY-001, FUNGI-PRIVACY-002 |
 | galerina-contract-sets.md | — | — | — | FUNGI-GOV-011, FUNGI-GOV-012 |
 | galerina-contracts-as-meaning-layer.md | — | — | — | — |
+| galerina-core.md | — | — | — | — |
 | galerina-core-cli-deploy-explain-plan.md | — | — | — | FUNGI-EFFECT-002, FUNGI-MANIFEST-002 |
 | galerina-core-cli-v02.md | — | — | — | — |
+| galerina-core-compiler.md | — | — | — | — |
 | galerina-core-compiler-manifest-generation-pass-14.md | — | — | — | FUNGI-MANIFEST-001, FUNGI-MANIFEST-002, FUNGI-MANIFEST-003, FUNGI-MANIFEST-004, FUNGI-MANIFEST-005 |
 | galerina-core-compute-gpu-and-photonic-backends.md | — | — | — | FUNGI-COMPAT-001, FUNGI-COMPAT-002, FUNGI-COMPAT-003, FUNGI-COMPAT-004, FUNGI-COMPAT-005 …+10 |
 | galerina-core-compute-v02.md | — | — | — | FUNGI-COMPAT-001, FUNGI-COMPAT-002, FUNGI-COMPAT-003, FUNGI-COMPUTE-001, FUNGI-COMPUTE-002 …+4 |
@@ -170,12 +174,14 @@ Generated: 2026-07-11
 | galerina-core-effect-checker-v02.md | — | — | — | FUNGI-BOUNDARY-001, FUNGI-BOUNDARY-002, FUNGI-BOUNDARY-003, FUNGI-BOUNDARY-004, FUNGI-EFFECT-001 …+4 |
 | galerina-core-flow-trace.md | — | — | — | FUNGI-TRACE-001, FUNGI-TRACE-002, FUNGI-TRACE-003, FUNGI-TRACE-004, FUNGI-TRACE-005 |
 | galerina-core-intent-safety-effects.md | — | — | Stage 1 — type contracts and documentation complete; parser/checker stubs in place | FUNGI-INTENT-001, FUNGI-INTENT-002, FUNGI-INTENT-003, FUNGI-INTENT-004, FUNGI-INTENT-005 |
+| galerina-core-logic.md | — | — | — | FUNGI-MATCH-001 |
 | galerina-core-logic-omni-logic.md | — | — | — | FUNGI-OMNI-001, FUNGI-OMNI-002, FUNGI-OMNI-003, FUNGI-OMNI-004, FUNGI-OMNI-005 |
 | galerina-core-logic-tri-decision-bool.md | — | — | — | FUNGI-DECISION-001, FUNGI-DECISION-002, FUNGI-DECISION-003, FUNGI-DECISION-004, FUNGI-DECISION-005 …+5 |
 | galerina-core-logic-tristate-developer-guide.md | — | — | — | FUNGI-DECISION-002, FUNGI-TRI-001, FUNGI-TRI-002 |
 | galerina-core-logic-v02.md | — | — | — | FUNGI-DECISION-001, FUNGI-DECISION-002, FUNGI-DECISION-003, FUNGI-OMNI-001, FUNGI-OMNI-002 …+5 |
 | galerina-core-manifest-generation-v02.md | — | — | — | FUNGI-MANIFEST-001, FUNGI-MANIFEST-002, FUNGI-MANIFEST-003, FUNGI-MANIFEST-004, FUNGI-MANIFEST-005 |
 | galerina-core-memory-model.md | — | — | Canonical v1 decision (memory-safety stance superseded — see banner) | FUNGI-AFFINE-001, FUNGI-BINDING-001, FUNGI-MEMORY-001, FUNGI-MEMORY-002, FUNGI-MEMORY-003 …+7 |
+| galerina-core-network.md | — | — | — | — |
 | galerina-core-network-governance.md | — | — | — | FUNGI-NETWORK-001, FUNGI-NETWORK-002, FUNGI-NETWORK-003, FUNGI-NETWORK-004, FUNGI-NETWORK-005 …+3 |
 | galerina-core-network-v02.md | — | — | — | FUNGI-NETWORK-001, FUNGI-NETWORK-002, FUNGI-NETWORK-003, FUNGI-NETWORK-004, FUNGI-NETWORK-005 …+3 |
 | galerina-core-network-webhook.md | — | — | — | — |
@@ -186,6 +192,7 @@ Generated: 2026-07-11
 | galerina-core-policy-online-safety-act.md | — | — | — | — |
 | galerina-core-reports-v02.md | — | — | — | FUNGI-AUDIT-001, FUNGI-AUDIT-002, FUNGI-AUDIT-003, FUNGI-DENIAL-001, FUNGI-DENIAL-002 …+10 |
 | galerina-core-runtime-resources.md | — | — | Canonical v1 concept — replaces OOP singleton pattern | FUNGI-RESOURCE-001, FUNGI-RESOURCE-002, FUNGI-RESOURCE-003, FUNGI-RESOURCE-004, FUNGI-RESOURCE-005 …+5 |
+| galerina-core-security.md | — | — | — | FUNGI-SECURITY-001 |
 | galerina-core-security-secret-reference-model.md | — | — | Architecture + Type Contracts + Runtime Helper Design | FUNGI-SECRET-001, FUNGI-SECRET-002 |
 | galerina-core-security-v02.md | — | — | — | FUNGI-SECRET-001, FUNGI-SECRET-002, FUNGI-SECRET-003, FUNGI-SECRET-004, FUNGI-SECRET-005 |
 | galerina-core-standard-types-string-char-byte.md | — | — | Draft standard-library design note | FUNGI-BYTE-001, FUNGI-BYTE-002, FUNGI-BYTE-003, FUNGI-BYTE-004, FUNGI-BYTE-005 …+8 |
@@ -196,6 +203,7 @@ Generated: 2026-07-11
 | galerina-coverage-crosscheck-methodology.md | — | — | IN PROGRESS — owner-directed 2026-06-22. **`codes` dimension BUILT + RUN** (`scripts/audit-coverage.mjs`, | — |
 | galerina-cpp-bridge.md | — | — | — | — |
 | galerina-cross-layer-resilience.md | — | — | — | FUNGI-UNIV-001 |
+| galerina-crypto-floor.md | — | — | — | — |
 | galerina-data-layout-memory-hints.md | — | — | — | — |
 | galerina-dbgovernance-components-design-2026-07-02.md | — | — | — | — |
 | galerina-dependency-cve-report-2026-07-02.md | — | — | — | — |
@@ -238,6 +246,7 @@ Generated: 2026-07-11
 | galerina-fortified-typed-logic.md | — | — | — | FUNGI-PROFILE-002, FUNGI-PROFILE-003, FUNGI-TAINT-001, FUNGI-TAINT-002, FUNGI-TERM-001 …+4 |
 | galerina-framework-api-server-implementation.md | — | — | — | — |
 | galerina-framework-api-server-v02.md | — | — | — | FUNGI-BOUNDARY-001, FUNGI-EFFECT-002, FUNGI-NETWORK-001, FUNGI-NETWORK-006, FUNGI-NETWORK-007 |
+| galerina-framework-app-kernel.md | — | — | — | — |
 | galerina-framework-layer-design.md | — | — | DRAFT for approval · **Created:** 2026-06-14 · **Owner directive:** user | — |
 | galerina-framework-plan-2026-06-21.md | — | — | — | FUNGI-MONO-001, FUNGI-PKG-001 |
 | galerina-fungi-gate-security-findings-register.md | — | — | — | FUNGI-GATELANG-001, FUNGI-GATELANG-002, FUNGI-MATCH-001, FUNGI-PRIVACY-002 |
@@ -326,6 +335,7 @@ Generated: 2026-07-11
 | galerina-package-manifest-spec.md | — | — | — | FUNGI-MODULE-001, FUNGI-MODULE-002, FUNGI-MODULE-003, FUNGI-MODULE-004, FUNGI-MODULE-005 …+5 |
 | galerina-package-naming.md | — | — | — | — |
 | galerina-package-resolver-architecture.md | — | — | — | FUNGI-PKG-001, FUNGI-PKG-002, FUNGI-PKG-003, FUNGI-PKG-004, FUNGI-PKG-005 …+1 |
+| galerina-package-standard-v1.md | — | — | 🧪 NORMATIVE DRAFT (R&D hub) · propose → main lands · 2026-07-11 | FUNGI-ASSIMILATE-001, FUNGI-GATELANG-002 |
 | galerina-paper-worthiness-assessment-2026-06-22.md | — | — | — | — |
 | galerina-paper-worthiness-assessment-2026-06-23.md | — | — | — | — |
 | galerina-passive-execution-plans.md | — | — | — | — |
@@ -510,6 +520,11 @@ Generated: 2026-07-11
 | galerina-rd-0339-make-misuse-impossible-tri-typestate-boundary.md | — | — | — | — |
 | galerina-rd-0340-gate-fungi-conformance-and-the-field-cut-rung-3-hoist.md | — | — | 🧪 R&D / SURFACE-CONFORMANCE AUDIT + ONE SPEC'D CHANGE (propose-only) · SAFE-internal · 2026-07-11 | FUNGI-PRIVACY-002 |
 | galerina-rd-0341-fungi-gate-author-mistake-sweep-verified.md | — | — | 🧪 R&D / VERIFIED SURFACE AUDIT (from source) + 1 NET-NEW SPEC'D PLUG (propose-only) · SAFE-internal · 2026-07-11 | FUNGI-AU-001, FUNGI-EFFECT-003, FUNGI-GOV-00, FUNGI-ID-001, FUNGI-MATCH-00 …+4 |
+| galerina-rd-0342-shrinking-the-production-tcb-ts-and-node-modules.md | — | — | 🧪 R&D / SUPPLY-CHAIN + TCB-MINIMIZATION DESIGN · SAFE-internal · 2026-07-11 | — |
+| galerina-rd-0343-gate-first-pipeline-single-grammar-substrate-pin.md | — | — | 🧪 R&D / DESIGN + 3 DECIDED CHOICES (propose-only) · SAFE-internal · 2026-07-11 | FUNGI-GATELANG-00, FUNGI-GATELANG-002, FUNGI-SUBSTRATE-001 |
+| galerina-rd-0344-one-gate-parser-single-grammar.md | — | — | 🧪 R&D / DESIGN (propose-only) · SAFE-internal · 2026-07-11 | — |
+| galerina-rd-0345-verify-packaging-trust-assumptions.md | — | — | 🧪 R&D / VERIFICATION (empirical + source + web) · SAFE-internal · 2026-07-11 | — |
+| galerina-rd-0346-crypto-floor-vs-149-per-package-ownership-decision.md | — | — | 🧪 R&D / DECISION RECORD — retracts a prior R&D recommendation · SAFE-internal · 2026-07-11 | — |
 | galerina-rd-34b-paramtaint-buildspec-2026-06-24.md | — | — | verify-before-build — **build-ready spec; the strict-profile escalation is owner-gated** | FUNGI-VALUESTATE-003, FUNGI-VALUESTATE-008 |
 | galerina-rd-53-azt-selfcert-and-blackhole-protocol-2026-06-23.md | — | — | — | FUNGI-GOV-3, FUNGI-MATCH-001, FUNGI-PCI-001, FUNGI-PRIVACY-013, FUNGI-SUBSTRATE-001 |
 | galerina-rd-59-js-quirks-vs-galerina-2026-06-25.md | — | — | — | FUNGI-NAME-001, FUNGI-NAME-002, FUNGI-TYPE-004, FUNGI-TYPE-008 |
@@ -539,7 +554,7 @@ Generated: 2026-07-11
 | galerina-rd-performance-and-boundary-opportunities.md | — | — | — | FUNGI-ENTROPY-001 |
 | galerina-rd-photonic-quantum-paging-graph-grounding-2026-06-25.md | — | — | — | FUNGI-RETAIN-001, FUNGI-SUBSTRATE-001 |
 | galerina-rd-reference-index.md | — | — | — | FUNGI-RETAIN-001 |
-| galerina-rd-results-log.md | — | — | — | FUNGI-ASSIMILATE-003, FUNGI-ASSIMILATE-004, FUNGI-ATTR-001, FUNGI-BUILD-002, FUNGI-EFFECT-006 …+14 |
+| galerina-rd-results-log.md | — | — | — | FUNGI-ASSIMILATE-003, FUNGI-ASSIMILATE-004, FUNGI-ATTR-001, FUNGI-BUILD-002, FUNGI-EFFECT-006 …+15 |
 | galerina-rd-syntax-7axis-sweep-2026-06-25.md | — | — | — | FUNGI-EFFECT-001, FUNGI-NUMERIC-001, FUNGI-VALUESTATE-008 |
 | galerina-rd-tenant-isolation-and-meshview-2026-06-24.md | — | 1.0 | — | FUNGI-GOV-3, FUNGI-PRIVACY-002, FUNGI-SUBSTRATE-001, FUNGI-TENANT-001, FUNGI-TENANT-002 |
 | galerina-rd-tritmesh-1-5-and-52-3d-2026-06-23.md | — | — | — | FUNGI-GOV-019, FUNGI-GOV-3, FUNGI-PRIVACY-002, FUNGI-SUBSTRATE-001, FUNGI-SUBSTRATE-002 …+1 |
@@ -603,6 +618,7 @@ Generated: 2026-07-11
 | galerina-substrate-ergonomics-infer-vs-declare.md | — | — | — | FUNGI-SUBSTRATE-002 |
 | galerina-substrate-failure-model.md | — | — | spike sub-spec + implementation (Direction **C** of the photonic/ternary R&D agenda). | FUNGI-GOV-3, FUNGI-PHOTONIC-001, FUNGI-SUBSTRATE-001, FUNGI-SUBSTRATE-002, FUNGI-SUBSTRATE-003 …+1 |
 | galerina-substrate-lane-fail-opens-2026-06-25.md | — | — | — | FUNGI-SUBSTRATE-001, FUNGI-SUBSTRATE-002 |
+| galerina-substrate-math.md | — | — | — | — |
 | galerina-substrate-worked-example.md | — | — | — | FUNGI-EFFECT-001, FUNGI-SUBSTRATE-001, FUNGI-SUBSTRATE-002, FUNGI-SUBSTRATE-003, FUNGI-SUBSTRATE-004 …+1 |
 | galerina-supply-chain-package-governance.md | — | — | — | FUNGI-CORE-0000, FUNGI-EFFECT-2000, FUNGI-PACKAGE-4000, FUNGI-PAYMENTS-1000, FUNGI-SECURITY-3000 …+3 |
 | galerina-symbol-resolver-spec.md | — | — | — | FUNGI-EFFECT-001, FUNGI-EFFECT-002, FUNGI-EFFECT-003, FUNGI-NAME-001, FUNGI-NAME-002 …+6 |
@@ -630,6 +646,7 @@ Generated: 2026-07-11
 | galerina-tlstp-transport-auth-rnd-2026-06-22.md | — | — | — | FUNGI-ENTROPY-002, FUNGI-GOV-3, FUNGI-HW-004, FUNGI-MONO-001, FUNGI-PRIVACY-002 …+1 |
 | galerina-tmf-engine.md | — | — | — | FUNGI-GOV-3, FUNGI-SUBSTRATE-001 |
 | galerina-topological-graph-engine.md | — | 1.1 | Can be implemented now (Task #79). Builds on existing domain guard infrastructure. | FUNGI-GATE-001, FUNGI-GATE-002, FUNGI-INV-000 |
+| galerina-tower-citizen.md | — | — | — | FUNGI-GOV-3 |
 | galerina-tower-native-syntax.md | — | 1.2 | Implemented — Stage A compiler + governance verifier (§1–§10) | FUNGI-ACCESS-001, FUNGI-ACCESS-002, FUNGI-ASSIMILATE-001, FUNGI-ASSIMILATE-002, FUNGI-ASSIMILATE-003 …+16 |
 | galerina-tpl-bitnet-fidelity-audit.md | — | — | verification record. Every claim below is a **direct quote from current source** (Galerina | — |
 | galerina-transport-auth-research-explained-2026-06-22.md | — | — | — | FUNGI-PRIVACY-002 |
@@ -670,22 +687,28 @@ Generated: 2026-07-11
 | HANDOFF-main-od5-graph-not-a-language-2026-07-03.md | — | — | — | — |
 | HANDOFF-main-od5-review-and-tritmeshql-2026-07-03.md | — | — | — | — |
 | HANDOFF-main-stoppers-and-questions-2026-07-03.md | — | — | — | FUNGI-LIMIT-001 |
+| HANDOVER-crypto-floor-decision-to-main-2026-07-11.md | — | — | — | — |
 | HANDOVER-galerina-docs-examples-corrections-2026-07-10.md | — | — | — | FUNGI-SYNTAX-014 |
 | HANDOVER-galerina-framework-api-server-schematic-2026-07-09.md | — | — | decision-ready for the MAIN Galerina session. **Scope:** read-only source verification against the live tree; nothing in the Galerina repo was modified to produce this document. | — |
+| HANDOVER-import-governance-audit-and-patch-2026-07-11.md | — | — | — | — |
 | HANDOVER-main-bend-interaction-combinators-rd0257-2026-07-04.md | — | — | — | FUNGI-SUBSTRATE-001 |
 | HANDOVER-main-full-control-of-galerina-2026-07-03.md | — | — | — | — |
+| HANDOVER-package-build-readiness-2026-07-11.md | — | — | — | FUNGI-GATELANG-002 |
+| HANDOVER-package-schematics-build-2026-07-11.md | — | — | — | — |
 | HANDOVER-post-RD-0320-2026-07-10.md | — | — | — | — |
 | HANDOVER-RD-0302-streaming-completion-2026-07-09.md | — | — | — | — |
 | HANDOVER-RD-0320-onward-2026-07-10.md | — | — | — | FUNGI-MATCH-001, FUNGI-PRIVACY-002, FUNGI-TAINT-001 |
 | HANDOVER-RnD-master-index-2026-07-09.md | — | — | — | — |
 | HANDOVER-rnd-research-session-2026-07-01.md | — | — | — | — |
 | HANDOVER-RnD-response-to-main-2026-07-09.md | — | — | — | — |
+| HANDOVER-session-master-2026-07-11.md | — | — | — | FUNGI-VALUESTATE-008 |
 | HANDOVER-super-RD-0303-to-RD-0320-2026-07-10.md | — | — | — | — |
 | HANDOVER-tritmesh-session-2026-07-04.md | — | — | — | FUNGI-SECRET-004, FUNGI-SUBSTRATE-001 |
 | hello-world-api-pattern.md | — | — | — | — |
 | http-method-declarations.md | — | — | — | — |
 | hybrid-electronic-optical-compute.md | — | — | — | — |
 | ihsa-storage-policy.md | — | — | — | FUNGI-EFFECT-001, FUNGI-STORAGE-001, FUNGI-VALUESTATE-003 |
+| INDEX.md | — | — | — | — |
 | KB-CATEGORY-INDEX.md | — | — | — | FUNGI-EFFECT-006, FUNGI-PRIVACY-001, FUNGI-PRIVACY-002, FUNGI-RETAIN-001 |
 | legacy-pattern-restrictions.md | — | — | — | — |
 | lifecycle-state-system.md | — | — | — | FUNGI-STATE-001, FUNGI-STATE-002, FUNGI-STATE-003, FUNGI-STATE-004, FUNGI-STATE-005 …+1 |
@@ -718,6 +741,7 @@ Generated: 2026-07-11
 | owner-decision-walkthrough-key-and-auth-2026-07-10.md | — | — | — | — |
 | package-completion-status.md | — | — | — | FUNGI-BOUNDARY-001, FUNGI-BOUNDARY-002, FUNGI-EFFECT-001 |
 | package-declaration-syntax.md | — | — | — | — |
+| PACKAGE-INDEX.md | — | — | — | — |
 | package-resolver.md | — | — | — | — |
 | parser-error-recovery.md | — | — | — | FUNGI-PARSE-001, FUNGI-PARSE-002 |
 | PASTE-TO-START-tritmesh-2026-07-04.md | — | — | — | — |
@@ -742,9 +766,12 @@ Generated: 2026-07-11
 | PROMPT-main-session-codebase-memory-mcp-fix-restart-refresh-2026-07-10.md | — | — | — | — |
 | PROMPT-main-session-familiarise-with-rules-2026-07-01.md | — | — | — | — |
 | PROMPT-main-session-full-auto-work-directive-2026-07-01.md | — | — | — | — |
+| PROMPT-main-session-governed-data-query-example-and-diagram-2026-07-11.md | — | — | — | FUNGI-GOV-003, FUNGI-MATCH-001, FUNGI-TYPE-001, FUNGI-VALUESTATE-003, FUNGI-VALUESTATE-008 |
 | PROMPT-main-session-hypha-engine-external-audit-rescope-2026-07-09.md | — | — | — | — |
 | PROMPT-main-session-MASTER-onboarding-2026-07-01.md | — | — | — | — |
 | PROMPT-main-session-mcp-client-side-gaps-2026-07-10.md | — | — | — | — |
+| PROMPT-main-session-P0-package-manifests-migration-2026-07-11.md | — | — | — | — |
+| PROMPT-main-session-P1-gate-pipeline-2026-07-11.md | — | add | — | FUNGI-GATELANG-00, FUNGI-GATELANG-002 |
 | PROMPT-main-session-pickup-all-handovers-2026-07-09.md | — | — | — | — |
 | PROMPT-main-session-pickup-all-handovers-2026-07-10.md | — | — | — | — |
 | PROMPT-main-session-privacy-redaction-and-correct-securitymd-2026-07-10.md | — | — | — | — |
@@ -762,6 +789,7 @@ Generated: 2026-07-11
 | PROMPT-oss-extraction-rnd-2026-07-01.md | — | — | — | — |
 | PROMPT-rd-code-edit-ledger-2026-07-08.md | — | — | — | — |
 | PROMPT-rd-logicn-to-galerina-rebrand-handover-2026-07-09.md | — | — | — | — |
+| PROMPT-rd-session-node-modules-and-the-ts-removal-floor-2026-07-11.md | — | — | — | — |
 | PROMPT-rnd-from-main-pickup-11-12-36-38-39-13-2026-07-10.md | — | — | — | — |
 | PROMPT-rnd-FYI-main-session-status-2026-07-10.md | — | — | — | — |
 | PROMPT-rnd-target-capability-provenance-2026-07-10.md | — | — | — | — |
@@ -854,6 +882,7 @@ Generated: 2026-07-11
 | standard-view-behaviour.md | — | — | — | — |
 | startup-and-boot-warmup.md | — | — | — | — |
 | STARTUP-tritmesh-rnd-and-build-2026-07-04.md | — | — | — | FUNGI-SECRET-004 |
+| SUMMARY.md | — | — | — | — |
 | terminology-naming-philosophy.md | — | — | — | — |
 | triggers.md | — | — | — | — |
 | tritmesh-spore-rnd-absorption-audit-2026-07-02.md | — | — | — | — |
@@ -891,7 +920,11 @@ Generated: 2026-07-11
 ## Orphaned Documents
 Docs with no inbound links from other KB docs:
 
-_No orphaned documents._
+- `HANDOVER-import-governance-audit-and-patch-2026-07-11.md` — HANDOVER — Import governance: the standard + audit-and-patch every import
+- `HANDOVER-session-master-2026-07-11.md` — HANDOVER — Session master, 2026-07-11 (R&D results + everything produced, where it lives, what's next)
+- `PROMPT-rd-session-node-modules-and-the-ts-removal-floor-2026-07-11.md` — To the R&D hub — what "no `.ts`" does (and does NOT) do to `node_modules`
+- `DEPENDENCY-USAGE.md` — Package census — DEPENDENCY USAGE (inline vs own-package)
+- `PACKAGE-INDEX.md` — Package census — PACKAGE INDEX (readiness vs the Standard doc-set)
 
 ## Stale Links
 Links pointing to missing files:
