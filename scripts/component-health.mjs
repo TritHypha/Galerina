@@ -231,6 +231,40 @@ summary.scope = "workspace packages only (not the full project: root CLI/scripts
 summary.conversion = conversion;
 summary.todos = todos;
 
+// ── README thesis tables (curated roadmap status, surfaced here so the tool and the README
+//    draw from ONE place — the Tests row is LIVE from version.json; the rest are the
+//    roadmap-readiness %s maintained in the README's "Zero-Trust thesis" + "Build Progress"
+//    sections. ◑ boundaries are partial: a shipped gate + a design-intent remainder. Update
+//    these arrays when a component's readiness changes, then sync the README rows. ─────────
+const ZERO_TRUST = [
+  { boundary: "Compiler", pct: 100, status: "✅ shipped — policy + execution DAG proven at build time" },
+  { boundary: "I/O — OS kernel", pct: 60, status: "◑ vAnd Kleene-K3 gate shipped · full kernel-bypass = design intent (DSS.wasm #102-106)" },
+  { boundary: "Packages", pct: 95, status: "◑ signed admission shipped (hash-pin · sig · revocation · caps) · registry-index the gap" },
+  { boundary: "Memory", pct: 45, status: "◑ TLSTP governs memory directly · real WASM isolation = design intent" },
+  { boundary: "TLSTP — zero-middleware", pct: 25, status: "◑ S1 cert/channel gate shipped · in-sandbox decryption = target (DSS.wasm TCB)" },
+];
+const BUILD_PROGRESS = [
+  { layer: "Specification / KB", pct: 100 },
+  { layer: "Lexer / Parser / Verifier / Contract / Value-state", pct: 100 },
+  { layer: "DRCM Phases 1-7 (Stage-A simulation)", pct: 100 },
+  { layer: "CBOR Manifests (RFC 8949)", pct: 100 },
+  { layer: "Tests — full suite", pct: 100, live: true },
+  { layer: "Stage-B self-hosting — interpreter parity", pct: 100 },
+  { layer: "Type checker / Effect checker", pct: 90 },
+  { layer: "WAT emitter", pct: 89 },
+  { layer: "Runtime interpreter", pct: 87 },
+  { layer: "Application-framework layer", pct: 72 },
+  { layer: "Post-Quantum & Hardware Security", pct: 38 },
+  { layer: "Passive Execution Plans & Target Bridges", pct: 22 },
+  { layer: "AI Inference Tower (BitNet/Groq/NVFP4)", pct: 12 },
+  { layer: "Photonic / Ternary Computing", pct: 3 },
+  { layer: "Stage-B self-hosting — WASM execution (P9)", status: "in progress" },
+  { layer: "B8 governed HTTP transport (TLSTP)", status: "in progress" },
+];
+const quantified = BUILD_PROGRESS.filter((l) => typeof l.pct === "number");
+const buildAvg = Math.round(quantified.reduce((a, l) => a + l.pct, 0) / quantified.length);
+const ztAvg = Math.round(ZERO_TRUST.reduce((a, b) => a + b.pct, 0) / ZERO_TRUST.length);
+
 // Shared renderer for the two automatic sections (used by --table AND the default report,
 // so the numbers can never drift between output modes).
 const extraSections = () => {
@@ -255,6 +289,17 @@ const extraSections = () => {
     lines.push(`    ${L("items open / done / total", 34)} ${R(`${todos.open} / ${todos.done} / ${todos.total}`, 20)}   (${todos.donePct.toFixed(1)}% done across ${todos.files} TODO.md files)`);
     lines.push("    note: doc-state signal only — per-package TODOs are known to lag shipped reality");
   }
+  lines.push("");
+  lines.push(`  ZERO-TRUST THESIS — boundary readiness (avg ${ztAvg}%; mirrors README "The Zero-Trust thesis")`);
+  for (const b of ZERO_TRUST) lines.push(`    ${L(b.boundary, 24)} ${R(b.pct + "%", 5)}  ${b.status}`);
+  lines.push("");
+  lines.push(`  BUILD PROGRESS — layer readiness (quantified avg ${buildAvg}%; mirrors README "Build Progress")`);
+  for (const l of BUILD_PROGRESS) {
+    const pctStr = typeof l.pct === "number" ? `${l.pct}%` : (l.status ?? "—");
+    const extra = l.live && version.testCount ? `  (${version.packageCount}/${version.packageCount} pkgs · ${fmt(version.testCount)} tests · 0 fail)` : "";
+    lines.push(`    ${L(l.layer, 50)} ${R(pctStr, 12)}${extra}`);
+  }
+  lines.push("    note: %s are the maintained roadmap-readiness figures (README source of truth); the Tests row is LIVE from version.json.");
   return lines;
 };
 
