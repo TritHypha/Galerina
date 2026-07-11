@@ -19,7 +19,7 @@
 // checks, emitting TypeDiagnostic records with codes that match the Stage A
 // compiler's canonical meanings:
 //   FUNGI-TYPE-001  UnknownType            — return/param type not a known type
-//   FUNGI-TYPE-002  TypeMismatch           — return expr type ≠ declared return type
+//   FUNGI-TYPE-008  InvalidReturnType      — return expr type ≠ declared return type (Stage-A canonical)
 //   FUNGI-TYPE-004  InvalidBinaryOperation — arithmetic operand not Int
 //
 // Known types in the Stage B subset: Int, Bool, String, Array.
@@ -157,7 +157,9 @@ contract {
           flowDiags = flowDiags.append({ code: "FUNGI-TYPE-004", message: msg4, flowName: name })
         }
 
-        // FUNGI-TYPE-002: return expression type must match the declared return type.
+        // FUNGI-TYPE-008 (InvalidReturnType): the return expression type must match the declared
+        // return type. Stage A emits 008 here (the returnStmt InvalidReturnType check); 002 is
+        // assignment TypeMismatch, which does not occur in this return-only Stage-B subset.
         // Only when the declared type is known and the expression typed cleanly.
         // "Unknown" means the type could not be inferred (e.g. a parameter
         // reference whose declared type the Stage B parser did not resolve) — that
@@ -167,8 +169,8 @@ contract {
           if inferred != "ERROR" {
             if inferred != "Unknown" {
               if inferred != retType {
-                let msg2: String = "type mismatch: flow '" + name + "' declares return type '" + retType + "' but its return expression is '" + inferred + "' (FUNGI-TYPE-002)"
-                flowDiags = flowDiags.append({ code: "FUNGI-TYPE-002", message: msg2, flowName: name })
+                let msg2: String = "invalid return type: flow '" + name + "' declares return type '" + retType + "' but this return expression has type '" + inferred + "' (FUNGI-TYPE-008)"
+                flowDiags = flowDiags.append({ code: "FUNGI-TYPE-008", message: msg2, flowName: name })
               }
             }
           }
