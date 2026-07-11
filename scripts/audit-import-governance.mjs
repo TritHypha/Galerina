@@ -74,11 +74,17 @@ import plugin assimilate "./q.fungi" as Q { contract { access { grant network.ou
 `;
   const top = parseProgram(src, 't.fungi').ast.children;
   const byKind = (k) => top.find((n) => n.kind === k);
+  // A plugin whose contract carries NO access { grant } — the contract alone is not enough.
+  const contractNoGrant = parseProgram(
+    `@version 1\nimport plugin safe "./r.fungi" as R { contract { intent { "x" } } }`,
+    't.fungi',
+  ).ast.children.find((n) => n.kind === 'importPluginDecl');
   const checks = [
     ['module import parsed', byKind('importDecl') !== undefined],
     ['safe plugin parsed', byKind('importPluginDecl') !== undefined],
     ['assimilate plugin parsed', byKind('assimilatedPluginDecl') !== undefined],
-    ['grantless safe plugin CAUGHT', !hasAccessGrant(byKind('importPluginDecl'))],
+    ['grantless (no-contract) safe plugin CAUGHT', !hasAccessGrant(byKind('importPluginDecl'))],
+    ['contract-but-no-grant plugin CAUGHT', !hasAccessGrant(contractNoGrant)],
     ['granted assimilate plugin passes', hasAccessGrant(byKind('assimilatedPluginDecl'))],
   ];
   let bad = 0;
