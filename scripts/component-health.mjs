@@ -239,7 +239,7 @@ summary.todos = todos;
 const ZERO_TRUST = [
   { boundary: "Compiler", pct: 100, status: "✅ shipped — policy + execution DAG proven at build time" },
   { boundary: "I/O — OS kernel", pct: 60, status: "◑ vAnd Kleene-K3 gate shipped · full kernel-bypass = design intent (DSS.wasm #102-106)" },
-  { boundary: "Packages", pct: 95, status: "◑ signed admission shipped (hash-pin · sig · revocation · caps) · registry-index the gap" },
+  { boundary: "Packages", pct: 97, status: "◑ signed admission fully twinned — central-index verdict (registry-index) + per-package manifest gate (PKG-001/002/004/006 deny · PKG-003/005 warn · PKG-006 revoked — package-admission.fungi) checker-clean · remaining = #143 execution + Phase-28 registry-data wiring" },
   { boundary: "Memory", pct: 58, status: "◑ governed-decision surface twinned (validator · pool · segmentation LSM-SEGV · trit-tamper LSM-TRIT-CORRUPT — 4 checker-clean .fungi) · real WASM isolation execution = design intent (#143)" },
   { boundary: "TLSTP — zero-middleware", pct: 25, status: "◑ S1 cert/channel gate shipped · in-sandbox decryption = target (DSS.wasm TCB)" },
 ];

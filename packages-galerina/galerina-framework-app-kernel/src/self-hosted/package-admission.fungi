@@ -1,0 +1,169 @@
+@version 1
+/// @file: package-admission.fungi
+/// @purpose: Stage-6 CHECKER-VERIFIED twin of the per-package MANIFEST-admission DECISIONS that
+///   galerina-core-compiler/src/package-resolver.ts folds (checkPackageCapabilityExpansion ->
+///   FUNGI-PKG-001, checkInstallScript -> PKG-004, checkRegistryTrust -> PKG-002, checkPackageProvenance
+///   -> PKG-003 / PKG-005 / PKG-006) and that the kernel enforces at load in fuse-loader.ts (the sha256
+///   hash-pin). The host seam does the crypto (signature verify, content hashing), the YAML parse, the
+///   lockfile set-difference and the registry allow-list membership test; this pure surface folds the
+///   resulting EVIDENCE fail-closed — the same inject-evidence / fold-verdict discipline as
+///   registry-index.fungi (the central-index verdict; this is its per-package manifest sibling).
+/// @fidelity: PKG-001 / PKG-002 / PKG-004 / PKG-006 are ERRORS (blocking -> the bare code). PKG-003
+///   (hash) and PKG-005 (signature) are WARNINGS by default and ERRORS only under a certified-registry
+///   policy, so they fold to an advisory "WARN:<code>" unless requireCertified promotes them to the bare
+///   (blocking) code. admitVerdict blocks ONLY on error-severity verdicts; warnings are surfaced but
+///   admit. The twin therefore never claims a DENY where package-resolver.ts only warns.
+/// @status: checker-verified twin (galerina check clean); NOT build-wired (execution switch #143).
+
+// FUNGI-PKG-001 CapabilityExpanded (error). addedCount = capabilities in the resolved manifest that are
+// NOT in the lockfile snapshot (host computes the set-difference; the cardinality is never negative).
+pure flow capabilityVerdict(addedCount: Int) -> String
+contract {
+  intent { "Fail-closed capability-expansion gate: a manifest declaring capabilities absent from the lockfile is a breaking security change (FUNGI-PKG-001); zero added -> 'ok'." }
+}
+{
+  if addedCount > 0 {
+    return "FUNGI-PKG-001"
+  }
+  return "ok"
+}
+
+// FUNGI-PKG-004 InstallScriptDenied (error). declared = the manifest set an installScript field;
+// isDeny = that value is exactly "deny". Anything declared-and-not-deny is refused (deny-by-default).
+pure flow installScriptVerdict(declared: Bool, isDeny: Bool) -> String
+contract {
+  intent { "Deny-by-default install-script gate: a declared, non-'deny' install script is refused (FUNGI-PKG-004); absent or 'deny' -> 'ok'." }
+}
+{
+  if declared == false {
+    return "ok"
+  }
+  if isDeny == true {
+    return "ok"
+  }
+  return "FUNGI-PKG-004"
+}
+
+// FUNGI-PKG-002 UntrustedRegistry (error) — dependency-confusion control.
+//   enforce         = the project set requireCertified OR supplied a trustedRegistries allow-list.
+//   hasRegistry     = the manifest declared a non-empty source registry.
+//   registryAllowed = that registry is a member of the allow-list (host computes; an EMPTY allow-list
+//                     yields false for every registry -> fail-closed deny-by-default).
+pure flow registryTrustVerdict(enforce: Bool, requireCertified: Bool, hasRegistry: Bool, registryAllowed: Bool) -> String
+contract {
+  intent { "Fail-closed registry-trust gate: under enforcement a missing registry (certified mode) or an off-allow-list registry is untrusted (FUNGI-PKG-002); no enforcement -> 'ok'." }
+}
+{
+  if enforce == false {
+    return "ok"
+  }
+  if hasRegistry == false {
+    if requireCertified == true {
+      return "FUNGI-PKG-002"
+    }
+    return "ok"
+  }
+  if registryAllowed == false {
+    return "FUNGI-PKG-002"
+  }
+  return "ok"
+}
+
+// FUNGI-PKG-003 MissingHash. hasValidHash = the manifest carries a well-formed `sha256:<64 hex>` content
+// hash (host validates the shape; placeholders like `sha256:pending` are NOT valid). Missing/invalid
+// WARNS by default and ERRORS (blocking) only under a certified-registry policy.
+pure flow hashVerdict(hasValidHash: Bool, requireCertified: Bool) -> String
+contract {
+  intent { "Content-hash provenance gate: a valid sha256 hash -> 'ok'; otherwise FUNGI-PKG-003 as a blocking error under certified mode, else an advisory 'WARN:FUNGI-PKG-003'." }
+}
+{
+  if hasValidHash == true {
+    return "ok"
+  }
+  if requireCertified == true {
+    return "FUNGI-PKG-003"
+  }
+  return "WARN:FUNGI-PKG-003"
+}
+
+// FUNGI-PKG-005 MissingSignature. Same severity rule as the hash gate.
+pure flow signatureVerdict(hasSignature: Bool, requireCertified: Bool) -> String
+contract {
+  intent { "Signature provenance gate: a present signature -> 'ok'; otherwise FUNGI-PKG-005 as a blocking error under certified mode, else an advisory 'WARN:FUNGI-PKG-005'." }
+}
+{
+  if hasSignature == true {
+    return "ok"
+  }
+  if requireCertified == true {
+    return "FUNGI-PKG-005"
+  }
+  return "WARN:FUNGI-PKG-005"
+}
+
+// FUNGI-PKG-006 RevokedSigner (error). Mirrors resolver revocation: the check runs ONLY when the manifest
+// names a signerKeyId AND the host injected a revocation predicate; `revoked` is that predicate's
+// fail-closed result (a throwing / tampered-registry check is folded to revoked=true by the host seam).
+pure flow revocationVerdict(hasSignerKeyId: Bool, checkAvailable: Bool, revoked: Bool) -> String
+contract {
+  intent { "Fail-closed signer-revocation gate: a package signed by a revoked key is refused (FUNGI-PKG-006); no keyId or no injected check -> 'ok' (revocation is an injected, opt-in predicate)." }
+}
+{
+  if hasSignerKeyId == false {
+    return "ok"
+  }
+  if checkAvailable == false {
+    return "ok"
+  }
+  if revoked == true {
+    return "FUNGI-PKG-006"
+  }
+  return "ok"
+}
+
+// Blocking classifier: a per-check verdict blocks admission iff it is error-severity — i.e. not "ok" and
+// not one of the advisory WARN tokens. Warnings are surfaced by the resolver but never deny admission.
+pure flow blockClass(verdict: String) -> String
+contract {
+  intent { "Classify a per-check verdict for admission: 'ok' and 'WARN:*' -> 'pass'; any error-severity code -> 'block'." }
+}
+{
+  if verdict == "ok" {
+    return "pass"
+  }
+  if verdict == "WARN:FUNGI-PKG-003" {
+    return "pass"
+  }
+  if verdict == "WARN:FUNGI-PKG-005" {
+    return "pass"
+  }
+  return "block"
+}
+
+// One-call admission: the first error-severity verdict wins (fail-closed short-circuit); warnings pass
+// through. Mirrors getResolverReport's diagnostic collection + the caller's error-blocks-admission rule.
+pure flow admitVerdict(capV: String, installV: String, registryV: String, hashV: String, signatureV: String, revocationV: String) -> String
+contract {
+  intent { "Compose the six per-package manifest gates: the first error-severity verdict denies (returns its code); if none block, the package is 'admitted' (warnings do not deny)." }
+}
+{
+  if blockClass(capV) == "block" {
+    return capV
+  }
+  if blockClass(installV) == "block" {
+    return installV
+  }
+  if blockClass(registryV) == "block" {
+    return registryV
+  }
+  if blockClass(hashV) == "block" {
+    return hashV
+  }
+  if blockClass(signatureV) == "block" {
+    return signatureV
+  }
+  if blockClass(revocationV) == "block" {
+    return revocationV
+  }
+  return "admitted"
+}

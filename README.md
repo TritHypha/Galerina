@@ -16,7 +16,7 @@ Galerina optimises for **mathematical proof and absolute Zero-Trust containment*
 |---|---|---|
 | **Compiler** | Verifies your **pre-resolved policy + execution DAG** strictly for deterministic, mathematically reproducible correctness — the contract is proven at build time, so there is no runtime surprise. | ✅ shipped |
 | **I/O — the OS kernel** | Assumes the kernel is *already a compromised, hostile environment*. Native capabilities are **denied by default**; the host is a **dumb byte-mover**; authorisation is the fail-closed **`vAnd` Kleene-K3 gate** — never OS-level I/O injected into a `main`. | ◑ K3 gate shipped · full bypass = design intent |
-| **Packages** | A **signed central registry** with fail-closed kernel verification: cryptographic manifests, content-addressed **hash-pinning**, and transitive **capability masks**. | ✅ admission shipped |
+| **Packages** | A **signed central registry** with fail-closed kernel verification: cryptographic manifests, content-addressed **hash-pinning**, and transitive **capability masks**. | ✅ admission shipped · decision surface twinned (`.fungi`) |
 | **Memory** | An actively-governed, **hostile physical boundary**. Standard shared-mutable memory models are **mathematically incompatible** with absolute Zero-Trust invariants — so TLSTP governs network memory *directly* instead of handing it to shared host state. | ◑ governed-surface twinned (checker-clean `.fungi`) · real isolation = design intent |
 | **TLSTP — zero-middleware** | Routes *around* the OS kernel: the host writes raw encrypted packets as **unparsed byte-arrays** straight into WASM linear memory; **decryption happens strictly inside the WASM sandbox** — the kernel never sees plaintext. | ◑ design intent (DSS.wasm TCB #102-106) |
 
