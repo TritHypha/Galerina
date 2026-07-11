@@ -14,7 +14,8 @@
     "brand-audit": "node scripts/brand-audit.mjs .",
     "audit:examples": "node scripts/audit-example-diagnostics.mjs",
     "audit:examples:selftest": "node scripts/audit-example-diagnostics.mjs --self-test",
-    "audit:node-floor": "node scripts/audit-node-dependencies.mjs"
+    "audit:node-floor": "node scripts/audit-node-dependencies.mjs",
+    "audit:imports": "node scripts/audit-import-governance.mjs"
   },
   "engines": {
     "node": ">=18.0.0"

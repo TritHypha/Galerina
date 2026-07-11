@@ -3597,12 +3597,16 @@ class GovernanceVerifier {
    */
   private verifyAssimilatedPlugins(nodes: readonly AstNode[], sourceFile: string): void {
     for (const node of nodes) {
-      if (node.kind !== "assimilatedPluginDecl") continue;
+      const isAssimilate = node.kind === "assimilatedPluginDecl";
+      const isSafe = node.kind === "importPluginDecl";
+      if (!isAssimilate && !isSafe) continue;
 
       const alias = node.value ?? "<unknown>";
 
-      // FUNGI-ASSIMILATE-001: warn if not in boot.fungi (Stage A warning; Stage B will be error)
-      if (!sourceFile.endsWith("boot.fungi")) {
+      // FUNGI-ASSIMILATE-001: assimilated (Hot-Code Residency) plugins may only be granted in
+      // boot.fungi. A `safe` bridged plugin is isolated/demand-loaded/transient and has no such
+      // constraint, so this boot check is assimilate-only.
+      if (isAssimilate && !sourceFile.endsWith("boot.fungi")) {
         this.diagnostics.push(makeGovDiag(
           "FUNGI-ASSIMILATE-001",
           "ASSIMILATE_OUTSIDE_BOOT",
@@ -3642,12 +3646,18 @@ class GovernanceVerifier {
       }
 
       if (!hasGrant) {
+        // EVERY plugin import (safe OR assimilate) is a Toxic-Border deny-by-default edge:
+        // an access { grant } contract is mandatory (imported effects are subset-checked
+        // against it). Previously only the assimilate form was checked, so a grantless
+        // `import plugin safe` slipped through fail-open (import-governance handover).
+        const [label, why] = isAssimilate
+          ? ["Assimilated plugin", "V_DPM bits are pre-warmed at boot — explicit capability grants are mandatory."]
+          : ["Plugin", "A plugin import is a deny-by-default Toxic-Border edge — explicit capability grants are mandatory."];
         this.diagnostics.push(makeGovDiag(
           "FUNGI-ASSIMILATE-003",
           "ASSIMILATE_MISSING_CAPABILITY_GRANTS",
           "error",
-          `Assimilated plugin '${alias}' has no access { grant } block in its contract. ` +
-          `V_DPM bits are pre-warmed at boot — explicit capability grants are mandatory.`,
+          `${label} '${alias}' has no access { grant } block in its contract. ${why}`,
           node.location,
           `Add inside the plugin contract: access { grant network.outbound }`,
         ));

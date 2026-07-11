@@ -442,6 +442,14 @@ jobs:
         run: node scripts/build-core-chain.mjs
       - name: CG-4 signing-boundary + CG-7 signed-fixture guard (build-dependent, enforcing)
         run: node --test scripts/tests/cg4-signing-boundary.test.mjs scripts/tests/signed-fixture-guard.test.mjs
+      # import-governance (build-dependent, ENFORCING): every `import plugin safe|assimilate` is a
+      # Toxic-Border deny-by-default edge and MUST carry an access { grant } contract (checker
+      # emits FUNGI-ASSIMILATE-003; this audit classifies every .fungi import with the REAL parser
+      # and RED's a grantless plugin). Needs the compiler dist. --self-test proves the detector.
+      - name: Import-governance audit (self-test, then enforcing)
+        run: |
+          node scripts/audit-import-governance.mjs --self-test
+          node scripts/audit-import-governance.mjs
 
   # KB-availability preflight — the two doc-drift gates (lint-conventions, diagnostic-doc-drift) read the
   # canonical diagnostics / count-authority docs from the PRIVATE sibling repo ZTF-Knowledge-Bases. The
