@@ -170,6 +170,14 @@ type SessionId = Brand<String, "SessionId">     // createSession.fungi:6
 `Decimal`. Note that *currency-literal* forms like `GBP0.00` are **not** general expression syntax —
 see "Literals" below.
 
+**Money arithmetic is exact** (RD-0349 I3). `add` / `subtract` / `multiply` / `divideBy` compute on a
+BigInt fixed-point core — the decimal string goes straight in, with **no `parseFloat`, no `toFixed`, no
+`1/x` float reciprocal** — so an 18-decimal amount (crypto precision) survives byte-exact, and division
+fails closed on a zero divisor. Cross-currency `Money<A> + Money<B>` is a compile error
+(`FUNGI-TYPE-004`; convert first with `fx.convert`), and `Money<C> * Money<C>` is dimensionally rejected
+(scale by a `Decimal`, not another `Money`). *(Per-currency minor units — JPY 0dp, BHD 3dp, crypto 8/18dp
+— arrive with the currency registry; until then every currency rounds at 2dp.)*
+
 ## Value-state qualifiers on a type
 
 `protected` and `redacted` (and `tainted`, `secret`) are **governance qualifiers** that prefix a base

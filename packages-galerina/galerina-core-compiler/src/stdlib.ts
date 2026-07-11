@@ -114,15 +114,51 @@ export function bigIntDecimalCmp(a: string, b: string): number {
   return na < nb ? -1 : na > nb ? 1 : 0;
 }
 
-/** Multiply a decimal string by a JavaScript number (for rate/factor scaling). */
+/**
+ * @deprecated (RD-0349 I3) — LOSSY: the `number` factor + `toFixed(10)` truncates beyond 10 dp and cannot
+ * represent an 18-dp crypto amount exactly. The money flow no longer uses it (see bigIntDecimalMul). Kept only
+ * for any external caller; prefer the exact decimal-string form below.
+ */
 export function bigIntDecimalMulNumber(a: string, factor: number): string {
-  // Convert factor to a decimal string, then use BigInt multiply
-  // Use toFixed(10) for precision, then trim trailing zeros
   const factorStr = factor.toFixed(10).replace(/0+$/, "").replace(/\.$/, "");
   const pa = decimalToBigInt(a);
   const pf = decimalToBigInt(factorStr);
   const scale = pa.scale + pf.scale;
   return bigIntToDecimalStr(pa.n * pf.n, scale);
+}
+
+/**
+ * Exact decimal multiply (RD-0349 I3) — BOTH operands as decimal strings, straight into the BigInt core: no
+ * `parseFloat`, no `toFixed`, no float bridge. The product scale is the sum of the operand scales (exact); the
+ * caller rounds to the target currency decimals. An 18-dp factor survives byte-exact.
+ */
+export function bigIntDecimalMul(a: string, b: string): string {
+  const pa = decimalToBigInt(a);
+  const pb = decimalToBigInt(b);
+  return bigIntToDecimalStr(pa.n * pb.n, pa.scale + pb.scale);
+}
+
+/**
+ * Exact decimal divide to `places` fractional digits with half-up rounding (RD-0349 I3) — decimal strings
+ * straight into the BigInt core: NO `1/x` float reciprocal. Non-terminating division (1/3 = 0.333…) is made
+ * exact by dividing at the requested scale and rounding the guard digit. Throws "division by zero" (the caller
+ * maps it to Err). `places` may be 0 (a zero-decimal currency).
+ */
+export function bigIntDecimalDiv(a: string, b: string, places: number): string {
+  const pa = decimalToBigInt(a);
+  const pb = decimalToBigInt(b);
+  if (pb.n === BigInt(0)) throw new Error("division by zero");
+  const ten = BigInt(10);
+  // (pa.n / 10^pa.scale) / (pb.n / 10^pb.scale) to `places` dp
+  //   = pa.n * 10^(pb.scale + places) / (pb.n * 10^pa.scale)
+  const num = pa.n * (ten ** BigInt(pb.scale + places));
+  const den = pb.n * (ten ** BigInt(pa.scale));
+  const neg = (num < BigInt(0)) !== (den < BigInt(0));
+  const an = num < BigInt(0) ? -num : num;
+  const ad = den < BigInt(0) ? -den : den;
+  let q = an / ad;
+  if ((an % ad) * BigInt(2) >= ad) q += BigInt(1); // half-up on the guard digit
+  return bigIntToDecimalStr(neg ? -q : q, places);
 }
 
 /** Round a decimal string to N decimal places. */
@@ -961,54 +997,66 @@ function moneyStatic(method: string, args: readonly GalerinaValue[]): GalerinaVa
   }
 }
 
+/**
+ * Per-currency minor-unit decimals (RD-0349 I2). moneyMethod threads this so NO literal `2` remains. Until the
+ * I1 UNIT_REGISTRY lands (owner-gated on the pinned, dated ISO snapshot the R&D hub is sourcing) every currency
+ * uses the 2dp default; when the registry arrives ONLY this function changes (JPY→0, BHD→3, BTC-sats→8, wei→18).
+ */
+function moneyDecimals(_currency: string): number {
+  return 2; // TODO(RD-0349 I1): registry-driven per-currency decimals — pending the pinned ISO snapshot
+}
+
+/** Scale for a Money<C> / Money<C> ratio (a Decimal, not Money): crypto-grade precision, exact (I3), never float. */
+const MONEY_RATIO_DECIMALS = 18;
+
 function moneyMethod(receiver: GalerinaValue, method: string, args: readonly GalerinaValue[]): GalerinaValue | undefined {
   if (!isMoney(receiver)) return undefined;
   const amountStr = moneyAmountStr(receiver);
   const currency = moneyCurrency(receiver);
+  const dp = moneyDecimals(currency); // RD-0349 I2: threaded per-currency decimals (no literal 2)
   switch (method) {
     case "amount":
-      // Return amount rounded to 2 decimal places for display
-      return { __tag: "decimal", value: bigIntDecimalRound(amountStr, 2) };
+      return { __tag: "decimal", value: bigIntDecimalRound(amountStr, dp) };
     case "currency":
       return { __tag: "string", value: currency };
     case "toString":
-      return { __tag: "string", value: `${currency} ${bigIntDecimalRound(amountStr, 2)}` };
+      return { __tag: "string", value: `${currency} ${bigIntDecimalRound(amountStr, dp)}` };
     case "add": {
       const other = args[0];
       if (other === undefined || !isMoney(other)) return { __tag: "runtimeError", message: "Money.add requires Money argument" };
       if (moneyCurrency(other) !== currency) return err(`Cannot add ${currency} and ${moneyCurrency(other)}`);
-      // Phase 9A-3: exact BigInt arithmetic — no floating-point rounding
-      return makeMoney(bigIntDecimalRound(bigIntDecimalAdd(amountStr, moneyAmountStr(other)), 2), currency);
+      // exact BigInt arithmetic — no floating-point rounding
+      return makeMoney(bigIntDecimalRound(bigIntDecimalAdd(amountStr, moneyAmountStr(other)), dp), currency);
     }
     case "subtract": {
       const other = args[0];
       if (other === undefined || !isMoney(other)) return { __tag: "runtimeError", message: "Money.subtract requires Money argument" };
       if (moneyCurrency(other) !== currency) return err(`Cannot subtract ${moneyCurrency(other)} from ${currency}`);
-      // Phase 9A-3: exact BigInt arithmetic
-      return makeMoney(bigIntDecimalRound(bigIntDecimalSub(amountStr, moneyAmountStr(other)), 2), currency);
+      return makeMoney(bigIntDecimalRound(bigIntDecimalSub(amountStr, moneyAmountStr(other)), dp), currency);
     }
     case "multiply": {
-      // Money<C> * Decimal (or number) — scale by a factor
-      // Stage 1 experimental warning preserved; BigInt multiply avoids FP errors
+      // Money<C> * Decimal|Int — scale by an EXACT decimal-string factor (RD-0349 I3: no parseFloat/toFixed).
       const factorArg = args[0];
       const factorStr = factorArg?.__tag === "decimal" ? factorArg.value
                       : factorArg?.__tag === "int" || factorArg?.__tag === "float"
                         ? factorArg.value.toString()
                         : "1";
-      return makeMoney(bigIntDecimalRound(bigIntDecimalMulNumber(amountStr, parseFloat(factorStr)), 2), currency);
+      return makeMoney(bigIntDecimalRound(bigIntDecimalMul(amountStr, factorStr), dp), currency);
     }
     case "divideBy": {
       const rhs = args[0];
       if (rhs === undefined) return err("Division by zero");
       if (isMoney(rhs)) {
-        // Money<C> / Money<C> → Decimal ratio; use parseFloat for the ratio only
-        const divisor = moneyAmount(rhs);
-        if (divisor === 0) return err("Division by zero");
-        return { __tag: "decimal", value: (moneyAmount(receiver) / divisor).toString() };
+        // Money<C> / Money<C> → EXACT Decimal ratio (RD-0349 I3: no float division).
+        if (decimalToBigInt(moneyAmountStr(rhs)).n === BigInt(0)) return err("Division by zero");
+        return { __tag: "decimal", value: bigIntDecimalDiv(amountStr, moneyAmountStr(rhs), MONEY_RATIO_DECIMALS) };
       }
-      const divisorVal = rhs.__tag === "decimal" ? parseFloat(rhs.value) : numVal(rhs);
-      if (divisorVal === 0) return err("Division by zero");
-      return makeMoney(bigIntDecimalRound(bigIntDecimalMulNumber(amountStr, 1 / divisorVal), 2), currency);
+      // Money<C> / Decimal|Int → Money, EXACT to the currency decimals (RD-0349 I3: no 1/x float reciprocal).
+      const divisorStr = rhs.__tag === "decimal" ? rhs.value
+                       : rhs.__tag === "int" || rhs.__tag === "float" ? rhs.value.toString()
+                       : "0";
+      if (decimalToBigInt(divisorStr).n === BigInt(0)) return err("Division by zero");
+      return makeMoney(bigIntDecimalDiv(amountStr, divisorStr, dp), currency);
     }
     default:
       return undefined;
