@@ -274,6 +274,25 @@ const GENERIC_EXAMPLES: ReadonlyMap<string, string> = new Map([
   ["Secret",       "Secret<ApiKey>"],
 ]);
 
+// The KIND of each type-argument POSITION for a generic. A position that is anything but
+// "type" is PAYLOAD — a nominal tag, a shape literal, or a dimension — and is NEVER a
+// type reference, so checkTypeRef must not recurse into it. This declarative table is the
+// single source of truth that replaces the old per-case regex skips (Brand tag / Tensor
+// shape / numeric dim): a new generic with a non-type arg adds ONE row here and the type
+// checker can never regress into that false-positive class again (057 Brand-tag, 401
+// Tensor-shape). Generics whose args are ALL types (Option, Result, Array, Map,
+// ReadOnlyView, Channel, Set, List, Secret) are omitted — the default kind is "type".
+// Each row's length matches GENERIC_ARITY for that base.
+type GenericArgKind = "type" | "tag" | "shape" | "dim";
+const GENERIC_ARG_KINDS: ReadonlyMap<string, readonly GenericArgKind[]> = new Map([
+  ["Brand",     ["type", "tag"]],        // Brand<T, Tag> — nominal identity tag (bare or quoted)
+  ["Tensor",    ["type", "shape"]],      // Tensor<Elem, [d0, d1, ...]> — shape literal
+  ["Vector",    ["type", "dim"]],        // Vector<Elem, N> — dimension (numeric or named)
+  ["Matrix",    ["type", "dim", "dim"]], // Matrix<Elem, R, C> — row/col dimensions
+  ["Money",     ["tag"]],                // Money<GBP> — currency tag
+  ["Embedding", ["dim"]],                // Embedding<768> — dimension
+]);
+
 // ---------------------------------------------------------------------------
 // Type string parser
 //
@@ -2052,24 +2071,18 @@ class TypeChecker {
       }
     }
 
-    // Recursively check each type argument
+    // Recursively check each TYPE-kind argument. A generic's non-type positions
+    // (nominal tags, shape literals, dimensions) are declared in GENERIC_ARG_KINDS and
+    // are never type references — that table is the single source of truth, replacing
+    // the old per-case regex skips (Brand tag / Tensor shape / numeric dim). Defense in
+    // depth: even a "type" position holding a literal, a quoted tag, or a bracketed
+    // shape is payload, not a type name. Location for nested args is Phase 7.
+    const argKinds = GENERIC_ARG_KINDS.get(base);
     for (let i = 0; i < args.length; i++) {
       const trimmed = (args[i] ?? "").trim();
-      if (trimmed === "" || /^\d/.test(trimmed)) continue; // skip numeric dimension args
-      // Skip a bracketed shape literal — the [1, 128] in Tensor<Float32, [1, 128]> is a
-      // dimension shape, not a type reference; recursing into it raised a false TYPE-001.
-      if (/^\[/.test(trimmed)) continue;
-      // Skip string-literal args: a quoted arg is a nominal TAG, not a type name —
-      // e.g. the second parameter of Brand<T, "Name"> is the brand tag, never a
-      // type reference. Recursing into it produced a false FUNGI-TYPE-001 (#17).
-      if (/^["']/.test(trimmed)) continue;
-      // Skip a Brand's tag argument (Brand<T, Tag>): the 2nd parameter is a nominal
-      // brand tag conferring nominal identity, NOT a type reference — whether quoted OR
-      // a bare identifier. The canonical form in SYNTAX-REFERENCE uses a bare tag
-      // (`Brand<String, EmailTag>`), so recursing into it raised a false FUNGI-TYPE-001
-      // under --strict-types — the strict-path sibling of the #17 quoted-tag fix.
-      if (base === "Brand" && i === 1) continue;
-      // Pass parent location; source locations for nested args are Phase 7
+      if (trimmed === "") continue;
+      if ((argKinds?.[i] ?? "type") !== "type") continue; // declared payload position
+      if (/^[\d"'\[]/.test(trimmed)) continue; // literal / quoted tag / shape literal
       this.checkTypeRef(trimmed, location);
     }
   }
