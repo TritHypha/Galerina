@@ -1,0 +1,99 @@
+@version 1
+/// @file: route-defaults.fungi
+/// @purpose: Stage-6 CHECKER-VERIFIED twin of route-defaults.ts's secure-by-default DECISIONS —
+///   the posture-aware ceilings (#195) and the relaxation-detection folds that feed the security
+///   report. The immutable policy-object SHAPING (?? merges, spread copies) stays in the host .ts;
+///   the GOVERNANCE decisions — what the secure ceiling is, and what counts as a relaxation of it —
+///   are here, fail-closed. Proves the .fungi checker handles real branching decision logic, not
+///   just a trivial fold.
+/// @status: checker-verified twin (galerina check clean); NOT build-wired (execution switch #143).
+
+// Secure body-size ceiling: 256 KB baseline, tightened to 64 KB under hostile-host posture "on".
+pure flow secureMaxBodyBytes(postureOn: Bool) -> Int
+contract {
+  intent { "The secure body-size ceiling in bytes; posture 'on' (#195) tightens 256 KB to 64 KB." }
+}
+{
+  if postureOn == true {
+    return 65536
+  }
+  return 262144
+}
+
+// Secure concurrency ceiling: 10 baseline, tightened to 5 under posture "on".
+pure flow secureMaxConcurrent(postureOn: Bool) -> Int
+contract {
+  intent { "The secure max-concurrent ceiling; posture 'on' tightens 10 to 5." }
+}
+{
+  if postureOn == true {
+    return 5
+  }
+  return 10
+}
+
+// A user body-size ABOVE the effective secure ceiling is a recorded relaxation. Fail-closed:
+// only an explicit widening past the ceiling counts; at-or-below is the secure default.
+pure flow isBodySizeRelaxation(userMaxBytes: Int, postureOn: Bool) -> Bool
+contract {
+  intent { "True iff a route widens the body-size ceiling above the secure default (a recorded relaxation)." }
+}
+{
+  if userMaxBytes > secureMaxBodyBytes(postureOn) {
+    return true
+  }
+  return false
+}
+
+// unknownFields / duplicateKeys: any value other than "deny" is a relaxation of the strict default.
+pure flow isFieldPolicyRelaxation(setting: String) -> Bool
+contract {
+  intent { "True iff a body field-policy is anything but the secure 'deny' default." }
+}
+{
+  if setting != "deny" {
+    return true
+  }
+  return false
+}
+
+// auth "public" weakens the required-auth default; "required" is the secure baseline.
+pure flow isAuthRelaxation(mode: String) -> Bool
+contract {
+  intent { "True iff a route sets auth mode 'public', relaxing the required-auth default." }
+}
+{
+  if mode == "public" {
+    return true
+  }
+  return false
+}
+
+// Idempotency default is ENABLED iff the method mutates state (POST/PUT/PATCH/DELETE).
+pure flow idempotentByDefault(method: String) -> Bool
+contract {
+  intent { "True iff the HTTP method mutates state, so idempotency is on by default." }
+}
+{
+  match method {
+    "POST" => return true
+    "PUT" => return true
+    "PATCH" => return true
+    "DELETE" => return true
+    _ => return false
+  }
+}
+
+// Disabling idempotency on a mutating method is a recorded relaxation.
+pure flow isIdempotencyRelaxation(method: String, enabled: Bool) -> Bool
+contract {
+  intent { "True iff a mutating-method route disables idempotency (a recorded relaxation)." }
+}
+{
+  if idempotentByDefault(method) == true {
+    if enabled == false {
+      return true
+    }
+  }
+  return false
+}
