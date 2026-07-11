@@ -3014,7 +3014,7 @@
       "defs": 0,
       "emits": 3,
       "tests": 29,
-      "docs": 16
+      "docs": 18
     },
     {
       "code": "FUNGI-EFFECT-003",
@@ -3734,7 +3734,7 @@
       "severities": [],
       "defs": 1,
       "emits": 1,
-      "tests": 34,
+      "tests": 35,
       "docs": 5
     },
     {
@@ -4681,7 +4681,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 5,
-      "docs": 9
+      "docs": 10
     },
     {
       "code": "FUNGI-MEMORY-001",
@@ -4966,7 +4966,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 14,
-      "docs": 1
+      "docs": 2
     },
     {
       "code": "FUNGI-NAME-003",
@@ -7883,7 +7883,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 3
+      "docs": 5
     },
     {
       "code": "FUNGI-TYPE-007",
@@ -8155,7 +8155,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 2,
-      "docs": 1
+      "docs": 2
     },
     {
       "code": "FUNGI-TYPE-022",
@@ -8169,7 +8169,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 6,
-      "docs": 1
+      "docs": 2
     },
     {
       "code": "FUNGI-TYPE-023",

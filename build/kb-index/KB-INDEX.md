@@ -1,4 +1,4 @@
-# Galerina KB index (877 docs)
+# Galerina KB index (879 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -2453,6 +2453,17 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - links: [[galerina-tri-pipe-is-photonic-router]] [[galerina-rd-0337-beyond-rust-tri-typesafety-and-a-ternary-native-safety-primitive]] [[galerina-tower-citizen-governance-runtime]]
 - terms: governed, adaptive, wiring, tri-pipe, rewire, crypto, photonic, workflow, substrate, problem-class, logic, binary, code, runtime
 
+## RD-0339 — From "safe *iff* four invariants" to make-misuse-impossible: the tri-typestate governance boundary · 2026-07-11
+`../ZTF-Knowledge-Bases/galerina-rd-0339-make-misuse-impossible-tri-typestate-boundary.md`
+- links: [[galerina-rd-0337-beyond-rust-tri-typesafety-and-a-ternary-native-safety-primitive]] [[galerina-rd-0338-adaptive-governed-workflow-tri-pipe]]
+- terms: value, boundary, four, photonic, pass, readonly, safe, iff, invariants, fail-open, tri, abstain, audit, make-misuse-impossible
+
+## RD-0340 — `.gate`/`.fungi` conformance to the make-misuse-impossible model, and the field↔cut rung-3 hoist
+`../ZTF-Knowledge-Bases/galerina-rd-0340-gate-fungi-conformance-and-the-field-cut-rung-3-hoist.md`
+- codes: FUNGI-PRIVACY-002
+- links: [[galerina-rd-0339-make-misuse-impossible-tri-typestate-boundary]] [[galerina-rd-0337-beyond-rust-tri-typesafety-and-a-ternary-native-safety-primitive]]
+- terms: cut, gate, field, rung-3, fungi, privacy, finding, rd-0339, deny, catch, hoist, epistemic, authoring, unknown
+
 ## R&D — Phase 34B boundary param auto-taint: verified state + build-ready spec
 `../ZTF-Knowledge-Bases/galerina-rd-34b-paramtaint-buildspec-2026-06-24.md`
 - codes: FUNGI-VALUESTATE-003, FUNGI-VALUESTATE-008
@@ -2615,10 +2626,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 
 ## Galerina — R&D Results Log (quick-lookup verdict table)
 `../ZTF-Knowledge-Bases/galerina-rd-results-log.md`
-- codes: FUNGI-SUBSTRATE-001, FUNGI-RUNTIME-003, FUNGI-PERM-001, FUNGI-GDCE-001, FUNGI-PRIVACY-002, FUNGI-PCI-G-000, FUNGI-ASSIMILATE-004, ERR_BRIDGE_UNATTESTED, ERR_HOST_NATIVE_DENIED, ERR_AI_MODEL_NOT_APPROVED, FUNGI-GOV-TPL-001, FUNGI-ASSIMILATE-003, FUNGI-BUILD-002, FUNGI-ATTR-001, FUNGI-PRIVACY-001, FUNGI-EFFECT-006, FUNGI-SEC-020, FUNGI-NAME-001, ERR_CERTIFIED, FUNGI-MATCH-001, FUNGI-GOV-003, ERR_ADDON_UNPINNED, FUNGI-SECRET-004, FUNGI-RETAIN-001
+- codes: FUNGI-PRIVACY-002, FUNGI-SUBSTRATE-001, FUNGI-RUNTIME-003, FUNGI-PERM-001, FUNGI-GDCE-001, FUNGI-PCI-G-000, FUNGI-ASSIMILATE-004, ERR_BRIDGE_UNATTESTED, ERR_HOST_NATIVE_DENIED, ERR_AI_MODEL_NOT_APPROVED, FUNGI-GOV-TPL-001, FUNGI-ASSIMILATE-003, FUNGI-BUILD-002, FUNGI-ATTR-001, FUNGI-PRIVACY-001, FUNGI-EFFECT-006, FUNGI-SEC-020, FUNGI-NAME-001, ERR_CERTIFIED, FUNGI-MATCH-001, FUNGI-GOV-003, ERR_ADDON_UNPINNED, FUNGI-SECRET-004, FUNGI-RETAIN-001
 - tasks: #22, #149, #11, #24, #28, #195, #102, #34, #0089, #212, #110, #10, #194, #205, #155
 - links: [[feedback-rd-absorb-positive-and-negative]] [[galerina-ci-state-and-cross-repo-gates]] [[galerina-kernel-ts-vs-fungi-rationale]] [[galerina-graph-ascii-outcome-and-gate-pipeline-2026-07-01]] [[galerina-graph-ascii-spec-and-ab-benchmark-2026-07-01]] [[galerina-rd-0236-runtime-50yr-mistake-audit]] [[galerina-rd-0237-runtime-governance-in-gate-reexamination]] [[galerina-rd-0234-fungi-50yr-mistake-audit]] [[galerina-rd-0234b-fungi-second-pass-hunt]] [[fail-closed-no-50yr-mistake-rule]]
-- terms: gate, galerina, owner, real, mjs, photonic, design, never, fungi, spore, graph, fail-closed, signed, verdict
+- terms: gate, galerina, owner, mjs, real, photonic, fungi, design, never, spore, fail-closed, graph, signed, shipped
 
 ## Galerina syntax 7-axis sweep (2026-06-25) — PARTIAL (4/8 categories; 4 rate-limited, to resume)
 `../ZTF-Knowledge-Bases/galerina-rd-syntax-7axis-sweep-2026-06-25.md`
@@ -3334,10 +3345,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/HANDOVER-RD-0302-streaming-completion-2026-07-09.md`
 - terms: rd-0302, stream, shipped, streaming, confirmed, prefilter, completion, schematic, gap, frames, kem-once, streamseal, frame, must
 
-## HANDOVER — R&D arc RD-0320 onward (currently → RD-0338) (+ Directives 1 & 2) · 2026-07-10
+## HANDOVER — R&D arc RD-0320 onward (currently → RD-0340) (+ Directives 1 & 2) · 2026-07-10 (upd 2026-07-11)
 `../ZTF-Knowledge-Bases/HANDOVER-RD-0320-onward-2026-07-10.md`
+- codes: FUNGI-PRIVACY-002
 - tasks: #11, #149, #23, #24, #27, #26, #143, #102, #22
-- terms: stage-6, papers, design, key, objectives, checker, directives, chatter, propose-only, handover, next, queue, fungi, arc
+- links: [[galerina-rd-0339-make-misuse-impossible-tri-typestate-boundary]] [[galerina-rd-0340-gate-fungi-conformance-and-the-field-cut-rung-3-hoist]]
+- terms: stage-6, fungi, checker, gate, propose-only, papers, design, key, objectives, boundary, cut, directives, decision, chatter
 
 ## HANDOVER — R&D session master index (all deliverables) · 2026-07-09
 `../ZTF-Knowledge-Bases/HANDOVER-RnD-master-index-2026-07-09.md`

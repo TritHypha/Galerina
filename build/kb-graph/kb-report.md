@@ -1,8 +1,8 @@
 # Galerina KB Graph Report
-Generated: 2026-07-10
+Generated: 2026-07-11
 
 ## Stats
-- Docs: 875 | Edges: 2964 | Orphans: 0 | Stale links: 4 | FUNGI codes: 712
+- Docs: 877 | Edges: 2968 | Orphans: 0 | Stale links: 4 | FUNGI codes: 712
 
 ## Document Registry (auto-generated)
 
@@ -507,6 +507,8 @@ Generated: 2026-07-10
 | galerina-rd-0336-chatter-91-115-typesafety-logic-runtime-verification.md | — | — | — | — |
 | galerina-rd-0337-beyond-rust-tri-typesafety-and-a-ternary-native-safety-primitive.md | — | — | — | FUNGI-GOV-3 |
 | galerina-rd-0338-adaptive-governed-workflow-tri-pipe.md | — | — | — | FUNGI-SUBSTRATE-001 |
+| galerina-rd-0339-make-misuse-impossible-tri-typestate-boundary.md | — | — | — | — |
+| galerina-rd-0340-gate-fungi-conformance-and-the-field-cut-rung-3-hoist.md | — | — | 🧪 R&D / SURFACE-CONFORMANCE AUDIT + ONE SPEC'D CHANGE (propose-only) · SAFE-internal · 2026-07-11 | FUNGI-PRIVACY-002 |
 | galerina-rd-34b-paramtaint-buildspec-2026-06-24.md | — | — | verify-before-build — **build-ready spec; the strict-profile escalation is owner-gated** | FUNGI-VALUESTATE-003, FUNGI-VALUESTATE-008 |
 | galerina-rd-53-azt-selfcert-and-blackhole-protocol-2026-06-23.md | — | — | — | FUNGI-GOV-3, FUNGI-MATCH-001, FUNGI-PCI-001, FUNGI-PRIVACY-013, FUNGI-SUBSTRATE-001 |
 | galerina-rd-59-js-quirks-vs-galerina-2026-06-25.md | — | — | — | FUNGI-NAME-001, FUNGI-NAME-002, FUNGI-TYPE-004, FUNGI-TYPE-008 |
@@ -673,7 +675,7 @@ Generated: 2026-07-10
 | HANDOVER-main-full-control-of-galerina-2026-07-03.md | — | — | — | — |
 | HANDOVER-post-RD-0320-2026-07-10.md | — | — | — | — |
 | HANDOVER-RD-0302-streaming-completion-2026-07-09.md | — | — | — | — |
-| HANDOVER-RD-0320-onward-2026-07-10.md | — | — | — | — |
+| HANDOVER-RD-0320-onward-2026-07-10.md | — | — | — | FUNGI-PRIVACY-002 |
 | HANDOVER-RnD-master-index-2026-07-09.md | — | — | — | — |
 | HANDOVER-rnd-research-session-2026-07-01.md | — | — | — | — |
 | HANDOVER-RnD-response-to-main-2026-07-09.md | — | — | — | — |

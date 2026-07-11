@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 877,
+  "docCount": 879,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -27703,6 +27703,104 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/galerina-rd-0339-make-misuse-impossible-tri-typestate-boundary.md",
+      "title": "RD-0339 — From \"safe *iff* four invariants\" to make-misuse-impossible: the tri-typestate governance boundary · 2026-07-11",
+      "headings": [
+        "Headline",
+        "§1 — The gap, named exactly",
+        "§2 — The trust-reduction ladder (hoist every invariant up it)",
+        "§3 — Security / cyber R&D grounding (the requested pass)",
+        "§4 — The tri / photonic R&D (the requested pass) — and the correction it forces",
+        "§5 — THE CHANGE, specified (so there is no ambiguity)",
+        "§6 — Threat model split + the honest bound",
+        "§7 — Verdict + recommendations (routing)"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "galerina-rd-0337-beyond-rust-tri-typesafety-and-a-ternary-native-safety-primitive",
+        "galerina-rd-0338-adaptive-governed-workflow-tri-pipe"
+      ],
+      "topTerms": [
+        "value",
+        "boundary",
+        "four",
+        "photonic",
+        "pass",
+        "readonly",
+        "safe",
+        "iff",
+        "invariants",
+        "fail-open",
+        "tri",
+        "abstain",
+        "audit",
+        "make-misuse-impossible",
+        "trust",
+        "core",
+        "type",
+        "allow",
+        "every",
+        "requested",
+        "tri-typestate",
+        "verified",
+        "cannot",
+        "deny",
+        "named"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/galerina-rd-0340-gate-fungi-conformance-and-the-field-cut-rung-3-hoist.md",
+      "title": "RD-0340 — `.gate`/`.fungi` conformance to the make-misuse-impossible model, and the field↔cut rung-3 hoist",
+      "headings": [
+        "Headline (TL;DR)",
+        "§0 — What was asked",
+        "§1 — Finding A: `.gate` *is* the epistemic type-state (and enforces it at rung-3)",
+        "§2 — Finding B: `.fungi` replaces `try/catch` with errors-as-values + `trap`",
+        "§3 — The gap: the field-blind privacy cut",
+        "§4 — The solution: hoist field↔cut to rung-3",
+        "§5 — THE CHANGE, specified (propose-only, for the main session to land)",
+        "§6 — One open item (UNVERIFIED — flagged for a follow-up sweep, not a claimed finding)",
+        "§7 — Security grounding and honest posture",
+        "§8 — Strip-list, harm-filter, verdict"
+      ],
+      "codes": [
+        "FUNGI-PRIVACY-002"
+      ],
+      "tasks": [],
+      "xrefs": [
+        "galerina-rd-0339-make-misuse-impossible-tri-typestate-boundary",
+        "galerina-rd-0337-beyond-rust-tri-typesafety-and-a-ternary-native-safety-primitive"
+      ],
+      "topTerms": [
+        "cut",
+        "gate",
+        "field",
+        "rung-3",
+        "fungi",
+        "privacy",
+        "finding",
+        "rd-0339",
+        "deny",
+        "catch",
+        "hoist",
+        "epistemic",
+        "authoring",
+        "unknown",
+        "type-state",
+        "try",
+        "trap",
+        "rule",
+        "reject",
+        "open",
+        "surface",
+        "path",
+        "ssn",
+        "make-misuse-impossible",
+        "model"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/galerina-rd-34b-paramtaint-buildspec-2026-06-24.md",
       "title": "R&D — Phase 34B boundary param auto-taint: verified state + build-ready spec",
       "headings": [
@@ -29144,11 +29242,11 @@
         "Complete R&D ledger — all bridge `done/` files (swept 95, 2026-06-23)"
       ],
       "codes": [
+        "FUNGI-PRIVACY-002",
         "FUNGI-SUBSTRATE-001",
         "FUNGI-RUNTIME-003",
         "FUNGI-PERM-001",
         "FUNGI-GDCE-001",
-        "FUNGI-PRIVACY-002",
         "FUNGI-PCI-G-000",
         "FUNGI-ASSIMILATE-004",
         "ERR_BRIDGE_UNATTESTED",
@@ -29202,28 +29300,28 @@
         "gate",
         "galerina",
         "owner",
-        "real",
         "mjs",
+        "real",
         "photonic",
+        "fungi",
         "design",
         "never",
-        "fungi",
         "spore",
-        "graph",
         "fail-closed",
+        "graph",
         "signed",
-        "verdict",
         "shipped",
+        "verdict",
         "audit",
         "security",
         "build",
         "tritmesh",
         "gap",
-        "proof",
-        "green",
-        "fix",
         "already",
-        "runtime"
+        "green",
+        "proof",
+        "fix",
+        "honest"
       ]
     },
     {
@@ -37295,20 +37393,22 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/HANDOVER-RD-0320-onward-2026-07-10.md",
-      "title": "HANDOVER — R&D arc RD-0320 onward (currently → RD-0338) (+ Directives 1 & 2) · 2026-07-10",
+      "title": "HANDOVER — R&D arc RD-0320 onward (currently → RD-0340) (+ Directives 1 & 2) · 2026-07-10 (upd 2026-07-11)",
       "headings": [
         "1. The recurring themes (read these first — they compress 13 RDs)",
-        "2. Per-RD digest (0320 → 0338)",
+        "2. Per-RD digest (0320 → 0340)",
         "3. Consolidated main-session action queue (all propose-only → you land)",
         "3a. OWNER-DIRECTED next objectives (2026-07-10) — Stage-6 self-hosting, sequential",
         "3b. RD-0333 findings (chatter 73–90 — design inputs, propose-only)",
-        "3c. Conceptual R&D — RD-0335 / 0337 / 0338 (directly feeds the §3a Stage-6 objectives)",
+        "3c. Conceptual R&D — RD-0335 / 0337 / 0338 / 0339 / 0340 (directly feeds the §3a Stage-6 objectives)",
         "4. Directives",
         "5. Key facts / corrections since 0320 (so your records reconcile)",
         "6. Owner-gated",
         "7. Papers (harm-filtered — constructions only, to KB `papers/`)"
       ],
-      "codes": [],
+      "codes": [
+        "FUNGI-PRIVACY-002"
+      ],
       "tasks": [
         "#11",
         "#149",
@@ -37320,32 +37420,35 @@
         "#102",
         "#22"
       ],
-      "xrefs": [],
+      "xrefs": [
+        "galerina-rd-0339-make-misuse-impossible-tri-typestate-boundary",
+        "galerina-rd-0340-gate-fungi-conformance-and-the-field-cut-rung-3-hoist"
+      ],
       "topTerms": [
         "stage-6",
+        "fungi",
+        "checker",
+        "gate",
+        "propose-only",
         "papers",
         "design",
         "key",
         "objectives",
-        "checker",
+        "boundary",
+        "cut",
         "directives",
+        "decision",
         "chatter",
-        "propose-only",
-        "handover",
-        "next",
-        "queue",
-        "fungi",
-        "arc",
-        "main",
-        "galerina",
-        "owner-gated",
         "type",
-        "fold",
-        "findings",
-        "rd-0320",
-        "consolidated",
+        "field",
+        "handover",
+        "galerina",
+        "next",
+        "deny",
+        "queue",
+        "arc",
         "must",
-        "mcp",
+        "main",
         "primitive"
       ]
     },
