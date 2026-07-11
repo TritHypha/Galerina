@@ -155,6 +155,9 @@ A ten-axis capability self-assessment across the surfaces Galerina governs, plus
   <tr>
     <td align="center" width="100%"><a href="docs/diagrams/galerina-payments-money-lane.svg"><img src="docs/diagrams/galerina-payments-money-lane.svg" alt="Galerina — a governed payment lane" width="100%"></a><br><sub><b>20 · Galerina — a governed payment lane (Money&lt;GBP&gt;)</b></sub></td>
   </tr>
+  <tr>
+    <td align="center" width="100%"><a href="docs/diagrams/radar-11-language-type-system.svg"><img src="docs/diagrams/radar-11-language-type-system.svg" alt="Language & Type System radar — Galerina vs Rust / TypeScript / Python" width="100%"></a><br><sub><b>21 · Language &amp; Type System — Galerina vs Rust / TypeScript / Python (radar)</b></sub></td>
+  </tr>
 </table>
 
 > **New here?** → [**SETUP.md**](SETUP.md) — install · run your first benchmark · Hello World with full governance comments
