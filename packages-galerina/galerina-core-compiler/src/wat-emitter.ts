@@ -355,6 +355,16 @@ export const WAT_REC_FIELD_SIZE = 4;
  */
 let recordCtx: { localDecls: string[]; counter: { n: number } } | null = null;
 
+/**
+ * Fail-closed loop fuel cap emitted INTO the WAT for every `while` loop (#22 / RD-0314).
+ * The interpreter and bytecode-VM trap at `maxIterations` (100_000), but that cap does not
+ * ship inside the emitted module — a standalone `while` compiled to WASM would otherwise loop
+ * unbounded (a live DoS if the module is run outside a fuel-metered host). Emitting a per-loop
+ * counter that TRAPS (`unreachable`) past the cap makes the module self-bounding, matching the
+ * runtime's fail-closed semantics (Goal-C liveness / 0032).
+ */
+const WAT_LOOP_FUEL_CAP = 100_000;
+
 /** typeName → ordered field names, built once per module from `record` decls.
  *  Used to compute field byte offsets for `r.field` loads. null → field access
  *  falls back to the placeholder. */
@@ -2235,9 +2245,19 @@ function emitBlockStatements(
           exitCondExpr = `(i32.eqz ${condNode ? emitWATExpr(condNode, vars, staticConsts) : "(i32.const 1)"})`;
         }
 
+        // #22 / RD-0314: fail-closed loop fuel cap. A per-loop i32 counter (defaults to 0) is
+        // incremented each iteration and TRAPS past WAT_LOOP_FUEL_CAP — so a runaway `while` in a
+        // standalone module aborts (unreachable) instead of hanging, mirroring the interpreter's
+        // maxIterations trap. The counter is checked AFTER the exit test, so it only counts taken
+        // iterations (body executions), exactly like the bytecode-VM's back-edge count.
+        const fuelLocal = `$__while_fuel_${labelN}`;
+        localDecls.push(`(local ${fuelLocal} i32)`);
+
         bodyLines.push(`(block ${exitLabel}`);
         bodyLines.push(`  (loop ${loopLabel}`);
         bodyLines.push(`    (br_if ${exitLabel} ${exitCondExpr})`);
+        bodyLines.push(`    (local.set ${fuelLocal} (i32.add (local.get ${fuelLocal}) (i32.const 1)))`);
+        bodyLines.push(`    (if (i32.gt_u (local.get ${fuelLocal}) (i32.const ${WAT_LOOP_FUEL_CAP})) (then unreachable))`);
 
         if (bodyBlock !== undefined) {
           const loopLines: string[] = [];
