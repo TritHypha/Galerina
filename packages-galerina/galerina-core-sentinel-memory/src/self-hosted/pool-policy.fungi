@@ -1,0 +1,56 @@
+@version 1
+/// @file: pool-policy.fungi
+/// @purpose: Stage-6 CHECKER-VERIFIED twin of static-memory-pool.ts's PURE admission DECISIONS — the
+///   deterministic fixed-block pool's config validation and segment-boundary resolution. These fold with
+///   NO engine state: the backing ArrayBuffer/SharedArrayBuffer, the free-lists, the typed-array views
+///   (i32/u8), the REJECT-fill scrub, and the live/generation Maps are the HOST floor; the *rules* over
+///   them (what config is legal, which segment a ptr belongs to) are governed logic and fold here.
+///   Mirrors StaticMemoryPool's constructor guards (LSM-CFG-001/002) + segmentOf (LSM-BOUNDS-001).
+/// @status: checker-verified twin (galerina check clean); NOT build-wired — the .ts stays the executed
+///   artifact until the Stage-6 execution switch (#143 WASM byte-parity). Host floor: the raw buffer +
+///   views + free-list state (stateful allocate/free stay host; the sizing ceil-division stays host too,
+///   so no float/int-division ambiguity enters a checker-only twin).
+
+// The pool-config admit DECISION, fail-closed. "ok", or the constructor trap code:
+//   - LSM-CFG-001: blockBytes must be a positive multiple of the alignment (align, 16 = 128-bit).
+//   - LSM-CFG-002: totalBytes must be a positive multiple of blockBytes.
+// Mirrors StaticMemoryPool's constructor validation exactly (a NEVER-growing pool must be carved cleanly).
+pure flow checkPoolConfig(blockBytes: Int, totalBytes: Int, align: Int) -> String
+contract {
+  intent { "Fail-closed pool config check: 'ok' iff blockBytes is a positive multiple of align AND totalBytes is a positive multiple of blockBytes; else the LSM-CFG-00x trap code." }
+}
+{
+  if blockBytes <= 0 {
+    return "LSM-CFG-001"
+  }
+  if blockBytes % align != 0 {
+    return "LSM-CFG-001"
+  }
+  if totalBytes <= 0 {
+    return "LSM-CFG-002"
+  }
+  if totalBytes % blockBytes != 0 {
+    return "LSM-CFG-002"
+  }
+  return "ok"
+}
+
+// The segment-of-pointer DECISION, fail-closed. Returns "compute" | "governance", or "LSM-BOUNDS-001"
+// when the ptr is outside the pool [0, capacityBytes). The pool is split into a compute region then a
+// governance region; a ptr below governanceBase is compute, at/above it is governance (mirrors segmentOf).
+pure flow segmentOfPtr(ptr: Int, capacityBytes: Int, governanceBase: Int) -> String
+contract {
+  intent { "Resolve which pool segment a ptr belongs to: 'compute' below governanceBase, 'governance' at/above it; 'LSM-BOUNDS-001' if the ptr is outside [0, capacityBytes)." }
+}
+{
+  if ptr < 0 {
+    return "LSM-BOUNDS-001"
+  }
+  if ptr >= capacityBytes {
+    return "LSM-BOUNDS-001"
+  }
+  if ptr < governanceBase {
+    return "compute"
+  }
+  return "governance"
+}
