@@ -196,7 +196,8 @@ contract {
 // We emit the Stage-A canonical codes on `let`/`mut` bindings:
 //   FUNGI-TYPE-001  UnknownType   — declared typeName is not a known type
 //   FUNGI-TYPE-002  TypeMismatch  — known typeName ≠ a single literal's litType
-// and recurse into `if`/`while` bodies so nested bindings are checked too.
+//   FUNGI-NAME-002  DuplicateName — a binding name re-declared in the SAME block scope
+// and recurse into `if`/`while` bodies (each a child scope) so nested bindings are checked too.
 
 // Read the single initializer/condition expression off a statement, if present.
 pure flow firstExpr(stmt: Auto) -> Option<Auto>
@@ -273,18 +274,71 @@ contract {
   return diags
 }
 
-// Check a list of statements (a flow body or a nested if/while block).
+// True if `target` already appears in `names` (linear scan; Stage B arrays have no Set).
+pure flow containsName(names: Array<Auto>, needle: String) -> Bool
+contract {
+  intent { "Membership test over the list of already-declared binding names in a scope." }
+}
+{
+  mut i: Int = 0
+  while i < names.count() {
+    let nOpt = names.get(i)
+    match nOpt {
+      Some(n) => {
+        let ns: String = n
+        if ns == needle {
+          return true
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return false
+}
+
+// True for a binding statement (let/mut) that introduces a name into the block scope.
+pure flow isBinding(kind: String) -> Bool
+contract {
+  intent { "True for a let or mut binding statement." }
+}
+{
+  if kind == "let" {
+    return true
+  }
+  if kind == "mut" {
+    return true
+  }
+  return false
+}
+
+// Check a list of statements (a flow body or a nested if/while block = one block scope).
+// Emits FUNGI-NAME-002 for a duplicate binding name within THIS scope (matching Stage A's
+// same-scope DuplicateName). A nested if/while body is a child scope (its own checkStmtList
+// call with a fresh `seen`), so re-declaring a name in a nested block is NOT a duplicate here.
 pure flow checkStmtList(flowName: String, stmts: Array<Auto>) -> Array<Auto>
 contract {
-  intent { "Walk a statement list, accumulating diagnostics for each statement." }
+  intent { "Walk a block scope, accumulating diagnostics and flagging duplicate bindings (FUNGI-NAME-002)." }
 }
 {
   mut diags: Array<Auto> = Array.empty()
+  mut seen: Array<Auto> = Array.empty()
   mut i: Int = 0
   while i < stmts.count() {
     let sOpt = stmts.get(i)
     match sOpt {
-      Some(s) => { diags = appendAll(diags, checkStmt(flowName, s)) }
+      Some(s) => {
+        if isBinding(s.kind) {
+          let nm: String = s.name
+          if containsName(seen, nm) {
+            let msgd: String = "duplicate binding '" + nm + "' is already declared in this scope (FUNGI-NAME-002)"
+            diags = diags.append({ code: "FUNGI-NAME-002", message: msgd, flowName: flowName })
+          }
+          seen = seen.append(nm)
+        }
+        diags = appendAll(diags, checkStmt(flowName, s))
+      }
       None => {}
       _ => {}
     }

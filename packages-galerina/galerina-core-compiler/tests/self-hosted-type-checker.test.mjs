@@ -337,4 +337,26 @@ describe("type-checker.fungi — checkFlowBodies (M-B body AST)", () => {
     ]);
     assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-002"]);
   });
+
+  it("duplicate binding in the same scope → FUNGI-NAME-002", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "x", typeName: "Int", expr: [expr("lit", "1", "Int")] }),
+        stmt({ kind: "let", name: "x", typeName: "Int", expr: [expr("lit", "2", "Int")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-NAME-002"]);
+  });
+
+  it("re-declaring a name in a NESTED block is a child scope, not a duplicate", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "x", typeName: "Int", expr: [expr("lit", "1", "Int")] }),
+        stmt({ kind: "if", expr: [expr("name", "cond")], body: [
+          stmt({ kind: "let", name: "x", typeName: "Int", expr: [expr("lit", "2", "Int")] }),
+        ] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), []);
+  });
 });
