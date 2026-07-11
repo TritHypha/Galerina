@@ -134,6 +134,15 @@ A ten-axis capability self-assessment across the surfaces Galerina governs, plus
   <tr>
     <td align="center" width="100%"><a href="docs/diagrams/galerina-governed-data-query-lane.svg"><img src="docs/diagrams/galerina-governed-data-query-lane.svg" alt="Galerina — the Governed Data-Query Lane" width="100%"></a><br><sub><b>13 · Galerina — the Governed Data-Query Lane (prove before use)</b></sub></td>
   </tr>
+  <tr>
+    <td align="center" width="100%"><a href="docs/diagrams/galerina-trust-state-lifecycle.svg"><img src="docs/diagrams/galerina-trust-state-lifecycle.svg" alt="Galerina — the Trust-State Lifecycle" width="100%"></a><br><sub><b>14 · Galerina — the Trust-State Lifecycle (prove or redact before use)</b></sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="100%"><a href="docs/diagrams/galerina-govern-dont-absorb.svg"><img src="docs/diagrams/galerina-govern-dont-absorb.svg" alt="Galerina — Govern-Don't-Absorb layer map" width="100%"></a><br><sub><b>15 · Galerina — Govern-Don't-Absorb (convert decisions, not compute)</b></sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="100%"><a href="docs/diagrams/galerina-ungoverned-vs-governed-breach.svg"><img src="docs/diagrams/galerina-ungoverned-vs-governed-breach.svg" alt="Galerina — the breach that can't compile" width="100%"></a><br><sub><b>16 · Galerina — the breach that can't compile (ungoverned vs governed)</b></sub></td>
+  </tr>
 </table>
 
 > **New here?** → [**SETUP.md**](SETUP.md) — install · run your first benchmark · Hello World with full governance comments
