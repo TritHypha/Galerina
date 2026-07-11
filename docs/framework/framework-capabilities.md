@@ -25,7 +25,7 @@ dataset.export
 
 | Concept | Meaning | Example |
 |---|---|---|
-| `effects` | What the code is technically allowed to do | `db.read`, `db.write`, `audit.write` |
+| `effects` | What the code is technically allowed to do | `database.read`, `database.write`, `audit.write` |
 | `capabilities` | What the actor is authorised to do | `users.read`, `users.email.update`, `users.pii.read` |
 
 You normally need both.

@@ -16,8 +16,8 @@ permission user_email_update {
   actor require users.email.update
   actor require users.private.read
 
-  code allow db.read
-  code allow db.write
+  code allow database.read
+  code allow database.write
   code allow audit.write
   code deny network.external
 
