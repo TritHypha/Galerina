@@ -240,7 +240,7 @@ const ZERO_TRUST = [
   { boundary: "Compiler", pct: 100, status: "✅ shipped — policy + execution DAG proven at build time" },
   { boundary: "I/O — OS kernel", pct: 60, status: "◑ vAnd Kleene-K3 gate shipped · full kernel-bypass = design intent (DSS.wasm #102-106)" },
   { boundary: "Packages", pct: 95, status: "◑ signed admission shipped (hash-pin · sig · revocation · caps) · registry-index the gap" },
-  { boundary: "Memory", pct: 45, status: "◑ TLSTP governs memory directly · real WASM isolation = design intent" },
+  { boundary: "Memory", pct: 58, status: "◑ governed-decision surface twinned (validator · pool · segmentation LSM-SEGV · trit-tamper LSM-TRIT-CORRUPT — 4 checker-clean .fungi) · real WASM isolation execution = design intent (#143)" },
   { boundary: "TLSTP — zero-middleware", pct: 25, status: "◑ S1 cert/channel gate shipped · in-sandbox decryption = target (DSS.wasm TCB)" },
 ];
 const BUILD_PROGRESS = [

@@ -1,0 +1,76 @@
+@version 1
+/// @file: trit-buffer-guard.fungi
+/// @purpose: Stage-6 CHECKER-VERIFIED twin of tpl-state-buffer.ts's PURE validation DECISIONS — the
+///   ternary packed-trit buffer's fail-closed guards. This is "tri-logic built into memory": the buffer
+///   natively stores ternary state {-1, 0, +1}, and every read/write is gated by a decision that folds
+///   with NO engine state. The bit-packing itself (the Int32Array view, the word/shift `locate` arithmetic,
+///   the read-modify-write of a 2-bit code) is the HOST floor; the RULES over it — is this a legal trit,
+///   is this index in range, is this decoded code a tamper sentinel — are governed logic and fold here.
+///   Mirrors TPLStateBuffer's constructor guard + setTrit/getTrit guards (LSM-TRIT-INDEX / -RANGE / -CORRUPT).
+/// @status: checker-verified twin (galerina check clean); NOT build-wired — tpl-state-buffer.ts stays the
+///   executed artifact until the Stage-6 execution switch (#143 WASM byte-parity). Host floor: the packed
+///   Int32Array + the bit-layout math. Encoding map (host): -1->0b00, 0->0b01, +1->0b10, tamper->0b11;
+///   the 4th code (3) is a CORRUPTION SENTINEL this buffer never writes, so reading it back means the
+///   backing memory was tampered — checkTritEnc is exactly that fail-closed tamper decision.
+
+// The constructor trit-count DECISION, fail-closed. A buffer sized with a negative trit count is illegal.
+// Mirrors TPLStateBuffer's constructor guard: tritCount < 0 -> LSM-TRIT-INDEX.
+pure flow checkTritCount(tritCount: Int) -> String
+contract {
+  intent { "Fail-closed buffer-size check: 'ok' iff tritCount is non-negative; else 'LSM-TRIT-INDEX'." }
+}
+{
+  if tritCount < 0 {
+    return "LSM-TRIT-INDEX"
+  }
+  return "ok"
+}
+
+// The trit-value DECISION, fail-closed. A written trit must be exactly one of {-1, 0, +1}; because a trit
+// is integer-typed, the closed range [-1, +1] is precisely that set. Mirrors setTrit's LSM-TRIT-RANGE guard.
+pure flow checkTritValue(value: Int) -> String
+contract {
+  intent { "Fail-closed trit-domain check: 'ok' iff value is in {-1, 0, +1}; else 'LSM-TRIT-RANGE'." }
+}
+{
+  if value < -1 {
+    return "LSM-TRIT-RANGE"
+  }
+  if value > 1 {
+    return "LSM-TRIT-RANGE"
+  }
+  return "ok"
+}
+
+// The trit-index DECISION, fail-closed. Any access must land inside [0, tritCount). Mirrors the shared
+// index guard in setTrit AND getTrit: i < 0 or i >= tritCount -> LSM-TRIT-INDEX.
+pure flow checkTritIndex(i: Int, tritCount: Int) -> String
+contract {
+  intent { "Fail-closed trit-index check: 'ok' iff 0 <= i < tritCount; else 'LSM-TRIT-INDEX'." }
+}
+{
+  if i < 0 {
+    return "LSM-TRIT-INDEX"
+  }
+  if i >= tritCount {
+    return "LSM-TRIT-INDEX"
+  }
+  return "ok"
+}
+
+// The decoded-code tamper DECISION, fail-closed. Reading a trit yields a 2-bit code; the legal codes are
+// {0, 1, 2} (mapping to -1, 0, +1). The 4th code (3) is the corruption sentinel this buffer never writes,
+// so decoding it means the backing memory was tampered. Mirrors getTrit's LSM-TRIT-CORRUPT trap.
+pure flow checkTritEnc(enc: Int) -> String
+contract {
+  intent { "Fail-closed tamper check on a decoded 2-bit trit code: 'ok' iff enc is in {0, 1, 2}; else 'LSM-TRIT-CORRUPT' (the sentinel 3, or any out-of-range code, is tampered memory)." }
+}
+{
+  if enc < 0 {
+    return "LSM-TRIT-CORRUPT"
+  }
+  if enc > 2 {
+    return "LSM-TRIT-CORRUPT"
+  }
+  return "ok"
+}
