@@ -143,10 +143,6 @@
     "category": "hidden-type-governed",
     "why": "declares `none` but emitted FUNGI-TYPE-001"
   },
-  "docs/examples/Level-4-Security/175-security-summary-example/example.fungi": {
-    "category": "redact-006",
-    "why": "declares `none` but emitted FUNGI-VALUESTATE-006"
-  },
   "docs/examples/Level-5-Governance/201-intent-basic/example.fungi": {
     "category": "tier-drift",
     "why": "declares `none` but emitted FUNGI-GOV-002, FUNGI-TIER-001, FUNGI-VALUESTATE-008"
