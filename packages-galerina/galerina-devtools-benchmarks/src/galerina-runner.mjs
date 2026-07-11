@@ -80,7 +80,11 @@ export async function runGalerinaPassiveBenchmark(fungiPath, callCount = 1000) {
     coldCalls,
     warmCallsPerSecond: Number((callCount / (warmMs / 1000)).toFixed(2)),
     coldCallsPerSecond: Number((coldCalls / (coldMs / 1000)).toFixed(2)),
-    iterationsPerSecond: Number((callCount / (warmMs / 1000)).toFixed(2)), // used by compare
+    // The COMPARABLE throughput is the COLD rate: every call clears the cache and recomputes, so it does the
+    // full per-call work like Node/Python/Rust — an apples-to-apples number. The WARM rate measured LRU
+    // cache-HITS on a zero-arg pure main() (returning a memoized result); × opsPerRun that reported fantasy
+    // ops/sec (a tree-walker "beating" native Rust). Report cold as the headline; warm stays as a detail field.
+    iterationsPerSecond: Number((coldCalls / (coldMs / 1000)).toFixed(2)), // used by compare (COLD = real recompute)
     result: result?.value ?? result,
     error: false,
     cpu: {
@@ -95,8 +99,9 @@ export async function runGalerinaPassiveBenchmark(fungiPath, callCount = 1000) {
     },
     notes: [
       `setupMs: one-time compile+governance cost (not charged to execution)`,
-      `warmCallsPerSecond: execution with LRU cache (deployment steady-state)`,
-      `coldCallsPerSecond: execution without cache (first-call per unique input)`,
+      `throughput (iterationsPerSecond) = COLD rate: real per-call recompute — the apples-to-apples cross-runtime number`,
+      `warmCallsPerSecond: LRU-cache steady-state (a Galerina-only optimization; NOT comparable to runtimes that recompute each call)`,
+      `coldCallsPerSecond: execution without cache (first-call per unique input) = the comparable throughput above`,
     ],
   };
 }

@@ -234,7 +234,11 @@ export function normalizeThroughput(rtKey, r, benchId) {
   if (GALERINA_INTERP.has(rtKey)) {
     ops = num(r.execMs) != null && r.execMs > 0 ? Math.round((spec.N / r.execMs) * 1000) : null;
   } else if (rtKey === "galerinaPassive") {
-    ops = scale(r.warmCallsPerSecond, spec.N);               // warm = LRU-cache steady state
+    // COLD rate (cache cleared each call = real recompute), NOT warm. warmCallsPerSecond measured LRU
+    // cache-HITS on a zero-arg pure main() (returning a memoized result), so × N it reported FANTASY
+    // ops/sec — a tree-walker "beating" native Rust by 10-40×. Cold ≈ governed (execution-only, no per-call
+    // governance) = credible. Verified: compute-mix cold×N 2.19M ≈ governed 1.82M (warm×N was 627M).
+    ops = scale(r.coldCallsPerSecond, spec.N);
   } else if (rtKey === "wasm") {
     ops = scale(r.callsPerSecond, spec.N);                   // one WASM call = one main() = N inner ops
   } else {
