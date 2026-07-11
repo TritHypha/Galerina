@@ -14,6 +14,17 @@
 
 Suite 92/92 · 6,929 · 0 fail; self-hosted corpus 294/294; all gates green (known #20 baseline aside).
 
+## 0.1 Why "no .ts" is one program, not a pile of file conversions (VERIFIED build mechanism, 2026-07-10)
+
+Checked from source this session — the deciding facts:
+
+- **A package can be fully `.fungi` ONLY if it is a LEAF.** `api-protocol-rest` and `framework-example-app` are 100% `.fungi` with **empty `main`/`types`**; they build via `galerina.mjs build --package .`, emitting **`.wasm` / `.wat` / `.lmanifest` / `.fuse.json`** — compiled artifacts, *not* a `dist/index.js` + `.d.ts` library. Nothing imports them as TypeScript.
+- **The kernel and compiler are the OPPOSITE — typed TS libraries the rest of the build consumes.** `@galerina/framework-app-kernel` declares `main: ./dist/index.js`, `types: ./dist/index.d.ts`, `build: tsc`, and is imported by **~10 packages** (the API-server stack: `server.ts`, `credential.ts`, `package-resolver.ts`, `kernel-integration.ts`, `openapi.ts`, …). `core-compiler` likewise (`type-checker.ts` is the *executed* compiler; `type-checker.fungi` is a twin run through the interpreter in tests — the `.ts` is never deleted, for ANY stage, today).
+- **Therefore deleting their `.ts` requires the `.fungi` build to emit a TS-consumable library** (`dist/index.js` + `index.d.ts`) that those ~10 importers can `import` with types. The `.fungi` build emits **`.wasm`, not a `.d.ts`**. Closing that gap IS the Stage-B execution switch (#143 WASM byte-parity + the DSS.wasm TCB #102–106, partly **hardware**-gated) — a program, not a per-file edit.
+- **Subset gap on top of that:** even the floor-free `secret-gate.ts` uses closures (`use<T>(name, fn)`), generics, and `try/catch` — outside the Stage-B `.fungi` interpreter subset — so it cannot even run as a *verified twin* until the subset grows.
+
+**Honest conclusion (the reason "no .ts this round" is not truthfully claimable for either target):** "no `.ts`" for the kernel/compiler is **not** a conversion checklist — it is the single execution-switch program (emit a typed library from `.fungi`, byte-parity-gated, partly HW-gated). Until it lands, a `.fungi` twin can reach *diagnostic/behavioral parity* but the `.ts` stays as the executed artifact; deleting it would break the ~10 importers and the compiler itself — an unverifiable build, i.e. a fake-green, which the house rules forbid. The `audit-kernel-floor` gate keeps the boundary honest (floor can only shrink) while the switch is built.
+
 ## 1. Objective 1 — Type checker to 22/22 codes (the burn-down)
 
 **Missing codes (17):** 003 (nominal/brand gate) · 008 (null denied) · 009/010 (generic arity/constraint) · 011 (collection element) · 012 (Result) · 014 (missing effect) · 016/017/030 (tensor shape/precision/element) · 018 (runtime-target) · 019 (unknown symbol) · 020 (shadowing) · 021/022 (match exhaustive/unreachable) · 023/024 (Auto deferral).
