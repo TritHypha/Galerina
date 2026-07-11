@@ -50,6 +50,15 @@ import { checkResilienceViolations, checkFaultHandlerViolations } from "./resili
 import { checkObservabilityWarnings } from "./observability-inference.js";
 import { checkSubstrateViolations } from "./substrate-inference.js";
 import { isRecognizedLimitDecl } from "./runtime/limitPolicy.js";
+// RD-0358 governed memory-residency hardening (PROTOTYPE) — the explicit `hardening {}` block
+// enforcement. Auto-derivation (H-1) is record-only (surfaced by scripts/hardening-show-derived.mjs);
+// this validates the EXPLICIT opt-in block fail-closed (H-2/H-7/H-4). See hardening-residency.ts.
+import {
+  deriveAuto, reconcileExplicit, canHonour, resolveHost,
+  VALID_RESIDENCY, VALID_ERASE, VALID_TIMING, VALID_SUBSTRATE,
+  FUNGI_HARDEN_001, FUNGI_HARDEN_002, FUNGI_HARDEN_003, FUNGI_HARDEN_006,
+  type ResidencyTier, type EraseMode, type TimingDiscipline, type Substrate, type ExplicitHardening,
+} from "./hardening-residency.js";
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -2099,6 +2108,7 @@ class GovernanceVerifier {
     // liability {} is auto-calculated — writing it manually is a design smell.
     if (flowNode !== undefined) {
       this.verifyPhysicalHardeningBlock(flowNode, flow.name);
+      this.verifyResidencyHardeningBlock(flowNode, flow.name, flow);
       this.verifyLiabilityBlock(flowNode, flow.name);
     }
 
@@ -3006,6 +3016,145 @@ class GovernanceVerifier {
       flow.location,
       `Add after the return type: -> ReturnType decreases n`,
     ));
+  }
+
+  /**
+   * FUNGI-HARDEN-001..006 (RD-0358 PROTOTYPE) — validate an EXPLICIT `hardening {}` block fail-closed.
+   *
+   * Auto-derivation (H-1) is intentionally NOT enforced here: for a secret the compiler derives the
+   * strictest floor and the developer writes nothing, but on this prototype branch that derivation is
+   * a checker-verified SHADOW surfaced by scripts/hardening-show-derived.mjs — it is not build-wired
+   * (execution switch #143), so it must not perturb the existing corpus. This method therefore fires
+   * ONLY when a flow carries an explicit `hardening {}` opt-in block, where enforcement is the point:
+   *   • unknown residency/erase/timing value → FUNGI-HARDEN-001/002/003 (fail-closed)
+   *   • loosen a secret's derived default without `audited_loosen` → FUNGI-HARDEN-004 (H-7)
+   *   • a residency ceiling the declared host cannot honour → FUNGI-HARDEN-005 (H-2/HV5, fail-closed REJECT)
+   *   • a secret-dependent branch under `timing constant` → FUNGI-HARDEN-006 (H-4, HONESTLY PARTIAL)
+   * The RD-0337 governed-downgrade-to-Refuted composition is stubbed (RD0337_TYPESTATE_STUB): the
+   * prototype takes the stricter REJECT path.
+   */
+  private verifyResidencyHardeningBlock(flowNode: AstNode, flowName: string, flow: FlowMeta): void {
+    const contractNode = (flowNode.children ?? []).find((c) => c.kind === "contractDecl");
+    if (contractNode === undefined) return;
+
+    const hardeningNode = (contractNode.children ?? []).find(
+      (c) => c.kind === "identifier" && ((c.value ?? "") === "hardening:block" || (c.value ?? "") === "hardening:"),
+    );
+    if (hardeningNode === undefined) return; // no explicit block — H-1 auto-derivation is record-only, not enforced here
+
+    // Flatten the block's `decl:` directive lines (same extraction as verifyPhysicalHardeningBlock).
+    const content = (hardeningNode.children ?? [])
+      .filter((c) => c.kind === "identifier" && (c.value ?? "").startsWith("decl:"))
+      .map((c) => (c.value ?? "").slice("decl:".length))
+      .join(" ")
+      .toLowerCase();
+    const extractValue = (keyword: string): string | undefined => {
+      const idx = content.indexOf(keyword);
+      if (idx === -1) return undefined;
+      const after = content.slice(idx + keyword.length).trim().split(/\s+/);
+      return after[0];
+    };
+
+    // Fail-closed value validation (an unrecognised directive value is rejected, never ignored).
+    const residencyRaw = extractValue("residency");
+    if (residencyRaw !== undefined && !VALID_RESIDENCY.has(residencyRaw)) {
+      this.diagnostics.push(makeGovDiag(FUNGI_HARDEN_001.code, FUNGI_HARDEN_001.name, "error",
+        `Flow '${flowName}': ${FUNGI_HARDEN_001.message} Got '${residencyRaw}'.`, hardeningNode.location));
+    }
+    const eraseRaw = extractValue("erase");
+    if (eraseRaw !== undefined && !VALID_ERASE.has(eraseRaw)) {
+      this.diagnostics.push(makeGovDiag(FUNGI_HARDEN_002.code, FUNGI_HARDEN_002.name, "error",
+        `Flow '${flowName}': ${FUNGI_HARDEN_002.message} Got '${eraseRaw}'.`, hardeningNode.location));
+    }
+    const timingRaw = extractValue("timing");
+    if (timingRaw !== undefined && !VALID_TIMING.has(timingRaw)) {
+      this.diagnostics.push(makeGovDiag(FUNGI_HARDEN_003.code, FUNGI_HARDEN_003.name, "error",
+        `Flow '${flowName}': ${FUNGI_HARDEN_003.message} Got '${timingRaw}'.`, hardeningNode.location));
+    }
+    const substrateRaw = extractValue("substrate");
+
+    // Build the explicit block from WELL-FORMED values only (a rejected value doesn't reconcile).
+    const explicit: ExplicitHardening = {
+      ...(residencyRaw !== undefined && VALID_RESIDENCY.has(residencyRaw) ? { residency: residencyRaw as ResidencyTier } : {}),
+      ...(eraseRaw !== undefined && VALID_ERASE.has(eraseRaw) ? { erase: eraseRaw as EraseMode } : {}),
+      ...(timingRaw !== undefined && VALID_TIMING.has(timingRaw) ? { timing: timingRaw as TimingDiscipline } : {}),
+      ...(substrateRaw !== undefined && VALID_SUBSTRATE.has(substrateRaw) ? { substrate: substrateRaw as Substrate } : {}),
+      auditedLoosen: content.includes("audited_loosen"),
+    };
+
+    // H-1 signal (privacy/secrets block, or a secret.* effect) → the auto floor to reconcile against.
+    const isSecretShaped = this.flowIsSecretShaped(contractNode, flow);
+    const auto = deriveAuto({
+      isSecret: isSecretShaped,
+      isTainted: false,
+      hasSecretReadEffect: flow.declaredEffects.some((e) => e === "secret.read" || e.startsWith("secret.")),
+    });
+
+    // H-7 — reconcile: a loosen of a secret's derived default without the audited opt-out is rejected.
+    const { effective, rejections } = reconcileExplicit(auto, explicit);
+    for (const r of rejections) {
+      this.diagnostics.push(makeGovDiag(r.code, r.name, "error", `Flow '${flowName}': ${r.reason}`, hardeningNode.location,
+        "Tighten the directive, or add `audited_loosen` to opt out visibly (governance may still refuse)."));
+    }
+
+    // H-2 / HV5 — the residency ceiling must be honourable by the declared host, else REJECT (fail-closed).
+    if (explicit.residency !== undefined) {
+      const host = resolveHost(extractValue("host"));
+      const honour = canHonour(effective.residency, host);
+      if (!honour.ok && honour.rejection !== undefined) {
+        this.diagnostics.push(makeGovDiag(honour.rejection.code, honour.rejection.name, "error",
+          `Flow '${flowName}': ${honour.rejection.reason} (RD-0337 governed-downgrade-to-Refuted is stubbed — the prototype fails closed.)`,
+          hardeningNode.location,
+          "Declare a capable `host <name>` seam (e.g. register_pinned), or relax the ceiling with an audited opt-out."));
+      }
+    }
+
+    // H-4 (HONESTLY PARTIAL) — a `timing constant` obligation with an input-dependent branch/scrutinee.
+    // Over-approximates: flags ANY parameter used in an if/match condition (without RD-0337 the checker
+    // cannot tell which parameter is the secret). Does NOT prove constant-time (see FUNGI_HARDEN_006).
+    if (effective.timing === "constant") {
+      const paramNames = new Set(
+        flow.params
+          .map((p) => p.replace(/^(?:readonly|unsafe|safe)\s+/, "").split(/[:\s]/)[0]?.trim())
+          .filter((n): n is string => n !== undefined && n.length > 0),
+      );
+      if (paramNames.size > 0 && this.hasSecretDependentTiming(flowNode, paramNames)) {
+        this.diagnostics.push(makeGovDiag(FUNGI_HARDEN_006.code, FUNGI_HARDEN_006.name, "warning",
+          `Flow '${flowName}': ${FUNGI_HARDEN_006.message}`, hardeningNode.location,
+          "Rewrite the input-dependent branch/index as a data-oblivious (branch-free) computation, or drop `timing constant` if this value is not secret."));
+      }
+    }
+  }
+
+  /** Secret-shaped = a privacy/secrets contract block, or a declared secret.* effect (the H-1 trigger). */
+  private flowIsSecretShaped(contractNode: AstNode, flow: FlowMeta): boolean {
+    const hasPrivacyOrSecrets = (contractNode.children ?? []).some((c) =>
+      c.kind === "secretsBlock" ||
+      (c.kind === "identifier" && ((c.value ?? "").startsWith("privacy:") || (c.value ?? "").startsWith("secrets:"))));
+    const hasSecretEffect = flow.declaredEffects.some((e) => e === "secret.read" || e.startsWith("secret."));
+    return hasPrivacyOrSecrets || hasSecretEffect;
+  }
+
+  /** H-4 checkable subset: an if/match whose condition references a flow parameter (input-dependent branch). */
+  private hasSecretDependentTiming(flowNode: AstNode, paramNames: ReadonlySet<string>): boolean {
+    let found = false;
+    const condRefsParam = (node: AstNode): boolean => {
+      let hit = false;
+      const walk = (n: AstNode): void => {
+        if (n.kind === "identifier" && n.value !== undefined && paramNames.has(n.value)) hit = true;
+        for (const c of n.children ?? []) walk(c);
+      };
+      walk(node);
+      return hit;
+    };
+    const walkBody = (node: AstNode): void => {
+      if ((node.kind === "ifStmt" || node.kind === "matchExpr") && node.children?.[0] !== undefined) {
+        if (condRefsParam(node.children[0])) found = true;
+      }
+      for (const c of node.children ?? []) walkBody(c);
+    };
+    walkBody(flowNode);
+    return found;
   }
 
   private verifyPhysicalHardeningBlock(flowNode: AstNode, flowName: string): void {

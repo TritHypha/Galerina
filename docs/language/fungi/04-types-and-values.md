@@ -238,6 +238,58 @@ secure flow classifyPrivateMedicalNote(readonly note: Protected<MedicalNote>) ->
 So both `protected T` (qualifier) and `Protected<T>` (wrapper) occur in real code. Full semantics in
 [05 — Bindings, taint & privacy](05-bindings-taint-privacy.md).
 
+## Governed memory-residency hardening (RD-0358, PROTOTYPE)
+
+A value's **maximum memory-residency tier** is a governed, fail-closed property — **auto-derived** from
+what the type system already knows, invisible for the common case. A `Secret`/`SecureString`/`Tainted`
+value, or a flow with the `secret.read` effect, is **automatically** hardened with the strictest floor,
+with **zero annotation**:
+
+```fungi
+secure flow useApiKey(k: SecureString) -> Bool
+contract { intent { "…" } privacy { contains PII } }
+{ return true }
+// the compiler injects — the developer writes NOTHING:
+//   hardening { residency no_swap  erase on_exit  timing constant  substrate binary }
+```
+
+* `residency: no_swap` — never spills to swap/disk. A ceiling, deny-by-default (strictest→loosest:
+  `register_only` < `no_dram_spill` < `no_swap` < `no_disk`).
+* `erase: on_exit` — zeroized when it leaves scope (the existing `flowHandlesSecrets` zeroize rail).
+* `timing: constant` — no secret-dependent branch/index (the cache-side-channel obligation).
+* `substrate: binary` — a secret never routes to the analog photonic path.
+
+This is **auto-SECURE, never auto-convenient** — the optimizer may not relax it. An explicit `hardening {}`
+block is written **only** at the exceptions: to *tighten* a non-secret, or to *audibly loosen* a derived
+default (a visible, deny-by-default act — add `audited_loosen`, and governance may still refuse). A ceiling
+the declared `host` seam cannot honour is **REJECTED, never silently spilled**:
+
+| Rule | Diagnostic |
+|---|---|
+| unknown `residency` / `erase` / `timing` value | `FUNGI-HARDEN-001` / `-002` / `-003` |
+| a secret default loosened without `audited_loosen` | `FUNGI-HARDEN-004` |
+| a residency ceiling the declared host can't honour → REJECT | `FUNGI-HARDEN-005` |
+| a secret-dependent branch under `timing constant` (checkable subset) | `FUNGI-HARDEN-006` |
+
+Inspect exactly what the compiler injects (auditable, not authored): `node
+scripts/hardening-show-derived.mjs <file>`. Worked examples:
+`docs/examples/Level-4-Security/179-hardening-secret-auto` (auto), `180-hardening-spill-rejected`
+(the fail-closed REJECT), `181-hardening-unlabelled-limit` (the honest HV8 limit).
+
+**PROTOTYPE status + honest limits (do not over-read).** The derivation + explicit-block enforcement are
+implemented and checker-verified, but this is a **checker-verified shadow** — the actual placement /
+`mlock` / zeroize *execution* is host + execution-switch (#143) territory, exactly like the Stage-6
+twins. The RD-0337 "governed downgrade that re-types a spilled value `Refuted`/`Tainted`" is **stubbed**,
+so the prototype fails closed (REJECT) instead. `timing: constant` (H-4) is **honestly partial** —
+constant-time is undecidable in general, so `FUNGI-HARDEN-006` flags the common case only and does **not**
+prove constant-time. HV8: auto-hardening covers only *labelled* values — an unlabelled secret is
+unhardened (example 181). `memory.spill` as a first-class effect (H-6) is design-stage
+(see [03 — Effects](03-effects-and-capabilities.md)).
+
+**Strip-list (binding).** *Photonic* = a classical analog matrix accelerator (the dataflow half only,
+never secrets); *tri/K3* = a classical governor, not a qubit; there is **no "unhackable"** — this shrinks
+and governs a memory-attack surface, it never zeroes it.
+
 ## Which "fancy" types are real vs aspirational
 
 Be careful here — several types are described in the KB/canonical docs but do **not** appear in the

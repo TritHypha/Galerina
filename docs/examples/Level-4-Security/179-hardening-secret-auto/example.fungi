@@ -1,0 +1,16 @@
+@version 1
+/// example: 179-hardening-secret-auto
+/// level: 4
+/// concept: a Secret value is AUTO-hardened (residency/erase/timing/substrate) with NO annotation (RD-0358 H-1)
+/// expected_diagnostics: none
+/// ai_rule: Never hand-write hardening for a secret — the compiler derives the strictest floor. Inspect it with `node scripts/hardening-show-derived.mjs <file>`.
+/// test_status: stable
+
+secure flow useApiKey(k: SecureString) -> Bool
+contract {
+  intent { "Use a secret API key. Hardening is auto-derived (no_swap + on_exit + constant + binary); the developer writes nothing." }
+  privacy { contains PII }
+}
+{
+  return true
+}

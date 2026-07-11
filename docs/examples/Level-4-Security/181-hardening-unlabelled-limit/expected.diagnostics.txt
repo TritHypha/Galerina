@@ -1,0 +1,5 @@
+none
+
+The HONEST LIMIT (HV8): an unlabelled value (no Secret/Tainted type, no privacy/secrets block,
+no secret.read effect) is NOT auto-hardened, and emits no diagnostic. Auto-hardening is only as
+good as the taint/secret labelling — this is a real gap, pinned so it is never mistaken for coverage.
