@@ -82,6 +82,25 @@ jobs:
           node scripts/audit-path-leak.mjs --self-test
           node scripts/audit-path-leak.mjs
 
+  # node-floor (build-free, ENFORCING): Galerina's bounded-TCB invariant — NO external npm
+  # dependency may enter beyond the declared floor (crypto primitives + the WASM toolchain +
+  # the build-time TS compiler; scripts/audit-node-dependencies.mjs NODE_FLOOR). Every other
+  # capability is Galerina's own code. FAILS a PR that adds an off-floor package (an accidental
+  # `npm install <foo>`), so "all node packages replaced" stays true permanently. The
+  # --self-test proves the detector flags an off-floor dep before the enforcing scan; it reads
+  # only package.json (no build / no install).
+  node-floor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (SHA-pinned, RD-0294w)
+        with:
+          node-version: "20"
+      - name: Node-dependency floor guard (self-test, then enforcing)
+        run: |
+          node scripts/audit-node-dependencies.mjs --self-test
+          node scripts/audit-node-dependencies.mjs
+
   # papers-index (build-free, zero-baseline, ENFORCING): the papers corpus index (docs/paper/README.md)
   # must link EVERY tracked paper under docs/paper/{defensive,scientific}-papers/, every index link must
   # resolve, and the intro corpus counts must match reality. A silently-unindexed defensive-publication is
