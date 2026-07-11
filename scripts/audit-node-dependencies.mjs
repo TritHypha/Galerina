@@ -1,20 +1,31 @@
 #!/usr/bin/env node
-// audit-node-dependencies.mjs — the "all node packages replaced" permanent guard.
+// audit-node-dependencies.mjs — the external-dependency floor: visibility + single-source pin.
 //
-// Galerina's goal is a bounded TCB: NO external npm dependency except a small, declared
-// floor (crypto primitives + the WASM toolchain + the build-time TS compiler). Every
-// other capability is Galerina's own code. This audit enumerates the declared deps of
-// EVERY package.json in the repo and FAILS if any external dep is not on the floor
-// allowlist — so an accidental `npm install <foo>` is caught in CI, permanently.
+// DECISION (RD-0346, HANDOVER-crypto-floor-decision-to-main): do NOT consolidate external
+// deps into one shared package — that would REVERSE Hardened-Border #149 (each package owns
+// its crypto by bare import, no cross-package reach-through) and create a shared-trust
+// chokepoint. Instead the "one visible floor for security" is THIS AUDIT, not a package.
 //
-// Internal deps (@galerina/* and file:/workspace:/link: locals) and Node builtins are
-// always OK. NODE_FLOOR is the reviewed exception set, each row carrying WHY it stays.
+// Galerina's bounded TCB: NO external npm dependency except a small, declared floor
+// (NODE_FLOOR — crypto primitives + the WASM toolchain + the build-time TS compiler). Every
+// other capability is Galerina's own code. This audit is fail-closed on three properties:
+//   1. floor        — every external dep is on NODE_FLOOR (an accidental `npm install <foo>`
+//                     in any of the ~95 package.json fails CI, permanently).
+//   2. single-source pin — every package that OWNS a given dep pins the SAME version string;
+//                     a drift means two packages ship divergent crypto/toolchain builds (#149
+//                     ownership is only sound if the N bare copies are byte-identical, RD-0345).
+//   3. visibility   — the report enumerates every external dep, its pin, and how many packages
+//                     own it: the whole external TCB in one place, with no shared-trust package.
+//
+// NOT covered here (by design, to avoid duplication): "no reach-through" (a package importing
+// crypto it does not declare) is gated by the hardened-border audit (audit-package-border.mjs +
+// each package's boundary-policy.json). The golden-reproducible-hash of each owner's built crypto
+// WASM is RD-0345 (needs the wabt pin) — a future check to fold in here.
 //
 // FLAGS:
-//   (none)      enforce: exit 1 if any external dep is off the floor allowlist.
-//   --list      print every external dep + which package(s) declare it (no enforcement).
-//   --self-test prove the detector fires on a planted off-floor dep (a neutered guard is
-//               itself a fail-open).
+//   (none)      enforce: exit 1 on any off-floor dep OR any single-source pin drift.
+//   --list      print every external dep + pin(s) + owner count (no enforcement).
+//   --self-test prove the detectors fire (off-floor + pin-drift). A neutered guard is a fail-open.
 //
 // Zero-dep; mirrors scripts/audit-example-diagnostics.mjs house style.
 
@@ -28,22 +39,26 @@ const root = resolve(scriptDir, '..');
 const list = process.argv.includes('--list');
 const selfTest = process.argv.includes('--self-test');
 
-// The declared TCB floor — the ONLY external npm packages Galerina is permitted to depend
-// on. Each entry names WHY it stays (a native primitive Galerina does not reimplement, or
-// the build-time TS compiler). Adding a row is a reviewed decision. Keep in sync with the
-// node-modules floor doc in the KB.
+// The declared TCB floor — the ONLY external npm packages Galerina is permitted to depend on,
+// each OWNED per-package by bare import (#149). Each row names WHY it stays. Adding a row is a
+// reviewed decision. Keep in sync with the node-modules floor doc in the KB.
 const NODE_FLOOR = new Map([
   ['typescript', 'build floor: the tsc compiler for .ts sources (retires when no .ts remains, #143)'],
   ['@types/node', 'build floor: Node type stubs consumed by tsc only'],
   ['@noble/post-quantum', 'crypto floor: ML-DSA-65 / ML-KEM post-quantum primitives (frozen TCB)'],
-  ['@noble/ciphers', 'crypto floor: audited pure-JS symmetric ciphers (same @noble family as post-quantum; ext-spore)'],
-  ['@noble/hashes', 'crypto floor: audited pure-JS hash functions SHA-2/3, BLAKE (ext-secrets-spore)'],
-  ['argon2', 'crypto floor: Argon2 password KDF native binding'],
+  ['@noble/ciphers', 'crypto floor: audited pure-JS symmetric ciphers (AES-GCM; ext-spore KEM-DEM)'],
+  ['@noble/hashes', 'crypto floor: audited pure-JS hash functions / Argon2id (ext-secrets-spore anchor)'],
+  ['argon2', 'crypto floor: Argon2 KDF native binding (slated per-package -> WASM PHC reference, RD-0345)'],
   ['bcryptjs', 'crypto floor: bcrypt password hashing'],
-  ['snarkjs', 'ZK floor: Groth16/PLONK zk-SNARK proving, bridged by the OPTIONAL ext-proof-snarkjs extension (not a core dep)'],
-  ['wabt', 'WASM toolchain: wat->wasm assembler for the build path'],
+  ['snarkjs', 'ZK floor: Groth16/PLONK zk-SNARK proving, bridged by the OPTIONAL ext-proof-snarkjs extension'],
+  ['wabt', 'WASM toolchain: wat->wasm assembler for the build path (pin required for RD-0345 golden hash)'],
   ['wat-wasm', 'WASM toolchain: wat assembler'],
 ]);
+
+// Build-time toolchain (retires with the .ts sources, #143) — NOT a runtime primitive, so
+// single-source pin drift here is a visible WARNING, not a fatal finding (R&D's single-source
+// requirement is about the crypto/runtime primitives, whose N bare copies must be byte-identical).
+const BUILD_TOOLING = new Set(['typescript', '@types/node']);
 
 const BUILTINS = new Set([...builtinModules, ...builtinModules.map((m) => `node:${m}`)]);
 const DEP_FIELDS = ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies'];
@@ -67,7 +82,10 @@ function collectPackageJsons(dir) {
   return out;
 }
 
-// --self-test: the detector must flag an off-floor dep and pass the allowed classes.
+// A dep is single-source-pinned iff all its owners declare one identical version string.
+const hasDrift = (versions) => new Set(versions).size > 1;
+
+// --self-test: the detectors must fire (off-floor dep + pin drift) and pass the allowed classes.
 if (selfTest) {
   const checks = [
     ['off-floor dep flagged', !NODE_FLOOR.has('left-pad') && !isInternal('left-pad', '^1') && !BUILTINS.has('left-pad')],
@@ -75,6 +93,8 @@ if (selfTest) {
     ['@galerina/* is internal', isInternal('@galerina/core-compiler', '^1')],
     ['file: dep is internal', isInternal('@galerina/x', 'file:../x')],
     ['node builtin ignored', BUILTINS.has('node:crypto')],
+    ['pin drift detected', hasDrift(['^1.3.0', '^1.4.0'])],
+    ['pin consistent ok', !hasDrift(['^1.3.0', '^1.3.0'])],
   ];
   let bad = 0;
   for (const [name, pass] of checks) { console.log(`  ${pass ? 'ok  ' : 'FAIL'} ${name}`); if (!pass) bad++; }
@@ -82,7 +102,7 @@ if (selfTest) {
   process.exit(bad ? 1 : 0);
 }
 
-// dep name -> Set<declaring package rel path>
+// dep name -> Array<{ pkg: rel path, version: string }>
 const external = new Map();
 const files = collectPackageJsons(root);
 for (const abs of files) {
@@ -94,28 +114,62 @@ for (const abs of files) {
     if (!deps || typeof deps !== 'object') continue;
     for (const [name, version] of Object.entries(deps)) {
       if (isInternal(name, version) || BUILTINS.has(name)) continue;
-      if (!external.has(name)) external.set(name, new Set());
-      external.get(name).add(rel);
+      if (!external.has(name)) external.set(name, []);
+      external.get(name).push({ pkg: rel, version: String(version) });
     }
   }
 }
 
+const names = [...external.keys()].sort();
+const versionsOf = (n) => [...new Set(external.get(n).map((e) => e.version))];
+const ownersOf = (n) => external.get(n).map((e) => e.pkg);
+
 if (list) {
   console.log(`External deps across ${files.length} package.json (${external.size} distinct):`);
-  for (const name of [...external.keys()].sort()) {
-    console.log(`  [${NODE_FLOOR.has(name) ? 'FLOOR    ' : 'OFF-FLOOR'}] ${name}  <- ${[...external.get(name)].join(', ')}`);
+  for (const name of names) {
+    const vers = versionsOf(name);
+    const tag = NODE_FLOOR.has(name) ? 'FLOOR    ' : 'OFF-FLOOR';
+    const vtag = vers.length > 1 ? `DRIFT(${vers.join(' vs ')})` : vers[0];
+    console.log(`  [${tag}] ${name}@${vtag}  <- ${ownersOf(name).length} pkg`);
   }
   process.exit(0);
 }
 
-const violations = [...external.keys()].filter((n) => !NODE_FLOOR.has(n)).sort();
-const floorUsed = [...external.keys()].filter((n) => NODE_FLOOR.has(n)).sort();
+const offFloor = names.filter((n) => !NODE_FLOOR.has(n));
+const floorUsed = names.filter((n) => NODE_FLOOR.has(n));
+const drift = names.filter((n) => hasDrift(versionsOf(n)));
 
-console.log(`node-dependencies: ${files.length} package.json scanned; floor deps in use: ${floorUsed.join(', ') || '(none)'}`);
-if (violations.length) {
-  console.log(`\n❌ ${violations.length} EXTERNAL dependency(ies) NOT on the declared TCB floor:`);
-  for (const name of violations) console.log(`  OFF-FLOOR  ${name}  <- ${[...external.get(name)].join(', ')}`);
-  console.log(`\nReplace it with Galerina's own code, or — if it is a true native primitive — add it to NODE_FLOOR with a reason.`);
-  process.exit(1);
+// Visibility — the single floor view: every external dep, its pin, and its owner count.
+console.log(`node-dependencies: ${files.length} package.json scanned; ${external.size} distinct external dep(s) — the floor (each #149-owned by bare import):`);
+for (const name of floorUsed) {
+  console.log(`  ${name}@${versionsOf(name).join('|')}  (${ownersOf(name).length} owner pkg)`);
 }
-console.log(`✅ all node packages replaced — every external dep is on the declared TCB floor (${floorUsed.length} in use).`);
+
+let red = false;
+if (offFloor.length) {
+  red = true;
+  console.log(`\n❌ ${offFloor.length} EXTERNAL dependency(ies) NOT on the declared TCB floor:`);
+  for (const name of offFloor) console.log(`  OFF-FLOOR  ${name}  <- ${ownersOf(name).join(', ')}`);
+  console.log(`  -> replace it with Galerina's own code, or add it to NODE_FLOOR with a reason.`);
+}
+const runtimeDrift = drift.filter((n) => !BUILD_TOOLING.has(n));
+const buildDrift = drift.filter((n) => BUILD_TOOLING.has(n));
+if (runtimeDrift.length) {
+  red = true;
+  console.log(`\n❌ ${runtimeDrift.length} RUNTIME/crypto dep(s) with single-source PIN DRIFT (owners disagree on the version):`);
+  for (const name of runtimeDrift) {
+    console.log(`  DRIFT  ${name}: ${versionsOf(name).join(' vs ')}`);
+    for (const e of external.get(name)) console.log(`         ${e.version}  ${e.pkg}`);
+  }
+  console.log(`  -> #149 per-package ownership is sound only if the N bare copies are byte-identical: pin ONE vetted version.`);
+}
+if (buildDrift.length) {
+  console.log(`\n⚠️  ${buildDrift.length} BUILD-tooling dep(s) with version drift (non-fatal — retires with .ts, #143):`);
+  for (const name of buildDrift) {
+    const owners = external.get(name);
+    const laggards = owners.filter((e) => e.version !== versionsOf(name)[0]);
+    console.log(`     ${name}: ${versionsOf(name).join(' vs ')} — align to the majority pin when convenient (${laggards.length} laggard pkg; needs an install+build to verify).`);
+  }
+}
+if (red) process.exit(1);
+console.log(`\n✅ external floor clean — every dep on the floor (${floorUsed.length}), crypto/runtime primitives single-source pinned, no reach-through (gated by hardened-border).`);
