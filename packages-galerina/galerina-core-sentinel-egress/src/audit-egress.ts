@@ -28,6 +28,13 @@ export interface AuditBatch {
   readonly prevHash: string;
   readonly batchHash: string;
   readonly records: readonly string[];
+  /**
+   * Key-rotation epoch that sealed this batch (#28/D2 step 4). When present it
+   * is BOUND INTO the MAC (an attacker cannot relabel a batch's epoch), and
+   * verification selects the key by epoch via {@link AuditEgress.verifyChainEpochAware}.
+   * Absent on legacy batches — whose hash input is byte-identical to before.
+   */
+  readonly epochId?: number;
 }
 
 export interface AuditEgressOptions {
@@ -48,6 +55,12 @@ export interface AuditEgressOptions {
    * certification blocker. Default false.
    */
   strictKey?: boolean;
+  /**
+   * Key-rotation epoch this writer seals batches under (#28/D2). Positive
+   * integer; stamped on and MAC-bound into every flushed batch. Omit for the
+   * legacy single-key ledger.
+   */
+  epochId?: number;
 }
 
 /** True if a key is missing or all bytes are zero (the non-secret dev key). */
@@ -59,14 +72,18 @@ function isWeakKey(key: Uint8Array | undefined): boolean {
 
 /**
  * Compute the keyed batch hash for a chain link.
- * `HMAC-SHA256-hex(prevHash + "\n" + records.join("\n"))`.
+ * Legacy (no epoch): `HMAC-SHA256-hex(prevHash + "\n" + records.join("\n"))` — unchanged bytes.
+ * Epoch-stamped:     the input is prefixed with `epoch:<id>\n`, binding the epoch
+ * into the MAC so a batch cannot be relabelled to verify under a different epoch's key.
  */
 function computeBatchHash(
   hmacKey: Uint8Array,
   prevHash: string,
   records: readonly string[],
+  epochId?: number,
 ): string {
   const h = createHmac("sha256", hmacKey);
+  if (epochId !== undefined) h.update(`epoch:${epochId}\n`);
   h.update(prevHash + "\n" + records.join("\n"));
   return h.digest("hex");
 }
@@ -86,7 +103,8 @@ export class AuditEgress {
   readonly #dir: string;
   readonly #ledgerPath: string;
   readonly #batchSize: number;
-  readonly #hmacKey: Uint8Array;
+  #hmacKey: Uint8Array;
+  #epochId: number | undefined;
   readonly #ring: RingBuffer<string>;
   #seq = 0;
   #prevHash: string = GENESIS;
@@ -104,13 +122,57 @@ export class AuditEgress {
         "AuditEgress strictKey: a real (non-zero) HMAC key is required — the all-zero development key is a certification blocker",
       );
     }
+    if (opts.epochId !== undefined && (!Number.isInteger(opts.epochId) || opts.epochId < 1)) {
+      throw new SecurityTrap(
+        "EGR-EPOCH-001",
+        `AuditEgress epochId must be a positive integer, got ${String(opts.epochId)}`,
+      );
+    }
     const ringCapacity = opts.ringCapacity ?? opts.batchSize * 4;
     this.#dir = opts.dir;
     this.#ledgerPath = join(opts.dir, LEDGER_FILE);
     this.#batchSize = opts.batchSize;
     this.#hmacKey = opts.hmacKey ?? ZERO_KEY;
+    this.#epochId = opts.epochId;
     this.#ring = new RingBuffer<string>(ringCapacity);
     mkdirSync(opts.dir, { recursive: true });
+  }
+
+  /**
+   * The Phase-2 SWITCH on the write side (#28/D2): seal all future batches under
+   * a new epoch's key. Fail-closed and forward-only:
+   *  - the new epoch must be a positive integer STRICTLY greater than the current
+   *    one (no rollback, no replay; adopting an epoch on a legacy writer requires
+   *    epoch ≥ 1);
+   *  - the new key must be real (non-zero) — rotating TO the development key is
+   *    never legal, regardless of `strictKey`;
+   *  - staged records are flushed under the OLD key first, so no record ever
+   *    straddles the boundary (the drain gate's no-in-flight guarantee, enforced
+   *    mechanically here too).
+   * The decision to call this belongs to the triple-lock phase machine
+   * (tower-citizen key-rotation); this is only the mechanism.
+   */
+  adoptEpoch(epochId: number, hmacKey: Uint8Array): void {
+    if (!Number.isInteger(epochId) || epochId < 1 || (this.#epochId !== undefined && epochId <= this.#epochId)) {
+      throw new SecurityTrap(
+        "EGR-EPOCH-002",
+        `adoptEpoch: epoch must be a positive integer greater than the current epoch (${String(this.#epochId)}), got ${String(epochId)}`,
+      );
+    }
+    if (isWeakKey(hmacKey)) {
+      throw new SecurityTrap(
+        "EGR-EPOCH-003",
+        "adoptEpoch: a real (non-zero) HMAC key is required — rotating to the development key is denied",
+      );
+    }
+    this.flush(); // seal everything staged under the OLD epoch's key first
+    this.#epochId = epochId;
+    this.#hmacKey = hmacKey;
+  }
+
+  /** The epoch this writer currently seals under (undefined = legacy single-key). */
+  get epochId(): number | undefined {
+    return this.#epochId;
   }
 
   /**
@@ -143,13 +205,14 @@ export class AuditEgress {
       return null;
     }
     const prevHash = this.#prevHash;
-    const batchHash = computeBatchHash(this.#hmacKey, prevHash, records);
+    const batchHash = computeBatchHash(this.#hmacKey, prevHash, records, this.#epochId);
     const batch: AuditBatch = {
       seq: this.#seq,
       count: records.length,
       prevHash,
       batchHash,
       records,
+      ...(this.#epochId !== undefined ? { epochId: this.#epochId } : {}),
     };
     // ONE disk write per batch — the whole point.
     appendFileSync(this.#ledgerPath, JSON.stringify(batch) + "\n");
@@ -200,11 +263,68 @@ export class AuditEgress {
       if (b.count !== b.records.length) {
         return false;
       }
-      const recomputed = computeBatchHash(key, b.prevHash, b.records);
+      const recomputed = computeBatchHash(key, b.prevHash, b.records, b.epochId);
       if (recomputed !== b.batchHash) {
         return false;
       }
       expectedPrev = b.batchHash;
+    }
+    return true;
+  }
+
+  /**
+   * Epoch-aware chain verification (#28/D2 step 4): each batch's key is selected
+   * by ITS epoch via `keyForEpoch` — the seam to the key ring + custody
+   * (tower-citizen `epochForVerification` refuses unknown/revoked epochs by
+   * returning null; custody maps the epoch's keyId to bytes).
+   *
+   * Fail-closed, all of:
+   *  - every batch MUST carry a positive-integer `epochId` (a legacy batch in an
+   *    epoch-aware ledger is a refusal, not a fallback);
+   *  - epochs must be NON-DECREASING along the chain (a newer batch under an
+   *    older epoch is a rollback → false);
+   *  - `keyForEpoch` returning null/undefined (unknown, future, or REVOKED
+   *    epoch) → false — revocation refuses even cryptographically valid MACs;
+   *  - the usual chain integrity: genesis link, seq monotone, count match, and
+   *    the epoch-bound MAC recomputed under that epoch's key.
+   *
+   * Old epochs' batches verify forever — the ring never deletes an epoch; only
+   * REVOKED epochs are refused, and that refusal is deliberate.
+   */
+  static verifyChainEpochAware(
+    batches: AuditBatch[],
+    keyForEpoch: (epochId: number) => Uint8Array | null | undefined,
+  ): boolean {
+    let expectedPrev = GENESIS;
+    let lastEpoch = 0;
+    for (let i = 0; i < batches.length; i++) {
+      const b = batches[i];
+      if (b === undefined) {
+        return false;
+      }
+      if (b.epochId === undefined || !Number.isInteger(b.epochId) || b.epochId < 1) {
+        return false; // epoch-aware ledgers carry epochs on EVERY batch — no silent legacy fallback
+      }
+      if (b.epochId < lastEpoch) {
+        return false; // epoch regression = rollback
+      }
+      if (b.prevHash !== expectedPrev || b.seq !== i || b.count !== b.records.length) {
+        return false;
+      }
+      let key: Uint8Array | null | undefined;
+      try {
+        key = keyForEpoch(b.epochId);
+      } catch {
+        return false; // a crashing key lookup is a refusal, not an exception path
+      }
+      if (!key || isWeakKey(key)) {
+        return false; // unknown / future / revoked epoch, or a weak key → fail-closed
+      }
+      if (computeBatchHash(key, b.prevHash, b.records, b.epochId) !== b.batchHash) {
+        return false;
+      }
+      expectedPrev = b.batchHash;
+      lastEpoch = b.epochId;
     }
     return true;
   }
