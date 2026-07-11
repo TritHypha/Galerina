@@ -329,10 +329,13 @@ function parseTypeString(raw: string): ParsedTypeRef {
   let current = "";
 
   for (const ch of innerStr) {
-    if (ch === "<") {
+    if (ch === "<" || ch === "[") {
+      // Track BOTH generic (<...>) and shape-literal ([...]) nesting depth so a comma
+      // inside a tensor shape — Tensor<Float32, [1, 128]> — is NOT split at top level
+      // (which mis-counted it as 3 args → false FUNGI-TYPE-009 / -001 under --strict).
       depth++;
       current += ch;
-    } else if (ch === ">") {
+    } else if (ch === ">" || ch === "]") {
       depth--;
       current += ch;
     } else if (ch === "," && depth === 0) {
@@ -2053,6 +2056,9 @@ class TypeChecker {
     for (let i = 0; i < args.length; i++) {
       const trimmed = (args[i] ?? "").trim();
       if (trimmed === "" || /^\d/.test(trimmed)) continue; // skip numeric dimension args
+      // Skip a bracketed shape literal — the [1, 128] in Tensor<Float32, [1, 128]> is a
+      // dimension shape, not a type reference; recursing into it raised a false TYPE-001.
+      if (/^\[/.test(trimmed)) continue;
       // Skip string-literal args: a quoted arg is a nominal TAG, not a type name —
       // e.g. the second parameter of Brand<T, "Name"> is the brand tag, never a
       // type reference. Recursing into it produced a false FUNGI-TYPE-001 (#17).
