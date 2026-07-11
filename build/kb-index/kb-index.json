@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 879,
+  "docCount": 881,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -27801,6 +27801,65 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/galerina-rd-0341-fungi-gate-author-mistake-sweep-verified.md",
+      "title": "RD-0341 — `.fungi`/`.gate` author-mistake sweep (VERIFIED from source): what's enforced, what's residual, how to plug it",
+      "headings": [
+        "Headline (TL;DR)",
+        "The list (consolidated author/AI-mistake surface)",
+        "Deep-dives (the three `.fungi` findings, with source citations)",
+        "Finding 1 — match exhaustiveness is enforced; the default-arm *content* is not (NET-NEW)",
+        "Finding 2 — effect inference is an allowlist",
+        "Finding 3 — taint is fail-closed and already hardened; two documented residuals remain",
+        "The cross-cutting theme (the reusable doctrine)",
+        "Honest posture",
+        "Recommendations"
+      ],
+      "codes": [
+        "FUNGI-MATCH-001",
+        "FUNGI-TAINT-001",
+        "FUNGI-MATCH-002",
+        "FUNGI-EFFECT-003",
+        "FUNGI-TAINT-003",
+        "FUNGI-ID-001",
+        "FUNGI-AU-001",
+        "FUNGI-MATCH-00X",
+        "FUNGI-GOV-00X"
+      ],
+      "tasks": [],
+      "xrefs": [
+        "galerina-rd-0340-gate-fungi-conformance-and-the-field-cut-rung-3-hoist",
+        "galerina-rd-0339-make-misuse-impossible-tri-typestate-boundary",
+        "galerina-rd-0337-beyond-rust-tri-typesafety-and-a-ternary-native-safety-primitive"
+      ],
+      "topTerms": [
+        "fail-closed",
+        "gate",
+        "fungi",
+        "surface",
+        "source",
+        "match",
+        "finding",
+        "enforced",
+        "effect",
+        "already",
+        "taint",
+        "plug",
+        "deny-by-default",
+        "residual",
+        "unknown",
+        "net-new",
+        "allowlist",
+        "verified",
+        "default",
+        "content",
+        "three",
+        "decision",
+        "registry",
+        "findings",
+        "hardened"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/galerina-rd-34b-paramtaint-buildspec-2026-06-24.md",
       "title": "R&D — Phase 34B boundary param auto-taint: verified state + build-ready spec",
       "headings": [
@@ -29242,6 +29301,9 @@
         "Complete R&D ledger — all bridge `done/` files (swept 95, 2026-06-23)"
       ],
       "codes": [
+        "FUNGI-MATCH-001",
+        "FUNGI-MATCH-002",
+        "FUNGI-TAINT-001",
         "FUNGI-PRIVACY-002",
         "FUNGI-SUBSTRATE-001",
         "FUNGI-RUNTIME-003",
@@ -29261,7 +29323,6 @@
         "FUNGI-SEC-020",
         "FUNGI-NAME-001",
         "ERR_CERTIFIED",
-        "FUNGI-MATCH-001",
         "FUNGI-GOV-003",
         "ERR_ADDON_UNPINNED",
         "FUNGI-SECRET-004",
@@ -29300,28 +29361,28 @@
         "gate",
         "galerina",
         "owner",
+        "fungi",
         "mjs",
         "real",
         "photonic",
-        "fungi",
         "design",
         "never",
-        "spore",
         "fail-closed",
+        "spore",
         "graph",
         "signed",
-        "shipped",
         "verdict",
+        "shipped",
         "audit",
         "security",
         "build",
         "tritmesh",
         "gap",
         "already",
+        "fix",
         "green",
         "proof",
-        "fix",
-        "honest"
+        "fail-open"
       ]
     },
     {
@@ -37393,21 +37454,23 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/HANDOVER-RD-0320-onward-2026-07-10.md",
-      "title": "HANDOVER — R&D arc RD-0320 onward (currently → RD-0340) (+ Directives 1 & 2) · 2026-07-10 (upd 2026-07-11)",
+      "title": "HANDOVER — R&D arc RD-0320 onward (currently → RD-0341) (+ Directives 1 & 2) · 2026-07-10 (upd 2026-07-11)",
       "headings": [
         "1. The recurring themes (read these first — they compress 13 RDs)",
-        "2. Per-RD digest (0320 → 0340)",
+        "2. Per-RD digest (0320 → 0341)",
         "3. Consolidated main-session action queue (all propose-only → you land)",
         "3a. OWNER-DIRECTED next objectives (2026-07-10) — Stage-6 self-hosting, sequential",
         "3b. RD-0333 findings (chatter 73–90 — design inputs, propose-only)",
-        "3c. Conceptual R&D — RD-0335 / 0337 / 0338 / 0339 / 0340 (directly feeds the §3a Stage-6 objectives)",
+        "3c. Conceptual R&D — RD-0335 / 0337 / 0338 / 0339 / 0340 / 0341 (directly feeds the §3a Stage-6 objectives)",
         "4. Directives",
         "5. Key facts / corrections since 0320 (so your records reconcile)",
         "6. Owner-gated",
         "7. Papers (harm-filtered — constructions only, to KB `papers/`)"
       ],
       "codes": [
-        "FUNGI-PRIVACY-002"
+        "FUNGI-MATCH-001",
+        "FUNGI-PRIVACY-002",
+        "FUNGI-TAINT-001"
       ],
       "tasks": [
         "#11",
@@ -37422,34 +37485,35 @@
       ],
       "xrefs": [
         "galerina-rd-0339-make-misuse-impossible-tri-typestate-boundary",
-        "galerina-rd-0340-gate-fungi-conformance-and-the-field-cut-rung-3-hoist"
+        "galerina-rd-0340-gate-fungi-conformance-and-the-field-cut-rung-3-hoist",
+        "galerina-rd-0341-fungi-gate-author-mistake-sweep-verified"
       ],
       "topTerms": [
-        "stage-6",
         "fungi",
-        "checker",
         "gate",
+        "stage-6",
+        "checker",
         "propose-only",
+        "fail-closed",
         "papers",
         "design",
+        "decision",
         "key",
+        "already",
         "objectives",
         "boundary",
         "cut",
         "directives",
-        "decision",
         "chatter",
         "type",
+        "deny",
+        "fail-open",
         "field",
         "handover",
-        "galerina",
-        "next",
-        "deny",
-        "queue",
-        "arc",
         "must",
-        "main",
-        "primitive"
+        "galerina",
+        "see",
+        "owner-gated"
       ]
     },
     {
@@ -41607,6 +41671,54 @@
         "never",
         "uniform",
         "opaque"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/PROMPT-main-session-rd0340-field-cut-rung3-hoist-2026-07-11.md",
+      "title": "Main-session task — land the RD-0340 field↔cut rung-3 hoist (`.gate` privacy-cut hardening)",
+      "headings": [
+        "Objective (one sentence)",
+        "Background (verified facts, do not re-derive)",
+        "The change (precise)",
+        "Files (two homes)",
+        "Rollout (decide with owner; recommended path)",
+        "Tests to add (pin rung-3 executably)",
+        "Constraints (binding)",
+        "Definition of done (finished = verified)"
+      ],
+      "codes": [
+        "FUNGI-PRIVACY-002"
+      ],
+      "tasks": [],
+      "xrefs": [
+        "galerina-rd-0340-gate-fungi-conformance-and-the-field-cut-rung-3-hoist"
+      ],
+      "topTerms": [
+        "cut",
+        "field",
+        "gate",
+        "rung-3",
+        "verified",
+        "privacy",
+        "path",
+        "rule",
+        "ssn",
+        "owner",
+        "green",
+        "reject",
+        "cut-set",
+        "land",
+        "rd-0340",
+        "posture-b",
+        "checker",
+        "binding",
+        "change",
+        "files",
+        "add",
+        "option",
+        "red",
+        "main-session",
+        "task"
       ]
     },
     {

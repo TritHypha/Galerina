@@ -4965,7 +4965,7 @@
       ],
       "defs": 0,
       "emits": 2,
-      "tests": 14,
+      "tests": 16,
       "docs": 2
     },
     {
@@ -7826,7 +7826,7 @@
       ],
       "defs": 1,
       "emits": 1,
-      "tests": 87,
+      "tests": 78,
       "docs": 9
     },
     {
@@ -7911,7 +7911,7 @@
       "severities": [],
       "defs": 0,
       "emits": 2,
-      "tests": 25,
+      "tests": 35,
       "docs": 1
     },
     {
@@ -8126,7 +8126,7 @@
       ],
       "defs": 1,
       "emits": 0,
-      "tests": 4,
+      "tests": 8,
       "docs": 0
     },
     {
@@ -8142,7 +8142,7 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 15,
+      "tests": 18,
       "docs": 1
     },
     {

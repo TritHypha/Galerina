@@ -2,7 +2,7 @@
 Generated: 2026-07-11
 
 ## Stats
-- Docs: 877 | Edges: 2968 | Orphans: 0 | Stale links: 4 | FUNGI codes: 712
+- Docs: 879 | Edges: 2970 | Orphans: 0 | Stale links: 4 | FUNGI codes: 714
 
 ## Document Registry (auto-generated)
 
@@ -509,6 +509,7 @@ Generated: 2026-07-11
 | galerina-rd-0338-adaptive-governed-workflow-tri-pipe.md | — | — | — | FUNGI-SUBSTRATE-001 |
 | galerina-rd-0339-make-misuse-impossible-tri-typestate-boundary.md | — | — | — | — |
 | galerina-rd-0340-gate-fungi-conformance-and-the-field-cut-rung-3-hoist.md | — | — | 🧪 R&D / SURFACE-CONFORMANCE AUDIT + ONE SPEC'D CHANGE (propose-only) · SAFE-internal · 2026-07-11 | FUNGI-PRIVACY-002 |
+| galerina-rd-0341-fungi-gate-author-mistake-sweep-verified.md | — | — | 🧪 R&D / VERIFIED SURFACE AUDIT (from source) + 1 NET-NEW SPEC'D PLUG (propose-only) · SAFE-internal · 2026-07-11 | FUNGI-AU-001, FUNGI-EFFECT-003, FUNGI-GOV-00, FUNGI-ID-001, FUNGI-MATCH-00 …+4 |
 | galerina-rd-34b-paramtaint-buildspec-2026-06-24.md | — | — | verify-before-build — **build-ready spec; the strict-profile escalation is owner-gated** | FUNGI-VALUESTATE-003, FUNGI-VALUESTATE-008 |
 | galerina-rd-53-azt-selfcert-and-blackhole-protocol-2026-06-23.md | — | — | — | FUNGI-GOV-3, FUNGI-MATCH-001, FUNGI-PCI-001, FUNGI-PRIVACY-013, FUNGI-SUBSTRATE-001 |
 | galerina-rd-59-js-quirks-vs-galerina-2026-06-25.md | — | — | — | FUNGI-NAME-001, FUNGI-NAME-002, FUNGI-TYPE-004, FUNGI-TYPE-008 |
@@ -538,7 +539,7 @@ Generated: 2026-07-11
 | galerina-rd-performance-and-boundary-opportunities.md | — | — | — | FUNGI-ENTROPY-001 |
 | galerina-rd-photonic-quantum-paging-graph-grounding-2026-06-25.md | — | — | — | FUNGI-RETAIN-001, FUNGI-SUBSTRATE-001 |
 | galerina-rd-reference-index.md | — | — | — | FUNGI-RETAIN-001 |
-| galerina-rd-results-log.md | — | — | — | FUNGI-ASSIMILATE-003, FUNGI-ASSIMILATE-004, FUNGI-ATTR-001, FUNGI-BUILD-002, FUNGI-EFFECT-006 …+12 |
+| galerina-rd-results-log.md | — | — | — | FUNGI-ASSIMILATE-003, FUNGI-ASSIMILATE-004, FUNGI-ATTR-001, FUNGI-BUILD-002, FUNGI-EFFECT-006 …+14 |
 | galerina-rd-syntax-7axis-sweep-2026-06-25.md | — | — | — | FUNGI-EFFECT-001, FUNGI-NUMERIC-001, FUNGI-VALUESTATE-008 |
 | galerina-rd-tenant-isolation-and-meshview-2026-06-24.md | — | 1.0 | — | FUNGI-GOV-3, FUNGI-PRIVACY-002, FUNGI-SUBSTRATE-001, FUNGI-TENANT-001, FUNGI-TENANT-002 |
 | galerina-rd-tritmesh-1-5-and-52-3d-2026-06-23.md | — | — | — | FUNGI-GOV-019, FUNGI-GOV-3, FUNGI-PRIVACY-002, FUNGI-SUBSTRATE-001, FUNGI-SUBSTRATE-002 …+1 |
@@ -675,7 +676,7 @@ Generated: 2026-07-11
 | HANDOVER-main-full-control-of-galerina-2026-07-03.md | — | — | — | — |
 | HANDOVER-post-RD-0320-2026-07-10.md | — | — | — | — |
 | HANDOVER-RD-0302-streaming-completion-2026-07-09.md | — | — | — | — |
-| HANDOVER-RD-0320-onward-2026-07-10.md | — | — | — | FUNGI-PRIVACY-002 |
+| HANDOVER-RD-0320-onward-2026-07-10.md | — | — | — | FUNGI-MATCH-001, FUNGI-PRIVACY-002, FUNGI-TAINT-001 |
 | HANDOVER-RnD-master-index-2026-07-09.md | — | — | — | — |
 | HANDOVER-rnd-research-session-2026-07-01.md | — | — | — | — |
 | HANDOVER-RnD-response-to-main-2026-07-09.md | — | — | — | — |
@@ -751,6 +752,7 @@ Generated: 2026-07-11
 | PROMPT-main-session-rd-0290-0294-implementation-2026-07-09.md | — | — | — | — |
 | PROMPT-main-session-rd-0297-api-coverage-build-queue-2026-07-09.md | — | — | — | FUNGI-EFFECT-004 |
 | PROMPT-main-session-rd0325-0326-defensive-controls-2026-07-10.md | — | — | — | — |
+| PROMPT-main-session-rd0340-field-cut-rung3-hoist-2026-07-11.md | — | — | — | FUNGI-PRIVACY-002 |
 | PROMPT-main-session-rnd-update-2026-07-01.md | — | — | — | — |
 | PROMPT-main-session-run-cybersec-skills-audit-on-galerina-2026-07-09.md | — | — | — | — |
 | PROMPT-main-session-token-management-graph-2026-07-01.md | — | — | — | — |
