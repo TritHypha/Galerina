@@ -36,6 +36,21 @@ Galerina optimises for **mathematical proof and absolute Zero-Trust containment*
 
 ---
 
+## What makes it different
+
+| Traditional | Galerina |
+|---|---|
+| Errors as exceptions | Explicit `Result<T, E>` — no silent failure |
+| Mutation is silent | `let` = immutable · `mut` = explicit · `readonly` = view |
+| Side-effects hidden | Effects declared: `contract { effects { database.write } }` |
+| Boundary data silently typed | `unsafe let raw` — untrusted until gated |
+| AI guesses at structure | Machine-readable ProofGraph + intent manifests |
+| Security checked at runtime | Compile-time: taint, secrets, PCI DSS, governance proofs |
+| Dependencies trusted by import | **Signed admission border** — hash-pin · signature · revocation · capability mask before a package runs (see *Package architecture*) |
+| Fixed hardware | Declared targets: CPU · WASM · GPU · NPU · Photonic |
+
+---
+
 ## What Galerina can and cannot do (honest scope)
 
 Three plain-English blocks. The first is the mature, shipped core; the second is a real but **emulated / owner-gated** frontier; the third is the hard boundary — what Galerina deliberately will **not** do.
@@ -218,21 +233,6 @@ intent  →  governed execution plan  →  coordinated compute  →  audit proof
 **Governed Execution Plan** — the compiler-generated operational contract: capabilities granted, effects allowed, targets approved, behaviours denied.
 **Coordinated Compute** — runtime orchestration across CPU/GPU/NPU/WASM and future targets, within declared authority.
 **Audit Proof** — structured, cryptographically signed runtime evidence that execution stayed within declared authority. *(Concept specs: internal engineering KB.)*
-
----
-
-## What makes it different
-
-| Traditional | Galerina |
-|---|---|
-| Errors as exceptions | Explicit `Result<T, E>` — no silent failure |
-| Mutation is silent | `let` = immutable · `mut` = explicit · `readonly` = view |
-| Side-effects hidden | Effects declared: `contract { effects { database.write } }` |
-| Boundary data silently typed | `unsafe let raw` — untrusted until gated |
-| AI guesses at structure | Machine-readable ProofGraph + intent manifests |
-| Security checked at runtime | Compile-time: taint, secrets, PCI DSS, governance proofs |
-| Dependencies trusted by import | **Signed admission border** — hash-pin · signature · revocation · capability mask before a package runs (see *Package architecture*) |
-| Fixed hardware | Declared targets: CPU · WASM · GPU · NPU · Photonic |
 
 ---
 
