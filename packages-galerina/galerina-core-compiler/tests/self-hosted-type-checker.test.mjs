@@ -196,8 +196,8 @@ const stmt = ({ kind, name = "", typeName = "", expr: e = [], body = [], elseBod
     elseBody: vList(elseBody),
   });
 
-const bodyFlow = ({ name, body = [] }) =>
-  vRecord({ name: vStr(name), body: vList(body) });
+const bodyFlow = ({ name, params = [], body = [] }) =>
+  vRecord({ name: vStr(name), params: vList(params), body: vList(body) });
 
 async function checkBodies(flows) {
   const args = new Map([["flows", vList(flows)]]);
@@ -367,6 +367,34 @@ describe("type-checker.fungi — checkFlowBodies (M-B body AST)", () => {
         stmt({ kind: "if", expr: [expr("name", "cond")], body: [
           stmt({ kind: "let", name: "y", typeName: "Int", expr: [expr("lit", "2", "Int")] }),
         ] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), []);
+  });
+
+  it("a name initializer referencing an undeclared symbol → FUNGI-TYPE-019", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "y", typeName: "Int", expr: [expr("name", "z")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-019"]);
+  });
+
+  it("a name initializer referencing an EARLIER binding is in scope (no FUNGI-TYPE-019)", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "x", typeName: "Int", expr: [expr("lit", "1", "Int")] }),
+        stmt({ kind: "let", name: "y", typeName: "Int", expr: [expr("name", "x")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), []);
+  });
+
+  it("a name initializer referencing a PARAM is in scope — params seed the body scope (no FUNGI-TYPE-019)", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", params: [param("p", "Int")], body: [
+        stmt({ kind: "let", name: "y", typeName: "Int", expr: [expr("name", "p")] }),
       ] }),
     ]);
     assert.deepEqual(codesFor(diags, "f"), []);

@@ -196,6 +196,7 @@ contract {
 // We emit the Stage-A canonical codes on `let`/`mut` bindings:
 //   FUNGI-TYPE-001  UnknownType     — declared typeName is not a known type
 //   FUNGI-TYPE-002  TypeMismatch    — known typeName ≠ a single literal's litType
+//   FUNGI-TYPE-019  UnknownSymbol   — a name initializer references an undeclared symbol (params seed the scope)
 //   FUNGI-NAME-002  DuplicateName   — a binding name re-declared in the SAME block scope
 //   FUNGI-TYPE-020  ShadowedBinding — a binding that shadows a name from an OUTER block scope
 // and recurse into `if`/`while` bodies (each a child scope, seeing the outer scope) too.
@@ -213,34 +214,35 @@ contract {
 }
 
 // Check one statement, recursing into if/while bodies, returning its diagnostics.
-pure flow checkStmt(flowName: String, stmt: Auto, outerScope: Array<Auto>) -> Array<Auto>
+pure flow checkStmt(flowName: String, stmt: Auto, scope: Array<Auto>) -> Array<Auto>
 contract {
-  intent { "Type-check a single body statement (let/mut bindings + nested if/while); nested blocks see outerScope." }
+  intent { "Type-check one body statement (let/mut binding + nested if/while); the initializer and nested blocks both see `scope` (params + prior bindings)." }
 }
 {
   mut diags: Array<Auto> = Array.empty()
   let kind: String = stmt.kind
 
   if kind == "let" {
-    diags = appendAll(diags, checkBinding(flowName, stmt))
+    diags = appendAll(diags, checkBinding(flowName, stmt, scope))
   }
   if kind == "mut" {
-    diags = appendAll(diags, checkBinding(flowName, stmt))
+    diags = appendAll(diags, checkBinding(flowName, stmt, scope))
   }
   if kind == "if" {
-    diags = appendAll(diags, checkStmtList(flowName, stmt.body, outerScope))
-    diags = appendAll(diags, checkStmtList(flowName, stmt.elseBody, outerScope))
+    diags = appendAll(diags, checkStmtList(flowName, stmt.body, scope))
+    diags = appendAll(diags, checkStmtList(flowName, stmt.elseBody, scope))
   }
   if kind == "while" {
-    diags = appendAll(diags, checkStmtList(flowName, stmt.body, outerScope))
+    diags = appendAll(diags, checkStmtList(flowName, stmt.body, scope))
   }
   return diags
 }
 
-// Validate a let/mut binding's declared type against a single literal initializer.
-pure flow checkBinding(flowName: String, stmt: Auto) -> Array<Auto>
+// Validate a let/mut binding: declared type, a literal initializer's type, and a name-reference
+// initializer against the visible `scope` (params + bindings declared before it).
+pure flow checkBinding(flowName: String, stmt: Auto, scope: Array<Auto>) -> Array<Auto>
 contract {
-  intent { "FUNGI-TYPE-001/002 for a let/mut binding with a declared type and literal RHS." }
+  intent { "FUNGI-TYPE-001/002/019 for a let/mut binding: unknown declared type, literal-type mismatch, or a name initializer referencing an undeclared symbol." }
 }
 {
   mut diags: Array<Auto> = Array.empty()
@@ -268,11 +270,40 @@ contract {
           }
         }
       }
+      // FUNGI-TYPE-019: a name initializer must reference an in-scope symbol (a param or a
+      // binding declared earlier). `scope` excludes this binding, so `let x = x` is unknown.
+      if rhs.kind == "name" {
+        let refName: String = rhs.value
+        if containsName(scope, refName) == false {
+          let msg19: String = "unknown symbol '" + refName + "' referenced in the initializer of binding '" + stmt.name + "' (FUNGI-TYPE-019)"
+          diags = diags.append({ code: "FUNGI-TYPE-019", message: msg19, flowName: flowName })
+        }
+      }
     }
     None => {}
     _ => {}
   }
   return diags
+}
+
+// Extract just the parameter NAMES from a flow's params array (seeds the body's initial scope).
+pure flow paramNames(params: Array<Auto>) -> Array<Auto>
+contract {
+  intent { "Return the list of parameter names declared by a flow (the body's initial in-scope symbols)." }
+}
+{
+  mut names: Array<Auto> = Array.empty()
+  mut i: Int = 0
+  while i < params.count() {
+    let pOpt = params.get(i)
+    match pOpt {
+      Some(p) => { names = names.append(p.name) }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return names
 }
 
 // True if `target` already appears in `names` (linear scan; Stage B arrays have no Set).
@@ -330,6 +361,10 @@ contract {
     let sOpt = stmts.get(i)
     match sOpt {
       Some(s) => {
+        // Scope VISIBLE to s = the enclosing scope + everything declared BEFORE s in this block.
+        // Computed before the current binding is added, so a name initializer cannot see itself.
+        let currentScope: Array<Auto> = appendAll(outerScope, localScope)
+        diags = appendAll(diags, checkStmt(flowName, s, currentScope))
         if isBinding(s.kind) {
           let nm: String = s.name
           if containsName(localScope, nm) {
@@ -344,10 +379,6 @@ contract {
           }
           localScope = localScope.append(nm)
         }
-        // Nested if/while blocks are child scopes: they see this block's outer scope PLUS the
-        // names declared so far in this block.
-        let innerScope: Array<Auto> = appendAll(outerScope, localScope)
-        diags = appendAll(diags, checkStmt(flowName, s, innerScope))
       }
       None => {}
       _ => {}
@@ -371,7 +402,8 @@ contract {
     match flowOpt {
       Some(fd) => {
         let name: String = fd.name
-        allDiags = appendAll(allDiags, checkStmtList(name, fd.body, Array.empty()))
+        let scope0: Array<Auto> = paramNames(fd.params)
+        allDiags = appendAll(allDiags, checkStmtList(name, fd.body, scope0))
         flowCount = flowCount + 1
       }
       None => {}
