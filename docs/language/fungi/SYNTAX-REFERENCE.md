@@ -43,6 +43,7 @@ One table per construct family. Every **Example** links a curriculum example tha
 | `effects { }` (empty) | pure, no effects | [101-pure-no-effects](../../examples/Level-3-Effects/101-pure-no-effects/example.fungi) | — |
 | `effects { database.write }` | one declared effect | [102-guarded-database-write](../../examples/Level-3-Effects/102-guarded-database-write/example.fungi) | — |
 | `effects { database.read phi.read audit.write }` | multiple; secure tier | [113-secure-flow-with-effects](../../examples/Level-3-Effects/113-secure-flow-with-effects/example.fungi) | — |
+| `effects { database.write network.outbound audit.write }` | multiple effects **+ a network egress** — a `protected` value must be redacted before the outbound sink | [104-multiple-effects](../../examples/Level-3-Effects/104-multiple-effects/example.fungi) | `FUNGI-VALUESTATE-006` |
 | Canonical effect names | the single-source set | — | `effect-checker.ts` `CANONICAL_EFFECTS`; `FUNGI-EFFECT-004/005` |
 
 ## Types

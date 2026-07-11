@@ -3,8 +3,19 @@
 /// level: 3
 /// concept: flow declaring multiple effects
 /// expected_diagnostics: none
-/// ai_rule: List all required effects in the contract effects block.
+/// ai_rule: List all required effects in the contract effects block; a protected value MUST be redacted before any network egress.
 /// test_status: stable
+
+record Order {
+  id: String
+  total: Int
+}
+
+enum SyncError {
+  ValidationFailed
+  NetworkFailed
+  Rejected
+}
 
 secure flow syncOrder(order: Order) -> SyncOrderResult
 
@@ -14,7 +25,7 @@ contract {
   }
 
   intent {
-    "Insert a validated order into the database, sync it to an external service, and write an audit record."
+    "Insert a validated order into the database, sync a redacted view to an external service, and write an audit record."
   }
 
   effects {
@@ -24,9 +35,15 @@ contract {
   }
 }
 {
+  ;; Multiple declared effects: database.write + network.outbound + audit.write.
+  ;; The order is validated at the boundary and stored protected in the trusted DB,
+  ;; but MUST be redacted before the external network egress — sending an un-redacted
+  ;; protected value to http.post is FUNGI-VALUESTATE-006 (fail-closed). Bind the
+  ;; redacted value to a let (the 161/166 pattern) so the boundary is gated too.
   let safeOrder: protected Order = validate.order(order)?
   let orderId = OrdersDB.insert(safeOrder)?
-  let _ = http.post("https://sync.example.com/orders", safeOrder)?
+  let syncPayload: redacted Order = redact(safeOrder)
+  let _ = http.post("https://sync.example.com/orders", syncPayload)?
   AuditLog.write({ action: "syncOrder", orderId: orderId })
   return Ok(unit)
 }
