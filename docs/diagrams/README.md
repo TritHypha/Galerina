@@ -16,6 +16,7 @@ Rendered SVG architecture diagrams. All use a shared palette so the set reads as
 | [galerina-tri-pipe.svg](galerina-tri-pipe.svg) | the Tri-Pipe execution router (binary / hybrid / photonic) | `galerina-photonic-ppu-virtualisation.md` |
 | **[galerina-untrusted-governed-lane.svg](galerina-untrusted-governed-lane.svg)** | **Govern-Don't-Absorb — the decision stays in the trusted core, the work runs in an untrusted lane admitted by a signed predicate and combined back by No-Coercion `min`** | **[`untrusted-governed-lane.md`](../../../ZTF-Knowledge-Bases/untrusted-governed-lane.md)** |
 | [galerina-tritmesh-query-lane.svg](galerina-tritmesh-query-lane.svg) | the `.hypha` (TritMeshQL) query lane — the T-ZONE split (opaque pushdown pre-Gate / semantic post-Gate), the Gate, and the GATED cross-collection traversal | [`../examples/hypha/README.md`](../examples/hypha/README.md) |
+| [galerina-governed-data-query-lane.svg](galerina-governed-data-query-lane.svg) | the governed data-query (filter-many) lane — untrusted filter → `validate.*(...)?` → `database.read`, audit only validated values; `FUNGI-VALUESTATE-003` REJECT + `-008` WARN | [`../examples/Level-4-Security/178-governed-data-query`](../examples/Level-4-Security/178-governed-data-query/example.fungi) |
 
 ## How they fit together
 

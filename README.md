@@ -131,6 +131,9 @@ A ten-axis capability self-assessment across the surfaces Galerina governs, plus
   <tr>
     <td align="center" width="100%"><a href="docs/diagrams/galerina-tritmesh-cache-passport-vs-legacy.svg"><img src="docs/diagrams/galerina-tritmesh-cache-passport-vs-legacy.svg" alt="TritMesh — cache + .spore passport vs legacy caching" width="100%"></a><br><sub><b>12 · TritMesh — cache &amp; <code>.spore</code> passport vs legacy caching</b></sub></td>
   </tr>
+  <tr>
+    <td align="center" width="100%"><a href="docs/diagrams/galerina-governed-data-query-lane.svg"><img src="docs/diagrams/galerina-governed-data-query-lane.svg" alt="Galerina — the Governed Data-Query Lane" width="100%"></a><br><sub><b>13 · Galerina — the Governed Data-Query Lane (prove before use)</b></sub></td>
+  </tr>
 </table>
 
 > **New here?** → [**SETUP.md**](SETUP.md) — install · run your first benchmark · Hello World with full governance comments

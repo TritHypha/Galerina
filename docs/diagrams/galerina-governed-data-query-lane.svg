@@ -1,0 +1,69 @@
+<svg width="100%" viewBox="0 0 720 560" xmlns="http://www.w3.org/2000/svg" role="img" font-family="ui-sans-serif, system-ui, sans-serif">
+<title>Galerina — the Governed Data-Query Lane (prove before use)</title>
+<desc>A governed, SQL-like query: untrusted filter input is proven with validate.*(...)? before it can reach database.read; a raw value reaching the DB is FUNGI-VALUESTATE-003 (REJECT); the audit records only validated values (a raw request.context.* is FUNGI-VALUESTATE-008, which errors in production); protected money is denied to the response body. Maps the 178-governed-data-query example.</desc>
+<defs>
+  <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+</defs>
+
+<text x="36" y="28" font-size="16" font-weight="700" fill="#1c2128">Galerina — the Governed Data-Query Lane</text>
+<text x="36" y="47" font-size="11" fill="#5a6470">Untrusted → Validated → Database · prove filters before the DB, audit only validated values · amber = untrusted · blue = untaint gate · teal = trusted · red = REJECT · purple = invariant</text>
+
+<!-- UNTRUSTED BOUNDARY -->
+<rect x="60" y="62" width="600" height="86" rx="10" fill="#fcf0d9" stroke="#c08a2e" stroke-width="1.8"/>
+<text x="360" y="84" text-anchor="middle" font-size="13.5" font-weight="700" fill="#6b4e15">UNTRUSTED BOUNDARY — raw filter input (unknown until proven)</text>
+<rect x="96" y="98" width="248" height="38" rx="7" fill="#f8e4bf" stroke="#c08a2e" stroke-width="1.1"/>
+<text x="220" y="114" text-anchor="middle" font-size="11" font-weight="600" fill="#6b4e15">unsafe let rawStatus = request.status</text>
+<text x="220" y="129" text-anchor="middle" font-size="9.5" fill="#7d5e1d">tainted — cannot reach a sink as-is</text>
+<rect x="376" y="98" width="248" height="38" rx="7" fill="#f8e4bf" stroke="#c08a2e" stroke-width="1.1"/>
+<text x="500" y="114" text-anchor="middle" font-size="11" font-weight="600" fill="#6b4e15">unsafe let rawMin = request.minAmount</text>
+<text x="500" y="129" text-anchor="middle" font-size="9.5" fill="#7d5e1d">tainted — cannot reach a sink as-is</text>
+
+<!-- untaint gate -->
+<path d="M360 148 L360 176" fill="none" stroke="#3b6fd4" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="120" y="176" width="480" height="48" rx="8" fill="#e8effb" stroke="#3b6fd4" stroke-width="1.5"/>
+<text x="360" y="195" text-anchor="middle" font-size="12" font-weight="700" fill="#1f3a6b">UNTAINT GATE — validate.status(rawStatus)? · validate.money(rawMin)?</text>
+<text x="360" y="212" text-anchor="middle" font-size="9.5" fill="#3a5285">K3: prove the value (ACCEPT → bound + trusted) or return Err (REJECT) — never a silent pass</text>
+
+<!-- REJECT arm -->
+<path d="M600 200 L662 200" fill="none" stroke="#c0392b" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="524" y="240" width="160" height="52" rx="7" fill="#fbe6e2" stroke="#c0392b" stroke-width="1.5"/>
+<text x="604" y="259" text-anchor="middle" font-size="10.5" font-weight="700" fill="#8f2519">REJECT → Err(QueryError)</text>
+<text x="604" y="274" text-anchor="middle" font-size="9" fill="#a5382b">a raw value reaching the DB</text>
+<text x="604" y="286" text-anchor="middle" font-size="9" fill="#a5382b">is FUNGI-VALUESTATE-003</text>
+<path d="M600 213 C 640 224, 620 232, 610 240" fill="none" stroke="#c0392b" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+
+<!-- ACCEPT into trusted lane -->
+<path d="M300 224 L300 252" fill="none" stroke="#2b8a7e" stroke-width="2" marker-end="url(#arr)"/>
+<text x="300" y="243" text-anchor="middle" font-size="9.5" font-weight="700" fill="#14534b">ACCEPT</text>
+
+<!-- TRUSTED / VALIDATED -->
+<rect x="60" y="252" width="440" height="120" rx="10" fill="#e3f5f2" stroke="#2b8a7e" stroke-width="1.8"/>
+<text x="280" y="274" text-anchor="middle" font-size="13.5" font-weight="700" fill="#14534b">TRUSTED / VALIDATED — proven values only</text>
+<rect x="84" y="288" width="180" height="66" rx="7" fill="#d3ede8" stroke="#2b8a7e" stroke-width="1.2"/>
+<text x="174" y="309" text-anchor="middle" font-size="11" font-weight="600" fill="#14534b">database.read</text>
+<text x="174" y="325" text-anchor="middle" font-size="9.5" fill="#1f6b60">TxDB.find(status, amount_gte)</text>
+<text x="174" y="340" text-anchor="middle" font-size="9.5" fill="#1f6b60">only a trusted status/minAmount</text>
+<path d="M264 321 L288 321" fill="none" stroke="#2b8a7e" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="288" y="288" width="188" height="66" rx="7" fill="#d3ede8" stroke="#2b8a7e" stroke-width="1.2"/>
+<text x="382" y="309" text-anchor="middle" font-size="11" font-weight="600" fill="#14534b">audit.write</text>
+<text x="382" y="325" text-anchor="middle" font-size="9.5" fill="#1f6b60">AuditLog.write(status, rows.length)</text>
+<text x="382" y="340" text-anchor="middle" font-size="9.5" fill="#1f6b60">only VALIDATED values</text>
+
+<!-- 008 warning on the raw-context path -->
+<rect x="516" y="312" width="168" height="52" rx="7" fill="#fcf0d9" stroke="#c08a2e" stroke-width="1.4" stroke-dasharray="5 4"/>
+<text x="600" y="330" text-anchor="middle" font-size="10" font-weight="700" fill="#6b4e15">WARN · FUNGI-VALUESTATE-008</text>
+<text x="600" y="344" text-anchor="middle" font-size="8.8" fill="#7d5e1d">a raw request.context.* into audit</text>
+<text x="600" y="356" text-anchor="middle" font-size="8.8" fill="#7d5e1d">ERRORS in a production build</text>
+
+<!-- egress -->
+<path d="M280 372 L280 400" fill="none" stroke="#2b8a7e" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="60" y="400" width="600" height="56" rx="10" fill="#eef7f5" stroke="#2b8a7e" stroke-width="1.6"/>
+<text x="360" y="421" text-anchor="middle" font-size="12.5" font-weight="700" fill="#14534b">EGRESS — response.body: the matched count only</text>
+<text x="360" y="440" text-anchor="middle" font-size="9.8" fill="#1f6b60">deny protected Money to response.body · redact protected values before egress · no money bytes leave</text>
+
+<!-- invariant -->
+<rect x="60" y="472" width="600" height="72" rx="9" fill="#f3eefa" stroke="#7a5bb0" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="360" y="493" text-anchor="middle" font-size="11.5" font-weight="700" fill="#43306b">The lane's invariant — prove before use</text>
+<text x="360" y="511" text-anchor="middle" font-size="10" fill="#5a4584">Untrusted → validate.*(...)? → Trusted → database.read · audit only validated values, never raw request.context.*</text>
+<text x="360" y="527" text-anchor="middle" font-size="9.5" fill="#5a4584">maps docs/examples/Level-4-Security/178-governed-data-query · galerina check clean (plain + --strict-types)</text>
+</svg>
