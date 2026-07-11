@@ -1,0 +1,43 @@
+@version 1
+/// @file: kernel.fungi
+/// @purpose: Stage-6 CHECKER-VERIFIED twin of kernel.ts's governed DECISION-half — the fixed,
+///   non-bypassable auth gate (gate 6) whose fail-closed channel/identity fold closed the
+///   RD-0307/0309 mTLS presence-only bypass (task #10). The host runs the transport, parses the
+///   request, and computes the K3 boundary collapse (tower-citizen decideAtBoundary); this pure
+///   surface folds that EVIDENCE fail-closed into an admit/refuse verdict. The rest of kernel.ts
+///   (idempotency store, body parse, dispatch, audit emit) is wiring/host-calls through seams.
+/// @status: checker-verified twin (galerina check clean); NOT build-wired (execution switch #143).
+
+// Gate 6 — the auth DECISION. channelVerdictAuthorized is the host's decideAtBoundary(v).authorized
+// (K3: ONLY an ALLOW +1 authorizes; INDETERMINATE 0 and DENY -1 both fail closed).
+// Returns "admit" or a structured 401 reason. Deny-by-default: presence is NOT authentication.
+pure flow authGateVerdict(authMode: String, hasChannelVerdict: Bool, channelVerdictAuthorized: Bool, headerPresent: Bool, allowPresenceFallback: Bool) -> String
+contract {
+  intent { "Fail-closed kernel auth gate 6: a required-auth route admits ONLY on an authorizing channel verdict (or an explicit opt-in header-presence fallback); bare presence never authenticates." }
+}
+{
+  // A public route carries no auth gate.
+  if authMode == "public" {
+    return "admit"
+  }
+  // mode "required": a transport-supplied channel/identity verdict is collapsed FAIL-CLOSED —
+  // only an authorizing (ALLOW) verdict admits; INDETERMINATE/DENY -> 401.
+  if hasChannelVerdict == true {
+    if channelVerdictAuthorized == true {
+      return "admit"
+    }
+    return "unauthorized_channel_verdict_denied"
+  }
+  // No channel verdict. The OPT-IN legacy fallback admits on mere Authorization-header presence —
+  // which is NOT a real token verification — so it is gated behind an explicit per-route opt-in.
+  if allowPresenceFallback == true {
+    if headerPresent == true {
+      return "admit"
+    }
+    return "unauthorized_header_required"
+  }
+  // TIGHTENED default (fail-closed, owner decision 2026-06-23; RD-0307/0309): with no verdict
+  // supplied, a required-auth route does NOT admit on header presence alone — presence is not
+  // authentication. This is the line that closed the mTLS presence-only bypass (#10).
+  return "unauthorized_verdict_required"
+}

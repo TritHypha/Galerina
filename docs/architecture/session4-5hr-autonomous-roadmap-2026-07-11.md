@@ -48,8 +48,8 @@ Full suite (`--emit-counts`) → sync counts (README/AGENTS/version.json) → al
 ## Status ledger (updated as I go)
 | Block | State |
 |---|---|
-| 1 — kernel twins 6/6 | ⏳ starting |
-| 2 — type-checker twin advance | ⏸ |
+| 1 — kernel decision-surface twins | ✅ **DONE** — 4/4 governed decision surfaces (`secret-gate`, `route-defaults`, `registry-index`, `kernel` gate-6 auth) are checker-verified `.fungi` + gated (`902d0eae`, `bedc5ff4`, `517c8fa2`, + this). `types.ts`=declarations-only, `index.ts`=barrel — no decision surface (correctly NOT force-twinned). Milestone: **100% of the kernel's governed decision surface in checker-verified `.fungi`**; `.ts` retained as executed (switch-gated). |
+| 2 — type-checker twin advance | ⏳ starting |
 | 3 — #22 fuel cap | ⏸ |
 | 4 — #41 defensive controls | ⏸ |
 | 5 — F3 verify + tc twins | ⏸ |

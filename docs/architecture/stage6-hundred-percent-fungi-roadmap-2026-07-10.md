@@ -55,6 +55,8 @@ Order by dependency-lightness (each = author the `.fungi` twin + a differential 
 
 These are *behavioral-twin* conversions under the kernel's own 104-test suite + new differential tests — the same discipline as the compiler corpus, without waiting for the full Stage-B execution switch.
 
+**UPDATE 2026-07-11 — kernel governed decision surfaces DONE (checker-verified `.fungi` twins, gated):** `secret-gate.fungi` (gate 9.5 admit), `route-defaults.fungi` (secure-by-default folds), `registry-index.fungi` (supply-chain verify→lookup→policy), `kernel.fungi` (gate-6 auth / RD-0307-0309 presence-bypass close). All `galerina check` clean, guarded by `scripts/audit-kernel-fungi-twins.mjs` (4/4). `types.ts` (declarations) and `index.ts` (barrel) carry no decision surface and were correctly NOT force-twinned. **So 100% of the kernel's governed decision surface is now in checker-verified `.fungi`** — the achievable-now milestone; the `.ts` stays the executed artifact until the execution switch (§0.1) retires it.
+
 ## 3. The execution switch (what finally deletes the `.ts`)
 
 Diagnostic parity makes a `.fungi` twin *complete*; deleting the `.ts` requires the build to *execute* the `.fungi`:
