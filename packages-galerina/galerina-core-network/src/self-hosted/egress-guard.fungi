@@ -1,0 +1,131 @@
+@version 1
+/// @file: egress-guard.fungi
+/// @purpose: Stage-6 CHECKER-VERIFIED twin of egress-guard.ts (TLSTP) — the outbound SSRF DECISION
+///   surface. The host does the byte/string work (parse an IPv4/IPv6/URL, normalise the numeric
+///   obfuscations — inet_aton decimal/hex/octal, IPv4-mapped IPv6 — via parseOctet/ipv4ToOctets/
+///   expandIpv6, and the WHATWG URL parse); this pure surface folds the resulting octets + policy
+///   flags fail-closed into a category and an ALLOW/DENY verdict. Deny-by-default: only a provably
+///   PUBLIC destination (or an operator allow-listed one) is dialled. Trit: ALLOW = +1, DENY = -1.
+/// @fidelity: classifyIpv4Category mirrors classifyIpv4 exactly (metadata FIRST — 169.254.169.254 is
+///   the SSRF prize — then the RFC-1918 / CGNAT / link-local / TEST-NET / multicast / broadcast bands).
+///   egressVerdict mirrors guardOutboundHost (allow-list · metadata opt-in · loopback dev exception ·
+///   the DENY_CATEGORIES set · INVALID never admitted even under allowNonPublic). resolvedVerdict is
+///   the DNS-rebind fold (guardResolvedAddresses): no resolution or ANY non-public address → DENY.
+///   urlVerdict is the guardOutboundUrl composition (scheme · userinfo · host · TLS · port), fail-closed.
+/// @status: checker-verified twin (galerina check clean); NOT build-wired (execution switch #143).
+
+/// Category codes (an enum-as-Int; the host maps them back to HostCategory strings):
+///   0 metadata · 1 loopback · 2 private · 3 linkLocal · 4 uniqueLocal · 5 cgnat
+///   6 multicast · 7 unspecified · 8 reserved · 9 broadcast · 10 public · 11 invalid
+/// Only 10 (public) is dialled by default; everything else is deny-by-default (metadata + loopback
+/// have their own opt-ins; invalid can never be admitted).
+pure flow classifyIpv4Category(a: Int, b: Int, c: Int, d: Int) -> Int
+contract { intent { "Classify four IPv4 octets into an egress category — metadata first, then the private/reserved bands, else public." } }
+{
+  // metadata FIRST — the single most important SSRF target, inside link-local (169.254.169.254).
+  if a == 169 {
+    if b == 254 {
+      if c == 169 {
+        if d == 254 { return 0 }
+      }
+      return 3
+    }
+  }
+  if a == 0 { return 7 }
+  if a == 127 { return 1 }
+  if a == 10 { return 2 }
+  if a == 172 {
+    if b > 15 {
+      if b < 32 { return 2 }
+    }
+  }
+  if a == 192 {
+    if b == 168 { return 2 }
+    if b == 0 {
+      if c == 0 { return 8 }
+      if c == 2 { return 8 }
+    }
+  }
+  if a == 100 {
+    if b > 63 {
+      if b < 128 { return 5 }
+    }
+  }
+  if a == 198 {
+    if b == 18 { return 8 }
+    if b == 19 { return 8 }
+    if b == 51 {
+      if c == 100 { return 8 }
+    }
+  }
+  if a == 203 {
+    if b == 0 {
+      if c == 113 { return 8 }
+    }
+  }
+  if a > 223 {
+    if a < 240 { return 6 }
+  }
+  if a > 239 {
+    if a == 255 {
+      if b == 255 {
+        if c == 255 {
+          if d == 255 { return 9 }
+        }
+      }
+    }
+    return 8
+  }
+  return 10
+}
+
+/// egressVerdict — the host-admission decision (guardOutboundHost). Deny-by-default: only public
+/// (or an explicitly allow-listed host) is dialled. Metadata needs an explicit opt-in; loopback has a
+/// local-dev exception; every other non-public category needs allowNonPublic; INVALID is never admitted.
+pure flow egressVerdict(category: Int, allowNonPublic: Bool, allowMetadata: Bool, allowLoopback: Bool, isAllowlisted: Bool) -> Int
+contract { intent { "Fold an egress category + policy flags into ALLOW(+1)/DENY(-1), deny-by-default." } }
+{
+  if isAllowlisted == true { return 1 }
+  if category == 0 {
+    if allowMetadata == true { return 1 }
+    return 0 - 1
+  }
+  if category == 1 {
+    if allowLoopback == true { return 1 }
+  }
+  if category == 10 { return 1 }
+  if category == 11 { return 0 - 1 }
+  if allowNonPublic == true { return 1 }
+  return 0 - 1
+}
+
+/// resolvedVerdict — the connect-time DNS-rebinding fold (guardResolvedAddresses). A hostname that
+/// looked public at check time can resolve to a private IP at connect time, or to a MIX. The host
+/// re-classifies every resolved address; this folds fail-closed: no resolution → DENY, ANY non-public
+/// resolved address → DENY (unless the host is explicitly allow-listed), else ALLOW.
+pure flow resolvedVerdict(resolvedCount: Int, anyNonPublic: Bool, isAllowlisted: Bool) -> Int
+contract { intent { "DNS-rebind fold: no resolution or any non-public resolved address denies; allow-list overrides." } }
+{
+  if resolvedCount < 1 { return 0 - 1 }
+  if isAllowlisted == true { return 1 }
+  if anyNonPublic == true { return 0 - 1 }
+  return 1
+}
+
+/// urlVerdict — the guardOutboundUrl composition. The host parses the URL (scheme, userinfo, host,
+/// port) and computes each boolean; this folds them fail-closed in the .ts order: an SSRF host denial
+/// keeps priority over TLS/port, a loopback dev host or an operator-trusted allow-listed host skips the
+/// TLS/port checks, and requireTls / the port allow-list are the last gates. hostVerdict is the Int
+/// egressVerdict returned for the URL's host.
+pure flow urlVerdict(schemeAllowed: Bool, credentialsBlocked: Bool, hostVerdict: Int, isLoopback: Bool, isAllowlisted: Bool, tlsOk: Bool, portOk: Bool) -> Int
+contract { intent { "Fold the outbound-URL checks fail-closed: scheme, userinfo, host SSRF verdict, then TLS + port." } }
+{
+  if schemeAllowed == false { return 0 - 1 }
+  if credentialsBlocked == true { return 0 - 1 }
+  if hostVerdict < 1 { return hostVerdict }
+  if isLoopback == true { return 1 }
+  if isAllowlisted == true { return 1 }
+  if tlsOk == false { return 0 - 1 }
+  if portOk == false { return 0 - 1 }
+  return 1
+}
