@@ -1,0 +1,15 @@
+{
+  "$comment": "License override ledger — RD-0355 L4. Each entry waives ONE package@version whose self-declared license is UNKNOWN/unparseable, with EVIDENCE: the sha256 of the actual upstream LICENSE file. scripts/audit-license-compat.mjs re-hashes that file at scan time, so a mismatch is RED (the npm license-flip vector). An UNKNOWN not listed here is RED; an override without licenseFileSha256 is invalid. Engineering-conservative evidence, NOT legal advice — any outward licensing act is owner/counsel signed.",
+  "overrides": [
+    {
+      "package": "esprima",
+      "version": "1.2.5",
+      "declaredLicense": "BSD",
+      "resolvedLicense": "BSD-2-Clause",
+      "evidence": "Old npm `licenses: [{ type: 'BSD' }]` array form; bare 'BSD' is not a valid SPDX id, so the fail-closed classifier escalates it to UNKNOWN-RED. The package's bundled LICENSE.BSD is the 2-clause BSD text ('Redistribution and use in source and binary forms, with or without ...'). Present only transitively under galerina-ext-proof-snarkjs.",
+      "licenseFileSha256": "0e74697a68cebdcd61502c30fe80ab7f9e341d995dcd452023654d57133534b1",
+      "reviewer": "main-session (engineering-conservative; owner/counsel confirms any outward act)",
+      "date": "2026-07-11"
+    }
+  ]
+}

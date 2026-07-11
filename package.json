@@ -15,7 +15,9 @@
     "audit:examples": "node scripts/audit-example-diagnostics.mjs",
     "audit:examples:selftest": "node scripts/audit-example-diagnostics.mjs --self-test",
     "audit:node-floor": "node scripts/audit-node-dependencies.mjs",
-    "audit:imports": "node scripts/audit-import-governance.mjs"
+    "audit:imports": "node scripts/audit-import-governance.mjs",
+    "audit:license": "node scripts/audit-license-compat.mjs",
+    "audit:license:selftest": "node scripts/audit-license-compat.mjs --self-test"
   },
   "engines": {
     "node": ">=18.0.0"
