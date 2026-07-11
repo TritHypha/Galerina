@@ -113,6 +113,45 @@ export {
   type GateTagKind,
 } from "./gate-parser.js";
 
+// RD-0358 — governed memory-residency hardening (PROTOTYPE; see hardening-residency.ts header).
+// H-1 auto-derivation + H-2 ceiling lattice + H-5 host seam + H-7 only-tightens + M6 fingerprint.
+export {
+  deriveAuto,
+  reconcileExplicit,
+  canHonour,
+  resolveHost,
+  showDerived,
+  fingerprint,
+  canonicalize,
+  stricterResidency,
+  atLeastAsStrict,
+  HOST_PROFILES,
+  UNKNOWN_HOST,
+  VALID_RESIDENCY,
+  VALID_ERASE,
+  VALID_TIMING,
+  VALID_SUBSTRATE,
+  HARDENING_DIAGNOSTICS,
+  RD0337_TYPESTATE_STUB,
+  FUNGI_HARDEN_001,
+  FUNGI_HARDEN_002,
+  FUNGI_HARDEN_003,
+  FUNGI_HARDEN_004,
+  FUNGI_HARDEN_005,
+  FUNGI_HARDEN_006,
+  type ResidencyTier,
+  type EraseMode,
+  type TimingDiscipline,
+  type Substrate,
+  type Provenance,
+  type DerivedHardening,
+  type HardeningSignal,
+  type ExplicitHardening,
+  type ReconcileResult,
+  type Rejection,
+  type HostResidencyCapability,
+} from "./hardening-residency.js";
+
 // Phase 5 / 18E / 18H / 19A — Effect Checker
 export {
   checkEffects,

@@ -4577,6 +4577,18 @@ class Parser {
         continue;
       }
 
+      // `hardening { residency no_swap  erase on_exit  timing constant  substrate binary
+      //   host mlock_posix  audited_loosen }` — RD-0358 governed memory-residency ceiling.
+      // AUTO-DERIVED for secrets (Secret/Tainted/secret.read): the developer writes NOTHING and
+      // the compiler injects the strictest floor. This EXPLICIT block is only for the exceptions —
+      // tighten a non-secret, or audibly loosen a derived default (governance may refuse the loosen).
+      // Validated fail-closed by governance-verifier.ts::verifyResidencyHardeningBlock.
+      if ((tok.kind === "keyword" || tok.kind === "identifier") && tok.value === "hardening") {
+        children.push(this.parseContractSubBlock("hardening"));
+        this.skipNewlines();
+        continue;
+      }
+
       // `liability {}` — auto-calculated max legal/financial exposure from the ValueGraph
       // breach-risk matrix. NEVER written in source — the governance verifier computes and
       // stores it in the ProofGraph. If a developer writes it manually a FUNGI-GOV warning fires.

@@ -110,6 +110,19 @@ This is the complete set the production effect checker accepts. Grouped for lear
 `eval.execute` is in the vocabulary on purpose: so that if you try to use it you get the real reason
 ("never grantable") instead of a typo hint.
 
+## Design-stage (RD-0358): `memory.spill` — NOT yet a real effect
+
+> **Not in `CANONICAL_EFFECTS`.** Do not declare it — the checker rejects it as unknown.
+
+RD-0358 (governed memory-residency hardening) proposes that **crossing a residency ceiling** — a value
+spilling past its declared `hardening { residency … }` tier — become a **deny-by-default effect**
+(`memory.spill`-class): an *undeclared* spill would not compile, and a *declared* one would be the
+audited paged-optimizer cousin. This is **design-stage (H-6)**: the hardening *derivation* and the
+explicit-block *enforcement* ship in the prototype (see
+[04 — Types § Governed memory-residency hardening](04-types-and-values.md)), but `memory.spill` is
+**not** wired as a first-class effect yet. When it lands it joins `CANONICAL_EFFECTS` (the single source
+of truth) and moves up into the real vocabulary above.
+
 ## Operation → effect inference (`EFFECT_REGISTRY`)
 
 The checker also knows which **standard-library calls** produce which effects, so it can verify your

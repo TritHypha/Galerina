@@ -1,0 +1,15 @@
+@version 1
+/// example: 181-hardening-unlabelled-limit
+/// level: 4
+/// concept: the HONEST LIMIT (HV8) — an UNLABELLED value gets NO hardening; auto-hardening is only as good as the taint/secret labelling (RD-0358 HV8)
+/// expected_diagnostics: none
+/// ai_rule: Auto-hardening covers ONLY values typed Secret/Tainted or reached by a secret.read effect. Label sensitive values, or they are NOT hardened — this is a real limit, not coverage.
+/// test_status: stable
+
+pure flow addTwo(a: Int, b: Int) -> Int
+contract {
+  intent { "Plain arithmetic — nothing is marked secret, so nothing is hardened (the honest boundary of auto-hardening)." }
+}
+{
+  return a + b
+}

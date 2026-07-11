@@ -1,0 +1,5 @@
+none
+
+A Secret value is auto-hardened (no_swap + on_exit + constant + binary) with NO annotation.
+Auto-derivation is a checker-verified shadow — it emits no diagnostic. Inspect what the compiler
+injects with: node scripts/hardening-show-derived.mjs <file> (RD-0358 H-1 / HV3).
