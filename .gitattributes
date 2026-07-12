@@ -12,3 +12,8 @@ scripts/hooks/* text eol=lf
 build/graph/*.md        text eol=lf
 build/kb-graph/*.md     text eol=lf
 build/dev-tool-index/*  text eol=lf
+
+# ── Benchmark result artifacts (written LF by the runner/snapshot scripts). Pin eol=lf so the committed
+#    baseline (results/latest.json) + saved snapshots (results/archive/**) don't phantom-churn under Windows
+#    autocrlf; a saved run then diffs cleanly and the NEXT benchmark's real change is visible against it.
+packages-galerina/galerina-devtools-benchmarks/results/**   text eol=lf
