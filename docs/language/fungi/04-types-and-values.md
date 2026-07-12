@@ -270,6 +270,7 @@ the declared `host` seam cannot honour is **REJECTED, never silently spilled**:
 | a secret default loosened without `audited_loosen` | `FUNGI-HARDEN-004` |
 | a residency ceiling the declared host can't honour → REJECT | `FUNGI-HARDEN-005` |
 | a secret-dependent branch under `timing constant` (checkable subset) | `FUNGI-HARDEN-006` |
+| a proven spill re-types the value `Refuted` (contagious, denies at a trust boundary) | `FUNGI-HARDEN-007` |
 
 Inspect exactly what the compiler injects (auditable, not authored): `node
 scripts/hardening-show-derived.mjs <file>`. Worked examples:
@@ -279,8 +280,10 @@ scripts/hardening-show-derived.mjs <file>`. Worked examples:
 **PROTOTYPE status + honest limits (do not over-read).** The derivation + explicit-block enforcement are
 implemented and checker-verified, but this is a **checker-verified shadow** — the actual placement /
 `mlock` / zeroize *execution* is host + execution-switch (#143) territory, exactly like the Stage-6
-twins. The RD-0337 "governed downgrade that re-types a spilled value `Refuted`/`Tainted`" is **stubbed**,
-so the prototype fails closed (REJECT) instead. `timing: constant` (H-4) is **honestly partial** —
+twins. The RD-0337 "governed downgrade that re-types a spilled value `Refuted`" is now **wired for real**
+(RD-0360 Option A): a proven spill re-types the value `Refuted` (`FUNGI-HARDEN-007`, sticky + contagious,
+so it denies at a trust boundary), via a compiler-side epistemic trit held equivalent to the runtime
+RD-0337 trit by a mandatory conformance gate. `timing: constant` (H-4) is **honestly partial** —
 constant-time is undecidable in general, so `FUNGI-HARDEN-006` flags the common case only and does **not**
 prove constant-time. HV8: auto-hardening covers only *labelled* values — an unlabelled secret is
 unhardened (example 181). `memory.spill` as a first-class effect (H-6) is design-stage
