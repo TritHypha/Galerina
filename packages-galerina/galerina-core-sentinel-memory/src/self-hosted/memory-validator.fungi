@@ -1,0 +1,72 @@
+@version 1
+/// @file: memory-validator.fungi
+/// @purpose: Stage-6 CHECKER-VERIFIED twin of memory-validator.ts's alignment + bounds DECISION surface —
+///   the Sentinel-Memory SAFETY border: every pointer is 128-bit (16-byte) aligned and every access must
+///   lie fully inside [0, capacity). These are PURE, stateless functions (no engine state, no host
+///   memory), so the whole surface folds in checker-verified .fungi, mirroring MemoryValidator's
+///   isAligned / assertAligned / assertInBounds / alignUp. The raw ArrayBuffer bytes and the .ts default
+///   of align=16 (a caller convenience) stay a host concern.
+/// @status: checker-verified twin (galerina check clean); NOT build-wired — the .ts stays the executed
+///   artifact until the Stage-6 execution switch (#143 WASM byte-parity). Host floor: NONE (pure logic).
+
+// True iff `ptr` is a non-negative whole multiple of `align` (MemoryValidator.isAligned). `align` is
+// passed explicitly — the .ts default of 16 bytes (128-bit) is a host-seam convenience, not governed logic.
+pure flow isAligned(ptr: Int, align: Int) -> Bool
+contract {
+  intent { "128-bit alignment predicate: ptr >= 0 AND ptr is a whole multiple of align." }
+}
+{
+  if ptr < 0 {
+    return false
+  }
+  if ptr % align == 0 {
+    return true
+  }
+  return false
+}
+
+// The alignment admit DECISION, fail-closed: "ok" (the .ts no-throw) or the trap code "LSM-ALIGN-001"
+// (mirrors MemoryValidator.assertAligned — issuing the actual SecurityTrap is the host caller's concern).
+pure flow checkAligned(ptr: Int, align: Int) -> String
+contract {
+  intent { "Fail-closed alignment check: 'ok' iff ptr is a non-negative multiple of align, else 'LSM-ALIGN-001'." }
+}
+{
+  if isAligned(ptr, align) == false {
+    return "LSM-ALIGN-001"
+  }
+  return "ok"
+}
+
+// The bounds admit DECISION, fail-closed: "ok" or the trap code "LSM-BOUNDS-001" (mirrors
+// MemoryValidator.assertInBounds). Refuse iff ptr < 0 OR len < 0 OR [ptr, ptr+len) escapes [0, capacity).
+pure flow checkInBounds(ptr: Int, len: Int, capacity: Int) -> String
+contract {
+  intent { "Fail-closed bounds check: 'ok' iff [ptr, ptr+len) lies fully inside [0, capacity), else 'LSM-BOUNDS-001'." }
+}
+{
+  if ptr < 0 {
+    return "LSM-BOUNDS-001"
+  }
+  if len < 0 {
+    return "LSM-BOUNDS-001"
+  }
+  if ptr + len > capacity {
+    return "LSM-BOUNDS-001"
+  }
+  return "ok"
+}
+
+// Round `n` up to the next multiple of `align`, integer arithmetic only (MemoryValidator.alignUp; the .ts
+// uses Math.ceil over floats — here the equivalent integer form, so there is no float lane in the twin).
+pure flow alignUp(n: Int, align: Int) -> Int
+contract {
+  intent { "Round n up to the next multiple of align using integer arithmetic (no floats)." }
+}
+{
+  let r: Int = n % align
+  if r == 0 {
+    return n
+  }
+  return n + align - r
+}

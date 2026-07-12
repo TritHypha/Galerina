@@ -3,7 +3,7 @@
 //
 // Implements Tainted<T> / SafeFor<Context, T> per the OWASP-aligned catalogue.
 //
-// Spec: docs/Knowledge-Bases/galerina-taint-catalogue.md
+// Spec: ../ZTF-Knowledge-Bases/galerina-taint-catalogue.md
 //
 // Core principle:  "A value is only clean for the sink it was cleaned for."
 //

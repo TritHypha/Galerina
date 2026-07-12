@@ -2,7 +2,7 @@
 // Galerina Phase 4 — Lexer
 //
 // Tokenises Galerina .fungi source text using the v1 keyword table.
-// Source of truth: docs/Knowledge-Bases/v1-reserved-keywords.md
+// Source of truth: ../ZTF-Knowledge-Bases/v1-reserved-keywords.md
 //
 // Types declared locally mirror @galerina/core — structurally compatible.
 // Replace with workspace imports once package links are in place.
@@ -124,7 +124,7 @@ export interface LexResult {
 
 // ---------------------------------------------------------------------------
 // V1 keyword sets
-// Source: docs/Knowledge-Bases/v1-reserved-keywords.md
+// Source: ../ZTF-Knowledge-Bases/v1-reserved-keywords.md
 // ---------------------------------------------------------------------------
 
 /** Keywords that are active in v0.1 and cannot be used as identifiers. */
@@ -164,14 +164,18 @@ export const V1_ACTIVE_KEYWORDS: ReadonlySet<string> = new Set([
   // used as values (e.g. prefer [npu]) — they are NOT keywords.
   // Only the declaration forms are keywords.
   "compute", "target", "prefer",
-  // Flow Contracts (Pilot Candidate) — docs/Knowledge-Bases/galerina-flow-contracts.md
+  // Flow Contracts (Pilot Candidate) — ../ZTF-Knowledge-Bases/galerina-flow-contracts.md
   "contract", "emit", "emits", "event", "types",
   // Resource declarations (Phase 17)
   "resource",
+  // Hallmark open types (RD-0353) — `hallmark X of T { gate: flow f }`: a
+  // developer-minted nominal type over a carrier, constructed only through a
+  // mandatory assay gate. Greenfield keyword; the token lives in this one place.
+  "hallmark",
   // Compile-time constants (allowed at top level; ordinary let/mut are not)
   "const",
   // Readable Logic Forms (Phase 9C) — promoted from future-reserved
-  // See: docs/Knowledge-Bases/galerina-readable-logic-forms.md
+  // See: ../ZTF-Knowledge-Bases/galerina-readable-logic-forms.md
   "and", "or", "unless", "is",
   // K3 verdict operators (W5a, 2026-07-08 syntax update — owner: hard-reserve).
   // Lattice DENY(-1) < UNKNOWN(0) < ALLOW(+1) (Q2). `flip` = K3 negation
@@ -215,7 +219,7 @@ export const V1_FUTURE_RESERVED: ReadonlySet<string> = new Set([
   "trait", "impl", "loop",
   "break", "continue",
   // Readable Logic Forms (proposal) — "until" still reserved for future use
-  // See: docs/Knowledge-Bases/galerina-readable-logic-forms.md
+  // See: ../ZTF-Knowledge-Bases/galerina-readable-logic-forms.md
   // Note: "and", "or", "unless", "is" promoted to V1_ACTIVE_KEYWORDS in Phase 9C
   "until",
 ]);
@@ -244,7 +248,7 @@ export const V1_DEPRECATED_RESERVED: ReadonlySet<string> = new Set([
 
 // ---------------------------------------------------------------------------
 // Flow Contract keywords (Pilot Candidate)
-// See: docs/Knowledge-Bases/galerina-flow-contracts.md
+// See: ../ZTF-Knowledge-Bases/galerina-flow-contracts.md
 // ---------------------------------------------------------------------------
 // contract, emit, emits, event, types are added to V1_ACTIVE_KEYWORDS above.
 

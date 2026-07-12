@@ -16,8 +16,8 @@ permission user_email_update {
   actor require users.email.update
   actor require users.private.read
 
-  code allow db.read
-  code allow db.write
+  code allow database.read
+  code allow database.write
   code allow audit.write
   code deny network.external
 
@@ -76,5 +76,5 @@ audit-actor-report.json
 
 ## Knowledge Base
 
-See [Permission, Capability And Actor Model](../Knowledge-Bases/permission-capability-actor-model.md).
-See [Audit Actor Model](../Knowledge-Bases/audit-actor-model.md).
+See [Permission, Capability And Actor Model](../../../ZTF-Knowledge-Bases/permission-capability-actor-model.md).
+See [Audit Actor Model](../../../ZTF-Knowledge-Bases/audit-actor-model.md).

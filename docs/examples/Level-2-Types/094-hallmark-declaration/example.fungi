@@ -1,0 +1,46 @@
+@version 1
+/// example: 094-hallmark-declaration
+/// level: 2
+/// concept: a hallmark mints a developer-defined nominal type over a carrier, gated by a mandatory assay
+/// expected_diagnostics: none
+/// test_status: stable
+/// ai_rule: A hallmarked type is minted ONLY through its gate; the schema's ops are deny-by-default.
+
+// A hallmark is the assay-office mark struck into precious metal: the compiler is the
+// assay office, the gate is the test that must be able to fail, and the name is a
+// protected mark. "PHP lets anyone scribble a name. Galerina hallmarks it."
+
+// CustomerRef — a hallmarked identity type over String. The gate is the assay.
+hallmark CustomerRef of String {
+  gate: flow assayCustomerRef
+}
+
+// LoyaltyPoints — a quantity-like hallmark. The schema IS the algebra: whole numbers,
+// never negative, and ONLY the four declared ops exist (ratio is undeclared, so
+// points / points will not compile — see 095-hallmark-ops-deny).
+hallmark LoyaltyPoints of Decimal {
+  decimals: 0
+  sign:     non-negative
+  ops:      { add, subtract, scale, compare }
+  gate:     flow assayPoints
+}
+
+// The assays — parse-don't-validate; each MUST be able to fail (the redness test).
+pure flow assayCustomerRef(raw: String) -> Result<CustomerRef, ValidationError> {
+  contract { intent "Assay a raw string into a CustomerRef: 13 chars." }
+  if raw.length() != 13 { return Err(ValidationError("wrong length")) }
+  return Ok(CustomerRef(raw))   // construction is legal ONLY here, inside the gate
+}
+
+pure flow assayPoints(raw: Decimal) -> Result<LoyaltyPoints, ValidationError> {
+  contract { intent "Admit a whole, non-negative loyalty-points balance." }
+  if raw < 0.0 { return Err(ValidationError("points cannot be negative")) }
+  return Ok(LoyaltyPoints(raw))
+}
+
+// Using the minted types — only DECLARED ops (add) appear.
+pure flow awardBonus(base: LoyaltyPoints, bonus: LoyaltyPoints) -> LoyaltyPoints {
+  contract { intent "Add a promotion bonus to a customer's balance." }
+  let total = base + bonus     // OK — 'add' is declared in ops {}
+  return total
+}

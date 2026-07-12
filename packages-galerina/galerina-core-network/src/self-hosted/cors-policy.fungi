@@ -1,0 +1,48 @@
+@version 1
+/// cors-policy twin — the deny-by-default CORS admission decision surface of
+/// cors-policy.ts. CORS governs which cross-ORIGIN browsers may READ a response; the
+/// dangerous default in the wild is REFLECTING an unvalidated Origin (= "let any site
+/// read authenticated responses"). This twin is the governed verdict fold: ADMIT = 1,
+/// DENY = -1 (deny-by-default). It never admits an unvalidated origin.
+///
+/// Host floor (stays .ts): the string work (exact-origin compare, case-folded header
+/// allow-list) and the response-header construction. This checker-verified twin is the
+/// ordered fold over those already-computed booleans — the decision, not the plumbing.
+
+pure flow admit() -> Int
+{
+  contract { intent "The admit verdict (+1)." }
+  return 1
+}
+
+pure flow deny() -> Int
+{
+  contract { intent "The deny verdict (-1) — deny-by-default." }
+  return 0 - 1
+}
+
+/// The CORS admission fold. Checks run in the same order as cors-policy.ts, first
+/// failure denies:
+///   6. no Origin        -> not a cross-origin request, pass (CORS does not apply)
+///   3. null Origin      -> DENY (sandboxed iframe / file:// / opaque redirect bypass)
+///   4. wildcard + creds -> DENY (forbidden by the Fetch spec; a misconfiguration)
+///   1+2. not exact and not wildcard -> DENY (no reflection, no suffix match)
+///   5. preflight        -> the requested method AND every requested header must be
+///                          allowed, else DENY
+pure flow corsVerdict(hasOrigin: Bool, isNullOrigin: Bool, isWildcard: Bool, hasCredentials: Bool, isExactAllowlisted: Bool, isPreflight: Bool, preflightMethodAllowed: Bool, preflightHeadersAllowed: Bool) -> Int
+{
+  contract { intent "Fold the deny-by-default CORS checks in order; the first failure denies." }
+  if hasOrigin == false { return 1 }
+  if isNullOrigin == true { return 0 - 1 }
+  if isWildcard == true {
+    if hasCredentials == true { return 0 - 1 }
+  }
+  if isExactAllowlisted == false {
+    if isWildcard == false { return 0 - 1 }
+  }
+  if isPreflight == true {
+    if preflightMethodAllowed == false { return 0 - 1 }
+    if preflightHeadersAllowed == false { return 0 - 1 }
+  }
+  return 1
+}

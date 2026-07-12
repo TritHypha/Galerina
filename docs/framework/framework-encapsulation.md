@@ -61,4 +61,4 @@ package-authority-report.json
 
 ## Knowledge Base
 
-See [Encapsulation Model](../Knowledge-Bases/encapsulation-model.md).
+See [Encapsulation Model](../../../ZTF-Knowledge-Bases/encapsulation-model.md).

@@ -1,4 +1,4 @@
-@version 1.0.0
+@version 1.2.0
 # Pattern (advanced): tenant isolation + bounded loop + re-authorised egress.
 # Shows four things 01-03 don't:
 #   - a PANIC drain [!] on cross-tenant reach (fail-closed, distinct from a deny drain),
@@ -36,6 +36,6 @@ GATE searchRecords(caller: CallerId, query: Query, tenantId: TenantId) -> Record
     [done]                  -> [×incomplete]                           # assembly incomplete
     [done]                  -> [-]                                     # assembly state unknown -> deny drain (distinct)
     [×incomplete]           -> [-]                                     # incomplete -> deny (drains)
-    [✓done]                 -> [safe:cut fu redactCrossTenant]        # EXPLICIT CUT (:cut) — strip any cross-tenant records
-    [safe:cut fu redactCrossTenant] -> [+]                            # egress: assembled, tenant-clean record page
+    [✓done]                 -> [safe:cut(Records) fu redactCrossTenant]        # EXPLICIT CUT (:cut) — strip any cross-tenant records
+    [safe:cut(Records) fu redactCrossTenant] -> [+]                            # egress: assembled, tenant-clean record page
 END

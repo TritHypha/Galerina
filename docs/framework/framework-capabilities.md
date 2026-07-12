@@ -25,7 +25,7 @@ dataset.export
 
 | Concept | Meaning | Example |
 |---|---|---|
-| `effects` | What the code is technically allowed to do | `db.read`, `db.write`, `audit.write` |
+| `effects` | What the code is technically allowed to do | `database.read`, `database.write`, `audit.write` |
 | `capabilities` | What the actor is authorised to do | `users.read`, `users.email.update`, `users.pii.read` |
 
 You normally need both.
@@ -81,5 +81,5 @@ Capability names, route/flow/package links and effective capability reports.
 
 ## Knowledge Base
 
-See [Capabilities](../Knowledge-Bases/capabilities.md) and
-[Permission, Capability And Actor Model](../Knowledge-Bases/permission-capability-actor-model.md).
+See [Capabilities](../../../ZTF-Knowledge-Bases/capabilities.md) and
+[Permission, Capability And Actor Model](../../../ZTF-Knowledge-Bases/permission-capability-actor-model.md).

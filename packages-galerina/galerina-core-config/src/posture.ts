@@ -185,7 +185,7 @@ export interface EgressTlsSetting {
    * ONLY. Lets "even in production we work with an internal proxy" without relaxing the posture for anything else.
    * ⚠ This is an SSRF bypass (CWE-918): trust rests entirely on the operator's list — keep it minimal (exact
    * hosts, no wildcards). The outbound dial AUDITS each host it admits via this list (see
-   * docs/Knowledge-Bases/galerina-egress-tls-boot-setting.md → "Operator warning").
+   * ../ZTF-Knowledge-Bases/galerina-egress-tls-boot-setting.md → "Operator warning").
    */
   readonly allowedHosts: readonly string[];
   readonly rationale: string;

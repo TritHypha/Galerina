@@ -479,11 +479,36 @@ class SymbolResolver {
         return;
       }
 
-      case "matchArm":
-        for (const child of node.children ?? []) {
-          this.walkNode(child, "normal");
+      case "matchArm": {
+        if (node.value === "__guard__") {
+          // Guard arm (`when cond => body`): children = [guardExpr, body] and there is NO
+          // pattern binding — the guard expression may itself be a bare identifier and must
+          // be USE-checked, so walk everything normally.
+          for (const child of node.children ?? []) {
+            this.walkNode(child, "normal");
+          }
+          return;
         }
+        // Constructor-pattern binding (`Some(user)`, `Ok(value)`, `Err(e)`): the parser stores
+        // the binding as a leading identifier child precisely "so downstream passes can
+        // register it in scope" (parser.ts parseMatchArm), and the interpreter declares it
+        // before evaluating the arm body (evalMatch). Mirror that here in a NESTED scope so
+        // the binding resolves inside this arm only — before this case existed, every
+        // `Some(v) => { … v … }` false-positived FUNGI-NAME-001 when the resolver ran (the
+        // governed-run pipeline), while `check` (which does not run this resolver) passed:
+        // the two pipelines disagreed on legal corpus-shaped code. Genuine typos in arm
+        // bodies still flag via the normal walk of the body child.
+        this.pushScope();
+        for (const child of node.children ?? []) {
+          if (child.kind === "identifier") {
+            this.declareInCurrentScope(child.value ?? "_", child); // binding declaration, not a use
+          } else {
+            this.walkNode(child, "normal");
+          }
+        }
+        this.popScope();
         return;
+      }
 
       case "ensureDecl":
         // 0040/#70: inside an `invariant { ensure … }` clause the magic `result` symbol (the
@@ -571,8 +596,15 @@ class SymbolResolver {
 }
 
 function isReceiverCall(node: AstNode): boolean {
-  const first = node.children?.[0];
-  return first?.kind === "identifier" || first?.kind === "memberExpr" || first?.kind === "callExpr";
+  // The parser marks every `receiver.method(args)` callExpr with callStyle: "method"
+  // (children[0] = the receiver expression) — parser.ts §parsePostfix. Use that marker,
+  // not a receiver-kind heuristic: the old kind list (identifier|memberExpr|callExpr)
+  // BOTH false-flagged method calls on any other receiver shape — `(pos + 1).toString()`
+  // raised FUNGI-NAME-001 on `toString` (check↔build divergence, found building the
+  // self-hosted lexer) — AND over-suppressed bare calls whose first ARGUMENT happened
+  // to be an identifier (`foo(bar)` never NAME-checked `foo`). The marker is exact in
+  // both directions; bare-call targets are now always checked.
+  return node.callStyle === "method";
 }
 
 function parseParamName(value: string): string {

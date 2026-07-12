@@ -30,4 +30,4 @@ fallback-report.json
 
 ## Knowledge Base
 
-See [Photonic Resolution Boundary](../Knowledge-Bases/photonic-resolution-boundary.md).
+See [Photonic Resolution Boundary](../../../ZTF-Knowledge-Bases/photonic-resolution-boundary.md).

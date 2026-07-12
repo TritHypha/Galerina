@@ -126,7 +126,7 @@ Node/V8 behavior must not define Galerina source meaning, and benchmarks from
 this path must be labelled as prototype runner or host-runtime overhead rather
 than native Galerina compiler performance.
 
-See `../../docs/Knowledge-Bases/node-hosted-runtime-roadmap.md`.
+See `../../../ZTF-Knowledge-Bases/node-hosted-runtime-roadmap.md`.
 
 Core runtime zones:
 
@@ -138,7 +138,7 @@ untrusted zone         plugins, third-party packages, external services, hardwar
 
 Untrusted systems may execute only through declared boundaries.
 
-See `../../docs/Knowledge-Bases/securely-governed-runtime.md`.
+See `../../../ZTF-Knowledge-Bases/securely-governed-runtime.md`.
 
 ## Verified Fast Paths
 
@@ -162,7 +162,7 @@ Fast path authority is leased and contextual, never permanent. Fast paths must
 expire and must be invalidated when policy, package versions, model versions,
 hardware, trust state or output contracts change.
 
-See `../../docs/Knowledge-Bases/verified-fast-paths.md`.
+See `../../../ZTF-Knowledge-Bases/verified-fast-paths.md`.
 
 ## AI Compute Plans
 
@@ -188,7 +188,7 @@ This lets the runtime enforce policy before execution, reduce copying, batch
 compatible work, select suitable CPU/GPU/NPU/WASM targets, validate typed output
 and produce compliance evidence.
 
-See `../../docs/Knowledge-Bases/ai-compute-plan.md`.
+See `../../../ZTF-Knowledge-Bases/ai-compute-plan.md`.
 
 ## Startup And Boot Warmup
 

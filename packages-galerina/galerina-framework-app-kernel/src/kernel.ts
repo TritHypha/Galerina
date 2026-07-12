@@ -26,7 +26,7 @@
 import type { HttpMethod, RouteDeclaration, EffectiveRoutePolicy } from "./types.js";
 import { resolveEffectiveRoutePolicy, type EffectivePosture } from "./route-defaults.js";
 // Gate 9.5 — the fail-closed secrets seam. The kernel depends only on the structural
-// SecretsProvider shape (no hard compile dependency on @galerina/ext-secrets-tmf); a
+// SecretsProvider shape (no hard compile dependency on @galerina/ext-secrets-spore); a
 // boot-resolved SealArena satisfies it by shape and is passed via CreateAppKernelOptions.
 import { createSecretGate } from "./secret-gate.js";
 import type { SecretsProvider } from "./secret-gate.js";
@@ -194,7 +194,7 @@ export interface CreateAppKernelOptions {
   readonly idempotencyStore?: IdempotencyStore;
   /** Override the audit sink (default: in-memory async). Emitted off the critical path. */
   readonly auditSink?: AuditSink;
-  /** Boot-resolved secrets provider (a SealArena from ext-secrets-tmf `loadAll`). Absent → every
+  /** Boot-resolved secrets provider (a SealArena from ext-secrets-spore `loadAll`). Absent → every
    *  route that DECLARES a required secret fails closed at gate 9.5 (503); secret-free routes are
    *  unaffected. The host owns the provider's lifecycle and MUST `dispose()` it on shutdown. */
   readonly secretsProvider?: SecretsProvider;
@@ -290,7 +290,7 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
     console.warn(
       "[galerina-app-kernel] gate 9.5: one or more routes declare secrets.require but no " +
         "secretsProvider was supplied — every secret-requiring route will fail closed (503 " +
-        "secret_unavailable). Wire a boot-resolved SecretsProvider (ext-secrets-tmf loadAll arena).",
+        "secret_unavailable). Wire a boot-resolved SecretsProvider (ext-secrets-spore loadAll arena).",
     );
   }
 
@@ -352,10 +352,15 @@ export function createAppKernel(opts: CreateAppKernelOptions): AppKernel {
           return { response: errorResponse(401, "unauthorized", "Channel/identity verdict denied admission."), policy };
         }
       } else if (policy.auth.allowHeaderPresenceFallback === true) {
-        // OPT-IN legacy fallback: header-PRESENCE check only. This is NOT a real verification of the
-        // token — it admits any non-empty Authorization header — so it is gated behind an explicit
-        // per-route opt-in (default off). Only reachable when a route sets allowHeaderPresenceFallback.
-        if (header(req.headers, "authorization") === undefined) {
+        // OPT-IN legacy fallback: header-PRESENCE only — NOT a real token verification (it admits any
+        // non-empty Authorization header), so it is gated behind an explicit per-route opt-in (default
+        // off). "Presence" means a NON-EMPTY value: an absent, empty, or whitespace-only Authorization
+        // header is not presence and is denied — this closes the empty-header admission the prior
+        // `=== undefined` check let through (RD-0307/0309). Mirrors galerina-auth `headerPresenceVerdict`
+        // (the reusable posture factor), kept INLINE so the kernel takes no capability-package compile
+        // dependency — the same structural-seam stance as gate 9.5 (Hardened Border: core-config + tower-citizen only).
+        const authz = header(req.headers, "authorization");
+        if (authz === undefined || authz.trim().length === 0) {
           return { response: errorResponse(401, "unauthorized", "Authorization header required."), policy };
         }
       } else {

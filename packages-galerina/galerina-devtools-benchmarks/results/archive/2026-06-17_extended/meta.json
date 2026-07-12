@@ -28,7 +28,7 @@
     "mandelbrot",
     "spectral-norm",
     "binary-trees",
-    "tmf-container",
+    "spore-container",
     "framework-pipeline"
   ],
   "excluded": [
@@ -51,7 +51,7 @@
     "mandelbrot": "PASS",
     "spectral-norm": "PASS",
     "binary-trees": "PASS",
-    "tmf-container": "PASS",
+    "spore-container": "PASS",
     "framework-pipeline": "PASS"
   },
   "truthAudit": "PASS (npm run audit)",

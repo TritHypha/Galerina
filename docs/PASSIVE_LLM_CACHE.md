@@ -405,7 +405,7 @@ Example diagnostic:
   "code": "GALERINA-LLM-CACHE-003",
   "severity": "blocked",
   "message": "LLM cache refused because input may contain secrets or personal data.",
-  "file": "support-chat.ln",
+  "file": "support-chat.fungi",
   "line": 28,
   "suggestion": "Use cache off, redact input, or use encrypted tenant-isolated cache."
 }

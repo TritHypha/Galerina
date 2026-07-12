@@ -1,6 +1,6 @@
 {
   "_comment": "galerina.check.json — project-level configuration for `galerina check`",
-  "_docs": "docs/Knowledge-Bases/galerina-check-config.md",
+  "_docs": "../ZTF-Knowledge-Bases/galerina-check-config.md",
 
   "profile": "production",
 

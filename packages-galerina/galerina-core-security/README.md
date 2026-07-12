@@ -169,7 +169,7 @@ function redactSecretValue(value: string): RedactionResult
 | `FUNGI-SECRET-001` | required secret unavailable |
 | `FUNGI-SECRET-002` | secret value attempted to flow to unsafe sink |
 
-See `docs/Knowledge-Bases/galerina-core-config-environment-secrets.md` for the
+See `../../../ZTF-Knowledge-Bases/galerina-core-config-environment-secrets.md` for the
 full secret reference model specification.
 
 ## Architecture Depth: TypeScript Contracts (v0.2 Specification)

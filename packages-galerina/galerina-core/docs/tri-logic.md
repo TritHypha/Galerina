@@ -5,7 +5,7 @@ and `Galerina`, but detailed logic semantics, conversion rules, truth tables and
 logic reports belong in `packages-galerina/galerina-core-logic/`.
 
 Current v0.2 package contract: use `packages-galerina/galerina-core-logic/README.md`
-and `docs/Knowledge-Bases/galerina-core-logic-tri-decision-bool.md` as canonical
+and `../../../../ZTF-Knowledge-Bases/galerina-core-logic-tri-decision-bool.md` as canonical
 for runtime-facing docs. That shape uses `TriState` with `kind`, `Decision` with
 `allow | deny | review | unknown`, evidence arrays, and fail-closed conversion
 to runtime Bool. Older examples in this file are language-explanatory and should

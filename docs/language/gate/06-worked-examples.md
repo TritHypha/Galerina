@@ -4,7 +4,7 @@ Four complete, **real** `.gate` files from the example corpus, read end to end. 
 `gate-check.mjs` (`21/21` corpus run, verified while writing these docs). Each shows a different core
 pattern. Read them as *maps*, tracing every path to a terminal.
 
-Sources: all files under `C:\Users\phill\Documents\GitHub\ZT-Galerina-GRAPH-ASCII-v2\examples\`.
+Sources: all files under `<GitHub>\ZT-Galerina-GRAPH-ASCII-v2\examples\`.
 
 ---
 

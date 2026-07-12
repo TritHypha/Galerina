@@ -10,7 +10,7 @@ import assert from "node:assert/strict";
 
 import { BitNetBridge, createBitNetBridge } from "../dist/index.js";
 
-const TEST_MODEL_PATH = "C:/wwwprojects/BitNet/models/bitnet_b1_58-2B-4T/ggml-model-i2_s.gguf";
+const TEST_MODEL_PATH = process.env.BITNET_TEST_MODEL ?? "vendor/bitnet/models/ggml-model-i2_s.gguf";
 
 // ---------------------------------------------------------------------------
 // createBitNetBridge factory

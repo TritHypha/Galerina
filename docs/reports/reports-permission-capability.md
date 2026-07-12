@@ -55,5 +55,5 @@ flow -> required capabilities -> actor capabilities -> allow/deny decision
 
 ## Knowledge Base
 
-See [Capabilities](../Knowledge-Bases/capabilities.md) and
-[Permission, Capability And Actor Model](../Knowledge-Bases/permission-capability-actor-model.md).
+See [Capabilities](../../../ZTF-Knowledge-Bases/capabilities.md) and
+[Permission, Capability And Actor Model](../../../ZTF-Knowledge-Bases/permission-capability-actor-model.md).

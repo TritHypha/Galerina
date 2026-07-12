@@ -20,7 +20,9 @@
     "test": "node --test tests/*.test.mjs",
     "typecheck": "tsc --noEmit",
     "audit": "node dist/cli.js audit",
-    "audit:json": "node dist/cli.js audit --json"
+    "audit:json": "node dist/cli.js audit --json",
+    "conformance": "node conformance-scan.mjs",
+    "conformance:selftest": "node conformance-scan.mjs --self-test"
   },
   "dependencies": {
     "@galerina/core-compiler": "file:../galerina-core-compiler",

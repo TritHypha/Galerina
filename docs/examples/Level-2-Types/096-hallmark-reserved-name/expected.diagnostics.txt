@@ -1,0 +1,5 @@
+FUNGI-HALLMARK-001
+
+'Money' is a reserved built-in type. For a currency amount use Money<GBP>; for a new
+quantity use a 'unit' declaration. The reserved gate also refuses currency/unit tags
+(GBP, USD, …) and governance/epistemic terms (Verdict, Trusted, Tainted, Secret, …).

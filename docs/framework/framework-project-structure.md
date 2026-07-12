@@ -26,7 +26,7 @@ docs/
   reports/
   rules/
   examples/
-  Knowledge-Bases/
+  ../../../ZTF-Knowledge-Bases/
 
 build/
   graph/

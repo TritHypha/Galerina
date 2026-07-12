@@ -395,7 +395,7 @@ or private certificates — only hashes, status flags, presence checks, and
 capability names. `validateAuditSafety()` enforces this by rejecting events
 containing `sk_live_` or `Bearer` token patterns.
 
-See `docs/Knowledge-Bases/runtime-audit-log-format.md` for the full schema,
+See `../../../ZTF-Knowledge-Bases/runtime-audit-log-format.md` for the full schema,
 execution proof design, JSONL format rationale, and v0.1 scope.
 
 Final rule:

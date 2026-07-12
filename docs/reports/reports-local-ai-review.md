@@ -43,4 +43,4 @@ report-explanation.md
 
 ## Knowledge Base
 
-See [Local AI Review](../Knowledge-Bases/local-ai-review.md).
+See [Local AI Review](../../../ZTF-Knowledge-Bases/local-ai-review.md).

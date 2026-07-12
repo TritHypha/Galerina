@@ -59,7 +59,7 @@ Galerina should support progressive architecture.
 
 | App size | Recommended structure |
 | --- | --- |
-| Small script | One or two `.ln` files |
+| Small script | One or two `.fungi` files |
 | Small API | `api/`, `flows/`, `infrastructure/` |
 | Business app | Add `domain/` |
 | Complex regulated app | Add stronger boundaries and policies |
@@ -73,29 +73,29 @@ structure when the extra files clarify business meaning and boundaries.
 
 ```text
 my-galerina-app/
-|-- boot.ln
-|-- main.ln
+|-- boot.fungi
+|-- main.fungi
 |-- api/
-|   |-- orders-api.ln
-|   `-- payment-webhook.ln
+|   |-- orders-api.fungi
+|   `-- payment-webhook.fungi
 |-- flows/
-|   |-- create-order.ln
-|   `-- refund-order.ln
+|   |-- create-order.fungi
+|   `-- refund-order.fungi
 |-- domain/
-|   |-- orders.ln
-|   |-- payments.ln
-|   `-- customers.ln
+|   |-- orders.fungi
+|   |-- payments.fungi
+|   `-- customers.fungi
 |-- infrastructure/
-|   |-- order-store.ln
-|   |-- payment-provider.ln
-|   `-- email-provider.ln
+|   |-- order-store.fungi
+|   |-- payment-provider.fungi
+|   `-- email-provider.fungi
 |-- compute/
-|   `-- fraud-score.ln
+|   `-- fraud-score.fungi
 |-- policies/
-|   |-- security-policy.ln
-|   |-- memory-policy.ln
-|   |-- crash-policy.ln
-|   `-- ai-cache-policy.ln
+|   |-- security-policy.fungi
+|   |-- memory-policy.fungi
+|   |-- crash-policy.fungi
+|   `-- ai-cache-policy.fungi
 `-- reports/
     |-- security-report.json
     |-- memory-report.json
@@ -491,20 +491,20 @@ Avoid database-shaped domain folders:
 
 ```text
 domain/
-|-- tbl_orders.ln
-|-- tbl_order_items.ln
-|-- tbl_customers.ln
-`-- tbl_payments.ln
+|-- tbl_orders.fungi
+|-- tbl_order_items.fungi
+|-- tbl_customers.fungi
+`-- tbl_payments.fungi
 ```
 
 Prefer business names:
 
 ```text
 domain/
-|-- orders.ln
-|-- payments.ln
-|-- customers.ln
-`-- refunds.ln
+|-- orders.fungi
+|-- payments.fungi
+|-- customers.fungi
+`-- refunds.fungi
 ```
 
 Avoid empty wrappers:

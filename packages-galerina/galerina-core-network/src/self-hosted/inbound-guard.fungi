@@ -1,0 +1,45 @@
+@version 1
+/// inbound-guard twin — the runtime inbound-admission + rate-limit VERDICT decision surfaces of
+/// inbound-guard.ts. Deny-by-default and fail-closed. ADMIT = 1, DENY = -1.
+///
+/// Host floor (stays .ts): the rate-limit string parse (parseRateLimit), the fixed-window counter
+/// Map (stateful storage), the port int-range check, and the JSON-encoded scoped counter key. This
+/// checker-verified twin is the verdict fold over those already-computed facts — the governed decision.
+
+pure flow admit() -> Int
+{
+  contract { intent "The admit verdict (+1)." }
+  return 1
+}
+
+pure flow deny() -> Int
+{
+  contract { intent "The deny verdict (-1) — deny-by-default." }
+  return 0 - 1
+}
+
+/// Inbound admission fold — the guardInboundRequest order: a bad port denies; an explicit inbound
+/// DENY rule that matches wins; otherwise a matching ALLOW rule admits; otherwise the policy's
+/// defaultEffect decides (deny unless explicitly allow).
+pure flow inboundVerdict(portValid: Bool, hasDenyMatch: Bool, hasAllowMatch: Bool, defaultAllow: Bool) -> Int
+{
+  contract { intent "Admit an inbound request deny-by-default: deny-match wins, then allow-match, then defaultEffect." }
+  if portValid == false { return 0 - 1 }
+  if hasDenyMatch == true { return 0 - 1 }
+  if hasAllowMatch == true { return 1 }
+  if defaultAllow == true { return 1 }
+  return 0 - 1
+}
+
+/// Fixed-window rate-limit fold — the RateLimiter.consume order: an UNPARSEABLE limit string is
+/// treated as EXCEEDED (fail-closed — a limit that cannot be evaluated must never be silently
+/// bypassed); a fresh or expired window admits and resets; within the window, admit iff the count is
+/// still below the limit, else EXCEEDED.
+pure flow rateLimitVerdict(parseable: Bool, windowExpired: Bool, countBelowLimit: Bool) -> Int
+{
+  contract { intent "Rate-limit verdict; an unparseable limit is EXCEEDED (fail-closed), then window/count decide." }
+  if parseable == false { return 0 - 1 }
+  if windowExpired == true { return 1 }
+  if countBelowLimit == true { return 1 }
+  return 0 - 1
+}

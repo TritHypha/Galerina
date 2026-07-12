@@ -1,0 +1,52 @@
+@version 1
+/// @file: pool-allocation-guard.fungi
+/// @purpose: Stage-6 CHECKER-VERIFIED twin of static-memory-pool.ts's governed ALLOCATE / FREE / use-after-free
+///   DECISION surface — the fail-closed verdicts the deterministic fixed-block pool folds. The host owns the
+///   mutable bookkeeping (the backing buffer, the per-segment free-lists, the live-ptr + generation maps, the
+///   contiguous-run search); this pure surface folds the resulting EVIDENCE fail-closed into a verdict. Config
+///   validation (LSM-CFG-001/002) + segment-of-ptr live in pool-policy.fungi; this is the alloc/free half.
+/// @status: checker-verified twin (galerina check clean); NOT build-wired (execution switch #143).
+
+// allocate(): forbidden during a locked flight phase (deterministic-timing freeze); a negative request is
+// out of bounds; and a request with no contiguous free run exhausts the segment. runAvailable = the host's
+// findContiguous(region, need) >= 0. Order mirrors the .ts: flight-lock, then bytes<0, then no-run.
+pure flow allocateVerdict(flightLocked: Bool, bytesNegative: Bool, runAvailable: Bool) -> String
+contract { intent { "Fail-closed allocate gate: LSM-FLIGHT-LOCKED during a locked flight; LSM-BOUNDS-001 for a negative request; LSM-POOL-EXHAUSTED when no contiguous run is free; else 'ok'." } }
+{
+  if flightLocked == true { return "LSM-FLIGHT-LOCKED" }
+  if bytesNegative == true { return "LSM-BOUNDS-001" }
+  if runAvailable == false { return "LSM-POOL-EXHAUSTED" }
+  return "ok"
+}
+
+// free(): a ptr with no live allocation record is unknown — refuse (never free memory the pool did not hand
+// out). ptrIsLive = the host's live-map has(ptr).
+pure flow freeVerdict(ptrIsLive: Bool) -> String
+contract { intent { "Fail-closed free gate: a pointer with no live allocation is unknown (LSM-FREE-001); a live pointer -> 'ok'." } }
+{
+  if ptrIsLive == false { return "LSM-FREE-001" }
+  return "ok"
+}
+
+// assertLive(): the use-after-free / ABA guard (0033). A held Block is stale if its ptr is no longer live, OR
+// its generation no longer matches the live allocation (the slot was freed and REUSED). Either case traps.
+// ptrIsLive = live-map has(ptr); generationMatches = live.generation === block.generation.
+pure flow useAfterFreeVerdict(ptrIsLive: Bool, generationMatches: Bool) -> String
+contract { intent { "Fail-closed use-after-free guard: a freed ptr or a generation mismatch (freed+reused slot, the ABA case) is a stale handle (LSM-UAF-001); a live, generation-matched handle -> 'ok'." } }
+{
+  if ptrIsLive == false { return "LSM-UAF-001" }
+  if generationMatches == false { return "LSM-UAF-001" }
+  return "ok"
+}
+
+// free() REJECT-fill (0112): the freed bytes are scrubbed with a SEGMENT-CORRECT fill so a recycled slot never
+// hands a fresh tenant the prior COMMIT/value. GOVERNANCE (2-bit trit) memory MUST be 0x00 = all 0b00 = decodes
+// to -1 (REJECT) so the K3 gate collapses to DENY; 0xFF = 0b11 would decode to ENC_ILLEGAL and throw
+// LSM-TRIT-CORRUPT (the wrong path). COMPUTE (Int/byte) memory scrubs with 0xFF. Zero-trust: ONLY "compute" gets
+// 0xFF; governance AND any unrecognized segment fail-safe to 0x00 (the REJECT fill), never the ILLEGAL byte.
+pure flow scrubFillByte(segment: String) -> Int
+contract { intent { "Segment-correct REJECT-fill byte: compute memory scrubs with 0xFF (255); governance (and any non-compute segment, fail-safe) scrubs with 0x00 so freed trit memory decodes to REJECT, never ILLEGAL." } }
+{
+  if segment == "compute" { return 255 }
+  return 0
+}

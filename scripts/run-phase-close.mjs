@@ -191,18 +191,20 @@ try {
   }
 } catch { /* non-fatal if no manifests */ }
 
-// ── 5. Full graph re-index — ALL THREE graph generators, not just the project graph ──
-//   project graph (build/graph) + kb graph (build/kb-graph; orphan/broken-link signal the stray-docs
-//   audit below reads) + per-package Hardened Border --check (border-drift surfaced, informational).
+// ── 5. Full graph re-index — graph-all.mjs runs the ENTIRE graph family (the single source of truth
+//   for "run graph", so on-demand and this cadence can't drift): project graph (build/graph) +
+//   graph-integrity validation + kb graph (build/kb-graph; the orphan/broken-link signal the stray-docs
+//   audit below reads) + per-package Hardened Border --check + memory graph (.claude health) +
+//   dev-tool index/graph. Add/remove graph tools THERE, not here. ──
 run("graph:all", "node", ["scripts/graph-all.mjs", "--quiet"]);
 
-// ── 5a. Code index + derived registry — the graphs the audits read; regenerate from source first
-//        so the lint/coverage gates below see current state (std #10 derived-catalog, #219). ──
+// ── 5a. Code index + derived registry — the INDEXES the audits read (a DIFFERENT family from the
+//        graphs in graph:all above); regenerate from source first so the lint/coverage gates below see
+//        current state (std #10 derived-catalog, #219). memory-graph + dev-tool-index moved INTO
+//        graph:all — do not re-run them here (that was the drift). ──
 run("code-index", "node", ["scripts/code-index.mjs"]);
 run("code-registry", "node", ["scripts/gen-code-registry.mjs"]);
 run("kb-index", "node", ["scripts/kb-index.mjs"]); // KB keyword index (token-saver): keep build/kb-index/ fresh vs the docs
-run("memory-graph", "node", ["scripts/memory-graph.mjs"]); // 4th graph tool: .claude memory health (dangling [[links]]/orphans/dupes)
-run("dev-tool-index", "node", ["scripts/dev-tool-index.mjs"]); // package + dev-tool index/graph (build/dev-tool-index/) — coverage + gaps visible
 
 // ── 5b. Convention lint gate (TASK-ENV-001) ──
 // The umbrella that runs every registered convention enforcer (today: the #215 code scanner; later:
@@ -282,6 +284,19 @@ run("effects:corpus", "node", ["scripts/audit-corpus-effect-names.mjs"]);
 // dirties the src (the writer/rebuilder guards prevent the KNOWN paths; this
 // gate catches any path). Blocking.
 run("signed:fixtures", "node", ["scripts/audit-signed-fixture-drift.mjs"]);
+
+// ── 5c-viii. ZT house-hygiene guards — wired into cadence 2026-07-10 (closes a dev-tool-index gap) ──
+// Both tools existed with a passing --self-test but were invoked only ad-hoc, so dev-tool-index's
+// gaps.toolsNotInCadence flagged them: a regression could escape phase-close and surface only on a manual
+// run. Now enforced every close, following the blocking audit-* pattern above (exit != 0 → ❌).
+// path:leak — ZT-17 fail-CLOSED guard: no committed file may leak an absolute local path (a
+//   C:\Users\<name>\… home, a wwwprojects root, or the dash-encoded machine slug) — a public-repo
+//   username/layout disclosure that also breaks on every other machine. Exit 1 on any leak.
+// name:collisions — RD-0124 guard: no two package names share a token-multiset (the graph-project /
+//   project-graph reordered-token bug) or sit within Levenshtein 1 (typo-twin), unless allowlisted with a
+//   resolution in governance/name-registry.json. Exit = violation count.
+run("path:leak", "node", ["scripts/audit-path-leak.mjs"]);
+run("name:collisions", "node", ["scripts/audit-name-collisions.mjs"]);
 
 // ── 5d. Dev-tool script tests (scripts/tests/) ──
 // These live OUTSIDE packages-galerina, so the package runner (run-all-tests.cjs) never sees them. Run them

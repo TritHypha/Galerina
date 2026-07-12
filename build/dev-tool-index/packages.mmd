@@ -71,6 +71,7 @@ flowchart LR
     galerina_devtools_benchmarks["devtools-benchmarks"]
     galerina_devtools_context["devtools-context"]
     galerina_devtools_flowgraph["devtools-flowgraph"]
+    galerina_devtools_fungi_scan["devtools-fungi-scan"]
     galerina_devtools_graph_algorithms["devtools-graph-algorithms"]
     galerina_devtools_graph_project["devtools-graph-project"]
     galerina_devtools_intelligence["devtools-intelligence"]
@@ -85,12 +86,12 @@ flowchart LR
   subgraph ext["ext"]
     galerina_ext_bridge_bitnet["ext-bridge-bitnet"]
     galerina_ext_bridge_cpp["ext-bridge-cpp"]
-    galerina_ext_bridge_quantum["ext-bridge-quantum"]
     galerina_ext_photonic_emulator["ext-photonic-emulator"]
     galerina_ext_proof_snarkjs["ext-proof-snarkjs"]
-    galerina_ext_secrets_tmf["ext-secrets-tmf"]
+    galerina_ext_secrets_spore["ext-secrets-spore"]
     galerina_ext_secrets_vault["ext-secrets-vault"]
-    galerina_ext_tmf["ext-tmf"]
+    galerina_ext_spore["ext-spore"]
+    galerina_ext_tritsocket["ext-tritsocket"]
   }
   subgraph target["target"]
     galerina_target_ai_accelerator["target-ai-accelerator"]
@@ -161,6 +162,7 @@ flowchart LR
   galerina_framework_example_app --> galerina_framework_app_kernel
   galerina_devtools_context --> galerina_core_compiler
   galerina_devtools_flowgraph --> galerina_core_compiler
+  galerina_devtools_fungi_scan --> galerina_core_compiler
   galerina_devtools_graph_project --> galerina_devtools_project_graph
   galerina_devtools_intelligence --> galerina_core_compiler
   galerina_devtools_naming --> galerina_core_compiler
@@ -172,10 +174,8 @@ flowchart LR
   galerina_ext_bridge_bitnet --> galerina_tower_citizen
   galerina_ext_bridge_cpp --> galerina_inference_bridge_contract
   galerina_ext_bridge_cpp --> galerina_tower_citizen
-  galerina_ext_bridge_quantum --> galerina_inference_bridge_contract
-  galerina_ext_bridge_quantum --> galerina_tower_citizen
   galerina_ext_photonic_emulator --> galerina_inference_bridge_contract
-  galerina_ext_secrets_tmf --> galerina_ext_tmf
+  galerina_ext_secrets_spore --> galerina_ext_spore
   galerina_observability --> galerina_framework_app_kernel
   galerina_hardware_tier --> galerina_inference_bridge_contract
   galerina_auth --> galerina_core_network

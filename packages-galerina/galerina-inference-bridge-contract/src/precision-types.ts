@@ -16,7 +16,7 @@ export type PrecisionTechnique =
  * the production quantization it ships, so the manifest can govern non-BitNet quantized
  * backends (a noisy lane can forbid a method; a certified profile can require qat/none).
  * Kept a CLOSED governance vocabulary, not a config dump. (idea-mining #5; MiniCPM/BitCPM
- * spectrum — see docs/Knowledge-Bases/galerina-external-idea-mining-2026-06-15.md.)
+ * spectrum — see ../ZTF-Knowledge-Bases/galerina-external-idea-mining-2026-06-15.md.)
  */
 export type QuantizationMethod =
   | "none"    // not quantized (full precision)

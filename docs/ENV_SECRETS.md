@@ -582,12 +582,12 @@ Everything above governs how `.env` *values* flow through the app once loaded.
 But a plaintext `.env` file is still readable by anyone who can read the file on
 disk. For the cases where the secrets file itself must be encrypted at rest,
 Galerina ships an **optional** drop-in replacement: `env.spore`, provided by the
-`@galerina/ext-secrets-tmf` package.
+`@galerina/ext-secrets-spore` package.
 
 `env.spore` is the SOPS / Sealed-Secrets / age pattern built on the `.spore`
-container. It is a **thin layer** over `@galerina/ext-tmf` (it owns no crypto and
+container. It is a **thin layer** over `@galerina/ext-spore` (it owns no crypto and
 no container bytes of its own — every byte primitive comes from the engine's
-`writeTmf`/`readTmf` and KEM-DEM `seal`/`open`). Each secret is sealed under a
+`writeSpore`/`readSpore` and KEM-DEM `seal`/`open`). Each secret is sealed under a
 recipient public key; the file on disk is ciphertext only.
 
 ```text
@@ -604,17 +604,17 @@ values.
 ### Governed In-Memory CLI
 
 Secrets in `env.spore` are managed through a governed CRUD/shell CLI
-(`galerina secrets-tmf` / `galerina-secrets-tmf`) that decrypts only into an arena
+(`galerina secrets-spore` / `galerina-secrets-spore`) that decrypts only into an arena
 buffer and never leaves plaintext where it can be scraped:
 
 ```text
-galerina-secrets-tmf init  --pub HEX        create an empty encrypted env.spore
-galerina-secrets-tmf set   NAME --pub HEX   value from STDIN or no-echo prompt
-galerina-secrets-tmf get   NAME             in-arena -> stdout (piped only)
-galerina-secrets-tmf list                   names + metadata, NEVER values
-galerina-secrets-tmf rm    NAME --pub HEX   remove a section
-galerina-secrets-tmf rotate-recipient --new-pub HEX
-galerina-secrets-tmf shell --pub HEX        in-arena REPL
+galerina-secrets-spore init  --pub HEX        create an empty encrypted env.spore
+galerina-secrets-spore set   NAME --pub HEX   value from STDIN or no-echo prompt
+galerina-secrets-spore get   NAME             in-arena -> stdout (piped only)
+galerina-secrets-spore list                   names + metadata, NEVER values
+galerina-secrets-spore rm    NAME --pub HEX   remove a section
+galerina-secrets-spore rotate-recipient --new-pub HEX
+galerina-secrets-spore shell --pub HEX        in-arena REPL
 ```
 
 The CLI enforces the same "used, not seen" rule on the editing surface itself:

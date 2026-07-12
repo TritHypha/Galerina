@@ -1,4 +1,4 @@
-@version 1.0.0
+@version 1.2.0
 # Pattern (advanced): secret handling + tri-state verdict + re-auth on a non-happy path.
 # Shows:
 #   - a SecureString input and secret.read, with the raw token cut before any egress,
@@ -23,8 +23,8 @@ GATE verifyToken(token: SecureString) -> TokenVerdict:
     [reemit]                -> [×suppress]                             # verdict suppressed by policy
     [reemit]                -> [-]                                     # emit policy unknown -> deny drain (distinct)
     [×suppress]             -> [-]                                     # suppressed -> deny (drains)
-    [✓]                     -> [redacted:cut fu redactToken]          # EXPLICIT CUT (:cut) — strip raw token before verdict egress
-    [✓expiredOk]            -> [redacted:cut fu redactToken]          # EXPLICIT CUT (:cut) — expired path also strips the token
-    [redacted:cut fu redactToken] -> [verdict:fu emitVerdict]         # verdict carries no token bytes
+    [✓]                     -> [redacted:cut(token) fu redactToken]          # EXPLICIT CUT (:cut) — strip raw token before verdict egress
+    [✓expiredOk]            -> [redacted:cut(token) fu redactToken]          # EXPLICIT CUT (:cut) — expired path also strips the token
+    [redacted:cut(token) fu redactToken] -> [verdict:fu emitVerdict]         # verdict carries no token bytes
     [verdict:fu emitVerdict] -> [+]                                   # egress: signature verdict only
 END

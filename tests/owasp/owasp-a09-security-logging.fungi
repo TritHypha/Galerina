@@ -7,7 +7,7 @@
 // are structured (CBOR Tag 410 AuditEvent schema, task #75), not printf strings.
 // govComment (;;) annotations are preserved in the .lmanifest narrative.
 //
-// Reference: docs/Knowledge-Bases/galerina-governance-rules.md
+// Reference: ../ZTF-Knowledge-Bases/galerina-governance-rules.md
 // Rules: A-001 (audit.write on high-risk flows), AU rule category,
 //        FUNGI-AUDIT-001 (structured AuditEvent format), govComment (task #93)
 

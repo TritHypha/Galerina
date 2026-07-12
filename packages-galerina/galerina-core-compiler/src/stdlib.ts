@@ -9,7 +9,7 @@
 //   Stage 2 will replace with arbitrary-precision decimal arithmetic before
 //   Money<C> arithmetic is considered production-valid.
 //
-//   Decision: docs/Knowledge-Bases/galerina-architecture-layers.md
+//   Decision: ../ZTF-Knowledge-Bases/galerina-architecture-layers.md
 // =============================================================================
 
 import { FUNGI_NONE, FUNGI_VOID, type GalerinaValue } from "./interpreter.js";
@@ -114,15 +114,51 @@ export function bigIntDecimalCmp(a: string, b: string): number {
   return na < nb ? -1 : na > nb ? 1 : 0;
 }
 
-/** Multiply a decimal string by a JavaScript number (for rate/factor scaling). */
+/**
+ * @deprecated (RD-0349 I3) — LOSSY: the `number` factor + `toFixed(10)` truncates beyond 10 dp and cannot
+ * represent an 18-dp crypto amount exactly. The money flow no longer uses it (see bigIntDecimalMul). Kept only
+ * for any external caller; prefer the exact decimal-string form below.
+ */
 export function bigIntDecimalMulNumber(a: string, factor: number): string {
-  // Convert factor to a decimal string, then use BigInt multiply
-  // Use toFixed(10) for precision, then trim trailing zeros
   const factorStr = factor.toFixed(10).replace(/0+$/, "").replace(/\.$/, "");
   const pa = decimalToBigInt(a);
   const pf = decimalToBigInt(factorStr);
   const scale = pa.scale + pf.scale;
   return bigIntToDecimalStr(pa.n * pf.n, scale);
+}
+
+/**
+ * Exact decimal multiply (RD-0349 I3) — BOTH operands as decimal strings, straight into the BigInt core: no
+ * `parseFloat`, no `toFixed`, no float bridge. The product scale is the sum of the operand scales (exact); the
+ * caller rounds to the target currency decimals. An 18-dp factor survives byte-exact.
+ */
+export function bigIntDecimalMul(a: string, b: string): string {
+  const pa = decimalToBigInt(a);
+  const pb = decimalToBigInt(b);
+  return bigIntToDecimalStr(pa.n * pb.n, pa.scale + pb.scale);
+}
+
+/**
+ * Exact decimal divide to `places` fractional digits with half-up rounding (RD-0349 I3) — decimal strings
+ * straight into the BigInt core: NO `1/x` float reciprocal. Non-terminating division (1/3 = 0.333…) is made
+ * exact by dividing at the requested scale and rounding the guard digit. Throws "division by zero" (the caller
+ * maps it to Err). `places` may be 0 (a zero-decimal currency).
+ */
+export function bigIntDecimalDiv(a: string, b: string, places: number): string {
+  const pa = decimalToBigInt(a);
+  const pb = decimalToBigInt(b);
+  if (pb.n === BigInt(0)) throw new Error("division by zero");
+  const ten = BigInt(10);
+  // (pa.n / 10^pa.scale) / (pb.n / 10^pb.scale) to `places` dp
+  //   = pa.n * 10^(pb.scale + places) / (pb.n * 10^pa.scale)
+  const num = pa.n * (ten ** BigInt(pb.scale + places));
+  const den = pb.n * (ten ** BigInt(pa.scale));
+  const neg = (num < BigInt(0)) !== (den < BigInt(0));
+  const an = num < BigInt(0) ? -num : num;
+  const ad = den < BigInt(0) ? -den : den;
+  let q = an / ad;
+  if ((an % ad) * BigInt(2) >= ad) q += BigInt(1); // half-up on the guard digit
+  return bigIntToDecimalStr(neg ? -q : q, places);
 }
 
 /** Round a decimal string to N decimal places. */
@@ -155,6 +191,15 @@ export interface StdlibContext {
   readonly resolveIdentifier: (name: string) => GalerinaValue | undefined;
   readonly callFlow: (name: string, args: ReadonlyMap<string, GalerinaValue>) => Promise<GalerinaValue>;
   readonly applyFn: (fn: GalerinaValue, arg: GalerinaValue) => Promise<GalerinaValue>;
+  // ── Outbound-HTTP injection seams (http.* / networkAsync) — OPTIONAL, fail-secure defaults ──────────
+  // Narrow seams so tests can drive the dial hermetically WITHOUT real network/DNS. They do NOT widen the
+  // trust surface: the SSRF egress guard (guardOutboundUrl + guardResolvedAddresses) ALWAYS runs on what
+  // `resolveHost` returns and BEFORE `dial` is ever called, so an injected resolver/dialer cannot bypass
+  // the deny-by-default host-category check. Production leaves both undefined (real DNS + pinned node dial).
+  readonly resolveHost?: (host: string) => Promise<readonly string[]>;
+  readonly dial?: (url: string, req: NetDialRequest) => Promise<NetDialResponse>;
+  /** Egress allow-list audit sink (default: stderr). A seam so tests capture the trail without monkeypatching. */
+  readonly auditSink?: (line: string) => void;
 }
 
 function safeDisplay(v: GalerinaValue): string {
@@ -952,54 +997,66 @@ function moneyStatic(method: string, args: readonly GalerinaValue[]): GalerinaVa
   }
 }
 
+/**
+ * Per-currency minor-unit decimals (RD-0349 I2). moneyMethod threads this so NO literal `2` remains. Until the
+ * I1 UNIT_REGISTRY lands (owner-gated on the pinned, dated ISO snapshot the R&D hub is sourcing) every currency
+ * uses the 2dp default; when the registry arrives ONLY this function changes (JPY→0, BHD→3, BTC-sats→8, wei→18).
+ */
+function moneyDecimals(_currency: string): number {
+  return 2; // TODO(RD-0349 I1): registry-driven per-currency decimals — pending the pinned ISO snapshot
+}
+
+/** Scale for a Money<C> / Money<C> ratio (a Decimal, not Money): crypto-grade precision, exact (I3), never float. */
+const MONEY_RATIO_DECIMALS = 18;
+
 function moneyMethod(receiver: GalerinaValue, method: string, args: readonly GalerinaValue[]): GalerinaValue | undefined {
   if (!isMoney(receiver)) return undefined;
   const amountStr = moneyAmountStr(receiver);
   const currency = moneyCurrency(receiver);
+  const dp = moneyDecimals(currency); // RD-0349 I2: threaded per-currency decimals (no literal 2)
   switch (method) {
     case "amount":
-      // Return amount rounded to 2 decimal places for display
-      return { __tag: "decimal", value: bigIntDecimalRound(amountStr, 2) };
+      return { __tag: "decimal", value: bigIntDecimalRound(amountStr, dp) };
     case "currency":
       return { __tag: "string", value: currency };
     case "toString":
-      return { __tag: "string", value: `${currency} ${bigIntDecimalRound(amountStr, 2)}` };
+      return { __tag: "string", value: `${currency} ${bigIntDecimalRound(amountStr, dp)}` };
     case "add": {
       const other = args[0];
       if (other === undefined || !isMoney(other)) return { __tag: "runtimeError", message: "Money.add requires Money argument" };
       if (moneyCurrency(other) !== currency) return err(`Cannot add ${currency} and ${moneyCurrency(other)}`);
-      // Phase 9A-3: exact BigInt arithmetic — no floating-point rounding
-      return makeMoney(bigIntDecimalRound(bigIntDecimalAdd(amountStr, moneyAmountStr(other)), 2), currency);
+      // exact BigInt arithmetic — no floating-point rounding
+      return makeMoney(bigIntDecimalRound(bigIntDecimalAdd(amountStr, moneyAmountStr(other)), dp), currency);
     }
     case "subtract": {
       const other = args[0];
       if (other === undefined || !isMoney(other)) return { __tag: "runtimeError", message: "Money.subtract requires Money argument" };
       if (moneyCurrency(other) !== currency) return err(`Cannot subtract ${moneyCurrency(other)} from ${currency}`);
-      // Phase 9A-3: exact BigInt arithmetic
-      return makeMoney(bigIntDecimalRound(bigIntDecimalSub(amountStr, moneyAmountStr(other)), 2), currency);
+      return makeMoney(bigIntDecimalRound(bigIntDecimalSub(amountStr, moneyAmountStr(other)), dp), currency);
     }
     case "multiply": {
-      // Money<C> * Decimal (or number) — scale by a factor
-      // Stage 1 experimental warning preserved; BigInt multiply avoids FP errors
+      // Money<C> * Decimal|Int — scale by an EXACT decimal-string factor (RD-0349 I3: no parseFloat/toFixed).
       const factorArg = args[0];
       const factorStr = factorArg?.__tag === "decimal" ? factorArg.value
                       : factorArg?.__tag === "int" || factorArg?.__tag === "float"
                         ? factorArg.value.toString()
                         : "1";
-      return makeMoney(bigIntDecimalRound(bigIntDecimalMulNumber(amountStr, parseFloat(factorStr)), 2), currency);
+      return makeMoney(bigIntDecimalRound(bigIntDecimalMul(amountStr, factorStr), dp), currency);
     }
     case "divideBy": {
       const rhs = args[0];
       if (rhs === undefined) return err("Division by zero");
       if (isMoney(rhs)) {
-        // Money<C> / Money<C> → Decimal ratio; use parseFloat for the ratio only
-        const divisor = moneyAmount(rhs);
-        if (divisor === 0) return err("Division by zero");
-        return { __tag: "decimal", value: (moneyAmount(receiver) / divisor).toString() };
+        // Money<C> / Money<C> → EXACT Decimal ratio (RD-0349 I3: no float division).
+        if (decimalToBigInt(moneyAmountStr(rhs)).n === BigInt(0)) return err("Division by zero");
+        return { __tag: "decimal", value: bigIntDecimalDiv(amountStr, moneyAmountStr(rhs), MONEY_RATIO_DECIMALS) };
       }
-      const divisorVal = rhs.__tag === "decimal" ? parseFloat(rhs.value) : numVal(rhs);
-      if (divisorVal === 0) return err("Division by zero");
-      return makeMoney(bigIntDecimalRound(bigIntDecimalMulNumber(amountStr, 1 / divisorVal), 2), currency);
+      // Money<C> / Decimal|Int → Money, EXACT to the currency decimals (RD-0349 I3: no 1/x float reciprocal).
+      const divisorStr = rhs.__tag === "decimal" ? rhs.value
+                       : rhs.__tag === "int" || rhs.__tag === "float" ? rhs.value.toString()
+                       : "0";
+      if (decimalToBigInt(divisorStr).n === BigInt(0)) return err("Division by zero");
+      return makeMoney(bigIntDecimalDiv(amountStr, divisorStr, dp), currency);
     }
     default:
       return undefined;
@@ -1257,21 +1314,147 @@ function serialization(fullName: string, args: readonly GalerinaValue[]): Galeri
 // EVERY env incl. production, bypassing the SSRF host-category denial + force-HTTPS for those hosts (CWE-918: the
 // trust then rests ENTIRELY on the operator's list — an abusable allow-listed host re-opens SSRF). We record each
 // host actually admitted through that bypass so an unexpected/abusable entry leaves a trail. First-use per host
-// per process (the audit answers WHICH listed hosts the bypass is serving, without per-request spam). stderr is
-// the only sink available at the dial — threading a structured AuditLogger through StdlibContext is the separate
-// owner-gated egress-policy follow-up. Auditing is best-effort: it must NEVER break an otherwise-permitted egress.
+// per process (the audit answers WHICH listed hosts the bypass is serving, without per-request spam). The default
+// sink is stderr, redirectable via StdlibContext.auditSink — a minimal seam so tests capture the trail WITHOUT
+// monkeypatching process.stderr (Galerina forbids monkeypatching; see monkey-patch-checker.ts). A full structured
+// AuditLogger remains the separate owner-gated egress-policy follow-up. Auditing is best-effort: it must NEVER
+// break an otherwise-permitted egress.
 const _auditedAllowlistEgress = new Set<string>();
-function auditAllowlistedEgress(host: string): void {
+function auditAllowlistedEgress(host: string, sink?: (line: string) => void): void {
   if (!host || _auditedAllowlistEgress.has(host)) return;
   _auditedAllowlistEgress.add(host);
+  const line =
+    `[galerina:egress-audit] FUNGI-NET-001 host "${host}" admitted via GALERINA_EGRESS_ALLOWED_HOSTS — ` +
+    `SSRF host-guard + force-HTTPS bypassed for this exact host (operator-trusted allow-list)\n`;
   try {
-    (process as unknown as { stderr?: { write(s: string): void } }).stderr?.write(
-      `[galerina:egress-audit] FUNGI-NET-001 host "${host}" admitted via GALERINA_EGRESS_ALLOWED_HOSTS — ` +
-        `SSRF host-guard + force-HTTPS bypassed for this exact host (operator-trusted allow-list)\n`,
-    );
+    if (sink) sink(line);
+    else (process as unknown as { stderr?: { write(s: string): void } }).stderr?.write(line);
   } catch {
     /* best-effort audit — swallow any sink failure */
   }
+}
+
+// ── Outbound HTTP dial (DNS-rebind–safe): pin the pre-validated IP through connect (RD-0310) ──────────
+// The SSRF guard resolves + validates a hostname's addresses, but a NAME-based fetch RE-RESOLVES at
+// connect time — a DNS-rebinding TOCTOU: public at check, private/metadata at connect. Node's global
+// fetch (undici) cannot pin the resolved address without the undici module (a package edge this minimal
+// package refuses), so http.* dials via node:http/node:https with a connect-time `lookup` LOCKED to the
+// addresses the guard already cleared. TLS is unaffected: Host + servername stay the ORIGINAL hostname
+// (cert validated against the name); only the dialled IP is pinned. `pinnedIps` is null for an IP-literal
+// / loopback-dev / operator-allow-listed host — no name to rebind, so the socket connects normally.
+export interface NetDialRequest {
+  readonly method: string;
+  readonly body?:
+    | { readonly kind: "bytes"; readonly value: Uint8Array }
+    | { readonly kind: "string"; readonly value: string };
+  /** The guard-cleared addresses to pin the socket to; null ⇒ no pin (IP-literal / loopback / allow-listed). */
+  readonly pinnedIps: readonly string[] | null;
+}
+export interface NetDialResponse {
+  readonly status: number;
+  readonly ok: boolean;
+  readonly location: string | null;
+  readonly bytes: Uint8Array;
+}
+
+function concatChunks(chunks: readonly Uint8Array[]): Uint8Array {
+  let total = 0;
+  for (const c of chunks) total += c.length;
+  const out = new Uint8Array(total);
+  let off = 0;
+  for (const c of chunks) { out.set(c, off); off += c.length; }
+  return out;
+}
+
+// Minimal structural types for the node:http/https slice used (this package ships no @types/node).
+type NetIncoming = {
+  statusCode?: number;
+  headers: Record<string, string | string[] | undefined>;
+  on(event: "data", cb: (chunk: Uint8Array) => void): void;
+  on(event: "end", cb: () => void): void;
+  on(event: "error", cb: (err: unknown) => void): void;
+};
+type NetClientRequest = {
+  on(event: "error", cb: (err: unknown) => void): void;
+  setTimeout(ms: number, cb: () => void): void;
+  write(chunk: Uint8Array | string): void;
+  destroy(err?: unknown): void;
+  end(): void;
+};
+type NetHttpModule = { request(options: unknown, cb: (res: NetIncoming) => void): NetClientRequest };
+type NetLookupCb = (
+  err: Error | null,
+  address?: string | ReadonlyArray<{ address: string; family: number }>,
+  family?: number,
+) => void;
+
+const NET_TIMEOUT_MS = 30_000;
+
+// Production transport: ONE request over node:http/https, connect pinned to `pinnedIps` (the rebind fix).
+async function pinnedDial(url: string, req: NetDialRequest): Promise<NetDialResponse> {
+  const { URL: NodeURL } = require("node:url") as {
+    URL: new (input: string) => { protocol: string; hostname: string; port: string; pathname: string; search: string };
+  };
+  const u = new NodeURL(url);
+  const isHttps = u.protocol === "https:";
+  const mod = require(isHttps ? "node:https" : "node:http") as NetHttpModule;
+  const port = u.port !== "" ? Number(u.port) : isHttps ? 443 : 80;
+
+  const pin = req.pinnedIps;
+  const famOf = (a: string): number => (a.includes(":") ? 6 : 4);
+  // Connect-time lookup LOCKED to the pre-validated addresses — the name is never re-resolved (the pin).
+  const lookup = pin && pin.length > 0
+    ? (_host: string, options: { family?: number; all?: boolean } | undefined, cb: NetLookupCb): void => {
+        const want = options?.family ?? 0;
+        const cands = want === 4 ? pin.filter((a) => !a.includes(":"))
+          : want === 6 ? pin.filter((a) => a.includes(":"))
+          : pin;
+        if (cands.length === 0) { cb(new Error("no pinned address for the requested family (fail-closed)")); return; }
+        if (options?.all) cb(null, cands.map((a) => ({ address: a, family: famOf(a) })));
+        else cb(null, cands[0]!, famOf(cands[0]!));
+      }
+    : undefined;
+
+  const headers: Record<string, string> = {};
+  let bodyOut: Uint8Array | string | undefined;
+  if (req.body) {
+    if (req.body.kind === "bytes") bodyOut = req.body.value;
+    else { bodyOut = req.body.value; headers["Content-Type"] = "application/json"; }
+  }
+
+  return await new Promise<NetDialResponse>((resolve, reject) => {
+    let settled = false;
+    const fail = (e: unknown): void => {
+      if (settled) return;
+      settled = true;
+      reject(e instanceof Error ? e : new Error(String(e)));
+    };
+    const options = {
+      method: req.method,
+      hostname: u.hostname,               // Host header + TLS servername/validation use the NAME, not the IP
+      port,
+      path: (u.pathname || "/") + (u.search || ""),
+      headers,
+      ...(lookup ? { lookup } : {}),
+    };
+    const request = mod.request(options, (res) => {
+      const chunks: Uint8Array[] = [];
+      res.on("data", (c) => chunks.push(c));
+      res.on("error", fail);
+      res.on("end", () => {
+        if (settled) return;
+        settled = true;
+        const status = res.statusCode ?? 0;
+        const locRaw = res.headers["location"];
+        const location = Array.isArray(locRaw) ? (locRaw[0] ?? null) : (locRaw ?? null);
+        resolve({ status, ok: status >= 200 && status < 300, location, bytes: concatChunks(chunks) });
+      });
+    });
+    request.on("error", fail);
+    request.setTimeout(NET_TIMEOUT_MS, () => request.destroy(new Error(`network timeout after ${NET_TIMEOUT_MS}ms`)));
+    if (bodyOut !== undefined) request.write(bodyOut);
+    request.end();
+  });
 }
 
 async function networkAsync(fullName: string, args: readonly GalerinaValue[], ctx: StdlibContext): Promise<GalerinaValue | undefined> {
@@ -1287,7 +1470,8 @@ async function networkAsync(fullName: string, args: readonly GalerinaValue[], ct
   // numeric-IP / IPv4-in-IPv6 / CGNAT / *.internal / embedded-credential bypasses, plus a DNS-rebind recheck.
   // It is applied to the ORIGINAL url AND to EVERY redirect hop — a guard-approved public URL can return
   // `302 Location: http://169.254.169.254/`, and a guard that only checks the original URL is bypassed by the
-  // redirect (DevSecOps pentest finding). Returns an error string, or null if the hop is permitted.
+  // redirect (DevSecOps pentest finding). guardHop returns an SSRF error, or the addresses to PIN through
+  // connect (RD-0310 DNS-rebind fix): the exact address validated is the exact address the dial connects to.
   // Force-HTTPS boot setting (owner "force https on http") + a smart LOCAL-DEV loopback exception. Canonical
   // setting + accessor live in @galerina/core-config (`resolveEgressTls`); the dial mirrors the same env reads
   // inline (no extra package edge). FAIL-SECURE on every axis:
@@ -1319,70 +1503,75 @@ async function networkAsync(fullName: string, args: readonly GalerinaValue[], ct
     ...(allowLoopback ? { allowLoopback: true } : {}),
     ...(allowedHosts.length ? { allowedHosts } : {}),
   };
-  const guardHop = async (u: string): Promise<string | null> => {
+  // Resolver seam (default: node:dns/promises, all addresses). The guard re-classifies EVERY address it
+  // returns, so an injected resolver cannot smuggle a private/metadata answer past the deny-by-default check.
+  const resolveHost = ctx.resolveHost ?? (async (host: string): Promise<readonly string[]> => {
+    // require (not import) — the compiler intentionally ships no @types/node; mirror the node:crypto pattern.
+    const dns = require("node:dns/promises") as {
+      lookup(host: string, opts: { all: true }): Promise<ReadonlyArray<{ address: string }>>;
+    };
+    return (await dns.lookup(host, { all: true })).map((r) => r.address);
+  });
+  // guardHop validates ONE hop. Returns the SSRF error string, OR the addresses to PIN through connect
+  // (pin=null ⇒ no name to rebind: an IP-literal, a loopback-dev host, or an operator-allow-listed host).
+  const guardHop = async (u: string): Promise<{ error: string } | { pin: readonly string[] | null }> => {
     const eg = guardOutboundUrl(u, dialPolicy);
-    if (!eg.allowed) return `NetworkError: SSRF — ${eg.reason} (FUNGI-NET-001 · ${eg.code})`;
+    if (!eg.allowed) return { error: `NetworkError: SSRF — ${eg.reason} (FUNGI-NET-001 · ${eg.code})` };
     // Audit the production SSRF/force-HTTPS bypass: this exact host was admitted only because the operator
     // allow-listed it (covers redirect hops too — guardHop re-runs on each Location). Normal public hosts
     // (code EGRESS_ALLOWED) are NOT audited; only the explicit bypass leaves a trail.
-    if (eg.code === "Galerina_NETWORK_EGRESS_ALLOWLISTED") auditAllowlistedEgress(eg.host);
+    if (eg.code === "Galerina_NETWORK_EGRESS_ALLOWLISTED") auditAllowlistedEgress(eg.host, ctx.auditSink);
     if (eg.requiresDnsRecheck) {
-      let ips: string[];
+      let ips: readonly string[];
       try {
-        // require (not import) — the compiler intentionally ships no @types/node; mirror the existing
-        // node:crypto require pattern in this file and type the slice we use.
-        const dns = require("node:dns/promises") as {
-          lookup(host: string, opts: { all: true }): Promise<ReadonlyArray<{ address: string }>>;
-        };
-        ips = (await dns.lookup(eg.host, { all: true })).map((r) => r.address);
+        ips = await resolveHost(eg.host);
       } catch {
-        return `NetworkError: SSRF — DNS resolution failed for '${eg.host}' (FUNGI-NET-001, fail-closed)`;
+        return { error: `NetworkError: SSRF — DNS resolution failed for '${eg.host}' (FUNGI-NET-001, fail-closed)` };
       }
       const rebind = guardResolvedAddresses(eg.host, ips);
-      if (!rebind.allowed) return `NetworkError: SSRF — ${rebind.reason} (FUNGI-NET-001 · ${rebind.code})`;
+      if (!rebind.allowed) return { error: `NetworkError: SSRF — ${rebind.reason} (FUNGI-NET-001 · ${rebind.code})` };
+      // PIN the cleared addresses — the dialer connects to THESE, never re-resolving the name (RD-0310 fix).
+      return { pin: ips };
     }
-    return null;
+    return { pin: null };
   };
 
-  const firstGuard = await guardHop(url);
-  if (firstGuard !== null) return err(firstGuard);
+  // Parse the optional request body ONCE — re-sent verbatim on each hop (preserves prior behaviour).
+  let body: NetDialRequest["body"];
+  const bodyArg = args[1];
+  if (bodyArg !== undefined && bodyArg.__tag !== "void") {
+    if (bodyArg.__tag === "bytes") body = { kind: "bytes", value: bodyArg.value as Uint8Array };
+    else if (bodyArg.__tag === "string") body = { kind: "string", value: bodyArg.value };
+  }
+  // Transport seam (default: pinnedDial — node:http/https, connect pinned to the guard-cleared IP). The
+  // guard ALWAYS runs before dial below, so an injected dialer never sees an unvalidated host.
+  const dial = ctx.dial ?? pinnedDial;
 
   try {
-    const bodyArg = args[1];
-    // redirect: "manual" — NEVER let fetch auto-follow. fetch/undici defaults to redirect:"follow", which
-    // would transparently follow a 302 to an internal/metadata host the guard never saw. We re-guard each
-    // Location ourselves before following, with a hop cap.
-    const init: RequestInit = { method, redirect: "manual" };
-    if (bodyArg !== undefined && bodyArg.__tag !== "void") {
-      if (bodyArg.__tag === "bytes") {
-        init.body = bodyArg.value as unknown as BodyInit;
-      } else if (bodyArg.__tag === "string") {
-        init.body = bodyArg.value;
-        (init.headers as Record<string, string>) = { "Content-Type": "application/json" };
-      }
-    }
     const { URL: NodeURL } = require("node:url") as { URL: new (input: string, base?: string) => { href: string } };
     const MAX_REDIRECTS = 5;
     let currentUrl = url;
     for (let hop = 0; ; hop++) {
-      const response = await fetch(currentUrl, init);
+      // Re-guard AND re-pin EVERY hop before dialling — the original URL and each redirect Location. This is
+      // the DNS-rebind fix: the exact address validated here is the exact address the dial connects to.
+      const guard = await guardHop(currentUrl);
+      if ("error" in guard) return err(guard.error);
+      // Omit `body` when absent (exactOptionalPropertyTypes: a present-but-undefined prop is a type error).
+      const response = await dial(currentUrl, { method, pinnedIps: guard.pin, ...(body ? { body } : {}) });
       if (response.status >= 300 && response.status < 400) {
         if (hop >= MAX_REDIRECTS) return err(`NetworkError: too many redirects (>${MAX_REDIRECTS}) from ${url}`);
-        const loc = response.headers.get("location");
+        const loc = response.location;
         if (!loc) return err(`NetworkError: HTTP ${response.status} redirect with no Location from ${currentUrl}`);
         let nextUrl: string;
         try { nextUrl = new NodeURL(loc, currentUrl).href; } // resolve a relative Location against the current URL
         catch { return err(`NetworkError: SSRF — invalid redirect target '${loc}' (FUNGI-NET-001)`); }
-        const hopErr = await guardHop(nextUrl); // RE-GUARD the redirect destination before following
-        if (hopErr !== null) return err(hopErr);
-        currentUrl = nextUrl;
+        currentUrl = nextUrl; // the next iteration re-guards + re-pins this destination before dialling
         continue;
       }
       if (!response.ok) {
         return err(`NetworkError: HTTP ${response.status} from ${currentUrl}`);
       }
-      const bytes = new Uint8Array(await response.arrayBuffer());
-      return ok({ __tag: "bytes", value: bytes });
+      return ok({ __tag: "bytes", value: response.bytes });
     }
   } catch (e) {
     return err(`NetworkError: ${e instanceof Error ? e.message : String(e)}`);

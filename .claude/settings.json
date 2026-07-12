@@ -18,7 +18,7 @@
           {
             "type": "command",
             "command": "node scripts/rd-absorb.mjs --summary",
-            "description": "Periodic drift heartbeat (informational, exit 0): one-line count of R&D done-files in ../Galerina-R-AND-D/_session-bridge/done/ not yet recorded in docs/Knowledge-Bases/galerina-rd-results-log.md — the absorption backlog the owner's standing process (feedback-rd-absorb-positive-and-negative) clears. Drop --summary for the actionable list."
+            "description": "Periodic drift heartbeat (informational, exit 0): one-line count of R&D done-files in ../Galerina-R-AND-D/_session-bridge/done/ not yet recorded in ../ZTF-Knowledge-Bases/galerina-rd-results-log.md — the absorption backlog the owner's standing process (feedback-rd-absorb-positive-and-negative) clears. Drop --summary for the actionable list."
           },
           {
             "type": "command",
@@ -77,7 +77,7 @@
       "fuse-rebuild": "node scripts/rebuild-fusable-packages.mjs",
       "benchmark": "cd packages-galerina/galerina-devtools-benchmarks && npm run run",
       "benchmark-quick": "cd packages-galerina/galerina-devtools-benchmarks && npm run run:quick",
-      "graph-all": "node scripts/graph-all.mjs   (RD-0124: runs ALL THREE graph generators — project graph + kb graph + per-package Hardened Border --check. This is what 'run graph' should mean; wired into run-phase-close. The bare 'graph' below is PROJECT-only.)",
+      "graph-all": "node scripts/graph-all.mjs   (THIS IS 'run graph' — the single source of truth. Runs the ENTIRE graph family, six tools: 1 project graph (build/graph) + 2 graph-integrity validation (RD-0121) + 3 kb graph (build/kb-graph) + 4 per-package Hardened Border --check + 5 memory graph (.claude health) + 6 dev-tool index/graph (build/dev-tool-index). run-phase-close §5 delegates its whole graph phase here, so add/remove graph tools in graph-all.mjs, not there. Pure INDEXES (code-index/code-registry/kb-index) are a separate family, kept in run-phase-close §5a. The bare 'graph' below is PROJECT-only.)",
       "graph": "node packages-galerina/galerina-core-cli/dist/index.js graph --out build/graph   (PROJECT graph only — one of three; prefer graph-all)",
       "kb-graph": "node packages-galerina/galerina-devtools-kb-graph/dist/cli.js --out build/kb-graph   (KB cross-ref graph: orphans + broken-links → build/kb-graph; the signal audit-stray-docs reads, so refresh before it)",
       "package-graph": "node packages-galerina/galerina-devtools-package-graph/dist/cli.js --scope <package-path>",

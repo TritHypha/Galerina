@@ -5,7 +5,7 @@
 // unsafe or unanalyzable features. They apply ADDITIONAL governance restrictions
 // on top of the standard Galerina runtime.
 //
-// Spec: docs/Knowledge-Bases/runtime-profiles.md
+// Spec: ../ZTF-Knowledge-Bases/runtime-profiles.md
 //
 // Profiles (composable — strictest rule wins):
 //   strict          — mandatory audit, no recursion, no unbounded loops, no JIT

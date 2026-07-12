@@ -494,7 +494,7 @@ environment data
 
 ## 21. Visibility Boundary Example
 
-`app/users/service.ln`:
+`app/users/service.fungi`:
 
 ```galerina
 module app/users/service
@@ -534,7 +534,7 @@ visibility: private
 
 ## 22. Package Boundary Example
 
-`app/users/types.ln`:
+`app/users/types.fungi`:
 
 ```galerina
 package type UserRecord = {

@@ -1,0 +1,8 @@
+FUNGI-VALUESTATE-004
+
+Tainted value 'evil' passed to 'assayCustomerRef'. A hallmark gate is an ordinary flow,
+not a registered untaint context, so a tainted value cannot be laundered into a clean
+hallmark value (minting is taint-transparent — minting is not sanitizing). Validate first:
+  safe mut clean = validate.string(evil)?
+FUNGI-VALUESTATE-001 is also emitted — a 'safe mut' binding needs a recognised gate
+(validate.*/sanitize.*/parse.*), which a hallmark assay is not.

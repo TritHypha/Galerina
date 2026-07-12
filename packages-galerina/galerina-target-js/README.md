@@ -1,11 +1,15 @@
 # Galerina Target JS
 
-> **Status: PLANNED — NOT ENFORCED.** This package has **no `src/`** yet — it defines target
-> *planning contracts* (the intended shape of JS output), not running code. In particular the
-> security-relevant items below (**server-only import blocking**, **secret/environment access
-> denial for browser JS**) are **described, not enforced**: there is no compiler pass or runtime
-> that applies them today. Do **not** rely on this package as a JS-output security control. The
-> enforcing implementation is future work; until it ships + is tested, treat these as design intent.
+> **Status: PLAN-TIME VALIDATORS SHIPPED (2026-07-10) — compiler-pass wiring still future.**
+> `src/index.ts` now carries the planning contracts **plus fail-closed plan-time validators**:
+> **server-only import blocking** (`Galerina_JS_SERVER_ONLY_IMPORT_IN_BROWSER`, deny-by-default
+> module list incl. every `node:` specifier) and **secret/environment access denial for browser
+> JS** (`Galerina_JS_BROWSER_SECRET_ACCESS_DENIED` / `_ENVIRONMENT_ACCESS_DENIED`) — tested in
+> `tests/js-target-contracts.test.mjs`. Honest scope: these run when a caller validates a
+> `JsOutputPlan`; the **compiler pass that derives plans from real emitted JS does not exist
+> yet**, so do not treat the package as an end-to-end JS-output security control until that
+> pass ships. Bundle reports derive their check outcomes from validation — a leaking plan
+> cannot produce a passing report.
 
 `galerina-target-js` defines JavaScript output target planning contracts.
 

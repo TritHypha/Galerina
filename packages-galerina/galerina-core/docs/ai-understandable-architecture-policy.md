@@ -19,7 +19,7 @@ runtime responsibilities.
 
 The current workspace uses:
 
-- `docs/Knowledge-Bases/` for one-concept indexed notes
+- `../../../../ZTF-Knowledge-Bases/` for one-concept indexed notes
 - `docs/framework/` for framework concepts
 - `docs/contracts/` for boundary agreements
 - `docs/reports/` for generated proof
@@ -42,15 +42,15 @@ Example shape:
 concepts:
   actor:
     definition: current execution identity
-    file: docs/Knowledge-Bases/audit-actor-model.md
+    file: ../../../../ZTF-Knowledge-Bases/audit-actor-model.md
 
   view:
     definition: who or what may see data
-    file: docs/Knowledge-Bases/data-visibility-view-terminology.md
+    file: ../../../../ZTF-Knowledge-Bases/data-visibility-view-terminology.md
 
   vault:
     definition: governed shared storage
-    file: docs/Knowledge-Bases/scoped-vaults.md
+    file: ../../../../ZTF-Knowledge-Bases/scoped-vaults.md
 ```
 
 ## Component Metadata

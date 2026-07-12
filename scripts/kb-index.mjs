@@ -42,18 +42,39 @@ function walkMd(dir, out) {
 }
 function kbFiles() {
   const out = walkMd(KB, []);                                    // recurse the whole KB (skip build/ etc.)
+  // FAIL-CLOSED (worktree footgun, 2026-07-09): an absent/unreadable KB dir used to scan as 0 docs and BUILD
+  // silently OVERWROTE the good committed index with an empty one (764->2 docs data-loss inside a
+  // .claude/worktrees/** checkout, where the sibling ../ZTF-Knowledge-Bases is NOT adjacent — walkMd's
+  // catch{} laundered the ENOENT). A 0-doc KB is never a valid corpus; refuse loudly BEFORE any write.
+  // Counted BEFORE adding EXTRA so the repo-root README/AGENTS files can't mask an empty KB as "2 docs".
+  if (out.length === 0) {
+    console.error(
+      `kb-index: FAIL-CLOSED — no .md docs found under the KB dir:\n  ${KB}\n` +
+      `  The corpus lives in the sibling ZTF-Knowledge-Bases repo (override: GALERINA_KB_DIR). In a git\n` +
+      `  worktree (.claude/worktrees/**) the sibling is not adjacent — set GALERINA_KB_DIR or run from the\n` +
+      `  main checkout. Nothing was written; the existing build/kb-index/ is preserved.`,
+    );
+    process.exit(1);
+  }
   for (const f of EXTRA) { const p = join(ROOT, f); try { statSync(p); out.push(p); } catch { /* absent */ } }
   return out;
 }
 const tokenize = (s) => (s.toLowerCase().match(/[a-z][a-z0-9-]{2,}/g) || []).filter((w) => !STOP.has(w));
+// KB doc titles/headings sometimes embed an absolute local path (a doc titled with `C:\Users\<name>\...`).
+// This index is committed in the PUBLIC Galerina repo, so copy those in verbatim and it leaks the OS
+// username/layout (the class scripts/audit-path-leak.mjs enforces). Genericize on the way out so a regen
+// never re-introduces the leak, no matter what the private KB source contains.
+const scrub = (s) => s
+  .replace(/[A-Za-z]:[\\/]{1,2}Users[\\/]{1,2}[^\s"'`)\]]+/g, "<path>")
+  .replace(/(?:[A-Za-z]:[\\/]{1,2})?wwwprojects[\\/][^\s"'`)\]]*/g, "<path>");
 
 function indexDoc(file) {
   const rel = relative(ROOT, file).replace(/\\/g, "/");
   const txt = readFileSync(file, "utf8");
   const lines = txt.split(/\r?\n/);
-  const title = (lines.find((l) => /^#\s+/.test(l)) || basename(file)).replace(/^#\s+/, "").trim();
-  const headings = lines.filter((l) => /^#{2,4}\s+/.test(l)).map((l) => l.replace(/^#+\s+/, "").trim());
-  const bold = [...new Set([...txt.matchAll(/\*\*([^*\n]{2,64})\*\*/g)].map((m) => m[1].trim()))];
+  const title = scrub((lines.find((l) => /^#\s+/.test(l)) || basename(file)).replace(/^#\s+/, "").trim());
+  const headings = lines.filter((l) => /^#{2,4}\s+/.test(l)).map((l) => scrub(l.replace(/^#+\s+/, "").trim()));
+  const bold = [...new Set([...txt.matchAll(/\*\*([^*\n]{2,64})\*\*/g)].map((m) => scrub(m[1].trim())))];
   const codes = [...new Set(extractCodes(txt))];
   const tasks = [...new Set(txt.match(/#\d{2,4}\b/g) || [])];
   const xrefs = [...new Set([...txt.matchAll(/\[\[([^\]]+)\]\]/g)].map((m) => m[1]))];

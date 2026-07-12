@@ -6,7 +6,7 @@
 // Wildcard capabilities, observability leaking private scope, and inline
 // policy without domain guard are caught at compile time.
 //
-// Reference: docs/Knowledge-Bases/galerina-governance-rules.md
+// Reference: ../ZTF-Knowledge-Bases/galerina-governance-rules.md
 // Rules: C-001 (FUNGI-CAP-001 wildcard), FUNGI-OBS-002 (observability ∩ privacy),
 //        FUNGI-SYNTAX-LEGACY-003 (advisory: inline policy without guard)
 

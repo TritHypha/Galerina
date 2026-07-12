@@ -263,7 +263,7 @@ export type ComputeCompatibilityFlagsMask = number;
 // The runtime resolves: ai.inference → host.npu.inference (if NPU available).
 //
 // Architecture rule: WASM governs, native accelerates, Galerina proves the boundary.
-// See: docs/Knowledge-Bases/galerina-hybrid-wasm-architecture.md
+// See: ../ZTF-Knowledge-Bases/galerina-hybrid-wasm-architecture.md
 // ---------------------------------------------------------------------------
 
 export const NativeCapabilityId = {
@@ -678,8 +678,8 @@ export function tensorDimensionCountsCompatible(
 //   Rule 7 (Fallback declared):   fallback field required
 //   Phase 27 isolation:           childProcess: true (always child process)
 //
-// See: docs/Knowledge-Bases/galerina-phase-27-ai-native.md
-// See: docs/Knowledge-Bases/galerina-hybrid-wasm-architecture.md
+// See: ../ZTF-Knowledge-Bases/galerina-phase-27-ai-native.md
+// See: ../ZTF-Knowledge-Bases/galerina-hybrid-wasm-architecture.md
 // ---------------------------------------------------------------------------
 
 export interface NativePluginManifest {

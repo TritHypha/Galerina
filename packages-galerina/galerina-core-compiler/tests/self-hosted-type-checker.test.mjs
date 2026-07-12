@@ -5,8 +5,9 @@
  * production interpreter and asserting their diagnostics. Codes match the
  * Stage A compiler's canonical meanings:
  *   - FUNGI-TYPE-001 (UnknownType)            — return/param type not a known type
- *   - FUNGI-TYPE-002 (TypeMismatch)           — return expr type != declared return type
+ *   - FUNGI-TYPE-002 (TypeMismatch)           — let/mut binding: declared type != initializer type (checkFlowBodies)
  *   - FUNGI-TYPE-004 (InvalidBinaryOperation) — arithmetic operand not Int
+ *   - FUNGI-TYPE-008 (InvalidReturnType)      — return expr type != declared return type (checkFlows)
  */
 
 import { describe, it } from "node:test";
@@ -100,12 +101,12 @@ describe("type-checker.fungi — FUNGI-TYPE-001 UnknownType", () => {
   });
 });
 
-describe("type-checker.fungi — FUNGI-TYPE-002 TypeMismatch", () => {
-  it("declared Int but Bool literal returned → FUNGI-TYPE-002", async () => {
+describe("type-checker.fungi — FUNGI-TYPE-008 InvalidReturnType (return-type mismatch; Stage-A canonical)", () => {
+  it("declared Int but Bool literal returned → FUNGI-TYPE-008", async () => {
     const { diags } = await check([
       flow({ name: "f", returnType: "Int", returnExpr: retExpr("literal", "Bool") }),
     ]);
-    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-002"]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-008"]);
   });
 
   it("compare expr returns Bool — matching Bool declaration passes", async () => {
@@ -115,11 +116,11 @@ describe("type-checker.fungi — FUNGI-TYPE-002 TypeMismatch", () => {
     assert.deepEqual(codesFor(diags, "f"), []);
   });
 
-  it("compare expr (Bool) against Int declaration → FUNGI-TYPE-002", async () => {
+  it("compare expr (Bool) against Int declaration → FUNGI-TYPE-008", async () => {
     const { diags } = await check([
       flow({ name: "f", returnType: "Int", returnExpr: retExpr("compare") }),
     ]);
-    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-002"]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-008"]);
   });
 });
 
@@ -138,8 +139,8 @@ describe("type-checker.fungi — FUNGI-TYPE-004 InvalidBinaryOperation", () => {
     assert.deepEqual(codesFor(diags, "add"), []);
   });
 
-  it("arith error suppresses the 002 mismatch (only 004 reported)", async () => {
-    // inferred is ERROR, so the 002 check is guarded off — exactly one 004.
+  it("arith error suppresses the 008 mismatch (only 004 reported)", async () => {
+    // inferred is ERROR, so the 008 return-type check is guarded off — exactly one 004.
     const { diags } = await check([
       flow({ name: "f", returnType: "Bool", returnExpr: retExpr("arith", "", "String", "Int") }),
     ]);
@@ -162,7 +163,7 @@ describe("type-checker.fungi — combined & aggregate", () => {
     ]);
     assert.equal(flowCount, 2);
     assert.deepEqual(codesFor(diags, "ok"), []);
-    assert.deepEqual(codesFor(diags, "bad"), ["FUNGI-TYPE-002"]);
+    assert.deepEqual(codesFor(diags, "bad"), ["FUNGI-TYPE-008"]);
   });
 
   it("empty flow list → no diagnostics, flowCount 0", async () => {
@@ -195,8 +196,8 @@ const stmt = ({ kind, name = "", typeName = "", expr: e = [], body = [], elseBod
     elseBody: vList(elseBody),
   });
 
-const bodyFlow = ({ name, body = [] }) =>
-  vRecord({ name: vStr(name), body: vList(body) });
+const bodyFlow = ({ name, params = [], body = [] }) =>
+  vRecord({ name: vStr(name), params: vList(params), body: vList(body) });
 
 async function checkBodies(flows) {
   const args = new Map([["flows", vList(flows)]]);
@@ -335,5 +336,67 @@ describe("type-checker.fungi — checkFlowBodies (M-B body AST)", () => {
       ] }),
     ]);
     assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-002"]);
+  });
+
+  it("duplicate binding in the same scope → FUNGI-NAME-002", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "x", typeName: "Int", expr: [expr("lit", "1", "Int")] }),
+        stmt({ kind: "let", name: "x", typeName: "Int", expr: [expr("lit", "2", "Int")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-NAME-002"]);
+  });
+
+  it("re-declaring a name in a NESTED block shadows the outer scope → FUNGI-TYPE-020", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "x", typeName: "Int", expr: [expr("lit", "1", "Int")] }),
+        stmt({ kind: "if", expr: [expr("name", "cond")], body: [
+          stmt({ kind: "let", name: "x", typeName: "Int", expr: [expr("lit", "2", "Int")] }),
+        ] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-020"]);
+  });
+
+  it("a nested binding with a FRESH name does not shadow (no FUNGI-TYPE-020)", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "x", typeName: "Int", expr: [expr("lit", "1", "Int")] }),
+        stmt({ kind: "if", expr: [expr("name", "cond")], body: [
+          stmt({ kind: "let", name: "y", typeName: "Int", expr: [expr("lit", "2", "Int")] }),
+        ] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), []);
+  });
+
+  it("a name initializer referencing an undeclared symbol → FUNGI-TYPE-019", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "y", typeName: "Int", expr: [expr("name", "z")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-019"]);
+  });
+
+  it("a name initializer referencing an EARLIER binding is in scope (no FUNGI-TYPE-019)", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "x", typeName: "Int", expr: [expr("lit", "1", "Int")] }),
+        stmt({ kind: "let", name: "y", typeName: "Int", expr: [expr("name", "x")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), []);
+  });
+
+  it("a name initializer referencing a PARAM is in scope — params seed the body scope (no FUNGI-TYPE-019)", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", params: [param("p", "Int")], body: [
+        stmt({ kind: "let", name: "y", typeName: "Int", expr: [expr("name", "p")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), []);
   });
 });

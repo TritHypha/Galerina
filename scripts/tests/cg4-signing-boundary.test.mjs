@@ -24,6 +24,7 @@ function makePkg(name, effectsClause) {
   mkdirSync(join(dir, "src"), { recursive: true });
   writeFileSync(join(dir, "package.fungi.json"), JSON.stringify({ name, entry: "src/index.fungi" }));
   writeFileSync(join(dir, "src", "index.fungi"), [
+    "@version 1",
     "secure flow doThing(x: Int) -> Int",
     "contract {",
     `  intent "cg4 fixture"`,

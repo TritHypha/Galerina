@@ -1,59 +1,56 @@
-import json, sys, time, gc, tracemalloc
+import json, sys, time, gc
 
-N = 1000
-its = 1000
+# data-query — SQL-like filter + group-by over a synthetic record stream.
+#
+# THE common bulk-N workload — mirrors benchmark.fungi main() = scanRecords(10000, 3000)
+# EXACTLY: ONE pass over n records, each a WHERE test (amount > threshold) plus a
+# GROUP BY category count, so one call = n record-scans. Same on every runtime.
+def scan_records(n, threshold):
+    matching = 0
+    c0 = c1 = c2 = c3 = 0
+    for i in range(n):
+        amount = (i * 50) % 10000               # 0..9999 deterministic
+        if amount > threshold:
+            matching += 1
+        cat = (i * 7) % 4                        # 0..3
+        if cat == 0: c0 += 1
+        elif cat == 1: c1 += 1
+        elif cat == 2: c2 += 1
+        else: c3 += 1
+    return matching + c0 + c1 + c2 + c3
 
+
+N = 10000                       # records scanned per call — matches benchmark.fungi main()
+THRESHOLD = 3000
+RECORD_SCANS_PER_CALL = N       # the canonical N
+
+calls = 300                     # python is slower; fewer calls, same throughput unit
 for i, a in enumerate(sys.argv):
-    if a == "--size" and i+1<len(sys.argv): N=int(sys.argv[i+1])
-    if a in ("--iterations","--operations") and i+1<len(sys.argv): its=int(sys.argv[i+1])
+    if a in ("--iterations", "--operations") and i + 1 < len(sys.argv):
+        calls = int(sys.argv[i + 1])
 
-statuses   = ["pending", "approved", "rejected", "flagged"]
-categories = ["healthcare", "finance", "government", "retail"]
-dataset = [{"id": i+1, "amount": int(abs((i % 200) * 50)), "status": statuses[i%4],
-            "category": categories[(i*7)%4], "year": 2020+(i%5), "priority": i%10,
-            "approved": i%3!=0} for i in range(N)]
-
-def bench(name, fn, iterations):
-    for _ in range(5): fn()
-    t0 = time.perf_counter()
-    for _ in range(iterations): fn()
-    elapsed = (time.perf_counter() - t0) * 1000
-    return {"name": name, "iterations": iterations,
-            "elapsedMs": round(elapsed, 3),
-            "operationsPerSecond": round(iterations / max(elapsed/1000, 1e-9), 0),
-            "nsPerOp": round(elapsed * 1e6 / max(iterations, 1), 1)}
-
-from collections import defaultdict
-
-results = {
-    "filterByStatus": bench("Filter by status", lambda: [r for r in dataset if r["status"]=="approved"], its),
-    "filterCompound":  bench("Compound filter",  lambda: [r for r in dataset if r["status"]=="approved" and r["amount"]>3000], its),
-    "aggregateSum":    bench("SUM aggregate",    lambda: sum(r["amount"] for r in dataset if r["category"]=="healthcare"), its),
-    "groupBy":         bench("GROUP BY",         lambda: {k: sum(1 for r in dataset if r["category"]==k) for k in categories}, its),
-    "sortTop10":       bench("Sort + LIMIT 10",  lambda: sorted(dataset, key=lambda r: -r["amount"])[:10], its),
-    "joinLike":        bench("JOIN-like filter",  lambda: [r for r in dataset if r["approved"] and r["category"]=="healthcare" and r["amount"]>5000], its),
-}
-
-# Memory measurement pass (separate from throughput timing).
-# Primary/dominant op = filterByStatus, the main filter query.
-_mem_iters = min(its, 50000)
+for _ in range(3):
+    scan_records(N, THRESHOLD)  # warmup
 gc.collect()
-tracemalloc.start()
-_base = tracemalloc.get_traced_memory()[0]
-for _ in range(_mem_iters):
-    [r for r in dataset if r["status"] == "approved"]
-_cur, _peak = tracemalloc.get_traced_memory()
-tracemalloc.stop()
-_heap_delta = _cur - _base
 
+t0 = time.perf_counter()
+checksum = 0
+for _ in range(calls):
+    checksum = scan_records(N, THRESHOLD)
+elapsed = (time.perf_counter() - t0) * 1000
+
+total_scans = calls * RECORD_SCANS_PER_CALL
 print(json.dumps({
-    "runtime": "python", "benchmark": "data-query-v1", "datasetSize": N,
-    "results": results,
-    "memory": {
-        "heapUsedBytes": _cur,
-        "heapUsedDelta": _heap_delta,
-        "bytesPerOperation": round(_heap_delta / _mem_iters, 2),
-        "tracemallocPeak": _peak,
-    },
-    "notes": [f"Dataset: {N} records"],
+    "runtime": "python",
+    "benchmark": "data-query-v1",
+    "datasetSize": N,
+    "calls": calls,
+    "recordScansPerCall": RECORD_SCANS_PER_CALL,
+    "checksum": checksum,
+    "elapsedMs": round(elapsed, 3),
+    "operationsPerSecond": round(total_scans / max(elapsed / 1000, 1e-9)),
+    "callsPerSecond": round(calls / max(elapsed / 1000, 1e-9)),
+    "notes": [
+        "Common bulk-N path: scanRecords(10000) = 10000 record-scans/call (filter + group-by), identical on every runtime",
+    ],
 }, indent=2))

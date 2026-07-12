@@ -14,14 +14,14 @@
  * resolution of the provider is async but happens ONCE, off the request path.
  *
  * The kernel deliberately depends only on the STRUCTURAL `SecretsProvider` shape below — not on
- * `@galerina/ext-secrets-tmf` — so it takes no hard compile dependency across packages. The
- * ext-secrets-tmf `SealArena` satisfies this interface by shape (has/use), so a boot-resolved
+ * `@galerina/ext-secrets-spore` — so it takes no hard compile dependency across packages. The
+ * ext-secrets-spore `SealArena` satisfies this interface by shape (has/use), so a boot-resolved
  * arena can be passed straight in as the provider.
  */
 
 /**
  * The boot-resolved secrets provider the kernel owns for the process lifetime. Structurally
- * satisfied by the ext-secrets-tmf `SealArena` (arena.ts has/use). Fail-closed by contract:
+ * satisfied by the ext-secrets-spore `SealArena` (arena.ts has/use). Fail-closed by contract:
  * `has` is false for an absent OR faulted secret; `use` yields `undefined` (and never calls `fn`)
  * for an absent/faulted secret and otherwise hands `fn` a short-lived plaintext view that never
  * escapes via the return path.

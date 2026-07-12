@@ -4,7 +4,7 @@
 // Confirms that declared intent, effects, policy, and compute governance match
 // observed program behaviour. Runs after all checker passes.
 //
-// Spec: docs/Knowledge-Bases/galerina-governance-verifier-spec.md
+// Spec: ../ZTF-Knowledge-Bases/galerina-governance-verifier-spec.md
 //
 // Implemented diagnostics (Stage A / Phase 10C):
 //   FUNGI-GOV-002      MISSING_AUDIT_FOR_GOVERNED_SINK
@@ -238,7 +238,7 @@ export const FUNGI_GOV_012 = {
 // access (effect ending `.tenant_scoped`) that is not paired with the caller-scope proof
 // (the sibling marker effect `tenant.scope`) is a FAIL-CLOSED compile error — it kills
 // IDOR / OWASP-A01 (Broken Access Control) at compile time. Spec:
-// docs/Knowledge-Bases/galerina-tritmesh-feature-gap-analysis-2026-06-24.md §"6 reusable mechanics" #1.
+// ../ZTF-Knowledge-Bases/galerina-tritmesh-feature-gap-analysis-2026-06-24.md §"6 reusable mechanics" #1.
 //
 // SCOPE HONESTY (calibrated, R&D 0109): this is a per-flow effect-SURFACE intersection —
 // it proves the flow DECLARED the caller-scope binding alongside its tenant-scoped access.
@@ -288,7 +288,7 @@ export const FUNGI_TENANT_002 = {
 // The substrate {} contract block's three invariants, fail-closed. Codes are shared
 // with Direction C's SUBSTRATE_DIAGNOSTICS (galerina-tower-citizen/src/substrate-model.ts);
 // the strings must match byte-for-byte. Implemented in substrate-inference.ts.
-// Spec: docs/Knowledge-Bases/galerina-substrate-contracts.md.
+// Spec: ../ZTF-Knowledge-Bases/galerina-substrate-contracts.md.
 
 /** FUNGI-CRYPTO-PQ-001: a crypto.sign effect in a certified profile must declare a PQ/hybrid algorithm. */
 export const FUNGI_CRYPTO_PQ_001 = {
@@ -3597,12 +3597,16 @@ class GovernanceVerifier {
    */
   private verifyAssimilatedPlugins(nodes: readonly AstNode[], sourceFile: string): void {
     for (const node of nodes) {
-      if (node.kind !== "assimilatedPluginDecl") continue;
+      const isAssimilate = node.kind === "assimilatedPluginDecl";
+      const isSafe = node.kind === "importPluginDecl";
+      if (!isAssimilate && !isSafe) continue;
 
       const alias = node.value ?? "<unknown>";
 
-      // FUNGI-ASSIMILATE-001: warn if not in boot.fungi (Stage A warning; Stage B will be error)
-      if (!sourceFile.endsWith("boot.fungi")) {
+      // FUNGI-ASSIMILATE-001: assimilated (Hot-Code Residency) plugins may only be granted in
+      // boot.fungi. A `safe` bridged plugin is isolated/demand-loaded/transient and has no such
+      // constraint, so this boot check is assimilate-only.
+      if (isAssimilate && !sourceFile.endsWith("boot.fungi")) {
         this.diagnostics.push(makeGovDiag(
           "FUNGI-ASSIMILATE-001",
           "ASSIMILATE_OUTSIDE_BOOT",
@@ -3642,12 +3646,18 @@ class GovernanceVerifier {
       }
 
       if (!hasGrant) {
+        // EVERY plugin import (safe OR assimilate) is a Toxic-Border deny-by-default edge:
+        // an access { grant } contract is mandatory (imported effects are subset-checked
+        // against it). Previously only the assimilate form was checked, so a grantless
+        // `import plugin safe` slipped through fail-open (import-governance handover).
+        const [label, why] = isAssimilate
+          ? ["Assimilated plugin", "V_DPM bits are pre-warmed at boot — explicit capability grants are mandatory."]
+          : ["Plugin", "A plugin import is a deny-by-default Toxic-Border edge — explicit capability grants are mandatory."];
         this.diagnostics.push(makeGovDiag(
           "FUNGI-ASSIMILATE-003",
           "ASSIMILATE_MISSING_CAPABILITY_GRANTS",
           "error",
-          `Assimilated plugin '${alias}' has no access { grant } block in its contract. ` +
-          `V_DPM bits are pre-warmed at boot — explicit capability grants are mandatory.`,
+          `${label} '${alias}' has no access { grant } block in its contract. ${why}`,
           node.location,
           `Add inside the plugin contract: access { grant network.outbound }`,
         ));

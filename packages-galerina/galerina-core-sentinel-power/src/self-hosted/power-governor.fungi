@@ -1,0 +1,71 @@
+@version 1
+/// @file: power-governor.fungi
+/// @purpose: Stage-6 CHECKER-VERIFIED twin of the sentinel-power PowerGovernor DECISION surface
+///   (power-governor.ts + thermal-envelope.ts). The host reads the thermal sensor and computes the
+///   threshold-crossing booleans (the float comparisons are floor); this pure surface folds them into
+///   the power-state ladder, the permitted kernel tier, and the fail-closed admission verdict. Core
+///   governance property (No-Coercion): the governor may only ever DOWN-tier toward the cool `shadow`
+///   kernel as heat rises — a request for a HOTTER kernel than the current band permits is DENIED.
+///   Trit: ALLOW = +1, DENY = -1.
+/// @fidelity: powerStateVerdict mirrors stateFor (TERMINAL first — the hottest band wins, fail-closed
+///   toward safety). kernelForState mirrors kernelForState (NOMINAL→native, THROTTLED→simd, SAFETY &
+///   TERMINAL→shadow). adjustmentVerdict mirrors requestAdjustment (granted iff target is cooler-or-equal
+///   to the band ceiling). envelopeValid mirrors validateEnvelope (LSP-ENV-001: 0 < throttle < safe <
+///   critical). killSwitchVerdict mirrors assertWithinEnvelope (LSP-CRITICAL-001: TERMINAL denies).
+/// @status: checker-verified twin (galerina check clean); NOT build-wired (execution switch #143).
+
+/// PowerState codes: 0 NOMINAL · 1 THROTTLED · 2 SAFETY · 3 TERMINAL (a strictly-ordered heat ladder).
+/// KernelTier ranks (power draw, hottest→coolest): 0 native · 1 simd · 2 shadow. A HIGHER rank is COOLER.
+
+/// powerStateVerdict — map the current reading to a power-state. The host supplies the three
+/// at-or-above-threshold booleans (float compares are floor); the twin folds them TERMINAL-first, so the
+/// hottest crossed band always wins (fail-closed toward the safe/shadow end).
+pure flow powerStateVerdict(atOrAboveCritical: Bool, atOrAboveSafe: Bool, atOrAboveThrottle: Bool) -> Int
+contract { intent { "Fold the thermal thresholds into a power-state, hottest band first (fail-closed toward safety)." } }
+{
+  if atOrAboveCritical == true { return 3 }
+  if atOrAboveSafe == true { return 2 }
+  if atOrAboveThrottle == true { return 1 }
+  return 0
+}
+
+/// kernelForState — the maximum-power kernel each band permits. Down-tiers toward `shadow` as heat rises;
+/// SAFETY and TERMINAL both permit only the cool shadow kernel.
+pure flow kernelForState(stateCode: Int) -> Int
+contract { intent { "Map a power-state to the hottest kernel tier its band permits (native/simd/shadow)." } }
+{
+  if stateCode == 0 { return 0 }
+  if stateCode == 1 { return 1 }
+  return 2
+}
+
+/// adjustmentVerdict — the admission decision (requestAdjustment). A request is GRANTED only when the
+/// target draws no more power than the band's ceiling — i.e. the target rank is cooler-or-equal
+/// (targetRank >= permittedRank). A request for a HOTTER kernel (lower rank) than the band allows is a
+/// fail-closed DENY: No-Coercion — heat can only force down-tiering, never authorize an up-tier.
+pure flow adjustmentVerdict(targetRank: Int, permittedRank: Int) -> Int
+contract { intent { "Grant a kernel request only if it is cooler-or-equal to the band ceiling; deny any up-tier." } }
+{
+  if targetRank < permittedRank { return 0 - 1 }
+  return 1
+}
+
+/// envelopeValid — the LSP-ENV-001 precondition. An envelope is sane only if 0 < throttleC < safeC <
+/// criticalC; the host computes the three ordering booleans. Fail-closed: any violation denies.
+pure flow envelopeValid(throttlePositive: Bool, throttleLtSafe: Bool, safeLtCritical: Bool) -> Int
+contract { intent { "Fail-closed envelope check: require 0 < throttle < safe < critical, else reject (LSP-ENV-001)." } }
+{
+  if throttlePositive == false { return 0 - 1 }
+  if throttleLtSafe == false { return 0 - 1 }
+  if safeLtCritical == false { return 0 - 1 }
+  return 1
+}
+
+/// killSwitchVerdict — the LSP-CRITICAL-001 kill-switch (assertWithinEnvelope). TERMINAL (at/above the
+/// critical threshold) denies deterministically; every cooler band passes.
+pure flow killSwitchVerdict(stateCode: Int) -> Int
+contract { intent { "Fail-closed thermal kill-switch: deny at TERMINAL (critical), else allow (LSP-CRITICAL-001)." } }
+{
+  if stateCode == 3 { return 0 - 1 }
+  return 1
+}

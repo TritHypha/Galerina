@@ -15,8 +15,8 @@
 // Validation throws SubstrateMathError. Consumers that need a different error contract
 // (e.g. tower-citizen's SubstrateParamError) validate in their own wrapper BEFORE calling.
 //
-// Spec: docs/Knowledge-Bases/galerina-substrate-failure-model.md §3.2/§3.4,
-//       docs/Knowledge-Bases/galerina-substrate-contracts.md §6.
+// Spec: ../ZTF-Knowledge-Bases/galerina-substrate-failure-model.md §3.2/§3.4,
+//       ../ZTF-Knowledge-Bases/galerina-substrate-contracts.md §6.
 // =============================================================================
 
 export class SubstrateMathError extends Error {

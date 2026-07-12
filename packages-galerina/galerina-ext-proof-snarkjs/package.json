@@ -1,13 +1,14 @@
 {
   "name": "@galerina/ext-proof-snarkjs",
   "version": "1.0.0-beta.2",
+  "license": "GPL-3.0-only",
   "description": "snarkjs Groth16 prover backend for Galerina epilogue { generate_proof zk_snark_receipt }. Phase 1: pure-JS Groth16 circuit over sha256(sourceText + contractHash). Non-core extension — the compiler core never imports this directly.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "test": "node --test tests/*.test.mjs",
+    "test": "npm run build && node --test tests/*.test.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

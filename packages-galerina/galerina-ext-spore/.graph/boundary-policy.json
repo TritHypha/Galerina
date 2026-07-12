@@ -1,0 +1,10 @@
+{
+  "packageName": "@galerina/ext-spore",
+  "allowedExternal": [
+    "@noble/ciphers/aes.js",
+    "@noble/post-quantum/hybrid.js",
+    "@noble/post-quantum/ml-kem.js",
+    "node:crypto"
+  ],
+  "note": "Baseline auto-generated. Edit allowedExternal to widen/narrow the border. `--check` fails if an import appears that is not listed here."
+}

@@ -1,5 +1,5 @@
 // =============================================================================
-// scanner.ts — scans .md files in docs/Knowledge-Bases/, extracts metadata
+// scanner.ts — scans .md files in ../ZTF-Knowledge-Bases/, extracts metadata
 // and cross-references between documents.
 // =============================================================================
 
@@ -115,9 +115,12 @@ export function scanKBDirectory(kbDir: string): ScanResult {
       continue;
     }
 
-    // Title: first # heading
+    // Title: first # heading (scrub absolute local paths — a KB doc titled with `C:\Users\<name>\...`
+    // would otherwise leak the machine into the committed kb-graph report; audit-path-leak.mjs enforces this).
     const headingMatch = HEADING_RE.exec(content);
-    const title = (headingMatch?.[1] ?? "").trim() || id;
+    const title = ((headingMatch?.[1] ?? "").trim() || id)
+      .replace(/[A-Za-z]:[\\/]{1,2}Users[\\/]{1,2}[^\s"'`)\]]+/g, "<path>")
+      .replace(/(?:[A-Za-z]:[\\/]{1,2})?wwwprojects[\\/][^\s"'`)\]]*/g, "<path>");
 
     // Version
     const versionMatch = VERSION_RE.exec(content);

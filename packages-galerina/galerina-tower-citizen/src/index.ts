@@ -47,6 +47,30 @@ export {
 export type { ConfidenceVerdict } from "./three-valued-governance.js";
 export type { GovernanceDiagnostic, BoundaryDecision } from "./three-valued-governance.js";
 
+// ── Epistemic type-state — the trust trit lifted from verdict to value (RD-0337) ──
+// The four tri-native safety primitives + the 3-axis type, all a thin proven lift over
+// three-valued-governance: values carry a first-class CONTAGIOUS, FAIL-CLOSED epistemic
+// trit (proven/unknown/refuted); the only lift to PROVEN is an explicit discharge; a
+// non-proven value deny-collapses at the boundary (FUNGI-GOV-3VL-001). Safety under
+// REPRESENTED (not eliminated) uncertainty — the tri-native element binary cannot express.
+export {
+  Trust,
+  unverified, trustedRoot, refute, discharge,
+  map, combine, combineAll,
+  isTrusted, isUnverified, isRefuted, trustOf,
+  requireTrusted,
+  optimistic, reconcile,
+  allContracts, anyContract, evaluateContract,
+  validateTriSchema,
+  classJoin, triTyped, combineTriTyped, declassify, releaseTo,
+} from "./epistemic-type-state.js";
+export type {
+  Epistemic, Trusted, Unverified, Refuted, TrustBoundaryResult,
+  Contract, EnforcementMode, ContractOutcome,
+  FieldRequirement, TriFieldSpec, TriSchema, TriFieldResult, TriSchemaResult,
+  Classification, TriTyped, ReleaseResult,
+} from "./epistemic-type-state.js";
+
 // ── Per-user data hard border — Qexecuted = Q ∩ S_user (owner note 54 / IDOR, CWE-639) ──
 // K3 set-intersection at the query boundary: caller scope comes ONLY from the proven .spore passport, never a
 // `?user_id=` param; a developer `where` may only narrow. Visibility is fail-closed PRIVATE by default —
@@ -87,6 +111,26 @@ export type {
 // expired -> DENY; malformed/absent -> INDETERMINATE/FUNGI-GOV-3VL-001. Pure (the caller passes now).
 export { checkLease, isLeaseValid, leaseVerdict } from "./lease.js";
 export type { CapabilityLease, LeaseDecision, LeaseDenyReason } from "./lease.js";
+
+// ── Triple-lock key-rotation DECISION core (#28/D2, steps 1–3) — owner-unlocked 2026-07-10 ──
+// Append-only MAC'd-head KeyRing (epochs never deleted → verify capability retained forever);
+// gates: readiness R1-R3 → triple lock allOf([A,B,C]) → switch → triple-verify → drain → retire
+// (signing power only; symmetric destroy = structural DENY). Atomic by immutability: abort
+// returns the SAME process object. DI seams fail-closed; key BYTES never enter this module —
+// custody execution (step 5) is a separate owner-gated package.
+export {
+  createKeyRing, verifyRing, activeEpoch, epochForVerification,
+  stageEpoch, switchActive, fallbackSwitch, markRevoked,
+  readinessVerdict, lockAVerdict, lockBVerdict, lockCVerdict, tripleLockVerdict,
+  tripleVerifyVerdict, drainVerdict, retireVerdict,
+  beginRotation, checkReadiness, stageCandidate, commitTripleLock, switchEpoch,
+  confirmTripleVerify, fallbackToOldEpoch, confirmDrain, retireOldEpoch,
+} from "./key-rotation.js";
+export type {
+  KeyKind, KeyEpochStatus, KeyEpoch, KeyRing, Transition,
+  RotationCtx, GateResult, ReadinessEvidence, VerifyEvidence, DrainEvidence,
+  RetirePolicyMode, RetirePolicy, RotationPhase, RotationProcess, PhaseOutcome,
+} from "./key-rotation.js";
 
 // ── Distinct-signer M-of-N threshold quorum (R&D 0109 G2, core half) — K3 custody DECISION ──
 // checkQuorum folds per-signer verdicts: ALLOW iff >= M DISTINCT signers approve (anti-Sybil,

@@ -231,6 +231,8 @@ Provides:
 - AgentResult
 - AgentMergePolicy
 - AgentReport
+- AgentDiagnosticSeverity
+- AgentDiagnostic
 
 ## galerina-ai-neural
 
@@ -261,98 +263,423 @@ Provides:
 - SpikingModel
 - NeuromorphicPlan
 - NeuromorphicReport
+- NeuromorphicDiagnosticSeverity
+- NeuromorphicDiagnostic
+- validateSpikeTrain
+- validateSpikingModel
+- validateNeuromorphicPlan
+- createNeuromorphicReport
 
 ## galerina-data
 
 Galerina data processing package umbrella contracts.
 
+Provides:
+- DataFamilyPackage
+- DATA_FAMILY_PACKAGES
+- DataMemoryLimits
+- DataSecurityBoundary
+- DataBoundaryDeclaration
+- DataChecksumAlgorithm
+- ArchiveIntegrityRef
+- DataReportStatus
+- DataFamilyReportEntry
+- DataFamilyReportIndex
+- DataDiagnosticSeverity
+- DataDiagnostic
+
 ## galerina-data-html
 
 Galerina HTML parse, sanitize, render and search document contracts.
+
+Provides:
+- HtmlParseMode
+- HtmlParsePlan
+- HtmlSanitizePolicy
+- HtmlRenderPlan
+- HtmlExtractionTarget
+- HtmlExtractionPlan
+- HtmlSearchField
+- HtmlSearchDocumentPlan
+- HtmlUnsafeFindingKind
+- HtmlUnsafeAction
+- HtmlUnsafeFinding
+- HtmlProcessingReport
 
 ## galerina-data-search
 
 Galerina search document, indexing, query and search report contracts.
 
+Provides:
+- SearchFieldKind
+- SearchDocumentField
+- SearchDocumentContract
+- SearchIndexPolicy
+- SearchIndexInput
+- SearchFilterOperator
+- SearchFilter
+- SearchQueryContract
+- SearchRankingStrategy
+- SearchFieldBoost
+- SearchRankingMetadata
+- SearchIndexReport
+
 ## galerina-data-archive
 
 Galerina archive manifest, integrity and restore report contracts.
+
+Provides:
+- ChecksumAlgorithm
+- ChecksumRef
+- ContentAddressedRef
+- ArchiveItem
+- SignatureAlgorithm
+- SignatureRef
+- RetentionPolicyRef
+- ArchiveManifest
+- ArchiveVerificationStatus
+- ArchiveIntegrityReport
+- ArchiveRestoreReport
+- ArchiveDiagnosticSeverity
 
 ## galerina-data-db
 
 Galerina typed database boundary contracts for model, query, command, response, archive and report flows.
 
+Provides:
+- DbBoundaryOperationKind
+- DbBoundaryOperation
+- DbBoundaryRequirements
+- DbModelFlow
+- DbReportIndexEntry
+- DbReportIndex
+- DbBoundaryReport
+- DbDiagnosticSeverity
+- DbDiagnostic
+- KNOWN_DB_OPERATION_KINDS
+- validateDbBoundaryOperation
+- validateDbBoundaryRequirements
+
 ## galerina-data-model
 
 Galerina typed database model, field classification and storage mapping contracts.
+
+Provides:
+- ModelFieldClassification
+- ModelFieldType
+- SecretStorageMode
+- ModelField
+- ModelKeyKind
+- ModelKey
+- ModelPermissionAction
+- ModelPermission
+- StorageKind
+- StorageMapping
+- DataModelContract
+- DataModelDiagnosticSeverity
 
 ## galerina-data-query
 
 Galerina typed query, command, parameterisation and database access report contracts.
 
+Provides:
+- QueryParameterType
+- QueryParameter
+- QueryCardinality
+- TypedQueryDeclaration
+- CommandEffect
+- TypedCommandDeclaration
+- RawSqlException
+- DatabaseAccessPolicy
+- QueryOption
+- optionSome
+- optionNone
+- isSome
+
 ## galerina-data-response
 
 Galerina safe database-model-to-response mapping and response report contracts.
+
+Provides:
+- ResponseFieldClassification
+- SourceModelField
+- ResponseFieldMapping
+- ModelToResponseMapping
+- ResponseFlowDeclaration
+- ResponseReportKind
+- ResponseReport
+- ResponseDiagnosticSeverity
+- ResponseDiagnostic
+- validateResponseMapping
+- validateResponseFlow
+- applyResponseMapping
 
 ## galerina-data-json
 
 Galerina JSON streaming, validation, redaction and archive contracts.
 
+Provides:
+- JsonDecodeMode
+- JsonMemoryPolicy
+- JsonDecodePlan
+- JsonSchemaKind
+- JsonSchemaField
+- JsonSchemaContract
+- JsonExtractionPlan
+- JsonRedactionPolicy
+- JsonArchiveReport
+- JsonDiagnosticSeverity
+- JsonDiagnostic
+- validateJsonMemoryPolicy
+
 ## galerina-data-database
 
 Galerina database export, snapshot, checksum and archive contracts.
+
+Provides:
+- DatabaseChecksumAlgorithm
+- DatabaseChecksum
+- SchemaVersionMetadata
+- DatabaseSnapshotMetadata
+- TableExportContract
+- DatabaseExportContract
+- DatabaseVerificationStatus
+- DatabaseExportReport
+- DatabaseRestoreValidationReport
+- DatabaseDiagnosticSeverity
+- DatabaseDiagnostic
+- validateDatabaseChecksum
 
 ## galerina-data-pipeline
 
 Galerina bounded streaming data pipeline, backpressure and checkpoint contracts.
 
+Provides:
+- PipelineSourceKind
+- PipelineSource
+- PipelineTransform
+- BatchWindow
+- SaturationBehaviour
+- BackpressurePolicy
+- CheckpointPolicy
+- RetryPolicy
+- QuarantinePolicy
+- PipelineBudgets
+- PipelineStage
+- PipelineDefinition
+
 ## galerina-data-reports
 
 Galerina data processing, HTML, search, archive and pipeline report contracts.
+
+Provides:
+- DataReportKind
+- DataReportStatus
+- DataReportDiagnosticSeverity
+- DataReportDiagnostic
+- DataReportEnvelope
+- KNOWN_DATA_REPORT_KINDS
+- deriveDataReportStatus
+- validateDataReportEnvelope
+- createDataReportEnvelope
 
 ## galerina-web
 
 Galerina browser-safe web package umbrella contracts.
 
+Provides:
+- WebFamilyPackage
+- WEB_FAMILY_PACKAGES
+- WebDiagnosticSeverity
+- WebDiagnostic
+- BrowserRuntimeProfile
+- WebRuntimeCheck
+- WebRuntimeCheckOutcome
+- WebReportStatus
+- BrowserRuntimeReport
+- WEB_RUNTIME_CHECKS
+- WebFamilyReportEntry
+- WebFamilyReportIndex
+
 ## galerina-web-render
 
 Galerina typed safe browser rendering pipeline contracts.
+
+Provides:
+- WebRenderDiagnosticSeverity
+- WebRenderDiagnostic
+- TextRenderContent
+- SafeHtmlRenderContent
+- RenderableContent
+- KNOWN_RENDERABLE_CONTENT_KINDS
+- StateDiffRenderPlan
+- StreamingBatchRenderPlan
+- DomUpdateCounts
+- WebRenderCheck
+- WebRenderCheckOutcome
+- WebRenderReportStatus
 
 ## galerina-web-state
 
 Galerina browser client state and state-diff contracts.
 
+Provides:
+- WebStateDiagnosticSeverity
+- WebStateDiagnostic
+- PageStatePhase
+- KNOWN_PAGE_STATE_PHASES
+- PageStateFieldKind
+- KNOWN_PAGE_STATE_FIELD_KINDS
+- PageStateField
+- PageStateContract
+- ApiToStateConversion
+- HydrationFieldClassification
+- KNOWN_HYDRATION_CLASSIFICATIONS
+- HydrationPayloadField
+
 ## galerina-web-components
 
 Galerina typed browser component boundary contracts.
+
+Provides:
+- WebComponentsDiagnosticSeverity
+- WebComponentsDiagnostic
+- ComponentPropKind
+- KNOWN_COMPONENT_PROP_KINDS
+- ComponentProp
+- ComponentTextChild
+- ComponentSafeHtmlChild
+- ComponentChildContent
+- KNOWN_COMPONENT_CHILD_KINDS
+- ComponentSlotContent
+- ComponentEffect
+- KNOWN_COMPONENT_EFFECTS
 
 ## galerina-web-router
 
 Galerina browser route and navigation contracts.
 
+Provides:
+- WebRouterDiagnosticSeverity
+- WebRouterDiagnostic
+- RouteParamValidatorKind
+- KNOWN_ROUTE_PARAM_VALIDATORS
+- RouteParamDeclaration
+- RouteDataFetchContract
+- RouteContract
+- RoutePreloadPolicy
+- WebRouterCheck
+- WebRouterCheckOutcome
+- WebRouterReportStatus
+- WebRouteReport
+
 ## galerina-web-events
 
 Galerina typed browser event contracts.
+
+Provides:
+- WebEventsDiagnosticSeverity
+- WebEventsDiagnostic
+- WebEventKind
+- KNOWN_WEB_EVENT_KINDS
+- EventPayloadFieldKind
+- KNOWN_EVENT_PAYLOAD_FIELD_KINDS
+- EventPayloadField
+- EventPropagationPolicy
+- KNOWN_EVENT_PROPAGATION_POLICIES
+- EventRatePolicy
+- SensitiveCapability
+- KNOWN_SENSITIVE_CAPABILITIES
 
 ## galerina-db-postgres
 
 Galerina PostgreSQL adapter contract placeholder.
 
+Provides:
+- PostgresDiagnosticSeverity
+- PostgresDiagnostic
+- PostgresAdapterRequirements
+- PostgresContractRefs
+- PostgresCredentialRef
+- PostgresPlaceholderStyle
+- PostgresSslMode
+- PostgresConnectionContract
+- PostgresAdapterDeclaration
+- PostgresAdapterCheck
+- PostgresAdapterCheckOutcome
+- PostgresAdapterReportStatus
+
 ## galerina-db-mysql
 
 Galerina MySQL adapter contract placeholder.
+
+Provides:
+- MysqlDiagnosticSeverity
+- MysqlDiagnostic
+- MysqlAdapterRequirements
+- MysqlContractRefs
+- MysqlCredentialRef
+- MysqlPlaceholderStyle
+- MysqlTlsMode
+- MysqlConnectionContract
+- MysqlAdapterDeclaration
+- MysqlAdapterCheck
+- MysqlAdapterCheckOutcome
+- MysqlAdapterReportStatus
 
 ## galerina-db-sqlite
 
 Galerina SQLite adapter contract placeholder.
 
+Provides:
+- SqliteDiagnosticSeverity
+- SqliteDiagnostic
+- SqliteAdapterRequirements
+- SqliteContractRefs
+- SqliteCredentialRef
+- SqlitePlaceholderStyle
+- SqliteJournalMode
+- SqliteAdapterDeclaration
+- SqliteAdapterCheck
+- SqliteAdapterCheckOutcome
+- SqliteAdapterReportStatus
+- SqliteAdapterReport
+
 ## galerina-db-opensearch
 
 Galerina OpenSearch adapter contract placeholder.
 
+Provides:
+- OpenSearchDiagnosticSeverity
+- OpenSearchDiagnostic
+- OpenSearchAdapterRequirements
+- OpenSearchContractRefs
+- OpenSearchCredentialRef
+- OpenSearchConnectionContract
+- OpenSearchIndexOperationKind
+- OpenSearchIndexOperation
+- OpenSearchQueryContract
+- OpenSearchAdapterDeclaration
+- OpenSearchAdapterCheck
+- OpenSearchAdapterCheckOutcome
+
 ## galerina-db-firestore
 
 Galerina Firestore adapter contract placeholder.
+
+Provides:
+- FirestoreDiagnosticSeverity
+- FirestoreDiagnostic
+- FirestoreAdapterRequirements
+- FirestoreContractRefs
+- FirestoreCredentialRef
+- FirestorePathKind
+- FirestorePathContract
+- FirestoreIndexFieldOrder
+- FirestoreIndexField
+- FirestoreCompositeIndex
+- FirestoreAdapterDeclaration
+- FirestoreAdapterCheck
 
 ## galerina-core-photonic
 
@@ -417,10 +744,29 @@ Provides:
 - NativeTarget
 - NativeArtifact
 - NativeTargetReport
+- NativeDiagnosticSeverity
+- NativeDiagnostic
+- validateNativeTarget
+- validateNativeArtifact
+- createNativeTargetReport
 
 ## galerina-target-js
 
 Galerina JavaScript output target planning contracts.
+
+Provides:
+- JsRuntime
+- JsModuleFormat
+- SourceMapMode
+- SourceMapRule
+- JsOutputPlan
+- EsModuleMetadata
+- FrameworkAdapterMetadata
+- JsBundleCheckOutcome
+- JsBundleReport
+- JsTargetDiagnosticSeverity
+- JsTargetDiagnostic
+- isServerOnlyImport
 
 ## galerina-target-wasm
 
@@ -430,6 +776,10 @@ Provides:
 - WasmTarget
 - WasmArtefact
 - WasmTargetReport
+- WasmDiagnosticSeverity
+- WasmDiagnostic
+- validateWasmArtefact
+- createWasmTargetReport
 
 ## galerina-target-gpu
 
@@ -439,6 +789,10 @@ Provides:
 - GpuTargetCapability
 - GpuKernelPlan
 - GpuTargetReport
+- GpuDiagnosticSeverity
+- GpuDiagnostic
+- validateGpuKernelPlan
+- createGpuTargetReport
 
 ## galerina-target-ai-accelerator
 
@@ -515,6 +869,9 @@ Standalone Galerina authentication/authorization FACTOR provider: computes the K
 
 Provides:
 - scopeVerdict
+- JwtAlg
+- BearerVerifyOptions
+- bearerTokenVerdict
 - channelIdentityVerdict
 - composeAuthVerdict
 - previewAdmission
@@ -658,24 +1015,6 @@ Provides:
 - flipProbability
 - singleLaneErrorProbability
 - nmrFailureProbability
-
-## galerina-ext-bridge-quantum
-
-Galerina governed bridge for IBM ffsim — out-of-process fermionic quantum simulation under contract, Tower audit lifecycle + attestation
-
-Provides:
-- FfsimEnv
-- detectFfsim
-- FfsimBackend
-- selectQuantumBackend
-- createQuantumBridgeRegistry
-- LimitVerdict
-- checkJobLimits
-- FfsimManifestInputs
-- buildFfsimManifest
-- validateFfsimManifest
-- QuantumOp
-- QUANTUM_OPS
 
 ## galerina-inference-bridge-contract
 
@@ -830,9 +1169,9 @@ Provides:
 - TriPipeEngine
 - createTriPipeEngine
 
-## galerina-ext-tmf
+## galerina-ext-spore
 
-Galerina .tmf format engine (Phase 2 #6) — TMX-256 integrity (TriMerkle-XOF/SHAKE256), container, KEM-DEM confidentiality, ML-DSA-65 signing. Crypto-on-core: bit-exact, deterministic.
+Galerina .spore format engine (Phase 2 #6) — TMX-256 integrity (TriMerkle-XOF/SHAKE256), container, KEM-DEM confidentiality, ML-DSA-65 signing. Crypto-on-core: bit-exact, deterministic.
 
 Provides:
 - MAGIC
@@ -840,13 +1179,13 @@ Provides:
 - HEADER_CORE_SIZE
 - ENTRY_SIZE
 - TMX_PROFILE_SHAKE
-- TmfErrorCode
-- TmfError
-- TmfSection
-- TmfReadResult
+- SporeErrorCode
+- SporeError
+- SporeSection
+- SporeReadResult
 - headerCore
-- writeTmf
-- readTmf
+- writeSpore
+- readSpore
 
 ## galerina-ext-bridge-bitnet
 
@@ -923,9 +1262,9 @@ Provides:
 - SecretHandle
 - VaultClient
 
-## galerina-ext-secrets-tmf
+## galerina-ext-secrets-spore
 
-OPTIONAL sealed-secrets-on-.tmf layer for Galerina. env.tmf = an encrypted-at-rest replacement for plaintext .env, edited through a governed in-memory-only CLI (no temp file, no $EDITOR, no .swp). Thin orchestration over @galerina/ext-tmf (format/crypto) + the ext-secrets-vault store discipline. No new crypto, no new container bytes; crypto stays Binary (FUNGI-SUBSTRATE-001). Unsigned-but-encrypted (flags.signed=0); signed root gated on ext-tmf slice 4/#7.
+OPTIONAL sealed-secrets-on-.spore layer for Galerina. env.spore = an encrypted-at-rest replacement for plaintext .env, edited through a governed in-memory-only CLI (no temp file, no $EDITOR, no .swp). Thin orchestration over @galerina/ext-spore (format/crypto) + the ext-secrets-vault store discipline. No new crypto, no new container bytes; crypto stays Binary (FUNGI-SUBSTRATE-001). Unsigned-but-encrypted (flags.signed=0); signed root gated on ext-spore slice 4/#7.
 
 Provides:
 - SecretConfigSource
@@ -940,6 +1279,23 @@ Provides:
 - atomicWriteCiphertext
 - setMlockHook
 - tryMlock
+
+## galerina-ext-tritsocket
+
+TritSocket: a deny-only ternary (Kleene-3) admission pre-filter. Emits Deny | Maybe — never Allow. A cheap, cache-dense necessary-condition check that runs IN FRONT OF a real keyed PQ gate (ML-DSA/Ed25519/HMAC), cutting load without ever weakening the real gate. The public mask makes the score forgeable, which is exactly why Maybe is never an Allow.
+
+Provides:
+- RealKeyedGate
+- admitSync
+- Verdict
+- Trit
+- packedLen
+- pack
+- unpack
+- prefilter
+- dot
+- prefilterBatch
+- ABI_VERSION
 
 ## galerina-governance-telemetry
 
@@ -1061,6 +1417,24 @@ Provides:
 - search
 - searchWithIndex
 - IndexedFlow
+
+## galerina-devtools-fungi-scan
+
+Syntax-migration corpus scanner: walks every .fungi/.gate file and reports old-form usage, @version headers, match exhaustiveness and planned-keyword collisions — via the REAL compiler lexer, never regex.
+
+Provides:
+- discoverInlineHosts
+- InlineFixture
+- looksLikeFungi
+- extractFungiFixtures
+- scanInlineFixtures
+- WordRollup
+- Rollup
+- buildRollup
+- renderMarkdown
+- renderConsole
+- PLANNED_CONSTRUCT_WORDS
+- PLANNED_ALIAS_WORDS
 
 ## galerina-devtools-kb-graph
 

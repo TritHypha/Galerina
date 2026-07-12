@@ -5,15 +5,13 @@
 
 **Status:** ✅ PASS
 
-> ⚠️ **Zero source files scanned.** The roots/extensions below matched nothing — this border is empty because nothing was inspected, NOT because the package has no dependencies. Check the package's source layout against `packageGraph.roots`/`extensions` in its package.json.
-
-**Scanned scope:** roots [_none present_] · extensions [`.ts`, `.fungi`]
+**Scanned scope:** roots [`src`] · extensions [`.ts`, `.fungi`]
 
 ## Summary
 
 | Metric | Count |
 |---|---|
-| Files | 0 |
+| Files | 1 |
 | Internal edges | 0 |
 | External dependencies | 0 |
 | ├─ Node core | 0 |
@@ -39,4 +37,4 @@ No boundary violations. All external imports are within the allowlist.
 _none_ — every file is reachable from an internal import or entry point.
 
 ## Entry Points
-_none detected_
+- `src/index.ts`

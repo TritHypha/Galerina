@@ -56,4 +56,4 @@ layers exist as implemented, tested, reportable runtime components.
 
 ## Knowledge Base
 
-See [Node-Hosted Runtime Roadmap](Knowledge-Bases/node-hosted-runtime-roadmap.md).
+See [Node-Hosted Runtime Roadmap](../../ZTF-Knowledge-Bases/node-hosted-runtime-roadmap.md).

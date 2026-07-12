@@ -10,7 +10,7 @@
 ;;
 ;; Build order position: 6 of 7 (penultimate)
 ;;
-;; See: docs/Knowledge-Bases/galerina-topological-graph-engine.md
+;; See: ../ZTF-Knowledge-Bases/galerina-topological-graph-engine.md
 
 import "./vdpm.fungi"
 import "./capability-map.fungi"

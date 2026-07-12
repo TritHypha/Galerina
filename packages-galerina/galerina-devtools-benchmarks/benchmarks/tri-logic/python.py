@@ -1,61 +1,73 @@
-import json, sys, time, gc, tracemalloc
+import json, sys, time, gc
 
-T, F, U = 1, -1, 0
-VALS = [T, F, U]
+# tri-logic — Kleene ternary logic, Int8 encoding: True=1, Unknown=0, False=-1.
+# Tri.and = min(a,b), Tri.or = max(a,b), Tri.not = -a.
+def tri_and(a, b): return a if a < b else b
+def tri_or(a, b):  return a if a > b else b
+def tri_not(a):    return -a
 
-def tri_and(a, b):
-    if a == F or b == F: return F
-    if a == U or b == U: return U
-    return T
 
-def tri_or(a, b):
-    if a == T or b == T: return T
-    if a == U or b == U: return U
-    return F
+def verify_truth_tables():
+    VALS = [1, -1, 0]
+    andE = {(1,1):1,(1,0):0,(1,-1):-1,(0,1):0,(0,0):0,(0,-1):-1,(-1,1):-1,(-1,0):-1,(-1,-1):-1}
+    orE  = {(1,1):1,(1,0):1,(1,-1):1,(0,1):1,(0,0):0,(0,-1):0,(-1,1):1,(-1,0):0,(-1,-1):-1}
+    errors = 0
+    for a in VALS:
+        for b in VALS:
+            if tri_and(a, b) != andE[(a, b)]: errors += 1
+            if tri_or(a, b)  != orE[(a, b)]:  errors += 1
+    for a in VALS:
+        if tri_not(a) != -a: errors += 1
+    return errors
 
-def tri_not(a):
-    return {T: F, F: T, U: U}[a]
 
-its = 200000
+# THE common bulk-N workload — mirrors benchmark.fungi main() = runBulkTri(100000)
+# EXACTLY: n elements, each 3 trit-ops (and + or + not), one call = 3n trit-ops.
+def run_bulk_tri(n):
+    total = 0
+    for i in range(n):
+        a = (i % 3) - 1
+        b = ((i * 7) % 3) - 1
+        total = total + tri_and(a, b) + tri_or(a, b) + tri_not(a)
+        if total > 1000000:
+            total -= 1000000
+    return total
+
+
+ELEMENTS = 100000                       # matches benchmark.fungi main()
+TRIT_OPS_PER_CALL = ELEMENTS * 3        # 300000 — the canonical N
+
+calls = 40                              # python is ~30x slower; fewer calls, same throughput unit
 for i, a in enumerate(sys.argv):
-    if a in ("--iterations","--operations") and i+1<len(sys.argv): its=int(sys.argv[i+1])
+    if a in ("--iterations", "--operations") and i + 1 < len(sys.argv):
+        calls = int(sys.argv[i + 1])
 
-def bench(name, fn, iterations):
-    for _ in range(100): fn()
-    t0 = time.perf_counter()
-    for _ in range(iterations): fn()
-    elapsed = (time.perf_counter() - t0) * 1000
-    return {"name": name, "iterations": iterations,
-            "elapsedMs": round(elapsed, 3),
-            "operationsPerSecond": round(iterations / max(elapsed/1000, 1e-9), 0),
-            "nsPerOp": round(elapsed * 1e6 / max(iterations, 1), 1)}
+truth_table_errors = verify_truth_tables()
 
-results = {
-    "triAnd":   bench("Tri.and (9 pairs)", lambda: [tri_and(a,b) for a in VALS for b in VALS], its),
-    "triOr":    bench("Tri.or  (9 pairs)", lambda: [tri_or(a,b)  for a in VALS for b in VALS], its),
-    "triNot":   bench("Tri.not (3 vals)",  lambda: [tri_not(a)   for a in VALS], its),
-}
-
-# Memory measurement pass (separate from throughput timing).
-# Primary/dominant op = triAnd, the representative bulk 9-pair trit operation.
-_mem_iters = min(its, 50000)
+for _ in range(2):
+    run_bulk_tri(ELEMENTS)              # warmup
 gc.collect()
-tracemalloc.start()
-_base = tracemalloc.get_traced_memory()[0]
-for _ in range(_mem_iters):
-    [tri_and(a, b) for a in VALS for b in VALS]
-_cur, _peak = tracemalloc.get_traced_memory()
-tracemalloc.stop()
-_heap_delta = _cur - _base
 
+t0 = time.perf_counter()
+checksum = 0
+for _ in range(calls):
+    checksum = run_bulk_tri(ELEMENTS)
+elapsed = (time.perf_counter() - t0) * 1000
+
+total_ops = calls * TRIT_OPS_PER_CALL
 print(json.dumps({
-    "runtime": "python", "benchmark": "tri-logic-v1",
-    "results": results,
-    "memory": {
-        "heapUsedBytes": _cur,
-        "heapUsedDelta": _heap_delta,
-        "bytesPerOperation": round(_heap_delta / _mem_iters, 2),
-        "tracemallocPeak": _peak,
-    },
-    "notes": ["Python dict-based ternary dispatch"],
+    "runtime": "python",
+    "benchmark": "tri-logic-v1",
+    "truthTableErrors": truth_table_errors,
+    "truthTableCorrect": truth_table_errors == 0,
+    "calls": calls,
+    "elementsPerCall": ELEMENTS,
+    "tritOpsPerCall": TRIT_OPS_PER_CALL,
+    "checksum": checksum,
+    "elapsedMs": round(elapsed, 3),
+    "operationsPerSecond": round(total_ops / max(elapsed / 1000, 1e-9)),
+    "callsPerSecond": round(calls / max(elapsed / 1000, 1e-9)),
+    "notes": [
+        "Common bulk-N path: runBulkTri(100000) = 300000 trit-ops/call, identical on every runtime",
+    ],
 }, indent=2))

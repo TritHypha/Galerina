@@ -12,7 +12,7 @@
 //   5. substrate-violation — a crypto effect on a noisy/photonic lane → FUNGI-SUBSTRATE-001.
 //
 // Output is an IR (one *TestCase[] per dimension) renderable to any concrete format; a minimal
-// TAP renderer is included. Design: docs/Knowledge-Bases/galerina-contract-driven-generation.md.
+// TAP renderer is included. Design: ../ZTF-Knowledge-Bases/galerina-contract-driven-generation.md.
 //
 // Tracked follow-ons (NOT yet built): the full K3 capability MATRIX (+1 allow / 0 indeterminate→deny
 // / −1 deny — this module covers only the −1 deny path); structural fuzz for record/enum/Option params;

@@ -15,6 +15,7 @@ const SERIES_COLORS = {
   Go:     "#00add8",
   "C++":  "#6f42c1",
   Python: "#3572a5",
+  TypeScript: "#3178c6",
   Zig:    "#f7a41d",
   Node:   "#43853d",
   R:      "#276dc3",
@@ -159,6 +160,24 @@ const charts = [
       "GPU FP16":         [5, 2, 0, 1, 2, 10],      // mature stack, power-hungry float matmul
       Python:             [3, 2, 0, 1, 3, 10],      // native lang alone — ecosystem-rich, no low-bit/ternary on its own
       "Python + PyTorch": [6, 3, 0, 1, 2, 10],      // DL framework adds int8/quant + GPU; ternary still research-only
+    },
+  },
+  {
+    // The language / type-system chart (added 2026-07-11): Galerina's distinctive move is that
+    // GOVERNANCE lives IN the type system — value-state (protected/redacted/tainted), the declared
+    // effect set (CANONICAL_EFFECTS), currency-typed Money<GBP>, and deny-by-default are CHECKED, not
+    // conventions. Rust has strong types + exhaustive match but no effect/value-state/governance layer;
+    // TypeScript is gradual + branded-by-hand; Python is dynamic. Scored honestly — Galerina leads here
+    // because it defines the category (exhaustive-match is a genuine tie with Rust).
+    file: "radar-11-language-type-system.svg",
+    title: "11 · Language & Type System",
+    subtitle: "governance and value-state live IN the type system",
+    axes: ["Value-state / Taint", "Effect System", "Governance in Types", "Domain / Money Types", "Exhaustive Match", "Fail-closed Default"],
+    series: {
+      Galerina:    [10, 10, 10, 9, 9, 10],
+      Rust:        [3, 2, 0, 5, 9, 3],
+      TypeScript:  [2, 1, 0, 4, 5, 1],
+      Python:      [1, 1, 0, 2, 3, 1],
     },
   },
 ];

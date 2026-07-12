@@ -6,7 +6,7 @@
 /// ai_rule: Redacted values are safe to transmit to audit or logging endpoints.
 /// test_status: stable
 
-guarded flow forwardAuditEvent(email: protected Email) -> ForwardAuditEventResult
+secure flow forwardAuditEvent(email: protected Email) -> ForwardAuditEventResult
 
 contract {
   // Security intent: redacting a protected value before sending it over the network
@@ -24,6 +24,10 @@ contract {
   }
 }
 {
-  http.post("/audit", redact(email))?
+  ;; Bind the redacted value to a `let` BEFORE the sink (the 161 pattern): this both
+  ;; strips the PII (redact) and gates the boundary, so neither FUNGI-VALUESTATE-006
+  ;; nor -008 fires. Redacting INLINE in the call arg leaves the boundary un-gated (008).
+  let safeEmail: redacted Email = redact(email)
+  http.post("/audit", safeEmail)?
   return Ok(unit)
 }

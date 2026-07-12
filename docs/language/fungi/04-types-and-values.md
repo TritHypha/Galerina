@@ -71,6 +71,25 @@ Form 3 (`type Name { ... }` with no `= record`) is the short spelling the parser
 record-style body (`parser.ts:5326`). Note that fields can carry qualifiers: `redacted String`,
 `readonly sessionId: SessionId`.
 
+### Record guarantees — fixed shape & canonical encoding
+
+Two properties hold for every record *by construction* and are worth stating as named guarantees (RD-0286a/g):
+
+- **Fixed shape.** A record's field set is closed at declaration. There is no syntax to add, remove, or
+  mutate a field — or to attach a prototype / dynamic key — at runtime: shape mutation is **unrepresentable,
+  not merely forbidden** (the same discipline that makes bounded cycles unrepresentable). You can read a
+  record declaration and know everything the value is — no hidden state, no shape mutation, no hidden-class
+  transition — so field access is a static offset, never a key lookup.
+- **Canonical encoding.** Each record *value* has exactly one byte-form — a single canonical serialization
+  (RFC 8785 / JCS discipline; materialise-once). This is what lets a record be hashed and signed without
+  ambiguity, and it underpins the signed inclusion / Merkle proofs over `.spore` (ext-spore).
+
+> **`sealed` surface — owner-gated.** Because there is no *unsealed* record semantics to opt into, a record
+> is already fixed-shape ("sealed") by nature; this section states the guarantee, it adds no grammar.
+> Whether to surface an explicit `sealed` keyword vs. leave the guarantee implicit-by-default is an **owner
+> decision** (RD-0266 §8.3 / RD-0286a) — deferred, not assumed. The `.gate` v0.4 accept set stays closed;
+> any new keyword lands only as a v0.5 proposal.
+
 ### Enum — `enum Name { A B C }`
 
 Variants are **space/newline-separated** (commas optional); `parser.ts:5394-5426`.
@@ -145,11 +164,58 @@ type PatientId = Brand<String, "PatientId">     // getPatient.fungi:2
 type SessionId = Brand<String, "SessionId">     // createSession.fungi:6
 ```
 
+### `hallmark` — developer-minted open types (RD-0353)
+
+Where `Brand<T, "Name">` is an inline one-off, a **hallmark** is a *declared, gated* nominal type — a
+name, a carrier, and a **mandatory assay gate**. The declaration IS the mint (no separate registration),
+and a hallmark is constructed **only** through its gate:
+
+```fungi
+hallmark CustomerRef of String {
+  gate: flow assayCustomerRef                      // the assay — returns Result<CustomerRef, E>, must be able to fail
+}
+
+hallmark LoyaltyPoints of Decimal {
+  decimals: 0
+  sign:     non-negative
+  ops:      { add, subtract, scale, compare }      // the CLOSED algebra — deny-by-default
+  gate:     flow assayPoints
+}
+```
+
+The name is the assay-office metaphor: the compiler is the assay, the gate is the test that must be able
+to fail, the name is a *protected mark*. Everything about a hallmark is fail-closed:
+
+| Rule | Enforced by |
+|---|---|
+| minted **only** through its gate (no raw assignment) | `FUNGI-TYPE-003` (a hallmark is a declared brand) |
+| distinct hallmarks / hallmark vs `Money` never unify | `FUNGI-TYPE-004` |
+| an undeclared name can't be *used* (no use-equals-create) | `FUNGI-TYPE-001` (+ did-you-mean) |
+| a reserved name (built-in, currency tag, `Verdict`/`Trusted`/…) can't be *minted* | `FUNGI-HALLMARK-001` |
+| non-ASCII / mixed-script name (homoglyph) | lexer `FUNGI-PARSE-001` (+ `FUNGI-HALLMARK-002` backstop) |
+| a hallmark with no gate is just an alias | `FUNGI-HALLMARK-003` |
+| `ops {}` may only draw from `{ add, subtract, scale, ratio, compare }` — never an effect | `FUNGI-HALLMARK-004` |
+| an undeclared op (`points / points` when `ratio` isn't declared) | `FUNGI-HALLMARK-005` |
+| **minting is not sanitizing** — a gate does not untaint | `FUNGI-VALUESTATE-004` / `-001` |
+
+Worked examples: `docs/examples/Level-2-Types/094-hallmark-declaration` (the mint) and `095`–`098` (ops
+deny-by-default · reserved names · construction-only · taint-transparency). Cross-package schema
+hash-pinning (so package B can't redeclare A's name with a looser schema) is owner-gated — until then a
+hallmark type is package-local.
+
 ### `Money<Currency>` and `Decimal`
 
 `Money<Currency>` tags an amount with a currency (`Money<GBP>`). For plain precise numbers use
 `Decimal`. Note that *currency-literal* forms like `GBP0.00` are **not** general expression syntax —
 see "Literals" below.
+
+**Money arithmetic is exact** (RD-0349 I3). `add` / `subtract` / `multiply` / `divideBy` compute on a
+BigInt fixed-point core — the decimal string goes straight in, with **no `parseFloat`, no `toFixed`, no
+`1/x` float reciprocal** — so an 18-decimal amount (crypto precision) survives byte-exact, and division
+fails closed on a zero divisor. Cross-currency `Money<A> + Money<B>` is a compile error
+(`FUNGI-TYPE-004`; convert first with `fx.convert`), and `Money<C> * Money<C>` is dimensionally rejected
+(scale by a `Decimal`, not another `Money`). *(Per-currency minor units — JPY 0dp, BHD 3dp, crypto 8/18dp
+— arrive with the currency registry; until then every currency rounds at 2dp.)*
 
 ## Value-state qualifiers on a type
 

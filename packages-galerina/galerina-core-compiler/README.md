@@ -300,7 +300,7 @@ Legacy codes `FUNGI-E4001` (undeclared effect), `FUNGI-E4002` (undeclared propag
 effect), `FUNGI-E4003` (forbidden compile-time effect) remain active until the
 FUNGI-EFFECT series fully replaces them.
 
-See `docs/Knowledge-Bases/effect-checker-and-boundary-checker.md` for the full
+See `../../../ZTF-Knowledge-Bases/effect-checker-and-boundary-checker.md` for the full
 specification including the 12-effect table, algorithm, and checker output schema.
 
 ## Boundary Checker (Planned)
@@ -387,7 +387,7 @@ export interface CheckedCallExpression {
 
 **Extended boundary checker codes (FUNGI-BOUNDARY-001 through FUNGI-BOUNDARY-009)
 and legacy codes FUNGI-E4004 through FUNGI-E4006** remain active. See
-`docs/Knowledge-Bases/effect-checker-and-boundary-checker.md` for the
+`../../../ZTF-Knowledge-Bases/effect-checker-and-boundary-checker.md` for the
 full 16-item implementation checklist and all boundary violation examples.
 
 ## Layered Compute Adapter Model

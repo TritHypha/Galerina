@@ -6,7 +6,7 @@
  * audited, and constrained regardless of which engine (BitNet / GroqCloud / NVFP4)
  * actually runs it. The governance_tier routes to the right backend.
  *
- * See: docs/Knowledge-Bases/galerina-governed-inference-tower.md
+ * See: ../ZTF-Knowledge-Bases/galerina-governed-inference-tower.md
  */
 
 ;; This flow calls an AI model under full governance.

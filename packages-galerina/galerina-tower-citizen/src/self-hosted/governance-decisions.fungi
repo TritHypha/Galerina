@@ -1,0 +1,48 @@
+@version 1
+/// @file: governance-decisions.fungi
+/// @purpose: Stage-6 CHECKER-VERIFIED twins of tower-citizen's core K3 governance DECISION folds —
+///   quorum (M-of-N distinct-signer) and lease (TTL). The host gathers the EVIDENCE (the anti-Sybil
+///   tally that dedups signers; the lease well-formedness + finite-clock guards); these pure flows fold
+///   that evidence into the balanced-trit Verdict, fail-closed. Extends the checker-verified `.fungi`
+///   governed-surface coverage from the app-kernel to the governance core.
+/// @status: checker-verified twin (galerina check clean); NOT build-wired (execution switch #143).
+///
+/// Verdict encoding = the shipped three-valued-governance balanced trit:
+///   1 = ALLOW · 0 = INDETERMINATE (fail-closed neutral) · -1 = DENY.
+
+// M-of-N distinct-signer quorum (quorum.ts quorumVerdict). distinctApprovals is the host tally's
+// dedup-by-signer approval count; malformed marks equivocation / a non-trit vote / a bad shape.
+// Fail-closed: malformed -> INDETERMINATE; a clean shortfall -> DENY; only >= M distinct approvals ALLOW.
+pure flow quorumVerdict(distinctApprovals: Int, m: Int, malformed: Bool) -> Int
+contract {
+  intent { "M-of-N distinct-signer K3 fold: malformed -> INDETERMINATE (0); >= M approvals -> ALLOW (1); else DENY (-1)." }
+}
+{
+  if malformed == true {
+    return 0
+  }
+  if distinctApprovals >= m {
+    return 1
+  }
+  return -1
+}
+
+// Fail-closed TTL capability lease (lease.ts leaseVerdict). wellFormed and nowFinite are host-computed
+// guards over the lease shape and the injected clock. Fail-closed: a malformed lease or a non-finite
+// clock -> INDETERMINATE; within the TTL (now < notAfter) -> ALLOW; expired -> DENY.
+pure flow leaseVerdict(wellFormed: Bool, nowFinite: Bool, now: Int, notAfter: Int) -> Int
+contract {
+  intent { "TTL lease K3 fold: malformed / non-finite clock -> INDETERMINATE (0); now < notAfter -> ALLOW (1); expired -> DENY (-1)." }
+}
+{
+  if wellFormed == false {
+    return 0
+  }
+  if nowFinite == false {
+    return 0
+  }
+  if now < notAfter {
+    return 1
+  }
+  return -1
+}

@@ -53,7 +53,7 @@ and validate typed outputs.
 AI compute plans must not let AI grant capabilities to itself or bypass policy,
 type checks, effect checks, data minimisation or audit.
 
-See `../../docs/Knowledge-Bases/ai-compute-plan.md`.
+See `../../../ZTF-Knowledge-Bases/ai-compute-plan.md`.
 
 ## Boundary
 

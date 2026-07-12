@@ -4,7 +4,7 @@
 //                    hot-RAM memory-safety, and operational positioning
 //                    FACT-CHECK PROOF
 // -----------------------------------------------------------------------------
-// Source note : C:\Users\phill\Documents\GitHub\Galerina\notes\76-mesh-r-d-01.md
+// Source note : <GitHub>\Galerina\notes\76-mesh-r-d-01.md
 //               (an owner-pasted AI architecture dialogue; its claims are
 //                HYPOTHESES to verify, not facts).
 //
@@ -21,7 +21,7 @@
 //       - Streaming N bytes is O(N) bandwidth-bound, not O(1).
 //
 // Dependencies: Node built-ins ONLY (crypto). No npm. No repo imports.
-// Run:  node C:\Users\phill\Documents\GitHub\Galerina\scripts\rd-0154-0155-tritmesh-scaling-factcheck-proof.mjs
+// Run:  node <GitHub>\Galerina\scripts\rd-0154-0155-tritmesh-scaling-factcheck-proof.mjs
 //
 // Output: PASS/FAIL per assertion, a final "N/N passed",
 //         and process.exitCode = 1 on any FAIL.

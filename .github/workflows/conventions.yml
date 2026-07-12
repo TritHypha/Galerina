@@ -19,11 +19,13 @@ permissions:
 
 jobs:
   lint-conventions:
+    needs: kb-preflight
+    if: needs.kb-preflight.outputs.has_kb_token == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (SHA-pinned, RD-0294w)
         with:
           node-version: "20"
 
@@ -33,11 +35,11 @@ jobs:
       # ZTF_KB_READ_TOKEN secret; if public, github.token suffices. A failed checkout fails the job
       # (fail-closed) rather than silently scanning an empty corpus.
       - name: Check out the KB corpus (sibling repo)
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
         with:
-          repository: zero-trust-framework/ZTF-Knowledge-Bases
+          repository: TritHypha/ZTF-Knowledge-Bases
           path: ZTF-Knowledge-Bases
-          token: ${{ secrets.ZTF_KB_READ_TOKEN || github.token }}
+          token: ${{ secrets.ZTF_KB_READ_TOKEN }}
 
       - name: Convention gate (report-only — STAGE 1 of #6)
         env:
@@ -56,12 +58,119 @@ jobs:
   hygiene-no-nul:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (SHA-pinned, RD-0294w)
         with:
           node-version: "20"
       - name: No NUL bytes in source (enforcing)
         run: node --test packages-galerina/galerina-core-compiler/tests/source-hygiene-no-nul.test.mjs
+
+  # path-leak (build-free, zero-baseline, ENFORCING): no committed file may contain an ABSOLUTE LOCAL path
+  # that leaks the developer's machine (a `C:\Users\<name>` home or a legacy wwwprojects root). Galerina is PUBLIC — such
+  # a path discloses the OS username + on-disk layout to the world AND breaks on every other checkout. The
+  # --self-test proves the detectors fire on a leak and stay silent on a <placeholder> (a neutered guard is a
+  # fail-open); then the scan runs ENFORCING against every git-tracked file. Baseline is 0.
+  path-leak:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (SHA-pinned, RD-0294w)
+        with:
+          node-version: "20"
+      - name: Absolute-local-path leak guard (self-test, then enforcing)
+        run: |
+          node scripts/audit-path-leak.mjs --self-test
+          node scripts/audit-path-leak.mjs
+
+  # node-floor (build-free, ENFORCING): Galerina's bounded-TCB invariant — NO external npm
+  # dependency may enter beyond the declared floor (crypto primitives + the WASM toolchain +
+  # the build-time TS compiler; scripts/audit-node-dependencies.mjs NODE_FLOOR). Every other
+  # capability is Galerina's own code. FAILS a PR that adds an off-floor package (an accidental
+  # `npm install <foo>`), so "all node packages replaced" stays true permanently. The
+  # --self-test proves the detector flags an off-floor dep before the enforcing scan; it reads
+  # only package.json (no build / no install).
+  node-floor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (SHA-pinned, RD-0294w)
+        with:
+          node-version: "20"
+      - name: Node-dependency floor guard (self-test, then enforcing)
+        run: |
+          node scripts/audit-node-dependencies.mjs --self-test
+          node scripts/audit-node-dependencies.mjs
+
+  # papers-index (build-free, zero-baseline, ENFORCING): the papers corpus index (docs/paper/README.md)
+  # must link EVERY tracked paper under docs/paper/{defensive,scientific}-papers/, every index link must
+  # resolve, and the intro corpus counts must match reality. A silently-unindexed defensive-publication is
+  # a governance gap (a timestamped prior-art record the corpus index omits); a dangling link is a broken
+  # published record. The --self-test proves the gap detectors fire before the enforcing scan. Baseline is 0.
+  papers-index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (SHA-pinned, RD-0294w)
+        with:
+          node-version: "20"
+      - name: Papers-index coverage guard (self-test, then enforcing)
+        run: |
+          node scripts/audit-papers-index.mjs --self-test
+          node scripts/audit-papers-index.mjs
+
+  # route-overlap (build-free, ENFORCING, DP-RD-0285): no two same-method routes in ONE .fungi file may have
+  # overlapping match sets. Galerina refuses ambiguous HTTP dispatch as a governed HOLD instead of the
+  # first-match-wins / precedence rules mainstream routers ship (route-confusion: path-normalisation
+  # shadowing, method-override bypass). Static overlap analysis over the closed {param}=([^/]+) pattern
+  # language of route-registry.ts, scoped per-file (one parsed program = one registry) so it stays SOUND.
+  # The --self-test proves the overlap detector fires before the enforcing scan.
+  route-overlap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (SHA-pinned, RD-0294w)
+        with:
+          node-version: "20"
+      - name: Route-overlap ambiguity guard (self-test, then enforcing)
+        run: |
+          node scripts/audit-route-overlap.mjs --self-test
+          node scripts/audit-route-overlap.mjs
+
+  # brand-keys (build-free, zero-baseline, ENFORCING, RD-0286 §5.3): BOLA's cheapest structural counter
+  # (OWASP API1:2023 / CWE-639). No raw String/Int/Number — parameter or literal — may reach a KEYED
+  # database./storage./ledger. verb as the object key: a raw key lets any caller-supplied value address
+  # any object (the /users/{id} IDOR shape). A Brand<T,"Name"> nominal identity proves the identifier
+  # passed a constructor/validation site. Write-shaped verbs are out of scope (payloads, not addresses);
+  # the sound authority stays the compiler's type-checker + the signed capability — this lint makes the
+  # regression VISIBLE at authoring time. The --self-test proves the detectors fire before the scan.
+  brand-keys:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (SHA-pinned, RD-0294w)
+        with:
+          node-version: "20"
+      - name: Brand-everywhere BOLA key guard (self-test, then enforcing)
+        run: |
+          node scripts/audit-brand-keys.mjs --self-test
+          node scripts/audit-brand-keys.mjs
+
+  # conformance (build-free, ENFORCING, RD-0296): the by-construction conformance gate in
+  # @galerina/devtools-security — machine-asserts that each VERIFIED design construction is STILL present, so
+  # it goes RED the moment a refactor removes it (algorithm-pinned verification 0294t; .spore fail-closed
+  # signed-reject 0294m; no fail-open CI gate RD-0290a). Operationalises the cybersec audit's CONFIRMED rows.
+  # Fail-closed: a check that cannot read its target FAILS. The --self-test proves every detector fires first.
+  conformance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (SHA-pinned, RD-0294w)
+        with:
+          node-version: "20"
+      - name: By-construction conformance gate (self-test, then enforcing)
+        run: |
+          node packages-galerina/galerina-devtools-security/conformance-scan.mjs --self-test
+          node packages-galerina/galerina-devtools-security/conformance-scan.mjs
 
   # A green, build-free, zero-baseline OPEN-CORE invariant (0056-ci-lint): no NON-Apache license
   # declaration may contaminate the Apache-2.0 package tree (PD-spec↛Apache), and no core package may
@@ -71,8 +180,8 @@ jobs:
   tier-boundary:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (SHA-pinned, RD-0294w)
         with:
           node-version: "20"
       - name: Tier-boundary contamination guard (self-test, then enforcing)
@@ -88,8 +197,8 @@ jobs:
   gate-injection:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (SHA-pinned, RD-0294w)
         with:
           node-version: "20"
       - name: Admission-border revocation-gate injection guard (self-test, then enforcing)
@@ -104,8 +213,8 @@ jobs:
   production-blockers:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (SHA-pinned, RD-0294w)
         with:
           node-version: "20"
       - name: Production-blocker emitter guard (self-test, then enforcing)
@@ -120,8 +229,8 @@ jobs:
   name-collisions:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (SHA-pinned, RD-0294w)
         with:
           node-version: "20"
       - name: Name-collision guard (self-test, then enforcing)
@@ -136,10 +245,12 @@ jobs:
   # "Audit event stream write failed" / really RateLimitExceeded class). The --self-test proves the
   # detector fires; then the scan runs ENFORCING (reads .ts source + the .md doc directly — no build).
   diagnostic-doc-drift:
+    needs: kb-preflight
+    if: needs.kb-preflight.outputs.has_kb_token == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (SHA-pinned, RD-0294w)
         with:
           node-version: "20"
       # The canonical diagnostic reference (compiler-diagnostics.md) migrated to the sibling
@@ -147,11 +258,11 @@ jobs:
       # scan fail-closes (exit 1) — which is why this job went RED after the migration. If ZTF-KB is
       # private, set a read-only ZTF_KB_READ_TOKEN secret; if public, github.token suffices.
       - name: Check out the KB corpus (sibling repo — holds compiler-diagnostics.md)
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
         with:
-          repository: zero-trust-framework/ZTF-Knowledge-Bases
+          repository: TritHypha/ZTF-Knowledge-Bases
           path: ZTF-Knowledge-Bases
-          token: ${{ secrets.ZTF_KB_READ_TOKEN || github.token }}
+          token: ${{ secrets.ZTF_KB_READ_TOKEN }}
       - name: Diagnostic doc↔source drift (self-test, then enforcing)
         env:
           GALERINA_KB_DIR: ${{ github.workspace }}/ZTF-Knowledge-Bases
@@ -169,8 +280,8 @@ jobs:
   overclaim-phrases:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (SHA-pinned, RD-0294w)
         with:
           node-version: "20"
       - name: Overclaim phrase-blocklist (self-test, then enforcing)
@@ -186,8 +297,8 @@ jobs:
   graph-integrity-selftest:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (SHA-pinned, RD-0294w)
         with:
           node-version: "20"
       - name: Graph-integrity detectors self-test (build-free)
@@ -203,8 +314,8 @@ jobs:
   web-stub-guard:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (SHA-pinned, RD-0294w)
         with:
           node-version: "20"
       - name: Web fail-closed contract guard (self-test, then enforcing)
@@ -224,8 +335,8 @@ jobs:
   hardened-border:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (SHA-pinned, RD-0294w)
         with:
           node-version: "20"
       - name: Build the package-graph scanner (pure TS, no runtime deps)
@@ -247,8 +358,8 @@ jobs:
   runtime-coverage:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (SHA-pinned, RD-0294w)
         with:
           node-version: "20"
       - name: Runtime operator-coverage gate (self-test, then enforcing)
@@ -263,8 +374,8 @@ jobs:
   phase-close-gates:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (SHA-pinned, RD-0294w)
         with:
           node-version: "20"
       # checker:wiring — every EXPORTED checker has a real pipeline call-site (the dead-gate class:
@@ -304,5 +415,54 @@ jobs:
       # dev-tool script tests — the audit/index/registry tooling itself (scripts/tests/) lives OUTSIDE
       # packages-galerina, so the package runner never sees it. Run here so the gates that guard the repo
       # are themselves regression-gated (incl. the doc-drift KB-resolution + fail-closed benches).
+      # The two BUILD-dependent script tests (cg4-signing-boundary + signed-fixture-guard — they drive
+      # `galerina.mjs build`, which imports galerina-core-compiler/dist) run in the separate build-cli-gates
+      # job below; exclude them here so THIS job stays build-free. A new build-free test is auto-included
+      # (the glob minus the two known build-dependent files) — no silent under-coverage.
       - name: Dev-tool script tests (build-free)
-        run: node --test scripts/tests/*.test.mjs
+        run: |
+          files=$(ls scripts/tests/*.test.mjs | grep -vE '/(cg4-signing-boundary|signed-fixture-guard)\.test\.mjs$')
+          echo "build-free script tests:"; echo "$files"
+          node --test $files
+
+  # build-cli gates (BUILD-FULL, ENFORCING) — the two script tests that drive `galerina.mjs build`
+  # (CG-4 signing-boundary + the CG-7 signed-fixture guard) need galerina-core-compiler/dist, which is
+  # gitignored. They passed only on a dev box (dist present) and errored "Cannot find module .../dist" in
+  # CI — the "green locally, red in CI" class these gates exist to prevent. Build the compiler's file: dep
+  # closure first (scripts/build-core-chain.mjs — topological, fail-closed) so the gates ACTUALLY enforce
+  # in CI instead of being silently skipped. Isolated in its own job so the fast build-free gates stay fast.
+  build-cli-gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (SHA-pinned, RD-0294w)
+        with:
+          node-version: "20"
+      - name: Build galerina-core-compiler + its file-dep closure (topological)
+        run: node scripts/build-core-chain.mjs
+      - name: CG-4 signing-boundary + CG-7 signed-fixture guard (build-dependent, enforcing)
+        run: node --test scripts/tests/cg4-signing-boundary.test.mjs scripts/tests/signed-fixture-guard.test.mjs
+      # import-governance (build-dependent, ENFORCING): every `import plugin safe|assimilate` is a
+      # Toxic-Border deny-by-default edge and MUST carry an access { grant } contract (checker
+      # emits FUNGI-ASSIMILATE-003; this audit classifies every .fungi import with the REAL parser
+      # and RED's a grantless plugin). Needs the compiler dist. --self-test proves the detector.
+      - name: Import-governance audit (self-test, then enforcing)
+        run: |
+          node scripts/audit-import-governance.mjs --self-test
+          node scripts/audit-import-governance.mjs
+
+  # KB-availability preflight — the two doc-drift gates (lint-conventions, diagnostic-doc-drift) read the
+  # canonical diagnostics / count-authority docs from the PRIVATE sibling repo ZTF-Knowledge-Bases. The
+  # default github.token cannot read a *separate* private repo, so they need a read-only ZTF_KB_READ_TOKEN
+  # secret (a fine-grained PAT or deploy key, read-only, scoped to TritHypha/ZTF-Knowledge-Bases). Until that
+  # secret exists they are SKIPPED (visibly grey, not red) rather than failing every push at the checkout
+  # step — a failed checkout enforces nothing AND emails a failure on every push. They still run ENFORCING
+  # locally / pre-commit (run-phase-close, where the KB is present), and auto-enable the moment the token is
+  # added:  gh secret set ZTF_KB_READ_TOKEN --repo TritHypha/Galerina  (paste a read-only KB-scoped PAT).
+  kb-preflight:
+    runs-on: ubuntu-latest
+    outputs:
+      has_kb_token: ${{ steps.probe.outputs.has }}
+    steps:
+      - id: probe
+        run: echo "has=${{ secrets.ZTF_KB_READ_TOKEN != '' }}" >> "$GITHUB_OUTPUT"

@@ -1,0 +1,29 @@
+@version 1
+/// example: 098-hallmark-taint-transparent
+/// level: 2
+/// concept: minting is taint-transparent — a hallmark gate is not an untaint context, so tainted input cannot be laundered
+/// expected_diagnostics: FUNGI-VALUESTATE-004
+/// test_status: stable
+/// ai_rule: A hallmark gate does NOT sanitize; validate a tainted value before passing it to (or minting it through) a gate.
+
+hallmark CustomerRef of String {
+  gate: flow assayCustomerRef
+}
+
+pure flow assayCustomerRef(raw: String) -> Result<CustomerRef, ValidationError> {
+  contract { intent "assay a raw string into a CustomerRef" }
+  return Ok(CustomerRef(raw))
+}
+
+secure flow smuggle(request: Request) -> Void {
+  contract {
+    intent "attempt to launder boundary data by passing it through a hallmark gate"
+    effects { audit.write }
+  }
+  unsafe let evil: String = request.body
+  // A hallmark gate is NOT a registered untaint context (validate.*/sanitize.*/parse.*),
+  // so the tainted value cannot be laundered into a "clean" CustomerRef. Minting is
+  // taint-transparent: minting is not sanitizing.
+  safe mut c = assayCustomerRef(evil)?
+  AuditLog.write(c)
+}

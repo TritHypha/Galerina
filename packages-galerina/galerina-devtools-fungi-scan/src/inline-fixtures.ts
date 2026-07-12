@@ -228,7 +228,7 @@ export function scanInlineFixtures(root: string): FileScan[] {
     const relPath = rel(abs);
     let source: string;
     try {
-      source = readFileSync(abs, "utf8");
+      source = readFileSync(abs, "utf8"); // perf-allow: loop-sync-io — one read per host file in a per-file CLI scan loop — distinct path per iteration, not hoistable
     } catch (err) {
       out.push(hostFinding(relPath, err instanceof Error ? err.message : String(err)));
       continue;

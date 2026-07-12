@@ -2,7 +2,7 @@
  * galerina-ext-bridge-bitnet — Governed BitNet CPU inference bridge
  *
  * Wraps the official Microsoft BitNet.cpp library (MIT License) with Galerina governance.
- * Source: C:\Users\phill\Documents\GitHub\BitNet (local clone of github.com/microsoft/BitNet)
+ * Source: a local clone of github.com/microsoft/BitNet (path is machine-specific; not hardcoded)
  *
  * C API surface (from ggml-bitnet.h):
  *   ggml_bitnet_init()                    — initialize the BitNet backend
@@ -65,7 +65,7 @@ export interface BitNetResponse {
 // Governance metadata for the BitNet plugin
 const BITNET_METADATA: PluginMetadata = {
   engineId:        "bitnet-cpu-v1.58-2b",
-  artifactPath:    "C:/wwwprojects/BitNet",
+  artifactPath:    process.env.BITNET_ARTIFACT_PATH ?? "vendor/bitnet",
   artifactHash:    "sha256:bitnet-b1.58-2b4t-local",  // computed from actual binary in production
   governanceTier:  1,          // Tier 1: CPU, air-gapped, highest governance
   license:         "MIT",

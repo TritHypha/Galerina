@@ -28,6 +28,12 @@ flowchart LR
   T_audit_allowlist_sensitive_mjs --> C_package_border
   T_audit_allowlist_sensitive_mjs --> C_graph_index
   T_audit_allowlist_sensitive_mjs --> C_sensitive_allowlist
+  T_audit_brand_keys_mjs["audit-brand-keys.mjs"]
+  T_audit_brand_keys_mjs --> C_signing_fusion
+  T_audit_brand_keys_mjs --> C_gate_wiring
+  T_audit_brand_keys_mjs --> C_diagnostics
+  T_audit_brand_keys_mjs --> C_doc_drift
+  T_audit_brand_keys_mjs --> C_brand
   T_audit_checker_wiring_mjs["audit-checker-wiring.mjs"]
   T_audit_checker_wiring_mjs --> C_sinks_taint
   T_audit_checker_wiring_mjs --> C_signing_fusion
@@ -76,10 +82,18 @@ flowchart LR
   T_audit_effect_canonicality_mjs --> C_secrets_privacy
   T_audit_effect_canonicality_mjs --> C_doc_drift
   T_audit_effect_canonicality_mjs --> C_graph_index
+  T_audit_example_diagnostics_mjs["audit-example-diagnostics.mjs"]
+  T_audit_example_diagnostics_mjs --> C_effects
+  T_audit_example_diagnostics_mjs --> C_governance
+  T_audit_example_diagnostics_mjs --> C_diagnostics
+  T_audit_example_diagnostics_mjs --> C_teaching_corpus
   T_audit_fungi_runtime_mjs["audit-fungi-runtime.mjs"]
   T_audit_fungi_runtime_mjs --> C_gate_wiring
   T_audit_fungi_runtime_mjs --> C_coverage
   T_audit_fungi_runtime_mjs --> C_teaching_corpus
+  T_audit_gate_selftests_mjs["audit-gate-selftests.mjs"]
+  T_audit_gate_selftests_mjs --> C_mutation_testing
+  T_audit_gate_selftests_mjs --> C_graph_index
   T_audit_graph_integrity_mjs["audit-graph-integrity.mjs"]
   T_audit_graph_integrity_mjs --> C_governance
   T_audit_graph_integrity_mjs --> C_diagnostics
@@ -93,6 +107,27 @@ flowchart LR
   T_audit_gscm_mjs --> C_diagnostics
   T_audit_gscm_mjs --> C_tier_floor
   T_audit_gscm_mjs --> C_teaching_corpus
+  T_audit_import_governance_mjs["audit-import-governance.mjs"]
+  T_audit_import_governance_mjs --> C_effects
+  T_audit_import_governance_mjs --> C_governance
+  T_audit_import_governance_mjs --> C_gate_wiring
+  T_audit_import_governance_mjs --> C_package_border
+  T_audit_import_governance_mjs --> C_graph_index
+  T_audit_kernel_floor_mjs["audit-kernel-floor.mjs"]
+  T_audit_kernel_floor_mjs --> C_signing_fusion
+  T_audit_kernel_floor_mjs --> C_governance
+  T_audit_kernel_floor_mjs --> C_diagnostics
+  T_audit_kernel_floor_mjs --> C_doc_drift
+  T_audit_kernel_floor_mjs --> C_web_stub
+  T_audit_kernel_floor_mjs --> C_graph_index
+  T_audit_kernel_fungi_twins_mjs["audit-kernel-fungi-twins.mjs"]
+  T_audit_kernel_fungi_twins_mjs --> C_governance
+  T_audit_kernel_fungi_twins_mjs --> C_gate_wiring
+  T_audit_kernel_fungi_twins_mjs --> C_graph_index
+  T_audit_license_compat_mjs["audit-license-compat.mjs"]
+  T_audit_license_compat_mjs --> C_effects
+  T_audit_license_compat_mjs --> C_doc_drift
+  T_audit_license_compat_mjs --> C_proofs
   T_audit_mutation_mjs["audit-mutation.mjs"]
   T_audit_mutation_mjs --> C_mutation_testing
   T_audit_mutation_mjs --> C_graph_index
@@ -118,6 +153,10 @@ flowchart LR
   T_audit_name_collisions_mjs --> C_doc_drift
   T_audit_name_collisions_mjs --> C_graph_index
   T_audit_name_collisions_mjs --> C_sensitive_allowlist
+  T_audit_node_dependencies_mjs["audit-node-dependencies.mjs"]
+  T_audit_node_dependencies_mjs --> C_signing_fusion
+  T_audit_node_dependencies_mjs --> C_diagnostics
+  T_audit_node_dependencies_mjs --> C_package_border
   T_audit_oblivious_mjs["audit-oblivious.mjs"]
   T_audit_oblivious_mjs --> C_sinks_taint
   T_audit_oblivious_mjs --> C_signing_fusion
@@ -137,6 +176,18 @@ flowchart LR
   T_audit_package_border_mjs --> C_package_border
   T_audit_package_border_mjs --> C_graph_index
   T_audit_package_border_mjs --> C_sensitive_allowlist
+  T_audit_papers_index_mjs["audit-papers-index.mjs"]
+  T_audit_papers_index_mjs --> C_sinks_taint
+  T_audit_papers_index_mjs --> C_governance
+  T_audit_papers_index_mjs --> C_teaching_corpus
+  T_audit_papers_index_mjs --> C_source_hygiene
+  T_audit_papers_index_mjs --> C_doc_drift
+  T_audit_papers_index_mjs --> C_graph_index
+  T_audit_path_leak_mjs["audit-path-leak.mjs"]
+  T_audit_path_leak_mjs --> C_sinks_taint
+  T_audit_path_leak_mjs --> C_diagnostics
+  T_audit_path_leak_mjs --> C_graph_index
+  T_audit_path_leak_mjs --> C_sensitive_allowlist
   T_audit_perf_hotpath_mjs["audit-perf-hotpath.mjs"]
   T_audit_perf_hotpath_mjs --> C_signing_fusion
   T_audit_perf_hotpath_mjs --> C_gate_wiring
@@ -154,6 +205,10 @@ flowchart LR
   T_audit_provenance_mjs --> C_teaching_corpus
   T_audit_provenance_mjs --> C_doc_drift
   T_audit_provenance_mjs --> C_graph_index
+  T_audit_route_overlap_mjs["audit-route-overlap.mjs"]
+  T_audit_route_overlap_mjs --> C_signing_fusion
+  T_audit_route_overlap_mjs --> C_governance
+  T_audit_route_overlap_mjs --> C_gate_wiring
   T_audit_runtime_coverage_mjs["audit-runtime-coverage.mjs"]
   T_audit_runtime_coverage_mjs --> C_signing_fusion
   T_audit_runtime_coverage_mjs --> C_gate_wiring
@@ -163,6 +218,9 @@ flowchart LR
   T_audit_scratchdir_hygiene_mjs["audit-scratchdir-hygiene.mjs"]
   T_audit_scratchdir_hygiene_mjs --> C_diagnostics
   T_audit_scratchdir_hygiene_mjs --> C_source_hygiene
+  T_audit_selfhost_readiness_mjs["audit-selfhost-readiness.mjs"]
+  T_audit_selfhost_readiness_mjs --> C_effects
+  T_audit_selfhost_readiness_mjs --> C_graph_index
   T_audit_signed_fixture_drift_mjs["audit-signed-fixture-drift.mjs"]
   T_audit_signed_fixture_drift_mjs --> C_signing_fusion
   T_audit_signed_fixture_drift_mjs --> C_graph_index
@@ -180,6 +238,9 @@ flowchart LR
   T_audit_stray_docs_mjs --> C_source_hygiene
   T_audit_stray_docs_mjs --> C_doc_drift
   T_audit_stray_docs_mjs --> C_graph_index
+  T_audit_syntax_reference_links_mjs["audit-syntax-reference-links.mjs"]
+  T_audit_syntax_reference_links_mjs --> C_gate_wiring
+  T_audit_syntax_reference_links_mjs --> C_doc_drift
   T_audit_syntax_mjs["audit-syntax.mjs"]
   T_audit_syntax_mjs --> C_signing_fusion
   T_audit_syntax_mjs --> C_gate_wiring
@@ -205,6 +266,7 @@ flowchart LR
   T_audit_web_stub_guard_mjs --> C_web_stub
   T_fix_logicn_brand_mjs["fix-logicn-brand.mjs"]
   T_fix_logicn_brand_mjs --> C_signing_fusion
+  T_fix_logicn_brand_mjs --> C_diagnostics
   T_fix_logicn_brand_mjs --> C_source_hygiene
   T_fix_logicn_brand_mjs --> C_doc_drift
   T_fix_logicn_brand_mjs --> C_brand
@@ -215,11 +277,14 @@ flowchart LR
   T_galerina_new_mjs --> C_governance
   T_graph_all_mjs["graph-all.mjs"]
   T_graph_all_mjs --> C_signing_fusion
+  T_graph_all_mjs --> C_coverage
+  T_graph_all_mjs --> C_diagnostics
   T_graph_all_mjs --> C_package_border
   T_graph_all_mjs --> C_source_hygiene
   T_graph_all_mjs --> C_doc_drift
   T_graph_all_mjs --> C_graph_index
   T_memory_graph_mjs["memory-graph.mjs"]
+  T_memory_graph_mjs --> C_diagnostics
   T_memory_graph_mjs --> C_source_hygiene
   T_memory_graph_mjs --> C_graph_index
   T_code_index_mjs["code-index.mjs"]
@@ -258,12 +323,10 @@ flowchart LR
   T_lint_fungi_mjs --> C_provenance
   T_lint_fungi_mjs --> C_diagnostics
   T_lint_fungi_mjs --> C_secrets_privacy
-  T_lint_fungi_mjs --> C_graph_index
   T_component_health_mjs["component-health.mjs"]
-  T_component_health_mjs --> C_governance
-  T_component_health_mjs --> C_source_hygiene
+  T_component_health_mjs --> C_signing_fusion
+  T_component_health_mjs --> C_provenance
   T_component_health_mjs --> C_doc_drift
-  T_component_health_mjs --> C_web_stub
   T_run_all_tests_cjs["run-all-tests.cjs"]
   T_run_all_tests_cjs --> C_diagnostics
   T_run_all_tests_cjs --> C_doc_drift
@@ -282,7 +345,7 @@ flowchart LR
   T_run_proofs_mjs --> C_doc_drift
   T_run_proofs_mjs --> C_proofs
   T_status_mjs["status.mjs"]
-  T_status_mjs --> C_naming
+  T_status_mjs --> C_diagnostics
   T_status_mjs --> C_teaching_corpus
   T_status_mjs --> C_source_hygiene
   T_status_mjs --> C_doc_drift
@@ -292,6 +355,10 @@ flowchart LR
   T_brand_audit_mjs --> C_diagnostics
   T_brand_audit_mjs --> C_source_hygiene
   T_brand_audit_mjs --> C_brand
+  T_build_core_chain_mjs["build-core-chain.mjs"]
+  T_build_core_chain_mjs --> C_signing_fusion
+  T_build_core_chain_mjs --> C_diagnostics
+  T_build_core_chain_mjs --> C_graph_index
   T_check_gate_injection_mjs["check-gate-injection.mjs"]
   T_check_gate_injection_mjs --> C_sinks_taint
   T_check_gate_injection_mjs --> C_signing_fusion
@@ -302,17 +369,50 @@ flowchart LR
   T_check_gate_injection_mjs --> C_graph_index
   T_fungi_astshape_mjs["fungi-astshape.mjs"]
   T_fungi_astshape_mjs --> C_secrets_privacy
-  T_fungi_astshape_mjs --> C_graph_index
+  T_generate_sbom_mjs["generate-sbom.mjs"]
+  T_generate_sbom_mjs --> C_sinks_taint
+  T_generate_sbom_mjs --> C_signing_fusion
+  T_generate_sbom_mjs --> C_diagnostics
+  T_generate_sbom_mjs --> C_doc_drift
+  T_generate_sbom_mjs --> C_graph_index
+  T_license_rollout_mjs["license-rollout.mjs"]
+  T_license_rollout_mjs --> C_governance
+  T_license_rollout_mjs --> C_coverage
+  T_license_rollout_mjs --> C_tier_floor
+  T_license_rollout_mjs --> C_proofs
   T_mark_core_change_cjs["mark-core-change.cjs"]
   T_mark_core_change_cjs --> C_graph_index
+  T_migrate_fungi_mjs["migrate-fungi.mjs"]
+  T_migrate_fungi_mjs --> C_signing_fusion
+  T_migrate_fungi_mjs --> C_diagnostics
+  T_migrate_fungi_mjs --> C_teaching_corpus
+  T_migrate_fungi_mjs --> C_doc_drift
+  T_migrate_fungi_mjs --> C_graph_index
+  T_package_usage_mjs["package-usage.mjs"]
+  T_package_usage_mjs --> C_diagnostics
+  T_package_usage_mjs --> C_package_border
+  T_package_usage_mjs --> C_graph_index
   T_rd_absorb_mjs["rd-absorb.mjs"]
   T_rd_absorb_mjs --> C_source_hygiene
   T_rd_absorb_mjs --> C_doc_drift
   T_rd_absorb_mjs --> C_graph_index
+  T_rebrand_tmf_to_spore_mjs["rebrand-tmf-to-spore.mjs"]
+  T_rebrand_tmf_to_spore_mjs --> C_diagnostics
+  T_rebrand_tmf_to_spore_mjs --> C_doc_drift
+  T_rebrand_tmf_to_spore_mjs --> C_brand
   T_rebuild_fusable_packages_mjs["rebuild-fusable-packages.mjs"]
   T_rebuild_fusable_packages_mjs --> C_signing_fusion
   T_rebuild_fusable_packages_mjs --> C_governance
   T_rebuild_fusable_packages_mjs --> C_graph_index
+  T_relink_workspace_mjs["relink-workspace.mjs"]
+  T_relink_workspace_mjs --> C_graph_index
+  T_rename_package_mjs["rename-package.mjs"]
+  T_rename_package_mjs --> C_secrets_privacy
+  T_rename_package_mjs --> C_source_hygiene
+  T_repoint_kb_refs_mjs["repoint-kb-refs.mjs"]
+  T_repoint_kb_refs_mjs --> C_diagnostics
+  T_repoint_kb_refs_mjs --> C_doc_drift
+  T_repoint_kb_refs_mjs --> C_graph_index
   T_verify_artifacts_mjs["verify-artifacts.mjs"]
   T_verify_artifacts_mjs --> C_signing_fusion
   T_verify_artifacts_mjs --> C_governance

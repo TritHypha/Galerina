@@ -7,7 +7,7 @@
 // variables or inline literals. Authentication flows must have audit.write
 // in effects so every login attempt is recorded.
 //
-// Reference: docs/Knowledge-Bases/galerina-governance-rules.md
+// Reference: ../ZTF-Knowledge-Bases/galerina-governance-rules.md
 // Rules: K-004 (FUNGI-SECRET-001/002/003), FUNGI-SECRET-ENV-001 (raw env var),
 //        A-001 (audit.write on auth flows)
 

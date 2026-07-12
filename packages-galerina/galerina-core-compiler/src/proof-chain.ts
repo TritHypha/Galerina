@@ -4,7 +4,7 @@
 // Produces SHA-256-based cryptographic evidence that what was declared matches
 // what was executed and audited.
 //
-// Spec: docs/Knowledge-Bases/galerina-proof-chain-spec.md
+// Spec: ../ZTF-Knowledge-Bases/galerina-proof-chain-spec.md
 // Schema version: fungi.execution.proof.v1
 // =============================================================================
 

@@ -4,6 +4,52 @@
 
 This file gives guidance to AI coding tools working on this repository.
 
+## Discovery protocol — graph first, grep last (owner rule, 2026-07-10)
+
+Token-cheap, reliable lookups exist for almost everything in this repo; use
+them BEFORE any raw grep or file-crawl:
+
+| Need | Use |
+|---|---|
+| Find a function/class/route/symbol | codebase-memory MCP `search_graph` (BM25 `query` or `name_pattern`), then `get_code_snippet` for the exact source |
+| Text pattern, with code context | MCP `search_code` (graph-augmented grep: deduped into containing functions, ranked, compact mode) |
+| Call chains / data flow | MCP `trace_path` |
+| Architecture overview | MCP `get_architecture`; `build/graph/Galerina_GRAPH_REPORT.md` |
+| A diagnostic code's def/emit/test/doc sites | `build/code-index/CODE_INDEX.md` (regen: `node scripts/code-index.mjs`) |
+| Which dev tool does X | `build/dev-tool-index/INDEX.md` (61 tools, categorised) |
+| Knowledge-base docs (sibling repo) | `node scripts/kb-index.mjs <terms>` (ranked query mode) |
+| A package's boundary/surface facts | its `.graph/BOUNDARY.md` |
+
+Raw `grep` is the LAST resort, for literal-string sweeps the graph does not
+model (absolute-path leaks, count-claim strings). Subagent/worker prompts must
+carry this protocol. If the lookup you need is missing: UPDATE or BUILD a dev
+tool (house pattern, committed) instead of grepping around the gap.
+
+### Post-commit index refresh (after adding/moving packages or landing code)
+
+Refresh the MCP index AND verify the refresh committed — never trust
+`status: "indexed"` alone on servers older than the 2026-07-10 dump-swap fix:
+
+1. Run `index_repository` (repo_path = this repo, mode `moderate`).
+2. In the response, check all three: `status` is `"indexed"`; `nodes` is close
+   to `expected_nodes` (a large shortfall = files extracted but not
+   committed); `indexed_head_sha` equals the commit you just made.
+3. Or ask `index_status`: `indexed_head_sha` is the BUILD POINT of the graph,
+   `git.head_sha` is the repo's current HEAD (always fresh, useless alone),
+   and `stale: false` confirms they match. `indexed_at` timestamps the build.
+4. Belt-and-braces: `search_graph` for one symbol introduced by the commit.
+
+Multiple concurrent agent sessions are safe: when sibling server processes
+hold the graph DB open, the server swaps content through SQLite/WAL instead
+of replacing the file. If the response says `status: "error"`, the previous
+graph is intact and no bookkeeping advanced — re-run after checking the
+server log; do NOT keep working against the stale graph as if it were fresh.
+Known failure mode on pre-fix servers: a reindex under concurrent sessions
+reports `"indexed"` while committing nothing, then freezes the index
+permanently (hash bookkeeping outruns the graph). If `search_graph` cannot
+find a symbol that `git ls-files` + grep prove exists, that freeze is the
+cause: upgrade the server, then reindex.
+
 ## Project Type
 
 This is the Galerina governance-first programming language — implementation,
@@ -29,10 +75,10 @@ intent → governed execution plan → coordinated compute → audit proof
 | 5 | Type + Effect Checker | Complete (Stage-A) |
 | 6 | IR (GIR) + Target Planner + WAT emitter | Complete (Stage-A) |
 
-> **Stage-A status (2026-06-23):** the full pipeline lexer→parser→type/effect/value-state→governance-verifier→GIR→WAT
-> is shipped and green (`galerina-core-compiler` at 4,256; whole suite 60/60 · 6,075 tests · 0 fail on a clean checkout). The remaining
+> **Stage-A status (2026-07-10):** the full pipeline lexer→parser→type/effect/value-state→governance-verifier→GIR→WAT
+> is shipped and green (`galerina-core-compiler` at 4,471; whole suite 92/92 · 7,057 tests · 0 fail on a clean checkout). The remaining
 > frontier is **Stage-B self-hosting WASM byte-parity** (only `tokenize` reaches it today) and the **real
-> `DSS.wasm`** Wasmtime runtime (#102–106, still a stub). See `docs/Knowledge-Bases/galerina-roadmap-and-percent-audit-2026-06-23.md`.
+> `DSS.wasm`** Wasmtime runtime (#102–106, still a stub). See `../ZTF-Knowledge-Bases/galerina-roadmap-and-percent-audit-2026-06-23.md`.
 
 ## Grammar — Current v0.1 Flow Forms
 
@@ -62,16 +108,16 @@ pure flow calculateVat(amount: Money<GBP>) -> Money<GBP> { ... }
 
 | What | File |
 |---|---|
-| Keyword table (lexer source of truth) | `docs/Knowledge-Bases/v1-reserved-keywords.md` |
-| Diagnostic codes — spec catalog | `docs/Knowledge-Bases/compiler-diagnostics.md` (forward-spec; includes unbuilt codes) |
+| Keyword table (lexer source of truth) | `../ZTF-Knowledge-Bases/v1-reserved-keywords.md` |
+| Diagnostic codes — spec catalog | `../ZTF-Knowledge-Bases/compiler-diagnostics.md` (forward-spec; includes unbuilt codes) |
 | Diagnostic codes — LIVE catalog (generated, every real code) | `build/code-registry/REGISTRY.md` (regen: `node scripts/gen-code-registry.mjs`) |
 | Code INDEX — every code → def/emit/test/doc sites (query instead of grep) | `build/code-index/CODE_INDEX.md` (regen: `node scripts/code-index.mjs`) |
-| Diagnostic-code CONVENTIONS (binding) | `docs/Knowledge-Bases/galerina-diagnostic-code-conventions.md` |
-| Audit Coverage & R&D Standards (20, research-grounded) | `docs/Knowledge-Bases/galerina-audit-coverage-and-rd-standards.md` |
+| Diagnostic-code CONVENTIONS (binding) | `../ZTF-Knowledge-Bases/galerina-diagnostic-code-conventions.md` |
+| Audit Coverage & R&D Standards (20, research-grounded) | `../ZTF-Knowledge-Bases/galerina-audit-coverage-and-rd-standards.md` |
 | AST contract (AstNodeKind, Token, etc.) | `packages-galerina/galerina-core/src/index.ts` |
-| Phase 4 plan | `docs/Knowledge-Bases/phase-4-parser-ast-plan.md` |
-| Concept model | `docs/Knowledge-Bases/galerina-concept-map.md` |
-| Code examples (corrected) | `docs/Knowledge-Bases/galerina-code-examples-full-flow.md` |
+| Phase 4 plan | `../ZTF-Knowledge-Bases/phase-4-parser-ast-plan.md` |
+| Concept model | `../ZTF-Knowledge-Bases/galerina-concept-map.md` |
+| Code examples (corrected) | `../ZTF-Knowledge-Bases/galerina-code-examples-full-flow.md` |
 
 ## Package Map
 
@@ -100,7 +146,7 @@ FUNGI-BINDING-*   binding mutability (001–004 defined)
 FUNGI-MEMORY-*    memory model (001–008 defined)
 ```
 
-See `docs/Knowledge-Bases/compiler-diagnostics.md` for the spec catalog, and `build/code-registry/REGISTRY.md`
+See `../ZTF-Knowledge-Bases/compiler-diagnostics.md` for the spec catalog, and `build/code-registry/REGISTRY.md`
 for the LIVE generated catalog (every real code + status). **Conventions are binding**
 (`galerina-diagnostic-code-conventions.md`): `name` is `UPPER_SNAKE`, `severity` is lowercase `error|warning|info`,
 one-code-one-fault, one owner per code, emit via an exported constant. Enforced by the umbrella gate

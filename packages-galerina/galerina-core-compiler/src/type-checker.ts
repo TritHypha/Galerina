@@ -3,7 +3,7 @@
 //
 // Validates type references and structural rules in the parsed AST.
 //
-// Spec: docs/Knowledge-Bases/formal-type-system-spec.md
+// Spec: ../ZTF-Knowledge-Bases/formal-type-system-spec.md
 //
 // Implemented diagnostics:
 //   FUNGI-TYPE-001  UnknownType                — type name not in scope
@@ -134,7 +134,7 @@ function makeTCDiag(
 // These are NOT types — they are compile-time keywords that tell the type
 // checker to defer resolution to the inference pass.
 // Do NOT emit FUNGI-TYPE-001 for these names.
-// Canonical source: docs/Knowledge-Bases/formal-type-system-spec.md §Auto
+// Canonical source: ../ZTF-Knowledge-Bases/formal-type-system-spec.md §Auto
 // ---------------------------------------------------------------------------
 
 const INFERENCE_MARKERS: ReadonlySet<string> = new Set([
@@ -143,7 +143,7 @@ const INFERENCE_MARKERS: ReadonlySet<string> = new Set([
 
 // ---------------------------------------------------------------------------
 // Built-in type registry
-// Canonical source: docs/Knowledge-Bases/formal-type-system-spec.md Section 2
+// Canonical source: ../ZTF-Knowledge-Bases/formal-type-system-spec.md Section 2
 // ---------------------------------------------------------------------------
 
 const BUILT_IN_TYPES: ReadonlySet<string> = new Set([
@@ -232,8 +232,25 @@ const STRING_BASED_TYPES: ReadonlySet<string> = new Set([
 ]);
 
 // ---------------------------------------------------------------------------
+// RD-0353 — Hallmark open types
+// `hallmark X of T { gate: flow f, ops { … } }` mints a nominal type over a
+// carrier. The schema's ops {} is the CLOSED algebra vocabulary a hallmark may
+// participate in — deny-by-default, and a schema can never grant an effect (T3/T7).
+// The epistemic/security governance vocabulary is reserved from minting (T1): a
+// name carries no authority, so it may not be impersonated by a developer type.
+// ---------------------------------------------------------------------------
+
+const HALLMARK_ALGEBRA_OPS: ReadonlySet<string> = new Set([
+  "add", "subtract", "scale", "ratio", "compare",
+]);
+
+const EPISTEMIC_RESERVED: ReadonlySet<string> = new Set([
+  "Trusted", "Unverified", "Refuted", "Tainted", "SafeFor", "Secret", "Decision", "Verdict",
+]);
+
+// ---------------------------------------------------------------------------
 // Generic arity rules
-// Canonical source: docs/Knowledge-Bases/formal-type-system-spec.md Section 3
+// Canonical source: ../ZTF-Knowledge-Bases/formal-type-system-spec.md Section 3
 // ---------------------------------------------------------------------------
 
 const GENERIC_ARITY: ReadonlyMap<string, number> = new Map([
@@ -272,6 +289,25 @@ const GENERIC_EXAMPLES: ReadonlyMap<string, string> = new Map([
   ["Brand",        "Brand<String, \"MyType\">"],
   ["Embedding",    "Embedding<768>"],
   ["Secret",       "Secret<ApiKey>"],
+]);
+
+// The KIND of each type-argument POSITION for a generic. A position that is anything but
+// "type" is PAYLOAD — a nominal tag, a shape literal, or a dimension — and is NEVER a
+// type reference, so checkTypeRef must not recurse into it. This declarative table is the
+// single source of truth that replaces the old per-case regex skips (Brand tag / Tensor
+// shape / numeric dim): a new generic with a non-type arg adds ONE row here and the type
+// checker can never regress into that false-positive class again (057 Brand-tag, 401
+// Tensor-shape). Generics whose args are ALL types (Option, Result, Array, Map,
+// ReadOnlyView, Channel, Set, List, Secret) are omitted — the default kind is "type".
+// Each row's length matches GENERIC_ARITY for that base.
+type GenericArgKind = "type" | "tag" | "shape" | "dim";
+const GENERIC_ARG_KINDS: ReadonlyMap<string, readonly GenericArgKind[]> = new Map([
+  ["Brand",     ["type", "tag"]],        // Brand<T, Tag> — nominal identity tag (bare or quoted)
+  ["Tensor",    ["type", "shape"]],      // Tensor<Elem, [d0, d1, ...]> — shape literal
+  ["Vector",    ["type", "dim"]],        // Vector<Elem, N> — dimension (numeric or named)
+  ["Matrix",    ["type", "dim", "dim"]], // Matrix<Elem, R, C> — row/col dimensions
+  ["Money",     ["tag"]],                // Money<GBP> — currency tag
+  ["Embedding", ["dim"]],                // Embedding<768> — dimension
 ]);
 
 // ---------------------------------------------------------------------------
@@ -329,10 +365,13 @@ function parseTypeString(raw: string): ParsedTypeRef {
   let current = "";
 
   for (const ch of innerStr) {
-    if (ch === "<") {
+    if (ch === "<" || ch === "[") {
+      // Track BOTH generic (<...>) and shape-literal ([...]) nesting depth so a comma
+      // inside a tensor shape — Tensor<Float32, [1, 128]> — is NOT split at top level
+      // (which mis-counted it as 3 args → false FUNGI-TYPE-009 / -001 under --strict).
       depth++;
       current += ch;
-    } else if (ch === ">") {
+    } else if (ch === ">" || ch === "]") {
       depth--;
       current += ch;
     } else if (ch === "," && depth === 0) {
@@ -449,6 +488,15 @@ class TypeChecker {
    */
   private readonly brandedTypes = new Set<string>();
 
+  /**
+   * RD-0353: hallmark open types — `hallmark X of T { gate: flow f, ops { … } }`.
+   * name → { carrier, gate-flow, declared ops }. A hallmark is ALSO registered in
+   * brandedTypes (construction-only → FUNGI-TYPE-003) and userDefinedTypes
+   * (declare-or-reject → FUNGI-TYPE-001); this map adds the schema so the closed
+   * ops vocabulary and cross-type non-unification can be enforced.
+   */
+  private readonly hallmarkSchemas = new Map<string, { carrier: string; gate: string; ops: Set<string> }>();
+
   // ── Phase 11A.2: binding kind tracking (let / mut / readonly) ────────────
   /** Per-scope map from binding name → declaration kind (for reassignment checks). */
   private readonly bindingKindScopes: Array<Map<string, "let" | "mut" | "readonly">> = [];
@@ -462,12 +510,68 @@ class TypeChecker {
   private readonly flowParamTypes = new Map<string, readonly string[]>();
   /** Flow declared effects registry, built during collectDeclarations. */
   private readonly flowDeclaredEffects = new Map<string, readonly string[]>();
+  /** record NAME → (field name → declared field type, "" when unannotated).
+   *  Built during collectDeclarations so a `#record` literal can be STRUCTURALLY
+   *  checked against a declared record type instead of collapsing to the opaque
+   *  'Record' (the check↔governed finding-(ii) divergence class). */
+  private readonly recordFieldTypes = new Map<string, Map<string, string>>();
   /** Declared return type of the flow currently being walked. */
   private currentReturnType = "";
   /** Effects declared on the flow currently being walked (for TYPE-014). */
   private currentFlowEffects: readonly string[] = [];
   /** Name of the flow currently being walked (for TYPE-014 messages). */
   private currentFlowName = "";
+
+  /** Structural record-literal adoption (shared by the return- and let-positions).
+   *  When a `#record` literal meets a DECLARED record type: field-check it against the
+   *  declaration. Full match → the literal IS that record type (returns true, no diagnostic).
+   *  Mismatch → emits ONE precise diagnostic (missing/unknown/badly-typed fields) under the
+   *  caller's code/name and returns true (handled). Not a record literal, or not a declared
+   *  record → returns false (caller falls back to its generic diagnostic). */
+  private tryRecordLiteralAdoption(
+    declaredBase: string,
+    expr: AstNode | undefined,
+    location: AstNode["location"],
+    diagCode: string,
+    diagName: string,
+    contextLabel: string,
+  ): boolean {
+    if (expr === undefined || expr.kind !== "callExpr" || expr.value !== "#record") return false;
+    const declFields = this.recordFieldTypes.get(declaredBase);
+    if (declFields === undefined) return false;
+    const litFields = new Map<string, AstNode | undefined>();
+    for (const f of expr.children ?? []) {
+      if (f.kind === "identifier" && f.value) litFields.set(f.value, f.children?.[0]);
+    }
+    const missing = [...declFields.keys()].filter((k) => !litFields.has(k));
+    const unknown = [...litFields.keys()].filter((k) => !declFields.has(k));
+    const badTypes: string[] = [];
+    for (const [fname, fval] of litFields) {
+      const declType = declFields.get(fname);
+      if (declType === undefined || declType === "" || fval === undefined) continue;
+      const fInferred = this.inferType(fval);
+      const fDeclBase = declType.split("<")[0]?.trim() ?? declType;
+      if (fInferred !== undefined && fInferred !== "Record" &&
+          !isAssignmentCompatible(fDeclBase, fInferred)) {
+        badTypes.push(`${fname}: declared '${declType}', got '${fInferred}'`);
+      }
+    }
+    if (missing.length > 0 || unknown.length > 0 || badTypes.length > 0) {
+      const detail = [
+        missing.length ? `missing field(s): ${missing.join(", ")}` : "",
+        unknown.length ? `unknown field(s): ${unknown.join(", ")}` : "",
+        ...badTypes,
+      ].filter(Boolean).join("; ");
+      this.diagnostics.push(makeTCDiag(
+        diagCode,
+        diagName,
+        `Record literal does not match ${contextLabel}: ${detail}.`,
+        location,
+        `Make the literal's fields match the 'record ${declaredBase}' declaration exactly.`,
+      ));
+    }
+    return true; // handled: adopted silently, or the precise diagnostic above
+  }
 
   check(ast: AstNode): void {
     // Pass 1: Collect all user-defined type, enum, and flow signature names
@@ -491,6 +595,23 @@ class TypeChecker {
       this.userDefinedTypes.add(node.value.trim());
     }
 
+    // Harvest record FIELDS (not just the name) so record literals can be structurally
+    // checked. Parser shape: recordDecl children are paramDecl nodes valued "name: Type"
+    // (or bare "name" when unannotated — stored as type "").
+    if (node.kind === "recordDecl" && node.value) {
+      const fields = new Map<string, string>();
+      for (const child of node.children ?? []) {
+        if (child.kind !== "paramDecl" || !child.value) continue;
+        const colon = child.value.indexOf(":");
+        if (colon >= 0) {
+          fields.set(child.value.slice(0, colon).trim(), child.value.slice(colon + 1).trim());
+        } else {
+          fields.set(child.value.trim(), "");
+        }
+      }
+      this.recordFieldTypes.set(node.value.trim(), fields);
+    }
+
     // Phase 9A-2: detect Brand<T, "Name"> aliases → register as branded type
     // These types require a validation gate before assignment (FUNGI-TYPE-003).
     if (node.kind === "typeDecl" && node.value) {
@@ -501,6 +622,32 @@ class TypeChecker {
           this.brandedTypes.add(node.value.trim());
         }
       }
+    }
+
+    // RD-0353: hallmark X of T { … } — a declared, gated nominal type. Register it
+    // as a user type (declare-or-reject) AND a branded type (construction only
+    // through its gate → FUNGI-TYPE-003), and capture its schema for op checks. The
+    // mint-time gates (reserved name, ASCII, gate-mandatory, closed ops) fire in
+    // walkNode → checkHallmarkDecl.
+    if (node.kind === "hallmarkDecl" && node.value) {
+      const hmName = node.value.trim();
+      this.userDefinedTypes.add(hmName);
+      this.brandedTypes.add(hmName);
+      let carrier = "";
+      let gate = "";
+      const ops = new Set<string>();
+      for (const c of node.children ?? []) {
+        if (c.kind === "typeRef") carrier = (c.value ?? "").trim();
+        else if (c.kind === "identifier" && c.value?.startsWith("gate:")) {
+          gate = c.value.slice("gate:".length).trim();
+        } else if (c.kind === "identifier" && c.value?.startsWith("ops:")) {
+          for (const o of c.value.slice("ops:".length).split(",")) {
+            const t = o.trim();
+            if (t !== "") ops.add(t);
+          }
+        }
+      }
+      this.hallmarkSchemas.set(hmName, { carrier, gate, ops });
     }
     if (node.kind === "enumDecl" && node.value) {
       const variants = new Set<string>();
@@ -694,6 +841,22 @@ class TypeChecker {
 
         // Graceful fallback: undefined receiver type or explicit "unknown" → unknown field
         if (receiverType === undefined || receiverType === "unknown" || receiverType === "") return undefined;
+
+        // An Auto-typed receiver is DEFERRED, not String-ish: guessing here is what mis-typed
+        // `entry.body` (GIR statement Array) as String via the field-name heuristics below and
+        // mis-fired TYPE-002/005 on the self-hosted corpus (finding ii). Unknown means unknown.
+        const receiverBase = receiverType.split("<")[0]?.trim() ?? receiverType;
+        if (receiverBase === "Auto") return undefined;
+
+        // REAL record schema lookup (the "Phase 11B" this comment block promised): a receiver
+        // whose type is a DECLARED record answers field accesses from its declaration — the
+        // declared field type, or undefined for a field the record does not declare. Takes
+        // precedence over every name-based heuristic below.
+        const schema = this.recordFieldTypes.get(receiverBase);
+        if (schema !== undefined) {
+          const declared = schema.get(node.value ?? "");
+          return declared === undefined || declared === "" ? undefined : declared;
+        }
 
         // Request object fields — any field access on Request → String
         // This is the common case: request.body.email, request.params.id, etc.
@@ -898,6 +1061,23 @@ class TypeChecker {
         }
         // Comparison and logical → Bool
         if (["==","!=","<","<=",">",">=","&&","||"].includes(op)) return "Bool";
+        // RD-0353: hallmark algebra composes to the hallmark type. H (+|-) H → H;
+        // H (*|/) scalar → H (scale); H / H → the carrier (ratio, dimensionless).
+        // Operator LEGALITY is enforced in checkBinaryOperatorTypes; here we only
+        // propagate the resulting type so a bound `let total = base + bonus` keeps
+        // its hallmark identity. No-op for all non-hallmark programs.
+        {
+          const lB = leftType.split("<")[0] ?? leftType;
+          const rB = rightType.split("<")[0] ?? rightType;
+          const lHm = this.hallmarkSchemas.get(lB);
+          const rHm = this.hallmarkSchemas.get(rB);
+          if (lHm !== undefined && rHm !== undefined && lB === rB) {
+            if (op === "/") return lHm.carrier !== "" ? lHm.carrier : undefined; // ratio → carrier
+            return lB;                                                            // add/subtract → same hallmark
+          }
+          if (lHm !== undefined && rHm === undefined && NUMERIC_TYPES.has(rB)) return lB; // H * scalar → H
+          if (rHm !== undefined && lHm === undefined && NUMERIC_TYPES.has(lB)) return rB; // scalar * H → H
+        }
         // Numeric arithmetic → numeric result
         if (NUMERIC_TYPES.has(leftType) && NUMERIC_TYPES.has(rightType)) {
           if (leftType === "Decimal" || rightType === "Decimal") return "Decimal";
@@ -1048,6 +1228,11 @@ class TypeChecker {
         return;
       }
 
+      // ── RD-0353: hallmark mint-time gates ────────────────────────────────
+      case "hallmarkDecl":
+        this.checkHallmarkDecl(node);
+        return;
+
       case "block":
         this.pushBindingScope();
         this.pushTypeScope();
@@ -1069,13 +1254,25 @@ class TypeChecker {
               (returnExpr.value === "Ok" || returnExpr.value === "Err" || returnExpr.value === "Some");
             const declaredBase = this.currentReturnType.split("<")[0]?.trim() ?? this.currentReturnType;
             if (!isOkErrReturn && !isAssignmentCompatible(declaredBase, inferredType)) {
-              this.diagnostics.push(makeTCDiag(
-                "FUNGI-TYPE-008",
-                "InvalidReturnType",
-                `Flow declares return type '${this.currentReturnType}' but this return expression has type '${inferredType}'.`,
-                node.location,
-                `Return a value of type '${this.currentReturnType}', or correct the flow return type declaration.`,
-              ));
+              // A `#record` LITERAL where a DECLARED record type is expected adopts that
+              // record type STRUCTURALLY (fields checked against the declaration) instead of
+              // collapsing to the opaque 'Record' — the corpus-wide `return { ty: "Int", … }
+              // -> RtValue` idiom (finding-(ii) divergence class). Mismatches still error
+              // with precise field detail: stronger than the string compare, never a mute.
+              const adopted = this.tryRecordLiteralAdoption(
+                declaredBase, returnExpr, node.location,
+                "FUNGI-TYPE-008", "InvalidReturnType",
+                `declared return type '${this.currentReturnType}'`,
+              );
+              if (!adopted) {
+                this.diagnostics.push(makeTCDiag(
+                  "FUNGI-TYPE-008",
+                  "InvalidReturnType",
+                  `Flow declares return type '${this.currentReturnType}' but this return expression has type '${inferredType}'.`,
+                  node.location,
+                  `Return a value of type '${this.currentReturnType}', or correct the flow return type declaration.`,
+                ));
+              }
             } else if (!isOkErrReturn && declaredBase === "Auto") {
               // Surface the deferral: isAssignmentCompatible() treats an `Auto`-declared
               // target as universally compatible, which silently mutes the return-type
@@ -1342,16 +1539,26 @@ class TypeChecker {
         if (!hasGovernanceQualifier && !isViewType && initNode !== undefined) {
           const inferredType = this.inferType(initNode);
           if (inferredType !== undefined && !isAssignmentCompatible(declaredBase, inferredType)) {
-            this.diagnostics.push(makeTCDiag(
-              "FUNGI-TYPE-002",
-              "TypeMismatch",
-              `Cannot assign '${inferredType}' to '${declaredBase}'. The declared type and the value type are incompatible.`,
-              node.location,
-              `Change the value to a '${declaredBase}' expression, or update the type annotation.`,
-              inferredType === "Int" && NUMERIC_TYPES.has(declaredBase)
-                ? undefined  // numeric widening — no code suggestion needed
-                : undefined,
-            ));
+            // `let x: SomeRecord = { … }` — same structural adoption as the return position
+            // (finding ii): a matching literal IS the declared record; a mismatch gets the
+            // precise field diagnostic from the helper instead of the generic one below.
+            const adopted = this.tryRecordLiteralAdoption(
+              declaredBase, initNode, node.location,
+              "FUNGI-TYPE-002", "TypeMismatch",
+              `declared type '${declaredBase}'`,
+            );
+            if (!adopted) {
+              this.diagnostics.push(makeTCDiag(
+                "FUNGI-TYPE-002",
+                "TypeMismatch",
+                `Cannot assign '${inferredType}' to '${declaredBase}'. The declared type and the value type are incompatible.`,
+                node.location,
+                `Change the value to a '${declaredBase}' expression, or update the type annotation.`,
+                inferredType === "Int" && NUMERIC_TYPES.has(declaredBase)
+                  ? undefined  // numeric widening — no code suggestion needed
+                  : undefined,
+              ));
+            }
           }
         }
 
@@ -1500,6 +1707,118 @@ class TypeChecker {
     }
   }
 
+  // ── RD-0353 — Hallmark open types (mint-time gates) ──────────────────────
+
+  /** A hallmark may not mint a reserved name: a built-in type or currency/unit tag
+   *  (both covered by BUILT_IN_TYPES) or the epistemic/security governance vocabulary. */
+  private isReservedHallmarkName(name: string): boolean {
+    return isBuiltInType(name) || EPISTEMIC_RESERVED.has(name);
+  }
+
+  private reservedHallmarkMessage(name: string): string {
+    const CURRENCY = new Set(["GBP", "USD", "EUR", "JPY", "CHF", "CAD", "AUD"]);
+    if (name === "Money") {
+      return `'Money' is a reserved built-in type. For a currency amount use Money<GBP>; for a new quantity use a 'unit' declaration.`;
+    }
+    if (CURRENCY.has(name)) {
+      return `'${name}' is a currency/unit tag, not a mintable name — did you want Money<${name}> or a 'unit' declaration?`;
+    }
+    if (EPISTEMIC_RESERVED.has(name)) {
+      return `'${name}' is a reserved governance/epistemic term. Names carry no authority in Galerina, so it cannot be minted as a hallmark type.`;
+    }
+    return `'${name}' is a reserved built-in name and cannot be minted as a hallmark type.`;
+  }
+
+  private emitHallmarkOpDenied(
+    typeName: string, algebraOp: string, operator: string,
+    ops: ReadonlySet<string>, location: SourceLocation | undefined,
+  ): void {
+    const declared = ops.size > 0 ? [...ops].join(", ") : "(none)";
+    this.diagnostics.push(makeTCDiag(
+      "FUNGI-HALLMARK-005",
+      "UNDECLARED_HALLMARK_OP",
+      `Operator '${operator}' needs the '${algebraOp}' operation, which '${typeName}' does not declare (ops { ${declared} }). Undeclared operations are denied by default.`,
+      location,
+      `Add '${algebraOp}' to the '${typeName}' ops { } schema, or avoid '${operator}' on '${typeName}'.`,
+    ));
+  }
+
+  /** Mint-time enforcement for a `hallmark X of T { … }` declaration: ASCII-only
+   *  name (T2), reserved-name gate (T1/T9), mandatory gate, and the closed ops
+   *  vocabulary (T3/T7). Construction-only and cross-type non-unification are
+   *  enforced at use sites via brandedTypes/FUNGI-TYPE-003 and
+   *  checkBinaryOperatorTypes/FUNGI-TYPE-004. */
+  private checkHallmarkDecl(node: AstNode): void {
+    const name = (node.value ?? "").trim();
+    const loc = node.location;
+    let carrier = "";
+    let gate = "";
+    let opsRaw: string | undefined;
+    for (const c of node.children ?? []) {
+      if (c.kind === "typeRef") carrier = (c.value ?? "").trim();
+      else if (c.kind === "identifier" && c.value) {
+        if (c.value.startsWith("gate:")) gate = c.value.slice("gate:".length).trim();
+        else if (c.value.startsWith("ops:")) opsRaw = c.value.slice("ops:".length);
+      }
+    }
+    const hasName = name !== "" && name !== "<unknown>";
+
+    // T2 — ASCII-only identifier (homoglyph / mixed-script protection).
+    if (hasName && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) {
+      this.diagnostics.push(makeTCDiag(
+        "FUNGI-HALLMARK-002",
+        "NON_ASCII_HALLMARK_NAME",
+        `Hallmark name '${name}' must be a plain ASCII identifier. Non-ASCII or mixed-script names are refused so a homoglyph cannot mint a look-alike of an existing type.`,
+        loc,
+        `Rename using ASCII letters, digits and underscore only.`,
+      ));
+    }
+
+    // T1 / T9 — reserved-name gate.
+    if (hasName && this.isReservedHallmarkName(name)) {
+      this.diagnostics.push(makeTCDiag(
+        "FUNGI-HALLMARK-001",
+        "RESERVED_TYPE_NAME",
+        this.reservedHallmarkMessage(name),
+        loc,
+        `Choose a name that is not a built-in type, currency/unit tag, or governance term.`,
+      ));
+    }
+
+    // Gate mandatory — a hallmark without an assay is just an alias.
+    if (gate === "") {
+      const suffix = hasName ? name : "Name";
+      this.diagnostics.push(makeTCDiag(
+        "FUNGI-HALLMARK-003",
+        "HALLMARK_GATE_REQUIRED",
+        `Hallmark '${name}' has no gate. A hallmark is minted only through a mandatory assay: declare 'gate: flow <parseFn>' returning Result<${suffix}, Error>.`,
+        loc,
+        `Add a gate: gate: flow parse${suffix}`,
+        `gate: flow parse${suffix}`,
+      ));
+    }
+
+    // T3 / T7 — ops must be drawn from the closed algebra vocabulary (never effects).
+    if (opsRaw !== undefined) {
+      for (const raw of opsRaw.split(",")) {
+        const opTok = raw.trim();
+        if (opTok === "") continue;
+        if (!HALLMARK_ALGEBRA_OPS.has(opTok)) {
+          this.diagnostics.push(makeTCDiag(
+            "FUNGI-HALLMARK-004",
+            "UNKNOWN_HALLMARK_OP",
+            `'${opTok}' is not a hallmark algebra operation. ops {} draws only from the closed set { ${[...HALLMARK_ALGEBRA_OPS].join(", ")} } — a schema can subtract capability, never grant an effect.`,
+            loc,
+            `Remove '${opTok}', or use one of: ${[...HALLMARK_ALGEBRA_OPS].join(", ")}.`,
+          ));
+        }
+      }
+    }
+
+    // The carrier must resolve (a bogus carrier is FUNGI-TYPE-001).
+    if (carrier !== "") this.checkTypeRef(carrier, loc);
+  }
+
   /**
    * Phase 8A: check binary operator type compatibility.
    * Emits FUNGI-TYPE-004 for incompatible operand types.
@@ -1553,6 +1872,84 @@ class TypeChecker {
         return;
       }
       return; // Money<C> / Money<C> → Decimal ratio, valid
+    }
+
+    // ── RD-0353 — Hallmark open types: nominal, closed-algebra operands ───────
+    // A hallmark type is nominal over a carrier; its schema's ops {} is the CLOSED
+    // set of algebra operations it participates in (deny-by-default). Distinct
+    // hallmark types never unify (FUNGI-TYPE-004); an operator whose algebra op is
+    // undeclared is FUNGI-HALLMARK-005.
+    {
+      const leftHm = this.hallmarkSchemas.get(leftBase);
+      const rightHm = this.hallmarkSchemas.get(rightBase);
+      if (leftHm !== undefined || rightHm !== undefined) {
+        const COMPARISONS = new Set(["<", ">", "<=", ">=", "==", "!="]);
+        // Two DIFFERENT hallmark types never unify.
+        if (leftHm !== undefined && rightHm !== undefined && leftBase !== rightBase) {
+          this.diagnostics.push(makeTCDiag(
+            "FUNGI-TYPE-004",
+            "InvalidBinaryOperation",
+            `'${leftBase}' and '${rightBase}' are distinct hallmark types and never unify under '${op}'.`,
+            location,
+            `Hallmark types are nominal — operate on values of the same type, or convert through an explicit gate.`,
+          ));
+          return;
+        }
+        // Same hallmark type on both sides — same-type algebra.
+        if (leftHm !== undefined && rightHm !== undefined) {
+          if (op === "*") {
+            this.diagnostics.push(makeTCDiag(
+              "FUNGI-TYPE-004",
+              "InvalidBinaryOperation",
+              `Operator '*' cannot be applied to two '${leftBase}' values (that would be '${leftBase}²'). Scale by a dimensionless number instead.`,
+              location,
+              `Scale by a number: value * 2.`,
+            ));
+            return;
+          }
+          const need = op === "+" ? "add"
+            : op === "-" ? "subtract"
+            : op === "/" ? "ratio"
+            : COMPARISONS.has(op) ? "compare"
+            : undefined;
+          if (need !== undefined && !leftHm.ops.has(need)) {
+            this.emitHallmarkOpDenied(leftBase, need, op, leftHm.ops, location);
+          }
+          return;
+        }
+        // Hallmark <op> non-hallmark: scalar scaling/comparison, else non-unification.
+        const schema = (leftHm ?? rightHm)!;
+        const hmName = leftHm !== undefined ? leftBase : rightBase;
+        const otherBase = leftHm !== undefined ? rightBase : leftBase;
+        if (NUMERIC_TYPES.has(otherBase)) {
+          if (op === "*" || op === "/") {
+            if (!schema.ops.has("scale")) this.emitHallmarkOpDenied(hmName, "scale", op, schema.ops, location);
+            return;
+          }
+          if (COMPARISONS.has(op)) {
+            if (!schema.ops.has("compare")) this.emitHallmarkOpDenied(hmName, "compare", op, schema.ops, location);
+            return;
+          }
+          // + or - with a bare number: a hallmark is not a raw number.
+          this.diagnostics.push(makeTCDiag(
+            "FUNGI-TYPE-004",
+            "InvalidBinaryOperation",
+            `Operator '${op}' cannot combine hallmark type '${hmName}' with a bare '${otherBase}'. Add/subtract two '${hmName}' values, or scale (*) by a number.`,
+            location,
+            `Use '${hmName}' ${op} '${hmName}', or scale by a number.`,
+          ));
+          return;
+        }
+        // Hallmark vs an unrelated built-in (Money, String, …) → never unify.
+        this.diagnostics.push(makeTCDiag(
+          "FUNGI-TYPE-004",
+          "InvalidBinaryOperation",
+          `'${leftBase}' and '${rightBase}' never unify under '${op}' — a hallmark type is nominal and shares no algebra with other types.`,
+          location,
+          `Operate on values of the same hallmark type.`,
+        ));
+        return;
+      }
     }
 
     // ── Decimal partial-operator REDIRECT (#53/#54) ──────────────────────────
@@ -1938,11 +2335,18 @@ class TypeChecker {
       }
     }
 
-    // Recursively check each type argument
-    for (const arg of args) {
-      const trimmed = arg.trim();
-      if (trimmed === "" || /^\d/.test(trimmed)) continue; // skip numeric dimension args
-      // Pass parent location; source locations for nested args are Phase 7
+    // Recursively check each TYPE-kind argument. A generic's non-type positions
+    // (nominal tags, shape literals, dimensions) are declared in GENERIC_ARG_KINDS and
+    // are never type references — that table is the single source of truth, replacing
+    // the old per-case regex skips (Brand tag / Tensor shape / numeric dim). Defense in
+    // depth: even a "type" position holding a literal, a quoted tag, or a bracketed
+    // shape is payload, not a type name. Location for nested args is Phase 7.
+    const argKinds = GENERIC_ARG_KINDS.get(base);
+    for (let i = 0; i < args.length; i++) {
+      const trimmed = (args[i] ?? "").trim();
+      if (trimmed === "") continue;
+      if ((argKinds?.[i] ?? "type") !== "type") continue; // declared payload position
+      if (/^[\d"'\[]/.test(trimmed)) continue; // literal / quoted tag / shape literal
       this.checkTypeRef(trimmed, location);
     }
   }

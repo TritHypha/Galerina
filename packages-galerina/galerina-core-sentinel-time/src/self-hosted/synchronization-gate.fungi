@@ -1,0 +1,35 @@
+@version 1
+/// @file: synchronization-gate.fungi
+/// @purpose: Stage-6 CHECKER-VERIFIED twin of the sentinel-time synchronization-gate DECISION surface
+///   (synchronization-gate.ts::enforceDrift) — the physical-time ↔ logical-tick drift gate. The host
+///   reads the RTC (physicalMs — a host seam), the logical clock (now / bootTick), and computes
+///   drift = actual_ticks - expected_ticks and its magnitude; this pure surface folds the drift
+///   magnitude + the StabilityEnvelope fail-closed into a pass/fault verdict. A clock that drifts beyond
+///   its envelope has lost determinism relative to the host and is FAILED deterministically. Trit:
+///   ALLOW = +1, DENY = -1.
+/// @fidelity: two distinct fail-closed reasons mirror the two .ts fault codes — LST-SYNC-001 (a gate
+///   used before its boot sync mapping is recorded) and LST-DRIFT-001 (|drift| strictly exceeds the
+///   envelope). enforceDrift faults when Math.abs(drift) > maxDriftTicks, so equality (drift == max)
+///   PASSES — the twin uses the same strict `>`.
+/// @status: checker-verified twin (galerina check clean); NOT build-wired (execution switch #143).
+
+/// syncGateVerdict — the LST-SYNC-001 precondition. The boot mapping (syncToPhysical) must be recorded
+/// before any drift question can be asked; an un-synced gate is fail-closed DENY.
+pure flow syncGateVerdict(synced: Bool) -> Int
+contract { intent { "Fail-closed sync precondition: the boot physical↔tick mapping must be recorded before a drift check (LST-SYNC-001)." } }
+{
+  if synced == false { return 0 - 1 }
+  return 1
+}
+
+/// driftGateVerdict — enforceDrift as a pure fold. Requires a prior sync (composes syncGateVerdict),
+/// then DENIES if the absolute drift strictly exceeds the stability envelope (LST-DRIFT-001); a synced
+/// clock whose drift is within the envelope (drift <= max) is the only ALLOW. `driftAbs` = the host's
+/// |actual - expected| ticks; `maxDriftTicks` = the envelope ceiling.
+pure flow driftGateVerdict(synced: Bool, driftAbs: Int, maxDriftTicks: Int) -> Int
+contract { intent { "Fail-closed drift gate: deny if unsynced, or if |drift| exceeds the stability envelope; else allow." } }
+{
+  if syncGateVerdict(synced) < 1 { return 0 - 1 }
+  if driftAbs > maxDriftTicks { return 0 - 1 }
+  return 1
+}

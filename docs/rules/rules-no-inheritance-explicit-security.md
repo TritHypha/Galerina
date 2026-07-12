@@ -55,4 +55,4 @@ generics or secure flows instead.
 
 ## Knowledge Base
 
-See [No Inheritance And Explicit Security](../Knowledge-Bases/no-inheritance-explicit-security.md).
+See [No Inheritance And Explicit Security](../../../ZTF-Knowledge-Bases/no-inheritance-explicit-security.md).

@@ -46,11 +46,11 @@ Report everything.
 Deployment intent should live in Galerina-owned declarations such as:
 
 ```text
-boot.ln
-galerina.deploy.ln
-galerina.security-policy.ln
-galerina.memory-policy.ln
-galerina.compute-policy.ln
+boot.fungi
+galerina.deploy.fungi
+galerina.security-policy.fungi
+galerina.memory-policy.fungi
+galerina.compute-policy.fungi
 ```
 
 It should not be scattered only across:
@@ -146,13 +146,13 @@ Galerina must not commit machine-specific runtime facts to Git.
 Git-tracked intent:
 
 ```text
-boot.ln
-main.ln
-galerina.deploy.ln
+boot.fungi
+main.fungi
+galerina.deploy.fungi
 galerina.lock.json
-galerina.security-policy.ln
-galerina.memory-policy.ln
-galerina.compute-policy.ln
+galerina.security-policy.fungi
+galerina.memory-policy.fungi
+galerina.compute-policy.fungi
 ```
 
 Not Git-tracked:

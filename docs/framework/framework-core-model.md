@@ -107,4 +107,4 @@ security-report.json
 
 ## Knowledge Base
 
-See [Core Application Model](../Knowledge-Bases/core-application-model.md).
+See [Core Application Model](../../../ZTF-Knowledge-Bases/core-application-model.md).

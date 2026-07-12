@@ -1,0 +1,104 @@
+@version 1
+/// @file: cert-gate.fungi
+/// @purpose: Stage-6 CHECKER-VERIFIED twin of cert-gate.ts (TLSTP S1) — the PURE K3 cert/channel-validation
+///   gate. The TLS/PKI library does the ASN.1 / path-building / signature / OCSP-CRL math; this surface folds
+///   the FOUR resulting sub-verdicts with the Kleene-K3 vAnd-reduce (min over the trit) and collapses
+///   fail-closed at the trust boundary. Trit encoding: ALLOW = +1, INDETERMINATE = 0, DENY = -1 (matching
+///   Verdict). HEADLINE: a revocation-UNKNOWN (0) collapses the whole channel to DENY by the ALGEBRA
+///   (vAnd(0,+1)=0; +1 is the conjunctive identity and cannot lift a 0), NOT a configurable flag — this closes
+///   the public web's soft-fail hole (responder-down => allow). FAIL-CLOSED SEAM: every missing / errored /
+///   un-provable factor maps to 0, never +1. The host runs the crypto + supplies each factor's folded evidence.
+/// @status: checker-verified twin (galerina check clean); NOT build-wired (execution switch #143).
+
+// The Kleene-K3 conjunction vAnd(a,b) = min(a,b) over the trit {-1,0,+1}. Commutative + associative; +1 is the
+// identity, -1 the annihilator, 0 the fail-closed floor that a lone +1 can never lift.
+pure flow vAnd(a: Int, b: Int) -> Int
+contract { intent { "Kleene-K3 conjunction: the minimum of two trits (-1 DENY < 0 INDETERMINATE < +1 ALLOW)." } }
+{
+  if a < b { return a }
+  return b
+}
+
+// pinMatch: pinned present AND matches -> +1; pinned present AND mismatch -> -1 (the MITM-with-valid-cert
+// case, a hard DENY annihilator); no pin configured, or nothing presented to compare -> 0. Pin MISMATCH (-1)
+// and pin ABSENT (0) are deliberately different — conflating them bricks un-pinned hosts or weakens pinned ones.
+pure flow pinMatchVerdict(pinConfigured: Bool, presentedPresent: Bool, digestMatches: Bool) -> Int
+contract { intent { "Fail-closed pin gate: a matched pin +1; a mismatched pin -1 (MITM); no pin configured or nothing presented 0." } }
+{
+  if pinConfigured == false { return 0 }
+  if presentedPresent == false { return 0 }
+  if digestMatches == true { return 1 }
+  return -1
+}
+
+// chainValid: library "valid" -> +1, "invalid" -> -1, "incomplete" / absent -> 0.
+pure flow chainValidVerdict(isValid: Bool, isInvalid: Bool) -> Int
+contract { intent { "Fail-closed chain gate: a provably valid path +1; a provably invalid path -1; incomplete/absent 0." } }
+{
+  if isValid == true { return 1 }
+  if isInvalid == true { return -1 }
+  return 0
+}
+
+// notExpired: inside the validity window -> +1; outside -> -1; no window / no clock / non-finite -> 0.
+// windowKnown = notBefore, notAfter and now are all present AND finite; withinWindow = notBefore <= now <= notAfter.
+pure flow notExpiredVerdict(windowKnown: Bool, withinWindow: Bool) -> Int
+contract { intent { "Fail-closed expiry gate: inside the validity window +1; outside -1; no window/clock 0." } }
+{
+  if windowKnown == false { return 0 }
+  if withinWindow == true { return 1 }
+  return -1
+}
+
+// revocationFresh — the headline factor. "revoked" -> -1; "good" AND provably fresh -> +1; "unknown" / stale /
+// no-freshness-data / a throwing injected check -> 0. A replayed old "good" must NOT authorize, so freshness is
+// a required part of +1. freshProvable = producedAt, now and freshnessMs finite AND age in [0, freshnessMs].
+pure flow revocationVerdict(isRevoked: Bool, isGood: Bool, freshProvable: Bool) -> Int
+contract { intent { "Fail-closed revocation gate: revoked -1; good AND fresh +1; unknown/stale/unprovable 0 — unknown collapses the channel to DENY through the fold." } }
+{
+  if isRevoked == true { return -1 }
+  if isGood == false { return 0 }
+  if freshProvable == false { return 0 }
+  return 1
+}
+
+// certVerdict = allOf([pinMatch, chainValid, notExpired, revocationFresh]) = the K3 vAnd-reduce (min): +1 iff
+// all four are +1; -1 iff any is -1; else 0. Fold order is irrelevant (vAnd is commutative + associative).
+pure flow certVerdict(pinMatch: Int, chainValid: Int, notExpired: Int, revocationFresh: Int) -> Int
+contract { intent { "K3 vAnd-reduce of the four cert sub-verdicts: +1 iff all four +1; -1 iff any -1; else 0." } }
+{
+  return vAnd(vAnd(vAnd(pinMatch, chainValid), notExpired), revocationFresh)
+}
+
+// withSideSignal: fold a degrade-only side-signal via vAnd (min). By No-Coercion it can only LOWER the verdict
+// (+1->0, +1->-1, 0->-1) and can NEVER lift 0->+1 or -1->+1 — a photonic/analog measurement may contribute to
+// the channel verdict without ever becoming a key or coercing an ALLOW.
+pure flow withSideSignal(verdict: Int, sideSignal: Int) -> Int
+contract { intent { "Degrade-only side-signal fold: vAnd(verdict, sideSignal) — can only lower, never lift the verdict (No-Coercion)." } }
+{
+  return vAnd(verdict, sideSignal)
+}
+
+// The boundary collapse: the channel opens IFF the composed verdict is exactly +1 (ALLOW). INDETERMINATE (0)
+// and DENY (-1) BOTH fail closed. Mirrors decideAtBoundary(v).authorized (a 0-collapse also emits
+// FUNGI-GOV-3VL-001 in the .ts — the host raises that diagnostic; this returns the admit/deny bit).
+pure flow boundaryAuthorized(verdict: Int) -> String
+contract { intent { "Fail-closed boundary collapse: authorize IFF the verdict is exactly +1 (ALLOW); 0 and -1 -> refuse." } }
+{
+  if verdict == 1 { return "authorized" }
+  return "denied"
+}
+
+// Mid-stream revocation re-check cadence (S4 reverify). Pure: given the cadence + the stream's progress, is a
+// re-check DUE? Fail-closed totality: due at EVERY chunk boundary (the floor); a valid "poll" is ALSO due once
+// its interval elapsed; an invalid/absent cadence degrades to the floor. No input ever yields "never".
+pure flow revocationRecheckDue(mode: String, everyMsValid: Bool, intervalElapsed: Bool, atChunkBoundary: Bool) -> String
+contract { intent { "Fail-closed re-check cadence: due at every chunk boundary; a valid 'poll' is also due once its interval elapsed; never 'never'." } }
+{
+  if atChunkBoundary == true { return "due" }
+  if mode == "poll" {
+    if everyMsValid == false { return "not-due" }
+    if intervalElapsed == true { return "due" }
+  }
+  return "not-due"
+}

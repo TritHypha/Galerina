@@ -1,0 +1,6 @@
+FUNGI-TYPE-003
+
+Cannot assign a raw String to a hallmark type 'CustomerRef' — a hallmark is a branded
+nominal type, constructed only through its gate. Mint it via the assay:
+  safe mut c = assayCustomerRef(raw)?
+(A raw String is also a plain type mismatch, so FUNGI-TYPE-002 is emitted alongside.)

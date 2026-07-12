@@ -90,11 +90,11 @@ describe("self-hosted pipeline — lexer → parser → type-checker (M-A/M-B)",
     assert.deepEqual(diags, []);
   });
 
-  it("a String returned where Int is declared is caught as FUNGI-TYPE-002 by the self-hosted checker", async () => {
+  it("a String returned where Int is declared is caught as FUNGI-TYPE-008 by the self-hosted checker", async () => {
     const { flows, diags } = await pipeline(`pure flow bad() -> Int { return "hello" }`);
     assert.equal(flows[0].exprKind, "literal");
     assert.equal(flows[0].litType, "String");
-    assert.deepEqual(diags, [{ code: "FUNGI-TYPE-002", flowName: "bad" }]);
+    assert.deepEqual(diags, [{ code: "FUNGI-TYPE-008", flowName: "bad" }]);
   });
 
   it("multiple flows: only the mismatching one is flagged (good passes, bad fails)", async () => {
@@ -102,7 +102,7 @@ describe("self-hosted pipeline — lexer → parser → type-checker (M-A/M-B)",
       `pure flow good(a: Int, b: Int) -> Int { return a }\npure flow bad() -> Int { return "hello" }`,
     );
     assert.equal(flows.length, 2);
-    assert.deepEqual(diags, [{ code: "FUNGI-TYPE-002", flowName: "bad" }]);
+    assert.deepEqual(diags, [{ code: "FUNGI-TYPE-008", flowName: "bad" }]);
   });
 
   it("a literal return matching its declared type produces no diagnostic", async () => {

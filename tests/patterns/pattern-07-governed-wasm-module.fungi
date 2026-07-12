@@ -1,7 +1,7 @@
 @version 1
 // EXPECT: ACCEPT
 // Pattern 7 — Governed WASM Module with DSS Supervision (drcm_core_v1 — future)
-// Reference: docs/Knowledge-Bases/galerina-architecture-patterns.md
+// Reference: ../ZTF-Knowledge-Bases/galerina-architecture-patterns.md
 //
 // This pattern shows the TARGET architecture for DRCM Phase 5+.
 // The step keyword, @experimental_profile blocks, and DSS supervision are

@@ -27,8 +27,8 @@ Node.js.
 > index + live-kernel wiring of the cert-gate are the remaining framework seams. The "Prototype /
 > Phase 4 next" sections below predate this and are retained for language-design reference only.
 > **Authoritative status:** the 2026-06-23 EOD %-audit + roadmap
-> [`galerina-roadmap-and-percent-audit-2026-06-23-eod.md`](../../docs/Knowledge-Bases/galerina-roadmap-and-percent-audit-2026-06-23-eod.md)
-> · [`galerina-runtime-status-SOT.md`](../../docs/Knowledge-Bases/galerina-runtime-status-SOT.md).
+> [`galerina-roadmap-and-percent-audit-2026-06-23-eod.md`](../../../ZTF-Knowledge-Bases/galerina-roadmap-and-percent-audit-2026-06-23-eod.md)
+> · [`galerina-runtime-status-SOT.md`](../../../ZTF-Knowledge-Bases/galerina-runtime-status-SOT.md).
 
 ---
 
@@ -46,13 +46,13 @@ coordinated compute
 audit proof
 ```
 
-**[Intent](../../docs/Knowledge-Bases/galerina-concept-intent.md)** — The explicit declaration of what a flow or system is *for*: its purpose, the authority it requires, the effects it may produce, the boundaries it must respect, and the outcomes it intends to deliver. Intent is machine-readable, compiler-visible, and enforceable — not documentation.
+**[Intent](../../../ZTF-Knowledge-Bases/galerina-concept-intent.md)** — The explicit declaration of what a flow or system is *for*: its purpose, the authority it requires, the effects it may produce, the boundaries it must respect, and the outcomes it intends to deliver. Intent is machine-readable, compiler-visible, and enforceable — not documentation.
 
-**[Governed Execution Plan](../../docs/Knowledge-Bases/galerina-concept-governed-execution-plan.md)** — The compiler/runtime-generated operational contract that defines how execution is *permitted* to occur: which capabilities are granted, which effects are allowed, which resources may be accessed, which runtime targets are approved, and which behaviors are explicitly denied. The bridge between declared intent and actual execution.
+**[Governed Execution Plan](../../../ZTF-Knowledge-Bases/galerina-concept-governed-execution-plan.md)** — The compiler/runtime-generated operational contract that defines how execution is *permitted* to occur: which capabilities are granted, which effects are allowed, which resources may be accessed, which runtime targets are approved, and which behaviors are explicitly denied. The bridge between declared intent and actual execution.
 
-**[Coordinated Compute](../../docs/Knowledge-Bases/galerina-concept-coordinated-compute.md)** — The runtime orchestration layer that transforms a governed execution plan into actual execution across CPU, GPU, NPU, APU, WASM, native and future targets. Responsible for target selection, fallback coordination, memory isolation, accelerator dispatch and runtime verification — all within declared authority constraints.
+**[Coordinated Compute](../../../ZTF-Knowledge-Bases/galerina-concept-coordinated-compute.md)** — The runtime orchestration layer that transforms a governed execution plan into actual execution across CPU, GPU, NPU, APU, WASM, native and future targets. Responsible for target selection, fallback coordination, memory isolation, accelerator dispatch and runtime verification — all within declared authority constraints.
 
-**[Audit Proof](../../docs/Knowledge-Bases/galerina-concept-audit-proof.md)** — The structured, verifiable runtime evidence that execution occurred within declared authority, respected governance policy, enforced runtime constraints and satisfied safety guarantees. Not logs — provable evidence.
+**[Audit Proof](../../../ZTF-Knowledge-Bases/galerina-concept-audit-proof.md)** — The structured, verifiable runtime evidence that execution occurred within declared authority, respected governance policy, enforced runtime constraints and satisfied safety guarantees. Not logs — provable evidence.
 
 ---
 
@@ -190,7 +190,7 @@ governance model examples — `intent`, `governance` blocks, value-state
 annotations (`unsafe unvalidated`, `safe validated`), runtime target planning
 and audit proof records — see the
 Knowledge Base:
-[`docs/Knowledge-Bases/galerina-code-examples-full-flow.md`](../../docs/Knowledge-Bases/galerina-code-examples-full-flow.md)
+[`../../../ZTF-Knowledge-Bases/galerina-code-examples-full-flow.md`](../../../ZTF-Knowledge-Bases/galerina-code-examples-full-flow.md)
 
 ### 1 — Types, records and errors
 
@@ -509,10 +509,10 @@ intent "Load application configuration from disk" {
 | (none) | Internal values | Internally constructed values — treated as safe by default |
 
 The full grammar and state transition rules are in
-[`docs/Knowledge-Bases/value-state-annotations.md`](../../docs/Knowledge-Bases/value-state-annotations.md).
+[`../../../ZTF-Knowledge-Bases/value-state-annotations.md`](../../../ZTF-Knowledge-Bases/value-state-annotations.md).
 
 The full grammar and all state transition rules are in
-[`docs/Knowledge-Bases/value-state-annotations.md`](../../docs/Knowledge-Bases/value-state-annotations.md).
+[`../../../ZTF-Knowledge-Bases/value-state-annotations.md`](../../../ZTF-Knowledge-Bases/value-state-annotations.md).
 
 ---
 
@@ -687,7 +687,7 @@ node ../../galerina-core-cli/dist/index.js task buildApi --file tasks.fungi --dr
 ## Roadmap
 
 > **Authoritative project roadmap** (security-first, with live %-audit) is the
-> [2026-06-23 EOD roadmap + % audit](../../docs/Knowledge-Bases/galerina-roadmap-and-percent-audit-2026-06-23-eod.md).
+> [2026-06-23 EOD roadmap + % audit](../../../ZTF-Knowledge-Bases/galerina-roadmap-and-percent-audit-2026-06-23-eod.md).
 > The language-foundation phases below are this package's own v1 grammar/spec milestones (reference).
 
 The v1 foundation phases build the language before expanding into domain
@@ -978,14 +978,14 @@ audit proof                  verifiable evidence that governed execution occurre
 ```
 
 Full specification with descriptions and examples for every stage:
-[`docs/Knowledge-Bases/galerina-governance-architecture.md`](../../docs/Knowledge-Bases/galerina-governance-architecture.md)
+[`../../../ZTF-Knowledge-Bases/galerina-governance-architecture.md`](../../../ZTF-Knowledge-Bases/galerina-governance-architecture.md)
 
 ---
 
 ## Diagnostic Codes
 
 All Galerina diagnostics follow the `FUNGI-SERIES-NNN` format. The full table lives
-in `docs/Knowledge-Bases/compiler-diagnostics.md`.
+in `../../../ZTF-Knowledge-Bases/compiler-diagnostics.md`.
 
 Active implemented series:
 

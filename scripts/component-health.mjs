@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 // component-health.mjs — Galerina per-COMPONENT readiness matrix for v1.0 "full testing".
-// Pure-read, zero-dep (node:fs/node:path only), never throws, exit 0 (1 only with --strict on gaps).
+// Pure-read, zero-dep (node builtins only: fs/path/url/child_process), never throws, exit 0 (1 only with --strict on gaps).
+// Prints a git PROVENANCE header (branch/SHA/dirty) so a report can never silently describe the wrong tree —
+// a detached HEAD is called out LOUDLY, because a detached-HEAD run once measured a stale pre-rename tree unnoticed.
+// Surfaces one honest SHIP-READINESS % over the FULL component set (orphans counted in, no gap class masked).
 // Complements status.mjs (headline counts) with a per-package breakdown + gap detector:
 //   which workspace packages have a test script, a tests/ dir + test files, a recorded test count,
 //   and which packages-galerina/ dirs are ORPHANS (a package.json on disk but absent from the workspace).
@@ -9,9 +12,20 @@
 //   node scripts/component-health.mjs --gaps     # only rows with a readiness gap
 //   node scripts/component-health.mjs --json     # machine-readable
 //   node scripts/component-health.mjs --strict   # exit 1 if any gap/orphan (CI gate)
+//   node scripts/component-health.mjs --table    # per-family readiness table with a TOTAL row
+//
+// The --table / default / --json outputs also carry two extra AUTOMATIC sections:
+//   CONVERSION — the .ts→.fungi self-hosting inventory (Stage-6 model: packages convert one at
+//     a time, pure-logic first, TCB last). "Converted" is MECHANICAL: a workspace package whose
+//     src/ holds .fungi and zero impl .ts. Self-hosted core modules are counted by EXISTENCE
+//     only — existence ≠ parity (the byte-parity gate lives in the Stage-B differential harness).
+//   TODO — checkbox counts ([ ] open / [x] done) across every git-TRACKED TODO.md, as written.
+//     Per-package TODOs are known to lag reality (e.g. long-shipped items still unchecked), so
+//     this is a doc-state signal, never a completion claim.
 import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { join, dirname, basename } from "node:path";
 import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PKG_DIR = join(ROOT, "packages-galerina");
@@ -20,11 +34,31 @@ const argv = new Set(process.argv.slice(2));
 const ONLY_GAPS = argv.has("--gaps");
 const AS_JSON = argv.has("--json");
 const STRICT = argv.has("--strict");
+const TABLE = argv.has("--table");
 
 const readJSON = (p) => { try { return JSON.parse(readFileSync(p, "utf8")); } catch { return null; } };
 const listDir = (p) => { try { return readdirSync(p); } catch { return null; } };
 const isDir = (p) => { try { return statSync(p).isDirectory(); } catch { return false; } };
 const fmt = (n) => (typeof n === "number" ? n.toLocaleString("en-US") : String(n));
+
+// ── git provenance (read-only; names the exact tree these numbers describe) ────
+// Runs only reporting git subcommands; ROOT-anchored; never throws (returns null on any failure).
+const git = (args) => {
+  try {
+    return execFileSync("git", args, { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+  } catch { return null; }
+};
+const provenance = (() => {
+  if (git(["rev-parse", "--is-inside-work-tree"]) !== "true") return { available: false };
+  const branch = git(["rev-parse", "--abbrev-ref", "HEAD"]); // literal "HEAD" when detached
+  const sha = git(["rev-parse", "--short", "HEAD"]);
+  const porcelain = git(["status", "--porcelain"]); // "" ⇒ clean, any content ⇒ dirty
+  return {
+    available: true, branch, sha,
+    detached: branch === "HEAD",
+    dirty: porcelain == null ? null : porcelain.length > 0,
+  };
+})();
 
 // ── inputs ───────────────────────────────────────────────────────────────────
 const workspace = readJSON(join(ROOT, "galerina.workspace.json")) || {};
@@ -95,6 +129,82 @@ for (const e of listDir(PKG_DIR) || []) {
   if (isDir(ep) && existsSync(join(ep, "package.json")) && !wsDirs.has(e)) orphans.push(e);
 }
 
+// #32 annotated exemption allowlist — documents WHY each orphan is a deliberate non-workspace package (so the
+// sub-100% ship-readiness is explained, not an open question), WITHOUT masking the denominator: exempt orphans
+// still count against the ship-readiness %. An orphan ABSENT from this list is UNEXPECTED and is flagged loudly —
+// the allowlist is a fail-closed signal (a new un-annotated orphan means "explain it or enlist it", never silent).
+const EXEMPT_ORPHANS = {
+  "galerina-devtools-benchmarks": "benchmark harness — not a shippable unit-tested package (run via its own npm scripts)",
+  "galerina-registry": "signed registry index — planned; joins the workspace when the index ships",
+};
+const orphanRows = orphans.slice().sort().map((o) => ({ dir: o, exemptReason: EXEMPT_ORPHANS[o] ?? null }));
+const unexpectedOrphans = orphanRows.filter((o) => o.exemptReason === null).map((o) => o.dir);
+
+// ── .ts→.fungi conversion inventory (Stage-6 self-hosting metric) ─────────────
+// Tracked files only (git ls-files) so gitignored build/ output can never inflate the counts.
+// Fail-honest: if git is unavailable the section reports itself unavailable instead of guessing.
+const trackedFiles = (() => {
+  const o = git(["ls-files"]);
+  return o ? o.split("\n").filter(Boolean) : null;
+})();
+const conversion = (() => {
+  if (!trackedFiles) return { available: false };
+  const isImplTs = (f) => f.endsWith(".ts") && !f.endsWith(".d.ts");
+  const tsImplAll = trackedFiles.filter(isImplTs);
+  const tsImplPkgs = tsImplAll.filter((f) => f.startsWith("packages-galerina/")); // the convertible universe (Stage 6 converts packages; root CLI/scripts stay host-side)
+  const tsDecl = trackedFiles.filter((f) => f.endsWith(".d.ts")).length;
+  const fungiAll = trackedFiles.filter((f) => f.endsWith(".fungi"));
+  const SELF_HOSTED = "packages-galerina/galerina-core-compiler/src/self-hosted/";
+  const fungiSelfHosted = fungiAll.filter((f) => f.startsWith(SELF_HOSTED)).length;
+  // "examples" counts BOTH the top-level examples/ tree AND per-package */examples/ trees —
+  // a top-level-only filter undercounted 309 example files as 52 (verified 2026-07-10).
+  const fungiExamples = fungiAll.filter((f) => f.startsWith("examples/") || f.includes("/examples/")).length;
+  // Per-workspace-package verdict — MECHANICAL: src/ holds ≥1 .fungi and ZERO host-language impl
+  // (.ts AND .mjs/.cjs/.js — a .mjs-implemented package with .fungi fixtures must not count).
+  // This matches .fungi-NATIVE packages as well as completed conversions — the tool cannot
+  // mechanically tell them apart, so the label says "fungi-only src/", never "converted".
+  // (A package mid-conversion — both languages present — honestly counts as NOT fungi-only.)
+  let fungiOnlyPkgs = 0;
+  for (const rel of wsPackages) {
+    const srcPrefix = `${rel.replace(/\\/g, "/")}/src/`;
+    const srcHost = tsImplAll.some((f) => f.startsWith(srcPrefix))
+      || trackedFiles.some((f) => f.startsWith(srcPrefix) && /\.(mjs|cjs|js)$/.test(f));
+    const srcFungi = fungiAll.some((f) => f.startsWith(srcPrefix) && !f.startsWith(SELF_HOSTED)); // self-hosted drafts live INSIDE compiler src — they don't make the compiler package fungi-only
+    if (!srcHost && srcFungi) fungiOnlyPkgs++;
+  }
+  const convertedPkgs = fungiOnlyPkgs;
+  return {
+    available: true,
+    convertedPackages: convertedPkgs,
+    workspacePackages: wsPackages.length,
+    pct: wsPackages.length ? (100 * convertedPkgs) / wsPackages.length : 0,
+    tsImplRemainingPkgs: tsImplPkgs.length,
+    tsImplRemainingTotal: tsImplAll.length,
+    tsDecl,
+    fungi: {
+      total: fungiAll.length,
+      selfHosted: fungiSelfHosted,
+      examples: fungiExamples,
+      other: fungiAll.length - fungiSelfHosted - fungiExamples,
+    },
+  };
+})();
+
+// ── tracked TODO.md checkbox counts (doc-state signal, not a completion claim) ─
+const todos = (() => {
+  if (!trackedFiles) return { available: false };
+  const files = trackedFiles.filter((f) => /(^|\/)TODO\.md$/i.test(f));
+  let open = 0, done = 0;
+  for (const f of files) {
+    let txt = "";
+    try { txt = readFileSync(join(ROOT, f), "utf8"); } catch { continue; }
+    open += (txt.match(/\[ \]/g) || []).length;
+    done += (txt.match(/\[x\]/gi) || []).length;
+  }
+  const total = open + done;
+  return { available: true, files: files.length, open, done, total, donePct: total ? (100 * done) / total : 0 };
+})();
+
 // ── roll-up ────────────────────────────────────────────────────────────────────
 const summary = {
   workspacePackages: rows.length,
@@ -105,16 +215,175 @@ const summary = {
   withGaps: rows.filter((r) => r.gaps.length).length,
   orphans: orphans.length,
 };
+// ── honest ship-readiness: GREEN components over the FULL set. Orphans are un-shippable
+//    components (a package.json on disk, absent from the workspace) so they count against the
+//    denominator and toward the gap total — never masked out to flatter the headline. ────────────
+summary.green = rows.filter((r) => r.gaps.length === 0).length;
+summary.components = rows.length + orphans.length;
+summary.totalGaps = summary.withGaps + orphans.length;
+summary.readinessPct = summary.components ? (summary.green / summary.components) * 100 : 0;
+// ── scope declaration: this % measures WORKSPACE PACKAGES ONLY (galerina.workspace.json +
+//    packages-galerina/ orphans). It does NOT cover the root CLI (galerina.mjs), root tests/,
+//    the scripts/ dev-tool suite, examples/, docs/, or the self-hosted .fungi corpus — those
+//    have their own gates (phase-close, lint-conventions, keep-green). Say so in EVERY output
+//    mode, so the headline % can never silently read as whole-project readiness. ──────────────
+summary.scope = "workspace packages only (not the full project: root CLI/scripts/examples/docs/corpus have their own gates)";
+summary.conversion = conversion;
+summary.todos = todos;
+
+// ── README thesis tables (curated roadmap status, surfaced here so the tool and the README
+//    draw from ONE place — the Tests row is LIVE from version.json; the rest are the
+//    roadmap-readiness %s maintained in the README's "Zero-Trust thesis" + "Build Progress"
+//    sections. ◑ boundaries are partial: a shipped gate + a design-intent remainder. Update
+//    these arrays when a component's readiness changes, then sync the README rows. ─────────
+const ZERO_TRUST = [
+  { boundary: "Compiler", pct: 100, status: "✅ shipped — policy + execution DAG proven at build time" },
+  { boundary: "I/O — OS kernel", pct: 66, status: "◑ auth gate (kernel.fungi) + sentinel-io decision surface FULLY twinned (integrity LSIO-INTEGRITY-001 · zero-copy LSIO-MAP-001 · manifest LSIO-MANIFEST-001) checker-clean · full kernel-bypass EXECUTION = design intent (DSS.wasm #102-106, #143 switch)" },
+  { boundary: "Packages", pct: 98, status: "◑ signed admission fully twinned — central-index (registry-index) + per-package manifest (package-admission) + kernel FUSION admission (descriptor · hash · sidecar · revocation · sig-policy · registry · capability — fuse-admission.fungi) checker-clean · remaining = #143 execution + Phase-28 registry-data wiring" },
+  { boundary: "Memory", pct: 62, status: "◑ governed-decision surface FULLY twinned (validator · pool-config · segmentation LSM-SEGV · trit-tamper LSM-TRIT-CORRUPT · allocate/free/UAF-guard LSM-UAF-001 + REJECT-scrub — 5 checker-clean .fungi) · real WASM isolation execution = design intent (#143 switch)" },
+  { boundary: "TLSTP — zero-middleware", pct: 48, status: "◑ ALL 6 core-network border DECISION surfaces twinned (.fungi, fail-closed; twin gate 20/20): cert-gate (S1 K3 pin·chain·expiry·revocation vAnd, unknown→DENY) · cors-policy (deny-by-default read admission) · inbound-guard (port admission + fail-closed rate-limit) · defensive-controls (RD-0325/0326: trusted-proxy · uniform responses · opaque-id · bounded pagination) · admission-feedback (degrade-only K3 telemetry self-throttle — toward DENY, never manufactures ALLOW) · egress-guard (SSRF octet→category classification + deny-by-default egress verdict + DNS-rebind fold + URL guard) — core-network decision surface COMPLETE; remaining = in-sandbox decryption EXECUTION (DSS.wasm TCB, #143 switch) + S4 recovering-FSM + B8 transport" },
+];
+const BUILD_PROGRESS = [
+  { layer: "Specification / KB", pct: 100 },
+  { layer: "Lexer / Parser / Verifier / Contract / Value-state", pct: 100 },
+  { layer: "DRCM Phases 1-7 (Stage-A simulation)", pct: 100 },
+  { layer: "CBOR Manifests (RFC 8949)", pct: 100 },
+  { layer: "Tests — full suite", pct: 100, live: true },
+  { layer: "Stage-B self-hosting — interpreter parity", pct: 100 },
+  { layer: "Type checker / Effect checker", pct: 90 },
+  { layer: "WAT emitter", pct: 89 },
+  { layer: "Runtime interpreter", pct: 87 },
+  { layer: "Application-framework layer", pct: 72 },
+  { layer: "Post-Quantum & Hardware Security", pct: 38 },
+  { layer: "Passive Execution Plans & Target Bridges", pct: 22 },
+  { layer: "AI Inference Tower (BitNet/Groq/NVFP4)", pct: 12 },
+  { layer: "Photonic / Ternary Computing", pct: 3 },
+  { layer: "Stage-B self-hosting — WASM execution (P9)", status: "in progress" },
+  { layer: "B8 governed HTTP transport (TLSTP)", status: "in progress" },
+];
+// ── TRACKING REGISTRY — substantial items NOT surfaced by the Zero-Trust or Build-Progress tables
+//    (the R&D §5 registry, HANDOVER-v1-finish-line-cutover 2026-07-12). HONESTY RULE: `state` is a bare %
+//    ONLY where a countable ladder exists (tests / rungs / increments); otherwise it is a truthful WORD —
+//    shipped · building · design-done · build-pending · post-v1 · "🔒 owner". Never an invented number.
+//    Keep in sync with the README "Tracking registry" table (tool = source, README = view), same as the
+//    two tables above. Order mirrors the §5 registry rows. ──────────────────────────────────────────────
+const TRACKING_REGISTRY = [
+  { item: "Execution-cutover (RD-0361)",        state: "building",      detail: "T1 pilot: R0 4/4 twins build-clean · R1+R3 proven 1/4 · T2–T5 pending · R4 authority flip 🔒 owner" },
+  { item: "Twin corpus + 6 sentinels",          state: "shipped",       detail: "~20 pure .fungi verdict twins checker-clean across 9 governed dirs (execution is RD-0361)" },
+  { item: "Hardening / residency (RD-0358)",     state: "design-done",   detail: "H-1..H-7 prototype done-to-gate on prototype/hardening-residency; merge 🔒 owner (§2.3)" },
+  { item: "Epistemic trust-trit (RD-0337)",      state: "shipped",       detail: "PROVEN/UNKNOWN/REFUTED runtime + compiler mirror (Option A) + trit-conformance gate 6/6" },
+  { item: "Hallmark open types (RD-0353 H1)",    state: "shipped",       detail: "developer-minted nominal types + mandatory assay gates; FUNGI-HALLMARK-001..005, example 097" },
+  { item: "Value-unit types (RD-0349)",          state: "building",      detail: "I2/I3 done · I1 ISO-4217 unlocked (§5) · I4–I6 queued; no float bridge" },
+  { item: "CANONICAL_EFFECTS registry (RD-0341)",state: "shipped",       detail: "single-source domain.verb + anti-drift self-tests; memory.spill deny-only, FUNGI-EFFECT-006" },
+  { item: "Contract Registry (RD-0359)",         state: "build-pending", detail: "gen-contract-registry.mjs unbuilt; timing unlocked (§5) — generate ALL contracts into one doc" },
+  { item: "Self-hosting Stages 3–6",             state: "post-v1",       detail: "bootstrap fixpoint · crypto FFI seam · .fungi↔host path · floor-by-floor; P9, non-v1-gate" },
+  { item: "DSS.wasm supervisor (#102–106)",      state: "post-v1",       detail: "real Wasmtime TCB (kernel-bypass / in-sandbox decrypt); design-spec exists; unlocked-to-build, non-v1-gate" },
+  { item: "Workspace package families",          state: "shipped",       detail: "94-pkg denominator built (target×9 · data×12 · db×5 · web×6 · ai · tools); 2 orphans #32-exempt" },
+  { item: "Package Standard + pub ladder",       state: "building",      detail: "Standard v1 + pkg-census + 9 schematics done; R1–R6 rungs pending; .graph amendment 🔒 owner" },
+  { item: "Security-infra designs (×4)",         state: "build-pending", detail: "SBOM tool exists; fuzz RD-0316 · Z3 RD-0318 · tabletop RD-0319 unlocked (§5), unbuilt" },
+  { item: "Devtools audit suite",                state: "shipped",       detail: "72 tools · 41 audits · keep-green + gate-selftests meta-gate; twin-audit execution column pending" },
+  { item: "Signing-key custody",                 state: "build-pending", detail: "hybrid key ceremony #34 done; L1 env.spore + vault move 🔒 owner-side; TPM(L3)/HW(L4) post-v1" },
+  { item: "Missing R&D (0363/0364/0365)",        state: "design-done",   detail: "all three closed (passive-plan · inference-bridge · TPM-custody); build increments P1–P5/I1–I6 pending" },
+  { item: "KB category indexes",                 state: "post-v1",       detail: "auto-generated KB grouping (API/Kernel/…); trigger: v1-freeze 🔒 owner" },
+  { item: "ZTF-KB path-leak guard",              state: "build-pending", detail: "kb-path-leak.mjs built; 346-leak/101-file remediation + CI wiring unlocked (§5)" },
+  { item: "TritMesh / .hypha / TritMeshQL",      state: "post-v1",       detail: "the NEXT project (database on Galerina); RD-0293/0294/0306/0312 designs" },
+  { item: "myco",                                state: "shipped",       detail: "v0.1.0 committed (graph-indexed grep replacement, own subproject); npm publish 🔒 outward" },
+];
+const quantified = BUILD_PROGRESS.filter((l) => typeof l.pct === "number");
+const buildAvg = Math.round(quantified.reduce((a, l) => a + l.pct, 0) / quantified.length);
+const ztAvg = Math.round(ZERO_TRUST.reduce((a, b) => a + b.pct, 0) / ZERO_TRUST.length);
+
+// Shared renderer for the two automatic sections (used by --table AND the default report,
+// so the numbers can never drift between output modes).
+const extraSections = () => {
+  const L = (s, n) => String(s).padEnd(n);
+  const R = (s, n) => String(s).padStart(n);
+  const lines = [];
+  lines.push("");
+  lines.push("  CONVERSION (.ts -> .fungi, Stage-6 self-hosting)");
+  if (!conversion.available) {
+    lines.push("    unavailable (not a git work tree)");
+  } else {
+    lines.push(`    ${L("packages with .fungi-only src/", 34)} ${R(`${conversion.convertedPackages}/${conversion.workspacePackages}`, 8)} ${R(conversion.pct.toFixed(1) + "%", 7)}`);
+    lines.push(`    ${L(".ts impl files remaining", 34)} ${R(conversion.tsImplRemainingPkgs, 8)}   (in packages; ${conversion.tsImplRemainingTotal} repo-wide incl. root tooling; +${conversion.tsDecl} .d.ts excluded)`);
+    lines.push(`    ${L(".fungi corpus", 34)} ${R(conversion.fungi.total, 8)}   (${conversion.fungi.selfHosted} self-hosted core drafts · ${conversion.fungi.examples} examples · ${conversion.fungi.other} other)`);
+    lines.push("    note: fungi-only = src/ holds .fungi with ZERO host-language impl (.ts/.mjs) — matches .fungi-NATIVE packages too, not only conversions; self-hosted drafts count by EXISTENCE, not byte-parity");
+  }
+  lines.push("");
+  lines.push("  TODO (tracked TODO.md checkboxes, as written)");
+  if (!todos.available) {
+    lines.push("    unavailable (not a git work tree)");
+  } else {
+    lines.push(`    ${L("items open / done / total", 34)} ${R(`${todos.open} / ${todos.done} / ${todos.total}`, 20)}   (${todos.donePct.toFixed(1)}% done across ${todos.files} TODO.md files)`);
+    lines.push("    note: doc-state signal only — per-package TODOs are known to lag shipped reality");
+  }
+  lines.push("");
+  lines.push(`  ZERO-TRUST THESIS — boundary readiness (avg ${ztAvg}%; mirrors README "The Zero-Trust thesis")`);
+  for (const b of ZERO_TRUST) lines.push(`    ${L(b.boundary, 24)} ${R(b.pct + "%", 5)}  ${b.status}`);
+  lines.push("");
+  lines.push(`  BUILD PROGRESS — layer readiness (quantified avg ${buildAvg}%; mirrors README "Build Progress")`);
+  for (const l of BUILD_PROGRESS) {
+    const pctStr = typeof l.pct === "number" ? `${l.pct}%` : (l.status ?? "—");
+    const extra = l.live && version.testCount ? `  (${version.packageCount}/${version.packageCount} pkgs · ${fmt(version.testCount)} tests · 0 fail)` : "";
+    lines.push(`    ${L(l.layer, 50)} ${R(pctStr, 12)}${extra}`);
+  }
+  lines.push("    note: %s are the maintained roadmap-readiness figures (README source of truth); the Tests row is LIVE from version.json.");
+  lines.push("");
+  lines.push(`  TRACKING REGISTRY — substantial items outside the two tables above (§5; mirrors README "Tracking registry")`);
+  for (const t of TRACKING_REGISTRY) {
+    const stateStr = typeof t.state === "number" ? `${t.state}%` : t.state;
+    lines.push(`    ${L(t.item, 32)} ${R(stateStr, 13)}  ${t.detail}`);
+  }
+  lines.push("    note: state is an honest WORD (shipped/building/design-done/build-pending/post-v1/🔒) — a bare % appears ONLY where a countable ladder exists, never invented.");
+  return lines;
+};
 
 if (AS_JSON) {
-  console.log(JSON.stringify({ summary, rows, orphans }, null, 2));
-  process.exit(STRICT && (summary.withGaps + summary.orphans) > 0 ? 1 : 0);
+  console.log(JSON.stringify({ provenance, summary, rows, orphans, orphanExemptions: orphanRows, unexpectedOrphans }, null, 2));
+  process.exit(STRICT && summary.totalGaps > 0 ? 1 : 0);
+}
+
+if (TABLE) {
+  // Per-family readiness table with a TOTAL row — the honest ship-readiness % broken out,
+  // ranked most-ready first. Orphans are their own row (0 green / N) and count in the TOTAL,
+  // so the TOTAL equals the SHIP-READINESS headline exactly (no masked denominator).
+  const fams = {};
+  for (const r of rows) {
+    if (!fams[r.family]) fams[r.family] = { g: 0, t: 0 };
+    fams[r.family].t += 1;
+    if (r.gaps.length === 0) fams[r.family].g += 1;
+  }
+  const ranked = Object.keys(fams)
+    .map((f) => ({ f, g: fams[f].g, t: fams[f].t, pct: (100 * fams[f].g) / fams[f].t }))
+    .sort((a, b) => b.pct - a.pct || a.f.localeCompare(b.f));
+  const L = (s, n) => String(s).padEnd(n);
+  const R = (s, n) => String(s).padStart(n);
+  const out = [];
+  if (provenance.available) out.push(`  ${provenance.branch} @ ${provenance.sha} · ${provenance.dirty ? "dirty" : "clean"}`);
+  out.push(`  ${L("FAMILY", 12)} ${R("GREEN", 6)} ${R("TOTAL", 6)} ${R("%", 7)}`);
+  for (const r of ranked) out.push(`  ${L(r.f, 12)} ${R(r.g, 6)} ${R(r.t, 6)} ${R(r.pct.toFixed(0) + "%", 7)}`);
+  out.push(`  ${L("(orphans)", 12)} ${R(0, 6)} ${R(orphans.length, 6)} ${R("0%", 7)}  ${unexpectedOrphans.length ? `⚠ ${unexpectedOrphans.length} UNEXPECTED (not on #32 allowlist)` : "all exempt (#32 documented)"}`);
+  out.push(`  ${L("TOTAL", 12)} ${R(summary.green, 6)} ${R(summary.components, 6)} ${R(summary.readinessPct.toFixed(1) + "%", 7)}`);
+  out.push(`  scope: ${summary.scope}`);
+  out.push(...extraSections());
+  console.log(out.join("\n"));
+  process.exit(STRICT && summary.totalGaps > 0 ? 1 : 0);
 }
 
 // ── render ───────────────────────────────────────────────────────────────────
 const pad = (s, n) => String(s).padEnd(n);
 const out = [];
 out.push(`Galerina component health — ${summary.workspacePackages} workspace packages · ${summary.withTestScript} test-bearing · ${fmt(summary.recordedTotal)} recorded tests`);
+// ── provenance header: which git tree produced these numbers (top of report) ──
+if (provenance.available) {
+  const state = provenance.dirty == null ? "dirty state unknown" : provenance.dirty ? "dirty (uncommitted changes)" : "clean";
+  out.push(`  provenance: ${provenance.branch} @ ${provenance.sha} · ${state}`);
+  if (provenance.detached) out.push("  ⚠ DETACHED HEAD — report may reflect a stale tree; confirm the SHA above is the tree you meant to measure");
+} else {
+  out.push("  provenance: unavailable (not a git work tree)");
+}
+out.push(`  SHIP-READINESS: ${summary.readinessPct.toFixed(1)}% (${summary.green}/${summary.components} components green) · ${summary.totalGaps} gap(s)`);
+out.push(`  scope: ${summary.scope}`);
 out.push("");
 for (const fam of [...new Set(rows.map((r) => r.family))].sort()) {
   const famRows = rows.filter((r) => r.family === fam).sort((a, b) => a.dir.localeCompare(b.dir));
@@ -130,5 +399,7 @@ for (const fam of [...new Set(rows.map((r) => r.family))].sort()) {
 out.push("");
 out.push(`  gaps    : ${summary.withGaps} package(s) with a readiness gap${ONLY_GAPS ? "" : "  (--gaps to isolate)"}`);
 out.push(`  orphans : ${summary.orphans}${orphans.length ? "  -> " + orphans.sort().join(", ") : ""}`);
+out.push(`  ship    : ${summary.readinessPct.toFixed(1)}% ship-ready · ${summary.totalGaps} total gap(s) = ${summary.withGaps} package + ${summary.orphans} orphan`);
+out.push(...extraSections());
 console.log(out.join("\n"));
-process.exit(STRICT && (summary.withGaps + orphans.length) > 0 ? 1 : 0);
+process.exit(STRICT && summary.totalGaps > 0 ? 1 : 0);

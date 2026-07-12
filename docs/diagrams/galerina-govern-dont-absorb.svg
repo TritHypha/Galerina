@@ -1,0 +1,71 @@
+<svg width="100%" viewBox="0 0 780 540" xmlns="http://www.w3.org/2000/svg" role="img" font-family="ui-sans-serif, system-ui, sans-serif">
+<title>Galerina — Govern-Don't-Absorb (convert decisions, not compute)</title>
+<desc>Galerina converts the GOVERNED DECISION SURFACE — verdicts, gates, policy/K3, privacy cuts, effect and taint checks — into checker-verified .fungi twins. It does NOT convert pure compute (math, graph algorithms), cryptography, the WASM toolchain, or host I/O: those are the declared minimal host floor, vetted and pinned, correctly .ts/native. The host is a dumb byte-mover; a governed decision compiles to a verdict the floor cannot override. This is why substrate-math, graph-algorithms and core-security are NOT .fungi-twin candidates — they are compute/crypto, not decisions.</desc>
+<defs>
+  <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+</defs>
+
+<text x="34" y="30" font-size="16" font-weight="700" fill="#1c2128">Galerina — Govern-Don't-Absorb</text>
+<text x="34" y="49" font-size="11" fill="#5a6470">Convert the decision surface to .fungi · leave compute + crypto as the declared floor · teal = governed (convert) · gray = host floor (stays native) · purple = invariant</text>
+
+<!-- TOP: governed decision surface (convert) -->
+<rect x="34" y="66" width="712" height="140" rx="11" fill="#e3f5f2" stroke="#2b8a7e" stroke-width="1.9"/>
+<text x="390" y="90" text-anchor="middle" font-size="13.5" font-weight="700" fill="#14534b">GOVERNED DECISION SURFACE — convert to checker-verified .fungi twins</text>
+<rect x="52" y="104" width="164" height="86" rx="7" fill="#d3ede8" stroke="#2b8a7e" stroke-width="1.1"/>
+<text x="134" y="126" text-anchor="middle" font-size="11" font-weight="600" fill="#14534b">Verdicts &amp; gates</text>
+<text x="134" y="144" text-anchor="middle" font-size="9.3" fill="#1f6b60">K3 vAnd · admission</text>
+<text x="134" y="158" text-anchor="middle" font-size="9.3" fill="#1f6b60">deny-by-default</text>
+<text x="134" y="176" text-anchor="middle" font-size="9.3" fill="#1f6b60">secret-gate · route-defaults</text>
+<rect x="228" y="104" width="164" height="86" rx="7" fill="#d3ede8" stroke="#2b8a7e" stroke-width="1.1"/>
+<text x="310" y="126" text-anchor="middle" font-size="11" font-weight="600" fill="#14534b">Policy &amp; privacy</text>
+<text x="310" y="144" text-anchor="middle" font-size="9.3" fill="#1f6b60">privacy cut(&lt;field&gt;)</text>
+<text x="310" y="158" text-anchor="middle" font-size="9.3" fill="#1f6b60">authority · purpose</text>
+<text x="310" y="176" text-anchor="middle" font-size="9.3" fill="#1f6b60">value-state 003/006/008</text>
+<rect x="404" y="104" width="164" height="86" rx="7" fill="#d3ede8" stroke="#2b8a7e" stroke-width="1.1"/>
+<text x="486" y="126" text-anchor="middle" font-size="11" font-weight="600" fill="#14534b">Effect &amp; taint</text>
+<text x="486" y="144" text-anchor="middle" font-size="9.3" fill="#1f6b60">CANONICAL_EFFECTS</text>
+<text x="486" y="158" text-anchor="middle" font-size="9.3" fill="#1f6b60">tier floor · epistemic trit</text>
+<text x="486" y="176" text-anchor="middle" font-size="9.3" fill="#1f6b60">import-plugin grant</text>
+<rect x="580" y="104" width="150" height="86" rx="7" fill="#d3ede8" stroke="#2b8a7e" stroke-width="1.1"/>
+<text x="655" y="126" text-anchor="middle" font-size="11" font-weight="600" fill="#14534b">Type &amp; match</text>
+<text x="655" y="144" text-anchor="middle" font-size="9.3" fill="#1f6b60">exhaustiveness</text>
+<text x="655" y="158" text-anchor="middle" font-size="9.3" fill="#1f6b60">fail-closed _ =&gt; deny</text>
+<text x="655" y="176" text-anchor="middle" font-size="9.3" fill="#1f6b60">governed Result&lt;T,E&gt;</text>
+
+<!-- THE SEAM -->
+<rect x="34" y="222" width="712" height="46" rx="9" fill="#e8effb" stroke="#3b6fd4" stroke-width="1.8"/>
+<text x="390" y="242" text-anchor="middle" font-size="12" font-weight="700" fill="#1f3a6b">THE SEAM — convert DECISIONS, not compute · the host is a dumb byte-mover</text>
+<text x="390" y="259" text-anchor="middle" font-size="9.5" fill="#3a5285">decisions cross DOWN to execute; the VERDICT stays governed above — the floor can never override it</text>
+<path d="M390 206 L390 220" fill="none" stroke="#3b6fd4" stroke-width="2" marker-end="url(#arr)"/>
+<path d="M390 268 L390 284" fill="none" stroke="#888780" stroke-width="2" marker-end="url(#arr)"/>
+
+<!-- BOTTOM: declared minimal host floor (stays native) -->
+<rect x="34" y="286" width="712" height="150" rx="11" fill="#f1efe8" stroke="#888780" stroke-width="1.9"/>
+<text x="390" y="310" text-anchor="middle" font-size="13.5" font-weight="700" fill="#2c2c2a">DECLARED MINIMAL HOST FLOOR — vetted + pinned · stays .ts / native (NOT a decision)</text>
+<rect x="52" y="324" width="164" height="96" rx="7" fill="#e6e4db" stroke="#888780" stroke-width="1.1"/>
+<text x="134" y="346" text-anchor="middle" font-size="11" font-weight="600" fill="#2c2c2a">Cryptography</text>
+<text x="134" y="364" text-anchor="middle" font-size="9.3" fill="#5f5e5a">@noble/* · argon2</text>
+<text x="134" y="378" text-anchor="middle" font-size="9.3" fill="#5f5e5a">bcryptjs · core-security</text>
+<text x="134" y="398" text-anchor="middle" font-size="9" fill="#5f5e5a">frozen TCB · #149 per-pkg</text>
+<rect x="228" y="324" width="164" height="96" rx="7" fill="#e6e4db" stroke="#888780" stroke-width="1.1"/>
+<text x="310" y="346" text-anchor="middle" font-size="11" font-weight="600" fill="#2c2c2a">Pure compute</text>
+<text x="310" y="364" text-anchor="middle" font-size="9.3" fill="#5f5e5a">substrate-math</text>
+<text x="310" y="378" text-anchor="middle" font-size="9.3" fill="#5f5e5a">graph-algorithms</text>
+<text x="310" y="398" text-anchor="middle" font-size="9" fill="#5f5e5a">no ASCII math — it's a value, not a verdict</text>
+<rect x="404" y="324" width="164" height="96" rx="7" fill="#e6e4db" stroke="#888780" stroke-width="1.1"/>
+<text x="486" y="346" text-anchor="middle" font-size="11" font-weight="600" fill="#2c2c2a">WASM toolchain</text>
+<text x="486" y="364" text-anchor="middle" font-size="9.3" fill="#5f5e5a">wabt · wat-wasm</text>
+<text x="486" y="378" text-anchor="middle" font-size="9.3" fill="#5f5e5a">.fungi → .wasm assembler</text>
+<text x="486" y="398" text-anchor="middle" font-size="9" fill="#5f5e5a">the build floor (retires w/ .ts)</text>
+<rect x="580" y="324" width="150" height="96" rx="7" fill="#e6e4db" stroke="#888780" stroke-width="1.1"/>
+<text x="655" y="346" text-anchor="middle" font-size="11" font-weight="600" fill="#2c2c2a">Host I/O seam</text>
+<text x="655" y="364" text-anchor="middle" font-size="9.3" fill="#5f5e5a">fuse-loader · fs · FFI</text>
+<text x="655" y="378" text-anchor="middle" font-size="9.3" fill="#5f5e5a">WebAssembly.instantiate</text>
+<text x="655" y="398" text-anchor="middle" font-size="9" fill="#5f5e5a">9-primitive typed seam</text>
+
+<!-- invariant -->
+<rect x="34" y="452" width="712" height="72" rx="9" fill="#f3eefa" stroke="#7a5bb0" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="390" y="474" text-anchor="middle" font-size="11.5" font-weight="700" fill="#43306b">The invariant — "100% .fungi" means 100% of the GOVERNED SURFACE in checker-verified twins, over a bounded, shrinking floor N</text>
+<text x="390" y="493" text-anchor="middle" font-size="10" fill="#5a4584">substrate-math · graph-algorithms · core-security are NOT twin candidates — they are compute/crypto, not decisions (the audit enforces the split)</text>
+<text x="390" y="510" text-anchor="middle" font-size="9.5" fill="#5a4584">gated by scripts/audit-kernel-fungi-twins.mjs + audit-kernel-floor.mjs · deleting the .ts stays execution-switch-gated (#143 WASM byte-parity)</text>
+</svg>

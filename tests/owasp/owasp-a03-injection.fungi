@@ -8,7 +8,7 @@
 // without passing through a validate.* guard — that demotion is enforced by
 // FUNGI-VALUESTATE-004.
 //
-// Reference: docs/Knowledge-Bases/galerina-governance-rules.md
+// Reference: ../ZTF-Knowledge-Bases/galerina-governance-rules.md
 // Rules: S-003, FUNGI-VALUESTATE-004 (taint demotion guard)
 
 // ── Types ─────────────────────────────────────────────────────────────────────

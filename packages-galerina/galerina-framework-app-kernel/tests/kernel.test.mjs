@@ -117,6 +117,34 @@ test("auth: allowHeaderPresenceFallback opt-in still 401s when NO header is pres
   assert.equal(ran, false);
 });
 
+// ── Empty/whitespace Authorization under the opt-in — the live presence-only bypass (RD-0307/0309) ──
+// The prior kernel branch checked only `header(...) === undefined`, so `Authorization: ""` (and a
+// whitespace-only value) slipped through and admitted a required-auth route with NO credential.
+// Routing the opt-in through headerPresenceVerdict (which treats an empty value as NOT present)
+// closes it: empty/whitespace → INDETERMINATE → decideAtBoundary denies → 401.
+test("auth: allowHeaderPresenceFallback opt-in 401s on an EMPTY Authorization header (presence bypass closed)", async () => {
+  let ran = false;
+  const k = createAppKernel({
+    routes: [{ method: "GET", path: "/secure", handler: "secure", auth: { mode: "required", allowHeaderPresenceFallback: true } }],
+    dispatch: { secure: () => { ran = true; return { body: { ok: true } }; } },
+  });
+  const res = await k.handle(req({ method: "GET", path: "/secure", headers: { authorization: "" } }));
+  assert.equal(res.status, 401);
+  assert.equal(errorOf(res), "unauthorized");
+  assert.equal(ran, false); // an empty credential must NOT admit
+});
+
+test("auth: allowHeaderPresenceFallback opt-in 401s on a WHITESPACE-only Authorization header", async () => {
+  let ran = false;
+  const k = createAppKernel({
+    routes: [{ method: "GET", path: "/secure", handler: "secure", auth: { mode: "required", allowHeaderPresenceFallback: true } }],
+    dispatch: { secure: () => { ran = true; return { body: { ok: true } }; } },
+  });
+  const res = await k.handle(req({ method: "GET", path: "/secure", headers: { authorization: "   " } }));
+  assert.equal(res.status, 401);
+  assert.equal(ran, false);
+});
+
 test("public route is allowed without Authorization (handler runs)", async () => {
   let ran = false;
   const k = createAppKernel({
@@ -265,6 +293,27 @@ test("over concurrency limit -> 429", async () => {
   // Slot released: a follow-up now succeeds.
   const r3 = await k.handle(req({ method: "GET", path: "/slow" }));
   assert.equal(r3.status, 200);
+});
+
+// RD-0333 F3 — release-on-failure: a handler that THROWS must still release the concurrency slot
+// (the `finally` at gate 9/10), or leaked slots accumulate and self-DoS the route via gate 9.
+test("F3: a THROWING handler releases the concurrency slot (no phantom-slot self-DoS)", async () => {
+  let calls = 0;
+  const k = createAppKernel({
+    routes: [{
+      method: "GET", path: "/boom", handler: "boom", auth: { mode: "public" },
+      limits: { maxConcurrent: 1 },
+    }],
+    dispatch: { boom: () => { calls += 1; throw new Error("handler fault"); } },
+  });
+  // First request: the handler throws -> fail-closed 500, and the `finally` must release the slot.
+  const r1 = await k.handle(req({ method: "GET", path: "/boom" }));
+  assert.equal(r1.status, 500);
+  assert.equal(errorOf(r1), "internal_error");
+  // If the slot had leaked, this would 429 forever. It must reach the handler again (slot was freed).
+  const r2 = await k.handle(req({ method: "GET", path: "/boom" }));
+  assert.equal(r2.status, 500);
+  assert.equal(calls, 2); // handler reached BOTH times => the slot was released after the throw.
 });
 
 test("the pipeline order is fixed: there is no way to register middleware", async () => {

@@ -159,9 +159,9 @@ export function findSignedPackageRoots(root: string): string[] {
     for (const e of entries) {
       if (e.isFile() && e.name === "package.fungi.json") {
         try {
-          const name = (JSON.parse(readFileSync(join(dir, e.name), "utf8")) as { name?: string }).name;
+          const name = (JSON.parse(readFileSync(join(dir, e.name), "utf8")) as { name?: string }).name; // perf-allow — one descriptor read+parse per fusable package dir in a CLI scan — distinct path per iteration, not hoistable
           if (typeof name === "string") {
-            const manifest = JSON.parse(readFileSync(join(dir, "dist", `${name}.lmanifest.json`), "utf8")) as {
+            const manifest = JSON.parse(readFileSync(join(dir, "dist", `${name}.lmanifest.json`), "utf8")) as { // perf-allow — one manifest read+parse per fusable package dir in a CLI scan — distinct path per iteration, not hoistable
               governanceSignature?: { keyId?: unknown; signature?: unknown };
             };
             const sig = manifest.governanceSignature;
@@ -356,7 +356,7 @@ export function scanCorpus(root: string): CorpusScan {
         : classifyCorpus(relPath);
       let source: string;
       try {
-        source = readFileSync(abs, "utf8");
+        source = readFileSync(abs, "utf8"); // perf-allow: loop-sync-io — one read per corpus file in a per-file CLI scan loop — distinct path per iteration, not hoistable
       } catch (err) {
         // fail-closed: unreadable file is a FINDING, not a skip
         files.push({

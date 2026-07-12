@@ -59,4 +59,4 @@ diagnostics.
 
 ## Knowledge Base
 
-See [Match Catch-All Branch](../Knowledge-Bases/match-catch-all-branch.md).
+See [Match Catch-All Branch](../../../ZTF-Knowledge-Bases/match-catch-all-branch.md).

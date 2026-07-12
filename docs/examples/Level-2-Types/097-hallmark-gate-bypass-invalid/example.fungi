@@ -1,0 +1,22 @@
+@version 1
+/// example: 097-hallmark-gate-bypass-invalid
+/// level: 2
+/// concept: a hallmarked type is constructed ONLY through its gate — a raw assignment is refused
+/// expected_diagnostics: FUNGI-TYPE-003
+/// test_status: stable
+/// ai_rule: You cannot assign a raw String to a hallmark type; mint it through the gate — assay...(raw)?.
+
+hallmark CustomerRef of String {
+  gate: flow assayCustomerRef
+}
+
+pure flow assayCustomerRef(raw: String) -> Result<CustomerRef, ValidationError> {
+  contract { intent "assay a raw string into a CustomerRef" }
+  return Ok(CustomerRef(raw))   // the ONLY place a CustomerRef may be constructed
+}
+
+pure flow bypass(seed: String) -> CustomerRef {
+  contract { intent "try to construct a CustomerRef without the gate" }
+  let c: CustomerRef = "CUST-00000001"   // REJECT — construction only through the gate
+  return c
+}

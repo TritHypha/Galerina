@@ -4533,12 +4533,12 @@
     }
   },
   {
-    "benchmark": "tmf-container",
+    "benchmark": "spore-container",
     "results": {
       "nodejs": {
         "runtime": "nodejs",
-        "benchmark": "tmf-container-v1",
-        "note": "Node.js column = @galerina/ext-tmf engine (the shipped Galerina artifact)",
+        "benchmark": "spore-container-v1",
+        "note": "Node.js column = @galerina/ext-spore engine (the shipped Galerina artifact)",
         "iterations": 300000,
         "containerBytes": 203,
         "integrityRoot": "43386e644c7b53aa0900cda21c15acd15f30b3fdf997950e39e7dd3dbc685212",
@@ -4563,7 +4563,7 @@
       },
       "python": {
         "runtime": "python",
-        "benchmark": "tmf-container-v1",
+        "benchmark": "spore-container-v1",
         "iterations": 100000,
         "containerBytes": 203,
         "integrityRoot": "43386e644c7b53aa0900cda21c15acd15f30b3fdf997950e39e7dd3dbc685212",
@@ -4584,7 +4584,7 @@
       },
       "rust": {
         "runtime": "rust",
-        "benchmark": "tmf-container-v1",
+        "benchmark": "spore-container-v1",
         "iterations": 300000,
         "containerBytes": 203,
         "integrityRoot": "43386e644c7b53aa0900cda21c15acd15f30b3fdf997950e39e7dd3dbc685212",
@@ -4596,7 +4596,7 @@
       }
     },
     "units": {
-      "benchId": "tmf-container",
+      "benchId": "spore-container",
       "comparable": true,
       "unit": "containers/s",
       "status": "PASS",

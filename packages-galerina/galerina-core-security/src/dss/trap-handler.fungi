@@ -9,7 +9,7 @@
 ;; Every unreachable trap that fires produces exactly one AuditEvent.
 ;; The AuditEvent is appended to the signed audit log before anything else.
 ;;
-;; See: docs/Knowledge-Bases/galerina-governed-tower-specification.md §3E
+;; See: ../ZTF-Knowledge-Bases/galerina-governed-tower-specification.md §3E
 
 import "./types/audit-event.fungi"
 import "./types/trap-signal.fungi"

@@ -27,5 +27,5 @@
     "typescript": "^5.5.0"
   },
   "keywords": ["galerina", "bitnet", "bridge", "ternary", "cuda", "simd", "inference"],
-  "note": "Stage A: governed bridge + simulator fallback + real hardware detection. Stage B: compile ggml-bitnet (C:/wwwprojects/BitNet, MIT) into a native N-API addon via cmake-js — see native/README.md."
+  "note": "Stage A: governed bridge + simulator fallback + real hardware detection. Stage B: compile ggml-bitnet (<projects>/BitNet, MIT) into a native N-API addon via cmake-js — see native/README.md."
 }

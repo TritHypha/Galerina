@@ -10,7 +10,7 @@
 > builds to — treat it as a scaffold/spec, not shipped code. The single source of
 > truth for the layer's scope, the one-kernel/many-protocols architecture, and the
 > phased build order is the layer design doc:
-> [`docs/Knowledge-Bases/galerina-framework-layer-design.md`](../../docs/Knowledge-Bases/galerina-framework-layer-design.md).
+> [`../../../ZTF-Knowledge-Bases/galerina-framework-layer-design.md`](../../../ZTF-Knowledge-Bases/galerina-framework-layer-design.md).
 
 `galerina-framework-api-server` is the first concrete HTTP API-serving package for Galerina.
 

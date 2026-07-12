@@ -1,6 +1,6 @@
 # Benchmark suite — handover to the hub/main session (2026-06-17)
 
-Worktree session deliverable. Authoritative roadmap entry: `docs/Knowledge-Bases/galerina-roadmap-and-audit-2026-06-17.md` §8. Memories: `galerina-benchmark-suite`, `feedback-benchmark-full-run`.
+Worktree session deliverable. Authoritative roadmap entry: `../../../ZTF-Knowledge-Bases/galerina-roadmap-and-audit-2026-06-17.md` §8. Memories: `galerina-benchmark-suite`, `feedback-benchmark-full-run`.
 
 ## OWNER POLICY (do this in the main session)
 When the owner asks for benchmarks: run the **FULL** suite (no `--quick`), tables **ordered by winners**, plus the audit.
@@ -10,7 +10,7 @@ When the owner asks for benchmarks: run the **FULL** suite (no `--quick`), table
 ## What changed
 1. **Unit-truth fix.** `src/throughput-units.mjs` normalises every runtime to ONE unit/benchmark. Killed the false "Galerina wins" (was comparing Galerina inner-ops/sec vs others' whole-call/sec). `runner.mjs` stamps `normThroughput`+`units` and **fails the run on a unit mismatch**. matrix-multiply, tri-logic, data-query are **non-comparable → flagged & excluded**.
 2. **Per-op memory dimension.** Every benchmark reports heap-allocated-per-op (Node `--expose-gc`+heapUsedDelta; Python `tracemalloc`; native ~0). `compare.mjs` §4 has a **Heap/op** column + per-benchmark memory winner.
-3. **New real-world (CLBG) benchmarks** (all checksum-verified byte-identical across runtimes): `mandelbrot` (230132), `binary-trees` (135854), `spectral-norm` (6647). Plus earlier `tmf-container`, `framework-pipeline`.
+3. **New real-world (CLBG) benchmarks** (all checksum-verified byte-identical across runtimes): `mandelbrot` (230132), `binary-trees` (135854), `spectral-norm` (6647). Plus earlier `spore-container`, `framework-pipeline`.
 4. **Truth guarantee:** `npm test` (28 synthetic logic cases) + `npm run audit` (cross-language checksum identity, unit alignment, anti-inflation regression over `latest.json`). **Both pass.**
 
 ## Headline results (full extended run, i9; see report.md for the full tables)

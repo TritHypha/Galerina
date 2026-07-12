@@ -14,8 +14,11 @@
 //   • A web-* package on disk that is NOT in the contract is ungoverned — VIOLATION (manifest must be
 //     complete). A contract package missing on disk is drift — VIOLATION.
 //
-// Zero-baseline today: all 6 are stubs, so 0 violations. The guard goes ENFORCING in CI, so the first
-// PR that adds a web-* implementation is forced to add the acceptance tests in the SAME change.
+// Baseline: the 6 web-* packages are now all IMPL_GUARDED (implementation + committed fail-closed
+// acceptance test), so 0 violations. The guard held ENFORCING as impl landed — each web-* implementation
+// was forced to add its FUNGI-WEB-* acceptance tests in the SAME change (exactly the RD-0100 rule it
+// exists to enforce). It stays enforcing: a new inert stub, or an impl that ever loses its acceptance
+// test, is caught here before it can fail open.
 //
 // Build-free (reads the filesystem + the JSON contract directly). Pattern mirrors audit-production-
 // blockers / audit-name-collisions: pure detectors + --self-test + `VIOLATIONS: N` + exit = count.

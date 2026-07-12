@@ -7,7 +7,7 @@
 This README is the current package-level v0.2 contract for runtime-facing logic
 docs. Older KB files may still contain the historical `type:` discriminant,
 three-state `Decision`, or string-array `triUnknown()` examples. Use the current
-shape here and in `docs/Knowledge-Bases/galerina-core-logic-tri-decision-bool.md`
+shape here and in `../../../ZTF-Knowledge-Bases/galerina-core-logic-tri-decision-bool.md`
 when updating dependent docs:
 
 ```text

@@ -8,7 +8,7 @@
 // `/spore`, `sporeFile`. This tool reads EVERY file as raw bytes (latin1) and
 // substring-scans, so nothing is skipped, in any form or case.
 //
-// It reports, per old-brand token (logicn->galerina, spore->fungi, lln->fungi):
+// It reports, per old-brand token (logicn->galerina, lln->fungi, LLN-CODE->FUNGI-):
 //   • every occurrence  file:line  <matched form>  context
 //   • classified: STRAGGLER (fix) | ALLOWED (root-signed/historical, keep)
 //     | GENERATED (dist/build/results — regenerable, low priority)
@@ -32,10 +32,10 @@ const SKIP_DIRS = new Set(["node_modules", ".git"]);
 // `lln` (matches fullName/fullNode/…), which uses targeted forms only.
 //
 // NB `.spore` is DELIBERATELY NOT a token: it is the CURRENT TritMesh DATABASE
-// container format (renamed from .tmf), a valid in-use extension — NOT old
+// container extension (renamed from .tmf on 2026-07-09), a valid in-use name — NOT old
 // branding. Only the OLD Galerina SOURCE extension `.lln` retires (-> .fungi).
-// The pre-.fungi transient source-name `.spore` is history; do not chase it here
-// or it false-flags every real TritMesh DB reference (owner note 2026-07-09).
+// Do NOT scan for `.spore` here or it false-flags every real TritMesh DB reference
+// (owner note 2026-07-09; the tmf->spore codemod once corrupted this NB, restored from git).
 const TOKENS = [
   { key: "logicn",   becomes: "galerina", re: /logicn/gi },
   // diagnostic codes: LLN-TYPE-024 -> FUNGI-TYPE-024 (uppercase, code shape)
@@ -61,8 +61,14 @@ const ALLOW = [
   /(^|[\\/])notes[\\/]/i,        // historical R&D scratch (note 77 documents the rename itself)
   /RESTART-PROMPT|RESUME-|HANDOFF|REBOOT/i,
   // TritMesh-domain examples: `.spore` is the CURRENT TritMesh DB-container name (owner rename
-  // .spore->.spore, notes/77-mesh-r-d-00.md:15; KB naming-audit 2026-07-03: "source stays .fungi").
+  // .tmf->.spore, notes/77-mesh-r-d-00.md:15; KB naming-audit 2026-07-03: "source stays .fungi").
   /(^|[\\/])docs[\\/]examples[\\/]hypha[\\/]/i,
+  // Dated/SUPERSEDED published papers retained "historical text unedited" (they carry a
+  // Superseded(date) -> rebranded banner pointing at the live re-issue): the old-brand refs are the
+  // supersession note itself + the reproducibility manifest (script/folder names as-measured, e.g.
+  // `LogicN-R-AND-D`, `logicn-*` benches, the `LLN-RETAIN-001` gate). Rewriting them would falsify a
+  // dated record — the rebrand lives in the re-issued companion, not here (preserve-provenance rule).
+  /latency-is-not-work-measured-negatives-photonic-substrates-2026-06-24\.md$/i,
   // R&D proof scripts: verbatim-quote the note claims they refute + use TritMesh-current `.spore`
   // (passport vector / DB / RD-0231 A4 artifact row), and rd-0218 carries a FUNCTIONAL bio-morpheme
   // regex (naming-philosophy R5 detector) — a brand-edit would falsify quotes or change behaviour.

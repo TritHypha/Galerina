@@ -126,7 +126,7 @@
 <text x="360" y="634" text-anchor="middle" font-size="9.5" fill="#c0392b" font-style="italic">honest caveat: real DSS.wasm is a stub · crash-containment (Goal C / DRCM Phase 5) asserted, not yet demonstrated</text>
 
 <!-- footer legend -->
-<text x="40" y="666" font-size="10.5" fill="#5a6470">Sources: galerina-tri-pipe/src/{index,tri-pipe,execution-router}.ts · docs/Knowledge-Bases/galerina-framework-plan-2026-06-21.md §5–6 (4 pipes, 24 hardenings adversarially verified)</text>
+<text x="40" y="666" font-size="10.5" fill="#5a6470">Sources: galerina-tri-pipe/src/{index,tri-pipe,execution-router}.ts · ../ZTF-Knowledge-Bases/galerina-framework-plan-2026-06-21.md §5–6 (4 pipes, 24 hardenings adversarially verified)</text>
 <text x="40" y="683" font-size="10.5" fill="#5a6470">Shipped guarantees grounded in §6 ranked build status (449d8f2, 7a58a26, FUNGI-MONO-001); photonic lane is the emulator (galerina-ext-photonic-emulator), not silicon.</text>
 <text x="40" y="700" font-size="10.5" fill="#3f2d73" font-weight="600">Invariant: crypto · governance · K3 · admission · secrets stay Binary; photonic is a degrade-only / projected co-processor, never trusted with a key.</text>
 </svg>

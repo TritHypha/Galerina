@@ -8,12 +8,12 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 
 | status | count | meaning |
 |---|---|---|
-| live | 117 | emitted with an exported constant |
-| inline | 147 | emitted, NO exported constant (R4 — Stage F) |
+| live | 122 | emitted with an exported constant |
+| inline | 145 | emitted, NO exported constant (R4 — Stage F) |
 | referenced | 97 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 8 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
-| phantom | 109 | doc-only mention, not in source (drift — DOC-004) |
-| ref | 156 | referenced only (no def/emit) |
+| phantom | 110 | doc-only mention, not in source (drift — DOC-004) |
+| ref | 173 | referenced only (no def/emit) |
 
 ## RESERVED — defined but not emitted (std #1: tag wire-or-retire)
 
@@ -210,6 +210,13 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-CHAR-003 | referenced | MULTI_CHAR_LITERAL | error |
 | FUNGI-CHAR-004 | dead | IMPLICIT_CHAR_NUMBER_CONVERSION | error |
 
+### CHECK (2)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-CHECK-001 | ref | — | — |
+| FUNGI-CHECK-002 | inline | CHECK_SUBJECT_NOT_VERDICT | — |
+
 ### CLI (1)
 
 | code | status | name(s) | severity |
@@ -354,7 +361,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-EFFECT-005 | live | BroadAliasUsed | warning |
 | FUNGI-EFFECT-006 | live | DenyOnlyEffect | error |
 
-### ERR_* (107)
+### ERR_* (96)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -409,15 +416,10 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | ERR_INVALID_AMOUNT | ref | — | — |
 | ERR_INVALID_ITERATIONS | ref | — | — |
 | ERR_INVALID_N | ref | — | — |
-| ERR_INVALID_NELEC | inline | — | — |
-| ERR_INVALID_ORBITALS | inline | — | — |
-| ERR_INVALID_PARAMS | inline | — | — |
-| ERR_INVALID_SEED | inline | — | — |
 | ERR_ITERATIONS_EXCEEDED | ref | — | — |
 | ERR_LATENCY_INVARIANT | ref | — | — |
-| ERR_LIMIT | ref | — | — |
-| ERR_MEMORY_EXCEEDED | inline | — | — |
 | ERR_MISSING_CORRELATION_ID | ref | — | — |
+| ERR_MODULE_NOT_FOUND | phantom | — | — |
 | ERR_NEGATIVE | ref | — | — |
 | ERR_NEGATIVE_AGE | phantom | — | — |
 | ERR_NEGATIVE_AMOUNT | ref | — | — |
@@ -426,11 +428,9 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | ERR_NEGATIVE_X | ref | — | — |
 | ERR_NEGATIVE_Y | ref | — | — |
 | ERR_NON_POSITIVE | ref | — | — |
-| ERR_ORBITALS_EXCEEDED | inline | — | — |
 | ERR_PAYLOAD_EXCEEDS_DWI_CEILING | ref | — | — |
 | ERR_PAYLOAD_TOO_LARGE | phantom | — | — |
 | ERR_PLAN_NOT_PREFLIGHTED | inline | — | — |
-| ERR_QUANTUM_PQ_REQUIRED | ref | — | — |
 | ERR_REGISTRY | ref | — | — |
 | ERR_REGISTRY_DUPLICATE | live | — | — |
 | ERR_REGISTRY_HASH_MISMATCH | live | — | — |
@@ -444,16 +444,12 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | ERR_REGISTRY_POLICY_DENIED | live | — | — |
 | ERR_REGISTRY_VERSION_UNKNOWN | live | — | — |
 | ERR_SCHEMA | ref | — | — |
-| ERR_SHOTS_EXCEEDED | inline | — | — |
 | ERR_SIZE_EXCEEDED | ref | — | — |
 | ERR_SOME_CODE | ref | — | — |
-| ERR_SUBSPACE_TOO_LARGE | inline | — | — |
 | ERR_TOO_SHORT | ref | — | — |
 | ERR_TOXIC_NEGATIVE | ref | — | — |
 | ERR_TOXIC_OVERFLOW | ref | — | — |
 | ERR_TRAP | ref | — | — |
-| ERR_TROTTER_STEPS_EXCEEDED | inline | — | — |
-| ERR_UNKNOWN_OP | inline | — | — |
 | ERR_UNREALISTIC_AGE | phantom | — | — |
 | ERR_UNVERIFIED_METADATA | ref | — | — |
 | ERR_VALID_CODE | ref | — | — |
@@ -584,6 +580,16 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-GRAPH-005 | inline | MissingAuditCoverage | warning |
 | FUNGI-GRAPH-006 | inline | UnboundedRetry | warning |
 
+### HALLMARK (5)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-HALLMARK-001 | live | RESERVED_TYPE_NAME | error |
+| FUNGI-HALLMARK-002 | live | NON_ASCII_HALLMARK_NAME | error |
+| FUNGI-HALLMARK-003 | live | HALLMARK_GATE_REQUIRED | error |
+| FUNGI-HALLMARK-004 | live | UNKNOWN_HALLMARK_OP | error |
+| FUNGI-HALLMARK-005 | live | UNDECLARED_HALLMARK_OP | error |
+
 ### HINT (1)
 
 | code | status | name(s) | severity |
@@ -650,6 +656,14 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-INV-002 | inline | — | — |
 | FUNGI-INV-003 | inline | INVARIANT_BLOCK_EMPTY | — |
 | FUNGI-INV-004 | inline | SYMBOL_UNRESOLVED_IN_INVARIANT | — |
+
+### K3 (3)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-K3-001 | inline | MIXED_VERDICT_BOOL_OPERANDS | — |
+| FUNGI-K3-002 | inline | VERDICT_UNARY_MISMATCH | — |
+| FUNGI-K3-003 | inline | FOLD_OPERAND_NOT_VERDICT | — |
 
 ### LEX (6)
 
@@ -920,6 +934,14 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 |---|---|---|---|
 | FUNGI-POLICY-001 | phantom | — | — |
 
+### PREFILTER (3)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-PREFILTER-001 | ref | — | — |
+| FUNGI-PREFILTER-002 | inline | PREFILTER_SUBJECT_NOT_VERDICT | — |
+| FUNGI-PREFILTER-003 | ref | — | — |
+
 ### PRIVACY (3)
 
 | code | status | name(s) | severity |
@@ -1127,7 +1149,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-SUBSTRATE-004 | live | UNVOTED_ANALOG_INTO_DETERMINISTIC | error |
 | FUNGI-SUBSTRATE-005 | live | REACH_EFFECT_ON_COMPUTE_ONLY_LANE | error |
 
-### SYNTAX (13)
+### SYNTAX (17)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -1140,6 +1162,10 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-SYNTAX-008 | referenced | UNSAFE_LET_AT_TOP_LEVEL | error |
 | FUNGI-SYNTAX-009 | referenced | EMIT_AT_TOP_LEVEL | error |
 | FUNGI-SYNTAX-010 | ref | — | — |
+| FUNGI-SYNTAX-011 | ref | — | — |
+| FUNGI-SYNTAX-013 | ref | — | — |
+| FUNGI-SYNTAX-014 | inline | VERSION_HEADER_INVALID | error |
+| FUNGI-SYNTAX-015 | inline | VERSION_HEADER_MISSING | error |
 | FUNGI-SYNTAX-LEGACY-001 | referenced | LegacyEffectsSyntax | warning |
 | FUNGI-SYNTAX-LEGACY-002 | ref | — | — |
 | FUNGI-SYNTAX-LEGACY-003 | ref | — | — |
@@ -1213,7 +1239,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-TRI-004 | live | — | — |
 | FUNGI-TRI-005 | live | — | — |
 
-### TYPE (26)
+### TYPE (27)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -1241,6 +1267,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-TYPE-021 | ref | — | — |
 | FUNGI-TYPE-022 | inline | UnreachablePattern | — |
 | FUNGI-TYPE-023 | inline | DeferredTypeCheck / MissingWildcardArm | warning |
+| FUNGI-TYPE-024 | inline | INT_LITERAL_I32_OVERFLOW | — |
 | FUNGI-TYPE-030 | live | TensorElementTypeMismatch | error |
 | FUNGI-TYPE-031 | referenced | TensorDimensionMismatch | error |
 
@@ -1319,6 +1346,25 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-WASM-001 | phantom | — | — |
 | FUNGI-WASM-004 | phantom | — | — |
 | FUNGI-WASM-005 | phantom | — | — |
+
+### WEB (14)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-WEB-001 | ref | — | — |
+| FUNGI-WEB-002 | ref | — | — |
+| FUNGI-WEB-003 | ref | — | — |
+| FUNGI-WEB-010 | ref | — | — |
+| FUNGI-WEB-011 | ref | — | — |
+| FUNGI-WEB-020 | ref | — | — |
+| FUNGI-WEB-021 | ref | — | — |
+| FUNGI-WEB-022 | ref | — | — |
+| FUNGI-WEB-030 | ref | — | — |
+| FUNGI-WEB-031 | ref | — | — |
+| FUNGI-WEB-040 | ref | — | — |
+| FUNGI-WEB-041 | ref | — | — |
+| FUNGI-WEB-042 | ref | — | — |
+| FUNGI-WEB-050 | ref | — | — |
 
 ### WORKFLOW (3)
 

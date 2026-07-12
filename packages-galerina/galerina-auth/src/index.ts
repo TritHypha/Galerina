@@ -9,11 +9,13 @@
 //   verdict.ts        — the K3 verdict algebra (re-exported vocabulary)
 //   channel.ts        — TLSTP S1 channel/identity factor (delegates to the certGate)
 //   credential.ts     — the required-auth posture: header presence is NOT auth
+//   bearer.ts         — JWT/bearer-token verification factor (algorithm-pinned, fail-closed)
 //   authorization.ts  — scope authorization factor (request-time RBAC)
 //   compose.ts        — fold factors → the one verdict the kernel folds
 
 export * from "./verdict.js";
 export * from "./channel.js";
 export * from "./credential.js";
+export * from "./bearer.js";
 export * from "./authorization.js";
 export * from "./compose.js";

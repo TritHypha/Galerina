@@ -6,7 +6,7 @@ belong in `packages-galerina/galerina-core-logic/`.
 
 Current v0.2 package contract: Omni states are documented in
 `packages-galerina/galerina-core-logic/README.md` and
-`docs/Knowledge-Bases/galerina-core-logic-omni-logic.md`. Uncertain Omni states
+`../../../../ZTF-Knowledge-Bases/galerina-core-logic-omni-logic.md`. Uncertain Omni states
 must map to `review()` rather than directly to runtime Bool, and Omni output is
 advisory until converted through `Decision`.
 

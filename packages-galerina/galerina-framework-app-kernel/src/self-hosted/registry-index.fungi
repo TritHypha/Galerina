@@ -1,0 +1,120 @@
+@version 1
+/// @file: registry-index.fungi
+/// @purpose: Stage-6 CHECKER-VERIFIED twin of registry-index.ts's fail-closed admission DECISIONS —
+///   the central signed-registry gate (verify -> lookup -> policy). The host seam does the injected
+///   crypto verify() and the entry filtering against the index; this pure surface folds the resulting
+///   EVIDENCE fail-closed (the same inject-evidence / fold-verdict discipline as key-rotation and
+///   secret-gate). Every fold returns a structured ERR_REGISTRY_* code or the success token.
+/// @status: checker-verified twin (galerina check clean); NOT build-wired (execution switch #143).
+
+// Risk lattice rank. An UNKNOWN rating ranks 99 (fail-closed: it exceeds any real maximum).
+pure flow riskRank(rating: String) -> Int
+contract {
+  intent { "Rank a risk rating on the low<medium<high<critical lattice; unknown -> 99 (fail-closed)." }
+}
+{
+  match rating {
+    "low" => return 0
+    "medium" => return 1
+    "high" => return 2
+    "critical" => return 3
+    _ => return 99
+  }
+}
+
+// The index-signature DECISION. verifyResult is the injected verifier's folded outcome:
+// "true" (a literal true) | "false" | "no-key". Fail-closed: ONLY "true" advances.
+pure flow signatureVerdict(hasEd25519Sig: Bool, sigNonEmpty: Bool, canonIsJcs: Bool, verifyResult: String, schemaOk: Bool, freshEnough: Bool) -> String
+contract {
+  intent { "Fold the central-index signature evidence fail-closed: unsigned/malformed/no-key/bad-sig/stale -> refuse, else 'verified'." }
+}
+{
+  if hasEd25519Sig == false {
+    return "ERR_REGISTRY_INDEX_UNSIGNED"
+  }
+  if sigNonEmpty == false {
+    return "ERR_REGISTRY_INDEX_UNSIGNED"
+  }
+  // canon sits OUTSIDE the signed bytes (unauthenticated) — only JCS is ever recomputed; reject others.
+  if canonIsJcs == false {
+    return "ERR_REGISTRY_INDEX_MALFORMED"
+  }
+  if verifyResult == "no-key" {
+    return "ERR_REGISTRY_INDEX_NO_KEY"
+  }
+  // Fail-closed: a truthy non-true verifier return must NOT pass — only the literal "true" admits.
+  if verifyResult != "true" {
+    return "ERR_REGISTRY_INDEX_BAD_SIGNATURE"
+  }
+  if schemaOk == false {
+    return "ERR_REGISTRY_INDEX_MALFORMED"
+  }
+  // Rollback/replay defense: the index must be strictly newer than the accepted floor.
+  if freshEnough == false {
+    return "ERR_REGISTRY_INDEX_STALE"
+  }
+  return "verified"
+}
+
+// The package-lookup DECISION over pre-computed match evidence (host filters the verified entries).
+// nameCount = entries with name==q.name; versionCount = of those, version==q.version.
+pure flow lookupVerdict(nameCount: Int, versionCount: Int, hashMatches: Bool, keyIdProvided: Bool, keyIdMatches: Bool) -> String
+contract {
+  intent { "Fold registry lookup evidence fail-closed: unknown/version-unknown/duplicate/hash/keyId -> refuse, else 'ok'." }
+}
+{
+  if nameCount == 0 {
+    return "ERR_REGISTRY_PACKAGE_UNKNOWN"
+  }
+  if versionCount == 0 {
+    return "ERR_REGISTRY_VERSION_UNKNOWN"
+  }
+  // Ambiguous: >1 entry for the same (name,version) — entry ORDER must never silently decide. Fail-closed.
+  if versionCount > 1 {
+    return "ERR_REGISTRY_DUPLICATE"
+  }
+  if hashMatches == false {
+    return "ERR_REGISTRY_HASH_MISMATCH"
+  }
+  if keyIdProvided == true {
+    if keyIdMatches == false {
+      return "ERR_REGISTRY_KEYID_MISMATCH"
+    }
+  }
+  return "ok"
+}
+
+// The registry-policy DECISION: certification level must be allowed; risk must be within the max.
+pure flow policyVerdict(levelAllowed: Bool, gateOnRisk: Bool, riskRating: String, maxRiskRating: String) -> String
+contract {
+  intent { "Fold registry policy fail-closed: disallowed level or over-max risk -> denied, else 'ok'." }
+}
+{
+  if levelAllowed == false {
+    return "ERR_REGISTRY_POLICY_DENIED"
+  }
+  if gateOnRisk == true {
+    if riskRank(riskRating) > riskRank(maxRiskRating) {
+      return "ERR_REGISTRY_POLICY_DENIED"
+    }
+  }
+  return "ok"
+}
+
+// One-call admission: verify -> lookup -> policy, first non-success wins (fail-closed short-circuit).
+pure flow admitVerdict(sigVerdict: String, lookupResult: String, policyResult: String) -> String
+contract {
+  intent { "Compose the three registry gates: the first non-success verdict wins; all pass -> 'admitted'." }
+}
+{
+  if sigVerdict != "verified" {
+    return sigVerdict
+  }
+  if lookupResult != "ok" {
+    return lookupResult
+  }
+  if policyResult != "ok" {
+    return policyResult
+  }
+  return "admitted"
+}

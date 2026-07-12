@@ -5,7 +5,7 @@
  * individual workflow step terminates ONLY that instance, leaving the DSS
  * supervisor and all other DWI instances running.
  *
- * Reference: docs/Knowledge-Bases/galerina-engineering-goals.md Goal C
+ * Reference: ../ZTF-Knowledge-Bases/galerina-engineering-goals.md Goal C
  *
  * Acceptance criterion (three concurrent DWI instances):
  *   - Instance A: well-formed flow → completes successfully

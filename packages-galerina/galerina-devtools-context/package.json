@@ -1,6 +1,7 @@
 {
   "name": "@galerina/devtools-context",
   "version": "1.0.0-beta.2",
+  "license": "Apache-2.0",
   "description": "Context Receipt generator for Galerina: produces minimal AI-consumable structural summaries from .fungi source. 98% token reduction vs raw source while preserving full architectural intent.",
   "type": "module",
   "main": "./dist/index.js",

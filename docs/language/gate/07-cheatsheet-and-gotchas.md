@@ -160,7 +160,7 @@ node tools/gate-check.mjs <file.gate | dir>     # check one file or a directory
 node tools/gate-check.mjs <dir> --json          # machine-readable
 node tools/gate-check.mjs --self-test           # probe every construct + audit case
 ```
-(From `C:\Users\phill\Documents\GitHub\ZT-Galerina-GRAPH-ASCII-v2`.) Exit 0 iff every file passes every check. The
+(From `<GitHub>\ZT-Galerina-GRAPH-ASCII-v2`.) Exit 0 iff every file passes every check. The
 final line reminds you: *a passing map NEVER authorizes — admission is the SIGNED capability at fuse
 time.*
 
@@ -190,7 +190,7 @@ These are places where the honest behaviour differs from a naive reading of the 
 
 ## Where to go next
 
-- The full grammar + Rosetta stone: `C:\Users\phill\Documents\GitHub\ZT-Galerina-GRAPH-ASCII-v2\SPEC-gate-language.md`.
+- The full grammar + Rosetta stone: `<GitHub>\ZT-Galerina-GRAPH-ASCII-v2\SPEC-gate-language.md`.
 - The validator (the real acceptance rules): `…\tools\gate-check.mjs`.
 - Real source to imitate: `…\examples\*.gate` (all pass the checker).
 - The design rationale: `…\DESIGN-BRIEF-gate-language.md` and `…\README.md`.

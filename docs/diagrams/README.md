@@ -2,7 +2,7 @@
 
 Rendered SVG architecture diagrams. All use a shared palette so the set reads as one system:
 
-- **teal** = trusted core / runtime · **blue** = compile-time · **amber** = governed-but-untrusted (ext / lanes) · **purple** = cross-cutting invariant.
+- **teal** = trusted core / runtime · **blue** = compile-time / gate · **amber** = governed-but-untrusted (ext / lanes) · **gray** = declared host floor (native) · **red** = REJECT / leak · **purple** = cross-cutting invariant.
 
 | Diagram | What it shows | Read it with |
 |---|---|---|
@@ -14,8 +14,16 @@ Rendered SVG architecture diagrams. All use a shared palette so the set reads as
 | [galerina-framework.svg](galerina-framework.svg) | the Zero-Trust application framework | `galerina-post-framework-architecture.md` |
 | [galerina-tower-citizen.svg](galerina-tower-citizen.svg) | the DRCM / Tower-citizen containment model | `galerina-drcm.md` |
 | [galerina-tri-pipe.svg](galerina-tri-pipe.svg) | the Tri-Pipe execution router (binary / hybrid / photonic) | `galerina-photonic-ppu-virtualisation.md` |
-| **[galerina-untrusted-governed-lane.svg](galerina-untrusted-governed-lane.svg)** | **Govern-Don't-Absorb — the decision stays in the trusted core, the work runs in an untrusted lane admitted by a signed predicate and combined back by No-Coercion `min`** | **[`untrusted-governed-lane.md`](../Knowledge-Bases/untrusted-governed-lane.md)** |
+| **[galerina-untrusted-governed-lane.svg](galerina-untrusted-governed-lane.svg)** | **Govern-Don't-Absorb — the decision stays in the trusted core, the work runs in an untrusted lane admitted by a signed predicate and combined back by No-Coercion `min`** | **[`untrusted-governed-lane.md`](../../../ZTF-Knowledge-Bases/untrusted-governed-lane.md)** |
 | [galerina-tritmesh-query-lane.svg](galerina-tritmesh-query-lane.svg) | the `.hypha` (TritMeshQL) query lane — the T-ZONE split (opaque pushdown pre-Gate / semantic post-Gate), the Gate, and the GATED cross-collection traversal | [`../examples/hypha/README.md`](../examples/hypha/README.md) |
+| [galerina-governed-data-query-lane.svg](galerina-governed-data-query-lane.svg) | the governed data-query (filter-many) lane — untrusted filter → `validate.*(...)?` → `database.read`, audit only validated values; `FUNGI-VALUESTATE-003` REJECT + `-008` WARN | [`../examples/Level-4-Security/178-governed-data-query`](../examples/Level-4-Security/178-governed-data-query/example.fungi) |
+| [galerina-trust-state-lifecycle.svg](galerina-trust-state-lifecycle.svg) | the mental model every value-state lane is an instance of — `raw → (prove \| redact) → trusted → sink`, the illegal shortcuts the checker refuses (`FUNGI-VALUESTATE-003`/`-006`/`-008`), and the `protected`/`redacted` labels it propagates | [`../language/fungi/SYNTAX-REFERENCE.md`](../language/fungi/SYNTAX-REFERENCE.md) |
+| [galerina-govern-dont-absorb.svg](galerina-govern-dont-absorb.svg) | the layer map — the governed **decision** surface (convert to `.fungi` twins) over the declared minimal **host floor** (crypto · pure compute · WASM toolchain · I/O seam, stays native); why `substrate-math` / `graph-algorithms` / `core-security` are NOT twin candidates | `scripts/audit-kernel-fungi-twins.mjs` |
+| [galerina-ungoverned-vs-governed-breach.svg](galerina-ungoverned-vs-governed-breach.svg) | side-by-side — the same PII flow ships and leaks in a typical language, but is a **compile error** in Galerina (`-003`/`-006`/`-008` + `deny protected to response.body`) | [`../examples/Level-4-Security/175-security-summary-example`](../examples/Level-4-Security/175-security-summary-example/example.fungi) |
+| [galerina-k3-verdict-lattice.svg](galerina-k3-verdict-lattice.svg) | the governance core — the three-valued Kleene lattice (ALLOW / INDETERMINATE / DENY), `vAnd = min`, deny-by-default, the boundary collapse INDETERMINATE→DENY, No-Coercion | `galerina-tower-citizen/src/three-valued-governance.ts` |
+| [galerina-privacy-cut-authoring.svg](galerina-privacy-cut-authoring.svg) | RD-0340 — the `.gate` `[name:cut(<field>)]` annotation, rung-3 (wrong field REJECT / un-annotated WARN), the `@version` 1.0→1.1→1.2 ladder, "checker leads, compiler rejects" | [`../../../ZTF-Knowledge-Bases`](../../../ZTF-Knowledge-Bases) SPEC-gate-language v0.6 |
+| [galerina-healthcare-getpatient-flow.svg](galerina-healthcare-getpatient-flow.svg) | a regulated PHI worked example — require actor · validate · `phi.read` · redact-before-audit · deny protected to response.body · mandatory audit | [`../../examples/healthcare/getPatient.fungi`](../../examples/healthcare/getPatient.fungi) |
+| [galerina-payments-money-lane.svg](galerina-payments-money-lane.svg) | a governed finance lane — `Money<GBP>` currency-as-a-type (cross-currency + money×money REJECT), governed charge, protected money never egresses raw | [`../examples/Level-9-Enterprise/453-financial-payment-charge`](../examples/Level-9-Enterprise/453-financial-payment-charge/example.fungi) |
 
 ## How they fit together
 

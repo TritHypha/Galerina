@@ -1,5 +1,5 @@
 // Diagnostic-namespace ownership — the CHECKED invariant (avoid semantic drift).
-// Spec: docs/Knowledge-Bases/galerina-diagnostic-namespace-ownership.md
+// Spec: ../ZTF-Knowledge-Bases/galerina-diagnostic-namespace-ownership.md
 //
 // Every FUNGI-* code emitted in the compiler source (`code: "FUNGI-..."` literals) must be REGISTERED
 // in a registry doc (compiler-diagnostics.md OR governance-rules.md), OR be on the explicit

@@ -562,7 +562,7 @@ export class HybridInferenceEngine {
     // cryptographic or physical proof that the backend is actually photonic. The load-bearing binding is
     // `bridgeId === declaredBridgeId` below, under a verified signature. This is a known instance of #36 P1
     // (a verified signature attests authenticity/integrity, not source-/substrate-FIDELITY) — see
-    // docs/Knowledge-Bases/galerina-provenance-integrity-vs-fidelity.md. The residual (a trust-root holder
+    // ../ZTF-Knowledge-Bases/galerina-provenance-integrity-vs-fidelity.md. The residual (a trust-root holder
     // mislabelling its own backend) is outside the confused-deputy model (requires the pinned signing key).
     const hwId = signed.manifest.hardwareIdentity;
     if (typeof hwId !== "string" || !hwId.startsWith("photonic")) {
@@ -638,8 +638,8 @@ export class HybridInferenceEngine {
    * Run a governed hybrid inference pass.
    *
    * FFI seam — in production each precision technique dispatches to its kernel:
-   *   ternary   → ggml_bitnet_mul_mat_task_compute()   (C:\Users\phill\Documents\GitHub\BitNet)
-   *   fp4_block → te_fp4_gemm()                         (C:\Users\phill\Documents\GitHub\TransformerEngine)
+   *   ternary   → ggml_bitnet_mul_mat_task_compute()   (<GitHub>\BitNet)
+   *   fp4_block → te_fp4_gemm()                         (<GitHub>\TransformerEngine)
    *   scheduled → static plan replay                    (Groq-derived scheduler)
    * Stage A returns a governed stub; the governance/audit path is fully real.
    */

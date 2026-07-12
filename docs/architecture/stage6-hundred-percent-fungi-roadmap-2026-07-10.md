@@ -1,0 +1,86 @@
+# ROADMAP — Stage-6 "100% + no .ts" for the Type/Effect checker and the OS-kernel (measured, mechanical, honest)
+
+**Status:** Active roadmap (2026-07-10). Owner objective (verbatim): *"Type checker / Effect checker to 100% build and .fungi, no .ts — and then the I/O — the OS kernel to 100%, both no .ts."*
+**This document is the "ensure we CAN" answer:** both objectives are reachable; here is the measured gap, the mechanical loop that closes each item, and the two honest floors with their endgames. Companions: `kernel-fungi-floor-resolution-2026-07-10.md` (the floor ADR + `audit-kernel-floor.mjs` gate), the RD-0338 differential-parity discipline, RD-0337 (the checker's 3-axis design frame).
+
+## 0. Measured state (2026-07-10, HEAD after battery `4cfbcd8e`)
+
+| Target | Today | Remaining to "100% .fungi logic" |
+|---|---|---|
+| **Effect checker** | `effect-checker.fungi` **6/6 codes — DIAGNOSTIC PARITY COMPLETE** (pilot `5a23152c`) | execution-switch only (§3) |
+| **Type checker** | `type-checker.fungi` **6/22 codes** (001/002/004/005/007 + a Stage-B-only 006) | **17 codes** + reconcile the 006 divergence (§1) |
+| **GIR emitter** | `gir-emitter.fungi` already self-hosted | — (rides the same execution switch) |
+| **OS-kernel** | **0/6** floor-free files converted (1,144 lines); floor confined to `fuse-loader.ts` (1,066 lines, 9 primitives, gate GREEN) | 6 file conversions (§2) + the seam endgame (§4) |
+
+Suite 92/92 · 6,929 · 0 fail; self-hosted corpus 294/294; all gates green (known #20 baseline aside).
+
+## 0.1 Why "no .ts" is one program, not a pile of file conversions (VERIFIED build mechanism, 2026-07-10)
+
+Checked from source this session — the deciding facts:
+
+- **A package can be fully `.fungi` ONLY if it is a LEAF.** `api-protocol-rest` and `framework-example-app` are 100% `.fungi` with **empty `main`/`types`**; they build via `galerina.mjs build --package .`, emitting **`.wasm` / `.wat` / `.lmanifest` / `.fuse.json`** — compiled artifacts, *not* a `dist/index.js` + `.d.ts` library. Nothing imports them as TypeScript.
+- **The kernel and compiler are the OPPOSITE — typed TS libraries the rest of the build consumes.** `@galerina/framework-app-kernel` declares `main: ./dist/index.js`, `types: ./dist/index.d.ts`, `build: tsc`, and is imported by **~10 packages** (the API-server stack: `server.ts`, `credential.ts`, `package-resolver.ts`, `kernel-integration.ts`, `openapi.ts`, …). `core-compiler` likewise (`type-checker.ts` is the *executed* compiler; `type-checker.fungi` is a twin run through the interpreter in tests — the `.ts` is never deleted, for ANY stage, today).
+- **Therefore deleting their `.ts` requires the `.fungi` build to emit a TS-consumable library** (`dist/index.js` + `index.d.ts`) that those ~10 importers can `import` with types. The `.fungi` build emits **`.wasm`, not a `.d.ts`**. Closing that gap IS the Stage-B execution switch (#143 WASM byte-parity + the DSS.wasm TCB #102–106, partly **hardware**-gated) — a program, not a per-file edit.
+- **CORRECTION (2026-07-11, owner-caught + verified by running `galerina check`):** `galerina check` **DOES** accept the constructs — `try/catch` maps to fail-closed `trap`, and `match` / `Result` / records / `Option` are all first-class **and checker-enforced** (`match` exhaustiveness = FUNGI-TYPE-021/022; `trap` = FUNGI-TYPE-006). `secret-gate`'s **admit DECISION surface** converts to `.fungi` and passes `check` clean — **0 errors, 0 governance warnings** (`src/self-hosted/secret-gate.fungi`). My earlier "out-of-subset" claim was wrong: it described the narrow self-hosted-*compiler-interpreter* subset, not the language/checker. The ONE construct `.fungi` genuinely lacks is a **higher-order `fn` parameter** (`use(name, fn)`) — which is `getSecret`'s short-lived plaintext VIEW, a **host-boundary** concern (handling secret bytes) that belongs in the seam regardless. So a kernel file **SPLITS cleanly**: decision surface → checker-verified `.fungi`; host view/crypto/fs → the declared seam.
+
+**Honest conclusion (corrected):** Converting the governed **decision surfaces** to checker-verified `.fungi` twins is **achievable now, this round** — proven by the `secret-gate` twin. What is NOT achievable this round is **deleting the `.ts`**: the kernel/compiler are typed TS libraries imported by ~10 packages, and the `.fungi` build emits `.wasm`, not a consumable `.d.ts`, so the importers can't yet load a `.fungi` kernel. That last mile is the single execution-switch program (emit a typed library from `.fungi`, #143 WASM byte-parity, partly HW-gated). Deleting the `.ts` before it lands = an unverifiable build (fake-green, forbidden). So the honest sequence is: **convert every floor-free decision surface to a checker-verified `.fungi` twin now** (the governed surface reaches `.fungi`), keep the `.ts` as the executed artifact, and let the execution switch retire the `.ts` when byte-parity lands. The `audit-kernel-floor` gate keeps the boundary honest (floor can only shrink) throughout.
+
+## 1. Objective 1 — Type checker to 22/22 codes (the burn-down)
+
+> **UPDATE 2026-07-11 — 4 codes landed, twin now at 10** `{001,002,004,005,006,007,008,019,NAME-002,TYPE-020}` (was 6). Done: **008** (return-mismatch parity — distinct from **002** let-binding `TypeMismatch`, matching Stage-A); **NAME-002** (duplicate binding, same block); **TYPE-020** (shadowed binding, outer scope); **019** (unknown symbol on a name initializer; params seed the body scope). These added a real symbol-table + scope-tracking + param-seed capability. Path chosen: burn down against **current** Stage-A codes (the #20 proposal keeps 008/002 unchanged → no remap). **The "current-shape" vein is now exhausted** — every remaining code needs a parser-shape extension (see the tranche below). Commits `504e2286`, `7a6e6c64`, `c7142dcf`, `4172d657`. Current consolidated plan: [`roadmap-2026-07-11.md`](roadmap-2026-07-11.md).
+
+**Missing codes (17):** 003 (nominal/brand gate) · 008 (null denied) · 009/010 (generic arity/constraint) · 011 (collection element) · 012 (Result) · 014 (missing effect) · 016/017/030 (tensor shape/precision/element) · 018 (runtime-target) · 019 (unknown symbol) · 020 (shadowing) · 021/022 (match exhaustive/unreachable) · 023/024 (Auto deferral).
+**Divergence to reconcile:** the `.fungi` emits **FUNGI-TYPE-006** (trap-statement checks) which Stage-A does not — decide retire-vs-adopt against the Stage-A registry, differential tests updated to the parity answer (the effect-checker pilot did exactly this for its 4 subset-encoding tests).
+
+**The honest pacing fact:** the Stage-B twin checks **what its input shape carries**. Its ParseResult flow-records carry `{name, returnType, params[{name,typeName}], returnExpr{kind,litType,leftType,rightType}}` (+ v2.2 static/bitfield/view/trap/step). So the 17 codes split:
+
+- **Tranche A — REVISED after source verification (2026-07-10):** the naive candidates do not survive a Stage-A semantics check:
+  - **008 is NOT "SilentNullDenied"** — the `type-checker.ts` header comment is stale; the actual emission (line ~1168) is `InvalidReturnType` ("declares return type X but return expression has type Y") — **semantically the same check the twin already emits as 002**. The two checkers use *different codes for the same check*: a code-mapping divergence, not a missing check.
+  - **020 ShadowedBinding** = *outer-scope* shadowing (same-scope duplicate = `FUNGI-NAME-002`); the Stage-B shape has no scopes yet → mapping duplicate-params to 020 would *create* a divergence. Tranche B.
+  - 019/011 need shape extensions as suspected. Tranche B.
+  - **⇒ THE REAL FRONT BLOCKER IS #20 (diagnostic-code taxonomy, 165 baseline: V1 overloads / V2 collisions).** Burning the 17 codes into the twin against Stage-A's *current* overloaded registry risks renumbering everything after the taxonomy lands. **Sequence: owner reviews the decision-ready #20 proposal (in the KB) → registry settles → the twin burns down against the settled registry.** The 006 reconcile (twin-only trap checks) folds into the same decision.
+- **Tranche B — needs a Stage-B parser-shape extension first** (each = parser.fungi emits the new fields → type-checker.fungi checks them → differential tests): 003 brands · 009/010 generics · 012 Result · 019 symbols · 020 scopes · 011 elements · 021/022 match arms · 023/024 Auto.
+- **Tranche C — needs the tensor/effect sub-shapes:** 014 (declared-effects, mirrors the effect-checker's shape) · 016/017/030 tensors · 018 runtime-target.
+- **Not blocked by #20:** the kernel behavioral twins (§2) are diag-code-independent — they proceed regardless.
+
+**The proven loop (per code, from the FUNGI-EFFECT-002 pilot):** read the Stage-A check semantics → (if needed) extend parser.fungi's record shape → implement in type-checker.fungi → `galerina check` clean → reconcile/extend `self-hosted-type-checker.test.mjs` differential blocks → full self-hosted corpus green → commit. **One code (or one shape-extension cluster) per commit; never fan-out.**
+
+## 2. Objective 2 — Kernel: convert the 6 floor-free files (1,144 lines)
+
+Order by dependency-lightness (each = author the `.fungi` twin + a differential test pinning `.ts`-vs-`.fungi` behavior on the same inputs; the `audit-kernel-floor` gate already proves them floor-free):
+1. `types.ts` (104) — type/record declarations → `.fungi` records.
+2. `secret-gate.ts` (84) — pure decision logic; smallest behavioral twin.
+3. `route-defaults.ts` (160) — the secure-by-default table.
+4. `registry-index.ts` (257) — index/lookup logic.
+5. `kernel.ts` (525) — the gate pipeline (decision half; its host calls already route through the seam).
+6. `index.ts` (14) — re-exports; trivial last.
+
+These are *behavioral-twin* conversions under the kernel's own 104-test suite + new differential tests — the same discipline as the compiler corpus, without waiting for the full Stage-B execution switch.
+
+**UPDATE 2026-07-11 — kernel governed decision surfaces DONE (checker-verified `.fungi` twins, gated):** `secret-gate.fungi` (gate 9.5 admit), `route-defaults.fungi` (secure-by-default folds), `registry-index.fungi` (supply-chain verify→lookup→policy), `kernel.fungi` (gate-6 auth / RD-0307-0309 presence-bypass close). All `galerina check` clean, guarded by `scripts/audit-kernel-fungi-twins.mjs` (4/4). `types.ts` (declarations) and `index.ts` (barrel) carry no decision surface and were correctly NOT force-twinned. **So 100% of the kernel's governed decision surface is now in checker-verified `.fungi`** — the achievable-now milestone; the `.ts` stays the executed artifact until the execution switch (§0.1) retires it.
+
+## 3. The execution switch (what finally deletes the `.ts`)
+
+Diagnostic parity makes a `.fungi` twin *complete*; deleting the `.ts` requires the build to *execute* the `.fungi`:
+- **Gate:** Stage-B **WASM byte-parity** (#143) — today only `tokenize` reaches it. The lowering floors already burned down this arc: ADT ABI + `?` error-prop landed; remaining floors tracked in the self-hosting evolution plan.
+- **Sequence:** per-stage byte-parity (lexer → parser → checkers → gir-emitter) → flip that stage's build entry to the `.fungi`-compiled artifact → the `.ts` twin becomes a frozen reference (kept for the differential oracle) → delete once the oracle is re-anchored on the WASM artifact.
+- **RD-0316/0318 assurance layer** (#29) is the safety net for the switch: fuzz differential-oracle + scoped Z3 on the checker algebra.
+
+## 4. The two floors and their endgames (the honest "no .ts" for the kernel)
+
+| Floor | Why `.fungi` can never hold it | Endgame that still reaches "no `.ts` source" |
+|---|---|---|
+| **Kernel host seam** (`fuse-loader.ts`, 9 primitives: createHash/createPublicKey/verify/readFileSync/existsSync/readdirSync/join/basename/WebAssembly.instantiate) | `.fungi` is host-blind by design (`galerina check` rejects even `^`); *something* must call the host | **(a)** extract the decision half into `.fungi` (shrinks the seam), then **(b)** the residual shim becomes **JSDoc-typed `.mjs` checked by `tsc --checkJs`** (type safety kept, zero `.ts` source), and **(c)** long-term the seam collapses into the **DSS.wasm TCB (#102-106)** where the host boundary is the WASM embedder itself. The `audit-kernel-floor` gate holds throughout: the floor can only shrink. |
+| **Compiler crypto/host-io** (signing, fs) | same host-blindness | same (b)/(c) pattern at the compiler's I/O edge; the checker/emitter logic itself has no floor |
+
+**Bottom line, stated plainly:** *"100% + no `.ts`"* is reachable for both objectives — the checker modules literally (pure logic, twins + execution switch), the kernel literally at the **source-language** level (governed surface → `.fungi`; the irreducible 9-primitive host shim → `.mjs`/DSS.wasm, which is *not TypeScript*). What can never happen is `.fungi` itself calling the host — that is the boundary the whole architecture exists to govern, and the floor gate keeps it honest while it shrinks.
+
+## 5. Sequence (owner-visible checkpoints)
+
+1. **Type-checker Tranche A** (008/019/020/011 + the 006 reconcile) — current shape, starts immediately.
+2. **Tranche B/C shape-extensions**, one cluster per commit, corpus green each time.
+3. **Kernel files 1→6** (§2) in parallel-safe order (behavioral twins; no compiler dependency).
+4. **Execution switch per stage** as #143 byte-parity lands (assurance layer #29 gates the flip).
+5. **Seam shrink → `.mjs` shim → DSS.wasm** (#102-106; owner-gated — it touches the TCB).
+
+Each checkpoint keeps: suite green · self-hosted corpus green · `audit-kernel-floor` green · counts synced.

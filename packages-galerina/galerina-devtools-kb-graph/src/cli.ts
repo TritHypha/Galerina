@@ -59,7 +59,7 @@ async function main(): Promise<void> {
   const { stats } = graph;
 
   // ── Print summary ──────────────────────────────────────────────────────────
-  console.log("Galerina KB Graph — docs/Knowledge-Bases/");
+  console.log("Galerina KB Graph — ../ZTF-Knowledge-Bases/");
   console.log(`Scanned: ${stats.totalDocs} documents`);
   console.log(`Edges:   ${stats.totalEdges} cross-references`);
   if (stats.orphanCount > 0) {

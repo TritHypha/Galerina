@@ -1,0 +1,82 @@
+@version 1
+/// @file: hardened-border.fungi
+/// @purpose: Stage-6 CHECKER-VERIFIED twin of the sentinel-io HARDENED-BORDER decision surface — the
+///   "host is a dumb byte-mover; tampered bytes never reach the backing buffer" boundary. Two host
+///   modules carry it: integrity-monitor.ts (per-block digest verification -> LSIO-INTEGRITY-001) and
+///   zero-copy-mapper.ts (source-length guard -> LSIO-MAP-001, and the staging-AFTER-verification
+///   ordering). The host seam runs the crypto (SHA-256 / keyed HMAC-SHA256 — a wrong-mode manifest
+///   yields a non-matching digest and is correctly refused), the byte copy, and the typed-array views;
+///   this pure surface folds the resulting EVIDENCE fail-closed into a release/refuse verdict — the same
+///   inject-evidence / fold-verdict discipline as kernel.fungi (the auth gate) and registry-index.fungi.
+/// @fidelity: integrityVerdict and mapGuardVerdict mirror the two live .ts codes exactly. blockBoundsVerdict
+///   is an EXPLICIT fail-closed bounds check the .ts currently leaves IMPLICIT (source.subarray clamps a
+///   past-the-end block to a short slice, which then fails the digest) — the twin refuses a malformed
+///   [offset,end) directly instead of relying on the downstream digest mismatch. releaseVerdict encodes
+///   the map() invariant: nothing is staged until BOTH bounds and integrity pass.
+/// @status: checker-verified twin (galerina check clean); NOT build-wired (execution switch #143).
+
+// LSIO-INTEGRITY-001 — the per-block integrity DECISION (integrity-monitor.ts verifyBlock/enforceBlock).
+// digestMatches = the host's `actual === expectedHex` in the monitor's configured mode (crypto is floor).
+pure flow integrityVerdict(digestMatches: Bool) -> String
+contract {
+  intent { "Fail-closed integrity gate: a block whose recomputed digest does not match the manifest's expected hex is refused (LSIO-INTEGRITY-001); a match -> 'ok'." }
+}
+{
+  if digestMatches == false {
+    return "LSIO-INTEGRITY-001"
+  }
+  return "ok"
+}
+
+// LSIO-MAP-001 — the zero-copy source-length guard (zero-copy-mapper.ts map()). A source shorter than the
+// manifest's declared totalBytes cannot back every block -> refuse before staging. Zero-trust addition: a
+// negative/corrupt totalBytes is nonsensical and also refuses (the .ts trusts a non-negative manifest).
+pure flow mapGuardVerdict(sourceLen: Int, totalBytes: Int) -> String
+contract {
+  intent { "Fail-closed staging guard: a source shorter than manifest.totalBytes (or a corrupt negative totalBytes) is refused (LSIO-MAP-001); sufficient length -> 'ok'." }
+}
+{
+  if totalBytes < 0 {
+    return "LSIO-MAP-001"
+  }
+  if sourceLen < totalBytes {
+    return "LSIO-MAP-001"
+  }
+  return "ok"
+}
+
+// Explicit per-block bounds (zero-trust strengthening — see @fidelity). `end` = offset+length computed by
+// the host. A block that starts before zero, ends past the buffer, or has end<offset (negative length /
+// overflow) is a malformed manifest and is refused directly rather than via a downstream digest failure.
+pure flow blockBoundsVerdict(offset: Int, end: Int, totalBytes: Int) -> String
+contract {
+  intent { "Fail-closed block-bounds gate: a block whose [offset,end) is negative-start, past totalBytes, or end<offset is a malformed manifest and is refused (LSIO-MAP-001); a well-formed range -> 'ok'." }
+}
+{
+  if offset < 0 {
+    return "LSIO-MAP-001"
+  }
+  if end < offset {
+    return "LSIO-MAP-001"
+  }
+  if end > totalBytes {
+    return "LSIO-MAP-001"
+  }
+  return "ok"
+}
+
+// The map() release invariant: stage a block into the backing buffer ONLY after BOTH its bounds and its
+// integrity pass (enforceBlock runs before backingBytes.set). First non-'ok' verdict wins (fail-closed).
+pure flow releaseVerdict(boundsResult: String, integrityResult: String) -> String
+contract {
+  intent { "Compose the hardened-border gates: a block is released only if bounds AND integrity pass; the first failing verdict denies (returns its code), else 'release'." }
+}
+{
+  if boundsResult != "ok" {
+    return boundsResult
+  }
+  if integrityResult != "ok" {
+    return integrityResult
+  }
+  return "release"
+}

@@ -55,12 +55,12 @@ const BENCHMARKS = [
   // so it is intentionally NOT in this array. Run it standalone: `npm run run:http`.
   // Tri-logic: 3-valued ternary logic (True=1, False=-1, Unknown=0) — all 27 truth table combinations.
   // Relevant for future photonic compute substrates; validates correctness and shows CPU overhead today.
-  { id: "tri-logic", dir: "tri-logic", galerinaOpsPerRun: 27000, passiveCallCount: 100 },
+  { id: "tri-logic", dir: "tri-logic", galerinaOpsPerRun: 300000, passiveCallCount: 100 },
   // Data-query: SQL-like data filtering on arrays of JSON records — a core web service workload.
   // Galerina governed path validates query inputs as Tainted<String> before execution.
   // main() = filterAndCount(1000) + groupByCategory(1000) = 2000 record-scans per call
   // (was 1000 — undercounted; flagged by the unit-alignment audit, fixed 2026-07-08).
-  { id: "data-query", dir: "data-query", galerinaOpsPerRun: 2000, passiveCallCount: 50 },
+  { id: "data-query", dir: "data-query", galerinaOpsPerRun: 10000, passiveCallCount: 50 },
   // Call-chain: layered call-dispatch overhead — controller → service.method → util fn.
   // In Galerina: main → serviceLayer → domainLayer → leafCompute (7 flow calls per chain).
   // One op = one outer chain; 50,000 chains per run. Isolates flow-call cost (arg binding
@@ -87,10 +87,10 @@ const BENCHMARKS = [
   // allocated per run. One op = one node allocated. Read the bytes/op column here.
   { id: "binary-trees", dir: "binary-trees", galerinaOpsPerRun: 135854, passiveCallCount: 3 },
   // ── .spore trust-container CREATION — TMX-256 SHAKE Merkle + LE container packing ──
-  // The Node.js column IS the shipped @galerina/ext-tmf engine (pure TS/Node — no .fungi
+  // The Node.js column IS the shipped @galerina/ext-spore engine (pure TS/Node — no .fungi
   // path exists); python.py / bench.rs are byte-identical reference writers that assert
   // the SAME golden root. Honest "can other languages create a .spore, and how fast?".
-  { id: "tmf-container", dir: "tmf-container" },
+  { id: "spore-container", dir: "spore-container" },
   // ── Native framework vs middleware — Galerina App Kernel's fixed 12-gate pipeline ──
   // The Node.js column IS the Galerina App Kernel (no middleware chain); python.py is an
   // equivalent SYNC gate chain (the "middleware" approach) doing the SAME gates. In-process

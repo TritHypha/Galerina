@@ -52,7 +52,8 @@ contract {
     patientId: patientId
   })?
 
-  http.post("/notify", email)?
+  let notifyEmail: redacted Email = redact(email)
+  http.post("/notify", notifyEmail)?
 
   let auditEmail: redacted Email = redact(email)
   let auditNhsNumber: redacted NhsNumber = redact(nhsNumber)

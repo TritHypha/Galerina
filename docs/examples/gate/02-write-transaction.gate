@@ -1,4 +1,4 @@
-@version 1.0.0
+@version 1.2.0
 # Pattern: governed write (transaction). Draw-don't-code: the deduction and the
 # masking are dense compute delegated to .fungi `fu` bodies; the map is the shape.
 GATE processRefund(client: CallerId, amount: Money<GBP>) -> RefundReceipt:
@@ -14,7 +14,7 @@ GATE processRefund(client: CallerId, amount: Money<GBP>) -> RefundReceipt:
     [authz]                  -> [-]                                # unknown -> deny drain (distinct default)
     [×]                      -> [-]                                # ineligible client drains to deny
     [✓]                      -> [posted:fu ledgerDeduct] @database.write   # dense compute in a .fungi fu
-    [posted:fu ledgerDeduct] -> [receipt:cut fu maskAmount]        # EXPLICIT CUT — masks the raw amount
-    [receipt:cut fu maskAmount] -> [logged:fu audit] @audit.write  # audit trail
+    [posted:fu ledgerDeduct] -> [receipt:cut(Amount) fu maskAmount]        # EXPLICIT CUT — masks the raw amount
+    [receipt:cut(Amount) fu maskAmount] -> [logged:fu audit] @audit.write  # audit trail
     [logged:fu audit]        -> [+]                                # egress: only the masked receipt leaves
 END

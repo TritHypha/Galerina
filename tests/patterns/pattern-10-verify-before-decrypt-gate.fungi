@@ -1,7 +1,7 @@
 @version 1
 // EXPECT: ACCEPT
 // Pattern 10 — Verify-Before-Decrypt Key-Release Gate (drcm_stable_v0)
-// Reference: docs/Knowledge-Bases/galerina-rd-adoption-2026-06-16.md (U1 — adopted from the tri-encryption R&D)
+// Reference: ../ZTF-Knowledge-Bases/galerina-rd-adoption-2026-06-16.md (U1 — adopted from the tri-encryption R&D)
 //
 // Use when: governing a confidentiality pipeline. Galerina decides WHETHER a key releases — integrity
 // AND authenticity must pass AND the governance verdict must collapse to Allow. The crypto math

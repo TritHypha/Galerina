@@ -2,7 +2,7 @@
 // Galerina Phase 4 — Recursive Descent Parser
 //
 // Parses Galerina .fungi source text into an AstNode tree.
-// Grammar: docs/Knowledge-Bases/phase-4-parser-ast-plan.md
+// Grammar: ../ZTF-Knowledge-Bases/phase-4-parser-ast-plan.md
 //
 // Entry point: parseProgram(source, file)
 //
@@ -83,6 +83,8 @@ export type AstNodeKind =
   | "guardDecl"
   // Resource declarations (Phase 17)
   | "resourceDecl"
+  // Hallmark open-type declarations (RD-0353)
+  | "hallmarkDecl"
   // Literal expression nodes
   | "charLiteral"
   | "listLiteral"
@@ -283,7 +285,7 @@ export const FUNGI_CURRENT_VERSION = 1;
 //
 // Each infix operator maps to its binding precedence and associativity.
 // Higher precedence binds tighter: * (60) > + (50) > == (30) > && (20) > || (10).
-// Ref: docs/Knowledge-Bases/operator-precedence.md
+// Ref: ../ZTF-Knowledge-Bases/operator-precedence.md
 // ---------------------------------------------------------------------------
 
 interface InfixEntry {
@@ -461,6 +463,7 @@ class Parser {
         }
         case "event":    return this.parseEventDecl();
         case "resource": return this.parseResourceDecl();
+        case "hallmark": return this.parseHallmarkDecl();
         case "let": {
           // FUNGI-SYNTAX-006: let at top level is not allowed
           this.emit(
@@ -2068,7 +2071,7 @@ class Parser {
    * chain with a table-driven precedence-climbing loop.
    *
    * Precedence table: INFIX_OPERATOR_TABLE (module level)
-   * Ref: docs/Knowledge-Bases/operator-precedence.md
+   * Ref: ../ZTF-Knowledge-Bases/operator-precedence.md
    *
    * @param minPrecedence  Minimum precedence for the next infix operator.
    *                       Callers pass 0 (the default) to parse a full expression.
@@ -4001,7 +4004,7 @@ class Parser {
    * that Galerina source files with compute blocks can be parsed without errors.
    * Semantic enforcement (effect routing, tensor type checking) is Phase 7+.
    *
-   * Ref: docs/Knowledge-Bases/governed-compute-chain.md
+   * Ref: ../ZTF-Knowledge-Bases/governed-compute-chain.md
    */
   private parseComputeTarget(): AstNode {
     const loc = this.loc();
@@ -5280,6 +5283,153 @@ class Parser {
     return { kind: "contractSetDecl", value: name, location: loc, children };
   }
 
+  // ── Hallmark open-type declaration (RD-0353) ─────────────────────────────
+
+  /**
+   * Parses a hallmark declaration — a developer-minted nominal type over a
+   * carrier, constructed only through a mandatory assay gate:
+   *
+   *   hallmark CustomerRef of String {
+   *     gate: flow assayCustomerRef
+   *   }
+   *
+   *   hallmark LoyaltyPoints of Decimal {
+   *     decimals: 0
+   *     sign:     non-negative
+   *     ops:      { add, subtract, scale, compare }
+   *     gate:     flow assayPoints
+   *   }
+   *
+   * Node shape (structured fields carried in child identifier values, mirroring
+   * resourceDecl):
+   *   { kind: "hallmarkDecl", value: Name, location, children: [
+   *       { kind: "typeRef",    value: Carrier },
+   *       { kind: "identifier", value: "gate:parseFn" }?,
+   *       { kind: "identifier", value: "decimals:N" }?,
+   *       { kind: "identifier", value: "sign:non-negative" }?,
+   *       { kind: "identifier", value: "ops:add,subtract,scale,compare" }?,
+   *   ]}
+   *
+   * The parser only captures structure. The mint-time gates (reserved name,
+   * ASCII-only, gate-mandatory, closed ops vocabulary) and use-site gates
+   * (construction-only, cross-type non-unification, ops deny-by-default) are all
+   * enforced by the type checker (FUNGI-HALLMARK-* / FUNGI-TYPE-003 / -004).
+   */
+  private parseHallmarkDecl(): AstNode {
+    const loc = this.loc();
+    this.advance(); // consume "hallmark"
+    this.skipNewlines();
+
+    // Minted name
+    const nameTok = this.current();
+    const name = nameTok.kind === "identifier" ? nameTok.value : "<unknown>";
+    if (nameTok.kind === "identifier") this.advance();
+    this.skipNewlines();
+
+    const children: AstNode[] = [];
+
+    // `of Carrier`
+    if ((this.current().kind === "keyword" || this.current().kind === "identifier") &&
+        this.current().value === "of") {
+      this.advance(); // consume "of"
+      this.skipNewlines();
+      const carTok = this.current();
+      if (carTok.kind === "identifier" || carTok.kind === "keyword") {
+        const carLoc = this.loc();
+        let carrier = carTok.value;
+        this.advance();
+        // Capture a simple generic tail if present (rare for carriers), e.g. of List<Int>.
+        if (this.currentIs("symbol", "<")) {
+          carrier += "<";
+          this.advance();
+          let depth = 1;
+          while (depth > 0 && !this.isEof()) {
+            if (this.currentIs("symbol", "<")) depth++;
+            else if (this.currentIs("symbol", ">")) depth--;
+            if (depth > 0) carrier += this.current().value;
+            this.advance();
+          }
+          carrier += ">";
+        }
+        children.push({ kind: "typeRef", value: carrier, location: carLoc });
+      }
+    }
+    this.skipNewlines();
+
+    if (!this.currentIs("symbol", "{")) {
+      return { kind: "hallmarkDecl", value: name, location: loc, children };
+    }
+    this.advance(); // consume {
+    this.skipNewlines();
+
+    while (!this.currentIs("symbol", "}") && !this.isEof()) {
+      const tok = this.current();
+      if (tok.kind === "identifier" || tok.kind === "keyword") {
+        const field = tok.value;
+        if (field === "gate") {
+          this.advance(); // consume "gate"
+          if (this.currentIs("symbol", ":")) this.advance();
+          this.skipNewlines();
+          // optional "flow" keyword before the gate-flow name
+          if ((this.current().kind === "keyword" || this.current().kind === "identifier") &&
+              this.current().value === "flow") {
+            this.advance();
+          }
+          const fnTok = this.current();
+          const fn = (fnTok.kind === "identifier" || fnTok.kind === "keyword") ? fnTok.value : "";
+          const fnLoc = this.loc();
+          if (fn !== "") this.advance();
+          children.push({ kind: "identifier", value: `gate:${fn}`, location: fnLoc });
+        } else if (field === "ops") {
+          this.advance(); // consume "ops"
+          if (this.currentIs("symbol", ":")) this.advance();
+          this.skipNewlines();
+          const opLoc = this.loc();
+          const parts: string[] = [];
+          if (this.currentIs("symbol", "{")) {
+            this.advance(); // consume {
+            while (!this.currentIs("symbol", "}") && !this.isEof()) {
+              const ot = this.current();
+              if (ot.kind === "identifier" || ot.kind === "keyword") parts.push(ot.value);
+              this.advance();
+            }
+            if (this.currentIs("symbol", "}")) this.advance(); // consume }
+          }
+          children.push({ kind: "identifier", value: `ops:${parts.join(",")}`, location: opLoc });
+        } else if (field === "decimals") {
+          this.advance(); // consume "decimals"
+          if (this.currentIs("symbol", ":")) this.advance();
+          const vTok = this.current();
+          const v = vTok.value;
+          const vLoc = this.loc();
+          this.advance();
+          children.push({ kind: "identifier", value: `decimals:${v}`, location: vLoc });
+        } else if (field === "sign") {
+          this.advance(); // consume "sign"
+          if (this.currentIs("symbol", ":")) this.advance();
+          const sLoc = this.loc();
+          const parts: string[] = [];
+          while (!this.isEof() && this.current().kind !== "newline" &&
+                 !this.currentIs("symbol", "}") && !this.currentIs("symbol", ",")) {
+            parts.push(this.current().value);
+            this.advance();
+          }
+          children.push({ kind: "identifier", value: `sign:${parts.join("")}`, location: sLoc });
+        } else {
+          // Unknown schema field — skip its token (defensive; the checker ignores it).
+          this.advance();
+        }
+      } else {
+        // commas, stray symbols — skip one token (guarantees loop progress)
+        this.advance();
+      }
+      this.skipNewlines();
+    }
+
+    if (this.currentIs("symbol", "}")) this.advance(); // consume }
+    return { kind: "hallmarkDecl", value: name, location: loc, children };
+  }
+
   // ── Resource declaration (Phase 17) ──────────────────────────────────────
 
   /**
@@ -5701,7 +5851,10 @@ class Parser {
       this.advance(); // consume {
       this.skipNewlines();
       while (!this.currentIs("symbol", "}") && !this.isEof()) {
-        if (this.current().kind === "identifier") {
+        // A field name may lex as a KEYWORD (e.g. `reason`, lexer.ts) — accept it exactly
+        // like parseRecordLiteral does, or the name token is skipped and the TYPE token is
+        // mis-read as an untyped field name ("reason: String" became a field named "String").
+        if (this.current().kind === "identifier" || this.current().kind === "keyword") {
           const fLoc = this.loc();
           const fName = this.current().value;
           this.advance();

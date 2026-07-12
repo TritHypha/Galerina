@@ -507,3 +507,35 @@ export {
   withTelemetryFeedback,
   certGateWithTelemetry,
 } from "./admission-feedback.js";
+
+// Deny-by-default CORS admission — the browser cross-origin complement to the inbound guard.
+export {
+  type CorsPolicy,
+  type CorsRequest,
+  type CorsDecision,
+  guardCorsRequest,
+} from "./cors-policy.js";
+
+// Defensive controls (RD-0325 attacker-past-proxy + RD-0326 enumeration) — fail-closed decision
+// surfaces: never trust proxy headers unless the proxy proved identity; uniform non-revealing
+// denials; bounded pagination; opaque-id validation. Wireable into route-defaults / the inbound guard.
+export {
+  type ProxyAuthMethod,
+  type ProxyTrustEvidence,
+  type ClientAddressInput,
+  type ClientAddressDecision,
+  type ResourceOutcome,
+  type AuthOutcome,
+  type UniformResourceDecision,
+  type UniformAuthDecision,
+  type PaginationPolicy,
+  type PageLimitDecision,
+  proxyIsTrusted,
+  resolveClientAddress,
+  uniformResourceResponse,
+  uniformAuthResponse,
+  boundPageLimit,
+  SECURE_PAGINATION,
+  isOpaqueId,
+  OPAQUE_ID_MIN_LENGTH,
+} from "./defensive-controls.js";

@@ -36,5 +36,5 @@ HTTP/1.x keep-alive, HTTP/2 multiplexing and HTTP/3/QUIC should be treated as
 transport capabilities selected by deployment profile, not as core language
 syntax.
 
-See [Fast Response And Keep-Alive](Knowledge-Bases/fast-response-and-keep-alive.md) and
-[Preplanned Startup And Fast Response](Knowledge-Bases/preplanned-startup-and-fast-response.md).
+See [Fast Response And Keep-Alive](../../ZTF-Knowledge-Bases/fast-response-and-keep-alive.md) and
+[Preplanned Startup And Fast Response](../../ZTF-Knowledge-Bases/preplanned-startup-and-fast-response.md).

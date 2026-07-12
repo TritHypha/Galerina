@@ -50,8 +50,9 @@ function throughput(r) {
       ?? r.iterationsPerSecond ?? r.callsPerSecond ?? r.runsPerSecond ?? null;
 }
 
-// Is this benchmark unit-comparable across runtimes? Non-comparable benchmarks
-// (matrix-multiply, tri-logic, data-query) are excluded from winner / floor claims.
+// Is this benchmark unit-comparable across runtimes? Any benchmark the spec marks
+// comparable:false is excluded from winner / floor claims. (matrix-multiply, tri-logic
+// and data-query were realigned to a common bulk-N path 2026-07-11 and are now included.)
 function comparable(bench) {
   return bench?.units ? bench.units.comparable !== false : specComparable(bench?.benchmark);
 }
@@ -108,7 +109,7 @@ function fmtBpo(n, rt) {
 // WHY a given runtime has no comparable throughput for a given benchmark, so the
 // table cell can say e.g. "not run", "errored", "no WASM — strings/records"
 // rather than an ambiguous dash. Reasons are deliberately short (table cells).
-const STRING_RECORD_BENCH = new Set(["crypto-ops", "text-html", "json-parse", "tmf-container", "framework-pipeline"]);
+const STRING_RECORD_BENCH = new Set(["crypto-ops", "text-html", "json-parse", "spore-container", "framework-pipeline"]);
 function cellReason(bench, rt) {
   const r = bench?.results?.[rt];
   // 1. Runtime never produced a result object for this benchmark.
@@ -874,14 +875,14 @@ console.log(`
 | **collection-pipeline** | Functional pipeline: filter → map → reduce over 10K integer records | Data transformation throughput — the bread-and-butter of governed APIs |
 | **compute-mix** | Mixed workload: string ops, conditionals, arithmetic, object creation | Closest to real-world application code; no single hot path |
 | **crypto-ops** | SHA-256 hashing, HMAC, Ed25519 sign+verify (via stdlib) | Performance of governed cryptographic operations (used in every secure flow) |
-| **data-query** | Filter + sort + aggregate over 1K records with governance checks | ⚠️ excluded — not unit-aligned (Galerina main() ≠ the 7 native query micro-benches) |
+| **data-query** | \`scanRecords(10K)\`: one pass — filter (WHERE amount>threshold) + GROUP BY category — the same bulk-N scan on every runtime | Governed data-query throughput in record-scans/sec (aligned 2026-07-11); the \`Tainted<String>\` query path is a compile-time cost layered on top |
 | **fibonacci-recursive** | Recursive fib(20): tail-call and LRU cache warm path | Tests recursion overhead + caching benefit across governed/passive/WASM tiers |
 | **governance-cost** | Sum 1..100 (triangle number) with full governance verification overhead | Directly measures the cost of Galerina's contract{} checking vs raw arithmetic |
 | **gpu-compute** | Parallel map-reduce kernel (100K elements) via Deno WebGPU | GPU dispatch throughput on RTX 2060 — the WASM/GPU crossover point |
 | **hardware-targets** | Dispatch to 5 hardware targets: CPU/GPU/NPU/WASM/fallback | Route decision overhead when contract.targets{} selects execution path |
 | **http-throughput** | Sequential HTTP requests/sec to a governed localhost endpoint | Server throughput — how fast Galerina can handle real HTTP requests |
 | **json-parse** | Parse 500 JSON records: split on comma, split on colon, accumulate | Real I/O parsing workload — string-heavy, cache-friendly on repeat calls |
-| **tmf-container** | Create the canonical .spore trust-container (TMX-256 SHAKE Merkle + LE packing). **The "Node.js" column IS Galerina's \`@galerina/ext-tmf\` engine** (pure TS/Node); Python/Rust are byte-identical reference writers — all assert the same golden root | Can other languages create a .spore, and how fast? Honest SHAKE256+packing race (the engine is pure Node, so it has no separate interpreter column) |
+| **spore-container** | Create the canonical .spore trust-container (TMX-256 SHAKE Merkle + LE packing). **The "Node.js" column IS Galerina's \`@galerina/ext-spore\` engine** (pure TS/Node); Python/Rust are byte-identical reference writers — all assert the same golden root | Can other languages create a .spore, and how fast? Honest SHAKE256+packing race (the engine is pure Node, so it has no separate interpreter column) |
 | **framework-pipeline** | One full governed request through the **Galerina App Kernel's fixed 12-gate pipeline** (route→policy→size→content-type→auth→decode→idempotency→concurrency→dispatch→encode→audit). **The "Node.js" column IS the App Kernel** (no middleware chain); Python is an equivalent sync gate chain | "Native framework, no middleware" vs a middleware chain — measures pipeline cost in-process (no sockets). The structural win is fewer deps + non-reorderable gates, not raw speed |
 | **low-memory** | Process 10K items with strict heap budget (measures bytes/op) | Memory efficiency — critical for edge/embedded deployment targets |
 | **matrix-multiply** | 32×32 integer GEMM (matrix multiplication) | Scientific / ML workload: dense arithmetic, benefits from SIMD/GPU |

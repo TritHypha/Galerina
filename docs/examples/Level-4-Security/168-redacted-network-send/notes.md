@@ -1,7 +1,7 @@
-﻿# 168 — Redacted network send
+# 168 — Redacted network send
 
-**Concept:** edacted value is safe to send to audit endpoints
+**Concept:** redacted value is safe to send to audit/logging endpoints
 
-edact(email) produces a edacted Email. Sending it to an audit or logging endpoint is safe — the raw value is masked.
+`redact(email)` produces a `redacted Email`. Bind it to a `let` **before** the sink (the 161 pattern) and forward it to an audit endpoint — the raw value is masked (no `FUNGI-VALUESTATE-006`) and the boundary is gated (no `FUNGI-VALUESTATE-008`). Redacting *inline* in the call argument leaves the boundary un-gated (008), so bind first.
 
-**AI rule:** Redacted values are safe to transmit to audit or logging endpoints.
+**AI rule:** Redacted values are safe to transmit to audit or logging endpoints — bind the `redact(...)` result to a `let` before the send.

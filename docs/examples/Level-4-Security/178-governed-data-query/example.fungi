@@ -1,0 +1,45 @@
+@version 1
+/// example: 178-governed-data-query
+/// level: 4
+/// concept: governed data-query — untrusted filter proven before the DB; audit records only validated values
+/// expected_diagnostics: none
+/// ai_rule: Validate boundary filters with validate.*(...)? before the database; audit only validated values, never raw request.context.* (that is FUNGI-VALUESTATE-008, which ERRORS in a production build).
+/// test_status: stable
+;; data-query.fungi — a governed, SQL-like query over sensitive records.
+;; Untrusted filter input is PROVEN before it can reach the database, and the
+;; audit records only VALIDATED values (never raw request.context.*), so this
+;; passes a governed/production compile (no FUNGI-VALUESTATE-008, strict-clean).
+;; Related: docs/language/fungi/05-bindings-taint-privacy.md
+record TxQueryRequest { status: String, minAmount: String }
+record TxSummary { status: String, matched: Int }
+enum QueryError { InvalidFilter NotAuthorized }
+type TxQueryResult = Result<TxSummary, QueryError>
+secure flow queryTransactions(readonly request: TxQueryRequest) -> TxQueryResult
+contract {
+  intent { "Count the transactions matching a caller-supplied status + minimum amount." }
+  effects { database.read audit.write }
+  privacy {
+    deny protected Money<GBP> to response.body
+    require redaction before audit.write
+  }
+  audit { require runtime report }
+}
+{
+  ;; 1 · Raw filter inputs are UNTRUSTED — "unknown until proven".
+  unsafe let rawStatus = request.status
+  unsafe let rawMin    = request.minAmount
+
+  ;; 2 · Untaint the boundary. validate.*(...)? proves the value or returns Err.
+  ;;     Reaching TxDB below with a raw value => FUNGI-VALUESTATE-003 (won't compile).
+  let status: String        = validate.status(rawStatus)?
+  let minAmount: Money<GBP>  = validate.money(rawMin)?
+
+  ;; 3 · Trusted -> safe to reach database.read.
+  let rows = TxDB.find({ status: status, amount_gte: minAmount })?
+
+  ;; 4 · Audit only VALIDATED values — never raw request.context.* (that trips
+  ;;     FUNGI-VALUESTATE-008, which ERRORS in a production build; see getPatient).
+  AuditLog.write({ event: "TransactionsQueried", filter_status: status, matched: rows.length })
+
+  return Ok({ status: status, matched: rows.length })
+}

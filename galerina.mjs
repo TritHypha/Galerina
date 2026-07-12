@@ -35,6 +35,20 @@ import { totalmem, freemem } from "node:os";
 // caller exits on a main path, continues on a batch path), so an oversized/unreadable file is rejected
 // before the allocation it would otherwise exhaust the host with.
 const MAX_SOURCE_BYTES = 10 * 1024 * 1024; // 10MB — mirrors the lexer's FUNGI-LEX-004 constant
+
+// ── Repo-relative source paths in COMMITTED artifacts (no-absolute-local-paths) ──
+// .lmanifest{,.json} + governance-impact.json record sourceFile. An absolute input
+// path (rebuild-fusable-packages passes one) would leak the local user home into a
+// tracked artifact (audit-path-leak windows-user-home class — leaked 2026-07-10).
+// Record repo-relative (POSIX) whenever the source sits under the working dir;
+// paths OUTSIDE the repo (scratch/temp builds) stay as given — their artifacts
+// land outside the tree and are never committed.
+function toRepoRelative(p) {
+  const norm = String(p).replace(/\\/g, "/");
+  const root = process.cwd().replace(/\\/g, "/").replace(/\/+$/, "") + "/";
+  return norm.startsWith(root) ? norm.slice(root.length) : norm;
+}
+
 function readUntrustedSource(path) {
   try {
     const st = statSync(path);
@@ -161,7 +175,7 @@ Commands:
   galerina version                                      show version and runtime status
   galerina diagnostic                                    run diagnostic fault-injection benchmark suite
   galerina border-check                                  validate all plugin schemas in governance/plugins/
-  galerina kb-graph [--all]                              scan docs/Knowledge-Bases/ cross-reference graph
+  galerina kb-graph [--all]                              scan ../ZTF-Knowledge-Bases/ cross-reference graph
   galerina ledger <egress-dir> [--json]                  build hash-linked compliance report from audit-egress
   galerina new <target-dir> [--name <pkg>]               scaffold an opinionated secure governed package
   galerina new app <target-dir> [--name <app>]           scaffold a governed app (App.fungi + App.manifest + flows/ deps/ proofs/)
@@ -176,8 +190,8 @@ Examples:
   wasmtime --invoke main build/governance-cost.wasm
 
 Install (if galerina not yet on PATH):
-  cd C:\\wwwprojects\\Galerina && npm link       (Windows cmd.exe)
-  cd /c/wwwprojects/Galerina && npm link        (Git Bash / Linux)
+  cd <projects>\\Galerina && npm link       (Windows cmd.exe)
+  cd <projects>/Galerina && npm link        (Git Bash / Linux)
 
 Baseline comparison (governance-cost):
   Stage-A tree-walker (governed):  3,200 ops/sec
@@ -387,7 +401,7 @@ Baseline comparison (governance-cost):
       console.log(`                ${mldsaPubPath}  (safe to commit)`);
       console.log(`   Private keys: ${envPath}      (NEVER COMMIT — keep in OFFLINE custody)`);
       console.log(`\n   #34 offline ceremony: run on an air-gapped host; keep ${envPath} in offline custody.`);
-      console.log(`   Runbook: docs/Knowledge-Bases/galerina-34-offline-key-ceremony-runbook.md\n`);
+      console.log(`   Runbook: docs/security/galerina-34-offline-key-ceremony-runbook.md\n`);
       process.exit(0);
     }
 
@@ -662,7 +676,7 @@ Baseline comparison (governance-cost):
     process.exit(denied > 0 ? 1 : 0);
   }
 
-  // ── galerina kb-graph — scan docs/Knowledge-Bases/ cross-reference graph ──────
+  // ── galerina kb-graph — scan ../ZTF-Knowledge-Bases/ cross-reference graph ──────
   if (command === "kb-graph") {
     // #174: pass argv as an array with shell:false — never interpolate user input
     // into a shell string (the prior execSync concatenation was a command-injection sink).
@@ -906,28 +920,54 @@ Baseline comparison (governance-cost):
       if (!packageDescriptor.name) { console.error('Error: package.fungi.json must declare a "name"'); process.exit(1); }
       packageBuild = pkgDir;
       fungiFile = join(pkgDir, packageDescriptor.entry || "src/index.fungi");
-      // ── CG-7 third end (owner-approved 2026-07-02): refuse to locally rebuild a SIGNED
-      // fusable package via direct `build --package` when its manifest is a COMMITTED
-      // (git-tracked) artifact — the committed dist/<name>.wasm + .lmanifest ARE the signed
+      // ── CG-7 third end (owner-approved 2026-07-02; committed-state refinement
+      // 2026-07-10, #21): refuse to locally rebuild a SIGNED fusable package via direct
+      // `build --package` when its manifest is a COMMITTED ceremony artifact — git-tracked
+      // AND real-signed IN HEAD. The committed dist/<name>.wasm + .lmanifest ARE the signed
       // artifacts, owned by the OFFLINE re-sign ceremony; a local rebuild mints an UNSIGNED
-      // manifest → the fuse loader fail-closes (FUNGI-FUSE-UNSIGNED). A real-signed but
-      // git-IGNORED/untracked manifest is a LOCAL dev artifact (e.g. api-protocol-rest
-      // regenerates its own dist inside its tests) — no committed fixture is at risk, so it
-      // rebuilds freely. Fail direction: outside a git repo (or on any git error) we cannot
-      // tell a dev artifact from a downloaded ceremony artifact → protect (most-secure
-      // default; matches isUnderSignedPackage's unreadable→protect stance). `--force`
-      // overrides for the deliberate pre-re-sign rebuild (rebuild-fusable-packages forwards
-      // it). The rebuild-hook guard + the `signed:fixtures` drift gate cover the automated
-      // paths; this closes the DIRECT-invocation path.
-      if (!rest.includes("--force") && isUnderSignedPackage(fungiFile)) {
+      // manifest → the fuse loader fail-closes (FUNGI-FUSE-UNSIGNED). Protection is decided
+      // from GIT, not disk shape (mirrors scripts/lib/signed-lmanifest.mjs
+      // isCommittedSignedManifest — keep the two in step):
+      //   untracked manifest            → a LOCAL dev artifact (api-protocol-rest's
+      //                                   test-regenerated dist) — rebuilds freely
+      //   tracked + HEAD real-signed    → refuse (the ceremony's)
+      //   tracked + HEAD placeholder    → rebuilds freely (regenerable; e.g. the fuse-demo
+      //                                   fixture until its ceremony — a locally minted
+      //                                   dev-key manifest sitting over it must NOT refuse)
+      //   tracked + HEAD unreadable     → refuse (cannot prove regenerable)
+      //   git errors / not a repo       → fall back to the DISK predicate (most-secure
+      //                                   default; matches isUnderSignedPackage's stance)
+      // `--force` overrides for the deliberate pre-re-sign rebuild
+      // (rebuild-fusable-packages forwards it). The rebuild-hook guard + the
+      // `signed:fixtures` drift gate cover the automated paths; this closes the
+      // DIRECT-invocation path with the SAME predicate they use.
+      if (!rest.includes("--force")) {
         const manRel = join("dist", `${packageDescriptor.name}.lmanifest.json`);
-        const tracked = spawnSync("git", ["ls-files", "--error-unmatch", manRel],
+        const manRelFwd = manRel.replace(/\\/g, "/");
+        let committedFixture;
+        const tracked = spawnSync("git", ["ls-files", "--error-unmatch", "--", manRelFwd],
           { cwd: packageBuild, encoding: "utf8", timeout: 15000 });
-        // 0 = tracked (committed fixture) · 1 = untracked (local dev artifact) · anything
-        // else (128 not-a-repo, spawn failure, timeout) → protect.
-        const committedFixture = tracked.status !== 1;
+        if (tracked.status === 1) {
+          committedFixture = false;                       // untracked → dev-local
+        } else if (tracked.status !== 0) {
+          committedFixture = isUnderSignedPackage(fungiFile); // git can't answer → disk floor
+        } else {
+          // `HEAD:./path` resolves relative to cwd (the package dir).
+          const show = spawnSync("git", ["show", `HEAD:./${manRelFwd}`],
+            { cwd: packageBuild, encoding: "utf8", timeout: 15000 });
+          if (show.status !== 0) {
+            committedFixture = true;                      // tracked but no HEAD blob → protect
+          } else {
+            try {
+              const sig = JSON.parse(show.stdout).governanceSignature;
+              committedFixture = sig !== null && typeof sig === "object" &&
+                typeof sig.keyId === "string" && typeof sig.signature === "string" &&
+                sig.signature.length > 0 && !sig.signature.startsWith("placeholder");
+            } catch { committedFixture = true; }          // tracked + unparseable → protect
+          }
+        }
         if (committedFixture) {
-          console.error(`⛔ Refusing to locally rebuild SIGNED package "${packageDescriptor.name}" — dist/${packageDescriptor.name}.lmanifest is a git-tracked signed artifact owned by the offline re-sign ceremony. A local rebuild would mint an UNSIGNED manifest and the fuse loader would fail-close. Pass --force only if you are deliberately rebuilding ahead of an offline re-sign.`);
+          console.error(`⛔ Refusing to locally rebuild SIGNED package "${packageDescriptor.name}" — dist/${packageDescriptor.name}.lmanifest is a git-tracked ceremony-signed artifact (signed in HEAD) owned by the offline re-sign ceremony. A local rebuild would mint an UNSIGNED manifest and the fuse loader would fail-close. Pass --force only if you are deliberately rebuilding ahead of an offline re-sign.`);
           process.exit(1);
         }
       }
@@ -1247,7 +1287,21 @@ Baseline comparison (governance-cost):
     const vsDiags = m.checkValueStates(parsed.ast).diagnostics ?? [];
     const valueStateErrors = vsDiags.filter(d => d.severity === "error");
     const boundaryWarnings = vsDiags.filter(d => d.code === "FUNGI-VALUESTATE-008" && d.severity !== "error");
-    const allDiags = [...errors, ...gov.diagnostics, ...tierWarnings, ...valueStateErrors, ...boundaryWarnings, ...integrityEffectErrors];
+    // Finding-(ii) closure (2026-07-10): `check` never ran the TYPE-CHECKER, so a file could be
+    // check-clean yet REJECTED fail-closed at `run --governed` on FUNGI-TYPE-* (runtime.fungi was
+    // the repro). Surface type ERRORS here in every mode so the divergence is visible at check
+    // time. Exit behavior follows the house staged-enforcement pattern (lint-conventions --soft
+    // precedent): an unconditional flip would red ~150 repo files including the DELIBERATE
+    // negative examples under docs/examples, so hard-fail is opt-in via --strict-types while the
+    // baseline burns down. The self-hosted corpus is 8/8 type-clean and must stay so.
+    const strictTypes = rest.includes("--strict-types");
+    const typeErrors = (m.checkTypes(parsed.ast).diagnostics ?? []).filter(d => d.severity === "error");
+    // Advisory in plain check: type errors must NOT suppress the ✅ clean line — they are a separate
+    // NOTE below it. Otherwise every one of the ~150 baseline files with an unmigrated type error (or a
+    // checkTypeRef false positive) loses its ✅, and the canonical clean example verifyPassword.fungi —
+    // which trips two false positives on Brand<String,"tag"> + enum — reads as failing. Only
+    // --strict-types folds them into the hard, ✅-suppressing, exit-failing set.
+    const allDiags = [...errors, ...gov.diagnostics, ...tierWarnings, ...valueStateErrors, ...boundaryWarnings, ...integrityEffectErrors, ...(strictTypes ? typeErrors : [])];
     if (allDiags.length === 0) {
       // We're building the language — distinguish "compiled real content" from "found nothing". A clean
       // parse with ZERO top-level declarations (an empty or comment-only file) must NOT report a blanket
@@ -1262,6 +1316,12 @@ Baseline comparison (governance-cost):
       }
     } else {
       allDiags.forEach(d => console.log(`${d.severity === "error" ? "❌" : "⚠️"} ${d.code}: ${d.message}`));
+    }
+    // Advisory type-error NOTE — printed AFTER the ✅/diagnostics in plain mode (a COUNT, not the full
+    // list, to keep clean output readable) so the check↔governed divergence stays visible without
+    // suppressing ✅. --strict-types instead surfaces each as ❌ above and exits non-zero.
+    if (!strictTypes && typeErrors.length > 0) {
+      console.log(`ℹ️  +${typeErrors.length} FUNGI-TYPE-* advisory (not counted in plain check; they FAIL a governed run — run 'galerina check ${fungiFile} --strict-types' to see + enforce).`);
     }
 
     // ── --diff flag: show change class vs HEAD~1 before pushing (#64) ─────────
@@ -1298,7 +1358,8 @@ Baseline comparison (governance-cost):
     // Exit non-zero on parse errors OR fail-closed value-state errors (e.g. FUNGI-NUMERIC-001 for a
     // still-gated width) — these are unconditional correctness failures the build/run path also rejects.
     // Tier/boundary findings stay display-only WARNINGS in check mode and do NOT affect the exit code.
-    process.exit(errors.length > 0 || valueStateErrors.length > 0 || integrityEffectErrors.length > 0 ? 1 : 0);
+    process.exit(errors.length > 0 || valueStateErrors.length > 0 || integrityEffectErrors.length > 0
+      || (strictTypes && typeErrors.length > 0) ? 1 : 0);
   }
 
   // ── galerina generate tests <file.fungi> [--tap] — contract-driven test obligations (0016) ──
@@ -1939,6 +2000,13 @@ Baseline comparison (governance-cost):
           case "string": return JSON.stringify(val.value);
           case "void": return "(void)";
           case "runtimeError": case "error": return `<error: ${val.message ?? "runtime error"}>`;
+          // Result::Err carries its payload under `.error`, NOT `.value` (interpreter.ts GalerinaValue:
+          // `{ __tag: "err", error: GalerinaValue }`; the Err ctor is at interpreter.ts ~2290). Without an
+          // explicit case an err value fell through to `default` below, where `val.value` is undefined so
+          // the `?? val.__tag` fallback printed the bare tag "err" instead of the payload. Render it
+          // recursively as `Err(<payload>)` to mirror the standalone raw-WASM formatRunOutput() display
+          // (e.g. Err("not positive")). Display-only — the interpreter value is untouched.
+          case "err": return `Err(${render(val.error)})`;
           default: return JSON.stringify(val.value ?? val.__tag);
         }
       };
@@ -2126,7 +2194,7 @@ Baseline comparison (governance-cost):
         m.checkEffects(parsed.flows, parsed.ast), "dev");
       const source = readUntrustedSource(fungiFile);
       if (source === null) process.exit(1); // fail-closed: oversized/unreadable .fungi rejected
-      const baseManifest = generateManifest(source, fungiFile, parsed.flows, govResult);
+      const baseManifest = generateManifest(source, toRepoRelative(fungiFile), parsed.flows, govResult);
 
       // ── Net a: embed the fusion descriptor INTO the manifest BEFORE signing ──────
       // (Fuse B2 STEP A) The fuse fields (kind/provides/seam/capabilities) and the
@@ -2410,7 +2478,7 @@ Baseline comparison (governance-cost):
         );
         const impactArtifact = {
           schemaVersion: "fungi.governance-impact.v1",
-          sourceFile: fungiFile.replace(/\\/g, "/"),
+          sourceFile: toRepoRelative(fungiFile),
           sourceHash: manifest.sourceHash,
           generatedAt: manifest.generatedAt,
           flowCount: parsed.flows.length,
@@ -2513,70 +2581,83 @@ Baseline comparison (governance-cost):
       return n;
     });
 
-    // ── Host Runtime (P9.3) — array manager + string intern table ──────────────
-    // Provides the bridge between WASM i32 opaque handles and host JS types.
-    // The string intern table is reconstructed from WAT comment annotations.
-    const _hostArrays = new Map();   // i32 ID → Array
-    let _nextArrId = 1;
-    const _hostStrings = new Map();  // i32 ID → string
-    let _nextStrId = 1;
-    _hostStrings.set(0, "");         // 0 = empty string (reserved)
+    // ── Host runtime (P9.3) — the CANONICAL closed import object ───────────────
+    // Single source of truth: createHostRuntime() (wasm-runtime.ts) — the registry the
+    // emitter's HOST_RUNTIME_IMPORTS declares against and wat-host-runtime-completeness
+    // pins. An inline copy here drifted twice (#169 char classifiers, then the whole
+    // Result/Option surface — every ADT-touching module failed at instantiate) and
+    // diverged semantically (None 0 vs the -1 sentinel, void __array_append, UTF-16
+    // charAt vs code points, ASCII-only isLetter). Do not re-inline it.
+    // No admission gate on this path: the module was compiled from source in-process
+    // above — there is no foreign binary to attest. Foreign/persisted binaries are
+    // admitted via admitAndInstantiate (attestation-first, fail-closed).
+    const host = m.createHostRuntime();
+    // Seed the emitter's string-literal handles from the structured intern table (#145),
+    // not by re-parsing the `;; ID = "value"` WAT comments.
+    for (const { handle, value } of m.getInternedStrings()) host.seedString(handle, value);
 
-    // Reconstruct string intern table from WAT ;; ID = "value" comments
-    for (const line of (assembled.wat ?? "").split("\n")) {
-      const m = line.match(/^;;\s+(\d+)\s*=\s*"(.*)"$/);
-      if (m) { const id = parseInt(m[1]); if (id > 0) { _hostStrings.set(id, m[2]); if (id >= _nextStrId) _nextStrId = id + 1; } }
-    }
-
-    function _strFromId(id) { return _hostStrings.get(id) ?? ""; }
-    function _strIntern(s) {
-      for (const [id, v] of _hostStrings) { if (v === s) return id; }
-      const id = _nextStrId++;
-      _hostStrings.set(id, s);
-      return id;
-    }
-
-    const hostRuntime = {
-      host: {
-        __array_create:   () => { const id = _nextArrId++; _hostArrays.set(id, []); return id; },
-        __array_append:   (arr, item) => { _hostArrays.get(arr)?.push(item); },
-        __array_get:      (arr, i) => _hostArrays.get(arr)?.[i] ?? 0,
-        __array_length:   (arr) => _hostArrays.get(arr)?.length ?? 0,
-        __array_contains: (arr, item) => (_hostArrays.get(arr)?.includes(item) ? 1 : 0),
-        __array_first:    (arr) => _hostArrays.get(arr)?.[0] ?? 0,
-        __array_last:     (arr) => { const a = _hostArrays.get(arr); return a?.length ? a[a.length-1] : 0; },
-        __str_concat:     (a, b) => _strIntern(_strFromId(a) + _strFromId(b)),
-        __str_length:     (id) => _strFromId(id).length,
-        __str_char_at:    (id, pos) => _strFromId(id).charCodeAt(pos) || 0,
-        __str_to_int:     (id) => parseInt(_strFromId(id), 10) || 0,
-        __int_to_str:     (n) => _strIntern(String(n)),
-        __str_eq:         (a, b) => (_strFromId(a) === _strFromId(b) ? 1 : 0),
-        __char_is_letter: (c) => (/[a-zA-Z_]/.test(String.fromCharCode(c)) ? 1 : 0),
-        __char_is_digit:  (c) => (c >= 48 && c <= 57 ? 1 : 0),
-        // #169: Char classifiers — mirror createHostRuntime / interpreter (stdlib.ts:1814-1816) truth tables.
-        // The emitter maps c.isUpper()/isLower()/isWhitespace() to these host imports (wat-emitter.ts:858-860)
-        // and declares them (wat-emitter.ts:2811-2813), but this inline run-host had drifted behind the
-        // canonical createHostRuntime — so `galerina run --wasm` on a flow using them failed at instantiate.
-        __char_is_upper:  (c) => { const ch = String.fromCharCode(c); return ch === ch.toUpperCase() && ch !== ch.toLowerCase() ? 1 : 0; },
-        __char_is_lower:  (c) => { const ch = String.fromCharCode(c); return ch === ch.toLowerCase() && ch !== ch.toUpperCase() ? 1 : 0; },
-        __char_is_whitespace: (c) => (/\s/.test(String.fromCharCode(c)) ? 1 : 0),
-        __char_to_string: (c) => _strIntern(String.fromCharCode(c)),
-        __unwrap_or:      (val, def) => val === 0 ? def : val,
-        __option_some:    (val) => val,
-        __option_none:    () => 0,
+    // Resolve an i32 return by the flow's DECLARED type — string/array/result handles
+    // are registry indices, so the type is the only sound disambiguator (an Int that
+    // happens to equal an interned-string handle must still print as the Int; the old
+    // registry-membership probe got that wrong). One generic level is enough here.
+    function splitGenericArgs(t) {
+      const inner = t.slice(t.indexOf("<") + 1, t.lastIndexOf(">"));
+      const parts = []; let depth = 0, cur = "";
+      for (const ch of inner) {
+        if (ch === "<") depth += 1;
+        else if (ch === ">") depth -= 1;
+        if (ch === "," && depth === 0) { parts.push(cur.trim()); cur = ""; continue; }
+        cur += ch;
       }
-    };
+      if (cur.trim() !== "") parts.push(cur.trim());
+      return parts;
+    }
+    function formatRunOutput(raw, declaredType) {
+      if (typeof raw !== "number") return raw;
+      const t = String(declaredType).trim();
+      if (t === "String") {
+        const s = host.readString(raw);
+        return s === undefined ? raw : `"${s}"`;
+      }
+      if (t.startsWith("Result<")) {
+        const r = host.readResult(raw);
+        if (r === undefined) return raw;
+        const [okT = "", errT = ""] = splitGenericArgs(t);
+        return `${r.tag === "ok" ? "Ok" : "Err"}(${formatRunOutput(r.value, r.tag === "ok" ? okT : errT)})`;
+      }
+      if (t.startsWith("Option<")) {
+        // Sentinel convention at the WASM boundary (wasm-runtime.ts): None = -1, Some(v) = v.
+        if (raw === -1) return "None";
+        return `Some(${formatRunOutput(raw, splitGenericArgs(t)[0] ?? "")})`;
+      }
+      if (t.startsWith("Array<") || t.startsWith("List<")) {
+        const a = host.readArray(raw);
+        if (a === undefined) return raw;
+        const elemT = splitGenericArgs(t)[0] ?? "";
+        return "[" + a.map((x) => formatRunOutput(x, elemT)).join(", ") + "]";
+      }
+      // No declared type: legacy heuristic (array, then string) for un-annotated flows.
+      if (t === "") {
+        const a = host.readArray(raw);
+        if (a !== undefined) return "[" + a.map((x) => formatRunOutput(x, "")).join(", ") + "]";
+        const s = raw > 0 ? host.readString(raw) : undefined;
+        if (s !== undefined) return `"${s}"`;
+      }
+      return raw;
+    }
 
-    const result = await WebAssembly.instantiate(assembled.wasm, hostRuntime);
+    const result = await WebAssembly.instantiate(assembled.wasm, host.imports);
+    const memExport = result.instance.exports.memory;
+    if (memExport instanceof WebAssembly.Memory) host.bindMemory(memExport);
     const fn = result.instance.exports[flowName];
     if (typeof fn !== "function") {
       const exported = Object.keys(result.instance.exports).filter(k => k !== "memory");
       const declared = (parsed.flows ?? []).some(f => f.name === flowName);
       if (declared) {
-        // The flow EXISTS in the source but is not a WASM export. Only pure flows that return a
-        // primitive are exported (exportAllPure); effectful/secure flows (e.g. `console.log`, returning
-        // Result/Void) run in the governed runtime, not the raw WASM --invoke surface (dogfooding #2).
-        console.error(`Flow '${flowName}' exists but is NOT in the WASM --invoke surface — only pure flows returning a primitive (Int/Bool) are exported.`);
+        // The flow EXISTS in the source but is not a WASM export. Only pure flows (and effect-free
+        // guarded flows, P9.4c) are exported (exportAllPure); effectful/secure flows (e.g. `console.log`)
+        // run in the governed runtime, not the raw WASM --invoke surface (dogfooding #2).
+        console.error(`Flow '${flowName}' exists but is NOT in the WASM --invoke surface — only pure flows (and effect-free guarded flows) are exported.`);
         console.error(`('${flowName}' is likely a secure/effectful flow; those run in the governed runtime, not raw WASM --invoke.)`);
         console.error(`→ Run it under governance:  galerina run ${fungiFile} --invoke ${flowName} --governed`);
         console.error(`Invokable here (raw WASM, pure only): ${exported.join(", ") || "(none)"}`);
@@ -2586,15 +2667,8 @@ Baseline comparison (governance-cost):
       process.exit(1);
     }
     const rawOutput = fn(...args);
-    // If output is an array ID, resolve it to a readable form
-    let output = rawOutput;
-    if (typeof rawOutput === "number" && _hostArrays.has(rawOutput)) {
-      const arr = _hostArrays.get(rawOutput);
-      output = "[" + arr.map(id => typeof id === "number" && _hostStrings.has(id) ? `"${_hostStrings.get(id)}"` : id).join(", ") + "]";
-    } else if (typeof rawOutput === "number" && _hostStrings.has(rawOutput) && rawOutput > 0) {
-      output = `"${_hostStrings.get(rawOutput)}"`;
-    }
-    console.log(output);
+    const declaredReturn = (parsed.flows ?? []).find((f) => f.name === flowName)?.returnType ?? "";
+    console.log(formatRunOutput(rawOutput, declaredReturn));
     return;
   }
 

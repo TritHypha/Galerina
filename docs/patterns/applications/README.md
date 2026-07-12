@@ -57,8 +57,8 @@ These 12 patterns cover 80-90% of what most business systems actually do, and th
 
 ## See Also
 
-- `docs/Knowledge-Bases/galerina-roadmap.md` — implementation phases
+- `../../../../ZTF-Knowledge-Bases/galerina-roadmap.md` — implementation phases
 - `docs/AI/GALERINA_5_MINUTE_PRIMER.md` — syntax quick-start for AI code generators
-- `docs/Knowledge-Bases/galerina-flow-contracts.md` — contract model reference
-- `docs/Knowledge-Bases/multi-actor-audit-events.md` — audit trail internals
-- `docs/Knowledge-Bases/governed-event-driven-execution.md` — event system
+- `../../../../ZTF-Knowledge-Bases/galerina-flow-contracts.md` — contract model reference
+- `../../../../ZTF-Knowledge-Bases/multi-actor-audit-events.md` — audit trail internals
+- `../../../../ZTF-Knowledge-Bases/governed-event-driven-execution.md` — event system

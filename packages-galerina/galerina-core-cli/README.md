@@ -95,7 +95,7 @@ Diagnostic codes: `FUNGI-PLAN-001` through `FUNGI-PLAN-004`.
 Implementation order: Phase 1 build → Phase 2 verify → Phase 3 explain →
 Phase 4 deploy → Phase 5 plan.
 
-See `docs/Knowledge-Bases/galerina-core-cli-deploy-explain-plan.md` for the
+See `../../../ZTF-Knowledge-Bases/galerina-core-cli-deploy-explain-plan.md` for the
 full specification including all examples, exit codes, output modes, and
 report file definitions.
 

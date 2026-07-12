@@ -10,8 +10,11 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), ".."); // repo root (scripts/..)
-const RND_TASKS = "C:/wwwprojects/Galerina-R-AND-D/_session-bridge/tasks";
-const RND_DONE = "C:/wwwprojects/Galerina-R-AND-D/_session-bridge/done";
+// R&D bridge lives in a SIBLING repo (…/Galerina-R-AND-D). Resolve relative to the repo root so this
+// works on any checkout — never a hardcoded absolute path (see scripts/audit-path-leak.mjs). Missing dir
+// is handled gracefully (listDir → null), so an absent sibling just prints n/a.
+const RND_TASKS = join(ROOT, "..", "Galerina-R-AND-D", "_session-bridge", "tasks");
+const RND_DONE = join(ROOT, "..", "Galerina-R-AND-D", "_session-bridge", "done");
 
 const NA = "n/a";
 const readText = (p) => { try { return readFileSync(p, "utf8"); } catch { return null; } };

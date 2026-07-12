@@ -2,7 +2,7 @@
 // Galerina Stage A — JSONL audit writer
 //
 // Implements the 7-rule JSONL audit contract from:
-//   docs/Knowledge-Bases/galerina-audit-writer-spec.md
+//   ../ZTF-Knowledge-Bases/galerina-audit-writer-spec.md
 //
 // Rules:
 //   1. Append-only — never overwrite or delete records

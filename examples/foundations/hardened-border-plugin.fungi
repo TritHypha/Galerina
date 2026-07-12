@@ -15,8 +15,8 @@
  *                                   whole process lifetime. See the assimilate test
  *                                   in tests/syntax/assimilate-plugin.fungi.
  *
- * See: docs/Knowledge-Bases/galerina-hardened-border.md
- *      docs/Knowledge-Bases/galerina-tower-native-syntax.md §10
+ * See: ../ZTF-Knowledge-Bases/galerina-hardened-border.md
+ *      ../ZTF-Knowledge-Bases/galerina-tower-native-syntax.md §10
  */
 
 ;; Import a payment plugin across the Toxic Border.

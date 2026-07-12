@@ -25,6 +25,10 @@ Examples include memory safety by default, security-first execution, explicit
 errors, secret-safe reports, declared effects, `Bool`-only conditions and no
 public raw model output.
 
+See [Governance Doctrine](rules-governance-doctrine.md) for the fail-closed-gate,
+least-privilege-credential, no-premature-reference and dated-artifact rules
+(RD-0290) that govern the gates and CI themselves.
+
 ### Core Language Rules
 
 Rules in this category should become compiler or runtime behaviour.
@@ -56,6 +60,10 @@ Examples include preferring composition over inheritance, contracts over hidden
 dispatch, typed views over raw model output and bounded caches over unbounded
 runtime state.
 
+See [Design Principles](rules-design-principles.md) for the rules that sit at the
+top of this category — the identity sentence as a feature gate, coherency over
+consistency, the grug test and the dual-audience rule.
+
 ### Future / Research Concepts
 
 Concepts in this category are long-term planning or research.
@@ -73,4 +81,4 @@ AI tools must reject or redesign suggestions that violate non-negotiable rules.
 
 ## Knowledge Base
 
-See [Priority Categories](../Knowledge-Bases/priority-categories.md).
+See [Priority Categories](../../../ZTF-Knowledge-Bases/priority-categories.md).

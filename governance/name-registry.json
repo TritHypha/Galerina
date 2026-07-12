@@ -51,7 +51,7 @@
     "entries": []
   },
   "crossScopePointers": {
-    "diagnosticFamilies": "FUNGI-<FAMILY>-NNN and ERR_* — canonical list + invariants in scripts/lib/codes.mjs + scripts/audit-diagnostic-codes.mjs; doc taxonomy in docs/Knowledge-Bases/compiler-diagnostics.md (kept honest by audit-diagnostic-doc-drift.mjs).",
-    "rdSeries": "RD-NNNN — R&D corpus in the Galerina-R-AND-D repo; KB write-ups as docs/Knowledge-Bases/galerina-rd-NNNN-*.md. RD-id uniqueness is owner-managed (future: add to otherGuardedNames to machine-enforce)."
+    "diagnosticFamilies": "FUNGI-<FAMILY>-NNN and ERR_* — canonical list + invariants in scripts/lib/codes.mjs + scripts/audit-diagnostic-codes.mjs; doc taxonomy in ../ZTF-Knowledge-Bases/compiler-diagnostics.md (kept honest by audit-diagnostic-doc-drift.mjs).",
+    "rdSeries": "RD-NNNN — R&D corpus in the Galerina-R-AND-D repo; KB write-ups as ../ZTF-Knowledge-Bases/galerina-rd-NNNN-*.md. RD-id uniqueness is owner-managed (future: add to otherGuardedNames to machine-enforce)."
   }
 }

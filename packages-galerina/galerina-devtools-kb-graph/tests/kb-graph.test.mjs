@@ -158,3 +158,48 @@ describe("reporter — output formats", () => {
       `stats line does not show correct doc count ${graph.stats.totalDocs}`);
   });
 });
+
+describe("reporter — path-leak redaction (ZT-17)", () => {
+  // A generated report is git-TRACKED and scanned by audit-path-leak, but the KB source carries
+  // a known, owner-gated absolute-path backlog, so the reporter MUST redact local paths at emit
+  // time (else a fresh regen surfaces a leak into the committed report). Controlled, non-vacuous
+  // input: fields that definitely carry a leak in each emitted output.
+  /** @type {any} */
+  const leakyGraph = {
+    nodes: [{
+      id: "leaky-doc",
+      title: "Leaky C:\\Users\\example\\Documents title", // path-leak-audit:allow — redaction-test fixture
+      status: "READ-ONLY; nothing in 'C:\\Users\\example\\Documents\\GitHub' is writable", // path-leak-audit:allow
+      lnlCodes: [],
+    }],
+    edges: [],
+    orphans: [],
+    staleLinks: ["from -> /home/example/secret/roadmap.md"],
+    stats: { totalDocs: 1, totalEdges: 0, totalFungiCodes: 0, orphanCount: 0, staleLinkCount: 1 },
+  };
+
+  test("markdown report redacts Windows + POSIX local paths and keeps the placeholder", () => {
+    const md = generateMarkdownReport(leakyGraph, "2026-01-01");
+    assert.ok(!/[A-Za-z]:\\+Users\\+/i.test(md), "Windows user-home path leaked into the report");
+    assert.ok(!/\/home\/example/i.test(md),      "POSIX home path leaked into the report");
+    assert.ok(md.includes("<local-path>"),       "redaction placeholder missing — redaction did not fire");
+  });
+
+  test("JSON output redacts local paths too", () => {
+    const json = generateJSON(leakyGraph);
+    assert.ok(!/[A-Za-z]:\\+Users\\+/i.test(json), "Windows path leaked into JSON");
+    assert.ok(!/\/home\/example/i.test(json),       "POSIX path leaked into JSON");
+  });
+
+  test("clean input is left untouched (no over-redaction)", () => {
+    /** @type {any} */
+    const cleanGraph = {
+      nodes: [{ id: "ok-doc", title: "Fine", version: "1.0", status: "authoritative", lnlCodes: [] }],
+      edges: [], orphans: [], staleLinks: [],
+      stats: { totalDocs: 1, totalEdges: 0, totalFungiCodes: 0, orphanCount: 0, staleLinkCount: 0 },
+    };
+    const md = generateMarkdownReport(cleanGraph, "2026-01-01");
+    assert.ok(!md.includes("<local-path>"), "clean input should not produce a redaction placeholder");
+    assert.ok(md.includes("authoritative"), "clean status text should survive verbatim");
+  });
+});

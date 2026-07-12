@@ -1,7 +1,7 @@
 @version 1
 // EXPECT: ACCEPT
 // Pattern 8 — Emergency Policy Overlay (DRCM Phase 4 — task #39)
-// Reference: docs/Knowledge-Bases/galerina-architecture-patterns.md
+// Reference: ../ZTF-Knowledge-Bases/galerina-architecture-patterns.md
 //
 // policy { emergency { ... } } is DRCM Phase 4 — now live in Stage A.
 // Demonstrates the structured emergency {} state machine parser (parseEmergencyBlock).

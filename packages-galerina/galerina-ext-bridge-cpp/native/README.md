@@ -7,7 +7,7 @@ compiled, the bridges run the byte-faithful `TPLSimulator` from
 
 ## Source
 
-The kernels come from Microsoft BitNet (MIT) at `C:\Users\phill\Documents\GitHub\BitNet`:
+The kernels come from Microsoft BitNet (MIT) at `<GitHub>\BitNet`:
 
 - `src/ggml-bitnet-mad.cpp` — I2_S ternary multiply-accumulate (the T-MAC)
 - `src/ggml-bitnet-lut.cpp` — TL1/TL2 lookup-table kernels
@@ -50,7 +50,7 @@ The loader (`addon-loader.ts`) searches:
 
 ## GPU (CUDA) seam
 
-`C:\Users\phill\Documents\GitHub\BitNet\gpu\` holds the CUDA kernel. When compiled and exposed via
+`<GitHub>\BitNet\gpu\` holds the CUDA kernel. When compiled and exposed via
 `hasCuda() === true`, `BitNetGpuBridge.nativeAvailable` flips to `true` and the
 GPU path activates. Until then the GPU bridge detects the device (real, via
 `nvidia-smi`) but executes on the deterministic simulator.

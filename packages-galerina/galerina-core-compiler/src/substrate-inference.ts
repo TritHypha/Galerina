@@ -18,7 +18,7 @@
 // A flow with NO substrate {} block, or one declaring `lane: digital`, is INERT
 // (returns []), so existing flows are completely unaffected.
 //
-// Spec: docs/Knowledge-Bases/galerina-substrate-contracts.md
+// Spec: ../ZTF-Knowledge-Bases/galerina-substrate-contracts.md
 // =============================================================================
 
 import { type AstNode, type FlowMeta } from "./parser.js";

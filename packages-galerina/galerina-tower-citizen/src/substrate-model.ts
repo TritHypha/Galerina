@@ -21,7 +21,7 @@
  * op identity. No non-seeded randomness, no wall-clock time. Same (seed, op) →
  * byte-identical result, so verifier output is a reproducible build artifact.
  *
- * Spec: docs/Knowledge-Bases/galerina-substrate-failure-model.md.
+ * Spec: ../ZTF-Knowledge-Bases/galerina-substrate-failure-model.md.
  */
 
 import { consensusTrit } from "./tpl-simulator.js";

@@ -1,0 +1,45 @@
+@version 1
+/// @file: segmentation-guard.fungi
+/// @purpose: Stage-6 CHECKER-VERIFIED twin of segmentation-controller.ts's PURE cross-segment access
+///   DECISION — the Compute/Governance isolation guard (LSM-SEGV-001). The Governed Tower keeps untrusted
+///   Compute state physically separate from the Governance state that authorizes it; a Compute op that
+///   reaches a Governance pointer (or vice versa) must TRAP before the access happens. The pointer→segment
+///   resolution (the pool region-map read, segmentOf) is the HOST floor and is already twinned in
+///   pool-policy.fungi's segmentOfPtr; what folds HERE is the isolation VERDICT over an already-resolved
+///   segment: actual-vs-intended, fail-closed on any unrecognized segment label.
+/// @status: checker-verified twin (galerina check clean); NOT build-wired — segmentation-controller.ts
+///   stays the executed artifact until the Stage-6 execution switch (#143 WASM byte-parity). Host floor:
+///   the StaticMemoryPool region map + the throw site. This twin adds a zero-trust check the .ts leaves
+///   implicit: an intended/actual segment that is neither "compute" nor "governance" DENIES (LSM-SEGV-001)
+///   instead of silently comparing two unknown strings.
+
+// The known pool segments. Any other label is illegal input and fails closed.
+//   - "compute":    untrusted Compute region.
+//   - "governance": the Governance region that authorizes Compute.
+
+// The cross-segment access DECISION, fail-closed. Given the ptr's already-resolved `actual` segment and
+// the `intended` segment of the operation, returns "ok" iff they match AND both are recognized segments;
+// otherwise "LSM-SEGV-001". Mirrors SegmentationController.assertAccess's `actual !== intended` trap, but
+// makes the legal-segment check explicit: an unrecognized segment on either side is a segmentation
+// violation, never a pass. (The direction — compute→governance vs governance→compute — is an audit-detail
+// string in the host wrapper; the governance VERDICT is identical for both and folds here.)
+pure flow checkSegmentAccess(actual: String, intended: String) -> String
+contract {
+  intent { "Fail-closed Compute/Governance isolation verdict: 'ok' iff `actual` equals `intended` and both are recognized segments ('compute' or 'governance'); else 'LSM-SEGV-001'." }
+}
+{
+  if intended != "compute" {
+    if intended != "governance" {
+      return "LSM-SEGV-001"
+    }
+  }
+  if actual != "compute" {
+    if actual != "governance" {
+      return "LSM-SEGV-001"
+    }
+  }
+  if actual != intended {
+    return "LSM-SEGV-001"
+  }
+  return "ok"
+}

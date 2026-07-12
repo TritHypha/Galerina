@@ -1,0 +1,104 @@
+@version 1
+/// @file: fuse-admission.fungi
+/// @purpose: Stage-6 CHECKER-VERIFIED twin of fuse-loader.ts's LOAD-time fusion-admission DECISIONS — the
+///   kernel's one-time, fail-closed gate that admits a separately-compiled package's governed .wasm. Distinct
+///   from package-admission.fungi (the manifest-FIELD gate, FUNGI-PKG-*) and registry-index.fungi (the central
+///   INDEX verdict): this is the app-kernel's own multi-gate FUSION verdict. The host does the crypto (sha256,
+///   Ed25519/hybrid verify), the JSON/IO, and the WASM instantiation; this pure surface folds the resulting
+///   EVIDENCE fail-closed. Gate order mirrors loadAndVerifyPackage: descriptor -> Gate1 hash -> sidecar ->
+///   Gate2b revocation -> signature policy -> registry -> Gate3 capability.
+/// @status: checker-verified twin (galerina check clean); NOT build-wired (execution switch #143).
+
+// The embedded signed `fuse` descriptor must exist, carry string name + wasmSha256, a well-formed
+// `sha256:<64 hex>` wasm hash, and a RECOGNISED schemaVersion (the CLOSED set {fungi.fuse.v1} — an absent or
+// unknown version is REFUSED, never assume-on-absence).
+pure flow descriptorVerdict(hasFuseBlock: Bool, nameAndShaStrings: Bool, wasmShaValidFormat: Bool, schemaRecognized: Bool) -> String
+contract { intent { "Fail-closed fuse-descriptor gate: no fuse block -> FUNGI-FUSE-NO-DESCRIPTOR; missing/mistyped name/hash or bad hash format -> FUNGI-FUSE-BAD-DESCRIPTOR; absent/unknown schemaVersion -> FUNGI-FUSE-VERSION; else 'ok'." } }
+{
+  if hasFuseBlock == false { return "FUNGI-FUSE-NO-DESCRIPTOR" }
+  if nameAndShaStrings == false { return "FUNGI-FUSE-BAD-DESCRIPTOR" }
+  if wasmShaValidFormat == false { return "FUNGI-FUSE-BAD-DESCRIPTOR" }
+  if schemaRecognized == false { return "FUNGI-FUSE-VERSION" }
+  return "ok"
+}
+
+// Gate 1: the .wasm artifact must exist and its sha256 MUST equal the (signed) descriptor's wasmSha256.
+// A mismatch is tamper. hashMatches = host's ("sha256:"+sha256(wasmBytes)) === descriptor.wasmSha256.
+pure flow hashGateVerdict(wasmPresent: Bool, hashMatches: Bool) -> String
+contract { intent { "Fail-closed Gate 1: a missing .wasm -> FUNGI-FUSE-NO-WASM; a sha256 that does not match the signed descriptor -> FUNGI-FUSE-HASH-MISMATCH (tamper); else 'ok'." } }
+{
+  if wasmPresent == false { return "FUNGI-FUSE-NO-WASM" }
+  if hashMatches == false { return "FUNGI-FUSE-HASH-MISMATCH" }
+  return "ok"
+}
+
+// The convenience <name>.fuse.json sidecar (if present) must AGREE with the SIGNED manifest's wasmSha256;
+// the signed manifest is the source of truth on any disagreement (fail-closed).
+pure flow sidecarVerdict(sidecarPresent: Bool, sidecarAgrees: Bool) -> String
+contract { intent { "Fail-closed sidecar cross-check: a present .fuse.json whose wasmSha256 disagrees with the signed manifest -> FUNGI-FUSE-SIDECAR-DRIFT; absent or agreeing -> 'ok'." } }
+{
+  if sidecarPresent == false { return "ok" }
+  if sidecarAgrees == false { return "FUNGI-FUSE-SIDECAR-DRIFT" }
+  return "ok"
+}
+
+// Gate 2b: REVOCATION (RD-0236 #8). Fires WHENEVER the manifest ASSERTS a keyId and a check is injected —
+// BEFORE and REGARDLESS of whether the signature verified, and even under allowUnsigned (the posture wins). A
+// throwing check (tampered/untrustworthy registry) is fail-closed to unverifiable.
+pure flow revocationGateVerdict(keyIdAsserted: Bool, checkActive: Bool, checkThrew: Bool, revoked: Bool) -> String
+contract { intent { "Fail-closed revocation gate: a throwing check -> FUNGI-FUSE-REVOCATION-UNVERIFIABLE; a revoked keyId -> FUNGI-FUSE-KEY-REVOKED (even unverified/allowUnsigned); no asserted keyId or no injected check -> 'ok'." } }
+{
+  if keyIdAsserted == false { return "ok" }
+  if checkActive == false { return "ok" }
+  if checkThrew == true { return "FUNGI-FUSE-REVOCATION-UNVERIFIABLE" }
+  if revoked == true { return "FUNGI-FUSE-KEY-REVOKED" }
+  return "ok"
+}
+
+// Gate 2 signature POLICY (the unsigned decision the caller makes; tamper already threw inside the verifier).
+// A verified signature admits. An UNSIGNED manifest is REFUSED under requireSignature (posture wins even over
+// allowUnsigned), admitted only when allowUnsigned is explicitly set, else refused (deny-by-default).
+pure flow signaturePolicyVerdict(sigVerified: Bool, requireSignature: Bool, allowUnsigned: Bool) -> String
+contract { intent { "Fail-closed signature policy: a verified signature -> 'admit'; an unsigned manifest is 'unsigned-refused' unless allowUnsigned (and never when requireSignature) -> 'admit'." } }
+{
+  if sigVerified == true { return "admit" }
+  if requireSignature == true { return "unsigned-refused" }
+  if allowUnsigned == true { return "admit" }
+  return "unsigned-refused"
+}
+
+// B5a: optional CENTRAL signed-registry admission (an allow-list ON TOP of the per-manifest gate). A non-ok
+// result refuses the fuse; when no registry check is injected, no gate runs. (The host propagates the
+// registry check's own specific code; this fold models the admit/refuse decision.)
+pure flow registryGateVerdict(registryActive: Bool, registryOk: Bool) -> String
+contract { intent { "Fail-closed central-registry gate: an active registry check returning non-ok -> 'registry-refused'; no check, or ok -> 'ok'." } }
+{
+  if registryActive == false { return "ok" }
+  if registryOk == false { return "registry-refused" }
+  return "ok"
+}
+
+// Gate 3: the CLOSED capability-bounded import object. Deny-by-default — a DECLARED capability with no
+// host-import factory is a misconfiguration and refuses the fuse (an undeclared capability simply gets no
+// namespace, which is not an error). hasFactory = the built-in/merged registry has a factory for this capability.
+pure flow capabilityGrantVerdict(hasFactory: Bool) -> String
+contract { intent { "Fail-closed Gate 3 (per declared capability): a declared capability with no host-import factory -> FUNGI-FUSE-UNKNOWN-CAP; a known capability -> 'grant'." } }
+{
+  if hasFactory == false { return "FUNGI-FUSE-UNKNOWN-CAP" }
+  return "grant"
+}
+
+// One-call fusion admission: compose the gates in the loader's order; the first failing verdict denies (returns
+// its code/token), all pass -> 'fused'. (signaturePolicy must be "admit"; capability must be "grant".)
+pure flow admitVerdict(descriptorV: String, hashV: String, sidecarV: String, revocationV: String, signaturePolicyV: String, registryV: String, capabilityV: String) -> String
+contract { intent { "Compose the fusion gates (descriptor -> hash -> sidecar -> revocation -> signature policy -> registry -> capability): the first failing verdict denies; all pass -> 'fused'." } }
+{
+  if descriptorV != "ok" { return descriptorV }
+  if hashV != "ok" { return hashV }
+  if sidecarV != "ok" { return sidecarV }
+  if revocationV != "ok" { return revocationV }
+  if signaturePolicyV != "admit" { return signaturePolicyV }
+  if registryV != "ok" { return registryV }
+  if capabilityV != "grant" { return capabilityV }
+  return "fused"
+}

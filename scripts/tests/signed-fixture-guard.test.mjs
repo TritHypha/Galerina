@@ -1,14 +1,19 @@
 // CG-7 cascade-guard tests (annotation→re-fuse→unsigned, owner-directed "both ends + detector").
 // Subprocess + crafted tmp workspaces = tests the REAL end-to-end behavior:
-//   1. the shared signed-manifest predicate (scripts/lib/signed-lmanifest.mjs)
-//   2. the detector gate (audit-signed-fixture-drift.mjs --root) on a temp git repo
+//   1. the shared signed-manifest predicates (scripts/lib/signed-lmanifest.mjs):
+//      disk shape (isRealSignedManifest) AND the CG-7 protection predicate
+//      (isCommittedSignedManifest: tracked + real-signed in HEAD — #21 unification)
+//   2. the detector gate (audit-signed-fixture-drift.mjs --root) on a temp git repo,
+//      including the two disk-decided failure modes the committed predicate kills:
+//      a dev-key-signed disk manifest over a committed placeholder must NOT flag
+//      (false-red flap), and a locally CLOBBERED ceremony manifest must STILL flag
+//      (fail-open demotion).
 //   3. the writer guard: `galerina deps --all --write` must NEVER rewrite src
 //      inside a SIGNED fusable package (and must rewrite an unsigned one).
 //   4. the direct-invocation guard (CG-7 third end, owner-approved 2026-07-02):
 //      `galerina build --package <signed>` refuses without --force; --force overrides.
-// The rebuild guard (rebuild-fusable-packages.mjs) shares predicate 1 and forwards
-// --force to the child build; its skip branch is exercised against the real repo by
-// the phase-close cadence.
+//   6. the rebuild guard (rebuild-fusable-packages.mjs --root): shares the SAME
+//      discovery + committed predicate as the detector; --force bypass is LOUD.
 import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from "node:fs";
@@ -17,7 +22,7 @@ import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
-import { isRealSignedManifest, findFusablePackages } from "../lib/signed-lmanifest.mjs";
+import { isRealSignedManifest, isCommittedSignedManifest, findFusablePackages } from "../lib/signed-lmanifest.mjs";
 
 const SCRIPTS = join(dirname(fileURLToPath(import.meta.url)), "..");
 const ROOT = join(SCRIPTS, "..");
@@ -35,7 +40,7 @@ function makePkg(base, name, { signature } = {}) {
   mkdirSync(join(dir, "dist"), { recursive: true });
   writeFileSync(join(dir, "package.fungi.json"), JSON.stringify({ name, entry: "src/index.fungi" }, null, 2));
   writeFileSync(join(dir, "src", "index.fungi"),
-    "pure flow lonely(x: Int) -> Int contract { effects {} } { return x }\n");
+    "@version 1\npure flow lonely(x: Int) -> Int contract { effects {} } { return x }\n");
   if (signature !== undefined) {
     writeFileSync(join(dir, "dist", `${name}.lmanifest.json`),
       JSON.stringify({ schemaVersion: "fungi.lmanifest.v1", governanceSignature: signature }, null, 2));
@@ -78,6 +83,42 @@ test("findFusablePackages marks signed vs unsigned", () => {
   assert.equal(byName.get("beta"), false);
 });
 
+// ── 1b. the committed predicate: protection comes from HEAD, not disk ─────
+test("isCommittedSignedManifest: HEAD decides — dev-signed-over-placeholder unprotected, clobbered-ceremony still protected",
+  { skip: !gitAvailable && "git not available" }, () => {
+  const repo = join(tmp, "committed-pred");
+  mkdirSync(repo, { recursive: true });
+  assert.equal(git(repo, "init", "-q").status, 0);
+  const ceremony = makePkg(repo, "ceremony", { signature: REAL_SIG });
+  const pretender = makePkg(repo, "pretender", { signature: { ...REAL_SIG, signature: "placeholder:sha256:abc" } });
+  const devlocal = makePkg(repo, "devlocal", { signature: REAL_SIG });
+  // commit ceremony + pretender; devlocal stays untracked (a local dev artifact)
+  assert.equal(git(repo, "add", "ceremony", "pretender").status, 0);
+  assert.equal(git(repo, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "fixture").status, 0);
+
+  const man = (p, n) => join(p, "dist", `${n}.lmanifest.json`);
+  assert.equal(isCommittedSignedManifest(repo, man(ceremony, "ceremony")), true, "committed-real → protected");
+  assert.equal(isCommittedSignedManifest(repo, man(pretender, "pretender")), false, "committed-placeholder → regenerable");
+  assert.equal(isCommittedSignedManifest(repo, man(devlocal, "devlocal")), false, "untracked dev-signed → not CG-7's concern");
+
+  // disk mutations must not change protection in EITHER direction
+  writeFileSync(man(pretender, "pretender"),
+    JSON.stringify({ schemaVersion: "fungi.lmanifest.v1", governanceSignature: REAL_SIG }, null, 2));
+  assert.equal(isCommittedSignedManifest(repo, man(pretender, "pretender")), false,
+    "a locally minted dev signature must NOT promote a committed-placeholder fixture into protection");
+  writeFileSync(man(ceremony, "ceremony"),
+    JSON.stringify({ schemaVersion: "fungi.lmanifest.v1", governanceSignature: { ...REAL_SIG, signature: "placeholder:sha256:x" } }, null, 2));
+  assert.equal(isCommittedSignedManifest(repo, man(ceremony, "ceremony")), true,
+    "a locally CLOBBERED ceremony manifest must NOT demote itself out of protection");
+
+  // findFusablePackages surfaces the same verdicts when given a gitRoot
+  const found = findFusablePackages([repo], { gitRoot: repo });
+  const byName = new Map(found.map(p => [p.name, p.committedSigned]));
+  assert.equal(byName.get("ceremony"), true);
+  assert.equal(byName.get("pretender"), false);
+  assert.equal(byName.get("devlocal"), false);
+});
+
 // ── 2. the detector gate on a temp git repo ───────────────────────────────
 test("detector: clean signed package → exit 0; dirty signed → exit 1; dirty unsigned → exit 0",
   { skip: !gitAvailable && "git not available" }, () => {
@@ -86,6 +127,7 @@ test("detector: clean signed package → exit 0; dirty signed → exit 1; dirty 
   assert.equal(git(repo, "init", "-q").status, 0);
   const signed = makePkg(repo, "locked", { signature: REAL_SIG });
   const unsigned = makePkg(repo, "open", {});
+  const pretender = makePkg(repo, "pretender", { signature: { ...REAL_SIG, signature: "placeholder:sha256:seed" } });
   assert.equal(git(repo, "add", "-A").status, 0);
   assert.equal(git(repo, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "fixture").status, 0);
 
@@ -98,11 +140,30 @@ test("detector: clean signed package → exit 0; dirty signed → exit 1; dirty 
     "pure flow lonely(x: Int) -> Int contract { effects {} } { return x }\n//fungi: IMPACT: (0)\n");
   assert.equal(run().status, 0, "drift in an UNSIGNED package is not CG-7's concern");
 
+  // The false-red flap (#21): a locally minted dev-key signature over a
+  // committed-PLACEHOLDER fixture is a regenerable dev artifact — dirty, disk-
+  // real-signed, and still NOT protected. The old disk-decided gate flagged this.
+  writeFileSync(join(pretender, "dist", "pretender.lmanifest.json"),
+    JSON.stringify({ schemaVersion: "fungi.lmanifest.v1", governanceSignature: REAL_SIG }, null, 2));
+  assert.equal(run().status, 0,
+    "a dev-signed disk manifest over a committed placeholder must NOT raise CG-7 drift");
+
   writeFileSync(join(signed, "src", "index.fungi"),
     "//fungi: IMPACT: (0) — safe to delete\npure flow lonely(x: Int) -> Int contract { effects {} } { return x }\n");
   const red = run();
   assert.equal(red.status, 1, "drift in a SIGNED package must block");
   assert.match(red.stdout, /CG-7 signed-drift/, "finding names the rule");
+
+  // The fail-open demotion (#21): restore locked's src, then CLOBBER its ceremony
+  // manifest to a placeholder. HEAD is real-signed → still protected; the clobber
+  // itself is the drift. The old disk-decided gate read the placeholder and let it pass.
+  assert.equal(git(repo, "checkout", "--", "locked/src/index.fungi").status, 0);
+  assert.equal(run().status, 0, "restored tree is clean again (pretender drift stays ignorable)");
+  writeFileSync(join(signed, "dist", "locked.lmanifest.json"),
+    JSON.stringify({ schemaVersion: "fungi.lmanifest.v1", governanceSignature: { ...REAL_SIG, signature: "placeholder:sha256:x" } }, null, 2));
+  const clobbered = run();
+  assert.equal(clobbered.status, 1, "a locally clobbered ceremony manifest must STILL be protected drift");
+  assert.match(clobbered.stdout, /locked/, "the clobbered package is the one named");
 });
 
 // ── 3. the writer guard end-to-end (galerina deps --all --write) ──────────
@@ -165,9 +226,14 @@ test("build --package: git-TRACKED signed manifest → refused; untracked dev-si
   assert.equal(git(repo, "init", "-q").status, 0);
   const ceremony = makePkg(repo, "ceremony", { signature: REAL_SIG });
   const devlocal = makePkg(repo, "devlocal", { signature: REAL_SIG });
-  // commit ceremony's manifest (committed fixture); leave devlocal fully untracked
-  assert.equal(git(repo, "add", "ceremony").status, 0);
+  const residue = makePkg(repo, "residue", { signature: { ...REAL_SIG, signature: "placeholder:sha256:seed" } });
+  // commit ceremony's + residue's manifests (committed fixtures); leave devlocal fully untracked
+  assert.equal(git(repo, "add", "ceremony", "residue").status, 0);
   assert.equal(git(repo, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "fixture").status, 0);
+  // residue's DISK manifest gets a locally minted real-shaped signature (the flap
+  // residue state: dev-signed over a committed placeholder — regenerable, never refused)
+  writeFileSync(join(residue, "dist", "residue.lmanifest.json"),
+    JSON.stringify({ schemaVersion: "fungi.lmanifest.v1", governanceSignature: REAL_SIG }, null, 2));
 
   const build = (dir) =>
     spawnSync("node", [join(ROOT, "galerina.mjs"), "build", "--package", dir],
@@ -182,4 +248,47 @@ test("build --package: git-TRACKED signed manifest → refused; untracked dev-si
   assert.doesNotMatch(allowed.stderr + allowed.stdout, REFUSAL,
     "an untracked dev-signed manifest is a local artifact — must NOT refuse");
   assert.equal(allowed.status, 0, `dev-signed local package should rebuild freely: ${allowed.stderr}`);
+
+  // the flap-residue state (#21): tracked manifest, PLACEHOLDER in HEAD, locally
+  // dev-signed on disk — regenerable. The old disk-decided guard refused this.
+  const relaxed = build(residue);
+  assert.doesNotMatch(relaxed.stderr + relaxed.stdout, REFUSAL,
+    "dev-signed disk over a committed-placeholder manifest must NOT refuse (HEAD decides)");
+  assert.equal(relaxed.status, 0, `flap-residue package should rebuild freely: ${relaxed.stderr}`);
+});
+
+// ── 6. the rebuild guard: same discovery + committed predicate as the detector ──
+// rebuild-fusable-packages --root on a git fixture: a committed ceremony-signed
+// package is 🔒-skipped even when stale; a committed-placeholder package rebuilds;
+// --force bypasses LOUDLY (⚠️ names the package) and actually rebuilds.
+test("rebuild guard: committed-signed skipped when stale; placeholder rebuilds; --force is loud",
+  { skip: !gitAvailable && "git not available" }, () => {
+  const repo = join(tmp, "rebuild-repo");
+  mkdirSync(repo, { recursive: true });
+  assert.equal(git(repo, "init", "-q").status, 0);
+  const sealed = makePkg(repo, "sealed", { signature: REAL_SIG });          // stale: src exists, no .wasm
+  makePkg(repo, "loose", { signature: { ...REAL_SIG, signature: "placeholder:sha256:seed" } });
+  assert.equal(git(repo, "add", "-A").status, 0);
+  assert.equal(git(repo, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "fixture").status, 0);
+
+  const rebuild = (...extra) =>
+    spawnSync("node", [join(SCRIPTS, "rebuild-fusable-packages.mjs"), "--root", repo, ...extra],
+      { encoding: "utf8", timeout: 240_000, shell: isWin });
+  const sealedMan = join(sealed, "dist", "sealed.lmanifest.json");
+  const beforeSealed = readFileSync(sealedMan, "utf8");
+
+  const first = rebuild();
+  assert.equal(first.status, 0, "rebuild is informational — always exit 0");
+  assert.match(first.stdout, /🔒 sealed: committed ceremony-SIGNED/, "stale committed-signed package is locked, not rebuilt");
+  assert.doesNotMatch(first.stdout, /rebuilt sealed/, "sealed must not be rebuilt without --force");
+  assert.match(first.stdout, /✅ rebuilt loose/, `committed-placeholder package rebuilds freely: ${first.stdout}`);
+  assert.equal(readFileSync(sealedMan, "utf8"), beforeSealed, "sealed manifest must be byte-identical");
+
+  const forced = rebuild("--force");
+  assert.equal(forced.status, 0);
+  assert.match(forced.stdout, /⚠️ {2}sealed: FORCED rebuild of a committed ceremony-SIGNED package/,
+    "the CG-7 bypass must be loud and name the package");
+  assert.match(forced.stdout, /✅ rebuilt sealed/, `forced rebuild must actually proceed: ${forced.stdout}`);
+  assert.notEqual(readFileSync(sealedMan, "utf8"), beforeSealed,
+    "forced rebuild mints a fresh (locally signed) manifest");
 });

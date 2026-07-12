@@ -29,4 +29,4 @@ If a program passes Galerina checks, the direction is that:
 
 ## Knowledge Base
 
-See [Boundary Safety Proof](../Knowledge-Bases/boundary-safety-proof.md).
+See [Boundary Safety Proof](../../../ZTF-Knowledge-Bases/boundary-safety-proof.md).

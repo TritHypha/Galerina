@@ -86,10 +86,10 @@ capability-lease-report.json
 - [Repositories And Storage](framework-repositories-storage.md)
 - [Adapters And Connectors](framework-adapters-connectors.md)
 - [MCP AI Tool Boundaries](framework-mcp-ai-tool-boundaries.md)
-- [AI Self-Modification Governance](../Knowledge-Bases/ai-self-modification-governance.md)
-- [Malicious Data And Exploit Resistance](../Knowledge-Bases/malicious-data-and-exploit-resistance.md)
+- [AI Self-Modification Governance](../../../ZTF-Knowledge-Bases/ai-self-modification-governance.md)
+- [Malicious Data And Exploit Resistance](../../../ZTF-Knowledge-Bases/malicious-data-and-exploit-resistance.md)
 
 ## Knowledge Base
 
-See [Core Application Model](../Knowledge-Bases/core-application-model.md) and
-[Boundary Extension Concepts](../Knowledge-Bases/boundary-extension-concepts.md).
+See [Core Application Model](../../../ZTF-Knowledge-Bases/core-application-model.md) and
+[Boundary Extension Concepts](../../../ZTF-Knowledge-Bases/boundary-extension-concepts.md).

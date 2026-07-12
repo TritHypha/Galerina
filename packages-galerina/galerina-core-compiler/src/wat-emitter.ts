@@ -355,6 +355,16 @@ export const WAT_REC_FIELD_SIZE = 4;
  */
 let recordCtx: { localDecls: string[]; counter: { n: number } } | null = null;
 
+/**
+ * Fail-closed loop fuel cap emitted INTO the WAT for every `while` loop (#22 / RD-0314).
+ * The interpreter and bytecode-VM trap at `maxIterations` (100_000), but that cap does not
+ * ship inside the emitted module — a standalone `while` compiled to WASM would otherwise loop
+ * unbounded (a live DoS if the module is run outside a fuel-metered host). Emitting a per-loop
+ * counter that TRAPS (`unreachable`) past the cap makes the module self-bounding, matching the
+ * runtime's fail-closed semantics (Goal-C liveness / 0032).
+ */
+const WAT_LOOP_FUEL_CAP = 100_000;
+
 /** typeName → ordered field names, built once per module from `record` decls.
  *  Used to compute field byte offsets for `r.field` loads. null → field access
  *  falls back to the placeholder. */
@@ -1839,9 +1849,20 @@ export function emitWATExpr(
           const ch = someArm?.children ?? [];
           return ch.length >= 2 && ch[0]?.kind === "identifier" ? ch[0]!.value : undefined;
         })();
-        const noneBody = noneArm ? armBodyExpr(noneArm) : undefined;
-        const someBody = someArm ? armBodyExpr(someArm) : undefined;
-        const noneWat = noneBody ? emitWATExpr(noneBody, vars, staticConsts) : "(i32.const 0)";
+        // A missing constructor arm falls to the match's wildcard (`_`/`else`) arm —
+        // for Option the wildcard IS the complement (`Some(x) + _` ⇒ `_` ≡ None). A
+        // missing side with NO wildcard is non-exhaustive (FUNGI-MATCH-001 rejects it
+        // upstream); emit a trap, never a silent 0 (RD-0240: fail-closed, not fail-open).
+        const wildcardArm = arms.find(a => { // perf-allow: loop-array-find — bounded N over a match expression's arms (None/Some/Ok/Err + wildcard, 2–4) — not a hot path
+          const p = a.value ?? "_";
+          return p === "_" || p === "else" || p === "default";
+        });
+        const noneSrc = noneArm ?? wildcardArm;
+        const someSrc = someArm ?? wildcardArm;
+        const noneBody = noneSrc !== undefined ? armBodyExpr(noneSrc) : undefined;
+        const someBody = someSrc !== undefined ? armBodyExpr(someSrc) : undefined;
+        const noneWat = noneBody !== undefined ? emitWATExpr(noneBody, vars, staticConsts)
+          : "(unreachable) (; RD-0240: Option match missing None arm and wildcard — fail-closed ;)";
         const someVars: ReadonlyMap<string, string> = someBind !== undefined
           ? new Map([...vars, [someBind, scratch]]) : vars;
         // #160: scope the Some binding's type (Option<T> inner) while emitting the arm.
@@ -1851,7 +1872,8 @@ export function emitWATExpr(
         if (someBind !== undefined && recordVarTypes !== null && someBindType !== undefined) {
           recordVarTypes.set(someBind, someBindType);
         }
-        const someWat = someBody ? emitWATExpr(someBody, someVars, staticConsts) : "(i32.const 0)";
+        const someWat = someBody !== undefined ? emitWATExpr(someBody, someVars, staticConsts)
+          : "(unreachable) (; RD-0240: Option match missing Some arm and wildcard — fail-closed ;)";
         if (someBind !== undefined && recordVarTypes !== null) {
           if (hadType) recordVarTypes.set(someBind, prevType!);
           else recordVarTypes.delete(someBind);
@@ -1902,6 +1924,52 @@ export function emitWATExpr(
       };
 
       return buildMatchChain(0);
+    }
+
+    case "errorPropagation": {
+      // `expr?` — Rust-style error propagation onto the ADT ABI. Governed semantics
+      // (interpreter.ts errorPropagation): Result — Err ⇒ early-return the Err handle
+      // UNCHANGED (the flow's own return type is that same Result<T,E>); Ok(v) ⇒ v.
+      // Option — None ⇒ early-return None; Some(v) ⇒ v. The subject is evaluated ONCE
+      // into a scratch (a call subject like `half(n)?` must never be evaluated twice —
+      // that would double any effect and re-roll any nondeterminism), then dispatched.
+      //
+      // Needs an active flow-body scratch context (recordCtx) for the local. Outside one,
+      // with no operand, or on an inner type whose ADT ABI we cannot prove, FAIL CLOSED
+      // with a trap rather than guess (RD-0240) — the prior behaviour was this same trap
+      // for every `?`; now the Result/Option cases actually lower.
+      const inner = node.children?.[0];
+      if (inner === undefined || recordCtx === null) {
+        return `(unreachable) (; RD-0240: '?' with no operand or outside a flow-body scratch context — fail-closed ;)`;
+      }
+      const innerWat = emitWATExpr(inner, vars, staticConsts);
+      const innerType = inferExprType(inner);
+      const scratch = `$__fungi_try_${recordCtx.counter.n++}`;
+      recordCtx.localDecls.push(`(local ${scratch} i32)`);
+      if (innerType === "Result" || innerType?.startsWith("Result<")) {
+        // tag 1 = Err ⇒ (return <the Err handle>); tag 0 = Ok ⇒ unwrap via __result_value.
+        return [
+          `(block (result i32)`,
+          `  (local.set ${scratch} ${innerWat})`,
+          `  (if (i32.eq (call $host___result_tag (local.get ${scratch})) (i32.const 1))`,
+          `    (then (return (local.get ${scratch}))))`,
+          `  (call $host___result_value (local.get ${scratch}))`,
+          `)`,
+        ].join("\n");
+      }
+      if (innerType === "Option" || innerType?.startsWith("Option<")) {
+        // Sentinel ABI (wasm-runtime.ts): None = negative, Some(v) = v (>= 0). None ⇒
+        // (return -1) [the None sentinel]; Some ⇒ the scratch value itself.
+        return [
+          `(block (result i32)`,
+          `  (local.set ${scratch} ${innerWat})`,
+          `  (if (i32.lt_s (local.get ${scratch}) (i32.const 0))`,
+          `    (then (return (i32.const -1))))`,
+          `  (local.get ${scratch})`,
+          `)`,
+        ].join("\n");
+      }
+      return `(unreachable) (; RD-0240: '?' on non-Result/Option inner type '${innerType ?? "unknown"}' — fail-closed ;)`;
     }
 
     default:
@@ -2177,9 +2245,19 @@ function emitBlockStatements(
           exitCondExpr = `(i32.eqz ${condNode ? emitWATExpr(condNode, vars, staticConsts) : "(i32.const 1)"})`;
         }
 
+        // #22 / RD-0314: fail-closed loop fuel cap. A per-loop i32 counter (defaults to 0) is
+        // incremented each iteration and TRAPS past WAT_LOOP_FUEL_CAP — so a runaway `while` in a
+        // standalone module aborts (unreachable) instead of hanging, mirroring the interpreter's
+        // maxIterations trap. The counter is checked AFTER the exit test, so it only counts taken
+        // iterations (body executions), exactly like the bytecode-VM's back-edge count.
+        const fuelLocal = `$__while_fuel_${labelN}`;
+        localDecls.push(`(local ${fuelLocal} i32)`);
+
         bodyLines.push(`(block ${exitLabel}`);
         bodyLines.push(`  (loop ${loopLabel}`);
         bodyLines.push(`    (br_if ${exitLabel} ${exitCondExpr})`);
+        bodyLines.push(`    (local.set ${fuelLocal} (i32.add (local.get ${fuelLocal}) (i32.const 1)))`);
+        bodyLines.push(`    (if (i32.gt_u (local.get ${fuelLocal}) (i32.const ${WAT_LOOP_FUEL_CAP})) (then unreachable))`);
 
         if (bodyBlock !== undefined) {
           const loopLines: string[] = [];
@@ -2209,6 +2287,16 @@ function emitBlockStatements(
         if (matchSubject === undefined || matchArms.length === 0) break;
 
         const subjectWat = emitWATExpr(matchSubject, vars, staticConsts);
+
+        // Shared by the Option and Result dispatches below: a missing constructor arm
+        // falls to the match's wildcard (`_`/`else`) arm (`Some(x) + _` ⇒ `_` ≡ None;
+        // `Ok(v) + _` ⇒ `_` ≡ Err). Missing side + no wildcard = non-exhaustive
+        // (FUNGI-MATCH-001 upstream) — trap, never an EMPTY branch (a silent no-op is
+        // the statement form of the fail-open this case's RD-0240 note already bans).
+        const ctorWildcardArm = matchArms.find(a => { // perf-allow: loop-array-find — bounded N over a match expression's arms (None/Some/Ok/Err + wildcard, 2–4) — not a hot path
+          const p = a.value ?? "_";
+          return p === "_" || p === "else" || p === "default";
+        });
 
         // ── Option<T> match: None / Some(x) sentinel dispatch (#160) ──────────
         // Host convention (P9): None is encoded as a negative i32 sentinel (-1);
@@ -2264,8 +2352,12 @@ function emitBlockStatements(
             return lines;
           };
 
-          const noneLines = emitArm(noneArm);
-          const someLines = emitArm(someArm, someBind);
+          const noneSrc = noneArm ?? ctorWildcardArm;
+          const someSrc = someArm ?? ctorWildcardArm;
+          const noneLines = noneSrc !== undefined ? emitArm(noneSrc)
+            : ["(unreachable) (; RD-0240: Option match missing None arm and wildcard — fail-closed ;)"];
+          const someLines = someSrc !== undefined ? emitArm(someSrc, someBind)
+            : ["(unreachable) (; RD-0240: Option match missing Some arm and wildcard — fail-closed ;)"];
 
           bodyLines.push(`(if (i32.lt_s (local.get ${scratch}) (i32.const 0))`);
           bodyLines.push(`  (then`);
@@ -2320,8 +2412,12 @@ function emitBlockStatements(
             }
             return lines;
           };
-          const okLines = emitResArm(okArm, resBindOf(okArm), okBindType);
-          const errLines = emitResArm(errArm, resBindOf(errArm), undefined);
+          const okSrc = okArm ?? ctorWildcardArm;
+          const errSrc = errArm ?? ctorWildcardArm;
+          const okLines = okSrc !== undefined ? emitResArm(okSrc, resBindOf(okArm), okBindType)
+            : ["(unreachable) (; RD-0240: Result match missing Ok arm and wildcard — fail-closed ;)"];
+          const errLines = errSrc !== undefined ? emitResArm(errSrc, resBindOf(errArm), undefined)
+            : ["(unreachable) (; RD-0240: Result match missing Err arm and wildcard — fail-closed ;)"];
 
           bodyLines.push(`(if (i32.eq (call $host___result_tag (local.get ${scratch})) (i32.const 0))`);
           bodyLines.push(`  (then`);

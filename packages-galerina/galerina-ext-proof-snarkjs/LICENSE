@@ -1,0 +1,22 @@
+Copyright (C) 2026 TritHypha
+
+@galerina/ext-proof-snarkjs is an OPTIONAL, non-core extension. It links snarkjs
+(GPL-3.0) in-process, so the combined work is licensed under the GNU General Public
+License, version 3.
+
+This program is free software: you can redistribute it and/or modify it under the
+terms of the GNU General Public License as published by the Free Software Foundation,
+version 3.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this
+program. If not, see <https://www.gnu.org/licenses/>.
+
+--------------------------------------------------------------------------------
+NOTICE: importing this package places your distributed work under GPL-3.0
+obligations — opt in knowingly. No other @galerina/* package depends on it
+(enforced by scripts/audit-license-compat.mjs). This is the ONE deliberate
+non-Apache exception in the workspace (RD-0355 L2).

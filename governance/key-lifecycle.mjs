@@ -8,7 +8,7 @@
  * stable code, a severity, and concrete remediation instructions.
  *
  * Diagnostic codes (FUNGI-KEY-*) are documented in
- * docs/Knowledge-Bases/galerina-key-lifecycle-diagnostics.md.
+ * ../ZTF-Knowledge-Bases/galerina-key-lifecycle-diagnostics.md.
  *
  * This is the developer-facing, zero-touch layer over the crypto-on-core primitives
  * (revocation-registry.mjs). Production key custody (HSM/KMS, auto-rotation) is #149.

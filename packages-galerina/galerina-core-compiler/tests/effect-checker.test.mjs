@@ -797,3 +797,127 @@ secure flow doIt(x: String) -> String contract { effects { } } {
     );
   });
 });
+
+// ── Scope-aware stdlib-module shadowing (2026-07-09) ──────────────────────────
+// A LOCAL binding that reuses a stdlib module's name (`env`, `fs`, ...) is DATA:
+// the governed tree-walker value-dispatches (verified by running), so module
+// effects must not be attributed to it. These tests pin BOTH directions — the
+// cure (shadowed locals are clean) and the fail-closed floor (aliases, unshadowed
+// module calls, convention receivers, and record-literal non-bindings still flag).
+
+describe("Effect Checker — scope-aware stdlib-module shadowing", () => {
+  it("does NOT flag a pure flow whose PARAM shadows the env module (self-hosted-corpus repro)", () => {
+    const { effectResults } = parseAndCheck(`
+pure flow lookupEnv(env: Array<Int>, name: String) -> Int {
+  let x = env.get(0)
+  return 0
+}
+`);
+    assert.equal(effectErrors(effectResults).length, 0,
+      `expected clean, got: ${effectErrors(effectResults).map((d) => d.code).join(", ")}`);
+  });
+
+  it("does NOT flag a pure flow whose LET shadows the env module", () => {
+    const { effectResults } = parseAndCheck(`
+pure flow lookupLocal() -> Int {
+  let env = [1, 2, 3]
+  let x = env.get(0)
+  return 0
+}
+`);
+    assert.equal(effectErrors(effectResults).length, 0,
+      `expected clean, got: ${effectErrors(effectResults).map((d) => d.code).join(", ")}`);
+  });
+
+  it("STILL flags a module ALIAS (let env = Env) — a real secret.read, not a shadow", () => {
+    const { effectResults } = parseAndCheck(`
+pure flow aliased() -> Int {
+  let env = Env
+  let x = env.get("HOME")
+  return 0
+}
+`);
+    assert.ok(hasEffectDiag(effectResults, "FUNGI-EFFECT-003"),
+      "alias to the Env module must keep flagging FUNGI-EFFECT-003");
+  });
+
+  it("STILL flags unshadowed capitalised Env.get in a pure flow", () => {
+    const { effectResults } = parseAndCheck(`
+pure flow readsEnv() -> Int {
+  let x = Env.get("HOME")
+  return 0
+}
+`);
+    assert.ok(hasEffectDiag(effectResults, "FUNGI-EFFECT-003"));
+  });
+
+  it("STILL flags unshadowed lowercase env.get in a pure flow", () => {
+    const { effectResults } = parseAndCheck(`
+pure flow readsEnvLower() -> Int {
+  let x = env.get("HOME")
+  return 0
+}
+`);
+    assert.ok(hasEffectDiag(effectResults, "FUNGI-EFFECT-003"));
+  });
+
+  it("suppresses FUNGI-STDLIB-001 when the receiver is a shadowing param", () => {
+    const { effectResults } = parseAndCheck(`
+flow firstOf(env: Array<Int>) -> Int {
+  let x = env.get(0)
+  return x
+}
+`);
+    assert.equal(hasEffectDiag(effectResults, "FUNGI-STDLIB-001"), false,
+      "a shadowed local must not require the stdlib env.get effect");
+  });
+
+  it("record-literal field named env does NOT suppress a real stdlib env.get (fail-open guard)", () => {
+    const { effectResults } = parseAndCheck(`
+pure flow mixed() -> Int {
+  let cfg = { env: 1 }
+  let x = env.get("HOME")
+  return 0
+}
+`);
+    assert.ok(hasEffectDiag(effectResults, "FUNGI-EFFECT-003"),
+      "a record-literal field is not a binding — the stdlib call must still flag");
+  });
+
+  it("convention receivers on locals STILL fire (UsersDB.insert → undeclared database.write)", () => {
+    // UsersDB is a LOCAL param, but it is not a stdlib module name, so the shadow
+    // suppression must not touch it — the \w+DB convention pattern still fires.
+    // (A lowercase `usersDB` receiver never matched via callExpr text even before
+    // this change — the C1 nameLooksLikeModule guard only builds dotted callText
+    // for capitalised receivers; pre-existing tradeoff, not part of this fix.)
+    const { effectResults } = parseAndCheck(`
+flow saveOne(UsersDB: OrderStore) -> Int {
+  let r = UsersDB.insert(1)
+  return 0
+}
+`);
+    assert.ok(hasEffectDiag(effectResults, "FUNGI-EFFECT-001"),
+      "local receivers matching the *DB convention are deliberately NOT suppressed");
+  });
+
+  it("scoping is per-flow: a sibling flow without the binding still flags env.get", () => {
+    const { effectResults } = parseAndCheck(`
+pure flow shadowed(env: Array<Int>) -> Int {
+  let x = env.get(0)
+  return 0
+}
+
+pure flow unshadowed() -> Int {
+  let x = env.get("HOME")
+  return 0
+}
+`);
+    const byFlow = new Map(effectResults.map((r) => [r.flowName, r]));
+    const shadowedErrors = byFlow.get("shadowed")?.diagnostics.filter((d) => d.severity === "error") ?? [];
+    assert.equal(shadowedErrors.length, 0, "shadowed flow must be clean");
+    assert.ok(
+      (byFlow.get("unshadowed")?.diagnostics ?? []).some((d) => d.code === "FUNGI-EFFECT-003"),
+      "unshadowed sibling flow must still flag",
+    );
+  });
+});
