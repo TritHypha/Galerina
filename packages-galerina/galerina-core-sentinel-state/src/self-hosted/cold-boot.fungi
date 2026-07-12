@@ -1,0 +1,23 @@
+@version 1
+/// @file: cold-boot.fungi
+/// @purpose: Stage-6 CHECKER-VERIFIED twin of the sentinel-state ColdBootOrchestrator DECISION surface.
+///   HONEST SCOPE: cold-boot's SUBSTANCE is host floor — StateSerializer (the crypto serialize/verify),
+///   AtomicWriter (durable fs), and scrub's zero-overwrite byte-mover; the ONLY governed DECISION is
+///   restore's fail-closed fold, twinned here. Trit: ALLOW = +1, DENY = -1.
+/// @fidelity: restoreVerdict mirrors restore() — a checkpoint is reconstructed only when a snapshot
+///   exists AND its integrity holds. checkpoint()/scrub() are byte/crypto movers with no branching
+///   governance decision (checkpoint always serialises+writes; scrub is a zero-overwrite+unlink, no-op if
+///   absent), so they stay entirely floor and are not twinned.
+/// @status: checker-verified twin (galerina check clean); NOT build-wired (execution switch #143).
+
+/// restoreVerdict — restore() as a fail-closed fold: a checkpoint is restored ONLY if a snapshot exists
+/// (else LSS-NOSNAP-001, a hardened-border violation — a cold boot with no snapshot fails closed, never
+/// silently boots blank) AND its integrity holds (else LSS-INTEGRITY-001, a security trap — the host's
+/// StateSerializer.deserialize runs the crypto). Absent or tampered → DENY.
+pure flow restoreVerdict(snapshotPresent: Bool, integrityOk: Bool) -> Int
+contract { intent { "Fail-closed cold-boot restore: restore only if the snapshot is present AND integrity holds (LSS-NOSNAP-001 / LSS-INTEGRITY-001)." } }
+{
+  if snapshotPresent == false { return 0 - 1 }
+  if integrityOk == false { return 0 - 1 }
+  return 1
+}

@@ -1,0 +1,68 @@
+@version 1
+/// @file: audit-egress.fungi
+/// @purpose: Stage-6 CHECKER-VERIFIED twin of the sentinel-egress AuditEgress chain-verification DECISION
+///   surface. The host runs the HMAC-SHA256 (crypto floor), the fs append/read, the ring buffer, and
+///   computes the per-batch equality booleans (prevHash link · seq · count · recomputed-MAC match ·
+///   epoch ordering · key usability); this pure surface folds them fail-closed into the per-batch
+///   chain-link verdict. Tamper-evidence, rollback-resistance and revocation-refusal are the governed
+///   decision. Trit: ALLOW = +1, DENY = -1.
+/// @fidelity: chainLinkVerdict mirrors verifyChain's per-batch checks (prevHash===expectedPrev · seq===i
+///   · count===records.length · recomputed keyed MAC===batchHash). epochLinkVerdict mirrors
+///   verifyChainEpochAware (adds: a valid epoch on EVERY batch — no silent legacy fallback · epoch
+///   NON-DECREASING = no rollback · a usable key = not unknown/future/REVOKED/weak). epochAdoptVerdict
+///   mirrors adoptEpoch (forward-only: strictly-greater epoch + a real non-zero key). configVerdict
+///   mirrors the constructor's EGR-CFG-001 / EGR-KEY-001 / EGR-EPOCH-001 preconditions.
+/// @status: checker-verified twin (galerina check clean); NOT build-wired (execution switch #143).
+
+/// chainLinkVerdict — verifyChain, per batch: the link holds iff the prevHash chains to the prior batch,
+/// the seq is the expected index, the count matches the record array, and the recomputed keyed MAC equals
+/// the stored batchHash. Any mismatch is a tamper signal → fail-closed DENY (the .ts returns false on the
+/// first mismatch — this is that single link's verdict).
+pure flow chainLinkVerdict(prevHashChains: Bool, seqExpected: Bool, countMatches: Bool, macMatches: Bool) -> Int
+contract { intent { "Fail-closed audit-chain link: prevHash chains AND seq AND count AND recomputed MAC match, else tamper DENY." } }
+{
+  if prevHashChains == false { return 0 - 1 }
+  if seqExpected == false { return 0 - 1 }
+  if countMatches == false { return 0 - 1 }
+  if macMatches == false { return 0 - 1 }
+  return 1
+}
+
+/// epochLinkVerdict — verifyChainEpochAware, per batch. Composes the base chain link (baseLink = the Int
+/// chainLinkVerdict returned) with the epoch guarantees: every batch MUST carry a valid epoch (no silent
+/// legacy fallback), the epoch must be NON-DECREASING (a newer batch under an older epoch is a rollback),
+/// and the key selected for that epoch must be usable — an unknown / future / REVOKED epoch, or a weak
+/// key, refuses even a cryptographically valid MAC. Fail-closed throughout.
+pure flow epochLinkVerdict(epochValid: Bool, epochNonDecreasing: Bool, keyUsable: Bool, baseLink: Int) -> Int
+contract { intent { "Fail-closed epoch-aware link: a valid + non-decreasing epoch AND a usable (non-revoked) key AND the base chain link." } }
+{
+  if epochValid == false { return 0 - 1 }
+  if epochNonDecreasing == false { return 0 - 1 }
+  if keyUsable == false { return 0 - 1 }
+  if baseLink < 1 { return baseLink }
+  return 1
+}
+
+/// epochAdoptVerdict — adoptEpoch (the write-side rotation switch), forward-only: a new epoch is adopted
+/// only if it is a positive integer STRICTLY greater than the current one (no rollback / no replay) AND
+/// the new key is real (non-zero) — rotating TO the all-zero development key is never legal. Else DENY
+/// (EGR-EPOCH-002 / EGR-EPOCH-003).
+pure flow epochAdoptVerdict(epochStrictlyGreater: Bool, keyReal: Bool) -> Int
+contract { intent { "Forward-only epoch adoption: a strictly-greater epoch AND a real non-zero key, else refuse." } }
+{
+  if epochStrictlyGreater == false { return 0 - 1 }
+  if keyReal == false { return 0 - 1 }
+  return 1
+}
+
+/// configVerdict — the AuditEgress constructor preconditions (fail-closed): batchSize a positive integer
+/// (EGR-CFG-001); under strictKey a real non-zero HMAC key (EGR-KEY-001 — the all-zero dev key is a
+/// certification blocker); a declared epochId a positive integer (EGR-EPOCH-001).
+pure flow configVerdict(batchSizePositive: Bool, strictKeyOk: Bool, epochIdOk: Bool) -> Int
+contract { intent { "Fail-closed audit-egress config: a positive batchSize, a real key under strictKey, and a positive epochId." } }
+{
+  if batchSizePositive == false { return 0 - 1 }
+  if strictKeyOk == false { return 0 - 1 }
+  if epochIdOk == false { return 0 - 1 }
+  return 1
+}
