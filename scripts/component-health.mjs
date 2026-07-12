@@ -241,7 +241,7 @@ const ZERO_TRUST = [
   { boundary: "I/O — OS kernel", pct: 66, status: "◑ auth gate (kernel.fungi) + sentinel-io decision surface FULLY twinned (integrity LSIO-INTEGRITY-001 · zero-copy LSIO-MAP-001 · manifest LSIO-MANIFEST-001) checker-clean · full kernel-bypass EXECUTION = design intent (DSS.wasm #102-106, #143 switch)" },
   { boundary: "Packages", pct: 98, status: "◑ signed admission fully twinned — central-index (registry-index) + per-package manifest (package-admission) + kernel FUSION admission (descriptor · hash · sidecar · revocation · sig-policy · registry · capability — fuse-admission.fungi) checker-clean · remaining = #143 execution + Phase-28 registry-data wiring" },
   { boundary: "Memory", pct: 62, status: "◑ governed-decision surface FULLY twinned (validator · pool-config · segmentation LSM-SEGV · trit-tamper LSM-TRIT-CORRUPT · allocate/free/UAF-guard LSM-UAF-001 + REJECT-scrub — 5 checker-clean .fungi) · real WASM isolation execution = design intent (#143 switch)" },
-  { boundary: "TLSTP — zero-middleware", pct: 48, status: "◑ ALL 6 core-network border DECISION surfaces twinned (.fungi, fail-closed; twin gate 20/20): cert-gate (S1 K3 pin·chain·expiry·revocation vAnd, unknown→DENY) · cors-policy (deny-by-default read admission) · inbound-guard (port admission + fail-closed rate-limit) · defensive-controls (RD-0325/0326: trusted-proxy · uniform responses · opaque-id · bounded pagination) · admission-feedback (degrade-only K3 telemetry self-throttle — toward DENY, never manufactures ALLOW) · egress-guard (SSRF octet→category classification + deny-by-default egress verdict + DNS-rebind fold + URL guard) — core-network decision surface COMPLETE; remaining = in-sandbox decryption EXECUTION (DSS.wasm TCB, #143 switch) + S4 recovering-FSM + B8 transport" },
+  { boundary: "TLSTP — zero-middleware", pct: 48, status: "◑ ALL 6 core-network border DECISION surfaces twinned (.fungi, fail-closed; twin gate 20/20): cert-gate (S1 K3 pin·chain·expiry·revocation vAnd, unknown→DENY) · cors-policy (deny-by-default read admission) · inbound-guard (port admission + fail-closed rate-limit) · defensive-controls (RD-0325/0326: trusted-proxy · uniform responses · opaque-id · bounded pagination) · admission-feedback (degrade-only K3 telemetry self-throttle — toward DENY, never manufactures ALLOW) · egress-guard (SSRF octet→category classification + deny-by-default egress verdict + DNS-rebind fold + URL guard) — core-network decision surface COMPLETE; the B8 ADMISSION fold (b8-admission.fungi) is now twinned + EXECUTION-PROVEN ≡ the shipped K3 calculus (RD-0361 differential, twin gate 7 differential); remaining = in-sandbox decryption EXECUTION (DSS.wasm TCB, #143 switch) + S4 recovering-FSM + B8 transport plumbing (raw-byte shim/ECH)" },
 ];
 const BUILD_PROGRESS = [
   { layer: "Specification / KB", pct: 100 },
@@ -258,8 +258,8 @@ const BUILD_PROGRESS = [
   { layer: "Passive Execution Plans & Target Bridges", pct: 35 },
   { layer: "AI Inference Tower (BitNet/Groq/NVFP4)", pct: 30 },
   { layer: "Photonic / Ternary Computing", pct: 3 },
-  { layer: "Stage-B self-hosting — WASM execution (P9)", status: "in progress" },
-  { layer: "B8 governed HTTP transport (TLSTP)", status: "in progress" },
+  { layer: "Stage-B self-hosting — WASM execution (P9)", status: "in progress — VERIFIED 2026-07-12: all 7 stage twins build→WASM (R0) + #105-admit (R1); frontier = R3 byte-parity per stage (only lexer/tokenize proven so far)" },
+  { layer: "B8 governed HTTP transport (TLSTP)", status: "in progress — admission fold (b8-admission.fungi) execution-proven ≡ the shipped K3 calculus (the converged build-first); remaining = raw-byte shim + S4 recovering-FSM + ECH/OHTTP + DSS.wasm in-sandbox isolation" },
 ];
 // ── TRACKING REGISTRY — substantial items NOT surfaced by the Zero-Trust or Build-Progress tables
 //    (the R&D §5 registry, HANDOVER-v1-finish-line-cutover 2026-07-12). HONESTY RULE: `state` is a bare %
