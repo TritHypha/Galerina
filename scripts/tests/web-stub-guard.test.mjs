@@ -40,10 +40,16 @@ describe("web-stub-guard: classifyPackage (pure detector)", () => {
 describe("web-stub-guard: live scan (current repo state)", () => {
   const results = scan();
 
-  it("governs all 6 web-* packages and they are all currently inert stubs", () => {
-    const stubs = results.filter((r) => r.status === "STUB").map((r) => r.pkg);
+  it("governs all 6 web-* packages and they are all implemented + born fail-closed (IMPL_GUARDED)", () => {
+    // Posture tripwire (snapshot of current repo state). When these were inert stubs this asserted
+    // STUB×6; the scaffold families were then implemented (owner-ordered, task #19) and each shipped its
+    // FUNGI-WEB-* fail-closed acceptance test in the SAME change — exactly the RD-0100 rule the guard
+    // enforces — so the guarded posture is now IMPL_GUARDED×6 with zero violations (asserted below).
+    // Any future posture change (a new inert stub, or an impl that lost its acceptance test) trips this
+    // on purpose, forcing an explicit review + baseline update.
+    const guarded = results.filter((r) => r.status === "IMPL_GUARDED").map((r) => r.pkg);
     for (const p of ["galerina-web", "galerina-web-render", "galerina-web-state", "galerina-web-router", "galerina-web-events", "galerina-web-components"]) {
-      assert.ok(stubs.includes(p), `${p} should be a governed inert stub`);
+      assert.ok(guarded.includes(p), `${p} should be implemented + fail-closed guarded (IMPL_GUARDED)`);
     }
   });
 
