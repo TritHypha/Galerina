@@ -3,3 +3,12 @@
 
 # Shell hooks must stay LF — a CRLF in the #!/bin/sh shebang breaks execution under sh.
 scripts/hooks/* text eol=lf
+
+# ── Regenerated graph / border / index artifacts (written LF by the graph tools). Pin eol=lf so Windows
+#    autocrlf does not phantom-dirty them on every `graph` run (the recurring CRLF churn — 44 files flipping
+#    line endings with no content change). They then diff cleanly and appear modified ONLY when the border/
+#    index ACTUALLY changes, which keeps the tracked BOUNDARY.md useful for PR-diff review.
+**/.graph/BOUNDARY.md   text eol=lf
+build/graph/*.md        text eol=lf
+build/kb-graph/*.md     text eol=lf
+build/dev-tool-index/*  text eol=lf
