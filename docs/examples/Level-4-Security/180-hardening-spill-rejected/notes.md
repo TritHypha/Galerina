@@ -12,6 +12,8 @@ The compiler **fails closed**: rather than silently spill a secret past its decl
 REJECTS with `FUNGI-HARDEN-005`. Make it compile by declaring a capable seam
 (`host register_pinned`) or by relaxing the ceiling with an audited opt-out.
 
-Honest scope: the softer "governed downgrade that re-types the value `Refuted`/`Tainted`" (RD-0358 §3-2)
-needs the epistemic type-state (RD-0337) and is **stubbed** on this branch — so the prototype takes the
-stricter REJECT path. Constant-time (H-4) is also honestly partial (undecidable in general).
+Honest scope: the governed downgrade that re-types the value `Refuted` (RD-0358 §3-2) is now **wired for
+real** (RD-0360 Option A) — that is the `FUNGI-HARDEN-007` above, via a compiler-side epistemic trit held
+equivalent to the runtime RD-0337 trit by a fail-closed conformance gate. To DECLARE the spill instead of
+suffering it is refused too — see example 182 (`memory.spill` is deny-only, `FUNGI-EFFECT-006`).
+Constant-time (H-4) is still honestly partial (undecidable in general).

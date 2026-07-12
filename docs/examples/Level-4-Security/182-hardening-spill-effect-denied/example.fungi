@@ -1,0 +1,17 @@
+@version 1
+/// example: 182-hardening-spill-effect-denied
+/// level: 4
+/// concept: you cannot DECLARE your way past a residency ceiling — the `memory.spill` effect is deny-only, REJECTED (RD-0358 H-6 / RD-0360 Q2)
+/// expected_diagnostics: FUNGI-EFFECT-006
+/// ai_rule: memory.spill is a recognised but never-grantable effect. Declaring it is inadmissible, not an under-declaration to fix — remove it. No declaration legitimises spilling a hardened secret to memory; the hardening checker (FUNGI-HARDEN-005/007) shuts the implicit door, this shuts the explicit one.
+/// test_status: stable
+
+secure flow declareSpill(k: SecureString) -> Bool
+contract {
+  intent { "Try to DECLARE a memory.spill effect to legitimise crossing a residency ceiling — the effect is deny-only, so the flow is rejected." }
+  privacy { contains PII }
+  effects { memory.spill }
+}
+{
+  return true
+}
