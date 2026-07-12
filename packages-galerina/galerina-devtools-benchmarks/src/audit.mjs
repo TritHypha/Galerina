@@ -66,18 +66,31 @@ for (const [id, field] of Object.entries(CHECKSUM_FIELD)) {
 // ── 2. Unit alignment (no FAIL) + 3. exclusions intact ──────────────────────
 console.log("\n2. Unit alignment + 3. exclusions");
 // matrix-multiply un-excluded 2026-06-23 (normalized to mul-adds/s — a size-invariant GEMM metric).
-// tri-logic & data-query stay excluded: their workload SHAPES (not just sizes) differ across runtimes.
-const MUST_BE_NONCOMPARABLE = new Set(["tri-logic", "data-query"]);
+// tri-logic & data-query un-excluded 2026-07-11: aligned to a common bulk-N path (same workload SHAPE on
+// every runtime) → one unit each (trit-ops/s · record-scans/s), status PASS (data-query's cross-runtime
+// checksums even agree at 16950). Keeping them in the exclusion set was the stale pre-alignment
+// expectation; they are asserted COMPARABLE below instead.
+const MUST_BE_NONCOMPARABLE = new Set([]); // none currently shape-non-comparable
+// Inverse guard (the new-error-type → update-the-detector discipline): a benchmark deliberately ALIGNED
+// to be cross-runtime comparable must STAY comparable — a silent regression to non-comparable (which would
+// drop it from the scoreboard / winner claims) fails the audit. Asserted only when the benchmark is present.
+const MUST_BE_COMPARABLE = new Set(["tri-logic", "data-query"]);
 for (const bench of data) {
   const u = bench.units;
   if (!u) continue;
   if (u.status === "FAIL") fail(`${bench.benchmark}: unit check FAILED — ${(u.problems || []).join("; ")}`);
   if (MUST_BE_NONCOMPARABLE.has(bench.benchmark) && u.comparable !== false)
     fail(`${bench.benchmark}: expected non-comparable (excluded) but comparable=${u.comparable}`);
+  if (MUST_BE_COMPARABLE.has(bench.benchmark) && u.comparable !== true)
+    fail(`${bench.benchmark}: expected comparable (aligned 2026-07-11) but comparable=${u.comparable} — alignment regressed`);
 }
 for (const id of MUST_BE_NONCOMPARABLE) {
   const u = byId.get(id)?.units;
   if (u && u.comparable === false) pass(`${id}: correctly flagged & excluded`);
+}
+for (const id of MUST_BE_COMPARABLE) {
+  const u = byId.get(id)?.units;
+  if (u && u.comparable === true) pass(`${id}: correctly aligned & comparable`);
 }
 {
   const aligned = data.filter(b => b.units?.status === "PASS").map(b => b.benchmark);
