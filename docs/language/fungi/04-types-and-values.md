@@ -286,8 +286,11 @@ so it denies at a trust boundary), via a compiler-side epistemic trit held equiv
 RD-0337 trit by a mandatory conformance gate. `timing: constant` (H-4) is **honestly partial** —
 constant-time is undecidable in general, so `FUNGI-HARDEN-006` flags the common case only and does **not**
 prove constant-time. HV8: auto-hardening covers only *labelled* values — an unlabelled secret is
-unhardened (example 181). `memory.spill` as a first-class effect (H-6) is design-stage
-(see [03 — Effects](03-effects-and-capabilities.md)).
+unhardened (example 181). `memory.spill` as an effect (H-6) is now **registered deny-only** (RD-0360 Q2):
+declaring it is `FUNGI-EFFECT-006` (never grantable), closing the *explicit*-spill door that
+`FUNGI-HARDEN-005/007` already closes on the *implicit* side — see
+[03 — Effects](03-effects-and-capabilities.md). A grantable "audited paged-optimizer" spill remains a
+distinct future effect (RD-0356 B5), never this name.
 
 **Strip-list (binding).** *Photonic* = a classical analog matrix accelerator (the dataflow half only,
 never secrets); *tri/K3* = a classical governor, not a qubit; there is **no "unhackable"** — this shrinks
