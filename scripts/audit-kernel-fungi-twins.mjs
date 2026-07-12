@@ -15,7 +15,7 @@
  * declared twin dir is missing (fail-closed: the gate cannot silently pass when it cannot look).
  */
 import { spawnSync } from "node:child_process";
-import { readdirSync, existsSync } from "node:fs";
+import { readdirSync, existsSync, readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -39,6 +39,24 @@ const TWIN_DIRS = [
 let failed = 0;
 let checked = 0;
 
+// Execution column (RD-0361): a twin is a `shadow` (checker-verified only) until a keep-green test builds it,
+// #105-admits it, and executes it — then it is `differential` (WASM verdict proven ≡ the .ts / spec). It becomes
+// `authoritative` only once the #143 execution switch flips it to the real decider (none are yet). Detected from
+// the twin's package tests/: a test that references the twin's filename AND calls admitAndInstantiate proves
+// execution. Makes RD-0361 progress MEASURABLE per RD-0366 ("measure, don't narrate").
+const exec = { shadow: 0, differential: 0, authoritative: 0 };
+function executionState(dir, twinFile) {
+  const testsDir = join(ROOT, dir.replace(/\/src\/self-hosted$/, ""), "tests");
+  if (!existsSync(testsDir)) return "shadow";
+  for (const f of readdirSync(testsDir)) {
+    if (!f.endsWith(".test.mjs")) continue;
+    let src = "";
+    try { src = readFileSync(join(testsDir, f), "utf8"); } catch { continue; }
+    if (src.includes(twinFile) && src.includes("admitAndInstantiate")) return "differential";
+  }
+  return "shadow";
+}
+
 for (const dir of TWIN_DIRS) {
   const abs = join(ROOT, dir);
   if (!existsSync(abs)) {
@@ -54,7 +72,9 @@ for (const dir of TWIN_DIRS) {
     // "3 errors" is not). Matching a bare /error/ is wrong — it hits the word in "0 errors".
     const out = (r.stdout ?? "") + (r.stderr ?? "");
     const ok = r.status === 0 && !/[1-9]\d* error/i.test(out);
-    console.log(`  ${ok ? "OK  " : "FAIL"} ${rel}${ok ? "" : "  →  " + out.trim().split("\n").slice(-1)[0]}`);
+    const state = executionState(dir, twin);
+    exec[state] += 1;
+    console.log(`  ${ok ? "OK  " : "FAIL"} [${state.padEnd(12)}] ${rel}${ok ? "" : "  →  " + out.trim().split("\n").slice(-1)[0]}`);
     checked += 1;
     if (!ok) failed += 1;
   }
@@ -65,4 +85,5 @@ if (checked === 0 && failed === 0) {
   process.exit(0);
 }
 console.log(`fungi-twins: ${checked - failed}/${checked} check-clean across ${TWIN_DIRS.length} dir(s)`);
+console.log(`execution column (RD-0361): ${exec.shadow} shadow · ${exec.differential} differential (execute through #105) · ${exec.authoritative} authoritative (#143 not flipped)`);
 process.exit(failed === 0 ? 0 : 1);
