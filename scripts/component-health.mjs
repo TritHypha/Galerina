@@ -275,7 +275,7 @@ const TRACKING_REGISTRY = [
   { item: "Hallmark open types (RD-0353 H1)",    state: "shipped",       detail: "developer-minted nominal types + mandatory assay gates; FUNGI-HALLMARK-001..005, example 097" },
   { item: "Value-unit types (RD-0349)",          state: "building",      detail: "I2/I3 done · I1 ISO-4217 unlocked (§5) · I4–I6 queued; no float bridge" },
   { item: "CANONICAL_EFFECTS registry (RD-0341)",state: "shipped",       detail: "single-source domain.verb + anti-drift self-tests; memory.spill deny-only, FUNGI-EFFECT-006" },
-  { item: "Contract Registry (RD-0359)",         state: "build-pending", detail: "gen-contract-registry.mjs unbuilt; timing unlocked (§5) — generate ALL contracts into one doc" },
+  { item: "Contract Registry (RD-0359)",         state: "shipped",       detail: "gen-contract-registry.mjs BUILT — 840 contracts across 446 .fungi → docs/contract-registry/CONTRACT_REGISTRY.md + .json; parser-authoritative flow list + intent extraction; --self-test + --check (CI-ready)" },
   { item: "Self-hosting Stages 3–6",             state: "post-v1",       detail: "bootstrap fixpoint · crypto FFI seam · .fungi↔host path · floor-by-floor; P9, non-v1-gate" },
   { item: "DSS.wasm supervisor (#102–106)",      state: "post-v1",       detail: "real Wasmtime TCB (kernel-bypass / in-sandbox decrypt); design-spec exists; unlocked-to-build, non-v1-gate" },
   { item: "Workspace package families",          state: "shipped",       detail: "94-pkg denominator built (target×9 · data×12 · db×5 · web×6 · ai · tools); 2 orphans #32-exempt" },

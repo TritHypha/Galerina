@@ -19,11 +19,11 @@
 <text x="102.5" y="418.0" text-anchor="end" font-size="12.5" font-weight="600" fill="#333">Exhaustive Match</text>
 <line x1="300" y1="300" x2="118.1" y2="195.0" stroke="#d0d0d0" stroke-width="1"/>
 <text x="102.5" y="190.0" text-anchor="end" font-size="12.5" font-weight="600" fill="#333">Fail-closed Default</text>
-<polygon points="300.0,90.0 481.9,195.0 481.9,405.0 300.0,489.0 136.3,394.5 118.1,195.0" fill="#e8590c" fill-opacity="0.14" stroke="#e8590c" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="300.0,90.0 481.9,195.0 481.9,405.0 300.0,510.0 136.3,394.5 118.1,195.0" fill="#e8590c" fill-opacity="0.14" stroke="#e8590c" stroke-width="2.5" stroke-linejoin="round"/>
 <circle cx="300.0" cy="90.0" r="3" fill="#e8590c"/>
 <circle cx="481.9" cy="195.0" r="3" fill="#e8590c"/>
 <circle cx="481.9" cy="405.0" r="3" fill="#e8590c"/>
-<circle cx="300.0" cy="489.0" r="3" fill="#e8590c"/>
+<circle cx="300.0" cy="510.0" r="3" fill="#e8590c"/>
 <circle cx="136.3" cy="394.5" r="3" fill="#e8590c"/>
 <circle cx="118.1" cy="195.0" r="3" fill="#e8590c"/>
 <polygon points="300.0,237.0 336.4,279.0 300.0,300.0 300.0,405.0 136.3,394.5 245.4,268.5" fill="#b7410e" fill-opacity="0.14" stroke="#b7410e" stroke-width="2.5" stroke-linejoin="round"/>

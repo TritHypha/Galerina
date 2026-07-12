@@ -29,6 +29,12 @@ const SERIES_COLORS = {
 
 const charts = [
   {
+    // Memory-Safe = 9 (deliberately NOT 10, 2026-07-12): governed memory-residency now ships (RD-0358,
+    // merged f7ff18df) — value-state/taint + a declared register-only/no-swap/no-dram residency CEILING
+    // + erase-on-exit + memory.spill deny-only + spill→Refuted: a governance layer beyond Rust's borrow
+    // checker. Held at 9 HONESTLY — the residency ceiling is compile-time-CHECKED but the runtime
+    // mlock/zeroize ENFORCEMENT is the #143 execution switch (not yet built); the score reflects proven
+    // enforcement, not declared intent. Bump to 10 when #143 lands.
     file: "radar-1-security-governance.svg",
     title: "1 · Security & Governance",
     subtitle: "where Galerina is built to lead",
@@ -165,16 +171,21 @@ const charts = [
   {
     // The language / type-system chart (added 2026-07-11): Galerina's distinctive move is that
     // GOVERNANCE lives IN the type system — value-state (protected/redacted/tainted), the declared
-    // effect set (CANONICAL_EFFECTS), currency-typed Money<GBP>, and deny-by-default are CHECKED, not
+    // effect set (CANONICAL_EFFECTS), currency-typed Money<GBP>, developer-minted nominal HALLMARK open
+    // types with mandatory assay gates (RD-0353 — raw→domain is a compile REJECT; parse-don't-validate
+    // as a first-class feature), value-unit types (RD-0349 I2/I3), and deny-by-default are CHECKED, not
     // conventions. Rust has strong types + exhaustive match but no effect/value-state/governance layer;
     // TypeScript is gradual + branded-by-hand; Python is dynamic. Scored honestly — Galerina leads here
     // because it defines the category (exhaustive-match is a genuine tie with Rust).
+    // Domain/Money bumped 9→10 (2026-07-12): hallmark + Money<GBP> + value-unit types all ship AND are
+    // CHECKED — best-in-set for governed domain typing (nothing in the comparison set governs nominal
+    // domain types with assay gates).
     file: "radar-11-language-type-system.svg",
     title: "11 · Language & Type System",
     subtitle: "governance and value-state live IN the type system",
     axes: ["Value-state / Taint", "Effect System", "Governance in Types", "Domain / Money Types", "Exhaustive Match", "Fail-closed Default"],
     series: {
-      Galerina:    [10, 10, 10, 9, 9, 10],
+      Galerina:    [10, 10, 10, 10, 9, 10],
       Rust:        [3, 2, 0, 5, 9, 3],
       TypeScript:  [2, 1, 0, 4, 5, 1],
       Python:      [1, 1, 0, 2, 3, 1],
