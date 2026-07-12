@@ -128,7 +128,17 @@ for (const f of files) {
   for (const name of declaredEffectNames(src)) {
     if (CANONICAL.has(name) && !DENY_ONLY.has(name)) continue;
     let cls, blocking;
-    if (DENY_ONLY.has(name)) { cls = "deny-only"; blocking = true; }
+    if (DENY_ONLY.has(name)) {
+      // Deny-only names are normally BLOCK (never grantable, any profile). EXCEPTION: a
+      // NEGATIVE example that deliberately declares one to TEACH the deny — and says so
+      // in-file via `/// expected_diagnostics: … FUNGI-EFFECT-006` — is legitimate (the
+      // curriculum analogue of the report-only negative fixtures under tests/; e.g.
+      // example 182, RD-0358 H-6 / RD-0360 Q2). Fail-closed: ONLY an explicit
+      // expected-deny header exempts it; any other deny-only declaration still BLOCKS.
+      const declaresDeny = /\/\/\/\s*expected_diagnostics:[^\n]*\bFUNGI-EFFECT-006\b/.test(src);
+      cls = declaresDeny ? "deny-only-demonstration" : "deny-only";
+      blocking = !declaresDeny;
+    }
     else if (BROAD.has(name)) { cls = "broad-alias"; blocking = false; }
     else if (ALIASES.has(name)) { cls = "alias"; blocking = true; }
     else if (ASPIRATIONAL_ALLOWLIST.get(rel)?.has(name)) { cls = "allowlisted-aspirational"; blocking = false; }
@@ -138,7 +148,8 @@ for (const f of files) {
 }
 
 const blocking = findings.filter((x) => x.blocking);
-const warns = findings.filter((x) => !x.blocking && !x.reportOnly);
+const demos = findings.filter((x) => x.class === "deny-only-demonstration");
+const warns = findings.filter((x) => !x.blocking && !x.reportOnly && x.class !== "deny-only-demonstration");
 const testOnly = findings.filter((x) => x.reportOnly);
 
 if (wantJson) {
@@ -147,6 +158,7 @@ if (wantJson) {
   console.log(`=== corpus effect-name audit (SoT: effect-checker.ts CANONICAL_EFFECTS) ===`);
   console.log(`   .fungi files: ${files.length} | canonical: ${CANONICAL.size} | aliases: ${ALIASES.size} | deny-only: ${DENY_ONLY.size}`);
   for (const x of blocking) console.log(`   ❌ [${x.class}] ${x.file}: effects { ${x.name} } — production compile rejects this name`);
+  for (const x of demos) console.log(`   ✅ [${x.class}] ${x.file}: effects { ${x.name} } — deliberate deny demonstration (declares expected FUNGI-EFFECT-006), not a corpus defect`);
   for (const x of warns) console.log(`   ⚠️  [${x.class}] ${x.file}: effects { ${x.name} } — accepted with a nudge; prefer the canonical name`);
   if (testOnly.length > 0) console.log(`   ℹ️  ${testOnly.length} non-canonical name(s) under tests/ (negative fixtures — report-only)`);
 }
