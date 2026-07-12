@@ -11,13 +11,13 @@
 
 | Metric | Count |
 |---|---|
-| Files | 1 |
+| Files | 2 |
 | Internal edges | 0 |
 | External dependencies | 0 |
 | ├─ Node core | 0 |
 | ├─ Workspace (@galerina/*) | 0 |
 | └─ Third-party | 0 |
-| Orphan files | 0 |
+| Orphan files | 1 |
 
 ## External Dependencies (the Border)
 
@@ -34,7 +34,7 @@ _none_
 No boundary violations. All external imports are within the allowlist.
 
 ## Orphaned Files
-_none_ — every file is reachable from an internal import or entry point.
+- `src/self-hosted/passive-plan-replay-admission.fungi`
 
 ## Entry Points
 - `src/index.ts`

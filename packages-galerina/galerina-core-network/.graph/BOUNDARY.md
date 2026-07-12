@@ -11,13 +11,13 @@
 
 | Metric | Count |
 |---|---|
-| Files | 13 |
+| Files | 14 |
 | Internal edges | 7 |
 | External dependencies | 1 |
 | ├─ Node core | 0 |
 | ├─ Workspace (@galerina/*) | 1 |
 | └─ Third-party | 0 |
-| Orphan files | 6 |
+| Orphan files | 7 |
 
 ## External Dependencies (the Border)
 
@@ -35,6 +35,7 @@ No boundary violations. All external imports are within the allowlist.
 
 ## Orphaned Files
 - `src/self-hosted/admission-feedback.fungi`
+- `src/self-hosted/b8-admission.fungi`
 - `src/self-hosted/cert-gate.fungi`
 - `src/self-hosted/cors-policy.fungi`
 - `src/self-hosted/defensive-controls.fungi`

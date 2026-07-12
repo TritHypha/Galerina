@@ -11,13 +11,13 @@
 
 | Metric | Count |
 |---|---|
-| Files | 11 |
+| Files | 12 |
 | Internal edges | 0 |
 | External dependencies | 6 |
 | ├─ Node core | 6 |
 | ├─ Workspace (@galerina/*) | 0 |
 | └─ Third-party | 0 |
-| Orphan files | 11 |
+| Orphan files | 12 |
 
 ## External Dependencies (the Border)
 
@@ -46,6 +46,7 @@ No boundary violations. All external imports are within the allowlist.
 - `src/galerina-runner.mjs`
 - `src/gpu-detect.mjs`
 - `src/mem-sampler.mjs`
+- `src/report.mjs`
 - `src/runner.mjs`
 - `src/snapshot.mjs`
 - `src/throughput-units.mjs`

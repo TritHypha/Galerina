@@ -11,13 +11,13 @@
 
 | Metric | Count |
 |---|---|
-| Files | 29 |
+| Files | 31 |
 | Internal edges | 68 |
 | External dependencies | 6 |
 | ├─ Node core | 3 |
 | ├─ Workspace (@galerina/*) | 2 |
 | └─ Third-party | 1 |
-| Orphan files | 1 |
+| Orphan files | 3 |
 
 ## External Dependencies (the Border)
 
@@ -38,6 +38,8 @@ No boundary violations. All external imports are within the allowlist.
 
 ## Orphaned Files
 - `src/self-hosted/governance-decisions.fungi`
+- `src/self-hosted/inference-governance.fungi`
+- `src/self-hosted/pq-admission-policy.fungi`
 
 ## Entry Points
 - `src/index.ts`

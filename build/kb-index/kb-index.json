@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 942,
+  "docCount": 946,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -29118,6 +29118,58 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/galerina-rd-0366-without-ts-ceiling-govern-dont-absorb-trichotomy.md",
+      "title": "RD-0366 — The \"without-`.ts`\" ceiling: the Govern-Don't-Absorb trichotomy (adjudication of main's stoppers handover)",
+      "headings": [
+        "1. The doctrine, crystallized (this is the reusable answer to \"why isn't X 100% in `.fungi`?\")",
+        "2. Refinement 1 (honesty guard main's reporting NEEDS) — the re-denomination is \"differential\", not \"authoritative\"",
+        "3. Refinement 2 (nuance, not correction) — bucket C has a without-`.ts`-*logic* axis main didn't name",
+        "4. Endorsed redirect — the highest-value without-`.ts` work is RD-0361 T2–T5",
+        "5. Record correction (resume-critical)",
+        "6. Honesty / verify-first"
+      ],
+      "codes": [],
+      "tasks": [
+        "#143",
+        "#105"
+      ],
+      "xrefs": [
+        "HANDOVER-component-build-stoppers-without-ts-2026-07-12",
+        "galerina-rd-0361-execution-cutover-ladder-twins-to-executing-fungi",
+        "galerina-rd-0363-passive-plan-execution-semantics-replay-under-governance",
+        "galerina-rd-0364-governed-inference-bridge-contract",
+        "galerina-rd-0365-tpm-enclave-key-custody-ladder",
+        "HANDOVER-v1-finish-line-cutover-and-gap-map-2026-07-12"
+      ],
+      "topTerms": [
+        "main",
+        "fungi",
+        "without-",
+        "correction",
+        "doctrine",
+        "refinement",
+        "honesty",
+        "rd-0361",
+        "answer",
+        "govern-don",
+        "t-absorb",
+        "adjudication",
+        "record",
+        "bucket",
+        "authoritative",
+        "differential",
+        "axis",
+        "trichotomy",
+        "isn",
+        "endorsed",
+        "guard",
+        "rd-0366",
+        "ceiling",
+        "stoppers",
+        "handover"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/galerina-rd-34b-paramtaint-buildspec-2026-06-24.md",
       "title": "R&D — Phase 34B boundary param auto-taint: verified state + build-ready spec",
       "headings": [
@@ -30591,6 +30643,7 @@
         "FUNGI-RETAIN-001"
       ],
       "tasks": [
+        "#143",
         "#105",
         "#10",
         "#11",
@@ -30626,27 +30679,27 @@
         "owner",
         "galerina",
         "never",
-        "design",
         "fungi",
+        "design",
+        "real",
         "mjs",
         "photonic",
-        "real",
         "fail-closed",
-        "already",
         "verdict",
+        "already",
         "build",
         "wasm",
         "audit",
         "shipped",
-        "spore",
-        "security",
         "verified",
         "crypto",
+        "spore",
+        "security",
         "graph",
         "signed",
         "owner-gated",
         "runtime",
-        "gap"
+        "honest"
       ]
     },
     {
@@ -38437,6 +38490,110 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-boundary-and-registry-build-program-2026-07-12.md",
+      "title": "HANDOVER — boundary & registry build program: what's doable without `.ts`, and every stopper",
+      "headings": [
+        "§1 Zero-Trust thesis boundaries — can each move toward 100% without `.ts`?",
+        "§2 Tracking registry — \"shipped\": ZT-63 hygiene check (`.ts`/`node_modules`)",
+        "§3 Tracking registry — \"building\": status + what \"finish\" needs",
+        "§4 Hardening / residency (RD-0358) — build as much as possible (task #52)",
+        "§5 The stopper map (one view)",
+        "§6 What I built this session (findings)",
+        "§6.1 End-phase results"
+      ],
+      "codes": [
+        "FUNGI-HARDEN-007"
+      ],
+      "tasks": [
+        "#105",
+        "#143",
+        "#102",
+        "#52"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "registry",
+        "without",
+        "build",
+        "rd-0361",
+        "stopper",
+        "authoritative",
+        "every",
+        "differential",
+        "boundary",
+        "session",
+        "compiler",
+        "host",
+        "tracking",
+        "hardening",
+        "twin",
+        "built",
+        "node",
+        "modules",
+        "execution",
+        "owner-gated",
+        "wasm",
+        "building",
+        "zt-63",
+        "finish",
+        "decision"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-component-build-stoppers-without-ts-2026-07-12.md",
+      "title": "HANDOVER — component build stoppers: what each component needs to advance (and the \"without .ts\" ceiling)",
+      "headings": [
+        "§0 The load-bearing distinction — this decides every \"can it go further without .ts?\"",
+        "§1 Passive plans & bridges — 35% (was 22%)",
+        "§2 AI Inference Tower — 30% (was 12%)",
+        "§3 Photonic / ternary — 3% (bar UNDECIDED per owner ruling)",
+        "§4 Post-Quantum & hardware — 38%",
+        "§5 The four ~90% components — the `.ts`-bound wall (Type/Effect · WAT · Runtime · App-framework)",
+        "§6 The one map that answers \"why isn't it 100% without .ts?\"",
+        "§7 What I built this session under this analysis (coding pass — FINDINGS)"
+      ],
+      "codes": [
+        "FUNGI-TYPE-005"
+      ],
+      "tasks": [
+        "#143",
+        "#105"
+      ],
+      "xrefs": [
+        "galerina-rd-0361-execution-cutover-ladder-twins-to-executing-fungi",
+        "galerina-rd-0363-passive-plan-execution-semantics-replay-under-governance",
+        "galerina-rd-0364-governed-inference-bridge-contract",
+        "galerina-rd-0365-tpm-enclave-key-custody-ladder"
+      ],
+      "topTerms": [
+        "fungi",
+        "without",
+        "host",
+        "decision",
+        "compiler",
+        "wat",
+        "component",
+        "components",
+        "owner",
+        "twin",
+        "verdict",
+        "build",
+        "photonic",
+        "emitter",
+        "runtime",
+        "these",
+        "effect",
+        "checker",
+        "hardware",
+        "advance",
+        "session",
+        "tower",
+        "further",
+        "governance",
+        "governed"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/HANDOVER-crypto-floor-decision-to-main-2026-07-11.md",
       "title": "HANDOVER — Answer to the crypto-floor question you paused on (keep #149)",
       "headings": [
@@ -39417,6 +39574,60 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-REPLY-rd0366-without-ts-adjudication-2026-07-12.md",
+      "title": "↩ R&D REPLY — the \"without-`.ts`\" stoppers finding: ENDORSED, with one build rule",
+      "headings": [
+        "TL;DR",
+        "1. The doctrine, blessed as the standing answer",
+        "2. The one BUILD RULE — tag the re-denomination `differential`, not `authoritative`",
+        "3. One nuance (optional, low priority — NOT a % lever)",
+        "4. What to build next (endorsed order)",
+        "5. Verify-first note",
+        "⏳ PART 2 — RESERVED (owner is adding a second part to this handover)"
+      ],
+      "codes": [],
+      "tasks": [
+        "#143",
+        "#105"
+      ],
+      "xrefs": [
+        "HANDOVER-component-build-stoppers-without-ts-2026-07-12",
+        "galerina-rd-0366-without-ts-ceiling-govern-dont-absorb-trichotomy",
+        "HANDOVER-v1-finish-line-cutover-and-gap-map-2026-07-12",
+        "galerina-rd-0361-execution-cutover-ladder-twins-to-executing-fungi",
+        "galerina-rd-0363-passive-plan-execution-semantics-replay-under-governance",
+        "galerina-rd-0364-governed-inference-bridge-contract",
+        "galerina-rd-0365-tpm-enclave-key-custody-ladder"
+      ],
+      "topTerms": [
+        "build",
+        "part",
+        "endorsed",
+        "rule",
+        "reply",
+        "owner",
+        "doctrine",
+        "differential",
+        "handover",
+        "fungi",
+        "authoritative",
+        "without-",
+        "finding",
+        "twins",
+        "reserved",
+        "next",
+        "note",
+        "second",
+        "stoppers",
+        "blessed",
+        "standing",
+        "answer",
+        "tag",
+        "re-denomination",
+        "nuance"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/HANDOVER-RnD-master-index-2026-07-09.md",
       "title": "HANDOVER — R&D session master index (all deliverables) · 2026-07-09",
       "headings": [
@@ -39735,6 +39946,7 @@
         "#11",
         "#12",
         "#20",
+        "#143",
         "#34"
       ],
       "xrefs": [
@@ -39744,14 +39956,15 @@
         "galerina-rd-0363-passive-plan-execution-semantics-replay-under-governance",
         "galerina-rd-0364-governed-inference-bridge-contract",
         "galerina-rd-0365-tpm-enclave-key-custody-ladder",
+        "galerina-rd-0366-without-ts-ceiling-govern-dont-absorb-trichotomy",
         "HANDOVER-galerina-finish-push-2026-07-12",
         "HANDOVER-governed-memory-residency-hardening-auto-2026-07-11"
       ],
       "topTerms": [
         "owner",
         "these",
-        "children",
         "build",
+        "children",
         "parent",
         "flip",
         "wasm",
@@ -39759,20 +39972,20 @@
         "execution",
         "before",
         "cutover",
-        "authority",
+        "decision",
         "registry",
+        "authority",
         "building",
         "zero-trust",
         "twin",
         "row",
+        "fungi",
         "caused",
         "stopper",
         "tranche",
-        "decision",
-        "each",
-        "them",
-        "line",
-        "unlock"
+        "column",
+        "differential",
+        "tracking"
       ]
     },
     {
@@ -52508,6 +52721,7 @@
         "#102",
         "#143",
         "#128",
+        "#105",
         "#163",
         "#165",
         "#32",
@@ -52524,22 +52738,22 @@
         "sub",
         "wasm",
         "shipped",
-        "audit",
         "governance",
+        "audit",
         "runtime",
+        "fungi",
+        "contract",
         "core",
         "architecture",
-        "contract",
         "package",
-        "fungi",
         "align",
         "center",
+        "signed",
+        "build",
+        "capability",
         "href",
         "img",
-        "src",
-        "alt",
-        "security",
-        "gate"
+        "src"
       ]
     },
     {

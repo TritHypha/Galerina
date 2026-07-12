@@ -107,6 +107,13 @@ flowchart LR
   T_audit_gscm_mjs --> C_diagnostics
   T_audit_gscm_mjs --> C_tier_floor
   T_audit_gscm_mjs --> C_teaching_corpus
+  T_audit_hardening_determinism_mjs["audit-hardening-determinism.mjs"]
+  T_audit_hardening_determinism_mjs --> C_sinks_taint
+  T_audit_hardening_determinism_mjs --> C_effects
+  T_audit_hardening_determinism_mjs --> C_signing_fusion
+  T_audit_hardening_determinism_mjs --> C_secrets_privacy
+  T_audit_hardening_determinism_mjs --> C_teaching_corpus
+  T_audit_hardening_determinism_mjs --> C_graph_index
   T_audit_import_governance_mjs["audit-import-governance.mjs"]
   T_audit_import_governance_mjs --> C_effects
   T_audit_import_governance_mjs --> C_governance
@@ -299,6 +306,13 @@ flowchart LR
   T_gen_code_registry_mjs --> C_diagnostics
   T_gen_code_registry_mjs --> C_doc_drift
   T_gen_code_registry_mjs --> C_graph_index
+  T_gen_contract_registry_mjs["gen-contract-registry.mjs"]
+  T_gen_contract_registry_mjs --> C_effects
+  T_gen_contract_registry_mjs --> C_signing_fusion
+  T_gen_contract_registry_mjs --> C_governance
+  T_gen_contract_registry_mjs --> C_secrets_privacy
+  T_gen_contract_registry_mjs --> C_doc_drift
+  T_gen_contract_registry_mjs --> C_graph_index
   T_kb_index_mjs["kb-index.mjs"]
   T_kb_index_mjs --> C_effects
   T_kb_index_mjs --> C_provenance
@@ -375,6 +389,15 @@ flowchart LR
   T_generate_sbom_mjs --> C_diagnostics
   T_generate_sbom_mjs --> C_doc_drift
   T_generate_sbom_mjs --> C_graph_index
+  T_hardening_show_derived_mjs["hardening-show-derived.mjs"]
+  T_hardening_show_derived_mjs --> C_sinks_taint
+  T_hardening_show_derived_mjs --> C_effects
+  T_hardening_show_derived_mjs --> C_signing_fusion
+  T_hardening_show_derived_mjs --> C_governance
+  T_hardening_show_derived_mjs --> C_gate_wiring
+  T_hardening_show_derived_mjs --> C_diagnostics
+  T_hardening_show_derived_mjs --> C_secrets_privacy
+  T_hardening_show_derived_mjs --> C_graph_index
   T_license_rollout_mjs["license-rollout.mjs"]
   T_license_rollout_mjs --> C_governance
   T_license_rollout_mjs --> C_coverage

@@ -3,9 +3,9 @@
   "totals": {
     "packages": 94,
     "testBearing": 93,
-    "tests": 7057,
-    "devTools": 72,
-    "auditTools": 41,
+    "tests": 7104,
+    "devTools": 75,
+    "auditTools": 42,
     "toolsInCadence": 21,
     "proofs": 40
   },
@@ -287,10 +287,10 @@
       "name": "galerina-core-compiler",
       "kind": "core",
       "description": "Galerina compiler pipeline contracts for parsing, checking, IR, diagnostics and reports.",
-      "tests": 4471,
+      "tests": 4505,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 96,
+      "files": 97,
       "deps": [
         "@galerina/core-network",
         "@galerina/core-security",
@@ -342,10 +342,10 @@
       "name": "galerina-core-network",
       "kind": "core",
       "description": "Galerina core network I/O policy, profile, permission and report contracts.",
-      "tests": 185,
+      "tests": 186,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 13,
+      "files": 14,
       "deps": [
         "@galerina/tower-citizen"
       ]
@@ -374,10 +374,10 @@
       "name": "galerina-core-runtime",
       "kind": "core",
       "description": "Galerina execution engine contracts for checked and compiled runtime execution.",
-      "tests": 12,
+      "tests": 13,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 1,
+      "files": 2,
       "deps": []
     },
     {
@@ -444,7 +444,7 @@
       "name": "galerina-core-sentinel-time",
       "kind": "core",
       "description": "Galerina Sentinel Time (LST) — deterministic Logical Clock + drift monitor. Cycle-indexed audit timing. Citize",
-      "tests": 13,
+      "tests": 14,
       "hasTestScript": true,
       "border": "PASS",
       "files": 5,
@@ -476,10 +476,10 @@
       "name": "galerina-tower-citizen",
       "kind": "tower",
       "description": "Galerina Tower Citizen — TowerRuntime + AuditLogger + PluginSandbox for governed AI inference",
-      "tests": 442,
+      "tests": 450,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 29,
+      "files": 31,
       "deps": [
         "@galerina/inference-bridge-contract",
         "@galerina/substrate-math"
@@ -518,7 +518,7 @@
       "name": "galerina-framework-app-kernel",
       "kind": "framework",
       "description": "Optional Galerina secure App Kernel: the fixed, non-bypassable governed request pipeline + secure-default rout",
-      "tests": 105,
+      "tests": 107,
       "hasTestScript": true,
       "border": "PASS",
       "files": 13,
@@ -547,7 +547,7 @@
       "tests": null,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 11,
+      "files": 12,
       "deps": []
     },
     {
@@ -1218,6 +1218,21 @@
       ]
     },
     {
+      "name": "audit-hardening-determinism.mjs",
+      "category": "audit",
+      "purpose": "the M6 / HV1 / HV9 injection-determinism gate (RD-0358 PROTOTYPE).",
+      "selfTest": true,
+      "inCadence": false,
+      "concerns": [
+        "sinks/taint",
+        "effects",
+        "signing/fusion",
+        "secrets/privacy",
+        "teaching-corpus",
+        "graph/index"
+      ]
+    },
+    {
       "name": "audit-import-governance.mjs",
       "category": "audit",
       "purpose": "inventory + classify every .fungi import; RED a plugin",
@@ -1674,6 +1689,21 @@
       ]
     },
     {
+      "name": "gen-contract-registry.mjs",
+      "category": "index",
+      "purpose": "RD-0359: generate ALL governed .fungi flow contracts into ONE doc.",
+      "selfTest": true,
+      "inCadence": false,
+      "concerns": [
+        "effects",
+        "signing/fusion",
+        "governance",
+        "secrets/privacy",
+        "doc-drift",
+        "graph/index"
+      ]
+    },
+    {
       "name": "kb-index.mjs",
       "category": "index",
       "purpose": "index the Galerina Knowledge-Base (ZTF-Knowledge-Bases/**/*.md, RECURSIVE — ~690 files) so you can",
@@ -1858,6 +1888,23 @@
         "signing/fusion",
         "diagnostics",
         "doc-drift",
+        "graph/index"
+      ]
+    },
+    {
+      "name": "hardening-show-derived.mjs",
+      "category": "util",
+      "purpose": "the HV3 audit surface (RD-0358 PROTOTYPE).",
+      "selfTest": false,
+      "inCadence": false,
+      "concerns": [
+        "sinks/taint",
+        "effects",
+        "signing/fusion",
+        "governance",
+        "gate-wiring",
+        "diagnostics",
+        "secrets/privacy",
         "graph/index"
       ]
     },
@@ -2056,6 +2103,7 @@
       "brand-audit.mjs",
       "build-core-chain.mjs",
       "generate-sbom.mjs",
+      "hardening-show-derived.mjs",
       "migrate-fungi.mjs",
       "package-usage.mjs",
       "rebrand-tmf-to-spore.mjs",
@@ -2082,6 +2130,7 @@
       "audit-effect-canonicality.mjs",
       "audit-gate-selftests.mjs",
       "audit-graph-integrity.mjs",
+      "audit-hardening-determinism.mjs",
       "audit-import-governance.mjs",
       "audit-kernel-floor.mjs",
       "audit-kernel-fungi-twins.mjs",
@@ -2106,6 +2155,7 @@
       "memory-graph.mjs",
       "code-index.mjs",
       "gen-code-registry.mjs",
+      "gen-contract-registry.mjs",
       "kb-index.mjs",
       "lint-conventions.mjs",
       "run-all-tests.cjs",
@@ -2115,6 +2165,7 @@
       "build-core-chain.mjs",
       "check-gate-injection.mjs",
       "generate-sbom.mjs",
+      "hardening-show-derived.mjs",
       "mark-core-change.cjs",
       "migrate-fungi.mjs",
       "package-usage.mjs",
@@ -2141,6 +2192,7 @@
       "audit-diagnostic-doc-drift.mjs",
       "audit-effect-canonicality.mjs",
       "audit-gscm.mjs",
+      "audit-hardening-determinism.mjs",
       "audit-kernel-floor.mjs",
       "audit-muted-diagnostics.mjs",
       "audit-name-collisions.mjs",
@@ -2158,12 +2210,14 @@
       "fix-logicn-brand.mjs",
       "galerina-new.mjs",
       "graph-all.mjs",
+      "gen-contract-registry.mjs",
       "lint-fungi.mjs",
       "component-health.mjs",
       "brand-audit.mjs",
       "build-core-chain.mjs",
       "check-gate-injection.mjs",
       "generate-sbom.mjs",
+      "hardening-show-derived.mjs",
       "migrate-fungi.mjs",
       "rebuild-fusable-packages.mjs",
       "verify-artifacts.mjs"
@@ -2186,7 +2240,8 @@
       "audit-syntax-reference-links.mjs",
       "audit-syntax.mjs",
       "lint-conventions.mjs",
-      "check-gate-injection.mjs"
+      "check-gate-injection.mjs",
+      "hardening-show-derived.mjs"
     ],
     "doc-drift": [
       "audit-brand-keys.mjs",
@@ -2210,6 +2265,7 @@
       "graph-all.mjs",
       "code-index.mjs",
       "gen-code-registry.mjs",
+      "gen-contract-registry.mjs",
       "kb-index.mjs",
       "lint-conventions.mjs",
       "component-health.mjs",
@@ -2231,13 +2287,15 @@
     ],
     "sinks/taint": [
       "audit-checker-wiring.mjs",
+      "audit-hardening-determinism.mjs",
       "audit-muted-diagnostics.mjs",
       "audit-oblivious.mjs",
       "audit-papers-index.mjs",
       "audit-path-leak.mjs",
       "audit-sink-canonicality.mjs",
       "check-gate-injection.mjs",
-      "generate-sbom.mjs"
+      "generate-sbom.mjs",
+      "hardening-show-derived.mjs"
     ],
     "governance": [
       "audit-checker-wiring.mjs",
@@ -2258,8 +2316,10 @@
       "audit-web-stub-guard.mjs",
       "galerina-new.mjs",
       "gen-code-registry.mjs",
+      "gen-contract-registry.mjs",
       "lint-conventions.mjs",
       "lint-fungi.mjs",
+      "hardening-show-derived.mjs",
       "license-rollout.mjs",
       "rebuild-fusable-packages.mjs",
       "verify-artifacts.mjs"
@@ -2269,13 +2329,16 @@
       "audit-effect-canonicality.mjs",
       "audit-example-diagnostics.mjs",
       "audit-gscm.mjs",
+      "audit-hardening-determinism.mjs",
       "audit-import-governance.mjs",
       "audit-license-compat.mjs",
       "audit-muted-diagnostics.mjs",
       "audit-selfhost-readiness.mjs",
       "audit-sink-canonicality.mjs",
       "galerina-new.mjs",
-      "kb-index.mjs"
+      "gen-contract-registry.mjs",
+      "kb-index.mjs",
+      "hardening-show-derived.mjs"
     ],
     "teaching-corpus": [
       "audit-corpus-effect-names.mjs",
@@ -2284,6 +2347,7 @@
       "audit-example-diagnostics.mjs",
       "audit-fungi-runtime.mjs",
       "audit-gscm.mjs",
+      "audit-hardening-determinism.mjs",
       "audit-oblivious.mjs",
       "audit-papers-index.mjs",
       "audit-provenance.mjs",
@@ -2316,14 +2380,17 @@
     ],
     "secrets/privacy": [
       "audit-effect-canonicality.mjs",
+      "audit-hardening-determinism.mjs",
       "audit-muted-diagnostics.mjs",
       "audit-oblivious.mjs",
       "audit-sink-canonicality.mjs",
       "audit-tier-boundary.mjs",
+      "gen-contract-registry.mjs",
       "kb-index.mjs",
       "lint-fungi.mjs",
       "check-gate-injection.mjs",
       "fungi-astshape.mjs",
+      "hardening-show-derived.mjs",
       "rename-package.mjs"
     ],
     "mutation-testing": [
@@ -2381,6 +2448,7 @@
       "audit-example-diagnostics.mjs",
       "audit-gate-selftests.mjs",
       "audit-graph-integrity.mjs",
+      "audit-hardening-determinism.mjs",
       "audit-import-governance.mjs",
       "audit-kernel-floor.mjs",
       "audit-kernel-fungi-twins.mjs",

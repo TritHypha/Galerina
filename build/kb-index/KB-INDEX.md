@@ -1,4 +1,4 @@
-# Galerina KB index (942 docs)
+# Galerina KB index (946 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -2606,6 +2606,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - links: [[galerina-rd-0362-v1-gap-map-scouting-all-components-and-unlisted]] [[galerina-rd-0319]] [[galerina-rd-0358-governed-memory-residency-dataflow-tri-photonic]] [[galerina-quantum-resilience-roadmap]]
 - terms: custody, key, rung, tpm, host, ladder, h-5, bar, honest, limits, seam, hardware, owner, spore
 
+## RD-0366 — The "without-`.ts`" ceiling: the Govern-Don't-Absorb trichotomy (adjudication of main's stoppers handover)
+`../ZTF-Knowledge-Bases/galerina-rd-0366-without-ts-ceiling-govern-dont-absorb-trichotomy.md`
+- tasks: #143, #105
+- links: [[HANDOVER-component-build-stoppers-without-ts-2026-07-12]] [[galerina-rd-0361-execution-cutover-ladder-twins-to-executing-fungi]] [[galerina-rd-0363-passive-plan-execution-semantics-replay-under-governance]] [[galerina-rd-0364-governed-inference-bridge-contract]] [[galerina-rd-0365-tpm-enclave-key-custody-ladder]] [[HANDOVER-v1-finish-line-cutover-and-gap-map-2026-07-12]]
+- terms: main, fungi, without-, correction, doctrine, refinement, honesty, rd-0361, answer, govern-don, t-absorb, adjudication, record, bucket
+
 ## R&D — Phase 34B boundary param auto-taint: verified state + build-ready spec
 `../ZTF-Knowledge-Bases/galerina-rd-34b-paramtaint-buildspec-2026-06-24.md`
 - codes: FUNGI-VALUESTATE-003, FUNGI-VALUESTATE-008
@@ -2769,9 +2775,9 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## Galerina — R&D Results Log (quick-lookup verdict table)
 `../ZTF-Knowledge-Bases/galerina-rd-results-log.md`
 - codes: FUNGI-TYPE-003, FUNGI-TAINT-003, FUNGI-TYPE-004, FUNGI-GATELANG-002, FUNGI-SUBSTRATE-001, FUNGI-MATCH-001, FUNGI-MATCH-002, FUNGI-TAINT-001, FUNGI-PRIVACY-002, FUNGI-RUNTIME-003, FUNGI-PERM-001, FUNGI-GDCE-001, FUNGI-PCI-G-000, FUNGI-ASSIMILATE-004, ERR_BRIDGE_UNATTESTED, ERR_HOST_NATIVE_DENIED, ERR_AI_MODEL_NOT_APPROVED, FUNGI-GOV-TPL-001, FUNGI-ASSIMILATE-003, FUNGI-BUILD-002, FUNGI-ATTR-001, FUNGI-PRIVACY-001, FUNGI-EFFECT-006, FUNGI-SEC-020
-- tasks: #105, #10, #11, #12, #102, #149, #22, #24, #28, #195, #34, #0089, #212, #110, #194, #205, #155
+- tasks: #143, #105, #10, #11, #12, #102, #149, #22, #24, #28, #195, #34, #0089, #212, #110, #194, #205, #155
 - links: [[feedback-rd-absorb-positive-and-negative]] [[galerina-ci-state-and-cross-repo-gates]] [[galerina-kernel-ts-vs-fungi-rationale]] [[galerina-graph-ascii-outcome-and-gate-pipeline-2026-07-01]] [[galerina-graph-ascii-spec-and-ab-benchmark-2026-07-01]] [[galerina-rd-0236-runtime-50yr-mistake-audit]] [[galerina-rd-0237-runtime-governance-in-gate-reexamination]] [[galerina-rd-0234-fungi-50yr-mistake-audit]] [[galerina-rd-0234b-fungi-second-pass-hunt]] [[fail-closed-no-50yr-mistake-rule]]
-- terms: gate, owner, galerina, never, design, fungi, mjs, photonic, real, fail-closed, already, verdict, build, wasm
+- terms: gate, owner, galerina, never, fungi, design, real, mjs, photonic, fail-closed, verdict, already, build, wasm
 
 ## Galerina syntax 7-axis sweep (2026-06-25) — PARTIAL (4/8 categories; 4 rate-limited, to resume)
 `../ZTF-Knowledge-Bases/galerina-rd-syntax-7axis-sweep-2026-06-25.md`
@@ -3458,6 +3464,19 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #10, #155, #102, #34
 - terms: stoppers, questions, signed, d-side, hub, handoff, main, session, response, angle, lifts, each, recommendation, whose
 
+## HANDOVER — boundary & registry build program: what's doable without `.ts`, and every stopper
+`../ZTF-Knowledge-Bases/HANDOVER-boundary-and-registry-build-program-2026-07-12.md`
+- codes: FUNGI-HARDEN-007
+- tasks: #105, #143, #102, #52
+- terms: registry, without, build, rd-0361, stopper, authoritative, every, differential, boundary, session, compiler, host, tracking, hardening
+
+## HANDOVER — component build stoppers: what each component needs to advance (and the "without .ts" ceiling)
+`../ZTF-Knowledge-Bases/HANDOVER-component-build-stoppers-without-ts-2026-07-12.md`
+- codes: FUNGI-TYPE-005
+- tasks: #143, #105
+- links: [[galerina-rd-0361-execution-cutover-ladder-twins-to-executing-fungi]] [[galerina-rd-0363-passive-plan-execution-semantics-replay-under-governance]] [[galerina-rd-0364-governed-inference-bridge-contract]] [[galerina-rd-0365-tpm-enclave-key-custody-ladder]]
+- terms: fungi, without, host, decision, compiler, wat, component, components, owner, twin, verdict, build, photonic, emitter
+
 ## HANDOVER — Answer to the crypto-floor question you paused on (keep #149)
 `../ZTF-Knowledge-Bases/HANDOVER-crypto-floor-decision-to-main-2026-07-11.md`
 - tasks: #149
@@ -3570,6 +3589,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - links: [[galerina-rd-0361-execution-cutover-ladder-twins-to-executing-fungi]] [[new-error-type-update-build-tools]] [[HANDOVER-galerina-finish-push-2026-07-12]] [[galerina-rd0361-execution-cutover-progress]] [[galerina-k3-three-valued-governance]]
 - terms: twin, discharged, wasm, rd-0361, twins, proven, main, first, rung, reference, end-to-end, through, session, build-eligibility
 
+## ↩ R&D REPLY — the "without-`.ts`" stoppers finding: ENDORSED, with one build rule
+`../ZTF-Knowledge-Bases/HANDOVER-REPLY-rd0366-without-ts-adjudication-2026-07-12.md`
+- tasks: #143, #105
+- links: [[HANDOVER-component-build-stoppers-without-ts-2026-07-12]] [[galerina-rd-0366-without-ts-ceiling-govern-dont-absorb-trichotomy]] [[HANDOVER-v1-finish-line-cutover-and-gap-map-2026-07-12]] [[galerina-rd-0361-execution-cutover-ladder-twins-to-executing-fungi]] [[galerina-rd-0363-passive-plan-execution-semantics-replay-under-governance]] [[galerina-rd-0364-governed-inference-bridge-contract]] [[galerina-rd-0365-tpm-enclave-key-custody-ladder]]
+- terms: build, part, endorsed, rule, reply, owner, doctrine, differential, handover, fungi, authoritative, without-, finding, twins
+
 ## HANDOVER — R&D session master index (all deliverables) · 2026-07-09
 `../ZTF-Knowledge-Bases/HANDOVER-RnD-master-index-2026-07-09.md`
 - tasks: #149
@@ -3605,9 +3630,9 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## HANDOVER — V1 finish line: the execution cutover + the gap map (plain-language build sheet)
 `../ZTF-Knowledge-Bases/HANDOVER-v1-finish-line-cutover-and-gap-map-2026-07-12.md`
 - codes: FUNGI-TYPE-005, FUNGI-HALLMARK-001, FUNGI-EFFECT-006
-- tasks: #105, #102, #21, #10, #11, #12, #20, #34
-- links: [[galerina-rd-0361-execution-cutover-ladder-twins-to-executing-fungi]] [[galerina-rd-0362-v1-gap-map-scouting-all-components-and-unlisted]] [[HANDOVER-REPLY-main-rd0361-t1-execution-cutover-2026-07-12]] [[galerina-rd-0363-passive-plan-execution-semantics-replay-under-governance]] [[galerina-rd-0364-governed-inference-bridge-contract]] [[galerina-rd-0365-tpm-enclave-key-custody-ladder]] [[HANDOVER-galerina-finish-push-2026-07-12]] [[HANDOVER-governed-memory-residency-hardening-auto-2026-07-11]]
-- terms: owner, these, children, build, parent, flip, wasm, readme, execution, before, cutover, authority, registry, building
+- tasks: #105, #102, #21, #10, #11, #12, #20, #143, #34
+- links: [[galerina-rd-0361-execution-cutover-ladder-twins-to-executing-fungi]] [[galerina-rd-0362-v1-gap-map-scouting-all-components-and-unlisted]] [[HANDOVER-REPLY-main-rd0361-t1-execution-cutover-2026-07-12]] [[galerina-rd-0363-passive-plan-execution-semantics-replay-under-governance]] [[galerina-rd-0364-governed-inference-bridge-contract]] [[galerina-rd-0365-tpm-enclave-key-custody-ladder]] [[galerina-rd-0366-without-ts-ceiling-govern-dont-absorb-trichotomy]] [[HANDOVER-galerina-finish-push-2026-07-12]] [[HANDOVER-governed-memory-residency-hardening-auto-2026-07-11]]
+- terms: owner, these, build, children, parent, flip, wasm, readme, execution, before, cutover, decision, registry, authority
 
 ## HANDOVER — Value-unit types (Money fixes · Commodity · Crypto · Rate) + the Hallmark open-type system — WITH docs/examples as a hard gate
 `../ZTF-Knowledge-Bases/HANDOVER-value-unit-types-and-hallmark-open-types-2026-07-11.md`
@@ -4718,5 +4743,5 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## Galerina
 `README.md`
 - codes: FUNGI-SUBSTRATE-002, FUNGI-SUBSTRATE-001, FUNGI-FAULT-001, FUNGI-NUMERIC-001, FUNGI-TIER-001, FUNGI-VALUESTATE-008, FUNGI-PKG-006, FUNGI-HALLMARK-001, FUNGI-EFFECT-006, FUNGI-MATCH-001, FUNGI-LEX-001, FUNGI-NAME-001, FUNGI-TYPE-001, FUNGI-EFFECT-001, FUNGI-GOV-001, FUNGI-TERM-001, FUNGI-PCI-001
-- tasks: #102, #143, #128, #163, #165, #32, #34
-- terms: galerina, docs, governed, svg, width, diagrams, sub, wasm, shipped, audit, governance, runtime, core, architecture
+- tasks: #102, #143, #128, #105, #163, #165, #32, #34
+- terms: galerina, docs, governed, svg, width, diagrams, sub, wasm, shipped, governance, audit, runtime, fungi, contract
