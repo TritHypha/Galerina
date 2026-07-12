@@ -56,7 +56,8 @@ import { isRecognizedLimitDecl } from "./runtime/limitPolicy.js";
 import {
   deriveAuto, reconcileExplicit, canHonour, resolveHost,
   VALID_RESIDENCY, VALID_ERASE, VALID_TIMING, VALID_SUBSTRATE,
-  FUNGI_HARDEN_001, FUNGI_HARDEN_002, FUNGI_HARDEN_003, FUNGI_HARDEN_006,
+  FUNGI_HARDEN_001, FUNGI_HARDEN_002, FUNGI_HARDEN_003, FUNGI_HARDEN_006, FUNGI_HARDEN_007,
+  spillRetype,
   type ResidencyTier, type EraseMode, type TimingDiscipline, type Substrate, type ExplicitHardening,
 } from "./hardening-residency.js";
 
@@ -3097,15 +3098,23 @@ class GovernanceVerifier {
         "Tighten the directive, or add `audited_loosen` to opt out visibly (governance may still refuse)."));
     }
 
-    // H-2 / HV5 — the residency ceiling must be honourable by the declared host, else REJECT (fail-closed).
+    // H-2 / HV5 — the residency ceiling must be honourable by the declared host. Unhonourable → the value
+    // is DOWNGRADED to `Refuted` (RD-0360 Option A, wired for real via spillRetype): FUNGI-HARDEN-005 names
+    // the unhonourable ceiling; FUNGI-HARDEN-007 records the governed downgrade — the value's compile-time
+    // trust is now Refuted (sticky + contagious), so a downstream trust-boundary release denies.
     if (explicit.residency !== undefined) {
       const host = resolveHost(extractValue("host"));
       const honour = canHonour(effective.residency, host);
       if (!honour.ok && honour.rejection !== undefined) {
         this.diagnostics.push(makeGovDiag(honour.rejection.code, honour.rejection.name, "error",
-          `Flow '${flowName}': ${honour.rejection.reason} (RD-0337 governed-downgrade-to-Refuted is stubbed — the prototype fails closed.)`,
+          `Flow '${flowName}': ${honour.rejection.reason}`,
           hardeningNode.location,
           "Declare a capable `host <name>` seam (e.g. register_pinned), or relax the ceiling with an audited opt-out."));
+        const spill = spillRetype(); // RD-0337 composition — the value's type-state becomes Refuted (no longer stubbed)
+        this.diagnostics.push(makeGovDiag(spill.code, FUNGI_HARDEN_007.name, "error",
+          `Flow '${flowName}': ${spill.reason}`,
+          hardeningNode.location,
+          "The value is now Refuted — it cannot be released at a trust boundary. Fix the ceiling (a capable host, or an audited loosen) to restore it to Trusted."));
       }
     }
 

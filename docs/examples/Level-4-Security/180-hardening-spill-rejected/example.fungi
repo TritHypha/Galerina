@@ -2,7 +2,7 @@
 /// example: 180-hardening-spill-rejected
 /// level: 4
 /// concept: an explicit residency ceiling the host cannot honour is REJECTED, never silently spilled (RD-0358 H-2/HV5)
-/// expected_diagnostics: FUNGI-HARDEN-005
+/// expected_diagnostics: FUNGI-HARDEN-005 FUNGI-HARDEN-007
 /// ai_rule: For a strict ceiling declare a capable host seam (e.g. register_pinned); otherwise the compiler fails closed rather than spill a secret.
 /// test_status: stable
 

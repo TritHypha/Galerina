@@ -25,12 +25,12 @@ contract { intent { "Handle a secret." } privacy { contains PII } }
     assert.deepEqual(hardenCodes(gov(src)), []);
   });
 
-  it("residency register_only on a host that cannot register-pin → FUNGI-HARDEN-005 (spill rejected)", () => {
+  it("residency register_only on a host that cannot register-pin → FUNGI-HARDEN-005 + 007 (unhonourable ceiling → value re-typed Refuted)", () => {
     const src = `secure flow handleKey(k: Int) -> Int
 contract { intent { "Handle a secret." } privacy { contains PII }
   hardening { residency register_only host mlock_posix } }
 { return 1 }`;
-    assert.deepEqual(hardenCodes(gov(src)), ["FUNGI-HARDEN-005"]);
+    assert.deepEqual(hardenCodes(gov(src)), ["FUNGI-HARDEN-005", "FUNGI-HARDEN-007"]);
   });
 
   it("residency no_swap on mlock_posix (which honours it) → clean, no FUNGI-HARDEN code", () => {
@@ -49,12 +49,12 @@ contract { intent { "Handle a secret." } privacy { contains PII }
     assert.deepEqual(hardenCodes(gov(src)), []);
   });
 
-  it("an undeclared host cannot honour a declared ceiling → FUNGI-HARDEN-005 (fail-closed, H-6)", () => {
+  it("an undeclared host cannot honour a declared ceiling → FUNGI-HARDEN-005 + 007 (fail-closed, H-6; value Refuted)", () => {
     const src = `secure flow handleKey(k: Int) -> Int
 contract { intent { "Handle a secret." } privacy { contains PII }
   hardening { residency no_swap } }
 { return 1 }`;
-    assert.deepEqual(hardenCodes(gov(src)), ["FUNGI-HARDEN-005"]);
+    assert.deepEqual(hardenCodes(gov(src)), ["FUNGI-HARDEN-005", "FUNGI-HARDEN-007"]);
   });
 
   it("an unrecognised residency tier → FUNGI-HARDEN-001 (fail-closed value validation)", () => {
