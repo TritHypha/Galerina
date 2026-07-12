@@ -1,0 +1,73 @@
+@version 1
+/// @file: passive-plan-replay-admission.fungi
+/// @purpose: Stage-6 governed DECISION surface for RD-0363 passive-plan REPLAY admission — the deny-by-default
+///   fold that decides whether a stored PassiveExecutionPlan (core-compiler runtime/executionPlan.ts) may be
+///   REPLAYED. A plan is EVIDENCE of what was approved at compile time, NEVER a bearer token: possessing it
+///   confers no authority. The host computes each boolean check (signature/hash · capability-currency · freshness
+///   · target-binding · step-containment · qualifier-coherence); this pure surface folds them fail-closed into a
+///   verdict. ALLOW = +1, DENY = -1 (INDETERMINATE collapses to DENY at the boundary).
+/// @fidelity: mirrors RD-0363 §2 / threats PV1–PV7 — any single failed check DENIES (deny-by-default AND). The
+///   .ts host floor stays: Ed25519/ML-DSA signature verify, plan deserialization, and the governed replayer loop.
+/// @status: checker-verified twin (galerina check clean); NOT build-wired (execution switch #143).
+
+/// admissionVerdict — RD-0363 §2.1 (PV1): a replayable plan needs a valid signature AND a matching planHash.
+/// Unsigned, tampered, or hash-mismatched ⇒ REJECT.
+pure flow admissionVerdict(signedOk: Bool, hashMatch: Bool) -> Int
+contract { intent { "Fail-closed plan admission: deny unless the stored plan is validly signed and its planHash matches (RD-0363 2.1)." } }
+{
+  if signedOk == false { return 0 - 1 }
+  if hashMatch == false { return 0 - 1 }
+  return 1
+}
+
+/// authorityVerdict — RD-0363 §2.2 (PV2, the load-bearing rule): approvedCapabilities is a RECORD, not a grant.
+/// At replay each capability is re-checked against the CURRENT grant state; approved-then-revoked ⇒ DENY. An old
+/// plan can never escalate past today's authority.
+pure flow authorityVerdict(capabilityCurrent: Bool) -> Int
+contract { intent { "Re-verify authority at replay: deny if any recorded capability is no longer currently granted (RD-0363 2.2)." } }
+{
+  if capabilityCurrent == false { return 0 - 1 }
+  return 1
+}
+
+/// freshnessVerdict — RD-0363 §2.3: generatedAt + a max-age policy; a stale plan is INDETERMINATE ⇒ deny at the
+/// boundary (K3 collapse).
+pure flow freshnessVerdict(fresh: Bool) -> Int
+contract { intent { "Freshness gate: a stale plan (past its max-age) is denied at the boundary (RD-0363 2.3)." } }
+{
+  if fresh == false { return 0 - 1 }
+  return 1
+}
+
+/// targetVerdict — RD-0363 §2.4 (PV3): a plan is pinned to the target family it was planned for; replaying a CPU
+/// plan on another lane ⇒ REJECT (no cross-target smuggling).
+pure flow targetVerdict(targetBound: Bool) -> Int
+contract { intent { "Target binding: deny a plan replayed on a target family other than the one it was planned for (RD-0363 2.4)." } }
+{
+  if targetBound == false { return 0 - 1 }
+  return 1
+}
+
+/// containmentVerdict — RD-0363 §2.5 (PV4+PV5): every step must stay within the plan's approvedCapabilities and
+/// the flow's contract effects (stepContained); and the qualifier must match the steps — a `pure`-labelled plan
+/// whose steps carry effects is malformed (qualifierCoherent false) ⇒ REJECT at admission, not at step N.
+pure flow containmentVerdict(stepContained: Bool, qualifierCoherent: Bool) -> Int
+contract { intent { "Step containment + qualifier coherence: deny if any step exceeds approved capabilities/effects, or the qualifier contradicts the steps (RD-0363 2.5)." } }
+{
+  if stepContained == false { return 0 - 1 }
+  if qualifierCoherent == false { return 0 - 1 }
+  return 1
+}
+
+/// planReplayVerdict — the composite RD-0363 §2 admission fold. A plan may be replayed ONLY when every deny-by-
+/// default check passes; any single failure ⇒ DENY. This is the K3 AND (No-Coercion min) of the sub-verdicts.
+pure flow planReplayVerdict(signedOk: Bool, hashMatch: Bool, capabilityCurrent: Bool, fresh: Bool, targetBound: Bool, stepContained: Bool, qualifierCoherent: Bool) -> Int
+contract { intent { "Deny-by-default passive-plan replay admission: ALLOW only if signature+hash, current authority, freshness, target binding, and step/qualifier containment ALL hold (RD-0363 2)." } }
+{
+  if admissionVerdict(signedOk, hashMatch) < 1 { return 0 - 1 }
+  if authorityVerdict(capabilityCurrent) < 1 { return 0 - 1 }
+  if freshnessVerdict(fresh) < 1 { return 0 - 1 }
+  if targetVerdict(targetBound) < 1 { return 0 - 1 }
+  if containmentVerdict(stepContained, qualifierCoherent) < 1 { return 0 - 1 }
+  return 1
+}

@@ -26,6 +26,7 @@ const GALERINA = join(ROOT, "galerina.mjs");
 const TWIN_DIRS = [
   "packages-galerina/galerina-framework-app-kernel/src/self-hosted",
   "packages-galerina/galerina-tower-citizen/src/self-hosted",
+  "packages-galerina/galerina-core-runtime/src/self-hosted",
   "packages-galerina/galerina-core-sentinel-memory/src/self-hosted",
   "packages-galerina/galerina-core-sentinel-io/src/self-hosted",
   "packages-galerina/galerina-core-network/src/self-hosted",

@@ -1,0 +1,95 @@
+@version 1
+/// @file: inference-governance.fungi
+/// @purpose: Stage-6 governed DECISION surface for RD-0364 — the per-CALL governance the AI Inference Tower
+///   applies before dispatching to a bridge (BitNet / cloud). The host floor stays .ts: attestation signature
+///   verify (bridge-attestation.ts::verifyAttestation), the bridge `execute`, the model itself. This pure surface
+///   folds the host-computed checks into fail-closed verdicts: bridge admission, model-identity class, cost caps,
+///   cloud egress, and the load-bearing OUTPUT-TAINT rule. ALLOW = +1, DENY = -1, INDETERMINATE = 0.
+/// @fidelity: mirrors RD-0364 §1–§4 / threats IV1–IV7. bridgeAdmissionVerdict mirrors verifyAttestation's fail-
+///   closed AND; identityClassVerdict encodes the honest tiers (local-attested +1 / provider-asserted 0 / reject
+///   -1); outputTrustTrit encodes §2 — a model's answer is UNKNOWN (0) until discharged by a verifier flow.
+/// @status: checker-verified twin (galerina check clean); NOT build-wired (execution switch #143).
+
+/// bridgeAdmissionVerdict — RD-0364 IV5: mirror the fail-closed attestation AND (bridge-attestation.ts). A bridge
+/// is admitted only when its manifest shape is valid, its hash is pinned, its signature verifies, the certified
+/// profile (if required) holds, and its signing key is not revoked. Any failure ⇒ DENY.
+pure flow bridgeAdmissionVerdict(shapeOk: Bool, hashPinned: Bool, signedOk: Bool, certifiedOk: Bool, notRevoked: Bool) -> Int
+contract { intent { "Fail-closed bridge admission: deny unless manifest shape, hash pin, signature, certified profile, and revocation all pass (RD-0364 IV5)." } }
+{
+  if shapeOk == false { return 0 - 1 }
+  if hashPinned == false { return 0 - 1 }
+  if signedOk == false { return 0 - 1 }
+  if certifiedOk == false { return 0 - 1 }
+  if notRevoked == false { return 0 - 1 }
+  return 1
+}
+
+/// attestedTierVerdict — the local-attested tier check factored out (RD-0364 §1, IV1): a local bridge is genuinely
+/// attested only if its pinned weights hash matches; a mismatch is a model swap ⇒ REJECT.
+pure flow attestedTierVerdict(weightsHashMatch: Bool) -> Int
+contract { intent { "Local-attested tier: a matching pinned weights hash earns attestation (+1); a mismatch is a model swap and is rejected (RD-0364 1)." } }
+{
+  if weightsHashMatch == false { return 0 - 1 }
+  return 1
+}
+
+/// identityClassVerdict — RD-0364 §1 (IV1, IV7): model identity is content-addressed. A local-attested bridge with
+/// a matching weights hash earns +1 (attested). A cloud bridge is provider-asserted → 0 (INDETERMINATE — honest,
+/// never claim attestation the math can't back). Anything else (unattested, or a local bridge whose hash
+/// mismatches) ⇒ -1 (reject / model swap).
+pure flow identityClassVerdict(localAttested: Bool, weightsHashMatch: Bool, providerAsserted: Bool) -> Int
+contract { intent { "Honest model-identity tier: local-attested with a matching weights hash is attested (+1); cloud provider-asserted is INDETERMINATE (0); a hash mismatch or unattested bridge is rejected (RD-0364 1)." } }
+{
+  if localAttested == true { return attestedTierVerdict(weightsHashMatch) }
+  if providerAsserted == true { return 0 }
+  return 0 - 1
+}
+
+/// costCapVerdict — RD-0364 §4 (IV4): the contract's inference{ maxCalls, maxTokens, maxSpend } caps are metered;
+/// the engine halts at cap (degrade-only — throttling can only tighten). Any cap exceeded ⇒ DENY.
+pure flow costCapVerdict(withinCalls: Bool, withinTokens: Bool, withinSpend: Bool) -> Int
+contract { intent { "Cost-cap gate: deny (halt) when any of the per-flow maxCalls/maxTokens/maxSpend caps is exceeded (RD-0364 4)." } }
+{
+  if withinCalls == false { return 0 - 1 }
+  if withinTokens == false { return 0 - 1 }
+  if withinSpend == false { return 0 - 1 }
+  return 1
+}
+
+/// egressVerdict — RD-0364 §3 (IV3): a cloud call is a data-egress event. The pinned provider host must pass the
+/// SSRF egress allowlist AND the inputs must pass the redaction boundary before leaving (a prompt can carry
+/// PII/secrets). Local-attested calls have no egress ⇒ clean. Any cloud egress failing either check ⇒ DENY.
+pure flow egressVerdict(isCloud: Bool, hostAllowed: Bool, inputRedacted: Bool) -> Int
+contract { intent { "Cloud egress gate: a cloud inference call is denied unless the provider host is allowlisted and inputs passed the redaction boundary; local calls have no egress (RD-0364 3)." } }
+{
+  if isCloud == false { return 1 }
+  if hostAllowed == false { return 0 - 1 }
+  if inputRedacted == false { return 0 - 1 }
+  return 1
+}
+
+/// outputTrustTrit — RD-0364 §2, THE load-bearing rule: inference output enters the program as UNKNOWN (0) BY
+/// CONSTRUCTION — a model's answer is a CLAIM, not a fact. It reaches a trust boundary only through a declared
+/// verifier flow (dischargedByVerifier); undischarged it stays 0, and vAnd(0,x) can never LIFT a verdict, so
+/// prompt-injection cannot mint authority and a hallucination cannot cross a requireTrusted() boundary.
+pure flow outputTrustTrit(dischargedByVerifier: Bool) -> Int
+contract { intent { "Output taint: inference output is UNKNOWN (0) until discharged by a declared verifier flow; only then may it be trusted (+1) (RD-0364 2, RD-0337 trit)." } }
+{
+  if dischargedByVerifier == false { return 0 }
+  return 1
+}
+
+/// inferenceCallVerdict — the composite RD-0364 per-call admission. ALLOW only when the bridge is admitted, the
+/// model-identity class is acceptable for the profile (a certified profile refuses anything but local-attested +1),
+/// the cost caps hold, and any cloud egress is clean. Deny-by-default: any failure ⇒ DENY. `identityClass` is the
+/// output of identityClassVerdict (+1 attested / 0 asserted / -1 reject).
+pure flow inferenceCallVerdict(bridgeAdmitted: Bool, identityClass: Int, requireCertified: Bool, costOk: Bool, egressOk: Bool) -> Int
+contract { intent { "Deny-by-default per-call inference admission: ALLOW only if the bridge is admitted, the identity class is acceptable (certified profile requires local-attested), cost caps hold, and cloud egress is clean (RD-0364)." } }
+{
+  if bridgeAdmitted == false { return 0 - 1 }
+  if identityClass < 0 { return 0 - 1 }
+  if requireCertified == true { if identityClass < 1 { return 0 - 1 } }
+  if costOk == false { return 0 - 1 }
+  if egressOk == false { return 0 - 1 }
+  return 1
+}
