@@ -136,12 +136,16 @@ A ten-axis capability self-assessment across the surfaces Galerina governs, plus
   </tr>
   <tr>
     <td align="center" width="100%"><a href="docs/diagrams/radar-9-data-science.svg"><img src="docs/diagrams/radar-9-data-science.svg" alt="Data Science" width="100%"></a><br><sub><b>9 · Data Science</b></sub></td>
+  
+    <tr>
+    <td align="center" width="100%"><a href="docs/diagrams/galerina-mechanics.svg"><img src="docs/diagrams/galerina-mechanics.svg" alt="Galerina — governance-first compute pipeline" width="100%"></a><br><sub><b>11 · Galerina — governance-first compute pipeline</b></sub></td>
   </tr>
   <tr>
     <td align="center" width="100%"><a href="docs/diagrams/radar-10-AI-ML-NuroNet.svg"><img src="docs/diagrams/radar-10-AI-ML-NuroNet.svg" alt="AI / ML / Neural Nets" width="100%"></a><br><sub><b>10 · AI / ML / Neural Nets</b></sub></td>
   </tr>
-  <tr>
-    <td align="center" width="100%"><a href="docs/diagrams/galerina-mechanics.svg"><img src="docs/diagrams/galerina-mechanics.svg" alt="Galerina — governance-first compute pipeline" width="100%"></a><br><sub><b>11 · Galerina — governance-first compute pipeline</b></sub></td>
+</tr>
+    <tr>
+    <td align="center" width="100%"><a href="docs/diagrams/radar-11-language-type-system.svg"><img src="docs/diagrams/radar-11-language-type-system.svg" alt="Language & Type System radar — Galerina vs Rust / TypeScript / Python" width="100%"></a><br><sub><b>21 · Language &amp; Type System — Galerina vs Rust / TypeScript / Python (radar)</b></sub></td>
   </tr>
   <tr>
     <td align="center" width="100%"><a href="docs/diagrams/galerina-tritmesh-cache-passport-vs-legacy.svg"><img src="docs/diagrams/galerina-tritmesh-cache-passport-vs-legacy.svg" alt="TritMesh — cache + .spore passport vs legacy caching" width="100%"></a><br><sub><b>12 · TritMesh — cache &amp; <code>.spore</code> passport vs legacy caching</b></sub></td>
@@ -169,9 +173,6 @@ A ten-axis capability self-assessment across the surfaces Galerina governs, plus
   </tr>
   <tr>
     <td align="center" width="100%"><a href="docs/diagrams/galerina-payments-money-lane.svg"><img src="docs/diagrams/galerina-payments-money-lane.svg" alt="Galerina — a governed payment lane" width="100%"></a><br><sub><b>20 · Galerina — a governed payment lane (Money&lt;GBP&gt;)</b></sub></td>
-  </tr>
-  <tr>
-    <td align="center" width="100%"><a href="docs/diagrams/radar-11-language-type-system.svg"><img src="docs/diagrams/radar-11-language-type-system.svg" alt="Language & Type System radar — Galerina vs Rust / TypeScript / Python" width="100%"></a><br><sub><b>21 · Language &amp; Type System — Galerina vs Rust / TypeScript / Python (radar)</b></sub></td>
   </tr>
 </table>
 
