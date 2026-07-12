@@ -1,6 +1,9 @@
 FUNGI-HARDEN-005 (RESIDENCY_CEILING_UNHONOURABLE)
+FUNGI-HARDEN-007 (SPILL_REFUTED)
 
 An explicit `hardening { residency register_only }` ceiling cannot be honoured by
-`host mlock_posix` (mlock guarantees no-swap/no-disk, not register pinning). Fail-closed:
-the value is REJECTED rather than silently spilled past its ceiling (RD-0358 H-2 / HV5).
-Declare a capable seam (e.g. `host register_pinned`) or relax the ceiling with an audited opt-out.
+`host mlock_posix` (mlock guarantees no-swap/no-disk, not register pinning). FUNGI-HARDEN-005
+names the unhonourable ceiling; FUNGI-HARDEN-007 records the governed downgrade (RD-0360 Option A,
+wired for real): the value's compile-time type-state becomes `Refuted` — sticky and contagious, so
+it can no longer be released at a trust boundary. Fix the ceiling (a capable `host register_pinned`,
+or an audited loosen) to restore it to `Trusted`.

@@ -87,10 +87,18 @@ export const FUNGI_HARDEN_006 = {
   message: "A secret-dependent branch or index was found under a `timing constant` obligation — a cache/timing side-channel (RD-0358 §2). NOTE: constant-time is undecidable in general; this flags the checkable subset only and does NOT prove constant-time.",
 } as const;
 
+/** FUNGI-HARDEN-007 (HV5, RD-0337 composition): a proven spill re-types the value `Refuted` (contagious). */
+export const FUNGI_HARDEN_007 = {
+  code: "FUNGI-HARDEN-007",
+  name: "SPILL_REFUTED",
+  severity: "error" as const,
+  message: "The value provably spills past its residency ceiling, so its compile-time type-state is downgraded to `Refuted` (sticky + contagious, RD-0337) — it can no longer be released at a trust boundary, and anything derived from it inherits the refutation. This is the governed downgrade (RD-0358 §3-2), not a silent spill.",
+} as const;
+
 /** Every hardening diagnostic constant — for registry tests + tooling. */
 export const HARDENING_DIAGNOSTICS = [
   FUNGI_HARDEN_001, FUNGI_HARDEN_002, FUNGI_HARDEN_003,
-  FUNGI_HARDEN_004, FUNGI_HARDEN_005, FUNGI_HARDEN_006,
+  FUNGI_HARDEN_004, FUNGI_HARDEN_005, FUNGI_HARDEN_006, FUNGI_HARDEN_007,
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -352,22 +360,80 @@ export function canHonour(ceiling: ResidencyTier, host: HostResidencyCapability)
 }
 
 // ---------------------------------------------------------------------------
-// RD-0337 composition — STUBBED. Do NOT read this as implemented.
+// RD-0337 composition — the compiler-side epistemic trit (Option A, RD-0360). NO LONGER STUBBED.
+//
+// The runtime carries this trit in `galerina-tower-citizen/src/epistemic-type-state.ts`. The compiler
+// is UPSTREAM of the runtime (core-compiler has no `tower-citizen` dependency and must not — that would
+// invert the layer), so it carries its OWN mirror of the same RD-0337 trit here. The two are held in
+// lock-step by a MANDATORY fail-closed conformance gate (compiler-trit ≡ runtime-trit) in tower-citizen's
+// tests (`tests/hardening-trit-conformance.test.mjs`) — without it the two impls could drift (the
+// compiler could rule a value `Trusted` that the runtime would `Refute`), so it is DoD at HV-suite rank.
+//
+// Encoding is byte-identical to the runtime `Verdict`/`Trust`: PROVEN = +1, UNKNOWN = 0, REFUTED = -1.
 // ---------------------------------------------------------------------------
 
-/**
- * On a PROVEN spill past the ceiling, RD-0358 §3-2 wants the value's TYPE to become `Refuted`/
- * `Tainted` (contagious) — a "loud governed downgrade" rather than a hard REJECT. That composition
- * needs the epistemic type-state (RD-0337), which has not landed. Until it does, the prototype
- * takes the STRICTER fail-closed path (REJECT via FUNGI-HARDEN-005). This marker exists so the gap
- * is explicit and testable — it is NOT a working downgrade.
- */
-export const RD0337_TYPESTATE_STUB = {
-  status: "STUB" as const,
-  requires: "RD-0337 (epistemic type-state: Trusted/Unverified/Refuted)",
-  wouldRetypeTo: "Refuted | Tainted",
-  note: "A proven spill should re-type the value Refuted/Tainted (contagious). Not wired — composes with RD-0337. The prototype REJECTS fail-closed (FUNGI-HARDEN-005) instead of the softer governed downgrade.",
+/** The compiler-side epistemic trust trit — the same balanced trit as the runtime `Trust`/`Verdict`. */
+export type CompilerTrust = 1 | 0 | -1;
+export const CompilerTrust = {
+  PROVEN: 1 as const,   // +1 — proof discharged; trusted here (runtime Trust.PROVEN / Verdict.ALLOW)
+  UNKNOWN: 0 as const,  //  0 — not yet proven; the FAIL-CLOSED default (runtime Trust.UNKNOWN / INDETERMINATE)
+  REFUTED: -1 as const, // -1 — proven-bad; a sticky hard negative (runtime Trust.REFUTED / Verdict.DENY)
 } as const;
+
+/** The compile-time value-state NAME (EPISTEMIC_RESERVED) for a trit — the name-map the gate asserts. */
+export function trustName(t: CompilerTrust): "Trusted" | "Unverified" | "Refuted" {
+  return t === 1 ? "Trusted" : t === 0 ? "Unverified" : "Refuted";
+}
+
+/** refute — mark a value proven-bad. Sticky: `dischargeTrust` can never lift a REFUTED (No-Coercion). */
+export function refute(): CompilerTrust {
+  return CompilerTrust.REFUTED;
+}
+
+/**
+ * combineTrust — the K3 conjunction (min-trit / vAnd): the LEAST-trusted operand wins, contagiously.
+ * `Trusted`+`Unverified` → `Unverified`; anything+`Refuted` → `Refuted`. An untrusted operand can only
+ * LOWER the result, never manufacture trust (No-Coercion). The exact algebra of the runtime `combine()`.
+ */
+export function combineTrust(a: CompilerTrust, b: CompilerTrust): CompilerTrust {
+  return (a < b ? a : b) as CompilerTrust;
+}
+
+/**
+ * dischargeTrust — the ONLY sanctioned lift path (mirrors the runtime `discharge`):
+ *   REFUTED stays REFUTED (sticky — a refutation can never be resurrected);
+ *   verified === true → PROVEN; verified === false → REFUTED; inconclusive (`undefined`) → UNKNOWN.
+ */
+export function dischargeTrust(current: CompilerTrust, verified: boolean | undefined): CompilerTrust {
+  if (current === CompilerTrust.REFUTED) return CompilerTrust.REFUTED;
+  if (verified === undefined) return CompilerTrust.UNKNOWN;
+  return verified ? CompilerTrust.PROVEN : CompilerTrust.REFUTED;
+}
+
+/** boundaryTrusted — the fail-closed trust boundary: release IFF PROVEN. UNKNOWN and REFUTED both deny. */
+export function boundaryTrusted(trust: CompilerTrust): boolean {
+  return trust === CompilerTrust.PROVEN;
+}
+
+/** The outcome of an unhonourable-ceiling spill: the value's new trit + the diagnostic that announces it. */
+export interface SpillOutcome {
+  /** The value's NEW compile-time trust after a proven spill — REFUTED (sticky + contagious). */
+  readonly retypedTo: CompilerTrust;
+  readonly code: string;
+  readonly reason: string;
+}
+
+/**
+ * spillRetype — the HV5 governed downgrade, wired FOR REAL (RD-0360 Q1 Option A; the RD-0337 stub is gone).
+ * When a value provably spills past its residency ceiling (the host cannot honour it), rather than a
+ * silent spill the value's compile-time TYPE-STATE becomes REFUTED — sticky and contagious: it can never
+ * be discharged back to `Trusted`, `combineTrust` propagates the refutation into anything derived from it,
+ * and a downstream `boundaryTrusted` release therefore DENIES. This is the "loud governed downgrade" of
+ * RD-0358 §3-2, composed with the shipped RD-0337 trit (held equivalent by the conformance gate).
+ */
+export function spillRetype(): SpillOutcome {
+  return { retypedTo: refute(), code: FUNGI_HARDEN_007.code, reason: FUNGI_HARDEN_007.message };
+}
 
 // ---------------------------------------------------------------------------
 // HV3 — `--show-derived`: expose EXACTLY what was injected (auditable, deterministic).

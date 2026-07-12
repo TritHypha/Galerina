@@ -135,18 +135,46 @@ test("residency lattice: register_only is strictest; stricterResidency / atLeast
   assert.equal(L.atLeastAsStrict("no_disk", "no_swap"), false);
 });
 
-// ── the RD-0337 composition is a STUB, honestly ─────────────────────────────────────────────────────
-test("RD-0337 type-state composition is a marked STUB (never faked as done)", () => {
-  assert.equal(L.RD0337_TYPESTATE_STUB.status, "STUB");
-  assert.match(L.RD0337_TYPESTATE_STUB.requires, /RD-0337/);
-  assert.match(L.RD0337_TYPESTATE_STUB.wouldRetypeTo, /Refuted/);
+// ── RD-0337 composition WIRED FOR REAL (Option A) — the compiler-side trit ──────────────────────────
+test("compiler-side trit: encoding matches the runtime (PROVEN +1 / UNKNOWN 0 / REFUTED -1) + name-map", () => {
+  assert.equal(L.CompilerTrust.PROVEN, 1);
+  assert.equal(L.CompilerTrust.UNKNOWN, 0);
+  assert.equal(L.CompilerTrust.REFUTED, -1);
+  assert.equal(L.trustName(1), "Trusted");
+  assert.equal(L.trustName(0), "Unverified");
+  assert.equal(L.trustName(-1), "Refuted");
+});
+
+test("compiler-side trit: refute is sticky, discharge is the only lift, combine is contagious min, boundary denies non-PROVEN", () => {
+  // sticky refute — discharge can NEVER resurrect a REFUTED
+  assert.equal(L.dischargeTrust(L.refute(), true), L.CompilerTrust.REFUTED);
+  // discharge = the only lift path
+  assert.equal(L.dischargeTrust(L.CompilerTrust.UNKNOWN, true), L.CompilerTrust.PROVEN);
+  assert.equal(L.dischargeTrust(L.CompilerTrust.UNKNOWN, false), L.CompilerTrust.REFUTED);
+  assert.equal(L.dischargeTrust(L.CompilerTrust.UNKNOWN, undefined), L.CompilerTrust.UNKNOWN); // inconclusive
+  // contagious min-fold — anything + REFUTED → REFUTED (No-Coercion)
+  assert.equal(L.combineTrust(L.CompilerTrust.PROVEN, L.CompilerTrust.REFUTED), L.CompilerTrust.REFUTED);
+  assert.equal(L.combineTrust(L.CompilerTrust.PROVEN, L.CompilerTrust.UNKNOWN), L.CompilerTrust.UNKNOWN);
+  assert.equal(L.combineTrust(L.CompilerTrust.PROVEN, L.CompilerTrust.PROVEN), L.CompilerTrust.PROVEN);
+  // fail-closed boundary — release IFF PROVEN
+  assert.equal(L.boundaryTrusted(L.CompilerTrust.PROVEN), true);
+  assert.equal(L.boundaryTrusted(L.CompilerTrust.UNKNOWN), false);
+  assert.equal(L.boundaryTrusted(L.CompilerTrust.REFUTED), false);
+});
+
+test("HV5 spillRetype: a proven spill re-types the value Refuted (contagious, denies at boundary) — FUNGI-HARDEN-007", () => {
+  const out = L.spillRetype();
+  assert.equal(out.retypedTo, L.CompilerTrust.REFUTED, "a spill re-types to Refuted (the governed downgrade, no longer stubbed)");
+  assert.equal(out.code, "FUNGI-HARDEN-007");
+  assert.equal(L.boundaryTrusted(out.retypedTo), false, "a spilled value cannot be released at a trust boundary");
+  assert.equal(L.combineTrust(L.CompilerTrust.PROVEN, out.retypedTo), L.CompilerTrust.REFUTED, "the refutation is contagious");
 });
 
 // ── the diagnostic set is well-formed (UPPER_SNAKE names, registered codes) ──────────────────────────
-test("all six FUNGI-HARDEN codes exist with UPPER_SNAKE names", () => {
-  assert.equal(L.HARDENING_DIAGNOSTICS.length, 6);
+test("all seven FUNGI-HARDEN codes exist with UPPER_SNAKE names", () => {
+  assert.equal(L.HARDENING_DIAGNOSTICS.length, 7);
   for (const d of L.HARDENING_DIAGNOSTICS) {
-    assert.match(d.code, /^FUNGI-HARDEN-00[1-6]$/);
+    assert.match(d.code, /^FUNGI-HARDEN-00[1-7]$/);
     assert.match(d.name, /^[A-Z][A-Z0-9_]*$/, `${d.code} name must be UPPER_SNAKE (audit-diagnostic-codes V5)`);
   }
 });
