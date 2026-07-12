@@ -268,9 +268,9 @@ const BUILD_PROGRESS = [
 //    Keep in sync with the README "Tracking registry" table (tool = source, README = view), same as the
 //    two tables above. Order mirrors the §5 registry rows. ──────────────────────────────────────────────
 const TRACKING_REGISTRY = [
-  { item: "Execution-cutover (RD-0361)",        state: "building",      detail: "T1 pilot: R0 4/4 twins build-clean · R1+R3 proven 1/4 · T2–T5 pending · R4 authority flip 🔒 owner" },
+  { item: "Execution-cutover (RD-0361)",        state: "building",      detail: "execution column SHIPPED · 6 twins DIFFERENTIAL (syncgate·passive-replay·inference·pq-admission·registry-index·package-admission — R0→R1 #105→R3 ≡ real .ts) · 21 shadow · T2–T5 + fuse-admission pending · R4 authority flip 🔒 owner (#143)" },
   { item: "Twin corpus + 6 sentinels",          state: "shipped",       detail: "~20 pure .fungi verdict twins checker-clean across 9 governed dirs (execution is RD-0361)" },
-  { item: "Hardening / residency (RD-0358)",     state: "design-done",   detail: "H-1..H-7 prototype done-to-gate on prototype/hardening-residency; merge 🔒 owner (§2.3)" },
+  { item: "Hardening / residency (RD-0358)",     state: "shipped",       detail: "H-1..H-7 INTEGRATED + MERGED to main (f7ff18df, task #52) — per-unit cherry-pick keep-green; H-6 memory.spill deny-only + trit-conformance 6/6 + example 182; remaining 🔒 H-5 signed-FuseDescriptor re-sign + #143 exec; H-4 honestly partial" },
   { item: "Epistemic trust-trit (RD-0337)",      state: "shipped",       detail: "PROVEN/UNKNOWN/REFUTED runtime + compiler mirror (Option A) + trit-conformance gate 6/6" },
   { item: "Hallmark open types (RD-0353 H1)",    state: "shipped",       detail: "developer-minted nominal types + mandatory assay gates; FUNGI-HALLMARK-001..005, example 097" },
   { item: "Value-unit types (RD-0349)",          state: "building",      detail: "I2/I3 done · I1 ISO-4217 unlocked (§5) · I4–I6 queued; no float bridge" },
