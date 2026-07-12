@@ -254,7 +254,7 @@ const BUILD_PROGRESS = [
   { layer: "WAT emitter", pct: 89 },
   { layer: "Runtime interpreter", pct: 87 },
   { layer: "Application-framework layer", pct: 72 },
-  { layer: "Post-Quantum & Hardware Security", pct: 38 },
+  { layer: "Post-Quantum & Hardware Security", pct: 40 },
   { layer: "Passive Execution Plans & Target Bridges", pct: 35 },
   { layer: "AI Inference Tower (BitNet/Groq/NVFP4)", pct: 30 },
   { layer: "Photonic / Ternary Computing", pct: 3 },

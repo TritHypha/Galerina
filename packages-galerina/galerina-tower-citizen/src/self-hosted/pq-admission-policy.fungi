@@ -1,0 +1,58 @@
+@version 1
+/// @file: pq-admission-policy.fungi
+/// @purpose: Stage-6 governed DECISION surface for the Post-Quantum admission POLICY — the require-hybrid /
+///   no-downgrade / certified-profile fold governing whether a hybrid Ed25519+ML-DSA-65 attestation is admitted.
+///   Mirrors the POLICY half of bridge-attestation.ts::verifyAttestationHybrid (CRYPTO-002): with requireHybrid,
+///   the ML-DSA-65 key + signature must be present and verify — an Ed25519-only attestation is DENIED, no PQ
+///   downgrade. The host floor stays .ts: the actual ML-DSA-65 + Ed25519 verify (@noble/post-quantum crypto).
+///   This pure surface folds the host-computed verify results into a fail-closed verdict. ALLOW=+1, DENY=-1.
+/// @fidelity: no-PQ-downgrade is load-bearing — requireHybrid AND (ml key/sig missing OR invalid) ⇒ DENY. A
+///   classical-only path is NEVER silently accepted when hybrid is required; a certified profile always requires
+///   the verified PQ half.
+/// @status: checker-verified twin (galerina check clean); NOT build-wired (execution switch #143).
+
+/// classicalVerdict — the Ed25519 (classical) half must always verify: a missing or invalid classical
+/// signature is a hard DENY regardless of the PQ half.
+pure flow classicalVerdict(edPresent: Bool, edValid: Bool) -> Int
+contract { intent { "Classical half: deny unless the Ed25519 signature is present and verifies." } }
+{
+  if edPresent == false { return 0 - 1 }
+  if edValid == false { return 0 - 1 }
+  return 1
+}
+
+/// pqDowngradeVerdict — CRYPTO-002 no-downgrade rule: when hybrid is REQUIRED, the ML-DSA-65 key + signature
+/// must be present AND verify — an Ed25519-only attestation is DENIED (no silent classical fallback). When
+/// hybrid is not required, the PQ half is not gated here (classical-only is allowed by policy).
+pure flow pqDowngradeVerdict(requireHybrid: Bool, mlKeyPresent: Bool, mlSigPresent: Bool, mlValid: Bool) -> Int
+contract { intent { "No-PQ-downgrade: if hybrid is required, deny unless the ML-DSA-65 key + signature are present and verify; classical-only is refused (CRYPTO-002)." } }
+{
+  if requireHybrid == false { return 1 }
+  if mlKeyPresent == false { return 0 - 1 }
+  if mlSigPresent == false { return 0 - 1 }
+  if mlValid == false { return 0 - 1 }
+  return 1
+}
+
+/// certifiedVerdict — the certified profile requires the verified PQ half: a certified-profile attestation
+/// whose ML-DSA signature is absent or invalid is DENIED (fail-closed refusal of asserted/classical tiers).
+pure flow certifiedVerdict(requireCertified: Bool, mlSigPresent: Bool, mlValid: Bool) -> Int
+contract { intent { "Certified profile: deny a certified-profile attestation unless its ML-DSA-65 signature is present and verifies." } }
+{
+  if requireCertified == false { return 1 }
+  if mlSigPresent == false { return 0 - 1 }
+  if mlValid == false { return 0 - 1 }
+  return 1
+}
+
+/// pqAdmissionVerdict — the composite PQ admission policy. ALLOW only when the classical half verifies, the
+/// no-downgrade rule holds (ML-DSA present + valid if hybrid required), and the certified profile (if required)
+/// has a verified PQ half. Deny-by-default: any failure ⇒ DENY.
+pure flow pqAdmissionVerdict(edPresent: Bool, edValid: Bool, requireHybrid: Bool, mlKeyPresent: Bool, mlSigPresent: Bool, mlValid: Bool, requireCertified: Bool) -> Int
+contract { intent { "Deny-by-default PQ admission: allow only if the classical signature verifies, the no-PQ-downgrade rule holds, and the certified profile (if required) has a verified ML-DSA-65 half (CRYPTO-002)." } }
+{
+  if classicalVerdict(edPresent, edValid) < 1 { return 0 - 1 }
+  if pqDowngradeVerdict(requireHybrid, mlKeyPresent, mlSigPresent, mlValid) < 1 { return 0 - 1 }
+  if certifiedVerdict(requireCertified, mlSigPresent, mlValid) < 1 { return 0 - 1 }
+  return 1
+}
