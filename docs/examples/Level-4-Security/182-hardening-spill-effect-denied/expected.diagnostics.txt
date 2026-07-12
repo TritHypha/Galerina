@@ -1,0 +1,8 @@
+FUNGI-EFFECT-006 (DenyOnlyEffect)
+
+The flow declares `effects { memory.spill }`. `memory.spill` is a DENY-ONLY effect (RD-0358 H-6,
+RD-0360 Q2): a recognised name that can never be granted — no capability bit, no host import, no
+admission path carries it. Declaring it is not an under-declaration to fix but a design boundary: you
+cannot DECLARE your way past a residency ceiling. This is the explicit-spill door; the governance
+verifier already shuts the implicit-spill door (example 180: FUNGI-HARDEN-005/007 re-type a spilled
+hardened value `Refuted`). Remove `memory.spill` — no declaration makes this flow admissible.
