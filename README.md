@@ -219,9 +219,36 @@ Run on an **Intel i9-9900K (8C/16T) + NVIDIA RTX 2060**, across Rust (native, ge
 | **Photonic / Ternary Computing** | ~3% | software simulation only (not hardware) |
 | **Application-framework layer** | ~72% | admission/fusion border (3 gates + `planComposition` multi-module linker + revocation, 104 tests) · `galerina new app` scaffolder · governed resolver (hash/sig/registry/install-deny + FUNGI-PKG-006) — all real + tested. **B8 HTTP transport unlocked + in progress** (S1 cert-gate landed, kernel-wiring pending). Servable api-server/example-app + signed registry index are the remaining gaps |
 | **B8 governed HTTP transport (TLSTP)** | in progress | **S1 K3 cert/channel-validation gate shipped** (`galerina-core-network`, 160 tests, fail-closed `revocation-unknown → DENY`, SEC-002 mutation-guarded) — wiring into live kernel auth + 0066 first-3 (handshake-bind · raw-byte shim · ECH/OHTTP) are next |
-| **Tri-Pipe fault tolerance (binary/hybrid/photonic)** | re-R&D | shipped: fail-closed core · arena + overflow traps · DbC post-conditions · K3 fail-safe · NMR tolerance · Freivalds verify · DRCM containment. A multi-agent stability re-R&D is in flight |
+| **Tri-Pipe fault tolerance (binary/hybrid/photonic)** | re-R&D complete | shipped: fail-closed core · arena + overflow traps · DbC post-conditions · K3 fail-safe · NMR tolerance · Freivalds verify · DRCM containment. The multi-agent stability re-R&D is **complete** (results-log 0032) |
 
 **Roadmap (security-first)** + **% audit** (~88% shippable) + build-roadmap are maintained in the internal engineering KB; the in-repo status view is [component-readiness-honest-audit-2026-07-10.md](docs/architecture/component-readiness-honest-audit-2026-07-10.md). *2026-06-25: faithful Int64 WASM lowering is lift-ready (gate closed by design); the Untrusted Governed Lane is documented; the Tower-of-Hanoi cross-language benchmark + the JS-quirks-vs-Galerina R&D (notes/59) landed.* *Latest (2026-06-24, v1.0.0-beta.2): `FUNGI-TIER-001` + `FUNGI-VALUESTATE-008` are now enforced on the `galerina.mjs` production build path, opt-in hybrid Ed25519+ML-DSA-65 `.lmanifest` signing shipped (certified profile), and `@galerina/ext-secrets-spore` (`env.spore` sealed secrets) landed; the next security fix is wiring the S1 cert-gate into live kernel admission (run `node scripts/status.mjs`; `node scripts/component-health.mjs --table` renders the per-component **Zero-Trust-thesis** + **Build-Progress** readiness live, Tests row sourced from `version.json`).*
+
+## Tracking registry
+
+Substantial items tracked *outside* the two tables above — the R&D **§5 registry** (finish-line handover, 2026-07-12). Mirrors `scripts/component-health.mjs --table` (tool = source, README = view). **State** is an honest word — `shipped` · `building` · `design-done` · `build-pending` · `post-v1` · `🔒 owner` — and a bare **%** appears only where a countable ladder (tests / rungs / increments) exists; never an invented number.
+
+| Item | State | Detail |
+|---|---|---|
+| **Execution-cutover (RD-0361)** | building | T1 pilot: R0 4/4 twins build-clean · R1+R3 proven 1/4 · T2–T5 pending · R4 authority flip 🔒 owner |
+| **Twin corpus + 6 sentinels** | shipped | ~20 pure `.fungi` verdict twins checker-clean across 9 governed dirs (execution is RD-0361) |
+| **Hardening / residency (RD-0358)** | design-done | H-1..H-7 prototype done-to-gate on `prototype/hardening-residency`; merge 🔒 owner (§2.3) |
+| **Epistemic trust-trit (RD-0337)** | shipped | PROVEN/UNKNOWN/REFUTED runtime + compiler mirror (Option A) + trit-conformance gate 6/6 |
+| **Hallmark open types (RD-0353 H1)** | shipped | developer-minted nominal types + mandatory assay gates; FUNGI-HALLMARK-001..005, example 097 |
+| **Value-unit types (RD-0349)** | building | I2/I3 done · I1 ISO-4217 unlocked (§5) · I4–I6 queued; no float bridge |
+| **CANONICAL_EFFECTS registry (RD-0341)** | shipped | single-source `domain.verb` + anti-drift self-tests; `memory.spill` deny-only, FUNGI-EFFECT-006 |
+| **Contract Registry (RD-0359)** | build-pending | `gen-contract-registry.mjs` unbuilt; timing unlocked (§5) — generate ALL contracts into one doc |
+| **Self-hosting Stages 3–6** | post-v1 | bootstrap fixpoint · crypto FFI seam · `.fungi`↔host path · floor-by-floor; P9, non-v1-gate |
+| **DSS.wasm supervisor (#102–106)** | post-v1 | real Wasmtime TCB (kernel-bypass / in-sandbox decrypt); design-spec exists; unlocked-to-build, non-v1-gate |
+| **Workspace package families** | shipped | 94-pkg denominator built (target×9 · data×12 · db×5 · web×6 · ai · tools); 2 orphans #32-exempt |
+| **Package Standard + pub ladder** | building | Standard v1 + pkg-census + 9 schematics done; R1–R6 rungs pending; `.graph` amendment 🔒 owner |
+| **Security-infra designs (×4)** | build-pending | SBOM tool exists; fuzz RD-0316 · Z3 RD-0318 · tabletop RD-0319 unlocked (§5), unbuilt |
+| **Devtools audit suite** | shipped | 72 tools · 41 audits · keep-green + gate-selftests meta-gate; twin-audit execution column pending |
+| **Signing-key custody** | build-pending | hybrid key ceremony #34 done; L1 `env.spore` + vault move 🔒 owner-side; TPM(L3)/HW(L4) post-v1 |
+| **Missing R&D (0363/0364/0365)** | design-done | all three closed (passive-plan · inference-bridge · TPM-custody); build increments P1–P5/I1–I6 pending |
+| **KB category indexes** | post-v1 | auto-generated KB grouping (API/Kernel/…); trigger: v1-freeze 🔒 owner |
+| **ZTF-KB path-leak guard** | build-pending | `kb-path-leak.mjs` built; 346-leak/101-file remediation + CI wiring unlocked (§5) |
+| **TritMesh / `.hypha` / TritMeshQL** | post-v1 | the NEXT project (database on Galerina); RD-0293/0294/0306/0312 designs |
+| **myco** | shipped | v0.1.0 committed (graph-indexed grep replacement, own subproject); npm publish 🔒 outward |
 
 ---
 

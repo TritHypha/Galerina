@@ -261,6 +261,34 @@ const BUILD_PROGRESS = [
   { layer: "Stage-B self-hosting — WASM execution (P9)", status: "in progress" },
   { layer: "B8 governed HTTP transport (TLSTP)", status: "in progress" },
 ];
+// ── TRACKING REGISTRY — substantial items NOT surfaced by the Zero-Trust or Build-Progress tables
+//    (the R&D §5 registry, HANDOVER-v1-finish-line-cutover 2026-07-12). HONESTY RULE: `state` is a bare %
+//    ONLY where a countable ladder exists (tests / rungs / increments); otherwise it is a truthful WORD —
+//    shipped · building · design-done · build-pending · post-v1 · "🔒 owner". Never an invented number.
+//    Keep in sync with the README "Tracking registry" table (tool = source, README = view), same as the
+//    two tables above. Order mirrors the §5 registry rows. ──────────────────────────────────────────────
+const TRACKING_REGISTRY = [
+  { item: "Execution-cutover (RD-0361)",        state: "building",      detail: "T1 pilot: R0 4/4 twins build-clean · R1+R3 proven 1/4 · T2–T5 pending · R4 authority flip 🔒 owner" },
+  { item: "Twin corpus + 6 sentinels",          state: "shipped",       detail: "~20 pure .fungi verdict twins checker-clean across 9 governed dirs (execution is RD-0361)" },
+  { item: "Hardening / residency (RD-0358)",     state: "design-done",   detail: "H-1..H-7 prototype done-to-gate on prototype/hardening-residency; merge 🔒 owner (§2.3)" },
+  { item: "Epistemic trust-trit (RD-0337)",      state: "shipped",       detail: "PROVEN/UNKNOWN/REFUTED runtime + compiler mirror (Option A) + trit-conformance gate 6/6" },
+  { item: "Hallmark open types (RD-0353 H1)",    state: "shipped",       detail: "developer-minted nominal types + mandatory assay gates; FUNGI-HALLMARK-001..005, example 097" },
+  { item: "Value-unit types (RD-0349)",          state: "building",      detail: "I2/I3 done · I1 ISO-4217 unlocked (§5) · I4–I6 queued; no float bridge" },
+  { item: "CANONICAL_EFFECTS registry (RD-0341)",state: "shipped",       detail: "single-source domain.verb + anti-drift self-tests; memory.spill deny-only, FUNGI-EFFECT-006" },
+  { item: "Contract Registry (RD-0359)",         state: "build-pending", detail: "gen-contract-registry.mjs unbuilt; timing unlocked (§5) — generate ALL contracts into one doc" },
+  { item: "Self-hosting Stages 3–6",             state: "post-v1",       detail: "bootstrap fixpoint · crypto FFI seam · .fungi↔host path · floor-by-floor; P9, non-v1-gate" },
+  { item: "DSS.wasm supervisor (#102–106)",      state: "post-v1",       detail: "real Wasmtime TCB (kernel-bypass / in-sandbox decrypt); design-spec exists; unlocked-to-build, non-v1-gate" },
+  { item: "Workspace package families",          state: "shipped",       detail: "94-pkg denominator built (target×9 · data×12 · db×5 · web×6 · ai · tools); 2 orphans #32-exempt" },
+  { item: "Package Standard + pub ladder",       state: "building",      detail: "Standard v1 + pkg-census + 9 schematics done; R1–R6 rungs pending; .graph amendment 🔒 owner" },
+  { item: "Security-infra designs (×4)",         state: "build-pending", detail: "SBOM tool exists; fuzz RD-0316 · Z3 RD-0318 · tabletop RD-0319 unlocked (§5), unbuilt" },
+  { item: "Devtools audit suite",                state: "shipped",       detail: "72 tools · 41 audits · keep-green + gate-selftests meta-gate; twin-audit execution column pending" },
+  { item: "Signing-key custody",                 state: "build-pending", detail: "hybrid key ceremony #34 done; L1 env.spore + vault move 🔒 owner-side; TPM(L3)/HW(L4) post-v1" },
+  { item: "Missing R&D (0363/0364/0365)",        state: "design-done",   detail: "all three closed (passive-plan · inference-bridge · TPM-custody); build increments P1–P5/I1–I6 pending" },
+  { item: "KB category indexes",                 state: "post-v1",       detail: "auto-generated KB grouping (API/Kernel/…); trigger: v1-freeze 🔒 owner" },
+  { item: "ZTF-KB path-leak guard",              state: "build-pending", detail: "kb-path-leak.mjs built; 346-leak/101-file remediation + CI wiring unlocked (§5)" },
+  { item: "TritMesh / .hypha / TritMeshQL",      state: "post-v1",       detail: "the NEXT project (database on Galerina); RD-0293/0294/0306/0312 designs" },
+  { item: "myco",                                state: "shipped",       detail: "v0.1.0 committed (graph-indexed grep replacement, own subproject); npm publish 🔒 outward" },
+];
 const quantified = BUILD_PROGRESS.filter((l) => typeof l.pct === "number");
 const buildAvg = Math.round(quantified.reduce((a, l) => a + l.pct, 0) / quantified.length);
 const ztAvg = Math.round(ZERO_TRUST.reduce((a, b) => a + b.pct, 0) / ZERO_TRUST.length);
@@ -300,6 +328,13 @@ const extraSections = () => {
     lines.push(`    ${L(l.layer, 50)} ${R(pctStr, 12)}${extra}`);
   }
   lines.push("    note: %s are the maintained roadmap-readiness figures (README source of truth); the Tests row is LIVE from version.json.");
+  lines.push("");
+  lines.push(`  TRACKING REGISTRY — substantial items outside the two tables above (§5; mirrors README "Tracking registry")`);
+  for (const t of TRACKING_REGISTRY) {
+    const stateStr = typeof t.state === "number" ? `${t.state}%` : t.state;
+    lines.push(`    ${L(t.item, 32)} ${R(stateStr, 13)}  ${t.detail}`);
+  }
+  lines.push("    note: state is an honest WORD (shipped/building/design-done/build-pending/post-v1/🔒) — a bare % appears ONLY where a countable ladder exists, never invented.");
   return lines;
 };
 
