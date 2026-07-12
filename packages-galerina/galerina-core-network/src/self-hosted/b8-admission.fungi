@@ -1,0 +1,71 @@
+@version 1
+/// @file: b8-admission.fungi
+/// @purpose: Stage-6 CHECKER-VERIFIED twin of the B8 governed-HTTP-transport-adapter ADMISSION DECISION —
+///   the converged build-first of the B8 build guide (KB galerina-b8-governed-transport §2). A real HTTP
+///   request is admitted IFF the K3 conjunction (vAnd = min) over EVERY request-path gate verdict is exactly
+///   ALLOW. The gate EVIDENCE is host/library work — TLS chain validation, sha256 pins, Ed25519 verify,
+///   revocation lookup, capability membership — and stays `.ts`/binary crypto floor; this pure surface folds
+///   the resulting TRITS fail-closed (govern-don't-absorb). Mirrors tower-citizen/three-valued-governance.ts
+///   (vAnd/allOf/decideAtBoundary) — the twin executes ≡ that shipped K3 calculus (RD-0361 differential).
+/// @fidelity: revocation-UNKNOWN maps to INDETERMINATE (0), which vAnd caps the fold at 0, and the boundary
+///   collapses 0 -> DENY (FUNGI-GOV-3VL-001). This is B8's headline: the classic TLS soft-fail hole (an
+///   unreachable OCSP responder treated as "good") is closed by construction — unknown -> DENY, never ALLOW.
+/// @status: checker-verified twin (galerina check clean); NOT build-wired (execution switch #143).
+
+// K3 conjunction: the more-cautious verdict wins. Trit domain DENY < INDETERMINATE < ALLOW ( -1 < 0 < +1 ),
+// so vAnd is min. Two structural facts (B8 §2.1): DENY absorbs (min(-1, x) = -1) and there is no upward
+// coercion (min(a, b) <= a, <= b) — a side-signal can only hold or lower a verdict, never raise it.
+pure flow vAnd(a: Int, b: Int) -> Int
+contract {
+  intent { "K3 conjunction: min over DENY<INDETERMINATE<ALLOW; one DENY absorbs the fold, no upward coercion." }
+}
+{
+  if a < b {
+    return a
+  }
+  return b
+}
+
+// The S1 channel-validation gate (cert-gate): the request's TLS chain reduced to one trit. Each sub-signal is
+// a HOST-LIBRARY-derived trit (Galerina never re-implements X.509/ASN.1) — chain_valid is binary from the
+// library; pin_match / not_expired / revocation_fresh each carry a meaningful INDETERMINATE. vAnd folds them.
+pure flow certVerdict(pinMatch: Int, chainValid: Int, notExpired: Int, revocationFresh: Int) -> Int
+contract {
+  intent { "S1 cert-gate: vAnd(pin_match, chain_valid, not_expired, revocation_fresh); revocation-unknown (0) caps at 0 -> DENY (closes TLS soft-fail)." }
+}
+{
+  let a = vAnd(pinMatch, chainValid)
+  let b = vAnd(notExpired, revocationFresh)
+  return vAnd(a, b)
+}
+
+// The composed B8 admission fold (allOf = left-reduce vAnd over the request path): raw-byte shim, verifyWasm
+// attestation, fuse Gate 1 (sha256 pin), Gate 2 (Ed25519 vs pinned keyId), Gate 2b (revocation, fail-closed),
+// Gate 3 (deny-by-default capabilities), and the S1 cert gate. Deny-by-default: any 0 or -1 sinks the fold
+// (Theorem 1 — one bad gate denies), so admission requires EVERY gate to independently return ALLOW.
+pure flow admitVerdict(shim: Int, verify: Int, hashPin: Int, sigPin: Int, revocation: Int, caps: Int, cert: Int) -> Int
+contract {
+  intent { "B8 admission: allOf/vAnd fold over G_shim, G_verify, G1(hash), G2(sig), G2b(revocation), G3(caps), G_S1(cert) — admit iff every gate is ALLOW." }
+}
+{
+  let a1 = vAnd(shim, verify)
+  let a2 = vAnd(a1, hashPin)
+  let a3 = vAnd(a2, sigPin)
+  let a4 = vAnd(a3, revocation)
+  let a5 = vAnd(a4, caps)
+  return vAnd(a5, cert)
+}
+
+// decideAtBoundary collapse: authorize IFF the composed verdict is exactly ALLOW (+1). BOTH INDETERMINATE (0)
+// and DENY (-1) reject — an indeterminate reaching the boundary is a DENY (with a FUNGI-GOV-3VL-001 audit on
+// the host side), never a silent pass.
+pure flow authorized(verdict: Int) -> Bool
+contract {
+  intent { "Fail-closed boundary collapse: admit IFF verdict == ALLOW (+1); INDETERMINATE (0) and DENY (-1) both reject." }
+}
+{
+  if verdict == 1 {
+    return true
+  }
+  return false
+}
