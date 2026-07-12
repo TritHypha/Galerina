@@ -57,6 +57,27 @@ describe("declared-name postures — deny-only", () => {
     assert.equal(flags, EffectFlags.UnmappedEffect, "deny-only / unmapped → sentinel (fail-closed), not bit 0");
     assert.equal(effectsSubset(flags, effectsToFlags([])), false, "eval.execute ⊄ [] — never grantable");
   });
+
+  it("memory.spill → FUNGI-EFFECT-006 error (deny-only, H-6), not UNKNOWN_EFFECT", () => {
+    // RD-0358 / RD-0360 Q2: a hardened value crossing its `hardening { residency }` ceiling is a
+    // RECOGNISED name that can never be granted — declaring it is inadmissible, not under-declared.
+    // This is the EXPLICIT-declaration door; FUNGI-HARDEN-005/007 close the IMPLICIT-spill door.
+    const diags = diagnosticsFor("memory.spill");
+    const d6 = diags.find(d => d.code === "FUNGI-EFFECT-006");
+    assert.ok(d6, "FUNGI-EFFECT-006 must fire for memory.spill");
+    assert.equal(d6.severity, "error");
+    assert.equal(d6.name, "DenyOnlyEffect");
+    assert.ok(!diags.some(d => d.code === "FUNGI-EFFECT-004"),
+      "memory.spill is deny-only, not unknown/non-canonical — no double-report");
+  });
+
+  it("memory.spill (deny-only) → UnmappedEffect sentinel, never satisfiable (fail-closed)", () => {
+    // The C10 fence at the type level: a declared spill requirement can never be a subset of any
+    // granted authority, so no grant ever makes a hardened spill admissible.
+    const flags = effectsToFlags(["memory.spill"]);
+    assert.equal(flags, EffectFlags.UnmappedEffect, "deny-only → sentinel (fail-closed), not bit 0");
+    assert.equal(effectsSubset(flags, effectsToFlags([])), false, "memory.spill ⊄ [] — never grantable");
+  });
 });
 
 describe("declared-name postures — aliases and canonical", () => {

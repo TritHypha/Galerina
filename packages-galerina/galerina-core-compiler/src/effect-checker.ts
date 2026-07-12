@@ -421,17 +421,32 @@ export const CANONICAL_EFFECTS = new Set([
   // telemetry.read promoted from Stage-B-only to canonical (aerospace corpus uses it;
   // EffectFlags.TelemetryRead bit 14 in type-registry.ts). eval.execute is deliberately
   // NOT here — it is DENY-ONLY (see DENY_ONLY_EFFECTS below): recognised, never grantable.
+  // memory.spill (H-6, RD-0358/RD-0360 Q2) is likewise DENY-ONLY, not here — a hardened
+  // value's residency-ceiling crossing is never a grantable authority. (No memory.* entry
+  // is canonical — the Q2 no-collision guardrail holds by construction.)
   "telemetry.read",
 ]);
 
 // Effects that are RECOGNISED but NEVER grantable — declaring one is an error at
 // every profile (FUNGI-EFFECT-006, fail-closed; galerina.mjs folds it into the
-// dev-integrity set). eval.execute = arbitrary dynamic evaluation: no capability
-// bit, no host import, no admission path may ever carry it. Keeping the name in
-// the vocabulary (vs UNKNOWN) gives authors the real reason instead of a typo hint,
-// and reconciles Stage-B knownEffects (C9) without making the effect grantable.
+// dev-integrity set). Keeping the name in the vocabulary (vs UNKNOWN) gives authors
+// the real reason instead of a typo hint, and reconciles Stage-B knownEffects (C9)
+// without making the effect grantable. C10 (audit-effect-canonicality) proves each
+// name here is absent from EVERY grantable table (canonical/alias/flag/gir/cap).
+//   • eval.execute — arbitrary dynamic evaluation: no capability bit, no host import,
+//     no admission path may ever carry it.
+//   • memory.spill — RD-0358 / RD-0360 Q2 (H-6): a hardened value crossing its
+//     `hardening { residency … }` ceiling (a register-only / no-swap secret reaching
+//     DRAM or swap). Deny-by-default and never grantable — no capability legitimises
+//     leaking a hardened secret to memory, so a DECLARED spill cannot buy admission
+//     the way FUNGI-HARDEN-005/007 already rejects the IMPLICIT spill (the two paths
+//     close the door from both sides). A future GRANTABLE "audited paged-optimizer"
+//     spill (RD-0356 B5) would be a DISTINCT canonical effect, never this name —
+//     keeping memory.spill deny-only guarantees "declared spill" can never become a
+//     synonym for "declared paging".
 export const DENY_ONLY_EFFECTS: ReadonlySet<string> = new Set([
   "eval.execute",
+  "memory.spill",
 ]);
 
 const EFFECT_NAME_ALIASES: ReadonlyMap<string, string> = new Map([

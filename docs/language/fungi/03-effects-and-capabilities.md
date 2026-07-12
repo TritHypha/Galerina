@@ -102,26 +102,38 @@ This is the complete set the production effect checker accepts. Grouped for lear
 | `worker.spawn` | Spawn a worker |
 | `event.schedule` | Schedule a future event |
 
-### The one deny-only effect
+### The deny-only effects
 | Effect | Meaning |
 |---|---|
 | `eval.execute` | Arbitrary dynamic evaluation — **RECOGNISED but NEVER grantable**. Declaring it is an error in every profile (`FUNGI-EFFECT-006`). It has no capability bit and no admission path. |
+| `memory.spill` | A hardened value crossing its `hardening { residency … }` ceiling (a `register_only` / `no_swap` secret reaching DRAM or swap). **RECOGNISED but NEVER grantable** (`FUNGI-EFFECT-006`) — see below. |
 
-`eval.execute` is in the vocabulary on purpose: so that if you try to use it you get the real reason
+Both names are in the vocabulary on purpose: so that if you try to use one you get the real reason
 ("never grantable") instead of a typo hint.
 
-## Design-stage (RD-0358): `memory.spill` — NOT yet a real effect
+## `memory.spill` — the deny-only residency-ceiling effect (H-6, RD-0358 / RD-0360)
 
-> **Not in `CANONICAL_EFFECTS`.** Do not declare it — the checker rejects it as unknown.
+> **Deny-only vocabulary (`DENY_ONLY_EFFECTS`), NOT `CANONICAL_EFFECTS`.** Declaring it is an error in
+> every profile (`FUNGI-EFFECT-006`) — there is no grant that makes a hardened spill admissible.
 
-RD-0358 (governed memory-residency hardening) proposes that **crossing a residency ceiling** — a value
-spilling past its declared `hardening { residency … }` tier — become a **deny-by-default effect**
-(`memory.spill`-class): an *undeclared* spill would not compile, and a *declared* one would be the
-audited paged-optimizer cousin. This is **design-stage (H-6)**: the hardening *derivation* and the
-explicit-block *enforcement* ship in the prototype (see
-[04 — Types § Governed memory-residency hardening](04-types-and-values.md)), but `memory.spill` is
-**not** wired as a first-class effect yet. When it lands it joins `CANONICAL_EFFECTS` (the single source
-of truth) and moves up into the real vocabulary above.
+RD-0358 (governed memory-residency hardening) names the event of a value **crossing its residency
+ceiling** — a `register_only` / `no_swap` secret reaching DRAM or swap — as the effect `memory.spill`.
+RD-0360 Q2 **blessed the name** (over `storage.spill`: "storage" means persistence and under-describes a
+register→DRAM spill) and fixed its disposition as **deny-by-default, never grantable**. It closes the
+door on the *explicit* side, exactly complementing the hardening checker on the *implicit* side:
+
+- **Implicit spill** — a `hardening { residency … }` ceiling the target cannot honour is rejected by the
+  governance verifier with `FUNGI-HARDEN-005` (and `FUNGI-HARDEN-007`, which re-types the value `Refuted`
+  so it can no longer be released at a trust boundary). See
+  [04 — Types § Governed memory-residency hardening](04-types-and-values.md).
+- **Explicit spill** — writing `effects { memory.spill }` to *declare your way past* the ceiling is
+  rejected by the effect checker with `FUNGI-EFFECT-006` (deny-only). You cannot buy admission for a
+  hardened spill: there is no capability bit, host import, or admission path that carries it.
+
+Why deny-only and not canonical: a canonical effect is **grantable**, and no authority legitimises
+leaking a hardened secret to memory. A future **grantable** "audited paged-optimizer" spill (RD-0356 B5)
+would be a *distinct* canonical effect with its own admission gate — never this name. Keeping
+`memory.spill` deny-only guarantees a *declared spill* can never become a synonym for *declared paging*.
 
 ## Operation → effect inference (`EFFECT_REGISTRY`)
 
