@@ -1,15 +1,15 @@
 # Galerina Graph Report
 
 Workspace: Galerina-app
-Generated: 2026-07-11T14:06:41.447Z
+Generated: 2026-07-12T10:09:11.842Z
 
 ## Summary
 
 - Packages: 92
-- Documents: 1961
-- Types/interfaces: 2412
-- Functions: 1210
-- Relationships: 5998
+- Documents: 1990
+- Types/interfaces: 2417
+- Functions: 1212
+- Relationships: 6025
 
 ## Package Nodes
 
@@ -86,7 +86,7 @@ Generated: 2026-07-11T14:06:41.447Z
 - galerina-ext-bridge-bitnet (packages-galerina/galerina-ext-bridge-bitnet/package.json)
 - galerina-ext-bridge-cpp (packages-galerina/galerina-ext-bridge-cpp/package.json)
 - galerina-ext-photonic-emulator (packages-galerina/galerina-ext-photonic-emulator/README.md)
-- galerina-ext-proof-snarkjs (packages-galerina/galerina-ext-proof-snarkjs/package.json)
+- galerina-ext-proof-snarkjs (packages-galerina/galerina-ext-proof-snarkjs/README.md)
 - galerina-ext-secrets-vault (packages-galerina/galerina-ext-secrets-vault/package.json)
 - galerina-ext-secrets-spore (packages-galerina/galerina-ext-secrets-spore/README.md)
 - galerina-ext-tritsocket (packages-galerina/galerina-ext-tritsocket/README.md)

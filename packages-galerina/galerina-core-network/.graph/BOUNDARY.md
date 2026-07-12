@@ -11,13 +11,13 @@
 
 | Metric | Count |
 |---|---|
-| Files | 7 |
+| Files | 13 |
 | Internal edges | 7 |
 | External dependencies | 1 |
 | ├─ Node core | 0 |
 | ├─ Workspace (@galerina/*) | 1 |
 | └─ Third-party | 0 |
-| Orphan files | 0 |
+| Orphan files | 6 |
 
 ## External Dependencies (the Border)
 
@@ -34,7 +34,12 @@ _none_
 No boundary violations. All external imports are within the allowlist.
 
 ## Orphaned Files
-_none_ — every file is reachable from an internal import or entry point.
+- `src/self-hosted/admission-feedback.fungi`
+- `src/self-hosted/cert-gate.fungi`
+- `src/self-hosted/cors-policy.fungi`
+- `src/self-hosted/defensive-controls.fungi`
+- `src/self-hosted/egress-guard.fungi`
+- `src/self-hosted/inbound-guard.fungi`
 
 ## Entry Points
 - `src/index.ts`

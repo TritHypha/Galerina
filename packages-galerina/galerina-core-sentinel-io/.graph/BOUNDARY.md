@@ -11,13 +11,13 @@
 
 | Metric | Count |
 |---|---|
-| Files | 6 |
+| Files | 8 |
 | Internal edges | 11 |
 | External dependencies | 1 |
 | ├─ Node core | 1 |
 | ├─ Workspace (@galerina/*) | 0 |
 | └─ Third-party | 0 |
-| Orphan files | 0 |
+| Orphan files | 2 |
 
 ## External Dependencies (the Border)
 
@@ -34,7 +34,8 @@ _none_
 No boundary violations. All external imports are within the allowlist.
 
 ## Orphaned Files
-_none_ — every file is reachable from an internal import or entry point.
+- `src/self-hosted/hardened-border.fungi`
+- `src/self-hosted/manifest-validator.fungi`
 
 ## Entry Points
 - `src/index.ts`

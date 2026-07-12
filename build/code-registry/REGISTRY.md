@@ -8,7 +8,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 
 | status | count | meaning |
 |---|---|---|
-| live | 117 | emitted with an exported constant |
+| live | 122 | emitted with an exported constant |
 | inline | 145 | emitted, NO exported constant (R4 — Stage F) |
 | referenced | 97 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 8 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
@@ -579,6 +579,16 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-GRAPH-004 | inline | PiiLeakagePath | error |
 | FUNGI-GRAPH-005 | inline | MissingAuditCoverage | warning |
 | FUNGI-GRAPH-006 | inline | UnboundedRetry | warning |
+
+### HALLMARK (5)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-HALLMARK-001 | live | RESERVED_TYPE_NAME | error |
+| FUNGI-HALLMARK-002 | live | NON_ASCII_HALLMARK_NAME | error |
+| FUNGI-HALLMARK-003 | live | HALLMARK_GATE_REQUIRED | error |
+| FUNGI-HALLMARK-004 | live | UNKNOWN_HALLMARK_OP | error |
+| FUNGI-HALLMARK-005 | live | UNDECLARED_HALLMARK_OP | error |
 
 ### HINT (1)
 

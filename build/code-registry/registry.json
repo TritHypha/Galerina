@@ -1,11 +1,11 @@
 {
   "generatedFrom": "build/code-index/code-index.json",
-  "total": 650,
+  "total": 655,
   "counts": {
     "ref": 173,
     "inline": 145,
     "phantom": 110,
-    "live": 117,
+    "live": 122,
     "referenced": 97,
     "dead": 8
   },
@@ -1297,7 +1297,7 @@
       "severities": [],
       "defs": 0,
       "emits": 4,
-      "tests": 5,
+      "tests": 13,
       "docs": 1
     },
     {
@@ -3047,7 +3047,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 64,
-      "docs": 18
+      "docs": 19
     },
     {
       "code": "FUNGI-EFFECT-005",
@@ -3388,7 +3388,7 @@
       "defs": 1,
       "emits": 0,
       "tests": 8,
-      "docs": 1
+      "docs": 2
     },
     {
       "code": "FUNGI-GATELANG-002",
@@ -3404,7 +3404,7 @@
       "defs": 1,
       "emits": 0,
       "tests": 2,
-      "docs": 5
+      "docs": 7
     },
     {
       "code": "FUNGI-GEN-TEST-005",
@@ -3462,7 +3462,7 @@
       "defs": 1,
       "emits": 1,
       "tests": 60,
-      "docs": 25
+      "docs": 27
     },
     {
       "code": "FUNGI-GOV-004",
@@ -3844,6 +3844,86 @@
       "emits": 1,
       "tests": 2,
       "docs": 0
+    },
+    {
+      "code": "FUNGI-HALLMARK-001",
+      "family": "HALLMARK",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "RESERVED_TYPE_NAME"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 8,
+      "docs": 8
+    },
+    {
+      "code": "FUNGI-HALLMARK-002",
+      "family": "HALLMARK",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "NON_ASCII_HALLMARK_NAME"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 0,
+      "docs": 2
+    },
+    {
+      "code": "FUNGI-HALLMARK-003",
+      "family": "HALLMARK",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "HALLMARK_GATE_REQUIRED"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 3,
+      "docs": 2
+    },
+    {
+      "code": "FUNGI-HALLMARK-004",
+      "family": "HALLMARK",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "UNKNOWN_HALLMARK_OP"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 5,
+      "docs": 2
+    },
+    {
+      "code": "FUNGI-HALLMARK-005",
+      "family": "HALLMARK",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "UNDECLARED_HALLMARK_OP"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 5,
+      "docs": 2
     },
     {
       "code": "FUNGI-HINT-COMPUTE-001",
@@ -4681,7 +4761,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 5,
-      "docs": 10
+      "docs": 14
     },
     {
       "code": "FUNGI-MEMORY-001",
@@ -5322,7 +5402,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 13,
-      "docs": 4
+      "docs": 6
     },
     {
       "code": "FUNGI-PARSE-002",
@@ -6165,7 +6245,7 @@
       "defs": 1,
       "emits": 3,
       "tests": 43,
-      "docs": 17
+      "docs": 18
     },
     {
       "code": "FUNGI-PRIVACY-003",
@@ -7295,7 +7375,7 @@
       "defs": 1,
       "emits": 0,
       "tests": 3,
-      "docs": 6
+      "docs": 7
     },
     {
       "code": "FUNGI-SYNTAX-007",
@@ -7511,7 +7591,7 @@
       "defs": 1,
       "emits": 0,
       "tests": 11,
-      "docs": 1
+      "docs": 2
     },
     {
       "code": "FUNGI-TAINT-004",
@@ -7681,7 +7761,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 26,
-      "docs": 1
+      "docs": 2
     },
     {
       "code": "FUNGI-TRACE-001",
@@ -7806,8 +7886,8 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 211,
-      "docs": 4
+      "tests": 221,
+      "docs": 11
     },
     {
       "code": "FUNGI-TYPE-002",
@@ -7827,7 +7907,7 @@
       "defs": 1,
       "emits": 1,
       "tests": 78,
-      "docs": 9
+      "docs": 10
     },
     {
       "code": "FUNGI-TYPE-003",
@@ -7842,8 +7922,8 @@
       ],
       "defs": 1,
       "emits": 1,
-      "tests": 59,
-      "docs": 6
+      "tests": 62,
+      "docs": 12
     },
     {
       "code": "FUNGI-TYPE-004",
@@ -7855,9 +7935,9 @@
       ],
       "severities": [],
       "defs": 0,
-      "emits": 12,
-      "tests": 129,
-      "docs": 14
+      "emits": 16,
+      "tests": 137,
+      "docs": 18
     },
     {
       "code": "FUNGI-TYPE-005",
@@ -7911,7 +7991,7 @@
       "severities": [],
       "defs": 0,
       "emits": 2,
-      "tests": 35,
+      "tests": 36,
       "docs": 1
     },
     {
@@ -7926,7 +8006,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 89,
-      "docs": 9
+      "docs": 10
     },
     {
       "code": "FUNGI-TYPE-010",
@@ -8186,7 +8266,7 @@
       "defs": 0,
       "emits": 3,
       "tests": 24,
-      "docs": 3
+      "docs": 4
     },
     {
       "code": "FUNGI-TYPE-024",
@@ -8342,7 +8422,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 27,
-      "docs": 9
+      "docs": 11
     },
     {
       "code": "FUNGI-VALUESTATE-002",
@@ -8370,7 +8450,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 124,
-      "docs": 25
+      "docs": 31
     },
     {
       "code": "FUNGI-VALUESTATE-004",
@@ -8386,7 +8466,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 20,
-      "docs": 7
+      "docs": 11
     },
     {
       "code": "FUNGI-VALUESTATE-005",
@@ -8420,7 +8500,7 @@
       "defs": 1,
       "emits": 2,
       "tests": 77,
-      "docs": 5
+      "docs": 11
     },
     {
       "code": "FUNGI-VALUESTATE-007",
@@ -8450,7 +8530,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 31,
-      "docs": 0
+      "docs": 4
     },
     {
       "code": "FUNGI-VAULT-001",

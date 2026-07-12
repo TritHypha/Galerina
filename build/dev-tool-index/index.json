@@ -3,9 +3,9 @@
   "totals": {
     "packages": 94,
     "testBearing": 93,
-    "tests": 6829,
-    "devTools": 61,
-    "auditTools": 33,
+    "tests": 7057,
+    "devTools": 72,
+    "auditTools": 41,
     "toolsInCadence": 21,
     "proofs": 40
   },
@@ -287,7 +287,7 @@
       "name": "galerina-core-compiler",
       "kind": "core",
       "description": "Galerina compiler pipeline contracts for parsing, checking, IR, diagnostics and reports.",
-      "tests": 4413,
+      "tests": 4471,
       "hasTestScript": true,
       "border": "PASS",
       "files": 96,
@@ -342,10 +342,10 @@
       "name": "galerina-core-network",
       "kind": "core",
       "description": "Galerina core network I/O policy, profile, permission and report contracts.",
-      "tests": 160,
+      "tests": 185,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 5,
+      "files": 13,
       "deps": [
         "@galerina/tower-citizen"
       ]
@@ -394,10 +394,10 @@
       "name": "galerina-core-sentinel-egress",
       "kind": "core",
       "description": "Galerina Sentinel Egress — governed audit egress: fixed ring buffer + batched HMAC-chained tamper-evident flus",
-      "tests": 20,
+      "tests": 33,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 4,
+      "files": 5,
       "deps": []
     },
     {
@@ -407,7 +407,7 @@
       "tests": 23,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 6,
+      "files": 8,
       "deps": []
     },
     {
@@ -417,7 +417,7 @@
       "tests": 34,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 7,
+      "files": 12,
       "deps": []
     },
     {
@@ -427,7 +427,7 @@
       "tests": 17,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 4,
+      "files": 5,
       "deps": []
     },
     {
@@ -437,7 +437,7 @@
       "tests": 15,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 5,
+      "files": 6,
       "deps": []
     },
     {
@@ -447,7 +447,7 @@
       "tests": 13,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 4,
+      "files": 5,
       "deps": []
     },
     {
@@ -476,10 +476,10 @@
       "name": "galerina-tower-citizen",
       "kind": "tower",
       "description": "Galerina Tower Citizen — TowerRuntime + AuditLogger + PluginSandbox for governed AI inference",
-      "tests": 338,
+      "tests": 442,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 26,
+      "files": 29,
       "deps": [
         "@galerina/inference-bridge-contract",
         "@galerina/substrate-math"
@@ -518,10 +518,10 @@
       "name": "galerina-framework-app-kernel",
       "kind": "framework",
       "description": "Optional Galerina secure App Kernel: the fixed, non-bypassable governed request pipeline + secure-default rout",
-      "tests": 104,
+      "tests": 105,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 7,
+      "files": 13,
       "deps": [
         "@galerina/core-config",
         "@galerina/tower-citizen"
@@ -547,7 +547,7 @@
       "tests": null,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 0,
+      "files": 11,
       "deps": []
     },
     {
@@ -624,7 +624,7 @@
       "name": "galerina-devtools-kb-graph",
       "kind": "devtools",
       "description": "Auto-index graph for Galerina Knowledge Base documents",
-      "tests": 20,
+      "tests": 23,
       "hasTestScript": true,
       "border": "PASS",
       "files": 4,
@@ -937,10 +937,10 @@
       "name": "galerina-auth",
       "kind": "auth",
       "description": "Standalone Galerina authentication/authorization FACTOR provider: computes the K3 auth/identity verdicts (TLST",
-      "tests": 35,
+      "tests": 59,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 6,
+      "files": 7,
       "deps": [
         "@galerina/core-network",
         "@galerina/tower-citizen"
@@ -1153,6 +1153,19 @@
       ]
     },
     {
+      "name": "audit-example-diagnostics.mjs",
+      "category": "audit",
+      "purpose": "the curriculum-wide diagnostics gate.",
+      "selfTest": true,
+      "inCadence": false,
+      "concerns": [
+        "effects",
+        "governance",
+        "diagnostics",
+        "teaching-corpus"
+      ]
+    },
+    {
       "name": "audit-fungi-runtime.mjs",
       "category": "audit",
       "purpose": "audit the SELF-HOSTED `.fungi` runtime corpus (the files the compiler/runtime is",
@@ -1162,6 +1175,17 @@
         "gate-wiring",
         "coverage",
         "teaching-corpus"
+      ]
+    },
+    {
+      "name": "audit-gate-selftests.mjs",
+      "category": "audit",
+      "purpose": "META-GATE: prove every audit/lint gate is NON-VACUOUS.",
+      "selfTest": true,
+      "inCadence": false,
+      "concerns": [
+        "mutation-testing",
+        "graph/index"
       ]
     },
     {
@@ -1191,6 +1215,59 @@
         "diagnostics",
         "tier-floor",
         "teaching-corpus"
+      ]
+    },
+    {
+      "name": "audit-import-governance.mjs",
+      "category": "audit",
+      "purpose": "inventory + classify every .fungi import; RED a plugin",
+      "selfTest": true,
+      "inCadence": false,
+      "concerns": [
+        "effects",
+        "governance",
+        "gate-wiring",
+        "package-border",
+        "graph/index"
+      ]
+    },
+    {
+      "name": "audit-kernel-floor.mjs",
+      "category": "audit",
+      "purpose": "enforce the App-Kernel host-floor boundary (ADR:",
+      "selfTest": false,
+      "inCadence": false,
+      "concerns": [
+        "signing/fusion",
+        "governance",
+        "diagnostics",
+        "doc-drift",
+        "web-stub",
+        "graph/index"
+      ]
+    },
+    {
+      "name": "audit-kernel-fungi-twins.mjs",
+      "category": "audit",
+      "purpose": "Declared self-hosted twin dirs (repo-relative). Add a package's `src/self-hosted` here when it gains twins.",
+      "selfTest": false,
+      "inCadence": false,
+      "concerns": [
+        "governance",
+        "gate-wiring",
+        "graph/index"
+      ]
+    },
+    {
+      "name": "audit-license-compat.mjs",
+      "category": "audit",
+      "purpose": "the license-audit GATE (RD-0355 L3).",
+      "selfTest": true,
+      "inCadence": false,
+      "concerns": [
+        "effects",
+        "doc-drift",
+        "proofs"
       ]
     },
     {
@@ -1240,6 +1317,18 @@
         "doc-drift",
         "graph/index",
         "sensitive-allowlist"
+      ]
+    },
+    {
+      "name": "audit-node-dependencies.mjs",
+      "category": "audit",
+      "purpose": "the external-dependency floor: visibility + single-source pin.",
+      "selfTest": true,
+      "inCadence": false,
+      "concerns": [
+        "signing/fusion",
+        "diagnostics",
+        "package-border"
       ]
     },
     {
@@ -1444,6 +1533,17 @@
       ]
     },
     {
+      "name": "audit-syntax-reference-links.mjs",
+      "category": "audit",
+      "purpose": "(no header description)",
+      "selfTest": false,
+      "inCadence": false,
+      "concerns": [
+        "gate-wiring",
+        "doc-drift"
+      ]
+    },
+    {
       "name": "audit-syntax.mjs",
       "category": "audit",
       "purpose": "BAD-SYNTAX / PARSE-ERROR tracker for BOTH `.fungi` AND `.ts` (owner 2026-06-28).",
@@ -1625,11 +1725,12 @@
       "name": "component-health.mjs",
       "category": "runner",
       "purpose": "Galerina per-COMPONENT readiness matrix for v1.0 \"full testing\".",
-      "selfTest": false,
+      "selfTest": true,
       "inCadence": false,
       "concerns": [
+        "signing/fusion",
         "provenance",
-        "source-hygiene"
+        "doc-drift"
       ]
     },
     {
@@ -1747,6 +1848,33 @@
       ]
     },
     {
+      "name": "generate-sbom.mjs",
+      "category": "util",
+      "purpose": "deterministic source SBOM for the REAL npm/lockfile graph (RD-0317 §1).",
+      "selfTest": true,
+      "inCadence": false,
+      "concerns": [
+        "sinks/taint",
+        "signing/fusion",
+        "diagnostics",
+        "doc-drift",
+        "graph/index"
+      ]
+    },
+    {
+      "name": "license-rollout.mjs",
+      "category": "util",
+      "purpose": "RD-0355 L1/L2/L7 (owner-confirmed 2026-07-11: Apache-2.0, attribution",
+      "selfTest": false,
+      "inCadence": false,
+      "concerns": [
+        "governance",
+        "coverage",
+        "tier-floor",
+        "proofs"
+      ]
+    },
+    {
       "name": "mark-core-change.cjs",
       "category": "util",
       "purpose": "mark-core-change.js",
@@ -1840,6 +1968,18 @@
       ]
     },
     {
+      "name": "repoint-kb-refs.mjs",
+      "category": "util",
+      "purpose": "deterministic codemod: repoint dangling in-repo KB refs",
+      "selfTest": false,
+      "inCadence": false,
+      "concerns": [
+        "diagnostics",
+        "doc-drift",
+        "graph/index"
+      ]
+    },
+    {
       "name": "verify-artifacts.mjs",
       "category": "util",
       "purpose": "(no header description)",
@@ -1870,7 +2010,8 @@
       "graph-all.mjs",
       "gen-code-registry.mjs",
       "lint-conventions.mjs",
-      "check-gate-injection.mjs"
+      "check-gate-injection.mjs",
+      "license-rollout.mjs"
     ],
     "diagnostics": [
       "audit-allowlist-sensitive.mjs",
@@ -1881,10 +2022,13 @@
       "audit-diagnostic-codes.mjs",
       "audit-diagnostic-doc-drift.mjs",
       "audit-effect-canonicality.mjs",
+      "audit-example-diagnostics.mjs",
       "audit-graph-integrity.mjs",
       "audit-gscm.mjs",
+      "audit-kernel-floor.mjs",
       "audit-muted-diagnostics.mjs",
       "audit-name-collisions.mjs",
+      "audit-node-dependencies.mjs",
       "audit-oblivious.mjs",
       "audit-overclaim-phrases.mjs",
       "audit-package-border.mjs",
@@ -1911,14 +2055,18 @@
       "status.mjs",
       "brand-audit.mjs",
       "build-core-chain.mjs",
+      "generate-sbom.mjs",
       "migrate-fungi.mjs",
       "package-usage.mjs",
       "rebrand-tmf-to-spore.mjs",
+      "repoint-kb-refs.mjs",
       "verify-artifacts.mjs"
     ],
     "package-border": [
       "audit-allowlist-sensitive.mjs",
       "audit-checker-wiring.mjs",
+      "audit-import-governance.mjs",
+      "audit-node-dependencies.mjs",
       "audit-package-border.mjs",
       "graph-all.mjs",
       "check-gate-injection.mjs",
@@ -1932,7 +2080,11 @@
       "audit-diagnostic-doc-drift.mjs",
       "audit-doc-drift.mjs",
       "audit-effect-canonicality.mjs",
+      "audit-gate-selftests.mjs",
       "audit-graph-integrity.mjs",
+      "audit-import-governance.mjs",
+      "audit-kernel-floor.mjs",
+      "audit-kernel-fungi-twins.mjs",
       "audit-mutation.mjs",
       "audit-muted-diagnostics.mjs",
       "audit-name-collisions.mjs",
@@ -1962,12 +2114,14 @@
       "status.mjs",
       "build-core-chain.mjs",
       "check-gate-injection.mjs",
+      "generate-sbom.mjs",
       "mark-core-change.cjs",
       "migrate-fungi.mjs",
       "package-usage.mjs",
       "rd-absorb.mjs",
       "rebuild-fusable-packages.mjs",
       "relink-workspace.mjs",
+      "repoint-kb-refs.mjs",
       "verify-artifacts.mjs"
     ],
     "sensitive-allowlist": [
@@ -1987,8 +2141,10 @@
       "audit-diagnostic-doc-drift.mjs",
       "audit-effect-canonicality.mjs",
       "audit-gscm.mjs",
+      "audit-kernel-floor.mjs",
       "audit-muted-diagnostics.mjs",
       "audit-name-collisions.mjs",
+      "audit-node-dependencies.mjs",
       "audit-oblivious.mjs",
       "audit-overclaim-phrases.mjs",
       "audit-perf-hotpath.mjs",
@@ -2003,9 +2159,11 @@
       "galerina-new.mjs",
       "graph-all.mjs",
       "lint-fungi.mjs",
+      "component-health.mjs",
       "brand-audit.mjs",
       "build-core-chain.mjs",
       "check-gate-injection.mjs",
+      "generate-sbom.mjs",
       "migrate-fungi.mjs",
       "rebuild-fusable-packages.mjs",
       "verify-artifacts.mjs"
@@ -2018,11 +2176,14 @@
       "audit-effect-canonicality.mjs",
       "audit-fungi-runtime.mjs",
       "audit-gscm.mjs",
+      "audit-import-governance.mjs",
+      "audit-kernel-fungi-twins.mjs",
       "audit-oblivious.mjs",
       "audit-perf-hotpath.mjs",
       "audit-route-overlap.mjs",
       "audit-runtime-coverage.mjs",
       "audit-sink-canonicality.mjs",
+      "audit-syntax-reference-links.mjs",
       "audit-syntax.mjs",
       "lint-conventions.mjs",
       "check-gate-injection.mjs"
@@ -2035,12 +2196,15 @@
       "audit-diagnostic-doc-drift.mjs",
       "audit-doc-drift.mjs",
       "audit-effect-canonicality.mjs",
+      "audit-kernel-floor.mjs",
+      "audit-license-compat.mjs",
       "audit-muted-diagnostics.mjs",
       "audit-name-collisions.mjs",
       "audit-overclaim-phrases.mjs",
       "audit-papers-index.mjs",
       "audit-provenance.mjs",
       "audit-stray-docs.mjs",
+      "audit-syntax-reference-links.mjs",
       "audit-syntax.mjs",
       "fix-logicn-brand.mjs",
       "graph-all.mjs",
@@ -2048,12 +2212,15 @@
       "gen-code-registry.mjs",
       "kb-index.mjs",
       "lint-conventions.mjs",
+      "component-health.mjs",
       "run-all-tests.cjs",
       "run-proofs.mjs",
       "status.mjs",
+      "generate-sbom.mjs",
       "migrate-fungi.mjs",
       "rd-absorb.mjs",
-      "rebrand-tmf-to-spore.mjs"
+      "rebrand-tmf-to-spore.mjs",
+      "repoint-kb-refs.mjs"
     ],
     "brand": [
       "audit-brand-keys.mjs",
@@ -2069,15 +2236,20 @@
       "audit-papers-index.mjs",
       "audit-path-leak.mjs",
       "audit-sink-canonicality.mjs",
-      "check-gate-injection.mjs"
+      "check-gate-injection.mjs",
+      "generate-sbom.mjs"
     ],
     "governance": [
       "audit-checker-wiring.mjs",
       "audit-coverage.mjs",
       "audit-diagnostic-doc-drift.mjs",
       "audit-effect-canonicality.mjs",
+      "audit-example-diagnostics.mjs",
       "audit-graph-integrity.mjs",
       "audit-gscm.mjs",
+      "audit-import-governance.mjs",
+      "audit-kernel-floor.mjs",
+      "audit-kernel-fungi-twins.mjs",
       "audit-muted-diagnostics.mjs",
       "audit-name-collisions.mjs",
       "audit-papers-index.mjs",
@@ -2088,13 +2260,17 @@
       "gen-code-registry.mjs",
       "lint-conventions.mjs",
       "lint-fungi.mjs",
+      "license-rollout.mjs",
       "rebuild-fusable-packages.mjs",
       "verify-artifacts.mjs"
     ],
     "effects": [
       "audit-corpus-effect-names.mjs",
       "audit-effect-canonicality.mjs",
+      "audit-example-diagnostics.mjs",
       "audit-gscm.mjs",
+      "audit-import-governance.mjs",
+      "audit-license-compat.mjs",
       "audit-muted-diagnostics.mjs",
       "audit-selfhost-readiness.mjs",
       "audit-sink-canonicality.mjs",
@@ -2105,6 +2281,7 @@
       "audit-corpus-effect-names.mjs",
       "audit-coverage.mjs",
       "audit-doc-drift.mjs",
+      "audit-example-diagnostics.mjs",
       "audit-fungi-runtime.mjs",
       "audit-gscm.mjs",
       "audit-oblivious.mjs",
@@ -2126,7 +2303,6 @@
       "fix-logicn-brand.mjs",
       "graph-all.mjs",
       "memory-graph.mjs",
-      "component-health.mjs",
       "status.mjs",
       "brand-audit.mjs",
       "rd-absorb.mjs",
@@ -2134,7 +2310,9 @@
     ],
     "proofs": [
       "audit-diagnostic-codes.mjs",
-      "run-proofs.mjs"
+      "audit-license-compat.mjs",
+      "run-proofs.mjs",
+      "license-rollout.mjs"
     ],
     "secrets/privacy": [
       "audit-effect-canonicality.mjs",
@@ -2148,17 +2326,23 @@
       "fungi-astshape.mjs",
       "rename-package.mjs"
     ],
+    "mutation-testing": [
+      "audit-gate-selftests.mjs",
+      "audit-mutation.mjs",
+      "lint-conventions.mjs"
+    ],
     "tier-floor": [
       "audit-gscm.mjs",
       "audit-muted-diagnostics.mjs",
       "audit-oblivious.mjs",
       "audit-perf-hotpath.mjs",
       "audit-tier-boundary.mjs",
-      "lint-conventions.mjs"
+      "lint-conventions.mjs",
+      "license-rollout.mjs"
     ],
-    "mutation-testing": [
-      "audit-mutation.mjs",
-      "lint-conventions.mjs"
+    "web-stub": [
+      "audit-kernel-floor.mjs",
+      "audit-web-stub-guard.mjs"
     ],
     "muted-diagnostics": [
       "audit-muted-diagnostics.mjs",
@@ -2181,9 +2365,6 @@
     ],
     "runtime-coverage": [
       "audit-runtime-coverage.mjs"
-    ],
-    "web-stub": [
-      "audit-web-stub-guard.mjs"
     ]
   },
   "gaps": {
@@ -2197,8 +2378,15 @@
       "audit-diagnostic-codes.mjs",
       "audit-diagnostic-doc-drift.mjs",
       "audit-doc-drift.mjs",
+      "audit-example-diagnostics.mjs",
+      "audit-gate-selftests.mjs",
       "audit-graph-integrity.mjs",
+      "audit-import-governance.mjs",
+      "audit-kernel-floor.mjs",
+      "audit-kernel-fungi-twins.mjs",
+      "audit-license-compat.mjs",
       "audit-mutation.mjs",
+      "audit-node-dependencies.mjs",
       "audit-overclaim-phrases.mjs",
       "audit-package-border.mjs",
       "audit-papers-index.mjs",
@@ -2208,6 +2396,7 @@
       "audit-runtime-coverage.mjs",
       "audit-selfhost-readiness.mjs",
       "audit-stray-docs.mjs",
+      "audit-syntax-reference-links.mjs",
       "audit-syntax.mjs",
       "audit-tier-boundary.mjs",
       "audit-web-stub-guard.mjs",

@@ -285,6 +285,19 @@ run("effects:corpus", "node", ["scripts/audit-corpus-effect-names.mjs"]);
 // gate catches any path). Blocking.
 run("signed:fixtures", "node", ["scripts/audit-signed-fixture-drift.mjs"]);
 
+// ── 5c-viii. ZT house-hygiene guards — wired into cadence 2026-07-10 (closes a dev-tool-index gap) ──
+// Both tools existed with a passing --self-test but were invoked only ad-hoc, so dev-tool-index's
+// gaps.toolsNotInCadence flagged them: a regression could escape phase-close and surface only on a manual
+// run. Now enforced every close, following the blocking audit-* pattern above (exit != 0 → ❌).
+// path:leak — ZT-17 fail-CLOSED guard: no committed file may leak an absolute local path (a
+//   C:\Users\<name>\… home, a wwwprojects root, or the dash-encoded machine slug) — a public-repo
+//   username/layout disclosure that also breaks on every other machine. Exit 1 on any leak.
+// name:collisions — RD-0124 guard: no two package names share a token-multiset (the graph-project /
+//   project-graph reordered-token bug) or sit within Levenshtein 1 (typo-twin), unless allowlisted with a
+//   resolution in governance/name-registry.json. Exit = violation count.
+run("path:leak", "node", ["scripts/audit-path-leak.mjs"]);
+run("name:collisions", "node", ["scripts/audit-name-collisions.mjs"]);
+
 // ── 5d. Dev-tool script tests (scripts/tests/) ──
 // These live OUTSIDE packages-galerina, so the package runner (run-all-tests.cjs) never sees them. Run them
 // here so the audit/index/registry tooling is regression-gated (e.g. the shared code-regex self-test).

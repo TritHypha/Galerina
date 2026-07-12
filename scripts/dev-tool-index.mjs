@@ -77,6 +77,10 @@ for (const name of readdirSync(PKG_DIR)) {
 packages.sort((a, b) => (KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind)) || a.name.localeCompare(b.name));
 
 // ── 2. DEV TOOLS ─────────────────────────────────────────────────────────────
+// Category is derived from the filename PREFIX. NB: an audit-class tool MUST be named `audit-*` — a
+// verb-noun name like `brand-audit.mjs` falls through to "util" and so never reaches
+// gaps.toolsNotInCadence (which scans only audit/lint), hiding it from this coverage report. Use the
+// `audit-` prefix for new audits; renaming brand-audit.mjs -> audit-brand.mjs would restore its visibility.
 function toolCategory(name) {
   if (/^audit-/.test(name)) return "audit";
   if (/^lint-/.test(name)) return "lint";
