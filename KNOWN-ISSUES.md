@@ -36,6 +36,12 @@ disclosed below. Read this before relying on any guarantee. Last reconciled: 202
   tracked (git-ignored since the initial commit); the historical exposure is attributed to the separate
   Galerina-Production repository. The revocation stands **unconditionally** regardless. Treat any
   signature from `8eecf4187ebc9341` as permanently distrusted.
+- **Trust-root rotated (2026-07-12, RD-0368).** The registry-signing trust root is now the hybrid
+  Ed25519 + ML-DSA-65 key `21415420b447e219`. The interim root `ab46f4c7e2797b9b` (which superseded the
+  compromised key above) was **lost** — its private half did not survive a workstation rebuild, which had
+  frozen the revocation registry — so `governance/revocations.json` was **re-signed under the new root** and
+  the trust-anchor pin moved (the `8eecf418…` revocation preserved). The lost root remains only as a public
+  verifier for historical signatures; it is **not** revoked (never compromised, only lost).
 - **`FUNGI-VALUESTATE-008` is production-gated.** The boundary-input cleanliness floor (an unmarked bare
   parameter reaching a governed sink) escalates to an *error* only in production builds, and is now
   enforced on the user-facing `galerina build` path under `GALERINA_PROFILE=production` (commit `8d840ca`);

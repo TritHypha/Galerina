@@ -22,9 +22,10 @@ When a draft is genuinely ready, promote it deterministically:
 1. **Compile** the actual `.wasm` / native artifact on a trusted build host.
 2. **Hash** it locally: `shasum -a 256 path/to/artifact` → set `manifest.sourceHash`
    to `sha256:<that digest>`.
-3. **Sign** the manifest with the **offline** hybrid Ed25519 + ML-DSA-65 key
-   (`ab46f4c7e2797b9b` / the current active generation — never the revoked
-   `8eecf4187ebc9341`, see `security/revocations/REV-2026-06.md`).
+3. **Sign** the manifest with the **offline** hybrid Ed25519 + ML-DSA-65 root key
+   (`21415420b447e219` / the current active generation — never the revoked
+   `8eecf4187ebc9341` or the lost interim root `ab46f4c7e2797b9b`, see
+   `security/revocations/REV-2026-06.md` and RD-0368).
 4. **Pin** the public key in the verifier/admission policy.
 5. **Move** the directory back into `../plugins/` and confirm
    `node galerina.mjs border-check` admits it (`1 admitted, 0 denied`).

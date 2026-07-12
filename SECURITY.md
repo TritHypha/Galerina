@@ -28,6 +28,13 @@ A signing private key (`8eecf4187ebc9341`) is **COMPROMISED** and must be distru
 any signature from the old key to `-1 Deny`, and **no in-tree artifact is signed by it** (the key id appears in
 this repository only in revocation/distrust records, never as key material).
 
+**Trust-root rotation (2026-07-12, RD-0368).** The registry-signing **trust root is now the hybrid
+Ed25519 + ML-DSA-65 key `21415420b447e219`** (pinned in `governance/trust-anchor.json`). It supersedes the
+interim root `ab46f4c7e2797b9b`, whose private half was **lost** (it did not survive a workstation rebuild):
+`governance/revocations.json` has been **re-signed under the new root** (the `8eecf4187ebc9341` revocation is
+preserved, append-only). The lost interim root is retained only as a **public verification key** for
+historical signatures — it is **not** revoked (it was never compromised, only lost).
+
 **Provenance (corrected 2026-07-10).** An earlier version of this advisory attributed the exposure to commit
 `cb5036d` in *this* repository's history. That commit does **not** resolve in this repository, and the private
 key file (`.env.galerina-signing`) was **never tracked here** (git-ignored since the initial commit,

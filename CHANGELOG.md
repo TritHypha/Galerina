@@ -4,6 +4,15 @@ All notable changes to Galerina are documented here (format: [Keep a Changelog](
 
 ## [Unreleased]
 
+### Security
+- **Signing-key trust-root rotation (RD-0368).** The registry-signing trust root was rotated from the
+  interim `ab46f4c7e2797b9b` — whose private half was **lost** (it did not survive a workstation rebuild),
+  freezing the revocation registry — to the hybrid Ed25519 + ML-DSA-65 key `21415420b447e219`.
+  `governance/revocations.json` was re-signed under the new root and `governance/trust-anchor.json`
+  re-pinned (with `rotatedFrom`/`rotatedAt`/`rotationRef`); the `8eecf4187ebc9341` revocation is preserved
+  (append-only). Verified: `assertRegistryTrustworthy` valid + pinned; full suite 92/92 · 7,104. Added
+  `governance/key-inventory.mjs` (fail-closed signing-key retire/archive audit).
+
 ### Changed
 - **Source-file rename `.spore` → `.fungi` and diagnostic codes `SPORE-` → `FUNGI-` completed and
   verified.** The extension/code sweep was finished and audited end-to-end (full suite 60/60 · 5,903
@@ -22,7 +31,8 @@ All notable changes to Galerina are documented here (format: [Keep a Changelog](
 - **`app-kernel` `LogicnKernelRequest/Response` → `GalerinaKernelRequest/Response`** — the file carried a
   legitimate NUL delimiter byte, so the codemod had skipped it as "binary".
 - **Restored the root-signed `greeting.lmanifest.json`** fixture whose signature the migration had
-  invalidated (the offline `ab46f4c7` re-sign to make it fungi-consistent is still owed).
+  invalidated (the offline re-sign to make it fungi-consistent is still owed — now under the rotated root
+  `21415420b447e219`, since the interim `ab46f4c7` root was lost; see RD-0368).
 
 ### Added
 - **`scripts/brand-audit.mjs`** — a binary-safe residual-brand + `@`-scope auditor. It reads every file
