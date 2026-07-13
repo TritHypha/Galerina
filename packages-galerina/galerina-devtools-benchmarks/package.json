@@ -19,6 +19,7 @@
     "run:http":               "node benchmarks/http-throughput/benchmark.mjs",
     "compare":                "node src/compare.mjs",
     "report":                 "node src/report.mjs",
+    "variance":               "node src/variance.mjs",
     "build:native":           "node src/build-native.mjs",
     "test":                   "node test/throughput-units.test.mjs",
     "audit":                  "node --expose-gc src/audit.mjs",
