@@ -370,7 +370,7 @@ describe("checkPackageProvenance: FUNGI-PKG-006 signing-key revocation (defense-
   });
 
   it("a non-revoked signer -> no revocation diagnostic", () => {
-    const result = checkPackageProvenance(signed({ signerKeyId: "ab46f4c7e2797b9b" }), { isRevoked: (k) => k === REVOKED });
+    const result = checkPackageProvenance(signed({ signerKeyId: "21415420b447e219" }), { isRevoked: (k) => k === REVOKED });
     assert.ok(!result.some((x) => x.code === "FUNGI-PKG-006"));
   });
 

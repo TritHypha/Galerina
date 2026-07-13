@@ -28,7 +28,8 @@ test("the compromised key 8eecf4187ebc9341 is revoked (→ Deny)", () => {
   assert.equal(isKeyRevoked("8eecf4187ebc9341", ROOT), true);
 });
 
-test("the active key ab46f4c7e2797b9b is NOT revoked", () => {
+test("the current root 21415420b447e219 and the former root ab46f4c7e2797b9b are NOT revoked", () => {
+  assert.equal(isKeyRevoked("21415420b447e219", ROOT), false);
   assert.equal(isKeyRevoked("ab46f4c7e2797b9b", ROOT), false);
 });
 

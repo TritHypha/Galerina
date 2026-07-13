@@ -42,7 +42,7 @@ test("verifyAttestation: a validly-signed but REVOKED signing key is refused (fa
 
   // A non-revoked signer still verifies.
   assert.equal(
-    verifyAttestation(att, { requireSigned: true, publicKeyPem, signerKeyId: "ab46f4c7e2797b9b", revocationCheck: (k) => k === REVOKED }).ok,
+    verifyAttestation(att, { requireSigned: true, publicKeyPem, signerKeyId: "21415420b447e219", revocationCheck: (k) => k === REVOKED }).ok,
     true,
   );
 
