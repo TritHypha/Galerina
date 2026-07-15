@@ -106,6 +106,21 @@ npm run compare
 
 Reads `results/latest.json` and prints a Markdown table showing throughput for each runtime and cross-runtime ratios.
 
+### Two views + a chart
+
+```
+npm run report      # writes results/benchmark-report-latest.{md,json} AND …-chart-latest.html
+npm run chart       # (re)render just the chart from the existing report JSON
+```
+
+`report` derives two views — the cross-language table (current run) and the diff-from-the-last-snapshot —
+and, as its last step, renders **`results/benchmark-chart-latest.html`**: a **self-contained SVG chart** (no CDN,
+no `<script>`, no dependency — opens offline in any browser, adapts to light/dark). View 1 is *where the
+production path lands* (WASM ÷ Node per benchmark, log scale, teal = WASM faster); view 2 is the notable movers vs
+the last snapshot. Read the movers against the noise floor — single-run cross-session diffs are dominated by
+machine variance (untouched native controls routinely swing ±20–28%), not code. Regression-gated by
+`test/chart.test.mjs` (self-contained, escaping, and derived-count invariants).
+
 ### Build native binaries
 
 ```

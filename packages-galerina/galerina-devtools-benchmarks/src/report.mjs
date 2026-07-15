@@ -78,7 +78,17 @@ if (diffFromLast.length) {
 md += `\n## 2. Cross-language (current run)\n\n| Benchmark | unit | ${RT.map((r) => r[1]).join(" | ")} |\n|---|---|${RT.map(() => "--:").join("|")}|\n`;
 for (const r of crossLanguage) md += `| ${r.benchmark}${r.aligned ? " ✅" : ""} | ${r.unit} | ${RT.map(([k]) => fmt(r[k])).join(" | ")} |\n`;
 writeFileSync(join(resultsDir, "benchmark-report-latest.md"), md);
-writeFileSync(join(resultsDir, "benchmark-report-latest.json"), JSON.stringify({ baseline: baselineLabel, runtimes: RT.map((r) => r[1]), diffFromLast, crossLanguage }, null, 2));
+const report = { baseline: baselineLabel, runtimes: RT.map((r) => r[1]), diffFromLast, crossLanguage };
+writeFileSync(join(resultsDir, "benchmark-report-latest.json"), JSON.stringify(report, null, 2));
+
+// Render the self-contained SVG chart from the same data (best-effort — a chart failure must never
+// fail the report). The tool produces the chart on every report, per the "benchmarking should emit a
+// chart" directive; the HTML opens offline with no external dependency.
+try {
+  const { buildChartHtml } = await import("./chart.mjs");
+  writeFileSync(join(resultsDir, "benchmark-chart-latest.html"), buildChartHtml(report));
+  console.log(`✅ chart: results/benchmark-chart-latest.html (self-contained SVG)`);
+} catch (e) { console.warn(`⚠ chart skipped: ${e?.message ?? e}`); }
 
 console.log(`✅ report: results/benchmark-report-latest.{md,json}`);
 console.log(`   view 1 — diff vs "${baselineLabel ?? "none"}": ${diffFromLast.length} pairs${diffFromLast.length ? ` (top: ${diffFromLast[0].benchmark}/${diffFromLast[0].runtime} ${diffFromLast[0].deltaPct >= 0 ? "+" : ""}${diffFromLast[0].deltaPct.toFixed(0)}%)` : ""}`);
