@@ -8,7 +8,10 @@
 
 ## Primitive types
 
-These are the built-in primitives (`type-registry.ts` TypeId table):
+These are the built-in primitives. The authoritative acceptance set is the **`isBuiltInType()` union gate** in
+`type-checker.ts` (`TypeId` ∪ `BUILT_IN_TYPES` ∪ `KNOWN_DOMAIN_TYPES`), not any single table — the bare primitives
+below live in the `TypeId` fast path, but the full writable vocabulary (incl. `Verdict`, the currency/error/domain
+families) is the union. See [reference/types.md](../../reference/types.md).
 
 | Type | Notes |
 |---|---|

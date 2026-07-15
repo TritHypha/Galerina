@@ -309,6 +309,12 @@ run("claim:hygiene", "node", ["scripts/audit-claim-hygiene.mjs"]);
 //   here makes it structurally impossible to ship a % audit that silently drops a section without the
 //   cadence going red.
 run("audit:sections", "node", ["scripts/component-health.mjs", "--self-test"]);
+// doc:reference-drift — the docs/reference/ pages must not DRIFT from the enforcing code (R&D's 2026-07-15
+//   re-verification found types.md documenting TypeId alone while the checker accepts the isBuiltInType()
+//   union). Extracts each page's vocabulary FROM SOURCE (45 canonical effects + 2 deny-only + the union gate
+//   + hardening/value-state/trust/receipt vocab) and fails closed if a page no longer covers it — the
+//   doc-from-source durable fix (code > code-derived views > design docs).
+run("doc:reference-drift", "node", ["scripts/audit-reference-doc-drift.mjs"]);
 run("name:collisions", "node", ["scripts/audit-name-collisions.mjs"]);
 
 // ── 5d. Dev-tool script tests (scripts/tests/) ──
