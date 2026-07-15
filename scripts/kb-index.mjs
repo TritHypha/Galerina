@@ -66,7 +66,12 @@ const tokenize = (s) => (s.toLowerCase().match(/[a-z][a-z0-9-]{2,}/g) || []).fil
 // never re-introduces the leak, no matter what the private KB source contains.
 const scrub = (s) => s
   .replace(/[A-Za-z]:[\\/]{1,2}Users[\\/]{1,2}[^\s"'`)\]]+/g, "<path>")
-  .replace(/(?:[A-Za-z]:[\\/]{1,2})?wwwprojects[\\/][^\s"'`)\]]*/g, "<path>");
+  .replace(/(?:[A-Za-z]:[\\/]{1,2})?wwwprojects[\\/][^\s"'`)\]]*/g, "<path>")
+  // Windows env-var path literals (the USERPROFILE / APPDATA / HOMEPATH tokens, percent-wrapped) — the
+  // `windows-env-literal` class scripts/audit-path-leak.mjs enforces. scrub() predated that detector, so a KB
+  // doc that QUOTES the pattern to teach the portability rule leaked it into this committed index on regen.
+  // Genericize it too, so the two stay in lockstep (a bare `userprofile` token never trips the %-anchored gate).
+  .replace(/%(?:USERPROFILE|USERNAME|HOMEPATH|HOMEDRIVE|APPDATA|LOCALAPPDATA)%/gi, "<env-var>");
 
 function indexDoc(file) {
   const rel = relative(ROOT, file).replace(/\\/g, "/");
