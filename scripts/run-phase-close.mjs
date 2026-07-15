@@ -302,6 +302,13 @@ run("path:leak", "node", ["scripts/audit-path-leak.mjs"]);
 //   (ML-DSA is the post-quantum half, not Ed25519; compliance wording needs a qualifier), and every
 //   relative doc link must resolve. Turns a manual claims audit into a standing fail-closed gate.
 run("claim:hygiene", "node", ["scripts/audit-claim-hygiene.mjs"]);
+// audit:sections — the % audit (component-health) MUST carry all three sections (Zero-Trust thesis ·
+//   Build progress · Tracking registry). The Tracking registry has recurrently gone missing from a
+//   hand-built % audit widget; component-health.mjs now builds the audit from a FIXED three-section spec
+//   and REFUSES (throws) if any section is empty, and its --self-test proves the throw fires. Wiring it
+//   here makes it structurally impossible to ship a % audit that silently drops a section without the
+//   cadence going red.
+run("audit:sections", "node", ["scripts/component-health.mjs", "--self-test"]);
 run("name:collisions", "node", ["scripts/audit-name-collisions.mjs"]);
 
 // ── 5d. Dev-tool script tests (scripts/tests/) ──

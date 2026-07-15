@@ -22,7 +22,7 @@
 //   TODO — checkbox counts ([ ] open / [x] done) across every git-TRACKED TODO.md, as written.
 //     Per-package TODOs are known to lag reality (e.g. long-shipped items still unchecked), so
 //     this is a doc-state signal, never a completion claim.
-import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync, statSync, writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
@@ -35,6 +35,8 @@ const ONLY_GAPS = argv.has("--gaps");
 const AS_JSON = argv.has("--json");
 const STRICT = argv.has("--strict");
 const TABLE = argv.has("--table");
+const AUDIT_HTML = argv.has("--audit-html");   // emit the self-contained % audit widget artifact
+const SELF_TEST = argv.has("--self-test");      // prove the % audit can never omit a section (fail-closed)
 
 const readJSON = (p) => { try { return JSON.parse(readFileSync(p, "utf8")); } catch { return null; } };
 const listDir = (p) => { try { return readdirSync(p); } catch { return null; } };
@@ -338,8 +340,126 @@ const extraSections = () => {
   return lines;
 };
 
+// ══════════════════════════════════════════════════════════════════════════════
+// % AUDIT — the three MANDATORY sections, structurally enforced.
+//   The % audit has recurrently shipped MISSING its "Tracking registry" section (a
+//   hand-built widget silently dropped it). This makes that IMPOSSIBLE: the audit is
+//   built from a FIXED three-section spec, and buildPercentAudit() THROWS if any
+//   required section is empty or absent — so a % audit artifact can NEVER render with
+//   fewer than three sections. `--self-test` proves the throw fires (a neutered guard
+//   is itself a fail-open); it is wired into the audit cadence.
+// ══════════════════════════════════════════════════════════════════════════════
+const REQUIRED_SECTIONS = [
+  { key: "zero-trust-thesis", title: "Zero-Trust thesis", kind: "meter", get rows() { return ZERO_TRUST.map((b) => ({ label: b.boundary, pct: b.pct, note: b.status })); }, get avg() { return ztAvg; } },
+  { key: "build-progress",    title: "Build progress",    kind: "meter", get rows() { return BUILD_PROGRESS.map((l) => ({ label: l.layer, pct: typeof l.pct === "number" ? l.pct : null, status: l.status ?? null, live: !!l.live })); }, get avg() { return buildAvg; } },
+  { key: "tracking-registry", title: "Tracking registry", kind: "registry", get rows() { return TRACKING_REGISTRY.map((t) => ({ item: t.item, state: t.state, detail: t.detail })); } },
+];
+// FAIL-CLOSED assembler: any missing / empty section is a hard error, never a silent drop.
+function buildPercentAudit() {
+  const sections = REQUIRED_SECTIONS.map((s) => {
+    const rows = s.rows;
+    if (!Array.isArray(rows) || rows.length === 0) {
+      throw new Error(`% audit section "${s.key}" (${s.title}) is empty or missing — the audit MUST carry all ${REQUIRED_SECTIONS.length} sections (zero-trust-thesis · build-progress · tracking-registry). Refusing to emit a partial audit.`);
+    }
+    return { key: s.key, title: s.title, kind: s.kind, avg: s.avg ?? null, rows };
+  });
+  const keys = sections.map((s) => s.key).join(",");
+  const need = ["zero-trust-thesis", "build-progress", "tracking-registry"].join(",");
+  if (keys !== need) throw new Error(`% audit section set drifted: got [${keys}], require [${need}]`);
+  return {
+    generatedBy: "scripts/component-health.mjs --audit-html",
+    provenance, shipReadinessPct: summary.readinessPct, ztAvg, buildAvg,
+    trackingRegistryCount: TRACKING_REGISTRY.length, sections,
+  };
+}
+
+// Self-contained SVG/HTML % audit artifact — no CDN, no <script>, opens offline, adapts to light/dark.
+function renderAuditHtml(audit) {
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const stateClass = (st) => ({ shipped: "s-ship", building: "s-build", "design-done": "s-build", "build-pending": "s-pend", "post-v1": "s-front" }[st] ?? "s-front");
+  const meterRow = (r) => {
+    const has = typeof r.pct === "number";
+    const fill = has ? (r.pct >= 100 ? "#008300" : r.pct >= 60 ? "#1baf7a" : "#eda100") : "#8a8880";
+    const w = has ? r.pct : 0;
+    const val = has ? `${r.pct}%` : esc(r.status ?? "—");
+    return `<div class="mrow"><span class="mlabel">${esc(r.label)}</span>`
+      + `<span class="mtrack"><span class="mfill" style="width:${w}%;background:${fill}"></span></span>`
+      + `<span class="mval">${val}</span></div>`;
+  };
+  const sectionHtml = (s) => {
+    if (s.kind === "meter") {
+      return `<h2>${esc(s.title)}${s.avg != null ? ` <span class="avg">avg ${s.avg}%</span>` : ""}</h2>` + s.rows.map(meterRow).join("");
+    }
+    // registry — a table with a state badge per item (the section that kept going missing)
+    return `<h2>${esc(s.title)} <span class="avg">${s.rows.length} items</span></h2>`
+      + `<table class="reg"><tbody>` + s.rows.map((r) =>
+        `<tr><td class="ritem">${esc(r.item)}</td><td><span class="badge ${stateClass(r.state)}">${esc(typeof r.state === "number" ? r.state + "%" : r.state)}</span></td><td class="rdetail">${esc(r.detail)}</td></tr>`
+      ).join("") + `</tbody></table>`;
+  };
+  const style = `<style>
+  .pa{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;max-width:920px;margin:0 auto;padding:1rem;color:#1a1a19}
+  .pa h1{font-size:20px;font-weight:500;margin:0 0 2px}.pa h2{font-size:16px;font-weight:500;margin:1.5rem 0 8px}
+  .pa .sub{font-size:13px;color:#6b6a64;margin:0 0 1rem}.pa .avg{font-size:12px;color:#8a8880;font-weight:400}
+  .pa .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:.6rem 0 0}
+  .pa .card{background:#f5f4ef;border-radius:8px;padding:.7rem}.pa .card .k{font-size:12px;color:#6b6a64}.pa .card .v{font-size:22px;font-weight:500}
+  .pa .mrow{display:grid;grid-template-columns:210px 1fr 46px;align-items:center;gap:10px;margin:5px 0}
+  .pa .mlabel{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pa .mtrack{height:14px;background:#e6e5de;border-radius:7px;overflow:hidden}.pa .mfill{display:block;height:100%;border-radius:7px}
+  .pa .mval{font-size:13px;font-weight:500;text-align:right;color:#52514e}
+  .pa table.reg{width:100%;border-collapse:collapse;font-size:13px}.pa .reg td{padding:6px 8px;border-top:0.5px solid #e1e0d9;vertical-align:top}
+  .pa .ritem{font-weight:500;white-space:nowrap}.pa .rdetail{color:#6b6a64;font-size:12px}
+  .pa .badge{font-size:11px;padding:2px 8px;border-radius:10px;white-space:nowrap}
+  .pa .s-ship{background:#e1f5ee;color:#0f6e56}.pa .s-build{background:#e6f1fb;color:#185fa5}.pa .s-pend{background:#faeeda;color:#854f0b}.pa .s-front{background:#f1efe8;color:#5f5e5a}
+  @media (prefers-color-scheme:dark){.pa{color:#e8e7e0}.pa .sub,.pa .card .k,.pa .rdetail,.pa .mval{color:#a3a29a}
+    .pa .card{background:#232322}.pa .mtrack{background:#333330}.pa .reg td{border-top-color:#333330}
+    .pa .s-ship{background:#04342c;color:#5dcaa5}.pa .s-build{background:#042c53;color:#85b7eb}.pa .s-pend{background:#412402;color:#ef9f27}.pa .s-front{background:#2c2c2a;color:#b4b2a9}}
+  </style>`;
+  const cards = `<div class="cards">`
+    + `<div class="card"><div class="k">ship-readiness</div><div class="v" style="color:#0f6e56">${audit.shipReadinessPct.toFixed(1)}%</div></div>`
+    + `<div class="card"><div class="k">ZT-thesis avg</div><div class="v">${audit.ztAvg}%</div></div>`
+    + `<div class="card"><div class="k">build avg</div><div class="v">${audit.buildAvg}%</div></div>`
+    + `<div class="card"><div class="k">tracking registry</div><div class="v">${audit.trackingRegistryCount}<span style="font-size:13px;color:#8a8880"> items</span></div></div>`
+    + `</div>`;
+  return `<!doctype html><meta charset="utf-8"><title>Galerina % audit</title>${style}<div class="pa">`
+    + `<h1>Galerina % audit</h1><p class="sub">${audit.provenance?.available ? esc(audit.provenance.branch + " @ " + audit.provenance.sha) : "provenance unavailable"} · generated by component-health.mjs · ${REQUIRED_SECTIONS.length} mandatory sections</p>`
+    + cards + audit.sections.map(sectionHtml).join("") + `</div>`;
+}
+
+if (SELF_TEST) {
+  const ok = (c, m) => { console.log(`  ${c ? "✅" : "❌"} ${m}`); if (!c) process.exitCode = 1; };
+  let audit;
+  try { audit = buildPercentAudit(); ok(true, "buildPercentAudit() succeeds on the real data"); }
+  catch (e) { ok(false, `buildPercentAudit threw on real data: ${e.message}`); process.exit(1); }
+  ok(audit.sections.length === 3, "the % audit has exactly 3 sections");
+  ok(audit.sections.some((s) => s.key === "tracking-registry" && s.rows.length > 0), "the Tracking registry section is present AND non-empty");
+  ok(audit.sections.map((s) => s.key).join(",") === "zero-trust-thesis,build-progress,tracking-registry", "sections are exactly [zero-trust · build · tracking-registry], in order");
+  const html = renderAuditHtml(audit);
+  for (const t of ["Zero-Trust thesis", "Build progress", "Tracking registry"]) ok(html.includes(t), `rendered artifact contains the "${t}" heading`);
+  ok(html.includes(esc0(TRACKING_REGISTRY[0].item)), "rendered artifact contains a real Tracking-registry row");
+  ok(!/https?:\/\//.test(html) && !/<script/i.test(html), "artifact is self-contained (no CDN / no <script>)");
+  // The load-bearing guarantee: an EMPTY tracking registry must be REFUSED, never silently rendered.
+  const saved = TRACKING_REGISTRY.splice(0, TRACKING_REGISTRY.length);
+  let threw = false; try { buildPercentAudit(); } catch { threw = true; }
+  TRACKING_REGISTRY.push(...saved);
+  ok(threw, "an EMPTY Tracking registry is REFUSED (buildPercentAudit throws — the % audit cannot drop a section)");
+  console.log(process.exitCode ? "  component-health % audit self-test FAILED" : "  component-health % audit self-test: all 3 sections structurally enforced ✅");
+  process.exit(process.exitCode ?? 0);
+}
+function esc0(s) { return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+if (AUDIT_HTML) {
+  const audit = buildPercentAudit();   // throws (fail-closed) if any of the 3 sections is missing/empty
+  const outDir = join(ROOT, "build", "component-health");
+  mkdirSync(outDir, { recursive: true });
+  const htmlPath = join(outDir, "percent-audit.html");
+  writeFileSync(htmlPath, renderAuditHtml(audit));
+  writeFileSync(join(outDir, "percent-audit.json"), JSON.stringify(audit, null, 2));
+  console.log(`✅ % audit: build/component-health/percent-audit.{html,json} — ${audit.sections.length} sections (ZT-thesis ${audit.ztAvg}% · build ${audit.buildAvg}% · tracking registry ${audit.trackingRegistryCount} items)`);
+  process.exit(0);
+}
+
 if (AS_JSON) {
-  console.log(JSON.stringify({ provenance, summary, rows, orphans, orphanExemptions: orphanRows, unexpectedOrphans }, null, 2));
+  console.log(JSON.stringify({ provenance, summary, rows, orphans, orphanExemptions: orphanRows, unexpectedOrphans, percentAudit: buildPercentAudit() }, null, 2));
   process.exit(STRICT && summary.totalGaps > 0 ? 1 : 0);
 }
 
