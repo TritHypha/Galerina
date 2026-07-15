@@ -296,6 +296,12 @@ run("signed:fixtures", "node", ["scripts/audit-signed-fixture-drift.mjs"]);
 //   project-graph reordered-token bug) or sit within Levenshtein 1 (typo-twin), unless allowlisted with a
 //   resolution in governance/name-registry.json. Exit = violation count.
 run("path:leak", "node", ["scripts/audit-path-leak.mjs"]);
+// claim:hygiene — RD technical-claims-audit (2026-07-14) durable fix: public docs (README · SECURITY ·
+//   docs/**) must carry their evidence tier — no unqualified superlatives ("absolute", "native-class",
+//   "mathematical proof", "unhackable" asserted rather than rebutted), controlled security/PQ vocabulary
+//   (ML-DSA is the post-quantum half, not Ed25519; compliance wording needs a qualifier), and every
+//   relative doc link must resolve. Turns a manual claims audit into a standing fail-closed gate.
+run("claim:hygiene", "node", ["scripts/audit-claim-hygiene.mjs"]);
 run("name:collisions", "node", ["scripts/audit-name-collisions.mjs"]);
 
 // ── 5d. Dev-tool script tests (scripts/tests/) ──

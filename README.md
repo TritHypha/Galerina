@@ -10,7 +10,7 @@ Galerina is built for organisations where software failure is not acceptable —
 
 ## The Zero-Trust thesis
 
-Galerina optimises for **mathematical proof and absolute Zero-Trust containment**: an ecosystem that trusts **absolutely no one — not the developer, not the network, not the host OS.** Where most languages bolt security on as a library, Galerina treats **every boundary as already hostile** and *proves* the boundary at compile time. Each row below is a boundary and the mandate Galerina enforces at it.
+Galerina optimises for **compile-time-verified governance and fail-closed Zero-Trust containment**: an ecosystem that trusts **no one by default — not the developer, not the network, not the host OS.** Where most languages bolt security on as a library, Galerina treats **every boundary as already hostile** and **verifies the boundary's contract at compile time** (a checked property, not an absolute-security guarantee). Each row below is a boundary and the mandate Galerina enforces at it.
 
 | Boundary | Galerina's mandate | Status |
 |---|---|---|
@@ -485,7 +485,7 @@ node packages-galerina/galerina-devtools-pci/dist/cli.js audit examples/auth-ser
 | [`docs/rules/`](docs/rules/) | In-repo rule set — design principles, boundary safety, governance doctrine, non-negotiables |
 | [`docs/framework/`](docs/framework/) | Framework designs — app kernel, HTTP transport, MCP/AI tool boundaries |
 | [`docs/security/`](docs/security/) | Security passes + runbooks — key ceremony, MCP tool-poisoning, SLSA/BOLA |
-| [notes/2026-06-17-zero-trust-senior-developer-project-audit.md](notes/2026-06-17-zero-trust-senior-developer-project-audit.md) | Latest independent audit (advanced-prototype verdict) |
+| Independent zero-trust audit (2026-06-17) *(in the private engineering KB)* | Latest full-repo review — advanced-prototype verdict; the in-repo view is the component-readiness audit above |
 | Internal engineering KB *(separate private repository, 867 docs)* | Master KB index · roadmaps + % audits · concept specs · numbered FUNGI rule registry · fail-open taxonomy · zero-trust engine · DRCM · integer types · architecture patterns |
 
 ---

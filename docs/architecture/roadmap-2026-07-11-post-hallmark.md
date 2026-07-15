@@ -53,7 +53,7 @@ owner-gated build — not a per-boundary gap.
 
 - **Next full run must include the C++ column** (g++ now installed — add `C:\msys64\ucrt64\bin` to PATH) and exercise **wat2wasm** (WABT CLI installed).
 - **Checksum reconciliation** for compute-mix / arithmetic-threshold (Galerina int-wrap vs the reference big-int) before quoting those two — tri-logic + data-query now match byte-for-byte, so they are clean.
-- Stable headline (unchanged): Galerina→WASM is native-class — within ~2× of Node, beats Node 8–10× on allocation, 45–1400× over the governed tree-walk interpreter (governance = a compile-time cost).
+- Stable headline (unchanged): Galerina→WASM is competitive with native — measured within ~2× of Node, beats Node 8–10× on allocation, 45–1400× over the governed tree-walk interpreter (governance = a compile-time cost). See benchmarks/results/latest.json.
 
 ## 6. Standing security backlog (unchanged, owner-paced)
 

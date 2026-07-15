@@ -11,8 +11,8 @@ sweep are patched and verified; the codebase is in a fail-closed, deterministic 
 the internal engineering KB
 (see "Phase 1 Security Audit — COMPLETE").
 
-**Senior-developer zero-trust audit (2026-06-17).** Independent full-repo review:
-[`notes/2026-06-17-zero-trust-senior-developer-project-audit.md`](notes/2026-06-17-zero-trust-senior-developer-project-audit.md).
+**Senior-developer zero-trust audit (2026-06-17).** Independent full-repo review (retained in the private
+engineering KB; the in-repo status view is `docs/architecture/component-readiness-honest-audit-2026-07-10.md`).
 Verdict: an **advanced prototype with hardened zero-trust subsystems — not yet production-complete**. Open
 P0 items: historical signing-key remediation (see Key management below), the `groq-inference-v1` plugin denied
 by the fail-closed border (placeholder source hash), and repo-wide typecheck reproducibility.
