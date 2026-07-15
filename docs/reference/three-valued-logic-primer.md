@@ -1,9 +1,8 @@
 # The logic of Galerina — three values, not two
 
 > The one idea under everything. Galerina's **decision logic is three-valued, not boolean** — the third
-> value is **"unknown," and it is first-class.** Every governance verdict, trust check, and the `Tri` type
-> carries it. Verified from source (`three-valued-governance.ts` · `epistemic-type-state.ts` ·
-> `type-registry.ts`).
+> value is **"unknown," and it is first-class.** Every governance verdict, trust check, and the `Tri`/`Verdict`
+> types carry it. Verified from source (`three-valued-governance.ts` · `epistemic-type-state.ts` · `type-checker.ts`).
 
 ## 1. Boolean vs. Galerina
 
@@ -51,8 +50,11 @@ The one-liner: **"unknown" is a valid, safe answer — and it collapses to DENY.
   layer. A value releases across a boundary **iff** it is `PROVEN`; the **only** way `UNKNOWN → PROVEN` is
   passing an actual verifier (`discharge`), and `REFUTED` is **sticky** (can never be resurrected).
   *(`epistemic-type-state.ts`; see [trust-trit.md](trust-trit.md))*
-- **The `Tri` type** — the three-valued native type in the type system (`Bool` is 2-valued; `Tri` is
-  3-valued). *(`type-registry.ts`; see [types.md](types.md))*
+- **The two three-valued types** — `Bool` is 2-valued; the trit is writable as **two distinct types**:
+  **`Tri`** (three-valued **truth**: True / False / Unknown — never silently converts to `Bool`) and **`Verdict`**
+  (three-valued **governance**: `DENY(-1) < UNKNOWN(0) < ALLOW(+1)`, lowered to WAT `i32`). Same balanced-trit shape;
+  one speaks truth, the other speaks authorization — don't conflate them. *(accepted via the `isBuiltInType()` union
+  gate in `type-checker.ts`; see [types.md](types.md))*
 - **The classification axis** — a *different* trit-lattice (`public ⊑ internal ⊑ secret`) that composes by
   **MAX** (most-restrictive wins; unknown → `secret`). Trust composes by min, sensitivity by max — each fails
   safe in its own direction. *(see [value-states.md](value-states.md))*
@@ -81,4 +83,5 @@ qubit, NOT quantum, NOT superposition.** The three values are discrete (`-1` / `
 (`Verdict` = DENY/INDETERMINATE/ALLOW = `-1`/`0`/`+1` at the enum; `vAnd` = min; `allOf([]) = INDETERMINATE`;
 `authorize` = `+1` only; `decideAtBoundary` → `FUNGI-GOV-3VL-001` on a `0`; Kleene `vNot` preserves
 indeterminacy) · `epistemic-type-state.ts` (`Trust` = REFUTED/UNKNOWN/PROVEN; `discharge`/`requireTrusted`) ·
-`type-registry.ts` (`Bool` vs `Tri`). Classical K3, not a qubit.*
+`type-checker.ts` `isBuiltInType()` union gate (`Bool` vs the two writable three-valued types: `Tri` = truth,
+`Verdict` = K3 governance). Classical K3, not a qubit.*

@@ -73,6 +73,9 @@ list is verified against it; regenerate from source if in doubt.
 
 ### `effects { … }` — the declarable effect vocabulary (grouped by domain)
 
+> **Per-effect detail:** each effect below is documented — what it authorises, what infers it, its tier, and its
+> diagnostics — in [reference/effects.md](reference/effects.md).
+
 | Domain | Legal `domain.verb` effects |
 |---|---|
 | Data / storage | `database.read` · `database.write` · `cache.read` · `cache.write` · `storage.read` · `storage.write` · `state.read` · `state.write` · `ledger.mutate` |
@@ -88,6 +91,9 @@ list is verified against it; regenerate from source if in doubt.
 
 ### `hardening { … }` — the residency / erase / timing ceilings
 
+> **Full detail** — incl. the `substrate` dimension and the 5-tier residency lattice not shown here:
+> [reference/hardening.md](reference/hardening.md).
+
 | Field | Legal values (strictest → loosest) | Omitted → |
 |---|---|---|
 | `residency` | `register_only` · `no_dram_spill` · `no_swap` · `no_disk` | auto-derived from the Secret/Tainted type |
@@ -98,17 +104,24 @@ Explicit values may only ever **tighten** the auto-derived floor; loosening requ
 
 ### Epistemic trust-trit (RD-0337) — tracked automatically, asserts only these
 
+> **Full detail** — the trit algebra, discharge/boundary, and the 3-axis type: [reference/trust-trit.md](reference/trust-trit.md).
+
 `PROVEN` · `UNKNOWN` · `REFUTED`. The developer does not usually write these; the type-state tracks them and a proven spill re-types a value `REFUTED` contagiously.
 
 ### Value-states — the boundary-data lattice
+
+> **Full detail** — incl. the `ReadOnly` flag, the Passport typestate, and the governed-sink requirements:
+> [reference/value-states.md](reference/value-states.md).
 
 `Unsafe` (untrusted boundary input) · `Safe` · `Validated` (a checked subset of Safe) · `Tainted` (derived from Unsafe through a non-gate) · `Secret` (`SecureString`, approved ops only), with `Protected` / `Redacted` sensitivity qualifiers. The **only** declassifier is `seal()` / `encrypt()`. Enforced by `FUNGI-SECRET-001..003` + `FUNGI-VALUESTATE-004`.
 
 ### Typed boundary — the type vocabulary
 
+> **Full detail** — the complete built-in vocabulary (~120 names, grouped by category): [reference/types.md](reference/types.md).
+
 A flow's params and returns are typed. The **built-in** types are a closed set; the developer also **defines**
 nominal / record / ADT types on top (so the vocabulary extends upward, never downward). Authoritative built-in
-set: `TypeId` in `type-registry.ts`.
+set: the `isBuiltInType()` union gate in `type-checker.ts` (= `TypeId` ∪ `BUILT_IN_TYPES` ∪ `KNOWN_DOMAIN_TYPES`).
 
 | Category | Types |
 |---|---|
@@ -123,6 +136,8 @@ Not a separate vocabulary — the declared `effects { }` set **is** the capabili
 above). The `#105` capability mask admits a unit only if its effects are within what policy grants.
 
 ### Audit receipts
+
+> **Full detail** — the receipt fields, `onFailure` modes, and the four strategies: [reference/receipts.md](reference/receipts.md).
 
 The Epilogue Receipt strategy is profile-driven (not written in the contract): `sha256_seal` (implemented) ·
 `zk_snark_receipt` (stub) · `auto` (→ `sha256_seal`) · `none`. Full detail in the automated-floor doc.

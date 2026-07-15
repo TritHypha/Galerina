@@ -3,94 +3,112 @@
 The built-in types a flow's params and returns may use, the qualifiers that mark sensitivity, and the ways a
 developer extends the set. This is the detail page behind the "Typed boundary" table in
 [contract-authoring-model.md](../contract-authoring-model.md) — a **Table 1 (standard)** element: you type the
-boundary, and the value-state checker holds you to it.
+boundary, and the type checker holds you to it.
 
-**Source of truth:** `packages-galerina/galerina-core-compiler/src/type-registry.ts` (`TypeId`, `TYPE_QUALIFIERS`).
-**Verified against source 2026-07-15.** The overview table shows a representative subset; the full registry below is
-**~55 built-in identifiers**.
+**Source of truth — one function, not one table:** `isBuiltInType()` in
+`packages-galerina/galerina-core-compiler/src/type-checker.ts` (the R5A unified gate). A bare type name is accepted
+**iff** it passes this gate (or is developer-declared / imported); otherwise `FUNGI-TYPE-001`. The gate is the
+**union of three tables**:
 
-> **Honest scope:** `TypeId` is the numeric registry of built-in type identifiers (Phase 18D). What actually
-> *compiles* is the type-checker's surfaced set (`BUILT_IN_TYPES`); a few identifiers here (notably the 64-bit
-> integers) are **gated behind their language switch** and are registry-reserved rather than currently writable.
-> Verify against `BUILT_IN_TYPES` for the surfaced subset. Developer-defined types are assigned IDs ≥ 1000 by the
-> symbol resolver.
+| # | Table | File | What it uniquely contributes |
+|---|---|---|---|
+| 1 | `TypeId` registry (fast path: `resolveTypeId(name) ≠ Unknown`) | `type-registry.ts` | **`Tri`** (its only name not also in table 2) |
+| 2 | `BUILT_IN_TYPES` string set | `type-checker.ts` | **`Verdict`**, `Float`, `Boolean`, `Channel`, `ReadOnlyView`, JSON subtypes, currencies, error + domain-identity families, `DynamicShape` |
+| 3 | `KNOWN_DOMAIN_TYPES` | `package-type-registry.ts` | `SessionId` · `AuthToken` · `ProductId` · `PaymentMethodId` · `InvoiceId` · `WebhookId` · `WebhookEvent` · `PhoneNumber` · `Diagnosis` · `MedicalRecord` · `LabResult` · `ConsentRecord` (the rest overlap table 2) |
+
+**Verified against source 2026-07-15 (full zero-trust re-verification).** Two earlier versions of this page were each
+wrong in one direction — first documenting table 1 alone (missing `Verdict` + the domain families), then table 2 alone
+(wrongly stating `Tri` is not writable). **The authoritative answer is the union gate.** If in doubt, read
+`isBuiltInType()` — never a single table.
 
 ---
 
 ## A. How the type vocabulary works (the shared slots)
 
-- **What (in general)** — a flow's parameters and returns are **typed**, and the type drives governance: it is the
-  input to the value-state lattice (a `SecureString` param is a `Secret`; a `Tainted<T>` propagates), to the
-  hardening auto-derivation (a `Secret` type derives the `no_swap`/`binary` floor), and to numeric lowering.
-- **Where — authored** — in the flow signature and in `record`/`enum` declarations. A **qualifier** may prefix a
-  type (`protected Email`, `redacted String`, `unsafe let raw`).
-- **Where — enforced** — `type-registry.ts` (`resolveTypeId`, which strips qualifiers and generic args) + the type
-  checker (`BUILT_IN_TYPES`) + the value-state checker.
-- **How — the set extends upward, never downward** — the built-in set is closed; the developer adds **nominal /
-  record / ADT / Hallmark / value-unit** types on top. You cannot remove or redefine a built-in.
-- **If omitted** — an untyped boundary is not governed; typed boundaries are how the checker knows what a value *is*.
-  An unrecognised type name resolves to `TypeId.Unknown` (fail-closed — it matches no built-in).
-- **Result — guarantee** — the typed boundary is what makes the rest of governance decidable: value-state,
-  hardening, redaction, and lowering all key off the resolved type.
+- **What (in general)** — a flow's parameters and returns are **typed**, and the type drives governance: it feeds the
+  value-state lattice (a `SecureString` param is a `Secret`; `Tainted<T>` propagates), the hardening auto-derivation
+  (a `Secret` type derives the `no_swap`/`binary` floor), and numeric lowering.
+- **Where — authored** — in the flow signature and in `record`/`enum` declarations. A **qualifier** may prefix a type
+  (`protected Email`, `redacted String`, `unsafe let raw`).
+- **Where — enforced** — the type checker: a name failing `isBuiltInType()` that is not locally declared or imported
+  is `FUNGI-TYPE-001` (with a fuzzy "did you mean" drawn from the same tables). Internally, `resolveTypeId` also maps
+  names to numeric IDs for hot-path comparisons, stripping qualifiers and generic args (`Array<Int>` → `Array`).
+- **How — the set extends upward, never downward** — the built-in union is closed; the developer adds **record /
+  ADT / Brand / Hallmark / value-unit** types on top (IDs ≥ 1000 from the symbol resolver). A Hallmark may not mint a
+  reserved name — the reserved set is exactly this union plus the epistemic/security vocabulary.
+- **If omitted / unknown** — an unrecognised type name is a hard `FUNGI-TYPE-001` (fail-closed; it matches no
+  built-in and no declaration).
+- **Result — guarantee** — the typed boundary is what makes the rest of governance decidable: value-state, hardening,
+  redaction, and lowering all key off the resolved type.
 
-## B. The built-in types (by category)
+## B. The built-in types (the union, by category)
 
-**Logical** — `Bool` (two-valued) and **`Tri`** — the three-valued native type (`+1`/`0`/`−1`), the type-level
-expression of the K3 governance trit. `Tri` is the one most 2-valued languages cannot express; it is why "unknown"
-can be a first-class, fail-closed value (see [trust-trit.md](trust-trit.md)).
+**Logical (three of them — two are three-valued)** — `Bool` / `Boolean` (two-valued) · **`Tri`** (three-valued
+**truth**: True / False / Unknown — must never silently convert to `Bool`; exhaustive `match` or an explicit
+conversion policy) · **`Verdict`** (three-valued **governance**: the K3 lattice `DENY(-1) < UNKNOWN(0) < ALLOW(+1)`,
+lowers to WAT `i32`) · `Char` · `Void` · `Unit`. `Tri` and `Verdict` are **distinct writable types** with the same
+balanced-trit shape — one speaks truth, the other speaks authorization (see
+[three-valued-logic-primer.md](three-valued-logic-primer.md)).
 
-**Integer** — `Int` (the default) plus fixed widths `Int8` · `Int16` · `Int32` · `Int64` · `UInt8` · `UInt16` ·
-`UInt32` · `UInt64`. Widths matter for wire formats and overflow behaviour; the **64-bit** types are gated behind
-their language switch (registry-reserved). Value-unit types (below) sit on top of the integer core.
+**Numeric** — `Int` (default) · fixed widths `Int8/16/32/64` · `UInt8/16/32/64` · `Float` · `Float16/32/64` ·
+`Double` · `Decimal`. Float is **discouraged** for value carrying — value-unit / financial types carry **no float
+bridge** (a currency is never a `Float`).
 
-**Floating point** — `Float16` · `Float32` · `Float64` · `Double` · `Decimal`. Float is **discouraged** for value
-carrying — value-unit / financial types carry **no float bridge** (a currency is never a `Float`), so money and
-quantity use `Decimal` / value-unit types, not binary floats.
+**Text** — `String` · `SecureString` (the `Secret` value-state — approved operations only; see
+[value-states.md](value-states.md)).
 
-**Text** — `String` · `Char` · **`SecureString`** (the `Secret` value-state — approved operations only, never
-logged/compared/serialised; see [value-states.md](value-states.md)).
+**Binary** — `Byte` · `Bytes` · `ReadOnlyView` (a read-only window over bytes).
 
-**Binary** — `Byte` · `Bytes` (raw octet payloads).
+**Temporal** — `Timestamp` · `Duration` · `Date` · `Time` · `DateTime`.
 
-**Temporal** — `Timestamp` · `Duration` · `Date` · `Time` · `DateTime`. Distinct types so a duration is never
-confused with an instant (and to keep the non-deterministic `clock.read` effect explicit).
+**JSON** — `Json` and its structural subtypes `JsonNull` · `JsonBool` · `JsonNumber` · `JsonString` · `JsonArray` ·
+`JsonObject`.
 
-**JSON** — `Json` (a structured document value).
+**Collections** — `Array<T>` · `List<T>` (ordered-collection alias for `Array`) · `Set<T>` · `Map<K,V>` ·
+`Channel<T>`.
 
-**Collections (generic)** — `Array<T>` · `List<T>` · `Set<T>` · `Map<K,V>` · `Option<T>` (`Some`/`None`) ·
-`Result<T,E>` (`Ok`/`Err`). `Option`/`Result` are the governed alternatives to null and to thrown errors — absence
-and failure are values you must handle, not surprises.
+**Algebraic** — `Option<T>` (`Some`/`None`) · `Result<T,E>` (`Ok`/`Err`).
 
-**Compute / AI** — `Tensor<T,[dims]>` · `AnyTensor` · `Vector` · `Matrix`. The shaped numeric types the
-`compute.*` lanes operate on; a `pure` flow over these is a `PureComputeCandidate` (see [effects.md](effects.md)).
+**Compute / AI** — `Tensor<T,[dims]>` · `AnyTensor` · `Vector` · `Matrix` · `DynamicShape` (a compute dimension
+label). A `pure` flow over these is a `PureComputeCandidate` (see [effects.md](effects.md)).
 
-**Security** — `Hash` · `Signature` · `Secret`. First-class types for cryptographic material, so a signature or a
-secret is never "just a string" — they carry their own handling rules.
+**Domain / financial** — `Money` and the currency types `GBP` · `USD` · `EUR` · `JPY` · `CHF` · `CAD` · `AUD` (typed
+value-units, fixed-point, no float bridge).
 
-**HTTP / API** — `Request` · `Response` · `Context`. The boundary types for API flows; a `Request` is an untrusted
-boundary source (its fields start `Unsafe`).
+**HTTP / API** — `Request` · `Response` · `Context` (a `Request`'s fields start `Unsafe`).
 
-**Domain / financial** — `Money`. A value-unit type with typed arithmetic and no float bridge — the anchor of the
-Hallmark financial story (fixed-point, MarketTime).
+**Security** — `Hash` · `Signature` · `Secret`.
 
-**Branded** — `Brand` — the nominal-typing primitive: a `Brand` over `String` makes `UserId` and `OrderId`
-non-interchangeable even though both are strings.
+**Error types** — `Error` · `ApiError` · `EmailError` · `PaymentError` · `ValidationError` · `WebhookError` ·
+`DecodeError` · `ParseError`, plus the domain error family (`AiError` · `HealthError` · `PatientError` ·
+`ReferralError` · `NotificationError` · `ExportError` · `RecordError` · `UserError` · `OrderError` · `AuthError` ·
+`PermissionError` · `NetworkError`). First-class error types so `Result<T,E>` carries a *typed* failure.
 
-**AI types** — `Prompt` · `Embedding` · `Classification` · `ModelOutput`. Typed so an embedding of PII is classified
-as sensitively as its source, and a model output carries its inputs' sensitivity.
+**Branded** — `Brand` — the nominal-typing primitive (`UserId` over `String` stays non-interchangeable).
 
-**Governance** — `AuditRecord` · `AuditProof` · `ExecutionPlan` · `RuntimeReport`. The types the tower-citizen
-runtime produces; they let governance artifacts be values a flow can reason about.
+**AI / ML** — `Prompt` · `Embedding` · `Classification` · `ModelOutput` · `Token` · `Label` · `ClassificationResult`
+· `EmbeddingResult` · `RiskScore` · `Score`. Typed so an embedding of PII is classified as sensitively as its source.
 
-**Unit / sentinel** — `Void` · `Unit` (no meaningful value) and `Unknown` (the fail-closed sentinel an unresolved
-type name maps to).
+**Governance** — `Policy` · `AuditRecord` · `AuditProof` · `ExecutionPlan` · `RuntimeReport` (the tower-citizen
+runtime's artifacts as first-class values).
+
+**Domain-identity (string-backed nominal)** — `Email` · `Url` · `Path` · `Hostname` · `Port` · `CurrencyCode` ·
+`Reference` · `Deadline` · `Actor` · `TraceId` · `TenantId` · `UserId`; healthcare `PatientId` · `NhsNumber` ·
+`PatientName` · `DateOfBirth` · `Diagnosis` · `MedicalRecord` · `LabResult` · `ConsentRecord`; financial/commerce
+`AccountId` · `CardNumber` · `SortCode` · `TransactionId` · `CustomerId` · `OrderId` · `ProductId` ·
+`PaymentMethodId` · `InvoiceId`; identity/session `SessionId` · `AuthToken` · `PhoneNumber` · `WebhookId` ·
+`WebhookEvent`. Branded identity types whose representation is `String` — so `UserId` and `OrderId` never
+interchange even though both are strings; the string-backed ones concatenate without an explicit `.toString()`.
+
+**Record / request / response** — request/response shapes registered as built-ins (`PatientReadRequest` ·
+`PatientProfileResponse` · `CreateOrderRequest` · `CreateOrderResponse` · …) plus import-resolved record types
+(`PatientRecord` · `HealthRecord` · `ClinicalActor` · `FinancialActor`) accepted without a local declaration.
 
 ## C. Qualifiers (the sensitivity prefix)
 
-The **single source of truth** is `TYPE_QUALIFIERS`: `protected` · `redacted` · `unsafe` · `safe` · `secret`. A
-qualifier prefixes a type (`protected Email`) and sets the value-state; `resolveTypeId` strips it to find the base
-type. This list is machine-extracted by the `.gate` tooling — never duplicate it in a regex. The qualifiers are
-documented from the value's side in [value-states.md](value-states.md).
+The **single source of truth** is `TYPE_QUALIFIERS` (in `type-registry.ts`): `protected` · `redacted` · `unsafe` ·
+`safe` · `secret`. A qualifier prefixes a type (`protected Email`) and sets the value-state; `resolveTypeId` strips it
+to find the base type. Documented from the value's side in [value-states.md](value-states.md).
 
 ## D. Developer-defined types (extend upward)
 
@@ -98,15 +116,17 @@ documented from the value's side in [value-states.md](value-states.md).
 |---|---|
 | `record { … }` | a struct — named, typed fields |
 | `enum` / variant ADT | a closed set of variants (exhaustively matched) |
-| `Brand` nominal | a distinct type over a base (e.g. `UserId` over `String`) — no accidental interchange |
-| **Hallmark** open types | developer-minted nominal types with **mandatory assay gates** (RD-0353) — an open type that still cannot skip its checks |
+| `Brand` nominal | a distinct type over a base (e.g. `UserId` over `String`) |
+| **Hallmark** open types | developer-minted nominal types with **mandatory assay gates** (RD-0353); may not mint a reserved (built-in-union) name |
 | **value-unit** types | currency / quantity types (RD-0349) with typed arithmetic and **no float bridge** |
 
-Each extends the vocabulary **upward** (adds a type) and is assigned an ID ≥ 1000; none can weaken or remove a
-built-in.
+Each extends the vocabulary **upward** (adds a type; custom types get `TypeId` ≥ 1000 from the symbol resolver) and
+none can weaken or remove a built-in.
 
 ---
 
-*Provenance: `type-registry.ts` (`TypeId`, `TYPE_NAME_TO_ID`, `TYPE_QUALIFIERS`, `resolveTypeId`); RD-0353
-(Hallmark), RD-0349 (value-unit). The surfaced/checked subset is `BUILT_IN_TYPES`. Verified against source
-2026-07-15.*
+*Provenance: `type-checker.ts` — `isBuiltInType()` (the R5A unified acceptance gate = the source of truth) +
+`BUILT_IN_TYPES`; `type-registry.ts` — `TypeId` (the numeric fast path; contributes `Tri`) + `TYPE_QUALIFIERS` +
+`resolveTypeId`; `package-type-registry.ts` — `KNOWN_DOMAIN_TYPES`. RD-0353 (Hallmark), RD-0349 (value-unit). Full
+zero-trust re-verification 2026-07-15: corrected twice — the vocabulary is the **union gate**, not any single table;
+`Tri` (truth) and `Verdict` (governance) are both writable three-valued types.*
