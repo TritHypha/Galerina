@@ -30,7 +30,7 @@ const refIndex = (i, tc) => (i < 0 || i >= tc ? "LSM-TRIT-INDEX" : "ok");
 const refEnc = (e) => (e < 0 || e > 2 ? "LSM-TRIT-CORRUPT" : "ok");
 const range = (lo, hi) => Array.from({ length: hi - lo + 1 }, (_, k) => lo + k);
 
-test("RD-0361 Memory · trit-buffer-guard: R0 build → R1 #105-admit → R3 WASM ≡ trit-buffer spec", async () => {
+test("RD-0361 Memory · trit-buffer-guard: R0 build → R1 #105-admit → R3 partition-equivalent to spec (labels unverified)", async () => {
   assert.ok(existsSync(COMPILER), "core-compiler dist not built — run the full suite first");
   const L = await import(pathToFileURL(COMPILER).href);
   let src = readFileSync(TWIN, "utf8"); if (src.charCodeAt(0) === 0xFEFF) src = src.slice(1);

@@ -33,7 +33,7 @@ const refCap = (hf) => (!hf ? "FUNGI-FUSE-UNKNOWN-CAP" : "grant");
 const bg = (n, f) => grid(n).map((a) => [...a]).map((a) => a); // helper alias
 const asBools = (arr) => arr.map((x) => x === 1);
 
-test("RD-0361 Packages · fuse-admission: R0 build → R1 #105-admit → R3 WASM ≡ fusion gates + composition", async () => {
+test("RD-0361 Packages · fuse-admission: R0 build → R1 #105-admit → R3 gates partition-equivalent (labels unverified) + composition denies", async () => {
   assert.ok(existsSync(COMPILER), "core-compiler dist not built — run the full suite first");
   const L = await import(pathToFileURL(COMPILER).href);
   let src = readFileSync(TWIN, "utf8"); if (src.charCodeAt(0) === 0xFEFF) src = src.slice(1);

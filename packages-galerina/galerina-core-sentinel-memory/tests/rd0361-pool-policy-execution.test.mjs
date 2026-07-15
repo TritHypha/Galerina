@@ -12,12 +12,17 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const COMPILER = join(HERE, "..", "..", "galerina-core-compiler", "dist", "index.js");
 const TWIN = join(HERE, "..", "src", "self-hosted", "pool-policy.fungi");
 
+// PARTITION-equivalence check (labels UNVERIFIED). Proves the twin partitions inputs into the SAME verdict
+// classes as the spec (no collapse, no split) — but NOT that the class labels match; a swapped-branch
+// relabelling would pass (R&D catch 2026-07-15). Full label-verification is gated on the string-return DECODE
+// increment (host.readString decodes runtime-built strings, not these interned literals in this build).
+// Honest tier: partition-proven, not ≡-spec.
 function diffStringFlow(X, fn, ref, corpus) {
   const handleOf = {};
   for (const a of corpus) { const s = ref(...a); if (!(s in handleOf)) handleOf[s] = X[fn](...a); }
   const handles = Object.values(handleOf);
-  assert.equal(new Set(handles).size, handles.length, `${fn}: distinct verdicts must map to distinct handles (no collapse)`);
-  for (const a of corpus) assert.equal(X[fn](...a), handleOf[ref(...a)], `${fn}(${a.join(",")}) → verdict ${ref(...a)}`);
+  assert.equal(new Set(handles).size, handles.length, `${fn}: distinct verdicts → distinct handles (no collapse)`);
+  for (const a of corpus) assert.equal(X[fn](...a), handleOf[ref(...a)], `${fn}(${a.join(",")}) → class ${ref(...a)}`);
 }
 
 const refConfig = (block, total, align) =>
@@ -25,7 +30,7 @@ const refConfig = (block, total, align) =>
 const refSeg = (ptr, cap, gov) =>
   (ptr < 0 ? "LSM-BOUNDS-001" : ptr >= cap ? "LSM-BOUNDS-001" : ptr < gov ? "compute" : "governance");
 
-test("RD-0361 Memory · pool-policy: R0 build → R1 #105-admit → R3 WASM ≡ pool-config + segment spec", async () => {
+test("RD-0361 Memory · pool-policy: R0 build → R1 #105-admit → R3 partition-equivalent to spec (labels unverified)", async () => {
   assert.ok(existsSync(COMPILER), "core-compiler dist not built — run the full suite first");
   const L = await import(pathToFileURL(COMPILER).href);
   let src = readFileSync(TWIN, "utf8"); if (src.charCodeAt(0) === 0xFEFF) src = src.slice(1);
