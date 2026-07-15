@@ -9,6 +9,8 @@ packages-galerina/galerina-core/examples/benchmark-results/*.json
 packages-galerina/galerina-devtools-benchmarks/results/history/
 # myco local search index (the graph-indexed finder; regenerated on demand, stores no absolute paths).
 .myco/
+# noise-gate preflight snapshot (regenerated per benchmark session; not a committed baseline).
+packages-galerina/galerina-devtools-benchmarks/results/noise-gate-latest.json
 /notes/*
 # Session scratch note at repo root (compaction transcript pointers — leaks the local transcript path).
 /notes.txt
