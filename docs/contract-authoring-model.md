@@ -104,7 +104,39 @@ Explicit values may only ever **tighten** the auto-derived floor; loosening requ
 
 `Unsafe` (untrusted boundary input) · `Safe` · `Validated` (a checked subset of Safe) · `Tainted` (derived from Unsafe through a non-gate) · `Secret` (`SecureString`, approved ops only), with `Protected` / `Redacted` sensitivity qualifiers. The **only** declassifier is `seal()` / `encrypt()`. Enforced by `FUNGI-SECRET-001..003` + `FUNGI-VALUESTATE-004`.
 
+### Typed boundary — the type vocabulary
+
+A flow's params and returns are typed. The **built-in** types are a closed set; the developer also **defines**
+nominal / record / ADT types on top (so the vocabulary extends upward, never downward). Authoritative built-in
+set: `TypeId` in `type-registry.ts`.
+
+| Category | Types |
+|---|---|
+| Primitives | `Int` · `Bool` · `String` · `Char` · `Float32` (float is discouraged; value-unit types carry **no float bridge**) |
+| Containers (generic) | `Array<T>` · `Option<T>` (`Some`/`None`) · `Result<T, E>` (`Ok`/`Err`) · `Tensor<T, [dims]>` |
+| Developer-defined | `record { … }` structs · `enum` / variant ADTs · `Brand` nominal types · **Hallmark** open types (developer-minted nominal + mandatory assay gates, RD-0353) · **value-unit** types (RD-0349, e.g. currency / quantity) |
+| Security qualifiers | `unsafe let raw` (untrusted boundary) · `protected` · `redacted` · `SecureString` (Secret) · `Tainted<T>` |
+
+### Capability boundary
+
+Not a separate vocabulary — the declared `effects { }` set **is** the capability surface (see the effect table
+above). The `#105` capability mask admits a unit only if its effects are within what policy grants.
+
+### Audit receipts
+
+The Epilogue Receipt strategy is profile-driven (not written in the contract): `sha256_seal` (implemented) ·
+`zk_snark_receipt` (stub) · `auto` (→ `sha256_seal`) · `none`. Full detail in the automated-floor doc.
+
 ### Open fields (no closed vocabulary)
 
 - `intent { "…" }` — free text (a human-readable purpose; required, but any string).
 - `invariant { … }` — boolean expressions over the flow's values (open, but must type-check).
+
+---
+
+## See also
+
+Table 3 — **what is automated and cannot be written** — is documented in full, mechanism by mechanism, in its own
+reference: [governance-automated-floor.md](governance-automated-floor.md) (the K3 calculus, fail-closed collapse,
+No-Coercion, the `#105` admission gates, the crypto floor, receipts, and the execution model). This authoring doc
+covers Tables 1 and 2 — what you write and what is auto-derived if you don't.
