@@ -134,6 +134,29 @@ Every derived hardening carries a **provenance** stamp: `auto-derived` (the floo
 (the developer tightened it) · `audited-loosen` (a logged, deliberate weakening) · `none` (non-secret, no hardening).
 `--show-derived` prints it so a reviewer sees exactly why each value carries the ceiling it does.
 
+### Threat-model grounding — why "assume memory is hostile" (RD-0369)
+
+The residency ceiling is not defensive theatre. Off-chip and persistent memory is a **live, software-reachable
+side-channel surface**, and the mitigations map one-to-one onto the tiers here:
+
+- **Off-chip / NVM caches leak.** Non-volatile memory modules carry their own internal caches; a purely-software
+  strided-timing attack reverse-engineers their structure and reads a co-resident victim through it — demonstrated
+  in the literature as a database-operation fingerprint (which SQL ran → full-DB leakage) and, most sharply, a
+  **crypto-key recovery** (a flush+reload on shared crypto code recovers private-key bits). The **`register_only` /
+  `no_dram_spill` / `no_swap`** residency tiers are exactly the "keys and secrets never touch a spillable,
+  co-resident memory device" rule that defends that key-recovery case; **`erase: on_exit`** closes the
+  leave-behind; **`timing: constant`** closes the timing channel.
+- **Pooled / fabric memory (CXL) is cross-tenant.** Disaggregated memory shared across hosts is a co-residency +
+  side-channel problem — its own design literature insists a granted region be root-of-trust-mediated and isolated
+  from other guests. The same posture applies: treat shared/persistent memory as an **untrusted substrate,
+  deny-by-default**, which is what the `substrate` dimension expresses.
+
+**Honest tier.** This is *design grounding*, not a shipped mitigation of a specific attack: it is why the ceiling
+exists and why its execution (`mlock` / zeroize, `#143`-gated) matters. The specific product exposures stay in the
+internal threat model (they are not published). The paired **bounded-memory governance pattern** — prefer a
+declared, fixed-size memory envelope over an unbounded cache on any governed path (DoS-resistant, predictable,
+auditable) — is the AI/resource-tier analogue of this same fail-closed instinct.
+
 ---
 
 *Provenance: `hardening-residency.ts` (`ResidencyTier`, `EraseMode`, `TimingDiscipline`, `Substrate`, `deriveAuto`,

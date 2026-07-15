@@ -1,5 +1,9 @@
 # Reference — the epistemic trust-trit (RD-0337)
 
+> **Context:** this is the *value-status* face of Galerina's one three-valued idea — read
+> [three-valued-logic-primer.md](three-valued-logic-primer.md) first. `PROVEN`/`UNKNOWN`/`REFUTED` is the same
+> `+1`/`0`/`-1` trit as a governance verdict, lifted from the gate layer up to the type layer.
+
 The three-valued **trust status a value carries** — `PROVEN` / `UNKNOWN` / `REFUTED` — and the small set of audited
 gates that move it. This is the detail page behind the "Epistemic trust-trit" row in
 [contract-authoring-model.md](../contract-authoring-model.md). It is a **Table 2 (auto-derived / tracked)** element:
