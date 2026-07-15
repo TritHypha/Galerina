@@ -7,6 +7,8 @@ build/.fungi-cache/
 .galerina/capabilities.local.*
 packages-galerina/galerina-core/examples/benchmark-results/*.json
 packages-galerina/galerina-devtools-benchmarks/results/history/
+# myco local search index (the graph-indexed finder; regenerated on demand, stores no absolute paths).
+.myco/
 /notes/*
 # Session scratch note at repo root (compaction transcript pointers — leaks the local transcript path).
 /notes.txt
