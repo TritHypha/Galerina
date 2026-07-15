@@ -349,10 +349,20 @@ const extraSections = () => {
 //   fewer than three sections. `--self-test` proves the throw fires (a neutered guard
 //   is itself a fail-open); it is wired into the audit cadence.
 // ══════════════════════════════════════════════════════════════════════════════
+// Owner rule (2026-07-15): the Tracking registry is ALWAYS ordered by STATUS — progress order,
+// most-shipped first. Enforced HERE (in the audit assembler) so every render — --audit-html, the --json
+// percentAudit, and any widget built from them — is status-ordered by construction, never hand-sorted.
+const STATUS_ORDER = ["shipped", "building", "design-done", "build-pending", "post-v1"];
+const statusRank = (s) => { const i = STATUS_ORDER.indexOf(typeof s === "number" ? "building" : s); return i === -1 ? STATUS_ORDER.length : i; };
 const REQUIRED_SECTIONS = [
   { key: "zero-trust-thesis", title: "Zero-Trust thesis", kind: "meter", get rows() { return ZERO_TRUST.map((b) => ({ label: b.boundary, pct: b.pct, note: b.status })); }, get avg() { return ztAvg; } },
   { key: "build-progress",    title: "Build progress",    kind: "meter", get rows() { return BUILD_PROGRESS.map((l) => ({ label: l.layer, pct: typeof l.pct === "number" ? l.pct : null, status: l.status ?? null, live: !!l.live })); }, get avg() { return buildAvg; } },
-  { key: "tracking-registry", title: "Tracking registry", kind: "registry", get rows() { return TRACKING_REGISTRY.map((t) => ({ item: t.item, state: t.state, detail: t.detail })); } },
+  { key: "tracking-registry", title: "Tracking registry", kind: "registry", get rows() {
+    return TRACKING_REGISTRY
+      .map((t, i) => ({ item: t.item, state: t.state, detail: t.detail, _i: i }))
+      .sort((a, b) => statusRank(a.state) - statusRank(b.state) || a._i - b._i)   // status order, stable within a status
+      .map(({ _i, ...r }) => r);
+  } },
 ];
 // FAIL-CLOSED assembler: any missing / empty section is a hard error, never a silent drop.
 function buildPercentAudit() {
@@ -390,11 +400,16 @@ function renderAuditHtml(audit) {
     if (s.kind === "meter") {
       return `<h2>${esc(s.title)}${s.avg != null ? ` <span class="avg">avg ${s.avg}%</span>` : ""}</h2>` + s.rows.map(meterRow).join("");
     }
-    // registry — a table with a state badge per item (the section that kept going missing)
-    return `<h2>${esc(s.title)} <span class="avg">${s.rows.length} items</span></h2>`
-      + `<table class="reg"><tbody>` + s.rows.map((r) =>
-        `<tr><td class="ritem">${esc(r.item)}</td><td><span class="badge ${stateClass(r.state)}">${esc(typeof r.state === "number" ? r.state + "%" : r.state)}</span></td><td class="rdetail">${esc(r.detail)}</td></tr>`
-      ).join("") + `</tbody></table>`;
+    // registry — grouped by STATUS (owner rule: always status-ordered), a state badge per item.
+    // Rows arrive status-ordered from REQUIRED_SECTIONS; insert a group header each time the status changes.
+    let last = null;
+    const body = s.rows.map((r) => {
+      const st = typeof r.state === "number" ? "building" : r.state;
+      const hdr = st !== last ? `<tr><td colspan="3" class="rgroup"><span class="badge ${stateClass(r.state)}">${esc(st)}</span> <span class="rgcount">${s.rows.filter((x) => (typeof x.state === "number" ? "building" : x.state) === st).length}</span></td></tr>` : "";
+      last = st;
+      return hdr + `<tr><td class="ritem">${esc(r.item)}</td><td class="rst">${esc(typeof r.state === "number" ? r.state + "%" : "")}</td><td class="rdetail">${esc(r.detail)}</td></tr>`;
+    }).join("");
+    return `<h2>${esc(s.title)} <span class="avg">${s.rows.length} items · ordered by status</span></h2><table class="reg"><tbody>${body}</tbody></table>`;
   };
   const style = `<style>
   .pa{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;max-width:920px;margin:0 auto;padding:1rem;color:#1a1a19}
@@ -407,7 +422,8 @@ function renderAuditHtml(audit) {
   .pa .mtrack{height:14px;background:#e6e5de;border-radius:7px;overflow:hidden}.pa .mfill{display:block;height:100%;border-radius:7px}
   .pa .mval{font-size:13px;font-weight:500;text-align:right;color:#52514e}
   .pa table.reg{width:100%;border-collapse:collapse;font-size:13px}.pa .reg td{padding:6px 8px;border-top:0.5px solid #e1e0d9;vertical-align:top}
-  .pa .ritem{font-weight:500;white-space:nowrap}.pa .rdetail{color:#6b6a64;font-size:12px}
+  .pa .ritem{font-weight:500;white-space:nowrap}.pa .rdetail{color:#6b6a64;font-size:12px}.pa .rst{font-size:11px;color:#8a8880;text-align:right}
+  .pa .rgroup{padding-top:12px}.pa .rgcount{font-size:11px;color:#8a8880}
   .pa .badge{font-size:11px;padding:2px 8px;border-radius:10px;white-space:nowrap}
   .pa .s-ship{background:#e1f5ee;color:#0f6e56}.pa .s-build{background:#e6f1fb;color:#185fa5}.pa .s-pend{background:#faeeda;color:#854f0b}.pa .s-front{background:#f1efe8;color:#5f5e5a}
   @media (prefers-color-scheme:dark){.pa{color:#e8e7e0}.pa .sub,.pa .card .k,.pa .rdetail,.pa .mval{color:#a3a29a}
@@ -436,6 +452,10 @@ if (SELF_TEST) {
   const html = renderAuditHtml(audit);
   for (const t of ["Zero-Trust thesis", "Build progress", "Tracking registry"]) ok(html.includes(t), `rendered artifact contains the "${t}" heading`);
   ok(html.includes(esc0(TRACKING_REGISTRY[0].item)), "rendered artifact contains a real Tracking-registry row");
+  // Tracking registry is ALWAYS status-ordered (owner rule): the emitted ranks must be non-decreasing.
+  const reg = audit.sections.find((s) => s.key === "tracking-registry").rows;
+  const ranks = reg.map((r) => statusRank(r.state));
+  ok(ranks.every((v, i) => i === 0 || ranks[i - 1] <= v), "Tracking registry rows are ordered by status (non-decreasing rank)");
   ok(!/https?:\/\//.test(html) && !/<script/i.test(html), "artifact is self-contained (no CDN / no <script>)");
   // The load-bearing guarantee: an EMPTY tracking registry must be REFUSED, never silently rendered.
   const saved = TRACKING_REGISTRY.splice(0, TRACKING_REGISTRY.length);
