@@ -26,6 +26,11 @@ const PATTERNS = [
   // Windows user home: drive + Users + a REAL name segment — leaks BOTH the drive layout and the
   // username. The (?!<) skips a `<name>`/`<user>` PLACEHOLDER, which teaches the rule rather than leaks.
   { name: "windows-user-home", re: /[A-Za-z]:[\\/]{1,2}Users[\\/]{1,2}(?!<)[^\\/\s"'`,;<]+/g },
+  // Percent-wrapped Windows env var used as a LITERAL path stand-in (`%USERPROFILE%\...`). Owner ruling
+  // 2026-07-15: a public repo hardcodes NOTHING machine-specific — a `%USERPROFILE%` literal is still a
+  // Windows-only hardcoding, not a portable fix, so it is itself a leak. A runtime env READ in code
+  // (`process.env.USERPROFILE`, `$env:USERNAME`) has no `%...%` wrapper and never matches — that stays legal.
+  { name: "windows-env-literal", re: /%(?:USERPROFILE|USERNAME|HOMEPATH|HOMEDRIVE|APPDATA|LOCALAPPDATA)%/gi },
   // The retired `wwwprojects` projects root, in path position (drive-prefixed or followed by a separator).
   { name: "wwwprojects-path", re: /(?:[A-Za-z]:[\\/]{1,2}wwwprojects|wwwprojects[\\/])/g },
   // Dash-encoded machine slug: `C-Users-<name>-...` — the SAME username+layout leak as
@@ -83,6 +88,10 @@ function selfTest() {
     ["forward-slash user-home fires", fires("C:/Users/someone/dev")],
     ["json-escaped user-home fires", fires('"root": "C:\\\\Users\\\\someone"')],
     ["wwwprojects path fires", fires("moved from C:\\wwwprojects\\galerina")],
+    ["percent env literal fires (%USERPROFILE% is NOT a portable fix)", fires("run %USERPROFILE%\\Documents\\GitHub\\x")],
+    ["%APPDATA% literal fires", fires("cache in %APPDATA%\\galerina")],
+    ["process.env.USERPROFILE READ does NOT fire (portable runtime access)", !fires("const home = process.env.USERPROFILE || process.env.HOME")],
+    ["$env:USERNAME READ does NOT fire", !fires('icacls x /grant:r "$($env:USERNAME):F"')],
     ["bare 'wwwprojects' word in prose does NOT fire", !fires("migrated the wwwprojects layout")],
     ["'C:\\Users\\<name>' placeholder does NOT fire", !fires("a hardcoded C:\\Users\\<name>\\x breaks")],
     ["allow-marker suppresses", !fires("example C:\\Users\\x  (path-leak-audit:allow)")],
@@ -127,8 +136,9 @@ for (const rel of files) {
 if (leakCount) {
   console.error(`\n  ❌ path-leak: ${leakCount} absolute-local-path leak(s) across ${leakFiles} file(s):\n`);
   console.error(report.join("\n"));
-  console.error(`\n  Fix: use a repo-relative path, ~ / $HOME / %USERPROFILE%, an env var, or a <placeholder>.`);
-  console.error(`  A line that must quote the pattern to teach the rule can carry the marker "${ALLOW_MARKER}".`);
+  console.error(`\n  Fix: use a repo-relative path, \`~\`/\`$HOME\`, a runtime env READ (process.env.X —`);
+  console.error(`  NOT a literal %USERPROFILE%), or a <placeholder>. A line that must quote the pattern to`);
+  console.error(`  teach the rule can carry the marker "${ALLOW_MARKER}".`);
   process.exit(1);
 }
 console.log(`  ✅ path-leak: no absolute-local-path leaks across ${files.length} tracked files.`);

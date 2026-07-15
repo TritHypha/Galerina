@@ -130,7 +130,7 @@ build/package-usage/
 # `git add -A` once swept a 9.7 MB .codebase-memory/graph.db.zst (a root copy AND a nested per-package
 # copy) up to origin (commit ae55016 "u", 2026-07-04). `**/` ignores the dir at ANY depth — do NOT
 # anchor it with a leading slash, that would miss the nested packages-galerina/.../src/ copy.
-# (The rnd-docs chroma vector store lives under %LOCALAPPDATA%, outside this repo, so needs no rule.)
+# (The rnd-docs chroma vector store lives in a machine-local app-data dir, outside this repo, so needs no rule.)
 **/.codebase-memory/
 # Name-based backstop for the heavy sqlite index dump, in case the directory rule above is ever narrowed.
 **/graph.db.zst
