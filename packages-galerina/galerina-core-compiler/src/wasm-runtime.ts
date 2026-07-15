@@ -22,6 +22,11 @@
 import {
   sign as edSign, verify as edVerify, generateKeyPairSync, createHash,
 } from "node:crypto";
+// RD-0389 record-marshalling ABI (ARG direction): the record staging base + field size are the
+// SAME constants the emitter lays records out with, so a host-staged record and a module-built one
+// share one layout (single source of truth — no drift). Used only inside allocRecord (call-time),
+// so the wat-emitter ↔ wasm-runtime edge is init-order-safe even under a cycle.
+import { WAT_HEAP_BASE, WAT_REC_FIELD_SIZE } from "./wat-emitter.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Attestation (Ed25519 over the raw .wasm binary)
@@ -176,6 +181,24 @@ export interface HostRuntime {
   bindMemory(memory: WebAssembly.Memory): void;
   /** Read field `slot` (0-based i32 slots) of a record at linear-memory `ptr`. */
   readRecordField(ptr: number, slot: number): number;
+  /**
+   * RD-0389 (ARG direction): build a host-side array from element handles (record ptrs, string
+   * handles, or raw values), returning its i32 handle — the counterpart of `readArray`. The module
+   * reads it with `__array_length` / `__array_get`. Test/differential marshalling ONLY (never on the
+   * production admission path; the closed import set is unchanged).
+   */
+  internArray(items: readonly number[]): number;
+  /**
+   * RD-0389 (ARG direction): stage a record in the module's OWN exported linear memory — write each
+   * field (one i32 slot) contiguously from a host bump pointer based at `WAT_HEAP_BASE`, returning
+   * the base ptr — the counterpart of `readRecordField`. The module reads a field with
+   * `i32.load(ptr + slot*WAT_REC_FIELD_SIZE)`, the SAME layout the emitter writes. FAIL-CLOSED:
+   * requires `bindMemory` first and ≥1 field, and traps rather than writing out of bounds. Valid for
+   * passing inputs to a flow that does NOT itself allocate records over that region (the differential
+   * contract); a String/nested-record field is passed as its handle/ptr, so records compose. Test/
+   * differential ONLY.
+   */
+  allocRecord(fields: readonly number[]): number;
   /** A snapshot of linear memory (for the trap observer). null before bindMemory. */
   snapshotMemory(): Uint8Array | null;
 }
@@ -194,6 +217,10 @@ export function createHostRuntime(observe?: Observer): HostRuntime {
   const arrays: number[][] = [];
   const results: { tag: "ok" | "err"; value: number }[] = [];
   let memory: WebAssembly.Memory | null = null;
+  // RD-0389: host bump pointer for records STAGED to pass in (allocRecord), based at the same
+  // WAT_HEAP_BASE the emitter allocates from. Monotone for this host's lifetime — a fresh host per
+  // scenario resets it, and it never overlaps a heap-free consuming flow (which makes no allocations).
+  let recordBump = WAT_HEAP_BASE;
 
   const tap = (name: string, args: number[], ret: number | undefined): number | undefined => {
     observe?.onHostCall?.(name, args, ret);
@@ -323,6 +350,24 @@ export function createHostRuntime(observe?: Observer): HostRuntime {
     readRecordField(ptr: number, slot: number): number {
       if (memory === null) throw new Error("readRecordField before bindMemory");
       return new Int32Array(memory.buffer)[(ptr >>> 2) + slot] ?? 0;
+    },
+    internArray(items: readonly number[]): number {
+      const id = arrays.length; arrays.push(items.map((x) => x | 0)); return id;
+    },
+    allocRecord(fields: readonly number[]): number {
+      if (memory === null) throw new Error("allocRecord before bindMemory — instantiate the module first (fail-closed)");
+      if (fields.length === 0) throw new Error("allocRecord: a record must have ≥1 field (fail-closed)");
+      const words = new Int32Array(memory.buffer);
+      const start = recordBump >>> 2;
+      // Bounds-check BEFORE any write — a staged record that would spill past linear memory traps at
+      // construction rather than corrupting memory or silently truncating (RD-0389 §5 fail-closed).
+      if (start + fields.length > words.length) {
+        throw new Error("allocRecord: record staging overflowed linear memory (fail-closed)");
+      }
+      for (let i = 0; i < fields.length; i++) words[start + i] = fields[i]! | 0;
+      const ptr = recordBump;
+      recordBump += fields.length * WAT_REC_FIELD_SIZE;
+      return ptr;
     },
     snapshotMemory(): Uint8Array | null {
       return memory === null ? null : new Uint8Array(memory.buffer.slice(0));
