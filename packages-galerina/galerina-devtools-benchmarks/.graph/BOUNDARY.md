@@ -11,13 +11,13 @@
 
 | Metric | Count |
 |---|---|
-| Files | 12 |
+| Files | 13 |
 | Internal edges | 0 |
 | External dependencies | 6 |
 | ├─ Node core | 6 |
 | ├─ Workspace (@galerina/*) | 0 |
 | └─ Third-party | 0 |
-| Orphan files | 12 |
+| Orphan files | 13 |
 
 ## External Dependencies (the Border)
 
@@ -50,6 +50,7 @@ No boundary violations. All external imports are within the allowlist.
 - `src/runner.mjs`
 - `src/snapshot.mjs`
 - `src/throughput-units.mjs`
+- `src/variance.mjs`
 - `src/wasm-runner.mjs`
 
 ## Entry Points
