@@ -9,7 +9,8 @@ Galerina Core
   defines API contracts, types, diagnostics and generated reports
 
 Galerina App Kernel
-  enforces validation, auth, rate limits, idempotency and typed handler dispatch
+  enforces validation, auth, idempotency and typed handler dispatch
+  (rate-limit POLICY is declared per route; kernel enforcement is planned — not yet wired)
 
 galerina-framework-api-server
   serves HTTP, loads route manifests and passes normalised requests to the kernel
@@ -63,7 +64,7 @@ typed request decoding
 auth and scopes
 idempotency
 webhook replay protection
-rate-limit policy
+rate-limit policy (declared per route; enforcement gate planned, not yet wired)
 memory budget policy
 effect policy
 typed handler execution
@@ -76,7 +77,7 @@ Galerina Core owns:
 language syntax
 API contract checks
 schema generation
-OpenAPI generation
+OpenAPI generation (planned — no shipped generator yet)
 source maps
 diagnostics
 security report contracts
