@@ -13,39 +13,39 @@ This rulebook is defensive governance guidance for runtime and language design. 
 
 ## Review Queue Summary
 
-- `LN-SEC-2026-004` Untrusted Input Boundary Enforcement - CWE-20, RubyGems -> `keep` (evidence=1.0, confidence=0.7)
-- `LN-SEC-2026-035` Weakness Cwe 1067 Review Rule -> `keep` (evidence=0.86, confidence=0.57)
-- `LN-SEC-2026-038` Weakness Cwe 17 Review Rule -> `keep` (evidence=0.86, confidence=0.57)
-- `LN-SEC-2026-039` Weakness Cwe 178 Review Rule -> `keep` (evidence=0.86, confidence=0.57)
-- `LN-SEC-2026-040` Weakness Cwe 19 Review Rule -> `keep` (evidence=0.86, confidence=0.57)
-- `LN-SEC-2026-041` Weakness Cwe 20 Review Rule -> `keep` (evidence=0.86, confidence=0.57)
-- `LN-SEC-2026-042` Weakness Cwe 200 Review Rule -> `keep` (evidence=0.97, confidence=0.74)
-- `LN-SEC-2026-046` Weakness Cwe 264 Review Rule -> `keep` (evidence=0.92, confidence=0.66)
-- `LN-SEC-2026-047` Weakness Cwe 269 Review Rule -> `keep` (evidence=0.86, confidence=0.57)
-- `LN-SEC-2026-048` Weakness Cwe 276 Review Rule -> `keep` (evidence=0.86, confidence=0.57)
-- `LN-SEC-2026-051` Weakness Cwe 287 Review Rule -> `keep` (evidence=0.86, confidence=0.57)
-- `LN-SEC-2026-052` Weakness Cwe 290 Review Rule - Remote User Affects Server State -> `keep` (evidence=0.91, confidence=0.57)
-- `LN-SEC-2026-054` Weakness Cwe 327 Review Rule -> `keep` (evidence=0.86, confidence=0.57)
-- `LN-SEC-2026-056` Weakness Cwe 384 Review Rule - Remote User Affects Server State -> `keep` (evidence=0.91, confidence=0.57)
-- `LN-SEC-2026-057` Weakness Cwe 400 Review Rule -> `keep` (evidence=0.86, confidence=0.57)
-- `LN-SEC-2026-059` Weakness Cwe 434 Review Rule -> `keep` (evidence=0.86, confidence=0.57)
-- `LN-SEC-2026-060` Weakness Cwe 476 Review Rule - Remote User Affects Server State -> `keep` (evidence=0.91, confidence=0.57)
-- `LN-SEC-2026-061` Weakness Cwe 77 Review Rule - Remote User Affects Server State -> `keep` (evidence=0.91, confidence=0.57)
-- `LN-SEC-2026-062` Weakness Cwe 78 Review Rule -> `keep` (evidence=0.92, confidence=0.66)
-- `LN-SEC-2026-003` State-Changing Request Intent Verification - CWE-352, RubyGems -> `merge` (evidence=1.0, confidence=0.7)
-- `LN-SEC-2026-007` Untrusted Input Boundary Enforcement - CWE-79, RubyGems -> `merge` (evidence=1.0, confidence=0.87)
-- `LN-SEC-2026-012` Native Boundary Isolation Requirement -> `merge` (evidence=1.0, confidence=0.87)
-- `LN-SEC-2026-018` Filesystem Boundary Governance - CWE-22, RubyGems -> `merge` (evidence=1.0, confidence=0.87)
-- `LN-SEC-2026-021` Plaintext Secrets Review Rule -> `merge` (evidence=0.96, confidence=0.57)
-- `LN-SEC-2026-025` Race Condition Review Rule -> `merge` (evidence=1.0, confidence=0.87)
-- `LN-SEC-2026-028` Trust Boundary Dependency Boundary Risk Review Rule -> `needs_human_review` (evidence=0.94, confidence=0.87)
-- `LN-SEC-2026-031` Trust Boundary Privilege Boundary Crossing Review Rule -> `needs_human_review` (evidence=0.94, confidence=0.87)
-- `LN-SEC-2026-032` Trust Boundary Remote User Affects Server State Review Rule -> `needs_human_review` (evidence=0.94, confidence=0.87)
-- `LN-SEC-2026-034` Trust Boundary Web Request Boundary Review Rule -> `needs_human_review` (evidence=0.76, confidence=0.57)
+- `GAL-SEC-2026-004` Untrusted Input Boundary Enforcement - CWE-20, RubyGems -> `keep` (evidence=1.0, confidence=0.7)
+- `GAL-SEC-2026-035` Weakness Cwe 1067 Review Rule -> `keep` (evidence=0.86, confidence=0.57)
+- `GAL-SEC-2026-038` Weakness Cwe 17 Review Rule -> `keep` (evidence=0.86, confidence=0.57)
+- `GAL-SEC-2026-039` Weakness Cwe 178 Review Rule -> `keep` (evidence=0.86, confidence=0.57)
+- `GAL-SEC-2026-040` Weakness Cwe 19 Review Rule -> `keep` (evidence=0.86, confidence=0.57)
+- `GAL-SEC-2026-041` Weakness Cwe 20 Review Rule -> `keep` (evidence=0.86, confidence=0.57)
+- `GAL-SEC-2026-042` Weakness Cwe 200 Review Rule -> `keep` (evidence=0.97, confidence=0.74)
+- `GAL-SEC-2026-046` Weakness Cwe 264 Review Rule -> `keep` (evidence=0.92, confidence=0.66)
+- `GAL-SEC-2026-047` Weakness Cwe 269 Review Rule -> `keep` (evidence=0.86, confidence=0.57)
+- `GAL-SEC-2026-048` Weakness Cwe 276 Review Rule -> `keep` (evidence=0.86, confidence=0.57)
+- `GAL-SEC-2026-051` Weakness Cwe 287 Review Rule -> `keep` (evidence=0.86, confidence=0.57)
+- `GAL-SEC-2026-052` Weakness Cwe 290 Review Rule - Remote User Affects Server State -> `keep` (evidence=0.91, confidence=0.57)
+- `GAL-SEC-2026-054` Weakness Cwe 327 Review Rule -> `keep` (evidence=0.86, confidence=0.57)
+- `GAL-SEC-2026-056` Weakness Cwe 384 Review Rule - Remote User Affects Server State -> `keep` (evidence=0.91, confidence=0.57)
+- `GAL-SEC-2026-057` Weakness Cwe 400 Review Rule -> `keep` (evidence=0.86, confidence=0.57)
+- `GAL-SEC-2026-059` Weakness Cwe 434 Review Rule -> `keep` (evidence=0.86, confidence=0.57)
+- `GAL-SEC-2026-060` Weakness Cwe 476 Review Rule - Remote User Affects Server State -> `keep` (evidence=0.91, confidence=0.57)
+- `GAL-SEC-2026-061` Weakness Cwe 77 Review Rule - Remote User Affects Server State -> `keep` (evidence=0.91, confidence=0.57)
+- `GAL-SEC-2026-062` Weakness Cwe 78 Review Rule -> `keep` (evidence=0.92, confidence=0.66)
+- `GAL-SEC-2026-003` State-Changing Request Intent Verification - CWE-352, RubyGems -> `merge` (evidence=1.0, confidence=0.7)
+- `GAL-SEC-2026-007` Untrusted Input Boundary Enforcement - CWE-79, RubyGems -> `merge` (evidence=1.0, confidence=0.87)
+- `GAL-SEC-2026-012` Native Boundary Isolation Requirement -> `merge` (evidence=1.0, confidence=0.87)
+- `GAL-SEC-2026-018` Filesystem Boundary Governance - CWE-22, RubyGems -> `merge` (evidence=1.0, confidence=0.87)
+- `GAL-SEC-2026-021` Plaintext Secrets Review Rule -> `merge` (evidence=0.96, confidence=0.57)
+- `GAL-SEC-2026-025` Race Condition Review Rule -> `merge` (evidence=1.0, confidence=0.87)
+- `GAL-SEC-2026-028` Trust Boundary Dependency Boundary Risk Review Rule -> `needs_human_review` (evidence=0.94, confidence=0.87)
+- `GAL-SEC-2026-031` Trust Boundary Privilege Boundary Crossing Review Rule -> `needs_human_review` (evidence=0.94, confidence=0.87)
+- `GAL-SEC-2026-032` Trust Boundary Remote User Affects Server State Review Rule -> `needs_human_review` (evidence=0.94, confidence=0.87)
+- `GAL-SEC-2026-034` Trust Boundary Web Request Boundary Review Rule -> `needs_human_review` (evidence=0.76, confidence=0.57)
 
 ## Rules
 
-## LN-SEC-2026-004: Untrusted Input Boundary Enforcement - CWE-20, RubyGems
+## GAL-SEC-2026-004: Untrusted Input Boundary Enforcement - CWE-20, RubyGems
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `keep`
@@ -96,7 +96,7 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-004
+- GAL-SEC-2026-004
 
 ### Supporting Evidence Summary
 
@@ -119,7 +119,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-035: Weakness Cwe 1067 Review Rule
+## GAL-SEC-2026-035: Weakness Cwe 1067 Review Rule
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `keep`
@@ -170,7 +170,7 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-035
+- GAL-SEC-2026-035
 
 ### Supporting Evidence Summary
 
@@ -190,7 +190,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-038: Weakness Cwe 17 Review Rule
+## GAL-SEC-2026-038: Weakness Cwe 17 Review Rule
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `keep`
@@ -241,7 +241,7 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-038
+- GAL-SEC-2026-038
 
 ### Supporting Evidence Summary
 
@@ -261,7 +261,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-039: Weakness Cwe 178 Review Rule
+## GAL-SEC-2026-039: Weakness Cwe 178 Review Rule
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `keep`
@@ -312,7 +312,7 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-039
+- GAL-SEC-2026-039
 
 ### Supporting Evidence Summary
 
@@ -332,7 +332,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-040: Weakness Cwe 19 Review Rule
+## GAL-SEC-2026-040: Weakness Cwe 19 Review Rule
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `keep`
@@ -383,7 +383,7 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-040
+- GAL-SEC-2026-040
 
 ### Supporting Evidence Summary
 
@@ -403,7 +403,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-041: Weakness Cwe 20 Review Rule
+## GAL-SEC-2026-041: Weakness Cwe 20 Review Rule
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `keep`
@@ -454,7 +454,7 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-041
+- GAL-SEC-2026-041
 
 ### Supporting Evidence Summary
 
@@ -474,7 +474,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-042: Weakness Cwe 200 Review Rule
+## GAL-SEC-2026-042: Weakness Cwe 200 Review Rule
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `keep`
@@ -525,7 +525,7 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-042
+- GAL-SEC-2026-042
 
 ### Supporting Evidence Summary
 
@@ -549,7 +549,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-046: Weakness Cwe 264 Review Rule
+## GAL-SEC-2026-046: Weakness Cwe 264 Review Rule
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `keep`
@@ -600,7 +600,7 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-046
+- GAL-SEC-2026-046
 
 ### Supporting Evidence Summary
 
@@ -622,7 +622,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-047: Weakness Cwe 269 Review Rule
+## GAL-SEC-2026-047: Weakness Cwe 269 Review Rule
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `keep`
@@ -673,7 +673,7 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-047
+- GAL-SEC-2026-047
 
 ### Supporting Evidence Summary
 
@@ -693,7 +693,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-048: Weakness Cwe 276 Review Rule
+## GAL-SEC-2026-048: Weakness Cwe 276 Review Rule
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `keep`
@@ -744,7 +744,7 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-048
+- GAL-SEC-2026-048
 
 ### Supporting Evidence Summary
 
@@ -764,7 +764,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-051: Weakness Cwe 287 Review Rule
+## GAL-SEC-2026-051: Weakness Cwe 287 Review Rule
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `keep`
@@ -815,7 +815,7 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-051
+- GAL-SEC-2026-051
 
 ### Supporting Evidence Summary
 
@@ -835,7 +835,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-052: Weakness Cwe 290 Review Rule - Remote User Affects Server State
+## GAL-SEC-2026-052: Weakness Cwe 290 Review Rule - Remote User Affects Server State
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `keep`
@@ -886,7 +886,7 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-052
+- GAL-SEC-2026-052
 
 ### Supporting Evidence Summary
 
@@ -906,7 +906,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-054: Weakness Cwe 327 Review Rule
+## GAL-SEC-2026-054: Weakness Cwe 327 Review Rule
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `keep`
@@ -957,7 +957,7 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-054
+- GAL-SEC-2026-054
 
 ### Supporting Evidence Summary
 
@@ -977,7 +977,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-056: Weakness Cwe 384 Review Rule - Remote User Affects Server State
+## GAL-SEC-2026-056: Weakness Cwe 384 Review Rule - Remote User Affects Server State
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `keep`
@@ -1028,7 +1028,7 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-056
+- GAL-SEC-2026-056
 
 ### Supporting Evidence Summary
 
@@ -1048,7 +1048,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-057: Weakness Cwe 400 Review Rule
+## GAL-SEC-2026-057: Weakness Cwe 400 Review Rule
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `keep`
@@ -1099,7 +1099,7 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-057
+- GAL-SEC-2026-057
 
 ### Supporting Evidence Summary
 
@@ -1119,7 +1119,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-059: Weakness Cwe 434 Review Rule
+## GAL-SEC-2026-059: Weakness Cwe 434 Review Rule
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `keep`
@@ -1170,7 +1170,7 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-059
+- GAL-SEC-2026-059
 
 ### Supporting Evidence Summary
 
@@ -1190,7 +1190,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-060: Weakness Cwe 476 Review Rule - Remote User Affects Server State
+## GAL-SEC-2026-060: Weakness Cwe 476 Review Rule - Remote User Affects Server State
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `keep`
@@ -1241,7 +1241,7 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-060
+- GAL-SEC-2026-060
 
 ### Supporting Evidence Summary
 
@@ -1261,7 +1261,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-061: Weakness Cwe 77 Review Rule - Remote User Affects Server State
+## GAL-SEC-2026-061: Weakness Cwe 77 Review Rule - Remote User Affects Server State
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `keep`
@@ -1312,7 +1312,7 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-061
+- GAL-SEC-2026-061
 
 ### Supporting Evidence Summary
 
@@ -1332,7 +1332,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-062: Weakness Cwe 78 Review Rule
+## GAL-SEC-2026-062: Weakness Cwe 78 Review Rule
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `keep`
@@ -1383,7 +1383,7 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-062
+- GAL-SEC-2026-062
 
 ### Supporting Evidence Summary
 
@@ -1405,7 +1405,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-003: State-Changing Request Intent Verification - CWE-352, RubyGems
+## GAL-SEC-2026-003: State-Changing Request Intent Verification - CWE-352, RubyGems
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `merge`
@@ -1456,9 +1456,9 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-003
-- LN-SEC-2026-001
-- LN-SEC-2026-002
+- GAL-SEC-2026-003
+- GAL-SEC-2026-001
+- GAL-SEC-2026-002
 
 ### Supporting Evidence Summary
 
@@ -1485,7 +1485,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-007: Untrusted Input Boundary Enforcement - CWE-79, RubyGems
+## GAL-SEC-2026-007: Untrusted Input Boundary Enforcement - CWE-79, RubyGems
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `merge`
@@ -1536,17 +1536,17 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-007
-- LN-SEC-2026-044
-- LN-SEC-2026-049
-- LN-SEC-2026-009
-- LN-SEC-2026-010
-- LN-SEC-2026-008
-- LN-SEC-2026-006
-- LN-SEC-2026-005
-- LN-SEC-2026-011
-- LN-SEC-2026-033
-- LN-SEC-2026-045
+- GAL-SEC-2026-007
+- GAL-SEC-2026-044
+- GAL-SEC-2026-049
+- GAL-SEC-2026-009
+- GAL-SEC-2026-010
+- GAL-SEC-2026-008
+- GAL-SEC-2026-006
+- GAL-SEC-2026-005
+- GAL-SEC-2026-011
+- GAL-SEC-2026-033
+- GAL-SEC-2026-045
 
 ### Supporting Evidence Summary
 
@@ -1574,7 +1574,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-012: Native Boundary Isolation Requirement
+## GAL-SEC-2026-012: Native Boundary Isolation Requirement
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `merge`
@@ -1625,11 +1625,11 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-012
-- LN-SEC-2026-013
-- LN-SEC-2026-015
-- LN-SEC-2026-016
-- LN-SEC-2026-014
+- GAL-SEC-2026-012
+- GAL-SEC-2026-013
+- GAL-SEC-2026-015
+- GAL-SEC-2026-016
+- GAL-SEC-2026-014
 
 ### Supporting Evidence Summary
 
@@ -1657,7 +1657,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-018: Filesystem Boundary Governance - CWE-22, RubyGems
+## GAL-SEC-2026-018: Filesystem Boundary Governance - CWE-22, RubyGems
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `merge`
@@ -1708,9 +1708,9 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-018
-- LN-SEC-2026-017
-- LN-SEC-2026-019
+- GAL-SEC-2026-018
+- GAL-SEC-2026-017
+- GAL-SEC-2026-019
 
 ### Supporting Evidence Summary
 
@@ -1738,7 +1738,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-021: Plaintext Secrets Review Rule
+## GAL-SEC-2026-021: Plaintext Secrets Review Rule
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `merge`
@@ -1789,10 +1789,10 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-021
-- LN-SEC-2026-022
-- LN-SEC-2026-023
-- LN-SEC-2026-024
+- GAL-SEC-2026-021
+- GAL-SEC-2026-022
+- GAL-SEC-2026-023
+- GAL-SEC-2026-024
 
 ### Supporting Evidence Summary
 
@@ -1818,7 +1818,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-025: Race Condition Review Rule
+## GAL-SEC-2026-025: Race Condition Review Rule
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `merge`
@@ -1869,8 +1869,8 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-025
-- LN-SEC-2026-026
+- GAL-SEC-2026-025
+- GAL-SEC-2026-026
 
 ### Supporting Evidence Summary
 
@@ -1898,7 +1898,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-028: Trust Boundary Dependency Boundary Risk Review Rule
+## GAL-SEC-2026-028: Trust Boundary Dependency Boundary Risk Review Rule
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `needs_human_review`
@@ -1949,18 +1949,18 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-028
-- LN-SEC-2026-029
-- LN-SEC-2026-037
-- LN-SEC-2026-043
-- LN-SEC-2026-058
-- LN-SEC-2026-027
-- LN-SEC-2026-030
-- LN-SEC-2026-036
-- LN-SEC-2026-050
-- LN-SEC-2026-053
-- LN-SEC-2026-055
-- LN-SEC-2026-064
+- GAL-SEC-2026-028
+- GAL-SEC-2026-029
+- GAL-SEC-2026-037
+- GAL-SEC-2026-043
+- GAL-SEC-2026-058
+- GAL-SEC-2026-027
+- GAL-SEC-2026-030
+- GAL-SEC-2026-036
+- GAL-SEC-2026-050
+- GAL-SEC-2026-053
+- GAL-SEC-2026-055
+- GAL-SEC-2026-064
 
 ### Supporting Evidence Summary
 
@@ -1988,7 +1988,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-031: Trust Boundary Privilege Boundary Crossing Review Rule
+## GAL-SEC-2026-031: Trust Boundary Privilege Boundary Crossing Review Rule
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `needs_human_review`
@@ -2039,9 +2039,9 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-031
-- LN-SEC-2026-020
-- LN-SEC-2026-063
+- GAL-SEC-2026-031
+- GAL-SEC-2026-020
+- GAL-SEC-2026-063
 
 ### Supporting Evidence Summary
 
@@ -2069,7 +2069,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-032: Trust Boundary Remote User Affects Server State Review Rule
+## GAL-SEC-2026-032: Trust Boundary Remote User Affects Server State Review Rule
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `needs_human_review`
@@ -2120,7 +2120,7 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-032
+- GAL-SEC-2026-032
 
 ### Supporting Evidence Summary
 
@@ -2148,7 +2148,7 @@ Not proposed.
 - Validate that the invariant is runtime/language-level rather than product-specific.
 
 
-## LN-SEC-2026-034: Trust Boundary Web Request Boundary Review Rule
+## GAL-SEC-2026-034: Trust Boundary Web Request Boundary Review Rule
 
 Rulebook Status: `needs_human_review`
 Recommended Action: `needs_human_review`
@@ -2199,7 +2199,7 @@ Not proposed.
 
 ### Merged From
 
-- LN-SEC-2026-034
+- GAL-SEC-2026-034
 
 ### Supporting Evidence Summary
 

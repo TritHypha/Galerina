@@ -7,9 +7,9 @@
       "evidence_score": 1.0,
       "reason": "Evidence is sufficient for a standalone rulebook draft entry.",
       "recommended_action": "keep",
-      "rule_id": "LN-SEC-2026-004",
+      "rule_id": "GAL-SEC-2026-004",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-004.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-004.rule.json"
       ],
       "title": "Untrusted Input Boundary Enforcement - CWE-20, RubyGems"
     },
@@ -19,9 +19,9 @@
       "evidence_score": 0.86,
       "reason": "Evidence is sufficient for a standalone rulebook draft entry.",
       "recommended_action": "keep",
-      "rule_id": "LN-SEC-2026-035",
+      "rule_id": "GAL-SEC-2026-035",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-035.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-035.rule.json"
       ],
       "title": "Weakness Cwe 1067 Review Rule"
     },
@@ -31,9 +31,9 @@
       "evidence_score": 0.86,
       "reason": "Evidence is sufficient for a standalone rulebook draft entry.",
       "recommended_action": "keep",
-      "rule_id": "LN-SEC-2026-038",
+      "rule_id": "GAL-SEC-2026-038",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-038.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-038.rule.json"
       ],
       "title": "Weakness Cwe 17 Review Rule"
     },
@@ -43,9 +43,9 @@
       "evidence_score": 0.86,
       "reason": "Evidence is sufficient for a standalone rulebook draft entry.",
       "recommended_action": "keep",
-      "rule_id": "LN-SEC-2026-039",
+      "rule_id": "GAL-SEC-2026-039",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-039.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-039.rule.json"
       ],
       "title": "Weakness Cwe 178 Review Rule"
     },
@@ -55,9 +55,9 @@
       "evidence_score": 0.86,
       "reason": "Evidence is sufficient for a standalone rulebook draft entry.",
       "recommended_action": "keep",
-      "rule_id": "LN-SEC-2026-040",
+      "rule_id": "GAL-SEC-2026-040",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-040.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-040.rule.json"
       ],
       "title": "Weakness Cwe 19 Review Rule"
     },
@@ -67,9 +67,9 @@
       "evidence_score": 0.86,
       "reason": "Evidence is sufficient for a standalone rulebook draft entry.",
       "recommended_action": "keep",
-      "rule_id": "LN-SEC-2026-041",
+      "rule_id": "GAL-SEC-2026-041",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-041.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-041.rule.json"
       ],
       "title": "Weakness Cwe 20 Review Rule"
     },
@@ -79,9 +79,9 @@
       "evidence_score": 0.97,
       "reason": "Evidence is sufficient for a standalone rulebook draft entry.",
       "recommended_action": "keep",
-      "rule_id": "LN-SEC-2026-042",
+      "rule_id": "GAL-SEC-2026-042",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-042.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-042.rule.json"
       ],
       "title": "Weakness Cwe 200 Review Rule"
     },
@@ -91,9 +91,9 @@
       "evidence_score": 0.92,
       "reason": "Evidence is sufficient for a standalone rulebook draft entry.",
       "recommended_action": "keep",
-      "rule_id": "LN-SEC-2026-046",
+      "rule_id": "GAL-SEC-2026-046",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-046.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-046.rule.json"
       ],
       "title": "Weakness Cwe 264 Review Rule"
     },
@@ -103,9 +103,9 @@
       "evidence_score": 0.86,
       "reason": "Evidence is sufficient for a standalone rulebook draft entry.",
       "recommended_action": "keep",
-      "rule_id": "LN-SEC-2026-047",
+      "rule_id": "GAL-SEC-2026-047",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-047.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-047.rule.json"
       ],
       "title": "Weakness Cwe 269 Review Rule"
     },
@@ -115,9 +115,9 @@
       "evidence_score": 0.86,
       "reason": "Evidence is sufficient for a standalone rulebook draft entry.",
       "recommended_action": "keep",
-      "rule_id": "LN-SEC-2026-048",
+      "rule_id": "GAL-SEC-2026-048",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-048.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-048.rule.json"
       ],
       "title": "Weakness Cwe 276 Review Rule"
     },
@@ -127,9 +127,9 @@
       "evidence_score": 0.86,
       "reason": "Evidence is sufficient for a standalone rulebook draft entry.",
       "recommended_action": "keep",
-      "rule_id": "LN-SEC-2026-051",
+      "rule_id": "GAL-SEC-2026-051",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-051.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-051.rule.json"
       ],
       "title": "Weakness Cwe 287 Review Rule"
     },
@@ -139,9 +139,9 @@
       "evidence_score": 0.91,
       "reason": "Evidence is sufficient for a standalone rulebook draft entry.",
       "recommended_action": "keep",
-      "rule_id": "LN-SEC-2026-052",
+      "rule_id": "GAL-SEC-2026-052",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-052.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-052.rule.json"
       ],
       "title": "Weakness Cwe 290 Review Rule - Remote User Affects Server State"
     },
@@ -151,9 +151,9 @@
       "evidence_score": 0.86,
       "reason": "Evidence is sufficient for a standalone rulebook draft entry.",
       "recommended_action": "keep",
-      "rule_id": "LN-SEC-2026-054",
+      "rule_id": "GAL-SEC-2026-054",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-054.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-054.rule.json"
       ],
       "title": "Weakness Cwe 327 Review Rule"
     },
@@ -163,9 +163,9 @@
       "evidence_score": 0.91,
       "reason": "Evidence is sufficient for a standalone rulebook draft entry.",
       "recommended_action": "keep",
-      "rule_id": "LN-SEC-2026-056",
+      "rule_id": "GAL-SEC-2026-056",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-056.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-056.rule.json"
       ],
       "title": "Weakness Cwe 384 Review Rule - Remote User Affects Server State"
     },
@@ -175,9 +175,9 @@
       "evidence_score": 0.86,
       "reason": "Evidence is sufficient for a standalone rulebook draft entry.",
       "recommended_action": "keep",
-      "rule_id": "LN-SEC-2026-057",
+      "rule_id": "GAL-SEC-2026-057",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-057.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-057.rule.json"
       ],
       "title": "Weakness Cwe 400 Review Rule"
     },
@@ -187,9 +187,9 @@
       "evidence_score": 0.86,
       "reason": "Evidence is sufficient for a standalone rulebook draft entry.",
       "recommended_action": "keep",
-      "rule_id": "LN-SEC-2026-059",
+      "rule_id": "GAL-SEC-2026-059",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-059.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-059.rule.json"
       ],
       "title": "Weakness Cwe 434 Review Rule"
     },
@@ -199,9 +199,9 @@
       "evidence_score": 0.91,
       "reason": "Evidence is sufficient for a standalone rulebook draft entry.",
       "recommended_action": "keep",
-      "rule_id": "LN-SEC-2026-060",
+      "rule_id": "GAL-SEC-2026-060",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-060.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-060.rule.json"
       ],
       "title": "Weakness Cwe 476 Review Rule - Remote User Affects Server State"
     },
@@ -211,9 +211,9 @@
       "evidence_score": 0.91,
       "reason": "Evidence is sufficient for a standalone rulebook draft entry.",
       "recommended_action": "keep",
-      "rule_id": "LN-SEC-2026-061",
+      "rule_id": "GAL-SEC-2026-061",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-061.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-061.rule.json"
       ],
       "title": "Weakness Cwe 77 Review Rule - Remote User Affects Server State"
     },
@@ -223,9 +223,9 @@
       "evidence_score": 0.92,
       "reason": "Evidence is sufficient for a standalone rulebook draft entry.",
       "recommended_action": "keep",
-      "rule_id": "LN-SEC-2026-062",
+      "rule_id": "GAL-SEC-2026-062",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-062.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-062.rule.json"
       ],
       "title": "Weakness Cwe 78 Review Rule"
     },
@@ -235,11 +235,11 @@
       "evidence_score": 1.0,
       "reason": "Overlaps another proposed rule in the same governance boundary.",
       "recommended_action": "merge",
-      "rule_id": "LN-SEC-2026-003",
+      "rule_id": "GAL-SEC-2026-003",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-003.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-001.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-002.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-003.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-001.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-002.rule.json"
       ],
       "title": "State-Changing Request Intent Verification - CWE-352, RubyGems"
     },
@@ -249,19 +249,19 @@
       "evidence_score": 1.0,
       "reason": "Multiple Stage 3 proposals describe the same governance boundary.",
       "recommended_action": "merge",
-      "rule_id": "LN-SEC-2026-007",
+      "rule_id": "GAL-SEC-2026-007",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-007.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-044.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-049.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-009.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-010.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-008.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-006.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-005.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-011.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-033.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-045.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-007.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-044.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-049.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-009.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-010.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-008.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-006.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-005.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-011.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-033.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-045.rule.json"
       ],
       "title": "Untrusted Input Boundary Enforcement - CWE-79, RubyGems"
     },
@@ -271,13 +271,13 @@
       "evidence_score": 1.0,
       "reason": "Overlaps another proposed rule in the same governance boundary.",
       "recommended_action": "merge",
-      "rule_id": "LN-SEC-2026-012",
+      "rule_id": "GAL-SEC-2026-012",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-012.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-013.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-015.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-016.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-014.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-012.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-013.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-015.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-016.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-014.rule.json"
       ],
       "title": "Native Boundary Isolation Requirement"
     },
@@ -287,11 +287,11 @@
       "evidence_score": 1.0,
       "reason": "Multiple Stage 3 proposals describe the same governance boundary.",
       "recommended_action": "merge",
-      "rule_id": "LN-SEC-2026-018",
+      "rule_id": "GAL-SEC-2026-018",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-018.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-017.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-019.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-018.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-017.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-019.rule.json"
       ],
       "title": "Filesystem Boundary Governance - CWE-22, RubyGems"
     },
@@ -301,12 +301,12 @@
       "evidence_score": 0.96,
       "reason": "Overlaps another proposed rule in the same governance boundary.",
       "recommended_action": "merge",
-      "rule_id": "LN-SEC-2026-021",
+      "rule_id": "GAL-SEC-2026-021",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-021.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-022.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-023.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-024.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-021.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-022.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-023.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-024.rule.json"
       ],
       "title": "Plaintext Secrets Review Rule"
     },
@@ -316,10 +316,10 @@
       "evidence_score": 1.0,
       "reason": "Overlaps another proposed rule in the same governance boundary.",
       "recommended_action": "merge",
-      "rule_id": "LN-SEC-2026-025",
+      "rule_id": "GAL-SEC-2026-025",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-025.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-026.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-025.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-026.rule.json"
       ],
       "title": "Race Condition Review Rule"
     },
@@ -329,20 +329,20 @@
       "evidence_score": 0.94,
       "reason": "Rule is broad and lacks a concrete exploit class.",
       "recommended_action": "needs_human_review",
-      "rule_id": "LN-SEC-2026-028",
+      "rule_id": "GAL-SEC-2026-028",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-028.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-029.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-037.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-043.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-058.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-027.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-030.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-036.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-050.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-053.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-055.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-064.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-028.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-029.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-037.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-043.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-058.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-027.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-030.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-036.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-050.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-053.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-055.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-064.rule.json"
       ],
       "title": "Trust Boundary Dependency Boundary Risk Review Rule"
     },
@@ -352,11 +352,11 @@
       "evidence_score": 0.94,
       "reason": "Rule is broad and lacks a concrete exploit class.",
       "recommended_action": "needs_human_review",
-      "rule_id": "LN-SEC-2026-031",
+      "rule_id": "GAL-SEC-2026-031",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-031.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-020.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-063.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-031.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-020.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-063.rule.json"
       ],
       "title": "Trust Boundary Privilege Boundary Crossing Review Rule"
     },
@@ -366,9 +366,9 @@
       "evidence_score": 0.94,
       "reason": "Rule is broad and lacks a concrete exploit class.",
       "recommended_action": "needs_human_review",
-      "rule_id": "LN-SEC-2026-032",
+      "rule_id": "GAL-SEC-2026-032",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-032.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-032.rule.json"
       ],
       "title": "Trust Boundary Remote User Affects Server State Review Rule"
     },
@@ -378,9 +378,9 @@
       "evidence_score": 0.76,
       "reason": "Rule is broad and lacks a concrete exploit class.",
       "recommended_action": "needs_human_review",
-      "rule_id": "LN-SEC-2026-034",
+      "rule_id": "GAL-SEC-2026-034",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-034.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-034.rule.json"
       ],
       "title": "Trust Boundary Web Request Boundary Review Rule"
     }
@@ -401,18 +401,18 @@
       "galerina_invariant": "Untrusted values crossing interpreter, query, template, command, or parser boundaries require governed validation and typed capability approval.",
       "merge_group": "deserialization-boundary",
       "merged_from": [
-        "LN-SEC-2026-004"
+        "GAL-SEC-2026-004"
       ],
       "recommended_action": "keep",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-004",
+      "rule_id": "GAL-SEC-2026-004",
       "runtime_guidance": "Track trust labels at runtime and audit untrusted-to-sensitive boundary crossings.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-004.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-004.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -569,18 +569,18 @@
       "galerina_invariant": "Potential runtime governance invariant requires human review before rule promotion.",
       "merge_group": "weakness-cwe-1067-review-rule",
       "merged_from": [
-        "LN-SEC-2026-035"
+        "GAL-SEC-2026-035"
       ],
       "recommended_action": "keep",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-035",
+      "rule_id": "GAL-SEC-2026-035",
       "runtime_guidance": "Review whether this pattern should become a runtime governance policy.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-035.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-035.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -640,18 +640,18 @@
       "galerina_invariant": "Potential runtime governance invariant requires human review before rule promotion.",
       "merge_group": "weakness-cwe-17-review-rule",
       "merged_from": [
-        "LN-SEC-2026-038"
+        "GAL-SEC-2026-038"
       ],
       "recommended_action": "keep",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-038",
+      "rule_id": "GAL-SEC-2026-038",
       "runtime_guidance": "Review whether this pattern should become a runtime governance policy.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-038.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-038.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -709,18 +709,18 @@
       "galerina_invariant": "Potential runtime governance invariant requires human review before rule promotion.",
       "merge_group": "weakness-cwe-178-review-rule",
       "merged_from": [
-        "LN-SEC-2026-039"
+        "GAL-SEC-2026-039"
       ],
       "recommended_action": "keep",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-039",
+      "rule_id": "GAL-SEC-2026-039",
       "runtime_guidance": "Review whether this pattern should become a runtime governance policy.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-039.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-039.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -780,18 +780,18 @@
       "galerina_invariant": "Potential runtime governance invariant requires human review before rule promotion.",
       "merge_group": "weakness-cwe-19-review-rule",
       "merged_from": [
-        "LN-SEC-2026-040"
+        "GAL-SEC-2026-040"
       ],
       "recommended_action": "keep",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-040",
+      "rule_id": "GAL-SEC-2026-040",
       "runtime_guidance": "Review whether this pattern should become a runtime governance policy.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-040.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-040.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -849,18 +849,18 @@
       "galerina_invariant": "Potential runtime governance invariant requires human review before rule promotion.",
       "merge_group": "weakness-cwe-20-review-rule",
       "merged_from": [
-        "LN-SEC-2026-041"
+        "GAL-SEC-2026-041"
       ],
       "recommended_action": "keep",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-041",
+      "rule_id": "GAL-SEC-2026-041",
       "runtime_guidance": "Review whether this pattern should become a runtime governance policy.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-041.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-041.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -918,18 +918,18 @@
       "galerina_invariant": "Potential runtime governance invariant requires human review before rule promotion.",
       "merge_group": "weakness-cwe-200-review-rule",
       "merged_from": [
-        "LN-SEC-2026-042"
+        "GAL-SEC-2026-042"
       ],
       "recommended_action": "keep",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-042",
+      "rule_id": "GAL-SEC-2026-042",
       "runtime_guidance": "Review whether this pattern should become a runtime governance policy.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-042.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-042.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -1051,18 +1051,18 @@
       "galerina_invariant": "Potential runtime governance invariant requires human review before rule promotion.",
       "merge_group": "weakness-cwe-264-review-rule",
       "merged_from": [
-        "LN-SEC-2026-046"
+        "GAL-SEC-2026-046"
       ],
       "recommended_action": "keep",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-046",
+      "rule_id": "GAL-SEC-2026-046",
       "runtime_guidance": "Review whether this pattern should become a runtime governance policy.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-046.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-046.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -1150,18 +1150,18 @@
       "galerina_invariant": "Potential runtime governance invariant requires human review before rule promotion.",
       "merge_group": "weakness-cwe-269-review-rule",
       "merged_from": [
-        "LN-SEC-2026-047"
+        "GAL-SEC-2026-047"
       ],
       "recommended_action": "keep",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-047",
+      "rule_id": "GAL-SEC-2026-047",
       "runtime_guidance": "Review whether this pattern should become a runtime governance policy.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-047.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-047.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -1219,18 +1219,18 @@
       "galerina_invariant": "Potential runtime governance invariant requires human review before rule promotion.",
       "merge_group": "weakness-cwe-276-review-rule",
       "merged_from": [
-        "LN-SEC-2026-048"
+        "GAL-SEC-2026-048"
       ],
       "recommended_action": "keep",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-048",
+      "rule_id": "GAL-SEC-2026-048",
       "runtime_guidance": "Review whether this pattern should become a runtime governance policy.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-048.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-048.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -1288,18 +1288,18 @@
       "galerina_invariant": "Potential runtime governance invariant requires human review before rule promotion.",
       "merge_group": "weakness-cwe-287-review-rule",
       "merged_from": [
-        "LN-SEC-2026-051"
+        "GAL-SEC-2026-051"
       ],
       "recommended_action": "keep",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-051",
+      "rule_id": "GAL-SEC-2026-051",
       "runtime_guidance": "Review whether this pattern should become a runtime governance policy.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-051.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-051.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -1359,18 +1359,18 @@
       "galerina_invariant": "Potential runtime governance invariant requires human review before rule promotion.",
       "merge_group": "weakness-cwe-290-review-rule-remote-user-affects-server-state",
       "merged_from": [
-        "LN-SEC-2026-052"
+        "GAL-SEC-2026-052"
       ],
       "recommended_action": "keep",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-052",
+      "rule_id": "GAL-SEC-2026-052",
       "runtime_guidance": "Review whether this pattern should become a runtime governance policy.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-052.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-052.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -1428,18 +1428,18 @@
       "galerina_invariant": "Potential runtime governance invariant requires human review before rule promotion.",
       "merge_group": "weakness-cwe-327-review-rule",
       "merged_from": [
-        "LN-SEC-2026-054"
+        "GAL-SEC-2026-054"
       ],
       "recommended_action": "keep",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-054",
+      "rule_id": "GAL-SEC-2026-054",
       "runtime_guidance": "Review whether this pattern should become a runtime governance policy.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-054.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-054.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -1497,18 +1497,18 @@
       "galerina_invariant": "Potential runtime governance invariant requires human review before rule promotion.",
       "merge_group": "weakness-cwe-384-review-rule-remote-user-affects-server-state",
       "merged_from": [
-        "LN-SEC-2026-056"
+        "GAL-SEC-2026-056"
       ],
       "recommended_action": "keep",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-056",
+      "rule_id": "GAL-SEC-2026-056",
       "runtime_guidance": "Review whether this pattern should become a runtime governance policy.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-056.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-056.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -1566,18 +1566,18 @@
       "galerina_invariant": "Potential runtime governance invariant requires human review before rule promotion.",
       "merge_group": "weakness-cwe-400-review-rule",
       "merged_from": [
-        "LN-SEC-2026-057"
+        "GAL-SEC-2026-057"
       ],
       "recommended_action": "keep",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-057",
+      "rule_id": "GAL-SEC-2026-057",
       "runtime_guidance": "Review whether this pattern should become a runtime governance policy.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-057.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-057.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -1635,18 +1635,18 @@
       "galerina_invariant": "Potential runtime governance invariant requires human review before rule promotion.",
       "merge_group": "weakness-cwe-434-review-rule",
       "merged_from": [
-        "LN-SEC-2026-059"
+        "GAL-SEC-2026-059"
       ],
       "recommended_action": "keep",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-059",
+      "rule_id": "GAL-SEC-2026-059",
       "runtime_guidance": "Review whether this pattern should become a runtime governance policy.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-059.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-059.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -1708,18 +1708,18 @@
       "galerina_invariant": "Potential runtime governance invariant requires human review before rule promotion.",
       "merge_group": "weakness-cwe-476-review-rule-remote-user-affects-server-state",
       "merged_from": [
-        "LN-SEC-2026-060"
+        "GAL-SEC-2026-060"
       ],
       "recommended_action": "keep",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-060",
+      "rule_id": "GAL-SEC-2026-060",
       "runtime_guidance": "Review whether this pattern should become a runtime governance policy.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-060.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-060.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -1779,18 +1779,18 @@
       "galerina_invariant": "Potential runtime governance invariant requires human review before rule promotion.",
       "merge_group": "weakness-cwe-77-review-rule-remote-user-affects-server-state",
       "merged_from": [
-        "LN-SEC-2026-061"
+        "GAL-SEC-2026-061"
       ],
       "recommended_action": "keep",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-061",
+      "rule_id": "GAL-SEC-2026-061",
       "runtime_guidance": "Review whether this pattern should become a runtime governance policy.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-061.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-061.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -1854,18 +1854,18 @@
       "galerina_invariant": "Potential runtime governance invariant requires human review before rule promotion.",
       "merge_group": "weakness-cwe-78-review-rule",
       "merged_from": [
-        "LN-SEC-2026-062"
+        "GAL-SEC-2026-062"
       ],
       "recommended_action": "keep",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-062",
+      "rule_id": "GAL-SEC-2026-062",
       "runtime_guidance": "Review whether this pattern should become a runtime governance policy.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-062.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-062.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -1955,22 +1955,22 @@
       "galerina_invariant": "State-changing requests require actor intent, origin validation, and audit policy.",
       "merge_group": "request-intent-boundary",
       "merged_from": [
-        "LN-SEC-2026-003",
-        "LN-SEC-2026-001",
-        "LN-SEC-2026-002"
+        "GAL-SEC-2026-003",
+        "GAL-SEC-2026-001",
+        "GAL-SEC-2026-002"
       ],
       "recommended_action": "merge",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-003",
+      "rule_id": "GAL-SEC-2026-003",
       "runtime_guidance": "Validate request origin and intent token before state mutation.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-003.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-001.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-002.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-003.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-001.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-002.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -2230,38 +2230,38 @@
       "galerina_invariant": "Untrusted values crossing interpreter, query, template, command, or parser boundaries require governed validation and typed capability approval.",
       "merge_group": "untrusted-input-boundary",
       "merged_from": [
-        "LN-SEC-2026-007",
-        "LN-SEC-2026-044",
-        "LN-SEC-2026-049",
-        "LN-SEC-2026-009",
-        "LN-SEC-2026-010",
-        "LN-SEC-2026-008",
-        "LN-SEC-2026-006",
-        "LN-SEC-2026-005",
-        "LN-SEC-2026-011",
-        "LN-SEC-2026-033",
-        "LN-SEC-2026-045"
+        "GAL-SEC-2026-007",
+        "GAL-SEC-2026-044",
+        "GAL-SEC-2026-049",
+        "GAL-SEC-2026-009",
+        "GAL-SEC-2026-010",
+        "GAL-SEC-2026-008",
+        "GAL-SEC-2026-006",
+        "GAL-SEC-2026-005",
+        "GAL-SEC-2026-011",
+        "GAL-SEC-2026-033",
+        "GAL-SEC-2026-045"
       ],
       "recommended_action": "merge",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-007",
+      "rule_id": "GAL-SEC-2026-007",
       "runtime_guidance": "Track trust labels at runtime and audit untrusted-to-sensitive boundary crossings.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-007.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-044.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-049.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-009.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-010.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-008.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-006.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-005.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-011.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-033.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-045.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-007.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-044.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-049.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-009.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-010.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-008.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-006.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-005.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-011.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-033.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-045.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -4042,26 +4042,26 @@
       "galerina_invariant": "Native or unsafe memory boundaries require explicit isolation and audit policy.",
       "merge_group": "memory-safety-boundary",
       "merged_from": [
-        "LN-SEC-2026-012",
-        "LN-SEC-2026-013",
-        "LN-SEC-2026-015",
-        "LN-SEC-2026-016",
-        "LN-SEC-2026-014"
+        "GAL-SEC-2026-012",
+        "GAL-SEC-2026-013",
+        "GAL-SEC-2026-015",
+        "GAL-SEC-2026-016",
+        "GAL-SEC-2026-014"
       ],
       "recommended_action": "merge",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-012",
+      "rule_id": "GAL-SEC-2026-012",
       "runtime_guidance": "Execute native extensions in isolated runtime zones when possible.",
       "sandbox_guidance": "Run native boundary code in a sandboxed execution zone.",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-012.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-013.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-015.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-016.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-014.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-012.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-013.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-015.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-016.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-014.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -7113,22 +7113,22 @@
       "galerina_invariant": "Filesystem operations require canonicalization and capability checks before crossing storage boundaries.",
       "merge_group": "filesystem-boundary",
       "merged_from": [
-        "LN-SEC-2026-018",
-        "LN-SEC-2026-017",
-        "LN-SEC-2026-019"
+        "GAL-SEC-2026-018",
+        "GAL-SEC-2026-017",
+        "GAL-SEC-2026-019"
       ],
       "recommended_action": "merge",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-018",
+      "rule_id": "GAL-SEC-2026-018",
       "runtime_guidance": "Constrain filesystem access by actor capability and sandbox root.",
       "sandbox_guidance": "Bind untrusted actors to isolated filesystem roots.",
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-018.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-017.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-019.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-018.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-017.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-019.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -7528,24 +7528,24 @@
       "galerina_invariant": "Potential runtime governance invariant requires human review before rule promotion.",
       "merge_group": "secret-handling-boundary",
       "merged_from": [
-        "LN-SEC-2026-021",
-        "LN-SEC-2026-022",
-        "LN-SEC-2026-023",
-        "LN-SEC-2026-024"
+        "GAL-SEC-2026-021",
+        "GAL-SEC-2026-022",
+        "GAL-SEC-2026-023",
+        "GAL-SEC-2026-024"
       ],
       "recommended_action": "merge",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-021",
+      "rule_id": "GAL-SEC-2026-021",
       "runtime_guidance": "Review whether this pattern should become a runtime governance policy.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-021.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-022.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-023.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-024.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-021.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-022.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-023.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-024.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -7705,20 +7705,20 @@
       "galerina_invariant": "Potential runtime governance invariant requires human review before rule promotion.",
       "merge_group": "concurrency-boundary",
       "merged_from": [
-        "LN-SEC-2026-025",
-        "LN-SEC-2026-026"
+        "GAL-SEC-2026-025",
+        "GAL-SEC-2026-026"
       ],
       "recommended_action": "merge",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-025",
+      "rule_id": "GAL-SEC-2026-025",
       "runtime_guidance": "Review whether this pattern should become a runtime governance policy.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-025.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-026.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-025.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-026.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -7940,40 +7940,40 @@
       "galerina_invariant": "Potential runtime governance invariant requires human review before rule promotion.",
       "merge_group": "dependency-provenance-boundary",
       "merged_from": [
-        "LN-SEC-2026-028",
-        "LN-SEC-2026-029",
-        "LN-SEC-2026-037",
-        "LN-SEC-2026-043",
-        "LN-SEC-2026-058",
-        "LN-SEC-2026-027",
-        "LN-SEC-2026-030",
-        "LN-SEC-2026-036",
-        "LN-SEC-2026-050",
-        "LN-SEC-2026-053",
-        "LN-SEC-2026-055",
-        "LN-SEC-2026-064"
+        "GAL-SEC-2026-028",
+        "GAL-SEC-2026-029",
+        "GAL-SEC-2026-037",
+        "GAL-SEC-2026-043",
+        "GAL-SEC-2026-058",
+        "GAL-SEC-2026-027",
+        "GAL-SEC-2026-030",
+        "GAL-SEC-2026-036",
+        "GAL-SEC-2026-050",
+        "GAL-SEC-2026-053",
+        "GAL-SEC-2026-055",
+        "GAL-SEC-2026-064"
       ],
       "recommended_action": "needs_human_review",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-028",
+      "rule_id": "GAL-SEC-2026-028",
       "runtime_guidance": "Review whether this pattern should become a runtime governance policy.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-028.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-029.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-037.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-043.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-058.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-027.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-030.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-036.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-050.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-053.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-055.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-064.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-028.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-029.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-037.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-043.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-058.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-027.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-030.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-036.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-050.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-053.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-055.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-064.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -9167,22 +9167,22 @@
       "galerina_invariant": "Potential runtime governance invariant requires human review before rule promotion.",
       "merge_group": "capability-boundary",
       "merged_from": [
-        "LN-SEC-2026-031",
-        "LN-SEC-2026-020",
-        "LN-SEC-2026-063"
+        "GAL-SEC-2026-031",
+        "GAL-SEC-2026-020",
+        "GAL-SEC-2026-063"
       ],
       "recommended_action": "needs_human_review",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-031",
+      "rule_id": "GAL-SEC-2026-031",
       "runtime_guidance": "Review whether this pattern should become a runtime governance policy.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-031.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-020.rule.json",
-        "data\\rules\\proposed\\LN-SEC-2026-063.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-031.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-020.rule.json",
+        "data\\rules\\proposed\\GAL-SEC-2026-063.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -10296,18 +10296,18 @@
       "galerina_invariant": "Potential runtime governance invariant requires human review before rule promotion.",
       "merge_group": "remote-state-boundary",
       "merged_from": [
-        "LN-SEC-2026-032"
+        "GAL-SEC-2026-032"
       ],
       "recommended_action": "needs_human_review",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-032",
+      "rule_id": "GAL-SEC-2026-032",
       "runtime_guidance": "Review whether this pattern should become a runtime governance policy.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-032.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-032.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
@@ -11419,18 +11419,18 @@
       "galerina_invariant": "Potential runtime governance invariant requires human review before rule promotion.",
       "merge_group": "web-request-boundary",
       "merged_from": [
-        "LN-SEC-2026-034"
+        "GAL-SEC-2026-034"
       ],
       "recommended_action": "needs_human_review",
       "review_notes": [
         "Human review is required before this rule is accepted or enforced.",
         "Validate that the invariant is runtime/language-level rather than product-specific."
       ],
-      "rule_id": "LN-SEC-2026-034",
+      "rule_id": "GAL-SEC-2026-034",
       "runtime_guidance": "Review whether this pattern should become a runtime governance policy.",
       "sandbox_guidance": null,
       "source_rule_files": [
-        "data\\rules\\proposed\\LN-SEC-2026-034.rule.json"
+        "data\\rules\\proposed\\GAL-SEC-2026-034.rule.json"
       ],
       "status": "needs_human_review",
       "supporting_evidence": [
