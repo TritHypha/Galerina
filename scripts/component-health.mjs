@@ -268,7 +268,7 @@ const BUILD_PROGRESS = [
 //    Keep in sync with the README "Tracking registry" table (tool = source, README = view), same as the
 //    two tables above. Order mirrors the §5 registry rows. ──────────────────────────────────────────────
 const TRACKING_REGISTRY = [
-  { item: "Execution-cutover (RD-0361)",        state: "building",      detail: "execution column SHIPPED · 7 twins DIFFERENTIAL (syncgate·passive-replay·inference·pq-admission·registry-index·package-admission·b8-admission — R0→R1 #105→R3 ≡ real .ts) · 21 shadow · T2–T5 + fuse-admission pending · R4 authority flip 🔒 owner (#143)" },
+  { item: "Execution-cutover (RD-0361)",        state: "building",      detail: "execution column SHIPPED · 26 twins DIFFERENTIAL (R0 build→R1 #105-admit→R3 ≡ real .ts; ALL string-verdict twins now LABEL-verified via the emitter intern-table decode) · 2 shadow (kernel=P9-lane · secret-gate=record-array ABI) · R4 authority flip 🔒 owner (#143)" },
   { item: "Twin corpus + 6 sentinels",          state: "shipped",       detail: "~20 pure .fungi verdict twins checker-clean across 9 governed dirs (execution is RD-0361)" },
   { item: "Hardening / residency (RD-0358)",     state: "shipped",       detail: "H-1..H-7 INTEGRATED + MERGED to main (f7ff18df, task #52) — per-unit cherry-pick keep-green; H-6 memory.spill deny-only + trit-conformance 6/6 + example 182; remaining 🔒 H-5 signed-FuseDescriptor re-sign + #143 exec; H-4 honestly partial" },
   { item: "Epistemic trust-trit (RD-0337)",      state: "shipped",       detail: "PROVEN/UNKNOWN/REFUTED runtime + compiler mirror (Option A) + trit-conformance gate 6/6" },
@@ -281,7 +281,7 @@ const TRACKING_REGISTRY = [
   { item: "Workspace package families",          state: "shipped",       detail: "94-pkg denominator built (target×9 · data×12 · db×5 · web×6 · ai · tools); 2 orphans #32-exempt" },
   { item: "Package Standard + pub ladder",       state: "building",      detail: "Standard v1 + pkg-census + 9 schematics done; R1–R6 rungs pending; .graph amendment 🔒 owner" },
   { item: "Security-infra designs (×4)",         state: "build-pending", detail: "SBOM tool exists; fuzz RD-0316 · Z3 RD-0318 · tabletop RD-0319 unlocked (§5), unbuilt" },
-  { item: "Devtools audit suite",                state: "shipped",       detail: "72 tools · 41 audits · keep-green + gate-selftests meta-gate; twin-audit execution column shipped (shadow|differential|authoritative)" },
+  { item: "Devtools audit suite",                state: "shipped",       detail: "76 tools · 44 audits (incl. claim-hygiene public-doc gate + env-var-literal-strict path-leak) · keep-green + gate-selftests meta-gate; twin-audit execution column shipped (shadow|differential|authoritative)" },
   { item: "Signing-key custody",                 state: "build-pending", detail: "the custody LADDER (where key BYTES live) — NOT key-rotation (which SHIPS as tower-citizen/key-rotation.ts, the triple-lock append-only lifecycle, #28/D2): hybrid key ceremony #34 done; L1 env.spore + vault move 🔒 owner-side; TPM(L3)/HW(L4) post-v1" },
   { item: "Missing R&D (0363/0364/0365)",        state: "building",      detail: "RD-0363 replay-admission + RD-0364 inference-governance DECISION surfaces authored in .fungi + executing through #105 (R0→R1, verdict≡spec); RD-0365 design-done; remaining P/I wiring increments pending" },
   { item: "KB category indexes",                 state: "post-v1",       detail: "auto-generated KB grouping (API/Kernel/…); trigger: v1-freeze 🔒 owner" },
