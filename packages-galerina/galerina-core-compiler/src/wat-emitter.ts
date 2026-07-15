@@ -1226,7 +1226,8 @@ function inferExprType(node: AstNode | undefined): string | undefined {
           return inferExprType(node.children?.[0]) === "Char" ? "Char" : "String";
         }
         if (name === "codePoint" || name === "length" || name === "charCount" ||
-            name === "indexOf" || name === "lastIndexOf" || name === "toInt") return "Int";
+            name === "indexOf" || name === "lastIndexOf" || name === "toInt" ||
+            name === "bitAnd" || name === "bitOr") return "Int";
         if (name === "isLetter" || name === "isDigit" || name === "isUpper" || name === "isLower" ||
             name === "isWhitespace" || name === "contains" || name === "startsWith" || name === "endsWith") return "Bool";
         if (name === "charAt") return "Option<Char>";
@@ -1665,6 +1666,21 @@ export function emitWATExpr(
         const recvName0 = receiverNode?.kind === "identifier" ? (receiverNode.value ?? "") : "";
         const isTypeRecv0 = recvName0 === "String" || recvName0 === "Int" || recvName0 === "Char" || recvName0 === "Array";
         const realReceiver = isTypeRecv0 ? argNodes[0] : receiverNode;
+
+        // U1/DSS: Int.bitAnd / Int.bitOr → native i32.and / i32.or. The interpreter's BigInt fold
+        // (stdlib.ts numericStatic) equals the sign-extended 32-bit bitwise op for EVERY
+        // i32-representable operand — infinite-precision two's-complement &/| of sign-extended
+        // values IS the 32-bit op reinterpreted signed — so the native instruction is byte-faithful
+        // on the whole WASM-tier Int domain. (The BigInt comment's beyond-i32 masks cannot enter
+        // this lane: an out-of-i32 literal is an invalid module → walker, fail-safe.) Static form
+        // only (`Int.bitAnd(a,b)`) — the interpreter defines no value-method form. Previously fell
+        // through to `call $bitAnd`, an undefined helper → wabt reject (the DSS 6/12 R0 blocker).
+        if ((name === "bitAnd" || name === "bitOr") && recvName0 === "Int" && argNodes.length === 2) {
+          const bitOp = name === "bitAnd" ? "i32.and" : "i32.or";
+          const aWat = emitWATExpr(argNodes[0]!, vars, staticConsts);
+          const bWat = emitWATExpr(argNodes[1]!, vars, staticConsts);
+          return `(${bitOp} ${aWat} ${bWat})`;
+        }
 
         // #160: codePoint is identity — a Char is already its code point i32. Emit the
         // receiver value directly (no host call). No trailing comment (used inline).
