@@ -31,12 +31,6 @@ contract {
     audit.write
   }
 
-  authority {
-    requires capability.billing.sovereign
-    signed_by actor.system.certified_settlement_agent
-    reason "Sovereign transactions require pre-approved agent certification."
-  }
-
   privacy {
     mask account_number
     mask pan
@@ -95,6 +89,15 @@ contract {
   invariant {
     ensure true;
   }
+}
+// `authority { }` is a SIBLING of `contract { }`, never nested inside it — the same rule as
+// `policy { }`. Nesting it was rejected deny-by-default (FUNGI-SYNTAX-011): an unrecognized block
+// inside a governance context is an ERROR, not a silent drain, so a mistyped or misplaced directive
+// can never be invisible to the verifiers while the build still signs.
+authority {
+  requires capability.billing.sovereign
+  signed_by actor.system.certified_settlement_agent
+  reason "Sovereign transactions require pre-approved agent certification."
 }
 {
   AuditLog.write("Sovereign transaction initiated")
