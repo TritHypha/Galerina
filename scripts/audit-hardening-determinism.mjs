@@ -34,6 +34,28 @@ const CORPUS = [
   { name: "secret + audited loosen no_disk", h: reconcileExplicit(autoSecret, { residency: "no_disk", auditedLoosen: true }).effective, golden: "3461472e" },
 ];
 
+// ── self-test: prove the determinism differential is NON-VACUOUS without a live corpus run — it CLEARS a
+//    clean re-derivation, CATCHES a weakened inject, and the digest actually DISCRIMINATES between floors
+//    (a constant digest would pass everything). This is the flag the gate-selftests meta-gate spawns to
+//    prove the guard has teeth; born self-tested (the "who watches the watchers" discipline, RD-0358). ──
+function selfTest() {
+  const clean = fingerprint(deriveAuto(SECRET));
+  const weakened = fingerprint({ ...autoSecret, residency: "unrestricted", erase: "none" });
+  const plain = fingerprint(deriveAuto(PLAIN));
+  const checks = [
+    ["determinism: the same source re-derives a byte-identical digest", clean === fingerprint(deriveAuto(SECRET))],
+    ["tamper has teeth: a weakened secret floor diverges from the clean digest", weakened !== clean],
+    ["digest discriminates: distinct floors (secret vs plain) → distinct digests", clean !== plain],
+    ["golden anchor: the secret floor still reproduces its pinned corpus golden", clean === CORPUS[0].golden],
+  ];
+  const failed = checks.filter(([, ok]) => !ok);
+  for (const [name, ok] of checks) console.log(`[self-test] ${ok ? "ok" : "FAIL"} — ${name}`);
+  if (failed.length > 0) { console.log("[self-test] FAIL — the determinism differential is neutered (theatre)"); process.exit(1); }
+  console.log("[self-test] PASS — determinism, tamper-teeth, discrimination + golden anchor all hold");
+}
+
+if (process.argv.includes("--self-test")) { selfTest(); process.exit(0); }
+
 let failed = 0;
 const log = (ok, msg) => { console.log(`  ${ok ? "OK  " : "FAIL"} ${msg}`); if (!ok) failed++; };
 
