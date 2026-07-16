@@ -140,6 +140,17 @@ describe("self-hosted pipeline — full body AST + body type-check (M-A fold →
     const codes = bodyDiags.filter((d) => d.flowName === "f").map((d) => d.code).sort();
     assert.deepEqual(codes, ["FUNGI-TYPE-002", "FUNGI-TYPE-025"]);
   });
+
+  it("FUNGI-TYPE-014: a flow calling an effectful callee without declaring the effect, via the REAL parser", async () => {
+    // Proves the cross-flow effect check on the REAL self-hosted parse: the parser must populate each
+    // flow's `effects` field from `contract { effects { … } }` AND emit the call as a `call` expr the
+    // twin's collector recognises. The isTensor/025 representation trap lives exactly here.
+    const { bodyDiags } = await pipeline(
+      `flow fetchRate() -> Int\n  contract { effects { network.outbound } }\n{ return 0 }\nflow computeRate() -> Int {\n  let r = fetchRate()\n  return 0\n}`,
+    );
+    const codes = bodyDiags.filter((d) => d.flowName === "computeRate").map((d) => d.code);
+    assert.ok(codes.includes("FUNGI-TYPE-014"), `expected 014 on computeRate, got: ${codes.join(", ")}`);
+  });
 });
 
 // ── effect + governance over the parsed body AST (M-B continued) ──

@@ -62,6 +62,7 @@ async function check(flows) {
     return {
       code: x.fields.get("code").value,
       flowName: x.fields.get("flowName").value,
+      message: x.fields.get("message").value,
     };
   });
   return { flowCount: rec.fields.get("flowCount").value, diags };
@@ -302,8 +303,15 @@ const stmt = ({ kind, name = "", typeName = "", initType = "", expr: e = [], bod
   });
 };
 
-const bodyFlow = ({ name, params = [], body = [] }) =>
-  vRecord({ name: vStr(name), params: vList(params), body: vList(body) });
+const bodyFlow = ({ name, params = [], body = [], effects = [] }) =>
+  vRecord({
+    name: vStr(name),
+    params: vList(params),
+    body: vList(body),
+    // Declared effect names (the parser's `effects: Array<String>`); checkFlowBodies reads these for
+    // the cross-flow FUNGI-TYPE-014 check. Always present (empty when a flow declares none).
+    effects: vList(effects.map(vStr)),
+  });
 
 async function checkBodies(flows) {
   const args = new Map([["flows", vList(flows)]]);
@@ -317,6 +325,7 @@ async function checkBodies(flows) {
     return {
       code: x.fields.get("code").value,
       flowName: x.fields.get("flowName").value,
+      message: x.fields.get("message").value,
     };
   });
   return { flowCount: rec.fields.get("flowCount").value, diags };
@@ -865,5 +874,60 @@ describe("type-checker.fungi — FUNGI-TYPE-025 SILENT_NULL_DENIED (null/undefin
       ] }),
     ]);
     assert.deepEqual(codesFor(diags, "f"), []);
+  });
+});
+
+// FUNGI-TYPE-014 (MISSING_REQUIRED_EFFECT, error) — the JOINT effect/type pass. For every flow the
+// current flow CALLS, each effect the callee declares must be declared by the current flow too. This is
+// the one cross-flow check: checkFlowBodies builds the flow→effects lookup over the whole `flows` set
+// (Stage-A's flowDeclaredEffects) and checks each call. Reproduces the four Stage-A cases from
+// type-checker-phase11-wave2.test.mjs. Effect INFERENCE (undeclared USE = FUNGI-EFFECT-001) and
+// transitive propagation stay out of scope. Verified vs raw diagnostics. (Tranche B, RD-0412 §4.)
+describe("type-checker.fungi — FUNGI-TYPE-014 MissingRequiredEffect (cross-flow joint pass)", () => {
+  const RET0 = () => stmt({ kind: "return", expr: [expr("lit", "0", "Int")] });
+
+  it("caller missing the callee's declared effect → FUNGI-TYPE-014", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "fetchRate", effects: ["network.outbound"], body: [RET0()] }),
+      bodyFlow({ name: "computeRate", effects: [], body: [
+        stmt({ kind: "let", name: "r", expr: [expr("call", "fetchRate")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "computeRate"), ["FUNGI-TYPE-014"]);
+  });
+
+  it("FUNGI-TYPE-014 message names the missing effect AND the called flow", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "fetchData", effects: ["network.outbound"], body: [RET0()] }),
+      bodyFlow({ name: "pureProcessor", effects: [], body: [
+        stmt({ kind: "return", expr: [expr("call", "fetchData")] }),
+      ] }),
+    ]);
+    const d = diags.find((x) => x.flowName === "pureProcessor" && x.code === "FUNGI-TYPE-014");
+    assert.ok(d, "expected FUNGI-TYPE-014 on pureProcessor");
+    assert.ok(
+      d.message.includes("network.outbound") && d.message.includes("fetchData"),
+      `message should name the effect + callee, got: ${d.message}`,
+    );
+  });
+
+  it("does NOT emit 014 when the caller declares the required effect", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "fetchRate", effects: ["network.outbound"], body: [RET0()] }),
+      bodyFlow({ name: "getRates", effects: ["network.outbound"], body: [
+        stmt({ kind: "return", expr: [expr("call", "fetchRate")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "getRates"), []);
+  });
+
+  it("does NOT emit 014 when the callee declares no effects", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "pureHelper", effects: [], body: [RET0()] }),
+      bodyFlow({ name: "caller", effects: [], body: [
+        stmt({ kind: "return", expr: [expr("call", "pureHelper")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "caller"), []);
   });
 });

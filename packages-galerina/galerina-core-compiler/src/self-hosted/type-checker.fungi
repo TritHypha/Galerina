@@ -759,7 +759,133 @@ contract {
   return diags
 }
 
-// Walk every flow's full statement body, emitting binding diagnostics.
+// Collect every callee NAME referenced by an expression tree (a `call` expr's `value`, plus any
+// calls nested in its arguments). Flat by design — Stage-A's 014 is a flow-name lookup, not scope
+// resolution (the twin has no symbol table; see why 019 was removed).
+pure flow collectCallsInExpr(e: Auto) -> Array<Auto>
+contract { intent { "Every callee name in an expression tree (the call itself and calls nested in its arguments)." } }
+{
+  mut names: Array<Auto> = Array.empty()
+  if e.kind == "call" {
+    names = names.append(e.value)
+  }
+  mut i: Int = 0
+  while i < e.children.count() {
+    let cOpt = e.children.get(i)
+    match cOpt {
+      Some(c) => { names = appendAll(names, collectCallsInExpr(c)) }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return names
+}
+
+// Collect every callee name called anywhere in a statement body: from each statement's initializer /
+// return / call expression, and recursively from nested if/while/match block bodies. The body-block
+// recursion is kind-gated exactly like checkStmt, so `body`/`elseBody` are only read where they exist.
+pure flow collectCallNames(stmts: Array<Auto>) -> Array<Auto>
+contract { intent { "Every callee name invoked in a statement body, descending into nested block bodies." } }
+{
+  mut names: Array<Auto> = Array.empty()
+  mut i: Int = 0
+  while i < stmts.count() {
+    let sOpt = stmts.get(i)
+    match sOpt {
+      Some(s) => {
+        mut j: Int = 0
+        while j < s.expr.count() {
+          let eOpt = s.expr.get(j)
+          match eOpt {
+            Some(e) => { names = appendAll(names, collectCallsInExpr(e)) }
+            None => {}
+            _ => {}
+          }
+          j = j + 1
+        }
+        if s.kind == "if" {
+          names = appendAll(names, collectCallNames(s.body))
+          names = appendAll(names, collectCallNames(s.elseBody))
+        }
+        if s.kind == "while" {
+          names = appendAll(names, collectCallNames(s.body))
+        }
+        if s.kind == "match" {
+          names = appendAll(names, collectCallNames(s.body))
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return names
+}
+
+// The declared effect set of the flow named `name`, or empty when it is not found / declares none.
+// A flat flow-name lookup (Stage-A's `flowDeclaredEffects` map), NOT scope resolution.
+pure flow effectsForFlow(flows: Array<Auto>, name: String) -> Array<Auto>
+contract { intent { "The declared effects of the flow with this name (empty if unknown or effect-free)." } }
+{
+  mut i: Int = 0
+  while i < flows.count() {
+    let fOpt = flows.get(i)
+    match fOpt {
+      Some(fd) => { if fd.name == name { return fd.effects } }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return Array.empty()
+}
+
+// FUNGI-TYPE-014 (MISSING_REQUIRED_EFFECT): the JOINT effect/type check. For every flow the current
+// flow CALLS, each effect that callee declares must also be declared by the current flow. Stage-A
+// (type-checker.ts:1395-1409) builds `flowDeclaredEffects` in a pre-pass (collectDeclarations) and
+// checks it at each call site; the twin does the same over the whole `flows` set. This is the ONE
+// cross-flow check — a flat callee-NAME lookup of declared effects, no symbol/scope resolution and no
+// effect INFERENCE (a flow that USES an undeclared effect is FUNGI-EFFECT-001, the effect-checker's
+// job, not 014). Verified vs raw diagnostics: caller `effects {}` calling `writer effects
+// { network.outbound }` -> 014; caller declaring the effect -> clean. (Tranche B, RD-0412 §4.)
+pure flow checkCallEffects(flowName: String, fd: Auto, flows: Array<Auto>) -> Array<Auto>
+contract { intent { "FUNGI-TYPE-014: a call whose callee declares an effect the current flow does not declare." } }
+{
+  mut diags: Array<Auto> = Array.empty()
+  let currentEffects: Array<Auto> = fd.effects
+  let callNames: Array<Auto> = collectCallNames(fd.body)
+  mut i: Int = 0
+  while i < callNames.count() {
+    let cnOpt = callNames.get(i)
+    match cnOpt {
+      Some(callee) => {
+        let required: Array<Auto> = effectsForFlow(flows, callee)
+        mut j: Int = 0
+        while j < required.count() {
+          let reOpt = required.get(j)
+          match reOpt {
+            Some(reqEffect) => {
+              if containsName(currentEffects, reqEffect) == false {
+                let msg14: String = "calling '" + callee + "' requires effect '" + reqEffect + "' but current flow '" + flowName + "' does not declare it (FUNGI-TYPE-014)"
+                diags = diags.append({ code: "FUNGI-TYPE-014", message: msg14, flowName: flowName })
+              }
+            }
+            None => {}
+            _ => {}
+          }
+          j = j + 1
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return diags
+}
+
+// Walk every flow's full statement body, emitting binding diagnostics + the cross-flow effect check.
 pure flow checkFlowBodies(flows: Array<Auto>) -> TypeCheckResult
 contract {
   intent { "Stage B body-level type checks: validate each flow's statement body AST." }
@@ -775,6 +901,9 @@ contract {
         let name: String = fd.name
         let scope0: Array<Auto> = paramNames(fd.params)
         allDiags = appendAll(allDiags, checkStmtList(name, fd.body, scope0))
+        // FUNGI-TYPE-014: the joint effect/type pass — every callee's declared effects must be
+        // declared by this flow. Needs the whole `flows` set (cross-flow callee lookup).
+        allDiags = appendAll(allDiags, checkCallEffects(name, fd, flows))
         flowCount = flowCount + 1
       }
       None => {}

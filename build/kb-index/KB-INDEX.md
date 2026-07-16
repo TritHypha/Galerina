@@ -1,4 +1,4 @@
-# Galerina KB index (1127 docs)
+# Galerina KB index (1133 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -162,7 +162,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-TYPE-012
 - tasks: #20, #143, #75, #84, #65, #37, #81, #69, #72, #38, #39
 - links: [[to-main/2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd]] [[to-main/2026-07-16-ACK-rd0128-stale-proof-confirm-option-a]] [[to-main/2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed]] [[to-main/2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion]] [[to-main/2026-07-16-ACK-match-arm-cluster-verified-source-and-execution]] [[to-main/2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed]] [[to-main/2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea]] [[to-main/2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed]] [[to-main/2026-07-16-HANDOVER-tech-transfer-confusable-safe-identity-ZT-checked]] [[to-main/2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering]] [[HANDOVER-round-2026-07-16-night-areas-dss-tlstp-cycle]] [[id]]
-- terms: main, to-main, cluster, verified, tranche, complete, closed, session, board, side, benchmark, hallmark, open, audit
+- terms: main, twin, tranche, closed, cluster, to-main, differential, verified, complete, d-verified, session, board, gate, false
 
 ## PROMPT — boot the main (Galerina build) session into the coordination loop
 `../ZTF-Knowledge-Bases/coordination/PROMPT-main-start-here.md`
@@ -181,6 +181,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## 2026-07-16-ACK-024-verified-plus-frontier-per-pass-scoping-and-025-coemission-design.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-024-verified-plus-frontier-per-pass-scoping-and-025-coemission-design.md`
 - terms: twin, confirmed, independent, check, frontier, co-emission, existing, finding, same, law, removed, resolved, keep, let
+
+## 2026-07-16-ACK-025-verified-96-96-plus-014-grounded-type-checker-emitted-finish-line.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-025-verified-96-96-plus-014-grounded-type-checker-emitted-finish-line.md`
+- codes: FUNGI-TYPE-014
+- terms: twin, effects, type-checker, effect, real, both, declared, flow, source, verified, grounded, null, call, after
 
 ## 2026-07-16-ACK-026-verified-plus-absence-fixture-principle-and-025-design-corrected.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-026-verified-plus-absence-fixture-principle-and-025-design-corrected.md`
@@ -266,6 +271,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #20
 - terms: dead, class, live, code, confirmed, generalize-the-binding, right, structural, codes, fix, instance, twin-emit-parity, audit, independently
 
+## 2026-07-16-CONFIRM-014-plan-sound-land-it-two-groundings-converged.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-CONFIRM-014-plan-sound-land-it-two-groundings-converged.md`
+- codes: FUNGI-EFFECT-001
+- terms: effects, pipeline, same, twin, effect, confirm-014-plan-sound-land-it-two-groundings-converged, plan, land, ground, stage-a, call, map, scope, clean
+
 ## 2026-07-16-FYI-push-policy-correction-main-is-commit-only.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-FYI-push-policy-correction-main-is-commit-only.md`
 - terms: owner, push, coordination, pushes, fyi-push-policy-correction-main-is-commit-only, main, commit-only, policy, corrected, readme, files, grant, commit, fyi
@@ -308,6 +318,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-TYPE-024, FUNGI-TYPE-025, FUNGI-TYPE-026, FUNGI-TYPE-014, FUNGI-NAME-001, FUNGI-NAME-003
 - tasks: #20
 - terms: frontier, type-checker, twin, pass, literal, int, landed, stage-a, i32, type, fungi-type-024, remaining, finding, grounded
+
+## 2026-07-16-ACK-025-landed-frontier-now-just-014-plus-real-node-refinement.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-025-landed-frontier-now-just-014-plus-real-node-refinement.md`
+- codes: FUNGI-TYPE-025, FUNGI-TYPE-014
+- tasks: #20
+- terms: null, twin, real, frontier, code, effect, milestone, fungi-type-025, landed, type-checker-twin, node, silent, denied, refinement
 
 ## 2026-07-16-ACK-026-landed-plus-latent-001-Auto-fix-and-025-grounded.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-026-landed-plus-latent-001-Auto-fix-and-025-grounded.md`
@@ -380,6 +396,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-TYPE-030
 - tasks: #20
 - terms: tensor, float32, real-parser, int8, differential, type, first, ack-tensor-cluster-030-017-016-landed-plus-absent-field-lesson, three, resolved, codes, same, pass, binding
+
+## 2026-07-16-FYI-014-fully-grounded-which-pass-answered-it-IS-type-checker-implementation-plan.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-FYI-014-fully-grounded-which-pass-answered-it-IS-type-checker-implementation-plan.md`
+- codes: FUNGI-TYPE-014, FUNGI-EFFECT-001
+- terms: pass, effects, effect, flow, twin, type-checker, raw-diag, land, scope, answered, next, confirm, call, joint
 
 ## 2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked.md`
@@ -5098,6 +5119,15 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## RD-0435 — Quantum: types, research, maths, symbols, storage — is it fast enough, can it retrieve correctly, and what it means for tri/photonic
 `../ZTF-Knowledge-Bases/RD-0435-quantum-data-types-maths-symbols-storage-fast-enough-retrieval-tri-photonic.md`
 - terms: quantum, data, photonic, classical, maths, symbols, tri, real, types, research, storage, fast, correctly, stored
+
+## RD-0436 — TritMesh:Rhizo (the fast engine): audience, workloads, the data/index operations, and the honest competitive case with the tri/photonic edge map
+`../ZTF-Knowledge-Bases/RD-0436-rhizo-fast-database-audience-workloads-data-operations-and-competitive-case-tri-photonic.md`
+- codes: FUNGI-TYPE-011
+- terms: index, rhizo, honest, security, edge, photonic, data, lane, postgres, design, real, third, fast, search
+
+## RD-0437 — Graphs as a family-wide substrate: graph applied to *every* part of the app, not just indexing, for all DB types
+`../ZTF-Knowledge-Bases/RD-0437-graphs-as-a-family-wide-substrate-beyond-indexing-every-part-of-the-app-all-db-types.md`
+- terms: graph, schema, security, graphs, app, dag, part, topology, signed, tri, authority, lineage, engines, dynamic
 
 ## Galerina AI-Friendliness — R&D Spec (2026-06-23)
 `../ZTF-Knowledge-Bases/rd-absorbed/from-galerina-r-and-d/AI-FRIENDLINESS-SPEC-2026-06-23.md`

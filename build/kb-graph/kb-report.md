@@ -2,7 +2,7 @@
 Generated: 2026-07-16
 
 ## Stats
-- Docs: 1125 | Edges: 3462 | Orphans: 69 | Stale links: 0 | FUNGI codes: 748
+- Docs: 1131 | Edges: 3462 | Orphans: 75 | Stale links: 0 | FUNGI codes: 748
 
 ## Document Registry (auto-generated)
 
@@ -31,6 +31,8 @@ Generated: 2026-07-16
 | 2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed.md | — | — | — | — |
 | 2026-07-16-ACK-024-landed-plus-frontier-correction-NAME-codes-are-symbol-resolver.md | — | — | — | FUNGI-NAME-001, FUNGI-NAME-003, FUNGI-TYPE-014, FUNGI-TYPE-024, FUNGI-TYPE-025 …+1 |
 | 2026-07-16-ACK-024-verified-plus-frontier-per-pass-scoping-and-025-coemission-design.md | — | — | — | — |
+| 2026-07-16-ACK-025-landed-frontier-now-just-014-plus-real-node-refinement.md | — | — | — | FUNGI-TYPE-014, FUNGI-TYPE-025 |
+| 2026-07-16-ACK-025-verified-96-96-plus-014-grounded-type-checker-emitted-finish-line.md | — | — | — | FUNGI-TYPE-014 |
 | 2026-07-16-ACK-026-landed-plus-latent-001-Auto-fix-and-025-grounded.md | — | — | — | FUNGI-TYPE-026 |
 | 2026-07-16-ACK-026-verified-plus-absence-fixture-principle-and-025-design-corrected.md | — | — | — | — |
 | 2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd.md | — | — | — | FUNGI-EFFECT-002 |
@@ -61,6 +63,8 @@ Generated: 2026-07-16
 | 2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering.md | — | — | — | — |
 | 2026-07-16-answers-to-night-round-rd-requests.md | — | — | — | — |
 | 2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea.md | — | — | — | FUNGI-TYPE-012 |
+| 2026-07-16-CONFIRM-014-plan-sound-land-it-two-groundings-converged.md | — | — | — | FUNGI-EFFECT-001 |
+| 2026-07-16-FYI-014-fully-grounded-which-pass-answered-it-IS-type-checker-implementation-plan.md | — | — | — | FUNGI-EFFECT-001, FUNGI-TYPE-014 |
 | 2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked.md | — | — | — | — |
 | 2026-07-16-FYI-passive-lane-variance-root-cause-GC-dominated-plus-watcher.md | — | — | — | — |
 | 2026-07-16-FYI-push-policy-correction-main-is-commit-only.md | — | — | — | — |
@@ -1012,6 +1016,8 @@ Generated: 2026-07-16
 | RD-0432-insurance-and-actuarial-data-model-deep-dive-reserves-triangles-treaties.md | — | — | — | — |
 | RD-0433-cross-script-symbol-comparison-latin-non-latin-homoglyph-confusable-safe-identity.md | — | — | — | — |
 | RD-0435-quantum-data-types-maths-symbols-storage-fast-enough-retrieval-tri-photonic.md | — | — | — | — |
+| RD-0436-rhizo-fast-database-audience-workloads-data-operations-and-competitive-case-tri-photonic.md | — | — | — | FUNGI-TYPE-011 |
+| RD-0437-graphs-as-a-family-wide-substrate-beyond-indexing-every-part-of-the-app-all-db-types.md | — | — | — | — |
 | rd-adversarial-verification-findings-2026-06-16.md | — | — | — | — |
 | rd-crossover-encryption-rnd.md | — | — | Merge / unified entry point. **Date:** 2026-06-16. **Posture:** grounded, cited, | FUNGI-AMD-024, FUNGI-PARSE-001, FUNGI-SUBSTRATE-001 |
 | rd-diagnostics-namespace-rnd-response.md | — | — | R&D response (2026-06-16). **Subject:** `Galerina/docs/Knowledge-Bases/galerina-diagnostic-namespace-ownership.md` | FUNGI-META-001, FUNGI-PRIVACY-00, FUNGI-SECRET-005 |
@@ -1159,8 +1165,11 @@ Docs with no inbound links from other KB docs:
 - `RD-0432-insurance-and-actuarial-data-model-deep-dive-reserves-triangles-treaties.md` — RD-0432 — The insurance & actuarial data model — deep-dive (per-service queue #8, final)
 - `RD-0433-cross-script-symbol-comparison-latin-non-latin-homoglyph-confusable-safe-identity.md` — RD-0433 — Cross-script symbol comparison — safe identity across Latin & non-Latin, homoglyph/confusable-resistant
 - `RD-0435-quantum-data-types-maths-symbols-storage-fast-enough-retrieval-tri-photonic.md` — RD-0435 — Quantum: types, research, maths, symbols, storage — is it fast enough, can it retrieve correctly, and what it means for tri/photonic
+- `RD-0436-rhizo-fast-database-audience-workloads-data-operations-and-competitive-case-tri-photonic.md` — RD-0436 — TritMesh:Rhizo (the fast engine): audience, workloads, the data/index operations, and the honest competitive case with the tri/photonic edge map
+- `RD-0437-graphs-as-a-family-wide-substrate-beyond-indexing-every-part-of-the-app-all-db-types.md` — RD-0437 — Graphs as a family-wide substrate: graph applied to *every* part of the app, not just indexing, for all DB types
 - `2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed.md` — 2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed
 - `2026-07-16-ACK-024-verified-plus-frontier-per-pass-scoping-and-025-coemission-design.md` — 2026-07-16-ACK-024-verified-plus-frontier-per-pass-scoping-and-025-coemission-design
+- `2026-07-16-ACK-025-verified-96-96-plus-014-grounded-type-checker-emitted-finish-line.md` — 2026-07-16-ACK-025-verified-96-96-plus-014-grounded-type-checker-emitted-finish-line
 - `2026-07-16-ACK-026-verified-plus-absence-fixture-principle-and-025-design-corrected.md` — 2026-07-16-ACK-026-verified-plus-absence-fixture-principle-and-025-design-corrected
 - `2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd.md` — 2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd
 - `2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed.md` — 2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed
@@ -1177,6 +1186,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-ANSWER-passive-lane-variance-median-rig-rides-63-and-allocation-probe-to-rd0358.md` — 2026-07-16-ANSWER-passive-lane-variance-median-rig-rides-63-and-allocation-probe-to-rd0358
 - `2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering.md` — 2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering
 - `2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea.md` — 2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea
+- `2026-07-16-CONFIRM-014-plan-sound-land-it-two-groundings-converged.md` — 2026-07-16-CONFIRM-014-plan-sound-land-it-two-groundings-converged
 - `2026-07-16-FYI-push-policy-correction-main-is-commit-only.md` — 2026-07-16-FYI-push-policy-correction-main-is-commit-only
 - `2026-07-16-HANDOVER-tech-transfer-confusable-safe-identity-ZT-checked.md` — 2026-07-16-HANDOVER-tech-transfer-confusable-safe-identity-ZT-checked
 - `2026-07-16-PRIORITY-main-instructions.md` — 2026-07-16-PRIORITY-main-instructions
@@ -1186,6 +1196,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion.md` — 2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion
 - `2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md` — 2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011
 - `2026-07-16-ACK-024-landed-plus-frontier-correction-NAME-codes-are-symbol-resolver.md` — 2026-07-16-ACK-024-landed-plus-frontier-correction-NAME-codes-are-symbol-resolver
+- `2026-07-16-ACK-025-landed-frontier-now-just-014-plus-real-node-refinement.md` — 2026-07-16-ACK-025-landed-frontier-now-just-014-plus-real-node-refinement
 - `2026-07-16-ACK-026-landed-plus-latent-001-Auto-fix-and-025-grounded.md` — 2026-07-16-ACK-026-landed-plus-latent-001-Auto-fix-and-025-grounded
 - `2026-07-16-ACK-brands-003-cluster-landed-plus-frontier-heuristic-caveat.md` — 2026-07-16-ACK-brands-003-cluster-landed-plus-frontier-heuristic-caveat
 - `2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch.md` — 2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch
@@ -1199,6 +1210,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-ACK-taxonomy-AUDIT-ZERO.md` — 2026-07-16-ACK-taxonomy-AUDIT-ZERO
 - `2026-07-16-ACK-taxonomy-rebaseline-167.md` — 2026-07-16-ACK-taxonomy-rebaseline-167
 - `2026-07-16-ACK-tensor-cluster-030-017-016-landed-plus-absent-field-lesson.md` — 2026-07-16-ACK-tensor-cluster-030-017-016-landed-plus-absent-field-lesson
+- `2026-07-16-FYI-014-fully-grounded-which-pass-answered-it-IS-type-checker-implementation-plan.md` — 2026-07-16-FYI-014-fully-grounded-which-pass-answered-it-IS-type-checker-implementation-plan
 - `2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked.md` — 2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked
 - `2026-07-16-FYI-passive-lane-variance-root-cause-GC-dominated-plus-watcher.md` — 2026-07-16-FYI-passive-lane-variance-root-cause-GC-dominated-plus-watcher
 - `2026-07-16-FYI-rd0128-stale-testwitness-proof.md` — 2026-07-16-FYI-rd0128-stale-testwitness-proof

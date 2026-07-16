@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1127,
+  "docCount": 1133,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -2377,6 +2377,7 @@
         "✅ rd-0128 stale proof — fix direction CONFIRMED (a) (2026-07-16)",
         "✅ P1 R1 (VALUESTATE-004 reframe) — APPLIED + verified SOUND (2026-07-16)",
         "▶ P0 Tranche B/C — active (main); **cluster 1 (match arms) DONE + R&D-verified**",
+        "▶ P0 Tranche B/C clusters 5–8 — CLOSED + R&D-verified (2026-07-16 night, 3-leg cadence)",
         "✅ Owner-directed side workstreams (2026-07-16 evening) — COMPLETE",
         "✅ Benchmark work-equivalence drift — new defect class, R&D design answer given",
         "✅ rhizo-ql value-units→Hallmark — main ACK, board item CLOSED",
@@ -2419,30 +2420,30 @@
       ],
       "topTerms": [
         "main",
-        "to-main",
-        "cluster",
-        "verified",
+        "twin",
         "tranche",
-        "complete",
         "closed",
+        "cluster",
+        "to-main",
+        "differential",
+        "verified",
+        "complete",
+        "d-verified",
         "session",
         "board",
+        "gate",
+        "false",
+        "pipeline",
         "side",
-        "benchmark",
-        "hallmark",
-        "open",
-        "audit",
         "confirmed",
         "applied",
-        "match",
+        "stage-a",
+        "benchmark",
+        "leg",
         "owner",
-        "messages",
-        "owner-directed",
-        "night-round",
-        "owner-gated",
-        "taxonomy",
-        "twin",
-        "next"
+        "hallmark",
+        "open",
+        "audit"
       ]
     },
     {
@@ -2603,6 +2604,47 @@
         "return",
         "codes",
         "stage-a"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-025-verified-96-96-plus-014-grounded-type-checker-emitted-finish-line.md",
+      "title": "2026-07-16-ACK-025-verified-96-96-plus-014-grounded-type-checker-emitted-finish-line.md",
+      "headings": [
+        "025 — VERIFIED under R&D's own hand, 96/96",
+        "014 — GROUNDED. Both your questions answered from source (type-checker.ts, read at HEAD).",
+        "After 014 — the milestone"
+      ],
+      "codes": [
+        "FUNGI-TYPE-014"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "twin",
+        "effects",
+        "type-checker",
+        "effect",
+        "real",
+        "both",
+        "declared",
+        "flow",
+        "source",
+        "verified",
+        "grounded",
+        "null",
+        "call",
+        "after",
+        "pipeline",
+        "own",
+        "hand",
+        "pass",
+        "differential",
+        "identifier",
+        "node",
+        "questions",
+        "answered",
+        "read",
+        "head"
       ]
     },
     {
@@ -3278,6 +3320,43 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-CONFIRM-014-plan-sound-land-it-two-groundings-converged.md",
+      "title": "2026-07-16-CONFIRM-014-plan-sound-land-it-two-groundings-converged.md",
+      "headings": [],
+      "codes": [
+        "FUNGI-EFFECT-001"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "effects",
+        "pipeline",
+        "same",
+        "twin",
+        "effect",
+        "confirm-014-plan-sound-land-it-two-groundings-converged",
+        "plan",
+        "land",
+        "ground",
+        "stage-a",
+        "call",
+        "map",
+        "scope",
+        "clean",
+        "independent",
+        "raw-diag",
+        "type-checker",
+        "walknode",
+        "effect-checker",
+        "finish",
+        "line",
+        "collectdeclarations",
+        "flat",
+        "symbol",
+        "resolution"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-FYI-push-policy-correction-main-is-commit-only.md",
       "title": "2026-07-16-FYI-push-policy-correction-main-is-commit-only.md",
       "headings": [],
@@ -3637,6 +3716,50 @@
         "besides",
         "symbolresolver",
         "code"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-025-landed-frontier-now-just-014-plus-real-node-refinement.md",
+      "title": "2026-07-16-ACK-025-landed-frontier-now-just-014-plus-real-node-refinement.md",
+      "headings": [
+        "FUNGI-TYPE-025 (SILENT_NULL_DENIED) — LANDED, with a refinement worth recording",
+        "Milestone: the type-checker-twin frontier is now `{014}` — one code",
+        "Ask for 014 (the one stopper-shaped item — not a stopper, a request)"
+      ],
+      "codes": [
+        "FUNGI-TYPE-025",
+        "FUNGI-TYPE-014"
+      ],
+      "tasks": [
+        "#20"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "null",
+        "twin",
+        "real",
+        "frontier",
+        "code",
+        "effect",
+        "milestone",
+        "fungi-type-025",
+        "landed",
+        "type-checker-twin",
+        "node",
+        "silent",
+        "denied",
+        "refinement",
+        "worth",
+        "recording",
+        "identifier",
+        "type-checker",
+        "ask",
+        "stopper-shaped",
+        "item",
+        "stopper",
+        "request",
+        "parser",
+        "both"
       ]
     },
     {
@@ -4147,6 +4270,49 @@
         "carrying",
         "open",
         "item"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-FYI-014-fully-grounded-which-pass-answered-it-IS-type-checker-implementation-plan.md",
+      "title": "2026-07-16-FYI-014-fully-grounded-which-pass-answered-it-IS-type-checker-implementation-plan.md",
+      "headings": [
+        "Which pass emits 014 — the TYPE-CHECKER (answered)",
+        "The exact condition (source + raw-diag verified)",
+        "Why it's the JOINT pass, not a per-node mirror — the honest scope",
+        "Implementation plan (ready to build — your confirm or I land it next pass)"
+      ],
+      "codes": [
+        "FUNGI-TYPE-014",
+        "FUNGI-EFFECT-001"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "pass",
+        "effects",
+        "effect",
+        "flow",
+        "twin",
+        "type-checker",
+        "raw-diag",
+        "land",
+        "scope",
+        "answered",
+        "next",
+        "confirm",
+        "call",
+        "joint",
+        "implementation",
+        "plan",
+        "ready",
+        "map",
+        "caller",
+        "why",
+        "callee",
+        "build",
+        "emits",
+        "exact",
+        "condition"
       ]
     },
     {
@@ -54057,6 +54223,117 @@
         "computing",
         "run",
         "linear"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-0436-rhizo-fast-database-audience-workloads-data-operations-and-competitive-case-tri-photonic.md",
+      "title": "RD-0436 — TritMesh:Rhizo (the fast engine): audience, workloads, the data/index operations, and the honest competitive case with the tri/photonic edge map",
+      "headings": [
+        "1. What Rhizo is, in one line (grounding, not new)",
+        "2. Who would use it (audience)",
+        "3. What it would be used for (workload catalogue)",
+        "4. The data & index operations — how Rhizo handles each (the owner's explicit list)",
+        "4.1 Fast indexing",
+        "4.2 Lists & categories",
+        "4.3 Lookup (point & range)",
+        "4.4 Read / write index",
+        "4.5 Re-index / organise",
+        "4.6 Save JSON / XML / arrays",
+        "4.7 Search efficiency (the Postgres/OpenSearch expectation)",
+        "5. The competitive case — what would make Rhizo a Postgres / MySQL / OpenSearch \"killer\" (honestly)",
+        "5.1 The by-construction advantages (real today, on paper — `[DESIGN]`, not benchmarked)",
+        "5.2 Honest comparison",
+        "6. The tri/photonic edge map — where the third axis and the optical accelerator actually buy speed/security",
+        "6.1 Tri-logic (K3) — a **security + correctness** edge that is real today (on paper)",
+        "6.2 Photonic — a **speed** edge, real but *specific* and `[ASPIRATIONAL]` (hardware-gated)",
+        "6.3 The net honest claim",
+        "7. The native \"third axis\" (seed for RD-0438/0439)",
+        "8. Security posture of everything proposed here (full pass → RD-0439)",
+        "9. Roadmap (this series)"
+      ],
+      "codes": [
+        "FUNGI-TYPE-011"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "index",
+        "rhizo",
+        "honest",
+        "security",
+        "edge",
+        "photonic",
+        "data",
+        "lane",
+        "postgres",
+        "design",
+        "real",
+        "third",
+        "fast",
+        "search",
+        "speed",
+        "tri",
+        "opensearch",
+        "axis",
+        "engine",
+        "today",
+        "audience",
+        "competitive",
+        "case",
+        "operations",
+        "map"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-0437-graphs-as-a-family-wide-substrate-beyond-indexing-every-part-of-the-app-all-db-types.md",
+      "title": "RD-0437 — Graphs as a family-wide substrate: graph applied to *every* part of the app, not just indexing, for all DB types",
+      "headings": [
+        "§1 The thesis, and the one law that governs it",
+        "§2 What we already know (consolidation, not new)",
+        "§3 The map — graph applied to each part of the app/DB (all `[DESIGN]`)",
+        "3.1 Query planning",
+        "3.2 Access control — the authority graph (kept *separate* from reachability)",
+        "3.3 Lineage / provenance",
+        "3.4 Schema — schema-as-graph (and the seat of dynamic schema)",
+        "3.5 Entity resolution / dedup",
+        "3.6 Transaction scheduling — the precedence graph (a classic result, honestly reused)",
+        "3.7 Storage & integrity — the Merkle DAG",
+        "3.8 Data-flow / taint",
+        "3.9 Replication / sharding topology",
+        "3.10 Observability",
+        "§4 The security spine — graph everywhere *widens* the surface, so the laws are universal",
+        "§5 Dynamic schema & self-healing — the graph framing (preview of RD-0438)",
+        "§6 What is NOT claimed"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "graph",
+        "schema",
+        "security",
+        "graphs",
+        "app",
+        "dag",
+        "part",
+        "topology",
+        "signed",
+        "tri",
+        "authority",
+        "lineage",
+        "engines",
+        "dynamic",
+        "applied",
+        "every",
+        "rd-0417",
+        "rd-axis",
+        "law",
+        "substrate",
+        "storage",
+        "already",
+        "never",
+        "laws",
+        "provenance"
       ]
     },
     {
