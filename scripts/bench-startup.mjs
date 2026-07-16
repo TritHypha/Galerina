@@ -168,9 +168,9 @@ function runGraph() {
     if (!p || !c) continue;
     const from = relModule(p), to = relModule(c);
     if (from.startsWith("scripts/lib/import-graph")) continue; // the rig itself is not part of the graph
-    if (from !== to) edgeSet.add(`${from} ${to}`);
+    if (from !== to) edgeSet.add(`${from}	${to}`);
   }
-  const edges = [...edgeSet].map((k) => { const [from, to] = k.split(" "); return { from, to }; });
+  const edges = [...edgeSet].map((k) => { const [from, to] = k.split("	"); return { from, to }; });
   const selfByModule = new Map(runModules(0).map((x) => [relModule(x.url), x.ms]));
   const ids = new Set(edges.flatMap((e) => [e.from, e.to]));
   const nodes = [...ids].map((id) => ({ id, selfMs: selfByModule.get(id) ?? 0 }));
