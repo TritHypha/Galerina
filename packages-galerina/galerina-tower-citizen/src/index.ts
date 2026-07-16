@@ -1,3 +1,7 @@
+// ── TLSTP S4 — the Recovering transport FSM above K3 (pure wrapper over decideAtBoundary) ──
+export { step as transportStep, permitData, initialContext as initialTransportContext } from "./transport-fsm.js";
+export type { TransportState, FsmContext, FsmEvent, StepResult, RecoveryConfig, ChannelKeys } from "./transport-fsm.js";
+
 export { TowerRuntime } from "./tower-runtime.js";
 export { AuditLogger } from "./audit-logger.js";
 export type { AuditLoggerOptions, EgressSink } from "./audit-logger.js";
