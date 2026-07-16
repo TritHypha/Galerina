@@ -833,3 +833,37 @@ describe("type-checker.fungi — FUNGI-TYPE-024 Int literal i32 overflow", () =>
     assert.deepEqual(codesFor(over, "g"), ["FUNGI-TYPE-024"]);
   });
 });
+
+// FUNGI-TYPE-025 (SILENT_NULL_DENIED, error) — a `null`/`undefined` initializer. Verified vs Stage-A raw
+// diagnostics: `let x: Int = null` and `= undefined` each emit {002, 025} — two independent conditions
+// (null/undefined infer to type 'Null' → 002 mismatch; not a valid Galerina value → 025). Built as an
+// IDENTIFIER node (value "null"), matching the parser's real representation, so the twin's value-keyed
+// branch runs the same way the real parser drives it (the pipeline suite proves the real path). (Tranche B.)
+describe("type-checker.fungi — FUNGI-TYPE-025 SILENT_NULL_DENIED (null/undefined literal)", () => {
+  it("let x: Int = null → 002 + 025", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "x", typeName: "Int", expr: [expr("identifier", "null")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-002", "FUNGI-TYPE-025"]);
+  });
+
+  it("let x: Int = undefined → 002 + 025", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "x", typeName: "Int", expr: [expr("identifier", "undefined")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-002", "FUNGI-TYPE-025"]);
+  });
+
+  it("a non-null identifier initializer does NOT trigger 025 (no false null-denial)", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "x", typeName: "Int", expr: [expr("identifier", "someVar")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), []);
+  });
+});

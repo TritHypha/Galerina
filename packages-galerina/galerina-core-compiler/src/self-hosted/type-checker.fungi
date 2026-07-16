@@ -51,6 +51,17 @@ contract {
   return false
 }
 
+// True for the `null`/`undefined` value keywords. Both infer to type 'Null' in Stage-A (so they mismatch
+// any concrete declared type — FUNGI-TYPE-002) and neither is a valid Galerina value (FUNGI-TYPE-025).
+// Keyed on the VALUE, because the parser represents `null`/`undefined` as an identifier node, not a lit.
+pure flow isNullish(v: String) -> Bool
+contract { intent { "True for the null/undefined value keywords (Stage-A type 'Null'; not valid values)." } }
+{
+  if v == "null" { return true }
+  if v == "undefined" { return true }
+  return false
+}
+
 // Infer the static type of a return expression from its decomposed parts.
 //   literal/param → the carried type (litType)
 //   compare       → Bool
@@ -617,6 +628,21 @@ contract {
           let msg24: String = "integer literal on binding '" + stmt.name + "' is outside the 32-bit Int range and wraps silently in WASM i32 (FUNGI-TYPE-024)"
           diags = diags.append({ code: "FUNGI-TYPE-024", message: msg24, flowName: flowName })
         }
+      }
+      // FUNGI-TYPE-002 + FUNGI-TYPE-025 (SILENT_NULL_DENIED): a `null`/`undefined` initializer. These are
+      // two INDEPENDENT Stage-A conditions that co-occur (verified vs raw diagnostics — `let x: Int = null`
+      // and `= undefined` each emit {002, 025}): null/undefined infer to type 'Null', which mismatches any
+      // concrete declared type (002), AND null/undefined is not a valid Galerina value — use Option<T> (025).
+      // Keyed on the VALUE, NOT the kind: the parser represents `null` as an IDENTIFIER node (value "null"),
+      // so a value test fires on both a hand-built lit and the real identifier — the twin emits {002, 025}
+      // for both, with no representation gap (the isTensor/absent-field lesson: match the real node, not a
+      // fiction). The return position `return null` -> {008, 025} is a documented gap (the return-expr
+      // record carries no value field). (Tranche B, RD-0412 §4.)
+      if isNullish(rhs.value) {
+        let msg2n: String = "cannot assign 'Null' (" + rhs.value + ") to '" + typeName + "'; the value type and the declared type are incompatible (FUNGI-TYPE-002)"
+        diags = diags.append({ code: "FUNGI-TYPE-002", message: msg2n, flowName: flowName })
+        let msg25: String = "'" + rhs.value + "' is not a valid Galerina value; use Option<T> to represent absence (FUNGI-TYPE-025)"
+        diags = diags.append({ code: "FUNGI-TYPE-025", message: msg25, flowName: flowName })
       }
       // NOTE: no FUNGI-TYPE-019 (UnknownSymbol) here. Verified 2026-07-16 against Stage-A
       // `galerina check --strict-types`: an undeclared name in an initializer (or return / arith /

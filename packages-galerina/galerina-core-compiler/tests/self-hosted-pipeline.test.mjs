@@ -132,6 +132,14 @@ describe("self-hosted pipeline — full body AST + body type-check (M-A fold →
     const { bodyDiags } = await pipeline(`pure flow f() -> Int { let a: Int = 1\nmut b: Int = 2\nreturn a }`);
     assert.deepEqual(bodyDiags, []);
   });
+
+  it("a null initializer via the REAL parser → 002 + 025 (SILENT_NULL_DENIED)", async () => {
+    // `null` parses to an identifier node (value "null"), not a literal. The twin's value-keyed nullish
+    // branch must fire on that real representation — this proves it, not just the hand-built differential.
+    const { bodyDiags } = await pipeline(`pure flow f() -> Int { let x: Int = null\nreturn 0 }`);
+    const codes = bodyDiags.filter((d) => d.flowName === "f").map((d) => d.code).sort();
+    assert.deepEqual(codes, ["FUNGI-TYPE-002", "FUNGI-TYPE-025"]);
+  });
 });
 
 // ── effect + governance over the parsed body AST (M-B continued) ──

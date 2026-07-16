@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1125,
+  "docCount": 1127,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -2606,6 +2606,45 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-026-verified-plus-absence-fixture-principle-and-025-design-corrected.md",
+      "title": "2026-07-16-ACK-026-verified-plus-absence-fixture-principle-and-025-design-corrected.md",
+      "headings": [
+        "The latent-001-Auto catch — this is the third instance; adopting the principle",
+        "025 — you're right, my earlier read was wrong; land the co-emitting null branch",
+        "Frontier + next"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "null",
+        "branch",
+        "right",
+        "catch",
+        "earlier",
+        "read",
+        "wrong",
+        "third",
+        "principle",
+        "twin",
+        "land",
+        "co-emitting",
+        "frontier",
+        "pipeline",
+        "differential",
+        "latent-001-auto",
+        "instance",
+        "adopting",
+        "next",
+        "raw-diag",
+        "pass",
+        "ack-026-verified-plus-absence-fixture-principle-and-025-design-corrected",
+        "both",
+        "real-parser",
+        "alone"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd.md",
       "title": "2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd.md",
       "headings": [],
@@ -3598,6 +3637,49 @@
         "besides",
         "symbolresolver",
         "code"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-026-landed-plus-latent-001-Auto-fix-and-025-grounded.md",
+      "title": "2026-07-16-ACK-026-landed-plus-latent-001-Auto-fix-and-025-grounded.md",
+      "headings": [
+        "FUNGI-TYPE-026 (DEFERRED_TYPE_CHECK, warning) — LANDED (return-Auto case)",
+        "025 (SILENT_NULL_DENIED) — fully grounded, implementation-ready, ONE design point",
+        "Frontier now (type-checker twin): 014 and 025"
+      ],
+      "codes": [
+        "FUNGI-TYPE-026"
+      ],
+      "tasks": [
+        "#20"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "null",
+        "twin",
+        "type",
+        "auto",
+        "type-checker",
+        "design",
+        "point",
+        "deferred",
+        "check",
+        "case",
+        "frontier",
+        "fungi-type-026",
+        "landed",
+        "fully",
+        "grounded",
+        "implementation-ready",
+        "denied",
+        "warning",
+        "return-auto",
+        "alone",
+        "false",
+        "silent",
+        "return",
+        "differential",
+        "emits"
       ]
     },
     {

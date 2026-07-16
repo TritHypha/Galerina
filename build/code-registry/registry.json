@@ -8212,7 +8212,7 @@
       ],
       "defs": 1,
       "emits": 2,
-      "tests": 88,
+      "tests": 91,
       "docs": 10
     },
     {
@@ -8595,7 +8595,7 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 15,
+      "tests": 20,
       "docs": 0
     },
     {
