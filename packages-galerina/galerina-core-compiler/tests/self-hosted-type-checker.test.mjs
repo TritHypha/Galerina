@@ -188,6 +188,9 @@ const expr = (kind, value = "", litType = "", children = []) =>
 
 // A match arm carries just its pattern text for exhaustiveness/reachability (`_`/`else` = wildcard).
 const arm = (pattern) => vRecord({ pattern: vStr(pattern) });
+// A list-literal initializer + its element literals (for the Array<T> collection-element checks).
+const litEl = (litType) => expr("lit", "", litType);
+const listOf = (...litTypes) => expr("listLiteral", "", "", litTypes.map(litEl));
 const stmt = ({ kind, name = "", typeName = "", expr: e = [], body = [], elseBody = [], arms = [] }) =>
   vRecord({
     kind: vStr(kind),
@@ -278,6 +281,65 @@ describe("type-checker.fungi — checkFlowBodies (M-B body AST)", () => {
       ] }),
     ]);
     assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-002"]);
+  });
+
+  // FUNGI-TYPE-011 (INVALID_COLLECTION_ELEMENT) + FUNGI-TYPE-001 on the element type — an `Array<T>`
+  // binding: Stage-A treats the `Array` base as known, flags an unknown element type T (001), and
+  // flags every list-literal element whose type differs from T (011, one per element). All cases
+  // verified against `galerina check --strict-types` before landing (Tranche B, RD-0412 §4).
+  it("Array<Int> = [Int, Int, Int] → no diagnostic (homogeneous)", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "xs", typeName: "Array<Int>", expr: [listOf("Int", "Int", "Int")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), []);
+  });
+
+  it("Array<Int> with a String element → exactly FUNGI-TYPE-011", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "xs", typeName: "Array<Int>", expr: [listOf("Int", "String", "Int")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-011"]);
+  });
+
+  it("Array<Int> with a Bool element → FUNGI-TYPE-011", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "xs", typeName: "Array<Int>", expr: [listOf("Int", "Bool", "Int")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-011"]);
+  });
+
+  it("Array<String> = [Int, Int] → FUNGI-TYPE-011 per element", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "xs", typeName: "Array<String>", expr: [listOf("Int", "Int")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-011", "FUNGI-TYPE-011"]);
+  });
+
+  it("Array<Widget> = [Int, Int, Int] → FUNGI-TYPE-001 (element) then 011 per element", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "xs", typeName: "Array<Widget>", expr: [listOf("Int", "Int", "Int")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"),
+      ["FUNGI-TYPE-001", "FUNGI-TYPE-011", "FUNGI-TYPE-011", "FUNGI-TYPE-011"]);
+  });
+
+  it("Array<Int> = [] (empty) → no diagnostic", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "xs", typeName: "Array<Int>", expr: [listOf()] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), []);
   });
 
   // FUNGI-TYPE-022/023 (match arm set) — a `match` must end with a wildcard `_ =>` catch-all

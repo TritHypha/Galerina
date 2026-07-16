@@ -321,6 +321,61 @@ contract {
   return diags
 }
 
+// Check a declared `Array<T>` binding — the Stage-A `checkTypes` collection path:
+//   FUNGI-TYPE-001 — the element type T is not a known/declared type
+//   FUNGI-TYPE-011 — a list-literal element whose (known) type differs from T (one per element)
+pure flow checkArrayBinding(flowName: String, stmt: Auto) -> Array<Auto>
+contract {
+  intent { "FUNGI-TYPE-001/011 for an Array<T> binding: an unknown element type, and any list-literal element that is not a T." }
+}
+{
+  mut diags: Array<Auto> = Array.empty()
+  let elem: String = stmt.typeName.replace("Array<", "").replace(">", "")
+
+  // A nested/parameterized element type (still carrying "Array") is out of this twin's scope — stay
+  // silent rather than mis-parse it (a known gap, never a false differential).
+  if elem.startsWith("Array") {
+    return diags
+  }
+
+  // FUNGI-TYPE-001: the element type must be a known/declared type.
+  if isKnownType(elem) == false {
+    let msg1e: String = "unknown element type '" + elem + "' on binding '" + stmt.name + "' (FUNGI-TYPE-001)"
+    diags = diags.append({ code: "FUNGI-TYPE-001", message: msg1e, flowName: flowName })
+  }
+
+  // FUNGI-TYPE-011: every list-literal element whose (known) type differs from the element type.
+  let listOpt = firstExpr(stmt)
+  match listOpt {
+    Some(lst) => {
+      if lst.kind == "listLiteral" {
+        mut k: Int = 0
+        while k < lst.children.count() {
+          let cOpt = lst.children.get(k)
+          match cOpt {
+            Some(c) => {
+              if c.kind == "lit" {
+                if isKnownType(c.litType) {
+                  if c.litType != elem {
+                    let msg11: String = "Array<" + elem + "> contains a '" + c.litType + "' element. All elements must be '" + elem + "' (FUNGI-TYPE-011)"
+                    diags = diags.append({ code: "FUNGI-TYPE-011", message: msg11, flowName: flowName })
+                  }
+                }
+              }
+            }
+            None => {}
+            _ => {}
+          }
+          k = k + 1
+        }
+      }
+    }
+    None => {}
+    _ => {}
+  }
+  return diags
+}
+
 // Validate a let/mut binding: declared type, a literal initializer's type, and a name-reference
 // initializer against the visible `scope` (params + bindings declared before it).
 pure flow checkBinding(flowName: String, stmt: Auto, scope: Array<Auto>) -> Array<Auto>
@@ -331,6 +386,19 @@ contract {
   mut diags: Array<Auto> = Array.empty()
   let typeName: String = stmt.typeName
   if typeName == "" {
+    return diags
+  }
+
+  // FUNGI-TYPE-001 (element) + FUNGI-TYPE-011: a declared `Array<T>` binding. Stage-A `checkTypes`
+  // treats the `Array` base as known, checks the ELEMENT type T on its own (TYPE-001 if T is not a
+  // known/declared type), then flags every list-literal element whose type differs from T (TYPE-011,
+  // one per element). Handled here and returned so the scalar TYPE-001/002 gate below only sees
+  // non-Array types. Verified against `galerina check --strict-types` (Tranche B, RD-0412 §4):
+  //   Array<Int> = [1,2,3]      -> clean
+  //   Array<Int> = [1,"x",3]    -> one 011
+  //   Array<Widget> = [1,2,3]   -> 001 (Widget) + 011 per element
+  if typeName.startsWith("Array<") {
+    diags = appendAll(diags, checkArrayBinding(flowName, stmt))
     return diags
   }
 
