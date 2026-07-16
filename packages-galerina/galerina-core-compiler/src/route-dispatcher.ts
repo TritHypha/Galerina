@@ -1,4 +1,9 @@
-import { createServer } from "node:http";
+// W2 closure cut (2026-07-16, RD-0403 §1.1): `node:http` is imported LAZILY inside startServer.
+// The static import dragged the entire Node network stack (http → tls → http2 → net → dns +
+// internal undici; measured 237 vs 112 native modules) onto the single-file `check` path via
+// index.js → route-dispatcher.js — a network stack has no business in a file check. The deferred
+// import fails CLOSED at first use with the same rejection semantics callers already handle
+// (startServer rejects). Detector: scripts/audit-check-import-set.mjs (the import-set ratchet).
 import { executeFlow, type GalerinaValue } from "./interpreter.js";
 import { type AstNode, type FlowMeta } from "./parser.js";
 import { buildRouteRegistry, type RouteMatch, type RouteRegistry } from "./route-registry.js";
@@ -61,11 +66,13 @@ export function makeApiErrorValue(status: number, message: string): GalerinaValu
   return { __tag: "record", fields };
 }
 
-export function startServer(
+export async function startServer(
   ast: AstNode,
   flows: readonly FlowMeta[],
   config: ServerConfig = { port: 3000 },
 ): Promise<RunningServer> {
+  // W2: the network stack loads only when a server actually starts (see header comment).
+  const { createServer } = await import("node:http");
   const registry = buildRouteRegistry(ast);
   const maxBodyBytes  = config.maxBodyBytes ?? 1_048_576;
   const mode          = config.mode ?? "dev";
