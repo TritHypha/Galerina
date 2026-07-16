@@ -1,4 +1,4 @@
-# Galerina KB index (1123 docs)
+# Galerina KB index (1125 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -178,6 +178,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #20
 - terms: gate, stage-a, ack-009-generics-cluster-verified-48-48-class-closed, check, differential, pass, arity, codes, verified, class, cluster, confirmed, emit-site, committed
 
+## 2026-07-16-ACK-024-verified-plus-frontier-per-pass-scoping-and-025-coemission-design.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-024-verified-plus-frontier-per-pass-scoping-and-025-coemission-design.md`
+- terms: twin, confirmed, independent, check, frontier, co-emission, existing, finding, same, law, removed, resolved, keep, let
+
 ## 2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd.md`
 - codes: FUNGI-EFFECT-002
@@ -294,6 +298,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md`
 - tasks: #20
 - terms: twin, stage-a, int, result, ack-009-generic-arity-cluster-landed-generalizes-011, generic, gate, arity, type, frontier, main, cluster, galerina, committed
+
+## 2026-07-16-ACK-024-landed-plus-frontier-correction-NAME-codes-are-symbol-resolver.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-024-landed-plus-frontier-correction-NAME-codes-are-symbol-resolver.md`
+- codes: FUNGI-TYPE-024, FUNGI-TYPE-025, FUNGI-TYPE-026, FUNGI-TYPE-014, FUNGI-NAME-001, FUNGI-NAME-003
+- tasks: #20
+- terms: frontier, type-checker, twin, pass, literal, int, landed, stage-a, i32, type, fungi-type-024, remaining, finding, grounded
 
 ## 2026-07-16-ACK-brands-003-cluster-landed-plus-frontier-heuristic-caveat.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-brands-003-cluster-landed-plus-frontier-heuristic-caveat.md`

@@ -137,11 +137,25 @@ contract {
         let retType: String = fd.returnType
         mut flowDiags: Array<Auto> = Array.empty()
 
-        // FUNGI-TYPE-001: declared return type must be a known type.
         let retKnown: Bool = isKnownType(retType)
-        if retKnown == false {
-          let msg1: String = "unknown return type '" + retType + "' on flow '" + name + "' (FUNGI-TYPE-001)"
-          flowDiags = flowDiags.append({ code: "FUNGI-TYPE-001", message: msg1, flowName: name })
+
+        // FUNGI-TYPE-026 (DEFERRED_TYPE_CHECK, warning): a return type declared `Auto` defers the
+        // return-type check pending inference. Stage-A emits 026 here — and NEITHER 001 (Auto is a
+        // valid deferred type, not an unknown one) NOR 008 (the check is deferred, not a mismatch).
+        // Verified vs a raw-diagnostics probe: `-> Auto { return 5 }` and `-> Auto { return "s" }`
+        // each emit 026 ALONE. The 008 block below is already gated on `retKnown`, which is false for
+        // Auto, so it self-skips; only the 001 gate needs the Auto exclusion. (Tranche B, RD-0412 §4.)
+        if retType == "Auto" {
+          let msg26: String = "return type declared 'Auto' on flow '" + name + "'; the return-type check against the return expression is deferred pending inference (FUNGI-TYPE-026)"
+          flowDiags = flowDiags.append({ code: "FUNGI-TYPE-026", message: msg26, flowName: name })
+        }
+
+        // FUNGI-TYPE-001: a NON-Auto declared return type must be a known type.
+        if retType != "Auto" {
+          if retKnown == false {
+            let msg1: String = "unknown return type '" + retType + "' on flow '" + name + "' (FUNGI-TYPE-001)"
+            flowDiags = flowDiags.append({ code: "FUNGI-TYPE-001", message: msg1, flowName: name })
+          }
         }
 
         // FUNGI-TYPE-001: parameter types must be known.

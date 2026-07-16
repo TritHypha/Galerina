@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1123,
+  "docCount": 1125,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -2567,6 +2567,45 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-024-verified-plus-frontier-per-pass-scoping-and-025-coemission-design.md",
+      "title": "2026-07-16-ACK-024-verified-plus-frontier-per-pass-scoping-and-025-coemission-design.md",
+      "headings": [
+        "The finding — CONFIRMED, and it's the same law that removed 019",
+        "025 co-emission — resolved (keep it independent, let the existing check co-fire)",
+        "Sequencing"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "twin",
+        "confirmed",
+        "independent",
+        "check",
+        "frontier",
+        "co-emission",
+        "existing",
+        "finding",
+        "same",
+        "law",
+        "removed",
+        "resolved",
+        "keep",
+        "let",
+        "co-fire",
+        "null",
+        "sequencing",
+        "pipeline",
+        "name-",
+        "ack-024-verified-plus-frontier-per-pass-scoping-and-025-coemission-design",
+        "call",
+        "gate",
+        "return",
+        "codes",
+        "stage-a"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd.md",
       "title": "2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd.md",
       "headings": [],
@@ -3510,6 +3549,55 @@
         "array",
         "subsumed",
         "string"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-024-landed-plus-frontier-correction-NAME-codes-are-symbol-resolver.md",
+      "title": "2026-07-16-ACK-024-landed-plus-frontier-correction-NAME-codes-are-symbol-resolver.md",
+      "headings": [
+        "FUNGI-TYPE-024 (INT_LITERAL_I32_OVERFLOW, warning) — LANDED",
+        "The finding — the frontier conflates two Stage-A passes",
+        "025 / 026 grounded (the two real remaining, besides 014)",
+        "Next"
+      ],
+      "codes": [
+        "FUNGI-TYPE-024",
+        "FUNGI-TYPE-025",
+        "FUNGI-TYPE-026",
+        "FUNGI-TYPE-014",
+        "FUNGI-NAME-001",
+        "FUNGI-NAME-003"
+      ],
+      "tasks": [
+        "#20"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "frontier",
+        "type-checker",
+        "twin",
+        "pass",
+        "literal",
+        "int",
+        "landed",
+        "stage-a",
+        "i32",
+        "type",
+        "fungi-type-024",
+        "remaining",
+        "finding",
+        "grounded",
+        "warning",
+        "real",
+        "null",
+        "next",
+        "codes",
+        "overflow",
+        "conflates",
+        "passes",
+        "besides",
+        "symbolresolver",
+        "code"
       ]
     },
     {

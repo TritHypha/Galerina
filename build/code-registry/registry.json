@@ -8192,7 +8192,7 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 227,
+      "tests": 229,
       "docs": 17
     },
     {
@@ -8611,7 +8611,7 @@
       ],
       "defs": 0,
       "emits": 2,
-      "tests": 9,
+      "tests": 14,
       "docs": 0
     },
     {

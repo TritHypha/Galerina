@@ -125,6 +125,41 @@ describe("type-checker.fungi — FUNGI-TYPE-008 InvalidReturnType (return-type m
   });
 });
 
+// FUNGI-TYPE-026 (DEFERRED_TYPE_CHECK, warning) — a return type declared `Auto` defers the return-type
+// check. Verified vs Stage-A raw diagnostics: `-> Auto { return 5 }` and `-> Auto { return "s" }` each
+// emit 026 ALONE — Auto is a valid deferred type (no 001) and the check is deferred (no 008 mismatch).
+// (Landing this also fixed a latent divergence: the twin previously flagged an Auto return type as an
+// unknown type, FUNGI-TYPE-001, since isKnownType has no `Auto`.) (Tranche B, RD-0412 §4.)
+describe("type-checker.fungi — FUNGI-TYPE-026 DEFERRED_TYPE_CHECK (Auto return defers the check)", () => {
+  it("Auto return + Int return expr → 026 (deferred, no 008)", async () => {
+    const { diags } = await check([
+      flow({ name: "f", returnType: "Auto", returnExpr: retExpr("literal", "Int") }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-026"]);
+  });
+
+  it("Auto return + String return expr → 026 (Auto defers, so no 008 mismatch)", async () => {
+    const { diags } = await check([
+      flow({ name: "f", returnType: "Auto", returnExpr: retExpr("literal", "String") }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-026"]);
+  });
+
+  it("Auto return is NOT flagged an unknown type → 026 only, never FUNGI-TYPE-001", async () => {
+    const { diags } = await check([
+      flow({ name: "f", returnType: "Auto", returnExpr: retExpr("param", "Int") }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-026"]);
+  });
+
+  it("a concrete return type still return-checks normally (no 026)", async () => {
+    const { diags } = await check([
+      flow({ name: "f", returnType: "Int", returnExpr: retExpr("literal", "Int") }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), []);
+  });
+});
+
 describe("type-checker.fungi — FUNGI-TYPE-004 InvalidBinaryOperation", () => {
   it("arith with a String operand → FUNGI-TYPE-004", async () => {
     const { diags } = await check([

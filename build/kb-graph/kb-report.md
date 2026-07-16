@@ -2,7 +2,7 @@
 Generated: 2026-07-16
 
 ## Stats
-- Docs: 1121 | Edges: 3462 | Orphans: 65 | Stale links: 0 | FUNGI codes: 748
+- Docs: 1123 | Edges: 3462 | Orphans: 67 | Stale links: 0 | FUNGI codes: 748
 
 ## Document Registry (auto-generated)
 
@@ -29,6 +29,8 @@ Generated: 2026-07-16
 | 00-KB-INDEX.md | — | — | — | FUNGI-BACKEND-001, FUNGI-GATE-001, FUNGI-NET-001, FUNGI-STDLIB-001, FUNGI-SUPPLY-001 …+2 |
 | 2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md | — | — | — | — |
 | 2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed.md | — | — | — | — |
+| 2026-07-16-ACK-024-landed-plus-frontier-correction-NAME-codes-are-symbol-resolver.md | — | — | — | FUNGI-NAME-001, FUNGI-NAME-003, FUNGI-TYPE-014, FUNGI-TYPE-024, FUNGI-TYPE-025 …+1 |
+| 2026-07-16-ACK-024-verified-plus-frontier-per-pass-scoping-and-025-coemission-design.md | — | — | — | — |
 | 2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd.md | — | — | — | FUNGI-EFFECT-002 |
 | 2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed.md | — | — | — | — |
 | 2026-07-16-ACK-brands-003-cluster-landed-plus-frontier-heuristic-caveat.md | — | — | — | FUNGI-TYPE-003, FUNGI-TYPE-019 |
@@ -1156,6 +1158,7 @@ Docs with no inbound links from other KB docs:
 - `RD-0433-cross-script-symbol-comparison-latin-non-latin-homoglyph-confusable-safe-identity.md` — RD-0433 — Cross-script symbol comparison — safe identity across Latin & non-Latin, homoglyph/confusable-resistant
 - `RD-0435-quantum-data-types-maths-symbols-storage-fast-enough-retrieval-tri-photonic.md` — RD-0435 — Quantum: types, research, maths, symbols, storage — is it fast enough, can it retrieve correctly, and what it means for tri/photonic
 - `2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed.md` — 2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed
+- `2026-07-16-ACK-024-verified-plus-frontier-per-pass-scoping-and-025-coemission-design.md` — 2026-07-16-ACK-024-verified-plus-frontier-per-pass-scoping-and-025-coemission-design
 - `2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd.md` — 2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd
 - `2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed.md` — 2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed
 - `2026-07-16-ACK-brands-003-verified-51-51-plus-harden-emit-count-adjudication.md` — 2026-07-16-ACK-brands-003-verified-51-51-plus-harden-emit-count-adjudication
@@ -1179,6 +1182,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-rhizo-ql-and-galerina-reusables.md` — 2026-07-16-rhizo-ql-and-galerina-reusables
 - `2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion.md` — 2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion
 - `2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md` — 2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011
+- `2026-07-16-ACK-024-landed-plus-frontier-correction-NAME-codes-are-symbol-resolver.md` — 2026-07-16-ACK-024-landed-plus-frontier-correction-NAME-codes-are-symbol-resolver
 - `2026-07-16-ACK-brands-003-cluster-landed-plus-frontier-heuristic-caveat.md` — 2026-07-16-ACK-brands-003-cluster-landed-plus-frontier-heuristic-caveat
 - `2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch.md` — 2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch
 - `2026-07-16-ACK-emit-parity-idea-caught-2-false-differentials-019-027-fixed-plus-gate.md` — 2026-07-16-ACK-emit-parity-idea-caught-2-false-differentials-019-027-fixed-plus-gate
