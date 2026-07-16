@@ -7,7 +7,8 @@ import { test, describe } from "node:test";
 import assert from "node:assert/strict";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { existsSync } from "node:fs";
+import { existsSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dir, "..", "..", "..");
@@ -156,6 +157,36 @@ describe("reporter — output formats", () => {
     const md = generateMarkdownReport(graph, "2026-06-05");
     assert.ok(md.includes(`Docs: ${graph.stats.totalDocs}`),
       `stats line does not show correct doc count ${graph.stats.totalDocs}`);
+  });
+});
+
+describe("scanner — [[wikilink]] cross-references (false-orphan fix, 2026-07-16)", () => {
+  // The KB's wiki-style [[doc-id]] refs (237 files) were invisible to the scanner, so a doc
+  // referenced ONLY by wikilinks was reported as a false orphan. Pinned both ways on a controlled
+  // fixture: a resolving [[id]] is an inbound MENTION (kills the orphan); a dangling [[id]] marks
+  // a doc worth writing later (house convention) and must NOT enter the stale-link count; and a
+  // genuinely unreferenced doc still fires the orphan signal (the detector is not neutered).
+  const dir = mkdtempSync(join(tmpdir(), "kb-graph-wikilink-"));
+  writeFileSync(join(dir, "alpha.md"), "# Alpha\n\nSee [[beta]] for detail; [[ghost-doc]] is planned.\n");
+  writeFileSync(join(dir, "beta.md"), "# Beta\n\nStands alone.\n");
+  writeFileSync(join(dir, "gamma.md"), "# Gamma\n\nNothing references me.\n");
+  const g = buildKBGraph(scanKBDirectory(dir));
+  rmSync(dir, { recursive: true, force: true });
+
+  test("a resolving [[wikilink]] counts as an inbound edge (target is NOT an orphan)", () => {
+    assert.ok(!g.orphans.includes("beta"), `beta is wikilinked from alpha yet reported orphaned`);
+    const e = g.edges.find(x => x.from === "alpha" && x.to === "beta");
+    assert.ok(e, "alpha→beta wikilink edge missing");
+    assert.equal(e.kind, "mention", "a wikilink must be a mention, never a 'link'");
+  });
+
+  test("a dangling [[wikilink]] is NOT a stale link (marks a doc worth writing later)", () => {
+    assert.ok(!g.staleLinks.some(s => s.includes("ghost-doc")),
+      "dangling [[ghost-doc]] wrongly entered the stale-link count");
+  });
+
+  test("orphan detection still fires on a genuinely unreferenced doc (non-vacuous)", () => {
+    assert.ok(g.orphans.includes("gamma"), "gamma has no inbound refs and must be an orphan");
   });
 });
 

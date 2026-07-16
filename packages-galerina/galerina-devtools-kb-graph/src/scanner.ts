@@ -34,6 +34,12 @@ const FUNGI_CODE_RE = /FUNGI-[A-Z]+-\d+/g;
 const MD_LINK_RE = /\[([^\]]*)\]\(([^)]+\.md)[^)]*\)/g;
 const BACKTICK_MD_RE = /`([a-zA-Z0-9_-]+\.md)`/g;
 const SEE_MD_RE = /[Ss]ee:?\s+([a-zA-Z0-9_-]+\.md)/g;
+// [[doc-id]] — the KB's wiki-style cross-reference (handovers/master docs; 237 files carry them).
+// Bare id, no .md. MUST be a MENTION, never a "link": a resolving [[id]] gives its target an inbound
+// edge (kills the false-orphan class found 2026-07-16 — a doc referenced ONLY by wikilinks reported
+// as orphaned), while a dangling [[id]] deliberately marks a doc worth writing later — house
+// convention, not a broken hyperlink — so it must never enter the stale-link count.
+const WIKILINK_RE = /\[\[([A-Za-z0-9._-]+)\]\]/g;
 const LAYER_RE = /\bLayer\s+(0|1|2A|2B|3)\b/;
 const VERSION_RE = /\*\*Version:\*\*\s*([^\s\n,]+)/;
 const STATUS_RE = /\*\*Status:\*\*\s*([^\n]+)/;
@@ -75,6 +81,11 @@ function extractEdges(fromId: string, content: string): KBEdge[] {
   // See: filename.md — a soft MENTION, not a hyperlink
   for (const m of content.matchAll(SEE_MD_RE)) {
     addEdge(m[1] ?? "", `See: ${m[1]}`, "mention");
+  }
+
+  // [[doc-id]] — wiki-style cross-reference (see WIKILINK_RE above for the mention-not-link reasoning)
+  for (const m of content.matchAll(WIKILINK_RE)) {
+    addEdge(`${m[1]}.md`, `[[${m[1]}]]`, "mention");
   }
 
   return edges;
