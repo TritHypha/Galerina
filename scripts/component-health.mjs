@@ -387,14 +387,18 @@ function buildPercentAudit() {
 function renderAuditHtml(audit) {
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const stateClass = (st) => ({ shipped: "s-ship", building: "s-build", "design-done": "s-build", "build-pending": "s-pend", "post-v1": "s-front" }[st] ?? "s-front");
+  // Owner rule 2026-07-16 ("% colors — always show it that way"): the meter fill stays ONE hue
+  // (series blue — the bar carries magnitude, not judgement); the VALUE text is threshold-colored:
+  // >=90 green (v-hi) · <40 red (v-lo) · otherwise primary (v-mid). Color encodes the reading.
+  const pctColor = (pct) => (pct >= 90 ? "v-hi" : pct < 40 ? "v-lo" : "v-mid");
   const meterRow = (r) => {
     const has = typeof r.pct === "number";
-    const fill = has ? (r.pct >= 100 ? "#008300" : r.pct >= 60 ? "#1baf7a" : "#eda100") : "#8a8880";
     const w = has ? r.pct : 0;
     const val = has ? `${r.pct}%` : esc(r.status ?? "—");
+    const vcls = has ? pctColor(r.pct) : "v-mid";
     return `<div class="mrow"><span class="mlabel">${esc(r.label)}</span>`
-      + `<span class="mtrack"><span class="mfill" style="width:${w}%;background:${fill}"></span></span>`
-      + `<span class="mval">${val}</span></div>`;
+      + `<span class="mtrack"><span class="mfill" style="width:${w}%"></span></span>`
+      + `<span class="mval ${vcls}">${val}</span></div>`;
   };
   const sectionHtml = (s) => {
     if (s.kind === "meter") {
@@ -419,15 +423,17 @@ function renderAuditHtml(audit) {
   .pa .card{background:#f5f4ef;border-radius:8px;padding:.7rem}.pa .card .k{font-size:12px;color:#6b6a64}.pa .card .v{font-size:22px;font-weight:500}
   .pa .mrow{display:grid;grid-template-columns:210px 1fr 46px;align-items:center;gap:10px;margin:5px 0}
   .pa .mlabel{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .pa .mtrack{height:14px;background:#e6e5de;border-radius:7px;overflow:hidden}.pa .mfill{display:block;height:100%;border-radius:7px}
-  .pa .mval{font-size:13px;font-weight:500;text-align:right;color:#52514e}
+  .pa .mtrack{height:14px;background:#e6e5de;border-radius:7px;overflow:hidden}.pa .mfill{display:block;height:100%;border-radius:7px;background:#2a78d6}
+  .pa .mval{font-size:13px;font-weight:500;text-align:right}
+  .pa .v-hi{color:#0f6e56}.pa .v-lo{color:#a32d2d}.pa .v-mid{color:#1a1a19}
   .pa table.reg{width:100%;border-collapse:collapse;font-size:13px}.pa .reg td{padding:6px 8px;border-top:0.5px solid #e1e0d9;vertical-align:top}
   .pa .ritem{font-weight:500;white-space:nowrap}.pa .rdetail{color:#6b6a64;font-size:12px}.pa .rst{font-size:11px;color:#8a8880;text-align:right}
   .pa .rgroup{padding-top:12px}.pa .rgcount{font-size:11px;color:#8a8880}
   .pa .badge{font-size:11px;padding:2px 8px;border-radius:10px;white-space:nowrap}
   .pa .s-ship{background:#e1f5ee;color:#0f6e56}.pa .s-build{background:#e6f1fb;color:#185fa5}.pa .s-pend{background:#faeeda;color:#854f0b}.pa .s-front{background:#f1efe8;color:#5f5e5a}
-  @media (prefers-color-scheme:dark){.pa{color:#e8e7e0}.pa .sub,.pa .card .k,.pa .rdetail,.pa .mval{color:#a3a29a}
+  @media (prefers-color-scheme:dark){.pa{color:#e8e7e0}.pa .sub,.pa .card .k,.pa .rdetail{color:#a3a29a}
     .pa .card{background:#232322}.pa .mtrack{background:#333330}.pa .reg td{border-top-color:#333330}
+    .pa .mfill{background:#3987e5}.pa .v-hi{color:#5dcaa5}.pa .v-lo{color:#e66767}.pa .v-mid{color:#e8e7e0}
     .pa .s-ship{background:#04342c;color:#5dcaa5}.pa .s-build{background:#042c53;color:#85b7eb}.pa .s-pend{background:#412402;color:#ef9f27}.pa .s-front{background:#2c2c2a;color:#b4b2a9}}
   </style>`;
   const cards = `<div class="cards">`
@@ -457,6 +463,9 @@ if (SELF_TEST) {
   const ranks = reg.map((r) => statusRank(r.state));
   ok(ranks.every((v, i) => i === 0 || ranks[i - 1] <= v), "Tracking registry rows are ordered by status (non-decreasing rank)");
   ok(!/https?:\/\//.test(html) && !/<script/i.test(html), "artifact is self-contained (no CDN / no <script>)");
+  // Owner color rule (2026-07-16): one-hue blue meter fill + threshold-colored VALUES (>=90 green, <40 red).
+  ok(html.includes('class="mval v-hi"') && html.includes(".v-hi{color:#0f6e56}"), "values >=90 carry the green threshold class (color rule enforced)");
+  ok(html.includes(".mfill") && html.includes("background:#2a78d6"), "meter fill is the single series blue (bars carry magnitude, values carry judgement)");
   // The load-bearing guarantee: an EMPTY tracking registry must be REFUSED, never silently rendered.
   const saved = TRACKING_REGISTRY.splice(0, TRACKING_REGISTRY.length);
   let threw = false; try { buildPercentAudit(); } catch { threw = true; }
