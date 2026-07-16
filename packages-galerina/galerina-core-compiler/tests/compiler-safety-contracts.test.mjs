@@ -539,7 +539,7 @@ flow renderScript() {
     assert.equal(FUNGI_SYNTAX_DIAGNOSTICS.length, 6); // 2 original + 4 new (006-009)
     assert.equal(FUNGI_BINDING_DIAGNOSTICS.length, 6); // 4 original + FUNGI-BINDING-005 + FUNGI-BINDING-006 (Phase 11A.2)
     assert.equal(FUNGI_PIPELINE_DIAGNOSTICS.length, 5);
-    assert.equal(FUNGI_INTENT_DIAGNOSTICS.length, 5);
+    assert.equal(FUNGI_INTENT_DIAGNOSTICS.length, 4); // 5 → 4: INTENT-001 retired 2026-07-16 (#20 V2, dormant; number never reused)
     assert.equal(FUNGI_BLOCK_DIAGNOSTICS.length, 4);
     assert.equal(FUNGI_STRING_DIAGNOSTICS.length, 4);
     assert.equal(FUNGI_CHAR_DIAGNOSTICS.length, 4);

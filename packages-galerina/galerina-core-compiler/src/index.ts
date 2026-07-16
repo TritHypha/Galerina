@@ -1303,13 +1303,10 @@ export interface IntentCheckResult {
 // is "FUNGI-INTENT-*" (matching FUNGI-CONFIG-*, FUNGI-LOGIC-*, etc.).
 // ---------------------------------------------------------------------------
 
-/** Declared intent conflicts with inferred behavior (e.g. delete in a "send receipt" flow). */
-export const FUNGI_INTENT_001 = {
-  code: "FUNGI-INTENT-001",
-  name: "INTENT_BEHAVIOR_MISMATCH",
-  severity: "error",
-  message: "Declared intent conflicts with inferred behavior.",
-} as const;
+// FUNGI-INTENT-001 (INTENT_BEHAVIOR_MISMATCH) — RETIRED 2026-07-16 (#20 taxonomy, RD-0412 V2).
+// The constant was dormant: never emitted by any checker, never asserted by any test (code-index
+// showed 0 emits / 0 tests). The intent-vs-inferred-behavior check it named was never built; if it
+// is built later it must mint a NEW number — retired numbers are never reused.
 
 /** API route, webhook, payment flow, or other governed surface is missing a required intent declaration. */
 export const FUNGI_INTENT_002 = {
@@ -1344,7 +1341,7 @@ export const FUNGI_INTENT_005 = {
 } as const;
 
 export const FUNGI_INTENT_DIAGNOSTICS = [
-  FUNGI_INTENT_001,
+  // FUNGI_INTENT_001 retired (see above) — 001 is never reused.
   FUNGI_INTENT_002,
   FUNGI_INTENT_003,
   FUNGI_INTENT_004,
@@ -2357,7 +2354,8 @@ function parseFlowStart(
  * Full implementation requires the compiler AST to carry FlowDeclarationMetadata.
  * Wire up in Stage 3 once the parser emits intent/effect nodes.
  *
- * TODO FUNGI-INTENT-001: check inferred effects against declared effects.
+ * TODO (unnumbered — FUNGI-INTENT-001 was retired 2026-07-16 and its number is never reused;
+ * mint a fresh INTENT code when this check is built): check inferred effects against declared effects.
  * TODO FUNGI-INTENT-002: require intent on governed surfaces.
  * TODO FUNGI-INTENT-003: require unsafe blocks to declare reason + fallback.
  * TODO FUNGI-INTENT-004: require privileged flows to declare capability.
