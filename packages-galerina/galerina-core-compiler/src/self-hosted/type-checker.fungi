@@ -235,6 +235,19 @@ contract {
   if kind == "while" {
     diags = appendAll(diags, checkStmtList(flowName, stmt.body, scope))
   }
+  if kind == "match" {
+    // FUNGI-TYPE-023 (MISSING_WILDCARD_ARM): a `match` must end with a wildcard `_ =>` (or `else =>`)
+    // catch-all arm. A non-exhaustive match is a governance hole — the WASM backend TRAPS the
+    // unmatched case (RD-0240) — so Stage-A's type checker emits TYPE-023 at compile time
+    // (fail-closed by construction, mirroring the governance-verifier's FUNGI-MATCH-001). Verified
+    // against `galerina check --strict-types` before landing (Tranche B, RD-0412 §4).
+    if stmt.hasWildcard == false {
+      let msg23: String = "match must end with a wildcard '_ =>' (or 'else =>') catch-all arm on flow '" + flowName + "' (FUNGI-TYPE-023)"
+      diags = diags.append({ code: "FUNGI-TYPE-023", message: msg23, flowName: flowName })
+    }
+    // Each arm body is a child scope over the same visible `scope`; check nested statements too.
+    diags = appendAll(diags, checkStmtList(flowName, stmt.body, scope))
+  }
   return diags
 }
 
