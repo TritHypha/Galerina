@@ -2,7 +2,7 @@
 Generated: 2026-07-16
 
 ## Stats
-- Docs: 1052 | Edges: 3440 | Orphans: 1 | Stale links: 0 | FUNGI codes: 747
+- Docs: 1090 | Edges: 3462 | Orphans: 34 | Stale links: 0 | FUNGI codes: 748
 
 ## Document Registry (auto-generated)
 
@@ -27,6 +27,30 @@ Generated: 2026-07-16
 | galerina-rd-0256-optional-serverless-2026-07-04.md | Layer 3 | — | DESIGN (AZT ~8/10 PURSUE · NIST ~3/7 HOLD-from-prod) · **Owner-gated** · **READ-ONLY R&D — prod untouched, no source written** | — |
 | _TEMPLATE.md | — | — | — | — |
 | 00-KB-INDEX.md | — | — | — | FUNGI-BACKEND-001, FUNGI-GATE-001, FUNGI-NET-001, FUNGI-STDLIB-001, FUNGI-SUPPLY-001 …+2 |
+| 2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd.md | — | — | — | FUNGI-EFFECT-002 |
+| 2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed.md | — | — | — | — |
+| 2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch.md | — | — | — | FUNGI-TYPE-001, FUNGI-TYPE-011 |
+| 2026-07-16-ACK-kb-graph-code-region-masking.md | — | — | — | — |
+| 2026-07-16-ACK-match-arm-cluster-landed-022-023-live-021-dead.md | — | — | — | FUNGI-TYPE-021, FUNGI-TYPE-022, FUNGI-TYPE-023 |
+| 2026-07-16-ACK-match-arm-cluster-verified-source-and-execution.md | — | — | — | FUNGI-TYPE-021, FUNGI-TYPE-022, FUNGI-TYPE-023 |
+| 2026-07-16-ACK-p1-r1-valuestate004-reframed.md | — | — | — | — |
+| 2026-07-16-ACK-p1-r2-closed-gates-reverified.md | — | — | — | — |
+| 2026-07-16-ACK-p1-r2-guarded-paramtypes-populated.md | — | — | — | — |
+| 2026-07-16-ACK-rd0128-option-a-applied.md | — | — | — | — |
+| 2026-07-16-ACK-rd0128-stale-proof-confirm-option-a.md | — | — | — | — |
+| 2026-07-16-ACK-rhizo-ql-reusables-hallmark-shape-ok.md | — | — | — | — |
+| 2026-07-16-ACK-taxonomy-AUDIT-ZERO.md | — | — | — | FUNGI-BORDER-002, FUNGI-GRAPH-001 |
+| 2026-07-16-ACK-taxonomy-rebaseline-167.md | — | — | — | FUNGI-GOV-3 |
+| 2026-07-16-ACK2-rebaseline-167-confirmed-proceed.md | — | — | — | FUNGI-GOV-3 |
+| 2026-07-16-answers-to-night-round-rd-requests.md | — | — | — | — |
+| 2026-07-16-FYI-push-policy-correction-main-is-commit-only.md | — | — | — | — |
+| 2026-07-16-FYI-rd0128-stale-testwitness-proof.md | — | — | — | — |
+| 2026-07-16-FYI-tranche-bc-grounded-not-a-loop-tick.md | — | — | — | — |
+| 2026-07-16-kb-graph-code-region-masking-stale-links-zeroed.md | — | — | — | — |
+| 2026-07-16-PRIORITY-main-instructions.md | — | — | — | FUNGI-EFFECT-002, FUNGI-TYPE-006 |
+| 2026-07-16-rhizo-ql-and-galerina-reusables.md | — | — | — | — |
+| 2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion.md | — | — | — | — |
+| 2026-07-16-UNLOCK-checker-taxonomy-20-adopt.md | — | — | — | FUNGI-EFFECT-002, FUNGI-TYPE-006 |
 | AI_INDEX.md | — | — | — | FUNGI-HW-101, FUNGI-PHOTONIC-001, FUNGI-SEC-014, FUNGI-SYNTAX-010, FUNGI-TYPE-031 |
 | ai-as-untrusted-reasoning-worker.md | — | — | — | — |
 | ai-compute-plan.md | — | — | — | — |
@@ -47,6 +71,7 @@ Generated: 2026-07-16
 | automated-runtime-trust-strategy.md | — | — | — | — |
 | benchmark-success-plan.md | — | — | — | — |
 | bit-width-and-base64-asset-policy.md | — | — | — | — |
+| BOARD.md | — | — | — | — |
 | boot-main-startup-defaults.md | — | — | — | — |
 | bootstrap-runtime-roadmap.md | — | — | — | — |
 | boundary-extension-concepts.md | — | — | — | — |
@@ -264,7 +289,7 @@ Generated: 2026-07-16
 | galerina-governance-diff-ci.md | — | — | — | FUNGI-DIFF-001, FUNGI-DIFF-002, FUNGI-DIFF-003, FUNGI-DIFF-004, FUNGI-DIFF-005 …+4 |
 | galerina-governance-economics-platform.md | — | — | — | FUNGI-AI-003, FUNGI-ECON-001 |
 | galerina-governance-mode-ladder.md | — | — | — | FUNGI-PRIVACY-002, FUNGI-SECRET-002, FUNGI-SUBSTRATE-001 |
-| galerina-governance-rules.md | — | 1.1 | Living document — rules are added as features land. | FUNGI-ACCESS-001, FUNGI-ACCESS-002, FUNGI-ASSIMILATE-001, FUNGI-ASSIMILATE-002, FUNGI-ASSIMILATE-003 …+74 |
+| galerina-governance-rules.md | — | 1.1 | Living document — rules are added as features land. | FUNGI-ACCESS-001, FUNGI-ACCESS-002, FUNGI-ASSIMILATE-001, FUNGI-ASSIMILATE-002, FUNGI-ASSIMILATE-003 …+89 |
 | galerina-governance-scope.md | — | — | — | FUNGI-VAL-001, FUNGI-VAL-002, FUNGI-VAL-003 |
 | galerina-governance-signature.md | — | — | — | — |
 | galerina-governance-verifier-architecture.md | — | — | — | FUNGI-CONTEXT-001, FUNGI-GOV-002, FUNGI-GOV-003, FUNGI-GOV-004, FUNGI-GOV-005 …+6 |
@@ -892,6 +917,7 @@ Generated: 2026-07-16
 | PROMPT-main-session-run-cybersec-skills-audit-on-galerina-2026-07-09.md | — | — | — | — |
 | PROMPT-main-session-token-management-graph-2026-07-01.md | — | — | — | — |
 | PROMPT-main-session-working-discipline-rules-and-graph-2026-07-01.md | — | — | — | — |
+| PROMPT-main-start-here.md | — | — | — | — |
 | PROMPT-oss-build-resume-2026-07-01.md | — | — | — | — |
 | PROMPT-oss-build-resume-2026-07-08.md | — | — | — | — |
 | PROMPT-oss-extraction-rnd-2026-07-01.md | — | — | — | — |
@@ -940,6 +966,17 @@ Generated: 2026-07-16
 | RD-0409-tritmesh-flux-the-fast-second-database-and-the-assurance-profile-tricks-security-adjudicated.md | — | — | — | — |
 | RD-0410-one-ql-two-surfaces-governed-writes-for-the-fast-engine-security-adjudicated.md | — | — | — | — |
 | RD-0411-strengthening-tritmesh-db-the-high-assurance-engine-hardening-pass.md | — | — | — | — |
+| RD-0412-diagnostic-code-taxonomy-20-adjudicated-adopt-the-checker-burn-down-unblocked.md | — | — | — | FUNGI-INTENT-001, FUNGI-SECRET-999, FUNGI-TYPE-006 |
+| RD-0413-tritmesh-tensor-numerical-quantum-engine-scope-and-security.md | — | — | — | FUNGI-SUBSTRATE-001 |
+| RD-0414-tritmesh-market-hallmark-finance-engine-scope-and-security.md | — | — | — | FUNGI-SUBSTRATE-001 |
+| RD-0415-storing-algebraic-maths-expressions-in-tritmesh-market-governed-zero-trust.md | — | — | — | — |
+| RD-0416-hallmark-name-reservation-tiered-canonical-entity-registry-zero-trust.md | — | — | — | — |
+| RD-0417-tritmesh-mycelium-graph-hypergraph-topology-layer-scope-and-security.md | — | — | — | — |
+| RD-0418-family-branding-check-and-high-assurance-engine-rename-options.md | — | — | — | — |
+| RD-0419-the-tritmesh-family-map-index-of-engines-ql-substrate-repos-and-open-decisions.md | — | — | — | — |
+| RD-0420-tritmesh-markets-service-catalogue.md | — | — | — | — |
+| RD-0421-financial-services-sector-map-who-uses-the-tritmesh-family.md | — | — | — | — |
+| RD-0422-financial-data-and-maths-taxonomy-per-service-map-graphs-as-streams.md | — | — | — | — |
 | rd-adversarial-verification-findings-2026-06-16.md | — | — | — | — |
 | rd-crossover-encryption-rnd.md | — | — | Merge / unified entry point. **Date:** 2026-06-16. **Posture:** grounded, cited, | FUNGI-AMD-024, FUNGI-PARSE-001, FUNGI-SUBSTRATE-001 |
 | rd-diagnostics-namespace-rnd-response.md | — | — | R&D response (2026-06-16). **Subject:** `Galerina/docs/Knowledge-Bases/galerina-diagnostic-namespace-ownership.md` | FUNGI-META-001, FUNGI-PRIVACY-00, FUNGI-SECRET-005 |
@@ -982,6 +1019,7 @@ Generated: 2026-07-16
 | rd-tri-encription-research-metadata-confidentiality.md | — | — | Research note (grounded, cited, adversarially verified). **Date:** 2026-06-16. | FUNGI-AMD-024 |
 | RD-UPDATE-hotpath-triple-lock-x-photonic-tri-logic-2026-07-15.md | — | — | — | — |
 | RD-UPDATE-table-rd0388-0398-recent-results-2026-07-16.md | — | — | — | FUNGI-HOT-001 |
+| README.md | — | — | — | — |
 | README.md | — | — | — | — |
 | README.md | — | — | — | — |
 | README.md | — | — | — | — |
@@ -1064,7 +1102,40 @@ Generated: 2026-07-16
 ## Orphaned Documents
 Docs with no inbound links from other KB docs:
 
-- `HANDOVER-round-2026-07-16-night-areas-dss-tlstp-cycle.md` — HANDOVER — round 2026-07-16 NIGHT: the 11-area drive, DSS.wasm + TLSTP builds, full cycle
+- `RD-0413-tritmesh-tensor-numerical-quantum-engine-scope-and-security.md` — RD-0413 — TritMesh:Tensor: the numerical / quantum-research engine — scope, tri-logic fit, security-adjudicated
+- `RD-0414-tritmesh-market-hallmark-finance-engine-scope-and-security.md` — RD-0414 — TritMesh:Market: the Hallmark finance engine — sealed hot-path types, honest latency, security-adjudicated
+- `RD-0415-storing-algebraic-maths-expressions-in-tritmesh-market-governed-zero-trust.md` — RD-0415 — Storing algebraic / maths expressions in TritMesh:Market — governed, zero-trust
+- `RD-0416-hallmark-name-reservation-tiered-canonical-entity-registry-zero-trust.md` — RD-0416 — Reserving Hallmark names for real-world entities — a tiered canonical registry, zero-trust
+- `RD-0417-tritmesh-mycelium-graph-hypergraph-topology-layer-scope-and-security.md` — RD-0417 — TritMesh:Mycelium: the shared graph / hypergraph / topology layer — scope, tri-logic fit, security
+- `RD-0418-family-branding-check-and-high-assurance-engine-rename-options.md` — RD-0418 — Family branding check + high-assurance-engine rename options
+- `RD-0419-the-tritmesh-family-map-index-of-engines-ql-substrate-repos-and-open-decisions.md` — RD-0419 — The TritMesh family map: engines · QL · substrate · repos · open owner decisions
+- `RD-0420-tritmesh-markets-service-catalogue.md` — RD-0420 — TritMesh:Markets service catalogue — every service type the finance family caters for
+- `RD-0421-financial-services-sector-map-who-uses-the-tritmesh-family.md` — RD-0421 — Who uses it: the financial-services sector map for the TritMesh family
+- `RD-0422-financial-data-and-maths-taxonomy-per-service-map-graphs-as-streams.md` — RD-0422 — The financial data-and-maths taxonomy — every data/maths class the services use, per-service map, graphs-as-streams
+- `2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd.md` — 2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd
+- `2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed.md` — 2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed
+- `2026-07-16-ACK-kb-graph-code-region-masking.md` — 2026-07-16-ACK-kb-graph-code-region-masking
+- `2026-07-16-ACK-match-arm-cluster-verified-source-and-execution.md` — 2026-07-16-ACK-match-arm-cluster-verified-source-and-execution
+- `2026-07-16-ACK-p1-r2-closed-gates-reverified.md` — 2026-07-16-ACK-p1-r2-closed-gates-reverified
+- `2026-07-16-ACK-rd0128-stale-proof-confirm-option-a.md` — 2026-07-16-ACK-rd0128-stale-proof-confirm-option-a
+- `2026-07-16-ACK2-rebaseline-167-confirmed-proceed.md` — 2026-07-16-ACK2-rebaseline-167-confirmed-proceed
+- `2026-07-16-FYI-push-policy-correction-main-is-commit-only.md` — 2026-07-16-FYI-push-policy-correction-main-is-commit-only
+- `2026-07-16-PRIORITY-main-instructions.md` — 2026-07-16-PRIORITY-main-instructions
+- `2026-07-16-UNLOCK-checker-taxonomy-20-adopt.md` — 2026-07-16-UNLOCK-checker-taxonomy-20-adopt
+- `2026-07-16-answers-to-night-round-rd-requests.md` — 2026-07-16-answers-to-night-round-rd-requests
+- `2026-07-16-rhizo-ql-and-galerina-reusables.md` — 2026-07-16-rhizo-ql-and-galerina-reusables
+- `2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion.md` — 2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion
+- `2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch.md` — 2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch
+- `2026-07-16-ACK-match-arm-cluster-landed-022-023-live-021-dead.md` — 2026-07-16-ACK-match-arm-cluster-landed-022-023-live-021-dead
+- `2026-07-16-ACK-p1-r1-valuestate004-reframed.md` — 2026-07-16-ACK-p1-r1-valuestate004-reframed
+- `2026-07-16-ACK-p1-r2-guarded-paramtypes-populated.md` — 2026-07-16-ACK-p1-r2-guarded-paramtypes-populated
+- `2026-07-16-ACK-rd0128-option-a-applied.md` — 2026-07-16-ACK-rd0128-option-a-applied
+- `2026-07-16-ACK-rhizo-ql-reusables-hallmark-shape-ok.md` — 2026-07-16-ACK-rhizo-ql-reusables-hallmark-shape-ok
+- `2026-07-16-ACK-taxonomy-AUDIT-ZERO.md` — 2026-07-16-ACK-taxonomy-AUDIT-ZERO
+- `2026-07-16-ACK-taxonomy-rebaseline-167.md` — 2026-07-16-ACK-taxonomy-rebaseline-167
+- `2026-07-16-FYI-rd0128-stale-testwitness-proof.md` — 2026-07-16-FYI-rd0128-stale-testwitness-proof
+- `2026-07-16-FYI-tranche-bc-grounded-not-a-loop-tick.md` — 2026-07-16-FYI-tranche-bc-grounded-not-a-loop-tick
+- `2026-07-16-kb-graph-code-region-masking-stale-links-zeroed.md` — 2026-07-16-kb-graph-code-region-masking-stale-links-zeroed
 
 ## Stale Links
 Links pointing to missing files:

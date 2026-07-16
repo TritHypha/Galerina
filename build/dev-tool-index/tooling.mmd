@@ -79,6 +79,9 @@ flowchart LR
   T_audit_doc_drift_mjs --> C_teaching_corpus
   T_audit_doc_drift_mjs --> C_doc_drift
   T_audit_doc_drift_mjs --> C_graph_index
+  T_audit_dss_wasm_build_mjs["audit-dss-wasm-build.mjs"]
+  T_audit_dss_wasm_build_mjs --> C_signing_fusion
+  T_audit_dss_wasm_build_mjs --> C_coverage
   T_audit_effect_canonicality_mjs["audit-effect-canonicality.mjs"]
   T_audit_effect_canonicality_mjs --> C_effects
   T_audit_effect_canonicality_mjs --> C_signing_fusion
@@ -302,6 +305,8 @@ flowchart LR
   T_galerina_new_mjs --> C_effects
   T_galerina_new_mjs --> C_signing_fusion
   T_galerina_new_mjs --> C_governance
+  T_gen_status_blocks_mjs["gen-status-blocks.mjs"]
+  T_gen_status_blocks_mjs --> C_doc_drift
   T_graph_all_mjs["graph-all.mjs"]
   T_graph_all_mjs --> C_signing_fusion
   T_graph_all_mjs --> C_coverage
@@ -390,6 +395,10 @@ flowchart LR
   T_status_mjs --> C_source_hygiene
   T_status_mjs --> C_doc_drift
   T_status_mjs --> C_graph_index
+  T_bench_startup_mjs["bench-startup.mjs"]
+  T_bench_startup_mjs --> C_signing_fusion
+  T_bench_startup_mjs --> C_source_hygiene
+  T_bench_startup_mjs --> C_graph_index
   T_brand_audit_mjs["brand-audit.mjs"]
   T_brand_audit_mjs --> C_signing_fusion
   T_brand_audit_mjs --> C_diagnostics

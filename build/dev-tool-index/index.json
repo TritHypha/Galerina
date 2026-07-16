@@ -4,9 +4,9 @@
     "packages": 94,
     "testBearing": 93,
     "tests": 7123,
-    "devTools": 80,
-    "auditTools": 45,
-    "toolsInCadence": 26,
+    "devTools": 83,
+    "auditTools": 46,
+    "toolsInCadence": 27,
     "proofs": 40
   },
   "packages": [
@@ -479,7 +479,7 @@
       "tests": 451,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 31,
+      "files": 33,
       "deps": [
         "@galerina/inference-bridge-contract",
         "@galerina/substrate-math"
@@ -1150,6 +1150,17 @@
       ]
     },
     {
+      "name": "audit-dss-wasm-build.mjs",
+      "category": "audit",
+      "purpose": "measured, ratcheted R0 build gate for the DSS.wasm modules (RD-0366:",
+      "selfTest": true,
+      "inCadence": false,
+      "concerns": [
+        "signing/fusion",
+        "coverage"
+      ]
+    },
+    {
       "name": "audit-effect-canonicality.mjs",
       "category": "audit",
       "purpose": "single-source-of-truth gate for effect names",
@@ -1677,6 +1688,16 @@
       ]
     },
     {
+      "name": "gen-status-blocks.mjs",
+      "category": "generator",
+      "purpose": "the DURABLE fix for status drift (task #74). component-health.mjs is the ONE",
+      "selfTest": true,
+      "inCadence": true,
+      "concerns": [
+        "doc-drift"
+      ]
+    },
+    {
       "name": "graph-all.mjs",
       "category": "graph",
       "purpose": "run EVERY Galerina graph-related dev tool in one shot. THIS is \"run graph\".",
@@ -1881,6 +1902,18 @@
         "teaching-corpus",
         "source-hygiene",
         "doc-drift",
+        "graph/index"
+      ]
+    },
+    {
+      "name": "bench-startup.mjs",
+      "category": "util",
+      "purpose": "W1, the start-up/warm-up measurement rig (RD-0401 §build-order rung 1).",
+      "selfTest": true,
+      "inCadence": false,
+      "concerns": [
+        "signing/fusion",
+        "source-hygiene",
         "graph/index"
       ]
     },
@@ -2120,6 +2153,7 @@
     "coverage": [
       "audit-allowlist-sensitive.mjs",
       "audit-coverage.mjs",
+      "audit-dss-wasm-build.mjs",
       "audit-fungi-runtime.mjs",
       "audit-gscm.mjs",
       "audit-name-collisions.mjs",
@@ -2244,6 +2278,7 @@
       "run-core-tests.cjs",
       "run-phase-close.mjs",
       "status.mjs",
+      "bench-startup.mjs",
       "build-core-chain.mjs",
       "check-gate-injection.mjs",
       "emit-doc-wat.mjs",
@@ -2273,6 +2308,7 @@
       "audit-brand-keys.mjs",
       "audit-checker-wiring.mjs",
       "audit-diagnostic-doc-drift.mjs",
+      "audit-dss-wasm-build.mjs",
       "audit-effect-canonicality.mjs",
       "audit-fungi-corpus-check.mjs",
       "audit-gscm.mjs",
@@ -2299,6 +2335,7 @@
       "gen-contract-registry.mjs",
       "lint-fungi.mjs",
       "component-health.mjs",
+      "bench-startup.mjs",
       "brand-audit.mjs",
       "build-core-chain.mjs",
       "check-gate-injection.mjs",
@@ -2354,6 +2391,7 @@
       "audit-syntax-reference-links.mjs",
       "audit-syntax.mjs",
       "fix-logicn-brand.mjs",
+      "gen-status-blocks.mjs",
       "graph-all.mjs",
       "code-index.mjs",
       "gen-code-registry.mjs",
@@ -2448,6 +2486,7 @@
       "graph-all.mjs",
       "memory-graph.mjs",
       "status.mjs",
+      "bench-startup.mjs",
       "brand-audit.mjs",
       "emit-doc-wat.mjs",
       "rd-absorb.mjs",
@@ -2550,6 +2589,7 @@
       "audit-diagnostic-codes.mjs",
       "audit-diagnostic-doc-drift.mjs",
       "audit-doc-drift.mjs",
+      "audit-dss-wasm-build.mjs",
       "audit-example-diagnostics.mjs",
       "audit-gate-selftests.mjs",
       "audit-graph-integrity.mjs",
