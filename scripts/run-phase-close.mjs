@@ -219,6 +219,11 @@ run("graph:all", "node", ["scripts/graph-all.mjs", "--quiet"]);
 //        graph:all — do not re-run them here (that was the drift). ──
 run("code-index", "node", ["scripts/code-index.mjs"]);
 run("code-registry", "node", ["scripts/gen-code-registry.mjs"]);
+// FUNGI-TYPE twin-parity (RD-0412): the self-hosted type-checker twin must only emit codes the real
+// type-checker.ts emits (scanned from actual call-sites, per-pass). Fail-closed — exit 3 on a false
+// differential — now that the type-system twin is complete, a permanent regression guard against a new
+// cluster mirroring a code the checker never raises. Standalone, source-scanned (no registry dependency).
+run("twin-emit-parity", "node", ["scripts/audit-twin-emit-parity.mjs"]);
 run("kb-index", "node", ["scripts/kb-index.mjs"]); // KB keyword index (token-saver): keep build/kb-index/ fresh vs the docs
 
 // ── 5b. Convention lint gate (TASK-ENV-001) ──

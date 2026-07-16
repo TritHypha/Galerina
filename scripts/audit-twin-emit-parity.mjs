@@ -1,89 +1,122 @@
 // =============================================================================
-// audit-twin-emit-parity.mjs — twin-emitted ⊆ Stage-A-emitted (fail-closed)
+// audit-twin-emit-parity.mjs — twin-emitted ⊆ type-checker-emitted (fail-closed)
 // =============================================================================
 // R&D's twin-emit-parity idea (2026-07-16), made structural. The self-hosted
 // type-checker TWIN (type-checker.fungi) must only emit diagnostic codes that
-// Stage-A actually EMITS. A twin code with no Stage-A emit site is a FALSE
-// DIFFERENTIAL — the twin flagging what the real checker never does (fails
-// closed against valid programs, erodes "twin ≡ Stage-A").
+// Stage-A's TYPE-CHECKER actually EMITS. A twin code with no type-checker emit
+// site is a FALSE DIFFERENTIAL — the twin flagging what the real checker never
+// does (fails closed against valid programs, erodes "twin ≡ Stage-A").
 //
-// The authoritative Stage-A emit set is the DERIVED code-registry
-// (build/code-registry/registry.json, built by gen-code-registry.mjs): each
-// entry carries an `emits` count of real emit sites. A code with emits===0 has
-// no Stage-A emit site (021/012/019/027 were all found this way). So:
-//   ASSERT  twin.emitSet ⊆ { code | registry.emits > 0 }         (fail-closed)
-//   REPORT  type-checker codes with emits>0 absent from the twin (the frontier)
+// AUTHORITY = the actual emit CALL-SITES in the checker SOURCE, scanned directly
+// (not the registry's text-match `emits` count, which also matched test-file and
+// comment mentions and so spuriously kept dead codes 019/027 "emitted"). A code
+// is type-checker-emitted iff type-checker.ts has a `makeTCDiag("CODE", …)` or a
+// `diagnostics.push({ code: "CODE" … })` call-site. This is the by-construction
+// discipline (#20 taxonomy / RD-0412): parse the emit structure, don't text-match.
 //
-// This would have caught 019 + 027 the moment they were mirrored, and it is a
-// permanent regression guard as new clusters land. Runs after `code-registry`
-// in phase-close so the registry it reads is fresh.
+//   ASSERT  twin.emitSet ⊆ typeChecker.emitSet                    (fail-closed, exit 3)
+//   REPORT  type-checker codes absent from the twin (the exact frontier)
+//   SCOPE   PER PASS — the twin mirrors type-checker.ts. NAME-* live in the
+//           SymbolResolver pass (symbol-resolver.ts); they are a FUTURE
+//           symbol-resolver twin's frontier, reported in a separate bucket, never
+//           mixed into this twin's frontier (that was the NAME-001/003 confusion).
+//
+// This would have caught 019 + 027 the moment they were mirrored, is exact (019/027
+// no longer appear — they have no type-checker.ts call-site), and is a permanent
+// regression guard as new clusters land. Self-sufficient: scans source, no registry.
 //
 // Usage: node scripts/audit-twin-emit-parity.mjs [--json] [--self-test]
-//        exit 3 = a twin false differential exists (twin emits a registry emits=0 code)
+//        exit 3 = a twin false differential exists (twin emits a code the type-checker never does)
 // =============================================================================
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const REGISTRY = join(ROOT, "build", "code-registry", "registry.json");
-const TWIN = join(ROOT, "packages-galerina", "galerina-core-compiler", "src", "self-hosted", "type-checker.fungi");
+const CC = join(ROOT, "packages-galerina", "galerina-core-compiler", "src");
+const TWIN = join(CC, "self-hosted", "type-checker.fungi");
+const TYPE_CHECKER = join(CC, "type-checker.ts");
+const SYMBOL_RESOLVER = join(CC, "symbol-resolver.ts");
 
 // ── pure core (self-tested) ───────────────────────────────────────────────────
 
-// Codes the twin raises: every `code: "FUNGI-…"` it appends.
+// Codes the twin RAISES: every `code: "FUNGI-…"` it appends (a comment mentioning a
+// code has no `code:` key, so it is excluded).
 export function twinEmitSet(src) {
   return [...new Set([...src.matchAll(/code:\s*"(FUNGI-[A-Z0-9]+-\d+)"/g)].map((m) => m[1]))].sort();
 }
 
-// Stage-A emit set from the registry: codes with a real emit site (emits > 0).
-export function stageAEmitSet(entries) {
-  return new Set(entries.filter((e) => (e.emits ?? 0) > 0).map((e) => e.code));
+// Codes a checker SOURCE file EMITS: the first arg of a `makeTCDiag("CODE", …)` call,
+// or the `code:` of an inline `diagnostics.push({ code: "CODE" … })`. Both are emit
+// call-sites; a `// FUNGI-…` comment or an `x.code === "FUNGI-…"` compare has neither
+// shape, so only real emissions are counted (the by-construction fix for 019/027).
+export function sourceEmitSet(src) {
+  const codes = new Set();
+  for (const m of src.matchAll(/makeTCDiag\(\s*"(FUNGI-[A-Z0-9]+-\d+)"/g)) codes.add(m[1]);
+  for (const m of src.matchAll(/\bcode:\s*"(FUNGI-[A-Z0-9]+-\d+)"/g)) codes.add(m[1]);
+  return codes;
 }
 
-// twin codes with NO Stage-A emit site = false differentials.
-export function falseDifferentials(twinCodes, emitSet, byCode) {
-  return twinCodes.filter((c) => !emitSet.has(c)).map((c) => ({ code: c, emits: byCode[c]?.emits ?? "absent" }));
+// twin codes with NO type-checker emit call-site = false differentials.
+export function falseDifferentials(twinCodes, emitSet) {
+  return twinCodes.filter((c) => !emitSet.has(c));
+}
+
+// type-checker codes the twin does not yet mirror (the exact frontier), TYPE-* only
+// scoped to the pass the twin twins.
+export function frontierFor(emitSet, twinCodes) {
+  const twinSet = new Set(twinCodes);
+  return [...emitSet].filter((c) => !twinSet.has(c)).sort();
 }
 
 // ── self-test ─────────────────────────────────────────────────────────────────
 if (process.argv.includes("--self-test")) {
-  const entries = [
-    { code: "FUNGI-TYPE-011", emits: 1 }, { code: "FUNGI-TYPE-019", emits: 0 },
-    { code: "FUNGI-TYPE-027", emits: 0 }, { code: "FUNGI-TYPE-002", emits: 1 },
-  ];
-  const byCode = Object.fromEntries(entries.map((e) => [e.code, e]));
-  const emit = stageAEmitSet(entries);
-  assert(emit.has("FUNGI-TYPE-011") && !emit.has("FUNGI-TYPE-019"), "emit set");
-  const twin = twinEmitSet(`diags.append({ code: "FUNGI-TYPE-011" }) ... { code: "FUNGI-TYPE-019", x }`);
-  assert(twin.length === 2 && twin[0] === "FUNGI-TYPE-011", "twin set");
-  const bad = falseDifferentials(twin, emit, byCode);
-  assert(bad.length === 1 && bad[0].code === "FUNGI-TYPE-019", "detects 019 false diff");
-  const clean = falseDifferentials(["FUNGI-TYPE-011", "FUNGI-TYPE-002"], emit, byCode);
-  assert(clean.length === 0, "clean twin passes");
-  console.log("twin-emit-parity self-test: 4/4 ok");
+  const tcSrc = `
+    this.diagnostics.push(makeTCDiag("FUNGI-TYPE-002", "X", msg));
+    this.diagnostics.push({ code: "FUNGI-TYPE-014", name: "Y" });
+    // dead: no FUNGI-TYPE-019 emit here — this comment must NOT count
+    if (d.code === "FUNGI-TYPE-027") return; // a compare, not an emit
+  `;
+  const emit = sourceEmitSet(tcSrc);
+  assert(emit.has("FUNGI-TYPE-002") && emit.has("FUNGI-TYPE-014"), "emit set: real sites");
+  assert(!emit.has("FUNGI-TYPE-019") && !emit.has("FUNGI-TYPE-027"), "emit set: excludes comment + compare");
+  const twin = twinEmitSet(`diags.append({ code: "FUNGI-TYPE-002" }); // no FUNGI-TYPE-019\n{ code: "FUNGI-TYPE-014" }`);
+  assert(twin.length === 2 && twin[0] === "FUNGI-TYPE-002", "twin set (comment excluded)");
+  assert(falseDifferentials(twin, emit).length === 0, "clean twin passes");
+  assert(falseDifferentials(["FUNGI-TYPE-019"], emit).length === 1, "detects a false differential");
+  assert(frontierFor(emit, twin).length === 0, "frontier empty when twin has all emits");
+  assert(frontierFor(sourceEmitSet(`makeTCDiag("FUNGI-TYPE-002",` + `"a")\nmakeTCDiag("FUNGI-TYPE-099","b")`), twin).join() === "FUNGI-TYPE-099", "frontier = unmirrored emits");
+  console.log("twin-emit-parity self-test: 7/7 ok");
   process.exit(0);
 }
 function assert(ok, what) { if (!ok) { console.error(`self-test FAIL: ${what}`); process.exit(1); } }
 
 // ── main ──────────────────────────────────────────────────────────────────────
-const entries = JSON.parse(readFileSync(REGISTRY, "utf8")).entries;
-const byCode = Object.fromEntries(entries.map((e) => [e.code, e]));
-const emitSet = stageAEmitSet(entries);
 const twin = twinEmitSet(readFileSync(TWIN, "utf8"));
-const bad = falseDifferentials(twin, emitSet, byCode);
+const tcEmits = sourceEmitSet(readFileSync(TYPE_CHECKER, "utf8"));
+const srEmits = sourceEmitSet(readFileSync(SYMBOL_RESOLVER, "utf8"));
 
-// frontier: TYPE-*/NAME-* codes Stage-A emits that the twin does not yet mirror
 const twinSet = new Set(twin);
-const frontier = [...emitSet].filter((c) => /^FUNGI-(TYPE|NAME)-/.test(c) && !twinSet.has(c)).sort();
+const bad = falseDifferentials(twin, tcEmits);          // twin ⊄ type-checker → false differential
+const tcGap = frontierFor(tcEmits, twin);               // ALL type-checker codes not yet mirrored (exact)
+// The twin's CHARTER is the TYPE-* type-system family. Scope the frontier to it; surface the other
+// diagnostic families type-checker.ts also emits (K3 logic, HALLMARK provenance, PREFILTER, CHECK,
+// BINDING lifecycle) as a SEPARATE bucket — real emits, distinct subsystems, a future twin's scope,
+// never silently hidden (the old TYPE|NAME frontier filter hid them). SymbolResolver (NAME-*) is a
+// different PASS again (per-pass scoping — the NAME-001/003 confusion).
+const typeFrontier = tcGap.filter((c) => /^FUNGI-TYPE-/.test(c));
+const otherFamilies = tcGap.filter((c) => !/^FUNGI-(TYPE|NAME)-/.test(c));
+const otherPass = [...srEmits].filter((c) => !tcEmits.has(c) && !twinSet.has(c)).sort();
 
 const asJson = process.argv.includes("--json");
 if (asJson) {
-  console.log(JSON.stringify({ twinEmits: twin.length, falseDifferentials: bad, frontier }, null, 1));
+  console.log(JSON.stringify({ twinEmits: twin.length, falseDifferentials: bad, typeFrontier, otherFamilies, otherPassFrontier: otherPass }, null, 1));
 } else {
   console.log(`twin-emit-parity: twin emits ${twin.length} codes · ${bad.length} false differential(s)`);
-  for (const b of bad) console.log(`  ⚠ FALSE DIFFERENTIAL ${b.code} — Stage-A registry emits=${b.emits} (twin flags what Stage-A never does)`);
-  if (bad.length === 0) console.log(`  ✅ twin-emitted ⊆ Stage-A-emitted (no false differential)`);
-  console.log(`  frontier (${frontier.length} TYPE/NAME codes Stage-A emits, twin does not yet mirror): ${frontier.join(" ") || "none — full parity"}`);
+  for (const c of bad) console.log(`  ⚠ FALSE DIFFERENTIAL ${c} — no emit call-site in type-checker.ts (twin flags what the checker never does)`);
+  if (bad.length === 0) console.log(`  ✅ twin-emitted ⊆ type-checker-emitted (no false differential)`);
+  console.log(`  type-system frontier (${typeFrontier.length} TYPE-* codes the twin does not yet mirror): ${typeFrontier.join(" ") || "none — the TYPE-* type-system twin is COMPLETE"}`);
+  console.log(`  other type-checker families (${otherFamilies.length}; distinct subsystems, NOT the TYPE-* charter — future twin scope): ${otherFamilies.join(" ") || "none"}`);
+  console.log(`  other-pass (SymbolResolver, a future twin's scope): ${otherPass.join(" ") || "none"}`);
 }
 process.exit(bad.length === 0 ? 0 : 3);

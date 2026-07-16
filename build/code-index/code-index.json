@@ -10447,12 +10447,14 @@
     "code": "FUNGI-MEMORY-001",
     "namespace": "FUNGI",
     "family": "MEMORY",
-    "occurrences": 25,
+    "occurrences": 26,
     "docOnly": false,
     "defs": [
       "packages-galerina/galerina-core-compiler/src/index.ts:1786"
     ],
-    "emits": [],
+    "emits": [
+      "scripts/audit-twin-emit-parity.mjs:75"
+    ],
     "tests": 3,
     "refs": 7,
     "docs": 9,
@@ -10486,6 +10488,7 @@
       "doc docs/COVERAGE.md:423",
       "doc docs/COVERAGE.md:433",
       "ref scripts/audit-production-blockers.mjs:5",
+      "emit scripts/audit-twin-emit-parity.mjs:75",
       "ref scripts/code-index.mjs:123",
       "ref scripts/lint-conventions.mjs:52"
     ]
@@ -17812,23 +17815,28 @@
     "code": "FUNGI-TYPE-002",
     "namespace": "FUNGI",
     "family": "TYPE",
-    "occurrences": 134,
+    "occurrences": 137,
     "docOnly": false,
     "defs": [
       "packages-galerina/galerina-core-compiler/src/index.ts:345"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/type-checker.ts:1551",
-      "scripts/audit-twin-emit-parity.mjs:53"
+      "scripts/audit-twin-emit-parity.mjs:75",
+      "scripts/audit-twin-emit-parity.mjs:83",
+      "scripts/audit-twin-emit-parity.mjs:88"
     ],
     "tests": 91,
-    "refs": 12,
+    "refs": 13,
     "docs": 10,
     "names": [
       "QUANTIZED_PRECISION_MISMATCH",
       "INVALID_RUNTIME_TARGET_TYPE",
       "UNKNOWN_SYMBOL",
-      "TYPE_MISMATCH"
+      "TYPE_MISMATCH",
+      "X",
+      "Y",
+      "a"
     ],
     "severities": [
       "warning",
@@ -17967,8 +17975,11 @@
       "doc docs/examples/Level-2-Types/AI_SUMMARY.md:50",
       "fungi docs/examples/Level-4-Security/160-protected-not-redacted/example.fungi:6",
       "doc docs/examples/README.md:73",
-      "emit scripts/audit-twin-emit-parity.mjs:53",
-      "ref scripts/audit-twin-emit-parity.mjs:62"
+      "emit scripts/audit-twin-emit-parity.mjs:75",
+      "ref scripts/audit-twin-emit-parity.mjs:81",
+      "emit scripts/audit-twin-emit-parity.mjs:83",
+      "ref scripts/audit-twin-emit-parity.mjs:84",
+      "emit scripts/audit-twin-emit-parity.mjs:88"
     ]
   },
   {
@@ -18694,18 +18705,16 @@
     "code": "FUNGI-TYPE-011",
     "namespace": "FUNGI",
     "family": "TYPE",
-    "occurrences": 78,
+    "occurrences": 73,
     "docOnly": false,
     "defs": [
       "packages-galerina/galerina-core-compiler/src/index.ts:339"
     ],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/type-checker.ts:1608",
-      "scripts/audit-twin-emit-parity.mjs:52",
-      "scripts/audit-twin-emit-parity.mjs:58"
+      "packages-galerina/galerina-core-compiler/src/type-checker.ts:1608"
     ],
     "tests": 62,
-    "refs": 6,
+    "refs": 3,
     "docs": 2,
     "names": [
       "INVALID_COLLECTION_ELEMENT",
@@ -18791,12 +18800,7 @@
       "test packages-galerina/galerina-core-compiler/tests/type-checker-phase11.test.mjs:137",
       "test packages-galerina/galerina-core-compiler/tests/type-checker-phase11.test.mjs:138",
       "doc docs/AI/DO_NOT_USE_YET.md:165",
-      "doc docs/roadmap-2026-07-15.md:63",
-      "emit scripts/audit-twin-emit-parity.mjs:52",
-      "ref scripts/audit-twin-emit-parity.mjs:57",
-      "emit scripts/audit-twin-emit-parity.mjs:58",
-      "ref scripts/audit-twin-emit-parity.mjs:59",
-      "ref scripts/audit-twin-emit-parity.mjs:62"
+      "doc docs/roadmap-2026-07-15.md:63"
     ]
   },
   {
@@ -18865,16 +18869,18 @@
     "code": "FUNGI-TYPE-014",
     "namespace": "FUNGI",
     "family": "TYPE",
-    "occurrences": 35,
+    "occurrences": 38,
     "docOnly": false,
     "defs": [
       "packages-galerina/galerina-core-compiler/src/index.ts:342"
     ],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/type-checker.ts:1400"
+      "packages-galerina/galerina-core-compiler/src/type-checker.ts:1400",
+      "scripts/audit-twin-emit-parity.mjs:76",
+      "scripts/audit-twin-emit-parity.mjs:83"
     ],
     "tests": 24,
-    "refs": 4,
+    "refs": 5,
     "docs": 0,
     "names": [
       "MISSING_REQUIRED_EFFECT",
@@ -18882,7 +18888,8 @@
       "TENSOR_SHAPE_MISMATCH",
       "QUANTIZED_PRECISION_MISMATCH",
       "INVALID_RUNTIME_TARGET_TYPE",
-      "UNKNOWN_SYMBOL"
+      "UNKNOWN_SYMBOL",
+      "Y"
     ],
     "severities": [
       "error",
@@ -18923,7 +18930,10 @@
       "test packages-galerina/galerina-core-compiler/tests/type-checker-phase11-wave2.test.mjs:176",
       "test packages-galerina/galerina-core-compiler/tests/type-checker-phase11-wave2.test.mjs:180",
       "test packages-galerina/galerina-core-compiler/tests/type-checker-phase11-wave2.test.mjs:191",
-      "test packages-galerina/galerina-core-compiler/tests/type-checker-phase11-wave2.test.mjs:192"
+      "test packages-galerina/galerina-core-compiler/tests/type-checker-phase11-wave2.test.mjs:192",
+      "emit scripts/audit-twin-emit-parity.mjs:76",
+      "ref scripts/audit-twin-emit-parity.mjs:81",
+      "emit scripts/audit-twin-emit-parity.mjs:83"
     ]
   },
   {
@@ -19118,11 +19128,10 @@
       "packages-galerina/galerina-core-compiler/src/index.ts:347"
     ],
     "emits": [
-      "scripts/audit-twin-emit-parity.mjs:52",
-      "scripts/audit-twin-emit-parity.mjs:58"
+      "scripts/audit-twin-emit-parity.mjs:83"
     ],
     "tests": 7,
-    "refs": 3,
+    "refs": 4,
     "docs": 1,
     "names": [
       "UNKNOWN_SYMBOL"
@@ -19143,10 +19152,10 @@
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-type-checker.test.mjs:704",
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-type-checker.test.mjs:714",
       "doc docs/roadmap-2026-07-15.md:42",
-      "emit scripts/audit-twin-emit-parity.mjs:52",
-      "ref scripts/audit-twin-emit-parity.mjs:57",
-      "emit scripts/audit-twin-emit-parity.mjs:58",
-      "ref scripts/audit-twin-emit-parity.mjs:61"
+      "ref scripts/audit-twin-emit-parity.mjs:77",
+      "ref scripts/audit-twin-emit-parity.mjs:82",
+      "emit scripts/audit-twin-emit-parity.mjs:83",
+      "ref scripts/audit-twin-emit-parity.mjs:86"
     ]
   },
   {
@@ -19457,21 +19466,20 @@
     "code": "FUNGI-TYPE-027",
     "namespace": "FUNGI",
     "family": "TYPE",
-    "occurrences": 3,
+    "occurrences": 4,
     "docOnly": false,
     "defs": [],
-    "emits": [
-      "scripts/audit-twin-emit-parity.mjs:53"
-    ],
+    "emits": [],
     "tests": 0,
-    "refs": 0,
+    "refs": 2,
     "docs": 1,
     "names": [],
     "severities": [],
     "allSites": [
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:1131",
       "doc docs/roadmap-2026-07-15.md:43",
-      "emit scripts/audit-twin-emit-parity.mjs:53"
+      "ref scripts/audit-twin-emit-parity.mjs:78",
+      "ref scripts/audit-twin-emit-parity.mjs:82"
     ]
   },
   {
@@ -19564,6 +19572,25 @@
       "test packages-galerina/galerina-core-compiler/tests/type-registry/type-id-and-flags.test.mjs:281",
       "test packages-galerina/galerina-core-compiler/tests/type-registry/type-id-and-flags.test.mjs:290",
       "test packages-galerina/galerina-core-compiler/tests/type-registry/type-id-and-flags.test.mjs:305"
+    ]
+  },
+  {
+    "code": "FUNGI-TYPE-099",
+    "namespace": "FUNGI",
+    "family": "TYPE",
+    "occurrences": 1,
+    "docOnly": false,
+    "defs": [],
+    "emits": [
+      "scripts/audit-twin-emit-parity.mjs:88"
+    ],
+    "tests": 0,
+    "refs": 0,
+    "docs": 0,
+    "names": [],
+    "severities": [],
+    "allSites": [
+      "emit scripts/audit-twin-emit-parity.mjs:88"
     ]
   },
   {

@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1133,
+  "docCount": 1135,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -2378,6 +2378,8 @@
         "✅ P1 R1 (VALUESTATE-004 reframe) — APPLIED + verified SOUND (2026-07-16)",
         "▶ P0 Tranche B/C — active (main); **cluster 1 (match arms) DONE + R&D-verified**",
         "▶ P0 Tranche B/C clusters 5–8 — CLOSED + R&D-verified (2026-07-16 night, 3-leg cadence)",
+        "✅ TYPE-CHECKER TWIN COMPLETE (2026-07-16 night) — 20 codes, 0 false differentials",
+        "▶ Owner-directed Rhizo / graph-DB series — ACTIVE (2026-07-16 night)",
         "✅ Owner-directed side workstreams (2026-07-16 evening) — COMPLETE",
         "✅ Benchmark work-equivalence drift — new defect class, R&D design answer given",
         "✅ rhizo-ql value-units→Hallmark — main ACK, board item CLOSED",
@@ -2389,7 +2391,8 @@
         "Post-v1 / hardware (design-gated, not a build lane)"
       ],
       "codes": [
-        "FUNGI-TYPE-012"
+        "FUNGI-TYPE-012",
+        "FUNGI-EFFECT-001"
       ],
       "tasks": [
         "#20",
@@ -2424,26 +2427,26 @@
         "tranche",
         "closed",
         "cluster",
+        "night",
+        "complete",
         "to-main",
         "differential",
+        "false",
         "verified",
-        "complete",
+        "owner-directed",
         "d-verified",
+        "type-checker",
+        "active",
+        "gate",
         "session",
         "board",
-        "gate",
-        "false",
-        "pipeline",
         "side",
-        "confirmed",
+        "codes",
+        "rhizo",
         "applied",
         "stage-a",
         "benchmark",
-        "leg",
-        "owner",
-        "hallmark",
-        "open",
-        "audit"
+        "pipeline"
       ]
     },
     {
@@ -2565,6 +2568,48 @@
         "first",
         "exactly",
         "parity"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-014-VERIFIED-101-101-TYPE-CHECKER-TWIN-COMPLETE-plus-next-steer.md",
+      "title": "2026-07-16-ACK-014-VERIFIED-101-101-TYPE-CHECKER-TWIN-COMPLETE-plus-next-steer.md",
+      "headings": [
+        "014 — VERIFIED, both tiers, my own hand",
+        "The milestone",
+        "Steer on next — option 1, then option 2 (effect-checker preferred); your call"
+      ],
+      "codes": [
+        "FUNGI-TYPE-014",
+        "FUNGI-EFFECT-001"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "twin",
+        "option",
+        "effect-checker",
+        "both",
+        "next",
+        "effect",
+        "call",
+        "milestone",
+        "verified",
+        "own",
+        "hand",
+        "steer",
+        "tiers",
+        "type-checker",
+        "preferred",
+        "callee",
+        "effects",
+        "ack-014-verified-101-101-type-checker-twin-complete-plus-next-steer",
+        "complete",
+        "emit-count",
+        "pass",
+        "differential",
+        "pipeline",
+        "flow",
+        "real"
       ]
     },
     {
@@ -4270,6 +4315,50 @@
         "carrying",
         "open",
         "item"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-DONE-014-landed-TYPE-CHECKER-TWIN-COMPLETE-20-codes-0-false-diff.md",
+      "title": "2026-07-16-DONE-014-landed-TYPE-CHECKER-TWIN-COMPLETE-20-codes-0-false-diff.md",
+      "headings": [
+        "FUNGI-TYPE-014 (MISSING_REQUIRED_EFFECT) — LANDED, both tiers green",
+        "The twin is complete",
+        "Next — your call on where the workstream goes"
+      ],
+      "codes": [
+        "FUNGI-TYPE-014",
+        "FUNGI-EFFECT-001"
+      ],
+      "tasks": [
+        "#20"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "twin",
+        "effect",
+        "call",
+        "landed",
+        "effects",
+        "fungi-type-014",
+        "complete",
+        "missing",
+        "both",
+        "tiers",
+        "green",
+        "workstream",
+        "next",
+        "required",
+        "goes",
+        "type-checker",
+        "false",
+        "parser",
+        "differential",
+        "frontier",
+        "done-014-landed-type-checker-twin-complete-20-codes-0-false-diff",
+        "codes",
+        "differentials",
+        "pass",
+        "flow"
       ]
     },
     {

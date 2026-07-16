@@ -6,7 +6,7 @@
     "tests": 7241,
     "devTools": 85,
     "auditTools": 48,
-    "toolsInCadence": 27,
+    "toolsInCadence": 28,
     "proofs": 40
   },
   "packages": [
@@ -1657,9 +1657,9 @@
     {
       "name": "audit-twin-emit-parity.mjs",
       "category": "audit",
-      "purpose": "twin-emitted ⊆ Stage-A-emitted (fail-closed)",
+      "purpose": "twin-emitted ⊆ type-checker-emitted (fail-closed)",
       "selfTest": true,
-      "inCadence": false,
+      "inCadence": true,
       "concerns": [
         "gate-wiring",
         "diagnostics",
@@ -2636,7 +2636,6 @@
       "audit-syntax-reference-links.mjs",
       "audit-syntax.mjs",
       "audit-tier-boundary.mjs",
-      "audit-twin-emit-parity.mjs",
       "audit-web-stub-guard.mjs",
       "lint-fungi.mjs"
     ]

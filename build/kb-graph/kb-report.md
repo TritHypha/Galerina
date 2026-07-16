@@ -2,7 +2,7 @@
 Generated: 2026-07-16
 
 ## Stats
-- Docs: 1131 | Edges: 3462 | Orphans: 75 | Stale links: 0 | FUNGI codes: 748
+- Docs: 1133 | Edges: 3462 | Orphans: 77 | Stale links: 0 | FUNGI codes: 748
 
 ## Document Registry (auto-generated)
 
@@ -29,6 +29,7 @@ Generated: 2026-07-16
 | 00-KB-INDEX.md | — | — | — | FUNGI-BACKEND-001, FUNGI-GATE-001, FUNGI-NET-001, FUNGI-STDLIB-001, FUNGI-SUPPLY-001 …+2 |
 | 2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md | — | — | — | — |
 | 2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed.md | — | — | — | — |
+| 2026-07-16-ACK-014-VERIFIED-101-101-TYPE-CHECKER-TWIN-COMPLETE-plus-next-steer.md | — | — | — | FUNGI-EFFECT-001, FUNGI-TYPE-014 |
 | 2026-07-16-ACK-024-landed-plus-frontier-correction-NAME-codes-are-symbol-resolver.md | — | — | — | FUNGI-NAME-001, FUNGI-NAME-003, FUNGI-TYPE-014, FUNGI-TYPE-024, FUNGI-TYPE-025 …+1 |
 | 2026-07-16-ACK-024-verified-plus-frontier-per-pass-scoping-and-025-coemission-design.md | — | — | — | — |
 | 2026-07-16-ACK-025-landed-frontier-now-just-014-plus-real-node-refinement.md | — | — | — | FUNGI-TYPE-014, FUNGI-TYPE-025 |
@@ -64,6 +65,7 @@ Generated: 2026-07-16
 | 2026-07-16-answers-to-night-round-rd-requests.md | — | — | — | — |
 | 2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea.md | — | — | — | FUNGI-TYPE-012 |
 | 2026-07-16-CONFIRM-014-plan-sound-land-it-two-groundings-converged.md | — | — | — | FUNGI-EFFECT-001 |
+| 2026-07-16-DONE-014-landed-TYPE-CHECKER-TWIN-COMPLETE-20-codes-0-false-diff.md | — | — | — | FUNGI-EFFECT-001, FUNGI-TYPE-014 |
 | 2026-07-16-FYI-014-fully-grounded-which-pass-answered-it-IS-type-checker-implementation-plan.md | — | — | — | FUNGI-EFFECT-001, FUNGI-TYPE-014 |
 | 2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked.md | — | — | — | — |
 | 2026-07-16-FYI-passive-lane-variance-root-cause-GC-dominated-plus-watcher.md | — | — | — | — |
@@ -98,7 +100,7 @@ Generated: 2026-07-16
 | automated-runtime-trust-strategy.md | — | — | — | — |
 | benchmark-success-plan.md | — | — | — | — |
 | bit-width-and-base64-asset-policy.md | — | — | — | — |
-| BOARD.md | — | — | — | FUNGI-TYPE-012 |
+| BOARD.md | — | — | — | FUNGI-EFFECT-001, FUNGI-TYPE-012 |
 | boot-main-startup-defaults.md | — | — | — | — |
 | bootstrap-runtime-roadmap.md | — | — | — | — |
 | boundary-extension-concepts.md | — | — | — | — |
@@ -1168,6 +1170,7 @@ Docs with no inbound links from other KB docs:
 - `RD-0436-rhizo-fast-database-audience-workloads-data-operations-and-competitive-case-tri-photonic.md` — RD-0436 — TritMesh:Rhizo (the fast engine): audience, workloads, the data/index operations, and the honest competitive case with the tri/photonic edge map
 - `RD-0437-graphs-as-a-family-wide-substrate-beyond-indexing-every-part-of-the-app-all-db-types.md` — RD-0437 — Graphs as a family-wide substrate: graph applied to *every* part of the app, not just indexing, for all DB types
 - `2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed.md` — 2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed
+- `2026-07-16-ACK-014-VERIFIED-101-101-TYPE-CHECKER-TWIN-COMPLETE-plus-next-steer.md` — 2026-07-16-ACK-014-VERIFIED-101-101-TYPE-CHECKER-TWIN-COMPLETE-plus-next-steer
 - `2026-07-16-ACK-024-verified-plus-frontier-per-pass-scoping-and-025-coemission-design.md` — 2026-07-16-ACK-024-verified-plus-frontier-per-pass-scoping-and-025-coemission-design
 - `2026-07-16-ACK-025-verified-96-96-plus-014-grounded-type-checker-emitted-finish-line.md` — 2026-07-16-ACK-025-verified-96-96-plus-014-grounded-type-checker-emitted-finish-line
 - `2026-07-16-ACK-026-verified-plus-absence-fixture-principle-and-025-design-corrected.md` — 2026-07-16-ACK-026-verified-plus-absence-fixture-principle-and-025-design-corrected
@@ -1210,6 +1213,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-ACK-taxonomy-AUDIT-ZERO.md` — 2026-07-16-ACK-taxonomy-AUDIT-ZERO
 - `2026-07-16-ACK-taxonomy-rebaseline-167.md` — 2026-07-16-ACK-taxonomy-rebaseline-167
 - `2026-07-16-ACK-tensor-cluster-030-017-016-landed-plus-absent-field-lesson.md` — 2026-07-16-ACK-tensor-cluster-030-017-016-landed-plus-absent-field-lesson
+- `2026-07-16-DONE-014-landed-TYPE-CHECKER-TWIN-COMPLETE-20-codes-0-false-diff.md` — 2026-07-16-DONE-014-landed-TYPE-CHECKER-TWIN-COMPLETE-20-codes-0-false-diff
 - `2026-07-16-FYI-014-fully-grounded-which-pass-answered-it-IS-type-checker-implementation-plan.md` — 2026-07-16-FYI-014-fully-grounded-which-pass-answered-it-IS-type-checker-implementation-plan
 - `2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked.md` — 2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked
 - `2026-07-16-FYI-passive-lane-variance-root-cause-GC-dominated-plus-watcher.md` — 2026-07-16-FYI-passive-lane-variance-root-cause-GC-dominated-plus-watcher

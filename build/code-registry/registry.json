@@ -1,12 +1,12 @@
 {
   "generatedFrom": "build/code-index/code-index.json",
-  "total": 681,
+  "total": 682,
   "counts": {
-    "ref": 174,
+    "ref": 175,
     "inline": 163,
     "phantom": 111,
-    "live": 129,
-    "referenced": 96,
+    "live": 130,
+    "referenced": 95,
     "dead": 8
   },
   "entries": [
@@ -5022,7 +5022,7 @@
       "code": "FUNGI-MEMORY-001",
       "family": "MEMORY",
       "namespace": "FUNGI",
-      "status": "referenced",
+      "status": "live",
       "names": [
         "USE_AFTER_MOVE"
       ],
@@ -5030,7 +5030,7 @@
         "error"
       ],
       "defs": 1,
-      "emits": 0,
+      "emits": 1,
       "tests": 3,
       "docs": 9
     },
@@ -8204,14 +8204,17 @@
         "QUANTIZED_PRECISION_MISMATCH",
         "INVALID_RUNTIME_TARGET_TYPE",
         "UNKNOWN_SYMBOL",
-        "TYPE_MISMATCH"
+        "TYPE_MISMATCH",
+        "X",
+        "Y",
+        "a"
       ],
       "severities": [
         "warning",
         "error"
       ],
       "defs": 1,
-      "emits": 2,
+      "emits": 4,
       "tests": 91,
       "docs": 10
     },
@@ -8351,7 +8354,7 @@
         "error"
       ],
       "defs": 1,
-      "emits": 3,
+      "emits": 1,
       "tests": 62,
       "docs": 2
     },
@@ -8410,14 +8413,15 @@
         "TENSOR_SHAPE_MISMATCH",
         "QUANTIZED_PRECISION_MISMATCH",
         "INVALID_RUNTIME_TARGET_TYPE",
-        "UNKNOWN_SYMBOL"
+        "UNKNOWN_SYMBOL",
+        "Y"
       ],
       "severities": [
         "error",
         "warning"
       ],
       "defs": 1,
-      "emits": 1,
+      "emits": 3,
       "tests": 24,
       "docs": 0
     },
@@ -8510,7 +8514,7 @@
         "error"
       ],
       "defs": 1,
-      "emits": 2,
+      "emits": 1,
       "tests": 7,
       "docs": 1
     },
@@ -8618,11 +8622,11 @@
       "code": "FUNGI-TYPE-027",
       "family": "TYPE",
       "namespace": "FUNGI",
-      "status": "inline",
+      "status": "ref",
       "names": [],
       "severities": [],
       "defs": 0,
-      "emits": 1,
+      "emits": 0,
       "tests": 0,
       "docs": 1
     },
@@ -8656,6 +8660,18 @@
       "defs": 1,
       "emits": 0,
       "tests": 4,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-TYPE-099",
+      "family": "TYPE",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 0,
       "docs": 0
     },
     {

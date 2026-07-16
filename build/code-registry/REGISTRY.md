@@ -8,12 +8,12 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 
 | status | count | meaning |
 |---|---|---|
-| live | 129 | emitted with an exported constant |
+| live | 130 | emitted with an exported constant |
 | inline | 163 | emitted, NO exported constant (R4 — Stage F) |
-| referenced | 96 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
+| referenced | 95 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 8 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
 | phantom | 111 | doc-only mention, not in source (drift — DOC-004) |
-| ref | 174 | referenced only (no def/emit) |
+| ref | 175 | referenced only (no def/emit) |
 
 ## RESERVED — defined but not emitted (std #1: tag wire-or-retire)
 
@@ -744,7 +744,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-MEMORY-001 | referenced | USE_AFTER_MOVE | error |
+| FUNGI-MEMORY-001 | live | USE_AFTER_MOVE | error |
 | FUNGI-MEMORY-002 | referenced | BORROW_AFTER_MOVE | error |
 | FUNGI-MEMORY-003 | referenced | BORROW_ESCAPES_SCOPE | error |
 | FUNGI-MEMORY-004 | referenced | READONLY_MUTATION | error |
@@ -1266,13 +1266,13 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-TRI-004 | live | — | — |
 | FUNGI-TRI-005 | live | — | — |
 
-### TYPE (30)
+### TYPE (31)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-TYPE-0 | ref | — | — |
 | FUNGI-TYPE-001 | inline | UNKNOWN_TYPE | — |
-| FUNGI-TYPE-002 | live | QUANTIZED_PRECISION_MISMATCH / INVALID_RUNTIME_TARGET_TYPE / UNKNOWN_SYMBOL / TYPE_MISMATCH | warning/error |
+| FUNGI-TYPE-002 | live | QUANTIZED_PRECISION_MISMATCH / INVALID_RUNTIME_TARGET_TYPE / UNKNOWN_SYMBOL / TYPE_MISMATCH / X / Y / a | warning/error |
 | FUNGI-TYPE-003 | live | INVALID_NOMINAL_CONVERSION | error |
 | FUNGI-TYPE-004 | inline | INVALID_BINARY_OPERATION | — |
 | FUNGI-TYPE-005 | inline | INVALID_CALL_ARG_TYPE | — |
@@ -1284,7 +1284,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-TYPE-011 | live | INVALID_COLLECTION_ELEMENT / INVALID_RESULT_TYPE / INVALID_SECRET_OPERATION / MISSING_REQUIRED_EFFECT / GOVERNED_SINK_VIOLATION / TENSOR_SHAPE_MISMATCH | error |
 | FUNGI-TYPE-012 | referenced | INVALID_RESULT_TYPE / INVALID_SECRET_OPERATION / MISSING_REQUIRED_EFFECT / GOVERNED_SINK_VIOLATION / TENSOR_SHAPE_MISMATCH / QUANTIZED_PRECISION_MISMATCH | error/warning |
 | FUNGI-TYPE-013 | referenced | INVALID_SECRET_OPERATION / MISSING_REQUIRED_EFFECT / GOVERNED_SINK_VIOLATION / TENSOR_SHAPE_MISMATCH / QUANTIZED_PRECISION_MISMATCH / INVALID_RUNTIME_TARGET_TYPE | error/warning |
-| FUNGI-TYPE-014 | live | MISSING_REQUIRED_EFFECT / GOVERNED_SINK_VIOLATION / TENSOR_SHAPE_MISMATCH / QUANTIZED_PRECISION_MISMATCH / INVALID_RUNTIME_TARGET_TYPE / UNKNOWN_SYMBOL | error/warning |
+| FUNGI-TYPE-014 | live | MISSING_REQUIRED_EFFECT / GOVERNED_SINK_VIOLATION / TENSOR_SHAPE_MISMATCH / QUANTIZED_PRECISION_MISMATCH / INVALID_RUNTIME_TARGET_TYPE / UNKNOWN_SYMBOL / Y | error/warning |
 | FUNGI-TYPE-015 | referenced | GOVERNED_SINK_VIOLATION / TENSOR_SHAPE_MISMATCH / QUANTIZED_PRECISION_MISMATCH / INVALID_RUNTIME_TARGET_TYPE / UNKNOWN_SYMBOL | error/warning |
 | FUNGI-TYPE-016 | live | TENSOR_SHAPE_MISMATCH / QUANTIZED_PRECISION_MISMATCH / INVALID_RUNTIME_TARGET_TYPE / UNKNOWN_SYMBOL | error/warning |
 | FUNGI-TYPE-017 | live | QUANTIZED_PRECISION_MISMATCH / INVALID_RUNTIME_TARGET_TYPE / UNKNOWN_SYMBOL | warning/error |
@@ -1297,9 +1297,10 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-TYPE-024 | inline | INT_LITERAL_I32_OVERFLOW | — |
 | FUNGI-TYPE-025 | inline | SILENT_NULL_DENIED | — |
 | FUNGI-TYPE-026 | inline | DEFERRED_TYPE_CHECK | warning |
-| FUNGI-TYPE-027 | inline | — | — |
+| FUNGI-TYPE-027 | ref | — | — |
 | FUNGI-TYPE-030 | live | TENSOR_ELEMENT_TYPE_MISMATCH | error |
 | FUNGI-TYPE-031 | referenced | TENSOR_DIMENSION_MISMATCH | error |
+| FUNGI-TYPE-099 | inline | — | — |
 
 ### VAL (4)
 

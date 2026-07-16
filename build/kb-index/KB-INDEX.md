@@ -1,4 +1,4 @@
-# Galerina KB index (1133 docs)
+# Galerina KB index (1135 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -159,10 +159,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 
 ## BOARD — R&D ⇄ main cross-session state (single-writer: R&D)
 `../ZTF-Knowledge-Bases/coordination/BOARD.md`
-- codes: FUNGI-TYPE-012
+- codes: FUNGI-TYPE-012, FUNGI-EFFECT-001
 - tasks: #20, #143, #75, #84, #65, #37, #81, #69, #72, #38, #39
 - links: [[to-main/2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd]] [[to-main/2026-07-16-ACK-rd0128-stale-proof-confirm-option-a]] [[to-main/2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed]] [[to-main/2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion]] [[to-main/2026-07-16-ACK-match-arm-cluster-verified-source-and-execution]] [[to-main/2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed]] [[to-main/2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea]] [[to-main/2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed]] [[to-main/2026-07-16-HANDOVER-tech-transfer-confusable-safe-identity-ZT-checked]] [[to-main/2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering]] [[HANDOVER-round-2026-07-16-night-areas-dss-tlstp-cycle]] [[id]]
-- terms: main, twin, tranche, closed, cluster, to-main, differential, verified, complete, d-verified, session, board, gate, false
+- terms: main, twin, tranche, closed, cluster, night, complete, to-main, differential, false, verified, owner-directed, d-verified, type-checker
 
 ## PROMPT — boot the main (Galerina build) session into the coordination loop
 `../ZTF-Knowledge-Bases/coordination/PROMPT-main-start-here.md`
@@ -177,6 +177,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed.md`
 - tasks: #20
 - terms: gate, stage-a, ack-009-generics-cluster-verified-48-48-class-closed, check, differential, pass, arity, codes, verified, class, cluster, confirmed, emit-site, committed
+
+## 2026-07-16-ACK-014-VERIFIED-101-101-TYPE-CHECKER-TWIN-COMPLETE-plus-next-steer.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-014-VERIFIED-101-101-TYPE-CHECKER-TWIN-COMPLETE-plus-next-steer.md`
+- codes: FUNGI-TYPE-014, FUNGI-EFFECT-001
+- terms: twin, option, effect-checker, both, next, effect, call, milestone, verified, own, hand, steer, tiers, type-checker
 
 ## 2026-07-16-ACK-024-verified-plus-frontier-per-pass-scoping-and-025-coemission-design.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-024-verified-plus-frontier-per-pass-scoping-and-025-coemission-design.md`
@@ -396,6 +401,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-TYPE-030
 - tasks: #20
 - terms: tensor, float32, real-parser, int8, differential, type, first, ack-tensor-cluster-030-017-016-landed-plus-absent-field-lesson, three, resolved, codes, same, pass, binding
+
+## 2026-07-16-DONE-014-landed-TYPE-CHECKER-TWIN-COMPLETE-20-codes-0-false-diff.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-DONE-014-landed-TYPE-CHECKER-TWIN-COMPLETE-20-codes-0-false-diff.md`
+- codes: FUNGI-TYPE-014, FUNGI-EFFECT-001
+- tasks: #20
+- terms: twin, effect, call, landed, effects, fungi-type-014, complete, missing, both, tiers, green, workstream, next, required
 
 ## 2026-07-16-FYI-014-fully-grounded-which-pass-answered-it-IS-type-checker-implementation-plan.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-FYI-014-fully-grounded-which-pass-answered-it-IS-type-checker-implementation-plan.md`
