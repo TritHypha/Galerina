@@ -405,6 +405,36 @@ contract { effects { custom.thing } }
     assert.equal(cap, "host.custom.thing", "Unknown effects should map to host.<effect>");
   });
 
+  // R2 (RD-0412 P1): a `governed floor_N flow` parses to a governedFlowDecl with a QUALIFIED node
+  // value (governed:floor_N:name), so findFlowNode (value===name) missed it and its declared params
+  // were dropped from GIR — the DSS-supervisor 0-param-signature-under-$pN-body class. Now resolved.
+  describe("R2 (#75-adjacent): governed floor flows carry their declared paramTypes", () => {
+    it("a `governed floor_N flow` populates paramTypes from its declared signature", () => {
+      const result = parseAndEmit(`
+governed floor_2 flow capCheck(state: Int, effect: String) -> Bool
+contract { intent "gate" effects {} }
+{ return true }
+`);
+      const flow = result.gir.flows.find((f) => f.name === "capCheck");
+      assert.equal(flow.qualifier, "guarded", "governed floor normalizes to the guarded qualifier");
+      assert.deepEqual(flow.paramTypes, ["Int", "String"],
+        "the governed flow's params must reach GIR (previously undefined — the WAT emitter then saw a 0-param signature)");
+    });
+
+    it("bare pure / guarded flows still populate paramTypes unchanged (the fallback is governed-only)", () => {
+      const p = parseAndEmit(`pure flow p(a: Int, b: String) -> Bool { return true }`);
+      assert.deepEqual(p.gir.flows[0].paramTypes, ["Int", "String"], "pure unchanged");
+      const g = parseAndEmit(`guarded flow g(a: Int, b: String) -> Bool contract { intent "x" effects {} } { return true }`);
+      assert.deepEqual(g.gir.flows[0].paramTypes, ["Int", "String"], "bare guarded unchanged");
+    });
+
+    it("a governed flow with NO params yields no paramTypes field (no spurious empty list)", () => {
+      const result = parseAndEmit(`governed floor_1 flow nc() -> Bool contract { intent "x" effects {} } { return true }`);
+      const flow = result.gir.flows.find((f) => f.name === "nc");
+      assert.equal(flow.paramTypes, undefined, "a zero-param governed flow must not gain a paramTypes field");
+    });
+  });
+
   it("GIRFlow capabilities is empty for pure flows with no effects", () => {
     const result = parseAndEmit(`
 pure flow noEffects(x: Int) -> Int {

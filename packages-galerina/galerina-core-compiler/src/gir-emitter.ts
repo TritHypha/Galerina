@@ -296,7 +296,22 @@ export function emitGIR(
     const allowedEffectsMask = effectsToFlags(flow.declaredEffects);
 
     // Phase 24: extract parameter types in declaration order for WAT emission.
-    const paramTypes = flowNode === undefined ? undefined : extractParamTypes(flowNode);
+    // R2 (RD-0412 P1): a `governed floor_N flow` parses to a `governedFlowDecl` whose value is the
+    // QUALIFIED `governed:floor_N:name` — findFlowNode (FLOW_KINDS + value===name) misses it, so its
+    // params were dropped. The WAT emitter then saw a 0-param signature under a body that references
+    // $pN (the DSS supervisor #128-sibling class the adoption gate had to fail-closed). Resolve the
+    // params directly from the governed node — the SAME extractParamTypes pure flows use — so more
+    // guarded/governed bodies lower fully. The isAdoptableGuardedBody floor stays the backstop (a
+    // still-mismatched body falls to the stub; no fail-open). paramTypes only — no other GIR field
+    // changes, so a governed flow's canonical GIR gains exactly its (already-declared) param list.
+    let paramTypes = flowNode === undefined ? undefined : extractParamTypes(flowNode);
+    if (paramTypes === undefined || paramTypes.length === 0) {
+      const govNode = findGovernedFlowNode(ast, flow.name);
+      if (govNode !== undefined) {
+        const govParams = extractParamTypes(govNode);
+        if (govParams.length > 0) paramTypes = govParams;
+      }
+    }
 
     // 0017: surface the fault-handler matrix only when at least one handler is explicitly declared, so
     // purely-default flows keep an unchanged canonical GIR/hash. When present we emit the FULL 4-class
@@ -359,6 +374,25 @@ function findFlowNode(ast: AstNode, name: string): AstNode | undefined {
     return undefined;
   }
 
+  return walk(ast);
+}
+
+/**
+ * R2 (RD-0412): resolve a `governed floor_N flow` by its BARE name. Its node kind is
+ * `governedFlowDecl` and its value is the qualified `governed:floor_N:name`, so the generic
+ * findFlowNode (FLOW_KINDS + value===name) does not match it. Match the last colon-segment.
+ * Flow names are identifiers (never contain ':'), so `split(':').pop()` recovers the bare name
+ * unambiguously — no substring false-match. Used only as a paramTypes fallback (§emitGIR).
+ */
+function findGovernedFlowNode(ast: AstNode, name: string): AstNode | undefined {
+  function walk(node: AstNode): AstNode | undefined {
+    if (node.kind === "governedFlowDecl" && ((node.value ?? "").split(":").pop() === name)) return node;
+    for (const child of node.children ?? []) {
+      const found = walk(child);
+      if (found !== undefined) return found;
+    }
+    return undefined;
+  }
   return walk(ast);
 }
 
