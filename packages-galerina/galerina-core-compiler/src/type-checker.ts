@@ -2416,6 +2416,37 @@ class TypeChecker {
         `_ => ...`,
       ));
     }
+
+    // ── tri-lint 0397-B (FUNGI-GOV-3VL-003): no wildcard over DENY on a Verdict match ─────────
+    // On a Verdict subject, ALL THREE K3 members (Allow / Deny / Unknown) must be NAMED arms.
+    // FUNGI-TYPE-023 makes the wildcard mandatory, so on a Verdict it is the DEAD backstop only
+    // (reachable by out-of-domain values alone — the SIMD `7`-byte class): if Deny or Unknown is
+    // left to `_`, an authorization outcome is decided by a catch-all (fail-open by omission);
+    // if Allow is left to `_`, "not denied" becomes admission and out-of-domain junk is ALLOWED.
+    // `check(v){ if:/deny:/ambig: }` enforces this structurally (FUNGI-CHECK-001) — this rule
+    // catches `match` used instead. `when` guards do NOT count as naming a member: a guard is an
+    // arbitrary expression, exactly the shape -004 exists to kill on Verdicts.
+    const scrutinee = (node.children ?? [])[0];
+    if (scrutinee !== undefined && this.inferType(scrutinee) === "Verdict") {
+      const namedMembers = new Set<string>();
+      for (const p of armPatterns) {
+        for (const part of p.split("|")) namedMembers.add(part.trim());
+      }
+      const missing = ["Allow", "Deny", "Unknown"].filter((m) => !namedMembers.has(m));
+      if (missing.length > 0) {
+        this.diagnostics.push(makeTCDiag(
+          "FUNGI-GOV-3VL-003",
+          "WildcardOverDenyOnVerdictMatch",
+          `match over a Verdict leaves ${missing.join(" and ")} to the wildcard arm. All three K3 members ` +
+          `(Allow / Deny / Unknown) must be NAMED arms — a catch-all that absorbs a verdict decides ` +
+          `authorization by omission (fail-open), and '_' standing in for Allow admits out-of-domain values. ` +
+          `The mandatory wildcard is the dead backstop only.`,
+          node.location,
+          `Name all three arms (Allow => ... Deny => ... Unknown => ...), keep '_' as the final backstop — ` +
+          `or use check(v) { if:/deny:/ambig: }, the sanctioned Verdict dispatch.`,
+        ));
+      }
+    }
   }
 
   private fuzzyTypeSuggestion(typeName: string): string | undefined {
