@@ -3,8 +3,8 @@
 This folder holds Galerina's publishable scholarly artifacts, consolidated 2026-07-09 from
 `docs/scientific-papers/`, the ZTF KB `defensive-publications/`, and the root `Galerina-ScientificPapers/` stray:
 
-- [`defensive-papers/`](defensive-papers/) — all **32** defensive-publication notes (timestamped prior-art records, novelty *disclaimed*; several are design-stage disclosures, marked as such)
-- [`scientific-papers/`](scientific-papers/) — eprint-shaped drafts / measured-negative candidates (currently **1**, superseded-draft status)
+- [`defensive-papers/`](defensive-papers/) — all **36** defensive-publication notes (timestamped prior-art records, novelty *disclaimed*; several are design-stage disclosures, marked as such)
+- [`scientific-papers/`](scientific-papers/) — eprint-shaped drafts (currently **4**): 1 superseded measured-negative draft + **3** harness-backed construction disclosures (novelty disclaimed) added 2026-07-16
 
 **Read the standard before adding anything here.**
 
@@ -106,6 +106,19 @@ Screened via the R&D paper-worthiness review `galerina-rd-paper-worthiness-revie
 | [`dp-rd-0353-hallmark-open-types-mandatory-assay-gate.md`](defensive-papers/dp-rd-0353-hallmark-open-types-mandatory-assay-gate.md) | 2026-07-12 | **Hallmark open types** — developer-mintable **nominal** types over a base representation, obtainable **only** through a mandatory declared assay gate (raw→type is a compile REJECT), operations deny-by-default, reserved-name guard, taint-transparent. Carries the validated-domain-value invariant in the type system ("parse, don't validate" as a first-class language mechanism). Shipped construction. |
 | [`dp-rd-0361-fail-closed-differential-cutover-and-cross-layer-algebra-conformance.md`](defensive-papers/dp-rd-0361-fail-closed-differential-cutover-and-cross-layer-algebra-conformance.md) | 2026-07-12 | A **fail-closed cutover method** promoting a verified implementation to authority against a **retained reference oracle** (divergence = REJECT + audit; no post-flip runtime fallback; atomic evidence-gated flip; measured shadow→differential→authoritative state-machine) + a **cross-layer algebra-conformance gate** (pinned bijection · full truth table · algebra-law checks · anti-neuter self-test) proving two non-dependent implementations identical. Migration *status* redacted. |
 
+### Defensive publications added 2026-07-16 (RD-0409 / 0417 / 0438 / 0441 — the paper-review sweep batch)
+
+Screened via the R&D paper-review sweep (KB RD-0444); all defensive-pub tier, novelty disclaimed, design-stage as
+marked. Harm-filter verified independently by main before publication — no Galerina-specific weakness, gap map, or
+live finding disclosed.
+
+| Document | Disclosed | Subject |
+|---|---|---|
+| [`dp-rd-0409-assurance-relocation-hot-cold-split-for-proofs.md`](defensive-papers/dp-rd-0409-assurance-relocation-hot-cold-split-for-proofs.md) | 2026-07-16 | **DP-RD-0409** — *assurance relocation*: the hot/cold code split applied to **proofs** — relocate expensive proofs off the warm path (deferred/async evidence, pending-proof as a fail-closed third state, cold-section compilation of governance paths), signed per-dataset profile with protected-class unreachability, effect-release gated on durable audit. Lower the overhead, never the guarantee; perf empirical (measured per workload). Design-stage. |
+| [`dp-rd-0417-topology-is-not-authority-reach-is-not-reasoning.md`](defensive-papers/dp-rd-0417-topology-is-not-authority-reach-is-not-reasoning.md) | 2026-07-16 | **DP-RD-0417** — *topology is not authority; reach is not reasoning*: a graph edge proves reach, never authorization; traversal needs a separately-signed capability against the signed schema spine. Corollaries: structure-as-disclosure under the zone model, budget-bounded walks (CWE-400), whole-hyperedge admission, and the AI-retrieval restatement (vectors advisory / signed graph authoritative — retrieval-injection structurally dead). Design-stage. |
+| [`dp-rd-0438-derived-structures-inherit-the-gate.md`](defensive-papers/dp-rd-0438-derived-structures-inherit-the-gate.md) | 2026-07-16 | **DP-RD-0438** — *derived structures inherit the gate*: every index/view/cache/replica/CDC/backup/embedding inherits the strictest gate of its sources, at creation and at read (verdict = min of sources — an algebra, not a policy lookup); derivation itself is governed; the derived-structure set is an enumerable census (derivation outside it refuses). Closes the derived-copy redaction bypass by construction; min-rule machine-checked in the SP-RD-0439 harness. Design-stage. |
+| [`dp-rd-0441-governed-low-latency-patterns.md`](defensive-papers/dp-rd-0441-governed-low-latency-patterns.md) | 2026-07-16 | **DP-RD-0441** — *governed low-latency patterns*: four constructions that keep their speed shape while the trust boundary is made explicit + fail-closed — the governed seqlock queue (torn-read-as-third-state, bounded/non-blocking-by-contract, per-consumer redaction), copy-not-pointers framing, self-describing signed headers (quarantine-on-unknown-version), and the kernel-bypass boundary rule (bypass moves the boundary into userspace, never removes it). Numbers deferred to measured benchmarks. Design-stage. |
+
 ### Design-stage defensive publications (filed 2026-07-09 — mechanisms specified, not yet implemented)
 
 Each states its DESIGN-STAGE status in its header and cites the KB RD doc it timestamps; update their status
@@ -124,6 +137,19 @@ lines when the mechanisms land.
 > named-machine measurement, so per §1 nothing qualifies beyond defensive-pub tier — including the RD-0295a
 > coverage scorecard, which is a **methodology** disclosure (a coverage enumeration is not a measurement). The
 > first candidate to change that remains the RD-0285j dispatch benchmark (numbers before speed claims).
+
+### Construction disclosures (harness-backed, `scientific-papers/`) — added 2026-07-16
+
+Eprint-shaped **prior-art disclosures with machine-checked harnesses** (construction + proof, novelty *disclaimed* —
+these are prior-art records, **not** the flagship/workshop novelty claims §1 forbids). Each cites a re-runnable
+harness; **all three re-run green under main's own hand 2026-07-16** (counts below). Harm-filter verified
+independently before publication. (Tiered defensive-pub by §1; filed here because they are eprint-shaped + harness-backed.)
+
+| Document | Harness (re-run 2026-07-16) | Subject |
+|---|---|---|
+| [`sp-rd-0412-two-tier-twin-verification-for-self-hosting-compilers.md`](scientific-papers/sp-rd-0412-two-tier-twin-verification-for-self-hosting-compilers.md) | `scripts/audit-twin-emit-parity.mjs --self-test` → **9/9** | **SP-RD-0412** — two-tier twin verification for self-hosting compilers: the four naive-differential failure modes (hand-built-node fiction · untested-position blind spot · semantic squat · un-twinnable construct) + the method (parser-coverage pre-gate + differential + real-parser pipeline + per-position raw-diagnostic grounding) + the two fail-closed CI gates (source-scanned emit-set parity, name parity). Novelty disclaimed. |
+| [`sp-rd-0433-confusable-safe-cross-script-identity-value-layer.md`](scientific-papers/sp-rd-0433-confusable-safe-cross-script-identity-value-layer.md) | `…/symbols-cross-script/verify-symbols.mjs` → **13/13** | **SP-RD-0433** — confusable-safe cross-script identity at the value layer: identity on an immutable canonical key (NFKC + Unicode default case-fold, never locale), deny invisibles/bidi, single-script confinement with non-Latin first-class, UTS #39 skeleton-collision as counterfeit detector, three-valued verdict — with the value-layer-only boundary (don't widen an ASCII identifier lexer). Novelty disclaimed. |
+| [`sp-rd-0439-third-state-fail-closed-calculus-executable-and-the-seqlock-equivalence.md`](scientific-papers/sp-rd-0439-third-state-fail-closed-calculus-executable-and-the-seqlock-equivalence.md) | `…/third-state-fail-closed/verify-third-state.mjs` → **19/19** | **SP-RD-0439** — a three-valued fail-closed calculus for data-system primitives (Kleene min/max/sign-flip · boundary-only collapse · derived-takes-min · exits only via proof or denial) + its equivalence to the seqlock read re-check (torn read = third state; re-check = boundary collapse; retry = the promoting proof). K3-classical, **not** a qubit claim. Novelty disclaimed. |
 
 ### Eprint drafts (`scientific-papers/`)
 
