@@ -1,30 +1,30 @@
 digraph imports {
   rankdir=LR;
   node [shape=box, fontsize=9];
-  "galerina.mjs" [label="galerina.mjs\n5.9 ms"];
-  "node:fs" [label="node:fs\n1.6 ms"];
-  "node:path" [label="node:path\n4.2 ms"];
+  "galerina.mjs" [label="galerina.mjs\n4.5 ms"];
+  "node:fs" [label="node:fs\n4.4 ms"];
+  "node:path" [label="node:path\n3.9 ms"];
   "node:crypto" [label="node:crypto\n0.0 ms"];
   "node:url" [label="node:url\n0.0 ms"];
   "node:child_process" [label="node:child_process\n0.0 ms"];
   "node:os" [label="node:os\n0.0 ms"];
   "packages-galerina/galerina-core-compiler/dist/index.js" [label="packages-galerina/galerina-core-compiler/dist/index.js\n0.0 ms"];
-  "packages-galerina/galerina-core-compiler/dist/lexer.js" [label="packages-galerina/galerina-core-compiler/dist/lexer.js\n0.0 ms"];
-  "packages-galerina/galerina-core-compiler/dist/parser.js" [label="packages-galerina/galerina-core-compiler/dist/parser.js\n4.4 ms"];
+  "packages-galerina/galerina-core-compiler/dist/lexer.js" [label="packages-galerina/galerina-core-compiler/dist/lexer.js\n1.1 ms"];
+  "packages-galerina/galerina-core-compiler/dist/parser.js" [label="packages-galerina/galerina-core-compiler/dist/parser.js\n3.4 ms"];
   "packages-galerina/galerina-core-compiler/dist/gate-parser.js" [label="packages-galerina/galerina-core-compiler/dist/gate-parser.js\n0.0 ms"];
   "packages-galerina/galerina-core-compiler/dist/hardening-residency.js" [label="packages-galerina/galerina-core-compiler/dist/hardening-residency.js\n0.0 ms"];
-  "packages-galerina/galerina-core-compiler/dist/effect-checker.js" [label="packages-galerina/galerina-core-compiler/dist/effect-checker.js\n3.3 ms"];
+  "packages-galerina/galerina-core-compiler/dist/effect-checker.js" [label="packages-galerina/galerina-core-compiler/dist/effect-checker.js\n3.4 ms"];
   "packages-galerina/galerina-devtools-graph-algorithms/dist/index.js" [label="packages-galerina/galerina-devtools-graph-algorithms/dist/index.js\n0.0 ms"];
   "packages-galerina/galerina-core-compiler/dist/type-registry.js" [label="packages-galerina/galerina-core-compiler/dist/type-registry.js\n0.0 ms"];
   "packages-galerina/galerina-core-compiler/dist/stdlib-registry.js" [label="packages-galerina/galerina-core-compiler/dist/stdlib-registry.js\n0.0 ms"];
   "packages-galerina/galerina-core-compiler/dist/leak-proof.js" [label="packages-galerina/galerina-core-compiler/dist/leak-proof.js\n0.0 ms"];
   "packages-galerina/galerina-core-compiler/dist/manifest-generator.js" [label="packages-galerina/galerina-core-compiler/dist/manifest-generator.js\n0.0 ms"];
   "packages-galerina/galerina-core-compiler/dist/capability-types.js" [label="packages-galerina/galerina-core-compiler/dist/capability-types.js\n0.0 ms"];
-  "packages-galerina/galerina-core-compiler/dist/proof-graph.js" [label="packages-galerina/galerina-core-compiler/dist/proof-graph.js\n0.0 ms"];
+  "packages-galerina/galerina-core-compiler/dist/proof-graph.js" [label="packages-galerina/galerina-core-compiler/dist/proof-graph.js\n1.1 ms"];
   "packages-galerina/galerina-core-compiler/dist/runtime/canonicalHash.js" [label="packages-galerina/galerina-core-compiler/dist/runtime/canonicalHash.js\n0.0 ms"];
   "packages-galerina/galerina-core-compiler/dist/fix-edit.js" [label="packages-galerina/galerina-core-compiler/dist/fix-edit.js\n0.0 ms"];
   "packages-galerina/galerina-core-compiler/dist/lmanifest-hybrid-verifier.js" [label="packages-galerina/galerina-core-compiler/dist/lmanifest-hybrid-verifier.js\n0.0 ms"];
-  "packages-galerina/galerina-core-compiler/dist/value-state-checker.js" [label="packages-galerina/galerina-core-compiler/dist/value-state-checker.js\n3.3 ms"];
+  "packages-galerina/galerina-core-compiler/dist/value-state-checker.js" [label="packages-galerina/galerina-core-compiler/dist/value-state-checker.js\n2.3 ms"];
   "packages-galerina/galerina-core-compiler/dist/numeric-lowering.js" [label="packages-galerina/galerina-core-compiler/dist/numeric-lowering.js\n0.0 ms"];
   "packages-galerina/galerina-core-compiler/dist/i64-arith.js" [label="packages-galerina/galerina-core-compiler/dist/i64-arith.js\n0.0 ms"];
   "packages-galerina/galerina-core-compiler/dist/u64-arith.js" [label="packages-galerina/galerina-core-compiler/dist/u64-arith.js\n0.0 ms"];
@@ -42,7 +42,7 @@ digraph imports {
   "packages-galerina/galerina-core-compiler/dist/test-generator.js" [label="packages-galerina/galerina-core-compiler/dist/test-generator.js\n0.0 ms"];
   "packages-galerina/galerina-core-compiler/dist/flow-dependency-analysis.js" [label="packages-galerina/galerina-core-compiler/dist/flow-dependency-analysis.js\n0.0 ms"];
   "packages-galerina/galerina-core-compiler/dist/flow-complexity.js" [label="packages-galerina/galerina-core-compiler/dist/flow-complexity.js\n0.0 ms"];
-  "packages-galerina/galerina-core-compiler/dist/interpreter.js" [label="packages-galerina/galerina-core-compiler/dist/interpreter.js\n0.0 ms"];
+  "packages-galerina/galerina-core-compiler/dist/interpreter.js" [label="packages-galerina/galerina-core-compiler/dist/interpreter.js\n1.1 ms"];
   "packages-galerina/galerina-core-compiler/dist/stdlib.js" [label="packages-galerina/galerina-core-compiler/dist/stdlib.js\n0.0 ms"];
   "node:module" [label="node:module\n0.0 ms"];
   "packages-galerina/galerina-core-network/dist/index.js" [label="packages-galerina/galerina-core-network/dist/index.js\n0.0 ms"];
@@ -50,6 +50,9 @@ digraph imports {
   "packages-galerina/galerina-core-network/dist/inbound-guard.js" [label="packages-galerina/galerina-core-network/dist/inbound-guard.js\n0.0 ms"];
   "packages-galerina/galerina-core-network/dist/cert-gate.js" [label="packages-galerina/galerina-core-network/dist/cert-gate.js\n0.0 ms"];
   "packages-galerina/galerina-tower-citizen/dist/index.js" [label="packages-galerina/galerina-tower-citizen/dist/index.js\n0.0 ms"];
+  "packages-galerina/galerina-tower-citizen/dist/transport-fsm.js" [label="packages-galerina/galerina-tower-citizen/dist/transport-fsm.js\n0.0 ms"];
+  "packages-galerina/galerina-tower-citizen/dist/three-valued-governance.js" [label="packages-galerina/galerina-tower-citizen/dist/three-valued-governance.js\n0.0 ms"];
+  "packages-galerina/galerina-tower-citizen/dist/tpl-simulator.js" [label="packages-galerina/galerina-tower-citizen/dist/tpl-simulator.js\n0.0 ms"];
   "packages-galerina/galerina-tower-citizen/dist/tower-runtime.js" [label="packages-galerina/galerina-tower-citizen/dist/tower-runtime.js\n0.0 ms"];
   "packages-galerina/galerina-tower-citizen/dist/audit-logger.js" [label="packages-galerina/galerina-tower-citizen/dist/audit-logger.js\n0.0 ms"];
   "packages-galerina/galerina-tower-citizen/dist/plugin-sandbox.js" [label="packages-galerina/galerina-tower-citizen/dist/plugin-sandbox.js\n0.0 ms"];
@@ -57,7 +60,6 @@ digraph imports {
   "packages-galerina/galerina-tower-citizen/dist/hybrid-engine.js" [label="packages-galerina/galerina-tower-citizen/dist/hybrid-engine.js\n0.0 ms"];
   "packages-galerina/galerina-tower-citizen/dist/precision-strategy.js" [label="packages-galerina/galerina-tower-citizen/dist/precision-strategy.js\n0.0 ms"];
   "packages-galerina/galerina-tower-citizen/dist/bridge/stub-provider.js" [label="packages-galerina/galerina-tower-citizen/dist/bridge/stub-provider.js\n0.0 ms"];
-  "packages-galerina/galerina-tower-citizen/dist/tpl-simulator.js" [label="packages-galerina/galerina-tower-citizen/dist/tpl-simulator.js\n0.0 ms"];
   "packages-galerina/galerina-tower-citizen/dist/governance-enforcer.js" [label="packages-galerina/galerina-tower-citizen/dist/governance-enforcer.js\n0.0 ms"];
   "packages-galerina/galerina-tower-citizen/dist/bridge/interface.js" [label="packages-galerina/galerina-tower-citizen/dist/bridge/interface.js\n0.0 ms"];
   "packages-galerina/galerina-inference-bridge-contract/dist/index.js" [label="packages-galerina/galerina-inference-bridge-contract/dist/index.js\n0.0 ms"];
@@ -67,7 +69,6 @@ digraph imports {
   "packages-galerina/galerina-tower-citizen/dist/bridge-attestation.js" [label="packages-galerina/galerina-tower-citizen/dist/bridge-attestation.js\n0.0 ms"];
   "packages-galerina/galerina-tower-citizen/dist/capability-grant.js" [label="packages-galerina/galerina-tower-citizen/dist/capability-grant.js\n0.0 ms"];
   "packages-galerina/galerina-tower-citizen/dist/compiled-policy.js" [label="packages-galerina/galerina-tower-citizen/dist/compiled-policy.js\n0.0 ms"];
-  "packages-galerina/galerina-tower-citizen/dist/three-valued-governance.js" [label="packages-galerina/galerina-tower-citizen/dist/three-valued-governance.js\n0.0 ms"];
   "packages-galerina/galerina-tower-citizen/dist/epistemic-type-state.js" [label="packages-galerina/galerina-tower-citizen/dist/epistemic-type-state.js\n0.0 ms"];
   "packages-galerina/galerina-tower-citizen/dist/data-plane-border.js" [label="packages-galerina/galerina-tower-citizen/dist/data-plane-border.js\n0.0 ms"];
   "packages-galerina/galerina-tower-citizen/dist/ai-governance.js" [label="packages-galerina/galerina-tower-citizen/dist/ai-governance.js\n0.0 ms"];
@@ -107,7 +108,6 @@ digraph imports {
   "packages-galerina/galerina-core-compiler/dist/runtime/limitPolicy.js" [label="packages-galerina/galerina-core-compiler/dist/runtime/limitPolicy.js\n0.0 ms"];
   "packages-galerina/galerina-core-compiler/dist/proof-chain.js" [label="packages-galerina/galerina-core-compiler/dist/proof-chain.js\n0.0 ms"];
   "packages-galerina/galerina-core-compiler/dist/route-dispatcher.js" [label="packages-galerina/galerina-core-compiler/dist/route-dispatcher.js\n0.0 ms"];
-  "node:http" [label="node:http\n0.3 ms"];
   "packages-galerina/galerina-core-compiler/dist/route-registry.js" [label="packages-galerina/galerina-core-compiler/dist/route-registry.js\n0.0 ms"];
   "packages-galerina/galerina-core-compiler/dist/attestation.js" [label="packages-galerina/galerina-core-compiler/dist/attestation.js\n0.0 ms"];
   "packages-galerina/galerina-core-compiler/dist/runtime/contractEnforcer.js" [label="packages-galerina/galerina-core-compiler/dist/runtime/contractEnforcer.js\n0.0 ms"];
@@ -213,6 +213,9 @@ digraph imports {
   "packages-galerina/galerina-core-network/dist/index.js" -> "packages-galerina/galerina-core-network/dist/inbound-guard.js";
   "packages-galerina/galerina-core-network/dist/index.js" -> "packages-galerina/galerina-core-network/dist/cert-gate.js";
   "packages-galerina/galerina-core-network/dist/cert-gate.js" -> "packages-galerina/galerina-tower-citizen/dist/index.js";
+  "packages-galerina/galerina-tower-citizen/dist/index.js" -> "packages-galerina/galerina-tower-citizen/dist/transport-fsm.js";
+  "packages-galerina/galerina-tower-citizen/dist/transport-fsm.js" -> "packages-galerina/galerina-tower-citizen/dist/three-valued-governance.js";
+  "packages-galerina/galerina-tower-citizen/dist/three-valued-governance.js" -> "packages-galerina/galerina-tower-citizen/dist/tpl-simulator.js";
   "packages-galerina/galerina-tower-citizen/dist/index.js" -> "packages-galerina/galerina-tower-citizen/dist/tower-runtime.js";
   "packages-galerina/galerina-tower-citizen/dist/tower-runtime.js" -> "packages-galerina/galerina-tower-citizen/dist/audit-logger.js";
   "packages-galerina/galerina-tower-citizen/dist/audit-logger.js" -> "node:fs";
@@ -247,7 +250,6 @@ digraph imports {
   "packages-galerina/galerina-tower-citizen/dist/index.js" -> "packages-galerina/galerina-tower-citizen/dist/tpl-simulator.js";
   "packages-galerina/galerina-tower-citizen/dist/index.js" -> "packages-galerina/galerina-tower-citizen/dist/governance-enforcer.js";
   "packages-galerina/galerina-tower-citizen/dist/index.js" -> "packages-galerina/galerina-tower-citizen/dist/three-valued-governance.js";
-  "packages-galerina/galerina-tower-citizen/dist/three-valued-governance.js" -> "packages-galerina/galerina-tower-citizen/dist/tpl-simulator.js";
   "packages-galerina/galerina-tower-citizen/dist/index.js" -> "packages-galerina/galerina-tower-citizen/dist/epistemic-type-state.js";
   "packages-galerina/galerina-tower-citizen/dist/epistemic-type-state.js" -> "packages-galerina/galerina-tower-citizen/dist/three-valued-governance.js";
   "packages-galerina/galerina-tower-citizen/dist/index.js" -> "packages-galerina/galerina-tower-citizen/dist/data-plane-border.js";
@@ -350,7 +352,6 @@ digraph imports {
   "packages-galerina/galerina-core-compiler/dist/runtime.js" -> "packages-galerina/galerina-core-compiler/dist/proof-chain.js";
   "packages-galerina/galerina-core-compiler/dist/proof-chain.js" -> "node:crypto";
   "packages-galerina/galerina-core-compiler/dist/runtime.js" -> "packages-galerina/galerina-core-compiler/dist/route-dispatcher.js";
-  "packages-galerina/galerina-core-compiler/dist/route-dispatcher.js" -> "node:http";
   "packages-galerina/galerina-core-compiler/dist/route-dispatcher.js" -> "packages-galerina/galerina-core-compiler/dist/interpreter.js";
   "packages-galerina/galerina-core-compiler/dist/route-dispatcher.js" -> "packages-galerina/galerina-core-compiler/dist/route-registry.js";
   "packages-galerina/galerina-core-compiler/dist/route-dispatcher.js" -> "packages-galerina/galerina-core-compiler/dist/stdlib.js";

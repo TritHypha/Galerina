@@ -4,15 +4,15 @@
   "nodes": [
     {
       "id": "galerina.mjs",
-      "selfMs": 5.925
+      "selfMs": 4.522
     },
     {
       "id": "node:fs",
-      "selfMs": 1.623
+      "selfMs": 4.358
     },
     {
       "id": "node:path",
-      "selfMs": 4.199
+      "selfMs": 3.883
     },
     {
       "id": "node:crypto",
@@ -36,11 +36,11 @@
     },
     {
       "id": "packages-galerina/galerina-core-compiler/dist/lexer.js",
-      "selfMs": 0
+      "selfMs": 1.114
     },
     {
       "id": "packages-galerina/galerina-core-compiler/dist/parser.js",
-      "selfMs": 4.394
+      "selfMs": 3.353
     },
     {
       "id": "packages-galerina/galerina-core-compiler/dist/gate-parser.js",
@@ -52,7 +52,7 @@
     },
     {
       "id": "packages-galerina/galerina-core-compiler/dist/effect-checker.js",
-      "selfMs": 3.284
+      "selfMs": 3.389
     },
     {
       "id": "packages-galerina/galerina-devtools-graph-algorithms/dist/index.js",
@@ -80,7 +80,7 @@
     },
     {
       "id": "packages-galerina/galerina-core-compiler/dist/proof-graph.js",
-      "selfMs": 0
+      "selfMs": 1.121
     },
     {
       "id": "packages-galerina/galerina-core-compiler/dist/runtime/canonicalHash.js",
@@ -96,7 +96,7 @@
     },
     {
       "id": "packages-galerina/galerina-core-compiler/dist/value-state-checker.js",
-      "selfMs": 3.315
+      "selfMs": 2.257
     },
     {
       "id": "packages-galerina/galerina-core-compiler/dist/numeric-lowering.js",
@@ -112,7 +112,7 @@
     },
     {
       "id": "packages-galerina/galerina-core-compiler/dist/type-checker.js",
-      "selfMs": 2.229
+      "selfMs": 2.236
     },
     {
       "id": "packages-galerina/galerina-core-compiler/dist/package-type-registry.js",
@@ -168,7 +168,7 @@
     },
     {
       "id": "packages-galerina/galerina-core-compiler/dist/interpreter.js",
-      "selfMs": 0
+      "selfMs": 1.15
     },
     {
       "id": "packages-galerina/galerina-core-compiler/dist/stdlib.js",
@@ -199,6 +199,18 @@
       "selfMs": 0
     },
     {
+      "id": "packages-galerina/galerina-tower-citizen/dist/transport-fsm.js",
+      "selfMs": 0
+    },
+    {
+      "id": "packages-galerina/galerina-tower-citizen/dist/three-valued-governance.js",
+      "selfMs": 0
+    },
+    {
+      "id": "packages-galerina/galerina-tower-citizen/dist/tpl-simulator.js",
+      "selfMs": 0
+    },
+    {
       "id": "packages-galerina/galerina-tower-citizen/dist/tower-runtime.js",
       "selfMs": 0
     },
@@ -224,10 +236,6 @@
     },
     {
       "id": "packages-galerina/galerina-tower-citizen/dist/bridge/stub-provider.js",
-      "selfMs": 0
-    },
-    {
-      "id": "packages-galerina/galerina-tower-citizen/dist/tpl-simulator.js",
       "selfMs": 0
     },
     {
@@ -264,10 +272,6 @@
     },
     {
       "id": "packages-galerina/galerina-tower-citizen/dist/compiled-policy.js",
-      "selfMs": 0
-    },
-    {
-      "id": "packages-galerina/galerina-tower-citizen/dist/three-valued-governance.js",
       "selfMs": 0
     },
     {
@@ -400,7 +404,7 @@
     },
     {
       "id": "packages-galerina/galerina-core-compiler/dist/governance-verifier.js",
-      "selfMs": 5.595
+      "selfMs": 5.615
     },
     {
       "id": "packages-galerina/galerina-core-compiler/dist/observability-inference.js",
@@ -425,10 +429,6 @@
     {
       "id": "packages-galerina/galerina-core-compiler/dist/route-dispatcher.js",
       "selfMs": 0
-    },
-    {
-      "id": "node:http",
-      "selfMs": 0.281
     },
     {
       "id": "packages-galerina/galerina-core-compiler/dist/route-registry.js",
@@ -854,6 +854,18 @@
     },
     {
       "from": "packages-galerina/galerina-tower-citizen/dist/index.js",
+      "to": "packages-galerina/galerina-tower-citizen/dist/transport-fsm.js"
+    },
+    {
+      "from": "packages-galerina/galerina-tower-citizen/dist/transport-fsm.js",
+      "to": "packages-galerina/galerina-tower-citizen/dist/three-valued-governance.js"
+    },
+    {
+      "from": "packages-galerina/galerina-tower-citizen/dist/three-valued-governance.js",
+      "to": "packages-galerina/galerina-tower-citizen/dist/tpl-simulator.js"
+    },
+    {
+      "from": "packages-galerina/galerina-tower-citizen/dist/index.js",
       "to": "packages-galerina/galerina-tower-citizen/dist/tower-runtime.js"
     },
     {
@@ -987,10 +999,6 @@
     {
       "from": "packages-galerina/galerina-tower-citizen/dist/index.js",
       "to": "packages-galerina/galerina-tower-citizen/dist/three-valued-governance.js"
-    },
-    {
-      "from": "packages-galerina/galerina-tower-citizen/dist/three-valued-governance.js",
-      "to": "packages-galerina/galerina-tower-citizen/dist/tpl-simulator.js"
     },
     {
       "from": "packages-galerina/galerina-tower-citizen/dist/index.js",
@@ -1399,10 +1407,6 @@
     {
       "from": "packages-galerina/galerina-core-compiler/dist/runtime.js",
       "to": "packages-galerina/galerina-core-compiler/dist/route-dispatcher.js"
-    },
-    {
-      "from": "packages-galerina/galerina-core-compiler/dist/route-dispatcher.js",
-      "to": "node:http"
     },
     {
       "from": "packages-galerina/galerina-core-compiler/dist/route-dispatcher.js",
