@@ -1,4 +1,4 @@
-# Galerina KB index (1135 docs)
+# Galerina KB index (1140 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -159,10 +159,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 
 ## BOARD — R&D ⇄ main cross-session state (single-writer: R&D)
 `../ZTF-Knowledge-Bases/coordination/BOARD.md`
-- codes: FUNGI-TYPE-012, FUNGI-EFFECT-001
+- codes: FUNGI-TYPE-012
 - tasks: #20, #143, #75, #84, #65, #37, #81, #69, #72, #38, #39
-- links: [[to-main/2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd]] [[to-main/2026-07-16-ACK-rd0128-stale-proof-confirm-option-a]] [[to-main/2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed]] [[to-main/2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion]] [[to-main/2026-07-16-ACK-match-arm-cluster-verified-source-and-execution]] [[to-main/2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed]] [[to-main/2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea]] [[to-main/2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed]] [[to-main/2026-07-16-HANDOVER-tech-transfer-confusable-safe-identity-ZT-checked]] [[to-main/2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering]] [[HANDOVER-round-2026-07-16-night-areas-dss-tlstp-cycle]] [[id]]
-- terms: main, twin, tranche, closed, cluster, night, complete, to-main, differential, false, verified, owner-directed, d-verified, type-checker
+- links: [[to-main/2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd]] [[to-main/2026-07-16-ACK-rd0128-stale-proof-confirm-option-a]] [[to-main/2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed]] [[to-main/2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion]] [[to-main/2026-07-16-ACK-match-arm-cluster-verified-source-and-execution]] [[to-main/2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed]] [[to-main/2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea]] [[to-main/2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed]] [[to-main/2026-07-16-ADJUDICATION-effect-005-unsquat-plus-name-parity-gate-plus-frontier-order]] [[to-main/2026-07-16-HANDOVER-tech-transfer-confusable-safe-identity-ZT-checked]] [[to-main/2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering]] [[HANDOVER-round-2026-07-16-night-areas-dss-tlstp-cycle]]
+- terms: main, twin, gate, tranche, complete, closed, cluster, night, to-main, false, differential, verified, next, d-verified
 
 ## PROMPT — boot the main (Galerina build) session into the coordination loop
 `../ZTF-Knowledge-Bases/coordination/PROMPT-main-start-here.md`
@@ -221,6 +221,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-emit-parity-gate-caught-019-027-well-done.md`
 - terms: twin, ack-emit-parity-gate-caught-019-027-well-done, gate, emit, registry, run, both, codes, stage-a, emits, right, phase-close, code, ack
 
+## 2026-07-16-ACK-honesty-correction-accepted-verified-plus-adjudication-of-the-11.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-honesty-correction-accepted-verified-plus-adjudication-of-the-11.md`
+- codes: FUNGI-HALLMARK-001, FUNGI-PREFILTER-002, FUNGI-BINDING-005, FUNGI-CHECK-002, FUNGI-K3-001
+- terms: gate, adjudication, twin, source, correction, accepted, verified, own, exactly, did, next, meta-point, job, day
+
 ## 2026-07-16-ACK-kb-graph-code-region-masking.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-kb-graph-code-region-masking.md`
 - tasks: #20
@@ -255,6 +260,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK2-rebaseline-167-confirmed-proceed.md`
 - codes: FUNGI-GOV-3VL-003, FUNGI-GOV-3VL-004
 - terms: commit, ack2-rebaseline-167-confirmed-proceed, harvest, ack, to-rnd, reconciliation, confirmed, proceed, against, delta, names, exactly, after, both
+
+## 2026-07-16-ADJUDICATION-effect-005-unsquat-plus-name-parity-gate-plus-frontier-order.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ADJUDICATION-effect-005-unsquat-plus-name-parity-gate-plus-frontier-order.md`
+- tasks: #20
+- terms: stage-a, code, fix, effect, alias, verified, gate, name, twin, leg, just, alias-cluster, broad, advisory
 
 ## 2026-07-16-ANSWER-passive-lane-variance-median-rig-rides-63-and-allocation-probe-to-rd0358.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ANSWER-passive-lane-variance-median-rig-rides-63-and-allocation-probe-to-rd0358.md`
@@ -416,6 +426,15 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## 2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked.md`
 - terms: wasm, lane, run, record-allocation, lanes, shape-only, fyi-benchmark-work-equivalence-class-996-debunked, class, benchmark, work-equivalence, figure, diff, series, node
+
+## 2026-07-16-FYI-effect-checker-twin-grounded-frontier-4-codes-plus-005-repurposing-finding.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-FYI-effect-checker-twin-grounded-frontier-4-codes-plus-005-repurposing-finding.md`
+- terms: twin, effect-checker, alias, effect, effect-005, infra, grounded, frontier, semantic, repurposing, canonical, false, code-set, map
+
+## 2026-07-16-FYI-parity-gate-hardened-fail-closed-AND-honesty-correction-11-other-family-codes.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-FYI-parity-gate-hardened-fail-closed-AND-honesty-correction-11-other-family-codes.md`
+- codes: FUNGI-K3-001, FUNGI-HALLMARK-001, FUNGI-PREFILTER-002, FUNGI-CHECK-002, FUNGI-BINDING-005
+- terms: twin, gate, type-checker, close, durable, correction, claim, emits, scope, type-, type-system, ack, verify-don, t-trust
 
 ## 2026-07-16-FYI-passive-lane-variance-root-cause-GC-dominated-plus-watcher.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-FYI-passive-lane-variance-root-cause-GC-dominated-plus-watcher.md`
@@ -5139,6 +5158,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## RD-0437 — Graphs as a family-wide substrate: graph applied to *every* part of the app, not just indexing, for all DB types
 `../ZTF-Knowledge-Bases/RD-0437-graphs-as-a-family-wide-substrate-beyond-indexing-every-part-of-the-app-all-db-types.md`
 - terms: graph, schema, security, graphs, app, dag, part, topology, signed, tri, authority, lineage, engines, dynamic
+
+## RD-0438 — The DB technical-feature ledger × tri-logic × the −1 third axis, per engine (incl. dynamic schema & self-healing)
+`../ZTF-Knowledge-Bases/RD-0438-db-technical-feature-ledger-tri-logic-third-axis-per-engine-dynamic-schema-self-healing.md`
+- codes: FUNGI-TYPE-025
+- terms: third, verdict, schema, self-healing, security, state, feature, ledger, axis, never, engine, graph, classic, signed
 
 ## Galerina AI-Friendliness — R&D Spec (2026-06-23)
 `../ZTF-Knowledge-Bases/rd-absorbed/from-galerina-r-and-d/AI-FRIENDLINESS-SPEC-2026-06-23.md`

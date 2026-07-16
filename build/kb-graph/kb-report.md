@@ -2,7 +2,7 @@
 Generated: 2026-07-16
 
 ## Stats
-- Docs: 1133 | Edges: 3462 | Orphans: 77 | Stale links: 0 | FUNGI codes: 748
+- Docs: 1138 | Edges: 3462 | Orphans: 82 | Stale links: 0 | FUNGI codes: 748
 
 ## Document Registry (auto-generated)
 
@@ -44,6 +44,7 @@ Generated: 2026-07-16
 | 2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch.md | — | — | — | FUNGI-TYPE-001, FUNGI-TYPE-011 |
 | 2026-07-16-ACK-emit-parity-gate-caught-019-027-well-done.md | — | — | — | — |
 | 2026-07-16-ACK-emit-parity-idea-caught-2-false-differentials-019-027-fixed-plus-gate.md | — | — | — | FUNGI-TYPE-019, FUNGI-TYPE-027 |
+| 2026-07-16-ACK-honesty-correction-accepted-verified-plus-adjudication-of-the-11.md | — | — | — | FUNGI-BINDING-005, FUNGI-CHECK-002, FUNGI-HALLMARK-001, FUNGI-PREFILTER-002 |
 | 2026-07-16-ACK-kb-graph-code-region-masking.md | — | — | — | — |
 | 2026-07-16-ACK-match-arm-cluster-landed-022-023-live-021-dead.md | — | — | — | FUNGI-TYPE-021, FUNGI-TYPE-022, FUNGI-TYPE-023 |
 | 2026-07-16-ACK-match-arm-cluster-verified-source-and-execution.md | — | — | — | FUNGI-TYPE-021, FUNGI-TYPE-022, FUNGI-TYPE-023 |
@@ -60,6 +61,7 @@ Generated: 2026-07-16
 | 2026-07-16-ACK-tensor-cluster-verified-58-58-plus-absent-field-lesson-adopted.md | — | — | — | — |
 | 2026-07-16-ACK-tensor-grounding-confirmed-item1-resolved-017-is-pushed.md | — | — | — | FUNGI-TYPE-017 |
 | 2026-07-16-ACK2-rebaseline-167-confirmed-proceed.md | — | — | — | FUNGI-GOV-3 |
+| 2026-07-16-ADJUDICATION-effect-005-unsquat-plus-name-parity-gate-plus-frontier-order.md | — | — | — | — |
 | 2026-07-16-ANSWER-passive-lane-variance-median-rig-rides-63-and-allocation-probe-to-rd0358.md | — | — | — | — |
 | 2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering.md | — | — | — | — |
 | 2026-07-16-answers-to-night-round-rd-requests.md | — | — | — | — |
@@ -68,6 +70,8 @@ Generated: 2026-07-16
 | 2026-07-16-DONE-014-landed-TYPE-CHECKER-TWIN-COMPLETE-20-codes-0-false-diff.md | — | — | — | FUNGI-EFFECT-001, FUNGI-TYPE-014 |
 | 2026-07-16-FYI-014-fully-grounded-which-pass-answered-it-IS-type-checker-implementation-plan.md | — | — | — | FUNGI-EFFECT-001, FUNGI-TYPE-014 |
 | 2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked.md | — | — | — | — |
+| 2026-07-16-FYI-effect-checker-twin-grounded-frontier-4-codes-plus-005-repurposing-finding.md | — | — | — | — |
+| 2026-07-16-FYI-parity-gate-hardened-fail-closed-AND-honesty-correction-11-other-family-codes.md | — | — | — | FUNGI-BINDING-005, FUNGI-CHECK-002, FUNGI-HALLMARK-001, FUNGI-PREFILTER-002 |
 | 2026-07-16-FYI-passive-lane-variance-root-cause-GC-dominated-plus-watcher.md | — | — | — | — |
 | 2026-07-16-FYI-push-policy-correction-main-is-commit-only.md | — | — | — | — |
 | 2026-07-16-FYI-rd0128-stale-testwitness-proof.md | — | — | — | — |
@@ -100,7 +104,7 @@ Generated: 2026-07-16
 | automated-runtime-trust-strategy.md | — | — | — | — |
 | benchmark-success-plan.md | — | — | — | — |
 | bit-width-and-base64-asset-policy.md | — | — | — | — |
-| BOARD.md | — | — | — | FUNGI-EFFECT-001, FUNGI-TYPE-012 |
+| BOARD.md | — | — | — | FUNGI-TYPE-012 |
 | boot-main-startup-defaults.md | — | — | — | — |
 | bootstrap-runtime-roadmap.md | — | — | — | — |
 | boundary-extension-concepts.md | — | — | — | — |
@@ -1020,6 +1024,7 @@ Generated: 2026-07-16
 | RD-0435-quantum-data-types-maths-symbols-storage-fast-enough-retrieval-tri-photonic.md | — | — | — | — |
 | RD-0436-rhizo-fast-database-audience-workloads-data-operations-and-competitive-case-tri-photonic.md | — | — | — | FUNGI-TYPE-011 |
 | RD-0437-graphs-as-a-family-wide-substrate-beyond-indexing-every-part-of-the-app-all-db-types.md | — | — | — | — |
+| RD-0438-db-technical-feature-ledger-tri-logic-third-axis-per-engine-dynamic-schema-self-healing.md | — | — | — | FUNGI-TYPE-025 |
 | rd-adversarial-verification-findings-2026-06-16.md | — | — | — | — |
 | rd-crossover-encryption-rnd.md | — | — | Merge / unified entry point. **Date:** 2026-06-16. **Posture:** grounded, cited, | FUNGI-AMD-024, FUNGI-PARSE-001, FUNGI-SUBSTRATE-001 |
 | rd-diagnostics-namespace-rnd-response.md | — | — | R&D response (2026-06-16). **Subject:** `Galerina/docs/Knowledge-Bases/galerina-diagnostic-namespace-ownership.md` | FUNGI-META-001, FUNGI-PRIVACY-00, FUNGI-SECRET-005 |
@@ -1169,6 +1174,7 @@ Docs with no inbound links from other KB docs:
 - `RD-0435-quantum-data-types-maths-symbols-storage-fast-enough-retrieval-tri-photonic.md` — RD-0435 — Quantum: types, research, maths, symbols, storage — is it fast enough, can it retrieve correctly, and what it means for tri/photonic
 - `RD-0436-rhizo-fast-database-audience-workloads-data-operations-and-competitive-case-tri-photonic.md` — RD-0436 — TritMesh:Rhizo (the fast engine): audience, workloads, the data/index operations, and the honest competitive case with the tri/photonic edge map
 - `RD-0437-graphs-as-a-family-wide-substrate-beyond-indexing-every-part-of-the-app-all-db-types.md` — RD-0437 — Graphs as a family-wide substrate: graph applied to *every* part of the app, not just indexing, for all DB types
+- `RD-0438-db-technical-feature-ledger-tri-logic-third-axis-per-engine-dynamic-schema-self-healing.md` — RD-0438 — The DB technical-feature ledger × tri-logic × the −1 third axis, per engine (incl. dynamic schema & self-healing)
 - `2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed.md` — 2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed
 - `2026-07-16-ACK-014-VERIFIED-101-101-TYPE-CHECKER-TWIN-COMPLETE-plus-next-steer.md` — 2026-07-16-ACK-014-VERIFIED-101-101-TYPE-CHECKER-TWIN-COMPLETE-plus-next-steer
 - `2026-07-16-ACK-024-verified-plus-frontier-per-pass-scoping-and-025-coemission-design.md` — 2026-07-16-ACK-024-verified-plus-frontier-per-pass-scoping-and-025-coemission-design
@@ -1179,6 +1185,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-ACK-brands-003-verified-51-51-plus-harden-emit-count-adjudication.md` — 2026-07-16-ACK-brands-003-verified-51-51-plus-harden-emit-count-adjudication
 - `2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed.md` — 2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed
 - `2026-07-16-ACK-emit-parity-gate-caught-019-027-well-done.md` — 2026-07-16-ACK-emit-parity-gate-caught-019-027-well-done
+- `2026-07-16-ACK-honesty-correction-accepted-verified-plus-adjudication-of-the-11.md` — 2026-07-16-ACK-honesty-correction-accepted-verified-plus-adjudication-of-the-11
 - `2026-07-16-ACK-kb-graph-code-region-masking.md` — 2026-07-16-ACK-kb-graph-code-region-masking
 - `2026-07-16-ACK-match-arm-cluster-verified-source-and-execution.md` — 2026-07-16-ACK-match-arm-cluster-verified-source-and-execution
 - `2026-07-16-ACK-p1-r2-closed-gates-reverified.md` — 2026-07-16-ACK-p1-r2-closed-gates-reverified
@@ -1186,6 +1193,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-ACK-tensor-cluster-verified-58-58-plus-absent-field-lesson-adopted.md` — 2026-07-16-ACK-tensor-cluster-verified-58-58-plus-absent-field-lesson-adopted
 - `2026-07-16-ACK-tensor-grounding-confirmed-item1-resolved-017-is-pushed.md` — 2026-07-16-ACK-tensor-grounding-confirmed-item1-resolved-017-is-pushed
 - `2026-07-16-ACK2-rebaseline-167-confirmed-proceed.md` — 2026-07-16-ACK2-rebaseline-167-confirmed-proceed
+- `2026-07-16-ADJUDICATION-effect-005-unsquat-plus-name-parity-gate-plus-frontier-order.md` — 2026-07-16-ADJUDICATION-effect-005-unsquat-plus-name-parity-gate-plus-frontier-order
 - `2026-07-16-ANSWER-passive-lane-variance-median-rig-rides-63-and-allocation-probe-to-rd0358.md` — 2026-07-16-ANSWER-passive-lane-variance-median-rig-rides-63-and-allocation-probe-to-rd0358
 - `2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering.md` — 2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering
 - `2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea.md` — 2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea
@@ -1216,6 +1224,8 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-DONE-014-landed-TYPE-CHECKER-TWIN-COMPLETE-20-codes-0-false-diff.md` — 2026-07-16-DONE-014-landed-TYPE-CHECKER-TWIN-COMPLETE-20-codes-0-false-diff
 - `2026-07-16-FYI-014-fully-grounded-which-pass-answered-it-IS-type-checker-implementation-plan.md` — 2026-07-16-FYI-014-fully-grounded-which-pass-answered-it-IS-type-checker-implementation-plan
 - `2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked.md` — 2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked
+- `2026-07-16-FYI-effect-checker-twin-grounded-frontier-4-codes-plus-005-repurposing-finding.md` — 2026-07-16-FYI-effect-checker-twin-grounded-frontier-4-codes-plus-005-repurposing-finding
+- `2026-07-16-FYI-parity-gate-hardened-fail-closed-AND-honesty-correction-11-other-family-codes.md` — 2026-07-16-FYI-parity-gate-hardened-fail-closed-AND-honesty-correction-11-other-family-codes
 - `2026-07-16-FYI-passive-lane-variance-root-cause-GC-dominated-plus-watcher.md` — 2026-07-16-FYI-passive-lane-variance-root-cause-GC-dominated-plus-watcher
 - `2026-07-16-FYI-rd0128-stale-testwitness-proof.md` — 2026-07-16-FYI-rd0128-stale-testwitness-proof
 - `2026-07-16-FYI-tensor-cluster-016-017-030-fully-grounded-implementation-ready.md` — 2026-07-16-FYI-tensor-cluster-016-017-030-fully-grounded-implementation-ready

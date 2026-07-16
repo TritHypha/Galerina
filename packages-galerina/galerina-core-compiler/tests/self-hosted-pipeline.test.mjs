@@ -151,6 +151,14 @@ describe("self-hosted pipeline — full body AST + body type-check (M-A fold →
     const codes = bodyDiags.filter((d) => d.flowName === "computeRate").map((d) => d.code);
     assert.ok(codes.includes("FUNGI-TYPE-014"), `expected 014 on computeRate, got: ${codes.join(", ")}`);
   });
+
+  it("FUNGI-BINDING-005: reassigning a let binding via the REAL parser", async () => {
+    // Proves the immutable-reassignment check on the real self-hosted parse: the parser emits let/mut
+    // with `.name` and the reassignment as `{kind:"assign", name}` — the twin's collector keys on that.
+    const { bodyDiags } = await pipeline(`pure flow f() -> Int {\n  let x: Int = 1\n  x = 2\n  return 0\n}`);
+    const codes = bodyDiags.filter((d) => d.flowName === "f").map((d) => d.code);
+    assert.ok(codes.includes("FUNGI-BINDING-005"), `expected BINDING-005 on f, got: ${codes.join(", ")}`);
+  });
 });
 
 // ── effect + governance over the parsed body AST (M-B continued) ──

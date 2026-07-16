@@ -931,3 +931,50 @@ describe("type-checker.fungi — FUNGI-TYPE-014 MissingRequiredEffect (cross-flo
     assert.deepEqual(codesFor(diags, "caller"), []);
   });
 });
+
+// FUNGI-BINDING-005 (IMMUTABLE_BINDING_REASSIGNED, error) — reassigning a `let` binding is an error;
+// `mut` is fine. Stage-A (type-checker.ts assignStmt): lookupBindingKind === "let" → 005. The twin flags
+// an assign whose target is declared `let` and NEVER `mut` in the flow (the mut-exclusion keeps it
+// false-differential-safe under a scope-unaware name pass). Verified vs raw diagnostics: `let x; x=…` →
+// 005; `mut y; y=…` → clean; no reassignment → clean. R&D's phase-2 increment (K3 + BINDING-005).
+describe("type-checker.fungi — FUNGI-BINDING-005 immutable-binding reassignment", () => {
+  it("reassigning a let binding → FUNGI-BINDING-005", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "x", typeName: "Int", expr: [expr("lit", "1", "Int")] }),
+        stmt({ kind: "assign", name: "x", expr: [expr("lit", "2", "Int")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-BINDING-005"]);
+  });
+
+  it("reassigning a mut binding → clean", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "mut", name: "y", typeName: "Int", expr: [expr("lit", "1", "Int")] }),
+        stmt({ kind: "assign", name: "y", expr: [expr("lit", "2", "Int")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), []);
+  });
+
+  it("a let binding that is never reassigned → clean", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "a", typeName: "Int", expr: [expr("lit", "1", "Int")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), []);
+  });
+
+  it("assigning to a name never declared `let` → clean (no false reassignment flag)", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "mut", name: "z", typeName: "Int", expr: [expr("lit", "1", "Int")] }),
+        stmt({ kind: "assign", name: "z", expr: [expr("lit", "2", "Int")] }),
+        stmt({ kind: "assign", name: "unknown", expr: [expr("lit", "3", "Int")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), []);
+  });
+});

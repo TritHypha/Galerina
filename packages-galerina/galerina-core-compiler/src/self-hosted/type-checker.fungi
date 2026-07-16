@@ -885,6 +885,75 @@ contract { intent { "FUNGI-TYPE-014: a call whose callee declares an effect the 
   return diags
 }
 
+// Collect every binding NAME declared (or, for kind "assign", targeted) by a statement of the given
+// kind in a body, descending into nested block bodies (kind-gated like checkStmt, so body/elseBody are
+// only read where they exist). Used by the FUNGI-BINDING-005 reassignment check.
+pure flow collectNamesByKind(stmts: Array<Auto>, kind: String) -> Array<Auto>
+contract { intent { "Every statement.name for statements of the given kind, recursing into block bodies." } }
+{
+  mut names: Array<Auto> = Array.empty()
+  mut i: Int = 0
+  while i < stmts.count() {
+    let sOpt = stmts.get(i)
+    match sOpt {
+      Some(s) => {
+        if s.kind == kind {
+          names = names.append(s.name)
+        }
+        if s.kind == "if" {
+          names = appendAll(names, collectNamesByKind(s.body, kind))
+          names = appendAll(names, collectNamesByKind(s.elseBody, kind))
+        }
+        if s.kind == "while" {
+          names = appendAll(names, collectNamesByKind(s.body, kind))
+        }
+        if s.kind == "match" {
+          names = appendAll(names, collectNamesByKind(s.body, kind))
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return names
+}
+
+// FUNGI-BINDING-005 (IMMUTABLE_BINDING_REASSIGNED): reassigning a `let` binding is an error (Stage-A
+// type-checker.ts assignStmt case: `lookupBindingKind === "let" | "readonly"` → 005). The twin's model
+// has `let` (immutable) + `mut` (mutable). Flag an assignment whose target was declared `let` AND is NOT
+// also declared `mut` anywhere in the flow — the `mut` exclusion keeps it FALSE-DIFFERENTIAL-SAFE: with a
+// scope-unaware name pass a shadowing `mut` could otherwise mis-flag a legitimate reassignment, so a
+// name that is ever `mut` is conservatively left alone (an under-report on shadowing, never a false
+// positive; scope-aware mutability is the honest follow-up). `readonly` is not in the twin's model — a
+// documented gap. Verified vs raw diagnostics: `let x = 1; x = 2` -> 005; `mut y; y = 2` -> clean.
+pure flow checkImmutableReassign(flowName: String, body: Array<Auto>) -> Array<Auto>
+contract { intent { "FUNGI-BINDING-005: an assignment whose target was declared immutable (let, never mut)." } }
+{
+  mut diags: Array<Auto> = Array.empty()
+  let letNames: Array<Auto> = collectNamesByKind(body, "let")
+  let mutNames: Array<Auto> = collectNamesByKind(body, "mut")
+  let targets: Array<Auto> = collectNamesByKind(body, "assign")
+  mut i: Int = 0
+  while i < targets.count() {
+    let tOpt = targets.get(i)
+    match tOpt {
+      Some(tgt) => {
+        if containsName(letNames, tgt) {
+          if containsName(mutNames, tgt) == false {
+            let msg5: String = "cannot reassign immutable binding '" + tgt + "' declared with 'let' in flow '" + flowName + "'; use 'mut' if reassignment is intended (FUNGI-BINDING-005)"
+            diags = diags.append({ code: "FUNGI-BINDING-005", message: msg5, flowName: flowName })
+          }
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return diags
+}
+
 // Walk every flow's full statement body, emitting binding diagnostics + the cross-flow effect check.
 pure flow checkFlowBodies(flows: Array<Auto>) -> TypeCheckResult
 contract {
@@ -904,6 +973,8 @@ contract {
         // FUNGI-TYPE-014: the joint effect/type pass — every callee's declared effects must be
         // declared by this flow. Needs the whole `flows` set (cross-flow callee lookup).
         allDiags = appendAll(allDiags, checkCallEffects(name, fd, flows))
+        // FUNGI-BINDING-005: reassigning an immutable (`let`, never `mut`) binding in this flow's body.
+        allDiags = appendAll(allDiags, checkImmutableReassign(name, fd.body))
         flowCount = flowCount + 1
       }
       None => {}

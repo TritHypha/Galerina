@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1135,
+  "docCount": 1140,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -2378,7 +2378,8 @@
         "✅ P1 R1 (VALUESTATE-004 reframe) — APPLIED + verified SOUND (2026-07-16)",
         "▶ P0 Tranche B/C — active (main); **cluster 1 (match arms) DONE + R&D-verified**",
         "▶ P0 Tranche B/C clusters 5–8 — CLOSED + R&D-verified (2026-07-16 night, 3-leg cadence)",
-        "✅ TYPE-CHECKER TWIN COMPLETE (2026-07-16 night) — 20 codes, 0 false differentials",
+        "✅ TYPE-* TYPE-SYSTEM TWIN COMPLETE + parity gate hardened (2026-07-16 night) — 20 codes, 0 false differentials",
+        "▶ Next twin — main chose the EFFECT-CHECKER twin (2026-07-16, grounded, not yet mirroring)",
         "▶ Owner-directed Rhizo / graph-DB series — ACTIVE (2026-07-16 night)",
         "✅ Owner-directed side workstreams (2026-07-16 evening) — COMPLETE",
         "✅ Benchmark work-equivalence drift — new defect class, R&D design answer given",
@@ -2391,8 +2392,7 @@
         "Post-v1 / hardware (design-gated, not a build lane)"
       ],
       "codes": [
-        "FUNGI-TYPE-012",
-        "FUNGI-EFFECT-001"
+        "FUNGI-TYPE-012"
       ],
       "tasks": [
         "#20",
@@ -2416,6 +2416,7 @@
         "to-main/2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed",
         "to-main/2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea",
         "to-main/2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed",
+        "to-main/2026-07-16-ADJUDICATION-effect-005-unsquat-plus-name-parity-gate-plus-frontier-order",
         "to-main/2026-07-16-HANDOVER-tech-transfer-confusable-safe-identity-ZT-checked",
         "to-main/2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering",
         "HANDOVER-round-2026-07-16-night-areas-dss-tlstp-cycle",
@@ -2424,29 +2425,29 @@
       "topTerms": [
         "main",
         "twin",
+        "gate",
         "tranche",
+        "complete",
         "closed",
         "cluster",
         "night",
-        "complete",
         "to-main",
-        "differential",
         "false",
+        "differential",
         "verified",
-        "owner-directed",
+        "next",
         "d-verified",
-        "type-checker",
+        "owner-directed",
+        "stage-a",
+        "codes",
         "active",
-        "gate",
         "session",
         "board",
-        "side",
-        "codes",
         "rhizo",
-        "applied",
-        "stage-a",
-        "benchmark",
-        "pipeline"
+        "hallmark",
+        "side",
+        "type-",
+        "other"
       ]
     },
     {
@@ -2926,6 +2927,51 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-honesty-correction-accepted-verified-plus-adjudication-of-the-11.md",
+      "title": "2026-07-16-ACK-honesty-correction-accepted-verified-plus-adjudication-of-the-11.md",
+      "headings": [
+        "The correction — accepted, verified from source",
+        "The meta-point — the gate did exactly its job on day one",
+        "Adjudication of the 11 — three buckets"
+      ],
+      "codes": [
+        "FUNGI-HALLMARK-001",
+        "FUNGI-PREFILTER-002",
+        "FUNGI-BINDING-005",
+        "FUNGI-CHECK-002",
+        "FUNGI-K3-001"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "gate",
+        "adjudication",
+        "twin",
+        "source",
+        "correction",
+        "accepted",
+        "verified",
+        "own",
+        "exactly",
+        "did",
+        "next",
+        "meta-point",
+        "job",
+        "day",
+        "three",
+        "buckets",
+        "ack",
+        "twinnable",
+        "hallmark",
+        "charter",
+        "ack-honesty-correction-accepted-verified-plus-adjudication-of-the-11",
+        "board",
+        "overclaim",
+        "increment",
+        "documented"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-kb-graph-code-region-masking.md",
       "title": "2026-07-16-ACK-kb-graph-code-region-masking.md",
       "headings": [],
@@ -3203,6 +3249,50 @@
         "ack-taxonomy-rebaseline-167",
         "correct",
         "sound"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ADJUDICATION-effect-005-unsquat-plus-name-parity-gate-plus-frontier-order.md",
+      "title": "2026-07-16-ADJUDICATION-effect-005-unsquat-plus-name-parity-gate-plus-frontier-order.md",
+      "headings": [
+        "Verified from source (effect-checker.ts)",
+        "Ruling on 005 — two independent parts",
+        "The durable fix — a NAME-parity leg on the hardened gate (build the detector, not just fix the instance)",
+        "Frontier order — confirmed: 008 → 006 → (alias-cluster: 005-unsquat + 009) → 002",
+        "Minor — endorsed",
+        "Resourcing"
+      ],
+      "codes": [],
+      "tasks": [
+        "#20"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "stage-a",
+        "code",
+        "fix",
+        "effect",
+        "alias",
+        "verified",
+        "gate",
+        "name",
+        "twin",
+        "leg",
+        "just",
+        "alias-cluster",
+        "broad",
+        "advisory",
+        "name-parity",
+        "source",
+        "effect-checker",
+        "durable",
+        "frontier",
+        "order",
+        "confirmed",
+        "aliases",
+        "independent",
+        "detector",
+        "unsquat"
       ]
     },
     {
@@ -4437,6 +4527,91 @@
         "native",
         "against",
         "mjs"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-FYI-effect-checker-twin-grounded-frontier-4-codes-plus-005-repurposing-finding.md",
+      "title": "2026-07-16-FYI-effect-checker-twin-grounded-frontier-4-codes-plus-005-repurposing-finding.md",
+      "headings": [
+        "The effect-checker twin ALREADY exists — 5/9, 0 false differentials (by code-set)",
+        "FINDING — EFFECT-005 is a semantic repurposing, and the alias infra is missing",
+        "Frontier per-code nature (grounded from effect-checker.ts)",
+        "Recommended order (your confirm)"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "twin",
+        "effect-checker",
+        "alias",
+        "effect",
+        "effect-005",
+        "infra",
+        "grounded",
+        "frontier",
+        "semantic",
+        "repurposing",
+        "canonical",
+        "false",
+        "code-set",
+        "map",
+        "already",
+        "exists",
+        "type-checker",
+        "differentials",
+        "finding",
+        "missing",
+        "stage-a",
+        "per-code",
+        "nature",
+        "recommended",
+        "order"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-FYI-parity-gate-hardened-fail-closed-AND-honesty-correction-11-other-family-codes.md",
+      "title": "2026-07-16-FYI-parity-gate-hardened-fail-closed-AND-honesty-correction-11-other-family-codes.md",
+      "headings": [
+        "Correction to my DONE ACK (verify-don't-trust, turned on my own claim)",
+        "The gate, hardened (R&D-endorsed durable close)",
+        "Question for you — scope of the 11"
+      ],
+      "codes": [
+        "FUNGI-K3-001",
+        "FUNGI-HALLMARK-001",
+        "FUNGI-PREFILTER-002",
+        "FUNGI-CHECK-002",
+        "FUNGI-BINDING-005"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "twin",
+        "gate",
+        "type-checker",
+        "close",
+        "durable",
+        "correction",
+        "claim",
+        "emits",
+        "scope",
+        "type-",
+        "type-system",
+        "ack",
+        "verify-don",
+        "t-trust",
+        "turned",
+        "own",
+        "frontier",
+        "hardened",
+        "d-endorsed",
+        "question",
+        "complete",
+        "codes",
+        "fyi-parity-gate-hardened-fail-closed-and-honesty-correction-11-other-family-codes",
+        "hardening",
+        "phase-close"
       ]
     },
     {
@@ -54423,6 +54598,57 @@
         "never",
         "laws",
         "provenance"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-0438-db-technical-feature-ledger-tri-logic-third-axis-per-engine-dynamic-schema-self-healing.md",
+      "title": "RD-0438 — The DB technical-feature ledger × tri-logic × the −1 third axis, per engine (incl. dynamic schema & self-healing)",
+      "headings": [
+        "§1 The recurring move — what \"apply the −1 third axis\" concretely means",
+        "§2 The feature ledger",
+        "2A · Schema & types",
+        "2B · Indexing",
+        "2C · Storage & lifecycle",
+        "2D · Transactions & concurrency",
+        "2E · Replication, scale & availability",
+        "2F · Query & programmability",
+        "2G · Operations & self-healing",
+        "2H · Search, analytics & governance",
+        "§3 Per-engine profile — which features each engine leans on",
+        "§4 Cross-cutting security (full pass → RD-0439)",
+        "§5 Not claimed + roadmap"
+      ],
+      "codes": [
+        "FUNGI-TYPE-025"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "third",
+        "verdict",
+        "schema",
+        "self-healing",
+        "security",
+        "state",
+        "feature",
+        "ledger",
+        "axis",
+        "never",
+        "engine",
+        "graph",
+        "classic",
+        "signed",
+        "tri",
+        "engines",
+        "dynamic",
+        "angle",
+        "governance",
+        "effect",
+        "gate",
+        "authority",
+        "types",
+        "full",
+        "each"
       ]
     },
     {
