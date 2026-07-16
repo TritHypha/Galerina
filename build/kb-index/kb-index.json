@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1143,
+  "docCount": 1148,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -2379,8 +2379,8 @@
         "▶ P0 Tranche B/C — active (main); **cluster 1 (match arms) DONE + R&D-verified**",
         "▶ P0 Tranche B/C clusters 5–8 — CLOSED + R&D-verified (2026-07-16 night, 3-leg cadence)",
         "✅ TYPE-* TYPE-SYSTEM TWIN COMPLETE + parity gate hardened (2026-07-16 night) — 20 codes, 0 false differentials",
-        "▶ Twin phase-2 IN PROGRESS — BINDING-005 landed+verified, K3 next; effect-checker PARKED (2026-07-16)",
-        "▶ Owner-directed Rhizo / graph-DB series — ACTIVE (2026-07-16 night)",
+        "▶ Twin — TYPE-* complete (21 codes); EFFECT-CHECKER twin NOW; K3 BLOCKED on parser (2026-07-16)",
+        "✅ Owner-directed Rhizo / graph-DB series — COMPLETE (2026-07-16 night)",
         "✅ Owner-directed side workstreams (2026-07-16 evening) — COMPLETE",
         "✅ Benchmark work-equivalence drift — new defect class, R&D design answer given",
         "✅ rhizo-ql value-units→Hallmark — main ACK, board item CLOSED",
@@ -2425,29 +2425,29 @@
       "topTerms": [
         "main",
         "twin",
-        "gate",
-        "verified",
-        "tranche",
         "complete",
+        "gate",
+        "tranche",
+        "codes",
         "closed",
         "cluster",
         "night",
         "to-main",
+        "type-",
         "false",
         "d-verified",
         "differential",
-        "codes",
-        "next",
-        "landed",
+        "parser",
+        "verified",
+        "owner",
         "owner-directed",
-        "active",
+        "rhizo",
         "hallmark",
         "session",
         "board",
-        "type-",
-        "rhizo",
-        "owner",
-        "side"
+        "side",
+        "type-system",
+        "parity"
       ]
     },
     {
@@ -3014,6 +3014,46 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-K3-stopper-endorsed-effect-checker-now-parser-coverage-pregate.md",
+      "title": "2026-07-16-ACK-K3-stopper-endorsed-effect-checker-now-parser-coverage-pregate.md",
+      "headings": [
+        "The stopper is right — corroborated structurally, not just trusted",
+        "The reusable lesson — a parser-coverage PRE-GATE for twinnability",
+        "Re-order — ENDORSED",
+        "Resourcing"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "parser",
+        "stopper",
+        "probe",
+        "twin",
+        "code",
+        "right",
+        "endorsed",
+        "corroborated",
+        "pre-gate",
+        "parser-coverage",
+        "resourcing",
+        "first",
+        "structurally",
+        "just",
+        "trusted",
+        "reusable",
+        "lesson",
+        "twinnability",
+        "re-order",
+        "before",
+        "name",
+        "kind",
+        "checker",
+        "ack-k3-stopper-endorsed-effect-checker-now-parser-coverage-pregate",
+        "flip"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-kb-graph-code-region-masking.md",
       "title": "2026-07-16-ACK-kb-graph-code-region-masking.md",
       "headings": [],
@@ -3531,6 +3571,50 @@
         "flat",
         "symbol",
         "resolution"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-CONFIRM-name-parity-option-1-verified-plus-add-severity-same-law.md",
+      "title": "2026-07-16-CONFIRM-name-parity-option-1-verified-plus-add-severity-same-law.md",
+      "headings": [
+        "My gap — owned, and verified from source",
+        "Confirmed: option (1) — add `name` to twin emits as the foundation",
+        "One addition — add `severity` in the same pass (same law, ~free)",
+        "Sequencing — endorsed",
+        "The rest — confirmed",
+        "Next — both endorsed, owner's resourcing call (you surfaced it correctly)"
+      ],
+      "codes": [],
+      "tasks": [
+        "#20"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "name",
+        "severity",
+        "twin",
+        "add",
+        "same",
+        "confirmed",
+        "endorsed",
+        "foundation",
+        "leg",
+        "emits",
+        "both",
+        "verified",
+        "option",
+        "law",
+        "free",
+        "gap",
+        "source",
+        "code",
+        "parity",
+        "pass",
+        "owned",
+        "addition",
+        "sequencing",
+        "rest",
+        "next"
       ]
     },
     {
@@ -4103,6 +4187,48 @@
         "stage-a",
         "every",
         "before"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-effect-005-adjudication-plus-NAME-parity-leg-prerequisite-twins-emit-no-name.md",
+      "title": "2026-07-16-ACK-effect-005-adjudication-plus-NAME-parity-leg-prerequisite-twins-emit-no-name.md",
+      "headings": [
+        "The NAME-parity leg — I love it (it IS the 014-was-001 detector), but one prerequisite you assumed away",
+        "Gate wart — fixed",
+        "Frontier order — confirmed",
+        "Next"
+      ],
+      "codes": [],
+      "tasks": [
+        "#20"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "name",
+        "leg",
+        "twin",
+        "name-parity",
+        "gate",
+        "confirmed",
+        "stage-a",
+        "prerequisite",
+        "wart",
+        "fixed",
+        "frontier",
+        "order",
+        "code",
+        "next",
+        "un-squat",
+        "love",
+        "was-001",
+        "detector",
+        "assumed",
+        "away",
+        "type-checker",
+        "effect-checker",
+        "emit",
+        "ack-effect-005-adjudication-plus-name-parity-leg-prerequisite-twins-emit-no-name",
+        "main"
       ]
     },
     {
@@ -4939,6 +5065,45 @@
         "open",
         "durability",
         "rebrand-report"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-STOPPER-K3-blocked-on-self-hosted-parser-pivot-to-effect-checker.md",
+      "title": "2026-07-16-STOPPER-K3-blocked-on-self-hosted-parser-pivot-to-effect-checker.md",
+      "headings": [
+        "K3 grounded (source + raw-diag verified)",
+        "The stopper — the self-hosted parser has no K3 grammar",
+        "Recommend: flip the sequence — effect-checker NOW, K3 after the parser"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "parser",
+        "verdict",
+        "flip",
+        "self-hosted",
+        "effect-checker",
+        "raw-diag",
+        "stopper",
+        "grounded",
+        "twin",
+        "sequence",
+        "after",
+        "grammar",
+        "param",
+        "recommend",
+        "source",
+        "verified",
+        "allow",
+        "true",
+        "k3foldexpr",
+        "kind",
+        "real",
+        "operators",
+        "pipeline",
+        "extension",
+        "binaryexpr"
       ]
     },
     {
@@ -54775,6 +54940,50 @@
         "test",
         "deny",
         "must"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-0440-myco-review-and-third-axis-speed-assessment-grounded.md",
+      "title": "RD-0440 — myco review + can the 3rd axis improve its speed? (grounded in the real code)",
+      "headings": [
+        "§1 Review — the architecture, confirmed from code",
+        "§2 The 3rd-axis speed assessment — where a genuinely ternary idea helps (each targets a verified cost)",
+        "Win 1 — a ternary **prune-verdict** {DEFINITE-HIT / DEFINITE-MISS / NEEDS-VERIFY} + a positional index *(targets C2)*",
+        "Win 2 — a **ternary search trie (TST)** for the term dictionary *(targets C1, partially)*",
+        "Win 3 — a **ternary binary-sniff** {text / binary / INDETERMINATE-encoding} *(correctness-first, speed-neutral)*",
+        "§3 The honest boundaries — where the \"3rd axis\" does NOT help (under-claim)",
+        "§4 Recommendation",
+        "§5 Not claimed"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "myco",
+        "ternary",
+        "win",
+        "speed",
+        "targets",
+        "axis",
+        "search",
+        "index",
+        "code",
+        "design",
+        "review",
+        "term",
+        "real",
+        "dictionary",
+        "positional",
+        "honest",
+        "tst",
+        "query",
+        "prune",
+        "file",
+        "word",
+        "substring",
+        "genuinely",
+        "cost",
+        "prune-verdict"
       ]
     },
     {

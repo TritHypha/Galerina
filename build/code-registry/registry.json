@@ -8207,14 +8207,15 @@
         "TYPE_MISMATCH",
         "X",
         "Y",
-        "a"
+        "a",
+        "WRONG_NAME"
       ],
       "severities": [
         "warning",
         "error"
       ],
       "defs": 1,
-      "emits": 4,
+      "emits": 5,
       "tests": 91,
       "docs": 10
     },
@@ -8414,14 +8415,15 @@
         "QUANTIZED_PRECISION_MISMATCH",
         "INVALID_RUNTIME_TARGET_TYPE",
         "UNKNOWN_SYMBOL",
-        "Y"
+        "Y",
+        "WRONG_NAME"
       ],
       "severities": [
         "error",
         "warning"
       ],
       "defs": 1,
-      "emits": 3,
+      "emits": 4,
       "tests": 24,
       "docs": 0
     },
@@ -8667,7 +8669,9 @@
       "family": "TYPE",
       "namespace": "FUNGI",
       "status": "inline",
-      "names": [],
+      "names": [
+        "WRONG_NAME"
+      ],
       "severities": [],
       "defs": 0,
       "emits": 1,

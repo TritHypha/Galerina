@@ -105,6 +105,58 @@ contract {
 
 // ── Per-flow checks ───────────────────────────────────────────
 
+// The canonical Stage-A diagnostic NAME for each code the twin emits — kept in ONE place so every
+// twin diagnostic carries the SAME {code, name} pair Stage-A does (one-code = one-name, the #20
+// taxonomy invariant). The name-parity gate leg diffs this table against type-checker.ts's emit-site
+// names by construction, catching a semantic squat (a code mirrored at the wrong meaning — the
+// 014-was-001 / effect-005 class) that a code-set-only check cannot see. (RD-0412 §4.)
+pure flow diagName(code: String) -> String
+contract { intent { "The canonical Stage-A diagnostic name for a code the twin emits (else empty)." } }
+{
+  if code == "FUNGI-TYPE-001" { return "UNKNOWN_TYPE" }
+  if code == "FUNGI-TYPE-002" { return "TYPE_MISMATCH" }
+  if code == "FUNGI-TYPE-003" { return "INVALID_NOMINAL_CONVERSION" }
+  if code == "FUNGI-TYPE-004" { return "INVALID_BINARY_OPERATION" }
+  if code == "FUNGI-TYPE-005" { return "INVALID_CALL_ARG_TYPE" }
+  if code == "FUNGI-TYPE-007" { return "INVALID_ARGUMENT_COUNT" }
+  if code == "FUNGI-TYPE-008" { return "INVALID_RETURN_TYPE" }
+  if code == "FUNGI-TYPE-009" { return "INVALID_GENERIC_INSTANTIATION" }
+  if code == "FUNGI-TYPE-011" { return "INVALID_COLLECTION_ELEMENT" }
+  if code == "FUNGI-TYPE-014" { return "MISSING_REQUIRED_EFFECT" }
+  if code == "FUNGI-TYPE-016" { return "TENSOR_SHAPE_MISMATCH" }
+  if code == "FUNGI-TYPE-017" { return "QUANTIZED_PRECISION_MISMATCH" }
+  if code == "FUNGI-TYPE-020" { return "SHADOWED_BINDING" }
+  if code == "FUNGI-TYPE-022" { return "UNREACHABLE_PATTERN" }
+  if code == "FUNGI-TYPE-023" { return "MISSING_WILDCARD_ARM" }
+  if code == "FUNGI-TYPE-024" { return "INT_LITERAL_I32_OVERFLOW" }
+  if code == "FUNGI-TYPE-025" { return "SILENT_NULL_DENIED" }
+  if code == "FUNGI-TYPE-026" { return "DEFERRED_TYPE_CHECK" }
+  if code == "FUNGI-TYPE-030" { return "TENSOR_ELEMENT_TYPE_MISMATCH" }
+  if code == "FUNGI-NAME-002" { return "DUPLICATE_NAME" }
+  if code == "FUNGI-BINDING-005" { return "IMMUTABLE_BINDING_REASSIGNED" }
+  return ""
+}
+
+// Attach the canonical name to every diagnostic, so the twin's emitted record is the faithful
+// {code, name, message, flowName} shape Stage-A uses (not {code, message, flowName}). Applied once at
+// each top-level return, so the ~21 emit sites stay terse and the name lives in exactly one table.
+pure flow withNames(diags: Array<Auto>) -> Array<Auto>
+contract { intent { "Return the diagnostics with the canonical Stage-A name attached to each." } }
+{
+  mut out: Array<Auto> = Array.empty()
+  mut i: Int = 0
+  while i < diags.count() {
+    let dOpt = diags.get(i)
+    match dOpt {
+      Some(d) => { out = out.append({ code: d.code, name: diagName(d.code), message: d.message, flowName: d.flowName }) }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return out
+}
+
 pure flow checkParams(flowName: String, params: Array<Auto>) -> Array<Auto>
 contract {
   intent { "FUNGI-TYPE-001: every parameter must name a known type." }
@@ -209,7 +261,7 @@ contract {
     }
     i = i + 1
   }
-  return { diagnostics: allDiags, flowCount: flowCount, checkedAt: "2026-06-02" }
+  return { diagnostics: withNames(allDiags), flowCount: flowCount, checkedAt: "2026-06-02" }
 }
 
 // ── Statement-body checks (Milestone M-B) ─────────────────────
@@ -982,7 +1034,7 @@ contract {
     }
     i = i + 1
   }
-  return { diagnostics: allDiags, flowCount: flowCount, checkedAt: "2026-06-05" }
+  return { diagnostics: withNames(allDiags), flowCount: flowCount, checkedAt: "2026-06-05" }
 }
 
 // ── v2.2 Additions ────────────────────────────────────────────

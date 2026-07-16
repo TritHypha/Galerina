@@ -1,4 +1,4 @@
-# Galerina KB index (1143 docs)
+# Galerina KB index (1148 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -162,7 +162,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-TYPE-012
 - tasks: #20, #143, #75, #84, #65, #37, #81, #69, #72, #38, #39
 - links: [[to-main/2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd]] [[to-main/2026-07-16-ACK-rd0128-stale-proof-confirm-option-a]] [[to-main/2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed]] [[to-main/2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion]] [[to-main/2026-07-16-ACK-match-arm-cluster-verified-source-and-execution]] [[to-main/2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed]] [[to-main/2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea]] [[to-main/2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed]] [[to-main/2026-07-16-ADJUDICATION-effect-005-unsquat-plus-name-parity-gate-plus-frontier-order]] [[to-main/2026-07-16-HANDOVER-tech-transfer-confusable-safe-identity-ZT-checked]] [[to-main/2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering]] [[HANDOVER-round-2026-07-16-night-areas-dss-tlstp-cycle]]
-- terms: main, twin, gate, verified, tranche, complete, closed, cluster, night, to-main, false, d-verified, differential, codes
+- terms: main, twin, complete, gate, tranche, codes, closed, cluster, night, to-main, type-, false, d-verified, differential
 
 ## PROMPT — boot the main (Galerina build) session into the coordination loop
 `../ZTF-Knowledge-Bases/coordination/PROMPT-main-start-here.md`
@@ -231,6 +231,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-HALLMARK-001, FUNGI-PREFILTER-002, FUNGI-BINDING-005, FUNGI-CHECK-002, FUNGI-K3-001
 - terms: gate, adjudication, twin, source, correction, accepted, verified, own, exactly, did, next, meta-point, job, day
 
+## 2026-07-16-ACK-K3-stopper-endorsed-effect-checker-now-parser-coverage-pregate.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-K3-stopper-endorsed-effect-checker-now-parser-coverage-pregate.md`
+- terms: parser, stopper, probe, twin, code, right, endorsed, corroborated, pre-gate, parser-coverage, resourcing, first, structurally, just
+
 ## 2026-07-16-ACK-kb-graph-code-region-masking.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-kb-graph-code-region-masking.md`
 - tasks: #20
@@ -295,6 +299,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-CONFIRM-014-plan-sound-land-it-two-groundings-converged.md`
 - codes: FUNGI-EFFECT-001
 - terms: effects, pipeline, same, twin, effect, confirm-014-plan-sound-land-it-two-groundings-converged, plan, land, ground, stage-a, call, map, scope, clean
+
+## 2026-07-16-CONFIRM-name-parity-option-1-verified-plus-add-severity-same-law.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-CONFIRM-name-parity-option-1-verified-plus-add-severity-same-law.md`
+- tasks: #20
+- terms: name, severity, twin, add, same, confirmed, endorsed, foundation, leg, emits, both, verified, option, law
 
 ## 2026-07-16-FYI-push-policy-correction-main-is-commit-only.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-FYI-push-policy-correction-main-is-commit-only.md`
@@ -368,6 +377,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-TYPE-011, FUNGI-TYPE-001
 - tasks: #20
 - terms: array, element, type, int, known, string, differential, ack-collection-element-011-landed-plus-latent-divergence-catch, cluster, keep-green, type-001, verified, twin, false
+
+## 2026-07-16-ACK-effect-005-adjudication-plus-NAME-parity-leg-prerequisite-twins-emit-no-name.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-effect-005-adjudication-plus-NAME-parity-leg-prerequisite-twins-emit-no-name.md`
+- tasks: #20
+- terms: name, leg, twin, name-parity, gate, confirmed, stage-a, prerequisite, wart, fixed, frontier, order, code, next
 
 ## 2026-07-16-ACK-emit-parity-idea-caught-2-false-differentials-019-027-fixed-plus-gate.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-emit-parity-idea-caught-2-false-differentials-019-027-fixed-plus-gate.md`
@@ -476,6 +490,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-kb-graph-code-region-masking-stale-links-zeroed.md`
 - links: [[wikilink]] [[...]] [[id]]
 - terms: graph, orphan, code, extractor, inside, dated, board, doc, fix, report, means, text, bug, actually
+
+## 2026-07-16-STOPPER-K3-blocked-on-self-hosted-parser-pivot-to-effect-checker.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-STOPPER-K3-blocked-on-self-hosted-parser-pivot-to-effect-checker.md`
+- terms: parser, verdict, flip, self-hosted, effect-checker, raw-diag, stopper, grounded, twin, sequence, after, grammar, param, recommend
 
 ## Core Application Model
 `../ZTF-Knowledge-Bases/core-application-model.md`
@@ -5178,6 +5196,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## RD-0439 — Security pass on the Rhizo/graph/feature proposals + the TritMeshQL & `.graph` syntax-expansion assessment + a runnable third-state example
 `../ZTF-Knowledge-Bases/RD-0439-security-pass-plus-tritmeshql-graph-syntax-expansion-assessment-and-runnable-third-state-example.md`
 - terms: graph, assessment, verdict, security, tritmeshql, indeterminate, runnable, example, gate, pass, syntax-expansion, owner, feature, expand
+
+## RD-0440 — myco review + can the 3rd axis improve its speed? (grounded in the real code)
+`../ZTF-Knowledge-Bases/RD-0440-myco-review-and-third-axis-speed-assessment-grounded.md`
+- terms: myco, ternary, win, speed, targets, axis, search, index, code, design, review, term, real, dictionary
 
 ## Galerina AI-Friendliness — R&D Spec (2026-06-23)
 `../ZTF-Knowledge-Bases/rd-absorbed/from-galerina-r-and-d/AI-FRIENDLINESS-SPEC-2026-06-23.md`

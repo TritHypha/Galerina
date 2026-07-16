@@ -69,6 +69,39 @@ export function frontierFor(emitSet, twinCodes) {
   return [...emitSet].filter((c) => !twinSet.has(c)).sort();
 }
 
+// ── name-parity leg — one-code = one-NAME across twin and Stage-A ────────────────
+// A code-set gate can't catch a SEMANTIC squat: a code mirrored at the wrong MEANING (the twin's
+// `name` for a code differs from Stage-A's) passes ⊆ but is a latent false differential — the
+// 014-was-001 / effect-005 class. This leg diffs the twin's declared code→name against Stage-A's
+// emit-site code→name, by construction, for every shared code.
+
+// The twin's code→name from its `diagName` table (`if code == "CODE" { return "NAME" }`).
+export function twinNameMap(src) {
+  const m = {};
+  for (const x of src.matchAll(/if\s+code\s*==\s*"(FUNGI-[A-Z0-9]+-\d+)"\s*\{\s*return\s*"([A-Z0-9_]+)"/g)) m[x[1]] = x[2];
+  return m;
+}
+// Stage-A code→name from its emit sites: makeTCDiag("CODE", "NAME", …) or push({ code:"CODE", name:"NAME" }).
+export function sourceNameMap(src) {
+  const m = {};
+  for (const x of src.matchAll(/makeTCDiag\(\s*"(FUNGI-[A-Z0-9]+-\d+)"\s*,\s*"([A-Z0-9_]+)"/g)) m[x[1]] = x[2];
+  for (const x of src.matchAll(/code:\s*"(FUNGI-[A-Z0-9]+-\d+)"\s*,\s*name:\s*"([A-Z0-9_]+)"/g)) if (!(x[1] in m)) m[x[1]] = x[2];
+  return m;
+}
+// codes where the twin's name and Stage-A's name disagree (a semantic squat), or the twin declares
+// no name for a code it emits (an incomplete mirror). Both are name-parity violations.
+export function nameParityViolations(twinCodes, twinNames, srcNames) {
+  const out = [];
+  for (const c of twinCodes) {
+    const tn = twinNames[c] ?? "";
+    const sn = srcNames[c] ?? "";
+    if (sn === "") continue;                       // no Stage-A name to diff against (skip)
+    if (tn === "") out.push({ code: c, twin: "(none)", stageA: sn, kind: "missing" });
+    else if (tn !== sn) out.push({ code: c, twin: tn, stageA: sn, kind: "squat" });
+  }
+  return out;
+}
+
 // ── self-test ─────────────────────────────────────────────────────────────────
 if (process.argv.includes("--self-test")) {
   const tcSrc = `
@@ -86,7 +119,14 @@ if (process.argv.includes("--self-test")) {
   assert(falseDifferentials(["FUNGI-TYPE-019"], emit).length === 1, "detects a false differential");
   assert(frontierFor(emit, twin).length === 0, "frontier empty when twin has all emits");
   assert(frontierFor(sourceEmitSet(`makeTCDiag("FUNGI-TYPE-002",` + `"a")\nmakeTCDiag("FUNGI-TYPE-099","b")`), twin).join() === "FUNGI-TYPE-099", "frontier = unmirrored emits");
-  console.log("twin-emit-parity self-test: 7/7 ok");
+  // name-parity leg
+  const tn = twinNameMap(`if code == "FUNGI-TYPE-002" { return "TYPE_MISMATCH" }\nif code == "FUNGI-TYPE-014" { return "MISSING_REQUIRED_EFFECT" }`);
+  assert(tn["FUNGI-TYPE-002"] === "TYPE_MISMATCH", "twinNameMap extracts the diagName table");
+  const sn = sourceNameMap(`makeTCDiag("FUNGI-TYPE-002", "TYPE_MISMATCH", m)\nthis.diagnostics.push({ code: "FUNGI-TYPE-014", name: "WRONG_NAME" });`);
+  assert(sn["FUNGI-TYPE-002"] === "TYPE_MISMATCH" && sn["FUNGI-TYPE-014"] === "WRONG_NAME", "sourceNameMap extracts emit-site names");
+  const nv = nameParityViolations(["FUNGI-TYPE-002", "FUNGI-TYPE-014"], tn, sn);
+  assert(nv.length === 1 && nv[0].code === "FUNGI-TYPE-014" && nv[0].kind === "squat", "detects a name squat, passes matching");
+  console.log("twin-emit-parity self-test: 9/9 ok");
   process.exit(0);
 }
 function assert(ok, what) { if (!ok) { console.error(`self-test FAIL: ${what}`); process.exit(1); } }
@@ -112,16 +152,23 @@ const typeFrontier = tcGap.filter((c) => /^FUNGI-TYPE-/.test(c));
 const otherFamilies = tcGap.filter((c) => !/^FUNGI-(TYPE|NAME)-/.test(c));
 const otherPass = [...srEmits].filter((c) => !tcEmits.has(c) && !twinSet.has(c)).sort();
 
+// name-parity leg: for every code the twin emits, its declared name must equal Stage-A's emit-site name.
+const twinNames = twinNameMap(readFileSync(TWIN, "utf8"));
+const tcNames = sourceNameMap(readFileSync(TYPE_CHECKER, "utf8"));
+const nameViol = nameParityViolations(twin, twinNames, tcNames);
+
 const asJson = process.argv.includes("--json");
 if (asJson) {
-  console.log(JSON.stringify({ twinEmits: twin.length, falseDifferentials: bad, typeFrontier, otherFamilies, otherPassFrontier: otherPass }, null, 1));
+  console.log(JSON.stringify({ twinEmits: twin.length, falseDifferentials: bad, nameParityViolations: nameViol, typeFrontier, otherFamilies, otherPassFrontier: otherPass }, null, 1));
 } else {
-  console.log(`twin-emit-parity: twin emits ${twin.length} codes · ${bad.length} false differential(s)`);
+  console.log(`twin-emit-parity: twin emits ${twin.length} codes · ${bad.length} false differential(s) · ${nameViol.length} name-parity violation(s)`);
   for (const c of bad) console.log(`  ⚠ FALSE DIFFERENTIAL ${c} — no emit call-site in type-checker.ts (twin flags what the checker never does)`);
   if (bad.length === 0) console.log(`  ✅ twin-emitted ⊆ type-checker-emitted (no false differential)`);
+  for (const v of nameViol) console.log(`  ⚠ NAME SQUAT ${v.code} — twin name '${v.twin}' ≠ Stage-A name '${v.stageA}' (one-code=one-name; a code mirrored at the wrong meaning)`);
+  if (nameViol.length === 0) console.log(`  ✅ name-parity: every twin code's name == Stage-A's (no semantic squat)`);
   console.log(`  type-system frontier (${typeFrontier.length} TYPE-* codes the twin does not yet mirror): ${typeFrontier.join(" ") || "none — the TYPE-* type-system twin is COMPLETE"}`);
   console.log(`  other type-checker families (${otherFamilies.length}; distinct subsystems, NOT the TYPE-* charter — future twin scope): ${otherFamilies.join(" ") || "none"}`);
   console.log(`  other-pass (SymbolResolver, a future twin's scope): ${otherPass.join(" ") || "none"}`);
 }
-process.exit(bad.length === 0 ? 0 : 3);
+process.exit(bad.length === 0 && nameViol.length === 0 ? 0 : 3);
 }

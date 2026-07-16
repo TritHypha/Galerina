@@ -2,7 +2,7 @@
 Generated: 2026-07-16
 
 ## Stats
-- Docs: 1141 | Edges: 3462 | Orphans: 85 | Stale links: 0 | FUNGI codes: 748
+- Docs: 1146 | Edges: 3462 | Orphans: 90 | Stale links: 0 | FUNGI codes: 748
 
 ## Document Registry (auto-generated)
 
@@ -44,9 +44,11 @@ Generated: 2026-07-16
 | 2026-07-16-ACK-brands-003-verified-51-51-plus-harden-emit-count-adjudication.md | — | — | — | FUNGI-TYPE-019 |
 | 2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed.md | — | — | — | FUNGI-TYPE-011 |
 | 2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch.md | — | — | — | FUNGI-TYPE-001, FUNGI-TYPE-011 |
+| 2026-07-16-ACK-effect-005-adjudication-plus-NAME-parity-leg-prerequisite-twins-emit-no-name.md | — | — | — | — |
 | 2026-07-16-ACK-emit-parity-gate-caught-019-027-well-done.md | — | — | — | — |
 | 2026-07-16-ACK-emit-parity-idea-caught-2-false-differentials-019-027-fixed-plus-gate.md | — | — | — | FUNGI-TYPE-019, FUNGI-TYPE-027 |
 | 2026-07-16-ACK-honesty-correction-accepted-verified-plus-adjudication-of-the-11.md | — | — | — | FUNGI-BINDING-005, FUNGI-CHECK-002, FUNGI-HALLMARK-001, FUNGI-PREFILTER-002 |
+| 2026-07-16-ACK-K3-stopper-endorsed-effect-checker-now-parser-coverage-pregate.md | — | — | — | — |
 | 2026-07-16-ACK-kb-graph-code-region-masking.md | — | — | — | — |
 | 2026-07-16-ACK-match-arm-cluster-landed-022-023-live-021-dead.md | — | — | — | FUNGI-TYPE-021, FUNGI-TYPE-022, FUNGI-TYPE-023 |
 | 2026-07-16-ACK-match-arm-cluster-verified-source-and-execution.md | — | — | — | FUNGI-TYPE-021, FUNGI-TYPE-022, FUNGI-TYPE-023 |
@@ -69,6 +71,7 @@ Generated: 2026-07-16
 | 2026-07-16-answers-to-night-round-rd-requests.md | — | — | — | — |
 | 2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea.md | — | — | — | FUNGI-TYPE-012 |
 | 2026-07-16-CONFIRM-014-plan-sound-land-it-two-groundings-converged.md | — | — | — | FUNGI-EFFECT-001 |
+| 2026-07-16-CONFIRM-name-parity-option-1-verified-plus-add-severity-same-law.md | — | — | — | — |
 | 2026-07-16-DONE-014-landed-TYPE-CHECKER-TWIN-COMPLETE-20-codes-0-false-diff.md | — | — | — | FUNGI-EFFECT-001, FUNGI-TYPE-014 |
 | 2026-07-16-FYI-014-fully-grounded-which-pass-answered-it-IS-type-checker-implementation-plan.md | — | — | — | FUNGI-EFFECT-001, FUNGI-TYPE-014 |
 | 2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked.md | — | — | — | — |
@@ -84,6 +87,7 @@ Generated: 2026-07-16
 | 2026-07-16-kb-graph-code-region-masking-stale-links-zeroed.md | — | — | — | — |
 | 2026-07-16-PRIORITY-main-instructions.md | — | — | — | FUNGI-EFFECT-002, FUNGI-TYPE-006 |
 | 2026-07-16-rhizo-ql-and-galerina-reusables.md | — | — | — | — |
+| 2026-07-16-STOPPER-K3-blocked-on-self-hosted-parser-pivot-to-effect-checker.md | — | — | — | — |
 | 2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion.md | — | — | — | — |
 | 2026-07-16-UNLOCK-checker-taxonomy-20-adopt.md | — | — | — | FUNGI-EFFECT-002, FUNGI-TYPE-006 |
 | AI_INDEX.md | — | — | — | FUNGI-HW-101, FUNGI-PHOTONIC-001, FUNGI-SEC-014, FUNGI-SYNTAX-010, FUNGI-TYPE-031 |
@@ -1028,6 +1032,7 @@ Generated: 2026-07-16
 | RD-0437-graphs-as-a-family-wide-substrate-beyond-indexing-every-part-of-the-app-all-db-types.md | — | — | — | — |
 | RD-0438-db-technical-feature-ledger-tri-logic-third-axis-per-engine-dynamic-schema-self-healing.md | — | — | — | FUNGI-TYPE-025 |
 | RD-0439-security-pass-plus-tritmeshql-graph-syntax-expansion-assessment-and-runnable-third-state-example.md | — | — | — | — |
+| RD-0440-myco-review-and-third-axis-speed-assessment-grounded.md | — | — | — | — |
 | rd-adversarial-verification-findings-2026-06-16.md | — | — | — | — |
 | rd-crossover-encryption-rnd.md | — | — | Merge / unified entry point. **Date:** 2026-06-16. **Posture:** grounded, cited, | FUNGI-AMD-024, FUNGI-PARSE-001, FUNGI-SUBSTRATE-001 |
 | rd-diagnostics-namespace-rnd-response.md | — | — | R&D response (2026-06-16). **Subject:** `Galerina/docs/Knowledge-Bases/galerina-diagnostic-namespace-ownership.md` | FUNGI-META-001, FUNGI-PRIVACY-00, FUNGI-SECRET-005 |
@@ -1179,12 +1184,14 @@ Docs with no inbound links from other KB docs:
 - `RD-0437-graphs-as-a-family-wide-substrate-beyond-indexing-every-part-of-the-app-all-db-types.md` — RD-0437 — Graphs as a family-wide substrate: graph applied to *every* part of the app, not just indexing, for all DB types
 - `RD-0438-db-technical-feature-ledger-tri-logic-third-axis-per-engine-dynamic-schema-self-healing.md` — RD-0438 — The DB technical-feature ledger × tri-logic × the −1 third axis, per engine (incl. dynamic schema & self-healing)
 - `RD-0439-security-pass-plus-tritmeshql-graph-syntax-expansion-assessment-and-runnable-third-state-example.md` — RD-0439 — Security pass on the Rhizo/graph/feature proposals + the TritMeshQL & `.graph` syntax-expansion assessment + a runnable third-state example
+- `RD-0440-myco-review-and-third-axis-speed-assessment-grounded.md` — RD-0440 — myco review + can the 3rd axis improve its speed? (grounded in the real code)
 - `2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed.md` — 2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed
 - `2026-07-16-ACK-014-VERIFIED-101-101-TYPE-CHECKER-TWIN-COMPLETE-plus-next-steer.md` — 2026-07-16-ACK-014-VERIFIED-101-101-TYPE-CHECKER-TWIN-COMPLETE-plus-next-steer
 - `2026-07-16-ACK-024-verified-plus-frontier-per-pass-scoping-and-025-coemission-design.md` — 2026-07-16-ACK-024-verified-plus-frontier-per-pass-scoping-and-025-coemission-design
 - `2026-07-16-ACK-025-verified-96-96-plus-014-grounded-type-checker-emitted-finish-line.md` — 2026-07-16-ACK-025-verified-96-96-plus-014-grounded-type-checker-emitted-finish-line
 - `2026-07-16-ACK-026-verified-plus-absence-fixture-principle-and-025-design-corrected.md` — 2026-07-16-ACK-026-verified-plus-absence-fixture-principle-and-025-design-corrected
 - `2026-07-16-ACK-BINDING-005-verified-106-plus-effect-005-already-answered-K3-sequence.md` — 2026-07-16-ACK-BINDING-005-verified-106-plus-effect-005-already-answered-K3-sequence
+- `2026-07-16-ACK-K3-stopper-endorsed-effect-checker-now-parser-coverage-pregate.md` — 2026-07-16-ACK-K3-stopper-endorsed-effect-checker-now-parser-coverage-pregate
 - `2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd.md` — 2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd
 - `2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed.md` — 2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed
 - `2026-07-16-ACK-brands-003-verified-51-51-plus-harden-emit-count-adjudication.md` — 2026-07-16-ACK-brands-003-verified-51-51-plus-harden-emit-count-adjudication
@@ -1203,6 +1210,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering.md` — 2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering
 - `2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea.md` — 2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea
 - `2026-07-16-CONFIRM-014-plan-sound-land-it-two-groundings-converged.md` — 2026-07-16-CONFIRM-014-plan-sound-land-it-two-groundings-converged
+- `2026-07-16-CONFIRM-name-parity-option-1-verified-plus-add-severity-same-law.md` — 2026-07-16-CONFIRM-name-parity-option-1-verified-plus-add-severity-same-law
 - `2026-07-16-FYI-push-policy-correction-main-is-commit-only.md` — 2026-07-16-FYI-push-policy-correction-main-is-commit-only
 - `2026-07-16-HANDOVER-tech-transfer-confusable-safe-identity-ZT-checked.md` — 2026-07-16-HANDOVER-tech-transfer-confusable-safe-identity-ZT-checked
 - `2026-07-16-PRIORITY-main-instructions.md` — 2026-07-16-PRIORITY-main-instructions
@@ -1217,6 +1225,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-ACK-adjudication-accepted-BINDING-005-landed-K3-next.md` — 2026-07-16-ACK-adjudication-accepted-BINDING-005-landed-K3-next
 - `2026-07-16-ACK-brands-003-cluster-landed-plus-frontier-heuristic-caveat.md` — 2026-07-16-ACK-brands-003-cluster-landed-plus-frontier-heuristic-caveat
 - `2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch.md` — 2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch
+- `2026-07-16-ACK-effect-005-adjudication-plus-NAME-parity-leg-prerequisite-twins-emit-no-name.md` — 2026-07-16-ACK-effect-005-adjudication-plus-NAME-parity-leg-prerequisite-twins-emit-no-name
 - `2026-07-16-ACK-emit-parity-idea-caught-2-false-differentials-019-027-fixed-plus-gate.md` — 2026-07-16-ACK-emit-parity-idea-caught-2-false-differentials-019-027-fixed-plus-gate
 - `2026-07-16-ACK-match-arm-cluster-landed-022-023-live-021-dead.md` — 2026-07-16-ACK-match-arm-cluster-landed-022-023-live-021-dead
 - `2026-07-16-ACK-p1-r1-valuestate004-reframed.md` — 2026-07-16-ACK-p1-r1-valuestate004-reframed
@@ -1237,6 +1246,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-FYI-tensor-cluster-016-017-030-fully-grounded-implementation-ready.md` — 2026-07-16-FYI-tensor-cluster-016-017-030-fully-grounded-implementation-ready
 - `2026-07-16-FYI-tranche-bc-grounded-not-a-loop-tick.md` — 2026-07-16-FYI-tranche-bc-grounded-not-a-loop-tick
 - `2026-07-16-FYI-type012-dead-009-is-the-live-generics-code.md` — 2026-07-16-FYI-type012-dead-009-is-the-live-generics-code
+- `2026-07-16-STOPPER-K3-blocked-on-self-hosted-parser-pivot-to-effect-checker.md` — 2026-07-16-STOPPER-K3-blocked-on-self-hosted-parser-pivot-to-effect-checker
 - `2026-07-16-kb-graph-code-region-masking-stale-links-zeroed.md` — 2026-07-16-kb-graph-code-region-masking-stale-links-zeroed
 
 ## Stale Links
