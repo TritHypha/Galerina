@@ -1,0 +1,127 @@
+@version 1
+/// @file: transport-fsm.fungi
+/// @purpose: Stage-6 CHECKER-VERIFIED twin of the TLSTP S4 Recovering-FSM transition function
+///   (transport-fsm.ts `step`) as four pure PROJECTIONS over an all-int evidence encoding. The host
+///   computes the K3 fold g = allOf(subVerdicts) with the SHIPPED calculus (itself execution-proven —
+///   the b8-admission twin); these flows fold the FSM edge, fail-closed. The charter layer split is
+///   preserved: the FSM READS a verdict, it never BECOMES one (TransportState is never aliased to the
+///   trit — Recovering is NOT the trit's 0).
+/// @status: checker-verified twin + RD-0361 execution differential (rd0361-transport-fsm-execution);
+///   NOT build-wired (execution switch #143).
+///
+/// Encodings (all Int):
+///   state:     0 = Established · 1 = Recovering · 2 = Closed
+///   event:     0 = fault · 1 = reverify · 2 = tick · 3 = fatal
+///   g:         the folded K3 verdict (1 ALLOW · 0 INDETERMINATE · -1 DENY); consulted ONLY on reverify
+///   enteredAt: ms timestamp Recovering was entered; -1 = null (outside Recovering)
+///
+/// Invariant pins mirrored from the RD (proved by the differential + its law asserts):
+///   INV-1 only Established permits data      · INV-2 Established reachable ONLY via reverify g == 1
+///   INV-3 Recovering times out to Closed     · INV-4 Closed is absorbing (stay, keys stay erased)
+///   INV-5 no manufactured authority          · INV-6 a 0 keeps holding (never resumes)
+
+// ── projection 1: the next TransportState ────────────────────────────────────────────────────────
+// Mirrors step()'s edge order EXACTLY: Closed-absorb → fatal → reverify → fault → tick.
+pure flow s4NextState(state: Int, hasKeys: Bool, enteredAt: Int, kind: Int, g: Int, nowMs: Int, timeoutMs: Int) -> Int
+contract {
+  intent { "S4 delta projection: next TransportState (0 Established / 1 Recovering / 2 Closed), fail-closed — a 0 verdict holds Recovering, never resumes." }
+}
+{
+  if state == 2 { return 2 }
+  if kind == 3 { return 2 }
+  if kind == 1 {
+    if g == -1 { return 2 }
+    if g == 1 { return 0 }
+    return 1
+  }
+  if kind == 0 { return 1 }
+  if state == 1 {
+    if enteredAt != -1 {
+      let elapsed = nowMs - enteredAt
+      if elapsed >= timeoutMs { return 2 }
+    }
+  }
+  return state
+}
+
+// ── projection 2: did this edge erase live keys? ─────────────────────────────────────────────────
+// True IFF the edge lands Closed from a live state while keys were held (toClosed's hadKeys).
+pure flow s4Erased(state: Int, hasKeys: Bool, enteredAt: Int, kind: Int, g: Int, nowMs: Int, timeoutMs: Int) -> Bool
+contract {
+  intent { "S4 erase projection: an edge into Closed erases held keys; Closed-stay and non-closing edges erase nothing." }
+}
+{
+  if state == 2 { return false }
+  if hasKeys == false { return false }
+  if kind == 3 { return true }
+  if kind == 1 {
+    if g == -1 { return true }
+    return false
+  }
+  if kind == 2 {
+    if state == 1 {
+      if enteredAt != -1 {
+        let elapsed = nowMs - enteredAt
+        if elapsed >= timeoutMs { return true }
+      }
+    }
+    return false
+  }
+  return false
+}
+
+// ── projection 3: are keys still held after the edge? ────────────────────────────────────────────
+// Every edge into Closed nulls keys; every other edge carries them through unchanged (stay() mirrors
+// the input — including the degenerate Closed-stay, which returns the context as-is).
+pure flow s4NextHasKeys(state: Int, hasKeys: Bool, enteredAt: Int, kind: Int, g: Int, nowMs: Int, timeoutMs: Int) -> Bool
+contract {
+  intent { "S4 key projection: keys survive every edge except an edge into Closed (erase-on-close); resume holds keys." }
+}
+{
+  if state == 2 { return hasKeys }
+  if kind == 3 { return false }
+  if kind == 1 {
+    if g == -1 { return false }
+    return hasKeys
+  }
+  if kind == 2 {
+    if state == 1 {
+      if enteredAt != -1 {
+        let elapsed = nowMs - enteredAt
+        if elapsed >= timeoutMs { return false }
+      }
+    }
+    return hasKeys
+  }
+  return hasKeys
+}
+
+// ── projection 4: the next enteredRecoveringAt (-1 = null) ───────────────────────────────────────
+// Established and Closed results clear the clock; entering Recovering starts it at nowMs; staying in
+// Recovering KEEPS the original entry time (cumulative dt is never reset — a fault or a 0 mid-recovery
+// does not extend the window).
+pure flow s4NextEnteredAt(state: Int, hasKeys: Bool, enteredAt: Int, kind: Int, g: Int, nowMs: Int, timeoutMs: Int) -> Int
+contract {
+  intent { "S4 clock projection: -1 outside Recovering; entering Recovering stamps nowMs; staying keeps the original entry (cumulative timeout)." }
+}
+{
+  if state == 2 { return enteredAt }
+  if kind == 3 { return -1 }
+  if kind == 1 {
+    if g == -1 { return -1 }
+    if g == 1 { return -1 }
+    if state == 1 { return enteredAt }
+    return nowMs
+  }
+  if kind == 0 {
+    if state == 0 { return nowMs }
+    return enteredAt
+  }
+  if state == 1 {
+    if enteredAt != -1 {
+      let elapsed = nowMs - enteredAt
+      if elapsed >= timeoutMs { return -1 }
+    }
+  }
+  return enteredAt
+}
