@@ -980,21 +980,39 @@ function moneyCurrency(v: GalerinaValue): string {
   return currency?.__tag === "string" ? currency.value : "";
 }
 
+/**
+ * RD-0349 I4 — ONE runtime unit table (the CANONICAL_EFFECTS pattern). This is the compile-time
+ * canon (type-checker BUILT_IN_TYPES' currencies) consolidated into a single runtime source:
+ * the per-currency constructors are GENERATED from it (G5 — the 4-of-7 hand-list dies by
+ * construction) and `Money.of` validates against it deny-by-default (G2 — the any-string
+ * fail-open twin closes). Tags are exact-codepoint UPPERCASE (the homoglyph/case-slip rule).
+ * When I1's owner-gated pinned ISO snapshot lands, ONLY this table grows (full active set,
+ * per-currency minorUnits incl. JPY→0) — no call-site changes.
+ */
+export const MONEY_UNIT_TAGS: readonly string[] = ["GBP", "USD", "EUR", "JPY", "CHF", "CAD", "AUD"];
+const MONEY_UNIT_SET = new Set(MONEY_UNIT_TAGS);
+
 function moneyStatic(method: string, args: readonly GalerinaValue[]): GalerinaValue | undefined {
-  switch (method) {
-    case "gbp":
-      return makeMoney(strVal(args[0] ?? { __tag: "string", value: "0.00" }), "GBP");
-    case "usd":
-      return makeMoney(strVal(args[0] ?? { __tag: "string", value: "0.00" }), "USD");
-    case "eur":
-      return makeMoney(strVal(args[0] ?? { __tag: "string", value: "0.00" }), "EUR");
-    case "jpy":
-      return makeMoney(strVal(args[0] ?? { __tag: "string", value: "0.00" }), "JPY");
-    case "of":
-      return makeMoney(args[0]?.__tag === "decimal" ? args[0].value : strVal(args[0] ?? { __tag: "string", value: "0.00" }), strVal(args[1] ?? { __tag: "string", value: "GBP" }));
-    default:
-      return undefined;
+  // Generated constructors: Money.gbp(...) … Money.aud(...) — one per table tag, no hand-list.
+  const asCtor = method.toUpperCase();
+  if (method === method.toLowerCase() && MONEY_UNIT_SET.has(asCtor)) {
+    return makeMoney(strVal(args[0] ?? { __tag: "string", value: "0.00" }), asCtor);
   }
+  if (method === "of") {
+    // Deny-by-default (parse-don't-validate): the code must be a KNOWN tag, exact-codepoint.
+    // No silent "GBP" default — an unnamed unit is the G2 bug class, not a convenience.
+    const codeArg = args[1];
+    const code = codeArg === undefined ? "" : strVal(codeArg);
+    if (!MONEY_UNIT_SET.has(code)) {
+      return {
+        __tag: "runtimeError",
+        message: `Money.of: unknown currency code '${code}' — valid codes: ${MONEY_UNIT_TAGS.join(", ")} ` +
+          `(exact-codepoint uppercase; the unit table grows with the pinned ISO snapshot, RD-0349 I1)`,
+      };
+    }
+    return makeMoney(args[0]?.__tag === "decimal" ? args[0].value : strVal(args[0] ?? { __tag: "string", value: "0.00" }), code);
+  }
+  return undefined;
 }
 
 /**
