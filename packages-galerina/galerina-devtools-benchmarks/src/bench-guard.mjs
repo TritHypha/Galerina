@@ -19,38 +19,42 @@
 //                      a mover here SIZES the environmental floor (thermal/boost).
 //   cpython            python — documented block-mover noise class (±25-35%).
 //   wasm               compiled → WebAssembly — the one STABLE, clean code signal.
-//   interpreter-single galerinaPassive with coldCalls==1 — the rate is ONE
-//                      wall-clock reading (spread up to 154%). NON-ATTRIBUTABLE.
-//   interpreter        galerinaGoverned/Manifest/Passive(coldCalls>1) — all run
-//                      the SAME tree-walker with ~20% CV GC-timing variance, so a
-//                      real regression must clear ~3σ (≈60%) to be a signal.
+//   passive-unmeasured galerinaPassive — its cold rate is single-shot per cold
+//                      call (coldCalls 1..20, cache-clear folded in) → below any
+//                      trustworthy sample floor. NON-ATTRIBUTABLE until the #63
+//                      median rig lands (R&D: report "not-measured", not a rate).
+//   interpreter        galerinaGoverned/Manifest — the tree-walker lanes that run
+//                      real work N times. Bar is DATA-DERIVED (p85 of the run
+//                      series' own spread), so it auto-shrinks when the rig lands.
 //
 // A mover is INVESTIGATE only on the wasm lane clearing max(floor, env×1.5), or
-// an interpreter lane clearing max(60%, env×2) — and never if it is a
+// an interpreter lane clearing max(dataDerivedBar, env×2) — and never if it is a
 // work-equivalence shape-only lane or part of a bidirectional same-bench scatter.
 //
 // Usage: node src/bench-guard.mjs [--json] [--floor <pct>] [--self-test]
 //        exit 0 = no attributable regressions · exit 3 = investigate (gate use)
 // =============================================================================
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 const RESULTS = join(ROOT, "results");
 const CONTROL = new Set(["nodejs", "cpp", "rust", "rustAvx2"]);
-const INTERP = new Set(["galerinaGoverned", "galerinaManifest", "galerinaPassive"]);
+const INTERP = new Set(["galerinaGoverned", "galerinaManifest"]); // attributable interpreter lanes (band derived from these)
 const FLOOR_DEFAULT = 8;   // wasm-lane min |Δ%| to consider (above the ~1.4% control band)
-const INTERP_BAR = 60;     // interpreter-lane min |Δ%| (≈3σ of the measured ~20% CV)
+const INTERP_BAR = 60;     // conservative fallback only when history is too thin to derive a bar
 
 // ── pure classification (self-tested) ────────────────────────────────────────
 
-// coldCallsByBench: { benchId -> coldCalls } from the raw run (passive lane only)
-export function variClass(lane, benchId, coldCallsByBench) {
+// The passive lane is non-attributable regardless of coldCalls (its cold rate is
+// single-shot per call until the #63 median rig). coldCallsByBench is retained
+// for callers/telemetry but does not change the class.
+export function variClass(lane, _benchId, _coldCallsByBench) {
   if (CONTROL.has(lane)) return "control";
   if (lane === "python") return "cpython";
   if (lane === "wasm") return "wasm";
-  if (lane === "galerinaPassive" && coldCallsByBench?.[benchId] === 1) return "interpreter-single";
+  if (lane === "galerinaPassive") return "passive-unmeasured";
   if (INTERP.has(lane)) return "interpreter";
   return "other";
 }
@@ -79,6 +83,29 @@ export function bidirectionalBenches(rows) {
   return new Set(Object.entries(sign).filter(([, s]) => s.size > 1).map(([b]) => b));
 }
 
+// DATA-DERIVED interpreter-lane noise band (R&D 2026-07-16: derive thresholds
+// from measured spread, not folklore constants — and it must auto-shrink when
+// the median rig lands). entries = [{stamp, flat}] sorted; we take the p85 of
+// run-to-run |Δ%| across every interpreter lane. Because it is recomputed from
+// the live series each run, it tightens automatically the moment a median rig
+// reduces the lanes' variance — a hand-set 60% could not. Returns null (→ the
+// documented conservative constant) when there is too little history to trust.
+export function deriveInterpBand(entries, laneSet = INTERP) {
+  const deltas = [];
+  for (let i = 1; i < entries.length; i++) {
+    const from = entries[i - 1].flat, to = entries[i].flat;
+    for (const key of Object.keys(to)) {
+      if (!laneSet.has(key.split("|")[1])) continue;
+      const a = from[key], b = to[key];
+      if (a > 0 && b > 0) deltas.push(Math.abs(((b - a) / a) * 100));
+    }
+  }
+  if (deltas.length < 8) return null;
+  deltas.sort((x, y) => x - y);
+  const p85 = deltas[Math.min(deltas.length - 1, Math.floor(deltas.length * 0.85))];
+  return Math.round(p85 * 10) / 10;
+}
+
 export function verdictFor(row, ctx) {
   const [bench, lane] = row.key.split("|");
   if (row.deltaPct === null) return { verdict: "lane-change", why: row.note };
@@ -87,13 +114,13 @@ export function verdictFor(row, ctx) {
   const shapeOnly = ctx.workEquivalence?.[bench]?.lanes?.includes(lane);
   if (cls === "control") return { verdict: mag > 10 ? "env-floor" : "noise", cls, why: "native control — sizes the noise floor, not a code signal" };
   if (cls === "cpython") return { verdict: "noise", cls, why: "CPython block-mover noise class" };
-  if (cls === "interpreter-single") return { verdict: "non-attributable", cls, why: "passive coldCalls=1 — one wall-clock reading (spread ~154%)" };
+  if (cls === "passive-unmeasured") return { verdict: "non-attributable", cls, why: "passive cold rate is single-shot per call — not-measured until the #63 median rig" };
   if (cls === "interpreter") {
     if (shapeOnly) return { verdict: "shape-only", cls, why: "work-equivalence: not a cross-runtime signal" };
     if (ctx.bidir.has(bench)) return { verdict: "noise", cls, why: "bidirectional scatter on this benchmark" };
-    const bar = Math.max(INTERP_BAR, ctx.envFloor * 2);
-    return mag > bar ? { verdict: "investigate", cls, why: `interpreter lane moved ${row.deltaPct}% > ${bar.toFixed(0)}% (≈3σ of ~20% CV)` }
-                     : { verdict: "noise", cls, why: `interpreter GC-variance, within ${bar.toFixed(0)}%` };
+    const bar = Math.max(ctx.interpBar, ctx.envFloor * 2);
+    return mag > bar ? { verdict: "investigate", cls, why: `interpreter lane moved ${row.deltaPct}% > ${bar.toFixed(0)}% (${ctx.interpBasis})` }
+                     : { verdict: "noise", cls, why: `interpreter variance, within ${bar.toFixed(0)}% (${ctx.interpBasis})` };
   }
   if (cls === "wasm") {
     if (shapeOnly) return { verdict: "shape-only", cls, why: "work-equivalence: not a cross-runtime signal" };
@@ -111,26 +138,34 @@ if (process.argv.includes("--self-test")) {
   assert(variClass("nodejs", "x", cc) === "control", "control");
   assert(variClass("python", "x", cc) === "cpython", "cpython");
   assert(variClass("wasm", "x", cc) === "wasm", "wasm");
-  assert(variClass("galerinaPassive", "compute-mix", cc) === "interpreter-single", "interpreter-single (coldCalls=1)");
-  assert(variClass("galerinaPassive", "text-html", cc) === "interpreter", "interpreter (coldCalls=20)");
+  assert(variClass("galerinaPassive", "compute-mix", cc) === "passive-unmeasured", "passive coldCalls=1 unmeasured");
+  assert(variClass("galerinaPassive", "text-html", cc) === "passive-unmeasured", "passive coldCalls=20 unmeasured");
+  assert(variClass("galerinaGoverned", "x", cc) === "interpreter", "governed = interpreter");
   assert(variClass("galerinaManifest", "hardware-targets", cc) === "interpreter", "manifest = interpreter");
   const rows = [
     { key: "b|rust", deltaPct: 4 }, { key: "b|rustAvx2", deltaPct: 31 },
     { key: "compute-mix|galerinaPassive", deltaPct: -45.8 },
     { key: "hardware-targets|galerinaManifest", deltaPct: -32.3 },
     { key: "c|wasm", deltaPct: 12 }, { key: "c|galerinaGoverned", deltaPct: -12 },
-    { key: "d|wasm", deltaPct: 55 },
+    { key: "d|wasm", deltaPct: 55 }, { key: "e|galerinaGoverned", deltaPct: 90 },
   ];
   assert(environmentalFloor(rows) === 31, "env floor = max control move");
   const bd = bidirectionalBenches(rows);
   assert(bd.has("c"), "bidirectional c (wasm +12 / gov -12)");
-  const ctx = { coldCalls: cc, envFloor: 31, floor: 8, bidir: bd, workEquivalence: {} };
-  assert(verdictFor(rows[2], ctx).verdict === "non-attributable", "passive coldCalls=1 non-attributable");
-  assert(verdictFor(rows[3], ctx).verdict === "noise", "manifest -32% < 62% interp bar -> noise");
+  const ctx = { coldCalls: cc, envFloor: 31, floor: 8, bidir: bd, workEquivalence: {}, interpBar: 25, interpBasis: "test" };
+  assert(verdictFor(rows[2], ctx).verdict === "non-attributable", "passive lane non-attributable");
+  assert(verdictFor(rows[3], ctx).verdict === "noise", "manifest -32% < max(25,62)=62 interp bar -> noise");
   assert(verdictFor(rows[1], ctx).verdict === "env-floor", "rustAvx2 +31 = env-floor");
   assert(verdictFor(rows[4], ctx).verdict === "noise", "wasm +12 but bidirectional -> noise");
-  assert(verdictFor(rows[6], ctx).verdict === "investigate", "wasm +40% clean lane > env×1.5 -> investigate");
-  console.log("bench-guard self-test: 11/11 ok");
+  assert(verdictFor(rows[6], ctx).verdict === "investigate", "wasm +55% clean lane > env×1.5 -> investigate");
+  assert(verdictFor(rows[7], ctx).verdict === "investigate", "governed +90% > max(25,62)=62 -> investigate");
+  // data-derived interpreter band: null on thin history (→ constant fallback), numeric with enough
+  assert(deriveInterpBand([{ stamp: "a", flat: { "x|galerinaGoverned": 100 } }, { stamp: "b", flat: { "x|galerinaGoverned": 110 } }]) === null, "thin history -> null (constant fallback)");
+  const many = [];
+  for (let i = 0; i <= 10; i++) many.push({ stamp: String(i), flat: { "a|galerinaGoverned": 100 + (i % 2) * 20, "b|galerinaManifest": 100 + (i % 2) * 20 } });
+  const band = deriveInterpBand(many);
+  assert(typeof band === "number" && band > 0, "sufficient history -> numeric data-derived band");
+  console.log("bench-guard self-test: 17/17 ok");
   process.exit(0);
 }
 function assert(ok, what) { if (!ok) { console.error(`self-test FAIL: ${what}`); process.exit(1); } }
@@ -154,11 +189,34 @@ try {
   }
 } catch { /* absent -> passive lanes classify as low-sample, still conservative */ }
 
+// DATA-DERIVED interpreter bar from the history run-series (R&D: not a folklore
+// constant; auto-shrinks when the median rig lands). Falls back to the
+// documented conservative constant only when history is too thin to trust.
+let interpBar = INTERP_BAR, interpBasis = `${INTERP_BAR}% constant (thin history)`;
+try {
+  const HDIR = join(RESULTS, "history");
+  const entries = readdirSync(HDIR)
+    .filter((f) => /^run-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}\.json$/.test(f))
+    .sort()
+    .map((f) => {
+      const arr = JSON.parse(readFileSync(join(HDIR, f), "utf8"));
+      const flat = {};
+      for (const e of arr) for (const [rt, v] of Object.entries(e.results ?? {})) {
+        if (!v || typeof v !== "object") continue;
+        const t = v.normThroughput ?? v.iterationsPerSecond ?? v.operationsPerSecond ?? v.runsPerSecond ?? null;
+        if (t !== null && Number.isFinite(t)) flat[`${e.benchmark}|${rt}`] = t;
+      }
+      return { stamp: f.slice(4, -5), flat };
+    });
+  const derived = deriveInterpBand(entries);
+  if (derived !== null) { interpBar = derived; interpBasis = `${derived}% data-derived (p85 of ${entries.length}-run interpreter spread)`; }
+} catch { /* history absent -> constant fallback, already conservative */ }
+
 function analyze(rep) {
   if (rep.baseline) return { baseline: true, note: rep.note, investigate: [], byVerdict: {} };
   const envFloor = environmentalFloor(rep.rows);
   const bidir = bidirectionalBenches(rep.rows);
-  const ctx = { coldCalls, envFloor, floor, bidir, workEquivalence: diff.workEquivalence };
+  const ctx = { coldCalls, envFloor, floor, bidir, workEquivalence: diff.workEquivalence, interpBar, interpBasis };
   const graded = rep.rows.filter((r) => r.deltaPct !== null || r.note).map((r) => ({ ...r, ...verdictFor(r, ctx) }));
   const byVerdict = {};
   for (const g of graded) byVerdict[g.verdict] = (byVerdict[g.verdict] ?? 0) + 1;
@@ -171,7 +229,7 @@ const totalInvestigate = out.sinceLast.investigate?.length ?? 0; // gate on sinc
 
 if (asJson) { console.log(JSON.stringify(out, null, 1)); }
 else {
-  console.log(`bench-guard @ ${diff.stamp}  (noise floor: ${diff.noiseFloorPct ?? "?"}%)`);
+  console.log(`bench-guard @ ${diff.stamp}  (noise floor: ${diff.noiseFloorPct ?? "?"}% · interpreter bar: ${interpBasis})`);
   for (const [title, a] of [["since last run", out.sinceLast], ["since day start", out.sinceDayStart]]) {
     if (a.baseline) { console.log(`  ${title}: ${a.note}`); continue; }
     const tally = Object.entries(a.byVerdict).map(([v, n]) => `${v} ${n}`).join(" · ");
