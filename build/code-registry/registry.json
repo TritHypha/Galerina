@@ -3118,7 +3118,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 9,
-      "docs": 0
+      "docs": 1
     },
     {
       "code": "FUNGI-EFFECT-009",
@@ -8646,7 +8646,7 @@
       "defs": 1,
       "emits": 1,
       "tests": 22,
-      "docs": 0
+      "docs": 1
     },
     {
       "code": "FUNGI-TYPE-031",

@@ -1,4 +1,4 @@
-# Galerina KB index (1151 docs)
+# Galerina KB index (1173 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -161,8 +161,8 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/BOARD.md`
 - codes: FUNGI-TYPE-012
 - tasks: #20, #143, #75, #84, #65, #37, #81, #69, #72, #38, #39
-- links: [[to-main/2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd]] [[to-main/2026-07-16-ACK-rd0128-stale-proof-confirm-option-a]] [[to-main/2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed]] [[to-main/2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion]] [[to-main/2026-07-16-ACK-match-arm-cluster-verified-source-and-execution]] [[to-main/2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed]] [[to-main/2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea]] [[to-main/2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed]] [[to-main/2026-07-16-ADJUDICATION-effect-005-unsquat-plus-name-parity-gate-plus-frontier-order]] [[to-main/2026-07-16-HANDOVER-tech-transfer-confusable-safe-identity-ZT-checked]] [[to-main/2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering]] [[HANDOVER-round-2026-07-16-night-areas-dss-tlstp-cycle]]
-- terms: main, twin, complete, gate, codes, tranche, closed, cluster, night, to-main, type-, false, d-verified, differential
+- links: [[to-main/2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd]] [[to-main/2026-07-16-ACK-rd0128-stale-proof-confirm-option-a]] [[to-main/2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed]] [[to-main/2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion]] [[to-main/2026-07-16-ACK-match-arm-cluster-verified-source-and-execution]] [[to-main/2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed]] [[to-main/2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea]] [[to-main/2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed]] [[to-main/2026-07-16-OWNER-GREENLIT-K3-parser-extension-workstream]] [[to-main/2026-07-16-ADJUDICATION-effect-005-unsquat-plus-name-parity-gate-plus-frontier-order]] [[to-main/2026-07-16-HANDOVER-tech-transfer-confusable-safe-identity-ZT-checked]] [[to-main/2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering]]
+- terms: main, twin, complete, gate, codes, tranche, to-main, closed, cluster, night, type-, false, d-verified, differential
 
 ## PROMPT — boot the main (Galerina build) session into the coordination loop
 `../ZTF-Knowledge-Bases/coordination/PROMPT-main-start-here.md`
@@ -221,6 +221,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed.md`
 - codes: FUNGI-TYPE-011
 - terms: array, verified, false, ack-collection-cluster-verified-and-divergence-catch-endorsed, emit-site, spot-check, differential, stage-a, element, both, cluster, latent-divergence, catch, method
+
+## 2026-07-16-ACK-EFFECT-008-verified-61-plus-2-findings-adjudicated-plus-count-flag.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-EFFECT-008-verified-61-plus-2-findings-adjudicated-plus-count-flag.md`
+- codes: FUNGI-EFFECT-008
+- terms: mirror, stage-a, finding, payment, charge, don, effect-008, verbatim, count, pipeline, doesn, verified, out-fix, flag
 
 ## 2026-07-16-ACK-emit-parity-gate-caught-019-027-well-done.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-emit-parity-gate-caught-019-027-well-done.md`
@@ -284,6 +289,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #63
 - terms: real, rig, fail-closed, floor, rd-0358, rate, answer-passive-lane-variance-median-rig-rides-63-and-allocation-probe-to-rd0358, mjs, window, cold, median-of-n, allocation, benchmark, sample
 
+## 2026-07-16-ANSWER-REQ-work-equivalent-alloc-lanes-flow-local-bump-arena-RD-0446.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ANSWER-REQ-work-equivalent-alloc-lanes-flow-local-bump-arena-RD-0446.md`
+- tasks: #128
+- terms: bump-arena, reframe, rd-0446, flow-local, materialised, flow, collection-pipeline, variant, recommended, allocator, model, full, design, real
+
 ## 2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering.md`
 - terms: benchmark, records, tag, answer-work-equivalence-structural-gate-and-record-lowering, real, wasm, lane, gate, structural, lanes, same, observable, shape-only, rd-0427
@@ -313,10 +323,27 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-FYI-push-policy-correction-main-is-commit-only.md`
 - terms: owner, push, coordination, pushes, fyi-push-policy-correction-main-is-commit-only, main, commit-only, policy, corrected, readme, files, grant, commit, fyi
 
+## 2026-07-16-HANDOVER-move-7-new-papers-to-galerina-docs-paper-plus-one-audit-confirm.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-HANDOVER-move-7-new-papers-to-galerina-docs-paper-plus-one-audit-confirm.md`
+- terms: confirm, drafts, move, audit, rd-0444, finding, land, paper, these, harm-filtered, verdicts, rationale, low, risk
+
 ## 2026-07-16-HANDOVER-tech-transfer-confusable-safe-identity-ZT-checked.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-HANDOVER-tech-transfer-confusable-safe-identity-ZT-checked.md`
 - codes: FUNGI-PARSE-001
 - terms: verdict, lexer, photonic, transfer, galerina, runnable, demonstrated, tri, candidates, supply-chain, availability, security-critical, finding, value-layer
+
+## 2026-07-16-OWNER-DECISIONS-1-3-plus-benchmark-devtool-handover-RD-0442.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-OWNER-DECISIONS-1-3-plus-benchmark-devtool-handover-RD-0442.md`
+- links: [[to-main/2026-07-16-OWNER-GREENLIT-K3-parser-extension-workstream]]
+- terms: owner, benchmark, handover, awareness, rd-0442, decisions, actionable, update, dev-tool, concurrency, latency, benchmarks, python, owner-decisions-1-3-plus-benchmark-devtool-handover-rd-0442
+
+## 2026-07-16-OWNER-GREENLIT-K3-parser-extension-workstream.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-OWNER-GREENLIT-K3-parser-extension-workstream.md`
+- terms: greenlit, call, sequencing, recommendation, offer, twin, owner-greenlit-k3-parser-extension-workstream, owner, parser-extension, workstream, extension, parser, grammar, way
+
+## 2026-07-16-OWNER-update-the-galerina-side-myco-with-rd0440-3rd-axis.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-OWNER-update-the-galerina-side-myco-with-rd0440-3rd-axis.md`
+- terms: myco, standalone, honest, galerina, owner, caveat, already, did, ternary, wants, verify-don, t-trust, speed, source
 
 ## 2026-07-16-PRIORITY-main-instructions.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-PRIORITY-main-instructions.md`
@@ -341,6 +368,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - links: [[RD-0412-diagnostic-code-taxonomy-20-adjudicated-adopt-the-checker-burn-down-unblocked]] [[diag-code-taxonomy-proposal-2026-07-10]]
 - terms: commit, reconcile, burn-down, twin, fungi-type-006, ack, decision, four, caveats, answers, don, stall, them, fold
 
+## 2026-07-17-ACK-papers-landed-clean-declarations-block-is-owner-gated.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-papers-landed-clean-declarations-block-is-owner-gated.md`
+- terms: block, parked, confirmed, declarations, agreed, owner-gated, authorship, owner, ack-papers-landed-clean-declarations-block-is-owner-gated, external, submission, in-repo, prior-art, already
+
 ## 2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md`
 - tasks: #20
@@ -363,6 +394,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-TYPE-026
 - tasks: #20
 - terms: null, twin, type, auto, type-checker, design, point, deferred, check, case, frontier, fungi-type-026, landed, fully
+
+## 2026-07-16-ACK-7-papers-landed-in-galerina-harnesses-reverified-audit-confirm-pass.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-7-papers-landed-in-galerina-harnesses-reverified-audit-confirm-pass.md`
+- terms: main, held, galerina, owner, push, landed, audit-confirm, completeness, note, bb522aaa, before, commit-only, verified, landing
 
 ## 2026-07-16-ACK-adjudication-accepted-BINDING-005-landed-K3-next.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-adjudication-accepted-BINDING-005-landed-K3-next.md`
@@ -504,6 +539,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-kb-graph-code-region-masking-stale-links-zeroed.md`
 - links: [[wikilink]] [[...]] [[id]]
 - terms: graph, orphan, code, extractor, inside, dated, board, doc, fix, report, means, text, bug, actually
+
+## 2026-07-16-REQ-existing-shape-only-alloc-lanes-to-work-equivalent-rd0442-addendum.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-REQ-existing-shape-only-alloc-lanes-to-work-equivalent-rd0442-addendum.md`
+- tasks: #128
+- terms: lanes, allocation, shape-only, three, real, heap, context, root, cause, verified, source, node, wasm, ask
 
 ## 2026-07-16-STOPPER-K3-blocked-on-self-hosted-parser-pivot-to-effect-checker.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-STOPPER-K3-blocked-on-self-hosted-parser-pivot-to-effect-checker.md`
@@ -4674,9 +4714,38 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/papers/dp-rd-0327-canonical-field-names-as-classification-carriers.md`
 - terms: field, canonical, classification, name, mapping, claims, construction, type, design, vocabulary, encoder, names, disclosure, redaction
 
+## Assurance relocation: the hot/cold split applied to proofs — lower the overhead, never the guarantee
+`../ZTF-Knowledge-Bases/papers/dp-rd-0409-assurance-relocation-hot-cold-split-for-proofs.md`
+- terms: cold, never, assurance, hot, relocation, split, proofs, guarantee, applied, lower, overhead, parallel, path, engineering
+
+## Topology is not authority; reach is not reasoning — the graph law, restated for AI retrieval
+`../ZTF-Knowledge-Bases/papers/dp-rd-0417-topology-is-not-authority-reach-is-not-reasoning.md`
+- terms: graph, law, retrieval, each, topology, authority, reach, construction, reasoning, edge, signed, traversal, corollaries, disclosed
+
+## Derived structures inherit the gate: closing the index/view/cache/replica redaction bypass by construction
+`../ZTF-Knowledge-Bases/papers/dp-rd-0438-derived-structures-inherit-the-gate.md`
+- terms: derived, construction, index, gate, structures, data, closing, view, cache, redaction, bypass, prior, art, novelty
+
+## Governed low-latency patterns: the seqlock queue, copy-not-pointers, self-describing signed headers, and the kernel-bypass boundary rule
+`../ZTF-Knowledge-Bases/papers/dp-rd-0441-governed-low-latency-patterns.md`
+- terms: boundary, rule, queue, governed, seqlock, signed, headers, low-latency, copy-not-pointers, self-describing, kernel-bypass, constructions, prior, art
+
 ## KB papers — defensive-publication drafts (R&D session)
 `../ZTF-Knowledge-Bases/papers/README.md`
-- terms: paper, drafts, session, here, harm, filter, papers, construction, staged, directive, before, defensive-publication, galerina, lives
+- terms: drafts, paper, rd-0444, staged, filter, sweep, rd-0365, papers, session, construction, harm, here, audit, galerina
+
+## Two-tier twin verification for self-hosting compilers: differential testing + real-parser pipelines + emit-set/name parity gates
+`../ZTF-Knowledge-Bases/papers/sp-rd-0412-two-tier-twin-verification-for-self-hosting-compilers.md`
+- terms: twin, differential, parity, method, code, name, reference, gates, verification, emit-set, each, caught, prior, art
+
+## Confusable-safe cross-script identity at the value layer: a three-valued admission gate for Latin and non-Latin symbols
+`../ZTF-Knowledge-Bases/papers/sp-rd-0433-confusable-safe-cross-script-identity-value-layer.md`
+- tasks: #39, #15, #31
+- terms: construction, honest, identity, value, admission, non-latin, symbols, boundary, layer, three-valued, deny, gate, latin, prior
+
+## A three-valued fail-closed calculus for data-system primitives — executable verification, and its equivalence to the seqlock re-check
+`../ZTF-Knowledge-Bases/papers/sp-rd-0439-third-state-fail-closed-calculus-executable-and-the-seqlock-equivalence.md`
+- terms: calculus, equivalence, seqlock, re-check, fail-closed, three-valued, indeterminate, machine-checked, prior, art, primitives, verification, construction, third
 
 ## Galerina — Parser Error Recovery Policy
 `../ZTF-Knowledge-Bases/parser-error-recovery.md`
@@ -5191,7 +5260,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 
 ## RD-0435 — Quantum: types, research, maths, symbols, storage — is it fast enough, can it retrieve correctly, and what it means for tri/photonic
 `../ZTF-Knowledge-Bases/RD-0435-quantum-data-types-maths-symbols-storage-fast-enough-retrieval-tri-photonic.md`
-- terms: quantum, data, photonic, classical, maths, symbols, tri, real, types, research, storage, fast, correctly, stored
+- terms: quantum, data, photonic, classical, real, maths, symbols, tri, types, research, storage, fast, correctly, stored
 
 ## RD-0436 — TritMesh:Rhizo (the fast engine): audience, workloads, the data/index operations, and the honest competitive case with the tri/photonic edge map
 `../ZTF-Knowledge-Bases/RD-0436-rhizo-fast-database-audience-workloads-data-operations-and-competitive-case-tri-photonic.md`
@@ -5214,6 +5283,32 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## RD-0440 — myco review + can the 3rd axis improve its speed? (grounded in the real code)
 `../ZTF-Knowledge-Bases/RD-0440-myco-review-and-third-axis-speed-assessment-grounded.md`
 - terms: myco, ternary, win, speed, targets, axis, search, index, code, design, review, term, real, dictionary
+
+## RD-0441 — External-source mining → TritMesh R&D table (ZT · use · paper · tri/−1 · RD)
+`../ZTF-Knowledge-Bases/RD-0441-external-source-mining-db-graph-ontology-lowlatency-rd-table-zt-use-paper.md`
+- terms: paper, s20, table, tri, benchmark, cold, reasoning, hot, tritmesh, sources, cited, reproduced, inbound, governance
+
+## RD-0442 — Benchmark expansion: a Go lane + 3 new (concurrency/API/latency) benchmarks + a per-language fairness audit → handover to main
+`../ZTF-Knowledge-Bases/RD-0442-benchmark-expansion-go-lane-three-new-benchmarks-per-language-fairness-audit.md`
+- terms: benchmark, lane, benchmarks, main, latency, fairness, audit, handover, add, concurrency, api, per-language, rust, python
+
+## RD-0443 — Improvement R&D: Galerina speed/latency + graph (combo vectors + RAG) applied to tritsockets · myco · TritMesh:DB — ZT | use | paper table
+`../ZTF-Knowledge-Bases/RD-0443-galerina-speed-latency-graph-vectors-rag-improvement-table-tritsockets-myco-tritmesh.md`
+- tasks: #10, #11, #12
+- terms: galerina, tritsockets, paper, improvement, graph, myco, table, latency, tritmesh, speed, rag, lane, never, pass
+
+## RD-0444 — Paper-review sweep: RD-0365 → RD-0443 (harm-filter verdicts) + audit of the published defensive papers
+`../ZTF-Knowledge-Bases/RD-0444-paper-review-sweep-rd0365-0443-harm-filter-verdicts-plus-published-paper-audit.md`
+- terms: papers, paper, published, rd-0443, audit, rd-0365, defensive, sweep, verdicts, write, construction, docs, pass, defensive-papers
+
+## RD-0445 — Quantum real-data test EXECUTED: the RD-0435 admission invariant on real tomography data (7/7) + the physical/unphysical finding
+`../ZTF-Knowledge-Bases/RD-0445-quantum-real-data-test-executed-tomography-admission-invariant-result.md`
+- terms: real, data, test, invariant, rd-0435, admission, finding, physical, real-data, tomography, unphysical, quantum, status, round-trip
+
+## RD-0446 — Making the shape-only allocation benchmark lanes work-equivalent: a flow-local bump-arena for real in-WASM allocation (+ the collection-pipeline framing)
+`../ZTF-Knowledge-Bases/RD-0446-work-equivalent-wasm-allocation-flow-local-bump-arena-for-the-shape-only-benchmark-lanes.md`
+- tasks: #128
+- terms: allocation, benchmark, bump-arena, real, model, flow-local, collection-pipeline, shape-only, loop, flow, lanes, record, arena, fail-open
 
 ## Galerina AI-Friendliness — R&D Spec (2026-06-23)
 `../ZTF-Knowledge-Bases/rd-absorbed/from-galerina-r-and-d/AI-FRIENDLINESS-SPEC-2026-06-23.md`

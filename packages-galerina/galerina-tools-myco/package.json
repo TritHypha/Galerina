@@ -1,0 +1,47 @@
+{
+  "name": "@galerina/tools-myco",
+  "version": "0.1.2",
+  "description": "grep, but it grows a graph — a graph-indexed search tool for file contents and filenames. Galerina's owned dev-tool finder (vendored from the myco subproject). Smart-case, token-precise, instant on repeat searches.",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "myco": "dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "DESIGN.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.json",
+    "dev": "node --experimental-strip-types src/cli.ts",
+    "test": "node --test --experimental-strip-types test/*.test.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "grep",
+    "search",
+    "graph",
+    "index",
+    "code-search",
+    "find",
+    "smart-case",
+    "cli"
+  ],
+  "author": "TritHypha <hello@trithypha.dev>",
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.9.0"
+  }
+}

@@ -5922,7 +5922,7 @@
     "code": "FUNGI-EFFECT-008",
     "namespace": "FUNGI",
     "family": "EFFECT",
-    "occurrences": 13,
+    "occurrences": 14,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -5930,7 +5930,7 @@
     ],
     "tests": 9,
     "refs": 0,
-    "docs": 0,
+    "docs": 1,
     "names": [
       "PRIVILEGED_EFFECT_ON_PLAIN_FLOW"
     ],
@@ -5950,7 +5950,8 @@
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-effect-checker.test.mjs:397",
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-effect-checker.test.mjs:418",
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-pipeline.test.mjs:185",
-      "test packages-galerina/galerina-core-compiler/tests/self-hosted-pipeline.test.mjs:191"
+      "test packages-galerina/galerina-core-compiler/tests/self-hosted-pipeline.test.mjs:191",
+      "doc docs/roadmap-2026-07-15.md:49"
     ]
   },
   {
@@ -8079,7 +8080,7 @@
       "test packages-galerina/galerina-core-compiler/tests/governance/tri-lint-verdict-ordering.test.mjs:28",
       "test packages-galerina/galerina-core-compiler/tests/governance/tri-lint-verdict-ordering.test.mjs:39",
       "test packages-galerina/galerina-core-compiler/tests/governance/tri-lint-verdict-ordering.test.mjs:49",
-      "doc docs/roadmap-2026-07-15.md:80"
+      "doc docs/roadmap-2026-07-15.md:107"
     ]
   },
   {
@@ -16565,7 +16566,7 @@
       "test packages-galerina/galerina-core-compiler/tests/secrets-body-retention-110.test.mjs:113",
       "doc docs/ANTI_HALLUCINATION.md:61",
       "fungi docs/examples/Level-9-Enterprise/465-enterprise-summary/example.fungi:29",
-      "doc docs/roadmap-2026-07-15.md:127",
+      "doc docs/roadmap-2026-07-15.md:154",
       "doc docs/SYNTAX_UPDATE_TRACKER.md:34",
       "doc docs/TODO.md:14",
       "ref scripts/audit-fungi-corpus-check.mjs:8",
@@ -18707,7 +18708,7 @@
       "doc docs/examples/Level-7-AI/362-ai-invalid-tensor-arity/notes.md:3",
       "doc docs/examples/README.md:79",
       "doc docs/language/fungi/SYNTAX-REFERENCE.md:63",
-      "doc docs/roadmap-2026-07-15.md:47"
+      "doc docs/roadmap-2026-07-15.md:74"
     ]
   },
   {
@@ -18841,7 +18842,7 @@
       "test packages-galerina/galerina-core-compiler/tests/type-checker-phase11.test.mjs:137",
       "test packages-galerina/galerina-core-compiler/tests/type-checker-phase11.test.mjs:138",
       "doc docs/AI/DO_NOT_USE_YET.md:165",
-      "doc docs/roadmap-2026-07-15.md:63"
+      "doc docs/roadmap-2026-07-15.md:90"
     ]
   },
   {
@@ -19202,7 +19203,7 @@
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-type-checker.test.mjs:692",
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-type-checker.test.mjs:704",
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-type-checker.test.mjs:714",
-      "doc docs/roadmap-2026-07-15.md:42",
+      "doc docs/roadmap-2026-07-15.md:69",
       "ref scripts/audit-twin-emit-parity.mjs:110",
       "ref scripts/audit-twin-emit-parity.mjs:115",
       "emit scripts/audit-twin-emit-parity.mjs:116",
@@ -19280,7 +19281,7 @@
       "test packages-galerina/galerina-core-compiler/tests/type-checker.test.mjs:603",
       "doc docs/architecture/stage6-hundred-percent-fungi-roadmap-2026-07-10.md:24",
       "doc docs/examples/README.md:81",
-      "doc docs/roadmap-2026-07-15.md:61"
+      "doc docs/roadmap-2026-07-15.md:88"
     ]
   },
   {
@@ -19326,7 +19327,7 @@
       "test packages-galerina/galerina-core-compiler/tests/type-checker.test.mjs:529",
       "doc docs/architecture/session4-5hr-autonomous-roadmap-2026-07-11.md:62",
       "doc docs/examples/README.md:82",
-      "doc docs/roadmap-2026-07-15.md:60"
+      "doc docs/roadmap-2026-07-15.md:87"
     ]
   },
   {
@@ -19384,7 +19385,7 @@
       "doc packages-galerina/galerina-framework-example-app/README.md:71",
       "fungi packages-galerina/galerina-framework-example-app/src/App.fungi:18",
       "doc docs/language/fungi/SYNTAX-REFERENCE.md:66",
-      "doc docs/roadmap-2026-07-15.md:61",
+      "doc docs/roadmap-2026-07-15.md:88",
       "ref scripts/galerina-new.mjs:23",
       "ref scripts/galerina-new.mjs:154",
       "ref scripts/galerina-new.mjs:196",
@@ -19534,7 +19535,7 @@
     "severities": [],
     "allSites": [
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:1254",
-      "doc docs/roadmap-2026-07-15.md:43",
+      "doc docs/roadmap-2026-07-15.md:70",
       "ref scripts/audit-twin-emit-parity.mjs:111",
       "ref scripts/audit-twin-emit-parity.mjs:115"
     ]
@@ -19543,7 +19544,7 @@
     "code": "FUNGI-TYPE-030",
     "namespace": "FUNGI",
     "family": "TYPE",
-    "occurrences": 40,
+    "occurrences": 41,
     "docOnly": false,
     "defs": [
       "packages-galerina/galerina-core-compiler/src/index.ts:353"
@@ -19553,7 +19554,7 @@
     ],
     "tests": 22,
     "refs": 7,
-    "docs": 0,
+    "docs": 1,
     "names": [
       "TENSOR_ELEMENT_TYPE_MISMATCH"
     ],
@@ -19600,7 +19601,8 @@
       "test packages-galerina/galerina-core-compiler/tests/type-registry/type-id-and-flags.test.mjs:9",
       "test packages-galerina/galerina-core-compiler/tests/type-registry/type-id-and-flags.test.mjs:267",
       "test packages-galerina/galerina-core-compiler/tests/type-registry/type-id-and-flags.test.mjs:290",
-      "test packages-galerina/galerina-core-compiler/tests/type-registry/type-id-and-flags.test.mjs:295"
+      "test packages-galerina/galerina-core-compiler/tests/type-registry/type-id-and-flags.test.mjs:295",
+      "doc docs/roadmap-2026-07-15.md:43"
     ]
   },
   {
