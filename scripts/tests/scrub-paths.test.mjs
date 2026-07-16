@@ -5,18 +5,20 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { scrubPaths } from "../lib/scrub-paths.mjs";
 
+// Fixture strings below QUOTE the banned patterns deliberately — they are the scrubber's inputs,
+// proving each class is genericized. Fake names (alice/bob/me), never a real machine path.
 test("scrubPaths: Windows user-home path → <path> (single and double backslash)", () => {
-  assert.equal(scrubPaths("see C:\\Users\\alice\\GitHub\\x.ts here"), "see <path> here");
-  assert.equal(scrubPaths("see C:\\\\Users\\\\bob\\\\y.md end"), "see <path> end");
+  assert.equal(scrubPaths("see C:\\Users\\alice\\GitHub\\x.ts here"), "see <path> here"); // path-leak-audit:allow
+  assert.equal(scrubPaths("see C:\\\\Users\\\\bob\\\\y.md end"), "see <path> end"); // path-leak-audit:allow
 });
 
 test("scrubPaths: wwwprojects root → <path>", () => {
-  assert.equal(scrubPaths("root wwwprojects\\galerina\\z done"), "root <path> done");
+  assert.equal(scrubPaths("root wwwprojects\\galerina\\z done"), "root <path> done"); // path-leak-audit:allow
 });
 
 test("scrubPaths: percent-wrapped env-var literals → <env-var> (the windows-env-literal class)", () => {
-  assert.equal(scrubPaths("path %USERPROFILE%\\.env"), "path <env-var>\\.env");
-  assert.equal(scrubPaths("%APPDATA% and %LocalAppData%"), "<env-var> and <env-var>");
+  assert.equal(scrubPaths("path %USERPROFILE%\\.env"), "path <env-var>\\.env"); // path-leak-audit:allow
+  assert.equal(scrubPaths("%APPDATA% and %LocalAppData%"), "<env-var> and <env-var>"); // path-leak-audit:allow
 });
 
 test("scrubPaths: SAFE tokens are untouched (no over-scrub)", () => {
@@ -28,7 +30,7 @@ test("scrubPaths: SAFE tokens are untouched (no over-scrub)", () => {
 });
 
 test("scrubPaths: idempotent (scrubbing an already-clean/scrubbed string is a no-op)", () => {
-  const once = scrubPaths("C:\\Users\\me\\p and %USERNAME%");
+  const once = scrubPaths("C:\\Users\\me\\p and %USERNAME%"); // path-leak-audit:allow
   assert.equal(scrubPaths(once), once);
 });
 

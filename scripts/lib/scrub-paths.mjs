@@ -2,9 +2,10 @@
 // gets written into a committed artifact (kb-index headings, code-index, generated reports). Extracted from
 // kb-index.mjs so it is IMPORTABLE and UNIT-TESTABLE (it previously ran only on-import, invisible to tests).
 //
-// The patterns are the lockstep of scripts/audit-path-leak.mjs's detectors: `C:\Users\<name>\...`, `wwwprojects\`,
-// and the %USERPROFILE%-style Windows env-var path literals. A generator that scrubs the SAME classes the gate
-// forbids means a regen can never re-introduce a leak (the fix + detector are one unit).
+// The patterns are the lockstep of scripts/audit-path-leak.mjs's detectors (named to teach — path-leak-audit:allow):
+// `C:\Users\<name>\...`, the wwwprojects root, and the %USERPROFILE%-style env-var literals (path-leak-audit:allow).
+// A generator that scrubs the SAME classes the gate forbids means a regen can never re-introduce a leak
+// (the fix + detector are one unit).
 export function scrubPaths(s) {
   return String(s)
     .replace(/[A-Za-z]:[\\/]{1,2}Users[\\/]{1,2}[^\s"'`)\]]+/g, "<path>")
