@@ -448,6 +448,66 @@ contract {
   return diags
 }
 
+// True for the Float32<->Int8 pair — the ONLY element mismatch Stage-A additionally WARNS on
+// (FUNGI-TYPE-017, QuantizedPrecisionMismatch). Every other element mismatch (e.g. Float64<->Float32)
+// is a bare FUNGI-TYPE-030 with no 017 rider. Verified vs a raw-diagnostics inspection of Stage-A.
+pure flow isQuantizedMix(a: String, b: String) -> Bool
+contract { intent { "True for the Float32/Int8 quantized-precision element pair (the FUNGI-TYPE-017 case)." } }
+{
+  if a == "Float32" {
+    if b == "Int8" { return true }
+  }
+  if a == "Int8" {
+    if b == "Float32" { return true }
+  }
+  return false
+}
+
+// FUNGI-TYPE-030/017/016 for a `Tensor<Elem, [dims]>` binding whose initializer is ALSO a tensor.
+// Stage-A (type-checker.ts ~1621-1686) gates the whole check on BOTH sides being Tensor<>, then:
+//   element type inequality (plain string compare)          -> FUNGI-TYPE-030 (error)
+//     ...and, only for the Float32<->Int8 quantized pair,    -> FUNGI-TYPE-017 (warning), inside the 030 block
+//   shape mismatch (rank, or a fixed dim value, differs)     -> FUNGI-TYPE-016 (error), independent of element
+// The builder supplies the pre-parsed element + a NORMALIZED shape string ("2,2") for both sides — the
+// init's INFERRED tensor type, since the twin has no symbol resolution — so this flow only COMPARES; the
+// fragile shape-literal parser stays out of the twin. For fixed dims, shape-string inequality IS Stage-A's
+// dim-value comparison (dynamic/named dims are out of scope — a documented gap, never a false differential).
+// Verified vs `galerina check --strict-types` AND a raw-diagnostics inspection (the CLI suppresses the 017
+// warning). Tranche B, RD-0412 §4:
+//   Tensor<Float32,[2,2]> = p:Tensor<Int8,[2,2]>    -> 017, 030      (quantized; 017 rides 030)
+//   Tensor<Float64,[2,2]> = p:Tensor<Float32,[2,2]> -> 030          (non-quantized element mismatch)
+//   Tensor<Float32,[2,2]> = p:Tensor<Float32,[3,3]> -> 016          (shape only; also rank [2,2] vs [2,2,2])
+//   Tensor<Float32,[2,2]> = p:Tensor<Int8,[3,3]>    -> 016, 017, 030
+pure flow checkTensorBinding(flowName: String, stmt: Auto) -> Array<Auto>
+contract {
+  intent { "FUNGI-TYPE-030/017/016 for a Tensor binding vs a tensor-typed initializer: element mismatch, quantized-precision mix, and shape mismatch." }
+}
+{
+  mut diags: Array<Auto> = Array.empty()
+  // Only fires when the initializer's inferred type is ALSO a tensor (Stage-A's both-Tensor gate).
+  if stmt.initTensorElem == "" {
+    return diags
+  }
+  let de: String = stmt.declaredTensorElem
+  let ie: String = stmt.initTensorElem
+  // FUNGI-TYPE-030: element type mismatch (Stage-A: expected.trim() === actual.trim()).
+  if de != ie {
+    let msg30: String = "Tensor element type mismatch: expected '" + de + "' but got '" + ie + "' (FUNGI-TYPE-030)"
+    diags = diags.append({ code: "FUNGI-TYPE-030", message: msg30, flowName: flowName })
+    // FUNGI-TYPE-017: quantized-precision warning — only the Float32/Int8 pair, and only within a 030.
+    if isQuantizedMix(de, ie) {
+      let msg17: String = "quantized/floating tensor mix (Int8 vs Float32) needs an explicit dequantize()/quantize() (FUNGI-TYPE-017)"
+      diags = diags.append({ code: "FUNGI-TYPE-017", message: msg17, flowName: flowName })
+    }
+  }
+  // FUNGI-TYPE-016: shape mismatch — rank or a fixed dimension value differs. Independent of the element.
+  if stmt.declaredTensorShape != stmt.initTensorShape {
+    let msg16: String = "Tensor shape mismatch on binding '" + stmt.name + "' (FUNGI-TYPE-016)"
+    diags = diags.append({ code: "FUNGI-TYPE-016", message: msg16, flowName: flowName })
+  }
+  return diags
+}
+
 // Validate a let/mut binding: declared type, a literal initializer's type, and a name-reference
 // initializer against the visible `scope` (params + bindings declared before it).
 pure flow checkBinding(flowName: String, stmt: Auto, scope: Array<Auto>) -> Array<Auto>
@@ -490,7 +550,21 @@ contract {
     return diags
   }
 
-  // Any generic `Base<args>` binding (Array, Result, Map, Tensor, …) goes through the general generic
+  // FUNGI-TYPE-030/017/016: a well-formed `Tensor<Elem, [dims]>` binding is compared element+shape against
+  // the initializer's INFERRED tensor type. Routed BEFORE the generic path so the `[dims]` shape literal is
+  // never mis-read as a type argument (which would be a false 001). The gate is the BOOLEAN `isTensor` (not
+  // `declaredTensorElem != ""`): on a node the parser does not mark, an absent field must read as false — a
+  // truthiness test does, a `!= ""` compare does NOT (absent ≠ "" is true, which would misroute every plain
+  // binding). Same absent-safe shape as the `isBranded` branch above. A well-formed 2-arg Tensor carries
+  // `declaredTensorElem`/`declaredTensorShape` (with the init's `initTensorElem`/`initTensorShape`); a
+  // malformed Tensor (wrong arity) is not marked and falls through to checkGenericBinding, which emits 009 as
+  // Stage-A does. Verified vs `galerina check --strict-types` + raw diagnostics (Tranche B, RD-0412 §4).
+  if stmt.isTensor {
+    diags = appendAll(diags, checkTensorBinding(flowName, stmt))
+    return diags
+  }
+
+  // Any generic `Base<args>` binding (Array, Result, Map, …) goes through the general generic
   // path, which subsumes the Array element check and adds arity (009), unknown type-argument (001),
   // and base-vs-literal mismatch (002). `typeArgs` is the parser-produced argument list (empty for a
   // non-generic type); its presence marks a generic, so the scalar TYPE-001/002 gate below only sees

@@ -210,8 +210,23 @@ function parseGeneric(typeName) {
   if (cur.trim()) args.push(cur.trim());
   return { base, args };
 }
-const stmt = ({ kind, name = "", typeName = "", expr: e = [], body = [], elseBody = [], arms = [], branded = false }) => {
+// Decompose a `Tensor<Elem, [d0, d1, …]>` into its element type and a NORMALIZED shape string ("2,2"),
+// or { elem:"", shape:"" } when the type is not a well-formed 2-arg Tensor (so a malformed Tensor falls
+// through to the generic arity path, which emits 009 as Stage-A does). Stands in for the parser lane
+// handing the twin a pre-decided tensor shape — keeps the fragile shape-literal parser out of .fungi.
+function parseTensor(typeName) {
   const { base, args } = parseGeneric(typeName);
+  if (base !== "Tensor" || args.length !== 2) return { elem: "", shape: "" };
+  const raw = args[1];
+  if (!raw.startsWith("[")) return { elem: "", shape: "" };
+  const inner = raw.slice(1, raw.lastIndexOf("]"));
+  const shape = inner.split(",").map((s) => s.trim()).filter((s) => s !== "").join(",");
+  return { elem: args[0], shape };
+}
+const stmt = ({ kind, name = "", typeName = "", initType = "", expr: e = [], body = [], elseBody = [], arms = [], branded = false }) => {
+  const { base, args } = parseGeneric(typeName);
+  const dt = parseTensor(typeName);
+  const it = parseTensor(initType);
   return vRecord({
     kind: vStr(kind),
     name: vStr(name),
@@ -223,6 +238,16 @@ const stmt = ({ kind, name = "", typeName = "", expr: e = [], body = [], elseBod
     // isBranded = the parser's brandedTypes-registry membership (type X = Brand<…>); the twin's
     // checkBinding emits FUNGI-TYPE-002/003 for a raw-literal init to a branded type.
     isBranded: vBool(branded),
+    // declared/init tensor decomposition (element + normalized shape) — set only for a well-formed
+    // `Tensor<Elem,[dims]>`. The twin's checkTensorBinding compares them for FUNGI-TYPE-030/017/016.
+    // `initType` is the initializer's INFERRED type (the twin has no symbol resolution, so the harness
+    // supplies it, mirroring how Stage-A resolves the RHS tensor type). `isTensor` is the absent-safe
+    // routing flag (a boolean the twin tests for truthiness; the real parser leaves it unset → false).
+    isTensor: vBool(dt.elem !== ""),
+    declaredTensorElem: vStr(dt.elem),
+    declaredTensorShape: vStr(dt.shape),
+    initTensorElem: vStr(it.elem),
+    initTensorShape: vStr(it.shape),
     expr: vList(e),
     body: vList(body),
     elseBody: vList(elseBody),
@@ -636,6 +661,80 @@ describe("type-checker.fungi — checkFlowBodies (M-B body AST)", () => {
     const { diags } = await checkBodies([
       bodyFlow({ name: "f", params: [param("p", "Int")], body: [
         stmt({ kind: "let", name: "y", typeName: "Int", expr: [expr("name", "p")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), []);
+  });
+});
+
+// FUNGI-TYPE-030 (TensorElementTypeMismatch, error) / -017 (QuantizedPrecisionMismatch, warning) /
+// -016 (TensorShapeMismatch, error) — a `Tensor<Elem,[dims]>` binding whose initializer is ALSO a
+// tensor. The twin compares the declared vs the init's INFERRED tensor (element + normalized shape).
+// Every expectation below was verified against Stage-A both via `galerina check --strict-types` AND a
+// raw-diagnostics inspection (the CLI suppresses the 017 warning; the differential compares the code
+// SET, so an unseen warning would silently diverge — hence the raw check). Because `codesFor` SORTS,
+// expectations are alphabetical. (Tranche B, RD-0412 §4.)
+describe("type-checker.fungi — FUNGI-TYPE-030/017/016 tensor element & shape", () => {
+  it("element mismatch Int8→Float32 (same shape) → 030 + 017 (quantized pair)", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "t", typeName: "Tensor<Float32, [2, 2]>", initType: "Tensor<Int8, [2, 2]>", expr: [expr("name", "p")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-017", "FUNGI-TYPE-030"]);
+  });
+
+  it("NON-quantized element mismatch Float64→Float32 (same shape) → 030 only (no 017)", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "t", typeName: "Tensor<Float64, [2, 2]>", initType: "Tensor<Float32, [2, 2]>", expr: [expr("name", "p")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-030"]);
+  });
+
+  it("shape mismatch same element (dim value [2,2]←[3,3]) → 016 only", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "t", typeName: "Tensor<Float32, [2, 2]>", initType: "Tensor<Float32, [3, 3]>", expr: [expr("name", "p")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-016"]);
+  });
+
+  it("rank mismatch same element ([2,2]←[2,2,2]) → 016 only", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "t", typeName: "Tensor<Float32, [2, 2]>", initType: "Tensor<Float32, [2, 2, 2]>", expr: [expr("name", "p")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-016"]);
+  });
+
+  it("element AND shape mismatch Int8[3,3]→Float32[2,2] → 016 + 017 + 030", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "t", typeName: "Tensor<Float32, [2, 2]>", initType: "Tensor<Int8, [3, 3]>", expr: [expr("name", "p")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-016", "FUNGI-TYPE-017", "FUNGI-TYPE-030"]);
+  });
+
+  it("identical tensors → no diagnostic", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "t", typeName: "Tensor<Float32, [2, 2]>", initType: "Tensor<Float32, [2, 2]>", expr: [expr("name", "p")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), []);
+  });
+
+  it("a well-formed Tensor's [dims] shape is NOT mis-flagged as an unknown type argument (no FUNGI-TYPE-001)", async () => {
+    // Regression: Tensor<Float32,[2,2]> must route to the tensor path, not the generic arity path
+    // (which would emit 001 for the "[2,2]" shape "argument"). Init omitted → tensor check is inert.
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "t", typeName: "Tensor<Float32, [2, 2]>", expr: [expr("name", "p")] }),
       ] }),
     ]);
     assert.deepEqual(codesFor(diags, "f"), []);

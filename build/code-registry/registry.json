@@ -8192,7 +8192,7 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
-      "tests": 226,
+      "tests": 227,
       "docs": 17
     },
     {
@@ -8212,7 +8212,7 @@
       ],
       "defs": 1,
       "emits": 2,
-      "tests": 83,
+      "tests": 88,
       "docs": 10
     },
     {
@@ -8228,7 +8228,7 @@
       ],
       "defs": 1,
       "emits": 1,
-      "tests": 62,
+      "tests": 64,
       "docs": 12
     },
     {
@@ -8311,7 +8311,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 97,
-      "docs": 11
+      "docs": 12
     },
     {
       "code": "FUNGI-TYPE-010",
@@ -8459,7 +8459,7 @@
       ],
       "defs": 1,
       "emits": 1,
-      "tests": 9,
+      "tests": 12,
       "docs": 1
     },
     {
@@ -8478,7 +8478,7 @@
       ],
       "defs": 1,
       "emits": 1,
-      "tests": 29,
+      "tests": 31,
       "docs": 0
     },
     {
@@ -8512,7 +8512,7 @@
       "defs": 1,
       "emits": 2,
       "tests": 7,
-      "docs": 0
+      "docs": 1
     },
     {
       "code": "FUNGI-TYPE-020",
@@ -8624,7 +8624,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 0,
-      "docs": 0
+      "docs": 1
     },
     {
       "code": "FUNGI-TYPE-030",
@@ -8639,7 +8639,7 @@
       ],
       "defs": 1,
       "emits": 1,
-      "tests": 16,
+      "tests": 22,
       "docs": 0
     },
     {

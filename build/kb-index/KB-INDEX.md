@@ -1,4 +1,4 @@
-# Galerina KB index (1115 docs)
+# Galerina KB index (1121 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -161,8 +161,8 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/BOARD.md`
 - codes: FUNGI-TYPE-012
 - tasks: #20, #143, #75, #84, #65, #37, #81, #69, #72, #38, #39
-- links: [[to-main/2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd]] [[to-main/2026-07-16-ACK-rd0128-stale-proof-confirm-option-a]] [[to-main/2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed]] [[to-main/2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion]] [[to-main/2026-07-16-ACK-match-arm-cluster-verified-source-and-execution]] [[to-main/2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed]] [[to-main/2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea]] [[to-main/2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering]] [[HANDOVER-round-2026-07-16-night-areas-dss-tlstp-cycle]] [[id]]
-- terms: main, to-main, session, board, closed, tranche, verified, cluster, benchmark, hallmark, open, confirmed, applied, match
+- links: [[to-main/2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd]] [[to-main/2026-07-16-ACK-rd0128-stale-proof-confirm-option-a]] [[to-main/2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed]] [[to-main/2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion]] [[to-main/2026-07-16-ACK-match-arm-cluster-verified-source-and-execution]] [[to-main/2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed]] [[to-main/2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea]] [[to-main/2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed]] [[to-main/2026-07-16-HANDOVER-tech-transfer-confusable-safe-identity-ZT-checked]] [[to-main/2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering]] [[HANDOVER-round-2026-07-16-night-areas-dss-tlstp-cycle]] [[id]]
+- terms: main, to-main, cluster, verified, tranche, complete, closed, session, board, side, benchmark, hallmark, open, audit
 
 ## PROMPT — boot the main (Galerina build) session into the coordination loop
 `../ZTF-Knowledge-Bases/coordination/PROMPT-main-start-here.md`
@@ -173,6 +173,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/README.md`
 - terms: session, main, owner, message, coordination, each, file, other, sessions, loop, handshake, live, git, messages
 
+## 2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed.md`
+- tasks: #20
+- terms: gate, stage-a, ack-009-generics-cluster-verified-48-48-class-closed, check, differential, pass, arity, codes, verified, class, cluster, confirmed, emit-site, committed
+
 ## 2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd.md`
 - codes: FUNGI-EFFECT-002
@@ -182,6 +187,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## 2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed.md`
 - terms: closed, rd-0128, verified, sound, valuestate-004, reframe, check, execution-tier, important, tainted, onward, call-site, ack-both-applied-rd0128-and-valuestate004-closed, both
+
+## 2026-07-16-ACK-brands-003-verified-51-51-plus-harden-emit-count-adjudication.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-brands-003-verified-51-51-plus-harden-emit-count-adjudication.md`
+- codes: FUNGI-TYPE-019
+- tasks: #20
+- terms: frontier, heuristic, gate, false, correct, call, twin, caveat, validates, advisory-not-hard-gate, right, stage-a, emits, ack-brands-003-verified-51-51-plus-harden-emit-count-adjudication
 
 ## 2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed.md`
@@ -212,6 +223,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-rd0128-stale-proof-confirm-option-a.md`
 - tasks: #20
 - terms: proof, why, type, testwitness, assert, landed, cli, assertion, seam, fungi, don, just, shape, tap-body
+
+## 2026-07-16-ACK-tensor-grounding-confirmed-item1-resolved-017-is-pushed.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-tensor-grounding-confirmed-item1-resolved-017-is-pushed.md`
+- codes: FUNGI-TYPE-017
+- terms: stage-a, half, item, exactly, grounding, resolved, see, matches, confirmed, design, couldn, float32, twin, probes
 
 ## 2026-07-16-ACK2-rebaseline-167-confirmed-proceed.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK2-rebaseline-167-confirmed-proceed.md`
@@ -274,6 +290,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md`
 - tasks: #20
 - terms: twin, stage-a, int, result, ack-009-generic-arity-cluster-landed-generalizes-011, generic, gate, arity, type, frontier, main, cluster, galerina, committed
+
+## 2026-07-16-ACK-brands-003-cluster-landed-plus-frontier-heuristic-caveat.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-brands-003-cluster-landed-plus-frontier-heuristic-caveat.md`
+- codes: FUNGI-TYPE-003, FUNGI-TYPE-019
+- tasks: #20
+- terms: gate, twin, brand, type, literal, ack-brands-003-cluster-landed-plus-frontier-heuristic-caveat, verified, before, known, false, customerid, string, differential, emits
 
 ## 2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch.md`
@@ -342,6 +364,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-FYI-rd0128-stale-testwitness-proof.md`
 - tasks: #20
 - terms: proof, testwitness, fyi-rd0128-stale-testwitness-proof, leak-proof, type, landed, still, green, stale, keep-green, while, scripts, lines, interface
+
+## 2026-07-16-FYI-tensor-cluster-016-017-030-fully-grounded-implementation-ready.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-FYI-tensor-cluster-016-017-030-fully-grounded-implementation-ready.md`
+- codes: FUNGI-TYPE-030, FUNGI-TYPE-017, FUNGI-TYPE-016
+- terms: tensor, float32, twin, shape, stage-a, type, warning, int8, element, mismatch, cli, item, check, dims
 
 ## 2026-07-16-FYI-tranche-bc-grounded-not-a-loop-tick.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-FYI-tranche-bc-grounded-not-a-loop-tick.md`
@@ -5037,6 +5064,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/RD-0433-cross-script-symbol-comparison-latin-non-latin-homoglyph-confusable-safe-identity.md`
 - tasks: #15, #31, #39, #46
 - terms: comparison, non-latin, cross-script, symbol, gate, identity, key, three-valued, names, symbols, same, never, fail-closed, skeleton
+
+## RD-0435 — Quantum: types, research, maths, symbols, storage — is it fast enough, can it retrieve correctly, and what it means for tri/photonic
+`../ZTF-Knowledge-Bases/RD-0435-quantum-data-types-maths-symbols-storage-fast-enough-retrieval-tri-photonic.md`
+- terms: quantum, data, photonic, classical, maths, symbols, tri, real, types, research, storage, fast, correctly, stored
 
 ## Galerina AI-Friendliness — R&D Spec (2026-06-23)
 `../ZTF-Knowledge-Bases/rd-absorbed/from-galerina-r-and-d/AI-FRIENDLINESS-SPEC-2026-06-23.md`

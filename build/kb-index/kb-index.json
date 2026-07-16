@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1115,
+  "docCount": 1121,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -2377,6 +2377,7 @@
         "✅ rd-0128 stale proof — fix direction CONFIRMED (a) (2026-07-16)",
         "✅ P1 R1 (VALUESTATE-004 reframe) — APPLIED + verified SOUND (2026-07-16)",
         "▶ P0 Tranche B/C — active (main); **cluster 1 (match arms) DONE + R&D-verified**",
+        "✅ Owner-directed side workstreams (2026-07-16 evening) — COMPLETE",
         "✅ Benchmark work-equivalence drift — new defect class, R&D design answer given",
         "✅ rhizo-ql value-units→Hallmark — main ACK, board item CLOSED",
         "Open messages (awaiting the other side)",
@@ -2410,6 +2411,8 @@
         "to-main/2026-07-16-ACK-match-arm-cluster-verified-source-and-execution",
         "to-main/2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed",
         "to-main/2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea",
+        "to-main/2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed",
+        "to-main/2026-07-16-HANDOVER-tech-transfer-confusable-safe-identity-ZT-checked",
         "to-main/2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering",
         "HANDOVER-round-2026-07-16-night-areas-dss-tlstp-cycle",
         "id"
@@ -2417,29 +2420,29 @@
       "topTerms": [
         "main",
         "to-main",
+        "cluster",
+        "verified",
+        "tranche",
+        "complete",
+        "closed",
         "session",
         "board",
-        "closed",
-        "tranche",
-        "verified",
-        "cluster",
+        "side",
         "benchmark",
         "hallmark",
         "open",
+        "audit",
         "confirmed",
         "applied",
         "match",
+        "owner",
         "messages",
+        "owner-directed",
         "night-round",
         "owner-gated",
-        "audit",
-        "proof",
-        "fix",
-        "reframe",
-        "arms",
-        "class",
-        "design",
-        "to-rnd"
+        "taxonomy",
+        "twin",
+        "next"
       ]
     },
     {
@@ -2527,6 +2530,43 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed.md",
+      "title": "2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed.md",
+      "headings": [],
+      "codes": [],
+      "tasks": [
+        "#20"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "gate",
+        "stage-a",
+        "ack-009-generics-cluster-verified-48-48-class-closed",
+        "check",
+        "differential",
+        "pass",
+        "arity",
+        "codes",
+        "verified",
+        "class",
+        "cluster",
+        "confirmed",
+        "emit-site",
+        "committed",
+        "don",
+        "need",
+        "verify",
+        "test",
+        "tests",
+        "twin",
+        "generic",
+        "int",
+        "first",
+        "exactly",
+        "parity"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd.md",
       "title": "2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd.md",
       "headings": [],
@@ -2605,6 +2645,47 @@
         "validate",
         "body",
         "silent"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-brands-003-verified-51-51-plus-harden-emit-count-adjudication.md",
+      "title": "2026-07-16-ACK-brands-003-verified-51-51-plus-harden-emit-count-adjudication.md",
+      "headings": [
+        "Frontier heuristic — your caveat is correct, and it *validates* the advisory-not-hard-gate call"
+      ],
+      "codes": [
+        "FUNGI-TYPE-019"
+      ],
+      "tasks": [
+        "#20"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "frontier",
+        "heuristic",
+        "gate",
+        "false",
+        "correct",
+        "call",
+        "twin",
+        "caveat",
+        "validates",
+        "advisory-not-hard-gate",
+        "right",
+        "stage-a",
+        "emits",
+        "ack-brands-003-verified-51-51-plus-harden-emit-count-adjudication",
+        "emit-count",
+        "test",
+        "codes",
+        "differentials",
+        "positives",
+        "emit",
+        "verified",
+        "harden",
+        "call-sites",
+        "yes",
+        "cadence"
       ]
     },
     {
@@ -2840,6 +2921,47 @@
         "self-correcting",
         "property",
         "matters"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-tensor-grounding-confirmed-item1-resolved-017-is-pushed.md",
+      "title": "2026-07-16-ACK-tensor-grounding-confirmed-item1-resolved-017-is-pushed.md",
+      "headings": [
+        "Item 1 — RESOLVED (the Stage-A half, which is the half you couldn't see)",
+        "Grounding confirmed (matches your probes exactly)",
+        "Endorse the plan + the design"
+      ],
+      "codes": [
+        "FUNGI-TYPE-017"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "stage-a",
+        "half",
+        "item",
+        "exactly",
+        "grounding",
+        "resolved",
+        "see",
+        "matches",
+        "confirmed",
+        "design",
+        "couldn",
+        "float32",
+        "twin",
+        "probes",
+        "endorse",
+        "plan",
+        "int8",
+        "ack-tensor-grounding-confirmed-item1-resolved-017-is-pushed",
+        "array",
+        "diagnostics",
+        "oracle",
+        "never",
+        "check",
+        "element",
+        "dims"
       ]
     },
     {
@@ -3353,6 +3475,46 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-brands-003-cluster-landed-plus-frontier-heuristic-caveat.md",
+      "title": "2026-07-16-ACK-brands-003-cluster-landed-plus-frontier-heuristic-caveat.md",
+      "headings": [],
+      "codes": [
+        "FUNGI-TYPE-003",
+        "FUNGI-TYPE-019"
+      ],
+      "tasks": [
+        "#20"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "gate",
+        "twin",
+        "brand",
+        "type",
+        "literal",
+        "ack-brands-003-cluster-landed-plus-frontier-heuristic-caveat",
+        "verified",
+        "before",
+        "known",
+        "false",
+        "customerid",
+        "string",
+        "differential",
+        "emits",
+        "stage-a",
+        "emit",
+        "main",
+        "frontier-heuristic",
+        "caveat",
+        "next",
+        "check",
+        "registry",
+        "mirroring",
+        "galerina",
+        "branded"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch.md",
       "title": "2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch.md",
       "headings": [],
@@ -3852,6 +4014,45 @@
         "main",
         "pre-existing",
         "surfaced"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-FYI-tensor-cluster-016-017-030-fully-grounded-implementation-ready.md",
+      "title": "2026-07-16-FYI-tensor-cluster-016-017-030-fully-grounded-implementation-ready.md",
+      "headings": [],
+      "codes": [
+        "FUNGI-TYPE-030",
+        "FUNGI-TYPE-017",
+        "FUNGI-TYPE-016"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "tensor",
+        "float32",
+        "twin",
+        "shape",
+        "stage-a",
+        "type",
+        "warning",
+        "int8",
+        "element",
+        "mismatch",
+        "cli",
+        "item",
+        "check",
+        "dims",
+        "array",
+        "float64",
+        "fyi-tensor-cluster-016-017-030-fully-grounded-implementation-ready",
+        "code",
+        "fires",
+        "both",
+        "init",
+        "elem",
+        "fungi-type-017",
+        "quantized",
+        "dim"
       ]
     },
     {
@@ -53564,6 +53765,51 @@
         "compare",
         "design",
         "sanctions"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-0435-quantum-data-types-maths-symbols-storage-fast-enough-retrieval-tri-photonic.md",
+      "title": "RD-0435 — Quantum: types, research, maths, symbols, storage — is it fast enough, can it retrieve correctly, and what it means for tri/photonic",
+      "headings": [
+        "§1 The types — quantum computing models + research areas",
+        "§2 The maths (all classical linear algebra over ℂ)",
+        "§3 The symbols — and they connect straight back to RD-0433",
+        "§4 Storage — the way things are stored (and the exponential wall)",
+        "§5 Is it fast enough to handle *true* quantum data? — the honest answer",
+        "§6 Can data be retrieved correctly? — yes, with by-construction checks",
+        "§7 What it means for tri (K3) / photonic — honestly",
+        "§8 Tests to run (and what else to check) — on the real data, once fetched",
+        "§9 Status + next"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "quantum",
+        "data",
+        "photonic",
+        "classical",
+        "maths",
+        "symbols",
+        "tri",
+        "real",
+        "types",
+        "research",
+        "storage",
+        "fast",
+        "correctly",
+        "stored",
+        "exponential",
+        "enough",
+        "means",
+        "state",
+        "rd-0433",
+        "store",
+        "way",
+        "simulation",
+        "computing",
+        "run",
+        "linear"
       ]
     },
     {

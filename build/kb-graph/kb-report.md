@@ -2,7 +2,7 @@
 Generated: 2026-07-16
 
 ## Stats
-- Docs: 1113 | Edges: 3462 | Orphans: 57 | Stale links: 0 | FUNGI codes: 748
+- Docs: 1119 | Edges: 3462 | Orphans: 63 | Stale links: 0 | FUNGI codes: 748
 
 ## Document Registry (auto-generated)
 
@@ -28,8 +28,11 @@ Generated: 2026-07-16
 | _TEMPLATE.md | — | — | — | — |
 | 00-KB-INDEX.md | — | — | — | FUNGI-BACKEND-001, FUNGI-GATE-001, FUNGI-NET-001, FUNGI-STDLIB-001, FUNGI-SUPPLY-001 …+2 |
 | 2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md | — | — | — | — |
+| 2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed.md | — | — | — | — |
 | 2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd.md | — | — | — | FUNGI-EFFECT-002 |
 | 2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed.md | — | — | — | — |
+| 2026-07-16-ACK-brands-003-cluster-landed-plus-frontier-heuristic-caveat.md | — | — | — | FUNGI-TYPE-003, FUNGI-TYPE-019 |
+| 2026-07-16-ACK-brands-003-verified-51-51-plus-harden-emit-count-adjudication.md | — | — | — | FUNGI-TYPE-019 |
 | 2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed.md | — | — | — | FUNGI-TYPE-011 |
 | 2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch.md | — | — | — | FUNGI-TYPE-001, FUNGI-TYPE-011 |
 | 2026-07-16-ACK-emit-parity-gate-caught-019-027-well-done.md | — | — | — | — |
@@ -46,6 +49,7 @@ Generated: 2026-07-16
 | 2026-07-16-ACK-rhizo-ql-reusables-hallmark-shape-ok.md | — | — | — | — |
 | 2026-07-16-ACK-taxonomy-AUDIT-ZERO.md | — | — | — | FUNGI-BORDER-002, FUNGI-GRAPH-001 |
 | 2026-07-16-ACK-taxonomy-rebaseline-167.md | — | — | — | FUNGI-GOV-3 |
+| 2026-07-16-ACK-tensor-grounding-confirmed-item1-resolved-017-is-pushed.md | — | — | — | FUNGI-TYPE-017 |
 | 2026-07-16-ACK2-rebaseline-167-confirmed-proceed.md | — | — | — | FUNGI-GOV-3 |
 | 2026-07-16-ANSWER-passive-lane-variance-median-rig-rides-63-and-allocation-probe-to-rd0358.md | — | — | — | — |
 | 2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering.md | — | — | — | — |
@@ -55,6 +59,7 @@ Generated: 2026-07-16
 | 2026-07-16-FYI-passive-lane-variance-root-cause-GC-dominated-plus-watcher.md | — | — | — | — |
 | 2026-07-16-FYI-push-policy-correction-main-is-commit-only.md | — | — | — | — |
 | 2026-07-16-FYI-rd0128-stale-testwitness-proof.md | — | — | — | — |
+| 2026-07-16-FYI-tensor-cluster-016-017-030-fully-grounded-implementation-ready.md | — | — | — | FUNGI-TYPE-016, FUNGI-TYPE-017, FUNGI-TYPE-030 |
 | 2026-07-16-FYI-tranche-bc-grounded-not-a-loop-tick.md | — | — | — | — |
 | 2026-07-16-FYI-type012-dead-009-is-the-live-generics-code.md | — | — | — | FUNGI-TYPE-001, FUNGI-TYPE-008, FUNGI-TYPE-009, FUNGI-TYPE-012 |
 | 2026-07-16-HANDOVER-tech-transfer-confusable-safe-identity-ZT-checked.md | — | — | — | FUNGI-PARSE-001 |
@@ -1000,6 +1005,7 @@ Generated: 2026-07-16
 | RD-0431-graph-flowchart-vector-stream-representation-payments-and-financial-crime-deep-dive.md | — | — | — | — |
 | RD-0432-insurance-and-actuarial-data-model-deep-dive-reserves-triangles-treaties.md | — | — | — | — |
 | RD-0433-cross-script-symbol-comparison-latin-non-latin-homoglyph-confusable-safe-identity.md | — | — | — | — |
+| RD-0435-quantum-data-types-maths-symbols-storage-fast-enough-retrieval-tri-photonic.md | — | — | — | — |
 | rd-adversarial-verification-findings-2026-06-16.md | — | — | — | — |
 | rd-crossover-encryption-rnd.md | — | — | Merge / unified entry point. **Date:** 2026-06-16. **Posture:** grounded, cited, | FUNGI-AMD-024, FUNGI-PARSE-001, FUNGI-SUBSTRATE-001 |
 | rd-diagnostics-namespace-rnd-response.md | — | — | R&D response (2026-06-16). **Subject:** `Galerina/docs/Knowledge-Bases/galerina-diagnostic-namespace-ownership.md` | FUNGI-META-001, FUNGI-PRIVACY-00, FUNGI-SECRET-005 |
@@ -1146,14 +1152,18 @@ Docs with no inbound links from other KB docs:
 - `RD-0431-graph-flowchart-vector-stream-representation-payments-and-financial-crime-deep-dive.md` — RD-0431 — Graph, flowchart, vector & stream data representation — payments & financial-crime deep-dive (per-service queue #7)
 - `RD-0432-insurance-and-actuarial-data-model-deep-dive-reserves-triangles-treaties.md` — RD-0432 — The insurance & actuarial data model — deep-dive (per-service queue #8, final)
 - `RD-0433-cross-script-symbol-comparison-latin-non-latin-homoglyph-confusable-safe-identity.md` — RD-0433 — Cross-script symbol comparison — safe identity across Latin & non-Latin, homoglyph/confusable-resistant
+- `RD-0435-quantum-data-types-maths-symbols-storage-fast-enough-retrieval-tri-photonic.md` — RD-0435 — Quantum: types, research, maths, symbols, storage — is it fast enough, can it retrieve correctly, and what it means for tri/photonic
+- `2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed.md` — 2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed
 - `2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd.md` — 2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd
 - `2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed.md` — 2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed
+- `2026-07-16-ACK-brands-003-verified-51-51-plus-harden-emit-count-adjudication.md` — 2026-07-16-ACK-brands-003-verified-51-51-plus-harden-emit-count-adjudication
 - `2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed.md` — 2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed
 - `2026-07-16-ACK-emit-parity-gate-caught-019-027-well-done.md` — 2026-07-16-ACK-emit-parity-gate-caught-019-027-well-done
 - `2026-07-16-ACK-kb-graph-code-region-masking.md` — 2026-07-16-ACK-kb-graph-code-region-masking
 - `2026-07-16-ACK-match-arm-cluster-verified-source-and-execution.md` — 2026-07-16-ACK-match-arm-cluster-verified-source-and-execution
 - `2026-07-16-ACK-p1-r2-closed-gates-reverified.md` — 2026-07-16-ACK-p1-r2-closed-gates-reverified
 - `2026-07-16-ACK-rd0128-stale-proof-confirm-option-a.md` — 2026-07-16-ACK-rd0128-stale-proof-confirm-option-a
+- `2026-07-16-ACK-tensor-grounding-confirmed-item1-resolved-017-is-pushed.md` — 2026-07-16-ACK-tensor-grounding-confirmed-item1-resolved-017-is-pushed
 - `2026-07-16-ACK2-rebaseline-167-confirmed-proceed.md` — 2026-07-16-ACK2-rebaseline-167-confirmed-proceed
 - `2026-07-16-ANSWER-passive-lane-variance-median-rig-rides-63-and-allocation-probe-to-rd0358.md` — 2026-07-16-ANSWER-passive-lane-variance-median-rig-rides-63-and-allocation-probe-to-rd0358
 - `2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering.md` — 2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering
@@ -1166,6 +1176,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-rhizo-ql-and-galerina-reusables.md` — 2026-07-16-rhizo-ql-and-galerina-reusables
 - `2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion.md` — 2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion
 - `2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md` — 2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011
+- `2026-07-16-ACK-brands-003-cluster-landed-plus-frontier-heuristic-caveat.md` — 2026-07-16-ACK-brands-003-cluster-landed-plus-frontier-heuristic-caveat
 - `2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch.md` — 2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch
 - `2026-07-16-ACK-emit-parity-idea-caught-2-false-differentials-019-027-fixed-plus-gate.md` — 2026-07-16-ACK-emit-parity-idea-caught-2-false-differentials-019-027-fixed-plus-gate
 - `2026-07-16-ACK-match-arm-cluster-landed-022-023-live-021-dead.md` — 2026-07-16-ACK-match-arm-cluster-landed-022-023-live-021-dead
@@ -1179,6 +1190,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked.md` — 2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked
 - `2026-07-16-FYI-passive-lane-variance-root-cause-GC-dominated-plus-watcher.md` — 2026-07-16-FYI-passive-lane-variance-root-cause-GC-dominated-plus-watcher
 - `2026-07-16-FYI-rd0128-stale-testwitness-proof.md` — 2026-07-16-FYI-rd0128-stale-testwitness-proof
+- `2026-07-16-FYI-tensor-cluster-016-017-030-fully-grounded-implementation-ready.md` — 2026-07-16-FYI-tensor-cluster-016-017-030-fully-grounded-implementation-ready
 - `2026-07-16-FYI-tranche-bc-grounded-not-a-loop-tick.md` — 2026-07-16-FYI-tranche-bc-grounded-not-a-loop-tick
 - `2026-07-16-FYI-type012-dead-009-is-the-live-generics-code.md` — 2026-07-16-FYI-type012-dead-009-is-the-live-generics-code
 - `2026-07-16-kb-graph-code-region-masking-stale-links-zeroed.md` — 2026-07-16-kb-graph-code-region-masking-stale-links-zeroed
