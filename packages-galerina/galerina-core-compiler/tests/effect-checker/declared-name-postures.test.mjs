@@ -81,9 +81,9 @@ describe("declared-name postures — deny-only", () => {
 });
 
 describe("declared-name postures — aliases and canonical", () => {
-  it("ai.infer → FUNGI-EFFECT-004 NON_CANONICAL_EFFECT suggesting ai.inference", () => {
+  it("ai.infer → FUNGI-EFFECT-009 NON_CANONICAL_EFFECT suggesting ai.inference", () => {
     const diags = diagnosticsFor("ai.infer");
-    const d = diags.find(x => x.code === "FUNGI-EFFECT-004");
+    const d = diags.find(x => x.code === "FUNGI-EFFECT-009");
     assert.ok(d, "alias must be flagged non-canonical");
     assert.equal(d.name, "NON_CANONICAL_EFFECT");
     assert.equal(d.suggestedCode, "ai.inference");
@@ -91,7 +91,7 @@ describe("declared-name postures — aliases and canonical", () => {
 
   it("telemetry.read is canonical: no name diagnostics", () => {
     const diags = diagnosticsFor("telemetry.read");
-    assert.ok(!diags.some(d => d.code === "FUNGI-EFFECT-004" || d.code === "FUNGI-EFFECT-005" || d.code === "FUNGI-EFFECT-006"),
+    assert.ok(!diags.some(d => d.code === "FUNGI-EFFECT-009" || d.code === "FUNGI-EFFECT-005" || d.code === "FUNGI-EFFECT-006"),
       `expected no name diagnostics, got: ${diags.map(d => d.code).join(",")}`);
   });
 
@@ -99,9 +99,9 @@ describe("declared-name postures — aliases and canonical", () => {
     assert.notEqual(effectsToFlags(["telemetry.read"]), 0, "telemetry.read must have an EffectFlags bit");
   });
 
-  it("pii.write → FUNGI-EFFECT-004 error suggesting database.write (pinned Wave-2 semantic)", () => {
+  it("pii.write → FUNGI-EFFECT-009 error suggesting database.write (pinned Wave-2 semantic; #20 split — the alias arm moved off -004)", () => {
     const diags = diagnosticsFor("pii.write");
-    const d = diags.find(x => x.code === "FUNGI-EFFECT-004");
+    const d = diags.find(x => x.code === "FUNGI-EFFECT-009");
     assert.ok(d, "pii.write must hard-error (error > warning; no silent widening)");
     assert.equal(d.severity, "error");
     assert.equal(d.suggestedCode, "database.write");

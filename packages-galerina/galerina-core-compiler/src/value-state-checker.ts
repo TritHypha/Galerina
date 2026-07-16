@@ -1389,7 +1389,7 @@ class ValueStateChecker {
       if (isProtectedValueExpression(init)) {
         this.diagnostics.push(makeVSDiag(
           "FUNGI-VALUESTATE-006",
-          "ProtectedBoundaryViolation",
+          "PROTECTED_BOUNDARY_VIOLATION",
           `Cannot assign a 'protected' value to plain binding '${info.name}'. Declare the binding as 'protected ${info.typeName}', or pass the value through an authorised access gate.`,
           node.location,
           `Change the type annotation to: protected ${info.typeName}`,
@@ -1708,8 +1708,8 @@ class ValueStateChecker {
         const lookup = (n: string) => this.lookupBinding(n);
         if (derivesFromSecret(arg, lookup)) {
           this.diagnostics.push({
-            code: "FUNGI-SECRET-002",
-            name: "SecretCrossesFlowBoundary",
+            code: "FUNGI-SECRET-006",
+            name: "SECRET_CROSSES_FLOW_BOUNDARY",
             severity: this.mode === "production" ? "error" : "warning",
             message: `A secret value is passed to flow '${calleeName}', which may transmit it off-host. The checker does not follow into the callee — seal/redact it or confirm '${calleeName}' keeps it within a trusted boundary.`,
             ...(node.location !== undefined ? { location: node.location } : {}),
@@ -1724,8 +1724,8 @@ class ValueStateChecker {
         const lookup = (n: string) => this.lookupBinding(n);
         if (derivesFromEmbedding(arg, lookup)) {
           this.diagnostics.push({
-            code: "FUNGI-PRIVACY-002",
-            name: "EmbeddingCrossesFlowBoundary",
+            code: "FUNGI-PRIVACY-004",
+            name: "EMBEDDING_CROSSES_FLOW_BOUNDARY",
             severity: this.mode === "production" ? "error" : "warning",
             message: `A cleartext semantic embedding is passed to flow '${calleeName}', which may egress it. The checker does not follow into the callee — seal() it or confirm '${calleeName}' keeps it within a trusted boundary.`,
             ...(node.location !== undefined ? { location: node.location } : {}),
@@ -1754,8 +1754,8 @@ class ValueStateChecker {
       const binding = this.lookupBinding(node.value ?? "");
       if (binding?.typeName === "SecureString") {
         this.diagnostics.push(makeVSDiag(
-          "FUNGI-SECRET-002",
-          "SecretSentToNetwork",
+          "FUNGI-SECRET-005",
+          "SECRET_SENT_TO_NETWORK",
           `SecureString binding '${binding.name}' must not be transmitted to network sink '${callName}'.`,
           location,
           `Send a sealed/redacted form instead, e.g. redact(${binding.name}), or use a capability-scoped secret channel.`,
@@ -1792,7 +1792,7 @@ class ValueStateChecker {
       if (binding?.embeddingDerived === true) {
         this.diagnostics.push(makeVSDiag(
           "FUNGI-PRIVACY-002",
-          "EmbeddingEgressDenied",
+          "EMBEDDING_EGRESS_DENIED",
           `Cleartext semantic embedding '${binding.name}' must not be transmitted to network sink '${callName}'.`,
           location,
           `Seal the vector before egress, e.g. seal(${binding.name}), and filter only at a trusted endpoint after decryption.`,
@@ -1809,7 +1809,7 @@ class ValueStateChecker {
     if (isEmbeddingSourceExpression(node)) {
       this.diagnostics.push(makeVSDiag(
         "FUNGI-PRIVACY-002",
-        "EmbeddingEgressDenied",
+        "EMBEDDING_EGRESS_DENIED",
         `A cleartext semantic embedding must not be transmitted to network sink '${callName}'.`,
         location,
         `Bind and seal the vector before egress: let v = seal(<embedding>), and filter only at a trusted endpoint after decryption.`,
@@ -2054,8 +2054,8 @@ class ValueStateChecker {
           binding.typeName.startsWith("protected ");
         if (isProtected) {
           this.diagnostics.push(makeVSDiag(
-            "FUNGI-VALUESTATE-006",
-            "ProtectedValueAtAuditLog",
+            "FUNGI-VALUESTATE-009",
+            "PROTECTED_VALUE_AT_AUDIT_LOG",
             `Protected binding '${binding.name}' passed to '${sinkName}' without redaction. Protected values must be redacted before appearing in audit logs.`,
             location,
             `Wrap with redact: AuditLog.write({ ..., ${binding.name}: redact(${binding.name}) })`,
@@ -2161,7 +2161,7 @@ class ValueStateChecker {
       if (binding?.typeName === "SecureString") {
         this.diagnostics.push(makeVSDiag(
           "FUNGI-SECRET-002",
-          "SecretComparisonDenied",
+          "SECRET_COMPARISON_DENIED",
           `SecureString binding '${binding.name}' must not be compared with == / !=. Use constantTimeEquals(${binding.name}, other) instead.`,
           location,
           `Replace with: let valid: Bool = constantTimeEquals(${binding.name}, other)`,

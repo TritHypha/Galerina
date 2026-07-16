@@ -1,5 +1,6 @@
 // =============================================================================
-// FUNGI-VALUESTATE-006 — redact() discharge inside a record literal (docs-review)
+// FUNGI-VALUESTATE-009 (was -006's audit-log arm until the #20 taxonomy split; -006 keeps
+// PROTECTED_BOUNDARY_VIOLATION) — redact() discharge inside a record literal (docs-review)
 //
 // AuditLog.write({ email: redact(email) }) is THE canonical PII-redaction pattern
 // in .fungi. The check used to look up the record FIELD NAME ("email") as a binding
@@ -19,7 +20,7 @@ import { parseProgram, checkValueStates } from "../../dist/index.js";
 const v6count = (body) => {
   const src = `secure flow f(email: protected String) -> Result<Int, ApiError> contract { effects { audit.write } } { ${body}  return Ok(1) }`;
   const p = parseProgram(src, "v6.fungi");
-  return (checkValueStates(p.ast).diagnostics ?? []).filter((d) => d.code === "FUNGI-VALUESTATE-006").length;
+  return (checkValueStates(p.ast).diagnostics ?? []).filter((d) => d.code === "FUNGI-VALUESTATE-009").length;
 };
 
 test("redact() inside a record-literal field discharges (canonical pattern admitted)", () => {

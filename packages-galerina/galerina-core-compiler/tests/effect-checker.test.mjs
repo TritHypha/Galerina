@@ -117,8 +117,8 @@ effects [payment.charge] {
 }
 `);
     const warnings = effectWarnings(effectResults);
-    assert.ok(warnings.some((d) => d.code === "FUNGI-EFFECT-001"),
-      "Expected FUNGI-EFFECT-001 warning for privileged effect on plain flow");
+    assert.ok(warnings.some((d) => d.code === "FUNGI-EFFECT-008"),
+      "Expected FUNGI-EFFECT-008 warning for privileged effect on plain flow");
   });
 
   // ── FO-DISPATCH-MISSING-CASE regression (galerina-fail-open-taxonomy.md) ────────
@@ -128,7 +128,7 @@ effects [payment.charge] {
   // undeclared effect on a user-named receiver (OrdersDB.find → database.read — neither a
   // secure-tier nor a registered stdlib effect) emitted ZERO diagnostics and signed a manifest
   // attesting effects [none]. These tests pin the closed hole.
-  it("emits FUNGI-EFFECT-001 for a plain flow with an undeclared database.read", () => {
+  it("emits FUNGI-EFFECT-008 for a plain flow with an undeclared database.read", () => {
     const { effectResults } = parseAndCheck(`
 flow loadOrder(order: Order) -> Result<Order, OrderError>
   contract { effects {  } }
@@ -334,7 +334,7 @@ guarded flow processOrder(order: Order) -> Result<OrderId, ProcessError>
 // intentional: guarded flows in source strings use "with effects [...]" canonical syntax
 describe("Effect checker - canonical effect names", () => {
   it("effects [network] emits FUNGI-EFFECT-005 (BroadAliasUsed) with suggestion network.outbound", () => {
-    // 'network' is a broad alias — now emits FUNGI-EFFECT-005 (warning), not FUNGI-EFFECT-004 (error)
+    // 'network' is a broad alias — now emits FUNGI-EFFECT-005 (warning), not FUNGI-EFFECT-009 (error)
     const { effectResults } = parseAndCheck(`
 guarded flow fetchRate(currency: String) -> Result<Decimal, RateError>
   contract { effects { network } }
@@ -348,7 +348,7 @@ guarded flow fetchRate(currency: String) -> Result<Decimal, RateError>
   });
 
   it("effects [database] emits FUNGI-EFFECT-005 (BroadAliasUsed) with suggestion database.read", () => {
-    // 'database' is a broad alias — now emits FUNGI-EFFECT-005 (warning), not FUNGI-EFFECT-004 (error)
+    // 'database' is a broad alias — now emits FUNGI-EFFECT-005 (warning), not FUNGI-EFFECT-009 (error)
     const { effectResults } = parseAndCheck(`
 guarded flow loadOrder(order: Order) -> Result<Order, OrderError>
   contract { effects { database } }
@@ -369,7 +369,7 @@ guarded flow fetchRate(currency: String) -> Result<Decimal, RateError>
   return json.decode(rawResponse)
 }
 `);
-    assert.ok(!effectResults.flatMap((r) => r.diagnostics).some((d) => d.code === "FUNGI-EFFECT-004"));
+    assert.ok(!effectResults.flatMap((r) => r.diagnostics).some((d) => d.code === "FUNGI-EFFECT-009"));
   });
 });
 
@@ -600,8 +600,8 @@ guarded flow storePersonal(data: PII) -> Result<Unit, Error>
   return Ok(unit)
 }
 `);
-    const diag = effectResults.flatMap((r) => r.diagnostics).find((d) => d.code === "FUNGI-EFFECT-004");
-    assert.ok(diag !== undefined, "Expected FUNGI-EFFECT-004 for pii.write");
+    const diag = effectResults.flatMap((r) => r.diagnostics).find((d) => d.code === "FUNGI-EFFECT-009");
+    assert.ok(diag !== undefined, "Expected FUNGI-EFFECT-009 for pii.write");
     assert.equal(diag.suggestedCode, "database.write",
       "pii.write should suggest database.write");
   });
@@ -614,8 +614,8 @@ guarded flow sendRequest(payload: Payload) -> Result<Unit, Error>
   return Ok(unit)
 }
 `);
-    const diag = effectResults.flatMap((r) => r.diagnostics).find((d) => d.code === "FUNGI-EFFECT-004");
-    assert.ok(diag !== undefined, "Expected FUNGI-EFFECT-004 for http.post");
+    const diag = effectResults.flatMap((r) => r.diagnostics).find((d) => d.code === "FUNGI-EFFECT-009");
+    assert.ok(diag !== undefined, "Expected FUNGI-EFFECT-009 for http.post");
     assert.equal(diag.suggestedCode, "network.outbound",
       "http.post should suggest network.outbound");
   });
@@ -628,8 +628,8 @@ guarded flow fetchData(url: String) -> Result<String, Error>
   return Ok(unit)
 }
 `);
-    const diag = effectResults.flatMap((r) => r.diagnostics).find((d) => d.code === "FUNGI-EFFECT-004");
-    assert.ok(diag !== undefined, "Expected FUNGI-EFFECT-004 for http.get");
+    const diag = effectResults.flatMap((r) => r.diagnostics).find((d) => d.code === "FUNGI-EFFECT-009");
+    assert.ok(diag !== undefined, "Expected FUNGI-EFFECT-009 for http.get");
     assert.equal(diag.suggestedCode, "network.outbound",
       "http.get should suggest network.outbound");
   });
@@ -642,8 +642,8 @@ guarded flow loadFile(path: String) -> Result<String, Error>
   return Ok(unit)
 }
 `);
-    const diag = effectResults.flatMap((r) => r.diagnostics).find((d) => d.code === "FUNGI-EFFECT-004");
-    assert.ok(diag !== undefined, "Expected FUNGI-EFFECT-004 for file.read");
+    const diag = effectResults.flatMap((r) => r.diagnostics).find((d) => d.code === "FUNGI-EFFECT-009");
+    assert.ok(diag !== undefined, "Expected FUNGI-EFFECT-009 for file.read");
     assert.equal(diag.suggestedCode, "storage.read",
       "file.read should suggest storage.read");
   });
@@ -657,7 +657,7 @@ guarded flow sendEmail(msg: EmailMessage) -> Result<Unit, Error>
 }
 `);
     assert.ok(
-      !effectResults.flatMap((r) => r.diagnostics).some((d) => d.code === "FUNGI-EFFECT-004"),
+      !effectResults.flatMap((r) => r.diagnostics).some((d) => d.code === "FUNGI-EFFECT-009"),
       "email.send is canonical — should not emit EFFECT-004"
     );
   });

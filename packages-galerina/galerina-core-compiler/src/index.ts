@@ -427,7 +427,7 @@ export const FUNGI_HALLMARK_005 = {
 /** FUNGI-VALUESTATE-006: A protected value was assigned to a plain (unprotected) binding. */
 export const FUNGI_VALUESTATE_006 = {
   code: "FUNGI-VALUESTATE-006",
-  name: "ProtectedBoundaryViolation",
+  name: "PROTECTED_BOUNDARY_VIOLATION",
   severity: "error" as const,
   message: "A protected value is used where the plain (unprotected) type is required. Declare the binding as 'protected X', or pass through an authorised access gate.",
 } as const;

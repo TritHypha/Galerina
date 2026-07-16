@@ -628,12 +628,12 @@ contract {
 // A trap statement has shape:
 //   { kind: "trap", condition: Expr, errorCode: String }
 // Type rules:
-//   FUNGI-TYPE-006a — the condition expression must be Bool
-//   FUNGI-TYPE-006b — errorCode must be a non-empty identifier
+//   FUNGI-TYPE-027a — the condition expression must be Bool
+//   FUNGI-TYPE-027b — errorCode must be a non-empty identifier
 
 pure flow checkTrapDecl(decl: Array<Auto>, env: Array<Auto>) -> Array<Auto>
 contract {
-  intent { "FUNGI-TYPE-006: trap condition must be Bool and error code must be a non-empty identifier." }
+  intent { "FUNGI-TYPE-027: trap condition must be Bool and error code must be a non-empty identifier." }
 }
 {
   mut diags: Array<Auto> = Array.empty()
@@ -644,13 +644,13 @@ contract {
       Some(t) => {
         if t.kind == "trap" {
           if t.errorCode == "" {
-            let msg: String = "trap statement missing error code identifier (FUNGI-TYPE-006)"
-            diags = diags.append({ code: "FUNGI-TYPE-006", message: msg, flowName: "trap" })
+            let msg: String = "trap statement missing error code identifier (FUNGI-TYPE-027)"
+            diags = diags.append({ code: "FUNGI-TYPE-027", message: msg, flowName: "trap" })
           }
           if t.condition.litType != "" {
             if t.condition.litType != "Bool" {
-              let msg: String = "trap condition must be Bool, found '" + t.condition.litType + "' (FUNGI-TYPE-006)"
-              diags = diags.append({ code: "FUNGI-TYPE-006", message: msg, flowName: "trap" })
+              let msg: String = "trap condition must be Bool, found '" + t.condition.litType + "' (FUNGI-TYPE-027)"
+              diags = diags.append({ code: "FUNGI-TYPE-027", message: msg, flowName: "trap" })
             }
           }
         }

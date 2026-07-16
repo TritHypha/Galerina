@@ -50,11 +50,13 @@ const SUPPRESS = new Set([
   "FUNGI-SYNTAX-006",      // top-level let — intro examples
   "FUNGI-SYNTAX-007",      // top-level mut — intro examples
   "FUNGI-SYNTAX-008",      // top-level binding variant
-  "FUNGI-VALUESTATE-006",  // ProtectedBoundaryViolation — Wave 2 false positives being resolved
+  "FUNGI-VALUESTATE-006",  // PROTECTED_BOUNDARY_VIOLATION — Wave 2 false positives being resolved
+  "FUNGI-VALUESTATE-009",  // PROTECTED_VALUE_AT_AUDIT_LOG — the #20 split of -006's audit-log arm; the suppression follows the arm
   "FUNGI-VALUESTATE-002",  // UnsafeConditionalUpgrade — Wave 2 implementation may need tuning
   "FUNGI-EVENT-003",       // ContractEmitsUndeclaredEvent — Wave 1 new diagnostic, needs tuning
   "FUNGI-EVENT-005",       // EventEmittedNotInContract — Wave 1 new diagnostic, needs tuning
-  "FUNGI-EFFECT-004",      // NonCanonicalEffectName — Wave 2 added pii.write alias; examples updated separately
+  "FUNGI-EFFECT-004",      // UNKNOWN_EFFECT — Wave 2; examples updated separately
+  "FUNGI-EFFECT-009",      // NON_CANONICAL_EFFECT — the #20 split of -004's alias arm (pii.write etc.); suppression follows the arm
   "FUNGI-STDLIB-001",      // StdlibEffectNotDeclared — Phase 18H new diagnostic; CEC examples updated separately
   "FUNGI-STDLIB-002",      // UnknownEffectfulStdlibCall — #153 fail-closed sibling of -001; CEC examples use unregistered effectful methods pedagogically
 ]);

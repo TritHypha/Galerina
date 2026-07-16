@@ -1261,13 +1261,13 @@ class TypeChecker {
               // with precise field detail: stronger than the string compare, never a mute.
               const adopted = this.tryRecordLiteralAdoption(
                 declaredBase, returnExpr, node.location,
-                "FUNGI-TYPE-008", "InvalidReturnType",
+                "FUNGI-TYPE-008", "INVALID_RETURN_TYPE",
                 `declared return type '${this.currentReturnType}'`,
               );
               if (!adopted) {
                 this.diagnostics.push(makeTCDiag(
                   "FUNGI-TYPE-008",
-                  "InvalidReturnType",
+                  "INVALID_RETURN_TYPE",
                   `Flow declares return type '${this.currentReturnType}' but this return expression has type '${inferredType}'.`,
                   node.location,
                   `Return a value of type '${this.currentReturnType}', or correct the flow return type declaration.`,
@@ -1279,8 +1279,8 @@ class TypeChecker {
               // check. Emit a visible advisory instead of nothing. Once an inference pass
               // resolves `Auto` to a concrete type, this site must re-check normally.
               this.diagnostics.push({
-                code: "FUNGI-TYPE-023",
-                name: "DeferredTypeCheck",
+                code: "FUNGI-TYPE-026",
+                name: "DEFERRED_TYPE_CHECK",
                 severity: "warning",
                 message: `Return type declared 'Auto'; the type check against this return expression ('${inferredType}') is deferred pending inference.`,
                 ...(node.location !== undefined ? { location: node.location } : {}),
@@ -1378,8 +1378,8 @@ class TypeChecker {
                 // Surface the deferral (see FUNGI-TYPE-023 on returnStmt): an `Auto`-declared
                 // parameter silently mutes the argument-type check via isAssignmentCompatible.
                 this.diagnostics.push({
-                  code: "FUNGI-TYPE-023",
-                  name: "DeferredTypeCheck",
+                  code: "FUNGI-TYPE-026",
+                  name: "DEFERRED_TYPE_CHECK",
                   severity: "warning",
                   message: `Parameter ${i + 1} of '${flowName}' is declared 'Auto'; the type check against this argument ('${inferredArgType}') is deferred pending inference.`,
                   ...(argNode.location !== undefined ? { location: argNode.location } : {}),
@@ -1417,8 +1417,8 @@ class TypeChecker {
         const val = node.value ?? "";
         if (val === "null" || val === "undefined") {
           this.diagnostics.push(makeTCDiag(
-            "FUNGI-TYPE-008",
-            "SilentNullDenied",
+            "FUNGI-TYPE-025",
+            "SILENT_NULL_DENIED",
             `'${val}' is not a valid Galerina value. Use Option<T> to represent absence.`,
             node.location,
             `Use None for absent values, or Option<T> as the type annotation.`,
@@ -2409,7 +2409,7 @@ class TypeChecker {
     if (!hasWildcard) {
       this.diagnostics.push(makeTCDiag(
         "FUNGI-TYPE-023",
-        "MissingWildcardArm",
+        "MISSING_WILDCARD_ARM",
         `match must end with a wildcard '_ =>' (or 'else =>') catch-all arm.`,
         node.location,
         `Add a final wildcard arm so every case is handled (fail-closed).`,

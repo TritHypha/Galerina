@@ -197,7 +197,7 @@ contract {
           let umsg2: String = "Effect '" + de + "' declared by flow '" + flowName + "' is not a recognised Galerina effect name"
           diags = diags.append({ code: "FUNGI-EFFECT-004", message: umsg2, flowName: flowName, severity: "error" })
         }
-        // Check #5 — FUNGI-EFFECT-002 (OVERDECLARED_EFFECT, warning): a KNOWN effect declared but
+        // Check #5 — FUNGI-EFFECT-007 (OVERDECLARED_EFFECT, warning — #20 split off -002, which keeps the transitive error): a KNOWN effect declared but
         // never used (not in usedEffects). Mirrors the Stage-A OVERDECLARED_EFFECT advisory. Skip
         // pure flows (a declared effect there is the 003 boundary violation) and unknown effects
         // (already flagged 004 above), so a single fault is never double-reported.
@@ -205,7 +205,7 @@ contract {
           if kind != "pure" {
             if contains(uniqueUsed, de) == false {
               let omsg: String = kind + " flow '" + flowName + "' declares effect '" + de + "' but no matching operation was observed"
-              diags = diags.append({ code: "FUNGI-EFFECT-002", message: omsg, flowName: flowName, severity: "warning" })
+              diags = diags.append({ code: "FUNGI-EFFECT-007", message: omsg, flowName: flowName, severity: "warning" })
             }
           }
         }

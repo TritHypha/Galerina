@@ -890,7 +890,7 @@ contract { effects { audit.write, secret.read } }
 // ── Task 4: protected value at AuditLog.write → VALUESTATE-006 ──────────────
 
 describe("Value-state checker — protected value at AuditLog.write (VALUESTATE-006)", () => {
-  it("emits FUNGI-VALUESTATE-006 for protected Email binding at AuditLog.write without redact", () => {
+  it("emits FUNGI-VALUESTATE-009 for protected Email binding at AuditLog.write without redact", () => {
     const result = parseAndCheck(`
 secure flow test(raw: String) -> Result<String, Error>
 contract { effects { audit.write, database.write } }
@@ -902,12 +902,12 @@ contract { effects { audit.write, database.write } }
 }
 `);
     assert.ok(
-      hasDiag(result, "FUNGI-VALUESTATE-006"),
-      `Expected FUNGI-VALUESTATE-006 for protected Email at AuditLog.write, got: ${result.diagnostics.map((d) => d.code).join(", ")}`,
+      hasDiag(result, "FUNGI-VALUESTATE-009"),
+      `Expected FUNGI-VALUESTATE-009 for protected Email at AuditLog.write, got: ${result.diagnostics.map((d) => d.code).join(", ")}`,
     );
   });
 
-  it("does not emit FUNGI-VALUESTATE-006 for protected Email wrapped in redact() at AuditLog.write", () => {
+  it("does not emit FUNGI-VALUESTATE-009 for protected Email wrapped in redact() at AuditLog.write", () => {
     const result = parseAndCheck(`
 secure flow test(raw: String) -> Result<String, Error>
 contract { effects { audit.write, database.write } }
@@ -919,8 +919,8 @@ contract { effects { audit.write, database.write } }
 }
 `);
     assert.ok(
-      !hasDiag(result, "FUNGI-VALUESTATE-006"),
-      `Unexpected FUNGI-VALUESTATE-006 when protected value is redacted before AuditLog.write`,
+      !hasDiag(result, "FUNGI-VALUESTATE-009"),
+      `Unexpected FUNGI-VALUESTATE-009 when protected value is redacted before AuditLog.write`,
     );
   });
 
@@ -1014,7 +1014,7 @@ ${body}
   });
 });
 
-// ── Secret → network egress guard (FUNGI-SECRET-002) ───────────────────────────
+// ── Secret → network egress guard (FUNGI-SECRET-005) ───────────────────────────
 describe("Value-state checker — secret to network egress", () => {
   const mk = (body) => `secure flow f() -> Int
 contract { intent { "x" }  secrets { credential k { provider "vault" } } }
@@ -1022,50 +1022,50 @@ contract { intent { "x" }  secrets { credential k { provider "vault" } } }
 ${body}
   return 0
 }`;
-  it("a secret sent to http.post → FUNGI-SECRET-002", () => {
+  it("a secret sent to http.post → FUNGI-SECRET-005", () => {
     const r = parseAndCheck(mk('  let key = secret.get("K")\n  let r = http.post("https://x", key)'));
-    assert.ok(hasDiag(r, "FUNGI-SECRET-002"), `expected SECRET-002, got: ${r.diagnostics.map((d) => d.code).join(", ")}`);
+    assert.ok(hasDiag(r, "FUNGI-SECRET-005"), `expected SECRET-002, got: ${r.diagnostics.map((d) => d.code).join(", ")}`);
   });
-  it("a secret sent to fetch(...) → FUNGI-SECRET-002", () => {
+  it("a secret sent to fetch(...) → FUNGI-SECRET-005", () => {
     const r = parseAndCheck(mk('  let key = vault.read("K")\n  let r = fetch(key)'));
-    assert.ok(hasDiag(r, "FUNGI-SECRET-002"));
+    assert.ok(hasDiag(r, "FUNGI-SECRET-005"));
   });
   it("redact(secret) to http.post → clean", () => {
     const r = parseAndCheck(mk('  let key = secret.get("K")\n  let r = http.post("u", redact(key))'));
-    assert.ok(!hasDiag(r, "FUNGI-SECRET-002"));
+    assert.ok(!hasDiag(r, "FUNGI-SECRET-005"));
   });
   it("a non-secret value to http.post → clean", () => {
     const r = parseAndCheck(mk('  let x = build(1)\n  let r = http.post("u", x)'));
-    assert.ok(!hasDiag(r, "FUNGI-SECRET-002"));
+    assert.ok(!hasDiag(r, "FUNGI-SECRET-005"));
   });
 
   // ── Derived-secret egress (regression: the credential laundering fail-open) ──
   // A secret transformed via slice/concat/record/etc. must STILL be blocked — these
   // are exactly the exfiltration vectors (the same evasion class as vec2text on a
   // semantic vector). Before the derivesFromSecret fix, all of these leaked clean.
-  it("a SLICED secret sent to http.post → FUNGI-SECRET-002", () => {
+  it("a SLICED secret sent to http.post → FUNGI-SECRET-005", () => {
     const r = parseAndCheck(mk('  let key = secret.get("K")\n  let part = key.slice(0,5)\n  let r = http.post("u", part)'));
-    assert.ok(hasDiag(r, "FUNGI-SECRET-002"), `expected SECRET-002 for sliced secret, got: ${r.diagnostics.map((d) => d.code).join(", ")}`);
+    assert.ok(hasDiag(r, "FUNGI-SECRET-005"), `expected SECRET-002 for sliced secret, got: ${r.diagnostics.map((d) => d.code).join(", ")}`);
   });
-  it("a CONCATENATED secret sent to http.post → FUNGI-SECRET-002", () => {
+  it("a CONCATENATED secret sent to http.post → FUNGI-SECRET-005", () => {
     const r = parseAndCheck(mk('  let key = secret.get("K")\n  let p = key + "Z"\n  let r = http.post("u", p)'));
-    assert.ok(hasDiag(r, "FUNGI-SECRET-002"), `expected SECRET-002 for concatenated secret, got: ${r.diagnostics.map((d) => d.code).join(", ")}`);
+    assert.ok(hasDiag(r, "FUNGI-SECRET-005"), `expected SECRET-002 for concatenated secret, got: ${r.diagnostics.map((d) => d.code).join(", ")}`);
   });
-  it("a secret wrapped in a RECORD field sent to http.post → FUNGI-SECRET-002", () => {
+  it("a secret wrapped in a RECORD field sent to http.post → FUNGI-SECRET-005", () => {
     const r = parseAndCheck(mk('  let key = secret.get("K")\n  let rec = { tok: key }\n  let r = http.post("u", rec)'));
-    assert.ok(hasDiag(r, "FUNGI-SECRET-002"), `expected SECRET-002 for record-wrapped secret, got: ${r.diagnostics.map((d) => d.code).join(", ")}`);
+    assert.ok(hasDiag(r, "FUNGI-SECRET-005"), `expected SECRET-002 for record-wrapped secret, got: ${r.diagnostics.map((d) => d.code).join(", ")}`);
   });
-  it("a DOUBLY-derived secret (slice then concat) sent to http.post → FUNGI-SECRET-002", () => {
+  it("a DOUBLY-derived secret (slice then concat) sent to http.post → FUNGI-SECRET-005", () => {
     const r = parseAndCheck(mk('  let key = secret.get("K")\n  let a = key.slice(0,8)\n  let b = a + "!"\n  let r = http.post("u", b)'));
-    assert.ok(hasDiag(r, "FUNGI-SECRET-002"), `expected SECRET-002 for doubly-derived secret, got: ${r.diagnostics.map((d) => d.code).join(", ")}`);
+    assert.ok(hasDiag(r, "FUNGI-SECRET-005"), `expected SECRET-002 for doubly-derived secret, got: ${r.diagnostics.map((d) => d.code).join(", ")}`);
   });
   it("redact() of a secret via an intermediate binding → clean (redact is the sole declassifier)", () => {
     const r = parseAndCheck(mk('  let key = secret.get("K")\n  let safe = redact(key)\n  let r = http.post("u", safe)'));
-    assert.ok(!hasDiag(r, "FUNGI-SECRET-002"), `redact-via-binding must clear the secret, got: ${r.diagnostics.map((d) => d.code).join(", ")}`);
+    assert.ok(!hasDiag(r, "FUNGI-SECRET-005"), `redact-via-binding must clear the secret, got: ${r.diagnostics.map((d) => d.code).join(", ")}`);
   });
   it("a derived NON-secret value → clean (no false positive)", () => {
     const r = parseAndCheck(mk('  let x = build(1)\n  let p = x.slice(0,2)\n  let r = http.post("u", p)'));
-    assert.ok(!hasDiag(r, "FUNGI-SECRET-002"));
+    assert.ok(!hasDiag(r, "FUNGI-SECRET-005"));
   });
 });
 
@@ -1360,7 +1360,7 @@ contract { effects { database.write } }
 // Before this fix, a raw SecureString handed to Slack.send / S3.put / Kafka.publish / … was NOT a
 // recognised network sink, so it signed clean (exfiltration). Now those named off-host services are
 // recognised. (The SOUND denylist→safelist inversion — unknown receiver ⇒ deny — is tracked as RD-0234c.)
-describe("Value-state checker — H3 secret egress to named external services (FUNGI-SECRET-002)", () => {
+describe("Value-state checker — H3 secret egress to named external services (FUNGI-SECRET-005)", () => {
   const flow = (stmt) => `
 secure flow test() -> Result<String, Error>
 contract { effects { secret.read, network.outbound } }
@@ -1371,19 +1371,19 @@ contract { effects { secret.read, network.outbound } }
 }
 `;
   for (const sink of ["Slack.send(apiKey)", "S3.put(apiKey)", "Kafka.publish(apiKey)", "Sns.publish(apiKey)", "Webhook.post(apiKey)", "Twilio.send(apiKey)"]) {
-    it(`FIRES FUNGI-SECRET-002 — a raw secret egresses via ${sink}`, () => {
+    it(`FIRES FUNGI-SECRET-005 — a raw secret egresses via ${sink}`, () => {
       const r = parseAndCheck(flow(sink));
-      assert.ok(hasDiag(r, "FUNGI-SECRET-002"), `expected exfil flag for ${sink}, got: ${r.diagnostics.map((d) => d.code).join(", ")}`);
+      assert.ok(hasDiag(r, "FUNGI-SECRET-005"), `expected exfil flag for ${sink}, got: ${r.diagnostics.map((d) => d.code).join(", ")}`);
     });
   }
 
   it("does NOT fire for a read-only getter on an egress service (no data leaves)", () => {
     const r = parseAndCheck(flow('let cfg: String = Slack.getChannel(apiKey)'));
-    assert.ok(!hasDiag(r, "FUNGI-SECRET-002"), "Slack.getChannel is a getter (get*), not an egress verb");
+    assert.ok(!hasDiag(r, "FUNGI-SECRET-005"), "Slack.getChannel is a getter (get*), not an egress verb");
   });
 
   it("does NOT fire for a non-egress-service call (no over-block)", () => {
     const r = parseAndCheck(flow('let h: String = Crypto.hashSecret(apiKey)'));
-    assert.ok(!hasDiag(r, "FUNGI-SECRET-002"), "Crypto is not an external egress service");
+    assert.ok(!hasDiag(r, "FUNGI-SECRET-005"), "Crypto is not an external egress service");
   });
 });

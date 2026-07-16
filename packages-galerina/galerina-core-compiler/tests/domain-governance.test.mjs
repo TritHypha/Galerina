@@ -769,8 +769,8 @@ contract { effects { database.write, database.read } }
   });
 });
 
-describe("Effect checker — FUNGI-EFFECT-002 overdeclared effect", () => {
-  it("emits FUNGI-EFFECT-002 (warning) when a declared effect is not observed", () => {
+describe("Effect checker — FUNGI-EFFECT-007 overdeclared effect", () => {
+  it("emits FUNGI-EFFECT-007 (warning) when a declared effect is not observed", () => {
     const { effects } = runPipeline(`
 guarded flow getOrder(request: Request) -> Result<Order, OrderError>
 contract { effects { database.read, network.outbound } }
@@ -779,10 +779,10 @@ contract { effects { database.read, network.outbound } }
   return Ok(order)
 }
 `);
-    assert.ok(effectHasDiag(effects, "FUNGI-EFFECT-002"), "Expected FUNGI-EFFECT-002 for overdeclared network.outbound");
+    assert.ok(effectHasDiag(effects, "FUNGI-EFFECT-007"), "Expected FUNGI-EFFECT-007 for overdeclared network.outbound");
   });
 
-  it("FUNGI-EFFECT-002 is warning severity for overdeclared effect", () => {
+  it("FUNGI-EFFECT-007 is warning severity for overdeclared effect", () => {
     const { effects } = runPipeline(`
 guarded flow getOrder(request: Request) -> Result<Order, OrderError>
 contract { effects { database.read, network.outbound } }
@@ -791,7 +791,7 @@ contract { effects { database.read, network.outbound } }
   return Ok(order)
 }
 `);
-    const diag = effects.flatMap((r) => r.diagnostics).find((d) => d.code === "FUNGI-EFFECT-002");
+    const diag = effects.flatMap((r) => r.diagnostics).find((d) => d.code === "FUNGI-EFFECT-007");
     assert.ok(diag !== undefined);
     assert.equal(diag.severity, "warning");
   });

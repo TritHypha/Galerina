@@ -725,7 +725,7 @@ export function checkFlowEffects(
     for (const effect of flow.declaredEffects) {
       if (!observedEffects.has(effect) && !hasTransitiveEffect(flow.name, effect, allFlows, callGraph, new Set())) {
         diagnostics.push({
-          code: "FUNGI-EFFECT-002",
+          code: "FUNGI-EFFECT-007",
           name: "OVERDECLARED_EFFECT",
           severity: "warning",
           message: `${qualifierLabel} "${flow.name}" declares effect "${effect}" but no matching operation was observed.`,
@@ -742,8 +742,8 @@ export function checkFlowEffects(
     for (const effect of flow.declaredEffects) {
       if (PLAIN_FLOW_PRIVILEGED_EFFECTS.has(effect)) {
         diagnostics.push({
-          code: "FUNGI-EFFECT-001",
-          name: "UNDECLARED_EFFECT",
+          code: "FUNGI-EFFECT-008",
+          name: "PRIVILEGED_EFFECT_ON_PLAIN_FLOW",
           severity: "warning",
           message: `Plain flow "${flow.name}" declares privileged effect "${effect}". Use "secure flow" for security-sensitive operations.`,
           location: flow.location,
@@ -903,7 +903,7 @@ function validateDeclaredEffectNames(flow: FlowMeta, diagnostics: EffectDiagnost
       } else {
         // Other alias variants (e.g. "http.get" → "network.outbound") — non-canonical, error
         diagnostics.push({
-          code: "FUNGI-EFFECT-004",
+          code: "FUNGI-EFFECT-009",
           name: "NON_CANONICAL_EFFECT",
           severity: "error",
           message: `Effect "${effect}" is not a canonical effect name. Use "${canonical}".`,

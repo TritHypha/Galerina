@@ -138,12 +138,12 @@ describe("effect-checker.fungi — clean reconciliation (used ⊆ declared)", ()
     assert.equal(cleanFlows, 1);
   });
 
-  it("declares more than it uses → FUNGI-EFFECT-002 overdeclared (Stage-A parity)", async () => {
+  it("declares more than it uses → FUNGI-EFFECT-007 overdeclared (Stage-A parity)", async () => {
     const { diags } = await check([
       flow({ name: "a2", kind: "guarded", effects: ["database.read", "audit.write"], usedEffects: ["database.read"] }),
     ]);
     // audit.write is declared but never used → overdeclared warning; database.read is used → no 001.
-    assert.deepEqual(codesFor(diags, "a2"), ["FUNGI-EFFECT-002"]);
+    assert.deepEqual(codesFor(diags, "a2"), ["FUNGI-EFFECT-007"]);
   });
 });
 
@@ -164,22 +164,22 @@ describe("effect-checker.fungi — FUNGI-EFFECT-004 UnknownEffect", () => {
     assert.deepEqual(codesFor(diags, "d"), ["FUNGI-EFFECT-004"]);
   });
 
-  it("uses an unknown effect → undeclared (001) + overdeclared (002) + unknown (004)", async () => {
+  it("uses an unknown effect → undeclared (001) + unknown (004) + overdeclared (007)", async () => {
     const { diags } = await check([
       flow({ name: "c", kind: "guarded", effects: ["database.read"], usedEffects: ["bogus.effect"] }),
     ]);
-    // bogus.effect: used-but-undeclared (001) + unknown (004); database.read: declared-but-unused (002).
-    assert.deepEqual(codesFor(diags, "c"), ["FUNGI-EFFECT-001", "FUNGI-EFFECT-002", "FUNGI-EFFECT-004"]);
+    // bogus.effect: used-but-undeclared (001) + unknown (004); database.read: declared-but-unused (007).
+    assert.deepEqual(codesFor(diags, "c"), ["FUNGI-EFFECT-001", "FUNGI-EFFECT-004", "FUNGI-EFFECT-007"]);
   });
 });
 
-describe("effect-checker.fungi — FUNGI-EFFECT-002 OverdeclaredEffect", () => {
-  it("a known effect declared but never used → FUNGI-EFFECT-002 warning", async () => {
+describe("effect-checker.fungi — FUNGI-EFFECT-007 OverdeclaredEffect", () => {
+  it("a known effect declared but never used → FUNGI-EFFECT-007 warning", async () => {
     const { diags } = await check([
       flow({ name: "od", kind: "guarded", effects: ["database.read", "audit.write"], usedEffects: ["database.read"] }),
     ]);
     const od = diags.filter((d) => d.flowName === "od");
-    assert.deepEqual(od.map((d) => d.code), ["FUNGI-EFFECT-002"]);
+    assert.deepEqual(od.map((d) => d.code), ["FUNGI-EFFECT-007"]);
     assert.equal(od[0].severity, "warning");
   });
 
@@ -250,7 +250,7 @@ describe("effect-checker.fungi — aggregate & edge cases", () => {
     assert.equal(cleanFlows, 1);
     assert.deepEqual(codesFor(diags, "ok"), []);
     // bad: network.outbound used-but-undeclared (001) + database.read declared-but-unused (002).
-    assert.deepEqual(codesFor(diags, "bad"), ["FUNGI-EFFECT-001", "FUNGI-EFFECT-002"]);
+    assert.deepEqual(codesFor(diags, "bad"), ["FUNGI-EFFECT-001", "FUNGI-EFFECT-007"]);
     assert.deepEqual(codesFor(diags, "purebad"), ["FUNGI-EFFECT-001", "FUNGI-EFFECT-003"]);
   });
 });
@@ -379,6 +379,6 @@ describe("effect-checker.fungi — no duplicate diagnostics", () => {
     const { diags } = await check([
       flow({ name: "y", kind: "guarded", effects: ["database.read"], usedEffects: ["network.outbound", "network.outbound"] }),
     ]);
-    assert.deepEqual(codesFor(diags, "y"), ["FUNGI-EFFECT-001", "FUNGI-EFFECT-002"]);
+    assert.deepEqual(codesFor(diags, "y"), ["FUNGI-EFFECT-001", "FUNGI-EFFECT-007"]);
   });
 });

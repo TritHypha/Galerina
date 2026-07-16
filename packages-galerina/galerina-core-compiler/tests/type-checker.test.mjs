@@ -327,36 +327,36 @@ flow test(
   });
 });
 
-// ── FUNGI-TYPE-008: null / undefined rejection ──────────────────────────────────
+// ── FUNGI-TYPE-025: null / undefined rejection ──────────────────────────────────
 
-describe("Type checker — FUNGI-TYPE-008 null/undefined", () => {
-  it("emits FUNGI-TYPE-008 for null literal in expression", () => {
+describe("Type checker — FUNGI-TYPE-025 null/undefined", () => {
+  it("emits FUNGI-TYPE-025 for null literal in expression", () => {
     const result = parseAndCheck(`
 flow test() -> String {
   let x: String = null
   return "ok"
 }
 `);
-    assert.ok(hasDiag(result, "FUNGI-TYPE-008"), "Expected FUNGI-TYPE-008 for null");
+    assert.ok(hasDiag(result, "FUNGI-TYPE-025"), "Expected FUNGI-TYPE-025 for null");
   });
 
-  it("emits FUNGI-TYPE-008 for undefined literal in expression", () => {
+  it("emits FUNGI-TYPE-025 for undefined literal in expression", () => {
     const result = parseAndCheck(`
 flow test() -> String {
   let x: String = undefined
   return "ok"
 }
 `);
-    assert.ok(hasDiag(result, "FUNGI-TYPE-008"), "Expected FUNGI-TYPE-008 for undefined");
+    assert.ok(hasDiag(result, "FUNGI-TYPE-025"), "Expected FUNGI-TYPE-025 for undefined");
   });
 
-  it("does not emit FUNGI-TYPE-008 for None (valid Galerina absence value)", () => {
+  it("does not emit FUNGI-TYPE-025 for None (valid Galerina absence value)", () => {
     const result = parseAndCheck(`
 flow test() -> Option<String> {
   return None
 }
 `);
-    assert.ok(!hasDiag(result, "FUNGI-TYPE-008"), "Unexpected FUNGI-TYPE-008 for None");
+    assert.ok(!hasDiag(result, "FUNGI-TYPE-025"), "Unexpected FUNGI-TYPE-025 for None");
   });
 });
 
@@ -530,32 +530,32 @@ flow test(x: Option<String>) -> String {
   });
 });
 
-describe("Type checker — FUNGI-TYPE-008 null/undefined", () => {
-  it("emits FUNGI-TYPE-008 for null literal in expression", () => {
+describe("Type checker — FUNGI-TYPE-025 null/undefined", () => {
+  it("emits FUNGI-TYPE-025 for null literal in expression", () => {
     const result = parseAndCheck(`
 flow test() -> Option<String> {
   return null
 }
 `);
-    assert.ok(hasDiag(result, "FUNGI-TYPE-008"), "Expected FUNGI-TYPE-008 for null");
+    assert.ok(hasDiag(result, "FUNGI-TYPE-025"), "Expected FUNGI-TYPE-025 for null");
   });
 
-  it("emits FUNGI-TYPE-008 for undefined literal in expression", () => {
+  it("emits FUNGI-TYPE-025 for undefined literal in expression", () => {
     const result = parseAndCheck(`
 flow test() -> Option<String> {
   return undefined
 }
 `);
-    assert.ok(hasDiag(result, "FUNGI-TYPE-008"), "Expected FUNGI-TYPE-008 for undefined");
+    assert.ok(hasDiag(result, "FUNGI-TYPE-025"), "Expected FUNGI-TYPE-025 for undefined");
   });
 
-  it("does not emit FUNGI-TYPE-008 for None", () => {
+  it("does not emit FUNGI-TYPE-025 for None", () => {
     const result = parseAndCheck(`
 flow test() -> Option<String> {
   return None
 }
 `);
-    assert.ok(!hasDiag(result, "FUNGI-TYPE-008"), "None is a valid Galerina absence value");
+    assert.ok(!hasDiag(result, "FUNGI-TYPE-025"), "None is a valid Galerina absence value");
   });
 });
 
@@ -1062,20 +1062,20 @@ flow test(readonly request: Request) -> String {
   });
 });
 
-// ── FUNGI-TYPE-023: deferred type check surfaced for `Auto`-declared param/return ──
+// ── FUNGI-TYPE-026: deferred type check surfaced for `Auto`-declared param/return ──
 // Regression: isAssignmentCompatible() treats an `Auto`-declared target as universally
 // compatible, which previously SILENTLY muted the return-type (008) and arg-type (005)
-// checks. The deferral is now surfaced as a visible `warning` (FUNGI-TYPE-023).
-describe("Type checker — FUNGI-TYPE-023 Auto deferral is visible (not muted)", () => {
+// checks. The deferral is now surfaced as a visible `warning` (FUNGI-TYPE-026).
+describe("Type checker — FUNGI-TYPE-026 Auto deferral is visible (not muted)", () => {
   it("emits a warning when a return type is declared Auto", () => {
     const result = parseAndCheck(`
 pure flow f() -> Auto {
   return "anything"
 }
 `);
-    assert.ok(hasDiag(result, "FUNGI-TYPE-023"),
-      `Expected FUNGI-TYPE-023 advisory for Auto return, got: ${result.diagnostics.map((d) => d.code).join(", ")}`);
-    const d = diagsWithCode(result, "FUNGI-TYPE-023")[0];
+    assert.ok(hasDiag(result, "FUNGI-TYPE-026"),
+      `Expected FUNGI-TYPE-026 advisory for Auto return, got: ${result.diagnostics.map((d) => d.code).join(", ")}`);
+    const d = diagsWithCode(result, "FUNGI-TYPE-026")[0];
     assert.equal(d.severity, "warning", "deferral must be a warning, not an error");
   });
 
@@ -1087,8 +1087,8 @@ pure flow caller() -> Int {
   return 0
 }
 `);
-    assert.ok(hasDiag(result, "FUNGI-TYPE-023"),
-      `Expected FUNGI-TYPE-023 advisory for Auto param, got: ${result.diagnostics.map((d) => d.code).join(", ")}`);
+    assert.ok(hasDiag(result, "FUNGI-TYPE-026"),
+      `Expected FUNGI-TYPE-026 advisory for Auto param, got: ${result.diagnostics.map((d) => d.code).join(", ")}`);
   });
 
   it("does NOT downgrade a concrete return mismatch — still a hard error", () => {
@@ -1099,7 +1099,7 @@ pure flow f() -> Int {
 `);
     assert.ok(hasDiag(result, "FUNGI-TYPE-008") || hasDiag(result, "FUNGI-TYPE-002"),
       "concrete mismatch must still hard-error");
-    assert.ok(!hasDiag(result, "FUNGI-TYPE-023"),
+    assert.ok(!hasDiag(result, "FUNGI-TYPE-026"),
       "concrete types must not emit the Auto deferral advisory");
   });
 });

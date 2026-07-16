@@ -517,7 +517,7 @@ describe("FUNGI_VALUESTATE_006 and FUNGI_VALUESTATE_007 exported constants", () 
     const { FUNGI_VALUESTATE_006 } = await import("../dist/index.js");
     assert.ok(FUNGI_VALUESTATE_006 !== undefined, "Expected FUNGI_VALUESTATE_006 to be exported");
     assert.equal(FUNGI_VALUESTATE_006.code, "FUNGI-VALUESTATE-006");
-    assert.equal(FUNGI_VALUESTATE_006.name, "ProtectedBoundaryViolation");
+    assert.equal(FUNGI_VALUESTATE_006.name, "PROTECTED_BOUNDARY_VIOLATION");
     assert.equal(FUNGI_VALUESTATE_006.severity, "error");
   });
 

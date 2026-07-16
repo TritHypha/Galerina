@@ -17,7 +17,7 @@
  *   FUNGI-VAL-003     Unknown classification
  *   FUNGI-HW-001      Quantum target without FormalRequired
  *   FUNGI-HW-002      NPU target without audit.write
- *   FUNGI-VALUESTATE-006  Protected value assigned to plain binding (no gate)
+ *   FUNGI-VALUESTATE-009  Protected value assigned to plain binding (no gate)
  *   FUNGI-NET-001     (constant) Network destination not in allowlist
  *   FUNGI-EFFECT-001  Effect used without declaration (network call)
  *   FUNGI-SOURCE-ESCAPE-001  eval() in flow body
@@ -422,10 +422,10 @@ describe("Denial #11 — FUNGI-HW-002: NPU target without audit.write", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 12. Protected value used without gate → FUNGI-VALUESTATE-006
+// 12. Protected value used without gate → FUNGI-VALUESTATE-009
 // ---------------------------------------------------------------------------
 
-describe("Denial #12 — FUNGI-VALUESTATE-006: Protected value assigned to plain binding", () => {
+describe("Denial #12 — FUNGI-VALUESTATE-009: Protected value assigned to plain binding", () => {
   it("protect() value assigned to a plain typed binding is denied", () => {
     const src = `
 flow storeEmail(raw: String) -> String {
@@ -576,10 +576,10 @@ flow loadPlugin(path: String) -> String {
 
 // ---------------------------------------------------------------------------
 // Bonus denial #16: protected value passed to AuditLog.write without redact()
-//   Also fires as FUNGI-VALUESTATE-006 (distinct from FUNGI-VALUESTATE-003)
+//   Also fires as FUNGI-VALUESTATE-009 (distinct from FUNGI-VALUESTATE-003)
 // ---------------------------------------------------------------------------
 
-describe("Denial #16 — FUNGI-VALUESTATE-006: Protected value at AuditLog.write without redact()", () => {
+describe("Denial #16 — FUNGI-VALUESTATE-009: Protected value at AuditLog.write without redact()", () => {
   it("protected Email at AuditLog.write without redact() is denied", () => {
     const src = `
 secure flow logSignup(rawEmail: String) -> Result<String, Error>
@@ -592,8 +592,8 @@ contract { effects { audit.write } }
 `;
     const codes = valueStateCodes(src);
     assert.ok(
-      codes.includes("FUNGI-VALUESTATE-006"),
-      `Expected FUNGI-VALUESTATE-006 for protected Email at AuditLog.write without redact(), got: [${codes.join(", ")}]`,
+      codes.includes("FUNGI-VALUESTATE-009"),
+      `Expected FUNGI-VALUESTATE-009 for protected Email at AuditLog.write without redact(), got: [${codes.join(", ")}]`,
     );
   });
 
@@ -609,8 +609,8 @@ contract { effects { audit.write } }
 `;
     const codes = valueStateCodes(src);
     assert.ok(
-      !codes.includes("FUNGI-VALUESTATE-006"),
-      `FUNGI-VALUESTATE-006 must not fire when protected value is redacted before AuditLog.write`,
+      !codes.includes("FUNGI-VALUESTATE-009"),
+      `FUNGI-VALUESTATE-009 must not fire when protected value is redacted before AuditLog.write`,
     );
   });
 });
