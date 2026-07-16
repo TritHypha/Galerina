@@ -17,6 +17,8 @@
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { Worker } from "node:worker_threads"; // slice-6c: watchdogged WASM invoke (a catch can't catch a hang)
+import { fileURLToPath } from "node:url";
 import { parseProgram, executeFlow, clearBytecodeCache } from "../dist/index.js";
 import * as L from "../dist/index.js"; // WASM-tier path (assembleWAT / admitAndInstantiate / …) for slice-2
 import { resolveGovernanceMode } from "../dist/governance-mode.js"; // slice-3 (not re-exported from the index barrel)
@@ -269,6 +271,154 @@ test("0014 slice-5a: FUZZ tree-walker ≡ bytecode/fast tier, byte-exact over ra
       if (ref.__tag === "runtimeError") assert.equal(ref.message, cand.message, `FUZZ tier TRAP divergence — ${ctx}`);
     }
   }
+});
+
+// ── Slice 6: SHAPE fuzz — loop-bearing generated programs (RD-0316 leg 1; task #29) ────────────────
+// Slices 5a/5b randomize only LEAF VALUES over 7 straight-line templates with zero loops — the exact
+// corpus gap that let RD-0314 (the WASM runaway-loop hang) need a human to find it by hand. This slice
+// randomizes the PROGRAM SHAPE: a seeded-PRNG generator emits small pure flows with a bounded `while`
+// loop and a random arithmetic expression tree in the body (params, the accumulator, the induction var,
+// edge literals; + - * / % with div/mod trap edges live), then drives them through (6a) walker ≡
+// bytecode/fast and (6b) walker ≡ REAL WASM. No new dependency — the same xorshift32 the harness
+// already owns (the owner's #29 constraint: seeded-PRNG arbitrary, no fast-check).
+function makeFlowGen(seed) {
+  const rng = makePRNG(seed);
+  const pick = (arr) => arr[rng() % arr.length];
+  // Small i32 literals + edges; kept small so bounded loops stay fast.
+  const LIT = [0, 1, 2, 3, 5, 7, -1, -2, 46341, MAX, MIN];
+  const expr = (depth, vars) => {
+    if (depth <= 0 || (rng() & 3) === 0) {
+      return (rng() & 1) === 0 ? pick(vars) : String(pick(LIT));
+    }
+    const op = pick(["+", "-", "*", "/", "%"]);
+    return `(${expr(depth - 1, vars)} ${op} ${expr(depth - 1, vars)})`;
+  };
+  let n = 0;
+  return () => {
+    n++;
+    const flow = `gShape${seed & 0xffff}x${n}`;
+    const bound = rng() % 40; // 0..39 iterations — shape variety without slow tests
+    const seedExpr = expr(2, ["a", "b"]);
+    const bodyExpr = expr(2, ["a", "b", "acc", "i"]);
+    const src =
+      `pure flow ${flow}(a: Int, b: Int) -> Int contract { effects {} } { ` +
+      `mut acc = ${seedExpr} ` +
+      `mut i = 0 ` +
+      `while i < ${bound} { acc = ${bodyExpr} i = i + 1 } ` +
+      `return acc }`;
+    return { flow, src };
+  };
+}
+
+test("0014 slice-6a: SHAPE FUZZ walker ≡ bytecode/fast tier over generated loop-bearing flows", async () => {
+  const gen = makeFlowGen(0xa11ce);
+  const sample = makeSampler(0xbeefcafe);
+  for (let p = 0; p < 12; p++) {
+    const { flow, src } = gen();
+    clearBytecodeCache();
+    const prog = parseProgram(src, "fid-shape.fungi");
+    const errs = (prog.diagnostics ?? []).filter((d) => d.severity === "error");
+    assert.equal(errs.length, 0, `generated program must parse: "${src}" → ${errs.map((d) => d.message).join("; ")}`);
+    for (let i = 0; i < 8; i++) {
+      const vals = [sample(), sample()];
+      const args = argMap(["a", "b"], vals);
+      const ref = (await reference(prog, flow, args)).value;
+      const cand = (await candidate(prog, flow, args)).value;
+      const ctx = `flow=${flow} args=[${vals}] src="${src}" : walker=${show(ref)} fast=${show(cand)}`;
+      assert.equal(ref.__tag, cand.__tag, `SHAPE tier TAG divergence — ${ctx}`);
+      if (ref.__tag === "int") assert.ok(Object.is(ref.value, cand.value), `SHAPE tier VALUE divergence — ${ctx}`);
+      if (ref.__tag === "runtimeError") assert.equal(ref.message, cand.message, `SHAPE tier TRAP divergence — ${ctx}`);
+    }
+  }
+});
+
+test("0014 slice-6b: SHAPE FUZZ REAL WASM ≡ reference walker over generated loop-bearing flows", async () => {
+  const gen = makeFlowGen(0x5eed5);
+  const generated = Array.from({ length: 6 }, () => gen());
+  const prog = parseProgram(generated.map((g) => g.src).join("\n"), "fid-shape-wasm.fungi");
+  const errs = (prog.diagnostics ?? []).filter((d) => d.severity === "error");
+  assert.equal(errs.length, 0, `generated module must parse: ${errs.map((d) => d.message).join("; ")}`);
+
+  const fx = L.checkEffects(prog.flows, prog.ast);
+  const { gir } = L.emitGIR(prog.ast, prog.flows, fx);
+  const wat = L.renderWAT(L.buildWATModuleFromGIR(gir, undefined, "fidshape", prog.ast, true));
+  const asm = await L.assembleWAT(wat);
+  assert.ok(asm.valid && asm.diagnostics.length === 0, `generated module assembles: ${JSON.stringify(asm.diagnostics)}`);
+  const kp = L.generateRunnerKeypair();
+  const att = L.signWasm(asm.wasm, kp.privateKeyPem, "dev");
+  const { instance } = await L.admitAndInstantiate({
+    wasm: asm.wasm, attestation: att,
+    policy: { requireSigned: true, publicKeyPem: kp.publicKeyPem },
+    host: L.createHostRuntime(),
+  });
+
+  const sample = makeSampler(0xf00df00d);
+  for (const { flow } of generated) {
+    assert.equal(typeof instance.exports[flow], "function", `WASM exports generated flow ${flow}`);
+    for (let i = 0; i < 6; i++) {
+      const vals = [sample(), sample()];
+      const ref = (await executeFlow(flow, argMap(["a", "b"], vals), prog.ast, prog.flows)).value;
+      const refTrap = ref.__tag === "runtimeError";
+      let wasmTrap = false, wasmVal;
+      try { wasmVal = instance.exports[flow](...vals); } catch { wasmTrap = true; }
+      const ctx = `flow=${flow} args=[${vals}] : walker=${refTrap ? "trap" : "int:" + ref.value} wasm=${wasmTrap ? "trap" : "int:" + wasmVal}`;
+      assert.equal(refTrap, wasmTrap, `SHAPE WASM TRAP/VALUE divergence — ${ctx}`);
+      if (!refTrap) assert.ok(Object.is(ref.value, wasmVal), `SHAPE WASM value divergence — ${ctx}`);
+    }
+  }
+});
+
+// ── Slice 6c: WASM runaway-loop LIVENESS — watchdogged, fail-closed (the RD-0314-class detector) ──
+// RD-0316's centerpiece gap: no runaway flow was ever routed through the REAL WASM path, and an
+// in-process `while true` invoke would freeze the whole harness (a hang never throws). Since then the
+// WAT emitter gained the per-loop FUEL CAP (task #22 / RD-0393 ceilings), so today the correct
+// behaviour is: `while true` in real WASM TRAPS fail-closed at the fuel cap, quickly. This slice
+// proves exactly that — through a worker_threads-isolated invoke with a wall-clock watchdog, so if a
+// future emitter change DROPS the fuel cap, the watchdog reclaims the hang and reports the RD-0314
+// class as a test failure instead of freezing CI.
+test("0014 slice-6c: runaway `while true` through REAL WASM traps at the fuel cap (watchdogged — a hang is a finding)", async () => {
+  const src = "pure flow runawayLoop(a: Int) -> Int contract { effects {} } { mut i = 0 while true { i = i + 1 } return i }";
+  const prog = parseProgram(src, "fid-runaway.fungi");
+  const errs = (prog.diagnostics ?? []).filter((d) => d.severity === "error");
+  assert.equal(errs.length, 0, `parse error: ${errs.map((d) => d.message).join("; ")}`);
+
+  const fx = L.checkEffects(prog.flows, prog.ast);
+  const { gir } = L.emitGIR(prog.ast, prog.flows, fx);
+  const wat = L.renderWAT(L.buildWATModuleFromGIR(gir, undefined, "fidrun", prog.ast, true));
+  const asm = await L.assembleWAT(wat);
+  assert.ok(asm.valid && asm.diagnostics.length === 0, `runaway module assembles: ${JSON.stringify(asm.diagnostics)}`);
+  const kp = L.generateRunnerKeypair();
+  const att = L.signWasm(asm.wasm, kp.privateKeyPem, "dev");
+
+  // The walker side of the differential: same flow, low cap → 'Loop exceeded' trap (fail-closed).
+  const walkerRes = await executeFlow("runawayLoop", argMap(["a"], [1]), prog.ast, prog.flows, undefined, undefined, { maxIterations: 50 });
+  assert.equal(walkerRes.value.__tag, "runtimeError", "walker: runaway loop must trap at the iteration cap");
+
+  // The WASM side, isolated + watchdogged (5s wall-clock — the fuel-cap trap lands in milliseconds).
+  const workerUrl = new URL("./helpers/wasm-invoke-worker.mjs", import.meta.url);
+  const outcome = await new Promise((resolve) => {
+    const w = new Worker(fileURLToPath(workerUrl), {
+      workerData: {
+        wasmB64: Buffer.from(asm.wasm).toString("base64"),
+        attestation: att,
+        publicKeyPem: kp.publicKeyPem,
+        flow: "runawayLoop",
+        args: [1],
+      },
+    });
+    const dog = setTimeout(() => {
+      w.terminate();
+      resolve({ hang: true });
+    }, 5000);
+    w.once("message", (m) => { clearTimeout(dog); resolve(m); });
+    w.once("error", (e) => { clearTimeout(dog); resolve({ ok: false, error: String(e) }); });
+  });
+
+  assert.ok(!outcome.hang,
+    "RD-0314 CLASS REGRESSION: `while true` in real WASM ran past the watchdog — the loop FUEL CAP is gone " +
+    "(wat-emitter must emit the per-loop fuel trap; see task #22 / RD-0393). A hang is a finding, never a freeze.");
+  assert.ok(outcome.ok, `worker failed before invoke: ${outcome.error ?? "unknown"}`);
+  assert.equal(outcome.trapped, true, "runaway `while true` in real WASM must TRAP at the fuel cap (fail-closed), not return a value");
 });
 
 test("0014 slice-5b: FUZZ WASM tier ≡ reference walker, byte-exact (value; trap⟺trap) over random i32 inputs", async () => {

@@ -1514,7 +1514,20 @@ export function emitWATExpr(
         return `(call $fungi_checked_sub_i64 (i64.const 0) ${innerI64})`;
       }
       const operand = child ? emitWATExpr(child, vars, staticConsts) : "(i32.const 0)";
-      if (op === "-") return `(call $fungi_checked_sub_i32 (i32.const 0) ${operand})`; // -INT32_MIN overflows → trap
+      if (op === "-") {
+        // Mirror of the i64 literal rule above: a negative INT32 LITERAL composes into a SINGLE
+        // (i32.const -n). `sub 0 (const 2147483648)` is NOT that — 2147483648 is out of signed-i32
+        // range, wabt wraps it to -2^31 via the unsigned bit-pattern, and the checked sub then
+        // computes 0 - (-2^31) = +2^31 → OVERFLOW TRAP on the perfectly legal value -2147483648
+        // (walker=int, wasm=trap — found by the slice-6 shape fuzzer on its first run). Guarded to
+        // magnitudes that FIT when negated; anything larger falls through and traps loudly (the
+        // literal itself is already out of i32 — FUNGI-TYPE-024 warns at check time).
+        if (child?.kind === "numberLiteral" && typeof child.value === "string"
+            && !/[.eE]/.test(child.value) && BigInt(child.value) <= 2147483648n) {
+          return `(i32.const -${child.value})`;
+        }
+        return `(call $fungi_checked_sub_i32 (i32.const 0) ${operand})`; // -INT32_MIN (runtime value) overflows → trap
+      }
       if (op === "!")  return `(i32.eqz ${operand})`;
       // W5a K3 negation: flip(x) = -x on the trit lattice (flip(-1)=+1, flip(0)=0,
       // flip(+1)=-1). Plain i32.sub — trits can never overflow, no checked helper needed.
