@@ -2377,7 +2377,7 @@ class GovernanceVerifier {
       if (refFlowName === "") {
         this.diagnostics.push(makeGovDiag(
           "FUNGI-ASSUME-001",
-          "ASSUMING_MISSING_FLOW_REF",
+          "ASSUMING_ARGUMENT_MISSING", // #20: one name for both -001 arms (flow-ref / claim); the message carries which
           "error",
           `Flow '${flow.name}': assuming() requires a flow reference as first argument. ` +
           `Syntax: assuming(flowName, "ensure condition") { }`,
@@ -2390,7 +2390,7 @@ class GovernanceVerifier {
       if (claim === "") {
         this.diagnostics.push(makeGovDiag(
           "FUNGI-ASSUME-001",
-          "ASSUMING_MISSING_CLAIM",
+          "ASSUMING_ARGUMENT_MISSING",
           "error",
           `Flow '${flow.name}': assuming() requires a claim string as second argument. ` +
           `Syntax: assuming(flowName, "ensure condition") { }`,

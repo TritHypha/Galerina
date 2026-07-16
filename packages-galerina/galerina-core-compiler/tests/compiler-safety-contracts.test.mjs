@@ -515,7 +515,7 @@ flow renderScript() {
 
   it("FUNGI_SEC_020 has code FUNGI-SEC-020, name RuntimeMutation, severity error, and suggestedFix", () => {
     assert.equal(FUNGI_SEC_020.code, "FUNGI-SEC-020");
-    assert.equal(FUNGI_SEC_020.name, "RuntimeMutation");
+    assert.equal(FUNGI_SEC_020.name, "RUNTIME_MUTATION_PROHIBITED");
     assert.equal(FUNGI_SEC_020.severity, "error");
     assert.ok(typeof FUNGI_SEC_020.message === "string" && FUNGI_SEC_020.message.length > 0);
     assert.ok(typeof FUNGI_SEC_020.suggestedFix === "string" && FUNGI_SEC_020.suggestedFix.length > 0);
@@ -523,7 +523,7 @@ flow renderScript() {
 
   it("FUNGI_SEC_021 has code FUNGI-SEC-021, name PrototypeMutation, severity error, and suggestedFix", () => {
     assert.equal(FUNGI_SEC_021.code, "FUNGI-SEC-021");
-    assert.equal(FUNGI_SEC_021.name, "PrototypeMutation");
+    assert.equal(FUNGI_SEC_021.name, "PROTOTYPE_MUTATION_PROHIBITED");
     assert.equal(FUNGI_SEC_021.severity, "error");
     assert.ok(typeof FUNGI_SEC_021.message === "string" && FUNGI_SEC_021.message.length > 0);
     assert.ok(typeof FUNGI_SEC_021.suggestedFix === "string" && FUNGI_SEC_021.suggestedFix.length > 0);

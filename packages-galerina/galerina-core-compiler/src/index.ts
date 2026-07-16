@@ -2032,9 +2032,12 @@ export {
 // ---------------------------------------------------------------------------
 
 /** FUNGI-SEC-020: Runtime behaviour modification is prohibited in Galerina. */
+// #20 taxonomy (RD-0412): ONE name per code — this name must stay identical to the
+// emit in monkey-patch-checker.ts (no import: the checker cannot depend on this barrel
+// without a cycle; audit-diagnostic-codes guards the pair against drift).
 export const FUNGI_SEC_020 = {
   code: "FUNGI-SEC-020",
-  name: "RuntimeMutation",
+  name: "RUNTIME_MUTATION_PROHIBITED",
   severity: "error" as const,
   message: "Runtime behaviour modification is prohibited in Galerina. Use adapters, interfaces, or mocks instead of patching runtime objects.",
   suggestedFix: "Declare an adapter implementing the interface, or use a mock in test boundaries.",
@@ -2043,7 +2046,7 @@ export const FUNGI_SEC_020 = {
 /** FUNGI-SEC-021: Prototype or object mutation after definition is prohibited. */
 export const FUNGI_SEC_021 = {
   code: "FUNGI-SEC-021",
-  name: "PrototypeMutation",
+  name: "PROTOTYPE_MUTATION_PROHIBITED",
   severity: "error" as const,
   message: "Prototype or object mutation after definition is prohibited. Galerina requires declared behaviour.",
   suggestedFix: "Use type declarations, adapters, or explicit contract extensions.",

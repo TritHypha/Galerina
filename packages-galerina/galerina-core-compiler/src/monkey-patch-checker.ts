@@ -136,7 +136,7 @@ function makeSec020Diagnostic(
 ): MonkeyPatchDiagnostic {
   const base = {
     code: "FUNGI-SEC-020",
-    name: "RuntimeMutationProhibited",
+    name: "RUNTIME_MUTATION_PROHIBITED", // #20: must equal FUNGI_SEC_020.name in index.ts (audit-guarded pair)
     severity: "error" as const,
     message: `Runtime behaviour modification is prohibited. '${callName}' replaces or patches a runtime object, capability, or adapter — this bypasses governance and audit trails.`,
     suggestedFix: "Declare an adapter implementing the interface, or use a mock in a test boundary. Never patch live runtime objects.",
@@ -151,7 +151,7 @@ function makeSec021Diagnostic(
 ): MonkeyPatchDiagnostic {
   const base = {
     code: "FUNGI-SEC-021",
-    name: "PrototypeMutationProhibited",
+    name: "PROTOTYPE_MUTATION_PROHIBITED", // #20: must equal FUNGI_SEC_021.name in index.ts (audit-guarded pair)
     severity: "error" as const,
     message: `Prototype mutation is prohibited. Assigning to '${targetPath}' rewrites shared inherited behaviour — this is not allowed in Galerina.`,
     suggestedFix: "Use type declarations, adapter interfaces, or explicit contract extensions instead of prototype assignment.",

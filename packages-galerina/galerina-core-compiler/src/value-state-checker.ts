@@ -1881,7 +1881,7 @@ class ValueStateChecker {
         }
         this.diagnostics.push(makeVSDiag(
           "FUNGI-VALUESTATE-005",
-          "DerivedUnsafeValueAtSink",
+          "DERIVED_UNSAFE_VALUE_AT_SINK",
           `Binding '${binding.name}' is derived from unsafe binding '${sourceName}' and cannot flow into governed sink '${sinkName}'. Even after transformation (e.g. .trim()), a value derived from unsafe input is still tainted.`,
           location,
           `Use a validation gate before the sink: let safe${binding.name.charAt(0).toUpperCase() + binding.name.slice(1)} = validate.${sourceName}(${sourceName})?`,

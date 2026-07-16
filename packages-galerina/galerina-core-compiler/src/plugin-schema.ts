@@ -111,11 +111,12 @@ export function validatePluginInput(
 
     if ((field.type === "Int" || field.type === "Float") && typeof value === "number") {
       if (field.minValue !== undefined && value < field.minValue) {
-        violations.push({ code: "FUNGI-BORDER-004", name: "VALUE_BELOW_MINIMUM", plugin: pluginName,
+        // #20: one name for both range arms; the message carries the direction.
+        violations.push({ code: "FUNGI-BORDER-004", name: "VALUE_OUT_OF_RANGE", plugin: pluginName,
           field: field.name, message: `Value ${value} below minimum ${field.minValue}.`, severity: "error" });
       }
       if (field.maxValue !== undefined && value > field.maxValue) {
-        violations.push({ code: "FUNGI-BORDER-004", name: "VALUE_ABOVE_MAXIMUM", plugin: pluginName,
+        violations.push({ code: "FUNGI-BORDER-004", name: "VALUE_OUT_OF_RANGE", plugin: pluginName,
           field: field.name, message: `Value ${value} above maximum ${field.maxValue}.`, severity: "error" });
       }
     }

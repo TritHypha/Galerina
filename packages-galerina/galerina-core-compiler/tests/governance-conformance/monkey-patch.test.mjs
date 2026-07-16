@@ -1,8 +1,8 @@
 // =============================================================================
 // Governance Conformance — Monkey-Patch Checker
 //
-// Proves FUNGI-SEC-020 (RuntimeMutationProhibited) and
-// FUNGI-SEC-021 (PrototypeMutationProhibited) fire for banned patterns and
+// Proves FUNGI-SEC-020 (RUNTIME_MUTATION_PROHIBITED) and
+// FUNGI-SEC-021 (PROTOTYPE_MUTATION_PROHIBITED) fire for banned patterns and
 // do NOT fire for clean Galerina source.
 //
 // Canonical boundary (user decision):
@@ -41,7 +41,7 @@ function codesOf(diags) {
 }
 
 // ---------------------------------------------------------------------------
-// FUNGI-SEC-020: RuntimeMutationProhibited — fires
+// FUNGI-SEC-020: RUNTIME_MUTATION_PROHIBITED — fires
 // ---------------------------------------------------------------------------
 
 describe("FUNGI-SEC-020: Runtime.patch fires", () => {
@@ -134,7 +134,7 @@ flow queryRuntime() -> String {
 });
 
 // ---------------------------------------------------------------------------
-// FUNGI-SEC-021: PrototypeMutationProhibited — text-level fires
+// FUNGI-SEC-021: PROTOTYPE_MUTATION_PROHIBITED — text-level fires
 // ---------------------------------------------------------------------------
 
 describe("FUNGI-SEC-021: String.prototype.trim mutation fires", () => {
