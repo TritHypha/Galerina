@@ -30,10 +30,11 @@
 //   node scripts/audit-fungi-corpus-check.mjs --self-test          # prove the detector fires (CI first)
 //   node scripts/audit-fungi-corpus-check.mjs                      # enforce: exit 1 on NEW breakage
 //   node scripts/audit-fungi-corpus-check.mjs --update-baseline    # re-record (deliberate; diff-reviewed)
-import { readFileSync, writeFileSync, existsSync, statSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, statSync, mkdirSync, readdirSync } from "node:fs";
 import { join, dirname, resolve, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const BASELINE = join(ROOT, "scripts", "baselines", "fungi-corpus-check.json");
@@ -97,8 +98,36 @@ function checkFile(rel) {
 }
 const loadJson = (p, fallback) => { try { return JSON.parse(readFileSync(p, "utf8")); } catch { return fallback; } };
 
+// ── compiler-build fingerprint (cache invalidation) ───────────────────────────────────────────
+// The per-file cache keys on the .fungi's (size, mtime) — but the ADJUDICATOR is `galerina.mjs check`,
+// the COMPILED compiler. If the compiler changes (e.g. a new checker rule) while no .fungi changes, a
+// pure (size, mtime) cache replays STALE verdicts and the gate silently trusts old results — a fail-OPEN
+// (found 2026-07-16: a fresh tri-lint rule left every .fungi mtime untouched, so the gate never re-ran).
+// So the whole cache is scoped to a fingerprint of the adjudicator (galerina.mjs + the core-compiler
+// dist): change the compiler and every entry misses, forcing a real re-check. Over-invalidation (a no-op
+// rebuild busts the cache) is the SAFE direction for a fail-closed gate.
+function statMark(p) {
+  try { const s = statSync(p); return `${relative(ROOT, p).replace(/\\/g, "/")}:${s.size}:${Math.round(s.mtimeMs)}`; }
+  catch { return ""; }
+}
+function compilerFingerprint() {
+  const marks = [statMark(join(ROOT, "galerina.mjs"))];
+  const walk = (dir) => {
+    let ents; try { ents = readdirSync(dir, { withFileTypes: true }); } catch { return; }
+    for (const e of ents) {
+      const abs = join(dir, e.name);
+      if (e.isDirectory()) walk(abs);
+      else if (e.isFile() && (e.name.endsWith(".js") || e.name.endsWith(".cjs"))) marks.push(statMark(abs));
+    }
+  };
+  walk(join(ROOT, "packages-galerina", "galerina-core-compiler", "dist"));
+  return createHash("sha256").update(marks.sort().join("|")).digest("hex").slice(0, 16);
+}
+
 function sweep(candidates) {
-  const cache = loadJson(CACHE, { entries: {} }).entries ?? {};
+  const fp = compilerFingerprint();
+  const raw = loadJson(CACHE, { entries: {} });
+  const cache = (raw.fingerprint === fp ? raw.entries : {}) ?? {}; // compiler changed => whole cache misses
   const fresh = {};
   const failing = {};
   let checked = 0, cached = 0;
@@ -112,7 +141,7 @@ function sweep(candidates) {
     fresh[rel] = verdict;
     if (!verdict.ok) failing[rel] = verdict.codes;
   }
-  try { mkdirSync(CACHE_DIR, { recursive: true }); writeFileSync(CACHE, JSON.stringify({ generated: "audit-fungi-corpus-check", entries: fresh }, null, 2)); } catch { /* cache is an optimisation, never a failure */ }
+  try { mkdirSync(CACHE_DIR, { recursive: true }); writeFileSync(CACHE, JSON.stringify({ generated: "audit-fungi-corpus-check", fingerprint: fp, entries: fresh }, null, 2)); } catch { /* cache is an optimisation, never a failure */ }
   return { failing, checked, cached };
 }
 
@@ -135,6 +164,8 @@ if (process.argv.includes("--self-test")) {
   const good = "build/_selftest/good-selftest.fungi";
   writeFileSync(join(ROOT, good), `@version 1\npure flow x() -> Int\ncontract {\n  intent { "ok" }\n}\n{\n  return 1\n}\n`);
   ok(checkFile(good).ok, "detector stays SILENT on a clean .fungi");
+  ok(/^[0-9a-f]{16}$/.test(compilerFingerprint()) && compilerFingerprint() === compilerFingerprint(),
+    "compiler fingerprint is a stable hash — cache is scoped to the compiler build (a new rule busts it)");
   ok(ownedElsewhere("docs/examples/Level-4-Security/169-secret-comparison/example.fungi"), "docs/examples/** deferred to audit-example-diagnostics");
   ok(isNegativeFixture("scripts/audit-fungi-corpus-check.mjs"), "negative-fixture marker detection works (this file mentions the header)");
   console.log(process.exitCode ? "  fungi-corpus-check self-test FAILED" : "  fungi-corpus-check self-test: finder coverage + detector verified ✅");
