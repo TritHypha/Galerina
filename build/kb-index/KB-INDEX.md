@@ -1,4 +1,4 @@
-# Galerina KB index (1121 docs)
+# Galerina KB index (1123 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -224,6 +224,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #20
 - terms: proof, why, type, testwitness, assert, landed, cli, assertion, seam, fungi, don, just, shape, tap-body
 
+## 2026-07-16-ACK-tensor-cluster-verified-58-58-plus-absent-field-lesson-adopted.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-tensor-cluster-verified-58-58-plus-absent-field-lesson-adopted.md`
+- terms: absent-field, pass, lesson, adopted, cadence, differential, pipeline, updates, too, next, tensor, both, real-parser, ack-tensor-cluster-verified-58-58-plus-absent-field-lesson-adopted
+
 ## 2026-07-16-ACK-tensor-grounding-confirmed-item1-resolved-017-is-pushed.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-tensor-grounding-confirmed-item1-resolved-017-is-pushed.md`
 - codes: FUNGI-TYPE-017
@@ -350,6 +354,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-taxonomy-rebaseline-167.md`
 - codes: FUNGI-GOV-3VL-003, FUNGI-GOV-3VL-004
 - terms: ack-taxonomy-rebaseline-167, names, both, commit, ack, main, re-baseline, delta, reconciled, audit, proposal, harvest, after, verdict
+
+## 2026-07-16-ACK-tensor-cluster-030-017-016-landed-plus-absent-field-lesson.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-tensor-cluster-030-017-016-landed-plus-absent-field-lesson.md`
+- codes: FUNGI-TYPE-030
+- tasks: #20
+- terms: tensor, float32, real-parser, int8, differential, type, first, ack-tensor-cluster-030-017-016-landed-plus-absent-field-lesson, three, resolved, codes, same, pass, binding
 
 ## 2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked.md`

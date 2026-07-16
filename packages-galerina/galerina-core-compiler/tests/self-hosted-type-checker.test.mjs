@@ -179,12 +179,22 @@ describe("type-checker.fungi — combined & aggregate", () => {
 // if/while), emitting FUNGI-TYPE-001 (unknown declared type) and FUNGI-TYPE-002
 // (declared type ≠ literal initializer type). Builds Stmt/Expr records by hand.
 
+// True when an Int literal's value is outside the WASM i32 range — the range decision the twin cannot
+// make itself (it runs on i32 Ints), so the parser lane / this builder supplies it as a field, exactly
+// like the pre-parsed tensor shape. Non-Int or non-lit exprs are never overflowing.
+function isI32Overflow(kind, litType, value) {
+  if (kind !== "lit" || litType !== "Int") return false;
+  const n = Number(String(value).replace(/_/g, ""));
+  return Number.isFinite(n) && (n > 2147483647 || n < -2147483648);
+}
 const expr = (kind, value = "", litType = "", children = []) =>
   vRecord({
     kind: vStr(kind),
     value: vStr(value),
     litType: vStr(litType),
     children: vList(children),
+    // FUNGI-TYPE-024: pre-parsed i32-overflow flag for Int literals (the twin can't hold the value).
+    litI32Overflow: vBool(isI32Overflow(kind, litType, value)),
   });
 
 // A match arm carries just its pattern text for exhaustiveness/reachability (`_`/`else` = wildcard).
@@ -738,5 +748,53 @@ describe("type-checker.fungi — FUNGI-TYPE-030/017/016 tensor element & shape",
       ] }),
     ]);
     assert.deepEqual(codesFor(diags, "f"), []);
+  });
+});
+
+// FUNGI-TYPE-024 (INT_LITERAL_I32_OVERFLOW, warning) — an Int literal outside the WASM i32 range
+// [-2147483648, 2147483647] wraps silently. Verified vs Stage-A raw diagnostics: an overflowing Int
+// literal in a binding emits 024 alone (the declared Int matches, so no 002). The twin relays the
+// parser-computed range flag (it can't hold the value on i32). Boundary values checked. (Tranche B.)
+describe("type-checker.fungi — FUNGI-TYPE-024 Int literal i32 overflow", () => {
+  it("Int literal above i32 max → 024", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "x", typeName: "Int", expr: [expr("lit", "9999999999999", "Int")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-024"]);
+  });
+
+  it("Int literal below i32 min (negative) → 024", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "x", typeName: "Int", expr: [expr("lit", "-9999999999999", "Int")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-024"]);
+  });
+
+  it("in-range Int literal → clean", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "x", typeName: "Int", expr: [expr("lit", "5", "Int")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), []);
+  });
+
+  it("exactly i32 max (2147483647) is in range → clean; max+1 (2147483648) → 024", async () => {
+    const { diags: ok } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "x", typeName: "Int", expr: [expr("lit", "2147483647", "Int")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(ok, "f"), []);
+    const { diags: over } = await checkBodies([
+      bodyFlow({ name: "g", body: [
+        stmt({ kind: "let", name: "x", typeName: "Int", expr: [expr("lit", "2147483648", "Int")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(over, "g"), ["FUNGI-TYPE-024"]);
   });
 });

@@ -2,7 +2,7 @@
 Generated: 2026-07-16
 
 ## Stats
-- Docs: 1119 | Edges: 3462 | Orphans: 63 | Stale links: 0 | FUNGI codes: 748
+- Docs: 1121 | Edges: 3462 | Orphans: 65 | Stale links: 0 | FUNGI codes: 748
 
 ## Document Registry (auto-generated)
 
@@ -49,6 +49,8 @@ Generated: 2026-07-16
 | 2026-07-16-ACK-rhizo-ql-reusables-hallmark-shape-ok.md | — | — | — | — |
 | 2026-07-16-ACK-taxonomy-AUDIT-ZERO.md | — | — | — | FUNGI-BORDER-002, FUNGI-GRAPH-001 |
 | 2026-07-16-ACK-taxonomy-rebaseline-167.md | — | — | — | FUNGI-GOV-3 |
+| 2026-07-16-ACK-tensor-cluster-030-017-016-landed-plus-absent-field-lesson.md | — | — | — | FUNGI-TYPE-030 |
+| 2026-07-16-ACK-tensor-cluster-verified-58-58-plus-absent-field-lesson-adopted.md | — | — | — | — |
 | 2026-07-16-ACK-tensor-grounding-confirmed-item1-resolved-017-is-pushed.md | — | — | — | FUNGI-TYPE-017 |
 | 2026-07-16-ACK2-rebaseline-167-confirmed-proceed.md | — | — | — | FUNGI-GOV-3 |
 | 2026-07-16-ANSWER-passive-lane-variance-median-rig-rides-63-and-allocation-probe-to-rd0358.md | — | — | — | — |
@@ -1163,6 +1165,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-ACK-match-arm-cluster-verified-source-and-execution.md` — 2026-07-16-ACK-match-arm-cluster-verified-source-and-execution
 - `2026-07-16-ACK-p1-r2-closed-gates-reverified.md` — 2026-07-16-ACK-p1-r2-closed-gates-reverified
 - `2026-07-16-ACK-rd0128-stale-proof-confirm-option-a.md` — 2026-07-16-ACK-rd0128-stale-proof-confirm-option-a
+- `2026-07-16-ACK-tensor-cluster-verified-58-58-plus-absent-field-lesson-adopted.md` — 2026-07-16-ACK-tensor-cluster-verified-58-58-plus-absent-field-lesson-adopted
 - `2026-07-16-ACK-tensor-grounding-confirmed-item1-resolved-017-is-pushed.md` — 2026-07-16-ACK-tensor-grounding-confirmed-item1-resolved-017-is-pushed
 - `2026-07-16-ACK2-rebaseline-167-confirmed-proceed.md` — 2026-07-16-ACK2-rebaseline-167-confirmed-proceed
 - `2026-07-16-ANSWER-passive-lane-variance-median-rig-rides-63-and-allocation-probe-to-rd0358.md` — 2026-07-16-ANSWER-passive-lane-variance-median-rig-rides-63-and-allocation-probe-to-rd0358
@@ -1187,6 +1190,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-ACK-rhizo-ql-reusables-hallmark-shape-ok.md` — 2026-07-16-ACK-rhizo-ql-reusables-hallmark-shape-ok
 - `2026-07-16-ACK-taxonomy-AUDIT-ZERO.md` — 2026-07-16-ACK-taxonomy-AUDIT-ZERO
 - `2026-07-16-ACK-taxonomy-rebaseline-167.md` — 2026-07-16-ACK-taxonomy-rebaseline-167
+- `2026-07-16-ACK-tensor-cluster-030-017-016-landed-plus-absent-field-lesson.md` — 2026-07-16-ACK-tensor-cluster-030-017-016-landed-plus-absent-field-lesson
 - `2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked.md` — 2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked
 - `2026-07-16-FYI-passive-lane-variance-root-cause-GC-dominated-plus-watcher.md` — 2026-07-16-FYI-passive-lane-variance-root-cause-GC-dominated-plus-watcher
 - `2026-07-16-FYI-rd0128-stale-testwitness-proof.md` — 2026-07-16-FYI-rd0128-stale-testwitness-proof

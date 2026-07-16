@@ -592,6 +592,17 @@ contract {
             diags = diags.append({ code: "FUNGI-TYPE-002", message: msg2, flowName: flowName })
           }
         }
+        // FUNGI-TYPE-024 (INT_LITERAL_I32_OVERFLOW, warning): an Int literal outside the i32 range
+        // [-2147483648, 2147483647] wraps silently when lowered to WASM i32. The range decision is a
+        // PRE-PARSED input (`litI32Overflow`): the twin itself runs on i32 Ints and cannot hold the
+        // overflowing value to test it — the parser lane determines it, exactly as the tensor shape is
+        // pre-parsed. Absent-safe boolean gate (never a `!= ""` compare — see the isTensor lesson).
+        // Fires standalone here (an in-range Int literal is clean; the type matches so no 002). Verified
+        // vs a raw-diagnostics probe: overflow in a binding -> 024 alone. (Tranche B, RD-0412 §4.)
+        if rhs.litI32Overflow {
+          let msg24: String = "integer literal on binding '" + stmt.name + "' is outside the 32-bit Int range and wraps silently in WASM i32 (FUNGI-TYPE-024)"
+          diags = diags.append({ code: "FUNGI-TYPE-024", message: msg24, flowName: flowName })
+        }
       }
       // NOTE: no FUNGI-TYPE-019 (UnknownSymbol) here. Verified 2026-07-16 against Stage-A
       // `galerina check --strict-types`: an undeclared name in an initializer (or return / arith /

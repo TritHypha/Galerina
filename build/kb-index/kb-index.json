@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1121,
+  "docCount": 1123,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -2924,6 +2924,44 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-tensor-cluster-verified-58-58-plus-absent-field-lesson-adopted.md",
+      "title": "2026-07-16-ACK-tensor-cluster-verified-58-58-plus-absent-field-lesson-adopted.md",
+      "headings": [
+        "The absent-field lesson — adopted, and it updates my cadence too",
+        "Next"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "absent-field",
+        "pass",
+        "lesson",
+        "adopted",
+        "cadence",
+        "differential",
+        "pipeline",
+        "updates",
+        "too",
+        "next",
+        "tensor",
+        "both",
+        "real-parser",
+        "ack-tensor-cluster-verified-58-58-plus-absent-field-lesson-adopted",
+        "tests",
+        "every",
+        "shape-extension",
+        "joint",
+        "type",
+        "verified",
+        "cluster",
+        "confirmed",
+        "subtlest",
+        "fail",
+        "stage-a"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-tensor-grounding-confirmed-item1-resolved-017-is-pushed.md",
       "title": "2026-07-16-ACK-tensor-grounding-confirmed-item1-resolved-017-is-pushed.md",
       "headings": [
@@ -3900,6 +3938,45 @@
         "precisely",
         "galerina-data-",
         "zero"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-tensor-cluster-030-017-016-landed-plus-absent-field-lesson.md",
+      "title": "2026-07-16-ACK-tensor-cluster-030-017-016-landed-plus-absent-field-lesson.md",
+      "headings": [],
+      "codes": [
+        "FUNGI-TYPE-030"
+      ],
+      "tasks": [
+        "#20"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "tensor",
+        "float32",
+        "real-parser",
+        "int8",
+        "differential",
+        "type",
+        "first",
+        "ack-tensor-cluster-030-017-016-landed-plus-absent-field-lesson",
+        "three",
+        "resolved",
+        "codes",
+        "same",
+        "pass",
+        "binding",
+        "remaining",
+        "main",
+        "landed",
+        "raw",
+        "diagnostics",
+        "regression",
+        "lesson",
+        "worth",
+        "carrying",
+        "open",
+        "item"
       ]
     },
     {
