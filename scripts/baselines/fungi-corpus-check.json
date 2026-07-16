@@ -1,0 +1,173 @@
+{
+  "note": "Known-failing .fungi (galerina check). RATCHET: may only SHRINK — fix a file => remove it here; never baseline a NEW break. See task #75 for the VALUESTATE-004 adjudication.",
+  "generated": "audit-fungi-corpus-check",
+  "knownFailing": {
+    "examples/auth-service/auditChainService.fungi": [
+      "FUNGI-VALUESTATE-004"
+    ],
+    "examples/auth-service/auditWriterService.fungi": [
+      "FUNGI-VALUESTATE-004"
+    ],
+    "examples/auth-service/bytecodeRouterService.fungi": [
+      "FUNGI-VALUESTATE-004"
+    ],
+    "examples/auth-service/capabilityHostService.fungi": [
+      "FUNGI-VALUESTATE-004"
+    ],
+    "examples/auth-service/capabilityResolverService.fungi": [
+      "FUNGI-VALUESTATE-004"
+    ],
+    "examples/auth-service/economicsRouterService.fungi": [
+      "FUNGI-VALUESTATE-004"
+    ],
+    "examples/auth-service/economicsService.fungi": [
+      "FUNGI-VALUESTATE-004"
+    ],
+    "examples/auth-service/effectCheckerService.fungi": [
+      "FUNGI-VALUESTATE-004"
+    ],
+    "examples/auth-service/governanceService.fungi": [
+      "FUNGI-VALUESTATE-004"
+    ],
+    "examples/auth-service/governanceVerifierService.fungi": [
+      "FUNGI-VALUESTATE-004"
+    ],
+    "examples/auth-service/manifestVerificationService.fungi": [
+      "FUNGI-VALUESTATE-004"
+    ],
+    "examples/auth-service/proofGraphService.fungi": [
+      "FUNGI-VALUESTATE-004"
+    ],
+    "examples/auth-service/proofVerifierService.fungi": [
+      "FUNGI-VALUESTATE-004"
+    ],
+    "examples/auth-service/routeDispatcherService.fungi": [
+      "FUNGI-VALUESTATE-004"
+    ],
+    "examples/auth-service/routingPolicyService.fungi": [
+      "FUNGI-VALUESTATE-004"
+    ],
+    "examples/auth-service/runtimeProfileService.fungi": [
+      "FUNGI-VALUESTATE-004"
+    ],
+    "examples/auth-service/stdlibCoreService.fungi": [
+      "FUNGI-VALUESTATE-004"
+    ],
+    "examples/auth-service/typeRegistryService.fungi": [
+      "FUNGI-VALUESTATE-004"
+    ],
+    "examples/auth-service/valueClassificationService.fungi": [
+      "FUNGI-VALUESTATE-004"
+    ],
+    "packages-galerina/galerina-core-logic/examples/compute-mix-throughput-benchmark.fungi": [
+      "FUNGI-GOV-010",
+      "FUNGI-PARSE-001"
+    ],
+    "packages-galerina/galerina-core-security/src/interim.fungi": [
+      "FUNGI-PARSE-001",
+      "FUNGI-VALUESTATE-008"
+    ],
+    "packages-galerina/galerina-core-tasks/examples/tasks.fungi": [
+      "FUNGI-PARSE-001"
+    ],
+    "packages-galerina/galerina-core/examples/ai-context.fungi": [
+      "FUNGI-GOV-010",
+      "FUNGI-PARSE-001"
+    ],
+    "packages-galerina/galerina-core/examples/boot.fungi": [
+      "FUNGI-PARSE-001",
+      "FUNGI-SYNTAX-006"
+    ],
+    "packages-galerina/galerina-core/examples/borrow-scope.fungi": [
+      "FUNGI-PARSE-001"
+    ],
+    "packages-galerina/galerina-core/examples/browser-form.fungi": [
+      "FUNGI-GOV-010",
+      "FUNGI-PARSE-001"
+    ],
+    "packages-galerina/galerina-core/examples/compute-block.fungi": [
+      "FUNGI-PARSE-001"
+    ],
+    "packages-galerina/galerina-core/examples/compute-mix-throughput-benchmark.fungi": [
+      "FUNGI-GOV-010",
+      "FUNGI-PARSE-001"
+    ],
+    "packages-galerina/galerina-core/examples/four-digit-guess-benchmark.fungi": [
+      "FUNGI-GOV-010",
+      "FUNGI-PARSE-001"
+    ],
+    "packages-galerina/galerina-core/examples/move-cleanup.fungi": [
+      "FUNGI-GOV-010",
+      "FUNGI-PARSE-001"
+    ],
+    "packages-galerina/galerina-core/examples/parallel-api-calls.fungi": [
+      "FUNGI-GOV-010",
+      "FUNGI-PARSE-001",
+      "FUNGI-SYNTAX-003"
+    ],
+    "packages-galerina/galerina-core/examples/payment-webhook.fungi": [
+      "FUNGI-GOV-010",
+      "FUNGI-PARSE-001"
+    ],
+    "packages-galerina/galerina-core/examples/reject-use-after-move.fungi": [
+      "FUNGI-PARSE-001"
+    ],
+    "packages-galerina/galerina-core/examples/rollback.fungi": [
+      "FUNGI-GOV-010",
+      "FUNGI-PARSE-001"
+    ],
+    "packages-galerina/galerina-core/examples/ternary-sim.fungi": [
+      "FUNGI-PARSE-001"
+    ],
+    "packages-galerina/galerina-core/examples/value-semantics-ownership.fungi": [
+      "FUNGI-PARSE-001"
+    ],
+    "packages-galerina/galerina-core/examples/workers.fungi": [
+      "FUNGI-PARSE-001"
+    ],
+    "packages-galerina/galerina-framework-app-kernel/examples/job.fungi": [
+      "FUNGI-PARSE-001"
+    ],
+    "packages-galerina/galerina-framework-app-kernel/examples/security-policy.fungi": [
+      "FUNGI-PARSE-001"
+    ],
+    "packages-galerina/galerina-framework-app-kernel/tests/json-return.fungi": [
+      "FUNGI-GOV-010",
+      "FUNGI-PARSE-001"
+    ],
+    "packages-galerina/galerina-framework-app-kernel/tests/vector-function.fungi": [
+      "FUNGI-GOV-010",
+      "FUNGI-PARSE-001",
+      "FUNGI-PARSE-002"
+    ],
+    "packages-galerina/galerina-tools-benchmark/examples/benchmark.config.fungi": [
+      "FUNGI-PARSE-001"
+    ],
+    "tests/owasp/owasp-a01-broken-access-control.fungi": [
+      "FUNGI-STDLIB-002",
+      "FUNGI-VALUESTATE-008"
+    ],
+    "tests/owasp/owasp-a02-cryptographic-failures.fungi": [
+      "FUNGI-SECRET-002",
+      "FUNGI-VALUESTATE-008"
+    ],
+    "tests/owasp/owasp-a04-insecure-design.fungi": [
+      "FUNGI-STDLIB-002",
+      "FUNGI-VALUESTATE-008"
+    ],
+    "tests/owasp/owasp-a05-security-misconfiguration.fungi": [
+      "FUNGI-STDLIB-002",
+      "FUNGI-VALUESTATE-006"
+    ],
+    "tests/owasp/owasp-a09-security-logging.fungi": [
+      "FUNGI-STDLIB-002",
+      "FUNGI-VALUESTATE-008"
+    ],
+    "tests/syntax/policy-mutation.fungi": [
+      "FUNGI-SYNTAX-011"
+    ],
+    "tests/syntax/trap-governed-view.fungi": [
+      "FUNGI-EFFECT-003"
+    ]
+  }
+}

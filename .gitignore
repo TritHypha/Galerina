@@ -11,6 +11,10 @@ packages-galerina/galerina-devtools-benchmarks/results/history/
 .myco/
 # noise-gate preflight snapshot (regenerated per benchmark session; not a committed baseline).
 packages-galerina/galerina-devtools-benchmarks/results/noise-gate-latest.json
+# fungi-corpus-check per-machine cache (mtime-keyed) + its self-test plants. The RATCHET baseline
+# (scripts/baselines/fungi-corpus-check.json) IS tracked; this cache is not.
+build/fungi-corpus-check/
+build/_selftest/
 /notes/*
 # Session scratch note at repo root (compaction transcript pointers — leaks the local transcript path).
 /notes.txt

@@ -32,9 +32,9 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const isWin = process.platform === "win32";
 const results = [];
 
-function run(name, cmd, args, { cwd = ROOT, okCodes = [0] } = {}) {
+function run(name, cmd, args, { cwd = ROOT, okCodes = [0], timeout = 180000 } = {}) {
   const t0 = Date.now();
-  const r = spawnSync(cmd, args, { cwd, encoding: "utf8", shell: isWin, timeout: 180000 });
+  const r = spawnSync(cmd, args, { cwd, encoding: "utf8", shell: isWin, timeout });
   const ms = Date.now() - t0;
   const code = r.status;
   const ok = okCodes.includes(code);
@@ -94,6 +94,13 @@ if (existsSync(patternsDir)) {
       ? `${patternFiles.length} patterns pass`
       : `FAILED — ${patternDetails.join(", ")}` });
 }
+
+// ── 1b2. FULL .fungi corpus compile gate ──
+// tests/patterns above checks 9 files; THIS gates the whole tracked corpus (~447) against the real
+// `galerina check`, ratcheted baseline (may only shrink). Born of the sovereignTransaction rot — a
+// flagship example carrying a hard FUNGI-SYNTAX-011 that nothing noticed. Cached by (size, mtime):
+// warm runs are seconds; a cold cache sweeps everything, hence the raised timeout.
+run("fungi:corpus-check", "node", ["scripts/audit-fungi-corpus-check.mjs"], { timeout: 600000 });
 
 // ── 1c. Goal acceptance tests (T-006/007/008) ──
 const goalsDir = join(ROOT, "tests", "goals");
