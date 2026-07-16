@@ -27,6 +27,13 @@ here is **source-verified**: each documents a vocabulary that resolves to a real
 - **[receipts.md](receipts.md)** — the Epilogue Receipt every governed flow emits, and the strategies that set
   its assurance level (`sha256_seal` shipped; `zk_snark_receipt` is a documented stub).
 
+## The cost model
+
+- **[cost-model-nesting.md](cost-model-nesting.md)** — what is "level 0" (the `flow` wrapper, the whole
+  `contract` block, block nesting — all erased/lifted at compile time, evidenced by regenerated WAT) and what
+  actually costs (flow calls today, loops as algorithm, host crossings). *Structure is free; safety text is
+  free; declare the contraction.*
+
 ## How to trust these pages
 
 Each page ends with a **provenance line** naming the source file(s) it was verified against. A mechanical

@@ -89,6 +89,15 @@ function buildChecks() {
       require: ["isBuiltInType"],
       note: "the 'Authoritative built-in set' pointer names the union, not one table",
     },
+    {
+      page: "docs/reference/cost-model-nesting.md",
+      source: "RD-0395 level-0 evidence (the real twin pair + its regenerator)",
+      // The page must keep naming the REAL example pair and its WAT regenerator — if either token
+      // vanishes, the page has been rewritten away from its evidence (emit-doc-wat --check separately
+      // guards the excerpt bytes).
+      require: ["syncGateVerdict", "driftGateVerdict", "emit-doc-wat", "contract", "fuel"],
+      note: "level-0 claims stay pinned to the regenerated twin evidence",
+    },
   ];
 }
 
@@ -133,5 +142,6 @@ if (findings.length) {
   console.error(`  genuinely dropped a vocabulary member, update both. Never argue the doc over the code.`);
   process.exit(1);
 }
-const total = buildChecks().reduce((n, c) => n + c.require.length, 0);
-console.log(`  ✅ reference-doc drift: 8 pages cover their enforcing source (${total} vocabulary members checked; 45 canonical effects + 2 deny-only + the isBuiltInType union).`);
+const allChecks = buildChecks();
+const total = allChecks.reduce((n, c) => n + c.require.length, 0);
+console.log(`  ✅ reference-doc drift: ${allChecks.length} pages cover their enforcing source (${total} vocabulary members checked; 45 canonical effects + 2 deny-only + the isBuiltInType union).`);

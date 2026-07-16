@@ -102,6 +102,10 @@ if (existsSync(patternsDir)) {
 // warm runs are seconds; a cold cache sweeps everything, hence the raised timeout.
 run("fungi:corpus-check", "node", ["scripts/audit-fungi-corpus-check.mjs"], { timeout: 600000 });
 
+// ── 1b3. Quoted-WAT drift gate — docs that quote emitted WAT must match the CURRENT emitter ──
+// (emit-doc-wat.mjs regenerates the excerpts through the real pipeline; --check fails on drift.)
+run("doc:wat-drift", "node", ["scripts/emit-doc-wat.mjs", "--check"]);
+
 // ── 1c. Goal acceptance tests (T-006/007/008) ──
 const goalsDir = join(ROOT, "tests", "goals");
 if (existsSync(goalsDir)) {

@@ -6,6 +6,10 @@ be *under-specified* but never *under-governed*: an omitted residency ceiling is
 an omitted trust-trit is tracked automatically, and the fixed invariants (the K3 calculus, fail-closed collapse,
 the admission border) cannot be opted out of at all.
 
+**Cost of all this text: zero.** The entire `contract {}` block is compile-time — it emits no body
+instructions (evidence: the regenerated WAT in [reference/cost-model-nesting.md](reference/cost-model-nesting.md)).
+Add every clause the flow deserves; none of it runs.
+
 This document splits governance into three tiers:
 
 1. what the developer **adds as standard** (mandatory — it will not compile / it fails the tier floor without it),

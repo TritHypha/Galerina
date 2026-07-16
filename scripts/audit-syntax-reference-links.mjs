@@ -25,6 +25,7 @@ const GALERINA = join(ROOT, "galerina.mjs");
 const DOCS = [
   "docs/language/fungi/SYNTAX-REFERENCE.md",
   "docs/language/fungi/DO-DONT-TERNARY.md",
+  "docs/reference/cost-model-nesting.md", // RD-0395: every linked cost-model example must stay check-clean
 ];
 const LINK_RE = /\]\(([^)]+\.(?:fungi|gate|md))\)/g;
 

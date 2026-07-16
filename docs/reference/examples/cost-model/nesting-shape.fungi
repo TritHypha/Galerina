@@ -1,0 +1,36 @@
+@version 1
+/// @file: nesting-shape.fungi
+/// @purpose: cost-model-nesting.md Table A row 3 — BLOCK NESTING IS SHAPE, NOT COST. The two flows
+///   below classify the same domain; one is styled deep (if inside match inside if), one is styled
+///   flat (early returns). They lower to the same control-flow structure: nesting depth in SOURCE
+///   does not survive lowering, so choose the shape the READER understands fastest.
+/// @status: positive doc example — linked from docs/reference/cost-model-nesting.md and re-checked
+///   by audit-syntax-reference-links + the fungi-corpus-check gate.
+
+/// Deep style: the decision tree written as nested blocks.
+pure flow classifyDeep(kind: Int, magnitude: Int) -> Int
+contract { intent { "Classify a reading by kind and magnitude — written with nested blocks (shape only; same lowering as the flat form)." } }
+{
+  if kind > 0 {
+    match magnitude {
+      0 => { return 0 }
+      _ => {
+        if magnitude > 100 {
+          return 2
+        }
+        return 1
+      }
+    }
+  }
+  return 0 - 1
+}
+
+/// Flat style: the same decision tree written with early returns.
+pure flow classifyFlat(kind: Int, magnitude: Int) -> Int
+contract { intent { "The same classification as classifyDeep, written flat — identical verdicts on every input." } }
+{
+  if kind <= 0 { return 0 - 1 }
+  if magnitude == 0 { return 0 }
+  if magnitude > 100 { return 2 }
+  return 1
+}

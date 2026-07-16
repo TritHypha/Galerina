@@ -1,0 +1,27 @@
+@version 1
+/// @file: loops-cost.fungi
+/// @purpose: cost-model-nesting.md Table B row 2 — NESTED LOOPS ARE ALGORITHMIC COST, in Galerina as
+///   in every language: the block nesting is free (see nesting-shape.fungi), but a loop inside a loop
+///   runs its body rows × cols times. That is the algorithm's O(n·m), not a language tax. The emitted
+///   WASM carries a per-loop fuel counter that TRAPS at the platform cap, so even a mis-bounded nest
+///   is bounded by construction.
+/// @status: positive doc example — linked from docs/reference/cost-model-nesting.md and re-checked
+///   by audit-syntax-reference-links + the fungi-corpus-check gate.
+
+/// Sums a rows×cols grid of synthetic readings: the body executes rows*cols times — the cost is the
+/// iteration count you asked for, and would be in C, Rust, or Node too.
+pure flow gridChecksum(rows: Int, cols: Int) -> Int
+contract { intent { "Fold a rows-by-cols grid; the work is rows*cols body executions — algorithmic cost, not nesting cost." } }
+{
+  mut acc: Int = 0
+  mut r: Int = 0
+  while r < rows {
+    mut c: Int = 0
+    while c < cols {
+      acc = acc + ((r * 31) + c)
+      c = c + 1
+    }
+    r = r + 1
+  }
+  return acc
+}

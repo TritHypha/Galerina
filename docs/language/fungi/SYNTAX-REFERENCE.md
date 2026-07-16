@@ -3,6 +3,8 @@
 One table per construct family. Every **Example** links a curriculum example that is verified `galerina check`-clean — enforced by `scripts/audit-syntax-reference-links.mjs`, which extracts every example link in this file and re-checks it (a broken/failing link is a RED gate). This doc is only trustworthy because its links are machine-verified.
 
 > Convention: `Construct | meaning | Example | Ref`. Examples are positive (clean) demonstrations. For rejected forms, see the negative twins in the same curriculum level and the diagnostics catalog.
+>
+> **Cost note:** source structure is free — the `flow` wrapper, the whole `contract {}` block, and block nesting all compile to zero body instructions. What actually costs (flow calls, loops, host crossings) is evidenced with regenerated WAT in the [cost model](../../reference/cost-model-nesting.md).
 
 ## Flows
 
