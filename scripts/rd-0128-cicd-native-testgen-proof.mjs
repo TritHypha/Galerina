@@ -47,10 +47,17 @@ ok(/#\s*TODO inject fault/.test(tg), "generator emits TODO descriptors, NOT exec
 const cli = read("packages-galerina/galerina-core-compiler/src/cli.ts");
 ok(cli.length > 0 && !/\btest\s*--?generate\b/.test(cli) && !/['\"]test:generate['\"]/.test(cli),
   "no `galerina test --generate` CLI command exists (net-new surface, not a new analysis)");
-// TestWitness must be aspiration-only today (comment), with NO real type — this is what we will build.
-const witnessMentions = (lp.match(/TestWitness/g) || []).length;
-const witnessTypeDecl = /(interface|type|class)\s+TestWitness\b/.test(lp);
-ok(witnessMentions > 0 && !witnessTypeDecl, `TestWitness is comment-only aspiration today (${witnessMentions} mentions, 0 type decls) — the buildable seam`);
+// TestWitness TYPE seam LANDED (b8cef3b4, 2026-07-02) — increment 1 shipped (type+digest+pre-image);
+// CLI / admission / TAP-body fill deferred. Assert it shipped CORRECTLY (not just that a type exists);
+// the open frontier (TODO descriptors, no `galerina test --generate` CLI) stays asserted at lines 46-48.
+// This keeps the proof a LIVING frontier-tracker: when the next increment lands, line 48 flips and
+// re-flags "frontier moved — update me" (the self-correcting property RD-0128 §a prescribes).
+const witnessMentions  = (lp.match(/TestWitness/g) || []).length;
+const witnessTypeDecl  = /(interface|type|class)\s+TestWitness\b/.test(lp);
+const witnessSchemaTag = /fungi\.testwitness\.v1/.test(lp);
+const suiteDigestFn    = /function\s+testSuiteDigest\b/.test(lp);
+ok(witnessMentions > 0 && witnessTypeDecl && witnessSchemaTag && suiteDigestFn,
+   "TestWitness seam LANDED: real type + fungi.testwitness.v1 schema + testSuiteDigest() (RD-0128 increment 1 shipped)");
 
 // ── 3. MATHS REFUTATIONS — the three refused-framing overclaims in note 67 ────────────────────────
 section("3. Overclaim refutations (cost models — the refused instant/O(1)/100% framing)");
