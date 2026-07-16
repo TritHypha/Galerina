@@ -2,7 +2,7 @@
 Generated: 2026-07-16
 
 ## Stats
-- Docs: 1138 | Edges: 3462 | Orphans: 82 | Stale links: 0 | FUNGI codes: 748
+- Docs: 1141 | Edges: 3462 | Orphans: 85 | Stale links: 0 | FUNGI codes: 748
 
 ## Document Registry (auto-generated)
 
@@ -36,7 +36,9 @@ Generated: 2026-07-16
 | 2026-07-16-ACK-025-verified-96-96-plus-014-grounded-type-checker-emitted-finish-line.md | — | — | — | FUNGI-TYPE-014 |
 | 2026-07-16-ACK-026-landed-plus-latent-001-Auto-fix-and-025-grounded.md | — | — | — | FUNGI-TYPE-026 |
 | 2026-07-16-ACK-026-verified-plus-absence-fixture-principle-and-025-design-corrected.md | — | — | — | — |
+| 2026-07-16-ACK-adjudication-accepted-BINDING-005-landed-K3-next.md | — | — | — | FUNGI-BINDING-005 |
 | 2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd.md | — | — | — | FUNGI-EFFECT-002 |
+| 2026-07-16-ACK-BINDING-005-verified-106-plus-effect-005-already-answered-K3-sequence.md | — | — | — | — |
 | 2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed.md | — | — | — | — |
 | 2026-07-16-ACK-brands-003-cluster-landed-plus-frontier-heuristic-caveat.md | — | — | — | FUNGI-TYPE-003, FUNGI-TYPE-019 |
 | 2026-07-16-ACK-brands-003-verified-51-51-plus-harden-emit-count-adjudication.md | — | — | — | FUNGI-TYPE-019 |
@@ -1025,6 +1027,7 @@ Generated: 2026-07-16
 | RD-0436-rhizo-fast-database-audience-workloads-data-operations-and-competitive-case-tri-photonic.md | — | — | — | FUNGI-TYPE-011 |
 | RD-0437-graphs-as-a-family-wide-substrate-beyond-indexing-every-part-of-the-app-all-db-types.md | — | — | — | — |
 | RD-0438-db-technical-feature-ledger-tri-logic-third-axis-per-engine-dynamic-schema-self-healing.md | — | — | — | FUNGI-TYPE-025 |
+| RD-0439-security-pass-plus-tritmeshql-graph-syntax-expansion-assessment-and-runnable-third-state-example.md | — | — | — | — |
 | rd-adversarial-verification-findings-2026-06-16.md | — | — | — | — |
 | rd-crossover-encryption-rnd.md | — | — | Merge / unified entry point. **Date:** 2026-06-16. **Posture:** grounded, cited, | FUNGI-AMD-024, FUNGI-PARSE-001, FUNGI-SUBSTRATE-001 |
 | rd-diagnostics-namespace-rnd-response.md | — | — | R&D response (2026-06-16). **Subject:** `Galerina/docs/Knowledge-Bases/galerina-diagnostic-namespace-ownership.md` | FUNGI-META-001, FUNGI-PRIVACY-00, FUNGI-SECRET-005 |
@@ -1175,11 +1178,13 @@ Docs with no inbound links from other KB docs:
 - `RD-0436-rhizo-fast-database-audience-workloads-data-operations-and-competitive-case-tri-photonic.md` — RD-0436 — TritMesh:Rhizo (the fast engine): audience, workloads, the data/index operations, and the honest competitive case with the tri/photonic edge map
 - `RD-0437-graphs-as-a-family-wide-substrate-beyond-indexing-every-part-of-the-app-all-db-types.md` — RD-0437 — Graphs as a family-wide substrate: graph applied to *every* part of the app, not just indexing, for all DB types
 - `RD-0438-db-technical-feature-ledger-tri-logic-third-axis-per-engine-dynamic-schema-self-healing.md` — RD-0438 — The DB technical-feature ledger × tri-logic × the −1 third axis, per engine (incl. dynamic schema & self-healing)
+- `RD-0439-security-pass-plus-tritmeshql-graph-syntax-expansion-assessment-and-runnable-third-state-example.md` — RD-0439 — Security pass on the Rhizo/graph/feature proposals + the TritMeshQL & `.graph` syntax-expansion assessment + a runnable third-state example
 - `2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed.md` — 2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed
 - `2026-07-16-ACK-014-VERIFIED-101-101-TYPE-CHECKER-TWIN-COMPLETE-plus-next-steer.md` — 2026-07-16-ACK-014-VERIFIED-101-101-TYPE-CHECKER-TWIN-COMPLETE-plus-next-steer
 - `2026-07-16-ACK-024-verified-plus-frontier-per-pass-scoping-and-025-coemission-design.md` — 2026-07-16-ACK-024-verified-plus-frontier-per-pass-scoping-and-025-coemission-design
 - `2026-07-16-ACK-025-verified-96-96-plus-014-grounded-type-checker-emitted-finish-line.md` — 2026-07-16-ACK-025-verified-96-96-plus-014-grounded-type-checker-emitted-finish-line
 - `2026-07-16-ACK-026-verified-plus-absence-fixture-principle-and-025-design-corrected.md` — 2026-07-16-ACK-026-verified-plus-absence-fixture-principle-and-025-design-corrected
+- `2026-07-16-ACK-BINDING-005-verified-106-plus-effect-005-already-answered-K3-sequence.md` — 2026-07-16-ACK-BINDING-005-verified-106-plus-effect-005-already-answered-K3-sequence
 - `2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd.md` — 2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd
 - `2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed.md` — 2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed
 - `2026-07-16-ACK-brands-003-verified-51-51-plus-harden-emit-count-adjudication.md` — 2026-07-16-ACK-brands-003-verified-51-51-plus-harden-emit-count-adjudication
@@ -1209,6 +1214,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-ACK-024-landed-plus-frontier-correction-NAME-codes-are-symbol-resolver.md` — 2026-07-16-ACK-024-landed-plus-frontier-correction-NAME-codes-are-symbol-resolver
 - `2026-07-16-ACK-025-landed-frontier-now-just-014-plus-real-node-refinement.md` — 2026-07-16-ACK-025-landed-frontier-now-just-014-plus-real-node-refinement
 - `2026-07-16-ACK-026-landed-plus-latent-001-Auto-fix-and-025-grounded.md` — 2026-07-16-ACK-026-landed-plus-latent-001-Auto-fix-and-025-grounded
+- `2026-07-16-ACK-adjudication-accepted-BINDING-005-landed-K3-next.md` — 2026-07-16-ACK-adjudication-accepted-BINDING-005-landed-K3-next
 - `2026-07-16-ACK-brands-003-cluster-landed-plus-frontier-heuristic-caveat.md` — 2026-07-16-ACK-brands-003-cluster-landed-plus-frontier-heuristic-caveat
 - `2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch.md` — 2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch
 - `2026-07-16-ACK-emit-parity-idea-caught-2-false-differentials-019-027-fixed-plus-gate.md` — 2026-07-16-ACK-emit-parity-idea-caught-2-false-differentials-019-027-fixed-plus-gate

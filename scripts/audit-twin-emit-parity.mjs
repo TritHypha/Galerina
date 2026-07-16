@@ -91,7 +91,11 @@ if (process.argv.includes("--self-test")) {
 }
 function assert(ok, what) { if (!ok) { console.error(`self-test FAIL: ${what}`); process.exit(1); } }
 
-// ── main ──────────────────────────────────────────────────────────────────────
+// ── main — run only when invoked directly, not when imported for its exports ────
+// (import-safe: reusing sourceEmitSet/twinEmitSet from another gate, e.g. the effect-checker
+// parity bucket, must not trigger this file's report + process.exit. No side effects on import.)
+const IS_MAIN = process.argv[1] !== undefined && process.argv[1].replace(/\\/g, "/").endsWith("scripts/audit-twin-emit-parity.mjs");
+if (IS_MAIN) {
 const twin = twinEmitSet(readFileSync(TWIN, "utf8"));
 const tcEmits = sourceEmitSet(readFileSync(TYPE_CHECKER, "utf8"));
 const srEmits = sourceEmitSet(readFileSync(SYMBOL_RESOLVER, "utf8"));
@@ -120,3 +124,4 @@ if (asJson) {
   console.log(`  other-pass (SymbolResolver, a future twin's scope): ${otherPass.join(" ") || "none"}`);
 }
 process.exit(bad.length === 0 ? 0 : 3);
+}

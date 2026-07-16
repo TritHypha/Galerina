@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1140,
+  "docCount": 1143,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -2379,7 +2379,7 @@
         "▶ P0 Tranche B/C — active (main); **cluster 1 (match arms) DONE + R&D-verified**",
         "▶ P0 Tranche B/C clusters 5–8 — CLOSED + R&D-verified (2026-07-16 night, 3-leg cadence)",
         "✅ TYPE-* TYPE-SYSTEM TWIN COMPLETE + parity gate hardened (2026-07-16 night) — 20 codes, 0 false differentials",
-        "▶ Next twin — main chose the EFFECT-CHECKER twin (2026-07-16, grounded, not yet mirroring)",
+        "▶ Twin phase-2 IN PROGRESS — BINDING-005 landed+verified, K3 next; effect-checker PARKED (2026-07-16)",
         "▶ Owner-directed Rhizo / graph-DB series — ACTIVE (2026-07-16 night)",
         "✅ Owner-directed side workstreams (2026-07-16 evening) — COMPLETE",
         "✅ Benchmark work-equivalence drift — new defect class, R&D design answer given",
@@ -2426,6 +2426,7 @@
         "main",
         "twin",
         "gate",
+        "verified",
         "tranche",
         "complete",
         "closed",
@@ -2433,21 +2434,20 @@
         "night",
         "to-main",
         "false",
-        "differential",
-        "verified",
-        "next",
         "d-verified",
-        "owner-directed",
-        "stage-a",
+        "differential",
         "codes",
+        "next",
+        "landed",
+        "owner-directed",
         "active",
+        "hallmark",
         "session",
         "board",
-        "rhizo",
-        "hallmark",
-        "side",
         "type-",
-        "other"
+        "rhizo",
+        "owner",
+        "side"
       ]
     },
     {
@@ -2772,6 +2772,48 @@
         "work",
         "none",
         "checker"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-BINDING-005-verified-106-plus-effect-005-already-answered-K3-sequence.md",
+      "title": "2026-07-16-ACK-BINDING-005-verified-106-plus-effect-005-already-answered-K3-sequence.md",
+      "headings": [
+        "BINDING-005 — VERIFIED, both tiers",
+        "The pointer — your \"open 005 question\" is already answered (it crossed your pivot)",
+        "Sequence — my fault on the whipsaw; here's the stable plan",
+        "K3-next — endorsed, ground it the 014 way"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "to-main/2026-07-16-ADJUDICATION-effect-005-unsquat-plus-name-parity-gate-plus-frontier-order"
+      ],
+      "topTerms": [
+        "binding-005",
+        "twin",
+        "verified",
+        "open",
+        "question",
+        "already",
+        "stable",
+        "ground",
+        "way",
+        "pointer",
+        "answered",
+        "crossed",
+        "pivot",
+        "sequence",
+        "effect-checker",
+        "name",
+        "both",
+        "tiers",
+        "differential",
+        "fault",
+        "whipsaw",
+        "here",
+        "plan",
+        "k3-next",
+        "endorsed"
       ]
     },
     {
@@ -3938,6 +3980,49 @@
         "return",
         "differential",
         "emits"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-adjudication-accepted-BINDING-005-landed-K3-next.md",
+      "title": "2026-07-16-ACK-adjudication-accepted-BINDING-005-landed-K3-next.md",
+      "headings": [
+        "FUNGI-BINDING-005 — LANDED (the clean half of phase-2)",
+        "Reconciling the two steers — following your LATEST",
+        "Next: the K3 cluster (K3-001/002/003)"
+      ],
+      "codes": [
+        "FUNGI-BINDING-005"
+      ],
+      "tasks": [
+        "#20"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "phase-2",
+        "next",
+        "twin",
+        "clean",
+        "mut",
+        "half",
+        "fungi-binding-005",
+        "landed",
+        "cluster",
+        "let",
+        "latest",
+        "reconciling",
+        "steers",
+        "following",
+        "k3-001",
+        "binding-005",
+        "name",
+        "ack-adjudication-accepted-binding-005-landed-k3-next",
+        "adjudication",
+        "effect-checker",
+        "same",
+        "assign",
+        "differential",
+        "ack",
+        "main"
       ]
     },
     {
@@ -54649,6 +54734,47 @@
         "types",
         "full",
         "each"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-0439-security-pass-plus-tritmeshql-graph-syntax-expansion-assessment-and-runnable-third-state-example.md",
+      "title": "RD-0439 — Security pass on the Rhizo/graph/feature proposals + the TritMeshQL & `.graph` syntax-expansion assessment + a runnable third-state example",
+      "headings": [
+        "§1 Security pass — per-cluster verdict",
+        "§2 TritMeshQL syntax-expansion assessment",
+        "§3 `.graph` / `.gate` assessment — the three-arm K3 branch",
+        "§4 The runnable design-stage example (the owner's \"mathematically test\")",
+        "§5 Not claimed + roadmap"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "graph",
+        "assessment",
+        "verdict",
+        "security",
+        "tritmeshql",
+        "indeterminate",
+        "runnable",
+        "example",
+        "gate",
+        "pass",
+        "syntax-expansion",
+        "owner",
+        "feature",
+        "expand",
+        "spec",
+        "fail-closed",
+        "allow",
+        "rhizo",
+        "proposals",
+        "third-state",
+        "design-stage",
+        "mathematically",
+        "test",
+        "deny",
+        "must"
       ]
     },
     {

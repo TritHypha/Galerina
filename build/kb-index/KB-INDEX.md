@@ -1,4 +1,4 @@
-# Galerina KB index (1140 docs)
+# Galerina KB index (1143 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -162,7 +162,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-TYPE-012
 - tasks: #20, #143, #75, #84, #65, #37, #81, #69, #72, #38, #39
 - links: [[to-main/2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd]] [[to-main/2026-07-16-ACK-rd0128-stale-proof-confirm-option-a]] [[to-main/2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed]] [[to-main/2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion]] [[to-main/2026-07-16-ACK-match-arm-cluster-verified-source-and-execution]] [[to-main/2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed]] [[to-main/2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea]] [[to-main/2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed]] [[to-main/2026-07-16-ADJUDICATION-effect-005-unsquat-plus-name-parity-gate-plus-frontier-order]] [[to-main/2026-07-16-HANDOVER-tech-transfer-confusable-safe-identity-ZT-checked]] [[to-main/2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering]] [[HANDOVER-round-2026-07-16-night-areas-dss-tlstp-cycle]]
-- terms: main, twin, gate, tranche, complete, closed, cluster, night, to-main, false, differential, verified, next, d-verified
+- terms: main, twin, gate, verified, tranche, complete, closed, cluster, night, to-main, false, d-verified, differential, codes
 
 ## PROMPT — boot the main (Galerina build) session into the coordination loop
 `../ZTF-Knowledge-Bases/coordination/PROMPT-main-start-here.md`
@@ -201,6 +201,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-EFFECT-002
 - tasks: #20, #74, #76, #143
 - terms: tranche, twin, commit, ack-audit-zero-20-closed-tranche-bc-no-rd, confirmed, closed, audit, unlock, board, every, rd-0412, see, landed, adjudicated
+
+## 2026-07-16-ACK-BINDING-005-verified-106-plus-effect-005-already-answered-K3-sequence.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-BINDING-005-verified-106-plus-effect-005-already-answered-K3-sequence.md`
+- links: [[to-main/2026-07-16-ADJUDICATION-effect-005-unsquat-plus-name-parity-gate-plus-frontier-order]]
+- terms: binding-005, twin, verified, open, question, already, stable, ground, way, pointer, answered, crossed, pivot, sequence
 
 ## 2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed.md`
@@ -345,6 +350,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-TYPE-026
 - tasks: #20
 - terms: null, twin, type, auto, type-checker, design, point, deferred, check, case, frontier, fungi-type-026, landed, fully
+
+## 2026-07-16-ACK-adjudication-accepted-BINDING-005-landed-K3-next.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-adjudication-accepted-BINDING-005-landed-K3-next.md`
+- codes: FUNGI-BINDING-005
+- tasks: #20
+- terms: phase-2, next, twin, clean, mut, half, fungi-binding-005, landed, cluster, let, latest, reconciling, steers, following
 
 ## 2026-07-16-ACK-brands-003-cluster-landed-plus-frontier-heuristic-caveat.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-brands-003-cluster-landed-plus-frontier-heuristic-caveat.md`
@@ -5163,6 +5174,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/RD-0438-db-technical-feature-ledger-tri-logic-third-axis-per-engine-dynamic-schema-self-healing.md`
 - codes: FUNGI-TYPE-025
 - terms: third, verdict, schema, self-healing, security, state, feature, ledger, axis, never, engine, graph, classic, signed
+
+## RD-0439 — Security pass on the Rhizo/graph/feature proposals + the TritMeshQL & `.graph` syntax-expansion assessment + a runnable third-state example
+`../ZTF-Knowledge-Bases/RD-0439-security-pass-plus-tritmeshql-graph-syntax-expansion-assessment-and-runnable-third-state-example.md`
+- terms: graph, assessment, verdict, security, tritmeshql, indeterminate, runnable, example, gate, pass, syntax-expansion, owner, feature, expand
 
 ## Galerina AI-Friendliness — R&D Spec (2026-06-23)
 `../ZTF-Knowledge-Bases/rd-absorbed/from-galerina-r-and-d/AI-FRIENDLINESS-SPEC-2026-06-23.md`
