@@ -461,6 +461,35 @@ contract {
     return diags
   }
 
+  // FUNGI-TYPE-003 (InvalidNominalConversion): a branded type (`type X = Brand<T,"Name">`) is a KNOWN
+  // type (no TYPE-001), but a raw literal initializer is a nominal conversion — Stage-A emits TYPE-002
+  // for any type-mismatched literal AND TYPE-003 when the literal is a String/SecureString (it must
+  // pass a validation gate, e.g. `validate.x(raw)?`). `isBranded` is the parser's brandedTypes-registry
+  // membership. Verified vs `galerina check --strict-types` (Tranche B, RD-0412 §4):
+  //   CustomerId = "raw" -> 002 + 003 · CustomerId = 5 -> 002 · CustomerId = <param> -> clean
+  if stmt.isBranded {
+    let rhsOpt = firstExpr(stmt)
+    match rhsOpt {
+      Some(rhs) => {
+        if rhs.kind == "lit" {
+          if isKnownType(rhs.litType) {
+            if rhs.litType != typeName {
+              let msg2b: String = "cannot assign '" + rhs.litType + "' to branded type '" + typeName + "' (FUNGI-TYPE-002)"
+              diags = diags.append({ code: "FUNGI-TYPE-002", message: msg2b, flowName: flowName })
+            }
+          }
+          if rhs.litType == "String" {
+            let msg3: String = "cannot assign a raw String to branded type '" + typeName + "'; requires a validation gate (FUNGI-TYPE-003)"
+            diags = diags.append({ code: "FUNGI-TYPE-003", message: msg3, flowName: flowName })
+          }
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    return diags
+  }
+
   // Any generic `Base<args>` binding (Array, Result, Map, Tensor, …) goes through the general generic
   // path, which subsumes the Array element check and adds arity (009), unknown type-argument (001),
   // and base-vs-literal mismatch (002). `typeArgs` is the parser-produced argument list (empty for a

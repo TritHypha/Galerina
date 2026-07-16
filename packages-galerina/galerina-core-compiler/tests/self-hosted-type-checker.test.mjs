@@ -25,6 +25,7 @@ const program = parseProgram(readFileSync(TC_FUNGI, "utf8"), "type-checker.fungi
 // ── value-model builders (interpreter takes tagged values / Maps) ──
 const vStr = (s) => ({ __tag: "string", value: String(s) });
 const vInt = (n) => ({ __tag: "int", value: n });
+const vBool = (b) => ({ __tag: "bool", value: Boolean(b) });
 const vList = (items) => ({ __tag: "list", items });
 
 function vRecord(obj) {
@@ -209,7 +210,7 @@ function parseGeneric(typeName) {
   if (cur.trim()) args.push(cur.trim());
   return { base, args };
 }
-const stmt = ({ kind, name = "", typeName = "", expr: e = [], body = [], elseBody = [], arms = [] }) => {
+const stmt = ({ kind, name = "", typeName = "", expr: e = [], body = [], elseBody = [], arms = [], branded = false }) => {
   const { base, args } = parseGeneric(typeName);
   return vRecord({
     kind: vStr(kind),
@@ -219,6 +220,9 @@ const stmt = ({ kind, name = "", typeName = "", expr: e = [], body = [], elseBod
     // type); the twin's checkGenericBinding checks FUNGI-TYPE-009/001/002/011 over them.
     typeBase: vStr(base),
     typeArgs: vList(args.map(vStr)),
+    // isBranded = the parser's brandedTypes-registry membership (type X = Brand<…>); the twin's
+    // checkBinding emits FUNGI-TYPE-002/003 for a raw-literal init to a branded type.
+    isBranded: vBool(branded),
     expr: vList(e),
     body: vList(body),
     elseBody: vList(elseBody),
@@ -410,6 +414,37 @@ describe("type-checker.fungi — checkFlowBodies (M-B body AST)", () => {
     const { diags } = await checkBodies([
       bodyFlow({ name: "f", body: [
         stmt({ kind: "let", name: "x", typeName: "Result<Int, String>", expr: [expr("name", "r")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), []);
+  });
+
+  // FUNGI-TYPE-003 (InvalidNominalConversion) — a branded type (`type X = Brand<T,"Name">`) is known,
+  // but a raw literal init is a nominal conversion: TYPE-002 for a type-mismatched literal, and TYPE-003
+  // (needs a validation gate) when the literal is a String. Verified vs `galerina check --strict-types`:
+  //   CustomerId = "raw" → 002 + 003 · CustomerId = 5 → 002 · CustomerId = <param> → clean.
+  it("branded CustomerId = \"raw\" (String literal) → FUNGI-TYPE-002 + 003", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "c", typeName: "CustomerId", branded: true, expr: [expr("lit", "raw", "String")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-002", "FUNGI-TYPE-003"]);
+  });
+
+  it("branded CustomerId = 5 (Int literal) → FUNGI-TYPE-002 only (003 needs a String)", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "c", typeName: "CustomerId", branded: true, expr: [expr("lit", "5", "Int")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-002"]);
+  });
+
+  it("branded CustomerId = id (name init, in scope) → no diagnostic; branded type is known (no 001)", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "c", typeName: "CustomerId", branded: true, expr: [expr("name", "id")] }),
       ] }),
     ]);
     assert.deepEqual(codesFor(diags, "f"), []);
