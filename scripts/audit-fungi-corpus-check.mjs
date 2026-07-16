@@ -40,14 +40,14 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const BASELINE = join(ROOT, "scripts", "baselines", "fungi-corpus-check.json");
 const CACHE_DIR = join(ROOT, "build", "fungi-corpus-check");
 const CACHE = join(CACHE_DIR, "cache.json");
-const MYCO = resolve(ROOT, "..", "subprojects", "myco", "dist", "cli.js");
+const MYCO = resolve(ROOT, "packages-galerina", "galerina-tools-myco", "dist", "cli.js");
 // node/git are real executables — spawn them directly. `shell:true` would be needed only for .cmd
 // shims (npm) and triggers Node's DEP0190 arg-concatenation warning; no shell = no concat hazard.
 const SPAWN = { encoding: "utf8", shell: false };
 
 // ── FIND ─────────────────────────────────────────────────────────────────────────────────────
 function mycoFungi() {
-  if (!existsSync(MYCO)) return { list: null, note: "myco dist not built (subprojects/myco)" };
+  if (!existsSync(MYCO)) return { list: null, note: "myco dist not built (packages-galerina/galerina-tools-myco — run `npm run build` there)" };
   const r = spawnSync("node", [MYCO, "-f", "fungi", ROOT, "--json", "--no-color", "-n", "9000"],
     { ...SPAWN, timeout: 180000 });
   const stdout = r.stdout ?? "";

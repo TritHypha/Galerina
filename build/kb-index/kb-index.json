@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1173,
+  "docCount": 1174,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -4209,6 +4209,46 @@
         "pass",
         "live",
         "cited"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-myco-galerina-package-updates-fold-into-galerina-tools-myco.md",
+      "title": "2026-07-17-myco-galerina-package-updates-fold-into-galerina-tools-myco.md",
+      "headings": [
+        "The resolution (context)",
+        "The updates to fold in (delta vs upstream v0.1.2)",
+        "Known-next (not this delta — FYI so you don't file it as a regression)",
+        "What I need from you"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "delta",
+        "upstream",
+        "myco",
+        "updates",
+        "fold",
+        "package",
+        "file",
+        "galerina-tools-myco",
+        "resolution",
+        "context",
+        "known-next",
+        "fyi",
+        "don",
+        "regression",
+        "need",
+        "source",
+        "galerina",
+        "subprojects",
+        "design",
+        "rd-0440",
+        "myco-galerina-package-updates-fold-into-galerina-tools-myco",
+        "main",
+        "owner",
+        "built",
+        "build"
       ]
     },
     {

@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const MYCO = resolve(ROOT, "..", "subprojects", "myco", "dist", "cli.js");
+const MYCO = resolve(ROOT, "packages-galerina", "galerina-tools-myco", "dist", "cli.js");
 const SPAWN = { encoding: "utf8", shell: false }; // node/git are real exes — no shell, no DEP0190
 
 /** Tracked files for a base glob — queries BOTH `<base>/*.ext` and `<base>/**\/*.ext` forms (quirk #1). */
