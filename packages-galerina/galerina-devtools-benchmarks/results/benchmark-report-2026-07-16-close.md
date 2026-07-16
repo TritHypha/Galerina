@@ -79,6 +79,34 @@ against the recorded noise floor:
     (governance-cost) — the class the queued fixed-time/median-of-N rig (#63) eliminates.
 - Full per-lane data: `results/history/diff-latest.json` (152 lanes tracked).
 
+## galerinaPassive ±45% swings — root cause (owner-flagged)
+
+Not a runtime signal. The lane's headline `iterationsPerSecond` = `coldCalls / coldMs`, where
+`coldCalls = callCount ≤ 5 ? 1 : min(callCount, 20)` (`src/galerina-runner.mjs`) — so timed/heavy
+benchmarks (compute-mix, gpu-compute) report the lane off **one cold call** (a single sample is not
+a rate), and lighter ones use ≤20 calls with a `clearPureFlowCache()` folded into the timed region,
+after a single warmup call (nowhere near JIT steady state).
+
+Empirical 10-rep sweep, back-to-back on one machine, zero code change:
+
+| Benchmark (coldCalls) | cold-rate CV | spread | CV with `gc()` per rep |
+|---|---:|---:|---:|
+| hardware-targets (1)* | 20.6% | 141% | 14.6% |
+| text-html (20) | 18.1% | 82% | 7.9% |
+
+*(probe forced coldCalls=1; the live run uses 20 — both are high-variance.)*
+
+Two conclusions: **(1)** a single run reads anywhere across a ~2× band, so ±45% is a draw from a
+~20% CV distribution — **both the + and the − are the same artifact, no boost and no regression to
+chase**; **(2)** forcing `gc()` before each rep **halves the variance** → the noise is **GC-timing
+dominated**. That is a real lead (not a phantom): the interpreter path allocates enough that GC
+timing dominates a sub-second window — cutting per-call interpreter allocation (arena reuse / the
+RD-0358 residency direction) would both speed the governed/interpreter lanes *and* collapse their
+variance. The `wasm` lane is compiled → the one structurally stable, clean cross-runtime signal.
+
+Fix (folds into #63): raise the coldCalls floor, real warmup loop, `gc()` per timed region,
+median-of-N + outlier rejection, ≥100 ms window; stop reporting a coldCalls=1 "rate" at all.
+
 ## Recurring measurement discipline (new this session)
 
 1. **`npm run history`** (benchmarks pkg) — auto-snapshot + since-last/day-start diffs with
@@ -94,3 +122,10 @@ Durability: the **% audit series is committed** (`build/audit-history/` is track
 run-churn stays out of the repo); the durable cross-machine bench record remains the tracked
 `full-suite-*.json` snapshots + the deliberate `results/archive/` baselines, which the history
 tool auto-seeds from on any fresh clone.
+
+3. **`npm run bench:guard`** (benchmarks pkg) — the **watcher**: auto-invoked at the end of every
+   `npm run history`, it classifies each mover by its lane's variance class (control · cpython ·
+   wasm · interpreter-single · interpreter) plus a bidirectional-scatter check and the
+   work-equivalence tags, and emits a fail-closed verdict (exit 3 + a named INVESTIGATE line only
+   when a mover survives every filter). Current run: **0 attributable regressions** (133 noise · 10
+   non-attributable · 11 shape-only · 7 env-floor). Self-tested (11/11).

@@ -2,7 +2,7 @@
 Generated: 2026-07-16
 
 ## Stats
-- Docs: 1090 | Edges: 3462 | Orphans: 34 | Stale links: 0 | FUNGI codes: 748
+- Docs: 1096 | Edges: 3462 | Orphans: 40 | Stale links: 0 | FUNGI codes: 748
 
 ## Document Registry (auto-generated)
 
@@ -29,6 +29,7 @@ Generated: 2026-07-16
 | 00-KB-INDEX.md | — | — | — | FUNGI-BACKEND-001, FUNGI-GATE-001, FUNGI-NET-001, FUNGI-STDLIB-001, FUNGI-SUPPLY-001 …+2 |
 | 2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd.md | — | — | — | FUNGI-EFFECT-002 |
 | 2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed.md | — | — | — | — |
+| 2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed.md | — | — | — | FUNGI-TYPE-011 |
 | 2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch.md | — | — | — | FUNGI-TYPE-001, FUNGI-TYPE-011 |
 | 2026-07-16-ACK-kb-graph-code-region-masking.md | — | — | — | — |
 | 2026-07-16-ACK-match-arm-cluster-landed-022-023-live-021-dead.md | — | — | — | FUNGI-TYPE-021, FUNGI-TYPE-022, FUNGI-TYPE-023 |
@@ -43,6 +44,7 @@ Generated: 2026-07-16
 | 2026-07-16-ACK-taxonomy-rebaseline-167.md | — | — | — | FUNGI-GOV-3 |
 | 2026-07-16-ACK2-rebaseline-167-confirmed-proceed.md | — | — | — | FUNGI-GOV-3 |
 | 2026-07-16-answers-to-night-round-rd-requests.md | — | — | — | — |
+| 2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked.md | — | — | — | — |
 | 2026-07-16-FYI-push-policy-correction-main-is-commit-only.md | — | — | — | — |
 | 2026-07-16-FYI-rd0128-stale-testwitness-proof.md | — | — | — | — |
 | 2026-07-16-FYI-tranche-bc-grounded-not-a-loop-tick.md | — | — | — | — |
@@ -977,6 +979,10 @@ Generated: 2026-07-16
 | RD-0420-tritmesh-markets-service-catalogue.md | — | — | — | — |
 | RD-0421-financial-services-sector-map-who-uses-the-tritmesh-family.md | — | — | — | — |
 | RD-0422-financial-data-and-maths-taxonomy-per-service-map-graphs-as-streams.md | — | — | — | — |
+| RD-0423-petabyte-scale-stretch-adjudication-container-crypto-catalogue-cost.md | — | — | — | — |
+| RD-0424-governed-ledger-data-model-accounting-deep-dive.md | — | — | — | — |
+| RD-0425-fixed-income-data-model-bonds-deep-dive-curves-conventions-sensitivities.md | — | — | — | — |
+| RD-0426-trading-and-auction-data-model-deep-dive-deterministic-books-allocation.md | — | — | — | — |
 | rd-adversarial-verification-findings-2026-06-16.md | — | — | — | — |
 | rd-crossover-encryption-rnd.md | — | — | Merge / unified entry point. **Date:** 2026-06-16. **Posture:** grounded, cited, | FUNGI-AMD-024, FUNGI-PARSE-001, FUNGI-SUBSTRATE-001 |
 | rd-diagnostics-namespace-rnd-response.md | — | — | R&D response (2026-06-16). **Subject:** `Galerina/docs/Knowledge-Bases/galerina-diagnostic-namespace-ownership.md` | FUNGI-META-001, FUNGI-PRIVACY-00, FUNGI-SECRET-005 |
@@ -1112,8 +1118,13 @@ Docs with no inbound links from other KB docs:
 - `RD-0420-tritmesh-markets-service-catalogue.md` — RD-0420 — TritMesh:Markets service catalogue — every service type the finance family caters for
 - `RD-0421-financial-services-sector-map-who-uses-the-tritmesh-family.md` — RD-0421 — Who uses it: the financial-services sector map for the TritMesh family
 - `RD-0422-financial-data-and-maths-taxonomy-per-service-map-graphs-as-streams.md` — RD-0422 — The financial data-and-maths taxonomy — every data/maths class the services use, per-service map, graphs-as-streams
+- `RD-0423-petabyte-scale-stretch-adjudication-container-crypto-catalogue-cost.md` — RD-0423 — Petabyte-scale stretch adjudication — can the family stretch that far?
+- `RD-0424-governed-ledger-data-model-accounting-deep-dive.md` — RD-0424 — The governed ledger data model — accounting deep-dive (per-service queue #1)
+- `RD-0425-fixed-income-data-model-bonds-deep-dive-curves-conventions-sensitivities.md` — RD-0425 — The fixed-income data model — bonds deep-dive (per-service queue #2)
+- `RD-0426-trading-and-auction-data-model-deep-dive-deterministic-books-allocation.md` — RD-0426 — The trading & auction data model — deep-dive (per-service queue #3)
 - `2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd.md` — 2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd
 - `2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed.md` — 2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed
+- `2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed.md` — 2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed
 - `2026-07-16-ACK-kb-graph-code-region-masking.md` — 2026-07-16-ACK-kb-graph-code-region-masking
 - `2026-07-16-ACK-match-arm-cluster-verified-source-and-execution.md` — 2026-07-16-ACK-match-arm-cluster-verified-source-and-execution
 - `2026-07-16-ACK-p1-r2-closed-gates-reverified.md` — 2026-07-16-ACK-p1-r2-closed-gates-reverified
@@ -1133,6 +1144,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-ACK-rhizo-ql-reusables-hallmark-shape-ok.md` — 2026-07-16-ACK-rhizo-ql-reusables-hallmark-shape-ok
 - `2026-07-16-ACK-taxonomy-AUDIT-ZERO.md` — 2026-07-16-ACK-taxonomy-AUDIT-ZERO
 - `2026-07-16-ACK-taxonomy-rebaseline-167.md` — 2026-07-16-ACK-taxonomy-rebaseline-167
+- `2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked.md` — 2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked
 - `2026-07-16-FYI-rd0128-stale-testwitness-proof.md` — 2026-07-16-FYI-rd0128-stale-testwitness-proof
 - `2026-07-16-FYI-tranche-bc-grounded-not-a-loop-tick.md` — 2026-07-16-FYI-tranche-bc-grounded-not-a-loop-tick
 - `2026-07-16-kb-graph-code-region-masking-stale-links-zeroed.md` — 2026-07-16-kb-graph-code-region-masking-stale-links-zeroed

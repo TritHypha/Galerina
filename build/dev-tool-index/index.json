@@ -3,9 +3,9 @@
   "totals": {
     "packages": 94,
     "testBearing": 93,
-    "tests": 7123,
-    "devTools": 83,
-    "auditTools": 46,
+    "tests": 7209,
+    "devTools": 84,
+    "auditTools": 47,
     "toolsInCadence": 27,
     "proofs": 40
   },
@@ -287,7 +287,7 @@
       "name": "galerina-core-compiler",
       "kind": "core",
       "description": "Galerina compiler pipeline contracts for parsing, checking, IR, diagnostics and reports.",
-      "tests": 4505,
+      "tests": 4562,
       "hasTestScript": true,
       "border": "PASS",
       "files": 97,
@@ -384,7 +384,7 @@
       "name": "galerina-core-security",
       "kind": "core",
       "description": "Reusable Galerina security primitives, redaction helpers, permission models and security report contracts.",
-      "tests": 14,
+      "tests": 15,
       "hasTestScript": true,
       "border": "PASS",
       "files": 14,
@@ -476,7 +476,7 @@
       "name": "galerina-tower-citizen",
       "kind": "tower",
       "description": "Galerina Tower Citizen — TowerRuntime + AuditLogger + PluginSandbox for governed AI inference",
-      "tests": 451,
+      "tests": 462,
       "hasTestScript": true,
       "border": "PASS",
       "files": 33,
@@ -518,7 +518,7 @@
       "name": "galerina-framework-app-kernel",
       "kind": "framework",
       "description": "Optional Galerina secure App Kernel: the fixed, non-bypassable governed request pipeline + secure-default rout",
-      "tests": 109,
+      "tests": 118,
       "hasTestScript": true,
       "border": "PASS",
       "files": 13,
@@ -547,7 +547,7 @@
       "tests": null,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 15,
+      "files": 16,
       "deps": []
     },
     {
@@ -624,7 +624,7 @@
       "name": "galerina-devtools-kb-graph",
       "kind": "devtools",
       "description": "Auto-index graph for Galerina Knowledge Base documents",
-      "tests": 23,
+      "tests": 31,
       "hasTestScript": true,
       "border": "PASS",
       "files": 4,
@@ -1457,6 +1457,14 @@
         "graph/index",
         "sensitive-allowlist"
       ]
+    },
+    {
+      "name": "audit-percent-history.mjs",
+      "category": "audit",
+      "purpose": "recurring % audit snapshots + deltas",
+      "selfTest": true,
+      "inCadence": false,
+      "concerns": []
     },
     {
       "name": "audit-perf-hotpath.mjs",
@@ -2603,6 +2611,7 @@
       "audit-overclaim-phrases.mjs",
       "audit-package-border.mjs",
       "audit-papers-index.mjs",
+      "audit-percent-history.mjs",
       "audit-production-blockers.mjs",
       "audit-provenance.mjs",
       "audit-route-overlap.mjs",

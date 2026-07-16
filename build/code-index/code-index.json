@@ -8053,7 +8053,7 @@
       "test packages-galerina/galerina-core-compiler/tests/governance/tri-lint-verdict-ordering.test.mjs:28",
       "test packages-galerina/galerina-core-compiler/tests/governance/tri-lint-verdict-ordering.test.mjs:39",
       "test packages-galerina/galerina-core-compiler/tests/governance/tri-lint-verdict-ordering.test.mjs:49",
-      "doc docs/roadmap-2026-07-15.md:47"
+      "doc docs/roadmap-2026-07-15.md:62"
     ]
   },
   {
@@ -16535,7 +16535,7 @@
       "test packages-galerina/galerina-core-compiler/tests/secrets-body-retention-110.test.mjs:113",
       "doc docs/ANTI_HALLUCINATION.md:61",
       "fungi docs/examples/Level-9-Enterprise/465-enterprise-summary/example.fungi:29",
-      "doc docs/roadmap-2026-07-15.md:94",
+      "doc docs/roadmap-2026-07-15.md:109",
       "doc docs/SYNTAX_UPDATE_TRACKER.md:34",
       "doc docs/TODO.md:14",
       "ref scripts/audit-fungi-corpus-check.mjs:8",
@@ -18645,7 +18645,7 @@
     "code": "FUNGI-TYPE-011",
     "namespace": "FUNGI",
     "family": "TYPE",
-    "occurrences": 73,
+    "occurrences": 74,
     "docOnly": false,
     "defs": [
       "packages-galerina/galerina-core-compiler/src/index.ts:339"
@@ -18655,7 +18655,7 @@
     ],
     "tests": 62,
     "refs": 3,
-    "docs": 1,
+    "docs": 2,
     "names": [
       "INVALID_COLLECTION_ELEMENT",
       "INVALID_RESULT_TYPE",
@@ -18740,7 +18740,8 @@
       "test packages-galerina/galerina-core-compiler/tests/type-checker-phase11.test.mjs:128",
       "test packages-galerina/galerina-core-compiler/tests/type-checker-phase11.test.mjs:137",
       "test packages-galerina/galerina-core-compiler/tests/type-checker-phase11.test.mjs:138",
-      "doc docs/AI/DO_NOT_USE_YET.md:165"
+      "doc docs/AI/DO_NOT_USE_YET.md:165",
+      "doc docs/roadmap-2026-07-15.md:45"
     ]
   },
   {
@@ -19110,13 +19111,13 @@
     "code": "FUNGI-TYPE-021",
     "namespace": "FUNGI",
     "family": "TYPE",
-    "occurrences": 8,
+    "occurrences": 9,
     "docOnly": false,
     "defs": [],
     "emits": [],
     "tests": 3,
     "refs": 2,
-    "docs": 2,
+    "docs": 3,
     "names": [],
     "severities": [],
     "allSites": [
@@ -19127,14 +19128,15 @@
       "test packages-galerina/galerina-core-compiler/tests/type-checker.test.mjs:422",
       "test packages-galerina/galerina-core-compiler/tests/type-checker.test.mjs:603",
       "doc docs/architecture/stage6-hundred-percent-fungi-roadmap-2026-07-10.md:24",
-      "doc docs/examples/README.md:81"
+      "doc docs/examples/README.md:81",
+      "doc docs/roadmap-2026-07-15.md:43"
     ]
   },
   {
     "code": "FUNGI-TYPE-022",
     "namespace": "FUNGI",
     "family": "TYPE",
-    "occurrences": 24,
+    "occurrences": 25,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -19142,7 +19144,7 @@
     ],
     "tests": 12,
     "refs": 3,
-    "docs": 2,
+    "docs": 3,
     "names": [
       "UNREACHABLE_PATTERN"
     ],
@@ -19171,14 +19173,15 @@
       "test packages-galerina/galerina-core-compiler/tests/type-checker.test.mjs:520",
       "test packages-galerina/galerina-core-compiler/tests/type-checker.test.mjs:529",
       "doc docs/architecture/session4-5hr-autonomous-roadmap-2026-07-11.md:62",
-      "doc docs/examples/README.md:82"
+      "doc docs/examples/README.md:82",
+      "doc docs/roadmap-2026-07-15.md:42"
     ]
   },
   {
     "code": "FUNGI-TYPE-023",
     "namespace": "FUNGI",
     "family": "TYPE",
-    "occurrences": 40,
+    "occurrences": 41,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -19186,7 +19189,7 @@
     ],
     "tests": 20,
     "refs": 8,
-    "docs": 4,
+    "docs": 5,
     "names": [
       "MISSING_WILDCARD_ARM"
     ],
@@ -19228,6 +19231,7 @@
       "doc packages-galerina/galerina-framework-example-app/README.md:71",
       "fungi packages-galerina/galerina-framework-example-app/src/App.fungi:18",
       "doc docs/language/fungi/SYNTAX-REFERENCE.md:66",
+      "doc docs/roadmap-2026-07-15.md:43",
       "ref scripts/galerina-new.mjs:23",
       "ref scripts/galerina-new.mjs:154",
       "ref scripts/galerina-new.mjs:196",

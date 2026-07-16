@@ -8353,7 +8353,7 @@
       "defs": 1,
       "emits": 1,
       "tests": 62,
-      "docs": 1
+      "docs": 2
     },
     {
       "code": "FUNGI-TYPE-012",
@@ -8540,7 +8540,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 3,
-      "docs": 2
+      "docs": 3
     },
     {
       "code": "FUNGI-TYPE-022",
@@ -8554,7 +8554,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 12,
-      "docs": 2
+      "docs": 3
     },
     {
       "code": "FUNGI-TYPE-023",
@@ -8568,7 +8568,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 20,
-      "docs": 4
+      "docs": 5
     },
     {
       "code": "FUNGI-TYPE-024",

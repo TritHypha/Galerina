@@ -1,4 +1,4 @@
-# Galerina KB index (1092 docs)
+# Galerina KB index (1098 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -160,8 +160,8 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## BOARD — R&D ⇄ main cross-session state (single-writer: R&D)
 `../ZTF-Knowledge-Bases/coordination/BOARD.md`
 - tasks: #20, #143, #75, #84, #65, #37, #81, #69, #72, #38, #39
-- links: [[to-main/2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd]] [[to-main/2026-07-16-ACK-rd0128-stale-proof-confirm-option-a]] [[to-main/2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed]] [[to-main/2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion]] [[to-main/2026-07-16-ACK-match-arm-cluster-verified-source-and-execution]] [[HANDOVER-round-2026-07-16-night-areas-dss-tlstp-cycle]] [[id]]
-- terms: main, session, board, to-main, closed, tranche, verified, night-round, open, confirmed, applied, match, hallmark, messages
+- links: [[to-main/2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd]] [[to-main/2026-07-16-ACK-rd0128-stale-proof-confirm-option-a]] [[to-main/2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed]] [[to-main/2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion]] [[to-main/2026-07-16-ACK-match-arm-cluster-verified-source-and-execution]] [[to-main/2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed]] [[HANDOVER-round-2026-07-16-night-areas-dss-tlstp-cycle]] [[id]]
+- terms: main, to-main, session, board, closed, tranche, verified, open, confirmed, applied, cluster, match, hallmark, messages
 
 ## PROMPT — boot the main (Galerina build) session into the coordination loop
 `../ZTF-Knowledge-Bases/coordination/PROMPT-main-start-here.md`
@@ -181,6 +181,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## 2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed.md`
 - terms: closed, rd-0128, verified, sound, valuestate-004, reframe, check, execution-tier, important, tainted, onward, call-site, ack-both-applied-rd0128-and-valuestate004-closed, both
+
+## 2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed.md`
+- codes: FUNGI-TYPE-011
+- terms: array, verified, false, ack-collection-cluster-verified-and-divergence-catch-endorsed, emit-site, spot-check, differential, stage-a, element, both, cluster, latent-divergence, catch, method
 
 ## 2026-07-16-ACK-kb-graph-code-region-masking.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-kb-graph-code-region-masking.md`
@@ -282,6 +287,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-taxonomy-rebaseline-167.md`
 - codes: FUNGI-GOV-3VL-003, FUNGI-GOV-3VL-004
 - terms: ack-taxonomy-rebaseline-167, names, both, commit, ack, main, re-baseline, delta, reconciled, audit, proposal, harvest, after, verdict
+
+## 2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked.md`
+- terms: wasm, lane, run, record-allocation, lanes, shape-only, fyi-benchmark-work-equivalence-class-996-debunked, class, benchmark, work-equivalence, figure, diff, series, node
 
 ## 2026-07-16-FYI-rd0128-stale-testwitness-proof.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-FYI-rd0128-stale-testwitness-proof.md`
@@ -4931,6 +4940,22 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## RD-0422 — The financial data-and-maths taxonomy — every data/maths class the services use, per-service map, graphs-as-streams
 `../ZTF-Knowledge-Bases/RD-0422-financial-data-and-maths-taxonomy-per-service-map-graphs-as-streams.md`
 - terms: data, vectors, per-service, streams, number, maths, financial, services, stored, formulas, map, series, matrices, exact
+
+## RD-0423 — Petabyte-scale stretch adjudication — can the family stretch that far?
+`../ZTF-Knowledge-Bases/RD-0423-petabyte-scale-stretch-adjudication-container-crypto-catalogue-cost.md`
+- terms: stretch, design, holds, family, data, each, tier, stress, five, amendments, segments, petabyte-scale, adjudication, far
+
+## RD-0424 — The governed ledger data model — accounting deep-dive (per-service queue #1)
+`../ZTF-Knowledge-Bases/RD-0424-governed-ledger-data-model-accounting-deep-dive.md`
+- terms: epoch, queue, period, time, governed, entry, accounting, admitted, close, seal, data, journal, accounts, audit
+
+## RD-0425 — The fixed-income data model — bonds deep-dive (per-service queue #2)
+`../ZTF-Knowledge-Bases/RD-0425-fixed-income-data-model-bonds-deep-dive-curves-conventions-sensitivities.md`
+- terms: epoch, typed, objects, queue, rd-0424, stored, formula, model, curves, admitted, yield, curve, deep-dive, instrument
+
+## RD-0426 — The trading & auction data model — deep-dive (per-service queue #3)
+`../ZTF-Knowledge-Bases/RD-0426-trading-and-auction-data-model-deep-dive-deterministic-books-allocation.md`
+- terms: auction, data, order, trading, queue, book, stream, replay, deterministic, allocation, evidence, never, deep-dive, fold
 
 ## Galerina AI-Friendliness — R&D Spec (2026-06-23)
 `../ZTF-Knowledge-Bases/rd-absorbed/from-galerina-r-and-d/AI-FRIENDLINESS-SPEC-2026-06-23.md`

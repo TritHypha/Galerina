@@ -167,3 +167,13 @@ for (const [title, rep] of [["since last run", out.sinceLast], ["since day start
   if (changed) console.log(`    (+${changed} lane add/remove — see diff-latest.json)`);
 }
 console.log(`  -> results/history/diff-latest.json`);
+
+// Auto-run the watcher on every re-run (owner ask): classify movers + verdict.
+console.log("");
+try {
+  const { execFileSync } = await import("node:child_process");
+  execFileSync(process.execPath, [join(ROOT, "src", "bench-guard.mjs")], { stdio: "inherit" });
+} catch (e) {
+  // exit 3 = "investigate" (a real signal, not a tool failure) — surface, don't crash the run
+  if (e?.status !== 3) console.error("bench-guard: " + (e?.message ?? e));
+}

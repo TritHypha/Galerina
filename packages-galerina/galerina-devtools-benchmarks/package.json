@@ -38,7 +38,8 @@
     "run:diagnostic": "node src/diagnostic-runner.mjs",
     "run:diagnostic-suite": "node --expose-gc src/runner.mjs --diagnostic",
     "run:fault-injection": "node src/diagnostic-runner.mjs --benchmark toxic-input --benchmark governance-violation",
-    "history": "node src/history.mjs"
+    "history": "node src/history.mjs",
+    "bench:guard": "node src/bench-guard.mjs"
   },
   "dependencies": {
     "@galerina/core-compiler": "file:../galerina-core-compiler"
