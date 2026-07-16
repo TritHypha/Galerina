@@ -321,52 +321,124 @@ contract {
   return diags
 }
 
-// Check a declared `Array<T>` binding — the Stage-A `checkTypes` collection path:
-//   FUNGI-TYPE-001 — the element type T is not a known/declared type
-//   FUNGI-TYPE-011 — a list-literal element whose (known) type differs from T (one per element)
-pure flow checkArrayBinding(flowName: String, stmt: Auto) -> Array<Auto>
+// Expected type-argument count for a known generic base (Stage-A `GENERIC_ARITY`, type-checker.ts),
+// or -1 when the base is not a known generic (Stage-A skips the arity check for unknown bases).
+pure flow genericArity(base: String) -> Int
 contract {
-  intent { "FUNGI-TYPE-001/011 for an Array<T> binding: an unknown element type, and any list-literal element that is not a T." }
+  intent { "The declared type-argument arity of a known generic base, or -1 if the base is not a known generic." }
+}
+{
+  if base == "Option" { return 1 }
+  if base == "Result" { return 2 }
+  if base == "Array" { return 1 }
+  if base == "List" { return 1 }
+  if base == "Set" { return 1 }
+  if base == "Map" { return 2 }
+  if base == "Channel" { return 1 }
+  if base == "Vector" { return 2 }
+  if base == "Matrix" { return 3 }
+  if base == "Money" { return 1 }
+  if base == "Tensor" { return 2 }
+  if base == "ReadOnlyView" { return 1 }
+  if base == "Brand" { return 2 }
+  if base == "Embedding" { return 1 }
+  if base == "Secret" { return 1 }
+  return 0 - 1
+}
+
+// Check a declared generic `Base<args>` binding — generalizes the Stage-A `checkTypes` path over ALL
+// generics (subsumes the former Array-only checkArrayBinding). Emits, IN Stage-A's order:
+//   FUNGI-TYPE-009 — a known generic base with the wrong number of type arguments (InvalidGeneric)
+//   FUNGI-TYPE-001 — a type argument that is not a known/declared type (one per unknown arg)
+//   FUNGI-TYPE-002 — a literal initializer whose (known) type differs from the base type
+//   FUNGI-TYPE-011 — for base Array, a list-literal element whose (known) type differs from the element
+// The shape (typeBase + typeArgs) is what Stage-A `parseTypeString` yields; the twin mirrors the
+// DECISION over it. Verified vs `galerina check --strict-types` (Tranche B, RD-0412 §4):
+//   Result<Int> = 5        -> 009, 002        Result<Int,Widget> = 5 -> 001(Widget), 002
+//   Map<Int> = 5           -> 009, 002        Array<Int> = [1,2,3]   -> clean
+//   Array<Widget> = [1,2,3] -> 001(Widget), 011 per element
+pure flow checkGenericBinding(flowName: String, stmt: Auto) -> Array<Auto>
+contract {
+  intent { "FUNGI-TYPE-009/001/002/011 for a generic Base<args> binding: wrong arity, an unknown type argument, a base-vs-literal mismatch, and Array element mismatches." }
 }
 {
   mut diags: Array<Auto> = Array.empty()
-  let elem: String = stmt.typeName.replace("Array<", "").replace(">", "")
+  let base: String = stmt.typeBase
+  let arity: Int = genericArity(base)
 
-  // A nested/parameterized element type (still carrying "Array") is out of this twin's scope — stay
-  // silent rather than mis-parse it (a known gap, never a false differential).
-  if elem.startsWith("Array") {
+  // Unknown generic base (e.g. `Foo<Int>`) is out of this twin's scope — Stage-A's arity gate skips
+  // unknown bases; stay silent rather than guess (a known gap, never a false differential).
+  if arity < 0 {
     return diags
   }
 
-  // FUNGI-TYPE-001: the element type must be a known/declared type.
-  if isKnownType(elem) == false {
-    let msg1e: String = "unknown element type '" + elem + "' on binding '" + stmt.name + "' (FUNGI-TYPE-001)"
-    diags = diags.append({ code: "FUNGI-TYPE-001", message: msg1e, flowName: flowName })
+  // FUNGI-TYPE-009: a known generic base must receive exactly its arity of type arguments.
+  if stmt.typeArgs.count() != arity {
+    let msg9: String = "Generic type '" + base + "' received the wrong number of type arguments (FUNGI-TYPE-009)"
+    diags = diags.append({ code: "FUNGI-TYPE-009", message: msg9, flowName: flowName })
   }
 
-  // FUNGI-TYPE-011: every list-literal element whose (known) type differs from the element type.
-  let listOpt = firstExpr(stmt)
-  match listOpt {
-    Some(lst) => {
-      if lst.kind == "listLiteral" {
-        mut k: Int = 0
-        while k < lst.children.count() {
-          let cOpt = lst.children.get(k)
-          match cOpt {
-            Some(c) => {
-              if c.kind == "lit" {
-                if isKnownType(c.litType) {
-                  if c.litType != elem {
-                    let msg11: String = "Array<" + elem + "> contains a '" + c.litType + "' element. All elements must be '" + elem + "' (FUNGI-TYPE-011)"
-                    diags = diags.append({ code: "FUNGI-TYPE-011", message: msg11, flowName: flowName })
+  // FUNGI-TYPE-001: each (simple) type argument must be a known/declared type. Nested/parameterized
+  // args (still carrying "Array") are out of scope — skipped, not mis-parsed.
+  mut a: Int = 0
+  while a < stmt.typeArgs.count() {
+    let argOpt = stmt.typeArgs.get(a)
+    match argOpt {
+      Some(arg) => {
+        if arg.startsWith("Array") == false {
+          if isKnownType(arg) == false {
+            let msg1: String = "unknown type argument '" + arg + "' on binding '" + stmt.name + "' (FUNGI-TYPE-001)"
+            diags = diags.append({ code: "FUNGI-TYPE-001", message: msg1, flowName: flowName })
+          }
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    a = a + 1
+  }
+
+  let rhsOpt = firstExpr(stmt)
+  match rhsOpt {
+    Some(rhs) => {
+      // FUNGI-TYPE-002: a literal initializer whose (known) type differs from the base type.
+      if rhs.kind == "lit" {
+        if isKnownType(rhs.litType) {
+          if rhs.litType != base {
+            let msg2: String = "type mismatch: binding '" + stmt.name + "' declared '" + base + "' but initialized with '" + rhs.litType + "' (FUNGI-TYPE-002)"
+            diags = diags.append({ code: "FUNGI-TYPE-002", message: msg2, flowName: flowName })
+          }
+        }
+      }
+      // FUNGI-TYPE-011: for base Array, every list-literal element whose (known) type differs from T.
+      if base == "Array" {
+        if rhs.kind == "listLiteral" {
+          let elemOpt = stmt.typeArgs.get(0)
+          match elemOpt {
+            Some(elem) => {
+              mut k: Int = 0
+              while k < rhs.children.count() {
+                let cOpt = rhs.children.get(k)
+                match cOpt {
+                  Some(c) => {
+                    if c.kind == "lit" {
+                      if isKnownType(c.litType) {
+                        if c.litType != elem {
+                          let msg11: String = "Array<" + elem + "> contains a '" + c.litType + "' element. All elements must be '" + elem + "' (FUNGI-TYPE-011)"
+                          diags = diags.append({ code: "FUNGI-TYPE-011", message: msg11, flowName: flowName })
+                        }
+                      }
+                    }
                   }
+                  None => {}
+                  _ => {}
                 }
+                k = k + 1
               }
             }
             None => {}
             _ => {}
           }
-          k = k + 1
         }
       }
     }
@@ -389,16 +461,13 @@ contract {
     return diags
   }
 
-  // FUNGI-TYPE-001 (element) + FUNGI-TYPE-011: a declared `Array<T>` binding. Stage-A `checkTypes`
-  // treats the `Array` base as known, checks the ELEMENT type T on its own (TYPE-001 if T is not a
-  // known/declared type), then flags every list-literal element whose type differs from T (TYPE-011,
-  // one per element). Handled here and returned so the scalar TYPE-001/002 gate below only sees
-  // non-Array types. Verified against `galerina check --strict-types` (Tranche B, RD-0412 §4):
-  //   Array<Int> = [1,2,3]      -> clean
-  //   Array<Int> = [1,"x",3]    -> one 011
-  //   Array<Widget> = [1,2,3]   -> 001 (Widget) + 011 per element
-  if typeName.startsWith("Array<") {
-    diags = appendAll(diags, checkArrayBinding(flowName, stmt))
+  // Any generic `Base<args>` binding (Array, Result, Map, Tensor, …) goes through the general generic
+  // path, which subsumes the Array element check and adds arity (009), unknown type-argument (001),
+  // and base-vs-literal mismatch (002). `typeArgs` is the parser-produced argument list (empty for a
+  // non-generic type); its presence marks a generic, so the scalar TYPE-001/002 gate below only sees
+  // non-generic types. Verified against `galerina check --strict-types` (Tranche B, RD-0412 §4).
+  if stmt.typeArgs.count() > 0 {
+    diags = appendAll(diags, checkGenericBinding(flowName, stmt))
     return diags
   }
 

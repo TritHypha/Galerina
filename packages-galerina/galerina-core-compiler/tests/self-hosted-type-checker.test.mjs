@@ -191,11 +191,34 @@ const arm = (pattern) => vRecord({ pattern: vStr(pattern) });
 // A list-literal initializer + its element literals (for the Array<T> collection-element checks).
 const litEl = (litType) => expr("lit", "", litType);
 const listOf = (...litTypes) => expr("listLiteral", "", "", litTypes.map(litEl));
-const stmt = ({ kind, name = "", typeName = "", expr: e = [], body = [], elseBody = [], arms = [] }) =>
-  vRecord({
+// Parse a declared type string into { base, args } the way Stage-A `parseTypeString` does — split the
+// top-level type arguments respecting BOTH `<>` and `[]` nesting (so Tensor<Float32, [1,128]> is 2 args,
+// not 3). This stands in for the parser lane; the twin mirrors the DECISION over base + args.
+function parseGeneric(typeName) {
+  const lt = typeName.indexOf("<");
+  if (lt < 0) return { base: typeName, args: [] };
+  const base = typeName.slice(0, lt);
+  const inner = typeName.slice(lt + 1, typeName.lastIndexOf(">"));
+  const args = []; let depth = 0, cur = "";
+  for (const ch of inner) {
+    if (ch === "<" || ch === "[") { depth++; cur += ch; }
+    else if (ch === ">" || ch === "]") { depth--; cur += ch; }
+    else if (ch === "," && depth === 0) { if (cur.trim()) args.push(cur.trim()); cur = ""; }
+    else cur += ch;
+  }
+  if (cur.trim()) args.push(cur.trim());
+  return { base, args };
+}
+const stmt = ({ kind, name = "", typeName = "", expr: e = [], body = [], elseBody = [], arms = [] }) => {
+  const { base, args } = parseGeneric(typeName);
+  return vRecord({
     kind: vStr(kind),
     name: vStr(name),
     typeName: vStr(typeName),
+    // typeBase + typeArgs = the parser-produced generic decomposition (empty args for a non-generic
+    // type); the twin's checkGenericBinding checks FUNGI-TYPE-009/001/002/011 over them.
+    typeBase: vStr(base),
+    typeArgs: vList(args.map(vStr)),
     expr: vList(e),
     body: vList(body),
     elseBody: vList(elseBody),
@@ -203,6 +226,7 @@ const stmt = ({ kind, name = "", typeName = "", expr: e = [], body = [], elseBod
     // faithful mirror of Stage-A `checkMatch`, which derives has-wildcard + reachability from it.
     arms: vList(arms),
   });
+};
 
 const bodyFlow = ({ name, params = [], body = [] }) =>
   vRecord({ name: vStr(name), params: vList(params), body: vList(body) });
@@ -337,6 +361,55 @@ describe("type-checker.fungi — checkFlowBodies (M-B body AST)", () => {
     const { diags } = await checkBodies([
       bodyFlow({ name: "f", body: [
         stmt({ kind: "let", name: "xs", typeName: "Array<Int>", expr: [listOf()] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), []);
+  });
+
+  // FUNGI-TYPE-009 (InvalidGenericInstantiation) — a known generic base with the wrong type-argument
+  // arity. The twin's binding path is generalized over ALL generics (subsumes the 011 Array case).
+  // Emit order verified vs `galerina check --strict-types`: 009 (arity) → 001 (unknown arg) → 002
+  // (a literal initializer vs the base type). The clean case emits nothing.
+  it("Result<Int> (arity 2, got 1) = 5 → FUNGI-TYPE-009 then 002", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "r", typeName: "Result<Int>", expr: [expr("lit", "5", "Int")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-002", "FUNGI-TYPE-009"]); // codesFor sorts — set, not order
+  });
+
+  it("Map<Int, String, Bool> (arity 2, got 3) = 5 → FUNGI-TYPE-009 then 002 (over-arity)", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "m", typeName: "Map<Int, String, Bool>", expr: [expr("lit", "5", "Int")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-002", "FUNGI-TYPE-009"]); // codesFor sorts — set, not order
+  });
+
+  it("Vector<Int> (arity 2, got 1) = 5 → FUNGI-TYPE-009 then 002 (non-Array generic)", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "v", typeName: "Vector<Int>", expr: [expr("lit", "5", "Int")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-002", "FUNGI-TYPE-009"]); // codesFor sorts — set, not order
+  });
+
+  it("Result<Int, Widget> (arity ok) = 5 → FUNGI-TYPE-001 (unknown arg) then 002", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "r", typeName: "Result<Int, Widget>", expr: [expr("lit", "5", "Int")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-001", "FUNGI-TYPE-002"]);
+  });
+
+  it("Result<Int, String> = r (well-formed generic, name init) → no diagnostic", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "let", name: "x", typeName: "Result<Int, String>", expr: [expr("name", "r")] }),
       ] }),
     ]);
     assert.deepEqual(codesFor(diags, "f"), []);
