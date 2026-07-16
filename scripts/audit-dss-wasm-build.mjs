@@ -32,6 +32,7 @@
 import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { createHash } from "node:crypto";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const DSS = join(ROOT, "packages-galerina", "galerina-core-security", "src", "dss");
@@ -69,7 +70,7 @@ async function buildModule(L, name) {
     const { gir } = L.emitGIR(prog.ast, prog.flows, fx);
     const wat = L.renderWAT(L.buildWATModuleFromGIR(gir, undefined, name.replace(/\.fungi$/, ""), prog.ast, true));
     const asm = await L.assembleWAT(wat);
-    if (asm.valid && asm.diagnostics.length === 0) return { name, mode, ok: true, bytes: asm.wasm.length };
+    if (asm.valid && asm.diagnostics.length === 0) return { name, mode, ok: true, bytes: asm.wasm.length, wasm: asm.wasm };
     // 160 chars: the old 60-char cut hid the ACTUAL wabt error ("undefined local variable $p1")
     // behind the generic "does not link" prefix for a full session. Show enough to diagnose.
     return { name, mode, ok: false, why: `assemble ${JSON.stringify(asm.diagnostics).slice(0, 160)}` };
@@ -114,6 +115,27 @@ if (process.argv.includes("--self-test")) {
 const { results } = await run();
 const building = results.filter((r) => r.ok).map((r) => r.name).sort();
 const failing = results.filter((r) => !r.ok);
+
+// Emit the built modules as REAL .wasm artifacts (feasibility artifacts — unsigned, regenerated
+// every run, build/ is untracked). A compiled .wasm is NOT proven isolation (#102-106 post-v1);
+// the manifest records exactly what was built and its digest so downstream work pins by hash.
+{
+  const OUT = join(ROOT, "build", "dss-wasm");
+  mkdirSync(OUT, { recursive: true });
+  const manifest = [];
+  for (const r of results) {
+    if (!r.ok || !r.wasm) continue;
+    const file = r.name.replace(/\.fungi$/, ".wasm");
+    writeFileSync(join(OUT, file), Buffer.from(r.wasm));
+    manifest.push({ name: file, source: r.name, mode: r.mode, bytes: r.bytes, sha256: createHash("sha256").update(r.wasm).digest("hex") });
+  }
+  writeFileSync(join(OUT, "manifest.json"), JSON.stringify({
+    generated: "audit-dss-wasm-build",
+    note: "Feasibility artifacts: real WASM builds of the DSS modules (supervisor = import-DAG bundle). UNSIGNED — admission happens at load via #105; isolation is NOT claimed (Wasmtime TCB #102-106, post-v1).",
+    modules: manifest,
+  }, null, 2) + "\n");
+  console.log(`  artifacts: ${manifest.length} .wasm written to build/dss-wasm/ (+ manifest.json, sha256-pinned)`);
+}
 for (const r of results) {
   console.log(`  ${r.ok ? "OK  " : "FAIL"} [${r.mode.padEnd(10)}] ${r.name.padEnd(24)} ${r.ok ? r.bytes + " B" : "→ " + r.why}`);
 }

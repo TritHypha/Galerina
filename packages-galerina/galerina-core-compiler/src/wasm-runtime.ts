@@ -212,7 +212,20 @@ export interface HostRuntime {
  * live in the module's linear memory (P9.4b) and are read via readRecordField. This
  * mirrors the interpreter's value model: chars are code points, strings are interned.
  */
-export function createHostRuntime(observe?: Observer): HostRuntime {
+export function createHostRuntime(
+  observe?: Observer,
+  grants?: {
+    /**
+     * #105 sanctioned effect grants (deny-by-default). A module whose DECLARED effects put
+     * host imports in its import table (e.g. the DSS supervisor's "audit.write") links ONLY
+     * if the admitting caller explicitly supplies a handler for that exact effect name here.
+     * No handler → the import stays outside the closed set → admission refuses with
+     * CRITICAL_SECURITY_VIOLATION, exactly as before (this parameter cannot weaken that).
+     * Every granted call is routed through the observer tap, so the audit layer sees it.
+     */
+    readonly effectHandlers?: Readonly<Record<string, (a: number, b: number) => number>>;
+  },
+): HostRuntime {
   const strings: string[] = [];
   const arrays: number[][] = [];
   const results: { tag: "ok" | "err"; value: number }[] = [];
@@ -336,6 +349,13 @@ export function createHostRuntime(observe?: Observer): HostRuntime {
     __option_some: (x: number) => tap("__option_some", [x], x) as number,
     __option_none: () => tap("__option_none", [], -1) as number,
   };
+
+  // Sanctioned effect grants (see the `grants` doc above): explicit, per-admission, deny-by-
+  // default. The stdlib bridge can never be shadowed by a grant — bridge names win.
+  for (const [effect, fn] of Object.entries(grants?.effectHandlers ?? {})) {
+    if (Object.prototype.hasOwnProperty.call(host, effect)) continue;
+    host[effect] = (a: number, b: number) => tap(effect, [a, b], fn(a, b)) as number;
+  }
 
   return {
     imports: { host },
