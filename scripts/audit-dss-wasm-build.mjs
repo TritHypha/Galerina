@@ -13,14 +13,17 @@
 //   • bundle     — a module that `import`s siblings is built as a CONCATENATED bundle of its resolved
 //     import DAG (the #56 concatenated-twins pattern), so cross-module calls resolve into ONE module.
 //
-// ★ VERIFIED FINDING (2026-07-16): dss-supervisor's import-DAG bundle LINKS to real WASM — 471 B, 16
-//   flows — proven in ISOLATION (a fresh single-build process) 5 independent ways. So the supervisor's
-//   core loop reaches Stage-B WASM; the U2 "merge" is a SOURCE-bundling step that works today.
-//   HOWEVER `assembleWAT` (the wabt binding) is NOT cleanly re-entrant on that largest bundle: built as
-//   one of a BATCH in a shared process (or in a fast child process) it non-deterministically returns
-//   "module does not link". That is a wabt-binding robustness finding for R&D, NOT a DSS link failure —
-//   so this gate builds IN-PROCESS (stable at 9/10) and records the supervisor's isolation-link as a
-//   known fact rather than re-assembling it flakily on every run.
+// ★ RESOLVED (2026-07-16 evening): the supervisor bundle now builds IN-BATCH — 10/10, deterministic.
+//   The "wabt batch-flake" had TWO stacked causes, both fixed:
+//   (1) assembleWAT shared ONE cached wabt (Emscripten) instance across builds → residue; fixed with a
+//       fresh toolkit instance per build (factory cached; ~3 ms/instantiation — wat-assembler.ts).
+//   (2) The REAL deterministic blocker by fix-time: the P9.4 guarded-body adoption gate accepted
+//       PARTIALLY-lowered bodies (inline "#128-sibling" placeholders) that referenced $pN params the
+//       GIR signature didn't declare — WAT that does not even PARSE ("undefined local variable $p1",
+//       flow checkCapabilityBefore), blocking the whole 16-flow module. The adoption gate now rejects
+//       partial bodies fail-closed to the plain `unreachable` stub (wat-emitter.ts, isAdoptableGuardedBody).
+//   This gate's 60-char error truncation HID defect (2) behind the flake story — kept at 160 now.
+//   Conformance: core-compiler tests/wat-assembler-isolation.test.mjs; the ratchet below owns regression.
 //
 // Usage:
 //   node scripts/audit-dss-wasm-build.mjs --self-test        # prove the detectors fire (CI first)
@@ -34,8 +37,6 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const DSS = join(ROOT, "packages-galerina", "galerina-core-security", "src", "dss");
 const COMPILER = join(ROOT, "packages-galerina", "galerina-core-compiler", "dist", "index.js");
 const BASELINE = join(ROOT, "scripts", "baselines", "dss-wasm-build.json");
-// The supervisor bundle links in isolation (471 B) but wabt is flaky on it in a batch — see the header.
-const ISOLATION_LINKED = new Set(["dss-supervisor.fungi"]);
 
 const read = (p) => { const s = readFileSync(p, "utf8"); return s.charCodeAt(0) === 0xFEFF ? s.slice(1) : s; };
 const importsOf = (src) => [...src.matchAll(/^\s*import\s+"([^"]+)"\s*$/gm)].map((m) => m[1]);
@@ -69,7 +70,9 @@ async function buildModule(L, name) {
     const wat = L.renderWAT(L.buildWATModuleFromGIR(gir, undefined, name.replace(/\.fungi$/, ""), prog.ast, true));
     const asm = await L.assembleWAT(wat);
     if (asm.valid && asm.diagnostics.length === 0) return { name, mode, ok: true, bytes: asm.wasm.length };
-    return { name, mode, ok: false, why: `assemble ${JSON.stringify(asm.diagnostics).slice(0, 60)}` };
+    // 160 chars: the old 60-char cut hid the ACTUAL wabt error ("undefined local variable $p1")
+    // behind the generic "does not link" prefix for a full session. Show enough to diagnose.
+    return { name, mode, ok: false, why: `assemble ${JSON.stringify(asm.diagnostics).slice(0, 160)}` };
   } catch (e) { return { name, mode, ok: false, why: `throw ${String(e?.message ?? e).slice(0, 60)}` }; }
 }
 
@@ -90,9 +93,9 @@ if (process.argv.includes("--self-test")) {
   ok(results.length >= 8, `DSS corpus found (${results.length} modules)`);
   ok(results.some((r) => r.name === "dss-supervisor.fungi" && r.mode === "bundle"), "the supervisor is built in BUNDLE mode (import-DAG concatenation)");
   ok(results.filter((r) => r.ok).length >= 8, `≥8 modules build to WASM in-batch (${results.filter((r) => r.ok).length})`);
-  // NOTE: the supervisor bundle's isolation-link (471 B) is a VERIFIED FINDING (fresh-process build, 5×),
-  // but wabt is not re-entrant enough to re-assert it reliably inside this batch process — so it is
-  // recorded as a documented fact (header + R&D handover), not a flaky in-batch assertion.
+  // The supervisor bundle — the historical re-entrancy/partial-lowering victim — must build IN-BATCH
+  // (resolved 2026-07-16; see header). This is the specific detector for both fixed causes.
+  ok(results.some((r) => r.name === "dss-supervisor.fungi" && r.ok), "the supervisor bundle builds IN-BATCH (re-entrancy + partial-lowering fixes hold)");
   // The regression detector must FIRE on a planted un-buildable module (an undefined symbol).
   const bad = await (async () => {
     try {
@@ -112,14 +115,13 @@ const { results } = await run();
 const building = results.filter((r) => r.ok).map((r) => r.name).sort();
 const failing = results.filter((r) => !r.ok);
 for (const r of results) {
-  const note = !r.ok && ISOLATION_LINKED.has(r.name) ? "  (links in ISOLATION — 471 B; wabt batch-flaky, R&D)" : "";
-  console.log(`  ${r.ok ? "OK  " : "FAIL"} [${r.mode.padEnd(10)}] ${r.name.padEnd(24)} ${r.ok ? r.bytes + " B" : "→ " + r.why}${note}`);
+  console.log(`  ${r.ok ? "OK  " : "FAIL"} [${r.mode.padEnd(10)}] ${r.name.padEnd(24)} ${r.ok ? r.bytes + " B" : "→ " + r.why}`);
 }
-console.log(`  dss-wasm-build: ${building.length}/${results.length} modules build to real WASM in-batch (supervisor bundle links in isolation → effective ${building.length + failing.filter((f) => ISOLATION_LINKED.has(f.name)).length}/${results.length})`);
+console.log(`  dss-wasm-build: ${building.length}/${results.length} modules build to real WASM in-batch`);
 
 if (process.argv.includes("--update-baseline")) {
   mkdirSync(dirname(BASELINE), { recursive: true });
-  writeFileSync(BASELINE, JSON.stringify({ note: "DSS modules that build to WASM in-batch (RATCHET: may only GROW — a building module that regresses is RED). dss-supervisor links only in isolation (wabt batch-flaky); tracked separately.", generated: "audit-dss-wasm-build", building }, null, 2) + "\n");
+  writeFileSync(BASELINE, JSON.stringify({ note: "DSS modules that build to WASM in-batch (RATCHET: may only GROW — a building module that regresses is RED). Includes dss-supervisor since 2026-07-16 (re-entrancy + partial-lowering fixes).", generated: "audit-dss-wasm-build", building }, null, 2) + "\n");
   console.log(`  baseline recorded: ${building.length} building in-batch.`);
   process.exit(0);
 }

@@ -1,9 +1,10 @@
 {
-  "note": "DSS modules that build to WASM in-batch (RATCHET: may only GROW — a building module that regresses is RED). dss-supervisor links only in isolation (wabt batch-flaky); tracked separately.",
+  "note": "DSS modules that build to WASM in-batch (RATCHET: may only GROW — a building module that regresses is RED). Includes dss-supervisor since 2026-07-16 (re-entrancy + partial-lowering fixes).",
   "generated": "audit-dss-wasm-build",
   "building": [
     "capability-map.fungi",
     "dag-validator.fungi",
+    "dss-supervisor.fungi",
     "dwi-allocator.fungi",
     "emergency-sm.fungi",
     "epilogue-receipt.fungi",

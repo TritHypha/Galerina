@@ -3434,6 +3434,23 @@ export function buildWATModule(
   // expectedType (cross-flow Int64 literal-arg faithfulness). Module-level; restored below.
   const prevFlowParamBases = flowParamBases;
   flowParamBases = buildFlowParamBases(gir.ast);
+  // P9.4 adoption gate (the "FULLY succeeds" check, implemented — 2026-07-16): a guarded body is
+  // adoptable ONLY when (a) it carries NO fail-closed lowering placeholder — "#128-sibling" is the
+  // shared marker every partial-lowering stub embeds — and (b) it references no positional param
+  // $pN outside the flow's declared GIR signature. paramTypes is pure-flow-populated, so a guarded
+  // flow's AST-lowered body can reference $p1 while its signature declares zero params; that WAT
+  // does not even PARSE ("undefined local variable $p1"), and ONE such flow blocks the WHOLE
+  // module (observed: DSS dss-supervisor bundle, flow checkCapabilityBefore — 15 good flows held
+  // hostage). Fail closed to the plain `unreachable` stub instead: the module stays linkable and
+  // the flow traps if invoked, exactly like its effectful siblings.
+  const isAdoptableGuardedBody = (bodyText: string, declaredParamCount: number): boolean => {
+    if (bodyText.includes("#128-sibling")) return false; // partial lowering — not "fully succeeded"
+    for (const m of bodyText.matchAll(/\$p(\d+)\b/g)) {
+      if (Number(m[1]) >= declaredParamCount) return false; // body refs a param the signature lacks
+    }
+    return true;
+  };
+
   const functions: WATFunction[] = gir.flows.map((flow) => {
     const flowDeclaredEffects = getFlowEffects(flow);
     const isPureFlow = flow.qualifier === "pure" && flowDeclaredEffects.length === 0;
@@ -3496,7 +3513,7 @@ export function buildWATModule(
       if (guardedAstNode !== undefined) {
         const guardedParamNames = extractFlowParamNames(guardedAstNode);
         const guardedBody = emitWATFromFlowAST(guardedAstNode, guardedParamNames, staticConsts, recordLayoutRegistry, enumVariantRegistry);
-        if (guardedBody !== null) {
+        if (guardedBody !== null && isAdoptableGuardedBody(guardedBody, namedParams.length)) {
           body = guardedBody;
         }
       }

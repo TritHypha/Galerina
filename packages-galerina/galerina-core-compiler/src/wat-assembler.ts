@@ -150,20 +150,29 @@ export async function assembleWAT(
 // Phase 27 — wabt npm package integration
 // ---------------------------------------------------------------------------
 
-/** Cached wabt instance to avoid re-initialising per call. */
-let _wabtInstance: unknown = null;
+// Build-isolation finding (2026-07-16, R&D-adjudicated): wabt is an Emscripten artifact that
+// holds internal state across calls — its linear-memory arena, parsed-module registry, and
+// feature flags — so a SHARED cached instance made `assembleWAT` non-re-entrant: a bundle that
+// links cleanly as the FIRST build in a process non-deterministically failed ("module does not
+// link — undefined functions") as one of a BATCH (observed on the largest DSS supervisor
+// bundle). Fix = fresh toolkit instance per build; only the module FACTORY is cached (the
+// import). Measured cost: ~3 ms per instantiation after first load — negligible against the
+// correctness win. `parsed.destroy()` below stays (frees per-module handles promptly).
+// Conformance: tests/wat-assembler-isolation.test.mjs (two different bundles, one process,
+// both link); real-world detector: scripts/audit-dss-wasm-build.mjs ratchet.
+let _wabtFactory: (() => Promise<unknown>) | null = null;
 
 /**
- * Lazily loads and caches the wabt npm package.
- * Returns null if the package is not installed.
+ * Loads the wabt npm package and returns a FRESH toolkit instance per call
+ * (no cross-build residue). Returns null if the package is not installed.
  */
 async function loadWabt(): Promise<unknown> {
-  if (_wabtInstance !== null) return _wabtInstance;
   try {
-    // Dynamic import — wabt is an optional peer dependency
-    const wabtInit = (await import("wabt" as string)).default as () => Promise<unknown>;
-    _wabtInstance = await wabtInit();
-    return _wabtInstance;
+    if (_wabtFactory === null) {
+      // Dynamic import — wabt is an optional peer dependency
+      _wabtFactory = (await import("wabt" as string)).default as () => Promise<unknown>;
+    }
+    return await _wabtFactory();
   } catch {
     return null;
   }
