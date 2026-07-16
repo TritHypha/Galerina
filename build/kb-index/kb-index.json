@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1150,
+  "docCount": 1151,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -4268,6 +4268,49 @@
         "emit",
         "ack-effect-005-adjudication-plus-name-parity-leg-prerequisite-twins-emit-no-name",
         "main"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-effect-008-landed-first-effect-twin-code-plus-two-findings.md",
+      "title": "2026-07-16-ACK-effect-008-landed-first-effect-twin-code-plus-two-findings.md",
+      "headings": [
+        "FUNGI-EFFECT-008 (PRIVILEGED_EFFECT_ON_PLAIN_FLOW) — LANDED, both tiers",
+        "Two findings for the effect-checker alignment work",
+        "verify-first caught my own bug (worth a note)",
+        "Sequence"
+      ],
+      "codes": [
+        "FUNGI-EFFECT-008",
+        "FUNGI-EFFECT-004"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "effect",
+        "flow",
+        "effect-checker",
+        "plain",
+        "privileged",
+        "twin",
+        "alignment",
+        "landed",
+        "findings",
+        "own",
+        "fungi-effect-008",
+        "both",
+        "tiers",
+        "work",
+        "verify-first",
+        "caught",
+        "bug",
+        "worth",
+        "note",
+        "sequence",
+        "first",
+        "leg-0",
+        "payment",
+        "charge",
+        "pipeline"
       ]
     },
     {

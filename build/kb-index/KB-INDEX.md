@@ -1,4 +1,4 @@
-# Galerina KB index (1150 docs)
+# Galerina KB index (1151 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -386,6 +386,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-effect-005-adjudication-plus-NAME-parity-leg-prerequisite-twins-emit-no-name.md`
 - tasks: #20
 - terms: name, leg, twin, name-parity, gate, confirmed, stage-a, prerequisite, wart, fixed, frontier, order, code, next
+
+## 2026-07-16-ACK-effect-008-landed-first-effect-twin-code-plus-two-findings.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-effect-008-landed-first-effect-twin-code-plus-two-findings.md`
+- codes: FUNGI-EFFECT-008, FUNGI-EFFECT-004
+- terms: effect, flow, effect-checker, plain, privileged, twin, alignment, landed, findings, own, fungi-effect-008, both, tiers, work
 
 ## 2026-07-16-ACK-emit-parity-idea-caught-2-false-differentials-019-027-fixed-plus-gate.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-emit-parity-idea-caught-2-false-differentials-019-027-fixed-plus-gate.md`

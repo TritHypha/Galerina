@@ -2,7 +2,7 @@
 Generated: 2026-07-16
 
 ## Stats
-- Docs: 1148 | Edges: 3462 | Orphans: 92 | Stale links: 0 | FUNGI codes: 748
+- Docs: 1149 | Edges: 3462 | Orphans: 93 | Stale links: 0 | FUNGI codes: 748
 
 ## Document Registry (auto-generated)
 
@@ -45,6 +45,7 @@ Generated: 2026-07-16
 | 2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed.md | — | — | — | FUNGI-TYPE-011 |
 | 2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch.md | — | — | — | FUNGI-TYPE-001, FUNGI-TYPE-011 |
 | 2026-07-16-ACK-effect-005-adjudication-plus-NAME-parity-leg-prerequisite-twins-emit-no-name.md | — | — | — | — |
+| 2026-07-16-ACK-effect-008-landed-first-effect-twin-code-plus-two-findings.md | — | — | — | FUNGI-EFFECT-004, FUNGI-EFFECT-008 |
 | 2026-07-16-ACK-emit-parity-gate-caught-019-027-well-done.md | — | — | — | — |
 | 2026-07-16-ACK-emit-parity-idea-caught-2-false-differentials-019-027-fixed-plus-gate.md | — | — | — | FUNGI-TYPE-019, FUNGI-TYPE-027 |
 | 2026-07-16-ACK-honesty-correction-accepted-verified-plus-adjudication-of-the-11.md | — | — | — | FUNGI-BINDING-005, FUNGI-CHECK-002, FUNGI-HALLMARK-001, FUNGI-PREFILTER-002 |
@@ -1229,6 +1230,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-ACK-brands-003-cluster-landed-plus-frontier-heuristic-caveat.md` — 2026-07-16-ACK-brands-003-cluster-landed-plus-frontier-heuristic-caveat
 - `2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch.md` — 2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch
 - `2026-07-16-ACK-effect-005-adjudication-plus-NAME-parity-leg-prerequisite-twins-emit-no-name.md` — 2026-07-16-ACK-effect-005-adjudication-plus-NAME-parity-leg-prerequisite-twins-emit-no-name
+- `2026-07-16-ACK-effect-008-landed-first-effect-twin-code-plus-two-findings.md` — 2026-07-16-ACK-effect-008-landed-first-effect-twin-code-plus-two-findings
 - `2026-07-16-ACK-emit-parity-idea-caught-2-false-differentials-019-027-fixed-plus-gate.md` — 2026-07-16-ACK-emit-parity-idea-caught-2-false-differentials-019-027-fixed-plus-gate
 - `2026-07-16-ACK-match-arm-cluster-landed-022-023-live-021-dead.md` — 2026-07-16-ACK-match-arm-cluster-landed-022-023-live-021-dead
 - `2026-07-16-ACK-name-parity-leg-landed-green-baseline-severity-deferred.md` — 2026-07-16-ACK-name-parity-leg-landed-green-baseline-severity-deferred
