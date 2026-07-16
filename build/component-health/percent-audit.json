@@ -1,0 +1,261 @@
+{
+  "generatedBy": "scripts/component-health.mjs --audit-html",
+  "provenance": {
+    "available": true,
+    "branch": "main",
+    "sha": "54d1afba",
+    "detached": false,
+    "dirty": true
+  },
+  "shipReadinessPct": 97.87234042553192,
+  "ztAvg": 75,
+  "buildAvg": 75,
+  "trackingRegistryCount": 20,
+  "sections": [
+    {
+      "key": "zero-trust-thesis",
+      "title": "Zero-Trust thesis",
+      "kind": "meter",
+      "avg": 75,
+      "rows": [
+        {
+          "label": "Compiler",
+          "pct": 100,
+          "note": "✅ shipped — policy + execution DAG proven at build time"
+        },
+        {
+          "label": "I/O — OS kernel",
+          "pct": 66,
+          "note": "◑ auth gate (kernel.fungi) + sentinel-io decision surface FULLY twinned (integrity LSIO-INTEGRITY-001 · zero-copy LSIO-MAP-001 · manifest LSIO-MANIFEST-001) checker-clean · full kernel-bypass EXECUTION = design intent (DSS.wasm #102-106, #143 switch)"
+        },
+        {
+          "label": "Packages",
+          "pct": 98,
+          "note": "◑ signed admission fully twinned — central-index (registry-index) + per-package manifest (package-admission) + kernel FUSION admission (descriptor · hash · sidecar · revocation · sig-policy · registry · capability — fuse-admission.fungi) checker-clean · remaining = #143 execution + Phase-28 registry-data wiring"
+        },
+        {
+          "label": "Memory",
+          "pct": 62,
+          "note": "◑ governed-decision surface FULLY twinned (validator · pool-config · segmentation LSM-SEGV · trit-tamper LSM-TRIT-CORRUPT · allocate/free/UAF-guard LSM-UAF-001 + REJECT-scrub — 5 checker-clean .fungi) · real WASM isolation execution = design intent (#143 switch)"
+        },
+        {
+          "label": "TLSTP — zero-middleware",
+          "pct": 48,
+          "note": "◑ ALL 6 core-network border DECISION surfaces twinned (.fungi, fail-closed; twin gate 20/20): cert-gate (S1 K3 pin·chain·expiry·revocation vAnd, unknown→DENY) · cors-policy (deny-by-default read admission) · inbound-guard (port admission + fail-closed rate-limit) · defensive-controls (RD-0325/0326: trusted-proxy · uniform responses · opaque-id · bounded pagination) · admission-feedback (degrade-only K3 telemetry self-throttle — toward DENY, never manufactures ALLOW) · egress-guard (SSRF octet→category classification + deny-by-default egress verdict + DNS-rebind fold + URL guard) — core-network decision surface COMPLETE; the B8 ADMISSION fold (b8-admission.fungi) is now twinned + EXECUTION-PROVEN ≡ the shipped K3 calculus (RD-0361 differential, twin gate 7 differential); remaining = in-sandbox decryption EXECUTION (DSS.wasm TCB, #143 switch) + S4 recovering-FSM + B8 transport plumbing (raw-byte shim/ECH)"
+        }
+      ]
+    },
+    {
+      "key": "build-progress",
+      "title": "Build progress",
+      "kind": "meter",
+      "avg": 75,
+      "rows": [
+        {
+          "label": "Specification / KB",
+          "pct": 100,
+          "status": null,
+          "live": false
+        },
+        {
+          "label": "Lexer / Parser / Verifier / Contract / Value-state",
+          "pct": 100,
+          "status": null,
+          "live": false
+        },
+        {
+          "label": "DRCM Phases 1-7 (Stage-A simulation)",
+          "pct": 100,
+          "status": null,
+          "live": false
+        },
+        {
+          "label": "CBOR Manifests (RFC 8949)",
+          "pct": 100,
+          "status": null,
+          "live": false
+        },
+        {
+          "label": "Tests — full suite",
+          "pct": 100,
+          "status": null,
+          "live": true
+        },
+        {
+          "label": "Stage-B self-hosting — interpreter parity",
+          "pct": 100,
+          "status": null,
+          "live": false
+        },
+        {
+          "label": "Type checker / Effect checker",
+          "pct": 90,
+          "status": null,
+          "live": false
+        },
+        {
+          "label": "WAT emitter",
+          "pct": 89,
+          "status": null,
+          "live": false
+        },
+        {
+          "label": "Runtime interpreter",
+          "pct": 87,
+          "status": null,
+          "live": false
+        },
+        {
+          "label": "Application-framework layer",
+          "pct": 72,
+          "status": null,
+          "live": false
+        },
+        {
+          "label": "Post-Quantum & Hardware Security",
+          "pct": 40,
+          "status": null,
+          "live": false
+        },
+        {
+          "label": "Passive Execution Plans & Target Bridges",
+          "pct": 35,
+          "status": null,
+          "live": false
+        },
+        {
+          "label": "AI Inference Tower (BitNet/Groq/NVFP4)",
+          "pct": 30,
+          "status": null,
+          "live": false
+        },
+        {
+          "label": "Photonic / Ternary Computing",
+          "pct": 3,
+          "status": null,
+          "live": false
+        },
+        {
+          "label": "Stage-B self-hosting — WASM execution (P9)",
+          "pct": null,
+          "status": "in progress — VERIFIED 2026-07-12: all 7 stage twins build→WASM (R0) + #105-admit (R1); frontier = R3 byte-parity per stage (only lexer/tokenize proven so far)",
+          "live": false
+        },
+        {
+          "label": "B8 governed HTTP transport (TLSTP)",
+          "pct": null,
+          "status": "in progress — admission fold (b8-admission.fungi) execution-proven ≡ the shipped K3 calculus (the converged build-first); remaining = raw-byte shim + S4 recovering-FSM + ECH/OHTTP + DSS.wasm in-sandbox isolation",
+          "live": false
+        }
+      ]
+    },
+    {
+      "key": "tracking-registry",
+      "title": "Tracking registry",
+      "kind": "registry",
+      "avg": null,
+      "rows": [
+        {
+          "item": "Twin corpus + 6 sentinels",
+          "state": "shipped",
+          "detail": "~20 pure .fungi verdict twins checker-clean across 9 governed dirs (execution is RD-0361)"
+        },
+        {
+          "item": "Hardening / residency (RD-0358)",
+          "state": "shipped",
+          "detail": "H-1..H-7 INTEGRATED + MERGED to main (f7ff18df, task #52) — per-unit cherry-pick keep-green; H-6 memory.spill deny-only + trit-conformance 6/6 + example 182; remaining 🔒 H-5 signed-FuseDescriptor re-sign + #143 exec; H-4 honestly partial"
+        },
+        {
+          "item": "Epistemic trust-trit (RD-0337)",
+          "state": "shipped",
+          "detail": "PROVEN/UNKNOWN/REFUTED runtime + compiler mirror (Option A) + trit-conformance gate 6/6"
+        },
+        {
+          "item": "Hallmark open types (RD-0353 H1)",
+          "state": "shipped",
+          "detail": "developer-minted nominal types + mandatory assay gates; FUNGI-HALLMARK-001..005, example 097"
+        },
+        {
+          "item": "CANONICAL_EFFECTS registry (RD-0341)",
+          "state": "shipped",
+          "detail": "single-source domain.verb + anti-drift self-tests; memory.spill deny-only, FUNGI-EFFECT-006"
+        },
+        {
+          "item": "Contract Registry (RD-0359)",
+          "state": "shipped",
+          "detail": "gen-contract-registry.mjs BUILT — 840 contracts across 446 .fungi → docs/contract-registry/CONTRACT_REGISTRY.md + .json; parser-authoritative flow list + intent extraction; --self-test + --check (CI-ready)"
+        },
+        {
+          "item": "Workspace package families",
+          "state": "shipped",
+          "detail": "94-pkg denominator built (target×9 · data×12 · db×5 · web×6 · ai · tools); 2 orphans #32-exempt"
+        },
+        {
+          "item": "Devtools audit suite",
+          "state": "shipped",
+          "detail": "77 tools · 45 audits (incl. claim-hygiene public-doc gate + env-var-literal-strict path-leak + the fungi-corpus-check compile gate: 447 tracked .fungi found (myco-graph∪git-index), 211 checkable vs the real `galerina check`, ratcheted 49-file baseline) · keep-green + gate-selftests meta-gate; twin-audit execution column shipped (shadow|differential|authoritative)"
+        },
+        {
+          "item": "myco",
+          "state": "shipped",
+          "detail": "v0.1.2 (graph-indexed grep replacement, own subproject); silent size-cap skips now surfaced + VERSION drift gate; npm publish 🔒 outward"
+        },
+        {
+          "item": "Execution-cutover (RD-0361)",
+          "state": "building",
+          "detail": "execution column SHIPPED · 27 twins DIFFERENTIAL (R0 build→R1 #105-admit→R3 ≡ real .ts; ALL string-verdict twins LABEL-verified via the emitter intern-table decode; secret-gate now executes over a REAL Array<SecretPresence> via the RD-0389 record-marshalling ABI, ARG direction) · 1 shadow (kernel=P9-lane) · R4 authority flip 🔒 owner (#143)"
+        },
+        {
+          "item": "Value-unit types (RD-0349)",
+          "state": "building",
+          "detail": "I2/I3 done · I1 ISO-4217 unlocked (§5) · I4–I6 queued; no float bridge"
+        },
+        {
+          "item": "Package Standard + pub ladder",
+          "state": "building",
+          "detail": "Standard v1 + pkg-census + 9 schematics done; R1–R6 rungs pending; .graph amendment 🔒 owner"
+        },
+        {
+          "item": "RD-0363/0364/0365 wiring (R&D done)",
+          "state": "building",
+          "detail": "R&D COMPLETE — all 3 authored in the KB (galerina-rd-0363/0364/0365). RD-0363 replay-admission + RD-0364 inference-governance DECISION surfaces execute through #105 (R0→R1, verdict≡spec); RD-0365 key-custody design-done. What remains is BUILD not R&D: P/I wiring increments (0363/0364) + implement 0365. (Renamed 2026-07-15 — 'Missing R&D' was a stale backlog label; the R&D is not missing.)"
+        },
+        {
+          "item": "Security-infra designs (×4)",
+          "state": "build-pending",
+          "detail": "SBOM tool exists; fuzz RD-0316 · Z3 RD-0318 · tabletop RD-0319 unlocked (§5), unbuilt"
+        },
+        {
+          "item": "Signing-key custody",
+          "state": "build-pending",
+          "detail": "the custody LADDER (where key BYTES live) — NOT key-rotation (which SHIPS as tower-citizen/key-rotation.ts, the triple-lock append-only lifecycle, #28/D2): hybrid key ceremony #34 done; L1 env.spore + vault move 🔒 owner-side; TPM(L3)/HW(L4) post-v1"
+        },
+        {
+          "item": "ZTF-KB path-leak guard",
+          "state": "build-pending",
+          "detail": "kb-path-leak.mjs built; 346-leak/101-file remediation + CI wiring unlocked (§5)"
+        },
+        {
+          "item": "Self-hosting Stages 3–6",
+          "state": "post-v1",
+          "detail": "bootstrap fixpoint · crypto FFI seam · .fungi↔host path · floor-by-floor; P9, non-v1-gate"
+        },
+        {
+          "item": "DSS.wasm supervisor (#102–106)",
+          "state": "post-v1",
+          "detail": "real Wasmtime TCB (kernel-bypass / in-sandbox decrypt); design-spec exists; unlocked-to-build, non-v1-gate"
+        },
+        {
+          "item": "KB category indexes",
+          "state": "post-v1",
+          "detail": "auto-generated KB grouping (API/Kernel/…); trigger: v1-freeze 🔒 owner"
+        },
+        {
+          "item": "TritMesh / .hypha / TritMeshQL",
+          "state": "post-v1",
+          "detail": "the NEXT project (database on Galerina); RD-0293/0294/0306/0312 designs"
+        }
+      ]
+    }
+  ]
+}

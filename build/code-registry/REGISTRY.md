@@ -8,12 +8,12 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 
 | status | count | meaning |
 |---|---|---|
-| live | 122 | emitted with an exported constant |
-| inline | 145 | emitted, NO exported constant (R4 — Stage F) |
+| live | 129 | emitted with an exported constant |
+| inline | 146 | emitted, NO exported constant (R4 — Stage F) |
 | referenced | 97 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 8 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
 | phantom | 110 | doc-only mention, not in source (drift — DOC-004) |
-| ref | 173 | referenced only (no def/emit) |
+| ref | 174 | referenced only (no def/emit) |
 
 ## RESERVED — defined but not emitted (std #1: tag wire-or-retire)
 
@@ -542,7 +542,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 |---|---|---|---|
 | FUNGI-GEN-TEST-005 | ref | — | — |
 
-### GOV (22)
+### GOV (23)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -567,6 +567,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-GOV-019 | live | LIMITS_UNKNOWN_FIELD | warning |
 | FUNGI-GOV-020 | live | AUTHORITY_OVERLY_BROAD | warning |
 | FUNGI-GOV-3VL-001 | live | INDETERMINATE_COLLAPSED_TO_DENY | — |
+| FUNGI-GOV-3VL-004 | inline | OrderedComparisonOnVerdict | — |
 | FUNGI-GOV-TPL-001 | inline | — | — |
 
 ### GRAPH (6)
@@ -589,6 +590,19 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-HALLMARK-003 | live | HALLMARK_GATE_REQUIRED | error |
 | FUNGI-HALLMARK-004 | live | UNKNOWN_HALLMARK_OP | error |
 | FUNGI-HALLMARK-005 | live | UNDECLARED_HALLMARK_OP | error |
+
+### HARDEN (8)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-HARDEN-00 | ref | — | — |
+| FUNGI-HARDEN-001 | live | UNKNOWN_RESIDENCY_TIER | error |
+| FUNGI-HARDEN-002 | live | UNKNOWN_ERASE_MODE | error |
+| FUNGI-HARDEN-003 | live | UNKNOWN_TIMING_DISCIPLINE | error |
+| FUNGI-HARDEN-004 | live | HARDENING_LOOSEN_NOT_AUDITED | error |
+| FUNGI-HARDEN-005 | live | RESIDENCY_CEILING_UNHONOURABLE | error |
+| FUNGI-HARDEN-006 | live | SECRET_DEPENDENT_TIMING | warning |
+| FUNGI-HARDEN-007 | live | SPILL_REFUTED | error |
 
 ### HINT (1)
 

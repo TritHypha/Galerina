@@ -1,8 +1,8 @@
 # Galerina KB Graph Report
-Generated: 2026-07-12
+Generated: 2026-07-16
 
 ## Stats
-- Docs: 951 | Edges: 3057 | Orphans: 20 | Stale links: 4 | FUNGI codes: 729
+- Docs: 1023 | Edges: 3604 | Orphans: 1 | Stale links: 4 | FUNGI codes: 747
 
 ## Document Registry (auto-generated)
 
@@ -80,6 +80,7 @@ Generated: 2026-07-12
 | dp-rd-0309-photonic-substrate-cannot-host-pq-authentication.md | — | — | — | — |
 | dp-rd-0327-canonical-field-names-as-classification-carriers.md | — | — | — | — |
 | effect-checker-and-boundary-checker.md | — | — | — | FUNGI-BOUNDARY-001, FUNGI-BOUNDARY-002, FUNGI-BOUNDARY-003, FUNGI-BOUNDARY-004, FUNGI-EFFECT-001 …+3 |
+| EMAIL-galerina-nesting-two-tables-2026-07-16.md | — | — | — | — |
 | encapsulation-model.md | — | — | — | FUNGI-ENCAP-001 |
 | error-propagation-chains.md | — | — | — | — |
 | excluded-features.md | — | — | — | — |
@@ -548,7 +549,7 @@ Generated: 2026-07-12
 | galerina-rd-0365-tpm-enclave-key-custody-ladder.md | — | — | 🧪 R&D / DESIGN + RECOMMENDATION (propose-only) · owner-authorized 2026-07-12 · SAFE-internal | — |
 | galerina-rd-0366-without-ts-ceiling-govern-dont-absorb-trichotomy.md | — | — | 🧪 R&D ADJUDICATION + DOCTRINE (propose-only) · SAFE-internal · 2026-07-12 | — |
 | galerina-rd-0367-optimal-brain-roster-grounded-in-self-knowledge.md | — | — | 🧪 R&D / OPERATING-MODEL DESIGN (propose-only) · owner-authorized 2026-07-12 ("R&D this, find the best path — you know yourself better than anyone") · SAFE-internal | — |
-| galerina-rd-0368-root-rotation-ceremony-and-key-housecleaning-INTERNAL.md | — | — | owner-action runbook · written 2026-07-12 · **INTERNAL — do not publish** (documents a live key-loss + a frozen-registry gap; same category as [[galerina-rd-0319-ir-key-compromise-runbook-key149-plan]]). | FUNGI-KEY-002 |
+| galerina-rd-0368-root-rotation-ceremony-and-key-housecleaning-INTERNAL.md | — | — | ✅ **CEREMONY EXECUTED 2026-07-12** — Galerina `main` @ `46dce6b7` (pushed). Root rotated `ab46f4c7` (lost) → `21415420b447e219` (hybrid); `revocations.json` re-signed, pin moved, `assertRegistryTrustworthy` green, suite 92/92·7104, `8eecf418` revocation preserved. **Ledger unfrozen.** Runbook retained below; §6 house-clean (2 orphans → `governance/retired/`) is the remaining step. · written 2026-07-12 · **INTERNAL — do not publish** (documents a live key-loss + a frozen-registry gap; same category as [[galerina-rd-0319-ir-key-compromise-runbook-key149-plan]]). | FUNGI-KEY-002 |
 | galerina-rd-34b-paramtaint-buildspec-2026-06-24.md | — | — | verify-before-build — **build-ready spec; the strict-profile escalation is owner-gated** | FUNGI-VALUESTATE-003, FUNGI-VALUESTATE-008 |
 | galerina-rd-53-azt-selfcert-and-blackhole-protocol-2026-06-23.md | — | — | — | FUNGI-GOV-3, FUNGI-MATCH-001, FUNGI-PCI-001, FUNGI-PRIVACY-013, FUNGI-SUBSTRATE-001 |
 | galerina-rd-59-js-quirks-vs-galerina-2026-06-25.md | — | — | — | FUNGI-NAME-001, FUNGI-NAME-002, FUNGI-TYPE-004, FUNGI-TYPE-008 |
@@ -660,7 +661,7 @@ Generated: 2026-07-12
 | galerina-third-party-plugin-authoring-guide.md | — | — | — | FUNGI-EFFECT-001, FUNGI-EFFECT-005, FUNGI-EFFECT-006, FUNGI-PARSE-001, FUNGI-PKG-001 …+3 |
 | galerina-threat-model-unleashed-2026-06-25.md | — | — | — | FUNGI-EFFECT-003, FUNGI-IMPORT-005, FUNGI-IMPORT-006, FUNGI-PARSE-001, FUNGI-STDLIB-002 …+2 |
 | galerina-three-valued-governance.md | — | — | spike sub-spec + implementation (Direction **A** of the photonic/ternary R&D agenda). | FUNGI-GOV-004, FUNGI-GOV-3, FUNGI-SAFETY-003 |
-| galerina-tlstp-0069-dtm-degrade-only.md | — | — | BUILD-GUIDE for an adopted 0065–0070 transport/auth R&D survivor. Design/spec passed the bar; build is hub/owner-gated (the 0050 exporter it depends on is net-new and owner-gated). **Read-only citations** resolve against `<local-path>` as `file:line`. | FUNGI-GOV-3, FUNGI-SUBSTRATE-001 |
+| galerina-tlstp-0069-dtm-degrade-only.md | — | — | BUILD-GUIDE for an adopted 0065–0070 transport/auth R&D survivor. Design/spec passed the bar; build is hub/owner-gated (the 0050 exporter it depends on is net-new and owner-gated). **Read-only citations** resolve against `Galerina` as `file:line`. | FUNGI-GOV-3, FUNGI-SUBSTRATE-001 |
 | galerina-tlstp-0070-tampertrust.md | — | — | — | FUNGI-GOV-3, FUNGI-SUBSTRATE-001, FUNGI-SUBSTRATE-002, FUNGI-SUBSTRATE-003, FUNGI-SUBSTRATE-004 |
 | galerina-tlstp-build-guide-index.md | — | — | — | FUNGI-PRIVACY-002 |
 | galerina-tlstp-s1-cert-gate.md | — | — | — | FUNGI-GOV-3 |
@@ -712,46 +713,94 @@ Generated: 2026-07-12
 | HANDOFF-main-od5-graph-not-a-language-2026-07-03.md | — | — | — | — |
 | HANDOFF-main-od5-review-and-tritmeshql-2026-07-03.md | — | — | — | — |
 | HANDOFF-main-stoppers-and-questions-2026-07-03.md | — | — | — | FUNGI-LIMIT-001 |
+| HANDOVER-benchmark-stability-galerina-more-stable-than-rust-2026-07-15.md | — | — | — | — |
+| HANDOVER-benchmark-two-regressions-isolate-2026-07-12.md | — | — | — | — |
+| HANDOVER-checker-interpreter-to-100-grounded-plan-2026-07-16.md | — | — | — | FUNGI-GOV-010, FUNGI-GOV-3 |
 | HANDOVER-component-build-stoppers-without-ts-2026-07-12.md | — | — | — | FUNGI-TYPE-005 |
 | HANDOVER-crypto-floor-decision-to-main-2026-07-11.md | — | — | — | — |
 | HANDOVER-diagram-refresh-hallmark-typesafety-hardening-2026-07-12.md | — | — | — | FUNGI-VALUESTATE-003 |
+| HANDOVER-drift-consistency-resource-stability-for-rd-2026-07-15.md | — | — | — | — |
+| HANDOVER-drift-protection-and-flat-resource-envelope-2026-07-15.md | — | — | — | — |
+| HANDOVER-drive-to-100-worklist-2026-07-16.md | — | — | — | FUNGI-GOV-3 |
+| HANDOVER-dss-wasm-compile-probe-2026-07-12.md | — | — | — | — |
 | HANDOVER-galerina-docs-examples-corrections-2026-07-10.md | — | — | — | FUNGI-SYNTAX-014 |
 | HANDOVER-galerina-finish-push-2026-07-12.md | — | — | — | FUNGI-EFFECT-006, FUNGI-HARDEN-001, FUNGI-HARDEN-005, FUNGI-NUMERIC-001 |
 | HANDOVER-galerina-framework-api-server-schematic-2026-07-09.md | — | — | decision-ready for the MAIN Galerina session. **Scope:** read-only source verification against the live tree; nothing in the Galerina repo was modified to produce this document. | — |
+| HANDOVER-galerina-hotpath-engine-for-main-2026-07-15.md | — | — | — | — |
 | HANDOVER-galerina-lint-unify-and-package-2026-07-11.md | — | — | — | — |
+| HANDOVER-galerina-logic-primer-three-valued-for-main-2026-07-15.md | — | — | — | FUNGI-GOV-3 |
+| HANDOVER-galerina-only-scope-and-reference-doc-reply-2026-07-15.md | — | — | — | — |
 | HANDOVER-governed-memory-residency-hardening-auto-2026-07-11.md | — | — | — | FUNGI-EFFECT-006, FUNGI-HARDEN-007, FUNGI-RETAIN-001, FUNGI-TYPE-003 |
 | HANDOVER-hardening-integrated-and-selfhosting-frontier-2026-07-12.md | — | — | — | FUNGI-EFFECT-006, FUNGI-HARDEN-001, FUNGI-HARDEN-006, FUNGI-HARDEN-007, FUNGI-PKG-001 |
+| HANDOVER-hotpath-tritmesh-roadmap-2026-07-15.md | — | — | — | — |
 | HANDOVER-import-governance-audit-and-patch-2026-07-11.md | — | — | — | FUNGI-EFFECT-004, FUNGI-EFFECT-005, FUNGI-EFFECT-006 |
+| HANDOVER-instruct-main-compiler-to-100pct-2026-07-15.md | — | — | — | — |
+| HANDOVER-instruct-main-cost-model-doc-add-construct-table-2026-07-16.md | — | — | — | — |
+| HANDOVER-instruct-main-depth-ladder-builds-2026-07-16.md | — | — | — | — |
+| HANDOVER-instruct-main-myco-0-1-1-and-devtools-review-2026-07-16.md | — | — | — | — |
+| HANDOVER-instruct-main-nesting-cost-model-doc-2026-07-15.md | — | — | — | — |
 | HANDOVER-licensing-compliance-and-gpl-posture-2026-07-11.md | — | — | — | — |
 | HANDOVER-main-bend-interaction-combinators-rd0257-2026-07-04.md | — | — | — | FUNGI-SUBSTRATE-001 |
 | HANDOVER-main-full-control-of-galerina-2026-07-03.md | — | — | — | — |
+| HANDOVER-MASTER-all-unlocked-drive-to-100pct-2026-07-15.md | — | — | — | — |
+| HANDOVER-MASTER-cycle-todo-sweep-2026-07-15.md | — | — | — | — |
+| HANDOVER-MASTER-main-endphase-rd0389-cycle-2026-07-15.md | — | — | — | — |
+| HANDOVER-MASTER-updated-main-endphase-2026-07-15.md | — | — | — | FUNGI-GOV-3 |
+| HANDOVER-MORNING-start-here-2026-07-16.md | — | — | — | FUNGI-GOV-010, FUNGI-PARSE-001, FUNGI-SYNTAX-011 |
+| HANDOVER-myco-0-1-2-silent-cap-and-version-drift-2026-07-16.md | — | — | shipped in-tree. Build clean, tests 11 → 14, CLI smoke-verified. | — |
+| HANDOVER-noise-immune-benchmarking-build-instructions-2026-07-15.md | — | — | — | — |
 | HANDOVER-package-build-readiness-2026-07-11.md | — | — | — | FUNGI-GATELANG-002 |
 | HANDOVER-package-schematics-build-2026-07-11.md | — | — | — | — |
 | HANDOVER-pnpm-workspaces-migration-and-graph-enforcement-2026-07-11.md | — | — | — | — |
 | HANDOVER-post-RD-0320-2026-07-10.md | — | — | — | — |
 | HANDOVER-RD-0302-streaming-completion-2026-07-09.md | — | — | — | — |
 | HANDOVER-RD-0320-onward-2026-07-10.md | — | — | — | FUNGI-MATCH-001, FUNGI-PRIVACY-002, FUNGI-TAINT-001 |
+| HANDOVER-rd-complete-does-not-equal-build-complete-2026-07-15.md | — | — | — | — |
+| HANDOVER-rd0361-twin-round-2-packages-complete-2026-07-15.md | — | — | — | — |
+| HANDOVER-reference-docs-reverification-and-questions-2026-07-15.md | — | — | — | FUNGI-TYPE-001 |
+| HANDOVER-registry-missing-rd-label-fix-and-roadmap-rd-sweep-2026-07-15.md | — | — | — | — |
+| HANDOVER-REPLY-benchmark-stability-and-unlocked-subsystems-2026-07-15.md | — | — | — | — |
+| HANDOVER-REPLY-drift-asks-blessed-rd0393-and-reconciliation-2026-07-15.md | — | — | — | FUNGI-RES-001 |
 | HANDOVER-REPLY-main-rd0337-hardening-2026-07-12.md | — | — | — | FUNGI-HARDEN-001 |
 | HANDOVER-REPLY-main-rd0360-h6-memory-spill-2026-07-12.md | — | — | — | FUNGI-EFFECT-006, FUNGI-HARDEN-00, FUNGI-HARDEN-005, FUNGI-HARDEN-006, FUNGI-HARDEN-007 |
 | HANDOVER-REPLY-main-rd0361-t1-execution-cutover-2026-07-12.md | — | — | — | — |
 | HANDOVER-REPLY-owner-gated-vs-undelivered-rd-2026-07-12.md | — | — | — | — |
+| HANDOVER-REPLY-p-flag-is-value-layer-and-myco-docs-landed-2026-07-16.md | — | — | — | FUNGI-GOV-3 |
+| HANDOVER-REPLY-rd0361-escalation-closed-and-session-close-2026-07-15.md | — | — | — | — |
+| HANDOVER-REPLY-rd0361-twin-round-2-2026-07-15.md | — | — | — | — |
 | HANDOVER-REPLY-rd0366-without-ts-adjudication-2026-07-12.md | — | — | — | FUNGI-HARDEN-007 |
+| HANDOVER-REPLY-rd0389-record-marshalling-secret-gate-closed-2026-07-15.md | — | — | — | — |
+| HANDOVER-REPLY-rd0389-verified-closed-and-rd-queue-close-2026-07-15.md | — | — | — | FUNGI-HOT-001 |
+| HANDOVER-REPLY-reference-docs-questions-answered-2026-07-15.md | — | — | — | — |
+| HANDOVER-REPLY-session-close-rd-corrections-2026-07-15.md | — | — | — | — |
+| HANDOVER-REPLY-todo-continuation-verified-and-adopted-2026-07-15.md | — | — | — | — |
+| HANDOVER-REPLY-tri-lint-series-confirmed-and-frontier-census-guidance-2026-07-16.md | — | — | — | FUNGI-GOV-3 |
+| HANDOVER-REPLY-zt-thesis-twin-round-2026-07-15.md | — | — | — | — |
 | HANDOVER-RnD-master-index-2026-07-09.md | — | — | — | — |
 | HANDOVER-rnd-research-session-2026-07-01.md | — | — | — | — |
 | HANDOVER-RnD-response-to-main-2026-07-09.md | — | — | — | — |
 | HANDOVER-session-close-and-resume-2026-07-12.md | — | — | — | — |
+| HANDOVER-session-close-pre-compact-2026-07-15.md | — | — | — | — |
 | HANDOVER-session-master-2026-07-11.md | — | — | — | FUNGI-VALUESTATE-008 |
 | HANDOVER-session-requests-log-2026-07-12.md | — | — | — | — |
 | HANDOVER-super-RD-0303-to-RD-0320-2026-07-10.md | — | — | — | — |
+| HANDOVER-technical-claims-audit-action-2026-07-15.md | — | — | — | — |
+| HANDOVER-technical-code-level-impact-tri-and-axes-2026-07-16.md | — | — | — | — |
+| HANDOVER-todo-continuation-noise-gate-b5a-e2e-2026-07-15.md | — | — | — | — |
+| HANDOVER-todo-sweep-2026-07-15.md | — | — | — | — |
+| HANDOVER-tri-lint-004-and-zt-build-tracking-cycle-2026-07-16.md | — | — | — | FUNGI-CHECK-001, FUNGI-GOV-3, FUNGI-MATCH-001 |
 | HANDOVER-tritmesh-session-2026-07-04.md | — | — | — | FUNGI-SECRET-004, FUNGI-SUBSTRATE-001 |
+| HANDOVER-ts-still-present-truth-census-and-label-fix-2026-07-16.md | — | — | — | — |
+| HANDOVER-unlocked-subsystems-to-100pct-fungi-2026-07-15.md | — | — | — | FUNGI-GOV-3, FUNGI-HALLMARK-001, FUNGI-TIER-001 |
 | HANDOVER-v1-finish-line-cutover-and-gap-map-2026-07-12.md | — | — | — | FUNGI-EFFECT-006, FUNGI-HALLMARK-001, FUNGI-TYPE-005 |
 | HANDOVER-value-unit-types-and-hallmark-open-types-2026-07-11.md | — | — | — | FUNGI-HALLMARK-001, FUNGI-TYPE-0, FUNGI-TYPE-003, FUNGI-TYPE-004, FUNGI-VALUESTATE-004 |
+| HANDOVER-zt-thesis-twin-round-and-registry-status-2026-07-15.md | — | — | — | — |
 | hello-world-api-pattern.md | — | — | — | — |
 | http-method-declarations.md | — | — | — | — |
 | hybrid-electronic-optical-compute.md | — | — | — | — |
 | ihsa-storage-policy.md | — | — | — | FUNGI-EFFECT-001, FUNGI-STORAGE-001, FUNGI-VALUESTATE-003 |
 | INDEX.md | — | — | — | — |
-| KB-CATEGORY-INDEX.md | — | — | — | FUNGI-EFFECT-006, FUNGI-PRIVACY-001, FUNGI-PRIVACY-002, FUNGI-RETAIN-001 |
+| KB-CATEGORY-INDEX.md | — | — | — | FUNGI-EFFECT-006, FUNGI-HOT-00, FUNGI-PRIVACY-001, FUNGI-PRIVACY-002, FUNGI-RETAIN-001 |
 | legacy-pattern-restrictions.md | — | — | — | — |
 | license-report.md | — | — | — | — |
 | lifecycle-state-system.md | — | — | — | FUNGI-STATE-001, FUNGI-STATE-002, FUNGI-STATE-003, FUNGI-STATE-004, FUNGI-STATE-005 …+1 |
@@ -843,6 +892,25 @@ Generated: 2026-07-12
 | quiet-runtime-secure-defaults.md | — | — | — | — |
 | rd-0055-beyond-bump-memory-tri-photonic.md | — | — | — | — |
 | rd-0114-virtual-3d-spatial-photonics-absorbed.md | — | — | — | FUNGI-SUBSTRATE-001 |
+| RD-0381-nvleak-countermeasure-tritmesh-db-memory-sidechannel-defense.md | — | — | — | — |
+| RD-0382-galerina-hotpath-execution-order-arena-buildable-spec.md | — | — | — | — |
+| RD-0383-claim-scan-detector-evidence-matrix-enforcement.md | — | — | — | — |
+| RD-0384-faster-mushroom-trusted-environment-threat-model-delta.md | — | — | — | — |
+| RD-0385-true-quantum-communications-scope-and-governance-position.md | — | — | — | — |
+| RD-0386-resilient-networking-scope-and-honest-position.md | — | — | — | — |
+| RD-0387-sponsorship-possibility-sweep-and-gap-fills.md | — | — | — | — |
+| RD-0388-galerina-hotpath-triple-lock-admission-and-prior-art.md | — | — | — | — |
+| RD-0389-record-marshalling-abi-mk-record-for-twins-and-p9-parser.md | — | — | — | — |
+| RD-0390-lproof-semantics-consolidated-spec.md | — | — | — | FUNGI-GOV-3 |
+| RD-0391-hotpath-lock1-eligibility-predicate-contract-clause-spec.md | — | — | — | FUNGI-GOV-3, FUNGI-HOT-00, FUNGI-HOT-001, FUNGI-HOT-002, FUNGI-HOT-003 …+7 |
+| RD-0392-closing-the-wasm-losing-benchmarks-under-zero-trust.md | — | — | — | — |
+| RD-0393-resource-budget-contract-element-declared-envelope-spec.md | — | — | — | FUNGI-RES-00, FUNGI-RES-001, FUNGI-RES-002, FUNGI-RES-003, FUNGI-RES-004 …+3 |
+| RD-0394-measure-through-noise-benchmark-consistency-on-a-policy-locked-machine.md | — | — | — | — |
+| RD-0395-nesting-adjudication-flow-level-erased-at-lowering-contract-emits-nothing.md | — | — | — | — |
+| RD-0396-nested-loops-x-photonic-tri-logic-the-depth-ladder-and-the-extra-minus-one.md | — | — | — | — |
+| RD-0397-tri-sweep-all-logic-and-syntax-for-the-minus-one-axes-and-the-lint-pack.md | — | — | — | FUNGI-GOV-3 |
+| RD-0398-the-call-ladder-resolving-flow-call-chains-like-loops.md | — | — | — | — |
+| RD-0399-tri-axis-sweep-tritmeshql-gate-ascii-and-tritmesh-db.md | — | — | — | — |
 | rd-adversarial-verification-findings-2026-06-16.md | — | — | — | — |
 | rd-crossover-encryption-rnd.md | — | — | Merge / unified entry point. **Date:** 2026-06-16. **Posture:** grounded, cited, | FUNGI-AMD-024, FUNGI-PARSE-001, FUNGI-SUBSTRATE-001 |
 | rd-diagnostics-namespace-rnd-response.md | — | — | R&D response (2026-06-16). **Subject:** `Galerina/docs/Knowledge-Bases/galerina-diagnostic-namespace-ownership.md` | FUNGI-META-001, FUNGI-PRIVACY-00, FUNGI-SECRET-005 |
@@ -851,6 +919,7 @@ Generated: 2026-07-12
 | rd-ffsim-build-readiness.md | — | — | — | FUNGI-SUBSTRATE-002 |
 | rd-ffsm-ffsim-op-catalog.md | — | — | — | — |
 | rd-fhe-encrypted-similarity-v0.md | — | — | research note (2026-06-17). Resolves the last open in-bounds R&D item (the "later/research" | FUNGI-SUBSTRATE-001 |
+| RD-hardening-memory-graph-walkthrough-2026-07-15.md | — | — | — | — |
 | rd-hardware-tier-directive-and-per-tier-packages.md | — | — | — | FUNGI-HW-004 |
 | rd-novelty-and-ip-assessment.md | — | — | R&D assessment, 2026-06-16. **Posture (binding):** grounded, honest-core vs aspirational kept | — |
 | rd-photonic-accelerated-lattice-signing.md | — | — | R&D findings, research-phase (2026-06-16). **Posture (binding, inherited from | — |
@@ -870,6 +939,7 @@ Generated: 2026-07-12
 | rd-revocation-registry-v0.md | — | — | Draft, buildable + **verified** (the canonical pre-image bytes + digest are reproduced by the | — |
 | RD-ROADMAP-2026-06-17.md | — | — | — | — |
 | rd-selective-disclosure-ann-v0.md | — | — | Draft, buildable + **verified** (the deterministic key-schedule / framing bytes are reproduced by | — |
+| RD-SESSION-LOG-2026-07-15.md | — | — | — | — |
 | rd-tlstp-closure-0071-0077-2026-06-22.md | — | — | — | — |
 | rd-tlstp-transport-auth-cluster-2026-06-22.md | — | — | — | FUNGI-PRIVACY-002 |
 | rd-tmf-confidentiality-layout.md | — | — | R&D Reference Blueprint / Approved Architecture | FUNGI-AMD-024, FUNGI-SUBSTRATE-001 |
@@ -881,6 +951,8 @@ Generated: 2026-07-12
 | rd-tri-encription-findings-and-roadmap.md | — | — | Consolidated checkpoint. **Date:** 2026-06-16. **Posture:** grounded, cited, adversarially | FUNGI-AMD-024, FUNGI-SUBSTRATE-001 |
 | rd-tri-encription-fungi-readme.md | — | — | — | FUNGI-AMD-024 |
 | rd-tri-encription-research-metadata-confidentiality.md | — | — | Research note (grounded, cited, adversarially verified). **Date:** 2026-06-16. | FUNGI-AMD-024 |
+| RD-UPDATE-hotpath-triple-lock-x-photonic-tri-logic-2026-07-15.md | — | — | — | — |
+| RD-UPDATE-table-rd0388-0398-recent-results-2026-07-16.md | — | — | — | FUNGI-HOT-001 |
 | README.md | — | — | — | — |
 | README.md | — | — | — | — |
 | README.md | — | — | — | — |
@@ -963,26 +1035,7 @@ Generated: 2026-07-12
 ## Orphaned Documents
 Docs with no inbound links from other KB docs:
 
-- `HANDOVER-REPLY-main-rd0337-hardening-2026-07-12.md` — ↩ MAIN-SESSION REPLY — RD-0337 & the hardening un-stub ask
-- `HANDOVER-REPLY-main-rd0360-h6-memory-spill-2026-07-12.md` — ↩ MAIN-SESSION REPLY — RD-0360 built + green (Option A · conformance gate · `memory.spill`), one placement deviation flagged
-- `HANDOVER-REPLY-main-rd0361-t1-execution-cutover-2026-07-12.md` — ↩ MAIN-SESSION REPLY — RD-0361 T1: R0 discharged (twins build-clean) + R1/R3 proven end-to-end
-- `HANDOVER-REPLY-owner-gated-vs-undelivered-rd-2026-07-12.md` — HANDOVER-REPLY — "owner-gated" ≠ "R&D main hasn't received"
-- `HANDOVER-REPLY-rd0366-without-ts-adjudication-2026-07-12.md` — ↩ R&D REPLY — the "without-`.ts`" stoppers finding: ENDORSED, with one build rule
-- `HANDOVER-component-build-stoppers-without-ts-2026-07-12.md` — HANDOVER — component build stoppers: what each component needs to advance (and the "without .ts" ceiling)
-- `HANDOVER-diagram-refresh-hallmark-typesafety-hardening-2026-07-12.md` — HANDOVER — `docs/diagrams` refresh check: hallmark · type-safety · hardening/residency (RD-0358)
-- `HANDOVER-galerina-finish-push-2026-07-12.md` — ↪ HANDOVER — Galerina finish-push (2026-07-12): land-what's-done · close-to-gate · honest-remaining
-- `HANDOVER-hardening-integrated-and-selfhosting-frontier-2026-07-12.md` — HANDOVER — RD-0358 hardening INTEGRATED to main; P9 + B8 self-hosting/transport frontier
-- `HANDOVER-import-governance-audit-and-patch-2026-07-11.md` — HANDOVER — Import governance: the standard + audit-and-patch every import
-- `HANDOVER-pnpm-workspaces-migration-and-graph-enforcement-2026-07-11.md` — HANDOVER — pnpm workspaces migration (kill the 2.17 GB duplication, keep #149) + wire the boundary-graph enforcement
-- `HANDOVER-session-close-and-resume-2026-07-12.md` — HANDOVER — session close & resume point (2026-07-12)
-- `HANDOVER-session-master-2026-07-11.md` — HANDOVER — Session master, 2026-07-11 (R&D results + everything produced, where it lives, what's next)
-- `HANDOVER-session-requests-log-2026-07-12.md` — HANDOVER — session request log (2026-07-12, "session-2")
-- `HANDOVER-v1-finish-line-cutover-and-gap-map-2026-07-12.md` — HANDOVER — V1 finish line: the execution cutover + the gap map (plain-language build sheet)
-- `PROMPT-rd-session-node-modules-and-the-ts-removal-floor-2026-07-11.md` — To the R&D hub — what "no `.ts`" does (and does NOT) do to `node_modules`
-- `galerina-rd-0368-root-rotation-ceremony-and-key-housecleaning-INTERNAL.md` — RD-0368 — Signing-key root-rotation ceremony + governance/ house-cleaning (INTERNAL)
-- `galerina-rd-paper-worthiness-review-0257-0367-2026-07-12.md` — Paper-worthiness review — RD-0257 → RD-0367 (the unscreened range) + harm-filter verdicts
-- `DEPENDENCY-USAGE.md` — Package census — DEPENDENCY USAGE (inline vs own-package)
-- `PACKAGE-INDEX.md` — Package census — PACKAGE INDEX (readiness vs the Standard doc-set)
+- `RD-0399-tri-axis-sweep-tritmeshql-gate-ascii-and-tritmesh-db.md` — RD-0399 — the tri-axis sweep applied outward: TritMeshQL · the `.gate` language · TritMesh-Database
 
 ## Stale Links
 Links pointing to missing files:

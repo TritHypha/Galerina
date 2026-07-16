@@ -1,4 +1,4 @@
-# Galerina KB index (946 docs)
+# Galerina KB index (1025 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -207,6 +207,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/effect-checker-and-boundary-checker.md`
 - codes: FUNGI-EFFECT-001, FUNGI-EFFECT-004, FUNGI-BOUNDARY-001, FUNGI-BOUNDARY-004, FUNGI-EFFECT-002, FUNGI-EFFECT-003, FUNGI-BOUNDARY-002, FUNGI-BOUNDARY-003
 - terms: effect, boundary, interface, string, checker, effects, network, secret, name, example, runtime, target, sourcelocation, canonical
+
+## Galerina `.fungi` — what nests, and what doesn't
+`../ZTF-Knowledge-Bases/EMAIL-galerina-nesting-two-tables-2026-07-16.md`
+- terms: nests, table, time, galerina, zero, instructions, nested, compile, loop, flow, body, compiler, erased, i32
 
 ## Encapsulation Model
 `../ZTF-Knowledge-Bases/encapsulation-model.md`
@@ -993,7 +997,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - links: [[galerina-photonic-tri-rd]] [[galerina-substrate-contracts]] [[galerina-ext-bridge-quantum]] [[galerina-quantum-resistance-posture]]
 - terms: precision, tolerance, measured, gate, contract, declared, source, grounded, manifest, state, accuracy, deny-by-default, galerina, whole
 
-## External Idea Mining — `<path>` (fresh pass, 2026-06-23)
+## External Idea Mining — `x` (fresh pass, 2026-06-23)
 `../ZTF-Knowledge-Bases/galerina-external-idea-mining-2026-06-23.md`
 - codes: FUNGI-PRIVACY-002, FUNGI-SUBSTRATE-001
 - terms: net-new, med, degrade-only, pass, ideas, out-of-bounds, substrate, low, idea, verify-before-build, binary, owner, picks, decision
@@ -2199,7 +2203,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 
 ## RD-0281 — Stale-path / dead-link audit across the GitHub tree (post-migration) · 2026-07-09
 `../ZTF-Knowledge-Bases/galerina-rd-0281-stale-path-link-audit-post-migration.md`
-- terms: logicn, wwwprojects, main, stale, cli, owner, mjs, path, galerina, root, live, rewrite, exists, users
+- terms: logicn, main, stale, legacy-rnd-root, cli, owner, mjs, path, galerina, root, live, rewrite, exists, github
 
 ## RD-0282 — LogicN → Galerina rebrand: tool + execution record (non-Galerina tree) · 2026-07-09
 `../ZTF-Knowledge-Bases/galerina-rd-0282-logicn-galerina-rebrand-execution-non-galerina-tree.md`
@@ -2561,9 +2565,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 
 ## RD-0358 — "Goes into the CPU, not memory": governed memory-residency + dataflow, done zero-trust with binary / tri / photonic
 `../ZTF-Knowledge-Bases/galerina-rd-0358-governed-memory-residency-dataflow-tri-photonic.md`
-- codes: FUNGI-RETAIN-001, FUNGI-EFFECT-006, FUNGI-HARDEN-005
-- links: [[HANDOVER-galerina-finish-push-2026-07-12]] [[galerina-rd-0360-hardening-spill-to-refuted-compiler-trit-and-memory-spill-effect]]
-- terms: never, memory, hardening, text, residency, photonic, governed, zero-trust, owner, secret, dram, spill, tri, fail-closed
+- codes: FUNGI-HARDEN-007, FUNGI-EFFECT-006, FUNGI-RETAIN-001, FUNGI-HARDEN-005
+- tasks: #143
+- links: [[HANDOVER-hardening-integrated-and-selfhosting-frontier-2026-07-12]] [[HANDOVER-galerina-finish-push-2026-07-12]] [[galerina-rd-0360-hardening-spill-to-refuted-compiler-trit-and-memory-spill-effect]]
+- terms: memory, never, hardening, text, residency, photonic, governed, zero-trust, owner, secret, spill, dram, fail-closed, tri
 
 ## RD-0359 — Is there ONE document listing all contracts (developer + automated)? Partially — the finding + the Contract Registry proposal
 `../ZTF-Knowledge-Bases/galerina-rd-0359-contract-registry-developer-and-automated-contracts.md`
@@ -2572,9 +2577,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 
 ## RD-0360 — Wiring spill→`Refuted` across the compiler/runtime layer, and the `memory.spill` effect name (R&D reply to main)
 `../ZTF-Knowledge-Bases/galerina-rd-0360-hardening-spill-to-refuted-compiler-trit-and-memory-spill-effect.md`
-- codes: FUNGI-HARDEN-00
-- links: [[HANDOVER-REPLY-main-rd0337-hardening-2026-07-12]] [[new-error-type-update-build-tools]] [[galerina-rd-0358-governed-memory-residency-dataflow-tri-photonic]] [[galerina-rd-0337-beyond-rust-tri-typesafety-and-a-ternary-native-safety-primitive]] [[galerina-hardening-residency-prototype]] [[galerina-k3-three-valued-governance]]
-- terms: spill, runtime, compiler, memory, refuted, trit, gate, main, option, name, effect, layering, import, constraint
+- codes: FUNGI-HARDEN-007, FUNGI-EFFECT-006, FUNGI-HARDEN-00
+- tasks: #143
+- links: [[HANDOVER-hardening-integrated-and-selfhosting-frontier-2026-07-12]] [[HANDOVER-REPLY-main-rd0337-hardening-2026-07-12]] [[new-error-type-update-build-tools]] [[galerina-rd-0358-governed-memory-residency-dataflow-tri-photonic]] [[galerina-rd-0337-beyond-rust-tri-typesafety-and-a-ternary-native-safety-primitive]] [[galerina-hardening-residency-prototype]] [[galerina-k3-three-valued-governance]]
+- terms: spill, runtime, compiler, memory, refuted, trit, gate, main, option, name, effect, layering, import, trit-conformance
 
 ## RD-0361 — The execution-cutover ladder: from checker-verified twins to EXECUTING `.fungi` (the missing direction behind "100% no-.ts")
 `../ZTF-Knowledge-Bases/galerina-rd-0361-execution-cutover-ladder-twins-to-executing-fungi.md`
@@ -2611,6 +2617,18 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #143, #105
 - links: [[HANDOVER-component-build-stoppers-without-ts-2026-07-12]] [[galerina-rd-0361-execution-cutover-ladder-twins-to-executing-fungi]] [[galerina-rd-0363-passive-plan-execution-semantics-replay-under-governance]] [[galerina-rd-0364-governed-inference-bridge-contract]] [[galerina-rd-0365-tpm-enclave-key-custody-ladder]] [[HANDOVER-v1-finish-line-cutover-and-gap-map-2026-07-12]]
 - terms: main, fungi, without-, correction, doctrine, refinement, honesty, rd-0361, answer, govern-don, t-absorb, adjudication, record, bucket
+
+## RD-0367 — The optimal brain roster, grounded in self-knowledge: a core five, activated specialists, and sessions-as-brains
+`../ZTF-Knowledge-Bases/galerina-rd-0367-optimal-brain-roster-grounded-in-self-knowledge.md`
+- links: [[HANDOVER-v1-finish-line-cutover-and-gap-map-2026-07-12]] [[no-in-session-subagent-fanout]]
+- terms: brain, core, specialists, brains, five, project, roster, model, failure, changes, session, actually, honest, modes
+
+## RD-0368 — Signing-key root-rotation ceremony + governance/ house-cleaning (INTERNAL)
+`../ZTF-Knowledge-Bases/galerina-rd-0368-root-rotation-ceremony-and-key-housecleaning-INTERNAL.md`
+- codes: FUNGI-KEY-002
+- tasks: #149, #28, #30, #39, #33
+- links: [[galerina-rd-0319-ir-key-compromise-runbook-key149-plan]] [[galerina-rd-0365-tpm-enclave-key-custody-ladder]] [[galerina-key-custody-and-rotation]] [[new-error-type-update-build-tools]]
+- terms: key, governance, root, ceremony, mjs, ledger, private, env, json, signing, verify, house-cleaning, pub, keep
 
 ## R&D — Phase 34B boundary param auto-taint: verified state + build-ready spec
 `../ZTF-Knowledge-Bases/galerina-rd-34b-paramtaint-buildspec-2026-06-24.md`
@@ -2754,6 +2772,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/galerina-rd-paper-worthiness-review-0114-0256-2026-07-04.md`
 - codes: FUNGI-SECRET-004, FUNGI-RETAIN-001, FUNGI-PRIVACY-001
 - terms: negative, defensive, draft, scientific, class, existing, review, candidates, first, rd-0114, dp-rd-, rd-0117, already-disclosed, these
+
+## Paper-worthiness review — RD-0257 → RD-0367 (the unscreened range) + harm-filter verdicts
+`../ZTF-Knowledge-Bases/galerina-rd-paper-worthiness-review-0257-0367-2026-07-12.md`
+- tasks: #143
+- links: [[harm-filter-on-papers]]
+- terms: pass, rd-0367, range, verdicts, construction, harm-filter, paper, galerina, paper-worthiness, screening, already, papered, four, batch
 
 ## Can the absorbed R&D improve Galerina performance, boundary, or memory?
 `../ZTF-Knowledge-Bases/galerina-rd-performance-and-boundary-opportunities.md`
@@ -3464,11 +3488,22 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #10, #155, #102, #34
 - terms: stoppers, questions, signed, d-side, hub, handoff, main, session, response, angle, lifts, each, recommendation, whose
 
-## HANDOVER — boundary & registry build program: what's doable without `.ts`, and every stopper
-`../ZTF-Knowledge-Bases/HANDOVER-boundary-and-registry-build-program-2026-07-12.md`
-- codes: FUNGI-HARDEN-007
-- tasks: #105, #143, #102, #52
-- terms: registry, without, build, rd-0361, stopper, authoritative, every, differential, boundary, session, compiler, host, tracking, hardening
+## HANDOVER → R&D — benchmark stability: why the variance is extreme, and why Galerina can be *more stable than Rust*
+`../ZTF-Knowledge-Bases/HANDOVER-benchmark-stability-galerina-more-stable-than-rust-2026-07-15.md`
+- links: [[HANDOVER-benchmark-two-regressions-isolate-2026-07-12]] [[HANDOVER-REPLY-benchmark-stability-and-unlocked-subsystems-2026-07-15]]
+- terms: rust, why, galerina, stable, harness, window, variance, six-digit-guess, text-html, benchmark, warmup, source, compute-mix, nothing
+
+## HANDOVER — isolate the two benchmark "regressions" (`six-digit-guess`, `text-html`)
+`../ZTF-Knowledge-Bases/HANDOVER-benchmark-two-regressions-isolate-2026-07-12.md`
+- tasks: #143
+- links: [[HANDOVER-hardening-integrated-and-selfhosting-frontier-2026-07-12]] [[galerina-hardening-residency-prototype]] [[HANDOVER-REPLY-owner-gated-vs-undelivered-rd-2026-07-12]]
+- terms: noise, hardening, run, text-html, benchmark, wasm, owner, step, six-digit-guess, rust, governed, both, runtime, path
+
+## HANDOVER → owner + R&D — checker + interpreter to 100: the grounded implementation spec (tri-lint pack) · emitter status
+`../ZTF-Knowledge-Bases/HANDOVER-checker-interpreter-to-100-grounded-plan-2026-07-16.md`
+- codes: FUNGI-GOV-3VL-001, FUNGI-GOV-3VL-003, FUNGI-GOV-010
+- tasks: #75, #76, #56, #105, #63, #77, #69
+- terms: emitter, checker, interpreter, tri-lint, pack, owner, grounded, wat, implementation-ready, handover, implementation, spec, status, pass
 
 ## HANDOVER — component build stoppers: what each component needs to advance (and the "without .ts" ceiling)
 `../ZTF-Knowledge-Bases/HANDOVER-component-build-stoppers-without-ts-2026-07-12.md`
@@ -3482,6 +3517,37 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #149
 - links: [[galerina-rd-0346-crypto-floor-vs-149-per-package-ownership-decision]]
 - terms: build, package, keep, audit, crypto-floor, crypto, answer, paused, shared, handover, question, decision, line, instead
+
+## HANDOVER — `docs/diagrams` refresh check: hallmark · type-safety · hardening/residency (RD-0358)
+`../ZTF-Knowledge-Bases/HANDOVER-diagram-refresh-hallmark-typesafety-hardening-2026-07-12.md`
+- codes: FUNGI-VALUESTATE-003
+- tasks: #143
+- links: [[galerina-rd-0353-…hallmark]] [[galerina-rd-0358-governed-memory-residency-dataflow-tri-photonic]] [[galerina-rd-0337-beyond-rust-tri-typesafety-and-a-ternary-native-safety-primitive]]
+- terms: svg, hallmark, docs, diagrams, hardening, rd-0358, residency, gap, change, already, main, spill, shipped, refuted
+
+## HANDOVER → R&D — drift, consistency, and resource stability: design principles + asks
+`../ZTF-Knowledge-Bases/HANDOVER-drift-consistency-resource-stability-for-rd-2026-07-15.md`
+- tasks: #74
+- terms: drift, resource, gate, consistency, governed, stability, never, memory, nothing, source, same, bound, view, code
+
+## HANDOVER → main + owner — DRIFT, explained and gated · and the FLAT-ENVELOPE doctrine (no CPU/GPU/memory spikes, nothing erratic)
+`../ZTF-Knowledge-Bases/HANDOVER-drift-protection-and-flat-resource-envelope-2026-07-15.md`
+- tasks: #62, #64, #105, #24, #63
+- links: [[RD-0392-closing-the-wasm-losing-benchmarks-under-zero-trust]]
+- terms: drift, gate, doctrine, galerina, build, flat-envelope, memory, spikes, erratic, already, owner, nothing, three, cpu
+
+## HANDOVER → owner + R&D — the drive-to-100 worklist (owner-issued 2026-07-16) + the stretch that preceded it
+`../ZTF-Knowledge-Bases/HANDOVER-drive-to-100-worklist-2026-07-16.md`
+- codes: FUNGI-GOV-3VL-003
+- tasks: #56, #105, #143, #38, #63, #74, #72, #37, #65, #29
+- links: [[HANDOVER-myco-0-1-2-silent-cap-and-version-drift-2026-07-16]] [[HANDOVER-tri-lint-004-and-zt-build-tracking-cycle-2026-07-16]] [[HANDOVER-REPLY-p-flag-is-value-layer-and-myco-docs-landed-2026-07-16]]
+- terms: stretch, worklist, owner-issued, owner, queued, live, items, main, updated, status, handover, drive-to-100, preceded, preceding
+
+## HANDOVER — DSS.wasm compile-probe: does `dss-supervisor.fungi` build under the current WAT emitter?
+`../ZTF-Knowledge-Bases/HANDOVER-dss-wasm-compile-probe-2026-07-12.md`
+- tasks: #102, #105, #143
+- links: [[HANDOVER-REPLY-owner-gated-vs-undelivered-rd-2026-07-12]]
+- terms: wasm, dss, emitter, probe, build, isolation, dss-supervisor, fungi, wat, handover, increment, real, pass, exact
 
 ## HANDOVER — Galerina docs / examples / governance / security / tests corrections + example-coverage gaps · 2026-07-10
 `../ZTF-Knowledge-Bases/HANDOVER-galerina-docs-examples-corrections-2026-07-10.md`
@@ -3501,18 +3567,46 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - links: [["413 Payload Too Large - kernel never reached"]] [["404 route_not_found"]] [["405 method_not_allowed"]] [["413 payload_too_large"]] [["415 unsupported_media_type"]] [["401 unauthorized"]] [["422 unprocessable_entity"]] [["409 conflict"]] [["429 too_many_requests"]] [["503 secret_unavailable"]]
 - terms: confirmed, src, kernel, gate, real, galerina-framework-api-server, test, package, fuse-loader, gap, tested, path, http, tests
 
+## HANDOVER → main — Galerina:HotPath: the Galerina engine work (Galerina-only)
+`../ZTF-Knowledge-Bases/HANDOVER-galerina-hotpath-engine-for-main-2026-07-15.md`
+- links: [[HANDOVER-hotpath-tritmesh-roadmap-2026-07-15]]
+- terms: galerina, hallmark, hotpath, seal, schema, security, engine, galerina-only, latency, execution-order, execution, sealed, type, arena
+
 ## HANDOVER — `galerina lint`: unify the two linters into one command + package `@galerina/lint`
 `../ZTF-Knowledge-Bases/HANDOVER-galerina-lint-unify-and-package-2026-07-11.md`
 - tasks: #178
 - links: [[galerina-rd-0347-fungi-linter-two-tier-fail-closed-and-galerina-lint]] [[galerina-package-standard-v1]]
 - terms: galerina, lint, security, package, command, style, tier, fix, already, fail-closed, verified, check, finding, gate
 
+## The logic of Galerina — three values, not two (a primer for main)
+`../ZTF-Knowledge-Bases/HANDOVER-galerina-logic-primer-three-valued-for-main-2026-07-15.md`
+- codes: FUNGI-GOV-3VL-001
+- tasks: #105
+- terms: unknown, trit, galerina, three, main, logic, value, every, deny, values, boolean, trust, proven, never
+
+## HANDOVER → main — reference-doc questions: CONCUR + closed · AND the scope line: **Galerina only, do NOT start TritMesh**
+`../ZTF-Knowledge-Bases/HANDOVER-galerina-only-scope-and-reference-doc-reply-2026-07-15.md`
+- links: [[HANDOVER-REPLY-reference-docs-questions-answered-2026-07-15]]
+- terms: tritmesh, galerina, part, start, concur, reference-doc, scope, line, project, main, closed, reply, handover, questions
+
 ## HANDOVER — Governed memory-residency: the `hardening {}` block, ON AUTO (secure-by-default, fail-closed)
 `../ZTF-Knowledge-Bases/HANDOVER-governed-memory-residency-hardening-auto-2026-07-11.md`
 - codes: FUNGI-TYPE-003, FUNGI-HARDEN-007, FUNGI-EFFECT-006, FUNGI-RETAIN-001
 - tasks: #143
 - links: [[galerina-rd-0358-governed-memory-residency-dataflow-tri-photonic]] [[HANDOVER-REPLY-main-rd0337-hardening-2026-07-12]] [[galerina-rd-0360-hardening-spill-to-refuted-compiler-trit-and-memory-spill-effect]] [[HANDOVER-REPLY-main-rd0360-h6-memory-spill-2026-07-12]] [[HANDOVER-v1-finish-line-cutover-and-gap-map-2026-07-12]] [[galerina-rd-0359-contract-registry-developer-and-automated-contracts]]
-- terms: hardening, owner, spill, auto, build, never, branch, secret, gate, fail-closed, main, handover, effect, contract
+- terms: hardening, owner, spill, auto, build, never, main, gate, branch, secret, fail-closed, handover, effect, contract
+
+## HANDOVER — RD-0358 hardening INTEGRATED to main; P9 + B8 self-hosting/transport frontier
+`../ZTF-Knowledge-Bases/HANDOVER-hardening-integrated-and-selfhosting-frontier-2026-07-12.md`
+- codes: FUNGI-HARDEN-007, FUNGI-EFFECT-006, FUNGI-HARDEN-006, FUNGI-PKG-001, FUNGI-HARDEN-001
+- tasks: #52, #143, #105, #102, #53
+- links: [[HANDOVER-REPLY-rd0366-without-ts-adjudication-2026-07-12]] [[galerina-rd-0360-hardening-spill-to-refuted-compiler-trit-and-memory-spill-effect]]
+- terms: main, progress, hardening, frontier, stopper, transport, owner, build, integrated, results, wasm, rd-0358, self-hosting, pushed
+
+## HANDOVER — Galerina:HotPath · TritMesh product-family · the roadmap (Task 3)
+`../ZTF-Knowledge-Bases/HANDOVER-hotpath-tritmesh-roadmap-2026-07-15.md`
+- links: [[RD-hardening-memory-graph-walkthrough-2026-07-15]] [[HANDOVER-technical-claims-audit-action-2026-07-15]]
+- terms: tritmesh, galerina, hallmark, hotpath, security, roadmap, nanosecond, rule, owner, sealed, memory, checks, sponsorship, task-1
 
 ## HANDOVER — Import governance: the standard + audit-and-patch every import
 `../ZTF-Knowledge-Bases/HANDOVER-import-governance-audit-and-patch-2026-07-11.md`
@@ -3520,6 +3614,33 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #149
 - links: [[galerina-package-standard-v1]]
 - terms: import, grant, every, effects, red, access, contract, governance, standard, already, canonical, audit-and-patch, read, plugin
+
+## HANDOVER → main — OWNER DIRECTIVE: drive the compiler to 100% (the no-gate path) + double-check of your #143 reply
+`../ZTF-Knowledge-Bases/HANDOVER-instruct-main-compiler-to-100pct-2026-07-15.md`
+- tasks: #143, #105, #62
+- links: [[HANDOVER-galerina-only-scope-and-reference-doc-reply-2026-07-15]]
+- terms: compiler, owner, double-check, reply, handover, build, emitter, finished, verified, different, layers, main, drive, path
+
+## HANDOVER → main — EXTEND the cost-model-nesting doc with the construct×tech table (Table C)
+`../ZTF-Knowledge-Bases/HANDOVER-instruct-main-cost-model-doc-add-construct-table-2026-07-16.md`
+- links: [[HANDOVER-instruct-main-nesting-cost-model-doc-2026-07-15]] [[HANDOVER-technical-code-level-impact-tri-and-axes-2026-07-16]]
+- terms: table, doc, sheet, original, construct, tech, same, handover, cost-model-nesting, section, rows, change, gates, main
+
+## HANDOVER → main — BUILD: the depth-ladder changes (B1–B5 from RD-0396) — trit folds, loop collapse, the ternary kernel
+`../ZTF-Knowledge-Bases/HANDOVER-instruct-main-depth-ladder-builds-2026-07-16.md`
+- tasks: #56, #63, #105, #69
+- links: [[RD-0396-nested-loops-x-photonic-tri-logic-the-depth-ladder-and-the-extra-minus-one]] [[RD-0398-the-call-ladder-resolving-flow-call-chains-like-loops]]
+- terms: changes, folds, fold, build, collapse, loop, kernel, pass, rd-0396, ternary, owner, carry, trit, constant
+
+## HANDOVER → main — myco 0.1.1 (the dotted-extension fix, shipped + live-verified) · and the dev-tools review: what recent learning goes into the tools
+`../ZTF-Knowledge-Bases/HANDOVER-instruct-main-myco-0-1-1-and-devtools-review-2026-07-16.md`
+- links: [[HANDOVER-ts-still-present-truth-census-and-label-fix-2026-07-16]] [[RD-0397-tri-sweep-all-logic-and-syntax-for-the-minus-one-axes-and-the-lint-pack]]
+- terms: myco, review, tools, main, dev-tools, fix, corpus-gate, version, build, fungi, week, live-verified, defect, search
+
+## HANDOVER → main — BUILD: the "what is level 0" cost-model doc (nesting story, with compiling examples)
+`../ZTF-Knowledge-Bases/HANDOVER-instruct-main-nesting-cost-model-doc-2026-07-15.md`
+- links: [[RD-0395-nesting-adjudication-flow-level-erased-at-lowering-contract-emits-nothing]]
+- terms: level, doc, example, table, cost, every, zero, main, nesting, examples, code, claim, sanctioned, wording
 
 ## HANDOVER — Licensing compliance: the LICENSE rollout, the license-audit rule, the GPL posture, and the override ledger
 `../ZTF-Knowledge-Bases/HANDOVER-licensing-compliance-and-gpl-posture-2026-07-11.md`
@@ -3535,6 +3656,47 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## HANDOVER — Main session takes FULL CONTROL of Galerina (2026-07-03)
 `../ZTF-Knowledge-Bases/HANDOVER-main-full-control-of-galerina-2026-07-03.md`
 - terms: galerina, handover, session, own, main, rd-0238, tritmesh, full, prod, apply, live, control, posture, read-only
+
+## HANDOVER (MASTER) → main — everything unlocked · stoppers R&D'd ahead · drive each part to 100%
+`../ZTF-Knowledge-Bases/HANDOVER-MASTER-all-unlocked-drive-to-100pct-2026-07-15.md`
+- tasks: #62, #64, #143, #102, #105, #68
+- links: [[HANDOVER-MASTER-updated-main-endphase-2026-07-15]] [[HANDOVER-session-close-pre-compact-2026-07-15]] [[HANDOVER-REPLY-session-close-rd-corrections-2026-07-15]] [[HANDOVER-unlocked-subsystems-to-100pct-fungi-2026-07-15]]
+- terms: pre-solved, wasm, design, dss, owner, build, main, unlocked, stoppers, data, next, differential, gate, hardware
+
+## HANDOVER (MASTER) — full ZT/Build/Tracking cycle · every-todo stopper sweep · Packages completion · roadmap
+`../ZTF-Knowledge-Bases/HANDOVER-MASTER-cycle-todo-sweep-2026-07-15.md`
+- tasks: #102, #143, #105, #64, #53, #57, #30, #24, #11, #20, #69, #13, #39, #12
+- links: [[HANDOVER-MASTER-updated-main-endphase-2026-07-15]]
+- terms: owner, packages, cycle, build, tracking, sweep, rd-0389, registry, items, todo, roadmap, abi, avg, exact
+
+## HANDOVER-MASTER → owner + R&D — main end-phase cycle (RD-0389 close · full verification · todo sweep) 2026-07-15
+`../ZTF-Knowledge-Bases/HANDOVER-MASTER-main-endphase-rd0389-cycle-2026-07-15.md`
+- tasks: #143, #62, #64, #56, #72, #37, #63, #65
+- terms: build, full, round, fix, keys, owner, rd-0389, sweep, cycle, item, every, gate, main, end-phase
+
+## HANDOVER (MASTER, updated by main) — R&D-doc actions done · end-phase green · drive-to-100% refreshed
+`../ZTF-Knowledge-Bases/HANDOVER-MASTER-updated-main-endphase-2026-07-15.md`
+- codes: FUNGI-GOV-3VL-001
+- tasks: #62, #64, #68, #143, #102, #70, #71, #69, #63, #22, #35, #29, #66, #37, #13, #39, #20, #24, #11
+- links: [[HANDOVER-MASTER-all-unlocked-drive-to-100pct-2026-07-15]]
+- terms: owner, actions, end-phase, benchmark, session, main, build, tranche, d-doc, refreshed, galerina, wasm, audit, path-leak-audit
+
+## HANDOVER-MORNING → main — START HERE (2026-07-16)
+`../ZTF-Knowledge-Bases/HANDOVER-MORNING-start-here-2026-07-16.md`
+- codes: FUNGI-SYNTAX-011, FUNGI-PARSE-001, FUNGI-GOV-010
+- tasks: #38, #76, #75, #72, #63, #74, #56, #37, #65, #69
+- links: [[HANDOVER-instruct-main-nesting-cost-model-doc-2026-07-15]] [[RD-0395-nesting-adjudication-flow-level-erased-at-lowering-contract-emits-nothing]] [[HANDOVER-todo-continuation-noise-gate-b5a-e2e-2026-07-15]]
+- terms: owner, real, gate, cycle, check, second, main, docs, build, fix, tests, reference, updated, audits
+
+## HANDOVER — myco 0.1.2: silent coverage caps made visible + version drift gate (2026-07-16)
+`../ZTF-Knowledge-Bases/HANDOVER-myco-0-1-2-silent-cap-and-version-drift-2026-07-16.md`
+- terms: myco, version, silent, drift, found, fix, file, index, note, gate, search, cap, walk, downstream
+
+## HANDOVER → main — NOISE-IMMUNE BENCHMARKING: build instructions (finishes task #63) — from RD-0394
+`../ZTF-Knowledge-Bases/HANDOVER-noise-immune-benchmarking-build-instructions-2026-07-15.md`
+- tasks: #63
+- links: [[RD-0394-measure-through-noise-benchmark-consistency-on-a-policy-locked-machine]]
+- terms: runner, build, spread, handover, main, control, results, report, rd-0394, owner, items, benchmark, never, changes
 
 ## HANDOVER — Package-build readiness: Standard v1 + the `.gate`/`.fungi` updates it needs
 `../ZTF-Knowledge-Bases/HANDOVER-package-build-readiness-2026-07-11.md`
@@ -3570,6 +3732,40 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - links: [[HANDOVER-package-build-readiness-2026-07-11]] [[galerina-package-standard-v1]] [[galerina-rd-0342-shrinking-the-production-tcb-ts-and-node-modules]] [[galerina-rd-0343-gate-first-pipeline-single-grammar-substrate-pin]] [[galerina-rd-0339-make-misuse-impossible-tri-typestate-boundary]] [[galerina-rd-0340-gate-fungi-conformance-and-the-field-cut-rung-3-hoist]] [[galerina-rd-0341-fungi-gate-author-mistake-sweep-verified]]
 - terms: fungi, gate, stage-6, checker, fail-closed, propose-only, papers, design, decision, key, already, objectives, boundary, cut
 
+## HANDOVER → main + owner — "all R&D done" ≠ "100% build". The honest formula.
+`../ZTF-Knowledge-Bases/HANDOVER-rd-complete-does-not-equal-build-complete-2026-07-15.md`
+- tasks: #143, #102
+- terms: build, make, main, owner, why, four, claim, status, categories, them, handover, honest, formula, sentence
+
+## HANDOVER → R&D — RD-0361 twin round 2: Packages surface complete, execution column 7→15 (2026-07-15)
+`../ZTF-Knowledge-Bases/HANDOVER-rd0361-twin-round-2-packages-complete-2026-07-15.md`
+- tasks: #143, #62
+- links: [[HANDOVER-zt-thesis-twin-round-and-registry-status-2026-07-15]]
+- terms: twins, round, execution, column, differential, packages, complete, session, shadow, surface, unblocks, residue, build, registry
+
+## HANDOVER → main — reference-docs full re-verification: result, corrections in your tree, and questions
+`../ZTF-Knowledge-Bases/HANDOVER-reference-docs-reverification-and-questions-2026-07-15.md`
+- codes: FUNGI-TYPE-001
+- terms: docs, types, verdict, main, tree, reference, questions, type, tri, handover, code, exactly, vocabulary, typeid
+
+## HANDOVER → main — "Missing R&D" was a stale LABEL (fixed) + roadmap R&D-completeness sweep
+`../ZTF-Knowledge-Bases/HANDOVER-registry-missing-rd-label-fix-and-roadmap-rd-sweep-2026-07-15.md`
+- tasks: #105, #63, #143
+- terms: missing, roadmap, fixed, d-completeness, sweep, owner, row, label, later, gap, build, main, stale, handover
+
+## HANDOVER-REPLY → main — adjudicating benchmark-stability + unlocked-subsystems
+`../ZTF-Knowledge-Bases/HANDOVER-REPLY-benchmark-stability-and-unlocked-subsystems-2026-07-15.md`
+- tasks: #143, #105
+- links: [[HANDOVER-benchmark-stability-galerina-more-stable-than-rust-2026-07-15]] [[HANDOVER-unlocked-subsystems-to-100pct-fungi-2026-07-15]] [[HANDOVER-dss-wasm-compile-probe-2026-07-12]] [[benchmark-noise-floor-discipline]] [[galerina-rd-0366-without-ts-ceiling-govern-dont-absorb-trichotomy]]
+- terms: part, main, rust, stability, benchmark, harness, table, window, handover-reply, adjudicating, benchmark-stability, unlocked-subsystems, adopt, dss
+
+## HANDOVER-REPLY → main — your three drift/stability asks: ALL BLESSED (one designed on the spot: RD-0393) + how the two drift docs compose
+`../ZTF-Knowledge-Bases/HANDOVER-REPLY-drift-asks-blessed-rd0393-and-reconciliation-2026-07-15.md`
+- codes: FUNGI-RES-001
+- tasks: #74, #24, #63
+- links: [[HANDOVER-drift-consistency-resource-stability-for-rd-2026-07-15]] [[RD-0393-resource-budget-contract-element-declared-envelope-spec]] [[HANDOVER-drift-protection-and-flat-resource-envelope-2026-07-15]]
+- terms: drift, blessed, ask, designed, docs, governed, compose, three, asks, rd-0393, already, main, fuel, nothing
+
 ## ↩ MAIN-SESSION REPLY — RD-0337 & the hardening un-stub ask
 `../ZTF-Knowledge-Bases/HANDOVER-REPLY-main-rd0337-hardening-2026-07-12.md`
 - codes: FUNGI-HARDEN-001
@@ -3589,11 +3785,79 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - links: [[galerina-rd-0361-execution-cutover-ladder-twins-to-executing-fungi]] [[new-error-type-update-build-tools]] [[HANDOVER-galerina-finish-push-2026-07-12]] [[galerina-rd0361-execution-cutover-progress]] [[galerina-k3-three-valued-governance]]
 - terms: twin, discharged, wasm, rd-0361, twins, proven, main, first, rung, reference, end-to-end, through, session, build-eligibility
 
+## HANDOVER-REPLY — "owner-gated" ≠ "R&D main hasn't received"
+`../ZTF-Knowledge-Bases/HANDOVER-REPLY-owner-gated-vs-undelivered-rd-2026-07-12.md`
+- tasks: #143, #102, #105
+- links: [[HANDOVER-session-requests-log-2026-07-12]] [[galerina-signing-root-key-lost-ledger-frozen]] [[HANDOVER-v1-finish-line-cutover-and-gap-map-2026-07-12]] [[galerina-rd-0366-without-ts-ceiling-govern-dont-absorb-trichotomy]]
+- terms: owner-gated, owner, main, reply, real, item, needs, build, buildable, list, items, gate, frontier, hasn
+
+## HANDOVER-REPLY → main — the P-flag question answered (it's the VALUE layer) · -003 placement confirmed · myco cross-links
+`../ZTF-Knowledge-Bases/HANDOVER-REPLY-p-flag-is-value-layer-and-myco-docs-landed-2026-07-16.md`
+- codes: FUNGI-GOV-3VL-003
+- links: [[HANDOVER-tri-lint-004-and-zt-build-tracking-cycle-2026-07-16]] [[HANDOVER-myco-0-1-2-silent-cap-and-version-drift-2026-07-16]] [[HANDOVER-instruct-main-myco-0-1-1-and-devtools-review-2026-07-16]]
+- terms: myco, p-flag, value, placement, flag, confirmed, rule, intent, main, layer, top, differential, correction, residual
+
+## HANDOVER-REPLY → R&D — round-2 labelling escalation CLOSED + session close (2026-07-15)
+`../ZTF-Knowledge-Bases/HANDOVER-REPLY-rd0361-escalation-closed-and-session-close-2026-07-15.md`
+- tasks: #105, #64, #53, #68, #62, #65, #57, #66, #67, #13, #41
+- links: [[HANDOVER-REPLY-rd0361-twin-round-2-2026-07-15]] [[HANDOVER-REPLY-zt-thesis-twin-round-2026-07-15]] [[HANDOVER-hotpath-tritmesh-roadmap-2026-07-15]]
+- terms: session, escalation, close, honest, twins, closed, re-tiered, twin, gate, concur, d4aa88ab, todo, audit, handover-reply
+
+## HANDOVER-REPLY → main — RD-0361 twin round 2 (ESCALATION of the round-1 labelling gap)
+`../ZTF-Knowledge-Bases/HANDOVER-REPLY-rd0361-twin-round-2-2026-07-15.md`
+- tasks: #105, #62
+- links: [[HANDOVER-rd0361-twin-round-2-packages-complete-2026-07-15]] [[HANDOVER-REPLY-zt-thesis-twin-round-2026-07-15]]
+- terms: gates, path, round, labelling, gap, source, complete, twin, confirmed, packages, main, escalation, claim, fuse
+
 ## ↩ R&D REPLY — the "without-`.ts`" stoppers finding: ENDORSED, with one build rule
 `../ZTF-Knowledge-Bases/HANDOVER-REPLY-rd0366-without-ts-adjudication-2026-07-12.md`
-- tasks: #143, #105
+- codes: FUNGI-HARDEN-007
+- tasks: #143, #105, #102, #52
 - links: [[HANDOVER-component-build-stoppers-without-ts-2026-07-12]] [[galerina-rd-0366-without-ts-ceiling-govern-dont-absorb-trichotomy]] [[HANDOVER-v1-finish-line-cutover-and-gap-map-2026-07-12]] [[galerina-rd-0361-execution-cutover-ladder-twins-to-executing-fungi]] [[galerina-rd-0363-passive-plan-execution-semantics-replay-under-governance]] [[galerina-rd-0364-governed-inference-bridge-contract]] [[galerina-rd-0365-tpm-enclave-key-custody-ladder]]
-- terms: build, part, endorsed, rule, reply, owner, doctrine, differential, handover, fungi, authoritative, without-, finding, twins
+- terms: build, main, differential, authoritative, session, rd-0361, without-, endorsed, rule, fungi, twins, part, boundary, tracking-registry
+
+## HANDOVER-REPLY → R&D — RD-0389 record-marshalling ABI (ARG direction) BUILT · secret-gate twin closed · compiler-to-100% step 1 done
+`../ZTF-Knowledge-Bases/HANDOVER-REPLY-rd0389-record-marshalling-secret-gate-closed-2026-07-15.md`
+- tasks: #105, #64, #68
+- links: [[RD-0389-record-marshalling-abi-mk-record-for-twins-and-p9-parser]] [[HANDOVER-instruct-main-compiler-to-100pct-2026-07-15]] [[HANDOVER-registry-missing-rd-label-fix-and-roadmap-rd-sweep-2026-07-15]] [[HANDOVER-rd-complete-does-not-equal-build-complete-2026-07-15]] [[HANDOVER-galerina-only-scope-and-reference-doc-reply-2026-07-15]]
+- terms: twin, abi, direction, parser, already, secret-gate, step, grounding, mechanism, shipped, build, read, here, rd-0389
+
+## HANDOVER-REPLY → main — RD-0389 loop CLOSED (verified live from R&D) + the R&D-queue close (RD-0391 · RD-0388 §9 · KB nav)
+`../ZTF-Knowledge-Bases/HANDOVER-REPLY-rd0389-verified-closed-and-rd-queue-close-2026-07-15.md`
+- codes: FUNGI-HOT-001
+- tasks: #64, #68, #69
+- links: [[HANDOVER-REPLY-rd0389-record-marshalling-secret-gate-closed-2026-07-15]] [[RD-0391-hotpath-lock1-eligibility-predicate-contract-clause-spec]]
+- terms: main, rd-0389, build, live, verified, d-queue, close, roadmap, closed, docs, rd-0388, nav, edits, working
+
+## HANDOVER-REPLY → R&D — reference-doc re-verification: questions answered, corrections committed, drift gate built
+`../ZTF-Knowledge-Bases/HANDOVER-REPLY-reference-docs-questions-answered-2026-07-15.md`
+- links: [[HANDOVER-reference-docs-reverification-and-questions-2026-07-15]]
+- terms: gate, built, source, types, questions, tri, verdict, drift, correction, docs, re-verification, committed, effects, answers
+
+## HANDOVER-REPLY → main / next session — R&D corrections to the session-close resume point
+`../ZTF-Knowledge-Bases/HANDOVER-REPLY-session-close-rd-corrections-2026-07-15.md`
+- tasks: #62, #64, #68, #105, #69, #65, #29, #28, #31, #53, #13, #41, #36, #48
+- links: [[HANDOVER-session-close-pre-compact-2026-07-15]] [[HANDOVER-galerina-hotpath-engine-for-main-2026-07-15]]
+- terms: resume, docs, reference, main, next, session, correction, decision, session-close, point, change, written, owner, loop
+
+## HANDOVER-REPLY → main + owner — todo continuation VERIFIED: noise-gate finding adopted · #72 correction confirmed from source · wiring endorsed GO · the two owner decisions framed
+`../ZTF-Knowledge-Bases/HANDOVER-REPLY-todo-continuation-verified-and-adopted-2026-07-15.md`
+- codes: ERR_REGISTRY
+- tasks: #72, #63, #56, #37, #65
+- links: [[HANDOVER-todo-continuation-noise-gate-b5a-e2e-2026-07-15]]
+- terms: owner, gate, correction, wiring, verified, finding, adopted, source, decisions, framed, item, key, main, noise
+
+## HANDOVER-REPLY → main — tri-lint code series CONFIRMED (no veto) · and the emitter frontier census: build it at the EMISSION POINT, not by scanning WAT
+`../ZTF-Knowledge-Bases/HANDOVER-REPLY-tri-lint-series-confirmed-and-frontier-census-guidance-2026-07-16.md`
+- codes: FUNGI-GOV-3VL-003
+- links: [[HANDOVER-checker-interpreter-to-100-grounded-plan-2026-07-16]]
+- terms: code, series, confirmed, census, emitter, main, veto, frontier, build, emission, wat, point, handover-reply, tri-lint
+
+## HANDOVER-REPLY → main — ZT-thesis twin round + registry status
+`../ZTF-Knowledge-Bases/HANDOVER-REPLY-zt-thesis-twin-round-2026-07-15.md`
+- tasks: #62, #143, #102
+- links: [[HANDOVER-zt-thesis-twin-round-and-registry-status-2026-07-15]] [[HANDOVER-unlocked-subsystems-to-100pct-fungi-2026-07-15]] [[HANDOVER-REPLY-benchmark-stability-and-unlocked-subsystems-2026-07-15]] [[HANDOVER-dss-wasm-compile-probe-2026-07-12]]
+- terms: twin, verdict, anchor, string, string-verdict, method, registry, concur, catch, content, status, partition, handleof, main
 
 ## HANDOVER — R&D session master index (all deliverables) · 2026-07-09
 `../ZTF-Knowledge-Bases/HANDOVER-RnD-master-index-2026-07-09.md`
@@ -3602,11 +3866,22 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 
 ## Handover — R&D research session, 2026-07-01 (for the main/hub session)
 `../ZTF-Knowledge-Bases/HANDOVER-rnd-research-session-2026-07-01.md`
-- terms: session, hub, prompt, graph, copy-paste, gate, research, build, fungi, design, pre-filter, decision, users, phill
+- terms: session, hub, prompt, graph, copy-paste, gate, research, build, fungi, design, pre-filter, decision, rd-0162, owner
 
 ## HANDOVER — R&D session → main Galerina session: response to your 2026-07-09 handover
 `../ZTF-Knowledge-Bases/HANDOVER-RnD-response-to-main-2026-07-09.md`
 - terms: handover, session, galerina, owner, schematic, main, response, authority, locks, listener, verification, transcript, did, push
+
+## HANDOVER — session close & resume point (2026-07-12)
+`../ZTF-Knowledge-Bases/HANDOVER-session-close-and-resume-2026-07-12.md`
+- tasks: #143, #105, #31, #53, #52
+- links: [[HANDOVER-boundary-and-registry-build-program-2026-07-12]]
+- terms: session, mjs, audit, scripts, boundary, handover, wasm, pushed, compiler, differential, benchmark, results, memory, resume
+
+## HANDOVER — session close / pre-compact resume point (2026-07-15)
+`../ZTF-Knowledge-Bases/HANDOVER-session-close-pre-compact-2026-07-15.md`
+- tasks: #143, #105, #64, #62, #68, #63, #69, #53, #57, #65, #29, #28, #31, #13, #41
+- terms: session, twins, twin, path, critical, resume, shadow, int, point, main, verified, commits, pushed, owner
 
 ## HANDOVER — Session master, 2026-07-11 (R&D results + everything produced, where it lives, what's next)
 `../ZTF-Knowledge-Bases/HANDOVER-session-master-2026-07-11.md`
@@ -3615,10 +3890,43 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - links: [[HANDOVER-package-build-readiness-2026-07-11]] [[HANDOVER-package-schematics-build-2026-07-11]] [[myco-project]] [[HANDOVER-value-unit-types-and-hallmark-open-types-2026-07-11]] [[HANDOVER-pnpm-workspaces-migration-and-graph-enforcement-2026-07-11]] [[HANDOVER-galerina-lint-unify-and-package-2026-07-11]] [[HANDOVER-import-governance-audit-and-patch-2026-07-11]]
 - terms: gate, main, thread, session, galerina, fungi, verified, next, handover, results, updated, post-compaction, same, day
 
+## HANDOVER — session request log (2026-07-12, "session-2")
+`../ZTF-Knowledge-Bases/HANDOVER-session-requests-log-2026-07-12.md`
+- tasks: #143, #52, #105, #56, #102, #53, #57
+- links: [[HANDOVER-hardening-integrated-and-selfhosting-frontier-2026-07-12]] [[HANDOVER-diagram-refresh-hallmark-typesafety-hardening-2026-07-12]]
+- terms: build, wasm, session, audit, each, request, shipped, blocker, handover, finding, needs, registry, frontier, get
+
 ## SUPER HANDOVER — Galerina / TritMesh / TritMeshQL R&D · RD-0303 → RD-0320 · 2026-07-10
 `../ZTF-Knowledge-Bases/HANDOVER-super-RD-0303-to-RD-0320-2026-07-10.md`
 - tasks: #149
 - terms: galerina, fix, key, tritmeshql, rd-0303, rd-0320, main, gate, live, session, zero, never, handover, gap
+
+## HANDOVER — action the technical-claims audit (all projects)
+`../ZTF-Knowledge-Bases/HANDOVER-technical-claims-audit-action-2026-07-15.md`
+- links: [[new-error-type-update-build-tools]] [[harm-filter-on-papers]]
+- terms: audit, tranche, evidence, fix, doesn, scope, claim, handover, trust-value, order, durable, recur, stop, re-incisions
+
+## HANDOVER (technical) → main + owner — does anything change at CODE level? The construct-by-construct table: standard-binary vs tri-logic vs axis tech
+`../ZTF-Knowledge-Bases/HANDOVER-technical-code-level-impact-tri-and-axes-2026-07-16.md`
+- terms: none, binary, tri, code, tech, table, axis, verdict, change, fold, construct, trit, opt-in, owner
+
+## HANDOVER → owner + R&D — todo continuation: noise-gate preflight (#63) · B5a registry e2e (#72) · the honest components-to-100 map
+`../ZTF-Knowledge-Bases/HANDOVER-todo-continuation-noise-gate-b5a-e2e-2026-07-15.md`
+- codes: ERR_REGISTRY
+- tasks: #63, #72, #143, #56, #37, #65
+- terms: item, owner, noise-gate, gate, registry, honest, needs, components-to-100, map, pass, actually, index, refused, wrong
+
+## HANDOVER — full todo sweep: finished or stopper-logged (2026-07-15)
+`../ZTF-Knowledge-Bases/HANDOVER-todo-sweep-2026-07-15.md`
+- tasks: #22, #31, #35, #36, #41, #62, #64, #67, #68, #53, #57, #29, #38, #30, #11, #12, #13, #20, #24, #28, #37, #39, #40, #56
+- terms: owner, sweep, stopper, closed, twin, string, unblocks, suite, todo, differential, main, commits, verified, commit
+
+## HANDOVER — tri-lint rule -004 landed + ZT/Build/Tracking cycle (2026-07-16)
+`../ZTF-Knowledge-Bases/HANDOVER-tri-lint-004-and-zt-build-tracking-cycle-2026-07-16.md`
+- codes: FUNGI-GOV-3VL-004, FUNGI-GOV-3VL-003, FUNGI-GOV-3VL-005, FUNGI-GOV-3VL-006, FUNGI-CHECK-001, FUNGI-MATCH-001
+- tasks: #143, #72, #65, #74, #63, #37, #29
+- links: [[HANDOVER-REPLY-p-flag-is-value-layer-and-myco-docs-landed-2026-07-16]]
+- terms: rule, tri-lint, handover, turn, myco, verdict, cycle, build, owner, landed, pack, needs, component-health, test
 
 ## HANDOVER — TritMesh / Galerina R&D session close (2026-07-04)
 `../ZTF-Knowledge-Bases/HANDOVER-tritmesh-session-2026-07-04.md`
@@ -3626,6 +3934,18 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #194
 - links: [[zt-scoring-two-scales]] [[reboot-prompt-location]] [[tritmeshql-project-state]] [[github-org-naming-convention]] [[org-licensing-and-ip-posture]]
 - terms: session, tritmesh, galerina, prod, shipped, verified, published, trithypha, gap, mjs, pushed, without, proven, cache
+
+## HANDOVER → main + owner — the `.ts` question: the owner's disk check is RIGHT, the audits never claimed otherwise — and the labels that let those two diverge get fixed NOW
+`../ZTF-Knowledge-Bases/HANDOVER-ts-still-present-truth-census-and-label-fix-2026-07-16.md`
+- tasks: #143, #74, #38
+- terms: owner, disk, check, actually, census, never, fungi, handover, labels, personal, fix, line, src, make
+
+## HANDOVER → R&D — drive the 9 owner-unlocked subsystems to 100% `.fungi`: ceilings, stoppers, and what to unlock next
+`../ZTF-Knowledge-Bases/HANDOVER-unlocked-subsystems-to-100pct-fungi-2026-07-15.md`
+- codes: FUNGI-HALLMARK-001, FUNGI-TIER-001, FUNGI-GOV-3VL-001
+- tasks: #105, #143, #149, #144, #145, #160, #34
+- links: [[HANDOVER-dss-wasm-compile-probe-2026-07-12]]
+- terms: fungi, population, compiler, wasm, owner, ceiling, item, unlock, permission, tooling, modules, dss, node, wiring
 
 ## HANDOVER — V1 finish line: the execution cutover + the gap map (plain-language build sheet)
 `../ZTF-Knowledge-Bases/HANDOVER-v1-finish-line-cutover-and-gap-map-2026-07-12.md`
@@ -3639,6 +3959,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-HALLMARK-001, FUNGI-TYPE-003, FUNGI-VALUESTATE-004, FUNGI-TYPE-0, FUNGI-TYPE-004
 - links: [[galerina-rd-0349-value-unit-types-money-commodity-crypto-registry]] [[galerina-rd-0350-gold-is-not-money-adversarial-case-for-commodity-crypto-generics]] [[galerina-rd-0351-finance-types-the-algebra-decides-money-markets-partition]] [[galerina-rd-0352-passive-open-type-system-schema-per-type-reserved-gate]] [[galerina-rd-0353-strain-syntax-and-abuse-proof-open-types]] [[galerina-rd-0353]] [[galerina-rd-0354-security-analysis-value-unit-and-hallmark-system]]
 - terms: examples, docs, gate, money, hallmark, crypto, registry, test, commodity, rate, types, hard, owner, unit
+
+## HANDOVER → R&D — ZT-thesis twin round + Tracking-registry status (2026-07-15)
+`../ZTF-Knowledge-Bases/HANDOVER-zt-thesis-twin-round-and-registry-status-2026-07-15.md`
+- tasks: #143, #105, #62, #102
+- terms: round, twin, tracking-registry, differential, twins, build, post-v1, rd-0361, each, wasm, thesis, progress, resolved, keep-green
 
 ## Hello World API Pattern
 `../ZTF-Knowledge-Bases/hello-world-api-pattern.md`
@@ -3657,11 +3982,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-STORAGE-001, FUNGI-EFFECT-001, FUNGI-VALUESTATE-003
 - terms: ihsa, storage, policy, memory, effect, galerina, block, read, path, infrequent, disk, governance, streaming, flow
 
-## KB Category Index — 875 docs, grouped by topic & type
+## KB Category Index — 1019 docs, grouped by topic & type
 `../ZTF-Knowledge-Bases/KB-CATEGORY-INDEX.md`
-- codes: FUNGI-PRIVACY-002, FUNGI-RETAIN-001, FUNGI-EFFECT-006, FUNGI-PRIVACY-001
-- tasks: #20, #204, #148, #30, #28, #219, #201, #197, #34, #149, #36, #200
-- terms: galerina, roadmap, audit, architecture, photonic, phase, security, governance, runtime, tritmesh, rd-absorbed, session, governed, model
+- codes: FUNGI-HOT-00, FUNGI-PRIVACY-002, FUNGI-RETAIN-001, FUNGI-EFFECT-006, FUNGI-PRIVACY-001
+- tasks: #20, #143, #204, #148, #30, #28, #219, #201, #197, #149, #34, #36, #63, #72, #200
+- terms: galerina, roadmap, handover, audit, photonic, main, governance, architecture, security, phase, runtime, tritmesh, gate, session
 
 ## Galerina governance signing key — custody (PRIVATE)
 `../ZTF-Knowledge-Bases/key-custody/README-galerina-signing-key.md`
@@ -3917,7 +4242,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 
 ## PASTE-TO-START-tritmesh-2026-07-04.md
 `../ZTF-Knowledge-Bases/PASTE-TO-START-tritmesh-2026-07-04.md`
-- terms: prod, users, github, build, galerina, zero-trust, phill, documents, keep-green, owner, never, cache, paste-to-start-tritmesh-2026-07-04, tritmesh
+- terms: prod, build, galerina, zero-trust, keep-green, owner, never, cache, paste-to-start-tritmesh-2026-07-04, tritmesh, don, ztf-knowledge-bases, real, design
 
 ## Pattern Matching
 `../ZTF-Knowledge-Bases/pattern-matching.md`
@@ -4021,7 +4346,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## PROMPT — main session MASTER onboarding (rules · graph-discovery · token-management)
 `../ZTF-Knowledge-Bases/PROMPT-main-session-MASTER-onboarding-2026-07-01.md`
 - links: [[memory-name]]
-- terms: rules, graph, github, index, mjs, users, phill, documents, memory, source, keep, galerina, every, rule
+- terms: rules, graph, index, mjs, memory, source, keep, galerina, every, rule, file, don, main, manual
 
 ## PROMPT — main session: close the 5 MCP client-side gaps in the boundary design · 2026-07-10
 `../ZTF-Knowledge-Bases/PROMPT-main-session-mcp-client-side-gaps-2026-07-10.md`
@@ -4091,7 +4416,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## PROMPT — main session: token-manage with the graph/index dev tools
 `../ZTF-Knowledge-Bases/PROMPT-main-session-token-management-graph-2026-07-01.md`
 - links: [[memory-name]]
-- terms: mjs, memory, index, memory-graph, kb-index, dev, tools, graph, path, files, whole, task, already, file
+- terms: mjs, memory, index, memory-graph, kb-index, dev, tools, graph, scripts, files, whole, task, already, file
 
 ## PROMPT — main session: standing working discipline (obey the rules · find via graph, not manual search)
 `../ZTF-Knowledge-Bases/PROMPT-main-session-working-discipline-rules-and-graph-2026-07-01.md`
@@ -4103,7 +4428,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 
 ## PROMPT — OSS-package build (Tier A/B + 2 new candidates) — RESUME 2026-07-08
 `../ZTF-Knowledge-Bases/PROMPT-oss-build-resume-2026-07-08.md`
-- terms: build, public, github, users, phill, documents, before, owner, zt-, critical, repo, first, freivalds, zt-tritsocket
+- terms: build, public, before, owner, zt-, critical, repo, first, freivalds, zt-tritsocket, zt-freivalds, push, naming, tier
 
 ## PROMPT — OSS-extraction R&D: which Galerina/TritMesh R&D can ship as honest open-source packages in other languages?
 `../ZTF-Knowledge-Bases/PROMPT-oss-extraction-rnd-2026-07-01.md`
@@ -4167,6 +4492,107 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-SUBSTRATE-001
 - terms: text, never, synthetic, lane, digital, honest, photonic, pmatrix, mesh, mac, cost, crypto, verdict, crossover
 
+## RD-0381 — NVLeak countermeasure design: TritMesh:DB defense against persistent-memory side-channels
+`../ZTF-Knowledge-Bases/RD-0381-nvleak-countermeasure-tritmesh-db-memory-sidechannel-defense.md`
+- links: [[RD-hardening-memory-graph-walkthrough-2026-07-15]] [[galerina-hardening-residency-prototype]]
+- terms: design, deny-by-default, tritmesh, nvleak, side-channels, evidenced, memory, defense, against, honest, layered, access, shared, security
+
+## RD-0382 — Galerina:HotPath execution-order-arena: buildable spec
+`../ZTF-Knowledge-Bases/RD-0382-galerina-hotpath-execution-order-arena-buildable-spec.md`
+- links: [[RD-hardening-memory-graph-walkthrough-2026-07-15]] [[HANDOVER-hotpath-tritmesh-roadmap-2026-07-15]] [[galerina-hardening-residency-prototype]]
+- terms: galerina, sealed, hotpath, execution, program, contract, arena, buildable, ghp, passes, must, spec, sponsorship, dag
+
+## RD-0383 — Claim-scan detector: the evidence-matrix / claim-hygiene enforcement
+`../ZTF-Knowledge-Bases/RD-0383-claim-scan-detector-evidence-matrix-enforcement.md`
+- links: [[HANDOVER-technical-claims-audit-action-2026-07-15]] [[new-error-type-update-build-tools]]
+- terms: detector, check, fail-closed, claim-scan, claim-hygiene, class, flags, security, self-tested, honest, rd-0383, evidence-matrix, enforcement, audit
+
+## RD-0384 — "Faster mushroom": the trusted-environment threat-model delta
+`../ZTF-Knowledge-Bases/RD-0384-faster-mushroom-trusted-environment-threat-model-delta.md`
+- links: [[HANDOVER-hotpath-tritmesh-roadmap-2026-07-15]] [[RD-hardening-memory-graph-walkthrough-2026-07-15]]
+- terms: delta, zero-trust, profile, drop, boundary, faster, mushroom, threat-model, galerina, trusted, hard, danger, changes, rd-0384
+
+## RD-0385 — True quantum communications: scope, honest framing, and the governance position
+`../ZTF-Knowledge-Bases/RD-0385-true-quantum-communications-scope-and-governance-position.md`
+- links: [[RD-hardening-memory-graph-walkthrough-2026-07-15]]
+- terms: qkd, quantum, honest, qrv, position, galerina, never, communications, governance, key, fit, hardware, pqc, classical
+
+## RD-0386 — Resilient networking: scope, honest position, and the quantum-comms tie-in
+`../ZTF-Knowledge-Bases/RD-0386-resilient-networking-scope-and-honest-position.md`
+- links: [[RD-0385-true-quantum-communications-scope-and-governance-position]] [[galerina-tri-pipe-is-photonic-router]]
+- terms: resilient, networking, honest, never, quantum-comms, tie-in, rd-0385, quantum, galerina, scope, transport, security, already, substrate
+
+## RD-0387 — `sponsorship.md` possibility sweep: every idea, its R&D status, and the gaps filled
+`../ZTF-Knowledge-Bases/RD-0387-sponsorship-possibility-sweep-and-gap-fills.md`
+- links: [[HANDOVER-hotpath-tritmesh-roadmap-2026-07-15]] [[RD-hardening-memory-graph-walkthrough-2026-07-15]]
+- terms: security, tritmesh, index, possibility, every, gaps, filled, zero-copy, sponsorship, vector, search, arrow, idea, interop
+
+## RD-0388 — Galerina:HotPath admission as a triple lock (Prove · Admit · Contain) + prior-art survey
+`../ZTF-Knowledge-Bases/RD-0388-galerina-hotpath-triple-lock-admission-and-prior-art.md`
+- tasks: #105
+- links: [[HANDOVER-galerina-hotpath-engine-for-main-2026-07-15]] [[RD-0391-hotpath-lock1-eligibility-predicate-contract-clause-spec]]
+- terms: lock, hotpath, admission, three, fail-closed, governed, galerina, triple, analogues, yes, path, prove, admit, fallback
+
+## RD-0389 — Record-marshalling ABI (`__mk_<Record>` / `__rd_<Record>`) — the last twin shadows + P9 parser byte-parity
+`../ZTF-Knowledge-Bases/RD-0389-record-marshalling-abi-mk-record-for-twins-and-p9-parser.md`
+- tasks: #64, #68
+- links: [[HANDOVER-REPLY-rd0389-record-marshalling-secret-gate-closed-2026-07-15]]
+- terms: record, abi, string, parser, twin, both, grounding, records, read, main, same, secret-gate, wasm, array
+
+## RD-0390 — `.lproof` semantics: the consolidated spec (wrapper, verification, fail-closed rules)
+`../ZTF-Knowledge-Bases/RD-0390-lproof-semantics-consolidated-spec.md`
+- codes: FUNGI-GOV-3VL-001
+- tasks: #105, #102
+- terms: lproof, semantics, wrapper, fail-closed, rules, cascade, proof, spec, manifest, safe, attestation, separate, explicitly, out
+
+## RD-0391 — HotPath Lock-1 eligibility predicate: the formal contract-clause spec (P1–P9 + FUNGI-HOT-00x)
+`../ZTF-Knowledge-Bases/RD-0391-hotpath-lock1-eligibility-predicate-contract-clause-spec.md`
+- codes: FUNGI-HOT-00, FUNGI-HOT-010, FUNGI-HOT-001, FUNGI-HOT-002, FUNGI-HOT-003, FUNGI-HOT-004, FUNGI-HOT-005, FUNGI-HOT-006, FUNGI-HOT-007, FUNGI-HOT-008, FUNGI-HOT-009, FUNGI-GOV-3V
+- tasks: #69, #105
+- terms: predicate, never, eligibility, hot, clause, request, already, verdict, spec, compiler, rd-0388, decision, proof, assert
+
+## RD-0392 — Closing the 9 WASM-losing benchmarks WITHOUT loosening zero trust (borrowed tech survey + the AI-speed tricks mapped)
+`../ZTF-Knowledge-Bases/RD-0392-closing-the-wasm-losing-benchmarks-under-zero-trust.md`
+- tasks: #105, #62, #64
+- terms: tier, trust, tricks, lane, check, wasm, same, tri-logic, never, elision, tech, zero-trust, mapped, photonic
+
+## RD-0393 — The `budget` contract element: a declared, fail-closed resource envelope (fuel · memory · dispatch rate · smoothness)
+`../ZTF-Knowledge-Bases/RD-0393-resource-budget-contract-element-declared-envelope-spec.md`
+- codes: FUNGI-RES-00, FUNGI-RES-001, FUNGI-RES-002, FUNGI-RES-003, FUNGI-RES-004, FUNGI-RES-005, FUNGI-RES-006, FUNGI-RES-007
+- tasks: #105, #24
+- links: [[HANDOVER-drift-consistency-resource-stability-for-rd-2026-07-15]] [[HANDOVER-drift-protection-and-flat-resource-envelope-2026-07-15]]
+- terms: budget, ceiling, envelope, fuel, dispatch, trap, declared, build, rate, clause, semantics, memory, border, unit
+
+## RD-0394 — Measure-through-noise: benchmark consistency + Galerina-first priority on a shared, policy-locked machine
+`../ZTF-Knowledge-Bases/RD-0394-measure-through-noise-benchmark-consistency-on-a-policy-locked-machine.md`
+- tasks: #63
+- links: [[HANDOVER-drift-protection-and-flat-resource-envelope-2026-07-15]] [[RD-0393-resource-budget-contract-element-declared-envelope-spec]] [[HANDOVER-todo-continuation-noise-gate-b5a-e2e-2026-07-15]]
+- terms: priority, machine, why, never, python, same, quiet, security, own, control, shared, run, galerina, spread
+
+## RD-0395 — Nesting adjudicated: the flow level is ERASED at lowering, and the contract block emits ZERO instructions
+`../ZTF-Knowledge-Bases/RD-0395-nesting-adjudication-flow-level-erased-at-lowering-contract-emits-nothing.md`
+- tasks: #105
+- terms: flow, cost, level, contract, real, nesting, zero, already, adjudicated, block, code, free, change, twin
+
+## RD-0396 — Nested loops × photonic tri-logic: the DEPTH LADDER, the three gifts of the extra −1, and the 3-axis index mapping (deep research)
+`../ZTF-Knowledge-Bases/RD-0396-nested-loops-x-photonic-tri-logic-the-depth-ladder-and-the-extra-minus-one.md`
+- links: [[HANDOVER-instruct-main-depth-ladder-builds-2026-07-16]] [[galerina-tri-pipe-is-photonic-router]]
+- terms: photonic, loop, nested, three, extra, honest, fold, depth, core, bounds, tri-logic, ladder, gifts, axes
+
+## RD-0397 — The −1 sweep: every logic/syntax construct re-examined for the trit (axes included), each security-checked, with the R&D table
+`../ZTF-Knowledge-Bases/RD-0397-tri-sweep-all-logic-and-syntax-for-the-minus-one-axes-and-the-lint-pack.md`
+- codes: FUNGI-GOV-3V
+- terms: sweep, trit, axes, check, every, syntax, verdict, logic, table, tri-lint, pack, yes, each, law
+
+## RD-0398 — The CALL ladder: resolving flow-call chains the way RD-0396 resolved loops (and the tail-call fuel hazard found doing it)
+`../ZTF-Knowledge-Bases/RD-0398-the-call-ladder-resolving-flow-call-chains-like-loops.md`
+- tasks: #105, #69
+- terms: fuel, call, ladder, tail-call, hazard, check, loop, predicate, found, calls, chains, rd-0396, depth, loops
+
+## RD-0399 — the tri-axis sweep applied outward: TritMeshQL · the `.gate` language · TritMesh-Database
+`../ZTF-Knowledge-Bases/RD-0399-tri-axis-sweep-tritmeshql-gate-ascii-and-tritmesh-db.md`
+- terms: gate, never, owner, repo, applied, spec, sweep, three-valued, findings, fixed, detector, tritmesh-database, axis, method
+
 ## Galerina AI-Friendliness — R&D Spec (2026-06-23)
 `../ZTF-Knowledge-Bases/rd-absorbed/from-galerina-r-and-d/AI-FRIENDLINESS-SPEC-2026-06-23.md`
 - tasks: #215, #218
@@ -4210,7 +4636,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/rd-absorbed/rd-crossover-encryption-rnd.md`
 - codes: FUNGI-AMD-024, FUNGI-SUBSTRATE-001, FUNGI-PARSE-001
 - tasks: #199, #34
-- terms: spec, track, tmf, phase, users, phill, documents, github, spore, galerina-r-and-d, both, research, fungi, tri-encryption
+- terms: spec, tmf, track, galerina-r-and-d, phase, spore, both, research, fungi, tri-encryption, merged, aead, verified, tracks
 
 ## Diagnostic-Namespace Ownership — R&D response (3 test-harness patches)
 `../ZTF-Knowledge-Bases/rd-absorbed/rd-diagnostics-namespace-rnd-response.md`
@@ -4223,7 +4649,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #34, #199
 - terms: fungi, galerina, governance, root, crypto, spec, gate, integrity, real, bench, key, aead, full, vectors
 
-## External repositories analysis — `<path>`
+## External repositories analysis — `x`
 `../ZTF-Knowledge-Bases/rd-absorbed/rd-external-repos-grounding-ledger.md`
 - terms: nvfp4, ternary, crypto, real, photonic, spore, minicpm, block, external, linear, scale, ledger, open, source
 
@@ -4408,9 +4834,31 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - links: [[SP-800-227]] [[RFC-9180]] [[Tink-Stream]] [[IV-Stream]] [[NTRU]] [[NTRU-MCF]] [[McMahon]] [[Analog-Precision]] [[FIPS-203]] [[FIPS-204]] [[OptoLink]] [[CryptoLight]]
 - terms: crypto, notes, galerina, encryption, aead, kem, spore, zero-trust, gate, key, integrity, confidentiality, layer, honest
 
+## R&D walkthrough — Hardening · Memory · Graph (video corpus, 2026-07-15)
+`../ZTF-Knowledge-Bases/RD-hardening-memory-graph-walkthrough-2026-07-15.md`
+- links: [[galerina-tri-pipe-is-photonic-router]] [[galerina-work-state]] [[benchmark-noise-floor-discipline]] [[harm-filter-on-papers]]
+- terms: memory, graph, tritmesh, hotpath, photonic, youtube, cache, governance, ibm, security, in-memory, storage, bounded, com
+
+## R&D session event log — 2026-07-15
+`../ZTF-Knowledge-Bases/RD-SESSION-LOG-2026-07-15.md`
+- links: [[no-house-rules-in-rd-results]]
+- terms: memory, good, log, event, source, security, hotpath, session, graph, folder, owner, scope, remain, read
+
+## R&D UPDATE — Galerina:HotPath triple lock × photonic tri-logic (2026-07-15)
+`../ZTF-Knowledge-Bases/RD-UPDATE-hotpath-triple-lock-x-photonic-tri-logic-2026-07-15.md`
+- tasks: #105
+- links: [[HANDOVER-galerina-hotpath-engine-for-main-2026-07-15]] [[galerina-tri-pipe-is-photonic-router]]
+- terms: photonic, lock, triple, lane, tri-logic, hotpath, offload, cross-compare, binary, update, galerina, admission, tier, honest
+
+## R&D UPDATE — the consolidated table: RD-0388 → RD-0398 (the recent wave) + key handover results
+`../ZTF-Knowledge-Bases/RD-UPDATE-table-rd0388-0398-recent-results-2026-07-16.md`
+- codes: FUNGI-HOT-001
+- tasks: #69, #105, #56, #63
+- terms: table, results, wave, key, shipped, yes, main, rd-0388, rd-0398, recent, non-rd, never, sheet, queue
+
 ## REBOOT / GET-STARTED PROMPT — paste after a /clear or a fresh start (from the `main` branch)
 `../ZTF-Knowledge-Bases/REBOOT-PROMPT-from-main-2026-07-03.md`
-- terms: main, branch, users, phill, documents, github, fresh, start, reboot, get-started, prompt, paste, after, clear
+- terms: main, branch, fresh, start, reboot, get-started, prompt, paste, after, clear, galerina, ztf-knowledge-bases, galerina-r-and-d, session
 
 ## release Keyword
 `../ZTF-Knowledge-Bases/release-keyword.md`
@@ -4426,7 +4874,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 
 ## Restart prompt — TritMesh/.graph research session (post-/clear, 2026-07-01)
 `../ZTF-Knowledge-Bases/RESTART-PROMPT-2026-07-01.md`
-- terms: graph, session, prompt, research, users, phill, documents, github, tritmesh, clear, gate, restart, post-, green
+- terms: graph, session, prompt, research, tritmesh, clear, gate, restart, post-, green, work, galerina, never, ztf-knowledge-bases
 
 ## Restricted Native Boundary (FFI)
 `../ZTF-Knowledge-Bases/restricted-native-boundary.md`
@@ -4519,7 +4967,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 
 ## SELF-PROMPT — Galerina hub, full-auto continuation (paste after `/clear`, 2026-07-01)
 `../ZTF-Knowledge-Bases/SELF-PROMPT-galerina-hub-2026-07-01.md`
-- terms: galerina, after, first, backlog, git, hub, clear, autonomy, preferred, order, documents, github, zt-galerina-graph-ascii, mjs
+- terms: galerina, after, first, backlog, git, hub, clear, autonomy, preferred, order, zt-galerina-graph-ascii, mjs, don, self-prompt
 
 ## Server Platform Support
 `../ZTF-Knowledge-Bases/server-platform-support.md`
@@ -4743,5 +5191,5 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## Galerina
 `README.md`
 - codes: FUNGI-SUBSTRATE-002, FUNGI-SUBSTRATE-001, FUNGI-FAULT-001, FUNGI-NUMERIC-001, FUNGI-TIER-001, FUNGI-VALUESTATE-008, FUNGI-PKG-006, FUNGI-HALLMARK-001, FUNGI-EFFECT-006, FUNGI-MATCH-001, FUNGI-LEX-001, FUNGI-NAME-001, FUNGI-TYPE-001, FUNGI-EFFECT-001, FUNGI-GOV-001, FUNGI-TERM-001, FUNGI-PCI-001
-- tasks: #102, #143, #128, #105, #163, #165, #32, #34
-- terms: galerina, docs, governed, svg, width, diagrams, sub, wasm, shipped, governance, audit, runtime, fungi, contract
+- tasks: #105, #143, #102, #128, #163, #165, #32
+- terms: galerina, docs, governed, svg, wasm, width, diagrams, sub, shipped, governance, audit, runtime, fungi, contract

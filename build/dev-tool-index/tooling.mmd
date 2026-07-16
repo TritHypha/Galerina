@@ -44,6 +44,12 @@ flowchart LR
   T_audit_checker_wiring_mjs --> C_doc_drift
   T_audit_checker_wiring_mjs --> C_graph_index
   T_audit_checker_wiring_mjs --> C_sensitive_allowlist
+  T_audit_claim_hygiene_mjs["audit-claim-hygiene.mjs"]
+  T_audit_claim_hygiene_mjs --> C_naming
+  T_audit_claim_hygiene_mjs --> C_tier_floor
+  T_audit_claim_hygiene_mjs --> C_source_hygiene
+  T_audit_claim_hygiene_mjs --> C_doc_drift
+  T_audit_claim_hygiene_mjs --> C_proofs
   T_audit_corpus_effect_names_mjs["audit-corpus-effect-names.mjs"]
   T_audit_corpus_effect_names_mjs --> C_effects
   T_audit_corpus_effect_names_mjs --> C_gate_wiring
@@ -87,6 +93,12 @@ flowchart LR
   T_audit_example_diagnostics_mjs --> C_governance
   T_audit_example_diagnostics_mjs --> C_diagnostics
   T_audit_example_diagnostics_mjs --> C_teaching_corpus
+  T_audit_fungi_corpus_check_mjs["audit-fungi-corpus-check.mjs"]
+  T_audit_fungi_corpus_check_mjs --> C_signing_fusion
+  T_audit_fungi_corpus_check_mjs --> C_diagnostics
+  T_audit_fungi_corpus_check_mjs --> C_teaching_corpus
+  T_audit_fungi_corpus_check_mjs --> C_doc_drift
+  T_audit_fungi_corpus_check_mjs --> C_graph_index
   T_audit_fungi_runtime_mjs["audit-fungi-runtime.mjs"]
   T_audit_fungi_runtime_mjs --> C_gate_wiring
   T_audit_fungi_runtime_mjs --> C_coverage
@@ -193,6 +205,8 @@ flowchart LR
   T_audit_path_leak_mjs["audit-path-leak.mjs"]
   T_audit_path_leak_mjs --> C_sinks_taint
   T_audit_path_leak_mjs --> C_diagnostics
+  T_audit_path_leak_mjs --> C_doc_drift
+  T_audit_path_leak_mjs --> C_brand
   T_audit_path_leak_mjs --> C_graph_index
   T_audit_path_leak_mjs --> C_sensitive_allowlist
   T_audit_perf_hotpath_mjs["audit-perf-hotpath.mjs"]
@@ -212,6 +226,12 @@ flowchart LR
   T_audit_provenance_mjs --> C_teaching_corpus
   T_audit_provenance_mjs --> C_doc_drift
   T_audit_provenance_mjs --> C_graph_index
+  T_audit_reference_doc_drift_mjs["audit-reference-doc-drift.mjs"]
+  T_audit_reference_doc_drift_mjs --> C_effects
+  T_audit_reference_doc_drift_mjs --> C_signing_fusion
+  T_audit_reference_doc_drift_mjs --> C_gate_wiring
+  T_audit_reference_doc_drift_mjs --> C_diagnostics
+  T_audit_reference_doc_drift_mjs --> C_doc_drift
   T_audit_route_overlap_mjs["audit-route-overlap.mjs"]
   T_audit_route_overlap_mjs --> C_signing_fusion
   T_audit_route_overlap_mjs --> C_governance
@@ -294,6 +314,12 @@ flowchart LR
   T_memory_graph_mjs --> C_diagnostics
   T_memory_graph_mjs --> C_source_hygiene
   T_memory_graph_mjs --> C_graph_index
+  T_ts_retirement_graph_mjs["ts-retirement-graph.mjs"]
+  T_ts_retirement_graph_mjs --> C_signing_fusion
+  T_ts_retirement_graph_mjs --> C_coverage
+  T_ts_retirement_graph_mjs --> C_diagnostics
+  T_ts_retirement_graph_mjs --> C_teaching_corpus
+  T_ts_retirement_graph_mjs --> C_graph_index
   T_code_index_mjs["code-index.mjs"]
   T_code_index_mjs --> C_provenance
   T_code_index_mjs --> C_diagnostics
@@ -381,6 +407,15 @@ flowchart LR
   T_check_gate_injection_mjs --> C_secrets_privacy
   T_check_gate_injection_mjs --> C_package_border
   T_check_gate_injection_mjs --> C_graph_index
+  T_emit_doc_wat_mjs["emit-doc-wat.mjs"]
+  T_emit_doc_wat_mjs --> C_effects
+  T_emit_doc_wat_mjs --> C_signing_fusion
+  T_emit_doc_wat_mjs --> C_naming
+  T_emit_doc_wat_mjs --> C_provenance
+  T_emit_doc_wat_mjs --> C_diagnostics
+  T_emit_doc_wat_mjs --> C_source_hygiene
+  T_emit_doc_wat_mjs --> C_doc_drift
+  T_emit_doc_wat_mjs --> C_graph_index
   T_fungi_astshape_mjs["fungi-astshape.mjs"]
   T_fungi_astshape_mjs --> C_secrets_privacy
   T_generate_sbom_mjs["generate-sbom.mjs"]

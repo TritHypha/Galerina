@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 946,
+  "docCount": 1025,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -3016,6 +3016,44 @@
         "return",
         "profile",
         "compiler"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/EMAIL-galerina-nesting-two-tables-2026-07-16.md",
+      "title": "Galerina `.fungi` — what nests, and what doesn't",
+      "headings": [
+        "Table 1 — NOT nested: erased or lifted at compile time (zero runtime instructions)",
+        "Table 2 — still nests: the honest residuals, grouped by why"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "nests",
+        "table",
+        "time",
+        "galerina",
+        "zero",
+        "instructions",
+        "nested",
+        "compile",
+        "loop",
+        "flow",
+        "body",
+        "compiler",
+        "erased",
+        "i32",
+        "why",
+        "call",
+        "permanent",
+        "until",
+        "fungi",
+        "doesn",
+        "lifted",
+        "runtime",
+        "still",
+        "honest",
+        "residuals"
       ]
     },
     {
@@ -12681,7 +12719,7 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/galerina-external-idea-mining-2026-06-23.md",
-      "title": "External Idea Mining — `<path>` (fresh pass, 2026-06-23)",
+      "title": "External Idea Mining — `x` (fresh pass, 2026-06-23)",
       "headings": [
         "The 5 HIGH-value net-new ideas",
         "Net-new MEDIUM / LOW (13)",
@@ -18450,7 +18488,7 @@
         "⚠️ 2026-07-02 — 50-YEAR-MISTAKE SWEEP (5 surfaces) + DEPENDENCY CVE + SALVAGE (all owner-gated, prod read-only, findings-only)",
         "2026-07-02 — ZT 7+ improvement backlog (net-new only; full specs in `galerina-zt-7plus-improvement-specs-2026-07-02.md`)",
         "2026-07-02 — Galerina → TritMesh forward-design (TritMesh = SEPARATE product consuming Galerina, Laravel:PHP/Zend)",
-        "A. R&D dispatched to the bridge (`<path>`)",
+        "A. R&D dispatched to the bridge (`Galerina-R-AND-D/_session-bridge/tasks`)",
         "B. R&D designed (in KB; build pending) — [galerina-architecture-rd-2026-06-23.md](galerina-architecture-rd-2026-06-23.md)",
         "2026-06-27 — net-new ADOPTABLES from the \"automate the defence\" R&D (RD-0137..0153)",
         "C. Build items (engineering — no further R&D needed)",
@@ -24478,9 +24516,9 @@
         "adapter",
         "verdict",
         "app",
-        "github",
         "passport",
-        "fail-closed"
+        "fail-closed",
+        "cold-start"
       ]
     },
     {
@@ -25281,9 +25319,9 @@
       "xrefs": [],
       "topTerms": [
         "logicn",
-        "wwwprojects",
         "main",
         "stale",
+        "legacy-rnd-root",
         "cli",
         "owner",
         "mjs",
@@ -25293,7 +25331,6 @@
         "live",
         "rewrite",
         "exists",
-        "users",
         "github",
         "references",
         "archival",
@@ -25304,7 +25341,8 @@
         "rewriting",
         "tree",
         "category",
-        "old"
+        "old",
+        "machine"
       ]
     },
     {
@@ -28717,18 +28755,22 @@
         "9. Does it withdraw anything? — the trade-off ledger (and why it stays zero-trust)"
       ],
       "codes": [
-        "FUNGI-RETAIN-001",
+        "FUNGI-HARDEN-007",
         "FUNGI-EFFECT-006",
+        "FUNGI-RETAIN-001",
         "FUNGI-HARDEN-005"
       ],
-      "tasks": [],
+      "tasks": [
+        "#143"
+      ],
       "xrefs": [
+        "HANDOVER-hardening-integrated-and-selfhosting-frontier-2026-07-12",
         "HANDOVER-galerina-finish-push-2026-07-12",
         "galerina-rd-0360-hardening-spill-to-refuted-compiler-trit-and-memory-spill-effect"
       ],
       "topTerms": [
-        "never",
         "memory",
+        "never",
         "hardening",
         "text",
         "residency",
@@ -28737,17 +28779,17 @@
         "zero-trust",
         "owner",
         "secret",
-        "dram",
         "spill",
-        "tri",
+        "dram",
         "fail-closed",
+        "tri",
         "constant-time",
         "injection",
         "tier",
         "value",
         "honest",
-        "security",
         "compiler",
+        "security",
         "check",
         "already",
         "surface",
@@ -28808,10 +28850,15 @@
         "5. Honesty / verify-first"
       ],
       "codes": [
+        "FUNGI-HARDEN-007",
+        "FUNGI-EFFECT-006",
         "FUNGI-HARDEN-00"
       ],
-      "tasks": [],
+      "tasks": [
+        "#143"
+      ],
       "xrefs": [
+        "HANDOVER-hardening-integrated-and-selfhosting-frontier-2026-07-12",
         "HANDOVER-REPLY-main-rd0337-hardening-2026-07-12",
         "new-error-type-update-build-tools",
         "galerina-rd-0358-governed-memory-residency-dataflow-tri-photonic",
@@ -28833,18 +28880,18 @@
         "effect",
         "layering",
         "import",
+        "trit-conformance",
         "constraint",
         "compiler-side",
         "reject",
         "storage",
+        "both",
+        "tower-citizen",
         "already",
         "confirm",
-        "trit-conformance",
         "layer",
         "reply",
-        "tower-citizen",
-        "real",
-        "linchpin"
+        "canonical"
       ]
     },
     {
@@ -29167,6 +29214,114 @@
         "ceiling",
         "stoppers",
         "handover"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/galerina-rd-0367-optimal-brain-roster-grounded-in-self-knowledge.md",
+      "title": "RD-0367 — The optimal brain roster, grounded in self-knowledge: a core five, activated specialists, and sessions-as-brains",
+      "headings": [
+        "1. The honest basis — my real failure modes, and the brain each one exists to counter",
+        "2. The resolved roster — a Core Five, always on; Four Specialists, woken by project shape",
+        "3. The realization that actually changes the design — a brain is strongest as a separate CONTEXT, not a hat in one",
+        "4. The switching economics (so the model doesn't become its own overhead)",
+        "5. What changes in `BRAINS.md` (the resolution to fold in)",
+        "6. Honesty / verify-first"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "HANDOVER-v1-finish-line-cutover-and-gap-map-2026-07-12",
+        "no-in-session-subagent-fanout"
+      ],
+      "topTerms": [
+        "brain",
+        "core",
+        "specialists",
+        "brains",
+        "five",
+        "project",
+        "roster",
+        "model",
+        "failure",
+        "changes",
+        "session",
+        "actually",
+        "honest",
+        "modes",
+        "own",
+        "four",
+        "strongest",
+        "grounded",
+        "design",
+        "real",
+        "each",
+        "supervisor",
+        "context",
+        "shape",
+        "always"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/galerina-rd-0368-root-rotation-ceremony-and-key-housecleaning-INTERNAL.md",
+      "title": "RD-0368 — Signing-key root-rotation ceremony + governance/ house-cleaning (INTERNAL)",
+      "headings": [
+        "TL;DR",
+        "1 · The finding — the trust root is lost, so the ledger is frozen",
+        "2 · Key inventory (classified from the on-disk ledgers)",
+        "3 · How sign/verify actually work (read from source, so the ceremony is exact)",
+        "4 · The root-rotation ceremony (Windows 10, owner-run)",
+        "Pre-flight",
+        "The swap (do both, then verify)",
+        "After the swap",
+        "5 · Operational-key rotation (the everyday one — separate, lighter)",
+        "6 · House-cleaning — retire in the ledger, archive to `governance/retired/`",
+        "`governance/key-inventory.mjs` — BUILT + run (2026-07-12)",
+        "7 · Naming convention (for the record)",
+        "8 · Owner-gated vs agent-doable",
+        "9 · Open decisions"
+      ],
+      "codes": [
+        "FUNGI-KEY-002"
+      ],
+      "tasks": [
+        "#149",
+        "#28",
+        "#30",
+        "#39",
+        "#33"
+      ],
+      "xrefs": [
+        "galerina-rd-0319-ir-key-compromise-runbook-key149-plan",
+        "galerina-rd-0365-tpm-enclave-key-custody-ladder",
+        "galerina-key-custody-and-rotation",
+        "new-error-type-update-build-tools"
+      ],
+      "topTerms": [
+        "key",
+        "governance",
+        "root",
+        "ceremony",
+        "mjs",
+        "ledger",
+        "private",
+        "env",
+        "json",
+        "signing",
+        "verify",
+        "house-cleaning",
+        "pub",
+        "keep",
+        "registry",
+        "operational",
+        "build",
+        "rotation",
+        "pem",
+        "public",
+        "retire",
+        "run",
+        "swap",
+        "root-rotation",
+        "lost"
       ]
     },
     {
@@ -30428,6 +30583,50 @@
         "re-do",
         "rejected-for-paper",
         "terse"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/galerina-rd-paper-worthiness-review-0257-0367-2026-07-12.md",
+      "title": "Paper-worthiness review — RD-0257 → RD-0367 (the unscreened range) + harm-filter verdicts",
+      "headings": [
+        "1. What was already papered in this range (no action)",
+        "2. Screening verdicts — RD-0310 → RD-0367 (the genuinely-unpapered tail)",
+        "3. The four written now (this batch)",
+        "4. Honesty / verify-first"
+      ],
+      "codes": [],
+      "tasks": [
+        "#143"
+      ],
+      "xrefs": [
+        "harm-filter-on-papers"
+      ],
+      "topTerms": [
+        "pass",
+        "rd-0367",
+        "range",
+        "verdicts",
+        "construction",
+        "harm-filter",
+        "paper",
+        "galerina",
+        "paper-worthiness",
+        "screening",
+        "already",
+        "papered",
+        "four",
+        "batch",
+        "review",
+        "rd-0257",
+        "unscreened",
+        "action",
+        "rd-0310",
+        "genuinely-unpapered",
+        "tail",
+        "written",
+        "honesty",
+        "verify-first",
+        "status"
       ]
     },
     {
@@ -38490,53 +38689,150 @@
       ]
     },
     {
-      "rel": "../ZTF-Knowledge-Bases/HANDOVER-boundary-and-registry-build-program-2026-07-12.md",
-      "title": "HANDOVER — boundary & registry build program: what's doable without `.ts`, and every stopper",
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-benchmark-stability-galerina-more-stable-than-rust-2026-07-15.md",
+      "title": "HANDOVER → R&D — benchmark stability: why the variance is extreme, and why Galerina can be *more stable than Rust*",
       "headings": [
-        "§1 Zero-Trust thesis boundaries — can each move toward 100% without `.ts`?",
-        "§2 Tracking registry — \"shipped\": ZT-63 hygiene check (`.ts`/`node_modules`)",
-        "§3 Tracking registry — \"building\": status + what \"finish\" needs",
-        "§4 Hardening / residency (RD-0358) — build as much as possible (task #52)",
-        "§5 The stopper map (one view)",
-        "§6 What I built this session (findings)",
-        "§6.1 End-phase results"
+        "1. Root cause — proven from the harness source, two opposite disciplines",
+        "2. Why \"nothing else running\" makes it *worse*, not better",
+        "3. The thesis — Galerina *more stable than Rust* (and why that is real, not spin)",
+        "4. The fix — standardise the harness on the `compute-mix` pattern",
+        "5. Ask for R&D"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "HANDOVER-benchmark-two-regressions-isolate-2026-07-12",
+        "HANDOVER-REPLY-benchmark-stability-and-unlocked-subsystems-2026-07-15"
+      ],
+      "topTerms": [
+        "rust",
+        "why",
+        "galerina",
+        "stable",
+        "harness",
+        "window",
+        "variance",
+        "six-digit-guess",
+        "text-html",
+        "benchmark",
+        "warmup",
+        "source",
+        "compute-mix",
+        "nothing",
+        "running",
+        "governed",
+        "cpu",
+        "stability",
+        "extreme",
+        "else",
+        "single",
+        "measured",
+        "turbo",
+        "fix",
+        "proven"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-benchmark-two-regressions-isolate-2026-07-12.md",
+      "title": "HANDOVER — isolate the two benchmark \"regressions\" (`six-digit-guess`, `text-html`)",
+      "headings": [
+        "✅ RESOLVED — main ran Step 1; verdict: **NOISE, not a regression** (2026-07-12)",
+        "✅✅ CONFIRMED AGAIN + CLOSED — warm re-run flipped both reds green; two-view UI restored (2026-07-13)",
+        "§0 Read the widget's own thesis first — the noise floor is large",
+        "§1 The two flags are NOT the same case — split them",
+        "§2 Why hardening is an unlikely *runtime* cause anyway",
+        "§3 The experiment — what to run in the next benchmark (answers owner Q1)",
+        "§4 The `.ts`→WASM question (answers owner Q2 — \"why would `.ts` be faster?\")",
+        "§5 What \"done\" looks like",
+        "§6 Pointers"
+      ],
+      "codes": [],
+      "tasks": [
+        "#143"
+      ],
+      "xrefs": [
+        "HANDOVER-hardening-integrated-and-selfhosting-frontier-2026-07-12",
+        "galerina-hardening-residency-prototype",
+        "HANDOVER-REPLY-owner-gated-vs-undelivered-rd-2026-07-12"
+      ],
+      "topTerms": [
+        "noise",
+        "hardening",
+        "run",
+        "text-html",
+        "benchmark",
+        "wasm",
+        "owner",
+        "step",
+        "six-digit-guess",
+        "rust",
+        "governed",
+        "both",
+        "runtime",
+        "path",
+        "answers",
+        "main",
+        "regression",
+        "warm",
+        "why",
+        "cause",
+        "band",
+        "control",
+        "same",
+        "first",
+        "widget"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-checker-interpreter-to-100-grounded-plan-2026-07-16.md",
+      "title": "HANDOVER → owner + R&D — checker + interpreter to 100: the grounded implementation spec (tri-lint pack) · emitter status",
+      "headings": [
+        "§1 Checker → 100: the tri-lint pack, implementation-ready",
+        "§2 Interpreter → 100",
+        "§3 WAT emitter (89) — moving, not blocked",
+        "§4 State"
       ],
       "codes": [
-        "FUNGI-HARDEN-007"
+        "FUNGI-GOV-3VL-001",
+        "FUNGI-GOV-3VL-003",
+        "FUNGI-GOV-010"
       ],
       "tasks": [
+        "#75",
+        "#76",
+        "#56",
         "#105",
-        "#143",
-        "#102",
-        "#52"
+        "#63",
+        "#77",
+        "#69"
       ],
       "xrefs": [],
       "topTerms": [
-        "registry",
-        "without",
+        "emitter",
+        "checker",
+        "interpreter",
+        "tri-lint",
+        "pack",
+        "owner",
+        "grounded",
+        "wat",
+        "implementation-ready",
+        "handover",
+        "implementation",
+        "spec",
+        "status",
+        "pass",
+        "moving",
+        "blocked",
+        "state",
+        "main",
+        "runtime",
         "build",
-        "rd-0361",
-        "stopper",
-        "authoritative",
-        "every",
-        "differential",
-        "boundary",
-        "session",
-        "compiler",
-        "host",
-        "tracking",
-        "hardening",
-        "twin",
-        "built",
-        "node",
-        "modules",
-        "execution",
-        "owner-gated",
-        "wasm",
-        "building",
-        "zt-63",
-        "finish",
-        "decision"
+        "rule",
+        "verdict",
+        "deny",
+        "same",
+        "corpus"
       ]
     },
     {
@@ -38636,6 +38932,254 @@
         "consistent",
         "net",
         "effect"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-diagram-refresh-hallmark-typesafety-hardening-2026-07-12.md",
+      "title": "HANDOVER — `docs/diagrams` refresh check: hallmark · type-safety · hardening/residency (RD-0358)",
+      "headings": [
+        "§0 Verdict",
+        "§1 Already fine — no change needed",
+        "§2 Gap 1 — **hallmark (RD-0353, shipped) is INVISIBLE** — `grep hallmark docs/diagrams` = **0 matches**",
+        "§3 Gap 2 — **hardening / residency (RD-0358) is essentially ABSENT** — 1 incidental match (`galerina-tri-pipe.svg`)",
+        "§4 Verify — `galerina-trust-state-lifecycle.svg`",
+        "§5 How to change a radar (do NOT hand-edit the SVG)",
+        "§6 Honest scope",
+        "§7 — Main-session response (2026-07-12, COMPLETED)"
+      ],
+      "codes": [
+        "FUNGI-VALUESTATE-003"
+      ],
+      "tasks": [
+        "#143"
+      ],
+      "xrefs": [
+        "galerina-rd-0353-…hallmark",
+        "galerina-rd-0358-governed-memory-residency-dataflow-tri-photonic",
+        "galerina-rd-0337-beyond-rust-tri-typesafety-and-a-ternary-native-safety-primitive"
+      ],
+      "topTerms": [
+        "svg",
+        "hallmark",
+        "docs",
+        "diagrams",
+        "hardening",
+        "rd-0358",
+        "residency",
+        "gap",
+        "change",
+        "already",
+        "main",
+        "spill",
+        "shipped",
+        "refuted",
+        "type-safety",
+        "radar",
+        "mjs",
+        "galerina-trust-state-lifecycle",
+        "grep",
+        "invisible",
+        "check",
+        "diagram",
+        "generate-radars",
+        "verify",
+        "rd-0353"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-drift-consistency-resource-stability-for-rd-2026-07-15.md",
+      "title": "HANDOVER → R&D — drift, consistency, and resource stability: design principles + asks",
+      "headings": [
+        "§1 Drift — the class, and how we defeat it",
+        "§2 Consistency — determinism is a governed property, not luck",
+        "§3 Resource stability — no spikes, nothing erratic (bound it, don't trust it)",
+        "§4 Net — one principle, three faces"
+      ],
+      "codes": [],
+      "tasks": [
+        "#74"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "drift",
+        "resource",
+        "gate",
+        "consistency",
+        "governed",
+        "stability",
+        "never",
+        "memory",
+        "nothing",
+        "source",
+        "same",
+        "bound",
+        "view",
+        "code",
+        "spikes",
+        "three",
+        "every",
+        "cap",
+        "design",
+        "erratic",
+        "spike",
+        "power",
+        "fail-closed",
+        "property",
+        "loop"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-drift-protection-and-flat-resource-envelope-2026-07-15.md",
+      "title": "HANDOVER → main + owner — DRIFT, explained and gated · and the FLAT-ENVELOPE doctrine (no CPU/GPU/memory spikes, nothing erratic)",
+      "headings": [
+        "§1 \"Drift\" is three different failures — name which one you mean",
+        "§2 What already protects Galerina (inventory — each is a live, fail-closed gate)",
+        "§3 The FLAT-ENVELOPE doctrine — no spikes by construction, not by tuning",
+        "§4 The gap to close — one new gate (build item, small)",
+        "§5 Honest tier",
+        "§6 Build order (all no-gate except as marked)"
+      ],
+      "codes": [],
+      "tasks": [
+        "#62",
+        "#64",
+        "#105",
+        "#24",
+        "#63"
+      ],
+      "xrefs": [
+        "RD-0392-closing-the-wasm-losing-benchmarks-under-zero-trust"
+      ],
+      "topTerms": [
+        "drift",
+        "gate",
+        "doctrine",
+        "galerina",
+        "build",
+        "flat-envelope",
+        "memory",
+        "spikes",
+        "erratic",
+        "already",
+        "owner",
+        "nothing",
+        "three",
+        "cpu",
+        "gpu",
+        "variance",
+        "fuel",
+        "protects",
+        "same",
+        "lane",
+        "main",
+        "inventory",
+        "each",
+        "arena",
+        "tier"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-drive-to-100-worklist-2026-07-16.md",
+      "title": "HANDOVER → owner + R&D — the drive-to-100 worklist (owner-issued 2026-07-16) + the stretch that preceded it",
+      "headings": [
+        "§1 The stretch preceding this list (all committed on `main`, unpushed)",
+        "§2 The worklist (owner-issued; live status — updated as items land)"
+      ],
+      "codes": [
+        "FUNGI-GOV-3VL-003"
+      ],
+      "tasks": [
+        "#56",
+        "#105",
+        "#143",
+        "#38",
+        "#63",
+        "#74",
+        "#72",
+        "#37",
+        "#65",
+        "#29"
+      ],
+      "xrefs": [
+        "HANDOVER-myco-0-1-2-silent-cap-and-version-drift-2026-07-16",
+        "HANDOVER-tri-lint-004-and-zt-build-tracking-cycle-2026-07-16",
+        "HANDOVER-REPLY-p-flag-is-value-layer-and-myco-docs-landed-2026-07-16"
+      ],
+      "topTerms": [
+        "stretch",
+        "worklist",
+        "owner-issued",
+        "owner",
+        "queued",
+        "live",
+        "items",
+        "main",
+        "updated",
+        "status",
+        "handover",
+        "drive-to-100",
+        "preceded",
+        "preceding",
+        "list",
+        "committed",
+        "unpushed",
+        "land",
+        "docs",
+        "doc",
+        "both",
+        "pass",
+        "first",
+        "pack",
+        "gate"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-dss-wasm-compile-probe-2026-07-12.md",
+      "title": "HANDOVER — DSS.wasm compile-probe: does `dss-supervisor.fungi` build under the current WAT emitter?",
+      "headings": [
+        "§0 Why this is the right first move (not an owner-flip)",
+        "§1 The probe — exact steps",
+        "§2 Decision tree on the outcome",
+        "§3 Scope guardrails (fail-closed on overclaim)",
+        "§4 What \"done\" looks like for this handover",
+        "§5 Pointers",
+        "✅ FINDINGS — main ran the probe (2026-07-15): R0 = 6/12, the gap is ONE named increment"
+      ],
+      "codes": [],
+      "tasks": [
+        "#102",
+        "#105",
+        "#143"
+      ],
+      "xrefs": [
+        "HANDOVER-REPLY-owner-gated-vs-undelivered-rd-2026-07-12"
+      ],
+      "topTerms": [
+        "wasm",
+        "dss",
+        "emitter",
+        "probe",
+        "build",
+        "isolation",
+        "dss-supervisor",
+        "fungi",
+        "wat",
+        "handover",
+        "increment",
+        "real",
+        "pass",
+        "exact",
+        "main",
+        "compile",
+        "first",
+        "byte",
+        "int",
+        "findings",
+        "gap",
+        "current",
+        "fail",
+        "move",
+        "placeholder"
       ]
     },
     {
@@ -38815,6 +39359,54 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-galerina-hotpath-engine-for-main-2026-07-15.md",
+      "title": "HANDOVER → main — Galerina:HotPath: the Galerina engine work (Galerina-only)",
+      "headings": [
+        "1. What it is",
+        "2. The pipeline",
+        "3. Hallmark's two modes (the load-bearing split)",
+        "4. The admission rule (fail-closed — the security spine)",
+        "5. Memory design — the execution-order arena (RD-0382)",
+        "6. Hallmark Seal — typed arithmetic + schema epochs (strengthens the type system)",
+        "7. Two Galerina governance rules to hold",
+        "8. Honest tier — sub-microsecond bounded, not nanosecond latency",
+        "9. Security check (the two Galerina items)",
+        "10. R&D table (Galerina-only)"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "HANDOVER-hotpath-tritmesh-roadmap-2026-07-15"
+      ],
+      "topTerms": [
+        "galerina",
+        "hallmark",
+        "hotpath",
+        "seal",
+        "schema",
+        "security",
+        "engine",
+        "galerina-only",
+        "latency",
+        "execution-order",
+        "execution",
+        "sealed",
+        "type",
+        "arena",
+        "rd-0382",
+        "memory",
+        "arithmetic",
+        "nanosecond",
+        "runtime",
+        "tier",
+        "split",
+        "overflow",
+        "admission",
+        "fail-closed",
+        "bounded"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/HANDOVER-galerina-lint-unify-and-package-2026-07-11.md",
       "title": "HANDOVER — `galerina lint`: unify the two linters into one command + package `@galerina/lint`",
       "headings": [
@@ -38863,6 +39455,92 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-galerina-logic-primer-three-valued-for-main-2026-07-15.md",
+      "title": "The logic of Galerina — three values, not two (a primer for main)",
+      "headings": [
+        "1. Boolean vs. Galerina",
+        "2. Why three, not two (the zero-trust reason)",
+        "3. The four laws (how the trit behaves)",
+        "4. Where the trit lives (it is everywhere)",
+        "5. The honesty guard (say this every time)",
+        "6. The mental model for main"
+      ],
+      "codes": [
+        "FUNGI-GOV-3VL-001"
+      ],
+      "tasks": [
+        "#105"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "unknown",
+        "trit",
+        "galerina",
+        "three",
+        "main",
+        "logic",
+        "value",
+        "every",
+        "deny",
+        "values",
+        "boolean",
+        "trust",
+        "proven",
+        "never",
+        "primer",
+        "verdict",
+        "boundary",
+        "why",
+        "everything",
+        "three-valued",
+        "type",
+        "indeterminate",
+        "refuted",
+        "zero-trust",
+        "reason"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-galerina-only-scope-and-reference-doc-reply-2026-07-15.md",
+      "title": "HANDOVER → main — reference-doc questions: CONCUR + closed · AND the scope line: **Galerina only, do NOT start TritMesh**",
+      "headings": [
+        "Part A — reference-doc reply: CONCUR across the board, two reinforcements",
+        "Part B — the scope line: **Galerina only. Do NOT start the TritMesh project.**"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "HANDOVER-REPLY-reference-docs-questions-answered-2026-07-15"
+      ],
+      "topTerms": [
+        "tritmesh",
+        "galerina",
+        "part",
+        "start",
+        "concur",
+        "reference-doc",
+        "scope",
+        "line",
+        "project",
+        "main",
+        "closed",
+        "reply",
+        "handover",
+        "questions",
+        "owner",
+        "across",
+        "board",
+        "reinforcements",
+        "built",
+        "focus",
+        "tri",
+        "verdict",
+        "build",
+        "directive",
+        "distinct"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/HANDOVER-governed-memory-residency-hardening-auto-2026-07-11.md",
       "title": "HANDOVER — Governed memory-residency: the `hardening {}` block, ON AUTO (secure-by-default, fail-closed)",
       "headings": [
@@ -38901,11 +39579,11 @@
         "auto",
         "build",
         "never",
+        "main",
+        "gate",
         "branch",
         "secret",
-        "gate",
         "fail-closed",
-        "main",
         "handover",
         "effect",
         "contract",
@@ -38920,6 +39598,116 @@
         "type-state",
         "verified",
         "until"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-hardening-integrated-and-selfhosting-frontier-2026-07-12.md",
+      "title": "HANDOVER — RD-0358 hardening INTEGRATED to main; P9 + B8 self-hosting/transport frontier",
+      "headings": [
+        "§1 RD-0358 hardening — INTEGRATED + MERGED + PUSHED (task #52 DONE)",
+        "§2 Benchmark baseline saved (owner: \"save the last results so the next diff shows the change\")",
+        "§3 Papers commit rode onto main (flagged for owner)",
+        "§4 P9 — Stage-B WASM self-hosting: frontier + stopper (Build Progress \"in progress\")",
+        "§5 B8 — governed HTTP transport: frontier + stopper (Build Progress \"in progress\")",
+        "§4b Packages → 100%: the without-`.ts` increment (this session)",
+        "§6 Stopper map (one view)",
+        "§7 Todos + pointers"
+      ],
+      "codes": [
+        "FUNGI-HARDEN-007",
+        "FUNGI-EFFECT-006",
+        "FUNGI-HARDEN-006",
+        "FUNGI-PKG-001",
+        "FUNGI-HARDEN-001"
+      ],
+      "tasks": [
+        "#52",
+        "#143",
+        "#105",
+        "#102",
+        "#53"
+      ],
+      "xrefs": [
+        "HANDOVER-REPLY-rd0366-without-ts-adjudication-2026-07-12",
+        "galerina-rd-0360-hardening-spill-to-refuted-compiler-trit-and-memory-spill-effect"
+      ],
+      "topTerms": [
+        "main",
+        "progress",
+        "hardening",
+        "frontier",
+        "stopper",
+        "transport",
+        "owner",
+        "build",
+        "integrated",
+        "results",
+        "wasm",
+        "rd-0358",
+        "self-hosting",
+        "pushed",
+        "packages",
+        "increment",
+        "next",
+        "benchmark",
+        "differential",
+        "real",
+        "commit",
+        "owner-gated",
+        "governed",
+        "session",
+        "baseline"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-hotpath-tritmesh-roadmap-2026-07-15.md",
+      "title": "HANDOVER — Galerina:HotPath · TritMesh product-family · the roadmap (Task 3)",
+      "headings": [
+        "§0 The roadmap (owner's vision — captured as design-stage, not commitment)",
+        "§1 Galerina:HotPath — the R&D",
+        "1.1 The pipeline",
+        "1.2 Hallmark's two modes (the load-bearing rule)",
+        "1.3 Nanosecond **resolution** ≠ nanosecond **latency** (honest-tier)",
+        "1.4 Naming (settled in sponsorship.md — adopt)",
+        "1.5 Admission rule (fail-closed — this is the security spine)",
+        "1.6 Memory design = Task-1 RD-0370",
+        "§2 Hallmark → TritMesh (the tie-in)",
+        "§3 R&D table (with security checks)",
+        "§4 Security checks (every proposed item)",
+        "§5 How this improves Galerina + TritMesh now"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "RD-hardening-memory-graph-walkthrough-2026-07-15",
+        "HANDOVER-technical-claims-audit-action-2026-07-15"
+      ],
+      "topTerms": [
+        "tritmesh",
+        "galerina",
+        "hallmark",
+        "hotpath",
+        "security",
+        "roadmap",
+        "nanosecond",
+        "rule",
+        "owner",
+        "sealed",
+        "memory",
+        "checks",
+        "sponsorship",
+        "task-1",
+        "rd-0370",
+        "honest-tier",
+        "execution",
+        "task",
+        "dynamic",
+        "schema",
+        "latency",
+        "design-stage",
+        "design",
+        "deterministic",
+        "resolution"
       ]
     },
     {
@@ -38971,6 +39759,232 @@
         "check",
         "crypto",
         "vocabulary"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-instruct-main-compiler-to-100pct-2026-07-15.md",
+      "title": "HANDOVER → main — OWNER DIRECTIVE: drive the compiler to 100% (the no-gate path) + double-check of your #143 reply",
+      "headings": [
+        "§1 What \"compiler to 100%\" actually means (the gap, verified)",
+        "§2 Double-check: can it be finished to 100% now? — YES, and here's why nothing blocks it",
+        "§3 The build order (keep-green throughout, no owner in the loop)",
+        "§4 Double-check of your #143 reply — correct, but it answers a *different* question",
+        "§5 Scope reminder (carried from the prior handover)"
+      ],
+      "codes": [],
+      "tasks": [
+        "#143",
+        "#105",
+        "#62"
+      ],
+      "xrefs": [
+        "HANDOVER-galerina-only-scope-and-reference-doc-reply-2026-07-15"
+      ],
+      "topTerms": [
+        "compiler",
+        "owner",
+        "double-check",
+        "reply",
+        "handover",
+        "build",
+        "emitter",
+        "finished",
+        "verified",
+        "different",
+        "layers",
+        "main",
+        "drive",
+        "path",
+        "yes",
+        "correct",
+        "interpreter",
+        "keep-green",
+        "loop",
+        "directive",
+        "no-gate",
+        "actually",
+        "means",
+        "gap",
+        "checker"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-instruct-main-cost-model-doc-add-construct-table-2026-07-16.md",
+      "title": "HANDOVER → main — EXTEND the cost-model-nesting doc with the construct×tech table (Table C)",
+      "headings": [
+        "§0 UPDATE (same day, later) — Table C is now TAKEN: the residual-nesting table, authored in-tree by R&D",
+        "§1 The change to the doc spec (one added section — everything else in the original sheet stands)",
+        "§2 Quality gates (unchanged from the original sheet, restated for the new rows)",
+        "§3 Sequencing"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "HANDOVER-instruct-main-nesting-cost-model-doc-2026-07-15",
+        "HANDOVER-technical-code-level-impact-tri-and-axes-2026-07-16"
+      ],
+      "topTerms": [
+        "table",
+        "doc",
+        "sheet",
+        "original",
+        "construct",
+        "tech",
+        "same",
+        "handover",
+        "cost-model-nesting",
+        "section",
+        "rows",
+        "change",
+        "gates",
+        "main",
+        "spec",
+        "authored",
+        "else",
+        "extend",
+        "update",
+        "day",
+        "later",
+        "taken",
+        "residual-nesting",
+        "in-tree",
+        "added"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-instruct-main-depth-ladder-builds-2026-07-16.md",
+      "title": "HANDOVER → main — BUILD: the depth-ladder changes (B1–B5 from RD-0396) — trit folds, loop collapse, the ternary kernel",
+      "headings": [
+        "§1 The five changes",
+        "§2 Sequencing (fits the existing queue, changes nothing above it)",
+        "§3 The fences (carry into every PR description)",
+        "§4 SECURITY-REVIEW ADDENDUM (adversarial second pass, owner-prompted) — four MORE requirements, all binding",
+        "§5 CALL-LADDER EXTENSION (owner check → [[RD-0398-the-call-ladder-resolving-flow-call-chains-like-loops]])"
+      ],
+      "codes": [],
+      "tasks": [
+        "#56",
+        "#63",
+        "#105",
+        "#69"
+      ],
+      "xrefs": [
+        "RD-0396-nested-loops-x-photonic-tri-logic-the-depth-ladder-and-the-extra-minus-one",
+        "RD-0398-the-call-ladder-resolving-flow-call-chains-like-loops"
+      ],
+      "topTerms": [
+        "changes",
+        "folds",
+        "fold",
+        "build",
+        "collapse",
+        "loop",
+        "kernel",
+        "pass",
+        "rd-0396",
+        "ternary",
+        "owner",
+        "carry",
+        "trit",
+        "constant",
+        "existing",
+        "fuel",
+        "every",
+        "never",
+        "four",
+        "main",
+        "five",
+        "tests",
+        "mode",
+        "time",
+        "proof"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-instruct-main-myco-0-1-1-and-devtools-review-2026-07-16.md",
+      "title": "HANDOVER → main — myco 0.1.1 (the dotted-extension fix, shipped + live-verified) · and the dev-tools review: what recent learning goes into the tools",
+      "headings": [
+        "§1 myco 0.1.1 — the field defect from YOUR corpus-gate build, fixed at the root",
+        "§2 Dev-tools review — what this week's understanding puts into the tools",
+        "§3 ADDENDUM (same day, later) — myco is now 0.1.2; §1's version references are superseded"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "HANDOVER-ts-still-present-truth-census-and-label-fix-2026-07-16",
+        "RD-0397-tri-sweep-all-logic-and-syntax-for-the-minus-one-axes-and-the-lint-pack"
+      ],
+      "topTerms": [
+        "myco",
+        "review",
+        "tools",
+        "main",
+        "dev-tools",
+        "fix",
+        "corpus-gate",
+        "version",
+        "build",
+        "fungi",
+        "week",
+        "live-verified",
+        "defect",
+        "search",
+        "galerina",
+        "paths",
+        "index",
+        "addendum",
+        "same",
+        "handover",
+        "dotted-extension",
+        "shipped",
+        "recent",
+        "learning",
+        "goes"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-instruct-main-nesting-cost-model-doc-2026-07-15.md",
+      "title": "HANDOVER → main — BUILD: the \"what is level 0\" cost-model doc (nesting story, with compiling examples)",
+      "headings": [
+        "§1 The deliverable",
+        "§2 Content spec — two tables, every row with a REAL example",
+        "Table A — \"LEVEL 0\": erased or lifted at compile time (zero runtime instructions)",
+        "Table B — \"NOT level 0\": the things that really cost (each with its honest fix pointer)",
+        "The tutorial lines — use the §7 sanctioned wording VERBATIM (it already passes claim hygiene)",
+        "§3 Quality gates (the doc ships like code)",
+        "§4 Scope note"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "RD-0395-nesting-adjudication-flow-level-erased-at-lowering-contract-emits-nothing"
+      ],
+      "topTerms": [
+        "level",
+        "doc",
+        "example",
+        "table",
+        "cost",
+        "every",
+        "zero",
+        "main",
+        "nesting",
+        "examples",
+        "code",
+        "claim",
+        "sanctioned",
+        "wording",
+        "row",
+        "real",
+        "compile",
+        "time",
+        "instructions",
+        "fix",
+        "build",
+        "compiling",
+        "tutorial",
+        "spec",
+        "quality"
       ]
     },
     {
@@ -39104,6 +40118,414 @@
         "native-addon",
         "rce",
         "build-staging"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-MASTER-all-unlocked-drive-to-100pct-2026-07-15.md",
+      "title": "HANDOVER (MASTER) → main — everything unlocked · stoppers R&D'd ahead · drive each part to 100%",
+      "headings": [
+        "§0 Bottom line (read this first)",
+        "§1 Status — the three dimensions",
+        "1a. Zero-Trust thesis (avg 75%) — the gap is EXECUTION, not design",
+        "1b. Build progress (quantified avg 75%)",
+        "1c. Tracking registry — the not-done items (the 13 \"shipped\" ones are complete)",
+        "§2 Everything is unlocked — state it plainly to main",
+        "§3 The stoppers, R&D'd AHEAD (pre-solved — so they don't block next round)",
+        "S1 — #62: `bitAnd`/`bitOr` emitter lowering  ·  the single highest-leverage  ·  **PRE-SOLVED**",
+        "S2 — #64: label-verified string-verdict differential  ·  the correctness gate  ·  **PRE-SOLVED (design)**",
+        "S3 — #68: string-ARG marshalling  ·  **PRE-SOLVED (design)**",
+        "S4 — U4: value-unit I1 ISO-4217 data  ·  **PRE-SOLVED (recommendation)**",
+        "S5 — U5: Z3 native-floor (security-infra)  ·  **PRE-SOLVED (recommendation)**",
+        "S6 — DSS.wasm  ·  **PRE-SOLVED (sequence)**",
+        "S7 — U1: WAT-emitter frontier (P9 self-hosting)  ·  next increment identified",
+        "§4 Instructions to 100% — the buildable-now sequence (no stopper remains)",
+        "§5 The honest residue — genuinely owner / hardware / by-design (NOT next-round stoppers)",
+        "§6 R&D — DONE (confirmation)",
+        "§7 One stale-data flag (fix when convenient)",
+        "§8 Security review + unlock confirmation (this pass, pre-handover)"
+      ],
+      "codes": [],
+      "tasks": [
+        "#62",
+        "#64",
+        "#143",
+        "#102",
+        "#105",
+        "#68"
+      ],
+      "xrefs": [
+        "HANDOVER-MASTER-updated-main-endphase-2026-07-15",
+        "HANDOVER-session-close-pre-compact-2026-07-15",
+        "HANDOVER-REPLY-session-close-rd-corrections-2026-07-15",
+        "HANDOVER-unlocked-subsystems-to-100pct-fungi-2026-07-15"
+      ],
+      "topTerms": [
+        "pre-solved",
+        "wasm",
+        "design",
+        "dss",
+        "owner",
+        "build",
+        "main",
+        "unlocked",
+        "stoppers",
+        "data",
+        "next",
+        "differential",
+        "gate",
+        "hardware",
+        "registry",
+        "everything",
+        "avg",
+        "frontier",
+        "ahead",
+        "read",
+        "stopper",
+        "sequence",
+        "wat-emitter",
+        "confirmation",
+        "execution"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-MASTER-cycle-todo-sweep-2026-07-15.md",
+      "title": "HANDOVER (MASTER) — full ZT/Build/Tracking cycle · every-todo stopper sweep · Packages completion · roadmap",
+      "headings": [
+        "§0 Bottom line",
+        "§1 The cycle — the three dimensions (re-verified 2026-07-15)",
+        "1a. Zero-Trust thesis (avg 75%) — unchanged %, but fuse-admission is now LABEL-verified",
+        "1b. Build progress (avg 75%)",
+        "1c. Tracking registry — 20 items, ALWAYS status-ordered (owner rule)",
+        "§2 What the owner asked to fix",
+        "§3 Packages 98% → 100% — the exact two items",
+        "§4 RD-0389 (record-marshalling ABI) — grounded, ready-to-execute, flagged for a dedicated pass",
+        "§5 Full-auto todo sweep — every open todo, with why it's not finished",
+        "§6 Roadmap",
+        "§7 Owner actions"
+      ],
+      "codes": [],
+      "tasks": [
+        "#102",
+        "#143",
+        "#105",
+        "#64",
+        "#53",
+        "#57",
+        "#30",
+        "#24",
+        "#11",
+        "#20",
+        "#69",
+        "#13",
+        "#39",
+        "#12"
+      ],
+      "xrefs": [
+        "HANDOVER-MASTER-updated-main-endphase-2026-07-15"
+      ],
+      "topTerms": [
+        "owner",
+        "packages",
+        "cycle",
+        "build",
+        "tracking",
+        "sweep",
+        "rd-0389",
+        "registry",
+        "items",
+        "todo",
+        "roadmap",
+        "abi",
+        "avg",
+        "exact",
+        "pass",
+        "full",
+        "stopper",
+        "full-auto",
+        "three",
+        "dedicated",
+        "fuse-admission",
+        "wasm",
+        "record",
+        "every",
+        "audit"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-MASTER-main-endphase-rd0389-cycle-2026-07-15.md",
+      "title": "HANDOVER-MASTER → owner + R&D — main end-phase cycle (RD-0389 close · full verification · todo sweep) 2026-07-15",
+      "headings": [
+        "§0 One-line state",
+        "§1 Built this round",
+        "§2 The full cycle — a coherent pass through the three columns",
+        "§3 Signing keys — answer to \"are all keys done?\"",
+        "§4 Per-todo sweep — every open item + why it isn't finished (none is missing-R&D)",
+        "§5 Durable fix queued (R&D asked twice)",
+        "§6 Commits + custody"
+      ],
+      "codes": [],
+      "tasks": [
+        "#143",
+        "#62",
+        "#64",
+        "#56",
+        "#72",
+        "#37",
+        "#63",
+        "#65"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "build",
+        "full",
+        "round",
+        "fix",
+        "keys",
+        "owner",
+        "rd-0389",
+        "sweep",
+        "cycle",
+        "item",
+        "every",
+        "gate",
+        "main",
+        "end-phase",
+        "owner-gated",
+        "wasm",
+        "built",
+        "per-todo",
+        "open",
+        "registry",
+        "pass",
+        "custody",
+        "why",
+        "finished",
+        "none"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-MASTER-updated-main-endphase-2026-07-15.md",
+      "title": "HANDOVER (MASTER, updated by main) — R&D-doc actions done · end-phase green · drive-to-100% refreshed",
+      "headings": [
+        "§0 Bottom line",
+        "§1 Status — the three dimensions (verified this session)",
+        "1a. Zero-Trust thesis (avg 75%)",
+        "1b. Build progress (avg 75%)",
+        "1c. Tracking registry — the moved items",
+        "§2 The R&D-doc actions — DONE / merged (§ the owner's \"did you do these?\")",
+        "2a. HANDOVER-technical-claims-audit-action → **DONE (Tranche A) + durable gate built**",
+        "2b. RD-hardening-memory-graph-walkthrough → **DONE (Galerina fold) + captured (task #71)**",
+        "2c. Logic primer → **promoted to a permanent doc**",
+        "§3 The path-portability ruling — enforced (the owner's \"nothing hardcoded, incl. <env-var>\") <!-- path-leak-audit:allow -->",
+        "§4 End-phase results (graphs · audits · tests · regen · benchmark · % audit)",
+        "§5 Commits this session (`main`, NOT pushed)",
+        "§6 The refreshed critical path (do these first)",
+        "§7 Owner actions / decisions (consolidated, unchanged set + new)"
+      ],
+      "codes": [
+        "FUNGI-GOV-3VL-001"
+      ],
+      "tasks": [
+        "#62",
+        "#64",
+        "#68",
+        "#143",
+        "#102",
+        "#70",
+        "#71",
+        "#69",
+        "#63",
+        "#22",
+        "#35",
+        "#29",
+        "#66",
+        "#37",
+        "#13",
+        "#39",
+        "#20",
+        "#24",
+        "#11"
+      ],
+      "xrefs": [
+        "HANDOVER-MASTER-all-unlocked-drive-to-100pct-2026-07-15"
+      ],
+      "topTerms": [
+        "owner",
+        "actions",
+        "end-phase",
+        "benchmark",
+        "session",
+        "main",
+        "build",
+        "tranche",
+        "d-doc",
+        "refreshed",
+        "galerina",
+        "wasm",
+        "audit",
+        "path-leak-audit",
+        "allow",
+        "avg",
+        "these",
+        "green",
+        "tests",
+        "doc",
+        "primer",
+        "task",
+        "master",
+        "built",
+        "graphs"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-MORNING-start-here-2026-07-16.md",
+      "title": "HANDOVER-MORNING → main — START HERE (2026-07-16)",
+      "headings": [
+        "§0 State at close — UPDATED after the second end-phase cycle (late night 2026-07-15)",
+        "§0b The second cycle's findings (housekeeping/bugs/security — the real news)",
+        "§1 THE MORNING BUILD (priority) — `docs/reference/cost-model-nesting.md`",
+        "§2 What landed overnight (all pushed)",
+        "§3 Coverage check (owner: \"anything new has tests and audits\")",
+        "§4 Reachable-now, ranked (nothing R&D-blocked)",
+        "§4b Cycle-2 todo deltas (why the new items aren't finished)",
+        "§5 Owner decisions waiting"
+      ],
+      "codes": [
+        "FUNGI-SYNTAX-011",
+        "FUNGI-PARSE-001",
+        "FUNGI-GOV-010"
+      ],
+      "tasks": [
+        "#38",
+        "#76",
+        "#75",
+        "#72",
+        "#63",
+        "#74",
+        "#56",
+        "#37",
+        "#65",
+        "#69"
+      ],
+      "xrefs": [
+        "HANDOVER-instruct-main-nesting-cost-model-doc-2026-07-15",
+        "RD-0395-nesting-adjudication-flow-level-erased-at-lowering-contract-emits-nothing",
+        "HANDOVER-todo-continuation-noise-gate-b5a-e2e-2026-07-15"
+      ],
+      "topTerms": [
+        "owner",
+        "real",
+        "gate",
+        "cycle",
+        "check",
+        "second",
+        "main",
+        "docs",
+        "build",
+        "fix",
+        "tests",
+        "reference",
+        "updated",
+        "audits",
+        "mjs",
+        "index",
+        "flow",
+        "night",
+        "morning",
+        "git",
+        "pushed",
+        "green",
+        "landed",
+        "overnight",
+        "coverage"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-myco-0-1-2-silent-cap-and-version-drift-2026-07-16.md",
+      "title": "HANDOVER — myco 0.1.2: silent coverage caps made visible + version drift gate (2026-07-16)",
+      "headings": [
+        "0. Why this matters",
+        "1. What was found and fixed (all three landed)",
+        "1a. Silent size cap — the headline fix",
+        "1b. VERSION drift — and its downstream victim",
+        "1c. Mojibake",
+        "2. Recommended next (found, deliberately NOT done this pass — each wants its own tested change)",
+        "3. Operational note for whoever wires myco into tooling",
+        "4. Verification trail"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "myco",
+        "version",
+        "silent",
+        "drift",
+        "found",
+        "fix",
+        "file",
+        "index",
+        "note",
+        "gate",
+        "search",
+        "cap",
+        "walk",
+        "downstream",
+        "handover",
+        "coverage",
+        "package",
+        "own",
+        "files",
+        "json",
+        "mojibake",
+        "next",
+        "pass",
+        "each",
+        "tooling"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-noise-immune-benchmarking-build-instructions-2026-07-15.md",
+      "title": "HANDOVER → main — NOISE-IMMUNE BENCHMARKING: build instructions (finishes task #63) — from RD-0394",
+      "headings": [
+        "§1 What you are building (7 items, all into the benchmark runner — completes #63)",
+        "§2 The red line (owner rule — carry it into the runner docs verbatim)",
+        "§3 What this changes about how results are read (one paragraph for the README/report)",
+        "§4 Fit with the standing work"
+      ],
+      "codes": [],
+      "tasks": [
+        "#63"
+      ],
+      "xrefs": [
+        "RD-0394-measure-through-noise-benchmark-consistency-on-a-policy-locked-machine"
+      ],
+      "topTerms": [
+        "runner",
+        "build",
+        "spread",
+        "handover",
+        "main",
+        "control",
+        "results",
+        "report",
+        "rd-0394",
+        "owner",
+        "items",
+        "benchmark",
+        "never",
+        "changes",
+        "about",
+        "noise-immune",
+        "benchmarking",
+        "instructions",
+        "finishes",
+        "task",
+        "python",
+        "run",
+        "building",
+        "completes",
+        "session"
       ]
     },
     {
@@ -39419,6 +40841,279 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-rd-complete-does-not-equal-build-complete-2026-07-15.md",
+      "title": "HANDOVER → main + owner — \"all R&D done\" ≠ \"100% build\". The honest formula.",
+      "headings": [
+        "The one sentence",
+        "R&D status — now genuinely complete (v1)",
+        "Why it is NOT 100% build — four categories, zero of them \"missing R&D\"",
+        "The reassurance (and the claim to make, and the one NOT to make)"
+      ],
+      "codes": [],
+      "tasks": [
+        "#143",
+        "#102"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "build",
+        "make",
+        "main",
+        "owner",
+        "why",
+        "four",
+        "claim",
+        "status",
+        "categories",
+        "them",
+        "handover",
+        "honest",
+        "formula",
+        "sentence",
+        "research",
+        "design",
+        "hardware",
+        "genuinely",
+        "complete",
+        "zero",
+        "missing",
+        "reassurance",
+        "frontier",
+        "every",
+        "decisions"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-rd0361-twin-round-2-packages-complete-2026-07-15.md",
+      "title": "HANDOVER → R&D — RD-0361 twin round 2: Packages surface complete, execution column 7→15 (2026-07-15)",
+      "headings": [
+        "The round — 8 twins proven this session, execution column 7 → 15 differential",
+        "Two proof methods now exist (the enabling advance)",
+        "The remaining 13 shadow twins + the ONE increment that unblocks the residue",
+        "State — ZT thesis · Build progress · Tracking registry",
+        "Recommendation (unchanged priority)"
+      ],
+      "codes": [],
+      "tasks": [
+        "#143",
+        "#62"
+      ],
+      "xrefs": [
+        "HANDOVER-zt-thesis-twin-round-and-registry-status-2026-07-15"
+      ],
+      "topTerms": [
+        "twins",
+        "round",
+        "execution",
+        "column",
+        "differential",
+        "packages",
+        "complete",
+        "session",
+        "shadow",
+        "surface",
+        "unblocks",
+        "residue",
+        "build",
+        "registry",
+        "unchanged",
+        "handover",
+        "rd-0361",
+        "twin",
+        "int",
+        "increment",
+        "thesis",
+        "progress",
+        "tracking",
+        "proven",
+        "fuse-admission"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-reference-docs-reverification-and-questions-2026-07-15.md",
+      "title": "HANDOVER → main — reference-docs full re-verification: result, corrections in your tree, and questions",
+      "headings": [
+        "§0 One-glance verdict",
+        "§1 The one real correction — the type vocabulary (read carefully; the naming is subtle)",
+        "§2 Exactly what changed in your (Galerina) tree — 3 files, uncommitted, yours to commit",
+        "§3 Questions for main (numbered — answer in a reply handover or inline)",
+        "§4 The standing rule this encodes (owner-ratified)"
+      ],
+      "codes": [
+        "FUNGI-TYPE-001"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "docs",
+        "types",
+        "verdict",
+        "main",
+        "tree",
+        "reference",
+        "questions",
+        "type",
+        "tri",
+        "handover",
+        "code",
+        "exactly",
+        "vocabulary",
+        "typeid",
+        "commit",
+        "truth",
+        "isbuiltintype",
+        "wrong",
+        "read",
+        "galerina",
+        "full",
+        "re-verification",
+        "pages",
+        "changed",
+        "answer"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-registry-missing-rd-label-fix-and-roadmap-rd-sweep-2026-07-15.md",
+      "title": "HANDOVER → main — \"Missing R&D\" was a stale LABEL (fixed) + roadmap R&D-completeness sweep",
+      "headings": [
+        "§1 The \"Missing R&D\" row — a naming bug, not a real gap (FIXED in your tree)",
+        "§2 Roadmap R&D-completeness sweep (the owner's \"all doable now, not later\")"
+      ],
+      "codes": [],
+      "tasks": [
+        "#105",
+        "#63",
+        "#143"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "missing",
+        "roadmap",
+        "fixed",
+        "d-completeness",
+        "sweep",
+        "owner",
+        "row",
+        "label",
+        "later",
+        "gap",
+        "build",
+        "main",
+        "stale",
+        "handover",
+        "registry",
+        "naming",
+        "bug",
+        "real",
+        "tree",
+        "doable",
+        "custody",
+        "authored",
+        "item",
+        "tritmesh",
+        "lproof"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-REPLY-benchmark-stability-and-unlocked-subsystems-2026-07-15.md",
+      "title": "HANDOVER-REPLY → main — adjudicating benchmark-stability + unlocked-subsystems",
+      "headings": [
+        "Part A — benchmark stability",
+        "Part B — the 9 unlocked subsystems",
+        "Cross-cutting"
+      ],
+      "codes": [],
+      "tasks": [
+        "#143",
+        "#105"
+      ],
+      "xrefs": [
+        "HANDOVER-benchmark-stability-galerina-more-stable-than-rust-2026-07-15",
+        "HANDOVER-unlocked-subsystems-to-100pct-fungi-2026-07-15",
+        "HANDOVER-dss-wasm-compile-probe-2026-07-12",
+        "benchmark-noise-floor-discipline",
+        "galerina-rd-0366-without-ts-ceiling-govern-dont-absorb-trichotomy"
+      ],
+      "topTerms": [
+        "part",
+        "main",
+        "rust",
+        "stability",
+        "benchmark",
+        "harness",
+        "table",
+        "window",
+        "handover-reply",
+        "adjudicating",
+        "benchmark-stability",
+        "unlocked-subsystems",
+        "adopt",
+        "dss",
+        "probe",
+        "measured",
+        "floor",
+        "governed",
+        "unlocked",
+        "subsystems",
+        "cross-cutting",
+        "proven",
+        "windows",
+        "never",
+        "wasm"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-REPLY-drift-asks-blessed-rd0393-and-reconciliation-2026-07-15.md",
+      "title": "HANDOVER-REPLY → main — your three drift/stability asks: ALL BLESSED (one designed on the spot: RD-0393) + how the two drift docs compose",
+      "headings": [
+        "§1 Ask 1 — \"governed views everywhere\" (status numbers = derived artifacts): **BLESSED**",
+        "§2 Ask 2 — the determinism line for every new surface: **BLESSED** (it is already law; now written)",
+        "§3 Ask 3 — resource posture as a governed, declared property: **BLESSED + DESIGNED — [[RD-0393-resource-budget-contract-element-declared-envelope-spec]]**",
+        "§4 The two drift docs — how they compose (no conflicts; one correction each way)",
+        "§5 Nothing owed"
+      ],
+      "codes": [
+        "FUNGI-RES-001"
+      ],
+      "tasks": [
+        "#74",
+        "#24",
+        "#63"
+      ],
+      "xrefs": [
+        "HANDOVER-drift-consistency-resource-stability-for-rd-2026-07-15",
+        "RD-0393-resource-budget-contract-element-declared-envelope-spec",
+        "HANDOVER-drift-protection-and-flat-resource-envelope-2026-07-15"
+      ],
+      "topTerms": [
+        "drift",
+        "blessed",
+        "ask",
+        "designed",
+        "docs",
+        "governed",
+        "compose",
+        "three",
+        "asks",
+        "rd-0393",
+        "already",
+        "main",
+        "fuel",
+        "nothing",
+        "status",
+        "derived",
+        "artifacts",
+        "line",
+        "surface",
+        "declared",
+        "resource",
+        "posture",
+        "property",
+        "each",
+        "correction"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/HANDOVER-REPLY-main-rd0337-hardening-2026-07-12.md",
       "title": "↩ MAIN-SESSION REPLY — RD-0337 & the hardening un-stub ask",
       "headings": [
@@ -39574,6 +41269,206 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-REPLY-owner-gated-vs-undelivered-rd-2026-07-12.md",
+      "title": "HANDOVER-REPLY — \"owner-gated\" ≠ \"R&D main hasn't received\"",
+      "headings": [
+        "§0 The distinction that answers it",
+        "§1 Correction to your §50 \"owner-gated / not buildable by the agent\" list — **3 items are mislabeled**",
+        "§2 The genuinely owner-gated set — each gate is real (do **not** try to self-clear)",
+        "§3 R&D is **not** blocking main anywhere — per frontier item",
+        "§4 ZTF-KB 346-leak remediation — agent-preparable, owner-commits",
+        "§5 · Point-by-point on the session log — what needs an R&D reply",
+        "§6 Net"
+      ],
+      "codes": [],
+      "tasks": [
+        "#143",
+        "#102",
+        "#105"
+      ],
+      "xrefs": [
+        "HANDOVER-session-requests-log-2026-07-12",
+        "galerina-signing-root-key-lost-ledger-frozen",
+        "HANDOVER-v1-finish-line-cutover-and-gap-map-2026-07-12",
+        "galerina-rd-0366-without-ts-ceiling-govern-dont-absorb-trichotomy"
+      ],
+      "topTerms": [
+        "owner-gated",
+        "owner",
+        "main",
+        "reply",
+        "real",
+        "item",
+        "needs",
+        "build",
+        "buildable",
+        "list",
+        "items",
+        "gate",
+        "frontier",
+        "hasn",
+        "correction",
+        "net",
+        "agent",
+        "genuinely",
+        "log",
+        "received",
+        "session",
+        "answers",
+        "trust",
+        "boundary",
+        "point-by-point"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-REPLY-p-flag-is-value-layer-and-myco-docs-landed-2026-07-16.md",
+      "title": "HANDOVER-REPLY → main — the P-flag question answered (it's the VALUE layer) · -003 placement confirmed · myco cross-links",
+      "headings": [
+        "§1 The P-flag answer: **(b) — the value/emitter sentinel-encoding differential is the flag's intent**",
+        "§2 Rule -003 placement — confirmed, no veto",
+        "§3 myco — the docs landed on top of your code commit; one correction; the residual joins your next-list"
+      ],
+      "codes": [
+        "FUNGI-GOV-3VL-003"
+      ],
+      "tasks": [],
+      "xrefs": [
+        "HANDOVER-tri-lint-004-and-zt-build-tracking-cycle-2026-07-16",
+        "HANDOVER-myco-0-1-2-silent-cap-and-version-drift-2026-07-16",
+        "HANDOVER-instruct-main-myco-0-1-1-and-devtools-review-2026-07-16"
+      ],
+      "topTerms": [
+        "myco",
+        "p-flag",
+        "value",
+        "placement",
+        "flag",
+        "confirmed",
+        "rule",
+        "intent",
+        "main",
+        "layer",
+        "top",
+        "differential",
+        "correction",
+        "residual",
+        "veto",
+        "commit",
+        "docs",
+        "handover-reply",
+        "question",
+        "answered",
+        "cross-links",
+        "answer",
+        "emitter",
+        "sentinel-encoding",
+        "none"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-REPLY-rd0361-escalation-closed-and-session-close-2026-07-15.md",
+      "title": "HANDOVER-REPLY → R&D — round-2 labelling escalation CLOSED + session close (2026-07-15)",
+      "headings": [
+        "1. The escalation — CONFIRMED and actioned",
+        "2. What I did (keep-green, committed `d4aa88ab`)",
+        "3. Honest twin tally this session (7 → 15 on the gate, re-tiered)",
+        "4. Concur on the rest",
+        "5. Session close — state + todo audit"
+      ],
+      "codes": [],
+      "tasks": [
+        "#105",
+        "#64",
+        "#53",
+        "#68",
+        "#62",
+        "#65",
+        "#57",
+        "#66",
+        "#67",
+        "#13",
+        "#41"
+      ],
+      "xrefs": [
+        "HANDOVER-REPLY-rd0361-twin-round-2-2026-07-15",
+        "HANDOVER-REPLY-zt-thesis-twin-round-2026-07-15",
+        "HANDOVER-hotpath-tritmesh-roadmap-2026-07-15"
+      ],
+      "topTerms": [
+        "session",
+        "escalation",
+        "close",
+        "honest",
+        "twins",
+        "closed",
+        "re-tiered",
+        "twin",
+        "gate",
+        "concur",
+        "d4aa88ab",
+        "todo",
+        "audit",
+        "handover-reply",
+        "round-2",
+        "labelling",
+        "packages",
+        "confirmed",
+        "actioned",
+        "did",
+        "keep-green",
+        "committed",
+        "tally",
+        "rest",
+        "state"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-REPLY-rd0361-twin-round-2-2026-07-15.md",
+      "title": "HANDOVER-REPLY → main — RD-0361 twin round 2 (ESCALATION of the round-1 labelling gap)",
+      "headings": [
+        "1. Confirmed from source — the 7 fuse gates are partition-proven, not label-proven",
+        "2. Re-tier the claim — \"Packages COMPLETE\" is partition-differential, not label-differential",
+        "3. The fix rides the increment you are already planning",
+        "4. Priority — correctness-critical path alongside the build-critical path"
+      ],
+      "codes": [],
+      "tasks": [
+        "#105",
+        "#62"
+      ],
+      "xrefs": [
+        "HANDOVER-rd0361-twin-round-2-packages-complete-2026-07-15",
+        "HANDOVER-REPLY-zt-thesis-twin-round-2026-07-15"
+      ],
+      "topTerms": [
+        "gates",
+        "path",
+        "round",
+        "labelling",
+        "gap",
+        "source",
+        "complete",
+        "twin",
+        "confirmed",
+        "packages",
+        "main",
+        "escalation",
+        "claim",
+        "fuse",
+        "partition-proven",
+        "label-proven",
+        "admit",
+        "partition-differential",
+        "handover-reply",
+        "rd-0361",
+        "round-1",
+        "test",
+        "re-tier",
+        "label-differential",
+        "fix"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/HANDOVER-REPLY-rd0366-without-ts-adjudication-2026-07-12.md",
       "title": "↩ R&D REPLY — the \"without-`.ts`\" stoppers finding: ENDORSED, with one build rule",
       "headings": [
@@ -39583,12 +41478,22 @@
         "3. One nuance (optional, low priority — NOT a % lever)",
         "4. What to build next (endorsed order)",
         "5. Verify-first note",
-        "⏳ PART 2 — RESERVED (owner is adding a second part to this handover)"
+        "PART 2 — the boundary & registry build program (main session, merged 2026-07-12)",
+        "P2·§1 — Zero-Trust thesis boundaries: can each move toward 100% without `.ts`?",
+        "P2·§2 — Tracking-registry \"shipped\": ZT-63 hygiene — **CLEAN, nothing to resolve**",
+        "P2·§3 — Tracking-registry \"building\": what \"finish\" needs, and whether it's without-`.ts`",
+        "P2·§4 — Hardening / residency (RD-0358, task #52): INTEGRATE, do not merge",
+        "P2·§5 — The stopper map (one view)",
+        "P2·§6 — What main built this session"
       ],
-      "codes": [],
+      "codes": [
+        "FUNGI-HARDEN-007"
+      ],
       "tasks": [
         "#143",
-        "#105"
+        "#105",
+        "#102",
+        "#52"
       ],
       "xrefs": [
         "HANDOVER-component-build-stoppers-without-ts-2026-07-12",
@@ -39601,30 +41506,372 @@
       ],
       "topTerms": [
         "build",
-        "part",
+        "main",
+        "differential",
+        "authoritative",
+        "session",
+        "rd-0361",
+        "without-",
         "endorsed",
         "rule",
-        "reply",
-        "owner",
-        "doctrine",
-        "differential",
-        "handover",
         "fungi",
-        "authoritative",
-        "without-",
-        "finding",
         "twins",
-        "reserved",
+        "part",
+        "boundary",
+        "tracking-registry",
+        "without",
+        "merge",
+        "built",
+        "host",
+        "twin",
+        "zt-63",
+        "hardening",
+        "wasm",
+        "reply",
+        "doctrine",
+        "compiler"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-REPLY-rd0389-record-marshalling-secret-gate-closed-2026-07-15.md",
+      "title": "HANDOVER-REPLY → R&D — RD-0389 record-marshalling ABI (ARG direction) BUILT · secret-gate twin closed · compiler-to-100% step 1 done",
+      "headings": [
+        "§1 What shipped",
+        "§2 The grounding finding — your ABI SHAPE was right, the MECHANISM changed (and why)",
+        "§3 For the P9 parser (your §4 READ direction) — already unblocked, and here is the next increment",
+        "§4 Honest status on \"compiler to 100%\""
+      ],
+      "codes": [],
+      "tasks": [
+        "#105",
+        "#64",
+        "#68"
+      ],
+      "xrefs": [
+        "RD-0389-record-marshalling-abi-mk-record-for-twins-and-p9-parser",
+        "HANDOVER-instruct-main-compiler-to-100pct-2026-07-15",
+        "HANDOVER-registry-missing-rd-label-fix-and-roadmap-rd-sweep-2026-07-15",
+        "HANDOVER-rd-complete-does-not-equal-build-complete-2026-07-15",
+        "HANDOVER-galerina-only-scope-and-reference-doc-reply-2026-07-15"
+      ],
+      "topTerms": [
+        "twin",
+        "abi",
+        "direction",
+        "parser",
+        "already",
+        "secret-gate",
+        "step",
+        "grounding",
+        "mechanism",
+        "shipped",
+        "build",
+        "read",
+        "here",
+        "rd-0389",
+        "closed",
+        "shape",
+        "changed",
+        "differential",
+        "record",
+        "status",
+        "increment",
+        "handover-reply",
+        "record-marshalling",
+        "arg",
+        "built"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-REPLY-rd0389-verified-closed-and-rd-queue-close-2026-07-15.md",
+      "title": "HANDOVER-REPLY → main — RD-0389 loop CLOSED (verified live from R&D) + the R&D-queue close (RD-0391 · RD-0388 §9 · KB nav)",
+      "headings": [
+        "§1 Your RD-0389 build — CONCUR, and verified live (not taken on trust)",
+        "§2 Roadmap `docs/roadmap-2026-07-15.md` — six reconcile edits sit in YOUR working tree (review + commit)",
+        "§3 New on the shelf from the R&D-queue close (nothing for main to build now)",
+        "§4 Net"
+      ],
+      "codes": [
+        "FUNGI-HOT-001"
+      ],
+      "tasks": [
+        "#64",
+        "#68",
+        "#69"
+      ],
+      "xrefs": [
+        "HANDOVER-REPLY-rd0389-record-marshalling-secret-gate-closed-2026-07-15",
+        "RD-0391-hotpath-lock1-eligibility-predicate-contract-clause-spec"
+      ],
+      "topTerms": [
+        "main",
+        "rd-0389",
+        "build",
+        "live",
+        "verified",
+        "d-queue",
+        "close",
+        "roadmap",
+        "closed",
+        "docs",
+        "rd-0388",
+        "nav",
+        "edits",
+        "working",
+        "tree",
+        "review",
+        "nothing",
+        "handover-reply",
+        "loop",
+        "rd-0391",
+        "concur",
+        "taken",
+        "trust",
+        "record",
+        "roadmap-2026-07-15"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-REPLY-reference-docs-questions-answered-2026-07-15.md",
+      "title": "HANDOVER-REPLY → R&D — reference-doc re-verification: questions answered, corrections committed, drift gate built",
+      "headings": [
+        "Verify-don't-trust — I re-derived your §1 correction from source",
+        "§1 Answers to your questions",
+        "§2 The rule this reinforces (adopted both ways)"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "HANDOVER-reference-docs-reverification-and-questions-2026-07-15"
+      ],
+      "topTerms": [
+        "gate",
+        "built",
+        "source",
+        "types",
+        "questions",
+        "tri",
+        "verdict",
+        "drift",
+        "correction",
+        "docs",
+        "re-verification",
+        "committed",
+        "effects",
+        "answers",
+        "pages",
+        "re-derived",
+        "isbuiltintype",
+        "union",
+        "both",
+        "handover-reply",
+        "reference-doc",
+        "answered",
+        "corrections",
+        "owner",
+        "truth"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-REPLY-session-close-rd-corrections-2026-07-15.md",
+      "title": "HANDOVER-REPLY → main / next session — R&D corrections to the session-close resume point",
+      "headings": [
+        "Loop confirmed (no change needed)",
+        "Correction 1 — the per-effect reference docs ARE written (resume line 52 is stale)",
+        "Correction 2 — the #69 GHP decision now has R&D backing (add to the resume)",
+        "Next-round hidden stoppers (the ask: \"anything else that would obviously appear next round\")",
+        "KB housekeeping (unchanged)"
+      ],
+      "codes": [],
+      "tasks": [
+        "#62",
+        "#64",
+        "#68",
+        "#105",
+        "#69",
+        "#65",
+        "#29",
+        "#28",
+        "#31",
+        "#53",
+        "#13",
+        "#41",
+        "#36",
+        "#48"
+      ],
+      "xrefs": [
+        "HANDOVER-session-close-pre-compact-2026-07-15",
+        "HANDOVER-galerina-hotpath-engine-for-main-2026-07-15"
+      ],
+      "topTerms": [
+        "resume",
+        "docs",
+        "reference",
+        "main",
         "next",
-        "note",
-        "second",
-        "stoppers",
-        "blessed",
-        "standing",
-        "answer",
-        "tag",
-        "re-denomination",
-        "nuance"
+        "session",
+        "correction",
+        "decision",
+        "session-close",
+        "point",
+        "change",
+        "written",
+        "owner",
+        "loop",
+        "stale",
+        "per-effect",
+        "add",
+        "round",
+        "handover-reply",
+        "corrections",
+        "confirmed",
+        "needed",
+        "line",
+        "galerina",
+        "commit"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-REPLY-todo-continuation-verified-and-adopted-2026-07-15.md",
+      "title": "HANDOVER-REPLY → main + owner — todo continuation VERIFIED: noise-gate finding adopted · #72 correction confirmed from source · wiring endorsed GO · the two owner decisions framed",
+      "headings": [
+        "§1 #63 item 1 (noise gate) — ACK, and the finding is ADOPTED into the R&D record",
+        "§2 #72 correction — CONCUR, and independently VERIFIED from source",
+        "§3 The generic `registryCheck` wiring — R&D says GO (it needs no gate)",
+        "§4 The two owner decisions, framed (nothing else blocks)",
+        "§5 Net"
+      ],
+      "codes": [
+        "ERR_REGISTRY"
+      ],
+      "tasks": [
+        "#72",
+        "#63",
+        "#56",
+        "#37",
+        "#65"
+      ],
+      "xrefs": [
+        "HANDOVER-todo-continuation-noise-gate-b5a-e2e-2026-07-15"
+      ],
+      "topTerms": [
+        "owner",
+        "gate",
+        "correction",
+        "wiring",
+        "verified",
+        "finding",
+        "adopted",
+        "source",
+        "decisions",
+        "framed",
+        "item",
+        "key",
+        "main",
+        "noise",
+        "record",
+        "independently",
+        "generic",
+        "registrycheck",
+        "handover-reply",
+        "todo",
+        "continuation",
+        "noise-gate",
+        "confirmed",
+        "endorsed",
+        "both"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-REPLY-tri-lint-series-confirmed-and-frontier-census-guidance-2026-07-16.md",
+      "title": "HANDOVER-REPLY → main — tri-lint code series CONFIRMED (no veto) · and the emitter frontier census: build it at the EMISSION POINT, not by scanning WAT",
+      "headings": [
+        "§1 The code series — CONFIRMED, use it",
+        "§2 The frontier-census ask — R&D has no shelf tool, and recommends AGAINST the obvious one",
+        "§3 Ack (no action)"
+      ],
+      "codes": [
+        "FUNGI-GOV-3VL-003"
+      ],
+      "tasks": [],
+      "xrefs": [
+        "HANDOVER-checker-interpreter-to-100-grounded-plan-2026-07-16"
+      ],
+      "topTerms": [
+        "code",
+        "series",
+        "confirmed",
+        "census",
+        "emitter",
+        "main",
+        "veto",
+        "frontier",
+        "build",
+        "emission",
+        "wat",
+        "point",
+        "handover-reply",
+        "tri-lint",
+        "scanning",
+        "frontier-census",
+        "ask",
+        "shelf",
+        "tool",
+        "recommends",
+        "against",
+        "obvious",
+        "ack",
+        "action",
+        "trap"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-REPLY-zt-thesis-twin-round-2026-07-15.md",
+      "title": "HANDOVER-REPLY → main — ZT-thesis twin round + registry status",
+      "headings": [
+        "1. The catch — the string-verdict method proves the partition, NOT the labelling (CONFIRMED from source)",
+        "2. The fix — anchor ≥1 representative per verdict to the actual string content",
+        "3. Concur — the rest",
+        "4. Minor — reconcile + tier-tag"
+      ],
+      "codes": [],
+      "tasks": [
+        "#62",
+        "#143",
+        "#102"
+      ],
+      "xrefs": [
+        "HANDOVER-zt-thesis-twin-round-and-registry-status-2026-07-15",
+        "HANDOVER-unlocked-subsystems-to-100pct-fungi-2026-07-15",
+        "HANDOVER-REPLY-benchmark-stability-and-unlocked-subsystems-2026-07-15",
+        "HANDOVER-dss-wasm-compile-probe-2026-07-12"
+      ],
+      "topTerms": [
+        "twin",
+        "verdict",
+        "anchor",
+        "string",
+        "string-verdict",
+        "method",
+        "registry",
+        "concur",
+        "catch",
+        "content",
+        "status",
+        "partition",
+        "handleof",
+        "main",
+        "round",
+        "confirmed",
+        "source",
+        "twins",
+        "proves",
+        "labelling",
+        "handle",
+        "actual",
+        "fix",
+        "representative",
+        "reconcile"
       ]
     },
     {
@@ -39700,10 +41947,6 @@
         "design",
         "pre-filter",
         "decision",
-        "users",
-        "phill",
-        "documents",
-        "github",
         "rd-0162",
         "owner",
         "tritsocket",
@@ -39712,7 +41955,11 @@
         "results-log",
         "net-new",
         "leads",
-        "language"
+        "language",
+        "before",
+        "handover",
+        "main",
+        "processed"
       ]
     },
     {
@@ -39755,6 +42002,117 @@
         "thing",
         "needs",
         "attention"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-session-close-and-resume-2026-07-12.md",
+      "title": "HANDOVER — session close & resume point (2026-07-12)",
+      "headings": [
+        "§1 What's done (this session's arc)",
+        "§2 End-phase results",
+        "§3 % audit snapshot (source: `scripts/component-health.mjs`)",
+        "§4 Git custody state",
+        "§5 Continuation worklist (what to do next, with stoppers)",
+        "§6 Traps & gotchas (verified this session)",
+        "§7 Pointers"
+      ],
+      "codes": [],
+      "tasks": [
+        "#143",
+        "#105",
+        "#31",
+        "#53",
+        "#52"
+      ],
+      "xrefs": [
+        "HANDOVER-boundary-and-registry-build-program-2026-07-12"
+      ],
+      "topTerms": [
+        "session",
+        "mjs",
+        "audit",
+        "scripts",
+        "boundary",
+        "handover",
+        "wasm",
+        "pushed",
+        "compiler",
+        "differential",
+        "benchmark",
+        "results",
+        "memory",
+        "resume",
+        "galerina",
+        "component-health",
+        "main",
+        "decision",
+        "twin",
+        "rd-0361",
+        "end-phase",
+        "run",
+        "git",
+        "node",
+        "source"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-session-close-pre-compact-2026-07-15.md",
+      "title": "HANDOVER — session close / pre-compact resume point (2026-07-15)",
+      "headings": [
+        "Where we are — verified",
+        "RD-0361 twin state — HONEST tier (the load-bearing correction this session)",
+        "The critical path (do these first, in fresh context)",
+        "Remaining 11 shadow twins — categorized",
+        "Other threads this session",
+        "Todos — 69 tasks, ~29 yet-to-be-done",
+        "Commits this session (`main`, NOT pushed)",
+        "R&D loop"
+      ],
+      "codes": [],
+      "tasks": [
+        "#143",
+        "#105",
+        "#64",
+        "#62",
+        "#68",
+        "#63",
+        "#69",
+        "#53",
+        "#57",
+        "#65",
+        "#29",
+        "#28",
+        "#31",
+        "#13",
+        "#41"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "session",
+        "twins",
+        "twin",
+        "path",
+        "critical",
+        "resume",
+        "shadow",
+        "int",
+        "point",
+        "main",
+        "verified",
+        "commits",
+        "pushed",
+        "owner",
+        "rd-0361",
+        "these",
+        "handover",
+        "close",
+        "pre-compact",
+        "state",
+        "honest",
+        "tier",
+        "load-bearing",
+        "correction",
+        "first"
       ]
     },
     {
@@ -39814,6 +42172,58 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-session-requests-log-2026-07-12.md",
+      "title": "HANDOVER — session request log (2026-07-12, \"session-2\")",
+      "headings": [
+        "The through-line (a recurring finding worth stating first)",
+        "Request-by-request",
+        "% audit — where we are",
+        "Blocker-clearing requests — the frontier items (what each needs to get past its blocker)",
+        "Git"
+      ],
+      "codes": [],
+      "tasks": [
+        "#143",
+        "#52",
+        "#105",
+        "#56",
+        "#102",
+        "#53",
+        "#57"
+      ],
+      "xrefs": [
+        "HANDOVER-hardening-integrated-and-selfhosting-frontier-2026-07-12",
+        "HANDOVER-diagram-refresh-hallmark-typesafety-hardening-2026-07-12"
+      ],
+      "topTerms": [
+        "build",
+        "wasm",
+        "session",
+        "audit",
+        "each",
+        "request",
+        "shipped",
+        "blocker",
+        "handover",
+        "finding",
+        "needs",
+        "registry",
+        "frontier",
+        "get",
+        "log",
+        "request-by-request",
+        "git",
+        "byte-parity",
+        "items",
+        "tpm",
+        "session-2",
+        "main",
+        "owner",
+        "through-line",
+        "recurring"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/HANDOVER-super-RD-0303-to-RD-0320-2026-07-10.md",
       "title": "SUPER HANDOVER — Galerina / TritMesh / TritMeshQL R&D · RD-0303 → RD-0320 · 2026-07-10",
       "headings": [
@@ -39859,6 +42269,282 @@
         "sbom",
         "sir",
         "picking-up"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-technical-claims-audit-action-2026-07-15.md",
+      "title": "HANDOVER — action the technical-claims audit (all projects)",
+      "headings": [
+        "§0 The through-line",
+        "§1 Execution order (do the doc-only tranche first — cheapest, highest trust-value)",
+        "§2 The durable fix — so it doesn't recur (\"stop re-incisions\")",
+        "§3 Scope note"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "new-error-type-update-build-tools",
+        "harm-filter-on-papers"
+      ],
+      "topTerms": [
+        "audit",
+        "tranche",
+        "evidence",
+        "fix",
+        "doesn",
+        "scope",
+        "claim",
+        "handover",
+        "trust-value",
+        "order",
+        "durable",
+        "recur",
+        "stop",
+        "re-incisions",
+        "claims",
+        "doc-only",
+        "action",
+        "technical-claims",
+        "projects",
+        "qrv",
+        "through-line",
+        "code",
+        "execution",
+        "first",
+        "cheapest"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-technical-code-level-impact-tri-and-axes-2026-07-16.md",
+      "title": "HANDOVER (technical) → main + owner — does anything change at CODE level? The construct-by-construct table: standard-binary vs tri-logic vs axis tech",
+      "headings": [
+        "§1 The construct table",
+        "§2 The one-paragraph answer"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "none",
+        "binary",
+        "tri",
+        "code",
+        "tech",
+        "table",
+        "axis",
+        "verdict",
+        "change",
+        "fold",
+        "construct",
+        "trit",
+        "opt-in",
+        "owner",
+        "anything",
+        "level",
+        "answer",
+        "folds",
+        "ordering",
+        "trits",
+        "handover",
+        "technical",
+        "main",
+        "construct-by-construct",
+        "standard-binary"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-todo-continuation-noise-gate-b5a-e2e-2026-07-15.md",
+      "title": "HANDOVER → owner + R&D — todo continuation: noise-gate preflight (#63) · B5a registry e2e (#72) · the honest components-to-100 map",
+      "headings": [
+        "§0 Landed this pass",
+        "§1 CORRECTION — I was wrong about `#72`, and the record needs fixing",
+        "§2 What #72 actually needed — and what it still needs",
+        "§3 #63 item 1 — the noise-gate, and what it found",
+        "§4 The honest components-to-100 map (what is ACTUALLY blocking each)",
+        "§5 Owner decisions this pass surfaced"
+      ],
+      "codes": [
+        "ERR_REGISTRY"
+      ],
+      "tasks": [
+        "#63",
+        "#72",
+        "#143",
+        "#56",
+        "#37",
+        "#65"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "item",
+        "owner",
+        "noise-gate",
+        "gate",
+        "registry",
+        "honest",
+        "needs",
+        "components-to-100",
+        "map",
+        "pass",
+        "actually",
+        "index",
+        "refused",
+        "wrong",
+        "still",
+        "e2e",
+        "build",
+        "correction",
+        "wiring",
+        "continuation",
+        "preflight",
+        "b5a",
+        "needed",
+        "key",
+        "handover"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-todo-sweep-2026-07-15.md",
+      "title": "HANDOVER — full todo sweep: finished or stopper-logged (2026-07-15)",
+      "headings": [
+        "Scoreboard",
+        "Commits this sweep (`main`, NOT pushed)",
+        "The load-bearing discovery (changes the R&D escalation's premise)",
+        "Per-todo ledger",
+        "Closed",
+        "Materially advanced (in progress)",
+        "Blocked — stopper, and who unblocks",
+        "R&D asks (design problems this sweep hit — solve these and the tail unblocks)",
+        "Owner actions (consolidated)",
+        "Suite — FINAL, verified"
+      ],
+      "codes": [],
+      "tasks": [
+        "#22",
+        "#31",
+        "#35",
+        "#36",
+        "#41",
+        "#62",
+        "#64",
+        "#67",
+        "#68",
+        "#53",
+        "#57",
+        "#29",
+        "#38",
+        "#30",
+        "#11",
+        "#12",
+        "#13",
+        "#20",
+        "#24",
+        "#28",
+        "#37",
+        "#39",
+        "#40",
+        "#56",
+        "#63",
+        "#65",
+        "#66",
+        "#69",
+        "#27",
+        "#105",
+        "#143",
+        "#10",
+        "#102",
+        "#149",
+        "#150"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "owner",
+        "sweep",
+        "stopper",
+        "closed",
+        "twin",
+        "string",
+        "unblocks",
+        "suite",
+        "todo",
+        "differential",
+        "main",
+        "commits",
+        "verified",
+        "commit",
+        "test",
+        "already",
+        "dss",
+        "twins",
+        "own",
+        "gate",
+        "tests",
+        "actions",
+        "design",
+        "full",
+        "solve"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-tri-lint-004-and-zt-build-tracking-cycle-2026-07-16.md",
+      "title": "HANDOVER — tri-lint rule -004 landed + ZT/Build/Tracking cycle (2026-07-16)",
+      "headings": [
+        "0. What landed (verified, committed)",
+        "1. The % audit cycle (source: `scripts/component-health.mjs`, self-test green)",
+        "2. Tri-lint pack — status + the rule -003 decision (the point of this turn)",
+        "Rule -004, as built",
+        "Rule -003 — the decisive grounding (logged, not guessed)",
+        "One genuine clarification for the owner (per \"add to handover if you need it\")",
+        "3. Owner-gated / standing needs (not blockers for the tri-lint continuation)",
+        "4. Next reachable (no R&D needed), in order",
+        "5. Verification this turn"
+      ],
+      "codes": [
+        "FUNGI-GOV-3VL-004",
+        "FUNGI-GOV-3VL-003",
+        "FUNGI-GOV-3VL-005",
+        "FUNGI-GOV-3VL-006",
+        "FUNGI-CHECK-001",
+        "FUNGI-MATCH-001"
+      ],
+      "tasks": [
+        "#143",
+        "#72",
+        "#65",
+        "#74",
+        "#63",
+        "#37",
+        "#29"
+      ],
+      "xrefs": [
+        "HANDOVER-REPLY-p-flag-is-value-layer-and-myco-docs-landed-2026-07-16"
+      ],
+      "topTerms": [
+        "rule",
+        "tri-lint",
+        "handover",
+        "turn",
+        "myco",
+        "verdict",
+        "cycle",
+        "build",
+        "owner",
+        "landed",
+        "pack",
+        "needs",
+        "component-health",
+        "test",
+        "match",
+        "type-checker",
+        "tracking",
+        "source",
+        "types",
+        "decision",
+        "owner-gated",
+        "conformance",
+        "pair",
+        "grounding",
+        "mjs"
       ]
     },
     {
@@ -39913,10 +42599,122 @@
         "rules",
         "owner",
         "keep-green",
-        "github",
         "next",
         "hub",
-        "passport"
+        "passport",
+        "branding"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-ts-still-present-truth-census-and-label-fix-2026-07-16.md",
+      "title": "HANDOVER → main + owner — the `.ts` question: the owner's disk check is RIGHT, the audits never claimed otherwise — and the labels that let those two diverge get fixed NOW",
+      "headings": [
+        "§1 The census (run from disk this pass — the owner's check, reproduced and confirmed)",
+        "§2 What each status line ACTUALLY asserts (the three-layer truth)",
+        "§3 THE FIX (build items — make the dashboard and a personal disk check UNABLE to disagree)",
+        "§4 What can the owner actually pull forward? (the honest levers)"
+      ],
+      "codes": [],
+      "tasks": [
+        "#143",
+        "#74",
+        "#38"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "owner",
+        "disk",
+        "check",
+        "actually",
+        "census",
+        "never",
+        "fungi",
+        "handover",
+        "labels",
+        "personal",
+        "fix",
+        "line",
+        "src",
+        "make",
+        "run",
+        "pass",
+        "asserts",
+        "status",
+        "build",
+        "floor",
+        "dashboard",
+        "levers",
+        "main",
+        "question",
+        "right"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-unlocked-subsystems-to-100pct-fungi-2026-07-15.md",
+      "title": "HANDOVER → R&D — drive the 9 owner-unlocked subsystems to 100% `.fungi`: ceilings, stoppers, and what to unlock next",
+      "headings": [
+        "0. Scope discipline — \"no `.ts`\" means different things to three different populations",
+        "Readiness + syntax/optimisation posture (the audit dimension, up front)",
+        "Completion + `.ts`/`node_modules` audit — the mechanical check-off (2026-07-15)",
+        "RD-0361 EXECUTION completions this session (2026-07-15) — TLSTP thesis surface advanced",
+        "The contract automation model — three tables (what the developer writes vs what Galerina injects)",
+        "Per-item ceiling, stopper, and buildable-now",
+        "1. Stage-B — WASM execution (P9)  · population B",
+        "2. B8 — governed HTTP transport (TLSTP)  · population A + B",
+        "3. Execution-cutover (RD-0361)  · population A",
+        "4. Value-unit types (RD-0349)  · population A/B (compiler)",
+        "5. Package Standard + publish ladder  · population A (+ C tooling)",
+        "6. Missing R&D (RD-0363 / 0364 / 0365)  · population A",
+        "7. Security-infra designs (×4)  · population C (tooling)",
+        "8. Signing-key custody  · NOT a `.ts`→`.fungi` item — key-material custody",
+        "9. ZTF-KB path-leak guard  · population C (KB repo tooling)",
+        "Consolidated: what must be unlocked/built (distinct from the now-lifted permission)",
+        "What this program CAN reach (the honest ceiling, ordered)",
+        "Session close — 2026-07-15 (this handover is current)"
+      ],
+      "codes": [
+        "FUNGI-HALLMARK-001",
+        "FUNGI-TIER-001",
+        "FUNGI-GOV-3VL-001"
+      ],
+      "tasks": [
+        "#105",
+        "#143",
+        "#149",
+        "#144",
+        "#145",
+        "#160",
+        "#34"
+      ],
+      "xrefs": [
+        "HANDOVER-dss-wasm-compile-probe-2026-07-12"
+      ],
+      "topTerms": [
+        "fungi",
+        "population",
+        "compiler",
+        "wasm",
+        "owner",
+        "ceiling",
+        "item",
+        "unlock",
+        "permission",
+        "tooling",
+        "modules",
+        "dss",
+        "node",
+        "wiring",
+        "session",
+        "stopper",
+        "build",
+        "contract",
+        "rd-0361",
+        "floor",
+        "execution",
+        "tlstp",
+        "package",
+        "differential",
+        "audit"
       ]
     },
     {
@@ -40044,6 +42842,52 @@
         "handover",
         "system",
         "until"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/HANDOVER-zt-thesis-twin-round-and-registry-status-2026-07-15.md",
+      "title": "HANDOVER → R&D — ZT-thesis twin round + Tracking-registry status (2026-07-15)",
+      "headings": [
+        "A. The round — RD-0361 execution column 7 → 13 differential (6 twins, keep-green)",
+        "B. The remaining twin queue (15 shadow) + the method-split",
+        "C. Tracking-registry — \"have these been resolved?\" → NO, here is each",
+        "D. Zero-Trust thesis + Build progress — current",
+        "E. The ceiling — and post-v1"
+      ],
+      "codes": [],
+      "tasks": [
+        "#143",
+        "#105",
+        "#62",
+        "#102"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "round",
+        "twin",
+        "tracking-registry",
+        "differential",
+        "twins",
+        "build",
+        "post-v1",
+        "rd-0361",
+        "each",
+        "wasm",
+        "thesis",
+        "progress",
+        "resolved",
+        "keep-green",
+        "execution",
+        "shadow",
+        "zero-trust",
+        "been",
+        "column",
+        "int",
+        "pattern",
+        "remaining",
+        "these",
+        "handover",
+        "zt-thesis"
       ]
     },
     {
@@ -40243,34 +43087,35 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/KB-CATEGORY-INDEX.md",
-      "title": "KB Category Index — 875 docs, grouped by topic & type",
+      "title": "KB Category Index — 1019 docs, grouped by topic & type",
       "headings": [
         "By topic",
-        "API & Routing  <a id=\"api\"></a>(73)",
-        "Kernel & Runtime  <a id=\"kernel\"></a>(150)",
-        "Compiler & Toolchain  <a id=\"compiler\"></a>(137)",
-        "Language · Syntax · Types · Values  <a id=\"language\"></a>(245)",
-        "Security & Border  <a id=\"security\"></a>(254)",
-        "Governance · Policy · K3/Tri  <a id=\"governance\"></a>(394)",
-        "Crypto & Attestation  <a id=\"crypto\"></a>(72)",
-        "Database · .spore · QL (TritMesh)  <a id=\"data\"></a>(182)",
-        "Photonic & Tri-logic  <a id=\"photonic\"></a>(137)",
-        "Hardware & Targets  <a id=\"hardware\"></a>(152)",
-        "Supply-chain & Build  <a id=\"supply\"></a>(60)",
-        "Networking & Transport  <a id=\"network\"></a>(35)",
-        "Examples & Patterns  <a id=\"examples\"></a>(101)",
-        "Roadmap · Phases · Decisions  <a id=\"roadmap\"></a>(103)",
-        "Performance & Benchmarks  <a id=\"perf\"></a>(37)",
+        "API & Routing  <a id=\"api\"></a>(74)",
+        "Kernel & Runtime  <a id=\"kernel\"></a>(164)",
+        "Compiler & Toolchain  <a id=\"compiler\"></a>(155)",
+        "Language · Syntax · Types · Values  <a id=\"language\"></a>(268)",
+        "Security & Border  <a id=\"security\"></a>(295)",
+        "Governance · Policy · K3/Tri  <a id=\"governance\"></a>(429)",
+        "Crypto & Attestation  <a id=\"crypto\"></a>(80)",
+        "Database · .spore · QL (TritMesh)  <a id=\"data\"></a>(191)",
+        "Photonic & Tri-logic  <a id=\"photonic\"></a>(152)",
+        "Hardware & Targets  <a id=\"hardware\"></a>(171)",
+        "Supply-chain & Build  <a id=\"supply\"></a>(79)",
+        "Networking & Transport  <a id=\"network\"></a>(36)",
+        "Examples & Patterns  <a id=\"examples\"></a>(130)",
+        "Roadmap · Phases · Decisions  <a id=\"roadmap\"></a>(108)",
+        "Performance & Benchmarks  <a id=\"perf\"></a>(43)",
         "By document type",
-        "R&D Reports (RD-####)  <a id=\"rd\"></a>(133)",
-        "Handovers  <a id=\"handover\"></a>(12)",
-        "Prompts & Self-Prompts  <a id=\"prompt\"></a>(34)",
-        "Papers (defensive / scientific)  <a id=\"paper\"></a>(12)",
-        "Indexes & Navigation  <a id=\"index\"></a>(8)",
-        "Specs & Reference  <a id=\"spec\"></a>(31)",
-        "Uncategorized (69)"
+        "R&D Reports (RD-####)  <a id=\"rd\"></a>(181)",
+        "Handovers  <a id=\"handover\"></a>(79)",
+        "Prompts & Self-Prompts  <a id=\"prompt\"></a>(39)",
+        "Papers (defensive / scientific)  <a id=\"paper\"></a>(13)",
+        "Indexes & Navigation  <a id=\"index\"></a>(10)",
+        "Specs & Reference  <a id=\"spec\"></a>(53)",
+        "Uncategorized (96)"
       ],
       "codes": [
+        "FUNGI-HOT-00",
         "FUNGI-PRIVACY-002",
         "FUNGI-RETAIN-001",
         "FUNGI-EFFECT-006",
@@ -40278,6 +43123,7 @@
       ],
       "tasks": [
         "#20",
+        "#143",
         "#204",
         "#148",
         "#30",
@@ -40285,38 +43131,40 @@
         "#219",
         "#201",
         "#197",
-        "#34",
         "#149",
+        "#34",
         "#36",
+        "#63",
+        "#72",
         "#200"
       ],
       "xrefs": [],
       "topTerms": [
         "galerina",
         "roadmap",
+        "handover",
         "audit",
-        "architecture",
         "photonic",
-        "phase",
-        "security",
+        "main",
         "governance",
+        "architecture",
+        "security",
+        "phase",
         "runtime",
         "tritmesh",
-        "rd-absorbed",
+        "gate",
         "session",
         "governed",
         "model",
+        "rd-absorbed",
+        "fungi",
         "spore",
+        "build",
         "prompt",
         "core",
-        "gate",
-        "main",
-        "api",
-        "fungi",
-        "graph",
-        "compiler",
-        "design",
-        "index"
+        "index",
+        "package",
+        "api"
       ]
     },
     {
@@ -43213,13 +46061,9 @@
       "xrefs": [],
       "topTerms": [
         "prod",
-        "users",
-        "github",
         "build",
         "galerina",
         "zero-trust",
-        "phill",
-        "documents",
         "keep-green",
         "owner",
         "never",
@@ -43236,7 +46080,11 @@
         "ecosystem",
         "org",
         "trithypha",
-        "continue"
+        "continue",
+        "read",
+        "handover",
+        "state",
+        "path"
       ]
     },
     {
@@ -44259,11 +47107,11 @@
         "both",
         "groups",
         "language",
-        "users",
-        "phill",
-        "documents",
-        "github",
-        "source"
+        "source",
+        "self-check",
+        "work",
+        "every",
+        "memory"
       ]
     },
     {
@@ -44415,12 +47263,8 @@
       "topTerms": [
         "rules",
         "graph",
-        "github",
         "index",
         "mjs",
-        "users",
-        "phill",
-        "documents",
         "memory",
         "source",
         "keep",
@@ -44437,7 +47281,11 @@
         "search",
         "large",
         "task",
-        "kb-index"
+        "kb-index",
+        "against",
+        "truth",
+        "obey",
+        "groups"
       ]
     },
     {
@@ -45014,7 +47862,7 @@
       "title": "PROMPT — main session: token-manage with the graph/index dev tools",
       "headings": [
         "The principle",
-        "The dev tools (already built — in `<path>`)",
+        "The dev tools (already built — in `Galerina/scripts`)",
         "memory-graph.mjs — the one for active MEMORY",
         "kb-index.mjs — caveat, FIX BEFORE RELYING ON IT",
         "The discipline (do this every task)",
@@ -45034,7 +47882,7 @@
         "dev",
         "tools",
         "graph",
-        "path",
+        "scripts",
         "files",
         "whole",
         "task",
@@ -45050,7 +47898,7 @@
         "token-manage",
         "topic",
         "large",
-        "principle"
+        "path"
       ]
     },
     {
@@ -45098,7 +47946,7 @@
       "title": "PROMPT — resume the OSS-package build (Tier A/B + 2 new candidates)",
       "headings": [
         "Role",
-        "Read first (authoritative — in `<path>`)",
+        "Read first (authoritative — in `ZTF-Knowledge-Bases`)",
         "The build set (each = one repo, owner-gated)",
         "How to build each",
         "Gates (per package)",
@@ -45130,10 +47978,10 @@
         "role",
         "zt-tritsocket",
         "read",
+        "ztf-knowledge-bases",
         "set",
         "gates",
-        "recommended",
-        "wave"
+        "recommended"
       ]
     },
     {
@@ -45146,7 +47994,7 @@
         "Build pattern (per ZT-tritsocket / ZT-freivalds)",
         "Environment (verified 2026-07-08, after the owner's Windows reinstall)",
         "Per-package gate (run BEFORE each build — `galerina-prebuild-due-diligence-checklist.md`)",
-        "Read first (in `<path>`)",
+        "Read first (in `ZTF-Knowledge-Bases`)",
         "Build set + locations (local staging dir = `ZT-<name>`; public repo per naming §3)",
         "Recommended order (first wave)",
         "freivalds exemplar (copy its structure)",
@@ -45159,10 +48007,6 @@
       "topTerms": [
         "build",
         "public",
-        "github",
-        "users",
-        "phill",
-        "documents",
         "before",
         "owner",
         "zt-",
@@ -45181,7 +48025,11 @@
         "verified",
         "plain",
         "rust",
-        "copy"
+        "copy",
+        "gate",
+        "name",
+        "local",
+        "prompt"
       ]
     },
     {
@@ -45833,6 +48681,906 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/RD-0381-nvleak-countermeasure-tritmesh-db-memory-sidechannel-defense.md",
+      "title": "RD-0381 — NVLeak countermeasure design: TritMesh:DB defense against persistent-memory side-channels",
+      "headings": [
+        "§1 The threat (recap, evidenced)",
+        "§2 The countermeasures (layered, deny-by-default)",
+        "§3 The honest boundary",
+        "§4 Security check"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "RD-hardening-memory-graph-walkthrough-2026-07-15",
+        "galerina-hardening-residency-prototype"
+      ],
+      "topTerms": [
+        "design",
+        "deny-by-default",
+        "tritmesh",
+        "nvleak",
+        "side-channels",
+        "evidenced",
+        "memory",
+        "defense",
+        "against",
+        "honest",
+        "layered",
+        "access",
+        "shared",
+        "security",
+        "rd-0381",
+        "countermeasure",
+        "persistent-memory",
+        "fingerprint",
+        "threat",
+        "recap",
+        "countermeasures",
+        "control",
+        "boundary",
+        "check",
+        "demonstrated"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-0382-galerina-hotpath-execution-order-arena-buildable-spec.md",
+      "title": "RD-0382 — Galerina:HotPath execution-order-arena: buildable spec",
+      "headings": [
+        "§1 The one idea",
+        "§2 The compile pipeline (three passes over the sealed program's execution DAG)",
+        "§3 The GHP contract (what the compiler must prove — the by-construction win)",
+        "§4 Packages (per `sponsorship.md`, adopt the naming)",
+        "§5 Security check (the load-bearing guardrail)",
+        "§6 Honest tier"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "RD-hardening-memory-graph-walkthrough-2026-07-15",
+        "HANDOVER-hotpath-tritmesh-roadmap-2026-07-15",
+        "galerina-hardening-residency-prototype"
+      ],
+      "topTerms": [
+        "galerina",
+        "sealed",
+        "hotpath",
+        "execution",
+        "program",
+        "contract",
+        "arena",
+        "buildable",
+        "ghp",
+        "passes",
+        "must",
+        "spec",
+        "sponsorship",
+        "dag",
+        "compiler",
+        "naming",
+        "tier",
+        "rd-0382",
+        "execution-order-arena",
+        "idea",
+        "compile",
+        "pipeline",
+        "three",
+        "prove",
+        "by-construction"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-0383-claim-scan-detector-evidence-matrix-enforcement.md",
+      "title": "RD-0383 — Claim-scan detector: the evidence-matrix / claim-hygiene enforcement",
+      "headings": [
+        "§1 Why (the recurring defect class)",
+        "§2 What it scans + what it flags",
+        "§3 How it behaves (fail-closed + self-tested)",
+        "§4 Security check",
+        "§5 Honest tier"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "HANDOVER-technical-claims-audit-action-2026-07-15",
+        "new-error-type-update-build-tools"
+      ],
+      "topTerms": [
+        "detector",
+        "check",
+        "fail-closed",
+        "claim-scan",
+        "claim-hygiene",
+        "class",
+        "flags",
+        "security",
+        "self-tested",
+        "honest",
+        "rd-0383",
+        "evidence-matrix",
+        "enforcement",
+        "audit",
+        "gate",
+        "why",
+        "recurring",
+        "defect",
+        "scans",
+        "behaves",
+        "tier",
+        "findings",
+        "claim",
+        "flag",
+        "reference"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-0384-faster-mushroom-trusted-environment-threat-model-delta.md",
+      "title": "RD-0384 — \"Faster mushroom\": the trusted-environment threat-model delta",
+      "headings": [
+        "§1 The premise (and the danger)",
+        "§2 The delta — what changes when you drop zero-trust",
+        "§3 The hard boundary (the load-bearing controls)",
+        "§4 Security check",
+        "§5 Honest tier"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "HANDOVER-hotpath-tritmesh-roadmap-2026-07-15",
+        "RD-hardening-memory-graph-walkthrough-2026-07-15"
+      ],
+      "topTerms": [
+        "delta",
+        "zero-trust",
+        "profile",
+        "drop",
+        "boundary",
+        "faster",
+        "mushroom",
+        "threat-model",
+        "galerina",
+        "trusted",
+        "hard",
+        "danger",
+        "changes",
+        "rd-0384",
+        "trusted-environment",
+        "closed",
+        "never",
+        "premise",
+        "product",
+        "type-safety",
+        "network",
+        "kept",
+        "load-bearing",
+        "controls",
+        "different"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-0385-true-quantum-communications-scope-and-governance-position.md",
+      "title": "RD-0385 — True quantum communications: scope, honest framing, and the governance position",
+      "headings": [
+        "§0 The distinction that governs everything (get this right or lose the reviewer)",
+        "§1 What QKD actually is — and its real limits (the honest bounds)",
+        "§2 The governance position — QRV/Galerina *govern* quantum comms (the same model as ffsim)",
+        "§3 The killer fit — Galerina supplies exactly what QKD is missing",
+        "§4 Grant / funding fit",
+        "§5 What must NEVER be claimed (STRIP-LIST-bound, additions)",
+        "§6 Security check",
+        "§7 Honest tier + residual open questions (→ QRV research list)"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "RD-hardening-memory-graph-walkthrough-2026-07-15"
+      ],
+      "topTerms": [
+        "qkd",
+        "quantum",
+        "honest",
+        "qrv",
+        "position",
+        "galerina",
+        "never",
+        "communications",
+        "governance",
+        "key",
+        "fit",
+        "hardware",
+        "pqc",
+        "classical",
+        "channel",
+        "real",
+        "true",
+        "research",
+        "same",
+        "model",
+        "device",
+        "scope",
+        "govern",
+        "security",
+        "hybrid"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-0386-resilient-networking-scope-and-honest-position.md",
+      "title": "RD-0386 — Resilient networking: scope, honest position, and the quantum-comms tie-in",
+      "headings": [
+        "§1 What \"resilient networking\" honestly means here",
+        "§2 What Galerina already provides (the substrate — not new)",
+        "§3 The quantum-comms tie-in (RD-0385)",
+        "§4 What must NEVER be claimed (STRIP-LIST-bound)",
+        "§5 Security check",
+        "§6 Honest tier + residuals"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "RD-0385-true-quantum-communications-scope-and-governance-position",
+        "galerina-tri-pipe-is-photonic-router"
+      ],
+      "topTerms": [
+        "resilient",
+        "networking",
+        "honest",
+        "never",
+        "quantum-comms",
+        "tie-in",
+        "rd-0385",
+        "quantum",
+        "galerina",
+        "scope",
+        "transport",
+        "security",
+        "already",
+        "substrate",
+        "residuals",
+        "position",
+        "strip-list-bound",
+        "recovering",
+        "admission",
+        "network",
+        "honestly",
+        "channel",
+        "rd-0386",
+        "leg",
+        "means"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-0387-sponsorship-possibility-sweep-and-gap-fills.md",
+      "title": "RD-0387 — `sponsorship.md` possibility sweep: every idea, its R&D status, and the gaps filled",
+      "headings": [
+        "§1 The map (every possibility → coverage)",
+        "§2 The gaps, filled",
+        "G1 — Zero-copy interop security (Arrow / NumPy / DLPack / CUDA / mmap / Parquet / HDF5 / Zarr / ffsim / Qiskit)",
+        "G2 — PostgreSQL-wire-protocol compatibility security",
+        "G3 — TritMesh:Index (full-text + vector search) security",
+        "§3 Net"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "HANDOVER-hotpath-tritmesh-roadmap-2026-07-15",
+        "RD-hardening-memory-graph-walkthrough-2026-07-15"
+      ],
+      "topTerms": [
+        "security",
+        "tritmesh",
+        "index",
+        "possibility",
+        "every",
+        "gaps",
+        "filled",
+        "zero-copy",
+        "sponsorship",
+        "vector",
+        "search",
+        "arrow",
+        "idea",
+        "interop",
+        "pg-wire",
+        "numpy",
+        "full-text",
+        "dlpack",
+        "cuda",
+        "hdf5",
+        "zarr",
+        "parquet",
+        "map",
+        "coverage",
+        "fail-closed"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-0388-galerina-hotpath-triple-lock-admission-and-prior-art.md",
+      "title": "RD-0388 — Galerina:HotPath admission as a triple lock (Prove · Admit · Contain) + prior-art survey",
+      "headings": [
+        "§1 The line, formalised — the threat, then the lock",
+        "§2 The triple lock",
+        "Lock 1 — PROVE (static eligibility; an allow-list by construction)",
+        "Lock 2 — ADMIT (governed trust border; K3 `#105`)",
+        "Lock 3 — CONTAIN (fail-closed fallback + preserved invariants + non-forcibility)",
+        "§3 Why three — the defence-in-depth argument (each lock covers a distinct failure)",
+        "§4 Prior art — what other projects use (mapped to the three locks)",
+        "Lock 1 analogues — prove-eligible-before-admission",
+        "Lock 2 analogues — governed / attested admission",
+        "Lock 3 analogues — fail-closed fallback + preserved invariants",
+        "The comparison — shipped elsewhere vs. composed here",
+        "§5 What Galerina:HotPath adds (the honest synthesis)",
+        "§6 Security check + the crux risk (Lock 1 soundness)",
+        "§7 Recommendations (buildable, when HotPath is built)",
+        "§8 Honest tier · residuals · paper note",
+        "§9 Citations — primary sources, pinned (2026-07-15)"
+      ],
+      "codes": [],
+      "tasks": [
+        "#105"
+      ],
+      "xrefs": [
+        "HANDOVER-galerina-hotpath-engine-for-main-2026-07-15",
+        "RD-0391-hotpath-lock1-eligibility-predicate-contract-clause-spec"
+      ],
+      "topTerms": [
+        "lock",
+        "hotpath",
+        "admission",
+        "three",
+        "fail-closed",
+        "governed",
+        "galerina",
+        "triple",
+        "analogues",
+        "yes",
+        "path",
+        "prove",
+        "admit",
+        "fallback",
+        "verifier",
+        "contain",
+        "ebpf",
+        "locks",
+        "code",
+        "security",
+        "never",
+        "eligibility",
+        "proof",
+        "invariants",
+        "honest"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-0389-record-marshalling-abi-mk-record-for-twins-and-p9-parser.md",
+      "title": "RD-0389 — Record-marshalling ABI (`__mk_<Record>` / `__rd_<Record>`) — the last twin shadows + P9 parser byte-parity",
+      "headings": [
+        "§1 The gap — two frontier items both need records across the WASM boundary",
+        "§2 The ABI — construct (`__mk_`) + read (`__rd_`), composed with the string helper",
+        "§3 Grounding (main's implementation step — kept honest)",
+        "§4 Why one ABI closes both (the leverage)",
+        "§5 Security check",
+        "§6 Honest tier + residual",
+        "AS-BUILT ADDENDUM (2026-07-15, same day) — shape held, MECHANISM superseded by grounding"
+      ],
+      "codes": [],
+      "tasks": [
+        "#64",
+        "#68"
+      ],
+      "xrefs": [
+        "HANDOVER-REPLY-rd0389-record-marshalling-secret-gate-closed-2026-07-15"
+      ],
+      "topTerms": [
+        "record",
+        "abi",
+        "string",
+        "parser",
+        "twin",
+        "both",
+        "grounding",
+        "records",
+        "read",
+        "main",
+        "same",
+        "secret-gate",
+        "wasm",
+        "array",
+        "differential",
+        "field",
+        "honest",
+        "byte-parity",
+        "shape",
+        "implementation",
+        "helper",
+        "closes",
+        "host",
+        "memory",
+        "construct"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-0390-lproof-semantics-consolidated-spec.md",
+      "title": "RD-0390 — `.lproof` semantics: the consolidated spec (wrapper, verification, fail-closed rules)",
+      "headings": [
+        "§1 What `.lproof` IS (and, load-bearing, what it is NOT)",
+        "§2 What it verifies (the semantics)",
+        "§3 Fail-closed rules (the semantics that keep it safe)",
+        "§4 Explicitly out of scope (kept separate on purpose)",
+        "§5 Security check",
+        "§6 Honest tier + what remains"
+      ],
+      "codes": [
+        "FUNGI-GOV-3VL-001"
+      ],
+      "tasks": [
+        "#105",
+        "#102"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "lproof",
+        "semantics",
+        "wrapper",
+        "fail-closed",
+        "rules",
+        "cascade",
+        "proof",
+        "spec",
+        "manifest",
+        "safe",
+        "attestation",
+        "separate",
+        "explicitly",
+        "out",
+        "remains",
+        "rd-0390",
+        "verification",
+        "tier",
+        "content",
+        "trust",
+        "shipped",
+        "scope",
+        "verifies",
+        "check",
+        "kept"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-0391-hotpath-lock1-eligibility-predicate-contract-clause-spec.md",
+      "title": "RD-0391 — HotPath Lock-1 eligibility predicate: the formal contract-clause spec (P1–P9 + FUNGI-HOT-00x)",
+      "headings": [
+        "§1 The clause — request, never assert",
+        "§2 The predicate, formalised — P1–P9 over surfaces the compiler already resolves",
+        "§3 Three-valued eligibility — and the decision rules",
+        "§4 Composition with Locks 2 and 3 (unchanged — the proof feeds the planner, nothing else)",
+        "§5 Diagnostics registry (reserved here, wired at build)",
+        "§6 Security check",
+        "§7 Honest tier + what remains"
+      ],
+      "codes": [
+        "FUNGI-HOT-00",
+        "FUNGI-HOT-010",
+        "FUNGI-HOT-001",
+        "FUNGI-HOT-002",
+        "FUNGI-HOT-003",
+        "FUNGI-HOT-004",
+        "FUNGI-HOT-005",
+        "FUNGI-HOT-006",
+        "FUNGI-HOT-007",
+        "FUNGI-HOT-008",
+        "FUNGI-HOT-009",
+        "FUNGI-GOV-3V"
+      ],
+      "tasks": [
+        "#69",
+        "#105"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "predicate",
+        "never",
+        "eligibility",
+        "hot",
+        "clause",
+        "request",
+        "already",
+        "verdict",
+        "spec",
+        "compiler",
+        "rd-0388",
+        "decision",
+        "proof",
+        "assert",
+        "planner",
+        "locks",
+        "lock-1",
+        "effects",
+        "diagnostics",
+        "here",
+        "composition",
+        "proven",
+        "unknown",
+        "remains",
+        "nothing"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-0392-closing-the-wasm-losing-benchmarks-under-zero-trust.md",
+      "title": "RD-0392 — Closing the 9 WASM-losing benchmarks WITHOUT loosening zero trust (borrowed tech survey + the AI-speed tricks mapped)",
+      "headings": [
+        "§1 Where we lose, and why (measured, then diagnosed)",
+        "§2 The zero-trust optimization law (what \"improve but keep the trust\" means concretely)",
+        "§3 The plan — four tiers, ordered by leverage-per-risk",
+        "Tier 1 — borrow standard open-source WASM tech (no trust change, buildable now)",
+        "Tier 2 — proof-licensed check elision (the zero-trust speed lane)",
+        "Tier 3 — the AI-inference tricks, mapped one-to-one (the owner's \"same tricks\" ask)",
+        "Tier 4 — photonic / tri-logic (the offload lane, honestly tiered)",
+        "§4 What NOT to do (fail-closed exclusions)",
+        "§5 Measure-first order (each step lands with its own before/after run)",
+        "§6 Security check"
+      ],
+      "codes": [],
+      "tasks": [
+        "#105",
+        "#62",
+        "#64"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "tier",
+        "trust",
+        "tricks",
+        "lane",
+        "check",
+        "wasm",
+        "same",
+        "tri-logic",
+        "never",
+        "elision",
+        "tech",
+        "zero-trust",
+        "mapped",
+        "photonic",
+        "offload",
+        "run",
+        "own",
+        "proof-licensed",
+        "zero",
+        "improve",
+        "plan",
+        "measured",
+        "speed",
+        "after",
+        "scalar"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-0393-resource-budget-contract-element-declared-envelope-spec.md",
+      "title": "RD-0393 — The `budget` contract element: a declared, fail-closed resource envelope (fuel · memory · dispatch rate · smoothness)",
+      "headings": [
+        "§1 The clause (indicative spelling; semantics normative)",
+        "§2 Semantics — trap at the ceiling, shape at the border",
+        "§3 Diagnostics (reserved `FUNGI-RES-00x`, wired at build; each lands with a conformance pair)",
+        "§4 How it composes (one envelope family, three enforcement points)",
+        "§5 Security check",
+        "§6 Honest tier + build order"
+      ],
+      "codes": [
+        "FUNGI-RES-00",
+        "FUNGI-RES-001",
+        "FUNGI-RES-002",
+        "FUNGI-RES-003",
+        "FUNGI-RES-004",
+        "FUNGI-RES-005",
+        "FUNGI-RES-006",
+        "FUNGI-RES-007"
+      ],
+      "tasks": [
+        "#105",
+        "#24"
+      ],
+      "xrefs": [
+        "HANDOVER-drift-consistency-resource-stability-for-rd-2026-07-15",
+        "HANDOVER-drift-protection-and-flat-resource-envelope-2026-07-15"
+      ],
+      "topTerms": [
+        "budget",
+        "ceiling",
+        "envelope",
+        "fuel",
+        "dispatch",
+        "trap",
+        "declared",
+        "build",
+        "rate",
+        "clause",
+        "semantics",
+        "memory",
+        "border",
+        "unit",
+        "cap",
+        "lane",
+        "contract",
+        "resource",
+        "shape",
+        "platform",
+        "offload",
+        "monitor",
+        "rd-0393",
+        "fail-closed",
+        "tier"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-0394-measure-through-noise-benchmark-consistency-on-a-policy-locked-machine.md",
+      "title": "RD-0394 — Measure-through-noise: benchmark consistency + Galerina-first priority on a shared, policy-locked machine",
+      "headings": [
+        "§1 Why Python swings ±20–30% when \"only Claude is running\" (it never is)",
+        "§2 The priority ladder — everything we may do, in leverage order (nothing on the list needs admin)",
+        "§3 The red line (the owner's \"without breaking the rules\") — stated as policy",
+        "§4 Build items → task #63 (the harness rig, made concrete)",
+        "§5 Why Galerina's own lane is the quiet one (and the honest claim)",
+        "§6 Security check",
+        "AS-MEASURED ADDENDUM (2026-07-15, same day) — the host floor is QUIET; attribution shifts runtime-internal"
+      ],
+      "codes": [],
+      "tasks": [
+        "#63"
+      ],
+      "xrefs": [
+        "HANDOVER-drift-protection-and-flat-resource-envelope-2026-07-15",
+        "RD-0393-resource-budget-contract-element-declared-envelope-spec",
+        "HANDOVER-todo-continuation-noise-gate-b5a-e2e-2026-07-15"
+      ],
+      "topTerms": [
+        "priority",
+        "machine",
+        "why",
+        "never",
+        "python",
+        "same",
+        "quiet",
+        "security",
+        "own",
+        "control",
+        "shared",
+        "run",
+        "galerina",
+        "spread",
+        "benchmark",
+        "policy",
+        "noise",
+        "claude",
+        "running",
+        "without",
+        "harness",
+        "rig",
+        "needs",
+        "gate",
+        "host"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-0395-nesting-adjudication-flow-level-erased-at-lowering-contract-emits-nothing.md",
+      "title": "RD-0395 — Nesting adjudicated: the flow level is ERASED at lowering, and the contract block emits ZERO instructions",
+      "headings": [
+        "§1 The experiment (run this pass, real emitter, real twin)",
+        "§2 Where the intuition IS right — the nesting-shaped things that DO cost (each already has its program)",
+        "§3 The proposed change, adjudicated: REFUSED — the flow level is load-bearing and free",
+        "§4 Knock-on effects IF it were forced anyway (recorded so the cost is on the table)",
+        "§5 Security check",
+        "§6 Recommendation + note for main",
+        "§7 ADDENDUM (2026-07-15) — tutorial-safe claims (owner asked: \"can a tutorial say *nest away*?\")"
+      ],
+      "codes": [],
+      "tasks": [
+        "#105"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "flow",
+        "cost",
+        "level",
+        "contract",
+        "real",
+        "nesting",
+        "zero",
+        "already",
+        "adjudicated",
+        "block",
+        "code",
+        "free",
+        "change",
+        "twin",
+        "erased",
+        "lowering",
+        "instructions",
+        "owner",
+        "body",
+        "effects",
+        "security",
+        "rd-0392",
+        "emitter",
+        "pass",
+        "source"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-0396-nested-loops-x-photonic-tri-logic-the-depth-ladder-and-the-extra-minus-one.md",
+      "title": "RD-0396 — Nested loops × photonic tri-logic: the DEPTH LADDER, the three gifts of the extra −1, and the 3-axis index mapping (deep research)",
+      "headings": [
+        "§1 The depth ladder — every honest way a nested loop loses a level",
+        "§2 The three gifts of the extra −1 (each a different physics/algebra, each real)",
+        "§3 The 3 axes — where nested loop INDICES go to die",
+        "§4 What we build NOW, on the binary core (no hardware, no gate)",
+        "§5 What the photonic tier adds later (and its honest bounds)",
+        "§6 Security check (the two sharp edges, both fenced)",
+        "§7 Measure-first order",
+        "§8 Citations (pinned this pass)"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "HANDOVER-instruct-main-depth-ladder-builds-2026-07-16",
+        "galerina-tri-pipe-is-photonic-router"
+      ],
+      "topTerms": [
+        "photonic",
+        "loop",
+        "nested",
+        "three",
+        "extra",
+        "honest",
+        "fold",
+        "depth",
+        "core",
+        "bounds",
+        "tri-logic",
+        "ladder",
+        "gifts",
+        "axes",
+        "lane",
+        "ternary",
+        "each",
+        "collapse",
+        "loops",
+        "axis",
+        "level",
+        "tier",
+        "pass",
+        "deep",
+        "time"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-0397-tri-sweep-all-logic-and-syntax-for-the-minus-one-axes-and-the-lint-pack.md",
+      "title": "RD-0397 — The −1 sweep: every logic/syntax construct re-examined for the trit (axes included), each security-checked, with the R&D table",
+      "headings": [
+        "§1 Method",
+        "§2 The R&D table",
+        "§3 What the sweep did NOT find (stated so it stays found)",
+        "§4 The deliverable for main — the **tri-lint pack** (small, sharp, buildable now)",
+        "§5 Security check (the sweep's own)",
+        "§6 COMPLETENESS ADDENDUM (2026-07-16 — owner confirm check: *\"EVERY bit of syntax/logic re-evaluated? maths re-done?\"*)"
+      ],
+      "codes": [
+        "FUNGI-GOV-3V"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "sweep",
+        "trit",
+        "axes",
+        "check",
+        "every",
+        "syntax",
+        "verdict",
+        "logic",
+        "table",
+        "tri-lint",
+        "pack",
+        "yes",
+        "each",
+        "law",
+        "never",
+        "security",
+        "found",
+        "checker",
+        "type",
+        "sharp",
+        "construct",
+        "owner",
+        "tri",
+        "simd",
+        "find"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-0398-the-call-ladder-resolving-flow-call-chains-like-loops.md",
+      "title": "RD-0398 — The CALL ladder: resolving flow-call chains the way RD-0396 resolved loops (and the tail-call fuel hazard found doing it)",
+      "headings": [
+        "§1 The call ladder (mirror of the loop ladder)",
+        "§2 The inline-legality predicate (C1's law — the part a generic optimizer must NOT decide)",
+        "§3 The tail-call fuel hazard (found by this R&D — the reason the check was worth it)",
+        "§4 Security check",
+        "§5 Build order (extends the depth-ladder sheet; measure via the noise-gated rig)"
+      ],
+      "codes": [],
+      "tasks": [
+        "#105",
+        "#69"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "fuel",
+        "call",
+        "ladder",
+        "tail-call",
+        "hazard",
+        "check",
+        "loop",
+        "predicate",
+        "found",
+        "calls",
+        "chains",
+        "rd-0396",
+        "depth",
+        "loops",
+        "chain",
+        "cap",
+        "inline",
+        "must",
+        "law",
+        "build",
+        "flow-call",
+        "resolved",
+        "proof",
+        "inline-legality",
+        "recursion"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-0399-tri-axis-sweep-tritmeshql-gate-ascii-and-tritmesh-db.md",
+      "title": "RD-0399 — the tri-axis sweep applied outward: TritMeshQL · the `.gate` language · TritMesh-Database",
+      "headings": [
+        "§1 What was applied (the recent-R&D deltas, per repo)",
+        "§2 Findings that were defects (fixed + detector shipped)",
+        "§3 The R&D table (owner format)",
+        "§4 Follow-ups (named, not silently dropped)"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "gate",
+        "never",
+        "owner",
+        "repo",
+        "applied",
+        "spec",
+        "sweep",
+        "three-valued",
+        "findings",
+        "fixed",
+        "detector",
+        "tritmesh-database",
+        "axis",
+        "method",
+        "table",
+        "bounded",
+        "readme",
+        "dropped",
+        "named",
+        "three",
+        "rd-0399",
+        "tri-axis",
+        "outward",
+        "tritmeshql",
+        "language"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/rd-absorbed/from-galerina-r-and-d/AI-FRIENDLINESS-SPEC-2026-06-23.md",
       "title": "Galerina AI-Friendliness — R&D Spec (2026-06-23)",
       "headings": [
@@ -46243,8 +49991,8 @@
         "2. Verification status (cross-checked 2026-06-16)",
         "3. Consolidated findings (merged)",
         "4. Hard-path index — every R&D document (both tracks)",
-        "`.spore` spec track — `<path>`",
-        "tri-encryption track — `<path>`",
+        "`.spore` spec track — `Galerina-R-AND-D/tmf`",
+        "tri-encryption track — `Galerina-R-AND-D/tri-encription`",
         "Adjacent (not merged here)",
         "5. Reconciliation — alignments, divergences, gaps",
         "Alignments (independently re-derived → high confidence)",
@@ -46277,15 +50025,11 @@
       "xrefs": [],
       "topTerms": [
         "spec",
-        "track",
         "tmf",
-        "phase",
-        "users",
-        "phill",
-        "documents",
-        "github",
-        "spore",
+        "track",
         "galerina-r-and-d",
+        "phase",
+        "spore",
         "both",
         "research",
         "fungi",
@@ -46294,13 +50038,17 @@
         "aead",
         "verified",
         "tracks",
-        "bench",
         "tri-encription",
+        "bench",
         "galerina",
         "confidentiality",
         "gaps",
         "shake256",
-        "owner"
+        "owner",
+        "deferred",
+        "core",
+        "default",
+        "source"
       ]
     },
     {
@@ -46420,7 +50168,7 @@
     },
     {
       "rel": "../ZTF-Knowledge-Bases/rd-absorbed/rd-external-repos-grounding-ledger.md",
-      "title": "External repositories analysis — `<path>`",
+      "title": "External repositories analysis — `x`",
       "headings": [
         "The 8 repos at a glance",
         "1. Bottom line",
@@ -48285,6 +52033,198 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/RD-hardening-memory-graph-walkthrough-2026-07-15.md",
+      "title": "R&D walkthrough — Hardening · Memory · Graph (video corpus, 2026-07-15)",
+      "headings": [
+        "§0 Source inventory (16 transcripts, stable YouTube URLs preserved)",
+        "§1 Extracted knowledge (per topic)",
+        "1.1 Memory hierarchy & the memory wall",
+        "1.2 Hardening — off-chip / persistent-memory side-channels (00002 NVLeak, USENIX Security '23)",
+        "1.3 Photonic in-memory compute (00003 IBM Research)",
+        "1.4 Graph & knowledge graph (00015 Neo4j · 00016 IBM)",
+        "1.5 Memory-wall economics & cache locality (00005 Semiconductor Eng · 00008 CS 61C) — the HotPath grounding",
+        "1.6 Advanced memory systems — composable/CXL (00006) + persistent memory (00007) — TritMesh storage + the shared-memory threat",
+        "1.7 Analog in-memory computing (00010 IBM) — generalises §1.3 photonic",
+        "1.8 Bounded AI memory — ARMT vs KV cache (00014, extends 00001) — a governance win",
+        "1.9 Locality in practice + execution-order layout (00009 Sorber · 00012 ANTSHIV) — the HotPath arena",
+        "1.10 OS + orchestration memory governance (00011 Linux VM · 00013 Kubernetes)",
+        "§2 R&D adoption table",
+        "§3 Security checks (every \"using\" adoption)",
+        "§4 Screenshots",
+        "§5 What feeds which project"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "galerina-tri-pipe-is-photonic-router",
+        "galerina-work-state",
+        "benchmark-noise-floor-discipline",
+        "harm-filter-on-papers"
+      ],
+      "topTerms": [
+        "memory",
+        "graph",
+        "tritmesh",
+        "hotpath",
+        "photonic",
+        "youtube",
+        "cache",
+        "governance",
+        "ibm",
+        "security",
+        "in-memory",
+        "storage",
+        "bounded",
+        "com",
+        "watch",
+        "data",
+        "analog",
+        "persistent",
+        "locality",
+        "knowledge",
+        "layout",
+        "arena",
+        "galerina",
+        "nvleak",
+        "cxl"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-SESSION-LOG-2026-07-15.md",
+      "title": "R&D session event log — 2026-07-15",
+      "headings": [
+        "Scope — three tasks",
+        "Event log",
+        "Source inventory — 16 YouTube transcripts (durable capture; folder won't remain)",
+        "Open items / to-capture"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "no-house-rules-in-rd-results"
+      ],
+      "topTerms": [
+        "memory",
+        "good",
+        "log",
+        "event",
+        "source",
+        "security",
+        "hotpath",
+        "session",
+        "graph",
+        "folder",
+        "owner",
+        "scope",
+        "remain",
+        "read",
+        "durable",
+        "tasks",
+        "nvleak",
+        "ibm",
+        "won",
+        "youtube",
+        "transcripts",
+        "open",
+        "three",
+        "hardening",
+        "table"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-UPDATE-hotpath-triple-lock-x-photonic-tri-logic-2026-07-15.md",
+      "title": "R&D UPDATE — Galerina:HotPath triple lock × photonic tri-logic (2026-07-15)",
+      "headings": [
+        "§1 What's new (the update)",
+        "§2 Compare findings with photonic tri-logic (the requested cross-compare)",
+        "§3 Where each strengthens the other",
+        "§4 Security check (cross-compare)",
+        "§5 R&D table",
+        "§6 Honest tier + net"
+      ],
+      "codes": [],
+      "tasks": [
+        "#105"
+      ],
+      "xrefs": [
+        "HANDOVER-galerina-hotpath-engine-for-main-2026-07-15",
+        "galerina-tri-pipe-is-photonic-router"
+      ],
+      "topTerms": [
+        "photonic",
+        "lock",
+        "triple",
+        "lane",
+        "tri-logic",
+        "hotpath",
+        "offload",
+        "cross-compare",
+        "binary",
+        "update",
+        "galerina",
+        "admission",
+        "tier",
+        "honest",
+        "governed",
+        "hot",
+        "execution",
+        "never",
+        "no-coercion",
+        "requested",
+        "table",
+        "trit",
+        "three",
+        "each",
+        "unit"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-UPDATE-table-rd0388-0398-recent-results-2026-07-16.md",
+      "title": "R&D UPDATE — the consolidated table: RD-0388 → RD-0398 (the recent wave) + key handover results",
+      "headings": [
+        "§1 The R&D table",
+        "§2 Key non-RD results of the wave (shipped or handed over)",
+        "§3 Reading order for main (unchanged queue, stated once)"
+      ],
+      "codes": [
+        "FUNGI-HOT-001"
+      ],
+      "tasks": [
+        "#69",
+        "#105",
+        "#56",
+        "#63"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "table",
+        "results",
+        "wave",
+        "key",
+        "shipped",
+        "yes",
+        "main",
+        "rd-0388",
+        "rd-0398",
+        "recent",
+        "non-rd",
+        "never",
+        "sheet",
+        "queue",
+        "update",
+        "consolidated",
+        "handover",
+        "handed",
+        "reading",
+        "order",
+        "unchanged",
+        "stated",
+        "once",
+        "owner",
+        "fail-closed"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/REBOOT-PROMPT-from-main-2026-07-03.md",
       "title": "REBOOT / GET-STARTED PROMPT — paste after a /clear or a fresh start (from the `main` branch)",
       "headings": [],
@@ -48294,10 +52234,6 @@
       "topTerms": [
         "main",
         "branch",
-        "users",
-        "phill",
-        "documents",
-        "github",
         "fresh",
         "start",
         "reboot",
@@ -48316,7 +52252,11 @@
         "green",
         "everything",
         "order",
-        "read"
+        "read",
+        "don",
+        "rules",
+        "live",
+        "index"
       ]
     },
     {
@@ -48461,10 +52401,6 @@
         "session",
         "prompt",
         "research",
-        "users",
-        "phill",
-        "documents",
-        "github",
         "tritmesh",
         "clear",
         "gate",
@@ -48481,7 +52417,11 @@
         "re-run",
         "maths",
         "right",
-        "state"
+        "state",
+        "before",
+        "stays",
+        "signed",
+        "fresh"
       ]
     },
     {
@@ -49649,8 +53589,6 @@
         "autonomy",
         "preferred",
         "order",
-        "documents",
-        "github",
         "zt-galerina-graph-ascii",
         "mjs",
         "don",
@@ -49662,8 +53600,10 @@
         "constraint",
         "registry",
         "locations",
-        "users",
-        "phill"
+        "orient",
+        "run",
+        "standing",
+        "rules"
       ]
     },
     {
@@ -50147,7 +54087,6 @@
         "rules",
         "gate",
         "shipped",
-        "github",
         "scales",
         "both",
         "cold",
@@ -50155,7 +54094,8 @@
         "list",
         "postures",
         "design",
-        "line"
+        "line",
+        "build-staging"
       ]
     },
     {
@@ -52718,14 +56658,13 @@
         "FUNGI-PCI-001"
       ],
       "tasks": [
-        "#102",
-        "#143",
-        "#128",
         "#105",
+        "#143",
+        "#102",
+        "#128",
         "#163",
         "#165",
-        "#32",
-        "#34"
+        "#32"
       ],
       "xrefs": [],
       "topTerms": [
@@ -52733,27 +56672,27 @@
         "docs",
         "governed",
         "svg",
+        "wasm",
         "width",
         "diagrams",
         "sub",
-        "wasm",
         "shipped",
         "governance",
         "audit",
         "runtime",
         "fungi",
         "contract",
+        "signed",
         "core",
-        "architecture",
+        "real",
         "package",
+        "architecture",
+        "build",
+        "gate",
         "align",
         "center",
-        "signed",
-        "build",
-        "capability",
-        "href",
-        "img",
-        "src"
+        "execution",
+        "capability"
       ]
     },
     {

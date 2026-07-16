@@ -1,0 +1,507 @@
+{
+  "generated": "ts-retirement-graph",
+  "totals": {
+    "ts": 431,
+    "twinned": 23,
+    "compilerCore": 90,
+    "floor": 16,
+    "program": 302,
+    "fungiInSrc": 52,
+    "packages": 92,
+    "finderDrift": -1,
+    "authoritativeFlips": 0
+  },
+  "retirementPaths": {
+    "twinned": "→ #143 R4 authority flips (twin proven differential — authority: .ts, R4 pending, 0 flipped)",
+    "compilerCore": "→ bootstrap fixpoint (the .fungi stages are compiled BY this .ts — retires last, post-v1)",
+    "floor": "→ NEVER (bounded-TCB floor by ruling: crypto primitives, host seams, pure-algorithm devtools)",
+    "program": "→ the #38 migration codemod program (owner-gated re-sign ceremony)"
+  },
+  "perPackage": {
+    "galerina-ai-agent": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-ai-lowbit": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-ai-neural": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-ai-neuromorphic": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-ai": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-auth": {
+      "ts": 7,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-core-cli": {
+      "ts": 10,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-core-compiler": {
+      "ts": 97,
+      "twinned": 7,
+      "fungi": 8
+    },
+    "galerina-core-compute": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-core-config": {
+      "ts": 3,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-core-economics": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-core-logic": {
+      "ts": 21,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-core-network": {
+      "ts": 7,
+      "twinned": 6,
+      "fungi": 7
+    },
+    "galerina-core-photonic": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-core-reports": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-core-runtime": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 1
+    },
+    "galerina-core-security": {
+      "ts": 1,
+      "twinned": 1,
+      "fungi": 13
+    },
+    "galerina-core-sentinel-egress": {
+      "ts": 4,
+      "twinned": 1,
+      "fungi": 1
+    },
+    "galerina-core-sentinel-io": {
+      "ts": 6,
+      "twinned": 0,
+      "fungi": 2
+    },
+    "galerina-core-sentinel-memory": {
+      "ts": 7,
+      "twinned": 1,
+      "fungi": 5
+    },
+    "galerina-core-sentinel-power": {
+      "ts": 4,
+      "twinned": 1,
+      "fungi": 1
+    },
+    "galerina-core-sentinel-state": {
+      "ts": 5,
+      "twinned": 1,
+      "fungi": 1
+    },
+    "galerina-core-sentinel-time": {
+      "ts": 4,
+      "twinned": 1,
+      "fungi": 1
+    },
+    "galerina-core-tasks": {
+      "ts": 9,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-core-vector": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-core": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-cpu-kernels": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-data-archive": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-data-database": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-data-db": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-data-html": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-data-json": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-data-model": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-data-pipeline": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-data-query": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-data-reports": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-data-response": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-data-search": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-data": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-db-firestore": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-db-mysql": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-db-opensearch": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-db-postgres": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-db-sqlite": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-devtools-context": {
+      "ts": 6,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-devtools-flowgraph": {
+      "ts": 4,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-devtools-fungi-scan": {
+      "ts": 5,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-devtools-graph-algorithms": {
+      "ts": 15,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-devtools-graph-project": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-devtools-intelligence": {
+      "ts": 7,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-devtools-kb-graph": {
+      "ts": 4,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-devtools-naming": {
+      "ts": 5,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-devtools-package-graph": {
+      "ts": 5,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-devtools-pci": {
+      "ts": 5,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-devtools-project-graph": {
+      "ts": 20,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-devtools-provenance": {
+      "ts": 5,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-devtools-security": {
+      "ts": 9,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-docs": {
+      "ts": 4,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-ext-bridge-bitnet": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-ext-bridge-cpp": {
+      "ts": 5,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-ext-photonic-emulator": {
+      "ts": 9,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-ext-proof-snarkjs": {
+      "ts": 3,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-ext-secrets-spore": {
+      "ts": 10,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-ext-secrets-vault": {
+      "ts": 5,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-ext-spore": {
+      "ts": 6,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-ext-tritsocket": {
+      "ts": 3,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-framework-api-server": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-framework-app-kernel": {
+      "ts": 7,
+      "twinned": 4,
+      "fungi": 6
+    },
+    "galerina-governance-telemetry": {
+      "ts": 3,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-hardware-tier": {
+      "ts": 4,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-inference-bridge-contract": {
+      "ts": 5,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-observability": {
+      "ts": 6,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-substrate-math": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-target-ai-accelerator": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-target-cpu": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-target-gpu": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-target-js": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-target-native": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-target-photonic": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-target-wasm": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-test": {
+      "ts": 7,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-tools-benchmark": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-tower-citizen": {
+      "ts": 28,
+      "twinned": 0,
+      "fungi": 3
+    },
+    "galerina-tri-pipe": {
+      "ts": 3,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-web-components": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-web-events": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-web-render": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-web-router": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-web-state": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-web": {
+      "ts": 1,
+      "twinned": 0,
+      "fungi": 0
+    },
+    "galerina-api-protocol-rest": {
+      "ts": 0,
+      "twinned": 0,
+      "fungi": 1
+    },
+    "galerina-framework-example-app": {
+      "ts": 0,
+      "twinned": 0,
+      "fungi": 2
+    }
+  },
+  "twinnedPairs": [
+    "packages-galerina/galerina-core-compiler/src/effect-checker.ts",
+    "packages-galerina/galerina-core-compiler/src/gir-emitter.ts",
+    "packages-galerina/galerina-core-compiler/src/governance-verifier.ts",
+    "packages-galerina/galerina-core-compiler/src/lexer.ts",
+    "packages-galerina/galerina-core-compiler/src/parser.ts",
+    "packages-galerina/galerina-core-compiler/src/runtime.ts",
+    "packages-galerina/galerina-core-compiler/src/type-checker.ts",
+    "packages-galerina/galerina-core-network/src/admission-feedback.ts",
+    "packages-galerina/galerina-core-network/src/cert-gate.ts",
+    "packages-galerina/galerina-core-network/src/cors-policy.ts",
+    "packages-galerina/galerina-core-network/src/defensive-controls.ts",
+    "packages-galerina/galerina-core-network/src/egress-guard.ts",
+    "packages-galerina/galerina-core-network/src/inbound-guard.ts",
+    "packages-galerina/galerina-core-security/src/index.ts",
+    "packages-galerina/galerina-core-sentinel-egress/src/audit-egress.ts",
+    "packages-galerina/galerina-core-sentinel-memory/src/memory-validator.ts",
+    "packages-galerina/galerina-core-sentinel-power/src/power-governor.ts",
+    "packages-galerina/galerina-core-sentinel-state/src/cold-boot.ts",
+    "packages-galerina/galerina-core-sentinel-time/src/synchronization-gate.ts",
+    "packages-galerina/galerina-framework-app-kernel/src/kernel.ts",
+    "packages-galerina/galerina-framework-app-kernel/src/registry-index.ts",
+    "packages-galerina/galerina-framework-app-kernel/src/route-defaults.ts",
+    "packages-galerina/galerina-framework-app-kernel/src/secret-gate.ts"
+  ]
+}
