@@ -49,9 +49,59 @@ function extractId(filePath: string): string {
   return basename(filePath, extname(filePath));
 }
 
+// ── Code-region masking ───────────────────────────────────────────────────────
+// Dated provenance artifacts (e.g. the rebrand report) quote source lines and JSON payloads
+// verbatim; link-shaped text inside those regions is DATA, not a live cross-reference, yet
+// the raw-content regexes read it as real edges — 4 phantom stale links, e.g.
+// rebrand-report → LLN-AMD-024-tmf-confidentiality, whose "linkText" was a multi-line JSON
+// splice. The provenance doc must never be edited, so the fix lives here: the HYPERLINK
+// extractors (MD_LINK_RE, WIKILINK_RE) scan a copy with fenced code blocks and inline
+// `code` spans blanked out. The MENTION extractors keep the raw text on purpose:
+// `file.md` in backticks IS the mention convention (BACKTICK_MD_RE could never match a
+// masked copy), and a dangling mention never enters the stale-link count anyway.
+
+// Blank every char except newlines, so masking preserves the line structure.
+function blankRegion(region: string): string {
+  return region.replace(/[^\n]/g, " ");
+}
+
+const FENCE_MARKER_RE = /^ {0,3}(`{3,}|~{3,})/;
+const FENCE_CLOSE_LINE_RE = /^ {0,3}(?:`{3,}|~{3,})[ \t]*$/;
+
+// Mask fenced code blocks (``` / ~~~; closer = same char, at least opener length, nothing
+// else on the line; an unclosed fence runs to EOF) and inline `code` spans. Fences go
+// first so a fence's own backticks can never pair up as inline spans. Inline spans are
+// kept single-line so one stray backtick can never mask half the document.
+function maskCodeRegions(content: string): string {
+  const lines = content.split("\n");
+  let fence: { char: string; len: number } | null = null;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i] ?? "";
+    const marker = FENCE_MARKER_RE.exec(line)?.[1];
+    if (fence === null) {
+      if (marker !== undefined) {
+        fence = { char: marker.charAt(0), len: marker.length };
+        lines[i] = ""; // the opener's info string can carry link-shaped text too
+      }
+      continue;
+    }
+    const closes = marker !== undefined
+      && marker.charAt(0) === fence.char
+      && marker.length >= fence.len
+      && FENCE_CLOSE_LINE_RE.test(line);
+    lines[i] = "";
+    if (closes) fence = null;
+  }
+  return lines.join("\n").replace(/(`+)[^`\n]+?\1/g, blankRegion);
+}
+
 function extractEdges(fromId: string, content: string): KBEdge[] {
   const edges: KBEdge[] = [];
   const seen = new Set<string>();
+
+  // Hyperlink extraction reads the masked copy; mention extraction reads the raw text.
+  // The split is load-bearing — see the maskCodeRegions rationale above.
+  const linkable = maskCodeRegions(content);
 
   function addEdge(toFile: string, linkText: string, kind: "link" | "mention"): void {
     // Normalise to id (strip .md, strip paths)
@@ -66,7 +116,7 @@ function extractEdges(fromId: string, content: string): KBEdge[] {
   // [link text](filename.md) — but SKIP external urls (http/https): a link to
   // github.com/TritHypha/Galerina/…/SECURITY.md is a CROSS-REPO reference, not an
   // internal KB doc edge, so it must never be counted as a stale internal link.
-  for (const m of content.matchAll(MD_LINK_RE)) {
+  for (const m of linkable.matchAll(MD_LINK_RE)) {
     const linkText = m[1] ?? "";
     const target = m[2] ?? "";
     if (target.startsWith("http://") || target.startsWith("https://")) continue;
@@ -84,7 +134,7 @@ function extractEdges(fromId: string, content: string): KBEdge[] {
   }
 
   // [[doc-id]] — wiki-style cross-reference (see WIKILINK_RE above for the mention-not-link reasoning)
-  for (const m of content.matchAll(WIKILINK_RE)) {
+  for (const m of linkable.matchAll(WIKILINK_RE)) {
     addEdge(`${m[1]}.md`, `[[${m[1]}]]`, "mention");
   }
 

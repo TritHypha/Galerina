@@ -234,3 +234,69 @@ describe("reporter — path-leak redaction (ZT-17)", () => {
     assert.ok(md.includes("authoritative"), "clean status text should survive verbatim");
   });
 });
+
+describe("scanner — fenced/inline code masking (rebrand-report parse artifacts, 2026-07-16)", () => {
+  // Dated provenance docs quote source lines + JSON payloads verbatim (the rebrand report
+  // uses inline `code` spans; other KB docs use ``` fences). Link-shaped text inside those
+  // regions is DATA: the extractor read it as live hyperlinks and invented 4 stale links
+  // (e.g. rebrand-report → LLN-AMD-024-tmf-confidentiality). The provenance doc must never
+  // be edited, so the EXTRACTOR skips code regions. Pinned fires-on-bad both ways: the
+  // planted link inside a fence / inline span is NOT extracted, while the same link planted
+  // unfenced IS (masking neither neuters extraction nor the stale detector).
+  const dir = mkdtempSync(join(tmpdir(), "kb-graph-codemask-"));
+  writeFileSync(join(dir, "real-target.md"), "# Real Target\n\nStands alone.\n");
+  writeFileSync(join(dir, "mention-doc.md"), "# Mention Doc\n\nStands alone.\n");
+  writeFileSync(join(dir, "source.md"), [
+    "# Source",
+    "",
+    "Live link: [real](real-target.md); live wikilink: [[real-target]].",
+    "Broken live hyperlink: [gone](unfenced-missing.md).",
+    "Backtick mention convention still counts: `mention-doc.md`.",
+    "",
+    "```json",
+    "{\"quote\": \"see ['fake'](fenced-fake-target.md) and [[fenced-fake-wiki]]\"}",
+    "```",
+    "",
+    "Quoted source line: `the ['x'](span-fake-target.md) blueprint` and `[[span-fake-wiki]]`.",
+    "",
+  ].join("\n"));
+  const scan = scanKBDirectory(dir);
+  const g2 = buildKBGraph(scan);
+  rmSync(dir, { recursive: true, force: true });
+
+  test("a link planted inside a fenced code block is NOT extracted", () => {
+    assert.ok(!scan.edges.some(e => e.to === "fenced-fake-target"),
+      "fenced [text](file.md) was extracted as a live link");
+    assert.ok(!scan.edges.some(e => e.to === "fenced-fake-wiki"),
+      "fenced [[wikilink]] was extracted as a live mention");
+  });
+
+  test("a link planted inside an inline code span is NOT extracted (the rebrand-report class)", () => {
+    assert.ok(!scan.edges.some(e => e.to === "span-fake-target"),
+      "inline-span [text](file.md) was extracted as a live link");
+    assert.ok(!scan.edges.some(e => e.to === "span-fake-wiki"),
+      "inline-span [[wikilink]] was extracted as a live mention");
+  });
+
+  test("fires-on-bad: the same planted links OUTSIDE code regions ARE extracted", () => {
+    const live = scan.edges.find(e => e.from === "source" && e.to === "real-target");
+    assert.ok(live, "unfenced [real](real-target.md) must be extracted");
+    assert.equal(live.kind, "link", "an unfenced [](…) hyperlink must keep kind 'link'");
+    assert.ok(scan.edges.some(e => e.from === "source" && e.to === "unfenced-missing" && e.kind === "link"),
+      "the unfenced broken hyperlink must still be extracted (it is the stale detector's input)");
+  });
+
+  test("the stale-link detector still fires on the live broken link — and ONLY on it", () => {
+    assert.equal(g2.staleLinks.length, 1,
+      `expected exactly 1 stale link (the unfenced one), got: ${JSON.stringify(g2.staleLinks)}`);
+    assert.ok(g2.staleLinks[0].includes("unfenced-missing"),
+      "the one stale link must be the live broken hyperlink, not a code-region artifact");
+  });
+
+  test("the backtick `file.md` MENTION convention still reads raw text (not masked away)", () => {
+    const m = scan.edges.find(e => e.from === "source" && e.to === "mention-doc");
+    assert.ok(m, "`mention-doc.md` backtick mention edge missing — masking must not blind the mention extractor");
+    assert.equal(m.kind, "mention");
+    assert.ok(!g2.orphans.includes("mention-doc"), "mention-doc lost its inbound mention edge");
+  });
+});

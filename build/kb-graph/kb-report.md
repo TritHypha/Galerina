@@ -2,7 +2,7 @@
 Generated: 2026-07-16
 
 ## Stats
-- Docs: 1023 | Edges: 3604 | Orphans: 1 | Stale links: 4 | FUNGI codes: 747
+- Docs: 1052 | Edges: 3440 | Orphans: 1 | Stale links: 0 | FUNGI codes: 747
 
 ## Document Registry (auto-generated)
 
@@ -55,6 +55,7 @@ Generated: 2026-07-16
 | build-system-and-cli.md | — | — | — | — |
 | builtin-view-levels.md | — | — | — | — |
 | capabilities.md | — | — | — | — |
+| census-2026-07-16.md | — | — | — | — |
 | certified-package-registry.md | — | — | — | — |
 | cicd-integration-and-provenance.md | — | — | — | — |
 | compile-time-metadata-reflection.md | — | — | — | — |
@@ -721,8 +722,9 @@ Generated: 2026-07-16
 | HANDOVER-diagram-refresh-hallmark-typesafety-hardening-2026-07-12.md | — | — | — | FUNGI-VALUESTATE-003 |
 | HANDOVER-drift-consistency-resource-stability-for-rd-2026-07-15.md | — | — | — | — |
 | HANDOVER-drift-protection-and-flat-resource-envelope-2026-07-15.md | — | — | — | — |
-| HANDOVER-drive-to-100-worklist-2026-07-16.md | — | — | — | FUNGI-GOV-3 |
+| HANDOVER-drive-to-100-worklist-2026-07-16.md | — | — | — | FUNGI-GOV-3, FUNGI-TYPE-023 |
 | HANDOVER-dss-wasm-compile-probe-2026-07-12.md | — | — | — | — |
+| HANDOVER-galerina-deltas-from-rd0399-0400-2026-07-16.md | — | — | — | FUNGI-GOV-3 |
 | HANDOVER-galerina-docs-examples-corrections-2026-07-10.md | — | — | — | FUNGI-SYNTAX-014 |
 | HANDOVER-galerina-finish-push-2026-07-12.md | — | — | — | FUNGI-EFFECT-006, FUNGI-HARDEN-001, FUNGI-HARDEN-005, FUNGI-NUMERIC-001 |
 | HANDOVER-galerina-framework-api-server-schematic-2026-07-09.md | — | — | decision-ready for the MAIN Galerina session. **Scope:** read-only source verification against the live tree; nothing in the Galerina repo was modified to produce this document. | — |
@@ -730,6 +732,7 @@ Generated: 2026-07-16
 | HANDOVER-galerina-lint-unify-and-package-2026-07-11.md | — | — | — | — |
 | HANDOVER-galerina-logic-primer-three-valued-for-main-2026-07-15.md | — | — | — | FUNGI-GOV-3 |
 | HANDOVER-galerina-only-scope-and-reference-doc-reply-2026-07-15.md | — | — | — | — |
+| HANDOVER-galerina-reusable-from-the-database-and-ql-rd-2026-07-16.md | — | — | — | — |
 | HANDOVER-governed-memory-residency-hardening-auto-2026-07-11.md | — | — | — | FUNGI-EFFECT-006, FUNGI-HARDEN-007, FUNGI-RETAIN-001, FUNGI-TYPE-003 |
 | HANDOVER-hardening-integrated-and-selfhosting-frontier-2026-07-12.md | — | — | — | FUNGI-EFFECT-006, FUNGI-HARDEN-001, FUNGI-HARDEN-006, FUNGI-HARDEN-007, FUNGI-PKG-001 |
 | HANDOVER-hotpath-tritmesh-roadmap-2026-07-15.md | — | — | — | — |
@@ -739,13 +742,17 @@ Generated: 2026-07-16
 | HANDOVER-instruct-main-depth-ladder-builds-2026-07-16.md | — | — | — | — |
 | HANDOVER-instruct-main-myco-0-1-1-and-devtools-review-2026-07-16.md | — | — | — | — |
 | HANDOVER-instruct-main-nesting-cost-model-doc-2026-07-15.md | — | — | — | — |
+| HANDOVER-instruct-main-warm-ladder-and-async-priming-2026-07-16.md | — | — | — | — |
+| HANDOVER-io-kernel-last-shadow-closed-2026-07-16.md | — | — | — | — |
 | HANDOVER-licensing-compliance-and-gpl-posture-2026-07-11.md | — | — | — | — |
 | HANDOVER-main-bend-interaction-combinators-rd0257-2026-07-04.md | — | — | — | FUNGI-SUBSTRATE-001 |
 | HANDOVER-main-full-control-of-galerina-2026-07-03.md | — | — | — | — |
 | HANDOVER-MASTER-all-unlocked-drive-to-100pct-2026-07-15.md | — | — | — | — |
 | HANDOVER-MASTER-cycle-todo-sweep-2026-07-15.md | — | — | — | — |
 | HANDOVER-MASTER-main-endphase-rd0389-cycle-2026-07-15.md | — | — | — | — |
+| HANDOVER-MASTER-runtime-performance-and-tri-review-program-2026-07-16.md | — | — | — | — |
 | HANDOVER-MASTER-updated-main-endphase-2026-07-15.md | — | — | — | FUNGI-GOV-3 |
+| HANDOVER-memory-dss-tlstp-sweep-rd-requests-2026-07-16.md | — | — | — | — |
 | HANDOVER-MORNING-start-here-2026-07-16.md | — | — | — | FUNGI-GOV-010, FUNGI-PARSE-001, FUNGI-SYNTAX-011 |
 | HANDOVER-myco-0-1-2-silent-cap-and-version-drift-2026-07-16.md | — | — | shipped in-tree. Build clean, tests 11 → 14, CLI smoke-verified. | — |
 | HANDOVER-noise-immune-benchmarking-build-instructions-2026-07-15.md | — | — | — | — |
@@ -756,8 +763,10 @@ Generated: 2026-07-16
 | HANDOVER-RD-0302-streaming-completion-2026-07-09.md | — | — | — | — |
 | HANDOVER-RD-0320-onward-2026-07-10.md | — | — | — | FUNGI-MATCH-001, FUNGI-PRIVACY-002, FUNGI-TAINT-001 |
 | HANDOVER-rd-complete-does-not-equal-build-complete-2026-07-15.md | — | — | — | — |
+| HANDOVER-rd-support-for-the-tracking-board-2026-07-16.md | — | — | — | — |
 | HANDOVER-rd0361-twin-round-2-packages-complete-2026-07-15.md | — | — | — | — |
 | HANDOVER-reference-docs-reverification-and-questions-2026-07-15.md | — | — | — | FUNGI-TYPE-001 |
+| HANDOVER-registry-drive-to-complete-2026-07-16.md | — | — | — | — |
 | HANDOVER-registry-missing-rd-label-fix-and-roadmap-rd-sweep-2026-07-15.md | — | — | — | — |
 | HANDOVER-REPLY-benchmark-stability-and-unlocked-subsystems-2026-07-15.md | — | — | — | — |
 | HANDOVER-REPLY-drift-asks-blessed-rd0393-and-reconciliation-2026-07-15.md | — | — | — | FUNGI-RES-001 |
@@ -775,23 +784,30 @@ Generated: 2026-07-16
 | HANDOVER-REPLY-session-close-rd-corrections-2026-07-15.md | — | — | — | — |
 | HANDOVER-REPLY-todo-continuation-verified-and-adopted-2026-07-15.md | — | — | — | — |
 | HANDOVER-REPLY-tri-lint-series-confirmed-and-frontier-census-guidance-2026-07-16.md | — | — | — | FUNGI-GOV-3 |
+| HANDOVER-REPLY-w1-adopted-rd0401-corrected-min-literal-adjudicated-2026-07-16.md | — | — | — | — |
+| HANDOVER-REPLY-wabt-isolation-prescription-and-sweep-acks-2026-07-16.md | — | — | — | — |
 | HANDOVER-REPLY-zt-thesis-twin-round-2026-07-15.md | — | — | — | — |
 | HANDOVER-RnD-master-index-2026-07-09.md | — | — | — | — |
 | HANDOVER-rnd-research-session-2026-07-01.md | — | — | — | — |
 | HANDOVER-RnD-response-to-main-2026-07-09.md | — | — | — | — |
+| HANDOVER-round-2026-07-16-night-areas-dss-tlstp-cycle.md | — | — | — | — |
 | HANDOVER-session-close-and-resume-2026-07-12.md | — | — | — | — |
 | HANDOVER-session-close-pre-compact-2026-07-15.md | — | — | — | — |
+| HANDOVER-SESSION-CLOSE-start-here-2026-07-16-evening.md | — | — | — | — |
 | HANDOVER-session-master-2026-07-11.md | — | — | — | FUNGI-VALUESTATE-008 |
 | HANDOVER-session-requests-log-2026-07-12.md | — | — | — | — |
+| HANDOVER-signing-key-root-operational-split-2026-07-16.md | — | — | — | — |
 | HANDOVER-super-RD-0303-to-RD-0320-2026-07-10.md | — | — | — | — |
 | HANDOVER-technical-claims-audit-action-2026-07-15.md | — | — | — | — |
 | HANDOVER-technical-code-level-impact-tri-and-axes-2026-07-16.md | — | — | — | — |
 | HANDOVER-todo-continuation-noise-gate-b5a-e2e-2026-07-15.md | — | — | — | — |
 | HANDOVER-todo-sweep-2026-07-15.md | — | — | — | — |
+| HANDOVER-todo-sweep-full-auto-2026-07-16.md | — | — | — | — |
 | HANDOVER-tri-lint-004-and-zt-build-tracking-cycle-2026-07-16.md | — | — | — | FUNGI-CHECK-001, FUNGI-GOV-3, FUNGI-MATCH-001 |
 | HANDOVER-tritmesh-session-2026-07-04.md | — | — | — | FUNGI-SECRET-004, FUNGI-SUBSTRATE-001 |
 | HANDOVER-ts-still-present-truth-census-and-label-fix-2026-07-16.md | — | — | — | — |
 | HANDOVER-unlocked-subsystems-to-100pct-fungi-2026-07-15.md | — | — | — | FUNGI-GOV-3, FUNGI-HALLMARK-001, FUNGI-TIER-001 |
+| HANDOVER-unlocks-actioned-u7-live-i1-pinned-tier-s-named-2026-07-16.md | — | — | — | — |
 | HANDOVER-v1-finish-line-cutover-and-gap-map-2026-07-12.md | — | — | — | FUNGI-EFFECT-006, FUNGI-HALLMARK-001, FUNGI-TYPE-005 |
 | HANDOVER-value-unit-types-and-hallmark-open-types-2026-07-11.md | — | — | — | FUNGI-HALLMARK-001, FUNGI-TYPE-0, FUNGI-TYPE-003, FUNGI-TYPE-004, FUNGI-VALUESTATE-004 |
 | HANDOVER-zt-thesis-twin-round-and-registry-status-2026-07-15.md | — | — | — | — |
@@ -886,6 +902,7 @@ Generated: 2026-07-16
 | PROMPT-rnd-FYI-main-session-status-2026-07-10.md | — | — | — | — |
 | PROMPT-rnd-target-capability-provenance-2026-07-10.md | — | — | — | — |
 | PROMPT-syntax-update-beta-shippable-2026-07-08.md | — | — | prompt **UN-HELD** — ready to hand to the main session on owner GO. **R&D pauses after handover** until 100% | FUNGI-MATCH-001, FUNGI-MEMORY-001, FUNGI-SUBSTRATE-001 |
+| PROVENANCE.md | — | — | — | — |
 | PUBLICATION-CONTROL-do-not-publish-register.md | — | — | — | — |
 | quantum-readiness.md | — | — | — | FUNGI-CRYPTO-001 |
 | query-type-and-database-access.md | — | — | — | — |
@@ -911,6 +928,18 @@ Generated: 2026-07-16
 | RD-0397-tri-sweep-all-logic-and-syntax-for-the-minus-one-axes-and-the-lint-pack.md | — | — | — | FUNGI-GOV-3 |
 | RD-0398-the-call-ladder-resolving-flow-call-chains-like-loops.md | — | — | — | — |
 | RD-0399-tri-axis-sweep-tritmeshql-gate-ascii-and-tritmesh-db.md | — | — | — | — |
+| RD-0400-hotpath-for-tritmeshql-hot-lane-placement-under-the-triple-lock.md | — | — | — | — |
+| RD-0401-galerina-warmup-startup-measured-floors-and-the-warm-ladder.md | — | — | — | — |
+| RD-0402-async-priming-for-startup-parallel-across-independents-strict-ladder-within.md | — | — | — | — |
+| RD-0403-graph-directed-warmup-dominator-cut-laziness-import-set-ratchet-admission-dag.md | — | — | — | — |
+| RD-0404-async-in-the-runtime-proper-pools-suspension-durable-audit-live-trust-and-the-refused-list.md | — | — | — | — |
+| RD-0405-formal-verification-split-finite-exhaustive-first-z3-only-for-the-symbolic-residue.md | — | — | — | — |
+| RD-0406-tier-s-named-the-symbolic-residue-collapses-at-the-shipped-ceilings.md | — | — | — | — |
+| RD-0407-whole-system-tri-review-census-and-the-dev-tool.md | — | — | — | — |
+| RD-0408-the-gil-lesson-galerina-is-nogil-by-construction-and-the-one-guard-that-keeps-it-so.md | — | — | — | — |
+| RD-0409-tritmesh-flux-the-fast-second-database-and-the-assurance-profile-tricks-security-adjudicated.md | — | — | — | — |
+| RD-0410-one-ql-two-surfaces-governed-writes-for-the-fast-engine-security-adjudicated.md | — | — | — | — |
+| RD-0411-strengthening-tritmesh-db-the-high-assurance-engine-hardening-pass.md | — | — | — | — |
 | rd-adversarial-verification-findings-2026-06-16.md | — | — | — | — |
 | rd-crossover-encryption-rnd.md | — | — | Merge / unified entry point. **Date:** 2026-06-16. **Posture:** grounded, cited, | FUNGI-AMD-024, FUNGI-PARSE-001, FUNGI-SUBSTRATE-001 |
 | rd-diagnostics-namespace-rnd-response.md | — | — | R&D response (2026-06-16). **Subject:** `Galerina/docs/Knowledge-Bases/galerina-diagnostic-namespace-ownership.md` | FUNGI-META-001, FUNGI-PRIVACY-00, FUNGI-SECRET-005 |
@@ -1035,152 +1064,9 @@ Generated: 2026-07-16
 ## Orphaned Documents
 Docs with no inbound links from other KB docs:
 
-- `RD-0399-tri-axis-sweep-tritmeshql-gate-ascii-and-tritmesh-db.md` — RD-0399 — the tri-axis sweep applied outward: TritMeshQL · the `.gate` language · TritMesh-Database
+- `HANDOVER-round-2026-07-16-night-areas-dss-tlstp-cycle.md` — HANDOVER — round 2026-07-16 NIGHT: the 11-area drive, DSS.wasm + TLSTP builds, full cycle
 
 ## Stale Links
 Links pointing to missing files:
 
-- rebrand-report → LLN-AMD-024-tmf-confidentiality ("{"path":"docs/examples/Level-2-Types/058-patient-id-type/example.lln","code":"LLN-SYNTAX-008"},{"path":"docs/examples/Level-2-Types/059-nhs-number-type/example.lln","code":"LLN-SYNTAX-008"},{"path":"`
-
-### `bin\Galerina-R-AND-D\build-staging\limit-enforcement-teeth\overlay\src\lexer.ts` — 58 (LogicN, ext-lln, scope-logicn, LLN-diag, logicn)
-- L2: `// LogicN Phase 4 — Lexer`
-- L4: `// Tokenises LogicN .lln source text using the v1 keyword table.`
-- L7: `// Types declared locally mirror @logicn/core — structurally compatible.`
-
-### `bin\Galerina-R-AND-D\build-staging\vs008-verify\src\lexer.ts` — 58 (LogicN, ext-lln, scope-logicn, LLN-diag, logicn)
-- L2: `// LogicN Phase 4 — Lexer`
-- L4: `// Tokenises LogicN .lln source text using the v1 keyword table.`
-- L7: `// Types declared locally mirror @logicn/core — structurally compatible.`
-
-### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\import-resolver.test.mjs` — 56 (scope-logicn, LLN-diag, ext-lln)
-- L6: `//   2. Names from @logicn/* packages are correctly classified as type/value`
-- L7: `//   3. Symbol resolver accepts imported value names without LLN-NAME-001`
-- L8: `//   4. Type checker accepts imported type names without LLN-TYPE-001`
-
-### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\effect-checker\flags-and-mode.test.mjs` — 54 (LLN-diag, ext-lln)
-- L2: `// Effect Checker — EffectCheckerFlags, LLN-EFFECT-005, EffectCheckerMode (Phase 18E)`
-- L7: `//   - LLN-EFFECT-005 BroadAliasUsed fires for 'network', 'database', 'ai', etc.`
-- L8: `//   - LLN-EFFECT-004 still fires for completely unknown effect names`
-
-### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\self-hosted-effect-checker.test.mjs` — 54 (ext-lln, LLN-diag)
-- L2: `* Self-hosted effect checker (effect-checker.lln) — execution tests.`
-- L5: `* the .lln flows through the production interpreter and asserting their`
-- L7: `*   - LLN-EFFECT-001 (UNDECLARED_EFFECT)          — used effect not declared`
-
-### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\package-resolver.test.mjs` — 51 (scope-logicn, logicn, ext-lln)
-- L8: `//   4. @logicn/domain-types registry includes "Email" and "UserId"`
-- L9: `//   5. @logicn/enterprise-types registry includes expected types`
-- L10: `//   6. @logicn/compute-types registry includes expected types`
-
-### `bin\Galerina-R-AND-D\tri-encription\FINDINGS-AND-ROADMAP.md` — 51 (LogicN, LLN-diag, logicn, ext-lln)
-- L7: `> photonic-LogicN ecosystem. This is R&D scratch ('<local-path>'), not a`
-- L8: `> production repo and not the LogicN/TritMesh monorepos.`
-- L16: `The question driving this work: *given the LogicN governance lessons, what can encryption actually look like`
-
-### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\domain-ai.test.mjs` — 50 (ext-lln, LLN-diag, LogicN)
-- L14: `return parseProgram(source, "test.lln");`
-- L18: `const parsed = parseProgram(source, "test.lln");`
-- L24: `const parsed = parseProgram(source, "test.lln");`
-
-### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\type-checker-phase11-wave2.test.mjs` — 50 (ext-lln, LLN-diag)
-- L9: `const parsed = parseProgram(source, "test.lln");`
-- L21: `// ── Task 1: LLN-TYPE-005 — call argument type mismatch ───────────────────────`
-- L23: `describe("Type checker — LLN-TYPE-005 InvalidCallArgType", () => {`
-
-### `bin\Galerina-R-AND-D\FFSM\SESSION-HANDOFF.md` — 50 (logicn, LogicN, LLN-diag, ext-lln)
-- L7: `> 'packages-logicn/logicn-inference-bridge-contract/src/manifest.ts' (DeterminismMode +="tolerance",`
-- L9: `> fail-closed all-three-pins rule), and 'packages-logicn/logicn-ext-bridge-quantum/' exists with`
-- L18: `> and op-catalog depth docs remain valid Phase-2 references. This is LogicN task **#199**.`
-
-### `bin\Galerina-R-AND-D\ecosystem-positioning\ECOSYSTEM-LANGUAGE-POSITIONING-0051.md` — 48 (LogicN, logicn, LLN-diag)
-- L3: `> **Citation base:** the LogicN production repo ('<local-path>'), STRICTLY READ-ONLY in this lane.`
-- L5: `> '.mjs' bench cites resolve in this R&D repo ('<local-path>').`
-- L7: `> **⚠ logicn.mjs is being actively edited by the owner during this session** — its line cites are point-in-time`
-
-### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\lln-val-enforcement.test.mjs` — 47 (LLN-diag, ext-lln)
-- L2: `* LLN-VAL-001 / LLN-VAL-002 / LLN-VAL-003 — Value/Safety Governance Enforcement`
-- L4: `* Tests the live enforcement of the three LLN-VAL diagnostic rules:`
-- L6: `*   LLN-VAL-001  SafetyCriticalMissingAudit       — safety_critical needs audit.write`
-
-### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\value-state-egress-hardening.test.mjs` — 47 (LLN-diag, ext-lln)
-- L3: `* 2026-06-16 adversarial audit of LLN-SECRET-002 / LLN-PRIVACY-002. Each was empirically`
-- L20: `const chk = (src) => checkValueStates(parseProgram(src, "test.lln").ast);`
-- L25: `it("a secret assigned into a mut binding then egressed → LLN-SECRET-002", () => {`
-
-### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\wat-phase26.test.mjs` — 47 (ext-lln, LLN-diag)
-- L7: `//   26B. getPatient.lln governance: PHI effects, requiresAudit, allowedEffects`
-- L8: `//   26B. getPatient.lln: parses with 0 errors`
-- L9: `//   26B. getPatient.lln: governance verifier produces runtimeManifests`
-
-### `bin\Galerina-R-AND-D\photonic-tri-governance\tri-pipe-per-tier-packages-and-hardware-directive-spec.md` — 47 (LogicN, logicn, ext-lln, LLN-diag, scope-logicn)
-- L3: `> **Citation base.** 'file.ext:line' references in this spec resolve against the **LogicN language`
-- L4: `> repo** ('<local-path>'; search 'packages-logicn\*\src\'), **not** the '.lln'-only TritMesh`
-- L5: `> repo. '.mjs' proof cites resolve in the R&D repo ('<local-path>').`
-
-### `bin\Galerina-R-AND-D\testing-strategy\TESTING-STRATEGY-RND-0048.md` — 47 (LogicN, logicn, ext-lln, LLN-diag)
-- L4: `> **LogicN language repo** ('<local-path>'; search 'packages-logicn\*\src\' and '\tests\',`
-- L5: `> root 'logicn.mjs'), **not** the '.lln'-only TritMesh repo. Convention + verifier:`
-- L12: `> LogicN — the production tree is READ-ONLY; this note designs and ranks, it does not implement.`
-
-### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\binding-checker.test.mjs` — 46 (LLN-diag, ext-lln)
-- L4: `// Tests for LLN-BINDING-005: immutable binding reassignment enforcement.`
-- L7: `//   - let binding reassignment → LLN-BINDING-005`
-- L9: `//   - flow parameter reassignment → LLN-BINDING-005`
-
-### `bin\Galerina-R-AND-D\NOTES-CORPUS-COVERAGE-MAP-RAW.json` — 46 (LogicN, logicn, LLN-diag, ext-lln)
-- L18: `"clusters": "**Cluster A — DRCM / Deterministic Runtime Containment (DEFER — hub-churning).** Notes '01'-'09' modules, '08-review', '09-review-of-review', and the DRCM-derivative '45-invariant', '47-n`
-- L26: `"evidence": "0101-dss-wasm-tcb-design-spec.done.md (lines 1-100; entire specification grounded in DRCM decisions); build-staging/vs008-verify/src/governance-verifier.ts (capability vector implementati`
-- L47: `"evidence": "0015-mid-compute-capability-revocation.done.md (per-op revocation re-eval enforcing monotonic decay); 0083-closed-capabilities-photonic-tri.done.md (monotonic capability narrowing); 0110-`
-
-### `bin\Galerina-R-AND-D\tri-encription\PATCH-SPEC-guarded-flow-valuestate-paramtaint-2026-06-23.md` — 44 (LLN-diag, logicn, LogicN)
-- L1: `# PATCH SPEC — guarded-flow value-state param-taint fail-OPEN (LLN-VALUESTATE)`
-- L5: `- **Component:** 'logicn-core-compiler' → 'src/value-state-checker.ts'`
-- L6: `- **Status of this doc:** R&D-side **advisory + patch spec**. The production tree is treated **READ-ONLY** from R&D — nothing in '<local-path>' was modified. The hub applies `
-
-### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\governance-conformance.test.mjs` — 43 (ext-lln, LLN-diag)
-- L28: `const parsed = parseProgram(source, "test.lln");`
-- L55: `it("declared database.read only but body calls AuditLog.write emits LLN-EFFECT-001 or LLN-EFFECT-002", () => {`
-- L66: `const hasEffectError = hasDiag(diags, "LLN-EFFECT-001") || hasDiag(diags, "LLN-EFFECT-002");`
-
-### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\lln-hw-enforcement.test.mjs` — 43 (LLN-diag, ext-lln)
-- L2: `* LLN-HW-001 / LLN-HW-002 / LLN-HW-003 — Hardware Governance Enforcement`
-- L6: `*   LLN-HW-001  QuantumTargetRequiresFormalProof    — quantum target → FormalRequired`
-- L7: `*   LLN-HW-002  SealedTargetRequiresAuditTrace      — NPU/TPU/ANE without audit.write`
-
-### `bin\Galerina-R-AND-D\build-staging\limit-enforcement-teeth\overlay\src\self-hosted\type-checker.lln` — 42 (ext-lln, LogicN, LLN-diag)
-- L1: `/// @file: type-checker.lln`
-- L15: `// LogicN Self-Hosted Type Checker — Phase 47`
-- L20: `//   LLN-TYPE-001  UnknownType            — return/param type not a known type`
-
-### `bin\Galerina-R-AND-D\build-staging\vs008-verify\src\self-hosted\type-checker.lln` — 42 (ext-lln, LogicN, LLN-diag)
-- L1: `/// @file: type-checker.lln`
-- L15: `// LogicN Self-Hosted Type Checker — Phase 47`
-- L20: `//   LLN-TYPE-001  UnknownType            — return/param type not a known type`
-
-### `bin\Galerina-R-AND-D\FFSM\app-project\S1-product-use-cases.md` — 42 (LogicN, logicn, LLN-diag, ext-lln)
-- L4: `> LogicN quantum-bridge would be **as a product**, grounded in the SHIPPED Phase-1.5 governance`
-- L9: `> edits are **owner-gated**; this doc lives only under 'LogicN-R-AND-D/FFSM/app-project/'.`
-- L27: `('logicn-ext-bridge-quantum-design.md:40-49').`
-
-### `bin\Galerina-R-AND-D\build-staging\limit-enforcement-teeth\overlay\src\wat-emitter.ts` — 41 (LogicN, LLN-diag, ext-lln, logicn)
-- L2: `// LogicN Phase 19 / Phase 22 — WAT Emitter (WebAssembly Text Format)`
-- L60: `* All WASM SIMD instructions that the LogicN compiler may emit.`
-- L121: `/** The LogicN effect this import corresponds to. */`
-
-### `bin\Galerina-R-AND-D\build-staging\vs008-verify\src\wat-emitter.ts` — 41 (LogicN, LLN-diag, ext-lln, logicn)
-- L2: `// LogicN Phase 19 / Phase 22 — WAT Emitter (WebAssembly Text Format)`
-- L60: `* All WASM SIMD instructions that the LogicN compiler may emit.`
-- L121: `/** The LogicN effect this import corresponds to. */`
-
-### `bin\Galerina-R-AND-D\build-staging\vs008-verify\tests\security-boundary.test.mjs` — 41 (LogicN, ext-lln, LLN-diag)
-- L2: `* Security Boundary Tests — LogicN Phase 33`
-- L31: `function taintCodes(src)   { const p = parseProgram(src, "t.lln"); return checkTaint(p.ast, p.flows).map(d=>d.code); }`
-- L32: `function profileCodes(src, profiles) { const p = parseProgram(src, "t.lln"); return checkProfiles(p.ast, p.flows, profiles).map(d=>d.code); }`
-
-### `bin\Galerina-R-AND-D\tri-encription\lln\README.md` — 41 (LogicN, ext-lln, LLN-diag, logicn, LOGICN)
-- L1: `# 'tri-encription/lln' — the governance layer, cloned in real LogicN ('.lln')`
-- L3: `A working LogicN clone of the part of the bench that LogicN is *actually for*: the **K3`
-- L5: `['../research/LLN-AMD-024-tmf-confidentiality.md'")
-- rebrand-report → tmf-container-v0 ("'tmf-container-v0.md'")
-- rebrand-report → signature-custody-v0 ("'spec/signature-custody-v0.md'")
-- rebrand-report → rd-3d-spatial-photonics-tower-spatial-mesh-2026-06-25 ("'rd-3d-spatial-photonics-tower-spatial-mesh-2026-06-25.md'")
+_No stale links._
