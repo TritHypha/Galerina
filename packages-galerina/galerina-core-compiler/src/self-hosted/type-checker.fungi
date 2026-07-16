@@ -236,17 +236,87 @@ contract {
     diags = appendAll(diags, checkStmtList(flowName, stmt.body, scope))
   }
   if kind == "match" {
-    // FUNGI-TYPE-023 (MISSING_WILDCARD_ARM): a `match` must end with a wildcard `_ =>` (or `else =>`)
-    // catch-all arm. A non-exhaustive match is a governance hole — the WASM backend TRAPS the
-    // unmatched case (RD-0240) — so Stage-A's type checker emits TYPE-023 at compile time
-    // (fail-closed by construction, mirroring the governance-verifier's FUNGI-MATCH-001). Verified
-    // against `galerina check --strict-types` before landing (Tranche B, RD-0412 §4).
-    if stmt.hasWildcard == false {
-      let msg23: String = "match must end with a wildcard '_ =>' (or 'else =>') catch-all arm on flow '" + flowName + "' (FUNGI-TYPE-023)"
-      diags = diags.append({ code: "FUNGI-TYPE-023", message: msg23, flowName: flowName })
-    }
+    // FUNGI-TYPE-022/023: check the match arm SET for a mandatory wildcard + arm reachability.
+    diags = appendAll(diags, checkMatchArms(flowName, stmt.arms))
     // Each arm body is a child scope over the same visible `scope`; check nested statements too.
     diags = appendAll(diags, checkStmtList(flowName, stmt.body, scope))
+  }
+  return diags
+}
+
+// A match arm's pattern is a wildcard catch-all if it is `_` or `else` (both spellings).
+pure flow isWildcardPat(pattern: String) -> Bool
+contract {
+  intent { "True for a wildcard match arm pattern ('_' or 'else')." }
+}
+{
+  if pattern == "_" {
+    return true
+  }
+  if pattern == "else" {
+    return true
+  }
+  return false
+}
+
+// Check a match statement's arm SET, mirroring Stage-A `checkMatch` (type-checker.ts):
+//   FUNGI-TYPE-023 (MISSING_WILDCARD_ARM) — no arm is a wildcard (`_`/`else`); the mandatory
+//     catch-all is missing, so an unhandled/future case would escape the match (fail-closed).
+//   FUNGI-TYPE-022 (UNREACHABLE_PATTERN)  — an arm FOLLOWS the first wildcard; the wildcard already
+//     covers all remaining cases, so every later arm is dead.
+// FUNGI-TYPE-021 (NonExhaustiveMatch) is SUPERSEDED by the mandatory wildcard in Stage-A and has NO
+// emit site there — so the twin deliberately does NOT emit it (mirroring it would be a false
+// differential). Verified against `galerina check --strict-types` before landing (Tranche B, RD-0412 §4).
+pure flow checkMatchArms(flowName: String, arms: Array<Auto>) -> Array<Auto>
+contract {
+  intent { "FUNGI-TYPE-022/023 for a match arm set: a missing mandatory wildcard, or an unreachable arm after the first wildcard." }
+}
+{
+  mut diags: Array<Auto> = Array.empty()
+
+  // Locate the FIRST wildcard arm (if any) — its index bounds the reachable arms.
+  mut hasWildcard: Bool = false
+  mut wildcardIdx: Int = 0 - 1
+  mut i: Int = 0
+  while i < arms.count() {
+    let aOpt = arms.get(i)
+    match aOpt {
+      Some(a) => {
+        if isWildcardPat(a.pattern) {
+          if hasWildcard == false {
+            hasWildcard = true
+            wildcardIdx = i
+          }
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+
+  // FUNGI-TYPE-023: a match MUST carry a `_ =>` (or `else =>`) catch-all. With none, nothing can be
+  // unreachable, so this is the only diagnostic for this match — return early (mirrors Stage-A, where
+  // the 022 loop cannot fire without a wildcard present).
+  if hasWildcard == false {
+    let msg23: String = "match must end with a wildcard '_ =>' (or 'else =>') catch-all arm on flow '" + flowName + "' (FUNGI-TYPE-023)"
+    diags = diags.append({ code: "FUNGI-TYPE-023", message: msg23, flowName: flowName })
+    return diags
+  }
+
+  // FUNGI-TYPE-022: every arm AFTER the first wildcard is unreachable.
+  mut j: Int = wildcardIdx + 1
+  while j < arms.count() {
+    let bOpt = arms.get(j)
+    match bOpt {
+      Some(b) => {
+        let msg22: String = "pattern '" + b.pattern + "' is unreachable — the wildcard arm already covers all remaining cases (flow '" + flowName + "', FUNGI-TYPE-022)"
+        diags = diags.append({ code: "FUNGI-TYPE-022", message: msg22, flowName: flowName })
+      }
+      None => {}
+      _ => {}
+    }
+    j = j + 1
   }
   return diags
 }

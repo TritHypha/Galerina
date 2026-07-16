@@ -25,7 +25,6 @@ const program = parseProgram(readFileSync(TC_FUNGI, "utf8"), "type-checker.fungi
 // ── value-model builders (interpreter takes tagged values / Maps) ──
 const vStr = (s) => ({ __tag: "string", value: String(s) });
 const vInt = (n) => ({ __tag: "int", value: n });
-const vBool = (b) => ({ __tag: "bool", value: Boolean(b) });
 const vList = (items) => ({ __tag: "list", items });
 
 function vRecord(obj) {
@@ -187,7 +186,9 @@ const expr = (kind, value = "", litType = "", children = []) =>
     children: vList(children),
   });
 
-const stmt = ({ kind, name = "", typeName = "", expr: e = [], body = [], elseBody = [], hasWildcard = true }) =>
+// A match arm carries just its pattern text for exhaustiveness/reachability (`_`/`else` = wildcard).
+const arm = (pattern) => vRecord({ pattern: vStr(pattern) });
+const stmt = ({ kind, name = "", typeName = "", expr: e = [], body = [], elseBody = [], arms = [] }) =>
   vRecord({
     kind: vStr(kind),
     name: vStr(name),
@@ -195,9 +196,9 @@ const stmt = ({ kind, name = "", typeName = "", expr: e = [], body = [], elseBod
     expr: vList(e),
     body: vList(body),
     elseBody: vList(elseBody),
-    // Only read for `kind === "match"` (FUNGI-TYPE-023 exhaustiveness); default true so
-    // non-match statements never trip the wildcard check.
-    hasWildcard: vBool(hasWildcard),
+    // Only read for `kind === "match"` (FUNGI-TYPE-022/023). The arm SET (not a scalar flag) is the
+    // faithful mirror of Stage-A `checkMatch`, which derives has-wildcard + reachability from it.
+    arms: vList(arms),
   });
 
 const bodyFlow = ({ name, params = [], body = [] }) =>
@@ -279,32 +280,61 @@ describe("type-checker.fungi — checkFlowBodies (M-B body AST)", () => {
     assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-002"]);
   });
 
-  // FUNGI-TYPE-023 (MISSING_WILDCARD_ARM) — a `match` must end with a wildcard `_ =>` catch-all
-  // arm or it is a non-exhaustive (governance-hole) match. Verified against Stage-A
-  // `galerina check --strict-types`: a wildcard-less match emits FUNGI-TYPE-023 (alongside the
-  // governance-verifier's FUNGI-MATCH-001); adding `_ =>` clears it. (Tranche B, RD-0412 §4.)
+  // FUNGI-TYPE-022/023 (match arm set) — a `match` must end with a wildcard `_ =>` catch-all
+  // (023, MISSING_WILDCARD_ARM), and any arm AFTER a wildcard is unreachable (022,
+  // UNREACHABLE_PATTERN). Both verified against Stage-A `galerina check --strict-types`: a
+  // wildcard-less match emits 023; a `_` followed by an arm emits 022 on that arm; a wildcard-last
+  // match is silent. (FUNGI-TYPE-021 NonExhaustiveMatch is superseded by the mandatory wildcard in
+  // Stage-A and has no emit site, so the twin deliberately does not emit it.) (Tranche B, RD-0412 §4.)
   it("match with no wildcard arm → exactly FUNGI-TYPE-023", async () => {
     const { diags } = await checkBodies([
       bodyFlow({ name: "f", body: [
-        stmt({ kind: "match", name: "c", hasWildcard: false }),
+        stmt({ kind: "match", name: "c", arms: [arm("Red"), arm("Green"), arm("Blue")] }),
       ] }),
     ]);
     assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-023"]);
   });
 
-  it("match WITH a wildcard arm → no diagnostic (exhaustive)", async () => {
+  it("match with a trailing wildcard arm → no diagnostic (exhaustive, reachable)", async () => {
     const { diags } = await checkBodies([
       bodyFlow({ name: "f", body: [
-        stmt({ kind: "match", name: "c", hasWildcard: true }),
+        stmt({ kind: "match", name: "c", arms: [arm("Red"), arm("Green"), arm("_")] }),
       ] }),
     ]);
     assert.deepEqual(codesFor(diags, "f"), []);
   });
 
+  it("`else` counts as the wildcard → no diagnostic", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "match", name: "c", arms: [arm("Red"), arm("else")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), []);
+  });
+
+  it("arm after a wildcard → FUNGI-TYPE-022 (unreachable)", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "match", name: "c", arms: [arm("_"), arm("Red")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-022"]);
+  });
+
+  it("two arms after a wildcard → FUNGI-TYPE-022 twice (one per dead arm)", async () => {
+    const { diags } = await checkBodies([
+      bodyFlow({ name: "f", body: [
+        stmt({ kind: "match", name: "c", arms: [arm("Red"), arm("_"), arm("Green"), arm("Blue")] }),
+      ] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-022", "FUNGI-TYPE-022"]);
+  });
+
   it("mismatch nested inside a match arm body is caught (recursion)", async () => {
     const { diags } = await checkBodies([
       bodyFlow({ name: "f", body: [
-        stmt({ kind: "match", name: "c", hasWildcard: true, body: [
+        stmt({ kind: "match", name: "c", arms: [arm("Red"), arm("_")], body: [
           stmt({ kind: "let", name: "y", typeName: "Int", expr: [expr("lit", "t", "String")] }),
         ] }),
       ] }),
