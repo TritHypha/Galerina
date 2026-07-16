@@ -421,15 +421,12 @@ contract {
           }
         }
       }
-      // FUNGI-TYPE-019: a name initializer must reference an in-scope symbol (a param or a
-      // binding declared earlier). `scope` excludes this binding, so `let x = x` is unknown.
-      if rhs.kind == "name" {
-        let refName: String = rhs.value
-        if containsName(scope, refName) == false {
-          let msg19: String = "unknown symbol '" + refName + "' referenced in the initializer of binding '" + stmt.name + "' (FUNGI-TYPE-019)"
-          diags = diags.append({ code: "FUNGI-TYPE-019", message: msg19, flowName: flowName })
-        }
-      }
+      // NOTE: no FUNGI-TYPE-019 (UnknownSymbol) here. Verified 2026-07-16 against Stage-A
+      // `galerina check --strict-types`: an undeclared name in an initializer (or return / arith /
+      // call position) emits NOTHING — Galerina's checker does not resolve bare symbols, and 019 has
+      // no emit site in the compiler (registry emits=0, def-only). Emitting it was a FALSE
+      // DIFFERENTIAL (the twin flagging what Stage-A never does); removed. `scope` stays in the
+      // signature for the block-scope binding/shadow checks (checkStmtList), just not consulted here.
     }
     None => {}
     _ => {}
@@ -776,43 +773,12 @@ contract {
 
 // ── 4. trap Statements ────────────────────────────────────────
 //
-// A trap statement has shape:
-//   { kind: "trap", condition: Expr, errorCode: String }
-// Type rules:
-//   FUNGI-TYPE-027a — the condition expression must be Bool
-//   FUNGI-TYPE-027b — errorCode must be a non-empty identifier
-
-pure flow checkTrapDecl(decl: Array<Auto>, env: Array<Auto>) -> Array<Auto>
-contract {
-  intent { "FUNGI-TYPE-027: trap condition must be Bool and error code must be a non-empty identifier." }
-}
-{
-  mut diags: Array<Auto> = Array.empty()
-  mut i: Int = 0
-  while i < decl.count() {
-    let tOpt = decl.get(i)
-    match tOpt {
-      Some(t) => {
-        if t.kind == "trap" {
-          if t.errorCode == "" {
-            let msg: String = "trap statement missing error code identifier (FUNGI-TYPE-027)"
-            diags = diags.append({ code: "FUNGI-TYPE-027", message: msg, flowName: "trap" })
-          }
-          if t.condition.litType != "" {
-            if t.condition.litType != "Bool" {
-              let msg: String = "trap condition must be Bool, found '" + t.condition.litType + "' (FUNGI-TYPE-027)"
-              diags = diags.append({ code: "FUNGI-TYPE-027", message: msg, flowName: "trap" })
-            }
-          }
-        }
-      }
-      None => {}
-      _ => {}
-    }
-    i = i + 1
-  }
-  return diags
-}
+// NOTE: no trap well-formedness check here. Verified 2026-07-16 against Stage-A
+// `galerina check --strict-types`: a `trap` with a non-Bool condition (`trap x : CODE`, x: Int)
+// or a missing error code emits NOTHING — Stage-A does not validate trap well-formedness at
+// compile time (traps are a runtime fail-closed mechanism). FUNGI-TYPE-027 has NO emit site in the
+// compiler (registry emits=0, no def). The former `checkTrapDecl` (never wired into any check path)
+// emitted 027 — a FALSE DIFFERENTIAL — and was removed.
 
 // ── 5. step Expressions ───────────────────────────────────────
 //

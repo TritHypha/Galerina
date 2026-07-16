@@ -501,13 +501,17 @@ describe("type-checker.fungi — checkFlowBodies (M-B body AST)", () => {
     assert.deepEqual(codesFor(diags, "f"), []);
   });
 
-  it("a name initializer referencing an undeclared symbol → FUNGI-TYPE-019", async () => {
+  // Verified 2026-07-16 vs Stage-A `galerina check --strict-types`: an undeclared name in an
+  // initializer emits NOTHING — Galerina does not resolve bare symbols, and FUNGI-TYPE-019 has no
+  // emit site (registry emits=0). The twin previously emitted 019 here — a FALSE DIFFERENTIAL, now
+  // removed. The twin must stay silent to match Stage-A.
+  it("a name initializer referencing an undeclared symbol → no diagnostic (Stage-A does not resolve symbols)", async () => {
     const { diags } = await checkBodies([
       bodyFlow({ name: "f", body: [
         stmt({ kind: "let", name: "y", typeName: "Int", expr: [expr("name", "z")] }),
       ] }),
     ]);
-    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-TYPE-019"]);
+    assert.deepEqual(codesFor(diags, "f"), []);
   });
 
   it("a name initializer referencing an EARLIER binding is in scope (no FUNGI-TYPE-019)", async () => {
