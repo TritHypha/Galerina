@@ -4,8 +4,8 @@
     "packages": 94,
     "testBearing": 93,
     "tests": 7209,
-    "devTools": 84,
-    "auditTools": 47,
+    "devTools": 85,
+    "auditTools": 48,
     "toolsInCadence": 27,
     "proofs": 40
   },
@@ -547,7 +547,7 @@
       "tests": null,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 16,
+      "files": 17,
       "deps": []
     },
     {
@@ -1655,6 +1655,18 @@
       ]
     },
     {
+      "name": "audit-twin-emit-parity.mjs",
+      "category": "audit",
+      "purpose": "twin-emitted ⊆ Stage-A-emitted (fail-closed)",
+      "selfTest": true,
+      "inCadence": false,
+      "concerns": [
+        "gate-wiring",
+        "diagnostics",
+        "tier-floor"
+      ]
+    },
+    {
       "name": "audit-web-stub-guard.mjs",
       "category": "audit",
       "purpose": "RD-0100 web-* fail-closed contract enforcer.",
@@ -2207,6 +2219,7 @@
       "audit-sink-canonicality.mjs",
       "audit-syntax.mjs",
       "audit-tier-boundary.mjs",
+      "audit-twin-emit-parity.mjs",
       "fix-logicn-brand.mjs",
       "graph-all.mjs",
       "memory-graph.mjs",
@@ -2372,6 +2385,7 @@
       "audit-sink-canonicality.mjs",
       "audit-syntax-reference-links.mjs",
       "audit-syntax.mjs",
+      "audit-twin-emit-parity.mjs",
       "lint-conventions.mjs",
       "check-gate-injection.mjs",
       "hardening-show-derived.mjs"
@@ -2478,6 +2492,7 @@
       "audit-oblivious.mjs",
       "audit-perf-hotpath.mjs",
       "audit-tier-boundary.mjs",
+      "audit-twin-emit-parity.mjs",
       "lint-conventions.mjs",
       "license-rollout.mjs"
     ],
@@ -2621,6 +2636,7 @@
       "audit-syntax-reference-links.mjs",
       "audit-syntax.mjs",
       "audit-tier-boundary.mjs",
+      "audit-twin-emit-parity.mjs",
       "audit-web-stub-guard.mjs",
       "lint-fungi.mjs"
     ]

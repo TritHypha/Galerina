@@ -2,7 +2,7 @@
 Generated: 2026-07-16
 
 ## Stats
-- Docs: 1096 | Edges: 3462 | Orphans: 40 | Stale links: 0 | FUNGI codes: 748
+- Docs: 1113 | Edges: 3462 | Orphans: 57 | Stale links: 0 | FUNGI codes: 748
 
 ## Document Registry (auto-generated)
 
@@ -27,27 +27,37 @@ Generated: 2026-07-16
 | galerina-rd-0256-optional-serverless-2026-07-04.md | Layer 3 | — | DESIGN (AZT ~8/10 PURSUE · NIST ~3/7 HOLD-from-prod) · **Owner-gated** · **READ-ONLY R&D — prod untouched, no source written** | — |
 | _TEMPLATE.md | — | — | — | — |
 | 00-KB-INDEX.md | — | — | — | FUNGI-BACKEND-001, FUNGI-GATE-001, FUNGI-NET-001, FUNGI-STDLIB-001, FUNGI-SUPPLY-001 …+2 |
+| 2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md | — | — | — | — |
 | 2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd.md | — | — | — | FUNGI-EFFECT-002 |
 | 2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed.md | — | — | — | — |
 | 2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed.md | — | — | — | FUNGI-TYPE-011 |
 | 2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch.md | — | — | — | FUNGI-TYPE-001, FUNGI-TYPE-011 |
+| 2026-07-16-ACK-emit-parity-gate-caught-019-027-well-done.md | — | — | — | — |
+| 2026-07-16-ACK-emit-parity-idea-caught-2-false-differentials-019-027-fixed-plus-gate.md | — | — | — | FUNGI-TYPE-019, FUNGI-TYPE-027 |
 | 2026-07-16-ACK-kb-graph-code-region-masking.md | — | — | — | — |
 | 2026-07-16-ACK-match-arm-cluster-landed-022-023-live-021-dead.md | — | — | — | FUNGI-TYPE-021, FUNGI-TYPE-022, FUNGI-TYPE-023 |
 | 2026-07-16-ACK-match-arm-cluster-verified-source-and-execution.md | — | — | — | FUNGI-TYPE-021, FUNGI-TYPE-022, FUNGI-TYPE-023 |
 | 2026-07-16-ACK-p1-r1-valuestate004-reframed.md | — | — | — | — |
 | 2026-07-16-ACK-p1-r2-closed-gates-reverified.md | — | — | — | — |
 | 2026-07-16-ACK-p1-r2-guarded-paramtypes-populated.md | — | — | — | — |
+| 2026-07-16-ACK-passive-bar-data-derived-landed-plus-rd0427-queued.md | — | — | — | — |
 | 2026-07-16-ACK-rd0128-option-a-applied.md | — | — | — | — |
 | 2026-07-16-ACK-rd0128-stale-proof-confirm-option-a.md | — | — | — | — |
 | 2026-07-16-ACK-rhizo-ql-reusables-hallmark-shape-ok.md | — | — | — | — |
 | 2026-07-16-ACK-taxonomy-AUDIT-ZERO.md | — | — | — | FUNGI-BORDER-002, FUNGI-GRAPH-001 |
 | 2026-07-16-ACK-taxonomy-rebaseline-167.md | — | — | — | FUNGI-GOV-3 |
 | 2026-07-16-ACK2-rebaseline-167-confirmed-proceed.md | — | — | — | FUNGI-GOV-3 |
+| 2026-07-16-ANSWER-passive-lane-variance-median-rig-rides-63-and-allocation-probe-to-rd0358.md | — | — | — | — |
+| 2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering.md | — | — | — | — |
 | 2026-07-16-answers-to-night-round-rd-requests.md | — | — | — | — |
+| 2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea.md | — | — | — | FUNGI-TYPE-012 |
 | 2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked.md | — | — | — | — |
+| 2026-07-16-FYI-passive-lane-variance-root-cause-GC-dominated-plus-watcher.md | — | — | — | — |
 | 2026-07-16-FYI-push-policy-correction-main-is-commit-only.md | — | — | — | — |
 | 2026-07-16-FYI-rd0128-stale-testwitness-proof.md | — | — | — | — |
 | 2026-07-16-FYI-tranche-bc-grounded-not-a-loop-tick.md | — | — | — | — |
+| 2026-07-16-FYI-type012-dead-009-is-the-live-generics-code.md | — | — | — | FUNGI-TYPE-001, FUNGI-TYPE-008, FUNGI-TYPE-009, FUNGI-TYPE-012 |
+| 2026-07-16-HANDOVER-tech-transfer-confusable-safe-identity-ZT-checked.md | — | — | — | FUNGI-PARSE-001 |
 | 2026-07-16-kb-graph-code-region-masking-stale-links-zeroed.md | — | — | — | — |
 | 2026-07-16-PRIORITY-main-instructions.md | — | — | — | FUNGI-EFFECT-002, FUNGI-TYPE-006 |
 | 2026-07-16-rhizo-ql-and-galerina-reusables.md | — | — | — | — |
@@ -73,7 +83,7 @@ Generated: 2026-07-16
 | automated-runtime-trust-strategy.md | — | — | — | — |
 | benchmark-success-plan.md | — | — | — | — |
 | bit-width-and-base64-asset-policy.md | — | — | — | — |
-| BOARD.md | — | — | — | — |
+| BOARD.md | — | — | — | FUNGI-TYPE-012 |
 | boot-main-startup-defaults.md | — | — | — | — |
 | bootstrap-runtime-roadmap.md | — | — | — | — |
 | boundary-extension-concepts.md | — | — | — | — |
@@ -983,6 +993,13 @@ Generated: 2026-07-16
 | RD-0424-governed-ledger-data-model-accounting-deep-dive.md | — | — | — | — |
 | RD-0425-fixed-income-data-model-bonds-deep-dive-curves-conventions-sensitivities.md | — | — | — | — |
 | RD-0426-trading-and-auction-data-model-deep-dive-deterministic-books-allocation.md | — | — | — | — |
+| RD-0427-work-equivalence-structural-benchmark-integrity-gate.md | — | — | — | — |
+| RD-0428-derivatives-and-risk-data-model-deep-dive-sealed-kernels-reproducible-simulation-margin.md | — | — | — | — |
+| RD-0429-lending-and-credit-data-model-deep-dive-amortization-scorecards-expected-loss.md | — | — | — | — |
+| RD-0430-audit-and-assurance-data-model-deep-dive-evidence-lineage-continuous-audit.md | — | — | — | — |
+| RD-0431-graph-flowchart-vector-stream-representation-payments-and-financial-crime-deep-dive.md | — | — | — | — |
+| RD-0432-insurance-and-actuarial-data-model-deep-dive-reserves-triangles-treaties.md | — | — | — | — |
+| RD-0433-cross-script-symbol-comparison-latin-non-latin-homoglyph-confusable-safe-identity.md | — | — | — | — |
 | rd-adversarial-verification-findings-2026-06-16.md | — | — | — | — |
 | rd-crossover-encryption-rnd.md | — | — | Merge / unified entry point. **Date:** 2026-06-16. **Posture:** grounded, cited, | FUNGI-AMD-024, FUNGI-PARSE-001, FUNGI-SUBSTRATE-001 |
 | rd-diagnostics-namespace-rnd-response.md | — | — | R&D response (2026-06-16). **Subject:** `Galerina/docs/Knowledge-Bases/galerina-diagnostic-namespace-ownership.md` | FUNGI-META-001, FUNGI-PRIVACY-00, FUNGI-SECRET-005 |
@@ -1122,31 +1139,48 @@ Docs with no inbound links from other KB docs:
 - `RD-0424-governed-ledger-data-model-accounting-deep-dive.md` — RD-0424 — The governed ledger data model — accounting deep-dive (per-service queue #1)
 - `RD-0425-fixed-income-data-model-bonds-deep-dive-curves-conventions-sensitivities.md` — RD-0425 — The fixed-income data model — bonds deep-dive (per-service queue #2)
 - `RD-0426-trading-and-auction-data-model-deep-dive-deterministic-books-allocation.md` — RD-0426 — The trading & auction data model — deep-dive (per-service queue #3)
+- `RD-0427-work-equivalence-structural-benchmark-integrity-gate.md` — RD-0427 — Work-equivalence as a structural benchmark-integrity gate (+ the record-lowering follow-on)
+- `RD-0428-derivatives-and-risk-data-model-deep-dive-sealed-kernels-reproducible-simulation-margin.md` — RD-0428 — The derivatives & risk data model — deep-dive (per-service queue #4)
+- `RD-0429-lending-and-credit-data-model-deep-dive-amortization-scorecards-expected-loss.md` — RD-0429 — The lending & credit data model — deep-dive (per-service queue #5, owner-named)
+- `RD-0430-audit-and-assurance-data-model-deep-dive-evidence-lineage-continuous-audit.md` — RD-0430 — The audit & assurance data model — deep-dive (per-service queue #6, owner-named)
+- `RD-0431-graph-flowchart-vector-stream-representation-payments-and-financial-crime-deep-dive.md` — RD-0431 — Graph, flowchart, vector & stream data representation — payments & financial-crime deep-dive (per-service queue #7)
+- `RD-0432-insurance-and-actuarial-data-model-deep-dive-reserves-triangles-treaties.md` — RD-0432 — The insurance & actuarial data model — deep-dive (per-service queue #8, final)
+- `RD-0433-cross-script-symbol-comparison-latin-non-latin-homoglyph-confusable-safe-identity.md` — RD-0433 — Cross-script symbol comparison — safe identity across Latin & non-Latin, homoglyph/confusable-resistant
 - `2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd.md` — 2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd
 - `2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed.md` — 2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed
 - `2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed.md` — 2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed
+- `2026-07-16-ACK-emit-parity-gate-caught-019-027-well-done.md` — 2026-07-16-ACK-emit-parity-gate-caught-019-027-well-done
 - `2026-07-16-ACK-kb-graph-code-region-masking.md` — 2026-07-16-ACK-kb-graph-code-region-masking
 - `2026-07-16-ACK-match-arm-cluster-verified-source-and-execution.md` — 2026-07-16-ACK-match-arm-cluster-verified-source-and-execution
 - `2026-07-16-ACK-p1-r2-closed-gates-reverified.md` — 2026-07-16-ACK-p1-r2-closed-gates-reverified
 - `2026-07-16-ACK-rd0128-stale-proof-confirm-option-a.md` — 2026-07-16-ACK-rd0128-stale-proof-confirm-option-a
 - `2026-07-16-ACK2-rebaseline-167-confirmed-proceed.md` — 2026-07-16-ACK2-rebaseline-167-confirmed-proceed
+- `2026-07-16-ANSWER-passive-lane-variance-median-rig-rides-63-and-allocation-probe-to-rd0358.md` — 2026-07-16-ANSWER-passive-lane-variance-median-rig-rides-63-and-allocation-probe-to-rd0358
+- `2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering.md` — 2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering
+- `2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea.md` — 2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea
 - `2026-07-16-FYI-push-policy-correction-main-is-commit-only.md` — 2026-07-16-FYI-push-policy-correction-main-is-commit-only
+- `2026-07-16-HANDOVER-tech-transfer-confusable-safe-identity-ZT-checked.md` — 2026-07-16-HANDOVER-tech-transfer-confusable-safe-identity-ZT-checked
 - `2026-07-16-PRIORITY-main-instructions.md` — 2026-07-16-PRIORITY-main-instructions
 - `2026-07-16-UNLOCK-checker-taxonomy-20-adopt.md` — 2026-07-16-UNLOCK-checker-taxonomy-20-adopt
 - `2026-07-16-answers-to-night-round-rd-requests.md` — 2026-07-16-answers-to-night-round-rd-requests
 - `2026-07-16-rhizo-ql-and-galerina-reusables.md` — 2026-07-16-rhizo-ql-and-galerina-reusables
 - `2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion.md` — 2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion
+- `2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md` — 2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011
 - `2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch.md` — 2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch
+- `2026-07-16-ACK-emit-parity-idea-caught-2-false-differentials-019-027-fixed-plus-gate.md` — 2026-07-16-ACK-emit-parity-idea-caught-2-false-differentials-019-027-fixed-plus-gate
 - `2026-07-16-ACK-match-arm-cluster-landed-022-023-live-021-dead.md` — 2026-07-16-ACK-match-arm-cluster-landed-022-023-live-021-dead
 - `2026-07-16-ACK-p1-r1-valuestate004-reframed.md` — 2026-07-16-ACK-p1-r1-valuestate004-reframed
 - `2026-07-16-ACK-p1-r2-guarded-paramtypes-populated.md` — 2026-07-16-ACK-p1-r2-guarded-paramtypes-populated
+- `2026-07-16-ACK-passive-bar-data-derived-landed-plus-rd0427-queued.md` — 2026-07-16-ACK-passive-bar-data-derived-landed-plus-rd0427-queued
 - `2026-07-16-ACK-rd0128-option-a-applied.md` — 2026-07-16-ACK-rd0128-option-a-applied
 - `2026-07-16-ACK-rhizo-ql-reusables-hallmark-shape-ok.md` — 2026-07-16-ACK-rhizo-ql-reusables-hallmark-shape-ok
 - `2026-07-16-ACK-taxonomy-AUDIT-ZERO.md` — 2026-07-16-ACK-taxonomy-AUDIT-ZERO
 - `2026-07-16-ACK-taxonomy-rebaseline-167.md` — 2026-07-16-ACK-taxonomy-rebaseline-167
 - `2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked.md` — 2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked
+- `2026-07-16-FYI-passive-lane-variance-root-cause-GC-dominated-plus-watcher.md` — 2026-07-16-FYI-passive-lane-variance-root-cause-GC-dominated-plus-watcher
 - `2026-07-16-FYI-rd0128-stale-testwitness-proof.md` — 2026-07-16-FYI-rd0128-stale-testwitness-proof
 - `2026-07-16-FYI-tranche-bc-grounded-not-a-loop-tick.md` — 2026-07-16-FYI-tranche-bc-grounded-not-a-loop-tick
+- `2026-07-16-FYI-type012-dead-009-is-the-live-generics-code.md` — 2026-07-16-FYI-type012-dead-009-is-the-live-generics-code
 - `2026-07-16-kb-graph-code-region-masking-stale-links-zeroed.md` — 2026-07-16-kb-graph-code-region-masking-stale-links-zeroed
 
 ## Stale Links

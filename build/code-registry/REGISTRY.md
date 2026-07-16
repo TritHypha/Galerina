@@ -8,12 +8,12 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 
 | status | count | meaning |
 |---|---|---|
-| live | 128 | emitted with an exported constant |
-| inline | 162 | emitted, NO exported constant (R4 — Stage F) |
-| referenced | 97 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
+| live | 129 | emitted with an exported constant |
+| inline | 163 | emitted, NO exported constant (R4 — Stage F) |
+| referenced | 96 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 8 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
 | phantom | 111 | doc-only mention, not in source (drift — DOC-004) |
-| ref | 175 | referenced only (no def/emit) |
+| ref | 174 | referenced only (no def/emit) |
 
 ## RESERVED — defined but not emitted (std #1: tag wire-or-retire)
 
@@ -1289,7 +1289,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-TYPE-016 | live | TENSOR_SHAPE_MISMATCH / QUANTIZED_PRECISION_MISMATCH / INVALID_RUNTIME_TARGET_TYPE / UNKNOWN_SYMBOL | error/warning |
 | FUNGI-TYPE-017 | live | QUANTIZED_PRECISION_MISMATCH / INVALID_RUNTIME_TARGET_TYPE / UNKNOWN_SYMBOL | warning/error |
 | FUNGI-TYPE-018 | referenced | INVALID_RUNTIME_TARGET_TYPE / UNKNOWN_SYMBOL | error |
-| FUNGI-TYPE-019 | referenced | UNKNOWN_SYMBOL | error |
+| FUNGI-TYPE-019 | live | UNKNOWN_SYMBOL | error |
 | FUNGI-TYPE-020 | inline | SHADOWED_BINDING | warning |
 | FUNGI-TYPE-021 | ref | — | — |
 | FUNGI-TYPE-022 | inline | UNREACHABLE_PATTERN | — |
@@ -1297,7 +1297,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-TYPE-024 | inline | INT_LITERAL_I32_OVERFLOW | — |
 | FUNGI-TYPE-025 | inline | SILENT_NULL_DENIED | — |
 | FUNGI-TYPE-026 | inline | DEFERRED_TYPE_CHECK | warning |
-| FUNGI-TYPE-027 | ref | — | — |
+| FUNGI-TYPE-027 | inline | — | — |
 | FUNGI-TYPE-030 | live | TENSOR_ELEMENT_TYPE_MISMATCH | error |
 | FUNGI-TYPE-031 | referenced | TENSOR_DIMENSION_MISMATCH | error |
 

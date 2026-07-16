@@ -1,13 +1,279 @@
 {
- "stamp": "2026-07-16T17-27-27",
+ "stamp": "2026-07-16T19-09-27",
  "sinceLast": {
-  "baseline": true,
-  "note": "no prior snapshot — this run seeds the series baseline",
-  "rows": []
+  "baseline": false,
+  "fromStamp": "2026-07-16T17-27-27",
+  "rows": [
+   {
+    "key": "build-progress:AI Inference Tower (BitNet/Groq/NVFP4)",
+    "from": 30,
+    "to": 30,
+    "deltaPp": 0
+   },
+   {
+    "key": "build-progress:Application-framework layer",
+    "from": 72,
+    "to": 72,
+    "deltaPp": 0
+   },
+   {
+    "key": "build-progress:CBOR Manifests (RFC 8949)",
+    "from": 100,
+    "to": 100,
+    "deltaPp": 0
+   },
+   {
+    "key": "build-progress:DRCM Phases 1-7 (Stage-A simulation)",
+    "from": 100,
+    "to": 100,
+    "deltaPp": 0
+   },
+   {
+    "key": "build-progress:Lexer / Parser / Verifier / Contract / Value-state",
+    "from": 100,
+    "to": 100,
+    "deltaPp": 0
+   },
+   {
+    "key": "build-progress:Passive Execution Plans & Target Bridges",
+    "from": 35,
+    "to": 35,
+    "deltaPp": 0
+   },
+   {
+    "key": "build-progress:Photonic / Ternary Computing",
+    "from": 3,
+    "to": 3,
+    "deltaPp": 0
+   },
+   {
+    "key": "build-progress:Post-Quantum & Hardware Security",
+    "from": 40,
+    "to": 40,
+    "deltaPp": 0
+   },
+   {
+    "key": "build-progress:Runtime interpreter",
+    "from": 87,
+    "to": 87,
+    "deltaPp": 0
+   },
+   {
+    "key": "build-progress:Specification / KB",
+    "from": 100,
+    "to": 100,
+    "deltaPp": 0
+   },
+   {
+    "key": "build-progress:Stage-B self-hosting — interpreter parity",
+    "from": 100,
+    "to": 100,
+    "deltaPp": 0
+   },
+   {
+    "key": "build-progress:Tests — full suite",
+    "from": 100,
+    "to": 100,
+    "deltaPp": 0
+   },
+   {
+    "key": "build-progress:Type checker / Effect checker",
+    "from": 90,
+    "to": 90,
+    "deltaPp": 0
+   },
+   {
+    "key": "build-progress:WAT emitter",
+    "from": 89,
+    "to": 89,
+    "deltaPp": 0
+   },
+   {
+    "key": "topline:build-avg",
+    "from": 75,
+    "to": 75,
+    "deltaPp": 0
+   },
+   {
+    "key": "topline:ship-readiness",
+    "from": 97.9,
+    "to": 97.9,
+    "deltaPp": 0
+   },
+   {
+    "key": "topline:zt-avg",
+    "from": 78,
+    "to": 78,
+    "deltaPp": 0
+   },
+   {
+    "key": "zero-trust-thesis:Compiler",
+    "from": 100,
+    "to": 100,
+    "deltaPp": 0
+   },
+   {
+    "key": "zero-trust-thesis:I/O — OS kernel",
+    "from": 72,
+    "to": 72,
+    "deltaPp": 0
+   },
+   {
+    "key": "zero-trust-thesis:Memory",
+    "from": 62,
+    "to": 62,
+    "deltaPp": 0
+   },
+   {
+    "key": "zero-trust-thesis:Packages",
+    "from": 98,
+    "to": 98,
+    "deltaPp": 0
+   },
+   {
+    "key": "zero-trust-thesis:TLSTP — zero-middleware",
+    "from": 56,
+    "to": 56,
+    "deltaPp": 0
+   }
+  ]
  },
  "sinceDayStart": {
-  "baseline": true,
-  "note": "no prior snapshot — this run seeds the day baseline",
-  "rows": []
+  "baseline": false,
+  "fromStamp": "2026-07-16T17-27-27",
+  "rows": [
+   {
+    "key": "build-progress:AI Inference Tower (BitNet/Groq/NVFP4)",
+    "from": 30,
+    "to": 30,
+    "deltaPp": 0
+   },
+   {
+    "key": "build-progress:Application-framework layer",
+    "from": 72,
+    "to": 72,
+    "deltaPp": 0
+   },
+   {
+    "key": "build-progress:CBOR Manifests (RFC 8949)",
+    "from": 100,
+    "to": 100,
+    "deltaPp": 0
+   },
+   {
+    "key": "build-progress:DRCM Phases 1-7 (Stage-A simulation)",
+    "from": 100,
+    "to": 100,
+    "deltaPp": 0
+   },
+   {
+    "key": "build-progress:Lexer / Parser / Verifier / Contract / Value-state",
+    "from": 100,
+    "to": 100,
+    "deltaPp": 0
+   },
+   {
+    "key": "build-progress:Passive Execution Plans & Target Bridges",
+    "from": 35,
+    "to": 35,
+    "deltaPp": 0
+   },
+   {
+    "key": "build-progress:Photonic / Ternary Computing",
+    "from": 3,
+    "to": 3,
+    "deltaPp": 0
+   },
+   {
+    "key": "build-progress:Post-Quantum & Hardware Security",
+    "from": 40,
+    "to": 40,
+    "deltaPp": 0
+   },
+   {
+    "key": "build-progress:Runtime interpreter",
+    "from": 87,
+    "to": 87,
+    "deltaPp": 0
+   },
+   {
+    "key": "build-progress:Specification / KB",
+    "from": 100,
+    "to": 100,
+    "deltaPp": 0
+   },
+   {
+    "key": "build-progress:Stage-B self-hosting — interpreter parity",
+    "from": 100,
+    "to": 100,
+    "deltaPp": 0
+   },
+   {
+    "key": "build-progress:Tests — full suite",
+    "from": 100,
+    "to": 100,
+    "deltaPp": 0
+   },
+   {
+    "key": "build-progress:Type checker / Effect checker",
+    "from": 90,
+    "to": 90,
+    "deltaPp": 0
+   },
+   {
+    "key": "build-progress:WAT emitter",
+    "from": 89,
+    "to": 89,
+    "deltaPp": 0
+   },
+   {
+    "key": "topline:build-avg",
+    "from": 75,
+    "to": 75,
+    "deltaPp": 0
+   },
+   {
+    "key": "topline:ship-readiness",
+    "from": 97.9,
+    "to": 97.9,
+    "deltaPp": 0
+   },
+   {
+    "key": "topline:zt-avg",
+    "from": 78,
+    "to": 78,
+    "deltaPp": 0
+   },
+   {
+    "key": "zero-trust-thesis:Compiler",
+    "from": 100,
+    "to": 100,
+    "deltaPp": 0
+   },
+   {
+    "key": "zero-trust-thesis:I/O — OS kernel",
+    "from": 72,
+    "to": 72,
+    "deltaPp": 0
+   },
+   {
+    "key": "zero-trust-thesis:Memory",
+    "from": 62,
+    "to": 62,
+    "deltaPp": 0
+   },
+   {
+    "key": "zero-trust-thesis:Packages",
+    "from": 98,
+    "to": 98,
+    "deltaPp": 0
+   },
+   {
+    "key": "zero-trust-thesis:TLSTP — zero-middleware",
+    "from": 56,
+    "to": 56,
+    "deltaPp": 0
+   }
+  ]
  }
 }

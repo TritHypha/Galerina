@@ -288,6 +288,10 @@ flowchart LR
   T_audit_tier_boundary_mjs --> C_tier_floor
   T_audit_tier_boundary_mjs --> C_source_hygiene
   T_audit_tier_boundary_mjs --> C_graph_index
+  T_audit_twin_emit_parity_mjs["audit-twin-emit-parity.mjs"]
+  T_audit_twin_emit_parity_mjs --> C_gate_wiring
+  T_audit_twin_emit_parity_mjs --> C_diagnostics
+  T_audit_twin_emit_parity_mjs --> C_tier_floor
   T_audit_web_stub_guard_mjs["audit-web-stub-guard.mjs"]
   T_audit_web_stub_guard_mjs --> C_signing_fusion
   T_audit_web_stub_guard_mjs --> C_governance

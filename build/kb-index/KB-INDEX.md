@@ -1,4 +1,4 @@
-# Galerina KB index (1098 docs)
+# Galerina KB index (1115 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -159,9 +159,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 
 ## BOARD — R&D ⇄ main cross-session state (single-writer: R&D)
 `../ZTF-Knowledge-Bases/coordination/BOARD.md`
+- codes: FUNGI-TYPE-012
 - tasks: #20, #143, #75, #84, #65, #37, #81, #69, #72, #38, #39
-- links: [[to-main/2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd]] [[to-main/2026-07-16-ACK-rd0128-stale-proof-confirm-option-a]] [[to-main/2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed]] [[to-main/2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion]] [[to-main/2026-07-16-ACK-match-arm-cluster-verified-source-and-execution]] [[to-main/2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed]] [[HANDOVER-round-2026-07-16-night-areas-dss-tlstp-cycle]] [[id]]
-- terms: main, to-main, session, board, closed, tranche, verified, open, confirmed, applied, cluster, match, hallmark, messages
+- links: [[to-main/2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd]] [[to-main/2026-07-16-ACK-rd0128-stale-proof-confirm-option-a]] [[to-main/2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed]] [[to-main/2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion]] [[to-main/2026-07-16-ACK-match-arm-cluster-verified-source-and-execution]] [[to-main/2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed]] [[to-main/2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea]] [[to-main/2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering]] [[HANDOVER-round-2026-07-16-night-areas-dss-tlstp-cycle]] [[id]]
+- terms: main, to-main, session, board, closed, tranche, verified, cluster, benchmark, hallmark, open, confirmed, applied, match
 
 ## PROMPT — boot the main (Galerina build) session into the coordination loop
 `../ZTF-Knowledge-Bases/coordination/PROMPT-main-start-here.md`
@@ -186,6 +187,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed.md`
 - codes: FUNGI-TYPE-011
 - terms: array, verified, false, ack-collection-cluster-verified-and-divergence-catch-endorsed, emit-site, spot-check, differential, stage-a, element, both, cluster, latent-divergence, catch, method
+
+## 2026-07-16-ACK-emit-parity-gate-caught-019-027-well-done.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-emit-parity-gate-caught-019-027-well-done.md`
+- terms: twin, ack-emit-parity-gate-caught-019-027-well-done, gate, emit, registry, run, both, codes, stage-a, emits, right, phase-close, code, ack
 
 ## 2026-07-16-ACK-kb-graph-code-region-masking.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-kb-graph-code-region-masking.md`
@@ -213,14 +218,34 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-GOV-3VL-003, FUNGI-GOV-3VL-004
 - terms: commit, ack2-rebaseline-167-confirmed-proceed, harvest, ack, to-rnd, reconciliation, confirmed, proceed, against, delta, names, exactly, after, both
 
+## 2026-07-16-ANSWER-passive-lane-variance-median-rig-rides-63-and-allocation-probe-to-rd0358.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ANSWER-passive-lane-variance-median-rig-rides-63-and-allocation-probe-to-rd0358.md`
+- tasks: #63
+- terms: real, rig, fail-closed, floor, rd-0358, rate, answer-passive-lane-variance-median-rig-rides-63-and-allocation-probe-to-rd0358, mjs, window, cold, median-of-n, allocation, benchmark, sample
+
+## 2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering.md`
+- terms: benchmark, records, tag, answer-work-equivalence-structural-gate-and-record-lowering, real, wasm, lane, gate, structural, lanes, same, observable, shape-only, rd-0427
+
 ## 2026-07-16-answers-to-night-round-rd-requests.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-answers-to-night-round-rd-requests.md`
 - tasks: #75, #56, #143
 - terms: gate, rule, adoption, paramtypes, floor, audit, valuestate-004, taint, populate, emitgir, keep, vocabulary, rd-0404, adjudication
 
+## 2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea.md`
+- codes: FUNGI-TYPE-012
+- tasks: #20
+- terms: dead, class, live, code, confirmed, generalize-the-binding, right, structural, codes, fix, instance, twin-emit-parity, audit, independently
+
 ## 2026-07-16-FYI-push-policy-correction-main-is-commit-only.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-FYI-push-policy-correction-main-is-commit-only.md`
 - terms: owner, push, coordination, pushes, fyi-push-policy-correction-main-is-commit-only, main, commit-only, policy, corrected, readme, files, grant, commit, fyi
+
+## 2026-07-16-HANDOVER-tech-transfer-confusable-safe-identity-ZT-checked.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-HANDOVER-tech-transfer-confusable-safe-identity-ZT-checked.md`
+- codes: FUNGI-PARSE-001
+- terms: verdict, lexer, photonic, transfer, galerina, runnable, demonstrated, tri, candidates, supply-chain, availability, security-critical, finding, value-layer
 
 ## 2026-07-16-PRIORITY-main-instructions.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-PRIORITY-main-instructions.md`
@@ -245,11 +270,22 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - links: [[RD-0412-diagnostic-code-taxonomy-20-adjudicated-adopt-the-checker-burn-down-unblocked]] [[diag-code-taxonomy-proposal-2026-07-10]]
 - terms: commit, reconcile, burn-down, twin, fungi-type-006, ack, decision, four, caveats, answers, don, stall, them, fold
 
+## 2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md`
+- tasks: #20
+- terms: twin, stage-a, int, result, ack-009-generic-arity-cluster-landed-generalizes-011, generic, gate, arity, type, frontier, main, cluster, galerina, committed
+
 ## 2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-collection-element-011-landed-plus-latent-divergence-catch.md`
 - codes: FUNGI-TYPE-011, FUNGI-TYPE-001
 - tasks: #20
 - terms: array, element, type, int, known, string, differential, ack-collection-element-011-landed-plus-latent-divergence-catch, cluster, keep-green, type-001, verified, twin, false
+
+## 2026-07-16-ACK-emit-parity-idea-caught-2-false-differentials-019-027-fixed-plus-gate.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-emit-parity-idea-caught-2-false-differentials-019-027-fixed-plus-gate.md`
+- codes: FUNGI-TYPE-019, FUNGI-TYPE-027
+- tasks: #20
+- terms: twin, emits, code, registry, gate, stage-a, trap, ack-emit-parity-idea-caught-2-false-differentials-019-027-fixed-plus-gate, main, false, differentials, verified, dead, phase-close
 
 ## 2026-07-16-ACK-match-arm-cluster-landed-022-023-live-021-dead.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-match-arm-cluster-landed-022-023-live-021-dead.md`
@@ -266,6 +302,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-p1-r2-guarded-paramtypes-populated.md`
 - tasks: #128
 - terms: governed, flow, floor, ack-p1-r2-guarded-paramtypes-populated, paramtypes, blast, radius, guarded, populated, landed, flows, bare, node, value
+
+## 2026-07-16-ACK-passive-bar-data-derived-landed-plus-rd0427-queued.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-passive-bar-data-derived-landed-plus-rd0427-queued.md`
+- tasks: #63
+- terms: rd-0427, manifest, benchmark, ack-passive-bar-data-derived-landed-plus-rd0427-queued, noted, passive-lane, main, three, data-derived, bar, landed, queued, cluster-2, verify
 
 ## 2026-07-16-ACK-rd0128-option-a-applied.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-rd0128-option-a-applied.md`
@@ -292,6 +333,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-FYI-benchmark-work-equivalence-class-996-debunked.md`
 - terms: wasm, lane, run, record-allocation, lanes, shape-only, fyi-benchmark-work-equivalence-class-996-debunked, class, benchmark, work-equivalence, figure, diff, series, node
 
+## 2026-07-16-FYI-passive-lane-variance-root-cause-GC-dominated-plus-watcher.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-FYI-passive-lane-variance-root-cause-GC-dominated-plus-watcher.md`
+- tasks: #63
+- terms: real, tool, lead, measurement, lane, source, coldcalls, lean, interpreter, root, cause, measured, run, honest
+
 ## 2026-07-16-FYI-rd0128-stale-testwitness-proof.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-FYI-rd0128-stale-testwitness-proof.md`
 - tasks: #20
@@ -301,6 +347,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-FYI-tranche-bc-grounded-not-a-loop-tick.md`
 - tasks: #20, #56
 - terms: twin, stage-a, shape, pass, differential, fyi-tranche-bc-grounded-not-a-loop-tick, name, check, tranche, grounded, dedicated, stopper, sequencing, focused
+
+## 2026-07-16-FYI-type012-dead-009-is-the-live-generics-code.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-FYI-type012-dead-009-is-the-live-generics-code.md`
+- codes: FUNGI-TYPE-012, FUNGI-TYPE-001, FUNGI-TYPE-008, FUNGI-TYPE-009
+- terms: result, arity, int, array, dead, generics, next, type, unknown, twin, fyi-type012-dead-009-is-the-live-generics-code, live, code, grounded
 
 ## 2026-07-16-kb-graph-code-region-masking-stale-links-zeroed.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-kb-graph-code-region-masking-stale-links-zeroed.md`
@@ -4926,8 +4977,8 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 
 ## RD-0419 — The TritMesh family map: engines · QL · substrate · repos · open owner decisions
 `../ZTF-Knowledge-Bases/RD-0419-the-tritmesh-family-map-index-of-engines-ql-substrate-repos-and-open-decisions.md`
-- tasks: #69, #143, #20
-- terms: family, tritmesh, repos, owner, substrate, engines, open, decisions, rd-0409, layer, engine, shared, language, never
+- tasks: #69, #143
+- terms: family, tritmesh, owner, repos, substrate, decisions, engines, open, markets, service, map, rd-0409, layer, engine
 
 ## RD-0420 — TritMesh:Markets service catalogue — every service type the finance family caters for
 `../ZTF-Knowledge-Bases/RD-0420-tritmesh-markets-service-catalogue.md`
@@ -4956,6 +5007,36 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## RD-0426 — The trading & auction data model — deep-dive (per-service queue #3)
 `../ZTF-Knowledge-Bases/RD-0426-trading-and-auction-data-model-deep-dive-deterministic-books-allocation.md`
 - terms: auction, data, order, trading, queue, book, stream, replay, deterministic, allocation, evidence, never, deep-dive, fold
+
+## RD-0427 — Work-equivalence as a structural benchmark-integrity gate (+ the record-lowering follow-on)
+`../ZTF-Knowledge-Bases/RD-0427-work-equivalence-structural-benchmark-integrity-gate.md`
+- tasks: #20
+- terms: benchmark, gate, structural, lane, wasm, work-equivalence, follow-on, real, tag, yes, honest, capability, lowering, rd-0389
+
+## RD-0428 — The derivatives & risk data model — deep-dive (per-service queue #4)
+`../ZTF-Knowledge-Bases/RD-0428-derivatives-and-risk-data-model-deep-dive-sealed-kernels-reproducible-simulation-margin.md`
+- terms: model, risk, kernels, derivatives, margin, sealed, queue, never, pricing, rd-0424, data, greeks, governed, typed
+
+## RD-0429 — The lending & credit data model — deep-dive (per-service queue #5, owner-named)
+`../ZTF-Knowledge-Bases/RD-0429-lending-and-credit-data-model-deep-dive-amortization-scorecards-expected-loss.md`
+- terms: credit, lending, model, rd-0424, queue, ledger, interest, typed, amortization, schedule, loan, mathematics, expected, loss
+
+## RD-0430 — The audit & assurance data model — deep-dive (per-service queue #6, owner-named)
+`../ZTF-Knowledge-Bases/RD-0430-audit-and-assurance-data-model-deep-dive-evidence-lineage-continuous-audit.md`
+- terms: audit, evidence, model, assurance, queue, graph, data, family, auditor, lineage, sampling, queries, query, traversal
+
+## RD-0431 — Graph, flowchart, vector & stream data representation — payments & financial-crime deep-dive (per-service queue #7)
+`../ZTF-Knowledge-Bases/RD-0431-graph-flowchart-vector-stream-representation-payments-and-financial-crime-deep-dive.md`
+- terms: graph, flowchart, data, payments, streams, integer, representation, queue, state, vectors, tables, vector, number, family
+
+## RD-0432 — The insurance & actuarial data model — deep-dive (per-service queue #8, final)
+`../ZTF-Knowledge-Bases/RD-0432-insurance-and-actuarial-data-model-deep-dive-reserves-triangles-treaties.md`
+- terms: actuarial, insurance, per-service, queue, placement, typed, mortality, development, signed, rd-0424, model, registries, reserves, scenario
+
+## RD-0433 — Cross-script symbol comparison — safe identity across Latin & non-Latin, homoglyph/confusable-resistant
+`../ZTF-Knowledge-Bases/RD-0433-cross-script-symbol-comparison-latin-non-latin-homoglyph-confusable-safe-identity.md`
+- tasks: #15, #31, #39, #46
+- terms: comparison, non-latin, cross-script, symbol, gate, identity, key, three-valued, names, symbols, same, never, fail-closed, skeleton
 
 ## Galerina AI-Friendliness — R&D Spec (2026-06-23)
 `../ZTF-Knowledge-Bases/rd-absorbed/from-galerina-r-and-d/AI-FRIENDLINESS-SPEC-2026-06-23.md`
