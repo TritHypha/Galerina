@@ -382,3 +382,39 @@ describe("effect-checker.fungi — no duplicate diagnostics", () => {
     assert.deepEqual(codesFor(diags, "y"), ["FUNGI-EFFECT-001", "FUNGI-EFFECT-007"]);
   });
 });
+
+// FUNGI-EFFECT-008 (PRIVILEGED_EFFECT_ON_PLAIN_FLOW, warning) — a plain `flow` (kind "flow") declaring a
+// privileged effect (secret.read / payment.charge, Stage-A PLAIN_FLOW_PRIVILEGED_EFFECTS) under-declares
+// the security tier; the fix is `secure flow`. Verified vs Stage-A checkFlowEffects raw diagnostics:
+// plain+secret.read → 008; secure/pure/non-privileged declarer → no 008. Tests use secret.read (a KNOWN
+// effect); payment.charge is also privileged but is NOT yet in the twin's knownEffects() (a latent
+// FUNGI-EFFECT-004 gap flagged for the canonical-effects alignment). (RD-0412 §4, effect-checker twin.)
+describe("effect-checker.fungi — FUNGI-EFFECT-008 PRIVILEGED_EFFECT_ON_PLAIN_FLOW", () => {
+  it("plain flow declaring a used privileged effect (secret.read) → 008 alone", async () => {
+    const { diags } = await check([
+      flow({ name: "f", kind: "flow", effects: ["secret.read"], usedEffects: ["secret.read"] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-EFFECT-008"]);
+  });
+
+  it("a SECURE flow with the same privileged effect → clean (no 008)", async () => {
+    const { diags } = await check([
+      flow({ name: "f", kind: "secure", effects: ["secret.read"], usedEffects: ["secret.read"] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), []);
+  });
+
+  it("a plain flow with a NON-privileged effect (database.read) → no 008", async () => {
+    const { diags } = await check([
+      flow({ name: "f", kind: "flow", effects: ["database.read"], usedEffects: ["database.read"] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), []);
+  });
+
+  it("plain flow declaring an UNUSED privileged effect → 007 + 008 (co-emission)", async () => {
+    const { diags } = await check([
+      flow({ name: "f", kind: "flow", effects: ["secret.read"], usedEffects: [] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-EFFECT-007", "FUNGI-EFFECT-008"]);
+  });
+});

@@ -2,7 +2,7 @@
 Generated: 2026-07-16
 
 ## Stats
-- Docs: 1146 | Edges: 3462 | Orphans: 90 | Stale links: 0 | FUNGI codes: 748
+- Docs: 1148 | Edges: 3462 | Orphans: 92 | Stale links: 0 | FUNGI codes: 748
 
 ## Document Registry (auto-generated)
 
@@ -52,6 +52,8 @@ Generated: 2026-07-16
 | 2026-07-16-ACK-kb-graph-code-region-masking.md | — | — | — | — |
 | 2026-07-16-ACK-match-arm-cluster-landed-022-023-live-021-dead.md | — | — | — | FUNGI-TYPE-021, FUNGI-TYPE-022, FUNGI-TYPE-023 |
 | 2026-07-16-ACK-match-arm-cluster-verified-source-and-execution.md | — | — | — | FUNGI-TYPE-021, FUNGI-TYPE-022, FUNGI-TYPE-023 |
+| 2026-07-16-ACK-name-parity-leg-landed-green-baseline-severity-deferred.md | — | — | — | FUNGI-TYPE-024 |
+| 2026-07-16-ACK-name-parity-leg-VERIFIED-green-baseline-count-reconciled-severity-from-const-defs.md | — | — | — | — |
 | 2026-07-16-ACK-p1-r1-valuestate004-reframed.md | — | — | — | — |
 | 2026-07-16-ACK-p1-r2-closed-gates-reverified.md | — | — | — | — |
 | 2026-07-16-ACK-p1-r2-guarded-paramtypes-populated.md | — | — | — | — |
@@ -1200,6 +1202,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-ACK-honesty-correction-accepted-verified-plus-adjudication-of-the-11.md` — 2026-07-16-ACK-honesty-correction-accepted-verified-plus-adjudication-of-the-11
 - `2026-07-16-ACK-kb-graph-code-region-masking.md` — 2026-07-16-ACK-kb-graph-code-region-masking
 - `2026-07-16-ACK-match-arm-cluster-verified-source-and-execution.md` — 2026-07-16-ACK-match-arm-cluster-verified-source-and-execution
+- `2026-07-16-ACK-name-parity-leg-VERIFIED-green-baseline-count-reconciled-severity-from-const-defs.md` — 2026-07-16-ACK-name-parity-leg-VERIFIED-green-baseline-count-reconciled-severity-from-const-defs
 - `2026-07-16-ACK-p1-r2-closed-gates-reverified.md` — 2026-07-16-ACK-p1-r2-closed-gates-reverified
 - `2026-07-16-ACK-rd0128-stale-proof-confirm-option-a.md` — 2026-07-16-ACK-rd0128-stale-proof-confirm-option-a
 - `2026-07-16-ACK-tensor-cluster-verified-58-58-plus-absent-field-lesson-adopted.md` — 2026-07-16-ACK-tensor-cluster-verified-58-58-plus-absent-field-lesson-adopted
@@ -1228,6 +1231,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-ACK-effect-005-adjudication-plus-NAME-parity-leg-prerequisite-twins-emit-no-name.md` — 2026-07-16-ACK-effect-005-adjudication-plus-NAME-parity-leg-prerequisite-twins-emit-no-name
 - `2026-07-16-ACK-emit-parity-idea-caught-2-false-differentials-019-027-fixed-plus-gate.md` — 2026-07-16-ACK-emit-parity-idea-caught-2-false-differentials-019-027-fixed-plus-gate
 - `2026-07-16-ACK-match-arm-cluster-landed-022-023-live-021-dead.md` — 2026-07-16-ACK-match-arm-cluster-landed-022-023-live-021-dead
+- `2026-07-16-ACK-name-parity-leg-landed-green-baseline-severity-deferred.md` — 2026-07-16-ACK-name-parity-leg-landed-green-baseline-severity-deferred
 - `2026-07-16-ACK-p1-r1-valuestate004-reframed.md` — 2026-07-16-ACK-p1-r1-valuestate004-reframed
 - `2026-07-16-ACK-p1-r2-guarded-paramtypes-populated.md` — 2026-07-16-ACK-p1-r2-guarded-paramtypes-populated
 - `2026-07-16-ACK-passive-bar-data-derived-landed-plus-rd0427-queued.md` — 2026-07-16-ACK-passive-bar-data-derived-landed-plus-rd0427-queued

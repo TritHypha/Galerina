@@ -119,6 +119,17 @@ contract { intent { "Remove duplicate string elements, preserving first occurren
 
 // ── Per-flow effect checks ────────────────────────────────────
 
+// The privileged-effect set a PLAIN flow must not declare (Stage-A PLAIN_FLOW_PRIVILEGED_EFFECTS,
+// effect-checker.ts:818) — mirrored verbatim. A plain `flow` touching these under-declares the security
+// tier; the fix is `secure flow`. (FUNGI-EFFECT-008.)
+pure flow isPrivilegedEffect(effect: String) -> Bool
+contract { intent { "True for an effect only a secure/guarded flow should carry (secret.read, payment.charge)." } }
+{
+  if effect == "secret.read" { return true }
+  if effect == "payment.charge" { return true }
+  return false
+}
+
 pure flow checkPureFlowEffects(flowName: String, effectCount: Int) -> Array<Auto>
 contract {
   intent { "Pure flows must declare zero effects. Emit FUNGI-EFFECT-003 (EFFECT_BOUNDARY_VIOLATION) if any declared." }
@@ -207,6 +218,17 @@ contract {
               let omsg: String = kind + " flow '" + flowName + "' declares effect '" + de + "' but no matching operation was observed"
               diags = diags.append({ code: "FUNGI-EFFECT-007", message: omsg, flowName: flowName, severity: "warning" })
             }
+          }
+        }
+        // Check #6 — FUNGI-EFFECT-008 (PRIVILEGED_EFFECT_ON_PLAIN_FLOW, warning): a PLAIN flow (kind
+        // "flow", not pure/secure/guarded) declaring a privileged effect. Mirrors Stage-A checkFlowEffects
+        // (effect-checker.ts:741): the security tier is under-declared; the fix is `secure flow`. Fires
+        // on the DECLARED effect independent of usage/known-ness. Verified vs raw diagnostics:
+        // `flow f() effects { secret.read }` -> 008; secure/pure/non-privileged declarer -> no 008.
+        if kind == "flow" {
+          if isPrivilegedEffect(de) {
+            let msg8: String = "Plain flow '" + flowName + "' declares privileged effect '" + de + "'; use 'secure flow' for security-sensitive operations"
+            diags = diags.append({ code: "FUNGI-EFFECT-008", message: msg8, flowName: flowName, severity: "warning" })
           }
         }
       }

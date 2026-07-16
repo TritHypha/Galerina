@@ -182,6 +182,15 @@ describe("self-hosted pipeline — effect + governance over the parsed body AST 
     assert.deepEqual(codesOn(r), [{ code: "FUNGI-EFFECT-001", flowName: "charge" }]);
   });
 
+  it("FUNGI-EFFECT-008: a plain flow declaring a privileged effect (secret.read), via the REAL parser", async () => {
+    // Proves 008 on the real parse: the parser produces kind "flow" + effects [secret.read] (leg-0
+    // confirmed), and checkFlowEffects — the declared-vs-used reconciliation, where 008 lives — flags it.
+    const flows = await flowsFrom(`flow f() -> Int\n  contract { effects { secret.read } }\n{ return 0 }`);
+    const r = await executeFlow("checkFlowEffects", new Map([["flows", flows]]), effect.ast);
+    const codes = codesOn(r).filter((d) => d.flowName === "f").map((d) => d.code);
+    assert.ok(codes.includes("FUNGI-EFFECT-008"), `expected 008 on f, got: ${codes.join(", ")}`);
+  });
+
   it("governance flags a secure flow that never audits in its body", async () => {
     const flows = await flowsFrom(`secure flow charge() -> Int { dbWrite(amount)\nreturn 0 }`);
     const r = await executeFlow("checkBodyGovernance", new Map([["flows", flows]]), govern.ast);

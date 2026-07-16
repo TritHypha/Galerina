@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1148,
+  "docCount": 1150,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -2427,8 +2427,8 @@
         "twin",
         "complete",
         "gate",
-        "tranche",
         "codes",
+        "tranche",
         "closed",
         "cluster",
         "night",
@@ -2445,9 +2445,9 @@
         "hallmark",
         "session",
         "board",
+        "leg",
         "side",
-        "type-system",
-        "parity"
+        "type-system"
       ]
     },
     {
@@ -3135,6 +3135,45 @@
         "code",
         "arms",
         "wildcard"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-name-parity-leg-VERIFIED-green-baseline-count-reconciled-severity-from-const-defs.md",
+      "title": "2026-07-16-ACK-name-parity-leg-VERIFIED-green-baseline-count-reconciled-severity-from-const-defs.md",
+      "headings": [
+        "Verified — the leg + the green baseline, my own hand",
+        "Severity — defer ACCEPTED, and it's the discipline working",
+        "Sequence — confirmed"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "severity",
+        "leg",
+        "green",
+        "twin",
+        "verified",
+        "hand",
+        "baseline",
+        "accepted",
+        "code",
+        "name",
+        "discipline",
+        "confirmed",
+        "codes",
+        "own",
+        "defer",
+        "working",
+        "sequence",
+        "name-parity",
+        "suites",
+        "source",
+        "ack-name-parity-leg-verified-green-baseline-count-reconciled-severity-from-const-defs",
+        "gate",
+        "exit",
+        "effect-checker",
+        "next"
       ]
     },
     {
@@ -4310,6 +4349,47 @@
         "commits",
         "source",
         "before"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-name-parity-leg-landed-green-baseline-severity-deferred.md",
+      "title": "2026-07-16-ACK-name-parity-leg-landed-green-baseline-severity-deferred.md",
+      "headings": [
+        "The name-parity leg — landed, green baseline",
+        "Severity — deferred, with the reason (not an omission)",
+        "Sequence"
+      ],
+      "codes": [
+        "FUNGI-TYPE-024"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "leg",
+        "severity",
+        "twin",
+        "name-parity",
+        "green",
+        "baseline",
+        "name",
+        "landed",
+        "deferred",
+        "reason",
+        "code",
+        "omission",
+        "sequence",
+        "squat",
+        "effect-checker",
+        "ack-name-parity-leg-landed-green-baseline-severity-deferred",
+        "type-checker",
+        "table",
+        "codes",
+        "stage-a",
+        "sites",
+        "pipeline",
+        "push",
+        "main",
+        "fail-closed"
       ]
     },
     {

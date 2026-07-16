@@ -1,4 +1,4 @@
-# Galerina KB index (1148 docs)
+# Galerina KB index (1150 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -162,7 +162,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-TYPE-012
 - tasks: #20, #143, #75, #84, #65, #37, #81, #69, #72, #38, #39
 - links: [[to-main/2026-07-16-ACK-audit-zero-20-CLOSED-tranche-bc-no-rd]] [[to-main/2026-07-16-ACK-rd0128-stale-proof-confirm-option-a]] [[to-main/2026-07-16-ACK-both-applied-rd0128-and-valuestate004-closed]] [[to-main/2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion]] [[to-main/2026-07-16-ACK-match-arm-cluster-verified-source-and-execution]] [[to-main/2026-07-16-ACK-collection-cluster-verified-and-divergence-catch-endorsed]] [[to-main/2026-07-16-CONFIRM-012-dead-009-live-plus-twin-emit-parity-gate-idea]] [[to-main/2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed]] [[to-main/2026-07-16-ADJUDICATION-effect-005-unsquat-plus-name-parity-gate-plus-frontier-order]] [[to-main/2026-07-16-HANDOVER-tech-transfer-confusable-safe-identity-ZT-checked]] [[to-main/2026-07-16-ANSWER-work-equivalence-structural-gate-and-record-lowering]] [[HANDOVER-round-2026-07-16-night-areas-dss-tlstp-cycle]]
-- terms: main, twin, complete, gate, tranche, codes, closed, cluster, night, to-main, type-, false, d-verified, differential
+- terms: main, twin, complete, gate, codes, tranche, closed, cluster, night, to-main, type-, false, d-verified, differential
 
 ## PROMPT — boot the main (Galerina build) session into the coordination loop
 `../ZTF-Knowledge-Bases/coordination/PROMPT-main-start-here.md`
@@ -245,6 +245,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-match-arm-cluster-verified-source-and-execution.md`
 - codes: FUNGI-TYPE-021, FUNGI-TYPE-022, FUNGI-TYPE-023
 - terms: stage-a, source, differential, twin, confirmed, dead, green, linchpin, side, executed, hand, correction, onward, verification
+
+## 2026-07-16-ACK-name-parity-leg-VERIFIED-green-baseline-count-reconciled-severity-from-const-defs.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-name-parity-leg-VERIFIED-green-baseline-count-reconciled-severity-from-const-defs.md`
+- terms: severity, leg, green, twin, verified, hand, baseline, accepted, code, name, discipline, confirmed, codes, own
 
 ## 2026-07-16-ACK-p1-r2-closed-gates-reverified.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-16-ACK-p1-r2-closed-gates-reverified.md`
@@ -394,6 +398,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-TYPE-021, FUNGI-TYPE-023, FUNGI-TYPE-022
 - tasks: #20
 - terms: arm, stage-a, wildcard, twin, dead, first, verified, differential, set, ack-match-arm-cluster-landed-022-023-live-021-dead, cluster, live, keep-green, fungi-type-021
+
+## 2026-07-16-ACK-name-parity-leg-landed-green-baseline-severity-deferred.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-name-parity-leg-landed-green-baseline-severity-deferred.md`
+- codes: FUNGI-TYPE-024
+- terms: leg, severity, twin, name-parity, green, baseline, name, landed, deferred, reason, code, omission, sequence, squat
 
 ## 2026-07-16-ACK-p1-r1-valuestate004-reframed.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-p1-r1-valuestate004-reframed.md`
