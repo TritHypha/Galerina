@@ -1,0 +1,576 @@
+{
+  "note": "Tonight's full run vs the 2026-07-16 morning run and the earliest record (2026-06-16). Movers = |delta vs morning| >= 10% (same-day, same machine; read against the native-control noise band).",
+  "generatedBy": "session cycle 2026-07-16 night",
+  "movers": [
+    {
+      "benchmark": "binary-trees",
+      "runtime": "python",
+      "deltaVsMorning": 50.6,
+      "now": 4318323,
+      "was": 2868333
+    },
+    {
+      "benchmark": "gpu-compute",
+      "runtime": "python",
+      "deltaVsMorning": 39.2,
+      "now": 10369608,
+      "was": 7452042
+    },
+    {
+      "benchmark": "record-allocation",
+      "runtime": "rustAvx2",
+      "deltaVsMorning": -17.8,
+      "now": 952852841.41,
+      "was": 1158587450.18
+    },
+    {
+      "benchmark": "json-parse",
+      "runtime": "python",
+      "deltaVsMorning": -16.9,
+      "now": 507000,
+      "was": 610000
+    },
+    {
+      "benchmark": "tower-of-hanoi",
+      "runtime": "python",
+      "deltaVsMorning": -16.4,
+      "now": 3451364.9,
+      "was": 4130637.44
+    },
+    {
+      "benchmark": "low-memory",
+      "runtime": "python",
+      "deltaVsMorning": -16.3,
+      "now": 3614700,
+      "was": 4316600
+    },
+    {
+      "benchmark": "spectral-norm",
+      "runtime": "python",
+      "deltaVsMorning": -14.7,
+      "now": 2109881,
+      "was": 2473270
+    },
+    {
+      "benchmark": "json-parse",
+      "runtime": "galerinaGoverned",
+      "deltaVsMorning": 14.5,
+      "now": 6397,
+      "was": 5585
+    },
+    {
+      "benchmark": "compute-mix",
+      "runtime": "wasm",
+      "deltaVsMorning": 14.4,
+      "now": 81268500,
+      "was": 71062000
+    },
+    {
+      "benchmark": "mandelbrot",
+      "runtime": "nodejs",
+      "deltaVsMorning": 14.1,
+      "now": 7122785,
+      "was": 6243454
+    },
+    {
+      "benchmark": "compute-mix",
+      "runtime": "python",
+      "deltaVsMorning": 13.9,
+      "now": 922777.71,
+      "was": 810292.44
+    },
+    {
+      "benchmark": "tri-logic",
+      "runtime": "python",
+      "deltaVsMorning": -13.8,
+      "now": 8903740,
+      "was": 10331472
+    },
+    {
+      "benchmark": "collection-pipeline",
+      "runtime": "python",
+      "deltaVsMorning": 13.7,
+      "now": 17149900,
+      "was": 15082600
+    },
+    {
+      "benchmark": "json-parse",
+      "runtime": "nodejs",
+      "deltaVsMorning": 13.7,
+      "now": 3451000,
+      "was": 3034500
+    },
+    {
+      "benchmark": "binary-trees",
+      "runtime": "galerinaManifest",
+      "deltaVsMorning": 12.6,
+      "now": 419795,
+      "was": 372693
+    },
+    {
+      "benchmark": "data-query",
+      "runtime": "python",
+      "deltaVsMorning": -11.9,
+      "now": 3754244,
+      "was": 4262321
+    },
+    {
+      "benchmark": "spore-container",
+      "runtime": "nodejs",
+      "deltaVsMorning": 10.4,
+      "now": 49138,
+      "was": 44509
+    },
+    {
+      "benchmark": "record-allocation",
+      "runtime": "python",
+      "deltaVsMorning": 10.2,
+      "now": 5136832.36,
+      "was": 4661244.08
+    }
+  ],
+  "benchmarks": [
+    {
+      "benchmark": "compute-mix",
+      "tonight": {
+        "nodejs": 143087189.77,
+        "python": 922777.71,
+        "cpp": 139094000,
+        "rust": 139311688.66,
+        "rustAvx2": 135062909.2,
+        "wasm": 81268500,
+        "galerinaGoverned": 1632920,
+        "galerinaManifest": 1808318,
+        "galerinaPassive": 2270000
+      },
+      "morning": {
+        "nodejs": 136664880.53,
+        "python": 810292.44,
+        "cpp": 132838000,
+        "rust": 132132582.08,
+        "rustAvx2": 130606674.75,
+        "wasm": 71062000,
+        "galerinaGoverned": 1709402,
+        "galerinaManifest": 1824152,
+        "galerinaPassive": 2219500
+      },
+      "earliest": {
+        "nodejs": 134725664.53,
+        "python": 1048652.15,
+        "rust": 131648515,
+        "rustAvx2": 129566265.9
+      }
+    },
+    {
+      "benchmark": "arithmetic-threshold",
+      "tonight": {},
+      "morning": {},
+      "earliest": {}
+    },
+    {
+      "benchmark": "six-digit-guess",
+      "tonight": {},
+      "morning": {},
+      "earliest": {}
+    },
+    {
+      "benchmark": "record-allocation",
+      "tonight": {
+        "nodejs": 57416817.39,
+        "python": 5136832.36,
+        "rust": 1203253597.73,
+        "rustAvx2": 952852841.41,
+        "wasm": 577965400,
+        "galerinaGoverned": 2427184,
+        "galerinaManifest": 2747253,
+        "galerinaPassive": 8944000
+      },
+      "morning": {
+        "nodejs": 56848867.29,
+        "python": 4661244.08,
+        "rust": 1173268256.05,
+        "rustAvx2": 1158587450.18,
+        "wasm": 552148900,
+        "galerinaGoverned": 2409639,
+        "galerinaManifest": 2610966,
+        "galerinaPassive": 8360400
+      },
+      "earliest": {}
+    },
+    {
+      "benchmark": "fibonacci-recursive",
+      "tonight": {},
+      "morning": {},
+      "earliest": {}
+    },
+    {
+      "benchmark": "tower-of-hanoi",
+      "tonight": {
+        "nodejs": 130176856.59,
+        "python": 3451364.9,
+        "rust": 263715860.5,
+        "rustAvx2": 260169941.17,
+        "wasm": 128345710,
+        "galerinaGoverned": 103622,
+        "galerinaManifest": 109978,
+        "galerinaPassive": 110754
+      },
+      "morning": {
+        "nodejs": 129819706.41,
+        "python": 4130637.44,
+        "rust": 252288536.32,
+        "rustAvx2": 252808338.61,
+        "wasm": 121448807,
+        "galerinaGoverned": 103875,
+        "galerinaManifest": 107038,
+        "galerinaPassive": 104856
+      },
+      "earliest": {}
+    },
+    {
+      "benchmark": "collection-pipeline",
+      "tonight": {
+        "nodejs": 76239700,
+        "python": 17149900,
+        "rust": 4451689800,
+        "rustAvx2": 13898173600,
+        "wasm": 440770100,
+        "galerinaGoverned": 2267574,
+        "galerinaManifest": 2267574,
+        "galerinaPassive": 8808300
+      },
+      "morning": {
+        "nodejs": 70966200,
+        "python": 15082600,
+        "rust": 4317127600,
+        "rustAvx2": 13129700400,
+        "wasm": 420978100,
+        "galerinaGoverned": 2083333,
+        "galerinaManifest": 2127660,
+        "galerinaPassive": 8360500
+      },
+      "earliest": {}
+    },
+    {
+      "benchmark": "governance-cost",
+      "tonight": {},
+      "morning": {},
+      "earliest": {}
+    },
+    {
+      "benchmark": "hardware-targets",
+      "tonight": {},
+      "morning": {},
+      "earliest": {}
+    },
+    {
+      "benchmark": "low-memory",
+      "tonight": {
+        "nodejs": 724409900,
+        "python": 3614700,
+        "rust": 1419572200,
+        "rustAvx2": 6361420300,
+        "wasm": 497016100,
+        "galerinaGoverned": 146156,
+        "galerinaManifest": 123900,
+        "galerinaPassive": 180800
+      },
+      "morning": {
+        "nodejs": 722867200,
+        "python": 4316600,
+        "rust": 1359712500,
+        "rustAvx2": 6134916600,
+        "wasm": 468649600,
+        "galerinaGoverned": 141383,
+        "galerinaManifest": 130429,
+        "galerinaPassive": 168300
+      },
+      "earliest": {}
+    },
+    {
+      "benchmark": "gpu-compute",
+      "tonight": {
+        "nodejs": 1034865231,
+        "python": 10369608,
+        "rust": 1245472738,
+        "rustAvx2": 1244547544,
+        "wasm": 496543000,
+        "galerinaGoverned": 347996,
+        "galerinaManifest": 326328,
+        "galerinaPassive": 400000
+      },
+      "morning": {
+        "nodejs": 963898716,
+        "python": 7452042,
+        "rust": 1182392483,
+        "rustAvx2": 1182792489,
+        "wasm": 469961000,
+        "galerinaGoverned": 366838,
+        "galerinaManifest": 355215,
+        "galerinaPassive": 399000
+      },
+      "earliest": {
+        "nodejs": 975994822,
+        "python": 11239445,
+        "rust": 1176351209,
+        "denoWebGpu": 4165608
+      }
+    },
+    {
+      "benchmark": "matrix-multiply",
+      "tonight": {
+        "nodejs": 634535281,
+        "python": 10323231,
+        "rust": 1532097987,
+        "rustAvx2": 1497744015,
+        "wasm": 462017987,
+        "galerinaGoverned": 771012,
+        "galerinaManifest": 716397,
+        "galerinaPassive": 963707
+      },
+      "morning": {
+        "nodejs": 611660595,
+        "python": 10055844,
+        "rust": 1516256625,
+        "rustAvx2": 1431017882,
+        "wasm": 440998298,
+        "galerinaGoverned": 733886,
+        "galerinaManifest": 727047,
+        "galerinaPassive": 895549
+      },
+      "earliest": {}
+    },
+    {
+      "benchmark": "crypto-ops",
+      "tonight": {},
+      "morning": {},
+      "earliest": {}
+    },
+    {
+      "benchmark": "text-html",
+      "tonight": {},
+      "morning": {},
+      "earliest": {}
+    },
+    {
+      "benchmark": "tri-logic",
+      "tonight": {
+        "nodejs": 1016928814,
+        "python": 8903740,
+        "rust": 1445008747,
+        "rustAvx2": 1448200406,
+        "wasm": 494010000,
+        "galerinaGoverned": 362919,
+        "galerinaManifest": 365159,
+        "galerinaPassive": 363000
+      },
+      "morning": {
+        "nodejs": 992164546,
+        "python": 10331472,
+        "rust": 1386779507,
+        "rustAvx2": 1394352686,
+        "wasm": 468900000,
+        "galerinaGoverned": 345479,
+        "galerinaManifest": 359518,
+        "galerinaPassive": 363000
+      },
+      "earliest": {}
+    },
+    {
+      "benchmark": "data-query",
+      "tonight": {
+        "nodejs": 396246751,
+        "python": 3754244,
+        "galerinaGoverned": 216873,
+        "galerinaManifest": 252972,
+        "galerinaPassive": 284400
+      },
+      "morning": {
+        "nodejs": 392700175,
+        "python": 4262321,
+        "galerinaGoverned": 233536,
+        "galerinaManifest": 236351,
+        "galerinaPassive": 284900
+      },
+      "earliest": {}
+    },
+    {
+      "benchmark": "call-chain",
+      "tonight": {
+        "nodejs": 285575577.58,
+        "python": 1776346.28,
+        "wasm": 57631000,
+        "galerinaGoverned": 57656,
+        "galerinaManifest": 57120,
+        "galerinaPassive": 63000
+      },
+      "morning": {
+        "nodejs": 308541984.85,
+        "python": 1897313.95,
+        "wasm": 54796500,
+        "galerinaGoverned": 58756,
+        "galerinaManifest": 58058,
+        "galerinaPassive": 63500
+      },
+      "earliest": {}
+    },
+    {
+      "benchmark": "nbody",
+      "tonight": {
+        "nodejs": 125290112,
+        "python": 1469626,
+        "wasm": 30680351,
+        "galerinaGoverned": 63891,
+        "galerinaManifest": 65448,
+        "galerinaPassive": 69796
+      },
+      "morning": {
+        "nodejs": 123974697,
+        "python": 1457751,
+        "wasm": 28815524,
+        "galerinaGoverned": 66927,
+        "galerinaManifest": 67628,
+        "galerinaPassive": 69796
+      },
+      "earliest": {}
+    },
+    {
+      "benchmark": "json-parse",
+      "tonight": {
+        "nodejs": 3451000,
+        "python": 507000,
+        "galerinaGoverned": 6397,
+        "galerinaManifest": 5085,
+        "galerinaPassive": 10100
+      },
+      "morning": {
+        "nodejs": 3034500,
+        "python": 610000,
+        "galerinaGoverned": 5585,
+        "galerinaManifest": 5249,
+        "galerinaPassive": 9900
+      },
+      "earliest": {}
+    },
+    {
+      "benchmark": "mandelbrot",
+      "tonight": {
+        "nodejs": 7122785,
+        "python": 198375,
+        "rust": 24282575,
+        "rustAvx2": 23597478,
+        "wasm": 9574482,
+        "galerinaGoverned": 8084,
+        "galerinaManifest": 8685,
+        "galerinaPassive": 8192
+      },
+      "morning": {
+        "nodejs": 6243454,
+        "python": 194717,
+        "rust": 23402689,
+        "rustAvx2": 22943356,
+        "wasm": 9070346,
+        "galerinaGoverned": 7979,
+        "galerinaManifest": 8332,
+        "galerinaPassive": 8028
+      },
+      "earliest": {}
+    },
+    {
+      "benchmark": "spectral-norm",
+      "tonight": {
+        "nodejs": 244753105,
+        "python": 2109881,
+        "rust": 379184299,
+        "rustAvx2": 370223652
+      },
+      "morning": {
+        "nodejs": 240640296,
+        "python": 2473270,
+        "rust": 372569913,
+        "rustAvx2": 365706930
+      },
+      "earliest": {}
+    },
+    {
+      "benchmark": "binary-trees",
+      "tonight": {
+        "nodejs": 80377470,
+        "python": 4318323,
+        "rust": 20469805,
+        "rustAvx2": 19466392,
+        "wasm": 617702326,
+        "galerinaGoverned": 396573,
+        "galerinaManifest": 419795,
+        "galerinaPassive": 452394
+      },
+      "morning": {
+        "nodejs": 77947100,
+        "python": 2868333,
+        "rust": 20346868,
+        "rustAvx2": 18009173,
+        "wasm": 587425903,
+        "galerinaGoverned": 366045,
+        "galerinaManifest": 372693,
+        "galerinaPassive": 417072
+      },
+      "earliest": {}
+    },
+    {
+      "benchmark": "spore-container",
+      "tonight": {
+        "nodejs": 49138,
+        "python": 80984,
+        "rust": 151300,
+        "rustAvx2": 169338
+      },
+      "morning": {
+        "nodejs": 44509,
+        "python": 76108,
+        "rust": 149910,
+        "rustAvx2": 167856
+      },
+      "earliest": {}
+    },
+    {
+      "benchmark": "framework-pipeline",
+      "tonight": {
+        "python": 143499
+      },
+      "morning": {
+        "python": 138076
+      },
+      "earliest": {}
+    },
+    {
+      "benchmark": "http-throughput",
+      "tonight": {},
+      "morning": {},
+      "earliest": {}
+    },
+    {
+      "benchmark": "naming-check",
+      "tonight": {},
+      "morning": {},
+      "earliest": {}
+    },
+    {
+      "benchmark": "context-receipt",
+      "tonight": {},
+      "morning": {},
+      "earliest": {}
+    },
+    {
+      "benchmark": "intelligence-search",
+      "tonight": {},
+      "morning": {},
+      "earliest": {}
+    },
+    {
+      "benchmark": "provenance-trace",
+      "tonight": {},
+      "morning": {},
+      "earliest": {}
+    }
+  ]
+}
