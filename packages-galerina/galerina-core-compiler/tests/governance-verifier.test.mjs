@@ -814,10 +814,11 @@ contract { intent { "Low risk." }  effects { audit.write }  ${extra} }
     assert.ok(!hasDiag(r, "FUNGI-GOV-017"), `unexpected: ${r.diagnostics.map(d=>d.code).join(",")}`);
   });
 
-  it("cyber_physical_hardening on low-risk flow (no high economics) → FUNGI-GOV-017 warning", () => {
+  it("cyber_physical_hardening on low-risk flow (no high economics) → FUNGI-GOV-023 warning (#20 split from GOV-017)", () => {
     const r = parseAndVerify(mkLow("cyber_physical_hardening { enclosure_shielding active_mesh  on_tamper_signal zeroize }"), "production");
-    assert.ok(hasDiag(r, "FUNGI-GOV-017"), `expected GOV-017, got: ${r.diagnostics.map(d=>d.code).join(",")}`);
-    assert.equal(r.diagnostics.find(d=>d.code==="FUNGI-GOV-017")?.severity, "warning");
+    assert.ok(hasDiag(r, "FUNGI-GOV-023"), `expected GOV-023, got: ${r.diagnostics.map(d=>d.code).join(",")}`);
+    assert.equal(r.diagnostics.find(d=>d.code==="FUNGI-GOV-023")?.severity, "warning");
+    assert.ok(!hasDiag(r, "FUNGI-GOV-017"), "the advisory arm must no longer ride the invalid-value code");
   });
 
   it("invalid enclosure_shielding value → FUNGI-GOV-017 error", () => {
@@ -1226,7 +1227,7 @@ pure flow add(a: Int, b: Int) -> Int { return a + b }
 
 // ── Domain Guard Policies — task #56 ─────────────────────────────────────────
 
-describe("Governance Verifier — Domain Guard Policies (FUNGI-GOV-004)", () => {
+describe("Governance Verifier — Domain Guard Policies (FUNGI-GOV-022)", () => {
   const GUARD_POLICY = `
 policy InvoicingDomainGuard {
   permitted_effects {
@@ -1239,7 +1240,7 @@ policy InvoicingDomainGuard {
 }
 `;
 
-  it("compliant contract passes cleanly — no FUNGI-GOV-004", () => {
+  it("compliant contract passes cleanly — no FUNGI-GOV-022", () => {
     const result = parseAndVerify(GUARD_POLICY + `
 secure flow processInvoice(id: String) -> Result<String, String>
 contract [conforms_to: InvoicingDomainGuard] {
@@ -1249,10 +1250,10 @@ contract [conforms_to: InvoicingDomainGuard] {
 }
 { return Ok(id) }
 `);
-    assert.ok(!hasDiag(result, "FUNGI-GOV-004"), `Expected no FUNGI-GOV-004 but got: ${result.diagnostics.filter(d=>d.code==="FUNGI-GOV-004").map(d=>d.message).join("; ")}`);
+    assert.ok(!hasDiag(result, "FUNGI-GOV-022"), `Expected no FUNGI-GOV-022 but got: ${result.diagnostics.filter(d=>d.code==="FUNGI-GOV-022").map(d=>d.message).join("; ")}`);
   });
 
-  it("forbidden effect triggers FUNGI-GOV-004", () => {
+  it("forbidden effect triggers FUNGI-GOV-022", () => {
     const result = parseAndVerify(GUARD_POLICY + `
 secure flow badInvoice(id: String) -> Result<String, String>
 contract [conforms_to: InvoicingDomainGuard] {
@@ -1262,12 +1263,12 @@ contract [conforms_to: InvoicingDomainGuard] {
 }
 { return Ok(id) }
 `);
-    assert.ok(hasDiag(result, "FUNGI-GOV-004"), "Expected FUNGI-GOV-004 for filesystem.wipe_all");
-    const diag = result.diagnostics.find(d => d.code === "FUNGI-GOV-004");
+    assert.ok(hasDiag(result, "FUNGI-GOV-022"), "Expected FUNGI-GOV-022 for filesystem.wipe_all");
+    const diag = result.diagnostics.find(d => d.code === "FUNGI-GOV-022");
     assert.ok(diag?.message.includes("filesystem.wipe_all"), `Expected message to mention 'filesystem.wipe_all': ${diag?.message}`);
   });
 
-  it("multiple forbidden effects each trigger FUNGI-GOV-004", () => {
+  it("multiple forbidden effects each trigger FUNGI-GOV-022", () => {
     const result = parseAndVerify(GUARD_POLICY + `
 secure flow multiViolation(id: String) -> Result<String, String>
 contract [conforms_to: InvoicingDomainGuard] {
@@ -1276,8 +1277,8 @@ contract [conforms_to: InvoicingDomainGuard] {
 }
 { return Ok(id) }
 `);
-    const violations = result.diagnostics.filter(d => d.code === "FUNGI-GOV-004");
-    assert.ok(violations.length >= 2, `Expected >=2 FUNGI-GOV-004 violations, got ${violations.length}`);
+    const violations = result.diagnostics.filter(d => d.code === "FUNGI-GOV-022");
+    assert.ok(violations.length >= 2, `Expected >=2 FUNGI-GOV-022 violations, got ${violations.length}`);
   });
 
   it("contract without conforms_to is not checked against any policy", () => {
@@ -1289,8 +1290,8 @@ contract {
 }
 { return Ok(id) }
 `);
-    // Without [conforms_to: ...], no domain guard check runs — no FUNGI-GOV-004
-    assert.ok(!hasDiag(result, "FUNGI-GOV-004"), "Expected no FUNGI-GOV-004 for unbound contract");
+    // Without [conforms_to: ...], no domain guard check runs — no FUNGI-GOV-022
+    assert.ok(!hasDiag(result, "FUNGI-GOV-022"), "Expected no FUNGI-GOV-022 for unbound contract");
   });
 
   it("conforms_to with missing policy emits a warning, not a hard error", () => {
@@ -1302,8 +1303,8 @@ contract [conforms_to: NonExistentPolicy] {
 }
 { return Ok(id) }
 `);
-    const diag = result.diagnostics.find(d => d.code === "FUNGI-GOV-004");
-    assert.ok(diag !== undefined, "Expected FUNGI-GOV-004 for missing policy reference");
+    const diag = result.diagnostics.find(d => d.code === "FUNGI-GOV-021");
+    assert.ok(diag !== undefined, "Expected FUNGI-GOV-021 for missing policy reference");
     assert.equal(diag?.severity, "warning", "Missing policy should be a warning, not an error");
   });
 

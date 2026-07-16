@@ -287,17 +287,20 @@ export {
 } from "./value-state-checker.js";
 
 // ---------------------------------------------------------------------------
-// Gate diagnostics — FUNGI-GATE-001
+// Gate diagnostics — FUNGI-GATE-003 (RESERVED)
 //
-// Reserved for Phase 19 @gate annotation enforcement.
+// #20 taxonomy split (RD-0412): FUNGI-GATE-001 belongs to the LIVE gate(condition)
+// check (GATE_UNKNOWN_CONDITION, governance-verifier.ts). This constant — the
+// Phase-19 @gate annotation enforcement, never emitted yet — was squatting on the
+// same code with an unrelated fault. It now holds its own RESERVED code.
 // When a flow is annotated @gate, callers must use error propagation (?)
 // and the result must transition the binding from unsafe to safe.
 // ---------------------------------------------------------------------------
 
-/** FUNGI-GATE-001: @gate-annotated flow called without required error propagation or state transition. */
-export const FUNGI_GATE_001 = {
-  code: "FUNGI-GATE-001",
-  name: "GateAnnotationRequired",
+/** FUNGI-GATE-003 (RESERVED, Phase 19): @gate-annotated flow called without required error propagation or state transition. */
+export const FUNGI_GATE_003 = {
+  code: "FUNGI-GATE-003",
+  name: "GATE_ANNOTATION_REQUIRED",
   severity: "error" as const,
   message: "This flow is annotated @gate. Callers must use error propagation (?) and assign the result to a 'safe mut' binding.",
   why: "@gate flows are the only way to transition data from unsafe to safe. Without the ? operator, errors are silently ignored and the transition is not proven.",

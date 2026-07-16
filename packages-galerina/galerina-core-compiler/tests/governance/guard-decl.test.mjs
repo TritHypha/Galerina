@@ -199,11 +199,11 @@ guard ChildGuard {
 });
 
 // ---------------------------------------------------------------------------
-// contract [conforms_to: GuardName] — FUNGI-GOV-004
+// contract [conforms_to: GuardName] — FUNGI-GOV-022
 // ---------------------------------------------------------------------------
 
-describe("contract [conforms_to: GuardName]: effect subset validation (FUNGI-GOV-004)", () => {
-  it("[conforms_to: GuardName] with effects within ceiling — 0 FUNGI-GOV-004", () => {
+describe("contract [conforms_to: GuardName]: effect subset validation (FUNGI-GOV-022)", () => {
+  it("[conforms_to: GuardName] with effects within ceiling — 0 FUNGI-GOV-022", () => {
     const source = `
 guard PaymentGuard {
   permitted_effects {
@@ -220,15 +220,15 @@ contract [conforms_to: PaymentGuard] {
 { return Ok(id) }
 `;
     const result = parseAndVerify(source);
-    const gov004 = result.diagnostics.filter((d) => d.code === "FUNGI-GOV-004");
+    const gov004 = result.diagnostics.filter((d) => d.code === "FUNGI-GOV-022");
     assert.equal(
       gov004.length,
       0,
-      `Expected 0 FUNGI-GOV-004 errors when effects subset of guard, got: ${gov004.map((e) => e.message).join("; ")}`,
+      `Expected 0 FUNGI-GOV-022 errors when effects subset of guard, got: ${gov004.map((e) => e.message).join("; ")}`,
     );
   });
 
-  it("[conforms_to: GuardName] with forbidden effect emits FUNGI-GOV-004", () => {
+  it("[conforms_to: GuardName] with forbidden effect emits FUNGI-GOV-022", () => {
     const source = `
 guard RestrictedGuard {
   permitted_effects {
@@ -245,17 +245,17 @@ contract [conforms_to: RestrictedGuard] {
 `;
     const result = parseAndVerify(source);
     assert.ok(
-      hasDiag(result, "FUNGI-GOV-004"),
-      `Expected FUNGI-GOV-004 for network.outbound outside guard ceiling, got: ${result.diagnostics.map((d) => d.code).join(", ")}`,
+      hasDiag(result, "FUNGI-GOV-022"),
+      `Expected FUNGI-GOV-022 for network.outbound outside guard ceiling, got: ${result.diagnostics.map((d) => d.code).join(", ")}`,
     );
-    const diag = result.diagnostics.find((d) => d.code === "FUNGI-GOV-004");
+    const diag = result.diagnostics.find((d) => d.code === "FUNGI-GOV-022");
     assert.ok(
       diag?.message.includes("network.outbound"),
-      `FUNGI-GOV-004 message must mention the violating effect, got: ${diag?.message}`,
+      `FUNGI-GOV-022 message must mention the violating effect, got: ${diag?.message}`,
     );
   });
 
-  it("contract without conforms_to is not checked — no FUNGI-GOV-004 for any effect", () => {
+  it("contract without conforms_to is not checked — no FUNGI-GOV-022 for any effect", () => {
     const source = `
 guard TightGuard {
   permitted_effects {
@@ -271,11 +271,11 @@ contract {
 { return Ok(id) }
 `;
     const result = parseAndVerify(source);
-    const gov004 = result.diagnostics.filter((d) => d.code === "FUNGI-GOV-004");
+    const gov004 = result.diagnostics.filter((d) => d.code === "FUNGI-GOV-022");
     assert.equal(
       gov004.length,
       0,
-      `Expected no FUNGI-GOV-004 for unbound contract (no conforms_to), got: ${gov004.map((e) => e.message).join("; ")}`,
+      `Expected no FUNGI-GOV-022 for unbound contract (no conforms_to), got: ${gov004.map((e) => e.message).join("; ")}`,
     );
   });
 });
@@ -287,7 +287,7 @@ contract {
 // ---------------------------------------------------------------------------
 
 describe("GOV-001: permitted_effects state machine + strict conforms_to", () => {
-  it("OMITTED permitted_effects (limits-only guard) is NEUTRAL — no FUNGI-GOV-004", () => {
+  it("OMITTED permitted_effects (limits-only guard) is NEUTRAL — no FUNGI-GOV-022", () => {
     const source = `
 guard LimitsOnly {
   enforced_limits {
@@ -304,12 +304,12 @@ contract [conforms_to: LimitsOnly] {
 `;
     const result = parseAndVerify(source);
     assert.ok(
-      !hasDiag(result, "FUNGI-GOV-004"),
+      !hasDiag(result, "FUNGI-GOV-022"),
       `omitted permitted_effects must be neutral (auto-inherit), got: ${result.diagnostics.map((d) => d.code).join(", ")}`,
     );
   });
 
-  it("EXPLICITLY EMPTY permitted_effects {} is DENY-ALL — every declared effect emits FUNGI-GOV-004", () => {
+  it("EXPLICITLY EMPTY permitted_effects {} is DENY-ALL — every declared effect emits FUNGI-GOV-022", () => {
     const source = `
 guard DenyAll {
   permitted_effects {
@@ -325,7 +325,7 @@ contract [conforms_to: DenyAll] {
 `;
     const result = parseAndVerify(source);
     assert.ok(
-      hasDiag(result, "FUNGI-GOV-004"),
+      hasDiag(result, "FUNGI-GOV-022"),
       `empty permitted_effects {} must deny all effects, got: ${result.diagnostics.map((d) => d.code).join(", ")}`,
     );
   });
@@ -340,7 +340,7 @@ contract [conforms_to: MissingPolicy] {
 { return Ok(id) }
 `;
     const result = parseAndVerify(source, "dev");
-    const d = result.diagnostics.find((x) => x.code === "FUNGI-GOV-004" && x.name === "DOMAIN_GUARD_NOT_FOUND");
+    const d = result.diagnostics.find((x) => x.code === "FUNGI-GOV-021" && x.name === "DOMAIN_GUARD_NOT_FOUND");
     assert.ok(d !== undefined && d.severity === "warning", `dev: expected a warning, got: ${d?.severity}`);
   });
 
@@ -354,7 +354,7 @@ contract [conforms_to: MissingPolicy] {
 { return Ok(id) }
 `;
     const result = parseAndVerify(source, "production");
-    const d = result.diagnostics.find((x) => x.code === "FUNGI-GOV-004" && x.name === "DOMAIN_GUARD_NOT_FOUND");
+    const d = result.diagnostics.find((x) => x.code === "FUNGI-GOV-021" && x.name === "DOMAIN_GUARD_NOT_FOUND");
     assert.ok(d !== undefined && d.severity === "error", `production: expected a fatal error, got: ${d?.severity}`);
   });
 });

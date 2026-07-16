@@ -551,8 +551,9 @@ export const FUNGI_OBS_001 = {
 
 // ── FUNGI-ASSUME codes ────────────────────────────────────────────────────────────────
 //
-// FUNGI-ASSUME-001  Flow referenced in assuming() does not exist in the known flow registry.
-// FUNGI-ASSUME-002  Claim in assuming() does not match any ProofObligation in the flow's manifest.
+// FUNGI-ASSUME-001  assuming() is syntactically incomplete (missing flow ref or claim argument).
+// FUNGI-ASSUME-002  Referenced flow has no contract {} block at all (cannot borrow a proof — error).
+// FUNGI-ASSUME-005  Claim does not match any ensure in the referenced contract (warning; gate NOT elided).
 // FUNGI-ASSUME-003  Referenced manifest is not present or sourceHash has changed (tampered/stale).
 // FUNGI-ASSUME-004  assuming() references a flow from a different trust domain (cross-module).
 //                 Only permitted when that flow's manifest carries a valid GovernanceSignature.
@@ -565,6 +566,8 @@ export const FUNGI_OBS_001 = {
 // FUNGI-MONO-001  Emergency transition attempts to ADD a capability (expand permissions).
 //               Only DENY/CLEAR operations are permitted in emergency {} blocks.
 //               Monotonicity rule: V_DPM bits can only be cleared, never set.
+// FUNGI-MONO-003  Emergency transition contains an unknown ACTION (typo class — #20 split from -001;
+//               an expansion ATTEMPT and a typo must be distinguishable by code).
 // FUNGI-MONO-002  Emergency transition references an unknown signal type.
 //               Valid signals: invariant_failure, capability_denied, fuel_exhausted,
 //               manifest_tampered, quarantine_request, any_failure.
@@ -2354,7 +2357,8 @@ class GovernanceVerifier {
    *
    * For each assumingDecl:
    *   1. Check flowRef names a known flow in this compilation unit (FUNGI-ASSUME-001)
-   *   2. Check the claim string appears as a ProofObligation in the known flow (FUNGI-ASSUME-002)
+   *   2. Check the referenced flow HAS a contract (FUNGI-ASSUME-002) and the claim string
+ *      matches an ensure in it (FUNGI-ASSUME-005 — the #20 split of the old -002 warning arm)
    *   3. If the flow is external, require that it was compiled with a valid GovernanceSignature (FUNGI-ASSUME-004)
    *   Note: FUNGI-ASSUME-003 (manifest file freshness) is a Phase 5 check — requires disk I/O at admission gate.
    *         In Stage A we emit a warning-only placeholder for cross-module assuming().
@@ -2463,8 +2467,10 @@ class GovernanceVerifier {
       }
 
       if (!claimFound) {
+        // #20 split: claim-not-matched (warning, gate NOT elided — fail-safe) is a distinct fault
+        // from -002's no-contract-at-all (error); it now carries its own code.
         this.diagnostics.push(makeGovDiag(
-          "FUNGI-ASSUME-002",
+          "FUNGI-ASSUME-005",
           "ASSUMING_CLAIM_NOT_FOUND",
           "warning",
           `Flow '${flow.name}': assuming() claims '${claim}' is proved in '${refFlowName}', ` +
@@ -2797,10 +2803,12 @@ class GovernanceVerifier {
       // policy means the boundary cannot be resolved — FATAL in production/deterministic
       // (fail-closed); a warning in dev (the policy may be in another file still being authored).
       const isProduction = this.currentProfile === "production" || this.currentProfile === "deterministic";
+      // #20 split (the 2026-06-22 audit's prescription): a typo/missing policy and a privilege
+      // breach must be distinguishable by code — GOV-004 keeps DENIED_TARGET_SELECTED only.
       this.diagnostics.push(makeGovDiag(
-        "FUNGI-GOV-004",
+        "FUNGI-GOV-021",
         "DOMAIN_GUARD_NOT_FOUND",
-        isProduction ? "error" : "warning",
+        isProduction ? "error" : "warning", // legit dev/prod toggle — carries over unchanged
         `Flow '${flow.name}' declares [conforms_to: ${policyName}] but no policy '${policyName}' was found in this file.` +
         (isProduction
           ? ` A production/deterministic build fails closed on a broken conformance chain.`
@@ -2831,7 +2839,7 @@ class GovernanceVerifier {
       for (const declaredEffect of flow.declaredEffects) {
         if (denyAll || !permittedEffects.has(declaredEffect)) {
           this.diagnostics.push(makeGovDiag(
-            "FUNGI-GOV-004",
+            "FUNGI-GOV-022",
             "DOMAIN_GUARD_POLICY_VIOLATION",
             "error",
             denyAll
@@ -3199,7 +3207,7 @@ class GovernanceVerifier {
     const shielding = extractValue("enclosure_shielding");
     if (shielding !== undefined && !VALID_SHIELDING.has(shielding)) {
       this.diagnostics.push(makeGovDiag(
-        "FUNGI-GOV-017", "InvalidPhysicalHardeningValue", "error",
+        "FUNGI-GOV-017", "INVALID_PHYSICAL_HARDENING_VALUE", "error",
         `Flow '${flowName}' declares cyber_physical_hardening { enclosure_shielding ${shielding} } but '${shielding}' is not a recognised shielding tier.`,
         hardeningNode.location,
         `Valid values: active_mesh | deep_trench | standard_fabric`,
@@ -3209,7 +3217,7 @@ class GovernanceVerifier {
     const tamper = extractValue("on_tamper_signal");
     if (tamper !== undefined && !VALID_TAMPER.has(tamper)) {
       this.diagnostics.push(makeGovDiag(
-        "FUNGI-GOV-017", "InvalidPhysicalHardeningValue", "error",
+        "FUNGI-GOV-017", "INVALID_PHYSICAL_HARDENING_VALUE", "error",
         `Flow '${flowName}' declares cyber_physical_hardening { on_tamper_signal ${tamper} } but '${tamper}' is not a recognised tamper response.`,
         hardeningNode.location,
         `Valid values: zeroize | quarantine_core | halt | demote_to_local`,
@@ -3226,8 +3234,10 @@ class GovernanceVerifier {
         (c.value ?? "").includes("max_risk_liability") && /\d{4,}/.test(c.value ?? ""),
       );
     if (!hasHighRisk) {
+      // #20 split: an advisory "this block is unnecessary on a low-risk flow" is a different
+      // question from -017's invalid-enum-value error.
       this.diagnostics.push(makeGovDiag(
-        "FUNGI-GOV-017", "PhysicalHardeningOnLowRiskFlow", "warning",
+        "FUNGI-GOV-023", "PHYSICAL_HARDENING_ON_LOW_RISK_FLOW", "warning",
         `Flow '${flowName}' explicitly declares cyber_physical_hardening {} but has no high max_risk_liability in economics {}. ` +
         `The runtime auto-selects the appropriate shielding tier from the ValueGraph. ` +
         `Omit this block unless operating on Tier 1 hardware with proven physical-breach risk.`,
@@ -3414,8 +3424,10 @@ class GovernanceVerifier {
             ));
           } else if (!val.startsWith("deny:") && !val.startsWith("action:") && val !== "") {
             // Unknown action type
+            // #20 split (P0-security per the 2026-06-22 audit): a privilege-expansion ATTEMPT
+            // (-001) and an unknown-action typo must be distinguishable by code.
             this.diagnostics.push(makeGovDiag(
-              "FUNGI-MONO-001",
+              "FUNGI-MONO-003",
               "EMERGENCY_UNKNOWN_ACTION",
               "warning",
               `Policy '${policyName}': emergency {} transition on '${signal}' contains ` +
