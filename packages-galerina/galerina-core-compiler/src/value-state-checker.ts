@@ -1662,8 +1662,18 @@ class ValueStateChecker {
     // Phase 4.3: Inter-flow taint — warn when a tainted argument is passed to a
     // user-defined flow. This is a call-site warning (FUNGI-VALUESTATE-004), NOT
     // full inter-procedural analysis. We do not follow into the callee body.
+    //
+    // #75 reframe (RD-0412 P1, VALUESTATE-004 was a FALSE CONTRADICTION): passing tainted data
+    // INTO a recognized gate (validate*/check*/verify*/sanitize*/parse*/decode*) is the CLEARING
+    // operation — untrusted-in → trusted-out — the entire purpose of a validation seam, NOT a
+    // defect. The old rule flagged it and suggested `validate.X(X)`, i.e. "wrap the gate call in
+    // a gate call" — a fix pointing at nothing, which blocked legitimate tainted→validator flows
+    // (the auth-service corpus). Only a NON-gate user flow warrants the cross-flow taint warning.
+    // (A gate that fails to actually re-type its input to safe is a separate concern — the gate's
+    // own body — not a call-site error; tainted reaching a non-clearing governed SINK stays
+    // covered by VALUESTATE-003.)
     const calleeName = node.value ?? "";
-    if (this.userFlows.has(calleeName)) {
+    if (this.userFlows.has(calleeName) && !isGateCallName(calleeName, this.userGates)) {
       // All children are arguments (no "method" style for user flow calls)
       const callArgs = node.children ?? [];
       for (const arg of callArgs) {

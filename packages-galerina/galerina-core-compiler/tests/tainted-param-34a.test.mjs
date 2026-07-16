@@ -51,4 +51,21 @@ describe("34A: `tainted` param qualifier closes the param-trusted-by-default fai
     const codes = vsCodes(`flow sink(x: String) -> Bool {\n  database.write(x)\n}\nflow ingest(tainted req: String) -> Bool {\n  sink(req)\n}`);
     assert.ok(codes.includes("FUNGI-VALUESTATE-004") || isRefusal(codes), `tainted param crossing a flow boundary must be refused, got [${codes}]`);
   });
+
+  // ── #75 reframe (RD-0412 P1): VALUESTATE-004 was a false contradiction — passing tainted data
+  //    INTO a recognized gate is the CLEARING operation (untrusted-in → trusted-out), not a defect.
+  //    Conformance PAIR: fires on a tainted → NON-gate handoff; silent on a tainted → GATE handoff.
+  it("#75 SILENT: a tainted arg passed INTO a recognized gate is NOT flagged (the gate is the clearing point)", () => {
+    // `validateReq` matches a gate name prefix (validate*) → isGateCallName true. Passing tainted
+    // `req` into it is the validation seam's whole purpose; the reframed rule must stay silent.
+    const codes = vsCodes(`flow validateReq(x: String) -> String {\n  return x\n}\nflow ingest(tainted req: String) -> Bool {\n  let clean = validateReq(req)\n  return true\n}`);
+    assert.ok(!codes.includes("FUNGI-VALUESTATE-004"), `passing tainted data into a gate must NOT emit VALUESTATE-004 (it is the clearing point), got [${codes}]`);
+  });
+
+  it("#75 FIRES (regression guard): the exemption is gate-NAME-scoped — a non-gate callee still refuses", () => {
+    // `processReq` is not a gate name → the cross-flow taint warning is unchanged. Proves the
+    // reframe narrowed the rule to gates only, it did not disable it.
+    const codes = vsCodes(`flow processReq(x: String) -> Bool {\n  database.write(x)\n}\nflow ingest(tainted req: String) -> Bool {\n  processReq(req)\n}`);
+    assert.ok(codes.includes("FUNGI-VALUESTATE-004") || isRefusal(codes), `a tainted arg to a NON-gate flow must still refuse, got [${codes}]`);
+  });
 });
