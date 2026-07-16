@@ -14,6 +14,7 @@ import { readdirSync, readFileSync, mkdirSync, writeFileSync, statSync } from "n
 import { join, relative, basename } from "node:path";
 import { extractCodes } from "./lib/codes.mjs";
 import { writeProvenance } from "./lib/provenance.mjs"; // BLD-003 / #216 provenance sidecar
+import { scrubPaths } from "./lib/scrub-paths.mjs"; // extracted + unit-tested (was module-internal, untestable)
 
 const ROOT = process.cwd(); // repo root when run by phase-close (cwd=Galerina); the dev-tool test drives it with cwd=tmp
 // The KB was relocated OUT of this repo (IP separation) — same convention as audit-effect-canonicality.mjs.
@@ -64,14 +65,7 @@ const tokenize = (s) => (s.toLowerCase().match(/[a-z][a-z0-9-]{2,}/g) || []).fil
 // This index is committed in the PUBLIC Galerina repo, so copy those in verbatim and it leaks the OS
 // username/layout (the class scripts/audit-path-leak.mjs enforces). Genericize on the way out so a regen
 // never re-introduces the leak, no matter what the private KB source contains.
-const scrub = (s) => s
-  .replace(/[A-Za-z]:[\\/]{1,2}Users[\\/]{1,2}[^\s"'`)\]]+/g, "<path>")
-  .replace(/(?:[A-Za-z]:[\\/]{1,2})?wwwprojects[\\/][^\s"'`)\]]*/g, "<path>")
-  // Windows env-var path literals (the USERPROFILE / APPDATA / HOMEPATH tokens, percent-wrapped) — the
-  // `windows-env-literal` class scripts/audit-path-leak.mjs enforces. scrub() predated that detector, so a KB
-  // doc that QUOTES the pattern to teach the portability rule leaked it into this committed index on regen.
-  // Genericize it too, so the two stay in lockstep (a bare `userprofile` token never trips the %-anchored gate).
-  .replace(/%(?:USERPROFILE|USERNAME|HOMEPATH|HOMEDRIVE|APPDATA|LOCALAPPDATA)%/gi, "<env-var>");
+const scrub = scrubPaths; // the genericizer now lives in lib/scrub-paths.mjs (importable + unit-tested)
 
 function indexDoc(file) {
   const rel = relative(ROOT, file).replace(/\\/g, "/");

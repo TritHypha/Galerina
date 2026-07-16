@@ -8,6 +8,10 @@
 // the rule, via an inline marker). `--self-test` proves the detectors still fire before the enforcing
 // scan — a neutered guard is itself a fail-open.
 //
+// ⚠ SCAN-AFTER-ADD: this guard scans git-TRACKED files. A brand-new file is invisible until it is staged —
+// so a green run BEFORE `git add` can turn RED after commit (a just-authored doc joined the scan set only at
+// add-time). Always `git add` new files, THEN trust a green. (Field-hit 2026-07-16; same note on the KB guard.)
+//
 // Usage:
 //   node scripts/audit-path-leak.mjs --self-test   # prove the detectors fire (run first in CI)
 //   node scripts/audit-path-leak.mjs               # enforce: exit 1 on any leak
