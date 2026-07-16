@@ -1,0 +1,13 @@
+{
+ "stamp": "2026-07-16T17-27-27",
+ "sinceLast": {
+  "baseline": true,
+  "note": "no prior snapshot — this run seeds the series baseline",
+  "rows": []
+ },
+ "sinceDayStart": {
+  "baseline": true,
+  "note": "no prior snapshot — this run seeds the day baseline",
+  "rows": []
+ }
+}

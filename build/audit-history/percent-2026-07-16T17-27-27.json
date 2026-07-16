@@ -1,0 +1,37 @@
+{
+ "stamp": "2026-07-16T17-27-27",
+ "provenance": {
+  "available": true,
+  "branch": "main",
+  "sha": "7f0b1a1a",
+  "detached": false,
+  "dirty": true
+ },
+ "shipReadinessPct": 97.9,
+ "ztAvg": 78,
+ "buildAvg": 75,
+ "flat": {
+  "topline:ship-readiness": 97.9,
+  "topline:zt-avg": 78,
+  "topline:build-avg": 75,
+  "zero-trust-thesis:Compiler": 100,
+  "zero-trust-thesis:I/O — OS kernel": 72,
+  "zero-trust-thesis:Packages": 98,
+  "zero-trust-thesis:Memory": 62,
+  "zero-trust-thesis:TLSTP — zero-middleware": 56,
+  "build-progress:Specification / KB": 100,
+  "build-progress:Lexer / Parser / Verifier / Contract / Value-state": 100,
+  "build-progress:DRCM Phases 1-7 (Stage-A simulation)": 100,
+  "build-progress:CBOR Manifests (RFC 8949)": 100,
+  "build-progress:Tests — full suite": 100,
+  "build-progress:Stage-B self-hosting — interpreter parity": 100,
+  "build-progress:Type checker / Effect checker": 90,
+  "build-progress:WAT emitter": 89,
+  "build-progress:Runtime interpreter": 87,
+  "build-progress:Application-framework layer": 72,
+  "build-progress:Post-Quantum & Hardware Security": 40,
+  "build-progress:Passive Execution Plans & Target Bridges": 35,
+  "build-progress:AI Inference Tower (BitNet/Groq/NVFP4)": 30,
+  "build-progress:Photonic / Ternary Computing": 3
+ }
+}

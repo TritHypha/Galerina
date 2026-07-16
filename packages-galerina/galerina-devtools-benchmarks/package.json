@@ -5,35 +5,45 @@
   "license": "Apache-2.0",
   "private": true,
   "type": "module",
-  "packageGraph": { "extensions": [".ts", ".fungi", ".mjs", ".js"] },
+  "packageGraph": {
+    "extensions": [
+      ".ts",
+      ".fungi",
+      ".mjs",
+      ".js"
+    ]
+  },
   "scripts": {
-    "run":                    "node --expose-gc src/runner.mjs",
-    "run:quick":              "node --expose-gc src/runner.mjs --quick",
-    "run:compute-mix":        "node --expose-gc src/runner.mjs --benchmark compute-mix",
-    "run:arithmetic":         "node --expose-gc src/runner.mjs --benchmark arithmetic-threshold",
-    "run:guess":              "node --expose-gc src/runner.mjs --benchmark six-digit-guess",
-    "run:hardware-targets":   "node --expose-gc src/runner.mjs --benchmark hardware-targets",
-    "run:governance-cost":    "node --expose-gc src/runner.mjs --benchmark governance-cost",
-    "run:call-chain":         "node --expose-gc src/runner.mjs --benchmark call-chain",
-    "run:passive":            "node --expose-gc src/runner.mjs --benchmark hardware-targets",
-    "run:http":               "node benchmarks/http-throughput/benchmark.mjs",
-    "compare":                "node src/compare.mjs",
-    "report":                 "node src/report.mjs",
-    "chart":                  "node src/chart.mjs",
-    "variance":               "node src/variance.mjs",
-    "noise-gate":             "node src/noise-gate.mjs",
-    "noise-gate:selftest":    "node src/noise-gate.mjs --self-test",
-    "build:native":           "node src/build-native.mjs",
-    "test":                   "node test/throughput-units.test.mjs && node test/chart.test.mjs && node test/noise-gate.test.mjs",
-    "audit":                  "node --expose-gc src/audit.mjs",
-    "snapshot":               "node src/snapshot.mjs",
-    "bench":                  "node --expose-gc src/runner.mjs --quick && node src/compare.mjs && node --expose-gc src/audit.mjs",
-    "run:diagnostic":         "node src/diagnostic-runner.mjs",
-    "run:diagnostic-suite":   "node --expose-gc src/runner.mjs --diagnostic",
-    "run:fault-injection":    "node src/diagnostic-runner.mjs --benchmark toxic-input --benchmark governance-violation"
+    "run": "node --expose-gc src/runner.mjs",
+    "run:quick": "node --expose-gc src/runner.mjs --quick",
+    "run:compute-mix": "node --expose-gc src/runner.mjs --benchmark compute-mix",
+    "run:arithmetic": "node --expose-gc src/runner.mjs --benchmark arithmetic-threshold",
+    "run:guess": "node --expose-gc src/runner.mjs --benchmark six-digit-guess",
+    "run:hardware-targets": "node --expose-gc src/runner.mjs --benchmark hardware-targets",
+    "run:governance-cost": "node --expose-gc src/runner.mjs --benchmark governance-cost",
+    "run:call-chain": "node --expose-gc src/runner.mjs --benchmark call-chain",
+    "run:passive": "node --expose-gc src/runner.mjs --benchmark hardware-targets",
+    "run:http": "node benchmarks/http-throughput/benchmark.mjs",
+    "compare": "node src/compare.mjs",
+    "report": "node src/report.mjs",
+    "chart": "node src/chart.mjs",
+    "variance": "node src/variance.mjs",
+    "noise-gate": "node src/noise-gate.mjs",
+    "noise-gate:selftest": "node src/noise-gate.mjs --self-test",
+    "build:native": "node src/build-native.mjs",
+    "test": "node test/throughput-units.test.mjs && node test/chart.test.mjs && node test/noise-gate.test.mjs",
+    "audit": "node --expose-gc src/audit.mjs",
+    "snapshot": "node src/snapshot.mjs",
+    "bench": "node --expose-gc src/runner.mjs --quick && node src/compare.mjs && node --expose-gc src/audit.mjs",
+    "run:diagnostic": "node src/diagnostic-runner.mjs",
+    "run:diagnostic-suite": "node --expose-gc src/runner.mjs --diagnostic",
+    "run:fault-injection": "node src/diagnostic-runner.mjs --benchmark toxic-input --benchmark governance-violation",
+    "history": "node src/history.mjs"
   },
   "dependencies": {
     "@galerina/core-compiler": "file:../galerina-core-compiler"
   },
-  "engines": { "node": ">=18" }
+  "engines": {
+    "node": ">=18"
+  }
 }

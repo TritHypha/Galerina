@@ -1,7 +1,19 @@
 @version 1
 /// record-allocation benchmark — Galerina governed runtime
-/// Creates N records with integer fields, sums two fields.
-/// Directly measures {__tag,value} object creation overhead.
+/// Binds N sets of integer fields, sums two of them.
+///
+/// LANE FIDELITY (verified 2026-07-16): the reference implementations
+/// (node.mjs / python.py / bench.rs) allocate a REAL heap record per
+/// iteration — that is the workload's defining operation. This .fungi body
+/// uses three scalar `let` bindings because a record literal is not yet
+/// expressible on every lane:
+///   - INTERPRETER lanes (galerinaGoverned/Manifest): each binding allocates
+///     a {__tag,value} box, so those lanes DO measure per-binding allocation
+///     overhead — the benchmark's original purpose.
+///   - WASM lane: `let x: Int` compiles to a register local — NO allocation.
+///     The WASM number is a scalar-loop rate, NOT an allocation rate; never
+///     cite it against node/rust as an allocation comparison (shape-only
+///     lane, tagged in src/history.mjs WORK_EQUIVALENCE).
 
 pure flow main() -> Int
 contract { effects {} }

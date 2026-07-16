@@ -17,11 +17,17 @@
     "audit:node-floor": "node scripts/audit-node-dependencies.mjs",
     "audit:imports": "node scripts/audit-import-governance.mjs",
     "audit:license": "node scripts/audit-license-compat.mjs",
-    "audit:license:selftest": "node scripts/audit-license-compat.mjs --self-test"
+    "audit:license:selftest": "node scripts/audit-license-compat.mjs --self-test",
+    "audit:percent-history": "node scripts/audit-percent-history.mjs"
   },
   "engines": {
     "node": ">=18.0.0"
   },
-  "keywords": ["galerina", "compiler", "governance", "wasm"],
+  "keywords": [
+    "galerina",
+    "compiler",
+    "governance",
+    "wasm"
+  ],
   "license": "Apache-2.0"
 }
