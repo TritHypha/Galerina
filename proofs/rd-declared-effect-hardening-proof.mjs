@@ -56,9 +56,10 @@ const diagsFor = (name) => {
   assert.equal(effectsToFlags(["eval.execute"]) & ~(1 << 30), 0, "P2: deny-only carries no grantable capability bit (UnmappedEffect sentinel only)");
   console.log("P2 ✅ eval.execute is deny-only (FUNGI-EFFECT-006) with no grant path");
 }
-// P3 — deprecated alias points at the canonical name
+// P3 — deprecated alias points at the canonical name (#20: the non-canonical arm moved off
+// EFFECT-004 to its own code EFFECT-009; EFFECT-004 keeps UNKNOWN_EFFECT).
 {
-  const d = diagsFor("ai.infer").find((x) => x.code === "FUNGI-EFFECT-004");
+  const d = diagsFor("ai.infer").find((x) => x.code === "FUNGI-EFFECT-009");
   assert.ok(d && d.suggestedCode === "ai.inference", "P3: ai.infer must suggest ai.inference");
   console.log("P3 ✅ ai.infer is a one-way deprecation alias of ai.inference");
 }

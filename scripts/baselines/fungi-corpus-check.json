@@ -148,7 +148,7 @@
       "FUNGI-VALUESTATE-008"
     ],
     "tests/owasp/owasp-a02-cryptographic-failures.fungi": [
-      "FUNGI-SECRET-002",
+      "FUNGI-SECRET-005",
       "FUNGI-VALUESTATE-008"
     ],
     "tests/owasp/owasp-a04-insecure-design.fungi": [

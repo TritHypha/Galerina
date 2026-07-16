@@ -40,13 +40,16 @@ const ALLOWLIST = {
   // Deliberate warning→error migration: error in build --production, softer in dev
   // iteration. Tracked for the migration + the signing-boundary hardening (2026-07-01).
   "FUNGI-SECRET-002":    "migration: error in production build; dev warning (fail-loud). Pending signing-boundary fix.",
+  "FUNGI-SECRET-006":    "#20 split of SECRET-002 (SECRET_CROSSES_FLOW_BOUNDARY); inherits the same reviewed prod-error/dev-warning toggle. RD-0412.",
   "FUNGI-PRIVACY-002":   "migration: error in production build; dev warning. Pending signing-boundary fix.",
+  "FUNGI-PRIVACY-004":   "#20 split of PRIVACY-002 (EMBEDDING_CROSSES_FLOW_BOUNDARY); inherits the same reviewed toggle. RD-0412.",
   "FUNGI-EFFECT-004":    "migration: error in production; dev warning (non-canonical effect).",
   "FUNGI-EFFECT-001":    "migration: error in production; warning in check/build (undeclared effect).",
   "FUNGI-STDLIB-001":    "migration: error in production; warning in check/build (stdlib effect).",
   "FUNGI-GOV-002":       "migration: warning in production, info in dev (missing audit for governed sink).",
   "FUNGI-GOV-010":       "migration: error in production, info in dev (intent missing on secure flow).",
   "FUNGI-GOV-004":       "deliberate: fail-closed error in production/deterministic; dev warning (conforms_to policy may be in an unfinished file). Verified 2026-07-01.",
+  "FUNGI-GOV-021":       "#20 split of GOV-004 (DOMAIN_GUARD_NOT_FOUND); inherits the same reviewed fail-closed prod-error/dev-warning toggle. RD-0412.",
   "FUNGI-SUBSTRATE-002": "deliberate: production/deterministic error, dev warning (tolerance unachievable on a noisy substrate lane — compute-safety). Verified 2026-07-01.",
   "FUNGI-VALUESTATE-008":"migration: downgraded in dev/check/build (untrusted boundary input).",
 };
@@ -55,7 +58,9 @@ const SUPPRESS_ALLOWLIST = {
   "FUNGI-GOV-002": "examples focus on other concepts; governance gap tracked separately",
   "FUNGI-GOV-007": "authority-block-reason not the subject under test",
   "FUNGI-EFFECT-004": "non-canonical effect names in legacy examples; tracked by audit-effect-canonicality",
+  "FUNGI-EFFECT-009": "#20 split of EFFECT-004's alias arm (NON_CANONICAL_EFFECT); the CEC suppression follows the arm. RD-0412.",
   "FUNGI-VALUESTATE-006": "Wave-2 example-promotion: Protected boundary violation suppressed while examples are cleaned; TODO un-suppress once examples pass.",
+  "FUNGI-VALUESTATE-009": "#20 split of VALUESTATE-006's audit-log arm (PROTECTED_VALUE_AT_AUDIT_LOG); the CEC suppression follows the arm. RD-0412.",
   "FUNGI-VALUESTATE-002": "Wave-2 example-promotion: Unsafe conditional upgrade suppressed while examples are cleaned; TODO un-suppress once examples pass.",
 };
 
