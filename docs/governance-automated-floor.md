@@ -11,14 +11,26 @@ Everything here corresponds to Table 3 of the authoring model, expanded with the
 
 ## 1. The K3 verdict calculus
 
-The three-valued (Kleene-K3) governance algebra. Every gate produces a **trit**, and verdicts compose by it.
+The three-valued (Kleene-K3) governance algebra. Every gate produces a **trit**, and verdicts compose by it. It is
+**not re-implemented** — it reuses the balanced-ternary gates (`minTrit`/`maxTrit`/`negTrit`) from `tpl-simulator.ts`
+under `Verdict`-typed names, and the exact K3 match is pinned by `three-valued-governance.test.mjs`.
 
 | Concept | Value / rule |
 |---|---|
 | Trits | `-1` DENY · `0` INDETERMINATE · `+1` ALLOW (a total order: DENY < INDETERMINATE < ALLOW) |
-| `vAnd(a, b)` | `min(a, b)` — the Kleene conjunction. `+1` is the identity, `-1` the annihilator, `0` the fail-closed floor |
-| `allOf([…])` | the `vAnd`-reduce over a list — `+1` iff every element is `+1`; `-1` iff any is `-1`; else `0` |
+| `vAnd(a, b)` | `min` — Kleene ∧. `+1` identity, `-1` annihilator, `0` the fail-closed floor |
+| `vOr(a, b)` | `max` — Kleene ∨ (the more-permissive verdict wins) |
+| `vNot(a)` | Kleene ¬ — ALLOW ↔ DENY; INDETERMINATE ↦ INDETERMINATE (indeterminacy preserved) |
+| `allOf([…])` | `vAnd`-reduce — `+1` iff every element is `+1`; `-1` iff any is `-1`; else `0`. **Empty → INDETERMINATE** (deny-by-default, never a vacuous ALLOW) |
+| `anyOf([…])` | `vOr`-reduce — same deny-by-default empty → INDETERMINATE |
 | `authorize(v)` | admit **iff** `v == +1` |
+| `decideAtBoundary(v)` | the audited collapse: `+1` → allow · `-1` → deny (silent, ordinary policy) · `0` → deny **+ `FUNGI-GOV-3VL-001`** (it is structurally impossible to drop a `0` silently) |
+
+**No-Coercion is structural, not a convention.** A side-signal folds into a verdict ONLY as a `vAnd`/`min` conjunct,
+so it can only ever *lower* the result — and the same law holds for the tensor fold (`vAndTensor`), the N-vote
+consensus (`consensusTritN`, where a tie collapses to INDETERMINATE), and the continuous confidence vector
+(`collapseConfidence`, where an ambiguous or low-confidence score fails safe to INDETERMINATE). None can manufacture
+an ALLOW or become a key.
 
 A contract cannot redefine this algebra — it is what ALLOW/DENY/INDETERMINATE *mean*.
 
@@ -54,6 +66,9 @@ halves required, no post-quantum downgrade. Under `GALERINA_MANIFEST_PROFILE=cer
 on a noisy/analog lane.
 
 ## 6. Epilogue receipts + append-only audit trail
+
+> **Full detail** — the receipt fields, `onFailure` modes, and the four strategies: [reference/receipts.md](reference/receipts.md).
+> (Receipts are automated — emitted regardless of the contract — so their reference lives on this floor doc, not the authoring doc.)
 
 Every governed execution emits an **Epilogue Receipt**; the strategy is fixed by profile, not by the contract:
 
