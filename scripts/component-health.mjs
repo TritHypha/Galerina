@@ -289,7 +289,7 @@ const TRACKING_REGISTRY = [
   { item: "KB category indexes",                 state: "post-v1",       detail: "auto-generated KB grouping (API/Kernel/…); trigger: v1-freeze 🔒 owner" },
   { item: "ZTF-KB path-leak guard",              state: "build-pending", detail: "kb-path-leak.mjs built; 346-leak/101-file remediation + CI wiring unlocked (§5)" },
   { item: "TritMesh / .hypha / TritMeshQL",      state: "post-v1",       detail: "the NEXT project (database on Galerina); RD-0293/0294/0306/0312 designs" },
-  { item: "myco",                                state: "shipped",       detail: "v0.1.0 committed (graph-indexed grep replacement, own subproject); npm publish 🔒 outward" },
+  { item: "myco",                                state: "shipped",       detail: "v0.1.2 (graph-indexed grep replacement, own subproject); silent size-cap skips now surfaced + VERSION drift gate; npm publish 🔒 outward" },
 ];
 const quantified = BUILD_PROGRESS.filter((l) => typeof l.pct === "number");
 const buildAvg = Math.round(quantified.reduce((a, l) => a + l.pct, 0) / quantified.length);
