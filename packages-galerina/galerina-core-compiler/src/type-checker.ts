@@ -2074,6 +2074,23 @@ class TypeChecker {
 
     // Comparison operators
     if (["<", "<=", ">", ">="].includes(op)) {
+      // tri-lint 0397-C (FUNGI-GOV-3VL-004): NO ORDERED COMPARISON ON A Verdict. Authorization is
+      // `== Verdict.Allow` (== +1) ONLY. `v >= 1` / `v > 0` is a fail-OPEN the instant an out-of-domain
+      // value appears (the SIMD `7`-byte class, generalised): the {−1,0,+1} order exists for the K3
+      // ALGEBRA (min/max fold internals), never for user authorization. This fires BEFORE the generic
+      // ORDERABLE_TYPES check so the author gets the security reason, not "comparable types".
+      if (leftType === "Verdict" || rightType === "Verdict") {
+        this.diagnostics.push(makeTCDiag(
+          "FUNGI-GOV-3VL-004",
+          "OrderedComparisonOnVerdict",
+          `Operator '${op}' orders a Verdict (K3 DENY/UNKNOWN/ALLOW). Authorization is '== Verdict.Allow' ONLY — ` +
+          `an ordered test like 'v >= 1' fails OPEN the moment an out-of-domain value appears. The order is for the ` +
+          `algebra (min/max folds), never for a user decision.`,
+          location,
+          `Authorize with '== Verdict.Allow' (exact match); use 'match' to branch all three arms.`,
+        ));
+        return;
+      }
       // String comparison with non-String = error
       if ((leftBase === "String" && rightBase !== "String" && rightBase !== "") ||
           (rightBase === "String" && leftBase !== "String" && leftBase !== "")) {
