@@ -106,6 +106,10 @@ run("fungi:corpus-check", "node", ["scripts/audit-fungi-corpus-check.mjs"], { ti
 // (emit-doc-wat.mjs regenerates the excerpts through the real pipeline; --check fails on drift.)
 run("doc:wat-drift", "node", ["scripts/emit-doc-wat.mjs", "--check"]);
 
+// ── 1b4. Status-block drift gate (#74) — doc status sections must match component-health (the source) ──
+// (gen-status-blocks.mjs regenerates the ship-readiness/ZT/Build/registry block; --check fails on drift.)
+run("doc:status-drift", "node", ["scripts/gen-status-blocks.mjs", "--check"]);
+
 // ── 1c. Goal acceptance tests (T-006/007/008) ──
 const goalsDir = join(ROOT, "tests", "goals");
 if (existsSync(goalsDir)) {
