@@ -1,0 +1,810 @@
+{
+  "generated": "bench-compare-earliest.mjs",
+  "earliestRecord": "full-suite-2026-06-16.json",
+  "currentRecord": "full-suite-2026-07-16.json",
+  "matchedBenchmarks": [
+    "compute-mix",
+    "arithmetic-threshold",
+    "six-digit-guess",
+    "record-allocation",
+    "fibonacci-recursive",
+    "collection-pipeline",
+    "governance-cost",
+    "hardware-targets",
+    "low-memory",
+    "gpu-compute",
+    "matrix-multiply",
+    "crypto-ops",
+    "text-html",
+    "tri-logic",
+    "data-query",
+    "call-chain",
+    "nbody",
+    "json-parse"
+  ],
+  "onlyInEarliest": [],
+  "onlyInCurrent": [
+    "tower-of-hanoi",
+    "mandelbrot",
+    "spectral-norm",
+    "binary-trees",
+    "spore-container",
+    "framework-pipeline"
+  ],
+  "pairCount": 57,
+  "controlBand": {
+    "median": 1.0036769657447333,
+    "min": 0.6630257988717414,
+    "max": 1.0143938128400782,
+    "n": 7
+  },
+  "galerinaMedian": 0.6187208546497758,
+  "governedMedian": 0.6218861209964412,
+  "passiveColdMedian": 0.9653846153846153,
+  "passiveWarmMedian": 0.5059223499083563,
+  "wasmNote": "wasm EXCLUDED from the month join — kernels + unit alignment changed; the 4-day archive diff is the valid wasm view",
+  "outsideControlBand": [
+    {
+      "bench": "record-allocation",
+      "rt": "galerinaPassive-cold",
+      "then": 65.95,
+      "now": 836.04,
+      "ratio": 12.676876421531462,
+      "control": false
+    },
+    {
+      "bench": "arithmetic-threshold",
+      "rt": "galerinaPassive-cold",
+      "then": 14.58,
+      "now": 146.12,
+      "ratio": 10.021947873799727,
+      "control": false
+    },
+    {
+      "bench": "compute-mix",
+      "rt": "galerinaPassive-cold",
+      "then": 4.75,
+      "now": 44.39,
+      "ratio": 9.345263157894736,
+      "control": false
+    },
+    {
+      "bench": "collection-pipeline",
+      "rt": "galerinaPassive-cold",
+      "then": 93.15,
+      "now": 836.05,
+      "ratio": 8.975308641975307,
+      "control": false
+    },
+    {
+      "bench": "data-query",
+      "rt": "galerinaPassive-cold",
+      "then": 255.31,
+      "now": 28.49,
+      "ratio": 0.11158983196897888,
+      "control": false
+    },
+    {
+      "bench": "arithmetic-threshold",
+      "rt": "galerinaManifest",
+      "then": 906262,
+      "now": 5314958,
+      "ratio": 5.864703584614603,
+      "control": false
+    },
+    {
+      "bench": "arithmetic-threshold",
+      "rt": "galerinaGoverned",
+      "then": 914649,
+      "now": 5180016,
+      "ratio": 5.663392186510891,
+      "control": false
+    },
+    {
+      "bench": "nbody",
+      "rt": "galerinaPassive-warm",
+      "then": 76219.51,
+      "now": 15908.37,
+      "ratio": 0.20871782041107326,
+      "control": false
+    },
+    {
+      "bench": "governance-cost",
+      "rt": "galerinaGoverned",
+      "then": 3333,
+      "now": 699,
+      "ratio": 0.20972097209720972,
+      "control": false
+    },
+    {
+      "bench": "hardware-targets",
+      "rt": "galerinaManifest",
+      "then": 20000,
+      "now": 4348,
+      "ratio": 0.2174,
+      "control": false
+    },
+    {
+      "bench": "low-memory",
+      "rt": "galerinaPassive-warm",
+      "then": 138408.3,
+      "now": 33624.75,
+      "ratio": 0.2429388266455119,
+      "control": false
+    },
+    {
+      "bench": "governance-cost",
+      "rt": "galerinaManifest",
+      "then": 4000,
+      "now": 1010,
+      "ratio": 0.2525,
+      "control": false
+    },
+    {
+      "bench": "matrix-multiply",
+      "rt": "galerinaPassive-warm",
+      "then": 111358.57,
+      "now": 31685.68,
+      "ratio": 0.2845374181798491,
+      "control": false
+    },
+    {
+      "bench": "data-query",
+      "rt": "galerinaPassive-warm",
+      "then": 128205.13,
+      "now": 40492.39,
+      "ratio": 0.31584063757823105,
+      "control": false
+    },
+    {
+      "bench": "gpu-compute",
+      "rt": "galerinaPassive-warm",
+      "then": 142045.45,
+      "now": 47938.64,
+      "ratio": 0.3374880363996171,
+      "control": false
+    },
+    {
+      "bench": "json-parse",
+      "rt": "galerinaPassive-warm",
+      "then": 106496.27,
+      "now": 37979.49,
+      "ratio": 0.35662741990869723,
+      "control": false
+    },
+    {
+      "bench": "hardware-targets",
+      "rt": "galerinaGoverned",
+      "then": 11111,
+      "now": 4000,
+      "ratio": 0.36000360003600035,
+      "control": false
+    },
+    {
+      "bench": "tri-logic",
+      "rt": "galerinaPassive-warm",
+      "then": 131527.03,
+      "now": 51240.01,
+      "ratio": 0.38957779248873786,
+      "control": false
+    },
+    {
+      "bench": "text-html",
+      "rt": "galerinaPassive-warm",
+      "then": 118105.59,
+      "now": 46713.69,
+      "ratio": 0.39552480115462785,
+      "control": false
+    },
+    {
+      "bench": "crypto-ops",
+      "rt": "galerinaManifest",
+      "then": 5556,
+      "now": 2273,
+      "ratio": 0.4091072714182865,
+      "control": false
+    },
+    {
+      "bench": "text-html",
+      "rt": "galerinaManifest",
+      "then": 4762,
+      "now": 2000,
+      "ratio": 0.41999160016799664,
+      "control": false
+    },
+    {
+      "bench": "governance-cost",
+      "rt": "galerinaPassive-warm",
+      "then": 104547.83,
+      "now": 46554.93,
+      "ratio": 0.44529790814405235,
+      "control": false
+    },
+    {
+      "bench": "crypto-ops",
+      "rt": "galerinaGoverned",
+      "then": 277,
+      "now": 131,
+      "ratio": 0.4729241877256318,
+      "control": false
+    },
+    {
+      "bench": "governance-cost",
+      "rt": "galerinaPassive-cold",
+      "then": 4215.32,
+      "now": 2280.94,
+      "ratio": 0.5411071994534223,
+      "control": false
+    },
+    {
+      "bench": "arithmetic-threshold",
+      "rt": "galerinaPassive-warm",
+      "then": 47619.05,
+      "now": 26978.42,
+      "ratio": 0.5665467916726603,
+      "control": false
+    },
+    {
+      "bench": "hardware-targets",
+      "rt": "galerinaPassive-warm",
+      "then": 130213.42,
+      "now": 76817.31,
+      "ratio": 0.589933894678444,
+      "control": false
+    },
+    {
+      "bench": "crypto-ops",
+      "rt": "galerinaPassive-warm",
+      "then": 19793.75,
+      "now": 11732.96,
+      "ratio": 0.5927608462267129,
+      "control": false
+    },
+    {
+      "bench": "hardware-targets",
+      "rt": "galerinaPassive-cold",
+      "then": 33829.5,
+      "now": 20212.23,
+      "ratio": 0.5974735068505298,
+      "control": false
+    },
+    {
+      "bench": "text-html",
+      "rt": "galerinaPassive-cold",
+      "then": 9184,
+      "now": 5530.36,
+      "ratio": 0.6021733449477351,
+      "control": false
+    },
+    {
+      "bench": "compute-mix",
+      "rt": "galerinaPassive-warm",
+      "then": 17311.02,
+      "now": 10604.45,
+      "ratio": 0.6125837761148679,
+      "control": false
+    },
+    {
+      "bench": "fibonacci-recursive",
+      "rt": "galerinaPassive-warm",
+      "then": 90252.71,
+      "now": 55555.56,
+      "ratio": 0.6155555883031102,
+      "control": false
+    },
+    {
+      "bench": "text-html",
+      "rt": "galerinaGoverned",
+      "then": 1124,
+      "now": 699,
+      "ratio": 0.6218861209964412,
+      "control": false
+    },
+    {
+      "bench": "six-digit-guess",
+      "rt": "galerinaPassive-warm",
+      "then": 38510.91,
+      "now": 24330.9,
+      "ratio": 0.6317923933763185,
+      "control": false
+    },
+    {
+      "bench": "crypto-ops",
+      "rt": "galerinaPassive-cold",
+      "then": 26932.4,
+      "now": 17438.31,
+      "ratio": 0.6474844425301867,
+      "control": false
+    },
+    {
+      "bench": "matrix-multiply",
+      "rt": "galerinaPassive-cold",
+      "then": 23.15,
+      "now": 27.33,
+      "ratio": 1.180561555075594,
+      "control": false
+    },
+    {
+      "bench": "nbody",
+      "rt": "galerinaPassive-cold",
+      "then": 1.9,
+      "now": 2.13,
+      "ratio": 1.1210526315789473,
+      "control": false
+    },
+    {
+      "bench": "fibonacci-recursive",
+      "rt": "galerinaPassive-cold",
+      "then": 24.77,
+      "now": 25.6,
+      "ratio": 1.0335082761404926,
+      "control": false
+    },
+    {
+      "bench": "low-memory",
+      "rt": "galerinaPassive-cold",
+      "then": 16.46,
+      "now": 16.83,
+      "ratio": 1.0224787363304981,
+      "control": false
+    }
+  ],
+  "pairs": [
+    {
+      "bench": "compute-mix",
+      "rt": "nodejs",
+      "then": 134725664.53,
+      "now": 136664880.53,
+      "ratio": 1.0143938128400782,
+      "control": true
+    },
+    {
+      "bench": "compute-mix",
+      "rt": "python",
+      "then": 1048652.15,
+      "now": 810292.44,
+      "ratio": 0.7726989736301022,
+      "control": true
+    },
+    {
+      "bench": "compute-mix",
+      "rt": "rust",
+      "then": 131648515,
+      "now": 132132582.08,
+      "ratio": 1.0036769657447333,
+      "control": true
+    },
+    {
+      "bench": "compute-mix",
+      "rt": "rustAvx2",
+      "then": 129566265.9,
+      "now": 130606674.75,
+      "ratio": 1.0080299362088816,
+      "control": true
+    },
+    {
+      "bench": "compute-mix",
+      "rt": "galerinaPassive-warm",
+      "then": 17311.02,
+      "now": 10604.45,
+      "ratio": 0.6125837761148679,
+      "control": false
+    },
+    {
+      "bench": "compute-mix",
+      "rt": "galerinaPassive-cold",
+      "then": 4.75,
+      "now": 44.39,
+      "ratio": 9.345263157894736,
+      "control": false
+    },
+    {
+      "bench": "arithmetic-threshold",
+      "rt": "galerinaGoverned",
+      "then": 914649,
+      "now": 5180016,
+      "ratio": 5.663392186510891,
+      "control": false
+    },
+    {
+      "bench": "arithmetic-threshold",
+      "rt": "galerinaManifest",
+      "then": 906262,
+      "now": 5314958,
+      "ratio": 5.864703584614603,
+      "control": false
+    },
+    {
+      "bench": "arithmetic-threshold",
+      "rt": "galerinaPassive-warm",
+      "then": 47619.05,
+      "now": 26978.42,
+      "ratio": 0.5665467916726603,
+      "control": false
+    },
+    {
+      "bench": "arithmetic-threshold",
+      "rt": "galerinaPassive-cold",
+      "then": 14.58,
+      "now": 146.12,
+      "ratio": 10.021947873799727,
+      "control": false
+    },
+    {
+      "bench": "six-digit-guess",
+      "rt": "galerinaGoverned",
+      "then": 47526,
+      "now": 47056,
+      "ratio": 0.9901106762614148,
+      "control": false
+    },
+    {
+      "bench": "six-digit-guess",
+      "rt": "galerinaManifest",
+      "then": 48285,
+      "now": 48047,
+      "ratio": 0.9950709330019675,
+      "control": false
+    },
+    {
+      "bench": "six-digit-guess",
+      "rt": "galerinaPassive-warm",
+      "then": 38510.91,
+      "now": 24330.9,
+      "ratio": 0.6317923933763185,
+      "control": false
+    },
+    {
+      "bench": "six-digit-guess",
+      "rt": "galerinaPassive-cold",
+      "then": 1.18,
+      "now": 1.18,
+      "ratio": 1,
+      "control": false
+    },
+    {
+      "bench": "record-allocation",
+      "rt": "galerinaPassive-warm",
+      "then": 88888.89,
+      "now": 69204.15,
+      "ratio": 0.7785466777681664,
+      "control": false
+    },
+    {
+      "bench": "record-allocation",
+      "rt": "galerinaPassive-cold",
+      "then": 65.95,
+      "now": 836.04,
+      "ratio": 12.676876421531462,
+      "control": false
+    },
+    {
+      "bench": "fibonacci-recursive",
+      "rt": "galerinaGoverned",
+      "then": 21,
+      "now": 15,
+      "ratio": 0.7142857142857143,
+      "control": false
+    },
+    {
+      "bench": "fibonacci-recursive",
+      "rt": "galerinaManifest",
+      "then": 24,
+      "now": 19,
+      "ratio": 0.7916666666666666,
+      "control": false
+    },
+    {
+      "bench": "fibonacci-recursive",
+      "rt": "galerinaPassive-warm",
+      "then": 90252.71,
+      "now": 55555.56,
+      "ratio": 0.6155555883031102,
+      "control": false
+    },
+    {
+      "bench": "fibonacci-recursive",
+      "rt": "galerinaPassive-cold",
+      "then": 24.77,
+      "now": 25.6,
+      "ratio": 1.0335082761404926,
+      "control": false
+    },
+    {
+      "bench": "collection-pipeline",
+      "rt": "galerinaPassive-warm",
+      "then": 116369.28,
+      "now": 83728.72,
+      "ratio": 0.7195087913236208,
+      "control": false
+    },
+    {
+      "bench": "collection-pipeline",
+      "rt": "galerinaPassive-cold",
+      "then": 93.15,
+      "now": 836.05,
+      "ratio": 8.975308641975307,
+      "control": false
+    },
+    {
+      "bench": "governance-cost",
+      "rt": "galerinaGoverned",
+      "then": 3333,
+      "now": 699,
+      "ratio": 0.20972097209720972,
+      "control": false
+    },
+    {
+      "bench": "governance-cost",
+      "rt": "galerinaManifest",
+      "then": 4000,
+      "now": 1010,
+      "ratio": 0.2525,
+      "control": false
+    },
+    {
+      "bench": "governance-cost",
+      "rt": "galerinaPassive-warm",
+      "then": 104547.83,
+      "now": 46554.93,
+      "ratio": 0.44529790814405235,
+      "control": false
+    },
+    {
+      "bench": "governance-cost",
+      "rt": "galerinaPassive-cold",
+      "then": 4215.32,
+      "now": 2280.94,
+      "ratio": 0.5411071994534223,
+      "control": false
+    },
+    {
+      "bench": "hardware-targets",
+      "rt": "galerinaGoverned",
+      "then": 11111,
+      "now": 4000,
+      "ratio": 0.36000360003600035,
+      "control": false
+    },
+    {
+      "bench": "hardware-targets",
+      "rt": "galerinaManifest",
+      "then": 20000,
+      "now": 4348,
+      "ratio": 0.2174,
+      "control": false
+    },
+    {
+      "bench": "hardware-targets",
+      "rt": "galerinaPassive-warm",
+      "then": 130213.42,
+      "now": 76817.31,
+      "ratio": 0.589933894678444,
+      "control": false
+    },
+    {
+      "bench": "hardware-targets",
+      "rt": "galerinaPassive-cold",
+      "then": 33829.5,
+      "now": 20212.23,
+      "ratio": 0.5974735068505298,
+      "control": false
+    },
+    {
+      "bench": "low-memory",
+      "rt": "galerinaPassive-warm",
+      "then": 138408.3,
+      "now": 33624.75,
+      "ratio": 0.2429388266455119,
+      "control": false
+    },
+    {
+      "bench": "low-memory",
+      "rt": "galerinaPassive-cold",
+      "then": 16.46,
+      "now": 16.83,
+      "ratio": 1.0224787363304981,
+      "control": false
+    },
+    {
+      "bench": "gpu-compute",
+      "rt": "nodejs",
+      "then": 975994822,
+      "now": 963898716,
+      "ratio": 0.9876063830182902,
+      "control": true
+    },
+    {
+      "bench": "gpu-compute",
+      "rt": "python",
+      "then": 11239445,
+      "now": 7452042,
+      "ratio": 0.6630257988717414,
+      "control": true
+    },
+    {
+      "bench": "gpu-compute",
+      "rt": "rust",
+      "then": 1176351209,
+      "now": 1182392483,
+      "ratio": 1.0051356040218087,
+      "control": true
+    },
+    {
+      "bench": "gpu-compute",
+      "rt": "galerinaPassive-warm",
+      "then": 142045.45,
+      "now": 47938.64,
+      "ratio": 0.3374880363996171,
+      "control": false
+    },
+    {
+      "bench": "gpu-compute",
+      "rt": "galerinaPassive-cold",
+      "then": 4.31,
+      "now": 3.99,
+      "ratio": 0.9257540603248261,
+      "control": false
+    },
+    {
+      "bench": "matrix-multiply",
+      "rt": "galerinaPassive-warm",
+      "then": 111358.57,
+      "now": 31685.68,
+      "ratio": 0.2845374181798491,
+      "control": false
+    },
+    {
+      "bench": "matrix-multiply",
+      "rt": "galerinaPassive-cold",
+      "then": 23.15,
+      "now": 27.33,
+      "ratio": 1.180561555075594,
+      "control": false
+    },
+    {
+      "bench": "crypto-ops",
+      "rt": "galerinaGoverned",
+      "then": 277,
+      "now": 131,
+      "ratio": 0.4729241877256318,
+      "control": false
+    },
+    {
+      "bench": "crypto-ops",
+      "rt": "galerinaManifest",
+      "then": 5556,
+      "now": 2273,
+      "ratio": 0.4091072714182865,
+      "control": false
+    },
+    {
+      "bench": "crypto-ops",
+      "rt": "galerinaPassive-warm",
+      "then": 19793.75,
+      "now": 11732.96,
+      "ratio": 0.5927608462267129,
+      "control": false
+    },
+    {
+      "bench": "crypto-ops",
+      "rt": "galerinaPassive-cold",
+      "then": 26932.4,
+      "now": 17438.31,
+      "ratio": 0.6474844425301867,
+      "control": false
+    },
+    {
+      "bench": "text-html",
+      "rt": "galerinaGoverned",
+      "then": 1124,
+      "now": 699,
+      "ratio": 0.6218861209964412,
+      "control": false
+    },
+    {
+      "bench": "text-html",
+      "rt": "galerinaManifest",
+      "then": 4762,
+      "now": 2000,
+      "ratio": 0.41999160016799664,
+      "control": false
+    },
+    {
+      "bench": "text-html",
+      "rt": "galerinaPassive-warm",
+      "then": 118105.59,
+      "now": 46713.69,
+      "ratio": 0.39552480115462785,
+      "control": false
+    },
+    {
+      "bench": "text-html",
+      "rt": "galerinaPassive-cold",
+      "then": 9184,
+      "now": 5530.36,
+      "ratio": 0.6021733449477351,
+      "control": false
+    },
+    {
+      "bench": "tri-logic",
+      "rt": "galerinaPassive-warm",
+      "then": 131527.03,
+      "now": 51240.01,
+      "ratio": 0.38957779248873786,
+      "control": false
+    },
+    {
+      "bench": "tri-logic",
+      "rt": "galerinaPassive-cold",
+      "then": 1.3,
+      "now": 1.21,
+      "ratio": 0.9307692307692307,
+      "control": false
+    },
+    {
+      "bench": "data-query",
+      "rt": "galerinaPassive-warm",
+      "then": 128205.13,
+      "now": 40492.39,
+      "ratio": 0.31584063757823105,
+      "control": false
+    },
+    {
+      "bench": "data-query",
+      "rt": "galerinaPassive-cold",
+      "then": 255.31,
+      "now": 28.49,
+      "ratio": 0.11158983196897888,
+      "control": false
+    },
+    {
+      "bench": "call-chain",
+      "rt": "galerinaPassive-warm",
+      "then": 57077.63,
+      "now": 43630.02,
+      "ratio": 0.7643978910827236,
+      "control": false
+    },
+    {
+      "bench": "call-chain",
+      "rt": "galerinaPassive-cold",
+      "then": 1.38,
+      "now": 1.27,
+      "ratio": 0.9202898550724639,
+      "control": false
+    },
+    {
+      "bench": "nbody",
+      "rt": "galerinaPassive-warm",
+      "then": 76219.51,
+      "now": 15908.37,
+      "ratio": 0.20871782041107326,
+      "control": false
+    },
+    {
+      "bench": "nbody",
+      "rt": "galerinaPassive-cold",
+      "then": 1.9,
+      "now": 2.13,
+      "ratio": 1.1210526315789473,
+      "control": false
+    },
+    {
+      "bench": "json-parse",
+      "rt": "galerinaPassive-warm",
+      "then": 106496.27,
+      "now": 37979.49,
+      "ratio": 0.35662741990869723,
+      "control": false
+    },
+    {
+      "bench": "json-parse",
+      "rt": "galerinaPassive-cold",
+      "then": 24.77,
+      "now": 19.8,
+      "ratio": 0.7993540573274123,
+      "control": false
+    }
+  ]
+}

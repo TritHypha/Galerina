@@ -11,13 +11,13 @@
 
 | Metric | Count |
 |---|---|
-| Files | 13 |
+| Files | 15 |
 | Internal edges | 0 |
 | External dependencies | 6 |
 | ├─ Node core | 6 |
 | ├─ Workspace (@galerina/*) | 0 |
 | └─ Third-party | 0 |
-| Orphan files | 13 |
+| Orphan files | 15 |
 
 ## External Dependencies (the Border)
 
@@ -41,11 +41,13 @@ No boundary violations. All external imports are within the allowlist.
 ## Orphaned Files
 - `src/audit.mjs`
 - `src/build-native.mjs`
+- `src/chart.mjs`
 - `src/compare.mjs`
 - `src/diagnostic-runner.mjs`
 - `src/galerina-runner.mjs`
 - `src/gpu-detect.mjs`
 - `src/mem-sampler.mjs`
+- `src/noise-gate.mjs`
 - `src/report.mjs`
 - `src/runner.mjs`
 - `src/snapshot.mjs`
