@@ -279,7 +279,7 @@ describe("TRI_STDLIB_OPS: TriState operations", () => {
 describe("FUNGI_STDLIB_001: constant shape", () => {
   it("has correct code and name", () => {
     assert.equal(FUNGI_STDLIB_001.code, "FUNGI-STDLIB-001");
-    assert.equal(FUNGI_STDLIB_001.name, "StdlibEffectNotDeclared");
+    assert.equal(FUNGI_STDLIB_001.name, "STDLIB_EFFECT_NOT_DECLARED");
     assert.equal(FUNGI_STDLIB_001.severity, "error");
   });
 

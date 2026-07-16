@@ -293,7 +293,7 @@ describe("Denial #7 — FUNGI-VAL-001: safety_critical without audit.write", () 
   it("FUNGI_VAL_001 constant has correct metadata", () => {
     assert.equal(FUNGI_VAL_001.code, "FUNGI-VAL-001");
     assert.equal(FUNGI_VAL_001.severity, "error");
-    assert.equal(FUNGI_VAL_001.name, "SafetyCriticalMissingAudit");
+    assert.equal(FUNGI_VAL_001.name, "SAFETY_CRITICAL_MISSING_AUDIT");
   });
 });
 
@@ -322,7 +322,7 @@ describe("Denial #8 — FUNGI-VAL-002: safety_critical without deterministic_exe
   it("FUNGI_VAL_002 constant has correct metadata", () => {
     assert.equal(FUNGI_VAL_002.code, "FUNGI-VAL-002");
     assert.equal(FUNGI_VAL_002.severity, "error");
-    assert.equal(FUNGI_VAL_002.name, "SafetyCriticalMissingDeterminism");
+    assert.equal(FUNGI_VAL_002.name, "SAFETY_CRITICAL_MISSING_DETERMINISM");
   });
 });
 
@@ -351,7 +351,7 @@ describe("Denial #9 — FUNGI-VAL-003: Unknown value classification", () => {
   it("FUNGI_VAL_003 constant has correct metadata", () => {
     assert.equal(FUNGI_VAL_003.code, "FUNGI-VAL-003");
     assert.equal(FUNGI_VAL_003.severity, "error");
-    assert.equal(FUNGI_VAL_003.name, "UnknownValueClassification");
+    assert.equal(FUNGI_VAL_003.name, "UNKNOWN_VALUE_CLASSIFICATION");
   });
 });
 
@@ -391,7 +391,7 @@ describe("Denial #10 — FUNGI-HW-001: Quantum target without FormalRequired", (
   it("FUNGI_HW_001 constant has correct metadata", () => {
     assert.equal(FUNGI_HW_001.code, "FUNGI-HW-001");
     assert.equal(FUNGI_HW_001.severity, "error");
-    assert.equal(FUNGI_HW_001.name, "QuantumTargetRequiresFormalProof");
+    assert.equal(FUNGI_HW_001.name, "QUANTUM_TARGET_REQUIRES_FORMAL_PROOF");
   });
 });
 
@@ -417,7 +417,7 @@ describe("Denial #11 — FUNGI-HW-002: NPU target without audit.write", () => {
   it("FUNGI_HW_002 constant has correct metadata", () => {
     assert.equal(FUNGI_HW_002.code, "FUNGI-HW-002");
     assert.equal(FUNGI_HW_002.severity, "warning");
-    assert.equal(FUNGI_HW_002.name, "SealedTargetRequiresAuditTrace");
+    assert.equal(FUNGI_HW_002.name, "SEALED_TARGET_REQUIRES_AUDIT_TRACE");
   });
 });
 
@@ -486,7 +486,7 @@ guarded flow fetchData(url: String) -> String
   it("FUNGI_NET_001 constant has code FUNGI-NET-001, name NetworkDestinationDenied, severity error", () => {
     // Verify the constant shape that runtime enforcement relies on
     assert.equal(FUNGI_NET_001.code, "FUNGI-NET-001");
-    assert.equal(FUNGI_NET_001.name, "NetworkDestinationDenied");
+    assert.equal(FUNGI_NET_001.name, "NETWORK_DESTINATION_DENIED");
     assert.equal(FUNGI_NET_001.severity, "error");
     assert.ok(
       typeof FUNGI_NET_001.suggestedFix === "string" && FUNGI_NET_001.suggestedFix.length > 0,

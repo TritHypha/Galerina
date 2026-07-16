@@ -32,7 +32,7 @@ export function detectCycles(g: FlowGraph): readonly GraphDiagnostic[] {
       const cycle = path.slice(cycleStart);
       diags.push({
         code: "FUNGI-GRAPH-001",
-        name: "CycleDetected",
+        name: "FLOW_CYCLE_DETECTED", // #20 rider (§8 commit 7 exception #1): distinct from FUNGI-PGRAPH-001 CYCLE_DETECTED (project-graph)
         severity: "error",
         message: `Potential execution cycle detected: ${cycle.join(" → ")} → ${node}. Add a retry limit, timeout, or exit condition.`,
         flows: cycle,
@@ -77,7 +77,7 @@ export function detectDeadFlows(g: FlowGraph): readonly GraphDiagnostic[] {
     if (!reachable.has(name) && node.qualifier !== "pure") {
       diags.push({
         code: "FUNGI-GRAPH-002",
-        name: "DeadFlow",
+        name: "DEAD_FLOW",
         severity: "warning",
         message: `Flow '${name}' is never reachable from any route or public entry point. Consider removing it or adding a route.`,
         flows: [name],
@@ -107,7 +107,7 @@ export function detectAuthorityEscalation(g: FlowGraph): readonly GraphDiagnosti
     if (!fromIsSensitive && toIsSensitive && from.qualifier === "flow") {
       diags.push({
         code: "FUNGI-GRAPH-003",
-        name: "AuthorityEscalation",
+        name: "AUTHORITY_ESCALATION",
         severity: "error",
         message: `Flow '${e.from}' (no sensitive effects) calls '${e.to}' which has sensitive effects [${to.declaredEffects.filter(x => sensitiveEffects.has(x)).join(", ")}]. Ensure ${e.from} has appropriate authority declared.`,
         flows: [e.from, e.to],
@@ -129,7 +129,7 @@ export function detectPiiLeakagePaths(g: FlowGraph): readonly GraphDiagnostic[] 
     if (from.hasPii && to.hasNetworkOut && !to.hasAudit) {
       diags.push({
         code: "FUNGI-GRAPH-004",
-        name: "PiiLeakagePath",
+        name: "PII_LEAKAGE_PATH",
         severity: "error",
         message: `PII flow '${e.from}' calls '${e.to}' which has network.outbound but no audit.write. Protected values may leak externally without an audit trail.`,
         flows: [e.from, e.to],
@@ -150,7 +150,7 @@ export function detectMissingAuditCoverage(g: FlowGraph): readonly GraphDiagnost
     if (isHighRisk && !node.hasAudit) {
       diags.push({
         code: "FUNGI-GRAPH-005",
-        name: "MissingAuditCoverage",
+        name: "MISSING_AUDIT_COVERAGE",
         severity: "warning",
         message: `Flow '${name}' performs high-risk operations [${node.declaredEffects.filter(e => HIGH_RISK_EFFECTS.has(e)).join(", ")}] without declaring audit.write. Critical state changes should have an audit trail.`,
         flows: [name],
@@ -176,7 +176,7 @@ export function detectUnboundedRetry(g: FlowGraph): readonly GraphDiagnostic[] {
       if (count >= 3) {
         diags.push({
           code: "FUNGI-GRAPH-006",
-          name: "UnboundedRetry",
+          name: "UNBOUNDED_RETRY",
           severity: "warning",
           message: `Flow '${caller}' calls '${callee}' ${count} times in the same path. Consider extracting to a bounded loop or caching the result.`,
           flows: [caller, callee],

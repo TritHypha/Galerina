@@ -328,7 +328,7 @@ class SymbolResolver {
     if (current.has(name)) {
       this.diagnostics.push({
         code: "FUNGI-NAME-002",
-        name: "DuplicateName",
+        name: "DUPLICATE_NAME",
         severity: "error",
         message: `'${name}' is already declared in this scope.`,
         ...(node.location !== undefined ? { location: node.location } : {}),
@@ -353,7 +353,7 @@ class SymbolResolver {
 
     this.diagnostics.push({
       code: "FUNGI-NAME-003",
-      name: "CrossModuleShadow",
+      name: "CROSS_MODULE_SHADOW",
       severity: "warning",
       message: `Binding '${name}' shadows the built-in domain type '${name}'. Consider renaming to avoid confusion.`,
       ...(node.location !== undefined ? { location: node.location } : {}),
@@ -402,7 +402,7 @@ class SymbolResolver {
 
     this.diagnostics.push({
       code: "FUNGI-NAME-001",
-      name: "UndeclaredName",
+      name: "UNDECLARED_NAME",
       severity: "error",
       message: `'${name}' is not declared in the current scope.`,
       ...(node.location !== undefined ? { location: node.location } : {}),
@@ -580,7 +580,7 @@ class SymbolResolver {
 
     this.diagnostics.push({
       code: "FUNGI-NAME-001",
-      name: "UndeclaredName",
+      name: "UNDECLARED_NAME",
       severity: "error",
       message: `'${name}' is not declared in the current scope.`,
       ...(node.location !== undefined ? { location: node.location } : {}),

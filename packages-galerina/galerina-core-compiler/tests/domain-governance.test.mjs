@@ -400,7 +400,7 @@ contract {
 
   it("FUNGI_GOV_011 constant has expected code and name", () => {
     assert.equal(FUNGI_GOV_011.code, "FUNGI-GOV-011");
-    assert.equal(FUNGI_GOV_011.name, "UnknownContractSet");
+    assert.equal(FUNGI_GOV_011.name, "UNKNOWN_CONTRACT_SET");
     assert.equal(FUNGI_GOV_011.severity, "error");
   });
 });
@@ -494,7 +494,7 @@ contract {
 
   it("FUNGI_GOV_012 constant has expected code and name", () => {
     assert.equal(FUNGI_GOV_012.code, "FUNGI-GOV-012");
-    assert.equal(FUNGI_GOV_012.name, "ContractSetRequirementNotMet");
+    assert.equal(FUNGI_GOV_012.name, "CONTRACT_SET_REQUIREMENT_NOT_MET");
     assert.equal(FUNGI_GOV_012.severity, "warning");
   });
 });
@@ -661,7 +661,7 @@ contract { effects { database.write } }
 
   it("FUNGI_EVENT_001 constant has expected code and name", () => {
     assert.equal(FUNGI_EVENT_001.code, "FUNGI-EVENT-001");
-    assert.equal(FUNGI_EVENT_001.name, "EventNotDeclared");
+    assert.equal(FUNGI_EVENT_001.name, "EVENT_NOT_DECLARED");
     assert.equal(FUNGI_EVENT_001.severity, "error");
   });
 });
@@ -720,7 +720,7 @@ contract { effects { database.write } }
 
   it("FUNGI_EVENT_002 constant has expected code and name", () => {
     assert.equal(FUNGI_EVENT_002.code, "FUNGI-EVENT-002");
-    assert.equal(FUNGI_EVENT_002.name, "EventNeverEmitted");
+    assert.equal(FUNGI_EVENT_002.name, "EVENT_NEVER_EMITTED");
     assert.equal(FUNGI_EVENT_002.severity, "warning");
   });
 });

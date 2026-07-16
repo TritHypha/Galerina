@@ -438,7 +438,7 @@ describe("NodeFlags: None for simple flow", () => {
 describe("FUNGI_COMPUTE_001: constant shape", () => {
   it("FUNGI_COMPUTE_001 has correct code and severity", () => {
     assert.equal(FUNGI_COMPUTE_001.code, "FUNGI-COMPUTE-001");
-    assert.equal(FUNGI_COMPUTE_001.name, "ComputeTargetIncompatiblePattern");
+    assert.equal(FUNGI_COMPUTE_001.name, "COMPUTE_TARGET_INCOMPATIBLE_PATTERN");
     assert.equal(FUNGI_COMPUTE_001.severity, "warning");
     assert.ok(typeof FUNGI_COMPUTE_001.message === "string");
     assert.ok(typeof FUNGI_COMPUTE_001.why === "string");

@@ -15,21 +15,21 @@ import { type AstNode, type SourceLocation } from "./parser.js";
 
 export const FUNGI_STYLE_001 = {
   code: "FUNGI-STYLE-001",
-  name: "FlowNameCamelCase",
+  name: "FLOW_NAME_CAMEL_CASE",
   severity: "warning" as const,
   message: "Flow and fn names should use camelCase (e.g. getUser, createPatient).",
 } as const;
 
 export const FUNGI_STYLE_002 = {
   code: "FUNGI-STYLE-002",
-  name: "TypeNamePascalCase",
+  name: "TYPE_NAME_PASCAL_CASE",
   severity: "warning" as const,
   message: "Type, record, and enum names should use PascalCase (e.g. UserId, PatientRecord).",
 } as const;
 
 export const FUNGI_STYLE_SEC_001 = {
   code: "FUNGI-STYLE-SEC-001",
-  name: "SensitiveBindingType",
+  name: "SENSITIVE_BINDING_TYPE",
   severity: "warning" as const,
   message: "Binding name looks sensitive. Use SecureString or protected String to enforce security constraints.",
 } as const;

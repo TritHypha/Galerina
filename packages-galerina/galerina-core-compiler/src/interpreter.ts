@@ -500,7 +500,7 @@ export function fitsTagged(n: number): boolean {
 /** FUNGI-RUNTIME-005: Attempt to access a governed value from an unauthorized flow. */
 export const FUNGI_RUNTIME_005 = {
   code: "FUNGI-RUNTIME-005",
-  name: "UnauthorizedGovernedValueAccess",
+  name: "UNAUTHORIZED_GOVERNED_VALUE_ACCESS",
   severity: "error" as const,
   message: "Attempt to access a governed value from an unauthorized flow.",
   why: "Protected values may only be accessed by flows with declared access rights.",

@@ -228,7 +228,7 @@ export const FUNGI_CONTEXT_001 = {
 /** FUNGI-GOV-011: `use SetName` references a contract set not declared at program scope. */
 export const FUNGI_GOV_011 = {
   code: "FUNGI-GOV-011",
-  name: "UnknownContractSet",
+  name: "UNKNOWN_CONTRACT_SET",
   severity: "error" as const,
   message: "Contract set referenced with 'use' is not declared at program scope.",
 } as const;
@@ -236,7 +236,7 @@ export const FUNGI_GOV_011 = {
 /** FUNGI-GOV-012: Contract set audit requirement not met by flow's declared effects. */
 export const FUNGI_GOV_012 = {
   code: "FUNGI-GOV-012",
-  name: "ContractSetRequirementNotMet",
+  name: "CONTRACT_SET_REQUIREMENT_NOT_MET",
   severity: "warning" as const,
   message: "Contract set requires audit.write but the flow does not declare it.",
 } as const;
@@ -440,7 +440,7 @@ export const FUNGI_TERM_001 = {
 /** FUNGI-GOV-013: A pure flow calls a flow with effects. Pure flows cannot cross into governed boundaries. */
 export const FUNGI_GOV_013 = {
   code: "FUNGI-GOV-013",
-  name: "BoundaryViolation",
+  name: "BOUNDARY_VIOLATION",
   severity: "error" as const,
   message: "A pure flow calls a flow with effects. Pure flows cannot cross into governed boundaries.",
   why: "Pure flows are proven effect-free. Calling an effectful flow breaks this proof.",
@@ -450,7 +450,7 @@ export const FUNGI_GOV_013 = {
 /** FUNGI-GOV-005: policy { purpose "read-only" } but flow also uses database.write (or similar). */
 export const FUNGI_GOV_005 = {
   code: "FUNGI-GOV-005",
-  name: "PolicyPurposeMismatch",
+  name: "POLICY_PURPOSE_MISMATCH",
   severity: "warning" as const,
   message: "Policy purpose contradicts declared effects.",
 } as const;
@@ -458,7 +458,7 @@ export const FUNGI_GOV_005 = {
 /** FUNGI-GOV-007: authority block exists but has no reason clause. */
 export const FUNGI_GOV_007 = {
   code: "FUNGI-GOV-007",
-  name: "AuthorityBlockMissingReason",
+  name: "AUTHORITY_BLOCK_MISSING_REASON",
   severity: "error" as const,
   message: `Authority block must include a reason declaration. Add: reason "Explain why this authority is needed"`,
 } as const;
@@ -471,7 +471,7 @@ export const FUNGI_GOV_007 = {
  *  governance-verifier.test.mjs.) */
 export const FUNGI_GOV_009 = {
   code: "FUNGI-GOV-009",
-  name: "PrivilegedFlowMissingCapability",
+  name: "PRIVILEGED_FLOW_MISSING_CAPABILITY",
   severity: "warning" as const,
   message: "Privileged flow declares no effects or capabilities. Privileged flows should explicitly declare what authority they require.",
 } as const;
@@ -489,7 +489,7 @@ export const FUNGI_GOV_009 = {
  */
 export const FUNGI_VAL_001 = {
   code: "FUNGI-VAL-001",
-  name: "SafetyCriticalMissingAudit",
+  name: "SAFETY_CRITICAL_MISSING_AUDIT",
   severity: "error" as const,
   message: "A safety_critical flow must declare audit.write in its effects block.",
   why: "Safety-critical systems require an immutable audit trail. Governance without audit is unverifiable.",
@@ -505,7 +505,7 @@ export const FUNGI_VAL_001 = {
  */
 export const FUNGI_VAL_002 = {
   code: "FUNGI-VAL-002",
-  name: "SafetyCriticalMissingDeterminism",
+  name: "SAFETY_CRITICAL_MISSING_DETERMINISM",
   severity: "error" as const,
   message: "A safety_critical flow must declare `require deterministic_execution` in contract.safety.",
   why: "Safety-critical correctness depends on deterministic, repeatable execution. Non-determinism invalidates formal proof.",
@@ -521,7 +521,7 @@ export const FUNGI_VAL_002 = {
  */
 export const FUNGI_VAL_003 = {
   code: "FUNGI-VAL-003",
-  name: "UnknownValueClassification",
+  name: "UNKNOWN_VALUE_CLASSIFICATION",
   severity: "error" as const,
   message: "Unrecognised classification in contract.value. Use a recognised classification: safety_critical, mission_critical, regulated, financial, medical, government, national_security, confidential, internal, or public.",
   why: "Value classifications drive governance rules, routing decisions, and compliance mapping. Unknown classifications cannot be enforced.",
@@ -2511,7 +2511,7 @@ class GovernanceVerifier {
       if (m && !VALID.has((m[1] ?? "").toUpperCase())) {
         this.diagnostics.push(makeGovDiag(
           "FUNGI-ARCH-001",
-          "InvalidVolatility",
+          "INVALID_VOLATILITY",
           "error",
           `Flow '${flow.name}': contract.architecture volatility must be LOW, MED, or HIGH (got '${m[1]}').`,
           loc,
@@ -2568,7 +2568,7 @@ class GovernanceVerifier {
         if (lb !== undefined && la < lb) {
           this.diagnostics.push(makeGovDiag(
             "FUNGI-ARCH-002",
-            "StableDependencyViolation",
+            "STABLE_DEPENDENCY_VIOLATION",
             "error",
             `Architectural Violation: flow '${name}' (volatility ${NAME[la]}) depends on '${callee}' ` +
             `(volatility ${NAME[lb]}). A more-stable flow must not depend on a more-volatile one (Stable Dependencies Principle).`,
@@ -3258,7 +3258,7 @@ class GovernanceVerifier {
 
     // liability {} is auto-calculated — writing it manually is a design smell.
     this.diagnostics.push(makeGovDiag(
-      "FUNGI-GOV-018", "ManualLiabilityDeclaration", "warning",
+      "FUNGI-GOV-018", "MANUAL_LIABILITY_DECLARATION", "warning",
       `Flow '${flowName}' manually declares a liability {} contract block. ` +
       `liability {} is auto-calculated from the ValueGraph breach-risk matrix and stored in the ProofGraph. ` +
       `Declaring it manually couples your source code to a specific risk assessment that may go stale.`,
@@ -3488,7 +3488,7 @@ class GovernanceVerifier {
       if (!VALID_STRATEGIES.has(rawStrategy)) {
         this.diagnostics.push(makeGovDiag(
           "FUNGI-GOV-015",
-          "EpilogueInvalidStrategy",
+          "EPILOGUE_INVALID_STRATEGY",
           "error",
           `Flow '${flowName}' declares epilogue { generate_proof ${rawStrategy || "<missing>"} } but '${rawStrategy || "<missing>"}' is not a recognised proof strategy.`,
           epilogueNode.location,
@@ -3507,7 +3507,7 @@ class GovernanceVerifier {
       if (!VALID_FAILURES.has(rawAction)) {
         this.diagnostics.push(makeGovDiag(
           "FUNGI-GOV-016",
-          "EpilogueInvalidFailureAction",
+          "EPILOGUE_INVALID_FAILURE_ACTION",
           "error",
           `Flow '${flowName}' declares epilogue { on_verification_failure ${rawAction || "<missing>"} } but '${rawAction || "<missing>"}' is not a recognised failure action.`,
           epilogueNode.location,

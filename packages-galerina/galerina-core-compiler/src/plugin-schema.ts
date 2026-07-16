@@ -84,7 +84,7 @@ export function validatePluginInput(
     if (actualType !== field.type && !isCompatibleType(actualType, field.type)) {
       violations.push({
         code: "FUNGI-BORDER-002",
-        name: "TYPE_MISMATCH",
+        name: "BORDER_TYPE_MISMATCH", // #20 rider (§8 commit 8): distinct from FUNGI-TYPE-002 TYPE_MISMATCH — one name per code
         plugin: pluginName,
         field: field.name,
         message: `Plugin '${pluginName}' input '${field.name}': expected ${field.type}, got ${actualType}. ` +

@@ -137,7 +137,7 @@ describe("FUNGI-VAL-001: SafetyCriticalMissingAudit", () => {
   it("FUNGI-VAL-001 constant has correct code and severity", () => {
     assert.equal(FUNGI_VAL_001.code, "FUNGI-VAL-001");
     assert.equal(FUNGI_VAL_001.severity, "error");
-    assert.equal(FUNGI_VAL_001.name, "SafetyCriticalMissingAudit");
+    assert.equal(FUNGI_VAL_001.name, "SAFETY_CRITICAL_MISSING_AUDIT");
   });
 });
 
@@ -190,7 +190,7 @@ describe("FUNGI-VAL-002: SafetyCriticalMissingDeterminism", () => {
   it("FUNGI-VAL-002 constant has correct code and severity", () => {
     assert.equal(FUNGI_VAL_002.code, "FUNGI-VAL-002");
     assert.equal(FUNGI_VAL_002.severity, "error");
-    assert.equal(FUNGI_VAL_002.name, "SafetyCriticalMissingDeterminism");
+    assert.equal(FUNGI_VAL_002.name, "SAFETY_CRITICAL_MISSING_DETERMINISM");
   });
 });
 

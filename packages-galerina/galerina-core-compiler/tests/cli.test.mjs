@@ -23,7 +23,7 @@ describe("FUNGI_SOURCE_ESCAPE_001 export", () => {
     assert.ok(FUNGI_SOURCE_ESCAPE_001 !== undefined, "FUNGI_SOURCE_ESCAPE_001 must be exported");
     assert.equal(FUNGI_SOURCE_ESCAPE_001.code, "FUNGI-SOURCE-ESCAPE-001");
     assert.equal(FUNGI_SOURCE_ESCAPE_001.severity, "error");
-    assert.equal(FUNGI_SOURCE_ESCAPE_001.name, "SourceLevelEvalEscape");
+    assert.equal(FUNGI_SOURCE_ESCAPE_001.name, "SOURCE_LEVEL_EVAL_ESCAPE");
   });
 });
 
@@ -37,7 +37,7 @@ describe("FUNGI_BACKEND_001 export", () => {
     assert.ok(FUNGI_BACKEND_001 !== undefined, "FUNGI_BACKEND_001 must be exported");
     assert.equal(FUNGI_BACKEND_001.code, "FUNGI-BACKEND-001");
     assert.equal(FUNGI_BACKEND_001.severity, "error");
-    assert.equal(FUNGI_BACKEND_001.name, "BackendError");
+    assert.equal(FUNGI_BACKEND_001.name, "BACKEND_ERROR");
   });
 });
 

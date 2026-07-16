@@ -421,18 +421,18 @@ describe("Event checker — constant shapes", () => {
   it("FUNGI_EVENT_003 has correct code and severity", () => {
     assert.equal(FUNGI_EVENT_003.code, "FUNGI-EVENT-003");
     assert.equal(FUNGI_EVENT_003.severity, "error");
-    assert.equal(FUNGI_EVENT_003.name, "ContractEmitsUndeclaredEvent");
+    assert.equal(FUNGI_EVENT_003.name, "CONTRACT_EMITS_UNDECLARED_EVENT");
   });
 
   it("FUNGI_EVENT_004 has correct code and severity", () => {
     assert.equal(FUNGI_EVENT_004.code, "FUNGI-EVENT-004");
     assert.equal(FUNGI_EVENT_004.severity, "warning");
-    assert.equal(FUNGI_EVENT_004.name, "DuplicateEventEmission");
+    assert.equal(FUNGI_EVENT_004.name, "DUPLICATE_EVENT_EMISSION");
   });
 
   it("FUNGI_EVENT_005 has correct code and severity", () => {
     assert.equal(FUNGI_EVENT_005.code, "FUNGI-EVENT-005");
     assert.equal(FUNGI_EVENT_005.severity, "warning");
-    assert.equal(FUNGI_EVENT_005.name, "EventEmittedNotInContract");
+    assert.equal(FUNGI_EVENT_005.name, "EVENT_EMITTED_NOT_IN_CONTRACT");
   });
 });

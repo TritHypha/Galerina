@@ -1219,7 +1219,7 @@ class ValueStateChecker {
       if (derivesFromSecret(_condition, (name) => this.lookupBinding(name))) {
         this.diagnostics.push({
           code: "FUNGI-SECRET-004",
-          name: "SecretDependentBranch",
+          name: "SECRET_DEPENDENT_BRANCH",
           severity: "warning",
           message: `This 'if' branches on a secret-derived value, so the arm taken — and thus the flow's observable execution time — depends on secret material (timing side-channel, CWE-208).`,
           ...(_condition.location !== undefined ? { location: _condition.location } : {}),
@@ -1246,7 +1246,7 @@ class ValueStateChecker {
             // then-branch has gate, else doesn't
             this.diagnostics.push(makeVSDiag(
               "FUNGI-VALUESTATE-002",
-              "UnsafeConditionalUpgrade",
+              "UNSAFE_CONDITIONAL_UPGRADE",
               `'safe mut ${name}' is used in both branches of an if/else, but only the 'if' branch uses a recognised gate. Both branches must validate before upgrading to safe.`,
               elseBlock.location,
               `Add a gate in the else branch: safe mut ${name} = validate.${name}(${name})?`,
@@ -1256,7 +1256,7 @@ class ValueStateChecker {
             // else-branch has gate, then doesn't
             this.diagnostics.push(makeVSDiag(
               "FUNGI-VALUESTATE-002",
-              "UnsafeConditionalUpgrade",
+              "UNSAFE_CONDITIONAL_UPGRADE",
               `'safe mut ${name}' is used in both branches of an if/else, but only the 'else' branch uses a recognised gate. Both branches must validate before upgrading to safe.`,
               thenBlock.location,
               `Add a gate in the if branch: safe mut ${name} = validate.${name}(${name})?`,
@@ -1398,7 +1398,7 @@ class ValueStateChecker {
       } else if (isRedactCall(init)) {
         this.diagnostics.push(makeVSDiag(
           "FUNGI-VALUESTATE-007",
-          "RedactedBoundaryViolation",
+          "REDACTED_BOUNDARY_VIOLATION",
           `Cannot assign a 'redacted' value to plain binding '${info.name}'. Redaction is irreversible — a redacted value cannot be converted back to its original type.`,
           node.location,
           `Use the redacted value as-is with type 'redacted ${info.typeName}', or do not redact before this point.`,
@@ -1458,7 +1458,7 @@ class ValueStateChecker {
       if (!this.isGateExpression(init)) {
         this.diagnostics.push(makeVSDiag(
           "FUNGI-VALUESTATE-001",
-          "UnsafeToSafeTransitionDenied",
+          "UNSAFE_TO_SAFE_TRANSITION_DENIED",
           `'safe mut ${info.name}' requires a recognised gate function on the right-hand side (validate.*, sanitize.*, json.decode<T>, parse.*).`,
           node.location,
           `Use: safe mut ${info.name} = validate.${info.name}(${info.name})?`,
@@ -1604,14 +1604,14 @@ class ValueStateChecker {
         // (a) STATE-SKIP: the value's stage is below the sink's required stage → deny (Raw<Verified<Authorized<Sealed).
         if (need !== undefined && b.passportStage < need) {
           this.diagnostics.push(makeVSDiag(
-            "FUNGI-PASSPORT-002", "PassportStateSkip",
+            "FUNGI-PASSPORT-002", "PASSPORT_STATE_SKIP",
             `Passport '${b.name}' is at stage ${b.passportStage} but sink '${sinkName}' requires stage ${need} (Raw<Verified<Authorized<Sealed). Advance it through the missing gate(s) before this sink.`,
             node.location, `Apply the missing gate (verify/authorize/seal) to '${b.name}' before '${sinkName}'.`));
         }
         // (b) CONSUME-ONCE: already consumed at a prior authority sink → deny re-use (affine/linear single-use).
         if (b.consumed === true) {
           this.diagnostics.push(makeVSDiag(
-            "FUNGI-AFFINE-001", "PassportConsumedTwice",
+            "FUNGI-AFFINE-001", "PASSPORT_CONSUMED_TWICE",
             `Passport '${b.name}' was already consumed and cannot be re-used (affine/linear single-use).`,
             node.location, `Re-derive a fresh passport; an authority value is consume-once.`,
             undefined,
@@ -1685,7 +1685,7 @@ class ValueStateChecker {
           }
           this.diagnostics.push({
             code: "FUNGI-VALUESTATE-004",
-            name: "TaintedValuePropagation",
+            name: "TAINTED_VALUE_PROPAGATION",
             severity: "error",
             message: `Tainted value '${taintName}' passed to '${calleeName}'. Validate before passing to another flow.`,
             ...(node.location !== undefined ? { location: node.location } : {}),
@@ -1858,7 +1858,7 @@ class ValueStateChecker {
         }
         this.diagnostics.push(makeVSDiag(
           "FUNGI-VALUESTATE-003",
-          "UnsafeValueReachedGovernedSink",
+          "UNSAFE_VALUE_REACHED_GOVERNED_SINK",
           `Unsafe binding '${binding.name}' cannot flow into governed sink '${sinkName}'.`,
           location,
           `Add before the sink call: safe mut ${binding.name} = validate.${binding.name}(${binding.name})?`,
@@ -1903,7 +1903,7 @@ class ValueStateChecker {
         this.diagnostics.push({
           ...makeVSDiag(
             "FUNGI-VALUESTATE-008",
-            "BoundaryInputUnclean",
+            "BOUNDARY_INPUT_UNCLEAN",
             `Untrusted boundary input '${binding.name}' reaches governed sink '${sinkName}' without an explicit gate.`,
             location,
             `Add before the sink: safe mut ${binding.name} = validate.${binding.name}(${binding.name})?  (or declare the param 'tainted' and gate it).`,
@@ -1954,7 +1954,7 @@ class ValueStateChecker {
         }
         this.diagnostics.push(makeVSDiag(
           "FUNGI-SECRET-001",
-          "SecretValueLogged",
+          "SECRET_VALUE_LOGGED",
           `SecureString binding '${binding.name}' must not be passed to '${callName}'.`,
           location,
           `Replace with: log.info("...", { key: redact(${binding.name}) })`,
@@ -1999,7 +1999,7 @@ class ValueStateChecker {
       if (binding?.typeName === "SecureString") {
         this.diagnostics.push(makeVSDiag(
           "FUNGI-SECRET-003",
-          "SecretSerializationDenied",
+          "SECRET_SERIALIZATION_DENIED",
           `SecureString binding '${binding.name}' must not be passed to '${callName}'. Secrets must not appear in serialized or audit output.`,
           location,
           `Use redact(${binding.name}) to produce a safe placeholder before passing to '${callName}'.`,
@@ -2124,7 +2124,7 @@ class ValueStateChecker {
 
     this.diagnostics.push(makeVSDiag(
       "FUNGI-VALUESTATE-004",
-      "TaintedValuePropagation",
+      "TAINTED_VALUE_PROPAGATION",
       `String concatenation includes unsafe binding '${unsafeBinding.name}'. The result is tainted and must not reach governed sinks.`,
       location,
       `Validate '${unsafeBinding.name}' before concatenation: let safe = validate.${unsafeBinding.name}(${unsafeBinding.name})?`,
@@ -2228,7 +2228,7 @@ const NUMERIC_BIND_KINDS = new Set(["letDecl", "mutDecl", "readonlyDecl"]);
 function unlowerableNumericDiag(base: string, location: SourceLocation | undefined): ValueStateDiagnostic {
   return {
     code: "FUNGI-NUMERIC-001",
-    name: "UnsupportedNumericWidth",
+    name: "UNSUPPORTED_NUMERIC_WIDTH",
     severity: "error",
     message: `Scalar '${base}' is a valid Galerina type, but the current WASM backend cannot lower it without silently truncating to 32 bits — a fail-open correctness hazard. 64-bit integers are not yet faithfully emitted, so this is rejected rather than silently narrowed.`,
     ...(location !== undefined ? { location } : {}),

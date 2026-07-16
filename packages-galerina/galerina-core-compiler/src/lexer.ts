@@ -293,7 +293,7 @@ export function lex(source: string, file: string): LexResult {
   if (source.length > MAX_FILE_SIZE) {
     const sizeError: LexerDiagnostic = {
       code: "FUNGI-LEX-004",
-      name: "FileTooLarge",
+      name: "FILE_TOO_LARGE",
       severity: "error",
       message: "File exceeds maximum size (10MB). Split into smaller files.",
       location: { file, line: 1, column: 1 },
@@ -349,7 +349,7 @@ export function lex(source: string, file: string): LexResult {
       if (diagnostics.length === MAX_DIAGNOSTICS) {
         diagnostics.push({
           code: "FUNGI-LEX-006",
-          name: "TooManyDiagnostics",
+          name: "TOO_MANY_DIAGNOSTICS",
           severity: "error",
           message: `Lexer emitted ${MAX_DIAGNOSTICS} diagnostics. Further errors suppressed. Fix the first errors and re-compile.`,
           location: { file, line: diagLine, column: diagCol },
@@ -389,7 +389,7 @@ export function lex(source: string, file: string): LexResult {
       if (lineLength > MAX_LINE_LENGTH) {
         diagnostics.push({
           code: "FUNGI-LEX-005",
-          name: "LineTooLong",
+          name: "LINE_TOO_LONG",
           severity: "warning",
           message: `Line ${startLine} exceeds maximum length (10,000 characters).`,
           location: { file, line: startLine, column: 1 },
@@ -408,7 +408,7 @@ export function lex(source: string, file: string): LexResult {
       if (tokens.length > MAX_TOKEN_COUNT) {
         diagnostics.push({
           code: "FUNGI-LEX-004",
-          name: "FileTooLarge",
+          name: "FILE_TOO_LARGE",
           severity: "error",
           message: "Token count exceeds maximum limit (1,000,000). Split into smaller files.",
           location: { file, line, column: col },
@@ -545,7 +545,7 @@ export function lex(source: string, file: string): LexResult {
                 if (!isValidHex || codePoint > 0x10FFFF) {
                   diag(
                     "FUNGI-LEX-003",
-                    "InvalidUnicodeEscape",
+                    "INVALID_UNICODE_ESCAPE",
                     "Invalid unicode escape sequence in string literal.",
                     startLine,
                     startCol,
@@ -558,7 +558,7 @@ export function lex(source: string, file: string): LexResult {
               } else {
                 diag(
                   "FUNGI-LEX-003",
-                  "InvalidUnicodeEscape",
+                  "INVALID_UNICODE_ESCAPE",
                   "Invalid unicode escape sequence in string literal.",
                   startLine,
                   startCol,
@@ -582,7 +582,7 @@ export function lex(source: string, file: string): LexResult {
               } else {
                 diag(
                   "FUNGI-LEX-003",
-                  "InvalidUnicodeEscape",
+                  "INVALID_UNICODE_ESCAPE",
                   "Invalid unicode escape sequence in string literal.",
                   startLine,
                   startCol,
@@ -603,7 +603,7 @@ export function lex(source: string, file: string): LexResult {
           oversized = true;
           diag(
             "FUNGI-LEX-002",
-            "OversizedToken",
+            "OVERSIZED_TOKEN",
             "String literal or identifier exceeds maximum length (10,000 characters).",
             startLine,
             startCol,
@@ -728,7 +728,7 @@ export function lex(source: string, file: string): LexResult {
         if (genericDepth > 8) {
           diag(
             "FUNGI-LEX-001",
-            "ExcessiveNesting",
+            "EXCESSIVE_NESTING",
             "Generic type nesting exceeds maximum depth (8 levels). Simplify the type.",
             startLine,
             startCol,
@@ -804,7 +804,7 @@ export function lex(source: string, file: string): LexResult {
       if (value.length > 10_000) {
         diag(
           "FUNGI-LEX-002",
-          "OversizedToken",
+          "OVERSIZED_TOKEN",
           "String literal or identifier exceeds maximum length (10,000 characters).",
           startLine,
           startCol,

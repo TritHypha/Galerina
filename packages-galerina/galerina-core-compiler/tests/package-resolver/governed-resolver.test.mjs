@@ -56,7 +56,7 @@ const GOOD_HASH_2 = "sha256:" + "b".repeat(64);
 describe("FUNGI-PKG constants: shape conformance", () => {
   it("FUNGI_PKG_001 (CapabilityExpanded) has correct shape", () => {
     assert.equal(FUNGI_PKG_001.code, "FUNGI-PKG-001");
-    assert.equal(FUNGI_PKG_001.name, "CapabilityExpanded");
+    assert.equal(FUNGI_PKG_001.name, "CAPABILITY_EXPANDED");
     assert.equal(FUNGI_PKG_001.severity, "error");
     assert.ok(typeof FUNGI_PKG_001.message === "string");
     assert.ok(typeof FUNGI_PKG_001.why === "string");
@@ -391,7 +391,7 @@ describe("checkPackageProvenance: FUNGI-PKG-006 signing-key revocation (defense-
 
   it("FUNGI_PKG_006 constant has the correct shape", () => {
     assert.equal(FUNGI_PKG_006.code, "FUNGI-PKG-006");
-    assert.equal(FUNGI_PKG_006.name, "RevokedSigner");
+    assert.equal(FUNGI_PKG_006.name, "REVOKED_SIGNER");
     assert.equal(FUNGI_PKG_006.severity, "error");
     assert.ok(typeof FUNGI_PKG_006.why === "string");
     assert.ok(typeof FUNGI_PKG_006.suggestedFix === "string");

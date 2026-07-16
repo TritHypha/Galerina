@@ -37,35 +37,35 @@ export interface EventCheckResult {
 
 export const FUNGI_EVENT_001 = {
   code: "FUNGI-EVENT-001",
-  name: "EventNotDeclared",
+  name: "EVENT_NOT_DECLARED",
   severity: "error" as const,
   message: "Event emitted but not declared at program scope. Add a top-level 'event EventName' declaration.",
 };
 
 export const FUNGI_EVENT_002 = {
   code: "FUNGI-EVENT-002",
-  name: "EventNeverEmitted",
+  name: "EVENT_NEVER_EMITTED",
   severity: "warning" as const,
   message: "Event declared but never emitted anywhere in the program.",
 };
 
 export const FUNGI_EVENT_003 = {
   code: "FUNGI-EVENT-003",
-  name: "ContractEmitsUndeclaredEvent",
+  name: "CONTRACT_EMITS_UNDECLARED_EVENT",
   severity: "error" as const,
   message: "Contract declares 'emits X' but no global 'event X' declaration exists. Declare the event at program scope.",
 };
 
 export const FUNGI_EVENT_004 = {
   code: "FUNGI-EVENT-004",
-  name: "DuplicateEventEmission",
+  name: "DUPLICATE_EVENT_EMISSION",
   severity: "warning" as const,
   message: "Event is emitted more than once in this flow. Consider whether this is intentional.",
 };
 
 export const FUNGI_EVENT_005 = {
   code: "FUNGI-EVENT-005",
-  name: "EventEmittedNotInContract",
+  name: "EVENT_EMITTED_NOT_IN_CONTRACT",
   severity: "warning" as const,
   message: "Event is emitted but not declared in contract.events. Add the event to the contract.events block.",
 };

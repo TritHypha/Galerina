@@ -34,7 +34,7 @@ export interface ProfileDiagnostic {
 /** FUNGI-PROFILE-001: Recursion is prohibited in strict / high_integrity profiles. */
 export const FUNGI_PROFILE_001 = {
   code: "FUNGI-PROFILE-001",
-  name: "RecursionInRestrictedProfile",
+  name: "RECURSION_IN_RESTRICTED_PROFILE",
   severity: "error" as const,
   message: "Recursion is prohibited in this profile. Restricted profiles require bounded, analyzable execution. Rewrite using a bounded loop.",
 } as const;
@@ -42,7 +42,7 @@ export const FUNGI_PROFILE_001 = {
 /** FUNGI-PROFILE-002: Unbounded loops are prohibited in strict profiles. */
 export const FUNGI_PROFILE_002 = {
   code: "FUNGI-PROFILE-002",
-  name: "UnboundedLoopInStrictProfile",
+  name: "UNBOUNDED_LOOP_IN_STRICT_PROFILE",
   severity: "error" as const,
   message: "Unbounded loop in strict profile. Strict profiles require loops with a provable bound (compile-time-known iteration limit or contract.limits).",
 } as const;
@@ -50,7 +50,7 @@ export const FUNGI_PROFILE_002 = {
 /** FUNGI-PROFILE-003: try/catch/throw used (reserved — should never appear in Galerina). */
 export const FUNGI_PROFILE_003 = {
   code: "FUNGI-PROFILE-003",
-  name: "ExceptionControlFlowProhibited",
+  name: "EXCEPTION_CONTROL_FLOW_PROHIBITED",
   severity: "error" as const,
   message: "Exception control flow (try/catch/throw) is prohibited. Galerina uses Result<T, Error>. This is enforced by construction — these are not Galerina keywords.",
 } as const;
@@ -58,7 +58,7 @@ export const FUNGI_PROFILE_003 = {
 /** FUNGI-PROFILE-004: JIT / dynamic code target in strict profile. */
 export const FUNGI_PROFILE_004 = {
   code: "FUNGI-PROFILE-004",
-  name: "JitProhibitedInStrictProfile",
+  name: "JIT_PROHIBITED_IN_STRICT_PROFILE",
   severity: "error" as const,
   message: "JIT / dynamic code execution target is prohibited in strict profile. Use ahead-of-time compilation (WASM or native).",
 } as const;
@@ -66,7 +66,7 @@ export const FUNGI_PROFILE_004 = {
 /** FUNGI-PROFILE-005: Dynamic package load in strict profile. */
 export const FUNGI_PROFILE_005 = {
   code: "FUNGI-PROFILE-005",
-  name: "DynamicPackageLoadProhibited",
+  name: "DYNAMIC_PACKAGE_LOAD_PROHIBITED",
   severity: "error" as const,
   message: "Dynamic package loading is prohibited in strict profile. All imports must resolve at compile time.",
 } as const;
@@ -74,7 +74,7 @@ export const FUNGI_PROFILE_005 = {
 /** FUNGI-PROFILE-005B: Dynamic regex from user input in strict / high_integrity profile. */
 export const FUNGI_PROFILE_005B = {
   code: "FUNGI-PROFILE-005B",
-  name: "DynamicRegexInStrictProfile",
+  name: "DYNAMIC_REGEX_IN_STRICT_PROFILE",
   severity: "error" as const,
   message: "Dynamic regex from runtime input is prohibited in strict/high_integrity profiles (ReDoS risk). Use Regex.escapeLiteral() for literal matching, or a compile-time constant pattern.",
   suggestedFix: "Replace String.matchesPattern(userInput) with String.contains() / String.startsWith() / a compile-time constant regex.",
@@ -83,7 +83,7 @@ export const FUNGI_PROFILE_005B = {
 /** FUNGI-PROFILE-006: Missing runtime_budget in high_integrity profile. */
 export const FUNGI_PROFILE_006 = {
   code: "FUNGI-PROFILE-006",
-  name: "MissingRuntimeBudget",
+  name: "MISSING_RUNTIME_BUDGET",
   severity: "warning" as const,
   message: "high_integrity profile recommends a runtime budget. Add contract.limits { request_time ... } to declare a bounded execution budget.",
 } as const;
@@ -91,7 +91,7 @@ export const FUNGI_PROFILE_006 = {
 /** FUNGI-PROFILE-007: Dynamic runtime mutation in high_integrity profile. */
 export const FUNGI_PROFILE_007 = {
   code: "FUNGI-PROFILE-007",
-  name: "DynamicRuntimeMutationProhibited",
+  name: "DYNAMIC_RUNTIME_MUTATION_PROHIBITED",
   severity: "error" as const,
   message: "Dynamic runtime mutation is prohibited in high_integrity profile. State transitions must be deterministic and declared.",
 } as const;

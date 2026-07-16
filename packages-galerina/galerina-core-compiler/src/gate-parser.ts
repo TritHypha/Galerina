@@ -26,7 +26,7 @@ import type { AstNode, FlowMeta, ParseDiagnostic, ParseResult, SourceLocation } 
 /** FUNGI-GATELANG-001: the `.gate` declarative header is malformed (missing `@version 1.0.0` header / INTENT / EFFECTS). */
 export const FUNGI_GATELANG_001 = {
   code: "FUNGI-GATELANG-001",
-  name: "MalformedGateHeader",
+  name: "MALFORMED_GATE_HEADER",
   severity: "error" as const,
   message: "A `.gate` file must open with the `@version 1.0.0` header and declare a mandatory INTENT and EFFECTS { } block.",
 } as const;
@@ -40,7 +40,7 @@ export const FUNGI_GATELANG_001 = {
  */
 export const FUNGI_GATELANG_002 = {
   code: "FUNGI-GATELANG-002",
-  name: "GateProductionEmitGatedOnBackstop",
+  name: "GATE_PRODUCTION_EMIT_GATED_ON_BACKSTOP",
   severity: "error" as const,
   message: "`.gate` production signing is gated on the sound compile-time backstop (FUNGI-PRIVACY-002 / RD-0234c), not yet wired — the build refuses to sign a `.gate` artifact until then (fail-closed).",
 } as const;

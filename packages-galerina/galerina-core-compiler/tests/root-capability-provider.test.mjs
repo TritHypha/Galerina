@@ -202,7 +202,7 @@ describe("FUNGI_BUILD_001", () => {
   });
 
   it("has the correct name", () => {
-    assert.strictEqual(FUNGI_BUILD_001.name, "NonDeterministicBuild");
+    assert.strictEqual(FUNGI_BUILD_001.name, "NON_DETERMINISTIC_BUILD");
   });
 
   it("has a suggestedFix", () => {

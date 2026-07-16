@@ -89,7 +89,7 @@ function makeEscapeDiagnostic(
 ): EscapeDiagnostic {
   const base = {
     code: "FUNGI-SOURCE-ESCAPE-001",
-    name: "SourceLevelEvalEscape",
+    name: "SOURCE_LEVEL_EVAL_ESCAPE",
     severity: "error" as const,
     message: `Galerina source calls eval() or a dynamic code loading function. This bypasses governance, capability checks, and audit trails.`,
     suggestedFix: "Replace with a declared flow with explicit effects and capability declarations.",

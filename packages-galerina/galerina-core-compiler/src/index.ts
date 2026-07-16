@@ -27,7 +27,7 @@ export {
 /** FUNGI-LEX-001: Generic type nesting exceeds maximum depth (8 levels). */
 export const FUNGI_LEX_001 = {
   code: "FUNGI-LEX-001",
-  name: "ExcessiveNesting",
+  name: "EXCESSIVE_NESTING",
   severity: "error" as const,
   message: "Generic type nesting exceeds maximum depth (8 levels). Simplify the type.",
   suggestedFix: "Use a type alias to break up deeply nested generics.",
@@ -36,7 +36,7 @@ export const FUNGI_LEX_001 = {
 /** FUNGI-LEX-002: String literal or identifier exceeds maximum length (10,000 characters). */
 export const FUNGI_LEX_002 = {
   code: "FUNGI-LEX-002",
-  name: "OversizedToken",
+  name: "OVERSIZED_TOKEN",
   severity: "error" as const,
   message: "String literal or identifier exceeds maximum length (10,000 characters).",
   suggestedFix: "Split large string literals or shorten identifier names.",
@@ -45,7 +45,7 @@ export const FUNGI_LEX_002 = {
 /** FUNGI-LEX-003: Invalid unicode escape sequence in string literal. */
 export const FUNGI_LEX_003 = {
   code: "FUNGI-LEX-003",
-  name: "InvalidUnicodeEscape",
+  name: "INVALID_UNICODE_ESCAPE",
   severity: "error" as const,
   message: "Invalid unicode escape sequence in string literal.",
   suggestedFix: "Use \\u{XXXXXX} with 1-6 hex digits, or \\uXXXX with exactly 4.",
@@ -54,7 +54,7 @@ export const FUNGI_LEX_003 = {
 /** FUNGI-LEX-004: Source file exceeds the 10 MB maximum. */
 export const FUNGI_LEX_004 = {
   code: "FUNGI-LEX-004",
-  name: "FileTooLarge",
+  name: "FILE_TOO_LARGE",
   severity: "error" as const,
   message: "File exceeds maximum size (10MB). Split into smaller files.",
 } as const;
@@ -62,7 +62,7 @@ export const FUNGI_LEX_004 = {
 /** FUNGI-LEX-005: A single line exceeds 10,000 characters. */
 export const FUNGI_LEX_005 = {
   code: "FUNGI-LEX-005",
-  name: "LineTooLong",
+  name: "LINE_TOO_LONG",
   severity: "warning" as const,
   message: "Line exceeds maximum length (10,000 characters).",
 } as const;
@@ -70,7 +70,7 @@ export const FUNGI_LEX_005 = {
 /** FUNGI-LEX-006: Lexer emitted too many diagnostics; further errors suppressed. */
 export const FUNGI_LEX_006 = {
   code: "FUNGI-LEX-006",
-  name: "TooManyDiagnostics",
+  name: "TOO_MANY_DIAGNOSTICS",
   severity: "error" as const,
   message: "Lexer emitted the maximum number of diagnostics (100). Further errors suppressed. Fix the first errors and re-compile.",
   why: "Emitting thousands of cascading diagnostics from a single malformed file wastes resources and obscures the root cause.",
@@ -327,7 +327,7 @@ export {
 /** FUNGI-TYPE-003: raw String assigned to a branded type (Brand<T,"Name"> alias) without a validation gate. */
 export const FUNGI_TYPE_003 = {
   code: "FUNGI-TYPE-003",
-  name: "InvalidNominalConversion",
+  name: "INVALID_NOMINAL_CONVERSION",
   severity: "error",
   message:
     "Branded types (type X = Brand<T, \"Name\">) cannot be assigned a raw String value. "
@@ -335,23 +335,23 @@ export const FUNGI_TYPE_003 = {
 } as const;
 
 // FUNGI-TYPE-010..019 — per formal-type-system-spec.md canonical mapping
-export const FUNGI_TYPE_010 = { code: "FUNGI-TYPE-010", name: "UnsatisfiedGenericConstraint", severity: "error", message: "Type does not satisfy the required generic constraint." } as const;
-export const FUNGI_TYPE_011 = { code: "FUNGI-TYPE-011", name: "InvalidCollectionElement", severity: "error", message: "Collection element type does not match the declared element type." } as const;
-export const FUNGI_TYPE_012 = { code: "FUNGI-TYPE-012", name: "InvalidResultType", severity: "error", message: "Ok/Err branch type does not match the declared Result<T,E> type." } as const;
-export const FUNGI_TYPE_013 = { code: "FUNGI-TYPE-013", name: "InvalidSecretOperation", severity: "error", message: "Protected secret value cannot use this operator. Use constantTimeEquals() for equality." } as const;
-export const FUNGI_TYPE_014 = { code: "FUNGI-TYPE-014", name: "MissingRequiredEffect", severity: "error", message: "Calling this function requires an effect that the current flow does not declare." } as const;
-export const FUNGI_TYPE_015 = { code: "FUNGI-TYPE-015", name: "GovernedSinkViolation", severity: "error", message: "Governed sink requires a safe/validated binding; received an unsafe binding." } as const;
-export const FUNGI_TYPE_016 = { code: "FUNGI-TYPE-016", name: "TensorShapeMismatch", severity: "error", message: "Tensor shapes are incompatible for this operation." } as const;
-export const FUNGI_TYPE_017 = { code: "FUNGI-TYPE-017", name: "QuantizedPrecisionMismatch", severity: "warning", message: "Cannot mix quantized (Int8) and floating-point (Float32) without explicit dequantize(). General numeric narrowing is FUNGI-TYPE-002." } as const;
-export const FUNGI_TYPE_018 = { code: "FUNGI-TYPE-018", name: "InvalidRuntimeTargetType", severity: "error", message: "This type cannot exist in the selected compute target." } as const;
-export const FUNGI_TYPE_019 = { code: "FUNGI-TYPE-019", name: "UnknownSymbol", severity: "error", message: "Symbol is not defined in the current scope." } as const;
+export const FUNGI_TYPE_010 = { code: "FUNGI-TYPE-010", name: "UNSATISFIED_GENERIC_CONSTRAINT", severity: "error", message: "Type does not satisfy the required generic constraint." } as const;
+export const FUNGI_TYPE_011 = { code: "FUNGI-TYPE-011", name: "INVALID_COLLECTION_ELEMENT", severity: "error", message: "Collection element type does not match the declared element type." } as const;
+export const FUNGI_TYPE_012 = { code: "FUNGI-TYPE-012", name: "INVALID_RESULT_TYPE", severity: "error", message: "Ok/Err branch type does not match the declared Result<T,E> type." } as const;
+export const FUNGI_TYPE_013 = { code: "FUNGI-TYPE-013", name: "INVALID_SECRET_OPERATION", severity: "error", message: "Protected secret value cannot use this operator. Use constantTimeEquals() for equality." } as const;
+export const FUNGI_TYPE_014 = { code: "FUNGI-TYPE-014", name: "MISSING_REQUIRED_EFFECT", severity: "error", message: "Calling this function requires an effect that the current flow does not declare." } as const;
+export const FUNGI_TYPE_015 = { code: "FUNGI-TYPE-015", name: "GOVERNED_SINK_VIOLATION", severity: "error", message: "Governed sink requires a safe/validated binding; received an unsafe binding." } as const;
+export const FUNGI_TYPE_016 = { code: "FUNGI-TYPE-016", name: "TENSOR_SHAPE_MISMATCH", severity: "error", message: "Tensor shapes are incompatible for this operation." } as const;
+export const FUNGI_TYPE_017 = { code: "FUNGI-TYPE-017", name: "QUANTIZED_PRECISION_MISMATCH", severity: "warning", message: "Cannot mix quantized (Int8) and floating-point (Float32) without explicit dequantize(). General numeric narrowing is FUNGI-TYPE-002." } as const;
+export const FUNGI_TYPE_018 = { code: "FUNGI-TYPE-018", name: "INVALID_RUNTIME_TARGET_TYPE", severity: "error", message: "This type cannot exist in the selected compute target." } as const;
+export const FUNGI_TYPE_019 = { code: "FUNGI-TYPE-019", name: "UNKNOWN_SYMBOL", severity: "error", message: "Symbol is not defined in the current scope." } as const;
 
 // FUNGI-TYPE-030/031 — Tensor element type and dimension checking (Phase 18D)
 
 /** FUNGI-TYPE-030: Tensor operations received mismatched element types. */
 export const FUNGI_TYPE_030 = {
   code: "FUNGI-TYPE-030",
-  name: "TensorElementTypeMismatch",
+  name: "TENSOR_ELEMENT_TYPE_MISMATCH",
   severity: "error" as const,
   message: "Tensor element types do not match. Float32 and Int8 tensors cannot be combined without explicit conversion.",
   why: "Mixed-precision tensor operations produce undefined results on GPU/NPU targets. All tensors in an operation must share the same element type, or use explicit quantize()/dequantize().",
@@ -361,7 +361,7 @@ export const FUNGI_TYPE_030 = {
 /** FUNGI-TYPE-031: Tensor operations received incompatible dimension counts. */
 export const FUNGI_TYPE_031 = {
   code: "FUNGI-TYPE-031",
-  name: "TensorDimensionMismatch",
+  name: "TENSOR_DIMENSION_MISMATCH",
   severity: "error" as const,
   message: "Tensor dimension counts do not match. [768] (rank 1) cannot be used where [Batch, 768] (rank 2) is expected.",
   why: "Rank mismatch causes silent shape errors in tensor operations. NPU/GPU kernels require matching rank at compile time.",
@@ -435,7 +435,7 @@ export const FUNGI_VALUESTATE_006 = {
 /** FUNGI-VALUESTATE-007: A redacted value cannot convert back to its original type. */
 export const FUNGI_VALUESTATE_007 = {
   code: "FUNGI-VALUESTATE-007",
-  name: "RedactedBoundaryViolation",
+  name: "REDACTED_BOUNDARY_VIOLATION",
   severity: "error" as const,
   message: "A redacted value cannot be converted back to its original type. Redaction is irreversible.",
 } as const;
@@ -453,7 +453,7 @@ export {
 /** FUNGI-NAME-003: Local binding shadows a built-in domain type. */
 export const FUNGI_NAME_003 = {
   code: "FUNGI-NAME-003",
-  name: "CrossModuleShadow",
+  name: "CROSS_MODULE_SHADOW",
   severity: "warning",
   message: "Local binding shadows a built-in domain type. Rename to avoid confusion.",
 } as const;
@@ -502,7 +502,7 @@ export type { SbomResult, SbomDiagnostic, SbomOptions } from "./sbom.js";
 /** FUNGI-PKG-001: Package declares capabilities not present in the lockfile snapshot. */
 export const FUNGI_PKG_001 = {
   code: "FUNGI-PKG-001",
-  name: "CapabilityExpanded",
+  name: "CAPABILITY_EXPANDED",
   severity: "error" as const,
   message: "Package declares new capabilities not present in the lockfile. This is a breaking security change — review and re-approve.",
   why: "Hidden capability expansion is a supply-chain attack vector. Any new capability must be explicitly reviewed before the lockfile is updated.",
@@ -512,7 +512,7 @@ export const FUNGI_PKG_001 = {
 /** FUNGI-PKG-002: Package comes from an unregistered or unverified registry. */
 export const FUNGI_PKG_002 = {
   code: "FUNGI-PKG-002",
-  name: "UntrustedRegistry",
+  name: "UNTRUSTED_REGISTRY",
   severity: "error" as const,
   message: "Package comes from an unregistered or unverified registry. Galerina requires all packages to come from a declared trusted registry.",
   why: "Dependency confusion attacks inject malicious packages via unofficial registries.",
@@ -522,7 +522,7 @@ export const FUNGI_PKG_002 = {
 /** FUNGI-PKG-003: Package manifest has no content-addressable hash. */
 export const FUNGI_PKG_003 = {
   code: "FUNGI-PKG-003",
-  name: "MissingHash",
+  name: "MISSING_HASH",
   severity: "warning" as const,
   message: "Package has no content-addressable hash. Without a hash, tamper detection and reproducible builds are not possible.",
   why: "A package without a hash can be silently replaced with a different version.",
@@ -532,7 +532,7 @@ export const FUNGI_PKG_003 = {
 /** FUNGI-PKG-004: Package declares or attempts an install script; default policy denies. */
 export const FUNGI_PKG_004 = {
   code: "FUNGI-PKG-004",
-  name: "InstallScriptDenied",
+  name: "INSTALL_SCRIPT_DENIED",
   severity: "error" as const,
   message: "Package attempts to declare an install script. Galerina denies install scripts by default.",
   why: "Install scripts execute arbitrary code during package resolution — a major supply-chain attack surface.",
@@ -542,7 +542,7 @@ export const FUNGI_PKG_004 = {
 /** FUNGI-PKG-005: Package has no signature; origin cannot be cryptographically verified. */
 export const FUNGI_PKG_005 = {
   code: "FUNGI-PKG-005",
-  name: "MissingSignature",
+  name: "MISSING_SIGNATURE",
   severity: "warning" as const,
   message: "Package has no signature. Origin cannot be cryptographically verified.",
   why: "An unsigned package cannot prove it came from the claimed publisher. It could be a substituted or tampered build.",
@@ -552,7 +552,7 @@ export const FUNGI_PKG_005 = {
 /** FUNGI-PKG-006: Package is signed by a REVOKED key; trusted origin cannot be established. */
 export const FUNGI_PKG_006 = {
   code: "FUNGI-PKG-006",
-  name: "RevokedSigner",
+  name: "REVOKED_SIGNER",
   severity: "error" as const,
   message: "Package is signed by a revoked key. A revoked signing key cannot establish trusted origin.",
   why: "Revocation is the supply-chain kill switch: a leaked or compromised signing key keeps producing cryptographically valid signatures, so the gate must refuse a revoked signer even when the signature verifies — at resolution as well as admission.",
@@ -836,7 +836,7 @@ export {
  */
 export const FUNGI_STDLIB_001 = {
   code: "FUNGI-STDLIB-001",
-  name: "StdlibEffectNotDeclared",
+  name: "STDLIB_EFFECT_NOT_DECLARED",
   severity: "error" as const,
   message: "Effectful stdlib function called without declaring the required effect in the contract.",
   why: "Every stdlib function that performs I/O, network access, filesystem access, or secret reads must be explicitly declared as an effect. This enables static governance proof and WASM import table generation.",
@@ -959,7 +959,7 @@ export {
 /** FUNGI-ECON-001: Flow execution may exceed the declared economic budget. */
 export const FUNGI_ECON_001 = {
   code: "FUNGI-ECON-001",
-  name: "BudgetExceeded",
+  name: "BUDGET_EXCEEDED",
   severity: "warning" as const,
   message: "Flow execution may exceed the declared economic budget.",
   why: "Economic contracts enable cost-aware scheduling. When actual cost exceeds declared targets, the runtime can route to cheaper alternatives or alert before money is spent.",
@@ -969,7 +969,7 @@ export const FUNGI_ECON_001 = {
 /** FUNGI-ECON-002: Protected data binding has no lineage declaration. */
 export const FUNGI_ECON_002 = {
   code: "FUNGI-ECON-002",
-  name: "LineageMissing",
+  name: "LINEAGE_MISSING",
   severity: "info" as const,
   message: "Protected data binding has no lineage declaration.",
   why: "Data lineage tracking enables automated regulatory reporting (GDPR Article 30, CCPA). Without lineage, organisations must manually trace data origins during audits.",
@@ -979,7 +979,7 @@ export const FUNGI_ECON_002 = {
 /** FUNGI-ECON-003: AI model call uses a model not in the contract's approved_models list. */
 export const FUNGI_ECON_003 = {
   code: "FUNGI-ECON-003",
-  name: "AiModelUnapproved",
+  name: "AI_MODEL_UNAPPROVED",
   severity: "error" as const,
   message: "AI model call uses a model not in the contract's approved_models list.",
   why: "Unapproved AI models can incur unexpected costs, produce unaudited outputs, or violate data processing agreements with vendors.",
@@ -989,7 +989,7 @@ export const FUNGI_ECON_003 = {
 /** FUNGI-GOV-014: Flow declares compute targets with prefer [...] but no fallback target is declared. */
 export const FUNGI_GOV_014 = {
   code: "FUNGI-GOV-014",
-  name: "MissingFallbackTarget",
+  name: "MISSING_FALLBACK_TARGET",
   severity: "warning" as const,
   message: "Flow declares compute targets with prefer [...] but no fallback target is declared. A fallback is required — without it, a native accelerator crash becomes an unrecoverable service failure.",
   why: "When native modules crash, the WASM control plane must fall back to a governed CPU/WASM path. No fallback = potential service outage with no recovery path.",
@@ -1019,7 +1019,7 @@ export {
  */
 export const FUNGI_EFFECT_005 = {
   code: "FUNGI-EFFECT-005",
-  name: "BroadAliasUsed",
+  name: "BROAD_ALIAS_USED",
   severity: "warning" as const,
   message: "Effect name is a broad alias. Use the canonical dot-path name to precisely declare authority.",
   why: "Broad aliases are ambiguous and may grant more authority than intended in future Galerina versions. Canonical names are stable, auditable, and governance-traceable.",
@@ -1036,7 +1036,7 @@ export const FUNGI_EFFECT_005 = {
  */
 export const FUNGI_EFFECT_006 = {
   code: "FUNGI-EFFECT-006",
-  name: "DenyOnlyEffect",
+  name: "DENY_ONLY_EFFECT",
   severity: "error" as const,
   message: "Effect is deny-only: recognised, never grantable. Remove it — no declaration makes this flow admissible.",
   why: "Deny-only effects mark operations the platform refuses by construction (arbitrary dynamic evaluation). Accepting them anywhere would be a fail-open in the effect vocabulary itself.",
@@ -1426,7 +1426,7 @@ export const FUNGI_SYNTAX_DIAGNOSTICS = [
  */
 export const FUNGI_SYNTAX_LEGACY_001 = {
   code: "FUNGI-SYNTAX-LEGACY-001",
-  name: "LegacyEffectsSyntax",
+  name: "LEGACY_EFFECTS_SYNTAX",
   severity: "warning" as const,
   message: "'with effects [...]' is legacy syntax. Use 'contract { effects { ... } }' instead.",
   suggestedFix: "Replace 'with effects [database.write]' with:\n  contract {\n    effects {\n      database.write\n    }\n  }",
@@ -1874,7 +1874,7 @@ export const FUNGI_MEMORY_DIAGNOSTICS = [
 /** FUNGI-COMPUTE-001: Pattern is not compatible with the declared compute target. */
 export const FUNGI_COMPUTE_001 = {
   code: "FUNGI-COMPUTE-001",
-  name: "ComputeTargetIncompatiblePattern",
+  name: "COMPUTE_TARGET_INCOMPATIBLE_PATTERN",
   severity: "warning" as const,
   message: "This pattern may not map efficiently to the declared compute target (NPU/GPU/TPU).",
   why: "NPU and GPU targets require deterministic, data-parallel patterns. Non-deterministic control flow (random(), dynamic dispatch, unbounded loops) cannot be compiled to fixed-function hardware.",
@@ -1895,7 +1895,7 @@ export const FUNGI_COMPUTE_001 = {
  */
 export const FUNGI_BUILD_001 = {
   code: "FUNGI-BUILD-001",
-  name: "NonDeterministicBuild",
+  name: "NON_DETERMINISTIC_BUILD",
   severity: "error" as const,
   message: "Same source produced different output on repeated compilation. This indicates a compiler bug, nondeterministic behaviour, or hidden state leakage.",
   suggestedFix: "Check for: timestamp in output, random values in codegen, hash map iteration order, filesystem enumeration order.",
@@ -1904,7 +1904,7 @@ export const FUNGI_BUILD_001 = {
 /** FUNGI-BACKEND-001: The CLI or runtime backend encountered an unrecoverable error (e.g. file read failure). */
 export const FUNGI_BACKEND_001 = {
   code: "FUNGI-BACKEND-001",
-  name: "BackendError",
+  name: "BACKEND_ERROR",
   severity: "error" as const,
   message: "The Galerina compiler backend encountered an unrecoverable error.",
   why: "A required file could not be read, or an internal pipeline step failed before compilation could begin.",
@@ -1925,7 +1925,7 @@ export {
 /** FUNGI-SOURCE-ESCAPE-001: Galerina source calls eval() or a dynamic code loading function. */
 export const FUNGI_SOURCE_ESCAPE_001 = {
   code: "FUNGI-SOURCE-ESCAPE-001",
-  name: "SourceLevelEvalEscape",
+  name: "SOURCE_LEVEL_EVAL_ESCAPE",
   severity: "error" as const,
   message: "Galerina source calls eval() or a dynamic code loading function. This bypasses governance, capability checks, and audit trails.",
   why: "Dynamic code cannot be effect-checked, verified, or audited.",

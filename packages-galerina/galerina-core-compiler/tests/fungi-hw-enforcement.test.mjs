@@ -149,7 +149,7 @@ describe("FUNGI-HW-001: QuantumTargetRequiresFormalProof", () => {
   it("FUNGI_HW_001 constant has correct code and severity", () => {
     assert.equal(FUNGI_HW_001.code, "FUNGI-HW-001");
     assert.equal(FUNGI_HW_001.severity, "error");
-    assert.equal(FUNGI_HW_001.name, "QuantumTargetRequiresFormalProof");
+    assert.equal(FUNGI_HW_001.name, "QUANTUM_TARGET_REQUIRES_FORMAL_PROOF");
   });
 });
 

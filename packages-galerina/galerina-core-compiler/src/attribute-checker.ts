@@ -43,7 +43,7 @@ export interface AttributeCheckResult {
 /** FUNGI-ATTR-001: an attribute directive wraps a block the compiler does not verify. */
 export const FUNGI_ATTR_001 = {
   code: "FUNGI-ATTR-001",
-  name: "UnverifiedAttributeBlock",
+  name: "UNVERIFIED_ATTRIBUTE_BLOCK",
   severity: "error" as const,
   message:
     "Attribute directive wraps a block the compiler does not parse or verify — its contents are invisible to every effect/taint/value-state/governance check, yet the artifact would still sign. Deny-by-default (RD-0234b Class D): such blocks are not admitted. Remove the block, or wait for the release that compiles this forward-looking syntax under an explicit --enable-experimental-profile opt-in.",
@@ -52,7 +52,7 @@ export const FUNGI_ATTR_001 = {
 /** FUNGI-ATTR-002: an unrecognised attribute directive. */
 export const FUNGI_ATTR_002 = {
   code: "FUNGI-ATTR-002",
-  name: "UnknownAttributeDirective",
+  name: "UNKNOWN_ATTRIBUTE_DIRECTIVE",
   severity: "error" as const,
   message:
     "Unknown attribute directive — rejected (deny-by-default). Only recognised attribute directives are permitted; an unrecognised '@name' may silently alter, gate, or hide governed code.",

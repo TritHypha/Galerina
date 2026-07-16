@@ -147,7 +147,7 @@ contract {
 
   it("FUNGI_SYNTAX_LEGACY_001 constant has correct shape", () => {
     assert.equal(FUNGI_SYNTAX_LEGACY_001.code, "FUNGI-SYNTAX-LEGACY-001");
-    assert.equal(FUNGI_SYNTAX_LEGACY_001.name, "LegacyEffectsSyntax");
+    assert.equal(FUNGI_SYNTAX_LEGACY_001.name, "LEGACY_EFFECTS_SYNTAX");
     assert.equal(FUNGI_SYNTAX_LEGACY_001.severity, "warning");
     assert.ok(typeof FUNGI_SYNTAX_LEGACY_001.message === "string");
     assert.ok(typeof FUNGI_SYNTAX_LEGACY_001.suggestedFix === "string");

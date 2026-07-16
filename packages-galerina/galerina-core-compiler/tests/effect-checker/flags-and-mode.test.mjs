@@ -226,7 +226,7 @@ contract { effects { network } }
 describe("FUNGI_EFFECT_005: constant shape", () => {
   it("has correct code and name", () => {
     assert.equal(FUNGI_EFFECT_005.code, "FUNGI-EFFECT-005");
-    assert.equal(FUNGI_EFFECT_005.name, "BroadAliasUsed");
+    assert.equal(FUNGI_EFFECT_005.name, "BROAD_ALIAS_USED");
     assert.equal(FUNGI_EFFECT_005.severity, "warning");
   });
 

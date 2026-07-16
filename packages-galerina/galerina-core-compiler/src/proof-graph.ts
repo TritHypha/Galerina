@@ -418,7 +418,7 @@ export interface HardwareSealedDispatch {
  */
 export const FUNGI_HW_001 = {
   code: "FUNGI-HW-001",
-  name: "QuantumTargetRequiresFormalProof",
+  name: "QUANTUM_TARGET_REQUIRES_FORMAL_PROOF",
   severity: "error" as const,
   message: "contract.hardware { target quantum } requires ProofLevel.FormalRequired. Quantum coprocessors are ExperimentalPlane (probabilistic, unobservable). Add formal proof requirements or use a lower-class target.",
   why: "Quantum results are probabilistic. Capability decisions based on unvalidated quantum output cannot be trusted. The type system enforces FormalRequired before quantum work may affect governance.",
@@ -432,7 +432,7 @@ export const FUNGI_HW_001 = {
  */
 export const FUNGI_HW_002 = {
   code: "FUNGI-HW-002",
-  name: "SealedTargetRequiresAuditTrace",
+  name: "SEALED_TARGET_REQUIRES_AUDIT_TRACE",
   severity: "warning" as const,
   message: "contract.hardware declares a sealed target (NPU, TPU, or ANE). The Input/Output seal is auto-applied, but audit.write is recommended to record the seal in the audit trail.",
   why: "The ImmutableInputSeal proves what entered and emerged from the accelerator, but is only forensically useful if recorded in the AuditGraph.",
@@ -446,7 +446,7 @@ export const FUNGI_HW_002 = {
  */
 export const FUNGI_HW_003 = {
   code: "FUNGI-HW-003",
-  name: "AcceleratorPlaneRequiresAttestation",
+  name: "ACCELERATOR_PLANE_REQUIRES_ATTESTATION",
   severity: "warning" as const,
   message: "contract.hardware declares a photonic or neuromorphic target (AcceleratorPlane). ProofLevel.Escalated requires runtime attestation. Add `require runtime_attestation` to the audit block.",
   why: "Photonic and neuromorphic hardware is partially observable. Runtime attestation records which physical execution path was used.",
@@ -462,7 +462,7 @@ export const FUNGI_HW_003 = {
  */
 export const FUNGI_HW_004 = {
   code: "FUNGI-HW-004",
-  name: "UnknownHardwareTarget",
+  name: "UNKNOWN_HARDWARE_TARGET",
   severity: "warning" as const,
   message: "is not in the hardware-trust registry for this build — its trust profile and proof requirements cannot be verified (uncertainty, not a denial). The build proceeds; this clears automatically once the target is registered.",
   why: "An unrecognised target is K3 INDETERMINATE: the compiler cannot validate its trust profile, so it cannot prove the hardware governance requirements are met. Reported yellow so a new/experimental target is not a hard build break.",

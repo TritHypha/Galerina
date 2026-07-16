@@ -316,7 +316,7 @@ describe("Lexer — endLine / endColumn source ranges", () => {
 describe("Lexer — FUNGI-LEX-001 excessive generic nesting", () => {
   it("exports FUNGI_LEX_001 with correct code", () => {
     assert.equal(FUNGI_LEX_001.code, "FUNGI-LEX-001");
-    assert.equal(FUNGI_LEX_001.name, "ExcessiveNesting");
+    assert.equal(FUNGI_LEX_001.name, "EXCESSIVE_NESTING");
   });
 
   it("does not emit FUNGI-LEX-001 for 8 levels of nesting", () => {
@@ -383,7 +383,7 @@ describe("Lexer — FUNGI-LEX-001 excessive generic nesting", () => {
 describe("Lexer — FUNGI-LEX-002 oversized token", () => {
   it("exports FUNGI_LEX_002 with correct code", () => {
     assert.equal(FUNGI_LEX_002.code, "FUNGI-LEX-002");
-    assert.equal(FUNGI_LEX_002.name, "OversizedToken");
+    assert.equal(FUNGI_LEX_002.name, "OVERSIZED_TOKEN");
   });
 
   it("emits FUNGI-LEX-002 for an identifier exceeding 10,000 chars", () => {
@@ -411,7 +411,7 @@ describe("Lexer — FUNGI-LEX-002 oversized token", () => {
 describe("Lexer — FUNGI-LEX-003 unicode escape sequences", () => {
   it("exports FUNGI_LEX_003 with correct code", () => {
     assert.equal(FUNGI_LEX_003.code, "FUNGI-LEX-003");
-    assert.equal(FUNGI_LEX_003.name, "InvalidUnicodeEscape");
+    assert.equal(FUNGI_LEX_003.name, "INVALID_UNICODE_ESCAPE");
   });
 
   it("correctly lexes \\u{1F600} (emoji code point)", () => {
@@ -485,7 +485,7 @@ describe("Lexer — Phase 18A: Token endLine / endColumn (Task 1 verification)",
 describe("Lexer — Phase 18A: FUNGI-LEX-004 file too large (Task 5)", () => {
   it("exports FUNGI_LEX_004 with correct code and name", () => {
     assert.equal(FUNGI_LEX_004.code, "FUNGI-LEX-004");
-    assert.equal(FUNGI_LEX_004.name, "FileTooLarge");
+    assert.equal(FUNGI_LEX_004.name, "FILE_TOO_LARGE");
     assert.equal(FUNGI_LEX_004.severity, "error");
   });
 
@@ -505,7 +505,7 @@ describe("Lexer — Phase 18A: FUNGI-LEX-004 file too large (Task 5)", () => {
 describe("Lexer — Phase 18A: FUNGI-LEX-005 line too long (Task 5)", () => {
   it("exports FUNGI_LEX_005 with correct code and name", () => {
     assert.equal(FUNGI_LEX_005.code, "FUNGI-LEX-005");
-    assert.equal(FUNGI_LEX_005.name, "LineTooLong");
+    assert.equal(FUNGI_LEX_005.name, "LINE_TOO_LONG");
     assert.equal(FUNGI_LEX_005.severity, "warning");
   });
 

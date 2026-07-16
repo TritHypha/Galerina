@@ -1354,7 +1354,7 @@ class TypeChecker {
           if (argNodes.length !== paramTypes.length) {
             this.diagnostics.push(makeTCDiag(
               "FUNGI-TYPE-007",
-              "InvalidArgumentCount",
+              "INVALID_ARGUMENT_COUNT",
               `Flow '${flowName}' expects ${paramTypes.length} argument${paramTypes.length === 1 ? "" : "s"} but received ${argNodes.length}.`,
               node.location,
               `Provide exactly ${paramTypes.length} argument${paramTypes.length === 1 ? "" : "s"} to '${flowName}'.`,
@@ -1369,7 +1369,7 @@ class TypeChecker {
               if (inferredArgType !== undefined && !isAssignmentCompatible(expectedType, inferredArgType)) {
                 this.diagnostics.push(makeTCDiag(
                   "FUNGI-TYPE-005",
-                  "InvalidCallArgType",
+                  "INVALID_CALL_ARG_TYPE",
                   `Argument ${i + 1} to '${flowName}' expects '${expectedType}' but received '${inferredArgType}'.`,
                   argNode.location,
                   `Pass a value of type '${expectedType}' as argument ${i + 1}.`,
@@ -1399,7 +1399,7 @@ class TypeChecker {
               if (!currentEffectSet.has(requiredEffect)) {
                 this.diagnostics.push(makeTCDiag(
                   "FUNGI-TYPE-014",
-                  "MissingRequiredEffect",
+                  "MISSING_REQUIRED_EFFECT",
                   `Calling '${flowName}' requires effect '${requiredEffect}' but current flow '${this.currentFlowName}' does not declare it.`,
                   node.location,
                   `Add '${requiredEffect}' to the effects declaration of '${this.currentFlowName}'.`,
@@ -1475,7 +1475,7 @@ class TypeChecker {
       // ── FUNGI-NAME-002: Duplicate name in the SAME scope ─────────────────────
       this.diagnostics.push({
         code: "FUNGI-NAME-002",
-        name: "DuplicateName",
+        name: "DUPLICATE_NAME",
         severity: "error",
         message: `'${bindingName}' is already declared in this scope.`,
         ...(node.location !== undefined ? { location: node.location } : {}),
@@ -1485,7 +1485,7 @@ class TypeChecker {
       // ── FUNGI-TYPE-020: Shadowing an OUTER scope binding ─────────────────────
       this.diagnostics.push({
         code: "FUNGI-TYPE-020",
-        name: "ShadowedBinding",
+        name: "SHADOWED_BINDING",
         severity: "warning",
         message: `Binding '${bindingName}' shadows an outer-scope binding with the same name.`,
         ...(node.location !== undefined ? { location: node.location } : {}),
@@ -1544,13 +1544,13 @@ class TypeChecker {
             // precise field diagnostic from the helper instead of the generic one below.
             const adopted = this.tryRecordLiteralAdoption(
               declaredBase, initNode, node.location,
-              "FUNGI-TYPE-002", "TypeMismatch",
+              "FUNGI-TYPE-002", "TYPE_MISMATCH",
               `declared type '${declaredBase}'`,
             );
             if (!adopted) {
               this.diagnostics.push(makeTCDiag(
                 "FUNGI-TYPE-002",
-                "TypeMismatch",
+                "TYPE_MISMATCH",
                 `Cannot assign '${inferredType}' to '${declaredBase}'. The declared type and the value type are incompatible.`,
                 node.location,
                 `Change the value to a '${declaredBase}' expression, or update the type annotation.`,
@@ -1581,7 +1581,7 @@ class TypeChecker {
             const gateName = `validate.${declaredBase.charAt(0).toLowerCase()}${declaredBase.slice(1)}`;
             this.diagnostics.push(makeTCDiag(
               "FUNGI-TYPE-003",
-              "InvalidNominalConversion",
+              "INVALID_NOMINAL_CONVERSION",
               `Cannot assign a raw String to branded type '${declaredBase}'. `
                 + `Branded types require a validation gate (e.g. ${gateName}(raw)?).`,
               node.location,
@@ -1607,7 +1607,7 @@ class TypeChecker {
                     !isAssignmentCompatible(elementType, elemInferred)) {
                   this.diagnostics.push(makeTCDiag(
                     "FUNGI-TYPE-011",
-                    "InvalidCollectionElement",
+                    "INVALID_COLLECTION_ELEMENT",
                     `Array<${elementType}> contains a '${elemInferred}' element. All elements must be '${elementType}'.`,
                     element.location,
                     `Change the element to a '${elementType}' value, or change the array type to Array<${elemInferred}>.`,
@@ -1634,7 +1634,7 @@ class TypeChecker {
               if (!tensorElementTypesCompatible(declaredTensor.elementType, inferredTensor.elementType)) {
                 this.diagnostics.push(makeTCDiag(
                   "FUNGI-TYPE-030",
-                  "TensorElementTypeMismatch",
+                  "TENSOR_ELEMENT_TYPE_MISMATCH",
                   `Tensor element type mismatch: expected '${declaredTensor.elementType}' but got '${inferredTensor.elementType}'. Cannot assign Tensor<${inferredTensor.elementType}> to Tensor<${declaredTensor.elementType}>.`,
                   node.location,
                   `Use dequantize() to convert Int8 to Float32 before assignment, or quantize() for the reverse.`,
@@ -1648,7 +1648,7 @@ class TypeChecker {
                 if (isQuantizedMix) {
                   this.diagnostics.push({
                     code: "FUNGI-TYPE-017",
-                    name: "QuantizedPrecisionMismatch",
+                    name: "QUANTIZED_PRECISION_MISMATCH",
                     severity: "warning",
                     message: `Cannot mix quantized (Int8) and floating-point (Float32) tensors without explicit dequantize(). Declare the binding as Tensor<${inferredTensor.elementType}, [...]> or call dequantize() first.`,
                     ...(node.location !== undefined ? { location: node.location } : {}),
@@ -1675,7 +1675,7 @@ class TypeChecker {
               if (rankMismatch || dimValueMismatch) {
                 this.diagnostics.push(makeTCDiag(
                   "FUNGI-TYPE-016",
-                  "TensorShapeMismatch",
+                  "TENSOR_SHAPE_MISMATCH",
                   `Tensor shape mismatch: expected [${declaredTensor.dimensions.join(", ")}] but got [${inferredTensor.dimensions.join(", ")}].`,
                   node.location,
                   `Use Tensor.unsqueeze() to add a dimension, Tensor.squeeze() to remove one, or reshape to match [${declaredTensor.dimensions.join(", ")}].`,
@@ -1840,7 +1840,7 @@ class TypeChecker {
           // Cross-currency addition/subtraction: Money<GBP> + Money<USD> → FUNGI-TYPE-004
           this.diagnostics.push(makeTCDiag(
             "FUNGI-TYPE-004",
-            "InvalidBinaryOperation",
+            "INVALID_BINARY_OPERATION",
             `Cannot ${op === "+" ? "add" : "subtract"} '${leftType}' and '${rightType}'. Money arithmetic requires the same currency.`,
             location,
             `Use fx.convert() for explicit currency conversion before arithmetic.`,
@@ -1853,7 +1853,7 @@ class TypeChecker {
         // Money<C> * Money<C> is dimensionally invalid (produces Money²)
         this.diagnostics.push(makeTCDiag(
           "FUNGI-TYPE-004",
-          "InvalidBinaryOperation",
+          "INVALID_BINARY_OPERATION",
           `Operator '*' cannot be applied to two Money values. Use 'Money<C> * Decimal' for scaling.`,
           location,
           `Multiply by a Decimal rate instead: amount * Decimal("0.20")`,
@@ -1864,7 +1864,7 @@ class TypeChecker {
         // Money<GBP> / Money<USD> is invalid (ratio requires same currency)
         this.diagnostics.push(makeTCDiag(
           "FUNGI-TYPE-004",
-          "InvalidBinaryOperation",
+          "INVALID_BINARY_OPERATION",
           `Cannot divide '${leftType}' by '${rightType}'. Currency ratio requires same currency.`,
           location,
           `Use fx.convert() first, or divide same-currency values.`,
@@ -1888,7 +1888,7 @@ class TypeChecker {
         if (leftHm !== undefined && rightHm !== undefined && leftBase !== rightBase) {
           this.diagnostics.push(makeTCDiag(
             "FUNGI-TYPE-004",
-            "InvalidBinaryOperation",
+            "INVALID_BINARY_OPERATION",
             `'${leftBase}' and '${rightBase}' are distinct hallmark types and never unify under '${op}'.`,
             location,
             `Hallmark types are nominal — operate on values of the same type, or convert through an explicit gate.`,
@@ -1900,7 +1900,7 @@ class TypeChecker {
           if (op === "*") {
             this.diagnostics.push(makeTCDiag(
               "FUNGI-TYPE-004",
-              "InvalidBinaryOperation",
+              "INVALID_BINARY_OPERATION",
               `Operator '*' cannot be applied to two '${leftBase}' values (that would be '${leftBase}²'). Scale by a dimensionless number instead.`,
               location,
               `Scale by a number: value * 2.`,
@@ -1933,7 +1933,7 @@ class TypeChecker {
           // + or - with a bare number: a hallmark is not a raw number.
           this.diagnostics.push(makeTCDiag(
             "FUNGI-TYPE-004",
-            "InvalidBinaryOperation",
+            "INVALID_BINARY_OPERATION",
             `Operator '${op}' cannot combine hallmark type '${hmName}' with a bare '${otherBase}'. Add/subtract two '${hmName}' values, or scale (*) by a number.`,
             location,
             `Use '${hmName}' ${op} '${hmName}', or scale by a number.`,
@@ -1943,7 +1943,7 @@ class TypeChecker {
         // Hallmark vs an unrelated built-in (Money, String, …) → never unify.
         this.diagnostics.push(makeTCDiag(
           "FUNGI-TYPE-004",
-          "InvalidBinaryOperation",
+          "INVALID_BINARY_OPERATION",
           `'${leftBase}' and '${rightBase}' never unify under '${op}' — a hallmark type is nominal and shares no algebra with other types.`,
           location,
           `Operate on values of the same hallmark type.`,
@@ -1964,7 +1964,7 @@ class TypeChecker {
       if (op === "/") {
         this.diagnostics.push(makeTCDiag(
           "FUNGI-NUMERIC-OP-001",
-          "PartialDecimalOperator",
+          "PARTIAL_DECIMAL_OPERATOR",
           "Operator '/' is not available for Decimal — exact decimal division is non-terminating (1/3 = 0.333…) and needs an explicit rounding policy + scale (a silent default rounding on money is a fail-open).",
           location,
           'Use the method form a.divide(b, scale, rounding) — e.g. total.divide(qty, 2, "halfEven"). Modes: halfEven|halfUp|halfDown|up|down|ceiling|floor.',
@@ -1973,7 +1973,7 @@ class TypeChecker {
       } else {
         this.diagnostics.push(makeTCDiag(
           "FUNGI-NUMERIC-OP-001",
-          "PartialDecimalOperator",
+          "PARTIAL_DECIMAL_OPERATOR",
           "Operator '%' is not available for Decimal — use the exact method form (modulo on a value that supports a rounding policy must be explicit).",
           location,
           "Use the method form a.remainder(b) — e.g. total.remainder(qty).",
@@ -1995,7 +1995,7 @@ class TypeChecker {
         if (isBuiltInType(rightBase) && !STRING_BASED_TYPES.has(rightBase)) {
           this.diagnostics.push(makeTCDiag(
             "FUNGI-TYPE-004",
-            "InvalidBinaryOperation",
+            "INVALID_BINARY_OPERATION",
             `Cannot use '+' between 'String' and '${rightBase}'. String concatenation requires both operands to be String.`,
             location,
             `Convert the '${rightBase}' to String first using .toString()`,
@@ -2008,7 +2008,7 @@ class TypeChecker {
         if (isBuiltInType(leftBase) && !STRING_BASED_TYPES.has(leftBase)) {
           this.diagnostics.push(makeTCDiag(
             "FUNGI-TYPE-004",
-            "InvalidBinaryOperation",
+            "INVALID_BINARY_OPERATION",
             `Cannot use '+' between '${leftBase}' and 'String'. String concatenation requires both operands to be String.`,
             location,
             `Convert the '${leftBase}' to String first using .toString()`,
@@ -2023,7 +2023,7 @@ class TypeChecker {
       if (leftBase === "Bool" || rightBase === "Bool") {
         this.diagnostics.push(makeTCDiag(
           "FUNGI-TYPE-004",
-          "InvalidBinaryOperation",
+          "INVALID_BINARY_OPERATION",
           `Arithmetic operator '${op}' cannot be applied to Bool. Bool supports only '&&', '||', and '!'.`,
           location,
           `Use '&&' or '||' for boolean logic, not arithmetic operators.`,
@@ -2047,7 +2047,7 @@ class TypeChecker {
         if (rightBase === "Money" && NUMERIC_TYPES.has(leftType)) return;  // Decimal * Money: valid
         this.diagnostics.push(makeTCDiag(
           "FUNGI-TYPE-004",
-          "InvalidBinaryOperation",
+          "INVALID_BINARY_OPERATION",
           `Operator '${op}' cannot be applied to '${leftType}' and '${rightType}'. Both operands must be numeric, or both String for '+'.`,
           location,
           `Use compatible types: two numeric values, or two Strings for concatenation.`,
@@ -2063,7 +2063,7 @@ class TypeChecker {
       if (leftType !== rightType && !NUMERIC_TYPES.has(leftType) && !NUMERIC_TYPES.has(rightType)) {
         this.diagnostics.push(makeTCDiag(
           "FUNGI-TYPE-004",
-          "InvalidBinaryOperation",
+          "INVALID_BINARY_OPERATION",
           `Equality operator '${op}' used on different types: '${leftType}' and '${rightType}'.`,
           location,
           `Ensure both sides of '${op}' have the same type.`,
@@ -2082,7 +2082,7 @@ class TypeChecker {
       if (leftType === "Verdict" || rightType === "Verdict") {
         this.diagnostics.push(makeTCDiag(
           "FUNGI-GOV-3VL-004",
-          "OrderedComparisonOnVerdict",
+          "ORDERED_COMPARISON_ON_VERDICT",
           `Operator '${op}' orders a Verdict (K3 DENY/UNKNOWN/ALLOW). Authorization is '== Verdict.Allow' ONLY — ` +
           `an ordered test like 'v >= 1' fails OPEN the moment an out-of-domain value appears. The order is for the ` +
           `algebra (min/max folds), never for a user decision.`,
@@ -2096,7 +2096,7 @@ class TypeChecker {
           (rightBase === "String" && leftBase !== "String" && leftBase !== "")) {
         this.diagnostics.push(makeTCDiag(
           "FUNGI-TYPE-004",
-          "InvalidBinaryOperation",
+          "INVALID_BINARY_OPERATION",
           `Operator '${op}' cannot compare 'String' with '${leftBase === "String" ? rightBase : leftBase}'. Only same-type comparison is allowed.`,
           location,
           `Compare values of the same type.`,
@@ -2106,7 +2106,7 @@ class TypeChecker {
       if (!ORDERABLE_TYPES.has(leftType) || !ORDERABLE_TYPES.has(rightType)) {
         this.diagnostics.push(makeTCDiag(
           "FUNGI-TYPE-004",
-          "InvalidBinaryOperation",
+          "INVALID_BINARY_OPERATION",
           `Comparison operator '${op}' requires comparable types, got '${leftType}' and '${rightType}'.`,
           location,
           `Use numeric or Timestamp values with comparison operators.`,
@@ -2139,7 +2139,7 @@ class TypeChecker {
       if (leftType !== "Bool") {
         this.diagnostics.push(makeTCDiag(
           "FUNGI-TYPE-004",
-          "InvalidBinaryOperation",
+          "INVALID_BINARY_OPERATION",
           `Logical operator '${op}' requires Bool operands, but left operand is '${leftType}'.`,
           location,
           `Ensure both operands are Bool.`,
@@ -2148,7 +2148,7 @@ class TypeChecker {
       if (rightType !== "Bool") {
         this.diagnostics.push(makeTCDiag(
           "FUNGI-TYPE-004",
-          "InvalidBinaryOperation",
+          "INVALID_BINARY_OPERATION",
           `Logical operator '${op}' requires Bool operands, but right operand is '${rightType}'.`,
           location,
           `Ensure both operands are Bool.`,
@@ -2325,7 +2325,7 @@ class TypeChecker {
       const singleCandidate = this.fuzzySingleCandidate(base);
       this.diagnostics.push(makeTCDiag(
         "FUNGI-TYPE-001",
-        "UnknownType",
+        "UNKNOWN_TYPE",
         `Type '${base}' is not defined. It is not a built-in type and no 'type ${base}' or 'enum ${base}' declaration was found in scope.`,
         location,
         suggestion,
@@ -2343,7 +2343,7 @@ class TypeChecker {
         const example = GENERIC_EXAMPLES.get(base) ?? `${base}<T>`;
         this.diagnostics.push(makeTCDiag(
           "FUNGI-TYPE-009",
-          "InvalidGenericInstantiation",
+          "INVALID_GENERIC_INSTANTIATION",
           `Generic type '${base}' expects ${expectedArity} type argument${expectedArity === 1 ? "" : "s"} but received ${argCount}.`,
           location,
           `${base} requires exactly ${expectedArity} type argument${expectedArity === 1 ? "" : "s"}. Example: ${example}`,
@@ -2390,7 +2390,7 @@ class TypeChecker {
           const unreachable = arms[j]!;
           this.diagnostics.push(makeTCDiag(
             "FUNGI-TYPE-022",
-            "UnreachablePattern",
+            "UNREACHABLE_PATTERN",
             `Pattern '${unreachable.value ?? "?"}' is unreachable — the wildcard arm already covers all remaining cases.`,
             unreachable.location,
             `Remove this unreachable arm, or move it before the wildcard.`,
@@ -2436,7 +2436,7 @@ class TypeChecker {
       if (missing.length > 0) {
         this.diagnostics.push(makeTCDiag(
           "FUNGI-GOV-3VL-003",
-          "WildcardOverDenyOnVerdictMatch",
+          "WILDCARD_OVER_DENY_ON_VERDICT_MATCH",
           `match over a Verdict leaves ${missing.join(" and ")} to the wildcard arm. All three K3 members ` +
           `(Allow / Deny / Unknown) must be NAMED arms — a catch-all that absorbs a verdict decides ` +
           `authorization by omission (fail-open), and '_' standing in for Allow admits out-of-domain values. ` +

@@ -211,7 +211,7 @@ export interface TaintDiagnostic {
 /** FUNGI-TAINT-001: Raw tainted value reaches an injection sink. */
 export const FUNGI_TAINT_001 = {
   code: "FUNGI-TAINT-001",
-  name: "TaintedValueAtInjectionSink",
+  name: "TAINTED_VALUE_AT_INJECTION_SINK",
   severity: "error" as const,
   message: "A tainted (untrusted) value reaches an injection sink without passing through an untaint boundary. Apply the appropriate sanitiser/encoder first.",
 } as const;
@@ -219,7 +219,7 @@ export const FUNGI_TAINT_001 = {
 /** FUNGI-TAINT-002: Unvalidated value at a business-logic sink. */
 export const FUNGI_TAINT_002 = {
   code: "FUNGI-TAINT-002",
-  name: "UnvalidatedValueAtLogicSink",
+  name: "UNVALIDATED_VALUE_AT_LOGIC_SINK",
   severity: "warning" as const,
   message: "An unvalidated value reaches a business-logic sink. Validate it first (Validated<T>).",
 } as const;
@@ -227,7 +227,7 @@ export const FUNGI_TAINT_002 = {
 /** FUNGI-TAINT-003: Value cleaned for context A used in a sink expecting context B. */
 export const FUNGI_TAINT_003 = {
   code: "FUNGI-TAINT-003",
-  name: "WrongContextUntaint",
+  name: "WRONG_CONTEXT_UNTAINT",
   severity: "error" as const,
   message: "A value cleaned for one sink context is used in a sink expecting a different context. A value is only clean for the sink it was cleaned for.",
 } as const;
@@ -235,7 +235,7 @@ export const FUNGI_TAINT_003 = {
 /** FUNGI-TAINT-004: Discouraged sanitiser used where a preferred boundary exists. */
 export const FUNGI_TAINT_004 = {
   code: "FUNGI-TAINT-004",
-  name: "DiscouragedSanitiser",
+  name: "DISCOURAGED_SANITISER",
   severity: "warning" as const,
   message: "Discouraged sanitiser used. OWASP prefers parameterized APIs (Sql.parameterize) and no-shell spawning (Process.spawn) over escaping/quoting.",
 } as const;
@@ -513,7 +513,7 @@ function checkDiscouraged(node: AstNode, flowName: string, diagnostics: TaintDia
 /** FUNGI-TAINT-005: Raw tainted value reaches an HTTP header sink (header injection risk). */
 export const FUNGI_TAINT_005 = {
   code: "FUNGI-TAINT-005",
-  name: "TaintedValueAtHeaderSink",
+  name: "TAINTED_VALUE_AT_HEADER_SINK",
   severity: "error" as const,
   message: "A tainted value reaches an HTTP header sink. HTTP header injection allows CRLF splitting and policy bypass. Use Http.encodeHeaderValue() to produce SafeFor<HttpHeaderValue>.",
   suggestedFix: "Wrap the value: Http.encodeHeaderValue(taintedValue)",
@@ -522,7 +522,7 @@ export const FUNGI_TAINT_005 = {
 /** FUNGI-TAINT-006: SSRF policy is insufficient (empty or missing blockPrivateIp). */
 export const FUNGI_TAINT_006 = {
   code: "FUNGI-TAINT-006",
-  name: "SsrfPolicyInsufficient",
+  name: "SSRF_POLICY_INSUFFICIENT",
   severity: "warning" as const,
   message: "Url.parseAndAllowlist() called without blockPrivateIp: true. An empty or incomplete policy allows SSRF to private IP ranges (RFC 1918, APIPA, loopback). Add blockPrivateIp: true to the policy.",
   suggestedFix: "Url.parseAndAllowlist(url, { blockPrivateIp: true, schemes: [\"https\"] })",

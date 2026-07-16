@@ -708,7 +708,7 @@ class Parser {
       // Hard error: use 'contract { effects { ... } }' instead.
       this.emit(
         "FUNGI-SYNTAX-LEGACY-001",
-        "LegacyEffectsSyntax",
+        "LEGACY_EFFECTS_SYNTAX",
         "'with effects [...]' was removed. Use 'contract { effects { ... } }' instead.",
         this.loc(),
         "Replace 'with effects [database.write]' with:\n  contract {\n    effects {\n      database.write\n    }\n  }",
@@ -748,7 +748,7 @@ class Parser {
         if (effectsNode === undefined) {
           this.emitWarning(
             "FUNGI-SYNTAX-LEGACY-001",
-            "LegacyEffectsSyntax",
+            "LEGACY_EFFECTS_SYNTAX",
             "'with effects [...]' is legacy syntax. Use 'contract { effects { ... } }' instead.",
             this.loc(),
             "Replace 'with effects [database.write]' with:\n  contract {\n    effects {\n      database.write\n    }\n  }",

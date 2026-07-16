@@ -483,30 +483,30 @@ describe("FUNGI_TYPE_010..019 exported constants", () => {
   it("FUNGI_TYPE_017 has severity warning (QuantizedPrecisionMismatch)", async () => {
     const { FUNGI_TYPE_017 } = await import("../dist/index.js");
     assert.equal(FUNGI_TYPE_017.severity, "warning");
-    assert.equal(FUNGI_TYPE_017.name, "QuantizedPrecisionMismatch");
+    assert.equal(FUNGI_TYPE_017.name, "QUANTIZED_PRECISION_MISMATCH");
   });
 
   it("FUNGI_TYPE_018 has severity error (InvalidRuntimeTargetType)", async () => {
     const { FUNGI_TYPE_018 } = await import("../dist/index.js");
     assert.equal(FUNGI_TYPE_018.severity, "error");
-    assert.equal(FUNGI_TYPE_018.name, "InvalidRuntimeTargetType");
+    assert.equal(FUNGI_TYPE_018.name, "INVALID_RUNTIME_TARGET_TYPE");
   });
 
   it("FUNGI_TYPE_019 has severity error (UnknownSymbol)", async () => {
     const { FUNGI_TYPE_019 } = await import("../dist/index.js");
     assert.equal(FUNGI_TYPE_019.severity, "error");
-    assert.equal(FUNGI_TYPE_019.name, "UnknownSymbol");
+    assert.equal(FUNGI_TYPE_019.name, "UNKNOWN_SYMBOL");
   });
 
   it("FUNGI_TYPE_010 has severity error (UnsatisfiedGenericConstraint)", async () => {
     const { FUNGI_TYPE_010 } = await import("../dist/index.js");
     assert.equal(FUNGI_TYPE_010.severity, "error");
-    assert.equal(FUNGI_TYPE_010.name, "UnsatisfiedGenericConstraint");
+    assert.equal(FUNGI_TYPE_010.name, "UNSATISFIED_GENERIC_CONSTRAINT");
   });
 
   it("FUNGI_TYPE_011 has name InvalidCollectionElement", async () => {
     const { FUNGI_TYPE_011 } = await import("../dist/index.js");
-    assert.equal(FUNGI_TYPE_011.name, "InvalidCollectionElement");
+    assert.equal(FUNGI_TYPE_011.name, "INVALID_COLLECTION_ELEMENT");
   });
 });
 
@@ -525,7 +525,7 @@ describe("FUNGI_VALUESTATE_006 and FUNGI_VALUESTATE_007 exported constants", () 
     const { FUNGI_VALUESTATE_007 } = await import("../dist/index.js");
     assert.ok(FUNGI_VALUESTATE_007 !== undefined, "Expected FUNGI_VALUESTATE_007 to be exported");
     assert.equal(FUNGI_VALUESTATE_007.code, "FUNGI-VALUESTATE-007");
-    assert.equal(FUNGI_VALUESTATE_007.name, "RedactedBoundaryViolation");
+    assert.equal(FUNGI_VALUESTATE_007.name, "REDACTED_BOUNDARY_VIOLATION");
     assert.equal(FUNGI_VALUESTATE_007.severity, "error");
   });
 });

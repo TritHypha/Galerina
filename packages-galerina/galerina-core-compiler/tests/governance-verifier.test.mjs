@@ -211,7 +211,7 @@ contract {
 
   it("FUNGI-GOV-011 constant has correct code", () => {
     assert.equal(FUNGI_GOV_011.code, "FUNGI-GOV-011");
-    assert.equal(FUNGI_GOV_011.name, "UnknownContractSet");
+    assert.equal(FUNGI_GOV_011.name, "UNKNOWN_CONTRACT_SET");
   });
 });
 
@@ -300,7 +300,7 @@ contract {
 
   it("FUNGI-GOV-012 constant has correct code", () => {
     assert.equal(FUNGI_GOV_012.code, "FUNGI-GOV-012");
-    assert.equal(FUNGI_GOV_012.name, "ContractSetRequirementNotMet");
+    assert.equal(FUNGI_GOV_012.name, "CONTRACT_SET_REQUIREMENT_NOT_MET");
   });
 });
 
@@ -571,7 +571,7 @@ policy {
 
   it("FUNGI-GOV-005 constant has correct code and name", () => {
     assert.equal(FUNGI_GOV_005.code, "FUNGI-GOV-005");
-    assert.equal(FUNGI_GOV_005.name, "PolicyPurposeMismatch");
+    assert.equal(FUNGI_GOV_005.name, "POLICY_PURPOSE_MISMATCH");
     assert.equal(FUNGI_GOV_005.severity, "warning");
   });
 });
@@ -617,7 +617,7 @@ authority share Payments.processor {
 
   it("FUNGI-GOV-007 constant has correct code and name", () => {
     assert.equal(FUNGI_GOV_007.code, "FUNGI-GOV-007");
-    assert.equal(FUNGI_GOV_007.name, "AuthorityBlockMissingReason");
+    assert.equal(FUNGI_GOV_007.name, "AUTHORITY_BLOCK_MISSING_REASON");
     assert.equal(FUNGI_GOV_007.severity, "error");
   });
 });
@@ -666,7 +666,7 @@ describe("Governance verifier — FUNGI-GOV-009 privileged flow missing capabili
 
   it("FUNGI-GOV-009 constant has correct code and name", () => {
     assert.equal(FUNGI_GOV_009.code, "FUNGI-GOV-009");
-    assert.equal(FUNGI_GOV_009.name, "PrivilegedFlowMissingCapability");
+    assert.equal(FUNGI_GOV_009.name, "PRIVILEGED_FLOW_MISSING_CAPABILITY");
     assert.equal(FUNGI_GOV_009.severity, "warning");
   });
 

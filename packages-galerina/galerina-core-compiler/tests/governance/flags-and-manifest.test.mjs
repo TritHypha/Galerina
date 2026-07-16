@@ -326,7 +326,7 @@ describe("FUNGI_GOV_014: MissingFallbackTarget shape", () => {
 describe("FUNGI_GOV_013 constant shape", () => {
   it("has correct code and name", () => {
     assert.equal(FUNGI_GOV_013.code, "FUNGI-GOV-013");
-    assert.equal(FUNGI_GOV_013.name, "BoundaryViolation");
+    assert.equal(FUNGI_GOV_013.name, "BOUNDARY_VIOLATION");
   });
 
   it("has severity error and non-empty message, why, and suggestedFix", () => {
@@ -462,7 +462,7 @@ contract {
 describe("R4: Security enforcement", () => {
   it("R4A: FUNGI-NET-001 constant has correct code and severity", () => {
     assert.equal(FUNGI_NET_001.code, "FUNGI-NET-001");
-    assert.equal(FUNGI_NET_001.name, "NetworkDestinationDenied");
+    assert.equal(FUNGI_NET_001.name, "NETWORK_DESTINATION_DENIED");
     assert.equal(FUNGI_NET_001.severity, "error");
     assert.ok(typeof FUNGI_NET_001.message === "string" && FUNGI_NET_001.message.length > 0,
       "FUNGI_NET_001.message must be non-empty");

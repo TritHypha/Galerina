@@ -38,7 +38,7 @@ describe("declared-name postures — deny-only", () => {
     const d6 = diags.find(d => d.code === "FUNGI-EFFECT-006");
     assert.ok(d6, "FUNGI-EFFECT-006 must fire");
     assert.equal(d6.severity, "error");
-    assert.equal(d6.name, "DenyOnlyEffect");
+    assert.equal(d6.name, "DENY_ONLY_EFFECT");
     assert.ok(!diags.some(d => d.code === "FUNGI-EFFECT-004"),
       "deny-only must not double-report as unknown/non-canonical");
   });
@@ -46,7 +46,7 @@ describe("declared-name postures — deny-only", () => {
   it("FUNGI_EFFECT_006 registry constant is exported with the right shape", () => {
     assert.equal(FUNGI_EFFECT_006.code, "FUNGI-EFFECT-006");
     assert.equal(FUNGI_EFFECT_006.severity, "error");
-    assert.equal(FUNGI_EFFECT_006.name, "DenyOnlyEffect");
+    assert.equal(FUNGI_EFFECT_006.name, "DENY_ONLY_EFFECT");
   });
 
   it("eval.execute (deny-only) sets the fail-closed sentinel, never bit 0 — never satisfiable", () => {
@@ -66,7 +66,7 @@ describe("declared-name postures — deny-only", () => {
     const d6 = diags.find(d => d.code === "FUNGI-EFFECT-006");
     assert.ok(d6, "FUNGI-EFFECT-006 must fire for memory.spill");
     assert.equal(d6.severity, "error");
-    assert.equal(d6.name, "DenyOnlyEffect");
+    assert.equal(d6.name, "DENY_ONLY_EFFECT");
     assert.ok(!diags.some(d => d.code === "FUNGI-EFFECT-004"),
       "memory.spill is deny-only, not unknown/non-canonical — no double-report");
   });

@@ -267,7 +267,7 @@ export function checkNaming(
       if (bindingName !== undefined && isAbbreviated(bindingName)) {
         findings.push({
           code: "FUNGI-NAMING-001",
-          name: "AbbreviatedIdentifier",
+          name: "ABBREVIATED_IDENTIFIER",
           severity: "warning",
           message: `Identifier '${bindingName}' is an abbreviation. Use a fully-spelled domain name (e.g. '${bindingName}' → a descriptive name like 'errorMessage', 'requestBody', 'contextData').`,
           identifierName: bindingName,
@@ -281,7 +281,7 @@ export function checkNaming(
       if (typeAnnotation !== undefined && isGenericTypeName(typeAnnotation)) {
         findings.push({
           code: "FUNGI-NAMING-003",
-          name: "GenericTypeName",
+          name: "GENERIC_TYPE_NAME",
           severity: "warning",
           message: `Binding '${bindingName ?? "?"}' uses generic type '${typeAnnotation}'. Replace with a named domain type alias (e.g. 'type UserPayload = Object' then use UserPayload).`,
           identifierName: bindingName ?? typeAnnotation,
@@ -303,7 +303,7 @@ export function checkNaming(
           if (/^[a-z]/.test(val)) {
             findings.push({
               code: "FUNGI-NAMING-001",
-              name: "AbbreviatedIdentifier",
+              name: "ABBREVIATED_IDENTIFIER",
               severity: "warning",
               message: `Identifier '${val}' is an abbreviation. Use a fully-spelled domain name.`,
               identifierName: val,
@@ -335,7 +335,7 @@ export function checkNaming(
         if (!alreadyEmitted) {
           findings.push({
             code: "FUNGI-NAMING-001",
-            name: "AbbreviatedIdentifier",
+            name: "ABBREVIATED_IDENTIFIER",
             severity: "warning",
             message: `Parameter '${paramName}' in flow '${flow.name}' is an abbreviation. Use a fully-spelled domain name.`,
             flowName: flow.name,
@@ -350,7 +350,7 @@ export function checkNaming(
       if (paramType !== undefined && isGenericTypeName(paramType)) {
         findings.push({
           code: "FUNGI-NAMING-003",
-          name: "GenericTypeName",
+          name: "GENERIC_TYPE_NAME",
           severity: "warning",
           message: `Parameter '${paramName ?? "?"}' in flow '${flow.name}' uses generic type '${paramType}'. Replace with a named domain type alias.`,
           flowName: flow.name,
@@ -364,7 +364,7 @@ export function checkNaming(
     if (isImplicitReturnType(flow.returnType)) {
       findings.push({
         code: "FUNGI-NAMING-002",
-        name: "ImplicitReturnType",
+        name: "IMPLICIT_RETURN_TYPE",
         severity: "warning",
         message: `Flow '${flow.name}' has implicit/void return type. Declare an explicit return type to communicate intent (e.g. '-> Unit' for intentional no-value, '-> Result<T, Error>' for fallible flows).`,
         flowName: flow.name,
@@ -376,7 +376,7 @@ export function checkNaming(
     if (isAbbreviatedFlowName(flow.name)) {
       findings.push({
         code: "FUNGI-NAMING-004",
-        name: "AbbreviatedFlowName",
+        name: "ABBREVIATED_FLOW_NAME",
         severity: "warning",
         message: `Flow name '${flow.name}' is too short or generic to convey domain intent. Use a name that includes a domain noun (e.g. 'hashPassword' instead of 'hash', 'processOrder' instead of 'proc').`,
         flowName: flow.name,
@@ -392,7 +392,7 @@ export function checkNaming(
     ) {
       findings.push({
         code: "FUNGI-NAMING-005",
-        name: "MissingIntentOnPublicFlow",
+        name: "MISSING_INTENT_ON_PUBLIC_FLOW",
         severity: "warning",
         message: `${flow.qualifier} flow '${flow.name}' has no contract { intent { ... } } block. Intent documents what this flow protects and why it is ${flow.qualifier} — required by the Zero-Ambiguity standard.`,
         flowName: flow.name,

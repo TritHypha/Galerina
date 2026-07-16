@@ -133,8 +133,8 @@ describe("FUNGI_SOURCE_ESCAPE_001 constant", () => {
     assert.equal(FUNGI_SOURCE_ESCAPE_001.severity, "error");
   });
 
-  it("has name 'SourceLevelEvalEscape'", () => {
-    assert.equal(FUNGI_SOURCE_ESCAPE_001.name, "SourceLevelEvalEscape");
+  it("has name 'SOURCE_LEVEL_EVAL_ESCAPE'", () => {
+    assert.equal(FUNGI_SOURCE_ESCAPE_001.name, "SOURCE_LEVEL_EVAL_ESCAPE");
   });
 
   it("has a non-empty message", () => {

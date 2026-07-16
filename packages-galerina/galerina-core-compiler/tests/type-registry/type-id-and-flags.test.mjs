@@ -293,7 +293,7 @@ describe("tensorDimensionCountsCompatible", () => {
 describe("FUNGI_TYPE_030 and FUNGI_TYPE_031: constant shapes", () => {
   it("FUNGI_TYPE_030 (TensorElementTypeMismatch) has correct shape", () => {
     assert.equal(FUNGI_TYPE_030.code, "FUNGI-TYPE-030");
-    assert.equal(FUNGI_TYPE_030.name, "TensorElementTypeMismatch");
+    assert.equal(FUNGI_TYPE_030.name, "TENSOR_ELEMENT_TYPE_MISMATCH");
     assert.equal(FUNGI_TYPE_030.severity, "error");
     assert.ok(typeof FUNGI_TYPE_030.why === "string");
     assert.ok(FUNGI_TYPE_030.suggestedFix.toLowerCase().includes("dequantize") ||
@@ -303,7 +303,7 @@ describe("FUNGI_TYPE_030 and FUNGI_TYPE_031: constant shapes", () => {
 
   it("FUNGI_TYPE_031 (TensorDimensionMismatch) has correct shape", () => {
     assert.equal(FUNGI_TYPE_031.code, "FUNGI-TYPE-031");
-    assert.equal(FUNGI_TYPE_031.name, "TensorDimensionMismatch");
+    assert.equal(FUNGI_TYPE_031.name, "TENSOR_DIMENSION_MISMATCH");
     assert.equal(FUNGI_TYPE_031.severity, "error");
     assert.ok(typeof FUNGI_TYPE_031.why === "string");
     assert.ok(FUNGI_TYPE_031.suggestedFix.toLowerCase().includes("squeeze") ||

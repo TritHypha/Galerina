@@ -716,7 +716,7 @@ pure flow test() -> Void {
 
   it("FUNGI-TYPE-017 constant has correct spec name QuantizedPrecisionMismatch", async () => {
     const { FUNGI_TYPE_017 } = await import("../dist/index.js");
-    assert.equal(FUNGI_TYPE_017.name, "QuantizedPrecisionMismatch");
+    assert.equal(FUNGI_TYPE_017.name, "QUANTIZED_PRECISION_MISMATCH");
     assert.equal(FUNGI_TYPE_017.severity, "warning");
   });
 

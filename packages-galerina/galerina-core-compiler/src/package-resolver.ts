@@ -118,7 +118,7 @@ export function checkPackageCapabilityExpansion(
     addedCapabilities: added,
     diagnostics: [{
       code: "FUNGI-PKG-001",
-      name: "CapabilityExpanded",
+      name: "CAPABILITY_EXPANDED",
       severity: "error",
       packageName: resolved.name,
       message: `Package '${resolved.name}@${resolved.version}' declares new capabilities not present in the lockfile: ${added.join(", ")}. This is a breaking security change — review and re-approve.`,
@@ -142,7 +142,7 @@ export function checkInstallScript(manifest: PackageManifest): readonly PackageR
   if (manifest.installScript !== undefined && manifest.installScript !== "deny") {
     return [{
       code: "FUNGI-PKG-004",
-      name: "InstallScriptDenied",
+      name: "INSTALL_SCRIPT_DENIED",
       severity: "error",
       packageName: manifest.name,
       message: `Package '${manifest.name}' attempts to declare an install script. Galerina denies install scripts by default. Only explicitly approved, signed packages may run install-time code.`,
@@ -234,7 +234,7 @@ export function checkRegistryTrust(
     if (opts?.requireCertified === true) {
       return [{
         code: "FUNGI-PKG-002",
-        name: "UntrustedRegistry",
+        name: "UNTRUSTED_REGISTRY",
         severity: "error",
         packageName: manifest.name,
         message: `Package '${manifest.name}@${manifest.version}' declares no source registry. Under a certified-registry policy every package must come from a declared, trusted registry.`,
@@ -248,7 +248,7 @@ export function checkRegistryTrust(
   if (!allow.includes(registry)) {
     return [{
       code: "FUNGI-PKG-002",
-      name: "UntrustedRegistry",
+      name: "UNTRUSTED_REGISTRY",
       severity: "error",
       packageName: manifest.name,
       message: `Package '${manifest.name}@${manifest.version}' comes from untrusted registry '${registry}', which is not on the project's trusted registry allow-list.`,
@@ -271,7 +271,7 @@ export function checkPackageProvenance(
   if (!hasValidContentHash(manifest.hash)) {
     diags.push({
       code: "FUNGI-PKG-003",
-      name: "MissingHash",
+      name: "MISSING_HASH",
       severity: provenanceSeverity,
       packageName: manifest.name,
       message: `Package '${manifest.name}@${manifest.version}' has no valid content-addressable hash (expected 'sha256:<64 hex>', got '${manifest.hash ?? "<none>"}'). Placeholder or malformed hashes (e.g. 'sha256:pending') are rejected. Without a real hash, tamper detection and reproducible builds are not possible.`,
@@ -282,7 +282,7 @@ export function checkPackageProvenance(
   if (!manifest.signature) {
     diags.push({
       code: "FUNGI-PKG-005",
-      name: "MissingSignature",
+      name: "MISSING_SIGNATURE",
       severity: provenanceSeverity,
       packageName: manifest.name,
       message: `Package '${manifest.name}@${manifest.version}' has no signature. Origin cannot be cryptographically verified.`,
@@ -303,7 +303,7 @@ export function checkPackageProvenance(
     if (revoked) {
       diags.push({
         code: "FUNGI-PKG-006",
-        name: "RevokedSigner",
+        name: "REVOKED_SIGNER",
         severity: "error",
         packageName: manifest.name,
         message: `Package '${manifest.name}@${manifest.version}' is signed by REVOKED key '${manifest.signerKeyId}'. A revoked signing key cannot establish trusted origin.`,

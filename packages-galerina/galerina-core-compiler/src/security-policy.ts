@@ -65,7 +65,7 @@ export const PRIVATE_IP_RANGES = [
  */
 export const FUNGI_NET_001 = {
   code: "FUNGI-NET-001",
-  name: "NetworkDestinationDenied",
+  name: "NETWORK_DESTINATION_DENIED",
   severity: "error" as const,
   message: "Network call target is not in the flow's declared network allowlist.",
   why: "Unrestricted network.outbound allows any internet endpoint to be called, enabling data exfiltration, C2 communication, and fan-out DDoS. Explicit allowlists make abuse detectable and blockable.",
@@ -87,7 +87,7 @@ export const FUNGI_NET_001 = {
  */
 export const FUNGI_NET_002 = {
   code: "FUNGI-NET-002",
-  name: "PrivateRangeAccess",
+  name: "PRIVATE_RANGE_ACCESS",
   severity: "error" as const,
   message: "Network call resolved to a private or reserved IP address. This is blocked to prevent SSRF attacks.",
   why: "DNS rebinding can make an allowed hostname resolve to an internal IP. Checking the resolved IP (not just the hostname) prevents attackers from using DNS manipulation to reach internal services.",
@@ -113,7 +113,7 @@ export const FUNGI_NET_002 = {
  */
 export const FUNGI_RUNTIME_006 = {
   code: "FUNGI-RUNTIME-006",
-  name: "RateLimitExceeded",
+  name: "RATE_LIMIT_EXCEEDED",
   severity: "error" as const,
   message: "A declared contract limit was exceeded. The flow has been aborted.",
   why: "Contract limits exist to prevent accidental and deliberate abuse. A flow that exceeds its declared limits is operating outside its governance contract.",
@@ -156,7 +156,7 @@ export interface NetworkDestinationPolicy {
  */
 export const FUNGI_ANTI_ABUSE_001 = {
   code: "FUNGI-ANTI-ABUSE-001",
-  name: "UngovernesBackgroundExecution",
+  name: "UNGOVERNES_BACKGROUND_EXECUTION",
   severity: "error" as const,
   message: "Background execution (process.spawn, worker.spawn, event.schedule) requires an explicit effect declaration. Undeclared background execution bypasses governance.",
   why: "Covert background workers can exfiltrate data, communicate with C2 servers, or spawn unbounded compute — all outside the governance contract. Requiring an explicit declaration makes spawn attempts detectable and blockable.",

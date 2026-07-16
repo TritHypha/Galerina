@@ -877,7 +877,7 @@ function validateDeclaredEffectNames(flow: FlowMeta, diagnostics: EffectDiagnost
     if (DENY_ONLY_EFFECTS.has(effect)) {
       diagnostics.push({
         code: "FUNGI-EFFECT-006",
-        name: "DenyOnlyEffect",
+        name: "DENY_ONLY_EFFECT",
         severity: "error",
         message: `Effect "${effect}" is deny-only: it is a recognised name but can never be granted (no capability, no host import, no admission path). Remove it — there is no declaration that makes this flow admissible.`,
         location: flow.location,
@@ -892,7 +892,7 @@ function validateDeclaredEffectNames(flow: FlowMeta, diagnostics: EffectDiagnost
         // FUNGI-EFFECT-005: broad alias — warn, not error; developer should use canonical form
         diagnostics.push({
           code: "FUNGI-EFFECT-005",
-          name: "BroadAliasUsed",
+          name: "BROAD_ALIAS_USED",
           severity: "warning",
           message: `Effect "${effect}" is a broad alias. Use the canonical name "${canonical}" to precisely declare authority.`,
           location: flow.location,
@@ -1101,7 +1101,7 @@ export function checkStdlibEffects(
           if (!declared.has(requiredEffect)) {
             diagnostics.push({
               code: "FUNGI-STDLIB-001",
-              name: "StdlibEffectNotDeclared",
+              name: "STDLIB_EFFECT_NOT_DECLARED",
               severity,
               message: `${name} requires ${requiredEffect} which is not declared in the contract.`,
               ...(node.location !== undefined ? { location: node.location } : {}),
@@ -1122,7 +1122,7 @@ export function checkStdlibEffects(
         if (broadEffect !== undefined && !declared.has(broadEffect)) {
           diagnostics.push({
             code: "FUNGI-STDLIB-002",
-            name: "UnknownEffectfulStdlibCall",
+            name: "UNKNOWN_EFFECTFUL_STDLIB_CALL",
             severity,
             message: `${fullName} is an unrecognised method on the effectful module "${receiverName}"; it requires at least ${broadEffect} which is not declared in the contract. Effectful modules are deny-by-default: declare the effect or use a recognised operation.`,
             ...(node.location !== undefined ? { location: node.location } : {}),
