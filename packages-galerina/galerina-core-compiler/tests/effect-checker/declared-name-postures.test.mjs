@@ -8,8 +8,10 @@
 //     NON_CANONICAL_EFFECT with the canonical suggestion
 //   - telemetry.read is canonical AND mask-visible (EffectFlags.TelemetryRead —
 //     CG-2: no canonical name may be mask-invisible)
-//   - pii.write keeps the pinned Wave-2 semantic: FUNGI-EFFECT-004 ERROR
-//     suggesting database.write (error > warning — no silent accept-surface widening)
+//   - pii.write is a non-broad alias → FUNGI-EFFECT-009 NON_CANONICAL_EFFECT (error) suggesting
+//     database.write. (The "#20 split" moved the alias arm off 004 → 009; still an ERROR, so the
+//     accept surface is not widened — the Wave-2 "error > warning" intent holds, only the number
+//     changed. Prose corrected 2026-07-17 to match the 009 assertion below; R&D-flagged stale-004.)
 //   - a truly unknown name still gets FUNGI-EFFECT-004 UNKNOWN_EFFECT (error)
 // =============================================================================
 

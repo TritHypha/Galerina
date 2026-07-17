@@ -468,6 +468,39 @@ describe("effect-checker.fungi — FUNGI-EFFECT-002 TRANSITIVE_EFFECT_NOT_DECLAR
     assert.deepEqual(codesFor(diags, "a"), ["FUNGI-EFFECT-002"]);
     assert.deepEqual(codesFor(diags, "b"), []);
   });
+
+  // R&D-grounded traps (PREP note 2026-07-17): diamond dedup · raw comparison (no alias resolution) ·
+  // call-graph fidelity on an unresolved callee. Assert on the CODE only (introducer is first-writer-wins
+  // by iteration order — R&D trap 2 — so the exact introducer name is not asserted).
+  it("trap-1 diamond R→{M,N}, M→C, N→C (C declares network.outbound) → R gets 002 once (deduped)", async () => {
+    const { diags } = await checkBody([
+      bodyFlow({ name: "r", kind: "flow", effects: [], body: [
+        stmt({ kind: "exprStmt", expr: [eCall("m")] }),
+        stmt({ kind: "exprStmt", expr: [eCall("n")] }),
+      ]}),
+      bodyFlow({ name: "m", kind: "flow", effects: [], body: [stmt({ kind: "exprStmt", expr: [eCall("c")] })] }),
+      bodyFlow({ name: "n", kind: "flow", effects: [], body: [stmt({ kind: "exprStmt", expr: [eCall("c")] })] }),
+      bodyFlow({ name: "c", kind: "flow", effects: ["network.outbound"], body: [] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "r"), ["FUNGI-EFFECT-002"]);
+  });
+
+  it("trap-3 raw comparison: caller declares BROAD alias 'network', transitive needs 'network.outbound' → 002 (no canonicalization)", async () => {
+    const { diags } = await checkBody([
+      bodyFlow({ name: "a", kind: "flow", effects: ["network"], body: [stmt({ kind: "exprStmt", expr: [eCall("b")] })] }),
+      bodyFlow({ name: "b", kind: "flow", effects: ["network.outbound"], body: [] }),
+    ]);
+    // "network" != "network.outbound" as raw strings → still under-declared → 002 (Stage-A does not
+    // canonicalize before the declared.has() test; ties into the alias-cluster).
+    assert.ok(codesFor(diags, "a").includes("FUNGI-EFFECT-002"), `expected 002, got: ${codesFor(diags, "a").join(", ")}`);
+  });
+
+  it("trap-4 call-graph fidelity: a flow calling a flow NOT in the set → clean (no crash, no spurious 002)", async () => {
+    const { diags } = await checkBody([
+      bodyFlow({ name: "a", kind: "flow", effects: [], body: [stmt({ kind: "exprStmt", expr: [eCall("nonexistent")] })] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "a"), []);
+  });
 });
 
 describe("effect-checker.fungi — no duplicate diagnostics", () => {

@@ -3021,7 +3021,7 @@
       ],
       "defs": 0,
       "emits": 2,
-      "tests": 24,
+      "tests": 26,
       "docs": 19
     },
     {
@@ -3053,7 +3053,7 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 52,
+      "tests": 51,
       "docs": 20
     },
     {
@@ -3134,7 +3134,7 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 23,
+      "tests": 24,
       "docs": 0
     },
     {

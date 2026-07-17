@@ -2,7 +2,7 @@
 Generated: 2026-07-17
 
 ## Stats
-- Docs: 1181 | Edges: 3476 | Orphans: 118 | Stale links: 0 | FUNGI codes: 748
+- Docs: 1184 | Edges: 3476 | Orphans: 121 | Stale links: 0 | FUNGI codes: 748
 
 ## Document Registry (auto-generated)
 
@@ -109,8 +109,11 @@ Generated: 2026-07-17
 | 2026-07-17-ACK-effect-parity-gate-VERIFIED-green-plus-coverage-boundary.md | — | — | — | FUNGI-EFFECT-002 |
 | 2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed.md | — | — | — | — |
 | 2026-07-17-ACK-papers-landed-clean-declarations-block-is-owner-gated.md | — | — | — | — |
+| 2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md | — | — | — | FUNGI-EFFECT-002 |
 | 2026-07-17-myco-galerina-package-updates-fold-into-galerina-tools-myco.md | — | — | — | — |
+| 2026-07-17-PREP-EFFECT-002-transitive-walk-faithfulness-traps-grounded-from-stage-A.md | — | — | — | — |
 | 2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked.md | — | — | — | — |
+| 2026-07-17-VERIFY-EFFECT-002-live-probe-found-pure-002-under-report-divergence.md | — | — | — | FUNGI-EFFECT-002, FUNGI-EFFECT-003 |
 | AI_INDEX.md | — | — | — | FUNGI-HW-101, FUNGI-PHOTONIC-001, FUNGI-SEC-014, FUNGI-SYNTAX-010, FUNGI-TYPE-031 |
 | ai-as-untrusted-reasoning-worker.md | — | — | — | — |
 | ai-compute-plan.md | — | — | — | — |
@@ -1271,7 +1274,9 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-ACK-alias-cluster-VERIFIED-plus-stale-004-cluster-plus-latent-008-fold-invariant.md` — 2026-07-17-ACK-alias-cluster-VERIFIED-plus-stale-004-cluster-plus-latent-008-fold-invariant
 - `2026-07-17-ACK-effect-parity-gate-VERIFIED-green-plus-coverage-boundary.md` — 2026-07-17-ACK-effect-parity-gate-VERIFIED-green-plus-coverage-boundary
 - `2026-07-17-ACK-papers-landed-clean-declarations-block-is-owner-gated.md` — 2026-07-17-ACK-papers-landed-clean-declarations-block-is-owner-gated
+- `2026-07-17-PREP-EFFECT-002-transitive-walk-faithfulness-traps-grounded-from-stage-A.md` — 2026-07-17-PREP-EFFECT-002-transitive-walk-faithfulness-traps-grounded-from-stage-A
 - `2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked.md` — 2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked
+- `2026-07-17-VERIFY-EFFECT-002-live-probe-found-pure-002-under-report-divergence.md` — 2026-07-17-VERIFY-EFFECT-002-live-probe-found-pure-002-under-report-divergence
 - `2026-07-17-myco-galerina-package-updates-fold-into-galerina-tools-myco.md` — 2026-07-17-myco-galerina-package-updates-fold-into-galerina-tools-myco
 - `2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md` — 2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011
 - `2026-07-16-ACK-024-landed-plus-frontier-correction-NAME-codes-are-symbol-resolver.md` — 2026-07-16-ACK-024-landed-plus-frontier-correction-NAME-codes-are-symbol-resolver
@@ -1311,6 +1316,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-ACK-alias-cluster-landed-005-unsquat-009-payment-charge.md` — 2026-07-17-ACK-alias-cluster-landed-005-unsquat-009-payment-charge
 - `2026-07-17-ACK-effect-parity-gate-extended-plus-docnit-plus-002-grounded.md` — 2026-07-17-ACK-effect-parity-gate-extended-plus-docnit-plus-002-grounded
 - `2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed.md` — 2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed
+- `2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md` — 2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed
 
 ## Stale Links
 Links pointing to missing files:

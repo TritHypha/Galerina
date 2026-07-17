@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1183,
+  "docCount": 1186,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -4384,6 +4384,45 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-PREP-EFFECT-002-transitive-walk-faithfulness-traps-grounded-from-stage-A.md",
+      "title": "2026-07-17-PREP-EFFECT-002-transitive-walk-faithfulness-traps-grounded-from-stage-A.md",
+      "headings": [
+        "The Stage-A shape (two 002 emit paths)",
+        "Traps I'll ground (ranked by how easy they are to get subtly wrong)",
+        "Note vs my open #3 finding"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "ground",
+        "emit",
+        "stage-a",
+        "traps",
+        "callee",
+        "effect",
+        "seen",
+        "paths",
+        "effects",
+        "get",
+        "shape",
+        "introducer",
+        "ranked",
+        "easy",
+        "subtly",
+        "wrong",
+        "note",
+        "open",
+        "finding",
+        "name",
+        "set",
+        "direct",
+        "collected",
+        "prep-effect-002-transitive-walk-faithfulness-traps-grounded-from-stage-a",
+        "transitive"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked.md",
       "title": "2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked.md",
       "headings": [
@@ -4422,6 +4461,49 @@
         "stated",
         "record",
         "asking"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-EFFECT-002-live-probe-found-pure-002-under-report-divergence.md",
+      "title": "2026-07-17-VERIFY-EFFECT-002-live-probe-found-pure-002-under-report-divergence.md",
+      "headings": [
+        "The pure-flow gating — CONFIRMED DIVERGENCE (you asked; Stage-A does not agree)",
+        "fn-helper sub-path (your caveat 2) — confirmed, a SECOND under-report",
+        "What IS faithful (verified, so you know the rest is solid)",
+        "Milestone framing (honest)"
+      ],
+      "codes": [
+        "FUNGI-EFFECT-002",
+        "FUNGI-EFFECT-003"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "stage-a",
+        "confirmed",
+        "pure",
+        "fn-helper",
+        "faithful",
+        "under-report",
+        "verified",
+        "live",
+        "divergence",
+        "asked",
+        "pure-flow",
+        "flow",
+        "twin",
+        "sub-path",
+        "effect",
+        "differential",
+        "gating",
+        "agree",
+        "caveat",
+        "second",
+        "know",
+        "rest",
+        "solid",
+        "milestone",
+        "framing"
       ]
     },
     {
@@ -5963,6 +6045,48 @@
         "galerina",
         "version",
         "test"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md",
+      "title": "2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md",
+      "headings": [
+        "EFFECT-002 — TRANSITIVE_EFFECT_NOT_DECLARED, landed",
+        "★ Milestone",
+        "Two honest caveats (verify-don't-overclaim)",
+        "Follow-ups (tracked)"
+      ],
+      "codes": [
+        "FUNGI-EFFECT-002"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "effect",
+        "transitive",
+        "declared",
+        "stage-a",
+        "twin",
+        "milestone",
+        "landed",
+        "honest",
+        "caveats",
+        "flow",
+        "tracked",
+        "effect-checker",
+        "effect-002",
+        "verify-don",
+        "t-overclaim",
+        "follow-ups",
+        "milestone-effect-checker-twin-complete-effect-002-landed",
+        "gate",
+        "both",
+        "sub-path",
+        "please",
+        "declare",
+        "differential",
+        "false",
+        "construction"
       ]
     },
     {

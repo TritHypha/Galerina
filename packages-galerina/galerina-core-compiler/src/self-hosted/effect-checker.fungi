@@ -302,17 +302,11 @@ contract {
                 }
               }
             }
-            // Check #6 — FUNGI-EFFECT-008 (PRIVILEGED_EFFECT_ON_PLAIN_FLOW, warning): a PLAIN flow (kind
-            // "flow", not pure/secure/guarded) declaring a privileged effect. Mirrors Stage-A checkFlowEffects
-            // (effect-checker.ts:741): the security tier is under-declared; the fix is `secure flow`. Fires
-            // on the DECLARED effect independent of usage/known-ness. Verified vs raw diagnostics:
-            // `flow f() effects { secret.read }` -> 008; secure/pure/non-privileged declarer -> no 008.
-            if kind == "flow" {
-              if isPrivilegedEffect(de) {
-                let msg8: String = "Plain flow '" + flowName + "' declares privileged effect '" + de + "'; use 'secure flow' for security-sensitive operations"
-                diags = diags.append({ code: "FUNGI-EFFECT-008", message: msg8, flowName: flowName, severity: "warning" })
-              }
-            }
+            // (FUNGI-EFFECT-008 is emitted in an INDEPENDENT pass after this loop — see below. It was
+            // previously here in the else-branch, which coupled it to the alias fold: an aliased
+            // declared-name skips the else, so a privileged effect that was ALSO an alias-key would
+            // silently skip 008 [R&D fold-invariant #3]. Faithful today because
+            // PLAIN_FLOW_PRIVILEGED_EFFECTS ∩ alias-keys = ∅, but now decoupled structurally.)
           }
         }
       }
@@ -320,6 +314,30 @@ contract {
       _ => {}
     }
     d = d + 1
+  }
+
+  // Check #6 — FUNGI-EFFECT-008 (PRIVILEGED_EFFECT_ON_PLAIN_FLOW, warning): an INDEPENDENT pass over
+  // declared effects. Mirrors Stage-A's SEPARATE checkFlowEffects (effect-checker.ts:741), whose
+  // diagnostics UNION with validateDeclaredEffectNames' 005/009 — so a plain flow declaring a
+  // privileged effect gets 008 regardless of whether that name is also a deny-only/alias (which would
+  // otherwise skip the else-branch). Grounded vs raw Stage-A: plain+secret.read -> 008; secure/pure/
+  // non-privileged declarer -> no 008. Structurally faithful, not just observationally (R&D #3(b)).
+  if kind == "flow" {
+    mut p: Int = 0
+    while p < declared.count() {
+      let pdOpt = declared.get(p)
+      match pdOpt {
+        Some(pd) => {
+          if isPrivilegedEffect(pd) {
+            let msg8: String = "Plain flow '" + flowName + "' declares privileged effect '" + pd + "'; use 'secure flow' for security-sensitive operations"
+            diags = diags.append({ code: "FUNGI-EFFECT-008", message: msg8, flowName: flowName, severity: "warning" })
+          }
+        }
+        None => {}
+        _ => {}
+      }
+      p = p + 1
+    }
   }
 
   return diags

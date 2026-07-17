@@ -820,10 +820,11 @@ const BROAD_EFFECT_ALIASES: ReadonlySet<string> = new Set([
   // secret.access is a coarse umbrella (access ⊇ read/write); treated as a broad
   // alias so it is accepted with a nudge (FUNGI-EFFECT-005) toward secret.read /
   // secret.write rather than a hard reject. Reconciliation 2026-07-01.
-  // NOTE (2026-07-02): pii.write deliberately NOT here — the Wave-2 pinned semantic
-  // (regression-tested) is a hard FUNGI-EFFECT-004 error suggesting database.write;
-  // softening an error to a warning widens the accept surface. The teaching corpus
-  // declares database.write and carries the pii intent in privacy{}/protected params.
+  // NOTE (2026-07-02; number corrected 2026-07-17): pii.write is deliberately NOT a BROAD alias — so
+  // it takes the non-broad alias arm below → FUNGI-EFFECT-009 (NON_CANONICAL_EFFECT) error suggesting
+  // database.write (the "#20 split" moved this off 004). The Wave-2 intent — "error, not warning" —
+  // holds: 009 is still an error, so softening to a warning would widen the accept surface. The
+  // teaching corpus declares database.write and carries the pii intent in privacy{}/protected params.
   "secret.access",
 ]);
 

@@ -1,4 +1,4 @@
-# Galerina KB index (1183 docs)
+# Galerina KB index (1186 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -392,10 +392,19 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-myco-galerina-package-updates-fold-into-galerina-tools-myco.md`
 - terms: delta, upstream, myco, updates, fold, package, file, galerina-tools-myco, resolution, context, known-next, fyi, don, regression
 
+## 2026-07-17-PREP-EFFECT-002-transitive-walk-faithfulness-traps-grounded-from-stage-A.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-PREP-EFFECT-002-transitive-walk-faithfulness-traps-grounded-from-stage-A.md`
+- terms: ground, emit, stage-a, traps, callee, effect, seen, paths, effects, get, shape, introducer, ranked, easy
+
 ## 2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked.md`
 - tasks: #143
 - terms: owner, repo, unlock, rd-0447, quantum, amplitude, remote, action, rd-0445, simulator, token, still, admission, closes
+
+## 2026-07-17-VERIFY-EFFECT-002-live-probe-found-pure-002-under-report-divergence.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-EFFECT-002-live-probe-found-pure-002-under-report-divergence.md`
+- codes: FUNGI-EFFECT-002, FUNGI-EFFECT-003
+- terms: stage-a, confirmed, pure, fn-helper, faithful, under-report, verified, live, divergence, asked, pure-flow, flow, twin, sub-path
 
 ## 2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md`
@@ -591,6 +600,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## 2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed.md`
 - terms: paths, myco, already, public, present, fold-in, both, repointed, folder, count, verified, reconciliation, owner, subprojects
+
+## 2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md`
+- codes: FUNGI-EFFECT-002
+- terms: effect, transitive, declared, stage-a, twin, milestone, landed, honest, caveats, flow, tracked, effect-checker, effect-002, verify-don
 
 ## Core Application Model
 `../ZTF-Knowledge-Bases/core-application-model.md`

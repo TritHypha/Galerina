@@ -590,9 +590,12 @@ guarded flow writeAndAudit(data: Data) -> Result<Unit, Error>
   });
 });
 
-// ── Task 2: EFFECT-004 with canonical alias suggestions ───────────────────────
-describe("Effect checker — EFFECT-004 canonical effect alias suggestions", () => {
-  it("pii.write emits EFFECT-004 suggesting database.write", () => {
+// ── Task 2: EFFECT-009 with canonical alias suggestions ───────────────────────
+// (The "#20 split" moved the non-broad-alias arm off 004 → 009 — 009 is still an ERROR, so the accept
+//  surface is not widened; only the number changed. Titles corrected 2026-07-17 to match the 009
+//  assertion below, R&D-flagged stale-004 cluster.)
+describe("Effect checker — EFFECT-009 canonical effect alias suggestions", () => {
+  it("pii.write emits EFFECT-009 suggesting database.write", () => {
     const { effectResults } = parseAndCheck(`
 guarded flow storePersonal(data: PII) -> Result<Unit, Error>
   contract { effects { pii.write } }
