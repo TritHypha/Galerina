@@ -111,19 +111,26 @@ export function verdictFor(row, ctx) {
   if (row.deltaPct === null) return { verdict: "lane-change", why: row.note };
   const cls = variClass(lane, bench, ctx.coldCalls);
   const mag = Math.abs(row.deltaPct);
-  const shapeOnly = ctx.workEquivalence?.[bench]?.lanes?.includes(lane);
+  const weLane = ctx.workEquivalence?.[bench]?.lanes?.includes(lane);
+  const weKind = weLane ? (ctx.workEquivalence[bench].kind ?? "elided") : null;
+  // Work-equivalence verdict (RD-0446): "elided" lanes do LESS work (the flow-local bump-arena §a will make
+  // them equivalent → citable, then their tag drops); "fused-vs-materialised" is a REAL optimisation difference
+  // (§b reframe) — shown + explicitly labelled, never cited as a raw cross-runtime ratio.
+  const weVerdict = (c) => weKind === "fused-vs-materialised"
+    ? { verdict: "fused-vs-materialised", cls: c, why: "real optimisation difference (fusion vs materialisation) — shown, never cited as a raw ratio (RD-0446 §b)" }
+    : { verdict: "shape-only", cls: c, why: "work-equivalence: allocation elided, not a cross-runtime signal (bump-arena pending, RD-0446 §a)" };
   if (cls === "control") return { verdict: mag > 10 ? "env-floor" : "noise", cls, why: "native control — sizes the noise floor, not a code signal" };
   if (cls === "cpython") return { verdict: "noise", cls, why: "CPython block-mover noise class" };
   if (cls === "passive-unmeasured") return { verdict: "non-attributable", cls, why: "passive cold rate is single-shot per call — not-measured until the #63 median rig" };
   if (cls === "interpreter") {
-    if (shapeOnly) return { verdict: "shape-only", cls, why: "work-equivalence: not a cross-runtime signal" };
+    if (weLane) return weVerdict(cls);
     if (ctx.bidir.has(bench)) return { verdict: "noise", cls, why: "bidirectional scatter on this benchmark" };
     const bar = Math.max(ctx.interpBar, ctx.envFloor * 2);
     return mag > bar ? { verdict: "investigate", cls, why: `interpreter lane moved ${row.deltaPct}% > ${bar.toFixed(0)}% (${ctx.interpBasis})` }
                      : { verdict: "noise", cls, why: `interpreter variance, within ${bar.toFixed(0)}% (${ctx.interpBasis})` };
   }
   if (cls === "wasm") {
-    if (shapeOnly) return { verdict: "shape-only", cls, why: "work-equivalence: not a cross-runtime signal" };
+    if (weLane) return weVerdict(cls);
     if (ctx.bidir.has(bench)) return { verdict: "noise", cls, why: "bidirectional scatter on this benchmark" };
     const bar = Math.max(ctx.floor, ctx.envFloor * 1.5);
     return mag > bar ? { verdict: "investigate", cls, why: `wasm lane (compiled, stable) moved ${row.deltaPct}% > bar ${bar.toFixed(1)}%` }
@@ -159,6 +166,13 @@ if (process.argv.includes("--self-test")) {
   assert(verdictFor(rows[4], ctx).verdict === "noise", "wasm +12 but bidirectional -> noise");
   assert(verdictFor(rows[6], ctx).verdict === "investigate", "wasm +55% clean lane > env×1.5 -> investigate");
   assert(verdictFor(rows[7], ctx).verdict === "investigate", "governed +90% > max(25,62)=62 -> investigate");
+  // RD-0446 work-equivalence verdicts: "elided" → shape-only (bump-arena §a will fix); "fused-vs-materialised" →
+  // a distinct label (§b reframe) — both non-cited, but the reframe says WHY (real optimisation, not elided work).
+  const weCtx = { ...ctx, workEquivalence: { "record-allocation": { kind: "elided", lanes: ["wasm"] }, "collection-pipeline": { kind: "fused-vs-materialised", lanes: ["wasm"] } } };
+  assert(verdictFor({ key: "record-allocation|wasm", deltaPct: 300 }, weCtx).verdict === "shape-only", "elided alloc lane -> shape-only");
+  assert(verdictFor({ key: "collection-pipeline|wasm", deltaPct: 300 }, weCtx).verdict === "fused-vs-materialised", "collection-pipeline -> fused-vs-materialised (RD-0446 reframe, non-vacuous)");
+  const weDefault = { ...ctx, workEquivalence: { "x": { lanes: ["wasm"] } } };
+  assert(verdictFor({ key: "x|wasm", deltaPct: 300 }, weDefault).verdict === "shape-only", "work-equivalence lane with no kind defaults to shape-only (elided)");
   // data-derived interpreter band: null on thin history (→ constant fallback), numeric with enough
   assert(deriveInterpBand([{ stamp: "a", flat: { "x|galerinaGoverned": 100 } }, { stamp: "b", flat: { "x|galerinaGoverned": 110 } }]) === null, "thin history -> null (constant fallback)");
   const many = [];
