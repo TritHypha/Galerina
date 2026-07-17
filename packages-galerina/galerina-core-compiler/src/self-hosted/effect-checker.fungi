@@ -754,25 +754,27 @@ contract {
         }
 
         // FUNGI-EFFECT-002 (TRANSITIVE_EFFECT_NOT_DECLARED, error): an effect a transitively-called
-        // flow DECLARES that THIS flow does not (effect-checker.ts:942). Skip pure flows — a pure flow
-        // reaching an effect is the 001/003 boundary, not a transitive under-declaration.
-        if kind != "pure" {
-          let transReq: Array<Auto> = collectTransitiveEffects(flows, name, [name])
-          mut t: Int = 0
-          while t < transReq.count() {
-            let trOpt = transReq.get(t)
-            match trOpt {
-              Some(rec) => {
-                if contains(declared, rec.effect) == false {
-                  let msg2: String = "Flow '" + name + "' calls '" + rec.introducer + "' which requires effect '" + rec.effect + "', but '" + name + "' does not declare it"
-                  flowDiags = flowDiags.append({ code: "FUNGI-EFFECT-002", message: msg2, flowName: name, severity: "error" })
-                }
+        // flow DECLARES that THIS flow does not (effect-checker.ts:945). UNCONDITIONAL over flow kind —
+        // Stage-A's validateInterFlowPropagation runs for EVERY flow, `pure` included, so a pure flow that
+        // transitively reaches an undeclared effect gets BOTH 002 and 003 (R&D live-probe confirmed, and
+        // ts:945 has no qualifier guard). The earlier `if kind != "pure"` skip was an under-report — the
+        // fail-open direction. Only the fn-helper 002 sub-path (ts:964, `qualifier !== "pure"`) is pure-
+        // gated; the twin does not mirror that path yet (parser-leg-0-gated).
+        let transReq: Array<Auto> = collectTransitiveEffects(flows, name, [name])
+        mut t: Int = 0
+        while t < transReq.count() {
+          let trOpt = transReq.get(t)
+          match trOpt {
+            Some(rec) => {
+              if contains(declared, rec.effect) == false {
+                let msg2: String = "Flow '" + name + "' calls '" + rec.introducer + "' which requires effect '" + rec.effect + "', but '" + name + "' does not declare it"
+                flowDiags = flowDiags.append({ code: "FUNGI-EFFECT-002", message: msg2, flowName: name, severity: "error" })
               }
-              None => {}
-              _ => {}
             }
-            t = t + 1
+            None => {}
+            _ => {}
           }
+          t = t + 1
         }
 
         mut j: Int = 0

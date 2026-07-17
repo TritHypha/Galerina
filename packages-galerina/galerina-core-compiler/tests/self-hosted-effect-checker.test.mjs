@@ -501,6 +501,22 @@ describe("effect-checker.fungi — FUNGI-EFFECT-002 TRANSITIVE_EFFECT_NOT_DECLAR
     ]);
     assert.deepEqual(codesFor(diags, "a"), []);
   });
+
+  // R&D VERIFY 2026-07-17 (live Stage-A probe): the transitive 002 is UNCONDITIONAL over flow kind —
+  // validateInterFlowPropagation (effect-checker.ts:945) has no `qualifier` guard, so a PURE flow that
+  // transitively reaches an undeclared effect gets 002 too. The twin's earlier `if kind != "pure"` skip
+  // was an under-report (the fail-open direction). On the checkBody surface only 002 appears; the paired
+  // 003 (pure calls an effectful flow, ts:673) lives in checkFlowEffects → asserted in the pipeline leg.
+  it("a PURE flow transitively reaching an undeclared effect → 002 (002 is not pure-gated)", async () => {
+    const { diags } = await checkBody([
+      bodyFlow({ name: "p", kind: "pure", effects: [], body: [
+        stmt({ kind: "exprStmt", expr: [eCall("b")] }),
+      ]}),
+      bodyFlow({ name: "b", kind: "flow", effects: ["database.write"], body: [] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "p"), ["FUNGI-EFFECT-002"]);
+    assert.deepEqual(codesFor(diags, "b"), []);
+  });
 });
 
 describe("effect-checker.fungi — no duplicate diagnostics", () => {

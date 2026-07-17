@@ -229,6 +229,18 @@ describe("self-hosted pipeline — effect + governance over the parsed body AST 
     assert.ok(codes.includes("FUNGI-EFFECT-002"), `expected 002 on a, got: ${codes.join(", ")}`);
   });
 
+  it("FUNGI-EFFECT-002: a PURE flow transitively reaching an undeclared effect, via the REAL parser (002 is not pure-gated — R&D VERIFY 2026-07-17)", async () => {
+    // Same shape as the plain-flow case above but `pure flow a`. Stage-A's validateInterFlowPropagation
+    // (effect-checker.ts:945) has no qualifier guard, so a pure flow reaching an undeclared effect gets the
+    // transitive 002 too — live Stage-A emits {002, 003} (003 = the pure-calls-effectful path, ts:673, in
+    // checkFlowEffects). This leg locks removal of the twin's `if kind != "pure"` under-report through the
+    // real parser on the checkBodyEffects surface (where the 002 lives).
+    const flows = await flowsFrom(`flow b() -> Int\n  contract { effects { network.outbound } }\n{ return 0 }\npure flow a() -> Int {\n  let r = b()\n  return 0\n}`);
+    const r = await executeFlow("checkBodyEffects", new Map([["flows", flows]]), effect.ast);
+    const codes = codesOn(r).filter((d) => d.flowName === "a").map((d) => d.code);
+    assert.ok(codes.includes("FUNGI-EFFECT-002"), `expected 002 on pure a, got: ${codes.join(", ")}`);
+  });
+
   it("governance flags a secure flow that never audits in its body", async () => {
     const flows = await flowsFrom(`secure flow charge() -> Int { dbWrite(amount)\nreturn 0 }`);
     const r = await executeFlow("checkBodyGovernance", new Map([["flows", flows]]), govern.ast);
