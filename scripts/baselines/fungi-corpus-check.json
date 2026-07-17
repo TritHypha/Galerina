@@ -26,9 +26,6 @@
     "examples/auth-service/effectCheckerService.fungi": [
       "FUNGI-VALUESTATE-004"
     ],
-    "examples/auth-service/governanceService.fungi": [
-      "FUNGI-VALUESTATE-004"
-    ],
     "examples/auth-service/governanceVerifierService.fungi": [
       "FUNGI-VALUESTATE-004"
     ],

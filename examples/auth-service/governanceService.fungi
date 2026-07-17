@@ -46,6 +46,26 @@ contract {
   return false
 }
 
+;; Validates an untrusted effect qualifier against the known governance vocabulary before it drives a
+;; decision. A pure computation PROPAGATES taint (pure != sanitizing); only a validating GATE clears it,
+;; so untrusted input is checked here rather than laundered through governanceLevel (RD adjudication
+;; 2026-07-17). Pure — no runtime authority / no effects.
+// Validate an untrusted effect qualifier: normalise to the recognised vocabulary (critical/secure/
+// guarded), or "" if unrecognised, so a governance decision is never computed on unvalidated input.
+// @cause  [Called by verifyGovernance before governanceLevel] -> validates the submitted qualifier.
+// @effect [Verdict only] -> returns the validated qualifier String; no state is mutated.
+pure flow validateEffectTag(effectTag: String) -> String
+contract {
+  intent { "Validate an untrusted effect qualifier against the known governance vocabulary before use." }
+}
+{
+  ;; only the recognised governance qualifiers are admitted; anything else normalises to "" (none)
+  if effectTag.contains("critical") { return "critical" }
+  if effectTag.contains("secure") { return "secure" }
+  if effectTag.contains("guarded") { return "guarded" }
+  return ""
+}
+
 ;; Verifies an untrusted flow's governance level against its declared qualifier, writing a redacted audit entry — permitted because tainted inputs are redacted before the write.
 ;; V_DPM capability required: network.inbound, audit.write
 // HTTP endpoint: verify a flow's governance level against its declared qualifier
@@ -64,7 +84,11 @@ contract {
   unsafe let qualifier: String = request.jsonBody.qualifier
 
   trap effectTag == "" : ERR_EMPTY_EFFECT_TAG
-  let level: Int = governanceLevel(effectTag)
+  ;; validate the untrusted qualifier BEFORE it drives a governance decision — the validating gate
+  ;; clears the taint (RD adjudication 2026-07-17: a governance/quota decision on unvalidated input is
+  ;; the exact gap FUNGI-VALUESTATE-004 flags)
+  let validEffectTag: String = validateEffectTag(effectTag)
+  let level: Int = governanceLevel(validEffectTag)
   let requiresAudit: Bool = requiresAuditForLevel(level)
 
   let qualifierValid: Bool = qualifier == "pure" || qualifier == "guarded" || qualifier == "secure"
