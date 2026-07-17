@@ -3,7 +3,7 @@
   "provenance": {
     "available": true,
     "branch": "main",
-    "sha": "1b71de07",
+    "sha": "91cd66d4",
     "detached": false,
     "dirty": true
   },
@@ -21,27 +21,42 @@
         {
           "label": "Compiler",
           "pct": 100,
-          "note": "✅ shipped — policy + execution DAG proven at build time"
+          "note": "✅ shipped — policy + execution DAG proven at build time",
+          "evidence": {
+            "asserted": "no countable ladder — 'shipped' is a judgement over the twin corpus; candidate ladder = per-stage twin checker-clean + RD-0361 differential ≡"
+          }
         },
         {
           "label": "I/O — OS kernel",
           "pct": 72,
-          "note": "◑ auth gate 6 (kernel.fungi) EXECUTION-PROVEN (RD-0361 differential ≡ the shipped kernel `handle`, first string-ARG twin) · DSS build gate now 10/10 DETERMINISTIC (2026-07-16 night: wabt fresh-instance-per-build + the P9.4 guarded-body adoption gate — the partial-lowering class that blocked the supervisor bundle is structurally dead) · the DSS supervisor V_DPM DECISION CORE is EXECUTION-PROVEN ≡ Stage-A over a 386-point matrix + laws (topology-first, monotonicity, deny-by-default, zero effect calls) with real .wasm artifacts (build/dss-wasm, sha256 manifest). sentinel-io decision surface FULLY twinned + checker-clean. Remaining to 100%: authoritative execution (#143 flip, owner) + full kernel-bypass I/O EXECUTION (the real Wasmtime TCB, DSS.wasm #102-106, post-v1)"
+          "note": "◑ auth gate 6 (kernel.fungi) EXECUTION-PROVEN (RD-0361 differential ≡ the shipped kernel `handle`, first string-ARG twin) · DSS build gate now 10/10 DETERMINISTIC (2026-07-16 night: wabt fresh-instance-per-build + the P9.4 guarded-body adoption gate — the partial-lowering class that blocked the supervisor bundle is structurally dead) · the DSS supervisor V_DPM DECISION CORE is EXECUTION-PROVEN ≡ Stage-A over a 386-point matrix + laws (topology-first, monotonicity, deny-by-default, zero effect calls) with real .wasm artifacts (build/dss-wasm, sha256 manifest). sentinel-io decision surface FULLY twinned + checker-clean. Remaining to 100%: authoritative execution (#143 flip, owner) + full kernel-bypass I/O EXECUTION (the real Wasmtime TCB, DSS.wasm #102-106, post-v1)",
+          "evidence": {
+            "asserted": "remainder is #143 execution — a binary switch, not a ladder; likely becomes a WORD"
+          }
         },
         {
           "label": "Packages",
           "pct": 98,
-          "note": "◑ signed admission fully twinned — central-index (registry-index) + per-package manifest (package-admission) + kernel FUSION admission (descriptor · hash · sidecar · revocation · sig-policy · registry · capability — fuse-admission.fungi) checker-clean · remaining = #143 execution + Phase-28 registry-data wiring"
+          "note": "◑ signed admission fully twinned — central-index (registry-index) + per-package manifest (package-admission) + kernel FUSION admission (descriptor · hash · sidecar · revocation · sig-policy · registry · capability — fuse-admission.fungi) checker-clean · remaining = #143 execution + Phase-28 registry-data wiring",
+          "evidence": {
+            "asserted": "remainder is #143 execution + Phase-28 registry data; the registry half IS countable (real sourceHash + reviewed:true per package)"
+          }
         },
         {
           "label": "Memory",
           "pct": 62,
-          "note": "◑ governed-decision surface FULLY twinned (validator · pool-config · segmentation LSM-SEGV · trit-tamper LSM-TRIT-CORRUPT · allocate/free/UAF-guard LSM-UAF-001 + REJECT-scrub — 5 checker-clean .fungi) · real WASM isolation execution = design intent (#143 switch)"
+          "note": "◑ governed-decision surface FULLY twinned (validator · pool-config · segmentation LSM-SEGV · trit-tamper LSM-TRIT-CORRUPT · allocate/free/UAF-guard LSM-UAF-001 + REJECT-scrub — 5 checker-clean .fungi) · real WASM isolation execution = design intent (#143 switch)",
+          "evidence": {
+            "asserted": "remainder is #143 execution — a binary switch, not a ladder; likely becomes a WORD"
+          }
         },
         {
           "label": "TLSTP — zero-middleware",
           "pct": 56,
-          "note": "◑ S4 recovering-FSM TWINNED + EXECUTION-PROVEN (2026-07-16 night: transport-fsm.fungi — δ as 4 pure all-int projections, checker-clean; RD-0361 differential 192 points ≡ the shipped `transportStep` incl. the τ boundary + Closed absorption, INV-1 join / INV-2 / INV-4 / INV-6 pinned on WASM outputs; charter-safe = state never aliased to the trit, resume rides === ALLOW only, erase-on-Closed). ALL 6 core-network border DECISION surfaces twinned (.fungi, fail-closed): cert-gate · cors-policy · inbound-guard · defensive-controls · admission-feedback · egress-guard — core-network decision surface COMPLETE; the B8 ADMISSION fold (b8-admission.fungi) twinned + EXECUTION-PROVEN ≡ the shipped K3 calculus; the DSS supervisor decision core (the in-sandbox tier's brain) is now execution-proven ≡ Stage-A (386 pts). Remaining = in-sandbox decryption EXECUTION (DSS.wasm Wasmtime TCB, #143 switch/post-v1) + B8 transport plumbing (raw-byte shim/ECH) + S4 wiring into the live transport (the twin is proven, not yet build-wired)"
+          "note": "◑ S4 recovering-FSM TWINNED + EXECUTION-PROVEN (2026-07-16 night: transport-fsm.fungi — δ as 4 pure all-int projections, checker-clean; RD-0361 differential 192 points ≡ the shipped `transportStep` incl. the τ boundary + Closed absorption, INV-1 join / INV-2 / INV-4 / INV-6 pinned on WASM outputs; charter-safe = state never aliased to the trit, resume rides === ALLOW only, erase-on-Closed). ALL 6 core-network border DECISION surfaces twinned (.fungi, fail-closed): cert-gate · cors-policy · inbound-guard · defensive-controls · admission-feedback · egress-guard — core-network decision surface COMPLETE; the B8 ADMISSION fold (b8-admission.fungi) twinned + EXECUTION-PROVEN ≡ the shipped K3 calculus; the DSS supervisor decision core (the in-sandbox tier's brain) is now execution-proven ≡ Stage-A (386 pts). Remaining = in-sandbox decryption EXECUTION (DSS.wasm Wasmtime TCB, #143 switch/post-v1) + B8 transport plumbing (raw-byte shim/ECH) + S4 wiring into the live transport (the twin is proven, not yet build-wired)",
+          "evidence": {
+            "asserted": "remainder is #143 + B8 raw-byte shim + S4 live wiring; the twinned-surface half is countable, the execution half is not"
+          }
         }
       ]
     },
@@ -55,97 +70,141 @@
           "label": "Specification / KB",
           "pct": 100,
           "status": null,
-          "live": false
+          "live": false,
+          "evidence": {
+            "asserted": "no countable ladder defined"
+          }
         },
         {
           "label": "Lexer / Parser / Verifier / Contract / Value-state",
           "pct": 100,
           "status": null,
-          "live": false
+          "live": false,
+          "evidence": {
+            "asserted": "no countable ladder defined"
+          }
         },
         {
           "label": "DRCM Phases 1-7 (Stage-A simulation)",
           "pct": 100,
           "status": null,
-          "live": false
+          "live": false,
+          "evidence": {
+            "asserted": "candidate ladder = the 7 phases, if each has a green gate"
+          }
         },
         {
           "label": "CBOR Manifests (RFC 8949)",
           "pct": 100,
           "status": null,
-          "live": false
+          "live": false,
+          "evidence": {
+            "asserted": "no countable ladder defined"
+          }
         },
         {
           "label": "Tests — full suite",
           "pct": 100,
           "status": null,
-          "live": true
+          "live": true,
+          "evidence": {
+            "live": "version.json test/package counts"
+          }
         },
         {
           "label": "Stage-B self-hosting — interpreter parity",
           "pct": 100,
           "status": null,
-          "live": false
+          "live": false,
+          "evidence": {
+            "asserted": "candidate ladder = R6 corpus Stage-A ≡ Stage-B per stage"
+          }
         },
         {
           "label": "Type checker / Effect checker",
           "pct": 90,
           "status": null,
-          "live": false
+          "live": false,
+          "evidence": {
+            "asserted": "candidate ladder = twin diagnostic-code parity (emit + name + severity), which IS mechanically checked today"
+          }
         },
         {
           "label": "WAT emitter",
           "pct": 89,
           "status": null,
-          "live": false
+          "live": false,
+          "evidence": {
+            "asserted": "candidate ladder = per-construct lowering coverage; #100 Option<Record> is the known open rung"
+          }
         },
         {
           "label": "Runtime interpreter",
           "pct": 87,
           "status": null,
-          "live": false
+          "live": false,
+          "evidence": {
+            "asserted": "no countable ladder defined"
+          }
         },
         {
           "label": "Application-framework layer",
           "pct": 72,
           "status": null,
-          "live": false
+          "live": false,
+          "evidence": {
+            "asserted": "candidate ladder = servable api-server · example-app · signed registry index"
+          }
         },
         {
           "label": "Post-Quantum & Hardware Security",
           "pct": 40,
           "status": null,
-          "live": false
+          "live": false,
+          "evidence": {
+            "asserted": "NO ladder — custody ladder + HW signer are post-v1/hardware. Fail-closed reading: this should become a WORD"
+          }
         },
         {
           "label": "Passive Execution Plans & Target Bridges",
           "pct": 35,
           "status": null,
-          "live": false
+          "live": false,
+          "evidence": {
+            "asserted": "countable P1-P4, but P2 is R&D-blocked (RD-0311) — convert once each rung has a check"
+          }
         },
         {
           "label": "AI Inference Tower (BitNet/Groq/NVFP4)",
           "pct": 30,
           "status": null,
-          "live": false
+          "live": false,
+          "evidence": {
+            "asserted": "countable I1-I5, but I1+I2 are ONE unit (RULING 2: no load site exists) — convert with the I2 wiring"
+          }
         },
         {
           "label": "Photonic / Ternary Computing",
           "pct": 3,
           "status": null,
-          "live": false
+          "live": false,
+          "evidence": {
+            "asserted": "NO ladder — simulation only, no hardware. Fail-closed reading: this should become a WORD"
+          }
         },
         {
           "label": "Stage-B self-hosting — WASM execution (P9)",
           "pct": null,
           "status": "in progress — VERIFIED 2026-07-12: all 7 stage twins build→WASM (R0) + #105-admit (R1); frontier = R3 byte-parity per stage (only lexer/tokenize proven so far)",
-          "live": false
+          "live": false,
+          "evidence": null
         },
         {
           "label": "B8 governed HTTP transport (TLSTP)",
           "pct": null,
           "status": "in progress — admission fold (b8-admission.fungi) execution-proven ≡ the shipped K3 calculus; S4 recovering-FSM twinned + execution-proven (192-pt differential, 2026-07-16 night); remaining = raw-byte shim + S4 live wiring + ECH/OHTTP + DSS.wasm in-sandbox isolation",
-          "live": false
+          "live": false,
+          "evidence": null
         }
       ]
     },
