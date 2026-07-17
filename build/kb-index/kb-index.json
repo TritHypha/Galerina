@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1274,
+  "docCount": 1282,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -5024,6 +5024,48 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-CLOSED-runtime-is-a-5th-100-casualty-debt-is-5-of-7-only-lexer-and-parser-survive.md",
+      "title": "2026-07-17-CLOSED-runtime-is-a-5th-100-casualty-debt-is-5-of-7-only-lexer-and-parser-survive.md",
+      "headings": [
+        "runtime confirmed — envLookup, L219-223",
+        "The complete #100 picture — 5 of 7, and WHY the two survivors survive",
+        "Why this changes the scoping of #100, not just its number",
+        "Scope honesty"
+      ],
+      "codes": [],
+      "tasks": [
+        "#100"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "runtime",
+        "envlookup",
+        "auto",
+        "traps",
+        "why",
+        "array",
+        "survive",
+        "confirmed",
+        "get",
+        "same",
+        "survivors",
+        "just",
+        "l219-223",
+        "name",
+        "trap",
+        "compile",
+        "complete",
+        "picture",
+        "changes",
+        "scoping",
+        "number",
+        "scope",
+        "honesty",
+        "stages",
+        "parser"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-CLOSING-CYCLE-full-verify-thesis-build-registry-benchmark-harness-finding.md",
       "title": "2026-07-17-CLOSING-CYCLE-full-verify-thesis-build-registry-benchmark-harness-finding.md",
       "headings": [
@@ -5355,6 +5397,44 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-DONE-last-doc-drift-cleared-dated-not-falsified-plus-a-gate-note.md",
+      "title": "2026-07-17-DONE-last-doc-drift-cleared-dated-not-falsified-plus-a-gate-note.md",
+      "headings": [
+        "The filing call (mine, per your \"your file\")",
+        "★ The gate note (low priority — one doc hit it, now clear)"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "gate",
+        "doc",
+        "packages",
+        "note",
+        "filing",
+        "call",
+        "file",
+        "hit",
+        "mine",
+        "low",
+        "priority",
+        "clear",
+        "claim",
+        "done-last-doc-drift-cleared-dated-not-falsified-plus-a-gate-note",
+        "count",
+        "measurement",
+        "ship",
+        "survey",
+        "filesystem",
+        "test-suite",
+        "packagecount",
+        "coverage",
+        "cleared",
+        "verified",
+        "dated"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-FINDING-Money-BANANAS-compiles-clean-I1s-compile-half-is-unbuilt-plus-RD-0349-amended.md",
       "title": "2026-07-17-FINDING-Money-BANANAS-compiles-clean-I1s-compile-half-is-unbuilt-plus-RD-0349-amended.md",
       "headings": [
@@ -5437,6 +5517,48 @@
         "worth",
         "still",
         "run"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-GROUNDING-discriminating-trap-law-efficiency-methodology-GIR-assertion-surface.md",
+      "title": "2026-07-17-GROUNDING-discriminating-trap-law-efficiency-methodology-GIR-assertion-surface.md",
+      "headings": [
+        "#2 — The discriminating-trap law (one line to encode)",
+        "#4 / #5 — Efficiency methodology that survives your own 996%-debunk",
+        "#6 — What a GIR audit must ASSERT (not dump), and the .gate question",
+        "The spine under all three"
+      ],
+      "codes": [],
+      "tasks": [
+        "#100"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "control",
+        "gate",
+        "audit",
+        "gir",
+        "trap",
+        "three",
+        "law",
+        "must",
+        "same",
+        "own",
+        "node",
+        "debunk",
+        "oracle",
+        "noise",
+        "assert",
+        "dump",
+        "never",
+        "absolute",
+        "against",
+        "ratio",
+        "band",
+        "discriminating-trap",
+        "efficiency",
+        "methodology",
+        "survives"
       ]
     },
     {
@@ -5927,6 +6049,53 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-RULING-100-the-emitter-trap-is-CORRECT-and-only-ONE-of-your-three-fixes-unblocks-P9.md",
+      "title": "2026-07-17-RULING-100-the-emitter-trap-is-CORRECT-and-only-ONE-of-your-three-fixes-unblocks-P9.md",
+      "headings": [
+        "I verified everything checkable read-only, before ruling",
+        "★ Ruling 1 — the emitter trap is CORRECT, and only ONE of your three options unblocks P9",
+        "Ruling 2 — duplicate-flow diagnostic: YES, and the detector already half-exists",
+        "Ruling 3 — R2 is a rung, not a smell, and it's the one the morning predicted",
+        "What I did NOT do"
+      ],
+      "codes": [
+        "FUNGI-NAME-002"
+      ],
+      "tasks": [
+        "#163",
+        "#100",
+        "#128"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "ruling",
+        "option",
+        "emitter",
+        "trap",
+        "type",
+        "auto",
+        "array",
+        "flow",
+        "yes",
+        "get",
+        "verified",
+        "three",
+        "options",
+        "already",
+        "read-only",
+        "build",
+        "real",
+        "duplicate-flow",
+        "diagnostic",
+        "rung",
+        "before",
+        "fix",
+        "unblocks",
+        "record",
+        "detector"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-RULING-RD-0450-A-FOR-BOTH-you-overruled-me-with-my-own-rule-plus-123-links-de-link-by-default.md",
       "title": "2026-07-17-RULING-RD-0450-A-FOR-BOTH-you-overruled-me-with-my-own-rule-plus-123-links-de-link-by-default.md",
       "headings": [
@@ -6055,6 +6224,49 @@
         "gap",
         "survived",
         "purest"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFIED-your-R2-tool-and-it-EXCLUDES-a-confirmed-4th-100-trap-gir-emitter-is-on-the-flows-chain.md",
+      "title": "2026-07-17-VERIFIED-your-R2-tool-and-it-EXCLUDES-a-confirmed-4th-100-trap-gir-emitter-is-on-the-flows-chain.md",
+      "headings": [
+        "Your R2 tool is verified — I ran it, didn't take it on trust",
+        "★ The finding — the not-swept boundary excludes a CONFIRMED 4th trap",
+        "What I'd change (yours to land — read-only here)",
+        "Ledger"
+      ],
+      "codes": [],
+      "tasks": [
+        "#100",
+        "#107"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "trap",
+        "array",
+        "flows",
+        "tool",
+        "traps",
+        "swept",
+        "emitgirmodule",
+        "gir-emitter",
+        "auto",
+        "verified",
+        "control",
+        "read",
+        "confirmed",
+        "entry",
+        "finding",
+        "ran",
+        "real",
+        "ruling",
+        "excludes",
+        "debt",
+        "take",
+        "get",
+        "runs",
+        "boundary",
+        "baseline"
       ]
     },
     {
@@ -9147,6 +9359,46 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-OWNER-SUGGESTED-audit-dev-tools-trap-classify-discriminate-efficiency-gir-inspect-help-requested.md",
+      "title": "2026-07-17-OWNER-SUGGESTED-audit-dev-tools-trap-classify-discriminate-efficiency-gir-inspect-help-requested.md",
+      "headings": [
+        "The owner's list (their intent), with status",
+        "The three actual asks"
+      ],
+      "codes": [],
+      "tasks": [
+        "#100"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "audit",
+        "status",
+        "owner",
+        "trap",
+        "help",
+        "gate",
+        "list",
+        "intent",
+        "control",
+        "three",
+        "actual",
+        "asks",
+        "efficiency",
+        "fungi",
+        "wanted",
+        "gir",
+        "owner-suggested-audit-dev-tools-trap-classify-discriminate-efficiency-gir-inspect-help-requested",
+        "already",
+        "parser",
+        "just",
+        "built",
+        "baseline",
+        "gir-emitter",
+        "split",
+        "compiler"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-P9-parser-stage-byte-parity-CLOSED-entry-point-proven-no-new-ABI.md",
       "title": "2026-07-17-P9-parser-stage-byte-parity-CLOSED-entry-point-proven-no-new-ABI.md",
       "headings": [
@@ -9654,6 +9906,48 @@
         "response",
         "keepalive",
         "startup"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-VERIFIED-gir-emitter-is-the-4th-100-trap-swept-baseline-4-ruling-received.md",
+      "title": "2026-07-17-VERIFIED-gir-emitter-is-the-4th-100-trap-swept-baseline-4-ruling-received.md",
+      "headings": [
+        "The finding was real and it's fixed",
+        "runtime — your 5th, kept honest, not swept",
+        "Your #100 ruling — received, and the dashboard now carries it",
+        "What's next (mine, no stopper for you)"
+      ],
+      "codes": [],
+      "tasks": [
+        "#100"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "swept",
+        "real",
+        "ruling",
+        "stopper",
+        "trap",
+        "runtime",
+        "received",
+        "dashboard",
+        "mine",
+        "next",
+        "honest",
+        "finding",
+        "fixed",
+        "array",
+        "same",
+        "kept",
+        "carries",
+        "traps",
+        "run",
+        "option",
+        "verified-gir-emitter-is-the-4th-100-trap-swept-baseline-4-ruling-received",
+        "verified",
+        "gir-emitter",
+        "source",
+        "generics"
       ]
     },
     {
@@ -35674,8 +35968,8 @@
       "topTerms": [
         "graph",
         "pnpm",
-        "part",
         "package",
+        "part",
         "per-package",
         "https",
         "survey",
@@ -36756,6 +37050,59 @@
         "rather",
         "galerina",
         "collides"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/galerina-rd-0454-runtime-performance-weakness-map-vs-node-python-rust-PRIVATE.md",
+      "title": "RD-0454 — Runtime performance weakness map: where Galerina loses cycles vs Node.js / Python / Rust · 2026-07-17",
+      "headings": [
+        "The thesis in one line",
+        "Evidence tiers (so no row is trusted past what it's worth)",
+        "Table 1 — Tri-logic & photonic execution model (the architecture tax)",
+        "Table 2 — WASM runtime & memory (the shipped-execution tax, TODAY)",
+        "Table 3 — Compiler & toolchain maturity (the young-toolchain tax)",
+        "Where the cycles actually go",
+        "Net read — where to actually look for slowdowns",
+        "Provenance & re-run"
+      ],
+      "codes": [],
+      "tasks": [
+        "#100"
+      ],
+      "xrefs": [
+        "benchmark-noise-floor-discipline",
+        "galerina-rd-0348-…",
+        "galerina-work-state",
+        "galerina-tri-pipe-is-photonic-router",
+        "harm-filter-on-papers",
+        "kb-private-docs-tagged-in-filename"
+      ],
+      "topTerms": [
+        "table",
+        "tax",
+        "runtime",
+        "photonic",
+        "wasm",
+        "memory",
+        "cycles",
+        "weakness",
+        "binary",
+        "python",
+        "galerina",
+        "rust",
+        "actually",
+        "node",
+        "latent",
+        "today",
+        "map",
+        "native",
+        "look",
+        "row",
+        "simd",
+        "performance",
+        "slowdowns",
+        "cost",
+        "optical"
       ]
     },
     {

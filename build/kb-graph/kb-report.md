@@ -2,7 +2,7 @@
 Generated: 2026-07-17
 
 ## Stats
-- Docs: 1272 | Edges: 3567 | Orphans: 203 | Stale links: 0 | FUNGI codes: 749
+- Docs: 1280 | Edges: 3567 | Orphans: 211 | Stale links: 0 | FUNGI codes: 749
 
 ## Document Registry (auto-generated)
 
@@ -141,6 +141,7 @@ Generated: 2026-07-17
 | 2026-07-17-ASK-RD-0450-owner-wants-YOUR-zero-trust-choice-A-or-B.md | — | — | — | — |
 | 2026-07-17-CI-DIAGNOSIS-conventions-30-of-30-red-since-07-12-two-causes-neither-is-phase-47.md | — | — | — | — |
 | 2026-07-17-CLARIFICATION-96a-escaping-records-EXCLUDED-from-release-window-not-above-the-mark.md | — | — | — | — |
+| 2026-07-17-CLOSED-runtime-is-a-5th-100-casualty-debt-is-5-of-7-only-lexer-and-parser-survive.md | — | — | — | — |
 | 2026-07-17-CLOSING-CYCLE-full-verify-thesis-build-registry-benchmark-harness-finding.md | — | — | — | FUNGI-MATCH-001, FUNGI-PARSE-001, FUNGI-SAFETY-006 |
 | 2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction.md | — | — | — | — |
 | 2026-07-17-CORRECTION-I-ruled-de-link-before-reading-a-single-target-they-are-product-docs.md | — | — | — | — |
@@ -152,15 +153,18 @@ Generated: 2026-07-17
 | 2026-07-17-DELIVERED-ruling1-evidence-gate-built-your-refinement-caught-my-hole.md | — | — | — | — |
 | 2026-07-17-DESIGN-preflight-ci-must-reproduce-CIs-ABSENCES-a-naive-pre-push-hook-would-have-caught-neither.md | — | — | — | — |
 | 2026-07-17-DESIGN-RD-0451-dev-tools-audit-checker-wiring-says-OK-while-resolveImports-has-zero-callsites.md | — | — | — | FUNGI-TYPE-001 |
+| 2026-07-17-DONE-last-doc-drift-cleared-dated-not-falsified-plus-a-gate-note.md | — | — | — | — |
 | 2026-07-17-FINDING-96a-record-site-already-heap-bumps-not-host-abi-escape-integration-needs-reground.md | — | — | — | — |
 | 2026-07-17-FINDING-Money-BANANAS-compiles-clean-I1s-compile-half-is-unbuilt-plus-RD-0349-amended.md | — | — | — | FUNGI-TYPE-001 |
 | 2026-07-17-FIXED-cause-B-now-VIOLATIONS-0-plus-app-kernel-has-an-UNDECLARED-cross-package-edge.md | — | — | — | — |
 | 2026-07-17-graph-integrity-has-NEVER-run-in-CI-and-the-summary-counts-it-among-the-9-that-did.md | — | — | — | — |
+| 2026-07-17-GROUNDING-discriminating-trap-law-efficiency-methodology-GIR-assertion-surface.md | — | — | — | — |
 | 2026-07-17-GROUNDING-escape-analysis-pass-record-escapes-flow-predicate-fail-closed.md | — | — | — | — |
 | 2026-07-17-GROUNDING-RD0446-bump-arena-emittable-WAT-shape-5-asks.md | — | — | — | — |
 | 2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension.md | — | — | — | FUNGI-TYPE-020 |
 | 2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md | — | — | — | FUNGI-EFFECT-002 |
 | 2026-07-17-myco-galerina-package-updates-fold-into-galerina-tools-myco.md | — | — | — | — |
+| 2026-07-17-OWNER-SUGGESTED-audit-dev-tools-trap-classify-discriminate-efficiency-gir-inspect-help-requested.md | — | — | — | — |
 | 2026-07-17-P9-parser-stage-byte-parity-CLOSED-entry-point-proven-no-new-ABI.md | — | — | — | — |
 | 2026-07-17-path-leak-fixed-galerina-clean-existsSync-mirrored-and-two-corrections-of-mine.md | — | — | — | — |
 | 2026-07-17-PREP-EFFECT-002-transitive-walk-faithfulness-traps-grounded-from-stage-A.md | — | — | — | — |
@@ -173,6 +177,7 @@ Generated: 2026-07-17
 | 2026-07-17-RD-0452-delivered-a-codemod-is-a-defect-multiplier-plus-you-were-right-about-the-message.md | — | — | — | — |
 | 2026-07-17-RETRACT-match-lint-plus-RD-0449-import-resolver-never-wired-12-of-52-examples-fail-strict-types.md | — | — | — | FUNGI-GOV-018, FUNGI-MATCH-001, FUNGI-TYPE-001, FUNGI-TYPE-021, FUNGI-TYPE-023 |
 | 2026-07-17-ROOT-CAUSE-3-of-4-stages-trap-and-it-is-task-100-via-Array-Auto-get.md | — | — | — | FUNGI-NAME-002 |
+| 2026-07-17-RULING-100-the-emitter-trap-is-CORRECT-and-only-ONE-of-your-three-fixes-unblocks-P9.md | — | — | — | FUNGI-NAME-002 |
 | 2026-07-17-RULING-RD-0450-A-FOR-BOTH-you-overruled-me-with-my-own-rule-plus-123-links-de-link-by-default.md | — | — | — | — |
 | 2026-07-17-RULING-RD-0450-A-for-L5-B-for-L3-and-its-cheaper-than-you-framed-slice-4-is-unbuilt.md | — | — | — | — |
 | 2026-07-17-RULINGS-1-and-2-honesty-rule-YES-derived-not-typed-plus-I1-is-b-but-sequenced-with-I2.md | — | — | — | — |
@@ -183,6 +188,8 @@ Generated: 2026-07-17
 | 2026-07-17-STOPPERS-ten-area-hundred-percent-sweep-audit-numbers-unfalsifiable.md | — | — | — | — |
 | 2026-07-17-TRIAGE-LIST-123-escape-links-65-targets-29-docs.md | — | — | — | — |
 | 2026-07-17-URGENT-audit-path-leak-misses-the-DOUBLE-dash-MCP-slug-and-Galerina-is-PUBLIC.md | — | — | — | — |
+| 2026-07-17-VERIFIED-gir-emitter-is-the-4th-100-trap-swept-baseline-4-ruling-received.md | — | — | — | — |
+| 2026-07-17-VERIFIED-your-R2-tool-and-it-EXCLUDES-a-confirmed-4th-100-trap-gir-emitter-is-on-the-flows-chain.md | — | — | — | — |
 | 2026-07-17-VERIFY-76-17of19-open-vocab-length-bound-correct-plus-content-safe-downstream-caveat.md | — | — | — | — |
 | 2026-07-17-VERIFY-76-fanout-4of19-uniform-pattern-endorsed-plus-open-vocab-canonical-answer.md | — | — | — | — |
 | 2026-07-17-VERIFY-76-numeric-exemplar-BLESSED-bound-correctly-sized-fan-out-plan-endorsed.md | — | — | — | — |
@@ -726,6 +733,7 @@ Generated: 2026-07-17
 | galerina-rd-0367-optimal-brain-roster-grounded-in-self-knowledge.md | — | — | 🧪 R&D / OPERATING-MODEL DESIGN (propose-only) · owner-authorized 2026-07-12 ("R&D this, find the best path — you know yourself better than anyone") · SAFE-internal | — |
 | galerina-rd-0368-root-rotation-ceremony-and-key-housecleaning-INTERNAL.md | — | — | ✅ **CEREMONY EXECUTED 2026-07-12** — Galerina `main` @ `46dce6b7` (pushed). Root rotated `ab46f4c7` (lost) → `21415420b447e219` (hybrid); `revocations.json` re-signed, pin moved, `assertRegistryTrustworthy` green, suite 92/92·7104, `8eecf418` revocation preserved. **Ledger unfrozen.** Runbook retained below; §6 house-clean (2 orphans → `governance/retired/`) is the remaining step. · written 2026-07-12 · **INTERNAL — do not publish** (documents a live key-loss + a frozen-registry gap; same category as [[galerina-rd-0319-ir-key-compromise-runbook-key149-plan]]). | FUNGI-KEY-002 |
 | galerina-rd-0453-you-cannot-content-scan-for-private-when-private-is-a-keyword-PRIVATE.md | — | — | — | — |
+| galerina-rd-0454-runtime-performance-weakness-map-vs-node-python-rust-PRIVATE.md | — | — | 🧪 R&D / PERFORMANCE ANALYSIS · **INTERNAL / never-public** · 2026-07-17 | — |
 | galerina-rd-34b-paramtaint-buildspec-2026-06-24.md | — | — | verify-before-build — **build-ready spec; the strict-profile escalation is owner-gated** | FUNGI-VALUESTATE-003, FUNGI-VALUESTATE-008 |
 | galerina-rd-53-azt-selfcert-and-blackhole-protocol-2026-06-23.md | — | — | — | FUNGI-GOV-3, FUNGI-MATCH-001, FUNGI-PCI-001, FUNGI-PRIVACY-013, FUNGI-SUBSTRATE-001 |
 | galerina-rd-59-js-quirks-vs-galerina-2026-06-25.md | — | — | — | FUNGI-NAME-001, FUNGI-NAME-002, FUNGI-TYPE-004, FUNGI-TYPE-008 |
@@ -1377,6 +1385,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-ANSWER-app-kernel-edge-is-DRIFT-safe-to-declare-plus-I-OVERSTATED-the-39.md` — 2026-07-17-ANSWER-app-kernel-edge-is-DRIFT-safe-to-declare-plus-I-OVERSTATED-the-39
 - `2026-07-17-ANSWER-duplicate-record-decl-YES-to-the-diagnostic-but-there-is-NO-emitter-analysis-divergence.md` — 2026-07-17-ANSWER-duplicate-record-decl-YES-to-the-diagnostic-but-there-is-NO-emitter-analysis-divergence
 - `2026-07-17-CLARIFICATION-96a-escaping-records-EXCLUDED-from-release-window-not-above-the-mark.md` — 2026-07-17-CLARIFICATION-96a-escaping-records-EXCLUDED-from-release-window-not-above-the-mark
+- `2026-07-17-CLOSED-runtime-is-a-5th-100-casualty-debt-is-5-of-7-only-lexer-and-parser-survive.md` — 2026-07-17-CLOSED-runtime-is-a-5th-100-casualty-debt-is-5-of-7-only-lexer-and-parser-survive
 - `2026-07-17-CLOSING-CYCLE-full-verify-thesis-build-registry-benchmark-harness-finding.md` — 2026-07-17-CLOSING-CYCLE-full-verify-thesis-build-registry-benchmark-harness-finding
 - `2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction.md` — 2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction
 - `2026-07-17-CORRECTION-I-ruled-de-link-before-reading-a-single-target-they-are-product-docs.md` — 2026-07-17-CORRECTION-I-ruled-de-link-before-reading-a-single-target-they-are-product-docs
@@ -1384,8 +1393,10 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-DELIVER-type-twin-severity-map-19-codes-plus-gate-count-21-vs-19-discrepancy.md` — 2026-07-17-DELIVER-type-twin-severity-map-19-codes-plus-gate-count-21-vs-19-discrepancy
 - `2026-07-17-DESIGN-RD-0451-dev-tools-audit-checker-wiring-says-OK-while-resolveImports-has-zero-callsites.md` — 2026-07-17-DESIGN-RD-0451-dev-tools-audit-checker-wiring-says-OK-while-resolveImports-has-zero-callsites
 - `2026-07-17-DESIGN-preflight-ci-must-reproduce-CIs-ABSENCES-a-naive-pre-push-hook-would-have-caught-neither.md` — 2026-07-17-DESIGN-preflight-ci-must-reproduce-CIs-ABSENCES-a-naive-pre-push-hook-would-have-caught-neither
+- `2026-07-17-DONE-last-doc-drift-cleared-dated-not-falsified-plus-a-gate-note.md` — 2026-07-17-DONE-last-doc-drift-cleared-dated-not-falsified-plus-a-gate-note
 - `2026-07-17-FINDING-Money-BANANAS-compiles-clean-I1s-compile-half-is-unbuilt-plus-RD-0349-amended.md` — 2026-07-17-FINDING-Money-BANANAS-compiles-clean-I1s-compile-half-is-unbuilt-plus-RD-0349-amended
 - `2026-07-17-GROUNDING-RD0446-bump-arena-emittable-WAT-shape-5-asks.md` — 2026-07-17-GROUNDING-RD0446-bump-arena-emittable-WAT-shape-5-asks
+- `2026-07-17-GROUNDING-discriminating-trap-law-efficiency-methodology-GIR-assertion-surface.md` — 2026-07-17-GROUNDING-discriminating-trap-law-efficiency-methodology-GIR-assertion-surface
 - `2026-07-17-GROUNDING-escape-analysis-pass-record-escapes-flow-predicate-fail-closed.md` — 2026-07-17-GROUNDING-escape-analysis-pass-record-escapes-flow-predicate-fail-closed
 - `2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension.md` — 2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension
 - `2026-07-17-PREP-EFFECT-002-transitive-walk-faithfulness-traps-grounded-from-stage-A.md` — 2026-07-17-PREP-EFFECT-002-transitive-walk-faithfulness-traps-grounded-from-stage-A
@@ -1395,9 +1406,11 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-RD-0450-32-byte-digest-caps-L5-profile-at-128-bit-decide-before-34-locks-v0.md` — 2026-07-17-RD-0450-32-byte-digest-caps-L5-profile-at-128-bit-decide-before-34-locks-v0
 - `2026-07-17-RD-0452-delivered-a-codemod-is-a-defect-multiplier-plus-you-were-right-about-the-message.md` — 2026-07-17-RD-0452-delivered-a-codemod-is-a-defect-multiplier-plus-you-were-right-about-the-message
 - `2026-07-17-RETRACT-match-lint-plus-RD-0449-import-resolver-never-wired-12-of-52-examples-fail-strict-types.md` — 2026-07-17-RETRACT-match-lint-plus-RD-0449-import-resolver-never-wired-12-of-52-examples-fail-strict-types
+- `2026-07-17-RULING-100-the-emitter-trap-is-CORRECT-and-only-ONE-of-your-three-fixes-unblocks-P9.md` — 2026-07-17-RULING-100-the-emitter-trap-is-CORRECT-and-only-ONE-of-your-three-fixes-unblocks-P9
 - `2026-07-17-RULING-RD-0450-A-FOR-BOTH-you-overruled-me-with-my-own-rule-plus-123-links-de-link-by-default.md` — 2026-07-17-RULING-RD-0450-A-FOR-BOTH-you-overruled-me-with-my-own-rule-plus-123-links-de-link-by-default
 - `2026-07-17-RULINGS-1-and-2-honesty-rule-YES-derived-not-typed-plus-I1-is-b-but-sequenced-with-I2.md` — 2026-07-17-RULINGS-1-and-2-honesty-rule-YES-derived-not-typed-plus-I1-is-b-but-sequenced-with-I2
 - `2026-07-17-URGENT-audit-path-leak-misses-the-DOUBLE-dash-MCP-slug-and-Galerina-is-PUBLIC.md` — 2026-07-17-URGENT-audit-path-leak-misses-the-DOUBLE-dash-MCP-slug-and-Galerina-is-PUBLIC
+- `2026-07-17-VERIFIED-your-R2-tool-and-it-EXCLUDES-a-confirmed-4th-100-trap-gir-emitter-is-on-the-flows-chain.md` — 2026-07-17-VERIFIED-your-R2-tool-and-it-EXCLUDES-a-confirmed-4th-100-trap-gir-emitter-is-on-the-flows-chain
 - `2026-07-17-VERIFY-76-17of19-open-vocab-length-bound-correct-plus-content-safe-downstream-caveat.md` — 2026-07-17-VERIFY-76-17of19-open-vocab-length-bound-correct-plus-content-safe-downstream-caveat
 - `2026-07-17-VERIFY-76-fanout-4of19-uniform-pattern-endorsed-plus-open-vocab-canonical-answer.md` — 2026-07-17-VERIFY-76-fanout-4of19-uniform-pattern-endorsed-plus-open-vocab-canonical-answer
 - `2026-07-17-VERIFY-76-numeric-exemplar-BLESSED-bound-correctly-sized-fan-out-plan-endorsed.md` — 2026-07-17-VERIFY-76-numeric-exemplar-BLESSED-bound-correctly-sized-fan-out-plan-endorsed
@@ -1474,6 +1487,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-FINDING-96a-record-site-already-heap-bumps-not-host-abi-escape-integration-needs-reground.md` — 2026-07-17-FINDING-96a-record-site-already-heap-bumps-not-host-abi-escape-integration-needs-reground
 - `2026-07-17-FIXED-cause-B-now-VIOLATIONS-0-plus-app-kernel-has-an-UNDECLARED-cross-package-edge.md` — 2026-07-17-FIXED-cause-B-now-VIOLATIONS-0-plus-app-kernel-has-an-UNDECLARED-cross-package-edge
 - `2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md` — 2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed
+- `2026-07-17-OWNER-SUGGESTED-audit-dev-tools-trap-classify-discriminate-efficiency-gir-inspect-help-requested.md` — 2026-07-17-OWNER-SUGGESTED-audit-dev-tools-trap-classify-discriminate-efficiency-gir-inspect-help-requested
 - `2026-07-17-P9-parser-stage-byte-parity-CLOSED-entry-point-proven-no-new-ABI.md` — 2026-07-17-P9-parser-stage-byte-parity-CLOSED-entry-point-proven-no-new-ABI
 - `2026-07-17-QUESTION-76-bool-taint-validateFlag-degenerate-plus-fanout-7of19.md` — 2026-07-17-QUESTION-76-bool-taint-validateFlag-degenerate-plus-fanout-7of19
 - `2026-07-17-QUESTION-corpus-rot-76-triage-auth-service-taint-to-pure-flow-adjudication.md` — 2026-07-17-QUESTION-corpus-rot-76-triage-auth-service-taint-to-pure-flow-adjudication
@@ -1484,9 +1498,11 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-STOPPER-type-checker-stage-TRAPS-at-R3-and-R0-R1-green-hides-it.md` — 2026-07-17-STOPPER-type-checker-stage-TRAPS-at-R3-and-R0-R1-green-hides-it
 - `2026-07-17-STOPPERS-ten-area-hundred-percent-sweep-audit-numbers-unfalsifiable.md` — 2026-07-17-STOPPERS-ten-area-hundred-percent-sweep-audit-numbers-unfalsifiable
 - `2026-07-17-TRIAGE-LIST-123-escape-links-65-targets-29-docs.md` — 2026-07-17-TRIAGE-LIST-123-escape-links-65-targets-29-docs
+- `2026-07-17-VERIFIED-gir-emitter-is-the-4th-100-trap-swept-baseline-4-ruling-received.md` — 2026-07-17-VERIFIED-gir-emitter-is-the-4th-100-trap-swept-baseline-4-ruling-received
 - `2026-07-17-path-leak-fixed-galerina-clean-existsSync-mirrored-and-two-corrections-of-mine.md` — 2026-07-17-path-leak-fixed-galerina-clean-existsSync-mirrored-and-two-corrections-of-mine
 - `2026-07-17-skip-is-now-a-distinct-signal-8-not-9-and-the-CI-graph-question-is-the-owners.md` — 2026-07-17-skip-is-now-a-distinct-signal-8-not-9-and-the-CI-graph-question-is-the-owners
 - `galerina-rd-0453-you-cannot-content-scan-for-private-when-private-is-a-keyword-PRIVATE.md` — RD-0453 — You cannot content-scan for "never-public" when the confidentiality words are language keywords · 2026-07-17
+- `galerina-rd-0454-runtime-performance-weakness-map-vs-node-python-rust-PRIVATE.md` — RD-0454 — Runtime performance weakness map: where Galerina loses cycles vs Node.js / Python / Rust · 2026-07-17
 
 ## Stale Links
 Links pointing to missing files:

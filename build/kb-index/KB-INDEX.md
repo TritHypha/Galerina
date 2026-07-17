@@ -1,4 +1,4 @@
-# Galerina KB index (1274 docs)
+# Galerina KB index (1282 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -465,6 +465,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #96, #128
 - terms: mark, window, fix, escaping, above, release, clarification-96a-escaping-records-excluded-from-release-window-not-above-the-mark, predicate, guard, per-iteration, allocated, inside, record, build
 
+## 2026-07-17-CLOSED-runtime-is-a-5th-100-casualty-debt-is-5-of-7-only-lexer-and-parser-survive.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-CLOSED-runtime-is-a-5th-100-casualty-debt-is-5-of-7-only-lexer-and-parser-survive.md`
+- tasks: #100
+- terms: runtime, envlookup, auto, traps, why, array, survive, confirmed, get, same, survivors, just, l219-223, name
+
 ## 2026-07-17-CLOSING-CYCLE-full-verify-thesis-build-registry-benchmark-harness-finding.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-CLOSING-CYCLE-full-verify-thesis-build-registry-benchmark-harness-finding.md`
 - codes: FUNGI-PARSE-001, FUNGI-MATCH-001, FUNGI-SAFETY-006
@@ -501,6 +506,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-TYPE-001
 - terms: own, surface, method, gate, resolveimports, class, run, exported, ten, first, why, full, catch, audit-checker-wiring
 
+## 2026-07-17-DONE-last-doc-drift-cleared-dated-not-falsified-plus-a-gate-note.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-DONE-last-doc-drift-cleared-dated-not-falsified-plus-a-gate-note.md`
+- terms: gate, doc, packages, note, filing, call, file, hit, mine, low, priority, clear, claim, done-last-doc-drift-cleared-dated-not-falsified-plus-a-gate-note
+
 ## 2026-07-17-FINDING-Money-BANANAS-compiles-clean-I1s-compile-half-is-unbuilt-plus-RD-0349-amended.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-FINDING-Money-BANANAS-compiles-clean-I1s-compile-half-is-unbuilt-plus-RD-0349-amended.md`
 - codes: FUNGI-TYPE-001
@@ -509,6 +518,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## 2026-07-17-graph-integrity-has-NEVER-run-in-CI-and-the-summary-counts-it-among-the-9-that-did.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-graph-integrity-has-NEVER-run-in-CI-and-the-summary-counts-it-among-the-9-that-did.md`
 - terms: check, green, same, ran, last, real, own, caller, finding, yours, first, total, violations, skipped
+
+## 2026-07-17-GROUNDING-discriminating-trap-law-efficiency-methodology-GIR-assertion-surface.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-GROUNDING-discriminating-trap-law-efficiency-methodology-GIR-assertion-surface.md`
+- tasks: #100
+- terms: control, gate, audit, gir, trap, three, law, must, same, own, node, debunk, oracle, noise
 
 ## 2026-07-17-GROUNDING-escape-analysis-pass-record-escapes-flow-predicate-fail-closed.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-GROUNDING-escape-analysis-pass-record-escapes-flow-predicate-fail-closed.md`
@@ -566,6 +580,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-MATCH-001, FUNGI-TYPE-023, FUNGI-TYPE-021, FUNGI-TYPE-001, FUNGI-GOV-018
 - terms: match, real, lint, enum, fix, resolveimports, wrong, nothing, never, type, contract, production, worth, auth-service
 
+## 2026-07-17-RULING-100-the-emitter-trap-is-CORRECT-and-only-ONE-of-your-three-fixes-unblocks-P9.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-RULING-100-the-emitter-trap-is-CORRECT-and-only-ONE-of-your-three-fixes-unblocks-P9.md`
+- codes: FUNGI-NAME-002
+- tasks: #163, #100, #128
+- terms: ruling, option, emitter, trap, type, auto, array, flow, yes, get, verified, three, options, already
+
 ## 2026-07-17-RULING-RD-0450-A-FOR-BOTH-you-overruled-me-with-my-own-rule-plus-123-links-de-link-by-default.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-RULING-RD-0450-A-FOR-BOTH-you-overruled-me-with-my-own-rule-plus-123-links-de-link-by-default.md`
 - tasks: #34
@@ -579,6 +599,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## 2026-07-17-URGENT-audit-path-leak-misses-the-DOUBLE-dash-MCP-slug-and-Galerina-is-PUBLIC.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-URGENT-audit-path-leak-misses-the-DOUBLE-dash-MCP-slug-and-Galerina-is-PUBLIC.md`
 - terms: note, real, guard, side, name, day, about, same, rule, leak, green, c--users-, public, thing
+
+## 2026-07-17-VERIFIED-your-R2-tool-and-it-EXCLUDES-a-confirmed-4th-100-trap-gir-emitter-is-on-the-flows-chain.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFIED-your-R2-tool-and-it-EXCLUDES-a-confirmed-4th-100-trap-gir-emitter-is-on-the-flows-chain.md`
+- tasks: #100, #107
+- terms: trap, array, flows, tool, traps, swept, emitgirmodule, gir-emitter, auto, verified, control, read, confirmed, entry
 
 ## 2026-07-17-VERIFY-76-17of19-open-vocab-length-bound-correct-plus-content-safe-downstream-caveat.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-76-17of19-open-vocab-length-bound-correct-plus-content-safe-downstream-caveat.md`
@@ -957,6 +982,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-EFFECT-002
 - terms: effect, transitive, declared, stage-a, twin, milestone, landed, honest, caveats, flow, tracked, effect-checker, effect-002, verify-don
 
+## 2026-07-17-OWNER-SUGGESTED-audit-dev-tools-trap-classify-discriminate-efficiency-gir-inspect-help-requested.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-OWNER-SUGGESTED-audit-dev-tools-trap-classify-discriminate-efficiency-gir-inspect-help-requested.md`
+- tasks: #100
+- terms: audit, status, owner, trap, help, gate, list, intent, control, three, actual, asks, efficiency, fungi
+
 ## 2026-07-17-P9-parser-stage-byte-parity-CLOSED-entry-point-proven-no-new-ABI.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-P9-parser-stage-byte-parity-CLOSED-entry-point-proven-no-new-ABI.md`
 - tasks: #105, #103
@@ -1014,6 +1044,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## 2026-07-17-TRIAGE-LIST-123-escape-links-65-targets-29-docs.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-TRIAGE-LIST-123-escape-links-65-targets-29-docs.md`
 - terms: docs, readme, framework, public, classify, target, thing, count, many, link, framework-boundaries, reports, rules, triage-list-123-escape-links-65-targets-29-docs
+
+## 2026-07-17-VERIFIED-gir-emitter-is-the-4th-100-trap-swept-baseline-4-ruling-received.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-VERIFIED-gir-emitter-is-the-4th-100-trap-swept-baseline-4-ruling-received.md`
+- tasks: #100
+- terms: swept, real, ruling, stopper, trap, runtime, received, dashboard, mine, next, honest, finding, fixed, array
 
 ## Core Application Model
 `../ZTF-Knowledge-Bases/core-application-model.md`
@@ -3385,7 +3420,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/galerina-rd-0348-package-dependency-management-survey-and-per-package-graph-verdict.md`
 - tasks: #149
 - links: [[HANDOVER-pnpm-workspaces-migration-and-graph-enforcement-2026-07-11]] [[galerina-rd-graph-wasm-admission-benchmark-2026-06-25]] [[galerina-rd-graph-per-component-realization-2026-06-25]]
-- terms: graph, pnpm, part, package, per-package, https, survey, npm, borrow, json, solved, ledger, provenance, com
+- terms: graph, pnpm, package, part, per-package, https, survey, npm, borrow, json, solved, ledger, provenance, com
 
 ## RD-0349 — Value-unit types: `Money<C>` · `Commodity<U>` · `Crypto<T>` over ONE unit registry (ISO 4217 + X-metals + ISO 24165), deny-by-default tags
 `../ZTF-Knowledge-Bases/galerina-rd-0349-value-unit-types-money-commodity-crypto-registry.md`
@@ -3501,6 +3536,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/galerina-rd-0453-you-cannot-content-scan-for-private-when-private-is-a-keyword-PRIVATE.md`
 - links: [[RD-0452]] [[RD-0451]]
 - terms: never-public, net, internal, cannot, private, docs, vocabulary, owner, public, wrong, policy, directive, right, words
+
+## RD-0454 — Runtime performance weakness map: where Galerina loses cycles vs Node.js / Python / Rust · 2026-07-17
+`../ZTF-Knowledge-Bases/galerina-rd-0454-runtime-performance-weakness-map-vs-node-python-rust-PRIVATE.md`
+- tasks: #100
+- links: [[benchmark-noise-floor-discipline]] [[galerina-rd-0348-…]] [[galerina-work-state]] [[galerina-tri-pipe-is-photonic-router]] [[harm-filter-on-papers]] [[kb-private-docs-tagged-in-filename]]
+- terms: table, tax, runtime, photonic, wasm, memory, cycles, weakness, binary, python, galerina, rust, actually, node
 
 ## R&D — Phase 34B boundary param auto-taint: verified state + build-ready spec
 `../ZTF-Knowledge-Bases/galerina-rd-34b-paramtaint-buildspec-2026-06-24.md`
