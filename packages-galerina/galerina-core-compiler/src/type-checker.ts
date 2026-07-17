@@ -2412,9 +2412,15 @@ class TypeChecker {
     this.diagnostics.push(makeTCDiag(
       "FUNGI-TYPE-032",
       "INVALID_CURRENCY_TAG",
-      `Money<${tag}>: '${tag}' is not a known ISO-4217 currency code.${hint}`,
+      `Money<${tag}>: '${tag}' is not a known ISO-4217 currency code — Money models legal-tender currencies only.${hint}`,
       location,
-      `A Money currency tag must be an ISO-4217 alphabetic code (e.g. Money<GBP>, Money<USD>).${hint}`,
+      near.length
+        // A near hit is almost certainly a typo — keep the developer on the currency path.
+        ? `A Money currency tag must be an ISO-4217 code (e.g. Money<GBP>, Money<USD>).${hint}`
+        // No near hit — likely a commodity/custom asset, not a mistyped currency. Money is the wrong
+        // type (a commodity has no issuer and no minor-unit scale); point at the escape hatch. (The
+        // dedicated commodity type is RD-0350 C1, not yet built — don't name a type that doesn't exist.)
+        : `A Money currency tag must be an ISO-4217 code (e.g. Money<GBP>). If '${tag}' is a commodity or custom asset rather than legal tender, Money is the wrong type — model it with its own unit/asset type, not Money.`,
       near.length === 1 ? `Money<${near[0]}>` : undefined,
     ));
   }

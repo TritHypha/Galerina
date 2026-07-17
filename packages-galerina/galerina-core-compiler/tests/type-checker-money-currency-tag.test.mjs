@@ -34,6 +34,12 @@ describe("RD-0349 I1: Money<CCY> currency-tag validation", () => {
       errs.some((e) => e.code === "FUNGI-TYPE-032" && /BANANAS/.test(e.message) && /ISO-4217/.test(e.message)),
       JSON.stringify(errs),
     );
+    // A commodity trader must be GUIDED, not merely refused: the diagnostic states Money is for
+    // legal-tender currencies only, and (no near-currency to suggest) that a commodity/custom asset
+    // needs its own type. Regression guard for the "what if BANANAS is a real commodity?" case.
+    const e = errs.find((x) => x.code === "FUNGI-TYPE-032");
+    assert.match(e.message, /legal-tender currencies only/, e.message);
+    assert.match(e.suggestedFix ?? "", /commodity or custom asset/, e.suggestedFix ?? "(no suggestedFix)");
   });
 
   it("a transposition typo (Money<GPB>) rejects AND suggests GBP first", () => {

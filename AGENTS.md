@@ -139,7 +139,7 @@ All Phase 4+ diagnostics use `FUNGI-CATEGORY-NNN` format. Key series:
 
 ```text
 FUNGI-PARSE-*     parser errors (001–014 defined)
-FUNGI-TYPE-*      type checker (001–008 defined)
+FUNGI-TYPE-*      type checker (001–032 defined, with gaps — see live registry)
 FUNGI-NAME-*      name resolution (001–005 defined)
 FUNGI-MATCH-*     exhaustive match (001–004 defined)
 FUNGI-EFFECT-*    effect checker (001–004 defined)
