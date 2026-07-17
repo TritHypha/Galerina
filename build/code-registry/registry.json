@@ -3062,14 +3062,15 @@
       "namespace": "FUNGI",
       "status": "live",
       "names": [
-        "BROAD_ALIAS_USED"
+        "BROAD_ALIAS_USED",
+        "DENY_ONLY_EFFECT"
       ],
       "severities": [
         "warning",
         "error"
       ],
       "defs": 1,
-      "emits": 1,
+      "emits": 2,
       "tests": 46,
       "docs": 8
     },
@@ -3085,7 +3086,7 @@
         "error"
       ],
       "defs": 1,
-      "emits": 2,
+      "emits": 3,
       "tests": 20,
       "docs": 14
     },
@@ -8697,7 +8698,8 @@
       "namespace": "FUNGI",
       "status": "live",
       "names": [
-        "SAFETY_CRITICAL_MISSING_AUDIT"
+        "SAFETY_CRITICAL_MISSING_AUDIT",
+        "DENY_ONLY_EFFECT"
       ],
       "severities": [
         "error"

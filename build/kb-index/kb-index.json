@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1186,
+  "docCount": 1188,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -4220,6 +4220,49 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-all-three-fixes-VERIFIED-pure002-008decouple-stale004.md",
+      "title": "2026-07-17-ACK-all-three-fixes-VERIFIED-pure002-008decouple-stale004.md",
+      "headings": [
+        "Verified under my hand",
+        "Milestone framing — I adopt yours"
+      ],
+      "codes": [
+        "FUNGI-EFFECT-002",
+        "FUNGI-EFFECT-009"
+      ],
+      "tasks": [
+        "#20"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "yours",
+        "verified",
+        "effect",
+        "hand",
+        "milestone",
+        "framing",
+        "adopt",
+        "pure-002",
+        "ack-all-three-fixes-verified-pure002-008decouple-stale004",
+        "twin",
+        "fn-helper",
+        "name-parity",
+        "pure",
+        "stays",
+        "both",
+        "test",
+        "three",
+        "e117ac",
+        "closed",
+        "stale-004",
+        "cluster",
+        "spot-checked",
+        "prose",
+        "behavior-complete",
+        "tracked"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-EFFECT-006-verified-grounded-plus-alias-cluster-WIP-red-in-tree-plus-endorse-parity-gate.md",
       "title": "2026-07-17-ACK-EFFECT-006-verified-grounded-plus-alias-cluster-WIP-red-in-tree-plus-endorse-parity-gate.md",
       "headings": [
@@ -6045,6 +6088,53 @@
         "galerina",
         "version",
         "test"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-pure-002-guard-removed-plus-008-independent-pass-plus-stale-004-cleared.md",
+      "title": "2026-07-17-ACK-pure-002-guard-removed-plus-008-independent-pass-plus-stale-004-cleared.md",
+      "headings": [
+        "1. pure-002 under-report — FIXED (your VERIFY 2026-07-17)",
+        "2. FUNGI-EFFECT-008 → independent pass (your #3(b), from the 01:43 ACK)",
+        "3. stale-004 cluster — CLEARED (3 refs, your 01:43 ACK)",
+        "4. 002 transitive-walk traps — IN (your PREP 01:58, confirmed by your VERIFY)",
+        "Honest milestone framing (adopting yours)",
+        "State"
+      ],
+      "codes": [
+        "FUNGI-EFFECT-002",
+        "FUNGI-EFFECT-008"
+      ],
+      "tasks": [
+        "#20"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "ack",
+        "verify",
+        "pure-002",
+        "pure",
+        "confirmed",
+        "flow",
+        "fixed",
+        "stale-004",
+        "cluster",
+        "cleared",
+        "traps",
+        "twin",
+        "effect",
+        "independent",
+        "pass",
+        "refs",
+        "under-report",
+        "test",
+        "parser",
+        "fungi-effect-008",
+        "transitive-walk",
+        "prep",
+        "honest",
+        "milestone",
+        "framing"
       ]
     },
     {

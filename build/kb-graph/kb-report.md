@@ -2,7 +2,7 @@
 Generated: 2026-07-17
 
 ## Stats
-- Docs: 1184 | Edges: 3476 | Orphans: 121 | Stale links: 0 | FUNGI codes: 748
+- Docs: 1186 | Edges: 3476 | Orphans: 123 | Stale links: 0 | FUNGI codes: 748
 
 ## Document Registry (auto-generated)
 
@@ -103,12 +103,14 @@ Generated: 2026-07-17
 | 2026-07-16-UNLOCK-checker-taxonomy-20-adopt.md | — | — | — | FUNGI-EFFECT-002, FUNGI-TYPE-006 |
 | 2026-07-17-ACK-alias-cluster-landed-005-unsquat-009-payment-charge.md | — | — | — | FUNGI-EFFECT-005, FUNGI-EFFECT-009 |
 | 2026-07-17-ACK-alias-cluster-VERIFIED-plus-stale-004-cluster-plus-latent-008-fold-invariant.md | — | — | — | FUNGI-EFFECT-004 |
+| 2026-07-17-ACK-all-three-fixes-VERIFIED-pure002-008decouple-stale004.md | — | — | — | FUNGI-EFFECT-002, FUNGI-EFFECT-009 |
 | 2026-07-17-ACK-EFFECT-006-landed-plus-count-method-aligned-plus-gate-gap.md | — | — | — | — |
 | 2026-07-17-ACK-EFFECT-006-verified-grounded-plus-alias-cluster-WIP-red-in-tree-plus-endorse-parity-gate.md | — | — | — | FUNGI-EFFECT-005, FUNGI-EFFECT-006 |
 | 2026-07-17-ACK-effect-parity-gate-extended-plus-docnit-plus-002-grounded.md | — | — | — | FUNGI-EFFECT-002 |
 | 2026-07-17-ACK-effect-parity-gate-VERIFIED-green-plus-coverage-boundary.md | — | — | — | FUNGI-EFFECT-002 |
 | 2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed.md | — | — | — | — |
 | 2026-07-17-ACK-papers-landed-clean-declarations-block-is-owner-gated.md | — | — | — | — |
+| 2026-07-17-ACK-pure-002-guard-removed-plus-008-independent-pass-plus-stale-004-cleared.md | — | — | — | FUNGI-EFFECT-002, FUNGI-EFFECT-008 |
 | 2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md | — | — | — | FUNGI-EFFECT-002 |
 | 2026-07-17-myco-galerina-package-updates-fold-into-galerina-tools-myco.md | — | — | — | — |
 | 2026-07-17-PREP-EFFECT-002-transitive-walk-faithfulness-traps-grounded-from-stage-A.md | — | — | — | — |
@@ -1272,6 +1274,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion.md` — 2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion
 - `2026-07-17-ACK-EFFECT-006-verified-grounded-plus-alias-cluster-WIP-red-in-tree-plus-endorse-parity-gate.md` — 2026-07-17-ACK-EFFECT-006-verified-grounded-plus-alias-cluster-WIP-red-in-tree-plus-endorse-parity-gate
 - `2026-07-17-ACK-alias-cluster-VERIFIED-plus-stale-004-cluster-plus-latent-008-fold-invariant.md` — 2026-07-17-ACK-alias-cluster-VERIFIED-plus-stale-004-cluster-plus-latent-008-fold-invariant
+- `2026-07-17-ACK-all-three-fixes-VERIFIED-pure002-008decouple-stale004.md` — 2026-07-17-ACK-all-three-fixes-VERIFIED-pure002-008decouple-stale004
 - `2026-07-17-ACK-effect-parity-gate-VERIFIED-green-plus-coverage-boundary.md` — 2026-07-17-ACK-effect-parity-gate-VERIFIED-green-plus-coverage-boundary
 - `2026-07-17-ACK-papers-landed-clean-declarations-block-is-owner-gated.md` — 2026-07-17-ACK-papers-landed-clean-declarations-block-is-owner-gated
 - `2026-07-17-PREP-EFFECT-002-transitive-walk-faithfulness-traps-grounded-from-stage-A.md` — 2026-07-17-PREP-EFFECT-002-transitive-walk-faithfulness-traps-grounded-from-stage-A
@@ -1316,6 +1319,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-ACK-alias-cluster-landed-005-unsquat-009-payment-charge.md` — 2026-07-17-ACK-alias-cluster-landed-005-unsquat-009-payment-charge
 - `2026-07-17-ACK-effect-parity-gate-extended-plus-docnit-plus-002-grounded.md` — 2026-07-17-ACK-effect-parity-gate-extended-plus-docnit-plus-002-grounded
 - `2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed.md` — 2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed
+- `2026-07-17-ACK-pure-002-guard-removed-plus-008-independent-pass-plus-stale-004-cleared.md` — 2026-07-17-ACK-pure-002-guard-removed-plus-008-independent-pass-plus-stale-004-cleared
 - `2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md` — 2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed
 
 ## Stale Links

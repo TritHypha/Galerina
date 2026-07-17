@@ -5290,7 +5290,7 @@
     "code": "FUNGI-EFFECT-001",
     "namespace": "FUNGI",
     "family": "EFFECT",
-    "occurrences": 148,
+    "occurrences": 149,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -5318,9 +5318,10 @@
       "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:714",
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:2072",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:19",
-      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:238",
-      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:739",
-      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:742",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:202",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:279",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:780",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:783",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:901",
       "ref packages-galerina/galerina-core-compiler/src/type-registry.ts:216",
       "test packages-galerina/galerina-core-compiler/tests/domain-governance.test.mjs:11",
@@ -5460,7 +5461,7 @@
     "code": "FUNGI-EFFECT-002",
     "namespace": "FUNGI",
     "family": "EFFECT",
-    "occurrences": 59,
+    "occurrences": 60,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -5482,9 +5483,10 @@
       "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:948",
       "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:969",
       "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:1244",
-      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:489",
-      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:756",
-      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:771",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:203",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:530",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:797",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:812",
       "test packages-galerina/galerina-core-compiler/tests/domain-governance.test.mjs:11",
       "test packages-galerina/galerina-core-compiler/tests/effect-checker.test.mjs:159",
       "test packages-galerina/galerina-core-compiler/tests/effect-checker.test.mjs:172",
@@ -5542,7 +5544,7 @@
     "code": "FUNGI-EFFECT-003",
     "namespace": "FUNGI",
     "family": "EFFECT",
-    "occurrences": 78,
+    "occurrences": 79,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -5569,11 +5571,12 @@
       "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:763",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:25",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:27",
-      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:196",
-      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:202",
-      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:234",
-      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:744",
-      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:747",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:204",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:237",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:243",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:275",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:785",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:788",
       "test packages-galerina/galerina-core-compiler/tests/domain-ai.test.mjs:810",
       "test packages-galerina/galerina-core-compiler/tests/domain-ai.test.mjs:818",
       "test packages-galerina/galerina-core-compiler/tests/domain-ai.test.mjs:830",
@@ -5644,7 +5647,7 @@
     "code": "FUNGI-EFFECT-004",
     "namespace": "FUNGI",
     "family": "EFFECT",
-    "occurrences": 86,
+    "occurrences": 87,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -5670,9 +5673,10 @@
       "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:919",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:22",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:68",
-      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:242",
-      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:246",
-      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:291",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:205",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:283",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:287",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:332",
       "test packages-galerina/galerina-core-compiler/tests/anti-hallucination-corpus.test.mjs:157",
       "test packages-galerina/galerina-core-compiler/tests/anti-hallucination-corpus.test.mjs:165",
       "test packages-galerina/galerina-core-compiler/tests/cec-integration.test.mjs:58",
@@ -5752,19 +5756,21 @@
     "code": "FUNGI-EFFECT-005",
     "namespace": "FUNGI",
     "family": "EFFECT",
-    "occurrences": 73,
+    "occurrences": 78,
     "docOnly": false,
     "defs": [
       "packages-galerina/galerina-core-compiler/src/index.ts:1021"
     ],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:895"
+      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:895",
+      "scripts/audit-twin-emit-parity.mjs:139"
     ],
     "tests": 46,
-    "refs": 7,
+    "refs": 10,
     "docs": 8,
     "names": [
-      "BROAD_ALIAS_USED"
+      "BROAD_ALIAS_USED",
+      "DENY_ONLY_EFFECT"
     ],
     "severities": [
       "warning",
@@ -5783,9 +5789,10 @@
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:29",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:148",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:165",
-      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:209",
-      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:275",
-      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:283",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:206",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:250",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:316",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:324",
       "test packages-galerina/galerina-core-compiler/tests/domain-ai.test.mjs:841",
       "test packages-galerina/galerina-core-compiler/tests/domain-ai.test.mjs:843",
       "test packages-galerina/galerina-core-compiler/tests/domain-ai.test.mjs:844",
@@ -5843,24 +5850,29 @@
       "doc docs/language/gate/02-clauses.md:69",
       "doc docs/reference/effects.md:39",
       "doc docs/reference/effects.md:66",
-      "ref scripts/audit-corpus-effect-names.mjs:14"
+      "ref scripts/audit-corpus-effect-names.mjs:14",
+      "ref scripts/audit-twin-emit-parity.mjs:138",
+      "emit scripts/audit-twin-emit-parity.mjs:139",
+      "ref scripts/audit-twin-emit-parity.mjs:140",
+      "ref scripts/audit-twin-emit-parity.mjs:141"
     ]
   },
   {
     "code": "FUNGI-EFFECT-006",
     "namespace": "FUNGI",
     "family": "EFFECT",
-    "occurrences": 50,
+    "occurrences": 54,
     "docOnly": false,
     "defs": [
       "packages-galerina/galerina-core-compiler/src/index.ts:1038"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/effect-checker.ts:880",
-      "scripts/audit-twin-emit-parity.mjs:134"
+      "scripts/audit-twin-emit-parity.mjs:134",
+      "scripts/audit-twin-emit-parity.mjs:139"
     ],
     "tests": 20,
-    "refs": 8,
+    "refs": 10,
     "docs": 14,
     "names": [
       "DENY_ONLY_EFFECT"
@@ -5875,8 +5887,9 @@
       "def packages-galerina/galerina-core-compiler/src/index.ts:1038",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:66",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:138",
-      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:262",
-      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:272",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:207",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:303",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:313",
       "test packages-galerina/galerina-core-compiler/tests/effect-checker/declared-name-postures.test.mjs:5",
       "test packages-galerina/galerina-core-compiler/tests/effect-checker/declared-name-postures.test.mjs:38",
       "test packages-galerina/galerina-core-compiler/tests/effect-checker/declared-name-postures.test.mjs:40",
@@ -5917,6 +5930,9 @@
       "ref scripts/audit-effect-canonicality.mjs:107",
       "emit scripts/audit-twin-emit-parity.mjs:134",
       "ref scripts/audit-twin-emit-parity.mjs:135",
+      "ref scripts/audit-twin-emit-parity.mjs:138",
+      "emit scripts/audit-twin-emit-parity.mjs:139",
+      "ref scripts/audit-twin-emit-parity.mjs:140",
       "ref scripts/component-health.mjs:279",
       "test scripts/tests/cg4-signing-boundary.test.mjs:72"
     ]
@@ -5925,7 +5941,7 @@
     "code": "FUNGI-EFFECT-007",
     "namespace": "FUNGI",
     "family": "EFFECT",
-    "occurrences": 17,
+    "occurrences": 18,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -5942,8 +5958,9 @@
     ],
     "allSites": [
       "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:728",
-      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:293",
-      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:301",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:208",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:334",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:342",
       "test packages-galerina/galerina-core-compiler/tests/domain-governance.test.mjs:772",
       "test packages-galerina/galerina-core-compiler/tests/domain-governance.test.mjs:773",
       "test packages-galerina/galerina-core-compiler/tests/domain-governance.test.mjs:782",
@@ -5964,7 +5981,7 @@
     "code": "FUNGI-EFFECT-008",
     "namespace": "FUNGI",
     "family": "EFFECT",
-    "occurrences": 18,
+    "occurrences": 19,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -5983,9 +6000,10 @@
       "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:745",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:69",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:127",
-      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:305",
-      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:319",
-      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:333",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:209",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:346",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:360",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:374",
       "test packages-galerina/galerina-core-compiler/tests/effect-checker.test.mjs:120",
       "test packages-galerina/galerina-core-compiler/tests/effect-checker.test.mjs:121",
       "test packages-galerina/galerina-core-compiler/tests/effect-checker.test.mjs:131",
@@ -6004,7 +6022,7 @@
     "code": "FUNGI-EFFECT-009",
     "namespace": "FUNGI",
     "family": "EFFECT",
-    "occurrences": 30,
+    "occurrences": 31,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -6023,8 +6041,9 @@
       "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:824",
       "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:907",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:166",
-      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:276",
-      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:286",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:210",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:317",
+      "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:327",
       "test packages-galerina/galerina-core-compiler/tests/cec-integration.test.mjs:59",
       "test packages-galerina/galerina-core-compiler/tests/effect-checker/declared-name-postures.test.mjs:11",
       "test packages-galerina/galerina-core-compiler/tests/effect-checker/declared-name-postures.test.mjs:86",
@@ -19744,7 +19763,8 @@
     "refs": 4,
     "docs": 3,
     "names": [
-      "SAFETY_CRITICAL_MISSING_AUDIT"
+      "SAFETY_CRITICAL_MISSING_AUDIT",
+      "DENY_ONLY_EFFECT"
     ],
     "severities": [
       "error"

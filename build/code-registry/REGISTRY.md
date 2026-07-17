@@ -359,7 +359,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-EFFECT-002 | inline | TRANSITIVE_EFFECT_NOT_DECLARED | error |
 | FUNGI-EFFECT-003 | inline | EFFECT_BOUNDARY_VIOLATION | error |
 | FUNGI-EFFECT-004 | inline | UNKNOWN_EFFECT | error |
-| FUNGI-EFFECT-005 | live | BROAD_ALIAS_USED | warning/error |
+| FUNGI-EFFECT-005 | live | BROAD_ALIAS_USED / DENY_ONLY_EFFECT | warning/error |
 | FUNGI-EFFECT-006 | live | DENY_ONLY_EFFECT | error |
 | FUNGI-EFFECT-007 | inline | OVERDECLARED_EFFECT | warning |
 | FUNGI-EFFECT-008 | inline | PRIVILEGED_EFFECT_ON_PLAIN_FLOW | warning |
@@ -1307,7 +1307,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-VAL-00 | ref | — | — |
-| FUNGI-VAL-001 | live | SAFETY_CRITICAL_MISSING_AUDIT | error |
+| FUNGI-VAL-001 | live | SAFETY_CRITICAL_MISSING_AUDIT / DENY_ONLY_EFFECT | error |
 | FUNGI-VAL-002 | referenced | SAFETY_CRITICAL_MISSING_DETERMINISM | error |
 | FUNGI-VAL-003 | referenced | UNKNOWN_VALUE_CLASSIFICATION | error |
 

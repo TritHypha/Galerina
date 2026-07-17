@@ -191,6 +191,47 @@ contract { intent { "Return the canonical effect an alias maps to, else empty st
   return ""
 }
 
+// The canonical Stage-A diagnostic NAME for each FUNGI-EFFECT-* code the twin emits — kept in ONE
+// place so every twin diagnostic carries the SAME {code, name} pair Stage-A does (one-code = one-name,
+// the #20 taxonomy invariant). The name-parity gate leg diffs this table against effect-checker.ts's
+// emit-site names by construction, catching a semantic squat (a code mirrored at the wrong meaning —
+// the 005-repurpose class) that a code-set-only check cannot see. (RD-0412 §4, effect-checker twin.)
+pure flow effectDiagName(code: String) -> String
+contract { intent { "The canonical Stage-A diagnostic name for an effect code the twin emits (else empty)." } }
+{
+  if code == "FUNGI-EFFECT-001" { return "UNDECLARED_EFFECT" }
+  if code == "FUNGI-EFFECT-002" { return "TRANSITIVE_EFFECT_NOT_DECLARED" }
+  if code == "FUNGI-EFFECT-003" { return "EFFECT_BOUNDARY_VIOLATION" }
+  if code == "FUNGI-EFFECT-004" { return "UNKNOWN_EFFECT" }
+  if code == "FUNGI-EFFECT-005" { return "BROAD_ALIAS_USED" }
+  if code == "FUNGI-EFFECT-006" { return "DENY_ONLY_EFFECT" }
+  if code == "FUNGI-EFFECT-007" { return "OVERDECLARED_EFFECT" }
+  if code == "FUNGI-EFFECT-008" { return "PRIVILEGED_EFFECT_ON_PLAIN_FLOW" }
+  if code == "FUNGI-EFFECT-009" { return "NON_CANONICAL_EFFECT" }
+  return ""
+}
+
+// Attach the canonical name to every diagnostic, PRESERVING the twin's {code, message, flowName,
+// severity} shape and ADDING name → the faithful {code, name, severity, message, flowName} Stage-A
+// uses. Applied once at each entry return so the emit sites stay terse and the name lives in one table.
+// (Severity is preserved deliberately — the differential harness reads it; dropping it would throw.)
+pure flow effectWithNames(diags: Array<Auto>) -> Array<Auto>
+contract { intent { "Return the diagnostics with the canonical Stage-A name attached to each." } }
+{
+  mut out: Array<Auto> = Array.empty()
+  mut i: Int = 0
+  while i < diags.count() {
+    let dOpt = diags.get(i)
+    match dOpt {
+      Some(d) => { out = out.append({ code: d.code, name: effectDiagName(d.code), message: d.message, flowName: d.flowName, severity: d.severity }) }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return out
+}
+
 pure flow checkPureFlowEffects(flowName: String, effectCount: Int) -> Array<Auto>
 contract {
   intent { "Pure flows must declare zero effects. Emit FUNGI-EFFECT-003 (EFFECT_BOUNDARY_VIOLATION) if any declared." }
@@ -797,7 +838,7 @@ contract {
     }
     i = i + 1
   }
-  return { diagnostics: allDiags, flowCount: flowCount, cleanFlows: cleanFlows }
+  return { diagnostics: effectWithNames(allDiags), flowCount: flowCount, cleanFlows: cleanFlows }
 }
 
 // ── Full effect check pass ────────────────────────────────────
@@ -883,5 +924,5 @@ contract {
     }
     i = i + 1
   }
-  return { diagnostics: allDiags, flowCount: flowCount, cleanFlows: cleanFlows }
+  return { diagnostics: effectWithNames(allDiags), flowCount: flowCount, cleanFlows: cleanFlows }
 }

@@ -1,4 +1,4 @@
-# Galerina KB index (1186 docs)
+# Galerina KB index (1188 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -374,6 +374,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #20
 - terms: alias, pii, write, invariant, else, verified, stage-a, three, fold, correct, independent, drift, extension, e13062
 
+## 2026-07-17-ACK-all-three-fixes-VERIFIED-pure002-008decouple-stale004.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-all-three-fixes-VERIFIED-pure002-008decouple-stale004.md`
+- codes: FUNGI-EFFECT-002, FUNGI-EFFECT-009
+- tasks: #20
+- terms: yours, verified, effect, hand, milestone, framing, adopt, pure-002, ack-all-three-fixes-verified-pure002-008decouple-stale004, twin, fn-helper, name-parity, pure, stays
+
 ## 2026-07-17-ACK-EFFECT-006-verified-grounded-plus-alias-cluster-WIP-red-in-tree-plus-endorse-parity-gate.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-EFFECT-006-verified-grounded-plus-alias-cluster-WIP-red-in-tree-plus-endorse-parity-gate.md`
 - codes: FUNGI-EFFECT-006, FUNGI-EFFECT-005
@@ -600,6 +606,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## 2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed.md`
 - terms: paths, myco, already, public, present, fold-in, both, repointed, folder, count, verified, reconciliation, owner, subprojects
+
+## 2026-07-17-ACK-pure-002-guard-removed-plus-008-independent-pass-plus-stale-004-cleared.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-pure-002-guard-removed-plus-008-independent-pass-plus-stale-004-cleared.md`
+- codes: FUNGI-EFFECT-002, FUNGI-EFFECT-008
+- tasks: #20
+- terms: ack, verify, pure-002, pure, confirmed, flow, fixed, stale-004, cluster, cleared, traps, twin, effect, independent
 
 ## 2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md`
