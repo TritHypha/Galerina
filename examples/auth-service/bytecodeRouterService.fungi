@@ -42,6 +42,26 @@ contract {
   }
 }
 
+;; Validate an untrusted flow qualifier against the recognised set before it drives tier selection —
+;; admit only the known qualifiers, returning a constant (never the raw input). Validate untrusted input
+;; before it drives a decision. Pure — no runtime authority / no effects.
+pure flow validateQualifier(qualifier: String) -> String
+{
+  if qualifier == "pure" { return "pure" }
+  if qualifier == "secure" { return "secure" }
+  if qualifier == "guarded" { return "guarded" }
+  return ""
+}
+
+;; Validate an untrusted boolean-flag string against {"true","false"} before it is decoded to a Bool —
+;; admit only the two literals, returning a constant. Pure — no runtime authority / no effects.
+pure flow validateBoolStr(flag: String) -> String
+{
+  if flag == "true" { return "true" }
+  if flag == "false" { return "false" }
+  return ""
+}
+
 ;; Accepts untrusted flow metadata over HTTP, traps empty fields, and returns the selected tier while writing a redacted audit entry — permitted because the tainted tier is redacted before the write.
 ;; V_DPM capability required: network.inbound, audit.write
 // @cause  [Auth service route POST /tier/select] -> invoked for each tier-selection request.
@@ -58,9 +78,12 @@ contract {
   trap rawQualifier == "" : ERR_EMPTY_QUALIFIER
   trap rawHasEffects == "" : ERR_EMPTY_HAS_EFFECTS
   trap rawIsIntegerOnly == "" : ERR_EMPTY_IS_INTEGER_ONLY
-  let hasEffects: Bool = rawHasEffects == "true"
-  let isIntegerOnly: Bool = rawIsIntegerOnly == "true"
-  let tier: String = selectExecutionTier(rawQualifier, hasEffects, isIntegerOnly)
+  ;; validate the untrusted flag strings before decoding to Bool — the gates clear the taint
+  let hasEffects: Bool = validateBoolStr(rawHasEffects) == "true"
+  let isIntegerOnly: Bool = validateBoolStr(rawIsIntegerOnly) == "true"
+  ;; validate the untrusted qualifier before it drives tier selection — the gate clears the taint
+  let validQualifier: String = validateQualifier(rawQualifier)
+  let tier: String = selectExecutionTier(validQualifier, hasEffects, isIntegerOnly)
   let light: String = tierTrafficLight(tier)
   let retTier: String = tier
   safe mut tier = redact(tier)

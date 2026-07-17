@@ -8,9 +8,6 @@
     "examples/auth-service/auditWriterService.fungi": [
       "FUNGI-VALUESTATE-004"
     ],
-    "examples/auth-service/bytecodeRouterService.fungi": [
-      "FUNGI-VALUESTATE-004"
-    ],
     "examples/auth-service/capabilityHostService.fungi": [
       "FUNGI-VALUESTATE-004"
     ],
@@ -29,13 +26,7 @@
     "examples/auth-service/manifestVerificationService.fungi": [
       "FUNGI-VALUESTATE-004"
     ],
-    "examples/auth-service/proofGraphService.fungi": [
-      "FUNGI-VALUESTATE-004"
-    ],
     "examples/auth-service/proofVerifierService.fungi": [
-      "FUNGI-VALUESTATE-004"
-    ],
-    "examples/auth-service/routingPolicyService.fungi": [
       "FUNGI-VALUESTATE-004"
     ],
     "examples/auth-service/runtimeProfileService.fungi": [

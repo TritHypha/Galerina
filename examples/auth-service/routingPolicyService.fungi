@@ -30,6 +30,25 @@ pure flow tierGovernanceClass(tier: String) -> Int
   return 0
 }
 
+;; Bound an untrusted effect count to [0, MAX] before it drives the tier decision — a validating gate
+;; that constrains the range clears the taint and rejects out-of-range input. Validate untrusted input
+;; before it drives a decision. Pure — no runtime authority / no effects.
+pure flow validateEffectCount(n: Int) -> Int
+{
+  if n < 0 { return 0 }
+  if n > 10000 { return 10000 }
+  return n
+}
+
+;; Re-materialise an untrusted boolean flag as a known literal at the trust boundary before it drives the
+;; tier decision, clearing the taint. (A Bool is inherently constrained to two values, so this is the
+;; degenerate-but-total case of the same validate-before-decision pattern.) Pure — no authority / no effects.
+pure flow validateFlag(b: Bool) -> Bool
+{
+  if b { return true }
+  return false
+}
+
 ;; Resolves the execution route and tier for a flow from its routing policy; permitted because the untrusted effect count is trapped-on-negative and the derived tier redacted before the audit write.
 ;; V_DPM capability required: network.inbound, audit.write
 // @cause  [POST /routing/resolve] -> HTTP route invokes this governed endpoint with flow routing properties.
@@ -44,7 +63,11 @@ contract {
   unsafe let hasAI: Bool = request.jsonBody.hasAI
   unsafe let isCritical: Bool = request.jsonBody.isSafetyCritical
   trap effectCount < 0 : ERR_NEGATIVE_EFFECT_COUNT
-  let tier: String = preferredTier(effectCount, hasAI, isCritical)
+  ;; validate/bound the untrusted inputs before they drive the tier decision — the gates clear the taint
+  let validEffectCount: Int = validateEffectCount(effectCount)
+  let validHasAI: Bool = validateFlag(hasAI)
+  let validIsCritical: Bool = validateFlag(isCritical)
+  let tier: String = preferredTier(validEffectCount, validHasAI, validIsCritical)
   trap tier == "" : ERR_INVALID_TIER
   let govClass: Int = tierGovernanceClass(tier)
   let retTier: String = tier

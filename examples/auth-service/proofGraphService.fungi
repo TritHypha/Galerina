@@ -37,6 +37,17 @@ contract {
   return false
 }
 
+;; Validate an untrusted flow qualifier against the recognised set before it drives the proof-level
+;; decision — admit only the known qualifiers, returning a constant. Validate untrusted input before it
+;; drives a decision. Pure — no runtime authority / no effects.
+pure flow validateQualifier(qualifier: String) -> String
+{
+  if qualifier == "pure" { return "pure" }
+  if qualifier == "guarded" { return "guarded" }
+  if qualifier == "secure" { return "secure" }
+  return ""
+}
+
 // HTTP endpoint: generate a proof graph summary
 ;; Accepts a flow-metadata request and returns a governance proof summary; permitted because the untrusted qualifier is trapped-on-empty and redacted before the audit write.
 ;; V_DPM capability required: network.inbound, audit.write
@@ -51,7 +62,9 @@ contract {
   unsafe let rawQualifier: String = request.jsonBody.qualifier
   unsafe let rawEffectCount: String = request.jsonBody.effectCount
   trap rawQualifier == "" : ERR_EMPTY_QUALIFIER
-  let level: Int = qualifierToProofLevel(rawQualifier)
+  ;; validate the untrusted qualifier before it drives the proof-level decision — the gate clears the taint
+  let validQualifier: String = validateQualifier(rawQualifier)
+  let level: Int = qualifierToProofLevel(validQualifier)
   let sufficient: Bool = proofLevelSufficient(level, 1)
   let retRawQualifier: String = rawQualifier
   safe mut rawQualifier = redact(rawQualifier)
