@@ -44,9 +44,14 @@ log(`   project graph: ${nodes} nodes / ${edges} edges (exit ${g1.status})`);
 // 2. graph integrity — validate what (1) just generated (RD-0121: generate then VALIDATE)
 log("── 2/6 graph integrity (validate build/graph/) ──");
 const g2 = run(["scripts/audit-graph-integrity.mjs"]);
-const integrity = /nothing to validate|not present/.test(g2.stdout ?? "")
-  ? "skipped (no generated graph)"
-  : `${first(g2.stdout, /TOTAL:\s*(\d+)/)} violation(s)`;
+// Reads the child's `SKIPPED:` token, not its prose. This line used to be
+//     /nothing to validate|not present/.test(g2.stdout)
+// — a regex over an ENGLISH LOG STRING, because the child's skip and its ran-and-clean were otherwise
+// identical (both `VIOLATIONS: 0`, both exit 0). That made a sentence into a protocol: reword the child's
+// log — a tidy-up, a typo fix — and this silently starts reporting a skip as "0 violation(s)". Nothing in
+// either file said the string was load-bearing. The child now emits a distinct SKIPPED line + exit 3.
+const skipped = /^SKIPPED:\s*(.+)$/m.exec(g2.stdout ?? "");
+const integrity = skipped ? `SKIPPED — ${skipped[1].trim()}` : `${first(g2.stdout, /TOTAL:\s*(\d+)/)} violation(s)`;
 log(`   graph integrity: ${integrity} (exit ${g2.status})`);
 
 // 3. kb graph

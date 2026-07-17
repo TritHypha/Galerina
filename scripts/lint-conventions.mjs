@@ -107,6 +107,7 @@ let total = 0;
 let toolErrors = 0;
 let skippedHeavy = 0;
 let skippedCrossRepo = 0;
+let skippedArtifact = 0; // the child skipped ITSELF — its input was absent (see the SKIPPED: check below)
 // Ask the DISK whether the corpus is readable — not whether a path resolves, and emphatically not
 // whether some secret is set. Resolved once, so every cross-repo member reports the same answer.
 const kbPresent = kbCorpusPresent();
@@ -120,6 +121,22 @@ for (const c of CHECKS) {
   }
   const r = spawnSync(process.execPath, [c.script], { encoding: "utf8" });
   const stdout = r.stdout || "";
+  // ★ THE THIRD KIND OF SKIP: the CHILD skipping ITSELF (R&D finding, 2026-07-17). The two above are
+  // skips WE decide — heavy, and cross-repo. This one the child decides, because its input is not there
+  // (audit-graph-integrity needs build/graph/*.json, a gitignored artifact absent from every clean
+  // checkout). It used to announce that by printing `VIOLATIONS: 0` and exiting 0 — indistinguishable
+  // from ran-and-clean — so this loop counted it among the "ran" and the summary of the first green
+  // `conventions` in eight days reported RD-0121 as a check that passed. It has never run in CI, once.
+  //
+  // A skip must be a signal a parent cannot mistake for a zero. Checked BEFORE the VIOLATIONS parse: a
+  // skipping child deliberately prints no VIOLATIONS line, so an older parent fails closed as a TOOL
+  // ERROR rather than silently reading it as clean.
+  const sm = stdout.match(/^SKIPPED:\s*(.+)$/m);
+  if (sm) {
+    skippedArtifact++;
+    rows.push({ name: c.name, desc: c.desc, skipped: true, artifactAbsent: sm[1].trim() });
+    continue;
+  }
   // Each check MUST print a machine-readable `VIOLATIONS: N` line. Parse THAT, not the raw exit code —
   // so a child that crashes (uncaught → exit 1) or is killed by a signal (status null) is a TOOL ERROR,
   // not silently folded in as "1 violation" making the gate look almost-green.
@@ -148,16 +165,23 @@ if (asJson) {
       out.push(`    ${row.desc}`);
       continue;
     }
+    if (row.artifactAbsent) {
+      out.push(`⊘ ${row.name} — SKIPPED BY THE CHECK ITSELF (its input is absent — this is NOT a pass)`);
+      out.push(`    reason: ${row.artifactAbsent}`);
+      out.push(`    ${row.desc}`);
+      continue;
+    }
     if (row.skipped) { out.push(`⊘ ${row.name} — SKIPPED (heavy; pass --full to run)`); out.push(`    ${row.desc}`); continue; }
     if (row.error) { out.push(`⚠ ${row.name} — TOOL ERROR: ${row.why}${row.stderr ? " — " + row.stderr : ""}`); continue; }
     out.push(`${row.violations === 0 ? "✓" : "✗"} ${row.name} — ${row.violations} violation(s)`);
     out.push(`    ${row.desc}`);
     if (row.totalLine) out.push(`    ${row.totalLine}`);
   }
-  const ran = CHECKS.length - toolErrors - skippedHeavy - skippedCrossRepo;
+  const ran = CHECKS.length - toolErrors - skippedHeavy - skippedCrossRepo - skippedArtifact;
   out.push(`\nTOTAL: ${total} violation(s) across ${ran} ran check(s)`
     + (skippedHeavy ? `  ·  ⊘ ${skippedHeavy} heavy skipped (--full)` : "")
     + (skippedCrossRepo ? `  ·  ⊘ ${skippedCrossRepo} cross-repo skipped (no KB here)` : "")
+    + (skippedArtifact ? `  ·  ⊘ ${skippedArtifact} artifact-absent skipped (the check skipped ITSELF)` : "")
     + (toolErrors ? `  ·  ⚠ ${toolErrors} TOOL ERROR(s)` : ""));
   // The green must state its SURFACE and its EXCLUSIONS. "CONVENTIONS GREEN ✓" over 10 of 12 checks is
   // the false green this whole file is meant not to print — a reader takes the tick as "all conventions",
@@ -166,8 +190,11 @@ if (asJson) {
     toolErrors > 0
       ? "GATE INCONCLUSIVE — a check failed to run (fix the tool error)."
       : total === 0
-        ? (skippedCrossRepo
-            ? `CONVENTIONS GREEN over ${ran}/${CHECKS.length} checks ✓ — NOT a verdict on the ${skippedCrossRepo} cross-repo check(s) above, which need the KB and are enforced in its CI.`
+        ? (skippedCrossRepo || skippedArtifact
+            ? `CONVENTIONS GREEN over ${ran}/${CHECKS.length} checks ✓ — NOT a verdict on the ${skippedCrossRepo + skippedArtifact} skipped check(s) above`
+              + (skippedCrossRepo ? ` (${skippedCrossRepo} cross-repo: need the KB, enforced in its CI)` : "")
+              + (skippedArtifact ? ` (${skippedArtifact} artifact-absent: the check's own input was missing — nothing was validated)` : "")
+              + "."
             : "CONVENTIONS GREEN ✓")
         : `CONVENTIONS HAVE VIOLATIONS — a strict gate would FAIL${soft ? " (running --soft: reported, not enforced)" : ""}.`,
   );

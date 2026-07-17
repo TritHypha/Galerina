@@ -103,17 +103,42 @@ if (process.argv.includes("--self-test")) {
   process.exit(ok ? 0 : 1);
 }
 
+// Exit codes are the contract: 0 = ran and clean · 1+ = ran and found N violations · 3 = NOTHING TO
+// VALIDATE (skipped). 3 is reserved so no caller can arithmetic its way from "skipped" to "clean".
+const EXIT_NOTHING_TO_VALIDATE = 3;
+
 // ── validate the committed graph ───────────────────────────────────────────────────────────────
 if (!existsSync(GRAPH)) {
   // The graph JSON is a ~3MB GENERATED artifact (gitignored; the CLI dist is not committed) so it is
   // absent in a build-free checkout. Absence means "no graph to validate here", NOT "the graph is
-  // corrupt" — so this validate-IF-PRESENT audit SKIPS cleanly. It is NOT fail-open: a PRESENT graph
-  // is always validated fail-closed (below); only the nothing-to-validate case skips. Run it after
+  // corrupt" — so this validate-IF-PRESENT audit SKIPS. It is NOT fail-open: a PRESENT graph is always
+  // validated fail-closed (below); only the nothing-to-validate case skips. Run it after
   // `galerina graph` (locally / pre-commit / a build-full CI), where it has a graph to check.
+  //
+  // ★ 2026-07-17 — THIS BLOCK USED TO PRINT `VIOLATIONS: 0` AND EXIT 0. That is byte-identical to what
+  // the ran-and-clean path prints (:135–137). To any caller, "I skipped" and "I ran and found nothing"
+  // were THE SAME EVENT: same exit code, same machine-readable line, differing only by a parenthetical
+  // in English prose. Consequence, measured by R&D: RD-0121 (dangling edges · duplicate ids · stale
+  // sourcePaths · dependency cycles) HAS NEVER VALIDATED ANYTHING IN CI — not once — and the umbrella's
+  // summary counted it among the "9 ran check(s)" on the first green `conventions` in eight days.
+  //
+  // The proof that this was an interface defect and not a subtlety: graph-all.mjs already regexed THIS
+  // FUNCTION'S PROSE (`/nothing to validate|not present/`) to recover the fact the exit code destroyed.
+  // One caller knew, one didn't, nothing reconciled them — and an English log string had silently become
+  // a protocol, so rewording this line would have turned a skip into a reported "0 violations".
+  //
+  // So the skip is now a DISTINCT, MACHINE-READABLE signal and there is deliberately NO `VIOLATIONS:`
+  // line: a caller that does not understand SKIPPED must NOT be able to read this as a clean zero. It
+  // will see a missing VIOLATIONS line and fail closed as a TOOL ERROR — loud and wrong-but-visible
+  // beats silent and wrong. Exit 3 is reserved for nothing-to-validate (0 = clean, 1+ = violations).
+  //
+  // Cause B was the same dependency — a check needing a build artifact, declared in a build-free job —
+  // and it was caught in eight days BECAUSE IT WENT RED. This one goes GREEN, and survived since the day
+  // it was written. A check that fails loudly gets fixed; a check that skips quietly survives forever.
   console.log(`[graph-integrity] ${GRAPH} not present (generated artifact) — nothing to validate; run \`galerina graph\` first.`);
-  console.log("VIOLATIONS: 0");
-  console.log("TOTAL: 0 graph-integrity violation(s) (skipped — no generated graph present)");
-  process.exit(0);
+  console.log(`SKIPPED: no generated graph at ${GRAPH} — nothing to validate (run \`galerina graph\` first)`);
+  console.log("TOTAL: SKIPPED graph-integrity — NOT a verdict on the graph, which was not read.");
+  process.exit(EXIT_NOTHING_TO_VALIDATE);
 }
 let graph;
 try { graph = JSON.parse(readFileSync(GRAPH, "utf8")); }
