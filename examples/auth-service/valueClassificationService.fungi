@@ -34,6 +34,20 @@ pure flow requiresEncryption(classification: Int) -> Bool
   return classification >= 2
 }
 
+;; Validates an untrusted type name against the recognised value-sensitivity vocabulary before it drives
+;; a classification decision. A pure classifier only PROPAGATES taint; a validating gate that admits none
+;; but the known categories clears it — validate untrusted input before it drives a decision.
+;; Pure — no runtime authority / no effects.
+pure flow validateTypeName(typeName: String) -> String
+{
+  if typeName.contains("medical") { return "medical" }
+  if typeName.contains("financial") { return "financial" }
+  if typeName.contains("pii") { return "pii" }
+  if typeName.contains("email") { return "email" }
+  if typeName.contains("public") { return "public" }
+  return ""
+}
+
 ;; Classifies request data into a governed value-sensitivity class and its redaction/encryption needs; permitted because the untrusted type name is trapped-on-empty and the derived classification redacted before the audit write.
 ;; V_DPM capability required: network.inbound, audit.write
 // @cause  [POST /value/classify] -> HTTP route invokes this governed endpoint with a type name.
@@ -46,7 +60,9 @@ contract {
 {
   unsafe let typeName: String = request.jsonBody.typeName
   trap typeName == "" : ERR_EMPTY_TYPE_NAME
-  let classification: Int = classifyValue(typeName)
+  ;; validate the untrusted type name before it drives the classification — the gate clears the taint
+  let validTypeName: String = validateTypeName(typeName)
+  let classification: Int = classifyValue(validTypeName)
   let needsRedact: Bool = requiresRedaction(classification)
   let encrypt: Bool = requiresEncryption(classification)
   let retClassification: Int = classification

@@ -78,6 +78,29 @@ contract {
   }
 }
 
+;; Validate an untrusted HTTP method against the allowed set before it drives dispatch — admit only the
+;; recognised verbs, returning a constant (never the raw input). Validate untrusted input before it
+;; drives a decision; a pure lookup only propagates taint. Pure — no runtime authority / no effects.
+pure flow validateMethod(method: String) -> String
+{
+  if method == "POST" { return "POST" }
+  if method == "GET" { return "GET" }
+  return ""
+}
+
+;; Validate an untrusted request path against the registered route allowlist — admit only known paths,
+;; returning a constant. Pure — no runtime authority / no effects.
+pure flow validatePath(path: String) -> String
+{
+  if path == "/auth/verify" { return "/auth/verify" }
+  if path == "/audit/write" { return "/audit/write" }
+  if path == "/capability/resolve" { return "/capability/resolve" }
+  if path == "/stdlib/demo" { return "/stdlib/demo" }
+  if path == "/health" { return "/health" }
+  if path == "/rate-status" { return "/rate-status" }
+  return ""
+}
+
 // The governed route dispatcher -- makes routing decisions and audits them
 ;; Accepts an incoming HTTP request, resolves the route, and returns a dispatch decision; permitted because the untrusted method and path are trapped-on-empty and redacted before the audit write.
 ;; V_DPM capability required: network.inbound, audit.write
@@ -107,7 +130,10 @@ contract {
 
   trap rawMethod == "" : ERR_EMPTY_HTTP_METHOD
   trap rawPath == "" : ERR_EMPTY_PATH
-  let resolvedFlow: String = resolveRoute(rawMethod, rawPath)
+  ;; validate the untrusted method + path before they drive the dispatch decision — the gates clear the taint
+  let validMethod: String = validateMethod(rawMethod)
+  let validPath: String = validatePath(rawPath)
+  let resolvedFlow: String = resolveRoute(validMethod, validPath)
   let profile: String = flowGovernanceProfile(resolvedFlow)
   let denied: Bool = profile == "denied"
 

@@ -35,9 +35,6 @@
     "examples/auth-service/proofVerifierService.fungi": [
       "FUNGI-VALUESTATE-004"
     ],
-    "examples/auth-service/routeDispatcherService.fungi": [
-      "FUNGI-VALUESTATE-004"
-    ],
     "examples/auth-service/routingPolicyService.fungi": [
       "FUNGI-VALUESTATE-004"
     ],
@@ -48,9 +45,6 @@
       "FUNGI-VALUESTATE-004"
     ],
     "examples/auth-service/typeRegistryService.fungi": [
-      "FUNGI-VALUESTATE-004"
-    ],
-    "examples/auth-service/valueClassificationService.fungi": [
       "FUNGI-VALUESTATE-004"
     ],
     "packages-galerina/galerina-core-logic/examples/compute-mix-throughput-benchmark.fungi": [
