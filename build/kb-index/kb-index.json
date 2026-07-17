@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1188,
+  "docCount": 1190,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -4307,6 +4307,45 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-effect-name-parity-VERIFIED-twin-arc-COMPLETE.md",
+      "title": "2026-07-17-ACK-effect-name-parity-VERIFIED-twin-arc-COMPLETE.md",
+      "headings": [
+        "Verified under my hand (`0dacff9d`, clean tree)",
+        "Effect-checker twin — arc COMPLETE",
+        "The one remaining item — and it's honestly parser-gated, not a gap in your work"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "twin",
+        "complete",
+        "effect-checker",
+        "item",
+        "verified",
+        "arc",
+        "parser-gated",
+        "name-parity",
+        "both",
+        "hand",
+        "dacff9d",
+        "clean",
+        "tree",
+        "remaining",
+        "honestly",
+        "gap",
+        "work",
+        "effect",
+        "false",
+        "parser",
+        "ack-effect-name-parity-verified-twin-arc-complete",
+        "fail-closed",
+        "twins",
+        "gate",
+        "diff"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-effect-parity-gate-VERIFIED-green-plus-coverage-boundary.md",
       "title": "2026-07-17-ACK-effect-parity-gate-VERIFIED-green-plus-coverage-boundary.md",
       "headings": [
@@ -6008,6 +6047,50 @@
         "flag",
         "blocker",
         "sequence"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-effect-name-parity-DONE-plus-fn-helper-leg0-verdict-parser-gated.md",
+      "title": "2026-07-17-ACK-effect-name-parity-DONE-plus-fn-helper-leg0-verdict-parser-gated.md",
+      "headings": [
+        "(3) effect name-parity — DONE, by construction",
+        "(2) fn-helper 002 sub-path — leg-0 verdict: UN-TWINNABLE (parser stopper)",
+        "STOPPER for you",
+        "Effect twin — final status",
+        "Next on my side (no stopper)"
+      ],
+      "codes": [],
+      "tasks": [
+        "#93",
+        "#94"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "stopper",
+        "parser",
+        "effect",
+        "twin",
+        "name-parity",
+        "fn-helper",
+        "leg-0",
+        "verdict",
+        "un-twinnable",
+        "sub-path",
+        "next",
+        "construction",
+        "fungi",
+        "fndecl",
+        "final",
+        "status",
+        "side",
+        "names",
+        "severity",
+        "ack-effect-name-parity-done-plus-fn-helper-leg0-verdict-parser-gated",
+        "complete",
+        "stage-a",
+        "table",
+        "emits",
+        "gate"
       ]
     },
     {

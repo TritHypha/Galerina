@@ -106,6 +106,46 @@ export function nameParityViolations(twinCodes, twinNames, srcNames) {
   return out;
 }
 
+// ── severity-parity leg — one-code = one-SEVERITY where Stage-A is unambiguous ───────────────────
+// A code the twin emits at a DIFFERENT severity than Stage-A is a latent divergence a name/emit-set
+// check can't see: a warning mirrored as an error over-blocks valid programs; an error mirrored as a
+// warning under-blocks (the dangerous direction). Severity is derived from the emit OBJECT, brace-
+// bounded (`[^{}]` never crosses an object boundary — so no cross-object mis-attribution, the fragility
+// R&D flagged), collecting ALL severities seen per code. Parity is asserted ONLY where Stage-A is
+// SINGLE-valued: a code with >1 Stage-A severity is CONDITIONAL (e.g. FUNGI-TIER-001 =
+// `enforceTierFloor ? "error" : "warning"`) and exempt — reported, not failed; a severity set via a
+// const/spread (no inline `severity:`) simply isn't extracted → exempt (sound: never assert on what we
+// can't read, so no false failure). This is the third parity leg after emit-set ⊆ and name-parity.
+
+// code -> Set<severity> from an emit object, in both field orders. Anchored on the object's opening `{`
+// with NO brace between it and the code+severity pair (`[^{}]` can't cross an object boundary, so no
+// cross-object mis-attribution). We deliberately do NOT anchor the trailing `}`: Stage-A diag objects
+// carry template-literal message/suggestedFix fields whose `${…}` braces sit AFTER severity, so a
+// closing-brace anchor would fail to match and make the whole leg vacuous. code+name+severity always
+// precede those templates, so matching just up to severity is both sufficient and brace-safe.
+export function severityMap(src) {
+  const m = {};
+  const add = (code, sev) => { if (m[code] === undefined) m[code] = new Set(); m[code].add(sev); };
+  for (const x of src.matchAll(/\{[^{}]*?code:\s*"(FUNGI-[A-Z0-9]+-\d+)"[^{}]*?severity:\s*"([a-z]+)"/g)) add(x[1], x[2]);
+  for (const x of src.matchAll(/\{[^{}]*?severity:\s*"([a-z]+)"[^{}]*?code:\s*"(FUNGI-[A-Z0-9]+-\d+)"/g)) add(x[2], x[1]);
+  return m;
+}
+// codes where the twin's single severity disagrees with Stage-A's single severity. Conditional (>1
+// Stage-A severity) or unextracted (0) codes are exempt. Returns {code, twin, stageA}.
+export function severityParityViolations(twinCodes, twinSev, srcSev) {
+  const out = [];
+  for (const c of twinCodes) {
+    const sa = srcSev[c];
+    const tw = twinSev[c];
+    if (sa === undefined || sa.size !== 1) continue;   // no Stage-A severity, or conditional → exempt
+    if (tw === undefined || tw.size !== 1) continue;   // twin has no single emitted severity here → skip
+    const saV = [...sa][0];
+    const twV = [...tw][0];
+    if (saV !== twV) out.push({ code: c, twin: twV, stageA: saV });
+  }
+  return out;
+}
+
 // ── self-test ─────────────────────────────────────────────────────────────────
 if (process.argv.includes("--self-test")) {
   const tcSrc = `
@@ -139,7 +179,15 @@ if (process.argv.includes("--self-test")) {
   const ecSn = sourceNameMap(`code: "FUNGI-EFFECT-006", name: "DENY_ONLY_EFFECT"\ncode: "FUNGI-EFFECT-005", name: "BROAD_ALIAS_USED"`);
   const ecNv = nameParityViolations(["FUNGI-EFFECT-006", "FUNGI-EFFECT-005"], ecTn, ecSn);
   assert(ecNv.length === 1 && ecNv[0].code === "FUNGI-EFFECT-005" && ecNv[0].kind === "squat", "effect name-parity: detects a 005 squat, passes the 006 match");
-  console.log("twin-emit-parity self-test: 11/11 ok");
+  // severity-parity: derive code→severity from brace-bounded emit objects; assert only where Stage-A is
+  // single-valued (a conditional code with two literal severities — the TIER-001 class — is exempt).
+  const twSev = severityMap(`diags.append({ code: "FUNGI-EFFECT-005", message: m, severity: "warning" })\n{ code: "FUNGI-EFFECT-006", severity: "error", message: m }`);
+  assert(twSev["FUNGI-EFFECT-005"] !== undefined && [...twSev["FUNGI-EFFECT-005"]][0] === "warning", "severityMap: code-before-severity");
+  assert(twSev["FUNGI-EFFECT-006"] !== undefined && [...twSev["FUNGI-EFFECT-006"]][0] === "error", "severityMap: severity-before-code (reverse order)");
+  const saSev = severityMap(`{ code: "FUNGI-EFFECT-005", severity: "error" }\n{ code: "FUNGI-COND-001", severity: "error" }\n{ code: "FUNGI-COND-001", severity: "warning" }`);
+  const sv = severityParityViolations(["FUNGI-EFFECT-005", "FUNGI-COND-001"], twSev, saSev);
+  assert(sv.length === 1 && sv[0].code === "FUNGI-EFFECT-005" && sv[0].twin === "warning" && sv[0].stageA === "error", "severity-parity: detects the 005 skew, exempts the conditional COND-001");
+  console.log("twin-emit-parity self-test: 12/12 ok");
   process.exit(0);
 }
 function assert(ok, what) { if (!ok) { console.error(`self-test FAIL: ${what}`); process.exit(1); } }
@@ -187,12 +235,16 @@ const ecFrontier = [...ecEmits].filter((c) => /^FUNGI-EFFECT-/.test(c) && !ecTwi
 const ecTwinNames = twinNameMap(ecTwinSrc);
 const ecCheckerNames = sourceNameMap(ecCheckerSrc);
 const ecNameViol = nameParityViolations(ecTwin, ecTwinNames, ecCheckerNames);
+// severity-parity for the effect twin: where Stage-A's severity is single-valued, the twin must match.
+const ecTwinSev = severityMap(ecTwinSrc);
+const ecCheckerSev = severityMap(ecCheckerSrc);
+const ecSevViol = severityParityViolations(ecTwin, ecTwinSev, ecCheckerSev);
 
 const asJson = process.argv.includes("--json");
 if (asJson) {
-  console.log(JSON.stringify({ twinEmits: twin.length, falseDifferentials: bad, nameParityViolations: nameViol, typeFrontier, otherFamilies, otherPassFrontier: otherPass, effectTwinEmits: ecTwin.length, effectFalseDifferentials: ecBad, effectNameParityViolations: ecNameViol, effectFrontier: ecFrontier }, null, 1));
+  console.log(JSON.stringify({ twinEmits: twin.length, falseDifferentials: bad, nameParityViolations: nameViol, typeFrontier, otherFamilies, otherPassFrontier: otherPass, effectTwinEmits: ecTwin.length, effectFalseDifferentials: ecBad, effectNameParityViolations: ecNameViol, effectSeverityParityViolations: ecSevViol, effectFrontier: ecFrontier }, null, 1));
 } else {
-  console.log(`twin-emit-parity: type-twin ${twin.length} codes · ${bad.length} false diff · ${nameViol.length} name-parity viol · effect-twin ${ecTwin.length} codes · ${ecBad.length} false diff · ${ecNameViol.length} name-parity viol`);
+  console.log(`twin-emit-parity: type-twin ${twin.length} codes · ${bad.length} false diff · ${nameViol.length} name-parity viol · effect-twin ${ecTwin.length} codes · ${ecBad.length} false diff · ${ecNameViol.length} name-parity viol · ${ecSevViol.length} severity-parity viol`);
   for (const c of bad) console.log(`  ⚠ FALSE DIFFERENTIAL ${c} — no emit call-site in type-checker.ts (twin flags what the checker never does)`);
   if (bad.length === 0) console.log(`  ✅ twin-emitted ⊆ type-checker-emitted (no false differential)`);
   for (const v of nameViol) console.log(`  ⚠ NAME SQUAT ${v.code} — twin name '${v.twin}' ≠ Stage-A name '${v.stageA}' (one-code=one-name; a code mirrored at the wrong meaning)`);
@@ -205,7 +257,9 @@ if (asJson) {
   if (ecBad.length === 0) console.log(`  ✅ effect twin (${ecTwin.length} FUNGI-EFFECT-* codes) ⊆ effect-checker-emitted (no false differential)`);
   for (const v of ecNameViol) console.log(`  ⚠ NAME SQUAT ${v.code} — effect twin name '${v.twin}' ≠ Stage-A name '${v.stageA}' (one-code=one-name; a code mirrored at the wrong meaning)`);
   if (ecNameViol.length === 0) console.log(`  ✅ effect name-parity: every effect twin code's name == Stage-A's (no semantic squat)`);
+  for (const v of ecSevViol) console.log(`  ⚠ SEVERITY SKEW ${v.code} — effect twin severity '${v.twin}' ≠ Stage-A severity '${v.stageA}' (an error-as-warning under-blocks; a warning-as-error over-blocks)`);
+  if (ecSevViol.length === 0) console.log(`  ✅ effect severity-parity: every effect twin code's severity == Stage-A's where single-valued (conditional codes exempt)`);
   console.log(`  effect frontier (${ecFrontier.length} FUNGI-EFFECT-* codes the twin does not yet mirror): ${ecFrontier.join(" ") || "none — the effect-checker twin is COMPLETE"}`);
 }
-process.exit(bad.length === 0 && nameViol.length === 0 && ecBad.length === 0 && ecNameViol.length === 0 ? 0 : 3);
+process.exit(bad.length === 0 && nameViol.length === 0 && ecBad.length === 0 && ecNameViol.length === 0 && ecSevViol.length === 0 ? 0 : 3);
 }

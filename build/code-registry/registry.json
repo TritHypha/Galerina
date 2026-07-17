@@ -1,9 +1,9 @@
 {
   "generatedFrom": "build/code-index/code-index.json",
-  "total": 682,
+  "total": 683,
   "counts": {
     "ref": 175,
-    "inline": 163,
+    "inline": 164,
     "phantom": 111,
     "live": 131,
     "referenced": 94,
@@ -2363,6 +2363,20 @@
       "docs": 2
     },
     {
+      "code": "FUNGI-COND-001",
+      "family": "COND",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [],
+      "severities": [
+        "error"
+      ],
+      "defs": 0,
+      "emits": 1,
+      "tests": 0,
+      "docs": 0
+    },
+    {
       "code": "FUNGI-CONFIG-001",
       "family": "CONFIG",
       "namespace": "FUNGI",
@@ -3070,7 +3084,7 @@
         "error"
       ],
       "defs": 1,
-      "emits": 2,
+      "emits": 4,
       "tests": 46,
       "docs": 8
     },
@@ -3083,10 +3097,11 @@
         "DENY_ONLY_EFFECT"
       ],
       "severities": [
-        "error"
+        "error",
+        "warning"
       ],
       "defs": 1,
-      "emits": 3,
+      "emits": 4,
       "tests": 20,
       "docs": 14
     },

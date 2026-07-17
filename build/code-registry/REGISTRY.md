@@ -9,7 +9,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | status | count | meaning |
 |---|---|---|
 | live | 131 | emitted with an exported constant |
-| inline | 163 | emitted, NO exported constant (R4 — Stage F) |
+| inline | 164 | emitted, NO exported constant (R4 — Stage F) |
 | referenced | 94 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 8 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
 | phantom | 111 | doc-only mention, not in source (drift — DOC-004) |
@@ -251,6 +251,12 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-COMPUTE-006 | phantom | — | — |
 | FUNGI-COMPUTE-007 | phantom | — | — |
 
+### COND (1)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-COND-001 | inline | — | error |
+
 ### CONFIG (30)
 
 | code | status | name(s) | severity |
@@ -360,7 +366,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-EFFECT-003 | inline | EFFECT_BOUNDARY_VIOLATION | error |
 | FUNGI-EFFECT-004 | inline | UNKNOWN_EFFECT | error |
 | FUNGI-EFFECT-005 | live | BROAD_ALIAS_USED / DENY_ONLY_EFFECT | warning/error |
-| FUNGI-EFFECT-006 | live | DENY_ONLY_EFFECT | error |
+| FUNGI-EFFECT-006 | live | DENY_ONLY_EFFECT | error/warning |
 | FUNGI-EFFECT-007 | inline | OVERDECLARED_EFFECT | warning |
 | FUNGI-EFFECT-008 | inline | PRIVILEGED_EFFECT_ON_PLAIN_FLOW | warning |
 | FUNGI-EFFECT-009 | inline | NON_CANONICAL_EFFECT | error |
