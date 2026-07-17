@@ -15,6 +15,7 @@
 //   FUNGI-TYPE-020  ShadowedBinding            — binding shadows outer-scope name (warning)
 //   FUNGI-TYPE-021  NonExhaustiveMatch         — match missing arm(s)
 //   FUNGI-TYPE-022  UnreachablePattern         — arm after wildcard or exhausted set
+//   FUNGI-TYPE-032  InvalidCurrencyTag         — Money<CCY> tag is not a known ISO-4217 code (RD-0349 I1)
 //   FUNGI-NAME-002  DuplicateName              — same name declared twice in same scope
 //
 // Implemented (continued):
@@ -48,6 +49,12 @@ import {
   tensorDimensionCountsCompatible,
 } from "./type-registry.js";
 import { KNOWN_DOMAIN_TYPES } from "./package-type-registry.js";
+import { MONEY_UNIT_TAGS } from "./unit-registry.generated.js";
+
+// RD-0349 I1: the pinned ISO-4217 currency set — the SAME generated table the runtime `Money.of`
+// enforces (stdlib.ts). A Money<CCY> whose tag is not here now fails at COMPILE time (FUNGI-TYPE-032),
+// not only at runtime. The table is generated from the KB snapshot; its drift gate keeps it in sync.
+const MONEY_UNIT_SET: ReadonlySet<string> = new Set<string>(MONEY_UNIT_TAGS);
 
 // ---------------------------------------------------------------------------
 // R5A: isBuiltInType — unified built-in type check (TypeId hot-path + BUILT_IN_TYPES fallback)
@@ -2362,10 +2369,54 @@ class TypeChecker {
     for (let i = 0; i < args.length; i++) {
       const trimmed = (args[i] ?? "").trim();
       if (trimmed === "") continue;
-      if ((argKinds?.[i] ?? "type") !== "type") continue; // declared payload position
+      const argKind = argKinds?.[i] ?? "type";
+      // RD-0349 I1: a Money currency tag is a payload position (never a type name), so the loop
+      // skips type-recursion for it — but it is NOT unvalidated: it must be a known ISO-4217 code.
+      if (argKind === "tag" && base === "Money") this.checkMoneyCurrencyTag(trimmed, location);
+      if (argKind !== "type") continue; // declared payload position
       if (/^[\d"'\[]/.test(trimmed)) continue; // literal / quoted tag / shape literal
       this.checkTypeRef(trimmed, location);
     }
+  }
+
+  // ── RD-0349 I1: compile-time currency-tag validation ──────────────────────
+  // Money<CCY>'s tag must be a known ISO-4217 code (the MONEY_UNIT_SET the runtime `Money.of` uses).
+  // A typo'd or invented code (Money<GPB>, Money<BANANAS>) previously compiled clean and was caught
+  // only at runtime, if the value ever flowed through Money.of — this closes G1/G2's compile half.
+  // Metals (XAU) and reserved codes (XXX/XTS) are (correctly) absent from the admissible set, so they
+  // reject here too; their SPECIFIC "use Commodity<XAU>" routing waits on Commodity<T> (RD-0350 C1).
+  // Reuses the module-level levenshtein for the "did you mean" hint.
+  private checkMoneyCurrencyTag(rawTag: string, location: SourceLocation | undefined): void {
+    const tag = rawTag.replace(/^["']|["']$/g, "").trim(); // bare or quoted
+    if (tag === "" || MONEY_UNIT_SET.has(tag)) return;
+    // Rank so the likely typo leads: a single adjacent transposition (GPB↔GBP) reads as ONE human typo
+    // but standard levenshtein scores it 2 — tie it with distance-1 so it sorts ahead of the noise of
+    // unrelated distance-2 codes.
+    const lt = tag.toLowerCase();
+    const rank = (c: string): number => {
+      const lc = c.toLowerCase();
+      const d = levenshtein(lc, lt);
+      if (d <= 1 || lc.length !== lt.length) return d;
+      for (let k = 0; k + 1 < lt.length; k++) {
+        if (lt.slice(0, k) + lt[k + 1] + lt[k] + lt.slice(k + 2) === lc) return 1;
+      }
+      return d;
+    };
+    const near = MONEY_UNIT_TAGS
+      .map((c) => [c, rank(c)] as const)
+      .filter(([, d]) => d <= 2)
+      .sort((a, b) => a[1] - b[1])        // closest first, so the intended code leads
+      .slice(0, 3)
+      .map(([c]) => c);
+    const hint = near.length ? ` Did you mean ${near.join(", ")}?` : "";
+    this.diagnostics.push(makeTCDiag(
+      "FUNGI-TYPE-032",
+      "INVALID_CURRENCY_TAG",
+      `Money<${tag}>: '${tag}' is not a known ISO-4217 currency code.${hint}`,
+      location,
+      `A Money currency tag must be an ISO-4217 alphabetic code (e.g. Money<GBP>, Money<USD>).${hint}`,
+      near.length === 1 ? `Money<${near[0]}>` : undefined,
+    ));
   }
 
   // ── Fuzzy suggestion ──────────────────────────────────────────────────────

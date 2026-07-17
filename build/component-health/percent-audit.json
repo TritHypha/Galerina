@@ -3,7 +3,7 @@
   "provenance": {
     "available": true,
     "branch": "main",
-    "sha": "e7c683f8",
+    "sha": "a1d2b340",
     "detached": false,
     "dirty": true
   },
@@ -277,7 +277,7 @@
         {
           "item": "Value-unit types (RD-0349)",
           "state": "building",
-          "detail": "I2/I3/I4 done (I4: ONE runtime unit table — generated constructors + deny-by-default Money.of, G2+G5 closed) · I5/I6 queued · I1 OWNER-GATE CLEARED (ISO-4217 snapshot pinned in KB data/iso-4217/, 280 entries, hash-recorded) → remainder = a generator run + drift gate (buildable, no longer owner-blocked); no float bridge"
+          "detail": "I2/I3/I4 done (I4: ONE runtime unit table — generated constructors + deny-by-default Money.of, G2+G5 closed) · I5/I6 queued · I1 OWNER-GATE CLEARED (ISO-4217 snapshot pinned in KB data/iso-4217/, 280 entries, hash-recorded) → remainder = the compile-time tag-validation + fuzzy-suggestion rungs NOW BUILT (2026-07-18 — type-checker imports MONEY_UNIT_TAGS; FUNGI-TYPE-032 rejects Money<BANANAS>/Money<GPB>/Money<XAU>/Money<XXX> at COMPILE, transposition-aware 'did you mean GBP', 6 regression tests, doc-drift+diagnostic-codes+twin-parity green) → I1 = 3/6; remaining rungs = `unit` schema escape · B1 reserved-name gate · B0 shadowing check; metals/reserved SPECIFIC Commodity<T> routing waits on RD-0350 C1; no float bridge"
         },
         {
           "item": "Package Standard + pub ladder",
