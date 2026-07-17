@@ -28,26 +28,15 @@
 import { readFileSync, writeFileSync, readdirSync, mkdirSync, existsSync, statSync, copyFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { WORK_EQUIVALENCE } from "./work-equivalence.mjs";
 
 const ROOT = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 const RESULTS = join(ROOT, "results");
 const HIST = join(RESULTS, "history");
 
-// Lanes where the .fungi source preserves recursion/loop shape but elides the
-// heap allocation the benchmark family is named for (see each benchmark.fungi
-// header). Cross-runtime throughput for these lanes is shape-parity data, NOT
-// an allocation comparison.
-export const WORK_EQUIVALENCE = {
-  // `kind` distinguishes WHY a lane is not a cross-runtime signal (RD-0446):
-  //  - "elided": the WASM/fungi lane does LESS work than node/rust (allocation elided → scalar binds / count-only).
-  //    The flow-local bump-arena (RD-0446 §a) makes it work-equivalent, after which its shape-only tag drops.
-  //  - "fused-vs-materialised": a REAL optimisation difference (fusion vs materialisation), NOT elided work. Kept +
-  //    labelled as such (RD-0446 §b reframe), never cited as a raw ratio; the true work-equivalent number needs a
-  //    materialised variant (recommended follow-on).
-  "record-allocation": { kind: "elided", lanes: ["wasm", "galerinaGoverned", "galerinaManifest", "galerinaPassive"], note: "fungi lane binds scalars (WASM: register locals) — node/rust allocate real records" },
-  "binary-trees": { kind: "elided", lanes: ["wasm", "galerinaGoverned", "galerinaManifest", "galerinaPassive"], note: "COUNT-ONLY form (documented in-corpus) — heap node elided, recursion shape + checksum preserved" },
-  "collection-pipeline": { kind: "fused-vs-materialised", lanes: ["wasm", "galerinaGoverned", "galerinaManifest", "galerinaPassive"], note: "fused while-loop (documented in-corpus) — node materializes filter/map arrays; a REAL optimisation, not elided work" },
-};
+// WORK_EQUIVALENCE (the shape-only lane map) now lives in ./work-equivalence.mjs
+// so the watcher (here) and the public report (compare.mjs) share one definition
+// and cannot drift. Imported above.
 
 // canonical throughput extractor — same chain as report.mjs/compare.mjs
 export const tput = (r) => r ? (r.normThroughput ?? r.operationsPerSecond ?? r.iterationsPerSecond ?? r.additionsPerSecond ?? r.attemptsPerSecond ?? r.callsPerSecond ?? r.runsPerSecond ?? null) : null;

@@ -11,6 +11,7 @@ import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { isComparable as specComparable, benchmarkSpec } from "./throughput-units.mjs";
+import { shapeOnlyLane, isShapeOnlyBench, WORK_EQUIVALENCE } from "./work-equivalence.mjs";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const dataPath  = join(__dirname, "..", "results", "latest.json");
@@ -313,6 +314,15 @@ for (const bench of data) {
     }
   }
 
+  // Shape-only + the winner is a NATIVE runtime → govVsWinner is a cross-runtime shape-parity
+  // artifact (not work-equivalent), the same class §1.5 marks. Within-Galerina ratios (winner is a
+  // Galerina lane) stay — they compare the same elided shape, interp vs compiled — but the row is
+  // still tagged shape-only in its note below.
+  const winnerIsNative = !["wasm", "galerinaPassive", "galerinaGoverned", "galerinaManifest"].includes(winnerRt);
+  if (gov && winnerSpeed && winnerIsNative && shapeOnlyLane(bench.benchmark, "galerinaGoverned")) {
+    govVsWinner = "◇ shape-only vs native";
+  }
+
   let govVsPython = gov ? "n/a (no Python)" : "N/A — governed ⟨interp⟩ not run";
   if (gov && py) {
     const r = gov / py;
@@ -340,6 +350,7 @@ for (const bench of data) {
   } else if (winnerRt === "python") {
     note = "Python wins (C-backed lib or small-N setup overhead)";
   }
+  if (isShapeOnlyBench(bench.benchmark)) note += `${note ? " · " : ""}◇ shape-only (see §1.5 note)`;
 
   console.log(`| **${bench.benchmark}** | **${winnerLabel}** ${deviceEmoji} | **${speedStr}** | ${govStr} | ${govVsWinner} | ${govVsPython} | ${note} |`);
 }
@@ -498,34 +509,58 @@ for (const bench of data) {
 
   if (!wasm && !governed) continue;
 
-  const wasmVsRust = wasm && bestRust ? trafficLightLabel(wasm, bestRust) : "—";
-  const wasmVsNode = wasm && node     ? trafficLightLabel(wasm, node)     : "—";
-  const govVsRust  = governed && bestRust ? trafficLightLabel(governed, bestRust) : "—";
-  const govVsNode  = governed && node     ? trafficLightLabel(governed, node)     : "—";
+  // Shape-only lanes (record-allocation / binary-trees / collection-pipeline): the Galerina lane
+  // elides the heap work the benchmark is named for, so a cross-runtime `N× slower/faster` against
+  // native is a measurement ARTIFACT, not a speed result. Show an explicit marker in the VISIBLE
+  // cell — never a ⚫/🔴 the honest note then contradicts (the report used to print ⚫ 20953× on the
+  // same row it called "native speed"). bench-guard.mjs reads the SAME map (work-equivalence.mjs),
+  // so the watcher and this report cannot disagree about which lanes are shape-only. (RD-0446)
+  const wasmSO = shapeOnlyLane(bench.benchmark, "wasm");
+  const govSO  = shapeOnlyLane(bench.benchmark, "galerinaGoverned");
+  const soCell = (so) => so.kind === "fused-vs-materialised" ? "◇ fused-form" : "◇ shape-only";
 
-  // Implication: is WASM matching native? is governed usable for serving?
+  const wasmVsRust = wasmSO ? soCell(wasmSO) : (wasm && bestRust ? trafficLightLabel(wasm, bestRust) : "—");
+  const wasmVsNode = wasmSO ? soCell(wasmSO) : (wasm && node     ? trafficLightLabel(wasm, node)     : "—");
+  const govVsRust  = govSO  ? soCell(govSO)  : (governed && bestRust ? trafficLightLabel(governed, bestRust) : "—");
+  const govVsNode  = govSO  ? soCell(govSO)  : (governed && node     ? trafficLightLabel(governed, node)     : "—");
+
+  // Implication. Shape-only benchmarks state the CITABLE figure (work-equivalent WASM = 47–94% of
+  // native) instead of a per-lane ratio nobody can attribute to real work — the loud artifact must
+  // never be the headline the row's own note contradicts.
   let impl = "";
-  if (wasm && bestRust) {
-    const wr = wasm / bestRust;
-    if (wr >= 0.9)       impl = "WASM = native speed";
-    else if (wr >= 2.0)  impl = "WASM beats Rust";
-    else if (wr >= 0.5)  impl = "WASM near native";
-    else if (wr >= 0.1)  impl = "WASM usable";
-    else                 impl = "WASM lags native";
-  }
-  if (governed && node) {
-    const gr = governed / node;
-    const sep = impl ? " | " : "";
-    if (gr >= 0.9)       impl += sep + "governed ≈ Node";
-    else if (gr >= 0.1)  impl += sep + "governed usable";
-    else if (gr >= 0.01) impl += sep + "governed slow";
-    else                 impl += sep + "governed needs sync";
+  if (isShapeOnlyBench(bench.benchmark)) {
+    impl = WORK_EQUIVALENCE[bench.benchmark].kind === "fused-vs-materialised"
+      ? "fused vs materialised — real optimisation, NOT a raw cross-runtime ratio (see note)"
+      : "shape-only — heap work elided, NOT work-equivalent; cite 47–94% of native on work-equivalent compute";
+  } else {
+    if (wasm && bestRust) {
+      const wr = wasm / bestRust;
+      if (wr >= 0.9)       impl = "WASM = native speed";
+      else if (wr >= 2.0)  impl = "WASM beats Rust";
+      else if (wr >= 0.5)  impl = "WASM near native";
+      else if (wr >= 0.1)  impl = "WASM usable";
+      else                 impl = "WASM lags native";
+    }
+    if (governed && node) {
+      const gr = governed / node;
+      const sep = impl ? " | " : "";
+      if (gr >= 0.9)       impl += sep + "governed ≈ Node";
+      else if (gr >= 0.1)  impl += sep + "governed usable";
+      else if (gr >= 0.01) impl += sep + "governed slow";
+      else                 impl += sep + "governed needs sync";
+    }
   }
 
   const wasmStr  = wasm     ? fmtT(wasm)     : "pending";
   const govStr   = governed ? fmtT(governed) : "—";
   console.log(`| ${bench.benchmark} | ${wasmStr} | ${wasmVsRust} | ${wasmVsNode} | ${govStr} | ${govVsRust} | ${govVsNode} | ${impl} |`);
 }
+console.log("\n> **◇ shape-only** — the Galerina lane elides the heap work this benchmark is named for (record-allocation");
+console.log("> binds scalars; binary-trees is count-only; collection-pipeline fuses the loop). A cross-runtime `N× slower`");
+console.log("> on these rows is shape-parity data, **not** a work-equivalent speed result — the debunked \"996% of native\"");
+console.log("> class. The citable figure is **work-equivalent WASM = 47–94% of native**. **◇ fused-form** marks a *real*");
+console.log("> optimisation difference (fusion vs materialisation), shown but never cited as a raw ratio. Raw throughput");
+console.log("> cells on these rows are the measured shape rate, not an allocation/materialisation rate.");
 
 // ── 2. Memory usage ────────────────────────────────────────────────────────────
 
