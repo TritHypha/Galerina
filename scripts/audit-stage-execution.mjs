@@ -53,16 +53,25 @@ const STAGES = [
     body: "let p = parseFlows(toks) let r = checkFlowEffects(p.flows) return r.flowCount" },
   { file: "governance-verifier.fungi", entry: "verifyGovernance", expect: "traps", debt: "#100",
     body: "let p = parseFlows(toks) let r = verifyGovernance(p.flows) return r.passed + r.failed" },
+  // gir-emitter's ON-chain entry is emitGIRModule(flows: Array<Auto>), NOT emitBodyGIR(Array<Stmt>). At
+  // gir-emitter.fungi:157-160 it does flows.get(i) then fd.name off the erased Auto payload — the identical
+  // #100 shape as the three above, hitting the same wat-emitter.ts:1340 trap. It was in NOT_SWEPT with a
+  // reason that named the wrong entry point (emitBodyGIR), so the swept edge was drawn one entry too narrow
+  // and the reported debt (3) under-stated the real one. Swept now; the driver returns g.pureCount (an Int
+  // field on GIRModule) so a dead-code-eliminated call can't read as "runs".
+  { file: "gir-emitter.fungi", entry: "emitGIRModule", expect: "traps", debt: "#100",
+    body: "let p = parseFlows(toks) let g = emitGIRModule(p.flows) return g.pureCount" },
 ];
 // Shrink-only. Raise it and you are declaring a new stage broken; that needs a human sentence, not a bump.
-const TRAP_BASELINE = 3;
+// 4, not 3: gir-emitter joined the sweep (see the entry above). This is not "a new stage broke" — it is a
+// known casualty that the previous boundary excluded; sweeping it makes the debt measured, not declared-around.
+const TRAP_BASELINE = 4;
 
 // ★ NOT SWEPT — declared, never silently omitted. A gate that quietly covers 4 of 7 while its green says
 // nothing is the surface problem this whole file is about.
 const NOT_SWEPT = [
   { file: "lexer.fungi", why: "exercised by every probe below — tokenize runs first in each driver; a lex failure surfaces as -1" },
-  { file: "gir-emitter.fungi", why: "emitBodyGIR takes Array<Stmt>, not the flows array — off this chain; needs its own driver" },
-  { file: "runtime.fungi", why: "not a pipeline stage" },
+  { file: "runtime.fungi", why: "has the #100 construct (envLookup L214-231 reads b.name/b.val off an Array<Auto> payload, reached by every variable reference via runProgram→evalGIRExpr→envLookup) but it traps at EXECUTION time, not COMPILE time — a different surface from this compile-pipeline sweep; same root, same un-erasure fix. Construct verified in source, not run here (no execution driver)." },
 ];
 // Stages CANNOT share a module: `appendAll` is defined in both type-checker and governance-verifier
 // (`paramNames` in type-checker and gir-emitter), the compiler accepts duplicate FLOW names, and it only
