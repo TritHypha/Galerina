@@ -62,20 +62,24 @@ describe("Phase 47: routingPolicyService.fungi", () => {
   after(async () => server?.close());
   const post = async (body) => { const r = await fetch(`http://127.0.0.1:${PORT}/routing/resolve`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)}); return JSON.parse(await r.text()); };
 
+  // Flags arrive as strings on the wire and are validated via validateBoolStr before decode (the #76
+  // Bool-taint contract: a Bool value can't be value-validated, so the gate sits on the string form —
+  // R&D adjudication 2026-07-17, replacing the reverted validateFlag launder). The routing LOGIC is
+  // unchanged; only the flag encoding is "true"/"false" strings.
   it("pure flow (no effects) → wasm tier", async () => {
-    const r = await post({ effectCount: 0, hasAI: false, isSafetyCritical: false });
+    const r = await post({ effectCount: 0, hasAI: "false", isSafetyCritical: "false" });
     assert.equal(r.tier, "wasm");
     assert.equal(r.governanceClass, 2);
   });
 
   it("AI flow → gpu tier", async () => {
-    const r = await post({ effectCount: 1, hasAI: true, isSafetyCritical: false });
+    const r = await post({ effectCount: 1, hasAI: "true", isSafetyCritical: "false" });
     assert.equal(r.tier, "gpu");
     assert.equal(r.governanceClass, 3);
   });
 
   it("safety critical → enclave tier", async () => {
-    const r = await post({ effectCount: 2, hasAI: false, isSafetyCritical: true });
+    const r = await post({ effectCount: 2, hasAI: "false", isSafetyCritical: "true" });
     assert.equal(r.tier, "enclave");
     assert.equal(r.governanceClass, 4);
   });
