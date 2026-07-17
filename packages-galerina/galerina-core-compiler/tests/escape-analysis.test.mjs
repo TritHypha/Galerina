@@ -24,6 +24,9 @@ import {
   computeAliases,
   collectRecordAllocSites,
   assertFlowLocal,
+  collectRecordFieldTypes,
+  collectRecordLiterals,
+  windowIsArenaSafe,
 } from "../dist/index.js";
 
 const FLOW_KINDS = new Set([
@@ -34,9 +37,9 @@ const FLOW_KINDS = new Set([
   "governedFlowDecl",
 ]);
 
-/** Parse a .fungi source and return the body block of the flow named `flowName` (default "f").
+/** Parse a .fungi source; return { ast, body } for the flow named `flowName` (default "f").
  *  (Sources may declare helper flows too, e.g. NEG-2's `g` — so select by name, not first-found.) */
-function bodyOf(source, flowName = "f") {
+function parseOf(source, flowName = "f") {
   const { ast, diagnostics } = parseProgram(source, "escape-test.fungi");
   const errs = (diagnostics ?? []).filter((d) => d.severity === "error");
   assert.equal(errs.length, 0, `unexpected parse errors: ${errs.map((e) => e.message).join(" | ")}`);
@@ -50,8 +53,10 @@ function bodyOf(source, flowName = "f") {
   assert.ok(flow, `no flow named '${flowName}' found in source`);
   const body = (flow.children ?? []).find((c) => c.kind === "block");
   assert.ok(body, "flow has no block body");
-  return body;
+  return { ast, body };
 }
+
+const bodyOf = (source, flowName = "f") => parseOf(source, flowName).body;
 
 describe("escape-analysis — recordEscapes (RD-0446 §a / #128, fail-closed)", () => {
   it("NEG-1: a returned record ESCAPES (return r)", () => {
@@ -93,5 +98,67 @@ describe("escape-analysis — recordEscapes (RD-0446 §a / #128, fail-closed)", 
     assert.throws(() => assertFlowLocal("r", escBody), /escapes its flow/, "guard fires on an escaping record");
     const localBody = bodyOf(`@version 1\nrecord Rec { v }\npure flow f() -> Int {\n  let r = Rec { v: 1 }\n  let x = r.v\n  return x\n}`);
     assert.doesNotThrow(() => assertFlowLocal("r", localBody), "guard passes a flow-local record");
+  });
+});
+
+// ── the WINDOW gate — the SUFFICIENT half (R&D #128 finding, 2026-07-17) ──────
+// recordEscapes is NECESSARY but field-type-blind and only sees let/mut-BOUND records,
+// so an ANONYMOUS nested literal slips through. These assert the window gate closes
+// that hole BY CONSTRUCTION (default-OFF), not by benchmark luck.
+describe("escape-analysis — windowIsArenaSafe (the sufficient half, fail-closed)", () => {
+  const CASE_A =
+    `@version 1\nrecord Inner { a: Int }\nrecord Box { item: Inner }\n` +
+    `pure flow f() -> Inner {\n  let b = Box { item: Inner { a: 1 } }\n  return b.item\n}`;
+
+  it("field types are read from the record decls (recordDecl → paramDecl 'name: Type')", () => {
+    const { ast } = parseOf(CASE_A);
+    const ft = collectRecordFieldTypes(ast);
+    assert.equal(ft.get("Inner")?.get("a"), "Int", "Inner.a is Int");
+    assert.equal(ft.get("Box")?.get("item"), "Inner", "Box.item is a RECORD type");
+  });
+
+  it("collectRecordLiterals sees the ANONYMOUS nested literal that collectRecordAllocSites misses", () => {
+    const { body } = parseOf(CASE_A);
+    assert.deepEqual(collectRecordAllocSites(body), ["b"], "only the NAMED record is an alloc site");
+    assert.equal(collectRecordLiterals(body).length, 2, "but there are TWO literals — Box AND the anonymous Inner");
+  });
+
+  it("R&D #128 CASE A: recordEscapes says b is flow-local, yet the window gate REFUSES it (the hole is closed)", () => {
+    const { ast, body } = parseOf(CASE_A);
+    // The per-record predicate alone is NOT sufficient — this is exactly the hole:
+    assert.equal(recordEscapes("b", body), false, "b really is flow-local by the per-record contract");
+    // …but b.item hands out the anonymous Inner's pointer, so the WINDOW must not be reclaimed:
+    assert.equal(
+      windowIsArenaSafe(body, collectRecordFieldTypes(ast)), false,
+      "Box.item is record-typed → window NOT arena-safe → no per-iteration reset → no #128",
+    );
+  });
+
+  it("the rewritten record-allocation shape (scalar-only fields, in a loop) IS arena-safe", () => {
+    const { ast, body } = parseOf(
+      `@version 1\nrecord Rec { v: Int }\npure flow f() -> Int {\n  mut total: Int = 0\n  mut i: Int = 0\n` +
+        `  while i < 10 {\n    let r = Rec { v: i }\n    total = total + r.v\n    i = i + 1\n  }\n  return total\n}`,
+    );
+    assert.equal(windowIsArenaSafe(body, collectRecordFieldTypes(ast)), true,
+      "all-scalar record in an intra-flow loop → reclaimable → alloc-count==N reachable");
+  });
+
+  it("a non-proven-scalar field type (String) closes the gate (fail-closed, not guessed)", () => {
+    const { ast, body } = parseOf(
+      `@version 1\nrecord S { s: String }\npure flow f() -> Int {\n  let r = S { s: "x" }\n  return 1\n}`,
+    );
+    assert.equal(windowIsArenaSafe(body, collectRecordFieldTypes(ast)), false,
+      "String is a handle/pointer, not a proven-scalar slot → gate closed");
+  });
+
+  it("an unknown/unresolvable record type closes the gate (DEFAULT-OFF)", () => {
+    const { body } = parseOf(`@version 1\nrecord Rec { v: Int }\npure flow f() -> Int {\n  let r = Rec { v: 1 }\n  return r.v\n}`);
+    assert.equal(windowIsArenaSafe(body, new Map()), false,
+      "no field-type info → cannot PROVE clean → gate closed");
+  });
+
+  it("a window with no record literals is vacuously safe (nothing to reclaim unsafely)", () => {
+    const { ast, body } = parseOf(`@version 1\npure flow f() -> Int {\n  let x: Int = 1\n  return x\n}`);
+    assert.equal(windowIsArenaSafe(body, collectRecordFieldTypes(ast)), true);
   });
 });

@@ -100,6 +100,10 @@ export {
   computeAliases,
   collectRecordAllocSites,
   assertFlowLocal,
+  collectRecordFieldTypes,
+  collectRecordLiterals,
+  windowIsArenaSafe,
+  type RecordFieldTypes,
 } from "./escape-analysis.js";
 
 // §5a–5d — `.gate` front-end parser (NEW, separate from the `.fungi` parser; same ParseResult shape)

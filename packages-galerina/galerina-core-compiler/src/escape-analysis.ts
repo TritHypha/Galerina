@@ -176,3 +176,112 @@ export function assertFlowLocal(recordName: string, flowBody: AstNode): void {
     );
   }
 }
+
+// =============================================================================
+// The WINDOW gate — the SUFFICIENT half of the #128 argument.
+// =============================================================================
+// `recordEscapes` above answers "does this NAMED record's handle outlive the flow".
+// That is NECESSARY but NOT SUFFICIENT to reclaim a per-iteration window, because
+// it is field-type-BLIND and only classifies let/mut-BOUND records. An ANONYMOUS
+// nested record literal therefore slips through (R&D finding, reproduced live):
+//
+//     let b = Box { item: Inner { a: 1 } }     return b.item
+//     → allocSites = ["b"]  (the anonymous `Inner` is untracked)
+//     → recordEscapes("b") = false  (b really is flow-local)
+//     → yet `b.item` hands OUT the anonymous Inner's POINTER, which lives in b's window.
+//
+// Naming the inner fixes it (it becomes a tracked alloc site and escapes on its own
+// → host ABI). The anonymous one has no name to classify, so nothing puts it on the
+// host ABI. This is LATENT under B2's per-INVOCATION reset (the arena survives to the
+// next top-level call) and only bites the per-ITERATION reset — reclaiming a window
+// that built an anonymous nested record whose pointer left the iteration → dangling (#128).
+// `assertFlowLocal` cannot catch it: it is per-NAMED-record, and `b` genuinely does
+// not escape — the escaper is the untracked inner.
+//
+// The invariant a reclaim must satisfy is therefore about the WINDOW, not one record:
+//   reclaim a window ONLY IF every allocation in it — named AND anonymous-nested —
+//   is proven not to outlive the window.
+// `windowIsArenaSafe` is that gate, and it is DEFAULT-OFF: a window the analysis
+// cannot PROVE clean keeps its records on the non-reset B2 path. That makes the hole
+// provably unreachable rather than merely unhit by the current benchmarks.
+
+/**
+ * Field types this analysis can PROVE are stored by VALUE in a record slot (an
+ * immediate i32), so reading such a field hands out a copy — never an arena pointer.
+ *
+ * Deliberately MINIMAL and fail-closed. Record slots are `WAT_REC_FIELD_SIZE` bytes
+ * written with `i32.store`, so only types that are genuinely an immediate i32 qualify.
+ * Everything else — `String` (a handle/pointer), `Float`/`Int64` (do not fit a 4-byte
+ * slot), arrays, `Option<…>`, and every record type — is NOT proven scalar and closes
+ * the gate. Widening this set requires grounding that type's ACTUAL field lowering
+ * first; guessing here re-opens #128.
+ */
+const PROVEN_SCALAR_FIELD_TYPES: ReadonlySet<string> = new Set(["Int", "Bool"]);
+
+/** Map of record type name → (field name → declared field type), from the `record` decls. */
+export type RecordFieldTypes = ReadonlyMap<string, ReadonlyMap<string, string>>;
+
+/**
+ * Build the field-type table from a parsed program: `record Box { item: Inner }`
+ * parses as `recordDecl{value:"Box", children:[paramDecl{value:"item: Inner"}]}`.
+ */
+export function collectRecordFieldTypes(programAst: AstNode): RecordFieldTypes {
+  const types = new Map<string, Map<string, string>>();
+  const walk = (n: AstNode | undefined): void => {
+    if (n === undefined) return;
+    if (n.kind === "recordDecl" && n.value !== undefined && n.value !== "") {
+      const fields = new Map<string, string>();
+      for (const p of n.children ?? []) {
+        if (p.kind !== "paramDecl") continue;
+        const raw = p.value ?? "";
+        const name = raw.split(":")[0]!.trim();
+        const ty = raw.includes(":") ? raw.split(":").slice(1).join(":").trim() : "";
+        if (name !== "") fields.set(name, ty);
+      }
+      types.set(n.value, fields);
+    }
+    for (const c of n.children ?? []) walk(c);
+  };
+  walk(programAst);
+  return types;
+}
+
+/** EVERY record literal in a subtree — named alloc sites AND anonymous nested ones. */
+export function collectRecordLiterals(node: AstNode): AstNode[] {
+  const out: AstNode[] = [];
+  const walk = (n: AstNode | undefined): void => {
+    if (n === undefined) return;
+    if (isRecordLiteral(n)) out.push(n);
+    for (const c of n.children ?? []) walk(c);
+  };
+  walk(node);
+  return out;
+}
+
+/**
+ * windowIsArenaSafe — may a per-iteration release window reclaim EVERYTHING allocated
+ * inside `windowNode`? FAIL-CLOSED / DEFAULT-OFF.
+ *
+ * True only when every record literal in the window (named AND anonymous-nested) has a
+ * RESOLVABLE declared type whose fields are ALL proven-scalar. Any of the following
+ * closes the gate: an untyped/unresolvable literal, an unknown record type, a record
+ * type with a record/array/String/other non-proven-scalar field, or zero known fields.
+ *
+ * Why "all fields scalar" rather than "no escaping record-typed field READ": a scalar-only
+ * record cannot hand out an interior pointer at all, so it needs no per-field read
+ * analysis — the strongest, simplest sufficient condition. A window that fails this
+ * keeps its records on the non-reset B2 path (correct, just not arena-optimised).
+ */
+export function windowIsArenaSafe(windowNode: AstNode, fieldTypes: RecordFieldTypes): boolean {
+  const literals = collectRecordLiterals(windowNode);
+  for (const lit of literals) {
+    const typeName = (lit as { typeName?: string }).typeName;
+    if (typeName === undefined || typeName === "") return false; // anonymous/untyped → cannot prove
+    const fields = fieldTypes.get(typeName);
+    if (fields === undefined || fields.size === 0) return false; // unknown type → cannot prove
+    for (const ty of fields.values()) {
+      if (!PROVEN_SCALAR_FIELD_TYPES.has(ty)) return false;       // any non-proven-scalar field → closed
+    }
+  }
+  return true; // vacuously true for a window with no record literals (nothing to reclaim unsafely)
+}
