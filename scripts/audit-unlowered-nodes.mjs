@@ -62,6 +62,37 @@ function countUnlowered(wat) {
   return hits;
 }
 
+// ── run-path scoping (R&D's R2->R3 bridge) ───────────────────────────────────
+// Count un-lowered nodes STATICALLY REACHABLE from a stage's R2 entry flow (vs the module-wide total).
+// run-path is a SUBSET of module-wide; run-path>0 means the entry can reach a node the emitter declined — a
+// latent or live R2 trap. The rendered WAT has ZERO call_indirect (asserted), so the direct-call graph
+// (`(call $x)` edges) is COMPLETE and reachability is EXACT, not a lower bound. Funcs are segmented by their
+// `(func $name` declaration, keeping the FIRST per name (the definition; later occurrences are export refs) —
+// no paren-matching, robust against the `(; … emitter cannot lower … ;)` block comments the markers live
+// inside (those never contain `(call $` or `(func $`).
+function runPathCount(wat, entry) {
+  if (/call_indirect/.test(wat)) return { err: "call_indirect present — the direct-call graph is incomplete" };
+  const starts = [...wat.matchAll(/\(func\s+(\$[^\s()]+)/g)];
+  const seg = new Map();
+  for (let i = 0; i < starts.length; i++) {
+    const body = wat.slice(starts[i].index, i + 1 < starts.length ? starts[i + 1].index : wat.length);
+    if (!seg.has(starts[i][1])) seg.set(starts[i][1], body); // first occurrence = the definition
+  }
+  const entryFn = "$" + entry;
+  if (!seg.has(entryFn)) return { err: `entry ${entryFn} not found among ${seg.size} funcs` };
+  const reach = new Set();
+  const stack = [entryFn];
+  while (stack.length) {
+    const f = stack.pop();
+    if (reach.has(f) || !seg.has(f)) continue;
+    reach.add(f);
+    for (const m of seg.get(f).matchAll(/\(call\s+(\$[^\s()]+)/g)) if (!reach.has(m[1])) stack.push(m[1]);
+  }
+  let count = 0;
+  for (const f of reach) count += (seg.get(f).match(new RegExp(MARKER, "g")) || []).length;
+  return { count, reachable: reach.size, funcs: seg.size };
+}
+
 const strip = (p) => {
   let s = readFileSync(join(SH, p), "utf8");
   if (s.charCodeAt(0) === 0xFEFF) s = s.slice(1);
@@ -92,8 +123,15 @@ function stageSource(file) {
 // flow the emitter can't fully lower, off the R2 run-path, which is why R2 still shows them RUN). The heavy
 // ones are type-checker / governance-verifier / runtime. runtime is included even though R2 excludes it: R2
 // is a RUN-time sweep and runtime traps at execution, but its un-lowered NODES are visible at EMIT time here.
-const STAGES = ["lexer.fungi", "parser.fungi", "type-checker.fungi", "effect-checker.fungi",
-  "governance-verifier.fungi", "gir-emitter.fungi", "runtime.fungi"];
+const STAGES = [
+  { file: "lexer.fungi", entry: "tokenize" },
+  { file: "parser.fungi", entry: "parseFlows" },
+  { file: "type-checker.fungi", entry: "checkFlows" },
+  { file: "effect-checker.fungi", entry: "checkFlowEffects" },
+  { file: "governance-verifier.fungi", entry: "verifyGovernance" },
+  { file: "gir-emitter.fungi", entry: "emitGIRModule" },
+  { file: "runtime.fungi", entry: "runProgram" },
+];
 
 // ★ MEASURED, not assumed. R&D's grounding expected this to be roughly "the #100 sites". Running it
 // falsified that: it is 385, module-wide, ALL #128 (unresolved member/name/op/node) — the WAT emitter's
@@ -103,6 +141,12 @@ const STAGES = ["lexer.fungi", "parser.fungi", "type-checker.fungi", "effect-che
 // run-path. Deterministic across runs. Shrink-only: a RISE = a new un-lowerable construct (fix the node); a
 // FALL = real lowering progress (lower the number to lock it in). Fixing #100 removes only its subset.
 const UNLOWERED_BASELINE = 385;
+
+// ★ RUN-PATH baseline — un-lowered nodes REACHABLE from each stage's R2 entry (a subset of module-wide: most
+// un-lowered nodes sit in funcs the entry never calls). Shrink-only, MEASURED. The (run-path, module-wide)
+// pair per stage is R&D's R2->R3 bridge: run-path>0 ⇒ the entry reaches a node the emitter declined (an R2
+// trap, latent or live); module-wide>0 ⇒ won't byte-parity at R3 even where run-path is 0.
+const RUNPATH_BASELINE = 142; // MEASURED. Per stage: lexer 0 · parser 1 · type-checker 16 · effect-checker 9 · governance-verifier 6 · gir-emitter 10 · runtime 100. lexer(0,>0) is the pure "runs but won't byte-parity" row; the 385-142=243 gap is un-lowered nodes in funcs unreachable from the entries.
 
 // ── #2-law self-test fixtures — generated from ONE template, element type the only variable ──────────────
 const mkFixture = (elemType, flowName) => `@version 1
@@ -128,6 +172,24 @@ contract { intent { "read a record field off an Array<${elemType}> payload" } }
 const FIRE = mkFixture("Auto", "getAutoField");     // erased element type — a field read must NOT lower
 const CONTROL = mkFixture("Item", "getTypedField"); // concrete element type — the same read must lower
 
+// ── run-path #2 control fixture: two entries — one REACHES a trapping helper, one only a clean helper —
+// both in a module whose module-wide un-lowered count is >0. Proves run-path is a strict subset, with its OWN
+// control (not the module-wide fixture) because the property under test changed (R&D's note).
+const RP_FIXTURE = `@version 1
+record Item { name: String  size: Int }
+pure flow trapHelper(items: Array<Auto>) -> Int
+contract { intent { "an Array<Auto> field read leaves an un-lowered node" } }
+{ mut t: Int = 0  let e = items.get(0)  match e { Some(it) => { t = it.size } _ => { t = 0 } }  return t }
+pure flow cleanHelper(items: Array<Item>) -> Int
+contract { intent { "a concrete-type field read fully lowers" } }
+{ mut t: Int = 0  let e = items.get(0)  match e { Some(it) => { t = it.size } _ => { t = 0 } }  return t }
+pure flow entryReaches(xs: Array<Auto>) -> Int
+contract { intent { "calls the trapping helper" } }
+{ return trapHelper(xs) }
+pure flow entryClean(xs: Array<Item>) -> Int
+contract { intent { "calls only the clean helper" } }
+{ return cleanHelper(xs) }`;
+
 async function selfTest(L) {
   const checks = [];
   const fire = renderWat(L, FIRE, "ul-fire");
@@ -152,6 +214,15 @@ async function selfTest(L) {
   const kinds = [...new Set(fireHits)].map((k) => `#${k}`).join(", ");
   checks.push([`the un-lowered node is classified by the emitter's task tag (got: ${kinds || "none"})`,
     fireHits.length > 0 && fireHits.every((k) => k !== "?")]);
+  // run-path #2 control — its own fixture (the property under test changed from the module-wide detector).
+  const rpFix = renderWat(L, RP_FIXTURE, "ul-rp");
+  const rpMW = rpFix.wat ? countUnlowered(rpFix.wat).length : 0;
+  const rpReach = rpFix.wat ? runPathCount(rpFix.wat, "entryReaches") : { err: "no wat" };
+  const rpClean = rpFix.wat ? runPathCount(rpFix.wat, "entryClean") : { err: "no wat" };
+  checks.push(["★ run-path FIRES: an entry calling a trapping helper reaches the un-lowered node",
+    !rpReach.err && rpReach.count > 0]);
+  checks.push(["★ run-path SILENT: an entry calling only a clean helper reaches 0 — module-wide still > 0",
+    !rpClean.err && rpClean.count === 0 && rpMW > 0]);
 
   let ok = true;
   for (const [name, pass] of checks) { console.log(`  ${pass ? "✅" : "❌"} ${name}`); if (!pass) ok = false; }
@@ -171,16 +242,18 @@ const L = await import(`file:///${DIST.replace(/\\/g, "/")}`);
 if (process.argv.includes("--self-test")) await selfTest(L);
 
 const rows = [];
-let total = 0;
+let total = 0, runPathTotal = 0;
 const byKind = {};
-for (const file of STAGES) {
+for (const { file, entry } of STAGES) {
   const r = renderWat(L, stageSource(file), `ul-${file}`);
-  if (r.error) { rows.push({ file, error: r.error, count: 0, kinds: {} }); continue; }
+  if (r.error) { rows.push({ file, entry, error: r.error, count: 0, runPath: null, kinds: {} }); continue; }
   const hits = countUnlowered(r.wat);
   const kinds = {};
   for (const k of hits) { kinds[k] = (kinds[k] ?? 0) + 1; byKind[k] = (byKind[k] ?? 0) + 1; }
-  rows.push({ file, count: hits.length, kinds });
+  const rp = runPathCount(r.wat, entry);
+  rows.push({ file, entry, count: hits.length, runPath: rp.err ? null : rp.count, rpErr: rp.err ?? null, kinds });
   total += hits.length;
+  if (!rp.err) runPathTotal += rp.count;
 }
 
 const violations = [];
@@ -190,17 +263,24 @@ for (const r of renderErr) violations.push(`${r.file}: could not render (${r.err
 if (total > UNLOWERED_BASELINE) violations.push(`${total} un-lowered node(s), baseline ${UNLOWERED_BASELINE} — a NEW un-lowerable construct was introduced. Shrink-only: fix the node, never raise the number.`);
 if (total < UNLOWERED_BASELINE && !renderErr.length) violations.push(`${total} un-lowered node(s), baseline ${UNLOWERED_BASELINE} — the count FELL (likely #100 progress). Lower UNLOWERED_BASELINE to ${total} to lock the win in.`);
 
+// run-path resolution is fail-closed: an unresolved call graph (call_indirect, or a missing entry) is NOT a 0.
+const rpErr = rows.filter((r) => !r.error && r.rpErr);
+for (const r of rpErr) violations.push(`${r.file}: run-path unresolved (${r.rpErr}) — reachability graph incomplete; fail-closed`);
+if (!rpErr.length && !renderErr.length && runPathTotal > RUNPATH_BASELINE) violations.push(`run-path un-lowered ${runPathTotal}, baseline ${RUNPATH_BASELINE} — a new REACHABLE un-lowerable node (a fresh R2 trap risk). Shrink-only.`);
+if (!rpErr.length && !renderErr.length && runPathTotal < RUNPATH_BASELINE) violations.push(`run-path un-lowered ${runPathTotal}, baseline ${RUNPATH_BASELINE} — reachable debt FELL. Lower RUNPATH_BASELINE to ${runPathTotal}.`);
+
 if (asJson) {
-  console.log(JSON.stringify({ rows, total, baseline: UNLOWERED_BASELINE, byKind, violations }, null, 2));
+  console.log(JSON.stringify({ rows, total, baseline: UNLOWERED_BASELINE, runPathTotal, runPathBaseline: RUNPATH_BASELINE, byKind, violations }, null, 2));
   process.exit(violations.length);
 }
 
 console.log(`\n  un-lowered-node ratchet — WAT nodes the emitter fail-closed instead of lowering (marker: "${MARKER}")\n`);
-console.log("  " + "stage".padEnd(28) + "un-lowered  kinds");
-console.log("  " + "-".repeat(64));
+console.log("  " + "stage".padEnd(28) + "run-path".padEnd(10) + "module".padEnd(9) + "kinds");
+console.log("  " + "-".repeat(72));
 for (const r of rows) {
   const kinds = r.error ? `render error: ${r.error}` : Object.entries(r.kinds).map(([k, n]) => `#${k}×${n}`).join(" ") || "—";
-  console.log("  " + r.file.padEnd(28) + String(r.error ? "?" : r.count).padEnd(12) + kinds);
+  const rpDisp = r.error ? "?" : r.rpErr ? "ERR" : String(r.runPath);
+  console.log("  " + r.file.padEnd(28) + rpDisp.padEnd(10) + (r.error ? "?" : String(r.count)).padEnd(9) + kinds);
 }
 console.log("");
 if (violations.length) {
@@ -208,10 +288,11 @@ if (violations.length) {
   for (const v of violations) console.error(`    ${v}`);
   console.error("");
 } else {
-  console.log(`  ✅ unlowered-nodes: ${total} un-lowered node(s) across ${STAGES.length} stages, matching the declared baseline (${UNLOWERED_BASELINE}).`);
+  console.log(`  ✅ unlowered-nodes: run-path ${runPathTotal} (baseline ${RUNPATH_BASELINE}) · module-wide ${total} (baseline ${UNLOWERED_BASELINE}) un-lowered node(s) across ${STAGES.length} stages.`);
+  console.log(`     ★ R2->R3 BRIDGE (run-path, module-wide): run-path = nodes REACHABLE from the stage's R2 entry (a live/latent R2 trap); module-wide = every flow's nodes (the R3 byte-parity precondition). run-path ⊆ module-wide; the ${total - runPathTotal}-node gap is un-lowered nodes in funcs the entry never calls — dead from R2, still emitted, so they block R3. A (0, >0) stage RUNS but won't byte-parity (today: lexer).`);
   console.log(`     by task tag: ${Object.entries(byKind).map(([k, n]) => `#${k}×${n}`).join(" · ") || "none"} — ALL #128 (unresolved member/name/op/node). #100's field-reads are an INDISTINGUISHABLE subset, NOT the bulk.`);
   console.log(`     surface: EMIT-time, MODULE-WIDE — every flow's un-lowered nodes, not the R2 run-path (audit-stage-execution.mjs). This is the WAT emitter's total partial-lowering debt over the self-hosted stages; fixing #100 removes only its subset.`);
 }
 console.log(`VIOLATIONS: ${violations.length}`);
-console.log(`TOTAL: ${violations.length} unlowered-nodes violation(s) · ${total} un-lowered node(s) across ${STAGES.length} stages (baseline ${UNLOWERED_BASELINE}, shrink-only)`);
+console.log(`TOTAL: ${violations.length} unlowered-nodes violation(s) · run-path ${runPathTotal}/${RUNPATH_BASELINE} · module-wide ${total}/${UNLOWERED_BASELINE} (both shrink-only)`);
 process.exit(violations.length);
