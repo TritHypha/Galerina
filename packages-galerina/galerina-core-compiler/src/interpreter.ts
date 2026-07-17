@@ -15,6 +15,7 @@ import { pureFlowCacheKey, getCachedPureFlow, setCachedPureFlow } from "./pure-f
 import { activeSinkMonitor } from "./security-sink-monitor.js";
 import { buildExecutionGraph, getOrLoadGraph, storeGraph, executionGraphCacheKey, ExecOp, type ExecutionGraph } from "./execution-graph.js";
 import { compileToBytecode, runBytecode } from "./bytecode-vm.js";
+import { canonicalHash } from "./runtime/canonicalHash.js";
 import { i32AddChecked, i32SubChecked, i32MulChecked, i32DivChecked, i32ModChecked, i32NegChecked, isI32Trap, type I32Result } from "./i32-arith.js";
 import { i64AddChecked, i64SubChecked, i64MulChecked, i64DivChecked, i64ModChecked, i64NegChecked, isI64Trap, type I64Result } from "./i64-arith.js";
 import { u64AddChecked, u64SubChecked, u64MulChecked, u64DivChecked, u64ModChecked, u64NegChecked, isU64Trap, type U64Result } from "./u64-arith.js";
@@ -3711,7 +3712,11 @@ export async function executeFlow(
     const flowIndex = buildFlowIndex(ast);
     const flowNode  = flowIndex.get(flowName);
     if (flowNode !== undefined) {
-      const sourceHash = flowName; // until hashSource is threaded through here
+      // Content-scope the cache key: hash the flow's AST, NOT its name. Keying on `flowName` alone (the old
+      // `sourceHash = flowName`) collided two source versions of one flow name — the FIRST's cached execution
+      // graph was served for the SECOND (the same class as the bytecode-cache-by-name bug, and every benchmark's
+      // entry flow is named `main`). External audit 2026-07-17, RD-0455 B.
+      const sourceHash = canonicalHash(flowNode);
       const egKey = executionGraphCacheKey(flowName, sourceHash);
       let egraph  = getOrLoadGraph(egKey);
       if (egraph === null) {

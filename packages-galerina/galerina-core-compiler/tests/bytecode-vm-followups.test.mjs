@@ -109,6 +109,27 @@ test("two distinct flows both named `main` compiled in sequence return their OWN
   assert.equal(rb, 22, "pre-fix the name-keyed cache served flow a's bytecode (returned 11) for flow b");
 });
 
+// ── Follow-up 3: the ExecutionGraph cache ALSO keyed on flow NAME (RD-0455 B, external audit 2026-07-17) ──
+// interpreter.ts used `sourceHash = flowName` → executionGraphCacheKey(name, name), so two source versions of
+// `main` collided (the first's cached graph served for the second) — the same class as Follow-up 2, in a
+// different cache. The key now folds canonicalHash(flowNode). Same repro shape: two distinct `main` flows.
+test("execution-graph cache: two distinct flows named `main` return their OWN results with the egraph fast-path", async () => {
+  clearBytecodeCache?.();
+  clearPureFlowCache?.();
+  const a = parse("pure flow main() -> Int contract { effects {} } { return 11 }", "ega.fungi");
+  const b = parse("pure flow main() -> Int contract { effects {} } { return 22 }", "egb.fungi");
+  // egraphFastPath ONLY (no pureFastPath) → the execution-graph tier, so this exercises the EGRAPH cache, not
+  // the bytecode tier (which intercepts trivial flows and has its own sourceTag-scoped cache).
+  const ra = await executeFlow("main", new Map(), a.ast, a.flows, undefined, undefined,
+    { egraphFastPath: true }, undefined, undefined);
+  const rb = await executeFlow("main", new Map(), b.ast, b.flows, undefined, undefined,
+    { egraphFastPath: true }, undefined, undefined);
+  assert.equal(ra.executionTier, "egraph", "must run on the execution-graph tier — else this test exercises nothing");
+  assert.equal(rb.executionTier, "egraph");
+  assert.equal(ra.value.value, 11);
+  assert.equal(rb.value.value, 22, "pre-fix the name-keyed execution-graph cache served flow a's graph (11) for flow b");
+});
+
 test("benchmark-runner repro: per-file `main` is isolated even when only the pure-flow cache is cleared", async () => {
   // Mirrors galerina-runner.mjs: it calls clearPureFlowCache() between benchmark files but NOT the bytecode
   // cache; every benchmark's entry flow is named `main`. Pre-fix, file B's `main` got file A's bytecode.
