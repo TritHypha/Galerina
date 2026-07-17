@@ -11,13 +11,13 @@
 
 | Metric | Count |
 |---|---|
-| Files | 17 |
+| Files | 19 |
 | Internal edges | 0 |
 | External dependencies | 6 |
 | ├─ Node core | 6 |
 | ├─ Workspace (@galerina/*) | 0 |
 | └─ Third-party | 0 |
-| Orphan files | 17 |
+| Orphan files | 19 |
 
 ## External Dependencies (the Border)
 
@@ -39,6 +39,7 @@ _none_
 No boundary violations. All external imports are within the allowlist.
 
 ## Orphaned Files
+- `src/audit-benchmark-integrity.mjs`
 - `src/audit.mjs`
 - `src/bench-guard.mjs`
 - `src/build-native.mjs`
@@ -56,6 +57,7 @@ No boundary violations. All external imports are within the allowlist.
 - `src/throughput-units.mjs`
 - `src/variance.mjs`
 - `src/wasm-runner.mjs`
+- `src/work-equivalence.mjs`
 
 ## Entry Points
 _none detected_

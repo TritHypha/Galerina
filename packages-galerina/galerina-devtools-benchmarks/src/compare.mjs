@@ -51,6 +51,17 @@ function throughput(r) {
       ?? r.iterationsPerSecond ?? r.callsPerSecond ?? r.runsPerSecond ?? null;
 }
 
+// Raw per-tier rate for the Governance table. governance-cost is comparable:false (an internal
+// govSpeed/manifestSpeed ratio, not cross-runtime), so the runner stamps normThroughput=null and the
+// cross-runtime throughput() returns null for it. The Governance table still needs the honest per-tier
+// rates to render the governed/manifest overhead factor, so read the legacy rate directly here.
+function tierRate(r) {
+  if (!r || r.error) return null;
+  if (typeof r.normThroughput === "number" && r.normThroughput > 0) return r.normThroughput;
+  return r.galerinaOpsPerSecond ?? r.warmCallsPerSecond ?? r.operationsPerSecond ?? r.additionsPerSecond
+      ?? r.attemptsPerSecond ?? r.iterationsPerSecond ?? r.callsPerSecond ?? r.runsPerSecond ?? null;
+}
+
 // Is this benchmark unit-comparable across runtimes? Any benchmark the spec marks
 // comparable:false is excluded from winner / floor claims. (matrix-multiply, tri-logic
 // and data-query were realigned to a common bulk-N path 2026-07-11 and are now included.)
@@ -430,9 +441,9 @@ for (const cls of METRIC_ORDER) {
     console.log("|---|---|---|---|---|");
     for (const bench of members) {
       const id = bench.benchmark;
-      const gov  = throughput(bench.results?.galerinaGoverned);
-      const man  = throughput(bench.results?.galerinaManifest);
-      const wasm = throughput(bench.results?.wasm);
+      const gov  = tierRate(bench.results?.galerinaGoverned);
+      const man  = tierRate(bench.results?.galerinaManifest);
+      const wasm = tierRate(bench.results?.wasm);
       const govStr  = gov  ? fmtT(gov)  : cellReason(bench, "galerinaGoverned");
       const manStr  = man  ? fmtT(man)  : cellReason(bench, "galerinaManifest");
       const wasmStr = wasm ? fmtT(wasm) : cellReason(bench, "wasm");
