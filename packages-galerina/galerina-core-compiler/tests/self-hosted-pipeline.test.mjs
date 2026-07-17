@@ -191,6 +191,17 @@ describe("self-hosted pipeline — effect + governance over the parsed body AST 
     assert.ok(codes.includes("FUNGI-EFFECT-008"), `expected 008 on f, got: ${codes.join(", ")}`);
   });
 
+  it("FUNGI-EFFECT-006: a flow declaring a deny-only effect (memory.spill), via the REAL parser", async () => {
+    // Proves 006 on the real parse: the parser produces the flow's effects [memory.spill] (leg-0), and
+    // checkFlowEffects' declared loop flags the deny-only name FIRST (Stage-A validateDeclaredEffectNames),
+    // skipping the 004 unknown-effect check for the same name.
+    const flows = await flowsFrom(`flow f() -> Int\n  contract { effects { memory.spill } }\n{ return 0 }`);
+    const r = await executeFlow("checkFlowEffects", new Map([["flows", flows]]), effect.ast);
+    const codes = codesOn(r).filter((d) => d.flowName === "f").map((d) => d.code);
+    assert.ok(codes.includes("FUNGI-EFFECT-006"), `expected 006 on f, got: ${codes.join(", ")}`);
+    assert.ok(!codes.includes("FUNGI-EFFECT-004"), `deny-only must skip 004, got: ${codes.join(", ")}`);
+  });
+
   it("governance flags a secure flow that never audits in its body", async () => {
     const flows = await flowsFrom(`secure flow charge() -> Int { dbWrite(amount)\nreturn 0 }`);
     const r = await executeFlow("checkBodyGovernance", new Map([["flows", flows]]), govern.ast);

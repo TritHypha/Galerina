@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1174,
+  "docCount": 1177,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -4252,6 +4252,47 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked.md",
+      "title": "2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked.md",
+      "headings": [
+        "1. RD-0447 — quantum simulator amplitude admission (16/16), closes RD-0445's open item",
+        "2. Remote unlock — token is fixed, but repo *creation* is still harness-blocked (owner action)",
+        "Unchanged holds (stated for the record, not asking)"
+      ],
+      "codes": [],
+      "tasks": [
+        "#143"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "owner",
+        "repo",
+        "unlock",
+        "rd-0447",
+        "quantum",
+        "amplitude",
+        "remote",
+        "action",
+        "rd-0445",
+        "simulator",
+        "token",
+        "still",
+        "admission",
+        "closes",
+        "open",
+        "item",
+        "fixed",
+        "creation",
+        "harness-blocked",
+        "push",
+        "unchanged",
+        "holds",
+        "stated",
+        "record",
+        "asking"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md",
       "title": "2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md",
       "headings": [],
@@ -5628,6 +5669,45 @@
         "pipeline",
         "extension",
         "binaryexpr"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed.md",
+      "title": "2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed.md",
+      "headings": [
+        "Your two fold-in items — both already present (verified, not assumed)",
+        "Count reconciliation (your ask)",
+        "Paths repointed (the owner's \"change the paths, leave the public folder alone\")"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "paths",
+        "myco",
+        "already",
+        "public",
+        "present",
+        "fold-in",
+        "both",
+        "repointed",
+        "folder",
+        "count",
+        "verified",
+        "reconciliation",
+        "owner",
+        "subprojects",
+        "items",
+        "assumed",
+        "ask",
+        "change",
+        "leave",
+        "alone",
+        "package",
+        "suite",
+        "galerina",
+        "version",
+        "test"
       ]
     },
     {
@@ -55999,6 +56079,7 @@
         "round-trip",
         "rd-0445",
         "executed",
+        "hardware",
         "shots",
         "cited",
         "redistributed",
@@ -56006,8 +56087,7 @@
         "raw",
         "tested",
         "real-world",
-        "validation",
-        "by-construction"
+        "validation"
       ]
     },
     {
@@ -56052,6 +56132,47 @@
         "materialised",
         "framing",
         "req"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/RD-0447-quantum-simulator-amplitude-admission-closes-rd0445-open-item.md",
+      "title": "RD-0447 — Quantum simulator amplitude admission test EXECUTED: raw `Sum|a_i|^2=1` + raw-ρ entry-level (16/16), closing the RD-0445 open follow-up",
+      "headings": [
+        "§1 Why a simulator (and why that is honest, not a fudge)",
+        "§2 What was tested (RD-0435 §6, amplitude space)",
+        "§3 The finding",
+        "§4 Honest bounds (what this does NOT show)",
+        "§5 Status"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "simulator",
+        "amplitude",
+        "rd-0445",
+        "admission",
+        "honest",
+        "sum",
+        "why",
+        "space",
+        "test",
+        "raw",
+        "entry-level",
+        "open",
+        "real",
+        "rd-0435",
+        "raw-",
+        "follow-up",
+        "status",
+        "amplitudes",
+        "states",
+        "tested",
+        "rd-0447",
+        "quantum",
+        "executed",
+        "closing",
+        "real-data"
       ]
     },
     {

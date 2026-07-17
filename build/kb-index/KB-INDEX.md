@@ -1,4 +1,4 @@
-# Galerina KB index (1174 docs)
+# Galerina KB index (1177 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -376,6 +376,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-myco-galerina-package-updates-fold-into-galerina-tools-myco.md`
 - terms: delta, upstream, myco, updates, fold, package, file, galerina-tools-myco, resolution, context, known-next, fyi, don, regression
 
+## 2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked.md`
+- tasks: #143
+- terms: owner, repo, unlock, rd-0447, quantum, amplitude, remote, action, rd-0445, simulator, token, still, admission, closes
+
 ## 2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md`
 - tasks: #20
@@ -552,6 +557,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## 2026-07-16-STOPPER-K3-blocked-on-self-hosted-parser-pivot-to-effect-checker.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-STOPPER-K3-blocked-on-self-hosted-parser-pivot-to-effect-checker.md`
 - terms: parser, verdict, flip, self-hosted, effect-checker, raw-diag, stopper, grounded, twin, sequence, after, grammar, param, recommend
+
+## 2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed.md`
+- terms: paths, myco, already, public, present, fold-in, both, repointed, folder, count, verified, reconciliation, owner, subprojects
 
 ## Core Application Model
 `../ZTF-Knowledge-Bases/core-application-model.md`
@@ -5313,6 +5322,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/RD-0446-work-equivalent-wasm-allocation-flow-local-bump-arena-for-the-shape-only-benchmark-lanes.md`
 - tasks: #128
 - terms: allocation, benchmark, bump-arena, real, model, flow-local, collection-pipeline, shape-only, loop, flow, lanes, record, arena, fail-open
+
+## RD-0447 — Quantum simulator amplitude admission test EXECUTED: raw `Sum|a_i|^2=1` + raw-ρ entry-level (16/16), closing the RD-0445 open follow-up
+`../ZTF-Knowledge-Bases/RD-0447-quantum-simulator-amplitude-admission-closes-rd0445-open-item.md`
+- terms: simulator, amplitude, rd-0445, admission, honest, sum, why, space, test, raw, entry-level, open, real, rd-0435
 
 ## Galerina AI-Friendliness — R&D Spec (2026-06-23)
 `../ZTF-Knowledge-Bases/rd-absorbed/from-galerina-r-and-d/AI-FRIENDLINESS-SPEC-2026-06-23.md`

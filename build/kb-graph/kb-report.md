@@ -1,8 +1,8 @@
 # Galerina KB Graph Report
-Generated: 2026-07-16
+Generated: 2026-07-17
 
 ## Stats
-- Docs: 1172 | Edges: 3476 | Orphans: 109 | Stale links: 0 | FUNGI codes: 748
+- Docs: 1175 | Edges: 3476 | Orphans: 112 | Stale links: 0 | FUNGI codes: 748
 
 ## Document Registry (auto-generated)
 
@@ -101,8 +101,10 @@ Generated: 2026-07-16
 | 2026-07-16-STOPPER-K3-blocked-on-self-hosted-parser-pivot-to-effect-checker.md | — | — | — | — |
 | 2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion.md | — | — | — | — |
 | 2026-07-16-UNLOCK-checker-taxonomy-20-adopt.md | — | — | — | FUNGI-EFFECT-002, FUNGI-TYPE-006 |
+| 2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed.md | — | — | — | — |
 | 2026-07-17-ACK-papers-landed-clean-declarations-block-is-owner-gated.md | — | — | — | — |
 | 2026-07-17-myco-galerina-package-updates-fold-into-galerina-tools-myco.md | — | — | — | — |
+| 2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked.md | — | — | — | — |
 | AI_INDEX.md | — | — | — | FUNGI-HW-101, FUNGI-PHOTONIC-001, FUNGI-SEC-014, FUNGI-SYNTAX-010, FUNGI-TYPE-031 |
 | ai-as-untrusted-reasoning-worker.md | — | — | — | — |
 | ai-compute-plan.md | — | — | — | — |
@@ -1056,6 +1058,7 @@ Generated: 2026-07-16
 | RD-0444-paper-review-sweep-rd0365-0443-harm-filter-verdicts-plus-published-paper-audit.md | — | — | — | — |
 | RD-0445-quantum-real-data-test-executed-tomography-admission-invariant-result.md | — | — | — | — |
 | RD-0446-work-equivalent-wasm-allocation-flow-local-bump-arena-for-the-shape-only-benchmark-lanes.md | — | — | — | — |
+| RD-0447-quantum-simulator-amplitude-admission-closes-rd0445-open-item.md | — | — | — | — |
 | rd-adversarial-verification-findings-2026-06-16.md | — | — | — | — |
 | rd-crossover-encryption-rnd.md | — | — | Merge / unified entry point. **Date:** 2026-06-16. **Posture:** grounded, cited, | FUNGI-AMD-024, FUNGI-PARSE-001, FUNGI-SUBSTRATE-001 |
 | rd-diagnostics-namespace-rnd-response.md | — | — | R&D response (2026-06-16). **Subject:** `Galerina/docs/Knowledge-Bases/galerina-diagnostic-namespace-ownership.md` | FUNGI-META-001, FUNGI-PRIVACY-00, FUNGI-SECRET-005 |
@@ -1217,6 +1220,7 @@ Docs with no inbound links from other KB docs:
 - `RD-0444-paper-review-sweep-rd0365-0443-harm-filter-verdicts-plus-published-paper-audit.md` — RD-0444 — Paper-review sweep: RD-0365 → RD-0443 (harm-filter verdicts) + audit of the published defensive papers
 - `RD-0445-quantum-real-data-test-executed-tomography-admission-invariant-result.md` — RD-0445 — Quantum real-data test EXECUTED: the RD-0435 admission invariant on real tomography data (7/7) + the physical/unphysical finding
 - `RD-0446-work-equivalent-wasm-allocation-flow-local-bump-arena-for-the-shape-only-benchmark-lanes.md` — RD-0446 — Making the shape-only allocation benchmark lanes work-equivalent: a flow-local bump-arena for real in-WASM allocation (+ the collection-pipeline framing)
+- `RD-0447-quantum-simulator-amplitude-admission-closes-rd0445-open-item.md` — RD-0447 — Quantum simulator amplitude admission test EXECUTED: raw `Sum|a_i|^2=1` + raw-ρ entry-level (16/16), closing the RD-0445 open follow-up
 - `2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed.md` — 2026-07-16-ACK-009-generics-cluster-verified-48-48-class-closed
 - `2026-07-16-ACK-014-VERIFIED-101-101-TYPE-CHECKER-TWIN-COMPLETE-plus-next-steer.md` — 2026-07-16-ACK-014-VERIFIED-101-101-TYPE-CHECKER-TWIN-COMPLETE-plus-next-steer
 - `2026-07-16-ACK-024-verified-plus-frontier-per-pass-scoping-and-025-coemission-design.md` — 2026-07-16-ACK-024-verified-plus-frontier-per-pass-scoping-and-025-coemission-design
@@ -1258,6 +1262,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-rhizo-ql-and-galerina-reusables.md` — 2026-07-16-rhizo-ql-and-galerina-reusables
 - `2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion.md` — 2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion
 - `2026-07-17-ACK-papers-landed-clean-declarations-block-is-owner-gated.md` — 2026-07-17-ACK-papers-landed-clean-declarations-block-is-owner-gated
+- `2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked.md` — 2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked
 - `2026-07-17-myco-galerina-package-updates-fold-into-galerina-tools-myco.md` — 2026-07-17-myco-galerina-package-updates-fold-into-galerina-tools-myco
 - `2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md` — 2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011
 - `2026-07-16-ACK-024-landed-plus-frontier-correction-NAME-codes-are-symbol-resolver.md` — 2026-07-16-ACK-024-landed-plus-frontier-correction-NAME-codes-are-symbol-resolver
@@ -1293,6 +1298,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-REQ-existing-shape-only-alloc-lanes-to-work-equivalent-rd0442-addendum.md` — 2026-07-16-REQ-existing-shape-only-alloc-lanes-to-work-equivalent-rd0442-addendum
 - `2026-07-16-STOPPER-K3-blocked-on-self-hosted-parser-pivot-to-effect-checker.md` — 2026-07-16-STOPPER-K3-blocked-on-self-hosted-parser-pivot-to-effect-checker
 - `2026-07-16-kb-graph-code-region-masking-stale-links-zeroed.md` — 2026-07-16-kb-graph-code-region-masking-stale-links-zeroed
+- `2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed.md` — 2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed
 
 ## Stale Links
 Links pointing to missing files:

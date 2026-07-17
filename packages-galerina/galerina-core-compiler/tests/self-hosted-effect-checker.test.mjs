@@ -418,3 +418,60 @@ describe("effect-checker.fungi — FUNGI-EFFECT-008 PRIVILEGED_EFFECT_ON_PLAIN_F
     assert.deepEqual(codesFor(diags, "f"), ["FUNGI-EFFECT-007", "FUNGI-EFFECT-008"]);
   });
 });
+
+// FUNGI-EFFECT-006 (DENY_ONLY_EFFECT, error) — a declared effect Stage-A recognises but can NEVER grant
+// (eval.execute, memory.spill; Stage-A DENY_ONLY_EFFECTS, effect-checker.ts:447). Checked FIRST in the
+// declared loop and, like Stage-A validateDeclaredEffectNames' `continue`, SKIPS 004/007/008 for that
+// effect. Grounded vs Stage-A checkFlowEffects raw diagnostics (probe): plain/secure/guarded memory.spill
+// → 006 alone; a pure flow adds 003 (pure boundary); a second, non-deny effect keeps its own checks
+// (per-effect). (RD-0412 §4, effect-checker twin, 006-frontier.)
+describe("effect-checker.fungi — FUNGI-EFFECT-006 DENY_ONLY_EFFECT", () => {
+  it("plain flow declaring a deny-only effect (memory.spill) → 006 alone (no 004/007)", async () => {
+    const { diags } = await check([
+      flow({ name: "f", kind: "flow", effects: ["memory.spill"], usedEffects: [] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-EFFECT-006"]);
+  });
+
+  it("plain flow declaring eval.execute (the other deny-only name) → 006 alone", async () => {
+    const { diags } = await check([
+      flow({ name: "f", kind: "flow", effects: ["eval.execute"], usedEffects: [] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-EFFECT-006"]);
+  });
+
+  it("a SECURE flow declaring memory.spill → 006 alone (deny-only fires on any kind)", async () => {
+    const { diags } = await check([
+      flow({ name: "f", kind: "secure", effects: ["memory.spill"], usedEffects: [] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-EFFECT-006"]);
+  });
+
+  it("a GUARDED flow declaring memory.spill → 006 alone", async () => {
+    const { diags } = await check([
+      flow({ name: "f", kind: "guarded", effects: ["memory.spill"], usedEffects: [] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-EFFECT-006"]);
+  });
+
+  it("a PURE flow declaring memory.spill → 003 + 006 (pure boundary + deny-only)", async () => {
+    const { diags } = await check([
+      flow({ name: "f", kind: "pure", effects: ["memory.spill"], usedEffects: [] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-EFFECT-003", "FUNGI-EFFECT-006"]);
+  });
+
+  it("deny-only + a used privileged effect → 006 + 008 (per-effect; deny-only doesn't mask 008)", async () => {
+    const { diags } = await check([
+      flow({ name: "f", kind: "flow", effects: ["memory.spill", "secret.read"], usedEffects: ["secret.read"] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-EFFECT-006", "FUNGI-EFFECT-008"]);
+  });
+
+  it("a KNOWN non-deny effect (database.read, used) → no 006", async () => {
+    const { diags } = await check([
+      flow({ name: "f", kind: "flow", effects: ["database.read"], usedEffects: ["database.read"] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), []);
+  });
+});

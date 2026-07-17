@@ -130,6 +130,17 @@ contract { intent { "True for an effect only a secure/guarded flow should carry 
   return false
 }
 
+// The deny-only effect set (Stage-A DENY_ONLY_EFFECTS, effect-checker.ts:447) — mirrored verbatim.
+// A recognised name that can NEVER be granted (no capability, no host import, no admission path);
+// declaring one is a design boundary, not an under-declaration to fix. (FUNGI-EFFECT-006.)
+pure flow isDenyOnly(effect: String) -> Bool
+contract { intent { "True for a deny-only effect (eval.execute, memory.spill) — recognised but never grantable." } }
+{
+  if effect == "eval.execute" { return true }
+  if effect == "memory.spill" { return true }
+  return false
+}
+
 pure flow checkPureFlowEffects(flowName: String, effectCount: Int) -> Array<Auto>
 contract {
   intent { "Pure flows must declare zero effects. Emit FUNGI-EFFECT-003 (EFFECT_BOUNDARY_VIOLATION) if any declared." }
@@ -204,31 +215,42 @@ contract {
     let deOpt = declared.get(d)
     match deOpt {
       Some(de) => {
-        if contains(known, de) == false {
-          let umsg2: String = "Effect '" + de + "' declared by flow '" + flowName + "' is not a recognised Galerina effect name"
-          diags = diags.append({ code: "FUNGI-EFFECT-004", message: umsg2, flowName: flowName, severity: "error" })
-        }
-        // Check #5 — FUNGI-EFFECT-007 (OVERDECLARED_EFFECT, warning — #20 split off -002, which keeps the transitive error): a KNOWN effect declared but
-        // never used (not in usedEffects). Mirrors the Stage-A OVERDECLARED_EFFECT advisory. Skip
-        // pure flows (a declared effect there is the 003 boundary violation) and unknown effects
-        // (already flagged 004 above), so a single fault is never double-reported.
-        if contains(known, de) {
-          if kind != "pure" {
-            if contains(uniqueUsed, de) == false {
-              let omsg: String = kind + " flow '" + flowName + "' declares effect '" + de + "' but no matching operation was observed"
-              diags = diags.append({ code: "FUNGI-EFFECT-007", message: omsg, flowName: flowName, severity: "warning" })
+        // Check #7 — FUNGI-EFFECT-006 (DENY_ONLY_EFFECT, error): a declared effect Stage-A recognises
+        // but can NEVER grant (eval.execute, memory.spill). Checked FIRST and — like Stage-A
+        // validateDeclaredEffectNames' `continue` — SKIPS the other declared-side checks (004/007/008)
+        // for this effect. Grounded vs raw Stage-A (checkFlowEffects): plain/secure/guarded memory.spill
+        // -> 006 alone; [memory.spill, secret.read] -> 006 + 008 (per-effect); a pure flow adds 003
+        // separately via checkPureFlowEffects.
+        if isDenyOnly(de) {
+          let msg6: String = "Effect '" + de + "' is deny-only: a recognised name that can never be granted — remove it, no declaration makes this flow admissible"
+          diags = diags.append({ code: "FUNGI-EFFECT-006", message: msg6, flowName: flowName, severity: "error" })
+        } else {
+          if contains(known, de) == false {
+            let umsg2: String = "Effect '" + de + "' declared by flow '" + flowName + "' is not a recognised Galerina effect name"
+            diags = diags.append({ code: "FUNGI-EFFECT-004", message: umsg2, flowName: flowName, severity: "error" })
+          }
+          // Check #5 — FUNGI-EFFECT-007 (OVERDECLARED_EFFECT, warning — #20 split off -002, which keeps the transitive error): a KNOWN effect declared but
+          // never used (not in usedEffects). Mirrors the Stage-A OVERDECLARED_EFFECT advisory. Skip
+          // pure flows (a declared effect there is the 003 boundary violation) and unknown effects
+          // (already flagged 004 above), so a single fault is never double-reported.
+          if contains(known, de) {
+            if kind != "pure" {
+              if contains(uniqueUsed, de) == false {
+                let omsg: String = kind + " flow '" + flowName + "' declares effect '" + de + "' but no matching operation was observed"
+                diags = diags.append({ code: "FUNGI-EFFECT-007", message: omsg, flowName: flowName, severity: "warning" })
+              }
             }
           }
-        }
-        // Check #6 — FUNGI-EFFECT-008 (PRIVILEGED_EFFECT_ON_PLAIN_FLOW, warning): a PLAIN flow (kind
-        // "flow", not pure/secure/guarded) declaring a privileged effect. Mirrors Stage-A checkFlowEffects
-        // (effect-checker.ts:741): the security tier is under-declared; the fix is `secure flow`. Fires
-        // on the DECLARED effect independent of usage/known-ness. Verified vs raw diagnostics:
-        // `flow f() effects { secret.read }` -> 008; secure/pure/non-privileged declarer -> no 008.
-        if kind == "flow" {
-          if isPrivilegedEffect(de) {
-            let msg8: String = "Plain flow '" + flowName + "' declares privileged effect '" + de + "'; use 'secure flow' for security-sensitive operations"
-            diags = diags.append({ code: "FUNGI-EFFECT-008", message: msg8, flowName: flowName, severity: "warning" })
+          // Check #6 — FUNGI-EFFECT-008 (PRIVILEGED_EFFECT_ON_PLAIN_FLOW, warning): a PLAIN flow (kind
+          // "flow", not pure/secure/guarded) declaring a privileged effect. Mirrors Stage-A checkFlowEffects
+          // (effect-checker.ts:741): the security tier is under-declared; the fix is `secure flow`. Fires
+          // on the DECLARED effect independent of usage/known-ness. Verified vs raw diagnostics:
+          // `flow f() effects { secret.read }` -> 008; secure/pure/non-privileged declarer -> no 008.
+          if kind == "flow" {
+            if isPrivilegedEffect(de) {
+              let msg8: String = "Plain flow '" + flowName + "' declares privileged effect '" + de + "'; use 'secure flow' for security-sensitive operations"
+              diags = diags.append({ code: "FUNGI-EFFECT-008", message: msg8, flowName: flowName, severity: "warning" })
+            }
           }
         }
       }
