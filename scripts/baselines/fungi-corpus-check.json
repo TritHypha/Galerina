@@ -8,19 +8,7 @@
     "examples/auth-service/auditWriterService.fungi": [
       "FUNGI-VALUESTATE-004"
     ],
-    "examples/auth-service/capabilityHostService.fungi": [
-      "FUNGI-VALUESTATE-004"
-    ],
-    "examples/auth-service/capabilityResolverService.fungi": [
-      "FUNGI-VALUESTATE-004"
-    ],
     "examples/auth-service/economicsRouterService.fungi": [
-      "FUNGI-VALUESTATE-004"
-    ],
-    "examples/auth-service/effectCheckerService.fungi": [
-      "FUNGI-VALUESTATE-004"
-    ],
-    "examples/auth-service/governanceVerifierService.fungi": [
       "FUNGI-VALUESTATE-004"
     ],
     "examples/auth-service/manifestVerificationService.fungi": [

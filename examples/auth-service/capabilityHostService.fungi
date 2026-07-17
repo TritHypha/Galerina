@@ -77,6 +77,87 @@ contract {
   return 0
 }
 
+;; Validate an untrusted effect name against the canonical Galerina effect vocabulary before it drives a
+;; governance decision: admit only recognised effect names (returning the name unchanged) and normalise
+;; anything unrecognised to "" — a validating gate that clears the taint. The allowlist mirrors
+;; effect-checker.ts CANONICAL_EFFECTS plus the deny-only names (recognised vocabulary that is never
+;; grantable); stripping a recognised-but-denied name to "" would let a permit-by-default policy pass it,
+;; so the full vocabulary is admitted and the policy flow keeps deciding. audit-effect-canonicality.mjs C11
+;; asserts this allowlist stays a subset of that vocabulary. Pure — no runtime authority / no effects.
+// @cause  [Called before the effect-name drives a policy decision] -> validates the untrusted effect name.
+// @effect [Verdict only] -> returns the validated effect name (or "" if unrecognised); no state is mutated.
+pure flow validateEffectName(effectName: String) -> String
+contract {
+  intent { "Validate an untrusted effect name against the canonical effect vocabulary before use." }
+}
+{
+  match effectName {
+    "database.read" => return "database.read"
+    "database.write" => return "database.write"
+    "cache.read" => return "cache.read"
+    "cache.write" => return "cache.write"
+    "network.outbound" => return "network.outbound"
+    "network.inbound" => return "network.inbound"
+    "network.external" => return "network.external"
+    "network.internal" => return "network.internal"
+    "secret.read" => return "secret.read"
+    "secret.write" => return "secret.write"
+    "audit.write" => return "audit.write"
+    "storage.read" => return "storage.read"
+    "storage.write" => return "storage.write"
+    "ledger.mutate" => return "ledger.mutate"
+    "shell.execute" => return "shell.execute"
+    "ai.inference" => return "ai.inference"
+    "compute.gpu" => return "compute.gpu"
+    "compute.npu" => return "compute.npu"
+    "compute.cpu" => return "compute.cpu"
+    "desktop.user.read" => return "desktop.user.read"
+    "native.call" => return "native.call"
+    "payment.charge" => return "payment.charge"
+    "pii.read" => return "pii.read"
+    "phi.read" => return "phi.read"
+    "phi.write" => return "phi.write"
+    "email.send" => return "email.send"
+    "process.spawn" => return "process.spawn"
+    "worker.spawn" => return "worker.spawn"
+    "event.schedule" => return "event.schedule"
+    "crypto.verify" => return "crypto.verify"
+    "crypto.sign" => return "crypto.sign"
+    "crypto.encrypt" => return "crypto.encrypt"
+    "crypto.decrypt" => return "crypto.decrypt"
+    "crypto.seal" => return "crypto.seal"
+    "crypto.sign.hybrid" => return "crypto.sign.hybrid"
+    "crypto.sign.mldsa65" => return "crypto.sign.mldsa65"
+    "crypto.sign.slhdsa" => return "crypto.sign.slhdsa"
+    "crypto.sign.ed25519" => return "crypto.sign.ed25519"
+    "random.generate" => return "random.generate"
+    "clock.read" => return "clock.read"
+    "state.read" => return "state.read"
+    "state.write" => return "state.write"
+    "message.publish" => return "message.publish"
+    "ai.train" => return "ai.train"
+    "telemetry.read" => return "telemetry.read"
+    "eval.execute" => return "eval.execute"
+    "memory.spill" => return "memory.spill"
+    _ => return ""
+  }
+}
+
+;; Validate an untrusted execution-context name against the recognised DeploymentProfile vocabulary
+;; (dev/production/deterministic/check-only — governance-verifier.ts::DeploymentProfile) before it selects
+;; the effect-allow policy; admit only the known contexts, normalising anything else to "" — a validating
+;; gate that clears the taint. Pure — no runtime authority / no effects.
+// @cause  [Called before the context selects the effect-allow policy] -> validates the untrusted context.
+// @effect [Verdict only] -> returns the validated context (or "" if unrecognised); no state is mutated.
+pure flow validateContext(context: String) -> String
+{
+  if context == "deterministic" { return "deterministic" }
+  if context == "production" { return "production" }
+  if context == "dev" { return "dev" }
+  if context == "check-only" { return "check-only" }
+  return ""
+}
+
 ;; Resolves an untrusted effect/context request into an allow decision and governance class, writing a redacted audit entry — permitted because tainted inputs are redacted before the write.
 ;; V_DPM capability required: network.inbound, audit.write
 // HTTP endpoint: check whether an effect is allowed in the caller's context
@@ -96,11 +177,15 @@ contract {
 
   trap effect == "" : ERR_EMPTY_EFFECT
   trap context == "" : ERR_EMPTY_CONTEXT
-  let allowed: Bool = isEffectAllowedInContext(effect, context)
-  let govClass: Int = effectGovernanceClass(effect)
+  ;; validate the untrusted effect name + execution context against their vocabularies before they drive
+  ;; the allow policy — the validating gates clear the taint
+  let validEffect: String = validateEffectName(effect)
+  let validContext: String = validateContext(context)
+  let allowed: Bool = isEffectAllowedInContext(validEffect, validContext)
+  let govClass: Int = effectGovernanceClass(validEffect)
 
-  let retEffect: String = effect
-  let retContext: String = context
+  let retEffect: String = validEffect
+  let retContext: String = validContext
   let retAllowed: Bool = allowed
   safe mut effect = redact(effect)
   safe mut context = redact(context)

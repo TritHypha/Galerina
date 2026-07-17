@@ -366,6 +366,59 @@ test("effect-canonicality: the REAL repo effect tables are single-source consist
     `internal effect tables have drifted: ${JSON.stringify(j.internal, null, 2)}`);
 });
 
+// ── C11: governed-example validateEffectName allowlists ⊆ recognised vocabulary ──
+// The auth-service examples guard an untrusted effect name with a `validateEffectName` allowlist gate.
+// A sham gate that "validates" a name the compiler rejects, or a vacuous one that admits nothing, is a
+// real defect (the plausible-but-non-compiling trap, in a security example). A crafted fixture proves
+// detection of both; a clean fixture proves no false-positive. The real repo is covered by the
+// regression guard above (j.internal.length === 0 includes C11).
+const exDir9 = join(tmp9, "examples", "auth-service");
+const writeExampleGate = (fname, admitted) => {
+  mkdirSync(exDir9, { recursive: true });
+  const arms = admitted.map((e) => `    "${e}" => return "${e}"`).join("\n");
+  writeFileSync(join(exDir9, fname), [
+    `@version 1`,
+    `pure flow validateEffectName(effectName: String) -> String`,
+    `{`,
+    `  match effectName {`,
+    arms,
+    `    _ => return ""`,
+    `  }`,
+    `}`,
+  ].join("\n") + "\n");
+};
+const clearExamples = () => { try { rmSync(exDir9, { recursive: true, force: true }); } catch { /* best effort */ } };
+const cleanBase = () => writeEffFixture(["database.read", "database.write", "secret.access"], ["database.read", "secret.access"]);
+
+test("effect-canonicality C11: DETECTS a sham validateEffectName allowlist (admits a non-effect) and blocks", () => {
+  cleanBase();
+  clearExamples();
+  writeExampleGate("shamService.fungi", ["database.read", "totally.fake"]);
+  const j = runCanon(tmp9);
+  const c11 = j.internal.find((f) => f.check.startsWith("C11 example-allowlist⊄"));
+  assert.ok(c11, "C11 raised: totally.fake is admitted by the gate but is not a recognised effect");
+  assert.ok(c11.items.some((s) => s.includes("totally.fake")), "the sham name is reported");
+  assert.ok(j.blockingCount > 0, "a sham example allowlist is blocking");
+});
+
+test("effect-canonicality C11: DETECTS a vacuous validateEffectName gate (admits nothing) and blocks", () => {
+  cleanBase();
+  clearExamples();
+  writeExampleGate("vacuousService.fungi", []);
+  const j = runCanon(tmp9);
+  const c11 = j.internal.find((f) => f.check.startsWith("C11 example-allowlist-vacuous"));
+  assert.ok(c11, "C11 raised: the gate admits nothing");
+  assert.ok(j.blockingCount > 0, "a vacuous example gate is blocking");
+});
+
+test("effect-canonicality C11: a clean allowlist (⊆ recognised) yields no C11 finding (no false-positive)", () => {
+  cleanBase();
+  clearExamples();
+  writeExampleGate("cleanService.fungi", ["database.read", "database.write"]);
+  const j = runCanon(tmp9);
+  assert.ok(!j.internal.some((f) => f.check.startsWith("C11")), "an allowlist ⊆ recognised vocabulary is clean");
+});
+
 // ── audit-muted-diagnostics: fail-open gate for silenced security/governance codes ──
 // A fixture with an UN-allowlisted mode-gated SECURITY code proves detection; the REAL repo
 // is asserted to have NO silently-muted security/governance codes (regression guard).

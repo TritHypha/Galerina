@@ -63,6 +63,87 @@ contract {
   return "APPROVED"
 }
 
+;; Validate an untrusted effect name against the canonical Galerina effect vocabulary before it drives a
+;; governance decision: admit only recognised effect names (returning the name unchanged) and normalise
+;; anything unrecognised to "" — a validating gate that clears the taint. The allowlist mirrors
+;; effect-checker.ts CANONICAL_EFFECTS plus the deny-only names (recognised vocabulary that is never
+;; grantable); stripping a recognised-but-denied name to "" would let a permit-by-default policy pass it,
+;; so the full vocabulary is admitted and the policy flow keeps deciding. audit-effect-canonicality.mjs C11
+;; asserts this allowlist stays a subset of that vocabulary. Pure — no runtime authority / no effects.
+// @cause  [Called before the effect-name drives a policy decision] -> validates the untrusted effect name.
+// @effect [Verdict only] -> returns the validated effect name (or "" if unrecognised); no state is mutated.
+pure flow validateEffectName(effectName: String) -> String
+contract {
+  intent { "Validate an untrusted effect name against the canonical effect vocabulary before use." }
+}
+{
+  match effectName {
+    "database.read" => return "database.read"
+    "database.write" => return "database.write"
+    "cache.read" => return "cache.read"
+    "cache.write" => return "cache.write"
+    "network.outbound" => return "network.outbound"
+    "network.inbound" => return "network.inbound"
+    "network.external" => return "network.external"
+    "network.internal" => return "network.internal"
+    "secret.read" => return "secret.read"
+    "secret.write" => return "secret.write"
+    "audit.write" => return "audit.write"
+    "storage.read" => return "storage.read"
+    "storage.write" => return "storage.write"
+    "ledger.mutate" => return "ledger.mutate"
+    "shell.execute" => return "shell.execute"
+    "ai.inference" => return "ai.inference"
+    "compute.gpu" => return "compute.gpu"
+    "compute.npu" => return "compute.npu"
+    "compute.cpu" => return "compute.cpu"
+    "desktop.user.read" => return "desktop.user.read"
+    "native.call" => return "native.call"
+    "payment.charge" => return "payment.charge"
+    "pii.read" => return "pii.read"
+    "phi.read" => return "phi.read"
+    "phi.write" => return "phi.write"
+    "email.send" => return "email.send"
+    "process.spawn" => return "process.spawn"
+    "worker.spawn" => return "worker.spawn"
+    "event.schedule" => return "event.schedule"
+    "crypto.verify" => return "crypto.verify"
+    "crypto.sign" => return "crypto.sign"
+    "crypto.encrypt" => return "crypto.encrypt"
+    "crypto.decrypt" => return "crypto.decrypt"
+    "crypto.seal" => return "crypto.seal"
+    "crypto.sign.hybrid" => return "crypto.sign.hybrid"
+    "crypto.sign.mldsa65" => return "crypto.sign.mldsa65"
+    "crypto.sign.slhdsa" => return "crypto.sign.slhdsa"
+    "crypto.sign.ed25519" => return "crypto.sign.ed25519"
+    "random.generate" => return "random.generate"
+    "clock.read" => return "clock.read"
+    "state.read" => return "state.read"
+    "state.write" => return "state.write"
+    "message.publish" => return "message.publish"
+    "ai.train" => return "ai.train"
+    "telemetry.read" => return "telemetry.read"
+    "eval.execute" => return "eval.execute"
+    "memory.spill" => return "memory.spill"
+    _ => return ""
+  }
+}
+
+;; Validate an untrusted deployment-profile name against the recognised DeploymentProfile vocabulary
+;; (dev/production/deterministic/check-only — governance-verifier.ts::DeploymentProfile) before it selects
+;; the effect-permission policy; admit only the known profiles, normalising anything else to "" — a
+;; validating gate that clears the taint. Pure — no runtime authority / no effects.
+// @cause  [Called before the profile selects the effect-permission policy] -> validates the untrusted profile.
+// @effect [Verdict only] -> returns the validated profile (or "" if unrecognised); no state is mutated.
+pure flow validateProfile(profile: String) -> String
+{
+  if profile == "deterministic" { return "deterministic" }
+  if profile == "production" { return "production" }
+  if profile == "dev" { return "dev" }
+  if profile == "check-only" { return "check-only" }
+  return ""
+}
+
 ;; Verifies an untrusted flow's effects and qualifier invariants against a profile and returns APPROVED/DENIED, writing a redacted audit entry — permitted because tainted inputs are redacted before the write.
 ;; V_DPM capability required: network.inbound, audit.write
 // HTTP endpoint: verify governance for a flow
@@ -87,8 +168,13 @@ contract {
   trap rawProfile == "" : ERR_EMPTY_PROFILE
   trap rawHasAudit == "" : ERR_EMPTY_HAS_AUDIT
 
+  ;; validate the untrusted effect name against the canonical vocabulary before it drives the effect gate —
+  ;; the validating gate clears the taint (a policy decision on an unvalidated effect name is the gap
+  ;; FUNGI-VALUESTATE-004 flags)
+  let validEffect: String = validateEffectName(rawEffect)
+  let validProfile: String = validateProfile(rawProfile)
   let hasAudit: Bool = rawHasAudit == "true"
-  let permitted: Bool = isEffectPermittedInProfile(rawEffect, rawProfile)
+  let permitted: Bool = isEffectPermittedInProfile(validEffect, validProfile)
   let invariants: Bool = checkQualifierInvariants(rawQualifier, hasAudit)
   let outcome: String = classifyGovernanceOutcome(permitted, invariants)
 
@@ -105,8 +191,8 @@ contract {
 
   return Ok({
     qualifier: retRawQualifier
-    effect: rawEffect
-    profile: rawProfile
+    effect: validEffect
+    profile: validProfile
     outcome: retOutcome
     phase: 56
   })

@@ -69,6 +69,85 @@ contract {
   }
 }
 
+;; Validate an untrusted effect name against the canonical Galerina effect vocabulary before it drives a
+;; governance decision: admit only recognised effect names (returning the name unchanged) and normalise
+;; anything unrecognised to "" — a validating gate that clears the taint. The allowlist mirrors
+;; effect-checker.ts CANONICAL_EFFECTS plus the deny-only names (recognised vocabulary that is never
+;; grantable); stripping a recognised-but-denied name to "" would let a permit-by-default policy pass it,
+;; so the full vocabulary is admitted and the policy flow keeps deciding. audit-effect-canonicality.mjs C11
+;; asserts this allowlist stays a subset of that vocabulary. Pure — no runtime authority / no effects.
+// @cause  [Called before the effect-name drives a policy decision] -> validates the untrusted effect name.
+// @effect [Verdict only] -> returns the validated effect name (or "" if unrecognised); no state is mutated.
+pure flow validateEffectName(effectName: String) -> String
+contract {
+  intent { "Validate an untrusted effect name against the canonical effect vocabulary before use." }
+}
+{
+  match effectName {
+    "database.read" => return "database.read"
+    "database.write" => return "database.write"
+    "cache.read" => return "cache.read"
+    "cache.write" => return "cache.write"
+    "network.outbound" => return "network.outbound"
+    "network.inbound" => return "network.inbound"
+    "network.external" => return "network.external"
+    "network.internal" => return "network.internal"
+    "secret.read" => return "secret.read"
+    "secret.write" => return "secret.write"
+    "audit.write" => return "audit.write"
+    "storage.read" => return "storage.read"
+    "storage.write" => return "storage.write"
+    "ledger.mutate" => return "ledger.mutate"
+    "shell.execute" => return "shell.execute"
+    "ai.inference" => return "ai.inference"
+    "compute.gpu" => return "compute.gpu"
+    "compute.npu" => return "compute.npu"
+    "compute.cpu" => return "compute.cpu"
+    "desktop.user.read" => return "desktop.user.read"
+    "native.call" => return "native.call"
+    "payment.charge" => return "payment.charge"
+    "pii.read" => return "pii.read"
+    "phi.read" => return "phi.read"
+    "phi.write" => return "phi.write"
+    "email.send" => return "email.send"
+    "process.spawn" => return "process.spawn"
+    "worker.spawn" => return "worker.spawn"
+    "event.schedule" => return "event.schedule"
+    "crypto.verify" => return "crypto.verify"
+    "crypto.sign" => return "crypto.sign"
+    "crypto.encrypt" => return "crypto.encrypt"
+    "crypto.decrypt" => return "crypto.decrypt"
+    "crypto.seal" => return "crypto.seal"
+    "crypto.sign.hybrid" => return "crypto.sign.hybrid"
+    "crypto.sign.mldsa65" => return "crypto.sign.mldsa65"
+    "crypto.sign.slhdsa" => return "crypto.sign.slhdsa"
+    "crypto.sign.ed25519" => return "crypto.sign.ed25519"
+    "random.generate" => return "random.generate"
+    "clock.read" => return "clock.read"
+    "state.read" => return "state.read"
+    "state.write" => return "state.write"
+    "message.publish" => return "message.publish"
+    "ai.train" => return "ai.train"
+    "telemetry.read" => return "telemetry.read"
+    "eval.execute" => return "eval.execute"
+    "memory.spill" => return "memory.spill"
+    _ => return ""
+  }
+}
+
+;; Validate an untrusted flow qualifier against the recognised set (pure/secure/guarded) before it drives
+;; the completeness check; admit only the known qualifiers, returning a constant (never the raw input) — a
+;; validating gate that clears the taint. Pure — no runtime authority / no effects.
+// @cause  [Called before the qualifier drives the completeness check] -> validates the untrusted qualifier.
+// @effect [Verdict only] -> returns the validated qualifier (or "" if unrecognised); no state is mutated.
+pure flow validateQualifier(qualifier: String) -> String
+{
+  if qualifier == "pure" { return "pure" }
+  if qualifier == "secure" { return "secure" }
+  if qualifier == "guarded" { return "guarded" }
+  return ""
+}
+
 ;; Verifies an untrusted flow's declared effects are valid and complete, writing a redacted audit entry — permitted because tainted inputs are redacted before the write.
 ;; V_DPM capability required: network.inbound, audit.write
 // HTTP endpoint: check effect declarations
@@ -89,11 +168,15 @@ contract {
   trap rawEffect == "" : ERR_EMPTY_EFFECT_NAME
   trap rawQualifier == "" : ERR_EMPTY_QUALIFIER
 
-  let capability: String = effectRequiresCapability(rawEffect)
+  ;; validate the untrusted effect name + qualifier against their vocabularies before they drive the
+  ;; capability + completeness checks — the validating gates clear the taint
+  let validEffect: String = validateEffectName(rawEffect)
+  let validQualifier: String = validateQualifier(rawQualifier)
+  let capability: String = effectRequiresCapability(validEffect)
   let severity: String = classifyEffectSeverity(capability)
-  let complete: Bool = effectsAreComplete(rawEffect, rawQualifier)
+  let complete: Bool = effectsAreComplete(validEffect, validQualifier)
 
-  let retRawEffect: String = rawEffect
+  let retRawEffect: String = validEffect
   let retCapability: String = capability
   safe mut rawEffect = redact(rawEffect)
   safe mut capability = redact(capability)
@@ -106,7 +189,7 @@ contract {
 
   return Ok({
     effect: retRawEffect
-    qualifier: rawQualifier
+    qualifier: validQualifier
     capability: retCapability
     severity: severity
     complete: complete

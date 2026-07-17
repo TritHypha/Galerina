@@ -19,11 +19,16 @@
 //   C4  SECURE_REQUIRED_EFFECTS / PURE_FORBIDDEN_EFFECTS⊆ canonical
 //   C5  KB master registry effect families             ⊆ canonical (∪ aliases)
 //   C6  .graph SPEC EBNF effect_fam families            ⊆ canonical families
+//   C7  capability-types.ts V_DPM vocabulary            ⊆ known (∪ wildcard roots)
+//   C8  gir-emitter.ts EFFECT_TO_CAPABILITY keys        ⊆ known
+//   C9  Stage-B self-hosted knownEffects()             ≈ canonical (informational)
+//   C10 no DENY_ONLY name appears in any grantable table (deny-only fence not fail-open)
+//   C11 auth-service validateEffectName allowlists      ⊆ recognised (canonical∪alias∪deny-only), non-empty
 //
 // Exit 0 iff every table + doc is consistent with the source of truth.
 // Usage:  node scripts/audit-effect-canonicality.mjs [--json]
 // =============================================================================
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -43,6 +48,10 @@ const KB_REGISTRY = join(KB_DIR, "galerina-rules-master-registry.md");
 // The .graph SPEC lives in the design workspace (not this repo); optional.
 const GRAPH_SPEC = process.env.GALERINA_GRAPH_SPEC ||
   join(ROOT, "../ZT-Galerina-GRAPH-ASCII/SPEC-graph-language.md");
+// C11 — the governed auth-service EXAMPLE corpus. Each example that guards an untrusted effect name with a
+// `validateEffectName` allowlist gate must admit ONLY recognised effect vocabulary (else the gate is a sham
+// that "validates" a name the compiler rejects — the plausible-but-non-compiling trap C5/C6 guard for docs).
+const EXAMPLES_DIR = join(ROOT, "examples/auth-service");
 
 // ── source extractors (regex over the TS source — the same robust approach the
 //    other audit-*.mjs use; no cross-package import / build dependency) ────────
@@ -224,6 +233,58 @@ if (existsSync(GRAPH_SPEC)) {
   if (bad.length) add("C10 deny-only-grantable",
     "a DENY_ONLY_EFFECTS name appears in a grantable table — the deny-only fence is fail-open", bad);
 }
+// C11 — governed-example `validateEffectName` allowlists ⊆ RECOGNISED effect vocabulary, non-vacuous.
+//   The auth-service examples guard an untrusted effect name with a `validateEffectName(e)` gate whose
+//   `match` arms are the admitted allowlist. Each admitted name (and each returned name) must be a
+//   RECOGNISED effect: canonical, a known alias, OR a deny-only name. Deny-only is INCLUDED on purpose —
+//   a permit-by-default policy that had a recognised-but-denied name (eval.execute) stripped to "" would
+//   PASS it, so the gate must admit the deny-only names to keep denying them; the superset is therefore
+//   the recognised vocabulary, not CANONICAL alone. A non-recognised name in an allowlist is a SHAM gate
+//   (it "validates" an effect the compiler rejects); an empty allowlist is a vacuous gate. BLOCKING.
+{
+  const isRecognised = (e) => isKnown(e) || DENY_ONLY.has(e);
+  // Slice the `match … { … }` body of a named .fungi flow (sliceBlock is for `const X = …` TS assignments;
+  // a .fungi flow body has no `=` before its block and the `=>` arms would mislead it, so balance braces
+  // from the flow's `match` keyword instead).
+  const sliceFlowMatch = (src, flowName) => {
+    const start = src.indexOf(`flow ${flowName}`);
+    if (start === -1) return null;
+    const mkw = src.indexOf("match ", start);
+    if (mkw === -1) return null;
+    const open = src.indexOf("{", mkw);
+    if (open === -1) return null;
+    let depth = 0;
+    for (let i = open; i < src.length; i++) {
+      if (src[i] === "{") depth++;
+      else if (src[i] === "}") { depth--; if (depth === 0) return src.slice(open, i + 1); }
+    }
+    return null;
+  };
+  const files = existsSync(EXAMPLES_DIR)
+    ? readdirSync(EXAMPLES_DIR).filter((f) => f.endsWith(".fungi")).sort()
+    : [];
+  const badMembers = [];   // "file: nonCanonicalName"
+  const vacuous = [];      // files whose validateEffectName gate admits nothing
+  for (const f of files) {
+    const src = readFileSync(join(EXAMPLES_DIR, f), "utf8");
+    if (!src.includes("flow validateEffectName")) continue;   // no effect-name allowlist — nothing to check
+    const gate = sliceFlowMatch(src, "validateEffectName");
+    if (!gate) continue;
+    // match arms: "KEY" => return "RET"   (the wildcard `_ => return ""` has no quoted key)
+    const pairs = [...gate.matchAll(/"([^"]+)"\s*=>\s*return\s*"([^"]*)"/g)];
+    const admitted = pairs.map((m) => m[1]);
+    if (admitted.length === 0) { vacuous.push(f); continue; }
+    for (const [, key, ret] of pairs) {
+      if (!isRecognised(key)) badMembers.push(`${f}: admits "${key}"`);
+      // the produced value must be a recognised effect too, or "" (the normalise-to-nothing sentinel)
+      if (ret !== "" && !isRecognised(ret)) badMembers.push(`${f}: returns "${ret}"`);
+    }
+  }
+  if (badMembers.length) add("C11 example-allowlist⊄recognised",
+    "an auth-service validateEffectName gate admits/returns an effect name that is neither canonical, a known alias, nor a deny-only name — a sham gate validating an effect the compiler rejects", badMembers);
+  if (vacuous.length) add("C11 example-allowlist-vacuous",
+    "an auth-service validateEffectName gate has an empty allowlist (admits nothing) — a vacuous gate", vacuous);
+}
 
 // ── severity ─────────────────────────────────────────────────────────────────
 // INTERNAL invariants (C1–C4): the compiler's own effect tables must agree — these
@@ -231,7 +292,7 @@ if (existsSync(GRAPH_SPEC)) {
 // DOC drift (C5–C6): the KB registry / .graph SPEC name effects the compiler rejects
 //   — real, but resolved by the family work (Commit 2). Reported; blocks only under --strict.
 const STRICT = process.argv.includes("--strict");
-const sevOf = (f) => (/^(C[1-4]|C7|C8|C10|BOOTSTRAP)\b/.test(f.check) ? "internal" : /^C9\b/.test(f.check) ? "stageb" : "docs");
+const sevOf = (f) => (/^(C[1-4]|C7|C8|C10|C11|BOOTSTRAP)\b/.test(f.check) ? "internal" : /^C9\b/.test(f.check) ? "stageb" : "docs");
 const internal = findings.filter((f) => sevOf(f) === "internal");
 const docs = findings.filter((f) => sevOf(f) === "docs");
 const stageb = findings.filter((f) => sevOf(f) === "stageb");   // Stage-B WIP — informational, never blocks
