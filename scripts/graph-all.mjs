@@ -26,7 +26,17 @@
 //   node scripts/graph-all.mjs --quiet   summary only
 import { spawnSync } from "node:child_process";
 import { readdirSync, existsSync } from "node:fs";
-import { join } from "node:path";
+import { join, dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+// cwd-independence. Every path below — the readdirSync of packages-galerina AND every spawned child's
+// relative script path — assumed process.cwd() == repo root. Run from anywhere else and step 4 hard-crashed
+// on ENOENT ('scandir .../packages-galerina') while steps 1-3 silently exited 1: a cron, a CI job, or a
+// Stop-hook invoked from another directory would have hit exactly that. Anchor to THIS file's location and
+// chdir once, so where the caller launched it stops mattering. (graph-all is only ever run as a script — an
+// orchestrator of top-level spawnSync — so a one-time chdir here has no import-side-effect surface.)
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+process.chdir(ROOT);
 
 const quiet = process.argv.includes("--quiet");
 const node = process.execPath;
