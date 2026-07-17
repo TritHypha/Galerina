@@ -2,7 +2,7 @@
 Generated: 2026-07-17
 
 ## Stats
-- Docs: 1244 | Edges: 3488 | Orphans: 177 | Stale links: 0 | FUNGI codes: 748
+- Docs: 1252 | Edges: 3557 | Orphans: 184 | Stale links: 0 | FUNGI codes: 749
 
 ## Document Registry (auto-generated)
 
@@ -130,7 +130,12 @@ Generated: 2026-07-17
 | 2026-07-17-ADJUDICATION-96a-RULE-A-extends-existing-B2-arena-to-per-iteration-mark-release-secret-zeroing-catch.md | — | — | — | — |
 | 2026-07-17-ADJUDICATION-benchmark-harness-DECOUPLE-2-with-declared-build-path-plus-provenance-protocol-host-side.md | — | — | — | FUNGI-PARSE-001 |
 | 2026-07-17-ADJUDICATION-bool-taint-reject-validateFlag-launder-use-c-flag-b-to-owner.md | — | — | — | — |
+| 2026-07-17-ANSWER-3-stoppers-your-STOPPER-1-fallback-recreates-todays-CI-404-plus-the-admission-predicate.md | — | — | — | — |
 | 2026-07-17-ANSWER-96a-scoping-6-record-alloc-is-intra-flow-BUT-neither-benchmark-allocates-binary-trees-language-gap.md | — | — | — | — |
+| 2026-07-17-ANSWER-duplicate-record-decl-YES-to-the-diagnostic-but-there-is-NO-emitter-analysis-divergence.md | — | — | — | FUNGI-DECL-001, FUNGI-PARSE-001 |
+| 2026-07-17-ANSWER-RD-0450-ruling-CONFIRMED-and-the-frozen-spec-is-in-YOUR-tree-not-lost.md | — | — | — | — |
+| 2026-07-17-ANSWERED-your-parting-question-123-public-links-into-the-private-KB-and-i-built-the-repro.md | — | — | — | — |
+| 2026-07-17-ASK-RD-0450-owner-wants-YOUR-zero-trust-choice-A-or-B.md | — | — | — | — |
 | 2026-07-17-CI-DIAGNOSIS-conventions-30-of-30-red-since-07-12-two-causes-neither-is-phase-47.md | — | — | — | — |
 | 2026-07-17-CLARIFICATION-96a-escaping-records-EXCLUDED-from-release-window-not-above-the-mark.md | — | — | — | — |
 | 2026-07-17-CLOSING-CYCLE-full-verify-thesis-build-registry-benchmark-harness-finding.md | — | — | — | FUNGI-MATCH-001, FUNGI-PARSE-001, FUNGI-SAFETY-006 |
@@ -143,6 +148,7 @@ Generated: 2026-07-17
 | 2026-07-17-DESIGN-preflight-ci-must-reproduce-CIs-ABSENCES-a-naive-pre-push-hook-would-have-caught-neither.md | — | — | — | — |
 | 2026-07-17-DESIGN-RD-0451-dev-tools-audit-checker-wiring-says-OK-while-resolveImports-has-zero-callsites.md | — | — | — | FUNGI-TYPE-001 |
 | 2026-07-17-FINDING-96a-record-site-already-heap-bumps-not-host-abi-escape-integration-needs-reground.md | — | — | — | — |
+| 2026-07-17-FINDING-Money-BANANAS-compiles-clean-I1s-compile-half-is-unbuilt-plus-RD-0349-amended.md | — | — | — | FUNGI-TYPE-001 |
 | 2026-07-17-GROUNDING-escape-analysis-pass-record-escapes-flow-predicate-fail-closed.md | — | — | — | — |
 | 2026-07-17-GROUNDING-RD0446-bump-arena-emittable-WAT-shape-5-asks.md | — | — | — | — |
 | 2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension.md | — | — | — | FUNGI-TYPE-020 |
@@ -156,11 +162,13 @@ Generated: 2026-07-17
 | 2026-07-17-RD-0448-leaf-terminator-is-its-own-task-gap-is-Option-constructors-not-Option-Record.md | — | — | — | FUNGI-MATCH-001 |
 | 2026-07-17-RD-0450-32-byte-digest-caps-L5-profile-at-128-bit-decide-before-34-locks-v0.md | — | — | — | — |
 | 2026-07-17-RETRACT-match-lint-plus-RD-0449-import-resolver-never-wired-12-of-52-examples-fail-strict-types.md | — | — | — | FUNGI-GOV-018, FUNGI-MATCH-001, FUNGI-TYPE-001, FUNGI-TYPE-021, FUNGI-TYPE-023 |
+| 2026-07-17-RULING-RD-0450-A-FOR-BOTH-you-overruled-me-with-my-own-rule-plus-123-links-de-link-by-default.md | — | — | — | — |
 | 2026-07-17-RULING-RD-0450-A-for-L5-B-for-L3-and-its-cheaper-than-you-framed-slice-4-is-unbuilt.md | — | — | — | — |
 | 2026-07-17-RULINGS-1-and-2-honesty-rule-YES-derived-not-typed-plus-I1-is-b-but-sequenced-with-I2.md | — | — | — | — |
 | 2026-07-17-STATUS-76-effect-name-files-done-plus-C11-superset-refinement.md | — | — | — | — |
 | 2026-07-17-STATUS-76-numeric-exemplar-economicsService-done-plus-cycle-green.md | — | — | — | — |
 | 2026-07-17-STOPPERS-ten-area-hundred-percent-sweep-audit-numbers-unfalsifiable.md | — | — | — | — |
+| 2026-07-17-TRIAGE-LIST-123-escape-links-65-targets-29-docs.md | — | — | — | — |
 | 2026-07-17-VERIFY-76-17of19-open-vocab-length-bound-correct-plus-content-safe-downstream-caveat.md | — | — | — | — |
 | 2026-07-17-VERIFY-76-fanout-4of19-uniform-pattern-endorsed-plus-open-vocab-canonical-answer.md | — | — | — | — |
 | 2026-07-17-VERIFY-76-numeric-exemplar-BLESSED-bound-correctly-sized-fan-out-plan-endorsed.md | — | — | — | — |
@@ -957,7 +965,7 @@ Generated: 2026-07-17
 | HANDOVER-unlocked-subsystems-to-100pct-fungi-2026-07-15.md | — | — | — | FUNGI-GOV-3, FUNGI-HALLMARK-001, FUNGI-TIER-001 |
 | HANDOVER-unlocks-actioned-u7-live-i1-pinned-tier-s-named-2026-07-16.md | — | — | — | — |
 | HANDOVER-v1-finish-line-cutover-and-gap-map-2026-07-12.md | — | — | — | FUNGI-EFFECT-006, FUNGI-HALLMARK-001, FUNGI-TYPE-005 |
-| HANDOVER-value-unit-types-and-hallmark-open-types-2026-07-11.md | — | — | — | FUNGI-HALLMARK-001, FUNGI-TYPE-0, FUNGI-TYPE-003, FUNGI-TYPE-004, FUNGI-VALUESTATE-004 |
+| HANDOVER-value-unit-types-and-hallmark-open-types-2026-07-11.md | — | — | — | FUNGI-HALLMARK-001, FUNGI-TYPE-0, FUNGI-TYPE-001, FUNGI-TYPE-003, FUNGI-TYPE-004 …+1 |
 | HANDOVER-zt-thesis-twin-round-and-registry-status-2026-07-15.md | — | — | — | — |
 | hello-world-api-pattern.md | — | — | — | — |
 | http-method-declarations.md | — | — | — | — |
@@ -1343,13 +1351,16 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-ADJUDICATION-96a-RULE-A-extends-existing-B2-arena-to-per-iteration-mark-release-secret-zeroing-catch.md` — 2026-07-17-ADJUDICATION-96a-RULE-A-extends-existing-B2-arena-to-per-iteration-mark-release-secret-zeroing-catch
 - `2026-07-17-ADJUDICATION-benchmark-harness-DECOUPLE-2-with-declared-build-path-plus-provenance-protocol-host-side.md` — 2026-07-17-ADJUDICATION-benchmark-harness-DECOUPLE-2-with-declared-build-path-plus-provenance-protocol-host-side
 - `2026-07-17-ADJUDICATION-bool-taint-reject-validateFlag-launder-use-c-flag-b-to-owner.md` — 2026-07-17-ADJUDICATION-bool-taint-reject-validateFlag-launder-use-c-flag-b-to-owner
-- `2026-07-17-CI-DIAGNOSIS-conventions-30-of-30-red-since-07-12-two-causes-neither-is-phase-47.md` — 2026-07-17-CI-DIAGNOSIS-conventions-30-of-30-red-since-07-12-two-causes-neither-is-phase-47
+- `2026-07-17-ANSWER-3-stoppers-your-STOPPER-1-fallback-recreates-todays-CI-404-plus-the-admission-predicate.md` — 2026-07-17-ANSWER-3-stoppers-your-STOPPER-1-fallback-recreates-todays-CI-404-plus-the-admission-predicate
+- `2026-07-17-ANSWER-RD-0450-ruling-CONFIRMED-and-the-frozen-spec-is-in-YOUR-tree-not-lost.md` — 2026-07-17-ANSWER-RD-0450-ruling-CONFIRMED-and-the-frozen-spec-is-in-YOUR-tree-not-lost
+- `2026-07-17-ANSWER-duplicate-record-decl-YES-to-the-diagnostic-but-there-is-NO-emitter-analysis-divergence.md` — 2026-07-17-ANSWER-duplicate-record-decl-YES-to-the-diagnostic-but-there-is-NO-emitter-analysis-divergence
 - `2026-07-17-CLARIFICATION-96a-escaping-records-EXCLUDED-from-release-window-not-above-the-mark.md` — 2026-07-17-CLARIFICATION-96a-escaping-records-EXCLUDED-from-release-window-not-above-the-mark
 - `2026-07-17-CLOSING-CYCLE-full-verify-thesis-build-registry-benchmark-harness-finding.md` — 2026-07-17-CLOSING-CYCLE-full-verify-thesis-build-registry-benchmark-harness-finding
 - `2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction.md` — 2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction
 - `2026-07-17-DELIVER-type-twin-severity-map-19-codes-plus-gate-count-21-vs-19-discrepancy.md` — 2026-07-17-DELIVER-type-twin-severity-map-19-codes-plus-gate-count-21-vs-19-discrepancy
 - `2026-07-17-DESIGN-RD-0451-dev-tools-audit-checker-wiring-says-OK-while-resolveImports-has-zero-callsites.md` — 2026-07-17-DESIGN-RD-0451-dev-tools-audit-checker-wiring-says-OK-while-resolveImports-has-zero-callsites
 - `2026-07-17-DESIGN-preflight-ci-must-reproduce-CIs-ABSENCES-a-naive-pre-push-hook-would-have-caught-neither.md` — 2026-07-17-DESIGN-preflight-ci-must-reproduce-CIs-ABSENCES-a-naive-pre-push-hook-would-have-caught-neither
+- `2026-07-17-FINDING-Money-BANANAS-compiles-clean-I1s-compile-half-is-unbuilt-plus-RD-0349-amended.md` — 2026-07-17-FINDING-Money-BANANAS-compiles-clean-I1s-compile-half-is-unbuilt-plus-RD-0349-amended
 - `2026-07-17-GROUNDING-RD0446-bump-arena-emittable-WAT-shape-5-asks.md` — 2026-07-17-GROUNDING-RD0446-bump-arena-emittable-WAT-shape-5-asks
 - `2026-07-17-GROUNDING-escape-analysis-pass-record-escapes-flow-predicate-fail-closed.md` — 2026-07-17-GROUNDING-escape-analysis-pass-record-escapes-flow-predicate-fail-closed
 - `2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension.md` — 2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension
@@ -1359,6 +1370,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-RD-0448-leaf-terminator-is-its-own-task-gap-is-Option-constructors-not-Option-Record.md` — 2026-07-17-RD-0448-leaf-terminator-is-its-own-task-gap-is-Option-constructors-not-Option-Record
 - `2026-07-17-RD-0450-32-byte-digest-caps-L5-profile-at-128-bit-decide-before-34-locks-v0.md` — 2026-07-17-RD-0450-32-byte-digest-caps-L5-profile-at-128-bit-decide-before-34-locks-v0
 - `2026-07-17-RETRACT-match-lint-plus-RD-0449-import-resolver-never-wired-12-of-52-examples-fail-strict-types.md` — 2026-07-17-RETRACT-match-lint-plus-RD-0449-import-resolver-never-wired-12-of-52-examples-fail-strict-types
+- `2026-07-17-RULING-RD-0450-A-FOR-BOTH-you-overruled-me-with-my-own-rule-plus-123-links-de-link-by-default.md` — 2026-07-17-RULING-RD-0450-A-FOR-BOTH-you-overruled-me-with-my-own-rule-plus-123-links-de-link-by-default
 - `2026-07-17-RULINGS-1-and-2-honesty-rule-YES-derived-not-typed-plus-I1-is-b-but-sequenced-with-I2.md` — 2026-07-17-RULINGS-1-and-2-honesty-rule-YES-derived-not-typed-plus-I1-is-b-but-sequenced-with-I2
 - `2026-07-17-VERIFY-76-17of19-open-vocab-length-bound-correct-plus-content-safe-downstream-caveat.md` — 2026-07-17-VERIFY-76-17of19-open-vocab-length-bound-correct-plus-content-safe-downstream-caveat
 - `2026-07-17-VERIFY-76-fanout-4of19-uniform-pattern-endorsed-plus-open-vocab-canonical-answer.md` — 2026-07-17-VERIFY-76-fanout-4of19-uniform-pattern-endorsed-plus-open-vocab-canonical-answer
@@ -1421,6 +1433,8 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-ACK-severity-parity-DONE-parity-trilogy-complete.md` — 2026-07-17-ACK-severity-parity-DONE-parity-trilogy-complete
 - `2026-07-17-ACK-type-twin-severity-WIRED-trilogy-complete-both-twins-plus-21v19-reconciled.md` — 2026-07-17-ACK-type-twin-severity-WIRED-trilogy-complete-both-twins-plus-21v19-reconciled
 - `2026-07-17-ANSWER-96a-scoping-6-record-alloc-is-intra-flow-BUT-neither-benchmark-allocates-binary-trees-language-gap.md` — 2026-07-17-ANSWER-96a-scoping-6-record-alloc-is-intra-flow-BUT-neither-benchmark-allocates-binary-trees-language-gap
+- `2026-07-17-ANSWERED-your-parting-question-123-public-links-into-the-private-KB-and-i-built-the-repro.md` — 2026-07-17-ANSWERED-your-parting-question-123-public-links-into-the-private-KB-and-i-built-the-repro
+- `2026-07-17-ASK-RD-0450-owner-wants-YOUR-zero-trust-choice-A-or-B.md` — 2026-07-17-ASK-RD-0450-owner-wants-YOUR-zero-trust-choice-A-or-B
 - `2026-07-17-DELIVER-76-taint-laundering-pattern-file-governanceService-verify-before-fanout.md` — 2026-07-17-DELIVER-76-taint-laundering-pattern-file-governanceService-verify-before-fanout
 - `2026-07-17-DELIVERED-96a-escape-increment-1-recordEscapes-predicate-6of6-please-isolation-verify.md` — 2026-07-17-DELIVERED-96a-escape-increment-1-recordEscapes-predicate-6of6-please-isolation-verify
 - `2026-07-17-DELIVERED-rd0349-I1-unit-table-generated-157-plus-3-stoppers.md` — 2026-07-17-DELIVERED-rd0349-I1-unit-table-generated-157-plus-3-stoppers
@@ -1433,6 +1447,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-STATUS-76-effect-name-files-done-plus-C11-superset-refinement.md` — 2026-07-17-STATUS-76-effect-name-files-done-plus-C11-superset-refinement
 - `2026-07-17-STATUS-76-numeric-exemplar-economicsService-done-plus-cycle-green.md` — 2026-07-17-STATUS-76-numeric-exemplar-economicsService-done-plus-cycle-green
 - `2026-07-17-STOPPERS-ten-area-hundred-percent-sweep-audit-numbers-unfalsifiable.md` — 2026-07-17-STOPPERS-ten-area-hundred-percent-sweep-audit-numbers-unfalsifiable
+- `2026-07-17-TRIAGE-LIST-123-escape-links-65-targets-29-docs.md` — 2026-07-17-TRIAGE-LIST-123-escape-links-65-targets-29-docs
 
 ## Stale Links
 Links pointing to missing files:
