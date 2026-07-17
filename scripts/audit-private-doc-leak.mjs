@@ -4,9 +4,9 @@
 // =============================================================================
 // RD-0453 established the `-PRIVATE.md` filename tag "so a tool can mechanically exclude never-public docs."
 // This is that tool — the enforcement half the convention shipped without. It became a LIVE necessity on
-// 2026-07-17: the kb-index generator indexed RD-0453/0454's TITLES into tracked build/kb-index/, leaking a
-// private "where Galerina is slower than Node/Python/Rust" weakness-map into public Galerina (title + terms,
-// caught before push). Gitignoring build/kb-index/ + build/kb-graph/ closed THAT vector; this gate closes the
+// 2026-07-17: the kb-index generator indexed a never-public doc's TITLE + terms digest into tracked
+// build/kb-index/ — a title that must never be public — caught before push. Gitignoring build/kb-index/ +
+// build/kb-graph/ closed THAT vector; this gate closes the
 // CLASS — any tracked file that names a `-PRIVATE.md` doc fails the build, so a regen, a new indexer, or a
 // stray doc-link can never silently re-introduce it. "Remember to exclude it" is not a control; a gate is.
 //
@@ -60,7 +60,7 @@ function scanText(text, file) {
 // ── self-test — R&D's #2 discriminating law: fires on a -PRIVATE ref, silent on a MINIMAL clean control ──
 function selfTest() {
   const checks = [];
-  const stem = "See ../ZTF-Knowledge-Bases/galerina-rd-0454-runtime-weakness-map-vs-node-python-rust";
+  const stem = "See ../ZTF-Knowledge-Bases/galerina-rd-0000-internal-example-note"; // generic placeholder — never a real private title
   const FIRE = `${stem}-PRIVATE.md for detail.`;
   const CONTROL = `${stem}-PUBLIC.md for detail.`;   // identical BUT for the tag — the single variable
   const fire = scanText(FIRE, "fixture");
@@ -77,7 +77,7 @@ function selfTest() {
     scanText("this doc is private and internal", "f").length === 0]);
   checks.push(["★ use-vs-mention: the BARE '-PRIVATE.md' tag (no filename stem) does NOT fire — it names no doc",
     scanText("the -PRIVATE.md tag describes the rule; a wiring comment may mention it", "f").length === 0]);
-  checks.push(["...but a real filename WITH a stem DOES fire (the leak shape)", scanText("rd-0454-map-PRIVATE.md", "f").length === 1]);
+  checks.push(["...but a real filename WITH a stem DOES fire (the leak shape)", scanText("internal-example-note-PRIVATE.md", "f").length === 1]);
 
   let ok = true;
   for (const [name, pass] of checks) { console.log(`  ${pass ? "✅" : "❌"} ${name}`); if (!pass) ok = false; }
