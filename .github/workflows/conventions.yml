@@ -447,8 +447,20 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (SHA-pinned, RD-0294w)
         with:
           node-version: "20"
-      - name: Build galerina-core-compiler + its file-dep closure (topological)
-        run: node scripts/build-core-chain.mjs
+      # Two roots, both PROVEN needed by a clean-clone run — not guessed:
+      #   galerina-core-compiler        — the CLI closure (CG-4 / signed-fixture / 4 of the 5 gates)
+      #   galerina-devtools-package-graph — audit-package-border's scanner. A DEVTOOL, so it is NOT a
+      #     CLI dependency and NOT in the compiler's file: closure. Without it the border gate exits 2
+      #     ("the package-graph scanner is not built … a border gate that cannot run must not silently
+      #     pass") and gate-selftests reports VIOLATIONS: 1 — the red MOVES lanes instead of clearing.
+      # `build-core-chain.mjs --gate-subjects` DERIVES this set from the gates themselves (the durable
+      # answer — a hand-listed root rots the day the next devtools-backed gate lands). It is not used
+      # here YET: it also derives galerina-framework-app-kernel, whose build fails from a clean checkout
+      # because src/kernel.ts imports "../../galerina-core-config/dist/posture.js" by RELATIVE PATH while
+      # its package.json declares NO dependencies — an undeclared cross-package edge the closure walk
+      # cannot see. Switch this step to --gate-subjects once that is declared (tracked; reported to R&D).
+      - name: Build the gate subjects + their file-dep closures (topological)
+        run: node scripts/build-core-chain.mjs galerina-core-compiler galerina-devtools-package-graph
       - name: CG-4 signing-boundary + CG-7 signed-fixture guard (build-dependent, enforcing)
         run: node --test scripts/tests/cg4-signing-boundary.test.mjs scripts/tests/signed-fixture-guard.test.mjs
       # gate-selftests — the META-gate ("is any detector neutered?"). It spawns every audit-*/lint-*
