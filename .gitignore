@@ -82,9 +82,16 @@ build/*.dot
 # KEEP the small human/AI nav docs (Galerina_GRAPH_REPORT.md, galerina-ai-map.md — AGENTS.md points to them).
 build/graph/*.json
 build/graph/*.html
-build/kb-graph/*.json
-build/kb-graph/*.dot
 build/graph/*.dot
+
+# ── SECURITY (2026-07-17, R&D leak finding): build/kb-index/ + build/kb-graph/ are a generated index OF THE
+# PRIVATE SIBLING KB (ZTF-Knowledge-Bases). Tracking them in this PUBLIC repo leaks every KB doc's TITLE +
+# terms digest — including never-public -PRIVATE docs (RD-0453/0454, title + "INTERNAL / never-public") and
+# gap-map / adversarial-audit titles ("the edges an attacker hits"). Unlike build/graph/ (an index of PUBLIC
+# code), a public repo has no business tracking a title-index of a PRIVATE repo. Both are regenerated on demand
+# (kb-index.mjs / the kb-graph builder), so nothing public needs the committed copy. Ignore the whole dirs.
+build/kb-index/
+build/kb-graph/
 
 # Per-package .graph/ (the Hardened Border): same philosophy. package-graph.json is the HEAVY
 # regenerated raw scan (node/edge dump, churns every `graph` run) and NOTHING reads the committed copy —

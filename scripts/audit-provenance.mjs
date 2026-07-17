@@ -22,9 +22,10 @@ const EXT = /\.(ts|mjs|cjs|fungi|md|json)$/;
 const ARTIFACTS = [
   { name: "code-index", file: "build/code-index/code-index.json", prov: "build/code-index/provenance.json", sources: ["packages-galerina", "docs", "scripts"] },
   { name: "code-registry", file: "build/code-registry/registry.json", prov: "build/code-registry/provenance.json", sources: ["packages-galerina", "scripts"] },
-  // KB corpus migrated to the sibling ZTF-Knowledge-Bases repo — track freshness against the REAL source
-  // (kb-index.mjs indexes it), not the retired local docs/Knowledge-Bases (which read as mtime 0 = a blind spot).
-  { name: "kb-index", file: "build/kb-index/kb-index.json", prov: "build/kb-index/provenance.json", sources: ["../ZTF-Knowledge-Bases", "README.md", "AGENTS.md"] },
+  // kb-index / kb-graph were REMOVED from provenance tracking 2026-07-17: they were untracked + gitignored
+  // (they index the PRIVATE sibling KB and leaked -PRIVATE + gap-map doc TITLES into public Galerina — R&D
+  // leak finding). A staleness check on a now-gitignored artifact is meaningless; the index is regenerated on
+  // demand by kb-index.mjs. Freshness of the private KB is the KB repo's concern, not the public tree's.
 ];
 
 function newestMtime(dir) {
