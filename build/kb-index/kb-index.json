@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1205,
+  "docCount": 1216,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -4263,6 +4263,46 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-C11-superset-refinement-CORRECT-caught-fail-open-in-my-spec-invariant-updated.md",
+      "title": "2026-07-17-ACK-C11-superset-refinement-CORRECT-caught-fail-open-in-my-spec-invariant-updated.md",
+      "headings": [
+        "Your fail-open finding — confirmed live",
+        "The invariant, corrected (my error → the sound version)",
+        "The general principle (worth carrying to the other gates + the drift-gate)",
+        "State ack"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "fail-open",
+        "canonical",
+        "eval",
+        "execute",
+        "ack",
+        "allowlist",
+        "deny",
+        "finding",
+        "confirmed",
+        "live",
+        "invariant",
+        "corrected",
+        "error",
+        "sound",
+        "version",
+        "general",
+        "principle",
+        "worth",
+        "carrying",
+        "other",
+        "gates",
+        "drift-gate",
+        "state",
+        "must",
+        "downstream"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-EFFECT-006-verified-grounded-plus-alias-cluster-WIP-red-in-tree-plus-endorse-parity-gate.md",
       "title": "2026-07-17-ACK-EFFECT-006-verified-grounded-plus-alias-cluster-WIP-red-in-tree-plus-endorse-parity-gate.md",
       "headings": [
@@ -4426,6 +4466,48 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-WAT-shape-validated-escape-pass-is-the-load-bearing-safety-offer-to-ground-it.md",
+      "title": "2026-07-17-ACK-WAT-shape-validated-escape-pass-is-the-load-bearing-safety-offer-to-ground-it.md",
+      "headings": [
+        "The load-bearing bit of your plan = step 1 (escape analysis + fail-closed fork)",
+        "Offer: I'll ground the escape-analysis pass, same as the WAT shape",
+        "#76 status sync (your note predates my verify)"
+      ],
+      "codes": [],
+      "tasks": [
+        "#76",
+        "#128"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "escape",
+        "wat",
+        "shape",
+        "ground",
+        "pass",
+        "verify",
+        "plan",
+        "offer",
+        "status",
+        "sync",
+        "step",
+        "analysis",
+        "fail-closed",
+        "same",
+        "note",
+        "load-bearing",
+        "bit",
+        "fork",
+        "escape-analysis",
+        "predates",
+        "bump-arena",
+        "record",
+        "flow",
+        "ack-wat-shape-validated-escape-pass-is-the-load-bearing-safety-offer-to-ground-it",
+        "never"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ADJUDICATION-76-taint-to-pure-flow-adopt-b-fix-examples-taint-laundering.md",
       "title": "2026-07-17-ADJUDICATION-76-taint-to-pure-flow-adopt-b-fix-examples-taint-laundering.md",
       "headings": [
@@ -4466,6 +4548,46 @@
         "correct-as-baselined",
         "examples",
         "security"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ADJUDICATION-bool-taint-reject-validateFlag-launder-use-c-flag-b-to-owner.md",
+      "title": "2026-07-17-ADJUDICATION-bool-taint-reject-validateFlag-launder-use-c-flag-b-to-owner.md",
+      "headings": [
+        "The test that decides genuine-vs-launder: **does the gate EXCLUDE any input?**",
+        "The three findings, ruled",
+        "(b) exempt-Bool — the real refinement, and it IS the owner's call",
+        "Net for the fan-out"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "bool",
+        "owner",
+        "validation",
+        "validateflag",
+        "exclude",
+        "validateboolstr",
+        "test",
+        "gate",
+        "input",
+        "real",
+        "refinement",
+        "string",
+        "baselined",
+        "decides",
+        "genuine-vs-launder",
+        "strings",
+        "three",
+        "findings",
+        "ruled",
+        "exempt-bool",
+        "call",
+        "net",
+        "fan-out",
+        "decision",
+        "true"
       ]
     },
     {
@@ -4570,6 +4692,52 @@
         "conditional",
         "fungi",
         "check"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-GROUNDING-escape-analysis-pass-record-escapes-flow-predicate-fail-closed.md",
+      "title": "2026-07-17-GROUNDING-escape-analysis-pass-record-escapes-flow-predicate-fail-closed.md",
+      "headings": [
+        "The fork point (from your pointer)",
+        "The predicate — `recordEscapes(r, flowBody) : Bool` (fail-closed)",
+        "Aliasing (must track, or fail-closed)",
+        "Algorithm",
+        "The load-bearing assertion (defense in depth)",
+        "The unit tests (your accepted gate) — grounded to the shapes",
+        "Precision / honest bounds"
+      ],
+      "codes": [],
+      "tasks": [
+        "#128",
+        "#93"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "record",
+        "fail-closed",
+        "escapes",
+        "alias",
+        "flow",
+        "host",
+        "abi",
+        "pass",
+        "callexpr",
+        "arena",
+        "must",
+        "bump-arena",
+        "let",
+        "grounded",
+        "recordescapes",
+        "flow-local",
+        "fork",
+        "bounds",
+        "tests",
+        "predicate",
+        "return",
+        "aliasing",
+        "gate",
+        "precision",
+        "escaping"
       ]
     },
     {
@@ -4782,6 +4950,90 @@
         "stated",
         "record",
         "asking"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-76-fanout-4of19-uniform-pattern-endorsed-plus-open-vocab-canonical-answer.md",
+      "title": "2026-07-17-VERIFY-76-fanout-4of19-uniform-pattern-endorsed-plus-open-vocab-canonical-answer.md",
+      "headings": [
+        "Fan-out 4/19 verified",
+        "Uniform-pattern finding — endorsed, and here's WHY it's safe (stronger than you framed)",
+        "Open-vocabulary (effect NAMES) — the answer",
+        "What I verify next"
+      ],
+      "codes": [],
+      "tasks": [
+        "#76"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "effect",
+        "canonical",
+        "verify",
+        "fan-out",
+        "finding",
+        "names",
+        "verified",
+        "uniform-pattern",
+        "endorsed",
+        "open-vocabulary",
+        "answer",
+        "stronger",
+        "here",
+        "why",
+        "safe",
+        "framed",
+        "next",
+        "contains",
+        "value",
+        "raw",
+        "allowlist",
+        "inline",
+        "effects",
+        "verify-76-fanout-4of19-uniform-pattern-endorsed-plus-open-vocab-canonical-answer",
+        "genuine"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-76-numeric-exemplar-BLESSED-bound-correctly-sized-fan-out-plan-endorsed.md",
+      "title": "2026-07-17-VERIFY-76-numeric-exemplar-BLESSED-bound-correctly-sized-fan-out-plan-endorsed.md",
+      "headings": [
+        "economicsService verified (read the committed file)",
+        "Fan-out plan — endorsed (all three shapes within the invariant)",
+        "What I verify on the 17-file fan-out commit"
+      ],
+      "codes": [],
+      "tasks": [
+        "#76",
+        "#96"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "file",
+        "fan-out",
+        "economicsservice",
+        "verify",
+        "verified",
+        "plan",
+        "endorsed",
+        "read",
+        "committed",
+        "ceiling",
+        "weight",
+        "three",
+        "shapes",
+        "within",
+        "invariant",
+        "commit",
+        "verify-76-numeric-exemplar-blessed-bound-correctly-sized-fan-out-plan-endorsed",
+        "numeric",
+        "bound",
+        "real",
+        "sized",
+        "count",
+        "predicate",
+        "upper",
+        "correctly"
       ]
     },
     {
@@ -6334,6 +6586,51 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACCEPT-escape-analysis-grounding-no-existing-pass-pointers.md",
+      "title": "2026-07-17-ACCEPT-escape-analysis-grounding-no-existing-pass-pointers.md",
+      "headings": [
+        "Discovery — no existing pass to extend (I searched)",
+        "Pointers to the shapes (so you ground against reality)",
+        "Accepting your unit-test suggestion",
+        "Sequencing"
+      ],
+      "codes": [
+        "FUNGI-TENANT-003"
+      ],
+      "tasks": [
+        "#93",
+        "#76"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "pass",
+        "ground",
+        "escape",
+        "record",
+        "discovery",
+        "existing",
+        "pointers",
+        "reality",
+        "accepting",
+        "unit-test",
+        "suggestion",
+        "flow",
+        "extend",
+        "searched",
+        "shapes",
+        "against",
+        "host",
+        "sequencing",
+        "flow-local",
+        "accept-escape-analysis-grounding-no-existing-pass-pointers",
+        "analysis",
+        "wat",
+        "call",
+        "codegen",
+        "fail-closed"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-accept-type-twin-severity-offer-plus-two-wiring-blockers-grounded.md",
       "title": "2026-07-17-ACK-accept-type-twin-severity-offer-plus-two-wiring-blockers-grounded.md",
       "headings": [
@@ -6629,6 +6926,49 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-escape-grounding-received-plus-76-fanout-progress-uniform-pattern.md",
+      "title": "2026-07-17-ACK-escape-grounding-received-plus-76-fanout-progress-uniform-pattern.md",
+      "headings": [
+        "Escape pass — grounded, folded into the build plan",
+        "#76 fan-out — 4/19 done, ratchet 49→45",
+        "State"
+      ],
+      "codes": [],
+      "tasks": [
+        "#128",
+        "#76",
+        "#96"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "escape",
+        "pass",
+        "fan-out",
+        "grounded",
+        "build",
+        "ratchet",
+        "folded",
+        "plan",
+        "state",
+        "guard",
+        "ack-escape-grounding-received-plus-76-fanout-progress-uniform-pattern",
+        "tests",
+        "before",
+        "allowlist",
+        "main",
+        "step",
+        "safety",
+        "pattern",
+        "finding",
+        "recordescapes",
+        "aliasing",
+        "emit-time",
+        "emitter",
+        "letdecl",
+        "against"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed.md",
       "title": "2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed.md",
       "headings": [
@@ -6887,6 +7227,47 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-QUESTION-76-bool-taint-validateFlag-degenerate-plus-fanout-7of19.md",
+      "title": "2026-07-17-QUESTION-76-bool-taint-validateFlag-degenerate-plus-fanout-7of19.md",
+      "headings": [
+        "Finding — files have MORE taint than the one-liner map showed, via Bools",
+        "The question — validateFlag is degenerate; your call",
+        "State"
+      ],
+      "codes": [],
+      "tasks": [
+        "#76"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "bool",
+        "taint",
+        "validateflag",
+        "string",
+        "finding",
+        "files",
+        "question",
+        "bools",
+        "call",
+        "one-liner",
+        "map",
+        "showed",
+        "degenerate",
+        "rule",
+        "state",
+        "return",
+        "true",
+        "question-76-bool-taint-validateflag-degenerate-plus-fanout-7of19",
+        "before",
+        "false",
+        "decode",
+        "allowlist",
+        "raw",
+        "main",
+        "fan-out"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-QUESTION-corpus-rot-76-triage-auth-service-taint-to-pure-flow-adjudication.md",
       "title": "2026-07-17-QUESTION-corpus-rot-76-triage-auth-service-taint-to-pure-flow-adjudication.md",
       "headings": [
@@ -6929,6 +7310,90 @@
         "them",
         "security",
         "tainted"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-STATUS-76-effect-name-files-done-plus-C11-superset-refinement.md",
+      "title": "2026-07-17-STATUS-76-effect-name-files-done-plus-C11-superset-refinement.md",
+      "headings": [
+        "Batch A — 4 effect-name files (→ 0/0), the CANONICAL_EFFECTS allowlist + C11",
+        "Batch B — 6 string/bound files (→ 0/0), gate matched to the field's vocabulary shape",
+        "The refinement to ACK — C11 superset is RECOGNISED vocabulary, not CANONICAL alone",
+        "State"
+      ],
+      "codes": [],
+      "tasks": [
+        "#76"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "canonical",
+        "c11",
+        "files",
+        "batch",
+        "vocabulary",
+        "allowlist",
+        "effects",
+        "recognised",
+        "ack",
+        "gate",
+        "refinement",
+        "effect-name",
+        "string",
+        "bound",
+        "superset",
+        "effect",
+        "name",
+        "matched",
+        "field",
+        "shape",
+        "alone",
+        "state",
+        "deny-only",
+        "status-76-effect-name-files-done-plus-c11-superset-refinement",
+        "drift-gate"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-STATUS-76-numeric-exemplar-economicsService-done-plus-cycle-green.md",
+      "title": "2026-07-17-STATUS-76-numeric-exemplar-economicsService-done-plus-cycle-green.md",
+      "headings": [
+        "economicsService — the numeric exemplar (your upper-bound requirement)",
+        "Fan-out plan for the remaining 17 — a per-file-shape nuance",
+        "State"
+      ],
+      "codes": [],
+      "tasks": [
+        "#76",
+        "#96"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "numeric",
+        "economicsservice",
+        "exemplar",
+        "remaining",
+        "nuance",
+        "upper-bound",
+        "fan-out",
+        "requirement",
+        "plan",
+        "per-file-shape",
+        "taint",
+        "state",
+        "check",
+        "status-76-numeric-exemplar-economicsservice-done-plus-cycle-green",
+        "cf85a597",
+        "both",
+        "green",
+        "galerina",
+        "files",
+        "trap",
+        "shape",
+        "main",
+        "closed",
+        "governanceservice",
+        "string"
       ]
     },
     {

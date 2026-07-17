@@ -3775,7 +3775,7 @@
       "doc docs/module-system-and-visibility.md:912",
       "doc docs/patterns/applications/02-workflow-process.md:65",
       "doc docs/patterns/applications/06-state-machines.md:62",
-      "ref scripts/audit-effect-canonicality.mjs:128"
+      "ref scripts/audit-effect-canonicality.mjs:137"
     ]
   },
   {
@@ -5959,7 +5959,7 @@
       "ref scripts/audit-corpus-effect-names.mjs:134",
       "ref scripts/audit-corpus-effect-names.mjs:138",
       "ref scripts/audit-corpus-effect-names.mjs:161",
-      "ref scripts/audit-effect-canonicality.mjs:107",
+      "ref scripts/audit-effect-canonicality.mjs:116",
       "emit scripts/audit-twin-emit-parity.mjs:197",
       "ref scripts/audit-twin-emit-parity.mjs:198",
       "ref scripts/audit-twin-emit-parity.mjs:201",
@@ -15448,8 +15448,8 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "test scripts/tests/dev-tools-scripts.test.mjs:379",
-      "test scripts/tests/dev-tools-scripts.test.mjs:391"
+      "test scripts/tests/dev-tools-scripts.test.mjs:432",
+      "test scripts/tests/dev-tools-scripts.test.mjs:444"
     ]
   },
   {

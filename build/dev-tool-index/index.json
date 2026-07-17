@@ -1184,7 +1184,8 @@
         "diagnostics",
         "secrets/privacy",
         "doc-drift",
-        "graph/index"
+        "graph/index",
+        "sensitive-allowlist"
       ]
     },
     {
@@ -2327,6 +2328,7 @@
     "sensitive-allowlist": [
       "audit-allowlist-sensitive.mjs",
       "audit-checker-wiring.mjs",
+      "audit-effect-canonicality.mjs",
       "audit-muted-diagnostics.mjs",
       "audit-name-collisions.mjs",
       "audit-oblivious.mjs",

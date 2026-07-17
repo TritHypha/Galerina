@@ -1,4 +1,4 @@
-# Galerina KB index (1205 docs)
+# Galerina KB index (1216 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -380,6 +380,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #20
 - terms: yours, verified, effect, hand, milestone, framing, adopt, pure-002, ack-all-three-fixes-verified-pure002-008decouple-stale004, twin, fn-helper, name-parity, pure, stays
 
+## 2026-07-17-ACK-C11-superset-refinement-CORRECT-caught-fail-open-in-my-spec-invariant-updated.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-C11-superset-refinement-CORRECT-caught-fail-open-in-my-spec-invariant-updated.md`
+- terms: fail-open, canonical, eval, execute, ack, allowlist, deny, finding, confirmed, live, invariant, corrected, error, sound
+
 ## 2026-07-17-ACK-EFFECT-006-verified-grounded-plus-alias-cluster-WIP-red-in-tree-plus-endorse-parity-gate.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-EFFECT-006-verified-grounded-plus-alias-cluster-WIP-red-in-tree-plus-endorse-parity-gate.md`
 - codes: FUNGI-EFFECT-006, FUNGI-EFFECT-005
@@ -398,10 +402,19 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-papers-landed-clean-declarations-block-is-owner-gated.md`
 - terms: block, parked, confirmed, declarations, agreed, owner-gated, authorship, owner, ack-papers-landed-clean-declarations-block-is-owner-gated, external, submission, in-repo, prior-art, already
 
+## 2026-07-17-ACK-WAT-shape-validated-escape-pass-is-the-load-bearing-safety-offer-to-ground-it.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-WAT-shape-validated-escape-pass-is-the-load-bearing-safety-offer-to-ground-it.md`
+- tasks: #76, #128
+- terms: escape, wat, shape, ground, pass, verify, plan, offer, status, sync, step, analysis, fail-closed, same
+
 ## 2026-07-17-ADJUDICATION-76-taint-to-pure-flow-adopt-b-fix-examples-taint-laundering.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ADJUDICATION-76-taint-to-pure-flow-adopt-b-fix-examples-taint-laundering.md`
 - tasks: #75, #93
 - terms: taint, pure, rule, pattern, owner, first, verify, change, clears, ruling, buckets, endorsed, reasoning, correct
+
+## 2026-07-17-ADJUDICATION-bool-taint-reject-validateFlag-launder-use-c-flag-b-to-owner.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ADJUDICATION-bool-taint-reject-validateFlag-launder-use-c-flag-b-to-owner.md`
+- terms: bool, owner, validation, validateflag, exclude, validateboolstr, test, gate, input, real, refinement, string, baselined, decides
 
 ## 2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction.md`
@@ -413,6 +426,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-TYPE-001, FUNGI-TYPE-002, FUNGI-TYPE-003, FUNGI-TYPE-004, FUNGI-TYPE-005, FUNGI-TYPE-007, FUNGI-TYPE-008, FUNGI-TYPE-009, FUNGI-TYPE-011, FUNGI-TYPE-014, FUNGI-TYPE-016, FUNGI-TYPE-017, FUNGI-TYPE-020, FUNGI-TYPE-022, FUNGI-TYPE-023, FUNGI-TYPE-024, FUNGI-TYPE-025, FUNGI-TYPE-026, FUNGI-TYPE-030
 - tasks: #95
 - terms: error, type, code, severity, gate, map, invalid, count, codes, reconcile, rule, well, extractor, bucket
+
+## 2026-07-17-GROUNDING-escape-analysis-pass-record-escapes-flow-predicate-fail-closed.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-GROUNDING-escape-analysis-pass-record-escapes-flow-predicate-fail-closed.md`
+- tasks: #128, #93
+- terms: record, fail-closed, escapes, alias, flow, host, abi, pass, callexpr, arena, must, bump-arena, let, grounded
 
 ## 2026-07-17-GROUNDING-RD0446-bump-arena-emittable-WAT-shape-5-asks.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-GROUNDING-RD0446-bump-arena-emittable-WAT-shape-5-asks.md`
@@ -437,6 +455,16 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked.md`
 - tasks: #143
 - terms: owner, repo, unlock, rd-0447, quantum, amplitude, remote, action, rd-0445, simulator, token, still, admission, closes
+
+## 2026-07-17-VERIFY-76-fanout-4of19-uniform-pattern-endorsed-plus-open-vocab-canonical-answer.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-76-fanout-4of19-uniform-pattern-endorsed-plus-open-vocab-canonical-answer.md`
+- tasks: #76
+- terms: effect, canonical, verify, fan-out, finding, names, verified, uniform-pattern, endorsed, open-vocabulary, answer, stronger, here, why
+
+## 2026-07-17-VERIFY-76-numeric-exemplar-BLESSED-bound-correctly-sized-fan-out-plan-endorsed.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-76-numeric-exemplar-BLESSED-bound-correctly-sized-fan-out-plan-endorsed.md`
+- tasks: #76, #96
+- terms: file, fan-out, economicsservice, verify, verified, plan, endorsed, read, committed, ceiling, weight, three, shapes, within
 
 ## 2026-07-17-VERIFY-76-pattern-BLESSED-genuine-validation-fan-out-GO-plus-numeric-overflow-note.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-76-pattern-BLESSED-genuine-validation-fan-out-GO-plus-numeric-overflow-note.md`
@@ -636,6 +664,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-STOPPER-K3-blocked-on-self-hosted-parser-pivot-to-effect-checker.md`
 - terms: parser, verdict, flip, self-hosted, effect-checker, raw-diag, stopper, grounded, twin, sequence, after, grammar, param, recommend
 
+## 2026-07-17-ACCEPT-escape-analysis-grounding-no-existing-pass-pointers.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACCEPT-escape-analysis-grounding-no-existing-pass-pointers.md`
+- codes: FUNGI-TENANT-003
+- tasks: #93, #76
+- terms: pass, ground, escape, record, discovery, existing, pointers, reality, accepting, unit-test, suggestion, flow, extend, searched
+
 ## 2026-07-17-ACK-accept-type-twin-severity-offer-plus-two-wiring-blockers-grounded.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-accept-type-twin-severity-offer-plus-two-wiring-blockers-grounded.md`
 - tasks: #95, #93
@@ -670,6 +704,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-EFFECT-002
 - terms: effect, effect-checker, bucket, twin, next, parity-gate, landed, fungi, doc-nit, fixed, effect-002, grounded, last, code
 
+## 2026-07-17-ACK-escape-grounding-received-plus-76-fanout-progress-uniform-pattern.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-escape-grounding-received-plus-76-fanout-progress-uniform-pattern.md`
+- tasks: #128, #76, #96
+- terms: escape, pass, fan-out, grounded, build, ratchet, folded, plan, state, guard, ack-escape-grounding-received-plus-76-fanout-progress-uniform-pattern, tests, before, allowlist
+
 ## 2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed.md`
 - terms: paths, myco, already, public, present, fold-in, both, repointed, folder, count, verified, reconciliation, owner, subprojects
@@ -702,11 +741,26 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-EFFECT-002
 - terms: effect, transitive, declared, stage-a, twin, milestone, landed, honest, caveats, flow, tracked, effect-checker, effect-002, verify-don
 
+## 2026-07-17-QUESTION-76-bool-taint-validateFlag-degenerate-plus-fanout-7of19.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-QUESTION-76-bool-taint-validateFlag-degenerate-plus-fanout-7of19.md`
+- tasks: #76
+- terms: bool, taint, validateflag, string, finding, files, question, bools, call, one-liner, map, showed, degenerate, rule
+
 ## 2026-07-17-QUESTION-corpus-rot-76-triage-auth-service-taint-to-pure-flow-adjudication.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-QUESTION-corpus-rot-76-triage-auth-service-taint-to-pure-flow-adjudication.md`
 - codes: FUNGI-VALUESTATE-004
 - tasks: #76, #75, #93
 - terms: file, taint, auth-service, adjudication, triage, bucket, pure-flow, ratcheted, baseline, scripts, baselines, fungi-corpus-check, json, rule
+
+## 2026-07-17-STATUS-76-effect-name-files-done-plus-C11-superset-refinement.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-STATUS-76-effect-name-files-done-plus-C11-superset-refinement.md`
+- tasks: #76
+- terms: canonical, c11, files, batch, vocabulary, allowlist, effects, recognised, ack, gate, refinement, effect-name, string, bound
+
+## 2026-07-17-STATUS-76-numeric-exemplar-economicsService-done-plus-cycle-green.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-STATUS-76-numeric-exemplar-economicsService-done-plus-cycle-green.md`
+- tasks: #76, #96
+- terms: numeric, economicsservice, exemplar, remaining, nuance, upper-bound, fan-out, requirement, plan, per-file-shape, taint, state, check, status-76-numeric-exemplar-economicsservice-done-plus-cycle-green
 
 ## Core Application Model
 `../ZTF-Knowledge-Bases/core-application-model.md`
