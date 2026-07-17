@@ -36,6 +36,7 @@ const AS_JSON = argv.has("--json");
 const STRICT = argv.has("--strict");
 const TABLE = argv.has("--table");
 const AUDIT_HTML = argv.has("--audit-html");   // emit the self-contained % audit widget artifact
+const AUDIT_CHECK = argv.has("--audit-check");  // staleness gate: committed percent-audit.json must match source (git provenance excluded)
 const SELF_TEST = argv.has("--self-test");      // prove the % audit can never omit a section (fail-closed)
 
 const readJSON = (p) => { try { return JSON.parse(readFileSync(p, "utf8")); } catch { return null; } };
@@ -383,6 +384,11 @@ function buildPercentAudit() {
   };
 }
 
+// The staleness-relevant CONTENT of a % audit: everything EXCEPT the git `provenance` (branch/sha/dirty),
+// which moves every commit and so is not a staleness signal. Two audits with the same content key are the
+// same audit even if generated at different commits. Used by the --audit-check gate and its self-test.
+function auditContentKey(a) { const { provenance, ...rest } = a; return JSON.stringify(rest); }
+
 // Self-contained SVG/HTML % audit artifact — no CDN, no <script>, opens offline, adapts to light/dark.
 function renderAuditHtml(audit) {
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -471,6 +477,11 @@ if (SELF_TEST) {
   let threw = false; try { buildPercentAudit(); } catch { threw = true; }
   TRACKING_REGISTRY.push(...saved);
   ok(threw, "an EMPTY Tracking registry is REFUSED (buildPercentAudit throws — the % audit cannot drop a section)");
+  // #95 staleness gate — the content key must IGNORE the volatile git provenance yet DETECT real drift.
+  ok(auditContentKey({ ...audit, provenance: { sha: "aaaaaaa" } }) === auditContentKey({ ...audit, provenance: { sha: "bbbbbbb" } }),
+    "staleness content key ignores git provenance (a new commit sha alone is NOT staleness)");
+  ok(auditContentKey(audit) !== auditContentKey({ ...audit, ztAvg: audit.ztAvg + 1 }),
+    "staleness content key DETECTS real drift (a changed ztAvg trips the gate — non-vacuous)");
   console.log(process.exitCode ? "  component-health % audit self-test FAILED" : "  component-health % audit self-test: all 3 sections structurally enforced ✅");
   process.exit(process.exitCode ?? 0);
 }
@@ -484,6 +495,26 @@ if (AUDIT_HTML) {
   writeFileSync(htmlPath, renderAuditHtml(audit));
   writeFileSync(join(outDir, "percent-audit.json"), JSON.stringify(audit, null, 2));
   console.log(`✅ % audit: build/component-health/percent-audit.{html,json} — ${audit.sections.length} sections (ZT-thesis ${audit.ztAvg}% · build ${audit.buildAvg}% · tracking registry ${audit.trackingRegistryCount} items)`);
+  process.exit(0);
+}
+
+if (AUDIT_CHECK) {
+  // Staleness gate (#95): the committed % audit must match what component-health.mjs (the source of
+  // truth) would generate NOW, comparing CONTENT only — the git `provenance` moves every commit and is
+  // NOT a staleness signal, so it's excluded via auditContentKey. Fail-closed (exit 3) if the source
+  // data (ZERO_TRUST / BUILD_PROGRESS / TRACKING_REGISTRY) drifted without a `--audit-html` regen.
+  const fresh = buildPercentAudit();   // throws (fail-closed) if any section is missing/empty
+  const auditPath = join(ROOT, "build", "component-health", "percent-audit.json");
+  if (!existsSync(auditPath)) {
+    console.error("❌ percent-audit staleness: build/component-health/percent-audit.json is MISSING — run `node scripts/component-health.mjs --audit-html` and commit it.");
+    process.exit(3);
+  }
+  const committed = JSON.parse(readFileSync(auditPath, "utf8"));
+  if (auditContentKey(fresh) !== auditContentKey(committed)) {
+    console.error("❌ percent-audit staleness: build/component-health/percent-audit.json content drifted from component-health.mjs (source of truth) — run `node scripts/component-health.mjs --audit-html` and commit the refreshed % audit. (git provenance is excluded from this check; only real content drift trips it.)");
+    process.exit(3);
+  }
+  console.log("✅ percent-audit fresh: committed % audit content == component-health.mjs (git provenance excluded from the staleness check)");
   process.exit(0);
 }
 

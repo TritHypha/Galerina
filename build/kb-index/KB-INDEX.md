@@ -1,4 +1,4 @@
-# Galerina KB index (1190 docs)
+# Galerina KB index (1195 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -398,6 +398,17 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-papers-landed-clean-declarations-block-is-owner-gated.md`
 - terms: block, parked, confirmed, declarations, agreed, owner-gated, authorship, owner, ack-papers-landed-clean-declarations-block-is-owner-gated, external, submission, in-repo, prior-art, already
 
+## 2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction.md`
+- tasks: #93, #94
+- terms: parser, self-hosted, twin, stopper, severity-parity, confirmed, transparency, nearly, contradiction, caught, effect, complete, boundary, fungi
+
+## 2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension.md`
+- codes: FUNGI-TYPE-020
+- tasks: #95, #96, #97
+- terms: severity, leg, effect, code, small, build, maketcdiag, codes, read, map, inline, found, type-checker, source
+
 ## 2026-07-17-myco-galerina-package-updates-fold-into-galerina-tools-myco.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-myco-galerina-package-updates-fold-into-galerina-tools-myco.md`
 - terms: delta, upstream, myco, updates, fold, package, file, galerina-tools-myco, resolution, context, known-next, fyi, don, regression
@@ -415,6 +426,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-EFFECT-002-live-probe-found-pure-002-under-report-divergence.md`
 - codes: FUNGI-EFFECT-002, FUNGI-EFFECT-003
 - terms: stage-a, confirmed, pure, fn-helper, faithful, under-report, verified, live, divergence, asked, pure-flow, flow, twin, sub-path
+
+## 2026-07-17-VERIFY-severity-parity-green-trilogy-complete-plus-type-twin-offer.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-severity-parity-green-trilogy-complete-plus-type-twin-offer.md`
+- codes: FUNGI-TIER-001
+- tasks: #93
+- terms: severity-parity, effect, twin, clean, severity, verified, complete, tree, b71de07, offer, type-twin, hand, follow-up, code
 
 ## 2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md`
@@ -593,6 +610,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-STOPPER-K3-blocked-on-self-hosted-parser-pivot-to-effect-checker.md`
 - terms: parser, verdict, flip, self-hosted, effect-checker, raw-diag, stopper, grounded, twin, sequence, after, grammar, param, recommend
 
+## 2026-07-17-ACK-accept-type-twin-severity-offer-plus-two-wiring-blockers-grounded.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-accept-type-twin-severity-offer-plus-two-wiring-blockers-grounded.md`
+- tasks: #95, #93
+- terms: severity, ground-truth, type-, type, twin, severities, fungi, accepting, offer, received, code, maketcdiag, effect, map
+
 ## 2026-07-17-ACK-alias-cluster-landed-005-unsquat-009-payment-charge.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-alias-cluster-landed-005-unsquat-009-payment-charge.md`
 - codes: FUNGI-EFFECT-005, FUNGI-EFFECT-009
@@ -621,6 +643,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-EFFECT-002, FUNGI-EFFECT-008
 - tasks: #20
 - terms: ack, verify, pure-002, pure, confirmed, flow, fixed, stale-004, cluster, cleared, traps, twin, effect, independent
+
+## 2026-07-17-ACK-severity-parity-DONE-parity-trilogy-complete.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-severity-parity-DONE-parity-trilogy-complete.md`
+- codes: FUNGI-TIER-001
+- tasks: #93
+- terms: effect, twin, severity, leg, severity-parity, landed, final, note, side, error, warning, code, ack-severity-parity-done-parity-trilogy-complete, emit-set
 
 ## 2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md`

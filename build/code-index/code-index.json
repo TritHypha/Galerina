@@ -5966,7 +5966,7 @@
       "ref scripts/audit-twin-emit-parity.mjs:180",
       "emit scripts/audit-twin-emit-parity.mjs:184",
       "ref scripts/audit-twin-emit-parity.mjs:186",
-      "ref scripts/component-health.mjs:279",
+      "ref scripts/component-health.mjs:280",
       "test scripts/tests/cg4-signing-boundary.test.mjs:72"
     ]
   },
@@ -8424,7 +8424,7 @@
       "doc docs/examples/Level-2-Types/096-hallmark-reserved-name/notes.md:11",
       "doc docs/language/fungi/04-types-and-values.md:197",
       "doc docs/language/fungi/SYNTAX-REFERENCE.md:57",
-      "ref scripts/component-health.mjs:277"
+      "ref scripts/component-health.mjs:278"
     ]
   },
   {

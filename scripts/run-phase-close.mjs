@@ -329,6 +329,12 @@ run("claim:hygiene", "node", ["scripts/audit-claim-hygiene.mjs"]);
 //   here makes it structurally impossible to ship a % audit that silently drops a section without the
 //   cadence going red.
 run("audit:sections", "node", ["scripts/component-health.mjs", "--self-test"]);
+// audit:percent-fresh (#95) — the committed build/component-health/percent-audit.json must match what
+//   component-health.mjs (the source of truth) generates NOW, comparing CONTENT only (the git provenance
+//   sha moves every commit and is excluded). Closes the staleness class where a closing cycle regenerated
+//   the build indexes but skipped --audit-html, leaving percent-audit.{html,json} describing an old tree.
+//   Fail-closed → run `node scripts/component-health.mjs --audit-html` and commit the refreshed % audit.
+run("audit:percent-fresh", "node", ["scripts/component-health.mjs", "--audit-check"]);
 // doc:reference-drift — the docs/reference/ pages must not DRIFT from the enforcing code (R&D's 2026-07-15
 //   re-verification found types.md documenting TypeId alone while the checker accepts the isBuiltInType()
 //   union). Extracts each page's vocabulary FROM SOURCE (45 canonical effects + 2 deny-only + the union gate

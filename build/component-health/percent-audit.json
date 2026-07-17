@@ -3,11 +3,11 @@
   "provenance": {
     "available": true,
     "branch": "main",
-    "sha": "331c9fcf",
+    "sha": "1b71de07",
     "detached": false,
     "dirty": true
   },
-  "shipReadinessPct": 97.87234042553192,
+  "shipReadinessPct": 96.84210526315789,
   "ztAvg": 78,
   "buildAvg": 75,
   "trackingRegistryCount": 20,

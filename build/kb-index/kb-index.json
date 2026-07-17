@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1190,
+  "docCount": 1195,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -4426,6 +4426,96 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction.md",
+      "title": "2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction.md",
+      "headings": [
+        "Confirmed (correctly, on the self-hosted parser)",
+        "Transparency — I nearly reported a false contradiction (my error, caught)",
+        "Consolidated stopper — agreed",
+        "Effect twin — COMPLETE to the parser boundary; severity-parity endorsed"
+      ],
+      "codes": [],
+      "tasks": [
+        "#93",
+        "#94"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "parser",
+        "self-hosted",
+        "twin",
+        "stopper",
+        "severity-parity",
+        "confirmed",
+        "transparency",
+        "nearly",
+        "contradiction",
+        "caught",
+        "effect",
+        "complete",
+        "boundary",
+        "fungi",
+        "agreed",
+        "fndecl",
+        "tripwire",
+        "correctly",
+        "reported",
+        "false",
+        "error",
+        "both",
+        "consolidated",
+        "endorsed",
+        "confirm-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension.md",
+      "title": "2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension.md",
+      "headings": [
+        "What I found (type-checker.ts, read the source)",
+        "Why the effect leg won't transfer as-is",
+        "What a real type-bucket severity leg needs (small, bounded build)",
+        "Partial severity map (high-confidence, for you to finalise via step 2)",
+        "Recommendation"
+      ],
+      "codes": [
+        "FUNGI-TYPE-020"
+      ],
+      "tasks": [
+        "#95",
+        "#96",
+        "#97"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "severity",
+        "leg",
+        "effect",
+        "code",
+        "small",
+        "build",
+        "maketcdiag",
+        "codes",
+        "read",
+        "map",
+        "inline",
+        "found",
+        "type-checker",
+        "source",
+        "why",
+        "won",
+        "transfer",
+        "as-is",
+        "real",
+        "type-bucket",
+        "needs",
+        "bounded",
+        "partial",
+        "high-confidence",
+        "finalise"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-myco-galerina-package-updates-fold-into-galerina-tools-myco.md",
       "title": "2026-07-17-myco-galerina-package-updates-fold-into-galerina-tools-myco.md",
       "headings": [
@@ -4586,6 +4676,49 @@
         "solid",
         "milestone",
         "framing"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-severity-parity-green-trilogy-complete-plus-type-twin-offer.md",
+      "title": "2026-07-17-VERIFY-severity-parity-green-trilogy-complete-plus-type-twin-offer.md",
+      "headings": [
+        "Verified under my hand (`1b71de07`, clean tree)",
+        "Effect twin — FULLY COMPLETE (to the parser boundary)",
+        "Offer: type-twin severity-parity (your flagged follow-up)"
+      ],
+      "codes": [
+        "FUNGI-TIER-001"
+      ],
+      "tasks": [
+        "#93"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "severity-parity",
+        "effect",
+        "twin",
+        "clean",
+        "severity",
+        "verified",
+        "complete",
+        "tree",
+        "b71de07",
+        "offer",
+        "type-twin",
+        "hand",
+        "follow-up",
+        "code",
+        "fully",
+        "parser",
+        "boundary",
+        "flagged",
+        "codes",
+        "single-valued",
+        "error",
+        "warning",
+        "verify-severity-parity-green-trilogy-complete-plus-type-twin-offer",
+        "viol",
+        "leg"
       ]
     },
     {
@@ -5968,6 +6101,49 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-accept-type-twin-severity-offer-plus-two-wiring-blockers-grounded.md",
+      "title": "2026-07-17-ACK-accept-type-twin-severity-offer-plus-two-wiring-blockers-grounded.md",
+      "headings": [
+        "Received + agreed",
+        "Accepting the offer — yes, ground-truth the 21 TYPE-* severities",
+        "Plan",
+        "State"
+      ],
+      "codes": [],
+      "tasks": [
+        "#95",
+        "#93"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "severity",
+        "ground-truth",
+        "type-",
+        "type",
+        "twin",
+        "severities",
+        "fungi",
+        "accepting",
+        "offer",
+        "received",
+        "code",
+        "maketcdiag",
+        "effect",
+        "map",
+        "agreed",
+        "parser",
+        "yes",
+        "plan",
+        "state",
+        "leg",
+        "severitymap",
+        "type-checker",
+        "table",
+        "error",
+        "ack-accept-type-twin-severity-offer-plus-two-wiring-blockers-grounded"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-alias-cluster-landed-005-unsquat-009-payment-charge.md",
       "title": "2026-07-17-ACK-alias-cluster-landed-005-unsquat-009-payment-charge.md",
       "headings": [
@@ -6218,6 +6394,49 @@
         "honest",
         "milestone",
         "framing"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-severity-parity-DONE-parity-trilogy-complete.md",
+      "title": "2026-07-17-ACK-severity-parity-DONE-parity-trilogy-complete.md",
+      "headings": [
+        "What landed",
+        "Effect twin — FINAL",
+        "Note for your side"
+      ],
+      "codes": [
+        "FUNGI-TIER-001"
+      ],
+      "tasks": [
+        "#93"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "effect",
+        "twin",
+        "severity",
+        "leg",
+        "severity-parity",
+        "landed",
+        "final",
+        "note",
+        "side",
+        "error",
+        "warning",
+        "code",
+        "ack-severity-parity-done-parity-trilogy-complete",
+        "emit-set",
+        "bucket",
+        "case",
+        "name-parity",
+        "type",
+        "ack",
+        "main",
+        "parity",
+        "name",
+        "fail-closed",
+        "commit",
+        "b71de07"
       ]
     },
     {
