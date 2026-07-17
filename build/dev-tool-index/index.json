@@ -4,9 +4,9 @@
     "packages": 95,
     "testBearing": 94,
     "tests": 7359,
-    "devTools": 88,
-    "auditTools": 50,
-    "toolsInCadence": 28,
+    "devTools": 90,
+    "auditTools": 52,
+    "toolsInCadence": 29,
     "proofs": 40
   },
   "packages": [
@@ -1504,6 +1504,21 @@
       ]
     },
     {
+      "name": "audit-private-doc-leak.mjs",
+      "category": "audit",
+      "purpose": "fail-CLOSED: no tracked file in this PUBLIC repo may name a never-public KB doc",
+      "selfTest": true,
+      "inCadence": true,
+      "concerns": [
+        "signing/fusion",
+        "naming",
+        "source-hygiene",
+        "doc-drift",
+        "graph/index",
+        "muted-diagnostics"
+      ]
+    },
+    {
       "name": "audit-production-blockers.mjs",
       "category": "audit",
       "purpose": "every PRODUCTION_BLOCKER must have a real emitter (RD-0124 NOW-1 follow-up).",
@@ -1524,7 +1539,6 @@
       "concerns": [
         "provenance",
         "diagnostics",
-        "teaching-corpus",
         "doc-drift",
         "graph/index"
       ]
@@ -1699,6 +1713,17 @@
         "gate-wiring",
         "diagnostics",
         "tier-floor"
+      ]
+    },
+    {
+      "name": "audit-unlowered-nodes.mjs",
+      "category": "audit",
+      "purpose": "the un-lowered-node ratchet (R&D grounding #6.1)",
+      "selfTest": true,
+      "inCadence": false,
+      "concerns": [
+        "signing/fusion",
+        "diagnostics"
       ]
     },
     {
@@ -2266,6 +2291,7 @@
       "audit-syntax.mjs",
       "audit-tier-boundary.mjs",
       "audit-twin-emit-parity.mjs",
+      "audit-unlowered-nodes.mjs",
       "fix-logicn-brand.mjs",
       "graph-all.mjs",
       "memory-graph.mjs",
@@ -2326,6 +2352,7 @@
       "audit-papers-index.mjs",
       "audit-path-leak.mjs",
       "audit-perf-hotpath.mjs",
+      "audit-private-doc-leak.mjs",
       "audit-production-blockers.mjs",
       "audit-provenance.mjs",
       "audit-selfhost-readiness.mjs",
@@ -2391,6 +2418,7 @@
       "audit-oblivious.mjs",
       "audit-overclaim-phrases.mjs",
       "audit-perf-hotpath.mjs",
+      "audit-private-doc-leak.mjs",
       "audit-reference-doc-drift.mjs",
       "audit-route-overlap.mjs",
       "audit-runtime-coverage.mjs",
@@ -2398,6 +2426,7 @@
       "audit-sink-canonicality.mjs",
       "audit-syntax.mjs",
       "audit-tier-boundary.mjs",
+      "audit-unlowered-nodes.mjs",
       "audit-web-stub-guard.mjs",
       "fix-logicn-brand.mjs",
       "galerina-new.mjs",
@@ -2459,6 +2488,7 @@
       "audit-overclaim-phrases.mjs",
       "audit-papers-index.mjs",
       "audit-path-leak.mjs",
+      "audit-private-doc-leak.mjs",
       "audit-provenance.mjs",
       "audit-reference-doc-drift.mjs",
       "audit-stage-execution.mjs",
@@ -2532,6 +2562,7 @@
     "naming": [
       "audit-claim-hygiene.mjs",
       "audit-name-collisions.mjs",
+      "audit-private-doc-leak.mjs",
       "audit-web-stub-guard.mjs",
       "run-phase-close.mjs",
       "emit-doc-wat.mjs"
@@ -2551,6 +2582,7 @@
       "audit-corpus-effect-names.mjs",
       "audit-name-collisions.mjs",
       "audit-papers-index.mjs",
+      "audit-private-doc-leak.mjs",
       "audit-scratchdir-hygiene.mjs",
       "audit-stray-docs.mjs",
       "audit-syntax.mjs",
@@ -2602,7 +2634,6 @@
       "audit-oblivious.mjs",
       "audit-papers-index.mjs",
       "audit-percent-evidence.mjs",
-      "audit-provenance.mjs",
       "audit-stage-execution.mjs",
       "ts-retirement-graph.mjs",
       "lint-conventions.mjs",
@@ -2636,7 +2667,8 @@
     ],
     "muted-diagnostics": [
       "audit-muted-diagnostics.mjs",
-      "audit-perf-hotpath.mjs"
+      "audit-perf-hotpath.mjs",
+      "audit-private-doc-leak.mjs"
     ],
     "provenance": [
       "audit-path-leak.mjs",
@@ -2691,6 +2723,7 @@
       "audit-syntax-reference-links.mjs",
       "audit-syntax.mjs",
       "audit-tier-boundary.mjs",
+      "audit-unlowered-nodes.mjs",
       "audit-web-stub-guard.mjs",
       "lint-fungi.mjs"
     ]

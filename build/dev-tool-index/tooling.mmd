@@ -223,6 +223,13 @@ flowchart LR
   T_audit_perf_hotpath_mjs --> C_tier_floor
   T_audit_perf_hotpath_mjs --> C_graph_index
   T_audit_perf_hotpath_mjs --> C_muted_diagnostics
+  T_audit_private_doc_leak_mjs["audit-private-doc-leak.mjs"]
+  T_audit_private_doc_leak_mjs --> C_signing_fusion
+  T_audit_private_doc_leak_mjs --> C_naming
+  T_audit_private_doc_leak_mjs --> C_source_hygiene
+  T_audit_private_doc_leak_mjs --> C_doc_drift
+  T_audit_private_doc_leak_mjs --> C_graph_index
+  T_audit_private_doc_leak_mjs --> C_muted_diagnostics
   T_audit_production_blockers_mjs["audit-production-blockers.mjs"]
   T_audit_production_blockers_mjs --> C_coverage
   T_audit_production_blockers_mjs --> C_diagnostics
@@ -230,7 +237,6 @@ flowchart LR
   T_audit_provenance_mjs["audit-provenance.mjs"]
   T_audit_provenance_mjs --> C_provenance
   T_audit_provenance_mjs --> C_diagnostics
-  T_audit_provenance_mjs --> C_teaching_corpus
   T_audit_provenance_mjs --> C_doc_drift
   T_audit_provenance_mjs --> C_graph_index
   T_audit_reference_doc_drift_mjs["audit-reference-doc-drift.mjs"]
@@ -301,6 +307,9 @@ flowchart LR
   T_audit_twin_emit_parity_mjs --> C_gate_wiring
   T_audit_twin_emit_parity_mjs --> C_diagnostics
   T_audit_twin_emit_parity_mjs --> C_tier_floor
+  T_audit_unlowered_nodes_mjs["audit-unlowered-nodes.mjs"]
+  T_audit_unlowered_nodes_mjs --> C_signing_fusion
+  T_audit_unlowered_nodes_mjs --> C_diagnostics
   T_audit_web_stub_guard_mjs["audit-web-stub-guard.mjs"]
   T_audit_web_stub_guard_mjs --> C_signing_fusion
   T_audit_web_stub_guard_mjs --> C_governance
