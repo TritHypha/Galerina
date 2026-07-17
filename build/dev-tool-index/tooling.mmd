@@ -224,6 +224,7 @@ flowchart LR
   T_audit_perf_hotpath_mjs --> C_graph_index
   T_audit_perf_hotpath_mjs --> C_muted_diagnostics
   T_audit_private_doc_leak_mjs["audit-private-doc-leak.mjs"]
+  T_audit_private_doc_leak_mjs --> C_sinks_taint
   T_audit_private_doc_leak_mjs --> C_signing_fusion
   T_audit_private_doc_leak_mjs --> C_naming
   T_audit_private_doc_leak_mjs --> C_source_hygiene

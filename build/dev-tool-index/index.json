@@ -3,7 +3,7 @@
   "totals": {
     "packages": 95,
     "testBearing": 94,
-    "tests": 7359,
+    "tests": 7361,
     "devTools": 90,
     "auditTools": 52,
     "toolsInCadence": 29,
@@ -297,7 +297,7 @@
       "name": "galerina-core-compiler",
       "kind": "core",
       "description": "Galerina compiler pipeline contracts for parsing, checking, IR, diagnostics and reports.",
-      "tests": 4698,
+      "tests": 4700,
       "hasTestScript": true,
       "border": "PASS",
       "files": 99,
@@ -1510,6 +1510,7 @@
       "selfTest": true,
       "inCadence": true,
       "concerns": [
+        "sinks/taint",
         "signing/fusion",
         "naming",
         "source-hygiene",
@@ -2528,6 +2529,7 @@
       "audit-muted-diagnostics.mjs",
       "audit-oblivious.mjs",
       "audit-papers-index.mjs",
+      "audit-private-doc-leak.mjs",
       "audit-sink-canonicality.mjs",
       "check-gate-injection.mjs",
       "generate-sbom.mjs",
