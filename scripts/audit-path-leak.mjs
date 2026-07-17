@@ -12,6 +12,26 @@
 // so a green run BEFORE `git add` can turn RED after commit (a just-authored doc joined the scan set only at
 // add-time). Always `git add` new files, THEN trust a green. (Field-hit 2026-07-16; same note on the KB guard.)
 //
+// ★ THE FAMILY, AND ITS PARITY GAP — this gate is VENDORED EIGHT TIMES and the copies are NOT equal.
+// Surveyed 2026-07-17 (and correcting 0820cd3f's message, which called six of them "blind": wrong — see
+// below). Two shapes exist:
+//   • 6 rules (this file, 184L · ZTF-Knowledge-Bases/tools/kb-path-leak.mjs, 166L) — adds
+//     dash-encoded-user-home + the NEVER_TRACKED pass (codebase-memory-dir, graph-db-blob).
+//   • 3 rules (98L, byte-identical across TritMesh-Database · -Markets · -Query-Language · -Rhizo ·
+//     -Tensor · ZT-Galerina-GRAPH-ASCII-v2) — drive-user-path · wwwprojects · unix-home-path ONLY.
+// The 3-rule copies never modelled the dash slug in EITHER form, and carry no NEVER_TRACKED pass at all
+// — the pass that exists because a 10 MB graph.db.zst with an embedded machine slug sat invisible at HEAD
+// for five days (ae55016e). Their header says "Vendored per consumer from the family's KB/Galerina
+// path-leak guards (one vetted source, copied)". True about PROVENANCE; a reader takes it as PARITY;
+// there is none, and nothing checks. Same class as everything else this file has taught today.
+//
+// Measured, not assumed: those six hold 151 tracked files between them and contain ZERO real leaks
+// under THIS ruleset (the only hits are the tools quoting `wwwprojects/` in their own rule definitions —
+// use-vs-mention). Five have no git remote; one is private. So the gap is LATENT, not live: nothing has
+// gone through it. Left as-is deliberately — right-sizing a guard to a 20-file doc repo is legitimate.
+// What is NOT legitimate is the silence: a copy that models fewer shapes should SAY so. The durable fix
+// is a copies-must-agree check (or a declared per-copy ruleset), not eight hand-syncs. See task #105.
+//
 // Usage:
 //   node scripts/audit-path-leak.mjs --self-test   # prove the detectors fire (run first in CI)
 //   node scripts/audit-path-leak.mjs               # enforce: exit 1 on any leak
