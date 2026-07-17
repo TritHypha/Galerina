@@ -292,6 +292,53 @@ const TRACKING_REGISTRY = [
   { item: "TritMesh / .hypha / TritMeshQL",      state: "post-v1",       detail: "the NEXT project (database on Galerina); RD-0293/0294/0306/0312 designs" },
   { item: "myco",                                state: "shipped",       detail: "v0.1.2 (graph-indexed grep replacement, own subproject); silent size-cap skips now surfaced + VERSION drift gate; npm publish 🔒 outward" },
 ];
+// ── EVIDENCE BINDING (RULING 1, R&D-blessed 2026-07-17) ──────────────────────────────────
+// A published number that cannot move in response to evidence is not a measurement, it is a
+// slogan. Every QUANTIFIED row above must therefore declare HOW its number is known. Exactly
+// three kinds are legal, and `scripts/audit-percent-evidence.mjs` fails closed on anything else:
+//
+//   live:     { live: "<source>" }   — computed from a live source at render time.
+//   ladder:   { ladder: [...] }      — pct DERIVED from rungs. Each rung names a MECHANICALLY
+//                                      CHECKABLE artifact (a test that passes, a gate that is
+//                                      green, a file that exists, a differential that is ≡) and
+//                                      `done` is COMPUTED by checking them — NEVER written.
+//                                      R&D's refinement, and it is the load-bearing half: a
+//                                      derived pct resting on a hand-typed `done` is WORSE than
+//                                      an honest constant, because it LOOKS computed.
+//   asserted: { asserted: "<why>" }  — hand-typed. A declared DEBT, not a measurement. Must
+//                                      appear in the gate's ASSERTED_BASELINE, which may only
+//                                      shrink. Every renderer must LABEL these as asserted, so a
+//                                      meter can never lend the aura of instrumentation to them.
+//
+// Fail-closed direction: no checkable ladder ⇒ NO NUMBER. Such a row should carry a WORD via
+// `status:` (BUILD_PROGRESS already does this for P9 and B8 — the mechanism is half-present
+// here already; this rule finishes it rather than inventing it).
+const EVIDENCE = {
+  // The one genuinely live number in the whole audit.
+  "Tests — full suite": { live: "version.json test/package counts" },
+
+  // ── DEBT. Each states WHY it is still asserted, so the baseline is a work-list, not a dump. ──
+  "Compiler": { asserted: "no countable ladder — 'shipped' is a judgement over the twin corpus; candidate ladder = per-stage twin checker-clean + RD-0361 differential ≡" },
+  "I/O — OS kernel": { asserted: "remainder is #143 execution — a binary switch, not a ladder; likely becomes a WORD" },
+  "Packages": { asserted: "remainder is #143 execution + Phase-28 registry data; the registry half IS countable (real sourceHash + reviewed:true per package)" },
+  "Memory": { asserted: "remainder is #143 execution — a binary switch, not a ladder; likely becomes a WORD" },
+  "TLSTP — zero-middleware": { asserted: "remainder is #143 + B8 raw-byte shim + S4 live wiring; the twinned-surface half is countable, the execution half is not" },
+  "Specification / KB": { asserted: "no countable ladder defined" },
+  "Lexer / Parser / Verifier / Contract / Value-state": { asserted: "no countable ladder defined" },
+  "DRCM Phases 1-7 (Stage-A simulation)": { asserted: "candidate ladder = the 7 phases, if each has a green gate" },
+  "CBOR Manifests (RFC 8949)": { asserted: "no countable ladder defined" },
+  "Stage-B self-hosting — interpreter parity": { asserted: "candidate ladder = R6 corpus Stage-A ≡ Stage-B per stage" },
+  "Type checker / Effect checker": { asserted: "candidate ladder = twin diagnostic-code parity (emit + name + severity), which IS mechanically checked today" },
+  "WAT emitter": { asserted: "candidate ladder = per-construct lowering coverage; #100 Option<Record> is the known open rung" },
+  "Runtime interpreter": { asserted: "no countable ladder defined" },
+  "Application-framework layer": { asserted: "candidate ladder = servable api-server · example-app · signed registry index" },
+  "Post-Quantum & Hardware Security": { asserted: "NO ladder — custody ladder + HW signer are post-v1/hardware. Fail-closed reading: this should become a WORD" },
+  "Passive Execution Plans & Target Bridges": { asserted: "countable P1-P4, but P2 is R&D-blocked (RD-0311) — convert once each rung has a check" },
+  "AI Inference Tower (BitNet/Groq/NVFP4)": { asserted: "countable I1-I5, but I1+I2 are ONE unit (RULING 2: no load site exists) — convert with the I2 wiring" },
+  "Photonic / Ternary Computing": { asserted: "NO ladder — simulation only, no hardware. Fail-closed reading: this should become a WORD" },
+};
+const evidenceFor = (label) => EVIDENCE[label] ?? null;
+
 const quantified = BUILD_PROGRESS.filter((l) => typeof l.pct === "number");
 const buildAvg = Math.round(quantified.reduce((a, l) => a + l.pct, 0) / quantified.length);
 const ztAvg = Math.round(ZERO_TRUST.reduce((a, b) => a + b.pct, 0) / ZERO_TRUST.length);
@@ -321,16 +368,28 @@ const extraSections = () => {
     lines.push("    note: doc-state signal only — per-package TODOs are known to lag shipped reality");
   }
   lines.push("");
+  // RULING 1: tag every number with HOW it is known, in the terminal render too — an untagged
+  // column of %s reads as measurement regardless of what a footnote says.
+  const evTag = (label) => {
+    const ev = evidenceFor(label);
+    if (ev?.live) return " [live]";
+    if (ev?.ladder) return " [derived]";
+    if (ev?.asserted) return " [asserted]";
+    return " [UNEVIDENCED]";
+  };
   lines.push(`  ZERO-TRUST THESIS — boundary readiness (avg ${ztAvg}%; mirrors README "The Zero-Trust thesis")`);
-  for (const b of ZERO_TRUST) lines.push(`    ${L(b.boundary, 24)} ${R(b.pct + "%", 5)}  ${b.status}`);
+  for (const b of ZERO_TRUST) lines.push(`    ${L(b.boundary, 24)} ${R(b.pct + "%", 5)}${L(evTag(b.boundary), 11)} ${b.status}`);
   lines.push("");
   lines.push(`  BUILD PROGRESS — layer readiness (quantified avg ${buildAvg}%; mirrors README "Build Progress")`);
   for (const l of BUILD_PROGRESS) {
-    const pctStr = typeof l.pct === "number" ? `${l.pct}%` : (l.status ?? "—");
+    const has = typeof l.pct === "number";
+    const pctStr = has ? `${l.pct}%` : (l.status ?? "—");
     const extra = l.live && version.testCount ? `  (${version.packageCount}/${version.packageCount} pkgs · ${fmt(version.testCount)} tests · 0 fail)` : "";
-    lines.push(`    ${L(l.layer, 50)} ${R(pctStr, 12)}${extra}`);
+    lines.push(`    ${L(l.layer, 50)} ${R(pctStr, 12)}${has ? evTag(l.layer) : ""}${extra}`);
   }
-  lines.push("    note: %s are the maintained roadmap-readiness figures (README source of truth); the Tests row is LIVE from version.json.");
+  lines.push("    note: [asserted] = HAND-TYPED, not measured — a declared debt, ratcheted by audit-percent-evidence.mjs.");
+  lines.push("          [live] = computed from version.json. [derived] = computed from a checkable rung ladder.");
+  lines.push("          A row with no checkable ladder should carry a WORD, not a number (P9 and B8 already do).");
   lines.push("");
   lines.push(`  TRACKING REGISTRY — substantial items outside the two tables above (§5; mirrors README "Tracking registry")`);
   for (const t of TRACKING_REGISTRY) {
@@ -356,8 +415,8 @@ const extraSections = () => {
 const STATUS_ORDER = ["shipped", "building", "design-done", "build-pending", "post-v1"];
 const statusRank = (s) => { const i = STATUS_ORDER.indexOf(typeof s === "number" ? "building" : s); return i === -1 ? STATUS_ORDER.length : i; };
 const REQUIRED_SECTIONS = [
-  { key: "zero-trust-thesis", title: "Zero-Trust thesis", kind: "meter", get rows() { return ZERO_TRUST.map((b) => ({ label: b.boundary, pct: b.pct, note: b.status })); }, get avg() { return ztAvg; } },
-  { key: "build-progress",    title: "Build progress",    kind: "meter", get rows() { return BUILD_PROGRESS.map((l) => ({ label: l.layer, pct: typeof l.pct === "number" ? l.pct : null, status: l.status ?? null, live: !!l.live })); }, get avg() { return buildAvg; } },
+  { key: "zero-trust-thesis", title: "Zero-Trust thesis", kind: "meter", get rows() { return ZERO_TRUST.map((b) => ({ label: b.boundary, pct: b.pct, note: b.status, evidence: evidenceFor(b.boundary) })); }, get avg() { return ztAvg; } },
+  { key: "build-progress",    title: "Build progress",    kind: "meter", get rows() { return BUILD_PROGRESS.map((l) => ({ label: l.layer, pct: typeof l.pct === "number" ? l.pct : null, status: l.status ?? null, live: !!l.live, evidence: evidenceFor(l.layer) })); }, get avg() { return buildAvg; } },
   { key: "tracking-registry", title: "Tracking registry", kind: "registry", get rows() {
     return TRACKING_REGISTRY
       .map((t, i) => ({ item: t.item, state: t.state, detail: t.detail, _i: i }))
@@ -397,13 +456,21 @@ function renderAuditHtml(audit) {
   // (series blue — the bar carries magnitude, not judgement); the VALUE text is threshold-colored:
   // >=90 green (v-hi) · <40 red (v-lo) · otherwise primary (v-mid). Color encodes the reading.
   const pctColor = (pct) => (pct >= 90 ? "v-hi" : pct < 40 ? "v-lo" : "v-mid");
+  // RULING 1: an ASSERTED row is hand-typed, not measured. Drawing it as a solid meter lends it
+  // the aura of instrumentation — the exact overclaim this rule exists to stop. So an asserted
+  // row renders HOLLOW (hatched fill) and carries an explicit "asserted" tag with its reason on
+  // hover; live/ladder rows render solid. The number still shows — this labels it, never hides it.
   const meterRow = (r) => {
     const has = typeof r.pct === "number";
     const w = has ? r.pct : 0;
     const val = has ? `${r.pct}%` : esc(r.status ?? "—");
     const vcls = has ? pctColor(r.pct) : "v-mid";
-    return `<div class="mrow"><span class="mlabel">${esc(r.label)}</span>`
-      + `<span class="mtrack"><span class="mfill" style="width:${w}%"></span></span>`
+    const asserted = has && !!r.evidence?.asserted;
+    const tag = asserted
+      ? ` <span class="atag" title="${esc(r.evidence.asserted)}">asserted</span>`
+      : (has && r.evidence?.live ? ` <span class="ltag" title="${esc(r.evidence.live)}">live</span>` : "");
+    return `<div class="mrow"><span class="mlabel">${esc(r.label)}${tag}</span>`
+      + `<span class="mtrack"><span class="mfill${asserted ? " mfill-asserted" : ""}" style="width:${w}%"></span></span>`
       + `<span class="mval ${vcls}">${val}</span></div>`;
   };
   const sectionHtml = (s) => {
@@ -432,6 +499,12 @@ function renderAuditHtml(audit) {
   .pa .mtrack{height:14px;background:#e6e5de;border-radius:7px;overflow:hidden}.pa .mfill{display:block;height:100%;border-radius:7px;background:#2a78d6}
   .pa .mval{font-size:13px;font-weight:500;text-align:right}
   .pa .v-hi{color:#0f6e56}.pa .v-lo{color:#a32d2d}.pa .v-mid{color:#1a1a19}
+  /* RULING 1: an asserted (hand-typed) number must NOT wear the costume of a measurement.
+     A solid bar reads as instrumentation; these render HATCHED + tagged, so the eye can
+     tell a measured row from a claimed one without reading the JSON. */
+  .pa .atag{font-size:10px;padding:1px 5px;border-radius:8px;background:#faeeda;color:#854f0b;font-weight:500;cursor:help}
+  .pa .ltag{font-size:10px;padding:1px 5px;border-radius:8px;background:#e1f5ee;color:#0f6e56;font-weight:500;cursor:help}
+  .pa .mfill-asserted{background:repeating-linear-gradient(45deg,#c3c2b7 0 4px,transparent 4px 8px);border:0.5px solid #b4b2a9;box-sizing:border-box}
   .pa table.reg{width:100%;border-collapse:collapse;font-size:13px}.pa .reg td{padding:6px 8px;border-top:0.5px solid #e1e0d9;vertical-align:top}
   .pa .ritem{font-weight:500;white-space:nowrap}.pa .rdetail{color:#6b6a64;font-size:12px}.pa .rst{font-size:11px;color:#8a8880;text-align:right}
   .pa .rgroup{padding-top:12px}.pa .rgcount{font-size:11px;color:#8a8880}
@@ -440,6 +513,8 @@ function renderAuditHtml(audit) {
   @media (prefers-color-scheme:dark){.pa{color:#e8e7e0}.pa .sub,.pa .card .k,.pa .rdetail{color:#a3a29a}
     .pa .card{background:#232322}.pa .mtrack{background:#333330}.pa .reg td{border-top-color:#333330}
     .pa .mfill{background:#3987e5}.pa .v-hi{color:#5dcaa5}.pa .v-lo{color:#e66767}.pa .v-mid{color:#e8e7e0}
+    .pa .atag{background:#412402;color:#ef9f27}.pa .ltag{background:#04342c;color:#5dcaa5}
+    .pa .mfill-asserted{background:repeating-linear-gradient(45deg,#5f5e5a 0 4px,transparent 4px 8px);border-color:#5f5e5a}
     .pa .s-ship{background:#04342c;color:#5dcaa5}.pa .s-build{background:#042c53;color:#85b7eb}.pa .s-pend{background:#412402;color:#ef9f27}.pa .s-front{background:#2c2c2a;color:#b4b2a9}}
   </style>`;
   const cards = `<div class="cards">`

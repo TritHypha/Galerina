@@ -349,6 +349,10 @@ flowchart LR
   T_gen_contract_registry_mjs --> C_secrets_privacy
   T_gen_contract_registry_mjs --> C_doc_drift
   T_gen_contract_registry_mjs --> C_graph_index
+  T_gen_unit_registry_mjs["gen-unit-registry.mjs"]
+  T_gen_unit_registry_mjs --> C_signing_fusion
+  T_gen_unit_registry_mjs --> C_provenance
+  T_gen_unit_registry_mjs --> C_diagnostics
   T_kb_index_mjs["kb-index.mjs"]
   T_kb_index_mjs --> C_effects
   T_kb_index_mjs --> C_provenance

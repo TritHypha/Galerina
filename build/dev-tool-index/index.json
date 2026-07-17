@@ -4,7 +4,7 @@
     "packages": 95,
     "testBearing": 94,
     "tests": 7292,
-    "devTools": 85,
+    "devTools": 86,
     "auditTools": 48,
     "toolsInCadence": 28,
     "proofs": 40
@@ -300,7 +300,7 @@
       "tests": 4631,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 97,
+      "files": 99,
       "deps": [
         "@galerina/core-network",
         "@galerina/core-security",
@@ -1814,6 +1814,18 @@
       ]
     },
     {
+      "name": "gen-unit-registry.mjs",
+      "category": "index",
+      "purpose": "RD-0349 I1: generate the runtime unit table from the",
+      "selfTest": true,
+      "inCadence": false,
+      "concerns": [
+        "signing/fusion",
+        "provenance",
+        "diagnostics"
+      ]
+    },
+    {
       "name": "kb-index.mjs",
       "category": "index",
       "purpose": "index the Galerina Knowledge-Base (ZTF-Knowledge-Bases/**/*.md, RECURSIVE — ~690 files) so you can",
@@ -2237,6 +2249,7 @@
       "ts-retirement-graph.mjs",
       "code-index.mjs",
       "gen-code-registry.mjs",
+      "gen-unit-registry.mjs",
       "kb-index.mjs",
       "lint-conventions.mjs",
       "lint-fungi.mjs",
@@ -2366,6 +2379,7 @@
       "graph-all.mjs",
       "ts-retirement-graph.mjs",
       "gen-contract-registry.mjs",
+      "gen-unit-registry.mjs",
       "lint-fungi.mjs",
       "component-health.mjs",
       "bench-startup.mjs",
@@ -2602,6 +2616,7 @@
       "audit-provenance.mjs",
       "code-index.mjs",
       "gen-code-registry.mjs",
+      "gen-unit-registry.mjs",
       "kb-index.mjs",
       "lint-conventions.mjs",
       "lint-fungi.mjs",

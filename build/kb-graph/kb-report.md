@@ -2,7 +2,7 @@
 Generated: 2026-07-17
 
 ## Stats
-- Docs: 1216 | Edges: 3476 | Orphans: 153 | Stale links: 0 | FUNGI codes: 748
+- Docs: 1240 | Edges: 3488 | Orphans: 173 | Stale links: 0 | FUNGI codes: 748
 
 ## Document Registry (auto-generated)
 
@@ -103,12 +103,15 @@ Generated: 2026-07-17
 | 2026-07-16-UNLOCK-checker-taxonomy-20-adopt.md | — | — | — | FUNGI-EFFECT-002, FUNGI-TYPE-006 |
 | 2026-07-17-ACCEPT-escape-analysis-grounding-no-existing-pass-pointers.md | — | — | — | FUNGI-TENANT-003 |
 | 2026-07-17-ACK-76-COMPLETE-19of19-bool-ruling-applied-plus-content-safe-confirmed-plus-bool-downstream-finding.md | — | — | — | — |
+| 2026-07-17-ACK-96a-finding-REPRODUCED-live-window-gate-BUILT-13of13-hole-closed-by-construction.md | — | — | — | — |
+| 2026-07-17-ACK-96a-section6-binary-trees-language-gap-ACCEPTED-plus-REFINEMENT-gate-reset-on-proven-safe-not-benchmark-luck.md | — | — | — | — |
 | 2026-07-17-ACK-accept-type-twin-severity-offer-plus-two-wiring-blockers-grounded.md | — | — | — | — |
 | 2026-07-17-ACK-alias-cluster-landed-005-unsquat-009-payment-charge.md | — | — | — | FUNGI-EFFECT-005, FUNGI-EFFECT-009 |
 | 2026-07-17-ACK-alias-cluster-VERIFIED-plus-stale-004-cluster-plus-latent-008-fold-invariant.md | — | — | — | FUNGI-EFFECT-004 |
 | 2026-07-17-ACK-all-three-fixes-VERIFIED-pure002-008decouple-stale004.md | — | — | — | FUNGI-EFFECT-002, FUNGI-EFFECT-009 |
 | 2026-07-17-ACK-bump-arena-WAT-shape-VALIDATED-prototype-plus-integration-plan.md | — | — | — | — |
 | 2026-07-17-ACK-C11-superset-refinement-CORRECT-caught-fail-open-in-my-spec-invariant-updated.md | — | — | — | — |
+| 2026-07-17-ACK-closing-cycle-plus-benchmark-harness-is-a-DESIGN-STOPPER-broader-than-compute-mix.md | — | — | — | FUNGI-GOV-010, FUNGI-PARSE-001 |
 | 2026-07-17-ACK-collection-pipeline-reframe-DONE-plus-ACCEPT-bump-arena-WAT-grounding.md | — | — | — | — |
 | 2026-07-17-ACK-EFFECT-006-landed-plus-count-method-aligned-plus-gate-gap.md | — | — | — | — |
 | 2026-07-17-ACK-EFFECT-006-verified-grounded-plus-alias-cluster-WIP-red-in-tree-plus-endorse-parity-gate.md | — | — | — | FUNGI-EFFECT-005, FUNGI-EFFECT-006 |
@@ -124,28 +127,45 @@ Generated: 2026-07-17
 | 2026-07-17-ACK-type-twin-severity-WIRED-trilogy-complete-both-twins-plus-21v19-reconciled.md | — | — | — | FUNGI-BINDING-005, FUNGI-NAME-002 |
 | 2026-07-17-ACK-WAT-shape-validated-escape-pass-is-the-load-bearing-safety-offer-to-ground-it.md | — | — | — | — |
 | 2026-07-17-ADJUDICATION-76-taint-to-pure-flow-adopt-b-fix-examples-taint-laundering.md | — | — | — | — |
+| 2026-07-17-ADJUDICATION-96a-RULE-A-extends-existing-B2-arena-to-per-iteration-mark-release-secret-zeroing-catch.md | — | — | — | — |
+| 2026-07-17-ADJUDICATION-benchmark-harness-DECOUPLE-2-with-declared-build-path-plus-provenance-protocol-host-side.md | — | — | — | FUNGI-PARSE-001 |
 | 2026-07-17-ADJUDICATION-bool-taint-reject-validateFlag-launder-use-c-flag-b-to-owner.md | — | — | — | — |
+| 2026-07-17-ANSWER-96a-scoping-6-record-alloc-is-intra-flow-BUT-neither-benchmark-allocates-binary-trees-language-gap.md | — | — | — | — |
+| 2026-07-17-CLARIFICATION-96a-escaping-records-EXCLUDED-from-release-window-not-above-the-mark.md | — | — | — | — |
+| 2026-07-17-CLOSING-CYCLE-full-verify-thesis-build-registry-benchmark-harness-finding.md | — | — | — | FUNGI-MATCH-001, FUNGI-PARSE-001, FUNGI-SAFETY-006 |
 | 2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction.md | — | — | — | — |
 | 2026-07-17-DELIVER-76-taint-laundering-pattern-file-governanceService-verify-before-fanout.md | — | — | — | — |
 | 2026-07-17-DELIVER-type-twin-severity-map-19-codes-plus-gate-count-21-vs-19-discrepancy.md | — | — | — | FUNGI-TYPE-001, FUNGI-TYPE-002, FUNGI-TYPE-003, FUNGI-TYPE-004, FUNGI-TYPE-005 …+14 |
+| 2026-07-17-DELIVERED-96a-escape-increment-1-recordEscapes-predicate-6of6-please-isolation-verify.md | — | — | — | — |
+| 2026-07-17-DELIVERED-rd0349-I1-unit-table-generated-157-plus-3-stoppers.md | — | — | — | — |
+| 2026-07-17-DESIGN-RD-0451-dev-tools-audit-checker-wiring-says-OK-while-resolveImports-has-zero-callsites.md | — | — | — | FUNGI-TYPE-001 |
+| 2026-07-17-FINDING-96a-record-site-already-heap-bumps-not-host-abi-escape-integration-needs-reground.md | — | — | — | — |
 | 2026-07-17-GROUNDING-escape-analysis-pass-record-escapes-flow-predicate-fail-closed.md | — | — | — | — |
 | 2026-07-17-GROUNDING-RD0446-bump-arena-emittable-WAT-shape-5-asks.md | — | — | — | — |
 | 2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension.md | — | — | — | FUNGI-TYPE-020 |
 | 2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md | — | — | — | FUNGI-EFFECT-002 |
 | 2026-07-17-myco-galerina-package-updates-fold-into-galerina-tools-myco.md | — | — | — | — |
 | 2026-07-17-PREP-EFFECT-002-transitive-walk-faithfulness-traps-grounded-from-stage-A.md | — | — | — | — |
+| 2026-07-17-PROPOSE-lint-if-chain-should-be-match-plus-CORRECTION-predicate-arms-do-not-parse.md | — | — | — | FUNGI-MATCH-001, FUNGI-PARSE-001, FUNGI-SAFETY-006 |
 | 2026-07-17-QUESTION-76-bool-taint-validateFlag-degenerate-plus-fanout-7of19.md | — | — | — | — |
 | 2026-07-17-QUESTION-corpus-rot-76-triage-auth-service-taint-to-pure-flow-adjudication.md | — | — | — | FUNGI-VALUESTATE-004 |
 | 2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked.md | — | — | — | — |
+| 2026-07-17-RD-0448-leaf-terminator-is-its-own-task-gap-is-Option-constructors-not-Option-Record.md | — | — | — | FUNGI-MATCH-001 |
+| 2026-07-17-RD-0450-32-byte-digest-caps-L5-profile-at-128-bit-decide-before-34-locks-v0.md | — | — | — | — |
+| 2026-07-17-RETRACT-match-lint-plus-RD-0449-import-resolver-never-wired-12-of-52-examples-fail-strict-types.md | — | — | — | FUNGI-GOV-018, FUNGI-MATCH-001, FUNGI-TYPE-001, FUNGI-TYPE-021, FUNGI-TYPE-023 |
+| 2026-07-17-RULINGS-1-and-2-honesty-rule-YES-derived-not-typed-plus-I1-is-b-but-sequenced-with-I2.md | — | — | — | — |
 | 2026-07-17-STATUS-76-effect-name-files-done-plus-C11-superset-refinement.md | — | — | — | — |
 | 2026-07-17-STATUS-76-numeric-exemplar-economicsService-done-plus-cycle-green.md | — | — | — | — |
+| 2026-07-17-STOPPERS-ten-area-hundred-percent-sweep-audit-numbers-unfalsifiable.md | — | — | — | — |
 | 2026-07-17-VERIFY-76-17of19-open-vocab-length-bound-correct-plus-content-safe-downstream-caveat.md | — | — | — | — |
 | 2026-07-17-VERIFY-76-fanout-4of19-uniform-pattern-endorsed-plus-open-vocab-canonical-answer.md | — | — | — | — |
 | 2026-07-17-VERIFY-76-numeric-exemplar-BLESSED-bound-correctly-sized-fan-out-plan-endorsed.md | — | — | — | — |
 | 2026-07-17-VERIFY-76-pattern-BLESSED-genuine-validation-fan-out-GO-plus-numeric-overflow-note.md | — | — | — | — |
+| 2026-07-17-VERIFY-96a-increment-1-PASS-6of6-plus-FINDING-anonymous-nested-record-field-read-escape-increment-2-blocker.md | — | — | — | — |
 | 2026-07-17-VERIFY-EFFECT-002-live-probe-found-pure-002-under-report-divergence.md | — | — | — | FUNGI-EFFECT-002, FUNGI-EFFECT-003 |
 | 2026-07-17-VERIFY-severity-parity-green-trilogy-complete-plus-type-twin-offer.md | — | — | — | FUNGI-TIER-001 |
 | 2026-07-17-VERIFY-type-severity-leg-green-BOTH-twins-trilogy-COMPLETE.md | — | — | — | — |
+| 2026-07-17-VERIFY-window-gate-13of13-CONFIRMED-plus-TWO-holes-cross-flow-alloc-and-duplicate-record-decl.md | — | — | — | — |
 | AI_INDEX.md | — | — | — | FUNGI-HW-101, FUNGI-PHOTONIC-001, FUNGI-SEC-014, FUNGI-SYNTAX-010, FUNGI-TYPE-031 |
 | ai-as-untrusted-reasoning-worker.md | — | — | — | — |
 | ai-compute-plan.md | — | — | — | — |
@@ -1100,6 +1120,10 @@ Generated: 2026-07-17
 | RD-0445-quantum-real-data-test-executed-tomography-admission-invariant-result.md | — | — | — | — |
 | RD-0446-work-equivalent-wasm-allocation-flow-local-bump-arena-for-the-shape-only-benchmark-lanes.md | — | — | — | — |
 | RD-0447-quantum-simulator-amplitude-admission-closes-rd0445-open-item.md | — | — | — | — |
+| RD-0448-option-constructor-lowering-is-the-leaf-terminator-gap.md | — | — | — | FUNGI-MATCH-001, FUNGI-SAFETY-006 |
+| RD-0449-fungi-corpus-slop-survey-match-exhaustiveness-is-a-myth.md | — | — | — | FUNGI-GOV-018, FUNGI-MATCH-001, FUNGI-MATCH-002, FUNGI-PARSE-001, FUNGI-SAFETY-006 …+6 |
+| RD-0450-32-byte-digest-caps-the-hybrid-at-128-bit-collision-resistance.md | — | — | — | — |
+| RD-0451-dev-tool-design-green-gates-that-are-green-because-they-are-not-looking.md | — | — | — | FUNGI-MATCH-001, FUNGI-TYPE-001 |
 | rd-adversarial-verification-findings-2026-06-16.md | — | — | — | — |
 | rd-crossover-encryption-rnd.md | — | — | Merge / unified entry point. **Date:** 2026-06-16. **Posture:** grounded, cited, | FUNGI-AMD-024, FUNGI-PARSE-001, FUNGI-SUBSTRATE-001 |
 | rd-diagnostics-namespace-rnd-response.md | — | — | R&D response (2026-06-16). **Subject:** `Galerina/docs/Knowledge-Bases/galerina-diagnostic-namespace-ownership.md` | FUNGI-META-001, FUNGI-PRIVACY-00, FUNGI-SECRET-005 |
@@ -1302,6 +1326,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-answers-to-night-round-rd-requests.md` — 2026-07-16-answers-to-night-round-rd-requests
 - `2026-07-16-rhizo-ql-and-galerina-reusables.md` — 2026-07-16-rhizo-ql-and-galerina-reusables
 - `2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion.md` — 2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion
+- `2026-07-17-ACK-96a-section6-binary-trees-language-gap-ACCEPTED-plus-REFINEMENT-gate-reset-on-proven-safe-not-benchmark-luck.md` — 2026-07-17-ACK-96a-section6-binary-trees-language-gap-ACCEPTED-plus-REFINEMENT-gate-reset-on-proven-safe-not-benchmark-luck
 - `2026-07-17-ACK-C11-superset-refinement-CORRECT-caught-fail-open-in-my-spec-invariant-updated.md` — 2026-07-17-ACK-C11-superset-refinement-CORRECT-caught-fail-open-in-my-spec-invariant-updated
 - `2026-07-17-ACK-EFFECT-006-verified-grounded-plus-alias-cluster-WIP-red-in-tree-plus-endorse-parity-gate.md` — 2026-07-17-ACK-EFFECT-006-verified-grounded-plus-alias-cluster-WIP-red-in-tree-plus-endorse-parity-gate
 - `2026-07-17-ACK-WAT-shape-validated-escape-pass-is-the-load-bearing-safety-offer-to-ground-it.md` — 2026-07-17-ACK-WAT-shape-validated-escape-pass-is-the-load-bearing-safety-offer-to-ground-it
@@ -1311,21 +1336,33 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-ACK-effect-parity-gate-VERIFIED-green-plus-coverage-boundary.md` — 2026-07-17-ACK-effect-parity-gate-VERIFIED-green-plus-coverage-boundary
 - `2026-07-17-ACK-papers-landed-clean-declarations-block-is-owner-gated.md` — 2026-07-17-ACK-papers-landed-clean-declarations-block-is-owner-gated
 - `2026-07-17-ADJUDICATION-76-taint-to-pure-flow-adopt-b-fix-examples-taint-laundering.md` — 2026-07-17-ADJUDICATION-76-taint-to-pure-flow-adopt-b-fix-examples-taint-laundering
+- `2026-07-17-ADJUDICATION-96a-RULE-A-extends-existing-B2-arena-to-per-iteration-mark-release-secret-zeroing-catch.md` — 2026-07-17-ADJUDICATION-96a-RULE-A-extends-existing-B2-arena-to-per-iteration-mark-release-secret-zeroing-catch
+- `2026-07-17-ADJUDICATION-benchmark-harness-DECOUPLE-2-with-declared-build-path-plus-provenance-protocol-host-side.md` — 2026-07-17-ADJUDICATION-benchmark-harness-DECOUPLE-2-with-declared-build-path-plus-provenance-protocol-host-side
 - `2026-07-17-ADJUDICATION-bool-taint-reject-validateFlag-launder-use-c-flag-b-to-owner.md` — 2026-07-17-ADJUDICATION-bool-taint-reject-validateFlag-launder-use-c-flag-b-to-owner
+- `2026-07-17-CLARIFICATION-96a-escaping-records-EXCLUDED-from-release-window-not-above-the-mark.md` — 2026-07-17-CLARIFICATION-96a-escaping-records-EXCLUDED-from-release-window-not-above-the-mark
+- `2026-07-17-CLOSING-CYCLE-full-verify-thesis-build-registry-benchmark-harness-finding.md` — 2026-07-17-CLOSING-CYCLE-full-verify-thesis-build-registry-benchmark-harness-finding
 - `2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction.md` — 2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction
 - `2026-07-17-DELIVER-type-twin-severity-map-19-codes-plus-gate-count-21-vs-19-discrepancy.md` — 2026-07-17-DELIVER-type-twin-severity-map-19-codes-plus-gate-count-21-vs-19-discrepancy
+- `2026-07-17-DESIGN-RD-0451-dev-tools-audit-checker-wiring-says-OK-while-resolveImports-has-zero-callsites.md` — 2026-07-17-DESIGN-RD-0451-dev-tools-audit-checker-wiring-says-OK-while-resolveImports-has-zero-callsites
 - `2026-07-17-GROUNDING-RD0446-bump-arena-emittable-WAT-shape-5-asks.md` — 2026-07-17-GROUNDING-RD0446-bump-arena-emittable-WAT-shape-5-asks
 - `2026-07-17-GROUNDING-escape-analysis-pass-record-escapes-flow-predicate-fail-closed.md` — 2026-07-17-GROUNDING-escape-analysis-pass-record-escapes-flow-predicate-fail-closed
 - `2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension.md` — 2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension
 - `2026-07-17-PREP-EFFECT-002-transitive-walk-faithfulness-traps-grounded-from-stage-A.md` — 2026-07-17-PREP-EFFECT-002-transitive-walk-faithfulness-traps-grounded-from-stage-A
+- `2026-07-17-PROPOSE-lint-if-chain-should-be-match-plus-CORRECTION-predicate-arms-do-not-parse.md` — 2026-07-17-PROPOSE-lint-if-chain-should-be-match-plus-CORRECTION-predicate-arms-do-not-parse
 - `2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked.md` — 2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked
+- `2026-07-17-RD-0448-leaf-terminator-is-its-own-task-gap-is-Option-constructors-not-Option-Record.md` — 2026-07-17-RD-0448-leaf-terminator-is-its-own-task-gap-is-Option-constructors-not-Option-Record
+- `2026-07-17-RD-0450-32-byte-digest-caps-L5-profile-at-128-bit-decide-before-34-locks-v0.md` — 2026-07-17-RD-0450-32-byte-digest-caps-L5-profile-at-128-bit-decide-before-34-locks-v0
+- `2026-07-17-RETRACT-match-lint-plus-RD-0449-import-resolver-never-wired-12-of-52-examples-fail-strict-types.md` — 2026-07-17-RETRACT-match-lint-plus-RD-0449-import-resolver-never-wired-12-of-52-examples-fail-strict-types
+- `2026-07-17-RULINGS-1-and-2-honesty-rule-YES-derived-not-typed-plus-I1-is-b-but-sequenced-with-I2.md` — 2026-07-17-RULINGS-1-and-2-honesty-rule-YES-derived-not-typed-plus-I1-is-b-but-sequenced-with-I2
 - `2026-07-17-VERIFY-76-17of19-open-vocab-length-bound-correct-plus-content-safe-downstream-caveat.md` — 2026-07-17-VERIFY-76-17of19-open-vocab-length-bound-correct-plus-content-safe-downstream-caveat
 - `2026-07-17-VERIFY-76-fanout-4of19-uniform-pattern-endorsed-plus-open-vocab-canonical-answer.md` — 2026-07-17-VERIFY-76-fanout-4of19-uniform-pattern-endorsed-plus-open-vocab-canonical-answer
 - `2026-07-17-VERIFY-76-numeric-exemplar-BLESSED-bound-correctly-sized-fan-out-plan-endorsed.md` — 2026-07-17-VERIFY-76-numeric-exemplar-BLESSED-bound-correctly-sized-fan-out-plan-endorsed
 - `2026-07-17-VERIFY-76-pattern-BLESSED-genuine-validation-fan-out-GO-plus-numeric-overflow-note.md` — 2026-07-17-VERIFY-76-pattern-BLESSED-genuine-validation-fan-out-GO-plus-numeric-overflow-note
+- `2026-07-17-VERIFY-96a-increment-1-PASS-6of6-plus-FINDING-anonymous-nested-record-field-read-escape-increment-2-blocker.md` — 2026-07-17-VERIFY-96a-increment-1-PASS-6of6-plus-FINDING-anonymous-nested-record-field-read-escape-increment-2-blocker
 - `2026-07-17-VERIFY-EFFECT-002-live-probe-found-pure-002-under-report-divergence.md` — 2026-07-17-VERIFY-EFFECT-002-live-probe-found-pure-002-under-report-divergence
 - `2026-07-17-VERIFY-severity-parity-green-trilogy-complete-plus-type-twin-offer.md` — 2026-07-17-VERIFY-severity-parity-green-trilogy-complete-plus-type-twin-offer
 - `2026-07-17-VERIFY-type-severity-leg-green-BOTH-twins-trilogy-COMPLETE.md` — 2026-07-17-VERIFY-type-severity-leg-green-BOTH-twins-trilogy-COMPLETE
+- `2026-07-17-VERIFY-window-gate-13of13-CONFIRMED-plus-TWO-holes-cross-flow-alloc-and-duplicate-record-decl.md` — 2026-07-17-VERIFY-window-gate-13of13-CONFIRMED-plus-TWO-holes-cross-flow-alloc-and-duplicate-record-decl
 - `2026-07-17-myco-galerina-package-updates-fold-into-galerina-tools-myco.md` — 2026-07-17-myco-galerina-package-updates-fold-into-galerina-tools-myco
 - `2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md` — 2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011
 - `2026-07-16-ACK-024-landed-plus-frontier-correction-NAME-codes-are-symbol-resolver.md` — 2026-07-16-ACK-024-landed-plus-frontier-correction-NAME-codes-are-symbol-resolver
@@ -1363,10 +1400,12 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-kb-graph-code-region-masking-stale-links-zeroed.md` — 2026-07-16-kb-graph-code-region-masking-stale-links-zeroed
 - `2026-07-17-ACCEPT-escape-analysis-grounding-no-existing-pass-pointers.md` — 2026-07-17-ACCEPT-escape-analysis-grounding-no-existing-pass-pointers
 - `2026-07-17-ACK-76-COMPLETE-19of19-bool-ruling-applied-plus-content-safe-confirmed-plus-bool-downstream-finding.md` — 2026-07-17-ACK-76-COMPLETE-19of19-bool-ruling-applied-plus-content-safe-confirmed-plus-bool-downstream-finding
+- `2026-07-17-ACK-96a-finding-REPRODUCED-live-window-gate-BUILT-13of13-hole-closed-by-construction.md` — 2026-07-17-ACK-96a-finding-REPRODUCED-live-window-gate-BUILT-13of13-hole-closed-by-construction
 - `2026-07-17-ACK-EFFECT-006-landed-plus-count-method-aligned-plus-gate-gap.md` — 2026-07-17-ACK-EFFECT-006-landed-plus-count-method-aligned-plus-gate-gap
 - `2026-07-17-ACK-accept-type-twin-severity-offer-plus-two-wiring-blockers-grounded.md` — 2026-07-17-ACK-accept-type-twin-severity-offer-plus-two-wiring-blockers-grounded
 - `2026-07-17-ACK-alias-cluster-landed-005-unsquat-009-payment-charge.md` — 2026-07-17-ACK-alias-cluster-landed-005-unsquat-009-payment-charge
 - `2026-07-17-ACK-bump-arena-WAT-shape-VALIDATED-prototype-plus-integration-plan.md` — 2026-07-17-ACK-bump-arena-WAT-shape-VALIDATED-prototype-plus-integration-plan
+- `2026-07-17-ACK-closing-cycle-plus-benchmark-harness-is-a-DESIGN-STOPPER-broader-than-compute-mix.md` — 2026-07-17-ACK-closing-cycle-plus-benchmark-harness-is-a-DESIGN-STOPPER-broader-than-compute-mix
 - `2026-07-17-ACK-collection-pipeline-reframe-DONE-plus-ACCEPT-bump-arena-WAT-grounding.md` — 2026-07-17-ACK-collection-pipeline-reframe-DONE-plus-ACCEPT-bump-arena-WAT-grounding
 - `2026-07-17-ACK-effect-name-parity-DONE-plus-fn-helper-leg0-verdict-parser-gated.md` — 2026-07-17-ACK-effect-name-parity-DONE-plus-fn-helper-leg0-verdict-parser-gated
 - `2026-07-17-ACK-effect-parity-gate-extended-plus-docnit-plus-002-grounded.md` — 2026-07-17-ACK-effect-parity-gate-extended-plus-docnit-plus-002-grounded
@@ -1375,12 +1414,17 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-ACK-pure-002-guard-removed-plus-008-independent-pass-plus-stale-004-cleared.md` — 2026-07-17-ACK-pure-002-guard-removed-plus-008-independent-pass-plus-stale-004-cleared
 - `2026-07-17-ACK-severity-parity-DONE-parity-trilogy-complete.md` — 2026-07-17-ACK-severity-parity-DONE-parity-trilogy-complete
 - `2026-07-17-ACK-type-twin-severity-WIRED-trilogy-complete-both-twins-plus-21v19-reconciled.md` — 2026-07-17-ACK-type-twin-severity-WIRED-trilogy-complete-both-twins-plus-21v19-reconciled
+- `2026-07-17-ANSWER-96a-scoping-6-record-alloc-is-intra-flow-BUT-neither-benchmark-allocates-binary-trees-language-gap.md` — 2026-07-17-ANSWER-96a-scoping-6-record-alloc-is-intra-flow-BUT-neither-benchmark-allocates-binary-trees-language-gap
 - `2026-07-17-DELIVER-76-taint-laundering-pattern-file-governanceService-verify-before-fanout.md` — 2026-07-17-DELIVER-76-taint-laundering-pattern-file-governanceService-verify-before-fanout
+- `2026-07-17-DELIVERED-96a-escape-increment-1-recordEscapes-predicate-6of6-please-isolation-verify.md` — 2026-07-17-DELIVERED-96a-escape-increment-1-recordEscapes-predicate-6of6-please-isolation-verify
+- `2026-07-17-DELIVERED-rd0349-I1-unit-table-generated-157-plus-3-stoppers.md` — 2026-07-17-DELIVERED-rd0349-I1-unit-table-generated-157-plus-3-stoppers
+- `2026-07-17-FINDING-96a-record-site-already-heap-bumps-not-host-abi-escape-integration-needs-reground.md` — 2026-07-17-FINDING-96a-record-site-already-heap-bumps-not-host-abi-escape-integration-needs-reground
 - `2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md` — 2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed
 - `2026-07-17-QUESTION-76-bool-taint-validateFlag-degenerate-plus-fanout-7of19.md` — 2026-07-17-QUESTION-76-bool-taint-validateFlag-degenerate-plus-fanout-7of19
 - `2026-07-17-QUESTION-corpus-rot-76-triage-auth-service-taint-to-pure-flow-adjudication.md` — 2026-07-17-QUESTION-corpus-rot-76-triage-auth-service-taint-to-pure-flow-adjudication
 - `2026-07-17-STATUS-76-effect-name-files-done-plus-C11-superset-refinement.md` — 2026-07-17-STATUS-76-effect-name-files-done-plus-C11-superset-refinement
 - `2026-07-17-STATUS-76-numeric-exemplar-economicsService-done-plus-cycle-green.md` — 2026-07-17-STATUS-76-numeric-exemplar-economicsService-done-plus-cycle-green
+- `2026-07-17-STOPPERS-ten-area-hundred-percent-sweep-audit-numbers-unfalsifiable.md` — 2026-07-17-STOPPERS-ten-area-hundred-percent-sweep-audit-numbers-unfalsifiable
 
 ## Stale Links
 Links pointing to missing files:
