@@ -37,11 +37,23 @@ const PATTERNS = [
   { name: "windows-env-literal", re: /%(?:USERPROFILE|USERNAME|HOMEPATH|HOMEDRIVE|APPDATA|LOCALAPPDATA)%/gi },
   // The retired `wwwprojects` projects root, in path position (drive-prefixed or followed by a separator).
   { name: "wwwprojects-path", re: /(?:[A-Za-z]:[\\/]{1,2}wwwprojects|wwwprojects[\\/])/g },
-  // Dash-encoded machine slug: `C-Users-<name>-...` — the SAME username+layout leak as
+  // Dash-encoded machine slug: `C--Users-<name>-...` — the SAME username+layout leak as
   // windows-user-home with the separators flattened to dashes (how the local index MCP derives its
   // project ids; one sat in a tracked artifact.json until 2026-07-09). Anchored on a lone drive
   // letter so prose like "Power-Users-Guide" stays silent; (?!<) keeps `<name>` placeholders legal.
-  { name: "dash-encoded-user-home", re: /(?<![A-Za-z0-9])[A-Za-z]-Users-(?!<)[A-Za-z0-9_.]+-[A-Za-z0-9]/g },
+  //
+  // ★ `-{1,2}` IS LOAD-BEARING — DO NOT NARROW IT BACK TO A SINGLE DASH (R&D finding, 2026-07-17).
+  // `C:\Users\x` flattens the drive COLON *and* the separator, one dash each → `C--Users-x`. TWO. This
+  // rule pictured one, so for as long as it existed it matched a shape the encoder never emits and
+  // MISSED every real slug — no other rule covered it either, on a PUBLIC repo whose owner's username
+  // is what this guard exists to keep private. Note windows-user-home above already spells its
+  // separator [\\/]{1,2}: the doubling was known, and applied to one rule and not this one.
+  //
+  // It survived because the self-test's fixture was drawn from THIS pattern's own surface (single-dash
+  // in, single-dash asserted). A fixture taken from the rule can only ever confirm the rule; it cannot
+  // report that the rule pictures the wrong thing. The regression case below plants the shape the
+  // ENCODER produces, which is the only fixture that could have caught this.
+  { name: "dash-encoded-user-home", re: /(?<![A-Za-z0-9])[A-Za-z]-{1,2}Users-(?!<)[A-Za-z0-9_.]+-[A-Za-z0-9]/g },
 ];
 
 // Paths that must NEVER be tracked at all, whatever they contain — mirrors the .gitignore policy for
@@ -100,8 +112,23 @@ function selfTest() {
     ["'C:\\Users\\<name>' placeholder does NOT fire", !fires("a hardcoded C:\\Users\\<name>\\x breaks")],
     ["allow-marker suppresses", !fires("example C:\\Users\\x  (path-leak-audit:allow)")],
     ["dash-encoded slug fires", fires('"project": "C-Users-someone-Documents-GitHub-Galerina"')],
+    // ★ THE REGRESSION (R&D finding, 2026-07-17). This is the shape the ENCODER actually emits — drive
+    // colon AND separator each flatten to a dash. The rule modelled ONE dash, so for its whole life it
+    // matched a shape nothing produces and missed every real slug; no other rule covered it either, on
+    // a PUBLIC repo. If this case ever goes red, someone narrowed `-{1,2}` back and the guard is blind.
+    //
+    // Note where this fixture comes from: the ENCODER's output, not the pattern. The pre-existing case
+    // above was drawn from the pattern itself, which is why it passed forever while the guard was blind
+    // — a fixture taken from the rule can only confirm the rule, never report that the rule is wrong.
+    ["DOUBLE-dash slug fires — the shape reality produces (C--Users-…)",
+      fires('"project": "C--Users-someone-Documents-GitHub-Galerina"')],
     ["dash-encoded placeholder does NOT fire", !fires("the slug looks like C-Users-<name>-Documents")],
+    // …and the widening must not cry wolf. A guard that fires on `<name>` placeholders or ordinary prose
+    // teaches people to reach for the allow-marker, and a habit of allow-marking is how the next REAL
+    // leak gets waved through. Silence cases are what make the widening safe to keep.
+    ["DOUBLE-dash placeholder does NOT fire", !fires("the slug looks like C--Users-<name>-Documents")],
     ["prose 'Power-Users-Guide' does NOT fire", !fires("see the Power-Users-Guide-2026 appendix")],
+    ["prose 'Power--Users-Guide' does NOT fire", !fires("see the Power--Users-Guide-2026 appendix")],
     ["tracked .codebase-memory dir fires", scanTrackedList([".codebase-memory/graph.db.zst"]).length === 1],
     ["tracked NESTED .codebase-memory fires", scanTrackedList(["packages-galerina/x/src/.codebase-memory/artifact.json"]).length === 1],
     ["tracked graph.db.zst anywhere fires", scanTrackedList(["some/dir/graph.db.zst"]).length === 1],
@@ -145,4 +172,12 @@ if (leakCount) {
   console.error(`  teach the rule can carry the marker "${ALLOW_MARKER}".`);
   process.exit(1);
 }
+// G0 — the green states its SURFACE, because the unqualified sentence was untrue this morning. "No
+// absolute-local-path leaks" reads as "no leaks"; what it can ever mean is "none of the shapes I model".
+// The dash-encoded rule modelled one dash where the encoder emits two, so this line printed a clean
+// bill of health over a rule that matched nothing real — for as long as the rule had existed. Naming the
+// modelled shapes is what lets the next reader notice one is missing, rather than trusting the tick.
 console.log(`  ✅ path-leak: no absolute-local-path leaks across ${files.length} tracked files.`);
+console.log(`     surface: ${PATTERNS.map((p) => p.name).join(" · ")}`);
+console.log(`     …of the shapes modelled above ONLY — an unmodelled encoding is invisible here, not absent.`);
+console.log(`     exclusions: binaries (scanned by path, not content) · lines marked "${ALLOW_MARKER}" · untracked files.`);
