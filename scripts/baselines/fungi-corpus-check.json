@@ -2,12 +2,6 @@
   "note": "Known-failing .fungi (galerina check). RATCHET: may only SHRINK — fix a file => remove it here; never baseline a NEW break. See task #75 for the VALUESTATE-004 adjudication.",
   "generated": "audit-fungi-corpus-check",
   "knownFailing": {
-    "examples/auth-service/economicsRouterService.fungi": [
-      "FUNGI-VALUESTATE-004"
-    ],
-    "examples/auth-service/manifestVerificationService.fungi": [
-      "FUNGI-VALUESTATE-004"
-    ],
     "packages-galerina/galerina-core-logic/examples/compute-mix-throughput-benchmark.fungi": [
       "FUNGI-GOV-010",
       "FUNGI-PARSE-001"

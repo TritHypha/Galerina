@@ -39,6 +39,19 @@ contract {
   }
 }
 
+;; Validate an untrusted boolean-flag string against {"true","false"} before it is decoded to a Bool —
+;; admit only the two literals, returning a constant, and EXCLUDE any non-boolean string (→ ""). Genuine
+;; gate for a wire flag: a Bool value can't be value-validated (validation is degenerate), so the constraint
+;; lives on the STRING form (R&D adjudication 2026-07-17). Pure — no runtime authority / no effects.
+// @cause  [Called before a flag string is decoded to a Bool] -> validates the untrusted flag string.
+// @effect [Verdict only] -> returns "true"/"false", or "" if not a boolean literal; no state is mutated.
+pure flow validateBoolStr(flag: String) -> String
+{
+  if flag == "true" { return "true" }
+  if flag == "false" { return "false" }
+  return ""
+}
+
 ;; Accepts untrusted economics metadata over HTTP and returns a routing decision, writing a redacted audit entry — permitted because the tainted target is redacted before the write.
 ;; V_DPM capability required: network.inbound, audit.write
 // @cause  [Auth service route POST /economics/route] -> invoked for each economics routing request.
@@ -52,10 +65,12 @@ contract {
   unsafe let rawHasAI: String = request.jsonBody.hasAI
   unsafe let rawIsCritical: String = request.jsonBody.isSafetyCritical
   unsafe let rawHasDB: String = request.jsonBody.hasDBWrite
-  // rawHasAI/rawIsCritical/rawHasDB are Bool, type-safe, no empty-string risk
-  let hasAI: Bool = rawHasAI == "true"
-  let isCritical: Bool = rawIsCritical == "true"
-  let hasDB: Bool = rawHasDB == "true"
+  ;; validate the untrusted boolean-flag strings before they are decoded and drive the target decision —
+  ;; the string allowlist excludes any non-boolean string and clears the taint (a derived Bool inherits the
+  ;; string's taint, so the gate must sit on the string BEFORE the == "true" decode)
+  let hasAI: Bool = validateBoolStr(rawHasAI) == "true"
+  let isCritical: Bool = validateBoolStr(rawIsCritical) == "true"
+  let hasDB: Bool = validateBoolStr(rawHasDB) == "true"
   let target: String = inferTarget(hasAI, isCritical, hasDB)
   trap target == "" : ERR_INVALID_TARGET
   let riskTier: String = inferRiskTier(target)

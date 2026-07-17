@@ -40,13 +40,17 @@ pure flow validateEffectCount(n: Int) -> Int
   return n
 }
 
-;; Re-materialise an untrusted boolean flag as a known literal at the trust boundary before it drives the
-;; tier decision, clearing the taint. (A Bool is inherently constrained to two values, so this is the
-;; degenerate-but-total case of the same validate-before-decision pattern.) Pure — no authority / no effects.
-pure flow validateFlag(b: Bool) -> Bool
+;; Validate an untrusted boolean-flag string against {"true","false"} before it is decoded to a Bool —
+;; admit only the two literals, returning a constant, and EXCLUDE any non-boolean string (→ ""). This is
+;; the genuine gate for a wire flag (a Bool value itself can't be value-validated — validation is
+;; degenerate; the constraint lives on the STRING form, R&D adjudication 2026-07-17). Pure — no authority.
+// @cause  [Called before a flag string is decoded to a Bool] -> validates the untrusted flag string.
+// @effect [Verdict only] -> returns "true"/"false", or "" if not a boolean literal; no state is mutated.
+pure flow validateBoolStr(flag: String) -> String
 {
-  if b { return true }
-  return false
+  if flag == "true" { return "true" }
+  if flag == "false" { return "false" }
+  return ""
 }
 
 ;; Resolves the execution route and tier for a flow from its routing policy; permitted because the untrusted effect count is trapped-on-negative and the derived tier redacted before the audit write.
@@ -60,14 +64,18 @@ contract {
 }
 {
   unsafe let effectCount: Int = request.jsonBody.effectCount
-  unsafe let hasAI: Bool = request.jsonBody.hasAI
-  unsafe let isCritical: Bool = request.jsonBody.isSafetyCritical
+  unsafe let rawHasAI: String = request.jsonBody.hasAI
+  unsafe let rawIsCritical: String = request.jsonBody.isSafetyCritical
   trap effectCount < 0 : ERR_NEGATIVE_EFFECT_COUNT
-  ;; validate/bound the untrusted inputs before they drive the tier decision — the gates clear the taint
+  ;; bound the untrusted effect count and validate the boolean-flag strings before they drive the tier
+  ;; decision — the clamp + the string allowlist clear the taint. The flags arrive as strings on the wire
+  ;; and validateBoolStr excludes any non-boolean string; a Bool VALUE can't be value-validated (validation
+  ;; is degenerate), so the constraint lives on the string form (R&D adjudication 2026-07-17: validateFlag
+  ;; excluded nothing = launder, reverted).
   let validEffectCount: Int = validateEffectCount(effectCount)
-  let validHasAI: Bool = validateFlag(hasAI)
-  let validIsCritical: Bool = validateFlag(isCritical)
-  let tier: String = preferredTier(validEffectCount, validHasAI, validIsCritical)
+  let hasAI: Bool = validateBoolStr(rawHasAI) == "true"
+  let isCritical: Bool = validateBoolStr(rawIsCritical) == "true"
+  let tier: String = preferredTier(validEffectCount, hasAI, isCritical)
   trap tier == "" : ERR_INVALID_TIER
   let govClass: Int = tierGovernanceClass(tier)
   let retTier: String = tier

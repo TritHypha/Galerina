@@ -20,6 +20,28 @@ pure flow isValidGovernanceFlags(flags: Int) -> Bool
   return flags > 0
 }
 
+;; Validate an untrusted manifest schema-version string against the recognised format (must carry both the
+;; fungi. and .v1 markers) before it drives the version check — admit only conforming versions (returning
+;; the value), and EXCLUDE anything else (→ ""). Genuine gate: excludes non-conforming versions; the
+;; validated value only feeds a .contains check + a redacted echo (content-safe downstream, R&D caveat
+;; 2026-07-17). Pure — no runtime authority / no effects.
+pure flow validateSchemaVersion(version: String) -> String
+{
+  if version.contains("fungi.") and version.contains(".v1") { return version }
+  return ""
+}
+
+;; Bound an untrusted governance-flags mask to the valid range before it drives the flags check — a
+;; validating clamp that EXCLUDES out-of-range values (negative → 0, over-ceiling → the 16-flag ceiling),
+;; clearing the taint (CWE-190: a governance bitfield must be ceilinged, not left unbounded). Pure — no
+;; runtime authority / no effects.
+pure flow validateFlagsMask(n: Int) -> Int
+{
+  if n < 0 { return 0 }
+  if n > 65535 { return 65535 }
+  return n
+}
+
 ;; Derives a manifest trust level from verified/signature/flags-valid combination — pure decision logic, safe with no authority.
 ;; Pure — no runtime authority / no effects.
 // @cause  [Called by verifyManifest] -> combines the verification checks into a trust level.
@@ -48,9 +70,15 @@ contract {
   unsafe let governanceFlagsMask: Int = request.jsonBody.governanceFlagsMask
   trap schemaVersion == "" : ERR_EMPTY_SCHEMA_VERSION
   trap governanceFlagsMask < 0 : ERR_INVALID_FLAGS
+  ;; validate the untrusted schema version (format) and bound the untrusted flags mask before they drive
+  ;; the verification decision — the gates clear the taint. (verified/hasSignature are direct Bool-typed
+  ;; inputs whose taint terminates in comparisons/response, not a second flow, so VALUESTATE-004 does not
+  ;; fire on them — R&D adjudication 2026-07-17: a Bool value can't be value-validated.)
+  let validSchemaVersion: String = validateSchemaVersion(schemaVersion)
+  let validFlagsMask: Int = validateFlagsMask(governanceFlagsMask)
   let isVerified: Bool = verified == true
-  let versionValid: Bool = isValidManifestVersion(schemaVersion)
-  let flagsValid: Bool = isValidGovernanceFlags(governanceFlagsMask)
+  let versionValid: Bool = isValidManifestVersion(validSchemaVersion)
+  let flagsValid: Bool = isValidGovernanceFlags(validFlagsMask)
   let trustLevel: Int = manifestTrustLevel(isVerified, hasSignature, flagsValid)
   let accepted: Bool = trustLevel >= 3
   let retTrustLevel: Int = trustLevel
@@ -58,7 +86,7 @@ contract {
   safe mut trustLevel = redact(trustLevel)
   safe mut accepted = redact(accepted)
   AuditLog.write({ event: "ManifestVerification", trustLevel: trustLevel, accepted: accepted })
-  return { schemaVersion: schemaVersion, versionValid: versionValid, flagsValid: flagsValid, trustLevel: retTrustLevel, accepted: retAccepted }
+  return { schemaVersion: validSchemaVersion, versionValid: versionValid, flagsValid: flagsValid, trustLevel: retTrustLevel, accepted: retAccepted }
 }
 
 route POST "/manifest/verify" { request Request  response Response  flow verifyManifest }
