@@ -19,8 +19,6 @@ permissions:
 
 jobs:
   lint-conventions:
-    needs: kb-preflight
-    if: needs.kb-preflight.outputs.has_kb_token == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
@@ -29,21 +27,22 @@ jobs:
         with:
           node-version: "20"
 
-      # The KB corpus (docs incl. compiler-diagnostics.md + the count-authority docs the doc-drift
-      # enforcers read) migrated to the sibling ZTF-Knowledge-Bases repo. Check it out so the umbrella's
-      # doc-drift / diagnostic-doc-drift members see it. If ZTF-KB is private, set a read-only
-      # ZTF_KB_READ_TOKEN secret; if public, github.token suffices. A failed checkout fails the job
-      # (fail-closed) rather than silently scanning an empty corpus.
-      - name: Check out the KB corpus (sibling repo)
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
-        with:
-          repository: TritHypha/ZTF-Knowledge-Bases
-          path: ZTF-Knowledge-Bases
-          token: ${{ secrets.ZTF_KB_READ_TOKEN }}
-
+      # ★ THERE IS DELIBERATELY NO KB CHECKOUT HERE. This job used to check out the PRIVATE sibling
+      # ZTF-Knowledge-Bases with a ZTF_KB_READ_TOKEN secret, so the umbrella's doc-drift /
+      # diagnostic-doc-drift members could read it. That checkout 404'd on EVERY run from 2026-07-09
+      # (last green: 844a55ff, 08:57Z) until it was removed — the token was added at 09:47Z, fifty
+      # minutes AFTER the breakage it was meant to fix, and never worked once.
+      #
+      # It is gone rather than repaired, because a PUBLIC repo cannot depend on a PRIVATE one:
+      #   • fork PRs never receive secrets, so this job could never be green for an outside contributor;
+      #   • nobody who clones this repo can reproduce the check — the corpus is not theirs to read;
+      #   • it parks a standing private-repo read grant in a public repo's settings, and it expires.
+      # Rotating the token fixes today and leaves all three. So the two cross-repo checks moved to the
+      # KB's own CI (kb-guards.yml), where BOTH trees are readable with no cross-repo credential at all:
+      # the KB is that workflow's own repo, and Galerina is public. The right credential here is none.
+      # The umbrella now DECLARES those members as skipped-here/enforced-there rather than counting a
+      # missing corpus as a drift. Owner action: delete the now-unused ZTF_KB_READ_TOKEN secret.
       - name: Convention gate (report-only — STAGE 1 of #6)
-        env:
-          GALERINA_KB_DIR: ${{ github.workspace }}/ZTF-Knowledge-Bases
         run: |
           echo '## Convention / quality gate (lint-conventions --soft)' >> "$GITHUB_STEP_SUMMARY"
           echo '' >> "$GITHUB_STEP_SUMMARY"
@@ -238,37 +237,21 @@ jobs:
           node scripts/audit-name-collisions.mjs --self-test
           node scripts/audit-name-collisions.mjs
 
-  # diagnostic-doc-drift (build-free, zero-baseline, ENFORCING): the canonical diagnostic reference
-  # (compiler-diagnostics.md) must not misdescribe a WIRED code. For any FUNGI-* code that carries a
-  # structured name/message in source AND a description in the doc, the two must share at least one
-  # meaningful word — zero overlap means the doc is describing a different fault (the FUNGI-RUNTIME-006
-  # "Audit event stream write failed" / really RateLimitExceeded class). The --self-test proves the
-  # detector fires; then the scan runs ENFORCING (reads .ts source + the .md doc directly — no build).
-  diagnostic-doc-drift:
-    needs: kb-preflight
-    if: needs.kb-preflight.outputs.has_kb_token == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4 (SHA-pinned, RD-0294w)
-        with:
-          node-version: "20"
-      # The canonical diagnostic reference (compiler-diagnostics.md) migrated to the sibling
-      # ZTF-Knowledge-Bases repo, so this cross-repo gate needs it checked out. Without it the enforcing
-      # scan fail-closes (exit 1) — which is why this job went RED after the migration. If ZTF-KB is
-      # private, set a read-only ZTF_KB_READ_TOKEN secret; if public, github.token suffices.
-      - name: Check out the KB corpus (sibling repo — holds compiler-diagnostics.md)
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4 (SHA-pinned, RD-0294w)
-        with:
-          repository: TritHypha/ZTF-Knowledge-Bases
-          path: ZTF-Knowledge-Bases
-          token: ${{ secrets.ZTF_KB_READ_TOKEN }}
-      - name: Diagnostic doc↔source drift (self-test, then enforcing)
-        env:
-          GALERINA_KB_DIR: ${{ github.workspace }}/ZTF-Knowledge-Bases
-        run: |
-          node scripts/audit-diagnostic-doc-drift.mjs --self-test
-          node scripts/audit-diagnostic-doc-drift.mjs
+  # ★ diagnostic-doc-drift LIVES IN THE KB'S CI NOW — ZTF-Knowledge-Bases/.github/workflows/kb-guards.yml
+  #
+  # It is not weakened and it is not gone: it still self-tests then runs ENFORCING at a zero baseline over
+  # 178 codes. It MOVED, because the doc it validates (compiler-diagnostics.md) lives in the KB, and a
+  # check belongs where its inputs are. Here it needed a private-repo token that 404'd on every run for 8
+  # days; there, both trees are readable with NO cross-repo credential — the KB is that workflow's own
+  # repo, and Galerina is public.
+  #
+  # The move also FIXES a hole this job always had: it only triggered on a Galerina push, so editing
+  # compiler-diagnostics.md in the KB could introduce drift that this gate would never look at. In the KB
+  # it runs on KB pushes AND on a daily schedule, so drift is caught from either side.
+  #
+  # Its umbrella twin (lint-conventions) declares it skipped-here/enforced-there rather than counting an
+  # absent corpus as a drift; scripts/tests/kb-dir.test.mjs fails if a KB-reading check is ever added back
+  # here without that declaration.
 
   # overclaim-phrases (build-free, zero-baseline, ENFORCING): no doc/.fungi/code-comment may pair a
   # complexity-boost claim (O(1) / single-clock / constant-time) with a zeroing token (fill / wipe /
@@ -481,18 +464,22 @@ jobs:
           node scripts/audit-import-governance.mjs --self-test
           node scripts/audit-import-governance.mjs
 
-  # KB-availability preflight — the two doc-drift gates (lint-conventions, diagnostic-doc-drift) read the
-  # canonical diagnostics / count-authority docs from the PRIVATE sibling repo ZTF-Knowledge-Bases. The
-  # default github.token cannot read a *separate* private repo, so they need a read-only ZTF_KB_READ_TOKEN
-  # secret (a fine-grained PAT or deploy key, read-only, scoped to TritHypha/ZTF-Knowledge-Bases). Until that
-  # secret exists they are SKIPPED (visibly grey, not red) rather than failing every push at the checkout
-  # step — a failed checkout enforces nothing AND emails a failure on every push. They still run ENFORCING
-  # locally / pre-commit (run-phase-close, where the KB is present), and auto-enable the moment the token is
-  # added:  gh secret set ZTF_KB_READ_TOKEN --repo TritHypha/Galerina  (paste a read-only KB-scoped PAT).
-  kb-preflight:
-    runs-on: ubuntu-latest
-    outputs:
-      has_kb_token: ${{ steps.probe.outputs.has }}
-    steps:
-      - id: probe
-        run: echo "has=${{ secrets.ZTF_KB_READ_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+  # ★ kb-preflight IS DELETED, AND IT IS WORTH KNOWING WHY — it was RIGHT about the risk and still lost.
+  #
+  # It existed to stop exactly the failure that then happened. Its own comment said so: "Until that secret
+  # exists they are SKIPPED (visibly grey, not red) rather than failing every push at the checkout step — a
+  # failed checkout enforces nothing AND emails a failure on every push."
+  #
+  # It gated the two KB jobs on `secrets.ZTF_KB_READ_TOKEN != ''`. The secret WAS set (2026-07-09 09:47Z),
+  # so the probe printed has=true, both jobs ran, and both 404'd at the checkout on every push for 8 days.
+  # The token had never worked once — it was added FIFTY MINUTES AFTER the breakage began (last green
+  # 844a55ff, 08:57Z; first red 09:05Z), so it was the attempted fix, not the cause.
+  #
+  # The preflight asks "is a token PRESENT?". The question it needed to answer is "can we READ the KB?".
+  # A set-but-invalid token is exactly the gap between those two, and it is the only case that matters —
+  # an absent token was already handled. Presence is not capability. The verdict was honest for its
+  # surface; the surface was not the thing.
+  #
+  # Nothing needs it now: the KB checks moved to the KB's CI, which reads both trees with no cross-repo
+  # credential. OWNER: delete the secret — `gh secret delete ZTF_KB_READ_TOKEN --repo TritHypha/Galerina`
+  # — it is a standing private-repo read grant in a PUBLIC repo's settings that grants nothing anyone uses.

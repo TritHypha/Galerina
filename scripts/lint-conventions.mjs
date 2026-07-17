@@ -12,7 +12,18 @@
 // Flags:
 //   --soft   always exit 0 (report-only) — for wiring into run-phase-close before the baseline hits 0.
 //   --json   emit machine-readable JSON (for #218 coverage cross-check to consume).
+//
+// ★ CROSS-REPO MEMBERS. Two checks read the PRIVATE sibling KB (ZTF-Knowledge-Bases). This repo is
+// PUBLIC, so on a public runner that corpus is legitimately absent — and both tools then fail-closed and
+// reported a "violation" that was NOT a drift, only the doc being elsewhere. The umbrella counted it as
+// a real one. That number was honest for its surface and its surface was not the thing.
+//
+// So a cross-repo member is DECLARED, and when the corpus is absent it is SKIPPED — never silently: the
+// report names the check, why it did not run, and WHERE it is enforced instead (the KB's own CI, which
+// can read both trees with no cross-repo credential at all). A skip that does not say where the check
+// still runs is just a hole with good manners.
 import { spawnSync } from "node:child_process";
+import { kbCorpusPresent, resolveKbDir } from "./lib/kb-dir.mjs";
 
 const CHECKS = [
   {
@@ -24,6 +35,10 @@ const CHECKS = [
     name: "doc-drift",
     script: "scripts/audit-doc-drift.mjs",
     desc: "DOC-004: doc 'living metrics' (global test/package COUNTS) vs the version.json authority — v1 heuristic (living docs only; #150 auto-count is the real remedy)",
+    // Partially cross-repo: it scans the KB's root docs AND this repo's README/AGENTS/CHANGELOG, and
+    // fail-closes on an unreadable corpus by design ("this audit once silently lost its whole corpus to
+    // a fail-open catch{}"). That design is right; a public runner having no KB is the exception.
+    crossRepo: { needs: "ZTF-Knowledge-Bases", enforcedIn: "ZTF-Knowledge-Bases CI (kb-guards.yml) — reads both trees, no cross-repo credential" },
   },
   {
     name: "provenance",
@@ -59,7 +74,11 @@ const CHECKS = [
   {
     name: "diagnostic-doc-drift",
     script: "scripts/audit-diagnostic-doc-drift.mjs",
-    desc: "RD-0124: the canonical diagnostic doc (compiler-diagnostics.md) must not misdescribe a wired code — for any FUNGI-* with a structured name/message in source AND a doc description, the two must share ≥1 meaningful word (zero-overlap = drift). Caught the FUNGI-RUNTIME-006 'Audit event stream write failed' (really RateLimitExceeded) bug + 14 more. Zero-baseline; also runs ENFORCING in conventions.yml.",
+    desc: "RD-0124: the canonical diagnostic doc (compiler-diagnostics.md) must not misdescribe a wired code — for any FUNGI-* with a structured name/message in source AND a doc description, the two must share ≥1 meaningful word (zero-overlap = drift). Caught the FUNGI-RUNTIME-006 'Audit event stream write failed' (really RateLimitExceeded) bug + 14 more. Zero-baseline; runs ENFORCING in the KB's kb-guards.yml (the doc it validates lives there).",
+    // WHOLLY cross-repo: the doc it compares against IS the KB's compiler-diagnostics.md. With no
+    // corpus there is nothing to compare — the tool correctly fail-closes, and this repo's public CI is
+    // simply not where that comparison can happen.
+    crossRepo: { needs: "ZTF-Knowledge-Bases", enforcedIn: "ZTF-Knowledge-Bases CI (kb-guards.yml) — reads both trees, no cross-repo credential" },
   },
   {
     name: "overclaim-phrases",
@@ -87,8 +106,18 @@ const rows = [];
 let total = 0;
 let toolErrors = 0;
 let skippedHeavy = 0;
+let skippedCrossRepo = 0;
+// Ask the DISK whether the corpus is readable — not whether a path resolves, and emphatically not
+// whether some secret is set. Resolved once, so every cross-repo member reports the same answer.
+const kbPresent = kbCorpusPresent();
+const kbDir = resolveKbDir();
 for (const c of CHECKS) {
   if (c.heavy && !full) { skippedHeavy++; rows.push({ name: c.name, desc: c.desc, skipped: true }); continue; }
+  if (c.crossRepo && !kbPresent) {
+    skippedCrossRepo++;
+    rows.push({ name: c.name, desc: c.desc, skipped: true, crossRepo: { ...c.crossRepo, lookedIn: kbDir } });
+    continue;
+  }
   const r = spawnSync(process.execPath, [c.script], { encoding: "utf8" });
   const stdout = r.stdout || "";
   // Each check MUST print a machine-readable `VIOLATIONS: N` line. Parse THAT, not the raw exit code —
@@ -108,23 +137,38 @@ for (const c of CHECKS) {
 }
 
 if (asJson) {
-  console.log(JSON.stringify({ total, toolErrors, skippedHeavy, checks: rows }, null, 2));
+  console.log(JSON.stringify({ total, toolErrors, skippedHeavy, skippedCrossRepo, kbPresent, checks: rows }, null, 2));
 } else {
   const out = ["# Galerina convention lint (TASK-ENV-001)\n"];
   for (const row of rows) {
+    if (row.crossRepo) {
+      out.push(`⊘ ${row.name} — SKIPPED (cross-repo: needs ${row.crossRepo.needs}, not readable here)`);
+      out.push(`    looked in: ${row.crossRepo.lookedIn}`);
+      out.push(`    ENFORCED IN: ${row.crossRepo.enforcedIn}`);
+      out.push(`    ${row.desc}`);
+      continue;
+    }
     if (row.skipped) { out.push(`⊘ ${row.name} — SKIPPED (heavy; pass --full to run)`); out.push(`    ${row.desc}`); continue; }
     if (row.error) { out.push(`⚠ ${row.name} — TOOL ERROR: ${row.why}${row.stderr ? " — " + row.stderr : ""}`); continue; }
     out.push(`${row.violations === 0 ? "✓" : "✗"} ${row.name} — ${row.violations} violation(s)`);
     out.push(`    ${row.desc}`);
     if (row.totalLine) out.push(`    ${row.totalLine}`);
   }
-  const ran = CHECKS.length - toolErrors - skippedHeavy;
-  out.push(`\nTOTAL: ${total} violation(s) across ${ran} ran check(s)` + (skippedHeavy ? `  ·  ⊘ ${skippedHeavy} heavy skipped (--full)` : "") + (toolErrors ? `  ·  ⚠ ${toolErrors} TOOL ERROR(s)` : ""));
+  const ran = CHECKS.length - toolErrors - skippedHeavy - skippedCrossRepo;
+  out.push(`\nTOTAL: ${total} violation(s) across ${ran} ran check(s)`
+    + (skippedHeavy ? `  ·  ⊘ ${skippedHeavy} heavy skipped (--full)` : "")
+    + (skippedCrossRepo ? `  ·  ⊘ ${skippedCrossRepo} cross-repo skipped (no KB here)` : "")
+    + (toolErrors ? `  ·  ⚠ ${toolErrors} TOOL ERROR(s)` : ""));
+  // The green must state its SURFACE and its EXCLUSIONS. "CONVENTIONS GREEN ✓" over 10 of 12 checks is
+  // the false green this whole file is meant not to print — a reader takes the tick as "all conventions",
+  // which is the claim the word CONVENTIONS makes. Name what did not run, or do not use the word.
   out.push(
     toolErrors > 0
       ? "GATE INCONCLUSIVE — a check failed to run (fix the tool error)."
       : total === 0
-        ? "CONVENTIONS GREEN ✓"
+        ? (skippedCrossRepo
+            ? `CONVENTIONS GREEN over ${ran}/${CHECKS.length} checks ✓ — NOT a verdict on the ${skippedCrossRepo} cross-repo check(s) above, which need the KB and are enforced in its CI.`
+            : "CONVENTIONS GREEN ✓")
         : `CONVENTIONS HAVE VIOLATIONS — a strict gate would FAIL${soft ? " (running --soft: reported, not enforced)" : ""}.`,
   );
   console.log(out.join("\n"));
