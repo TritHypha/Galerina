@@ -3,7 +3,7 @@
   "provenance": {
     "available": true,
     "branch": "main",
-    "sha": "39657cb3",
+    "sha": "f30e2e8e",
     "detached": false,
     "dirty": true
   },
@@ -195,7 +195,7 @@
         {
           "label": "Stage-B self-hosting — WASM execution (P9)",
           "pct": null,
-          "status": "in progress — VERIFIED 2026-07-12: all 7 stage twins build→WASM (R0) + #105-admit (R1); frontier = R3 byte-parity per stage (only lexer/tokenize proven so far)",
+          "status": "in progress — all 7 stage twins build→WASM (R0) + #105-admit (R1) since 2026-07-12. R3 byte-parity: LEXER (tokenize) + the whole PARSER ladder to its entry point — parseParams (flat) → parseExpr (recursive) → parseStmt (self+mutual) → parseBlock → parseFlows (2026-07-17, 53 differential tests, all first-run green). The recursive AST readback needed NO new ABI: readRecordField→readArray→recurse composes from the shipped primitives, so that claim is now executed rather than asserted. NOT proven: type-checker · effect-checker · governance-verifier · gir-emitter · runtime (5 of 7 stages) — the frontier is those, not the ABI",
           "live": false,
           "evidence": null
         },

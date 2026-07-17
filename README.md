@@ -32,7 +32,7 @@ Galerina optimises for **compile-time-verified governance and fail-closed Zero-T
 
 **Produces a cryptographic audit trail.** Every governed execution generates an Epilogue Receipt (sha256_seal or zk_snark). Every security trap appends to an append-only audit log (CBOR Tag 410 AuditEvent). **Hybrid Ed25519 + ML-DSA-65 (NIST FIPS 204) signing is shipped** on the attestation, proof-graph, and bridge surfaces (both halves required — no post-quantum downgrade; certified mode *mandates* the ML-DSA key). **Opt-in hybrid signing now extends to the `.lmanifest`** as well: the default stays **Ed25519** (unchanged), and setting `GALERINA_MANIFEST_PROFILE=certified` *mandates* the hybrid Ed25519+ML-DSA-65 manifest signature — both halves required, fail-closed (`FUNGI-MANIFEST-PQ-REQUIRED` / `-PUBKEY-MISSING` / `-TAMPER`), with no post-quantum downgrade.
 
-**Compiles to WebAssembly.** Governance is verified by the compiler at build time and enforced on the Stage-A runtime today. **WASM is the production execution path** — independently benchmarked as native-class (see Benchmarks). Full in-WASM self-hosting (P9) is *in progress*: the self-hosted `lexer.fungi` `tokenize` reaches **byte-for-byte Stage-A == Stage-B real-WASM parity** (#143); extending that to the parser/type-checker/governance-verifier flows is the remaining gate.
+**Compiles to WebAssembly.** Governance is verified by the compiler at build time and enforced on the Stage-A runtime today. **WASM is the production execution path** — independently benchmarked as native-class (see Benchmarks). Full in-WASM self-hosting (P9) is *in progress*: the self-hosted `lexer.fungi` `tokenize` **and the `parser.fungi` entry point `parseFlows`** reach **byte-for-byte Stage-A == Stage-B real-WASM parity** (#143) — the parser ladder is proven from leaf to entry point (`parseParams` → `parseExpr` → `parseStmt` → `parseBlock` → `parseFlows`, 53 differential tests), including self- and mutually-recursive AST readback with **no new ABI**; extending that to the type-checker/governance-verifier flows is the remaining gate.
 
 ---
 
@@ -91,7 +91,7 @@ Galerina can **govern a tolerant numeric sub-kernel** as a deny-by-default, untr
 - **Crypto on a noisy/photonic lane** — integrity is never tolerance-bounded; `crypto.*` on a noisy lane is denied (`FUNGI-SUBSTRATE-001`) no matter how much voting/averaging/ECC is stacked. **Crypto and any bit-exact result stay digital, always.**
 - **AI as an in-path authorizer** — a model may *propose* (untrusted, degrade-only), but a probabilistic/self-reported score can never *lift* a security verdict.
 - **"Instant / free / O(1)" optical compute** — refuted; light transit is N-independent in *latency*, but the *work* is Θ(N²) load + Θ(N) I/O.
-- **Not yet (roadmap, not "cannot"):** real photonic hardware (emulated today), full in-WASM self-hosting (tokenize only so far), and real in-sandbox `DSS.wasm` isolation (#102–106).
+- **Not yet (roadmap, not "cannot"):** real photonic hardware (emulated today), full in-WASM self-hosting (lexer `tokenize` + the whole parser entry point are byte-parity-proven; type-checker / governance-verifier / gir-emitter are not), and real in-sandbox `DSS.wasm` isolation (#102–106).
 
 ---
 
@@ -201,7 +201,7 @@ Run on an **Intel i9-9900K (8C/16T) + NVIDIA RTX 2060**, across Rust (native, ge
 | **Lexer / Parser / Governance Verifier / Contract blocks / Value-state checker** | 100% | full pipeline |
 | **DRCM Phases 1–7 (Governed Tower — Stage-A simulation)** | 100% | real `DSS.wasm` is Post-P9 (#102–106) |
 | **CBOR Manifests (RFC 8949)** | 100% | |
-| **Tests — full suite** | 100% | **93/93 packages · 7,350 tests · 0 failures** |
+| **Tests — full suite** | 100% | **93/93 packages · 7,359 tests · 0 failures** |
 | **Resilience — first-class fault handlers (0017)** | shipped | `on_*_fault` → fail-closed `halt` default + FUNGI-FAULT-001/003 + `GIRFlow.faultHandlers` |
 | **Contract-driven test generation (0016)** | 5/5 vector dimensions | fault-injection · effect-egress · capability-denial · boundary/fuzz · substrate-violation (over GIR) |
 | **Type checker / Effect checker** | ~90% | |
@@ -446,7 +446,7 @@ Layer 5: ProofGraph + .lmanifest      — cryptographic audit proof (Ed25519 def
 ## Running the Tools
 
 ```bash
-# Tests — core suite (4 packages) / full suite (93 packages, 7,350 tests)
+# Tests — core suite (4 packages) / full suite (93 packages, 7,359 tests)
 node scripts/run-all-tests.cjs --core
 npm test
 

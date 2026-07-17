@@ -273,7 +273,7 @@ const BUILD_PROGRESS = [
   { layer: "Passive Execution Plans & Target Bridges", pct: 35 },
   { layer: "AI Inference Tower (BitNet/Groq/NVFP4)", pct: 30 },
   { layer: "Photonic / Ternary Computing", pct: 3 },
-  { layer: "Stage-B self-hosting — WASM execution (P9)", status: "in progress — VERIFIED 2026-07-12: all 7 stage twins build→WASM (R0) + #105-admit (R1); frontier = R3 byte-parity per stage (only lexer/tokenize proven so far)" },
+  { layer: "Stage-B self-hosting — WASM execution (P9)", status: "in progress — all 7 stage twins build→WASM (R0) + #105-admit (R1) since 2026-07-12. R3 byte-parity: LEXER (tokenize) + the whole PARSER ladder to its entry point — parseParams (flat) → parseExpr (recursive) → parseStmt (self+mutual) → parseBlock → parseFlows (2026-07-17, 53 differential tests, all first-run green). The recursive AST readback needed NO new ABI: readRecordField→readArray→recurse composes from the shipped primitives, so that claim is now executed rather than asserted. NOT proven: type-checker · effect-checker · governance-verifier · gir-emitter · runtime (5 of 7 stages) — the frontier is those, not the ABI" },
   { layer: "B8 governed HTTP transport (TLSTP)", status: "in progress — admission fold (b8-admission.fungi) execution-proven ≡ the shipped K3 calculus; S4 recovering-FSM twinned + execution-proven (192-pt differential, 2026-07-16 night); remaining = raw-byte shim + S4 live wiring + ECH/OHTTP + DSS.wasm in-sandbox isolation" },
 ];
 // ── TRACKING REGISTRY — substantial items NOT surfaced by the Zero-Trust or Build-Progress tables
