@@ -5,8 +5,8 @@
     "ref": 175,
     "inline": 163,
     "phantom": 111,
-    "live": 130,
-    "referenced": 95,
+    "live": 131,
+    "referenced": 94,
     "dead": 8
   },
   "entries": [
@@ -3085,7 +3085,7 @@
         "error"
       ],
       "defs": 1,
-      "emits": 1,
+      "emits": 2,
       "tests": 20,
       "docs": 14
     },
@@ -8695,7 +8695,7 @@
       "code": "FUNGI-VAL-001",
       "family": "VAL",
       "namespace": "FUNGI",
-      "status": "referenced",
+      "status": "live",
       "names": [
         "SAFETY_CRITICAL_MISSING_AUDIT"
       ],
@@ -8703,7 +8703,7 @@
         "error"
       ],
       "defs": 1,
-      "emits": 0,
+      "emits": 1,
       "tests": 36,
       "docs": 3
     },

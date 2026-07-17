@@ -8,9 +8,9 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 
 | status | count | meaning |
 |---|---|---|
-| live | 130 | emitted with an exported constant |
+| live | 131 | emitted with an exported constant |
 | inline | 163 | emitted, NO exported constant (R4 — Stage F) |
-| referenced | 95 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
+| referenced | 94 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 8 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
 | phantom | 111 | doc-only mention, not in source (drift — DOC-004) |
 | ref | 175 | referenced only (no def/emit) |
@@ -1307,7 +1307,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-VAL-00 | ref | — | — |
-| FUNGI-VAL-001 | referenced | SAFETY_CRITICAL_MISSING_AUDIT | error |
+| FUNGI-VAL-001 | live | SAFETY_CRITICAL_MISSING_AUDIT | error |
 | FUNGI-VAL-002 | referenced | SAFETY_CRITICAL_MISSING_DETERMINISM | error |
 | FUNGI-VAL-003 | referenced | UNKNOWN_VALUE_CLASSIFICATION | error |
 

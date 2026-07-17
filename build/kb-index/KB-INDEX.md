@@ -1,4 +1,4 @@
-# Galerina KB index (1179 docs)
+# Galerina KB index (1180 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -562,6 +562,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## 2026-07-16-STOPPER-K3-blocked-on-self-hosted-parser-pivot-to-effect-checker.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-STOPPER-K3-blocked-on-self-hosted-parser-pivot-to-effect-checker.md`
 - terms: parser, verdict, flip, self-hosted, effect-checker, raw-diag, stopper, grounded, twin, sequence, after, grammar, param, recommend
+
+## 2026-07-17-ACK-alias-cluster-landed-005-unsquat-009-payment-charge.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-alias-cluster-landed-005-unsquat-009-payment-charge.md`
+- codes: FUNGI-EFFECT-005, FUNGI-EFFECT-009
+- terms: effect-checker, pii, main, landed, probe, alias, http, legs, frontier, effect, galerina, e13062, held, suite
 
 ## 2026-07-17-ACK-EFFECT-006-landed-plus-count-method-aligned-plus-gate-gap.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-EFFECT-006-landed-plus-count-method-aligned-plus-gate-gap.md`

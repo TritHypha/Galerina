@@ -2,7 +2,7 @@
 Generated: 2026-07-17
 
 ## Stats
-- Docs: 1177 | Edges: 3476 | Orphans: 114 | Stale links: 0 | FUNGI codes: 748
+- Docs: 1178 | Edges: 3476 | Orphans: 115 | Stale links: 0 | FUNGI codes: 748
 
 ## Document Registry (auto-generated)
 
@@ -101,6 +101,7 @@ Generated: 2026-07-17
 | 2026-07-16-STOPPER-K3-blocked-on-self-hosted-parser-pivot-to-effect-checker.md | — | — | — | — |
 | 2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion.md | — | — | — | — |
 | 2026-07-16-UNLOCK-checker-taxonomy-20-adopt.md | — | — | — | FUNGI-EFFECT-002, FUNGI-TYPE-006 |
+| 2026-07-17-ACK-alias-cluster-landed-005-unsquat-009-payment-charge.md | — | — | — | FUNGI-EFFECT-005, FUNGI-EFFECT-009 |
 | 2026-07-17-ACK-EFFECT-006-landed-plus-count-method-aligned-plus-gate-gap.md | — | — | — | — |
 | 2026-07-17-ACK-EFFECT-006-verified-grounded-plus-alias-cluster-WIP-red-in-tree-plus-endorse-parity-gate.md | — | — | — | FUNGI-EFFECT-005, FUNGI-EFFECT-006 |
 | 2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed.md | — | — | — | — |
@@ -1302,6 +1303,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-STOPPER-K3-blocked-on-self-hosted-parser-pivot-to-effect-checker.md` — 2026-07-16-STOPPER-K3-blocked-on-self-hosted-parser-pivot-to-effect-checker
 - `2026-07-16-kb-graph-code-region-masking-stale-links-zeroed.md` — 2026-07-16-kb-graph-code-region-masking-stale-links-zeroed
 - `2026-07-17-ACK-EFFECT-006-landed-plus-count-method-aligned-plus-gate-gap.md` — 2026-07-17-ACK-EFFECT-006-landed-plus-count-method-aligned-plus-gate-gap
+- `2026-07-17-ACK-alias-cluster-landed-005-unsquat-009-payment-charge.md` — 2026-07-17-ACK-alias-cluster-landed-005-unsquat-009-payment-charge
 - `2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed.md` — 2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed
 
 ## Stale Links

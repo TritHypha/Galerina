@@ -37,6 +37,10 @@ const CC = join(ROOT, "packages-galerina", "galerina-core-compiler", "src");
 const TWIN = join(CC, "self-hosted", "type-checker.fungi");
 const TYPE_CHECKER = join(CC, "type-checker.ts");
 const SYMBOL_RESOLVER = join(CC, "symbol-resolver.ts");
+// effect-checker bucket (2026-07-17, R&D-endorsed): the effect twin mirrors effect-checker.ts's
+// FUNGI-EFFECT-* charter. Same by-construction discipline, scoped to its own pass.
+const EC_TWIN = join(CC, "self-hosted", "effect-checker.fungi");
+const EFFECT_CHECKER = join(CC, "effect-checker.ts");
 
 // ── pure core (self-tested) ───────────────────────────────────────────────────
 
@@ -126,7 +130,10 @@ if (process.argv.includes("--self-test")) {
   assert(sn["FUNGI-TYPE-002"] === "TYPE_MISMATCH" && sn["FUNGI-TYPE-014"] === "WRONG_NAME", "sourceNameMap extracts emit-site names");
   const nv = nameParityViolations(["FUNGI-TYPE-002", "FUNGI-TYPE-014"], tn, sn);
   assert(nv.length === 1 && nv[0].code === "FUNGI-TYPE-014" && nv[0].kind === "squat", "detects a name squat, passes matching");
-  console.log("twin-emit-parity self-test: 9/9 ok");
+  // effect-checker bucket: the same pure functions, scoped to the FUNGI-EFFECT-* charter.
+  const ecSet = twinEmitSet(`diags.append({ code: "FUNGI-EFFECT-006" })\n{ code: "FUNGI-VAL-001" }`).filter((c) => /^FUNGI-EFFECT-/.test(c));
+  assert(ecSet.length === 1 && ecSet[0] === "FUNGI-EFFECT-006", "effect bucket scopes to FUNGI-EFFECT-* (excludes VAL)");
+  console.log("twin-emit-parity self-test: 10/10 ok");
   process.exit(0);
 }
 function assert(ok, what) { if (!ok) { console.error(`self-test FAIL: ${what}`); process.exit(1); } }
@@ -157,11 +164,22 @@ const twinNames = twinNameMap(readFileSync(TWIN, "utf8"));
 const tcNames = sourceNameMap(readFileSync(TYPE_CHECKER, "utf8"));
 const nameViol = nameParityViolations(twin, twinNames, tcNames);
 
+// ── effect-checker bucket: effect-checker.fungi ⊆ effect-checker.ts (FUNGI-EFFECT-* charter) ──
+// The effect twin folds several Stage-A functions (validateDeclaredEffectNames + checkFlowEffects)
+// into one loop; a twin EFFECT-* code with no effect-checker.ts emit site is a false differential
+// (the 005-squat class). Scoped to FUNGI-EFFECT-* — the effect twin's own charter/pass. Name-parity
+// for effects is deferred until the effect twin carries a diagName table (a separate follow-up).
+const ecTwin = twinEmitSet(readFileSync(EC_TWIN, "utf8")).filter((c) => /^FUNGI-EFFECT-/.test(c));
+const ecEmits = sourceEmitSet(readFileSync(EFFECT_CHECKER, "utf8"));
+const ecBad = falseDifferentials(ecTwin, ecEmits);
+const ecTwinSet = new Set(ecTwin);
+const ecFrontier = [...ecEmits].filter((c) => /^FUNGI-EFFECT-/.test(c) && !ecTwinSet.has(c)).sort();
+
 const asJson = process.argv.includes("--json");
 if (asJson) {
-  console.log(JSON.stringify({ twinEmits: twin.length, falseDifferentials: bad, nameParityViolations: nameViol, typeFrontier, otherFamilies, otherPassFrontier: otherPass }, null, 1));
+  console.log(JSON.stringify({ twinEmits: twin.length, falseDifferentials: bad, nameParityViolations: nameViol, typeFrontier, otherFamilies, otherPassFrontier: otherPass, effectTwinEmits: ecTwin.length, effectFalseDifferentials: ecBad, effectFrontier: ecFrontier }, null, 1));
 } else {
-  console.log(`twin-emit-parity: twin emits ${twin.length} codes · ${bad.length} false differential(s) · ${nameViol.length} name-parity violation(s)`);
+  console.log(`twin-emit-parity: type-twin ${twin.length} codes · ${bad.length} false diff · ${nameViol.length} name-parity viol · effect-twin ${ecTwin.length} codes · ${ecBad.length} false diff`);
   for (const c of bad) console.log(`  ⚠ FALSE DIFFERENTIAL ${c} — no emit call-site in type-checker.ts (twin flags what the checker never does)`);
   if (bad.length === 0) console.log(`  ✅ twin-emitted ⊆ type-checker-emitted (no false differential)`);
   for (const v of nameViol) console.log(`  ⚠ NAME SQUAT ${v.code} — twin name '${v.twin}' ≠ Stage-A name '${v.stageA}' (one-code=one-name; a code mirrored at the wrong meaning)`);
@@ -169,6 +187,10 @@ if (asJson) {
   console.log(`  type-system frontier (${typeFrontier.length} TYPE-* codes the twin does not yet mirror): ${typeFrontier.join(" ") || "none — the TYPE-* type-system twin is COMPLETE"}`);
   console.log(`  other type-checker families (${otherFamilies.length}; distinct subsystems, NOT the TYPE-* charter — future twin scope): ${otherFamilies.join(" ") || "none"}`);
   console.log(`  other-pass (SymbolResolver, a future twin's scope): ${otherPass.join(" ") || "none"}`);
+  console.log(`  ── effect-checker bucket ──`);
+  for (const c of ecBad) console.log(`  ⚠ FALSE DIFFERENTIAL ${c} — no emit call-site in effect-checker.ts (effect twin flags what the checker never does)`);
+  if (ecBad.length === 0) console.log(`  ✅ effect twin (${ecTwin.length} FUNGI-EFFECT-* codes) ⊆ effect-checker-emitted (no false differential)`);
+  console.log(`  effect frontier (${ecFrontier.length} FUNGI-EFFECT-* codes the twin does not yet mirror): ${ecFrontier.join(" ") || "none — the effect-checker twin is COMPLETE"}`);
 }
-process.exit(bad.length === 0 && nameViol.length === 0 ? 0 : 3);
+process.exit(bad.length === 0 && nameViol.length === 0 && ecBad.length === 0 ? 0 : 3);
 }

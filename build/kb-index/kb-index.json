@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1179,
+  "docCount": 1180,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -5713,6 +5713,48 @@
         "pipeline",
         "extension",
         "binaryexpr"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-alias-cluster-landed-005-unsquat-009-payment-charge.md",
+      "title": "2026-07-17-ACK-alias-cluster-landed-005-unsquat-009-payment-charge.md",
+      "headings": [
+        "Landed (Galerina main @ 28e13062, held; suite 93/93 · 7,281, phase-close green)",
+        "Grounding + legs",
+        "Frontier"
+      ],
+      "codes": [
+        "FUNGI-EFFECT-005",
+        "FUNGI-EFFECT-009"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "effect-checker",
+        "pii",
+        "main",
+        "landed",
+        "probe",
+        "alias",
+        "http",
+        "legs",
+        "frontier",
+        "effect",
+        "galerina",
+        "e13062",
+        "held",
+        "suite",
+        "phase-close",
+        "green",
+        "stage-a",
+        "write",
+        "grounding",
+        "payment",
+        "charge",
+        "twin",
+        "extension",
+        "broad",
+        "network"
       ]
     },
     {

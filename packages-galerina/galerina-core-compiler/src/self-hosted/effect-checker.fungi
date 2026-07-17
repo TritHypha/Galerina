@@ -260,9 +260,11 @@ contract {
     match deOpt {
       Some(de) => {
         // Check #7 — FUNGI-EFFECT-006 (DENY_ONLY_EFFECT, error): a declared effect Stage-A recognises
-        // but can NEVER grant (eval.execute, memory.spill). Checked FIRST and — like Stage-A
-        // validateDeclaredEffectNames' `continue` — SKIPS the other declared-side checks (004/007/008)
-        // for this effect. Grounded vs raw Stage-A (checkFlowEffects): plain/secure/guarded memory.spill
+        // but can NEVER grant (eval.execute, memory.spill). Checked FIRST and SKIPS the twin's whole
+        // else-branch (alias 005/009 + 004/007/008) for this effect. (Net-equivalent to Stage-A's
+        // `continue`, which skips validateDeclaredEffectNames' 005/009/004 remainder — the twin folds
+        // those into one else, so the skip set is named for the twin's architecture, not Stage-A's.)
+        // Grounded vs raw Stage-A (checkFlowEffects): plain/secure/guarded memory.spill
         // -> 006 alone; [memory.spill, secret.read] -> 006 + 008 (per-effect); a pure flow adds 003
         // separately via checkPureFlowEffects.
         if isDenyOnly(de) {
