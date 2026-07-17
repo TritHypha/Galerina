@@ -2,7 +2,7 @@ import { spawnSync, execSync } from "node:child_process";
 import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { benchmarkSpec, normalizeThroughput, assertBenchmarkUnits } from "./throughput-units.mjs";
+import { benchmarkSpec, normalizeThroughput, assertBenchmarkUnits, metricClassOf } from "./throughput-units.mjs";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const benchDir   = join(__dirname, "..", "benchmarks");
@@ -252,7 +252,9 @@ async function runBenchmark(bench) {
     }
   }
 
-  return { benchmark: bench.id, results: res, ...(units ? { units } : {}) };
+  // metricClass (additive — measurements unchanged) groups this benchmark into its per-metric report
+  // table and lets the UI chart tab by metric without importing throughput-units. R&D co-design 2026-07-17.
+  return { benchmark: bench.id, metricClass: metricClassOf(bench.id), results: res, ...(units ? { units } : {}) };
 }
 
 // --quick: use 3s for time-based benchmarks (compute-mix), halve iteration counts.

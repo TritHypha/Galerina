@@ -189,6 +189,19 @@ const SPECS = {
     N: 10000, unit: "record-scans/s", comparable: true,
     native: (_rt, r) => num(r.operationsPerSecond),
   },
+
+  // ── CATEGORICALLY NOT CROSS-RUNTIME (R&D adjudication 2026-07-17) ─────────────
+  // governance-cost measures an INTERNAL ratio (its own header: "govSpeed/manifestSpeed is the
+  // governance cost factor"), and its native baseline does ZERO governance BY DESIGN. No amount of
+  // unit-aligning makes governed-vs-ungoverned work-equivalent — the whole point is that the work
+  // differs. So it is comparable:false (not shape-only — a shape-only marker would falsely promise
+  // future certifiability). Its metricClass is "governance"; the governance table has NO native
+  // column, so a cross-runtime ratio is structurally unrepresentable. The honest headline is the
+  // internal govSpeed/manifestSpeed overhead factor (measured same-N).
+  "governance-cost": {
+    N: 1, unit: "gov-factor", comparable: false,
+    reason: "internal governed/manifest ratio — native baseline does no governance; not cross-runtime by design",
+  },
 };
 
 // ratio of an inner-op rate to a whole-call rate must ≈ expected inner-ops-per-call.
@@ -213,6 +226,58 @@ export function isComparable(benchId) {
   const s = SPECS[benchId];
   return s ? s.comparable : true;
 }
+
+// ── metric classification (R&D co-design 2026-07-17: separate per-metric tables) ──
+// Each benchmark is grouped by the ONE metric it actually measures, so the report never ranks a
+// benchmark by a metric it wasn't measuring (the root cause of the false cross-runtime ratios).
+//   cpu-throughput — inner-ops/s, cross-runtime; admitted to the CPU table ONLY if certified
+//                    work-equivalent (in SPECS, comparable:true). Uncertified lanes are shown as
+//                    UNCERTIFIED (no ratio) until inner-op + N parity is verified.
+//   memory         — bytes/op is the honest metric (allocation benchmarks); no throughput ratio.
+//   gpu            — kernel-evals/s on the GPU-shaped workload. matrix-multiply DUAL-HOMES here too
+//                    (it has a real WebGPU lane) — the GPU table also picks up any benchmark with a
+//                    denoWebGpu result, so dual-home is data-driven, not a second map entry.
+//   io             — own units (bytes/s, docs/s, requests/s); not inner-op normalised.
+//   governance     — Galerina-internal tier ratio ONLY (governed/manifest). The governance table has
+//                    NO native column, so a cross-runtime ⚫ is structurally impossible.
+export const METRIC_CLASS = {
+  "compute-mix": "cpu-throughput",
+  "arithmetic-threshold": "cpu-throughput",
+  "six-digit-guess": "cpu-throughput",
+  "fibonacci-recursive": "cpu-throughput",
+  "hardware-targets": "cpu-throughput",   // Float32 dot-product compute — NOT governance (confirmed from source)
+  "tower-of-hanoi": "cpu-throughput",
+  "nbody": "cpu-throughput",
+  "mandelbrot": "cpu-throughput",
+  "spectral-norm": "cpu-throughput",
+  "tri-logic": "cpu-throughput",
+  "data-query": "cpu-throughput",
+  "call-chain": "cpu-throughput",
+  "matrix-multiply": "cpu-throughput",    // dual-home: also rendered in the GPU table via its WebGPU lane
+  "record-allocation": "memory",
+  "low-memory": "memory",
+  "binary-trees": "memory",
+  "collection-pipeline": "memory",
+  "gpu-compute": "gpu",
+  "json-parse": "io",
+  "spore-container": "io",
+  "framework-pipeline": "io",
+  "http-throughput": "io",
+  "crypto-ops": "io",
+  "text-html": "io",
+  "governance-cost": "governance",
+};
+
+/**
+ * The metric class for a benchmark. Unknown ids default to "io" (own-units, neutral) — a fail-closed
+ * choice: an uncategorised benchmark does NOT silently enter the certified cross-runtime CPU table.
+ */
+export function metricClassOf(benchId) {
+  return METRIC_CLASS[benchId] ?? "io";
+}
+
+/** Ordered metric classes for report layout — decreasing cross-runtime comparability, governance last. */
+export const METRIC_ORDER = ["cpu-throughput", "memory", "gpu", "io", "governance"];
 
 /**
  * Normalize ONE runtime result to inner-ops/sec for its benchmark.

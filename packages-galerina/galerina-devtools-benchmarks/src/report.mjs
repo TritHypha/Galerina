@@ -15,6 +15,7 @@
 import { readFileSync, writeFileSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { metricClassOf } from "./throughput-units.mjs";
 
 const root = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 const resultsDir = join(root, "results");
@@ -60,7 +61,10 @@ if (baseline) {
 
 // ── view 2: cross-language ──
 const crossLanguage = latest.map((b) => {
-  const row = { benchmark: b.benchmark, aligned: b.units ? b.units.comparable !== false : false, unit: b.units?.unit ?? "per-call" };
+  // metricClass (additive): the ONE metric this benchmark measures, so chart.mjs can group per metric
+  // without re-deriving. Prefer metricClassOf() over any stamped b.metricClass so an older latest.json
+  // (from before runner.mjs stamped the field) still classifies correctly.
+  const row = { benchmark: b.benchmark, metricClass: metricClassOf(b.benchmark), aligned: b.units ? b.units.comparable !== false : false, unit: b.units?.unit ?? "per-call" };
   for (const [k] of RT) row[k] = tput(b.results[k]);
   return row;
 });

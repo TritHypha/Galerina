@@ -322,6 +322,13 @@ run("path:leak", "node", ["scripts/audit-path-leak.mjs"]);
 //   regen / new indexer / stray doc-link can never silently re-introduce it. Scoped to the tag, not the
 //   private-KB path (which has legit refs). --self-test proves it fires. Exit = violation count. Blocking.
 run("private-doc-leak", "node", ["scripts/audit-private-doc-leak.mjs"]);
+// bench-report-stale — R&D 2026-07-17: the published benchmark report.md must match its generator run over
+//   the committed results/latest.json. It was found 381 commits behind its data (the closing cycle refreshed
+//   latest.json ~11× but never regenerated report.md), so the public report showed numbers from an old run —
+//   a pure integrity defect that silently re-opens. --stale-only gates freshness ALONE (the Check-B
+//   uncertified-ratio/admission gate wires in after the per-metric-table restructure). Regenerate with
+//   `node src/compare.mjs > report.md`. Exit 3 on staleness. Blocking.
+run("bench-report-stale", "node", ["packages-galerina/galerina-devtools-benchmarks/src/audit-benchmark-integrity.mjs", "--stale-only"]);
 // claim:hygiene — RD technical-claims-audit (2026-07-14) durable fix: public docs (README · SECURITY ·
 //   docs/**) must carry their evidence tier — no unqualified superlatives ("absolute", "native-class",
 //   "mathematical proof", "unhackable" asserted rather than rebutted), controlled security/PQ vocabulary

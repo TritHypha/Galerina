@@ -10,8 +10,8 @@
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { isComparable as specComparable, benchmarkSpec } from "./throughput-units.mjs";
-import { shapeOnlyLane, isShapeOnlyBench, WORK_EQUIVALENCE } from "./work-equivalence.mjs";
+import { isComparable as specComparable, benchmarkSpec, metricClassOf, METRIC_ORDER } from "./throughput-units.mjs";
+import { isShapeOnlyBench } from "./work-equivalence.mjs";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const dataPath  = join(__dirname, "..", "results", "latest.json");
@@ -254,168 +254,198 @@ console.log("- **Galerina manifest ⟨interp⟩** — Stage-A: pre-verified runt
 console.log("- **Galerina passive ⟨interp⟩** — Stage-A: pre-compiled deployment model with LRU result cache (warm path). *Diagnostic.*\n");
 console.log("---\n");
 
-console.log("## 1. Throughput — Winner per Benchmark\n");
-console.log("> **🏆 Winner** = fastest runtime for that workload. Medals (🥇🥈🥉) show top 3 in the detail tables below.");
-console.log(`> 🖥️ CPU = CPU execution | 🎮 GPU = real GPU dispatch (Deno WebGPU on ${GPU_NAME})\n`);
+// ── §1: Per-Metric Scoreboards (R&D structural fix for false cross-runtime ratios, 2026-07-17) ──
+// A table has ONE metric. Grouping every benchmark by the single metric it actually MEASURES makes a
+// false cross-metric comparison structurally unrepresentable: the Memory table ranks by bytes/op (no
+// throughput ratio, no ⚫), and the Governance table's columns are Galerina tiers ONLY (NO native
+// column), so it literally cannot divide by a native rate to print a "N× slower". This REPLACES the
+// three old MIXED headline tables (the §1 winner-per-benchmark table, the §1.5 canonical scoreboard,
+// and the §1.5 traffic-light summary), each of which ranked EVERY benchmark in one cross-runtime
+// throughput comparison — forcing a memory or governance benchmark into a throughput ranking it was
+// never measuring (the root cause of governance-cost's ⚫ 1,077,381× artifact). The single global
+// cross-metric winner tally is dropped with them.
+console.log("## 1. Per-Metric Scoreboards\n");
 
-// ── Winner summary first ──────────────────────────────────────────────────────
-// Columns now centre on the Galerina *governed* tier (the honest always-on path):
-//   • "Galerina (governed)" — governed throughput
-//   • "gov ÷ Winner"      — governed as a multiple of the fastest runtime (≤1×, shows the gap)
-//   • "gov ÷ Python"      — governed vs Python, the FLOOR Galerina must beat (✅ ≥1× / ❌ <1×)
-// Rationale: Galerina's Stage-A runtime is still TypeScript-interpreted (Stage B < 100%),
-// so Python is the fair like-for-like floor; Rust/Zig/WASM are the aspirational ceiling.
-console.log("| Benchmark | 🏆 Winner | Winner Speed | Galerina (governed) | gov ÷ Winner | gov ÷ Python (floor) | Why the winner wins |");
-console.log("|---|---|---|---|---|---|---|");
-
-for (const bench of data) {
-  if (!comparable(bench)) {
-    console.log(`| **${bench.benchmark}** | ⚠️ not unit-aligned | N/A — excluded | N/A — excluded | N/A — excluded | N/A — excluded | excluded — ${unitReason(bench)} |`);
-    continue;
-  }
-  const m = {};
-  for (const rt of ORDER) m[rt] = throughput(bench.results?.[rt]);
-
-  // Find the actual winner (highest throughput across all runtimes including denoWebGpu)
-  let winnerRt = null, winnerSpeed = 0;
-  for (const rt of ORDER) {
-    if (m[rt] && m[rt] > winnerSpeed) { winnerSpeed = m[rt]; winnerRt = rt; }
-  }
-  if (!winnerRt) {
-    // No runtime produced a comparable throughput for this benchmark — say so in
-    // every cell rather than leaving five silent dashes.
-    const why = bench.results && Object.keys(bench.results).length
-      ? "not run — no comparable runtime"
-      : "not run — benchmark not executed";
-    console.log(`| **${bench.benchmark}** | ⚪ no result | ${why} | not run | n/a — no winner | n/a — no winner | No runtime produced a throughput number |`);
-    continue;
-  }
-
-  const winnerLabel = LABEL[winnerRt] ?? winnerRt;
-  const deviceEmoji = (winnerRt === "denoWebGpu") ? "🎮" : "🖥️";
-  const speedStr = fmtT(winnerSpeed);
-
-  // ── Galerina governed tier vs winner + vs Python floor ──
-  const gov = m.galerinaGoverned ?? 0;
-  const py  = m.python ?? 0;
-  // governed ⟨interp⟩ didn't run for this benchmark → say why, never a bare dash.
-  const govStr = gov ? fmtT(gov) : cellReason(bench, "galerinaGoverned");
-
-  let govVsWinner = gov ? "—" : "N/A — governed ⟨interp⟩ not run";
-  if (gov && winnerSpeed) {
-    if (winnerRt === "galerinaGoverned") {
-      govVsWinner = "🏆 1.00× (is winner)";
-    } else {
-      const r = gov / winnerSpeed;          // always ≤ 1 unless governed is winner
-      const slower = (1 / r);
-      govVsWinner = r >= 0.1
-        ? `${r.toFixed(2)}× (${slower.toFixed(1)}× slower)`
-        : `${r.toFixed(r < 0.001 ? 5 : 4)}× (${slower >= 1000 ? (slower/1000).toFixed(1)+"K" : slower.toFixed(0)}× slower)`;
-    }
-  }
-
-  // Shape-only + the winner is a NATIVE runtime → govVsWinner is a cross-runtime shape-parity
-  // artifact (not work-equivalent), the same class §1.5 marks. Within-Galerina ratios (winner is a
-  // Galerina lane) stay — they compare the same elided shape, interp vs compiled — but the row is
-  // still tagged shape-only in its note below.
-  const winnerIsNative = !["wasm", "galerinaPassive", "galerinaGoverned", "galerinaManifest"].includes(winnerRt);
-  if (gov && winnerSpeed && winnerIsNative && shapeOnlyLane(bench.benchmark, "galerinaGoverned")) {
-    govVsWinner = "◇ shape-only vs native";
-  }
-
-  let govVsPython = gov ? "n/a (no Python)" : "N/A — governed ⟨interp⟩ not run";
-  if (gov && py) {
-    const r = gov / py;
-    govVsPython = r >= 1
-      ? `✅ **${r.toFixed(2)}×** faster`
-      : `❌ ${r.toFixed(2)}× (${(1/r).toFixed(1)}× slower)`;
-  }
-
-  // Short note explaining why this runtime wins
-  let note = "";
-  if (winnerRt === "wasm") {
-    note = "WASM JIT — zero alloc, native-speed compiled";
-  } else if (winnerRt === "rust" || winnerRt === "rustAvx2") {
-    note = "Native compiled — LLVM optimised, may auto-vectorise";
-  } else if (winnerRt === "nodejs") {
-    note = "V8 JIT — wins when WASM N/A or string/async workload";
-  } else if (winnerRt === "galerinaPassive") {
-    const nextBest = ORDER.filter(r => r !== "galerinaPassive" && m[r]).sort((a,b) => (m[b]??0)-(m[a]??0))[0];
-    const nb = nextBest ? ` (first-call winner: ${LABEL[nextBest]} at ${fmtT(m[nextBest])})` : "";
-    note = `LRU cache warm path${nb}`;
-  } else if (winnerRt === "galerinaGoverned" || winnerRt === "galerinaManifest") {
-    note = "Galerina governed path wins this workload";
-  } else if (winnerRt === "denoWebGpu") {
-    note = `🎮 Real GPU dispatch (${GPU_NAME} via WebGPU)`;
-  } else if (winnerRt === "python") {
-    note = "Python wins (C-backed lib or small-N setup overhead)";
-  }
-  if (isShapeOnlyBench(bench.benchmark)) note += `${note ? " · " : ""}◇ shape-only (see §1.5 note)`;
-
-  console.log(`| **${bench.benchmark}** | **${winnerLabel}** ${deviceEmoji} | **${speedStr}** | ${govStr} | ${govVsWinner} | ${govVsPython} | ${note} |`);
-}
-
-// Floor-pass summary: how many benchmarks does governed Galerina beat Python on?
+// Category legend — a cross-runtime ratio is shown ONLY for work-equivalence-certified lanes.
 {
-  let beatsPython = 0, comparedToPython = 0, excluded = 0;
-  for (const bench of data) {
-    if (!comparable(bench)) { excluded++; continue; }
-    const gov = throughput(bench.results?.galerinaGoverned);
-    const py  = throughput(bench.results?.python);
-    if (gov && py) { comparedToPython++; if (gov >= py) beatsPython++; }
+  let certified = 0, shapeOnly = 0, governance = 0, uncertified = 0;
+  for (const b of data) {
+    const id = b.benchmark;
+    if (isShapeOnlyBench(id)) shapeOnly++;
+    else if (metricClassOf(id) === "governance") governance++;
+    else if (benchmarkSpec(id) && specComparable(id)) certified++;
+    else uncertified++;
   }
-  if (comparedToPython > 0) {
-    console.log(`\n> **Python floor check:** Galerina (governed) beats Python on **${beatsPython}/${comparedToPython}** unit-aligned benchmarks where both ran. ` +
-      `Python is the like-for-like floor while the Stage-A runtime is still TypeScript-interpreted; Rust/Zig/WASM are the ceiling.` +
-      (excluded ? ` (${excluded} benchmark(s) excluded — not unit-aligned; see §1.6.)` : ""));
-  }
+  console.log(`> Categories: ${certified} certified · ${shapeOnly} shape-only(→Memory) · ${governance} internal-ratio(Governance) · ${uncertified} uncertified — a cross-runtime ratio is shown only for work-equivalence-certified lanes.\n`);
 }
 
-// ── §1.5: Canonical scoreboard — production-ceiling winner-ordered, with Galerina rank + ×slower ──
-// THE STANDARD benchmark view (owner rule 2026-06-23, see galerina-benchmark-scoreboard-standard.md). The
-// "winner" is the PRODUCTION ceiling — the 3 ⟨interp⟩ diagnostic tiers (LRU-cache passive / manifest /
-// governed) CANNOT win, since reading a warm-cache tier as a "win" is misleading. Every comparable
-// benchmark shows where Galerina's SHIPPING path (WASM ▶ production) and its diagnostic worst-case
-// (governed ⟨interp⟩) placed: rank among the production pool + ×slower vs the winner. No silent caps —
-// excluded (not unit-aligned) + insufficient-data benchmarks are listed.
-console.log("\n## 1.5 Scoreboard — production-ceiling winner-ordered (Galerina rank + ×slower)\n");
-console.log("> **The standard view.** Winner = fastest PRODUCTION runtime (the 3 ⟨interp⟩ diagnostic tiers cannot 'win'). " +
-  "`rank` = where WASM ▶ production placed among the production runtimes; `×slower` = vs the winner. " +
-  "WASM ▶ production is the shipping cost; governed ⟨interp⟩ is the Stage-A diagnostic worst-case (NOT shipping).\n");
-console.log("| Benchmark | 🏆 Winner (ceiling) | Speed | WASM▶prod: rank · ×slower | gov⟨interp⟩: ×slower |");
-console.log("|---|---|---|---|---|");
-
-const PROD_POOL = ORDER.filter((rt) => !["galerinaPassive", "galerinaManifest", "galerinaGoverned"].includes(rt));
-const ordinal = (k) => k + (k % 10 === 1 && k % 100 !== 11 ? "st" : k % 10 === 2 && k % 100 !== 12 ? "nd" : k % 10 === 3 && k % 100 !== 13 ? "rd" : "th");
-const xSlower = (slow, win) => {
-  if (!slow || !win) return "—";
-  if (slow >= win) return "1.0× (won)";
-  const x = win / slow;
-  return x < 10 ? `${x.toFixed(1)}× slower` : x >= 1000 ? `${(x / 1000).toFixed(1)}K× slower` : `${Math.round(x)}× slower`;
+// ── helpers local to the per-metric scoreboards ──────────────────────────────────
+const bestRustOf = (m) => (Math.max(m.rustAvx512 ?? 0, m.rustAvx2 ?? 0, m.rust ?? 0) || null);
+// CERTIFIED = the lane is work-equivalence-certified in SPECS (a cross-runtime ratio is honest).
+const isCertified = (id) => !!benchmarkSpec(id) && specComparable(id);
+// Native/own-unit rates a legacy (non-normalised) io or DevTools benchmark reports at the top level.
+const IO_RATE_FIELDS = ["operationsPerSecond", "iterationsPerSecond", "callsPerSecond", "requestsPerSecond", "filesPerSecond", "receiptsPerSecond", "queriesPerSecond", "runsPerSecond", "nodeRaw_reqPerSec"];
+const ioRate = (r) => {
+  const t = throughput(r);
+  if (t != null) return t;
+  if (!r || r.error) return null;
+  for (const f of IO_RATE_FIELDS) if (typeof r[f] === "number") return r[f];
+  return null;
 };
-const winTally = {};
-const canonRows = [];
-const lowData = [];
-for (const bench of data) {
-  if (!comparable(bench)) continue;
-  const m = {};
-  for (const rt of PROD_POOL) m[rt] = throughput(bench.results?.[rt]) ?? 0;
-  const ranked = PROD_POOL.filter((rt) => m[rt] > 0).sort((a, b) => m[b] - m[a]);
-  if (ranked.length < 2) { lowData.push(bench.benchmark); continue; }
-  const winnerRt = ranked[0], winSpeed = m[winnerRt], M = ranked.length;
-  const wasmRank = ranked.indexOf("wasm");
-  const wasm = throughput(bench.results?.wasm) ?? 0;
-  const gov = throughput(bench.results?.galerinaGoverned) ?? 0;
-  const wasmCell = wasm > 0 && wasmRank >= 0 ? `${ordinal(wasmRank + 1)}/${M} · ${xSlower(wasm, winSpeed)}` : cellReason(bench, "wasm");
-  winTally[LABEL[winnerRt]] = (winTally[LABEL[winnerRt]] ?? 0) + 1;
-  canonRows.push({ bench: bench.benchmark, winnerLabel: LABEL[winnerRt], winSpeed, wasmCell, govCell: gov > 0 ? xSlower(gov, winSpeed) : cellReason(bench, "galerinaGoverned") });
+const IO_UNIT = { "crypto-ops": "ops/s", "text-html": "ops/s", "http-throughput": "requests/s",
+  "naming-check": "files/s", "context-receipt": "receipts/s", "intelligence-search": "queries/s", "provenance-trace": "files/s" };
+const ioUnitOf = (id) => benchmarkSpec(id)?.unit ?? IO_UNIT[id] ?? "native rate";
+// denoWebGpu may run but produce NO number on this machine (no real GPU dispatch) → say so honestly,
+// never imply a fabricated GPU rate.
+const gpuCell = (r) => (r && r.error) ? "⏳ GPU pending" : (throughput(r) != null ? fmtT(throughput(r)) : "—");
+
+// Loop the metric classes in order (decreasing cross-runtime comparability, governance last) and emit
+// ONE table per class that has data. matrix-multiply DUAL-HOMES: it stays in the CPU table (its metric
+// class) AND is picked up by the GPU table because it carries a denoWebGpu lane.
+for (const cls of METRIC_ORDER) {
+  const members = cls === "gpu"
+    ? data.filter((b) => metricClassOf(b.benchmark) === "gpu" || b.results?.denoWebGpu !== undefined)
+    : data.filter((b) => metricClassOf(b.benchmark) === cls);
+  if (members.length === 0) continue;
+
+  // ── cpu-throughput — inner-ops/s, cross-runtime, CERTIFIED lanes only ──────────
+  if (cls === "cpu-throughput") {
+    const rows = [];
+    let ceilLabel = null, ceilSpeed = 0, ceilBench = null;
+    for (const bench of members) {
+      const id = bench.benchmark;
+      const m = {}; for (const rt of ORDER) m[rt] = throughput(bench.results?.[rt]);
+      const rust = bestRustOf(m), node = m.nodejs, wasm = m.wasm, gov = m.galerinaGoverned;
+      const wasmStr = wasm ? fmtT(wasm) : cellReason(bench, "wasm");
+      const govStr  = gov  ? fmtT(gov)  : cellReason(bench, "galerinaGoverned");
+      let vsRust, vsNode, impl;
+      if (isCertified(id)) {
+        vsRust = wasm && rust ? trafficLightLabel(wasm, rust) : "—";
+        vsNode = wasm && node ? trafficLightLabel(wasm, node) : "—";
+        if (wasm && rust) {
+          const wr = wasm / rust;
+          impl = wr >= 0.9 ? "WASM = native speed" : wr >= 0.5 ? "WASM near native" : wr >= 0.1 ? "WASM usable" : "WASM lags native";
+        } else if (wasm && node) {
+          const wn = wasm / node;
+          impl = wn >= 0.9 ? "WASM ≈ Node" : wn >= 0.5 ? "WASM within 2× of Node" : wn >= 0.1 ? "WASM 2–10× under Node" : "WASM lags Node";
+        } else impl = "WASM not built for this lane yet";
+        for (const rt of ORDER) if (m[rt] && m[rt] > ceilSpeed) { ceilSpeed = m[rt]; ceilLabel = LABEL[rt]; ceilBench = id; }
+      } else {
+        vsRust = "UNCERTIFIED"; vsNode = "UNCERTIFIED";
+        impl = "not yet work-equivalence-certified (N/work mismatch)";
+      }
+      rows.push(`| ${id} | ${wasmStr} | ${vsRust} | ${vsNode} | ${govStr} | ${impl} |`);
+    }
+    console.log("### CPU Throughput — inner-ops/s (cross-runtime; certified lanes only)\n");
+    console.log("> 🚦 **vs Rust / vs Node** compare the **WASM ▶ production** lane to native. A traffic-light ratio");
+    console.log("> appears ONLY for work-equivalence-certified benchmarks; `UNCERTIFIED` lanes show raw throughput and");
+    console.log("> NO ratio (their N/work is not yet proven equivalent across runtimes).\n");
+    console.log("| Benchmark | WASM ▶ production | vs Rust | vs Node | Galerina governed ⟨interp⟩ | Implication |");
+    console.log("|---|---|---|---|---|---|");
+    for (const r of rows) console.log(r);
+    console.log("\n> 🚦 🟢 ≥0.9 (≈native) · ⚪ ≥0.5 (within 2×) · 🟡 ≥0.1 (2–10× slower) · 🔴 ≥0.01 (10–100×) · ⚫ <0.01 (100×+).");
+    if (ceilLabel) console.log(`> **Ceiling (fastest certified lane):** ${ceilLabel} — ${fmtT(ceilSpeed)} on ${ceilBench}.`);
+    console.log("");
+    continue;
+  }
+
+  // ── memory — ranked by heap BYTES/OP (the honest metric); NO throughput ratio ──
+  if (cls === "memory") {
+    const MEM_COLS = ["nodejs", "python", "wasm", "galerinaGoverned", "galerinaManifest"];
+    console.log("### Memory — heap bytes per operation (the honest metric; lower is better)\n");
+    console.log("> Ranked by **bytes/op**, NOT throughput — these benchmarks measure allocation, so no cross-runtime");
+    console.log("> throughput ratio (and no ⚫) is shown. Native Rust/C++ allocate off the GC heap (~0 native — see §2b/§4).\n");
+    console.log("| Benchmark | 🏆 Best (lowest heap B/op) | " + MEM_COLS.map((rt) => LABEL[rt]).join(" | ") + " |");
+    console.log("|" + Array(MEM_COLS.length + 2).fill("---").join("|") + "|");
+    for (const bench of members) {
+      const bpo = {}; for (const rt of MEM_COLS) bpo[rt] = bytesPerOp(bench.results?.[rt]);
+      // Winner = lowest measured NON-NEGATIVE heap bytes/op (a negative delta is GC-reclaim noise, not
+      // "less allocation", so it can't crown a winner).
+      let bestRt = null, bestVal = Infinity;
+      for (const rt of MEM_COLS) { const v = bpo[rt]; if (typeof v === "number" && v >= 0 && v < bestVal) { bestVal = v; bestRt = rt; } }
+      const bestCell = bestRt ? `**${LABEL[bestRt]}** (${fmtBpo(bestVal, bestRt)})` : "no measured heap alloc";
+      const cells = MEM_COLS.map((rt) => bpo[rt] === null ? cellReason(bench, rt) : fmtBpo(bpo[rt], rt));
+      console.log(`| ${bench.benchmark} | ${bestCell} | ${cells.join(" | ")} |`);
+    }
+    console.log("\n> **No throughput ratio, no ⚫ here** — a memory benchmark ranked by throughput is exactly the");
+    console.log("> cross-metric bug this section removes. record-allocation / binary-trees / collection-pipeline live");
+    console.log("> here by bytes/op, so they no longer carry the ◇ shape-only marker; their shape rate is in §4.\n");
+    continue;
+  }
+
+  // ── gpu — kernel-evals/s (cross-runtime; native + GPU columns) ──────────────────
+  if (cls === "gpu") {
+    console.log("### GPU — kernel-evals/s (GPU-shaped workload; matrix-multiply dual-homes here)\n");
+    console.log("> Cross-runtime. Deno WebGPU is the only real-dispatch path; where it produced no number on this");
+    console.log("> machine it shows **⏳ GPU pending** — the honest status, never a fabricated GPU rate.\n");
+    console.log("| Benchmark | 🏆 Winner | Speed | WASM ▶ production | GPU (Deno WebGPU) | vs Node (WASM) | Implication |");
+    console.log("|---|---|---|---|---|---|---|");
+    for (const bench of members) {
+      const id = bench.benchmark;
+      const m = {}; for (const rt of ORDER) m[rt] = throughput(bench.results?.[rt]);
+      let winRt = null, winSpeed = 0;
+      for (const rt of ORDER) if (m[rt] && m[rt] > winSpeed) { winSpeed = m[rt]; winRt = rt; }
+      const node = m.nodejs, wasm = m.wasm;
+      const wasmStr = wasm ? fmtT(wasm) : cellReason(bench, "wasm");
+      const vsNode = isCertified(id) ? (wasm && node ? trafficLightLabel(wasm, node) : "—") : "UNCERTIFIED";
+      const impl = winRt === "denoWebGpu" ? "real GPU dispatch wins" : "CPU/WASM lanes lead — real GPU dispatch pending (see §4b)";
+      console.log(`| ${id} | ${winRt ? LABEL[winRt] : "—"} | ${winSpeed ? fmtT(winSpeed) : "—"} | ${wasmStr} | ${gpuCell(bench.results?.denoWebGpu)} | ${vsNode} | ${impl} |`);
+    }
+    console.log("\n> **vs Node (WASM)** compares the WASM ▶ production lane to Node.js on the kernel. matrix-multiply also");
+    console.log("> appears in the CPU Throughput table (dual-home) — it has both a compute lane and a WebGPU lane.\n");
+    continue;
+  }
+
+  // ── io — own units per benchmark; raw rate, NO cross-runtime ratio ──────────────
+  if (cls === "io") {
+    const IO_COLS = ["nodejs", "python", "rust", "wasm", "galerinaGoverned"];
+    const active = members.filter((b) => IO_COLS.some((rt) => ioRate(b.results?.[rt]) != null) || ORDER.some((rt) => ioRate(b.results?.[rt]) != null));
+    if (active.length === 0) continue;
+    console.log("### I/O & DevTools — native units per benchmark (raw rate; NOT inner-op normalised)\n");
+    console.log("> Each benchmark has its OWN unit, so there is **no cross-runtime ratio** — the winner is the fastest");
+    console.log("> lane by raw rate WITHIN that benchmark's native unit. Comparing rates ACROSS benchmarks is meaningless.\n");
+    console.log("| Benchmark | Unit (native) | 🏆 Fastest lane | " + IO_COLS.map((rt) => LABEL[rt]).join(" | ") + " |");
+    console.log("|" + Array(IO_COLS.length + 3).fill("---").join("|") + "|");
+    for (const bench of active) {
+      const id = bench.benchmark;
+      const rate = {}; for (const rt of IO_COLS) rate[rt] = ioRate(bench.results?.[rt]);
+      let winRt = null, winSpeed = 0;
+      for (const rt of IO_COLS) if (rate[rt] && rate[rt] > winSpeed) { winSpeed = rate[rt]; winRt = rt; }
+      const winCell = winRt ? `**${LABEL[winRt]}** (${fmtT(winSpeed)})` : "—";
+      const cells = IO_COLS.map((rt) => rate[rt] != null ? fmtT(rate[rt]) : cellReason(bench, rt));
+      console.log(`| ${id} | ${ioUnitOf(id)} | ${winCell} | ${cells.join(" | ")} |`);
+    }
+    console.log("\n> Values are native rates (records/s, containers/s, requests/s, files/s, …), shown for transparency —");
+    console.log("> NOT a cross-runtime ranking. The inner-op-normalised throughput lives in the CPU table above.\n");
+    continue;
+  }
+
+  // ── governance — Galerina tiers ONLY, NO native column (LAST) ───────────────────
+  if (cls === "governance") {
+    console.log("### Governance — Galerina-internal tier ratio ONLY (NO native column)\n");
+    console.log("> This table's columns are Galerina tiers ONLY — there is **no rust/node/python/cpp column**, so a");
+    console.log("> cross-runtime `N× slower` is structurally impossible here. The old six-figure governance-cost artifact");
+    console.log("> came from dividing the governed tier by a native rate — a division this table cannot express.\n");
+    console.log("| Benchmark | Galerina governed ⟨interp⟩ | Galerina manifest ⟨interp⟩ | WASM ▶ production | governed/manifest (gov overhead) |");
+    console.log("|---|---|---|---|---|");
+    for (const bench of members) {
+      const id = bench.benchmark;
+      const gov  = throughput(bench.results?.galerinaGoverned);
+      const man  = throughput(bench.results?.galerinaManifest);
+      const wasm = throughput(bench.results?.wasm);
+      const govStr  = gov  ? fmtT(gov)  : cellReason(bench, "galerinaGoverned");
+      const manStr  = man  ? fmtT(man)  : cellReason(bench, "galerinaManifest");
+      const wasmStr = wasm ? fmtT(wasm) : cellReason(bench, "wasm");
+      const ratioCell = (gov && man)
+        ? `${(gov / man).toFixed(2)}× governed/manifest (gov overhead ≈ ${(man / gov).toFixed(2)}×)`
+        : "internal-ratio only — no cross-runtime number";
+      console.log(`| ${id} | ${govStr} | ${manStr} | ${wasmStr} | ${ratioCell} |`);
+    }
+    console.log("\n> **governed/manifest** is governance-cost's honest headline: the same-N cost of always-on governance");
+    console.log("> (capabilities + audit + proof) vs the pre-verified manifest. `gov overhead` = manifest ÷ governed.\n");
+    continue;
+  }
 }
-canonRows.sort((a, b) => a.winnerLabel.localeCompare(b.winnerLabel) || b.winSpeed - a.winSpeed);
-for (const r of canonRows) console.log(`| ${r.bench} | **${r.winnerLabel}** | ${fmtT(r.winSpeed)} | ${r.wasmCell} | ${r.govCell} |`);
-console.log("\n**Winner tally (production ceiling):** " + (Object.entries(winTally).sort((a, b) => b[1] - a[1]).map(([w, n]) => `${w} ${n}`).join(" · ") || "—"));
-const canonExcl = data.filter((b) => !comparable(b)).map((b) => b.benchmark);
-if (canonExcl.length) console.log(`\n> **Excluded — not unit-aligned (no silent caps):** ${canonExcl.join(", ")}.`);
-if (lowData.length) console.log(`> **Insufficient data (<2 production runtimes ran):** ${lowData.join(", ")}.`);
 
 // ── Full table ────────────────────────────────────────────────────────────────
 console.log("\n### Full Throughput Table (all runtimes)\n");
@@ -491,76 +521,8 @@ console.log("\n> **Excluded** benchmarks are dropped from the winner table and t
 console.log("> workloads are realigned across runtimes. Excluding them is what stops false \"Galerina wins\" on");
 console.log("> mismatched workloads (the same class of bug the unit normalisation fixed for the numeric loops).");
 
-// ── 1.5 Traffic Light Summary ──────────────────────────────────────────────────
-// Shows at a glance how each key runtime compares to the best result.
-// 🟢 within 10% of best  ⚪ within 2×  🟡 2-10× slower  🔴 10-100× slower  ⚫ 100×+ slower
-
-console.log("\n## 1.5 Traffic Light Summary\n");
-console.log("> 🟢 = at/near best | ⚪ = within 2× | 🟡 = 2-10× slower | 🔴 = 10-100× slower | ⚫ = 100×+ slower\n");
-console.log("| Benchmark | WASM (Phase 27) | vs Rust | vs Node.js | Galerina governed | vs Rust | vs Node | Implication |");
-console.log("|---|---|---|---|---|---|---|---|");
-
-for (const bench of data) {
-  const mt = {}; for (const rt of ORDER) mt[rt] = throughput(bench.results?.[rt]);
-  const bestRust = Math.max(mt.rustAvx512 ?? 0, mt.rustAvx2 ?? 0, mt.rust ?? 0) || null;
-  const node     = mt.nodejs;
-  const wasm     = mt.wasm;
-  const governed = mt.galerinaGoverned;
-
-  if (!wasm && !governed) continue;
-
-  // Shape-only lanes (record-allocation / binary-trees / collection-pipeline): the Galerina lane
-  // elides the heap work the benchmark is named for, so a cross-runtime `N× slower/faster` against
-  // native is a measurement ARTIFACT, not a speed result. Show an explicit marker in the VISIBLE
-  // cell — never a ⚫/🔴 the honest note then contradicts (the report used to print ⚫ 20953× on the
-  // same row it called "native speed"). bench-guard.mjs reads the SAME map (work-equivalence.mjs),
-  // so the watcher and this report cannot disagree about which lanes are shape-only. (RD-0446)
-  const wasmSO = shapeOnlyLane(bench.benchmark, "wasm");
-  const govSO  = shapeOnlyLane(bench.benchmark, "galerinaGoverned");
-  const soCell = (so) => so.kind === "fused-vs-materialised" ? "◇ fused-form" : "◇ shape-only";
-
-  const wasmVsRust = wasmSO ? soCell(wasmSO) : (wasm && bestRust ? trafficLightLabel(wasm, bestRust) : "—");
-  const wasmVsNode = wasmSO ? soCell(wasmSO) : (wasm && node     ? trafficLightLabel(wasm, node)     : "—");
-  const govVsRust  = govSO  ? soCell(govSO)  : (governed && bestRust ? trafficLightLabel(governed, bestRust) : "—");
-  const govVsNode  = govSO  ? soCell(govSO)  : (governed && node     ? trafficLightLabel(governed, node)     : "—");
-
-  // Implication. Shape-only benchmarks state the CITABLE figure (work-equivalent WASM = 47–94% of
-  // native) instead of a per-lane ratio nobody can attribute to real work — the loud artifact must
-  // never be the headline the row's own note contradicts.
-  let impl = "";
-  if (isShapeOnlyBench(bench.benchmark)) {
-    impl = WORK_EQUIVALENCE[bench.benchmark].kind === "fused-vs-materialised"
-      ? "fused vs materialised — real optimisation, NOT a raw cross-runtime ratio (see note)"
-      : "shape-only — heap work elided, NOT work-equivalent; cite 47–94% of native on work-equivalent compute";
-  } else {
-    if (wasm && bestRust) {
-      const wr = wasm / bestRust;
-      if (wr >= 0.9)       impl = "WASM = native speed";
-      else if (wr >= 2.0)  impl = "WASM beats Rust";
-      else if (wr >= 0.5)  impl = "WASM near native";
-      else if (wr >= 0.1)  impl = "WASM usable";
-      else                 impl = "WASM lags native";
-    }
-    if (governed && node) {
-      const gr = governed / node;
-      const sep = impl ? " | " : "";
-      if (gr >= 0.9)       impl += sep + "governed ≈ Node";
-      else if (gr >= 0.1)  impl += sep + "governed usable";
-      else if (gr >= 0.01) impl += sep + "governed slow";
-      else                 impl += sep + "governed needs sync";
-    }
-  }
-
-  const wasmStr  = wasm     ? fmtT(wasm)     : "pending";
-  const govStr   = governed ? fmtT(governed) : "—";
-  console.log(`| ${bench.benchmark} | ${wasmStr} | ${wasmVsRust} | ${wasmVsNode} | ${govStr} | ${govVsRust} | ${govVsNode} | ${impl} |`);
-}
-console.log("\n> **◇ shape-only** — the Galerina lane elides the heap work this benchmark is named for (record-allocation");
-console.log("> binds scalars; binary-trees is count-only; collection-pipeline fuses the loop). A cross-runtime `N× slower`");
-console.log("> on these rows is shape-parity data, **not** a work-equivalent speed result — the debunked \"996% of native\"");
-console.log("> class. The citable figure is **work-equivalent WASM = 47–94% of native**. **◇ fused-form** marks a *real*");
-console.log("> optimisation difference (fusion vs materialisation), shown but never cited as a raw ratio. Raw throughput");
-console.log("> cells on these rows are the measured shape rate, not an allocation/materialisation rate.");
+// ── §1.5 tables removed — the Throughput Winner table, the canonical Scoreboard, and the Traffic
+//    Light Summary were mixed cross-metric tables; superseded by the Per-Metric Scoreboards in §1.
 
 // ── 2. Memory usage ────────────────────────────────────────────────────────────
 
