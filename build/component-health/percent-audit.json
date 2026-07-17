@@ -3,11 +3,11 @@
   "provenance": {
     "available": true,
     "branch": "main",
-    "sha": "d0268373",
+    "sha": "68ec4e26",
     "detached": false,
     "dirty": true
   },
-  "shipReadinessPct": 96.84210526315789,
+  "shipReadinessPct": 97.89473684210527,
   "ztAvg": 78,
   "buildAvg": 75,
   "trackingRegistryCount": 20,
@@ -247,7 +247,7 @@
         {
           "item": "Workspace package families",
           "state": "shipped",
-          "detail": "94-pkg denominator built (target×9 · data×12 · db×5 · web×6 · ai · tools); 2 orphans #32-exempt"
+          "detail": "93 workspace packages + 2 #32-exempt orphans = 95 components (target×9 · data×12 · db×5 · web×6 · ai · tools). galerina-tools-myco joined 2026-07-17 — it had a package.json and 14 passing tests but was never in galerina.workspace.json, so it read as an un-adjudicated ORPHAN. Two hand-kept registries (workspace list · version.json testCountByPackage) disagreeing is what that gate is for; it caught it."
         },
         {
           "item": "Devtools audit suite",

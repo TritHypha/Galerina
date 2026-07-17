@@ -57,6 +57,7 @@
         "packages-galerina/galerina-core-cli",
         "packages-galerina/galerina-core-tasks",
         "packages-galerina/galerina-tools-benchmark",
+        "packages-galerina/galerina-tools-myco",
         "packages-galerina/galerina-test",
         "packages-galerina/galerina-devtools-graph-project",
         "packages-galerina/galerina-framework-example-app",

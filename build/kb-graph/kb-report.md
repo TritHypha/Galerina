@@ -2,7 +2,7 @@
 Generated: 2026-07-17
 
 ## Stats
-- Docs: 1259 | Edges: 3561 | Orphans: 191 | Stale links: 0 | FUNGI codes: 749
+- Docs: 1267 | Edges: 3562 | Orphans: 198 | Stale links: 0 | FUNGI codes: 749
 
 ## Document Registry (auto-generated)
 
@@ -126,6 +126,7 @@ Generated: 2026-07-17
 | 2026-07-17-ACK-severity-parity-DONE-parity-trilogy-complete.md | — | — | — | FUNGI-TIER-001 |
 | 2026-07-17-ACK-type-twin-severity-WIRED-trilogy-complete-both-twins-plus-21v19-reconciled.md | — | — | — | FUNGI-BINDING-005, FUNGI-NAME-002 |
 | 2026-07-17-ACK-WAT-shape-validated-escape-pass-is-the-load-bearing-safety-offer-to-ground-it.md | — | — | — | — |
+| 2026-07-17-ADJUDICATED-3-undeclared-pairs-all-safe-plus-the-name-registry-allowlist-has-DECAYED.md | — | — | — | — |
 | 2026-07-17-ADJUDICATION-76-taint-to-pure-flow-adopt-b-fix-examples-taint-laundering.md | — | — | — | — |
 | 2026-07-17-ADJUDICATION-96a-RULE-A-extends-existing-B2-arena-to-per-iteration-mark-release-secret-zeroing-catch.md | — | — | — | — |
 | 2026-07-17-ADJUDICATION-benchmark-harness-DECOUPLE-2-with-declared-build-path-plus-provenance-protocol-host-side.md | — | — | — | FUNGI-PARSE-001 |
@@ -134,6 +135,7 @@ Generated: 2026-07-17
 | 2026-07-17-ANSWER-96a-scoping-6-record-alloc-is-intra-flow-BUT-neither-benchmark-allocates-binary-trees-language-gap.md | — | — | — | — |
 | 2026-07-17-ANSWER-app-kernel-edge-is-DRIFT-safe-to-declare-plus-I-OVERSTATED-the-39.md | — | — | — | — |
 | 2026-07-17-ANSWER-duplicate-record-decl-YES-to-the-diagnostic-but-there-is-NO-emitter-analysis-divergence.md | — | — | — | FUNGI-DECL-001, FUNGI-PARSE-001 |
+| 2026-07-17-ANSWER-message-correction-is-already-adjacent-in-history-plus-gate-subjects-now-DERIVED.md | — | — | — | — |
 | 2026-07-17-ANSWER-RD-0450-ruling-CONFIRMED-and-the-frozen-spec-is-in-YOUR-tree-not-lost.md | — | — | — | — |
 | 2026-07-17-ANSWERED-your-parting-question-123-public-links-into-the-private-KB-and-i-built-the-repro.md | — | — | — | — |
 | 2026-07-17-ASK-RD-0450-owner-wants-YOUR-zero-trust-choice-A-or-B.md | — | — | — | — |
@@ -153,11 +155,13 @@ Generated: 2026-07-17
 | 2026-07-17-FINDING-96a-record-site-already-heap-bumps-not-host-abi-escape-integration-needs-reground.md | — | — | — | — |
 | 2026-07-17-FINDING-Money-BANANAS-compiles-clean-I1s-compile-half-is-unbuilt-plus-RD-0349-amended.md | — | — | — | FUNGI-TYPE-001 |
 | 2026-07-17-FIXED-cause-B-now-VIOLATIONS-0-plus-app-kernel-has-an-UNDECLARED-cross-package-edge.md | — | — | — | — |
+| 2026-07-17-graph-integrity-has-NEVER-run-in-CI-and-the-summary-counts-it-among-the-9-that-did.md | — | — | — | — |
 | 2026-07-17-GROUNDING-escape-analysis-pass-record-escapes-flow-predicate-fail-closed.md | — | — | — | — |
 | 2026-07-17-GROUNDING-RD0446-bump-arena-emittable-WAT-shape-5-asks.md | — | — | — | — |
 | 2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension.md | — | — | — | FUNGI-TYPE-020 |
 | 2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md | — | — | — | FUNGI-EFFECT-002 |
 | 2026-07-17-myco-galerina-package-updates-fold-into-galerina-tools-myco.md | — | — | — | — |
+| 2026-07-17-path-leak-fixed-galerina-clean-existsSync-mirrored-and-two-corrections-of-mine.md | — | — | — | — |
 | 2026-07-17-PREP-EFFECT-002-transitive-walk-faithfulness-traps-grounded-from-stage-A.md | — | — | — | — |
 | 2026-07-17-PROPOSE-lint-if-chain-should-be-match-plus-CORRECTION-predicate-arms-do-not-parse.md | — | — | — | FUNGI-MATCH-001, FUNGI-PARSE-001, FUNGI-SAFETY-006 |
 | 2026-07-17-QUESTION-76-bool-taint-validateFlag-degenerate-plus-fanout-7of19.md | — | — | — | — |
@@ -165,6 +169,7 @@ Generated: 2026-07-17
 | 2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked.md | — | — | — | — |
 | 2026-07-17-RD-0448-leaf-terminator-is-its-own-task-gap-is-Option-constructors-not-Option-Record.md | — | — | — | FUNGI-MATCH-001 |
 | 2026-07-17-RD-0450-32-byte-digest-caps-L5-profile-at-128-bit-decide-before-34-locks-v0.md | — | — | — | — |
+| 2026-07-17-RD-0452-delivered-a-codemod-is-a-defect-multiplier-plus-you-were-right-about-the-message.md | — | — | — | — |
 | 2026-07-17-RETRACT-match-lint-plus-RD-0449-import-resolver-never-wired-12-of-52-examples-fail-strict-types.md | — | — | — | FUNGI-GOV-018, FUNGI-MATCH-001, FUNGI-TYPE-001, FUNGI-TYPE-021, FUNGI-TYPE-023 |
 | 2026-07-17-RULING-RD-0450-A-FOR-BOTH-you-overruled-me-with-my-own-rule-plus-123-links-de-link-by-default.md | — | — | — | — |
 | 2026-07-17-RULING-RD-0450-A-for-L5-B-for-L3-and-its-cheaper-than-you-framed-slice-4-is-unbuilt.md | — | — | — | — |
@@ -173,6 +178,7 @@ Generated: 2026-07-17
 | 2026-07-17-STATUS-76-numeric-exemplar-economicsService-done-plus-cycle-green.md | — | — | — | — |
 | 2026-07-17-STOPPERS-ten-area-hundred-percent-sweep-audit-numbers-unfalsifiable.md | — | — | — | — |
 | 2026-07-17-TRIAGE-LIST-123-escape-links-65-targets-29-docs.md | — | — | — | — |
+| 2026-07-17-URGENT-audit-path-leak-misses-the-DOUBLE-dash-MCP-slug-and-Galerina-is-PUBLIC.md | — | — | — | — |
 | 2026-07-17-VERIFY-76-17of19-open-vocab-length-bound-correct-plus-content-safe-downstream-caveat.md | — | — | — | — |
 | 2026-07-17-VERIFY-76-fanout-4of19-uniform-pattern-endorsed-plus-open-vocab-canonical-answer.md | — | — | — | — |
 | 2026-07-17-VERIFY-76-numeric-exemplar-BLESSED-bound-correctly-sized-fan-out-plan-endorsed.md | — | — | — | — |
@@ -185,6 +191,7 @@ Generated: 2026-07-17
 | 2026-07-17-VERIFY-severity-parity-green-trilogy-complete-plus-type-twin-offer.md | — | — | — | FUNGI-TIER-001 |
 | 2026-07-17-VERIFY-type-severity-leg-green-BOTH-twins-trilogy-COMPLETE.md | — | — | — | — |
 | 2026-07-17-VERIFY-window-gate-13of13-CONFIRMED-plus-TWO-holes-cross-flow-alloc-and-duplicate-record-decl.md | — | — | — | — |
+| 2026-07-17-your-six-fabricated-greens-are-a-BUG-IN-THE-GATE-not-in-you-and-mine-had-it-too.md | — | — | — | — |
 | AI_INDEX.md | — | — | — | FUNGI-HW-101, FUNGI-PHOTONIC-001, FUNGI-SEC-014, FUNGI-SYNTAX-010, FUNGI-TYPE-031 |
 | ai-as-untrusted-reasoning-worker.md | — | — | — | — |
 | ai-compute-plan.md | — | — | — | — |
@@ -1143,6 +1150,7 @@ Generated: 2026-07-17
 | RD-0449-fungi-corpus-slop-survey-match-exhaustiveness-is-a-myth.md | — | — | — | FUNGI-GOV-018, FUNGI-MATCH-001, FUNGI-MATCH-002, FUNGI-PARSE-001, FUNGI-SAFETY-006 …+6 |
 | RD-0450-32-byte-digest-caps-the-hybrid-at-128-bit-collision-resistance.md | — | — | — | — |
 | RD-0451-dev-tool-design-green-gates-that-are-green-because-they-are-not-looking.md | — | — | — | FUNGI-MATCH-001, FUNGI-TYPE-001 |
+| RD-0452-a-codemod-is-a-defect-multiplier-with-good-hygiene.md | — | — | — | — |
 | rd-adversarial-verification-findings-2026-06-16.md | — | — | — | — |
 | rd-crossover-encryption-rnd.md | — | — | Merge / unified entry point. **Date:** 2026-06-16. **Posture:** grounded, cited, | FUNGI-AMD-024, FUNGI-PARSE-001, FUNGI-SUBSTRATE-001 |
 | rd-diagnostics-namespace-rnd-response.md | — | — | R&D response (2026-06-16). **Subject:** `Galerina/docs/Knowledge-Bases/galerina-diagnostic-namespace-ownership.md` | FUNGI-META-001, FUNGI-PRIVACY-00, FUNGI-SECRET-005 |
@@ -1354,6 +1362,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-ACK-effect-name-parity-VERIFIED-twin-arc-COMPLETE.md` — 2026-07-17-ACK-effect-name-parity-VERIFIED-twin-arc-COMPLETE
 - `2026-07-17-ACK-effect-parity-gate-VERIFIED-green-plus-coverage-boundary.md` — 2026-07-17-ACK-effect-parity-gate-VERIFIED-green-plus-coverage-boundary
 - `2026-07-17-ACK-papers-landed-clean-declarations-block-is-owner-gated.md` — 2026-07-17-ACK-papers-landed-clean-declarations-block-is-owner-gated
+- `2026-07-17-ADJUDICATED-3-undeclared-pairs-all-safe-plus-the-name-registry-allowlist-has-DECAYED.md` — 2026-07-17-ADJUDICATED-3-undeclared-pairs-all-safe-plus-the-name-registry-allowlist-has-DECAYED
 - `2026-07-17-ADJUDICATION-76-taint-to-pure-flow-adopt-b-fix-examples-taint-laundering.md` — 2026-07-17-ADJUDICATION-76-taint-to-pure-flow-adopt-b-fix-examples-taint-laundering
 - `2026-07-17-ADJUDICATION-96a-RULE-A-extends-existing-B2-arena-to-per-iteration-mark-release-secret-zeroing-catch.md` — 2026-07-17-ADJUDICATION-96a-RULE-A-extends-existing-B2-arena-to-per-iteration-mark-release-secret-zeroing-catch
 - `2026-07-17-ADJUDICATION-benchmark-harness-DECOUPLE-2-with-declared-build-path-plus-provenance-protocol-host-side.md` — 2026-07-17-ADJUDICATION-benchmark-harness-DECOUPLE-2-with-declared-build-path-plus-provenance-protocol-host-side
@@ -1379,9 +1388,11 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked.md` — 2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked
 - `2026-07-17-RD-0448-leaf-terminator-is-its-own-task-gap-is-Option-constructors-not-Option-Record.md` — 2026-07-17-RD-0448-leaf-terminator-is-its-own-task-gap-is-Option-constructors-not-Option-Record
 - `2026-07-17-RD-0450-32-byte-digest-caps-L5-profile-at-128-bit-decide-before-34-locks-v0.md` — 2026-07-17-RD-0450-32-byte-digest-caps-L5-profile-at-128-bit-decide-before-34-locks-v0
+- `2026-07-17-RD-0452-delivered-a-codemod-is-a-defect-multiplier-plus-you-were-right-about-the-message.md` — 2026-07-17-RD-0452-delivered-a-codemod-is-a-defect-multiplier-plus-you-were-right-about-the-message
 - `2026-07-17-RETRACT-match-lint-plus-RD-0449-import-resolver-never-wired-12-of-52-examples-fail-strict-types.md` — 2026-07-17-RETRACT-match-lint-plus-RD-0449-import-resolver-never-wired-12-of-52-examples-fail-strict-types
 - `2026-07-17-RULING-RD-0450-A-FOR-BOTH-you-overruled-me-with-my-own-rule-plus-123-links-de-link-by-default.md` — 2026-07-17-RULING-RD-0450-A-FOR-BOTH-you-overruled-me-with-my-own-rule-plus-123-links-de-link-by-default
 - `2026-07-17-RULINGS-1-and-2-honesty-rule-YES-derived-not-typed-plus-I1-is-b-but-sequenced-with-I2.md` — 2026-07-17-RULINGS-1-and-2-honesty-rule-YES-derived-not-typed-plus-I1-is-b-but-sequenced-with-I2
+- `2026-07-17-URGENT-audit-path-leak-misses-the-DOUBLE-dash-MCP-slug-and-Galerina-is-PUBLIC.md` — 2026-07-17-URGENT-audit-path-leak-misses-the-DOUBLE-dash-MCP-slug-and-Galerina-is-PUBLIC
 - `2026-07-17-VERIFY-76-17of19-open-vocab-length-bound-correct-plus-content-safe-downstream-caveat.md` — 2026-07-17-VERIFY-76-17of19-open-vocab-length-bound-correct-plus-content-safe-downstream-caveat
 - `2026-07-17-VERIFY-76-fanout-4of19-uniform-pattern-endorsed-plus-open-vocab-canonical-answer.md` — 2026-07-17-VERIFY-76-fanout-4of19-uniform-pattern-endorsed-plus-open-vocab-canonical-answer
 - `2026-07-17-VERIFY-76-numeric-exemplar-BLESSED-bound-correctly-sized-fan-out-plan-endorsed.md` — 2026-07-17-VERIFY-76-numeric-exemplar-BLESSED-bound-correctly-sized-fan-out-plan-endorsed
@@ -1394,7 +1405,9 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-VERIFY-severity-parity-green-trilogy-complete-plus-type-twin-offer.md` — 2026-07-17-VERIFY-severity-parity-green-trilogy-complete-plus-type-twin-offer
 - `2026-07-17-VERIFY-type-severity-leg-green-BOTH-twins-trilogy-COMPLETE.md` — 2026-07-17-VERIFY-type-severity-leg-green-BOTH-twins-trilogy-COMPLETE
 - `2026-07-17-VERIFY-window-gate-13of13-CONFIRMED-plus-TWO-holes-cross-flow-alloc-and-duplicate-record-decl.md` — 2026-07-17-VERIFY-window-gate-13of13-CONFIRMED-plus-TWO-holes-cross-flow-alloc-and-duplicate-record-decl
+- `2026-07-17-graph-integrity-has-NEVER-run-in-CI-and-the-summary-counts-it-among-the-9-that-did.md` — 2026-07-17-graph-integrity-has-NEVER-run-in-CI-and-the-summary-counts-it-among-the-9-that-did
 - `2026-07-17-myco-galerina-package-updates-fold-into-galerina-tools-myco.md` — 2026-07-17-myco-galerina-package-updates-fold-into-galerina-tools-myco
+- `2026-07-17-your-six-fabricated-greens-are-a-BUG-IN-THE-GATE-not-in-you-and-mine-had-it-too.md` — 2026-07-17-your-six-fabricated-greens-are-a-BUG-IN-THE-GATE-not-in-you-and-mine-had-it-too
 - `2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md` — 2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011
 - `2026-07-16-ACK-024-landed-plus-frontier-correction-NAME-codes-are-symbol-resolver.md` — 2026-07-16-ACK-024-landed-plus-frontier-correction-NAME-codes-are-symbol-resolver
 - `2026-07-16-ACK-025-landed-frontier-now-just-014-plus-real-node-refinement.md` — 2026-07-16-ACK-025-landed-frontier-now-just-014-plus-real-node-refinement
@@ -1446,6 +1459,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-ACK-severity-parity-DONE-parity-trilogy-complete.md` — 2026-07-17-ACK-severity-parity-DONE-parity-trilogy-complete
 - `2026-07-17-ACK-type-twin-severity-WIRED-trilogy-complete-both-twins-plus-21v19-reconciled.md` — 2026-07-17-ACK-type-twin-severity-WIRED-trilogy-complete-both-twins-plus-21v19-reconciled
 - `2026-07-17-ANSWER-96a-scoping-6-record-alloc-is-intra-flow-BUT-neither-benchmark-allocates-binary-trees-language-gap.md` — 2026-07-17-ANSWER-96a-scoping-6-record-alloc-is-intra-flow-BUT-neither-benchmark-allocates-binary-trees-language-gap
+- `2026-07-17-ANSWER-message-correction-is-already-adjacent-in-history-plus-gate-subjects-now-DERIVED.md` — 2026-07-17-ANSWER-message-correction-is-already-adjacent-in-history-plus-gate-subjects-now-DERIVED
 - `2026-07-17-ANSWERED-your-parting-question-123-public-links-into-the-private-KB-and-i-built-the-repro.md` — 2026-07-17-ANSWERED-your-parting-question-123-public-links-into-the-private-KB-and-i-built-the-repro
 - `2026-07-17-ASK-RD-0450-owner-wants-YOUR-zero-trust-choice-A-or-B.md` — 2026-07-17-ASK-RD-0450-owner-wants-YOUR-zero-trust-choice-A-or-B
 - `2026-07-17-DELIVER-76-taint-laundering-pattern-file-governanceService-verify-before-fanout.md` — 2026-07-17-DELIVER-76-taint-laundering-pattern-file-governanceService-verify-before-fanout
@@ -1462,6 +1476,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-STATUS-76-numeric-exemplar-economicsService-done-plus-cycle-green.md` — 2026-07-17-STATUS-76-numeric-exemplar-economicsService-done-plus-cycle-green
 - `2026-07-17-STOPPERS-ten-area-hundred-percent-sweep-audit-numbers-unfalsifiable.md` — 2026-07-17-STOPPERS-ten-area-hundred-percent-sweep-audit-numbers-unfalsifiable
 - `2026-07-17-TRIAGE-LIST-123-escape-links-65-targets-29-docs.md` — 2026-07-17-TRIAGE-LIST-123-escape-links-65-targets-29-docs
+- `2026-07-17-path-leak-fixed-galerina-clean-existsSync-mirrored-and-two-corrections-of-mine.md` — 2026-07-17-path-leak-fixed-galerina-clean-existsSync-mirrored-and-two-corrections-of-mine
 
 ## Stale Links
 Links pointing to missing files:

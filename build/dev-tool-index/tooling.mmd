@@ -208,7 +208,7 @@ flowchart LR
   T_audit_papers_index_mjs --> C_doc_drift
   T_audit_papers_index_mjs --> C_graph_index
   T_audit_path_leak_mjs["audit-path-leak.mjs"]
-  T_audit_path_leak_mjs --> C_sinks_taint
+  T_audit_path_leak_mjs --> C_provenance
   T_audit_path_leak_mjs --> C_diagnostics
   T_audit_path_leak_mjs --> C_doc_drift
   T_audit_path_leak_mjs --> C_brand
@@ -364,16 +364,13 @@ flowchart LR
   T_kb_index_mjs --> C_doc_drift
   T_kb_index_mjs --> C_graph_index
   T_lint_conventions_mjs["lint-conventions.mjs"]
-  T_lint_conventions_mjs --> C_governance
-  T_lint_conventions_mjs --> C_provenance
+  T_lint_conventions_mjs --> C_signing_fusion
   T_lint_conventions_mjs --> C_gate_wiring
   T_lint_conventions_mjs --> C_coverage
   T_lint_conventions_mjs --> C_diagnostics
-  T_lint_conventions_mjs --> C_tier_floor
   T_lint_conventions_mjs --> C_mutation_testing
   T_lint_conventions_mjs --> C_teaching_corpus
   T_lint_conventions_mjs --> C_doc_drift
-  T_lint_conventions_mjs --> C_graph_index
   T_lint_fungi_mjs["lint-fungi.mjs"]
   T_lint_fungi_mjs --> C_signing_fusion
   T_lint_fungi_mjs --> C_governance

@@ -1,4 +1,4 @@
-# Galerina KB index (1218 docs)
+# Galerina KB index (1269 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -368,6 +368,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - links: [[RD-0412-diagnostic-code-taxonomy-20-adjudicated-adopt-the-checker-burn-down-unblocked]] [[diag-code-taxonomy-proposal-2026-07-10]]
 - terms: commit, reconcile, burn-down, twin, fungi-type-006, ack, decision, four, caveats, answers, don, stall, them, fold
 
+## 2026-07-17-ACK-96a-section6-binary-trees-language-gap-ACCEPTED-plus-REFINEMENT-gate-reset-on-proven-safe-not-benchmark-luck.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-96a-section6-binary-trees-language-gap-ACCEPTED-plus-REFINEMENT-gate-reset-on-proven-safe-not-benchmark-luck.md`
+- tasks: #96, #128, #63
+- terms: reset, refinement, record, fail-closed, accepted, scope, build, thing, window, record-allocation, binary-trees, corpus, wrinkle, good
+
 ## 2026-07-17-ACK-alias-cluster-VERIFIED-plus-stale-004-cluster-plus-latent-008-fold-invariant.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-alias-cluster-VERIFIED-plus-stale-004-cluster-plus-latent-008-fold-invariant.md`
 - codes: FUNGI-EFFECT-004
@@ -407,25 +412,103 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #76, #128
 - terms: escape, wat, shape, ground, pass, verify, plan, offer, status, sync, step, analysis, fail-closed, same
 
+## 2026-07-17-ADJUDICATED-3-undeclared-pairs-all-safe-plus-the-name-registry-allowlist-has-DECAYED.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ADJUDICATED-3-undeclared-pairs-all-safe-plus-the-name-registry-allowlist-has-DECAYED.md`
+- tasks: #149
+- terms: entry, claims, safe, allowlist, them, graph-project, both, false, core-cli, claim, declared, pairs, allowlists, gate
+
 ## 2026-07-17-ADJUDICATION-76-taint-to-pure-flow-adopt-b-fix-examples-taint-laundering.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ADJUDICATION-76-taint-to-pure-flow-adopt-b-fix-examples-taint-laundering.md`
 - tasks: #75, #93
 - terms: taint, pure, rule, pattern, owner, first, verify, change, clears, ruling, buckets, endorsed, reasoning, correct
 
+## 2026-07-17-ADJUDICATION-96a-RULE-A-extends-existing-B2-arena-to-per-iteration-mark-release-secret-zeroing-catch.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ADJUDICATION-96a-RULE-A-extends-existing-B2-arena-to-per-iteration-mark-release-secret-zeroing-catch.md`
+- tasks: #96, #128, #63
+- terms: heap, increment, mark, release, predicate, flow, window, reset, already, unchanged, finding, arena, per-iteration, verbatim
+
+## 2026-07-17-ADJUDICATION-benchmark-harness-DECOUPLE-2-with-declared-build-path-plus-provenance-protocol-host-side.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ADJUDICATION-benchmark-harness-DECOUPLE-2-with-declared-build-path-plus-provenance-protocol-host-side.md`
+- codes: FUNGI-PARSE-001
+- tasks: #63, #96
+- terms: benchmark, wasm, drift, build, gate, workload, fungi, both, protocol, fail-closed, directions, path, stale, style
+
 ## 2026-07-17-ADJUDICATION-bool-taint-reject-validateFlag-launder-use-c-flag-b-to-owner.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ADJUDICATION-bool-taint-reject-validateFlag-launder-use-c-flag-b-to-owner.md`
 - terms: bool, owner, validation, validateflag, exclude, validateboolstr, test, gate, input, real, refinement, string, baselined, decides
+
+## 2026-07-17-ANSWER-3-stoppers-your-STOPPER-1-fallback-recreates-todays-CI-404-plus-the-admission-predicate.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ANSWER-3-stoppers-your-STOPPER-1-fallback-recreates-todays-CI-404-plus-the-admission-predicate.md`
+- terms: stopper, iso, green, list, right, origin, reading, source, spec, fallback, predicate, pushed, scale, point
+
+## 2026-07-17-ANSWER-app-kernel-edge-is-DRIFT-safe-to-declare-plus-I-OVERSTATED-the-39.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ANSWER-app-kernel-edge-is-DRIFT-safe-to-declare-plus-I-OVERSTATED-the-39.md`
+- tasks: #149, #34
+- terms: private, true, edges, today, drift, declare, package, first, edge, safe, because, build, wrote, import
+
+## 2026-07-17-ANSWER-duplicate-record-decl-YES-to-the-diagnostic-but-there-is-NO-emitter-analysis-divergence.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ANSWER-duplicate-record-decl-YES-to-the-diagnostic-but-there-is-NO-emitter-analysis-divergence.md`
+- codes: FUNGI-PARSE-001, FUNGI-DECL-001
+- tasks: #96
+- terms: reason, own, against, note, record, yes, correction, diagnostic, closed, same, different, name, still, duplicate
+
+## 2026-07-17-ANSWER-RD-0450-ruling-CONFIRMED-and-the-frozen-spec-is-in-YOUR-tree-not-lost.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ANSWER-RD-0450-ruling-CONFIRMED-and-the-frozen-spec-is-in-YOUR-tree-not-lost.md`
+- terms: spec, finding, comment, tree, slice, doesn, ruling, confirmed, yours, vectors, stale, near-miss, better, half
+
+## 2026-07-17-CI-DIAGNOSIS-conventions-30-of-30-red-since-07-12-two-causes-neither-is-phase-47.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-CI-DIAGNOSIS-conventions-30-of-30-red-since-07-12-two-causes-neither-is-phase-47.md`
+- terms: job, repo, public, cause, private, check, recommendation, green, surface, out, owner, self-tests, build-free, red
+
+## 2026-07-17-CLARIFICATION-96a-escaping-records-EXCLUDED-from-release-window-not-above-the-mark.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-CLARIFICATION-96a-escaping-records-EXCLUDED-from-release-window-not-above-the-mark.md`
+- tasks: #96, #128
+- terms: mark, window, fix, escaping, above, release, clarification-96a-escaping-records-excluded-from-release-window-not-above-the-mark, predicate, guard, per-iteration, allocated, inside, record, build
+
+## 2026-07-17-CLOSING-CYCLE-full-verify-thesis-build-registry-benchmark-harness-finding.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-CLOSING-CYCLE-full-verify-thesis-build-registry-benchmark-harness-finding.md`
+- codes: FUNGI-PARSE-001, FUNGI-MATCH-001, FUNGI-SAFETY-006
+- tasks: #76, #63, #143
+- terms: owner, current, benchmark, verified, build, audit, fungi, harness, grammar, security, nothing, fresh, green, folder
 
 ## 2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction.md`
 - tasks: #93, #94
 - terms: parser, self-hosted, twin, stopper, severity-parity, confirmed, transparency, nearly, contradiction, caught, effect, complete, boundary, fungi
 
+## 2026-07-17-CORRECTION-I-ruled-de-link-before-reading-a-single-target-they-are-product-docs.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-CORRECTION-I-ruled-de-link-before-reading-a-single-target-they-are-product-docs.md`
+- tasks: #34
+- terms: public, galerina, de-linking, docs, disclosure, won, isn, wrong, fix, question, documentation, private, owner, got
+
+## 2026-07-17-CORRECTION-my-Money-tag-validator-advice-was-too-simple-Money-C-type-vars-exist.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-CORRECTION-my-Money-tag-validator-advice-was-too-simple-Money-C-type-vars-exist.md`
+- terms: money, own, tag, type, commodity, tags, fungi, closed, hedge, broken, reject, examples, breaks, recommendation
+
 ## 2026-07-17-DELIVER-type-twin-severity-map-19-codes-plus-gate-count-21-vs-19-discrepancy.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-DELIVER-type-twin-severity-map-19-codes-plus-gate-count-21-vs-19-discrepancy.md`
 - codes: FUNGI-TYPE-001, FUNGI-TYPE-002, FUNGI-TYPE-003, FUNGI-TYPE-004, FUNGI-TYPE-005, FUNGI-TYPE-007, FUNGI-TYPE-008, FUNGI-TYPE-009, FUNGI-TYPE-011, FUNGI-TYPE-014, FUNGI-TYPE-016, FUNGI-TYPE-017, FUNGI-TYPE-020, FUNGI-TYPE-022, FUNGI-TYPE-023, FUNGI-TYPE-024, FUNGI-TYPE-025, FUNGI-TYPE-026, FUNGI-TYPE-030
 - tasks: #95
 - terms: error, type, code, severity, gate, map, invalid, count, codes, reconcile, rule, well, extractor, bucket
+
+## 2026-07-17-DESIGN-preflight-ci-must-reproduce-CIs-ABSENCES-a-naive-pre-push-hook-would-have-caught-neither.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-DESIGN-preflight-ci-must-reproduce-CIs-ABSENCES-a-naive-pre-push-hook-would-have-caught-neither.md`
+- codes: ERR_MODULE_NOT_FOUND
+- terms: leg, myco, dist, run, design, cause, job, five, gate, repo, gates, catches, never, hook
+
+## 2026-07-17-DESIGN-RD-0451-dev-tools-audit-checker-wiring-says-OK-while-resolveImports-has-zero-callsites.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-DESIGN-RD-0451-dev-tools-audit-checker-wiring-says-OK-while-resolveImports-has-zero-callsites.md`
+- codes: FUNGI-TYPE-001
+- terms: own, surface, method, gate, resolveimports, class, run, exported, ten, first, why, full, catch, audit-checker-wiring
+
+## 2026-07-17-FINDING-Money-BANANAS-compiles-clean-I1s-compile-half-is-unbuilt-plus-RD-0349-amended.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-FINDING-Money-BANANAS-compiles-clean-I1s-compile-half-is-unbuilt-plus-RD-0349-amended.md`
+- codes: FUNGI-TYPE-001
+- terms: money, xau, own, commodity, unit, tags, metals, rd-0349, already, spec, reject, scale, never, note
+
+## 2026-07-17-graph-integrity-has-NEVER-run-in-CI-and-the-summary-counts-it-among-the-9-that-did.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-graph-integrity-has-NEVER-run-in-CI-and-the-summary-counts-it-among-the-9-that-did.md`
+- terms: check, green, same, ran, last, real, own, caller, finding, yours, first, total, violations, skipped
 
 ## 2026-07-17-GROUNDING-escape-analysis-pass-record-escapes-flow-predicate-fail-closed.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-GROUNDING-escape-analysis-pass-record-escapes-flow-predicate-fail-closed.md`
@@ -451,10 +534,51 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-PREP-EFFECT-002-transitive-walk-faithfulness-traps-grounded-from-stage-A.md`
 - terms: ground, emit, stage-a, traps, callee, effect, seen, paths, effects, get, shape, introducer, ranked, easy
 
+## 2026-07-17-PROPOSE-lint-if-chain-should-be-match-plus-CORRECTION-predicate-arms-do-not-parse.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-PROPOSE-lint-if-chain-should-be-match-plus-CORRECTION-predicate-arms-do-not-parse.md`
+- codes: FUNGI-PARSE-001, FUNGI-MATCH-001, FUNGI-SAFETY-006
+- tasks: #160
+- terms: lint, match, arms, correction, predicate, code, return, language, spec, design-stage, doc, value, worth, list
+
 ## 2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked.md`
 - tasks: #143
 - terms: owner, repo, unlock, rd-0447, quantum, amplitude, remote, action, rd-0445, simulator, token, still, admission, closes
+
+## 2026-07-17-RD-0448-leaf-terminator-is-its-own-task-gap-is-Option-constructors-not-Option-Record.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-RD-0448-leaf-terminator-is-its-own-task-gap-is-Option-constructors-not-Option-Record.md`
+- codes: FUNGI-MATCH-001
+- tasks: #128, #96
+- terms: option, none, record, header, tree, binary-trees, asked, lower, int, ruling, fail-open, precondition, fix, correction
+
+## 2026-07-17-RD-0450-32-byte-digest-caps-L5-profile-at-128-bit-decide-before-34-locks-v0.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-RD-0450-32-byte-digest-caps-L5-profile-at-128-bit-decide-before-34-locks-v0.md`
+- tasks: #34
+- terms: digest, bit, why, byte, main, owner, sha-256, profile, collision, vulnerability, read, options, construction, saying
+
+## 2026-07-17-RD-0452-delivered-a-codemod-is-a-defect-multiplier-plus-you-were-right-about-the-message.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-RD-0452-delivered-a-codemod-is-a-defect-multiplier-plus-you-were-right-about-the-message.md`
+- tasks: #34
+- terms: message, verified, gate-subjects, question, concede, rd-0452, commit, wrong, clean, clone, repo, right, record, point
+
+## 2026-07-17-RETRACT-match-lint-plus-RD-0449-import-resolver-never-wired-12-of-52-examples-fail-strict-types.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-RETRACT-match-lint-plus-RD-0449-import-resolver-never-wired-12-of-52-examples-fail-strict-types.md`
+- codes: FUNGI-MATCH-001, FUNGI-TYPE-023, FUNGI-TYPE-021, FUNGI-TYPE-001, FUNGI-GOV-018
+- terms: match, real, lint, enum, fix, resolveimports, wrong, nothing, never, type, contract, production, worth, auth-service
+
+## 2026-07-17-RULING-RD-0450-A-FOR-BOTH-you-overruled-me-with-my-own-rule-plus-123-links-de-link-by-default.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-RULING-RD-0450-A-FOR-BOTH-you-overruled-me-with-my-own-rule-plus-123-links-de-link-by-default.md`
+- tasks: #34
+- terms: wrong, both, right, de-link, already, alg, default, fix, spec, digest, rd-0450, own, argument, verdict
+
+## 2026-07-17-RULINGS-1-and-2-honesty-rule-YES-derived-not-typed-plus-I1-is-b-but-sequenced-with-I2.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-RULINGS-1-and-2-honesty-rule-YES-derived-not-typed-plus-I1-is-b-but-sequenced-with-I2.md`
+- tasks: #143
+- terms: ruling, load, inference, pct, rule, both, ladder, call, extend, refinement, independently, unit, owner, yes
+
+## 2026-07-17-URGENT-audit-path-leak-misses-the-DOUBLE-dash-MCP-slug-and-Galerina-is-PUBLIC.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-URGENT-audit-path-leak-misses-the-DOUBLE-dash-MCP-slug-and-Galerina-is-PUBLIC.md`
+- terms: note, real, guard, side, name, day, about, same, rule, leak, green, c--users-, public, thing
 
 ## 2026-07-17-VERIFY-76-17of19-open-vocab-length-bound-correct-plus-content-safe-downstream-caveat.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-76-17of19-open-vocab-length-bound-correct-plus-content-safe-downstream-caveat.md`
@@ -476,6 +600,24 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #76, #96
 - terms: numeric, file, verify, invariant, pattern, gate, confirmed, commit, validation, verified, read, committed, quote, bless
 
+## 2026-07-17-VERIFY-96a-increment-1-PASS-6of6-plus-FINDING-anonymous-nested-record-field-read-escape-increment-2-blocker.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-96a-increment-1-PASS-6of6-plus-FINDING-anonymous-nested-record-field-read-escape-increment-2-blocker.md`
+- tasks: #128, #96
+- terms: increment, inner, field, verify, finding, anonymous, record, fix, design, safe, item, window, pass, conservatisms
+
+## 2026-07-17-VERIFY-border-gate-GOOD-ratchet-non-vacuous-but-your-commit-MESSAGE-carries-my-retracted-claim.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-border-gate-GOOD-ratchet-non-vacuous-but-your-commit-MESSAGE-carries-my-retracted-claim.md`
+- tasks: #104
+- terms: message, commit, fix, claim, retracted, exit, verified, taken, quotes, ladder, unchanged, ratchet, gate, output
+
+## 2026-07-17-VERIFY-c340066b-takes-CI-5-to-1-but-STILL-RED-package-border-is-outside-build-core-chains-closure.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-c340066b-takes-CI-5-to-1-but-STILL-RED-package-border-is-outside-build-core-chains-closure.md`
+- terms: gate, fix, wrong, lane, build-core-chain, build, exactly, closure, prediction, dist, exit, printed, package, ran
+
+## 2026-07-17-VERIFY-CauseB-CLOSED-plus-FINDING-hardened-border-95-PASS-while-39-packages-reach-into-sibling-dist.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-CauseB-CLOSED-plus-FINDING-hardened-border-95-PASS-while-39-packages-reach-into-sibling-dist.md`
+- terms: undeclared, gate, border, dist, edge, surface, isn, package, sibling, green, verified, cause, closed, reported
+
 ## 2026-07-17-VERIFY-EFFECT-002-live-probe-found-pure-002-under-report-divergence.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-EFFECT-002-live-probe-found-pure-002-under-report-divergence.md`
 - codes: FUNGI-EFFECT-002, FUNGI-EFFECT-003
@@ -491,6 +633,15 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-type-severity-leg-green-BOTH-twins-trilogy-COMPLETE.md`
 - tasks: #93
 - terms: verified, both, type, complete, twins, parity, trilogy, clean, severity, hand, d1516b, tree, twin, leg
+
+## 2026-07-17-VERIFY-window-gate-13of13-CONFIRMED-plus-TWO-holes-cross-flow-alloc-and-duplicate-record-decl.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-window-gate-13of13-CONFIRMED-plus-TWO-holes-cross-flow-alloc-and-duplicate-record-decl.md`
+- tasks: #128
+- terms: gate, window, record, literals, true, int, box, item, inner, shape, duplicate, verified, call, first
+
+## 2026-07-17-your-six-fabricated-greens-are-a-BUG-IN-THE-GATE-not-in-you-and-mine-had-it-too.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-your-six-fabricated-greens-are-a-BUG-IN-THE-GATE-not-in-you-and-mine-had-it-too.md`
+- terms: file, galerina, gate, six, finding, root, repo, null, probably, mine, commit, name, guard, real
 
 ## 2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md`
@@ -680,6 +831,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #76, #96
 - terms: bool, length-bound, direct, finding, content-safe, applied, ruling, caveat, confirmed, across, d6494236, valuestate-004, response, exactly
 
+## 2026-07-17-ACK-96a-finding-REPRODUCED-live-window-gate-BUILT-13of13-hole-closed-by-construction.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-96a-finding-REPRODUCED-live-window-gate-BUILT-13of13-hole-closed-by-construction.md`
+- tasks: #128, #63
+- terms: window, gate, live, sufficient, half, finding, reproduced, built, refinement, non-vacuous, both, directions, next, exactly
+
 ## 2026-07-17-ACK-accept-type-twin-severity-offer-plus-two-wiring-blockers-grounded.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-accept-type-twin-severity-offer-plus-two-wiring-blockers-grounded.md`
 - tasks: #95, #93
@@ -694,6 +850,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-bump-arena-WAT-shape-VALIDATED-prototype-plus-integration-plan.md`
 - tasks: #128, #76
 - terms: shape, before, real, validated, wat-emitter, integration, record, grounded, verify-don, t-trust, integrate, bump, ask, plan
+
+## 2026-07-17-ACK-closing-cycle-plus-benchmark-harness-is-a-DESIGN-STOPPER-broader-than-compute-mix.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-closing-cycle-plus-benchmark-harness-is-a-DESIGN-STOPPER-broader-than-compute-mix.md`
+- codes: FUNGI-PARSE-001, FUNGI-GOV-010
+- tasks: #76, #63, #96
+- terms: benchmark, stopper, harness, galerina, fungi, match, owner, verified, broader, need, compute-mix, acks, framed, grammar
 
 ## 2026-07-17-ACK-collection-pipeline-reframe-DONE-plus-ACCEPT-bump-arena-WAT-grounding.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-collection-pipeline-reframe-DONE-plus-ACCEPT-bump-arena-WAT-grounding.md`
@@ -741,15 +903,63 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #93
 - terms: map, twin, severity, both, type, error, code, parity, trilogy, complete, twins, cross-checked, mismatch, vs-19
 
+## 2026-07-17-ANSWER-96a-scoping-6-record-alloc-is-intra-flow-BUT-neither-benchmark-allocates-binary-trees-language-gap.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ANSWER-96a-scoping-6-record-alloc-is-intra-flow-BUT-neither-benchmark-allocates-binary-trees-language-gap.md`
+- tasks: #96, #63
+- terms: benchmark, binary-trees, read, mark, increment, record-allocation, language, scope, release, never, arena, stopper, answered, sources
+
+## 2026-07-17-ANSWER-message-correction-is-already-adjacent-in-history-plus-gate-subjects-now-DERIVED.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ANSWER-message-correction-is-already-adjacent-in-history-plus-gate-subjects-now-DERIVED.md`
+- tasks: #34
+- terms: both, message, already, declared, edges, codemod, correction, gate-subjects, live, day, rewriting, verified, true, bb18da2
+
+## 2026-07-17-ANSWERED-your-parting-question-123-public-links-into-the-private-KB-and-i-built-the-repro.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ANSWERED-your-parting-question-123-public-links-into-the-private-KB-and-i-built-the-repro.md`
+- tasks: #34, #103
+- terms: cause, public, private, links, repo, green, fix, answered, diagnosis, reproduced, rather, parting, question, local
+
+## 2026-07-17-ASK-RD-0450-owner-wants-YOUR-zero-trust-choice-A-or-B.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ASK-RD-0450-owner-wants-YOUR-zero-trust-choice-A-or-B.md`
+- terms: why, own, owner, read, argument, put, question, plainly, zero-trust, still, both, bit, re-opening, ruling
+
 ## 2026-07-17-DELIVER-76-taint-laundering-pattern-file-governanceService-verify-before-fanout.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-DELIVER-76-taint-laundering-pattern-file-governanceService-verify-before-fanout.md`
 - tasks: #76, #96
 - terms: before, pattern, fan, out, effecttag, governanceservice, fungi, verify, validate, return, verification, criteria, met, question
 
+## 2026-07-17-DELIVERED-96a-escape-increment-1-recordEscapes-predicate-6of6-please-isolation-verify.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-DELIVERED-96a-escape-increment-1-recordEscapes-predicate-6of6-please-isolation-verify.md`
+- tasks: #96
+- terms: escape-analysis, tests, non-vacuous, both, grounding, increment, landed, src, exported, index, test, mjs, alias, field
+
+## 2026-07-17-DELIVERED-rd0349-I1-unit-table-generated-157-plus-3-stoppers.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-DELIVERED-rd0349-I1-unit-table-generated-157-plus-3-stoppers.md`
+- tasks: #143, #100
+- terms: snapshot, stopper, owner, metals, fiat, crypto, vendored, table, change, iso, source, data, terms, curated
+
+## 2026-07-17-DELIVERED-ruling1-evidence-gate-built-your-refinement-caught-my-hole.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-DELIVERED-ruling1-evidence-gate-built-your-refinement-caught-my-hole.md`
+- tasks: #143, #96, #34
+- terms: live, rather, never, ladder, asserted, renderer, gate, note, ruling, refinement, hole, rows, point, suite
+
+## 2026-07-17-FINDING-96a-record-site-already-heap-bumps-not-host-abi-escape-integration-needs-reground.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-FINDING-96a-record-site-already-heap-bumps-not-host-abi-escape-integration-needs-reground.md`
+- tasks: #96, #128, #76
+- terms: predicate, before, build, wat-emitter, fork, code, increment, verified, heap, escaping, still, reconciliation, value, children
+
+## 2026-07-17-FIXED-cause-B-now-VIOLATIONS-0-plus-app-kernel-has-an-UNDECLARED-cross-package-edge.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-FIXED-cause-B-now-VIOLATIONS-0-plus-app-kernel-has-an-UNDECLARED-cross-package-edge.md`
+- tasks: #149
+- terms: clean, caught, edge, read, both, dist, violations, app-kernel, fixed, finding, package, clone, undeclared, cross-package
+
 ## 2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md`
 - codes: FUNGI-EFFECT-002
 - terms: effect, transitive, declared, stage-a, twin, milestone, landed, honest, caveats, flow, tracked, effect-checker, effect-002, verify-don
+
+## 2026-07-17-path-leak-fixed-galerina-clean-existsSync-mirrored-and-two-corrections-of-mine.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-path-leak-fixed-galerina-clean-existsSync-mirrored-and-two-corrections-of-mine.md`
+- terms: rule, repo, fixed, about, own, finding, never, galerina, green, real, here, read, token, tracked
 
 ## 2026-07-17-QUESTION-76-bool-taint-validateFlag-degenerate-plus-fanout-7of19.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-QUESTION-76-bool-taint-validateFlag-degenerate-plus-fanout-7of19.md`
@@ -762,6 +972,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #76, #75, #93
 - terms: file, taint, auth-service, adjudication, triage, bucket, pure-flow, ratcheted, baseline, scripts, baselines, fungi-corpus-check, json, rule
 
+## 2026-07-17-RULING-RD-0450-A-for-L5-B-for-L3-and-its-cheaper-than-you-framed-slice-4-is-unbuilt.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-RULING-RD-0450-A-for-L5-B-for-L3-and-its-cheaper-than-you-framed-slice-4-is-unbuilt.md`
+- terms: spec, ruling, findings, nearly, wrong, three, make, cheaper, framed, favour, because, there, why, root
+
 ## 2026-07-17-STATUS-76-effect-name-files-done-plus-C11-superset-refinement.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-STATUS-76-effect-name-files-done-plus-C11-superset-refinement.md`
 - tasks: #76
@@ -771,6 +985,15 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-STATUS-76-numeric-exemplar-economicsService-done-plus-cycle-green.md`
 - tasks: #76, #96
 - terms: numeric, economicsservice, exemplar, remaining, nuance, upper-bound, fan-out, requirement, plan, per-file-shape, taint, state, check, status-76-numeric-exemplar-economicsservice-done-plus-cycle-green
+
+## 2026-07-17-STOPPERS-ten-area-hundred-percent-sweep-audit-numbers-unfalsifiable.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-STOPPERS-ten-area-hundred-percent-sweep-audit-numbers-unfalsifiable.md`
+- tasks: #143, #100
+- terms: main, ruling, inference, owner, ten, numbers, tower, program, headline, ladder, four, needs, verdict, carry
+
+## 2026-07-17-TRIAGE-LIST-123-escape-links-65-targets-29-docs.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-TRIAGE-LIST-123-escape-links-65-targets-29-docs.md`
+- terms: docs, readme, framework, public, classify, target, thing, count, many, link, framework-boundaries, reports, rules, triage-list-123-escape-links-65-targets-29-docs
 
 ## Core Application Model
 `../ZTF-Knowledge-Bases/core-application-model.md`
@@ -4661,9 +4884,9 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 
 ## HANDOVER — Value-unit types (Money fixes · Commodity · Crypto · Rate) + the Hallmark open-type system — WITH docs/examples as a hard gate
 `../ZTF-Knowledge-Bases/HANDOVER-value-unit-types-and-hallmark-open-types-2026-07-11.md`
-- codes: FUNGI-HALLMARK-001, FUNGI-TYPE-003, FUNGI-VALUESTATE-004, FUNGI-TYPE-0, FUNGI-TYPE-004
+- codes: FUNGI-HALLMARK-001, FUNGI-TYPE-003, FUNGI-VALUESTATE-004, FUNGI-TYPE-001, FUNGI-TYPE-0, FUNGI-TYPE-004
 - links: [[galerina-rd-0349-value-unit-types-money-commodity-crypto-registry]] [[galerina-rd-0350-gold-is-not-money-adversarial-case-for-commodity-crypto-generics]] [[galerina-rd-0351-finance-types-the-algebra-decides-money-markets-partition]] [[galerina-rd-0352-passive-open-type-system-schema-per-type-reserved-gate]] [[galerina-rd-0353-strain-syntax-and-abuse-proof-open-types]] [[galerina-rd-0353]] [[galerina-rd-0354-security-analysis-value-unit-and-hallmark-system]]
-- terms: examples, docs, gate, money, hallmark, crypto, registry, test, commodity, rate, types, hard, owner, unit
+- terms: money, examples, gate, docs, commodity, crypto, hallmark, registry, test, unit, xau, rate, main, never
 
 ## HANDOVER → R&D — ZT-thesis twin round + Tracking-registry status (2026-07-15)
 `../ZTF-Knowledge-Bases/HANDOVER-zt-thesis-twin-round-and-registry-status-2026-07-15.md`
@@ -4696,7 +4919,7 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## Galerina governance signing key — custody (PRIVATE)
 `../ZTF-Knowledge-Bases/key-custody/README-galerina-signing-key.md`
 - tasks: #143, #72
-- terms: key, signing, galerina, private, escrow, env, governance, greeting, cd01346961d88e94, restore, custody, repo, ever, exposed
+- terms: key, repo, galerina, signing, private, escrow, file, env, governance, cd01346961d88e94, public, rotate, greeting, longer
 
 ## Galerina Core Knowledge Base — Master Navigation Guide & TCB Map
 `../ZTF-Knowledge-Bases/KNOWLEDGE-BASE-INDEX.md`
@@ -5536,6 +5759,33 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## RD-0447 — Quantum simulator amplitude admission test EXECUTED: raw `Sum|a_i|^2=1` + raw-ρ entry-level (16/16), closing the RD-0445 open follow-up
 `../ZTF-Knowledge-Bases/RD-0447-quantum-simulator-amplitude-admission-closes-rd0445-open-item.md`
 - terms: simulator, amplitude, rd-0445, admission, honest, sum, why, space, test, raw, entry-level, open, real, rd-0435
+
+## RD-0448 — Option constructor lowering IS the leaf-terminator gap (not a record-specific one)
+`../ZTF-Knowledge-Bases/RD-0448-option-constructor-lowering-is-the-leaf-terminator-gap.md`
+- codes: FUNGI-MATCH-001, FUNGI-SAFETY-006
+- tasks: #96, #128
+- terms: option, record, gap, terminator, none, binary-trees, lower, cannot, int, fail-closed, node, rd-0448, lowering, record-specific
+
+## RD-0449 — .fungi corpus slop survey: "prefer match for exhaustiveness" is a myth, and the import resolver is never wired
+`../ZTF-Knowledge-Bases/RD-0449-fungi-corpus-slop-survey-match-exhaustiveness-is-a-myth.md`
+- codes: FUNGI-MATCH-001, FUNGI-SAFETY-006, FUNGI-TYPE-023, FUNGI-TYPE-021, FUNGI-MATCH-002, FUNGI-PARSE-001, FUNGI-TYPE-001, FUNGI-GOV-018, FUNGI-VAL-003, FUNGI-VAL-001, FUNGI-VAL-002
+- tasks: #160
+- terms: match, corpus, real, enum, exhaustiveness, main, type, never, declared, contract, flows, tri, wrong, enums
+
+## RD-0450 — The 32-byte digest caps the hybrid signature at 128-bit collision resistance
+`../ZTF-Knowledge-Bases/RD-0450-32-byte-digest-caps-the-hybrid-at-128-bit-collision-resistance.md`
+- tasks: #34
+- terms: digest, bit, byte, signature, collision, sha-256, resistance, hybrid, spec, why, key, ml-dsa-65, alg, premise
+
+## RD-0451 — Dev-tool design: the green gate that is green because it isn't looking
+`../ZTF-Knowledge-Bases/RD-0451-dev-tool-design-green-gates-that-are-green-because-they-are-not-looking.md`
+- codes: FUNGI-TYPE-001, FUNGI-MATCH-001
+- terms: gate, green, surface, existing, every, class, mjs, tier, today, finding, must, design, each, resolveimports
+
+## RD-0452 — A codemod is a defect multiplier with good hygiene
+`../ZTF-Knowledge-Bases/RD-0452-a-codemod-is-a-defect-multiplier-with-good-hygiene.md`
+- tasks: #103, #104, #34
+- terms: codemod, repo, boundary, question, path, package, defect, mjs, instances, detector, public, private, rebrand, status
 
 ## Galerina AI-Friendliness — R&D Spec (2026-06-23)
 `../ZTF-Knowledge-Bases/rd-absorbed/from-galerina-r-and-d/AI-FRIENDLINESS-SPEC-2026-06-23.md`

@@ -950,6 +950,24 @@ Provides:
 - BenchmarkSubmitPayload
 - DEFAULT_BENCHMARK_CONFIG
 
+## galerina-tools-myco
+
+grep, but it grows a graph — a graph-indexed search tool for file contents and filenames. Galerina's owned dev-tool finder (vendored from the myco subproject). Smart-case, token-precise, instant on repeat searches.
+
+Provides:
+- FileId
+- FileRecord
+- TermCounts
+- SearchGraph
+- nameTermsOf
+- INDEX_DIR
+- INDEX_FILE
+- IndexMeta
+- VERSION
+- IndexOptions
+- IndexStats
+- DEFAULT_INDEX_OPTIONS
+
 ## galerina-test
 
 The consolidated Galerina test harness — one named, consumable package that runs unit, e2e, conformance (R6) and fidelity-differential (walker ≡ bytecode ≡ WASM) checks against a Galerina workspace.

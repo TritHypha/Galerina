@@ -1,15 +1,15 @@
 # Galerina Graph Report
 
 Workspace: Galerina-app
-Generated: 2026-07-17T11:11:52.886Z
+Generated: 2026-07-17T12:46:21.543Z
 
 ## Summary
 
-- Packages: 92
-- Documents: 2065
-- Types/interfaces: 2453
-- Functions: 1236
-- Relationships: 6163
+- Packages: 93
+- Documents: 2073
+- Types/interfaces: 2474
+- Functions: 1245
+- Relationships: 6201
 
 ## Package Nodes
 
@@ -67,6 +67,7 @@ Generated: 2026-07-17T11:11:52.886Z
 - galerina-core-cli (packages-galerina/galerina-core-cli/README.md)
 - galerina-core-tasks (packages-galerina/galerina-core-tasks/README.md)
 - galerina-tools-benchmark (packages-galerina/galerina-tools-benchmark/README.md)
+- galerina-tools-myco (packages-galerina/galerina-tools-myco/README.md)
 - galerina-test (packages-galerina/galerina-test/README.md)
 - galerina-devtools-graph-project (packages-galerina/galerina-devtools-graph-project/README.md)
 - galerina-framework-example-app (packages-galerina/galerina-framework-example-app/README.md)

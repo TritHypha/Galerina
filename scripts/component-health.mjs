@@ -81,13 +81,25 @@ const FAMILY = {
 const familyOf = (dir) => FAMILY[dir.replace(/^galerina-/, "").split("-")[0]] || "other";
 
 // ── per-component rows (driven by the workspace list) ─────────────────────────
+// This counts A TEST FILE — not "a test file with the extension I expected". The distinction is the
+// whole of 2026-07-17: the surface was `(mjs|cjs|js)`, and when galerina-tools-myco was enlisted the
+// gate reported `tests-dir-empty` over a directory holding FOUR tests that run and pass, because they
+// are `.test.ts` (TypeScript, run under --experimental-strip-types). The verdict was honest about its
+// surface and flatly false about the package.
+//
+// Measured before widening, rather than assumed: 538 `.test.mjs` across 92 packages · 4 `.test.ts` in
+// myco · nothing else. So `.test.mjs` IS the house style and myco (vendored from an upstream TS
+// project) is the deviation — but that is a STYLE question, and this is not the style gate. A false
+// "no tests here" about a tested package teaches people the gate cries wolf, and a gate nobody believes
+// gets switched off. Extension-agnostic within the runner's real capability is the honest model.
+const TEST_FILE = /\.test\.(mjs|cjs|js|ts|mts|cts)$/;
 const countTestFiles = (dir) => {
   let n = 0;
   const walk = (d) => {
     for (const e of listDir(d) || []) {
       const ep = join(d, e);
       if (isDir(ep)) walk(ep);
-      else if (/\.test\.(mjs|cjs|js)$/.test(e)) n++;
+      else if (TEST_FILE.test(e)) n++;
     }
   };
   if (existsSync(dir)) walk(dir);
@@ -281,7 +293,7 @@ const TRACKING_REGISTRY = [
   { item: "Contract Registry (RD-0359)",         state: "shipped",       detail: "gen-contract-registry.mjs BUILT — 840 contracts across 446 .fungi → docs/contract-registry/CONTRACT_REGISTRY.md + .json; parser-authoritative flow list + intent extraction; --self-test + --check (CI-ready)" },
   { item: "Self-hosting Stages 3–6",             state: "post-v1",       detail: "bootstrap fixpoint · crypto FFI seam · .fungi↔host path · floor-by-floor; P9, non-v1-gate" },
   { item: "DSS.wasm supervisor (#102–106)",      state: "post-v1",       detail: "real Wasmtime TCB (kernel-bypass / in-sandbox decrypt) stays post-v1 — but the DECISION CORE is now execution-proven (2026-07-16 night): build gate 10/10 deterministic, V_DPM flows ≡ Stage-A over 386 pts + topology-first/monotonicity/deny-by-default laws, zero effect calls from the pure core, 10 real .wasm artifacts sha256-manifested (build/dss-wasm); effect imports link only via explicit deny-by-default grants (createHostRuntime effectHandlers)" },
-  { item: "Workspace package families",          state: "shipped",       detail: "94-pkg denominator built (target×9 · data×12 · db×5 · web×6 · ai · tools); 2 orphans #32-exempt" },
+  { item: "Workspace package families",          state: "shipped",       detail: "93 workspace packages + 2 #32-exempt orphans = 95 components (target×9 · data×12 · db×5 · web×6 · ai · tools). galerina-tools-myco joined 2026-07-17 — it had a package.json and 14 passing tests but was never in galerina.workspace.json, so it read as an un-adjudicated ORPHAN. Two hand-kept registries (workspace list · version.json testCountByPackage) disagreeing is what that gate is for; it caught it." },
   { item: "Package Standard + pub ladder",       state: "building",      detail: "Standard v1 + pkg-census + 9 schematics done; R1–R6 rungs pending; .graph amendment 🔒 owner" },
   { item: "Security-infra designs (×4)",         state: "building",      detail: "SBOM tool exists · fuzz RD-0316 leg 1 BUILT (slice-6 shape-oracle live in the suite; found+fixed the MIN-literal wasm-trap fidelity bug on run one) · Z3 RD-0318 needs a new dep (🔒 propose) · tabletop RD-0319 = owner exercise, runbook on request" },
   { item: "Devtools audit suite",                state: "shipped",       detail: "77 tools · 45 audits (incl. claim-hygiene public-doc gate + env-var-literal-strict path-leak + the fungi-corpus-check compile gate: 447 tracked .fungi found (myco-graph∪git-index), 211 checkable vs the real `galerina check`, ratcheted 49-file baseline) · keep-green + gate-selftests meta-gate; twin-audit execution column shipped (shadow|differential|authoritative)" },

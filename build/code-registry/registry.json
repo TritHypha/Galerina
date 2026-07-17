@@ -848,7 +848,7 @@
       "defs": 1,
       "emits": 2,
       "tests": 4,
-      "docs": 0
+      "docs": 1
     },
     {
       "code": "ERR_REGISTRY_INDEX_MALFORMED",
@@ -860,7 +860,7 @@
       "defs": 1,
       "emits": 2,
       "tests": 3,
-      "docs": 0
+      "docs": 1
     },
     {
       "code": "ERR_REGISTRY_INDEX_NO_KEY",
@@ -872,7 +872,7 @@
       "defs": 1,
       "emits": 1,
       "tests": 3,
-      "docs": 0
+      "docs": 1
     },
     {
       "code": "ERR_REGISTRY_INDEX_STALE",
@@ -884,7 +884,7 @@
       "defs": 1,
       "emits": 2,
       "tests": 4,
-      "docs": 0
+      "docs": 2
     },
     {
       "code": "ERR_REGISTRY_INDEX_UNSIGNED",
@@ -5033,7 +5033,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 5,
-      "docs": 14
+      "docs": 15
     },
     {
       "code": "FUNGI-MEMORY-001",
@@ -7108,7 +7108,7 @@
       "defs": 1,
       "emits": 1,
       "tests": 2,
-      "docs": 0
+      "docs": 1
     },
     {
       "code": "FUNGI-SBOM-001",

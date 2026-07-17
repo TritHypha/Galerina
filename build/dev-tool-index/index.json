@@ -3,7 +3,7 @@
   "totals": {
     "packages": 95,
     "testBearing": 94,
-    "tests": 7292,
+    "tests": 7313,
     "devTools": 87,
     "auditTools": 49,
     "toolsInCadence": 28,
@@ -297,7 +297,7 @@
       "name": "galerina-core-compiler",
       "kind": "core",
       "description": "Galerina compiler pipeline contracts for parsing, checking, IR, diagnostics and reports.",
-      "tests": 4631,
+      "tests": 4652,
       "hasTestScript": true,
       "border": "PASS",
       "files": 99,
@@ -1462,7 +1462,7 @@
       "selfTest": true,
       "inCadence": true,
       "concerns": [
-        "sinks/taint",
+        "provenance",
         "diagnostics",
         "doc-drift",
         "brand",
@@ -1858,16 +1858,13 @@
       "selfTest": true,
       "inCadence": true,
       "concerns": [
-        "governance",
-        "provenance",
+        "signing/fusion",
         "gate-wiring",
         "coverage",
         "diagnostics",
-        "tier-floor",
         "mutation-testing",
         "teaching-corpus",
-        "doc-drift",
-        "graph/index"
+        "doc-drift"
       ]
     },
     {
@@ -2331,7 +2328,6 @@
       "gen-code-registry.mjs",
       "gen-contract-registry.mjs",
       "kb-index.mjs",
-      "lint-conventions.mjs",
       "run-all-tests.cjs",
       "run-core-tests.cjs",
       "run-phase-close.mjs",
@@ -2394,6 +2390,7 @@
       "ts-retirement-graph.mjs",
       "gen-contract-registry.mjs",
       "gen-unit-registry.mjs",
+      "lint-conventions.mjs",
       "lint-fungi.mjs",
       "component-health.mjs",
       "bench-startup.mjs",
@@ -2485,7 +2482,6 @@
       "audit-muted-diagnostics.mjs",
       "audit-oblivious.mjs",
       "audit-papers-index.mjs",
-      "audit-path-leak.mjs",
       "audit-sink-canonicality.mjs",
       "check-gate-injection.mjs",
       "generate-sbom.mjs",
@@ -2511,7 +2507,6 @@
       "galerina-new.mjs",
       "gen-code-registry.mjs",
       "gen-contract-registry.mjs",
-      "lint-conventions.mjs",
       "lint-fungi.mjs",
       "hardening-show-derived.mjs",
       "license-rollout.mjs",
@@ -2533,7 +2528,6 @@
       "audit-perf-hotpath.mjs",
       "audit-tier-boundary.mjs",
       "audit-twin-emit-parity.mjs",
-      "lint-conventions.mjs",
       "license-rollout.mjs"
     ],
     "source-hygiene": [
@@ -2628,12 +2622,12 @@
       "audit-perf-hotpath.mjs"
     ],
     "provenance": [
+      "audit-path-leak.mjs",
       "audit-provenance.mjs",
       "code-index.mjs",
       "gen-code-registry.mjs",
       "gen-unit-registry.mjs",
       "kb-index.mjs",
-      "lint-conventions.mjs",
       "lint-fungi.mjs",
       "component-health.mjs",
       "run-phase-close.mjs",
