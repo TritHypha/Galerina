@@ -1,4 +1,4 @@
-# Galerina KB index (1195 docs)
+# Galerina KB index (1196 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -402,6 +402,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction.md`
 - tasks: #93, #94
 - terms: parser, self-hosted, twin, stopper, severity-parity, confirmed, transparency, nearly, contradiction, caught, effect, complete, boundary, fungi
+
+## 2026-07-17-DELIVER-type-twin-severity-map-19-codes-plus-gate-count-21-vs-19-discrepancy.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-DELIVER-type-twin-severity-map-19-codes-plus-gate-count-21-vs-19-discrepancy.md`
+- codes: FUNGI-TYPE-001, FUNGI-TYPE-002, FUNGI-TYPE-003, FUNGI-TYPE-004, FUNGI-TYPE-005, FUNGI-TYPE-007, FUNGI-TYPE-008, FUNGI-TYPE-009, FUNGI-TYPE-011, FUNGI-TYPE-014, FUNGI-TYPE-016, FUNGI-TYPE-017, FUNGI-TYPE-020, FUNGI-TYPE-022, FUNGI-TYPE-023, FUNGI-TYPE-024, FUNGI-TYPE-025, FUNGI-TYPE-026, FUNGI-TYPE-030
+- tasks: #95
+- terms: error, type, code, severity, gate, map, invalid, count, codes, reconcile, rule, well, extractor, bucket
 
 ## 2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension.md`

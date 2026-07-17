@@ -146,6 +146,29 @@ export function severityParityViolations(twinCodes, twinSev, srcSev) {
   return out;
 }
 
+// The TYPE twin declares severity in a `diagSeverity` TABLE (`if code == "CODE" { return "error"|"warning" }`),
+// not inline at emit sites (unlike the effect twin) — so read the table, as code→Set (single-valued) to plug
+// into severityParityViolations unchanged. `[A-Z0-9_]+` in twinNameMap can't match lowercase error/warning, so
+// the diagName and diagSeverity tables are read without collision.
+export function severityReturnMap(src) {
+  const m = {};
+  for (const x of src.matchAll(/if\s+code\s*==\s*"(FUNGI-[A-Z0-9]+-\d+)"\s*\{\s*return\s*"(error|warning)"/g)) {
+    if (m[x[1]] === undefined) m[x[1]] = new Set();
+    m[x[1]].add(x[2]);
+  }
+  return m;
+}
+// Stage-A's type severities: severityMap catches the inline `push({…severity:"warning"})` sites (017/020/026);
+// makeTCDiag(code,…) hardcodes "error" (type-checker.ts:120-128) so every makeTCDiag code is an error. Union.
+export function typeSourceSeverityMap(src) {
+  const m = severityMap(src);
+  for (const x of src.matchAll(/makeTCDiag\(\s*"(FUNGI-[A-Z0-9]+-\d+)"/g)) {
+    if (m[x[1]] === undefined) m[x[1]] = new Set();
+    m[x[1]].add("error");
+  }
+  return m;
+}
+
 // ── self-test ─────────────────────────────────────────────────────────────────
 if (process.argv.includes("--self-test")) {
   const tcSrc = `
@@ -187,7 +210,14 @@ if (process.argv.includes("--self-test")) {
   const saSev = severityMap(`{ code: "FUNGI-EFFECT-005", severity: "error" }\n{ code: "FUNGI-COND-001", severity: "error" }\n{ code: "FUNGI-COND-001", severity: "warning" }`);
   const sv = severityParityViolations(["FUNGI-EFFECT-005", "FUNGI-COND-001"], twSev, saSev);
   assert(sv.length === 1 && sv[0].code === "FUNGI-EFFECT-005" && sv[0].twin === "warning" && sv[0].stageA === "error", "severity-parity: detects the 005 skew, exempts the conditional COND-001");
-  console.log("twin-emit-parity self-test: 12/12 ok");
+  // type bucket: twin severity from the diagSeverity TABLE (returns error/warning); Stage-A = inline push ∪ makeTCDiag→error.
+  const tsvTwin = severityReturnMap(`if code == "FUNGI-TYPE-020" { return "warning" }\nif code == "FUNGI-TYPE-001" { return "error" }`);
+  assert(tsvTwin["FUNGI-TYPE-020"] !== undefined && [...tsvTwin["FUNGI-TYPE-020"]][0] === "warning" && [...tsvTwin["FUNGI-TYPE-001"]][0] === "error", "severityReturnMap reads the twin's diagSeverity table");
+  const tsvSrc = typeSourceSeverityMap(`this.diagnostics.push({ code: "FUNGI-TYPE-020", name: "X", severity: "warning" });\nmakeTCDiag("FUNGI-TYPE-001", "Y", m)`);
+  assert([...tsvSrc["FUNGI-TYPE-020"]][0] === "warning" && [...tsvSrc["FUNGI-TYPE-001"]][0] === "error", "typeSourceSeverityMap: inline push warning + makeTCDiag→error");
+  const tsvSkew = severityReturnMap(`if code == "FUNGI-TYPE-020" { return "error" }`);
+  assert(severityParityViolations(["FUNGI-TYPE-020"], tsvSkew, tsvSrc).length === 1, "type severity-parity: detects a 020 error-vs-warning skew (non-vacuous)");
+  console.log("twin-emit-parity self-test: 13/13 ok");
   process.exit(0);
 }
 function assert(ok, what) { if (!ok) { console.error(`self-test FAIL: ${what}`); process.exit(1); } }
@@ -217,6 +247,12 @@ const otherPass = [...srEmits].filter((c) => !tcEmits.has(c) && !twinSet.has(c))
 const twinNames = twinNameMap(readFileSync(TWIN, "utf8"));
 const tcNames = sourceNameMap(readFileSync(TYPE_CHECKER, "utf8"));
 const nameViol = nameParityViolations(twin, twinNames, tcNames);
+// severity-parity leg (type twin, #94 extension): the twin declares severity in its diagSeverity table;
+// Stage-A's is severityMap (inline warnings 017/020/026) ∪ makeTCDiag→error. R&D-ground-truthed 2026-07-17
+// (18 error · 3 warning · 0 conditional; the 21 = 19 TYPE + NAME-002 + BINDING-005).
+const twinSev = severityReturnMap(readFileSync(TWIN, "utf8"));
+const tcSev = typeSourceSeverityMap(readFileSync(TYPE_CHECKER, "utf8"));
+const sevViol = severityParityViolations(twin, twinSev, tcSev);
 
 // ── effect-checker bucket: effect-checker.fungi ⊆ effect-checker.ts (FUNGI-EFFECT-* charter) ──
 // The effect twin folds several Stage-A functions (validateDeclaredEffectNames + checkFlowEffects)
@@ -242,13 +278,15 @@ const ecSevViol = severityParityViolations(ecTwin, ecTwinSev, ecCheckerSev);
 
 const asJson = process.argv.includes("--json");
 if (asJson) {
-  console.log(JSON.stringify({ twinEmits: twin.length, falseDifferentials: bad, nameParityViolations: nameViol, typeFrontier, otherFamilies, otherPassFrontier: otherPass, effectTwinEmits: ecTwin.length, effectFalseDifferentials: ecBad, effectNameParityViolations: ecNameViol, effectSeverityParityViolations: ecSevViol, effectFrontier: ecFrontier }, null, 1));
+  console.log(JSON.stringify({ twinEmits: twin.length, falseDifferentials: bad, nameParityViolations: nameViol, typeSeverityParityViolations: sevViol, typeFrontier, otherFamilies, otherPassFrontier: otherPass, effectTwinEmits: ecTwin.length, effectFalseDifferentials: ecBad, effectNameParityViolations: ecNameViol, effectSeverityParityViolations: ecSevViol, effectFrontier: ecFrontier }, null, 1));
 } else {
-  console.log(`twin-emit-parity: type-twin ${twin.length} codes · ${bad.length} false diff · ${nameViol.length} name-parity viol · effect-twin ${ecTwin.length} codes · ${ecBad.length} false diff · ${ecNameViol.length} name-parity viol · ${ecSevViol.length} severity-parity viol`);
+  console.log(`twin-emit-parity: type-twin ${twin.length} codes · ${bad.length} false diff · ${nameViol.length} name-parity viol · ${sevViol.length} severity-parity viol · effect-twin ${ecTwin.length} codes · ${ecBad.length} false diff · ${ecNameViol.length} name-parity viol · ${ecSevViol.length} severity-parity viol`);
   for (const c of bad) console.log(`  ⚠ FALSE DIFFERENTIAL ${c} — no emit call-site in type-checker.ts (twin flags what the checker never does)`);
   if (bad.length === 0) console.log(`  ✅ twin-emitted ⊆ type-checker-emitted (no false differential)`);
   for (const v of nameViol) console.log(`  ⚠ NAME SQUAT ${v.code} — twin name '${v.twin}' ≠ Stage-A name '${v.stageA}' (one-code=one-name; a code mirrored at the wrong meaning)`);
   if (nameViol.length === 0) console.log(`  ✅ name-parity: every twin code's name == Stage-A's (no semantic squat)`);
+  for (const v of sevViol) console.log(`  ⚠ SEVERITY SKEW ${v.code} — type twin severity '${v.twin}' ≠ Stage-A severity '${v.stageA}' (an error-as-warning under-blocks; a warning-as-error over-blocks)`);
+  if (sevViol.length === 0) console.log(`  ✅ type severity-parity: every type twin code's severity == Stage-A's (18 error · 3 warning · 0 conditional)`);
   console.log(`  type-system frontier (${typeFrontier.length} TYPE-* codes the twin does not yet mirror): ${typeFrontier.join(" ") || "none — the TYPE-* type-system twin is COMPLETE"}`);
   console.log(`  other type-checker families (${otherFamilies.length}; distinct subsystems, NOT the TYPE-* charter — future twin scope): ${otherFamilies.join(" ") || "none"}`);
   console.log(`  other-pass (SymbolResolver, a future twin's scope): ${otherPass.join(" ") || "none"}`);
@@ -261,5 +299,5 @@ if (asJson) {
   if (ecSevViol.length === 0) console.log(`  ✅ effect severity-parity: every effect twin code's severity == Stage-A's where single-valued (conditional codes exempt)`);
   console.log(`  effect frontier (${ecFrontier.length} FUNGI-EFFECT-* codes the twin does not yet mirror): ${ecFrontier.join(" ") || "none — the effect-checker twin is COMPLETE"}`);
 }
-process.exit(bad.length === 0 && nameViol.length === 0 && ecBad.length === 0 && ecNameViol.length === 0 && ecSevViol.length === 0 ? 0 : 3);
+process.exit(bad.length === 0 && nameViol.length === 0 && sevViol.length === 0 && ecBad.length === 0 && ecNameViol.length === 0 && ecSevViol.length === 0 ? 0 : 3);
 }

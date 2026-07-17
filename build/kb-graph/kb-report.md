@@ -2,7 +2,7 @@
 Generated: 2026-07-17
 
 ## Stats
-- Docs: 1193 | Edges: 3476 | Orphans: 130 | Stale links: 0 | FUNGI codes: 748
+- Docs: 1194 | Edges: 3476 | Orphans: 131 | Stale links: 0 | FUNGI codes: 748
 
 ## Document Registry (auto-generated)
 
@@ -116,6 +116,7 @@ Generated: 2026-07-17
 | 2026-07-17-ACK-pure-002-guard-removed-plus-008-independent-pass-plus-stale-004-cleared.md | — | — | — | FUNGI-EFFECT-002, FUNGI-EFFECT-008 |
 | 2026-07-17-ACK-severity-parity-DONE-parity-trilogy-complete.md | — | — | — | FUNGI-TIER-001 |
 | 2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction.md | — | — | — | — |
+| 2026-07-17-DELIVER-type-twin-severity-map-19-codes-plus-gate-count-21-vs-19-discrepancy.md | — | — | — | FUNGI-TYPE-001, FUNGI-TYPE-002, FUNGI-TYPE-003, FUNGI-TYPE-004, FUNGI-TYPE-005 …+14 |
 | 2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension.md | — | — | — | FUNGI-TYPE-020 |
 | 2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md | — | — | — | FUNGI-EFFECT-002 |
 | 2026-07-17-myco-galerina-package-updates-fold-into-galerina-tools-myco.md | — | — | — | — |
@@ -1286,6 +1287,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-ACK-effect-parity-gate-VERIFIED-green-plus-coverage-boundary.md` — 2026-07-17-ACK-effect-parity-gate-VERIFIED-green-plus-coverage-boundary
 - `2026-07-17-ACK-papers-landed-clean-declarations-block-is-owner-gated.md` — 2026-07-17-ACK-papers-landed-clean-declarations-block-is-owner-gated
 - `2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction.md` — 2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction
+- `2026-07-17-DELIVER-type-twin-severity-map-19-codes-plus-gate-count-21-vs-19-discrepancy.md` — 2026-07-17-DELIVER-type-twin-severity-map-19-codes-plus-gate-count-21-vs-19-discrepancy
 - `2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension.md` — 2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension
 - `2026-07-17-PREP-EFFECT-002-transitive-walk-faithfulness-traps-grounded-from-stage-A.md` — 2026-07-17-PREP-EFFECT-002-transitive-walk-faithfulness-traps-grounded-from-stage-A
 - `2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked.md` — 2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked

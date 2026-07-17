@@ -3,9 +3,9 @@
   "total": 683,
   "counts": {
     "ref": 175,
-    "inline": 164,
+    "inline": 162,
     "phantom": 111,
-    "live": 131,
+    "live": 133,
     "referenced": 94,
     "dead": 8
   },
@@ -8202,13 +8202,17 @@
       "code": "FUNGI-TYPE-001",
       "family": "TYPE",
       "namespace": "FUNGI",
-      "status": "inline",
+      "status": "live",
       "names": [
-        "UNKNOWN_TYPE"
+        "UNKNOWN_TYPE",
+        "Y",
+        "X"
       ],
-      "severities": [],
-      "defs": 0,
-      "emits": 1,
+      "severities": [
+        "warning"
+      ],
+      "defs": 1,
+      "emits": 2,
       "tests": 229,
       "docs": 17
     },
@@ -8541,14 +8545,15 @@
       "code": "FUNGI-TYPE-020",
       "family": "TYPE",
       "namespace": "FUNGI",
-      "status": "inline",
+      "status": "live",
       "names": [
-        "SHADOWED_BINDING"
+        "SHADOWED_BINDING",
+        "X"
       ],
       "severities": [
         "warning"
       ],
-      "defs": 0,
+      "defs": 1,
       "emits": 1,
       "tests": 18,
       "docs": 1

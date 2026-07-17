@@ -137,18 +137,52 @@ contract { intent { "The canonical Stage-A diagnostic name for a code the twin e
   return ""
 }
 
-// Attach the canonical name to every diagnostic, so the twin's emitted record is the faithful
-// {code, name, message, flowName} shape Stage-A uses (not {code, message, flowName}). Applied once at
-// each top-level return, so the ~21 emit sites stay terse and the name lives in exactly one table.
+// The canonical Stage-A SEVERITY for each code the twin emits — one place, so every twin diagnostic
+// carries the SAME {code, severity} Stage-A does (one-code = one-severity, #94's parity leg). Stage-A's
+// makeTCDiag hardcodes "error" (type-checker.ts:120-128); only three ADVISORY codes are pushed as a
+// warning inline (017 quantized-stub · 020 shadowing · 026 deferred-inference). All 21 listed EXPLICITLY
+// (not "default error") so the severity-parity gate leg reads a declared severity for every code, not a
+// silent fallback. R&D-ground-truthed 2026-07-17 (19 TYPE + NAME-002 + BINDING-005, symmetric-diff empty).
+pure flow diagSeverity(code: String) -> String
+contract { intent { "The canonical Stage-A severity for a code the twin emits (else empty)." } }
+{
+  if code == "FUNGI-TYPE-017" { return "warning" }
+  if code == "FUNGI-TYPE-020" { return "warning" }
+  if code == "FUNGI-TYPE-026" { return "warning" }
+  if code == "FUNGI-TYPE-001" { return "error" }
+  if code == "FUNGI-TYPE-002" { return "error" }
+  if code == "FUNGI-TYPE-003" { return "error" }
+  if code == "FUNGI-TYPE-004" { return "error" }
+  if code == "FUNGI-TYPE-005" { return "error" }
+  if code == "FUNGI-TYPE-007" { return "error" }
+  if code == "FUNGI-TYPE-008" { return "error" }
+  if code == "FUNGI-TYPE-009" { return "error" }
+  if code == "FUNGI-TYPE-011" { return "error" }
+  if code == "FUNGI-TYPE-014" { return "error" }
+  if code == "FUNGI-TYPE-016" { return "error" }
+  if code == "FUNGI-TYPE-022" { return "error" }
+  if code == "FUNGI-TYPE-023" { return "error" }
+  if code == "FUNGI-TYPE-024" { return "error" }
+  if code == "FUNGI-TYPE-025" { return "error" }
+  if code == "FUNGI-TYPE-030" { return "error" }
+  if code == "FUNGI-NAME-002" { return "error" }
+  if code == "FUNGI-BINDING-005" { return "error" }
+  return "error"
+}
+
+// Attach the canonical name AND severity to every diagnostic, so the twin's emitted record is the
+// faithful {code, name, severity, message, flowName} shape Stage-A uses (not {code, message, flowName}).
+// Applied once at each top-level return, so the ~21 emit sites stay terse and name+severity live in
+// exactly one table each.
 pure flow withNames(diags: Array<Auto>) -> Array<Auto>
-contract { intent { "Return the diagnostics with the canonical Stage-A name attached to each." } }
+contract { intent { "Return the diagnostics with the canonical Stage-A name + severity attached to each." } }
 {
   mut out: Array<Auto> = Array.empty()
   mut i: Int = 0
   while i < diags.count() {
     let dOpt = diags.get(i)
     match dOpt {
-      Some(d) => { out = out.append({ code: d.code, name: diagName(d.code), message: d.message, flowName: d.flowName }) }
+      Some(d) => { out = out.append({ code: d.code, name: diagName(d.code), severity: diagSeverity(d.code), message: d.message, flowName: d.flowName }) }
       None => {}
       _ => {}
     }

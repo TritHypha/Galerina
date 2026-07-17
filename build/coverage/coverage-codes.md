@@ -11,11 +11,11 @@ Index: code-index.json (683 codes) · Derived registry: build/code-registry (ALL
 ## Backlogs (NOT orphans — tracked for incremental adoption, not exit-failing)
 - governance-rules.md CURATION gap: 408 src-real FUNGI-* lack a semantic entry in the curated registry (they ARE in the derived registry). Generate/curate per std #10.
 - PHANTOM doc-only drift: 111 (std #9/#10 → DOC-004).
-- INLINE / no exported constant (R4): 164 (std #5 → taxonomy Stage F).
+- INLINE / no exported constant (R4): 162 (std #5 → taxonomy Stage F).
 - DEAD / RESERVED (defined, never emitted): 8 (std #1 wire-or-retire; tagged RESERVED in the derived registry).
 
 ## Notes
 - #215 scanner is SRC-ONLY; doc/README-declared ownership is invisible to it (Stage-D FUNGI-BOUNDARY lesson); REGISTRY-PHANTOM covers the reverse, full doc-ownership = scanner §6 (future).
 - Known false-dead pending const-id resolution: FUNGI-BOOL-BOUNDARY-001/002 (live via validateBoolBoundary).
 
-## Coverage holes: 0 · curation backlog: 408 · drift: 111 · R4-inline: 164 · RESERVED: 8
+## Coverage holes: 0 · curation backlog: 408 · drift: 111 · R4-inline: 162 · RESERVED: 8

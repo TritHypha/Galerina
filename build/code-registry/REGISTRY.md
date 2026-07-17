@@ -8,8 +8,8 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 
 | status | count | meaning |
 |---|---|---|
-| live | 131 | emitted with an exported constant |
-| inline | 164 | emitted, NO exported constant (R4 — Stage F) |
+| live | 133 | emitted with an exported constant |
+| inline | 162 | emitted, NO exported constant (R4 — Stage F) |
 | referenced | 94 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 8 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
 | phantom | 111 | doc-only mention, not in source (drift — DOC-004) |
@@ -1277,7 +1277,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-TYPE-0 | ref | — | — |
-| FUNGI-TYPE-001 | inline | UNKNOWN_TYPE | — |
+| FUNGI-TYPE-001 | live | UNKNOWN_TYPE / Y / X | warning |
 | FUNGI-TYPE-002 | live | QUANTIZED_PRECISION_MISMATCH / INVALID_RUNTIME_TARGET_TYPE / UNKNOWN_SYMBOL / TYPE_MISMATCH / X / Y / a / WRONG_NAME | warning/error |
 | FUNGI-TYPE-003 | live | INVALID_NOMINAL_CONVERSION | error |
 | FUNGI-TYPE-004 | inline | INVALID_BINARY_OPERATION | — |
@@ -1296,7 +1296,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-TYPE-017 | live | QUANTIZED_PRECISION_MISMATCH / INVALID_RUNTIME_TARGET_TYPE / UNKNOWN_SYMBOL | warning/error |
 | FUNGI-TYPE-018 | referenced | INVALID_RUNTIME_TARGET_TYPE / UNKNOWN_SYMBOL | error |
 | FUNGI-TYPE-019 | live | UNKNOWN_SYMBOL | error |
-| FUNGI-TYPE-020 | inline | SHADOWED_BINDING | warning |
+| FUNGI-TYPE-020 | live | SHADOWED_BINDING / X | warning |
 | FUNGI-TYPE-021 | ref | — | — |
 | FUNGI-TYPE-022 | inline | UNREACHABLE_PATTERN | — |
 | FUNGI-TYPE-023 | inline | MISSING_WILDCARD_ARM | — |
