@@ -3,7 +3,7 @@
   "provenance": {
     "available": true,
     "branch": "main",
-    "sha": "f30e2e8e",
+    "sha": "8f48e056",
     "detached": false,
     "dirty": true
   },
@@ -195,7 +195,7 @@
         {
           "label": "Stage-B self-hosting — WASM execution (P9)",
           "pct": null,
-          "status": "in progress — all 7 stage twins build→WASM (R0) + #105-admit (R1) since 2026-07-12. R3 byte-parity: LEXER (tokenize) + the whole PARSER ladder to its entry point — parseParams (flat) → parseExpr (recursive) → parseStmt (self+mutual) → parseBlock → parseFlows (2026-07-17, 53 differential tests, all first-run green). The recursive AST readback needed NO new ABI: readRecordField→readArray→recurse composes from the shipped primitives, so that claim is now executed rather than asserted. NOT proven: type-checker · effect-checker · governance-verifier · gir-emitter · runtime (5 of 7 stages) — the frontier is those, not the ABI",
+          "status": "in progress — 2 of 7 stages proven at R3. PROVEN (byte-parity ≡ Stage-A through real WASM behind #105): lexer `tokenize` · the whole PARSER ladder to its entry point — parseParams (flat) → parseExpr (recursive) → parseStmt (self+mutual) → parseBlock → parseFlows (2026-07-17, 53 differential tests, all first-run green); the recursive AST readback needed NO new ABI (readRecordField→readArray→recurse composes from the shipped primitives — that was an assertion, it is now executed). ★ TYPE-CHECKER TRAPS AT R3 (2026-07-17): R0 builds + R1 #105-admits + exports, and `checkFlows` throws `unreachable` on ONE real flow (empty input is fine; the parser and the tokenize→parseFlows→checkFlows chaining are both fine — it is checkFlows' own body). Diagnosis INCOMPLETE, handed to R&D with a repro. ⚠ THE ROW ITSELF WAS THE LESSON: 'all 7 twins build (R0) + admit (R1), flows callable' stood from 2026-07-12 and read as 'the stages work' — they are CALLABLE; one traps when called. R1 asks 'does it export?'; nothing asked 'does it RUN?'. NOT proven: type-checker (TRAPS) · effect-checker · governance-verifier · gir-emitter · runtime",
           "live": false,
           "evidence": null
         },
