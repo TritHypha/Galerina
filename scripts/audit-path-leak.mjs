@@ -109,7 +109,23 @@ function scanText(text) {
       p.re.lastIndex = 0;
       let m;
       while ((m = p.re.exec(lines[i])) !== null) {
-        hits.push({ line: i + 1, pattern: p.name, text: lines[i].trim().slice(0, 160) });
+        // ⚠ THE EVIDENCE MUST CONTAIN THE FINDING (R&D, 2026-07-17; mirrored). This printed
+        // `lines[i].trim().slice(0, 160)` — the HEAD of the line, not the hit. On a long line the match
+        // sits past char 160, so the gate said "leak at line N" and printed a sentence with no leak in
+        // it. R&D caught it on live traffic: a real hit in an incoming note rendered as
+        // "…6 repos · 151 tracked files · ZERO real l".
+        //
+        // That is WORSE THAN A MISS. A miss is silent; this actively teaches the reader the gate cries
+        // wolf — and a gate nobody believes gets switched off, which is a fail-open through the reader
+        // rather than through the code. It is also the same mistake one axis over: the scan's surface
+        // was not HEAD, and the report's surface was not the finding's location.
+        //
+        // (I hit this output myself and reasoned past it — "the match must be further along the line" —
+        // instead of asking why the evidence didn't contain the evidence. R&D ran it and fixed it.)
+        const start = Math.max(0, m.index - 40);
+        const end = Math.min(lines[i].length, m.index + m[0].length + 40);
+        const snippet = (start > 0 ? "…" : "") + lines[i].slice(start, end).trim() + (end < lines[i].length ? "…" : "");
+        hits.push({ line: i + 1, col: m.index + 1, pattern: p.name, text: snippet });
       }
     }
   }
@@ -149,6 +165,14 @@ function selfTest() {
     ["DOUBLE-dash placeholder does NOT fire", !fires("the slug looks like C--Users-<name>-Documents")],
     ["prose 'Power-Users-Guide' does NOT fire", !fires("see the Power-Users-Guide-2026 appendix")],
     ["prose 'Power--Users-Guide' does NOT fire", !fires("see the Power--Users-Guide-2026 appendix")],
+    // ★ REPORT case (R&D 2026-07-17): the evidence must CONTAIN the finding. A true hit whose printed
+    // snippet has no leak in it reads as a false positive, and a gate nobody believes gets switched off.
+    ["★ report: a leak past char 160 is SHOWN — the old slice(0,160) printed a line head with no hit in it",
+      (() => {
+        const long = "x".repeat(200) + " C--Users-someone-Documents-GitHub";
+        const h = scanText(long);
+        return h.length === 1 && h[0].text.includes("C--Users-someone") && h[0].col > 160;
+      })()],
     // ★ SURFACE cases (R&D 2026-07-17) — these pin the fail-open where the guard printed a count it had
     // not read. Every case above tests a PATTERN; these test WHAT GETS SCANNED, which is the axis that
     // was actually broken. A ruleset can be perfect and still never be shown the file.
@@ -240,7 +264,7 @@ for (const { rel, from } of planScanTargets(files, dirty, (r) => existsSync(join
     // Label the snapshot: a HEAD-only hit is INVISIBLE on disk, and a reader told to "fix line 22" of a
     // file that looks clean will conclude the guard is broken rather than that HEAD is dirty.
     const tag = from === "HEAD" ? " [in HEAD, not on disk]" : "";
-    for (const h of hits) report.push(`  ${rel}:${h.line}${tag}  [${h.pattern}]  ${h.text}`);
+    for (const h of hits) report.push(`  ${rel}:${h.line}:${h.col}${tag}  [${h.pattern}]  ${h.text}`);
   }
 }
 
