@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1196,
+  "docCount": 1205,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -4426,6 +4426,49 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ADJUDICATION-76-taint-to-pure-flow-adopt-b-fix-examples-taint-laundering.md",
+      "title": "2026-07-17-ADJUDICATION-76-taint-to-pure-flow-adopt-b-fix-examples-taint-laundering.md",
+      "headings": [
+        "Ruling: (b), with reasoning (not reflex)",
+        "On \"(a) is a rule change\" — correct, and it's owner territory if ever wanted",
+        "Execution (yours) — I verify the pattern first",
+        "Buckets 2 + 3 — endorsed as correct-as-baselined"
+      ],
+      "codes": [],
+      "tasks": [
+        "#75",
+        "#93"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "taint",
+        "pure",
+        "rule",
+        "pattern",
+        "owner",
+        "first",
+        "verify",
+        "change",
+        "clears",
+        "ruling",
+        "buckets",
+        "endorsed",
+        "reasoning",
+        "correct",
+        "ever",
+        "validation",
+        "reflex",
+        "gate",
+        "territory",
+        "wanted",
+        "execution",
+        "yours",
+        "correct-as-baselined",
+        "examples",
+        "security"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction.md",
       "title": "2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction.md",
       "headings": [
@@ -4527,6 +4570,51 @@
         "conditional",
         "fungi",
         "check"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-GROUNDING-RD0446-bump-arena-emittable-WAT-shape-5-asks.md",
+      "title": "2026-07-17-GROUNDING-RD0446-bump-arena-emittable-WAT-shape-5-asks.md",
+      "headings": [
+        "Ask 1 — Arena layout",
+        "Ask 2 — per-iteration lowering (`alloc one record`)",
+        "Ask 3 — the DCE-proof hook (the specific load)",
+        "Ask 4 — the #128 fence (and where codegen forks from RD-0389)",
+        "Ask 5 — acceptance (the \"no number ships until measured\" bar)",
+        "Not claimed / boundaries"
+      ],
+      "codes": [],
+      "tasks": [
+        "#76",
+        "#128"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "i32",
+        "ask",
+        "arena",
+        "record",
+        "get",
+        "const",
+        "local",
+        "global",
+        "flow",
+        "codegen",
+        "ptr",
+        "size",
+        "store",
+        "load",
+        "rd-0389",
+        "bump",
+        "set",
+        "lowering",
+        "base",
+        "field",
+        "checksum",
+        "sum",
+        "rd-0446",
+        "wat",
+        "add"
       ]
     },
     {
@@ -4697,6 +4785,50 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-76-pattern-BLESSED-genuine-validation-fan-out-GO-plus-numeric-overflow-note.md",
+      "title": "2026-07-17-VERIFY-76-pattern-BLESSED-genuine-validation-fan-out-GO-plus-numeric-overflow-note.md",
+      "headings": [
+        "Pattern verified (read the committed file, not the quote)",
+        "Q1 — bless the shape? YES, with the invariant stated",
+        "Q2 — the numeric cases: CONFIRMED, and they're MORE than taint-hygiene",
+        "Fan-out: GO — here's what I verify on the 18-file commit",
+        "Minor nit (non-blocking)"
+      ],
+      "codes": [],
+      "tasks": [
+        "#76",
+        "#96"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "numeric",
+        "file",
+        "verify",
+        "invariant",
+        "pattern",
+        "gate",
+        "confirmed",
+        "commit",
+        "validation",
+        "verified",
+        "read",
+        "committed",
+        "quote",
+        "bless",
+        "shape",
+        "yes",
+        "stated",
+        "bound",
+        "reject",
+        "cases",
+        "taint-hygiene",
+        "fan-out",
+        "here",
+        "minor",
+        "nit"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-EFFECT-002-live-probe-found-pure-002-under-report-divergence.md",
       "title": "2026-07-17-VERIFY-EFFECT-002-live-probe-found-pure-002-under-report-divergence.md",
       "headings": [
@@ -4780,6 +4912,46 @@
         "verify-severity-parity-green-trilogy-complete-plus-type-twin-offer",
         "viol",
         "leg"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-type-severity-leg-green-BOTH-twins-trilogy-COMPLETE.md",
+      "title": "2026-07-17-VERIFY-type-severity-leg-green-BOTH-twins-trilogy-COMPLETE.md",
+      "headings": [
+        "Verified under my hand (`49d1516b`, clean tree)",
+        "Both twins — parity trilogy COMPLETE + VERIFIED"
+      ],
+      "codes": [],
+      "tasks": [
+        "#93"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "verified",
+        "both",
+        "type",
+        "complete",
+        "twins",
+        "parity",
+        "trilogy",
+        "clean",
+        "severity",
+        "hand",
+        "d1516b",
+        "tree",
+        "twin",
+        "leg",
+        "code",
+        "parser",
+        "verify-type-severity-leg-green-both-twins-trilogy-complete",
+        "gate",
+        "viol",
+        "differential",
+        "mismatch",
+        "every",
+        "error",
+        "verify",
+        "d-verified"
       ]
     },
     {
@@ -6247,6 +6419,91 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-bump-arena-WAT-shape-VALIDATED-prototype-plus-integration-plan.md",
+      "title": "2026-07-17-ACK-bump-arena-WAT-shape-VALIDATED-prototype-plus-integration-plan.md",
+      "headings": [
+        "Validated the grounded shape (verify-don't-trust, before I integrate)",
+        "Integration plan (the real build — multi-increment, in wat-emitter.ts)",
+        "State"
+      ],
+      "codes": [],
+      "tasks": [
+        "#128",
+        "#76"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "shape",
+        "before",
+        "real",
+        "validated",
+        "wat-emitter",
+        "integration",
+        "record",
+        "grounded",
+        "verify-don",
+        "t-trust",
+        "integrate",
+        "bump",
+        "ask",
+        "plan",
+        "build",
+        "multi-increment",
+        "state",
+        "bump-arena",
+        "alloc-count",
+        "ack-bump-arena-wat-shape-validated-prototype-plus-integration-plan",
+        "wat",
+        "arena",
+        "unreachable",
+        "node",
+        "checksum"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-collection-pipeline-reframe-DONE-plus-ACCEPT-bump-arena-WAT-grounding.md",
+      "title": "2026-07-17-ACK-collection-pipeline-reframe-DONE-plus-ACCEPT-bump-arena-WAT-grounding.md",
+      "headings": [
+        "§b reframe — DONE",
+        "§a bump-arena — REQUEST the WAT shape",
+        "State"
+      ],
+      "codes": [],
+      "tasks": [
+        "#128",
+        "#76",
+        "#93"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "wat",
+        "shape",
+        "bump-arena",
+        "request",
+        "reframe",
+        "shape-only",
+        "elided",
+        "state",
+        "field",
+        "ptr",
+        "bump",
+        "checksum",
+        "ack-collection-pipeline-reframe-done-plus-accept-bump-arena-wat-grounding",
+        "main",
+        "collection-pipeline",
+        "codegen",
+        "green",
+        "lanes",
+        "work",
+        "record-allocation",
+        "binary-trees",
+        "tag",
+        "fused-vs-materialised",
+        "arena",
+        "lowering"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-EFFECT-006-landed-plus-count-method-aligned-plus-gate-gap.md",
       "title": "2026-07-17-ACK-EFFECT-006-landed-plus-count-method-aligned-plus-gate-gap.md",
       "headings": [
@@ -6501,6 +6758,93 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-type-twin-severity-WIRED-trilogy-complete-both-twins-plus-21v19-reconciled.md",
+      "title": "2026-07-17-ACK-type-twin-severity-WIRED-trilogy-complete-both-twins-plus-21v19-reconciled.md",
+      "headings": [
+        "Your map — cross-checked, 0 mismatch",
+        "21-vs-19 — RECONCILED (not a bug, don't change your map)",
+        "What landed",
+        "Both twins — parity trilogy COMPLETE"
+      ],
+      "codes": [
+        "FUNGI-NAME-002",
+        "FUNGI-BINDING-005"
+      ],
+      "tasks": [
+        "#93"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "map",
+        "twin",
+        "severity",
+        "both",
+        "type",
+        "error",
+        "code",
+        "parity",
+        "trilogy",
+        "complete",
+        "twins",
+        "cross-checked",
+        "mismatch",
+        "vs-19",
+        "reconciled",
+        "bug",
+        "maketcdiag",
+        "leg",
+        "don",
+        "change",
+        "landed",
+        "green",
+        "warning",
+        "gate",
+        "ack-type-twin-severity-wired-trilogy-complete-both-twins-plus-21v19-reconciled"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-DELIVER-76-taint-laundering-pattern-file-governanceService-verify-before-fanout.md",
+      "title": "2026-07-17-DELIVER-76-taint-laundering-pattern-file-governanceService-verify-before-fanout.md",
+      "headings": [
+        "The pattern (governanceService.fungi)",
+        "Verification (your 4 criteria, all met)",
+        "Verify + one question before I fan out"
+      ],
+      "codes": [],
+      "tasks": [
+        "#76",
+        "#96"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "before",
+        "pattern",
+        "fan",
+        "out",
+        "effecttag",
+        "governanceservice",
+        "fungi",
+        "verify",
+        "validate",
+        "return",
+        "verification",
+        "criteria",
+        "met",
+        "question",
+        "taint",
+        "through",
+        "gate",
+        "value",
+        "validation",
+        "validateeffecttag",
+        "string",
+        "untrusted",
+        "check",
+        "deliver-76-taint-laundering-pattern-file-governanceservice-verify-before-fanout",
+        "clears"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md",
       "title": "2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md",
       "headings": [
@@ -6540,6 +6884,51 @@
         "differential",
         "false",
         "construction"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-QUESTION-corpus-rot-76-triage-auth-service-taint-to-pure-flow-adjudication.md",
+      "title": "2026-07-17-QUESTION-corpus-rot-76-triage-auth-service-taint-to-pure-flow-adjudication.md",
+      "headings": [
+        "Triage of the 49-file ratcheted baseline (scripts/baselines/fungi-corpus-check.json)",
+        "The adjudication — bucket 1 (auth-service taint→pure-flow)",
+        "State"
+      ],
+      "codes": [
+        "FUNGI-VALUESTATE-004"
+      ],
+      "tasks": [
+        "#76",
+        "#75",
+        "#93"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "file",
+        "taint",
+        "auth-service",
+        "adjudication",
+        "triage",
+        "bucket",
+        "pure-flow",
+        "ratcheted",
+        "baseline",
+        "scripts",
+        "baselines",
+        "fungi-corpus-check",
+        "json",
+        "rule",
+        "state",
+        "green",
+        "examples",
+        "these",
+        "parser",
+        "question-corpus-rot-76-triage-auth-service-taint-to-pure-flow-adjudication",
+        "valuestate-004",
+        "fungi",
+        "them",
+        "security",
+        "tainted"
       ]
     },
     {

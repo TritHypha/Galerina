@@ -35,6 +35,28 @@ pure flow totalCost(computeCost: Int, riskCost: Int, auditCost: Int) -> Int
   return computeCost + riskCost + auditCost
 }
 
+;; Bounds an untrusted count to [0, MAX] before it feeds the cost arithmetic (count * weight). An
+;; unbounded count would overflow the i32 product / drive a cost-DoS — so validate the ceiling, not just
+;; the sign. Validate untrusted input before it drives a decision; a pure computation only propagates it.
+;; Pure — no runtime authority / no effects.
+pure flow validateCount(n: Int) -> Int
+{
+  ;; MAX_COUNT: the largest legitimate op/record count. Caps count*160 (the top risk weight) far below
+  ;; the i32 ceiling, closing the integer-overflow / cost-DoS exposure.
+  if n < 0 { return 0 }
+  if n > 1000000 { return 1000000 }
+  return n
+}
+
+;; Bounds an untrusted class index to the recognised [0, 4] range before it selects a cost weight.
+;; Pure — no runtime authority / no effects.
+pure flow validateClass(c: Int) -> Int
+{
+  if c < 0 { return 0 }
+  if c > 4 { return 4 }
+  return c
+}
+
 ;; Accepts untrusted cost inputs over HTTP, traps negatives, and returns a cost breakdown, writing a redacted audit entry — permitted because the tainted total is redacted before the write.
 ;; V_DPM capability required: network.inbound, audit.write
 // @cause  [Auth service route POST /economics/estimate] -> invoked for each cost estimation request.
@@ -53,8 +75,13 @@ contract {
   trap recordCount < 0 : ERR_NEGATIVE_RECORD_COUNT
   trap targetClass < 0 : ERR_INVALID_TARGET_CLASS
   trap classificationLevel < 0 : ERR_INVALID_CLASSIFICATION
-  let compute: Int = estimateComputeCost(opCount, targetClass)
-  let risk: Int = estimateRiskCost(recordCount, classificationLevel)
+  ;; bound each untrusted input BEFORE the cost arithmetic — closes the unbounded-count overflow / cost-DoS
+  let safeOpCount: Int = validateCount(opCount)
+  let safeRecordCount: Int = validateCount(recordCount)
+  let safeTargetClass: Int = validateClass(targetClass)
+  let safeClassLevel: Int = validateClass(classificationLevel)
+  let compute: Int = estimateComputeCost(safeOpCount, safeTargetClass)
+  let risk: Int = estimateRiskCost(safeRecordCount, safeClassLevel)
   let audit: Int = 5
   let total: Int = totalCost(compute, risk, audit)
   let retTotal: Int = total

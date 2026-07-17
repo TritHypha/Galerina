@@ -1,4 +1,4 @@
-# Galerina KB index (1196 docs)
+# Galerina KB index (1205 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -398,6 +398,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-papers-landed-clean-declarations-block-is-owner-gated.md`
 - terms: block, parked, confirmed, declarations, agreed, owner-gated, authorship, owner, ack-papers-landed-clean-declarations-block-is-owner-gated, external, submission, in-repo, prior-art, already
 
+## 2026-07-17-ADJUDICATION-76-taint-to-pure-flow-adopt-b-fix-examples-taint-laundering.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ADJUDICATION-76-taint-to-pure-flow-adopt-b-fix-examples-taint-laundering.md`
+- tasks: #75, #93
+- terms: taint, pure, rule, pattern, owner, first, verify, change, clears, ruling, buckets, endorsed, reasoning, correct
+
 ## 2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction.md`
 - tasks: #93, #94
@@ -408,6 +413,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-TYPE-001, FUNGI-TYPE-002, FUNGI-TYPE-003, FUNGI-TYPE-004, FUNGI-TYPE-005, FUNGI-TYPE-007, FUNGI-TYPE-008, FUNGI-TYPE-009, FUNGI-TYPE-011, FUNGI-TYPE-014, FUNGI-TYPE-016, FUNGI-TYPE-017, FUNGI-TYPE-020, FUNGI-TYPE-022, FUNGI-TYPE-023, FUNGI-TYPE-024, FUNGI-TYPE-025, FUNGI-TYPE-026, FUNGI-TYPE-030
 - tasks: #95
 - terms: error, type, code, severity, gate, map, invalid, count, codes, reconcile, rule, well, extractor, bucket
+
+## 2026-07-17-GROUNDING-RD0446-bump-arena-emittable-WAT-shape-5-asks.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-GROUNDING-RD0446-bump-arena-emittable-WAT-shape-5-asks.md`
+- tasks: #76, #128
+- terms: i32, ask, arena, record, get, const, local, global, flow, codegen, ptr, size, store, load
 
 ## 2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension.md`
@@ -428,6 +438,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #143
 - terms: owner, repo, unlock, rd-0447, quantum, amplitude, remote, action, rd-0445, simulator, token, still, admission, closes
 
+## 2026-07-17-VERIFY-76-pattern-BLESSED-genuine-validation-fan-out-GO-plus-numeric-overflow-note.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-76-pattern-BLESSED-genuine-validation-fan-out-GO-plus-numeric-overflow-note.md`
+- tasks: #76, #96
+- terms: numeric, file, verify, invariant, pattern, gate, confirmed, commit, validation, verified, read, committed, quote, bless
+
 ## 2026-07-17-VERIFY-EFFECT-002-live-probe-found-pure-002-under-report-divergence.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-EFFECT-002-live-probe-found-pure-002-under-report-divergence.md`
 - codes: FUNGI-EFFECT-002, FUNGI-EFFECT-003
@@ -438,6 +453,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-TIER-001
 - tasks: #93
 - terms: severity-parity, effect, twin, clean, severity, verified, complete, tree, b71de07, offer, type-twin, hand, follow-up, code
+
+## 2026-07-17-VERIFY-type-severity-leg-green-BOTH-twins-trilogy-COMPLETE.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-type-severity-leg-green-BOTH-twins-trilogy-COMPLETE.md`
+- tasks: #93
+- terms: verified, both, type, complete, twins, parity, trilogy, clean, severity, hand, d1516b, tree, twin, leg
 
 ## 2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-ACK-009-generic-arity-cluster-landed-generalizes-011.md`
@@ -626,6 +646,16 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-EFFECT-005, FUNGI-EFFECT-009
 - terms: effect-checker, pii, main, landed, probe, alias, http, legs, frontier, effect, galerina, e13062, held, suite
 
+## 2026-07-17-ACK-bump-arena-WAT-shape-VALIDATED-prototype-plus-integration-plan.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-bump-arena-WAT-shape-VALIDATED-prototype-plus-integration-plan.md`
+- tasks: #128, #76
+- terms: shape, before, real, validated, wat-emitter, integration, record, grounded, verify-don, t-trust, integrate, bump, ask, plan
+
+## 2026-07-17-ACK-collection-pipeline-reframe-DONE-plus-ACCEPT-bump-arena-WAT-grounding.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-collection-pipeline-reframe-DONE-plus-ACCEPT-bump-arena-WAT-grounding.md`
+- tasks: #128, #76, #93
+- terms: wat, shape, bump-arena, request, reframe, shape-only, elided, state, field, ptr, bump, checksum, ack-collection-pipeline-reframe-done-plus-accept-bump-arena-wat-grounding, main
+
 ## 2026-07-17-ACK-EFFECT-006-landed-plus-count-method-aligned-plus-gate-gap.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-EFFECT-006-landed-plus-count-method-aligned-plus-gate-gap.md`
 - terms: effect, effect-checker, count, twin, deny, effect-006, landed, method, aligned, gap, found, while, checking, everything
@@ -656,10 +686,27 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #93
 - terms: effect, twin, severity, leg, severity-parity, landed, final, note, side, error, warning, code, ack-severity-parity-done-parity-trilogy-complete, emit-set
 
+## 2026-07-17-ACK-type-twin-severity-WIRED-trilogy-complete-both-twins-plus-21v19-reconciled.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-type-twin-severity-WIRED-trilogy-complete-both-twins-plus-21v19-reconciled.md`
+- codes: FUNGI-NAME-002, FUNGI-BINDING-005
+- tasks: #93
+- terms: map, twin, severity, both, type, error, code, parity, trilogy, complete, twins, cross-checked, mismatch, vs-19
+
+## 2026-07-17-DELIVER-76-taint-laundering-pattern-file-governanceService-verify-before-fanout.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-DELIVER-76-taint-laundering-pattern-file-governanceService-verify-before-fanout.md`
+- tasks: #76, #96
+- terms: before, pattern, fan, out, effecttag, governanceservice, fungi, verify, validate, return, verification, criteria, met, question
+
 ## 2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md`
 - codes: FUNGI-EFFECT-002
 - terms: effect, transitive, declared, stage-a, twin, milestone, landed, honest, caveats, flow, tracked, effect-checker, effect-002, verify-don
+
+## 2026-07-17-QUESTION-corpus-rot-76-triage-auth-service-taint-to-pure-flow-adjudication.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-QUESTION-corpus-rot-76-triage-auth-service-taint-to-pure-flow-adjudication.md`
+- codes: FUNGI-VALUESTATE-004
+- tasks: #76, #75, #93
+- terms: file, taint, auth-service, adjudication, triage, bucket, pure-flow, ratcheted, baseline, scripts, baselines, fungi-corpus-check, json, rule
 
 ## Core Application Model
 `../ZTF-Knowledge-Bases/core-application-model.md`

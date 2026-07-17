@@ -20,9 +20,6 @@
     "examples/auth-service/economicsRouterService.fungi": [
       "FUNGI-VALUESTATE-004"
     ],
-    "examples/auth-service/economicsService.fungi": [
-      "FUNGI-VALUESTATE-004"
-    ],
     "examples/auth-service/effectCheckerService.fungi": [
       "FUNGI-VALUESTATE-004"
     ],
