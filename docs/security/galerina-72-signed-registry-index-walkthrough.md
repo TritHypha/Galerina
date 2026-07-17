@@ -20,8 +20,11 @@ The key arriving removes **one** of **four** blockers. Honest status:
 |---|---|
 | Index **library** (`registry-index.ts`) — build / canonical-input / sign / verify / lookup | ✅ **built + tested** |
 | Index **signer CLI** — gather entries → build → sign → write | ❌ **does not exist — must be built** |
-| Registry **entries** (`galerina-registry/packages/*/package.galerina.yaml`) | ⚠️ **Phase-28 scaffold**, "declarative stubs pending full resolver wiring" / "pending governance review" |
+| Registry **entries** (`galerina-registry/packages/*/package.galerina.yaml`) | ⚠️ **placeholders** — 2 packages, each `hash: "sha256:pending"`, `governance.reviewed: false` |
 | **Private key** custody | ✅ **owner holds it** |
+
+**§4 is runnable today** (push, custody hardening, anchor pinning, wipe). **§4b — the signing act — is not, and
+deliberately has no command:** the signer doesn't exist, and the entries pin nothing. See §4b for the evidence.
 
 `signRegistryIndex(index, keyId, sign)` takes an **injected** `sign` callback — the module is deliberately
 crypto-agnostic (no `node:*`). Nothing today supplies a real Ed25519 signer or gathers the entries. **So
@@ -112,37 +115,95 @@ existing, tested codes — the tool must not invent new ones.
 
 ---
 
-## 4. The signing act (once §1 is decided and §3 is built)
+## 4. Step-by-step — what you CAN run today
 
-On your signing host, with the private key present **only** in the environment:
+These are runnable now, in order. PowerShell, from the repo root unless stated. Nothing here touches the
+private key's contents.
+
+### 4.1 Green the origin (do this first — it is currently red)
+
+`origin/main` is behind local and its HEAD fails the Phase-47 routingPolicy test; the fix is already
+committed locally. Pushing the stack greens it.
 
 ```powershell
-# 1. Load the key into this session ONLY — from wherever you custody it, not from the repo.
-#    (Parse your key .env into env vars; do not copy the file into the tree.)
-Get-Content <your-key-file> | Where-Object { $_ -match '^\s*GALERINA_' } | ForEach-Object {
-  $k, $v = $_ -split '=', 2
-  Set-Item -Path ("Env:" + $k.Trim()) -Value $v.Trim()
-}
-
-# 2. Confirm the key id you are about to sign under (id only — never print key material).
-$env:GALERINA_SIGNING_KEY_ID
-
-# 3. Build + sign + self-verify (the tool from §3).
-node scripts/<signer>.mjs --registry <registry-identity> --issued-at <iso8601> --out <index-path>
-
-# 4. Verify the emitted index INDEPENDENTLY against the committed public key.
-node scripts/<verifier>.mjs --index <index-path>
-
-# 5. Drop the key from this session.
-Remove-Item Env:GALERINA_SIGNING_* -ErrorAction SilentlyContinue
+cd <galerina-repo>
+git log --oneline origin/main..HEAD          # review exactly what you are about to publish
+node scripts/run-all-tests.cjs               # expect: 93/93 packages passed
+git push origin main
+git log --oneline -1 origin/main             # confirm origin moved
 ```
 
-Then commit **only** the signed index (never the key), and record the **index `issuedAt` + the authority
-keyId + a SHA-256 pin of the emitted index** so verifiers pin bytes, not just an id.
+### 4.2 Harden the key's custody (no key contents are read)
 
-**Close the session properly:** wipe any working copy of the key, confirm `git status` shows no key file, and
-confirm the ACL/custody copy is intact **before** destroying anything — the #34 runbook's copy-first,
-destroy-second ordering applies here too. A destroy without a verified copy loses the trust root.
+Confirm it is outside every working tree, lock the ACL to you, and confirm a custody copy exists **before**
+destroying anything.
+
+```powershell
+# Confirm the key's folder is NOT a git repo (this must FAIL with "not a git repository"):
+cd <folder-containing-your-key>
+git rev-parse --show-toplevel
+
+# Confirm no repo tracks a private key (expect: only .pub.pem / .mldsa.pub.b64 public halves):
+cd <galerina-repo>
+git ls-files "*21415420b447e219*"
+
+# Restrict the NTFS ACL to your user (do this on the working copy AND the custody copy):
+icacls <your-key-file> /inheritance:r /grant:r "$($env:USERNAME):F"
+```
+
+### 4.3 Verify the public anchor is committed (verifiers pin these, not the private half)
+
+```powershell
+cd <galerina-repo>
+git ls-files governance/ | Select-String "21415420b447e219"
+Get-FileHash governance/signing-key-21415420b447e219.pub.pem -Algorithm SHA256
+Get-FileHash governance/signing-key-21415420b447e219.mldsa.pub.b64 -Algorithm SHA256
+```
+
+Record both SHA-256 pins alongside the key id, so verifiers pin the **bytes**, not just an id.
+
+### 4.4 Wipe surplus plaintext copies (COPY-FIRST, DESTROY-SECOND)
+
+Only after you have **verified a readable custody copy** (hardware token / encrypted offline media / secrets
+manager). A destroy without a verified copy **loses the trust root permanently** — you would have to mint a
+new `<id>` and re-pin every verifier.
+
+```powershell
+Remove-Item <surplus-plaintext-copy>
+cipher /w:<containing-folder>        # overwrite the freed space on that volume
+```
+
+---
+
+## 4b. The signing act — NOT RUNNABLE YET (and why)
+
+There is deliberately no command here. Two hard blockers, both verified in the tree today:
+
+**(a) The signer does not exist.** `signRegistryIndex(index, keyId, sign)` takes an **injected** `sign`
+callback — `registry-index.ts` is crypto-agnostic by design (no `node:*`). Nothing gathers entries or supplies
+an Ed25519 signer. §3 is that tool; it is engineering work, not a custody act.
+
+**(b) The data is placeholders.** The registry currently holds two packages (`@galerina/auth`,
+`@galerina/healthcare`), and each manifest reads:
+
+```yaml
+hash: "sha256:pending"                    # the sourceHash pins NOTHING
+signature: null
+governance:
+  reviewed: false                         # explicitly not reviewed
+  notes: "Phase 28 scaffold. Pending governance review."
+```
+
+The index's entire purpose is that `sourceHash` **pins the expected package bytes**. `sha256:pending` pins
+nothing. Signing this would take your trust root and **authoritatively assert a placeholder** — converting
+"unverified" into "certified by the registry authority". That is strictly worse than having no index, because
+the resolver would then trust the assertion. **Do not sign until `hash` is a real content hash and
+`governance.reviewed` is true.**
+
+Once §1 is decided, §3 is built, and the entries are real, the sequence will be: load the key into the session
+env only (never copy it into the tree) → confirm `$env:GALERINA_SIGNING_KEY_ID` (id only, never print key
+material) → build+sign+self-verify → verify independently against the committed public key → drop the env vars
+→ commit only the signed index and record its `issuedAt`, authority keyId, and a SHA-256 pin.
 
 ---
 
