@@ -1634,7 +1634,7 @@
       "defs": 1,
       "emits": 1,
       "tests": 45,
-      "docs": 0
+      "docs": 1
     },
     {
       "code": "FUNGI-BINDING-006",
@@ -3086,7 +3086,7 @@
       "defs": 1,
       "emits": 4,
       "tests": 46,
-      "docs": 8
+      "docs": 9
     },
     {
       "code": "FUNGI-EFFECT-006",
@@ -8294,7 +8294,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 6
+      "docs": 5
     },
     {
       "code": "FUNGI-TYPE-007",
@@ -8336,7 +8336,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 97,
-      "docs": 12
+      "docs": 13
     },
     {
       "code": "FUNGI-TYPE-010",
@@ -8446,7 +8446,7 @@
       "defs": 1,
       "emits": 4,
       "tests": 24,
-      "docs": 0
+      "docs": 1
     },
     {
       "code": "FUNGI-TYPE-015",
@@ -8506,7 +8506,7 @@
       "defs": 1,
       "emits": 1,
       "tests": 31,
-      "docs": 0
+      "docs": 1
     },
     {
       "code": "FUNGI-TYPE-018",
@@ -8582,7 +8582,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 12,
-      "docs": 3
+      "docs": 4
     },
     {
       "code": "FUNGI-TYPE-023",
@@ -8668,7 +8668,7 @@
       "defs": 1,
       "emits": 1,
       "tests": 22,
-      "docs": 1
+      "docs": 2
     },
     {
       "code": "FUNGI-TYPE-031",

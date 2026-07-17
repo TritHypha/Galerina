@@ -1,4 +1,4 @@
-# Galerina KB index (1269 docs)
+# Galerina KB index (1270 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -975,6 +975,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## 2026-07-17-RULING-RD-0450-A-for-L5-B-for-L3-and-its-cheaper-than-you-framed-slice-4-is-unbuilt.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-RULING-RD-0450-A-for-L5-B-for-L3-and-its-cheaper-than-you-framed-slice-4-is-unbuilt.md`
 - terms: spec, ruling, findings, nearly, wrong, three, make, cheaper, framed, favour, because, there, why, root
+
+## 2026-07-17-skip-is-now-a-distinct-signal-8-not-9-and-the-CI-graph-question-is-the-owners.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-skip-is-now-a-distinct-signal-8-not-9-and-the-CI-graph-question-is-the-owners.md`
+- terms: finding, graph, check, owner, skipped, build, escalated, answered, sentence, fix, fixed, both, stands, entirely
 
 ## 2026-07-17-STATUS-76-effect-name-files-done-plus-C11-superset-refinement.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-STATUS-76-effect-name-files-done-plus-C11-superset-refinement.md`

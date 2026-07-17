@@ -2900,7 +2900,7 @@
     "code": "FUNGI-BINDING-005",
     "namespace": "FUNGI",
     "family": "BINDING",
-    "occurrences": 60,
+    "occurrences": 61,
     "docOnly": false,
     "defs": [
       "packages-galerina/galerina-core-compiler/src/index.ts:1486"
@@ -2910,7 +2910,7 @@
     ],
     "tests": 45,
     "refs": 5,
-    "docs": 0,
+    "docs": 1,
     "names": [
       "IMMUTABLE_BINDING_REASSIGNED"
     ],
@@ -2977,7 +2977,8 @@
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-type-checker.test.mjs:935",
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-type-checker.test.mjs:940",
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-type-checker.test.mjs:941",
-      "test packages-galerina/galerina-core-compiler/tests/self-hosted-type-checker.test.mjs:948"
+      "test packages-galerina/galerina-core-compiler/tests/self-hosted-type-checker.test.mjs:948",
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:588"
     ]
   },
   {
@@ -5655,7 +5656,7 @@
       "doc packages-galerina/galerina-devtools-project-graph/README.md:189",
       "doc docs/architecture/self-hosting-readiness-2026-07-09.md:93",
       "doc docs/compiler-effect-and-boundary-checker.md:975",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:457",
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:466",
       "doc docs/examples/EXAMPLES_INDEX.md:123",
       "doc docs/examples/EXAMPLES_INDEX.md:133",
       "fungi docs/examples/Level-3-Effects/107-pure-flow-calls-effectful-flow/example.fungi:6",
@@ -5784,7 +5785,7 @@
     "code": "FUNGI-EFFECT-005",
     "namespace": "FUNGI",
     "family": "EFFECT",
-    "occurrences": 83,
+    "occurrences": 84,
     "docOnly": false,
     "defs": [
       "packages-galerina/galerina-core-compiler/src/index.ts:1034"
@@ -5797,7 +5798,7 @@
     ],
     "tests": 46,
     "refs": 13,
-    "docs": 8,
+    "docs": 9,
     "names": [
       "BROAD_ALIAS_USED",
       "DENY_ONLY_EFFECT"
@@ -5870,6 +5871,7 @@
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-pipeline.test.mjs:205",
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-pipeline.test.mjs:211",
       "doc docs/compiler-effect-and-boundary-checker.md:977",
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:467",
       "fungi docs/examples/Level-3-Effects/119-effect-name-invalid/example.fungi:4",
       "fungi docs/examples/Level-3-Effects/119-effect-name-invalid/example.fungi:5",
       "fungi docs/examples/Level-3-Effects/119-effect-name-invalid/example.fungi:7",
@@ -6054,7 +6056,7 @@
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-effect-checker.test.mjs:620",
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-pipeline.test.mjs:185",
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-pipeline.test.mjs:191",
-      "doc docs/roadmap-2026-07-15.md:50"
+      "doc docs/roadmap-2026-07-15.md:53"
     ]
   },
   {
@@ -7220,7 +7222,7 @@
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:144",
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:145",
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:148",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:489",
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:509",
       "doc docs/examples/EXAMPLES_INDEX.md:186",
       "fungi docs/examples/Level-5-Governance/205-remote-execution-violation/example.fungi:5",
       "doc docs/examples/Level-5-Governance/AI_SUMMARY.md:73",
@@ -7273,7 +7275,7 @@
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:572",
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:573",
       "doc docs/AI/DO_NOT_USE_YET.md:166",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:492",
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:512",
       "doc docs/examples/EXAMPLES_INDEX.md:193",
       "doc docs/examples/EXAMPLES_INDEX.md:312",
       "fungi docs/examples/Level-5-Governance/212-policy-purpose-mismatch/example.fungi:5",
@@ -8194,7 +8196,7 @@
       "test packages-galerina/galerina-core-compiler/tests/governance/tri-lint-verdict-ordering.test.mjs:28",
       "test packages-galerina/galerina-core-compiler/tests/governance/tri-lint-verdict-ordering.test.mjs:39",
       "test packages-galerina/galerina-core-compiler/tests/governance/tri-lint-verdict-ordering.test.mjs:49",
-      "doc docs/roadmap-2026-07-15.md:108"
+      "doc docs/roadmap-2026-07-15.md:111"
     ]
   },
   {
@@ -8899,7 +8901,7 @@
       "test packages-galerina/galerina-core-compiler/tests/gir-emitter.test.mjs:184",
       "test packages-galerina/galerina-core-compiler/tests/gir-emitter.test.mjs:197",
       "test packages-galerina/galerina-core-compiler/tests/gir-emitter.test.mjs:198",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:891",
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:962",
       "doc docs/examples/EXAMPLES_INDEX.md:234",
       "doc docs/examples/EXAMPLES_INDEX.md:263",
       "doc docs/examples/EXAMPLES_INDEX.md:290",
@@ -9360,7 +9362,7 @@
       "test packages-galerina/galerina-core-compiler/tests/governance/guard-decl.test.mjs:155",
       "test packages-galerina/galerina-core-compiler/tests/governance/guard-decl.test.mjs:166",
       "test packages-galerina/galerina-core-compiler/tests/governance/guard-decl.test.mjs:167",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:494"
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:514"
     ]
   },
   {
@@ -10575,7 +10577,7 @@
       "doc docs/language/fungi/SYNTAX-REFERENCE.md:82",
       "doc docs/language/fungi/SYNTAX-REFERENCE.md:83",
       "doc docs/language/fungi/SYNTAX-REFERENCE.md:84",
-      "doc docs/roadmap-2026-07-15.md:40",
+      "doc docs/roadmap-2026-07-15.md:43",
       "doc docs/SYNTAX_UPDATE_PLAN.md:29",
       "doc docs/SYNTAX_UPDATE_PLAN.md:60",
       "doc docs/SYNTAX_UPDATE_TRACKER.md:33",
@@ -10990,7 +10992,7 @@
       "test packages-galerina/galerina-core-compiler/tests/governance/emergency-monotonicity.test.mjs:91",
       "test packages-galerina/galerina-core-compiler/tests/governance/emergency-monotonicity.test.mjs:98",
       "test packages-galerina/galerina-core-compiler/tests/governance/emergency-monotonicity.test.mjs:116",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:490",
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:510",
       "doc docs/language/fungi/06-governance-constructs.md:255"
     ]
   },
@@ -11065,7 +11067,7 @@
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/governance-verifier.fungi:714",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/governance-verifier.fungi:717",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/governance-verifier.fungi:718",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:493"
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:513"
     ]
   },
   {
@@ -11217,7 +11219,7 @@
       "test packages-galerina/galerina-core-compiler/tests/type-checker.test.mjs:418",
       "test packages-galerina/galerina-core-compiler/tests/type-checker.test.mjs:584",
       "doc docs/architecture/stage6-hundred-percent-fungi-roadmap-2026-07-10.md:39",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:570",
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:594",
       "doc docs/examples/README.md:89"
     ]
   },
@@ -13283,7 +13285,7 @@
       "fungi packages-galerina/galerina-framework-app-kernel/src/self-hosted/package-admission.fungi:134",
       "test packages-galerina/galerina-framework-app-kernel/tests/rd0361-packages-execution-cutover.test.mjs:162",
       "doc packages-galerina/galerina-registry/README.md:45",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:145"
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:149"
     ]
   },
   {
@@ -13328,7 +13330,7 @@
       "test packages-galerina/galerina-framework-app-kernel/tests/rd0361-packages-execution-cutover.test.mjs:148",
       "doc packages-galerina/galerina-registry/README.md:17",
       "doc packages-galerina/galerina-registry/README.md:46",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:146"
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:150"
     ]
   },
   {
@@ -13384,7 +13386,7 @@
       "fungi packages-galerina/galerina-framework-app-kernel/src/self-hosted/package-admission.fungi:137",
       "test packages-galerina/galerina-framework-app-kernel/tests/rd0361-packages-execution-cutover.test.mjs:167",
       "doc packages-galerina/galerina-registry/README.md:47",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:149"
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:153"
     ]
   },
   {
@@ -13429,7 +13431,7 @@
       "fungi packages-galerina/galerina-framework-app-kernel/src/self-hosted/package-admission.fungi:109",
       "fungi packages-galerina/galerina-framework-app-kernel/src/self-hosted/package-admission.fungi:119",
       "test packages-galerina/galerina-framework-app-kernel/tests/rd0361-packages-execution-cutover.test.mjs:172",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:148"
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:152"
     ]
   },
   {
@@ -14848,7 +14850,7 @@
       "emit packages-galerina/galerina-core-compiler/src/index.ts:2605",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:113",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:508",
-      "doc docs/roadmap-2026-07-15.md:40"
+      "doc docs/roadmap-2026-07-15.md:43"
     ]
   },
   {
@@ -15800,7 +15802,7 @@
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/governance-verifier.fungi:657",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/governance-verifier.fungi:670",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/governance-verifier.fungi:671",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:495"
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:515"
     ]
   },
   {
@@ -16683,7 +16685,7 @@
       "test packages-galerina/galerina-core-compiler/tests/secrets-body-retention-110.test.mjs:113",
       "doc docs/ANTI_HALLUCINATION.md:61",
       "fungi docs/examples/Level-9-Enterprise/465-enterprise-summary/example.fungi:29",
-      "doc docs/roadmap-2026-07-15.md:155",
+      "doc docs/roadmap-2026-07-15.md:158",
       "doc docs/SYNTAX_UPDATE_TRACKER.md:34",
       "doc docs/TODO.md:14",
       "ref scripts/audit-fungi-corpus-check.mjs:8",
@@ -17124,7 +17126,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:931",
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:1002",
       "doc docs/examples/EXAMPLES_INDEX.md:288",
       "doc docs/examples/Level-6-Compute/AI_SUMMARY.md:47",
       "fungi docs/examples/Level-8-Targets/414-target-no-fallback-invalid/example.fungi:6",
@@ -17464,7 +17466,7 @@
       "test packages-galerina/galerina-core-compiler/tests/governance/trap-decl.test.mjs:181",
       "test packages-galerina/galerina-core-compiler/tests/governance/trap-decl.test.mjs:182",
       "test packages-galerina/galerina-core-compiler/tests/governance/trap-decl.test.mjs:269",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:496"
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:516"
     ]
   },
   {
@@ -17637,7 +17639,7 @@
     "severities": [],
     "allSites": [
       "test packages-galerina/galerina-core-compiler/tests/type-checker-phase11.test.mjs:479",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:570"
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:594"
     ]
   },
   {
@@ -17938,9 +17940,9 @@
       "test packages-galerina/galerina-core-compiler/tests/type-registry/type-id-hot-paths.test.mjs:131",
       "test packages-galerina/galerina-core-compiler/tests/type-registry/type-id-hot-paths.test.mjs:140",
       "test packages-galerina/galerina-core-compiler/tests/type-registry/type-id-hot-paths.test.mjs:145",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:563",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:566",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:567",
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:583",
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:590",
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:591",
       "doc docs/examples/EXAMPLES_INDEX.md:98",
       "fungi docs/examples/Level-2-Types/084-unknown-type/example.fungi:5",
       "fungi docs/examples/Level-2-Types/084-unknown-type/example.fungi:6",
@@ -18568,26 +18570,25 @@
       "test packages-galerina/galerina-core-compiler/tests/type-checker.test.mjs:799",
       "test packages-galerina/galerina-core-compiler/tests/type-checker.test.mjs:809",
       "doc docs/architecture/self-hosting-evolution-plan-2026-07-10.md:28",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:572"
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:596"
     ]
   },
   {
     "code": "FUNGI-TYPE-006",
     "namespace": "FUNGI",
     "family": "TYPE",
-    "occurrences": 6,
+    "occurrences": 5,
     "docOnly": true,
     "defs": [],
     "emits": [],
     "tests": 0,
     "refs": 0,
-    "docs": 6,
+    "docs": 5,
     "names": [],
     "severities": [],
     "allSites": [
       "doc docs/architecture/stage6-hundred-percent-fungi-roadmap-2026-07-10.md:24",
       "doc docs/architecture/stage6-hundred-percent-fungi-roadmap-2026-07-10.md:33",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:571",
       "doc docs/examples/Level-2-Types/AI_SUMMARY.md:49",
       "doc docs/examples/Level-6-Compute/AI_SUMMARY.md:48",
       "doc docs/examples/README.md:76"
@@ -18632,7 +18633,7 @@
       "test packages-galerina/galerina-core-compiler/tests/type-checker.test.mjs:766",
       "test packages-galerina/galerina-core-compiler/tests/type-checker.test.mjs:769",
       "test packages-galerina/galerina-core-compiler/tests/type-checker.test.mjs:779",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:568",
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:592",
       "doc docs/examples/README.md:77"
     ]
   },
@@ -18692,7 +18693,7 @@
     "code": "FUNGI-TYPE-009",
     "namespace": "FUNGI",
     "family": "TYPE",
-    "occurrences": 141,
+    "occurrences": 142,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -18700,7 +18701,7 @@
     ],
     "tests": 97,
     "refs": 14,
-    "docs": 12,
+    "docs": 13,
     "names": [
       "INVALID_GENERIC_INSTANTIATION"
     ],
@@ -18825,7 +18826,8 @@
       "test packages-galerina/galerina-core-compiler/tests/type-checker.test.mjs:237",
       "test packages-galerina/galerina-core-compiler/tests/type-checker.test.mjs:249",
       "test packages-galerina/galerina-core-compiler/tests/type-checker.test.mjs:250",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:909",
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:587",
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:980",
       "doc docs/examples/EXAMPLES_INDEX.md:79",
       "doc docs/examples/EXAMPLES_INDEX.md:82",
       "doc docs/examples/EXAMPLES_INDEX.md:95",
@@ -18846,7 +18848,7 @@
       "doc docs/examples/Level-7-AI/362-ai-invalid-tensor-arity/notes.md:3",
       "doc docs/examples/README.md:79",
       "doc docs/language/fungi/SYNTAX-REFERENCE.md:63",
-      "doc docs/roadmap-2026-07-15.md:75"
+      "doc docs/roadmap-2026-07-15.md:78"
     ]
   },
   {
@@ -18981,7 +18983,7 @@
       "test packages-galerina/galerina-core-compiler/tests/type-checker-phase11.test.mjs:137",
       "test packages-galerina/galerina-core-compiler/tests/type-checker-phase11.test.mjs:138",
       "doc docs/AI/DO_NOT_USE_YET.md:165",
-      "doc docs/roadmap-2026-07-15.md:91"
+      "doc docs/roadmap-2026-07-15.md:94"
     ]
   },
   {
@@ -19050,7 +19052,7 @@
     "code": "FUNGI-TYPE-014",
     "namespace": "FUNGI",
     "family": "TYPE",
-    "occurrences": 45,
+    "occurrences": 46,
     "docOnly": false,
     "defs": [
       "packages-galerina/galerina-core-compiler/src/index.ts:355"
@@ -19063,7 +19065,7 @@
     ],
     "tests": 24,
     "refs": 9,
-    "docs": 0,
+    "docs": 1,
     "names": [
       "MISSING_REQUIRED_EFFECT",
       "GOVERNED_SINK_VIOLATION",
@@ -19116,6 +19118,7 @@
       "test packages-galerina/galerina-core-compiler/tests/type-checker-phase11-wave2.test.mjs:180",
       "test packages-galerina/galerina-core-compiler/tests/type-checker-phase11-wave2.test.mjs:191",
       "test packages-galerina/galerina-core-compiler/tests/type-checker-phase11-wave2.test.mjs:192",
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:584",
       "emit scripts/audit-twin-emit-parity.mjs:176",
       "ref scripts/audit-twin-emit-parity.mjs:181",
       "emit scripts/audit-twin-emit-parity.mjs:183",
@@ -19211,7 +19214,7 @@
     "code": "FUNGI-TYPE-017",
     "namespace": "FUNGI",
     "family": "TYPE",
-    "occurrences": 44,
+    "occurrences": 45,
     "docOnly": false,
     "defs": [
       "packages-galerina/galerina-core-compiler/src/index.ts:358"
@@ -19221,7 +19224,7 @@
     ],
     "tests": 31,
     "refs": 3,
-    "docs": 0,
+    "docs": 1,
     "names": [
       "QUANTIZED_PRECISION_MISMATCH",
       "INVALID_RUNTIME_TARGET_TYPE",
@@ -19275,7 +19278,8 @@
       "test packages-galerina/galerina-core-compiler/tests/type-checker-phase11.test.mjs:188",
       "test packages-galerina/galerina-core-compiler/tests/type-checker-phase11.test.mjs:196",
       "test packages-galerina/galerina-core-compiler/tests/type-checker-phase11.test.mjs:197",
-      "test packages-galerina/galerina-core-compiler/tests/type-registry/type-checker-tensor.test.mjs:4"
+      "test packages-galerina/galerina-core-compiler/tests/type-registry/type-checker-tensor.test.mjs:4",
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:611"
     ]
   },
   {
@@ -19345,7 +19349,7 @@
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-type-checker.test.mjs:692",
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-type-checker.test.mjs:704",
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-type-checker.test.mjs:714",
-      "doc docs/roadmap-2026-07-15.md:70",
+      "doc docs/roadmap-2026-07-15.md:73",
       "ref scripts/audit-twin-emit-parity.mjs:177",
       "ref scripts/audit-twin-emit-parity.mjs:182",
       "emit scripts/audit-twin-emit-parity.mjs:183",
@@ -19433,14 +19437,14 @@
       "test packages-galerina/galerina-core-compiler/tests/type-checker.test.mjs:603",
       "doc docs/architecture/stage6-hundred-percent-fungi-roadmap-2026-07-10.md:24",
       "doc docs/examples/README.md:81",
-      "doc docs/roadmap-2026-07-15.md:89"
+      "doc docs/roadmap-2026-07-15.md:92"
     ]
   },
   {
     "code": "FUNGI-TYPE-022",
     "namespace": "FUNGI",
     "family": "TYPE",
-    "occurrences": 27,
+    "occurrences": 28,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -19448,7 +19452,7 @@
     ],
     "tests": 12,
     "refs": 3,
-    "docs": 3,
+    "docs": 4,
     "names": [
       "UNREACHABLE_PATTERN"
     ],
@@ -19479,8 +19483,9 @@
       "test packages-galerina/galerina-core-compiler/tests/type-checker.test.mjs:520",
       "test packages-galerina/galerina-core-compiler/tests/type-checker.test.mjs:529",
       "doc docs/architecture/session4-5hr-autonomous-roadmap-2026-07-11.md:62",
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:589",
       "doc docs/examples/README.md:82",
-      "doc docs/roadmap-2026-07-15.md:88"
+      "doc docs/roadmap-2026-07-15.md:91"
     ]
   },
   {
@@ -19539,7 +19544,7 @@
       "doc packages-galerina/galerina-framework-example-app/README.md:71",
       "fungi packages-galerina/galerina-framework-example-app/src/App.fungi:18",
       "doc docs/language/fungi/SYNTAX-REFERENCE.md:66",
-      "doc docs/roadmap-2026-07-15.md:89",
+      "doc docs/roadmap-2026-07-15.md:92",
       "ref scripts/galerina-new.mjs:23",
       "ref scripts/galerina-new.mjs:154",
       "ref scripts/galerina-new.mjs:196",
@@ -19692,7 +19697,7 @@
     "severities": [],
     "allSites": [
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:1288",
-      "doc docs/roadmap-2026-07-15.md:71",
+      "doc docs/roadmap-2026-07-15.md:74",
       "ref scripts/audit-twin-emit-parity.mjs:178",
       "ref scripts/audit-twin-emit-parity.mjs:182"
     ]
@@ -19701,7 +19706,7 @@
     "code": "FUNGI-TYPE-030",
     "namespace": "FUNGI",
     "family": "TYPE",
-    "occurrences": 42,
+    "occurrences": 43,
     "docOnly": false,
     "defs": [
       "packages-galerina/galerina-core-compiler/src/index.ts:366"
@@ -19711,7 +19716,7 @@
     ],
     "tests": 22,
     "refs": 7,
-    "docs": 1,
+    "docs": 2,
     "names": [
       "TENSOR_ELEMENT_TYPE_MISMATCH"
     ],
@@ -19760,7 +19765,8 @@
       "test packages-galerina/galerina-core-compiler/tests/type-registry/type-id-and-flags.test.mjs:267",
       "test packages-galerina/galerina-core-compiler/tests/type-registry/type-id-and-flags.test.mjs:290",
       "test packages-galerina/galerina-core-compiler/tests/type-registry/type-id-and-flags.test.mjs:295",
-      "doc docs/roadmap-2026-07-15.md:44"
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:595",
+      "doc docs/roadmap-2026-07-15.md:47"
     ]
   },
   {
@@ -19901,8 +19907,8 @@
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-pipeline.test.mjs:263",
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-pipeline.test.mjs:340",
       "ref packages-galerina/galerina-devtools-security/src/audit-runner.ts:114",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:480",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:481",
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:500",
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:501",
       "emit scripts/audit-twin-emit-parity.mjs:197"
     ]
   },

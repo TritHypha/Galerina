@@ -2,7 +2,7 @@
 Generated: 2026-07-17
 
 ## Stats
-- Docs: 1267 | Edges: 3562 | Orphans: 198 | Stale links: 0 | FUNGI codes: 749
+- Docs: 1268 | Edges: 3562 | Orphans: 199 | Stale links: 0 | FUNGI codes: 749
 
 ## Document Registry (auto-generated)
 
@@ -174,6 +174,7 @@ Generated: 2026-07-17
 | 2026-07-17-RULING-RD-0450-A-FOR-BOTH-you-overruled-me-with-my-own-rule-plus-123-links-de-link-by-default.md | — | — | — | — |
 | 2026-07-17-RULING-RD-0450-A-for-L5-B-for-L3-and-its-cheaper-than-you-framed-slice-4-is-unbuilt.md | — | — | — | — |
 | 2026-07-17-RULINGS-1-and-2-honesty-rule-YES-derived-not-typed-plus-I1-is-b-but-sequenced-with-I2.md | — | — | — | — |
+| 2026-07-17-skip-is-now-a-distinct-signal-8-not-9-and-the-CI-graph-question-is-the-owners.md | — | — | — | — |
 | 2026-07-17-STATUS-76-effect-name-files-done-plus-C11-superset-refinement.md | — | — | — | — |
 | 2026-07-17-STATUS-76-numeric-exemplar-economicsService-done-plus-cycle-green.md | — | — | — | — |
 | 2026-07-17-STOPPERS-ten-area-hundred-percent-sweep-audit-numbers-unfalsifiable.md | — | — | — | — |
@@ -1477,6 +1478,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-STOPPERS-ten-area-hundred-percent-sweep-audit-numbers-unfalsifiable.md` — 2026-07-17-STOPPERS-ten-area-hundred-percent-sweep-audit-numbers-unfalsifiable
 - `2026-07-17-TRIAGE-LIST-123-escape-links-65-targets-29-docs.md` — 2026-07-17-TRIAGE-LIST-123-escape-links-65-targets-29-docs
 - `2026-07-17-path-leak-fixed-galerina-clean-existsSync-mirrored-and-two-corrections-of-mine.md` — 2026-07-17-path-leak-fixed-galerina-clean-existsSync-mirrored-and-two-corrections-of-mine
+- `2026-07-17-skip-is-now-a-distinct-signal-8-not-9-and-the-CI-graph-question-is-the-owners.md` — 2026-07-17-skip-is-now-a-distinct-signal-8-not-9-and-the-CI-graph-question-is-the-owners
 
 ## Stale Links
 Links pointing to missing files:

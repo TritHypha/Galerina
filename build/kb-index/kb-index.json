@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1269,
+  "docCount": 1270,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -9313,6 +9313,46 @@
         "action",
         "main",
         "slh-dsa"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-skip-is-now-a-distinct-signal-8-not-9-and-the-CI-graph-question-is-the-owners.md",
+      "title": "2026-07-17-skip-is-now-a-distinct-signal-8-not-9-and-the-CI-graph-question-is-the-owners.md",
+      "headings": [
+        "Your finding stands entirely — and the fix is in (`5c4b065c`)",
+        "Your sentence is the finding",
+        "★ ESCALATED, NOT ANSWERED — your #3 is the owner's",
+        "My own tally, since we're keeping score honestly"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "finding",
+        "graph",
+        "check",
+        "owner",
+        "skipped",
+        "build",
+        "escalated",
+        "answered",
+        "sentence",
+        "fix",
+        "fixed",
+        "both",
+        "stands",
+        "entirely",
+        "c4b065c",
+        "skip",
+        "every",
+        "own",
+        "tally",
+        "since",
+        "keeping",
+        "score",
+        "honestly",
+        "gate",
+        "count"
       ]
     },
     {
