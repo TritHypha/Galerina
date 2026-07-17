@@ -2,7 +2,7 @@
 Generated: 2026-07-17
 
 ## Stats
-- Docs: 1268 | Edges: 3562 | Orphans: 199 | Stale links: 0 | FUNGI codes: 749
+- Docs: 1271 | Edges: 3562 | Orphans: 202 | Stale links: 0 | FUNGI codes: 749
 
 ## Document Registry (auto-generated)
 
@@ -161,6 +161,7 @@ Generated: 2026-07-17
 | 2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension.md | — | — | — | FUNGI-TYPE-020 |
 | 2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md | — | — | — | FUNGI-EFFECT-002 |
 | 2026-07-17-myco-galerina-package-updates-fold-into-galerina-tools-myco.md | — | — | — | — |
+| 2026-07-17-P9-parser-stage-byte-parity-CLOSED-entry-point-proven-no-new-ABI.md | — | — | — | — |
 | 2026-07-17-path-leak-fixed-galerina-clean-existsSync-mirrored-and-two-corrections-of-mine.md | — | — | — | — |
 | 2026-07-17-PREP-EFFECT-002-transitive-walk-faithfulness-traps-grounded-from-stage-A.md | — | — | — | — |
 | 2026-07-17-PROPOSE-lint-if-chain-should-be-match-plus-CORRECTION-predicate-arms-do-not-parse.md | — | — | — | FUNGI-MATCH-001, FUNGI-PARSE-001, FUNGI-SAFETY-006 |
@@ -171,12 +172,14 @@ Generated: 2026-07-17
 | 2026-07-17-RD-0450-32-byte-digest-caps-L5-profile-at-128-bit-decide-before-34-locks-v0.md | — | — | — | — |
 | 2026-07-17-RD-0452-delivered-a-codemod-is-a-defect-multiplier-plus-you-were-right-about-the-message.md | — | — | — | — |
 | 2026-07-17-RETRACT-match-lint-plus-RD-0449-import-resolver-never-wired-12-of-52-examples-fail-strict-types.md | — | — | — | FUNGI-GOV-018, FUNGI-MATCH-001, FUNGI-TYPE-001, FUNGI-TYPE-021, FUNGI-TYPE-023 |
+| 2026-07-17-ROOT-CAUSE-3-of-4-stages-trap-and-it-is-task-100-via-Array-Auto-get.md | — | — | — | FUNGI-NAME-002 |
 | 2026-07-17-RULING-RD-0450-A-FOR-BOTH-you-overruled-me-with-my-own-rule-plus-123-links-de-link-by-default.md | — | — | — | — |
 | 2026-07-17-RULING-RD-0450-A-for-L5-B-for-L3-and-its-cheaper-than-you-framed-slice-4-is-unbuilt.md | — | — | — | — |
 | 2026-07-17-RULINGS-1-and-2-honesty-rule-YES-derived-not-typed-plus-I1-is-b-but-sequenced-with-I2.md | — | — | — | — |
 | 2026-07-17-skip-is-now-a-distinct-signal-8-not-9-and-the-CI-graph-question-is-the-owners.md | — | — | — | — |
 | 2026-07-17-STATUS-76-effect-name-files-done-plus-C11-superset-refinement.md | — | — | — | — |
 | 2026-07-17-STATUS-76-numeric-exemplar-economicsService-done-plus-cycle-green.md | — | — | — | — |
+| 2026-07-17-STOPPER-type-checker-stage-TRAPS-at-R3-and-R0-R1-green-hides-it.md | — | — | — | — |
 | 2026-07-17-STOPPERS-ten-area-hundred-percent-sweep-audit-numbers-unfalsifiable.md | — | — | — | — |
 | 2026-07-17-TRIAGE-LIST-123-escape-links-65-targets-29-docs.md | — | — | — | — |
 | 2026-07-17-URGENT-audit-path-leak-misses-the-DOUBLE-dash-MCP-slug-and-Galerina-is-PUBLIC.md | — | — | — | — |
@@ -1470,11 +1473,14 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-FINDING-96a-record-site-already-heap-bumps-not-host-abi-escape-integration-needs-reground.md` — 2026-07-17-FINDING-96a-record-site-already-heap-bumps-not-host-abi-escape-integration-needs-reground
 - `2026-07-17-FIXED-cause-B-now-VIOLATIONS-0-plus-app-kernel-has-an-UNDECLARED-cross-package-edge.md` — 2026-07-17-FIXED-cause-B-now-VIOLATIONS-0-plus-app-kernel-has-an-UNDECLARED-cross-package-edge
 - `2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md` — 2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed
+- `2026-07-17-P9-parser-stage-byte-parity-CLOSED-entry-point-proven-no-new-ABI.md` — 2026-07-17-P9-parser-stage-byte-parity-CLOSED-entry-point-proven-no-new-ABI
 - `2026-07-17-QUESTION-76-bool-taint-validateFlag-degenerate-plus-fanout-7of19.md` — 2026-07-17-QUESTION-76-bool-taint-validateFlag-degenerate-plus-fanout-7of19
 - `2026-07-17-QUESTION-corpus-rot-76-triage-auth-service-taint-to-pure-flow-adjudication.md` — 2026-07-17-QUESTION-corpus-rot-76-triage-auth-service-taint-to-pure-flow-adjudication
+- `2026-07-17-ROOT-CAUSE-3-of-4-stages-trap-and-it-is-task-100-via-Array-Auto-get.md` — 2026-07-17-ROOT-CAUSE-3-of-4-stages-trap-and-it-is-task-100-via-Array-Auto-get
 - `2026-07-17-RULING-RD-0450-A-for-L5-B-for-L3-and-its-cheaper-than-you-framed-slice-4-is-unbuilt.md` — 2026-07-17-RULING-RD-0450-A-for-L5-B-for-L3-and-its-cheaper-than-you-framed-slice-4-is-unbuilt
 - `2026-07-17-STATUS-76-effect-name-files-done-plus-C11-superset-refinement.md` — 2026-07-17-STATUS-76-effect-name-files-done-plus-C11-superset-refinement
 - `2026-07-17-STATUS-76-numeric-exemplar-economicsService-done-plus-cycle-green.md` — 2026-07-17-STATUS-76-numeric-exemplar-economicsService-done-plus-cycle-green
+- `2026-07-17-STOPPER-type-checker-stage-TRAPS-at-R3-and-R0-R1-green-hides-it.md` — 2026-07-17-STOPPER-type-checker-stage-TRAPS-at-R3-and-R0-R1-green-hides-it
 - `2026-07-17-STOPPERS-ten-area-hundred-percent-sweep-audit-numbers-unfalsifiable.md` — 2026-07-17-STOPPERS-ten-area-hundred-percent-sweep-audit-numbers-unfalsifiable
 - `2026-07-17-TRIAGE-LIST-123-escape-links-65-targets-29-docs.md` — 2026-07-17-TRIAGE-LIST-123-escape-links-65-targets-29-docs
 - `2026-07-17-path-leak-fixed-galerina-clean-existsSync-mirrored-and-two-corrections-of-mine.md` — 2026-07-17-path-leak-fixed-galerina-clean-existsSync-mirrored-and-two-corrections-of-mine

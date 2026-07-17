@@ -11173,7 +11173,7 @@
     "code": "FUNGI-NAME-002",
     "namespace": "FUNGI",
     "family": "NAME",
-    "occurrences": 31,
+    "occurrences": 32,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -11181,7 +11181,7 @@
       "packages-galerina/galerina-core-compiler/src/type-checker.ts:1477"
     ],
     "tests": 16,
-    "refs": 3,
+    "refs": 4,
     "docs": 3,
     "names": [
       "DUPLICATE_NAME"
@@ -11220,7 +11220,8 @@
       "test packages-galerina/galerina-core-compiler/tests/type-checker.test.mjs:584",
       "doc docs/architecture/stage6-hundred-percent-fungi-roadmap-2026-07-10.md:39",
       "doc docs/contract-registry/CONTRACT_REGISTRY.md:594",
-      "doc docs/examples/README.md:89"
+      "doc docs/examples/README.md:89",
+      "ref scripts/component-health.mjs:276"
     ]
   },
   {

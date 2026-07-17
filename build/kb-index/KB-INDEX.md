@@ -1,4 +1,4 @@
-# Galerina KB index (1270 docs)
+# Galerina KB index (1273 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -957,6 +957,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-EFFECT-002
 - terms: effect, transitive, declared, stage-a, twin, milestone, landed, honest, caveats, flow, tracked, effect-checker, effect-002, verify-don
 
+## 2026-07-17-P9-parser-stage-byte-parity-CLOSED-entry-point-proven-no-new-ABI.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-P9-parser-stage-byte-parity-CLOSED-entry-point-proven-no-new-ABI.md`
+- tasks: #105, #103
+- terms: parser, four, own, point, work, corrected, stopper, flow, frontier, public, claims, falsified, array, expr
+
 ## 2026-07-17-path-leak-fixed-galerina-clean-existsSync-mirrored-and-two-corrections-of-mine.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-path-leak-fixed-galerina-clean-existsSync-mirrored-and-two-corrections-of-mine.md`
 - terms: rule, repo, fixed, about, own, finding, never, galerina, green, real, here, read, token, tracked
@@ -971,6 +976,12 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-VALUESTATE-004
 - tasks: #76, #75, #93
 - terms: file, taint, auth-service, adjudication, triage, bucket, pure-flow, ratcheted, baseline, scripts, baselines, fungi-corpus-check, json, rule
+
+## 2026-07-17-ROOT-CAUSE-3-of-4-stages-trap-and-it-is-task-100-via-Array-Auto-get.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ROOT-CAUSE-3-of-4-stages-trap-and-it-is-task-100-via-Array-Auto-get.md`
+- codes: FUNGI-NAME-002
+- tasks: #100, #105
+- terms: array, stage, auto, get, fungi, cause, sweep, trap, option, stages, first, wrong, asked, finding
 
 ## 2026-07-17-RULING-RD-0450-A-for-L5-B-for-L3-and-its-cheaper-than-you-framed-slice-4-is-unbuilt.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-RULING-RD-0450-A-for-L5-B-for-L3-and-its-cheaper-than-you-framed-slice-4-is-unbuilt.md`
@@ -989,6 +1000,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-STATUS-76-numeric-exemplar-economicsService-done-plus-cycle-green.md`
 - tasks: #76, #96
 - terms: numeric, economicsservice, exemplar, remaining, nuance, upper-bound, fan-out, requirement, plan, per-file-shape, taint, state, check, status-76-numeric-exemplar-economicsservice-done-plus-cycle-green
+
+## 2026-07-17-STOPPER-type-checker-stage-TRAPS-at-R3-and-R0-R1-green-hides-it.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-STOPPER-type-checker-stage-TRAPS-at-R3-and-R0-R1-green-hides-it.md`
+- tasks: #105, #100
+- terms: parser, type-checker, stage, name, need, traps, flow, fungi, bug, stopped, trap, wrong, solid, stages
 
 ## 2026-07-17-STOPPERS-ten-area-hundred-percent-sweep-audit-numbers-unfalsifiable.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-STOPPERS-ten-area-hundred-percent-sweep-audit-numbers-unfalsifiable.md`
@@ -6390,4 +6406,4 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 `README.md`
 - codes: FUNGI-SUBSTRATE-002, FUNGI-SUBSTRATE-001, FUNGI-FAULT-001, FUNGI-NUMERIC-001, FUNGI-TIER-001, FUNGI-VALUESTATE-008, FUNGI-PKG-006, FUNGI-HALLMARK-001, FUNGI-EFFECT-006, FUNGI-MATCH-001, FUNGI-LEX-001, FUNGI-NAME-001, FUNGI-TYPE-001, FUNGI-EFFECT-001, FUNGI-GOV-001, FUNGI-TERM-001, FUNGI-PCI-001
 - tasks: #105, #143, #102, #128, #163, #165, #32
-- terms: galerina, docs, governed, svg, wasm, width, diagrams, sub, shipped, governance, audit, runtime, fungi, contract
+- terms: galerina, docs, governed, svg, wasm, width, diagrams, sub, shipped, governance, audit, fungi, runtime, contract

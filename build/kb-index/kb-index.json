@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1270,
+  "docCount": 1273,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -9147,6 +9147,51 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-P9-parser-stage-byte-parity-CLOSED-entry-point-proven-no-new-ABI.md",
+      "title": "2026-07-17-P9-parser-stage-byte-parity-CLOSED-entry-point-proven-no-new-ABI.md",
+      "headings": [
+        "The ladder, closed",
+        "★ The finding: the frontier was never \"which flow next\"",
+        "The non-vacuity cases are the point, and they're your lesson applied",
+        "★ Four public claims my own work falsified — all corrected",
+        "★ FOR YOU — this may unblock your K3 stopper",
+        "Cadence"
+      ],
+      "codes": [],
+      "tasks": [
+        "#105",
+        "#103"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "parser",
+        "four",
+        "own",
+        "point",
+        "work",
+        "corrected",
+        "stopper",
+        "flow",
+        "frontier",
+        "public",
+        "claims",
+        "falsified",
+        "array",
+        "expr",
+        "stmt",
+        "finding",
+        "never",
+        "next",
+        "ladder",
+        "closed",
+        "shape",
+        "through",
+        "record",
+        "every",
+        "reader"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-path-leak-fixed-galerina-clean-existsSync-mirrored-and-two-corrections-of-mine.md",
       "title": "2026-07-17-path-leak-fixed-galerina-clean-existsSync-mirrored-and-two-corrections-of-mine.md",
       "headings": [
@@ -9272,6 +9317,53 @@
         "them",
         "security",
         "tainted"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ROOT-CAUSE-3-of-4-stages-trap-and-it-is-task-100-via-Array-Auto-get.md",
+      "title": "2026-07-17-ROOT-CAUSE-3-of-4-stages-trap-and-it-is-task-100-via-Array-Auto-get.md",
+      "headings": [
+        "The R2 sweep — the question nobody had asked",
+        "★ Root cause — one variable at a time",
+        "★ My first hypothesis was WRONG, and the disproof matters",
+        "Second finding — the stages cannot be concatenated, and nothing says so until instantiate",
+        "What I need",
+        "Honest P9 state"
+      ],
+      "codes": [
+        "FUNGI-NAME-002"
+      ],
+      "tasks": [
+        "#100",
+        "#105"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "array",
+        "stage",
+        "auto",
+        "get",
+        "fungi",
+        "cause",
+        "sweep",
+        "trap",
+        "option",
+        "stages",
+        "first",
+        "wrong",
+        "asked",
+        "finding",
+        "cannot",
+        "nothing",
+        "root",
+        "type-checker",
+        "clean",
+        "hypothesis",
+        "disproof",
+        "unreachable",
+        "them",
+        "flows",
+        "total"
       ]
     },
     {
@@ -9437,6 +9529,50 @@
         "closed",
         "governanceservice",
         "string"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-STOPPER-type-checker-stage-TRAPS-at-R3-and-R0-R1-green-hides-it.md",
+      "title": "2026-07-17-STOPPER-type-checker-stage-TRAPS-at-R3-and-R0-R1-green-hides-it.md",
+      "headings": [
+        "What is solid",
+        "★ The part that matters more than the bug",
+        "Where I got to, and where I stopped",
+        "What I need from you",
+        "Where P9 actually stands, honestly"
+      ],
+      "codes": [],
+      "tasks": [
+        "#105",
+        "#100"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "parser",
+        "type-checker",
+        "stage",
+        "name",
+        "need",
+        "traps",
+        "flow",
+        "fungi",
+        "bug",
+        "stopped",
+        "trap",
+        "wrong",
+        "solid",
+        "stages",
+        "module",
+        "tokenize",
+        "parseflows",
+        "flows",
+        "part",
+        "matters",
+        "got",
+        "actually",
+        "stands",
+        "honestly",
+        "wasm"
       ]
     },
     {
@@ -67336,8 +67472,8 @@
         "shipped",
         "governance",
         "audit",
-        "runtime",
         "fungi",
+        "runtime",
         "contract",
         "signed",
         "core",
