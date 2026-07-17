@@ -93,6 +93,15 @@ export {
   type SourceLocation as ParserSourceLocation,
 } from "./parser.js";
 
+// #96 §a / RD-0446 bump-arena / #128 — conservative escape analysis for flow-local record literals
+// (increment 1: pure `recordEscapes` predicate + aliasing + the redundant emit-time guard; no emitter change).
+export {
+  recordEscapes,
+  computeAliases,
+  collectRecordAllocSites,
+  assertFlowLocal,
+} from "./escape-analysis.js";
+
 // §5a–5d — `.gate` front-end parser (NEW, separate from the `.fungi` parser; same ParseResult shape)
 export {
   parseGate,
