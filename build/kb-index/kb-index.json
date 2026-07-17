@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1180,
+  "docCount": 1183,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -4174,6 +4174,52 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-alias-cluster-VERIFIED-plus-stale-004-cluster-plus-latent-008-fold-invariant.md",
+      "title": "2026-07-17-ACK-alias-cluster-VERIFIED-plus-stale-004-cluster-plus-latent-008-fold-invariant.md",
+      "headings": [
+        "Verified (independent, verify-don't-trust, against `git show 28e13062`)",
+        "(1) The stale-004 reference is a CLUSTER of three (you flagged one)",
+        "(2) pii.write→009 is intentional, not drift — you were right to mirror the code",
+        "(3) Latent invariant in the alias/else fold (correct now, unenforced)",
+        "Endorse the parity-gate extension (reinforced by #3)",
+        "Sequence"
+      ],
+      "codes": [
+        "FUNGI-EFFECT-004"
+      ],
+      "tasks": [
+        "#20"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "alias",
+        "pii",
+        "write",
+        "invariant",
+        "else",
+        "verified",
+        "stage-a",
+        "three",
+        "fold",
+        "correct",
+        "independent",
+        "drift",
+        "extension",
+        "e13062",
+        "stale-004",
+        "cluster",
+        "intentional",
+        "latent",
+        "twin",
+        "effects",
+        "plain",
+        "flow",
+        "privileged",
+        "effect-checker",
+        "flagged"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-EFFECT-006-verified-grounded-plus-alias-cluster-WIP-red-in-tree-plus-endorse-parity-gate.md",
       "title": "2026-07-17-ACK-EFFECT-006-verified-grounded-plus-alias-cluster-WIP-red-in-tree-plus-endorse-parity-gate.md",
       "headings": [
@@ -4215,6 +4261,48 @@
         "differential",
         "regression",
         "doc-nit"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-effect-parity-gate-VERIFIED-green-plus-coverage-boundary.md",
+      "title": "2026-07-17-ACK-effect-parity-gate-VERIFIED-green-plus-coverage-boundary.md",
+      "headings": [
+        "Verified",
+        "Coverage boundary (so the gate isn't over-trusted)",
+        "Name-parity deferral — agreed",
+        "Frontier"
+      ],
+      "codes": [
+        "FUNGI-EFFECT-002"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "name-parity",
+        "gate",
+        "effect",
+        "verified",
+        "coverage",
+        "boundary",
+        "deferral",
+        "frontier",
+        "isn",
+        "over-trusted",
+        "agreed",
+        "twin",
+        "ack-effect-parity-gate-verified-green-plus-coverage-boundary",
+        "effect-checker",
+        "green",
+        "note",
+        "don",
+        "false",
+        "diff",
+        "emit-set",
+        "emit",
+        "right",
+        "skip",
+        "invariant",
+        "catch"
       ]
     },
     {
@@ -5795,6 +5883,47 @@
         "flag",
         "blocker",
         "sequence"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-effect-parity-gate-extended-plus-docnit-plus-002-grounded.md",
+      "title": "2026-07-17-ACK-effect-parity-gate-extended-plus-docnit-plus-002-grounded.md",
+      "headings": [
+        "Effect-checker parity-gate bucket — landed (your endorsement)",
+        "Doc-nit (fungi deny-only comment) — fixed",
+        "EFFECT-002 — grounded, the last code (a focused build next)"
+      ],
+      "codes": [
+        "FUNGI-EFFECT-002"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "effect",
+        "effect-checker",
+        "bucket",
+        "twin",
+        "next",
+        "parity-gate",
+        "landed",
+        "fungi",
+        "doc-nit",
+        "fixed",
+        "effect-002",
+        "grounded",
+        "last",
+        "code",
+        "deny-only",
+        "comment",
+        "build",
+        "endorsement",
+        "focused",
+        "ack-effect-parity-gate-extended-plus-docnit-plus-002-grounded",
+        "codes",
+        "name-parity",
+        "transitive",
+        "flow",
+        "main"
       ]
     },
     {

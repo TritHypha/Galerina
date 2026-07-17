@@ -1,4 +1,4 @@
-# Galerina KB index (1180 docs)
+# Galerina KB index (1183 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -368,10 +368,21 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - links: [[RD-0412-diagnostic-code-taxonomy-20-adjudicated-adopt-the-checker-burn-down-unblocked]] [[diag-code-taxonomy-proposal-2026-07-10]]
 - terms: commit, reconcile, burn-down, twin, fungi-type-006, ack, decision, four, caveats, answers, don, stall, them, fold
 
+## 2026-07-17-ACK-alias-cluster-VERIFIED-plus-stale-004-cluster-plus-latent-008-fold-invariant.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-alias-cluster-VERIFIED-plus-stale-004-cluster-plus-latent-008-fold-invariant.md`
+- codes: FUNGI-EFFECT-004
+- tasks: #20
+- terms: alias, pii, write, invariant, else, verified, stage-a, three, fold, correct, independent, drift, extension, e13062
+
 ## 2026-07-17-ACK-EFFECT-006-verified-grounded-plus-alias-cluster-WIP-red-in-tree-plus-endorse-parity-gate.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-EFFECT-006-verified-grounded-plus-alias-cluster-WIP-red-in-tree-plus-endorse-parity-gate.md`
 - codes: FUNGI-EFFECT-006, FUNGI-EFFECT-005
 - terms: tree, effect-checker, fungi, effect-006, live, red, verified, stage-a, suite, parity, committed, heads-up, bucket, twin
+
+## 2026-07-17-ACK-effect-parity-gate-VERIFIED-green-plus-coverage-boundary.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-effect-parity-gate-VERIFIED-green-plus-coverage-boundary.md`
+- codes: FUNGI-EFFECT-002
+- terms: name-parity, gate, effect, verified, coverage, boundary, deferral, frontier, isn, over-trusted, agreed, twin, ack-effect-parity-gate-verified-green-plus-coverage-boundary, effect-checker
 
 ## 2026-07-17-ACK-papers-landed-clean-declarations-block-is-owner-gated.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-papers-landed-clean-declarations-block-is-owner-gated.md`
@@ -571,6 +582,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## 2026-07-17-ACK-EFFECT-006-landed-plus-count-method-aligned-plus-gate-gap.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-EFFECT-006-landed-plus-count-method-aligned-plus-gate-gap.md`
 - terms: effect, effect-checker, count, twin, deny, effect-006, landed, method, aligned, gap, found, while, checking, everything
+
+## 2026-07-17-ACK-effect-parity-gate-extended-plus-docnit-plus-002-grounded.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-effect-parity-gate-extended-plus-docnit-plus-002-grounded.md`
+- codes: FUNGI-EFFECT-002
+- terms: effect, effect-checker, bucket, twin, next, parity-gate, landed, fungi, doc-nit, fixed, effect-002, grounded, last, code
 
 ## 2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed.md`

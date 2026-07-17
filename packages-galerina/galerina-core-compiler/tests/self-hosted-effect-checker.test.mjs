@@ -415,6 +415,61 @@ describe("effect-checker.fungi — checkBodyEffects (body-derived effects)", () 
   });
 });
 
+// FUNGI-EFFECT-002 (TRANSITIVE_EFFECT_NOT_DECLARED, error) — a flow that calls (directly or
+// transitively) a flow declaring an effect it does not declare (Stage-A collectTransitiveCalledEffects,
+// effect-checker.ts:942). Uses checkBodyEffects (it has each flow's body + declared effects → the call
+// graph). Mirrors the Stage-A algorithm; the real-parser leg is in self-hosted-pipeline.test.mjs.
+describe("effect-checker.fungi — FUNGI-EFFECT-002 TRANSITIVE_EFFECT_NOT_DECLARED", () => {
+  it("A calls B (declares network.outbound); A declares nothing → 002 on A", async () => {
+    const { diags } = await checkBody([
+      bodyFlow({ name: "a", kind: "flow", effects: [], body: [
+        stmt({ kind: "exprStmt", expr: [eCall("b")] }),
+      ]}),
+      bodyFlow({ name: "b", kind: "flow", effects: ["network.outbound"], body: [] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "a"), ["FUNGI-EFFECT-002"]);
+    assert.deepEqual(codesFor(diags, "b"), []);
+  });
+
+  it("A calls B and A DECLARES the effect → clean (no 002)", async () => {
+    const { diags } = await checkBody([
+      bodyFlow({ name: "a", kind: "flow", effects: ["network.outbound"], body: [
+        stmt({ kind: "exprStmt", expr: [eCall("b")] }),
+      ]}),
+      bodyFlow({ name: "b", kind: "flow", effects: ["network.outbound"], body: [] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "a"), []);
+  });
+
+  it("transitive: A→B→C (C declares network.outbound); A and B under-declare → 002 on both", async () => {
+    const { diags } = await checkBody([
+      bodyFlow({ name: "a", kind: "flow", effects: [], body: [
+        stmt({ kind: "exprStmt", expr: [eCall("b")] }),
+      ]}),
+      bodyFlow({ name: "b", kind: "flow", effects: [], body: [
+        stmt({ kind: "exprStmt", expr: [eCall("c")] }),
+      ]}),
+      bodyFlow({ name: "c", kind: "flow", effects: ["network.outbound"], body: [] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "a"), ["FUNGI-EFFECT-002"]);
+    assert.deepEqual(codesFor(diags, "b"), ["FUNGI-EFFECT-002"]);
+    assert.deepEqual(codesFor(diags, "c"), []);
+  });
+
+  it("a cycle A↔B is path-guarded (terminates); only the under-declarer gets 002", async () => {
+    const { diags } = await checkBody([
+      bodyFlow({ name: "a", kind: "flow", effects: [], body: [
+        stmt({ kind: "exprStmt", expr: [eCall("b")] }),
+      ]}),
+      bodyFlow({ name: "b", kind: "flow", effects: ["network.outbound"], body: [
+        stmt({ kind: "exprStmt", expr: [eCall("a")] }),
+      ]}),
+    ]);
+    assert.deepEqual(codesFor(diags, "a"), ["FUNGI-EFFECT-002"]);
+    assert.deepEqual(codesFor(diags, "b"), []);
+  });
+});
+
 describe("effect-checker.fungi — no duplicate diagnostics", () => {
   it("a used + declared unknown effect emits exactly ONE FUNGI-EFFECT-004", async () => {
     const { diags } = await check([

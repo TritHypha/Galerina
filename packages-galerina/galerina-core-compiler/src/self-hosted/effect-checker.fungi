@@ -465,6 +465,234 @@ contract {
   return out
 }
 
+// ── EFFECT-002 transitive machinery (TRANSITIVE_EFFECT_NOT_DECLARED) ───────────
+// Stage-A (effect-checker.ts:942, collectTransitiveCalledEffects): a flow that CALLS — directly or
+// transitively — a flow declaring an effect the caller does NOT declare must itself declare it, or
+// FUNGI-EFFECT-002 is emitted. Mirrored: build the callee names per flow, walk the call graph
+// (path-guarded for cycles), collect each transitively-called flow's DECLARED effects, then flag any
+// not declared on the caller.
+
+// Every callee NAME in an Expr tree (a `call` Expr contributes its callee `value`; recurse children).
+pure flow collectCallNamesExpr(expr: Auto) -> Array<Auto>
+contract { intent { "Collect every called name in an Expr (call value + recursion into children)." } }
+{
+  mut out: Array<Auto> = Array.empty()
+  let kind: String = expr.kind
+  if kind == "call" {
+    out = out.append(expr.value)
+  }
+  let children: Array<Auto> = expr.children
+  mut i: Int = 0
+  while i < children.count() {
+    let cOpt = children.get(i)
+    match cOpt {
+      Some(child) => {
+        let childNames: Array<Auto> = collectCallNamesExpr(child)
+        mut j: Int = 0
+        while j < childNames.count() {
+          let nOpt = childNames.get(j)
+          match nOpt {
+            Some(nm) => { out = out.append(nm) }
+            None => {}
+            _ => {}
+          }
+          j = j + 1
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return out
+}
+
+// Every callee name in a statement list (stmt exprs + nested if/while/else bodies).
+pure flow collectCallNamesStmts(stmts: Array<Auto>) -> Array<Auto>
+contract { intent { "Walk a statement list collecting every called name (exprs + nested bodies)." } }
+{
+  mut out: Array<Auto> = Array.empty()
+  mut i: Int = 0
+  while i < stmts.count() {
+    let sOpt = stmts.get(i)
+    match sOpt {
+      Some(stmt) => {
+        let exprs: Array<Auto> = stmt.expr
+        mut e: Int = 0
+        while e < exprs.count() {
+          let exOpt = exprs.get(e)
+          match exOpt {
+            Some(ex) => {
+              let exNames: Array<Auto> = collectCallNamesExpr(ex)
+              mut k: Int = 0
+              while k < exNames.count() {
+                let enOpt = exNames.get(k)
+                match enOpt {
+                  Some(en) => { out = out.append(en) }
+                  None => {}
+                  _ => {}
+                }
+                k = k + 1
+              }
+            }
+            None => {}
+            _ => {}
+          }
+          e = e + 1
+        }
+        let nested: Array<Auto> = stmt.body
+        let nestedNames: Array<Auto> = collectCallNamesStmts(nested)
+        mut n: Int = 0
+        while n < nestedNames.count() {
+          let nnOpt = nestedNames.get(n)
+          match nnOpt {
+            Some(nn) => { out = out.append(nn) }
+            None => {}
+            _ => {}
+          }
+          n = n + 1
+        }
+        let elseNested: Array<Auto> = stmt.elseBody
+        let elseNames: Array<Auto> = collectCallNamesStmts(elseNested)
+        mut m: Int = 0
+        while m < elseNames.count() {
+          let emOpt = elseNames.get(m)
+          match emOpt {
+            Some(em) => { out = out.append(em) }
+            None => {}
+            _ => {}
+          }
+          m = m + 1
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return out
+}
+
+// The declared effects of the flow named `name` (empty if not found).
+pure flow declaredEffectsOfFlow(flows: Array<Auto>, name: String) -> Array<Auto>
+contract { intent { "Return the declared effects of the flow with this name, else empty." } }
+{
+  mut out: Array<Auto> = Array.empty()
+  mut i: Int = 0
+  while i < flows.count() {
+    let fOpt = flows.get(i)
+    match fOpt {
+      Some(f) => {
+        if f.name == name {
+          out = f.effects
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return out
+}
+
+// The callee names in the body of the flow named `name` (empty if not found).
+pure flow flowCallNames(flows: Array<Auto>, name: String) -> Array<Auto>
+contract { intent { "Return the callee names in the body of the flow with this name, else empty." } }
+{
+  mut out: Array<Auto> = Array.empty()
+  mut i: Int = 0
+  while i < flows.count() {
+    let fOpt = flows.get(i)
+    match fOpt {
+      Some(f) => {
+        if f.name == name {
+          out = collectCallNamesStmts(f.body)
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return out
+}
+
+// True when a records list already carries a record for this effect (first-introducer dedup).
+pure flow containsEffectRec(recs: Array<Auto>, effect: String) -> Bool
+contract { intent { "True when some record in recs has .effect == effect." } }
+{
+  mut found: Bool = false
+  mut i: Int = 0
+  while i < recs.count() {
+    let rOpt = recs.get(i)
+    match rOpt {
+      Some(r) => {
+        if r.effect == effect {
+          found = true
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return found
+}
+
+// Effects required TRANSITIVELY by `name`: every transitively-called flow's DECLARED effects, as
+// {effect, introducer} records (first introducer kept). `seen` is the path guard against cycles.
+pure flow collectTransitiveEffects(flows: Array<Auto>, name: String, seen: Array<Auto>) -> Array<Auto>
+contract { intent { "Records {effect, introducer} for every effect a transitively-called flow declares." } }
+{
+  mut out: Array<Auto> = Array.empty()
+  let calls: Array<Auto> = flowCallNames(flows, name)
+  mut i: Int = 0
+  while i < calls.count() {
+    let cOpt = calls.get(i)
+    match cOpt {
+      Some(calledName) => {
+        let calleeEffs: Array<Auto> = declaredEffectsOfFlow(flows, calledName)
+        mut j: Int = 0
+        while j < calleeEffs.count() {
+          let eOpt = calleeEffs.get(j)
+          match eOpt {
+            Some(eff) => {
+              if containsEffectRec(out, eff) == false {
+                out = out.append({ effect: eff, introducer: calledName })
+              }
+            }
+            None => {}
+            _ => {}
+          }
+          j = j + 1
+        }
+        if contains(seen, calledName) == false {
+          let newSeen: Array<Auto> = seen.append(calledName)
+          let deeper: Array<Auto> = collectTransitiveEffects(flows, calledName, newSeen)
+          mut k: Int = 0
+          while k < deeper.count() {
+            let dOpt = deeper.get(k)
+            match dOpt {
+              Some(rec) => {
+                if containsEffectRec(out, rec.effect) == false {
+                  out = out.append(rec)
+                }
+              }
+              None => {}
+              _ => {}
+            }
+            k = k + 1
+          }
+        }
+      }
+      None => {}
+      _ => {}
+    }
+    i = i + 1
+  }
+  return out
+}
+
 // Derive used effects from the body AST, then reconcile against declared.
 pure flow checkBodyEffects(flows: Array<Auto>) -> EffectCheckResult
 contract {
@@ -505,6 +733,28 @@ contract {
             _ => {}
           }
           u = u + 1
+        }
+
+        // FUNGI-EFFECT-002 (TRANSITIVE_EFFECT_NOT_DECLARED, error): an effect a transitively-called
+        // flow DECLARES that THIS flow does not (effect-checker.ts:942). Skip pure flows — a pure flow
+        // reaching an effect is the 001/003 boundary, not a transitive under-declaration.
+        if kind != "pure" {
+          let transReq: Array<Auto> = collectTransitiveEffects(flows, name, [name])
+          mut t: Int = 0
+          while t < transReq.count() {
+            let trOpt = transReq.get(t)
+            match trOpt {
+              Some(rec) => {
+                if contains(declared, rec.effect) == false {
+                  let msg2: String = "Flow '" + name + "' calls '" + rec.introducer + "' which requires effect '" + rec.effect + "', but '" + name + "' does not declare it"
+                  flowDiags = flowDiags.append({ code: "FUNGI-EFFECT-002", message: msg2, flowName: name, severity: "error" })
+                }
+              }
+              None => {}
+              _ => {}
+            }
+            t = t + 1
+          }
         }
 
         mut j: Int = 0

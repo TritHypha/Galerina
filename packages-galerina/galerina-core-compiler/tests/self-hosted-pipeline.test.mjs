@@ -219,6 +219,16 @@ describe("self-hosted pipeline — effect + governance over the parsed body AST 
     assert.ok(codes.includes("FUNGI-EFFECT-009"), `expected 009 on f, got: ${codes.join(", ")}`);
   });
 
+  it("FUNGI-EFFECT-002: a flow transitively calling an undeclared effect, via the REAL parser", async () => {
+    // b declares network.outbound; a calls b() in its body but declares nothing → the twin's
+    // checkBodyEffects builds the call graph from the parsed bodies and flags 002 on a. Proves the
+    // parser produces the flow-call structure the transitive walk needs (leg-2).
+    const flows = await flowsFrom(`flow b() -> Int\n  contract { effects { network.outbound } }\n{ return 0 }\nflow a() -> Int {\n  let r = b()\n  return 0\n}`);
+    const r = await executeFlow("checkBodyEffects", new Map([["flows", flows]]), effect.ast);
+    const codes = codesOn(r).filter((d) => d.flowName === "a").map((d) => d.code);
+    assert.ok(codes.includes("FUNGI-EFFECT-002"), `expected 002 on a, got: ${codes.join(", ")}`);
+  });
+
   it("governance flags a secure flow that never audits in its body", async () => {
     const flows = await flowsFrom(`secure flow charge() -> Int { dbWrite(amount)\nreturn 0 }`);
     const r = await executeFlow("checkBodyGovernance", new Map([["flows", flows]]), govern.ast);
