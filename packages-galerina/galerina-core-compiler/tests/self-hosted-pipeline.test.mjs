@@ -241,6 +241,22 @@ describe("self-hosted pipeline — effect + governance over the parsed body AST 
     assert.ok(codes.includes("FUNGI-EFFECT-002"), `expected 002 on pure a, got: ${codes.join(", ")}`);
   });
 
+  // leg-0 capability tripwire (R&D caveat 2 / #99): Stage-A's collectFnHelperEffects (effect-checker.ts:1370)
+  // emits 002 for a nested `fn` helper that uses an effect the parent flow does not declare — it walks the
+  // `fnDecl` children of the flow body. The SELF-HOSTED parser does NOT yet produce fnDecl nodes: the lexer
+  // tokenizes `fn` (lexer.fungi:64) but parser.fungi has no fn-declaration production, so a nested fn helper
+  // degrades to a flat exprStmt sequence (the same class as K3 ops → param, #93). The twin therefore cannot
+  // faithfully mirror the fn-helper 002 sub-path until the parser grows fn support. This test PINS that
+  // boundary: it passes while the parser lacks fn structure and FLIPS the moment fnDecl appears — the signal
+  // to build the twin's fn-helper mirror. Do not "fix" by deleting; it is a capability tripwire, not a bug.
+  it("leg-0: self-hosted parser does not yet structure a nested fn helper (fn-helper 002 is parser-gated)", async () => {
+    const flows = await flowsFrom(`flow a() -> Int {\n  fn helper() -> Int { return 1 }\n  return 0\n}`);
+    const a = flows.items[0].value ?? flows.items[0];
+    const kinds = a.fields.get("body").items.map((s) => (s.value ?? s).fields.get("kind").value);
+    assert.ok(!kinds.includes("fnDecl"),
+      `leg-0 tripwire FLIPPED: parser now emits fnDecl (body kinds: ${kinds.join(", ")}) — time to mirror collectFnHelperEffects (effect-checker.ts:1370) as the twin's fn-helper 002 sub-path`);
+  });
+
   it("governance flags a secure flow that never audits in its body", async () => {
     const flows = await flowsFrom(`secure flow charge() -> Int { dbWrite(amount)\nreturn 0 }`);
     const r = await executeFlow("checkBodyGovernance", new Map([["flows", flows]]), govern.ast);
