@@ -1,7 +1,7 @@
 {
   "generatedBy": "gen-contract-registry.mjs",
-  "contracts": 840,
-  "parsed": 446,
+  "contracts": 906,
+  "parsed": 450,
   "rows": [
     {
       "file": "docs/examples/Level-1-Basics/001-pure-flow/example.fungi",
@@ -2282,6 +2282,30 @@
       "intent": "Approve a payment — enforce high-value threshold as a governance condition."
     },
     {
+      "file": "docs/reference/examples/cost-model/loops-cost.fungi",
+      "name": "gridChecksum",
+      "qualifier": "pure",
+      "signature": "pure flow gridChecksum(rows: Int, cols: Int) -> Int",
+      "effects": [],
+      "intent": "Fold a rows-by-cols grid; the work is rows*cols body executions — algorithmic cost, not nesting cost."
+    },
+    {
+      "file": "docs/reference/examples/cost-model/nesting-shape.fungi",
+      "name": "classifyDeep",
+      "qualifier": "pure",
+      "signature": "pure flow classifyDeep(kind: Int, magnitude: Int) -> Int",
+      "effects": [],
+      "intent": "Classify a reading by kind and magnitude — written with nested blocks (shape only; same lowering as the flat form)."
+    },
+    {
+      "file": "docs/reference/examples/cost-model/nesting-shape.fungi",
+      "name": "classifyFlat",
+      "qualifier": "pure",
+      "signature": "pure flow classifyFlat(kind: Int, magnitude: Int) -> Int",
+      "effects": [],
+      "intent": "The same classification as classifyDeep, written flat — identical verdicts on every input."
+    },
+    {
       "file": "examples/aerospace/planSatelliteManeuver.fungi",
       "name": "planSatelliteManeuver",
       "qualifier": "secure",
@@ -2349,6 +2373,22 @@
     },
     {
       "file": "examples/auth-service/auditChainService.fungi",
+      "name": "sanitizeIdentifier",
+      "qualifier": "pure",
+      "signature": "pure flow sanitizeIdentifier(s: String) -> String",
+      "effects": [],
+      "intent": "Bound an untrusted audit identifier to a maximum length before use (CWE-400)."
+    },
+    {
+      "file": "examples/auth-service/auditChainService.fungi",
+      "name": "validateStatus",
+      "qualifier": "pure",
+      "signature": "pure flow validateStatus(status: String) -> String",
+      "effects": [],
+      "intent": "Chain a governed audit entry from the request's flowName, status, and timestamp."
+    },
+    {
+      "file": "examples/auth-service/auditChainService.fungi",
       "name": "chainAuditEntry",
       "qualifier": "secure",
       "signature": "secure flow chainAuditEntry(readonly request: Request) -> Response",
@@ -2373,6 +2413,14 @@
       "signature": "pure flow validateAuditEvent(eventName: String, level: String) -> Bool",
       "effects": [],
       "intent": "Ensure required fields are present before writing to the audit log."
+    },
+    {
+      "file": "examples/auth-service/auditWriterService.fungi",
+      "name": "sanitizeEventName",
+      "qualifier": "pure",
+      "signature": "pure flow sanitizeEventName(name: String) -> String",
+      "effects": [],
+      "intent": "Bound an untrusted audit event name to a maximum length before use (CWE-400)."
     },
     {
       "file": "examples/auth-service/auditWriterService.fungi",
@@ -2403,6 +2451,22 @@
     },
     {
       "file": "examples/auth-service/bytecodeRouterService.fungi",
+      "name": "validateQualifier",
+      "qualifier": "pure",
+      "signature": "pure flow validateQualifier(qualifier: String) -> String",
+      "effects": [],
+      "intent": "Accept flow metadata and return the optimal execution tier selection."
+    },
+    {
+      "file": "examples/auth-service/bytecodeRouterService.fungi",
+      "name": "validateBoolStr",
+      "qualifier": "pure",
+      "signature": "pure flow validateBoolStr(flag: String) -> String",
+      "effects": [],
+      "intent": "Accept flow metadata and return the optimal execution tier selection."
+    },
+    {
+      "file": "examples/auth-service/bytecodeRouterService.fungi",
       "name": "resolveBytecodeRoute",
       "qualifier": "secure",
       "signature": "secure flow resolveBytecodeRoute(readonly request: Request) -> TierResult",
@@ -2430,6 +2494,22 @@
     },
     {
       "file": "examples/auth-service/capabilityHostService.fungi",
+      "name": "validateEffectName",
+      "qualifier": "pure",
+      "signature": "pure flow validateEffectName(effectName: String) -> String",
+      "effects": [],
+      "intent": "Validate an untrusted effect name against the canonical effect vocabulary before use."
+    },
+    {
+      "file": "examples/auth-service/capabilityHostService.fungi",
+      "name": "validateContext",
+      "qualifier": "pure",
+      "signature": "pure flow validateContext(context: String) -> String",
+      "effects": [],
+      "intent": "Resolve whether a requested effect is permitted in the caller's capability context."
+    },
+    {
+      "file": "examples/auth-service/capabilityHostService.fungi",
       "name": "checkCapability",
       "qualifier": "secure",
       "signature": "secure flow checkCapability(readonly request: Request) -> Response",
@@ -2454,6 +2534,14 @@
       "signature": "pure flow effectTier(effectName: String) -> String",
       "effects": [],
       "intent": "Return the execution tier for a given effect. Governance decides. Economics optimises."
+    },
+    {
+      "file": "examples/auth-service/capabilityResolverService.fungi",
+      "name": "validateEffectName",
+      "qualifier": "pure",
+      "signature": "pure flow validateEffectName(effectName: String) -> String",
+      "effects": [],
+      "intent": "Validate an untrusted effect name against the canonical effect vocabulary before use."
     },
     {
       "file": "examples/auth-service/capabilityResolverService.fungi",
@@ -2506,6 +2594,14 @@
     },
     {
       "file": "examples/auth-service/economicsRouterService.fungi",
+      "name": "validateBoolStr",
+      "qualifier": "pure",
+      "signature": "pure flow validateBoolStr(flag: String) -> String",
+      "effects": [],
+      "intent": "Accept flow economics metadata and return a routing decision."
+    },
+    {
+      "file": "examples/auth-service/economicsRouterService.fungi",
       "name": "routeByEconomics",
       "qualifier": "secure",
       "signature": "secure flow routeByEconomics(readonly request: Request) -> EconomicsResult",
@@ -2536,6 +2632,22 @@
       "name": "totalCost",
       "qualifier": "pure",
       "signature": "pure flow totalCost(computeCost: Int, riskCost: Int, auditCost: Int) -> Int",
+      "effects": [],
+      "intent": "Estimate the economic cost of an operation to inform routing decisions."
+    },
+    {
+      "file": "examples/auth-service/economicsService.fungi",
+      "name": "validateCount",
+      "qualifier": "pure",
+      "signature": "pure flow validateCount(n: Int) -> Int",
+      "effects": [],
+      "intent": "Estimate the economic cost of an operation to inform routing decisions."
+    },
+    {
+      "file": "examples/auth-service/economicsService.fungi",
+      "name": "validateClass",
+      "qualifier": "pure",
+      "signature": "pure flow validateClass(c: Int) -> Int",
       "effects": [],
       "intent": "Estimate the economic cost of an operation to inform routing decisions."
     },
@@ -2576,6 +2688,22 @@
     },
     {
       "file": "examples/auth-service/effectCheckerService.fungi",
+      "name": "validateEffectName",
+      "qualifier": "pure",
+      "signature": "pure flow validateEffectName(effectName: String) -> String",
+      "effects": [],
+      "intent": "Validate an untrusted effect name against the canonical effect vocabulary before use."
+    },
+    {
+      "file": "examples/auth-service/effectCheckerService.fungi",
+      "name": "validateQualifier",
+      "qualifier": "pure",
+      "signature": "pure flow validateQualifier(qualifier: String) -> String",
+      "effects": [],
+      "intent": "Verify that a flow's declared effects are valid and complete. Phase 57 milestone: the effect checker itself is governed Galerina source."
+    },
+    {
+      "file": "examples/auth-service/effectCheckerService.fungi",
       "name": "checkEffectDeclaration",
       "qualifier": "secure",
       "signature": "secure flow checkEffectDeclaration(readonly request: Request) -> EffectCheckResult",
@@ -2600,6 +2728,14 @@
       "signature": "pure flow requiresAuditForLevel(level: Int) -> Bool",
       "effects": [],
       "intent": "Return true when the governance level mandates audit logging (level >= 2)."
+    },
+    {
+      "file": "examples/auth-service/governanceService.fungi",
+      "name": "validateEffectTag",
+      "qualifier": "pure",
+      "signature": "pure flow validateEffectTag(effectTag: String) -> String",
+      "effects": [],
+      "intent": "Validate an untrusted effect qualifier against the known governance vocabulary before use."
     },
     {
       "file": "examples/auth-service/governanceService.fungi",
@@ -2638,6 +2774,22 @@
     },
     {
       "file": "examples/auth-service/governanceVerifierService.fungi",
+      "name": "validateEffectName",
+      "qualifier": "pure",
+      "signature": "pure flow validateEffectName(effectName: String) -> String",
+      "effects": [],
+      "intent": "Validate an untrusted effect name against the canonical effect vocabulary before use."
+    },
+    {
+      "file": "examples/auth-service/governanceVerifierService.fungi",
+      "name": "validateProfile",
+      "qualifier": "pure",
+      "signature": "pure flow validateProfile(profile: String) -> String",
+      "effects": [],
+      "intent": "Accept a governance verification request. Return APPROVED or DENIED with reason."
+    },
+    {
+      "file": "examples/auth-service/governanceVerifierService.fungi",
       "name": "verifyFlowGovernance",
       "qualifier": "secure",
       "signature": "secure flow verifyFlowGovernance(readonly request: Request) -> VerifyResult",
@@ -2671,6 +2823,22 @@
       "name": "isValidGovernanceFlags",
       "qualifier": "pure",
       "signature": "pure flow isValidGovernanceFlags(flags: Int) -> Bool",
+      "effects": [],
+      "intent": "Verify a runtime manifest's schema version and signature status."
+    },
+    {
+      "file": "examples/auth-service/manifestVerificationService.fungi",
+      "name": "validateSchemaVersion",
+      "qualifier": "pure",
+      "signature": "pure flow validateSchemaVersion(version: String) -> String",
+      "effects": [],
+      "intent": "Verify a runtime manifest's schema version and signature status."
+    },
+    {
+      "file": "examples/auth-service/manifestVerificationService.fungi",
+      "name": "validateFlagsMask",
+      "qualifier": "pure",
+      "signature": "pure flow validateFlagsMask(n: Int) -> Int",
       "effects": [],
       "intent": "Verify a runtime manifest's schema version and signature status."
     },
@@ -2745,6 +2913,14 @@
     },
     {
       "file": "examples/auth-service/proofGraphService.fungi",
+      "name": "validateQualifier",
+      "qualifier": "pure",
+      "signature": "pure flow validateQualifier(qualifier: String) -> String",
+      "effects": [],
+      "intent": "Accept a flow metadata request and return a governance proof summary."
+    },
+    {
+      "file": "examples/auth-service/proofGraphService.fungi",
       "name": "generateProofSummary",
       "qualifier": "secure",
       "signature": "secure flow generateProofSummary(readonly request: Request) -> ProofResult",
@@ -2769,6 +2945,14 @@
       "signature": "pure flow proofStrength(algorithm: String) -> Int",
       "effects": [],
       "intent": "Return the proof strength score for the given algorithm (3=strongest, 0=unknown)."
+    },
+    {
+      "file": "examples/auth-service/proofVerifierService.fungi",
+      "name": "validateAlgorithm",
+      "qualifier": "pure",
+      "signature": "pure flow validateAlgorithm(alg: String) -> String",
+      "effects": [],
+      "intent": "Verify a governance proof using its declared proof algorithm."
     },
     {
       "file": "examples/auth-service/proofVerifierService.fungi",
@@ -2818,6 +3002,22 @@
     },
     {
       "file": "examples/auth-service/routeDispatcherService.fungi",
+      "name": "validateMethod",
+      "qualifier": "pure",
+      "signature": "pure flow validateMethod(method: String) -> String",
+      "effects": [],
+      "intent": "Accept an incoming HTTP request, resolve the route, and return a dispatch decision. Phase 54 milestone: route dispatcher as governed Galerina source."
+    },
+    {
+      "file": "examples/auth-service/routeDispatcherService.fungi",
+      "name": "validatePath",
+      "qualifier": "pure",
+      "signature": "pure flow validatePath(path: String) -> String",
+      "effects": [],
+      "intent": "Accept an incoming HTTP request, resolve the route, and return a dispatch decision. Phase 54 milestone: route dispatcher as governed Galerina source."
+    },
+    {
+      "file": "examples/auth-service/routeDispatcherService.fungi",
       "name": "dispatchRequest",
       "qualifier": "secure",
       "signature": "secure flow dispatchRequest(readonly request: Request) -> RouteResult",
@@ -2845,6 +3045,22 @@
     },
     {
       "file": "examples/auth-service/routingPolicyService.fungi",
+      "name": "validateEffectCount",
+      "qualifier": "pure",
+      "signature": "pure flow validateEffectCount(n: Int) -> Int",
+      "effects": [],
+      "intent": "Resolve the execution route and tier for a flow from its routing policy."
+    },
+    {
+      "file": "examples/auth-service/routingPolicyService.fungi",
+      "name": "validateBoolStr",
+      "qualifier": "pure",
+      "signature": "pure flow validateBoolStr(flag: String) -> String",
+      "effects": [],
+      "intent": "Resolve the execution route and tier for a flow from its routing policy."
+    },
+    {
+      "file": "examples/auth-service/routingPolicyService.fungi",
       "name": "resolveRoute",
       "qualifier": "secure",
       "signature": "secure flow resolveRoute(readonly request: Request) -> Response",
@@ -2860,7 +3076,7 @@
       "qualifier": "pure",
       "signature": "pure flow profileAllowsRecursion(profile: String) -> Bool",
       "effects": [],
-      "intent": "Check a runtime profile request against the governed profile rules."
+      "intent": ""
     },
     {
       "file": "examples/auth-service/runtimeProfileService.fungi",
@@ -2883,6 +3099,14 @@
       "name": "profileSecurityLevel",
       "qualifier": "pure",
       "signature": "pure flow profileSecurityLevel(profile: String) -> Int",
+      "effects": [],
+      "intent": "Check a runtime profile request against the governed profile rules."
+    },
+    {
+      "file": "examples/auth-service/runtimeProfileService.fungi",
+      "name": "validateProfile",
+      "qualifier": "pure",
+      "signature": "pure flow validateProfile(profile: String) -> String",
       "effects": [],
       "intent": "Check a runtime profile request against the governed profile rules."
     },
@@ -2958,6 +3182,14 @@
     },
     {
       "file": "examples/auth-service/stdlibCoreService.fungi",
+      "name": "sanitizeInput",
+      "qualifier": "pure",
+      "signature": "pure flow sanitizeInput(s: String) -> String",
+      "effects": [],
+      "intent": "Bound an untrusted free-text input to a maximum length before use (CWE-400)."
+    },
+    {
+      "file": "examples/auth-service/stdlibCoreService.fungi",
       "name": "stdlibDemo",
       "qualifier": "secure",
       "signature": "secure flow stdlibDemo(readonly request: Request) -> StdlibResult",
@@ -2982,6 +3214,14 @@
       "signature": "pure flow typeCategory(name: String) -> String",
       "effects": [],
       "intent": "Return the category for the given type name."
+    },
+    {
+      "file": "examples/auth-service/typeRegistryService.fungi",
+      "name": "validateTypeName",
+      "qualifier": "pure",
+      "signature": "pure flow validateTypeName(name: String) -> String",
+      "effects": [],
+      "intent": "Resolve a type name against the governed type registry."
     },
     {
       "file": "examples/auth-service/typeRegistryService.fungi",
@@ -3050,6 +3290,14 @@
       "name": "requiresEncryption",
       "qualifier": "pure",
       "signature": "pure flow requiresEncryption(classification: Int) -> Bool",
+      "effects": [],
+      "intent": "Classify request data into a governed value-sensitivity class."
+    },
+    {
+      "file": "examples/auth-service/valueClassificationService.fungi",
+      "name": "validateTypeName",
+      "qualifier": "pure",
+      "signature": "pure flow validateTypeName(typeName: String) -> String",
       "effects": [],
       "intent": "Classify request data into a governed value-sensitivity class."
     },
@@ -3501,6 +3749,54 @@
     },
     {
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi",
+      "name": "isPrivilegedEffect",
+      "qualifier": "pure",
+      "signature": "pure flow isPrivilegedEffect(effect: String) -> Bool",
+      "effects": [],
+      "intent": "True for an effect only a secure/guarded flow should carry (secret.read, payment.charge)."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi",
+      "name": "isDenyOnly",
+      "qualifier": "pure",
+      "signature": "pure flow isDenyOnly(effect: String) -> Bool",
+      "effects": [],
+      "intent": "True for a deny-only effect (eval.execute, memory.spill) — recognised but never grantable."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi",
+      "name": "isBroadAlias",
+      "qualifier": "pure",
+      "signature": "pure flow isBroadAlias(effect: String) -> Bool",
+      "effects": [],
+      "intent": "True for a broad effect alias (network, database, ... , secret.access)."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi",
+      "name": "aliasCanonicalOf",
+      "qualifier": "pure",
+      "signature": "pure flow aliasCanonicalOf(effect: String) -> String",
+      "effects": [],
+      "intent": "Return the canonical effect an alias maps to, else empty string."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi",
+      "name": "effectDiagName",
+      "qualifier": "pure",
+      "signature": "pure flow effectDiagName(code: String) -> String",
+      "effects": [],
+      "intent": "The canonical Stage-A diagnostic name for an effect code the twin emits (else empty)."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi",
+      "name": "effectWithNames",
+      "qualifier": "pure",
+      "signature": "pure flow effectWithNames(diags: Array<Auto>) -> Array<Auto>",
+      "effects": [],
+      "intent": "Return the diagnostics with the canonical Stage-A name attached to each."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi",
       "name": "checkPureFlowEffects",
       "qualifier": "pure",
       "signature": "pure flow checkPureFlowEffects(flowName: String, effectCount: Int) -> Array<Auto>",
@@ -3513,7 +3809,7 @@
       "qualifier": "pure",
       "signature": "pure flow checkSecureFlowEffects(flowName: String, effectCount: Int) -> Array<Auto>",
       "effects": [],
-      "intent": "Secure/guarded flows should declare at least audit.write for traceability."
+      "intent": "Secure/guarded flows with zero declared effects: Stage-A emits NO diagnostic. The prior FUNGI-EFFECT-005 here was a SQUAT — 005 is canonically BROAD_ALIAS_USED, now emitted in the declared-effect loop. Un-squatted 2026-07-17 (R&D-adjudicated); kept as a no-op seam so the entry's call site is unchanged."
     },
     {
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi",
@@ -3546,6 +3842,54 @@
       "signature": "pure flow collectBodyEffects(stmts: Array<Auto>) -> Array<Auto>",
       "effects": [],
       "intent": "Walk a statement list: each stmt's expr(s) and nested if/while bodies contribute call effects."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi",
+      "name": "collectCallNamesExpr",
+      "qualifier": "pure",
+      "signature": "pure flow collectCallNamesExpr(expr: Auto) -> Array<Auto>",
+      "effects": [],
+      "intent": "Collect every called name in an Expr (call value + recursion into children)."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi",
+      "name": "collectCallNamesStmts",
+      "qualifier": "pure",
+      "signature": "pure flow collectCallNamesStmts(stmts: Array<Auto>) -> Array<Auto>",
+      "effects": [],
+      "intent": "Walk a statement list collecting every called name (exprs + nested bodies)."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi",
+      "name": "declaredEffectsOfFlow",
+      "qualifier": "pure",
+      "signature": "pure flow declaredEffectsOfFlow(flows: Array<Auto>, name: String) -> Array<Auto>",
+      "effects": [],
+      "intent": "Return the declared effects of the flow with this name, else empty."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi",
+      "name": "flowCallNames",
+      "qualifier": "pure",
+      "signature": "pure flow flowCallNames(flows: Array<Auto>, name: String) -> Array<Auto>",
+      "effects": [],
+      "intent": "Return the callee names in the body of the flow with this name, else empty."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi",
+      "name": "containsEffectRec",
+      "qualifier": "pure",
+      "signature": "pure flow containsEffectRec(recs: Array<Auto>, effect: String) -> Bool",
+      "effects": [],
+      "intent": "True when some record in recs has .effect == effect."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi",
+      "name": "collectTransitiveEffects",
+      "qualifier": "pure",
+      "signature": "pure flow collectTransitiveEffects(flows: Array<Auto>, name: String, seen: Array<Auto>) -> Array<Auto>",
+      "effects": [],
+      "intent": "Records {effect, introducer} for every effect a transitively-called flow declares."
     },
     {
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi",
@@ -4325,6 +4669,14 @@
     },
     {
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "isNullish",
+      "qualifier": "pure",
+      "signature": "pure flow isNullish(v: String) -> Bool",
+      "effects": [],
+      "intent": "True for the null/undefined value keywords (Stage-A type 'Null'; not valid values)."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
       "name": "inferExprType",
       "qualifier": "pure",
       "signature": "pure flow inferExprType(kind: String, litType: String, leftType: String, rightType: String) -> String",
@@ -4338,6 +4690,30 @@
       "signature": "pure flow appendAll(dst: Array<Auto>, src: Array<Auto>) -> Array<Auto>",
       "effects": [],
       "intent": "Concatenate src onto dst (Stage B arrays are append-only)."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "diagName",
+      "qualifier": "pure",
+      "signature": "pure flow diagName(code: String) -> String",
+      "effects": [],
+      "intent": "The canonical Stage-A diagnostic name for a code the twin emits (else empty)."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "diagSeverity",
+      "qualifier": "pure",
+      "signature": "pure flow diagSeverity(code: String) -> String",
+      "effects": [],
+      "intent": "The canonical Stage-A severity for a code the twin emits (else empty)."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "withNames",
+      "qualifier": "pure",
+      "signature": "pure flow withNames(diags: Array<Auto>) -> Array<Auto>",
+      "effects": [],
+      "intent": "Return the diagnostics with the canonical Stage-A name + severity attached to each."
     },
     {
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
@@ -4370,6 +4746,54 @@
       "signature": "pure flow checkStmt(flowName: String, stmt: Auto, scope: Array<Auto>) -> Array<Auto>",
       "effects": [],
       "intent": "Type-check one body statement (let/mut binding + nested if/while); the initializer and nested blocks both see `scope` (params + prior bindings)."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "isWildcardPat",
+      "qualifier": "pure",
+      "signature": "pure flow isWildcardPat(pattern: String) -> Bool",
+      "effects": [],
+      "intent": "True for a wildcard match arm pattern ('_' or 'else')."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "checkMatchArms",
+      "qualifier": "pure",
+      "signature": "pure flow checkMatchArms(flowName: String, arms: Array<Auto>) -> Array<Auto>",
+      "effects": [],
+      "intent": "FUNGI-TYPE-022/023 for a match arm set: a missing mandatory wildcard, or an unreachable arm after the first wildcard."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "genericArity",
+      "qualifier": "pure",
+      "signature": "pure flow genericArity(base: String) -> Int",
+      "effects": [],
+      "intent": "The declared type-argument arity of a known generic base, or -1 if the base is not a known generic."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "checkGenericBinding",
+      "qualifier": "pure",
+      "signature": "pure flow checkGenericBinding(flowName: String, stmt: Auto) -> Array<Auto>",
+      "effects": [],
+      "intent": "FUNGI-TYPE-009/001/002/011 for a generic Base<args> binding: wrong arity, an unknown type argument, a base-vs-literal mismatch, and Array element mismatches."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "isQuantizedMix",
+      "qualifier": "pure",
+      "signature": "pure flow isQuantizedMix(a: String, b: String) -> Bool",
+      "effects": [],
+      "intent": "True for the Float32/Int8 quantized-precision element pair (the FUNGI-TYPE-017 case)."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "checkTensorBinding",
+      "qualifier": "pure",
+      "signature": "pure flow checkTensorBinding(flowName: String, stmt: Auto) -> Array<Auto>",
+      "effects": [],
+      "intent": "FUNGI-TYPE-030/017/016 for a Tensor binding vs a tensor-typed initializer: element mismatch, quantized-precision mix, and shape mismatch."
     },
     {
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
@@ -4410,6 +4834,54 @@
       "signature": "pure flow checkStmtList(flowName: String, stmts: Array<Auto>, outerScope: Array<Auto>) -> Array<Auto>",
       "effects": [],
       "intent": "Walk a block scope: flag a duplicate binding (FUNGI-NAME-002) and a binding that shadows an outer scope (FUNGI-TYPE-020)."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "collectCallsInExpr",
+      "qualifier": "pure",
+      "signature": "pure flow collectCallsInExpr(e: Auto) -> Array<Auto>",
+      "effects": [],
+      "intent": "Every callee name in an expression tree (the call itself and calls nested in its arguments)."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "collectCallNames",
+      "qualifier": "pure",
+      "signature": "pure flow collectCallNames(stmts: Array<Auto>) -> Array<Auto>",
+      "effects": [],
+      "intent": "Every callee name invoked in a statement body, descending into nested block bodies."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "effectsForFlow",
+      "qualifier": "pure",
+      "signature": "pure flow effectsForFlow(flows: Array<Auto>, name: String) -> Array<Auto>",
+      "effects": [],
+      "intent": "The declared effects of the flow with this name (empty if unknown or effect-free)."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "checkCallEffects",
+      "qualifier": "pure",
+      "signature": "pure flow checkCallEffects(flowName: String, fd: Auto, flows: Array<Auto>) -> Array<Auto>",
+      "effects": [],
+      "intent": "FUNGI-TYPE-014: a call whose callee declares an effect the current flow does not declare."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "collectNamesByKind",
+      "qualifier": "pure",
+      "signature": "pure flow collectNamesByKind(stmts: Array<Auto>, kind: String) -> Array<Auto>",
+      "effects": [],
+      "intent": "Every statement.name for statements of the given kind, recursing into block bodies."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "checkImmutableReassign",
+      "qualifier": "pure",
+      "signature": "pure flow checkImmutableReassign(flowName: String, body: Array<Auto>) -> Array<Auto>",
+      "effects": [],
+      "intent": "FUNGI-BINDING-005: an assignment whose target was declared immutable (let, never mut)."
     },
     {
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
@@ -4474,14 +4946,6 @@
       "signature": "pure flow checkViewBindings(flowName: String, bindings: Array<Auto>) -> Array<Auto>",
       "effects": [],
       "intent": "FUNGI-TYPE-005: every view(cap) binding must carry at least one named capability."
-    },
-    {
-      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
-      "name": "checkTrapDecl",
-      "qualifier": "pure",
-      "signature": "pure flow checkTrapDecl(decl: Array<Auto>, env: Array<Auto>) -> Array<Auto>",
-      "effects": [],
-      "intent": "FUNGI-TYPE-006: trap condition must be Bool and error code must be a non-empty identifier."
     },
     {
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
@@ -4567,6 +5031,38 @@
       "signature": "pure flow telemetrySideSignal(healthDegrades: Bool, scorePresent: Bool, scoreGarbage: Bool, scoreHardDeny: Bool, scoreThrottle: Bool) -> Int",
       "effects": [],
       "intent": ""
+    },
+    {
+      "file": "packages-galerina/galerina-core-network/src/self-hosted/b8-admission.fungi",
+      "name": "vAnd",
+      "qualifier": "pure",
+      "signature": "pure flow vAnd(a: Int, b: Int) -> Int",
+      "effects": [],
+      "intent": "K3 conjunction: min over DENY<INDETERMINATE<ALLOW; one DENY absorbs the fold, no upward coercion."
+    },
+    {
+      "file": "packages-galerina/galerina-core-network/src/self-hosted/b8-admission.fungi",
+      "name": "certVerdict",
+      "qualifier": "pure",
+      "signature": "pure flow certVerdict(pinMatch: Int, chainValid: Int, notExpired: Int, revocationFresh: Int) -> Int",
+      "effects": [],
+      "intent": "S1 cert-gate: vAnd(pin_match, chain_valid, not_expired, revocation_fresh); revocation-unknown (0) caps at 0 -> DENY (closes TLS soft-fail)."
+    },
+    {
+      "file": "packages-galerina/galerina-core-network/src/self-hosted/b8-admission.fungi",
+      "name": "admitVerdict",
+      "qualifier": "pure",
+      "signature": "pure flow admitVerdict(shim: Int, verify: Int, hashPin: Int, sigPin: Int, revocation: Int, caps: Int, cert: Int) -> Int",
+      "effects": [],
+      "intent": "B8 admission: allOf/vAnd fold over G_shim, G_verify, G1(hash), G2(sig), G2b(revocation), G3(caps), G_S1(cert) — admit iff every gate is ALLOW."
+    },
+    {
+      "file": "packages-galerina/galerina-core-network/src/self-hosted/b8-admission.fungi",
+      "name": "authorized",
+      "qualifier": "pure",
+      "signature": "pure flow authorized(verdict: Int) -> Bool",
+      "effects": [],
+      "intent": "Fail-closed boundary collapse: admit IFF verdict == ALLOW (+1); INDETERMINATE (0) and DENY (-1) both reject."
     },
     {
       "file": "packages-galerina/galerina-core-network/src/self-hosted/cert-gate.fungi",
@@ -6692,6 +7188,38 @@
       "signature": "pure flow pqAdmissionVerdict(edPresent: Bool, edValid: Bool, requireHybrid: Bool, mlKeyPresent: Bool, mlSigPresent: Bool, mlValid: Bool, requireCertified: Bool) -> Int",
       "effects": [],
       "intent": "Deny-by-default PQ admission: allow only if the classical signature verifies, the no-PQ-downgrade rule holds, and the certified profile (if required) has a verified ML-DSA-65 half (CRYPTO-002)."
+    },
+    {
+      "file": "packages-galerina/galerina-tower-citizen/src/self-hosted/transport-fsm.fungi",
+      "name": "s4NextState",
+      "qualifier": "pure",
+      "signature": "pure flow s4NextState(state: Int, hasKeys: Bool, enteredAt: Int, kind: Int, g: Int, nowMs: Int, timeoutMs: Int) -> Int",
+      "effects": [],
+      "intent": "S4 delta projection: next TransportState (0 Established / 1 Recovering / 2 Closed), fail-closed — a 0 verdict holds Recovering, never resumes."
+    },
+    {
+      "file": "packages-galerina/galerina-tower-citizen/src/self-hosted/transport-fsm.fungi",
+      "name": "s4Erased",
+      "qualifier": "pure",
+      "signature": "pure flow s4Erased(state: Int, hasKeys: Bool, enteredAt: Int, kind: Int, g: Int, nowMs: Int, timeoutMs: Int) -> Bool",
+      "effects": [],
+      "intent": "S4 erase projection: an edge into Closed erases held keys; Closed-stay and non-closing edges erase nothing."
+    },
+    {
+      "file": "packages-galerina/galerina-tower-citizen/src/self-hosted/transport-fsm.fungi",
+      "name": "s4NextHasKeys",
+      "qualifier": "pure",
+      "signature": "pure flow s4NextHasKeys(state: Int, hasKeys: Bool, enteredAt: Int, kind: Int, g: Int, nowMs: Int, timeoutMs: Int) -> Bool",
+      "effects": [],
+      "intent": "S4 key projection: keys survive every edge except an edge into Closed (erase-on-close); resume holds keys."
+    },
+    {
+      "file": "packages-galerina/galerina-tower-citizen/src/self-hosted/transport-fsm.fungi",
+      "name": "s4NextEnteredAt",
+      "qualifier": "pure",
+      "signature": "pure flow s4NextEnteredAt(state: Int, hasKeys: Bool, enteredAt: Int, kind: Int, g: Int, nowMs: Int, timeoutMs: Int) -> Int",
+      "effects": [],
+      "intent": "S4 clock projection: -1 outside Recovering; entering Recovering stamps nowMs; staying keeps the original entry (cumulative timeout)."
     },
     {
       "file": "tests/owasp/owasp-a01-broken-access-control.fungi",
