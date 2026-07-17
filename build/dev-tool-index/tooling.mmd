@@ -213,6 +213,8 @@ flowchart LR
   T_audit_path_leak_mjs --> C_brand
   T_audit_path_leak_mjs --> C_graph_index
   T_audit_path_leak_mjs --> C_sensitive_allowlist
+  T_audit_percent_evidence_mjs["audit-percent-evidence.mjs"]
+  T_audit_percent_evidence_mjs --> C_teaching_corpus
   T_audit_perf_hotpath_mjs["audit-perf-hotpath.mjs"]
   T_audit_perf_hotpath_mjs --> C_signing_fusion
   T_audit_perf_hotpath_mjs --> C_gate_wiring

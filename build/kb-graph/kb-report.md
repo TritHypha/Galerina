@@ -2,7 +2,7 @@
 Generated: 2026-07-17
 
 ## Stats
-- Docs: 1240 | Edges: 3488 | Orphans: 173 | Stale links: 0 | FUNGI codes: 748
+- Docs: 1243 | Edges: 3488 | Orphans: 176 | Stale links: 0 | FUNGI codes: 748
 
 ## Document Registry (auto-generated)
 
@@ -131,6 +131,7 @@ Generated: 2026-07-17
 | 2026-07-17-ADJUDICATION-benchmark-harness-DECOUPLE-2-with-declared-build-path-plus-provenance-protocol-host-side.md | — | — | — | FUNGI-PARSE-001 |
 | 2026-07-17-ADJUDICATION-bool-taint-reject-validateFlag-launder-use-c-flag-b-to-owner.md | — | — | — | — |
 | 2026-07-17-ANSWER-96a-scoping-6-record-alloc-is-intra-flow-BUT-neither-benchmark-allocates-binary-trees-language-gap.md | — | — | — | — |
+| 2026-07-17-CI-DIAGNOSIS-conventions-30-of-30-red-since-07-12-two-causes-neither-is-phase-47.md | — | — | — | — |
 | 2026-07-17-CLARIFICATION-96a-escaping-records-EXCLUDED-from-release-window-not-above-the-mark.md | — | — | — | — |
 | 2026-07-17-CLOSING-CYCLE-full-verify-thesis-build-registry-benchmark-harness-finding.md | — | — | — | FUNGI-MATCH-001, FUNGI-PARSE-001, FUNGI-SAFETY-006 |
 | 2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction.md | — | — | — | — |
@@ -138,6 +139,8 @@ Generated: 2026-07-17
 | 2026-07-17-DELIVER-type-twin-severity-map-19-codes-plus-gate-count-21-vs-19-discrepancy.md | — | — | — | FUNGI-TYPE-001, FUNGI-TYPE-002, FUNGI-TYPE-003, FUNGI-TYPE-004, FUNGI-TYPE-005 …+14 |
 | 2026-07-17-DELIVERED-96a-escape-increment-1-recordEscapes-predicate-6of6-please-isolation-verify.md | — | — | — | — |
 | 2026-07-17-DELIVERED-rd0349-I1-unit-table-generated-157-plus-3-stoppers.md | — | — | — | — |
+| 2026-07-17-DELIVERED-ruling1-evidence-gate-built-your-refinement-caught-my-hole.md | — | — | — | — |
+| 2026-07-17-DESIGN-preflight-ci-must-reproduce-CIs-ABSENCES-a-naive-pre-push-hook-would-have-caught-neither.md | — | — | — | — |
 | 2026-07-17-DESIGN-RD-0451-dev-tools-audit-checker-wiring-says-OK-while-resolveImports-has-zero-callsites.md | — | — | — | FUNGI-TYPE-001 |
 | 2026-07-17-FINDING-96a-record-site-already-heap-bumps-not-host-abi-escape-integration-needs-reground.md | — | — | — | — |
 | 2026-07-17-GROUNDING-escape-analysis-pass-record-escapes-flow-predicate-fail-closed.md | — | — | — | — |
@@ -1339,11 +1342,13 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-ADJUDICATION-96a-RULE-A-extends-existing-B2-arena-to-per-iteration-mark-release-secret-zeroing-catch.md` — 2026-07-17-ADJUDICATION-96a-RULE-A-extends-existing-B2-arena-to-per-iteration-mark-release-secret-zeroing-catch
 - `2026-07-17-ADJUDICATION-benchmark-harness-DECOUPLE-2-with-declared-build-path-plus-provenance-protocol-host-side.md` — 2026-07-17-ADJUDICATION-benchmark-harness-DECOUPLE-2-with-declared-build-path-plus-provenance-protocol-host-side
 - `2026-07-17-ADJUDICATION-bool-taint-reject-validateFlag-launder-use-c-flag-b-to-owner.md` — 2026-07-17-ADJUDICATION-bool-taint-reject-validateFlag-launder-use-c-flag-b-to-owner
+- `2026-07-17-CI-DIAGNOSIS-conventions-30-of-30-red-since-07-12-two-causes-neither-is-phase-47.md` — 2026-07-17-CI-DIAGNOSIS-conventions-30-of-30-red-since-07-12-two-causes-neither-is-phase-47
 - `2026-07-17-CLARIFICATION-96a-escaping-records-EXCLUDED-from-release-window-not-above-the-mark.md` — 2026-07-17-CLARIFICATION-96a-escaping-records-EXCLUDED-from-release-window-not-above-the-mark
 - `2026-07-17-CLOSING-CYCLE-full-verify-thesis-build-registry-benchmark-harness-finding.md` — 2026-07-17-CLOSING-CYCLE-full-verify-thesis-build-registry-benchmark-harness-finding
 - `2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction.md` — 2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction
 - `2026-07-17-DELIVER-type-twin-severity-map-19-codes-plus-gate-count-21-vs-19-discrepancy.md` — 2026-07-17-DELIVER-type-twin-severity-map-19-codes-plus-gate-count-21-vs-19-discrepancy
 - `2026-07-17-DESIGN-RD-0451-dev-tools-audit-checker-wiring-says-OK-while-resolveImports-has-zero-callsites.md` — 2026-07-17-DESIGN-RD-0451-dev-tools-audit-checker-wiring-says-OK-while-resolveImports-has-zero-callsites
+- `2026-07-17-DESIGN-preflight-ci-must-reproduce-CIs-ABSENCES-a-naive-pre-push-hook-would-have-caught-neither.md` — 2026-07-17-DESIGN-preflight-ci-must-reproduce-CIs-ABSENCES-a-naive-pre-push-hook-would-have-caught-neither
 - `2026-07-17-GROUNDING-RD0446-bump-arena-emittable-WAT-shape-5-asks.md` — 2026-07-17-GROUNDING-RD0446-bump-arena-emittable-WAT-shape-5-asks
 - `2026-07-17-GROUNDING-escape-analysis-pass-record-escapes-flow-predicate-fail-closed.md` — 2026-07-17-GROUNDING-escape-analysis-pass-record-escapes-flow-predicate-fail-closed
 - `2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension.md` — 2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension
@@ -1418,6 +1423,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-DELIVER-76-taint-laundering-pattern-file-governanceService-verify-before-fanout.md` — 2026-07-17-DELIVER-76-taint-laundering-pattern-file-governanceService-verify-before-fanout
 - `2026-07-17-DELIVERED-96a-escape-increment-1-recordEscapes-predicate-6of6-please-isolation-verify.md` — 2026-07-17-DELIVERED-96a-escape-increment-1-recordEscapes-predicate-6of6-please-isolation-verify
 - `2026-07-17-DELIVERED-rd0349-I1-unit-table-generated-157-plus-3-stoppers.md` — 2026-07-17-DELIVERED-rd0349-I1-unit-table-generated-157-plus-3-stoppers
+- `2026-07-17-DELIVERED-ruling1-evidence-gate-built-your-refinement-caught-my-hole.md` — 2026-07-17-DELIVERED-ruling1-evidence-gate-built-your-refinement-caught-my-hole
 - `2026-07-17-FINDING-96a-record-site-already-heap-bumps-not-host-abi-escape-integration-needs-reground.md` — 2026-07-17-FINDING-96a-record-site-already-heap-bumps-not-host-abi-escape-integration-needs-reground
 - `2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md` — 2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed
 - `2026-07-17-QUESTION-76-bool-taint-validateFlag-degenerate-plus-fanout-7of19.md` — 2026-07-17-QUESTION-76-bool-taint-validateFlag-degenerate-plus-fanout-7of19

@@ -4,8 +4,8 @@
     "packages": 95,
     "testBearing": 94,
     "tests": 7292,
-    "devTools": 86,
-    "auditTools": 48,
+    "devTools": 87,
+    "auditTools": 49,
     "toolsInCadence": 28,
     "proofs": 40
   },
@@ -1470,6 +1470,16 @@
       ]
     },
     {
+      "name": "audit-percent-evidence.mjs",
+      "category": "audit",
+      "purpose": "every published % must carry evidence (RULING 1)",
+      "selfTest": true,
+      "inCadence": false,
+      "concerns": [
+        "teaching-corpus"
+      ]
+    },
+    {
       "name": "audit-percent-history.mjs",
       "category": "audit",
       "purpose": "recurring % audit snapshots + deltas",
@@ -2577,6 +2587,7 @@
       "audit-hardening-determinism.mjs",
       "audit-oblivious.mjs",
       "audit-papers-index.mjs",
+      "audit-percent-evidence.mjs",
       "audit-provenance.mjs",
       "ts-retirement-graph.mjs",
       "lint-conventions.mjs",
@@ -2653,6 +2664,7 @@
       "audit-overclaim-phrases.mjs",
       "audit-package-border.mjs",
       "audit-papers-index.mjs",
+      "audit-percent-evidence.mjs",
       "audit-percent-history.mjs",
       "audit-production-blockers.mjs",
       "audit-provenance.mjs",
