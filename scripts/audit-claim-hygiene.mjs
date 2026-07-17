@@ -18,10 +18,27 @@
 //   node scripts/audit-claim-hygiene.mjs               # enforce: exit 1 on any finding
 import { readFileSync, existsSync } from "node:fs";
 import { execFileSync } from "node:child_process";
-import { join, dirname, resolve } from "node:path";
+import { join, dirname, resolve, relative, isAbsolute } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+
+/**
+ * Does an already-resolved absolute path land OUTSIDE the repo root?
+ *
+ * PURE + FILESYSTEM-FREE by design — that is the whole point. The predicate must not ask the disk,
+ * because the disk answers for the auditor and not for the reader. `root` is injected (a DI seam) so
+ * the self-test can drive it without touching the real tree.
+ *
+ * Compares path SEGMENTS, not string prefixes: a naive `abs.startsWith(root)` would call
+ * `/repo-evil/x.md` an inside-link because `/repo` is a string prefix of it.
+ */
+export function escapesRoot(abs, root = ROOT) {
+  const rel = relative(root, abs);
+  // relative() gives "" for the root itself, a plain path for descendants, and something starting
+  // with ".." (or an absolute path, on a different drive/UNC) for anything outside.
+  return rel.startsWith("..") || isAbsolute(rel);
+}
 const git = (...a) => execFileSync("git", a, { cwd: ROOT, encoding: "utf8", windowsHide: true });
 const ALLOW_MARKER = "claim-hygiene:allow";
 const SELF = "scripts/audit-claim-hygiene.mjs";
@@ -89,11 +106,25 @@ function scanText(text, relForLinks) {
     COMPLIANCE.lastIndex = 0;
     if (COMPLIANCE.test(ln) && !COMPLIANCE_QUALIFIER.test(ln)) findings.push({ line: i + 1, rule: "B:bare-compliance-claim", text: ln.trim().slice(0, 150) });
     // C. reference-must-exist — relative markdown links to a repo .md file.
+    //
+    // TWO rules, deliberately distinct (R&D 2026-07-17). A link that ESCAPES the repo root can never
+    // resolve for anyone who clones this repo — so asking the local filesystem about it is itself the
+    // bug: it answers with the auditor's machine, not the reader's. This audit was GREEN locally and
+    // emitted 123 findings on a clean checkout, every one a `../../../ZTF-Knowledge-Bases/…` link into
+    // the PRIVATE sibling — resolving only because a dev box happens to have it checked out next door.
+    // So escapes are decided BY ARITHMETIC, before existsSync is ever consulted: local and CI agree by
+    // construction rather than by luck.
+    //
+    // And it is NOT reported as "broken". A finding that names the wrong defect gets the wrong
+    // remediation — "broken" invites someone to repair the path, and that is exactly what happened once
+    // already (the #34 codemod "fixed" stale refs by pointing them AT the private sibling). The defect
+    // is that a public doc reaches outside its own repo at all.
     if (relForLinks) {
       for (const m of ln.matchAll(/\]\((?!https?:|#|mailto:)([^)#]+\.md)(?:#[^)]*)?\)/g)) {
         const target = m[1].trim();
         const abs = target.startsWith("/") ? join(ROOT, target.slice(1)) : resolve(join(ROOT, dirname(relForLinks)), target);
-        if (!existsSync(abs)) findings.push({ line: i + 1, rule: "C:broken-doc-link", text: target });
+        if (escapesRoot(abs)) findings.push({ line: i + 1, rule: "C:escapes-repo-root", text: target });
+        else if (!existsSync(abs)) findings.push({ line: i + 1, rule: "C:broken-doc-link", text: target });
       }
     }
   }
@@ -123,6 +154,22 @@ function selfTest() {
     ["bare PCI-DSS compliant fires", fires("Galerina is PCI-DSS compliant out of the box")],
     ["compliance WITH qualifier does NOT fire", !fires("emits evidence useful to a PCI-DSS auditor; no compliance claim")],
     ["broken doc link fires", scanText("see [x](docs/does-not-exist-zzz.md)", "README.md").some((f) => f.rule === "C:broken-doc-link")],
+
+    // C:escapes-repo-root — the rule that was missing while 123 links into the PRIVATE sibling read as
+    // "all doc links resolve". Non-vacuous in BOTH directions: it must fire on a real escape even when
+    // the target EXISTS on this machine (the whole failure mode), and stay silent on in-repo links.
+    ["link escaping the repo root FIRES — even though it resolves on this dev box",
+      scanText("see [x](../../../ZTF-Knowledge-Bases/README.md)", "docs/rules/x.md").some((f) => f.rule === "C:escapes-repo-root")],
+    ["…and it is NOT mis-reported as broken (wrong defect ⇒ wrong fix: someone already 'repaired' these once)",
+      !scanText("see [x](../../../ZTF-Knowledge-Bases/README.md)", "docs/rules/x.md").some((f) => f.rule === "C:broken-doc-link")],
+    ["a valid IN-REPO relative link stays silent (not 'everything escapes')",
+      !scanText("see [x](../../README.md)", "docs/rules/x.md").some((f) => f.rule === "C:escapes-repo-root")],
+    ["escapesRoot is decided by ARITHMETIC, never by the filesystem",
+      escapesRoot("/repo/../elsewhere/x.md", "/repo") && !escapesRoot("/repo/docs/x.md", "/repo")],
+    ["escapesRoot compares SEGMENTS, not string prefixes (/repo-evil is not inside /repo)",
+      escapesRoot("/repo-evil/x.md", "/repo")],
+    ["the repo root itself does not escape",
+      !escapesRoot("/repo", "/repo")],
   ];
   let ok = true;
   for (const [name, pass] of checks) { console.log(`  ${pass ? "✅" : "❌"} ${name}`); if (!pass) ok = false; }
@@ -137,7 +184,22 @@ const files = git("ls-files").split("\n").map((s) => s.trim()).filter(Boolean)
   .filter((f) => f === "README.md" || f === "SECURITY.md" || /^docs\/.*\.md$/.test(f))
   .filter((f) => f !== SELF);
 
-let findingCount = 0, fileCount = 0;
+// ── C:escapes-repo-root RATCHET ──────────────────────────────────────────────────────────────────
+// The escape rule (added 2026-07-17) exposed a pre-existing debt the old resolver could not see: 123
+// public docs link into the PRIVATE sibling KB. Fixing them is a per-target judgement — de-link to
+// prose by default, dual-home the few that a public reader genuinely needs (R&D triages, main edits) —
+// so they cannot all be repaired in the same commit that lands the detector.
+//
+// This is a DECLARED, SHRINK-ONLY baseline, the same shape as gate-selftests' ADVISORY_BASELINE. It is
+// not a mute: every finding is still PRINTED in full, the count is enforced, and a single NEW escape
+// pushes it over the line and fails. Lower it as targets are fixed; never raise it.
+//
+// Why baseline rather than leave it red: a red gate here would be removed from the cadence within a
+// day, and then NOTHING would enforce the boundary. Declared debt that blocks new violations beats an
+// honest red that gets switched off.
+const ESCAPE_BASELINE = 123;
+
+let findingCount = 0, fileCount = 0, escapeCount = 0;
 const report = [];
 for (const rel of files) {
   const abs = join(ROOT, rel);
@@ -145,17 +207,38 @@ for (const rel of files) {
   const findings = scanText(readFileSync(abs, "utf8"), rel);
   if (findings.length) {
     fileCount++; findingCount += findings.length;
+    escapeCount += findings.filter((f) => f.rule === "C:escapes-repo-root").length;
     for (const f of findings) report.push(`  ${rel}:${f.line}  [${f.rule}]  ${f.text}`);
   }
 }
 
+// Everything EXCEPT the baselined escapes is blocking, as before.
+const blocking = findingCount - Math.min(escapeCount, ESCAPE_BASELINE);
+
 if (findingCount) {
-  console.error(`\n  ❌ claim-hygiene: ${findingCount} finding(s) across ${fileCount} public doc(s):\n`);
+  console.error(`\n  claim-hygiene: ${findingCount} finding(s) across ${fileCount} public doc(s):\n`);
   console.error(report.join("\n"));
-  console.error(`\n  Fix: scope the claim to its evidence tier (drop the superlative or cite a named proof/`);
-  console.error(`  benchmark/cert artifact); use controlled PQ vocabulary (ML-DSA is the post-quantum half,`);
-  console.error(`  not Ed25519); qualify any compliance wording; repair the broken doc link.`);
-  console.error(`  A line that must quote a phrase to teach the rule can carry the marker "${ALLOW_MARKER}".`);
-  process.exit(1);
+  if (escapeCount) {
+    console.error(`\n  ── ${escapeCount} × [C:escapes-repo-root] — DECLARED DEBT (baseline ${ESCAPE_BASELINE}, shrink-only) ──`);
+    console.error(`  These are NOT broken paths to repair — that is how they got here (#34's codemod repointed`);
+    console.error(`  stale refs AT the private sibling). A public doc must not reference a path outside its own`);
+    console.error(`  repo at all: it resolves only on a machine that happens to have the sibling checked out,`);
+    console.error(`  and never for anyone who clones this repo. Fix = de-link to prose ("maintained in the`);
+    console.error(`  internal engineering KB", no path) by default; dual-home a curated public copy only where a`);
+    console.error(`  public reader genuinely needs it. Tracked as task #103.`);
+  }
+  if (escapeCount > ESCAPE_BASELINE) {
+    console.error(`\n  ❌ NEW boundary violation: ${escapeCount} escapes vs baseline ${ESCAPE_BASELINE}. The ratchet only shrinks.`);
+    process.exit(1);
+  }
+  if (blocking > 0) {
+    console.error(`\n  ❌ ${blocking} blocking finding(s). Fix: scope the claim to its evidence tier (drop the superlative`);
+    console.error(`  or cite a named proof/benchmark/cert artifact); use controlled PQ vocabulary (ML-DSA is the`);
+    console.error(`  post-quantum half, not Ed25519); qualify any compliance wording; repair the broken doc link.`);
+    console.error(`  A line that must quote a phrase to teach the rule can carry the marker "${ALLOW_MARKER}".`);
+    process.exit(1);
+  }
+  console.error(`\n  ⚠️  ${escapeCount} declared escape(s) at baseline — no new violations. Gate holds; debt visible.`);
+  process.exit(0);
 }
 console.log(`  ✅ claim-hygiene: ${files.length} public doc(s) clean — no unqualified superlatives, controlled PQ vocabulary, all doc links resolve.`);
