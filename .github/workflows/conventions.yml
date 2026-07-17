@@ -415,13 +415,22 @@ jobs:
       # dev-tool script tests — the audit/index/registry tooling itself (scripts/tests/) lives OUTSIDE
       # packages-galerina, so the package runner never sees it. Run here so the gates that guard the repo
       # are themselves regression-gated (incl. the doc-drift KB-resolution + fail-closed benches).
-      # The two BUILD-dependent script tests (cg4-signing-boundary + signed-fixture-guard — they drive
-      # `galerina.mjs build`, which imports galerina-core-compiler/dist) run in the separate build-cli-gates
-      # job below; exclude them here so THIS job stays build-free. A new build-free test is auto-included
-      # (the glob minus the two known build-dependent files) — no silent under-coverage.
+      # The BUILD-dependent script tests run in the separate build-cli-gates job below; exclude them here
+      # so THIS job stays build-free. A new build-free test is auto-included (the glob minus the known
+      # build-dependent files) — no silent under-coverage.
+      #   • cg4-signing-boundary + signed-fixture-guard — drive `galerina.mjs build` (imports dist).
+      #   • gate-selftests — SPAWNS every audit-*/lint-* tool's --self-test, and FIVE of them read build
+      #     artifacts (audit-dss-wasm-build · audit-fungi-corpus-check · audit-hardening-determinism ·
+      #     audit-import-governance · audit-package-border). The META-gate is build-free; five of its
+      #     SUBJECTS are not — a surface/capability mismatch, not a logic bug. It was RED here on every
+      #     run since 2026-07-12 (VIOLATIONS: 5) while reporting VIOLATIONS: 0 on any dev box, because
+      #     dist/ and build/dss-wasm/ are gitignored (0 tracked files) and so exist only locally. The red
+      #     asserted "neutered detector", which was FALSE — the detectors are fine, their INPUT was absent.
+      #     Moved rather than skipped: it must still enforce, just where its subjects can actually load.
+      #     Same class, same remedy as cg4/signed-fixture above — that lesson simply never reached it.
       - name: Dev-tool script tests (build-free)
         run: |
-          files=$(ls scripts/tests/*.test.mjs | grep -vE '/(cg4-signing-boundary|signed-fixture-guard)\.test\.mjs$')
+          files=$(ls scripts/tests/*.test.mjs | grep -vE '/(cg4-signing-boundary|signed-fixture-guard|gate-selftests)\.test\.mjs$')
           echo "build-free script tests:"; echo "$files"
           node --test $files
 
@@ -442,6 +451,13 @@ jobs:
         run: node scripts/build-core-chain.mjs
       - name: CG-4 signing-boundary + CG-7 signed-fixture guard (build-dependent, enforcing)
         run: node --test scripts/tests/cg4-signing-boundary.test.mjs scripts/tests/signed-fixture-guard.test.mjs
+      # gate-selftests — the META-gate ("is any detector neutered?"). It spawns every audit-*/lint-*
+      # tool's --self-test, and five of those read build artifacts, so it belongs in THIS lane, after
+      # build-core-chain, where its subjects can load. Run build-free it reported VIOLATIONS: 5 — not
+      # neutered detectors, just absent input — while a dev box reported 0. Here it enforces over all
+      # ~50 gates against a real build, which is the only place its verdict means anything.
+      - name: Gate-selftests meta-gate (build-dependent, enforcing)
+        run: node --test scripts/tests/gate-selftests.test.mjs
       # import-governance (build-dependent, ENFORCING): every `import plugin safe|assimilate` is a
       # Toxic-Border deny-by-default edge and MUST carry an access { grant } contract (checker
       # emits FUNGI-ASSIMILATE-003; this audit classifies every .fungi import with the REAL parser
