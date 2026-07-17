@@ -316,6 +316,12 @@ run("signed:fixtures", "node", ["scripts/audit-signed-fixture-drift.mjs"]);
 //   project-graph reordered-token bug) or sit within Levenshtein 1 (typo-twin), unless allowlisted with a
 //   resolution in governance/name-registry.json. Exit = violation count.
 run("path:leak", "node", ["scripts/audit-path-leak.mjs"]);
+// private-doc-leak — RD-0453 enforcement (2026-07-17): no TRACKED public file may NAME a never-public
+//   -PRIVATE.md KB doc. The kb-index generator leaked RD-0454's "where Galerina is slower" weakness-map
+//   TITLE into tracked build/kb-index/; gitignoring closed that vector, this gate closes the CLASS so a
+//   regen / new indexer / stray doc-link can never silently re-introduce it. Scoped to the tag, not the
+//   private-KB path (which has legit refs). --self-test proves it fires. Exit = violation count. Blocking.
+run("private-doc-leak", "node", ["scripts/audit-private-doc-leak.mjs"]);
 // claim:hygiene — RD technical-claims-audit (2026-07-14) durable fix: public docs (README · SECURITY ·
 //   docs/**) must carry their evidence tier — no unqualified superlatives ("absolute", "native-class",
 //   "mathematical proof", "unhackable" asserted rather than rebutted), controlled security/PQ vocabulary
