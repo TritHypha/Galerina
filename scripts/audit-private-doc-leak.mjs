@@ -34,9 +34,13 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 // Spawn git directly, NO shell (args as an array — no shell-injection surface). Same idiom as audit-path-leak.
 const git = (...a) => execFileSync("git", a, { cwd: ROOT, encoding: "utf8", windowsHide: true });
 
-// The never-public tag. Case-INSENSITIVE: the convention is CAPS (`-PRIVATE.md`), but a mis-cased reference
-// still leaks the title, so fail closed on any casing. `[\w.-]*` captures the whole filename stem for the report.
-const PRIVATE_REF = /[\w.-]*-PRIVATE\.md/gi;
+// A reference to an ACTUAL never-public doc FILENAME: a filename stem (>=1 word char) then the `-PRIVATE.md`
+// tag. Case-INSENSITIVE (the convention is CAPS but a mis-cased ref still leaks the title). The leading `\w`
+// is what separates USE (naming `galerina-...-PRIVATE.md`, a real leak) from MENTION (a comment or doc that
+// writes the BARE `-PRIVATE.md` tag to describe the rule — no stem, names no doc, not a leak). A real private
+// doc always has a name; the bare tag never does. Without this, the gate flagged its own wiring comment in
+// run-phase-close.mjs — a false positive caught by phase-close on the first run.
+const PRIVATE_REF = /\w[\w.-]*-PRIVATE\.md/gi;
 
 // This tool DEFINES the pattern (the regex + the self-test fixtures), so it necessarily contains the literal
 // "-PRIVATE.md" — use-vs-mention. Allowlist THIS file by its repo-relative path; nothing else is exempt. A real
@@ -71,6 +75,9 @@ function selfTest() {
     scanText("see foo-private.md", "f").length === 1]);
   checks.push(["a bare mention of the word 'private' (no -PRIVATE.md suffix) does NOT fire — no false alarm",
     scanText("this doc is private and internal", "f").length === 0]);
+  checks.push(["★ use-vs-mention: the BARE '-PRIVATE.md' tag (no filename stem) does NOT fire — it names no doc",
+    scanText("the -PRIVATE.md tag describes the rule; a wiring comment may mention it", "f").length === 0]);
+  checks.push(["...but a real filename WITH a stem DOES fire (the leak shape)", scanText("rd-0454-map-PRIVATE.md", "f").length === 1]);
 
   let ok = true;
   for (const [name, pass] of checks) { console.log(`  ${pass ? "✅" : "❌"} ${name}`); if (!pass) ok = false; }
