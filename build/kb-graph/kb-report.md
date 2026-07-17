@@ -2,7 +2,7 @@
 Generated: 2026-07-17
 
 ## Stats
-- Docs: 1243 | Edges: 3488 | Orphans: 176 | Stale links: 0 | FUNGI codes: 748
+- Docs: 1244 | Edges: 3488 | Orphans: 177 | Stale links: 0 | FUNGI codes: 748
 
 ## Document Registry (auto-generated)
 
@@ -156,6 +156,7 @@ Generated: 2026-07-17
 | 2026-07-17-RD-0448-leaf-terminator-is-its-own-task-gap-is-Option-constructors-not-Option-Record.md | — | — | — | FUNGI-MATCH-001 |
 | 2026-07-17-RD-0450-32-byte-digest-caps-L5-profile-at-128-bit-decide-before-34-locks-v0.md | — | — | — | — |
 | 2026-07-17-RETRACT-match-lint-plus-RD-0449-import-resolver-never-wired-12-of-52-examples-fail-strict-types.md | — | — | — | FUNGI-GOV-018, FUNGI-MATCH-001, FUNGI-TYPE-001, FUNGI-TYPE-021, FUNGI-TYPE-023 |
+| 2026-07-17-RULING-RD-0450-A-for-L5-B-for-L3-and-its-cheaper-than-you-framed-slice-4-is-unbuilt.md | — | — | — | — |
 | 2026-07-17-RULINGS-1-and-2-honesty-rule-YES-derived-not-typed-plus-I1-is-b-but-sequenced-with-I2.md | — | — | — | — |
 | 2026-07-17-STATUS-76-effect-name-files-done-plus-C11-superset-refinement.md | — | — | — | — |
 | 2026-07-17-STATUS-76-numeric-exemplar-economicsService-done-plus-cycle-green.md | — | — | — | — |
@@ -1428,6 +1429,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md` — 2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed
 - `2026-07-17-QUESTION-76-bool-taint-validateFlag-degenerate-plus-fanout-7of19.md` — 2026-07-17-QUESTION-76-bool-taint-validateFlag-degenerate-plus-fanout-7of19
 - `2026-07-17-QUESTION-corpus-rot-76-triage-auth-service-taint-to-pure-flow-adjudication.md` — 2026-07-17-QUESTION-corpus-rot-76-triage-auth-service-taint-to-pure-flow-adjudication
+- `2026-07-17-RULING-RD-0450-A-for-L5-B-for-L3-and-its-cheaper-than-you-framed-slice-4-is-unbuilt.md` — 2026-07-17-RULING-RD-0450-A-for-L5-B-for-L3-and-its-cheaper-than-you-framed-slice-4-is-unbuilt
 - `2026-07-17-STATUS-76-effect-name-files-done-plus-C11-superset-refinement.md` — 2026-07-17-STATUS-76-effect-name-files-done-plus-C11-superset-refinement
 - `2026-07-17-STATUS-76-numeric-exemplar-economicsService-done-plus-cycle-green.md` — 2026-07-17-STATUS-76-numeric-exemplar-economicsService-done-plus-cycle-green
 - `2026-07-17-STOPPERS-ten-area-hundred-percent-sweep-audit-numbers-unfalsifiable.md` — 2026-07-17-STOPPERS-ten-area-hundred-percent-sweep-audit-numbers-unfalsifiable
