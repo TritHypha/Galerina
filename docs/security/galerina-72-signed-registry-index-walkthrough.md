@@ -183,22 +183,50 @@ There is deliberately no command here. Two hard blockers, both verified in the t
 callback — `registry-index.ts` is crypto-agnostic by design (no `node:*`). Nothing gathers entries or supplies
 an Ed25519 signer. §3 is that tool; it is engineering work, not a custody act.
 
-**(b) The data is placeholders.** The registry currently holds two packages (`@galerina/auth`,
-`@galerina/healthcare`), and each manifest reads:
+**(b) THE PACKAGES DO NOT EXIST.** *(Corrected 2026-07-17 — this section previously said "the data is
+placeholders", which was too kind and sent the reader looking for a data-entry fix. The truth is
+structural.)*
+
+`packages-galerina/galerina-registry/` contains, in its entirety: `LICENSE`, `package.json`,
+`package-lock.json`, `README.md`, `.graph/`, and **two YAML files**. There is no `src/`, no `dist/`, no
+code. There is no `@galerina/auth`. Each manifest reads:
 
 ```yaml
-hash: "sha256:pending"                    # the sourceHash pins NOTHING
+hash: "sha256:pending"                    # NOT awaiting `galerina package hash` — there are no bytes to hash
 signature: null
 governance:
-  reviewed: false                         # explicitly not reviewed
+  reviewed: false
   notes: "Phase 28 scaffold. Pending governance review."
 ```
 
-The index's entire purpose is that `sourceHash` **pins the expected package bytes**. `sha256:pending` pins
-nothing. Signing this would take your trust root and **authoritatively assert a placeholder** — converting
-"unverified" into "certified by the registry authority". That is strictly worse than having no index, because
-the resolver would then trust the assertion. **Do not sign until `hash` is a real content hash and
-`governance.reviewed` is true.**
+And the registry's own README says so plainly — it was accurate the whole time:
+
+> **⚠️ Scaffold (Phase 28).** The package manifests here are **declarative stubs pending full resolver
+> wiring**… The guarantees described below are the **intended design** — they are **NOT yet actively
+> enforced or signed**, so do not treat them as live controls.
+
+So **#72 was never blocked on a signer or on a governance review. It is blocked on the registry being
+empty.** "Governance-review the two packages" is not a decision anyone can make: you cannot review code
+that does not exist, and the README's own "Adding a Package" flow puts review at step 4, *after* a real
+content hash at step 3. The index's entire purpose is that `sourceHash` **pins the expected package
+bytes**; here there are no bytes.
+
+**What you would actually be certifying.** Both stubs carry claims that signing would make authoritative:
+
+- **`@galerina/auth`** declares `network.outbound` as an **effect** but *not* as a capability
+  (`capabilities: [secret.read, audit.write]` vs `effects: [secret.read, audit.write, network.outbound]`).
+  For a package that reads secrets, `network.outbound` is the exfiltration path — and it is the one with
+  no matching capability.
+- **`@galerina/healthcare`** claims `complianceFramework: "HIPAA"` and "HIPAA-aligned PHI handling", while
+  declaring `database.read`/`database.write` and **not** `phi.read`/`phi.write` — which are real canonical
+  effects. The package whose stated purpose is PHI handling would not trip PHI governance at all. Signing
+  this index makes the **trust root assert HIPAA alignment for a package with zero code**. That is the
+  single most dangerous artifact in this task, and it is four lines of YAML.
+
+**Therefore #72 as written is not achievable and should be re-scoped or parked**: a certified registry
+with no packages is not a thing. Either real packages get published first (then hash → review → sign), or
+#72 closes as premature. Signing an index over two stubs would convert "unverified" into "certified by the
+registry authority" — strictly worse than having no index, because the resolver would then trust it.
 
 Once §1 is decided, §3 is built, and the entries are real, the sequence will be: load the key into the session
 env only (never copy it into the tree) → confirm `$env:GALERINA_SIGNING_KEY_ID` (id only, never print key
