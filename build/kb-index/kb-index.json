@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1273,
+  "docCount": 1274,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -36711,6 +36711,51 @@
         "swap",
         "root-rotation",
         "lost"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/galerina-rd-0453-you-cannot-content-scan-for-private-when-private-is-a-keyword-PRIVATE.md",
+      "title": "RD-0453 — You cannot content-scan for \"never-public\" when the confidentiality words are language keywords · 2026-07-17",
+      "headings": [
+        "1. The ask, and the number I got wrong twice",
+        "2. The real finding — the vocabulary collides with the policy term, by construction",
+        "3. Why this makes the owner's directive load-bearing rather than decorative",
+        "4. Consequence: the scope cannot be detected, only decided",
+        "5. What is actually true right now",
+        "6. Provenance & how to re-run"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [
+        "RD-0452",
+        "RD-0451"
+      ],
+      "topTerms": [
+        "never-public",
+        "net",
+        "internal",
+        "cannot",
+        "private",
+        "docs",
+        "vocabulary",
+        "owner",
+        "public",
+        "wrong",
+        "policy",
+        "directive",
+        "right",
+        "words",
+        "language",
+        "number",
+        "real",
+        "finding",
+        "why",
+        "confidentiality",
+        "keywords",
+        "every",
+        "rather",
+        "galerina",
+        "collides"
       ]
     },
     {

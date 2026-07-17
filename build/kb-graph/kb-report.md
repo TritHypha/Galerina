@@ -2,7 +2,7 @@
 Generated: 2026-07-17
 
 ## Stats
-- Docs: 1271 | Edges: 3562 | Orphans: 202 | Stale links: 0 | FUNGI codes: 749
+- Docs: 1272 | Edges: 3567 | Orphans: 203 | Stale links: 0 | FUNGI codes: 749
 
 ## Document Registry (auto-generated)
 
@@ -725,6 +725,7 @@ Generated: 2026-07-17
 | galerina-rd-0366-without-ts-ceiling-govern-dont-absorb-trichotomy.md | — | — | 🧪 R&D ADJUDICATION + DOCTRINE (propose-only) · SAFE-internal · 2026-07-12 | — |
 | galerina-rd-0367-optimal-brain-roster-grounded-in-self-knowledge.md | — | — | 🧪 R&D / OPERATING-MODEL DESIGN (propose-only) · owner-authorized 2026-07-12 ("R&D this, find the best path — you know yourself better than anyone") · SAFE-internal | — |
 | galerina-rd-0368-root-rotation-ceremony-and-key-housecleaning-INTERNAL.md | — | — | ✅ **CEREMONY EXECUTED 2026-07-12** — Galerina `main` @ `46dce6b7` (pushed). Root rotated `ab46f4c7` (lost) → `21415420b447e219` (hybrid); `revocations.json` re-signed, pin moved, `assertRegistryTrustworthy` green, suite 92/92·7104, `8eecf418` revocation preserved. **Ledger unfrozen.** Runbook retained below; §6 house-clean (2 orphans → `governance/retired/`) is the remaining step. · written 2026-07-12 · **INTERNAL — do not publish** (documents a live key-loss + a frozen-registry gap; same category as [[galerina-rd-0319-ir-key-compromise-runbook-key149-plan]]). | FUNGI-KEY-002 |
+| galerina-rd-0453-you-cannot-content-scan-for-private-when-private-is-a-keyword-PRIVATE.md | — | — | — | — |
 | galerina-rd-34b-paramtaint-buildspec-2026-06-24.md | — | — | verify-before-build — **build-ready spec; the strict-profile escalation is owner-gated** | FUNGI-VALUESTATE-003, FUNGI-VALUESTATE-008 |
 | galerina-rd-53-azt-selfcert-and-blackhole-protocol-2026-06-23.md | — | — | — | FUNGI-GOV-3, FUNGI-MATCH-001, FUNGI-PCI-001, FUNGI-PRIVACY-013, FUNGI-SUBSTRATE-001 |
 | galerina-rd-59-js-quirks-vs-galerina-2026-06-25.md | — | — | — | FUNGI-NAME-001, FUNGI-NAME-002, FUNGI-TYPE-004, FUNGI-TYPE-008 |
@@ -1485,6 +1486,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-TRIAGE-LIST-123-escape-links-65-targets-29-docs.md` — 2026-07-17-TRIAGE-LIST-123-escape-links-65-targets-29-docs
 - `2026-07-17-path-leak-fixed-galerina-clean-existsSync-mirrored-and-two-corrections-of-mine.md` — 2026-07-17-path-leak-fixed-galerina-clean-existsSync-mirrored-and-two-corrections-of-mine
 - `2026-07-17-skip-is-now-a-distinct-signal-8-not-9-and-the-CI-graph-question-is-the-owners.md` — 2026-07-17-skip-is-now-a-distinct-signal-8-not-9-and-the-CI-graph-question-is-the-owners
+- `galerina-rd-0453-you-cannot-content-scan-for-private-when-private-is-a-keyword-PRIVATE.md` — RD-0453 — You cannot content-scan for "never-public" when the confidentiality words are language keywords · 2026-07-17
 
 ## Stale Links
 Links pointing to missing files:

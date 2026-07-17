@@ -267,6 +267,11 @@ flowchart LR
   T_audit_sink_canonicality_mjs --> C_secrets_privacy
   T_audit_sink_canonicality_mjs --> C_graph_index
   T_audit_sink_canonicality_mjs --> C_sensitive_allowlist
+  T_audit_stage_execution_mjs["audit-stage-execution.mjs"]
+  T_audit_stage_execution_mjs --> C_coverage
+  T_audit_stage_execution_mjs --> C_teaching_corpus
+  T_audit_stage_execution_mjs --> C_doc_drift
+  T_audit_stage_execution_mjs --> C_graph_index
   T_audit_stray_docs_mjs["audit-stray-docs.mjs"]
   T_audit_stray_docs_mjs --> C_coverage
   T_audit_stray_docs_mjs --> C_source_hygiene

@@ -1,4 +1,4 @@
-# Galerina KB index (1273 docs)
+# Galerina KB index (1274 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -3496,6 +3496,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #149, #28, #30, #39, #33
 - links: [[galerina-rd-0319-ir-key-compromise-runbook-key149-plan]] [[galerina-rd-0365-tpm-enclave-key-custody-ladder]] [[galerina-key-custody-and-rotation]] [[new-error-type-update-build-tools]]
 - terms: key, governance, root, ceremony, mjs, ledger, private, env, json, signing, verify, house-cleaning, pub, keep
+
+## RD-0453 — You cannot content-scan for "never-public" when the confidentiality words are language keywords · 2026-07-17
+`../ZTF-Knowledge-Bases/galerina-rd-0453-you-cannot-content-scan-for-private-when-private-is-a-keyword-PRIVATE.md`
+- links: [[RD-0452]] [[RD-0451]]
+- terms: never-public, net, internal, cannot, private, docs, vocabulary, owner, public, wrong, policy, directive, right, words
 
 ## R&D — Phase 34B boundary param auto-taint: verified state + build-ready spec
 `../ZTF-Knowledge-Bases/galerina-rd-34b-paramtaint-buildspec-2026-06-24.md`

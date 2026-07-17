@@ -4,8 +4,8 @@
     "packages": 95,
     "testBearing": 94,
     "tests": 7359,
-    "devTools": 87,
-    "auditTools": 49,
+    "devTools": 88,
+    "auditTools": 50,
     "toolsInCadence": 28,
     "proofs": 40
   },
@@ -1620,6 +1620,19 @@
       ]
     },
     {
+      "name": "audit-stage-execution.mjs",
+      "category": "audit",
+      "purpose": "R2: does each self-hosted stage actually RUN?",
+      "selfTest": true,
+      "inCadence": false,
+      "concerns": [
+        "coverage",
+        "teaching-corpus",
+        "doc-drift",
+        "graph/index"
+      ]
+    },
+    {
       "name": "audit-stray-docs.mjs",
       "category": "audit",
       "purpose": "STRAY / STALE Markdown tracker (owner 2026-06-23). Surfaces every *.md that lives",
@@ -2211,6 +2224,7 @@
       "audit-name-collisions.mjs",
       "audit-production-blockers.mjs",
       "audit-runtime-coverage.mjs",
+      "audit-stage-execution.mjs",
       "audit-stray-docs.mjs",
       "audit-syntax.mjs",
       "audit-tier-boundary.mjs",
@@ -2317,6 +2331,7 @@
       "audit-selfhost-readiness.mjs",
       "audit-signed-fixture-drift.mjs",
       "audit-sink-canonicality.mjs",
+      "audit-stage-execution.mjs",
       "audit-stray-docs.mjs",
       "audit-syntax.mjs",
       "audit-tier-boundary.mjs",
@@ -2446,6 +2461,7 @@
       "audit-path-leak.mjs",
       "audit-provenance.mjs",
       "audit-reference-doc-drift.mjs",
+      "audit-stage-execution.mjs",
       "audit-stray-docs.mjs",
       "audit-syntax-reference-links.mjs",
       "audit-syntax.mjs",
@@ -2587,6 +2603,7 @@
       "audit-papers-index.mjs",
       "audit-percent-evidence.mjs",
       "audit-provenance.mjs",
+      "audit-stage-execution.mjs",
       "ts-retirement-graph.mjs",
       "lint-conventions.mjs",
       "run-phase-close.mjs",
@@ -2669,6 +2686,7 @@
       "audit-route-overlap.mjs",
       "audit-runtime-coverage.mjs",
       "audit-selfhost-readiness.mjs",
+      "audit-stage-execution.mjs",
       "audit-stray-docs.mjs",
       "audit-syntax-reference-links.mjs",
       "audit-syntax.mjs",
