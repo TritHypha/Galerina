@@ -37,7 +37,7 @@
 //   node scripts/audit-path-leak.mjs               # enforce: exit 1 on any leak
 import { readFileSync, existsSync } from "node:fs";
 import { execFileSync } from "node:child_process";
-import { join, dirname, resolve } from "node:path";
+import { join, dirname, resolve, basename, relative, isAbsolute } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -165,6 +165,20 @@ function selfTest() {
     ["DOUBLE-dash placeholder does NOT fire", !fires("the slug looks like C--Users-<name>-Documents")],
     ["prose 'Power-Users-Guide' does NOT fire", !fires("see the Power-Users-Guide-2026 appendix")],
     ["prose 'Power--Users-Guide' does NOT fire", !fires("see the Power--Users-Guide-2026 appendix")],
+    // ★ SUBJECT case (R&D 2026-07-17): the verdict names its tree, by BASENAME, and that stays a
+    // basename. This line is the most-pasted string the tool emits; an absolute path here would put a
+    // machine path into every terminal, CI log and bug report quoting a green — the leak this guard
+    // exists to prevent, laundered through the guard. Asserted so nobody "improves" it to a full path.
+    ["★ subject: the verdict names its tree by BASENAME and leaks no absolute path",
+      (() => {
+        const line = `  ✅ path-leak [${basename(ROOT)}/]: no absolute-local-path leaks.`;
+        return line.includes("[Galerina/]") && scanText(line).length === 0 && !/[A-Za-z]:[\\/]/.test(line);
+      })()],
+    ["★ subject: the outside-the-tree warning itself carries no absolute path either",
+      (() => {
+        const warn = `     ⚠ run from ${basename("/some/other/repo")}/, OUTSIDE the tree named above. it scanned ${basename(ROOT)}/, NOT your current directory.`;
+        return scanText(warn).length === 0 && !/[A-Za-z]:[\\/]/.test(warn);
+      })()],
     // ★ REPORT case (R&D 2026-07-17): the evidence must CONTAIN the finding. A true hit whose printed
     // snippet has no leak in it reads as a false positive, and a gate nobody believes gets switched off.
     ["★ report: a leak past char 160 is SHOWN — the old slice(0,160) printed a line head with no hit in it",
@@ -268,8 +282,37 @@ for (const { rel, from } of planScanTargets(files, dirty, (r) => existsSync(join
   }
 }
 
+/**
+ * ★ A VERDICT WITH NO SUBJECT IS ONE MISLABEL AWAY FROM FICTION (R&D's framing, 2026-07-17; mirrored).
+ *
+ * This gate is cwd-INDEPENDENT: ROOT comes from the script's own location and git runs with `cwd: ROOT`,
+ * so `node <path>/audit-path-leak.mjs` scans THAT repo from anywhere. The convention is arguably right —
+ * it is what a CI job wants — and the gate was never wrong. THE DEFECT WAS THAT IT NEVER SAID SO. I ran
+ * `cd $repo && node <this gate>` across six sibling repos and got six confident greens, every one about
+ * Galerina, and labelled them with the other repos' names. The only reason that table did not ship is
+ * that six repos sharing one file count is arithmetically impossible. Had the counts been plausible it
+ * would have been a fabrication, and R&D reproduced the same trap in their copy without doing anything
+ * careless. So: the verdict names its subject, and running from outside that tree says so out loud.
+ *
+ * ★ BASENAME, NEVER AN ABSOLUTE PATH — and this is the part to not "improve" later. The verdict is the
+ * most-pasted string this tool emits: terminals, CI logs, bug reports. Printing `C:\\Users\\<name>\\…`
+ * would put a machine path into every one of them — the exact leak this guard exists to prevent,
+ * laundered THROUGH the guard. The proof is one day old: the report announcing the dash-fix leaked the
+ * owner's username because probe output was pasted verbatim. The self-test asserts this carries no
+ * absolute path.
+ */
+const subject = basename(ROOT);
+const cwdRel = relative(ROOT, process.cwd());
+// SEGMENTS, not string prefixes: `Galerina-archive` is NOT inside `Galerina`, and a naive startsWith
+// says it is. Same predicate as escapesRoot — it is the same prefix trap, one axis over.
+const cwdOutsideTree = cwdRel.startsWith("..") || isAbsolute(cwdRel);
+const outsideNote = cwdOutsideTree
+  ? `\n     ⚠ run from ${basename(process.cwd())}/, OUTSIDE the tree named above. This gate is cwd-independent:` +
+    `\n       it scanned ${subject}/, NOT your current directory. To scan ${basename(process.cwd())}/, use that repo's own guard.`
+  : "";
+
 if (leakCount) {
-  console.error(`\n  ❌ path-leak: ${leakCount} absolute-local-path leak(s) across ${leakFiles} file(s):\n`);
+  console.error(`\n  ❌ path-leak [${subject}/]: ${leakCount} absolute-local-path leak(s) across ${leakFiles} file(s):${outsideNote}\n`);
   console.error(report.join("\n"));
   console.error(`\n  Fix: use a repo-relative path, \`~\`/\`$HOME\`, a runtime env READ (process.env.X —`);
   console.error(`  NOT a literal %USERPROFILE%), or a <placeholder>. A line that must quote the pattern to`);
@@ -286,7 +329,7 @@ if (leakCount) {
 // across 1303 tracked files" meant "across the 1302 I actually opened" and nothing said which. The KB's
 // missing one was its private signing key. Two numbers that must agree, printed apart, is a lie waiting
 // to happen; printed together, it is arithmetic a reader can check.
-console.log(`  ✅ path-leak: no absolute-local-path leaks.`);
+console.log(`  ✅ path-leak [${subject}/]: no absolute-local-path leaks.${outsideNote}`);
 console.log(`     read: ${readWorktree} working-tree file(s) + ${readHead} committed blob(s) where HEAD differs from disk, of ${files.length} tracked.`);
 console.log(`     shapes: ${PATTERNS.map((p) => p.name).join(" · ")}`);
 console.log(`     …of those shapes ONLY — an unmodelled encoding is INVISIBLE here, not absent.`);
