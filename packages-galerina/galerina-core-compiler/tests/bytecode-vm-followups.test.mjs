@@ -78,6 +78,26 @@ test("end-to-end: a runaway pure flow FAILS CLOSED via the bytecode tier (byte-i
   assert.equal(fast.value.message, ref.value.message, "bytecode + tree-walker traps must be byte-identical");
 });
 
+// ── Fail-closed on an unknown opcode (external audit 2026-07-17, RD-0455) ────────────────────────────
+// The `default` arm returned 0 — a plausible program value, and Unknown/HOLD in the tri-logic — for a corrupt,
+// truncated, or future opcode: a fail-OPEN in a fail-CLOSED VM (everything else traps: overflow, div0, the loop
+// cap). It must TRAP. Feed a stream with an opcode the VM doesn't know and assert a throw, not a value.
+test("runBytecode: an unknown opcode TRAPS fail-closed (never returns a plausible value like 0)", () => {
+  clearBytecodeCache();
+  // 4242 is not a member of the Op enum → the switch default must throw, not fall through to `return 0`.
+  assert.throws(() => runBytecode({ code: [4242], localCount: 0 }, []), /Unknown bytecode opcode 4242/);
+});
+
+test("runBytecode: a corrupt opcode inside an otherwise-valid stream also traps (not a silent wrong value)", () => {
+  clearBytecodeCache();
+  const p = parse("pure flow c() -> Int contract { effects {} } { return 7 }", "c.fungi");
+  const prog = compileToBytecode(p.ast, "c");
+  assert.notEqual(prog, null, "a trivial pure flow must be bytecode-eligible");
+  // Prepend an unknown opcode — models a truncated/tampered stream. Pre-fix this returned 0 (wrong-but-runnable);
+  // it must now trap before it can produce any value.
+  assert.throws(() => runBytecode({ ...prog, code: [9998, ...Array.from(prog.code)] }, []), /Unknown bytecode opcode 9998/);
+});
+
 // ── Follow-up 2: cache keyed per program AST, not by flow name alone ─────────────────────────────────
 test("two distinct flows both named `main` compiled in sequence return their OWN results (direct)", () => {
   const a = parse("pure flow main() -> Int contract { effects {} } { return 11 }", "a.fungi");

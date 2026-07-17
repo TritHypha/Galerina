@@ -379,7 +379,12 @@ export function runBytecode(program: BytecodeProgram, args: readonly number[], m
       case Op.RETURN: return stack[--sp]!;
       case Op.HALT: return sp > 0 ? stack[sp-1]! : 0;
 
-      default: return 0; // unknown opcode — should not happen
+      default:
+        // Fail-CLOSED on an unknown opcode. Returning 0 — a plausible program value, and Unknown/HOLD in the
+        // tri-logic — for a corrupt / truncated / future opcode is a fail-OPEN in a fail-CLOSED VM: it would
+        // silently yield a wrong-but-runnable result instead of trapping. Everything else here traps (overflow,
+        // div0, the loop cap); this now does too. (External audit 2026-07-17, RD-0455.)
+        throw new Error(`Unknown bytecode opcode ${op} at pc=${pc - 1} — fail-closed (corrupt/truncated bytecode, or an opcode the VM was not updated for)`);
     }
   }
   return sp > 0 ? stack[sp-1]! : 0;
