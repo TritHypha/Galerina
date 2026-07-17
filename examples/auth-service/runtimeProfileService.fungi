@@ -48,6 +48,22 @@ pure flow profileSecurityLevel(profile: String) -> Int
   return 1
 }
 
+;; Validate an untrusted runtime-profile name against the recognised set before it drives the permission
+;; decisions: profile-checker.ts::RuntimeProfile (strict/high_integrity/deterministic) plus the production
+;; deployment profile this endpoint also ranks. Admit only the known profiles, returning a constant (never
+;; the raw input), normalising anything else to "" — a validating gate that clears the taint. Pure — no
+;; runtime authority / no effects.
+// @cause  [Called before the profile drives the permission decisions] -> validates the untrusted profile.
+// @effect [Verdict only] -> returns the validated profile (or "" if unrecognised); no state is mutated.
+pure flow validateProfile(profile: String) -> String
+{
+  if profile == "strict" { return "strict" }
+  if profile == "high_integrity" { return "high_integrity" }
+  if profile == "deterministic" { return "deterministic" }
+  if profile == "production" { return "production" }
+  return ""
+}
+
 ;; Checks a runtime-profile request against the governed profile rules and returns its permissions; permitted because the untrusted profile name is trapped-on-empty and redacted before the audit write.
 ;; V_DPM capability required: network.inbound, audit.write
 // @cause  [POST /profile/check] -> HTTP route invokes this governed endpoint with a profile name.
@@ -60,11 +76,14 @@ contract {
 {
   unsafe let profile: String = request.jsonBody.profile
   trap profile == "" : ERR_EMPTY_PROFILE_NAME
-  let allowsRecursion: Bool = profileAllowsRecursion(profile)
-  let allowsUnbounded: Bool = profileAllowsUnboundedLoop(profile)
-  let requiresBudget: Bool = profileRequiresBudget(profile)
-  let securityLevel: Int = profileSecurityLevel(profile)
-  let retProfile: String = profile
+  ;; validate the untrusted profile name against the recognised set before it drives the permission
+  ;; decisions — the validating gate clears the taint
+  let validProfile: String = validateProfile(profile)
+  let allowsRecursion: Bool = profileAllowsRecursion(validProfile)
+  let allowsUnbounded: Bool = profileAllowsUnboundedLoop(validProfile)
+  let requiresBudget: Bool = profileRequiresBudget(validProfile)
+  let securityLevel: Int = profileSecurityLevel(validProfile)
+  let retProfile: String = validProfile
   let retSecurityLevel: Int = securityLevel
   safe mut profile = redact(profile)
   safe mut securityLevel = redact(securityLevel)

@@ -91,6 +91,21 @@ contract {
   return n
 }
 
+;; Bound an untrusted free-text input to a maximum length before it drives the stdlib demo computations —
+;; a validating gate that rejects over-long input (returning "") and so clears the taint. CWE-400: an
+;; unbounded-length input drives per-character work; bounding it at the trust boundary caps that cost.
+;; Validate untrusted input before use. Pure — no runtime authority / no effects.
+// @cause  [Called before the input drives the length/clamp computations] -> bounds the untrusted input.
+// @effect [Verdict only] -> returns the input if within bound, else "" (rejected); no state is mutated.
+pure flow sanitizeInput(s: String) -> String
+contract {
+  intent { "Bound an untrusted free-text input to a maximum length before use (CWE-400)." }
+}
+{
+  if s.length() > 4096 { return "" }
+  return s
+}
+
 // HTTP service endpoint for stdlib exploration
 ;; Demonstrates stdlib string/math operations over request input in a governed context; permitted because the untrusted input is trapped-on-empty and the derived length redacted before the audit write.
 ;; V_DPM capability required: network.inbound, audit.write
@@ -110,7 +125,10 @@ contract {
   unsafe let rawInput: String = request.jsonBody.input
 
   trap rawInput == "" : ERR_EMPTY_INPUT
-  let len: Int = strLength(rawInput)
+  ;; bound the untrusted input length before it drives the stdlib computations — the validating gate clears
+  ;; the taint (CWE-400: cap the per-character work an unbounded input would drive)
+  let validInput: String = sanitizeInput(rawInput)
+  let len: Int = strLength(validInput)
   let hasContent: Bool = len > 0
   let clamped: Int = mathClamp(len, 0, 100)
 

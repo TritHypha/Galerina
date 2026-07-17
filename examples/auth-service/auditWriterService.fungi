@@ -50,6 +50,21 @@ contract {
   return true
 }
 
+;; Bound an untrusted audit event name to a maximum length before it drives the severity classification —
+;; a validating gate that rejects an over-long name (returning "") and so clears the taint. CWE-400: an
+;; unbounded event name drives per-character work in the classifier and bloats the ledger. The name stays
+;; open-vocabulary — any real event is still logged; only its length is constrained. Pure — no authority.
+// @cause  [Called before the event name drives the severity classification] -> bounds the untrusted name.
+// @effect [Verdict only] -> returns the name if within bound, else "" (rejected); no state is mutated.
+pure flow sanitizeEventName(name: String) -> String
+contract {
+  intent { "Bound an untrusted audit event name to a maximum length before use (CWE-400)." }
+}
+{
+  if name.length() > 256 { return "" }
+  return name
+}
+
 ;; Accepts an untrusted audit event over HTTP, validates required fields, then writes a redacted entry to the governed log — permitted because tainted inputs are redacted before the write.
 ;; V_DPM capability required: network.inbound, audit.write
 // HTTP endpoint: accept and write an audit event
@@ -76,9 +91,12 @@ contract {
     return Err("Invalid audit event: missing required fields")
   }
 
-  let severity: String = classifyAuditSeverity(rawEvent)
+  ;; bound the untrusted event name before it drives the severity classification — the validating gate
+  ;; clears the taint (the name stays open-vocabulary; only its length is constrained)
+  let validEvent: String = sanitizeEventName(rawEvent)
+  let severity: String = classifyAuditSeverity(validEvent)
 
-  let retRawEvent: String = rawEvent
+  let retRawEvent: String = validEvent
   let retSeverity: String = severity
   safe mut rawEvent = redact(rawEvent)
   safe mut rawLevel = redact(rawLevel)

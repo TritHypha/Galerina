@@ -56,6 +56,30 @@ contract {
   return "unknown"
 }
 
+;; Validate an untrusted type name against the governed registry's recognised vocabulary before it drives
+;; the resolution: admit the built-in primitives and collections by exact name, and the Effect / Governance
+;; type families by their marker — returning a CONSTANT (never the raw input), normalising anything else to
+;; "" — a validating gate that clears the taint. Returning the family marker (not the raw name) keeps
+;; typeCategory's family classification intact without laundering the input. Pure — no authority / no effects.
+// @cause  [Called before the type name drives the resolution] -> validates the untrusted type name.
+// @effect [Verdict only] -> returns the validated type name/marker (or "" if unrecognised); no state mutated.
+pure flow validateTypeName(name: String) -> String
+{
+  if name == "Int" { return "Int" }
+  if name == "Bool" { return "Bool" }
+  if name == "String" { return "String" }
+  if name == "Float" { return "Float" }
+  if name == "Bytes" { return "Bytes" }
+  if name == "Unit" { return "Unit" }
+  if name == "Void" { return "Void" }
+  if name == "List" { return "List" }
+  if name == "Map" { return "Map" }
+  if name == "Set" { return "Set" }
+  if name.contains("Effect") { return "Effect" }
+  if name.contains("Governance") { return "Governance" }
+  return ""
+}
+
 // The governed type resolution endpoint.
 // Accepts { typeName } and returns the resolved type metadata.
 ;; Resolves a type name against the governed type registry and returns its metadata; permitted because the untrusted type name is trapped-on-empty and redacted before the audit write.
@@ -74,10 +98,13 @@ contract {
   unsafe let typeName: String = request.jsonBody.typeName
 
   trap typeName == "" : ERR_EMPTY_TYPE_NAME
-  let isBuiltin: Bool = isBuiltinType(typeName)
-  let category: String = typeCategory(typeName)
+  ;; validate the untrusted type name against the recognised registry vocabulary before it drives the
+  ;; resolution — the validating gate clears the taint
+  let validTypeName: String = validateTypeName(typeName)
+  let isBuiltin: Bool = isBuiltinType(validTypeName)
+  let category: String = typeCategory(validTypeName)
 
-  let retTypeName: String = typeName
+  let retTypeName: String = validTypeName
   let retIsBuiltin: Bool = isBuiltin
   let retCategory: String = category
   safe mut typeName = redact(typeName)

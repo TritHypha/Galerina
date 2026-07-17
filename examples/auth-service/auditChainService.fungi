@@ -42,6 +42,35 @@ contract {
   return false
 }
 
+;; Bound an untrusted audit identifier (flow name / timestamp) to a maximum length before it is composed
+;; into the canonical event ID — a validating gate that rejects an over-long value (returning "") and so
+;; clears the taint. CWE-400: an unbounded identifier bloats the tamper-evident ledger. The identifier
+;; stays open-vocabulary; only its length is constrained. Pure — no runtime authority / no effects.
+// @cause  [Called before the identifier is composed into the event ID] -> bounds the untrusted identifier.
+// @effect [Verdict only] -> returns the identifier if within bound, else "" (rejected); no state is mutated.
+pure flow sanitizeIdentifier(s: String) -> String
+contract {
+  intent { "Bound an untrusted audit identifier to a maximum length before use (CWE-400)." }
+}
+{
+  if s.length() > 256 { return "" }
+  return s
+}
+
+;; Validate an untrusted audit status against the recognised set (Success/Denied/Failed) before it is
+;; admitted to the tamper-evident ledger; admit only the known statuses, returning a constant (never the
+;; raw input), normalising anything else to "" — a validating gate that clears the taint. Pure — no
+;; runtime authority / no effects.
+// @cause  [Called before the status is admitted to the ledger] -> validates the untrusted status.
+// @effect [Verdict only] -> returns the validated status (or "" if unrecognised); no state is mutated.
+pure flow validateStatus(status: String) -> String
+{
+  if status == "Success" { return "Success" }
+  if status == "Denied" { return "Denied" }
+  if status == "Failed" { return "Failed" }
+  return ""
+}
+
 ;; Ingests an untrusted request, traps empty fields, then chains a redacted audit entry — permitted because every tainted value is redacted before it reaches the ledger.
 ;; V_DPM capability required: network.inbound, audit.write
 // HTTP endpoint: chain a governed audit entry from { flowName, status, timestamp }
@@ -63,8 +92,13 @@ contract {
   trap flowName == "" : ERR_EMPTY_FLOW_NAME
   trap status == "" : ERR_EMPTY_STATUS
   trap timestamp == "" : ERR_EMPTY_TIMESTAMP
-  let eventId: String = auditEventId(flowName, timestamp)
-  let statusValid: Bool = isValidAuditStatus(status)
+  ;; bound the untrusted identifiers and validate the untrusted status before they are admitted to the
+  ;; ledger — the validating gates clear the taint
+  let validFlowName: String = sanitizeIdentifier(flowName)
+  let validTimestamp: String = sanitizeIdentifier(timestamp)
+  let validStatus: String = validateStatus(status)
+  let eventId: String = auditEventId(validFlowName, validTimestamp)
+  let statusValid: Bool = isValidAuditStatus(validStatus)
 
   let retEventId: String = eventId
   let retStatusValid: Bool = statusValid

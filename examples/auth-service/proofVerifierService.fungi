@@ -41,6 +41,19 @@ contract {
   return 0
 }
 
+;; Validate an untrusted proof-algorithm name against the recognised set (fungi.gov.sig.v1 / sha256) before
+;; it drives the validity + strength decision; admit only the known algorithms, returning a constant (never
+;; the raw input), normalising anything else to "" — a validating gate that clears the taint. Pure — no
+;; runtime authority / no effects.
+// @cause  [Called before the algorithm drives the validity + strength decision] -> validates the algorithm.
+// @effect [Verdict only] -> returns the validated algorithm (or "" if unrecognised); no state is mutated.
+pure flow validateAlgorithm(alg: String) -> String
+{
+  if alg == "fungi.gov.sig.v1" { return "fungi.gov.sig.v1" }
+  if alg == "sha256" { return "sha256" }
+  return ""
+}
+
 // The governed proof verification endpoint.
 // Accepts { algorithm, signaturePresent } and returns proof metadata.
 ;; Verifies a governance proof by its declared algorithm and returns proof metadata; permitted because the untrusted algorithm is trapped-on-empty and redacted before the audit write.
@@ -61,10 +74,13 @@ contract {
 
   trap algorithm == "" : ERR_EMPTY_ALGORITHM
 
-  let valid: Bool = isValidAlgorithm(algorithm)
-  let strength: Int = proofStrength(algorithm)
+  ;; validate the untrusted algorithm against the recognised set before it drives the validity + strength
+  ;; decision — the validating gate clears the taint
+  let validAlgorithm: String = validateAlgorithm(algorithm)
+  let valid: Bool = isValidAlgorithm(validAlgorithm)
+  let strength: Int = proofStrength(validAlgorithm)
 
-  let retAlgorithm: String = algorithm
+  let retAlgorithm: String = validAlgorithm
   let retValid: Bool = valid
   let retStrength: Int = strength
   safe mut algorithm = redact(algorithm)
