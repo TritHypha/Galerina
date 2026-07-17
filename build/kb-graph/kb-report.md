@@ -2,7 +2,7 @@
 Generated: 2026-07-17
 
 ## Stats
-- Docs: 1252 | Edges: 3557 | Orphans: 184 | Stale links: 0 | FUNGI codes: 749
+- Docs: 1259 | Edges: 3561 | Orphans: 191 | Stale links: 0 | FUNGI codes: 749
 
 ## Document Registry (auto-generated)
 
@@ -132,6 +132,7 @@ Generated: 2026-07-17
 | 2026-07-17-ADJUDICATION-bool-taint-reject-validateFlag-launder-use-c-flag-b-to-owner.md | — | — | — | — |
 | 2026-07-17-ANSWER-3-stoppers-your-STOPPER-1-fallback-recreates-todays-CI-404-plus-the-admission-predicate.md | — | — | — | — |
 | 2026-07-17-ANSWER-96a-scoping-6-record-alloc-is-intra-flow-BUT-neither-benchmark-allocates-binary-trees-language-gap.md | — | — | — | — |
+| 2026-07-17-ANSWER-app-kernel-edge-is-DRIFT-safe-to-declare-plus-I-OVERSTATED-the-39.md | — | — | — | — |
 | 2026-07-17-ANSWER-duplicate-record-decl-YES-to-the-diagnostic-but-there-is-NO-emitter-analysis-divergence.md | — | — | — | FUNGI-DECL-001, FUNGI-PARSE-001 |
 | 2026-07-17-ANSWER-RD-0450-ruling-CONFIRMED-and-the-frozen-spec-is-in-YOUR-tree-not-lost.md | — | — | — | — |
 | 2026-07-17-ANSWERED-your-parting-question-123-public-links-into-the-private-KB-and-i-built-the-repro.md | — | — | — | — |
@@ -140,6 +141,8 @@ Generated: 2026-07-17
 | 2026-07-17-CLARIFICATION-96a-escaping-records-EXCLUDED-from-release-window-not-above-the-mark.md | — | — | — | — |
 | 2026-07-17-CLOSING-CYCLE-full-verify-thesis-build-registry-benchmark-harness-finding.md | — | — | — | FUNGI-MATCH-001, FUNGI-PARSE-001, FUNGI-SAFETY-006 |
 | 2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction.md | — | — | — | — |
+| 2026-07-17-CORRECTION-I-ruled-de-link-before-reading-a-single-target-they-are-product-docs.md | — | — | — | — |
+| 2026-07-17-CORRECTION-my-Money-tag-validator-advice-was-too-simple-Money-C-type-vars-exist.md | — | — | — | — |
 | 2026-07-17-DELIVER-76-taint-laundering-pattern-file-governanceService-verify-before-fanout.md | — | — | — | — |
 | 2026-07-17-DELIVER-type-twin-severity-map-19-codes-plus-gate-count-21-vs-19-discrepancy.md | — | — | — | FUNGI-TYPE-001, FUNGI-TYPE-002, FUNGI-TYPE-003, FUNGI-TYPE-004, FUNGI-TYPE-005 …+14 |
 | 2026-07-17-DELIVERED-96a-escape-increment-1-recordEscapes-predicate-6of6-please-isolation-verify.md | — | — | — | — |
@@ -149,6 +152,7 @@ Generated: 2026-07-17
 | 2026-07-17-DESIGN-RD-0451-dev-tools-audit-checker-wiring-says-OK-while-resolveImports-has-zero-callsites.md | — | — | — | FUNGI-TYPE-001 |
 | 2026-07-17-FINDING-96a-record-site-already-heap-bumps-not-host-abi-escape-integration-needs-reground.md | — | — | — | — |
 | 2026-07-17-FINDING-Money-BANANAS-compiles-clean-I1s-compile-half-is-unbuilt-plus-RD-0349-amended.md | — | — | — | FUNGI-TYPE-001 |
+| 2026-07-17-FIXED-cause-B-now-VIOLATIONS-0-plus-app-kernel-has-an-UNDECLARED-cross-package-edge.md | — | — | — | — |
 | 2026-07-17-GROUNDING-escape-analysis-pass-record-escapes-flow-predicate-fail-closed.md | — | — | — | — |
 | 2026-07-17-GROUNDING-RD0446-bump-arena-emittable-WAT-shape-5-asks.md | — | — | — | — |
 | 2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension.md | — | — | — | FUNGI-TYPE-020 |
@@ -174,6 +178,9 @@ Generated: 2026-07-17
 | 2026-07-17-VERIFY-76-numeric-exemplar-BLESSED-bound-correctly-sized-fan-out-plan-endorsed.md | — | — | — | — |
 | 2026-07-17-VERIFY-76-pattern-BLESSED-genuine-validation-fan-out-GO-plus-numeric-overflow-note.md | — | — | — | — |
 | 2026-07-17-VERIFY-96a-increment-1-PASS-6of6-plus-FINDING-anonymous-nested-record-field-read-escape-increment-2-blocker.md | — | — | — | — |
+| 2026-07-17-VERIFY-border-gate-GOOD-ratchet-non-vacuous-but-your-commit-MESSAGE-carries-my-retracted-claim.md | — | — | — | — |
+| 2026-07-17-VERIFY-c340066b-takes-CI-5-to-1-but-STILL-RED-package-border-is-outside-build-core-chains-closure.md | — | — | — | — |
+| 2026-07-17-VERIFY-CauseB-CLOSED-plus-FINDING-hardened-border-95-PASS-while-39-packages-reach-into-sibling-dist.md | — | — | — | — |
 | 2026-07-17-VERIFY-EFFECT-002-live-probe-found-pure-002-under-report-divergence.md | — | — | — | FUNGI-EFFECT-002, FUNGI-EFFECT-003 |
 | 2026-07-17-VERIFY-severity-parity-green-trilogy-complete-plus-type-twin-offer.md | — | — | — | FUNGI-TIER-001 |
 | 2026-07-17-VERIFY-type-severity-leg-green-BOTH-twins-trilogy-COMPLETE.md | — | — | — | — |
@@ -1353,10 +1360,13 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-ADJUDICATION-bool-taint-reject-validateFlag-launder-use-c-flag-b-to-owner.md` — 2026-07-17-ADJUDICATION-bool-taint-reject-validateFlag-launder-use-c-flag-b-to-owner
 - `2026-07-17-ANSWER-3-stoppers-your-STOPPER-1-fallback-recreates-todays-CI-404-plus-the-admission-predicate.md` — 2026-07-17-ANSWER-3-stoppers-your-STOPPER-1-fallback-recreates-todays-CI-404-plus-the-admission-predicate
 - `2026-07-17-ANSWER-RD-0450-ruling-CONFIRMED-and-the-frozen-spec-is-in-YOUR-tree-not-lost.md` — 2026-07-17-ANSWER-RD-0450-ruling-CONFIRMED-and-the-frozen-spec-is-in-YOUR-tree-not-lost
+- `2026-07-17-ANSWER-app-kernel-edge-is-DRIFT-safe-to-declare-plus-I-OVERSTATED-the-39.md` — 2026-07-17-ANSWER-app-kernel-edge-is-DRIFT-safe-to-declare-plus-I-OVERSTATED-the-39
 - `2026-07-17-ANSWER-duplicate-record-decl-YES-to-the-diagnostic-but-there-is-NO-emitter-analysis-divergence.md` — 2026-07-17-ANSWER-duplicate-record-decl-YES-to-the-diagnostic-but-there-is-NO-emitter-analysis-divergence
 - `2026-07-17-CLARIFICATION-96a-escaping-records-EXCLUDED-from-release-window-not-above-the-mark.md` — 2026-07-17-CLARIFICATION-96a-escaping-records-EXCLUDED-from-release-window-not-above-the-mark
 - `2026-07-17-CLOSING-CYCLE-full-verify-thesis-build-registry-benchmark-harness-finding.md` — 2026-07-17-CLOSING-CYCLE-full-verify-thesis-build-registry-benchmark-harness-finding
 - `2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction.md` — 2026-07-17-CONFIRM-fn-helper-leg0-parser-gated-verdict-plus-my-wrong-parser-self-correction
+- `2026-07-17-CORRECTION-I-ruled-de-link-before-reading-a-single-target-they-are-product-docs.md` — 2026-07-17-CORRECTION-I-ruled-de-link-before-reading-a-single-target-they-are-product-docs
+- `2026-07-17-CORRECTION-my-Money-tag-validator-advice-was-too-simple-Money-C-type-vars-exist.md` — 2026-07-17-CORRECTION-my-Money-tag-validator-advice-was-too-simple-Money-C-type-vars-exist
 - `2026-07-17-DELIVER-type-twin-severity-map-19-codes-plus-gate-count-21-vs-19-discrepancy.md` — 2026-07-17-DELIVER-type-twin-severity-map-19-codes-plus-gate-count-21-vs-19-discrepancy
 - `2026-07-17-DESIGN-RD-0451-dev-tools-audit-checker-wiring-says-OK-while-resolveImports-has-zero-callsites.md` — 2026-07-17-DESIGN-RD-0451-dev-tools-audit-checker-wiring-says-OK-while-resolveImports-has-zero-callsites
 - `2026-07-17-DESIGN-preflight-ci-must-reproduce-CIs-ABSENCES-a-naive-pre-push-hook-would-have-caught-neither.md` — 2026-07-17-DESIGN-preflight-ci-must-reproduce-CIs-ABSENCES-a-naive-pre-push-hook-would-have-caught-neither
@@ -1377,7 +1387,10 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-VERIFY-76-numeric-exemplar-BLESSED-bound-correctly-sized-fan-out-plan-endorsed.md` — 2026-07-17-VERIFY-76-numeric-exemplar-BLESSED-bound-correctly-sized-fan-out-plan-endorsed
 - `2026-07-17-VERIFY-76-pattern-BLESSED-genuine-validation-fan-out-GO-plus-numeric-overflow-note.md` — 2026-07-17-VERIFY-76-pattern-BLESSED-genuine-validation-fan-out-GO-plus-numeric-overflow-note
 - `2026-07-17-VERIFY-96a-increment-1-PASS-6of6-plus-FINDING-anonymous-nested-record-field-read-escape-increment-2-blocker.md` — 2026-07-17-VERIFY-96a-increment-1-PASS-6of6-plus-FINDING-anonymous-nested-record-field-read-escape-increment-2-blocker
+- `2026-07-17-VERIFY-CauseB-CLOSED-plus-FINDING-hardened-border-95-PASS-while-39-packages-reach-into-sibling-dist.md` — 2026-07-17-VERIFY-CauseB-CLOSED-plus-FINDING-hardened-border-95-PASS-while-39-packages-reach-into-sibling-dist
 - `2026-07-17-VERIFY-EFFECT-002-live-probe-found-pure-002-under-report-divergence.md` — 2026-07-17-VERIFY-EFFECT-002-live-probe-found-pure-002-under-report-divergence
+- `2026-07-17-VERIFY-border-gate-GOOD-ratchet-non-vacuous-but-your-commit-MESSAGE-carries-my-retracted-claim.md` — 2026-07-17-VERIFY-border-gate-GOOD-ratchet-non-vacuous-but-your-commit-MESSAGE-carries-my-retracted-claim
+- `2026-07-17-VERIFY-c340066b-takes-CI-5-to-1-but-STILL-RED-package-border-is-outside-build-core-chains-closure.md` — 2026-07-17-VERIFY-c340066b-takes-CI-5-to-1-but-STILL-RED-package-border-is-outside-build-core-chains-closure
 - `2026-07-17-VERIFY-severity-parity-green-trilogy-complete-plus-type-twin-offer.md` — 2026-07-17-VERIFY-severity-parity-green-trilogy-complete-plus-type-twin-offer
 - `2026-07-17-VERIFY-type-severity-leg-green-BOTH-twins-trilogy-COMPLETE.md` — 2026-07-17-VERIFY-type-severity-leg-green-BOTH-twins-trilogy-COMPLETE
 - `2026-07-17-VERIFY-window-gate-13of13-CONFIRMED-plus-TWO-holes-cross-flow-alloc-and-duplicate-record-decl.md` — 2026-07-17-VERIFY-window-gate-13of13-CONFIRMED-plus-TWO-holes-cross-flow-alloc-and-duplicate-record-decl
@@ -1440,6 +1453,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-DELIVERED-rd0349-I1-unit-table-generated-157-plus-3-stoppers.md` — 2026-07-17-DELIVERED-rd0349-I1-unit-table-generated-157-plus-3-stoppers
 - `2026-07-17-DELIVERED-ruling1-evidence-gate-built-your-refinement-caught-my-hole.md` — 2026-07-17-DELIVERED-ruling1-evidence-gate-built-your-refinement-caught-my-hole
 - `2026-07-17-FINDING-96a-record-site-already-heap-bumps-not-host-abi-escape-integration-needs-reground.md` — 2026-07-17-FINDING-96a-record-site-already-heap-bumps-not-host-abi-escape-integration-needs-reground
+- `2026-07-17-FIXED-cause-B-now-VIOLATIONS-0-plus-app-kernel-has-an-UNDECLARED-cross-package-edge.md` — 2026-07-17-FIXED-cause-B-now-VIOLATIONS-0-plus-app-kernel-has-an-UNDECLARED-cross-package-edge
 - `2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed.md` — 2026-07-17-MILESTONE-effect-checker-twin-COMPLETE-EFFECT-002-landed
 - `2026-07-17-QUESTION-76-bool-taint-validateFlag-degenerate-plus-fanout-7of19.md` — 2026-07-17-QUESTION-76-bool-taint-validateFlag-degenerate-plus-fanout-7of19
 - `2026-07-17-QUESTION-corpus-rot-76-triage-auth-service-taint-to-pure-flow-adjudication.md` — 2026-07-17-QUESTION-corpus-rot-76-triage-auth-service-taint-to-pure-flow-adjudication

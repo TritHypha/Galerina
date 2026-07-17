@@ -1988,11 +1988,12 @@
       "name": "build-core-chain.mjs",
       "category": "util",
       "purpose": "build a package plus its transitive `file:` dependency closure in",
-      "selfTest": false,
+      "selfTest": true,
       "inCadence": false,
       "concerns": [
         "signing/fusion",
         "diagnostics",
+        "package-border",
         "graph/index"
       ]
     },
@@ -2287,6 +2288,7 @@
       "audit-node-dependencies.mjs",
       "audit-package-border.mjs",
       "graph-all.mjs",
+      "build-core-chain.mjs",
       "check-gate-injection.mjs",
       "package-usage.mjs"
     ],
