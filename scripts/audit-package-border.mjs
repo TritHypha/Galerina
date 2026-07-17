@@ -29,7 +29,7 @@
  * Residual (honestly scoped): orphan-file findings are advisory here (parity with the CLI --check, which
  * exits 1 only on boundary FAIL). #40 tracks scanner bare-subpath vs relative-form border identity.
  */
-import { readdirSync, existsSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { readdirSync, existsSync, readFileSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { join, resolve, dirname } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -79,6 +79,49 @@ async function loadScanner() {
   const { buildGraph } = await import(pathToFileURL(join(DIST, "graph.js")).href);
   const { runBoundaryGate } = await import(pathToFileURL(join(DIST, "reporter.js")).href);
   return { scanPackage, buildGraph, runBoundaryGate };
+}
+
+// ══════════════════════════════════════════════════════════════════════════════════════════════
+// CROSS-PACKAGE RELATIVE IMPORTS — the border crossing this gate did not look at (2026-07-17)
+// ══════════════════════════════════════════════════════════════════════════════════════════════
+// THE FINDING. This gate reported "95 PASS / 0 FAIL — every package's external surface is within its
+// Hardened Border" while 39 imports reached into a SIBLING package's dist/ by relative path. It was not
+// a bug: the surface is EXTERNAL (npm) specifiers checked against `allowedExternal`, and
+// `../../sibling/dist/x.js` is a relative FILE PATH, not an external — so it fell outside the surface
+// entirely. The verdict was honest for its surface. Its surface just wasn't the border. That the gate is
+// NAMED "Hardened Border" is what makes it dangerous: a reader takes "95 PASS" to mean exactly the thing
+// that was never checked.
+//
+// WHY IT IS A BORDER CROSSING — and the most dangerous kind. `../../sibling/` bypasses package.json
+// altogether: no declaration, no version, no npm resolution, and invisible to the file:-closure walk
+// (which is how one of these broke a clean-checkout CI build — the closure could not see an edge that
+// exists only in code).
+//
+// TWO SEVERITIES, deliberately distinct:
+//   • ANY `../../<sibling>/…`  → PUBLISH-BLOCKER. It resolves in the monorepo and CANNOT resolve for
+//     anyone running `npm install @galerina/<pkg>` — a published tarball has no `../../` sibling — and
+//     it reaches into `dist/` rather than the package's public entry, so no `exports` map can rescue it.
+//     These packages are not standalone, which is the whole point of the package standard.
+//   • …AND UNDECLARED (package.json names neither) → also a clean-clone BUILD-BREAKER.
+//
+// G0: the green must say what it does NOT check. That one line, present from the start, would have
+// surfaced this the day the gate shipped.
+const PKG_DIR_NAMES = () => readdirSync(PKG_ROOT, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name);
+
+/**
+ * Find cross-package relative imports in one package's source. Pure-ish: `siblings` is injected so the
+ * self-test drives it with a fixture instead of the real tree (a DI seam, no monkeypatching).
+ * Only counts `../../<x>/…` where <x> is a REAL sibling package dir — `../../lib/util.js` inside a
+ * package is not a border crossing, and calling it one would be a false positive.
+ */
+export function findCrossPackageRelativeImports(sourceText, siblings) {
+  const out = [];
+  for (const m of sourceText.matchAll(/from\s+["']\.\.\/\.\.\/([a-z0-9-]+)\/([^"']*)["']/g)) {
+    const sib = m[1];
+    if (!siblings.includes(sib)) continue;
+    out.push({ sibling: sib, path: m[2], reachesDist: m[2].startsWith("dist/") });
+  }
+  return out;
 }
 
 /** Re-scan a package from source and enforce its committed policy (check=true → never auto-baselines). */
@@ -182,8 +225,61 @@ async function main() {
     );
     process.exit(1);
   }
-  console.log("  ✅ every package's external surface is within its Hardened Border.\n");
+
+  // ── SECOND SURFACE: cross-package relative imports (see the header block above) ──────────────
+  const siblings = PKG_DIR_NAMES();
+  const crossings = [];
+  for (const dir of siblings) {
+    const src = join(PKG_ROOT, dir, "src");
+    if (!existsSync(src)) continue;
+    for (const file of walkSource(src)) {
+      for (const c of findCrossPackageRelativeImports(readFileSync(file, "utf8"), siblings)) {
+        crossings.push({ from: dir, ...c, file: file.slice(ROOT.length + 1) });
+      }
+    }
+  }
+  const pairs = [...new Set(crossings.map((c) => `${c.from} → ${c.sibling}`))].sort();
+
+  // RATCHET — shrink-only, same shape as the other declared baselines. These are a PRE-EXISTING debt the
+  // old surface could not see; they cannot all be fixed in the commit that lands the detector. Every
+  // crossing is still PRINTED, the count is enforced, and ONE new crossing fails the gate.
+  const CROSSING_BASELINE = 39;
+
+  if (crossings.length) {
+    console.log(`\n  ── cross-package relative imports: ${crossings.length} across ${pairs.length} pair(s) ──`);
+    for (const p of pairs) console.log(`     ${p}`);
+    console.log(
+      `\n  These are PUBLISH-BLOCKERS, declared or not: \`../../<sibling>/dist/…\` resolves in this monorepo\n` +
+      `  and CANNOT resolve for anyone running \`npm install\` — a published tarball has no \`../../\` sibling,\n` +
+      `  and it reaches into dist/ rather than the package's public entry, so no \`exports\` map can rescue it.\n` +
+      `  It also bypasses package.json entirely: no declaration, no version, invisible to the file:-closure\n` +
+      `  walk (which is how one of these broke a clean-checkout CI build). Fix = declare the dep and import\n` +
+      `  the package by name. Tracked as task #104.`,
+    );
+  }
+  if (crossings.length > CROSSING_BASELINE) {
+    console.error(`\n  ❌ NEW cross-package relative import: ${crossings.length} vs baseline ${CROSSING_BASELINE}. The ratchet only shrinks.`);
+    process.exit(1);
+  }
+
+  // G0 — the green states its surface AND its exclusions. The old green ("every package's external
+  // surface is within its Hardened Border") was true and read as a guarantee it never made.
+  console.log(`\n  ✅ every package's external surface is within its Hardened Border.`);
+  console.log(`     SURFACE: external (npm) specifiers vs each package's declared allowedExternal, re-derived from source.`);
+  console.log(`     ALSO CHECKED: cross-package relative imports — ${crossings.length} at baseline ${CROSSING_BASELINE} (declared debt, shrink-only).`);
+  console.log(`     NOT CHECKED: runtime reach-through, dynamic import() specifiers, or imports outside packages-galerina/*/src.\n`);
   process.exit(0);
+}
+
+/** Recursively list .ts/.mjs source files. */
+function walkSource(dir) {
+  const out = [];
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    const p = join(dir, e.name);
+    if (e.isDirectory()) out.push(...walkSource(p));
+    else if (/\.(ts|mjs)$/.test(e.name)) out.push(p);
+  }
+  return out;
 }
 
 main().catch((e) => {
