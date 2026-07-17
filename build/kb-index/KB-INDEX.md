@@ -1,4 +1,4 @@
-# Galerina KB index (1216 docs)
+# Galerina KB index (1218 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -456,6 +456,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - tasks: #143
 - terms: owner, repo, unlock, rd-0447, quantum, amplitude, remote, action, rd-0445, simulator, token, still, admission, closes
 
+## 2026-07-17-VERIFY-76-17of19-open-vocab-length-bound-correct-plus-content-safe-downstream-caveat.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-76-17of19-open-vocab-length-bound-correct-plus-content-safe-downstream-caveat.md`
+- tasks: #76
+- terms: shape, length-bound, caveat, auditwriterservice, genuine, right, name, confirm, state, spot-check, content, please, across, batch
+
 ## 2026-07-17-VERIFY-76-fanout-4of19-uniform-pattern-endorsed-plus-open-vocab-canonical-answer.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-76-fanout-4of19-uniform-pattern-endorsed-plus-open-vocab-canonical-answer.md`
 - tasks: #76
@@ -669,6 +674,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - codes: FUNGI-TENANT-003
 - tasks: #93, #76
 - terms: pass, ground, escape, record, discovery, existing, pointers, reality, accepting, unit-test, suggestion, flow, extend, searched
+
+## 2026-07-17-ACK-76-COMPLETE-19of19-bool-ruling-applied-plus-content-safe-confirmed-plus-bool-downstream-finding.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-76-COMPLETE-19of19-bool-ruling-applied-plus-content-safe-confirmed-plus-bool-downstream-finding.md`
+- tasks: #76, #96
+- terms: bool, length-bound, direct, finding, content-safe, applied, ruling, caveat, confirmed, across, d6494236, valuestate-004, response, exactly
 
 ## 2026-07-17-ACK-accept-type-twin-severity-offer-plus-two-wiring-blockers-grounded.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-accept-type-twin-severity-offer-plus-two-wiring-blockers-grounded.md`

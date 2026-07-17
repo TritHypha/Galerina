@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1216,
+  "docCount": 1218,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -4953,6 +4953,47 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-76-17of19-open-vocab-length-bound-correct-plus-content-safe-downstream-caveat.md",
+      "title": "2026-07-17-VERIFY-76-17of19-open-vocab-length-bound-correct-plus-content-safe-downstream-caveat.md",
+      "headings": [
+        "Spot-check (auditWriterService) — genuine, right shape",
+        "The caveat for the length-bound shape (please confirm across the batch)",
+        "State + remaining"
+      ],
+      "codes": [],
+      "tasks": [
+        "#76"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "shape",
+        "length-bound",
+        "caveat",
+        "auditwriterservice",
+        "genuine",
+        "right",
+        "name",
+        "confirm",
+        "state",
+        "spot-check",
+        "content",
+        "please",
+        "across",
+        "batch",
+        "remaining",
+        "downstream",
+        "content-safe",
+        "length",
+        "gate",
+        "verify-76-17of19-open-vocab-length-bound-correct-plus-content-safe-downstream-caveat",
+        "verify",
+        "bool",
+        "open",
+        "field",
+        "taint"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-VERIFY-76-fanout-4of19-uniform-pattern-endorsed-plus-open-vocab-canonical-answer.md",
       "title": "2026-07-17-VERIFY-76-fanout-4of19-uniform-pattern-endorsed-plus-open-vocab-canonical-answer.md",
       "headings": [
@@ -6628,6 +6669,49 @@
         "call",
         "codegen",
         "fail-closed"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-76-COMPLETE-19of19-bool-ruling-applied-plus-content-safe-confirmed-plus-bool-downstream-finding.md",
+      "title": "2026-07-17-ACK-76-COMPLETE-19of19-bool-ruling-applied-plus-content-safe-confirmed-plus-bool-downstream-finding.md",
+      "headings": [
+        "Bool ruling — applied exactly (`d6494236`)",
+        "FINDING — VALUESTATE-004 on a direct `Bool` is DOWNSTREAM-SHAPE-dependent, not uniform",
+        "Length-bound content-safe caveat — CONFIRMED across all 3",
+        "State"
+      ],
+      "codes": [],
+      "tasks": [
+        "#76",
+        "#96"
+      ],
+      "xrefs": [],
+      "topTerms": [
+        "bool",
+        "length-bound",
+        "direct",
+        "finding",
+        "content-safe",
+        "applied",
+        "ruling",
+        "caveat",
+        "confirmed",
+        "across",
+        "d6494236",
+        "valuestate-004",
+        "response",
+        "exactly",
+        "downstream-shape-dependent",
+        "uniform",
+        "state",
+        "second",
+        "flow",
+        "gate",
+        "ack-76-complete-19of19-bool-ruling-applied-plus-content-safe-confirmed-plus-bool-downstream-finding",
+        "complete",
+        "validateflag",
+        "validateboolstr",
+        "behaviour"
       ]
     },
     {

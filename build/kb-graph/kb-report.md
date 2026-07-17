@@ -2,7 +2,7 @@
 Generated: 2026-07-17
 
 ## Stats
-- Docs: 1214 | Edges: 3476 | Orphans: 151 | Stale links: 0 | FUNGI codes: 748
+- Docs: 1216 | Edges: 3476 | Orphans: 153 | Stale links: 0 | FUNGI codes: 748
 
 ## Document Registry (auto-generated)
 
@@ -102,6 +102,7 @@ Generated: 2026-07-17
 | 2026-07-16-tranche-bc-first-cluster-match-arms-and-ordering-criterion.md | — | — | — | — |
 | 2026-07-16-UNLOCK-checker-taxonomy-20-adopt.md | — | — | — | FUNGI-EFFECT-002, FUNGI-TYPE-006 |
 | 2026-07-17-ACCEPT-escape-analysis-grounding-no-existing-pass-pointers.md | — | — | — | FUNGI-TENANT-003 |
+| 2026-07-17-ACK-76-COMPLETE-19of19-bool-ruling-applied-plus-content-safe-confirmed-plus-bool-downstream-finding.md | — | — | — | — |
 | 2026-07-17-ACK-accept-type-twin-severity-offer-plus-two-wiring-blockers-grounded.md | — | — | — | — |
 | 2026-07-17-ACK-alias-cluster-landed-005-unsquat-009-payment-charge.md | — | — | — | FUNGI-EFFECT-005, FUNGI-EFFECT-009 |
 | 2026-07-17-ACK-alias-cluster-VERIFIED-plus-stale-004-cluster-plus-latent-008-fold-invariant.md | — | — | — | FUNGI-EFFECT-004 |
@@ -138,6 +139,7 @@ Generated: 2026-07-17
 | 2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked.md | — | — | — | — |
 | 2026-07-17-STATUS-76-effect-name-files-done-plus-C11-superset-refinement.md | — | — | — | — |
 | 2026-07-17-STATUS-76-numeric-exemplar-economicsService-done-plus-cycle-green.md | — | — | — | — |
+| 2026-07-17-VERIFY-76-17of19-open-vocab-length-bound-correct-plus-content-safe-downstream-caveat.md | — | — | — | — |
 | 2026-07-17-VERIFY-76-fanout-4of19-uniform-pattern-endorsed-plus-open-vocab-canonical-answer.md | — | — | — | — |
 | 2026-07-17-VERIFY-76-numeric-exemplar-BLESSED-bound-correctly-sized-fan-out-plan-endorsed.md | — | — | — | — |
 | 2026-07-17-VERIFY-76-pattern-BLESSED-genuine-validation-fan-out-GO-plus-numeric-overflow-note.md | — | — | — | — |
@@ -1317,6 +1319,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension.md` — 2026-07-17-GROUNDTRUTH-type-twin-severities-are-helper-based-NOT-a-clean-effect-leg-extension
 - `2026-07-17-PREP-EFFECT-002-transitive-walk-faithfulness-traps-grounded-from-stage-A.md` — 2026-07-17-PREP-EFFECT-002-transitive-walk-faithfulness-traps-grounded-from-stage-A
 - `2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked.md` — 2026-07-17-RD-0447-quantum-sim-amplitude-closes-rd0445-plus-remote-creation-still-harness-blocked
+- `2026-07-17-VERIFY-76-17of19-open-vocab-length-bound-correct-plus-content-safe-downstream-caveat.md` — 2026-07-17-VERIFY-76-17of19-open-vocab-length-bound-correct-plus-content-safe-downstream-caveat
 - `2026-07-17-VERIFY-76-fanout-4of19-uniform-pattern-endorsed-plus-open-vocab-canonical-answer.md` — 2026-07-17-VERIFY-76-fanout-4of19-uniform-pattern-endorsed-plus-open-vocab-canonical-answer
 - `2026-07-17-VERIFY-76-numeric-exemplar-BLESSED-bound-correctly-sized-fan-out-plan-endorsed.md` — 2026-07-17-VERIFY-76-numeric-exemplar-BLESSED-bound-correctly-sized-fan-out-plan-endorsed
 - `2026-07-17-VERIFY-76-pattern-BLESSED-genuine-validation-fan-out-GO-plus-numeric-overflow-note.md` — 2026-07-17-VERIFY-76-pattern-BLESSED-genuine-validation-fan-out-GO-plus-numeric-overflow-note
@@ -1359,6 +1362,7 @@ Docs with no inbound links from other KB docs:
 - `2026-07-16-STOPPER-K3-blocked-on-self-hosted-parser-pivot-to-effect-checker.md` — 2026-07-16-STOPPER-K3-blocked-on-self-hosted-parser-pivot-to-effect-checker
 - `2026-07-16-kb-graph-code-region-masking-stale-links-zeroed.md` — 2026-07-16-kb-graph-code-region-masking-stale-links-zeroed
 - `2026-07-17-ACCEPT-escape-analysis-grounding-no-existing-pass-pointers.md` — 2026-07-17-ACCEPT-escape-analysis-grounding-no-existing-pass-pointers
+- `2026-07-17-ACK-76-COMPLETE-19of19-bool-ruling-applied-plus-content-safe-confirmed-plus-bool-downstream-finding.md` — 2026-07-17-ACK-76-COMPLETE-19of19-bool-ruling-applied-plus-content-safe-confirmed-plus-bool-downstream-finding
 - `2026-07-17-ACK-EFFECT-006-landed-plus-count-method-aligned-plus-gate-gap.md` — 2026-07-17-ACK-EFFECT-006-landed-plus-count-method-aligned-plus-gate-gap
 - `2026-07-17-ACK-accept-type-twin-severity-offer-plus-two-wiring-blockers-grounded.md` — 2026-07-17-ACK-accept-type-twin-severity-offer-plus-two-wiring-blockers-grounded
 - `2026-07-17-ACK-alias-cluster-landed-005-unsquat-009-payment-charge.md` — 2026-07-17-ACK-alias-cluster-landed-005-unsquat-009-payment-charge
