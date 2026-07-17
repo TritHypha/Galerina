@@ -3053,7 +3053,7 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 50,
+      "tests": 52,
       "docs": 20
     },
     {
@@ -3065,11 +3065,12 @@
         "BROAD_ALIAS_USED"
       ],
       "severities": [
-        "warning"
+        "warning",
+        "error"
       ],
       "defs": 1,
       "emits": 1,
-      "tests": 43,
+      "tests": 46,
       "docs": 8
     },
     {
@@ -3117,7 +3118,7 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 10,
+      "tests": 11,
       "docs": 1
     },
     {
@@ -3133,7 +3134,7 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 18,
+      "tests": 23,
       "docs": 0
     },
     {

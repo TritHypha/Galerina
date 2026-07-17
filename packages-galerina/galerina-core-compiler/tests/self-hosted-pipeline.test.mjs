@@ -202,6 +202,23 @@ describe("self-hosted pipeline — effect + governance over the parsed body AST 
     assert.ok(!codes.includes("FUNGI-EFFECT-004"), `deny-only must skip 004, got: ${codes.join(", ")}`);
   });
 
+  it("FUNGI-EFFECT-005: a flow declaring a broad alias (network), via the REAL parser", async () => {
+    // The parser produces effects [network]; the declared loop's alias branch flags the broad alias
+    // (Stage-A validateDeclaredEffectNames) as 005, not 004.
+    const flows = await flowsFrom(`flow f() -> Int\n  contract { effects { network } }\n{ return 0 }`);
+    const r = await executeFlow("checkFlowEffects", new Map([["flows", flows]]), effect.ast);
+    const codes = codesOn(r).filter((d) => d.flowName === "f").map((d) => d.code);
+    assert.ok(codes.includes("FUNGI-EFFECT-005"), `expected 005 on f, got: ${codes.join(", ")}`);
+    assert.ok(!codes.includes("FUNGI-EFFECT-004"), `broad alias must not 004, got: ${codes.join(", ")}`);
+  });
+
+  it("FUNGI-EFFECT-009: a flow declaring a non-broad alias (http.get), via the REAL parser", async () => {
+    const flows = await flowsFrom(`flow f() -> Int\n  contract { effects { http.get } }\n{ return 0 }`);
+    const r = await executeFlow("checkFlowEffects", new Map([["flows", flows]]), effect.ast);
+    const codes = codesOn(r).filter((d) => d.flowName === "f").map((d) => d.code);
+    assert.ok(codes.includes("FUNGI-EFFECT-009"), `expected 009 on f, got: ${codes.join(", ")}`);
+  });
+
   it("governance flags a secure flow that never audits in its body", async () => {
     const flows = await flowsFrom(`secure flow charge() -> Int { dbWrite(amount)\nreturn 0 }`);
     const r = await executeFlow("checkBodyGovernance", new Map([["flows", flows]]), govern.ast);

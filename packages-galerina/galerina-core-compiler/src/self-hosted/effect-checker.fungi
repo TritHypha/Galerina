@@ -65,7 +65,10 @@ contract {
     // (Stage-A aliases ai.infer one-way). eval.execute stays KNOWN — it is the
     // Stage-A DENY-ONLY name (FUNGI-EFFECT-006): recognised, never grantable.
     "ai.inference", "process.spawn", "eval.execute",
-    "pii.read", "pii.write"
+    // payment.charge: a canonical privileged effect (Stage-A recognises it — no FUNGI-EFFECT-004;
+    // a plain flow declaring it gets FUNGI-EFFECT-008). Added 2026-07-17 to mirror Stage-A's
+    // canonical set verbatim (was a latent per-input 004 divergence the code-set gate can't see).
+    "pii.read", "pii.write", "payment.charge"
   ]
 }
 
@@ -141,6 +144,53 @@ contract { intent { "True for a deny-only effect (eval.execute, memory.spill) �
   return false
 }
 
+// Broad aliases (Stage-A BROAD_EFFECT_ALIASES, effect-checker.ts:818) — short forms that resolve to a
+// canonical name; using one is accepted with a nudge (FUNGI-EFFECT-005, warning). Mirrored verbatim.
+pure flow isBroadAlias(effect: String) -> Bool
+contract { intent { "True for a broad effect alias (network, database, ... , secret.access)." } }
+{
+  if effect == "network" { return true }
+  if effect == "database" { return true }
+  if effect == "filesystem" { return true }
+  if effect == "secret" { return true }
+  if effect == "ai" { return true }
+  if effect == "audit" { return true }
+  if effect == "pii" { return true }
+  if effect == "phi" { return true }
+  if effect == "secret.access" { return true }
+  return false
+}
+
+// The canonical spelling an alias resolves to (Stage-A EFFECT_NAME_ALIASES, effect-checker.ts:452), or
+// "" when the effect is not an alias. A broad alias → FUNGI-EFFECT-005 (warning); any OTHER alias
+// (non-broad, e.g. http.get / pii.write) → FUNGI-EFFECT-009 (NON_CANONICAL_EFFECT, error). Mirrored
+// verbatim — the differential compares codes, so the canonical text is for the message only.
+pure flow aliasCanonicalOf(effect: String) -> String
+contract { intent { "Return the canonical effect an alias maps to, else empty string." } }
+{
+  if effect == "network" { return "network.outbound" }
+  if effect == "database" { return "database.read" }
+  if effect == "filesystem" { return "storage.read" }
+  if effect == "secret" { return "secret.read" }
+  if effect == "ai" { return "ai.inference" }
+  if effect == "audit" { return "audit.write" }
+  if effect == "pii" { return "pii.read" }
+  if effect == "phi" { return "phi.read" }
+  if effect == "secret.access" { return "secret.read" }
+  if effect == "pii.write" { return "database.write" }
+  if effect == "http.get" { return "network.outbound" }
+  if effect == "http.post" { return "network.outbound" }
+  if effect == "http.put" { return "network.outbound" }
+  if effect == "http.delete" { return "network.outbound" }
+  if effect == "http.patch" { return "network.outbound" }
+  if effect == "file.read" { return "storage.read" }
+  if effect == "file.write" { return "storage.write" }
+  if effect == "ai.remoteInference" { return "ai.inference" }
+  if effect == "crypto.password.verify" { return "crypto.verify" }
+  if effect == "ai.infer" { return "ai.inference" }
+  return ""
+}
+
 pure flow checkPureFlowEffects(flowName: String, effectCount: Int) -> Array<Auto>
 contract {
   intent { "Pure flows must declare zero effects. Emit FUNGI-EFFECT-003 (EFFECT_BOUNDARY_VIOLATION) if any declared." }
@@ -156,16 +206,10 @@ contract {
 
 pure flow checkSecureFlowEffects(flowName: String, effectCount: Int) -> Array<Auto>
 contract {
-  intent { "Secure/guarded flows should declare at least audit.write for traceability." }
+  intent { "Secure/guarded flows with zero declared effects: Stage-A emits NO diagnostic. The prior FUNGI-EFFECT-005 here was a SQUAT — 005 is canonically BROAD_ALIAS_USED, now emitted in the declared-effect loop. Un-squatted 2026-07-17 (R&D-adjudicated); kept as a no-op seam so the entry's call site is unchanged." }
 }
 {
-  mut diags: Array<Auto> = Array.empty()
-  if effectCount == 0 {
-    let msg: String = "Secure/guarded flow '" + flowName + "' declares no effects — consider declaring audit.write"
-    // FUNGI-EFFECT-005 carried from prior stub: no canonical code for this advisory.
-    diags = diags.append({ code: "FUNGI-EFFECT-005", message: msg, flowName: flowName, severity: "warning" })
-  }
-  return diags
+  return Array.empty()
 }
 
 // Reconcile what a flow USES against what it DECLARES.
@@ -225,31 +269,47 @@ contract {
           let msg6: String = "Effect '" + de + "' is deny-only: a recognised name that can never be granted — remove it, no declaration makes this flow admissible"
           diags = diags.append({ code: "FUNGI-EFFECT-006", message: msg6, flowName: flowName, severity: "error" })
         } else {
-          if contains(known, de) == false {
-            let umsg2: String = "Effect '" + de + "' declared by flow '" + flowName + "' is not a recognised Galerina effect name"
-            diags = diags.append({ code: "FUNGI-EFFECT-004", message: umsg2, flowName: flowName, severity: "error" })
-          }
-          // Check #5 — FUNGI-EFFECT-007 (OVERDECLARED_EFFECT, warning — #20 split off -002, which keeps the transitive error): a KNOWN effect declared but
-          // never used (not in usedEffects). Mirrors the Stage-A OVERDECLARED_EFFECT advisory. Skip
-          // pure flows (a declared effect there is the 003 boundary violation) and unknown effects
-          // (already flagged 004 above), so a single fault is never double-reported.
-          if contains(known, de) {
-            if kind != "pure" {
-              if contains(uniqueUsed, de) == false {
-                let omsg: String = kind + " flow '" + flowName + "' declares effect '" + de + "' but no matching operation was observed"
-                diags = diags.append({ code: "FUNGI-EFFECT-007", message: omsg, flowName: flowName, severity: "warning" })
+          // Check #8 — alias handling (Stage-A validateDeclaredEffectNames, effect-checker.ts:889): a
+          // declared effect that is an ALIAS emits FUNGI-EFFECT-005 (broad alias → warning) or
+          // FUNGI-EFFECT-009 (non-broad alias → error) — and NOT 004/007/008 — mirroring the Stage-A
+          // branch order. Grounded vs raw Stage-A: network/database/secret/pii/secret.access -> 005;
+          // http.get/http.post/pii.write -> 009; a canonical name (network.outbound) -> none.
+          let canon: String = aliasCanonicalOf(de)
+          if canon != "" {
+            if isBroadAlias(de) {
+              let msg5: String = "Effect '" + de + "' is a broad alias — use the canonical name '" + canon + "' to precisely declare authority"
+              diags = diags.append({ code: "FUNGI-EFFECT-005", message: msg5, flowName: flowName, severity: "warning" })
+            } else {
+              let msg9: String = "Effect '" + de + "' is not a canonical effect name — use '" + canon + "'"
+              diags = diags.append({ code: "FUNGI-EFFECT-009", message: msg9, flowName: flowName, severity: "error" })
+            }
+          } else {
+            if contains(known, de) == false {
+              let umsg2: String = "Effect '" + de + "' declared by flow '" + flowName + "' is not a recognised Galerina effect name"
+              diags = diags.append({ code: "FUNGI-EFFECT-004", message: umsg2, flowName: flowName, severity: "error" })
+            }
+            // Check #5 — FUNGI-EFFECT-007 (OVERDECLARED_EFFECT, warning — #20 split off -002, which keeps the transitive error): a KNOWN effect declared but
+            // never used (not in usedEffects). Mirrors the Stage-A OVERDECLARED_EFFECT advisory. Skip
+            // pure flows (a declared effect there is the 003 boundary violation) and unknown effects
+            // (already flagged 004 above), so a single fault is never double-reported.
+            if contains(known, de) {
+              if kind != "pure" {
+                if contains(uniqueUsed, de) == false {
+                  let omsg: String = kind + " flow '" + flowName + "' declares effect '" + de + "' but no matching operation was observed"
+                  diags = diags.append({ code: "FUNGI-EFFECT-007", message: omsg, flowName: flowName, severity: "warning" })
+                }
               }
             }
-          }
-          // Check #6 — FUNGI-EFFECT-008 (PRIVILEGED_EFFECT_ON_PLAIN_FLOW, warning): a PLAIN flow (kind
-          // "flow", not pure/secure/guarded) declaring a privileged effect. Mirrors Stage-A checkFlowEffects
-          // (effect-checker.ts:741): the security tier is under-declared; the fix is `secure flow`. Fires
-          // on the DECLARED effect independent of usage/known-ness. Verified vs raw diagnostics:
-          // `flow f() effects { secret.read }` -> 008; secure/pure/non-privileged declarer -> no 008.
-          if kind == "flow" {
-            if isPrivilegedEffect(de) {
-              let msg8: String = "Plain flow '" + flowName + "' declares privileged effect '" + de + "'; use 'secure flow' for security-sensitive operations"
-              diags = diags.append({ code: "FUNGI-EFFECT-008", message: msg8, flowName: flowName, severity: "warning" })
+            // Check #6 — FUNGI-EFFECT-008 (PRIVILEGED_EFFECT_ON_PLAIN_FLOW, warning): a PLAIN flow (kind
+            // "flow", not pure/secure/guarded) declaring a privileged effect. Mirrors Stage-A checkFlowEffects
+            // (effect-checker.ts:741): the security tier is under-declared; the fix is `secure flow`. Fires
+            // on the DECLARED effect independent of usage/known-ness. Verified vs raw diagnostics:
+            // `flow f() effects { secret.read }` -> 008; secure/pure/non-privileged declarer -> no 008.
+            if kind == "flow" {
+              if isPrivilegedEffect(de) {
+                let msg8: String = "Plain flow '" + flowName + "' declares privileged effect '" + de + "'; use 'secure flow' for security-sensitive operations"
+                diags = diags.append({ code: "FUNGI-EFFECT-008", message: msg8, flowName: flowName, severity: "warning" })
+              }
             }
           }
         }

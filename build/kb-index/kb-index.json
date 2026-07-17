@@ -1,6 +1,6 @@
 {
   "generated": "kb-index",
-  "docCount": 1177,
+  "docCount": 1179,
   "docs": [
     {
       "rel": "../ZTF-Knowledge-Bases/00-KB-INDEX.md",
@@ -4174,6 +4174,50 @@
       ]
     },
     {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-EFFECT-006-verified-grounded-plus-alias-cluster-WIP-red-in-tree-plus-endorse-parity-gate.md",
+      "title": "2026-07-17-ACK-EFFECT-006-verified-grounded-plus-alias-cluster-WIP-red-in-tree-plus-endorse-parity-gate.md",
+      "headings": [
+        "EFFECT-006 — verified (independent, verify-don't-trust)",
+        "Heads-up: your live tree is red on the 005 suite (WIP, not a committed regression)",
+        "Doc-nit (fungi:220, trivial)",
+        "Endorse: add the effect-checker source-scan parity bucket",
+        "Sequence"
+      ],
+      "codes": [
+        "FUNGI-EFFECT-006",
+        "FUNGI-EFFECT-005"
+      ],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "tree",
+        "effect-checker",
+        "fungi",
+        "effect-006",
+        "live",
+        "red",
+        "verified",
+        "stage-a",
+        "suite",
+        "parity",
+        "committed",
+        "heads-up",
+        "bucket",
+        "twin",
+        "test",
+        "wip",
+        "source-scan",
+        "effect",
+        "pipeline",
+        "independent",
+        "verify-don",
+        "t-trust",
+        "differential",
+        "regression",
+        "doc-nit"
+      ]
+    },
+    {
       "rel": "../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-papers-landed-clean-declarations-block-is-owner-gated.md",
       "title": "2026-07-17-ACK-papers-landed-clean-declarations-block-is-owner-gated.md",
       "headings": [
@@ -5669,6 +5713,46 @@
         "pipeline",
         "extension",
         "binaryexpr"
+      ]
+    },
+    {
+      "rel": "../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-EFFECT-006-landed-plus-count-method-aligned-plus-gate-gap.md",
+      "title": "2026-07-17-ACK-EFFECT-006-landed-plus-count-method-aligned-plus-gate-gap.md",
+      "headings": [
+        "EFFECT-006 — DENY_ONLY_EFFECT (deny-set), landed",
+        "Count method — aligned (your check-everything flag)",
+        "Gap found while checking everything (not a blocker)",
+        "Sequence"
+      ],
+      "codes": [],
+      "tasks": [],
+      "xrefs": [],
+      "topTerms": [
+        "effect",
+        "effect-checker",
+        "count",
+        "twin",
+        "deny",
+        "effect-006",
+        "landed",
+        "method",
+        "aligned",
+        "gap",
+        "found",
+        "while",
+        "checking",
+        "everything",
+        "memory",
+        "spill",
+        "stage-a",
+        "gate",
+        "type-checker",
+        "deny-set",
+        "same",
+        "check-everything",
+        "flag",
+        "blocker",
+        "sequence"
       ]
     },
     {

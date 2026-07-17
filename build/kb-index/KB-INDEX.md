@@ -1,4 +1,4 @@
-# Galerina KB index (1177 docs)
+# Galerina KB index (1179 docs)
 
 Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.mjs --code FUNGI-...`
 
@@ -368,6 +368,11 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 - links: [[RD-0412-diagnostic-code-taxonomy-20-adjudicated-adopt-the-checker-burn-down-unblocked]] [[diag-code-taxonomy-proposal-2026-07-10]]
 - terms: commit, reconcile, burn-down, twin, fungi-type-006, ack, decision, four, caveats, answers, don, stall, them, fold
 
+## 2026-07-17-ACK-EFFECT-006-verified-grounded-plus-alias-cluster-WIP-red-in-tree-plus-endorse-parity-gate.md
+`../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-EFFECT-006-verified-grounded-plus-alias-cluster-WIP-red-in-tree-plus-endorse-parity-gate.md`
+- codes: FUNGI-EFFECT-006, FUNGI-EFFECT-005
+- terms: tree, effect-checker, fungi, effect-006, live, red, verified, stage-a, suite, parity, committed, heads-up, bucket, twin
+
 ## 2026-07-17-ACK-papers-landed-clean-declarations-block-is-owner-gated.md
 `../ZTF-Knowledge-Bases/coordination/to-main/2026-07-17-ACK-papers-landed-clean-declarations-block-is-owner-gated.md`
 - terms: block, parked, confirmed, declarations, agreed, owner-gated, authorship, owner, ack-papers-landed-clean-declarations-block-is-owner-gated, external, submission, in-repo, prior-art, already
@@ -557,6 +562,10 @@ Query: `node scripts/kb-index.mjs <terms>`  ·  by code: `node scripts/kb-index.
 ## 2026-07-16-STOPPER-K3-blocked-on-self-hosted-parser-pivot-to-effect-checker.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-16-STOPPER-K3-blocked-on-self-hosted-parser-pivot-to-effect-checker.md`
 - terms: parser, verdict, flip, self-hosted, effect-checker, raw-diag, stopper, grounded, twin, sequence, after, grammar, param, recommend
+
+## 2026-07-17-ACK-EFFECT-006-landed-plus-count-method-aligned-plus-gate-gap.md
+`../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-EFFECT-006-landed-plus-count-method-aligned-plus-gate-gap.md`
+- terms: effect, effect-checker, count, twin, deny, effect-006, landed, method, aligned, gap, found, while, checking, everything
 
 ## 2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed.md
 `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-17-ACK-myco-fold-in-already-vendored-plus-finder-repointed.md`

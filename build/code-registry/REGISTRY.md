@@ -359,7 +359,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-EFFECT-002 | inline | TRANSITIVE_EFFECT_NOT_DECLARED | error |
 | FUNGI-EFFECT-003 | inline | EFFECT_BOUNDARY_VIOLATION | error |
 | FUNGI-EFFECT-004 | inline | UNKNOWN_EFFECT | error |
-| FUNGI-EFFECT-005 | live | BROAD_ALIAS_USED | warning |
+| FUNGI-EFFECT-005 | live | BROAD_ALIAS_USED | warning/error |
 | FUNGI-EFFECT-006 | live | DENY_ONLY_EFFECT | error |
 | FUNGI-EFFECT-007 | inline | OVERDECLARED_EFFECT | warning |
 | FUNGI-EFFECT-008 | inline | PRIVILEGED_EFFECT_ON_PLAIN_FLOW | warning |

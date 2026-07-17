@@ -221,14 +221,62 @@ describe("effect-checker.fungi — FUNGI-EFFECT-003 PureViolation", () => {
   });
 });
 
-describe("effect-checker.fungi — FUNGI-EFFECT-005 secure advisory", () => {
-  it("secure flow declaring no effects → FUNGI-EFFECT-005 warning", async () => {
+// FUNGI-EFFECT-005 (BROAD_ALIAS_USED, warning) + FUNGI-EFFECT-009 (NON_CANONICAL_EFFECT, error) —
+// the alias-cluster. 005 was previously a SQUAT here (a secure/guarded flow declaring no effects);
+// Stage-A emits NO diagnostic for that, and 005 is canonically BROAD_ALIAS_USED. Un-squatted 2026-07-17
+// (R&D-adjudicated). Grounded vs raw Stage-A validateDeclaredEffectNames: broad alias (network/…/
+// secret.access) -> 005; non-broad alias (http.get/pii.write) -> 009; payment.charge is CANONICAL
+// (in knownEffects) -> 008 not 004; an invention -> 004. (RD-0412 §4, effect-checker twin, alias-cluster.)
+describe("effect-checker.fungi — FUNGI-EFFECT-005 / 009 alias-cluster (un-squatted)", () => {
+  it("secure flow declaring no effects → NO diagnostic (un-squatted; Stage-A emits nothing)", async () => {
     const { diags } = await check([
       flow({ name: "g", kind: "secure", effects: [], usedEffects: [] }),
     ]);
-    const g = diags.filter((d) => d.flowName === "g");
-    assert.deepEqual(g.map((d) => d.code), ["FUNGI-EFFECT-005"]);
-    assert.equal(g[0].severity, "warning");
+    assert.deepEqual(codesFor(diags, "g"), []);
+  });
+
+  it("a broad alias (network) → 005 warning alone", async () => {
+    const { diags } = await check([
+      flow({ name: "f", kind: "flow", effects: ["network"], usedEffects: [] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-EFFECT-005"]);
+    assert.equal(diags.filter((d) => d.flowName === "f")[0].severity, "warning");
+  });
+
+  it("another broad alias (secret.access) → 005 (not 004/009)", async () => {
+    const { diags } = await check([
+      flow({ name: "f", kind: "flow", effects: ["secret.access"], usedEffects: [] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-EFFECT-005"]);
+  });
+
+  it("a non-broad alias (http.get) → 009 error", async () => {
+    const { diags } = await check([
+      flow({ name: "f", kind: "flow", effects: ["http.get"], usedEffects: [] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-EFFECT-009"]);
+    assert.equal(diags.filter((d) => d.flowName === "f")[0].severity, "error");
+  });
+
+  it("pii.write is a non-broad alias → 009 (the L823 '004' comment is stale; Stage-A emits 009)", async () => {
+    const { diags } = await check([
+      flow({ name: "f", kind: "flow", effects: ["pii.write"], usedEffects: [] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-EFFECT-009"]);
+  });
+
+  it("payment.charge (plain, used) → 008 alone, no spurious 004 (now canonical in knownEffects)", async () => {
+    const { diags } = await check([
+      flow({ name: "f", kind: "flow", effects: ["payment.charge"], usedEffects: ["payment.charge"] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-EFFECT-008"]);
+  });
+
+  it("a true invention (totally.fake.effect) → 004 (unknown, not an alias)", async () => {
+    const { diags } = await check([
+      flow({ name: "f", kind: "flow", effects: ["totally.fake.effect"], usedEffects: [] }),
+    ]);
+    assert.deepEqual(codesFor(diags, "f"), ["FUNGI-EFFECT-004"]);
   });
 });
 
