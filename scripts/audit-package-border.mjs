@@ -248,13 +248,23 @@ async function main() {
   if (crossings.length) {
     console.log(`\n  ── cross-package relative imports: ${crossings.length} across ${pairs.length} pair(s) ──`);
     for (const p of pairs) console.log(`     ${p}`);
+    // The honest ladder. An earlier draft of this message said "these are PUBLISH-BLOCKERS, declared or
+    // not" — FALSE, and I shipped it without checking: every package carrying one of these edges is
+    // `private: true`, so none is published and none blocks a publish today. Verified: 10 packages, 39
+    // edges, 0 publishable. Corrected rather than left standing, since a gate that overstates its own
+    // finding teaches readers to discount it.
     console.log(
-      `\n  These are PUBLISH-BLOCKERS, declared or not: \`../../<sibling>/dist/…\` resolves in this monorepo\n` +
-      `  and CANNOT resolve for anyone running \`npm install\` — a published tarball has no \`../../\` sibling,\n` +
-      `  and it reaches into dist/ rather than the package's public entry, so no \`exports\` map can rescue it.\n` +
-      `  It also bypasses package.json entirely: no declaration, no version, invisible to the file:-closure\n` +
-      `  walk (which is how one of these broke a clean-checkout CI build). Fix = declare the dep and import\n` +
-      `  the package by name. Tracked as task #104.`,
+      `\n  What this is, precisely:\n` +
+      `   • TODAY — an UNDECLARED edge (package.json names neither side) breaks a clean-checkout BUILD.\n` +
+      `     It bypasses package.json entirely: no declaration, no version, and invisible to the file:-\n` +
+      `     closure walk — which is exactly how one of these broke CI, and what blocks the derived\n` +
+      `     \`build-core-chain --gate-subjects\`. This is the acute, real-now case.\n` +
+      `   • LATER — every one of these blocks the package-standard goal (standalone/publishable units).\n` +
+      `     \`../../<sibling>/dist/…\` resolves in this monorepo and cannot resolve for anyone running\n` +
+      `     \`npm install\`; it also reaches into dist/ rather than the package's public entry, so no\n` +
+      `     \`exports\` map rescues it. NOT a live publish-blocker: every carrier is currently private:true.\n` +
+      `     It breaks the day any of them flips to publishable.\n` +
+      `  Fix = declare the dep, then import the package by name (bare), per #149. Tracked as task #104.`,
     );
   }
   if (crossings.length > CROSSING_BASELINE) {
