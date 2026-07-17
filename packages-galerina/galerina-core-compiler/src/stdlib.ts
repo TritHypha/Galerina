@@ -986,10 +986,17 @@ function moneyCurrency(v: GalerinaValue): string {
  * the per-currency constructors are GENERATED from it (G5 — the 4-of-7 hand-list dies by
  * construction) and `Money.of` validates against it deny-by-default (G2 — the any-string
  * fail-open twin closes). Tags are exact-codepoint UPPERCASE (the homoglyph/case-slip rule).
- * When I1's owner-gated pinned ISO snapshot lands, ONLY this table grows (full active set,
- * per-currency minorUnits incl. JPY→0) — no call-site changes.
+ * RD-0349 I1 LANDED (2026-07-17): the table is no longer hand-typed. It is GENERATED one-way
+ * from the pinned ISO 4217 snapshot (`data/iso-4217/list-one-2026-07-16.xml`, SHA-256 recorded
+ * in the generated header) by `scripts/gen-unit-registry.mjs`, and a drift gate (`--check`)
+ * goes RED if anyone hand-edits the table or swaps the snapshot. 7 hand-typed tags → 157
+ * generated currencies, each carrying its ISO minor units (JPY→0). As promised, ONLY the table
+ * grew: no call-site changes, and the currency TYPE names in the type-checker's BUILT_IN_TYPES
+ * are deliberately NOT generated — minting 157 global type names would collide with ordinary
+ * identifiers (ISO has `ALL` and `TRY`), which is a language change, not a table refresh.
  */
-export const MONEY_UNIT_TAGS: readonly string[] = ["GBP", "USD", "EUR", "JPY", "CHF", "CAD", "AUD"];
+import { MONEY_UNIT_TAGS, MONEY_MINOR_UNITS } from "./unit-registry.generated.js";
+export { MONEY_UNIT_TAGS, MONEY_MINOR_UNITS };
 const MONEY_UNIT_SET = new Set(MONEY_UNIT_TAGS);
 
 function moneyStatic(method: string, args: readonly GalerinaValue[]): GalerinaValue | undefined {

@@ -28,8 +28,28 @@ const run = (expr) => exec(`  let m = ${expr}\n  return m.toString()`);
 const runErr = (expr) => exec(`  return ${expr}`);
 
 describe("RD-0349 I4 — Money runtime unit table (G2/G5)", () => {
-  it("the canon is the 7 compile-time currencies (one table, one source)", () => {
-    assert.deepEqual([...MONEY_UNIT_TAGS], ["GBP", "USD", "EUR", "JPY", "CHF", "CAD", "AUD"]);
+  // I1 LANDED 2026-07-17 — this assertion USED to pin the table's exact contents:
+  //   assert.deepEqual([...MONEY_UNIT_TAGS], ["GBP","USD","EUR","JPY","CHF","CAD","AUD"]);
+  // That was a snapshot of the HAND-TYPED table, and I1 is the rung that replaces it: stdlib.ts
+  // promised "when I1's owner-gated pinned ISO snapshot lands, ONLY this table grows (full active
+  // set)". The table is now GENERATED from the pinned snapshot (157 codes), so an exact-7 pin is a
+  // stale literal, not a property. "One table, one source" SURVIVES in the two forms that carry the
+  // meaning — and both are stronger than the old literal, because a hand-edit now fails them:
+  //   (a) the source is the snapshot, evidenced by provenance (see unit-registry.test.mjs);
+  //   (b) no ORPHAN currency TYPE — every compile-time currency type is admitted at runtime.
+  // (b) is the direction that could actually bite: BUILT_IN_TYPES deliberately did NOT grow (157
+  // global type names would collide with ordinary identifiers — ISO has `ALL` and `TRY`), so the
+  // type list is a curated SUBSET and must stay one.
+  it("one source: no orphan currency TYPE — every compile-time currency is runtime-admitted", () => {
+    const COMPILE_TIME_CURRENCY_TYPES = ["GBP", "USD", "EUR", "JPY", "CHF", "CAD", "AUD"];
+    for (const c of COMPILE_TIME_CURRENCY_TYPES) {
+      assert.ok(MONEY_UNIT_TAGS.includes(c),
+        `${c} is a currency TYPE in the type-checker but is not admitted by the runtime table — an orphan type`);
+    }
+  });
+
+  it("the table is the full ISO active set, not the old hand-typed 7", () => {
+    assert.ok(MONEY_UNIT_TAGS.length > 7, `expected the generated active set, got ${MONEY_UNIT_TAGS.length}`);
   });
 
   it("G5 closed: EVERY table currency has a generated constructor (incl. the 3 that were missing)", async () => {
