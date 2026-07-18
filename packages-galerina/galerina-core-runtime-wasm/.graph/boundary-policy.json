@@ -1,7 +1,8 @@
 {
   "packageName": "@galerina/core-runtime-wasm",
   "allowedExternal": [
+    "@galerina/core-runtime",
     "node:crypto"
   ],
-  "note": "Border-safe TCB home (RD-0361 R4 / #143). The ONLY external imports this package may EVER carry are node:crypto (Ed25519 + sha256 for the attestation TCB) + TYPE-ONLY seam interfaces from @galerina/core-runtime. It must NEVER import @galerina/core-compiler (that would drag the compiler across the Hardened Border — the exact fail-open this package exists to prevent). This gate IS that machine-checkable rule: a compiler import here fails the border build. Holds record-abi + the WASM TCB (wasm-runtime)."
+  "note": "Border-safe TCB home (RD-0361 R4 / #143). The ONLY imports this package may EVER carry are (1) node:crypto (Ed25519 + sha256 for the attestation TCB) and (2) the TYPE-ONLY seam interfaces from @galerina/core-runtime (GovernedAdmissionVerifier / LowLevelWasmExecutor) that src/seam-adapters.ts implements. That @galerina/core-runtime edge is the ✅ direction (core-runtime-wasm -> core-runtime, type-only in code; core-runtime is a zero-dep leaf so it adds no runtime weight); the REVERSE (core-runtime -> core-runtime-wasm) is FORBIDDEN and would cycle / drag the TCB into the pure declaration layer. It must NEVER import @galerina/core-compiler (that would drag the compiler across the Hardened Border — the exact fail-open this package exists to prevent). This gate IS that machine-checkable rule: a compiler import here fails the border build. Holds record-abi + the WASM TCB (wasm-runtime) + the injectable seam adapters (seam-adapters)."
 }

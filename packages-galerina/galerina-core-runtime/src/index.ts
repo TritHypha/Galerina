@@ -310,11 +310,29 @@ export interface GovernedRuntimeArtifactSource {
  *  no import; the real verify is a vetted, hash-pinned native-floor artifact. An absent verifier ⇒ deny. */
 export interface GovernedAdmissionVerifier {
   readonly seamVersion: string;
-  /** Returns true ONLY if `attestation` is a valid signature admitting THIS `artifactSha256` (and export). */
+  /**
+   * Returns true ONLY if `attestation` is a valid signature admitting THIS MODULE — the signature binds
+   * `domain ∥ artifactSha256 ∥ profile` (the whole-module hash + provenance profile), NOT a single export —
+   * AND `exportName` is a defined export of that hash-verified module.
+   *
+   * Why the module hash already binds the export (R&D ruling 2026-07-18): a module's export SECTION is part
+   * of the bytes sha256 covers, so admitting a module cryptographically admits its whole export TABLE — you
+   * cannot swap the module (hash mismatch) nor conjure an export it does not define. Admission is therefore
+   * PER-MODULE = all-of-that-module's-exports-equally-admitted; there is no representable "admit foo but not
+   * bar" for one signed module. Per-export admission of a MULTI-export module would need a per-export
+   * pre-image (`domain ∥ hash ∥ export ∥ profile`) — a deferred, owner-gated attestation-contract change; it
+   * adds no security for today's one-governed-export-per-module artifacts.
+   *
+   * The export-presence check is a HARD fail-closed gate, not advisory: a valid signature over a module that
+   * does NOT define `exportName` returns FALSE. (Verifying the signature but then calling an unchecked export
+   * is the one way this could drift open.) `artifactBytes` is the hash-verified module the caller is about to
+   * run — the composition passes the exact bytes it re-hashed — so the presence check is on the admitted bytes.
+   */
   verifyAttestation(input: {
     readonly attestation: string;
     readonly artifactSha256: string;
     readonly exportName: string;
+    readonly artifactBytes: Uint8Array;
   }): boolean;
 }
 
@@ -348,8 +366,9 @@ function denyVerdict(reason: string): GovernedRuntimeVerdict {
 /** Compose the border-safe governed executor. The returned executor performs, per request and IN ORDER:
  *  (0) seam-version match on the request AND every injected dependency; (1) resolve artifact bytes from the
  *  content store; (2) re-hash and require the digest to equal the pinned sha256 (integrity); (3) verify the
- *  request's SIGNED attestation against that freshly-computed hash (admission — a signature, not a trust-me
- *  boolean); (4) instantiate + call via the low-level VM. Any failure at any step — including a missing
+ *  request's SIGNED attestation against that freshly-computed hash AND that the requested export is defined by
+ *  the hash-verified module (admission — a signature, not a trust-me boolean); (4) instantiate + call via the
+ *  low-level VM. Any failure at any step — including a missing
  *  dependency or an empty attestation — is a DENY with a specific reason. Integrity and admission are both
  *  proven on the same bytes and BEFORE execution, so no unverified/unadmitted artifact ever reaches the VM
  *  and no TOCTOU window opens. There is no path from an absent dependency or a failed check to `admit`. */
@@ -395,9 +414,12 @@ export function createGovernedRuntimeExecutor(
       if (typeof request.attestation !== "string" || request.attestation === "") {
         return denyVerdict("request carries no signed admission attestation — deny (a bare 'admitted' claim is not accepted).");
       }
-      // Admission is verified INSIDE, against the freshly-COMPUTED hash (not the request's claimed hash) — so
-      // it is bound to the exact bytes we are about to run, closing any check-then-swap window.
-      if (!admissionVerifier.verifyAttestation({ attestation: request.attestation, artifactSha256: computed, exportName: request.exportName })) {
+      // Admission is verified INSIDE, against the freshly-COMPUTED hash (not the request's claimed hash) and
+      // the EXACT bytes we re-hashed — so it is bound to the bytes we are about to run, closing any
+      // check-then-swap window. The verifier also hard-gates that `exportName` is a defined export of that
+      // hash-verified module (the export table is part of the signed bytes), so a valid signature can never
+      // admit a call to an export the signed module does not define.
+      if (!admissionVerifier.verifyAttestation({ attestation: request.attestation, artifactSha256: computed, exportName: request.exportName, artifactBytes: bytes })) {
         return denyVerdict(
           `admission attestation did not verify for artifact '${computed}' / export '${request.exportName}'.`,
         );

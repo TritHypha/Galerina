@@ -15,3 +15,10 @@ export type {
   AdmissionPolicy, RunnerProfile, WasmAttestation, AdmissionVerdict,
   Observer, HostRuntime, AdmissionResult,
 } from "./wasm-runtime.js";
+
+// The injectable seam adapters — what core-runtime's createGovernedRuntimeExecutor INJECTS (never imports) to
+// reach authoritative twin execution across the Hardened Border (RD-0361 R4 / #143; R&D ruling 2026-07-18).
+export {
+  hashArtifact, serializeAttestation, parseAttestation,
+  createWasmAdmissionVerifier, createLowLevelWasmExecutor, createBorderSafeRuntimeDeps,
+} from "./seam-adapters.js";

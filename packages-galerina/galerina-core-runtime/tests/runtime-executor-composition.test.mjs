@@ -95,11 +95,11 @@ test("★ a bare/empty attestation is REFUSED (a trust-me claim is not admission
   assert.equal(calls.instantiate, 0);
 });
 
-test("★ admission is verified INSIDE, bound to the freshly-COMPUTED hash (anti-replay / anti-TOCTOU)", () => {
+test("★ admission is verified INSIDE, bound to the freshly-COMPUTED hash + the re-hashed bytes (anti-replay / anti-TOCTOU)", () => {
   const { exec, calls } = wired();
   exec.admitAndExecute(req());
-  assert.deepEqual(calls.verifyArg, { attestation: "att-ok", artifactSha256: SHA, exportName: "runTwin" },
-    "verifyAttestation must be called with the computed artifact hash it is bound to");
+  assert.deepEqual(calls.verifyArg, { attestation: "att-ok", artifactSha256: SHA, exportName: "runTwin", artifactBytes: BYTES },
+    "verifyAttestation must be called with the computed artifact hash AND the exact re-hashed bytes it is bound to (so it can hard-gate export presence on the admitted module)");
 });
 
 test("★ a non-verifying attestation denies and never reaches the VM (admission before execution)", () => {
