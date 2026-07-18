@@ -3,7 +3,7 @@
   "provenance": {
     "available": true,
     "branch": "main",
-    "sha": "f1dc33f7",
+    "sha": "c9796569",
     "detached": false,
     "dirty": true
   },
@@ -272,7 +272,7 @@
         {
           "item": "Contract Registry (RD-0359)",
           "state": "shipped",
-          "detail": "gen-contract-registry.mjs BUILT — 840 contracts across 446 .fungi → docs/contract-registry/CONTRACT_REGISTRY.md + .json; parser-authoritative flow list + intent extraction; --self-test + --check (CI-ready)"
+          "detail": "gen-contract-registry.mjs BUILT — 907 contracts across 450 .fungi → docs/contract-registry/CONTRACT_REGISTRY.md + .json; parser-authoritative flow list + intent extraction; --self-test + --check (CI-ready)"
         },
         {
           "item": "Workspace package families",

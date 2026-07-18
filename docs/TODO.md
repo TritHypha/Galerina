@@ -1,6 +1,29 @@
 # TODO
 
 Living task list. Authoritative forward view: `../ZTF-Knowledge-Bases/galerina-roadmap.md`.
+Live per-item state also lives in the in-session task board + `../ZTF-Knowledge-Bases/coordination/` (main↔R&D).
+The dated blocks below are a historical log; the **CURRENT STATE** block is the head.
+
+## 📍 CURRENT STATE — 2026-07-18 (closing cycle)
+
+**Suite 93/93 packages · 7,393 tests · 0 fail** · phase-close all green · ship-readiness **97.9%** (93/95 pkgs) ·
+Zero-Trust thesis avg **78** · Build avg **75** · tracking registry **20 items** · HEAD after this cycle
+`c9796569` (clean, ahead of origin — owner pushes).
+
+Landed this cycle: `Array<T>.get()→Option<T>` type parity (`f1dc33f7`, P9 layer S1) · build/contract-registry
+regen (906→907 catch-up, `dee0ce46`) · **full benchmark refresh** (`c9796569` — certified WASM **30–59% of
+native** Rust, memory **~0 B/op**; 4 uncertified lanes correctly carry no cross-runtime ratio). Dist rebuilt
+(7 pkgs tsc-clean), fusable `.wasm` fresh (signed `greeting` protected), all build/ artifacts regenerated.
+
+**Open stoppers — all owner or R&D gated (not forced):**
+- **#100 / P9** real Stage-B generics: un-erase `Array<Auto>` end-to-end (incl. `get→Option→match-bind`) →
+  unblocks R2 "does-it-RUN" for 5 trapping stages. Owner build-gate. R3 byte-parity is a larger, distinct track.
+- **#143** authority flip (execution cutover R4) — owner. Turns 29/29 differential twins authoritative.
+- **#81** audit-log key: strict key vs public ZERO_KEY (forgeable ledger) + hybrid N-of-N — owner custody call.
+- **RD-0510** K3-XOR branding — HELD per R&D confirm 2026-07-18. **RD-0349 I1** rungs (3/6) — R&D-gated (C1).
+- Benchmark work-equivalence: align N/work for the 4 uncertified CPU lanes so they become certifiable (follow-up).
+
+Handover to R&D: `../ZTF-Knowledge-Bases/coordination/to-rnd/2026-07-18-CLOSING-CYCLE-*.md`.
 
 ## ⚡ ACTIVE — 2026-07-08 syntax/logic update → 100% beta-shippable (owner PROMPT, full-auto session)
 > Work order: `../ZTF-Knowledge-Bases/PROMPT-syntax-update-beta-shippable-2026-07-08.md` (+ RD-0266c, security
