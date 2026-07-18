@@ -304,6 +304,33 @@ const RD0361_T1 = [
     test: ["node", "--test", "tests/rd0361-execution-cutover.test.mjs"],
     desc: "RD-0361 T1 — the synchronization-gate TWIN's LST-DRIFT-001 boundary weakened > to >= (drift==max would wrongly DENY in the WASM); the R0->R3 execution-cutover differential must catch WASM != real .ts (proves the cutover differential is non-vacuous — R4 evidence item c)",
   },
+  {
+    id: "rd0361-t1-power-adjustment-boundary",
+    file: "packages-galerina/galerina-core-sentinel-power/src/self-hosted/power-governor.fungi",
+    find: "targetRank < permittedRank",
+    replace: "targetRank <= permittedRank",
+    cwd: "packages-galerina/galerina-core-sentinel-power",
+    test: ["node", "--test", "tests/rd0361-power-governor-execution.test.mjs"],
+    desc: "RD-0361 T1 — power-governor adjustmentVerdict boundary < -> <= (a cooler-or-EQUAL kernel request would be wrongly DENIED in the WASM); the execution-cutover differential must catch WASM != real .ts",
+  },
+  {
+    id: "rd0361-t1-coldboot-integrity",
+    file: "packages-galerina/galerina-core-sentinel-state/src/self-hosted/cold-boot.fungi",
+    find: "integrityOk == false",
+    replace: "integrityOk != false",
+    cwd: "packages-galerina/galerina-core-sentinel-state",
+    test: ["node", "--test", "tests/rd0361-cold-boot-execution.test.mjs"],
+    desc: "RD-0361 T1 — cold-boot restoreVerdict integrity check inverted (a FAILED-integrity snapshot would be restored — fail-open); the execution-cutover differential must catch WASM != real .ts",
+  },
+  {
+    id: "rd0361-t1-egress-mac",
+    file: "packages-galerina/galerina-core-sentinel-egress/src/self-hosted/audit-egress.fungi",
+    find: "macMatches == false",
+    replace: "macMatches != false",
+    cwd: "packages-galerina/galerina-core-sentinel-egress",
+    test: ["node", "--test", "tests/rd0361-audit-egress-execution.test.mjs"],
+    desc: "RD-0361 T1 — audit-egress chainLinkVerdict MAC check inverted (a TAMPERED batch with a bad MAC would verify — fail-open); the execution-cutover differential must catch WASM != real .ts",
+  },
 ];
 
 const MUTANTS = configArg ? JSON.parse(readFileSync(configArg, "utf8")) : [...BUILTIN, ...CERT, ...FUSE, ...CC_I32, ...VSC_EGRESS, ...QUORUM_GOV, ...RD0361_T1];
