@@ -260,8 +260,11 @@ const QUORUM_GOV = [
   {
     id: "no-coercion-vand-lift",
     file: `${TC}/src/three-valued-governance.ts`,
-    find: "  return minTrit(a, b) as Verdict;",
-    replace: "  return maxTrit(a, b) as Verdict;",
+    // Anchor updated 2026-07-18: S0 (arith-Trit brand) replaced the `as Verdict` cast with the validating
+    // `asVerdict()` mint, so the old `return minTrit(a, b) as Verdict;` no longer exists. Same mutation
+    // (min -> max) on the current `asVerdict(minTrit(a, b))` form.
+    find: "asVerdict(minTrit(a, b))",
+    replace: "asVerdict(maxTrit(a, b))",
     cwd: TC, build: TC_BUILD, test: TC_GOV_TEST,
     desc: "vAnd (Kleene AND / No-Coercion) swapped min->max: an untrusted DENY operand no longer LOWERS the verdict (a lift) — vAnd(ALLOW,DENY) would yield ALLOW",
   },
@@ -283,7 +286,27 @@ const QUORUM_GOV = [
   },
 ];
 
-const MUTANTS = configArg ? JSON.parse(readFileSync(configArg, "utf8")) : [...BUILTIN, ...CERT, ...FUSE, ...CC_I32, ...VSC_EGRESS, ...QUORUM_GOV];
+// ── RD-0361 execution-cutover twins: the T1 sentinel DIFFERENTIALS must be NON-VACUOUS (R4 anti-neuter) ──
+// The R4 authority flip (make a `.fungi`/WASM twin the real decider + delete the `.ts`) is gated on a
+// soaked-clean differential — the twin's WASM verdict must EQUAL the real `.ts` verdict over the boundary
+// corpus. A differential that would NOT notice a WRONG twin is the fail-OPEN that gate exists to prevent
+// (RD-0361 R4 unlock protocol, evidence item c: "an injected mismatch turns the differential RED"). Each
+// mutant WEAKENS the twin's verdict fold; the execution-cutover test (which rebuilds the WASM from the
+// mutated `.fungi` at runtime, then compares to the real `.ts`) must KILL it. No `build` step — the `.fungi`
+// is compiled INSIDE the test, and the package's `.ts` dist is unchanged by a `.fungi` mutation.
+const RD0361_T1 = [
+  {
+    id: "rd0361-t1-sync-drift-boundary",
+    file: "packages-galerina/galerina-core-sentinel-time/src/self-hosted/synchronization-gate.fungi",
+    find: "driftAbs > maxDriftTicks",
+    replace: "driftAbs >= maxDriftTicks",
+    cwd: "packages-galerina/galerina-core-sentinel-time",
+    test: ["node", "--test", "tests/rd0361-execution-cutover.test.mjs"],
+    desc: "RD-0361 T1 — the synchronization-gate TWIN's LST-DRIFT-001 boundary weakened > to >= (drift==max would wrongly DENY in the WASM); the R0->R3 execution-cutover differential must catch WASM != real .ts (proves the cutover differential is non-vacuous — R4 evidence item c)",
+  },
+];
+
+const MUTANTS = configArg ? JSON.parse(readFileSync(configArg, "utf8")) : [...BUILTIN, ...CERT, ...FUSE, ...CC_I32, ...VSC_EGRESS, ...QUORUM_GOV, ...RD0361_T1];
 
 function git(args) { return spawnSync("git", args, { cwd: ROOT, encoding: "utf8" }); }
 function isClean(file) { return git(["diff", "--quiet", "--", file]).status === 0; }
