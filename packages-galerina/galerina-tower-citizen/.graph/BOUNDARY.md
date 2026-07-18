@@ -11,13 +11,13 @@
 
 | Metric | Count |
 |---|---|
-| Files | 33 |
-| Internal edges | 70 |
+| Files | 34 |
+| Internal edges | 72 |
 | External dependencies | 6 |
 | ├─ Node core | 3 |
 | ├─ Workspace (@galerina/*) | 2 |
 | └─ Third-party | 1 |
-| Orphan files | 4 |
+| Orphan files | 5 |
 
 ## External Dependencies (the Border)
 
@@ -41,6 +41,7 @@ No boundary violations. All external imports are within the allowlist.
 - `src/self-hosted/inference-governance.fungi`
 - `src/self-hosted/pq-admission-policy.fungi`
 - `src/self-hosted/transport-fsm.fungi`
+- `src/trit-brand.type-guard.ts`
 
 ## Entry Points
 - `src/index.ts`
