@@ -616,6 +616,27 @@ class TypeChecker {
       if (!TYPE_DECL_KINDS.has(child.kind)) continue;
       const nm = (child.value ?? "").trim();
       if (nm === "") continue;
+      // B0 (RD-0349, R&D ruling 2026-07-18 = set "a"): a NON-hallmark type/record/enum that declares a name from
+      // the UN-SHADOWABLE AUTHORITY vocabulary silently SHADOWS it — a confused-deputy path where a downstream
+      // governance/currency check can then operate on the wrong type. The set is NARROW, EXPLICIT and curated:
+      // `Money` (gates currency validation), the epistemic vocab (Verdict/Secret/Trusted/Unverified/Refuted/
+      // Tainted/SafeFor/Decision — gate trust/secrecy/verdict), and `Brand` (the validated-mint gate). It grows
+      // ONLY as authority types ship — deliberately NOT isBuiltInType (its BUILT_IN_TYPES/KNOWN_DOMAIN_TYPES
+      // convenience sets over-reach onto UserId/Email = false positives), and NOT the structural ADTs
+      // (Result/Option/Array/… grant no authority; shadowing one is a footgun the schema checker already
+      // catches, not authority laundering). hallmarkDecl is skipped (FUNGI-HALLMARK-005 owns it). Reuses
+      // FUNGI-NAME-002 — shadowing a reserved name is a collision with the name that authority already owns.
+      if (child.kind !== "hallmarkDecl" && (nm === "Money" || nm === "Brand" || EPISTEMIC_RESERVED.has(nm))) {
+        const kindWord = child.kind === "recordDecl" ? "record" : child.kind === "enumDecl" ? "enum" : "type";
+        this.diagnostics.push({
+          code: "FUNGI-NAME-002",
+          name: "DUPLICATE_NAME",
+          severity: "error",
+          message: `'${nm}' is a reserved authority name — a ${kindWord} declaration cannot shadow it (names carry no authority in Galerina).`,
+          ...(child.location !== undefined ? { location: child.location } : {}),
+          suggestedFix: `Rename this declaration — '${nm}' gates a governance or currency decision, so shadowing it could confuse an authority check. Structural names (Result, Option, …) are fine to declare; authority names are not.`,
+        });
+      }
       if (seen.has(nm)) {
         this.diagnostics.push({
           code: "FUNGI-NAME-002",

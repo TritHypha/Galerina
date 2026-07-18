@@ -45,8 +45,8 @@ describe("parser: record-decl field names that lex as keywords", () => {
 describe("TYPE-008: record literal returned as a declared record type", () => {
   it("matching literal ADOPTS the declared type — no diagnostic", () => {
     const errs = check(`
-record Decision { tier: String reason: String isOptimal: Bool }
-pure flow pick() -> Decision {
+record TierDecision {tier: String reason: String isOptimal: Bool }
+pure flow pick() -> TierDecision {
   return { tier: "bytecode", reason: "pure", isOptimal: true }
 }`);
     assert.deepEqual(errs.map((e) => e.code), [], JSON.stringify(errs));
@@ -54,8 +54,8 @@ pure flow pick() -> Decision {
 
   it("missing + unknown fields emit ONE precise TYPE-008 (fail-closed, not silent)", () => {
     const errs = check(`
-record Decision { tier: String reason: String isOptimal: Bool }
-pure flow pick() -> Decision {
+record TierDecision {tier: String reason: String isOptimal: Bool }
+pure flow pick() -> TierDecision {
   return { tier: "bytecode", extra: 1 }
 }`);
     assert.equal(errs.length, 1, JSON.stringify(errs));
@@ -66,8 +66,8 @@ pure flow pick() -> Decision {
 
   it("a badly-typed field is named precisely (tier declared String, got Bool)", () => {
     const errs = check(`
-record Decision { tier: String reason: String isOptimal: Bool }
-pure flow pick() -> Decision {
+record TierDecision {tier: String reason: String isOptimal: Bool }
+pure flow pick() -> TierDecision {
   return { tier: true, reason: "r", isOptimal: false }
 }`);
     assert.equal(errs.length, 1, JSON.stringify(errs));
@@ -111,9 +111,9 @@ pure flow drive(entry: Auto) -> Int {
 
   it("declared-record receiver answers from the SCHEMA: String field into Int param errors", () => {
     const errs = check(`
-record Decision { tier: String reason: String }
+record TierDecision {tier: String reason: String }
 pure flow wantInt(n: Int) -> Int { return n }
-pure flow drive(d: Decision) -> Int {
+pure flow drive(d: TierDecision) -> Int {
   return wantInt(d.tier)
 }`);
     assert.equal(errs.length, 1, JSON.stringify(errs));
@@ -123,9 +123,9 @@ pure flow drive(d: Decision) -> Int {
 
   it("declared-record receiver: correctly-typed field access is clean", () => {
     const errs = check(`
-record Decision { tier: String reason: String }
+record TierDecision {tier: String reason: String }
 pure flow wantStr(s: String) -> String { return s }
-pure flow drive(d: Decision) -> String {
+pure flow drive(d: TierDecision) -> String {
   return wantStr(d.tier)
 }`);
     assert.deepEqual(errs.map((e) => e.code), [], JSON.stringify(errs));
