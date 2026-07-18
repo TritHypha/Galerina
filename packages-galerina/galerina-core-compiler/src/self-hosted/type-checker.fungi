@@ -51,6 +51,176 @@ contract {
   return false
 }
 
+// True when t is an ISO 4217 active currency code that Money admits. The body between the
+// <generated:currency-set> markers is emitted ONE-WAY by scripts/gen-unit-registry.mjs from the SAME pinned
+// snapshot as MONEY_UNIT_TAGS (RD-0349 I1) and drift-gated (`--check`) — hand-edits are a finding. This is
+// the in-language twin of the Stage-A currency validation, so the twin can reject Money<BANANAS>/GPB/XAU/XXX
+// itself (FUNGI-TYPE-032) instead of mis-treating the tag as a type (the former FUNGI-TYPE-001 mis-emit).
+pure flow isKnownCurrency(t: String) -> Bool
+contract { intent { "True when t is an ISO 4217 active currency code admitted by Money (generated set)." } }
+{
+  // <generated:currency-set>
+  if t == "AED" { return true }
+  if t == "AFN" { return true }
+  if t == "ALL" { return true }
+  if t == "AMD" { return true }
+  if t == "AOA" { return true }
+  if t == "ARS" { return true }
+  if t == "AUD" { return true }
+  if t == "AWG" { return true }
+  if t == "AZN" { return true }
+  if t == "BAM" { return true }
+  if t == "BBD" { return true }
+  if t == "BDT" { return true }
+  if t == "BHD" { return true }
+  if t == "BIF" { return true }
+  if t == "BMD" { return true }
+  if t == "BND" { return true }
+  if t == "BOB" { return true }
+  if t == "BRL" { return true }
+  if t == "BSD" { return true }
+  if t == "BTN" { return true }
+  if t == "BWP" { return true }
+  if t == "BYN" { return true }
+  if t == "BZD" { return true }
+  if t == "CAD" { return true }
+  if t == "CDF" { return true }
+  if t == "CHF" { return true }
+  if t == "CLP" { return true }
+  if t == "CNY" { return true }
+  if t == "COP" { return true }
+  if t == "CRC" { return true }
+  if t == "CUP" { return true }
+  if t == "CVE" { return true }
+  if t == "CZK" { return true }
+  if t == "DJF" { return true }
+  if t == "DKK" { return true }
+  if t == "DOP" { return true }
+  if t == "DZD" { return true }
+  if t == "EGP" { return true }
+  if t == "ERN" { return true }
+  if t == "ETB" { return true }
+  if t == "EUR" { return true }
+  if t == "FJD" { return true }
+  if t == "FKP" { return true }
+  if t == "GBP" { return true }
+  if t == "GEL" { return true }
+  if t == "GHS" { return true }
+  if t == "GIP" { return true }
+  if t == "GMD" { return true }
+  if t == "GNF" { return true }
+  if t == "GTQ" { return true }
+  if t == "GYD" { return true }
+  if t == "HKD" { return true }
+  if t == "HNL" { return true }
+  if t == "HTG" { return true }
+  if t == "HUF" { return true }
+  if t == "IDR" { return true }
+  if t == "ILS" { return true }
+  if t == "INR" { return true }
+  if t == "IQD" { return true }
+  if t == "IRR" { return true }
+  if t == "ISK" { return true }
+  if t == "JMD" { return true }
+  if t == "JOD" { return true }
+  if t == "JPY" { return true }
+  if t == "KES" { return true }
+  if t == "KGS" { return true }
+  if t == "KHR" { return true }
+  if t == "KMF" { return true }
+  if t == "KPW" { return true }
+  if t == "KRW" { return true }
+  if t == "KWD" { return true }
+  if t == "KYD" { return true }
+  if t == "KZT" { return true }
+  if t == "LAK" { return true }
+  if t == "LBP" { return true }
+  if t == "LKR" { return true }
+  if t == "LRD" { return true }
+  if t == "LSL" { return true }
+  if t == "LYD" { return true }
+  if t == "MAD" { return true }
+  if t == "MDL" { return true }
+  if t == "MGA" { return true }
+  if t == "MKD" { return true }
+  if t == "MMK" { return true }
+  if t == "MNT" { return true }
+  if t == "MOP" { return true }
+  if t == "MRU" { return true }
+  if t == "MUR" { return true }
+  if t == "MVR" { return true }
+  if t == "MWK" { return true }
+  if t == "MXN" { return true }
+  if t == "MYR" { return true }
+  if t == "MZN" { return true }
+  if t == "NAD" { return true }
+  if t == "NGN" { return true }
+  if t == "NIO" { return true }
+  if t == "NOK" { return true }
+  if t == "NPR" { return true }
+  if t == "NZD" { return true }
+  if t == "OMR" { return true }
+  if t == "PAB" { return true }
+  if t == "PEN" { return true }
+  if t == "PGK" { return true }
+  if t == "PHP" { return true }
+  if t == "PKR" { return true }
+  if t == "PLN" { return true }
+  if t == "PYG" { return true }
+  if t == "QAR" { return true }
+  if t == "RON" { return true }
+  if t == "RSD" { return true }
+  if t == "RUB" { return true }
+  if t == "RWF" { return true }
+  if t == "SAR" { return true }
+  if t == "SBD" { return true }
+  if t == "SCR" { return true }
+  if t == "SDG" { return true }
+  if t == "SEK" { return true }
+  if t == "SGD" { return true }
+  if t == "SHP" { return true }
+  if t == "SLE" { return true }
+  if t == "SOS" { return true }
+  if t == "SRD" { return true }
+  if t == "SSP" { return true }
+  if t == "STN" { return true }
+  if t == "SVC" { return true }
+  if t == "SYP" { return true }
+  if t == "SZL" { return true }
+  if t == "THB" { return true }
+  if t == "TJS" { return true }
+  if t == "TMT" { return true }
+  if t == "TND" { return true }
+  if t == "TOP" { return true }
+  if t == "TRY" { return true }
+  if t == "TTD" { return true }
+  if t == "TWD" { return true }
+  if t == "TZS" { return true }
+  if t == "UAH" { return true }
+  if t == "UGX" { return true }
+  if t == "USD" { return true }
+  if t == "UYU" { return true }
+  if t == "UYW" { return true }
+  if t == "UZS" { return true }
+  if t == "VED" { return true }
+  if t == "VES" { return true }
+  if t == "VND" { return true }
+  if t == "VUV" { return true }
+  if t == "WST" { return true }
+  if t == "XAD" { return true }
+  if t == "XAF" { return true }
+  if t == "XCD" { return true }
+  if t == "XCG" { return true }
+  if t == "XOF" { return true }
+  if t == "XPF" { return true }
+  if t == "YER" { return true }
+  if t == "ZAR" { return true }
+  if t == "ZMW" { return true }
+  if t == "ZWG" { return true }
+  // </generated:currency-set>
+  return false
+}
+
 // True for the `null`/`undefined` value keywords. Both infer to type 'Null' in Stage-A (so they mismatch
 // any concrete declared type — FUNGI-TYPE-002) and neither is a valid Galerina value (FUNGI-TYPE-025).
 // Keyed on the VALUE, because the parser represents `null`/`undefined` as an identifier node, not a lit.
@@ -132,6 +302,7 @@ contract { intent { "The canonical Stage-A diagnostic name for a code the twin e
   if code == "FUNGI-TYPE-025" { return "SILENT_NULL_DENIED" }
   if code == "FUNGI-TYPE-026" { return "DEFERRED_TYPE_CHECK" }
   if code == "FUNGI-TYPE-030" { return "TENSOR_ELEMENT_TYPE_MISMATCH" }
+  if code == "FUNGI-TYPE-032" { return "INVALID_CURRENCY_TAG" }
   if code == "FUNGI-NAME-002" { return "DUPLICATE_NAME" }
   if code == "FUNGI-BINDING-005" { return "IMMUTABLE_BINDING_REASSIGNED" }
   return ""
@@ -165,6 +336,7 @@ contract { intent { "The canonical Stage-A severity for a code the twin emits (e
   if code == "FUNGI-TYPE-024" { return "error" }
   if code == "FUNGI-TYPE-025" { return "error" }
   if code == "FUNGI-TYPE-030" { return "error" }
+  if code == "FUNGI-TYPE-032" { return "error" }
   if code == "FUNGI-NAME-002" { return "error" }
   if code == "FUNGI-BINDING-005" { return "error" }
   return "error"
@@ -496,10 +668,21 @@ contract {
     let argOpt = stmt.typeArgs.get(a)
     match argOpt {
       Some(arg) => {
-        if arg.startsWith("Array") == false {
-          if isKnownType(arg) == false {
-            let msg1: String = "unknown type argument '" + arg + "' on binding '" + stmt.name + "' (FUNGI-TYPE-001)"
-            diags = diags.append({ code: "FUNGI-TYPE-001", message: msg1, flowName: flowName })
+        if base == "Money" {
+          // FUNGI-TYPE-032: Money's type argument is a CURRENCY tag, not a type — validate it against the
+          // generated ISO 4217 active set (isKnownCurrency). A non-currency (Money<BANANAS>/GPB/XAU/XXX) is
+          // rejected here, NOT via isKnownType (which would mis-emit FUNGI-TYPE-001 — a currency is not a
+          // declared type). Mirrors the Stage-A type-checker's Money<CCY> validation.
+          if isKnownCurrency(arg) == false {
+            let msg32: String = "unknown currency '" + arg + "' for Money — not an ISO 4217 active code (FUNGI-TYPE-032)"
+            diags = diags.append({ code: "FUNGI-TYPE-032", message: msg32, flowName: flowName })
+          }
+        } else {
+          if arg.startsWith("Array") == false {
+            if isKnownType(arg) == false {
+              let msg1: String = "unknown type argument '" + arg + "' on binding '" + stmt.name + "' (FUNGI-TYPE-001)"
+              diags = diags.append({ code: "FUNGI-TYPE-001", message: msg1, flowName: flowName })
+            }
           }
         }
       }

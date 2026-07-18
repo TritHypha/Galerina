@@ -71,6 +71,32 @@ async function check(flows) {
 const codesFor = (diags, flowName) =>
   diags.filter((d) => d.flowName === flowName).map((d) => d.code).sort();
 
+// #124 — execute the twin's generated isKnownCurrency flow directly (proves the 157-currency set the
+// generator injected actually validates IN-LANGUAGE, not merely that the twin parses).
+async function isCurrency(tag) {
+  const r = await executeFlow(
+    "isKnownCurrency", new Map([["t", vStr(tag)]]), program.ast, program.flows,
+    undefined, undefined, { pureFastPath: false }, undefined, undefined,
+  );
+  return (r.value ?? r).value;
+}
+
+describe("type-checker.fungi — FUNGI-TYPE-032 currency validation (isKnownCurrency, generated from ISO 4217)", () => {
+  it("admits real ISO 4217 active codes (incl. one NOT in the seed probe → proves the full generated set)", async () => {
+    assert.equal(await isCurrency("GBP"), true);
+    assert.equal(await isCurrency("USD"), true);
+    assert.equal(await isCurrency("JPY"), true);
+    assert.equal(await isCurrency("ZAR"), true);
+  });
+  it("rejects the semantically-invalid tags the Stage-A type-checker rejects (→ FUNGI-TYPE-032)", async () => {
+    assert.equal(await isCurrency("BANANAS"), false); // invented — not a currency
+    assert.equal(await isCurrency("GPB"), false);     // transposition of GBP
+    assert.equal(await isCurrency("XAU"), false);     // gold — no ISO minor unit
+    assert.equal(await isCurrency("XXX"), false);     // 'no currency involved'
+    assert.equal(await isCurrency("XDR"), false);     // unit of account, not a currency
+  });
+});
+
 describe("type-checker.fungi — parses clean", () => {
   it("has zero parse errors", () => {
     const errors = program.diagnostics.filter((d) => d.severity === "error");

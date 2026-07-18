@@ -17,7 +17,7 @@
 | CBOR Manifests (RFC 8949) | 100% |
 | Tests — full suite | 100% |
 | Stage-B self-hosting — interpreter parity | 100% |
-| Type checker / Effect checker | 97% |
+| Type checker / Effect checker | 100% |
 | WAT emitter | 89% |
 | Runtime interpreter | 87% |
 | Application-framework layer | 72% |

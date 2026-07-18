@@ -34,6 +34,12 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SNAPSHOT = join(ROOT, "data", "iso-4217", "list-one-2026-07-16.xml");
 const OUT = join(ROOT, "packages-galerina", "galerina-core-compiler", "src", "unit-registry.generated.ts");
+// #124 — the self-hosted type-checker twin validates Money<CCY> IN-LANGUAGE (FUNGI-TYPE-032). Its
+// isKnownCurrency body is generated ONE-WAY from the SAME snapshot as MONEY_UNIT_TAGS and injected between
+// these markers, so the twin's currency set can never drift from the TS side (R&D STOPPER-1 option (a)).
+const TWIN = join(ROOT, "packages-galerina", "galerina-core-compiler", "src", "self-hosted", "type-checker.fungi");
+const TWIN_MARK_OPEN = "  // <generated:currency-set>";
+const TWIN_MARK_CLOSE = "  // </generated:currency-set>";
 
 // ── the pin (law 1 + law 3). A snapshot swap trips this before a single byte is parsed.
 const SNAPSHOT_PIN = "838dfb991648cf36df939edd5fe3811737962b75a32252847d239cedd1e291c9";
@@ -159,6 +165,31 @@ export const UNIT_REGISTRY_PROVENANCE = {
 `;
 }
 
+/** The self-hosted twin's isKnownCurrency body — one `if` per code, same in-language idiom as isKnownType.
+ *  Deterministic (sorted codes, fixed layout) so the twin's currency-set region diffs cleanly under --check. */
+export function renderFungiCurrencySet(codes) {
+  return codes.map((c) => `  if t == "${c}" { return true }`).join("\n");
+}
+
+/** Replace the body between the <generated:currency-set> markers in type-checker.fungi with `region`.
+ *  Marker-delimited so the generator owns exactly that span and nothing else in the hand-authored twin. */
+export function injectFungiRegion(twinSrc, region) {
+  const openAt = twinSrc.indexOf(TWIN_MARK_OPEN);
+  const closeAt = twinSrc.indexOf(TWIN_MARK_CLOSE);
+  if (openAt < 0 || closeAt < 0 || closeAt < openAt) {
+    throw new Error(`type-checker.fungi: currency-set markers missing/malformed (open@${openAt}, close@${closeAt}) — cannot inject.`);
+  }
+  return twinSrc.slice(0, openAt + TWIN_MARK_OPEN.length) + "\n" + region + "\n" + twinSrc.slice(closeAt);
+}
+
+/** Extract the current between-markers region from the twin (for --check), normalized to \n. */
+export function extractFungiRegion(twinSrc) {
+  const openAt = twinSrc.indexOf(TWIN_MARK_OPEN);
+  const closeAt = twinSrc.indexOf(TWIN_MARK_CLOSE);
+  if (openAt < 0 || closeAt < 0 || closeAt < openAt) return null;
+  return twinSrc.slice(openAt + TWIN_MARK_OPEN.length, closeAt).replace(/\r\n/g, "\n").replace(/^\n|\n$/g, "");
+}
+
 // ── generation ───────────────────────────────────────────────────────────────
 
 function generate() {
@@ -229,9 +260,10 @@ const argv = process.argv.slice(2);
 if (argv.includes("--self-test")) selfTest();
 
 const { table, text } = generate();
+const fungiRegion = renderFungiCurrencySet(table.codes); // #124 — the twin's in-language currency set
 
 if (argv.includes("--check")) {
-  // Law 2: the drift gate. Regenerate-and-diff.
+  // Law 2: the drift gate. Regenerate-and-diff — BOTH the TS table AND the twin's currency-set region.
   let current = "";
   try { current = readFileSync(OUT, "utf8"); } catch {
     console.error(`❌ ${OUT} is MISSING — run: node scripts/gen-unit-registry.mjs`);
@@ -243,12 +275,38 @@ if (argv.includes("--check")) {
       "   Regenerate with: node scripts/gen-unit-registry.mjs");
     process.exit(1);
   }
-  console.log(`✅ unit registry in sync with ${SNAPSHOT_NAME} (${table.codes.length} currencies, pin ${SNAPSHOT_PIN.slice(0, 12)}…)`);
+  // #124: the self-hosted twin's currency set is generated from the SAME snapshot — it must not drift either.
+  let twinSrc = "";
+  try { twinSrc = readFileSync(TWIN, "utf8"); } catch {
+    console.error(`❌ ${TWIN} is MISSING — cannot check the twin currency set.`);
+    process.exit(1);
+  }
+  const twinNow = extractFungiRegion(twinSrc);
+  if (twinNow === null) {
+    console.error("❌ type-checker.fungi: <generated:currency-set> markers missing — cannot check the twin currency set.");
+    process.exit(1);
+  }
+  if (twinNow !== fungiRegion) {
+    console.error("❌ TWIN CURRENCY-SET DRIFT — type-checker.fungi's isKnownCurrency set does not match the pinned snapshot.\n" +
+      "   The self-hosted twin's currency validation has drifted from MONEY_UNIT_TAGS (a false-differential risk).\n" +
+      "   Regenerate with: node scripts/gen-unit-registry.mjs");
+    process.exit(1);
+  }
+  console.log(`✅ unit registry + twin currency-set in sync with ${SNAPSHOT_NAME} (${table.codes.length} currencies, pin ${SNAPSHOT_PIN.slice(0, 12)}…)`);
   process.exit(0);
 }
 
 writeFileSync(OUT, text);
+// #124: inject the same currency set into the self-hosted twin (isKnownCurrency), so it validates Money<CCY>
+// in-language from the ONE source of truth. Marker-delimited — only the between-markers span is rewritten.
+let twinSrc = "";
+try { twinSrc = readFileSync(TWIN, "utf8"); } catch {
+  console.error(`❌ ${TWIN} is MISSING — cannot inject the twin currency set.`);
+  process.exit(1);
+}
+writeFileSync(TWIN, injectFungiRegion(twinSrc, fungiRegion));
 const byReason = {};
 for (const r of table.excluded.values()) byReason[r] = (byReason[r] ?? 0) + 1;
 console.log(`✅ unit registry generated — ${table.codes.length} currencies from ${SNAPSHOT_NAME}`);
+console.log(`   twin currency-set injected into type-checker.fungi (isKnownCurrency, ${table.codes.length} codes)`);
 console.log(`   excluded: ${Object.entries(byReason).map(([r, n]) => `${r} ×${n}`).join(" · ")}`);
