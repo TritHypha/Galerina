@@ -9710,15 +9710,15 @@
     "code": "FUNGI-INV-001",
     "namespace": "FUNGI",
     "family": "INV",
-    "occurrences": 22,
+    "occurrences": 24,
     "docOnly": false,
     "defs": [],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/governance-verifier.ts:2641",
       "packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2756"
     ],
-    "tests": 11,
-    "refs": 9,
+    "tests": 12,
+    "refs": 10,
     "docs": 0,
     "names": [
       "PRE_CONDITION_STATICALLY_FALSE"
@@ -9735,7 +9735,8 @@
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:2664",
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:5129",
       "emit packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2756",
-      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2855",
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2876",
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2896",
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:1344",
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:1355",
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:1358",
@@ -9746,7 +9747,8 @@
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:1446",
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:1485",
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:1486",
-      "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:1487"
+      "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:1487",
+      "test packages-galerina/galerina-core-compiler/tests/wat-tri-fuse-a-elision.test.mjs:5"
     ]
   },
   {
