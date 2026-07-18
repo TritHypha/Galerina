@@ -3,9 +3,9 @@
   "totals": {
     "packages": 95,
     "testBearing": 94,
-    "tests": 7362,
-    "devTools": 90,
-    "auditTools": 52,
+    "tests": 7368,
+    "devTools": 91,
+    "auditTools": 53,
     "toolsInCadence": 29,
     "proofs": 40
   },
@@ -297,7 +297,7 @@
       "name": "galerina-core-compiler",
       "kind": "core",
       "description": "Galerina compiler pipeline contracts for parsing, checking, IR, diagnostics and reports.",
-      "tests": 4701,
+      "tests": 4707,
       "hasTestScript": true,
       "border": "PASS",
       "files": 99,
@@ -1042,6 +1042,19 @@
         "package-border",
         "graph/index",
         "sensitive-allowlist"
+      ]
+    },
+    {
+      "name": "audit-artifact-drift.mjs",
+      "category": "audit",
+      "purpose": "a hand-authored value drifting from a GENERATED",
+      "selfTest": true,
+      "inCadence": false,
+      "concerns": [
+        "signing/fusion",
+        "coverage",
+        "diagnostics",
+        "doc-drift"
       ]
     },
     {
@@ -2243,6 +2256,7 @@
   "coverage": {
     "coverage": [
       "audit-allowlist-sensitive.mjs",
+      "audit-artifact-drift.mjs",
       "audit-coverage.mjs",
       "audit-dss-wasm-build.mjs",
       "audit-fungi-runtime.mjs",
@@ -2264,6 +2278,7 @@
     ],
     "diagnostics": [
       "audit-allowlist-sensitive.mjs",
+      "audit-artifact-drift.mjs",
       "audit-brand-keys.mjs",
       "audit-checker-wiring.mjs",
       "audit-corpus-effect-names.mjs",
@@ -2403,6 +2418,7 @@
       "audit-sink-canonicality.mjs"
     ],
     "signing/fusion": [
+      "audit-artifact-drift.mjs",
       "audit-brand-keys.mjs",
       "audit-checker-wiring.mjs",
       "audit-claim-hygiene.mjs",
@@ -2449,30 +2465,8 @@
       "rebuild-fusable-packages.mjs",
       "verify-artifacts.mjs"
     ],
-    "gate-wiring": [
-      "audit-brand-keys.mjs",
-      "audit-checker-wiring.mjs",
-      "audit-corpus-effect-names.mjs",
-      "audit-coverage.mjs",
-      "audit-effect-canonicality.mjs",
-      "audit-fungi-runtime.mjs",
-      "audit-gscm.mjs",
-      "audit-import-governance.mjs",
-      "audit-kernel-fungi-twins.mjs",
-      "audit-oblivious.mjs",
-      "audit-perf-hotpath.mjs",
-      "audit-reference-doc-drift.mjs",
-      "audit-route-overlap.mjs",
-      "audit-runtime-coverage.mjs",
-      "audit-sink-canonicality.mjs",
-      "audit-syntax-reference-links.mjs",
-      "audit-syntax.mjs",
-      "audit-twin-emit-parity.mjs",
-      "lint-conventions.mjs",
-      "check-gate-injection.mjs",
-      "hardening-show-derived.mjs"
-    ],
     "doc-drift": [
+      "audit-artifact-drift.mjs",
       "audit-brand-keys.mjs",
       "audit-checker-wiring.mjs",
       "audit-claim-hygiene.mjs",
@@ -2514,6 +2508,29 @@
       "rd-absorb.mjs",
       "rebrand-tmf-to-spore.mjs",
       "repoint-kb-refs.mjs"
+    ],
+    "gate-wiring": [
+      "audit-brand-keys.mjs",
+      "audit-checker-wiring.mjs",
+      "audit-corpus-effect-names.mjs",
+      "audit-coverage.mjs",
+      "audit-effect-canonicality.mjs",
+      "audit-fungi-runtime.mjs",
+      "audit-gscm.mjs",
+      "audit-import-governance.mjs",
+      "audit-kernel-fungi-twins.mjs",
+      "audit-oblivious.mjs",
+      "audit-perf-hotpath.mjs",
+      "audit-reference-doc-drift.mjs",
+      "audit-route-overlap.mjs",
+      "audit-runtime-coverage.mjs",
+      "audit-sink-canonicality.mjs",
+      "audit-syntax-reference-links.mjs",
+      "audit-syntax.mjs",
+      "audit-twin-emit-parity.mjs",
+      "lint-conventions.mjs",
+      "check-gate-injection.mjs",
+      "hardening-show-derived.mjs"
     ],
     "brand": [
       "audit-brand-keys.mjs",
@@ -2695,6 +2712,7 @@
     "concernsNoTool": [],
     "toolsNotInCadence": [
       "audit-allowlist-sensitive.mjs",
+      "audit-artifact-drift.mjs",
       "audit-brand-keys.mjs",
       "audit-diagnostic-codes.mjs",
       "audit-diagnostic-doc-drift.mjs",
