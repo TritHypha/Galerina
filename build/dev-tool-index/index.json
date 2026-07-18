@@ -3,7 +3,7 @@
   "totals": {
     "packages": 95,
     "testBearing": 94,
-    "tests": 7389,
+    "tests": 7391,
     "devTools": 92,
     "auditTools": 54,
     "toolsInCadence": 31,
@@ -297,7 +297,7 @@
       "name": "galerina-core-compiler",
       "kind": "core",
       "description": "Galerina compiler pipeline contracts for parsing, checking, IR, diagnostics and reports.",
-      "tests": 4728,
+      "tests": 4730,
       "hasTestScript": true,
       "border": "PASS",
       "files": 99,
@@ -1899,6 +1899,7 @@
       "concerns": [
         "signing/fusion",
         "provenance",
+        "gate-wiring",
         "diagnostics"
       ]
     },
@@ -2544,6 +2545,7 @@
       "audit-syntax-reference-links.mjs",
       "audit-syntax.mjs",
       "audit-twin-emit-parity.mjs",
+      "gen-unit-registry.mjs",
       "lint-conventions.mjs",
       "check-gate-injection.mjs",
       "hardening-show-derived.mjs"
