@@ -1,0 +1,5 @@
+{
+  "packageName": "@galerina/core-runtime-wasm",
+  "allowedExternal": [],
+  "note": "Border-safe TCB home (RD-0361 R4 / #143). The ONLY external imports this package may EVER carry are node:crypto + TYPE-ONLY seam interfaces from @galerina/core-runtime. It must NEVER import @galerina/core-compiler (that would drag the compiler across the Hardened Border — the exact fail-open this package exists to prevent). This gate IS that machine-checkable rule: a compiler import here fails the border build. Currently holds only record-abi (pure constants, no external imports → empty allowlist); node:crypto + core-runtime types are added when the TCB (wasm-runtime) moves in."
+}

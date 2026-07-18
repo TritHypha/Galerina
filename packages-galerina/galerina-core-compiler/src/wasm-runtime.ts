@@ -25,10 +25,11 @@ import {
 // RD-0389 record-marshalling ABI (ARG direction): the record staging base + field size are the
 // SAME constants the emitter lays records out with, so a host-staged record and a module-built one
 // share one layout (single source of truth — no drift). Used only inside allocRecord (call-time).
-// #143 extraction (RD-0361 R4): imported from the dependency-free record-abi module, NOT from the
-// emitter — so this TCB carries no import of the compiler's emitter and can relocate to a border-safe
-// home (the kernel may depend on that home but never the compiler — the Hardened Border).
-import { WAT_HEAP_BASE, WAT_REC_FIELD_SIZE } from "./record-abi.js";
+// #143 extraction (RD-0361 R4): the record-layout ABI now lives in the border-safe package
+// @galerina/core-runtime-wasm, NOT the emitter — so this TCB carries no import of the compiler and, when
+// it relocates INTO that package (next brick), will import record-abi locally. The kernel may depend on
+// that border-safe home but never the compiler (the Hardened Border).
+import { WAT_HEAP_BASE, WAT_REC_FIELD_SIZE } from "@galerina/core-runtime-wasm";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Attestation (Ed25519 over the raw .wasm binary)

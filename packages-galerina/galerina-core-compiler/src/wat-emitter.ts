@@ -29,10 +29,11 @@ import { STDLIB_CAPABILITY_MAP } from "./stdlib-registry.js";
 import type { AstNode } from "./parser.js";
 import { i32AddChecked, i32SubChecked, i32MulChecked, i32DivChecked, i32ModChecked, isI32Trap, type I32Result } from "./i32-arith.js";
 import { numericBaseType } from "./numeric-lowering.js";
-// The record-layout ABI is the ONE contract shared with the WASM runtime TCB (wasm-runtime.ts).
-// It lives in its own dependency-free module so the TCB can reach its layout without importing the
-// emitter — the first brick of the #143 border-safe TCB extraction (RD-0361 R4). Re-exported below.
-import { WAT_HEAP_BASE, WAT_REC_FIELD_SIZE } from "./record-abi.js";
+// The record-layout ABI is the ONE contract shared with the WASM runtime TCB. It now lives in the
+// border-safe package @galerina/core-runtime-wasm (RD-0361 R4 / #143), so the emitter imports the layout
+// FROM the border-safe home (compiler → border-safe home, the ALLOWED direction) and the TCB knows its
+// layout without importing the emitter. Re-exported below for back-compat.
+import { WAT_HEAP_BASE, WAT_REC_FIELD_SIZE } from "@galerina/core-runtime-wasm";
 // S2 fuller-A (RD-0456): the ONE static-discharge oracle, shared with the governance-verifier so the
 // two can never drift about what is a proven-constant governance operand (single witness, KB f86155b).
 import { flattenGovernanceConjunction, foldStaticVerdict } from "./invariant-discharge.js";
@@ -346,8 +347,8 @@ export function deriveArenaWATMemory(
 // P9.4b — record struct layout (linear-memory bump allocator)
 // ---------------------------------------------------------------------------
 
-// The record-layout ABI (WAT_HEAP_BASE, WAT_REC_FIELD_SIZE) now lives in ./record-abi.ts — the
-// dependency-free contract the emitter and the WASM runtime TCB both bind to. Re-exported here so
+// The record-layout ABI (WAT_HEAP_BASE, WAT_REC_FIELD_SIZE) now lives in @galerina/core-runtime-wasm —
+// the border-safe contract the emitter and the WASM runtime TCB both bind to. Re-exported here so
 // existing `from "./wat-emitter.js"` importers are unchanged (single source of truth, no drift).
 export { WAT_HEAP_BASE, WAT_REC_FIELD_SIZE };
 

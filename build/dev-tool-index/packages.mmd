@@ -47,6 +47,7 @@ flowchart LR
     galerina_core_photonic["core-photonic"]
     galerina_core_reports["core-reports"]
     galerina_core_runtime["core-runtime"]
+    galerina_core_runtime_wasm["core-runtime-wasm"]
     galerina_core_security["core-security"]
     galerina_core_sentinel_egress["core-sentinel-egress"]
     galerina_core_sentinel_io["core-sentinel-io"]
@@ -143,6 +144,7 @@ flowchart LR
   galerina_core_cli --> galerina_core_tasks
   galerina_core_cli --> galerina_devtools_graph_project
   galerina_core_compiler --> galerina_core_network
+  galerina_core_compiler --> galerina_core_runtime_wasm
   galerina_core_compiler --> galerina_core_security
   galerina_core_compiler --> galerina_devtools_graph_algorithms
   galerina_core_compiler --> galerina_substrate_math

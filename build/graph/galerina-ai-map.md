@@ -18,6 +18,14 @@ Provides:
 - inspectBuffer
 - ContactFormData
 
+## galerina-core-runtime-wasm
+
+Border-safe WASM trust-computing base (RD-0361 R4 / #143): the record-layout ABI and (next brick) the attested WASM instantiation TCB that the kernel/DSS reach WITHOUT importing the compiler.
+
+Provides:
+- WAT_HEAP_BASE
+- WAT_REC_FIELD_SIZE
+
 ## galerina-core-compiler
 
 Galerina compiler pipeline contracts for parsing, checking, IR, diagnostics and reports.

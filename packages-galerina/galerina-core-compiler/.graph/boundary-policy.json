@@ -2,6 +2,7 @@
   "packageName": "@galerina/core-compiler",
   "allowedExternal": [
     "@galerina/core-network",
+    "@galerina/core-runtime-wasm",
     "@galerina/core-security",
     "@galerina/devtools-graph-algorithms",
     "@galerina/substrate-math",

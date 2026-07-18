@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@galerina/core-network": "file:../galerina-core-network",
+    "@galerina/core-runtime-wasm": "file:../galerina-core-runtime-wasm",
     "@galerina/core-security": "file:../galerina-core-security",
     "@galerina/devtools-graph-algorithms": "file:../galerina-devtools-graph-algorithms",
     "@galerina/substrate-math": "file:../galerina-substrate-math",

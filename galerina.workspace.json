@@ -4,6 +4,7 @@
     "description": "A clean Galerina app workspace template.",
     "packages": [
         "packages-galerina/galerina-core",
+        "packages-galerina/galerina-core-runtime-wasm",
         "packages-galerina/galerina-core-compiler",
         "packages-galerina/galerina-core-runtime",
         "packages-galerina/galerina-core-network",

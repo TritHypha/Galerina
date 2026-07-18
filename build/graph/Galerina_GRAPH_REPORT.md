@@ -1,19 +1,20 @@
 # Galerina Graph Report
 
 Workspace: Galerina-app
-Generated: 2026-07-18T14:39:00.101Z
+Generated: 2026-07-18T14:55:47.040Z
 
 ## Summary
 
-- Packages: 93
-- Documents: 2798
+- Packages: 94
+- Documents: 2803
 - Types/interfaces: 2486
 - Functions: 1254
-- Relationships: 6949
+- Relationships: 6955
 
 ## Package Nodes
 
 - galerina-core (packages-galerina/galerina-core/README.md)
+- galerina-core-runtime-wasm (packages-galerina/galerina-core-runtime-wasm/README.md)
 - galerina-core-compiler (packages-galerina/galerina-core-compiler/README.md)
 - galerina-core-runtime (packages-galerina/galerina-core-runtime/README.md)
 - galerina-core-network (packages-galerina/galerina-core-network/README.md)
