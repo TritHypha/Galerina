@@ -11,10 +11,10 @@
 
 | Metric | Count |
 |---|---|
-| Files | 2 |
-| Internal edges | 1 |
-| External dependencies | 0 |
-| ├─ Node core | 0 |
+| Files | 3 |
+| Internal edges | 3 |
+| External dependencies | 1 |
+| ├─ Node core | 1 |
 | ├─ Workspace (@galerina/*) | 0 |
 | └─ Third-party | 0 |
 | Orphan files | 0 |
@@ -22,7 +22,7 @@
 ## External Dependencies (the Border)
 
 ### Node core
-_none_
+- `node:crypto`
 
 ### Workspace (@galerina/*)
 _none_

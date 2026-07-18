@@ -727,14 +727,17 @@ export {
 } from "./wat-assembler.js";
 
 // P9 (#105) — WASM execution harness as a SECURITY ADMISSION GATE
+// #143 (RD-0361 R4): the WASM TCB moved to the border-safe package @galerina/core-runtime-wasm.
+// Re-exported here so every existing `@galerina/core-compiler` consumer of these symbols is unchanged
+// (compiler → core-runtime-wasm is the ALLOWED direction; the kernel reaches the TCB without the compiler).
 export {
   wasmHash, generateRunnerKeypair, signWasm, verifyWasm,
   createHostRuntime, admitAndInstantiate,
-} from "./wasm-runtime.js";
+} from "@galerina/core-runtime-wasm";
 export type {
   AdmissionPolicy, RunnerProfile, WasmAttestation, AdmissionVerdict,
   Observer, HostRuntime, AdmissionResult,
-} from "./wasm-runtime.js";
+} from "@galerina/core-runtime-wasm";
 
 // Phase 19 / 22A / 22 / 27D — WAT Emitter (WebAssembly Text Format) — skeleton + SIMD types + pure bodies + SIMD ops
 export {

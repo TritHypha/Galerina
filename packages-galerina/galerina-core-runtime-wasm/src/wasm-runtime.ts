@@ -14,9 +14,11 @@
  *      Dev passes an `Observer` (host-call log, trap memory dump); prod passes none.
  *      Neither path can skip the attestation or allowlist — there is no "dev bypass".
  *
- * Crypto is Ed25519 via node:crypto (the same primitive the Tower uses for bridge
- * attestation; the compiler signs its own runner artifacts, it does not import the
- * Tower). This keeps the layering clean: compiler → node:crypto, never → tower.
+ * Crypto is Ed25519 via node:crypto. This is the BORDER-SAFE TCB home (RD-0361 R4 / #143):
+ * it lives in @galerina/core-runtime-wasm, reachable by the kernel/DSS but NEVER importing the
+ * compiler — so the layering is clean (this package → node:crypto + record-abi ONLY, the Hardened
+ * Border holds). It provides the LowLevelWasmExecutor / admission-verify / hash that core-runtime's
+ * createGovernedRuntimeExecutor INJECTS (never imports).
  */
 
 import {
@@ -25,11 +27,9 @@ import {
 // RD-0389 record-marshalling ABI (ARG direction): the record staging base + field size are the
 // SAME constants the emitter lays records out with, so a host-staged record and a module-built one
 // share one layout (single source of truth — no drift). Used only inside allocRecord (call-time).
-// #143 extraction (RD-0361 R4): the record-layout ABI now lives in the border-safe package
-// @galerina/core-runtime-wasm, NOT the emitter — so this TCB carries no import of the compiler and, when
-// it relocates INTO that package (next brick), will import record-abi locally. The kernel may depend on
-// that border-safe home but never the compiler (the Hardened Border).
-import { WAT_HEAP_BASE, WAT_REC_FIELD_SIZE } from "@galerina/core-runtime-wasm";
+// #143 (RD-0361 R4): record-abi is now a sibling module IN this border-safe package — imported locally,
+// so the TCB carries no cross-package import for its own layout.
+import { WAT_HEAP_BASE, WAT_REC_FIELD_SIZE } from "./record-abi.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Attestation (Ed25519 over the raw .wasm binary)
@@ -97,7 +97,9 @@ export function signWasm(
 ): WasmAttestation {
   const sha256 = wasmHash(wasm);
   // #173: sign over (domain ∥ hash ∥ profile), NOT the raw bytes — binds the profile into the signature.
-  const sig = edSign(null, admissionPreimage(sha256, profile) as unknown as BufferSource, { key: privateKeyPem, dsaEncoding: "ieee-p1363" });
+  // (admissionPreimage returns a Uint8Array, which IS an ArrayBufferView — no cast needed; a `BufferSource`
+  //  cast would (wrongly) widen to ArrayBuffer and is rejected by current node types.)
+  const sig = edSign(null, admissionPreimage(sha256, profile), { key: privateKeyPem, dsaEncoding: "ieee-p1363" });
   return { sha256, signature: Buffer.from(sig).toString("base64"), profile };
 }
 
@@ -138,9 +140,9 @@ export function verifyWasm(
       // pre-image and the signature fails — closing the re-label privilege escalation.
       const ok = edVerify(
         null,
-        admissionPreimage(hash, attestation.profile) as unknown as BufferSource,
+        admissionPreimage(hash, attestation.profile),
         { key: effectivePolicy.publicKeyPem, dsaEncoding: "ieee-p1363" },
-        Buffer.from(attestation.signature, "base64") as unknown as BufferSource,
+        Buffer.from(attestation.signature, "base64"),
       );
       if (!ok) return { ok: false, reason: "signature verification failed", hash };
     } catch (e) {

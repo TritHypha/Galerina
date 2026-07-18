@@ -25,6 +25,16 @@ Border-safe WASM trust-computing base (RD-0361 R4 / #143): the record-layout ABI
 Provides:
 - WAT_HEAP_BASE
 - WAT_REC_FIELD_SIZE
+- AdmissionPolicy
+- RunnerProfile
+- WasmAttestation
+- AdmissionVerdict
+- wasmHash
+- generateRunnerKeypair
+- signWasm
+- verifyWasm
+- Observer
+- HostRuntime
 
 ## galerina-core-compiler
 

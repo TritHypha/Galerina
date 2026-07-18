@@ -23,9 +23,12 @@ compiler import here fails the build) — the border is not a convention, it is 
 
 - `record-abi.ts` — the record-layout ABI (`WAT_HEAP_BASE`, `WAT_REC_FIELD_SIZE`): the ONE contract the
   WAT emitter and the WASM runtime TCB both bind to. Dependency-free.
-- *(next brick)* the WASM TCB (`wasm-runtime`): attestation-verify-then-instantiate, closed host import
-  set, host record-marshalling. It provides the `LowLevelWasmExecutor` / `GovernedAdmissionVerifier` /
-  `hashArtifact` that get **injected** into `core-runtime`'s `createGovernedRuntimeExecutor` — never
-  imported by core-runtime.
+- `wasm-runtime.ts` — the WASM TCB: attestation-verify-then-instantiate (`admitAndInstantiate`,
+  `verifyWasm`, `wasmHash`, `signWasm`), a closed host import set, and host record-marshalling
+  (`createHostRuntime`). Imports only `node:crypto` + the local `record-abi`. It is the mechanism that
+  provides the `LowLevelWasmExecutor` / admission-verify / hash which `core-runtime`'s
+  `createGovernedRuntimeExecutor` **injects** — never imported by core-runtime.
 
-Status: being populated by the #143 TCB extraction (brick 1 record-abi landed; the TCB follows).
+Status: the #143 TCB extraction is complete (record-abi + the TCB both live here; the compiler re-exports
+them for back-compat). Remaining #143 work is the per-surface R4 authority flip (secret-gate first,
+byte-parity order, shadow-bake), which is a runtime-authority change, not a code move.
