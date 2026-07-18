@@ -29,6 +29,10 @@ import { STDLIB_CAPABILITY_MAP } from "./stdlib-registry.js";
 import type { AstNode } from "./parser.js";
 import { i32AddChecked, i32SubChecked, i32MulChecked, i32DivChecked, i32ModChecked, isI32Trap, type I32Result } from "./i32-arith.js";
 import { numericBaseType } from "./numeric-lowering.js";
+// The record-layout ABI is the ONE contract shared with the WASM runtime TCB (wasm-runtime.ts).
+// It lives in its own dependency-free module so the TCB can reach its layout without importing the
+// emitter — the first brick of the #143 border-safe TCB extraction (RD-0361 R4). Re-exported below.
+import { WAT_HEAP_BASE, WAT_REC_FIELD_SIZE } from "./record-abi.js";
 
 // ---------------------------------------------------------------------------
 // Phase 22A — WASM SIMD capability types
@@ -339,11 +343,10 @@ export function deriveArenaWATMemory(
 // P9.4b — record struct layout (linear-memory bump allocator)
 // ---------------------------------------------------------------------------
 
-/** Records bump-allocate above this byte offset; the low region stays reserved
- *  scratch/null (so a 0 handle never collides with a real record base). */
-export const WAT_HEAP_BASE = 1024;
-/** Every record field occupies one i32 slot (a number or an opaque i32 handle). */
-export const WAT_REC_FIELD_SIZE = 4;
+// The record-layout ABI (WAT_HEAP_BASE, WAT_REC_FIELD_SIZE) now lives in ./record-abi.ts — the
+// dependency-free contract the emitter and the WASM runtime TCB both bind to. Re-exported here so
+// existing `from "./wat-emitter.js"` importers are unchanged (single source of truth, no drift).
+export { WAT_HEAP_BASE, WAT_REC_FIELD_SIZE };
 
 /**
  * Per-flow record-construction scratch. emitWATFromFlowAST sets this before walking
