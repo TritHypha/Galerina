@@ -26,6 +26,7 @@ import { readFileSync, readdirSync, existsSync, statSync, writeFileSync, mkdirSy
 import { join, dirname, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
+import { twinParityLadder } from "./lib/twin-parity-ladder.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const PKG_DIR = join(ROOT, "packages-galerina");
@@ -251,6 +252,13 @@ summary.todos = todos;
 //    roadmap-readiness %s maintained in the README's "Zero-Trust thesis" + "Build Progress"
 //    sections. ◑ boundaries are partial: a shipped gate + a design-intent remainder. Update
 //    these arrays when a component's readiness changes, then sync the README rows. ─────────
+// #122 RULING-1: the Type-checker / Effect-checker row's % is DERIVED live from twin diagnostic-code
+// parity (scripts/lib/twin-parity-ladder.mjs → audit-twin-emit-parity). Fail-closed but NON-FATAL: if
+// the ladder can't be computed we carry a WORD (never the old hand-typed number), which preserves this
+// tool's "never throws" contract while honouring RULING-1's "no evidence ⇒ no number".
+let TCE = null;
+try { TCE = twinParityLadder(); } catch { TCE = null; }
+
 const ZERO_TRUST = [
   { boundary: "Compiler", pct: 100, status: "✅ shipped — policy + execution DAG proven at build time" },
   { boundary: "I/O — OS kernel", pct: 72, status: "◑ auth gate 6 (kernel.fungi) EXECUTION-PROVEN (RD-0361 differential ≡ the shipped kernel `handle`, first string-ARG twin) · DSS build gate now 10/10 DETERMINISTIC (2026-07-16 night: wabt fresh-instance-per-build + the P9.4 guarded-body adoption gate — the partial-lowering class that blocked the supervisor bundle is structurally dead) · the DSS supervisor V_DPM DECISION CORE is EXECUTION-PROVEN ≡ Stage-A over a 386-point matrix + laws (topology-first, monotonicity, deny-by-default, zero effect calls) with real .wasm artifacts (build/dss-wasm, sha256 manifest). sentinel-io decision surface FULLY twinned + checker-clean. Remaining to 100%: authoritative execution (#143 flip, owner) + full kernel-bypass I/O EXECUTION (the real Wasmtime TCB, DSS.wasm #102-106, post-v1)" },
@@ -265,7 +273,9 @@ const BUILD_PROGRESS = [
   { layer: "CBOR Manifests (RFC 8949)", pct: 100 },
   { layer: "Tests — full suite", pct: 100, live: true },
   { layer: "Stage-B self-hosting — interpreter parity", pct: 100 },
-  { layer: "Type checker / Effect checker", pct: 90 },
+  TCE
+    ? { layer: "Type checker / Effect checker", pct: TCE.pct }
+    : { layer: "Type checker / Effect checker", status: "twin-parity ladder unavailable — carrying a word (fail-closed: no number without evidence)" },
   { layer: "WAT emitter", pct: 89 },
   { layer: "Runtime interpreter", pct: 87 },
   { layer: "Application-framework layer", pct: 72 },
@@ -340,7 +350,10 @@ const EVIDENCE = {
   "DRCM Phases 1-7 (Stage-A simulation)": { asserted: "candidate ladder = the 7 phases, if each has a green gate" },
   "CBOR Manifests (RFC 8949)": { asserted: "no countable ladder defined" },
   "Stage-B self-hosting — interpreter parity": { asserted: "candidate ladder = R6 corpus Stage-A ≡ Stage-B per stage" },
-  "Type checker / Effect checker": { asserted: "candidate ladder = twin diagnostic-code parity (emit + name + severity), which IS mechanically checked today" },
+  // #122: CONVERTED asserted → ladder. pct is DERIVED live from twin diagnostic-code parity (28/29 of
+  // the TYPE-* ∪ EFFECT-* charter mirrored today; the 1 open rung is FUNGI-TYPE-032). When the ladder
+  // can't be computed the row above carries a WORD, so no `asserted` fallback number is ever published.
+  "Type checker / Effect checker": TCE ? { ladder: TCE.ladder } : { asserted: "twin-parity ladder temporarily unavailable — carrying a word, not a stale number" },
   "WAT emitter": { asserted: "candidate ladder = per-construct lowering coverage; #100 Option<Record> is the known open rung" },
   "Runtime interpreter": { asserted: "no countable ladder defined" },
   "Application-framework layer": { asserted: "candidate ladder = servable api-server · example-app · signed registry index" },

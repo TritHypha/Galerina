@@ -204,7 +204,7 @@ Run on an **Intel i9-9900K (8C/16T) + NVIDIA RTX 2060**, across Rust (native, ge
 | **Tests — full suite** | 100% | **93/93 packages · 7,368 tests · 0 failures** |
 | **Resilience — first-class fault handlers (0017)** | shipped | `on_*_fault` → fail-closed `halt` default + FUNGI-FAULT-001/003 + `GIRFlow.faultHandlers` |
 | **Contract-driven test generation (0016)** | 5/5 vector dimensions | fault-injection · effect-egress · capability-denial · boundary/fuzz · substrate-violation (over GIR) |
-| **Type checker / Effect checker** | ~90% | |
+| **Type checker / Effect checker** | 97% | *derived* from twin diagnostic-code parity — 28/29 of the TYPE/EFFECT diagnostic charter mirrored with emit+name+severity parity (open rung: FUNGI-TYPE-032) |
 | **WAT emitter** | ~89% | #128(a) fail-closed fix landed (unhandled stmt → `unreachable` trap); #128(b)/GAP-4 `forEachStmt` lowering landed (for-in → counted loop over the host array bridge); `for…where` filtered iteration lowers as a guarded loop — all execution + interpreter-fidelity tested |
 | **Faithful Int64 (i64) lowering** | lift-ready | exact 64-bit integers end-to-end — interpreter `bigint` ≡ WASM `i64`, overflow **traps** (Fork-A, no silent wrap), the walker≡WASM differential passes non-vacuously over (2⁵³,2⁶³). The `FUNGI-NUMERIC-001` gate stays **closed by design** (declaring a scalar `Int64` errors today); the lift is one owner-gated line + a final cross-flow check. `UInt64` still gated. Throughput i64 ≈ i32. (Integer-types spec: internal engineering KB) |
 | **Runtime interpreter** | ~87% | diagnostic tier (see Benchmarks) |

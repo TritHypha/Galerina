@@ -278,7 +278,10 @@ const ecSevViol = severityParityViolations(ecTwin, ecTwinSev, ecCheckerSev);
 
 const asJson = process.argv.includes("--json");
 if (asJson) {
-  console.log(JSON.stringify({ twinEmits: twin.length, falseDifferentials: bad, nameParityViolations: nameViol, typeSeverityParityViolations: sevViol, typeFrontier, otherFamilies, otherPassFrontier: otherPass, effectTwinEmits: ecTwin.length, effectFalseDifferentials: ecBad, effectNameParityViolations: ecNameViol, effectSeverityParityViolations: ecSevViol, effectFrontier: ecFrontier }, null, 1));
+  console.log(JSON.stringify({ twinEmits: twin.length, falseDifferentials: bad, nameParityViolations: nameViol, typeSeverityParityViolations: sevViol, typeFrontier, otherFamilies, otherPassFrontier: otherPass, effectTwinEmits: ecTwin.length, effectFalseDifferentials: ecBad, effectNameParityViolations: ecNameViol, effectSeverityParityViolations: ecSevViol, effectFrontier: ecFrontier,
+    // The mirrored CODE LISTS (not just counts), scoped to each twin's charter family, so a consumer can
+    // build the type/effect twin-parity LADDER (RULING-1 #122) without re-deriving the scoping here.
+    typeMirrored: twin.filter((c) => /^FUNGI-TYPE-/.test(c)), effectMirrored: ecTwin }, null, 1));
 } else {
   console.log(`twin-emit-parity: type-twin ${twin.length} codes · ${bad.length} false diff · ${nameViol.length} name-parity viol · ${sevViol.length} severity-parity viol · effect-twin ${ecTwin.length} codes · ${ecBad.length} false diff · ${ecNameViol.length} name-parity viol · ${ecSevViol.length} severity-parity viol`);
   for (const c of bad) console.log(`  ⚠ FALSE DIFFERENTIAL ${c} — no emit call-site in type-checker.ts (twin flags what the checker never does)`);

@@ -42,6 +42,7 @@
 import { execFileSync } from "node:child_process";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { twinParityLadder } from "./lib/twin-parity-ladder.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -61,7 +62,8 @@ const ASSERTED_BASELINE = Object.freeze([
   "DRCM Phases 1-7 (Stage-A simulation)",
   "CBOR Manifests (RFC 8949)",
   "Stage-B self-hosting — interpreter parity",
-  "Type checker / Effect checker",
+  // "Type checker / Effect checker" LEFT the baseline 2026-07-18 (#122): it now derives its pct from
+  // a real twin diagnostic-code-parity ladder. Per the ratchet, it can never return here.
   "WAT emitter",
   "Runtime interpreter",
   "Application-framework layer",
@@ -182,14 +184,21 @@ if (process.argv.includes("--self-test")) selfTest();
 const raw = execFileSync("node", [join(ROOT, "scripts", "component-health.mjs"), "--json"], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
 const audit = JSON.parse(raw).percentAudit;
 
-// No ladder is wired to a real artifact YET — every row is live or baseline-asserted. When the
-// first real ladder lands, its checker goes here. Until then `checkRung` is never consulted on
-// live data, and the self-test above is what proves the computed path works.
-const { violations, assertedSeen } = auditRows(audit.sections, ASSERTED_BASELINE);
+// #122: the FIRST real ladder is wired — "Type checker / Effect checker" derives from twin
+// diagnostic-code parity. checkRung consults the SAME twinParityLadder() source component-health
+// published from, so the gate recomputes the pct INDEPENDENTLY and fails LADDER_DISAGREES on any skew
+// (the whole point: a derived pct resting on a count the verifier computes differently is the defect).
+// If the twin audit can't run, component-health degrades that row to a WORD (no pct) — so there is no
+// ladder row to check and the empty mirrored set is never consulted.
+let mirrored = new Set();
+try { mirrored = twinParityLadder().mirrored; } catch { /* row degraded to a word upstream — nothing to check */ }
+const checkRung = (code) => mirrored.has(code);
+const { violations, assertedSeen } = auditRows(audit.sections, ASSERTED_BASELINE, checkRung);
 const stale = staleBaseline(ASSERTED_BASELINE, assertedSeen);
 
 const quantified = audit.sections.filter((s) => s.kind === "meter").flatMap((s) => (s.rows ?? []).filter((r) => typeof r.pct === "number"));
 const live = quantified.filter((r) => r.evidence?.live).length;
+const ladderCount = quantified.filter((r) => r.evidence?.ladder).length;
 
 if (violations.length) {
   console.error(`❌ percent-evidence: ${violations.length} violation(s) — a published % must carry evidence.\n`);
@@ -201,6 +210,6 @@ if (stale.length) {
   process.exit(1);
 }
 
-console.log(`✅ percent-evidence: ${quantified.length} quantified rows — ${live} live · 0 ladder · ${assertedSeen.size} asserted (declared debt, ratchet holds).`);
+console.log(`✅ percent-evidence: ${quantified.length} quantified rows — ${live} live · ${ladderCount} ladder · ${assertedSeen.size} asserted (declared debt, ratchet holds).`);
 console.log(`   The ${assertedSeen.size} asserted rows are HAND-TYPED, not measured. They are labelled as such in every render.`);
 console.log(`   Ratchet: no NEW bare pct can be published, and a row that earns evidence can never return to the baseline.`);

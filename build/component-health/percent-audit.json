@@ -3,7 +3,7 @@
   "provenance": {
     "available": true,
     "branch": "main",
-    "sha": "a1d2b340",
+    "sha": "19af3698",
     "detached": false,
     "dirty": true
   },
@@ -122,11 +122,41 @@
         },
         {
           "label": "Type checker / Effect checker",
-          "pct": 90,
+          "pct": 97,
           "status": null,
           "live": false,
           "evidence": {
-            "asserted": "candidate ladder = twin diagnostic-code parity (emit + name + severity), which IS mechanically checked today"
+            "ladder": [
+              "FUNGI-EFFECT-001",
+              "FUNGI-EFFECT-002",
+              "FUNGI-EFFECT-003",
+              "FUNGI-EFFECT-004",
+              "FUNGI-EFFECT-005",
+              "FUNGI-EFFECT-006",
+              "FUNGI-EFFECT-007",
+              "FUNGI-EFFECT-008",
+              "FUNGI-EFFECT-009",
+              "FUNGI-TYPE-001",
+              "FUNGI-TYPE-002",
+              "FUNGI-TYPE-003",
+              "FUNGI-TYPE-004",
+              "FUNGI-TYPE-005",
+              "FUNGI-TYPE-007",
+              "FUNGI-TYPE-008",
+              "FUNGI-TYPE-009",
+              "FUNGI-TYPE-011",
+              "FUNGI-TYPE-014",
+              "FUNGI-TYPE-016",
+              "FUNGI-TYPE-017",
+              "FUNGI-TYPE-020",
+              "FUNGI-TYPE-022",
+              "FUNGI-TYPE-023",
+              "FUNGI-TYPE-024",
+              "FUNGI-TYPE-025",
+              "FUNGI-TYPE-026",
+              "FUNGI-TYPE-030",
+              "FUNGI-TYPE-032"
+            ]
           }
         },
         {
