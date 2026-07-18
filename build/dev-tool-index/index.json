@@ -4,7 +4,7 @@
     "packages": 96,
     "testBearing": 95,
     "tests": 7448,
-    "devTools": 94,
+    "devTools": 95,
     "auditTools": 55,
     "toolsInCadence": 33,
     "proofs": 40
@@ -2149,6 +2149,20 @@
       ]
     },
     {
+      "name": "gather-t1-twin-hashes.mjs",
+      "category": "util",
+      "purpose": "RD-0361 R4 evidence-pack producer, item (d).",
+      "selfTest": false,
+      "inCadence": false,
+      "concerns": [
+        "effects",
+        "signing/fusion",
+        "governance",
+        "diagnostics",
+        "graph/index"
+      ]
+    },
+    {
       "name": "generate-sbom.mjs",
       "category": "util",
       "purpose": "deterministic source SBOM for the REAL npm/lockfile graph (RD-0317 §1).",
@@ -2388,6 +2402,7 @@
       "brand-audit.mjs",
       "build-core-chain.mjs",
       "emit-doc-wat.mjs",
+      "gather-t1-twin-hashes.mjs",
       "generate-sbom.mjs",
       "hardening-show-derived.mjs",
       "migrate-fungi.mjs",
@@ -2458,6 +2473,7 @@
       "build-core-chain.mjs",
       "check-gate-injection.mjs",
       "emit-doc-wat.mjs",
+      "gather-t1-twin-hashes.mjs",
       "generate-sbom.mjs",
       "hardening-show-derived.mjs",
       "mark-core-change.cjs",
@@ -2526,6 +2542,7 @@
       "build-core-chain.mjs",
       "check-gate-injection.mjs",
       "emit-doc-wat.mjs",
+      "gather-t1-twin-hashes.mjs",
       "generate-sbom.mjs",
       "hardening-show-derived.mjs",
       "migrate-fungi.mjs",
@@ -2636,6 +2653,7 @@
       "gen-contract-registry.mjs",
       "registry-index-cli.mjs",
       "lint-fungi.mjs",
+      "gather-t1-twin-hashes.mjs",
       "hardening-show-derived.mjs",
       "license-rollout.mjs",
       "rebuild-fusable-packages.mjs",
@@ -2719,6 +2737,7 @@
       "gen-contract-registry.mjs",
       "kb-index.mjs",
       "emit-doc-wat.mjs",
+      "gather-t1-twin-hashes.mjs",
       "hardening-show-derived.mjs"
     ],
     "teaching-corpus": [

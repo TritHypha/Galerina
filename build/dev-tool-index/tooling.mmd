@@ -481,6 +481,12 @@ flowchart LR
   T_emit_doc_wat_mjs --> C_graph_index
   T_fungi_astshape_mjs["fungi-astshape.mjs"]
   T_fungi_astshape_mjs --> C_secrets_privacy
+  T_gather_t1_twin_hashes_mjs["gather-t1-twin-hashes.mjs"]
+  T_gather_t1_twin_hashes_mjs --> C_effects
+  T_gather_t1_twin_hashes_mjs --> C_signing_fusion
+  T_gather_t1_twin_hashes_mjs --> C_governance
+  T_gather_t1_twin_hashes_mjs --> C_diagnostics
+  T_gather_t1_twin_hashes_mjs --> C_graph_index
   T_generate_sbom_mjs["generate-sbom.mjs"]
   T_generate_sbom_mjs --> C_sinks_taint
   T_generate_sbom_mjs --> C_signing_fusion
