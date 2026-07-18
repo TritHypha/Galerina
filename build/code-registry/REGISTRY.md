@@ -141,11 +141,11 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-BOOL-BOUNDARY-001 | live | — | — |
-| FUNGI-BOOL-BOUNDARY-002 | live | — | — |
-| FUNGI-BOOL-BOUNDARY-003 | live | — | — |
-| FUNGI-BOOL-BOUNDARY-004 | live | — | — |
-| FUNGI-BOOL-BOUNDARY-005 | live | — | — |
+| FUNGI-BOOL-BOUNDARY-001 | live | FAILED_CLOSED | error |
+| FUNGI-BOOL-BOUNDARY-002 | live | UNKNOWN_REASON | info |
+| FUNGI-BOOL-BOUNDARY-003 | live | INVALID_INPUT | error |
+| FUNGI-BOOL-BOUNDARY-004 | live | MISSING_BOUNDARY_NAME | error |
+| FUNGI-BOOL-BOUNDARY-005 | live | RESULT_MISUSED | error |
 
 ### BORDER (5)
 
@@ -322,11 +322,11 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-DECISION-001 | live | — | — |
-| FUNGI-DECISION-002 | live | — | — |
-| FUNGI-DECISION-003 | live | — | — |
-| FUNGI-DECISION-004 | live | — | — |
-| FUNGI-DECISION-005 | live | — | — |
+| FUNGI-DECISION-001 | live | INVALID_DECISION | error |
+| FUNGI-DECISION-002 | live | EMPTY_REASON | error |
+| FUNGI-DECISION-003 | live | EMPTY_UNKNOWN_REASONS | error |
+| FUNGI-DECISION-004 | live | FAILED_CLOSED | error |
+| FUNGI-DECISION-005 | live | EMPTY_COMBINE | warning |
 
 ### DENIAL (2)
 
@@ -587,7 +587,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-GOV-021 | inline | DOMAIN_GUARD_NOT_FOUND | — |
 | FUNGI-GOV-022 | inline | DOMAIN_GUARD_POLICY_VIOLATION | — |
 | FUNGI-GOV-023 | inline | PHYSICAL_HARDENING_ON_LOW_RISK_FLOW | — |
-| FUNGI-GOV-3VL-001 | live | INDETERMINATE_COLLAPSED_TO_DENY | — |
+| FUNGI-GOV-3VL-001 | live | INDETERMINATE_COLLAPSED_TO_DENY | warning |
 | FUNGI-GOV-3VL-003 | inline | WILDCARD_OVER_DENY_ON_VERDICT_MATCH | — |
 | FUNGI-GOV-3VL-004 | inline | ORDERED_COMPARISON_ON_VERDICT | — |
 | FUNGI-GOV-TPL-001 | inline | — | — |
@@ -848,11 +848,11 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-OMNI-001 | live | — | — |
-| FUNGI-OMNI-002 | live | — | — |
-| FUNGI-OMNI-003 | live | — | — |
-| FUNGI-OMNI-004 | live | — | — |
-| FUNGI-OMNI-005 | live | — | — |
+| FUNGI-OMNI-001 | live | DIRECT_BOUNDARY_USE | error |
+| FUNGI-OMNI-002 | live | ADVISORY_ONLY_VIOLATED | error |
+| FUNGI-OMNI-003 | live | CONFIDENCE_OUT_OF_RANGE | error |
+| FUNGI-OMNI-004 | live | MALFORMED_EVIDENCE | error |
+| FUNGI-OMNI-005 | live | INVALID_STATE | error |
 
 ### PARSE (4)
 
@@ -1273,11 +1273,11 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-TRI-001 | live | — | — |
-| FUNGI-TRI-002 | live | — | — |
-| FUNGI-TRI-003 | live | — | — |
-| FUNGI-TRI-004 | live | — | — |
-| FUNGI-TRI-005 | live | — | — |
+| FUNGI-TRI-001 | live | INVALID_TRISTATE | error |
+| FUNGI-TRI-002 | live | EMPTY_UNKNOWN_REASONS | error |
+| FUNGI-TRI-003 | live | INVALID_OPERAND | error |
+| FUNGI-TRI-004 | live | UNKNOWN_LEAKED | error |
+| FUNGI-TRI-005 | live | MALFORMED_UNKNOWN_REASON | error |
 
 ### TYPE (32)
 
@@ -1356,11 +1356,11 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-VAULT-001 | live | — | — |
-| FUNGI-VAULT-002 | live | — | — |
-| FUNGI-VAULT-003 | live | — | — |
-| FUNGI-VAULT-004 | live | — | — |
-| FUNGI-VAULT-005 | live | — | — |
+| FUNGI-VAULT-001 | live | — | error |
+| FUNGI-VAULT-002 | live | — | error |
+| FUNGI-VAULT-003 | live | — | error |
+| FUNGI-VAULT-004 | live | — | error |
+| FUNGI-VAULT-005 | live | — | error |
 
 ### VER (1)
 

@@ -100,7 +100,17 @@ for (const file of FILES) {
       const win = line.slice(cs) + " " + lines.slice(i + 1, Math.min(i + 5, lines.length)).join(" ");
       for (const mm of win.matchAll(/\b([A-Za-z_]\w*)(?:\.(?:code|name|severity))?\b/g)) {
         const cc = constToCode.get(mm[1]);
-        if (cc) { get(cc).occ.push({ file: rel, line: i + 1, role: isDoc ? "doc" : isTest ? "test" : "emit" }); break; }
+        if (cc) {
+          const e = get(cc);
+          e.occ.push({ file: rel, line: i + 1, role: isDoc ? "doc" : isTest ? "test" : "emit" });
+          // #125: a `create*Diagnostic(CONST, "NAME", "severity", …)` POSITIONAL call names its code by a
+          // const (resolved here) and its severity by a bare string literal — capture the FIRST severity
+          // token from the call window (a closed vocabulary error|warning|info, so unambiguous, and it
+          // precedes the message) so a positional-const emit like the VAULT/PRIVACY diagnostics is not
+          // recorded live-but-blank-severity.
+          if (!isDoc && !isTest) { const sv = win.match(/"(error|warning|info)"/); if (sv) e.sevs.add(sv[1]); }
+          break;
+        }
       }
     }
     // const-identifier emit/use: `code: FUNGI_FOO_001_BAR` / `errorCode: ERR_X` — id ≠ hyphenated code string,
@@ -109,7 +119,22 @@ for (const file of FILES) {
     if (!isComment && !isTypeDecl) {
       for (const m of line.matchAll(/\b(?:code|errorCode):\s*([A-Za-z_]\w*)/g)) {
         const cc = constToCode.get(m[1]);
-        if (cc) get(cc).occ.push({ file: rel, line: i + 1, role: isDoc ? "doc" : isTest ? "test" : "emit" });
+        if (!cc) continue;
+        const e = get(cc);
+        e.occ.push({ file: rel, line: i + 1, role: isDoc ? "doc" : isTest ? "test" : "emit" });
+        // #125 severity-capture: the code on THIS line is a CONST identifier, so extractCodes(line) is
+        // empty and the name/severity window below (gated on a hyphenated literal) never runs for it. A
+        // multi-line `{ code: FUNGI_X_CONST, name: "…", severity: "…" }` diagnostic would then register
+        // LIVE but with a BLANK severity (the registry severity-capture gap: 27 FUNGI-* codes). Capture
+        // name/severity here from the SAME object, bounded at the object close (`}`) or the next `code:`
+        // field so it can never bleed into the following diagnostic object.
+        if (!isDoc && !isTest) {
+          for (let j = i; j < Math.min(i + 10, lines.length); j++) {
+            if (j > i && (/^\s*\}/.test(lines[j]) || /\b(?:code|errorCode):/.test(lines[j]))) break;
+            const nm = lines[j].match(/name:\s*"([^"]+)"/); if (nm) e.names.add(nm[1]);
+            const sv = lines[j].match(/severity:\s*"([^"]+)"/); if (sv) e.sevs.add(sv[1]);
+          }
+        }
       }
     }
     const codes = extractCodes(line);

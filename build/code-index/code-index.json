@@ -1855,7 +1855,7 @@
     "severities": [],
     "allSites": [
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:1664",
-      "ref scripts/code-index.mjs:106",
+      "ref scripts/code-index.mjs:116",
       "test scripts/tests/codes.test.mjs:45"
     ]
   },
@@ -3130,8 +3130,12 @@
     "tests": 2,
     "refs": 1,
     "docs": 3,
-    "names": [],
-    "severities": [],
+    "names": [
+      "FAILED_CLOSED"
+    ],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "doc packages-galerina/galerina-core-logic/README.md:370",
       "ref packages-galerina/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:11",
@@ -3159,8 +3163,12 @@
     "tests": 1,
     "refs": 1,
     "docs": 0,
-    "names": [],
-    "severities": [],
+    "names": [
+      "UNKNOWN_REASON"
+    ],
+    "severities": [
+      "info"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:14",
       "def packages-galerina/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:15",
@@ -3183,8 +3191,12 @@
     "tests": 1,
     "refs": 1,
     "docs": 0,
-    "names": [],
-    "severities": [],
+    "names": [
+      "INVALID_INPUT"
+    ],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:17",
       "def packages-galerina/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:18",
@@ -3207,8 +3219,12 @@
     "tests": 1,
     "refs": 1,
     "docs": 0,
-    "names": [],
-    "severities": [],
+    "names": [
+      "MISSING_BOUNDARY_NAME"
+    ],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:20",
       "def packages-galerina/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:21",
@@ -3231,8 +3247,12 @@
     "tests": 1,
     "refs": 1,
     "docs": 2,
-    "names": [],
-    "severities": [],
+    "names": [
+      "RESULT_MISUSED"
+    ],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "doc packages-galerina/galerina-core-logic/README.md:370",
       "ref packages-galerina/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:23",
@@ -5007,8 +5027,12 @@
     "tests": 1,
     "refs": 1,
     "docs": 3,
-    "names": [],
-    "severities": [],
+    "names": [
+      "INVALID_DECISION"
+    ],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "doc packages-galerina/galerina-core-logic/README.md:364",
       "ref packages-galerina/galerina-core-logic/src/decision/decision-diagnostics.ts:11",
@@ -5034,8 +5058,12 @@
     "tests": 1,
     "refs": 1,
     "docs": 0,
-    "names": [],
-    "severities": [],
+    "names": [
+      "EMPTY_REASON"
+    ],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-logic/src/decision/decision-diagnostics.ts:14",
       "def packages-galerina/galerina-core-logic/src/decision/decision-diagnostics.ts:15",
@@ -5058,8 +5086,12 @@
     "tests": 1,
     "refs": 1,
     "docs": 0,
-    "names": [],
-    "severities": [],
+    "names": [
+      "EMPTY_UNKNOWN_REASONS"
+    ],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-logic/src/decision/decision-diagnostics.ts:17",
       "def packages-galerina/galerina-core-logic/src/decision/decision-diagnostics.ts:18",
@@ -5082,8 +5114,12 @@
     "tests": 1,
     "refs": 1,
     "docs": 0,
-    "names": [],
-    "severities": [],
+    "names": [
+      "FAILED_CLOSED"
+    ],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-logic/src/decision/decision-diagnostics.ts:20",
       "def packages-galerina/galerina-core-logic/src/decision/decision-diagnostics.ts:21",
@@ -5106,8 +5142,12 @@
     "tests": 1,
     "refs": 1,
     "docs": 2,
-    "names": [],
-    "severities": [],
+    "names": [
+      "EMPTY_COMBINE"
+    ],
+    "severities": [
+      "warning"
+    ],
     "allSites": [
       "doc packages-galerina/galerina-core-logic/README.md:364",
       "ref packages-galerina/galerina-core-logic/src/decision/decision-diagnostics.ts:23",
@@ -8077,7 +8117,9 @@
     "names": [
       "INDETERMINATE_COLLAPSED_TO_DENY"
     ],
-    "severities": [],
+    "severities": [
+      "warning"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-auth/src/channel.ts:63",
       "ref packages-galerina/galerina-auth/src/compose.ts:50",
@@ -10668,7 +10710,7 @@
       "doc docs/COVERAGE.md:433",
       "ref scripts/audit-production-blockers.mjs:5",
       "emit scripts/audit-twin-emit-parity.mjs:175",
-      "ref scripts/code-index.mjs:123",
+      "ref scripts/code-index.mjs:148",
       "ref scripts/lint-conventions.mjs:67"
     ]
   },
@@ -11907,8 +11949,12 @@
     "tests": 1,
     "refs": 1,
     "docs": 4,
-    "names": [],
-    "severities": [],
+    "names": [
+      "DIRECT_BOUNDARY_USE"
+    ],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "doc packages-galerina/galerina-core-logic/README.md:376",
       "ref packages-galerina/galerina-core-logic/src/omni/omni-diagnostics.ts:11",
@@ -11935,8 +11981,12 @@
     "tests": 1,
     "refs": 1,
     "docs": 1,
-    "names": [],
-    "severities": [],
+    "names": [
+      "ADVISORY_ONLY_VIOLATED"
+    ],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-logic/src/omni/omni-diagnostics.ts:14",
       "def packages-galerina/galerina-core-logic/src/omni/omni-diagnostics.ts:15",
@@ -11960,8 +12010,12 @@
     "tests": 1,
     "refs": 1,
     "docs": 1,
-    "names": [],
-    "severities": [],
+    "names": [
+      "CONFIDENCE_OUT_OF_RANGE"
+    ],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-logic/src/omni/omni-diagnostics.ts:17",
       "def packages-galerina/galerina-core-logic/src/omni/omni-diagnostics.ts:18",
@@ -11985,8 +12039,12 @@
     "tests": 1,
     "refs": 1,
     "docs": 1,
-    "names": [],
-    "severities": [],
+    "names": [
+      "MALFORMED_EVIDENCE"
+    ],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-logic/src/omni/omni-diagnostics.ts:20",
       "def packages-galerina/galerina-core-logic/src/omni/omni-diagnostics.ts:21",
@@ -12010,8 +12068,12 @@
     "tests": 1,
     "refs": 1,
     "docs": 3,
-    "names": [],
-    "severities": [],
+    "names": [
+      "INVALID_STATE"
+    ],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "doc packages-galerina/galerina-core-logic/README.md:376",
       "ref packages-galerina/galerina-core-logic/src/omni/omni-diagnostics.ts:23",
@@ -17552,8 +17614,12 @@
     "tests": 1,
     "refs": 1,
     "docs": 3,
-    "names": [],
-    "severities": [],
+    "names": [
+      "INVALID_TRISTATE"
+    ],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "doc packages-galerina/galerina-core-logic/README.md:358",
       "ref packages-galerina/galerina-core-logic/src/tri/tri-diagnostics.ts:11",
@@ -17579,8 +17645,12 @@
     "tests": 1,
     "refs": 1,
     "docs": 0,
-    "names": [],
-    "severities": [],
+    "names": [
+      "EMPTY_UNKNOWN_REASONS"
+    ],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-logic/src/tri/tri-diagnostics.ts:14",
       "def packages-galerina/galerina-core-logic/src/tri/tri-diagnostics.ts:15",
@@ -17603,8 +17673,12 @@
     "tests": 1,
     "refs": 1,
     "docs": 0,
-    "names": [],
-    "severities": [],
+    "names": [
+      "INVALID_OPERAND"
+    ],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-logic/src/tri/tri-diagnostics.ts:17",
       "def packages-galerina/galerina-core-logic/src/tri/tri-diagnostics.ts:18",
@@ -17627,8 +17701,12 @@
     "tests": 1,
     "refs": 1,
     "docs": 0,
-    "names": [],
-    "severities": [],
+    "names": [
+      "UNKNOWN_LEAKED"
+    ],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-logic/src/tri/tri-diagnostics.ts:20",
       "def packages-galerina/galerina-core-logic/src/tri/tri-diagnostics.ts:21",
@@ -17651,8 +17729,12 @@
     "tests": 1,
     "refs": 1,
     "docs": 2,
-    "names": [],
-    "severities": [],
+    "names": [
+      "MALFORMED_UNKNOWN_REASON"
+    ],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "doc packages-galerina/galerina-core-logic/README.md:358",
       "ref packages-galerina/galerina-core-logic/src/tri/tri-diagnostics.ts:23",
@@ -20933,7 +21015,9 @@
     "refs": 2,
     "docs": 3,
     "names": [],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-config/src/index.ts:1279",
       "ref packages-galerina/galerina-core-config/src/index.ts:1313",
@@ -20961,7 +21045,9 @@
     "refs": 1,
     "docs": 0,
     "names": [],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-config/src/index.ts:1315",
       "def packages-galerina/galerina-core-config/src/index.ts:1316",
@@ -20985,7 +21071,9 @@
     "refs": 1,
     "docs": 0,
     "names": [],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-config/src/index.ts:1317",
       "def packages-galerina/galerina-core-config/src/index.ts:1318",
@@ -21009,7 +21097,9 @@
     "refs": 1,
     "docs": 0,
     "names": [],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-config/src/index.ts:1319",
       "def packages-galerina/galerina-core-config/src/index.ts:1320",
@@ -21033,7 +21123,9 @@
     "refs": 1,
     "docs": 1,
     "names": [],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-config/src/index.ts:1321",
       "def packages-galerina/galerina-core-config/src/index.ts:1322",

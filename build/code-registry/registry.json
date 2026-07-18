@@ -1721,8 +1721,12 @@
       "family": "BOOL",
       "namespace": "FUNGI",
       "status": "live",
-      "names": [],
-      "severities": [],
+      "names": [
+        "FAILED_CLOSED"
+      ],
+      "severities": [
+        "error"
+      ],
       "defs": 1,
       "emits": 2,
       "tests": 2,
@@ -1733,8 +1737,12 @@
       "family": "BOOL",
       "namespace": "FUNGI",
       "status": "live",
-      "names": [],
-      "severities": [],
+      "names": [
+        "UNKNOWN_REASON"
+      ],
+      "severities": [
+        "info"
+      ],
       "defs": 1,
       "emits": 1,
       "tests": 1,
@@ -1745,8 +1753,12 @@
       "family": "BOOL",
       "namespace": "FUNGI",
       "status": "live",
-      "names": [],
-      "severities": [],
+      "names": [
+        "INVALID_INPUT"
+      ],
+      "severities": [
+        "error"
+      ],
       "defs": 1,
       "emits": 1,
       "tests": 1,
@@ -1757,8 +1769,12 @@
       "family": "BOOL",
       "namespace": "FUNGI",
       "status": "live",
-      "names": [],
-      "severities": [],
+      "names": [
+        "MISSING_BOUNDARY_NAME"
+      ],
+      "severities": [
+        "error"
+      ],
       "defs": 1,
       "emits": 1,
       "tests": 1,
@@ -1769,8 +1785,12 @@
       "family": "BOOL",
       "namespace": "FUNGI",
       "status": "live",
-      "names": [],
-      "severities": [],
+      "names": [
+        "RESULT_MISUSED"
+      ],
+      "severities": [
+        "error"
+      ],
       "defs": 1,
       "emits": 1,
       "tests": 1,
@@ -2823,8 +2843,12 @@
       "family": "DECISION",
       "namespace": "FUNGI",
       "status": "live",
-      "names": [],
-      "severities": [],
+      "names": [
+        "INVALID_DECISION"
+      ],
+      "severities": [
+        "error"
+      ],
       "defs": 1,
       "emits": 1,
       "tests": 1,
@@ -2835,8 +2859,12 @@
       "family": "DECISION",
       "namespace": "FUNGI",
       "status": "live",
-      "names": [],
-      "severities": [],
+      "names": [
+        "EMPTY_REASON"
+      ],
+      "severities": [
+        "error"
+      ],
       "defs": 1,
       "emits": 1,
       "tests": 1,
@@ -2847,8 +2875,12 @@
       "family": "DECISION",
       "namespace": "FUNGI",
       "status": "live",
-      "names": [],
-      "severities": [],
+      "names": [
+        "EMPTY_UNKNOWN_REASONS"
+      ],
+      "severities": [
+        "error"
+      ],
       "defs": 1,
       "emits": 1,
       "tests": 1,
@@ -2859,8 +2891,12 @@
       "family": "DECISION",
       "namespace": "FUNGI",
       "status": "live",
-      "names": [],
-      "severities": [],
+      "names": [
+        "FAILED_CLOSED"
+      ],
+      "severities": [
+        "error"
+      ],
       "defs": 1,
       "emits": 1,
       "tests": 1,
@@ -2871,8 +2907,12 @@
       "family": "DECISION",
       "namespace": "FUNGI",
       "status": "live",
-      "names": [],
-      "severities": [],
+      "names": [
+        "EMPTY_COMBINE"
+      ],
+      "severities": [
+        "warning"
+      ],
       "defs": 1,
       "emits": 1,
       "tests": 1,
@@ -3879,7 +3919,9 @@
       "names": [
         "INDETERMINATE_COLLAPSED_TO_DENY"
       ],
-      "severities": [],
+      "severities": [
+        "warning"
+      ],
       "defs": 1,
       "emits": 1,
       "tests": 36,
@@ -5646,8 +5688,12 @@
       "family": "OMNI",
       "namespace": "FUNGI",
       "status": "live",
-      "names": [],
-      "severities": [],
+      "names": [
+        "DIRECT_BOUNDARY_USE"
+      ],
+      "severities": [
+        "error"
+      ],
       "defs": 1,
       "emits": 1,
       "tests": 1,
@@ -5658,8 +5704,12 @@
       "family": "OMNI",
       "namespace": "FUNGI",
       "status": "live",
-      "names": [],
-      "severities": [],
+      "names": [
+        "ADVISORY_ONLY_VIOLATED"
+      ],
+      "severities": [
+        "error"
+      ],
       "defs": 1,
       "emits": 1,
       "tests": 1,
@@ -5670,8 +5720,12 @@
       "family": "OMNI",
       "namespace": "FUNGI",
       "status": "live",
-      "names": [],
-      "severities": [],
+      "names": [
+        "CONFIDENCE_OUT_OF_RANGE"
+      ],
+      "severities": [
+        "error"
+      ],
       "defs": 1,
       "emits": 1,
       "tests": 1,
@@ -5682,8 +5736,12 @@
       "family": "OMNI",
       "namespace": "FUNGI",
       "status": "live",
-      "names": [],
-      "severities": [],
+      "names": [
+        "MALFORMED_EVIDENCE"
+      ],
+      "severities": [
+        "error"
+      ],
       "defs": 1,
       "emits": 1,
       "tests": 1,
@@ -5694,8 +5752,12 @@
       "family": "OMNI",
       "namespace": "FUNGI",
       "status": "live",
-      "names": [],
-      "severities": [],
+      "names": [
+        "INVALID_STATE"
+      ],
+      "severities": [
+        "error"
+      ],
       "defs": 1,
       "emits": 1,
       "tests": 1,
@@ -8155,8 +8217,12 @@
       "family": "TRI",
       "namespace": "FUNGI",
       "status": "live",
-      "names": [],
-      "severities": [],
+      "names": [
+        "INVALID_TRISTATE"
+      ],
+      "severities": [
+        "error"
+      ],
       "defs": 1,
       "emits": 1,
       "tests": 1,
@@ -8167,8 +8233,12 @@
       "family": "TRI",
       "namespace": "FUNGI",
       "status": "live",
-      "names": [],
-      "severities": [],
+      "names": [
+        "EMPTY_UNKNOWN_REASONS"
+      ],
+      "severities": [
+        "error"
+      ],
       "defs": 1,
       "emits": 1,
       "tests": 1,
@@ -8179,8 +8249,12 @@
       "family": "TRI",
       "namespace": "FUNGI",
       "status": "live",
-      "names": [],
-      "severities": [],
+      "names": [
+        "INVALID_OPERAND"
+      ],
+      "severities": [
+        "error"
+      ],
       "defs": 1,
       "emits": 1,
       "tests": 1,
@@ -8191,8 +8265,12 @@
       "family": "TRI",
       "namespace": "FUNGI",
       "status": "live",
-      "names": [],
-      "severities": [],
+      "names": [
+        "UNKNOWN_LEAKED"
+      ],
+      "severities": [
+        "error"
+      ],
       "defs": 1,
       "emits": 1,
       "tests": 1,
@@ -8203,8 +8281,12 @@
       "family": "TRI",
       "namespace": "FUNGI",
       "status": "live",
-      "names": [],
-      "severities": [],
+      "names": [
+        "MALFORMED_UNKNOWN_REASON"
+      ],
+      "severities": [
+        "error"
+      ],
       "defs": 1,
       "emits": 1,
       "tests": 1,
@@ -8975,7 +9057,9 @@
       "namespace": "FUNGI",
       "status": "live",
       "names": [],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 1,
       "emits": 1,
       "tests": 1,
@@ -8987,7 +9071,9 @@
       "namespace": "FUNGI",
       "status": "live",
       "names": [],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 1,
       "emits": 1,
       "tests": 1,
@@ -8999,7 +9085,9 @@
       "namespace": "FUNGI",
       "status": "live",
       "names": [],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 1,
       "emits": 1,
       "tests": 1,
@@ -9011,7 +9099,9 @@
       "namespace": "FUNGI",
       "status": "live",
       "names": [],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 1,
       "emits": 1,
       "tests": 1,
@@ -9023,7 +9113,9 @@
       "namespace": "FUNGI",
       "status": "live",
       "names": [],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 1,
       "emits": 1,
       "tests": 1,

@@ -116,11 +116,11 @@ Query this instead of grepping. Regenerate: `node scripts/code-index.mjs`.
 
 | code | name(s) | severity | def | emit | test | doc |
 |---|---|---|---|---|---|---|
-| FUNGI-BOOL-BOUNDARY-001 | — | — | packages-galerina/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:12 | 2 | 2 | 3 |
-| FUNGI-BOOL-BOUNDARY-002 | — | — | packages-galerina/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:15 | 1 | 1 | 0 |
-| FUNGI-BOOL-BOUNDARY-003 | — | — | packages-galerina/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:18 | 1 | 1 | 0 |
-| FUNGI-BOOL-BOUNDARY-004 | — | — | packages-galerina/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:21 | 1 | 1 | 0 |
-| FUNGI-BOOL-BOUNDARY-005 | — | — | packages-galerina/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:24 | 1 | 1 | 2 |
+| FUNGI-BOOL-BOUNDARY-001 | FAILED_CLOSED | error | packages-galerina/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:12 | 2 | 2 | 3 |
+| FUNGI-BOOL-BOUNDARY-002 | UNKNOWN_REASON | info | packages-galerina/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:15 | 1 | 1 | 0 |
+| FUNGI-BOOL-BOUNDARY-003 | INVALID_INPUT | error | packages-galerina/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:18 | 1 | 1 | 0 |
+| FUNGI-BOOL-BOUNDARY-004 | MISSING_BOUNDARY_NAME | error | packages-galerina/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:21 | 1 | 1 | 0 |
+| FUNGI-BOOL-BOUNDARY-005 | RESULT_MISUSED | error | packages-galerina/galerina-core-logic/src/bool-boundary/bool-diagnostics.ts:24 | 1 | 1 | 2 |
 
 ## BORDER (5)
 
@@ -297,11 +297,11 @@ Query this instead of grepping. Regenerate: `node scripts/code-index.mjs`.
 
 | code | name(s) | severity | def | emit | test | doc |
 |---|---|---|---|---|---|---|
-| FUNGI-DECISION-001 | — | — | packages-galerina/galerina-core-logic/src/decision/decision-diagnostics.ts:12 | 1 | 1 | 3 |
-| FUNGI-DECISION-002 | — | — | packages-galerina/galerina-core-logic/src/decision/decision-diagnostics.ts:15 | 1 | 1 | 0 |
-| FUNGI-DECISION-003 | — | — | packages-galerina/galerina-core-logic/src/decision/decision-diagnostics.ts:18 | 1 | 1 | 0 |
-| FUNGI-DECISION-004 | — | — | packages-galerina/galerina-core-logic/src/decision/decision-diagnostics.ts:21 | 1 | 1 | 0 |
-| FUNGI-DECISION-005 | — | — | packages-galerina/galerina-core-logic/src/decision/decision-diagnostics.ts:24 | 1 | 1 | 2 |
+| FUNGI-DECISION-001 | INVALID_DECISION | error | packages-galerina/galerina-core-logic/src/decision/decision-diagnostics.ts:12 | 1 | 1 | 3 |
+| FUNGI-DECISION-002 | EMPTY_REASON | error | packages-galerina/galerina-core-logic/src/decision/decision-diagnostics.ts:15 | 1 | 1 | 0 |
+| FUNGI-DECISION-003 | EMPTY_UNKNOWN_REASONS | error | packages-galerina/galerina-core-logic/src/decision/decision-diagnostics.ts:18 | 1 | 1 | 0 |
+| FUNGI-DECISION-004 | FAILED_CLOSED | error | packages-galerina/galerina-core-logic/src/decision/decision-diagnostics.ts:21 | 1 | 1 | 0 |
+| FUNGI-DECISION-005 | EMPTY_COMBINE | warning | packages-galerina/galerina-core-logic/src/decision/decision-diagnostics.ts:24 | 1 | 1 | 2 |
 
 ## DENIAL (2)
 
@@ -562,7 +562,7 @@ Query this instead of grepping. Regenerate: `node scripts/code-index.mjs`.
 | FUNGI-GOV-021 | DOMAIN_GUARD_NOT_FOUND | — | — | 1 | 4 | 0 |
 | FUNGI-GOV-022 | DOMAIN_GUARD_POLICY_VIOLATION | — | — | 1 | 28 | 0 |
 | FUNGI-GOV-023 | PHYSICAL_HARDENING_ON_LOW_RISK_FLOW | — | — | 1 | 3 | 0 |
-| FUNGI-GOV-3VL-001 | INDETERMINATE_COLLAPSED_TO_DENY | — | packages-galerina/galerina-tower-citizen/src/three-valued-governance.ts:102 | 1 | 36 | 11 |
+| FUNGI-GOV-3VL-001 | INDETERMINATE_COLLAPSED_TO_DENY | warning | packages-galerina/galerina-tower-citizen/src/three-valued-governance.ts:102 | 1 | 36 | 11 |
 | FUNGI-GOV-3VL-003 | WILDCARD_OVER_DENY_ON_VERDICT_MATCH | — | — | 1 | 9 | 0 |
 | FUNGI-GOV-3VL-004 | ORDERED_COMPARISON_ON_VERDICT | — | — | 1 | 6 | 1 |
 | FUNGI-GOV-TPL-001 | — | — | — | 1 | 1 | 1 |
@@ -823,11 +823,11 @@ Query this instead of grepping. Regenerate: `node scripts/code-index.mjs`.
 
 | code | name(s) | severity | def | emit | test | doc |
 |---|---|---|---|---|---|---|
-| FUNGI-OMNI-001 | — | — | packages-galerina/galerina-core-logic/src/omni/omni-diagnostics.ts:12 | 1 | 1 | 4 |
-| FUNGI-OMNI-002 | — | — | packages-galerina/galerina-core-logic/src/omni/omni-diagnostics.ts:15 | 1 | 1 | 1 |
-| FUNGI-OMNI-003 | — | — | packages-galerina/galerina-core-logic/src/omni/omni-diagnostics.ts:18 | 1 | 1 | 1 |
-| FUNGI-OMNI-004 | — | — | packages-galerina/galerina-core-logic/src/omni/omni-diagnostics.ts:21 | 1 | 1 | 1 |
-| FUNGI-OMNI-005 | — | — | packages-galerina/galerina-core-logic/src/omni/omni-diagnostics.ts:24 | 1 | 1 | 3 |
+| FUNGI-OMNI-001 | DIRECT_BOUNDARY_USE | error | packages-galerina/galerina-core-logic/src/omni/omni-diagnostics.ts:12 | 1 | 1 | 4 |
+| FUNGI-OMNI-002 | ADVISORY_ONLY_VIOLATED | error | packages-galerina/galerina-core-logic/src/omni/omni-diagnostics.ts:15 | 1 | 1 | 1 |
+| FUNGI-OMNI-003 | CONFIDENCE_OUT_OF_RANGE | error | packages-galerina/galerina-core-logic/src/omni/omni-diagnostics.ts:18 | 1 | 1 | 1 |
+| FUNGI-OMNI-004 | MALFORMED_EVIDENCE | error | packages-galerina/galerina-core-logic/src/omni/omni-diagnostics.ts:21 | 1 | 1 | 1 |
+| FUNGI-OMNI-005 | INVALID_STATE | error | packages-galerina/galerina-core-logic/src/omni/omni-diagnostics.ts:24 | 1 | 1 | 3 |
 
 ## PARSE (4)
 
@@ -1248,11 +1248,11 @@ Query this instead of grepping. Regenerate: `node scripts/code-index.mjs`.
 
 | code | name(s) | severity | def | emit | test | doc |
 |---|---|---|---|---|---|---|
-| FUNGI-TRI-001 | — | — | packages-galerina/galerina-core-logic/src/tri/tri-diagnostics.ts:12 | 1 | 1 | 3 |
-| FUNGI-TRI-002 | — | — | packages-galerina/galerina-core-logic/src/tri/tri-diagnostics.ts:15 | 1 | 1 | 0 |
-| FUNGI-TRI-003 | — | — | packages-galerina/galerina-core-logic/src/tri/tri-diagnostics.ts:18 | 1 | 1 | 0 |
-| FUNGI-TRI-004 | — | — | packages-galerina/galerina-core-logic/src/tri/tri-diagnostics.ts:21 | 1 | 1 | 0 |
-| FUNGI-TRI-005 | — | — | packages-galerina/galerina-core-logic/src/tri/tri-diagnostics.ts:24 | 1 | 1 | 2 |
+| FUNGI-TRI-001 | INVALID_TRISTATE | error | packages-galerina/galerina-core-logic/src/tri/tri-diagnostics.ts:12 | 1 | 1 | 3 |
+| FUNGI-TRI-002 | EMPTY_UNKNOWN_REASONS | error | packages-galerina/galerina-core-logic/src/tri/tri-diagnostics.ts:15 | 1 | 1 | 0 |
+| FUNGI-TRI-003 | INVALID_OPERAND | error | packages-galerina/galerina-core-logic/src/tri/tri-diagnostics.ts:18 | 1 | 1 | 0 |
+| FUNGI-TRI-004 | UNKNOWN_LEAKED | error | packages-galerina/galerina-core-logic/src/tri/tri-diagnostics.ts:21 | 1 | 1 | 0 |
+| FUNGI-TRI-005 | MALFORMED_UNKNOWN_REASON | error | packages-galerina/galerina-core-logic/src/tri/tri-diagnostics.ts:24 | 1 | 1 | 2 |
 
 ## TYPE (32)
 
@@ -1331,11 +1331,11 @@ Query this instead of grepping. Regenerate: `node scripts/code-index.mjs`.
 
 | code | name(s) | severity | def | emit | test | doc |
 |---|---|---|---|---|---|---|
-| FUNGI-VAULT-001 | — | — | packages-galerina/galerina-core-config/src/index.ts:1314 | 1 | 1 | 3 |
-| FUNGI-VAULT-002 | — | — | packages-galerina/galerina-core-config/src/index.ts:1316 | 1 | 1 | 0 |
-| FUNGI-VAULT-003 | — | — | packages-galerina/galerina-core-config/src/index.ts:1318 | 1 | 1 | 0 |
-| FUNGI-VAULT-004 | — | — | packages-galerina/galerina-core-config/src/index.ts:1320 | 1 | 1 | 0 |
-| FUNGI-VAULT-005 | — | — | packages-galerina/galerina-core-config/src/index.ts:1322 | 1 | 1 | 1 |
+| FUNGI-VAULT-001 | — | error | packages-galerina/galerina-core-config/src/index.ts:1314 | 1 | 1 | 3 |
+| FUNGI-VAULT-002 | — | error | packages-galerina/galerina-core-config/src/index.ts:1316 | 1 | 1 | 0 |
+| FUNGI-VAULT-003 | — | error | packages-galerina/galerina-core-config/src/index.ts:1318 | 1 | 1 | 0 |
+| FUNGI-VAULT-004 | — | error | packages-galerina/galerina-core-config/src/index.ts:1320 | 1 | 1 | 0 |
+| FUNGI-VAULT-005 | — | error | packages-galerina/galerina-core-config/src/index.ts:1322 | 1 | 1 | 1 |
 
 ## VER (1)
 
