@@ -333,7 +333,50 @@ const RD0361_T1 = [
   },
 ];
 
-const MUTANTS = configArg ? JSON.parse(readFileSync(configArg, "utf8")) : [...BUILTIN, ...CERT, ...FUSE, ...CC_I32, ...VSC_EGRESS, ...QUORUM_GOV, ...RD0361_T1];
+// ── RD-0361 T2 (Memory tranche): the sentinel-memory differentials must also be non-vacuous ────────────
+// Same anti-neuter pattern as T1, extended to the four sentinel-memory twins that carry an execution-cutover
+// differential (trit-buffer-guard is shadow-only, no differential to guard). Each mutant plants a fail-open
+// in the twin's `.fungi` fold; its rd0361-*-execution differential rebuilds the WASM and KILLS it.
+const RD0361_T2_MEMORY = [
+  {
+    id: "rd0361-t2-memvalidator-align",
+    file: "packages-galerina/galerina-core-sentinel-memory/src/self-hosted/memory-validator.fungi",
+    find: "ptr % align == 0",
+    replace: "ptr % align != 0",
+    cwd: "packages-galerina/galerina-core-sentinel-memory",
+    test: ["node", "--test", "tests/rd0361-memory-validator-execution.test.mjs"],
+    desc: "RD-0361 T2 — memory-validator isAligned inverted (an UNALIGNED ptr would pass the alignment gate); the execution-cutover differential must catch WASM != real .ts",
+  },
+  {
+    id: "rd0361-t2-poolalloc-exhaust",
+    file: "packages-galerina/galerina-core-sentinel-memory/src/self-hosted/pool-allocation-guard.fungi",
+    find: "runAvailable == false",
+    replace: "runAvailable != false",
+    cwd: "packages-galerina/galerina-core-sentinel-memory",
+    test: ["node", "--test", "tests/rd0361-pool-allocation-guard-execution.test.mjs"],
+    desc: "RD-0361 T2 — pool-allocation-guard exhaustion check inverted (an EXHAUSTED pool would allocate — LSM-POOL-EXHAUSTED bypass); the execution-cutover differential must catch WASM != real .ts",
+  },
+  {
+    id: "rd0361-t2-poolpolicy-blockbytes",
+    file: "packages-galerina/galerina-core-sentinel-memory/src/self-hosted/pool-policy.fungi",
+    find: "blockBytes <= 0",
+    replace: "blockBytes < 0",
+    cwd: "packages-galerina/galerina-core-sentinel-memory",
+    test: ["node", "--test", "tests/rd0361-pool-policy-execution.test.mjs"],
+    desc: "RD-0361 T2 — pool-policy blockBytes floor <=0 -> <0 (a ZERO-byte block config accepted); the execution-cutover differential must catch WASM != real .ts",
+  },
+  {
+    id: "rd0361-t2-segguard-crosssegment",
+    file: "packages-galerina/galerina-core-sentinel-memory/src/self-hosted/segmentation-guard.fungi",
+    find: "actual != intended",
+    replace: "actual == intended",
+    cwd: "packages-galerina/galerina-core-sentinel-memory",
+    test: ["node", "--test", "tests/rd0361-segmentation-guard-execution.test.mjs"],
+    desc: "RD-0361 T2 — segmentation-guard cross-segment check inverted (a CROSS-segment access allowed — LSM-SEGV bypass); the execution-cutover differential must catch WASM != real .ts",
+  },
+];
+
+const MUTANTS = configArg ? JSON.parse(readFileSync(configArg, "utf8")) : [...BUILTIN, ...CERT, ...FUSE, ...CC_I32, ...VSC_EGRESS, ...QUORUM_GOV, ...RD0361_T1, ...RD0361_T2_MEMORY];
 
 function git(args) { return spawnSync("git", args, { cwd: ROOT, encoding: "utf8" }); }
 function isClean(file) { return git(["diff", "--quiet", "--", file]).status === 0; }
