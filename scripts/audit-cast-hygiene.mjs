@@ -39,12 +39,15 @@ const CAST_RE = new RegExp(`\\bas\\s+(${BANNED.join("|")})\\b`, "g");
 
 // SHRINK-ONLY baseline — authority casts that exist and are known remediation debt, keyed by (repo-relative
 // file, trimmed line). Remediate → delete the entry (the gate then forbids that cast forever).
-// ★ EMPTIED 2026-07-18 (S0 remediation, R&D-ruled): all 7 casts are gone — the 6 Kleene re-brands now route
-// through the blessed `asVerdict()` (validates -1|0|1, fail-closed), and two redundant casts were dropped
-// (substrate-model:225 min-folds a reading that is structurally a Verdict; partial-return:57 narrows via
-// `typeof`). The baseline is now ZERO-TOLERANCE: ANY bare `as Verdict`/`as Trit` anywhere is a violation. A
-// legitimately-blessed cast (should one ever be unavoidable) goes here WITH a note — but the mint is the door.
-const BASELINE = [];
+// ★ 2026-07-18 (S0): the 7 original `as Verdict` casts are all GONE (6 → the blessed `asVerdict()`, 2 redundant
+// dropped). The ONLY allowlisted cast is the single blessed number→Trit mint inside `asTrit()` — a branded type
+// (`number & {__trit}`) cannot be produced by `if`-narrowing, so its constructor needs exactly one `as Trit`,
+// validated first (SecurityTrap on a non-trit). Everything else is ZERO-TOLERANCE: any other `as Verdict`/`as
+// Trit` anywhere is a violation. A future blessed cast goes here WITH a note — but a mint is the only door.
+const BASELINE = [
+  { file: "packages-galerina/galerina-tower-citizen/src/tpl-simulator.ts", line: "return n as Trit;",
+    note: "the ONE blessed number→Trit mint, inside asTrit() (validates -1|0|1 first; mirrors asVerdict). RD-0510 brand." },
+];
 const baseKey = (file, line) => `${file}::${line}`;
 
 // Is the `as X` match at index `idx` inside a comment or string on this line? (skip those — e.g. a JSDoc that

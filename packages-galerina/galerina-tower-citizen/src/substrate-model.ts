@@ -24,7 +24,7 @@
  * Spec: ../ZTF-Knowledge-Bases/galerina-substrate-failure-model.md.
  */
 
-import { consensusTrit } from "./tpl-simulator.js";
+import { consensusTrit, asTrit } from "./tpl-simulator.js";
 import { Verdict, vAnd } from "./three-valued-governance.js";
 import { dispatchDeadZone, type OnIndeterminate } from "./deadzone-dispatcher.js";
 // Pure NMR compute is the shared single source of truth (also used by the compiler's
@@ -391,5 +391,9 @@ export function empiricalAdversarialError(
 
 /** N=3 majority delegates to the shipped consensusTrit (reuse, not reimplement). */
 export function votedTrit3(a: -1 | 0 | 1, b: -1 | 0 | 1, c: -1 | 0 | 1): -1 | 0 | 1 {
-  return consensusTrit(a, b, c) as -1 | 0 | 1;
+  // Substrate readings are trit-valued MEASUREMENTS, so the arith consensus (majority) is the right face here.
+  // asTrit each reading in; narrow the Trit result back to the reading union out — a deliberate, audited
+  // reading↔Trit boundary (never a bare cast, never a Verdict — a vote of readings is not a governance verdict).
+  const r = consensusTrit(asTrit(a), asTrit(b), asTrit(c));
+  return r === 1 ? 1 : r === -1 ? -1 : 0;
 }

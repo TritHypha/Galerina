@@ -8,10 +8,12 @@ import assert from "node:assert/strict";
 import { describe, it, test } from "node:test";
 import {
   Verdict, vAnd, vOr, vNot, allOf, anyOf, collapse, authorize,
-  decideAtBoundary, GOV_3VL_DIAGNOSTIC,
-  // the underlying #173/#196 gates — to pin "reuse, no semantics changed"
-  minTrit, maxTrit, negTrit, SecurityTrap,
+  decideAtBoundary, GOV_3VL_DIAGNOSTIC, SecurityTrap,
 } from "../dist/index.js";
+// The underlying #173/#196 gates are now INTERNAL number primitives — the RD-0510 arith-Trit brand de-exported
+// them from the barrel (a bare-number arith surface is the laundering path). Import from the module directly to
+// pin "reuse, no semantics changed" (this test proves vAnd=minTrit etc., which needs the raw primitive).
+import { minTrit, maxTrit, negTrit } from "../dist/tpl-simulator.js";
 
 const TRITS = [Verdict.DENY, Verdict.INDETERMINATE, Verdict.ALLOW]; // -1, 0, 1
 

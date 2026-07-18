@@ -2,10 +2,13 @@
 // The photonic substrate's algebra over {-1 (REJECT), 0 (HOLD), +1 (COMMIT)}.
 import assert from "node:assert/strict";
 import { test } from "node:test";
+// This is the tpl-simulator primitive unit test, so it imports from the MODULE directly — minTrit/maxTrit/
+// negTrit are internal (RD-0510 brand de-exported them from the barrel), and the arith ops here are exercised
+// with raw numbers (the brand is compile-time only; asTrit is identity on valid trits at runtime).
 import {
   negTrit, sumTrit, xorTrit, carryTrit, addTrit, mulTrit,
   minTrit, maxTrit, consensusTrit, SecurityTrap,
-} from "../dist/index.js";
+} from "../dist/tpl-simulator.js";
 
 const TRITS = [-1, 0, 1];
 

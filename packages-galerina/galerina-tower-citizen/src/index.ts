@@ -34,9 +34,14 @@ export type {
 // ── Virtual Photonic Processor — BitNet-faithful ternary core (TPL Standard v1.0) ──
 export { TPLSimulator, TritState, SecurityTrap, TPLIntegrityFault } from "./tpl-simulator.js";
 // Balanced-ternary logic gates (#196/#173) — carry-free SUM (== XOR), carry, AND/OR, multiply, consensus.
+// Arith-Trit face (RD-0510 brand): the public arithmetic gates take/return the branded `Trit`, mutually
+// non-assignable with `Verdict`. The shared number primitives minTrit/maxTrit/negTrit are INTERNAL (reached
+// only via the branded faces vAnd/… and negT), so they are NOT re-exported — a bare-number arith surface is
+// the laundering path the brand closes. Mint a Trit via `asTrit`.
 export {
-  negTrit, sumTrit, xorTrit, carryTrit, addTrit, mulTrit, minTrit, maxTrit, consensusTrit,
+  asTrit, sumTrit, xorTrit, carryTrit, addTrit, mulTrit, consensusTrit, negT,
 } from "./tpl-simulator.js";
+export type { Trit } from "./tpl-simulator.js";
 export { GovernanceEnforcer, TPL_DEFAULT_POLICY } from "./governance-enforcer.js";
 export type { TransitionPolicy, RestrictedTransition } from "./governance-enforcer.js";
 

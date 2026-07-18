@@ -99,10 +99,36 @@ function assertTrit(v: number): void {
   }
 }
 
-/** Negation (NOT): +1 ↔ -1, 0 ↦ 0. */
+// ── The arith-Trit brand (RD-0510 · S0 second half) — "parse, don't cast" for the arithmetic trit ───────
+/**
+ * A balanced trit as a BRANDED number, distinct from a governance `Verdict` (the bare `-1|0|1` union). The
+ * brand makes the two families mutually non-assignable in BOTH directions: a `Verdict` cannot be fed to an
+ * arithmetic gate (`sumTrit`/`xorTrit`/…) and a `Trit` cannot be fed to a K3 governance op (`vAnd`/…) —
+ * feeding either across is authority-laundering (RD-0510; `verify-governance-algebra` SUITE 3/5 prove an
+ * arith op can raise a verdict). The arithmetic family below is the `Trit` face; the K3 family in
+ * three-valued-governance.ts is the `Verdict` face; both call the same INTERNAL `minTrit`/`maxTrit`/`negTrit`
+ * number math, and neither raw primitive is exposed on the barrel.
+ */
+export type Trit = number & { readonly __trit: unique symbol };
+
+/**
+ * The ONE sanctioned number→Trit mint — validates `-1|0|1` or fail-closed throw (mirrors `asVerdict`). The
+ * single `as Trit` cast lives HERE and is allowlisted in audit-cast-hygiene; every other site mints via this.
+ */
+export function asTrit(n: number): Trit {
+  assertTrit(n);
+  return n as Trit;
+}
+
+/** Negation (NOT): +1 ↔ -1, 0 ↦ 0. INTERNAL number primitive — shared by vNot (Verdict face) and negT (Trit face). */
 export function negTrit(a: number): number {
   assertTrit(a);
   return a === 0 ? 0 : -a;   // normalise away JS -0
+}
+
+/** Arith negation — the `Trit` face of negTrit (the K3 face is `vNot`). */
+export function negT(a: Trit): Trit {
+  return asTrit(negTrit(a));
 }
 
 /**
@@ -111,47 +137,44 @@ export function negTrit(a: number): number {
  * opposite sign.
  *   -1,-1→+1 · -1,0→-1 · -1,+1→0 · 0,0→0 · 0,+1→+1 · +1,+1→-1
  */
-export function sumTrit(a: number, b: number): number {
+export function sumTrit(a: Trit, b: Trit): Trit {
   assertTrit(a); assertTrit(b);
   const s = a + b;
-  if (s === 2) return -1;   // +1 +1 → wrap to -1 (carry +1)
-  if (s === -2) return 1;   // -1 -1 → wrap to +1 (carry -1)
-  return s;                 // already in {-1, 0, +1}
+  return asTrit(s === 2 ? -1 : s === -2 ? 1 : s); // +1+1→-1, -1-1→+1, else already in {-1,0,+1}
 }
 
 /** Balanced-ternary XOR — alias of the SUM gate (the notes' "SUM/XOR gate"). */
-export function xorTrit(a: number, b: number): number {
+export function xorTrit(a: Trit, b: Trit): Trit {
   return sumTrit(a, b);
 }
 
 /** The carry digit alongside sumTrit(a,b): -1 for (-1,-1), +1 for (+1,+1), else 0. */
-export function carryTrit(a: number, b: number): number {
+export function carryTrit(a: Trit, b: Trit): Trit {
   assertTrit(a); assertTrit(b);
   const s = a + b;
-  if (s === 2) return 1;
-  if (s === -2) return -1;
-  return 0;
+  return asTrit(s === 2 ? 1 : s === -2 ? -1 : 0);
 }
 
 /** Balanced-ternary half-adder: { sum, carry } with 3*carry + sum === a + b. */
-export function addTrit(a: number, b: number): { sum: number; carry: number } {
+export function addTrit(a: Trit, b: Trit): { sum: Trit; carry: Trit } {
   return { sum: sumTrit(a, b), carry: carryTrit(a, b) };
 }
 
 /** Balanced-ternary multiply: 0 dominates; like signs → +1, unlike → -1. */
-export function mulTrit(a: number, b: number): number {
+export function mulTrit(a: Trit, b: Trit): Trit {
   assertTrit(a); assertTrit(b);
   const p = a * b;
-  return p === 0 ? 0 : p;     // normalise away JS -0 (e.g. -1 * 0)
+  return asTrit(p === 0 ? 0 : p); // normalise away JS -0 (e.g. -1 * 0)
 }
 
-/** Balanced-ternary AND (min): the more-cautious (negative) input wins — fail-closed. */
+/** Balanced-ternary AND (min): the more-cautious (negative) input wins — fail-closed. INTERNAL number
+ *  primitive (the shared K3/arith math) — reached only via the branded faces `vAnd` (Verdict) etc., not the barrel. */
 export function minTrit(a: number, b: number): number {
   assertTrit(a); assertTrit(b);
   return a < b ? a : b;
 }
 
-/** Balanced-ternary OR (max): the more-permissive (positive) input wins. */
+/** Balanced-ternary OR (max): the more-permissive (positive) input wins. INTERNAL number primitive (see minTrit). */
 export function maxTrit(a: number, b: number): number {
   assertTrit(a); assertTrit(b);
   return a > b ? a : b;
@@ -161,10 +184,10 @@ export function maxTrit(a: number, b: number): number {
  * 3-input consensus (majority) gate — sign of a+b+c. A tie / all-HOLD yields 0
  * (HOLD), the fail-closed neutral, matching the Epistemic-Hold posture.
  */
-export function consensusTrit(a: number, b: number, c: number): number {
+export function consensusTrit(a: Trit, b: Trit, c: Trit): Trit {
   assertTrit(a); assertTrit(b); assertTrit(c);
   const s = a + b + c;
-  return s > 0 ? 1 : s < 0 ? -1 : 0;
+  return asTrit(s > 0 ? 1 : s < 0 ? -1 : 0);
 }
 
 /**

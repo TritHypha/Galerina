@@ -563,7 +563,7 @@ Query this instead of grepping. Regenerate: `node scripts/code-index.mjs`.
 | FUNGI-GOV-021 | DOMAIN_GUARD_NOT_FOUND | — | — | 1 | 4 | 0 |
 | FUNGI-GOV-022 | DOMAIN_GUARD_POLICY_VIOLATION | — | — | 1 | 28 | 0 |
 | FUNGI-GOV-023 | PHYSICAL_HARDENING_ON_LOW_RISK_FLOW | — | — | 1 | 3 | 0 |
-| FUNGI-GOV-3VL-001 | INDETERMINATE_COLLAPSED_TO_DENY | warning | packages-galerina/galerina-tower-citizen/src/three-valued-governance.ts:102 | 1 | 36 | 11 |
+| FUNGI-GOV-3VL-001 | INDETERMINATE_COLLAPSED_TO_DENY | warning | packages-galerina/galerina-tower-citizen/src/three-valued-governance.ts:119 | 1 | 36 | 11 |
 | FUNGI-GOV-3VL-003 | WILDCARD_OVER_DENY_ON_VERDICT_MATCH | error | — | 1 | 9 | 0 |
 | FUNGI-GOV-3VL-004 | ORDERED_COMPARISON_ON_VERDICT | error | — | 1 | 6 | 1 |
 | FUNGI-GOV-TPL-001 | — | — | — | 1 | 1 | 1 |
