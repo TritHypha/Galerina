@@ -4,59 +4,59 @@ Current run: results/latest.json. Baseline ("last time"): 2026-07-12_posthardeni
 
 ## 1. Difference from the last run
 
-117 runtime·benchmark pairs · median |Δ| 5.0% · >10%: 30.
+117 runtime·benchmark pairs · median |Δ| 1.8% · >10%: 27.
 
 | Benchmark | Runtime | last | now | Δ% |
 |---|---|--:|--:|--:|
-| record-allocation | Python | 3.1M | 5.1M | +64.8% |
-| matrix-multiply | Python | 11.9M | 6.8M | -42.9% |
-| tri-logic | Python | 11.2M | 6.8M | -39.6% |
-| tower-of-hanoi | Python | 3.6M | 5.0M | +38.7% |
-| json-parse | Python | 714.0K | 458.0K | -35.9% |
-| call-chain | Python | 2.1M | 1.4M | -34.5% |
-| collection-pipeline | Python | 15.0M | 10.2M | -32.2% |
-| low-memory | Python | 4.5M | 3.0M | -32.1% |
-| nbody | Python | 1.6M | 1.1M | -28.3% |
-| gpu-compute | Python | 9.4M | 6.7M | -28.3% |
-| binary-trees | Rust | 21.3M | 15.6M | -26.8% |
-| six-digit-guess | Rust | 62.3M | 78.1M | +25.4% |
-| spectral-norm | Python | 2.3M | 1.7M | -25.3% |
-| crypto-ops | Galerina gov | 160 | 123 | -23.1% |
-| record-allocation | Galerina gov | 2.5M | 2.0M | -21.7% |
-| collection-pipeline | Galerina gov | 2.1M | 1.7M | -20.3% |
-| fibonacci-recursive | Galerina gov | 15 | 12 | -20.0% |
-| data-query | Python | 4.3M | 3.5M | -19.4% |
-| governance-cost | Rust AVX2 | 752.0M | 888.0M | +18.1% |
-| nbody | Galerina gov | 72.1K | 61.2K | -15.1% |
+| binary-trees | Python | 5.4M | 2.9M | -46.3% |
+| matrix-multiply | Python | 11.9M | 6.5M | -45.8% |
+| low-memory | Python | 4.5M | 2.8M | -38.0% |
+| gpu-compute | Python | 9.4M | 6.2M | -34.3% |
+| nbody | Python | 1.6M | 1.0M | -34.1% |
+| collection-pipeline | Python | 15.0M | 10.5M | -30.2% |
+| call-chain | Python | 2.1M | 1.5M | -29.8% |
+| json-parse | Python | 714.0K | 506.5K | -29.1% |
+| six-digit-guess | Rust | 62.3M | 79.7M | +28.0% |
+| tri-logic | Python | 11.2M | 8.2M | -27.4% |
+| data-query | Python | 4.3M | 3.2M | -26.4% |
+| governance-cost | Python | 28.2K | 20.7K | -26.4% |
+| spore-container | Python | 68.3K | 85.7K | +25.5% |
+| tower-of-hanoi | Python | 3.6M | 2.9M | -21.0% |
+| spectral-norm | Python | 2.3M | 1.8M | -19.6% |
+| data-query | Galerina gov | 253.8K | 206.5K | -18.6% |
+| record-allocation | Python | 3.1M | 3.6M | +17.2% |
+| mandelbrot | Python | 175.2K | 205.0K | +17.0% |
+| six-digit-guess | Rust AVX2 | 66.3M | 75.8M | +14.4% |
+| hardware-targets | WASM prod | 35.3M | 40.4M | +14.3% |
 
 ## 2. Cross-language (current run)
 
 | Benchmark | unit | Rust AVX2 | Rust | C++ | Node.js | WASM prod | Galerina gov | Python |
 |---|---|--:|--:|--:|--:|--:|--:|--:|
-| compute-mix ✅ | mix-ops/s | 130.1M | 130.8M | 134.5M | 139.7M | 75.8M | 1.6M | 766.2K |
-| arithmetic-threshold | per-call | 1.57B | 1.56B | 1.87B | 976.2M | 491.0M | 84 | 3.8M |
-| six-digit-guess | per-call | 67.1M | 78.1M | 67.4M | 2.9M | 36.4M | 1 | 96.9K |
-| record-allocation ✅ | records/s | 943.1M | 1.17B | — | 59.0M | 536.2M | 2.0M | 5.1M |
-| fibonacci-recursive | per-call | 499 | 500 | — | 126 | 17.2K | 12 | 6 |
-| tower-of-hanoi ✅ | moves/s | 251.9M | 252.2M | — | 129.1M | 121.3M | 95.7K | 5.0M |
-| collection-pipeline ✅ | elements/s | 13.27B | 4.27B | — | 70.7M | 417.4M | 1.7M | 10.2M |
-| governance-cost | gov-factor | 888.0M | 883.7M | — | 2.1M | 2.9M | 765 | 25.1K |
-| hardware-targets | per-call | 1.2M | 1.2M | — | 907.9K | 40.1M | 4.0K | — |
-| low-memory ✅ | items/s | 6.15B | 1.36B | — | 712.3M | 470.1M | 145.8K | 3.0M |
-| gpu-compute ✅ | kernel-evals/s | 1.19B | 1.20B | — | 987.5M | 475.8M | 376.1K | 6.7M |
-| matrix-multiply ✅ | mul-adds/s | 1.41B | 1.51B | — | 623.3M | 444.9M | 712.3K | 6.8M |
-| crypto-ops | per-call | — | — | — | — | — | 123 | — |
-| text-html | per-call | — | — | — | — | — | 692 | — |
-| tri-logic ✅ | trit-ops/s | 1.39B | 1.38B | — | 1.00B | 470.1M | 347.8K | 6.8M |
-| data-query ✅ | record-scans/s | — | — | — | 390.3M | — | 222.2K | 3.5M |
-| call-chain ✅ | chains/s | — | — | — | 277.2M | 54.4M | 58.2K | 1.4M |
-| nbody ✅ | force-evals/s | — | — | — | 121.5M | 28.7M | 61.2K | 1.1M |
-| json-parse ✅ | records/s | — | — | — | 3.0M | — | 5.6K | 458.0K |
-| mandelbrot ✅ | pixels/s | 23.4M | 23.4M | — | 6.2M | 9.1M | 7.7K | 148.8K |
-| spectral-norm ✅ | A-evals/s | 355.6M | 371.4M | — | 243.2M | — | — | 1.7M |
-| binary-trees ✅ | nodes/s | 20.1M | 15.6M | — | 76.6M | 587.3M | 366.7K | 5.1M |
-| spore-container ✅ | containers/s | 135.6K | 139.6K | — | 42.7K | — | — | 64.5K |
-| framework-pipeline ✅ | requests/s | — | — | — | — | — | — | 114.6K |
+| compute-mix ✅ | mix-ops/s | 135.8M | 139.3M | 139.5M | 142.2M | 80.9M | 1.8M | 823.7K |
+| arithmetic-threshold | per-call | 1.60B | 1.60B | 1.92B | 1.00B | 516.0M | 85 | 4.1M |
+| six-digit-guess | per-call | 75.8M | 79.7M | 68.8M | 2.9M | 38.3M | 1 | 89.2K |
+| record-allocation ✅ | records/s | 920.0M | 1.21B | — | 58.5M | 579.2M | 2.3M | 3.6M |
+| fibonacci-recursive | per-call | 521 | 516 | — | 134 | 18.1K | 15 | 6 |
+| tower-of-hanoi ✅ | moves/s | 260.0M | 263.9M | — | 132.9M | 128.2M | 105.2K | 2.9M |
+| collection-pipeline ✅ | elements/s | 13.45B | 4.42B | — | 76.6M | 442.4M | 2.3M | 10.5M |
+| governance-cost | gov-factor | 797.6M | 901.2M | — | 2.2M | 3.0M | 812 | 20.7K |
+| hardware-targets | per-call | 1.2M | 1.2M | — | 953.1K | 40.4M | 4.1K | — |
+| low-memory ✅ | items/s | 6.37B | 1.41B | — | 718.4M | 494.5M | 149.3K | 2.8M |
+| gpu-compute ✅ | kernel-evals/s | 1.25B | 1.24B | — | 1.04B | 497.2M | 340.9K | 6.2M |
+| matrix-multiply ✅ | mul-adds/s | 1.45B | 1.55B | — | 645.8M | 463.7M | 762.9K | 6.5M |
+| crypto-ops | per-call | — | — | — | — | — | 142 | — |
+| text-html | per-call | — | — | — | — | — | 801 | — |
+| tri-logic ✅ | trit-ops/s | 1.45B | 1.45B | — | 1.04B | 492.3M | 327.2K | 8.2M |
+| data-query ✅ | record-scans/s | — | — | — | 403.1M | — | 206.5K | 3.2M |
+| call-chain ✅ | chains/s | — | — | — | 299.0M | 57.6M | 57.8K | 1.5M |
+| nbody ✅ | force-evals/s | — | — | — | 124.6M | 30.6M | 63.8K | 1.0M |
+| json-parse ✅ | records/s | — | — | — | 3.3M | — | 5.6K | 506.5K |
+| mandelbrot ✅ | pixels/s | 24.1M | 24.1M | — | 7.1M | 9.4M | 8.0K | 205.0K |
+| spectral-norm ✅ | A-evals/s | 354.2M | 390.9M | — | 244.7M | — | — | 1.8M |
+| binary-trees ✅ | nodes/s | 19.7M | 20.9M | — | 81.7M | 612.7M | 348.2K | 2.9M |
+| spore-container ✅ | containers/s | 138.0K | 133.3K | — | 46.3K | — | — | 85.7K |
+| framework-pipeline ✅ | requests/s | — | — | — | — | — | — | 113.3K |
 | http-throughput | per-call | — | — | — | — | — | — | — |
 | naming-check | per-call | — | — | — | — | — | — | — |
 | context-receipt | per-call | — | — | — | — | — | — | — |
