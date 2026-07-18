@@ -19,6 +19,9 @@
 //                        codes"). FUNGI-DRIFT-001.
 //   A3  baseline       — dead + phantom are shrink-only; an INCREASE past the frozen
 //                        baseline FAILS (new drift entering the registry). FUNGI-DRIFT-002.
+//   reserved-code      — a family's reserved sub-range (FUNGI-MEMORY-001..007) must stay
+//   stability            un-emitted; a silent promotion to `live` FAILS (RD-0511-3, the
+//   (RD-0511-3)          Galerina-side fold of KB kb-closure-drift check D). FUNGI-DRIFT-002.
 //
 // NON-NEGOTIABLES (RD-0499): fail-closed (absent/unparseable registry → FAIL, never
 // skip); shrink-only baselines; surface-honest green (names the scanned + excluded
@@ -129,6 +132,40 @@ export function severityIncomplete(entries) {
     .map((e) => e.code);
 }
 
+// RD-0511-3 reserved-code stability (Galerina-side fold of the KB kb-closure-drift check D). A diagnostic
+// family can carve out a RESERVED sub-range — codes that are spec'd but deliberately un-emitted (spec/twin
+// placeholders). The bug this guards actually recurred this session: a scripts/ self-test FIXTURE line made
+// FUNGI-MEMORY-001 read as `live` in the registry until 65e29f6f taught the scanner that scripts/ occurrences
+// are ref-not-emit. Nothing on the Galerina side asserts the family STAYS reserved — A1 auto-stamps the live
+// count (a promotion just re-stamps, never fails) and A3 freezes only dead/phantom. The KB check D catches it
+// but only cross-repo/async. This is the in-repo, at-phase-close guard: a reserved code that turns `live` is a
+// frozen-invariant violation (reuses FUNGI-DRIFT-002 — same fault class as a shrink-only baseline that grew).
+//
+// Built programmatically (prefix + number) so NO complete FUNGI-<CAT>-NNN literal appears in this file — a
+// literal would make the code-index scanner re-count it (scripts/ ref-downgrade fixes the STATUS, not the
+// presence). Reserved range per the registry 2026-07-18: FUNGI-MEMORY-001..007 (008 is the one genuine emit).
+const RESERVED_SPEC = Object.freeze({ "FUNGI-MEMORY": Object.freeze([1, 2, 3, 4, 5, 6, 7]) });
+export function reservedCodesOf(spec) {
+  const out = [];
+  for (const [prefix, nums] of Object.entries(spec)) {
+    for (const n of nums) out.push(`${prefix}-${String(n).padStart(3, "0")}`);
+  }
+  return out;
+}
+// A reserved code must be PRESENT in the registry and NOT `live`. promoted = a reserved code the registry now
+// marks live (the silent-promotion class). absent = a reserved code with no entry at all (the family's shape
+// changed → can't verify → fail-closed, never a silent no-op). Both are FUNGI-DRIFT-002 violations.
+export function reservedDrift(entries, reservedList) {
+  const byCode = new Map((entries ?? []).map((e) => [e.code, e]));
+  const promoted = [], absent = [];
+  for (const code of reservedList) {
+    const e = byCode.get(code);
+    if (!e) { absent.push(code); continue; }
+    if (e.status === "live") promoted.push(code);
+  }
+  return { promoted, absent };
+}
+
 // ── self-test — non-vacuous, and proves the SURFACE not only the logic ───────
 if (process.argv.includes("--self-test")) {
   let pass = 0, fail = 0;
@@ -155,6 +192,15 @@ if (process.argv.includes("--self-test")) {
   ok(severityIncomplete([{ code: "FUNGI-X-001", namespace: "FUNGI", status: "live", severities: ["error"] }]).length === 0, "a live FUNGI-* WITH a severity is silent");
   ok(severityIncomplete([{ code: "ERR_X", namespace: "ERR", status: "live", severities: [] }]).length === 0, "a blank-severity ERR_* is scoped out (no severity by design — R&D-confirmed, not a false positive)");
   ok(severityIncomplete([{ code: "FUNGI-X-002", namespace: "FUNGI", status: "dead", severities: [] }]).length === 0, "a non-live FUNGI-* is not required to carry a severity");
+
+  // RD-0511-3 reserved-code stability — synthetic placeholder family (FUNGI-X, dropped by the scanner) so
+  // the test proves the LOGIC without seeding a real code into the registry.
+  const RC = reservedCodesOf({ "FUNGI-X": [1, 2] });
+  ok(RC.length === 2 && RC[0] === "FUNGI-X-001" && RC[1] === "FUNGI-X-002", "reserved codes built programmatically from prefix+number (no complete literal in source)");
+  ok(reservedDrift([{ code: "FUNGI-X-001", status: "referenced" }, { code: "FUNGI-X-002", status: "referenced" }], RC).promoted.length === 0, "reserved codes at 'referenced' are silent");
+  ok(reservedDrift([{ code: "FUNGI-X-001", status: "live" }, { code: "FUNGI-X-002", status: "referenced" }], RC).promoted.length === 1, "★ a reserved code promoted to 'live' FIRES (the 65e29f6f silent-promotion class this gate exists for)");
+  ok(reservedDrift([{ code: "FUNGI-X-001", status: "referenced" }], RC).absent.length === 1, "a reserved code ABSENT from the registry FIRES (fail-closed — a family that changed shape can't be verified, not a silent pass)");
+  ok(reservedCodesOf(RESERVED_SPEC).length === 7, "the real reserved spec is the 7 FUNGI-MEMORY placeholders (008 is the one genuine emit)");
 
   // ★ THE SURFACE (RD-0451) — proven separately from the logic
   ok(isScanSurface("README.md") && isScanSurface("build/status/STATUS.md") && isScanSurface("docs/a/b.md"), "surface INCLUDES the dirs that state registry counts (a drift there is visible)");
@@ -197,8 +243,9 @@ const gradeable = claims.filter((c) => KNOWN_COUNT_KEYS.includes(c.key));
 const drift = countDrift(claims, counts);
 const breach = baselineBreach(counts, BASELINE);
 const sevGaps = severityIncomplete(reg.entries);
+const reserved = reservedDrift(reg.entries, reservedCodesOf(RESERVED_SPEC));
 
-console.log("artifact-drift · FAMILY A (registry) — checks A1 count-drift + A2 severity-completeness + A3 baseline.");
+console.log("artifact-drift · FAMILY A (registry) — checks A1 count-drift + A2 severity-completeness + A3 baseline + reserved-code stability (RD-0511-3).");
 console.log("  NOT checked this pass (surface-honest): A4 production-blocker CONVERSE (needs a registry `production_blocker` attribute; its emitter half is lint-conventions `production-blockers`, satisfied) · families B manifest / C assembly / D register (next — see to-rnd RD-0499 plan).");
 console.log(`  A1 surface: ${docs.length} markdown doc(s) scanned [root *.md + build/status/** + build/code-registry/** + docs/**, minus node_modules/.git/dist/coverage]; ${gradeable.length} registry-count claim(s) gradeable.`);
 for (const d of drift) console.log(`  ⚠ FUNGI-DRIFT-001 ${d.file}: states "${d.claimed} ${d.key}" but registry.counts.${d.key} = ${d.actual} (${d.form} form)`);
@@ -207,9 +254,12 @@ for (const b of breach) console.log(`  ⚠ FUNGI-DRIFT-002 counts.${b.key} = ${b
 if (breach.length === 0) console.log(`  ✅ A3: dead=${counts.dead}≤${BASELINE.dead} · phantom=${counts.phantom}≤${BASELINE.phantom} (shrink-only baseline holds).`);
 for (const c of sevGaps) console.log(`  ⚠ FUNGI-DRIFT-003 ${c}: a LIVE FUNGI-* diagnostic with NO captured severity (A2 severity-completeness).`);
 if (sevGaps.length === 0) console.log(`  ✅ A2: every live FUNGI-* diagnostic carries a severity (${(reg.entries ?? []).filter((e) => e.namespace === "FUNGI" && e.status === "live").length} FUNGI-* live; ERR_* scoped out by design).`);
+for (const c of reserved.promoted) console.log(`  ⚠ FUNGI-DRIFT-002 ${c}: a RESERVED code is now 'live' in the registry — a silent promotion (the 65e29f6f scanner/fixture class). Reserved codes must stay un-emitted.`);
+for (const c of reserved.absent) console.log(`  ⚠ FUNGI-DRIFT-002 ${c}: a RESERVED code is ABSENT from the registry — the reserved family changed shape and can no longer be verified (fail-closed).`);
+if (reserved.promoted.length + reserved.absent.length === 0) console.log(`  ✅ reserved-code stability: the ${reservedCodesOf(RESERVED_SPEC).length} reserved FUNGI-MEMORY placeholders are all present and NON-live (RD-0511-3).`);
 
-const violations = drift.length + breach.length + sevGaps.length;
+const violations = drift.length + breach.length + sevGaps.length + reserved.promoted.length + reserved.absent.length;
 console.log(violations === 0
-  ? `✅ artifact-drift family A: 0 violation(s) across ${docs.length} doc(s) + the registry (counts, severities, baseline).`
-  : `❌ artifact-drift family A: ${violations} violation(s) — a count drifted, a live FUNGI-* lacks a severity, or a shrink-only baseline grew.`);
+  ? `✅ artifact-drift family A: 0 violation(s) across ${docs.length} doc(s) + the registry (counts, severities, baseline, reserved-code stability).`
+  : `❌ artifact-drift family A: ${violations} violation(s) — a count drifted, a live FUNGI-* lacks a severity, a shrink-only baseline grew, or a reserved code drifted.`);
 process.exit(violations === 0 ? 0 : 1);
