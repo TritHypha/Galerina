@@ -3,7 +3,7 @@
   "totals": {
     "packages": 96,
     "testBearing": 95,
-    "tests": 7448,
+    "tests": 7468,
     "devTools": 95,
     "auditTools": 55,
     "toolsInCadence": 33,
@@ -395,7 +395,7 @@
       "name": "galerina-core-runtime-wasm",
       "kind": "core",
       "description": "Border-safe WASM trust-computing base (RD-0361 R4 / #143): the record-layout ABI and (next brick) the attested",
-      "tests": 7,
+      "tests": 27,
       "hasTestScript": true,
       "border": "PASS",
       "files": 4,

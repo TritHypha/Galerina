@@ -465,7 +465,86 @@ const RD0361_IO_NETWORK = [
   },
 ];
 
-const MUTANTS = configArg ? JSON.parse(readFileSync(configArg, "utf8")) : [...BUILTIN, ...CERT, ...FUSE, ...CC_I32, ...VSC_EGRESS, ...QUORUM_GOV, ...RD0361_T1, ...RD0361_T2_MEMORY, ...RD0361_IO_NETWORK];
+// RD-0361 app-kernel + tower-citizen tranche — the LAST execution-cutover differentials: the app-kernel's
+// six governed twins (secret-gate, route-defaults, fuse-admission, kernel auth gate 6, registry-index,
+// package-admission) + tower-citizen's governance core (quorum/lease) + the S4 transport FSM. With this the
+// anti-neuter covers EVERY rd0361-*-execution differential (trit-buffer-guard is shadow-only, no differential).
+const RD0361_APPKERNEL_TOWER = [
+  {
+    id: "rd0361-ak-secretgate-present",
+    file: "packages-galerina/galerina-framework-app-kernel/src/self-hosted/secret-gate.fungi",
+    find: "s.status != \"present\"",
+    replace: "s.status == \"present\"",
+    cwd: "packages-galerina/galerina-framework-app-kernel",
+    test: ["node", "--test", "tests/rd0361-secret-gate-execution.test.mjs"],
+    desc: "app-kernel secret-gate admitSecrets inverted (a NON-present required secret would be admitted); the differential must catch WASM != real .ts",
+  },
+  {
+    id: "rd0361-ak-routedefaults-authrelax",
+    file: "packages-galerina/galerina-framework-app-kernel/src/self-hosted/route-defaults.fungi",
+    find: "mode == \"public\"",
+    replace: "mode != \"public\"",
+    cwd: "packages-galerina/galerina-framework-app-kernel",
+    test: ["node", "--test", "tests/rd0361-route-defaults-execution.test.mjs"],
+    desc: "app-kernel route-defaults isAuthRelaxation inverted (an auth=public relaxation would NOT be flagged in the security report); the differential must catch WASM != real .ts",
+  },
+  {
+    id: "rd0361-ak-fuseadmission-hashtamper",
+    file: "packages-galerina/galerina-framework-app-kernel/src/self-hosted/fuse-admission.fungi",
+    find: "hashMatches == false",
+    replace: "hashMatches != false",
+    cwd: "packages-galerina/galerina-framework-app-kernel",
+    test: ["node", "--test", "tests/rd0361-fuse-admission-execution.test.mjs"],
+    desc: "app-kernel fuse-admission hashGateVerdict inverted (a TAMPERED .wasm whose sha256 != the signed descriptor would pass Gate 1); the differential must catch WASM != real .ts",
+  },
+  {
+    id: "rd0361-ak-kernel-authgate",
+    file: "packages-galerina/galerina-framework-app-kernel/src/self-hosted/kernel.fungi",
+    find: "channelVerdictAuthorized == true",
+    replace: "channelVerdictAuthorized == false",
+    cwd: "packages-galerina/galerina-framework-app-kernel",
+    test: ["node", "--test", "tests/rd0361-kernel-auth-gate-execution.test.mjs"],
+    desc: "app-kernel kernel auth gate 6 inverted (a NON-authorizing channel verdict would admit -- the RD-0307/0309 mTLS presence-only bypass, task #10); the differential must catch WASM != real .ts",
+  },
+  {
+    id: "rd0361-ak-registryindex-lookup-hash",
+    file: "packages-galerina/galerina-framework-app-kernel/src/self-hosted/registry-index.fungi",
+    find: "hashMatches == false",
+    replace: "hashMatches != false",
+    cwd: "packages-galerina/galerina-framework-app-kernel",
+    test: ["node", "--test", "tests/rd0361-packages-execution-cutover.test.mjs"],
+    desc: "app-kernel registry-index lookupVerdict inverted (a registry entry whose sourceHash does not match the query would be admitted); the differential must catch WASM != real .ts",
+  },
+  {
+    id: "rd0361-ak-packageadmission-capexpand",
+    file: "packages-galerina/galerina-framework-app-kernel/src/self-hosted/package-admission.fungi",
+    find: "if addedCount > 0 {",
+    replace: "if addedCount < 0 {",
+    cwd: "packages-galerina/galerina-framework-app-kernel",
+    test: ["node", "--test", "tests/rd0361-packages-execution-cutover.test.mjs"],
+    desc: "app-kernel package-admission capabilityVerdict weakened (a manifest expanding capabilities beyond the lockfile would NOT be flagged FUNGI-PKG-001 -- dependency-confusion escalation); the differential must catch WASM != real .ts",
+  },
+  {
+    id: "rd0361-tc-transportfsm-resume",
+    file: "packages-galerina/galerina-tower-citizen/src/self-hosted/transport-fsm.fungi",
+    find: "if g == 1 { return 0 }",
+    replace: "if g >= 0 { return 0 }",
+    cwd: "packages-galerina/galerina-tower-citizen",
+    test: ["node", "--test", "tests/rd0361-transport-fsm-execution.test.mjs"],
+    desc: "tower-citizen transport-fsm s4NextState weakened (an INDETERMINATE 0 reverify would RESUME to Established -- manufactured authority, INV-2/INV-5/INV-6, resume must ride === ALLOW only); the differential must catch WASM != real .ts",
+  },
+  {
+    id: "rd0361-tc-governance-quorum",
+    file: "packages-galerina/galerina-tower-citizen/src/self-hosted/governance-decisions.fungi",
+    find: "distinctApprovals >= m",
+    replace: "distinctApprovals <= m",
+    cwd: "packages-galerina/galerina-tower-citizen",
+    test: ["node", "--test", "tests/rd0361-governance-decisions-execution.test.mjs"],
+    desc: "tower-citizen governance-decisions quorumVerdict boundary flipped (a sub-M distinct-signer count would reach ALLOW -- quorum-shortfall bypass); the differential must catch WASM != real .ts",
+  },
+];
+
+const MUTANTS = configArg ? JSON.parse(readFileSync(configArg, "utf8")) : [...BUILTIN, ...CERT, ...FUSE, ...CC_I32, ...VSC_EGRESS, ...QUORUM_GOV, ...RD0361_T1, ...RD0361_T2_MEMORY, ...RD0361_IO_NETWORK, ...RD0361_APPKERNEL_TOWER];
 
 function git(args) { return spawnSync("git", args, { cwd: ROOT, encoding: "utf8" }); }
 function isClean(file) { return git(["diff", "--quiet", "--", file]).status === 0; }
