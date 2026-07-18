@@ -76,6 +76,12 @@ for (const file of FILES) {
         e.occ.push({ file: rel, line: i + 1, role: isDoc ? "doc" : isTest ? "test" : "emit" });
         const nm = margs[ci + 1];
         if (nm && /^[A-Za-z][A-Za-z0-9_]*$/.test(nm) && !isDoc && !isTest) e.names.add(nm);
+        // makeTCDiag / makeVSDiag hardcode `severity:"error"` INTERNALLY (no severity arg at the call
+        // site), so the field-window scan below never sees it and the code registers severity-blank
+        // (the FUNGI-PRIVACY-002 gap). Attribute "error" here. Factories that TAKE a severity arg
+        // (governance-verifier's makeGovDiag) are captured at their call site — only the two
+        // error-hardcoding factories are inferred.
+        if (/make(?:TC|VS)Diag\s*\(/.test(line) && !isDoc && !isTest) e.sevs.add("error");
       }
     }
     // multi-line Error/Exception construction: `throw new SomeError(<newline> ERR_x, msg)` — the code

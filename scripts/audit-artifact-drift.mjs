@@ -118,6 +118,17 @@ function discoverDocs() {
   return [...new Set(acc)];
 }
 
+// A2 severity-completeness (RD-0499, R&D-scoped 2026-07-18): every LIVE FUNGI-* diagnostic must carry a
+// severity. ERR_* runtime error codes have no severity BY DESIGN — scoped out (flagging them is a false
+// positive; R&D confirmed there is NO "security family" — key on the FUNGI- prefix). Sound ONLY after
+// the make*Diag severity-capture fix (03fe028e + the makeVSDiag/makeTCDiag inference): before that, A2
+// would flag scanner blind spots as if they were real gaps (the wrong-surface trap R&D warned of).
+export function severityIncomplete(entries) {
+  return (entries ?? [])
+    .filter((e) => e.namespace === "FUNGI" && e.status === "live" && (e.severities ?? []).length === 0)
+    .map((e) => e.code);
+}
+
 // ── self-test — non-vacuous, and proves the SURFACE not only the logic ───────
 if (process.argv.includes("--self-test")) {
   let pass = 0, fail = 0;
@@ -138,6 +149,12 @@ if (process.argv.includes("--self-test")) {
   ok(baselineBreach({ phantom: 111, dead: 8 }, BASELINE).length === 0, "at-baseline is silent");
   ok(baselineBreach({ phantom: 112, dead: 8 }, BASELINE).some((b) => b.key === "phantom" && b.kind === "INCREASE"), "a phantom INCREASE fires (shrink-only ratchet)");
   ok(baselineBreach({ dead: 8 }, BASELINE).some((b) => b.key === "phantom" && b.kind === "MISSING"), "a MISSING count fires (fail-closed — a can't-read is not a silent pass)");
+
+  // A2 severity-completeness — a live FUNGI-* with no severity is a gap; ERR_* is scoped out by design.
+  ok(severityIncomplete([{ code: "FUNGI-X-001", namespace: "FUNGI", status: "live", severities: [] }]).length === 1, "a live FUNGI-* with BLANK severity fires (A2)");
+  ok(severityIncomplete([{ code: "FUNGI-X-001", namespace: "FUNGI", status: "live", severities: ["error"] }]).length === 0, "a live FUNGI-* WITH a severity is silent");
+  ok(severityIncomplete([{ code: "ERR_X", namespace: "ERR", status: "live", severities: [] }]).length === 0, "a blank-severity ERR_* is scoped out (no severity by design — R&D-confirmed, not a false positive)");
+  ok(severityIncomplete([{ code: "FUNGI-X-002", namespace: "FUNGI", status: "dead", severities: [] }]).length === 0, "a non-live FUNGI-* is not required to carry a severity");
 
   // ★ THE SURFACE (RD-0451) — proven separately from the logic
   ok(isScanSurface("README.md") && isScanSurface("build/status/STATUS.md") && isScanSurface("docs/a/b.md"), "surface INCLUDES the dirs that state registry counts (a drift there is visible)");
@@ -179,17 +196,20 @@ for (const rel of docs) {
 const gradeable = claims.filter((c) => KNOWN_COUNT_KEYS.includes(c.key));
 const drift = countDrift(claims, counts);
 const breach = baselineBreach(counts, BASELINE);
+const sevGaps = severityIncomplete(reg.entries);
 
-console.log("artifact-drift · FAMILY A (registry) — checks A1 count-drift + A3 baseline ONLY.");
-console.log("  NOT checked this pass (surface-honest): A2 severity-completeness · A4 production-blocker · families B manifest / C assembly / D register (next — see to-rnd RD-0499 plan).");
+console.log("artifact-drift · FAMILY A (registry) — checks A1 count-drift + A2 severity-completeness + A3 baseline.");
+console.log("  NOT checked this pass (surface-honest): A4 production-blocker CONVERSE (needs a registry `production_blocker` attribute; its emitter half is lint-conventions `production-blockers`, satisfied) · families B manifest / C assembly / D register (next — see to-rnd RD-0499 plan).");
 console.log(`  A1 surface: ${docs.length} markdown doc(s) scanned [root *.md + build/status/** + build/code-registry/** + docs/**, minus node_modules/.git/dist/coverage]; ${gradeable.length} registry-count claim(s) gradeable.`);
 for (const d of drift) console.log(`  ⚠ FUNGI-DRIFT-001 ${d.file}: states "${d.claimed} ${d.key}" but registry.counts.${d.key} = ${d.actual} (${d.form} form)`);
 if (drift.length === 0) console.log(`  ✅ A1: every gradeable count claim matches registry.counts (live=${counts.live} · total=${counts.total} · dead=${counts.dead} · phantom=${counts.phantom}).`);
 for (const b of breach) console.log(`  ⚠ FUNGI-DRIFT-002 counts.${b.key} = ${b.now} ${b.kind === "INCREASE" ? `> frozen baseline ${b.baseline} (shrink-only — a new drift entered the registry)` : "is MISSING from registry.counts"}`);
 if (breach.length === 0) console.log(`  ✅ A3: dead=${counts.dead}≤${BASELINE.dead} · phantom=${counts.phantom}≤${BASELINE.phantom} (shrink-only baseline holds).`);
+for (const c of sevGaps) console.log(`  ⚠ FUNGI-DRIFT-003 ${c}: a LIVE FUNGI-* diagnostic with NO captured severity (A2 severity-completeness).`);
+if (sevGaps.length === 0) console.log(`  ✅ A2: every live FUNGI-* diagnostic carries a severity (${(reg.entries ?? []).filter((e) => e.namespace === "FUNGI" && e.status === "live").length} FUNGI-* live; ERR_* scoped out by design).`);
 
-const violations = drift.length + breach.length;
+const violations = drift.length + breach.length + sevGaps.length;
 console.log(violations === 0
-  ? `✅ artifact-drift family A: 0 violation(s) across ${docs.length} doc(s) + the registry baseline.`
-  : `❌ artifact-drift family A: ${violations} violation(s) — a stated count drifted from the generated registry, or a shrink-only baseline grew.`);
+  ? `✅ artifact-drift family A: 0 violation(s) across ${docs.length} doc(s) + the registry (counts, severities, baseline).`
+  : `❌ artifact-drift family A: ${violations} violation(s) — a count drifted, a live FUNGI-* lacks a severity, or a shrink-only baseline grew.`);
 process.exit(violations === 0 ? 0 : 1);

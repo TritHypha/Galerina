@@ -39,7 +39,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-AFFINE-001 | inline | PASSPORT_CONSUMED_TWICE | — |
+| FUNGI-AFFINE-001 | inline | PASSPORT_CONSUMED_TWICE | error |
 
 ### AMD (1)
 
@@ -216,7 +216,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-CHECK-001 | ref | — | — |
-| FUNGI-CHECK-002 | inline | CHECK_SUBJECT_NOT_VERDICT | — |
+| FUNGI-CHECK-002 | inline | CHECK_SUBJECT_NOT_VERDICT | error |
 
 ### CLI (1)
 
@@ -588,8 +588,8 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-GOV-022 | inline | DOMAIN_GUARD_POLICY_VIOLATION | — |
 | FUNGI-GOV-023 | inline | PHYSICAL_HARDENING_ON_LOW_RISK_FLOW | — |
 | FUNGI-GOV-3VL-001 | live | INDETERMINATE_COLLAPSED_TO_DENY | warning |
-| FUNGI-GOV-3VL-003 | inline | WILDCARD_OVER_DENY_ON_VERDICT_MATCH | — |
-| FUNGI-GOV-3VL-004 | inline | ORDERED_COMPARISON_ON_VERDICT | — |
+| FUNGI-GOV-3VL-003 | inline | WILDCARD_OVER_DENY_ON_VERDICT_MATCH | error |
+| FUNGI-GOV-3VL-004 | inline | ORDERED_COMPARISON_ON_VERDICT | error |
 | FUNGI-GOV-TPL-001 | inline | — | — |
 
 ### GRAPH (6)
@@ -697,9 +697,9 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-K3-001 | inline | MIXED_VERDICT_BOOL_OPERANDS | — |
-| FUNGI-K3-002 | inline | VERDICT_UNARY_MISMATCH | — |
-| FUNGI-K3-003 | inline | FOLD_OPERAND_NOT_VERDICT | — |
+| FUNGI-K3-001 | inline | MIXED_VERDICT_BOOL_OPERANDS | error |
+| FUNGI-K3-002 | inline | VERDICT_UNARY_MISMATCH | error |
+| FUNGI-K3-003 | inline | FOLD_OPERAND_NOT_VERDICT | error |
 
 ### LEX (6)
 
@@ -835,7 +835,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-NUMERIC-001 | inline | UNSUPPORTED_NUMERIC_WIDTH | error |
-| FUNGI-NUMERIC-OP-001 | inline | PARTIAL_DECIMAL_OPERATOR | — |
+| FUNGI-NUMERIC-OP-001 | inline | PARTIAL_DECIMAL_OPERATOR | error |
 
 ### OBS (2)
 
@@ -867,7 +867,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-PASSPORT-002 | inline | PASSPORT_STATE_SKIP | — |
+| FUNGI-PASSPORT-002 | inline | PASSPORT_STATE_SKIP | error |
 
 ### PCI (15)
 
@@ -976,7 +976,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-PREFILTER-001 | ref | — | — |
-| FUNGI-PREFILTER-002 | inline | PREFILTER_SUBJECT_NOT_VERDICT | — |
+| FUNGI-PREFILTER-002 | inline | PREFILTER_SUBJECT_NOT_VERDICT | error |
 | FUNGI-PREFILTER-003 | ref | — | — |
 
 ### PRIVACY (4)
@@ -984,7 +984,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-PRIVACY-001 | live | PROTECTED_DATA_IN_RESPONSE_PRIVACY_DENY | error |
-| FUNGI-PRIVACY-002 | live | EMBEDDING_EGRESS_DENIED | — |
+| FUNGI-PRIVACY-002 | live | EMBEDDING_EGRESS_DENIED | error |
 | FUNGI-PRIVACY-003 | ref | — | — |
 | FUNGI-PRIVACY-004 | inline | EMBEDDING_CROSSES_FLOW_BOUNDARY | — |
 
@@ -1112,11 +1112,11 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-SECRET-001 | inline | SECRET_VALUE_LOGGED | — |
-| FUNGI-SECRET-002 | inline | SECRET_COMPARISON_DENIED | — |
-| FUNGI-SECRET-003 | inline | SECRET_SERIALIZATION_DENIED | — |
+| FUNGI-SECRET-001 | inline | SECRET_VALUE_LOGGED | error |
+| FUNGI-SECRET-002 | inline | SECRET_COMPARISON_DENIED | error |
+| FUNGI-SECRET-003 | inline | SECRET_SERIALIZATION_DENIED | error |
 | FUNGI-SECRET-004 | inline | SECRET_DEPENDENT_BRANCH | warning |
-| FUNGI-SECRET-005 | inline | SECRET_SENT_TO_NETWORK | — |
+| FUNGI-SECRET-005 | inline | SECRET_SENT_TO_NETWORK | error |
 | FUNGI-SECRET-006 | inline | SECRET_CROSSES_FLOW_BOUNDARY | — |
 | FUNGI-SECRET-999 | ref | — | — |
 
@@ -1284,15 +1284,15 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-TYPE-0 | ref | — | — |
-| FUNGI-TYPE-001 | live | UNKNOWN_TYPE / Y / X | warning |
+| FUNGI-TYPE-001 | live | UNKNOWN_TYPE / Y / X | error/warning |
 | FUNGI-TYPE-002 | live | QUANTIZED_PRECISION_MISMATCH / INVALID_RUNTIME_TARGET_TYPE / UNKNOWN_SYMBOL / TYPE_MISMATCH / X / Y / a / WRONG_NAME | warning/error |
 | FUNGI-TYPE-003 | live | INVALID_NOMINAL_CONVERSION | error |
-| FUNGI-TYPE-004 | inline | INVALID_BINARY_OPERATION | — |
-| FUNGI-TYPE-005 | inline | INVALID_CALL_ARG_TYPE | — |
+| FUNGI-TYPE-004 | inline | INVALID_BINARY_OPERATION | error |
+| FUNGI-TYPE-005 | inline | INVALID_CALL_ARG_TYPE | error |
 | FUNGI-TYPE-006 | phantom | — | — |
-| FUNGI-TYPE-007 | inline | INVALID_ARGUMENT_COUNT | — |
-| FUNGI-TYPE-008 | inline | INVALID_RETURN_TYPE | — |
-| FUNGI-TYPE-009 | inline | INVALID_GENERIC_INSTANTIATION | — |
+| FUNGI-TYPE-007 | inline | INVALID_ARGUMENT_COUNT | error |
+| FUNGI-TYPE-008 | inline | INVALID_RETURN_TYPE | error |
+| FUNGI-TYPE-009 | inline | INVALID_GENERIC_INSTANTIATION | error |
 | FUNGI-TYPE-010 | referenced | UNSATISFIED_GENERIC_CONSTRAINT / INVALID_COLLECTION_ELEMENT / INVALID_RESULT_TYPE / INVALID_SECRET_OPERATION / MISSING_REQUIRED_EFFECT / GOVERNED_SINK_VIOLATION | error |
 | FUNGI-TYPE-011 | live | INVALID_COLLECTION_ELEMENT / INVALID_RESULT_TYPE / INVALID_SECRET_OPERATION / MISSING_REQUIRED_EFFECT / GOVERNED_SINK_VIOLATION / TENSOR_SHAPE_MISMATCH | error |
 | FUNGI-TYPE-012 | referenced | INVALID_RESULT_TYPE / INVALID_SECRET_OPERATION / MISSING_REQUIRED_EFFECT / GOVERNED_SINK_VIOLATION / TENSOR_SHAPE_MISMATCH / QUANTIZED_PRECISION_MISMATCH | error/warning |
@@ -1305,15 +1305,15 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-TYPE-019 | live | UNKNOWN_SYMBOL | error |
 | FUNGI-TYPE-020 | live | SHADOWED_BINDING / X | warning |
 | FUNGI-TYPE-021 | ref | — | — |
-| FUNGI-TYPE-022 | inline | UNREACHABLE_PATTERN | — |
-| FUNGI-TYPE-023 | inline | MISSING_WILDCARD_ARM | — |
-| FUNGI-TYPE-024 | inline | INT_LITERAL_I32_OVERFLOW | — |
-| FUNGI-TYPE-025 | inline | SILENT_NULL_DENIED | — |
+| FUNGI-TYPE-022 | inline | UNREACHABLE_PATTERN | error |
+| FUNGI-TYPE-023 | inline | MISSING_WILDCARD_ARM | error |
+| FUNGI-TYPE-024 | inline | INT_LITERAL_I32_OVERFLOW | error |
+| FUNGI-TYPE-025 | inline | SILENT_NULL_DENIED | error |
 | FUNGI-TYPE-026 | inline | DEFERRED_TYPE_CHECK | warning |
 | FUNGI-TYPE-027 | ref | — | — |
 | FUNGI-TYPE-030 | live | TENSOR_ELEMENT_TYPE_MISMATCH | error |
 | FUNGI-TYPE-031 | referenced | TENSOR_DIMENSION_MISMATCH | error |
-| FUNGI-TYPE-032 | inline | INVALID_CURRENCY_TAG | — |
+| FUNGI-TYPE-032 | inline | INVALID_CURRENCY_TAG | error |
 | FUNGI-TYPE-099 | inline | WRONG_NAME | — |
 
 ### VAL (4)
@@ -1342,15 +1342,15 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-VALUESTATE-00 | ref | — | — |
-| FUNGI-VALUESTATE-001 | inline | UNSAFE_TO_SAFE_TRANSITION_DENIED | — |
-| FUNGI-VALUESTATE-002 | inline | UNSAFE_CONDITIONAL_UPGRADE | — |
-| FUNGI-VALUESTATE-003 | inline | UNSAFE_VALUE_REACHED_GOVERNED_SINK | — |
+| FUNGI-VALUESTATE-001 | inline | UNSAFE_TO_SAFE_TRANSITION_DENIED | error |
+| FUNGI-VALUESTATE-002 | inline | UNSAFE_CONDITIONAL_UPGRADE | error |
+| FUNGI-VALUESTATE-003 | inline | UNSAFE_VALUE_REACHED_GOVERNED_SINK | error |
 | FUNGI-VALUESTATE-004 | inline | TAINTED_VALUE_PROPAGATION | error |
 | FUNGI-VALUESTATE-005 | live | DERIVED_UNSAFE_VALUE_AT_SINK | error |
 | FUNGI-VALUESTATE-006 | live | PROTECTED_BOUNDARY_VIOLATION | error |
 | FUNGI-VALUESTATE-007 | live | REDACTED_BOUNDARY_VIOLATION | error |
-| FUNGI-VALUESTATE-008 | inline | BOUNDARY_INPUT_UNCLEAN | — |
-| FUNGI-VALUESTATE-009 | inline | PROTECTED_VALUE_AT_AUDIT_LOG | — |
+| FUNGI-VALUESTATE-008 | inline | BOUNDARY_INPUT_UNCLEAN | error |
+| FUNGI-VALUESTATE-009 | inline | PROTECTED_VALUE_AT_AUDIT_LOG | error |
 
 ### VAULT (5)
 

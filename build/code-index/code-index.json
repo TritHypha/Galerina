@@ -1855,7 +1855,7 @@
     "severities": [],
     "allSites": [
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:1664",
-      "ref scripts/code-index.mjs:116",
+      "ref scripts/code-index.mjs:122",
       "test scripts/tests/codes.test.mjs:45"
     ]
   },
@@ -2076,7 +2076,9 @@
     "names": [
       "PASSPORT_CONSUMED_TWICE"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "doc packages-galerina/galerina-core/examples/examples-manifest.md:63",
       "doc packages-galerina/galerina-core/examples/examples-manifest.md:69",
@@ -3985,7 +3987,9 @@
     "names": [
       "CHECK_SUBJECT_NOT_VERDICT"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "emit packages-galerina/galerina-core-compiler/src/type-checker.ts:2279",
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:2280",
@@ -8232,7 +8236,9 @@
     "names": [
       "WILDCARD_OVER_DENY_ON_VERDICT_MATCH"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:2567",
       "emit packages-galerina/galerina-core-compiler/src/type-checker.ts:2584",
@@ -8264,7 +8270,9 @@
     "names": [
       "ORDERED_COMPARISON_ON_VERDICT"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:2174",
       "emit packages-galerina/galerina-core-compiler/src/type-checker.ts:2180",
@@ -9846,7 +9854,9 @@
     "names": [
       "MIXED_VERDICT_BOOL_OPERANDS"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-compiler/src/interpreter.ts:319",
       "ref packages-galerina/galerina-core-compiler/src/interpreter.ts:2124",
@@ -9881,7 +9891,9 @@
     "names": [
       "VERDICT_UNARY_MISMATCH"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-compiler/src/interpreter.ts:2043",
       "emit packages-galerina/galerina-core-compiler/src/type-checker.ts:2338",
@@ -9911,7 +9923,9 @@
     "names": [
       "FOLD_OPERAND_NOT_VERDICT"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-compiler/src/interpreter.ts:2086",
       "emit packages-galerina/galerina-core-compiler/src/type-checker.ts:2362",
@@ -10710,7 +10724,7 @@
       "doc docs/COVERAGE.md:433",
       "ref scripts/audit-production-blockers.mjs:5",
       "emit scripts/audit-twin-emit-parity.mjs:175",
-      "ref scripts/code-index.mjs:148",
+      "ref scripts/code-index.mjs:154",
       "ref scripts/lint-conventions.mjs:67"
     ]
   },
@@ -11252,7 +11266,7 @@
     "code": "FUNGI-NAME-002",
     "namespace": "FUNGI",
     "family": "NAME",
-    "occurrences": 68,
+    "occurrences": 71,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -11265,7 +11279,7 @@
       "packages-galerina/galerina-core-compiler/src/type-checker.ts:1574"
     ],
     "tests": 42,
-    "refs": 9,
+    "refs": 12,
     "docs": 3,
     "names": [
       "DUPLICATE_NAME"
@@ -11341,6 +11355,9 @@
       "doc docs/architecture/stage6-hundred-percent-fungi-roadmap-2026-07-10.md:39",
       "doc docs/contract-registry/CONTRACT_REGISTRY.md:594",
       "doc docs/examples/README.md:89",
+      "ref scripts/audit-silent-overwrite.mjs:11",
+      "ref scripts/audit-silent-overwrite.mjs:131",
+      "ref scripts/audit-silent-overwrite.mjs:139",
       "ref scripts/component-health.mjs:286"
     ]
   },
@@ -11892,7 +11909,9 @@
     "names": [
       "PARTIAL_DECIMAL_OPERATOR"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-compiler/src/decimal-arith.ts:18",
       "emit packages-galerina/galerina-core-compiler/src/type-checker.ts:2062",
@@ -12271,7 +12290,9 @@
     "names": [
       "PASSPORT_STATE_SKIP"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-compiler/src/value-state-checker.ts:109",
       "emit packages-galerina/galerina-core-compiler/src/value-state-checker.ts:1606",
@@ -13687,7 +13708,9 @@
     "names": [
       "PREFILTER_SUBJECT_NOT_VERDICT"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-compiler/src/interpreter.ts:1809",
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:1855",
@@ -13784,7 +13807,7 @@
     "code": "FUNGI-PRIVACY-002",
     "namespace": "FUNGI",
     "family": "PRIVACY",
-    "occurrences": 74,
+    "occurrences": 75,
     "docOnly": false,
     "defs": [
       "packages-galerina/galerina-core-compiler/src/gate-parser.ts:45"
@@ -13794,12 +13817,14 @@
       "packages-galerina/galerina-core-compiler/src/value-state-checker.ts:1820"
     ],
     "tests": 38,
-    "refs": 15,
+    "refs": 16,
     "docs": 18,
     "names": [
       "EMBEDDING_EGRESS_DENIED"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-compiler/src/gate-parser.ts:37",
       "def packages-galerina/galerina-core-compiler/src/gate-parser.ts:45",
@@ -13873,6 +13898,7 @@
       "doc docs/TODO.md:491",
       "doc docs/TODO.md:498",
       "ref scripts/audit-muted-diagnostics.mjs:44",
+      "ref scripts/code-index.mjs:81",
       "ref scripts/kb-index.mjs:9",
       "ref scripts/rd-0168-graph-pci-compliance-scanner-proof.mjs:477"
     ]
@@ -15223,7 +15249,9 @@
     "names": [
       "SECRET_VALUE_LOGGED"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "doc packages-galerina/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:37",
       "doc packages-galerina/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:138",
@@ -15334,7 +15362,9 @@
     "names": [
       "SECRET_COMPARISON_DENIED"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "doc packages-galerina/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:38",
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:2158",
@@ -15416,7 +15446,9 @@
     "names": [
       "SECRET_SERIALIZATION_DENIED"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "doc packages-galerina/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:39",
       "ref packages-galerina/galerina-core-compiler/src/value-state-checker.ts:20",
@@ -15506,7 +15538,9 @@
     "names": [
       "SECRET_SENT_TO_NETWORK"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "emit packages-galerina/galerina-core-compiler/src/value-state-checker.ts:1766",
       "ref packages-galerina/galerina-core-compiler/src/value-state-checker.ts:1767",
@@ -17825,6 +17859,7 @@
       "X"
     ],
     "severities": [
+      "error",
       "warning"
     ],
     "allSites": [
@@ -18467,7 +18502,9 @@
     "names": [
       "INVALID_BINARY_OPERATION"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-compiler/scripts/cec-test-level2-wrapped.mjs:37",
       "ref packages-galerina/galerina-core-compiler/scripts/cec-test-level2-wrapped.mjs:41",
@@ -18698,7 +18735,9 @@
     "names": [
       "INVALID_CALL_ARG_TYPE"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:120",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:156",
@@ -18774,7 +18813,9 @@
     "names": [
       "INVALID_ARGUMENT_COUNT"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:121",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:157",
@@ -18817,7 +18858,9 @@
     "names": [
       "INVALID_RETURN_TYPE"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:22",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:122",
@@ -18869,7 +18912,9 @@
     "names": [
       "INVALID_GENERIC_INSTANTIATION"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-compiler/scripts/cec-audit.mjs:26",
       "ref packages-galerina/galerina-core-compiler/scripts/cec-check-468.mjs:4",
@@ -19620,7 +19665,9 @@
     "names": [
       "UNREACHABLE_PATTERN"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:129",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:163",
@@ -19668,7 +19715,9 @@
     "names": [
       "MISSING_WILDCARD_ARM"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "doc packages-galerina/galerina-api-protocol-rest/README.md:18",
       "fungi packages-galerina/galerina-api-protocol-rest/src/index.fungi:16",
@@ -19731,7 +19780,9 @@
     "names": [
       "INT_LITERAL_I32_OVERFLOW"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:131",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:165",
@@ -19770,7 +19821,9 @@
     "names": [
       "SILENT_NULL_DENIED"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:55",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:132",
@@ -19978,7 +20031,9 @@
     "names": [
       "INVALID_CURRENCY_TAG"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:18",
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:55",
@@ -20282,7 +20337,9 @@
     "names": [
       "UNSAFE_TO_SAFE_TRANSITION_DENIED"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "doc packages-galerina/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:30",
       "ref packages-galerina/galerina-core-compiler/src/value-state-checker.ts:13",
@@ -20347,7 +20404,9 @@
     "names": [
       "UNSAFE_CONDITIONAL_UPGRADE"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "doc packages-galerina/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:31",
       "ref packages-galerina/galerina-core-compiler/scripts/cec-promotion-pass.mjs:35",
@@ -20393,7 +20452,9 @@
     "names": [
       "UNSAFE_VALUE_REACHED_GOVERNED_SINK"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "doc packages-galerina/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:32",
       "doc packages-galerina/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:134",
@@ -20946,7 +21007,9 @@
     "names": [
       "BOUNDARY_INPUT_UNCLEAN"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "ref packages-galerina/galerina-core-compiler/src/cli.ts:430",
       "ref packages-galerina/galerina-core-compiler/src/value-state-checker.ts:777",
@@ -21015,7 +21078,9 @@
     "names": [
       "PROTECTED_VALUE_AT_AUDIT_LOG"
     ],
-    "severities": [],
+    "severities": [
+      "error"
+    ],
     "allSites": [
       "emit packages-galerina/galerina-core-compiler/src/value-state-checker.ts:2066",
       "ref packages-galerina/galerina-core-compiler/src/value-state-checker.ts:2067",

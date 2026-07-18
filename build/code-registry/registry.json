@@ -1198,7 +1198,9 @@
       "names": [
         "PASSPORT_CONSUMED_TWICE"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 1,
       "tests": 3,
@@ -2216,7 +2218,9 @@
       "names": [
         "CHECK_SUBJECT_NOT_VERDICT"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 1,
       "tests": 5,
@@ -3935,7 +3939,9 @@
       "names": [
         "WILDCARD_OVER_DENY_ON_VERDICT_MATCH"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 1,
       "tests": 9,
@@ -3949,7 +3955,9 @@
       "names": [
         "ORDERED_COMPARISON_ON_VERDICT"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 1,
       "tests": 6,
@@ -4659,7 +4667,9 @@
       "names": [
         "MIXED_VERDICT_BOOL_OPERANDS"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 1,
       "tests": 5,
@@ -4673,7 +4683,9 @@
       "names": [
         "VERDICT_UNARY_MISMATCH"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 2,
       "tests": 4,
@@ -4687,7 +4699,9 @@
       "names": [
         "FOLD_OPERAND_NOT_VERDICT"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 1,
       "tests": 2,
@@ -5647,7 +5661,9 @@
       "names": [
         "PARTIAL_DECIMAL_OPERATOR"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 2,
       "tests": 8,
@@ -5819,7 +5835,9 @@
       "names": [
         "PASSPORT_STATE_SKIP"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 1,
       "tests": 3,
@@ -6569,7 +6587,9 @@
       "names": [
         "PREFILTER_SUBJECT_NOT_VERDICT"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 1,
       "tests": 5,
@@ -6611,7 +6631,9 @@
       "names": [
         "EMBEDDING_EGRESS_DENIED"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 1,
       "emits": 2,
       "tests": 38,
@@ -7274,7 +7296,9 @@
       "names": [
         "SECRET_VALUE_LOGGED"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 1,
       "tests": 45,
@@ -7288,7 +7312,9 @@
       "names": [
         "SECRET_COMPARISON_DENIED"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 1,
       "tests": 34,
@@ -7302,7 +7328,9 @@
       "names": [
         "SECRET_SERIALIZATION_DENIED"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 1,
       "tests": 14,
@@ -7332,7 +7360,9 @@
       "names": [
         "SECRET_SENT_TO_NETWORK"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 1,
       "tests": 45,
@@ -8315,6 +8345,7 @@
         "X"
       ],
       "severities": [
+        "error",
         "warning"
       ],
       "defs": 1,
@@ -8370,7 +8401,9 @@
       "names": [
         "INVALID_BINARY_OPERATION"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 16,
       "tests": 137,
@@ -8384,7 +8417,9 @@
       "names": [
         "INVALID_CALL_ARG_TYPE"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 1,
       "tests": 24,
@@ -8410,7 +8445,9 @@
       "names": [
         "INVALID_ARGUMENT_COUNT"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 1,
       "tests": 10,
@@ -8424,7 +8461,9 @@
       "names": [
         "INVALID_RETURN_TYPE"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 1,
       "tests": 21,
@@ -8438,7 +8477,9 @@
       "names": [
         "INVALID_GENERIC_INSTANTIATION"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 1,
       "tests": 97,
@@ -8684,7 +8725,9 @@
       "names": [
         "UNREACHABLE_PATTERN"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 1,
       "tests": 12,
@@ -8698,7 +8741,9 @@
       "names": [
         "MISSING_WILDCARD_ARM"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 1,
       "tests": 20,
@@ -8712,7 +8757,9 @@
       "names": [
         "INT_LITERAL_I32_OVERFLOW"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 1,
       "tests": 9,
@@ -8726,7 +8773,9 @@
       "names": [
         "SILENT_NULL_DENIED"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 1,
       "tests": 20,
@@ -8800,7 +8849,9 @@
       "names": [
         "INVALID_CURRENCY_TAG"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 1,
       "tests": 8,
@@ -8925,7 +8976,9 @@
       "names": [
         "UNSAFE_TO_SAFE_TRANSITION_DENIED"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 1,
       "tests": 27,
@@ -8939,7 +8992,9 @@
       "names": [
         "UNSAFE_CONDITIONAL_UPGRADE"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 2,
       "tests": 15,
@@ -8953,7 +9008,9 @@
       "names": [
         "UNSAFE_VALUE_REACHED_GOVERNED_SINK"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 1,
       "tests": 124,
@@ -9031,7 +9088,9 @@
       "names": [
         "BOUNDARY_INPUT_UNCLEAN"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 1,
       "tests": 31,
@@ -9045,7 +9104,9 @@
       "names": [
         "PROTECTED_VALUE_AT_AUDIT_LOG"
       ],
-      "severities": [],
+      "severities": [
+        "error"
+      ],
       "defs": 0,
       "emits": 1,
       "tests": 18,
