@@ -1,9 +1,9 @@
 {
   "generatedFrom": "build/code-index/code-index.json",
-  "total": 683,
+  "total": 684,
   "counts": {
     "ref": 175,
-    "inline": 162,
+    "inline": 163,
     "phantom": 111,
     "live": 133,
     "referenced": 94,
@@ -8684,6 +8684,20 @@
       "defs": 1,
       "emits": 0,
       "tests": 4,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-TYPE-032",
+      "family": "TYPE",
+      "namespace": "FUNGI",
+      "status": "inline",
+      "names": [
+        "INVALID_CURRENCY_TAG"
+      ],
+      "severities": [],
+      "defs": 0,
+      "emits": 1,
+      "tests": 8,
       "docs": 0
     },
     {

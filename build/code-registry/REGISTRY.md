@@ -9,7 +9,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | status | count | meaning |
 |---|---|---|
 | live | 133 | emitted with an exported constant |
-| inline | 162 | emitted, NO exported constant (R4 — Stage F) |
+| inline | 163 | emitted, NO exported constant (R4 — Stage F) |
 | referenced | 94 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 8 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
 | phantom | 111 | doc-only mention, not in source (drift — DOC-004) |
@@ -1272,7 +1272,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-TRI-004 | live | — | — |
 | FUNGI-TRI-005 | live | — | — |
 
-### TYPE (31)
+### TYPE (32)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -1306,6 +1306,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-TYPE-027 | ref | — | — |
 | FUNGI-TYPE-030 | live | TENSOR_ELEMENT_TYPE_MISMATCH | error |
 | FUNGI-TYPE-031 | referenced | TENSOR_DIMENSION_MISMATCH | error |
+| FUNGI-TYPE-032 | inline | INVALID_CURRENCY_TAG | — |
 | FUNGI-TYPE-099 | inline | WRONG_NAME | — |
 
 ### VAL (4)
