@@ -11286,7 +11286,7 @@
     "code": "FUNGI-NAME-002",
     "namespace": "FUNGI",
     "family": "NAME",
-    "occurrences": 82,
+    "occurrences": 83,
     "docOnly": false,
     "defs": [],
     "emits": [
@@ -11300,7 +11300,7 @@
       "packages-galerina/galerina-core-compiler/src/type-checker.ts:1605"
     ],
     "tests": 51,
-    "refs": 13,
+    "refs": 14,
     "docs": 3,
     "names": [
       "DUPLICATE_NAME"
@@ -11388,8 +11388,9 @@
       "doc docs/contract-registry/CONTRACT_REGISTRY.md:594",
       "doc docs/examples/README.md:89",
       "ref scripts/audit-silent-overwrite.mjs:11",
-      "ref scripts/audit-silent-overwrite.mjs:131",
-      "ref scripts/audit-silent-overwrite.mjs:139",
+      "ref scripts/audit-silent-overwrite.mjs:39",
+      "ref scripts/audit-silent-overwrite.mjs:164",
+      "ref scripts/audit-silent-overwrite.mjs:172",
       "ref scripts/component-health.mjs:286"
     ]
   },

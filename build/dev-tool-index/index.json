@@ -3,7 +3,7 @@
   "totals": {
     "packages": 95,
     "testBearing": 94,
-    "tests": 7383,
+    "tests": 7389,
     "devTools": 92,
     "auditTools": 54,
     "toolsInCadence": 31,
@@ -297,7 +297,7 @@
       "name": "galerina-core-compiler",
       "kind": "core",
       "description": "Galerina compiler pipeline contracts for parsing, checking, IR, diagnostics and reports.",
-      "tests": 4722,
+      "tests": 4728,
       "hasTestScript": true,
       "border": "PASS",
       "files": 99,
@@ -1851,7 +1851,7 @@
       "name": "code-index.mjs",
       "category": "index",
       "purpose": "index EVERY diagnostic/error code in Galerina: its definition, its name/severity,",
-      "selfTest": false,
+      "selfTest": true,
       "inCadence": true,
       "concerns": [
         "provenance",
