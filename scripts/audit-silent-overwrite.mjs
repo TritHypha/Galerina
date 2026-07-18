@@ -34,7 +34,40 @@ const GUARD_WINDOW = 18; // lines: a guard this close to a write counts as prote
 //    registries), keyed "file:collection". Adding here is a review flag; removing (a site got a real
 //    guard, or was deleted) is fine. Seed it from the first real run, then it only shrinks. ──────────
 const REVIEWED = new Set([
-  // (populated from the first run — see the report; each entry is a human-reviewed "not a namespace".)
+  // Reviewed 2026-07-18 (owner silent-overwrite hunt, #126). The ONE real top-level declaration collision
+  // this surfaced — duplicate domain-guard/policy names (governance-verifier knownDomainGuards) — is now
+  // caught upstream by the type-checker (checkDuplicateTopLevelGovernance → FUNGI-NAME-002); its .set site
+  // stays here because the guard lives in a different pass, so the heuristic can't see it. The rest are
+  // legitimate last-write / accumulation, verified by reading each:
+
+  // — now GUARDED upstream (#126: type-checker rejects the dup before this map is built) —
+  "governance-verifier.ts:knownDomainGuards",
+
+  // — flow-name-keyed → a duplicate key can only arise from a duplicate FLOW name, already rejected by #107 —
+  "type-checker.ts:flowDeclaredEffects",
+  "governance-verifier.ts:governanceFlagsByFlow",
+  "governance-verifier.ts:proofGraphsByFlow",
+  "governance-verifier.ts:intentStatus",
+
+  // — Set / map semantics where last-write or union IS correct (not a name registry) —
+  "governance-verifier.ts:effects",         // permitted_effects Set — add of a dup name is idempotent
+  "governance-verifier.ts:aliasCarries",    // read-then-merge (union) of carried taint labels, not overwrite
+  "governance-verifier.ts:ceilings",        // enforced_limits keyed by canonicalLimitName — alias→canonical last-wins is intended
+  "stdlib.ts:fields",                       // Map.from over entries — last-key-wins is standard map construction
+  "value-state-checker.ts:result",          // per-block "safe binding has a gate?" analysis state
+  "interpreter.ts:fnIndex",                 // flow-LOCAL fn helpers (runtime dispatch), not a top-level decl
+
+  // — output buffers / accumulators (not name-keyed declaration registries at all) —
+  "wat-emitter.ts:out",
+  "governance-verifier.ts:out",
+  "governance-verifier.ts:denied",
+  "stdlib.ts:merged",
+  "escape-analysis.ts:types",
+
+  // — section-keyed, NOT a user name: contractSetDecl.value is a SECTION keyword (intent/privacy/audit/…),
+  //   so a "duplicate" is a repeated section, whose semantics differ from a name collision — left for a
+  //   separate, narrower review rather than treated as the dup-name class —
+  "governance-verifier.ts:knownContractSets",
 ]);
 
 // ── pure core (self-tested) ──────────────────────────────────────────────────
