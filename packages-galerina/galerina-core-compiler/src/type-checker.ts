@@ -1877,11 +1877,14 @@ class TypeChecker {
 
   private reservedHallmarkMessage(name: string): string {
     const CURRENCY = new Set(["GBP", "USD", "EUR", "JPY", "CHF", "CAD", "AUD"]);
+    // NB: do NOT point users at a `unit NAME { … }` construct — it does not parse yet (FUNGI-PARSE-001), so
+    // naming it would be a premature reference to a phantom (the discipline FUNGI-TYPE-032 already follows).
+    // Restore the `unit`-declaration guidance only once that construct actually compiles (RD-0349 rung).
     if (name === "Money") {
-      return `'Money' is a reserved built-in type. For a currency amount use Money<GBP>; for a new quantity use a 'unit' declaration.`;
+      return `'Money' is a reserved built-in type. For a currency amount use Money<GBP>; a non-currency quantity needs its own dedicated type (Money models legal tender only).`;
     }
     if (CURRENCY.has(name)) {
-      return `'${name}' is a currency/unit tag, not a mintable name — did you want Money<${name}> or a 'unit' declaration?`;
+      return `'${name}' is a currency/unit tag, not a mintable name — did you want Money<${name}>?`;
     }
     if (EPISTEMIC_RESERVED.has(name)) {
       return `'${name}' is a reserved governance/epistemic term. Names carry no authority in Galerina, so it cannot be minted as a hallmark type.`;
