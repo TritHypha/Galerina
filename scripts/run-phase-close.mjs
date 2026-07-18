@@ -116,6 +116,12 @@ run("doc:status-drift", "node", ["scripts/gen-status-blocks.mjs", "--check"]);
 // today, fail on any NEW one. Additive detector — touches no governance code, cannot regress the kernel.
 run("lint:cast-hygiene", "node", ["scripts/audit-cast-hygiene.mjs"]);
 
+// ── 1b6. Registry-index signer CLI (#72 walkthrough §3) — the review gate must keep refusing stubs ──
+// The CLI's hermetic self-test proves fail-closed end-to-end with ephemeral keys: stub manifests are
+// un-signable (deny-by-default review gate), tampered/forged/forked indexes REFUSE, and the roadmap e2e
+// (forked-but-validly-signed package → HASH_MISMATCH) holds. Signing the REAL index stays an owner ceremony.
+run("registry-index:selftest", "node", ["scripts/registry-index-cli.mjs", "--self-test"]);
+
 // ── 1c. Goal acceptance tests (T-006/007/008) ──
 const goalsDir = join(ROOT, "tests", "goals");
 if (existsSync(goalsDir)) {
