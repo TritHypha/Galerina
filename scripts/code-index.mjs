@@ -191,19 +191,27 @@ for (const file of FILES) {
 }
 
 // ── assemble ──
-// Reserved placeholder family: FUNGI-X-* are SELF-TEST FIXTURE codes (names "Foo"/"Bar"), used by
-// scripts/audit-production-blockers.mjs and scripts/audit-artifact-drift.mjs to exercise emit-detection /
-// severity-completeness logic. They live in scripts/ (not tests/), so the indexer would otherwise record
-// their `code: "FUNGI-X-001"` fixture lines as REAL emits and promote them to "live" — polluting the
-// registry and tripping A2 severity-completeness on a non-diagnostic (the fixture-inside-the-surface trap,
-// RD-0451). "X" is never a real diagnostic family (real families are semantic: TYPE/NAME/GOV/EFFECT/…), so
-// excluding it here is safe and keeps the shared extractCodes intact (those self-tests still need to see it).
-const RESERVED_PLACEHOLDER_FAMILIES = new Set(["X"]);
+// A diagnostic code is DEFINED + EMITTED by compiler source (packages-galerina/*/src), never by a dev-tool
+// SCRIPT — scripts only reference or self-test codes. So a def/emit the heuristic scored inside scripts/ is
+// really a REF: e.g. audit-twin-emit-parity.mjs's self-test fixture `makeTCDiag("FUNGI-TYPE-002", …)`, or the
+// negative case `// dead: no FUNGI-TYPE-019 emit here — this comment must NOT count`. Downgrading them keeps a
+// RESERVED code (defined in src, only fixture-"emitted" in a script — FUNGI-MEMORY-001/COND-001/TYPE-019/
+// VAL-001) from being mis-promoted to "live" (RD-0451 surface — the same class as the FUNGI-X fixture, but
+// hitting REAL reserved codes). Applied before the dedup so collapsed refs don't double-count.
+const isScriptFile = (f) => f.startsWith("scripts/");
+// Reserved placeholder families: FUNGI-X-* / FUNGI-Y-* are pure SELF-TEST FIXTURE codes (names "Foo"/"Bar")
+// in audit-production-blockers.mjs / audit-artifact-drift.mjs. "X"/"Y" are never real diagnostic families
+// (real families are semantic: TYPE/NAME/GOV/EFFECT/MEMORY/…), so drop them entirely; the shared extractCodes
+// stays intact (those self-tests still need to see them). The scripts-emit downgrade above handles the
+// fixtures that reuse a REAL family (TYPE-099, etc.) — they survive as refs, correctly non-live.
+const RESERVED_PLACEHOLDER_FAMILIES = new Set(["X", "Y"]);
 const codes = [...idx.entries()]
   .filter(([code]) => !(nsOf(code) === "FUNGI" && RESERVED_PLACEHOLDER_FAMILIES.has(familyOf(code))))
   .map(([code, e]) => {
   const seen = new Set();
-  const occ = e.occ.filter((o) => { const k = `${o.file}:${o.line}:${o.role}`; if (seen.has(k)) return false; seen.add(k); return true; });
+  const occ = e.occ
+    .map((o) => (isScriptFile(o.file) && (o.role === "def" || o.role === "emit")) ? { ...o, role: "ref" } : o)
+    .filter((o) => { const k = `${o.file}:${o.line}:${o.role}`; if (seen.has(k)) return false; seen.add(k); return true; });
   return {
     code, namespace: nsOf(code), family: familyOf(code),
     occurrences: occ.length,

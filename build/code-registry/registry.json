@@ -1,12 +1,12 @@
 {
   "generatedFrom": "build/code-index/code-index.json",
-  "total": 684,
+  "total": 683,
   "counts": {
-    "ref": 176,
-    "inline": 164,
+    "ref": 179,
+    "inline": 162,
     "phantom": 111,
-    "live": 133,
-    "referenced": 92,
+    "live": 128,
+    "referenced": 95,
     "dead": 8
   },
   "entries": [
@@ -1082,11 +1082,11 @@
       "code": "ERR_X",
       "family": "ERR_*",
       "namespace": "ERR",
-      "status": "inline",
+      "status": "ref",
       "names": [],
       "severities": [],
       "defs": 0,
-      "emits": 1,
+      "emits": 0,
       "tests": 1,
       "docs": 0
     },
@@ -1730,7 +1730,7 @@
         "error"
       ],
       "defs": 1,
-      "emits": 2,
+      "emits": 1,
       "tests": 2,
       "docs": 3
     },
@@ -2390,13 +2390,13 @@
       "code": "FUNGI-COND-001",
       "family": "COND",
       "namespace": "FUNGI",
-      "status": "inline",
+      "status": "ref",
       "names": [],
       "severities": [
         "error"
       ],
       "defs": 0,
-      "emits": 1,
+      "emits": 0,
       "tests": 0,
       "docs": 0
     },
@@ -3164,7 +3164,7 @@
         "error"
       ],
       "defs": 1,
-      "emits": 4,
+      "emits": 1,
       "tests": 46,
       "docs": 9
     },
@@ -3181,7 +3181,7 @@
         "warning"
       ],
       "defs": 1,
-      "emits": 4,
+      "emits": 1,
       "tests": 20,
       "docs": 14
     },
@@ -5131,7 +5131,7 @@
       "code": "FUNGI-MEMORY-001",
       "family": "MEMORY",
       "namespace": "FUNGI",
-      "status": "live",
+      "status": "referenced",
       "names": [
         "USE_AFTER_MOVE"
       ],
@@ -5139,7 +5139,7 @@
         "error"
       ],
       "defs": 1,
-      "emits": 1,
+      "emits": 0,
       "tests": 3,
       "docs": 9
     },
@@ -7117,7 +7117,7 @@
       "severities": [
         "error"
       ],
-      "defs": 2,
+      "defs": 1,
       "emits": 3,
       "tests": 21,
       "docs": 1
@@ -8350,7 +8350,7 @@
       "code": "FUNGI-TYPE-001",
       "family": "TYPE",
       "namespace": "FUNGI",
-      "status": "live",
+      "status": "inline",
       "names": [
         "UNKNOWN_TYPE",
         "Y",
@@ -8360,8 +8360,8 @@
         "error",
         "warning"
       ],
-      "defs": 1,
-      "emits": 2,
+      "defs": 0,
+      "emits": 1,
       "tests": 229,
       "docs": 17
     },
@@ -8385,7 +8385,7 @@
         "error"
       ],
       "defs": 1,
-      "emits": 5,
+      "emits": 1,
       "tests": 91,
       "docs": 10
     },
@@ -8603,7 +8603,7 @@
         "warning"
       ],
       "defs": 1,
-      "emits": 4,
+      "emits": 1,
       "tests": 24,
       "docs": 1
     },
@@ -8688,7 +8688,7 @@
       "code": "FUNGI-TYPE-019",
       "family": "TYPE",
       "namespace": "FUNGI",
-      "status": "live",
+      "status": "referenced",
       "names": [
         "UNKNOWN_SYMBOL"
       ],
@@ -8696,7 +8696,7 @@
         "error"
       ],
       "defs": 1,
-      "emits": 1,
+      "emits": 0,
       "tests": 7,
       "docs": 1
     },
@@ -8704,7 +8704,7 @@
       "code": "FUNGI-TYPE-020",
       "family": "TYPE",
       "namespace": "FUNGI",
-      "status": "live",
+      "status": "inline",
       "names": [
         "SHADOWED_BINDING",
         "X"
@@ -8712,7 +8712,7 @@
       "severities": [
         "warning"
       ],
-      "defs": 1,
+      "defs": 0,
       "emits": 1,
       "tests": 18,
       "docs": 1
@@ -8873,13 +8873,13 @@
       "code": "FUNGI-TYPE-099",
       "family": "TYPE",
       "namespace": "FUNGI",
-      "status": "inline",
+      "status": "ref",
       "names": [
         "WRONG_NAME"
       ],
       "severities": [],
       "defs": 0,
-      "emits": 1,
+      "emits": 0,
       "tests": 0,
       "docs": 0
     },
@@ -8899,7 +8899,7 @@
       "code": "FUNGI-VAL-001",
       "family": "VAL",
       "namespace": "FUNGI",
-      "status": "live",
+      "status": "referenced",
       "names": [
         "SAFETY_CRITICAL_MISSING_AUDIT",
         "DENY_ONLY_EFFECT"
@@ -8908,7 +8908,7 @@
         "error"
       ],
       "defs": 1,
-      "emits": 1,
+      "emits": 0,
       "tests": 36,
       "docs": 3
     },
@@ -9529,18 +9529,6 @@
       "emits": 0,
       "tests": 0,
       "docs": 1
-    },
-    {
-      "code": "FUNGI-Y-007",
-      "family": "Y",
-      "namespace": "FUNGI",
-      "status": "inline",
-      "names": [],
-      "severities": [],
-      "defs": 0,
-      "emits": 1,
-      "tests": 0,
-      "docs": 0
     }
   ]
 }

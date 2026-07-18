@@ -8,12 +8,12 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 
 | status | count | meaning |
 |---|---|---|
-| live | 133 | emitted with an exported constant |
-| inline | 164 | emitted, NO exported constant (R4 — Stage F) |
-| referenced | 92 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
+| live | 128 | emitted with an exported constant |
+| inline | 162 | emitted, NO exported constant (R4 — Stage F) |
+| referenced | 95 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 8 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
 | phantom | 111 | doc-only mention, not in source (drift — DOC-004) |
-| ref | 176 | referenced only (no def/emit) |
+| ref | 179 | referenced only (no def/emit) |
 
 ## RESERVED — defined but not emitted (std #1: tag wire-or-retire)
 
@@ -255,7 +255,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-COND-001 | inline | — | error |
+| FUNGI-COND-001 | ref | — | error |
 
 ### CONFIG (30)
 
@@ -472,7 +472,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | ERR_UNVERIFIED_METADATA | ref | — | — |
 | ERR_VALID_CODE | ref | — | — |
 | ERR_VALIDATION_FAILURE | ref | — | — |
-| ERR_X | inline | — | — |
+| ERR_X | ref | — | — |
 | ERR_X_Y | ref | — | — |
 | ERR_ZERO | ref | — | — |
 | ERR_ZERO_AMOUNT | phantom | — | — |
@@ -758,7 +758,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-MEMORY-001 | live | USE_AFTER_MOVE | error |
+| FUNGI-MEMORY-001 | referenced | USE_AFTER_MOVE | error |
 | FUNGI-MEMORY-002 | referenced | BORROW_AFTER_MOVE | error |
 | FUNGI-MEMORY-003 | referenced | BORROW_ESCAPES_SCOPE | error |
 | FUNGI-MEMORY-004 | referenced | READONLY_MUTATION | error |
@@ -1285,7 +1285,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-TYPE-0 | ref | — | — |
-| FUNGI-TYPE-001 | live | UNKNOWN_TYPE / Y / X | error/warning |
+| FUNGI-TYPE-001 | inline | UNKNOWN_TYPE / Y / X | error/warning |
 | FUNGI-TYPE-002 | live | QUANTIZED_PRECISION_MISMATCH / INVALID_RUNTIME_TARGET_TYPE / UNKNOWN_SYMBOL / TYPE_MISMATCH / X / Y / a / WRONG_NAME | warning/error |
 | FUNGI-TYPE-003 | live | INVALID_NOMINAL_CONVERSION | error |
 | FUNGI-TYPE-004 | inline | INVALID_BINARY_OPERATION | error |
@@ -1303,8 +1303,8 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-TYPE-016 | live | TENSOR_SHAPE_MISMATCH / QUANTIZED_PRECISION_MISMATCH / INVALID_RUNTIME_TARGET_TYPE / UNKNOWN_SYMBOL | error/warning |
 | FUNGI-TYPE-017 | live | QUANTIZED_PRECISION_MISMATCH / INVALID_RUNTIME_TARGET_TYPE / UNKNOWN_SYMBOL | warning/error |
 | FUNGI-TYPE-018 | referenced | INVALID_RUNTIME_TARGET_TYPE / UNKNOWN_SYMBOL | error |
-| FUNGI-TYPE-019 | live | UNKNOWN_SYMBOL | error |
-| FUNGI-TYPE-020 | live | SHADOWED_BINDING / X | warning |
+| FUNGI-TYPE-019 | referenced | UNKNOWN_SYMBOL | error |
+| FUNGI-TYPE-020 | inline | SHADOWED_BINDING / X | warning |
 | FUNGI-TYPE-021 | ref | — | — |
 | FUNGI-TYPE-022 | inline | UNREACHABLE_PATTERN | error |
 | FUNGI-TYPE-023 | inline | MISSING_WILDCARD_ARM | error |
@@ -1315,14 +1315,14 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-TYPE-030 | live | TENSOR_ELEMENT_TYPE_MISMATCH | error |
 | FUNGI-TYPE-031 | referenced | TENSOR_DIMENSION_MISMATCH | error |
 | FUNGI-TYPE-032 | inline | INVALID_CURRENCY_TAG | error |
-| FUNGI-TYPE-099 | inline | WRONG_NAME | — |
+| FUNGI-TYPE-099 | ref | WRONG_NAME | — |
 
 ### VAL (4)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-VAL-00 | ref | — | — |
-| FUNGI-VAL-001 | live | SAFETY_CRITICAL_MISSING_AUDIT / DENY_ONLY_EFFECT | error |
+| FUNGI-VAL-001 | referenced | SAFETY_CRITICAL_MISSING_AUDIT / DENY_ONLY_EFFECT | error |
 | FUNGI-VAL-002 | referenced | SAFETY_CRITICAL_MISSING_DETERMINISM | error |
 | FUNGI-VAL-003 | referenced | UNKNOWN_VALUE_CLASSIFICATION | error |
 
@@ -1420,9 +1420,3 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-WORKFLOW-001 | phantom | — | — |
 | FUNGI-WORKFLOW-002 | phantom | — | — |
 | FUNGI-WORKFLOW-003 | phantom | — | — |
-
-### Y (1)
-
-| code | status | name(s) | severity |
-|---|---|---|---|
-| FUNGI-Y-007 | inline | — | — |
