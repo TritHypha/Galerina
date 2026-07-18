@@ -2851,6 +2851,31 @@ function buildAndChain(operands: AstNode[], template: AstNode): AstNode {
   return acc;
 }
 
+// ── S2 / Tri-Fuse B (RD-0456) — deny-sentinel codegen convention ──────────────────────────────────────────
+// The DENY sentinel for a MATERIALIZED governance-verdict slot. When C (verdict-as-mask, S4) lowers a hoisted
+// verdict into a WASM local, that local MUST be initialized to this value at allocation, BEFORE any conditional
+// write — so a codegen path that forgets to write it reads DENY, never 0/undefined/ALLOW. This makes the
+// fail-open structurally UNWRITABLE: only a proven-ALLOW path may store +1 (ALLOW). It is the codegen-granularity
+// form of the empty-fold doctrine (allOf([]) = INDETERMINATE → deny) and the structural cure for the
+// `bytecode-vm:382 return 0` fail-open CLASS (RD-0455 — already fail-closed at HEAD; B cures the class, not a point).
+//
+// The value is DENY(-1) in the K3 verdict lattice (three-valued-governance: authorize(v) ⇔ v = +1, so -1 never
+// authorizes — bound to the real `authorize` in governance-algebra-binding.test.mjs). DORMANT until C: no live
+// emission path references emitVerdictSlotInitWAT yet, so this is BYTE-PARITY-SAFE (it changes no emitted WASM
+// today); it lands the convention so C's slot is born fail-closed rather than retrofitted. Pinned by
+// tests/wat-tri-fuse-b-deny-sentinel.test.mjs.
+export const GOVERNANCE_VERDICT_DENY_SENTINEL = -1;
+
+/**
+ * Emit the WAT that initializes a governance-verdict local to the DENY sentinel — the S2/B fail-closed init.
+ * C (S4) MUST route every verdict-slot allocation through this, so an unwritten slot reads DENY. Returns the
+ * folded `local.set` that stores the sentinel into `$<localName>`. (Dormant today; see the note above.)
+ */
+export function emitVerdictSlotInitWAT(localName: string): string {
+  return `(local.set $${localName} (i32.const ${GOVERNANCE_VERDICT_DENY_SENTINEL}))` +
+    ` ;; S2/B deny-sentinel — an unwritten verdict slot reads DENY (fail-open unwritable)`;
+}
+
 /**
  * Extract `runtime-precheck` ensure expression nodes from a flow's invariant block.
  * `statically_verified` invariants (constant-fold = true) are excluded — no WAT gate needed.

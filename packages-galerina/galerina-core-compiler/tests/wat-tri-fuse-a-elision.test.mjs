@@ -7,7 +7,8 @@
  * The load-bearing properties: (1) a proven operand IS elided (real win, not a no-op); (2) a runtime operand is
  * NEVER elided (no fail-open — the gate still enforces it); (3) an all-unknown conjunction is byte-identical
  * (only conjunctions with something to elide change); (4) runtime behaviour is identical (WASM still traps).
- * Oracle for the maths: verify-governance-algebra SUITE 4 (elision-soundness), 169/169.
+ * Oracle for the maths: tools/verify-governance-algebra.mjs SUITE 4 (elision-soundness), 169/169 — now in-repo,
+ * and bound to the REAL gate + run in the counted suite by galerina-tower-citizen/tests/governance-algebra-binding.test.mjs.
  */
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";

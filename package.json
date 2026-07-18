@@ -18,7 +18,9 @@
     "audit:imports": "node scripts/audit-import-governance.mjs",
     "audit:license": "node scripts/audit-license-compat.mjs",
     "audit:license:selftest": "node scripts/audit-license-compat.mjs --self-test",
-    "audit:percent-history": "node scripts/audit-percent-history.mjs"
+    "audit:percent-history": "node scripts/audit-percent-history.mjs",
+    "audit:governance-algebra": "node tools/verify-governance-algebra.mjs",
+    "audit:governance-algebra:selftest": "node tools/verify-governance-algebra.mjs --self-test"
   },
   "engines": {
     "node": ">=18.0.0"
