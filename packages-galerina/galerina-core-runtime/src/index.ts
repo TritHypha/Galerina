@@ -273,3 +273,125 @@ export function bindGovernedRuntime(
   if (provider.seamVersion !== GOVERNED_RUNTIME_SEAM_VERSION) return DENY_ALL_RUNTIME_EXECUTOR;
   return provider;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Governed-runtime executor COMPOSITION (RD-0361 R4 / #143 · block 2 — deny-by-default orchestration)
+// ─────────────────────────────────────────────────────────────────────────────
+// The seam above DECLARES the edge; this composes the fail-closed executor that sits behind it WITHOUT
+// pulling any border-crossing mechanism into core-runtime. A governed executor must, in order: resolve the
+// pinned artifact, prove its INTEGRITY, prove its ADMISSION, then run it. That control flow — the part that
+// must never fall open — is orchestrated here; every MECHANISM is INJECTED (a DI seam, never an import): the
+// content store, the sha256, the signature/admission oracle, and the low-level WASM VM all live behind the
+// Hardened Border (the DSS.wasm supervisor wires them). core-runtime therefore stays dependency-free and
+// border-safe while still owning the deny-by-default orchestration. Every branch that is not a full success
+// DENIES with a specific, auditable reason — there is NO path from a missing dependency or a failed check to
+// `admit`. This is the border-safe half of #143 block 2; the injected TCB (compiler's admitAndInstantiate +
+// host marshalling) is extracted into a border-safe home in the owner-gated half.
+
+/** Content-addressed source of pre-built, pre-signed artifact bytes. Returns the bytes registered under a
+ *  sha256, or undefined if it cannot vouch for that hash. The source is UNTRUSTED: the executor re-hashes
+ *  whatever bytes come back and denies on mismatch, so a compromised or buggy source cannot smuggle in a
+ *  different artifact than the one the request pinned. */
+export interface GovernedRuntimeArtifactSource {
+  readonly seamVersion: string;
+  artifactBytesFor(artifactSha256: string): Uint8Array | undefined;
+}
+
+/** Injected admission oracle: proves a pinned artifact is signed-admitted for a given export (the #105
+ *  admission decision). Crypto/signature verification lives behind the border — never in core-runtime — so it
+ *  is injected here as a pure boolean verdict. An absent verifier ⇒ deny (unproven ⇒ not admitted). */
+export interface GovernedAdmissionVerifier {
+  readonly seamVersion: string;
+  isAdmitted(input: { readonly artifactSha256: string; readonly exportName: string }): boolean;
+}
+
+/** The one border-crossing capability: instantiate verified bytes and call an export. This wraps the
+ *  compiler's WASM TCB (admitAndInstantiate + host record-marshalling) — injected by the DSS.wasm supervisor
+ *  on the border-safe side, NEVER imported by core-runtime (importing it would drag the compiler across the
+ *  Hardened Border, the exact fail-open the seam exists to prevent). */
+export interface LowLevelWasmExecutor {
+  readonly seamVersion: string;
+  instantiateAndCall(input: {
+    readonly artifactBytes: Uint8Array;
+    readonly exportName: string;
+    readonly args: readonly unknown[];
+  }): { readonly ok: true; readonly result?: unknown } | { readonly ok: false; readonly reason: string };
+}
+
+/** Injected dependencies of a composed governed executor. Every one is OPTIONAL so an under-wired
+ *  composition fails closed — a missing dependency denies, never admits. */
+export interface GovernedRuntimeExecutorDeps {
+  readonly artifactSource?: GovernedRuntimeArtifactSource;
+  readonly admissionVerifier?: GovernedAdmissionVerifier;
+  readonly lowLevel?: LowLevelWasmExecutor;
+  /** sha256 over the artifact bytes, hex-encoded lowercase — injected so no crypto import lands in core-runtime. */
+  readonly hashArtifact?: (bytes: Uint8Array) => string;
+}
+
+function denyVerdict(reason: string): GovernedRuntimeVerdict {
+  return { outcome: "deny", reason };
+}
+
+/** Compose the border-safe governed executor. The returned executor performs, per request and IN ORDER:
+ *  (0) seam-version match on the request AND every injected dependency; (1) resolve artifact bytes from the
+ *  content store; (2) re-hash and require the digest to equal the pinned sha256 (integrity); (3) require a
+ *  positive admission verdict for (hash, export); (4) instantiate + call via the low-level VM. Any failure at
+ *  any step — including a missing dependency — is a DENY with a specific reason. Admission is checked BEFORE
+ *  execution, so an unadmitted artifact never reaches the VM. There is no path from an absent dependency or a
+ *  failed check to `admit`. */
+export function createGovernedRuntimeExecutor(
+  deps: GovernedRuntimeExecutorDeps = {},
+): GovernedRuntimeExecutor {
+  return {
+    seamVersion: GOVERNED_RUNTIME_SEAM_VERSION,
+    admitAndExecute(request: GovernedRuntimeRequest): GovernedRuntimeVerdict {
+      if (request.seamVersion !== GOVERNED_RUNTIME_SEAM_VERSION) {
+        return denyVerdict(
+          `request seam version '${request.seamVersion}' does not match '${GOVERNED_RUNTIME_SEAM_VERSION}'.`,
+        );
+      }
+      const { artifactSource, admissionVerifier, lowLevel, hashArtifact } = deps;
+      if (
+        artifactSource === undefined ||
+        admissionVerifier === undefined ||
+        lowLevel === undefined ||
+        hashArtifact === undefined
+      ) {
+        return denyVerdict(
+          "governed executor is under-wired — a required capability (artifact source, admission verifier, hash, or low-level executor) is unplugged; deny-by-default.",
+        );
+      }
+      if (
+        artifactSource.seamVersion !== GOVERNED_RUNTIME_SEAM_VERSION ||
+        admissionVerifier.seamVersion !== GOVERNED_RUNTIME_SEAM_VERSION ||
+        lowLevel.seamVersion !== GOVERNED_RUNTIME_SEAM_VERSION
+      ) {
+        return denyVerdict("a wired capability pins a different seam version — refused (fail-closed).");
+      }
+      const bytes = artifactSource.artifactBytesFor(request.artifactSha256);
+      if (bytes === undefined) {
+        return denyVerdict(`no artifact registered for sha256 '${request.artifactSha256}'.`);
+      }
+      const computed = hashArtifact(bytes);
+      if (computed !== request.artifactSha256) {
+        return denyVerdict(
+          `artifact integrity check FAILED — source returned bytes hashing to '${computed}', not the pinned '${request.artifactSha256}'.`,
+        );
+      }
+      if (!admissionVerifier.isAdmitted({ artifactSha256: request.artifactSha256, exportName: request.exportName })) {
+        return denyVerdict(
+          `artifact '${request.artifactSha256}' is not signed-admitted for export '${request.exportName}'.`,
+        );
+      }
+      const executed = lowLevel.instantiateAndCall({
+        artifactBytes: bytes,
+        exportName: request.exportName,
+        args: request.args,
+      });
+      if (!executed.ok) {
+        return denyVerdict(`low-level execution denied: ${executed.reason}`);
+      }
+      return { outcome: "admit", result: executed.result };
+    },
+  };
+}
