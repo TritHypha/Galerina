@@ -129,6 +129,20 @@ function resolveDenoBin() {
   return "deno";
 }
 
+// Go lane (RD-0442) — resolve a runnable `go` executable, or null (skip-if-absent, like the other optional
+// toolchains). Cached so the PATH probe runs once for the whole suite, not per benchmark.
+let _goBin;
+function resolveGoBin() {
+  if (_goBin !== undefined) return _goBin;
+  const isWin = process.platform === "win32";
+  try {
+    const out = execSync(isWin ? "where go" : "command -v go", { encoding: "utf8" }).trim().split(/\r?\n/);
+    const pick = out.find(p => !isWin || /\.exe$/i.test(p)) || out[0];
+    _goBin = pick && existsSync(pick) ? pick : null;
+  } catch { _goBin = null; }
+  return _goBin;
+}
+
 function runProc(cmd, args=[]) {
   // --expose-gc lets node runners force a clean GC baseline before measuring heap
   // delta, so the per-operation memory numbers are reliable (not GC-timing noise).
@@ -183,6 +197,13 @@ async function runBenchmark(bench) {
       if (exe) { console.log(`  ${key}...`); res[key] = runProc(exe); break; }
     }
   }
+
+  // ── Go lane (RD-0442) — `go run bench.go` (compile+run), probed skip-if-absent, JSON on stdout. Go is not
+  // the CPU ceiling; it's here to win where designed to (kernel-path / concurrency). Same honest-benchmark
+  // discipline: the bench.go must match the reference algorithm + N so its `result` checksum agrees. ─────────
+  const goBench = join(dir, "bench.go");
+  const goBin = existsSync(goBench) ? resolveGoBin() : null;
+  if (goBin) { console.log(`  go...`); res.go = runProc(goBin, ["run", goBench]); }
 
   // ── WASM execution (Phase 27 — requires wat-wasm assembler) ─────────────
   const wasmRunner = join(dir, "bench-wasm.mjs");
