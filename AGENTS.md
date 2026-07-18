@@ -76,7 +76,7 @@ intent → governed execution plan → coordinated compute → audit proof
 | 6 | IR (GIR) + Target Planner + WAT emitter | Complete (Stage-A) |
 
 > **Stage-A status (2026-07-17):** the full pipeline lexer→parser→type/effect/value-state→governance-verifier→GIR→WAT
-> is shipped and green (`galerina-core-compiler` at 4,722; whole suite 93/93 · 7,383 tests · 0 fail on a clean checkout). The remaining
+> is shipped and green (`galerina-core-compiler` at 4,728; whole suite 93/93 · 7,389 tests · 0 fail on a clean checkout). The remaining
 > frontier is **Stage-B self-hosting WASM byte-parity** (lexer `tokenize` and the whole parser ladder up to its
 > entry point `parseFlows` reach it today — 53 differential tests, recursive AST readback, no new ABI; the
 > type-checker / governance-verifier / gir-emitter stages do not) and the **real
