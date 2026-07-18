@@ -5,8 +5,10 @@
  * there is NO path from a missing dependency or a failed check to `admit`, and admission is proven BEFORE the
  * low-level VM is ever touched (an unadmitted artifact must never execute).
  *
- * The fakes use a trivial injected hash (`h:<len>:<first-byte>`) so integrity match/mismatch is controllable
- * without real crypto — the composition logic under test is the control flow, not the digest algorithm.
+ * Admission is a SIGNED attestation verified INSIDE against the freshly-computed hash (R&D ruling 2026-07-18:
+ * a bare `admitted` boolean crossing the seam is forgeable — the same class as a bare `as Verdict` cast). The
+ * fakes use a trivial injected hash (`h:<len>:<first-byte>`) and a trivial `verifyAttestation` so match/mismatch
+ * is controllable without real crypto — the composition logic under test is the control flow, not the algorithm.
  */
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -20,15 +22,15 @@ const fakeHash = (bytes) => `h:${bytes.length}:${bytes[0] ?? 0}`;
 const BYTES = new Uint8Array([7, 7, 7]);
 const SHA = fakeHash(BYTES); // "h:3:7" — the pinned hash the request will carry
 
-const req = (over = {}) => ({ seamVersion: V, artifactSha256: SHA, exportName: "runTwin", args: [1, 2], ...over });
+const req = (over = {}) => ({ seamVersion: V, artifactSha256: SHA, attestation: "att-ok", exportName: "runTwin", args: [1, 2], ...over });
 
 // A fully-wired, all-admitting composition — the happy path and the base every deny-case perturbs.
 const wired = (over = {}) => {
-  const calls = { instantiate: 0 };
+  const calls = { instantiate: 0, verifyArg: null };
   const deps = {
     hashArtifact: fakeHash,
     artifactSource: { seamVersion: V, artifactBytesFor: (sha) => (sha === SHA ? BYTES : undefined) },
-    admissionVerifier: { seamVersion: V, isAdmitted: () => true },
+    admissionVerifier: { seamVersion: V, verifyAttestation: (input) => { calls.verifyArg = input; return input.attestation === "att-ok"; } },
     lowLevel: {
       seamVersion: V,
       instantiateAndCall: () => { calls.instantiate += 1; return { ok: true, result: 42 }; },
@@ -38,7 +40,7 @@ const wired = (over = {}) => {
   return { exec: createGovernedRuntimeExecutor(deps), calls };
 };
 
-test("★ happy path: integrity + admission pass → admit, carrying the VM result", () => {
+test("★ happy path: integrity + a verified attestation → admit, carrying the VM result", () => {
   const { exec, calls } = wired();
   const v = exec.admitAndExecute(req());
   assert.equal(v.outcome, "admit");
@@ -85,11 +87,26 @@ test("★ integrity: a source returning bytes that re-hash to a DIFFERENT value 
   assert.equal(calls.instantiate, 0, "bytes failing integrity must never execute");
 });
 
-test("★ admission is proven BEFORE execution: an unadmitted artifact denies and never reaches the VM", () => {
-  const { exec, calls } = wired({ admissionVerifier: { seamVersion: V, isAdmitted: () => false } });
+test("★ a bare/empty attestation is REFUSED (a trust-me claim is not admission) — never reaches the VM", () => {
+  const { exec, calls } = wired();
+  const v = exec.admitAndExecute(req({ attestation: "" }));
+  assert.equal(v.outcome, "deny");
+  assert.match(v.reason, /no signed admission attestation/);
+  assert.equal(calls.instantiate, 0);
+});
+
+test("★ admission is verified INSIDE, bound to the freshly-COMPUTED hash (anti-replay / anti-TOCTOU)", () => {
+  const { exec, calls } = wired();
+  exec.admitAndExecute(req());
+  assert.deepEqual(calls.verifyArg, { attestation: "att-ok", artifactSha256: SHA, exportName: "runTwin" },
+    "verifyAttestation must be called with the computed artifact hash it is bound to");
+});
+
+test("★ a non-verifying attestation denies and never reaches the VM (admission before execution)", () => {
+  const { exec, calls } = wired({ admissionVerifier: { seamVersion: V, verifyAttestation: () => false } });
   const v = exec.admitAndExecute(req());
   assert.equal(v.outcome, "deny");
-  assert.match(v.reason, /not signed-admitted/);
+  assert.match(v.reason, /did not verify/);
   assert.equal(calls.instantiate, 0, "an unadmitted artifact must never touch the low-level executor");
 });
 

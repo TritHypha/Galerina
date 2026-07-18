@@ -230,11 +230,16 @@ function createRuntimeDiagnostic(
  *  mismatched executor. */
 export const GOVERNED_RUNTIME_SEAM_VERSION = "galerina.runtime.seam.v1";
 
-/** An admit request: a pre-built, pre-signed twin artifact (hash-pinned) + the already-marshalled call.
- *  There is deliberately no source/`.fungi` field — the seam never compiles; it only executes a signed artifact. */
+/** An admit request: a pre-built, pre-signed twin artifact (hash-pinned) + a signed admission attestation +
+ *  the already-marshalled call. There is deliberately no source/`.fungi` field — the seam never compiles; it
+ *  only executes a signed artifact. */
 export interface GovernedRuntimeRequest {
   readonly seamVersion: string;
   readonly artifactSha256: string;
+  /** The signed #105 admission attestation, bound to `artifactSha256`. Verified INSIDE the executor via an
+   *  injected crypto capability (never a bare "admitted" boolean handed across the seam — that is forgeable,
+   *  the same class as a bare `as Verdict` cast). An empty attestation is refused (fail-closed). */
+  readonly attestation: string;
   readonly exportName: string;
   readonly args: readonly unknown[];
 }
@@ -297,12 +302,20 @@ export interface GovernedRuntimeArtifactSource {
   artifactBytesFor(artifactSha256: string): Uint8Array | undefined;
 }
 
-/** Injected admission oracle: proves a pinned artifact is signed-admitted for a given export (the #105
- *  admission decision). Crypto/signature verification lives behind the border — never in core-runtime — so it
- *  is injected here as a pure boolean verdict. An absent verifier ⇒ deny (unproven ⇒ not admitted). */
+/** Injected admission verifier: checks the request's SIGNED #105 attestation against the artifact hash (the
+ *  #105 admission decision). A signature primitive, not a trust-me boolean — the executor calls it INSIDE, in
+ *  the same moment as the integrity re-hash, so no forgeable `admitted` claim crosses the seam and no TOCTOU
+ *  window opens between "admitted" and execute. Bound to the artifact hash → an attestation for artifact X
+ *  cannot be replayed to admit artifact Y. Crypto stays injected (like `hashArtifact`) so core-runtime holds
+ *  no import; the real verify is a vetted, hash-pinned native-floor artifact. An absent verifier ⇒ deny. */
 export interface GovernedAdmissionVerifier {
   readonly seamVersion: string;
-  isAdmitted(input: { readonly artifactSha256: string; readonly exportName: string }): boolean;
+  /** Returns true ONLY if `attestation` is a valid signature admitting THIS `artifactSha256` (and export). */
+  verifyAttestation(input: {
+    readonly attestation: string;
+    readonly artifactSha256: string;
+    readonly exportName: string;
+  }): boolean;
 }
 
 /** The one border-crossing capability: instantiate verified bytes and call an export. This wraps the
@@ -334,11 +347,12 @@ function denyVerdict(reason: string): GovernedRuntimeVerdict {
 
 /** Compose the border-safe governed executor. The returned executor performs, per request and IN ORDER:
  *  (0) seam-version match on the request AND every injected dependency; (1) resolve artifact bytes from the
- *  content store; (2) re-hash and require the digest to equal the pinned sha256 (integrity); (3) require a
- *  positive admission verdict for (hash, export); (4) instantiate + call via the low-level VM. Any failure at
- *  any step — including a missing dependency — is a DENY with a specific reason. Admission is checked BEFORE
- *  execution, so an unadmitted artifact never reaches the VM. There is no path from an absent dependency or a
- *  failed check to `admit`. */
+ *  content store; (2) re-hash and require the digest to equal the pinned sha256 (integrity); (3) verify the
+ *  request's SIGNED attestation against that freshly-computed hash (admission — a signature, not a trust-me
+ *  boolean); (4) instantiate + call via the low-level VM. Any failure at any step — including a missing
+ *  dependency or an empty attestation — is a DENY with a specific reason. Integrity and admission are both
+ *  proven on the same bytes and BEFORE execution, so no unverified/unadmitted artifact ever reaches the VM
+ *  and no TOCTOU window opens. There is no path from an absent dependency or a failed check to `admit`. */
 export function createGovernedRuntimeExecutor(
   deps: GovernedRuntimeExecutorDeps = {},
 ): GovernedRuntimeExecutor {
@@ -378,9 +392,14 @@ export function createGovernedRuntimeExecutor(
           `artifact integrity check FAILED — source returned bytes hashing to '${computed}', not the pinned '${request.artifactSha256}'.`,
         );
       }
-      if (!admissionVerifier.isAdmitted({ artifactSha256: request.artifactSha256, exportName: request.exportName })) {
+      if (typeof request.attestation !== "string" || request.attestation === "") {
+        return denyVerdict("request carries no signed admission attestation — deny (a bare 'admitted' claim is not accepted).");
+      }
+      // Admission is verified INSIDE, against the freshly-COMPUTED hash (not the request's claimed hash) — so
+      // it is bound to the exact bytes we are about to run, closing any check-then-swap window.
+      if (!admissionVerifier.verifyAttestation({ attestation: request.attestation, artifactSha256: computed, exportName: request.exportName })) {
         return denyVerdict(
-          `artifact '${request.artifactSha256}' is not signed-admitted for export '${request.exportName}'.`,
+          `admission attestation did not verify for artifact '${computed}' / export '${request.exportName}'.`,
         );
       }
       const executed = lowLevel.instantiateAndCall({
