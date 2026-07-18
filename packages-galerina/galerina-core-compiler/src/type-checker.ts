@@ -1565,12 +1565,35 @@ class TypeChecker {
         return;
       }
 
-      case "matchExpr":
+      case "matchExpr": {
         this.checkMatchExhaustiveness(node);
-        for (const child of node.children ?? []) {
-          this.walkNode(child);
+        const mChildren = node.children ?? [];
+        const scrutinee = mChildren[0];
+        // The scrutinee is evaluated in the OUTER scope.
+        if (scrutinee !== undefined) this.walkNode(scrutinee);
+        // #100 / P9 inference chain (the get→Option→match-bind half): bind each arm's payload variable to
+        // the scrutinee's payload type — Some(it) on Option<T> → it:T; Ok(it)/Err(e) on Result<T,E> → it:T/e:E
+        // — so the arm body type-checks the bound variable instead of leaving it untyped. Skip Auto so the
+        // Array<Auto> twins stay byte-identical (it:Auto ≡ unbound); concrete Option<T> matches get it:T.
+        const scrutType = scrutinee !== undefined ? this.inferType(scrutinee) : undefined;
+        for (let i = 1; i < mChildren.length; i++) {
+          const arm = mChildren[i]!;
+          const isPayloadPat = arm.value === "Some" || arm.value === "Ok" || arm.value === "Err";
+          const bindingId = isPayloadPat ? (arm.children ?? [])[0] : undefined;
+          const payloadType = isPayloadPat ? this.matchArmPayloadType(scrutType, arm.value ?? "") : undefined;
+          this.pushBindingScope();
+          this.pushTypeScope();
+          if (bindingId?.kind === "identifier" && bindingId.value !== undefined && bindingId.value !== ""
+              && payloadType !== undefined && payloadType !== "" && payloadType !== "Auto") {
+            this.registerBinding(bindingId.value);
+            this.registerBindingType(bindingId.value, payloadType);
+          }
+          this.walkNode(arm);
+          this.popTypeScope();
+          this.popBindingScope();
         }
         return;
+      }
 
       default:
         break;
@@ -2556,6 +2579,18 @@ class TypeChecker {
   }
 
   // ── Fuzzy suggestion ──────────────────────────────────────────────────────
+
+  /** #100/P9 — the type a match arm's payload variable binds to, from the scrutinee's type + the pattern:
+   *  Some(x) on Option<T> → T; Ok(x) on Result<T,E> → T; Err(e) on Result<T,E> → E. undefined if not
+   *  determinable (then the arm variable is left untyped, exactly as before this fix). */
+  private matchArmPayloadType(scrutType: string | undefined, pattern: string): string | undefined {
+    if (scrutType === undefined || scrutType === "") return undefined;
+    const parsed = parseTypeString(scrutType);
+    if (parsed.base === "Option" && pattern === "Some") return parsed.args[0]?.trim();
+    if (parsed.base === "Result" && pattern === "Ok") return parsed.args[0]?.trim();
+    if (parsed.base === "Result" && pattern === "Err") return parsed.args[1]?.trim();
+    return undefined;
+  }
 
   private checkMatchExhaustiveness(node: AstNode): void {
     const arms = (node.children ?? []).slice(1);
