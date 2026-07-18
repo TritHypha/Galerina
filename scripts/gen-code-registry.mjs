@@ -74,5 +74,20 @@ for (const fam of Object.keys(byFamily).sort()) {
 writeFileSync(join(ROOT, "build/code-registry/REGISTRY.md"), md.join("\n"));
 writeProvenance(join(ROOT, "build/code-registry"), "gen-code-registry"); // BLD-003 / #216
 
+// ── STRUCTURAL STAMP (RD-0499): make a hand-authored count UNREPRESENTABLE ───────────────────────
+// A count stated in a doc behind a `<!-- registry:counts.KEY -->N` marker is OVERWRITTEN from the
+// generated source on every run, so a drifted number cannot survive a regen — stronger than the A1
+// drift DETECTOR (audit-artifact-drift.mjs), which only catches drift BETWEEN regens. Additive +
+// idempotent: a doc with no marker is untouched; a marker already correct is a no-op (no churn).
+// `total` folds in from entries.length (it lives at registry.total, not under counts).
+const stampSource = { ...counts, total: entries.length };
+for (const rel of ["AGENTS.md"]) {
+  let src;
+  try { src = readFileSync(join(ROOT, rel), "utf8"); } catch { continue; }
+  const next = src.replace(/(<!--\s*registry:counts\.([a-z]+)\s*-->)[ \t]*[\d,]*/g,
+    (m, marker, key) => (key in stampSource ? `${marker}${stampSource[key]}` : m));
+  if (next !== src) { writeFileSync(join(ROOT, rel), next); console.log(`  -> stamped registry counts into ${rel} (drift now unrepresentable)`); }
+}
+
 console.log(`gen-code-registry: ${entries.length} codes — ${Object.entries(counts).map(([k, v]) => `${k}:${v}`).join(" · ")}`);
 console.log("  -> build/code-registry/REGISTRY.md + registry.json");
