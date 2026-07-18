@@ -8997,7 +8997,7 @@
       "test packages-galerina/galerina-core-compiler/tests/gir-emitter.test.mjs:184",
       "test packages-galerina/galerina-core-compiler/tests/gir-emitter.test.mjs:197",
       "test packages-galerina/galerina-core-compiler/tests/gir-emitter.test.mjs:198",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:962",
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:963",
       "doc docs/examples/EXAMPLES_INDEX.md:234",
       "doc docs/examples/EXAMPLES_INDEX.md:263",
       "doc docs/examples/EXAMPLES_INDEX.md:290",
@@ -17321,7 +17321,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:1002",
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:1003",
       "doc docs/examples/EXAMPLES_INDEX.md:288",
       "doc docs/examples/Level-6-Compute/AI_SUMMARY.md:47",
       "fungi docs/examples/Level-8-Targets/414-target-no-fallback-invalid/example.fungi:6",
@@ -19052,7 +19052,7 @@
       "test packages-galerina/galerina-core-compiler/tests/type-checker.test.mjs:249",
       "test packages-galerina/galerina-core-compiler/tests/type-checker.test.mjs:250",
       "doc docs/contract-registry/CONTRACT_REGISTRY.md:587",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:980",
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:981",
       "doc docs/examples/EXAMPLES_INDEX.md:79",
       "doc docs/examples/EXAMPLES_INDEX.md:82",
       "doc docs/examples/EXAMPLES_INDEX.md:95",
@@ -19501,7 +19501,7 @@
       "test packages-galerina/galerina-core-compiler/tests/type-checker-phase11.test.mjs:196",
       "test packages-galerina/galerina-core-compiler/tests/type-checker-phase11.test.mjs:197",
       "test packages-galerina/galerina-core-compiler/tests/type-registry/type-checker-tensor.test.mjs:4",
-      "doc docs/contract-registry/CONTRACT_REGISTRY.md:611"
+      "doc docs/contract-registry/CONTRACT_REGISTRY.md:612"
     ]
   },
   {

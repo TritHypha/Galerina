@@ -1,6 +1,6 @@
 {
   "generatedBy": "gen-contract-registry.mjs",
-  "contracts": 906,
+  "contracts": 907,
   "parsed": 450,
   "rows": [
     {
@@ -4666,6 +4666,14 @@
       "signature": "pure flow isKnownType(t: String) -> Bool",
       "effects": [],
       "intent": "True when t names a type the Stage B checker knows (Int/Bool/String/Array)."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
+      "name": "isKnownCurrency",
+      "qualifier": "pure",
+      "signature": "pure flow isKnownCurrency(t: String) -> Bool",
+      "effects": [],
+      "intent": "True when t is an ISO 4217 active currency code admitted by Money (generated set)."
     },
     {
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",

@@ -3,7 +3,7 @@
   "provenance": {
     "available": true,
     "branch": "main",
-    "sha": "3e58fac3",
+    "sha": "f1dc33f7",
     "detached": false,
     "dirty": true
   },
@@ -122,7 +122,7 @@
         },
         {
           "label": "Type checker / Effect checker",
-          "pct": 97,
+          "pct": 100,
           "status": null,
           "live": false,
           "evidence": {
