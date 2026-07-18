@@ -270,6 +270,12 @@ flowchart LR
   T_audit_signed_fixture_drift_mjs["audit-signed-fixture-drift.mjs"]
   T_audit_signed_fixture_drift_mjs --> C_signing_fusion
   T_audit_signed_fixture_drift_mjs --> C_graph_index
+  T_audit_silent_overwrite_mjs["audit-silent-overwrite.mjs"]
+  T_audit_silent_overwrite_mjs --> C_effects
+  T_audit_silent_overwrite_mjs --> C_naming
+  T_audit_silent_overwrite_mjs --> C_gate_wiring
+  T_audit_silent_overwrite_mjs --> C_graph_index
+  T_audit_silent_overwrite_mjs --> C_proofs
   T_audit_sink_canonicality_mjs["audit-sink-canonicality.mjs"]
   T_audit_sink_canonicality_mjs --> C_sinks_taint
   T_audit_sink_canonicality_mjs --> C_effects

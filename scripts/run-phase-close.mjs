@@ -335,6 +335,12 @@ run("bench-report-stale", "node", ["packages-galerina/galerina-devtools-benchmar
 //   this reports any pre-regen drift or a baseline increase. Standalone→phase-close per the RD-0499
 //   wiring plan (A2 severity + A4 + families B/C/D pending R&D; CI-enforcing wiring = owner-gated).
 run("artifact-drift", "node", ["scripts/audit-artifact-drift.mjs"]);
+// silent-overwrite — owner 2026-07-18: hunt the silent-name-collision class (dup flow/type/member/EFFECT)
+//   with myco instead of by hand. Surfaces name-keyed collection writes with no nearby dup-guard as
+//   REVIEW CANDIDATES (a heuristic aid, not a proof). Report-only (exit 0) — a backlog like fungi-quality;
+//   run `node scripts/audit-silent-overwrite.mjs` for the candidate list, `--all` for guarded+unguarded.
+//   Its --self-test also runs in the gate-selftests meta-gate.
+run("silent-overwrite", "node", ["scripts/audit-silent-overwrite.mjs"]);
 // claim:hygiene — RD technical-claims-audit (2026-07-14) durable fix: public docs (README · SECURITY ·
 //   docs/**) must carry their evidence tier — no unqualified superlatives ("absolute", "native-class",
 //   "mathematical proof", "unhackable" asserted rather than rebutted), controlled security/PQ vocabulary
