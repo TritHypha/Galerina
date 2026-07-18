@@ -191,7 +191,17 @@ for (const file of FILES) {
 }
 
 // ── assemble ──
-const codes = [...idx.entries()].map(([code, e]) => {
+// Reserved placeholder family: FUNGI-X-* are SELF-TEST FIXTURE codes (names "Foo"/"Bar"), used by
+// scripts/audit-production-blockers.mjs and scripts/audit-artifact-drift.mjs to exercise emit-detection /
+// severity-completeness logic. They live in scripts/ (not tests/), so the indexer would otherwise record
+// their `code: "FUNGI-X-001"` fixture lines as REAL emits and promote them to "live" — polluting the
+// registry and tripping A2 severity-completeness on a non-diagnostic (the fixture-inside-the-surface trap,
+// RD-0451). "X" is never a real diagnostic family (real families are semantic: TYPE/NAME/GOV/EFFECT/…), so
+// excluding it here is safe and keeps the shared extractCodes intact (those self-tests still need to see it).
+const RESERVED_PLACEHOLDER_FAMILIES = new Set(["X"]);
+const codes = [...idx.entries()]
+  .filter(([code]) => !(nsOf(code) === "FUNGI" && RESERVED_PLACEHOLDER_FAMILIES.has(familyOf(code))))
+  .map(([code, e]) => {
   const seen = new Set();
   const occ = e.occ.filter((o) => { const k = `${o.file}:${o.line}:${o.role}`; if (seen.has(k)) return false; seen.add(k); return true; });
   return {

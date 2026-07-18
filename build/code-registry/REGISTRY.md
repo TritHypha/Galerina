@@ -9,11 +9,11 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | status | count | meaning |
 |---|---|---|
 | live | 133 | emitted with an exported constant |
-| inline | 163 | emitted, NO exported constant (R4 — Stage F) |
-| referenced | 94 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
+| inline | 164 | emitted, NO exported constant (R4 — Stage F) |
+| referenced | 92 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 8 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
 | phantom | 111 | doc-only mention, not in source (drift — DOC-004) |
-| ref | 177 | referenced only (no def/emit) |
+| ref | 176 | referenced only (no def/emit) |
 
 ## RESERVED — defined but not emitted (std #1: tag wire-or-retire)
 
@@ -342,12 +342,13 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-DEPLOY-001 | phantom | — | — |
 | FUNGI-DEPLOY-005 | phantom | — | — |
 
-### DRIFT (2)
+### DRIFT (3)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-DRIFT-001 | ref | — | — |
 | FUNGI-DRIFT-002 | ref | — | — |
+| FUNGI-DRIFT-003 | ref | — | — |
 
 ### EC (2)
 
@@ -471,7 +472,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | ERR_UNVERIFIED_METADATA | ref | — | — |
 | ERR_VALID_CODE | ref | — | — |
 | ERR_VALIDATION_FAILURE | ref | — | — |
-| ERR_X | ref | — | — |
+| ERR_X | inline | — | — |
 | ERR_X_Y | ref | — | — |
 | ERR_ZERO | ref | — | — |
 | ERR_ZERO_AMOUNT | phantom | — | — |
@@ -1419,14 +1420,6 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-WORKFLOW-001 | phantom | — | — |
 | FUNGI-WORKFLOW-002 | phantom | — | — |
 | FUNGI-WORKFLOW-003 | phantom | — | — |
-
-### X (3)
-
-| code | status | name(s) | severity |
-|---|---|---|---|
-| FUNGI-X-001 | referenced | Foo | — |
-| FUNGI-X-002 | referenced | — | — |
-| FUNGI-X-1 | ref | — | — |
 
 ### Y (1)
 

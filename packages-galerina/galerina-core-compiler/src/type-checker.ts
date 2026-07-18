@@ -593,6 +593,10 @@ class TypeChecker {
     // module type is a different scope (legitimate shadowing, e.g. examples/contracts.fungi), so it is
     // NOT flagged — verified the local decl is nested in the flow node, not a root child.
     this.checkDuplicateTopLevelTypes(ast);
+    // Pass 1c — #126: two TOP-LEVEL domain-guard declarations with the same name silently overwrite each
+    // other in governance-verifier's knownDomainGuards map (the 2nd wins). `guard Name {}` and its legacy
+    // alias `policy Name {}` share one namespace. Flag the duplicate — same silent-overwrite class.
+    this.checkDuplicateTopLevelGovernance(ast);
     // Pass 2: Validate all type references and infer/check types
     this.pushBindingScope();
     this.pushTypeScope();
@@ -623,6 +627,33 @@ class TypeChecker {
         });
       } else {
         seen.add(nm);
+      }
+    }
+  }
+
+  // #126: flag a duplicate TOP-LEVEL domain-guard declaration. `guard Name {}` (the v2.2 canonical form)
+  // and its legacy alias `policy Name {}` share ONE module namespace — governance-verifier keys BOTH into
+  // its knownDomainGuards map by name, where a 2nd declaration of a name silently overwrites the 1st (the
+  // same silent-overwrite fault as duplicate flows/types — surfaced by scripts/audit-silent-overwrite.mjs).
+  // Iterates ast.children so it sees ONLY module-level decls. Skips the bare-keyword sentinel nodes (value
+  // "guard"/"policy", mirroring governance-verifier's own exclusions). Reuses FUNGI-NAME-002 (DUPLICATE_NAME).
+  private checkDuplicateTopLevelGovernance(ast: AstNode): void {
+    const seenGuards = new Set<string>();
+    for (const child of ast.children ?? []) {
+      if (child.kind !== "guardDecl" && child.kind !== "policyDecl") continue;
+      const nm = (child.value ?? "").trim();
+      if (nm === "" || nm === "guard" || nm === "policy") continue;
+      if (seenGuards.has(nm)) {
+        this.diagnostics.push({
+          code: "FUNGI-NAME-002",
+          name: "DUPLICATE_NAME",
+          severity: "error",
+          message: `Domain guard '${nm}' is already declared in this module.`,
+          ...(child.location !== undefined ? { location: child.location } : {}),
+          suggestedFix: `Rename this declaration — a domain guard named '${nm}' was already declared at module level (guard and its legacy alias policy share one namespace); the second definition silently overrides the first.`,
+        });
+      } else {
+        seenGuards.add(nm);
       }
     }
   }

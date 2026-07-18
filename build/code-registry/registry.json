@@ -1,12 +1,12 @@
 {
   "generatedFrom": "build/code-index/code-index.json",
-  "total": 686,
+  "total": 684,
   "counts": {
-    "ref": 177,
-    "inline": 163,
+    "ref": 176,
+    "inline": 164,
     "phantom": 111,
     "live": 133,
-    "referenced": 94,
+    "referenced": 92,
     "dead": 8
   },
   "entries": [
@@ -1082,11 +1082,11 @@
       "code": "ERR_X",
       "family": "ERR_*",
       "namespace": "ERR",
-      "status": "ref",
+      "status": "inline",
       "names": [],
       "severities": [],
       "defs": 0,
-      "emits": 0,
+      "emits": 1,
       "tests": 1,
       "docs": 0
     },
@@ -2984,6 +2984,18 @@
     },
     {
       "code": "FUNGI-DRIFT-002",
+      "family": "DRIFT",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-DRIFT-003",
       "family": "DRIFT",
       "namespace": "FUNGI",
       "status": "ref",
@@ -5409,8 +5421,8 @@
         "error"
       ],
       "defs": 0,
-      "emits": 7,
-      "tests": 42,
+      "emits": 8,
+      "tests": 51,
       "docs": 3
     },
     {
@@ -9517,44 +9529,6 @@
       "emits": 0,
       "tests": 0,
       "docs": 1
-    },
-    {
-      "code": "FUNGI-X-001",
-      "family": "X",
-      "namespace": "FUNGI",
-      "status": "referenced",
-      "names": [
-        "Foo"
-      ],
-      "severities": [],
-      "defs": 1,
-      "emits": 0,
-      "tests": 0,
-      "docs": 0
-    },
-    {
-      "code": "FUNGI-X-002",
-      "family": "X",
-      "namespace": "FUNGI",
-      "status": "referenced",
-      "names": [],
-      "severities": [],
-      "defs": 1,
-      "emits": 0,
-      "tests": 0,
-      "docs": 0
-    },
-    {
-      "code": "FUNGI-X-1",
-      "family": "X",
-      "namespace": "FUNGI",
-      "status": "ref",
-      "names": [],
-      "severities": [],
-      "defs": 0,
-      "emits": 0,
-      "tests": 0,
-      "docs": 0
     },
     {
       "code": "FUNGI-Y-007",
