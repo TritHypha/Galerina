@@ -400,6 +400,13 @@ flowchart LR
   T_kb_index_mjs --> C_secrets_privacy
   T_kb_index_mjs --> C_doc_drift
   T_kb_index_mjs --> C_graph_index
+  T_registry_index_cli_mjs["registry-index-cli.mjs"]
+  T_registry_index_cli_mjs --> C_signing_fusion
+  T_registry_index_cli_mjs --> C_governance
+  T_registry_index_cli_mjs --> C_coverage
+  T_registry_index_cli_mjs --> C_diagnostics
+  T_registry_index_cli_mjs --> C_doc_drift
+  T_registry_index_cli_mjs --> C_graph_index
   T_lint_conventions_mjs["lint-conventions.mjs"]
   T_lint_conventions_mjs --> C_signing_fusion
   T_lint_conventions_mjs --> C_gate_wiring

@@ -4,9 +4,9 @@
     "packages": 95,
     "testBearing": 94,
     "tests": 7401,
-    "devTools": 93,
+    "devTools": 94,
     "auditTools": 55,
-    "toolsInCadence": 32,
+    "toolsInCadence": 33,
     "proofs": 40
   },
   "packages": [
@@ -300,7 +300,7 @@
       "tests": 4736,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 99,
+      "files": 101,
       "deps": [
         "@galerina/core-network",
         "@galerina/core-security",
@@ -1937,6 +1937,21 @@
       ]
     },
     {
+      "name": "registry-index-cli.mjs",
+      "category": "index",
+      "purpose": "registry-index-cli — walkthrough §3 signer/verifier CLI for the certified",
+      "selfTest": true,
+      "inCadence": true,
+      "concerns": [
+        "signing/fusion",
+        "governance",
+        "coverage",
+        "diagnostics",
+        "doc-drift",
+        "graph/index"
+      ]
+    },
+    {
       "name": "lint-conventions.mjs",
       "category": "lint",
       "purpose": "TASK-ENV-001: the umbrella convention linter (owner 2026-06-22, STRICT).",
@@ -2305,6 +2320,7 @@
       "graph-all.mjs",
       "ts-retirement-graph.mjs",
       "gen-code-registry.mjs",
+      "registry-index-cli.mjs",
       "lint-conventions.mjs",
       "check-gate-injection.mjs",
       "license-rollout.mjs"
@@ -2350,6 +2366,7 @@
       "gen-code-registry.mjs",
       "gen-unit-registry.mjs",
       "kb-index.mjs",
+      "registry-index-cli.mjs",
       "lint-conventions.mjs",
       "lint-fungi.mjs",
       "run-all-tests.cjs",
@@ -2421,6 +2438,7 @@
       "gen-code-registry.mjs",
       "gen-contract-registry.mjs",
       "kb-index.mjs",
+      "registry-index-cli.mjs",
       "run-all-tests.cjs",
       "run-core-tests.cjs",
       "run-phase-close.mjs",
@@ -2488,6 +2506,7 @@
       "ts-retirement-graph.mjs",
       "gen-contract-registry.mjs",
       "gen-unit-registry.mjs",
+      "registry-index-cli.mjs",
       "lint-conventions.mjs",
       "lint-fungi.mjs",
       "component-health.mjs",
@@ -2535,6 +2554,7 @@
       "gen-code-registry.mjs",
       "gen-contract-registry.mjs",
       "kb-index.mjs",
+      "registry-index-cli.mjs",
       "lint-conventions.mjs",
       "component-health.mjs",
       "run-all-tests.cjs",
@@ -2603,6 +2623,7 @@
       "galerina-new.mjs",
       "gen-code-registry.mjs",
       "gen-contract-registry.mjs",
+      "registry-index-cli.mjs",
       "lint-fungi.mjs",
       "hardening-show-derived.mjs",
       "license-rollout.mjs",
