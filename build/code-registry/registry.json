@@ -5395,8 +5395,8 @@
         "error"
       ],
       "defs": 0,
-      "emits": 2,
-      "tests": 16,
+      "emits": 3,
+      "tests": 23,
       "docs": 3
     },
     {

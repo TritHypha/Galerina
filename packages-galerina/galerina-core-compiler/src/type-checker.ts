@@ -515,6 +515,10 @@ class TypeChecker {
   private readonly flowReturnTypes = new Map<string, string>();
   /** Flow parameter type list, built during collectDeclarations. */
   private readonly flowParamTypes = new Map<string, readonly string[]>();
+  // Flow names already declared in THIS module. A second occurrence is a duplicate flow declaration:
+  // it silently overwrites the signature registry above and collides only at WASM instantiate
+  // ("Duplicate export name"). Tracked here so collectDeclarations can catch it at compile time.
+  private readonly declaredFlowNames = new Set<string>();
   /** Flow declared effects registry, built during collectDeclarations. */
   private readonly flowDeclaredEffects = new Map<string, readonly string[]>();
   /** record NAME → (field name → declared field type, "" when unannotated).
@@ -673,6 +677,21 @@ class TypeChecker {
       "flowDecl", "secureFlowDecl", "pureFlowDecl", "guardedFlowDecl",
     ]);
     if (FLOW_DECL_KINDS.has(node.kind) && node.value) {
+      // FUNGI-NAME-002: two flows with the same name in one module silently overwrite each other in the
+      // signature registry below and collide only at WASM instantiate ("Duplicate export name"). Catch
+      // it at COMPILE time — the 2nd+ declaration of a name is the duplicate (the first is authoritative).
+      if (this.declaredFlowNames.has(node.value)) {
+        this.diagnostics.push({
+          code: "FUNGI-NAME-002",
+          name: "DUPLICATE_NAME",
+          severity: "error",
+          message: `Flow '${node.value}' is already declared in this module.`,
+          ...(node.location !== undefined ? { location: node.location } : {}),
+          suggestedFix: `Rename this flow — a flow named '${node.value}' was already declared. Duplicate flow names collide at WASM export.`,
+        });
+      } else {
+        this.declaredFlowNames.add(node.value);
+      }
       const children = node.children ?? [];
       // Extract return type from the first typeRef child (the return type annotation)
       const retTypeNode = children.find((c) => c.kind === "typeRef");
