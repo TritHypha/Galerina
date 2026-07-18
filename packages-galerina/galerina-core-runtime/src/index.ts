@@ -211,3 +211,65 @@ function createRuntimeDiagnostic(
     ...(path === undefined ? {} : { path }),
   };
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Border-safe governed-runtime SEAM (RD-0361 R4 / #143 · P1.5, R&D 2026-07-18)
+// ─────────────────────────────────────────────────────────────────────────────
+// A "what to enforce" decision (a governance verdict) was welded to a "how to execute" mechanism (the
+// compiler's WASM executor: admitAndInstantiate + host record-marshalling). That coupling is why the
+// app-kernel — which is allowed to depend on core-runtime but NEVER the compiler (Hardened Border) — cannot
+// make a twin's WASM verdict authoritative without pulling the compiler across the border (a fail-open).
+//
+// This seam is the fix: the ONE declared, minimal-authority, deny-by-default edge a border-locked consumer
+// binds to reach authoritative twin execution. core-runtime DECLARES the seam (this file, dependency-free);
+// it does NOT execute — the executor (a pre-signed-`.wasm` loader owned by the DSS.wasm supervisor) plugs in
+// behind it later. Compile-at-runtime is forbidden by contract (a request carries a hash-pinned, pre-built
+// artifact) — compiling at runtime is exactly what would drag the compiler back across the border.
+
+/** The pinned seam version. A provider whose version differs is REFUSED (fail-closed) — never run a
+ *  mismatched executor. */
+export const GOVERNED_RUNTIME_SEAM_VERSION = "galerina.runtime.seam.v1";
+
+/** An admit request: a pre-built, pre-signed twin artifact (hash-pinned) + the already-marshalled call.
+ *  There is deliberately no source/`.fungi` field — the seam never compiles; it only executes a signed artifact. */
+export interface GovernedRuntimeRequest {
+  readonly seamVersion: string;
+  readonly artifactSha256: string;
+  readonly exportName: string;
+  readonly args: readonly unknown[];
+}
+
+/** The seam verdict. Fail-CLOSED: anything that is not an explicit `admit` is a denial. `admit` optionally
+ *  carries the executed twin's raw result token for the caller to interpret. */
+export type GovernedRuntimeVerdict =
+  | { readonly outcome: "admit"; readonly result?: unknown }
+  | { readonly outcome: "deny"; readonly reason: string };
+
+/** A border-safe executor plugged in behind the seam. Real implementations live in the DSS.wasm supervisor /
+ *  a pre-signed-`.wasm` loader — NOT here. Must pin the same seam version. */
+export interface GovernedRuntimeExecutor {
+  readonly seamVersion: string;
+  admitAndExecute(request: GovernedRuntimeRequest): GovernedRuntimeVerdict;
+}
+
+/** Deny-by-default executor: with nothing wired, EVERY request denies. This is the whole point of the seam —
+ *  an absent/unplugged runtime provider must never fall through to admit (the fail-open the border prevents). */
+export const DENY_ALL_RUNTIME_EXECUTOR: GovernedRuntimeExecutor = {
+  seamVersion: GOVERNED_RUNTIME_SEAM_VERSION,
+  admitAndExecute: (): GovernedRuntimeVerdict => ({
+    outcome: "deny",
+    reason:
+      "no governed-runtime executor is wired — deny-by-default (the border-safe runtime seam is unplugged).",
+  }),
+};
+
+/** Bind a consumer to the seam. Returns the deny-all executor when no provider is supplied OR when the
+ *  provider's seam version does not match the pinned version — both are unsafe and MUST fail closed rather
+ *  than admit. A version match with a real provider returns that provider unchanged. */
+export function bindGovernedRuntime(
+  provider?: GovernedRuntimeExecutor,
+): GovernedRuntimeExecutor {
+  if (provider === undefined) return DENY_ALL_RUNTIME_EXECUTOR;
+  if (provider.seamVersion !== GOVERNED_RUNTIME_SEAM_VERSION) return DENY_ALL_RUNTIME_EXECUTOR;
+  return provider;
+}

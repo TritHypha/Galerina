@@ -3,7 +3,7 @@
   "totals": {
     "packages": 95,
     "testBearing": 94,
-    "tests": 7397,
+    "tests": 7401,
     "devTools": 92,
     "auditTools": 54,
     "toolsInCadence": 31,
@@ -384,7 +384,7 @@
       "name": "galerina-core-runtime",
       "kind": "core",
       "description": "Galerina execution engine contracts for checked and compiled runtime execution.",
-      "tests": 13,
+      "tests": 17,
       "hasTestScript": true,
       "border": "PASS",
       "files": 2,
