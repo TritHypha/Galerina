@@ -1,8 +1,8 @@
 {
   "generatedFrom": "build/code-index/code-index.json",
-  "total": 684,
+  "total": 686,
   "counts": {
-    "ref": 175,
+    "ref": 177,
     "inline": 163,
     "phantom": 111,
     "live": 133,
@@ -2925,6 +2925,30 @@
       "emits": 0,
       "tests": 0,
       "docs": 2
+    },
+    {
+      "code": "FUNGI-DRIFT-001",
+      "family": "DRIFT",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-DRIFT-002",
+      "family": "DRIFT",
+      "namespace": "FUNGI",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 0
     },
     {
       "code": "FUNGI-EC-001",

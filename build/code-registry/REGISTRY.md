@@ -13,7 +13,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | referenced | 94 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 8 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
 | phantom | 111 | doc-only mention, not in source (drift — DOC-004) |
-| ref | 175 | referenced only (no def/emit) |
+| ref | 177 | referenced only (no def/emit) |
 
 ## RESERVED — defined but not emitted (std #1: tag wire-or-retire)
 
@@ -341,6 +341,13 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 |---|---|---|---|
 | FUNGI-DEPLOY-001 | phantom | — | — |
 | FUNGI-DEPLOY-005 | phantom | — | — |
+
+### DRIFT (2)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-DRIFT-001 | ref | — | — |
+| FUNGI-DRIFT-002 | ref | — | — |
 
 ### EC (2)
 
