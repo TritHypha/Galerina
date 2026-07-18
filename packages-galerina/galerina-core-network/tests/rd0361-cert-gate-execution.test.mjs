@@ -45,16 +45,23 @@ test("RD-0361 S1 · cert-gate: R0 build → R1 #105-admit → R3 WASM ≡ real K
   const fx = L.checkEffects(prog.flows, prog.ast);
   const { gir } = L.emitGIR(prog.ast, prog.flows, fx);
   const wat = L.renderWAT(L.buildWATModuleFromGIR(gir, undefined, "cert-gate", prog.ast, /*exportAllPure*/ true));
+  // #64: the emitter's per-module literal table — read after the build — decodes String verdicts by handle.
+  const internTable = new Map(L.getInternedStrings().map((e) => [e.handle, e.value]));
   const asm = await L.assembleWAT(wat);
   assert.ok(asm.valid && asm.diagnostics.length === 0, `twin WAT assembles (R0): ${JSON.stringify(asm.diagnostics)}`);
 
   // ── R1 · sign + #105 admit ──
   const host = L.createHostRuntime();
+  // #64/#68: seed the module literals for content-equal decode, and marshal a String ARG at the module's own
+  // literal handle when interned (faithful to in-module string origin), else a fresh host handle.
+  for (const e of L.getInternedStrings()) host.seedString(e.handle, e.value);
+  const decode = (h) => internTable.get(h) ?? host.readString(h);
+  const marshal = (s) => { for (const [h, v] of internTable) { if (v === s) return h; } return host.internString(s); };
   const kp = L.generateRunnerKeypair();
   const att = L.signWasm(asm.wasm, kp.privateKeyPem, "dev");
   const { instance } = await L.admitAndInstantiate({ wasm: asm.wasm, attestation: att, policy: { requireSigned: true, publicKeyPem: kp.publicKeyPem }, host });
   const X = instance.exports;
-  for (const f of ["vAnd", "pinMatchVerdict", "chainValidVerdict", "notExpiredVerdict", "revocationVerdict", "certVerdict", "withSideSignal"])
+  for (const f of ["vAnd", "pinMatchVerdict", "chainValidVerdict", "notExpiredVerdict", "revocationVerdict", "certVerdict", "withSideSignal", "boundaryAuthorized", "revocationRecheckDue"])
     assert.equal(typeof X[f], "function", `${f} admitted + exported (R1)`);
 
   // ── R3 · differential vs the REAL three-valued-governance.ts + the fail-closed sub-gate spec ──
@@ -79,4 +86,19 @@ test("RD-0361 S1 · cert-gate: R0 build → R1 #105-admit → R3 WASM ≡ real K
   const staleGood = X.revocationVerdict(bit(false), bit(true), bit(false)); // good but not fresh → 0
   assert.equal(staleGood, 0, "revocation stale-'good' → INDETERMINATE, never ALLOW");
   assert.equal(X.certVerdict(1, 1, 1, staleGood), 0, "a lone +1 cannot lift the 0 — channel folds to DENY (soft-fail closed)");
+
+  // ── boundaryAuthorized — the fail-closed boundary COLLAPSE (the actual admit/deny), authorize IFF the
+  //    composed verdict is exactly +1 (ALLOW); INDETERMINATE (0) and DENY (-1) BOTH refuse. Previously the
+  //    differential proved the sub-verdicts + certVerdict but NOT this final decision fold — a WASM whose
+  //    0-collapse diverged would have passed. Surfaced + closed by the SEC-002 anti-neuter (a weakened
+  //    `verdict >= 0` boundary must now fail the differential). ──
+  const refAuthorized = (v) => (v === 1 ? "authorized" : "denied");
+  for (const v of TRITS) assert.equal(decode(X.boundaryAuthorized(v)), refAuthorized(v), `boundaryAuthorized(${v}) (label-verified)`);
+
+  // ── revocationRecheckDue — the S4 mid-stream re-check cadence (fail-closed totality: due at every chunk
+  //    boundary; a valid 'poll' is also due once its interval elapsed; never 'never'). String mode ARG is
+  //    marshalled at the module's own literal handle. ──
+  const refRecheck = (mode, ev, ie, cb) => (cb ? "due" : (mode === "poll" ? (!ev ? "not-due" : (ie ? "due" : "not-due")) : "not-due"));
+  for (const mode of ["poll", "other"]) for (const ev of BOOLS) for (const ie of BOOLS) for (const cb of BOOLS)
+    assert.equal(decode(X.revocationRecheckDue(marshal(mode), bit(ev), bit(ie), bit(cb))), refRecheck(mode, ev, ie, cb), `revocationRecheckDue(${mode},${ev},${ie},${cb}) (label-verified)`);
 });

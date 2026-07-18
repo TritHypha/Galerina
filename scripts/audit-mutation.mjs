@@ -376,7 +376,96 @@ const RD0361_T2_MEMORY = [
   },
 ];
 
-const MUTANTS = configArg ? JSON.parse(readFileSync(configArg, "utf8")) : [...BUILTIN, ...CERT, ...FUSE, ...CC_I32, ...VSC_EGRESS, ...QUORUM_GOV, ...RD0361_T1, ...RD0361_T2_MEMORY];
+// RD-0361 sentinel-io + core-network border tranche — the whole core-network decision surface (all 7 border
+// twins) + both sentinel-io twins, proving each execution-cutover differential NON-VACUOUS. Landing this closed
+// a real coverage gap: the cert-gate differential proved the sub-verdicts + certVerdict but never exercised
+// boundaryAuthorized (the actual admit/deny collapse), so a weakened 0-collapse would have passed — the
+// differential now covers boundaryAuthorized + revocationRecheckDue (label-verified), and the mutant is killed.
+const RD0361_IO_NETWORK = [
+  {
+    id: "rd0361-io-hardenedborder-integrity",
+    file: "packages-galerina/galerina-core-sentinel-io/src/self-hosted/hardened-border.fungi",
+    find: "digestMatches == false",
+    replace: "digestMatches != false",
+    cwd: "packages-galerina/galerina-core-sentinel-io",
+    test: ["node", "--test", "tests/rd0361-hardened-border-execution.test.mjs"],
+    desc: "sentinel-io hardened-border integrityVerdict inverted (a TAMPERED block whose digest does not match would be RELEASED); the execution-cutover differential must catch WASM != real .ts",
+  },
+  {
+    id: "rd0361-io-manifestvalidator-allblocks",
+    file: "packages-galerina/galerina-core-sentinel-io/src/self-hosted/manifest-validator.fungi",
+    find: "allBlocksOk == false",
+    replace: "allBlocksOk != false",
+    cwd: "packages-galerina/galerina-core-sentinel-io",
+    test: ["node", "--test", "tests/rd0361-manifest-validator-execution.test.mjs"],
+    desc: "sentinel-io manifest-validator manifestVerdict inverted (a manifest with a BAD block accepted as 'valid'); the differential must catch WASM != real .ts",
+  },
+  {
+    id: "rd0361-net-certgate-boundary",
+    file: "packages-galerina/galerina-core-network/src/self-hosted/cert-gate.fungi",
+    find: "verdict == 1",
+    replace: "verdict >= 0",
+    cwd: "packages-galerina/galerina-core-network",
+    test: ["node", "--test", "tests/rd0361-cert-gate-execution.test.mjs"],
+    desc: "core-network cert-gate boundaryAuthorized weakened (INDETERMINATE 0 would AUTHORIZE — the revocation-unknown soft-fail hole); the differential must catch WASM != real .ts",
+  },
+  {
+    id: "rd0361-net-inboundguard-denymatch",
+    file: "packages-galerina/galerina-core-network/src/self-hosted/inbound-guard.fungi",
+    find: "hasDenyMatch == true",
+    replace: "hasDenyMatch == false",
+    cwd: "packages-galerina/galerina-core-network",
+    test: ["node", "--test", "tests/rd0361-inbound-guard-execution.test.mjs"],
+    desc: "core-network inbound-guard inboundVerdict inverted (an explicit DENY rule would be IGNORED); the differential must catch WASM != real .ts",
+  },
+  {
+    id: "rd0361-net-corspolicy-allowlist",
+    file: "packages-galerina/galerina-core-network/src/self-hosted/cors-policy.fungi",
+    find: "isExactAllowlisted == false",
+    replace: "isExactAllowlisted == true",
+    cwd: "packages-galerina/galerina-core-network",
+    test: ["node", "--test", "tests/rd0361-cors-policy-execution.test.mjs"],
+    desc: "core-network cors-policy corsVerdict inverted (a NON-allowlisted origin admitted — the unvalidated-origin reflection hole); the differential must catch WASM != real .ts",
+  },
+  {
+    id: "rd0361-net-egressguard-metadata",
+    file: "packages-galerina/galerina-core-network/src/self-hosted/egress-guard.fungi",
+    find: "if d == 254 { return 0 }",
+    replace: "if d == 254 { return 10 }",
+    cwd: "packages-galerina/galerina-core-network",
+    test: ["node", "--test", "tests/rd0361-egress-guard-execution.test.mjs"],
+    desc: "core-network egress-guard classifyIpv4Category weakened (169.254.169.254 metadata classified PUBLIC and dialled — the SSRF prize); the differential must catch WASM != real .ts",
+  },
+  {
+    id: "rd0361-net-admissionfeedback-harddeny",
+    file: "packages-galerina/galerina-core-network/src/self-hosted/admission-feedback.fungi",
+    find: "v = vAnd(v, 0 - 1)",
+    replace: "v = vAnd(v, 1)",
+    cwd: "packages-galerina/galerina-core-network",
+    test: ["node", "--test", "tests/rd0361-admission-feedback-execution.test.mjs"],
+    desc: "core-network admission-feedback telemetrySideSignal weakened (a hard-DENY telemetry reading would NOT degrade the channel); the differential must catch WASM != real .ts",
+  },
+  {
+    id: "rd0361-net-defensivecontrols-mtlspin",
+    file: "packages-galerina/galerina-core-network/src/self-hosted/defensive-controls.fungi",
+    find: "if mtlsPinned == true { return 1 }",
+    replace: "if mtlsPinned == false { return 1 }",
+    cwd: "packages-galerina/galerina-core-network",
+    test: ["node", "--test", "tests/rd0361-defensive-controls-execution.test.mjs"],
+    desc: "core-network defensive-controls proxyTrustVerdict inverted (an UNPINNED verified mTLS cert would trust the proxy — the pinning bypass, RD-0325); the differential must catch WASM != real .ts",
+  },
+  {
+    id: "rd0361-net-b8admission-boundary",
+    file: "packages-galerina/galerina-core-network/src/self-hosted/b8-admission.fungi",
+    find: "if verdict == 1 {",
+    replace: "if verdict >= 0 {",
+    cwd: "packages-galerina/galerina-core-network",
+    test: ["node", "--test", "tests/rd0361-b8-admission-execution.test.mjs"],
+    desc: "core-network b8-admission authorized weakened (INDETERMINATE 0 would AUTHORIZE — B8's TLS soft-fail hole); the differential must catch WASM != real .ts",
+  },
+];
+
+const MUTANTS = configArg ? JSON.parse(readFileSync(configArg, "utf8")) : [...BUILTIN, ...CERT, ...FUSE, ...CC_I32, ...VSC_EGRESS, ...QUORUM_GOV, ...RD0361_T1, ...RD0361_T2_MEMORY, ...RD0361_IO_NETWORK];
 
 function git(args) { return spawnSync("git", args, { cwd: ROOT, encoding: "utf8" }); }
 function isClean(file) { return git(["diff", "--quiet", "--", file]).status === 0; }
