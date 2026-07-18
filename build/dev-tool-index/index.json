@@ -3,7 +3,7 @@
   "totals": {
     "packages": 96,
     "testBearing": 95,
-    "tests": 7485,
+    "tests": 7488,
     "devTools": 95,
     "auditTools": 55,
     "toolsInCadence": 33,
@@ -297,7 +297,7 @@
       "name": "galerina-core-compiler",
       "kind": "core",
       "description": "Galerina compiler pipeline contracts for parsing, checking, IR, diagnostics and reports.",
-      "tests": 4767,
+      "tests": 4770,
       "hasTestScript": true,
       "border": "PASS",
       "files": 99,

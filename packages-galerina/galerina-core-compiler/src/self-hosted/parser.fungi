@@ -394,6 +394,47 @@ contract { intent { "Decompose a flow's return-expression tokens into the checke
 
 // â”€â”€ Sub-parsers (called by parseFlows) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+// P9 brick 1 (self-hosted generics): read a base type name plus an OPTIONAL balanced generic argument
+// list, concatenated into one flat string with no spaces — byte-identical to the TS parser's parseTypeRef
+// (parser.ts). So `x: Array<Token>` yields the typeName "Array<Token>" instead of the base-only "Array"
+// (which erased the element type and produced Array<Auto> downstream → the #100 unreachable trap). For a
+// NON-generic type this reduces to the base token and pos+1, so non-generic params parse byte-identically.
+pure flow readTypeName(tokens: Array<Token>, pos: Int) -> String
+contract { intent { "Read a base type name plus an optional balanced generic argument list into a flat string (matches TS parseTypeRef)." } }
+{
+  mut name: String = tokVal(tokens, pos)
+  mut p: Int = pos + 1
+  mut depth: Int = 0
+  mut scanning: Bool = tokVal(tokens, p) == "<"
+  while scanning {
+    let t: String = tokVal(tokens, p)
+    if t == "" { scanning = false }
+    if t == "<" { name = name + "<"  depth = depth + 1  p = p + 1 }
+    if t == ">" { name = name + ">"  depth = depth - 1  p = p + 1  if depth == 0 { scanning = false } }
+    if t != "" and t != "<" and t != ">" { name = name + t  p = p + 1 }
+  }
+  return name
+}
+
+// P9 brick 1: the token position just past a (possibly generic) type that starts at pos — the base name
+// plus any balanced < ... > argument list. Mirrors readTypeName's scan so the two never disagree on where a
+// type ends. For a non-generic type this is pos + 1 (identical to the old fixed advance).
+pure flow typeEndPos(tokens: Array<Token>, pos: Int) -> Int
+contract { intent { "Return the token position just past a (possibly generic) type starting at pos." } }
+{
+  mut p: Int = pos + 1
+  mut depth: Int = 0
+  mut scanning: Bool = tokVal(tokens, p) == "<"
+  while scanning {
+    let t: String = tokVal(tokens, p)
+    if t == "" { scanning = false }
+    if t == "<" { depth = depth + 1  p = p + 1 }
+    if t == ">" { depth = depth - 1  p = p + 1  if depth == 0 { scanning = false } }
+    if t != "" and t != "<" and t != ">" { p = p + 1 }
+  }
+  return p
+}
+
 // Parse "(" paramName: TypeName, ... ")" starting at pos.
 // Returns [params, newPos] encoded as a record { params, pos }.
 pure flow parseParams(tokens: Array<Token>, startPos: Int) -> Array<FlowParam>
@@ -410,10 +451,10 @@ contract { intent { "Parse a parenthesised parameter list. Caller must advance p
     if pv == "readonly" {
       let pname = tokVal(tokens, p + 1)
       let colon  = tokVal(tokens, p + 2)
-      let ptype  = tokVal(tokens, p + 3)
+      let ptype  = readTypeName(tokens, p + 3)
       if colon == ":" {
         params = params.append({ name: pname, typeName: ptype, isReadonly: true })
-        p = p + 4
+        p = typeEndPos(tokens, p + 3)
       }
       if colon != ":" { p = p + 1 }
     }
@@ -421,10 +462,10 @@ contract { intent { "Parse a parenthesised parameter list. Caller must advance p
     let isSpecial: Bool = pv == ")" or pv == "" or pv == "," or pv == "readonly"
     if isSpecial == false {
       let colon = tokVal(tokens, p + 1)
-      let ptype = tokVal(tokens, p + 2)
+      let ptype = readTypeName(tokens, p + 2)
       if colon == ":" {
         params = params.append({ name: pv, typeName: ptype, isReadonly: false })
-        p = p + 3
+        p = typeEndPos(tokens, p + 2)
       }
       if colon != ":" { p = p + 1 }
     }

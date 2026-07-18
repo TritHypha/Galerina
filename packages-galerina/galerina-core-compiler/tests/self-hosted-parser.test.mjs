@@ -224,6 +224,41 @@ describe("Self-Hosted Parser (parser.fungi) — parse-time sanity", () => {
 });
 
 // ---------------------------------------------------------------------------
+// P9 brick 1: self-hosted generics — the parser preserves generic type arguments
+// (readTypeName / typeEndPos in parser.fungi, byte-identical to the TS parseTypeRef).
+// Before brick 1 the type was a single token, so `Array<Int>` erased to `Array`
+// (→ `Array<Auto>` downstream → the #100 unreachable trap in the 5 trapping stages).
+// ---------------------------------------------------------------------------
+
+describe("Self-Hosted Parser — P9 brick 1: generic param type arguments", () => {
+
+  it("★ a generic param preserves its arguments: Array<Int> → typeName 'Array<Int>' (not the base-only 'Array')", async () => {
+    const result = await pipeline('pure flow f(xs: Array<Int>) -> Int { return 0 }');
+    const [flow] = flowsList(result);
+    const params = paramsList(flow);
+    assert.equal(params.length, 1, "exactly one param");
+    assert.equal(params[0].name, "xs");
+    assert.equal(params[0].typeName, "Array<Int>", "the generic argument must be preserved (was erased to 'Array' pre-brick-1)");
+  });
+
+  it("a NON-generic param is unchanged: Int → typeName 'Int' (brick 1 reduces to the old single-token read)", async () => {
+    const result = await pipeline('pure flow f(n: Int) -> Int { return 0 }');
+    const params = paramsList(flowsList(result)[0]);
+    assert.equal(params.length, 1);
+    assert.equal(params[0].typeName, "Int", "non-generic types parse byte-identically to before");
+  });
+
+  it("★ the generic scan stops at the matching '>' — it does not swallow the next param", async () => {
+    const result = await pipeline('pure flow f(xs: Array<Int>, n: Int) -> Int { return 0 }');
+    const params = paramsList(flowsList(result)[0]);
+    assert.equal(params.length, 2, "two params — the scan consumed exactly Array<Int>, not into the comma");
+    assert.equal(params[0].typeName, "Array<Int>");
+    assert.equal(params[1].name, "n");
+    assert.equal(params[1].typeName, "Int", "the second param is intact — typeEndPos landed after the matching >");
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Section 2: pure flow — simplest case
 // ---------------------------------------------------------------------------
 
