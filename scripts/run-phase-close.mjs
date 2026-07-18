@@ -329,6 +329,12 @@ run("private-doc-leak", "node", ["scripts/audit-private-doc-leak.mjs"]);
 //   uncertified-ratio/admission gate wires in after the per-metric-table restructure). Regenerate with
 //   `node src/compare.mjs > report.md`. Exit 3 on staleness. Blocking.
 run("bench-report-stale", "node", ["packages-galerina/galerina-devtools-benchmarks/src/audit-benchmark-integrity.mjs", "--stale-only"]);
+// artifact-drift — RD-0499 family A (2026-07-18): a count STATED in a doc must equal the GENERATED
+//   registry (A1 marker + prose forms — the "90 vs 133" class), and dead/phantom are shrink-only (A3).
+//   The structural stamp (gen-code-registry overwrites the markers) makes count-drift unrepresentable;
+//   this reports any pre-regen drift or a baseline increase. Standalone→phase-close per the RD-0499
+//   wiring plan (A2 severity + A4 + families B/C/D pending R&D; CI-enforcing wiring = owner-gated).
+run("artifact-drift", "node", ["scripts/audit-artifact-drift.mjs"]);
 // claim:hygiene — RD technical-claims-audit (2026-07-14) durable fix: public docs (README · SECURITY ·
 //   docs/**) must carry their evidence tier — no unqualified superlatives ("absolute", "native-class",
 //   "mathematical proof", "unhackable" asserted rather than rebutted), controlled security/PQ vocabulary

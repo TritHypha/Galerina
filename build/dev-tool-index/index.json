@@ -6,7 +6,7 @@
     "tests": 7368,
     "devTools": 91,
     "auditTools": 53,
-    "toolsInCadence": 29,
+    "toolsInCadence": 30,
     "proofs": 40
   },
   "packages": [
@@ -1049,7 +1049,7 @@
       "category": "audit",
       "purpose": "a hand-authored value drifting from a GENERATED",
       "selfTest": true,
-      "inCadence": false,
+      "inCadence": true,
       "concerns": [
         "signing/fusion",
         "coverage",
@@ -2712,7 +2712,6 @@
     "concernsNoTool": [],
     "toolsNotInCadence": [
       "audit-allowlist-sensitive.mjs",
-      "audit-artifact-drift.mjs",
       "audit-brand-keys.mjs",
       "audit-diagnostic-codes.mjs",
       "audit-diagnostic-doc-drift.mjs",
