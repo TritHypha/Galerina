@@ -110,6 +110,12 @@ run("doc:wat-drift", "node", ["scripts/emit-doc-wat.mjs", "--check"]);
 // (gen-status-blocks.mjs regenerates the ship-readiness/ZT/Build/registry block; --check fails on drift.)
 run("doc:status-drift", "node", ["scripts/gen-status-blocks.mjs", "--check"]);
 
+// ── 1b5. Cast-hygiene lint (R&D sorted-path S0) — no NEW bare `as Verdict`/`as Trit` authority cast ──
+// A bare cast MINTS governance authority past every gate (the laundering a type-brand cannot see; SUITE 5:
+// an unvoted reading cast to a Verdict manufactures ALLOW). Shrink-only baseline of the casts that exist
+// today, fail on any NEW one. Additive detector — touches no governance code, cannot regress the kernel.
+run("lint:cast-hygiene", "node", ["scripts/audit-cast-hygiene.mjs"]);
+
 // ── 1c. Goal acceptance tests (T-006/007/008) ──
 const goalsDir = join(ROOT, "tests", "goals");
 if (existsSync(goalsDir)) {
