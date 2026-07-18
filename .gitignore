@@ -62,6 +62,12 @@ build/*.txt
 build/_*.json
 build/*.snap
 build/sbom/
+# build/dss-wasm/: DSS module build outputs (capability-map.wasm, dss-supervisor.wasm, … + manifest.json).
+# These are compiled .wasm artifacts, but the `build/*.wasm` rule above only matches .wasm DIRECTLY under
+# build/, so this nested dir escaped it (same nested-glob-miss as build/lss-test-*/ below). Regenerated build
+# outputs, never source — and the runtime-status SOT §6 tracks the COMPOSED governed DSS component (#102–106)
+# as pending, NOT these raw per-module outputs, so ignoring them contradicts no status claim.
+build/dss-wasm/
 # Workspace intelligence index (galerina-devtools-intelligence): a GENERATED per-workspace cache that
 # embeds ABSOLUTE machine paths (workspaceDir + per-flow filePath) — committing it leaks the OS
 # username/layout (see scripts/audit-path-leak.mjs) and it is rebuilt on demand by buildIndex() and the
