@@ -3,7 +3,7 @@
   "provenance": {
     "available": true,
     "branch": "main",
-    "sha": "9234e4b7",
+    "sha": "c7079bcf",
     "detached": false,
     "dirty": true
   },
@@ -302,7 +302,7 @@
         {
           "item": "Execution-cutover (RD-0361)",
           "state": "building",
-          "detail": "execution column COMPLETE · 29/29 DIFFERENTIAL · 0 shadow (R0 build→R1 #105-admit→R3 ≡ the real .ts decider; string-verdict twins LABEL-verified; secret-gate over a REAL Array<SecretPresence> via RD-0389 record-ABI; kernel auth gate 6 closed as the FIRST string-ARG twin; S4 transport-FSM joined 2026-07-16 night as the 29th — 4 pure δ projections ≡ transportStep, 192 pts + INV pins) · only R4 authority flip 🔒 owner (#143) remains"
+          "detail": "execution column COMPLETE · 29/29 DIFFERENTIAL · 0 shadow (R0 build→R1 #105-admit→R3 ≡ the real .ts decider; string-verdict twins LABEL-verified; secret-gate over a REAL Array<SecretPresence> via RD-0389 record-ABI; kernel auth gate 6 closed as the FIRST string-ARG twin; S4 transport-FSM joined 2026-07-16 night as the 29th — 4 pure δ projections ≡ transportStep, 192 pts + INV pins) · ★ 2026-07-18: R4 T1 tranche FLIPPED to AUTHORITATIVE on the owner's nod (the FIRST trust-root authority flip — 4 authoritative: synchronization-gate · power-governor · cold-boot · audit-egress; recorded in the authority ledger docs/security/rd0361-authoritative-twins.json, RED-on-regression + missing-target enforced by audit-kernel-fungi-twins.mjs + self-tested; the .ts is a differential shadow, shadow-bake in progress). Column now 0 shadow · 25 differential · 4 authoritative. Every one of the 29 differentials is anti-neuter-proven non-vacuous (SEC-002 52/52). T2–T5 each need their own evidence pack + owner nod"
         },
         {
           "item": "Value-unit types (RD-0349)",
