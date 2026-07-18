@@ -222,7 +222,10 @@ export class NoisyLane {
  * Therefore no substrate failure can manufacture an ALLOW (proof: spec §4).
  */
 export function effectiveVerdict(ideal: Verdict, reading: -1 | 0 | 1): Verdict {
-  return vAnd(ideal, reading as Verdict);
+  // A reading (`-1|0|1`) is structurally a Verdict; it enters ONLY through vAnd's min, so it can CONFIRM or
+  // DEGRADE `ideal`, never upgrade it (min(ideal, +1) = ideal; min(-1, x) = -1) — no substrate failure can
+  // manufacture an ALLOW (spec §4). It is min-folded here, never authorized on its own; no bare cast needed.
+  return vAnd(ideal, reading);
 }
 
 // ── Analytic guarantee check (von Neumann NMR, exact closed form) ─────────────

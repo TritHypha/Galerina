@@ -4,9 +4,9 @@
     "packages": 95,
     "testBearing": 94,
     "tests": 7401,
-    "devTools": 92,
-    "auditTools": 54,
-    "toolsInCadence": 31,
+    "devTools": 93,
+    "auditTools": 55,
+    "toolsInCadence": 32,
     "proofs": 40
   },
   "packages": [
@@ -1069,6 +1069,24 @@
         "diagnostics",
         "doc-drift",
         "brand"
+      ]
+    },
+    {
+      "name": "audit-cast-hygiene.mjs",
+      "category": "audit",
+      "purpose": "LINT: no NEW bare `as Verdict` / `as Trit` authority cast.",
+      "selfTest": true,
+      "inCadence": true,
+      "concerns": [
+        "signing/fusion",
+        "governance",
+        "gate-wiring",
+        "diagnostics",
+        "source-hygiene",
+        "doc-drift",
+        "brand",
+        "proofs",
+        "sensitive-allowlist"
       ]
     },
     {
@@ -2295,6 +2313,7 @@
       "audit-allowlist-sensitive.mjs",
       "audit-artifact-drift.mjs",
       "audit-brand-keys.mjs",
+      "audit-cast-hygiene.mjs",
       "audit-checker-wiring.mjs",
       "audit-corpus-effect-names.mjs",
       "audit-coverage.mjs",
@@ -2423,6 +2442,7 @@
     ],
     "sensitive-allowlist": [
       "audit-allowlist-sensitive.mjs",
+      "audit-cast-hygiene.mjs",
       "audit-checker-wiring.mjs",
       "audit-effect-canonicality.mjs",
       "audit-muted-diagnostics.mjs",
@@ -2436,6 +2456,7 @@
     "signing/fusion": [
       "audit-artifact-drift.mjs",
       "audit-brand-keys.mjs",
+      "audit-cast-hygiene.mjs",
       "audit-checker-wiring.mjs",
       "audit-claim-hygiene.mjs",
       "audit-diagnostic-doc-drift.mjs",
@@ -2484,6 +2505,7 @@
     "doc-drift": [
       "audit-artifact-drift.mjs",
       "audit-brand-keys.mjs",
+      "audit-cast-hygiene.mjs",
       "audit-checker-wiring.mjs",
       "audit-claim-hygiene.mjs",
       "audit-corpus-effect-names.mjs",
@@ -2527,6 +2549,7 @@
     ],
     "gate-wiring": [
       "audit-brand-keys.mjs",
+      "audit-cast-hygiene.mjs",
       "audit-checker-wiring.mjs",
       "audit-corpus-effect-names.mjs",
       "audit-coverage.mjs",
@@ -2552,25 +2575,15 @@
     ],
     "brand": [
       "audit-brand-keys.mjs",
+      "audit-cast-hygiene.mjs",
       "audit-path-leak.mjs",
       "fix-logicn-brand.mjs",
       "brand-audit.mjs",
       "rebrand-tmf-to-spore.mjs",
       "verify-artifacts.mjs"
     ],
-    "sinks/taint": [
-      "audit-checker-wiring.mjs",
-      "audit-hardening-determinism.mjs",
-      "audit-muted-diagnostics.mjs",
-      "audit-oblivious.mjs",
-      "audit-papers-index.mjs",
-      "audit-private-doc-leak.mjs",
-      "audit-sink-canonicality.mjs",
-      "check-gate-injection.mjs",
-      "generate-sbom.mjs",
-      "hardening-show-derived.mjs"
-    ],
     "governance": [
+      "audit-cast-hygiene.mjs",
       "audit-checker-wiring.mjs",
       "audit-coverage.mjs",
       "audit-diagnostic-doc-drift.mjs",
@@ -2596,26 +2609,8 @@
       "rebuild-fusable-packages.mjs",
       "verify-artifacts.mjs"
     ],
-    "naming": [
-      "audit-claim-hygiene.mjs",
-      "audit-name-collisions.mjs",
-      "audit-private-doc-leak.mjs",
-      "audit-silent-overwrite.mjs",
-      "audit-web-stub-guard.mjs",
-      "run-phase-close.mjs",
-      "emit-doc-wat.mjs"
-    ],
-    "tier-floor": [
-      "audit-claim-hygiene.mjs",
-      "audit-gscm.mjs",
-      "audit-muted-diagnostics.mjs",
-      "audit-oblivious.mjs",
-      "audit-perf-hotpath.mjs",
-      "audit-tier-boundary.mjs",
-      "audit-twin-emit-parity.mjs",
-      "license-rollout.mjs"
-    ],
     "source-hygiene": [
+      "audit-cast-hygiene.mjs",
       "audit-claim-hygiene.mjs",
       "audit-corpus-effect-names.mjs",
       "audit-name-collisions.mjs",
@@ -2636,11 +2631,43 @@
       "rename-package.mjs"
     ],
     "proofs": [
+      "audit-cast-hygiene.mjs",
       "audit-claim-hygiene.mjs",
       "audit-diagnostic-codes.mjs",
       "audit-license-compat.mjs",
       "audit-silent-overwrite.mjs",
       "run-proofs.mjs",
+      "license-rollout.mjs"
+    ],
+    "sinks/taint": [
+      "audit-checker-wiring.mjs",
+      "audit-hardening-determinism.mjs",
+      "audit-muted-diagnostics.mjs",
+      "audit-oblivious.mjs",
+      "audit-papers-index.mjs",
+      "audit-private-doc-leak.mjs",
+      "audit-sink-canonicality.mjs",
+      "check-gate-injection.mjs",
+      "generate-sbom.mjs",
+      "hardening-show-derived.mjs"
+    ],
+    "naming": [
+      "audit-claim-hygiene.mjs",
+      "audit-name-collisions.mjs",
+      "audit-private-doc-leak.mjs",
+      "audit-silent-overwrite.mjs",
+      "audit-web-stub-guard.mjs",
+      "run-phase-close.mjs",
+      "emit-doc-wat.mjs"
+    ],
+    "tier-floor": [
+      "audit-claim-hygiene.mjs",
+      "audit-gscm.mjs",
+      "audit-muted-diagnostics.mjs",
+      "audit-oblivious.mjs",
+      "audit-perf-hotpath.mjs",
+      "audit-tier-boundary.mjs",
+      "audit-twin-emit-parity.mjs",
       "license-rollout.mjs"
     ],
     "effects": [

@@ -43,21 +43,38 @@ export const Verdict = {
   ALLOW: 1,          // may authorize
 } as const;
 
+// ── The blessed Verdict mint — "parse, don't cast" (S0 cast-hygiene, RD 2026-07-18) ──
+
+/**
+ * The ONE sanctioned trit→Verdict transition. Every place that turns a COMPUTED trit — a K3 gate result from
+ * tpl-simulator's `number`-typed minTrit/maxTrit/negTrit, or a validated tensor element — into a Verdict
+ * routes through here, so a bare `x as Verdict` never mints governance authority past the type-checker (the
+ * authority-laundering pattern `scripts/audit-cast-hygiene.mjs` forbids). It VALIDATES, it does not assert: a
+ * value outside {-1, 0, 1} is a fail-closed hard error, never a silently-minted invalid verdict (the `if`
+ * also narrows `number` → Verdict, so the mint itself needs no cast). Do NOT call this on a raw substrate
+ * READING — a reading is a measurement, min-folded via `effectiveVerdict`; it can only degrade a verdict,
+ * never be authorized on its own.
+ */
+export function asVerdict(t: number): Verdict {
+  if (t === -1 || t === 0 || t === 1) return t;
+  throw new Error(`asVerdict: ${t} is not a governance verdict trit (expected -1, 0, or 1) — fail-closed`);
+}
+
 // ── Kleene K3 calculus — Verdict-typed aliases of the shipped gates ───────────
 
 /** Kleene ∧ (AND) — the more-cautious verdict wins (fail-closed). Delegates to minTrit. */
 export function vAnd(a: Verdict, b: Verdict): Verdict {
-  return minTrit(a, b) as Verdict;
+  return asVerdict(minTrit(a, b));
 }
 
 /** Kleene ∨ (OR) — the more-permissive verdict wins. Delegates to maxTrit. */
 export function vOr(a: Verdict, b: Verdict): Verdict {
-  return maxTrit(a, b) as Verdict;
+  return asVerdict(maxTrit(a, b));
 }
 
 /** Kleene ¬ (NOT) — ALLOW ↔ DENY; INDETERMINATE ↦ INDETERMINATE (indeterminacy preserved). */
 export function vNot(a: Verdict): Verdict {
-  return negTrit(a) as Verdict;
+  return asVerdict(negTrit(a));
 }
 
 // ── Composition (deny-by-default empty handling) ──────────────────────────────
@@ -184,7 +201,7 @@ export function vAndTensor(vCore: Int8Array, tSub: Int8Array): Int8Array {
     if ((a !== -1 && a !== 0 && a !== 1) || (b !== -1 && b !== 0 && b !== 1)) {
       throw new Error(`vAndTensor: non-trit element at index ${k} (${a}, ${b}) — fail-closed`);
     }
-    out[k] = vAnd(a as Verdict, b as Verdict);
+    out[k] = vAnd(asVerdict(a), asVerdict(b));
   }
   return out;
 }

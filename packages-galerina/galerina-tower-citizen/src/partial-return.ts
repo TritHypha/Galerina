@@ -53,8 +53,8 @@ export type FieldVerdict = Verdict | readonly Verdict[] | undefined;
 
 function foldField(fv: FieldVerdict): Verdict {
   if (fv === undefined) return Verdict.INDETERMINATE; // deny-by-default
-  if (Array.isArray(fv)) return allOf(fv as readonly Verdict[]); // per-field vAnd fold ([] → INDETERMINATE)
-  return fv as Verdict;
+  if (typeof fv === "number") return fv;              // a single Verdict — `typeof` narrows cleanly (no cast)
+  return allOf(fv);                                    // a readonly Verdict[] — per-field vAnd fold ([] → INDETERMINATE)
 }
 
 /**

@@ -44,7 +44,7 @@ export type { TransitionPolicy, RestrictedTransition } from "./governance-enforc
 // Kleene K3 over the trit (vAnd=minTrit ∧, vOr=maxTrit ∨, vNot=negTrit ¬); collapse
 // at the trust boundary (0,-1 → deny); FUNGI-GOV-3VL-001 audits 0→deny. Never silent.
 export {
-  Verdict, vAnd, vOr, vNot, allOf, anyOf, collapse, authorize,
+  Verdict, asVerdict, vAnd, vOr, vNot, allOf, anyOf, collapse, authorize,
   decideAtBoundary, GOV_3VL_DIAGNOSTIC,
   vAndTensor, vAndTensor2D, consensusTritN, collapseConfidence,
 } from "./three-valued-governance.js";

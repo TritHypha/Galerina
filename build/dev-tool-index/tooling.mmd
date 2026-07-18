@@ -39,6 +39,16 @@ flowchart LR
   T_audit_brand_keys_mjs --> C_diagnostics
   T_audit_brand_keys_mjs --> C_doc_drift
   T_audit_brand_keys_mjs --> C_brand
+  T_audit_cast_hygiene_mjs["audit-cast-hygiene.mjs"]
+  T_audit_cast_hygiene_mjs --> C_signing_fusion
+  T_audit_cast_hygiene_mjs --> C_governance
+  T_audit_cast_hygiene_mjs --> C_gate_wiring
+  T_audit_cast_hygiene_mjs --> C_diagnostics
+  T_audit_cast_hygiene_mjs --> C_source_hygiene
+  T_audit_cast_hygiene_mjs --> C_doc_drift
+  T_audit_cast_hygiene_mjs --> C_brand
+  T_audit_cast_hygiene_mjs --> C_proofs
+  T_audit_cast_hygiene_mjs --> C_sensitive_allowlist
   T_audit_checker_wiring_mjs["audit-checker-wiring.mjs"]
   T_audit_checker_wiring_mjs --> C_sinks_taint
   T_audit_checker_wiring_mjs --> C_signing_fusion
