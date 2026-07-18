@@ -587,12 +587,44 @@ class TypeChecker {
   check(ast: AstNode): void {
     // Pass 1: Collect all user-defined type, enum, and flow signature names
     this.collectDeclarations(ast);
+    // Pass 1b — #107 (extended): two TOP-LEVEL type-level declarations (type/record/enum/hallmark) with
+    // the same name silently overwrite each other in the type registry (the 2nd wins — a silent
+    // mis-compile). Flag the duplicate. TOP-LEVEL ONLY (ast.children): a flow-LOCAL type that shadows a
+    // module type is a different scope (legitimate shadowing, e.g. examples/contracts.fungi), so it is
+    // NOT flagged — verified the local decl is nested in the flow node, not a root child.
+    this.checkDuplicateTopLevelTypes(ast);
     // Pass 2: Validate all type references and infer/check types
     this.pushBindingScope();
     this.pushTypeScope();
     this.walkNode(ast);
     this.popTypeScope();
     this.popBindingScope();
+  }
+
+  // #107 (extended): flag a duplicate TOP-LEVEL type-level declaration. type/record/enum/hallmark share
+  // one module type namespace; a 2nd declaration of a name silently overrides the 1st in the registry.
+  // Iterates ast.children so it sees ONLY module-level decls (a flow-local type shadow is nested and
+  // therefore excluded). Reuses FUNGI-NAME-002 (DUPLICATE_NAME) — the same fault as a duplicate binding.
+  private checkDuplicateTopLevelTypes(ast: AstNode): void {
+    const TYPE_DECL_KINDS = new Set(["typeDecl", "recordDecl", "enumDecl", "hallmarkDecl"]);
+    const seen = new Set<string>();
+    for (const child of ast.children ?? []) {
+      if (!TYPE_DECL_KINDS.has(child.kind)) continue;
+      const nm = (child.value ?? "").trim();
+      if (nm === "") continue;
+      if (seen.has(nm)) {
+        this.diagnostics.push({
+          code: "FUNGI-NAME-002",
+          name: "DUPLICATE_NAME",
+          severity: "error",
+          message: `Type '${nm}' is already declared in this module.`,
+          ...(child.location !== undefined ? { location: child.location } : {}),
+          suggestedFix: `Rename this declaration — a type named '${nm}' was already declared at module level; the second definition silently overrides the first.`,
+        });
+      } else {
+        seen.add(nm);
+      }
+    }
   }
 
   getResult(): TypeCheckResult {
