@@ -1360,11 +1360,12 @@
       "name": "audit-kernel-fungi-twins.mjs",
       "category": "audit",
       "purpose": "Declared self-hosted twin dirs (repo-relative). Add a package's `src/self-hosted` here when it gains twins.",
-      "selfTest": false,
+      "selfTest": true,
       "inCadence": false,
       "concerns": [
         "governance",
         "gate-wiring",
+        "doc-drift",
         "graph/index"
       ]
     },
@@ -2564,6 +2565,7 @@
       "audit-effect-canonicality.mjs",
       "audit-fungi-corpus-check.mjs",
       "audit-kernel-floor.mjs",
+      "audit-kernel-fungi-twins.mjs",
       "audit-license-compat.mjs",
       "audit-muted-diagnostics.mjs",
       "audit-name-collisions.mjs",

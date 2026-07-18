@@ -36,16 +36,36 @@ const TWIN_DIRS = [
   "packages-galerina/galerina-core-sentinel-state/src/self-hosted",
 ];
 
-let failed = 0;
-let checked = 0;
+// ── RD-0361 R4 AUTHORITY LEDGER (the trust-root flip). A twin listed in docs/security/rd0361-authoritative-
+// twins.json is AUTHORITATIVE: its WASM is the decider and its .ts is a differential SHADOW. This gate ENFORCES,
+// fail-closed, that every authoritative twin STAYS check-clean AND still `differential` (its execution-cutover
+// test proves WASM===.ts). An authoritative twin that regresses to `shadow` (its differential proof was dropped)
+// or fails `galerina check` is a RED gate — the exact trust-root fail-open (flip to trusted, then quietly remove
+// the proof) this ledger exists to catch. A present-but-malformed ledger is itself RED (deny-by-default); an
+// absent ledger simply means nothing is flipped yet.
+const LEDGER_PATH = join(ROOT, "docs", "security", "rd0361-authoritative-twins.json");
+function loadAuthoritative() {
+  if (!existsSync(LEDGER_PATH)) return { set: new Set(), error: null };
+  let raw;
+  try { raw = JSON.parse(readFileSync(LEDGER_PATH, "utf8")); }
+  catch (e) { return { set: new Set(), error: `authority ledger is malformed JSON (${e.message})` }; }
+  if (!raw || !Array.isArray(raw.twins)) return { set: new Set(), error: "authority ledger has no `twins` array" };
+  const set = new Set();
+  for (const t of raw.twins) {
+    if (!t || typeof t.file !== "string" || typeof t.dir !== "string") {
+      return { set: new Set(), error: "authority ledger has a twin entry missing `file`/`dir`" };
+    }
+    set.add(`${t.dir}/${t.file}`);
+  }
+  return { set, error: null };
+}
 
 // Execution column (RD-0361): a twin is a `shadow` (checker-verified only) until a keep-green test builds it,
 // #105-admits it, and executes it — then it is `differential` (WASM verdict proven ≡ the .ts / spec). It becomes
-// `authoritative` only once the #143 execution switch flips it to the real decider (none are yet). Detected from
-// the twin's package tests/: a test that references the twin's filename AND calls admitAndInstantiate proves
-// execution. Makes RD-0361 progress MEASURABLE per RD-0366 ("measure, don't narrate").
-const exec = { shadow: 0, differential: 0, authoritative: 0 };
-function executionState(dir, twinFile) {
+// `authoritative` once the #143 execution switch (this ledger, on the owner's nod) flips it to the decider of
+// record. Raw state is detected from the twin's package tests/: a test that references the twin's filename AND
+// calls admitAndInstantiate proves execution. Makes RD-0361 progress MEASURABLE per RD-0366 ("measure, don't narrate").
+function rawExecutionState(dir, twinFile) {
   const testsDir = join(ROOT, dir.replace(/\/src\/self-hosted$/, ""), "tests");
   if (!existsSync(testsDir)) return "shadow";
   for (const f of readdirSync(testsDir)) {
@@ -56,6 +76,48 @@ function executionState(dir, twinFile) {
   }
   return "shadow";
 }
+
+// The RED-on-regression rule (pure, self-tested). rawState ∈ {shadow, differential}:
+//   authoritative-declared + differential (proof present) → "authoritative"
+//   authoritative-declared + shadow      (proof GONE)     → "regressed"   (RED — trust-root fail-open)
+//   not declared                                          → rawState unchanged
+function classifyWithAuthority(rawState, isAuthoritative) {
+  if (!isAuthoritative) return rawState;
+  return rawState === "differential" ? "authoritative" : "regressed";
+}
+
+// Anti-neuter: prove the RED-on-regression detector fires before trusting the enforcing sweep.
+if (process.argv.includes("--self-test")) {
+  const cases = [
+    ["differential", true, "authoritative"],
+    ["shadow", true, "regressed"],
+    ["differential", false, "differential"],
+    ["shadow", false, "shadow"],
+  ];
+  for (const [raw, auth, want] of cases) {
+    const got = classifyWithAuthority(raw, auth);
+    if (got !== want) {
+      console.error(`SELF-TEST FAIL: classifyWithAuthority(${raw}, ${auth}) = ${got}, want ${want} (RED-on-regression neutered)`);
+      process.exit(2);
+    }
+  }
+  console.log("  self-test: authority classifier fires — differential→authoritative, shadow-when-declared→regressed (RED) ✅");
+  process.exit(0);
+}
+
+let failed = 0;
+let checked = 0;
+const exec = { shadow: 0, differential: 0, authoritative: 0, regressed: 0 };
+
+const { set: authoritative, error: ledgerError } = loadAuthoritative();
+if (ledgerError) {
+  console.error(`fungi-twins: ${ledgerError} — fail-closed (the R4 authority ledger cannot be trusted).`);
+  failed += 1;
+}
+// Every authoritative-declared twin MUST be seen in the sweep — a ledger entry whose twin is absent (typo /
+// moved / deleted) is a flip target that no longer exists, and must not silently pass (you believe a trust root
+// is verified when it isn't there at all). Tracked here, enforced after the sweep.
+const seenAuthoritative = new Set();
 
 for (const dir of TWIN_DIRS) {
   const abs = join(ROOT, dir);
@@ -71,12 +133,27 @@ for (const dir of TWIN_DIRS) {
     // Fail-closed: check must exit 0 AND report no POSITIVE error count ("0 errors" is clean;
     // "3 errors" is not). Matching a bare /error/ is wrong — it hits the word in "0 errors".
     const out = (r.stdout ?? "") + (r.stderr ?? "");
-    const ok = r.status === 0 && !/[1-9]\d* error/i.test(out);
-    const state = executionState(dir, twin);
+    const checkOk = r.status === 0 && !/[1-9]\d* error/i.test(out);
+    if (authoritative.has(rel)) seenAuthoritative.add(rel);
+    const state = classifyWithAuthority(rawExecutionState(dir, twin), authoritative.has(rel));
     exec[state] += 1;
-    console.log(`  ${ok ? "OK  " : "FAIL"} [${state.padEnd(12)}] ${rel}${ok ? "" : "  →  " + out.trim().split("\n").slice(-1)[0]}`);
+    // A `regressed` twin is an authoritative twin whose differential proof is gone — a trust-root RED even if
+    // `galerina check` still passes (check-clean is necessary, not sufficient, for an authoritative twin).
+    const ok = checkOk && state !== "regressed";
+    const note = state === "regressed"
+      ? "  →  AUTHORITATIVE twin regressed to shadow: its execution-cutover differential proof is GONE (trust-root fail-open)"
+      : (checkOk ? "" : "  →  " + out.trim().split("\n").slice(-1)[0]);
+    console.log(`  ${ok ? "OK  " : "FAIL"} [${state.padEnd(13)}] ${rel}${note}`);
     checked += 1;
     if (!ok) failed += 1;
+  }
+}
+
+// Fail-closed: an authoritative-declared twin that never appeared in the sweep is a missing flip target.
+for (const key of authoritative) {
+  if (!seenAuthoritative.has(key)) {
+    console.error(`fungi-twins: authoritative twin declared in the R4 ledger but NOT found in any twin dir (${key}) — fail-closed (a flip target that does not exist).`);
+    failed += 1;
   }
 }
 
@@ -85,5 +162,6 @@ if (checked === 0 && failed === 0) {
   process.exit(0);
 }
 console.log(`fungi-twins: ${checked - failed}/${checked} check-clean across ${TWIN_DIRS.length} dir(s)`);
-console.log(`execution column (RD-0361): ${exec.shadow} shadow · ${exec.differential} differential (execute through #105) · ${exec.authoritative} authoritative (#143 not flipped)`);
+const flip = exec.authoritative > 0 ? ` — #143 R4 flip LIVE (${exec.authoritative} authoritative)` : " (#143 not flipped)";
+console.log(`execution column (RD-0361): ${exec.shadow} shadow · ${exec.differential} differential (execute through #105) · ${exec.authoritative} authoritative${exec.regressed ? ` · ${exec.regressed} REGRESSED (RED)` : ""}${flip}`);
 process.exit(failed === 0 ? 0 : 1);

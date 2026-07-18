@@ -1,0 +1,46 @@
+{
+  "$schema-note": "RD-0361 R4 AUTHORITY LEDGER. A twin listed here is AUTHORITATIVE: its .fungi/WASM is the decider of record; the co-located .ts is demoted to a differential SHADOW (it keeps running and its execution-cutover test keeps asserting WASM===.ts, so any divergence is a RED alarm) for a bake window, and is deleted only post-bake. A twin is added here ONLY on the OWNER's condition-form nod over its evidence pack. scripts/audit-kernel-fungi-twins.mjs reads this ledger and ENFORCES, fail-closed, that every authoritative twin stays check-clean AND still differential (its execution-cutover test references it + admitAndInstantiate): an authoritative twin that regresses to shadow, or fails `galerina check`, is a RED gate — the trust-root fail-open this ledger exists to prevent. A malformed ledger is itself RED (deny-by-default).",
+  "protocol": "RD-0361 R4 authority flip · shadow-bake (R&D feca65e: existing differential harness, authority inverted; keep the .ts one bake window before deleting)",
+  "twins": [
+    {
+      "file": "synchronization-gate.fungi",
+      "dir": "packages-galerina/galerina-core-sentinel-time/src/self-hosted",
+      "tranche": "T1",
+      "surface": "physical<->logical clock-drift envelope (LST-DRIFT-001 / LST-SYNC-001)",
+      "sha256": "3c697b6241fb777e652312a064c6bf6d6dd0e16794ce2ae01ea1641d0fe54eac",
+      "evidencePack": "docs/security/rd0361-t1-r4-evidence-pack.md",
+      "ownerNod": "2026-07-18 — '#143 R4 flip go for it'",
+      "bake": "shadow-bake in progress (.ts retained as differential shadow; delete post-bake)"
+    },
+    {
+      "file": "power-governor.fungi",
+      "dir": "packages-galerina/galerina-core-sentinel-power/src/self-hosted",
+      "tranche": "T1",
+      "surface": "thermal band + kernel up-tier gate (LSP-*)",
+      "sha256": "371e2efe31c335163267f654652e259e92ef112444d51fe4c79fcb56ff051126",
+      "evidencePack": "docs/security/rd0361-t1-r4-evidence-pack.md",
+      "ownerNod": "2026-07-18 — '#143 R4 flip go for it'",
+      "bake": "shadow-bake in progress (.ts retained as differential shadow; delete post-bake)"
+    },
+    {
+      "file": "cold-boot.fungi",
+      "dir": "packages-galerina/galerina-core-sentinel-state/src/self-hosted",
+      "tranche": "T1",
+      "surface": "fail-closed snapshot restore (LSS-NOSNAP-001 / LSS-INTEGRITY-001)",
+      "sha256": "19632e4aaadc65a1498daaba7bc61a86959a08621c4f577651b73a10be7ad093",
+      "evidencePack": "docs/security/rd0361-t1-r4-evidence-pack.md",
+      "ownerNod": "2026-07-18 — '#143 R4 flip go for it'",
+      "bake": "shadow-bake in progress (.ts retained as differential shadow; delete post-bake)"
+    },
+    {
+      "file": "audit-egress.fungi",
+      "dir": "packages-galerina/galerina-core-sentinel-egress/src/self-hosted",
+      "tranche": "T1",
+      "surface": "tamper-evident audit-chain link + epoch verify (per-batch MAC)",
+      "sha256": "ccd7e7c9dd3c439f26ccc435bb6321ac8c7724b47603633901e813373deda115",
+      "evidencePack": "docs/security/rd0361-t1-r4-evidence-pack.md",
+      "ownerNod": "2026-07-18 — '#143 R4 flip go for it'",
+      "bake": "shadow-bake in progress (.ts retained as differential shadow; delete post-bake)"
+    }
+  ]
+}
