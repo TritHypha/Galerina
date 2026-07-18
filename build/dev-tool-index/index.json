@@ -398,8 +398,10 @@
       "tests": 7,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 3,
-      "deps": []
+      "files": 4,
+      "deps": [
+        "@galerina/core-runtime"
+      ]
     },
     {
       "name": "galerina-core-security",

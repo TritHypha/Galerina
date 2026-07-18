@@ -73,7 +73,7 @@
 | `galerina-core-photonic` | core | 4 | PASS | 0 | Galerina photonic and wavelength concepts, models, APIs and simulation contracts. |
 | `galerina-core-reports` | core | 15 | PASS | 0 | Shared Galerina report schemas and report-writing contracts. |
 | `galerina-core-runtime` | core | 29 | PASS | 0 | Galerina execution engine contracts for checked and compiled runtime execution. |
-| `galerina-core-runtime-wasm` | core | 7 | PASS | 0 | Border-safe WASM trust-computing base (RD-0361 R4 / #143): the record-layout ABI and (next brick) the attested |
+| `galerina-core-runtime-wasm` | core | 7 | PASS | 1 | Border-safe WASM trust-computing base (RD-0361 R4 / #143): the record-layout ABI and (next brick) the attested |
 | `galerina-core-security` | core | 15 | PASS | 0 | Reusable Galerina security primitives, redaction helpers, permission models and security report contracts. |
 | `galerina-core-sentinel-egress` | core | 34 | PASS | 0 | Galerina Sentinel Egress — governed audit egress: fixed ring buffer + batched HMAC-chained tamper-evident flus |
 | `galerina-core-sentinel-io` | core | 25 | PASS | 0 | Galerina Sentinel I/O (LSIO) — deterministic, governed, manifest-driven zero-copy data ingestion with HMAC-SHA |
