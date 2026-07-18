@@ -34,7 +34,10 @@
 //
 // Usage:
 //   node scripts/audit-path-leak.mjs --self-test   # prove the detectors fire (run first in CI)
-//   node scripts/audit-path-leak.mjs               # enforce: exit 1 on any leak
+//   node scripts/audit-path-leak.mjs               # enforce over the whole tracked set: exit 1 on any leak
+//   node scripts/audit-path-leak.mjs --staged      # PRE-COMMIT: scan only the staged index blobs (new files
+//                                                  #   included) — the targeted check, same detectors, exit 1 on leak
+//   node scripts/audit-path-leak.mjs --files a b   # scan only these files from the worktree (works pre-`git add`)
 import { readFileSync, existsSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { join, dirname, resolve, basename, relative, isAbsolute } from "node:path";
@@ -132,6 +135,39 @@ function scanText(text) {
   return hits;
 }
 
+const isBinary = (buf) => buf.subarray(0, 8000).includes(0);
+
+// Normalise a CLI path arg (relative to CWD, or absolute) to a repo-relative, forward-slash key.
+function toRel(p) {
+  const abs = isAbsolute(p) ? p : resolve(process.cwd(), p);
+  return relative(ROOT, abs).split("\\").join("/");
+}
+
+// Pure scanner over an EXPLICIT target list — each target carries a lazy `read()` returning its bytes (or
+// null if unreadable). Reuses the SAME detectors as the full scan (scanTrackedList structural + scanText
+// content), so a targeted / pre-commit check can never model fewer shapes than the CI gate — that parity is
+// the whole point: it is what makes `--files`/`--staged` the REAL gate, not a hand-rolled regex that misses
+// the `<name>` placeholder or the dash-slug. Returns counts + report lines; the caller decides how to exit.
+export function scanTargets(targets) {
+  let leakFiles = 0, leakCount = 0;
+  const report = [];
+  for (const h of scanTrackedList(targets.map((t) => t.rel))) {
+    leakFiles++; leakCount++;
+    report.push(`  ${h.rel}  [tracked-forbidden:${h.pattern}]  machine-local index artifact must not be tracked — git rm --cached it`);
+  }
+  for (const { rel, read } of targets) {
+    if (ALLOW_FILES.has(rel)) continue;
+    let buf; try { buf = read(); } catch { buf = null; }
+    if (!buf || isBinary(buf)) continue;
+    const hits = scanText(buf.toString("utf8"));
+    if (hits.length) {
+      leakFiles++; leakCount += hits.length;
+      for (const h of hits) report.push(`  ${rel}:${h.line}:${h.col}  [${h.pattern}]  ${h.text}`);
+    }
+  }
+  return { leakFiles, leakCount, report };
+}
+
 function selfTest() {
   const fires = (s) => scanText(s).length > 0;
   const checks = [
@@ -198,6 +234,23 @@ function selfTest() {
       JSON.stringify(planScanTargets(["c.md"], new Set(), () => true)) === JSON.stringify([{ rel: "c.md", from: "worktree" }])],
     ["★ surface: an allowlisted file is planned for NOTHING (and is declared in the green)",
       planScanTargets([...ALLOW_FILES][0] ? [[...ALLOW_FILES][0]] : ["scripts/audit-path-leak.mjs"], new Set(), () => true).length === 0],
+    // ★ TARGETED modes (--files/--staged, 2026-07-18): the pre-commit surface must run the SAME detectors, so
+    // a brand-new file — invisible to the tracked scan until `git add` (the SCAN-AFTER-ADD trap above) — is
+    // checkable BEFORE it lands, which is exactly when a hand-rolled regex gets reached for and misses the
+    // `<name>` placeholder / dash-slug. scanTargets is the shared core; these pin it fires, stays silent on a
+    // placeholder, and honours allow / never-tracked identically to the full scan.
+    ["★ targeted: a --files target with a real leak fires",
+      scanTargets([{ rel: "x.ts", read: () => Buffer.from("root = C:\\Users\\real\\dev") }]).leakCount === 1],
+    ["★ targeted: a clean --files target is silent",
+      scanTargets([{ rel: "x.ts", read: () => Buffer.from("import y from './y'") }]).leakCount === 0],
+    ["★ targeted: a `<name>` placeholder in a target does NOT fire (the false-positive that started this)",
+      scanTargets([{ rel: "x.ts", read: () => Buffer.from("a hardcoded C:\\Users\\<name>\\x breaks") }]).leakCount === 0],
+    ["★ targeted: an unreadable target is skipped, not crashed",
+      scanTargets([{ rel: "gone.ts", read: () => { throw new Error("ENOENT"); } }]).leakCount === 0],
+    ["★ targeted: an allowlisted target is not scanned",
+      scanTargets([{ rel: [...ALLOW_FILES][0], read: () => Buffer.from("C:\\Users\\real\\x") }]).leakCount === 0],
+    ["★ targeted: a NEVER_TRACKED target fires structurally (no read needed)",
+      scanTargets([{ rel: "pkg/x/.codebase-memory/a.json", read: () => Buffer.from("{}") }]).leakCount === 1],
     ["tracked .codebase-memory dir fires", scanTrackedList([".codebase-memory/graph.db.zst"]).length === 1],
     ["tracked NESTED .codebase-memory fires", scanTrackedList(["packages-galerina/x/src/.codebase-memory/artifact.json"]).length === 1],
     ["tracked graph.db.zst anywhere fires", scanTrackedList(["some/dir/graph.db.zst"]).length === 1],
@@ -210,6 +263,40 @@ function selfTest() {
 }
 
 if (process.argv.includes("--self-test")) { selfTest(); process.exit(0); }
+
+// ── targeted pre-commit modes (2026-07-18): scan exactly what you're ABOUT to commit, with the SAME detectors ──
+// The default scan reads the whole tracked set (the CI surface). But a brand-new file is untracked until
+// `git add` (the SCAN-AFTER-ADD trap above), so a pre-commit leak-check reached for an ad-hoc regex — which
+// missed the `<name>` placeholder and the dash-slug the real detectors handle. These modes run scanTargets
+// (the shared core), so the REAL gate is the pre-commit gate, never a hand-rolled one:
+//   --staged            scan the STAGED index blobs (what WILL be committed), including new staged files
+//   --files <p> [<p>…]  scan the given files from the worktree (works pre-`git add`; repo-relative or absolute)
+if (process.argv.includes("--staged") || process.argv.includes("--files")) {
+  const stagedMode = process.argv.includes("--staged");
+  let targets;
+  if (stagedMode) {
+    // --diff-filter=d drops staged DELETIONS (no blob to read); the rest carry a `:path` index blob.
+    const staged = git("diff", "--cached", "--name-only", "--diff-filter=d").split("\n").map((s) => s.trim()).filter(Boolean);
+    targets = staged.map((rel) => ({ rel, read: () => { try { return execFileSync("git", ["show", `:${rel}`], { cwd: ROOT, windowsHide: true, maxBuffer: 64 * 1024 * 1024 }); } catch { return null; } } }));
+  } else {
+    const fi = process.argv.indexOf("--files");
+    const paths = process.argv.slice(fi + 1).filter((a) => !a.startsWith("-"));
+    if (!paths.length) { console.error("  --files needs at least one path (repo-relative or absolute)"); process.exit(2); }
+    targets = paths.map((p) => { const rel = toRel(p); return { rel, read: () => existsSync(join(ROOT, rel)) ? readFileSync(join(ROOT, rel)) : null }; });
+  }
+  const label = stagedMode ? "staged" : "files";
+  const { leakFiles, leakCount, report } = scanTargets(targets);
+  if (leakCount) {
+    console.error(`\n  ❌ path-leak [--${label}]: ${leakCount} leak(s) across ${leakFiles} of ${targets.length} target(s):\n`);
+    console.error(report.join("\n"));
+    console.error(`\n  Fix: a repo-relative path, ~/$HOME, a runtime env READ (process.env.X — NOT a literal %USERPROFILE%),`);
+    console.error(`  or a <placeholder>. A line that must quote the pattern to teach the rule can carry "${ALLOW_MARKER}".`);
+    process.exit(1);
+  }
+  console.log(`  ✅ path-leak [--${label}]: no leaks in ${targets.length} target(s).`);
+  console.log(`     shapes: ${PATTERNS.map((p) => p.name).join(" · ")} …of those shapes ONLY (an unmodelled encoding is invisible here).`);
+  process.exit(0);
+}
 
 /**
  * Decide WHAT to scan and FROM WHERE. The index and the working tree are two different snapshots:
@@ -245,7 +332,6 @@ export function planScanTargets(tracked, dirty, exists) {
   return plan;
 }
 
-const isBinary = (buf) => buf.subarray(0, 8000).includes(0);
 const files = git("ls-files").split("\n").map((s) => s.trim()).filter(Boolean);
 // `git diff --name-only HEAD` reports DIRTY *and* tracked-but-DELETED paths — the two cases where the
 // index and the working tree disagree, and the only cases where reading the disk is not reading HEAD.
