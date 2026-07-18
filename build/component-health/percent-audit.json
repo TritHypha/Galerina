@@ -3,11 +3,11 @@
   "provenance": {
     "available": true,
     "branch": "main",
-    "sha": "c9796569",
+    "sha": "9234e4b7",
     "detached": false,
     "dirty": true
   },
-  "shipReadinessPct": 97.89473684210527,
+  "shipReadinessPct": 97.91666666666666,
   "ztAvg": 78,
   "buildAvg": 75,
   "trackingRegistryCount": 20,
@@ -29,7 +29,7 @@
         {
           "label": "I/O — OS kernel",
           "pct": 72,
-          "note": "◑ auth gate 6 (kernel.fungi) EXECUTION-PROVEN (RD-0361 differential ≡ the shipped kernel `handle`, first string-ARG twin) · DSS build gate now 10/10 DETERMINISTIC (2026-07-16 night: wabt fresh-instance-per-build + the P9.4 guarded-body adoption gate — the partial-lowering class that blocked the supervisor bundle is structurally dead) · the DSS supervisor V_DPM DECISION CORE is EXECUTION-PROVEN ≡ Stage-A over a 386-point matrix + laws (topology-first, monotonicity, deny-by-default, zero effect calls) with real .wasm artifacts (build/dss-wasm, sha256 manifest). sentinel-io decision surface FULLY twinned + checker-clean. Remaining to 100%: authoritative execution (#143 flip, owner) + full kernel-bypass I/O EXECUTION (the real Wasmtime TCB, DSS.wasm #102-106, post-v1)",
+          "note": "◑ auth gate 6 (kernel.fungi) EXECUTION-PROVEN (RD-0361 differential ≡ the shipped kernel `handle`, first string-ARG twin) · DSS build gate now 10/10 DETERMINISTIC (2026-07-16 night: wabt fresh-instance-per-build + the P9.4 guarded-body adoption gate — the partial-lowering class that blocked the supervisor bundle is structurally dead) · the DSS supervisor V_DPM DECISION CORE is EXECUTION-PROVEN ≡ Stage-A over a 386-point matrix + laws (topology-first, monotonicity, deny-by-default, zero effect calls) with real .wasm artifacts (build/dss-wasm, sha256 manifest). sentinel-io decision surface FULLY twinned + checker-clean. ★ 2026-07-18: the #143 border-safe INJECTABLE execution path is now BUILT (@galerina/core-runtime-wasm seam adapters — R&D model-A admission-verify + HARD export-presence gate + sync LowLevelWasmExecutor, cc057d7c) so the extracted WASM TCB is wirable by the kernel/DSS WITHOUT crossing the compiler border; the % is unchanged because the remaining step is the authority FLIP (owner nod), not the wiring. Remaining to 100%: authoritative execution (#143 flip, owner) + full kernel-bypass I/O EXECUTION (the real Wasmtime TCB, DSS.wasm #102-106, post-v1)",
           "evidence": {
             "asserted": "remainder is #143 execution — a binary switch, not a ladder; likely becomes a WORD"
           }
@@ -37,7 +37,7 @@
         {
           "label": "Packages",
           "pct": 98,
-          "note": "◑ signed admission fully twinned — central-index (registry-index) + per-package manifest (package-admission) + kernel FUSION admission (descriptor · hash · sidecar · revocation · sig-policy · registry · capability — fuse-admission.fungi) checker-clean · remaining = #143 execution + Phase-28 registry-data wiring",
+          "note": "◑ signed admission fully twinned — central-index (registry-index) + per-package manifest (package-admission) + kernel FUSION admission (descriptor · hash · sidecar · revocation · sig-policy · registry · capability — fuse-admission.fungi) checker-clean · ★ 2026-07-18: the #72 walkthrough-§3 signer CLI is BUILT (registry-index-cli.mjs — build/sign/verify over the SHIPPED decider, single-witness; deny-by-default review gate makes a stub catalog UN-SIGNABLE — proven by 16/16 hermetic self-test + a live-tree REFUSED run; phase-close-wired) · remaining = REAL registry entries (governance review = human act) + the owner signing ceremony (§1.1 alg + §1.2 authority-key decisions, walkthrough §4) + #143 execution — the % does NOT move for a mechanism-only increment · ★ 2026-07-18: the #143 injectable execution path (core-runtime-wasm seam adapters, cc057d7c) is now BUILT — still % unchanged (gated on real registry entries + owner signing + the #143 flip)",
           "evidence": {
             "asserted": "remainder is #143 execution + Phase-28 registry data; the registry half IS countable (real sourceHash + reviewed:true per package)"
           }
@@ -45,7 +45,7 @@
         {
           "label": "Memory",
           "pct": 62,
-          "note": "◑ governed-decision surface FULLY twinned (validator · pool-config · segmentation LSM-SEGV · trit-tamper LSM-TRIT-CORRUPT · allocate/free/UAF-guard LSM-UAF-001 + REJECT-scrub — 5 checker-clean .fungi) · real WASM isolation execution = design intent (#143 switch)",
+          "note": "◑ governed-decision surface FULLY twinned (validator · pool-config · segmentation LSM-SEGV · trit-tamper LSM-TRIT-CORRUPT · allocate/free/UAF-guard LSM-UAF-001 + REJECT-scrub — 5 checker-clean .fungi) · real WASM isolation execution = design intent (#143 switch) · ★ 2026-07-18: the injectable border-safe execution path is now BUILT (core-runtime-wasm seam adapters, cc057d7c); % unchanged — the #143 flip is the gate, not the wiring",
           "evidence": {
             "asserted": "remainder is #143 execution — a binary switch, not a ladder; likely becomes a WORD"
           }
@@ -53,7 +53,7 @@
         {
           "label": "TLSTP — zero-middleware",
           "pct": 56,
-          "note": "◑ S4 recovering-FSM TWINNED + EXECUTION-PROVEN (2026-07-16 night: transport-fsm.fungi — δ as 4 pure all-int projections, checker-clean; RD-0361 differential 192 points ≡ the shipped `transportStep` incl. the τ boundary + Closed absorption, INV-1 join / INV-2 / INV-4 / INV-6 pinned on WASM outputs; charter-safe = state never aliased to the trit, resume rides === ALLOW only, erase-on-Closed). ALL 6 core-network border DECISION surfaces twinned (.fungi, fail-closed): cert-gate · cors-policy · inbound-guard · defensive-controls · admission-feedback · egress-guard — core-network decision surface COMPLETE; the B8 ADMISSION fold (b8-admission.fungi) twinned + EXECUTION-PROVEN ≡ the shipped K3 calculus; the DSS supervisor decision core (the in-sandbox tier's brain) is now execution-proven ≡ Stage-A (386 pts). Remaining = in-sandbox decryption EXECUTION (DSS.wasm Wasmtime TCB, #143 switch/post-v1) + B8 transport plumbing (raw-byte shim/ECH) + S4 wiring into the live transport (the twin is proven, not yet build-wired)",
+          "note": "◑ S4 recovering-FSM TWINNED + EXECUTION-PROVEN (2026-07-16 night: transport-fsm.fungi — δ as 4 pure all-int projections, checker-clean; RD-0361 differential 192 points ≡ the shipped `transportStep` incl. the τ boundary + Closed absorption, INV-1 join / INV-2 / INV-4 / INV-6 pinned on WASM outputs; charter-safe = state never aliased to the trit, resume rides === ALLOW only, erase-on-Closed). ALL 6 core-network border DECISION surfaces twinned (.fungi, fail-closed): cert-gate · cors-policy · inbound-guard · defensive-controls · admission-feedback · egress-guard — core-network decision surface COMPLETE; the B8 ADMISSION fold (b8-admission.fungi) twinned + EXECUTION-PROVEN ≡ the shipped K3 calculus; the DSS supervisor decision core (the in-sandbox tier's brain) is now execution-proven ≡ Stage-A (386 pts). Remaining = in-sandbox decryption EXECUTION (DSS.wasm Wasmtime TCB, #143 switch/post-v1) + B8 transport plumbing (raw-byte shim/ECH) + S4 wiring into the live transport (the twin is proven, not yet build-wired) · ★ 2026-07-18: the injectable border-safe execution path is now BUILT (core-runtime-wasm seam adapters, cc057d7c) — the DSS/kernel can reach authoritative twin execution without the compiler; % unchanged (owner #143 flip is the gate)",
           "evidence": {
             "asserted": "remainder is #143 + B8 raw-byte shim + S4 live wiring; the twinned-surface half is countable, the execution half is not"
           }
