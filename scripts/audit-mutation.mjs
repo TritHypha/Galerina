@@ -544,7 +544,52 @@ const RD0361_APPKERNEL_TOWER = [
   },
 ];
 
-const MUTANTS = configArg ? JSON.parse(readFileSync(configArg, "utf8")) : [...BUILTIN, ...CERT, ...FUSE, ...CC_I32, ...VSC_EGRESS, ...QUORUM_GOV, ...RD0361_T1, ...RD0361_T2_MEMORY, ...RD0361_IO_NETWORK, ...RD0361_APPKERNEL_TOWER];
+// The differential TAIL — the four execution-cutover twins that the RD-0361 tranches missed because their
+// tests are named for a LATER RD (0363/0364/0365) or (trit-buffer-guard) were mis-remembered as shadow-only.
+// The kernel-fungi-twins gate reports 29 differential twins; these four are the balance beyond the 25 above,
+// so with them the anti-neuter covers EVERY differential twin the gate counts (29/29):
+//   trit-buffer-guard (rd0361, memory tamper sentinel) · passive-plan-replay-admission (rd0363, replay authority)
+//   inference-governance (rd0364, model output-taint) · pq-admission-policy (rd0365, PQ no-downgrade).
+const RD_DIFFERENTIAL_TAIL = [
+  {
+    id: "rd0361-mem-tritbufferguard-tamper",
+    file: "packages-galerina/galerina-core-sentinel-memory/src/self-hosted/trit-buffer-guard.fungi",
+    find: "if enc > 2 {",
+    replace: "if enc > 3 {",
+    cwd: "packages-galerina/galerina-core-sentinel-memory",
+    test: ["node", "--test", "tests/rd0361-trit-buffer-guard-execution.test.mjs"],
+    desc: "sentinel-memory trit-buffer-guard checkTritEnc weakened (the 2-bit corruption sentinel code 3 would decode 'ok' -- tampered backing memory accepted, LSM-TRIT-CORRUPT bypass); the differential must catch WASM != real .ts",
+  },
+  {
+    id: "rd0363-rt-passiveplan-authority",
+    file: "packages-galerina/galerina-core-runtime/src/self-hosted/passive-plan-replay-admission.fungi",
+    find: "if capabilityCurrent == false { return 0 - 1 }",
+    replace: "if capabilityCurrent == false { return 1 }",
+    cwd: "packages-galerina/galerina-core-runtime",
+    test: ["node", "--test", "tests/rd0363-passive-plan-replay-execution.test.mjs"],
+    desc: "core-runtime passive-plan-replay authorityVerdict weakened (an approved-then-REVOKED capability would still replay -- an old plan escalating past today's authority, RD-0363 2.2); the differential must catch WASM != real .ts",
+  },
+  {
+    id: "rd0364-tc-inferencegov-outputtaint",
+    file: "packages-galerina/galerina-tower-citizen/src/self-hosted/inference-governance.fungi",
+    find: "if dischargedByVerifier == false { return 0 }",
+    replace: "if dischargedByVerifier == false { return 1 }",
+    cwd: "packages-galerina/galerina-tower-citizen",
+    test: ["node", "--test", "tests/rd0364-inference-governance-execution.test.mjs"],
+    desc: "tower-citizen inference-governance outputTrustTrit weakened (UNDISCHARGED model output would be TRUSTED +1 -- prompt-injection/hallucination could cross a requireTrusted boundary, RD-0364 2); the differential must catch WASM != real .ts",
+  },
+  {
+    id: "rd0365-tc-pqadmission-classical",
+    file: "packages-galerina/galerina-tower-citizen/src/self-hosted/pq-admission-policy.fungi",
+    find: "if edValid == false { return 0 - 1 }",
+    replace: "if edValid == false { return 1 }",
+    cwd: "packages-galerina/galerina-tower-citizen",
+    test: ["node", "--test", "tests/rd0365-pq-admission-policy-execution.test.mjs"],
+    desc: "tower-citizen pq-admission-policy classicalVerdict weakened (an INVALID Ed25519 signature would admit -- the classical-half bypass in the hybrid PQ admission fold, CRYPTO-002); the differential must catch WASM != real .ts",
+  },
+];
+
+const MUTANTS = configArg ? JSON.parse(readFileSync(configArg, "utf8")) : [...BUILTIN, ...CERT, ...FUSE, ...CC_I32, ...VSC_EGRESS, ...QUORUM_GOV, ...RD0361_T1, ...RD0361_T2_MEMORY, ...RD0361_IO_NETWORK, ...RD0361_APPKERNEL_TOWER, ...RD_DIFFERENTIAL_TAIL];
 
 function git(args) { return spawnSync("git", args, { cwd: ROOT, encoding: "utf8" }); }
 function isClean(file) { return git(["diff", "--quiet", "--", file]).status === 0; }
