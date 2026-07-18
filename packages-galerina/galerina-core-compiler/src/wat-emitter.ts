@@ -33,6 +33,9 @@ import { numericBaseType } from "./numeric-lowering.js";
 // It lives in its own dependency-free module so the TCB can reach its layout without importing the
 // emitter — the first brick of the #143 border-safe TCB extraction (RD-0361 R4). Re-exported below.
 import { WAT_HEAP_BASE, WAT_REC_FIELD_SIZE } from "./record-abi.js";
+// S2 fuller-A (RD-0456): the ONE static-discharge oracle, shared with the governance-verifier so the
+// two can never drift about what is a proven-constant governance operand (single witness, KB f86155b).
+import { flattenGovernanceConjunction, foldStaticVerdict } from "./invariant-discharge.js";
 
 // ---------------------------------------------------------------------------
 // Phase 22A — WASM SIMD capability types
@@ -2831,17 +2834,10 @@ function bodyTailIsUnreachable(blockNode: AstNode): boolean {
   return false;
 }
 
-/**
- * A (RD-0456 Tri-Fuse) — flatten a governance conjunction (`&&`/`and`, which lowers to K3 min / bitwise-and;
- * `true` is the identity of both) into its operand list; a non-conjunction returns a single-element list.
- * `a && b && c` (left-assoc nested binaryExpr) → [a, b, c], so each operand can be folded independently.
- */
-function flattenAndChain(expr: AstNode): AstNode[] {
-  if (expr.kind === "binaryExpr" && (expr.value === "&&" || expr.value === "and") && expr.children?.length === 2) {
-    return [...flattenAndChain(expr.children[0]!), ...flattenAndChain(expr.children[1]!)];
-  }
-  return [expr];
-}
+// A (RD-0456 Tri-Fuse) — conjunction flattening + the per-operand static fold now live in
+// ./invariant-discharge.ts (flattenGovernanceConjunction / foldStaticVerdict), shared with the
+// governance-verifier so there is exactly one discharge oracle. buildAndChain stays here: it rebuilds
+// WAT-bound AST for emission and is an emitter concern, not a discharge one.
 
 /** Rebuild a left-assoc conjunction from operands (>=1). One operand returns as-is (no wrapper). Each wrapper
  *  clones `template` (the original conjunction node — preserves kind/value/location) with fresh children, so the
@@ -2875,26 +2871,28 @@ function extractInvariantEnsures(flowNode: AstNode): AstNode[] {
     // never emit a WAT entry/tail gate for them (a bare `result` would lower to `(unreachable)`).
     // emitWATFromFlowAST already declines such flows to the interpreter; this is defence-in-depth.
     if (exprReferencesResult(expr)) continue;
-    // Skip a statically provable WHOLE invariant: TRUE → no gate needed; FALSE → the governance verifier
-    // already emitted FUNGI-INV-001 (either way no runtime gate). (tryConstantFold proves a single bool/comparison.)
-    const staticResult = tryConstantFold(expr);
-    if (staticResult === true) continue;
-    if (staticResult === false) continue;
+    // Skip a statically provable WHOLE invariant: ALLOW(+1) → no gate needed; DENY(-1) → the governance
+    // verifier already emitted FUNGI-INV-001 (either way no runtime gate). foldStaticVerdict is the SHARED
+    // oracle (the verifier records off the same fold, so it and this emitter cannot disagree — single witness).
+    const staticVerdict = foldStaticVerdict(expr);
+    if (staticVerdict === 1) continue;
+    if (staticVerdict === -1) continue;
     // A (RD-0456 Tri-Fuse — per-operand static elision over a governance min-chain `&&`/`and`). Decompose the
-    // conjunction and fold each operand: a statically-ALLOW operand ELIDES (min-identity min(ALLOW,x)=x;
-    // true && x = x), a statically-DENY operand COLLAPSES the whole to DENY (annihilator → verifier flagged it,
-    // no runtime gate), an unknown operand KEEPS its gate. Sound + fail-CLOSED: tryConstantFold only proves a
-    // constant bool/comparison, so no runtime-dependent operand is ever elided. A conjunction with nothing to
-    // elide is pushed unchanged (byte-identical); otherwise the gate covers only the surviving operands.
-    const operands = flattenAndChain(expr);
+    // conjunction and fold each operand on the SHARED oracle: a statically-ALLOW operand ELIDES (min-identity
+    // min(ALLOW,x)=x; true && x = x), a statically-DENY operand COLLAPSES the whole to DENY (annihilator →
+    // verifier flagged it, no runtime gate), an unknown operand KEEPS its gate. Sound + fail-CLOSED:
+    // foldStaticVerdict only proves a constant bool / literal comparison / negated bool, so no runtime-dependent
+    // operand is ever elided. A conjunction with nothing to elide is pushed unchanged (byte-identical);
+    // otherwise the gate covers only the surviving operands.
+    const operands = flattenGovernanceConjunction(expr);
     if (operands.length === 1) { ensures.push(expr); continue; } // not a conjunction — unchanged
     const survivors: AstNode[] = [];
     let collapsedDeny = false;
     for (const operand of operands) {
-      const folded = tryConstantFold(operand);
-      if (folded === true) continue;                    // statically ALLOW → elide (min-identity)
-      if (folded === false) { collapsedDeny = true; break; } // statically DENY → annihilate the min-chain
-      survivors.push(operand);                          // unknown → keep this operand's gate
+      const sv = foldStaticVerdict(operand);
+      if (sv === 1) continue;                           // statically ALLOW → elide (min-identity)
+      if (sv === -1) { collapsedDeny = true; break; }   // statically DENY → annihilate the min-chain
+      survivors.push(operand);                          // unknown (0) → keep this operand's gate
     }
     if (collapsedDeny) continue;                        // whole min-chain statically DENY (FUNGI-INV-001 territory)
     if (survivors.length === 0) continue;               // every operand statically ALLOW → whole ALLOW → elide
@@ -2958,21 +2956,8 @@ function exprReferencesResult(node: AstNode): boolean {
 }
 
 /** Lightweight constant-fold for WAT emitter (mirrors governance verifier logic) */
-function tryConstantFold(expr: AstNode): boolean | null {
-  if (expr.kind === "boolLiteral") return expr.value === "true";
-  if (expr.kind === "binaryExpr" && expr.children?.length === 2) {
-    const l = expr.children[0], r = expr.children[1];
-    if (l?.kind === "numberLiteral" && r?.kind === "numberLiteral") {
-      const lv = parseFloat(l.value ?? "0"), rv = parseFloat(r.value ?? "0");
-      switch (expr.value) {
-        case ">": return lv > rv; case "<": return lv < rv;
-        case ">=": return lv >= rv; case "<=": return lv <= rv;
-        case "==": return lv === rv; case "!=": return lv !== rv;
-      }
-    }
-  }
-  return null;
-}
+// tryConstantFold was the emitter's private constant-fold — now unified into the shared
+// foldStaticVerdict (./invariant-discharge.ts) so the emitter and governance-verifier share one oracle.
 
 /** Short description of an AST expression for WAT comments */
 function describeASTExpr(expr: AstNode): string {

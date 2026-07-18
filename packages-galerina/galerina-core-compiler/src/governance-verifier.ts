@@ -47,6 +47,9 @@ import { GovernanceFlags, type GovernanceFlagsMask, type RuntimeManifest } from 
 import { buildProofGraphCached, computeExecutionSignature, generateEpilogueReceipt, type EpilogueFailureAction, type EpilogueProofStrategy, type ProofGraph, type ProofObligation, FUNGI_HW_001, FUNGI_HW_002, FUNGI_HW_003, FUNGI_HW_004, TAMPER_RESPONSE_STRATEGIES } from "./proof-graph.js";
 import { HARDWARE_TRUST_PROFILES, ProofLevel } from "./type-registry.js";
 import { checkResilienceViolations, checkFaultHandlerViolations } from "./resilience-inference.js";
+// S2 fuller-A (RD-0456): the ONE static-discharge oracle, shared with the WAT emitter so the recorded
+// `statically_verified` obligation and the emitter's gate elision are proven off the same fold (KB f86155b).
+import { foldStaticVerdict } from "./invariant-discharge.js";
 import { checkObservabilityWarnings } from "./observability-inference.js";
 import { checkSubstrateViolations } from "./substrate-inference.js";
 import { isRecognizedLimitDecl } from "./runtime/limitPolicy.js";
@@ -2686,37 +2689,13 @@ class GovernanceVerifier {
    * Phase 4 (SMT solver) will handle arithmetic equality, state invariants, etc.
    */
   private tryStaticEval(expr: AstNode): boolean | null {
-    // Boolean literal: ensure true / ensure false
-    if (expr.kind === "boolLiteral") {
-      return expr.value === "true";
-    }
-
-    // Binary comparison with two number literals: ensure 5 > 0, ensure 0 == 0
-    if (expr.kind === "binaryExpr" && expr.children?.length === 2) {
-      const left  = expr.children[0];
-      const right = expr.children[1];
-      if (left?.kind === "numberLiteral" && right?.kind === "numberLiteral") {
-        const l = parseFloat(left.value ?? "0");
-        const r = parseFloat(right.value ?? "0");
-        const op = expr.value ?? "";
-        switch (op) {
-          case ">":  return l > r;
-          case "<":  return l < r;
-          case ">=": return l >= r;
-          case "<=": return l <= r;
-          case "==": return l === r;
-          case "!=": return l !== r;
-        }
-      }
-    }
-
-    // Logical NOT on a literal: ensure !false
-    if (expr.kind === "unaryExpr" && expr.value === "!" && expr.children?.[0]?.kind === "boolLiteral") {
-      return expr.children[0].value !== "true";
-    }
-
-    // Everything else is unknown → runtime-precheck
-    return null;
+    // Single witness (S2 fuller-A): delegate to the SHARED foldStaticVerdict oracle so this verifier's
+    // recorded `statically_verified` obligation and the WAT emitter's gate elision are proven off the SAME
+    // fold — they cannot drift (KB f86155b). +1 → true (proven) · -1 → false (disproven → FUNGI-INV-001) ·
+    // 0 → null (unknown → runtime-precheck). Behaviour-preserving: foldStaticVerdict is the exact superset of
+    // the cases this method handled (bool literal · numeric-literal comparison · negated bool literal).
+    const sv = foldStaticVerdict(expr);
+    return sv === 0 ? null : sv === 1;
   }
 
   /** Produce a short human-readable description of an expression for error messages. */
