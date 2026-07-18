@@ -2829,6 +2829,29 @@ function bodyTailIsUnreachable(blockNode: AstNode): boolean {
 }
 
 /**
+ * A (RD-0456 Tri-Fuse) — flatten a governance conjunction (`&&`/`and`, which lowers to K3 min / bitwise-and;
+ * `true` is the identity of both) into its operand list; a non-conjunction returns a single-element list.
+ * `a && b && c` (left-assoc nested binaryExpr) → [a, b, c], so each operand can be folded independently.
+ */
+function flattenAndChain(expr: AstNode): AstNode[] {
+  if (expr.kind === "binaryExpr" && (expr.value === "&&" || expr.value === "and") && expr.children?.length === 2) {
+    return [...flattenAndChain(expr.children[0]!), ...flattenAndChain(expr.children[1]!)];
+  }
+  return [expr];
+}
+
+/** Rebuild a left-assoc conjunction from operands (>=1). One operand returns as-is (no wrapper). Each wrapper
+ *  clones `template` (the original conjunction node — preserves kind/value/location) with fresh children, so the
+ *  reduced gate lowers exactly like a hand-written conjunction over the surviving operands. */
+function buildAndChain(operands: AstNode[], template: AstNode): AstNode {
+  let acc = operands[0]!;
+  for (let i = 1; i < operands.length; i++) {
+    acc = { ...template, children: [acc, operands[i]!] };
+  }
+  return acc;
+}
+
+/**
  * Extract `runtime-precheck` ensure expression nodes from a flow's invariant block.
  * `statically_verified` invariants (constant-fold = true) are excluded — no WAT gate needed.
  */
@@ -2849,13 +2872,31 @@ function extractInvariantEnsures(flowNode: AstNode): AstNode[] {
     // never emit a WAT entry/tail gate for them (a bare `result` would lower to `(unreachable)`).
     // emitWATFromFlowAST already declines such flows to the interpreter; this is defence-in-depth.
     if (exprReferencesResult(expr)) continue;
-    // Skip statically provable TRUE (constant fold = true) — no WAT gate needed
+    // Skip a statically provable WHOLE invariant: TRUE → no gate needed; FALSE → the governance verifier
+    // already emitted FUNGI-INV-001 (either way no runtime gate). (tryConstantFold proves a single bool/comparison.)
     const staticResult = tryConstantFold(expr);
     if (staticResult === true) continue;
-    // Skip statically FALSE — governance verifier already emitted FUNGI-INV-001
     if (staticResult === false) continue;
-    // Unknown → runtime-precheck → inject WAT gate
-    ensures.push(expr);
+    // A (RD-0456 Tri-Fuse — per-operand static elision over a governance min-chain `&&`/`and`). Decompose the
+    // conjunction and fold each operand: a statically-ALLOW operand ELIDES (min-identity min(ALLOW,x)=x;
+    // true && x = x), a statically-DENY operand COLLAPSES the whole to DENY (annihilator → verifier flagged it,
+    // no runtime gate), an unknown operand KEEPS its gate. Sound + fail-CLOSED: tryConstantFold only proves a
+    // constant bool/comparison, so no runtime-dependent operand is ever elided. A conjunction with nothing to
+    // elide is pushed unchanged (byte-identical); otherwise the gate covers only the surviving operands.
+    const operands = flattenAndChain(expr);
+    if (operands.length === 1) { ensures.push(expr); continue; } // not a conjunction — unchanged
+    const survivors: AstNode[] = [];
+    let collapsedDeny = false;
+    for (const operand of operands) {
+      const folded = tryConstantFold(operand);
+      if (folded === true) continue;                    // statically ALLOW → elide (min-identity)
+      if (folded === false) { collapsedDeny = true; break; } // statically DENY → annihilate the min-chain
+      survivors.push(operand);                          // unknown → keep this operand's gate
+    }
+    if (collapsedDeny) continue;                        // whole min-chain statically DENY (FUNGI-INV-001 territory)
+    if (survivors.length === 0) continue;               // every operand statically ALLOW → whole ALLOW → elide
+    if (survivors.length === operands.length) { ensures.push(expr); continue; } // nothing elided → byte-identical
+    ensures.push(buildAndChain(survivors, expr));       // reduced gate over the unknown operands only
   }
   return ensures;
 }
