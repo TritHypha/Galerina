@@ -646,10 +646,21 @@ class TypeChecker {
       for (const child of node.children ?? []) {
         if (child.kind !== "paramDecl" || !child.value) continue;
         const colon = child.value.indexOf(":");
-        if (colon >= 0) {
-          fields.set(child.value.slice(0, colon).trim(), child.value.slice(colon + 1).trim());
-        } else {
-          fields.set(child.value.trim(), "");
+        const fname = (colon >= 0 ? child.value.slice(0, colon) : child.value).trim();
+        const ftype = colon >= 0 ? child.value.slice(colon + 1).trim() : "";
+        // #107 (extended): a duplicate field name silently overwrites the first in the record shape.
+        // The first definition is authoritative; flag the second (FUNGI-NAME-002).
+        if (fname !== "" && fields.has(fname)) {
+          this.diagnostics.push({
+            code: "FUNGI-NAME-002",
+            name: "DUPLICATE_NAME",
+            severity: "error",
+            message: `Field '${fname}' is already declared in record '${node.value.trim()}'.`,
+            ...(child.location !== undefined ? { location: child.location } : {}),
+            suggestedFix: `Rename this field — '${fname}' appears more than once in the record.`,
+          });
+        } else if (fname !== "") {
+          fields.set(fname, ftype);
         }
       }
       this.recordFieldTypes.set(node.value.trim(), fields);
@@ -696,7 +707,20 @@ class TypeChecker {
       const variants = new Set<string>();
       for (const child of node.children ?? []) {
         if ((child.kind === "identifier" || child.kind === "enumVariant") && child.value) {
-          variants.add(child.value.trim());
+          const vname = child.value.trim();
+          // #107 (extended): a duplicate enum variant is ambiguous. Flag the second (FUNGI-NAME-002).
+          if (vname !== "" && variants.has(vname)) {
+            this.diagnostics.push({
+              code: "FUNGI-NAME-002",
+              name: "DUPLICATE_NAME",
+              severity: "error",
+              message: `Variant '${vname}' is already declared in enum '${node.value.trim()}'.`,
+              ...(child.location !== undefined ? { location: child.location } : {}),
+              suggestedFix: `Rename this variant — '${vname}' appears more than once in the enum.`,
+            });
+          } else if (vname !== "") {
+            variants.add(vname);
+          }
         }
       }
       if (variants.size > 0) {
@@ -1217,9 +1241,24 @@ class TypeChecker {
         this.pushBindingScope();
         this.pushTypeScope();
         // Register params first so they're in scope throughout the body
+        const seenParams = new Set<string>();
         for (const child of node.children ?? []) {
           if (child.kind === "paramDecl") {
             const paramName = parseParamName(child.value ?? "");
+            // #107 (extended): a duplicate parameter name is ambiguous — the 2nd binding silently
+            // shadows the 1st in the flow scope. Flag it (FUNGI-NAME-002); the first is authoritative.
+            if (paramName !== "" && seenParams.has(paramName)) {
+              this.diagnostics.push({
+                code: "FUNGI-NAME-002",
+                name: "DUPLICATE_NAME",
+                severity: "error",
+                message: `Parameter '${paramName}' is already declared in this flow's parameter list.`,
+                ...(child.location !== undefined ? { location: child.location } : {}),
+                suggestedFix: `Rename this parameter — '${paramName}' appears more than once in the parameter list.`,
+              });
+            } else if (paramName !== "") {
+              seenParams.add(paramName);
+            }
             this.registerBinding(paramName);
             // Phase 11A.2: flow parameters are immutable (readonly) by default
             this.registerBindingKind(paramName, "readonly");
