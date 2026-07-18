@@ -65,13 +65,16 @@ export function parseAttestation(wire: string): WasmAttestation | null {
     : { sha256: o.sha256, signature: o.signature, profile };
 }
 
-/** True iff `bytes` compile to a module that DEFINES an export named `exportName`. Fail-closed: unparseable
- *  bytes → false. This is the presence check on the admitted (hash-verified) bytes — the export table is part
- *  of the signed hash, so this confirms the signed module actually admits the requested export. */
+/** True iff `bytes` compile to a module that DEFINES a callable FUNCTION export named `exportName`. Fail-closed:
+ *  unparseable bytes → false. This is the presence check on the admitted (hash-verified) bytes — the export
+ *  table is part of the signed hash, so this confirms the signed module actually admits the requested export.
+ *  The `kind === "function"` clause (R&D precision 2026-07-18) makes ADMISSION itself exact: a module exporting
+ *  a memory/global named `exportName` but no function `exportName` is denied HERE, not merely later at the
+ *  executor's `typeof fn !== "function"` deny — belt-and-braces, so the two layers agree at the point of decision. */
 function moduleDefinesExport(bytes: Uint8Array, exportName: string): boolean {
   try {
     const mod = new WebAssembly.Module(bytes as BufferSource);
-    return WebAssembly.Module.exports(mod).some((e) => e.name === exportName);
+    return WebAssembly.Module.exports(mod).some((e) => e.name === exportName && e.kind === "function");
   } catch {
     return false;
   }
