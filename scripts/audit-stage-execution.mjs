@@ -53,19 +53,21 @@ const STAGES = [
     body: "let p = parseFlows(toks) let r = checkFlowEffects(p.flows) return r.flowCount" },
   { file: "governance-verifier.fungi", entry: "verifyGovernance", expect: "traps", debt: "#100",
     body: "let p = parseFlows(toks) let r = verifyGovernance(p.flows) return r.passed + r.failed" },
-  // gir-emitter's ON-chain entry is emitGIRModule(flows: Array<Auto>), NOT emitBodyGIR(Array<Stmt>). At
-  // gir-emitter.fungi:157-160 it does flows.get(i) then fd.name off the erased Auto payload — the identical
-  // #100 shape as the three above, hitting the same wat-emitter.ts:1340 trap. It was in NOT_SWEPT with a
-  // reason that named the wrong entry point (emitBodyGIR), so the swept edge was drawn one entry too narrow
-  // and the reported debt (3) under-stated the real one. Swept now; the driver returns g.pureCount (an Int
-  // field on GIRModule) so a dead-code-eliminated call can't read as "runs".
-  { file: "gir-emitter.fungi", entry: "emitGIRModule", expect: "traps", debt: "#100",
+  // gir-emitter's ON-chain entry is emitGIRModule(flows: Array<Auto>). It read fd.name/fd.returnExpr off the
+  // erased Auto payload — the identical #100 shape as the three above. FIXED 2026-07-19 (P9 brick-2, Option Y —
+  // concatenate the real lexer+parser, the in-tree R2 pattern, so parser's FlowDecl/Expr/Stmt are in scope):
+  // emitGIRModule's `flows` param concretized to Array<FlowDecl>, its callees' AST params to Expr/Stmt/FlowParam,
+  // and the record-field binder given a typed local (`let re: ReturnExpr = fd.returnExpr`) — so field offsets
+  // resolve and the stage RUNS. R3 emitGIRModule byte-parity (Stage-A interpreter == Stage-B WASM) verified green.
+  // The driver returns g.pureCount (an Int field on GIRModule) so a dead-code-eliminated call can't read as "runs".
+  { file: "gir-emitter.fungi", entry: "emitGIRModule", expect: "runs",
     body: "let p = parseFlows(toks) let g = emitGIRModule(p.flows) return g.pureCount" },
 ];
 // Shrink-only. Raise it and you are declaring a new stage broken; that needs a human sentence, not a bump.
-// 4, not 3: gir-emitter joined the sweep (see the entry above). This is not "a new stage broke" — it is a
-// known casualty that the previous boundary excluded; sweeping it makes the debt measured, not declared-around.
-const TRAP_BASELINE = 4;
+// 3: gir-emitter's #100 debt was PAID 2026-07-19 (its `flows` param concretized to Array<FlowDecl> — it RUNS and
+// is R3 byte-parity green), so the sweep drops 4→3, leaving the three remaining trappers (type-checker,
+// effect-checker, governance-verifier). Lowered because a debt was retired, never raised.
+const TRAP_BASELINE = 3;
 
 // ★ NOT SWEPT — declared, never silently omitted. A gate that quietly covers 4 of 7 while its green says
 // nothing is the surface problem this whole file is about.

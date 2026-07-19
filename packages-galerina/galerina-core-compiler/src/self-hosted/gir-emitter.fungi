@@ -143,7 +143,7 @@ contract {
 
 // ── GIR module emission ───────────────────────────────────────
 
-pure flow emitGIRModule(flows: Array<Auto>) -> GIRModule
+pure flow emitGIRModule(flows: Array<FlowDecl>) -> GIRModule
 contract {
   intent { "Emit a GIR module from a Stage B ParseResult: a flow-decl node and an expression node per FlowDecl." }
 }
@@ -165,7 +165,7 @@ contract {
         let node: GIRNode = emitFlowGIRNode(name, qualifier, retType, effects.count(), params.count())
         nodes = nodes.append(node)
 
-        let re = fd.returnExpr
+        let re: ReturnExpr = fd.returnExpr
         let exprNode: GIRExprNode = emitFlowExprGIR(name, re.kind, re.litType, re.leftType, re.rightType)
         exprNodes = exprNodes.append(exprNode)
 
@@ -240,7 +240,7 @@ contract { intent { "Result type of a binop opcode: arithmetic Int, comparison B
 }
 
 // Recursively lower a parser Expr AST node into a GIRExpr.
-pure flow lowerExpr(expr: Auto) -> GIRExpr
+pure flow lowerExpr(expr: Expr) -> GIRExpr
 contract { intent { "Recursively lower a parser Expr AST node into a GIRExpr." } }
 {
   let kind: String = expr.kind
@@ -362,7 +362,7 @@ record GIRStmt {
 }
 
 // Read the single carried expression off a statement, if present.
-pure flow firstExprOf(stmt: Auto) -> Option<Auto>
+pure flow firstExprOf(stmt: Stmt) -> Option<Expr>
 contract { intent { "Return Some(expr) for the statement's lone carried expr, else None." } }
 {
   if stmt.expr.count() > 0 {
@@ -372,7 +372,7 @@ contract { intent { "Return Some(expr) for the statement's lone carried expr, el
 }
 
 // Lower one statement into a GIRStmt, recursing into if/while bodies.
-pure flow lowerStmt(stmt: Auto) -> GIRStmt
+pure flow lowerStmt(stmt: Stmt) -> GIRStmt
 contract { intent { "Lower a single body statement into a GIRStmt." } }
 {
   let kind: String = stmt.kind
@@ -468,7 +468,7 @@ contract { intent { "Lower a single body statement into a GIRStmt." } }
       None => {}
       _ => {}
     }
-    let armStmts: Array<Auto> = stmt.body
+    let armStmts: Array<Stmt> = stmt.body
     mut loweredArms: Array<GIRStmt> = Array.empty()
     mut mai: Int = 0
     while mai < armStmts.count() {
@@ -520,7 +520,7 @@ contract { intent { "Public entry — lower a flow body's statement AST into Arr
 // resolve flow→flow calls. Each entry: { name, params: Array<String>, body: Array<GIRStmt> }.
 
 // Collect the ORDERED parameter names of a flow into an Array<String>.
-pure flow paramNames(params: Array<Auto>) -> Array<Auto>
+pure flow paramNames(params: Array<FlowParam>) -> Array<Auto>
 contract { intent { "Extract each FlowParam's name into an ordered Array<String>." } }
 {
   mut names: Array<String> = Array.empty()
@@ -538,7 +538,7 @@ contract { intent { "Extract each FlowParam's name into an ordered Array<String>
 }
 
 // Build the flow table: one FlowEntry per flow, with lowered GIR bodies.
-pure flow buildFlowTable(flows: Array<Auto>) -> Array<Auto>
+pure flow buildFlowTable(flows: Array<FlowDecl>) -> Array<Auto>
 contract { intent { "Build Array<FlowEntry> { name, params: Array<String>, body: Array<GIRStmt> } from parser flows." } }
 {
   mut table: Array<Auto> = Array.empty()
