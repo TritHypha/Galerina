@@ -81,7 +81,13 @@ const STAGES = [
   { name: "effect-checker", files: ["lexer.fungi", "parser.fungi", "effect-checker.fungi"] },
   { name: "gir-emitter", files: ["lexer.fungi", "parser.fungi", "gir-emitter.fungi"] },
   { name: "governance-verifier", files: ["lexer.fungi", "parser.fungi", "governance-verifier.fungi"] },
-  { name: "runtime", files: ["lexer.fungi", "parser.fungi", "runtime.fungi"] },
+  // runtime consumes gir-emitter's GIR records (GIRExpr/GIRStmt/FlowEntry — it walks
+  // them: op/ty/kids/params/body/…). Its concat scope is therefore 4-STAGE, not the
+  // lexer+parser+<stage> shape of the checkers; built without gir-emitter the instrument
+  // leg reports those cross-stage field reads as false "unresolved member" markers.
+  // (audit-stage-execution.mjs excludes runtime for the same cross-stage reason; here we
+  // model it instead so the instrument cross-check stays live.)
+  { name: "runtime", files: ["lexer.fungi", "parser.fungi", "gir-emitter.fungi", "runtime.fungi"] },
 ];
 
 // ── the scanner core (single-pass, non-backtracking) ─────────────────────────
@@ -413,9 +419,24 @@ function propose(site, records) {
         add(ft, `rhs ${rm[1]}.${rm[2]} : ${rn}.${rm[2]} = ${ft}`);
     }
   }
-  // (d) anonymous append shape with no registry match → propose defining a record
+  // (d) anonymous append shape with no read/rhs match. REUSE-BEFORE-MINT: if an
+  //     existing record in the concat scope has an EXACTLY matching field set,
+  //     propose reusing it — never mint a duplicate (R&D 2026-07-19: otherwise the
+  //     tool proposes a NEW record identical to an existing diagnostic record —
+  //     TypeDiagnostic / EffectDiagnostic / GovDiagnostic — across the checker
+  //     stages; measured 27 of 32 DEFINE rows. Minting duplicate diagnostic types
+  //     across three compiler stages is worse than the erasure it fixes.)
+  //     Exact sorted-field-set equality ONLY — a subset/superset is a DIFFERENT
+  //     record and stays DEFINE (fail-closed: a partial field set cannot construct
+  //     a wider record, so it must not silently reuse one).
   const anon = site.appendShapes.find((s) => s.fields);
-  if (anon && cands.size === 0) return { type: `NEW record {${anon.fields.join(", ")}}`, conf: "DEFINE", ev: ["anonymous append shape — name it (derive-from-append ruling)"] };
+  if (anon && cands.size === 0) {
+    const want = [...anon.fields].sort().join(",");
+    const reuse = [...records].filter(([, rf]) => [...rf.keys()].sort().join(",") === want).map(([rn]) => rn);
+    if (reuse.length === 1) return { type: reuse[0], conf: "REUSE", ev: [`append shape {${anon.fields.join(", ")}} == existing record ${reuse[0]} — reuse it, do NOT mint a duplicate`] };
+    if (reuse.length > 1) return { type: reuse.join(" | "), conf: "AMBIGUOUS", ev: reuse.map((r) => `append shape == existing record ${r} (multiple exact matches — pick one)`) };
+    return { type: `NEW record {${anon.fields.join(", ")}}`, conf: "DEFINE", ev: ["anonymous append shape, no existing record matches — declare it (derive-from-append ruling)"] };
+  }
   if (cands.size === 0) return { type: "?", conf: "UNKNOWN", ev: ["no evidence matched — read the flow by hand"] };
   // rank: most evidence wins; tie → ambiguous (fail-closed: never silently pick)
   const ranked = [...cands.entries()].sort((a, b) => b[1].length - a[1].length);
@@ -509,12 +530,24 @@ contract { intent { "nested generic must scan as ONE type, not confuse depth" } 
 {
   return m.count()
 }
-pure flow anonAppend(n: Int) -> Int
-contract { intent { "anonymous append shape → DEFINE proposal" } }
+record Diag {
+  code: String
+  message: String
+  flowName: String
+}
+pure flow reuseAppend(n: Int) -> Int
+contract { intent { "append-only shape EXACTLY matches existing record Diag → REUSE, not mint a duplicate" } }
 {
   mut diags: Array<Auto> = Array.empty()
   diags = diags.append({ code: "X", message: "y", flowName: "z" })
-  return diags.get(0).code
+  return diags.count()
+}
+pure flow defineNewRecord(n: Int) -> Int
+contract { intent { "append-only shape matches NO record → DEFINE (mint) still fires" } }
+{
+  mut rows: Array<Auto> = Array.empty()
+  rows = rows.append({ note: "x", weight: "y" })
+  return rows.count()
 }
 pure flow multiLineContract(xs: Array<Auto>) -> Int
 contract {
@@ -611,8 +644,8 @@ function selfTest() {
   const { sites } = scanFile(FIXTURE, "fixture", records, collectFlowReturns(fixtureLines));
   const by = (flow, name) => sites.find((s) => s.flow === flow && s.name === name);
 
-  checks.push(["record registry parses (Item/Widget/Box/Ret/Decl/Sub) with depth-read field types",
-    records.get("Box")?.get("items") === "Array<Item>" && records.get("Decl")?.get("ret") === "Ret" && records.size === 6]);
+  checks.push(["record registry parses (Item/Widget/Box/Ret/Decl/Sub/Diag) with depth-read field types",
+    records.get("Box")?.get("items") === "Array<Item>" && records.get("Decl")?.get("ret") === "Ret" && records.get("Diag")?.get("flowName") === "String" && records.size === 7]);
   const d = by("needsDirect", "xs");
   checks.push(["direct .get(i).field is NEEDS with the field captured", !!d && d.reads.has("name")]);
   const b = by("needsBound", "xs");
@@ -628,10 +661,14 @@ function selfTest() {
   const pr = r && propose(r, records);
   checks.push(["rhs `= b.items` yields Item via the registry field lookup", !!pr && pr.type === "Item" && pr.conf === "HIGH"]);
   checks.push(["nested Array<Array<Int>> scans as one balanced type (no Auto site)", !sites.some((s) => s.flow === "nested")]);
-  const an = by("anonAppend", "diags");
-  const pan = an && propose(an, records);
-  checks.push(["anonymous append shape → DEFINE proposal carrying the field set",
-    !!pan && pan.conf === "DEFINE" && pan.type.includes("code") && pan.type.includes("flowName")]);
+  const ra = by("reuseAppend", "diags");
+  const pra = ra && propose(ra, records);
+  checks.push(["★ reuse-before-mint: append shape == existing record proposes REUSE (Diag), never a duplicate",
+    !!pra && pra.conf === "REUSE" && pra.type === "Diag"]);
+  const dn = by("defineNewRecord", "rows");
+  const pdn = dn && propose(dn, records);
+  checks.push(["anonymous append matching NO existing record still → DEFINE (mint) carrying the field set",
+    !!pdn && pdn.conf === "DEFINE" && pdn.type.includes("note") && pdn.type.includes("weight")]);
   checks.push(["strings/comments with < > @ // never create sites",
     !sites.some((s) => s.file !== "fixture") && sites.every((s) => Number.isInteger(s.line))]);
   const ml = by("multiLineContract", "xs");
