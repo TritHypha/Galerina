@@ -63,6 +63,57 @@ contract { intent { "P9 R3 driver: lower a flow body to GIR statements and count
     Err(e) => { return -1 }
   }
 }
+
+/// R3 driver C (VALUE, non-vacuous) — lower the FIRST flow's body and project the ACTUAL lowered binop
+/// OPCODE of its first return. A count projection (drivers A/B) collapses "add" and "unknown" to the same
+/// number, so it stays green even if every opcode is wrong (the #160 str_eq false-green). This projects the
+/// opcode VALUE opcodeOf produced, mapped to a distinct Int, so a wrong opcode ("unknown") CHANGES the result.
+pure flow giremitBinopProbe(src: String) -> Int
+contract { intent { "P9 R3 VALUE driver: project the first return's lowered binop opcode." } }
+{
+  let res = tokenize(src)
+  match res {
+    Ok(toks) => {
+      let p = parseFlows(toks)
+      let flows: Array<FlowDecl> = p.flows
+      let fOpt = flows.get(0)
+      match fOpt {
+        Some(fd) => {
+          let stmts: Array<GIRStmt> = emitBodyGIR(fd.body)
+          let sOpt = stmts.get(0)
+          match sOpt {
+            Some(s) => {
+              let exprs: Array<GIRExpr> = s.expr
+              let eOpt = exprs.get(0)
+              match eOpt {
+                Some(ex) => {
+                  let opc: String = ex.value
+                  match opc {
+                    "add" => { return 1 }
+                    "sub" => { return 2 }
+                    "mul" => { return 3 }
+                    "div" => { return 4 }
+                    "eq" => { return 5 }
+                    "lt" => { return 7 }
+                    "unknown" => { return 99 }
+                    _ => { return 0 }
+                  }
+                }
+                None => { return -3 }
+                _ => { return -3 }
+              }
+            }
+            None => { return -2 }
+            _ => { return -2 }
+          }
+        }
+        None => { return -1 }
+        _ => { return -1 }
+      }
+    }
+    Err(e) => { return -1 }
+  }
+}
 `;
 const SRC = "@version 1\n" + strip("lexer.fungi") + "\n" + strip("parser.fungi") + "\n" + strip("gir-emitter.fungi") + "\n" + DRIVER;
 
@@ -135,4 +186,26 @@ describe("P9 R3 · gir-emitter stage: emitGIRModule + emitBodyGIR byte-parity (S
     assert.ok(i > 0, "interpreter lowers a non-empty body");
     assert.equal(w, i, "WASM agrees");
   });
+});
+
+// R3 VALUE lane (R&D ruling 2026-07-19): drivers A/B above project COUNTS, which are value-vacuous — the
+// count is unchanged whether an operator lowers to "add" or "unknown", so this stage read R3-green while
+// every emitted opcode was wrong in WASM (the #160 str_eq false-green, caught only by the runtime exec
+// driver). This lane projects the lowered binop OPCODE VALUE (via opcodeOf), mapped to a distinct Int, so a
+// wrong opcode ("unknown" ⇒ 99) makes WASM disagree with the interpreter and reds. "Non-vacuous" = the
+// projection DISCRIMINATES a correct output from an incorrect one, not merely "the path ran".
+const OPCODE_CORPUS = [
+  ["pure flow f(a: Int, b: Int) -> Int\ncontract { intent { \"x\" } }\n{ return a + b }", 1, "add"],
+  ["pure flow f(a: Int, b: Int) -> Int\ncontract { intent { \"x\" } }\n{ return a - b }", 2, "sub"],
+  ["pure flow f(a: Int, b: Int) -> Int\ncontract { intent { \"x\" } }\n{ return a * b }", 3, "mul"],
+  ["pure flow f(a: Int, b: Int) -> Bool\ncontract { intent { \"x\" } }\n{ return a < b }", 7, "lt"],
+];
+describe("P9 R3 · gir-emitter VALUE lane: the lowered binop OPCODE (not a count) is Stage-A ≡ Stage-B", () => {
+  for (const [src, code, opc] of OPCODE_CORPUS) {
+    it(`opcode "${opc}" projects identically (interp == WASM == ${code}, "unknown" would be 99)`, async () => {
+      const [i, w] = await Promise.all([runInterp("giremitBinopProbe", src), runWasm("giremitBinopProbe", src)]);
+      assert.equal(i, code, `interpreter must lower "${opc}" to ${code} (a COUNT projection would miss a wrong opcode)`);
+      assert.equal(w, i, `WASM opcode value must equal interpreter — a wrong opcode ("unknown" ⇒ 99) reds this`);
+    });
+  }
 });
