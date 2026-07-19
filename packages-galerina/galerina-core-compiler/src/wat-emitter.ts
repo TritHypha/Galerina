@@ -507,6 +507,57 @@ export function buildRecordFieldTypes(ast: AstNode | undefined): Map<string, Map
   return out;
 }
 
+/**
+ * #132 fail-closed guard — refuse (at record-layout time) any record field whose type does NOT lower to a
+ * 4-byte WASM `i32` slot. The record layout stores EVERY field via a 4-byte `i32.store` at
+ * `offset = index·4` (record-abi.ts: `WAT_REC_FIELD_SIZE = 4`), so a field whose value is wider than an
+ * i32 — `f64` (Float/Float64/Double), `i64` (Int64/UInt64), or `f32` (Float32/Float16) — cannot round-trip
+ * that slot. Measured 2026-07-19: every such record field either builds an INVALID module (rejected at
+ * instantiate with a CRITICAL_SECURITY_VIOLATION — loud but late and opaque) or reads back the WRONG value
+ * (silent-wrong). Refuse rather than emit a mis-laid-out module — never a silent mis-layout (fail-closed).
+ * Surfaced as FUNGI-LAYOUT-001 so the failure is an early, actionable compile refusal. The genuine fix
+ * (variable-width record slots — real `f64.store`/`i64.store` at an 8-byte slot) is task #132; this holds
+ * the line until then.
+ *
+ * The boundary is a PROPERTY, not a name list: `galerinaTypeToWAT(fieldType) !== "i32"`. Reusing the
+ * emitter's own type→wasm-type mapping makes the guard drift-proof (any current or future non-i32 type is
+ * covered automatically — no list to rot) AND self-correcting: a type is auto-admitted the moment its
+ * lowering is fixed to a 4-byte i32/handle. i32-handle occupants (String / Array / nested record / enum /
+ * Option / Result — the mapping's `default` case) all return "i32" and are correctly admitted.
+ *
+ * Note (2026-07-19): `Decimal` maps to `f64` here, so a Decimal record field is refused TODAY — and
+ * measurably breaks (invalid module). It is *designed* as a bignum i32-handle (`stdlib.ts` ScaledDecimal),
+ * so the `Decimal → f64` line in galerinaTypeToWAT is a latent inconsistency; once that lowers Decimal to a
+ * handle, this guard admits Decimal with no edit. Flagged to R&D.
+ *
+ * SCOPE: WASM lowering only (this emitter). The tree-walking interpreter stores wide values faithfully, so
+ * interpreter execution of the same program is unaffected. Verified zero current use: 0 of 450 `.fungi`
+ * files declare a non-i32 record field (2026-07-19), so this refuses no working program.
+ */
+function assertLowerableRecordFields(ast: AstNode | undefined): void {
+  const offenders: string[] = [];
+  for (const [recName, fields] of buildRecordFieldTypes(ast)) {
+    for (const [fname, ftype] of fields) {
+      let watType;
+      try { watType = galerinaTypeToWAT(ftype.trim()); }
+      catch { continue; } // malformed type name → not this guard's concern (BK-2 fails closed at lowering)
+      if (watType !== "i32") offenders.push(`${recName}.${fname}: ${ftype} (→ wasm ${watType})`);
+    }
+  }
+  if (offenders.length > 0) {
+    // FUNGI-LAYOUT-001 — registered in ../ZTF-Knowledge-Bases/compiler-diagnostics.md. The `code:` literal
+    // is the form the diagnostic-namespace registration test discovers, so this code stays machine-checked.
+    const diag = { code: "FUNGI-LAYOUT-001", name: "UNSUPPORTED_RECORD_LAYOUT", severity: "error" } as const;
+    throw new Error(
+      `${diag.code}: a record field whose type lowers to a WASM value wider than the 4-byte record slot ` +
+      `(f64 / i64 / f32) cannot be laid out yet — every record field is stored via a 4-byte i32.store ` +
+      `(offset = index·4), so such a field is emitted into an invalid module or silently mis-read. Refusing ` +
+      `rather than emit a mis-laid-out module (fail-closed; the variable-width-slot fix is task #132). ` +
+      `Offending field(s): ${offenders.join(", ")}.`,
+    );
+  }
+}
+
 /** The record type a `let`/param binding refers to, or undefined. `raw` is the
  *  binding's `value` (e.g. "r: TokenizeResult"); `initNode` is its initialiser. */
 function recordTypeOfBinding(raw: string, initNode: AstNode | undefined): string | undefined {
@@ -3540,6 +3591,9 @@ export function buildWATModule(
 
   // P9.4b: record-type → field-name layout, built once for `r.field` offset lowering.
   const recordLayoutRegistry = buildRecordLayouts(gir.ast);
+  // #132 fail-closed: refuse any record with a DIRECT f64 field before emitting a mis-laid-out module.
+  // Placed here (layout time, before any module-level state is mutated) so a refusal leaks no state.
+  assertLowerableRecordFields(gir.ast);
   // P9.4d (#144): enum-type → variant-name list, for `EnumType.Variant` → i32 tag.
   const enumVariantRegistry = buildEnumVariants(gir.ast);
   // #160: flowName → return type, so `let xs = makeKeywordTable()` carries a type for
