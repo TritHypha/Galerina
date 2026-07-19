@@ -4,7 +4,7 @@
     "packages": 97,
     "testBearing": 96,
     "tests": 7526,
-    "devTools": 96,
+    "devTools": 97,
     "auditTools": 56,
     "toolsInCadence": 34,
     "proofs": 40
@@ -2257,6 +2257,18 @@
       ]
     },
     {
+      "name": "p9-100-site-mapper.mjs",
+      "category": "util",
+      "purpose": "the #100 worklist advisor for the P9 self-hosted stages",
+      "selfTest": true,
+      "inCadence": false,
+      "concerns": [
+        "effects",
+        "signing/fusion",
+        "diagnostics"
+      ]
+    },
+    {
       "name": "package-usage.mjs",
       "category": "util",
       "purpose": "workspace package USAGE / reverse-dependency graph.",
@@ -2433,6 +2445,7 @@
       "generate-sbom.mjs",
       "hardening-show-derived.mjs",
       "migrate-fungi.mjs",
+      "p9-100-site-mapper.mjs",
       "package-usage.mjs",
       "rebrand-tmf-to-spore.mjs",
       "repoint-kb-refs.mjs",
@@ -2573,6 +2586,7 @@
       "generate-sbom.mjs",
       "hardening-show-derived.mjs",
       "migrate-fungi.mjs",
+      "p9-100-site-mapper.mjs",
       "rebuild-fusable-packages.mjs",
       "verify-artifacts.mjs"
     ],
@@ -2769,7 +2783,8 @@
       "kb-index.mjs",
       "emit-doc-wat.mjs",
       "gather-t1-twin-hashes.mjs",
-      "hardening-show-derived.mjs"
+      "hardening-show-derived.mjs",
+      "p9-100-site-mapper.mjs"
     ],
     "teaching-corpus": [
       "audit-corpus-effect-names.mjs",
