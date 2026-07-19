@@ -272,10 +272,10 @@ contract { intent { "Evaluate a GIR binop opcode over two runtime values." } }
 
 // Find a flow entry by name in the flow table; sentinel (empty name/params/body)
 // when absent. Entries are read dynamically: entry.name / entry.params / entry.body.
-pure flow lookupFlow(flows: Array<Auto>, name: String) -> Auto
+pure flow lookupFlow(flows: Array<FlowEntry>, name: String) -> FlowEntry
 contract { intent { "Return the flow-table entry whose name matches, or an empty sentinel entry." } }
 {
-  mut result: Auto = { name: "", params: Array.empty(), body: Array.empty() }
+  mut result: FlowEntry = FlowEntry { name: "", params: Array.empty(), body: Array.empty() }
   mut i: Int = 0
   while i < flows.count() {
     let eOpt = flows.get(i)
@@ -292,7 +292,7 @@ contract { intent { "Return the flow-table entry whose name matches, or an empty
 }
 
 // Evaluate a GIRExpr in an environment, resolving `call`s against `flows`.
-pure flow evalGIRExpr(expr: Auto, env: Array<Auto>, flows: Array<Auto>) -> RtValue
+pure flow evalGIRExpr(expr: GIRExpr, env: Array<Binding>, flows: Array<FlowEntry>) -> RtValue
 contract { intent { "Recursively evaluate a GIR expression node to an Int/Bool runtime value." } }
 {
   let op: String = expr.op
@@ -315,7 +315,7 @@ contract { intent { "Recursively evaluate a GIR expression node to an Int/Bool r
   }
 
   if op == "binop" {
-    let kids: Array<Auto> = expr.kids
+    let kids: Array<GIRExpr> = expr.kids
     mut a: RtValue = rtInt(0)
     mut b: RtValue = rtInt(0)
     let lOpt = kids.get(0)
@@ -334,7 +334,7 @@ contract { intent { "Recursively evaluate a GIR expression node to an Int/Bool r
   }
 
   if op == "unop" {
-    let kids: Array<Auto> = expr.kids
+    let kids: Array<GIRExpr> = expr.kids
     mut a: RtValue = rtInt(0)
     let kOpt = kids.get(0)
     match kOpt {
@@ -350,8 +350,8 @@ contract { intent { "Recursively evaluate a GIR expression node to an Int/Bool r
   if op == "call" {
     // Evaluate the arguments in the current env, then bind them positionally
     // into a fresh callee env and execute the callee's body.
-    let kids: Array<Auto> = expr.kids
-    mut argVals: Array<Auto> = Array.empty()
+    let kids: Array<GIRExpr> = expr.kids
+    mut argVals: Array<RtValue> = Array.empty()
     mut ai: Int = 0
     while ai < kids.count() {
       let kOpt = kids.get(ai)
@@ -619,9 +619,9 @@ contract { intent { "Recursively evaluate a GIR expression node to an Int/Bool r
       return rtNone()
     }
 
-    let entry: Auto = lookupFlow(flows, expr.value)
+    let entry: FlowEntry = lookupFlow(flows, expr.value)
     let params: Array<Auto> = entry.params
-    mut calleeEnv: Array<Auto> = Array.empty()
+    mut calleeEnv: Array<Binding> = Array.empty()
     mut pi: Int = 0
     while pi < params.count() and pi < argVals.count() {
       let pOpt = params.get(pi)
@@ -646,7 +646,7 @@ contract { intent { "Recursively evaluate a GIR expression node to an Int/Bool r
 
   // R2: field access — op:"field", value:fieldName, kids:[receiver]
   if op == "field" {
-    let kids: Array<Auto> = expr.kids
+    let kids: Array<GIRExpr> = expr.kids
     mut recv: RtValue = rtInt(0)
     let rOpt = kids.get(0)
     match rOpt {
@@ -661,7 +661,7 @@ contract { intent { "Recursively evaluate a GIR expression node to an Int/Bool r
   // Fields are stored as alternating (name-as-String-RtValue, value-RtValue) pairs
   // matching the layout expected by recordGet().
   if op == "reclit" {
-    let kids: Array<Auto> = expr.kids
+    let kids: Array<GIRExpr> = expr.kids
     mut fields: Array<RtValue> = Array.empty()
     mut ri: Int = 0
     while ri + 1 < kids.count() {
@@ -691,7 +691,7 @@ contract { intent { "Recursively evaluate a GIR expression node to an Int/Bool r
 
   // R2: array literal — op:"arrlit", kids:[elements]
   if op == "arrlit" {
-    let kids: Array<Auto> = expr.kids
+    let kids: Array<GIRExpr> = expr.kids
     mut items: Array<RtValue> = Array.empty()
     mut ai: Int = 0
     while ai < kids.count() {
@@ -711,7 +711,7 @@ contract { intent { "Recursively evaluate a GIR expression node to an Int/Bool r
 }
 
 // Evaluate the lone expression carried by a GIRStmt (or Int 0 when absent).
-pure flow evalFirst(exprs: Array<Auto>, env: Array<Auto>, flows: Array<Auto>) -> RtValue
+pure flow evalFirst(exprs: Array<GIRExpr>, env: Array<Binding>, flows: Array<FlowEntry>) -> RtValue
 contract { intent { "Evaluate a statement's single carried GIR expression, or Int 0 if none." } }
 {
   let opt = exprs.get(0)
@@ -723,10 +723,10 @@ contract { intent { "Evaluate a statement's single carried GIR expression, or In
 }
 
 // Execute a GIR statement list, threading the environment. Stops early on `ret`.
-pure flow execGIRBody(stmts: Array<Auto>, env: Array<Auto>, flows: Array<Auto>) -> ExecResult
+pure flow execGIRBody(stmts: Array<GIRStmt>, env: Array<Binding>, flows: Array<FlowEntry>) -> ExecResult
 contract { intent { "Execute a GIR statement body; thread the env, short-circuit on return. Collects audit entries from effect calls." } }
 {
-  mut curEnv: Array<Auto> = env
+  mut curEnv: Array<Binding> = env
   mut returned: Bool = false
   mut retVal: RtValue = rtInt(0)
   mut auditEntries: Array<AuditEntry> = Array.empty()
@@ -751,7 +751,7 @@ contract { intent { "Execute a GIR statement body; thread the env, short-circuit
         if op == "eval" {
           // Intercept effect calls BEFORE general eval so we can record them.
           // Current intercepted effects: AuditLog.write, audit.write
-          let evalExpr: Auto = s.expr
+          let evalExpr: Array<GIRExpr> = s.expr
           let exprOpt = evalExpr.get(0)
           match exprOpt {
             Some(ex) => {
@@ -815,7 +815,7 @@ contract { intent { "Execute a GIR statement body; thread the env, short-circuit
         // the payload[0] is bound into the arm's execution environment.
         if op == "matche" {
           let subjVal: RtValue = evalFirst(s.expr, curEnv, flows)
-          let armList: Array<Auto> = s.body
+          let armList: Array<GIRStmt> = s.body
           mut ai2: Int = 0
           mut matched: Bool = false
           while ai2 < armList.count() and matched == false and returned == false {
@@ -906,7 +906,7 @@ contract { intent { "Execute a GIR statement body; thread the env, short-circuit
 
 // Public entry: execute a GIR body with a given initial environment (params),
 // returning the flow's return value.
-pure flow runGIRBody(stmts: Array<Auto>, env: Array<Auto>) -> RtValue
+pure flow runGIRBody(stmts: Array<GIRStmt>, env: Array<Binding>) -> RtValue
 contract { intent { "Execute a GIR flow body with an initial environment; return its return value." } }
 {
   let res: ExecResult = execGIRBody(stmts, env, Array.empty())
@@ -914,7 +914,7 @@ contract { intent { "Execute a GIR flow body with an initial environment; return
 }
 
 // Convenience: execute a GIR body with an empty environment.
-pure flow runGIR(stmts: Array<Auto>) -> RtValue
+pure flow runGIR(stmts: Array<GIRStmt>) -> RtValue
 contract { intent { "Execute a GIR flow body with an empty environment." } }
 {
   return runGIRBody(stmts, Array.empty())
@@ -930,12 +930,12 @@ record RunResult {
   auditLog: Array<AuditEntry>
 }
 
-pure flow runProgram(flows: Array<Auto>, entryName: String, args: Array<Auto>) -> RunResult
+pure flow runProgram(flows: Array<FlowEntry>, entryName: String, args: Array<RtValue>) -> RunResult
 contract { intent { "Run a flow-table program from an entry flow with positional args; return value + audit log." } }
 {
-  let entry: Auto = lookupFlow(flows, entryName)
+  let entry: FlowEntry = lookupFlow(flows, entryName)
   let params: Array<Auto> = entry.params
-  mut env: Array<Auto> = Array.empty()
+  mut env: Array<Binding> = Array.empty()
   mut i: Int = 0
   while i < params.count() and i < args.count() {
     let pOpt = params.get(i)
