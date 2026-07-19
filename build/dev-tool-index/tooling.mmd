@@ -193,6 +193,11 @@ flowchart LR
   T_audit_name_collisions_mjs --> C_doc_drift
   T_audit_name_collisions_mjs --> C_graph_index
   T_audit_name_collisions_mjs --> C_sensitive_allowlist
+  T_audit_no_redeclare_mjs["audit-no-redeclare.mjs"]
+  T_audit_no_redeclare_mjs --> C_effects
+  T_audit_no_redeclare_mjs --> C_governance
+  T_audit_no_redeclare_mjs --> C_gate_wiring
+  T_audit_no_redeclare_mjs --> C_diagnostics
   T_audit_node_dependencies_mjs["audit-node-dependencies.mjs"]
   T_audit_node_dependencies_mjs --> C_signing_fusion
   T_audit_node_dependencies_mjs --> C_diagnostics
