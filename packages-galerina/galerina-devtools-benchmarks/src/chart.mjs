@@ -257,23 +257,22 @@ export function buildChartHtml(report) {
   const v0 = wasmRelativeChart(report.crossLanguage ?? []);
   const v2 = metricChart(report.crossLanguage ?? []);
   const v1 = diffChart(report.diffFromLast ?? []);
+  // Committed DARK theme with a SOLID background (owner 2026-07-19: the chart must carry its own dark
+  // ground so it is legible on any HTML page, not rely on the host's background). Single deliberate
+  // theme — no prefers-color-scheme flip — so it renders identically wherever it is embedded/published.
   const style = `<style>
-  .bench-chart{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;max-width:900px;margin:0 auto;padding:1rem;color:#1a1a19}
-  .bench-chart h1{font-size:20px;font-weight:500;margin:0 0 4px}.bench-chart h2{font-size:16px;font-weight:500;margin:1.6rem 0 2px}
-  .bench-chart .sub{font-size:13px;color:#6b6a64;margin:0 0 10px}.bench-chart .empty{color:#8a8880;font-size:13px}
-  .bench-chart svg .grid{stroke:#d8d6cf;stroke-width:1}.bench-chart svg .tick{fill:#8a8880;font-size:11px}
-  .bench-chart svg .lbl{fill:#3a3a37;font-size:12px}.bench-chart svg .val{fill:#6b6a64;font-size:11px;font-weight:500}
-  .bench-chart svg .mh{fill:#1a1a19;font-size:14px;font-weight:600}.bench-chart svg .sum{fill:#6b6a64;font-size:11px}
-  .bench-chart svg .note{fill:#8a8880;font-size:11px;font-style:italic}
-  .bench-chart svg .tram{stroke:#c8c6bf;stroke-width:1;stroke-opacity:0.6}.bench-chart svg .rt{fill:#9a9992;font-size:9px}
-  @media (prefers-color-scheme:dark){.bench-chart{color:#e8e7e0}.bench-chart .sub{color:#a3a29a}
-    .bench-chart svg .grid{stroke:#3a3a37}.bench-chart svg .lbl{fill:#c9c8c0}.bench-chart svg .val{fill:#a3a29a}
-    .bench-chart svg .mh{fill:#e8e7e0}.bench-chart svg .sum{fill:#a3a29a}.bench-chart svg .note{fill:#9a9992}
-    .bench-chart svg .tram{stroke:#45453f}.bench-chart svg .rt{fill:#8a8982}}
+  .bench-chart{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;max-width:920px;margin:0 auto;padding:1.5rem 1.75rem;color:#ebeae2;background:#16150e;border-radius:14px}
+  .bench-chart h1{font-size:20px;font-weight:500;margin:0 0 4px;color:#f5f4ed}.bench-chart h2{font-size:16px;font-weight:500;margin:1.7rem 0 2px;color:#f5f4ed}
+  .bench-chart .sub{font-size:13px;color:#a5a49a;margin:0 0 10px}.bench-chart .empty{color:#8f8e85;font-size:13px}
+  .bench-chart svg .grid{stroke:#413f37;stroke-width:1}.bench-chart svg .tick{fill:#a5a49a;font-size:11px}
+  .bench-chart svg .lbl{fill:#dbdad1;font-size:12px}.bench-chart svg .val{fill:#c4c3b9;font-size:11px;font-weight:500}
+  .bench-chart svg .mh{fill:#f5f4ed;font-size:14px;font-weight:600}.bench-chart svg .sum{fill:#a5a49a;font-size:11px}
+  .bench-chart svg .note{fill:#8f8e85;font-size:11px;font-style:italic}
+  .bench-chart svg .tram{stroke:#4d4b43;stroke-width:1;stroke-opacity:0.75}.bench-chart svg .rt{fill:#8f8e85;font-size:9px}
   </style>`;
   return `<!doctype html><meta charset="utf-8"><title>Galerina benchmark chart</title>${style}
 <div class="bench-chart">
-  <h1>Galerina benchmark — three views</h1>
+  <h1>Galerina benchmark — runtimes vs the WASM baseline</h1>
   <p class="sub">Baseline: ${esc(report.baseline ?? "none")}. Pre-rendered SVG · no external dependency · opens offline.</p>
   <h2>Every runtime relative to WASM (0 = the WASM production path)</h2>
   <p class="sub">${esc(v0.caption ?? "")}</p>
