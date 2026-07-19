@@ -73,7 +73,7 @@ const TRAP_BASELINE = 3;
 // nothing is the surface problem this whole file is about.
 const NOT_SWEPT = [
   { file: "lexer.fungi", why: "exercised by every probe below — tokenize runs first in each driver; a lex failure surfaces as -1" },
-  { file: "runtime.fungi", why: "has the #100 construct (envLookup L214-231 reads b.name/b.val off an Array<Auto> payload, reached by every variable reference via runProgram→evalGIRExpr→envLookup) but it traps at EXECUTION time, not COMPILE time — a different surface from this compile-pipeline sweep; same root, same un-erasure fix. Construct verified in source, not run here (no execution driver)." },
+  { file: "runtime.fungi", why: "verified by wat-p9-runtime-exec-parity.test.mjs (exec-value R3: Stage-A interpreter == Stage-B WASM over runProgram's real return value), NOT by this compile-pipeline sweep. Its #100 sites were concretized 2026-07-19 (stage-local RtValue/Binding + the cross-stage GIRExpr/GIRStmt/FlowEntry it walks from gir-emitter), so envLookup no longer reads off an Array<Auto> payload. Excluded here for a STRUCTURAL reason, not a debt: runtime consumes gir-emitter's records, so it needs the 4-STAGE concat (lexer+parser+gir-emitter+runtime); this gate's 2-stage lexer+parser+<stage> probe cannot express that cross-stage type dependency. runtime also traps at EXECUTION, not COMPILE, so an admitted-and-run driver (that test) is its correct instrument — a compile sweep that never runs a GIR can't observe it." },
 ];
 // Stages CANNOT share a module: `appendAll` is defined in both type-checker and governance-verifier
 // (`paramNames` in type-checker and gir-emitter), the compiler accepts duplicate FLOW names, and it only
