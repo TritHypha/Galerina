@@ -38,7 +38,11 @@ export async function runWASMBenchmark(fungiPath, opsPerRun = null) {
   const assembled = await m.assembleWAT(wat);
   const compileMs = performance.now() - t0;
 
-  if (!assembled.valid) {
+  // #163: a wabt-REJECTED module comes back as the minimal-encoder STUB with
+  // `valid:true` PLUS a "NOT a faithful compile" diagnostic. Gating on `valid`
+  // alone benchmarked that stub — timing a module that never held the program.
+  // Same `valid && diagnostics.length===0` decline as executeWASMFlow.
+  if (!assembled.valid || assembled.diagnostics.length > 0) {
     return {
       runtime: "wasm", error: true,
       reason: assembled.diagnostics.map(d => d.message).join("; "),

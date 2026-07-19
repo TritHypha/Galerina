@@ -1003,7 +1003,12 @@ function runWasmStandaloneBuild(targetDir: string, files: string[]): void {
 
   // Run JS assembler to produce WASM binary
   assembleWAT(cleanWat).then((assembleResult) => {
-    if (assembleResult.valid) {
+    // #163: a wabt-REJECTED module falls back to the minimal-encoder STUB with
+    // `valid:true` PLUS a "NOT a faithful compile" diagnostic. Gating on `valid`
+    // alone wrote that stub to disk and announced it as the compiled binary — the
+    // stub is not "the program minus a call", it never contained the program.
+    // Same `valid && diagnostics.length===0` decline as executeWASMFlow.
+    if (assembleResult.valid && assembleResult.diagnostics.length === 0) {
       writeFileSync(wasmOutPath, Buffer.from(assembleResult.wasm));
       process.stdout.write(`[info] WASM binary written: ${wasmOutPath}\n`);
 
@@ -1022,6 +1027,9 @@ function runWasmStandaloneBuild(targetDir: string, files: string[]): void {
       }
     } else {
       process.stdout.write(`[warn] JS assembler could not produce a valid WASM binary for this WAT pattern.\n`);
+      for (const d of assembleResult.diagnostics) {
+        process.stdout.write(`[warn] assembler: ${d.message}\n`);
+      }
       process.stdout.write(`[info] WAT file is at: ${watOutPath}\n`);
       const wasmtimeVersion = checkWasmtime();
       if (wasmtimeVersion !== null) {
