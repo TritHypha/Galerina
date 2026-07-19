@@ -4,9 +4,9 @@
     "packages": 97,
     "testBearing": 96,
     "tests": 7552,
-    "devTools": 101,
-    "auditTools": 60,
-    "toolsInCadence": 38,
+    "devTools": 102,
+    "auditTools": 61,
+    "toolsInCadence": 39,
     "proofs": 40
   },
   "packages": [
@@ -1089,6 +1089,18 @@
         "signing/fusion",
         "coverage",
         "diagnostics",
+        "doc-drift"
+      ]
+    },
+    {
+      "name": "audit-auto-erasure-ratchet.mjs",
+      "category": "audit",
+      "purpose": "(no header description)",
+      "selfTest": true,
+      "inCadence": true,
+      "concerns": [
+        "signing/fusion",
+        "coverage",
         "doc-drift"
       ]
     },
@@ -2420,6 +2432,7 @@
       "audit-allowlist-sensitive.mjs",
       "audit-arithmetic-conformance.mjs",
       "audit-artifact-drift.mjs",
+      "audit-auto-erasure-ratchet.mjs",
       "audit-coverage.mjs",
       "audit-dss-wasm-build.mjs",
       "audit-fungi-runtime.mjs",
@@ -2624,6 +2637,7 @@
     ],
     "signing/fusion": [
       "audit-artifact-drift.mjs",
+      "audit-auto-erasure-ratchet.mjs",
       "audit-brand-keys.mjs",
       "audit-cast-hygiene.mjs",
       "audit-checker-wiring.mjs",
@@ -2679,6 +2693,7 @@
     ],
     "doc-drift": [
       "audit-artifact-drift.mjs",
+      "audit-auto-erasure-ratchet.mjs",
       "audit-brand-keys.mjs",
       "audit-cast-hygiene.mjs",
       "audit-checker-wiring.mjs",

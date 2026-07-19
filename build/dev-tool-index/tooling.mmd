@@ -37,6 +37,10 @@ flowchart LR
   T_audit_artifact_drift_mjs --> C_coverage
   T_audit_artifact_drift_mjs --> C_diagnostics
   T_audit_artifact_drift_mjs --> C_doc_drift
+  T_audit_auto_erasure_ratchet_mjs["audit-auto-erasure-ratchet.mjs"]
+  T_audit_auto_erasure_ratchet_mjs --> C_signing_fusion
+  T_audit_auto_erasure_ratchet_mjs --> C_coverage
+  T_audit_auto_erasure_ratchet_mjs --> C_doc_drift
   T_audit_brand_keys_mjs["audit-brand-keys.mjs"]
   T_audit_brand_keys_mjs --> C_signing_fusion
   T_audit_brand_keys_mjs --> C_gate_wiring

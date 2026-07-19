@@ -9997,8 +9997,8 @@
       "ref scripts/audit-wat-lowering.mjs:152",
       "ref scripts/audit-wat-lowering.mjs:153",
       "ref scripts/audit-wat-lowering.mjs:204",
-      "ref scripts/run-phase-close.mjs:383",
-      "ref scripts/run-phase-close.mjs:384"
+      "ref scripts/run-phase-close.mjs:389",
+      "ref scripts/run-phase-close.mjs:390"
     ]
   },
   {
@@ -16957,7 +16957,7 @@
       "ref scripts/audit-fungi-corpus-check.mjs:8",
       "ref scripts/audit-fungi-corpus-check.mjs:95",
       "ref scripts/audit-fungi-corpus-check.mjs:162",
-      "ref scripts/run-phase-close.mjs:101"
+      "ref scripts/run-phase-close.mjs:107"
     ]
   },
   {
