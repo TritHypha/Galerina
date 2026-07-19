@@ -186,7 +186,75 @@ function diffChart(diffFromLast) {
   return { svg, caption: "Read against the noise floor: single-run cross-session diffs are dominated by machine variance (untouched native controls routinely swing ±20–28%), not code — see the harness-standardisation note." };
 }
 
+// ── View 0 (owner-requested 2026-07-19): every LANGUAGE RUNTIME relative to the WASM production
+//    path. WASM is the 0 line; a runtime faster than WASM plots RIGHT (+, teal), slower plots LEFT
+//    (−, orange) on a symmetric LOG axis (ratios span ~0.01×–130×; linear would be unreadable). Each
+//    benchmark is its own lane framed by a pair of horizontal "tramlines". Honest-by-construction:
+//    only benchmarks with a WASM baseline AND a comparable per-benchmark unit are plotted; governance
+//    is internal-only (excluded); a benchmark with no WASM value is listed in the caption, not silently
+//    dropped; a work-UNALIGNED benchmark's bars are HATCHED with a trailing "≈" — its cross-runtime
+//    ratio is not yet work-equivalent (read against the noise floor). Galerina's governed/manifest
+//    tiers are not raw-runtime peers and live in the metric/report views, not here. ──
+function wasmRelativeChart(crossLanguage) {
+  const PEERS = [["rustAvx2", "Rust·AVX2"], ["rust", "Rust"], ["cpp", "C++"], ["go", "Go"], ["nodejs", "Node"], ["python", "Python"]];
+  const all = Array.isArray(crossLanguage) ? crossLanguage : [];
+  const isGov = (r) => (r.metricClass ?? "") === "governance";
+  const hasWasm = (r) => typeof r.wasm === "number" && r.wasm > 0;
+  const peersOf = (r) => PEERS.filter(([k]) => typeof r[k] === "number" && r[k] > 0);
+  const plottable = all.filter((r) => !isGov(r) && hasWasm(r) && peersOf(r).length);
+  const noBase = all.filter((r) => !isGov(r) && !hasWasm(r));
+  if (!plottable.length) return { svg: `<p class="empty">no benchmark carries a WASM baseline with a comparable peer runtime</p>`, caption: "" };
+
+  const W = 860, LEFT = 132, RIGHT = 18, plotW = W - LEFT - RIGHT, MID = LEFT + plotW / 2;
+  const CAP = 2.3;                                                     // log10 domain: ~0.005× … ~200×
+  const x = (ratio) => MID + (Math.max(-CAP, Math.min(CAP, Math.log10(ratio))) / CAP) * (plotW / 2);
+  const subH = 15, laneGap = 12, axisH = 34, padTop = 8;
+  const fmtMul = (m) => (m >= 100 ? Math.round(m) : m >= 10 ? m.toFixed(0) : m.toFixed(1)) + "×";
+  const classOrder = { "cpu-throughput": 0, gpu: 1, io: 2, memory: 3 };
+  const rows = [...plottable].sort((a, b) =>
+    (classOrder[a.metricClass] ?? 9) - (classOrder[b.metricClass] ?? 9) || String(a.benchmark).localeCompare(String(b.benchmark)));
+
+  const bodyTop = padTop + axisH;
+  const H = Math.round(bodyTop + rows.reduce((s, r) => s + peersOf(r).length * subH + laneGap, 0) + 22);
+  const gridBottom = H - 16;
+
+  let body = `<defs><pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="5" stroke="#ffffff" stroke-width="2" stroke-opacity="0.5"/></pattern></defs>`;
+  // axis: heading, direction cues, dashed WASM=0 line, ± reference gridlines
+  body += `<text x="${MID}" y="12" class="mh" text-anchor="middle">WASM = 0 baseline</text>`;
+  body += `<text x="${LEFT}" y="27" class="tick" text-anchor="start">← slower than WASM</text>`;
+  body += `<text x="${(W - RIGHT).toFixed(0)}" y="27" class="tick" text-anchor="end">faster than WASM →</text>`;
+  body += `<line x1="${MID}" y1="${(bodyTop - 6).toFixed(1)}" x2="${MID}" y2="${gridBottom}" class="grid" stroke-dasharray="4 3"/>`;
+  for (const t of [100, 10, 2]) for (const s of [t, 1 / t]) {
+    const gx = x(s).toFixed(1);
+    body += `<line x1="${gx}" y1="${(bodyTop - 2).toFixed(1)}" x2="${gx}" y2="${gridBottom}" class="grid"/>`;
+    body += `<text x="${gx}" y="${(bodyTop - 9).toFixed(1)}" class="tick" text-anchor="middle">${s >= 1 ? "+" : "−"}${t}×</text>`;
+  }
+
+  let y = bodyTop;
+  for (const r of rows) {
+    const peers = peersOf(r), laneH = peers.length * subH, aligned = r.aligned !== false;
+    body += `<line x1="${LEFT}" y1="${y.toFixed(1)}" x2="${(W - RIGHT).toFixed(0)}" y2="${y.toFixed(1)}" class="tram"/>`;
+    body += `<line x1="${LEFT}" y1="${(y + laneH).toFixed(1)}" x2="${(W - RIGHT).toFixed(0)}" y2="${(y + laneH).toFixed(1)}" class="tram"/>`;
+    body += `<text x="${(LEFT - 6).toFixed(0)}" y="${(y + laneH / 2 + 3).toFixed(1)}" class="lbl" text-anchor="end">${esc(r.benchmark)}${aligned ? "" : " ≈"}</text>`;
+    peers.forEach(([k, name], i) => {
+      const ratio = r[k] / r.wasm, faster = ratio >= 1, bx = x(ratio);
+      const bl = Math.min(MID, bx), bw = Math.max(1, Math.abs(bx - MID)), ry = y + i * subH;
+      body += `<rect x="${bl.toFixed(1)}" y="${(ry + 2).toFixed(1)}" width="${bw.toFixed(1)}" height="${subH - 4}" rx="2" fill="${faster ? "#1a9e75" : "#d06a35"}"${aligned ? "" : ' fill-opacity="0.5"'}/>`;
+      if (!aligned) body += `<rect x="${bl.toFixed(1)}" y="${(ry + 2).toFixed(1)}" width="${bw.toFixed(1)}" height="${subH - 4}" rx="2" fill="url(#hatch)"/>`;
+      body += `<text x="${(faster ? bx + 4 : bx - 4).toFixed(1)}" y="${(ry + subH / 2 + 2).toFixed(1)}" class="val" text-anchor="${faster ? "start" : "end"}">${faster ? "+" : "−"}${fmtMul(faster ? ratio : 1 / ratio)}</text>`;
+      body += `<text x="${(MID + (faster ? -4 : 4)).toFixed(1)}" y="${(ry + subH / 2 + 2).toFixed(1)}" class="rt" text-anchor="${faster ? "end" : "start"}">${name}</text>`;
+    });
+    y += laneH + laneGap;
+  }
+
+  const svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Each language runtime's throughput relative to the WASM production path, per benchmark; right of the dashed WASM=0 line is faster than WASM and left is slower, on a log scale, with each test in its own tramlined lane">${body}</svg>`;
+  const excl = noBase.length ? ` ${noBase.length} benchmark(s) carry no WASM value and are omitted here (${noBase.slice(0, 6).map((r) => r.benchmark).join(", ")}${noBase.length > 6 ? ", …" : ""}).` : "";
+  const caption = `WASM is the 0 line. A bar to the RIGHT (teal, +) is that runtime FASTER than Galerina's WASM path; to the LEFT (orange, −) is SLOWER — log scale, so +10× and −10× sit symmetrically. Each test is its own tramlined lane. Governance is internal-only and excluded; a hatched bar with a trailing "≈" is work-UNALIGNED (the ratio is not yet a certified work-equivalent comparison — read it against the noise floor).${excl}`;
+  return { svg, caption };
+}
+
 export function buildChartHtml(report) {
+  const v0 = wasmRelativeChart(report.crossLanguage ?? []);
   const v2 = metricChart(report.crossLanguage ?? []);
   const v1 = diffChart(report.diffFromLast ?? []);
   const style = `<style>
@@ -197,14 +265,19 @@ export function buildChartHtml(report) {
   .bench-chart svg .lbl{fill:#3a3a37;font-size:12px}.bench-chart svg .val{fill:#6b6a64;font-size:11px;font-weight:500}
   .bench-chart svg .mh{fill:#1a1a19;font-size:14px;font-weight:600}.bench-chart svg .sum{fill:#6b6a64;font-size:11px}
   .bench-chart svg .note{fill:#8a8880;font-size:11px;font-style:italic}
+  .bench-chart svg .tram{stroke:#c8c6bf;stroke-width:1;stroke-opacity:0.6}.bench-chart svg .rt{fill:#9a9992;font-size:9px}
   @media (prefers-color-scheme:dark){.bench-chart{color:#e8e7e0}.bench-chart .sub{color:#a3a29a}
     .bench-chart svg .grid{stroke:#3a3a37}.bench-chart svg .lbl{fill:#c9c8c0}.bench-chart svg .val{fill:#a3a29a}
-    .bench-chart svg .mh{fill:#e8e7e0}.bench-chart svg .sum{fill:#a3a29a}.bench-chart svg .note{fill:#9a9992}}
+    .bench-chart svg .mh{fill:#e8e7e0}.bench-chart svg .sum{fill:#a3a29a}.bench-chart svg .note{fill:#9a9992}
+    .bench-chart svg .tram{stroke:#45453f}.bench-chart svg .rt{fill:#8a8982}}
   </style>`;
   return `<!doctype html><meta charset="utf-8"><title>Galerina benchmark chart</title>${style}
 <div class="bench-chart">
-  <h1>Galerina benchmark — two views</h1>
+  <h1>Galerina benchmark — three views</h1>
   <p class="sub">Baseline: ${esc(report.baseline ?? "none")}. Pre-rendered SVG · no external dependency · opens offline.</p>
+  <h2>Every runtime relative to WASM (0 = the WASM production path)</h2>
+  <p class="sub">${esc(v0.caption ?? "")}</p>
+  ${v0.svg ?? v0}
   <h2>Results by metric class</h2>
   <p class="sub">${esc(v2.caption ?? "")}</p>
   ${v2.svg ?? v2}

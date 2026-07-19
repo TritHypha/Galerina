@@ -36,8 +36,15 @@ const fixture = {
 const html = buildChartHtml(fixture);
 
 ok(typeof html === "string" && html.length > 500, "produces a non-trivial HTML string");
-ok((html.match(/<svg/g) || []).length === 2, "renders both views as SVG (2 <svg> blocks: metric-grouped + diff)");
+ok((html.match(/<svg/g) || []).length === 3, "renders THREE views as SVG (WASM-relative + metric-grouped + diff)");
 ok((html.match(/<rect/g) || []).length >= 6, "renders bars (>=6 <rect>) for the fixture rows");
+
+// VIEW 0 (owner-requested 2026-07-19): every runtime RELATIVE TO WASM — WASM is the 0 line, a runtime
+// faster than WASM is a teal (+) bar to the RIGHT, slower is an orange (−) bar to the LEFT, and each
+// test sits in its own tramlined lane. The +/− must be DERIVED from the data, never hardcoded.
+ok(html.includes("WASM = 0 baseline"), "WASM-relative view renders the WASM=0 axis heading");
+ok(html.includes('class="tram"'), "WASM-relative view draws per-test tramlines");
+ok(/fill="#1a9e75"/.test(html) && /fill="#d06a35"/.test(html), "WASM-relative bars show BOTH faster (+, teal) and slower (−, orange), derived from the fixture (call-chain faster, compute-mix slower)");
 
 // SELF-CONTAINED: the zero-trust point — no external dependency of any kind.
 ok(!/https?:\/\//.test(html), "no external URL (no CDN / no remote fetch)");
