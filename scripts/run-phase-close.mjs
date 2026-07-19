@@ -394,6 +394,16 @@ run("wasm-validate", "node", ["scripts/audit-wasm-validate.mjs"]);
 //   vacuity). 4 baselined (077 Money/Money i32.div_s truncation + the Float32/16-emitted-as-integer
 //   class); shrink-only, a NEW divergence / wrong-trap / silent-value-where-fail-closed-expected → exit 1.
 run("arith-conformance", "node", ["scripts/audit-arithmetic-conformance.mjs"]);
+// report-blind-consumers (owner-directed 2026-07-19, after #163) — the CLASS gate for the defect that
+//   put an unfaithful STUB on disk: `assembleWAT` returns a value AND a report that disagree by design
+//   (wabt-rejected → minimal-encoder stub, `valid:true` + a "NOT a faithful compile" diagnostic). Four
+//   consumers, three verdicts: executeWASMFlow and galerina.mjs read the report and declined; cli.ts
+//   wrote the stub to disk and wasm-runner.mjs benchmarked it. Nothing enforced the invariant, so the
+//   blind ones stayed blind. This gate holds it: branch on the value ⟹ consult the report in a DECISION
+//   (printing it in an error message is NOT consulting it — that exact shape was the wasm-runner bug),
+//   and never use the artifact with no gate at all. 5 baselined (all in scripts/, incl. gather-t1-twin-
+//   hashes.mjs which HASHES the artifact ungated); shrink-only, a NEW blind consumer → exit 1.
+run("report-blind-consumers", "node", ["scripts/audit-report-blind-consumers.mjs"]);
 // doc:reference-drift — the docs/reference/ pages must not DRIFT from the enforcing code (R&D's 2026-07-15
 //   re-verification found types.md documenting TypeId alone while the checker accepts the isBuiltInType()
 //   union). Extracts each page's vocabulary FROM SOURCE (45 canonical effects + 2 deny-only + the union gate

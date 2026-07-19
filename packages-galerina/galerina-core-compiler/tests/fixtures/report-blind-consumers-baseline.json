@@ -1,0 +1,36 @@
+{
+  "note": "Shrink-only baseline of known report-blind consumers. Entries may be REMOVED as sites are fixed; a NEW entry must be a deliberate, reviewed act. See scripts/audit-report-blind-consumers.mjs.",
+  "generated_by": "scripts/audit-report-blind-consumers.mjs --update-baseline",
+  "entries": [
+    {
+      "key": "scripts/audit-arithmetic-conformance.mjs::assembleWAT::b::VIOLATION",
+      "file": "scripts/audit-arithmetic-conformance.mjs",
+      "line": 180,
+      "why": "uses .wasm without branching on .valid or .diagnostics at all"
+    },
+    {
+      "key": "scripts/audit-stage-execution.mjs::assembleWAT::asm::VIOLATION",
+      "file": "scripts/audit-stage-execution.mjs",
+      "line": 145,
+      "why": "branches on .valid but never consults .diagnostics in a decision"
+    },
+    {
+      "key": "scripts/audit-wasm-validate.mjs::assembleWAT::b::VIOLATION",
+      "file": "scripts/audit-wasm-validate.mjs",
+      "line": 101,
+      "why": "uses .wasm without branching on .valid or .diagnostics at all"
+    },
+    {
+      "key": "scripts/bench-startup.mjs::assembleWAT::asm::VIOLATION",
+      "file": "scripts/bench-startup.mjs",
+      "line": 97,
+      "why": "branches on .valid but never consults .diagnostics in a decision"
+    },
+    {
+      "key": "scripts/gather-t1-twin-hashes.mjs::assembleWAT::asm::VIOLATION",
+      "file": "scripts/gather-t1-twin-hashes.mjs",
+      "line": 42,
+      "why": "uses .wasm without branching on .valid or .diagnostics at all"
+    }
+  ]
+}
