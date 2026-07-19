@@ -166,8 +166,14 @@ function analyze(relPath, rawSrc, spec) {
   const callSites = [...src.matchAll(new RegExp(`\\b${spec.api}\\s*\\(`, "g"))];
   if (callSites.length === 0) return { findings: out, callSites: 0 };
 
-  const bindings = new Map();
-  const bind = (name, idx) => { if (name && !bindings.has(name)) bindings.set(name, idx); };
+  // ⚠ PER-SITE, not per-name. Two calls in one file commonly reuse the same variable
+  // (`const asm = await assembleWAT(...)` at :144 AND :250 of audit-stage-execution.mjs). Keying by
+  // name kept only the first and searched the WHOLE file for `asm.diagnostics`, so gating ONE site
+  // would mark the file clean while the other stayed blind — the baseline would understate and the
+  // burn-down would report done with a live blind consumer. Each occurrence now gets its own scope,
+  // running to the next binding of the same name. Found by R&D's independent detector, not by mine.
+  const bindings = [];
+  const bind = (name, idx) => { if (name) bindings.push({ name, idx }); };
 
   for (const m of src.matchAll(
     new RegExp(`(?:const|let|var)\\s+([A-Za-z_$][\\w$]*)\\s*=\\s*(?:await\\s+)?(?:[A-Za-z_$][\\w$]*\\.)?${spec.api}\\s*\\(`, "g"),
@@ -195,10 +201,17 @@ function analyze(relPath, rawSrc, spec) {
     });
   }
 
-  for (const [b, bIdx] of bindings) {
+  bindings.sort((x, y) => x.idx - y.idx);
+  for (let bi = 0; bi < bindings.length; bi++) {
+    const { name: b, idx: bIdx } = bindings[bi];
+    // Scope this site: from its own binding to the NEXT binding of the same name (or EOF).
+    const next = bindings.slice(bi + 1).find((o) => o.name === b);
+    const scopeEnd = next ? next.idx : src.length;
     // `?.` must be matched as well as `.` — `b?.wasm` is the shape that hid audit-wasm-validate.mjs
     // from the first version of this gate, which is the very tool R&D proved cannot see a stub.
-    const uses = (field) => [...src.matchAll(new RegExp(`\\b${b}\\s*\\??\\.\\s*${field}\\b`, "g"))];
+    const uses = (field) => [...src.slice(bIdx, scopeEnd)
+      .matchAll(new RegExp(`\\b${b}\\s*\\??\\.\\s*${field}\\b`, "g"))]
+      .map((m) => ({ index: m.index + bIdx }));
     const valueUses = uses(spec.value);
     const artifactUses = uses(spec.artifact);
     const reportDecides = uses(spec.report)
@@ -235,7 +248,26 @@ function analyze(relPath, rawSrc, spec) {
   return { findings: out, callSites: callSites.length };
 }
 
-const keyOf = (f) => `${f.file}::${f.api}::${f.binding}::${f.kind}`;
+/**
+ * Baseline key. The ORDINAL is load-bearing: audit-stage-execution.mjs has two ungated
+ * `const asm = await assembleWAT(...)` sites, so without it both collapse onto one baseline entry —
+ * gate one site and the other is silently treated as already-baselined, which is how a burn-down
+ * closes with a live blind consumer. An ordinal (nth such site in the file, source order) survives
+ * line movement, where embedding the line number would churn on every unrelated edit.
+ */
+const keyOf = (f) => `${f.file}::${f.api}::${f.binding}::${f.kind}#${f.ord ?? 1}`;
+
+/** Number same-shaped findings within a file so each physical site has its own identity. */
+function assignOrdinals(list) {
+  const seen = new Map();
+  for (const f of list.slice().sort((a, b) => a.line - b.line)) {
+    const k = `${f.file}::${f.api}::${f.binding}::${f.kind}`;
+    const n = (seen.get(k) ?? 0) + 1;
+    seen.set(k, n);
+    f.ord = n;
+  }
+  return list;
+}
 
 function loadBaseline() {
   if (!existsSync(BASELINE)) return { entries: [] };
@@ -328,6 +360,7 @@ if (totalCallSites === 0) {
   process.exit(1);
 }
 
+assignOrdinals(findings);
 const baseline = loadBaseline();
 const baseKeys = new Set((baseline.entries || []).map((e) => e.key));
 const fresh = findings.filter((f) => !baseKeys.has(keyOf(f)));

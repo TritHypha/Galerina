@@ -3,37 +3,43 @@
   "generated_by": "scripts/audit-report-blind-consumers.mjs --update-baseline",
   "entries": [
     {
-      "key": "packages-galerina/galerina-devtools-benchmarks/bench-i64-vs-i32.mjs::assembleWAT::asm::VIOLATION",
+      "key": "packages-galerina/galerina-devtools-benchmarks/bench-i64-vs-i32.mjs::assembleWAT::asm::VIOLATION#1",
       "file": "packages-galerina/galerina-devtools-benchmarks/bench-i64-vs-i32.mjs",
       "line": 24,
       "why": "branches on .valid but never consults .diagnostics in a decision"
     },
     {
-      "key": "scripts/audit-arithmetic-conformance.mjs::assembleWAT::b::VIOLATION",
+      "key": "scripts/audit-arithmetic-conformance.mjs::assembleWAT::b::VIOLATION#1",
       "file": "scripts/audit-arithmetic-conformance.mjs",
       "line": 180,
       "why": "uses .wasm without branching on .valid or .diagnostics at all"
     },
     {
-      "key": "scripts/audit-stage-execution.mjs::assembleWAT::asm::VIOLATION",
+      "key": "scripts/audit-stage-execution.mjs::assembleWAT::asm::VIOLATION#1",
       "file": "scripts/audit-stage-execution.mjs",
       "line": 145,
       "why": "branches on .valid but never consults .diagnostics in a decision"
     },
     {
-      "key": "scripts/audit-wasm-validate.mjs::assembleWAT::b::VIOLATION",
+      "key": "scripts/audit-stage-execution.mjs::assembleWAT::asm::VIOLATION#2",
+      "file": "scripts/audit-stage-execution.mjs",
+      "line": 251,
+      "why": "branches on .valid but never consults .diagnostics in a decision"
+    },
+    {
+      "key": "scripts/audit-wasm-validate.mjs::assembleWAT::b::VIOLATION#1",
       "file": "scripts/audit-wasm-validate.mjs",
       "line": 101,
       "why": "uses .wasm without branching on .valid or .diagnostics at all"
     },
     {
-      "key": "scripts/bench-startup.mjs::assembleWAT::asm::VIOLATION",
+      "key": "scripts/bench-startup.mjs::assembleWAT::asm::VIOLATION#1",
       "file": "scripts/bench-startup.mjs",
       "line": 97,
       "why": "branches on .valid but never consults .diagnostics in a decision"
     },
     {
-      "key": "scripts/gather-t1-twin-hashes.mjs::assembleWAT::asm::VIOLATION",
+      "key": "scripts/gather-t1-twin-hashes.mjs::assembleWAT::asm::VIOLATION#1",
       "file": "scripts/gather-t1-twin-hashes.mjs",
       "line": 42,
       "why": "uses .wasm without branching on .valid or .diagnostics at all"
