@@ -1,0 +1,8 @@
+{
+  "known_failing": [
+    "f16-add-exact-halves",
+    "f32-add-exact-halves",
+    "f32-add-must-be-32bit",
+    "money-ratio-must-not-truncate"
+  ]
+}

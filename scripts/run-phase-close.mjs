@@ -388,6 +388,12 @@ run("wat-lowering", "node", ["scripts/audit-wat-lowering.mjs"]);
 //   clears checkTypes + governance + security (052/077 hid here). 10 baselined (A1/A2/A3/B emitter
 //   classes); shrink-only, a NEW invalid → exit 1. Complements the source-level audit-wat-lowering sweep.
 run("wasm-validate", "node", ["scripts/audit-wasm-validate.mjs"]);
+// arith-conformance (R&D prototype, owner-directed "check ALL maths thoroughly, even if other dev
+//   tools do the same") — 38 hand-pinned arithmetic cases, each pinned to the answer DERIVED BY HAND
+//   from the maths, never to what the system prints and never to "Stage-A == Stage-B" (reference
+//   vacuity). 4 baselined (077 Money/Money i32.div_s truncation + the Float32/16-emitted-as-integer
+//   class); shrink-only, a NEW divergence / wrong-trap / silent-value-where-fail-closed-expected → exit 1.
+run("arith-conformance", "node", ["scripts/audit-arithmetic-conformance.mjs"]);
 // doc:reference-drift — the docs/reference/ pages must not DRIFT from the enforcing code (R&D's 2026-07-15
 //   re-verification found types.md documenting TypeId alone while the checker accepts the isBuiltInType()
 //   union). Extracts each page's vocabulary FROM SOURCE (45 canonical effects + 2 deny-only + the union gate
