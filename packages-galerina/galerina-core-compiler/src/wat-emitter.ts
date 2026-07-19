@@ -531,8 +531,11 @@ export function buildRecordFieldTypes(ast: AstNode | undefined): Map<string, Map
  * handle, this guard admits Decimal with no edit. Flagged to R&D.
  *
  * SCOPE: WASM lowering only (this emitter). The tree-walking interpreter stores wide values faithfully, so
- * interpreter execution of the same program is unaffected. Verified zero current use: 0 of 450 `.fungi`
- * files declare a non-i32 record field (2026-07-19), so this refuses no working program.
+ * interpreter execution of the same program is unaffected. Corpus inventory (scripts/audit-wat-lowering.mjs,
+ * 2026-07-19 — supersedes an earlier ad-hoc scan that was fail-open/vacuous): the ONLY non-i32 record
+ * fields are 4 `Decimal` fields in one example (docs/examples/…/472-physics-simulation), latently broken on
+ * WASM by the `Decimal → f64` wart (#137) — refusing them is correct, not a false-refusal. There are 0
+ * Float/Int64/Float32 record fields anywhere; none of the refused fields is a working program.
  */
 function assertLowerableRecordFields(ast: AstNode | undefined): void {
   const offenders: string[] = [];
