@@ -47,6 +47,23 @@ contract { intent { "numeric-looking string patterns still compare by string val
     _ => { return 0 }
   }
 }
+
+record Tok { kind: String; text: String }
+
+// The CHECKER-STAGE shape: the subject is a record FIELD (t.kind), not an identifier. inferExprType
+// returns undefined for a memberExpr, so the fix must key off the QUOTED string-literal pattern — not
+// the subject type — or record-field string matches (fd.kind / classification / effect-name) silently
+// mis-dispatch to the wildcard in WASM. This is what the self-hosted checkers depend on.
+pure flow fieldDispatch(k: String) -> Int
+contract { intent { "match on a String record FIELD, not an identifier" } }
+{
+  let t = Tok { kind: k, text: "x" }
+  match t.kind {
+    "id" => { return 10 }
+    "num" => { return 20 }
+    _ => { return 0 }
+  }
+}
 `;
 
 /** Build + sign + admit the module once; return {instance, host, nextHandle} with interned literals seeded. */
@@ -77,8 +94,9 @@ function callWasm(ctx, fn, s) {
   return Number(ctx.instance.exports[fn](h));
 }
 
+const PARAM = { opcodeOf: "op", numericPattern: "s", fieldDispatch: "k" };
 async function callInterp(prog, fn, s) {
-  const args = new Map([[fn === "opcodeOf" ? "op" : "s", { __tag: "string", value: s }]]);
+  const args = new Map([[PARAM[fn], { __tag: "string", value: s }]]);
   const r = await L.executeFlow(fn, args, prog.ast, prog.flows, undefined, undefined, { pureFastPath: true });
   return Number(r?.value?.value ?? r?.value ?? r);
 }
@@ -103,10 +121,19 @@ describe("#160 String-subject match compares by VALUE, not by interned handle (W
     assert.equal(callWasm(ctx, "numericPattern", "3"), 0, '"3" → `_` ⇒ 0');
   });
 
+  it("match on a record FIELD (t.kind) dispatches by value — the checker-stage shape", async () => {
+    const ctx = await instantiate();
+    // inferExprType is undefined for a memberExpr subject; the quoted-pattern signal must carry it.
+    assert.equal(callWasm(ctx, "fieldDispatch", "id"), 10, '"id" → arm 10 (pre-fix: field subject fell to `_` ⇒ 0)');
+    assert.equal(callWasm(ctx, "fieldDispatch", "num"), 20, '"num" → arm 20');
+    assert.equal(callWasm(ctx, "fieldDispatch", "xx"), 0, '"xx" → `_` ⇒ 0');
+  });
+
   it("WASM matches the interpreter (Stage-A ≡ Stage-B) across the corpus", async () => {
     const ctx = await instantiate();
     for (const [fn, s] of [["opcodeOf", "add"], ["opcodeOf", "sub"], ["opcodeOf", "mul"], ["opcodeOf", "zzz"],
-                           ["numericPattern", "1"], ["numericPattern", "2"], ["numericPattern", "9"]]) {
+                           ["numericPattern", "1"], ["numericPattern", "2"], ["numericPattern", "9"],
+                           ["fieldDispatch", "id"], ["fieldDispatch", "num"], ["fieldDispatch", "zz"]]) {
       const i = await callInterp(ctx.prog, fn, s);
       const w = callWasm(ctx, fn, s);
       assert.equal(w, i, `${fn}(${JSON.stringify(s)}): interp=${i} wasm=${w}`);

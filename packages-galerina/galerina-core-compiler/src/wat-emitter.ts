@@ -1940,12 +1940,16 @@ export function emitWATExpr(
           return bodyWat;
         }
 
-        // #160: a String subject compares every arm pattern by VALUE (str_eq), never i32.eq on
-        // interned handles — equal-valued strings can have different handles (the same rule the
-        // `==`/`!=` operators already follow above). Must PRECEDE the int/enum interpretations:
-        // a numeric-looking pattern (e.g. "1") against a String subject is still a string literal,
-        // so `parseInt` must not hijack it into an i32.eq handle compare.
-        if (inferExprType(subject) === "String") {
+        // #160: a String comparison uses VALUE equality (str_eq), never i32.eq on interned handles —
+        // equal-valued strings can have different handles (the same rule `==`/`!=` already follow).
+        // Trigger on EITHER a String subject OR a quoted string-literal pattern: inferExprType returns
+        // undefined for a memberExpr subject (e.g. `t.kind`), so the subject-type signal alone misses
+        // record-field matches — but a quoted pattern is an unambiguous string literal (a bareword
+        // enum/constructor or a bare int is never quoted), exactly as `==` keys off its literal operand.
+        // internString strips the surrounding quotes, so str_eq compares the dequoted content. Must
+        // PRECEDE the int/enum interpretation (a quoted numeric-looking pattern `"1"` is still a string).
+        const patternIsStringLit = pattern.length >= 2 && pattern.charCodeAt(0) === 34 && pattern.charCodeAt(pattern.length - 1) === 34;
+        if (inferExprType(subject) === "String" || patternIsStringLit) {
           const rest = buildMatchChain(armIdx + 1);
           return `(if (result i32) (call $host___str_eq ${subjectWat} (i32.const ${internString(pattern)}))\n  (then ${bodyWat})\n  (else ${rest})\n)`;
         }
@@ -2517,14 +2521,16 @@ function emitBlockStatements(
           // to the interned id.
           const asInt = parseInt(pattern, 10);
           const enumTag = enumVariantTag(pattern, matchSubject);
-          // #160: a String subject compares every arm pattern by VALUE (str_eq), never i32.eq on
-          // interned handles (equal-valued strings can have different handles — same rule as `==`).
-          // Precedes the int/enum interpretation: a numeric-looking pattern against a String subject
-          // is still a string literal, so `parseInt` must not hijack it into an i32.eq handle compare.
-          const strSubject = inferExprType(matchSubject) === "String";
+          // #160: str_eq on EITHER a String subject OR a quoted string-literal pattern — inferExprType is
+          // undefined for a memberExpr subject (`fd.kind`), so a quoted pattern is the reliable string
+          // signal (a bareword enum/constructor or a bare int is never quoted), mirroring how `==` keys off
+          // its literal. internString strips the quotes, so str_eq compares dequoted content. Precedes the
+          // int/enum interpretation so a quoted numeric-looking pattern `"1"` isn't hijacked into i32.eq.
+          const patternIsStringLit = pattern.length >= 2 && pattern.charCodeAt(0) === 34 && pattern.charCodeAt(pattern.length - 1) === 34;
+          const useStrEq = inferExprType(matchSubject) === "String" || patternIsStringLit;
           const condWat = pattern === "__guard__"
             ? (arm.children?.[0] ? emitWATExpr(arm.children[0], vars, staticConsts) : "(i32.const 1)")
-            : strSubject
+            : useStrEq
               ? `(call $host___str_eq ${subjectWat} (i32.const ${internString(pattern)}))`
               : !isNaN(asInt)
                 ? `(i32.eq ${subjectWat} (i32.const ${asInt}))`
