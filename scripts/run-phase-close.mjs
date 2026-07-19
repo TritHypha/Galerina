@@ -383,6 +383,11 @@ run("no-redeclare", "node", ["scripts/audit-no-redeclare.mjs"]);
 //   FUNGI-LAYOUT-001 compile guard) so the `why` can't rot. Shrink-only baseline; a NEW affected site → exit 1.
 //   Complements the per-program FUNGI-LAYOUT-001 compile guard with a corpus-wide, non-compiled-included sweep.
 run("wat-lowering", "node", ["scripts/audit-wat-lowering.mjs"]);
+// wasm-validate (R&D prototype, owner-directed 2026-07-19) — assembles every example the front-end
+//   gate ADMITS and runs WebAssembly.validate(); the only gate that catches a malformed module that
+//   clears checkTypes + governance + security (052/077 hid here). 10 baselined (A1/A2/A3/B emitter
+//   classes); shrink-only, a NEW invalid → exit 1. Complements the source-level audit-wat-lowering sweep.
+run("wasm-validate", "node", ["scripts/audit-wasm-validate.mjs"]);
 // doc:reference-drift — the docs/reference/ pages must not DRIFT from the enforcing code (R&D's 2026-07-15
 //   re-verification found types.md documenting TypeId alone while the checker accepts the isBuiltInType()
 //   union). Extracts each page's vocabulary FROM SOURCE (45 canonical effects + 2 deny-only + the union gate

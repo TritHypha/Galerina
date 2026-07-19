@@ -1,0 +1,14 @@
+{
+  "invalid": [
+    "docs/examples/Level-1-Basics/006-mut-binding/example.fungi",
+    "docs/examples/Level-1-Basics/012-match-result/example.fungi",
+    "docs/examples/Level-2-Types/052-decimal-basic/example.fungi",
+    "docs/examples/Level-2-Types/058-patient-id-type/example.fungi",
+    "docs/examples/Level-2-Types/071-money-gbp/example.fungi",
+    "docs/examples/Level-2-Types/077-money-ratio/example.fungi",
+    "docs/examples/Level-2-Types/088-array-range/example.fungi",
+    "docs/examples/Level-2-Types/093-time-types/example.fungi",
+    "docs/examples/Level-6-Compute/307-vector-type/example.fungi",
+    "docs/examples/Level-6-Compute/320-statistics-stdlib/example.fungi"
+  ]
+}
