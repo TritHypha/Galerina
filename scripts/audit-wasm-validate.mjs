@@ -100,7 +100,11 @@ async function classify(src, file) {
     const b = await L.assembleWAT(wat);                 // MUST await — see discipline 1
     u8 = b instanceof Uint8Array ? b : new Uint8Array(b?.bytes || b?.wasm || b);
   } catch (e) { return { k: "INVALID", why: "assemble rejected: " + e.message.slice(0, 60) }; }
-  if (!u8 || u8.length < 8) return { k: "SKIP", why: "assembler returned no bytes" };
+  // <= 8, not < 8 (R&D 2026-07-19): the bespoke assembler does NOT throw on unparseable WAT — it
+  // returns the 8-byte EMPTY module (`\0asm` + version) which WebAssembly.validate() reports TRUE,
+  // so a `< 8` check lets an unassembled module bucket as VALID (a fail-open in the fail-open gate).
+  // Treat the minimal empty module as unassessed (SKIP), never VALID.
+  if (!u8 || u8.length <= 8) return { k: "SKIP", why: "assembler returned only the empty module (unparseable WAT)" };
   if (!WebAssembly.validate(u8)) return { k: "INVALID", why: "failed WebAssembly.validate" };
   return declines(wat) ? { k: "DECLINES", why: "valid module, fail-closed trap in a flow body" } : { k: "VALID", why: "" };
 }
