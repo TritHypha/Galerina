@@ -11,8 +11,8 @@
 
 | Metric | Count |
 |---|---|
-| Files | 11 |
-| Internal edges | 22 |
+| Files | 12 |
+| Internal edges | 23 |
 | External dependencies | 3 |
 | ├─ Node core | 3 |
 | ├─ Workspace (@galerina/*) | 0 |

@@ -15,6 +15,7 @@ import * as path from "node:path";
 
 import type { FileId, SearchGraph } from "../graph/model.ts";
 import { foldCase, hasUpper, wordScanner } from "../util/normalize.ts";
+import { assessRegexSafety, MAX_REGEX_LINE_LEN, SEARCH_TIME_BUDGET_MS } from "./regex-guard.ts";
 
 export type MatchMode = "word" | "substring" | "regex";
 
@@ -42,6 +43,11 @@ export interface SearchResult {
   filesSearched: number;
   filesMatched: number;
   truncated: boolean;
+  // Word-mode only: files that CONTAIN the pattern verbatim but produced no match
+  // because the word-boundary test rejected them. Surfaced so a narrowed result can
+  // never be mistaken for absence — the "no silent caps" contract (DESIGN §8/§10)
+  // applied to the matcher itself, not just to the walker's size cap.
+  wordBoundaryExcluded: number;
 }
 
 export interface SearchError {
@@ -62,6 +68,8 @@ function resolveSensitivity(query: string, opt: boolean | "smart"): boolean {
   return opt === "smart" ? hasUpper(query) : opt;
 }
 
+const WORD_CHAR = /[\p{L}\p{N}_]/u;
+
 // Compile the precise matcher used in phase 2.
 function buildMatcher(query: string, mode: MatchMode, sensitive: boolean): RegExp {
   if (mode === "regex") {
@@ -71,9 +79,39 @@ function buildMatcher(query: string, mode: MatchMode, sensitive: boolean): RegEx
   const esc = escapeRegExp(query);
   const flags = sensitive ? "gu" : "giu";
   if (mode === "word") {
-    return new RegExp(`(?<![\\p{L}\\p{N}_])${esc}(?![\\p{L}\\p{N}_])`, flags);
+    // PER-EDGE boundary test: apply a lookaround ONLY where the pattern's own edge
+    // character is a word constituent.
+    //
+    // Applying both edges unconditionally is the bug this replaces. For a pattern
+    // that already ENDS in punctuation — `foo(`, `foo.`, `foo[`, `#include <`, `-> `
+    // — the trailing test lands on the character AFTER the punctuation and demands
+    // it be a non-word char. So `foo(bar)` is rejected while `foo("x")` and `foo()`
+    // survive: every call site passing a VARIABLE disappears, which is precisely the
+    // query a developer types to enumerate call sites before changing a contract.
+    // Measured in the field on a real API: 5 files returned where a full walk finds
+    // ~90, and `assembleWAT(c` returned zero while a file contained
+    // `assembleWAT(cleanWat)`. A miss reads as absence, so this was silent and wrong.
+    //
+    // `foo(` keeps whole-word protection on its LEFT edge (no match inside
+    // `refoo(`), and simply stops filtering on its right.
+    //
+    // Deliberate divergence from `grep -w`, which applies both edges unconditionally
+    // — but grep's DEFAULT is not `-w`, so a grep user never trips over it, while
+    // myco's default IS whole-word. Same semantics, different blast radius.
+    const lead = WORD_CHAR.test(query[0] ?? "") ? "(?<![\\p{L}\\p{N}_])" : "";
+    const trail = WORD_CHAR.test(query[query.length - 1] ?? "")
+      ? "(?![\\p{L}\\p{N}_])"
+      : "";
+    return new RegExp(`${lead}${esc}${trail}`, flags);
   }
   return new RegExp(esc, flags);
+}
+
+// A non-global, verbatim matcher for the same query — used ONLY to detect files the
+// word-boundary test discarded, so the summary can say so rather than imply absence.
+// Non-global on purpose: `.test()` on a /g/ regex is stateful and would alternate.
+function buildLooseProbe(query: string, sensitive: boolean): RegExp {
+  return new RegExp(escapeRegExp(query), sensitive ? "u" : "iu");
 }
 
 // The word-terms of the query, folded — the keys we traverse in phase 1.
@@ -126,9 +164,12 @@ function scanLine(
   matcher: RegExp,
 ): Array<{ col: number; length: number }> {
   const hits: Array<{ col: number; length: number }> = [];
+  // Bound the input to any single exec — the ReDoS input-size guard. Positions in
+  // the prefix are identical to the original line, so reported columns stay valid.
+  const hay = line.length > MAX_REGEX_LINE_LEN ? line.slice(0, MAX_REGEX_LINE_LEN) : line;
   matcher.lastIndex = 0;
   let m: RegExpExecArray | null;
-  while ((m = matcher.exec(line)) !== null) {
+  while ((m = matcher.exec(hay)) !== null) {
     hits.push({ col: m.index + 1, length: m[0].length });
     if (m[0].length === 0) matcher.lastIndex++; // guard against zero-width loops
   }
@@ -141,12 +182,13 @@ async function matchFile(
   relPath: string,
   matcher: RegExp,
   context: number,
-): Promise<Match[]> {
+  loose?: RegExp,
+): Promise<{ hits: Match[]; excludedByBoundary: boolean }> {
   let text: string;
   try {
     text = await fs.readFile(absPath, "utf8");
   } catch {
-    return [];
+    return { hits: [], excludedByBoundary: false };
   }
   const lines = text.split("\n");
   const out: Match[] = [];
@@ -164,7 +206,12 @@ async function matchFile(
       });
     }
   }
-  return out;
+  // Nothing matched, but the file DOES contain the pattern verbatim ⟹ the boundary
+  // test discarded it. We already hold the text, so this costs one extra scan on
+  // zero-hit candidates only.
+  const excludedByBoundary =
+    out.length === 0 && loose !== undefined && loose.test(text);
+  return { hits: out, excludedByBoundary };
 }
 
 // Rank: files with more hits first, then shorter paths, then alphabetical;
@@ -191,12 +238,19 @@ function searchNames(
   graph: SearchGraph,
   matcher: RegExp,
   limit: number,
+  loose?: RegExp,
 ): SearchResult {
   const matches: Match[] = [];
   let searched = 0;
+  let excluded = 0;
   for (const rec of graph.files()) {
     searched++;
-    for (const hit of scanLine(rec.path, matcher)) {
+    const nameHits = scanLine(rec.path, matcher);
+    if (nameHits.length === 0) {
+      if (loose !== undefined && loose.test(rec.path)) excluded++;
+      continue;
+    }
+    for (const hit of nameHits) {
       matches.push({
         path: rec.path,
         line: 0,
@@ -221,6 +275,7 @@ function searchNames(
     filesSearched: searched,
     filesMatched: matched,
     truncated: ranked.length > limit,
+    wordBoundaryExcluded: excluded,
   };
 }
 
@@ -231,6 +286,13 @@ export async function search(
   opts: SearchOptions,
 ): Promise<SearchOutcome> {
   if (query === "") return { error: "empty query" };
+  // ReDoS guard: refuse an exponential-by-construction pattern BEFORE it is compiled
+  // or run (fail-closed). Ordinary patterns pass; the input cap + time budget below
+  // bound whatever the static check conservatively allows.
+  if (opts.mode === "regex") {
+    const verdict = assessRegexSafety(query);
+    if (!verdict.safe) return { error: `unsafe regex refused (ReDoS guard): ${verdict.reason}` };
+  }
   const sensitive = resolveSensitivity(query, opts.caseSensitive);
 
   let matcher: RegExp;
@@ -255,7 +317,11 @@ export async function search(
     matcher = new RegExp(`${escapeRegExp(query)}$`, sensitive ? "gu" : "giu");
   }
 
-  if (opts.files) return searchNames(graph, matcher, opts.limit);
+  // Only word mode can discard a verbatim occurrence, so only word mode needs the probe.
+  const loose =
+    opts.mode === "word" ? buildLooseProbe(query, sensitive) : undefined;
+
+  if (opts.files) return searchNames(graph, matcher, opts.limit, loose);
 
   const ids = candidates(graph, queryTerms(query), opts.mode);
   const records =
@@ -265,20 +331,42 @@ export async function search(
 
   const all: Match[] = [];
   const filesMatched = new Set<string>();
+  const startedAt = Date.now();
+  let budgetExceeded = false;
+  let searched = 0;
+  let excluded = 0;
   for (const rec of records) {
+    // Wall-clock ceiling — a slow-but-not-refused pattern cannot run forever. We
+    // stop between files (a single exec is already bounded by scanLine's input cap).
+    // Reporting the real `searched` count + `truncated` keeps myco's "never mistake
+    // nothing for absent" contract honest (DESIGN §8/§10).
+    if (Date.now() - startedAt > SEARCH_TIME_BUDGET_MS) {
+      budgetExceeded = true;
+      break;
+    }
+    searched++;
     const abs = path.join(root, rec.path);
-    const hits = await matchFile(abs, rec.path, matcher, opts.context);
+    const { hits, excludedByBoundary } = await matchFile(
+      abs,
+      rec.path,
+      matcher,
+      opts.context,
+      loose,
+    );
     if (hits.length > 0) {
       filesMatched.add(rec.path);
       all.push(...hits);
+    } else if (excludedByBoundary) {
+      excluded++;
     }
   }
 
   const ranked = rank(all);
   return {
     matches: ranked.slice(0, opts.limit),
-    filesSearched: records.length,
+    filesSearched: searched,
     filesMatched: filesMatched.size,
-    truncated: ranked.length > opts.limit,
+    truncated: ranked.length > opts.limit || budgetExceeded,
+    wordBoundaryExcluded: excluded,
   };
 }

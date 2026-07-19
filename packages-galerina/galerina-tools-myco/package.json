@@ -1,8 +1,8 @@
 {
   "name": "@galerina/tools-myco",
-  "version": "0.1.2",
-  "description": "grep, but it grows a graph — a graph-indexed search tool for file contents and filenames. Galerina's owned dev-tool finder (vendored from the myco subproject). Smart-case, token-precise, instant on repeat searches.",
-  "license": "MIT",
+  "version": "0.1.3",
+  "description": "grep, but it grows a graph â€” a graph-indexed search tool for file contents and filenames. Galerina's owned dev-tool finder (vendored from the myco subproject). Smart-case, token-precise, instant on repeat searches.",
+  "license": "Apache-2.0",
   "private": true,
   "type": "module",
   "bin": {
@@ -43,5 +43,12 @@
   "devDependencies": {
     "@types/node": "^22.10.0",
     "typescript": "^5.9.0"
+  },
+  "galerinaVendor": {
+    "upstream": "subprojects/myco (sibling checkout; remote github.com/TritHypha/myco, private)",
+    "upstreamCommit": "e5e0e25",
+    "syncedAt": "2026-07-19",
+    "contains": "v0.1.3 ReDoS regex-guard + the per-edge word-boundary fix and wordBoundaryExcluded reporting (e5e0e25)",
+    "rule": "MIRROR — do not edit src/ here. Fix upstream, then re-vendor. src/ must be byte-identical to upstream at upstreamCommit; anything else is undeclared drift."
   }
 }

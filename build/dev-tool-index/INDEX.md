@@ -55,7 +55,7 @@
 | `galerina-db-sqlite` | db | 21 | PASS | 0 | Galerina SQLite adapter contract placeholder. |
 | `galerina-registry` | registry | — | PASS | 0 | — |
 | `galerina-tools-benchmark` | tools | 9 | PASS | 0 | Galerina benchmark and diagnostics contracts for logic, compute targets, fallback behaviour and safe reporting |
-| `galerina-tools-myco` | tools | 14 | PASS | 0 | grep, but it grows a graph — a graph-indexed search tool for file contents and filenames. Galerina's owned dev |
+| `galerina-tools-myco` | tools | 14 | PASS | 0 | grep, but it grows a graph â€” a graph-indexed search tool for file contents and filenames. Galerina's owned d |
 | `galerina-web` | web | 25 | PASS | 0 | Galerina browser-safe web package umbrella contracts. |
 | `galerina-web-components` | web | 26 | PASS | 0 | Galerina typed browser component boundary contracts. |
 | `galerina-web-events` | web | 25 | PASS | 0 | Galerina typed browser event contracts. |
