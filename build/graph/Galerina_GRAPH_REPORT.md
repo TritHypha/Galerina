@@ -1,15 +1,15 @@
 # Galerina Graph Report
 
 Workspace: Galerina-app
-Generated: 2026-07-18T21:27:51.350Z
+Generated: 2026-07-19T03:32:54.228Z
 
 ## Summary
 
-- Packages: 94
-- Documents: 2812
-- Types/interfaces: 2488
-- Functions: 1260
-- Relationships: 6976
+- Packages: 95
+- Documents: 2828
+- Types/interfaces: 2509
+- Functions: 1266
+- Relationships: 7019
 
 ## Package Nodes
 
@@ -84,6 +84,7 @@ Generated: 2026-07-18T21:27:51.350Z
 - galerina-core-sentinel-time (packages-galerina/galerina-core-sentinel-time/package.json)
 - galerina-tower-citizen (packages-galerina/galerina-tower-citizen/package.json)
 - galerina-tri-pipe (packages-galerina/galerina-tri-pipe/README.md)
+- galerina-tri-regex (packages-galerina/galerina-tri-regex/README.md)
 - galerina-ext-spore (packages-galerina/galerina-ext-spore/README.md)
 - galerina-ext-bridge-bitnet (packages-galerina/galerina-ext-bridge-bitnet/package.json)
 - galerina-ext-bridge-cpp (packages-galerina/galerina-ext-bridge-cpp/package.json)

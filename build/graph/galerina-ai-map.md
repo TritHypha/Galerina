@@ -1205,6 +1205,24 @@ Provides:
 - TriPipeEngine
 - createTriPipeEngine
 
+## galerina-tri-regex
+
+Ternary streaming pattern matching — ReDoS-immune by construction. Non-backtracking automaton, compile-time cost certificate, fail-closed SECURITY_VETO on uncertifiable patterns, three-valued streaming verdicts (+1 match / 0 indeterminate / -1 refuse) with fail-closed collapse at end-of-stream.
+
+Provides:
+- Closure
+- Compiled
+- compileAst
+- inRanges
+- TriStream
+- TriMatcher
+- VERSION
+- CompileOptions
+- CompileOk
+- compile
+- normalizeRanges
+- complementRanges
+
 ## galerina-ext-spore
 
 Galerina .spore format engine (Phase 2 #6) — TMX-256 integrity (TriMerkle-XOF/SHAKE256), container, KEM-DEM confidentiality, ML-DSA-65 signing. Crypto-on-core: bit-exact, deterministic.
