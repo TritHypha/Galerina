@@ -372,6 +372,10 @@ run("audit:sections", "node", ["scripts/component-health.mjs", "--self-test"]);
 //   the build indexes but skipped --audit-html, leaving percent-audit.{html,json} describing an old tree.
 //   Fail-closed → run `node scripts/component-health.mjs --audit-html` and commit the refreshed % audit.
 run("audit:percent-fresh", "node", ["scripts/component-health.mjs", "--audit-check"]);
+// no-redeclare (#56/#108 P9 Option-Y guard, R&D 2026-07-19) — no self-hosted stage may declare a top-level
+//   name already in lexer/parser: the concat-prelude (Option Y) stays sound only while parser↔stage is
+//   collision-free (else a late `Duplicate export name` at WASM instantiate, #107). Cheap name-set intersection.
+run("no-redeclare", "node", ["scripts/audit-no-redeclare.mjs"]);
 // doc:reference-drift — the docs/reference/ pages must not DRIFT from the enforcing code (R&D's 2026-07-15
 //   re-verification found types.md documenting TypeId alone while the checker accepts the isBuiltInType()
 //   union). Extracts each page's vocabulary FROM SOURCE (45 canonical effects + 2 deny-only + the union gate
