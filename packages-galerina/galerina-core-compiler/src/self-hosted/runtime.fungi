@@ -184,7 +184,7 @@ contract { intent { "Build a List runtime value." } }
 pure flow recordGet(rec: RtValue, fieldName: String) -> RtValue
 contract { intent { "Read a named field from a record runtime value." } }
 {
-  let flds: Array<Auto> = rec.fields
+  let flds: Array<RtValue> = rec.fields
   let n: Int = flds.count()
   mut i: Int = 0
   mut result: RtValue = rtInt(0)
@@ -211,7 +211,7 @@ contract { intent { "Read a named field from a record runtime value." } }
 }
 
 // Look up the most-recent binding of `name`; rtInt(0) when unbound.
-pure flow envLookup(env: Array<Auto>, name: String) -> RtValue
+pure flow envLookup(env: Array<Binding>, name: String) -> RtValue
 contract { intent { "Return the most-recently-bound value for name, or Int 0 if unbound." } }
 {
   mut result: RtValue = rtInt(0)
@@ -231,10 +231,10 @@ contract { intent { "Return the most-recently-bound value for name, or Int 0 if 
 }
 
 // Bind name → value (append; later bindings shadow earlier ones on lookup).
-pure flow envBind(env: Array<Auto>, name: String, v: RtValue) -> Array<Auto>
+pure flow envBind(env: Array<Binding>, name: String, v: RtValue) -> Array<Binding>
 contract { intent { "Append a name→value binding to the environment." } }
 {
-  return env.append({ name: name, val: v })
+  return env.append(Binding { name: name, val: v })
 }
 
 // Apply a binary opcode to two runtime values.
