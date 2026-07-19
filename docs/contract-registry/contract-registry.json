@@ -1,6 +1,6 @@
 {
   "generatedBy": "gen-contract-registry.mjs",
-  "contracts": 907,
+  "contracts": 909,
   "parsed": 450,
   "rows": [
     {
@@ -3935,7 +3935,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/gir-emitter.fungi",
       "name": "emitGIRModule",
       "qualifier": "pure",
-      "signature": "pure flow emitGIRModule(flows: Array<Auto>) -> GIRModule",
+      "signature": "pure flow emitGIRModule(flows: Array<FlowDecl>) -> GIRModule",
       "effects": [],
       "intent": "Emit a GIR module from a Stage B ParseResult: a flow-decl node and an expression node per FlowDecl."
     },
@@ -3959,7 +3959,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/gir-emitter.fungi",
       "name": "lowerExpr",
       "qualifier": "pure",
-      "signature": "pure flow lowerExpr(expr: Auto) -> GIRExpr",
+      "signature": "pure flow lowerExpr(expr: Expr) -> GIRExpr",
       "effects": [],
       "intent": "Recursively lower a parser Expr AST node into a GIRExpr."
     },
@@ -3967,7 +3967,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/gir-emitter.fungi",
       "name": "firstExprOf",
       "qualifier": "pure",
-      "signature": "pure flow firstExprOf(stmt: Auto) -> Option<Auto>",
+      "signature": "pure flow firstExprOf(stmt: Stmt) -> Option<Expr>",
       "effects": [],
       "intent": "Return Some(expr) for the statement's lone carried expr, else None."
     },
@@ -3975,7 +3975,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/gir-emitter.fungi",
       "name": "lowerStmt",
       "qualifier": "pure",
-      "signature": "pure flow lowerStmt(stmt: Auto) -> GIRStmt",
+      "signature": "pure flow lowerStmt(stmt: Stmt) -> GIRStmt",
       "effects": [],
       "intent": "Lower a single body statement into a GIRStmt."
     },
@@ -3999,7 +3999,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/gir-emitter.fungi",
       "name": "paramNames",
       "qualifier": "pure",
-      "signature": "pure flow paramNames(params: Array<Auto>) -> Array<Auto>",
+      "signature": "pure flow paramNames(params: Array<FlowParam>) -> Array<Auto>",
       "effects": [],
       "intent": "Extract each FlowParam's name into an ordered Array<String>."
     },
@@ -4007,7 +4007,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/gir-emitter.fungi",
       "name": "buildFlowTable",
       "qualifier": "pure",
-      "signature": "pure flow buildFlowTable(flows: Array<Auto>) -> Array<Auto>",
+      "signature": "pure flow buildFlowTable(flows: Array<FlowDecl>) -> Array<FlowEntry>",
       "effects": [],
       "intent": "Build Array<FlowEntry> { name, params: Array<String>, body: Array<GIRStmt> } from parser flows."
     },
@@ -4309,6 +4309,22 @@
     },
     {
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/parser.fungi",
+      "name": "readTypeName",
+      "qualifier": "pure",
+      "signature": "pure flow readTypeName(tokens: Array<Token>, pos: Int) -> String",
+      "effects": [],
+      "intent": "Read a base type name plus an optional balanced generic argument list into a flat string (matches TS parseTypeRef)."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/parser.fungi",
+      "name": "typeEndPos",
+      "qualifier": "pure",
+      "signature": "pure flow typeEndPos(tokens: Array<Token>, pos: Int) -> Int",
+      "effects": [],
+      "intent": "Return the token position just past a (possibly generic) type starting at pos."
+    },
+    {
+      "file": "packages-galerina/galerina-core-compiler/src/self-hosted/parser.fungi",
       "name": "parseParams",
       "qualifier": "pure",
       "signature": "pure flow parseParams(tokens: Array<Token>, startPos: Int) -> Array<FlowParam>",
@@ -4583,7 +4599,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/runtime.fungi",
       "name": "envLookup",
       "qualifier": "pure",
-      "signature": "pure flow envLookup(env: Array<Auto>, name: String) -> RtValue",
+      "signature": "pure flow envLookup(env: Array<Binding>, name: String) -> RtValue",
       "effects": [],
       "intent": "Return the most-recently-bound value for name, or Int 0 if unbound."
     },
@@ -4591,7 +4607,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/runtime.fungi",
       "name": "envBind",
       "qualifier": "pure",
-      "signature": "pure flow envBind(env: Array<Auto>, name: String, v: RtValue) -> Array<Auto>",
+      "signature": "pure flow envBind(env: Array<Binding>, name: String, v: RtValue) -> Array<Binding>",
       "effects": [],
       "intent": "Append a name→value binding to the environment."
     },
@@ -4607,7 +4623,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/runtime.fungi",
       "name": "lookupFlow",
       "qualifier": "pure",
-      "signature": "pure flow lookupFlow(flows: Array<Auto>, name: String) -> Auto",
+      "signature": "pure flow lookupFlow(flows: Array<FlowEntry>, name: String) -> FlowEntry",
       "effects": [],
       "intent": "Return the flow-table entry whose name matches, or an empty sentinel entry."
     },
@@ -4615,7 +4631,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/runtime.fungi",
       "name": "evalGIRExpr",
       "qualifier": "pure",
-      "signature": "pure flow evalGIRExpr(expr: Auto, env: Array<Auto>, flows: Array<Auto>) -> RtValue",
+      "signature": "pure flow evalGIRExpr(expr: GIRExpr, env: Array<Binding>, flows: Array<FlowEntry>) -> RtValue",
       "effects": [],
       "intent": "Recursively evaluate a GIR expression node to an Int/Bool runtime value."
     },
@@ -4623,7 +4639,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/runtime.fungi",
       "name": "evalFirst",
       "qualifier": "pure",
-      "signature": "pure flow evalFirst(exprs: Array<Auto>, env: Array<Auto>, flows: Array<Auto>) -> RtValue",
+      "signature": "pure flow evalFirst(exprs: Array<GIRExpr>, env: Array<Binding>, flows: Array<FlowEntry>) -> RtValue",
       "effects": [],
       "intent": "Evaluate a statement's single carried GIR expression, or Int 0 if none."
     },
@@ -4631,7 +4647,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/runtime.fungi",
       "name": "execGIRBody",
       "qualifier": "pure",
-      "signature": "pure flow execGIRBody(stmts: Array<Auto>, env: Array<Auto>, flows: Array<Auto>) -> ExecResult",
+      "signature": "pure flow execGIRBody(stmts: Array<GIRStmt>, env: Array<Binding>, flows: Array<FlowEntry>) -> ExecResult",
       "effects": [],
       "intent": "Execute a GIR statement body; thread the env, short-circuit on return. Collects audit entries from effect calls."
     },
@@ -4639,7 +4655,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/runtime.fungi",
       "name": "runGIRBody",
       "qualifier": "pure",
-      "signature": "pure flow runGIRBody(stmts: Array<Auto>, env: Array<Auto>) -> RtValue",
+      "signature": "pure flow runGIRBody(stmts: Array<GIRStmt>, env: Array<Binding>) -> RtValue",
       "effects": [],
       "intent": "Execute a GIR flow body with an initial environment; return its return value."
     },
@@ -4647,7 +4663,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/runtime.fungi",
       "name": "runGIR",
       "qualifier": "pure",
-      "signature": "pure flow runGIR(stmts: Array<Auto>) -> RtValue",
+      "signature": "pure flow runGIR(stmts: Array<GIRStmt>) -> RtValue",
       "effects": [],
       "intent": "Execute a GIR flow body with an empty environment."
     },
@@ -4655,7 +4671,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/runtime.fungi",
       "name": "runProgram",
       "qualifier": "pure",
-      "signature": "pure flow runProgram(flows: Array<Auto>, entryName: String, args: Array<Auto>) -> RunResult",
+      "signature": "pure flow runProgram(flows: Array<FlowEntry>, entryName: String, args: Array<RtValue>) -> RunResult",
       "effects": [],
       "intent": "Run a flow-table program from an entry flow with positional args; return value + audit log."
     },

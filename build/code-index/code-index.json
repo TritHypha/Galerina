@@ -1771,7 +1771,7 @@
     "allSites": [
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:3567",
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:1686",
-      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2565"
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2643"
     ]
   },
   {
@@ -6683,9 +6683,9 @@
       "ref packages-galerina/galerina-core-compiler/src/runtime/canonicalHash.ts:69",
       "emit packages-galerina/galerina-core-compiler/src/runtime/canonicalHash.ts:75",
       "ref packages-galerina/galerina-core-compiler/src/stdlib.ts:266",
-      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:999",
-      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:1357",
-      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:1433",
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:1068",
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:1435",
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:1511",
       "test packages-galerina/galerina-core-compiler/tests/canonical-hash.test.mjs:79",
       "test packages-galerina/galerina-core-compiler/tests/float-nonfinite-failopen.test.mjs:27",
       "test packages-galerina/galerina-core-compiler/tests/float-nonfinite-wasm-parity.test.mjs:2"
@@ -9690,7 +9690,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2572"
+      "packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2650"
     ],
     "tests": 3,
     "refs": 1,
@@ -9699,7 +9699,7 @@
     "severities": [],
     "allSites": [
       "ref packages-galerina/galerina-core-compiler/src/capability-types.ts:168",
-      "emit packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2572",
+      "emit packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2650",
       "test packages-galerina/galerina-core-compiler/tests/helpers/tower-log-assertions.mjs:52",
       "test packages-galerina/galerina-core-compiler/tests/helpers/tower-log-assertions.mjs:59",
       "test packages-galerina/galerina-core-compiler/tests/helpers/tower-log-assertions.mjs:60",
@@ -9723,7 +9723,7 @@
     "defs": [],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/governance-verifier.ts:2644",
-      "packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2786"
+      "packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2864"
     ],
     "tests": 13,
     "refs": 12,
@@ -9744,9 +9744,9 @@
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:2694",
       "ref packages-galerina/galerina-core-compiler/src/invariant-discharge.ts:27",
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:5129",
-      "emit packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2786",
-      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2924",
-      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2946",
+      "emit packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2864",
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:3002",
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:3024",
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:1344",
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:1355",
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:1358",
@@ -9771,8 +9771,8 @@
     "defs": [],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/interpreter.ts:1421",
-      "packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2807",
-      "packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2815"
+      "packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2885",
+      "packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2893"
     ],
     "tests": 4,
     "refs": 5,
@@ -9786,8 +9786,8 @@
       "ref packages-galerina/galerina-core-compiler/src/interpreter.ts:1491",
       "ref packages-galerina/galerina-core-compiler/src/interpreter.ts:1502",
       "ref packages-galerina/galerina-core-compiler/src/interpreter.ts:1508",
-      "emit packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2807",
-      "emit packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2815",
+      "emit packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2885",
+      "emit packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2893",
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:1393",
       "test packages-galerina/galerina-core-compiler/tests/output-postconditions.test.mjs:7",
       "test packages-galerina/galerina-core-compiler/tests/output-postconditions.test.mjs:25",
@@ -9848,7 +9848,7 @@
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:2623",
       "emit packages-galerina/galerina-core-compiler/src/governance-verifier.ts:2627",
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:2628",
-      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2748",
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2826",
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:1410",
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:1419",
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:1420",
@@ -9961,6 +9961,37 @@
       "test packages-galerina/galerina-core-compiler/tests/k3-operators.test.mjs:146",
       "test packages-galerina/galerina-core-compiler/tests/k3-operators.test.mjs:147",
       "doc docs/SYNTAX_UPDATE_TRACKER.md:42"
+    ]
+  },
+  {
+    "code": "FUNGI-LAYOUT-001",
+    "namespace": "FUNGI",
+    "family": "LAYOUT",
+    "occurrences": 9,
+    "docOnly": false,
+    "defs": [
+      "packages-galerina/galerina-core-compiler/src/wat-emitter.ts:540"
+    ],
+    "emits": [],
+    "tests": 6,
+    "refs": 2,
+    "docs": 0,
+    "names": [
+      "UNSUPPORTED_RECORD_LAYOUT"
+    ],
+    "severities": [
+      "error"
+    ],
+    "allSites": [
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:520",
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:538",
+      "def packages-galerina/galerina-core-compiler/src/wat-emitter.ts:540",
+      "test packages-galerina/galerina-core-compiler/tests/wat-float-record-refusal.test.mjs:2",
+      "test packages-galerina/galerina-core-compiler/tests/wat-float-record-refusal.test.mjs:10",
+      "test packages-galerina/galerina-core-compiler/tests/wat-float-record-refusal.test.mjs:37",
+      "test packages-galerina/galerina-core-compiler/tests/wat-float-record-refusal.test.mjs:40",
+      "test packages-galerina/galerina-core-compiler/tests/wat-float-record-refusal.test.mjs:45",
+      "test packages-galerina/galerina-core-compiler/tests/wat-float-record-refusal.test.mjs:70"
     ]
   },
   {
@@ -10682,8 +10713,8 @@
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:3992",
       "emit packages-galerina/galerina-core-compiler/src/governance-verifier.ts:4003",
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:4004",
-      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:1890",
-      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2344",
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:1968",
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2422",
       "test packages-galerina/galerina-core-compiler/tests/anti-hallucination-corpus.test.mjs:179",
       "test packages-galerina/galerina-core-compiler/tests/governance/match-exhaustiveness.test.mjs:2",
       "test packages-galerina/galerina-core-compiler/tests/governance/match-exhaustiveness.test.mjs:25",
@@ -11914,7 +11945,7 @@
       "ref packages-galerina/galerina-core-compiler/src/value-state-checker.ts:2205",
       "emit packages-galerina/galerina-core-compiler/src/value-state-checker.ts:2240",
       "ref packages-galerina/galerina-core-compiler/src/value-state-checker.ts:2300",
-      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:845",
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:914",
       "test packages-galerina/galerina-core-compiler/tests/cli-numeric-gate.test.mjs:2",
       "test packages-galerina/galerina-core-compiler/tests/cli-numeric-gate.test.mjs:15",
       "test packages-galerina/galerina-core-compiler/tests/cli-numeric-gate.test.mjs:17",
@@ -19837,7 +19868,7 @@
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:898",
       "emit packages-galerina/galerina-core-compiler/src/type-checker.ts:2399",
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:2400",
-      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:1531",
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:1609",
       "test packages-galerina/galerina-core-compiler/tests/int-literal-range.test.mjs:2",
       "test packages-galerina/galerina-core-compiler/tests/int-literal-range.test.mjs:24",
       "test packages-galerina/galerina-core-compiler/tests/int-literal-range.test.mjs:27",

@@ -10,7 +10,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 |---|---|---|
 | live | 128 | emitted with an exported constant |
 | inline | 162 | emitted, NO exported constant (R4 — Stage F) |
-| referenced | 95 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
+| referenced | 96 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 8 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
 | phantom | 111 | doc-only mention, not in source (drift — DOC-004) |
 | ref | 179 | referenced only (no def/emit) |
@@ -701,6 +701,12 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-K3-001 | inline | MIXED_VERDICT_BOOL_OPERANDS | error |
 | FUNGI-K3-002 | inline | VERDICT_UNARY_MISMATCH | error |
 | FUNGI-K3-003 | inline | FOLD_OPERAND_NOT_VERDICT | error |
+
+### LAYOUT (1)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-LAYOUT-001 | referenced | UNSUPPORTED_RECORD_LAYOUT | error |
 
 ### LEX (6)
 

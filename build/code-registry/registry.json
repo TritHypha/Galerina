@@ -1,12 +1,12 @@
 {
   "generatedFrom": "build/code-index/code-index.json",
-  "total": 683,
+  "total": 684,
   "counts": {
     "ref": 179,
     "inline": 162,
     "phantom": 111,
     "live": 128,
-    "referenced": 95,
+    "referenced": 96,
     "dead": 8
   },
   "entries": [
@@ -4718,6 +4718,22 @@
       "emits": 1,
       "tests": 2,
       "docs": 1
+    },
+    {
+      "code": "FUNGI-LAYOUT-001",
+      "family": "LAYOUT",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [
+        "UNSUPPORTED_RECORD_LAYOUT"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 0,
+      "tests": 6,
+      "docs": 0
     },
     {
       "code": "FUNGI-LEX-001",
