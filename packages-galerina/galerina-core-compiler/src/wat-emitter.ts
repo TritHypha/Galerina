@@ -376,6 +376,12 @@ const WAT_LOOP_FUEL_CAP = 100_000;
  *  Used to compute field byte offsets for `r.field` loads. null → field access
  *  falls back to the placeholder. */
 let recordLayouts: ReadonlyMap<string, readonly string[]> | null = null;
+/** #160 str_eq: recordTypeName → (fieldName → declared type), so a memberExpr `a.s` infers to its
+ *  field's type (e.g. "String"). Without it, `field == field` (both operands memberExprs, no string
+ *  LITERAL operand to key off) falls through to i32.eq on string HANDLES instead of host___str_eq —
+ *  a silent wrong answer for equal-valued heap strings. Module-level, built once per module emit
+ *  (mirrors flowReturnTypes), consumed by inferExprType. */
+let recordFieldTypes: Map<string, Map<string, string>> | null = null;
 /** varName → record typeName for the flow currently being emitted (reset per flow).
  *  Populated from `let r: T = …` annotations, `let r = T{…}` literal types, and
  *  record-typed flow params. Lets `r.field` resolve to an i32.load at the slot offset. */
@@ -472,6 +478,29 @@ export function buildRecordLayouts(ast: AstNode | undefined): Map<string, string
         .filter((c) => c.kind === "paramDecl")
         .map((c) => (c.value ?? "").split(":")[0]!.trim())
         .filter((n) => n.length > 0);
+      out.set(node.value, fields);
+    }
+  }
+  return out;
+}
+
+/** Build the typeName → (fieldName → declared type) registry from a program AST's `record` decls.
+ *  Sibling to buildRecordLayouts — the paramDecl value is "name: Type", so this keeps the type half
+ *  that layouts discards. Powers memberExpr type inference for #160 str_eq on `a.s == b.s`. */
+export function buildRecordFieldTypes(ast: AstNode | undefined): Map<string, Map<string, string>> {
+  const out = new Map<string, Map<string, string>>();
+  for (const node of ast?.children ?? []) {
+    if (node.kind === "recordDecl" && node.value) {
+      const fields = new Map<string, string>();
+      for (const c of node.children ?? []) {
+        if (c.kind !== "paramDecl") continue;
+        const raw = c.value ?? "";
+        const colon = raw.indexOf(":");
+        if (colon < 0) continue;
+        const name = raw.slice(0, colon).trim();
+        const type = raw.slice(colon + 1).trim();
+        if (name.length > 0 && type.length > 0) fields.set(name, type);
+      }
       out.set(node.value, fields);
     }
   }
@@ -1189,6 +1218,15 @@ function inferExprType(node: AstNode | undefined): string | undefined {
       if (recv?.kind === "identifier" && recv.value === "Verdict" &&
           (node.value === "Deny" || node.value === "Unknown" || node.value === "Allow")) {
         return "Verdict";
+      }
+      // #160 str_eq: resolve `a.s` to its field's declared type, so `a.s == b.s` (neither operand a
+      // literal) is detected as a String comparison → host___str_eq, not i32.eq on handles. Recursive
+      // via inferExprType(recv), so it also types `a.b.c` chains (receiver's field type is a record).
+      const recvType = inferExprType(recv);
+      const fieldName = node.value;
+      if (recvType !== undefined && fieldName !== undefined) {
+        const ft = recordFieldTypes?.get(recvType)?.get(fieldName);
+        if (ft !== undefined) return ft;
       }
       return undefined;
     }
@@ -3508,6 +3546,10 @@ export function buildWATModule(
   // type-directed `.contains` / `+` lowering. Module-level for inferExprType; restored below.
   const prevFlowReturnTypes = flowReturnTypes;
   flowReturnTypes = buildFlowReturnTypes(gir.ast);
+  // #160 str_eq: recordType → field → declared type, so `a.s == b.s` (two String fields) is a String
+  // comparison → host___str_eq, not i32.eq on handles. Module-level for inferExprType; restored below.
+  const prevRecordFieldTypes = recordFieldTypes;
+  recordFieldTypes = buildRecordFieldTypes(gir.ast);
   // 0115: flowName → param base types, so a call site threads a callee's Int64 param as the arg's
   // expectedType (cross-flow Int64 literal-arg faithfulness). Module-level; restored below.
   const prevFlowParamBases = flowParamBases;
@@ -3681,6 +3723,7 @@ export function buildWATModule(
   }
 
   flowReturnTypes = prevFlowReturnTypes; // #160: restore module-level type context
+  recordFieldTypes = prevRecordFieldTypes;
   flowParamBases = prevFlowParamBases;   // 0115: restore
 
   return {
