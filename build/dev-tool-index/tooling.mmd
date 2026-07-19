@@ -28,6 +28,10 @@ flowchart LR
   T_audit_allowlist_sensitive_mjs --> C_package_border
   T_audit_allowlist_sensitive_mjs --> C_graph_index
   T_audit_allowlist_sensitive_mjs --> C_sensitive_allowlist
+  T_audit_arithmetic_conformance_mjs["audit-arithmetic-conformance.mjs"]
+  T_audit_arithmetic_conformance_mjs --> C_gate_wiring
+  T_audit_arithmetic_conformance_mjs --> C_coverage
+  T_audit_arithmetic_conformance_mjs --> C_graph_index
   T_audit_artifact_drift_mjs["audit-artifact-drift.mjs"]
   T_audit_artifact_drift_mjs --> C_signing_fusion
   T_audit_artifact_drift_mjs --> C_coverage
@@ -267,6 +271,9 @@ flowchart LR
   T_audit_reference_doc_drift_mjs --> C_gate_wiring
   T_audit_reference_doc_drift_mjs --> C_diagnostics
   T_audit_reference_doc_drift_mjs --> C_doc_drift
+  T_audit_report_blind_consumers_mjs["audit-report-blind-consumers.mjs"]
+  T_audit_report_blind_consumers_mjs --> C_signing_fusion
+  T_audit_report_blind_consumers_mjs --> C_diagnostics
   T_audit_route_overlap_mjs["audit-route-overlap.mjs"]
   T_audit_route_overlap_mjs --> C_signing_fusion
   T_audit_route_overlap_mjs --> C_governance
@@ -338,6 +345,18 @@ flowchart LR
   T_audit_unlowered_nodes_mjs["audit-unlowered-nodes.mjs"]
   T_audit_unlowered_nodes_mjs --> C_signing_fusion
   T_audit_unlowered_nodes_mjs --> C_diagnostics
+  T_audit_wasm_validate_mjs["audit-wasm-validate.mjs"]
+  T_audit_wasm_validate_mjs --> C_signing_fusion
+  T_audit_wasm_validate_mjs --> C_governance
+  T_audit_wasm_validate_mjs --> C_provenance
+  T_audit_wasm_validate_mjs --> C_diagnostics
+  T_audit_wasm_validate_mjs --> C_teaching_corpus
+  T_audit_wasm_validate_mjs --> C_doc_drift
+  T_audit_wasm_validate_mjs --> C_web_stub
+  T_audit_wasm_validate_mjs --> C_graph_index
+  T_audit_wat_lowering_mjs["audit-wat-lowering.mjs"]
+  T_audit_wat_lowering_mjs --> C_signing_fusion
+  T_audit_wat_lowering_mjs --> C_teaching_corpus
   T_audit_web_stub_guard_mjs["audit-web-stub-guard.mjs"]
   T_audit_web_stub_guard_mjs --> C_signing_fusion
   T_audit_web_stub_guard_mjs --> C_governance

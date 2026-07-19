@@ -11,13 +11,13 @@
 
 | Metric | Count |
 |---|---|
-| Files | 19 |
+| Files | 20 |
 | Internal edges | 0 |
 | External dependencies | 6 |
 | ├─ Node core | 6 |
 | ├─ Workspace (@galerina/*) | 0 |
 | └─ Third-party | 0 |
-| Orphan files | 19 |
+| Orphan files | 20 |
 
 ## External Dependencies (the Border)
 
@@ -42,6 +42,7 @@ No boundary violations. All external imports are within the allowlist.
 - `src/audit-benchmark-integrity.mjs`
 - `src/audit.mjs`
 - `src/bench-guard.mjs`
+- `src/build-chart.mjs`
 - `src/build-native.mjs`
 - `src/chart.mjs`
 - `src/compare.mjs`
