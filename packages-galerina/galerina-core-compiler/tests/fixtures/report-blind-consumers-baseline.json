@@ -3,6 +3,12 @@
   "generated_by": "scripts/audit-report-blind-consumers.mjs --update-baseline",
   "entries": [
     {
+      "key": "packages-galerina/galerina-devtools-benchmarks/bench-i64-vs-i32.mjs::assembleWAT::asm::VIOLATION",
+      "file": "packages-galerina/galerina-devtools-benchmarks/bench-i64-vs-i32.mjs",
+      "line": 24,
+      "why": "branches on .valid but never consults .diagnostics in a decision"
+    },
+    {
       "key": "scripts/audit-arithmetic-conformance.mjs::assembleWAT::b::VIOLATION",
       "file": "scripts/audit-arithmetic-conformance.mjs",
       "line": 180,

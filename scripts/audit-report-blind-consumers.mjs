@@ -129,10 +129,23 @@ const COMPARISON = /(?:===|!==|==|!=|>=|<=|>|<)/;
  * The `const ok = x.diagnostics.length === 0; … if (!ok)` shape is a DECISION — that is galerina.mjs,
  * and treating it as a report-use would flag the one consumer that gets this right.
  */
-function classifyUse(src, stmt) {
+function classifyUse(src, stmt, stmtStart = -1, occIdx = -1) {
   const s = stmt.trim();
-  if (/^(?:\}\s*)?(?:else\s+)?if\s*\(/.test(s)) return "DECISION";
-  if (/^(?:while|for|switch)\s*\(/.test(s)) return "DECISION";
+  const head = /^(?:\}\s*)?(?:else\s+)?(?:if|while|for|switch)\s*\(/.exec(s);
+  if (head) {
+    // ⚠ A one-liner — `if (!asm.valid) { log(asm.diagnostics); exit(2); }` — is ONE statement, so a
+    // naive "starts with if" credits the BODY's mention as a condition test. That is the exact false
+    // negative this gate exists to catch (it hid bench-i64-vs-i32.mjs:23 from v1). Only an occurrence
+    // INSIDE the condition parens is a decision; anything after them is reporting.
+    const open = stmtStart + (stmt.length - stmt.trimStart().length) + head[0].length - 1;
+    let depth = 0, close = -1;
+    for (let i = open; i < src.length; i++) {
+      if (src[i] === "(") depth++;
+      else if (src[i] === ")" && --depth === 0) { close = i; break; }
+    }
+    if (occIdx < 0 || close < 0) return "DECISION";
+    return occIdx > open && occIdx < close ? "DECISION" : "REPORT";
+  }
   if (/^(?:throw|process\.exit)\b/.test(s)) return "DECISION";
   if (/^return\s+[\s\S]*\?/.test(s)) return "DECISION";
   const asg = /^(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=([\s\S]*)$/.exec(s);
@@ -189,9 +202,9 @@ function analyze(relPath, rawSrc, spec) {
     const valueUses = uses(spec.value);
     const artifactUses = uses(spec.artifact);
     const reportDecides = uses(spec.report)
-      .some((m) => classifyUse(src, statementAround(src, m.index)) === "DECISION");
+      .some((m) => classifyUse(src, statementAround(src, m.index), lineStart(src, m.index), m.index) === "DECISION");
     const valueDecides = valueUses
-      .some((m) => classifyUse(src, statementAround(src, m.index)) === "DECISION");
+      .some((m) => classifyUse(src, statementAround(src, m.index), lineStart(src, m.index), m.index) === "DECISION");
 
     if (valueDecides && !reportDecides) {
       out.push({
@@ -252,6 +265,10 @@ const FIXTURES = [
     src: `const b = await L.assembleWAT(wat);\nconst u8 = b instanceof Uint8Array ? b : new Uint8Array(b?.bytes || b?.wasm || b);\nWebAssembly.validate(u8);` },
   { name: "blind: destructures the artifact, never binds the report", expect: "VIOLATION",
     src: `const { wasm } = await assembleWAT(w);\nwriteFileSync(p, wasm);` },
+  { name: "blind ONE-LINER: report mentioned in the if BODY, not the condition (bench-i64-vs-i32.mjs:23)", expect: "VIOLATION",
+    src: `const asm = await L.assembleWAT(wat);\nif (!asm.valid) { console.error("no:", JSON.stringify(asm.diagnostics)); process.exit(2); }\nconst att = L.signWasm(asm.wasm, kp.privateKeyPem, "dev");` },
+  { name: "good ONE-LINER: report tested INSIDE the condition", expect: "CLEAN",
+    src: `const asm = await L.assembleWAT(wat);\nif (!asm.valid || asm.diagnostics.length > 0) { process.exit(2); }\nuse(asm.wasm);` },
 ];
 
 function selfTest() {
