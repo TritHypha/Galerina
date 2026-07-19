@@ -44,6 +44,12 @@ function run(name, cmd, args, { cwd = ROOT, okCodes = [0], timeout = 180000 } = 
 }
 
 function summarise(name, out, ok, code) {
+  // An EXPLICIT summary always wins over the guesses below. Added 2026-07-19 after the new
+  // auto-erasure-ratchet gate was rendered as "245 tests pass" — the `total` heuristic beneath grabs
+  // any number following the word "total", so a DEBT count was reported in the vocabulary of passing
+  // tests. A gate that measures something other than tests can now say so instead of being guessed at.
+  const explicit = out.match(/^SUMMARY:\s*(.+)$/m);
+  if (explicit) return explicit[1].trim();
   // graph
   const nodes = out.match(/Nodes:\s*(\d+)/);
   const edges = out.match(/Edges:\s*(\d+)/);
@@ -404,6 +410,14 @@ run("arith-conformance", "node", ["scripts/audit-arithmetic-conformance.mjs"]);
 //   and never use the artifact with no gate at all. 5 baselined (all in scripts/, incl. gather-t1-twin-
 //   hashes.mjs which HASHES the artifact ungated); shrink-only, a NEW blind consumer → exit 1.
 run("report-blind-consumers", "node", ["scripts/audit-report-blind-consumers.mjs"]);
+// auto-erasure-ratchet (P9/#100, 2026-07-19) — the ENFORCING half of the `Auto`-in-generic ruling.
+//   `Auto` was permitted as a wildcard in argument position so the generic-assignability fix could land
+//   without reddening the self-hosted stages at once — explicitly CONDITIONAL on the ratchet being a
+//   gate rather than a documented number ("without that it is merely the permissive option"). Per-file
+//   shrink-only, so debt cannot migrate between files; a NEW file carrying `Auto` fails until it is
+//   deliberately baselined. Baseline 247 (245 of them in the 5 self-hosted stages), which is ~14x
+//   SMALLER than the 3,419/78-files figure the coordination trail carried — see the header.
+run("auto-erasure-ratchet", "node", ["scripts/audit-auto-erasure-ratchet.mjs"]);
 // doc:reference-drift — the docs/reference/ pages must not DRIFT from the enforcing code (R&D's 2026-07-15
 //   re-verification found types.md documenting TypeId alone while the checker accepts the isBuiltInType()
 //   union). Extracts each page's vocabulary FROM SOURCE (45 canonical effects + 2 deny-only + the union gate

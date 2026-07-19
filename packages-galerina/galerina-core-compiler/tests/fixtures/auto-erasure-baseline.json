@@ -1,0 +1,15 @@
+{
+  "note": "Shrink-only ratchet on Auto type erasure (P9/#100). Counts may DECREASE freely; any increase or new file is a deliberate act that must be re-baselined with a reason. See scripts/audit-auto-erasure-ratchet.mjs.",
+  "generated_by": "scripts/audit-auto-erasure-ratchet.mjs --update-baseline",
+  "total": 247,
+  "stage_total": 245,
+  "files": {
+    "docs/examples/Level-2-Types/069-auto-inference/example.fungi": 1,
+    "docs/examples/Level-2-Types/070-auto-invalid/example.fungi": 1,
+    "packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi": 75,
+    "packages-galerina/galerina-core-compiler/src/self-hosted/gir-emitter.fungi": 31,
+    "packages-galerina/galerina-core-compiler/src/self-hosted/governance-verifier.fungi": 43,
+    "packages-galerina/galerina-core-compiler/src/self-hosted/runtime.fungi": 8,
+    "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi": 88
+  }
+}
