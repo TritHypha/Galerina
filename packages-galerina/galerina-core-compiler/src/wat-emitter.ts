@@ -1940,6 +1940,16 @@ export function emitWATExpr(
           return bodyWat;
         }
 
+        // #160: a String subject compares every arm pattern by VALUE (str_eq), never i32.eq on
+        // interned handles — equal-valued strings can have different handles (the same rule the
+        // `==`/`!=` operators already follow above). Must PRECEDE the int/enum interpretations:
+        // a numeric-looking pattern (e.g. "1") against a String subject is still a string literal,
+        // so `parseInt` must not hijack it into an i32.eq handle compare.
+        if (inferExprType(subject) === "String") {
+          const rest = buildMatchChain(armIdx + 1);
+          return `(if (result i32) (call $host___str_eq ${subjectWat} (i32.const ${internString(pattern)}))\n  (then ${bodyWat})\n  (else ${rest})\n)`;
+        }
+
         // Try to parse as an integer constant for equality comparison
         const asInt = parseInt(pattern, 10);
         if (!isNaN(asInt)) {
@@ -2507,11 +2517,18 @@ function emitBlockStatements(
           // to the interned id.
           const asInt = parseInt(pattern, 10);
           const enumTag = enumVariantTag(pattern, matchSubject);
+          // #160: a String subject compares every arm pattern by VALUE (str_eq), never i32.eq on
+          // interned handles (equal-valued strings can have different handles — same rule as `==`).
+          // Precedes the int/enum interpretation: a numeric-looking pattern against a String subject
+          // is still a string literal, so `parseInt` must not hijack it into an i32.eq handle compare.
+          const strSubject = inferExprType(matchSubject) === "String";
           const condWat = pattern === "__guard__"
             ? (arm.children?.[0] ? emitWATExpr(arm.children[0], vars, staticConsts) : "(i32.const 1)")
-            : !isNaN(asInt)
-              ? `(i32.eq ${subjectWat} (i32.const ${asInt}))`
-              : `(i32.eq ${subjectWat} (i32.const ${enumTag !== undefined ? enumTag : internString(pattern)}))`;
+            : strSubject
+              ? `(call $host___str_eq ${subjectWat} (i32.const ${internString(pattern)}))`
+              : !isNaN(asInt)
+                ? `(i32.eq ${subjectWat} (i32.const ${asInt}))`
+                : `(i32.eq ${subjectWat} (i32.const ${enumTag !== undefined ? enumTag : internString(pattern)}))`;
 
           bodyLines.push(`(if ${condWat}`);
           bodyLines.push(`  (then`);
