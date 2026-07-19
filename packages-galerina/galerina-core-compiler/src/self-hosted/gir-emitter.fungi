@@ -518,6 +518,15 @@ contract { intent { "Public entry — lower a flow body's statement AST into Arr
 
 // FLOW TABLE (M-B) — build a cross-flow lookup table the runtime consumes to
 // resolve flow→flow calls. Each entry: { name, params: Array<String>, body: Array<GIRStmt> }.
+//
+// FlowEntry is the runtime's cross-stage consumption shape (runtime.fungi's lookupFlow reads
+// entry.name/.params/.body). Named here at the producer (buildFlowTable) — derive-from-append,
+// one source of truth. params/body stay Array<Auto> to match paramNames/lowerBody's output.
+record FlowEntry {
+  name: String
+  params: Array<Auto>
+  body: Array<Auto>
+}
 
 // Collect the ORDERED parameter names of a flow into an Array<String>.
 pure flow paramNames(params: Array<FlowParam>) -> Array<Auto>
@@ -538,16 +547,16 @@ contract { intent { "Extract each FlowParam's name into an ordered Array<String>
 }
 
 // Build the flow table: one FlowEntry per flow, with lowered GIR bodies.
-pure flow buildFlowTable(flows: Array<FlowDecl>) -> Array<Auto>
+pure flow buildFlowTable(flows: Array<FlowDecl>) -> Array<FlowEntry>
 contract { intent { "Build Array<FlowEntry> { name, params: Array<String>, body: Array<GIRStmt> } from parser flows." } }
 {
-  mut table: Array<Auto> = Array.empty()
+  mut table: Array<FlowEntry> = Array.empty()
   mut i: Int = 0
   while i < flows.count() {
     let fOpt = flows.get(i)
     match fOpt {
       Some(fd) => {
-        let entry = { name: fd.name, params: paramNames(fd.params), body: lowerBody(fd.body) }
+        let entry: FlowEntry = FlowEntry { name: fd.name, params: paramNames(fd.params), body: lowerBody(fd.body) }
         table = table.append(entry)
       }
       None => {}
