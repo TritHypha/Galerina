@@ -74,6 +74,7 @@
         "packages-galerina/galerina-core-sentinel-time",
         "packages-galerina/galerina-tower-citizen",
         "packages-galerina/galerina-tri-pipe",
+        "packages-galerina/galerina-tri-regex",
         "packages-galerina/galerina-ext-spore",
         "packages-galerina/galerina-ext-bridge-bitnet",
         "packages-galerina/galerina-ext-bridge-cpp",
