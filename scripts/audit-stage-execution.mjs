@@ -36,6 +36,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const SH = join(ROOT, "packages-galerina/galerina-core-compiler/src/self-hosted");
 const DIST = join(ROOT, "packages-galerina/galerina-core-compiler/dist/index.js");
 const REGISTRY = join(ROOT, "docs/contract-registry/contract-registry.json");
+const TESTS = join(ROOT, "packages-galerina/galerina-core-compiler/tests");
 
 // ── the declared surface ─────────────────────────────────────────────────────
 // Every entry is CHECKED against the Contract Registry before the sweep. A hand list that silently rots
@@ -75,6 +76,25 @@ const NOT_SWEPT = [
   { file: "lexer.fungi", why: "exercised by every probe below — tokenize runs first in each driver; a lex failure surfaces as -1" },
   { file: "runtime.fungi", why: "verified by wat-p9-runtime-exec-parity.test.mjs (exec-value R3: Stage-A interpreter == Stage-B WASM over runProgram's real return value), NOT by this compile-pipeline sweep. Its #100 sites were concretized 2026-07-19 (stage-local RtValue/Binding + the cross-stage GIRExpr/GIRStmt/FlowEntry it walks from gir-emitter), so envLookup no longer reads off an Array<Auto> payload. Excluded here for a STRUCTURAL reason, not a debt: runtime consumes gir-emitter's records, so it needs the 4-STAGE concat (lexer+parser+gir-emitter+runtime); this gate's 2-stage lexer+parser+<stage> probe cannot express that cross-stage type dependency. runtime also traps at EXECUTION, not COMPILE, so an admitted-and-run driver (that test) is its correct instrument — a compile sweep that never runs a GIR can't observe it." },
 ];
+
+// RD 2026-07-19 hardening: a NOT_SWEPT `why` that cites an enforcing test ("verified by X.test.mjs") is a
+// CLAIM, and a claim that isn't mechanically checkable rots. The stale `why` I hand-fixed here (it named an
+// Array<Auto> read + "no execution driver", both untrue after the concretization + the exec-parity test) is
+// exactly the stale-green this gate exists to catch — recurring inside the gate's OWN exemption list. So
+// every cited *.test.mjs must EXIST in the suite dir, else the exemption's proof is a fiction → fail closed.
+function citedTests(why) {
+  return [...String(why ?? "").matchAll(/([A-Za-z0-9._-]+\.test\.mjs)/g)].map((m) => m[1]);
+}
+function missingCitedTests() {
+  const missing = [];
+  for (const s of NOT_SWEPT) {
+    for (const t of citedTests(s.why)) {
+      if (!existsSync(join(TESTS, t))) missing.push({ file: s.file, test: t });
+    }
+  }
+  return missing;
+}
+
 // Stages CANNOT share a module: `appendAll` is defined in both type-checker and governance-verifier
 // (`paramNames` in type-checker and gir-emitter), the compiler accepts duplicate FLOW names, and it only
 // fails at WASM instantiate with `Duplicate export name`. See task #107. Hence: one module per stage.
@@ -252,6 +272,9 @@ async function selfTest(L) {
   }
   checks.push(["the declared baseline is shrink-only and stated", Number.isInteger(TRAP_BASELINE) && TRAP_BASELINE >= 0]);
   checks.push(["the not-swept set is declared, not silently omitted", NOT_SWEPT.length > 0 && NOT_SWEPT.every((s) => s.why)]);
+  checks.push(["every NOT_SWEPT 'verified by <test>' cites a test file that EXISTS in tests/", missingCitedTests().length === 0]);
+  checks.push(["★ the NOT_SWEPT test-reference check FIRES on a missing test (silent on a real one)",
+    citedTests("verified by __no_such_test__.test.mjs").length === 1 && !existsSync(join(TESTS, "__no_such_test__.test.mjs"))]);
 
   let ok = true;
   for (const [name, pass] of checks) { console.log(`  ${pass ? "✅" : "❌"} ${name}`); if (!pass) ok = false; }
@@ -299,6 +322,11 @@ for (const r of results) {
 }
 const traps = results.filter((r) => r.r2 === "traps").length;
 if (traps > TRAP_BASELINE) violations.push(`${traps} stage(s) trap, baseline ${TRAP_BASELINE} — a NEW stage broke. The baseline is shrink-only: fix the stage, never raise the number.`);
+// A NOT_SWEPT exemption that cites an enforcing test must point at a test that EXISTS — else "covered
+// elsewhere" is an unbacked claim (the stale-`why` class). Fail closed on a missing cited test.
+for (const m of missingCitedTests()) {
+  violations.push(`${m.file}: NOT_SWEPT 'why' cites ${m.test} as its enforcing test, but that file is ABSENT from tests/ — the exemption's proof does not exist (fail-closed).`);
+}
 
 if (asJson) {
   console.log(JSON.stringify({ results, traps, baseline: TRAP_BASELINE, notSwept: NOT_SWEPT, violations }, null, 2));
