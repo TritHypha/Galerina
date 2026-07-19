@@ -4,9 +4,9 @@
     "packages": 97,
     "testBearing": 96,
     "tests": 7552,
-    "devTools": 102,
-    "auditTools": 61,
-    "toolsInCadence": 39,
+    "devTools": 103,
+    "auditTools": 62,
+    "toolsInCadence": 40,
     "proofs": 40
   },
   "packages": [
@@ -1307,6 +1307,17 @@
       ]
     },
     {
+      "name": "audit-gate-key-injectivity.mjs",
+      "category": "audit",
+      "purpose": "(no header description)",
+      "selfTest": true,
+      "inCadence": true,
+      "concerns": [
+        "coverage",
+        "teaching-corpus"
+      ]
+    },
+    {
       "name": "audit-gate-selftests.mjs",
       "category": "audit",
       "purpose": "META-GATE: prove every audit/lint gate is NON-VACUOUS.",
@@ -2436,6 +2447,7 @@
       "audit-coverage.mjs",
       "audit-dss-wasm-build.mjs",
       "audit-fungi-runtime.mjs",
+      "audit-gate-key-injectivity.mjs",
       "audit-gscm.mjs",
       "audit-name-collisions.mjs",
       "audit-production-blockers.mjs",
@@ -2870,6 +2882,7 @@
       "audit-example-diagnostics.mjs",
       "audit-fungi-corpus-check.mjs",
       "audit-fungi-runtime.mjs",
+      "audit-gate-key-injectivity.mjs",
       "audit-gscm.mjs",
       "audit-hardening-determinism.mjs",
       "audit-oblivious.mjs",

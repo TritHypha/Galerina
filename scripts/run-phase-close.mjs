@@ -418,6 +418,14 @@ run("report-blind-consumers", "node", ["scripts/audit-report-blind-consumers.mjs
 //   deliberately baselined. Baseline 247 (245 of them in the 5 self-hosted stages), which is ~14x
 //   SMALLER than the 3,419/78-files figure the coordination trail carried — see the header.
 run("auto-erasure-ratchet", "node", ["scripts/audit-auto-erasure-ratchet.mjs"]);
+// gate-key-injectivity (2026-07-19) — the meta-gate for "can a baseline tell two sites apart?".
+//   report-blind-consumers shipped with key = file::api::binding::kind; audit-stage-execution.mjs has
+//   TWO ungated `const asm = await assembleWAT(...)` calls (:145 and :251) which collapsed onto ONE
+//   baseline entry — fix one and the gate reports the file clean while the other stays blind, with no
+//   red at any point. A baseline IS an identity scheme, so non-injective keys quietly void "shrink-
+//   only". Checks registered gates' --json findings (distinct position => distinct key) and every
+//   baseline file for duplicate keys; uncovered gates are named on each run rather than skipped.
+run("gate-key-injectivity", "node", ["scripts/audit-gate-key-injectivity.mjs"]);
 // doc:reference-drift — the docs/reference/ pages must not DRIFT from the enforcing code (R&D's 2026-07-15
 //   re-verification found types.md documenting TypeId alone while the checker accepts the isBuiltInType()
 //   union). Extracts each page's vocabulary FROM SOURCE (45 canonical effects + 2 deny-only + the union gate

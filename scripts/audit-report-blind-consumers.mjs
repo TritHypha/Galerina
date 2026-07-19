@@ -377,7 +377,12 @@ if (argv.includes("--update-baseline")) {
 }
 
 if (argv.includes("--json")) {
-  console.log(JSON.stringify({ findings, fresh, stale, totalCallSites, filesInScope, filesSkippedAsTest }, null, 2));
+  // Emit the baseline KEY with each finding so audit-gate-key-injectivity can check that distinct
+  // sites get distinct keys without re-implementing this gate's key logic.
+  console.log(JSON.stringify({
+    findings: findings.map((f) => ({ ...f, key: keyOf(f) })),
+    fresh, stale, totalCallSites, filesInScope, filesSkippedAsTest,
+  }, null, 2));
   process.exit(fresh.length > 0 ? 1 : 0);
 }
 

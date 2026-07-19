@@ -131,6 +131,9 @@ flowchart LR
   T_audit_fungi_runtime_mjs --> C_gate_wiring
   T_audit_fungi_runtime_mjs --> C_coverage
   T_audit_fungi_runtime_mjs --> C_teaching_corpus
+  T_audit_gate_key_injectivity_mjs["audit-gate-key-injectivity.mjs"]
+  T_audit_gate_key_injectivity_mjs --> C_coverage
+  T_audit_gate_key_injectivity_mjs --> C_teaching_corpus
   T_audit_gate_selftests_mjs["audit-gate-selftests.mjs"]
   T_audit_gate_selftests_mjs --> C_mutation_testing
   T_audit_gate_selftests_mjs --> C_graph_index

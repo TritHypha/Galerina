@@ -3,7 +3,7 @@
   "provenance": {
     "available": true,
     "branch": "main",
-    "sha": "8263a21a",
+    "sha": "61570adf",
     "detached": false,
     "dirty": true
   },
@@ -287,7 +287,7 @@
         {
           "item": "Signing-key custody",
           "state": "shipped",
-          "detail": "RESOLVED 2026-07-16 — the hybrid root 21415420b447e219 moved OFF the plaintext env-file into an OFFLINE secret store (owner); custody README corrected (it had mis-named the key + a dangerous restore step) + root-vs-operational split plan written (answers #72 — the registry authority is a NEW operational key, never the cold root). Residual owner cleanup: securely wipe the 2 remaining on-disk plaintext copies (cipher /w:). key-rotation itself SHIPS (tower-citizen/key-rotation.ts). TPM(L3)/HW(L4) + HSM/PKCS#11 = post-v1 hardening"
+          "detail": "RESOLVED 2026-07-16 — the hybrid root 21415420b447e219 moved OFF the plaintext env-file into an OFFLINE secret store (owner); custody README corrected (it had mis-named the key + a dangerous restore step) + root-vs-operational split plan written (answers #72 — the registry authority is a NEW operational key, never the cold root). The 'wipe the 2 remaining plaintext copies' residual is CLOSED (2026-07-18 custody close-out, re-verified 2026-07-19: key-vault empty, GitHub\\keys absent, every .pem on disk is a .pub half; the only private key present is the repo-root .env.galerina-signing = 53de6be4, gitignored, which belongs there). OPEN instead: (a) the offline root has ONE copy — duplicate to 2-3 media with destination verification, the exact ab46f4c7 machine-rebuild risk; (b) NOT a residual — recorded so it stops being re-raised: per-machine dev keys auto-mint into a package's governance/ dir when a build runs with cwd inside it (api-protocol-rest's own package.json build script does). That is BY DESIGN — .gitignore:34 ignores **/governance/signing-key-*.pub.pem with :39 negating the single ceremony anchor 21415420, so minted pubkeys are build artifacts, never governance records, and key-inventory is CORRECT to omit them. Owner mints deliberately. Do not flag, do not 'delete on sight'. key-rotation itself SHIPS (tower-citizen/key-rotation.ts). TPM(L3)/HW(L4) + HSM/PKCS#11 = post-v1 hardening"
         },
         {
           "item": "ZTF-KB path-leak guard",
