@@ -23,6 +23,7 @@
 // Phase 2 — Contract Blocks validation (new):
 //   FUNGI-GOV-019  LIMITS_UNKNOWN_FIELD           (limits {} typo detection)
 //   FUNGI-GOV-020  AUTHORITY_OVERLY_BROAD         (authority { requires * })
+//   FUNGI-GOV-024  SANDBOX_REQUIRED_BUT_UNAVAILABLE (step expr → DSS.wasm isolation gap)
 //
 // Phase 3 — Governance Verifier completion (new):
 //   FUNGI-GOV-001  INTENT_BEHAVIOR_MISMATCH       (heuristic: read/pure intent + write effects)
@@ -637,6 +638,27 @@ export const FUNGI_DRCM_UNSUPPORTED = {
   name: "DRCM_FEATURE_NOT_YET_SUPPORTED",
   severity: "error" as const,
   message: "DRCM feature used without @experimental_profile wrapper in --release build. Wrap with @experimental_profile(name: \"drcm_core_v1\", status: \"planned_phaseN\") { ... }.",
+} as const;
+
+/**
+ * FUNGI-GOV-024: A flow uses a `step` expression (DWI isolate call) which requires
+ * DSS.wasm process-level sandbox isolation at runtime. In Stage A the isolation is
+ * only SIMULATED (the inner flow runs in the same Node.js process). In a production
+ * or deterministic profile this is a containment failure — the architectural guarantee
+ * does not exist yet.
+ *
+ * Severity: warning in dev/check-only (the gap is documented); error in production/
+ * deterministic (fail-closed: cannot sign a manifest that overclaims sandbox isolation).
+ *
+ * This diagnostic makes the Stage-A simulation boundary visible and compile-detectable
+ * rather than silently absent. Reference: DSS.wasm spec (tasks #102–#106),
+ * interpreter.ts:2215 "full shared-nothing isolation is deferred to the WASM tier".
+ */
+export const FUNGI_GOV_024 = {
+  code: "FUNGI-GOV-024",
+  name: "SANDBOX_REQUIRED_BUT_UNAVAILABLE",
+  severity: "warning" as const,
+  message: "Flow uses a `step` expression (DWI isolate call) which requires DSS.wasm process isolation. In Stage A this is simulated — the inner flow runs in the same process. Full sandbox isolation is deferred to the WASM tier (tasks #102–#106).",
 } as const;
 
 /** Recognised value classifications from the Galerina governance scope KB. */
@@ -2213,6 +2235,34 @@ class GovernanceVerifier {
     // and ambient authority leaks. Force explicit NetworkTarget variants.
     if (flowNode !== undefined) {
       this.verifyNetworkWildcardBan(flow, flowNode, loc);
+    }
+
+    // ── FUNGI-GOV-024: step expression → DSS.wasm sandbox required but unavailable ──
+    // A `step` expression (DWI isolate call) requires process-level sandbox isolation
+    // provided by DSS.wasm. In Stage A the isolation is simulated; in production/
+    // deterministic profiles this is a containment failure (error). In dev/check-only
+    // it is a warning that makes the simulation boundary visible.
+    if (flowNode !== undefined) {
+      const hasStep = findNodes(flowNode, "stepExpr").length > 0;
+      if (hasStep) {
+        const isProduction = this.currentProfile === "production" || this.currentProfile === "deterministic";
+        this.diagnostics.push(makeGovDiag(
+          "FUNGI-GOV-024",
+          "SANDBOX_REQUIRED_BUT_UNAVAILABLE",
+          isProduction ? "error" : "warning",
+          `Flow '${flow.name}' uses a step expression (DWI isolate call) which requires ` +
+          `DSS.wasm process-level sandbox isolation. In Stage A this is simulated — the ` +
+          `inner flow runs in the same Node.js process.` +
+          (isProduction
+            ? ` A production/deterministic build cannot sign a manifest that overclaims sandbox isolation. ` +
+              `DSS.wasm process isolation is deferred to the WASM tier (tasks #102–#106).`
+            : ` Full shared-nothing isolation is deferred to the WASM tier (tasks #102–#106). ` +
+              `The simulation is behaviour-correct but not process-isolated.`),
+          loc,
+          `Wrap this flow in @experimental_profile to acknowledge the simulation boundary, ` +
+          `or remove the step expression until DSS.wasm is available.`,
+        ));
+      }
     }
 
     // ── FUNGI-RES-001: Resilience violation — retry + mutation without idempotent (task #58) ──
