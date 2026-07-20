@@ -13,6 +13,46 @@ import {
   type LimitConfig, parseLimitConfig, checkRequestSize, checkBatchSize,
   checkResultCount, checkQueryLength, checkAmount, checkConcurrentTasks, checkRate,
 } from "./limitPolicy.js";
+
+// ---------------------------------------------------------------------------
+// CompiledContract — pre-parsed, frozen contract config
+//
+// Parsing an AstNode on every flow invocation is O(children) per call. For
+// a flow that is invoked thousands of times, the parse work is wasted — the
+// contract block does not change between invocations. CompiledContract holds
+// the already-parsed config so createContractEnforcer can skip all three
+// parse* functions on the hot path.
+//
+// Usage: call compileContract(contractNode) once at flow-admission time (or
+// after the governance-verifier pass) and pass the result to
+// createContractEnforcer via the `compiled` option. runtime.ts demonstrates
+// the pattern.
+// ---------------------------------------------------------------------------
+
+/** Pre-parsed, frozen contract configuration. */
+export interface CompiledContract {
+  readonly timeoutConfig: TimeoutConfig;
+  readonly retryPolicy: EffectRetryPolicy;
+  readonly limitConfig: LimitConfig;
+}
+
+/**
+ * Compile a contract AST node into a frozen CompiledContract struct.
+ *
+ * This is the one-time admission-time cost that replaces the per-invocation
+ * parse* calls inside createContractEnforcer. Call once; store the result.
+ *
+ * When contractNode is undefined (the flow declares no contract) the result
+ * holds all default configs — identical behaviour to the previous per-call path.
+ */
+export function compileContract(contractNode: AstNode | undefined): CompiledContract {
+  return Object.freeze({
+    timeoutConfig: parseTimeoutConfig(contractNode),
+    retryPolicy:   parseRetryPolicy(contractNode),
+    limitConfig:   parseLimitConfig(contractNode),
+  });
+}
+
 import {
   type ContractEnforcementRecord,
   createEnforcementRecord,
@@ -67,17 +107,25 @@ export interface ContractEnforcer {
 }
 
 /**
- * Creates a ContractEnforcer for the named flow, parsing all policy
- * configuration from the optional contract AST node.
+ * Creates a ContractEnforcer for the named flow.
+ *
+ * Fast path: pass a `CompiledContract` (from `compileContract()`) in opts to skip
+ * all three parse* calls. Use this when the same flow is invoked repeatedly —
+ * compile once at flow-admission time, pass the result on every invocation.
+ *
+ * Slow path (backward-compatible): omit `opts.compiled`; the enforcer parses the
+ * contractNode inline as before. This path is still correct but pays the O(children)
+ * parse cost on every invocation.
  */
 export function createContractEnforcer(
   contractNode: AstNode | undefined,
   flowName: string,
-  opts?: { traceId?: string; actor?: string; deadlineMs?: number },
+  opts?: { traceId?: string; actor?: string; deadlineMs?: number; compiled?: CompiledContract },
 ): ContractEnforcer {
-  const timeoutConfig: TimeoutConfig = parseTimeoutConfig(contractNode);
-  const retryPolicy: EffectRetryPolicy = parseRetryPolicy(contractNode);
-  const limitConfig: LimitConfig = parseLimitConfig(contractNode);
+  // Use pre-compiled config when available (fast path) — otherwise parse inline.
+  const timeoutConfig: TimeoutConfig = opts?.compiled?.timeoutConfig ?? parseTimeoutConfig(contractNode);
+  const retryPolicy: EffectRetryPolicy = opts?.compiled?.retryPolicy ?? parseRetryPolicy(contractNode);
+  const limitConfig: LimitConfig = opts?.compiled?.limitConfig ?? parseLimitConfig(contractNode);
 
   // Deadline resolution priority:
   //   1. opts.deadlineMs (absolute ms, from caller like runtime.ts options)

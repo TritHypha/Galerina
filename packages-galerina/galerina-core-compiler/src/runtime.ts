@@ -20,7 +20,7 @@ import { buildProofChain, type ExecutionProofChain } from "./proof-chain.js";
 import { startServer, type RunningServer, type ServerConfig } from "./route-dispatcher.js";
 import { buildRouteRegistry } from "./route-registry.js";
 import { buildAttestation, signAttestation, type GalerinaAttestation, type AttestationKeyPair } from "./attestation.js";
-import { createContractEnforcer, type ContractEnforcer } from "./runtime/contractEnforcer.js";
+import { createContractEnforcer, compileContract, type ContractEnforcer } from "./runtime/contractEnforcer.js";
 import { createCapabilityHost, type CapabilityHost } from "./runtime/capabilityHost.js";
 import type { ContractEnforcementRecord } from "./runtime/runtimeReport.js";
 import { checkSourceEscapes, type EscapeDiagnostic } from "./source-escape-checker.js";
@@ -216,13 +216,17 @@ export async function run(
 
   const contractNode = (targetFlowNode?.children ?? []).find((c) => c.kind === "contractDecl");
 
-  // Build the enforcer — merge any options.deadlineMs (absolute) into it.
-  // createContractEnforcer will pick up the contract node's own timeout as well;
-  // opts.deadlineMs takes priority when both are present.
+  // Pre-compile contract config once — avoids O(children) AST walks on every invocation.
+  // compileContract(undefined) returns default configs (same behaviour as before when no contract).
+  const compiledContract = compileContract(contractNode);
+
+  // Build the enforcer — pass the pre-compiled config to skip inline parsing.
+  // opts.deadlineMs takes priority over the contract's own timeout when both are present.
   const finalEnforcer: ContractEnforcer = createContractEnforcer(
     contractNode,
     flowName,
     {
+      compiled: compiledContract,
       ...(options.traceId !== undefined ? { traceId: options.traceId } : {}),
       ...(options.deadlineMs !== undefined
         ? { deadlineMs: Date.now() + options.deadlineMs }
