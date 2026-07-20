@@ -329,6 +329,12 @@ export const HOST_PROFILES: ReadonlyMap<string, HostResidencyCapability> = new M
   ["mlock_posix", { name: "mlock_posix", canRegisterPin: false, canNoDramSpill: false, canNoSwap: true, canNoDisk: true }],
   // A hypothetical register-pinned target (TRESOR-class) — honours every ceiling. Design-stage.
   ["register_pinned", { name: "register_pinned", canRegisterPin: true, canNoDramSpill: true, canNoSwap: true, canNoDisk: true }],
+  // Browser / WASM secure context: JavaScript sandbox guarantees no persistent disk writes (no filesystem
+  // access from WASM without an explicit JS host bridge). Cannot mlock (no syscall surface), cannot forbid
+  // DRAM. Satisfies `no_disk` only — the ceiling for browser-deployed WASM flows handling secrets.
+  // Note: the "no persistent disk" guarantee is the browser sandbox, not a kernel primitive; this seam
+  // is only appropriate for in-browser WASM deployments (target-wasm + browser runtime).
+  ["browser_secure_context", { name: "browser_secure_context", canRegisterPin: false, canNoDramSpill: false, canNoSwap: false, canNoDisk: true }],
 ]);
 
 /** Resolve a declared host name to its capability, fail-closed to UNKNOWN_HOST for an unknown/undeclared name. */
