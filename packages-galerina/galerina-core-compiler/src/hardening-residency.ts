@@ -400,6 +400,18 @@ export function refute(): CompilerTrust {
  * combineTrust — the K3 conjunction (min-trit / vAnd): the LEAST-trusted operand wins, contagiously.
  * `Trusted`+`Unverified` → `Unverified`; anything+`Refuted` → `Refuted`. An untrusted operand can only
  * LOWER the result, never manufacture trust (No-Coercion). The exact algebra of the runtime `combine()`.
+ *
+ * WHY this is self-contained (does not import from @galerina/core-logic):
+ *   `CompilerTrust` is a numeric trit enum (REFUTED=0, UNKNOWN=1, PROVEN=2) where the K3 min is trivially
+ *   `Math.min(a, b)` / `a < b ? a : b`. The `@galerina/core-logic` TriState is an object type
+ *   `{kind:"true"|"false"|"unknown", reasons?:[…]}` that carries provenance chains for type-checking and
+ *   lattice-proofs. Converting between them at every call site would add noise with zero semantic gain —
+ *   the algebra is identical (`min(a,b)`) but the representation intentionally differs:
+ *     CompilerTrust  — compiler-only, numeric, allocation-free on the hot path.
+ *     TriState       — cross-package, object, reason-tracking (used in `@galerina/tower-citizen`).
+ *   The conformance test suite (`galerina-tower-citizen/tests/trit-conformance.test.mjs`, 6/6) verifies
+ *   that both implementations produce the same truth table. This is the correct relationship: same algebra,
+ *   separate representations, conformance-tested parity. (Bob review 2026-07, item 6.)
  */
 export function combineTrust(a: CompilerTrust, b: CompilerTrust): CompilerTrust {
   return (a < b ? a : b) as CompilerTrust;
