@@ -2242,8 +2242,9 @@ class GovernanceVerifier {
     // provided by DSS.wasm. In Stage A the isolation is simulated; in production/
     // deterministic profiles this is a containment failure (error). In dev/check-only
     // it is a warning that makes the simulation boundary visible.
+    // Note: the parser emits step calls as { kind:"callExpr", value:"step:<name>" }
     if (flowNode !== undefined) {
-      const hasStep = findNodes(flowNode, "stepExpr").length > 0;
+      const hasStep = findNodes(flowNode, "callExpr").some((n) => (n.value ?? "").startsWith("step:"));
       if (hasStep) {
         const isProduction = this.currentProfile === "production" || this.currentProfile === "deterministic";
         this.diagnostics.push(makeGovDiag(

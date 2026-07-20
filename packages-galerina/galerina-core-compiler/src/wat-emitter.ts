@@ -2298,9 +2298,39 @@ function emitBlockStatements(
       case "returnStmt": {
         const exprNode = stmt.children?.[0];
         // Step 3g: thread the flow's declared return base so a bare `return <Int64 literal>` emits i64.const.
-        const exprStr  = exprNode !== undefined
+        let exprStr = exprNode !== undefined
           ? emitWATExpr(exprNode, vars, staticConsts, currentReturnBase)
           : "(i32.const 0) ;; return void";
+
+        // Step 4e (Int→Int64 widening): if the declared return is i64 but the expression leaves
+        // i32 on the stack (e.g. `return n` where n: Int), widen with i64.extend_i32_s.
+        // This covers `pure flow f(n: Int) -> Int64 { return n }` where the parameter is i32 but
+        // the function result is i64 — without widening wabt rejects "expected [i64] but got [i32]".
+        //
+        // GUARD: only widen when we are sure the expression is actually i32, not already i64.
+        // `watStackType` conservatively returns "i32" for `(local.get $x)` even when $x is i64 —
+        // it cannot inspect the local declaration from the string alone. So before applying the
+        // extend we check: if the return expr is a single identifier whose WAT local is declared
+        // as i64 in the current function's localDecls (or is a function parameter of 64-bit type),
+        // skip the extend (it's already i64). Otherwise apply it.
+        if (is64BitWatType(currentReturnBase) && watStackType(exprStr) === "i32") {
+          // Check if the expr is a `(local.get $name)` where $name is already an i64 local.
+          // localDecls entries look like: `(local $name i64)` or `(local $name i32)`.
+          const localGetMatch = exprStr.match(/^\(local\.get \$([^\s)]+)\)/);
+          const isAlreadyI64 = localGetMatch !== null
+            ? localDecls.some((d) => d.includes(`$${localGetMatch[1]}`) && d.endsWith(" i64)"))
+            : false;
+          // Also check: is it a parameter access? Parameters are not in localDecls — check recordVarTypes.
+          // A param typed "Int64" or "UInt64" in recordVarTypes is already i64.
+          const varName = exprNode?.kind === "identifier" ? (exprNode.value ?? "") : null;
+          const paramTypeIs64 = varName !== null
+            ? is64BitWatType(numericBaseType(recordVarTypes?.get(varName) ?? ""))
+            : false;
+          if (!isAlreadyI64 && !paramTypeIs64) {
+            exprStr = `(i64.extend_i32_s ${exprStr})`;
+          }
+        }
+
         // Inside nested blocks (if/while body), use explicit (return <expr>)
         // so the value is returned from the FUNCTION, not just pushed to the block stack.
         // At top-level function body, the last expr is the implicit function return.
