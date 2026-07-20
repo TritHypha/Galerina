@@ -31,15 +31,15 @@ import { resolveEffectiveRoutePolicy, type EffectivePosture } from "./route-defa
 import { createSecretGate } from "./secret-gate.js";
 import type { SecretsProvider } from "./secret-gate.js";
 // #195/#179 — resolve OS/HW posture via @galerina/core-config (single source of truth for the
-// fail-secure logic). Relative-dist import: this path resolves identically from src/ and dist/
-// (each sits two levels under packages-galerina/). Swap to the bare specifier once workspaces land (#155).
-import { resolvePosture } from "../../galerina-core-config/dist/posture.js";
-import type { SecurityPosture, ResolvedPosture } from "../../galerina-core-config/dist/posture.js";
-import type { EnvironmentMode } from "../../galerina-core-config/dist/index.js";
+// fail-secure logic). @galerina/core-config is declared as a file: dependency in package.json;
+// the bare specifier resolves via the package's main entry (dist/index.js) which re-exports
+// posture.js via its barrel. Relative-dist paths removed — #155 / item #8 Bob review.
+import { resolvePosture } from "@galerina/core-config";
+import type { SecurityPosture, ResolvedPosture, EnvironmentMode } from "@galerina/core-config";
 // K3 boundary collapse for channel/identity admission — the TLSTP S1 cert-gate verdict folds in
-// here. Relative-dist import (same pattern as core-config above; bare specifier once #155 lands).
-import { decideAtBoundary } from "../../galerina-tower-citizen/dist/index.js";
-import type { Verdict } from "../../galerina-tower-citizen/dist/index.js";
+// here. @galerina/tower-citizen is a file: dependency; "." export resolves to dist/index.js.
+import { decideAtBoundary } from "@galerina/tower-citizen";
+import type { Verdict } from "@galerina/tower-citizen";
 
 /** Normalised inbound request the pipeline operates on. */
 export interface GalerinaKernelRequest {
