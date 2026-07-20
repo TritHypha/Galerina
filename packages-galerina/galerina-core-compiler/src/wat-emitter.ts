@@ -1858,6 +1858,35 @@ export function emitWATExpr(
         return `(call ${hostCallFn} ${args.join(" ")})`.trimEnd();
       }
 
+      // A2 guard: detect known-unlowerable type constructors that cannot be defined in the WAT
+      // module. Previously these fell through to `(call $name ...)`, emitting a dangling call
+      // that the bespoke assembler silently drops — the 25 silent A2 failures (the call is gone
+      // from the executed module; for privacy/money functions this is a silent security defect).
+      //
+      // The correct failure mode is `(unreachable)` — a loud WASM trap, not a silent deletion.
+      // The full fix is to define/import these as host functions; until then, emit fail-closed.
+      //
+      // This set covers the stdlib symbols confirmed as A2 causes in the corpus:
+      //   - Money currency constructors: gbp, eur, usd, chf, jpy, cad, aud — Money<X>(value)
+      //   - Decimal constructor: Decimal(value) — maps to f64 but no WASM host stub yet
+      //   - Collection/IO operations: range, print, map, redact — no WASM host stub yet
+      //
+      // NOTE: `flowReturnTypes` will not contain these names (they are not user flows), so
+      // the lookup below will be null — meaning they WOULD fall through to the bare call.
+      // Instead, fail closed here explicitly.
+      const UNLOWERED_STDLIB_CONSTRUCTORS = new Set([
+        // Money currency constructors (ISO 4217)
+        "gbp", "eur", "usd", "chf", "jpy", "cad", "aud", "nzd", "sgd", "hkd",
+        // Decimal (bignum) constructor — no WASM host stub; lowers to f64 which is wrong (#137)
+        "Decimal",
+        // Collection/IO stdlib — no WASM host stubs yet
+        "range", "print", "map", "redact", "reduce", "filter",
+      ]);
+      if (UNLOWERED_STDLIB_CONSTRUCTORS.has(name) && flowReturnTypes?.get(name) === undefined) {
+        // Inline block comment (safe in any expression position — no `;;` that swallows parens).
+        return `(unreachable) (; A2: '${name}' is a stdlib/Money constructor not yet lowered to a host import — fail-closed (task #163-A2) ;)`;
+      }
+
       // Flow-to-flow calls within pure flows.
       // 0115 lift-blocker fix: thread each callee parameter's 64-bit base type as the argument's
       // expectedType, so an Int64 literal / const-expression / negation argument emits `(i64.const …)`
@@ -2198,9 +2227,15 @@ function emitBlockStatements(
     switch (stmt.kind) {
       case "mutDecl":
       case "letDecl": {
-        // mutDecl has value like "total: Int" — strip the type annotation
+        // mutDecl/letDecl value is like "total: Int" or "unsafe rawPatientId: String".
+        // Strip the type annotation first, then strip any leading binding modifier
+        // (unsafe / safe) so the WAT local name is never "$unsafe rawPatientId" (a name
+        // containing a space makes WAT read "$unsafe" as the identifier and "rawPatientId"
+        // as a stray token → invalid local index: 0). A3 fix.
         const rawName  = stmt.value ?? `_anon${localDecls.length}`;
-        const varName  = rawName.split(":")[0]?.trim() ?? rawName;
+        const nameBeforeColon = rawName.split(":")[0]?.trim() ?? rawName;
+        // Strip "unsafe " / "safe " prefix (the binding trust-level modifier).
+        const varName  = nameBeforeColon.replace(/^(?:unsafe|safe)\s+/, "");
         const watLocal = `$${varName}`;
         const initNode = stmt.children?.[0];
         // P9.4b: remember the record type of this binding so later `varName.field`
@@ -3737,17 +3772,25 @@ export function buildWATModule(
     // (Int64 AND UInt64, #52) map the function result to i64 — they store as i64 (galerinaTypeToWAT); Float32
     // stays i32 (unchanged).
     const declaredReturn = flowReturnTypes?.get(flow.name);
+    // A1 fix: a Void-returning flow must emit `(func $name ...)` with NO `(result …)`.
+    // Previously every flow unconditionally got `results: ["i32"]`, so a Void flow's body
+    // (which ends on a local.set with nothing on the stack) was invalid — the signature
+    // promised an i32 return but the stack was empty at function end.
+    // ONLY flows explicitly declared as returning Void get empty results. A missing/unknown
+    // return type still defaults to i32 (safe fallback — was always the prior behaviour).
+    const isVoidReturn = declaredReturn === "Void";
     const resultVal: WATValType =
       declaredReturn !== undefined && FLOAT_WAT_TYPES.has(declaredReturn) ? "f64" :
       declaredReturn !== undefined && is64BitWatType(numericBaseType(declaredReturn)) ? "i64" :
       "i32";
+    const resultTypes: readonly WATValType[] = isVoidReturn ? [] : [resultVal];
     return {
       name: flow.name,
       isPure: flow.qualifier === "pure",
       isEntryPoint: entrySet.has(flow.name),
       handlesSecrets: gir.ast !== undefined ? flowHandlesSecrets(findFlowNodeInAST(gir.ast, flow.name)) : false,
       ...(declaredReturn !== undefined ? { returnType: declaredReturn } : {}),
-      type: { params: paramValTypes, results: [resultVal] },
+      type: { params: paramValTypes, results: resultTypes },
       body,
       ...(namedParams.length > 0 ? { namedParams } : {}),
     };

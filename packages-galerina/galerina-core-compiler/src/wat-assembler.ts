@@ -66,6 +66,38 @@ export interface WATAssemblerResult {
 }
 
 // ---------------------------------------------------------------------------
+// WAT-level dangling-call detector (A2 class)
+// ---------------------------------------------------------------------------
+
+/**
+ * Scans WAT source for (call $X) where $X is neither defined (func $X ...) nor
+ * imported (import ... (func $X ...)) in the module.
+ *
+ * The bespoke minimal encoder SILENTLY DROPS unresolved calls — where the dropped
+ * call's value is structurally required the module becomes INVALID (the 7 loud A2
+ * failures); where it is NOT required the module validates and RUNS WITH THE CALL
+ * DELETED (the 25 silent A2 failures, including `$redact` — a privacy function).
+ * Both classes are defective. This check surfaces them before assembly.
+ *
+ * Comments are stripped before scanning so a `;;` or block comment containing
+ * `(call $x)` never generates a false positive (this bit R&D's own sweep twice).
+ *
+ * Returns an array of unresolved callee names, or empty if all calls are resolved.
+ */
+export function findUndefinedCallees(watSource: string): string[] {
+  // Strip block comments then line comments
+  let code = watSource;
+  let prev: string;
+  do { prev = code; code = code.replace(/\(;[\s\S]*?;\)/g, " "); } while (code !== prev);
+  code = code.replace(/;;[^\n]*/g, " ");
+
+  const defined  = new Set([...code.matchAll(/\(func\s+\$([A-Za-z0-9_$.]+)/g)].map((m) => m[1] as string));
+  const imported = new Set([...code.matchAll(/\(import[^)]*\(func\s+\$([A-Za-z0-9_$.]+)/g)].map((m) => m[1] as string));
+  const called   = [...new Set([...code.matchAll(/\(call\s+\$([A-Za-z0-9_$.]+)/g)].map((m) => m[1] as string))];
+  return called.filter((c) => !defined.has(c) && !imported.has(c));
+}
+
+// ---------------------------------------------------------------------------
 // assembleWAT
 // ---------------------------------------------------------------------------
 
@@ -105,6 +137,26 @@ export async function assembleWAT(
   // (e.g. undefined function references). The old code collapsed both into a
   // misleading "wabt not available" diagnostic — which masked invalid modules as
   // valid minimal-encoder stubs. Load wabt first, THEN attempt assembly separately.
+  // A2 pre-check: scan for undefined callees BEFORE attempting assembly.
+  // The bespoke minimal encoder silently drops unresolved calls; wabt rejects them —
+  // but only 7 of the 32 A2-affected modules become INVALID (the ones where the dropped
+  // call's value is structurally required). The other 25 validate and run with the call
+  // deleted. Fail closed here for ALL 32, before either assembler sees the module.
+  const undefinedCallees = findUndefinedCallees(watSource);
+  if (undefinedCallees.length > 0) {
+    return {
+      wasm: new Uint8Array(0),
+      sourceWAT: watSource,
+      valid: false,
+      diagnostics: [{
+        message: `WAT module calls function(s) that are neither defined nor imported: ` +
+          `${undefinedCallees.map((c: string) => `$${c}`).join(", ")} — ` +
+          `this is an A2 emitter defect (the callee was not lowered to a host import or a local function). ` +
+          `Fix: define/import the callee, or emit (unreachable) at the call site.`,
+      }],
+    };
+  }
+
   let wabtModule: unknown = null;
   try { wabtModule = await loadWabt(); } catch { wabtModule = null; }
   let wabtError: unknown = null;
@@ -118,22 +170,33 @@ export async function assembleWAT(
     }
   }
 
-  // Fallback: Phase 25 minimal binary encoder (handles simple constant/identity patterns).
+  // #163 step 2: wabt is installed and REJECTED this specific module — a genuine compile failure.
+  // Do NOT fall through to the minimal encoder and return valid:true with a stub. That was the
+  // exact fail-open: a wabt-rejected module would get a stub that passes WebAssembly.validate()
+  // and the consumer gate (`valid && diagnostics.length === 0`) would catch it only because of
+  // the diagnostic — a fragile defence. The correct answer is `valid: false`, immediately.
+  if (wabtError !== null) {
+    return {
+      wasm: new Uint8Array(0),
+      sourceWAT: watSource,
+      valid: false,
+      diagnostics: [{ message: `wabt rejected this WAT: ${((wabtError as Error)?.message ?? String(wabtError)).slice(0, 300)}` }],
+    };
+  }
+
+  // Fallback: Phase 25 minimal binary encoder (wabt not installed).
+  // This path is only reached when wabt is NOT present (wabtError === null AND wabtModule === null).
   try {
     const binary = encodeMinimalWASM(watSource);
     const valid = binary.length > 8
       && binary[0] === 0x00 && binary[1] === 0x61
       && binary[2] === 0x73 && binary[3] === 0x6d;
-    const wabtRejected = wabtError !== null;
-    const stubMsg = wabtRejected
-      ? `wabt REJECTED this WAT (module does not link — e.g. undefined functions): ${((wabtError as Error)?.message ?? String(wabtError)).slice(0, 180)} — minimal-encoder STUB returned; this is NOT a faithful compile`
-      : "wabt not available — using minimal encoder (limited WAT support)";
     return {
       wasm: binary,
       sourceWAT: watSource,
       valid,
       diagnostics: valid
-        ? [{ message: stubMsg }]
+        ? [{ message: "wabt not available — using minimal encoder (limited WAT support; install wabt npm package for full WAT)" }]
         : [{ message: "Minimal encoder: complex WAT patterns not yet supported; install wabt npm package" }],
     };
   } catch (err) {

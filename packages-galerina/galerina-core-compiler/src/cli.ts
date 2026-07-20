@@ -975,7 +975,9 @@ function runWasmStandaloneBuild(targetDir: string, files: string[]): void {
     }
 
     const girResult = emitGIR(parseResult.ast, parseResult.flows, effectResults);
-    const watModule = buildWATModuleFromGIR(girResult.gir, STDLIB_CAPABILITY_MAP, "wasm-standalone");
+    // #140: pass ast so the emitter can use real flow bodies instead of the Phase-25 fallback walker.
+    // exportAllPure is deliberately omitted (default false) — that is a separate design decision.
+    const watModule = buildWATModuleFromGIR(girResult.gir, STDLIB_CAPABILITY_MAP, "wasm-standalone", parseResult.ast);
     const watText = renderWAT(watModule);
     watParts.push(`\n;; === ${filePath} ===\n${watText}`);
   }

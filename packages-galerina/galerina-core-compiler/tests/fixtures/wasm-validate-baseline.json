@@ -1,14 +1,29 @@
 {
   "invalid": [
+    "docs/examples/Level-1-Basics/004-local-fn-helper/example.fungi",
     "docs/examples/Level-1-Basics/006-mut-binding/example.fungi",
+    "docs/examples/Level-1-Basics/010-result-return/example.fungi",
     "docs/examples/Level-1-Basics/012-match-result/example.fungi",
-    "docs/examples/Level-2-Types/052-decimal-basic/example.fungi",
-    "docs/examples/Level-2-Types/058-patient-id-type/example.fungi",
+    "docs/examples/Level-1-Basics/021-flow-contract-basic/example.fungi",
     "docs/examples/Level-2-Types/071-money-gbp/example.fungi",
     "docs/examples/Level-2-Types/077-money-ratio/example.fungi",
     "docs/examples/Level-2-Types/088-array-range/example.fungi",
+    "docs/examples/Level-2-Types/089-duration-type/example.fungi",
+    "docs/examples/Level-2-Types/090-result-sequence/example.fungi",
     "docs/examples/Level-2-Types/093-time-types/example.fungi",
+    "docs/examples/Level-2-Types/094-hallmark-declaration/example.fungi",
+    "docs/examples/Level-2-Types/098-hallmark-taint-transparent/example.fungi",
+    "docs/examples/Level-3-Effects/106-missing-network-effect/example.fungi",
+    "docs/examples/Level-3-Effects/107-pure-flow-calls-effectful-flow/example.fungi",
+    "docs/examples/Level-3-Effects/109-local-fn-pure-helper/example.fungi",
+    "docs/examples/Level-4-Security/170-constant-time-comparison/example.fungi",
+    "docs/examples/Level-6-Compute/301-compute-target-best/example.fungi",
+    "docs/examples/Level-6-Compute/303-compute-gpu-explicit/example.fungi",
     "docs/examples/Level-6-Compute/307-vector-type/example.fungi",
-    "docs/examples/Level-6-Compute/320-statistics-stdlib/example.fungi"
+    "docs/examples/Level-6-Compute/308-matrix-type/example.fungi",
+    "docs/examples/Level-6-Compute/319-money-times-decimal/example.fungi",
+    "docs/examples/Level-6-Compute/320-statistics-stdlib/example.fungi",
+    "docs/examples/Level-7-AI/364-ai-effect-propagation/example.fungi",
+    "docs/examples/Level-8-Targets/404-target-wasm/example.fungi"
   ]
 }
