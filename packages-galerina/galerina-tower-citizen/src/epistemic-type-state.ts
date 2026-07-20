@@ -260,6 +260,30 @@ export function requireTrusted<T>(
  * be mistaken for a verified result. The approximation is fail-closed at every boundary
  * until {@link reconcile} discharges it against the exact oracle. (An approximate
  * photonic/noisy-lane result is INDETERMINATE until the digital verify discharges it.)
+ *
+ * **Correct lifecycle — optimistic → reconcile:**
+ * ```ts
+ * // 1. Accept the fast approximate result as UNKNOWN (typed Unverified<T>)
+ * const approxResult = optimistic(photonicOutput, "photonic-lane-result");
+ *
+ * // 2. Operate on the approximate value BEFORE reconciliation when latency matters;
+ * //    the trit propagates (combine keeps it UNKNOWN until discharged).
+ * const derived = map(approxResult, transform);
+ *
+ * // 3. When the exact oracle is available, discharge — PROVEN or REFUTED.
+ * const verified = reconcile(approxResult, (v) => digitalVerify(v), "digital-cross-check");
+ *
+ * // 4. Only release at a trust boundary after reconciliation.
+ * const result = requireTrusted(verified); // returns null if still UNKNOWN or REFUTED
+ * ```
+ *
+ * **Anti-pattern to avoid:** using `optimistic` as "I'll verify it later but might forget".
+ * The key discipline is that `reconcile` MUST be called before any `requireTrusted` / `releaseTo`
+ * boundary — the type system does not enforce this ordering, but the invariant (I4) does: an
+ * UNKNOWN result at a boundary always denies. Forgetting to reconcile = silent denial, not silent
+ * acceptance. That is fail-CLOSED, which is correct but confusing if unexpected. Use `unverified`
+ * instead when there is no approximate value — `optimistic` is specifically for the
+ * "fast approximate result that will be verified" pattern.
  */
 export function optimistic<T>(approx: T, reason = "optimistic-approximation"): Unverified<T> {
   return { value: approx, trust: Trust.UNKNOWN, provenance: [`optimistic:${reason}`] };
