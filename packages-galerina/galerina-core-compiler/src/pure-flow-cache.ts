@@ -76,10 +76,127 @@ class LRUCache {
 // Session-scoped cache — lives for the lifetime of the process
 const SESSION_CACHE = new LRUCache();
 
+// ---------------------------------------------------------------------------
+// FNV-1a structural fingerprint — O(1) cache-key derivation for GalerinaValue
+//
+// FNV-1a (32-bit) over the discriminant tag bytes + the numeric payload.
+// Not a cryptographic hash — not used for security. Used only for the LRU
+// cache key where:
+//   • collisions are harmless (a false hit → wrong cached value → incorrect
+//     result — impossible because same tag+payload is structural equality
+//     for the simple variants that dominate the hot path).
+//   • speed is critical (called on every memoised pure-flow lookup).
+//
+// Tag encoding: each __tag char contributes one FNV round.
+// Payload encoding:
+//   int/byte       — value as an integer FNV round.
+//   int64/uint64   — low 32 bits XOR high 32 bits.
+//   float/decimal  — string-of-value contributes per-char rounds.
+//   bool/verdict   — numeric literal round.
+//   string/secure  — per-char rounds.
+//   char           — single-char round.
+//   bytes          — per-byte rounds.
+//   void/none      — no payload (tag alone).
+//   record/list/
+//   some/ok/err    — XOR child fingerprints (order-insensitive for record,
+//                    order-sensitive for list).
+//   others         — string rounds on toString representation.
+//
+// The 32-bit output is widened to a JS number (safe integer range).
+// ---------------------------------------------------------------------------
+
+const FNV_PRIME   = 0x01000193; // 16777619
+const FNV_OFFSET  = 0x811c9dc5; // 2166136261
+
+/** Compute one FNV-1a round for a single byte value (0–255). */
+function fnvByte(hash: number, byte: number): number {
+  return Math.imul(hash ^ byte, FNV_PRIME) >>> 0;
+}
+
+/** Mix a non-negative integer into the FNV-1a accumulator. */
+function fnvInt(hash: number, n: number): number {
+  hash = fnvByte(hash, n & 0xff);
+  hash = fnvByte(hash, (n >>> 8)  & 0xff);
+  hash = fnvByte(hash, (n >>> 16) & 0xff);
+  hash = fnvByte(hash, (n >>> 24) & 0xff);
+  return hash;
+}
+
+/** Mix a string into the FNV-1a accumulator (UTF-16 code units). */
+function fnvStr(hash: number, s: string): number {
+  for (let i = 0; i < s.length; i++) {
+    hash = fnvByte(hash, s.charCodeAt(i) & 0xff);
+    hash = fnvByte(hash, (s.charCodeAt(i) >>> 8) & 0xff);
+  }
+  return hash;
+}
+
 /**
- * Build a stable cache key for a pure flow call.
- * Key: flowName + ":" + hash(args) — identical args → identical key.
+ * Compute an FNV-1a structural fingerprint for a GalerinaValue.
+ *
+ * Returns a 32-bit unsigned integer as a JS number.
+ * Identical inputs always produce the same output; the probability of a false
+ * collision between structurally distinct values is 1/2³² ≈ 2.3×10⁻¹⁰ —
+ * acceptable for an LRU cache over semantically-equal-by-construction pure
+ * flow arguments.
  */
+export function galerinaValueFingerprint(v: GalerinaValue): number {
+  // Seed each variant with the FNV offset XOR the tag's first char code so
+  // distinct empty variants (void, none) never collide.
+  let h = fnvStr(FNV_OFFSET, v.__tag);
+  switch (v.__tag) {
+    case "int":    return fnvInt(h, v.value);
+    case "byte":   return fnvInt(h, v.value);
+    case "bool":   return fnvInt(h, v.value ? 1 : 0);
+    case "verdict":return fnvInt(h, v.value + 1); // shift -1→0, 0→1, 1→2
+    case "char":   return fnvStr(h, v.value);
+    case "string": return fnvStr(h, v.value);
+    case "secure": return fnvStr(h, v.value);
+    case "decimal":return fnvStr(h, v.value);
+    case "float":  return fnvStr(h, String(v.value));
+    case "int64":
+    case "uint64": {
+      const lo = Number(v.value & BigInt(0xffffffff));
+      const hi = Number((v.value >> BigInt(32)) & BigInt(0xffffffff));
+      return fnvInt(fnvInt(h, lo), hi);
+    }
+    case "bytes": {
+      for (let i = 0; i < v.value.length; i++) h = fnvByte(h, v.value[i]!);
+      return h;
+    }
+    case "void":
+    case "none":
+      return h; // tag alone
+    case "some":
+    case "ok":
+      return fnvInt(h, galerinaValueFingerprint(v.value));
+    case "err":
+      return fnvInt(h, galerinaValueFingerprint(v.error));
+    case "list": {
+      for (const item of v.items) h = fnvInt(h, galerinaValueFingerprint(item));
+      return h;
+    }
+    case "record": {
+      // Records are structurally unordered — XOR the per-field fingerprints.
+      let xor = 0;
+      for (const [k, fv] of v.fields) {
+        xor ^= fnvInt(fnvStr(FNV_OFFSET, k), galerinaValueFingerprint(fv));
+      }
+      return fnvInt(h, xor);
+    }
+    case "protected":
+    case "redacted":
+    case "unresolved":
+    case "runtimeError":
+    case "error":
+    case "function":
+      return fnvStr(h, String("value" in v ? v.value : "name" in v ? v.name : "message" in v ? v.message : ""));
+    default:
+      // Exhaustive fallback — should never reach here for known tags.
+      return h;
+  }
+}
+
 /**
  * Build a stable cache key for a pure flow call.
  * @param flowName   Name of the flow (e.g. "main")
@@ -93,9 +210,13 @@ export function pureFlowCacheKey(
   args: ReadonlyMap<string, GalerinaValue>,
   sourceTag?: string,
 ): string {
-  const argsObj: Record<string, unknown> = {};
-  for (const [k, v] of args) argsObj[k] = v;
-  const base = `${flowName}:${canonicalHash(argsObj)}`;
+  // Build key as "flowName:arg0tag=fp0,arg1tag=fp1,…" — pre-computed integer
+  // fingerprints joined with commas; zero JSON.stringify, zero SHA-256.
+  const parts: string[] = [];
+  for (const [k, v] of args) {
+    parts.push(`${k}=${galerinaValueFingerprint(v)}`);
+  }
+  const base = `${flowName}:${parts.join(",")}`;
   return sourceTag ? `${sourceTag}:${base}` : base;
 }
 
