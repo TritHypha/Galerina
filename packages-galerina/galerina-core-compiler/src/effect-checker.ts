@@ -66,6 +66,9 @@ export const EFFECT_REGISTRY: Readonly<Record<string, readonly string[]>> = {
   "http.delete": ["network.outbound"],
   "https.get": ["network.outbound"],
   "https.post": ["network.outbound"],
+  "https.put": ["network.outbound"],
+  "https.patch": ["network.outbound"],
+  "https.delete": ["network.outbound"],
 
   // Audit
   "AuditLog.write": ["audit.write"],
