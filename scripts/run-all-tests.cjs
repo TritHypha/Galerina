@@ -158,6 +158,58 @@ function buildPerPackage(res) {
   return map;
 }
 
+/**
+ * Cross-check testCountByPackage against the workspace package list.
+ *
+ * Item 9 (Bob architectural review 2026-07): version.json testCountByPackage is
+ * a second hand-maintained registry that can drift from galerina.workspace.json.
+ * After writing new counts, validate that:
+ *   (a) every key in the new perPackage map corresponds to a real discovered package
+ *       (no ghost entries from renamed/removed packages).
+ *   (b) warn about packages that ARE in the workspace but produced no count
+ *       (possible newly-added packages not yet in the map).
+ *
+ * Mismatches are printed as warnings — not fatal, because a freshly-added package
+ * may not have landed in the SOT yet. Stale ghosts (case a) are always actionable.
+ */
+function validateTestCountVsWorkspace(perPackage) {
+  // Load workspace package names from galerina.workspace.json
+  let workspacePkgs;
+  try {
+    const ws = JSON.parse(fs.readFileSync(path.join(ROOT, 'galerina.workspace.json'), 'utf8'));
+    workspacePkgs = new Set(
+      (ws.packages || []).map((p) => p.replace(/^packages-galerina\//, '')),
+    );
+  } catch {
+    process.stdout.write('   ⚠️  workspace cross-check: could not read galerina.workspace.json; skipped.\n');
+    return;
+  }
+
+  const countKeys = new Set(Object.keys(perPackage));
+
+  // (a) Keys in testCountByPackage that are NOT in the workspace — ghost entries.
+  const ghosts = [...countKeys].filter((k) => !workspacePkgs.has(k));
+  if (ghosts.length > 0) {
+    process.stdout.write(
+      `   ⚠️  workspace cross-check: ${ghosts.length} ghost key(s) in testCountByPackage not in workspace: ` +
+      ghosts.join(', ') + '\n',
+    );
+  }
+
+  // (b) Workspace packages not in testCountByPackage — newly-added or renamed.
+  const missing = [...workspacePkgs].filter((k) => !countKeys.has(k));
+  if (missing.length > 0) {
+    process.stdout.write(
+      `   ℹ️  workspace cross-check: ${missing.length} workspace package(s) absent from testCountByPackage: ` +
+      missing.join(', ') + '\n',
+    );
+  }
+
+  if (ghosts.length === 0 && missing.length === 0) {
+    process.stdout.write(`   ✅ workspace cross-check: testCountByPackage keys match workspace (${countKeys.size} packages).\n`);
+  }
+}
+
 function writeVersionJson(total, pkgCount, perPackage) {
   const file = path.join(ROOT, 'version.json');
   let raw;
@@ -299,6 +351,8 @@ if (emitCounts) {
     const perPackage = buildPerPackage(results);
     writeVersionJson(totalTests, passed, perPackage);
     writeSotDoc(totalTests, passed);
+    // Item 9 (Bob review 2026-07): cross-check testCountByPackage vs workspace
+    validateTestCountVsWorkspace(perPackage);
   }
 }
 
