@@ -3884,8 +3884,13 @@ export function buildWATModuleFromGIR(
   },
   capabilityMap: ReadonlyMap<string, { readonly wasmImport?: string; readonly requiredEffects: readonly string[] }>,
   target: "wasm-standalone" | "wasm-hybrid" = "wasm-standalone",
-  /** Phase 25: original program AST for real arithmetic body emission. */
-  ast?: AstNode,
+  /** Phase 25: original program AST for real arithmetic body emission.
+   *  Required — callers that cannot supply an AST must emit a diagnostic
+   *  before reaching the emitter, not pass undefined here. Removing the `?`
+   *  makes an omitted argument a compile-time type error (prevents the class
+   *  of bug fixed by #140 / d7e0e77d from recurring at a new call site).
+   */
+  ast: AstNode,
   /** Phase 27: export all pure flows for WebAssembly.instantiate callers. */
   exportAllPure?: boolean,
 ): WATModule {
