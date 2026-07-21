@@ -50,6 +50,7 @@ const ALLOWLIST = {
   "FUNGI-GOV-010":       "migration: error in production, info in dev (intent missing on secure flow).",
   "FUNGI-GOV-004":       "deliberate: fail-closed error in production/deterministic; dev warning (conforms_to policy may be in an unfinished file). Verified 2026-07-01.",
   "FUNGI-GOV-021":       "#20 split of GOV-004 (DOMAIN_GUARD_NOT_FOUND); inherits the same reviewed fail-closed prod-error/dev-warning toggle. RD-0412.",
+  "FUNGI-GOV-024":       "deliberate: SANDBOX_REQUIRED_BUT_UNAVAILABLE — error in production/deterministic, warning in dev (sandbox gate is enforced strictly at the prod build boundary). Item 7 Bob architectural review 2026-07.",
   "FUNGI-SUBSTRATE-002": "deliberate: production/deterministic error, dev warning (tolerance unachievable on a noisy substrate lane — compute-safety). Verified 2026-07-01.",
   "FUNGI-VALUESTATE-008":"migration: downgraded in dev/check/build (untrusted boundary input).",
 };
