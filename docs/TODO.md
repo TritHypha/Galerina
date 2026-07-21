@@ -4,11 +4,35 @@ Living task list. Authoritative forward view: `../ZTF-Knowledge-Bases/galerina-r
 Live per-item state also lives in the in-session task board + `../ZTF-Knowledge-Bases/coordination/` (main↔R&D).
 The dated blocks below are a historical log; the **CURRENT STATE** block is the head.
 
-## 📍 CURRENT STATE — 2026-07-21 (architectural review session close)
+## 📍 CURRENT STATE — 2026-07-21 (WAT lowering session)
 
-**Suite 95/95 packages · 7,561 tests · 0 fail** · phase-close all green (56 gates) · graph-all all green ·
-Zero-Trust thesis avg **78** · Build avg **75** · tracking registry **20 items** · HEAD `5d75fbd1` (clean, ahead
+**Suite 95/95 packages · 7,591 tests · 0 fail** · phase-close all green (56 gates) · graph-all all green ·
+benchmark snapshot `2026-07-21_post-wat-lowering` (29 benchmarks) · HEAD `4537e637` (clean, ahead
 of origin — owner pushes when ready).
+
+**This session — W5b WAT lowering + RD housekeeping:**
+- `d18e2841` W5b T2.2/T2.4: `check{}` / `prefilter{}` / `fault` WAT lowering (emitWATExpr + emitBlockStatements +
+  emitBlockLastExpr + inferExprType); 8 new differential tests (wat-k3-constructs.test.mjs): DENY/UNKNOWN/ALLOW ×
+  interpreter+WASM parity, arithmetic arms, prefilter ALLOW-downgrade, fault WAT validation + FaultSignal.
+  Closes SYNTAX_UPDATE_TRACKER T2.2 REMAINING: "WAT lowering for check{}" is now real WAT, not unreachable stub.
+- `d18e2841` Int.bitXor/bitNot/bitShiftLeft/bitShiftRight — stdlib + WAT lowering + differential tests.
+- `d18e2841` RD-0365 keyCustody ladder field in HOST_PROFILES + UNKNOWN_HOST (all profiles).
+- `d18e2841` RD-0364 inference.invoke/load: CANONICAL_EFFECTS, EffectFlags bits 15+16, EFFECT_TO_CAPABILITY.
+- `d18e2841` RD-0363 passive plan replay: planSignature/maxAgeMs/targetBinding + verifyPlanFreshness/Admission.
+- `d18e2841` K3 consolidation: bytecode-vm Op.AND/OR → Math.min/Math.max (lattice algebra).
+- `d18e2841` docs/reference/effects.md: inference.invoke + inference.load entries (doc:reference-drift gate).
+- `d18e2841` checker-wiring-allowlist: verifyPlanAdmission (RD-0363 runtime API, not a compile gate).
+- `4537e637` build artefacts regenerated (code-index, registry, graph, benchmark report).
+
+**Remaining open items (not yet done):**
+- T2.3 `sealed auto schema` + inject pass (deferred, needs typestate-CORE design)
+- T2.5 `unsecure`/`secure flow`/`purify` (W6-coupled, lands with codemod)
+- T2.6 lexer alias table + desugar-identity lint (W6-coupled)
+- T3.x codemod + taint-default flip + corpus migration (W6)
+- A18 tenant scope (BETA BLOCKER — next work package)
+- check{} WAT lowering for `fault` audited channel spec (A10 surface-syntax spec pending)
+- Final deliverables: `.fungi` building standards doc + package migration plan doc
+
 
 **Bob architectural review 2026-07 — 7/7 items implemented and gated:**
 - `57db1e1a` item 1: FNV-1a fingerprint replaces SHA-256 in `pure-flow-cache.ts`

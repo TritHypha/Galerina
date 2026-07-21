@@ -1,0 +1,60 @@
+{
+  "label": "post-wat-lowering",
+  "date": "2026-07-21",
+  "capturedAt": "2026-07-21T06:55:21.224Z",
+  "git": {
+    "commit": "4537e637",
+    "branch": "main"
+  },
+  "node": "v24.18.0",
+  "os": {
+    "platform": "win32",
+    "release": "10.0.19045"
+  },
+  "cpu": "Intel(R) Core(TM) i9-9900K CPU @ 3.60GHz",
+  "cores": 16,
+  "totalMemGB": 34,
+  "benchmarks": 29,
+  "comparable": [
+    "compute-mix",
+    "record-allocation",
+    "tower-of-hanoi",
+    "collection-pipeline",
+    "low-memory",
+    "gpu-compute",
+    "matrix-multiply",
+    "tri-logic",
+    "data-query",
+    "call-chain",
+    "nbody",
+    "json-parse",
+    "mandelbrot",
+    "spectral-norm",
+    "binary-trees",
+    "spore-container",
+    "framework-pipeline"
+  ],
+  "excluded": [
+    "governance-cost"
+  ],
+  "unitCheck": {
+    "compute-mix": "PASS",
+    "record-allocation": "PASS",
+    "tower-of-hanoi": "PASS",
+    "collection-pipeline": "PASS",
+    "governance-cost": "FLAGGED",
+    "low-memory": "PASS",
+    "gpu-compute": "PASS",
+    "matrix-multiply": "PASS",
+    "tri-logic": "PASS",
+    "data-query": "PASS",
+    "call-chain": "PASS",
+    "nbody": "PASS",
+    "json-parse": "PASS",
+    "mandelbrot": "PASS",
+    "spectral-norm": "PASS",
+    "binary-trees": "PASS",
+    "spore-container": "PASS",
+    "framework-pipeline": "PASS"
+  }
+}
