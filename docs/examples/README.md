@@ -10,12 +10,15 @@
 ## Status
 
 ```
-215 .fungi examples across 9 levels + proposed readable logic forms
+222 .fungi examples across 9 levels + proposed readable logic forms
 Phase 9 + Phase 10 complete
 All examples use: readonly request: Request (not req)
 All flows with contracts use named result types: -> FlowNameResult
-Diagnostics: FUNGI-TYPE-003, FUNGI-EVENT-001/002, FUNGI-GOV-003/011/012, FUNGI-CONTEXT-001, Readable Logic Forms
+Diagnostics: FUNGI-TYPE-003, FUNGI-EVENT-001/002, FUNGI-GOV-003/011/012, FUNGI-CONTEXT-001,
+             FUNGI-CHECK-001/002, FUNGI-PREFILTER-001/002/003, FUNGI-K3-001/002/003,
+             FUNGI-GOV-024, FUNGI-SYNTAX-014/015, Readable Logic Forms
 Signed Attestation (Ed25519), 16-section contract model, naming conventions
+W5b: check{}/prefilter{}/fault WAT lowering complete (RD-0363/0364/0365)
 ```
 
 ## Purpose
@@ -126,7 +129,21 @@ NNN-example-name/
 | `FUNGI-HINT-COMPUTE-001` | ai.inference without compute target preference (info hint) | ✅ Implemented |
 | `FUNGI-GOV-003` | `response.denies` field appears in response body | ✅ Phase 10C |
 | `FUNGI-CONTEXT-001` | `context.require X` declared but field never accessed in body (warning) | ✅ Phase 10C |
+| `FUNGI-GOV-024` | `target { sandbox: required }` in a host that cannot provide a sandbox | ✅ W5b |
 | `FUNGI-GOV-005` | Policy purpose/behaviour mismatch | Phase 11 |
+
+### K3 / Verdict checker (W5b)
+
+| Code | Meaning | Status |
+|---|---|---|
+| `FUNGI-CHECK-001` | `check{}` missing one or more arms (if/deny/ambig all required) | ✅ W5b |
+| `FUNGI-CHECK-002` | `check{}` subject is not `Verdict` type | ✅ W5b |
+| `FUNGI-PREFILTER-001` | `prefilter{}` missing arm | ✅ W5b |
+| `FUNGI-PREFILTER-002` | `prefilter{}` subject is not `Verdict` | ✅ W5b |
+| `FUNGI-PREFILTER-003` | `prefilter{}` has `if:`/`allow:` arm (illegal — prefilter can never grant) | ✅ W5b |
+| `FUNGI-K3-001` | `Bool` mixed with `Verdict` in `&&`/`\|\|` | ✅ W5b |
+| `FUNGI-K3-002` | `!` applied to `Verdict` (use `flip()`) | ✅ W5b |
+| `FUNGI-K3-003` | Non-`Verdict` operand inside `all{}`/`any{}` | ✅ W5b |
 
 ### Event checker (Phase 9B)
 
