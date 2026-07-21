@@ -4,7 +4,27 @@ Living task list. Authoritative forward view: `../ZTF-Knowledge-Bases/galerina-r
 Live per-item state also lives in the in-session task board + `../ZTF-Knowledge-Bases/coordination/` (main↔R&D).
 The dated blocks below are a historical log; the **CURRENT STATE** block is the head.
 
-## 📍 CURRENT STATE — 2026-07-18 (closing cycle)
+## 📍 CURRENT STATE — 2026-07-21 (architectural review session close)
+
+**Suite 95/95 packages · 7,561 tests · 0 fail** · phase-close all green (56 gates) · graph-all all green ·
+Zero-Trust thesis avg **78** · Build avg **75** · tracking registry **20 items** · HEAD `5d75fbd1` (clean, ahead
+of origin — owner pushes when ready).
+
+**Bob architectural review 2026-07 — 7/7 items implemented and gated:**
+- `57db1e1a` item 1: FNV-1a fingerprint replaces SHA-256 in `pure-flow-cache.ts`
+- `e2363293` item 2: `compileContract()` + `CompiledContract` in `contractEnforcer.ts`, wired in `runtime.ts`
+- `ca839d19` item 4: `ast: AstNode` (non-optional) in `buildWATModuleFromGIR`
+- `e7cab494` item 6: JSDoc documenting `combineTrust` self-containment rationale
+- `15baab71` item 7: `FUNGI-GOV-024 SANDBOX_REQUIRED_BUT_UNAVAILABLE` in `governance-verifier.ts`
+- `71dba695` item 8: Bare specifier imports in `kernel.ts` (removed relative-dist paths)
+- `90c31ea5` item 9: `validateTestCountVsWorkspace()` cross-check in `run-all-tests.cjs`
+- `b485deef` regression: `stepExpr`→`callExpr` GOV-024 fix + Int→Int64 widening (Step 4e)
+- `ac3e0b3`  regression: cross-flow Int64 callee return not widened (calleeReturnIs64 guard)
+- `5d75fbd1` audit fix: `FUNGI-GOV-024` allowlisted in `audit-muted-diagnostics.mjs`
+
+**Open stoppers — unchanged from 2026-07-18, all owner or R&D gated:**
+
+## 📍 PREVIOUS STATE — 2026-07-18 (closing cycle)
 
 **Suite 93/93 packages · 7,393 tests · 0 fail** · phase-close all green · ship-readiness **97.9%** (93/95 pkgs) ·
 Zero-Trust thesis avg **78** · Build avg **75** · tracking registry **20 items** · HEAD after this cycle
