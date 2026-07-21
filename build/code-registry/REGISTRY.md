@@ -8,7 +8,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 
 | status | count | meaning |
 |---|---|---|
-| live | 128 | emitted with an exported constant |
+| live | 129 | emitted with an exported constant |
 | inline | 162 | emitted, NO exported constant (R4 — Stage F) |
 | referenced | 96 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 8 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
@@ -561,7 +561,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 |---|---|---|---|
 | FUNGI-GEN-TEST-005 | ref | — | — |
 
-### GOV (27)
+### GOV (28)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -588,6 +588,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-GOV-021 | inline | DOMAIN_GUARD_NOT_FOUND | — |
 | FUNGI-GOV-022 | inline | DOMAIN_GUARD_POLICY_VIOLATION | — |
 | FUNGI-GOV-023 | inline | PHYSICAL_HARDENING_ON_LOW_RISK_FLOW | — |
+| FUNGI-GOV-024 | live | SANDBOX_REQUIRED_BUT_UNAVAILABLE | warning |
 | FUNGI-GOV-3VL-001 | live | INDETERMINATE_COLLAPSED_TO_DENY | warning |
 | FUNGI-GOV-3VL-003 | inline | WILDCARD_OVER_DENY_ON_VERDICT_MATCH | error |
 | FUNGI-GOV-3VL-004 | inline | ORDERED_COMPARISON_ON_VERDICT | error |

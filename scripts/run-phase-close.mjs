@@ -378,9 +378,10 @@ run("audit:sections", "node", ["scripts/component-health.mjs", "--self-test"]);
 //   the build indexes but skipped --audit-html, leaving percent-audit.{html,json} describing an old tree.
 //   Fail-closed → run `node scripts/component-health.mjs --audit-html` and commit the refreshed % audit.
 run("audit:percent-fresh", "node", ["scripts/component-health.mjs", "--audit-check"]);
-// no-redeclare (#56/#108 P9 Option-Y guard, R&D 2026-07-19) — no self-hosted stage may declare a top-level
-//   name already in lexer/parser: the concat-prelude (Option Y) stays sound only while parser↔stage is
-//   collision-free (else a late `Duplicate export name` at WASM instantiate, #107). Cheap name-set intersection.
+// no-redeclare (#56/#108 P9 Option-Y guard) — no self-hosted stage may declare a top-level name already
+//   in lexer/parser: the concat-prelude (Option Y) stays sound only while parser↔stage is collision-free
+//   (else a late `Duplicate export name` at WASM instantiate, #107). Cheap name-set intersection. This
+//   gate is MANDATORY — it guards a structural WASM correctness invariant, not a style preference.
 run("no-redeclare", "node", ["scripts/audit-no-redeclare.mjs"]);
 // wat-lowering (R&D 2026-07-19, owner-directed) — corpus inventory of the WAT record-field-layout fault
 //   class: a record field whose type lowers WIDER than the 4-byte i32 slot (via the emitter's REAL
@@ -394,6 +395,13 @@ run("wat-lowering", "node", ["scripts/audit-wat-lowering.mjs"]);
 //   clears checkTypes + governance + security (052/077 hid here). 10 baselined (A1/A2/A3/B emitter
 //   classes); shrink-only, a NEW invalid → exit 1. Complements the source-level audit-wat-lowering sweep.
 run("wasm-validate", "node", ["scripts/audit-wasm-validate.mjs"]);
+// wat-invalid-triage (R&D prototype, vendored 2026-07-19) — ADVISORY root-cause classifier for the
+//   10 baselined INVALID modules. Pairs with wasm-validate: where wasm-validate is the enforcing gate
+//   ("is any module malformed?"), this answers "WHY?" by recovering the actual WASM validator reason
+//   (which WebAssembly.validate() withholds) and classifying into A1/A2/A3/B. Turns "10 broken" into
+//   "4 root causes, N sites each" — the shape that makes fixing tractable. Exit 0 always (advisory);
+//   exit 1 only on --self-test failure. Fix order: A2 → A1 → A3 → B LAST (never f64.convert_i32_s).
+run("wat:invalid-triage", "node", ["scripts/wat-invalid-triage.mjs", "--self-test"], { okCodes: [0] });
 // arith-conformance (R&D prototype, owner-directed "check ALL maths thoroughly, even if other dev
 //   tools do the same") — 38 hand-pinned arithmetic cases, each pinned to the answer DERIVED BY HAND
 //   from the maths, never to what the system prints and never to "Stage-A == Stage-B" (reference
@@ -433,6 +441,43 @@ run("gate-key-injectivity", "node", ["scripts/audit-gate-key-injectivity.mjs"]);
 //   doc-from-source durable fix (code > code-derived views > design docs).
 run("doc:reference-drift", "node", ["scripts/audit-reference-doc-drift.mjs"]);
 run("name:collisions", "node", ["scripts/audit-name-collisions.mjs"]);
+
+// workspace:pointers — CI guard for galerina.workspace.json named pointer fields (Bob review 2026-07).
+//   Every packages-galerina/* path in the workspace file must resolve to a real directory. Catches a
+//   renamed package that didn't update the workspace file, a stale named-pointer key, or a missing
+//   package.json — the class the myco orphan detection was doing manually. Exit 1 on broken pointers.
+run("workspace:pointers", "node", ["scripts/validate-workspace-pointers.mjs"]);
+
+// ── Authority gates: previously unwired (bridge msg 0016, 2026-07-19) ─────────────────────────────
+// Both gates existed with --self-test and correct exit behaviour but were NOT wired into phase-close,
+// so a regression would be caught only if someone happened to run them manually that day. A gate that
+// doesn't run cannot fail, and its silence reads exactly like success.
+//
+// stage-execution — P9 enforcement: stops a self-hosted stage silently regressing RUN → TRAP.
+//   TRAP_BASELINE = 3 (shrink-only); a new trapping stage or a baseline increase → exit 1.
+//   component-health.mjs states "VIOLATIONS 0 · baseline 3 · exit 0" as the current assertion.
+run("stage-execution", "node", ["scripts/audit-stage-execution.mjs"]);
+//
+// kernel-fungi-twins — RD-0361 authority ledger: guards the 4 decision-surface twins flipped to
+//   AUTHORITATIVE on the owner's nod (synchronization-gate · power-governor · cold-boot · audit-egress).
+//   component-health.mjs asserts "RED-on-regression + missing-target enforced by audit-kernel-fungi-
+//   twins.mjs + self-tested" — that assertion was live while the gate was NOT wired. Now it is.
+//   29/29 differentials · 4 authoritative · exit 0 on success.
+run("kernel-fungi-twins", "node", ["scripts/audit-kernel-fungi-twins.mjs"]);
+
+// ── Doc-freshness gates: previously unwired (Bob review 2026-07) ────────────────────────────────────
+// Documentation drift in a language specification is a security issue: a stale spec that disagrees with
+// the compiler is a source of developer confusion that can lead to incorrect assumptions about guarantees.
+//
+// stray-docs — surfaces every *.md not reachable from a known doc root (orphaned / stale markdown).
+//   A stale doc in the spec corpus can describe a removed feature as still present — a trust hazard.
+//   Report-only (exit 0): the stray list may have legitimate entries on first run; triage and baseline.
+run("doc:stray", "node", ["scripts/audit-stray-docs.mjs"]);
+//
+// doc-drift — flags "living metrics" in docs (version numbers, counts, dates) that disagree with the
+//   generated source. Report-only while the baseline is being established (exit 0). Once the count
+//   reaches 0, drop --soft to make it a hard gate.
+run("doc:drift", "node", ["scripts/audit-doc-drift.mjs", "--soft"]);
 
 // ── 5d. Dev-tool script tests (scripts/tests/) ──
 // These live OUTSIDE packages-galerina, so the package runner (run-all-tests.cjs) never sees them. Run them

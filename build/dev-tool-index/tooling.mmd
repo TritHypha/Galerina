@@ -502,6 +502,11 @@ flowchart LR
   T_check_gate_injection_mjs --> C_secrets_privacy
   T_check_gate_injection_mjs --> C_package_border
   T_check_gate_injection_mjs --> C_graph_index
+  T_debug_compiler_globs_mjs["debug-compiler-globs.mjs"]
+  T_debug_compiler_globs_mjs --> C_effects
+  T_debug_compiler_globs_mjs --> C_governance
+  T_debug_compiler_globs_mjs --> C_gate_wiring
+  T_debug_compiler_globs_mjs --> C_graph_index
   T_emit_doc_wat_mjs["emit-doc-wat.mjs"]
   T_emit_doc_wat_mjs --> C_effects
   T_emit_doc_wat_mjs --> C_signing_fusion
@@ -576,9 +581,21 @@ flowchart LR
   T_repoint_kb_refs_mjs --> C_diagnostics
   T_repoint_kb_refs_mjs --> C_doc_drift
   T_repoint_kb_refs_mjs --> C_graph_index
+  T_test_compiler_subdirs_mjs["test-compiler-subdirs.mjs"]
+  T_test_compiler_subdirs_mjs --> C_effects
+  T_test_compiler_subdirs_mjs --> C_governance
+  T_test_compiler_subdirs_mjs --> C_gate_wiring
+  T_validate_workspace_pointers_mjs["validate-workspace-pointers.mjs"]
+  T_validate_workspace_pointers_mjs --> C_source_hygiene
+  T_validate_workspace_pointers_mjs --> C_doc_drift
   T_verify_artifacts_mjs["verify-artifacts.mjs"]
   T_verify_artifacts_mjs --> C_signing_fusion
   T_verify_artifacts_mjs --> C_governance
   T_verify_artifacts_mjs --> C_diagnostics
   T_verify_artifacts_mjs --> C_brand
   T_verify_artifacts_mjs --> C_graph_index
+  T_wat_invalid_triage_mjs["wat-invalid-triage.mjs"]
+  T_wat_invalid_triage_mjs --> C_provenance
+  T_wat_invalid_triage_mjs --> C_teaching_corpus
+  T_wat_invalid_triage_mjs --> C_web_stub
+  T_wat_invalid_triage_mjs --> C_graph_index

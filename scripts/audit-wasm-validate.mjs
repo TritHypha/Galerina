@@ -95,10 +95,18 @@ async function classify(src, file) {
     wat = L.renderWAT(L.buildWATModuleFromGIR(gir, undefined, "audit", p.ast, true));
   } catch (e) { return { k: "SKIP", why: "lowering threw: " + e.message.slice(0, 60) }; }
 
-  let u8;
+  let u8, asmDiag = [];
   try {
     const b = await L.assembleWAT(wat);                 // MUST await — see discipline 1
-    u8 = b instanceof Uint8Array ? b : new Uint8Array(b?.bytes || b?.wasm || b);
+    asmDiag = b.diagnostics ?? [];
+    // A2 pre-check path (2026-07-xx): assembleWAT returns valid:false + empty wasm when the WAT
+    // calls a function that is neither defined nor imported. This is INVALID, not SKIP — the
+    // emitter produced a structurally defective module. Bucket it before the <= 8 guard so
+    // the self-test's "known-bad" case is not silently reclassified as unassessed.
+    if (!b.valid && b.wasm.length === 0 && asmDiag.length > 0) {
+      return { k: "INVALID", why: "assembler A2 pre-check: " + asmDiag[0].message.slice(0, 120) };
+    }
+    u8 = b.wasm;
   } catch (e) { return { k: "INVALID", why: "assemble rejected: " + e.message.slice(0, 60) }; }
   // <= 8, not < 8 (R&D 2026-07-19): the bespoke assembler does NOT throw on unparseable WAT — it
   // returns the 8-byte EMPTY module (`\0asm` + version) which WebAssembly.validate() reports TRUE,

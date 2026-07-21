@@ -137,7 +137,7 @@ because a ledger is both a durable write and a governance record. Secure-tier.
 #### `network.outbound`  · secure-tier · pure-forbidden
 **What** — egress: the flow initiates a connection out. The canonical destination for HTTP client calls, and the
 single most common exfiltration channel — hence secure-tier and the anchor of the egress obligation.
-**Inferred from** — `http.get/post/put/patch/delete`, `https.get/post`, `*Api.send`, `*Adapter.<method>`.
+**Inferred from** — `http.get/post/put/patch/delete`, `https.get/post/put/patch/delete`, `*Api.send`, `*Adapter.<method>`.
 **Result** — authorises outbound network; using it from a plain/guarded flow trips `FUNGI-TIER-001`.
 
 #### `network.inbound`  · secure-tier · pure-forbidden
@@ -153,8 +153,12 @@ from `network.internal` so policy can grant intra-cluster traffic without granti
 **Result** — authorises cross-boundary traffic; secure-tier floor applies.
 
 #### `network.internal`  · secure-tier · pure-forbidden
-**What** — communication within the trust boundary (service-to-service inside the mesh). Still secure-tier — an
-internal call can still move sensitive data — but separable from external egress for least-privilege grants.
+**What** — communication within the trust boundary (service-to-service inside the mesh). Secure-tier for the
+same reason as every `network.*` effect: all network-crossing is an egress surface regardless of trust zone.
+The trust zone (`network.internal` vs `network.external`) governs the **grant scope** — what policy allows
+you to reach — not the **tier**. An internal call can exfiltrate sensitive data as easily as an external one;
+restricting egress to the mesh is a policy decision, not a security property of the tier itself. Separable
+from `network.external` so policy can grant intra-cluster traffic without granting internet egress.
 **Inferred from** — declared explicitly.
 **Result** — authorises intra-boundary traffic; secure-tier floor applies.
 
@@ -282,10 +286,18 @@ deprecated spellings).
 **Result** — authorises inference; secure-tier floor applies.
 
 #### `ai.train`  · pure-forbidden
-**What** — train or fine-tune a model. Notably *not* secure-tier in the current floor (training is a batch compute
-job rather than a live trust decision), but still an effect a pure flow may not perform.
+**What** — train or fine-tune a model. Deliberately *not* secure-tier in the current floor. The rationale:
+a training job is a batch compute obligation rather than a live trust decision; the security sensitivity of
+the training data is already captured by the effects required to read it (`pii.read`, `phi.read`, etc.) which
+ARE secure-tier. This means: a flow that trains on PII data must declare BOTH `ai.train` AND `pii.read` —
+the `pii.read` obligation is what forces `secure` tier and all the associated admission obligations. `ai.train`
+itself is deliberately not doubled to avoid the ambiguity of "two secure-tier effects both requiring the same
+audit trail". Note: the gradient-inversion / membership-inference exfiltration risk is real; the defence is the
+`pii.read` obligation upstream (the data must be read before it can be trained on), not a tier upgrade on
+`ai.train` itself.
 **Inferred from** — the `ModelTrain` capability bit.
-**Result** — authorises training; undeclared → `FUNGI-EFFECT-001`.
+**Result** — authorises training; undeclared → `FUNGI-EFFECT-001`. Not secure-tier by design — declare
+`pii.read` / `phi.read` / `phi.write` alongside it when the training data is sensitive.
 
 #### `native.call`  · secure-tier · pure-forbidden
 **What** — call native / FFI code. Secure-tier and high-consequence: native code escapes the governed WASM sandbox,

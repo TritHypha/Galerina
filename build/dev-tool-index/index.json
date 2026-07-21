@@ -4,9 +4,9 @@
     "packages": 97,
     "testBearing": 96,
     "tests": 7552,
-    "devTools": 103,
+    "devTools": 107,
     "auditTools": 62,
-    "toolsInCadence": 40,
+    "toolsInCadence": 46,
     "proofs": 40
   },
   "packages": [
@@ -183,7 +183,7 @@
     {
       "name": "galerina-registry",
       "kind": "registry",
-      "description": "",
+      "description": "Signed package registry entries for the Galerina platform. Empty until the owner signing ceremony (registry wa",
       "tests": null,
       "hasTestScript": false,
       "border": "PASS",
@@ -1231,7 +1231,7 @@
       "category": "audit",
       "purpose": "DOC-004 (#219 standard \"doc↔source drift\"). v1: flag doc \"living metrics\" — global",
       "selfTest": false,
-      "inCadence": false,
+      "inCadence": true,
       "concerns": [
         "teaching-corpus",
         "doc-drift",
@@ -1406,7 +1406,7 @@
       "category": "audit",
       "purpose": "Declared self-hosted twin dirs (repo-relative). Add a package's `src/self-hosted` here when it gains twins.",
       "selfTest": true,
-      "inCadence": false,
+      "inCadence": true,
       "concerns": [
         "governance",
         "gate-wiring",
@@ -1767,7 +1767,7 @@
       "category": "audit",
       "purpose": "R2: does each self-hosted stage actually RUN?",
       "selfTest": true,
-      "inCadence": false,
+      "inCadence": true,
       "concerns": [
         "coverage",
         "teaching-corpus",
@@ -1780,7 +1780,7 @@
       "category": "audit",
       "purpose": "STRAY / STALE Markdown tracker (owner 2026-06-23). Surfaces every *.md that lives",
       "selfTest": false,
-      "inCadence": false,
+      "inCadence": true,
       "concerns": [
         "coverage",
         "source-hygiene",
@@ -2222,6 +2222,19 @@
       ]
     },
     {
+      "name": "debug-compiler-globs.mjs",
+      "category": "util",
+      "purpose": "(no header description)",
+      "selfTest": false,
+      "inCadence": false,
+      "concerns": [
+        "effects",
+        "governance",
+        "gate-wiring",
+        "graph/index"
+      ]
+    },
+    {
       "name": "emit-doc-wat.mjs",
       "category": "util",
       "purpose": "the \"generate the view\" doctrine applied to QUOTED WAT in docs (RD-0395 §3.2).",
@@ -2424,6 +2437,29 @@
       ]
     },
     {
+      "name": "test-compiler-subdirs.mjs",
+      "category": "util",
+      "purpose": "(no header description)",
+      "selfTest": false,
+      "inCadence": false,
+      "concerns": [
+        "effects",
+        "governance",
+        "gate-wiring"
+      ]
+    },
+    {
+      "name": "validate-workspace-pointers.mjs",
+      "category": "util",
+      "purpose": "CI guard for galerina.workspace.json",
+      "selfTest": false,
+      "inCadence": true,
+      "concerns": [
+        "source-hygiene",
+        "doc-drift"
+      ]
+    },
+    {
       "name": "verify-artifacts.mjs",
       "category": "util",
       "purpose": "(no header description)",
@@ -2434,6 +2470,19 @@
         "governance",
         "diagnostics",
         "brand",
+        "graph/index"
+      ]
+    },
+    {
+      "name": "wat-invalid-triage.mjs",
+      "category": "util",
+      "purpose": "(no header description)",
+      "selfTest": true,
+      "inCadence": true,
+      "concerns": [
+        "provenance",
+        "teaching-corpus",
+        "web-stub",
         "graph/index"
       ]
     }
@@ -2593,6 +2642,7 @@
       "bench-startup.mjs",
       "build-core-chain.mjs",
       "check-gate-injection.mjs",
+      "debug-compiler-globs.mjs",
       "emit-doc-wat.mjs",
       "gather-t1-twin-hashes.mjs",
       "generate-sbom.mjs",
@@ -2604,7 +2654,8 @@
       "rebuild-fusable-packages.mjs",
       "relink-workspace.mjs",
       "repoint-kb-refs.mjs",
-      "verify-artifacts.mjs"
+      "verify-artifacts.mjs",
+      "wat-invalid-triage.mjs"
     ],
     "sensitive-allowlist": [
       "audit-allowlist-sensitive.mjs",
@@ -2645,7 +2696,9 @@
       "gen-unit-registry.mjs",
       "lint-conventions.mjs",
       "check-gate-injection.mjs",
-      "hardening-show-derived.mjs"
+      "debug-compiler-globs.mjs",
+      "hardening-show-derived.mjs",
+      "test-compiler-subdirs.mjs"
     ],
     "signing/fusion": [
       "audit-artifact-drift.mjs",
@@ -2750,7 +2803,8 @@
       "migrate-fungi.mjs",
       "rd-absorb.mjs",
       "rebrand-tmf-to-spore.mjs",
-      "repoint-kb-refs.mjs"
+      "repoint-kb-refs.mjs",
+      "validate-workspace-pointers.mjs"
     ],
     "brand": [
       "audit-brand-keys.mjs",
@@ -2786,10 +2840,12 @@
       "gen-contract-registry.mjs",
       "registry-index-cli.mjs",
       "lint-fungi.mjs",
+      "debug-compiler-globs.mjs",
       "gather-t1-twin-hashes.mjs",
       "hardening-show-derived.mjs",
       "license-rollout.mjs",
       "rebuild-fusable-packages.mjs",
+      "test-compiler-subdirs.mjs",
       "verify-artifacts.mjs"
     ],
     "source-hygiene": [
@@ -2811,7 +2867,8 @@
       "brand-audit.mjs",
       "emit-doc-wat.mjs",
       "rd-absorb.mjs",
-      "rename-package.mjs"
+      "rename-package.mjs",
+      "validate-workspace-pointers.mjs"
     ],
     "proofs": [
       "audit-cast-hygiene.mjs",
@@ -2870,10 +2927,12 @@
       "galerina-new.mjs",
       "gen-contract-registry.mjs",
       "kb-index.mjs",
+      "debug-compiler-globs.mjs",
       "emit-doc-wat.mjs",
       "gather-t1-twin-hashes.mjs",
       "hardening-show-derived.mjs",
-      "p9-100-site-mapper.mjs"
+      "p9-100-site-mapper.mjs",
+      "test-compiler-subdirs.mjs"
     ],
     "teaching-corpus": [
       "audit-corpus-effect-names.mjs",
@@ -2895,7 +2954,8 @@
       "lint-conventions.mjs",
       "run-phase-close.mjs",
       "status.mjs",
-      "migrate-fungi.mjs"
+      "migrate-fungi.mjs",
+      "wat-invalid-triage.mjs"
     ],
     "secrets/privacy": [
       "audit-effect-canonicality.mjs",
@@ -2920,7 +2980,8 @@
     "web-stub": [
       "audit-kernel-floor.mjs",
       "audit-wasm-validate.mjs",
-      "audit-web-stub-guard.mjs"
+      "audit-web-stub-guard.mjs",
+      "wat-invalid-triage.mjs"
     ],
     "muted-diagnostics": [
       "audit-muted-diagnostics.mjs",
@@ -2938,7 +2999,8 @@
       "lint-fungi.mjs",
       "component-health.mjs",
       "run-phase-close.mjs",
-      "emit-doc-wat.mjs"
+      "emit-doc-wat.mjs",
+      "wat-invalid-triage.mjs"
     ],
     "runtime-coverage": [
       "audit-runtime-coverage.mjs"
@@ -2954,7 +3016,6 @@
       "audit-brand-keys.mjs",
       "audit-diagnostic-codes.mjs",
       "audit-diagnostic-doc-drift.mjs",
-      "audit-doc-drift.mjs",
       "audit-dss-wasm-build.mjs",
       "audit-example-diagnostics.mjs",
       "audit-gate-selftests.mjs",
@@ -2962,7 +3023,6 @@
       "audit-hardening-determinism.mjs",
       "audit-import-governance.mjs",
       "audit-kernel-floor.mjs",
-      "audit-kernel-fungi-twins.mjs",
       "audit-license-compat.mjs",
       "audit-mutation.mjs",
       "audit-node-dependencies.mjs",
@@ -2976,8 +3036,6 @@
       "audit-route-overlap.mjs",
       "audit-runtime-coverage.mjs",
       "audit-selfhost-readiness.mjs",
-      "audit-stage-execution.mjs",
-      "audit-stray-docs.mjs",
       "audit-syntax-reference-links.mjs",
       "audit-syntax.mjs",
       "audit-tier-boundary.mjs",

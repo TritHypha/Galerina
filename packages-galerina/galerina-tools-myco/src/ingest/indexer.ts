@@ -73,8 +73,14 @@ export async function buildIndex(
       continue; // races with deletion, permission errors — skip, don't crash
     }
     if (looksBinary(buf)) {
-      if (existing) graph.removeFile(meta.relPath); // e.g. a file turned binary
-      stats.skippedBinary++;
+      // Index binary files with an EMPTY term set so the name index still sees them.
+      // A file with no terms is invisible to content queries (the prune phase finds nothing),
+      // so content-search semantics are unchanged. But `-f filename` can now find the path,
+      // which was previously impossible — a binary file had no node at all, so even its name
+      // was invisible. DESIGN.md §10 "candidate fix" — now applied.
+      graph.setFile(meta.relPath, meta.mtimeMs, meta.size, new Map());
+      if (!existing) stats.skippedBinary++;
+      else stats.skippedBinary++; // still counted as skipped-binary (no content indexed)
       continue;
     }
 

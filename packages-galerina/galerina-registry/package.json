@@ -1,6 +1,7 @@
 {
   "name": "@galerina/registry",
   "version": "1.0.0-beta.2",
+  "description": "Signed package registry entries for the Galerina platform. Empty until the owner signing ceremony (registry walkthrough §4) — do not add entries manually. Populated by the registry-index-cli.mjs signing flow after governance review.",
   "license": "Apache-2.0",
   "private": true
 }

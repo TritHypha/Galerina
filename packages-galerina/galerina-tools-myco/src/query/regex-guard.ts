@@ -29,8 +29,10 @@ export const MAX_REPETITION = 1000;
  *  rare pathological single line, e.g. a minified blob, within an allowed file.) */
 export const MAX_REGEX_LINE_LEN = 200_000;
 
-/** Wall-clock ceiling for one search's verify phase; exceeded => stop + truncate. */
-export const SEARCH_TIME_BUDGET_MS = 5_000;
+/** Wall-clock ceiling for one search's verify phase; exceeded => stop + truncate.
+ *  2000ms for interactive CLI use — overlapping-alternation patterns that pass the static
+ *  check (see module header) are still bounded here. Use `--timeout <ms>` for batch/CI use. */
+export const SEARCH_TIME_BUDGET_MS = 2_000;
 
 export type RegexVerdict = { safe: true } | { safe: false; reason: string };
 

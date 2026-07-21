@@ -35,8 +35,19 @@ Register-resident / never-to-RAM key handling (TRESOR and the cold-boot-defence 
 
 ## 5. Declarations
 
-- **Type/tier:** defensive-pub (design-stage).
+- **Type/tier:** defensive-pub. Originally filed as design-stage; **updated 2026-07 to reflect shipped
+  construction**: H-1 (auto-derivation), H-2 (residency lattice + fail-closed honour check), H-3
+  (reconcile explicit vs auto), H-4 (constant-time check — honestly partial, undecidable in general),
+  H-5 (host-seam capability contract), H-6 (`memory.spill` deny-only effect), H-7 (only-tightens +
+  `audited_loosen` opt-out), and the RD-0337 `spillRetype()` composition (spill re-types a value
+  `Refuted`, sticky + contagious) are **all integrated and merged to main** (f7ff18df, task #52).
+  Remaining design-stage items: H-5 signed FuseDescriptor re-sign + `#143` execution enforcement
+  (mlock syscalls, zeroize — compiler ceiling is proven, runtime placement enforcement awaits the
+  `#143` authority flip). H-4 constant-time check remains honestly partial (the decidable subset only).
 - **Authorship & AI assistance:** drafted with AI assistance (Claude) under human direction, grounded in KB RD-0358 (Row A and the adopted models M1–M3/M6), and the shipped physical-hardening contract, secret-aware emission, and crypto-erase-directive constituents. Galerina-internal threat-model tables and implementation-status residuals are deliberately **not** reproduced here (out of scope for a construction disclosure).
 - **Funding:** none. **Competing interests:** none declared.
-- **Data / artifact availability:** design source KB `galerina-rd-0358…`; shipped constituents named above. The residency clause + auto-derivation are not yet built.
+- **Data / artifact availability:** design source KB `galerina-rd-0358…`; shipped constituents in
+  `packages-galerina/galerina-core-compiler/src/hardening-residency.ts` (H-1..H-7 + RD-0337
+  composition) and `packages-galerina/galerina-tower-citizen/src/epistemic-type-state.ts` (runtime
+  trit). Trit-conformance gate 6/6 green (`tests/hardening-trit-conformance.test.mjs`).
 - **Licence:** Apache-2.0.
