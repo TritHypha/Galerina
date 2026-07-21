@@ -200,6 +200,13 @@ export interface StdlibContext {
   readonly dial?: (url: string, req: NetDialRequest) => Promise<NetDialResponse>;
   /** Egress allow-list audit sink (default: stderr). A seam so tests capture the trail without monkeypatching. */
   readonly auditSink?: (line: string) => void;
+  /**
+   * Stdout output seam for print() / println().
+   * Default: console.log (production). Tests supply a collector here instead of
+   * monkey-patching console.log. Monkey-patching a global is forbidden in Galerina
+   * runtime code — this seam is the governed alternative (same pattern as auditSink).
+   */
+  readonly outputSink?: (line: string) => void;
 }
 
 function safeDisplay(v: GalerinaValue): string {
@@ -1802,6 +1809,27 @@ export async function callStdlib(
   if (receiver === undefined) {
     if (fullName === "format") return formatString(args);
     if (fullName === "Decimal") return decimalConstructor(args);
+
+    // print() — the canonical developer-facing output function.
+    // Prints all arguments space-separated with a trailing newline.
+    // print("hello world")  → hello world
+    // print("x =", x)       → x = 42
+    // Secure values are blocked at the value-state-checker (FUNGI-SECRET-001);
+    // this layer only performs the output. Pure I/O — no effects gated here.
+    if (fullName === "print" || fullName === "println") {
+      // Route through ctx.outputSink when provided (test seam / governed capture).
+      // Default to console.log in production. Never monkey-patch console.log — that
+      // mutates a global and is forbidden in the Galerina runtime model.
+      const emit = ctx.outputSink ?? console.log;
+      const line = args.length === 0
+        ? ""
+        : args.length === 1
+          ? safeDisplay(args[0]!)
+          : args.map((a) => safeDisplay(a)).join(" ");
+      emit(line);
+      return FUNGI_VOID;
+    }
+
 
     // Runtime.cpuUsage() / Runtime.memoryUsage() — for benchmark resource reporting
     if (fullName === "Runtime.cpuUsage" || fullName === "cpuUsage") {

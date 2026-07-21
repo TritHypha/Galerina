@@ -1,0 +1,18 @@
+@version 1
+/// example: 026-pure-flow-main
+/// level: 1
+/// concept: Entry point — pure flow main() is the zero-arg program entry convention
+/// expected_diagnostics: none
+/// test_status: stable
+/// ai_rule: Use pure flow main() -> Int as the entry point for a runnable program. Return 0 for success.
+
+;; Entry point: main() returns an Int exit code (0 = success).
+;; Pure — no runtime authority / no effects.
+pure flow main() -> Int
+contract {
+  intent { "Run the program and return exit code 0 on success." }
+}
+{
+  print("Hello from Galerina!")
+  return 0
+}

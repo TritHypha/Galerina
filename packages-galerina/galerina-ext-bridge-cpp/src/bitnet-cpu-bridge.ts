@@ -143,9 +143,10 @@ export class BitNetCpuBridge implements InferenceBridge {
       deterministic: true,
     };
 
-    // Standard 1 — Determinism Hook: native must match the simulator exactly.
-    if (this.determinismChecksRemaining > 0) {
-      this.determinismChecksRemaining--;
+    // Standard 1 — Determinism Hook: native must match the simulator on every call.
+    // The countdown was removed — a server running > 8 inference calls had no
+    // determinism enforcement, silently. Always-on is the zero-trust requirement.
+    if (this.alwaysCheckDeterminism) {
       if (nativeValue !== ref.value) {
         throw new Error(
           `[CITIZEN_STANDARD_VIOLATION]: native BitNet result ${nativeValue} ≠ ` +

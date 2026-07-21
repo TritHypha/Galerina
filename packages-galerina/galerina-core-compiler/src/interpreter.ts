@@ -541,6 +541,14 @@ export interface InterpreterRuntimeOptions {
    *  NESTED bounded loops (e.g. 100k × 100k = 10^10 ops, each loop under the 100k per-loop cap) have no
    *  TOTAL bound. Deterministic (a step count, not wall-clock). Exceeding it TRAPS (deny-by-default). */
   readonly maxSteps?: number;
+  /**
+   * Stdout capture seam for print() / println() output.
+   * Default: console.log (production). Tests pass a collector here instead of
+   * monkey-patching console.log — the same pattern as auditSink in StdlibContext.
+   * Monkey-patching console.log is forbidden in Galerina runtime code (it mutates a
+   * global; this seam is the governed alternative).
+   */
+  readonly outputSink?: (line: string) => void;
 }
 
 /** Default global compute-step budget — high enough that no legitimate flow reaches it (a flow doing
@@ -1243,6 +1251,7 @@ class Interpreter {
         }
         return { __tag: "runtimeError" as const, message: `cannot apply '${fn.__tag === "unresolved" ? fn.name : fn.__tag}' as a function — pass a named fn or flow (higher-order call fails closed)` };
       },
+      ...(this.runtimeOptions.outputSink !== undefined ? { outputSink: this.runtimeOptions.outputSink } : {}),
     };
   }
 
@@ -2412,9 +2421,18 @@ class Interpreter {
       return FUNGI_VOID;
     }
 
-    if (methodName === "print" || fullName.startsWith("log.") || fullName.startsWith("console.")) {
-      const arg = args[0] !== undefined ? await this.evalExpr(args[0]) : FUNGI_VOID;
-      console.log(safeDisplay(arg));
+    if (methodName === "print" || methodName === "println" ||
+        fullName === "Console.print" || fullName === "Console.println" ||
+        fullName.startsWith("log.") || fullName.startsWith("console.")) {
+      // Route through the outputSink seam when provided; default to console.log.
+      // Never monkey-patch console.log — that mutates a global and is forbidden
+      // in the Galerina runtime model. Tests inject outputSink via runtimeOptions.
+      const emit = this.runtimeOptions.outputSink ?? console.log;
+      const parts: string[] = [];
+      for (const argExpr of args) {
+        parts.push(safeDisplay(await this.evalExpr(argExpr)));
+      }
+      emit(parts.join(" "));
       return FUNGI_VOID;
     }
 

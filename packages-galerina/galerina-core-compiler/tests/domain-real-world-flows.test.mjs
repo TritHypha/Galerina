@@ -25,11 +25,11 @@ import { parseProgram, checkTypes, resolveSymbols, executeFlow } from "../dist/i
 // Test harness
 // ---------------------------------------------------------------------------
 
-async function parseAndRun(source, flowName, args = new Map()) {
+async function parseAndRun(source, flowName, args = new Map(), runtimeOptions = undefined) {
   const parsed = parseProgram(source, "test.fungi");
   resolveSymbols(parsed.ast);
   checkTypes(parsed.ast);
-  return await executeFlow(flowName, args, parsed.ast);
+  return await executeFlow(flowName, args, parsed.ast, undefined, undefined, undefined, runtimeOptions);
 }
 
 // ============================================================================
@@ -949,6 +949,9 @@ pure flow testRedact(raw: String) -> Bool {
   });
 
   it("protected email is masked in display (not leaked as plaintext)", async () => {
+    // Use the outputSink seam — never monkey-patch console.log (global mutation
+    // is forbidden in the Galerina runtime model; outputSink is the governed
+    // capture alternative, same pattern as auditSink).
     const SOURCE3 = `
 secure flow logProtected() -> Void {
   let email: protected Email = "secret@example.com"
@@ -957,13 +960,7 @@ secure flow logProtected() -> Void {
 }
 `;
     const lines = [];
-    const originalLog = console.log;
-    console.log = (v) => lines.push(String(v));
-    try {
-      await parseAndRun(SOURCE3, "logProtected");
-    } finally {
-      console.log = originalLog;
-    }
+    await parseAndRun(SOURCE3, "logProtected", new Map(), { outputSink: (line) => lines.push(line) });
     assert.ok(lines.includes("[PROTECTED]"), "Expected [PROTECTED] in console output");
     assert.equal(lines.some((l) => l.includes("secret@example.com")), false, "Email must not appear in output");
   });

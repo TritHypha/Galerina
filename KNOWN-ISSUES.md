@@ -42,6 +42,12 @@ disclosed below. Read this before relying on any guarantee. Last reconciled: 202
   frozen the revocation registry — so `governance/revocations.json` was **re-signed under the new root** and
   the trust-anchor pin moved (the `8eecf418…` revocation preserved). The lost root remains only as a public
   verifier for historical signatures; it is **not** revoked (never compromised, only lost).
+- **⚠️ OWNER ACTION REQUIRED — revoke `ab46f4c7e2797b9b` in the signed registry.** Per zero-trust policy a
+  key whose private half is in unknown custody must be formally revoked (not just superseded). This requires
+  the trust-root key `21415420b447e219` to sign the updated `governance/revocations.json`. The dev signing
+  key cannot perform this operation — the `trust-anchor.json` pin enforces that only `21415420b447e219` may
+  sign the registry. Steps: (1) add `ab46f4c7e2797b9b` to the `revoked[]` array in `governance/revocations.json`,
+  (2) run `node governance/sign-revocations.mjs` with the hybrid trust-root key loaded in `.env.galerina-signing`.
 - **`FUNGI-VALUESTATE-008` is production-gated.** The boundary-input cleanliness floor (an unmarked bare
   parameter reaching a governed sink) escalates to an *error* only in production builds, and is now
   enforced on the user-facing `galerina build` path under `GALERINA_PROFILE=production` (commit `8d840ca`);

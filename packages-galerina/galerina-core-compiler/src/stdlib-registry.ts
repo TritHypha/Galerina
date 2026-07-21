@@ -128,6 +128,9 @@ export const STDLIB_CAPABILITY_MAP: ReadonlyMap<string, StdlibCapabilityEntry> =
 export type StdlibModuleKind = "pure" | "effectful";
 
 export const STDLIB_MODULE_KIND: ReadonlyMap<string, StdlibModuleKind> = new Map([
+  // Console output — pure I/O, no governance effect required
+  ["Console",     "pure"],
+
   // Pure (zero imports in WASM, safe for GPU/NPU/APU)
   ["String",      "pure"],
   ["Char",        "pure"],

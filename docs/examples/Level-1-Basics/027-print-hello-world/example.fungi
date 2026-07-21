@@ -1,0 +1,20 @@
+@version 1
+/// example: 027-print-hello-world
+/// level: 1
+/// concept: print() — write values to stdout from a pure flow
+/// expected_diagnostics: none
+/// test_status: stable
+/// ai_rule: print() writes to stdout. It accepts any value type and is blocked for SecureString.
+
+;; Demonstrates print() with a String literal, an Int, and a calculated value.
+;; Pure — no runtime authority / no effects.
+pure flow main() -> Int
+contract {
+  intent { "Demonstrate print() with multiple value types." }
+}
+{
+  print("Hello from Galerina!")
+  print("The answer is", 42)
+  print("2 + 2 =", 2 + 2)
+  return 0
+}

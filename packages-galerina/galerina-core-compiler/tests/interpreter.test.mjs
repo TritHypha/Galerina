@@ -306,23 +306,23 @@ pure flow validateEmail(rawEmail: String) -> protected Email {
   });
 
   it("masks protected values in console output", async () => {
-    const originalLog = console.log;
+    // Use the outputSink seam — never monkey-patch console.log (global mutation
+    // is forbidden in the Galerina runtime model; auditSink + outputSink are the
+    // governed capture alternatives).
     const lines = [];
-    console.log = (value) => {
-      lines.push(String(value));
-    };
-
-    try {
-      await parseAndRun(`
+    await executeFlow(
+      "logEmail",
+      new Map(),
+      parseProgram(`
 secure flow logEmail() -> Void {
   let email: protected Email = "raw@example.com"
   print(email)
   return
 }
-`, "logEmail");
-    } finally {
-      console.log = originalLog;
-    }
+`, "test.fungi").ast,
+      undefined, undefined, undefined,
+      { outputSink: (line) => lines.push(line) },
+    );
 
     assert.ok(lines.includes("[PROTECTED]"));
     assert.equal(lines.some((line) => line.includes("raw@example.com")), false);

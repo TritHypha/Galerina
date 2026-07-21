@@ -1931,7 +1931,7 @@ export function emitWATExpr(
         // Decimal (bignum) constructor — no WASM host stub; lowers to f64 which is wrong (#137)
         "Decimal",
         // Collection/IO stdlib — no WASM host stubs yet
-        "range", "print", "map", "redact", "reduce", "filter",
+        "range", "map", "redact", "reduce", "filter",
       ]);
       if (UNLOWERED_STDLIB_CONSTRUCTORS.has(name) && flowReturnTypes?.get(name) === undefined) {
         // Inline block comment (safe in any expression position — no `;;` that swallows parens).

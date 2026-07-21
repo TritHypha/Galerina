@@ -135,9 +135,9 @@ get R&D to tell you what it did for the gzip R&D using tri -1 then use GPT
 
 priority is WAT and P9 for main
 
-I have done some R&D into other areas check "C:\Users\phill\Documents\GitHub\gpt\Security-infra designs" 
-and a seperate R&D in "C:\Users\phill\Documents\GitHub\gpt\RD-0363-0364-0365 wiring"
-and C:\Users\phill\Documents\GitHub\gpt\RD-0363-0364-0365 wiring\README.md inc C:\Users\phill\Documents\GitHub\gpt\RD-0363-0364-0365 wiring\src\rd0363-passive-plan-replay.ts C:\Users\phill\Documents\GitHub\gpt\RD-0363-0364-0365 wiring\src\rd0364-governed-inference-contract.ts C:\Users\phill\Documents\GitHub\gpt\RD-0363-0364-0365 wiring\src\rd0365-key-custody-ladder.ts C:\Users\phill\Documents\GitHub\gpt\RD-0363-0364-0365 wiring\tests\rd0363-0364-0365.selftest.ts C:\Users\phill\Documents\GitHub\gpt\RD-0363-0364-0365 wiring\docs\source-sighting.md C:\Users\phill\Documents\GitHub\gpt\RD-0363-0364-0365 wiring\docs\acceptance-checklist.md
+I have done some R&D into other areas check "<GitHub>\gpt\Security-infra designs"
+and a seperate R&D in "<GitHub>\gpt\RD-0363-0364-0365 wiring"
+and <GitHub>\gpt\RD-0363-0364-0365 wiring\README.md inc <GitHub>\gpt\RD-0363-0364-0365 wiring\src\rd0363-passive-plan-replay.ts <GitHub>\gpt\RD-0363-0364-0365 wiring\src\rd0364-governed-inference-contract.ts <GitHub>\gpt\RD-0363-0364-0365 wiring\src\rd0365-key-custody-ladder.ts <GitHub>\gpt\RD-0363-0364-0365 wiring\tests\rd0363-0364-0365.selftest.ts <GitHub>\gpt\RD-0363-0364-0365 wiring\docs\source-sighting.md <GitHub>\gpt\RD-0363-0364-0365 wiring\docs\acceptance-checklist.md
 
 
 #owner phill
