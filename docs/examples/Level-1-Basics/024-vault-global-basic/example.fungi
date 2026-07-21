@@ -1,10 +1,9 @@
+@version 1
 /// example: 024-vault-global-basic
 /// level: 1
 /// concept: vault global — typed non-secret application configuration
 /// expected_diagnostics: none
 /// ai_rule: Use vault global for typed, non-secret, application-wide config values that are fixed at boot. Reading requires no effect declaration.
-
-@version 1
 
 ;; vault global declares typed, non-secret configuration fixed at boot.
 ;; These are not global variables — they are read-only after the service starts.

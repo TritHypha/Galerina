@@ -1,10 +1,9 @@
+@version 1
 /// example: 025-vault-global-secret-invalid
 /// level: 1
 /// concept: FUNGI-VAULT-001 — secret-like value in vault global is rejected
 /// expected_diagnostics: FUNGI-VAULT-001
 /// ai_rule: Never put API keys, signing keys, passwords or tokens in vault global. The compiler detects secret-pattern values and emits FUNGI-VAULT-001. Use secret {} references instead.
-
-@version 1
 
 ;; INVALID — secret-like values are rejected in vault global.
 ;; FUNGI-VAULT-001 fires on the stripe.key and jwt.secret entries.

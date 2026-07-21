@@ -138,7 +138,24 @@ export type AstNodeKind =
   // rotationDecl = { children:[interval:<I>, on_rotation_fault:<H>?] }. Engine stays in galerina-ext-secrets-vault.
   | "secretsBlock"
   | "credentialDecl"
-  | "rotationDecl";
+  | "rotationDecl"
+  // GlobalVault declaration (W5b vault sprint, 2026-07-21):
+  // vaultDecl — top-level `vault { ... }` block.
+  //   { kind: "vaultDecl", children: [vaultEntryDecl...] }
+  // vaultEntryDecl — one named entry inside a vault block.
+  //   { kind: "vaultEntryDecl",
+  //     value: "entryName",         // e.g. "loginCount"
+  //     children: [
+  //       identifier("type:Int"),        // entry type
+  //       identifier("keyed_by:UUID")?,  // optional keyed-by annotation
+  //       identifier("readonly:true")?,  // optional readonly flag
+  //       identifier("allow:flowName:read"),  // zero or more allow entries
+  //       identifier("allow:flowName:write"), // ...
+  //       identifier("audit:required"),   // optional audit policy
+  //     ]
+  //   }
+  | "vaultDecl"
+  | "vaultEntryDecl";
 
 export interface SourceLocation {
   readonly file: string;
@@ -464,6 +481,7 @@ class Parser {
         case "event":    return this.parseEventDecl();
         case "resource": return this.parseResourceDecl();
         case "hallmark": return this.parseHallmarkDecl();
+        case "vault":   return this.parseVaultDecl();
         case "let": {
           // FUNGI-SYNTAX-006: let at top level is not allowed
           this.emit(
@@ -5653,6 +5671,144 @@ class Parser {
     const name = this.current().kind === "identifier" ? this.current().value : "<unknown>";
     if (this.current().kind === "identifier") this.advance();
     return { kind: "intentDecl", value: `event:${name}`, location: loc };
+  }
+
+  /**
+   * Parses a top-level GlobalVault declaration:
+   *
+   *   vault {
+   *     entryName: Type {
+   *       allow flowName read|write
+   *       audit required|optional
+   *     }
+   *     entryName: Type keyed by KeyType {
+   *       allow flowName read
+   *       allow flowName write
+   *       audit required
+   *     }
+   *     entryName: readonly Type {
+   *       allow flowName read
+   *       audit optional
+   *     }
+   *   }
+   *
+   * Produces: { kind: "vaultDecl", children: [vaultEntryDecl, ...] }
+   *
+   * Each vaultEntryDecl:
+   *   { kind: "vaultEntryDecl", value: "entryName",
+   *     children: [identifier("type:<T>"), identifier("allow:<flow>:read"), ...] }
+   */
+  private parseVaultDecl(): AstNode {
+    const loc = this.loc();
+    this.advance(); // consume "vault"
+    this.skipNewlines();
+    if (!this.currentIs("symbol", "{")) {
+      this.emit("FUNGI-VAULT-001", "VAULT_MISSING_OPEN_BRACE",
+        "Expected '{' after 'vault'.", this.loc(),
+        "vault { entryName: Type { allow flowName read } }");
+      this.skipToNextDeclaration();
+      return { kind: "vaultDecl", location: loc, children: [] };
+    }
+    this.advance(); // consume "{"
+    const entries: AstNode[] = [];
+    while (!this.isEof() && !this.currentIs("symbol", "}")) {
+      this.skipNewlines();
+      if (this.currentIs("symbol", "}")) break;
+      // govComment lines (;; ...) — skip silently
+      if (this.current().kind === "govComment") { this.advance(); continue; }
+      const entryLoc = this.loc();
+      // entry name
+      const entryTok = this.current();
+      const isReadonly = entryTok.kind === "keyword" && entryTok.value === "readonly";
+      if (isReadonly) this.advance(); // consume "readonly"
+      this.skipNewlines();
+      if (this.current().kind !== "identifier" && this.current().kind !== "keyword") {
+        this.skipNewlines();
+        if (this.currentIs("symbol", "}")) break;
+        this.advance();
+        continue;
+      }
+      const entryName = this.current().value ?? "<unknown>";
+      this.advance(); // consume entry name
+      // colon
+      if (this.currentIs("symbol", ":")) this.advance();
+      // type — may be prefixed with `readonly`: `appId: readonly UUID { ... }`
+      this.skipNewlines();
+      let typeIsReadonly = false;
+      if (this.current().kind === "keyword" && this.current().value === "readonly") {
+        typeIsReadonly = true;
+        this.advance(); // consume "readonly" type prefix
+        this.skipNewlines();
+      }
+      const typeTok = this.current();
+      const typeName = (typeTok.kind === "identifier" || typeTok.kind === "keyword") ? typeTok.value : "Unknown";
+      if (typeTok.kind === "identifier" || typeTok.kind === "keyword") this.advance();
+      // optional "keyed by KeyType"
+      let keyedBy: string | undefined;
+      this.skipNewlines();
+      if (this.current().kind === "identifier" && this.current().value === "keyed") {
+        this.advance(); // "keyed"
+        this.skipNewlines();
+        if (this.current().kind === "identifier" && this.current().value === "by") this.advance(); // "by"
+        this.skipNewlines();
+        keyedBy = (this.current().kind === "identifier" || this.current().kind === "keyword")
+          ? this.current().value : undefined;
+        if (keyedBy !== undefined) this.advance();
+      }
+      // entry body { allow ... ; audit ... }
+      const entryChildren: AstNode[] = [];
+      entryChildren.push({ kind: "identifier", value: `type:${typeName}`, location: entryLoc });
+      if (isReadonly || typeIsReadonly) entryChildren.push({ kind: "identifier", value: "readonly:true", location: entryLoc });
+      if (keyedBy !== undefined) entryChildren.push({ kind: "identifier", value: `keyed_by:${keyedBy}`, location: entryLoc });
+      this.skipNewlines();
+      if (this.currentIs("symbol", "{")) {
+        this.advance(); // consume "{"
+        while (!this.isEof() && !this.currentIs("symbol", "}")) {
+          this.skipNewlines();
+          if (this.currentIs("symbol", "}")) break;
+          if (this.current().kind === "govComment") { this.advance(); continue; }
+          const subLoc = this.loc();
+          const subTok = this.current();
+          // allow flowName read|write
+          if ((subTok.kind === "identifier" || subTok.kind === "keyword") && subTok.value === "allow") {
+            this.advance(); // "allow"
+            this.skipNewlines();
+            const flowTok = this.current();
+            const allowedFlow = (flowTok.kind === "identifier" || flowTok.kind === "keyword") ? flowTok.value : "<unknown>";
+            if (flowTok.kind === "identifier" || flowTok.kind === "keyword") this.advance();
+            this.skipNewlines();
+            const permTok = this.current();
+            const perm = (permTok.kind === "identifier" || permTok.kind === "keyword") ? permTok.value : "read";
+            if (permTok.kind === "identifier" || permTok.kind === "keyword") this.advance();
+            entryChildren.push({ kind: "identifier", value: `allow:${allowedFlow}:${perm}`, location: subLoc });
+          }
+          // audit required|optional
+          else if ((subTok.kind === "identifier" || subTok.kind === "keyword") && subTok.value === "audit") {
+            this.advance(); // "audit"
+            this.skipNewlines();
+            const auditTok = this.current();
+            const auditLevel = (auditTok.kind === "identifier" || auditTok.kind === "keyword") ? auditTok.value : "required";
+            if (auditTok.kind === "identifier" || auditTok.kind === "keyword") this.advance();
+            entryChildren.push({ kind: "identifier", value: `audit:${auditLevel}`, location: subLoc });
+          }
+          // skip unknown tokens inside entry body
+          else {
+            this.advance();
+          }
+        }
+        if (this.currentIs("symbol", "}")) this.advance(); // consume "}"
+      } else {
+        // no body block — entry without permissions (emit diagnostic)
+        this.emit("FUNGI-VAULT-002", "VAULT_ENTRY_MISSING_PERMISSIONS",
+          `Vault entry '${entryName}' has no permission block. Add { allow flowName read|write; audit required }.`,
+          entryLoc,
+          `vault { ${entryName}: ${typeName} { allow yourFlow read } }`);
+      }
+      entries.push({ kind: "vaultEntryDecl", value: entryName, location: entryLoc, children: entryChildren });
+      this.skipNewlines();
+    }
+    if (this.currentIs("symbol", "}")) this.advance(); // consume closing "}"
+    return { kind: "vaultDecl", location: loc, children: entries };
   }
 
   /**

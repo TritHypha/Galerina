@@ -1,10 +1,9 @@
+@version 1
 /// example: 474-vault-session-session-pattern
 /// level: 9
 /// concept: vault.session — user session vault for auth tokens, profile and permission data
 /// expected_diagnostics: none
 /// ai_rule: Use vault.session for data that belongs to a logged-in user session. Session vault entries are owner-checked, TTL-controlled, and cleared on logout or expiry. Never store secrets in vault.session — use vault.secure.
-
-@version 1
 
 ;; vault.session stores data that belongs to an authenticated user session.
 ;; TTL = session lifetime; cleared on logout or expiry.
@@ -53,7 +52,7 @@ contract {
 }
 
 ;; Read permission summary from session vault — no DB call
-pure flow authorizeAction(userId: UserId, action: String) -> Result<Bool, Error>
+guarded flow authorizeAction(userId: UserId, action: String) -> Result<Bool, Error>
 contract {
   intent "Check a user permission from the session vault"
   effects { vault.read }

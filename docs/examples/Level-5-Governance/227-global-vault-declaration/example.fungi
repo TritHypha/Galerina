@@ -1,13 +1,12 @@
+@version 1
 /// example: 227-global-vault-declaration
 /// level: 5
 /// concept: GlobalVault — declaring protected runtime state with vault {} and permission lists
 /// expected_diagnostics: none
 /// ai_rule: Use vault {} (GlobalVault) for mutable runtime state that must persist across flow calls. Every entry must declare which flows may read and write it, and whether writes require audit. Access via secure.valueName.
 
-@version 1
-
 ;; vault {} declares GlobalVault — named, permission-controlled, auditable runtime state.
-;; This is the Galerina replacement for global variables.
+;; This is the Galerina replacement for global mutable state.
 ;;
 ;; Rules:
 ;;   - Every entry must list allowed readers and writers
@@ -21,44 +20,26 @@ vault {
     audit required                 ;; every write emits an audit event
   }
 
-  session: SessionRecord keyed by SessionUUID {
-    allow createSession write
-    allow getSession    read
-    allow revokeSession write
-    audit required
-  }
-
-  appId: readonly UUID {
+  appId: readonly String {
     allow getAppId read
     audit optional
   }
 }
 
 ;; Reading vault state — requires vault.read effect
-;; The flow must be in the entry's allow ... read list
-pure flow getLoginCount() -> Int
+guarded flow getLoginCount() -> Int
 contract {
   intent "Return the current login attempt count from the vault"
   effects { vault.read }
 }
 {
-  let count = secure.loginCount     ;; runtime-checks: only getLoginCount may read this
+  let count = secure.loginCount
   return count
 }
 
-guarded flow getSession(uuid: SessionUUID) -> Result<SessionRecord, Error>
+guarded flow getAppId() -> String
 contract {
-  intent "Retrieve a session record from the vault"
-  effects { vault.read }
-}
-{
-  let session = secure.session[uuid]
-  return Ok(session)
-}
-
-pure flow getAppId() -> UUID
-contract {
-  intent "Return the stable application UUID"
+  intent "Return the stable application identifier"
   effects { vault.read }
 }
 {

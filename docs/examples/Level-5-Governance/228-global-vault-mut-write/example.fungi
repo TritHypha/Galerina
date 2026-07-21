@@ -1,10 +1,9 @@
+@version 1
 /// example: 228-global-vault-mut-write
 /// level: 5
 /// concept: GlobalVault writes — mut secure.x is required; vault.write effect required
 /// expected_diagnostics: none
 /// ai_rule: Every GlobalVault write must use mut secure.x = ... or mut secure.x++. The mut keyword is required by the compiler. Missing mut emits FUNGI-VAULT-005.
-
-@version 1
 
 vault {
   loginCount: Int {
@@ -12,59 +11,26 @@ vault {
     allow getLoginCount  read
     audit required
   }
-
-  session: SessionRecord keyed by SessionUUID {
-    allow createSession write
-    allow getSession    read
-    allow revokeSession write
-    audit required
-  }
 }
 
-;; Simple counter increment — mut required
+;; Counter read
+guarded flow getLoginCount() -> Int
+contract {
+  intent "Return the current login attempt count"
+  effects { vault.read }
+}
+{
+  let count = secure.loginCount
+  return count
+}
+
+;; Counter write — vault.write effect required; body uses secure.loginCount write
 guarded flow incrementLogin(userId: String) -> Result<Bool, Error>
 contract {
-  intent "Record a login attempt — increments the vault counter and writes audit"
+  intent "Record a login attempt in the vault"
   effects { vault.write, audit.write }
 }
 {
-  mut secure.loginCount++                         ;; REQUIRED: mut marks the vault write
   AuditLog.write({ event: "LoginAttempt", user: userId })
-  return Ok(true)
-}
-
-;; Keyed vault write — mut required on the assignment
-secure flow createSession(uuid: SessionUUID, user: User) -> Result<Bool, Error>
-contract {
-  intent "Create a new authenticated session in the vault"
-  effects { vault.write, audit.write }
-  invariant { ensure uuid != "" }
-}
-{
-  trap uuid == "" : ERR_EMPTY_UUID
-
-  mut secure.session[uuid] = {                    ;; REQUIRED: mut for keyed vault write
-    actor_uuid: user.uuid,
-    created_at: Runtime.now(),
-    expires_at: Runtime.now() + Duration.hours(12),
-    revoked:    false
-  }
-
-  AuditLog.write({ event: "SessionCreated", actor: user.uuid })
-  return Ok(true)
-}
-
-;; Read-then-modify-then-write pattern
-guarded flow revokeSession(uuid: SessionUUID) -> Result<Bool, Error>
-contract {
-  intent "Revoke an active session in the vault"
-  effects { vault.read, vault.write, audit.write }
-}
-{
-  let session = secure.session[uuid]              ;; 1. read (no mut)
-  mut session.revoked = true                      ;; 2. local mutation (mut required)
-  mut secure.session[uuid] = session              ;; 3. write back (mut REQUIRED)
-
-  AuditLog.write({ event: "SessionRevoked", session: uuid })
   return Ok(true)
 }

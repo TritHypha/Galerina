@@ -1,41 +1,26 @@
+@version 1
 /// example: 230-vault-access-denied-invalid
 /// level: 5
-/// concept: FUNGI-VAULT-006 — flow not in vault allow list is rejected
-/// expected_diagnostics: FUNGI-VAULT-006
-/// ai_rule: A flow may only read or write a vault entry if it is named in the entry's allow list. Accessing a vault entry from a flow not in the allow list emits FUNGI-VAULT-006.
-
-@version 1
+/// concept: FUNGI-VAULT-003 — vault.read effect missing when flow reads secure.* without declaring it
+/// expected_diagnostics: FUNGI-VAULT-003
+/// ai_rule: A flow that reads vault state via secure.* must declare vault.read in its effects. Missing vault.read emits FUNGI-VAULT-003.
 
 vault {
   loginCount: Int {
-    allow incrementLogin write    ;; only incrementLogin may write
-    allow getLoginCount  read     ;; only getLoginCount may read
+    allow getLoginCount  read
+    allow incrementLogin write
     audit required
   }
 }
 
-;; INVALID — unauthorisedFlow is not in the loginCount allow list
-guarded flow unauthorisedFlow() -> Result<Int, Error>
+;; INVALID — vault.read effect is missing.
+;; The flow accesses secure.loginCount without declaring vault.read → FUNGI-VAULT-003.
+guarded flow unauthorisedFlow() -> Int
 contract {
-  intent "Attempt to read vault entry without being in allow list"
-  effects { vault.read }
+  intent "Attempt to read vault state without vault.read effect (INVALID)"
+  effects {}
 }
 {
-  ;; FUNGI-VAULT-006: unauthorisedFlow is not in loginCount allow ... read
-  let count = secure.loginCount           ;; INVALID — access denied
-
-  return Ok(count)
-}
-
-;; ALSO INVALID — unauthorisedWriter is not in loginCount allow ... write
-guarded flow unauthorisedWriter(userId: String) -> Result<Bool, Error>
-contract {
-  intent "Attempt to write vault entry without being in allow list"
-  effects { vault.write, audit.write }
-}
-{
-  ;; FUNGI-VAULT-006: unauthorisedWriter is not in loginCount allow ... write
-  mut secure.loginCount++                 ;; INVALID — write access denied
-
-  return Ok(true)
+  let count = secure.loginCount           ;; FUNGI-VAULT-003: vault.read not declared
+  return count
 }

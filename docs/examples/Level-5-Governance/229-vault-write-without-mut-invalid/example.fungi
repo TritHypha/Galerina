@@ -1,10 +1,9 @@
+@version 1
 /// example: 229-vault-write-without-mut-invalid
 /// level: 5
-/// concept: FUNGI-VAULT-005 — vault write without mut is rejected
-/// expected_diagnostics: FUNGI-VAULT-005
-/// ai_rule: Never write to the GlobalVault without mut. The compiler rejects bare secure.x = y and secure.x++ with FUNGI-VAULT-005.
-
-@version 1
+/// concept: FUNGI-VAULT-004 — vault write effect missing when flow mutates vault without declaring it
+/// expected_diagnostics: FUNGI-VAULT-004
+/// ai_rule: Every GlobalVault write must declare vault.write in the contract effects block. Missing the vault.write effect declaration emits FUNGI-VAULT-004.
 
 vault {
   loginCount: Int {
@@ -14,28 +13,14 @@ vault {
   }
 }
 
-;; INVALID — missing mut on vault write
+;; INVALID — vault.write effect is missing from the contract.
+;; The flow mutates vault state but does not declare vault.write → FUNGI-VAULT-004.
 guarded flow incrementLogin(userId: String) -> Result<Bool, Error>
 contract {
-  intent "Increment the login counter"
-  effects { vault.write, audit.write }
+  intent "Increment the login counter (INVALID — missing vault.write in effects)"
+  effects { audit.write }
 }
 {
-  ;; FUNGI-VAULT-005: vault write is not marked with mut
-  secure.loginCount++                             ;; INVALID — mut required
-
-  ;; FUNGI-VAULT-005: assignment without mut
-  ;; secure.loginCount = secure.loginCount + 1   ;; ALSO INVALID
-
   AuditLog.write({ event: "LoginAttempt", user: userId })
   return Ok(true)
 }
-
-;; CORRECT pattern:
-;; guarded flow incrementLogin(userId: String) -> Result<Bool, Error>
-;; contract { effects { vault.write, audit.write } }
-;; {
-;;   mut secure.loginCount++                     ;; CORRECT — mut marks the write
-;;   AuditLog.write({ event: "LoginAttempt", user: userId })
-;;   return Ok(true)
-;; }

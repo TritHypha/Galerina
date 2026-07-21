@@ -246,6 +246,55 @@ export const FUNGI_GOV_012 = {
   message: "Contract set requires audit.write but the flow does not declare it.",
 } as const;
 
+
+// ── GlobalVault diagnostic codes (W5b vault sprint, 2026-07-21) ──────────────────────────
+// The vault {} top-level block declares GlobalVault — permission-controlled, auditable runtime
+// state. The governance verifier enforces: vault reads require vault.read effect; vault writes
+// require vault.write effect; writes must use `mut secure.*`; readonly entries cannot be mutated.
+
+/** FUNGI-VAULT-001 (parse): `vault` block missing opening brace. (Declared in parser, registered here.) */
+export const FUNGI_VAULT_001 = {
+  code: "FUNGI-VAULT-001", name: "VAULT_MISSING_OPEN_BRACE", severity: "error" as const,
+  message: "Expected '{' after 'vault'. Syntax: vault { entryName: Type { allow flowName read|write } }",
+} as const;
+
+/** FUNGI-VAULT-002 (parse): a vault entry has no permission block. */
+export const FUNGI_VAULT_002 = {
+  code: "FUNGI-VAULT-002", name: "VAULT_ENTRY_MISSING_PERMISSIONS", severity: "error" as const,
+  message: "A vault entry must have a permission block: { allow flowName read|write; audit required|optional }.",
+} as const;
+
+/** FUNGI-VAULT-003: a flow reads vault state (`secure.*`) but does not declare vault.read effect. */
+export const FUNGI_VAULT_003 = {
+  code: "FUNGI-VAULT-003", name: "VAULT_READ_EFFECT_MISSING", severity: "error" as const,
+  message: "Flow accesses vault state via `secure.*` but does not declare 'vault.read' in its effects block. Add vault.read to the contract effects.",
+} as const;
+
+/** FUNGI-VAULT-004: a flow writes vault state (`mut secure.*`) but does not declare vault.write effect. */
+export const FUNGI_VAULT_004 = {
+  code: "FUNGI-VAULT-004", name: "VAULT_WRITE_EFFECT_MISSING", severity: "error" as const,
+  message: "Flow mutates vault state via `mut secure.*` but does not declare 'vault.write' in its effects block. Add vault.write to the contract effects.",
+} as const;
+
+/** FUNGI-VAULT-005: a flow writes vault state without the `mut` keyword. */
+export const FUNGI_VAULT_005 = {
+  code: "FUNGI-VAULT-005", name: "VAULT_WRITE_WITHOUT_MUT", severity: "error" as const,
+  message: "Vault writes require the `mut` keyword: `mut secure.entryName = value`. A bare secure.entryName assignment is rejected.",
+} as const;
+
+/** FUNGI-VAULT-006: a flow accesses a vault entry it is not listed as allowed to access. */
+export const FUNGI_VAULT_006 = {
+  code: "FUNGI-VAULT-006", name: "VAULT_PERMISSION_DENIED", severity: "error" as const,
+  message: "Flow is not in the allow list for this vault entry. Add `allow flowName read|write` to the vault entry.",
+} as const;
+
+/** FUNGI-VAULT-007: a vault write is performed on a readonly vault entry. */
+export const FUNGI_VAULT_007 = {
+  code: "FUNGI-VAULT-007", name: "VAULT_READONLY_WRITE", severity: "error" as const,
+  message: "Vault entry is declared `readonly` — it cannot be mutated after creation.",
+} as const;
+
+
 // ── FUNGI-TENANT codes (G1 — deny-by-default tenant-isolation border, R&D 0109) ──
 // A data-access effect on a tenant-partitioned vault/resource MUST be bound to the
 // caller's PROVEN scope. Mechanic = CAPABILITY INTERSECTION over the manifest, not an
@@ -1548,6 +1597,14 @@ class GovernanceVerifier {
 
     // ── FUNGI-ASSIMILATE-001/003: assimilated plugin validation ─────────────────────
     this.verifyAssimilatedPlugins(allNodes, sourceFile ?? "");
+
+    // ── FUNGI-VAULT-003/004: GlobalVault effect enforcement ────────────────────────
+    // If the program declares a vault {} block, every flow that accesses `secure.*`
+    // must declare vault.read; every flow that mutates `mut secure.*` must declare vault.write.
+    const vaultDecl = allNodes.find(n => n.kind === "vaultDecl");
+    if (vaultDecl !== undefined) {
+      this.verifyVaultEffects(ast, flows, effectResults);
+    }
   }
 
   getResult(): GovernanceVerifyResult {
@@ -2979,6 +3036,94 @@ class GovernanceVerifier {
       ));
     }
   }
+
+
+  /**
+   * FUNGI-VAULT-003/004: GlobalVault effect enforcement.
+   * For each flow in the program:
+   *  - If its body reads `secure.*` (a member access where the receiver is the identifier "secure"),
+   *    it must declare `vault.read` in its effects. → FUNGI-VAULT-003
+   *  - If its body mutates `mut secure.*` (assignment or increment on `secure.*`),
+   *    it must declare `vault.write` in its effects. → FUNGI-VAULT-004
+   *
+   * Stage A implementation: detect `secure` as an identifier or receiver in member/assign
+   * expressions. This covers the canonical `secure.name` and `mut secure.name = …` patterns.
+   */
+  private verifyVaultEffects(
+    ast: AstNode,
+    flows: readonly FlowMeta[],
+    effectResults: readonly EffectCheckResult[],
+  ): void {
+    const effectByFlow = new Map<string, Set<string>>();
+    for (const er of effectResults) effectByFlow.set(er.flowName, new Set(er.declaredEffects));
+
+    /** Recursively scan a node for vault read/write access patterns. */
+    function scanNode(node: AstNode, inMutContext: boolean): { hasRead: boolean; hasWrite: boolean } {
+      let hasRead = false;
+      let hasWrite = false;
+      if (node.kind === "memberExpr") {
+        // `secure.something` — receiver is an identifier named "secure"
+        const receiver = node.children?.[0];
+        if (receiver?.kind === "identifier" && receiver.value === "secure") {
+          if (inMutContext) hasWrite = true;
+          else hasRead = true;
+        }
+      }
+      if (node.kind === "assignStmt") {
+        // assignment lhs — check if lhs is secure.* (always a write)
+        const lhs = node.children?.[0];
+        if (lhs !== undefined) {
+          const sub = scanNode(lhs, true);
+          hasRead = hasRead || sub.hasRead;
+          hasWrite = hasWrite || sub.hasWrite;
+        }
+        // rhs does not propagate mut context
+        const rhs = node.children?.[1];
+        if (rhs !== undefined) {
+          const sub = scanNode(rhs, false);
+          hasRead = hasRead || sub.hasRead;
+          hasWrite = hasWrite || sub.hasWrite;
+        }
+        return { hasRead, hasWrite };
+      }
+      // Descend into all children
+      for (const child of node.children ?? []) {
+        const sub = scanNode(child, inMutContext);
+        hasRead = hasRead || sub.hasRead;
+        hasWrite = hasWrite || sub.hasWrite;
+      }
+      return { hasRead, hasWrite };
+    }
+
+    for (const flow of flows) {
+      const effects = effectByFlow.get(flow.name) ?? new Set<string>();
+      // find the flow node body
+      const flowNode = (ast.children ?? []).find(
+        n => typeof n.value === "string" && n.value === flow.name && n.children !== undefined,
+      );
+      if (flowNode === undefined) continue;
+      const body = (flowNode.children ?? []).find(c => c.kind === "block");
+      if (body === undefined) continue;
+      const { hasRead, hasWrite } = scanNode(body, false);
+      if (hasRead && !effects.has("vault.read")) {
+        this.diagnostics.push(makeGovDiag(
+          FUNGI_VAULT_003.code, FUNGI_VAULT_003.name, FUNGI_VAULT_003.severity,
+          `Flow '${flow.name}' accesses vault state via 'secure.*' but does not declare 'vault.read' in its effects.`,
+          flow.location,
+          `Add vault.read to the contract: contract { effects { vault.read } }`,
+        ));
+      }
+      if (hasWrite && !effects.has("vault.write")) {
+        this.diagnostics.push(makeGovDiag(
+          FUNGI_VAULT_004.code, FUNGI_VAULT_004.name, FUNGI_VAULT_004.severity,
+          `Flow '${flow.name}' mutates vault state via 'mut secure.*' but does not declare 'vault.write' in its effects.`,
+          flow.location,
+          `Add vault.write to the contract: contract { effects { vault.write } }`,
+        ));
+      }
+    }
+  }
+
 
   // ── Phase 2.1 — FUNGI-GOV-019: limits {} field name validation ─────────────
 

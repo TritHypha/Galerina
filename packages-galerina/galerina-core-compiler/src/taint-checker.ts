@@ -319,10 +319,31 @@ function taintOf(expr: AstNode, bindings: Map<string, TaintState>): TaintState {
       // literals / unknown → clean
       return { kind: "clean" };
     }
-    case "stringLiteral":
+    case "stringLiteral": {
+      // A plain string literal is clean, BUT an interpolated string (e.g.
+      // `"SELECT * FROM t WHERE id=${req.body.id}"`) propagates taint from
+      // any ${...} hole that names a tainted binding.  The lexer keeps the
+      // entire interpolated string as a single token whose `.value` contains
+      // the raw source text including the `${...}` markers — same convention
+      // used by value-state-checker.ts `interpolatedNames()`.
+      const raw = expr.value ?? "";
+      if (raw.includes("${")) {
+        const holes = /\$\{([^}]*)\}/g;
+        let m: RegExpExecArray | null;
+        while ((m = holes.exec(raw)) !== null) {
+          const ids = (m[1] ?? "").match(/[A-Za-z_]\w*/g) ?? [];
+          for (const id of ids) {
+            if (TAINT_SOURCES.has(id)) return { kind: "tainted" };
+            const bound = bindings.get(id);
+            if (bound?.kind === "tainted") return { kind: "tainted" };
+          }
+        }
+      }
+      return { kind: "clean" };
+    }
     case "numberLiteral":
     case "boolLiteral":
-      return { kind: "clean" }; // literals are never tainted
+      return { kind: "clean" }; // numeric / bool literals are never tainted
 
     case "memberExpr": {
       // request.body, req.params → tainted

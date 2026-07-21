@@ -42,8 +42,10 @@ import { STDLIB_CAPABILITY_MAP } from "./stdlib-registry.js";
 import { EFFECT_REGISTRY } from "./effect-checker.js";
 import { canonicalHash, hashSource, hashGIR } from "./runtime/canonicalHash.js";
 import { gatherFileImports } from "./module-registry.js";
+import { loadPackageManifest } from "./package-resolver.js";
+import { generateCycloneDxSbom } from "./sbom.js";
 import type { Dirent } from "node:fs";
-import { join, basename, resolve as resolvePath } from "node:path";
+import { join, basename, dirname, resolve as resolvePath } from "node:path";
 
 // =============================================================================
 // galerina.check.json -- project-level configuration for `galerina check`
@@ -1373,6 +1375,42 @@ function main(): void {
       const manifestPath = join(outDir, `${baseName}.lmanifest`);
       writeFileSync(manifestPath, result.manifestJson, "utf8"); // perf-allow: loop-sync-io — one read/write per file in a per-file CLI build/scan loop (or one-shot startup config resolution) — distinct path per iteration, not hoistable, not O(n²)
       process.stdout.write(`[manifest] ${manifestPath}\n`);
+    }
+  }
+
+  // ── Production SBOM emission (RD-0120-F3) ──────────────────────────────────
+  // For production/deterministic builds: collect package.galerina.yaml manifests
+  // from every compiled file's directory, deduplicate, and emit CycloneDX 1.5
+  // build/galerina.sbom.json. Fail-closed: FUNGI-SBOM-001 is printed for every
+  // component without a verifiable sha256 hash, and the BOM is marked incomplete.
+  if ((mode === "build-production" || mode === "build-deterministic") && totalErrors === 0) {
+    const seen = new Set<string>();
+    const manifests: ReturnType<typeof loadPackageManifest>[] = [];
+    for (const filePath of filteredFiles) {
+      const dir = dirname(resolvePath(filePath));
+      if (!seen.has(dir)) {
+        seen.add(dir);
+        const m = loadPackageManifest(dir);
+        if (m !== undefined) manifests.push(m);
+      }
+    }
+    if (manifests.length > 0) {
+      const sbomResult = generateCycloneDxSbom(
+        manifests.filter((m): m is NonNullable<typeof m> => m !== undefined),
+        { rootName: basename(targetDir) },
+      );
+      // Surface FUNGI-SBOM-001 diagnostics for incomplete components.
+      for (const d of sbomResult.diagnostics) {
+        process.stdout.write(`[warn] ${d.code}  ${d.component}\n  ${d.message}\n`);
+        totalWarnings += 1;
+      }
+      const outDir = join(targetDir, "build");
+      try { mkdirSync(outDir, { recursive: true }); } catch { /* already exists */ }
+      const sbomPath = join(outDir, "galerina.sbom.json");
+      writeFileSync(sbomPath, JSON.stringify(sbomResult.bom, null, 2), "utf8"); // perf-allow: loop-sync-io — one write per build (not per-file), so not O(n)
+      process.stdout.write(
+        `[sbom] ${sbomPath}${sbomResult.complete ? " (complete)" : " (INCOMPLETE — missing hashes)"}\n`,
+      );
     }
   }
 

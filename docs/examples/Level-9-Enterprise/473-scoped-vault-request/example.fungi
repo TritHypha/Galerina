@@ -1,10 +1,9 @@
+@version 1
 /// example: 473-scoped-vault-request
 /// level: 9
 /// concept: vault.request — per-request scoped vault for safe data reuse without global state
 /// expected_diagnostics: none
 /// ai_rule: Use vault.request to cache data loaded once per HTTP request. The vault entry is typed, permission-controlled and automatically destroyed when the request ends. This avoids repeated database calls without introducing global state.
-
-@version 1
 
 ;; vault request declares a scoped vault entry with TTL = one HTTP request.
 ;; The entry is typed, owned, permission-controlled and automatically cleared.
@@ -40,7 +39,7 @@ contract {
 }
 
 ;; Read from vault — zero database calls for subsequent access in the same request
-pure flow getCustomerForOrder(id: CustomerId) -> Result<Customer, Error>
+guarded flow getCustomerForOrder(id: CustomerId) -> Result<Customer, Error>
 contract {
   intent "Read customer from request vault — no database hit"
   effects { vault.read }
