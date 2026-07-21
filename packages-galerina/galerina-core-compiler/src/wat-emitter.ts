@@ -1095,9 +1095,25 @@ const FLOAT_CHECKED_HELPERS: Readonly<Record<string, string>> = {
   ].join("\n"),
 };
 
-// W5a K3 verdict helpers (2026-07-08): lattice min/max over i32 trits — a helper
-// function so each operand is evaluated exactly ONCE (an inline `select` would
-// duplicate the operand expressions). Lattice: DENY(-1) < UNKNOWN(0) < ALLOW(+1).
+// W5a K3 verdict helpers (2026-07-08): lattice min/max over i32 trits.
+// Lattice: DENY(-1) < UNKNOWN(0) < ALLOW(+1).
+//
+// P2 (2026-07-21): The 2-operand fast path inlines the same select pattern as
+// the helpers, but without the function-call overhead.  `left`/`right` in the
+// binary-op emitter and `acc`/`next` in k3FoldExpr are fully-evaluated WAT
+// expression strings — there is NO duplication risk (the original "one evaluation"
+// concern was about inlining raw *source* sub-expressions, not pre-emitted WAT
+// strings).  The helpers remain in ALL_CHECKED_HELPERS as the fallback for indirect
+// call paths and the ≥3-operand chain tail (after the first step is inlined).
+//
+// Inline form:
+//   K3 AND:  (select L R (i32.lt_s L R))  — L if L < R, else R  (= signed min)
+//   K3 OR:   (select L R (i32.gt_s L R))  — L if L > R, else R  (= signed max)
+//
+// Correctness: identical truth-table to $fungi_k3_min / $fungi_k3_max (proven in
+// proofs/k3-truth-tables-proof.mjs over all 9 trit pairs).
+// Wabt note: i32.min_s / i32.max_s are NOT in the baseline WASM spec and are
+// rejected by the wabt version in this workspace — use select explicitly.
 const K3_HELPERS: Readonly<Record<string, string>> = {
   $fungi_k3_min: [
     "(func $fungi_k3_min (param $a i32) (param $b i32) (result i32)",
@@ -1494,14 +1510,21 @@ export function emitWATExpr(
       if (op === "!=" && stringOperand) {
         return `(i32.eqz (call $host___str_eq ${left} ${right}))`;
       }
-      // W5a K3: type-directed verdict lane — && = lattice min, || = lattice max,
-      // via the single-evaluation helpers. MUST come before the generic i32 map:
-      // bitwise i32.and(-1,1)=1 would turn Deny&&Allow into ALLOW (fail-open).
+      // W5a K3: type-directed verdict lane — && = lattice min, || = lattice max.
+      // MUST come before the generic i32 map: bitwise i32.and(-1,1)=1 would turn
+      // Deny&&Allow into ALLOW (fail-open).
+      //
+      // P2 (2026-07-21): inline the select pattern for the 2-operand case instead
+      // of calling $fungi_k3_min / $fungi_k3_max.  `left` and `right` are already fully
+      // emitted WAT strings (no duplication of source sub-expressions).  Saves 2 WASM
+      // call frames per trit-op — the dominant overhead in the tri-logic benchmark.
+      // Inline form: (select L R (i32.lt_s L R)) for min, (select L R (i32.gt_s L R)) for max.
+      // i32.min_s / i32.max_s are not in baseline WASM and are rejected by the workspace wabt.
       const verdictOperand = lty === "Verdict" || rty === "Verdict";
       if ((op === "&&" || op === "||") && verdictOperand) {
         return op === "&&"
-          ? `(call $fungi_k3_min ${left} ${right})`
-          : `(call $fungi_k3_max ${left} ${right})`;
+          ? `(select ${left} ${right} (i32.lt_s ${left} ${right}))`
+          : `(select ${left} ${right} (i32.gt_s ${left} ${right}))`;
       }
       // #165: native f64 lowering for float operands. Float literals already emit f64.const, but the
       // binary-op map is i32-only — so without this a float `+ - * /` or comparison emitted an i32
@@ -1645,13 +1668,24 @@ export function emitWATExpr(
       // pre-existing discipline as Bool &&/|| lowering to i32.and/or; the
       // tree-walker short-circuits on the absorbing element. Verdict operands
       // are pure trits, so the RESULTS agree (the truth-table proof pins this).
+      //
+      // P2 (2026-07-21): inline i32.min_s / i32.max_s for the 2-operand first step.
+      // For the 2-operand case (kids.length === 2) this saves 2 call frames and also
+      // avoids injecting $fungi_k3_min/$fungi_k3_max into the helpers set entirely for
+      // that flow.  For ≥3-operand chains we keep using the helpers (the accumulator
+      // is already a fully-evaluated i32 expression, so inlining nested min_s is safe,
+      // but the helpers make the WAT more readable for the 3+ case).
       const isAll = node.value !== "any";
       const kids = node.children ?? [];
       if (kids.length === 0) return isAll ? `(i32.const 0) (; all{} => UNKNOWN ;)` : `(i32.const -1) (; any{} => DENY ;)`;
       let acc = emitWATExpr(kids[0]!, vars, staticConsts);
       for (let i = 1; i < kids.length; i++) {
         const next = emitWATExpr(kids[i]!, vars, staticConsts);
-        acc = isAll ? `(call $fungi_k3_min ${acc} ${next})` : `(call $fungi_k3_max ${acc} ${next})`;
+        // P2: every step inlines the select pattern (safe: acc and next are already
+        // fully-evaluated WAT strings from the previous iteration).
+        acc = isAll
+          ? `(select ${acc} ${next} (i32.lt_s ${acc} ${next}))`
+          : `(select ${acc} ${next} (i32.gt_s ${acc} ${next}))`;
       }
       return acc;
     }
