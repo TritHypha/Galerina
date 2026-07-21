@@ -4,9 +4,13 @@
 
 Galerina is built for organisations where software failure is not acceptable — financial platforms, healthcare systems, government services, and regulated enterprise. Every execution is **declared, verified, and audited** by design, not by convention.
 
-> **Maturity (honest status, 2026-07-21 · v1.0.0-beta.2).** Galerina is an **advanced prototype with several hardened zero-trust subsystems** — *not* yet a production-complete platform. The **compiler, security, and governance core are production-grade** (95/95 packages, 7,611 tests, fail-closed border check). The **application-framework layer is now substantially real**: the deny-by-default admission/fusion border (3 gates + multi-module linker + revocation), the `galerina new app` scaffolder, and the governed package resolver are shipped and tested (104 App-Kernel tests). The **governed HTTP transport (B8) is unlocked and in progress** — the TLSTP **S1 K3 cert/channel-validation gate** landed (`galerina-core-network`, 160 tests, fail-closed `revocation-unknown → DENY`) — the kernel's gate 6 now fail-closes on absent/empty auth headers (the mTLS presence-bypass fix), though the full S1 cert/channel verdict is not yet wired into live kernel admission; the *servable api-server / example-app* and the *signed registry index* are the remaining framework gaps. Stage-B self-hosting (P9) is in progress — 3 of 7 self-hosted compiler stages now run as real signed WASM (lexer, parser, and gir-emitter; gir-emitter joined 2026-07-19), with lexer and the full parser ladder byte-parity-proven, and the "Tower" compute layer is a **governed software simulator + bridge-attestation runtime, not real photonic-CPU virtualisation**. See [the component-readiness honest audit (2026-07-10)](docs/architecture/component-readiness-honest-audit-2026-07-10.md); the full roadmap, % audit, and framework plan are maintained in the internal engineering KB.
+---
+
+> **New here?** → [**SETUP.md**](SETUP.md) — install · run your first benchmark · Hello World with full governance comments
 
 ---
+
+
 
 ## The Zero-Trust thesis
 
@@ -175,7 +179,7 @@ A ten-axis capability self-assessment across the surfaces Galerina governs, plus
   </tr>
 </table>
 
-> **New here?** → [**SETUP.md**](SETUP.md) — install · run your first benchmark · Hello World with full governance comments
+
 
 ---
 
