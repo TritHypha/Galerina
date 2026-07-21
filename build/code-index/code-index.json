@@ -17,7 +17,7 @@
       "ref packages-galerina/galerina-ext-bridge-cpp/src/addon-loader.ts:96",
       "test packages-galerina/galerina-ext-bridge-cpp/tests/addon-loader.test.mjs:58",
       "test packages-galerina/galerina-ext-bridge-cpp/tests/addon-loader.test.mjs:63",
-      "doc docs/TODO.md:166"
+      "doc docs/TODO.md:186"
     ]
   },
   {
@@ -39,7 +39,7 @@
       "test packages-galerina/galerina-ext-bridge-cpp/tests/addon-loader.test.mjs:53",
       "test packages-galerina/galerina-ext-bridge-cpp/tests/addon-loader.test.mjs:68",
       "test packages-galerina/galerina-ext-bridge-cpp/tests/addon-loader.test.mjs:74",
-      "doc docs/TODO.md:165"
+      "doc docs/TODO.md:185"
     ]
   },
   {
@@ -107,7 +107,7 @@
       "test packages-galerina/galerina-tower-citizen/tests/compiled-policy.test.mjs:56",
       "test packages-galerina/galerina-tower-citizen/tests/rd0236-runtime-hardening.test.mjs:146",
       "test packages-galerina/galerina-tower-citizen/tests/rd0236-runtime-hardening.test.mjs:152",
-      "doc docs/TODO.md:486"
+      "doc docs/TODO.md:506"
     ]
   },
   {
@@ -298,7 +298,7 @@
       "test packages-galerina/galerina-tower-citizen/tests/certified-profile.test.mjs:158",
       "test packages-galerina/galerina-tower-citizen/tests/rd0236-runtime-hardening.test.mjs:114",
       "test packages-galerina/galerina-tower-citizen/tests/rd0236-runtime-hardening.test.mjs:120",
-      "doc docs/TODO.md:483"
+      "doc docs/TODO.md:503"
     ]
   },
   {
@@ -520,8 +520,8 @@
       "emit packages-galerina/galerina-tower-citizen/src/hybrid-engine.ts:1085",
       "test packages-galerina/galerina-tower-citizen/tests/certified-profile.test.mjs:53",
       "test packages-galerina/galerina-tower-citizen/tests/certified-profile.test.mjs:113",
-      "doc docs/TODO.md:79",
-      "doc docs/TODO.md:453"
+      "doc docs/TODO.md:99",
+      "doc docs/TODO.md:473"
     ]
   },
   {
@@ -543,8 +543,8 @@
       "ref packages-galerina/galerina-tower-citizen/src/tower-runtime.ts:52",
       "emit packages-galerina/galerina-tower-citizen/src/tower-runtime.ts:81",
       "test packages-galerina/galerina-tower-citizen/tests/rd0236-runtime-hardening.test.mjs:96",
-      "doc docs/TODO.md:79",
-      "doc docs/TODO.md:473"
+      "doc docs/TODO.md:99",
+      "doc docs/TODO.md:493"
     ]
   },
   {
@@ -964,7 +964,7 @@
       "test packages-galerina/galerina-tower-citizen/tests/governance-hardening.test.mjs:38",
       "test packages-galerina/galerina-tower-citizen/tests/rd0236-runtime-hardening.test.mjs:136",
       "doc docs/reports/galerina-ground-up-security-architectural-audit-report.md:625",
-      "doc docs/TODO.md:484"
+      "doc docs/TODO.md:504"
     ]
   },
   {
@@ -1771,7 +1771,7 @@
     "allSites": [
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:3618",
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:1686",
-      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2731"
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2826"
     ]
   },
   {
@@ -2024,7 +2024,7 @@
       "doc docs/ANTI_HALLUCINATION.md:88",
       "doc docs/paper/defensive-papers/dp-rd-0271-secure-by-omission-contract-field-defaults.md:62",
       "doc docs/SYNTAX_UPDATE_TRACKER.md:35",
-      "doc docs/TODO.md:40"
+      "doc docs/TODO.md:60"
     ]
   },
   {
@@ -2093,7 +2093,7 @@
       "doc packages-galerina/galerina-core/examples/examples-manifest.md:69",
       "doc packages-galerina/galerina-core/examples/examples-manifest.md:123",
       "fungi packages-galerina/galerina-core/examples/value-semantics-ownership.fungi:7",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1785",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1795",
       "ref packages-galerina/galerina-core-compiler/src/value-state-checker.ts:109",
       "emit packages-galerina/galerina-core-compiler/src/value-state-checker.ts:1613",
       "ref packages-galerina/galerina-core-compiler/src/value-state-checker.ts:1614",
@@ -2302,7 +2302,7 @@
       "test packages-galerina/galerina-tower-citizen/tests/rd0236-runtime-hardening.test.mjs:68",
       "test packages-galerina/galerina-tower-citizen/tests/rd0236-runtime-hardening.test.mjs:77",
       "test packages-galerina/galerina-tower-citizen/tests/rd0236-runtime-hardening.test.mjs:107",
-      "doc docs/TODO.md:465",
+      "doc docs/TODO.md:485",
       "ref scripts/audit-import-governance.mjs:20"
     ]
   },
@@ -2324,7 +2324,7 @@
     "allSites": [
       "emit packages-galerina/galerina-tower-citizen/src/tower-runtime.ts:137",
       "test packages-galerina/galerina-tower-citizen/tests/rd0236-runtime-hardening.test.mjs:81",
-      "doc docs/TODO.md:467"
+      "doc docs/TODO.md:487"
     ]
   },
   {
@@ -2477,8 +2477,8 @@
       "def packages-galerina/galerina-core-compiler/src/attribute-checker.ts:45",
       "test packages-galerina/galerina-core-compiler/tests/security-gate-coverage.test.mjs:39",
       "test packages-galerina/galerina-core-compiler/tests/signing-boundary-matrix.test.mjs:102",
-      "doc docs/TODO.md:310",
-      "doc docs/TODO.md:324"
+      "doc docs/TODO.md:330",
+      "doc docs/TODO.md:344"
     ]
   },
   {
@@ -2672,7 +2672,7 @@
     "occurrences": 8,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1922"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1932"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/cli.ts:349"
@@ -2688,10 +2688,10 @@
     ],
     "allSites": [
       "emit packages-galerina/galerina-core-compiler/src/cli.ts:349",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1901",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1920",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1922",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:2047",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1911",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1930",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1932",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:2057",
       "ref packages-galerina/galerina-core-compiler/src/monkey-patch-checker.ts:19",
       "test packages-galerina/galerina-core-compiler/tests/cli.test.mjs:38",
       "test packages-galerina/galerina-core-compiler/tests/governance-conformance/monkey-patch.test.mjs:12"
@@ -2778,10 +2778,10 @@
     "occurrences": 11,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1457"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1467"
     ],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:2725"
+      "packages-galerina/galerina-core-compiler/src/index.ts:2735"
     ],
     "tests": 1,
     "refs": 2,
@@ -2797,10 +2797,10 @@
       "doc packages-galerina/galerina-core/README.md:325",
       "doc packages-galerina/galerina-core/README.md:721",
       "doc packages-galerina/galerina-core/README.md:996",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1452",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1457",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:2715",
-      "emit packages-galerina/galerina-core-compiler/src/index.ts:2725",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1462",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1467",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:2725",
+      "emit packages-galerina/galerina-core-compiler/src/index.ts:2735",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:276",
       "doc docs/COVERAGE.md:48",
       "doc docs/language/fungi/05-bindings-taint-privacy.md:23"
@@ -2813,10 +2813,10 @@
     "occurrences": 6,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1465"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1475"
     ],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:2737"
+      "packages-galerina/galerina-core-compiler/src/index.ts:2747"
     ],
     "tests": 1,
     "refs": 1,
@@ -2829,9 +2829,9 @@
     ],
     "allSites": [
       "doc packages-galerina/galerina-core/README.md:358",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1465",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:2716",
-      "emit packages-galerina/galerina-core-compiler/src/index.ts:2737",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1475",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:2726",
+      "emit packages-galerina/galerina-core-compiler/src/index.ts:2747",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:276",
       "doc docs/language/fungi/05-bindings-taint-privacy.md:50"
     ]
@@ -2843,10 +2843,10 @@
     "occurrences": 7,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1473"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1483"
     ],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:2769"
+      "packages-galerina/galerina-core-compiler/src/index.ts:2779"
     ],
     "tests": 1,
     "refs": 1,
@@ -2860,9 +2860,9 @@
     "allSites": [
       "doc packages-galerina/galerina-core/README.md:351",
       "doc packages-galerina/galerina-core/README.md:357",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1473",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:2756",
-      "emit packages-galerina/galerina-core-compiler/src/index.ts:2769",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1483",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:2766",
+      "emit packages-galerina/galerina-core-compiler/src/index.ts:2779",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:288",
       "doc docs/language/fungi/05-bindings-taint-privacy.md:50"
     ]
@@ -2874,11 +2874,11 @@
     "occurrences": 15,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1481"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1491"
     ],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:2823",
-      "packages-galerina/galerina-core-compiler/src/index.ts:2862"
+      "packages-galerina/galerina-core-compiler/src/index.ts:2833",
+      "packages-galerina/galerina-core-compiler/src/index.ts:2872"
     ],
     "tests": 6,
     "refs": 1,
@@ -2894,10 +2894,10 @@
       "doc packages-galerina/galerina-core/README.md:334",
       "doc packages-galerina/galerina-core/README.md:573",
       "doc packages-galerina/galerina-core/README.md:724",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1481",
-      "emit packages-galerina/galerina-core-compiler/src/index.ts:2823",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:2834",
-      "emit packages-galerina/galerina-core-compiler/src/index.ts:2862",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1491",
+      "emit packages-galerina/galerina-core-compiler/src/index.ts:2833",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:2844",
+      "emit packages-galerina/galerina-core-compiler/src/index.ts:2872",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:557",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:571",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:575",
@@ -2914,7 +2914,7 @@
     "occurrences": 61,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1489"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1499"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/type-checker.ts:1460"
@@ -2929,8 +2929,8 @@
       "error"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1487",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1489",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1497",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1499",
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:2041",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:307",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:341",
@@ -2999,7 +2999,7 @@
     "occurrences": 3,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1497"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1507"
     ],
     "emits": [],
     "tests": 1,
@@ -3012,8 +3012,8 @@
       "error"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1495",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1497",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1505",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1507",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:540"
     ]
   },
@@ -3024,10 +3024,10 @@
     "occurrences": 7,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1589"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1599"
     ],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:2642"
+      "packages-galerina/galerina-core-compiler/src/index.ts:2652"
     ],
     "tests": 2,
     "refs": 1,
@@ -3040,9 +3040,9 @@
     ],
     "allSites": [
       "doc packages-galerina/galerina-core/README.md:999",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1584",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1589",
-      "emit packages-galerina/galerina-core-compiler/src/index.ts:2642",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1594",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1599",
+      "emit packages-galerina/galerina-core-compiler/src/index.ts:2652",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:340",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:355",
       "doc docs/COVERAGE.md:49"
@@ -3055,10 +3055,10 @@
     "occurrences": 5,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1597"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1607"
     ],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:2238"
+      "packages-galerina/galerina-core-compiler/src/index.ts:2248"
     ],
     "tests": 2,
     "refs": 0,
@@ -3070,8 +3070,8 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1597",
-      "emit packages-galerina/galerina-core-compiler/src/index.ts:2238",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1607",
+      "emit packages-galerina/galerina-core-compiler/src/index.ts:2248",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:359",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:373",
       "doc docs/COVERAGE.md:49"
@@ -3084,7 +3084,7 @@
     "occurrences": 1,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1605"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1615"
     ],
     "emits": [],
     "tests": 0,
@@ -3097,7 +3097,7 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1605"
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1615"
     ]
   },
   {
@@ -3107,7 +3107,7 @@
     "occurrences": 3,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1613"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1623"
     ],
     "emits": [],
     "tests": 0,
@@ -3120,9 +3120,9 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1613",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:2261",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:2264"
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1623",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:2271",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:2274"
     ]
   },
   {
@@ -3582,7 +3582,7 @@
     "occurrences": 16,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1913"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1923"
     ],
     "emits": [],
     "tests": 4,
@@ -3600,9 +3600,9 @@
       "ref packages-galerina/galerina-core-compiler/src/cli.ts:216",
       "ref packages-galerina/galerina-core-compiler/src/cli.ts:217",
       "ref packages-galerina/galerina-core-compiler/src/cli.ts:694",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1905",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1909",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1913",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1915",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1919",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1923",
       "ref packages-galerina/galerina-core-compiler/src/production-check.ts:53",
       "test packages-galerina/galerina-core-compiler/tests/phase29.test.mjs:196",
       "test packages-galerina/galerina-core-compiler/tests/phase29.test.mjs:198",
@@ -3628,8 +3628,8 @@
     "severities": [],
     "allSites": [
       "ref packages-galerina/galerina-core-compiler/src/cli.ts:570",
-      "doc docs/TODO.md:311",
-      "doc docs/TODO.md:315"
+      "doc docs/TODO.md:331",
+      "doc docs/TODO.md:335"
     ]
   },
   {
@@ -3657,7 +3657,7 @@
     "occurrences": 7,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1718"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1728"
     ],
     "emits": [],
     "tests": 1,
@@ -3671,8 +3671,8 @@
     ],
     "allSites": [
       "doc packages-galerina/galerina-core/README.md:1002",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1713",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1718",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1723",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1728",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:456",
       "doc docs/COVERAGE.md:47",
       "doc docs/COVERAGE.md:423",
@@ -3686,7 +3686,7 @@
     "occurrences": 1,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1726"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1736"
     ],
     "emits": [],
     "tests": 0,
@@ -3699,7 +3699,7 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1726"
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1736"
     ]
   },
   {
@@ -3709,7 +3709,7 @@
     "occurrences": 1,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1734"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1744"
     ],
     "emits": [],
     "tests": 0,
@@ -3722,7 +3722,7 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1734"
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1744"
     ]
   },
   {
@@ -3732,7 +3732,7 @@
     "occurrences": 2,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1742"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1752"
     ],
     "emits": [],
     "tests": 1,
@@ -3745,7 +3745,7 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1742",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1752",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:458"
     ]
   },
@@ -3756,7 +3756,7 @@
     "occurrences": 1,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1750"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1760"
     ],
     "emits": [],
     "tests": 0,
@@ -3769,7 +3769,7 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1750"
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1760"
     ]
   },
   {
@@ -3855,7 +3855,7 @@
     "occurrences": 7,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1675"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1685"
     ],
     "emits": [],
     "tests": 1,
@@ -3869,8 +3869,8 @@
     ],
     "allSites": [
       "doc packages-galerina/galerina-core/README.md:1001",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1670",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1675",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1680",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1685",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:450",
       "doc docs/COVERAGE.md:47",
       "doc docs/COVERAGE.md:423",
@@ -3884,7 +3884,7 @@
     "occurrences": 1,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1683"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1693"
     ],
     "emits": [],
     "tests": 0,
@@ -3897,7 +3897,7 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1683"
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1693"
     ]
   },
   {
@@ -3907,7 +3907,7 @@
     "occurrences": 7,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1691"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1701"
     ],
     "emits": [],
     "tests": 4,
@@ -3920,7 +3920,7 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1691",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1701",
       "ref packages-galerina/galerina-core-compiler/src/lexer.ts:500",
       "ref packages-galerina/galerina-core-compiler/src/lexer.ts:511",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:452",
@@ -3936,7 +3936,7 @@
     "occurrences": 1,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1699"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1709"
     ],
     "emits": [],
     "tests": 0,
@@ -3949,19 +3949,19 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1699"
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1709"
     ]
   },
   {
     "code": "FUNGI-CHECK-001",
     "namespace": "FUNGI",
     "family": "CHECK",
-    "occurrences": 11,
+    "occurrences": 14,
     "docOnly": false,
     "defs": [],
     "emits": [],
     "tests": 6,
-    "refs": 3,
+    "refs": 6,
     "docs": 2,
     "names": [],
     "severities": [],
@@ -3969,6 +3969,9 @@
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:1756",
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:1783",
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:2672",
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2166",
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2183",
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2920",
       "test packages-galerina/galerina-core-compiler/tests/check-construct.test.mjs:7",
       "test packages-galerina/galerina-core-compiler/tests/check-construct.test.mjs:55",
       "test packages-galerina/galerina-core-compiler/tests/check-construct.test.mjs:59",
@@ -4127,7 +4130,7 @@
     "occurrences": 9,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1892"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1902"
     ],
     "emits": [],
     "tests": 2,
@@ -4140,9 +4143,9 @@
       "warning"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1878",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1890",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1892",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1888",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1900",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1902",
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:320",
       "test packages-galerina/galerina-core-compiler/tests/parser/node-flags.test.mjs:435",
       "test packages-galerina/galerina-core-compiler/tests/parser/node-flags.test.mjs:440",
@@ -4960,7 +4963,7 @@
       "error"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:405",
+      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:415",
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:307",
       "def packages-galerina/galerina-core-compiler/src/governance-verifier.ts:309",
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:315",
@@ -5354,7 +5357,7 @@
     "occurrences": 6,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:977"
+      "packages-galerina/galerina-core-compiler/src/index.ts:987"
     ],
     "emits": [],
     "tests": 3,
@@ -5367,9 +5370,9 @@
       "warning"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:972",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:975",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:977",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:982",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:985",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:987",
       "test packages-galerina/galerina-core-compiler/tests/type-registry/economics-contract.test.mjs:7",
       "test packages-galerina/galerina-core-compiler/tests/type-registry/economics-contract.test.mjs:73",
       "test packages-galerina/galerina-core-compiler/tests/type-registry/economics-contract.test.mjs:74"
@@ -5382,7 +5385,7 @@
     "occurrences": 2,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:987"
+      "packages-galerina/galerina-core-compiler/src/index.ts:997"
     ],
     "emits": [],
     "tests": 0,
@@ -5395,8 +5398,8 @@
       "info"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:985",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:987"
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:995",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:997"
     ]
   },
   {
@@ -5406,7 +5409,7 @@
     "occurrences": 2,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:997"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1007"
     ],
     "emits": [],
     "tests": 0,
@@ -5419,22 +5422,22 @@
       "error"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:995",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:997"
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1005",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1007"
     ]
   },
   {
     "code": "FUNGI-EFFECT-001",
     "namespace": "FUNGI",
     "family": "EFFECT",
-    "occurrences": 150,
+    "occurrences": 152,
     "docOnly": false,
     "defs": [],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:717"
+      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:741"
     ],
-    "tests": 71,
-    "refs": 8,
+    "tests": 72,
+    "refs": 9,
     "docs": 52,
     "names": [
       "UNDECLARED_EFFECT"
@@ -5452,7 +5455,8 @@
       "ref packages-galerina/galerina-core-compiler/src/cli.ts:460",
       "ref packages-galerina/galerina-core-compiler/src/cli.ts:779",
       "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:7",
-      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:717",
+      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:447",
+      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:741",
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:2097",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:19",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:202",
@@ -5460,7 +5464,7 @@
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:780",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:783",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:1118",
-      "ref packages-galerina/galerina-core-compiler/src/type-registry.ts:216",
+      "ref packages-galerina/galerina-core-compiler/src/type-registry.ts:225",
       "test packages-galerina/galerina-core-compiler/tests/domain-governance.test.mjs:11",
       "test packages-galerina/galerina-core-compiler/tests/domain-governance.test.mjs:729",
       "test packages-galerina/galerina-core-compiler/tests/domain-governance.test.mjs:732",
@@ -5496,6 +5500,7 @@
       "test packages-galerina/galerina-core-compiler/tests/leak-proof.test.mjs:63",
       "test packages-galerina/galerina-core-compiler/tests/phase34-verify-password-service.test.mjs:84",
       "test packages-galerina/galerina-core-compiler/tests/phase34-verify-password-service.test.mjs:88",
+      "test packages-galerina/galerina-core-compiler/tests/rd-0364-inference-effects.test.mjs:7",
       "test packages-galerina/galerina-core-compiler/tests/security-denial-paths.test.mjs:22",
       "test packages-galerina/galerina-core-compiler/tests/security-denial-paths.test.mjs:465",
       "test packages-galerina/galerina-core-compiler/tests/security-denial-paths.test.mjs:469",
@@ -5603,8 +5608,8 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:951",
-      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:972"
+      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:975",
+      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:996"
     ],
     "tests": 29,
     "refs": 1,
@@ -5618,9 +5623,9 @@
     "allSites": [
       "doc packages-galerina/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:48",
       "doc packages-galerina/galerina-core-compiler/README.md:295",
-      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:951",
-      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:972",
-      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:1247",
+      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:975",
+      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:996",
+      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:1271",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:203",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:530",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:797",
@@ -5686,9 +5691,9 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:651",
-      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:665",
-      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:678"
+      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:675",
+      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:689",
+      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:702"
     ],
     "tests": 45,
     "refs": 2,
@@ -5702,11 +5707,11 @@
     "allSites": [
       "doc packages-galerina/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:49",
       "doc packages-galerina/galerina-core-compiler/README.md:296",
-      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:189",
-      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:651",
-      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:665",
-      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:678",
-      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:766",
+      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:199",
+      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:675",
+      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:689",
+      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:702",
+      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:790",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:25",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:27",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:204",
@@ -5785,13 +5790,13 @@
     "code": "FUNGI-EFFECT-004",
     "namespace": "FUNGI",
     "family": "EFFECT",
-    "occurrences": 87,
+    "occurrences": 92,
     "docOnly": false,
     "defs": [],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:922"
+      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:946"
     ],
-    "tests": 51,
+    "tests": 56,
     "refs": 8,
     "docs": 20,
     "names": [
@@ -5805,10 +5810,10 @@
       "doc packages-galerina/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:50",
       "doc packages-galerina/galerina-core-compiler/README.md:297",
       "ref packages-galerina/galerina-core-compiler/scripts/cec-promotion-pass.mjs:33",
-      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:418",
-      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:820",
-      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:836",
-      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:922",
+      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:428",
+      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:844",
+      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:860",
+      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:946",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:22",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:68",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:205",
@@ -5854,6 +5859,11 @@
       "test packages-galerina/galerina-core-compiler/tests/governance/flags-and-manifest.test.mjs:511",
       "test packages-galerina/galerina-core-compiler/tests/governance/flags-and-manifest.test.mjs:513",
       "test packages-galerina/galerina-core-compiler/tests/governance/flags-and-manifest.test.mjs:516",
+      "test packages-galerina/galerina-core-compiler/tests/rd-0364-inference-effects.test.mjs:5",
+      "test packages-galerina/galerina-core-compiler/tests/rd-0364-inference-effects.test.mjs:21",
+      "test packages-galerina/galerina-core-compiler/tests/rd-0364-inference-effects.test.mjs:41",
+      "test packages-galerina/galerina-core-compiler/tests/rd-0364-inference-effects.test.mjs:55",
+      "test packages-galerina/galerina-core-compiler/tests/rd-0364-inference-effects.test.mjs:56",
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-effect-checker.test.mjs:9",
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-effect-checker.test.mjs:159",
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-effect-checker.test.mjs:160",
@@ -5897,10 +5907,10 @@
     "occurrences": 84,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1037"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1047"
     ],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:898"
+      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:922"
     ],
     "tests": 46,
     "refs": 16,
@@ -5915,14 +5925,14 @@
     ],
     "allSites": [
       "doc packages-galerina/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:51",
-      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:483",
-      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:819",
-      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:824",
-      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:896",
-      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:898",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1024",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1028",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1037",
+      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:502",
+      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:843",
+      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:848",
+      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:920",
+      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:922",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1034",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1038",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1047",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:29",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:148",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:165",
@@ -6007,10 +6017,10 @@
     "occurrences": 56,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1054"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1064"
     ],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:883"
+      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:907"
     ],
     "tests": 20,
     "refs": 14,
@@ -6023,10 +6033,10 @@
       "warning"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:434",
-      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:883",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1046",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1054",
+      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:453",
+      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:907",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1056",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1064",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:66",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:138",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:207",
@@ -6065,7 +6075,7 @@
       "doc docs/reference/effects.md:395",
       "doc docs/reference/effects.md:401",
       "doc docs/reference/effects.md:410",
-      "doc docs/TODO.md:255",
+      "doc docs/TODO.md:275",
       "ref scripts/audit-corpus-effect-names.mjs:134",
       "ref scripts/audit-corpus-effect-names.mjs:138",
       "ref scripts/audit-corpus-effect-names.mjs:161",
@@ -6089,7 +6099,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:731"
+      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:755"
     ],
     "tests": 14,
     "refs": 0,
@@ -6101,7 +6111,7 @@
       "warning"
     ],
     "allSites": [
-      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:731",
+      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:755",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:208",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:334",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:342",
@@ -6129,7 +6139,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:748"
+      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:772"
     ],
     "tests": 11,
     "refs": 0,
@@ -6141,7 +6151,7 @@
       "warning"
     ],
     "allSites": [
-      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:748",
+      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:772",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:69",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:127",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:209",
@@ -6170,7 +6180,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:910"
+      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:934"
     ],
     "tests": 24,
     "refs": 2,
@@ -6182,8 +6192,8 @@
       "error"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:827",
-      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:910",
+      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:851",
+      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:934",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:166",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:210",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi:317",
@@ -6684,8 +6694,8 @@
       "emit packages-galerina/galerina-core-compiler/src/runtime/canonicalHash.ts:75",
       "ref packages-galerina/galerina-core-compiler/src/stdlib.ts:266",
       "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:1082",
-      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:1449",
-      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:1525",
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:1451",
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:1527",
       "test packages-galerina/galerina-core-compiler/tests/canonical-hash.test.mjs:79",
       "test packages-galerina/galerina-core-compiler/tests/float-nonfinite-failopen.test.mjs:27",
       "test packages-galerina/galerina-core-compiler/tests/float-nonfinite-wasm-parity.test.mjs:2"
@@ -6852,7 +6862,7 @@
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:3886",
       "emit packages-galerina/galerina-core-compiler/src/governance-verifier.ts:3888",
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:3889",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:305",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:310",
       "test packages-galerina/galerina-core-compiler/tests/governance/gate-decl.test.mjs:7",
       "test packages-galerina/galerina-core-compiler/tests/governance/gate-decl.test.mjs:9",
       "test packages-galerina/galerina-core-compiler/tests/governance/gate-decl.test.mjs:123",
@@ -6913,7 +6923,7 @@
     "occurrences": 4,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:315"
+      "packages-galerina/galerina-core-compiler/src/index.ts:320"
     ],
     "emits": [],
     "tests": 1,
@@ -6926,9 +6936,9 @@
       "error"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:303",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:313",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:315",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:308",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:318",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:320",
       "test packages-galerina/galerina-core-compiler/tests/value-state/flags-and-registry.test.mjs:201"
     ]
   },
@@ -6965,7 +6975,7 @@
       "test packages-galerina/galerina-core-compiler/tests/gate-parser.test.mjs:155",
       "test packages-galerina/galerina-core-compiler/tests/gate-parser.test.mjs:158",
       "doc docs/architecture/gate-cutset-version-gating-decision-2026-07-11.md:42",
-      "doc docs/TODO.md:137"
+      "doc docs/TODO.md:157"
     ]
   },
   {
@@ -7000,7 +7010,7 @@
       "doc docs/language/gate/README.md:33",
       "doc docs/language/gate/README.md:164",
       "doc docs/SYNTAX_UPDATE_PLAN.md:18",
-      "doc docs/TODO.md:141"
+      "doc docs/TODO.md:161"
     ]
   },
   {
@@ -7283,8 +7293,8 @@
       "doc docs/language/fungi/05-bindings-taint-privacy.md:268",
       "doc docs/language/fungi/DO-DONT-TERNARY.md:18",
       "doc docs/language/fungi/SYNTAX-REFERENCE.md:36",
-      "doc docs/TODO.md:354",
-      "doc docs/TODO.md:411"
+      "doc docs/TODO.md:374",
+      "doc docs/TODO.md:431"
     ]
   },
   {
@@ -7775,7 +7785,7 @@
     "occurrences": 6,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1007"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1017"
     ],
     "emits": [],
     "tests": 4,
@@ -7788,8 +7798,8 @@
       "warning"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1005",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1007",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1015",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1017",
       "test packages-galerina/galerina-core-compiler/tests/governance/flags-and-manifest.test.mjs:313",
       "test packages-galerina/galerina-core-compiler/tests/governance/flags-and-manifest.test.mjs:314",
       "test packages-galerina/galerina-core-compiler/tests/type-registry/native-plugin-manifest.test.mjs:73",
@@ -7979,7 +7989,7 @@
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:901",
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:904",
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:905",
-      "doc docs/TODO.md:192"
+      "doc docs/TODO.md:212"
     ]
   },
   {
@@ -8129,7 +8139,7 @@
     "code": "FUNGI-GOV-024",
     "namespace": "FUNGI",
     "family": "GOV",
-    "occurrences": 7,
+    "occurrences": 9,
     "docOnly": false,
     "defs": [
       "packages-galerina/galerina-core-compiler/src/governance-verifier.ts:658"
@@ -8139,7 +8149,7 @@
     ],
     "tests": 0,
     "refs": 5,
-    "docs": 0,
+    "docs": 2,
     "names": [
       "SANDBOX_REQUIRED_BUT_UNAVAILABLE"
     ],
@@ -8153,6 +8163,8 @@
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:2240",
       "emit packages-galerina/galerina-core-compiler/src/governance-verifier.ts:2250",
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:2251",
+      "doc docs/TODO.md:18",
+      "doc docs/TODO.md:23",
       "ref scripts/audit-muted-diagnostics.mjs:53"
     ]
   },
@@ -8358,7 +8370,7 @@
       "emit packages-galerina/galerina-tower-citizen/src/governance-enforcer.ts:56",
       "ref packages-galerina/galerina-tower-citizen/src/governance-enforcer.ts:57",
       "test packages-galerina/galerina-tower-citizen/tests/rd0236-runtime-hardening.test.mjs:39",
-      "doc docs/TODO.md:456"
+      "doc docs/TODO.md:476"
     ]
   },
   {
@@ -8536,7 +8548,7 @@
     "occurrences": 22,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:395"
+      "packages-galerina/galerina-core-compiler/src/index.ts:400"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/type-checker.ts:1963"
@@ -8551,8 +8563,8 @@
       "error"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:393",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:395",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:398",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:400",
       "emit packages-galerina/galerina-core-compiler/src/type-checker.ts:1963",
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:1964",
       "test packages-galerina/galerina-core-compiler/tests/hallmark.test.mjs:75",
@@ -8582,7 +8594,7 @@
     "occurrences": 6,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:405"
+      "packages-galerina/galerina-core-compiler/src/index.ts:410"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/type-checker.ts:1952"
@@ -8597,8 +8609,8 @@
       "error"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:403",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:405",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:408",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:410",
       "emit packages-galerina/galerina-core-compiler/src/type-checker.ts:1952",
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:1953",
       "doc docs/examples/Level-2-Types/096-hallmark-reserved-name/notes.md:20",
@@ -8612,7 +8624,7 @@
     "occurrences": 9,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:414"
+      "packages-galerina/galerina-core-compiler/src/index.ts:419"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/type-checker.ts:1975"
@@ -8627,8 +8639,8 @@
       "error"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:412",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:414",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:417",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:419",
       "emit packages-galerina/galerina-core-compiler/src/type-checker.ts:1975",
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:1976",
       "test packages-galerina/galerina-core-compiler/tests/hallmark.test.mjs:87",
@@ -8645,7 +8657,7 @@
     "occurrences": 11,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:424"
+      "packages-galerina/galerina-core-compiler/src/index.ts:429"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/type-checker.ts:1991"
@@ -8660,8 +8672,8 @@
       "error"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:422",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:424",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:427",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:429",
       "emit packages-galerina/galerina-core-compiler/src/type-checker.ts:1991",
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:1992",
       "test packages-galerina/galerina-core-compiler/tests/hallmark.test.mjs:93",
@@ -8680,7 +8692,7 @@
     "occurrences": 15,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:433"
+      "packages-galerina/galerina-core-compiler/src/index.ts:438"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/type-checker.ts:1921"
@@ -8695,8 +8707,8 @@
       "error"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:431",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:433",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:436",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:438",
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:627",
       "emit packages-galerina/galerina-core-compiler/src/type-checker.ts:1921",
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:1922",
@@ -8873,7 +8885,7 @@
       "packages-galerina/galerina-core-compiler/src/hardening-residency.ts:76"
     ],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/hardening-residency.ts:362"
+      "packages-galerina/galerina-core-compiler/src/hardening-residency.ts:383"
     ],
     "tests": 7,
     "refs": 4,
@@ -8885,12 +8897,12 @@
       "error"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:445",
+      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:464",
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:3070",
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:3140",
       "ref packages-galerina/galerina-core-compiler/src/hardening-residency.ts:74",
       "def packages-galerina/galerina-core-compiler/src/hardening-residency.ts:76",
-      "emit packages-galerina/galerina-core-compiler/src/hardening-residency.ts:362",
+      "emit packages-galerina/galerina-core-compiler/src/hardening-residency.ts:383",
       "test packages-galerina/galerina-core-compiler/tests/effect-checker/declared-name-postures.test.mjs:66",
       "test packages-galerina/galerina-core-compiler/tests/hardening-integration.test.mjs:28",
       "test packages-galerina/galerina-core-compiler/tests/hardening-integration.test.mjs:33",
@@ -8957,7 +8969,7 @@
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/governance-verifier.ts:3152",
-      "packages-galerina/galerina-core-compiler/src/hardening-residency.ts:453"
+      "packages-galerina/galerina-core-compiler/src/hardening-residency.ts:474"
     ],
     "tests": 4,
     "refs": 3,
@@ -8973,7 +8985,7 @@
       "emit packages-galerina/galerina-core-compiler/src/governance-verifier.ts:3152",
       "ref packages-galerina/galerina-core-compiler/src/hardening-residency.ts:90",
       "def packages-galerina/galerina-core-compiler/src/hardening-residency.ts:92",
-      "emit packages-galerina/galerina-core-compiler/src/hardening-residency.ts:453",
+      "emit packages-galerina/galerina-core-compiler/src/hardening-residency.ts:474",
       "test packages-galerina/galerina-core-compiler/tests/hardening-integration.test.mjs:33",
       "test packages-galerina/galerina-core-compiler/tests/hardening-integration.test.mjs:57",
       "test packages-galerina/galerina-core-compiler/tests/hardening-residency.test.mjs:165",
@@ -9084,7 +9096,7 @@
       "doc packages-galerina/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:93",
       "doc packages-galerina/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:128",
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:1999",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:204",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:209",
       "ref packages-galerina/galerina-core-compiler/src/proof-graph.ts:412",
       "def packages-galerina/galerina-core-compiler/src/proof-graph.ts:420",
       "test packages-galerina/galerina-core-compiler/tests/fungi-hw-enforcement.test.mjs:2",
@@ -9605,9 +9617,9 @@
     "allSites": [
       "doc packages-galerina/galerina-core/README.md:370",
       "doc packages-galerina/galerina-core/README.md:1003",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1319",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1325",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:2376",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1329",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1335",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:2386",
       "doc docs/COVERAGE.md:302",
       "doc docs/examples/EXAMPLES_INDEX.md:184",
       "fungi docs/examples/Level-5-Governance/203-intent-mismatch-invalid/example.fungi:6",
@@ -9624,7 +9636,7 @@
     "occurrences": 2,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1332"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1342"
     ],
     "emits": [],
     "tests": 0,
@@ -9637,8 +9649,8 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1332",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:2378"
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1342",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:2388"
     ]
   },
   {
@@ -9648,7 +9660,7 @@
     "occurrences": 2,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1340"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1350"
     ],
     "emits": [],
     "tests": 0,
@@ -9661,8 +9673,8 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1340",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:2379"
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1350",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:2389"
     ]
   },
   {
@@ -9672,7 +9684,7 @@
     "occurrences": 2,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1348"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1358"
     ],
     "emits": [],
     "tests": 0,
@@ -9685,8 +9697,8 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1348",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:2380"
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1358",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:2390"
     ]
   },
   {
@@ -9696,7 +9708,7 @@
     "occurrences": 2,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1356"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1366"
     ],
     "emits": [],
     "tests": 0,
@@ -9709,8 +9721,8 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1356",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:2381"
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1366",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:2391"
     ]
   },
   {
@@ -9721,7 +9733,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2738"
+      "packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2833"
     ],
     "tests": 3,
     "refs": 1,
@@ -9730,7 +9742,7 @@
     "severities": [],
     "allSites": [
       "ref packages-galerina/galerina-core-compiler/src/capability-types.ts:168",
-      "emit packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2738",
+      "emit packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2833",
       "test packages-galerina/galerina-core-compiler/tests/helpers/tower-log-assertions.mjs:52",
       "test packages-galerina/galerina-core-compiler/tests/helpers/tower-log-assertions.mjs:59",
       "test packages-galerina/galerina-core-compiler/tests/helpers/tower-log-assertions.mjs:60",
@@ -9754,7 +9766,7 @@
     "defs": [],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/governance-verifier.ts:2695",
-      "packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2952"
+      "packages-galerina/galerina-core-compiler/src/wat-emitter.ts:3148"
     ],
     "tests": 13,
     "refs": 12,
@@ -9775,9 +9787,9 @@
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:2745",
       "ref packages-galerina/galerina-core-compiler/src/invariant-discharge.ts:27",
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:5129",
-      "emit packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2952",
-      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:3090",
-      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:3112",
+      "emit packages-galerina/galerina-core-compiler/src/wat-emitter.ts:3148",
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:3286",
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:3308",
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:1344",
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:1355",
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:1358",
@@ -9802,8 +9814,8 @@
     "defs": [],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/interpreter.ts:1421",
-      "packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2973",
-      "packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2981"
+      "packages-galerina/galerina-core-compiler/src/wat-emitter.ts:3169",
+      "packages-galerina/galerina-core-compiler/src/wat-emitter.ts:3177"
     ],
     "tests": 4,
     "refs": 5,
@@ -9817,8 +9829,8 @@
       "ref packages-galerina/galerina-core-compiler/src/interpreter.ts:1491",
       "ref packages-galerina/galerina-core-compiler/src/interpreter.ts:1502",
       "ref packages-galerina/galerina-core-compiler/src/interpreter.ts:1508",
-      "emit packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2973",
-      "emit packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2981",
+      "emit packages-galerina/galerina-core-compiler/src/wat-emitter.ts:3169",
+      "emit packages-galerina/galerina-core-compiler/src/wat-emitter.ts:3177",
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:1393",
       "test packages-galerina/galerina-core-compiler/tests/output-postconditions.test.mjs:7",
       "test packages-galerina/galerina-core-compiler/tests/output-postconditions.test.mjs:25",
@@ -9879,7 +9891,7 @@
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:2674",
       "emit packages-galerina/galerina-core-compiler/src/governance-verifier.ts:2678",
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:2679",
-      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2914",
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:3110",
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:1410",
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:1419",
       "test packages-galerina/galerina-core-compiler/tests/governance-verifier.test.mjs:1420",
@@ -9930,7 +9942,7 @@
       "test packages-galerina/galerina-core-compiler/tests/k3-operators.test.mjs:137",
       "doc docs/ANTI_HALLUCINATION.md:63",
       "doc docs/SYNTAX_UPDATE_TRACKER.md:42",
-      "doc docs/TODO.md:48"
+      "doc docs/TODO.md:68"
     ]
   },
   {
@@ -10307,7 +10319,7 @@
       "test packages-galerina/galerina-core-compiler/tests/governance/guard-decl.test.mjs:392",
       "test packages-galerina/galerina-core-compiler/tests/governance/guard-decl.test.mjs:393",
       "test packages-galerina/galerina-core-compiler/tests/governance/guard-decl.test.mjs:398",
-      "doc docs/TODO.md:296"
+      "doc docs/TODO.md:316"
     ]
   },
   {
@@ -10751,8 +10763,8 @@
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:4043",
       "emit packages-galerina/galerina-core-compiler/src/governance-verifier.ts:4054",
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:4055",
-      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2011",
-      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2510",
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2028",
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2605",
       "test packages-galerina/galerina-core-compiler/tests/anti-hallucination-corpus.test.mjs:179",
       "test packages-galerina/galerina-core-compiler/tests/governance/match-exhaustiveness.test.mjs:2",
       "test packages-galerina/galerina-core-compiler/tests/governance/match-exhaustiveness.test.mjs:25",
@@ -10771,8 +10783,8 @@
       "doc docs/SYNTAX_UPDATE_PLAN.md:29",
       "doc docs/SYNTAX_UPDATE_PLAN.md:60",
       "doc docs/SYNTAX_UPDATE_TRACKER.md:33",
-      "doc docs/TODO.md:36",
-      "doc docs/TODO.md:148"
+      "doc docs/TODO.md:56",
+      "doc docs/TODO.md:168"
     ]
   },
   {
@@ -10782,7 +10794,7 @@
     "occurrences": 30,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1802"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1812"
     ],
     "emits": [],
     "tests": 3,
@@ -10806,10 +10818,10 @@
       "doc packages-galerina/galerina-core/README.md:753",
       "doc packages-galerina/galerina-core/README.md:994",
       "doc packages-galerina/galerina-core/README.md:1033",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1765",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1769",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1798",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1802",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1775",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1779",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1808",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1812",
       "ref packages-galerina/galerina-core-compiler/src/production-check.ts:39",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:469",
       "test packages-galerina/galerina-core-compiler/tests/phase29.test.mjs:240",
@@ -10834,7 +10846,7 @@
     "occurrences": 2,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1810"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1820"
     ],
     "emits": [],
     "tests": 1,
@@ -10847,7 +10859,7 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1810",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1820",
       "test packages-galerina/galerina-core-compiler/tests/phase29.test.mjs:242"
     ]
   },
@@ -10858,7 +10870,7 @@
     "occurrences": 4,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1818"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1828"
     ],
     "emits": [],
     "tests": 2,
@@ -10872,7 +10884,7 @@
     ],
     "allSites": [
       "doc packages-galerina/galerina-core/README.md:751",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1818",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1828",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:473",
       "test packages-galerina/galerina-core-compiler/tests/phase29.test.mjs:242"
     ]
@@ -10884,7 +10896,7 @@
     "occurrences": 2,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1826"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1836"
     ],
     "emits": [],
     "tests": 1,
@@ -10897,7 +10909,7 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1826",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1836",
       "test packages-galerina/galerina-core-compiler/tests/phase29.test.mjs:243"
     ]
   },
@@ -10908,7 +10920,7 @@
     "occurrences": 4,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1834"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1844"
     ],
     "emits": [],
     "tests": 2,
@@ -10922,7 +10934,7 @@
     ],
     "allSites": [
       "doc packages-galerina/galerina-core/README.md:752",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1834",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1844",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:476",
       "test packages-galerina/galerina-core-compiler/tests/phase29.test.mjs:243"
     ]
@@ -10934,7 +10946,7 @@
     "occurrences": 3,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1842"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1852"
     ],
     "emits": [],
     "tests": 2,
@@ -10947,7 +10959,7 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1842",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1852",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:479",
       "test packages-galerina/galerina-core-compiler/tests/phase29.test.mjs:243"
     ]
@@ -10959,7 +10971,7 @@
     "occurrences": 2,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1850"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1860"
     ],
     "emits": [],
     "tests": 1,
@@ -10972,7 +10984,7 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1850",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1860",
       "test packages-galerina/galerina-core-compiler/tests/phase29.test.mjs:243"
     ]
   },
@@ -10983,10 +10995,10 @@
     "occurrences": 21,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1860"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1870"
     ],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:2898"
+      "packages-galerina/galerina-core-compiler/src/index.ts:2908"
     ],
     "tests": 11,
     "refs": 5,
@@ -11001,11 +11013,11 @@
       "doc packages-galerina/galerina-core/README.md:598",
       "doc packages-galerina/galerina-core/README.md:610",
       "doc packages-galerina/galerina-core/README.md:725",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1767",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1856",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1860",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:2873",
-      "emit packages-galerina/galerina-core-compiler/src/index.ts:2898",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1777",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1866",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1870",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:2883",
+      "emit packages-galerina/galerina-core-compiler/src/index.ts:2908",
       "ref packages-galerina/galerina-core-compiler/src/production-check.ts:38",
       "ref packages-galerina/galerina-core-compiler/src/production-check.ts:45",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:482",
@@ -11357,8 +11369,8 @@
       "doc docs/architecture/self-hosting-readiness-2026-07-09.md:135",
       "doc docs/examples/README.md:88",
       "doc docs/handover/HANDOVER-worker-cli-invoke-marshal-2026-07-10.md:42",
-      "doc docs/TODO.md:315",
-      "doc docs/TODO.md:407"
+      "doc docs/TODO.md:335",
+      "doc docs/TODO.md:427"
     ]
   },
   {
@@ -11488,7 +11500,7 @@
     "occurrences": 19,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:468"
+      "packages-galerina/galerina-core-compiler/src/index.ts:473"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/symbol-resolver.ts:355"
@@ -11503,8 +11515,8 @@
       "warning"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:466",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:468",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:471",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:473",
       "ref packages-galerina/galerina-core-compiler/src/symbol-resolver.ts:9",
       "ref packages-galerina/galerina-core-compiler/src/symbol-resolver.ts:167",
       "ref packages-galerina/galerina-core-compiler/src/symbol-resolver.ts:344",
@@ -11752,11 +11764,11 @@
       "ref packages-galerina/galerina-core-compiler/src/security-policy.ts:56",
       "ref packages-galerina/galerina-core-compiler/src/security-policy.ts:60",
       "def packages-galerina/galerina-core-compiler/src/security-policy.ts:67",
-      "ref packages-galerina/galerina-core-compiler/src/stdlib.ts:1352",
-      "ref packages-galerina/galerina-core-compiler/src/stdlib.ts:1544",
-      "ref packages-galerina/galerina-core-compiler/src/stdlib.ts:1554",
-      "ref packages-galerina/galerina-core-compiler/src/stdlib.ts:1557",
-      "ref packages-galerina/galerina-core-compiler/src/stdlib.ts:1592",
+      "ref packages-galerina/galerina-core-compiler/src/stdlib.ts:1375",
+      "ref packages-galerina/galerina-core-compiler/src/stdlib.ts:1567",
+      "ref packages-galerina/galerina-core-compiler/src/stdlib.ts:1577",
+      "ref packages-galerina/galerina-core-compiler/src/stdlib.ts:1580",
+      "ref packages-galerina/galerina-core-compiler/src/stdlib.ts:1615",
       "test packages-galerina/galerina-core-compiler/tests/governance/flags-and-manifest.test.mjs:463",
       "test packages-galerina/galerina-core-compiler/tests/governance/flags-and-manifest.test.mjs:464",
       "test packages-galerina/galerina-core-compiler/tests/security-denial-paths.test.mjs:21",
@@ -12423,7 +12435,7 @@
       "test packages-galerina/galerina-core-compiler/tests/value-state/affine-passport-typestate-0111.test.mjs:36",
       "doc docs/reference/value-states.md:118",
       "doc docs/reference/value-states.md:134",
-      "doc docs/TODO.md:423"
+      "doc docs/TODO.md:443"
     ]
   },
   {
@@ -13287,7 +13299,7 @@
     "occurrences": 5,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1537"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1547"
     ],
     "emits": [],
     "tests": 0,
@@ -13301,9 +13313,9 @@
     ],
     "allSites": [
       "doc packages-galerina/galerina-core/README.md:1004",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1532",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1537",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:2788",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1542",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1547",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:2798",
       "doc docs/COVERAGE.md:48"
     ]
   },
@@ -13314,7 +13326,7 @@
     "occurrences": 2,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1545"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1555"
     ],
     "emits": [],
     "tests": 0,
@@ -13327,8 +13339,8 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1545",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:2789"
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1555",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:2799"
     ]
   },
   {
@@ -13338,7 +13350,7 @@
     "occurrences": 2,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1553"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1563"
     ],
     "emits": [],
     "tests": 0,
@@ -13351,8 +13363,8 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1553",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:2790"
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1563",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:2800"
     ]
   },
   {
@@ -13362,7 +13374,7 @@
     "occurrences": 2,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1561"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1571"
     ],
     "emits": [],
     "tests": 0,
@@ -13375,8 +13387,8 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1561",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:2791"
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1571",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:2801"
     ]
   },
   {
@@ -13386,7 +13398,7 @@
     "occurrences": 2,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1569"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1579"
     ],
     "emits": [],
     "tests": 0,
@@ -13399,8 +13411,8 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1569",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:2792"
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1579",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:2802"
     ]
   },
   {
@@ -13410,7 +13422,7 @@
     "occurrences": 21,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:517"
+      "packages-galerina/galerina-core-compiler/src/index.ts:522"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/package-resolver.ts:120"
@@ -13425,9 +13437,9 @@
       "error"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:512",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:515",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:517",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:517",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:520",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:522",
       "ref packages-galerina/galerina-core-compiler/src/package-resolver.ts:91",
       "ref packages-galerina/galerina-core-compiler/src/package-resolver.ts:102",
       "emit packages-galerina/galerina-core-compiler/src/package-resolver.ts:120",
@@ -13455,7 +13467,7 @@
     "occurrences": 29,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:527"
+      "packages-galerina/galerina-core-compiler/src/index.ts:532"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/package-resolver.ts:236",
@@ -13471,8 +13483,8 @@
       "error"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:525",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:527",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:530",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:532",
       "ref packages-galerina/galerina-core-compiler/src/package-resolver.ts:192",
       "ref packages-galerina/galerina-core-compiler/src/package-resolver.ts:198",
       "ref packages-galerina/galerina-core-compiler/src/package-resolver.ts:208",
@@ -13509,7 +13521,7 @@
     "occurrences": 46,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:537"
+      "packages-galerina/galerina-core-compiler/src/index.ts:542"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/package-resolver.ts:273"
@@ -13524,8 +13536,8 @@
       "warning"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:535",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:537",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:540",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:542",
       "ref packages-galerina/galerina-core-compiler/src/package-resolver.ts:160",
       "ref packages-galerina/galerina-core-compiler/src/package-resolver.ts:178",
       "ref packages-galerina/galerina-core-compiler/src/package-resolver.ts:190",
@@ -13579,7 +13591,7 @@
     "occurrences": 22,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:547"
+      "packages-galerina/galerina-core-compiler/src/index.ts:552"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/package-resolver.ts:144"
@@ -13594,8 +13606,8 @@
       "error"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:545",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:547",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:550",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:552",
       "ref packages-galerina/galerina-core-compiler/src/package-resolver.ts:134",
       "emit packages-galerina/galerina-core-compiler/src/package-resolver.ts:144",
       "ref packages-galerina/galerina-core-compiler/src/production-check.ts:49",
@@ -13625,7 +13637,7 @@
     "occurrences": 32,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:557"
+      "packages-galerina/galerina-core-compiler/src/index.ts:562"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/package-resolver.ts:284"
@@ -13640,13 +13652,13 @@
       "warning"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:555",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:557",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:560",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:562",
       "ref packages-galerina/galerina-core-compiler/src/package-resolver.ts:160",
       "ref packages-galerina/galerina-core-compiler/src/package-resolver.ts:178",
       "ref packages-galerina/galerina-core-compiler/src/package-resolver.ts:191",
       "emit packages-galerina/galerina-core-compiler/src/package-resolver.ts:284",
-      "ref packages-galerina/galerina-core-compiler/src/type-registry.ts:671",
+      "ref packages-galerina/galerina-core-compiler/src/type-registry.ts:680",
       "test packages-galerina/galerina-core-compiler/tests/package-resolver/governed-resolver.test.mjs:9",
       "test packages-galerina/galerina-core-compiler/tests/package-resolver/governed-resolver.test.mjs:84",
       "test packages-galerina/galerina-core-compiler/tests/package-resolver/governed-resolver.test.mjs:177",
@@ -13681,7 +13693,7 @@
     "occurrences": 21,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:567"
+      "packages-galerina/galerina-core-compiler/src/index.ts:572"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/package-resolver.ts:305"
@@ -13696,8 +13708,8 @@
       "error"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:565",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:567",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:570",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:572",
       "ref packages-galerina/galerina-core-compiler/src/package-resolver.ts:53",
       "emit packages-galerina/galerina-core-compiler/src/package-resolver.ts:305",
       "test packages-galerina/galerina-core-compiler/tests/package-resolver/governed-resolver.test.mjs:9",
@@ -13794,18 +13806,20 @@
     "code": "FUNGI-PREFILTER-001",
     "namespace": "FUNGI",
     "family": "PREFILTER",
-    "occurrences": 9,
+    "occurrences": 11,
     "docOnly": false,
     "defs": [],
     "emits": [],
     "tests": 6,
-    "refs": 2,
+    "refs": 4,
     "docs": 1,
     "names": [],
     "severities": [],
     "allSites": [
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:1854",
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:1882",
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2220",
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:2967",
       "test packages-galerina/galerina-core-compiler/tests/prefilter-construct.test.mjs:11",
       "test packages-galerina/galerina-core-compiler/tests/prefilter-construct.test.mjs:57",
       "test packages-galerina/galerina-core-compiler/tests/prefilter-construct.test.mjs:58",
@@ -13920,10 +13934,10 @@
       "test packages-galerina/galerina-core-compiler/tests/governance/rd-fungi-privacy-canonicality-guard.test.mjs:113",
       "test packages-galerina/galerina-core-compiler/tests/governance/rd-fungi-privacy-canonicality-guard.test.mjs:117",
       "test packages-galerina/galerina-core-compiler/tests/security-gate-coverage.test.mjs:71",
-      "doc docs/TODO.md:180",
-      "doc docs/TODO.md:311",
-      "doc docs/TODO.md:326",
-      "doc docs/TODO.md:341"
+      "doc docs/TODO.md:200",
+      "doc docs/TODO.md:331",
+      "doc docs/TODO.md:346",
+      "doc docs/TODO.md:361"
     ]
   },
   {
@@ -14017,9 +14031,9 @@
       "doc docs/paper/defensive-papers/dp-rd-0229-graph-aot-gate-unreachability-proof-hallucination-block.md:62",
       "doc docs/paper/defensive-papers/dp-rd-0229-graph-aot-gate-unreachability-proof-hallucination-block.md:102",
       "doc docs/paper/defensive-papers/dp-rd-0229-graph-aot-gate-unreachability-proof-hallucination-block.md:129",
-      "doc docs/TODO.md:141",
-      "doc docs/TODO.md:514",
-      "doc docs/TODO.md:521",
+      "doc docs/TODO.md:161",
+      "doc docs/TODO.md:534",
+      "doc docs/TODO.md:541",
       "ref scripts/audit-muted-diagnostics.mjs:44",
       "ref scripts/code-index.mjs:81",
       "ref scripts/kb-index.mjs:9",
@@ -14548,10 +14562,10 @@
     "occurrences": 11,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1523"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1533"
     ],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:2944"
+      "packages-galerina/galerina-core-compiler/src/index.ts:2954"
     ],
     "tests": 1,
     "refs": 3,
@@ -14568,10 +14582,10 @@
       "doc packages-galerina/galerina-core/README.md:722",
       "doc packages-galerina/galerina-core/README.md:726",
       "doc packages-galerina/galerina-core/README.md:995",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1513",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1523",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:2909",
-      "emit packages-galerina/galerina-core-compiler/src/index.ts:2944",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1523",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1533",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:2919",
+      "emit packages-galerina/galerina-core-compiler/src/index.ts:2954",
       "ref packages-galerina/galerina-core-compiler/src/production-check.ts:47",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:550"
     ]
@@ -14964,10 +14978,10 @@
     "occurrences": 7,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1961"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1971"
     ],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:2454"
+      "packages-galerina/galerina-core-compiler/src/index.ts:2464"
     ],
     "tests": 2,
     "refs": 2,
@@ -14980,9 +14994,9 @@
     ],
     "allSites": [
       "doc packages-galerina/galerina-core/README.md:997",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1952",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1961",
-      "emit packages-galerina/galerina-core-compiler/src/index.ts:2454",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1962",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1971",
+      "emit packages-galerina/galerina-core-compiler/src/index.ts:2464",
       "ref packages-galerina/galerina-core-compiler/src/production-check.ts:29",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:70",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:492"
@@ -14995,10 +15009,10 @@
     "occurrences": 5,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1969"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1979"
     ],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:2490"
+      "packages-galerina/galerina-core-compiler/src/index.ts:2500"
     ],
     "tests": 2,
     "refs": 1,
@@ -15010,8 +15024,8 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1969",
-      "emit packages-galerina/galerina-core-compiler/src/index.ts:2490",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1979",
+      "emit packages-galerina/galerina-core-compiler/src/index.ts:2500",
       "ref packages-galerina/galerina-core-compiler/src/production-check.ts:30",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:91",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:496"
@@ -15024,11 +15038,11 @@
     "occurrences": 10,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1977"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1987"
     ],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:2516",
-      "packages-galerina/galerina-core-compiler/src/index.ts:2538"
+      "packages-galerina/galerina-core-compiler/src/index.ts:2526",
+      "packages-galerina/galerina-core-compiler/src/index.ts:2548"
     ],
     "tests": 5,
     "refs": 2,
@@ -15040,9 +15054,9 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1977",
-      "emit packages-galerina/galerina-core-compiler/src/index.ts:2516",
-      "emit packages-galerina/galerina-core-compiler/src/index.ts:2538",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1987",
+      "emit packages-galerina/galerina-core-compiler/src/index.ts:2526",
+      "emit packages-galerina/galerina-core-compiler/src/index.ts:2548",
       "ref packages-galerina/galerina-core-compiler/src/production-check.ts:31",
       "ref packages-galerina/galerina-core-compiler/src/stdlib-registry.ts:239",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:131",
@@ -15059,10 +15073,10 @@
     "occurrences": 8,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1985"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1995"
     ],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:2567"
+      "packages-galerina/galerina-core-compiler/src/index.ts:2577"
     ],
     "tests": 5,
     "refs": 1,
@@ -15074,8 +15088,8 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1985",
-      "emit packages-galerina/galerina-core-compiler/src/index.ts:2567",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1995",
+      "emit packages-galerina/galerina-core-compiler/src/index.ts:2577",
       "ref packages-galerina/galerina-core-compiler/src/production-check.ts:32",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:202",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:502",
@@ -15091,10 +15105,10 @@
     "occurrences": 5,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1993"
+      "packages-galerina/galerina-core-compiler/src/index.ts:2003"
     ],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:2587"
+      "packages-galerina/galerina-core-compiler/src/index.ts:2597"
     ],
     "tests": 2,
     "refs": 1,
@@ -15106,8 +15120,8 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1993",
-      "emit packages-galerina/galerina-core-compiler/src/index.ts:2587",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:2003",
+      "emit packages-galerina/galerina-core-compiler/src/index.ts:2597",
       "ref packages-galerina/galerina-core-compiler/src/production-check.ts:33",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:206",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:505"
@@ -15120,10 +15134,10 @@
     "occurrences": 5,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:2001"
+      "packages-galerina/galerina-core-compiler/src/index.ts:2011"
     ],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:2608"
+      "packages-galerina/galerina-core-compiler/src/index.ts:2618"
     ],
     "tests": 2,
     "refs": 0,
@@ -15135,8 +15149,8 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:2001",
-      "emit packages-galerina/galerina-core-compiler/src/index.ts:2608",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:2011",
+      "emit packages-galerina/galerina-core-compiler/src/index.ts:2618",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:113",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:508",
       "doc docs/roadmap-2026-07-15.md:43"
@@ -15160,7 +15174,7 @@
       "error"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:507",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:512",
       "ref packages-galerina/galerina-core-compiler/src/sbom.ts:10",
       "ref packages-galerina/galerina-core-compiler/src/sbom.ts:21",
       "emit packages-galerina/galerina-core-compiler/src/sbom.ts:73",
@@ -15205,7 +15219,7 @@
     "occurrences": 58,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:2055"
+      "packages-galerina/galerina-core-compiler/src/index.ts:2065"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/monkey-patch-checker.ts:138"
@@ -15221,9 +15235,9 @@
     ],
     "allSites": [
       "ref packages-galerina/galerina-core-compiler/src/cli.ts:491",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:2044",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:2050",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:2055",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:2054",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:2060",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:2065",
       "ref packages-galerina/galerina-core-compiler/src/lexer.ts:235",
       "ref packages-galerina/galerina-core-compiler/src/monkey-patch-checker.ts:8",
       "ref packages-galerina/galerina-core-compiler/src/monkey-patch-checker.ts:47",
@@ -15277,7 +15291,7 @@
       "test packages-galerina/galerina-core-compiler/tests/security-gate-coverage.test.mjs:31",
       "test packages-galerina/galerina-core-compiler/tests/signing-boundary-matrix.test.mjs:86",
       "ref packages-galerina/galerina-devtools-security/src/audit-runner.ts:139",
-      "doc docs/TODO.md:402"
+      "doc docs/TODO.md:422"
     ]
   },
   {
@@ -15287,7 +15301,7 @@
     "occurrences": 34,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:2064"
+      "packages-galerina/galerina-core-compiler/src/index.ts:2074"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/monkey-patch-checker.ts:153"
@@ -15302,8 +15316,8 @@
       "error"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:2062",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:2064",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:2072",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:2074",
       "ref packages-galerina/galerina-core-compiler/src/monkey-patch-checker.ts:13",
       "emit packages-galerina/galerina-core-compiler/src/monkey-patch-checker.ts:153",
       "ref packages-galerina/galerina-core-compiler/src/monkey-patch-checker.ts:184",
@@ -15547,8 +15561,8 @@
       "doc docs/patterns/applications/08-secrets.md:14",
       "doc docs/patterns/applications/08-secrets.md:38",
       "doc docs/reference/value-states.md:93",
-      "doc docs/TODO.md:293",
-      "doc docs/TODO.md:420",
+      "doc docs/TODO.md:313",
+      "doc docs/TODO.md:440",
       "ref scripts/audit-muted-diagnostics.mjs:42"
     ]
   },
@@ -15765,7 +15779,7 @@
     "occurrences": 46,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1943"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1953"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/source-escape-checker.ts:91"
@@ -15781,9 +15795,9 @@
     ],
     "allSites": [
       "doc packages-galerina/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:60",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1931",
       "ref packages-galerina/galerina-core-compiler/src/index.ts:1941",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1943",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1951",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1953",
       "ref packages-galerina/galerina-core-compiler/src/monkey-patch-checker.ts:18",
       "ref packages-galerina/galerina-core-compiler/src/production-check.ts:51",
       "ref packages-galerina/galerina-core-compiler/src/proof-graph.ts:487",
@@ -15989,10 +16003,10 @@
     "occurrences": 33,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:854"
+      "packages-galerina/galerina-core-compiler/src/index.ts:864"
     ],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:1107"
+      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:1131"
     ],
     "tests": 18,
     "refs": 11,
@@ -16008,14 +16022,14 @@
       "ref packages-galerina/galerina-core-compiler/src/cli.ts:430",
       "ref packages-galerina/galerina-core-compiler/src/cli.ts:457",
       "ref packages-galerina/galerina-core-compiler/src/cli.ts:460",
-      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:492",
-      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:784",
-      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:986",
-      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:1054",
-      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:1107",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:840",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:844",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:854",
+      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:516",
+      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:808",
+      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:1010",
+      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:1078",
+      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:1131",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:850",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:854",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:864",
       "ref packages-galerina/galerina-core-compiler/src/production-check.ts:55",
       "test packages-galerina/galerina-core-compiler/tests/cec-integration.test.mjs:60",
       "test packages-galerina/galerina-core-compiler/tests/effect-checker/flags-and-mode.test.mjs:242",
@@ -16047,7 +16061,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:1128"
+      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:1152"
     ],
     "tests": 17,
     "refs": 1,
@@ -16057,8 +16071,8 @@
     ],
     "severities": [],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:1058",
-      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:1128",
+      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:1082",
+      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:1152",
       "test packages-galerina/galerina-core-compiler/tests/c1-effect-alias.test.mjs:55",
       "test packages-galerina/galerina-core-compiler/tests/c1-effect-alias.test.mjs:58",
       "test packages-galerina/galerina-core-compiler/tests/c1-effect-alias.test.mjs:62",
@@ -16126,7 +16140,7 @@
     "occurrences": 7,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1632"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1642"
     ],
     "emits": [],
     "tests": 1,
@@ -16140,8 +16154,8 @@
     ],
     "allSites": [
       "doc packages-galerina/galerina-core/README.md:1000",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1627",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1632",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1637",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1642",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:443",
       "doc docs/COVERAGE.md:47",
       "doc docs/COVERAGE.md:423",
@@ -16155,7 +16169,7 @@
     "occurrences": 2,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1640"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1650"
     ],
     "emits": [],
     "tests": 1,
@@ -16168,7 +16182,7 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1640",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1650",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:445"
     ]
   },
@@ -16179,7 +16193,7 @@
     "occurrences": 1,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1648"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1658"
     ],
     "emits": [],
     "tests": 0,
@@ -16192,7 +16206,7 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1648"
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1658"
     ]
   },
   {
@@ -16202,7 +16216,7 @@
     "occurrences": 1,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1656"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1666"
     ],
     "emits": [],
     "tests": 0,
@@ -16215,7 +16229,7 @@
       "warning"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1656"
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1666"
     ]
   },
   {
@@ -16429,7 +16443,7 @@
       "error"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:401",
+      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:411",
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:318",
       "def packages-galerina/galerina-core-compiler/src/governance-verifier.ts:320",
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:2317",
@@ -16686,10 +16700,10 @@
     "occurrences": 8,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1376"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1386"
     ],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:2678"
+      "packages-galerina/galerina-core-compiler/src/index.ts:2688"
     ],
     "tests": 1,
     "refs": 2,
@@ -16704,9 +16718,9 @@
       "doc packages-galerina/galerina-core/README.md:706",
       "doc packages-galerina/galerina-core/README.md:998",
       "ref packages-galerina/galerina-core/src/index.ts:150",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1371",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1376",
-      "emit packages-galerina/galerina-core-compiler/src/index.ts:2678",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1381",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1386",
+      "emit packages-galerina/galerina-core-compiler/src/index.ts:2688",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:250",
       "doc docs/COVERAGE.md:48"
     ]
@@ -16718,10 +16732,10 @@
     "occurrences": 4,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1384"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1394"
     ],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:2692"
+      "packages-galerina/galerina-core-compiler/src/index.ts:2702"
     ],
     "tests": 1,
     "refs": 0,
@@ -16733,8 +16747,8 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1384",
-      "emit packages-galerina/galerina-core-compiler/src/index.ts:2692",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1394",
+      "emit packages-galerina/galerina-core-compiler/src/index.ts:2702",
       "test packages-galerina/galerina-core-compiler/tests/compiler-safety-contracts.test.mjs:256",
       "doc docs/language/fungi/05-bindings-taint-privacy.md:82"
     ]
@@ -16798,7 +16812,7 @@
     "occurrences": 21,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1392"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1402"
     ],
     "emits": [],
     "tests": 3,
@@ -16816,7 +16830,7 @@
       "ref packages-galerina/galerina-core-compiler/scripts/cec-debug-003.mjs:9",
       "ref packages-galerina/galerina-core-compiler/scripts/cec-promotion-pass.mjs:30",
       "ref packages-galerina/galerina-core-compiler/scripts/cec-test-003.mjs:18",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1392",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1402",
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:468",
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:470",
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:492",
@@ -16841,7 +16855,7 @@
     "occurrences": 11,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1400"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1410"
     ],
     "emits": [],
     "tests": 1,
@@ -16859,7 +16873,7 @@
       "ref packages-galerina/galerina-core-compiler/scripts/cec-debug-003.mjs:10",
       "ref packages-galerina/galerina-core-compiler/scripts/cec-promotion-pass.mjs:31",
       "ref packages-galerina/galerina-core-compiler/scripts/cec-test-003.mjs:19",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1400",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1410",
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:480",
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:482",
       "test packages-galerina/galerina-core-compiler/tests/cec-integration.test.mjs:51",
@@ -16874,7 +16888,7 @@
     "occurrences": 17,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1408"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1418"
     ],
     "emits": [],
     "tests": 5,
@@ -16892,7 +16906,7 @@
       "ref packages-galerina/galerina-core-compiler/scripts/cec-debug-003.mjs:11",
       "ref packages-galerina/galerina-core-compiler/scripts/cec-promotion-pass.mjs:32",
       "ref packages-galerina/galerina-core-compiler/scripts/cec-test-003.mjs:20",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1408",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1418",
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:543",
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:547",
       "test packages-galerina/galerina-core-compiler/tests/cec-integration.test.mjs:52",
@@ -16913,7 +16927,7 @@
     "occurrences": 7,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1416"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1426"
     ],
     "emits": [],
     "tests": 0,
@@ -16926,7 +16940,7 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1416",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1426",
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:560",
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:562",
       "doc docs/AI/DO_NOT_USE_YET.md:133",
@@ -16984,7 +16998,7 @@
       "fungi docs/examples/Level-9-Enterprise/465-enterprise-summary/example.fungi:29",
       "doc docs/roadmap-2026-07-15.md:158",
       "doc docs/SYNTAX_UPDATE_TRACKER.md:34",
-      "doc docs/TODO.md:37",
+      "doc docs/TODO.md:57",
       "ref scripts/audit-fungi-corpus-check.mjs:8",
       "ref scripts/audit-fungi-corpus-check.mjs:95",
       "ref scripts/audit-fungi-corpus-check.mjs:162",
@@ -17010,7 +17024,7 @@
       "test packages-galerina/galerina-core-compiler/tests/governance/unknown-block-reject.test.mjs:124",
       "test packages-galerina/galerina-core-compiler/tests/governance/unknown-block-reject.test.mjs:137",
       "doc docs/SYNTAX_UPDATE_TRACKER.md:34",
-      "doc docs/TODO.md:38"
+      "doc docs/TODO.md:58"
     ]
   },
   {
@@ -17043,7 +17057,7 @@
       "test packages-galerina/galerina-core-compiler/tests/version-header.test.mjs:43",
       "test packages-galerina/galerina-core-compiler/tests/version-header.test.mjs:69",
       "doc docs/SYNTAX_UPDATE_TRACKER.md:37",
-      "doc docs/TODO.md:41"
+      "doc docs/TODO.md:61"
     ]
   },
   {
@@ -17087,7 +17101,7 @@
     "occurrences": 24,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:1444"
+      "packages-galerina/galerina-core-compiler/src/index.ts:1454"
     ],
     "emits": [],
     "tests": 15,
@@ -17100,9 +17114,9 @@
       "warning"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1432",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:1436",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:1444",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1442",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:1446",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:1454",
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:707",
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:710",
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:750",
@@ -17648,7 +17662,7 @@
     "docOnly": false,
     "defs": [],
     "emits": [
-      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:773"
+      "packages-galerina/galerina-core-compiler/src/effect-checker.ts:797"
     ],
     "tests": 26,
     "refs": 6,
@@ -17659,9 +17673,9 @@
     "severities": [],
     "allSites": [
       "ref packages-galerina/galerina-core-compiler/src/cli.ts:436",
-      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:577",
-      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:760",
-      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:773",
+      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:601",
+      "ref packages-galerina/galerina-core-compiler/src/effect-checker.ts:784",
+      "emit packages-galerina/galerina-core-compiler/src/effect-checker.ts:797",
       "test packages-galerina/galerina-core-compiler/tests/cli-tier-floor-enforcement.test.mjs:2",
       "test packages-galerina/galerina-core-compiler/tests/cli-tier-floor-enforcement.test.mjs:7",
       "test packages-galerina/galerina-core-compiler/tests/cli-tier-floor-enforcement.test.mjs:22",
@@ -18296,7 +18310,7 @@
     "occurrences": 150,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:358"
+      "packages-galerina/galerina-core-compiler/src/index.ts:363"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/type-checker.ts:1732"
@@ -18324,7 +18338,7 @@
       "ref packages-galerina/galerina-core-compiler/scripts/cec-test-level2-wrapped.mjs:33",
       "ref packages-galerina/galerina-core-compiler/scripts/cec-test-level2-wrapped.mjs:61",
       "ref packages-galerina/galerina-core-compiler/scripts/cec-test-level2-wrapped.mjs:65",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:358",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:363",
       "ref packages-galerina/galerina-core-compiler/src/plugin-schema.ts:87",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:225",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:287",
@@ -18478,7 +18492,7 @@
     "occurrences": 97,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:342"
+      "packages-galerina/galerina-core-compiler/src/index.ts:347"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/type-checker.ts:1763"
@@ -18493,9 +18507,9 @@
       "error"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:340",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:342",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:390",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:345",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:347",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:395",
       "ref packages-galerina/galerina-core-compiler/src/parser.ts:5328",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:288",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:325",
@@ -18630,7 +18644,7 @@
       "ref packages-galerina/galerina-core-compiler/scripts/cec-test-level2-wrapped.mjs:37",
       "ref packages-galerina/galerina-core-compiler/scripts/cec-test-level2-wrapped.mjs:41",
       "ref packages-galerina/galerina-core-compiler/scripts/cec-test-level2-wrapped.mjs:45",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:391",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:396",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:23",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:289",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:326",
@@ -19188,7 +19202,7 @@
     "occurrences": 4,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:351"
+      "packages-galerina/galerina-core-compiler/src/index.ts:356"
     ],
     "emits": [],
     "tests": 1,
@@ -19206,8 +19220,8 @@
       "error"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:350",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:351",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:355",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:356",
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:30",
       "test packages-galerina/galerina-core-compiler/tests/type-checker-phase11.test.mjs:456"
     ]
@@ -19219,7 +19233,7 @@
     "occurrences": 75,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:352"
+      "packages-galerina/galerina-core-compiler/src/index.ts:357"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/type-checker.ts:1789"
@@ -19239,7 +19253,7 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:352",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:357",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:294",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:331",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:637",
@@ -19323,7 +19337,7 @@
     "occurrences": 2,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:353"
+      "packages-galerina/galerina-core-compiler/src/index.ts:358"
     ],
     "emits": [],
     "tests": 0,
@@ -19342,7 +19356,7 @@
       "warning"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:353",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:358",
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:31"
     ]
   },
@@ -19353,7 +19367,7 @@
     "occurrences": 4,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:354"
+      "packages-galerina/galerina-core-compiler/src/index.ts:359"
     ],
     "emits": [],
     "tests": 1,
@@ -19372,9 +19386,9 @@
       "warning"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:354",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:359",
       "ref packages-galerina/galerina-core-compiler/src/stdlib-registry.ts:89",
-      "ref packages-galerina/galerina-core-compiler/src/stdlib.ts:2693",
+      "ref packages-galerina/galerina-core-compiler/src/stdlib.ts:2716",
       "test packages-galerina/galerina-core-compiler/tests/constant-time-equals-h7.test.mjs:3"
     ]
   },
@@ -19385,7 +19399,7 @@
     "occurrences": 46,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:355"
+      "packages-galerina/galerina-core-compiler/src/index.ts:360"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/type-checker.ts:1558"
@@ -19408,7 +19422,7 @@
       "warning"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:355",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:360",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:295",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:332",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:1113",
@@ -19463,7 +19477,7 @@
     "occurrences": 2,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:356"
+      "packages-galerina/galerina-core-compiler/src/index.ts:361"
     ],
     "emits": [],
     "tests": 0,
@@ -19481,7 +19495,7 @@
       "warning"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:356",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:361",
       "ref packages-galerina/galerina-core-compiler/src/test-generator.ts:102"
     ]
   },
@@ -19492,7 +19506,7 @@
     "occurrences": 24,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:357"
+      "packages-galerina/galerina-core-compiler/src/index.ts:362"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/type-checker.ts:1857"
@@ -19511,7 +19525,7 @@
       "warning"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:357",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:362",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:296",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:333",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:764",
@@ -19544,7 +19558,7 @@
     "occurrences": 45,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:358"
+      "packages-galerina/galerina-core-compiler/src/index.ts:363"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/type-checker.ts:1831"
@@ -19562,7 +19576,7 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:358",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:363",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:297",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:320",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:746",
@@ -19616,7 +19630,7 @@
     "occurrences": 11,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:359"
+      "packages-galerina/galerina-core-compiler/src/index.ts:364"
     ],
     "emits": [],
     "tests": 9,
@@ -19630,7 +19644,7 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:359",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:364",
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:32",
       "test packages-galerina/galerina-core-compiler/tests/domain-security.test.mjs:1153",
       "test packages-galerina/galerina-core-compiler/tests/domain-security.test.mjs:1156",
@@ -19650,7 +19664,7 @@
     "occurrences": 17,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:360"
+      "packages-galerina/galerina-core-compiler/src/index.ts:365"
     ],
     "emits": [],
     "tests": 7,
@@ -19663,7 +19677,7 @@
       "error"
     ],
     "allSites": [
-      "def packages-galerina/galerina-core-compiler/src/index.ts:360",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:365",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:482",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:916",
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:33",
@@ -19906,7 +19920,7 @@
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:898",
       "emit packages-galerina/galerina-core-compiler/src/type-checker.ts:2399",
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:2400",
-      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:1623",
+      "ref packages-galerina/galerina-core-compiler/src/wat-emitter.ts:1625",
       "test packages-galerina/galerina-core-compiler/tests/int-literal-range.test.mjs:2",
       "test packages-galerina/galerina-core-compiler/tests/int-literal-range.test.mjs:24",
       "test packages-galerina/galerina-core-compiler/tests/int-literal-range.test.mjs:27",
@@ -20041,7 +20055,7 @@
     "occurrences": 43,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:366"
+      "packages-galerina/galerina-core-compiler/src/index.ts:371"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/type-checker.ts:1816"
@@ -20056,9 +20070,9 @@
       "error"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:362",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:364",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:366",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:367",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:369",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:371",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:304",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:338",
       "fungi packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi:747",
@@ -20073,8 +20087,8 @@
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:1814",
       "emit packages-galerina/galerina-core-compiler/src/type-checker.ts:1816",
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:1817",
-      "ref packages-galerina/galerina-core-compiler/src/type-registry.ts:602",
-      "ref packages-galerina/galerina-core-compiler/src/type-registry.ts:649",
+      "ref packages-galerina/galerina-core-compiler/src/type-registry.ts:611",
+      "ref packages-galerina/galerina-core-compiler/src/type-registry.ts:658",
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-type-checker.test.mjs:314",
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-type-checker.test.mjs:750",
       "test packages-galerina/galerina-core-compiler/tests/self-hosted-type-checker.test.mjs:757",
@@ -20108,7 +20122,7 @@
     "occurrences": 7,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:376"
+      "packages-galerina/galerina-core-compiler/src/index.ts:381"
     ],
     "emits": [],
     "tests": 4,
@@ -20121,9 +20135,9 @@
       "error"
     ],
     "allSites": [
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:374",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:376",
-      "ref packages-galerina/galerina-core-compiler/src/type-registry.ts:657",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:379",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:381",
+      "ref packages-galerina/galerina-core-compiler/src/type-registry.ts:666",
       "test packages-galerina/galerina-core-compiler/tests/type-registry/type-id-and-flags.test.mjs:9",
       "test packages-galerina/galerina-core-compiler/tests/type-registry/type-id-and-flags.test.mjs:281",
       "test packages-galerina/galerina-core-compiler/tests/type-registry/type-id-and-flags.test.mjs:290",
@@ -20756,7 +20770,7 @@
       "doc docs/patterns/applications/11-audit-trails.md:120",
       "doc docs/reference/value-states.md:56",
       "doc docs/reference/value-states.md:128",
-      "doc docs/TODO.md:382",
+      "doc docs/TODO.md:402",
       "ref scripts/audit-mutation.mjs:201",
       "ref scripts/audit-mutation.mjs:208",
       "ref scripts/audit-reference-doc-drift.mjs:65"
@@ -20839,7 +20853,7 @@
     "occurrences": 61,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:325"
+      "packages-galerina/galerina-core-compiler/src/index.ts:330"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/value-state-checker.ts:1892"
@@ -20855,8 +20869,8 @@
     ],
     "allSites": [
       "doc packages-galerina/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:34",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:323",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:325",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:328",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:330",
       "ref packages-galerina/galerina-core-compiler/src/value-state-checker.ts:28",
       "ref packages-galerina/galerina-core-compiler/src/value-state-checker.ts:788",
       "ref packages-galerina/galerina-core-compiler/src/value-state-checker.ts:1842",
@@ -20924,7 +20938,7 @@
     "occurrences": 96,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:442"
+      "packages-galerina/galerina-core-compiler/src/index.ts:447"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/value-state-checker.ts:1390"
@@ -20943,8 +20957,8 @@
       "doc packages-galerina/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:134",
       "ref packages-galerina/galerina-core-compiler/scripts/cec-promotion-pass.mjs:34",
       "ref packages-galerina/galerina-core-compiler/src/governance-verifier.ts:2108",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:440",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:442",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:445",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:447",
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:37",
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:450",
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:1714",
@@ -21031,7 +21045,7 @@
       "doc docs/reference/value-states.md:83",
       "doc docs/reference/value-states.md:131",
       "doc docs/security/slsa-deep-bola-pass-2026-07-09.md:45",
-      "doc docs/TODO.md:421",
+      "doc docs/TODO.md:441",
       "ref scripts/audit-example-diagnostics.mjs:9",
       "ref scripts/audit-example-diagnostics.mjs:160",
       "ref scripts/audit-muted-diagnostics.mjs:63"
@@ -21044,7 +21058,7 @@
     "occurrences": 51,
     "docOnly": false,
     "defs": [
-      "packages-galerina/galerina-core-compiler/src/index.ts:450"
+      "packages-galerina/galerina-core-compiler/src/index.ts:455"
     ],
     "emits": [
       "packages-galerina/galerina-core-compiler/src/value-state-checker.ts:1399"
@@ -21060,8 +21074,8 @@
     ],
     "allSites": [
       "doc packages-galerina/galerina-core-compiler/docs/Knowledge-Bases/galerina-security-invariants-matrix.md:36",
-      "ref packages-galerina/galerina-core-compiler/src/index.ts:448",
-      "def packages-galerina/galerina-core-compiler/src/index.ts:450",
+      "ref packages-galerina/galerina-core-compiler/src/index.ts:453",
+      "def packages-galerina/galerina-core-compiler/src/index.ts:455",
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:38",
       "ref packages-galerina/galerina-core-compiler/src/type-checker.ts:1777",
       "ref packages-galerina/galerina-core-compiler/src/value-state-checker.ts:386",
@@ -21375,7 +21389,7 @@
     "names": [],
     "severities": [],
     "allSites": [
-      "doc docs/TODO.md:390"
+      "doc docs/TODO.md:410"
     ]
   },
   {

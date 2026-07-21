@@ -3099,7 +3099,7 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 71,
+      "tests": 72,
       "docs": 52
     },
     {
@@ -3147,7 +3147,7 @@
       ],
       "defs": 0,
       "emits": 1,
-      "tests": 51,
+      "tests": 56,
       "docs": 20
     },
     {
@@ -3941,7 +3941,7 @@
       "defs": 1,
       "emits": 1,
       "tests": 0,
-      "docs": 0
+      "docs": 2
     },
     {
       "code": "FUNGI-GOV-3VL-001",
