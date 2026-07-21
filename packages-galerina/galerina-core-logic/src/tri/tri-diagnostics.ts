@@ -40,12 +40,14 @@ export function triDiagnosticInvalidTriState(path?: string): LogicDiagnostic {
 export function triDiagnosticEmptyUnknownReasons(path?: string): LogicDiagnostic {
   return {
     code: FUNGI_TRI_002_EMPTY_UNKNOWN_REASONS,
-    name: "EMPTY_UNKNOWN_REASONS",
+    name: "TRI_EMPTY_UNKNOWN_REASONS",
     severity: "error",
     message: "TriState unknown must carry at least one UnknownReason explaining why the value is unknown.",
     ...(path === undefined ? {} : { path }),
   };
 }
+// NOTE: name is TRI_EMPTY_UNKNOWN_REASONS (not EMPTY_UNKNOWN_REASONS) to avoid V2 collision
+// with FUNGI-DECISION-003 which uses EMPTY_UNKNOWN_REASONS for the Decision variant.
 
 export function triDiagnosticInvalidOperand(path?: string): LogicDiagnostic {
   return {

@@ -19,6 +19,7 @@ import {
   FUNGI_GOV_005,
   FUNGI_GOV_007,
   FUNGI_GOV_009,
+  FUNGI_GOV_024,
 } from "../dist/governance-verifier.js";
 
 function parseAndVerify(source, profile = "dev") {
@@ -1668,5 +1669,51 @@ contract {
 { return Ok(id) }
 `);
     assert.ok(!hasDiag(result, "FUNGI-OBS-001"), "No FUNGI-OBS-001 for secure flow");
+  });
+});
+
+// ── FUNGI-GOV-024: step expression requires DSS.wasm sandbox ─────────────────
+describe("Governance verifier — FUNGI-GOV-024 sandbox required but unavailable", () => {
+  const STEP_SOURCE = `
+secure flow isolatedCompute(input: String) -> Result<String, String>
+contract {
+  intent { "Run an isolated computation step." }
+  effects { }
+}
+{
+  let result = step innerCompute(input)
+  return Ok(result)
+}
+pure flow innerCompute(x: String) -> String {
+  return x
+}
+`;
+
+  it("emits FUNGI-GOV-024 as warning in dev profile when step expression is used", () => {
+    const result = parseAndVerify(STEP_SOURCE, "dev");
+    const diag = result.diagnostics.find((d) => d.code === FUNGI_GOV_024.code);
+    assert.ok(diag !== undefined, "Expected FUNGI-GOV-024 diagnostic in dev mode");
+    assert.equal(diag.severity, "warning", "FUNGI-GOV-024 must be a warning in dev profile (simulation boundary visible but not blocking)");
+    assert.equal(diag.name, "SANDBOX_REQUIRED_BUT_UNAVAILABLE");
+  });
+
+  it("emits FUNGI-GOV-024 as error in production profile when step expression is used", () => {
+    const result = parseAndVerify(STEP_SOURCE, "production");
+    const diag = result.diagnostics.find((d) => d.code === FUNGI_GOV_024.code);
+    assert.ok(diag !== undefined, "Expected FUNGI-GOV-024 diagnostic in production mode");
+    assert.equal(diag.severity, "error", "FUNGI-GOV-024 must be an error in production profile (fail-closed: cannot claim sandbox isolation that does not exist)");
+  });
+
+  it("does NOT emit FUNGI-GOV-024 for a flow with no step expression", () => {
+    const result = parseAndVerify(`
+secure flow plainCompute(input: String) -> Result<String, String>
+contract {
+  intent { "A normal secure flow with no step isolation." }
+  effects { }
+}
+{ return Ok(input) }
+`, "production");
+    assert.ok(!result.diagnostics.some((d) => d.code === FUNGI_GOV_024.code),
+      "FUNGI-GOV-024 must not fire when there is no step expression");
   });
 });

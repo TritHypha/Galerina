@@ -1902,7 +1902,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 10
+      "docs": 9
     },
     {
       "code": "FUNGI-BOUNDARY-002",
@@ -1914,7 +1914,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 8
+      "docs": 6
     },
     {
       "code": "FUNGI-BOUNDARY-003",
@@ -1926,7 +1926,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 7
+      "docs": 5
     },
     {
       "code": "FUNGI-BOUNDARY-004",
@@ -1938,7 +1938,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 7
+      "docs": 5
     },
     {
       "code": "FUNGI-BOUNDARY-005",
@@ -1950,7 +1950,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 4
+      "docs": 3
     },
     {
       "code": "FUNGI-BOUNDARY-006",
@@ -1962,7 +1962,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 3
+      "docs": 2
     },
     {
       "code": "FUNGI-BOUNDARY-007",
@@ -1974,7 +1974,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 5
+      "docs": 4
     },
     {
       "code": "FUNGI-BOUNDARY-008",
@@ -1986,7 +1986,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 3
+      "docs": 2
     },
     {
       "code": "FUNGI-BOUNDARY-009",
@@ -1998,7 +1998,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 3
+      "docs": 2
     },
     {
       "code": "FUNGI-BUILD-001",
@@ -2798,7 +2798,7 @@
       "defs": 1,
       "emits": 1,
       "tests": 35,
-      "docs": 10
+      "docs": 11
     },
     {
       "code": "FUNGI-CONTRACT-003",
@@ -3124,7 +3124,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 72,
-      "docs": 52
+      "docs": 51
     },
     {
       "code": "FUNGI-EFFECT-002",
@@ -3140,7 +3140,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 29,
-      "docs": 19
+      "docs": 17
     },
     {
       "code": "FUNGI-EFFECT-003",
@@ -3156,7 +3156,7 @@
       "defs": 0,
       "emits": 3,
       "tests": 45,
-      "docs": 19
+      "docs": 17
     },
     {
       "code": "FUNGI-EFFECT-004",
@@ -3172,7 +3172,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 56,
-      "docs": 20
+      "docs": 19
     },
     {
       "code": "FUNGI-EFFECT-005",
@@ -3407,7 +3407,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 7,
-      "docs": 1
+      "docs": 2
     },
     {
       "code": "FUNGI-FAULT-003",
@@ -3621,7 +3621,7 @@
       "defs": 1,
       "emits": 2,
       "tests": 23,
-      "docs": 2
+      "docs": 3
     },
     {
       "code": "FUNGI-GOV-002",
@@ -4229,7 +4229,7 @@
       "defs": 1,
       "emits": 1,
       "tests": 2,
-      "docs": 4
+      "docs": 5
     },
     {
       "code": "FUNGI-HARDEN-002",
@@ -4685,7 +4685,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 13,
-      "docs": 0
+      "docs": 1
     },
     {
       "code": "FUNGI-INV-002",
@@ -4805,7 +4805,7 @@
       "defs": 1,
       "emits": 0,
       "tests": 23,
-      "docs": 1
+      "docs": 2
     },
     {
       "code": "FUNGI-LEX-002",
@@ -5151,7 +5151,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 2
+      "docs": 1
     },
     {
       "code": "FUNGI-MANIFEST-002",
@@ -5163,7 +5163,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 2
+      "docs": 1
     },
     {
       "code": "FUNGI-MANIFEST-003",
@@ -5175,7 +5175,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 2
+      "docs": 1
     },
     {
       "code": "FUNGI-MANIFEST-004",
@@ -5187,7 +5187,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 2
+      "docs": 1
     },
     {
       "code": "FUNGI-MANIFEST-005",
@@ -5199,7 +5199,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 0,
-      "docs": 2
+      "docs": 1
     },
     {
       "code": "FUNGI-MATCH-001",
@@ -5495,7 +5495,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 37,
-      "docs": 5
+      "docs": 6
     },
     {
       "code": "FUNGI-NAME-002",
@@ -7418,7 +7418,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 45,
-      "docs": 30
+      "docs": 34
     },
     {
       "code": "FUNGI-SECRET-002",
@@ -8114,7 +8114,7 @@
       "defs": 1,
       "emits": 0,
       "tests": 40,
-      "docs": 1
+      "docs": 3
     },
     {
       "code": "FUNGI-TAINT-002",
@@ -8316,7 +8316,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 26,
-      "docs": 8
+      "docs": 9
     },
     {
       "code": "FUNGI-TRACE-001",
@@ -8467,7 +8467,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 229,
-      "docs": 17
+      "docs": 18
     },
     {
       "code": "FUNGI-TYPE-002",
@@ -8491,7 +8491,7 @@
       "defs": 1,
       "emits": 1,
       "tests": 95,
-      "docs": 10
+      "docs": 11
     },
     {
       "code": "FUNGI-TYPE-003",
@@ -8539,7 +8539,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 24,
-      "docs": 2
+      "docs": 3
     },
     {
       "code": "FUNGI-TYPE-006",
@@ -9098,7 +9098,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 27,
-      "docs": 13
+      "docs": 14
     },
     {
       "code": "FUNGI-VALUESTATE-002",
@@ -9178,7 +9178,7 @@
       "defs": 1,
       "emits": 1,
       "tests": 60,
-      "docs": 13
+      "docs": 14
     },
     {
       "code": "FUNGI-VALUESTATE-007",
@@ -9210,7 +9210,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 31,
-      "docs": 4
+      "docs": 5
     },
     {
       "code": "FUNGI-VALUESTATE-009",

@@ -19,6 +19,8 @@ export const FUNGI_DECISION_003_EMPTY_UNKNOWN_REASONS = "FUNGI-DECISION-003";
 
 /** FUNGI-DECISION-004: A non-allow Decision (deny/review/unknown) reached a runtime bool boundary. */
 export const FUNGI_DECISION_004_FAILED_CLOSED = "FUNGI-DECISION-004";
+// NOTE: name is DECISION_FAILED_CLOSED (not FAILED_CLOSED) to avoid V2 collision with
+// FUNGI-BOOL-BOUNDARY-001 which uses FAILED_CLOSED for the TriState variant.
 
 /** FUNGI-DECISION-005: combineDecisions() received an empty array. */
 export const FUNGI_DECISION_005_EMPTY_COMBINE = "FUNGI-DECISION-005";
@@ -64,7 +66,7 @@ export function decisionDiagnosticFailedClosed(
 ): LogicDiagnostic {
   return {
     code: FUNGI_DECISION_004_FAILED_CLOSED,
-    name: "FAILED_CLOSED",
+    name: "DECISION_FAILED_CLOSED",
     severity: "error",
     message: `Decision kind "${kind}" reached a runtime boolean boundary and was rejected (fail-closed). Reason: ${reason}`,
     ...(path === undefined ? {} : { path }),
