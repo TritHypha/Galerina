@@ -5,6 +5,17 @@
 // genuinely is). Short axis labels by design. esc() XML-escapes all text so `&` in a title can't produce
 // invalid SVG.
 // Score change log:
+//   2026-07-21 (session 6): Radar 1 Supply-chain 9→10 — Url.parseAndAllowlist duplicate fixed (SsrfCheckedUrl
+//     was silently overwritten by SafeUrl in BOUNDARY_BY_FN — last-write-wins Map construction); SBOM pipeline
+//     wired to build-production/deterministic (generateCycloneDxSbom → build/galerina.sbom.json, CycloneDX 1.5,
+//     FUNGI-SBOM-001 for missing sha256 hashes). Both supply-chain gaps now closed.
+//   2026-07-21 (session 6): Radar 4 Fault Healing 7→8 — FUNGI-RES-002 SUBSTRATE_HEAL_NOT_AUDITED added:
+//     flows declaring on_substrate_fault fallback without audit.write get a warning. Substrate lane switches
+//     are availability events that must be auditable. Enforced by governance verifier.
+//   2026-07-21 (session 6): Radar 5 Supply-chain 9→10 — same as radar-1; SBOM pipeline is the CI/CD axis.
+//   2026-07-21 (session 6): Radar 7 Injection/XSS 7→8 — template literal taint propagation (BOB X-3):
+//     stringLiteral ${...} holes now propagate taint from named bindings; Url.parseAndAllowlist SSRF
+//     dedup fix ensures SsrfCheckedUrl context is correctly produced. Two distinct injection gaps closed.
 //   2026-07-21 (session 3): Radar 2 Latency Predict 6→7 — P2 K3 inline eliminates 2 WASM call frames per
 //     trit-op (&&/|| on Verdict and k3FoldExpr N-operand chain), verified differential in wat-k3-inline.test.mjs.
 //   2026-07-21 (session 2): Radar 3 Tooling 6→7 — vault system fully documented in BOB/fungi-building-standards
@@ -106,7 +117,8 @@ const charts = [
     series: {
       // Auto-gen Tests 7→8 (2026-07-21): 7,611 tests across 95 packages; 12 new K3-inline differential
       // + 8 new WAT-construct differential; mutation coverage 23/23 killed (session 1 data).
-      Galerina: [9, 8, 9, 9, 6, 3],   // ~15 enforcing lints + #149 + mutation gate + signed witnesses; LSP not built
+      // Supply-chain 9→10 (session 6): SBOM pipeline wired to build-production/deterministic.
+      Galerina: [9, 8, 10, 9, 6, 3],   // ~15 enforcing lints + #149 + mutation gate + signed witnesses; LSP not built
       Go:     [6, 5, 5, 2, 9, 9],
       Rust:   [7, 5, 5, 3, 9, 9],
       Python: [4, 6, 3, 2, 7, 8],
