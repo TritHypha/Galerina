@@ -1,12 +1,12 @@
 {
   "generatedFrom": "build/code-index/code-index.json",
-  "total": 685,
+  "total": 692,
   "counts": {
-    "ref": 179,
+    "ref": 181,
     "inline": 162,
     "phantom": 111,
-    "live": 129,
-    "referenced": 96,
+    "live": 132,
+    "referenced": 98,
     "dead": 8
   },
   "entries": [
@@ -405,6 +405,18 @@
       "emits": 0,
       "tests": 0,
       "docs": 2
+    },
+    {
+      "code": "ERR_EMPTY_CUSTOMER_ID",
+      "family": "ERR_*",
+      "namespace": "ERR",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
+      "docs": 0
     },
     {
       "code": "ERR_EMPTY_DATA",
@@ -944,6 +956,18 @@
       "defs": 1,
       "emits": 1,
       "tests": 2,
+      "docs": 0
+    },
+    {
+      "code": "ERR_REPEAT_THRESHOLD",
+      "family": "ERR_*",
+      "namespace": "ERR",
+      "status": "ref",
+      "names": [],
+      "severities": [],
+      "defs": 0,
+      "emits": 0,
+      "tests": 0,
       "docs": 0
     },
     {
@@ -2208,7 +2232,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 6,
-      "docs": 2
+      "docs": 4
     },
     {
       "code": "FUNGI-CHECK-002",
@@ -2224,7 +2248,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 5,
-      "docs": 2
+      "docs": 3
     },
     {
       "code": "FUNGI-CLI-REDACT-001",
@@ -3941,7 +3965,7 @@
       "defs": 1,
       "emits": 1,
       "tests": 0,
-      "docs": 2
+      "docs": 4
     },
     {
       "code": "FUNGI-GOV-3VL-001",
@@ -4302,6 +4326,22 @@
       "emits": 2,
       "tests": 4,
       "docs": 8
+    },
+    {
+      "code": "FUNGI-HARDEN-008",
+      "family": "HARDEN",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "RESIDENCY_NOT_ENFORCED_AT_RUNTIME"
+      ],
+      "severities": [
+        "warning"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 3,
+      "docs": 1
     },
     {
       "code": "FUNGI-HINT-COMPUTE-001",
@@ -4701,7 +4741,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 5,
-      "docs": 3
+      "docs": 5
     },
     {
       "code": "FUNGI-K3-002",
@@ -4717,7 +4757,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 4,
-      "docs": 1
+      "docs": 2
     },
     {
       "code": "FUNGI-K3-003",
@@ -4733,7 +4773,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 2,
-      "docs": 1
+      "docs": 2
     },
     {
       "code": "FUNGI-LAYOUT-001",
@@ -4860,6 +4900,22 @@
       "emits": 1,
       "tests": 7,
       "docs": 1
+    },
+    {
+      "code": "FUNGI-LINT-001",
+      "family": "LINT",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "EXCESSIVE_NESTING"
+      ],
+      "severities": [
+        "info"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 0,
+      "docs": 0
     },
     {
       "code": "FUNGI-LOGIC-001",
@@ -6621,7 +6677,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 6,
-      "docs": 1
+      "docs": 3
     },
     {
       "code": "FUNGI-PREFILTER-002",
@@ -6637,7 +6693,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 5,
-      "docs": 1
+      "docs": 2
     },
     {
       "code": "FUNGI-PREFILTER-003",
@@ -6649,7 +6705,7 @@
       "defs": 0,
       "emits": 0,
       "tests": 4,
-      "docs": 1
+      "docs": 2
     },
     {
       "code": "FUNGI-PRIVACY-001",
@@ -7023,6 +7079,22 @@
       "defs": 1,
       "emits": 1,
       "tests": 7,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-RES-002",
+      "family": "RES",
+      "namespace": "FUNGI",
+      "status": "live",
+      "names": [
+        "SUBSTRATE_HEAL_NOT_AUDITED"
+      ],
+      "severities": [
+        "warning"
+      ],
+      "defs": 1,
+      "emits": 1,
+      "tests": 0,
       "docs": 0
     },
     {
@@ -7958,7 +8030,7 @@
       "defs": 0,
       "emits": 2,
       "tests": 6,
-      "docs": 2
+      "docs": 3
     },
     {
       "code": "FUNGI-SYNTAX-015",
@@ -9161,69 +9233,111 @@
       "family": "VAULT",
       "namespace": "FUNGI",
       "status": "live",
-      "names": [],
+      "names": [
+        "VAULT_MISSING_OPEN_BRACE"
+      ],
       "severities": [
         "error"
       ],
-      "defs": 1,
+      "defs": 2,
       "emits": 1,
       "tests": 1,
-      "docs": 3
+      "docs": 7
     },
     {
       "code": "FUNGI-VAULT-002",
       "family": "VAULT",
       "namespace": "FUNGI",
       "status": "live",
-      "names": [],
+      "names": [
+        "VAULT_ENTRY_MISSING_PERMISSIONS"
+      ],
       "severities": [
         "error"
       ],
-      "defs": 1,
+      "defs": 2,
       "emits": 1,
       "tests": 1,
-      "docs": 0
+      "docs": 1
     },
     {
       "code": "FUNGI-VAULT-003",
       "family": "VAULT",
       "namespace": "FUNGI",
       "status": "live",
-      "names": [],
+      "names": [
+        "VAULT_READ_EFFECT_MISSING"
+      ],
       "severities": [
         "error"
       ],
-      "defs": 1,
-      "emits": 1,
+      "defs": 2,
+      "emits": 2,
       "tests": 1,
-      "docs": 0
+      "docs": 1
     },
     {
       "code": "FUNGI-VAULT-004",
       "family": "VAULT",
       "namespace": "FUNGI",
       "status": "live",
-      "names": [],
+      "names": [
+        "VAULT_WRITE_EFFECT_MISSING"
+      ],
       "severities": [
         "error"
       ],
-      "defs": 1,
-      "emits": 1,
+      "defs": 2,
+      "emits": 2,
       "tests": 1,
-      "docs": 0
+      "docs": 1
     },
     {
       "code": "FUNGI-VAULT-005",
       "family": "VAULT",
       "namespace": "FUNGI",
       "status": "live",
-      "names": [],
+      "names": [
+        "VAULT_WRITE_WITHOUT_MUT"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 2,
+      "emits": 1,
+      "tests": 1,
+      "docs": 8
+    },
+    {
+      "code": "FUNGI-VAULT-006",
+      "family": "VAULT",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [
+        "VAULT_PERMISSION_DENIED"
+      ],
       "severities": [
         "error"
       ],
       "defs": 1,
-      "emits": 1,
-      "tests": 1,
+      "emits": 0,
+      "tests": 0,
+      "docs": 3
+    },
+    {
+      "code": "FUNGI-VAULT-007",
+      "family": "VAULT",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [
+        "VAULT_READONLY_WRITE"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 0,
+      "tests": 0,
       "docs": 1
     },
     {

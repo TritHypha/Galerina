@@ -21,6 +21,8 @@ export {
   triStateAnd,
   triStateOr,
   triStateNor,
+  triStateXnor,
+  triStateImplies,
   combineUnknownReasons,
 } from "./tri-ops.js";
 

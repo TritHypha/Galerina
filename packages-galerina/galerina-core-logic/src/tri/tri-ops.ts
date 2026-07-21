@@ -79,6 +79,42 @@ export function triStateNor(a: TriState, b: TriState): TriState {
 }
 
 // ---------------------------------------------------------------------------
+// XNOR (logical equivalence / biconditional)
+// ---------------------------------------------------------------------------
+
+/**
+ * Logical XNOR (equivalence) for TriState: a XNOR b = NOT(a XOR b) = (a AND b) OR (NOT a AND NOT b).
+ * true XNOR true = true; false XNOR false = true; true XNOR false = false; unknown ∘ anything = unknown.
+ *
+ * Useful for governance rule composition: "if hasCapability then mustLog" rewrites as
+ * IMPLIES(hasCapability, mustLog), but equivalence checks also arise in symmetric invariants.
+ */
+export function triStateXnor(a: TriState, b: TriState): TriState {
+  if (a.kind === "true"  && b.kind === "true")  return TRI_STATE_TRUE;
+  if (a.kind === "false" && b.kind === "false") return TRI_STATE_TRUE;
+  if (a.kind === "true"  && b.kind === "false") return TRI_STATE_FALSE;
+  if (a.kind === "false" && b.kind === "true")  return TRI_STATE_FALSE;
+  // At least one is unknown — collect all reasons
+  const reasons = combineUnknownReasons([a, b]);
+  return triUnknownFromReasons(reasons);
+}
+
+// ---------------------------------------------------------------------------
+// IMPLIES (material conditional: A → B ≡ ¬A ∨ B)
+// ---------------------------------------------------------------------------
+
+/**
+ * Material implication for TriState: A → B ≡ NOT A OR B.
+ * Useful for governance rules like "if hasCapability then mustDeclareEffect":
+ *   triStateImplies(hasCapability, hasDeclaredEffect)
+ * true → false = false (the only failing case); true → true = true; false → anything = true.
+ * unknown as antecedent = unknown (we cannot prove the obligation); unknown consequent = unknown.
+ */
+export function triStateImplies(antecedent: TriState, consequent: TriState): TriState {
+  return triStateOr(triStateNot(antecedent), consequent);
+}
+
+// ---------------------------------------------------------------------------
 // Unknown reason aggregation
 // ---------------------------------------------------------------------------
 

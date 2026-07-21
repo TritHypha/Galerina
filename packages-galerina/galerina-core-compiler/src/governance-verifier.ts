@@ -595,6 +595,15 @@ export const FUNGI_RES_001 = {
   message: "retry declared on a flow with mutation effects (database.write, gateway.charge) without idempotent: true. Retrying mutations risks duplicate writes.",
 } as const;
 
+/** FUNGI-RES-002: on_substrate_fault fallback declared (substrate heal) but flow does not declare audit.write.
+ *  Substrate failover events are security-relevant (availability event, lane degradation) and must be audited. */
+export const FUNGI_RES_002 = {
+  code: "FUNGI-RES-002",
+  name: "SUBSTRATE_HEAL_NOT_AUDITED",
+  severity: "warning" as const,
+  message: "on_substrate_fault fallback declared (substrate heal) but the flow does not declare 'audit.write'. Substrate lane switches must be auditable.",
+} as const;
+
 /** FUNGI-OBS-001: explicit observability {} on a pure flow (no side effects to observe). */
 export const FUNGI_OBS_001 = {
   code: "FUNGI-OBS-001",

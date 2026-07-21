@@ -300,7 +300,7 @@
       "tests": 4836,
       "hasTestScript": true,
       "border": "PASS",
-      "files": 99,
+      "files": 100,
       "deps": [
         "@galerina/core-network",
         "@galerina/core-runtime-wasm",

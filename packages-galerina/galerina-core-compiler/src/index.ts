@@ -900,6 +900,7 @@ export {
   FUNGI_GOV_012,
   // New category codes (task #50 — EC/ID/AU/LC/T/FG)
   FUNGI_RES_001,
+  FUNGI_RES_002,
   FUNGI_OBS_001,
   FUNGI_EC_001,
   FUNGI_EC_002,
@@ -969,6 +970,13 @@ export {
   FUNGI_TAINT_005,
   FUNGI_TAINT_006,
 } from "./taint-checker.js";
+
+// Lint Checker (FUNGI-LINT-001 EXCESSIVE_NESTING — ergonomics info)
+export {
+  checkLint,
+  FUNGI_LINT_001,
+  type LintDiagnostic,
+} from "./lint-checker.js";
 
 // Phase 29/33 — Economics Inference (convention over configuration)
 export {

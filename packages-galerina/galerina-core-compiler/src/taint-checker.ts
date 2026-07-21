@@ -45,8 +45,13 @@ interface UntaintBoundary {
 export const UNTAINT_BOUNDARIES: readonly UntaintBoundary[] = [
   // Phase 33: HTTP header untaint (Critical — strips CR/LF/null before setHeader)
   { fn: "Http.encodeHeaderValue",      produces: "HttpHeaderValue", preferred: true },
-  // Phase 33: SSRF-checked URL (private-IP block verified)
-  { fn: "Url.parseAndAllowlist",       produces: "SsrfCheckedUrl",  preferred: true },
+  // Phase 33: SSRF-checked URL (private-IP block verified).
+  // BOB §4.6: Url.parseAndAllowlist appeared twice (SsrfCheckedUrl and SafeUrl). The second
+  // entry silently overwrote the first in BOUNDARY_BY_FN because Map construction from an
+  // iterable uses last-write-wins. Fix: rename the SSRF-specific gate to Url.parseAndCheckSsrf
+  // so both contexts are distinct entries. `Url.parseAndAllowlist` remains as SafeUrl (the
+  // broader case); SSRF-specific sinks should call `Url.parseAndCheckSsrf`.
+  { fn: "Url.parseAndCheckSsrf",       produces: "SsrfCheckedUrl",  preferred: true },
   { fn: "Sql.parameterize",            produces: "SqlValue",      preferred: true },
   { fn: "Sql.escape",                  produces: "SqlValue",      preferred: false }, // discouraged
   { fn: "Sql.identifierFromAllowlist", produces: "SqlIdentifier", preferred: true },

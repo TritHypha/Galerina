@@ -292,7 +292,7 @@ export function inferFlowResilience(
 // ---------------------------------------------------------------------------
 
 export interface ResilienceViolation {
-  readonly code: "FUNGI-RES-001" | "FUNGI-RES-CB-PENDING";
+  readonly code: "FUNGI-RES-001" | "FUNGI-RES-002" | "FUNGI-RES-CB-PENDING";
   readonly severity: "error" | "warning";
   readonly subcode: string;
   readonly message: string;
@@ -343,6 +343,30 @@ export function checkResilienceViolations(
       hint: `Track the breaker externally until DRCM Phase 5 lands, or choose an enforced fallback ` +
         `(propagate / return_cached / return_default / quarantine / escalate).`,
     });
+  }
+
+  // FUNGI-RES-002: a declared on_substrate_fault fallback handler performs a substrate failover
+  // (heal) but the flow does not declare audit.write. Substrate heal events are security-relevant
+  // (a lane degraded and the flow silently switched execution substrate) and must be auditable.
+  const substrateHandler = buildFaultHandlers(flowNode).find(
+    (h) => h.signal === "on_substrate_fault" && h.action === "fallback" && h.source === "declared",
+  );
+  if (substrateHandler !== undefined) {
+    const hasAuditEffect = flow.declaredEffects.some(
+      (e) => e === "audit.write" || e === "audit",
+    );
+    if (!hasAuditEffect) {
+      violations.push({
+        code: "FUNGI-RES-002",
+        severity: "warning",
+        subcode: "SUBSTRATE_HEAL_NOT_AUDITED",
+        message:
+          `Flow '${flow.name}' declares on_substrate_fault fallback (substrate heal) but does not ` +
+          `declare 'audit.write'. Substrate failover events are security-relevant — silent substrate ` +
+          `lane switches are an observable availability event that operators must be able to audit.`,
+        hint: `Add 'audit.write' to the flow's effects {} block, or acknowledge this with a ';; govComment' if audit is handled upstream.`,
+      });
+    }
   }
 
   return violations;

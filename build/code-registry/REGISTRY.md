@@ -8,12 +8,12 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 
 | status | count | meaning |
 |---|---|---|
-| live | 129 | emitted with an exported constant |
+| live | 132 | emitted with an exported constant |
 | inline | 162 | emitted, NO exported constant (R4 — Stage F) |
-| referenced | 96 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
+| referenced | 98 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
 | dead | 8 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
 | phantom | 111 | doc-only mention, not in source (drift — DOC-004) |
-| ref | 179 | referenced only (no def/emit) |
+| ref | 181 | referenced only (no def/emit) |
 
 ## RESERVED — defined but not emitted (std #1: tag wire-or-retire)
 
@@ -379,7 +379,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-EFFECT-008 | inline | PRIVILEGED_EFFECT_ON_PLAIN_FLOW | warning |
 | FUNGI-EFFECT-009 | inline | NON_CANONICAL_EFFECT | error |
 
-### ERR_* (96)
+### ERR_* (98)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -416,6 +416,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | ERR_EMPTY_CONTRACT | ref | — | — |
 | ERR_EMPTY_CONTRACT_HASH | ref | — | — |
 | ERR_EMPTY_CURRENCY | ref | — | — |
+| ERR_EMPTY_CUSTOMER_ID | ref | — | — |
 | ERR_EMPTY_DATA | ref | — | — |
 | ERR_EMPTY_FLOW_ID | ref | — | — |
 | ERR_EMPTY_OPERATION | ref | — | — |
@@ -461,6 +462,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | ERR_REGISTRY_PACKAGE_UNKNOWN | live | — | — |
 | ERR_REGISTRY_POLICY_DENIED | live | — | — |
 | ERR_REGISTRY_VERSION_UNKNOWN | live | — | — |
+| ERR_REPEAT_THRESHOLD | ref | — | — |
 | ERR_SCHEMA | ref | — | — |
 | ERR_SIZE_EXCEEDED | ref | — | — |
 | ERR_SOME_CODE | ref | — | — |
@@ -615,7 +617,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-HALLMARK-004 | live | UNKNOWN_HALLMARK_OP | error |
 | FUNGI-HALLMARK-005 | live | UNDECLARED_HALLMARK_OP | error |
 
-### HARDEN (8)
+### HARDEN (9)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
@@ -627,6 +629,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-HARDEN-005 | live | RESIDENCY_CEILING_UNHONOURABLE | error |
 | FUNGI-HARDEN-006 | live | SECRET_DEPENDENT_TIMING | warning |
 | FUNGI-HARDEN-007 | live | SPILL_REFUTED | error |
+| FUNGI-HARDEN-008 | live | RESIDENCY_NOT_ENFORCED_AT_RUNTIME | warning |
 
 ### HINT (1)
 
@@ -725,6 +728,12 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-LIMIT-001 | inline | ENFORCED_LIMIT_EXCEEDED | — |
+
+### LINT (1)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-LINT-001 | live | EXCESSIVE_NESTING | info |
 
 ### LOGIC (14)
 
@@ -1053,11 +1062,12 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-REPORT-001 | inline | — | — |
 | FUNGI-REPORT-005 | inline | — | — |
 
-### RES (1)
+### RES (2)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-RES-001 | live | RESILIENCE_RETRY_ON_MUTATION | error |
+| FUNGI-RES-002 | live | SUBSTRATE_HEAL_NOT_AUDITED | warning |
 
 ### RESOURCE (1)
 
@@ -1360,15 +1370,17 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-VALUESTATE-008 | inline | BOUNDARY_INPUT_UNCLEAN | error |
 | FUNGI-VALUESTATE-009 | inline | PROTECTED_VALUE_AT_AUDIT_LOG | error |
 
-### VAULT (5)
+### VAULT (7)
 
 | code | status | name(s) | severity |
 |---|---|---|---|
-| FUNGI-VAULT-001 | live | — | error |
-| FUNGI-VAULT-002 | live | — | error |
-| FUNGI-VAULT-003 | live | — | error |
-| FUNGI-VAULT-004 | live | — | error |
-| FUNGI-VAULT-005 | live | — | error |
+| FUNGI-VAULT-001 | live | VAULT_MISSING_OPEN_BRACE | error |
+| FUNGI-VAULT-002 | live | VAULT_ENTRY_MISSING_PERMISSIONS | error |
+| FUNGI-VAULT-003 | live | VAULT_READ_EFFECT_MISSING | error |
+| FUNGI-VAULT-004 | live | VAULT_WRITE_EFFECT_MISSING | error |
+| FUNGI-VAULT-005 | live | VAULT_WRITE_WITHOUT_MUT | error |
+| FUNGI-VAULT-006 | referenced | VAULT_PERMISSION_DENIED | error |
+| FUNGI-VAULT-007 | referenced | VAULT_READONLY_WRITE | error |
 
 ### VER (1)
 
