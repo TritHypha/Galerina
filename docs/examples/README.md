@@ -145,6 +145,18 @@ NNN-example-name/
 | `FUNGI-K3-002` | `!` applied to `Verdict` (use `flip()`) | ✅ W5b |
 | `FUNGI-K3-003` | Non-`Verdict` operand inside `all{}`/`any{}` | ✅ W5b |
 
+### Vault system (Stage B — planned)
+
+| Code | Meaning | Status |
+|---|---|---|
+| `FUNGI-VAULT-001` | Secret-like value in `vault global` — use `secret {}` instead | Stage B |
+| `FUNGI-VAULT-002` | Config vault key does not match `segment.segment` dot-path format | Stage B |
+| `FUNGI-VAULT-003` | Config vault value cannot be coerced to declared type | Stage B |
+| `FUNGI-VAULT-004` | Required config vault key is absent | Stage B |
+| `FUNGI-VAULT-005` | Vault write without `mut` / runtime write to `vault global` | Stage B |
+| `FUNGI-VAULT-006` | Flow not in vault entry's `allow` list | Stage B |
+| `FUNGI-VAULT-007` | Wrong vault scope (e.g. `vault.session` inside a pure flow) | Stage B |
+
 ### Event checker (Phase 9B)
 
 | Code | Meaning | Status |

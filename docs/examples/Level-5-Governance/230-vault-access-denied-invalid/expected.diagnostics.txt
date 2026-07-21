@@ -1,0 +1,1 @@
+FUNGI-VAULT-006: Flow 'unauthorisedFlow' is not in the allow list for vault entry 'loginCount'.

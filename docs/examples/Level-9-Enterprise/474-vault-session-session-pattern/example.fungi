@@ -1,0 +1,85 @@
+/// example: 474-vault-session-session-pattern
+/// level: 9
+/// concept: vault.session — user session vault for auth tokens, profile and permission data
+/// expected_diagnostics: none
+/// ai_rule: Use vault.session for data that belongs to a logged-in user session. Session vault entries are owner-checked, TTL-controlled, and cleared on logout or expiry. Never store secrets in vault.session — use vault.secure.
+
+@version 1
+
+;; vault.session stores data that belongs to an authenticated user session.
+;; TTL = session lifetime; cleared on logout or expiry.
+;; Use for: recently loaded profile, permission summary, basket state.
+;; Do NOT use for: secrets, API keys, raw PII — use vault.secure for those.
+vault session UserPermissionCache {
+  key:         UserId
+  type:        PermissionSummary
+  ttl:         session
+  owner:       ctx.user.id
+  sensitivity: private
+  access: [
+    loadPermissions,
+    authorizeAction,
+    checkAdminAccess
+  ]
+}
+
+vault session UserProfile {
+  key:         UserId
+  type:        UserProfileSummary
+  ttl:         session
+  owner:       ctx.user.id
+  sensitivity: private
+  access: [
+    loadProfile,
+    renderDashboard
+  ]
+}
+
+;; Load and cache user permissions for the session
+guarded flow loadPermissions(userId: UserId) -> Result<PermissionSummary, Error>
+contract {
+  intent "Load user permissions from database and cache in session vault"
+  effects { database.read, vault.write }
+}
+{
+  let perms = Database.permissions.findByUser(userId)?
+
+  vault.session.set UserPermissionCache {
+    key:   userId
+    value: perms
+  }
+
+  return Ok(perms)
+}
+
+;; Read permission summary from session vault — no DB call
+pure flow authorizeAction(userId: UserId, action: String) -> Result<Bool, Error>
+contract {
+  intent "Check a user permission from the session vault"
+  effects { vault.read }
+}
+{
+  let perms = vault.session.get UserPermissionCache {
+    key:     userId
+    require: authorizeAction
+  }
+
+  return Ok(perms.allows(action))
+}
+
+;; Full enterprise flow using both session vault reads
+secure flow renderDashboard(
+  readonly request: Request,
+  userId: UserId
+) -> Result<DashboardData, Error>
+contract {
+  intent "Render user dashboard from session-cached profile and permissions"
+  effects { vault.read, audit.write }
+}
+{
+  let perms   = vault.session.get UserPermissionCache { key: userId, require: renderDashboard }
+  let profile = vault.session.get UserProfile         { key: userId, require: renderDashboard }
+
+  AuditLog.write({ event: "DashboardRendered", user: userId })
+  return Ok(DashboardData { profile: profile, permissions: perms })
+}

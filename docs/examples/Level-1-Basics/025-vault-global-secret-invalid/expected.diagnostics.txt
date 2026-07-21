@@ -1,0 +1,1 @@
+FUNGI-VAULT-001: Secret-like value found in config vault. Use a secret {} reference instead.

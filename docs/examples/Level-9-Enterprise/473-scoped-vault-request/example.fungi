@@ -1,0 +1,79 @@
+/// example: 473-scoped-vault-request
+/// level: 9
+/// concept: vault.request — per-request scoped vault for safe data reuse without global state
+/// expected_diagnostics: none
+/// ai_rule: Use vault.request to cache data loaded once per HTTP request. The vault entry is typed, permission-controlled and automatically destroyed when the request ends. This avoids repeated database calls without introducing global state.
+
+@version 1
+
+;; vault request declares a scoped vault entry with TTL = one HTTP request.
+;; The entry is typed, owned, permission-controlled and automatically cleared.
+;; It cannot escape the current request boundary.
+vault request CustomerSessionData {
+  key:         CustomerId
+  type:        Customer
+  ttl:         request                            ;; lifetime = exactly this HTTP request
+  owner:       ctx.user.id                        ;; owner-checked on every access
+  sensitivity: private
+  access: [
+    Orders.create,
+    Orders.preview,
+    Customer.summary
+  ]
+}
+
+;; Load customer ONCE per request and store in vault.request
+guarded flow loadCustomer(id: CustomerId) -> Result<Customer, Error>
+contract {
+  intent "Load customer from database once per request and cache in request vault"
+  effects { database.read, vault.write }
+}
+{
+  let customer = Database.customers.findById(id)?
+
+  vault.request.set CustomerSessionData {
+    key:   id
+    value: customer
+  }
+
+  return Ok(customer)
+}
+
+;; Read from vault — zero database calls for subsequent access in the same request
+pure flow getCustomerForOrder(id: CustomerId) -> Result<Customer, Error>
+contract {
+  intent "Read customer from request vault — no database hit"
+  effects { vault.read }
+}
+{
+  let customer = vault.request.get CustomerSessionData {
+    key:     id
+    require: Orders.create                        ;; capability check on access
+  }
+  return Ok(customer)
+}
+
+;; Using the scoped vault pattern in an order creation flow
+secure flow createOrder(
+  readonly request: Request,
+  customerId: CustomerId
+) -> Result<OrderId, Error>
+contract {
+  intent "Create an order using customer data from the request vault"
+  effects { database.read, database.write, vault.read, vault.write, audit.write }
+  invariant { ensure customerId != "" }
+}
+{
+  trap customerId == "" : ERR_EMPTY_CUSTOMER_ID
+
+  unsafe let rawItems: String = request.body.items
+
+  ;; Load customer once (or hit vault cache if already loaded in this request)
+  let customer = loadCustomer(customerId)?
+
+  ;; All downstream flows use vault.request — no further DB calls for customer
+  let customerForValidation = getCustomerForOrder(customerId)?
+
+  AuditLog.write({ event: "OrderCreated", customer: customerId })
+  return Ok("order-id-placeholder")
+}

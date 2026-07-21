@@ -1,0 +1,66 @@
+/// example: 227-global-vault-declaration
+/// level: 5
+/// concept: GlobalVault — declaring protected runtime state with vault {} and permission lists
+/// expected_diagnostics: none
+/// ai_rule: Use vault {} (GlobalVault) for mutable runtime state that must persist across flow calls. Every entry must declare which flows may read and write it, and whether writes require audit. Access via secure.valueName.
+
+@version 1
+
+;; vault {} declares GlobalVault — named, permission-controlled, auditable runtime state.
+;; This is the Galerina replacement for global variables.
+;;
+;; Rules:
+;;   - Every entry must list allowed readers and writers
+;;   - Writes always require mut secure.<name> = ...
+;;   - audit required = every write emits an audit event
+;;   - readonly entries cannot be mutated after creation
+vault {
+  loginCount: Int {
+    allow incrementLogin write     ;; only incrementLogin may write this entry
+    allow getLoginCount  read      ;; only getLoginCount may read this entry
+    audit required                 ;; every write emits an audit event
+  }
+
+  session: SessionRecord keyed by SessionUUID {
+    allow createSession write
+    allow getSession    read
+    allow revokeSession write
+    audit required
+  }
+
+  appId: readonly UUID {
+    allow getAppId read
+    audit optional
+  }
+}
+
+;; Reading vault state — requires vault.read effect
+;; The flow must be in the entry's allow ... read list
+pure flow getLoginCount() -> Int
+contract {
+  intent "Return the current login attempt count from the vault"
+  effects { vault.read }
+}
+{
+  let count = secure.loginCount     ;; runtime-checks: only getLoginCount may read this
+  return count
+}
+
+guarded flow getSession(uuid: SessionUUID) -> Result<SessionRecord, Error>
+contract {
+  intent "Retrieve a session record from the vault"
+  effects { vault.read }
+}
+{
+  let session = secure.session[uuid]
+  return Ok(session)
+}
+
+pure flow getAppId() -> UUID
+contract {
+  intent "Return the stable application UUID"
+  effects { vault.read }
+}
+{
+  return secure.appId
+}

@@ -1,0 +1,51 @@
+/// example: 024-vault-global-basic
+/// level: 1
+/// concept: vault global — typed non-secret application configuration
+/// expected_diagnostics: none
+/// ai_rule: Use vault global for typed, non-secret, application-wide config values that are fixed at boot. Reading requires no effect declaration.
+
+@version 1
+
+;; vault global declares typed, non-secret configuration fixed at boot.
+;; These are not global variables — they are read-only after the service starts.
+vault global {
+  app.name:              String   = "TritHypha"
+  app.region:            String   = "eu-west-2"
+  api.version:           String   = "2.1.0"
+  limits.maxUploadMb:    Int      = 25
+  limits.maxRetries:     Int      = 3
+  features.search:       Bool     = true
+  features.payments:     Bool     = true
+  payments.provider:     String   = "stripe"
+  payments.currency:     String   = "GBP"
+}
+
+;; Reading vault global values requires NO effect declaration — they are non-secret and read-only.
+pure flow getMaxUploadMb() -> Int
+contract {
+  intent "Return the maximum upload size from application config"
+  effects {}
+}
+{
+  let maxUpload = vault.limits.maxUploadMb      ;; typed property access — preferred form
+  return maxUpload
+}
+
+pure flow isPaymentsEnabled() -> Bool
+contract {
+  intent "Check whether the payments feature flag is active"
+  effects {}
+}
+{
+  return vault.features.payments
+}
+
+pure flow getPaymentCurrency() -> String
+contract {
+  intent "Return the configured payment currency from vault global"
+  effects {}
+}
+{
+  let currency = vault.get<String>("payments.currency")  ;; generic key access — also valid
+  return currency
+}

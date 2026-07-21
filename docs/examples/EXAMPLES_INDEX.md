@@ -1,6 +1,6 @@
 # Galerina Canonical Example Corpus — Index
 
-> Generated: 2026-05-31  |  Total: 222 examples  |  Stable: 188  |  Draft: 34
+> Generated: 2026-07-21  |  Total: 230 examples  |  Stable: 196  |  Draft: 34
 
 This file is the human-readable companion to `examples.manifest.json`.
 Each example lives at `docs/Examples/<level-dir>/<id>/example.fungi`.
@@ -26,7 +26,7 @@ Each example lives at `docs/Examples/<level-dir>/<id>/example.fungi`.
 
 Core syntax — pure/guarded/secure flow, let/mut/readonly, Result, Option, match, enum, record, type alias, contract.
 
-**23 examples** — 19 stable, 4 draft
+**25 examples** — 21 stable, 4 draft
 
 | ID | Concept | Status | Key Features |
 |---|---|---|---|
@@ -53,6 +53,8 @@ Core syntax — pure/guarded/secure flow, let/mut/readonly, Result, Option, matc
 | `021-flow-contract-basic` | flow contract block with types, intent, and events | stable | Array, Result, events, match, protected |
 | `022-no-toplevel-let` | top-level let bindings are rejected `FUNGI-SYNTAX-006` | stable | contract, flow |
 | `023-readable-logic-forms` | readable operator aliases — and, or, unless, is | stable | unless |
+| `024-vault-global-basic` | `vault global` — typed non-secret application configuration | stable | vault |
+| `025-vault-global-secret-invalid` | secret-like value in `vault global` is rejected `FUNGI-VAULT-001` | stable | vault |
 
 ## Level 2 — Types
 
@@ -175,7 +177,7 @@ Security model — trust boundaries, unsafe let, validate gates, protected/redac
 
 Governance — intent, policy, authority, contract blocks (errors, context, timeouts, retries, limits, privacy, observability, events), contract sets.
 
-**26 examples** — 22 stable, 4 draft
+**30 examples** — 26 stable, 4 draft
 
 | ID | Concept | Status | Key Features |
 |---|---|---|---|
@@ -205,6 +207,10 @@ Governance — intent, policy, authority, contract blocks (errors, context, time
 | `224-contract-best-practices` | gold standard contract — named result type, full contract, raw->protected->redact->audit | stable | Result, audit, errors, events, observability, privacy |
 | `225-context-missing` | FUNGI-CONTEXT-001 — context require actor declared but never accessed `FUNGI-CONTEXT-001` | stable | Result, audit |
 | `226-full-16-section-minimal` | all 16 contract sections in canonical order — minimal but complete template | stable | Result, audit, errors, events, limits, observability |
+| `227-global-vault-declaration` | GlobalVault — declaring `vault {}` with typed entries, allow lists and audit | stable | vault |
+| `228-global-vault-mut-write` | GlobalVault writes — `mut secure.x` required; vault.write effect required | stable | vault |
+| `229-vault-write-without-mut-invalid` | vault write without mut rejected `FUNGI-VAULT-005` | stable | vault |
+| `230-vault-access-denied-invalid` | flow not in vault allow list rejected `FUNGI-VAULT-006` | stable | vault |
 
 ## Level 6 — Compute
 
@@ -293,7 +299,7 @@ Compute targets — cpu, gpu, npu, wasm, photonic, quantum, adaptive/determinist
 
 Enterprise patterns — healthcare PII, financial payments, compliance effects, full 16-section contracts, supply chain.
 
-**22 examples** — 12 stable, 10 draft
+**24 examples** — 14 stable, 10 draft
 
 | ID | Concept | Status | Key Features |
 |---|---|---|---|
@@ -319,6 +325,8 @@ Enterprise patterns — healthcare PII, financial payments, compliance effects, 
 | `470-contract-healthcare-search` | healthcare patient search with complete privacy, observability, errors, and context contract sections | draft | Result, audit, errors, events, limits, observability |
 | `471-medical-medication-check` | medical domain — record types Patient and Medication, interaction validation pattern | stable | Result, audit, errors, events, observability, privacy |
 | `472-physics-simulation` | scientific domain — Mass, Force, Energy domain record types, pure kinetic energy calculation | stable | record |
+| `473-scoped-vault-request` | vault.request — per-request scoped vault for safe data reuse without global state | stable | vault |
+| `474-vault-session-session-pattern` | vault.session — user session vault for permission cache and profile data | stable | vault |
 
 ## Proposed — Readable Logic Forms
 
@@ -340,17 +348,17 @@ Proposed readable operator aliases — equality, comparison, boolean, unless, go
 
 | Level | Name | Total | Stable | Draft |
 |---|---|---|---|---|
-| 1 | Basics | 23 | 19 | 4 |
+| 1 | Basics | 25 | 21 | 4 |
 | 2 | Types | 43 | 40 | 3 |
 | 3 | Effects | 20 | 18 | 2 |
 | 4 | Security | 27 | 25 | 2 |
-| 5 | Governance | 26 | 22 | 4 |
+| 5 | Governance | 30 | 26 | 4 |
 | 6 | Compute | 20 | 20 | 0 |
 | 7 | AI | 20 | 12 | 8 |
 | 8 | Targets | 16 | 15 | 1 |
-| 9 | Enterprise | 22 | 12 | 10 |
+| 9 | Enterprise | 24 | 14 | 10 |
 | P | Readable Logic Forms | 5 | 5 | 0 |
-| **—** | **Total** | **222** | **188** | **34** |
+| **—** | **Total** | **230** | **196** | **34** |
 
 ---
 
