@@ -2326,7 +2326,16 @@ function emitBlockStatements(
           const paramTypeIs64 = varName !== null
             ? is64BitWatType(numericBaseType(recordVarTypes?.get(varName) ?? ""))
             : false;
-          if (!isAlreadyI64 && !paramTypeIs64) {
+          // Step 4e cross-flow fix (0115): a `return callee(...)` where `callee` is a user flow
+          // that returns Int64/UInt64 already leaves i64 on the stack — the `(call $callee …)`
+          // instruction's result type is i64, so `watStackType` (which conservatively returns "i32"
+          // for any `(call $…)` it can't classify) misdetects it. Guard: if the return expr node is
+          // a non-method callExpr whose callee return type is 64-bit, skip the extend.
+          const calleeReturnIs64 =
+            exprNode?.kind === "callExpr" && exprNode.callStyle !== "method"
+              ? is64BitWatType(numericBaseType(flowReturnTypes?.get(exprNode.value ?? "") ?? ""))
+              : false;
+          if (!isAlreadyI64 && !paramTypeIs64 && !calleeReturnIs64) {
             exprStr = `(i64.extend_i32_s ${exprStr})`;
           }
         }
