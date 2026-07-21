@@ -41,3 +41,8 @@ verifyRuntimeManifestHash  # runtime host binds GIR↔manifest at load; exercise
 checkProfiles                    # invoked by galerina-devtools-security/audit-runner.ts (profile-taint audit surface)
 checkFileSymbolCollisions        # module-registry API; invoked by tests/governance/import-resolution.test.mjs (resolver-side)
 checkPackageCapabilityExpansion  # package-resolver governance gate; invoked by tests/package-resolver/governed-resolver.test.mjs
+
+# ── RD-0363 passive plan replay API — exposed for external runtime callers (not a
+#    compile-time gate). Passive plan admission is a runtime host concern; the compiler
+#    generates the planSignature slot but does not invoke admission itself. ──────────
+verifyPlanAdmission              # RD-0363 runtime API; invoked by the host plan-replay supervisor, not the compile pipeline

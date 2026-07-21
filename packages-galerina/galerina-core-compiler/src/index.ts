@@ -171,6 +171,8 @@ export {
   type Rejection,
   type HostResidencyCapability,
   type SpillOutcome,
+  // RD-0365: KeyCustody type export so callers can reference the ladder rungs.
+  type KeyCustody,
 } from "./hardening-residency.js";
 
 // Phase 5 / 18E / 18H / 19A — Effect Checker
@@ -185,6 +187,9 @@ export {
   inferDirectEffectsForFlow,
   buildModuleAliasMap,
   buildFlowEffectSummary,
+  // RD-0364: export CANONICAL_EFFECTS and DENY_ONLY_EFFECTS so callers can check membership.
+  CANONICAL_EFFECTS,
+  DENY_ONLY_EFFECTS,
   type EffectCheckResult,
   type EffectDiagnostic,
   type FlowEffectSummary,
@@ -649,6 +654,11 @@ export {
   type ResponseStep,
   type EmitEventStep,
   type ReturnStep,
+  // RD-0363 replay admission helpers
+  verifyPlanFreshness,
+  verifyPlanAdmission,
+  PLAN_DEFAULT_MAX_AGE_MS,
+  type PlanAdmissionResult,
 } from "./runtime/executionPlan.js";
 
 // Stage A - AST Interpreter

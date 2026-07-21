@@ -177,6 +177,9 @@ export const EffectFlags = {
   // contributed bit 0 = "no authority required" — effectsToFlags sets this sentinel. A subset check then
   // fails CLOSED: a required-but-unmapped effect is NOT satisfied by a declared mask that lacks the
   // sentinel. Per-effect precision for unmapped effects is the AUTHORITATIVE string-name check's job.
+  // RD-0364 governed inference bridge contract: granular per-call and model-load effects.
+  InferenceInvoke: 1 << 15,  // inference.invoke (per-call AI request)
+  InferenceLoad:   1 << 16,  // inference.load (model load/register — supply-chain event)
   UnmappedEffect:  1 << 30,
 } as const;
 
@@ -206,6 +209,12 @@ const EFFECT_NAME_TO_FLAG: ReadonlyMap<string, EffectFlagsMask> = new Map([
   ["message.publish",            EffectFlags.MessagePublish],
   ["ai.train",                   EffectFlags.ModelTrain],
   ["telemetry.read",             EffectFlags.TelemetryRead],
+  // RD-0364: granular inference effects → distinct bits so the subset check is precise.
+  ["inference.invoke",           EffectFlags.InferenceInvoke],
+  ["inference.load",             EffectFlags.InferenceLoad],
+  // Coarse aliases route to the InferenceInvoke bit.
+  ["ai.inference.invoke",        EffectFlags.InferenceInvoke],
+  ["ai.inference.load",          EffectFlags.InferenceLoad],
 ]);
 
 /**

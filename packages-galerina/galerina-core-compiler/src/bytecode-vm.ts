@@ -349,8 +349,16 @@ export function runBytecode(program: BytecodeProgram, args: readonly number[], m
       case Op.EQ: { const b = stack[--sp]!; stack[sp-1] = stack[sp-1]! === b ? 1 : 0; break; }
       case Op.NE: { const b = stack[--sp]!; stack[sp-1] = stack[sp-1]! !== b ? 1 : 0; break; }
 
-      case Op.AND: { const b = stack[--sp]!; stack[sp-1] = (stack[sp-1]! !== 0 && b !== 0) ? 1 : 0; break; }
-      case Op.OR:  { const b = stack[--sp]!; stack[sp-1] = (stack[sp-1]! !== 0 || b !== 0) ? 1 : 0; break; }
+      // K3 consolidation (Bob architectural item 6): AND/OR use min/max — the canonical K3 algebra
+      // (triStateAnd = min, triStateOr = max from @galerina/core-logic). For Boolean operands (0/1)
+      // min/max is byte-identical to &&/||. For K3 Verdict operands (-1/0/+1) min/max is correct;
+      // the old `!== 0` map was wrong (it collapsed DENY(-1) to false, then AND(DENY,ALLOW)=0 but
+      // should be -1). No import needed — `Math.min`/`Math.max` is the same math, no dep cycle.
+      case Op.AND: { const b = stack[--sp]!; stack[sp-1] = Math.min(stack[sp-1]!, b); break; }
+      case Op.OR:  { const b = stack[--sp]!; stack[sp-1] = Math.max(stack[sp-1]!, b); break; }
+      // Op.NOT handles boolean `!` on 0/1 values only (Verdict `flip` uses the WAT/tree-walker path,
+      // not the bytecode-vm). Boolean NOT: NOT(1)=0, NOT(0)=1. Keep the safe === 0 test, not negation
+      // (negation would produce -1 for input 1, wrong for boolean). K3 flip is not compiled here.
       case Op.NOT: stack[sp-1] = stack[sp-1]! === 0 ? 1 : 0; break;
       case Op.NEG: stack[sp-1] = i32Trap(i32NegChecked(stack[sp-1]!)); break;
 

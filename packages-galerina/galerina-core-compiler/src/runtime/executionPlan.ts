@@ -86,7 +86,34 @@ export interface PassiveExecutionPlan {
   readonly approvedCapabilities: ReadonlyMap<string, ApprovedCapability>;
   readonly planHash: string;
   readonly generatedAt: string;
+  /**
+   * RD-0363 §2.1 — signed artifact slot.
+   * At build time this is left undefined (plans are produced by the compiler, not the signing key).
+   * The signing surface: Ed25519 (+ ML-DSA-65 in certified profile) over the canonical planHash.
+   * Post-v1 admission gate: a replayable plan must carry both halves; unsigned ⇒ REJECT at the
+   * replay-time admission check (the same pattern as the #105 fuse-loader gate).
+   *
+   * Format: "<ed25519-hex>.<mldsa65-hex>" or "<ed25519-hex>" (dev profile)
+   * Absent at compile time = unsigned (feasibility artifact, not a bearer token).
+   */
+  readonly planSignature?: string;
+  /**
+   * RD-0363 §2.2 — replay freshness.
+   * Maximum age in milliseconds before a stored plan is considered stale → INDETERMINATE → deny.
+   * Defaults to 86_400_000 ms (24 h) when not specified.
+   * A verifier checking `Date.now() - generatedAt > maxAgeMs` resolves: old plan → fail-closed DENY.
+   */
+  readonly maxAgeMs?: number;
+  /**
+   * RD-0363 §2.3 — target binding.
+   * The compute target family this plan was built for (e.g. "cpu", "wasm", "gpu").
+   * Replaying a cpu-plan on a gpu lane ⇒ REJECT at admission (cross-target smuggling, PV3).
+   */
+  readonly targetBinding?: string;
 }
+
+/** Default plan max-age (24 h in ms). Plans older than this are stale → deny at replay. */
+export const PLAN_DEFAULT_MAX_AGE_MS = 86_400_000;
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -281,6 +308,104 @@ export function buildExecutionPlan(
     planHash,
     generatedAt,
   };
+}
+
+// ---------------------------------------------------------------------------
+// RD-0363 — Passive plan replay admission helpers
+// ---------------------------------------------------------------------------
+
+/** Result of a freshness/admission check on a PassiveExecutionPlan. */
+export interface PlanAdmissionResult {
+  readonly admitted: boolean;
+  /** Human-readable denial reason if !admitted. */
+  readonly reason?: string;
+  /** K3 fold: +1 admitted, 0 stale/unsigned (indeterminate → caller denies), -1 rejected. */
+  readonly verdict: 1 | 0 | -1;
+}
+
+/**
+ * RD-0363 §2.2 freshness check — is the plan still within its max age?
+ *
+ * `nowMs` defaults to `Date.now()` (injected for deterministic testing).
+ * Returns: +1 fresh, 0 stale (→ INDETERMINATE → caller collapses to DENY), -1 if parse fails.
+ */
+export function verifyPlanFreshness(
+  plan: PassiveExecutionPlan,
+  nowMs: number = Date.now(),
+): PlanAdmissionResult {
+  const maxAge = plan.maxAgeMs ?? PLAN_DEFAULT_MAX_AGE_MS;
+  let generatedAtMs: number;
+  try {
+    generatedAtMs = new Date(plan.generatedAt).getTime();
+  } catch {
+    return { admitted: false, reason: "planFreshness: generatedAt is not a valid ISO date", verdict: -1 };
+  }
+  if (!Number.isFinite(generatedAtMs)) {
+    return { admitted: false, reason: "planFreshness: generatedAt parsed to a non-finite timestamp", verdict: -1 };
+  }
+  const age = nowMs - generatedAtMs;
+  if (age > maxAge) {
+    return {
+      admitted: false,
+      reason: `planFreshness: plan is ${Math.round(age / 1000)}s old (max ${Math.round(maxAge / 1000)}s) — STALE`,
+      verdict: 0, // INDETERMINATE → collapses to DENY at the caller boundary
+    };
+  }
+  return { admitted: true, verdict: 1 };
+}
+
+/**
+ * RD-0363 §2 plan admission gate — combines hash integrity, freshness, and target binding.
+ *
+ * This is the compile-time half of the admission story. The full runtime half (capability
+ * re-verification at replay time, RD-0363 §2.2) is a runtime concern beyond the compiler.
+ *
+ * Checks:
+ *   (1) planHash integrity — canonical hash must match what was committed at build time.
+ *   (2) freshness — plan must be within its max-age window.
+ *   (3) targetBinding — if a required target is specified, the plan must declare it.
+ *
+ * Signature verification (Ed25519 + ML-DSA-65) is NOT done here; it requires the key material
+ * which the compiler does not hold. The gate returns INDETERMINATE (0) when planSignature is
+ * absent so that a downstream verifier that DOES hold the key can fold its verdict in. A missing
+ * signature never converts to ALLOW — it is always at best 0, never +1.
+ */
+export function verifyPlanAdmission(
+  plan: PassiveExecutionPlan,
+  options?: { requiredTarget?: string; nowMs?: number },
+): PlanAdmissionResult {
+  // (1) Hash integrity — recompute the canonical hash and compare.
+  const canonical = {
+    flow: plan.flow,
+    qualifier: plan.qualifier,
+    steps: plan.steps,
+    approvedCapabilities: Object.fromEntries(plan.approvedCapabilities),
+  };
+  const recomputed = createHash("sha256").update(JSON.stringify(canonical), "utf8").digest("hex");
+  if (recomputed !== plan.planHash) {
+    return { admitted: false, reason: `planAdmission: planHash mismatch — plan may have been tampered (PV1)`, verdict: -1 };
+  }
+
+  // (2) Freshness.
+  const fresh = verifyPlanFreshness(plan, options?.nowMs);
+  if (!fresh.admitted) return fresh;
+
+  // (3) Target binding — if required, the plan must declare a matching targetBinding.
+  if (options?.requiredTarget !== undefined) {
+    if (plan.targetBinding === undefined) {
+      return { admitted: false, reason: `planAdmission: plan has no targetBinding but ${options.requiredTarget} is required (PV3)`, verdict: -1 };
+    }
+    if (plan.targetBinding !== options.requiredTarget) {
+      return { admitted: false, reason: `planAdmission: targetBinding "${plan.targetBinding}" !== required "${options.requiredTarget}" (PV3)`, verdict: -1 };
+    }
+  }
+
+  // Signature absent → INDETERMINATE (0). The caller MUST fold a key-verifier verdict before admitting.
+  if (plan.planSignature === undefined) {
+    return { admitted: false, reason: "planAdmission: no planSignature — unsigned plan is INDETERMINATE (not a bearer token)", verdict: 0 };
+  }
+
+  return { admitted: true, verdict: 1 };
 }
 
 // ---------------------------------------------------------------------------

@@ -1284,7 +1284,9 @@ function inferExprType(node: AstNode | undefined): string | undefined {
       }
       return undefined;
     }
-    case "k3FoldExpr": return "Verdict";
+    case "k3FoldExpr":    return "Verdict";
+    case "checkExpr":     return "Verdict"; // W5b T2.2: check{} produces the arm's Verdict result
+    case "prefilterExpr": return "Verdict"; // W5b T2.4: prefilter{} produces the arm's Verdict result
     case "unaryExpr": {
       if (node.value === "flip") return "Verdict"; // K3 negation is Verdict-only
       if (node.value === "!") return "Bool";
@@ -1787,11 +1789,26 @@ export function emitWATExpr(
         // this lane: an out-of-i32 literal is an invalid module → walker, fail-safe.) Static form
         // only (`Int.bitAnd(a,b)`) — the interpreter defines no value-method form. Previously fell
         // through to `call $bitAnd`, an undefined helper → wabt reject (the DSS 6/12 R0 blocker).
-        if ((name === "bitAnd" || name === "bitOr") && recvName0 === "Int" && argNodes.length === 2) {
-          const bitOp = name === "bitAnd" ? "i32.and" : "i32.or";
+        // U1/bitwise: Int.bitAnd/Or/Xor/ShiftLeft/ShiftRight → native i32 bitwise ops.
+        // Int.bitNot → i32.xor(x, -1) which is the standard WASM complement pattern.
+        // All byte-faithful: BigInt two's-complement semantics == signed i32 ops for the i32 domain.
+        if (recvName0 === "Int" && argNodes.length === 2 &&
+            (name === "bitAnd" || name === "bitOr" || name === "bitXor" ||
+             name === "bitShiftLeft" || name === "bitShiftRight")) {
+          const bitOp = name === "bitAnd" ? "i32.and"
+            : name === "bitOr"  ? "i32.or"
+            : name === "bitXor" ? "i32.xor"
+            : name === "bitShiftLeft" ? "i32.shl"
+            : "i32.shr_s"; // bitShiftRight = arithmetic shift right
           const aWat = emitWATExpr(argNodes[0]!, vars, staticConsts);
           const bWat = emitWATExpr(argNodes[1]!, vars, staticConsts);
+          // i32.shl/shr_s mask the shift count to [0,31] natively — byte-faithful.
           return `(${bitOp} ${aWat} ${bWat})`;
+        }
+        if (name === "bitNot" && recvName0 === "Int" && argNodes.length === 1) {
+          // i32.xor(x, -1) = bitwise NOT in WASM (no dedicated i32.not instruction).
+          const xWat = emitWATExpr(argNodes[0]!, vars, staticConsts);
+          return `(i32.xor ${xWat} (i32.const -1))`;
         }
 
         // #160: codePoint is identity — a Char is already its code point i32. Emit the
@@ -2143,6 +2160,83 @@ export function emitWATExpr(
       return `(unreachable) (; RD-0240: '?' on non-Result/Option inner type '${innerType ?? "unknown"}' — fail-closed ;)`;
     }
 
+    // W5b T2.2: check(subject){ if:/deny:/ambig: } — K3 tri-branch (expression form).
+    // Subject is a Verdict trit (i32: −1/0/+1). Dispatch: −1→deny, 0→ambig, +1→if.
+    // Emitted as a nested (if (else (if))) chain; fail-closed unreachable when any arm is
+    // absent (the FUNGI-CHECK-001 compile gate makes that an error before we reach here,
+    // but the belt must never silently fall through). Requires an active recordCtx (the
+    // subject scratch local lives inside the flow body). Outside a flow body the WASM tier
+    // is not in use, so the placeholder is correct.
+    case "checkExpr": {
+      const subjectNode = node.children?.[0];
+      const arms = (node.children ?? []).slice(1).filter((c) => c.kind === "checkArm");
+      if (subjectNode === undefined || recordCtx === null) {
+        return `(unreachable) (; check{}: no subject or outside flow body — fail-closed ;)`;
+      }
+      const subjectWat = emitWATExpr(subjectNode, vars, staticConsts);
+      const scratch = `$__fungi_chk_${recordCtx.counter.n++}`;
+      recordCtx.localDecls.push(`(local ${scratch} i32)`);
+      const getArm = (label: string): string => {
+        const arm = arms.find((a) => a.value === label);
+        const body = arm?.children?.[0];
+        if (body === undefined)
+          return `(unreachable) (; check{}: missing '${label}' arm — fail-closed (FUNGI-CHECK-001 belt) ;)`;
+        return body.kind === "block" ? emitBlockLastExpr(body, vars, staticConsts) : emitWATExpr(body, vars, staticConsts);
+      };
+      // Nested (if DENY (then …) (else (if AMBIG (then …) (else ALLOW…))))
+      return [
+        `(block (result i32)`,
+        `  (local.set ${scratch} ${subjectWat})`,
+        `  (if (result i32) (i32.eq (local.get ${scratch}) (i32.const -1))`,
+        `    (then ${getArm("deny")})`,
+        `    (else`,
+        `      (if (result i32) (i32.eq (local.get ${scratch}) (i32.const 0))`,
+        `        (then ${getArm("ambig")})`,
+        `        (else ${getArm("if")})`,
+        `      )`,
+        `    )`,
+        `  )`,
+        `)`,
+      ].join("\n");
+    }
+
+    // W5b T2.4: prefilter(subject){ deny:/maybe: } — DENY-ONLY gate (expression form).
+    // DENY(−1) → deny arm; UNKNOWN(0) or ALLOW(+1) → maybe arm (ALLOW is downgraded).
+    // Mirrors check{} lowering strategy; deny-arm fires when subject < 0 (only −1 is
+    // valid but an out-of-lattice trit also fires deny — fail-closed for both).
+    case "prefilterExpr": {
+      const subjectNode = node.children?.[0];
+      const arms = (node.children ?? []).slice(1).filter((c) => c.kind === "prefilterArm");
+      if (subjectNode === undefined || recordCtx === null) {
+        return `(unreachable) (; prefilter{}: no subject or outside flow body — fail-closed ;)`;
+      }
+      const subjectWat = emitWATExpr(subjectNode, vars, staticConsts);
+      const scratch = `$__fungi_pflt_${recordCtx.counter.n++}`;
+      recordCtx.localDecls.push(`(local ${scratch} i32)`);
+      const getArm = (label: string): string => {
+        const arm = arms.find((a) => a.value === label);
+        const body = arm?.children?.[0];
+        if (body === undefined)
+          return `(unreachable) (; prefilter{}: missing '${label}' arm — fail-closed (FUNGI-PREFILTER-001 belt) ;)`;
+        return body.kind === "block" ? emitBlockLastExpr(body, vars, staticConsts) : emitWATExpr(body, vars, staticConsts);
+      };
+      return [
+        `(block (result i32)`,
+        `  (local.set ${scratch} ${subjectWat})`,
+        `  (if (result i32) (i32.lt_s (local.get ${scratch}) (i32.const 0))`,
+        `    (then ${getArm("deny")})`,
+        `    (else ${getArm("maybe")})`,
+        `  )`,
+        `)`,
+      ].join("\n");
+    }
+
+    // W5b T2.2: faultStmt in expression position — never produces a value; always traps.
+    // The compile-time guarantee (fault is a statement, never a sub-expression) should
+    // prevent this path, but the belt never silently returns a value.
+    case "faultStmt":
+      return `(unreachable) (; fault — terminal audited channel, WASM tier traps (W5b T2.2) ;)`;
+
     default:
       return `(unreachable) (; unhandled: ${node.kind} — fail-closed (emitter cannot lower; #128-sibling) ;)`;
   }
@@ -2189,7 +2283,8 @@ export function emitBlockLastExpr(
   if (last.kind === "binaryExpr" || last.kind === "callExpr" ||
       last.kind === "identifier"  || last.kind === "numberLiteral" ||
       last.kind === "boolLiteral" || last.kind === "stringLiteral" ||
-      last.kind === "matchExpr"   || last.kind === "listLiteral") {
+      last.kind === "matchExpr"   || last.kind === "listLiteral" ||
+      last.kind === "checkExpr"   || last.kind === "prefilterExpr") {
     return emitWATExpr(last, vars, staticConsts);
   }
   return "(unreachable) ;; unresolved block expr — fail-closed (emitter cannot lower block tail; #128-sibling)";
@@ -2801,6 +2896,107 @@ function emitBlockStatements(
         bodyLines.push(`    (br ${loopLabel})`);
         bodyLines.push(`  )`);
         bodyLines.push(`)`);
+        break;
+      }
+
+      // W5b T2.2: check(subject){ if:/deny:/ambig: } — K3 tri-branch (statement form).
+      // Subject is a Verdict trit (i32). Dispatch: −1→deny, 0→ambig, +1→if (same as
+      // expression form, without the (block (result i32)) wrapper — arms are statements).
+      case "checkExpr": {
+        const subjectNode = stmt.children?.[0];
+        const arms = (stmt.children ?? []).slice(1).filter((c) => c.kind === "checkArm");
+        if (subjectNode === undefined) {
+          bodyLines.push(`(unreachable) ;; check{}: no subject — fail-closed`);
+          break;
+        }
+        const subjectWat = emitWATExpr(subjectNode, vars, staticConsts);
+        const n = labelCounter.n++;
+        const scratch = `$__fungi_chk_${n}`;
+        localDecls.push(`(local ${scratch} i32)`);
+        const emitArmStmts = (label: string): string[] => {
+          const arm = arms.find((a) => a.value === label);
+          const body = arm?.children?.[0];
+          if (body === undefined)
+            return [`(unreachable) ;; check{}: missing '${label}' arm — fail-closed (FUNGI-CHECK-001 belt)`];
+          const lines: string[] = [];
+          const armBlock: AstNode = body.kind === "block" ? body : { kind: "block", children: [body] };
+          emitBlockStatements(armBlock, vars, localDecls, lines, labelCounter, true, staticConsts);
+          return lines;
+        };
+        bodyLines.push(`(local.set ${scratch} ${subjectWat})`);
+        bodyLines.push(`(if (i32.eq (local.get ${scratch}) (i32.const -1))`);
+        bodyLines.push(`  (then`);
+        for (const l of emitArmStmts("deny")) bodyLines.push(`    ${l}`);
+        bodyLines.push(`  )`);
+        bodyLines.push(`  (else`);
+        bodyLines.push(`    (if (i32.eq (local.get ${scratch}) (i32.const 0))`);
+        bodyLines.push(`      (then`);
+        for (const l of emitArmStmts("ambig")) bodyLines.push(`        ${l}`);
+        bodyLines.push(`      )`);
+        bodyLines.push(`      (else`);
+        for (const l of emitArmStmts("if")) bodyLines.push(`        ${l}`);
+        bodyLines.push(`      )`);
+        bodyLines.push(`    )`);
+        bodyLines.push(`  )`);
+        bodyLines.push(`)`);
+        // Structural terminator: arms always return so control never falls through here.
+        // Without this wabt rejects the module with "type mismatch in implicit return"
+        // when the enclosing function has a result type (the if block alone does not
+        // push a value onto the stack in statement form).
+        bodyLines.push(`(unreachable) ;; check{} structural terminator — arms always return`);
+        break;
+      }
+
+      // W5b T2.4: prefilter(subject){ deny:/maybe: } — DENY-ONLY gate (statement form).
+      // DENY(−1) → deny arm; anything ≥ 0 → maybe arm (ALLOW is downgraded, A8 core).
+      case "prefilterExpr": {
+        const subjectNode = stmt.children?.[0];
+        const arms = (stmt.children ?? []).slice(1).filter((c) => c.kind === "prefilterArm");
+        if (subjectNode === undefined) {
+          bodyLines.push(`(unreachable) ;; prefilter{}: no subject — fail-closed`);
+          break;
+        }
+        const subjectWat = emitWATExpr(subjectNode, vars, staticConsts);
+        const n = labelCounter.n++;
+        const scratch = `$__fungi_pflt_${n}`;
+        localDecls.push(`(local ${scratch} i32)`);
+        const emitArmStmts = (label: string): string[] => {
+          const arm = arms.find((a) => a.value === label);
+          const body = arm?.children?.[0];
+          if (body === undefined)
+            return [`(unreachable) ;; prefilter{}: missing '${label}' arm — fail-closed (FUNGI-PREFILTER-001 belt)`];
+          const lines: string[] = [];
+          const armBlock: AstNode = body.kind === "block" ? body : { kind: "block", children: [body] };
+          emitBlockStatements(armBlock, vars, localDecls, lines, labelCounter, true, staticConsts);
+          return lines;
+        };
+        bodyLines.push(`(local.set ${scratch} ${subjectWat})`);
+        bodyLines.push(`(if (i32.lt_s (local.get ${scratch}) (i32.const 0))`);
+        bodyLines.push(`  (then`);
+        for (const l of emitArmStmts("deny")) bodyLines.push(`    ${l}`);
+        bodyLines.push(`  )`);
+        bodyLines.push(`  (else`);
+        for (const l of emitArmStmts("maybe")) bodyLines.push(`    ${l}`);
+        bodyLines.push(`  )`);
+        bodyLines.push(`)`);
+        // Structural terminator: same wabt "type mismatch in implicit return" guard.
+        bodyLines.push(`(unreachable) ;; prefilter{} structural terminator — arms always return`);
+        break;
+      }
+
+      // W5b T2.2: fault <expr> — terminal audited channel.
+      // The interpreter throws a FaultSignal; in the WASM tier there is no host-managed
+      // audit journal, so the equivalent is an unconditional trap. The reason expression
+      // is evaluated first (so any effect it has is observed before the trap fires —
+      // matching the interpreter's "eval then throw" order), then unreachable.
+      case "faultStmt": {
+        const reasonNode = stmt.children?.[0];
+        if (reasonNode !== undefined) {
+          // Evaluate the reason for its side-effects (e.g. a host call that logs); result dropped.
+          const reasonWat = emitWATExpr(reasonNode, vars, staticConsts);
+          bodyLines.push(`(drop ${reasonWat}) ;; fault reason evaluated (side-effects observed)`);
+        }
+        bodyLines.push(`(unreachable) ;; fault — W5b T2.2 terminal audited channel, WASM tier traps`);
         break;
       }
 

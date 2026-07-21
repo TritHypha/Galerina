@@ -1120,6 +1120,29 @@ function numericStatic(receiver: string, method: string, args: readonly Galerina
       const b = BigInt(Math.trunc(numVal(args[1] ?? FUNGI_VOID)));
       return { __tag: "int", value: Number(a | b) };
     }
+    case "Int.bitXor": {
+      // Bitwise XOR for toggle / difference masks.
+      const a = BigInt(Math.trunc(numVal(args[0] ?? FUNGI_VOID)));
+      const b = BigInt(Math.trunc(numVal(args[1] ?? FUNGI_VOID)));
+      return { __tag: "int", value: Number(BigInt.asIntN(32, a ^ b)) };
+    }
+    case "Int.bitNot": {
+      // Bitwise complement (one's complement) — NOT(x) = ~x as signed i32.
+      const a = BigInt(Math.trunc(numVal(args[0] ?? FUNGI_VOID)));
+      return { __tag: "int", value: Number(BigInt.asIntN(32, ~a)) };
+    }
+    case "Int.bitShiftLeft": {
+      // Left-shift — clamps shift to [0,31] (WASM i32.shl semantics).
+      const a = Math.trunc(numVal(args[0] ?? FUNGI_VOID));
+      const s = Math.trunc(numVal(args[1] ?? FUNGI_VOID)) & 31;
+      return { __tag: "int", value: (a << s) | 0 };
+    }
+    case "Int.bitShiftRight": {
+      // Arithmetic right-shift (sign-extending) — clamps shift to [0,31] (WASM i32.shr_s).
+      const a = Math.trunc(numVal(args[0] ?? FUNGI_VOID));
+      const s = Math.trunc(numVal(args[1] ?? FUNGI_VOID)) & 31;
+      return { __tag: "int", value: (a >> s) | 0 };
+    }
     case "Float.parse": {
       const n = parseFloat(strVal(args[0] ?? FUNGI_VOID));
       return !Number.isFinite(n) ? err("ParseError: not a valid finite float") : ok({ __tag: "float", value: n });

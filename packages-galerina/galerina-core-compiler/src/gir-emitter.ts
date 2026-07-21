@@ -815,9 +815,13 @@ export const EFFECT_TO_CAPABILITY: ReadonlyMap<string, string> = new Map([
   ["network.outbound", "host.network.outbound"],
   ["network.inbound",  "host.network.inbound"],
   ["ai.inference",     "host.ai.inference"],
-  ["storage.read",  "host.filesystem.read"],
-  ["storage.write", "host.filesystem.write"],
+  ["storage.read",     "host.filesystem.read"],
+  ["storage.write",    "host.filesystem.write"],
   ["email.send",       "host.email.send"],
+  // RD-0364: granular inference effects map to the same host.ai.inference capability root,
+  // distinguished by the .invoke / .load suffix so admission can gate them independently.
+  ["inference.invoke", "host.ai.inference.invoke"],
+  ["inference.load",   "host.ai.inference.load"],
 ]);
 
 export interface AiGraphSourceSpan {

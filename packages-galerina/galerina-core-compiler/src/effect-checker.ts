@@ -85,10 +85,20 @@ export const EFFECT_REGISTRY: Readonly<Record<string, readonly string[]>> = {
   "File.readText": ["storage.read"],
   "File.readBytes": ["storage.read"],
 
-  // AI
+  // AI / inference
   "ai.inference": ["ai.inference"],
   "Model.run": ["ai.inference"],
   "Classifier.classify": ["ai.inference"],
+  // RD-0364 governed inference bridge contract: granular per-call and model-load effects.
+  "inference.invoke": ["inference.invoke"],
+  "inference.load":   ["inference.load"],
+  // Bridge method patterns: HybridInferenceEngine.infer → inference.invoke; Model.load → inference.load.
+  "HybridInferenceEngine.infer":    ["inference.invoke"],
+  "InferenceEngine.infer":          ["inference.invoke"],
+  "BitNetBridge.infer":             ["inference.invoke"],
+  "InferenceEngine.loadModel":      ["inference.load"],
+  "InferenceEngine.registerModel":  ["inference.load"],
+  "HybridInferenceEngine.seal":     ["inference.invoke"],
 
   // Email
   "email.send": ["network.outbound", "email.send"],
@@ -428,6 +438,15 @@ export const CANONICAL_EFFECTS = new Set([
   // value's residency-ceiling crossing is never a grantable authority. (No memory.* entry
   // is canonical — the Q2 no-collision guardrail holds by construction.)
   "telemetry.read",
+  // RD-0364 — governed inference bridge contract: per-call invocation + model-load resource/
+  // supply-chain events. Distinct from ai.inference (generic capability-level) by granularity:
+  //   inference.invoke — a per-call AI inference request (resource + latency surface).
+  //   inference.load   — loading/registering a model (resource + supply-chain event; weights hash
+  //                      must be verified at load time per RD-0364 §1).
+  // Deny-by-default: a flow reaching an inference service without declaring one of these is
+  // rejected at compile time (FUNGI-EFFECT-001). ai.inference remains the coarse alias (§3 CANONICAL_EFFECTS).
+  "inference.invoke",
+  "inference.load",
 ]);
 
 // Effects that are RECOGNISED but NEVER grantable — declaring one is an error at
@@ -482,6 +501,11 @@ const EFFECT_NAME_ALIASES: ReadonlyMap<string, string> = new Map([
   // secret.access is the coarse umbrella; nudge authors to the fine-grained
   // secret.read/secret.write (emits FUNGI-EFFECT-005 broad-alias warning, below).
   ["secret.access", "secret.read"],
+  // RD-0364: ai.inference as coarse alias for inference.invoke (the most common path).
+  // Authors using the coarse alias will get inference.invoke semantics. The fine-grained
+  // inference.load must always be declared explicitly (no coarse alias — supply-chain event).
+  ["ai.inference.invoke", "inference.invoke"],
+  ["ai.inference.load",   "inference.load"],
 ]);
 
 // ---------------------------------------------------------------------------

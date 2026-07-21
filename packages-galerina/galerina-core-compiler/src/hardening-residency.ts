@@ -306,35 +306,56 @@ function pickTwoValued<T extends string>(
 // UNDECLARED or incapable host FAILS CLOSED (H-6): the ceiling is unhonourable.
 // ---------------------------------------------------------------------------
 
+/** Key custody level (RD-0365): how strongly the host protects signing key material at rest.
+ *  Each rung is strictly stronger:
+ *    env-spore   — sealed-at-rest (env.spore SealArena); current shipped baseline (L1).
+ *    os-keystore — OS keystore wraps the KEK (Windows DPAPI / macOS keychain); L2.
+ *    tpm-sealed  — TPM 2.0 PCR-sealed KEK; key is bound to machine + measured boot; L3.
+ *    hardware-signer — key never leaves TPM/HSM/YubiKey; signing happens inside device; L4.
+ *  A host claiming a rung it cannot prove is resolved to UNKNOWN_HOST → fail-closed (H-5/H-6). */
+export type KeyCustody = "env-spore" | "os-keystore" | "tpm-sealed" | "hardware-signer";
+
 export interface HostResidencyCapability {
   readonly name: string;
   readonly canRegisterPin: boolean; // TRESOR-class register residency
   readonly canNoDramSpill: boolean; // on-package SRAM pinning, no DRAM
   readonly canNoSwap: boolean;      // mlock / MADV_DONTDUMP — never swap
   readonly canNoDisk: boolean;      // never persist to disk
+  /** RD-0365 key custody level. A RESERVED slot — the H-5 seam acknowledges the rung,
+   *  but enforcement (PCR quote into #105 admission) is post-v1. Defaults to "env-spore"
+   *  (the current shipped baseline) so existing profiles are unaffected. */
+  readonly keyCustody: KeyCustody;
 }
 
 /** Fail-closed default (H-6): no declared seam ⇒ NOTHING is guaranteed ⇒ any ceiling is unhonourable. */
 export const UNKNOWN_HOST: HostResidencyCapability = {
   name: "<undeclared>", canRegisterPin: false, canNoDramSpill: false, canNoSwap: false, canNoDisk: false,
+  keyCustody: "env-spore",
 };
 
 /**
  * Declared host seams (H-5). The names a `hardening { host <name> }` directive may reference.
  * These are the CONTRACT (design-stage); the actual syscalls live behind the framework-app-kernel
  * 9-primitive floor seam (a platform without the primitive resolves to UNKNOWN_HOST → fail-closed).
+ *
+ * keyCustody (RD-0365): a RESERVED slot indicating the rung of the custody ladder this host profile
+ * claims. Post-v1, a PCR-quote TPM attestation can be folded into the #105 admission gate so that
+ * custody becomes part of the trust chain. For v1, the field is informational — it documents the
+ * claim without enforcing the proof, which is the correct starting line for any honest trust ladder.
  */
 export const HOST_PROFILES: ReadonlyMap<string, HostResidencyCapability> = new Map([
   // POSIX mlock: guarantees no-swap + no-disk; cannot pin to registers or forbid DRAM.
-  ["mlock_posix", { name: "mlock_posix", canRegisterPin: false, canNoDramSpill: false, canNoSwap: true, canNoDisk: true }],
+  ["mlock_posix", { name: "mlock_posix", canRegisterPin: false, canNoDramSpill: false, canNoSwap: true, canNoDisk: true, keyCustody: "env-spore" }],
   // A hypothetical register-pinned target (TRESOR-class) — honours every ceiling. Design-stage.
-  ["register_pinned", { name: "register_pinned", canRegisterPin: true, canNoDramSpill: true, canNoSwap: true, canNoDisk: true }],
+  // keyCustody: "hardware-signer" because a register-pinned target implies an HSM for key ops.
+  ["register_pinned", { name: "register_pinned", canRegisterPin: true, canNoDramSpill: true, canNoSwap: true, canNoDisk: true, keyCustody: "hardware-signer" }],
   // Browser / WASM secure context: JavaScript sandbox guarantees no persistent disk writes (no filesystem
   // access from WASM without an explicit JS host bridge). Cannot mlock (no syscall surface), cannot forbid
   // DRAM. Satisfies `no_disk` only — the ceiling for browser-deployed WASM flows handling secrets.
   // Note: the "no persistent disk" guarantee is the browser sandbox, not a kernel primitive; this seam
   // is only appropriate for in-browser WASM deployments (target-wasm + browser runtime).
-  ["browser_secure_context", { name: "browser_secure_context", canRegisterPin: false, canNoDramSpill: false, canNoSwap: false, canNoDisk: true }],
+  // keyCustody: "env-spore" — browser sessions cannot provide TPM/HSM; L1 is the ceiling.
+  ["browser_secure_context", { name: "browser_secure_context", canRegisterPin: false, canNoDramSpill: false, canNoSwap: false, canNoDisk: true, keyCustody: "env-spore" }],
 ]);
 
 /** Resolve a declared host name to its capability, fail-closed to UNKNOWN_HOST for an unknown/undeclared name. */

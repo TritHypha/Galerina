@@ -299,6 +299,21 @@ audit trail". Note: the gradient-inversion / membership-inference exfiltration r
 **Result** — authorises training; undeclared → `FUNGI-EFFECT-001`. Not secure-tier by design — declare
 `pii.read` / `phi.read` / `phi.write` alongside it when the training data is sensitive.
 
+#### `inference.invoke`  · secure-tier · pure-forbidden
+**What** — invoke a governed inference bridge (RD-0364): send an input to a loaded model and receive a governed result.
+Secure-tier because bridge outputs carry the sensitivity of their inputs (gradient-inversion / membership-inference
+risk) and because the call crosses a host boundary to the inference runtime.
+**Inferred from** — `EffectFlags.InferenceInvoke` (bit 15); declared explicitly or via the `inference.invoke` alias.
+**Result** — authorises a governed inference call; secure-tier floor applies. Must be declared alongside `pii.read`
+or `phi.read` when the model input contains sensitive data.
+
+#### `inference.load`  · secure-tier · pure-forbidden
+**What** — load a model artefact into the governed inference bridge (RD-0364). Secure-tier because model weights can
+contain memorised training data (extraction attacks), the load crosses a boundary to the model store, and the loaded
+model becomes part of the trusted compute surface.
+**Inferred from** — `EffectFlags.InferenceLoad` (bit 16); declared explicitly or via the `inference.load` alias.
+**Result** — authorises a model-load into the bridge runtime; secure-tier floor applies.
+
 #### `native.call`  · secure-tier · pure-forbidden
 **What** — call native / FFI code. Secure-tier and high-consequence: native code escapes the governed WASM sandbox,
 so it carries the strongest obligation short of deny-only.
