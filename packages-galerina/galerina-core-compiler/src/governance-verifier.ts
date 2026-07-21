@@ -61,6 +61,7 @@ import {
   deriveAuto, reconcileExplicit, canHonour, resolveHost,
   VALID_RESIDENCY, VALID_ERASE, VALID_TIMING, VALID_SUBSTRATE,
   FUNGI_HARDEN_001, FUNGI_HARDEN_002, FUNGI_HARDEN_003, FUNGI_HARDEN_006, FUNGI_HARDEN_007,
+  FUNGI_HARDEN_008,
   spillRetype,
   type ResidencyTier, type EraseMode, type TimingDiscipline, type Substrate, type ExplicitHardening,
 } from "./hardening-residency.js";
@@ -3153,6 +3154,16 @@ class GovernanceVerifier {
           `Flow '${flowName}': ${spill.reason}`,
           hardeningNode.location,
           "The value is now Refuted — it cannot be released at a trust boundary. Fix the ceiling (a capable host, or an audited loosen) to restore it to Trusted."));
+      } else if (effective.residency === "register_only" || effective.residency === "no_dram_spill") {
+        // BOB-M1 / FUNGI-HARDEN-008: the host CAN honour the ceiling but the runtime mlock/VirtualLock
+        // enforcement is not yet wired (post-#143 execution cutover). Emit a warning so production
+        // operators know the declaration is currently asserted but not enforced at the process level.
+        // TODO(#143): remove this warning once mlock/VirtualLock enforcement is live.
+        this.diagnostics.push(makeGovDiag(
+          FUNGI_HARDEN_008.code, FUNGI_HARDEN_008.name, "warning",
+          `Flow '${flowName}': ${FUNGI_HARDEN_008.message}`,
+          hardeningNode.location,
+          "Wait for #143 to land (mlock/VirtualLock enforcement), or relax the ceiling to `no_swap` which is enforced today via mlock_posix."));
       }
     }
 

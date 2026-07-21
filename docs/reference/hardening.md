@@ -57,6 +57,7 @@ against source 2026-07-15.** Two things the overview table doesn't show, documen
 | `FUNGI-HARDEN-005` | the declared host **cannot honour** the residency ceiling → reject | error |
 | `FUNGI-HARDEN-006` | a secret-dependent branch/index under `timing constant` (checkable subset only) | warning |
 | `FUNGI-HARDEN-007` | a **proven spill** re-types the value `REFUTED` (sticky + contagious) | error |
+| `FUNGI-HARDEN-008` | `register_only` or `no_dram_spill` declared + honoured, but **runtime mlock/VirtualLock not yet wired** (post-`#143`) | warning |
 
 ---
 

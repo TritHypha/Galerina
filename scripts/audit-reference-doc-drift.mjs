@@ -56,7 +56,7 @@ function buildChecks() {
     {
       page: "docs/reference/hardening.md",
       source: "hardening-residency.ts residency/erase/timing tiers",
-      require: ["register_only", "no_dram_spill", "no_swap", "no_disk", "on_exit", "constant", "unconstrained", "FUNGI-HARDEN-007"],
+      require: ["register_only", "no_dram_spill", "no_swap", "no_disk", "on_exit", "constant", "unconstrained", "FUNGI-HARDEN-007", "FUNGI-HARDEN-008"],
       note: "residency + erase + timing tiers",
     },
     {

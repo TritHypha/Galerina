@@ -4,13 +4,32 @@ Living task list. Authoritative forward view: `../ZTF-Knowledge-Bases/galerina-r
 Live per-item state also lives in the in-session task board + `../ZTF-Knowledge-Bases/coordination/` (main↔R&D).
 The dated blocks below are a historical log; the **CURRENT STATE** block is the head.
 
-## 📍 CURRENT STATE — 2026-07-21 (WAT lowering session)
+## 📍 CURRENT STATE — 2026-07-21 (P2 K3 inline + vault docs session)
 
-**Suite 95/95 packages · 7,591 tests · 0 fail** · phase-close all green (56 gates) · graph-all all green ·
-benchmark snapshot `2026-07-21_post-wat-lowering` (29 benchmarks) · HEAD `4537e637` (clean, ahead
+**Suite 95/95 packages · 7,611 tests · 0 fail** · phase-close all green (56 gates) · graph-all all green ·
+benchmark snapshot `2026-07-21_post-wat-lowering` (29 benchmarks) · HEAD `9aec26c3` (clean, ahead
 of origin — owner pushes when ready).
 
-**This session — W5b WAT lowering + RD housekeeping:**
+**Session 3 — P2 K3 inline + wabt probe:**
+- `9aec26c3` Proposal P2 (inline K3 min/max): `wat-emitter.ts` binary-op &&/|| on Verdict
+  and k3FoldExpr N-operand chain now emit `(select L R (i32.lt_s/gt_s L R))` instead of
+  `(call $fungi_k3_min/max L R)` — eliminates 2 WASM call frames per trit-op.
+  12 new differential tests in `tests/wat-k3-inline.test.mjs`: WAT-text assertion + 9 trit-pair parity +
+  empty folds + 3-operand fold + chained &&. 95/95 · 7,611 · 0 fail.
+- Proposal P3 (tail-call return_call) confirmed BLOCKED: workspace wabt rejects `return_call` (too old)
+  — blocker + fix design documented in BOB/architectural-redesign-proposals-2026-07.md.
+
+**Session 2 — vault documentation + examples:**
+- `5111e9bf` + `4c26f7b7` Vault system was entirely undocumented — zero `.fungi` building standards coverage,
+  zero examples. Remediated: new KB doc `ZTF-Knowledge-Bases/galerina-vault-system.md` (3 vault kinds, layer
+  model, effects, 7 FUNGI-VAULT-* codes, rules). BOB/fungi-building-standards-2026-07.md §3d rewritten:
+  vault global / GlobalVault + `secure.*` / scoped vaults / secret vault access. `vault.read` / `vault.write`
+  added to effects table. 8 new canonical examples: 024–025 (Level 1 vault global + invalid), 227–230
+  (Level 5 GlobalVault), 473–474 (Level 9 scoped vaults). EXAMPLES_INDEX 222 → 230. Contract optionality §4a
+  (3 tiers). BOB/architectural-redesign-proposals-2026-07.md: benchmark perf plans P1–P4 + proof/execution
+  separation plan. Galerina/docs/README.md BOB Engineering Documents section added.
+
+**Session 1 — W5b WAT lowering + RD housekeeping (previous CURRENT STATE, preserved):**
 - `d18e2841` W5b T2.2/T2.4: `check{}` / `prefilter{}` / `fault` WAT lowering (emitWATExpr + emitBlockStatements +
   emitBlockLastExpr + inferExprType); 8 new differential tests (wat-k3-constructs.test.mjs): DENY/UNKNOWN/ALLOW ×
   interpreter+WASM parity, arithmetic arms, prefilter ALLOW-downgrade, fault WAT validation + FaultSignal.
@@ -31,7 +50,7 @@ of origin — owner pushes when ready).
 - T3.x codemod + taint-default flip + corpus migration (W6)
 - A18 tenant scope (BETA BLOCKER — next work package)
 - check{} WAT lowering for `fault` audited channel spec (A10 surface-syntax spec pending)
-- Final deliverables: `.fungi` building standards doc + package migration plan doc
+- Final deliverables: `.fungi` building standards doc ✅ · package migration plan doc ✅ (both done in session 2)
 
 
 **Bob architectural review 2026-07 — 7/7 items implemented and gated:**

@@ -19,13 +19,13 @@
 <text x="102.5" y="418.0" text-anchor="end" font-size="12.5" font-weight="600" fill="#333">Mem Footprint</text>
 <line x1="300" y1="300" x2="118.1" y2="195.0" stroke="#d0d0d0" stroke-width="1"/>
 <text x="102.5" y="190.0" text-anchor="end" font-size="12.5" font-weight="600" fill="#333">Latency Predict.</text>
-<polygon points="300.0,195.0 336.4,279.0 445.5,384.0 300.0,405.0 209.1,352.5 190.9,237.0" fill="#e8590c" fill-opacity="0.14" stroke="#e8590c" stroke-width="2.5" stroke-linejoin="round"/>
+<polygon points="300.0,195.0 336.4,279.0 445.5,384.0 300.0,405.0 209.1,352.5 172.7,226.5" fill="#e8590c" fill-opacity="0.14" stroke="#e8590c" stroke-width="2.5" stroke-linejoin="round"/>
 <circle cx="300.0" cy="195.0" r="3" fill="#e8590c"/>
 <circle cx="336.4" cy="279.0" r="3" fill="#e8590c"/>
 <circle cx="445.5" cy="384.0" r="3" fill="#e8590c"/>
 <circle cx="300.0" cy="405.0" r="3" fill="#e8590c"/>
 <circle cx="209.1" cy="352.5" r="3" fill="#e8590c"/>
-<circle cx="190.9" cy="237.0" r="3" fill="#e8590c"/>
+<circle cx="172.7" cy="226.5" r="3" fill="#e8590c"/>
 <polygon points="300.0,90.0 463.7,205.5 463.7,394.5 300.0,489.0 136.3,394.5 118.1,195.0" fill="#b7410e" fill-opacity="0.14" stroke="#b7410e" stroke-width="2.5" stroke-linejoin="round"/>
 <circle cx="300.0" cy="90.0" r="3" fill="#b7410e"/>
 <circle cx="463.7" cy="205.5" r="3" fill="#b7410e"/>

@@ -41,12 +41,14 @@ contract { intent { "Handle a secret." } privacy { contains PII }
     assert.deepEqual(hardenCodes(gov(src)), []);
   });
 
-  it("register_only WITH a register_pinned host (which honours it) → clean", () => {
+  it("register_only WITH a register_pinned host (which honours it) → FUNGI-HARDEN-008 warning (runtime enforcement gap, BOB-M1)", () => {
     const src = `secure flow handleKey(k: Int) -> Int
 contract { intent { "Handle a secret." } privacy { contains PII }
   hardening { residency register_only host register_pinned } }
 { return 1 }`;
-    assert.deepEqual(hardenCodes(gov(src)), []);
+    // FUNGI-HARDEN-008 fires because register_only is declared + honourable, but the runtime
+    // mlock/VirtualLock enforcement is post-#143 — the warning makes the gap visible in production builds.
+    assert.deepEqual(hardenCodes(gov(src)), ["FUNGI-HARDEN-008"]);
   });
 
   it("an undeclared host cannot honour a declared ceiling → FUNGI-HARDEN-005 + 007 (fail-closed, H-6; value Refuted)", () => {

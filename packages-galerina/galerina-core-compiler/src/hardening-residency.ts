@@ -95,10 +95,29 @@ export const FUNGI_HARDEN_007 = {
   message: "The value provably spills past its residency ceiling, so its compile-time type-state is downgraded to `Refuted` (sticky + contagious, RD-0337) — it can no longer be released at a trust boundary, and anything derived from it inherits the refutation. This is the governed downgrade (RD-0358 §3-2), not a silent spill.",
 } as const;
 
+/**
+ * FUNGI-HARDEN-008 (BOB-M1): `register_only` (or `no_dram_spill`) residency is declared but the
+ * runtime mlock/VirtualLock enforcement is not yet wired (post-#143 execution cutover).
+ * The compile-time governance declaration is still valuable — it closes the declare-and-forget
+ * silent gap — but production operators must know the declaration is currently asserted, not enforced.
+ * Suppressable with `@allow_residency_unenforceable` on the specific hardening block.
+ */
+export const FUNGI_HARDEN_008 = {
+  code: "FUNGI-HARDEN-008",
+  name: "RESIDENCY_NOT_ENFORCED_AT_RUNTIME",
+  severity: "warning" as const,
+  message:
+    "Residency ceiling `register_only` or `no_dram_spill` declared, but host-level mlock/VirtualLock " +
+    "enforcement is not yet wired (post-#143). The compile-time declaration is authoritative — " +
+    "the runtime enforcement gap must be tracked. Suppress with @allow_residency_unenforceable " +
+    "after reviewing, or wait for #143 to land.",
+} as const;
+
 /** Every hardening diagnostic constant — for registry tests + tooling. */
 export const HARDENING_DIAGNOSTICS = [
   FUNGI_HARDEN_001, FUNGI_HARDEN_002, FUNGI_HARDEN_003,
   FUNGI_HARDEN_004, FUNGI_HARDEN_005, FUNGI_HARDEN_006, FUNGI_HARDEN_007,
+  FUNGI_HARDEN_008,
 ] as const;
 
 // ---------------------------------------------------------------------------

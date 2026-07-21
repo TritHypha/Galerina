@@ -171,10 +171,10 @@ test("HV5 spillRetype: a proven spill re-types the value Refuted (contagious, de
 });
 
 // ── the diagnostic set is well-formed (UPPER_SNAKE names, registered codes) ──────────────────────────
-test("all seven FUNGI-HARDEN codes exist with UPPER_SNAKE names", () => {
-  assert.equal(L.HARDENING_DIAGNOSTICS.length, 7);
+test("all eight FUNGI-HARDEN codes exist with UPPER_SNAKE names", () => {
+  assert.equal(L.HARDENING_DIAGNOSTICS.length, 8);
   for (const d of L.HARDENING_DIAGNOSTICS) {
-    assert.match(d.code, /^FUNGI-HARDEN-00[1-7]$/);
+    assert.match(d.code, /^FUNGI-HARDEN-00[1-8]$/);
     assert.match(d.name, /^[A-Z][A-Z0-9_]*$/, `${d.code} name must be UPPER_SNAKE (audit-diagnostic-codes V5)`);
   }
 });

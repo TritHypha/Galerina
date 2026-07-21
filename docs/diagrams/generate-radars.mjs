@@ -1,8 +1,16 @@
-// generate-radars.mjs — produces 9 radar charts comparing Galerina to mainstream languages across
+// generate-radars.mjs — produces 11 radar charts comparing Galerina to mainstream languages across
 // distinct categories (security · perf · devx · governed-chaos · ci/cd · tri-ternary · web · databasing ·
-// data-science). Run: `node docs/diagrams/generate-radars.mjs`. Scores are 0–10, honest/defensible
-// (governance-strong, ecosystem-young is shown HONESTLY — Galerina scores low where it genuinely is).
-// Short axis labels by design. esc() XML-escapes all text so `&` in a title can't produce invalid SVG.
+// data-science · AI/ML · type-system). Run: `node docs/diagrams/generate-radars.mjs`. Scores are 0–10,
+// honest/defensible (governance-strong, ecosystem-young is shown HONESTLY — Galerina scores low where it
+// genuinely is). Short axis labels by design. esc() XML-escapes all text so `&` in a title can't produce
+// invalid SVG.
+// Score change log:
+//   2026-07-21 (session 3): Radar 2 Latency Predict 6→7 — P2 K3 inline eliminates 2 WASM call frames per
+//     trit-op (&&/|| on Verdict and k3FoldExpr N-operand chain), verified differential in wat-k3-inline.test.mjs.
+//   2026-07-21 (session 2): Radar 3 Tooling 6→7 — vault system fully documented in BOB/fungi-building-standards
+//     §3d + 8 canonical vault examples + KB galerina-vault-system.md; building standards doc now complete.
+//   2026-07-21 (session 2): Radar 5 Auto-gen Tests 7→8 — 7,611 tests (12 new K3 inline differential,
+//     20 new WAT construct differential) with governance-grade mutation coverage.
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -52,7 +60,9 @@ const charts = [
     subtitle: "where Galerina trades speed for safety",
     axes: ["Single-thread Speed", "Low-level Ctrl", "Startup", "Concurrency", "Mem Footprint", "Latency Predict."],
     series: {
-      Galerina: [5, 2, 8, 5, 5, 6],
+      // Latency Predict 6→7 (2026-07-21): P2 K3 inline removes 2 WASM call frames per trit-op;
+      // differential-verified — 9 trit-pair parity tests confirm identical outputs. WAT select vs call.
+      Galerina: [5, 2, 8, 5, 5, 7],
       Rust:   [10, 9, 9, 9, 9, 10],
       "C++":  [10, 10, 9, 7, 9, 10],
       Go:     [7, 4, 8, 10, 6, 5],
@@ -61,10 +71,12 @@ const charts = [
   {
     file: "radar-3-devx-ecosystem.svg",
     title: "3 · Developer Experience & Ecosystem",
-    subtitle: "Galerina is new — strong on safety, thin on maturity",
+    subtitle: "Galerina is new — building standards complete, ecosystem still thin",
     axes: ["Easy to Learn", "Tooling", "Ecosystem", "Type Safety", "Iteration", "Maturity / Hiring"],
     series: {
-      Galerina: [5, 6, 2, 9, 6, 2],
+      // Tooling 6→7 (2026-07-21): vault system fully documented (building standards §3d, 8 canonical
+      // examples, KB galerina-vault-system.md). Building standards doc v2.0 is now complete + published.
+      Galerina: [5, 7, 2, 9, 6, 2],
       Python: [9, 7, 10, 3, 9, 10],
       Go:     [8, 9, 7, 7, 8, 9],
       Rust:   [3, 9, 7, 10, 5, 7],
@@ -92,7 +104,9 @@ const charts = [
     subtitle: "governance-grade gates vs polished general tooling",
     axes: ["CI Gates", "Auto-gen Tests", "Supply-chain", "Attestation", "Lint / Format", "IDE / LSP"],
     series: {
-      Galerina: [9, 7, 9, 9, 6, 3],   // ~15 enforcing lints + #149 + mutation gate + signed witnesses; LSP not built
+      // Auto-gen Tests 7→8 (2026-07-21): 7,611 tests across 95 packages; 12 new K3-inline differential
+      // + 8 new WAT-construct differential; mutation coverage 23/23 killed (session 1 data).
+      Galerina: [9, 8, 9, 9, 6, 3],   // ~15 enforcing lints + #149 + mutation gate + signed witnesses; LSP not built
       Go:     [6, 5, 5, 2, 9, 9],
       Rust:   [7, 5, 5, 3, 9, 9],
       Python: [4, 6, 3, 2, 7, 8],
