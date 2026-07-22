@@ -27,7 +27,7 @@ It is not a systems language, not a scripting language, and not a general-purpos
 
 **Closest analogies:** Ada/SPARK (formally verified, safety-critical, regulated domains) + Rust (no silent failure, explicit ownership) + Erlang (structured fault handling) — but targeting modern API/web workloads and shipping to WASM, with K3 ternary governance and first-class supply-chain provenance.
 
-> Full classification record: [`ZTF-Knowledge-Bases/galerina-language-classification.md`](../ZTF-Knowledge-Bases/galerina-language-classification.md)
+> Full classification record maintained in the project's internal engineering knowledge base.
 
 ---
 

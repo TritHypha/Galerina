@@ -180,20 +180,11 @@ documentation lives in `../packages-galerina/galerina-core/`.
 - [Decisions](DECISIONS.md)
 - [Changelog](CHANGELOG.md)
 
-## BOB Engineering Documents
+## Engineering references
 
-Authoritative engineering references authored by Bob (senior review · 2026-07).
-These are the go-to references for source authors and reviewers.
-
-- [`.fungi` Building Standards](../../../BOB/fungi-building-standards-2026-07.md) — complete type system, all flow types, contract block reference, K3 operators, import patterns, hallmarks, static/bitfield, vault system (§3d), contract optionality (§4a), checklist
-- [Package Build Migration Plan](../../../BOB/package-build-migration-plan-2026-07.md) — flat package model, meta files, dep-ordered build, migration phases
-- [Architectural Redesign Proposals](../../../BOB/architectural-redesign-proposals-2026-07.md) — 11 proposals with status, benchmark perf plans (P1–P4), proof/execution separation plan, P2 K3 inline DONE, P3 BLOCKED
-- [Component Review](../../../BOB/component-review-2026-07.md) — per-package analysis, maturity ratings, open gaps
-- [Senior Review](../../../BOB/galerina-senior-review-2026-07.md) — overall project review, security findings, what to change
-- [`.fungi` and Gate Language Reference](../../../BOB/fungi-and-gate-language-reference.md) — language quick-reference
-- [Runtime Performance and Security Improvements](../../../BOB/runtime-performance-and-security-improvements.md) — runtime tuning recommendations
-- [Memory Security, XSS, Nesting & Developer Ergonomics Review](../../../BOB/memory-security-xss-developer-review-2026-07.md) — M/X/N/E findings with severities and recommendations (2026-07-21)
-- [Language Gaps vs Go, Python, Rust](../../../BOB/language-gaps-vs-go-python-rust-2026-07.md) — honest gap analysis + prioritised LG-1–LG-10 roadmap (2026-07-21)
+Detailed internal engineering references — language and package-build standards, migration
+plans, and design/component reviews — are maintained in the project's internal engineering
+documentation and are not part of this public repository.
 
 ## Package-Level References
 
