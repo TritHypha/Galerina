@@ -108,7 +108,7 @@ export function checkLint(
     if (!flows.some(f => f.name === flowName)) continue;
 
     // The body is the last block child of the flow declaration
-    const body = (c.children ?? []).find(ch => ch.kind === "block");
+    const body = (c.children ?? []).find(ch => ch.kind === "block"); // perf-allow: loop-array-find — c.children has ≤5 elements (flow-level children: params, effects, contract, block); O(1) in practice
     if (body === undefined) continue;
 
     const depth = maxNestingDepth(body);

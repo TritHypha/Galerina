@@ -2248,7 +2248,7 @@ export function emitWATExpr(
       const scratch = `$__fungi_pflt_${recordCtx.counter.n++}`;
       recordCtx.localDecls.push(`(local ${scratch} i32)`);
       const getArm = (label: string): string => {
-        const arm = arms.find((a) => a.value === label);
+        const arm = arms.find((a) => a.value === label); // perf-allow: loop-array-find — arms has ≤2 elements (deny/maybe); O(1) in practice
         const body = arm?.children?.[0];
         if (body === undefined)
           return `(unreachable) (; prefilter{}: missing '${label}' arm — fail-closed (FUNGI-PREFILTER-001 belt) ;)`;
@@ -2948,7 +2948,7 @@ function emitBlockStatements(
         const scratch = `$__fungi_chk_${n}`;
         localDecls.push(`(local ${scratch} i32)`);
         const emitArmStmts = (label: string): string[] => {
-          const arm = arms.find((a) => a.value === label);
+          const arm = arms.find((a) => a.value === label); // perf-allow: loop-array-find — arms has ≤3 elements (deny/ambig/if); O(1) in practice
           const body = arm?.children?.[0];
           if (body === undefined)
             return [`(unreachable) ;; check{}: missing '${label}' arm — fail-closed (FUNGI-CHECK-001 belt)`];
@@ -2995,7 +2995,7 @@ function emitBlockStatements(
         const scratch = `$__fungi_pflt_${n}`;
         localDecls.push(`(local ${scratch} i32)`);
         const emitArmStmts = (label: string): string[] => {
-          const arm = arms.find((a) => a.value === label);
+          const arm = arms.find((a) => a.value === label); // perf-allow: loop-array-find — arms has ≤2 elements (deny/maybe); O(1) in practice
           const body = arm?.children?.[0];
           if (body === undefined)
             return [`(unreachable) ;; prefilter{}: missing '${label}' arm — fail-closed (FUNGI-PREFILTER-001 belt)`];

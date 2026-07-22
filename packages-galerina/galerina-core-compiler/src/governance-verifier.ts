@@ -3104,14 +3104,18 @@ class GovernanceVerifier {
       return { hasRead, hasWrite };
     }
 
+    // Pre-index AST children by flow name to avoid O(n²) .find() inside the flows loop.
+    const flowNodeByName = new Map<string, AstNode>();
+    for (const n of (ast.children ?? [])) {
+      if (typeof n.value === "string" && n.children !== undefined) {
+        flowNodeByName.set(n.value, n);
+      }
+    }
     for (const flow of flows) {
       const effects = effectByFlow.get(flow.name) ?? new Set<string>();
-      // find the flow node body
-      const flowNode = (ast.children ?? []).find(
-        n => typeof n.value === "string" && n.value === flow.name && n.children !== undefined,
-      );
+      const flowNode = flowNodeByName.get(flow.name);
       if (flowNode === undefined) continue;
-      const body = (flowNode.children ?? []).find(c => c.kind === "block");
+      const body = (flowNode.children ?? []).find(c => c.kind === "block"); // perf-allow: loop-array-find — flowNode.children has ≤8 elements (single flow's children: params, contract, effects, block); O(1) in practice
       if (body === undefined) continue;
       const { hasRead, hasWrite } = scanNode(body, false);
       if (hasRead && !effects.has("vault.read")) {

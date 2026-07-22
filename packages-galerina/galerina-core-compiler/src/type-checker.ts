@@ -2582,7 +2582,7 @@ class TypeChecker {
     const near = MONEY_UNIT_TAGS
       .map((c) => [c, rank(c)] as const)
       .filter(([, d]) => d <= 2)
-      .sort((a, b) => a[1] - b[1])        // closest first, so the intended code leads
+      .sort((a, b) => a[1] - b[1])        // closest first, so the intended code leads  // perf-allow: loop-sort — called only on currency-tag TYPE-032 errors (error-reporting path, not hot); ≤3 candidates after filter
       .slice(0, 3)
       .map(([c]) => c);
     const hint = near.length ? ` Did you mean ${near.join(", ")}?` : "";
