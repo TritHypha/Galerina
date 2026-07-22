@@ -29,13 +29,17 @@ contract {
   effects {}
 }
 {
-  let clearMask = Int.bitOr(V_DPM.network_outbound, Int.bitOr(V_DPM.storage_write, V_DPM.ai_inference))
-  let keepMask = Int.bitAnd(vdpm, 4294967260)  ;; ~(bit0 | bit1 | bit5) = ~35
-  let newVdpm = Int.bitAnd(vdpm, keepMask)
+  ;; Monotonic clear of caps 0,1,5 (network/storage/ai). Keep-mask 4294967260 = ~(1|2|32) = ~35, a
+  ;; CONSTANT — mirrors applyQuarantine/applyEmergencyMode. A single bitAnd with a keep-mask can only
+  ;; CLEAR bits, never set one (the monotonic rule). No "bits-to-clear" mask is kept as a live value:
+  ;; a positive clear-mask (35) invites the inverting bug `bitAnd(vdpm, clearMask)` — which KEEPS only
+  ;; bits 0,1,5 and clears everything else. bitsCleared (35) is the reported clear set as a constant,
+  ;; never something ANDed against the register. Leaves secret/audit/db/shell/native (bits 2,3,4,6,7) set.
+  let newVdpm = Int.bitAnd(vdpm, 4294967260)
 
   return EmergencyTransitionResult {
     vdpmAfter:        newVdpm
-    bitsCleared:      clearMask
+    bitsCleared:      35
     quarantineSet:    false
     emergencyModeSet: false
     signalHandled:    true
