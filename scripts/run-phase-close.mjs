@@ -465,6 +465,13 @@ run("stage-execution", "node", ["scripts/audit-stage-execution.mjs"]);
 //   29/29 differentials · 4 authoritative · exit 0 on success.
 run("kernel-fungi-twins", "node", ["scripts/audit-kernel-fungi-twins.mjs"]);
 
+// compiler-stage-twins — RD-0528 compiler self-hosting authority track, SEPARATE from the kernel
+//   sentinel ledger (a sentinel flip retires zero lines of the .ts compiler). Runs `galerina check`
+//   on every self-hosted compiler stage (that dir was in NO standing check gate before) and enforces
+//   the RD-0528 authority ledger (empty until the owner flips a stage, I-4). Self-tested; today
+//   7 differential · 0 authoritative · exit 0.
+run("compiler-stage-twins", "node", ["scripts/audit-compiler-stage-twins.mjs"]);
+
 // ── Doc-freshness gates: previously unwired (Bob review 2026-07) ────────────────────────────────────
 // Documentation drift in a language specification is a security issue: a stale spec that disagrees with
 // the compiler is a source of developer confusion that can lead to incorrect assumptions about guarantees.
