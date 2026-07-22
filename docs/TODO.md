@@ -6,7 +6,28 @@ The dated blocks below are a historical log; the **CURRENT STATE** block is the 
 
 ## 📍 CURRENT STATE — 2026-07-22 (Phase 3: R3 byte-parity for type-checker, effect-checker, governance-verifier)
 
-**Suite 95/95 packages · 7,619+ tests · 0 fail** · audit 0 errors · 75 warnings (all pre-existing).
+**Suite 95/95 packages · 7,672 tests · 0 fail** · audit 0 errors · 75 warnings (all pre-existing).
+
+### Session deliverables — 2026-07-22 (R4 T2 flip · DSS.wasm Phase 5 START)
+
+- **WAT emitter confirmed DONE** — `audit-wat-lowering.mjs` `VIOLATIONS: 0`; only Decimal (bignum,
+  correctly fail-closed, `#137`) + HOF (closures) remain, tracked as their own feature-flags.
+- **R4 authority flip (`#143`) — T2 Memory tranche FLIPPED** (`432cddee`) under owner GO. Five
+  sentinel-memory twins now authoritative (memory-validator · pool-allocation-guard · pool-policy ·
+  segmentation-guard · trit-buffer-guard); full evidence pack `docs/security/rd0361-t2-r4-evidence-pack.md`
+  (a–e: all differential · 7,672 green · **52/52 mutants killed** · 5/5 hash-pinned + #105-admitted via new
+  `scripts/gather-t2-twin-hashes.mjs` · perf N/A). **Ledger: 9 authoritative (4 T1 + 5 T2) · 20 differential ·
+  0 shadow · `audit-kernel-fungi-twins` exit 0.** Non-destructive shadow-bake (`.ts` retained as the live
+  differential guard; deletion is a later step). Remaining per-tranche: T3 IO/network · T5 tower (mutation
+  groups already exist) · **T4 cert-gate LAST** (flips late).
+- **DSS.wasm Phase 5 (`#102–106`) STARTED** — owner lifted the pause. Spec-of-record: KB
+  `galerina-deterministic-runtime-containment.md` (DRCM, locked Decisions 2026-06-04) + R&D bridge **#0039
+  addendum U1–U8** (the build checklist): U1 `#105` admission faithfulness precondition (structural since
+  `#163`) · U2 compiler-version floor in the attestation profile · U3 wasmtime fuel-API re-pin
+  (`Store::add_fuel` removed → `set_fuel`/`get_fuel` + `Config::consume_fuel`; a Store starts at **0 fuel and
+  traps** = fail-closed default) · U4 audit via `Observer.onOutput` → sentinel-egress HMAC ledger (DONE,
+  `c82db9b1`) · U5 V_DPM zero-mask fail-closed differential point · U6 register `FUNGI-INV-000/001/002` ·
+  U7 fuzz determinism replay `(seed, params, version)` · U8 DRCM 7-phase gantt marked historical.
 
 ### Session deliverables — 2026-07-22 (WAT stdlib host stubs finished · EXOR/XNOR · RT-28→DSS.wasm inputs)
 
