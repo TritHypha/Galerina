@@ -4,9 +4,24 @@ Living task list. Authoritative forward view: `../ZTF-Knowledge-Bases/galerina-r
 Live per-item state also lives in the in-session task board + `../ZTF-Knowledge-Bases/coordination/` (main↔R&D).
 The dated blocks below are a historical log; the **CURRENT STATE** block is the head.
 
-## 📍 CURRENT STATE — 2026-07-22 (A18 tenant scope — BETA BLOCKER closed)
+## 📍 CURRENT STATE — 2026-07-22 (Phase 2: #100 Array<Auto> erasure fix — 3 stage twins now RUN)
 
 **Suite 95/95 packages · 7,619 tests · 0 fail** · audit 0 errors · 75 warnings (all pre-existing).
+
+### Session deliverables — 2026-07-22 (Phase 2: #100 Array<Auto> fix)
+
+- **Phase 2 DSS.wasm path COMPLETE** — `#100` Array<Auto> type-erasure debt paid in all 3 trapped stage
+  twins (`type-checker.fungi`, `effect-checker.fungi`, `governance-verifier.fungi`):
+  - Root cause: `Array<Auto>.get(i)` returns `Option<Auto>`, so field accesses on the element have
+    unknown offsets at WAT lowering → `unreachable` trap at runtime.
+  - Fix: concretized to `Array<FlowDecl>` / `Array<Stmt>` / `Array<Expr>` / `Array<FlowParam>` at every
+    flows/stmts/exprs/params parameter where field access follows `get()`. Same proven pattern as
+    `gir-emitter.fungi` (2026-07-19).
+  - `parser.fungi` extended with `classification: String` / `deterministic: Bool` / `usedEffects: Array<String>`
+    on `FlowDecl` (emitted with safe defaults) so `governance-verifier`'s field accesses resolve.
+  - `audit-stage-execution.mjs` TRAP_BASELINE lowered **3→0**: all 5 swept stages now RUN (R2 green).
+  - Commit: `4eba36bd` · 95/95 · 7,619 · 0 fail
+  - **DSS.wasm path progress: Phase 1 ✅ → Phase 2 ✅ → Phase 3 (R3 byte-parity, 3 new stages)**
 
 ### Session deliverables — 2026-07-22 (A18 tenant scope)
 
