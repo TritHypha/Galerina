@@ -4,9 +4,21 @@ Living task list. Authoritative forward view: `../ZTF-Knowledge-Bases/galerina-r
 Live per-item state also lives in the in-session task board + `../ZTF-Knowledge-Bases/coordination/` (main↔R&D).
 The dated blocks below are a historical log; the **CURRENT STATE** block is the head.
 
-## 📍 CURRENT STATE — 2026-07-22 (Phase 3: R3 byte-parity for type-checker, effect-checker, governance-verifier)
+## 📍 CURRENT STATE — 2026-07-23 (RD-0528 compiler self-hosting — I-1 authority track + I-3 functional corpus; DSS.wasm at ceiling)
 
-**Suite 95/95 packages · 7,672 tests · 0 fail** · audit 0 errors · 75 warnings (all pre-existing).
+**Suite green.** Full workspace last totalled 95/95 pkgs · 7,672 · 0 fail (2026-07-22); this session ADDED tests, all pass — full re-total pending. Evidenced this session: compiler pkg **4926/4926**, SEC-002 **59/59 killed**, I-3 corpus **11/11**, all 6 graphs green, audit 0 errors.
+
+### Session deliverables — 2026-07-23 (DSS.wasm at ceiling · RD-0528 I-1/I-3 · #141 report-blind → 0 · redact standalone)
+
+Full-auto loop (main); owner away for the tail. Commits below, NONE pushed (owner pushes).
+
+- **DSS.wasm sidecar at un-gated CEILING** (`subprojects/dss-host`, native Rust wasmtime TCB): M0 fuel · M1 386-pt V_DPM differential+laws through REAL wasmtime (U10 engine-transfer closed) · F4 pooled zero-on-reset · **F3 #173 attestation re-verify** (`ade43cd3`; ed25519-dalek per owner ruling; INTEROP + 4 tamper-reject proven, 5/5). No open HIGH. F7 / collapse-conformance / U2 batched for a later Phase-5 sprint (owner-gated).
+- **RD-0528 compiler self-hosting I-1** — the 7 self-hosted stages get their OWN authority track (PROPOSAL; each flip owner-gated at I-4, SEPARATE from the kernel sentinel ledger): (a) R3 byte-parity re-verified **512/512**; (d) `scripts/gather-compiler-stage-hashes.mjs` — 7 build-clean + #105-admitted, deterministic sha256; ledger `docs/security/rd0528-compiler-authoritative-stages.json` (empty `twins`) + gate `scripts/audit-compiler-stage-twins.mjs` wired into phase-close; (c) **mutation-kill 7/7** in SEC-002 (`RD0528_COMPILER`, **59/59 killed · VIOLATIONS 0**); evidence pack `docs/security/rd0528-compiler-stages-evidence-pack.md`. **Prereqs NOT pre-empted:** I-2 bootstrap-seed (owner's steer: pin the current Stage-A WASM at a commit + trust register) · I-3 oracle.
+- **RD-0528 I-3 functional corpus tranche 1** (`ef246e01`) — owner ruled I-3 = FUNCTIONAL correctness, NOT `.ts`-intermediate identity. `tests/self-hosted-i3-functional-corpus.test.mjs`: NON-VACUOUS (4 must-pass + 6 must-fail with exact MEASURED codes) over the self-hosted lex→parse→typecheck pipeline, **11/11**. Findings routed to R&D (`#0048`/`#0049`): the self-hosted compiler has NO WAT/WASM backend (bootstrap fixpoint blocked) · `parser.fungi` never reports parse errors → pipeline fails OPEN on 3/6 malformed inputs.
+- **#141 report-blind consumers → baseline 0** (`a5a779f9` signing-path gather-t1/t2 · `20f98252` +6 audit/bench): every `assembleWAT` consumer now gates on `valid && diagnostics.length===0` before using `.wasm` — the unfaithful-STUB fail-open class is now impossible to introduce silently (a new one = a VIOLATION, exit 1). Detector **0 violations / 0 baselined**, self-test 15/15; twin sha256 unchanged (signing path preserved).
+- **redact standalone fix** (`7180bd04`): `redact(x)` emitted a call to an undefined `$host___redact` → invalid standalone module (A2 defect); now lowered INLINE to the **-2 sentinel** (`__redact` always returns -2 — value-faithful, PII-stripping, host-free). audit-wasm-validate exit 0; full compiler suite **4926/4926**.
+- **All 6 graphs green** (`308b5e4d`): project 6848n/7121e · integrity 0 · **Hardened Border 97/0** · memory clean · dev-tools 97 pkgs / 111 tools / 40 proofs.
+- ⚠ **Stale task-board items caught (verify-don't-trust):** `#140` (CLI omits AST arg) + `#138` (consumers gate on `valid` alone) BOTH already fixed in-tree — not re-done.
 
 ### Session deliverables — 2026-07-22 (R4 T2 flip · DSS.wasm Phase 5 START)
 
