@@ -4,7 +4,7 @@
     "packages": 97,
     "testBearing": 96,
     "tests": 7591,
-    "devTools": 108,
+    "devTools": 109,
     "auditTools": 63,
     "toolsInCadence": 46,
     "proofs": 40
@@ -2293,6 +2293,19 @@
       ]
     },
     {
+      "name": "gather-t2-twin-hashes.mjs",
+      "category": "util",
+      "purpose": "RD-0361 R4 evidence-pack producer (item (d)) for the T2 Memory tranche.",
+      "selfTest": false,
+      "inCadence": false,
+      "concerns": [
+        "effects",
+        "signing/fusion",
+        "diagnostics",
+        "graph/index"
+      ]
+    },
+    {
       "name": "generate-sbom.mjs",
       "category": "util",
       "purpose": "deterministic source SBOM for the REAL npm/lockfile graph (RD-0317 §1).",
@@ -2589,6 +2602,7 @@
       "build-core-chain.mjs",
       "emit-doc-wat.mjs",
       "gather-t1-twin-hashes.mjs",
+      "gather-t2-twin-hashes.mjs",
       "generate-sbom.mjs",
       "hardening-show-derived.mjs",
       "migrate-fungi.mjs",
@@ -2665,6 +2679,7 @@
       "debug-compiler-globs.mjs",
       "emit-doc-wat.mjs",
       "gather-t1-twin-hashes.mjs",
+      "gather-t2-twin-hashes.mjs",
       "generate-sbom.mjs",
       "hardening-show-derived.mjs",
       "mark-core-change.cjs",
@@ -2769,6 +2784,7 @@
       "check-gate-injection.mjs",
       "emit-doc-wat.mjs",
       "gather-t1-twin-hashes.mjs",
+      "gather-t2-twin-hashes.mjs",
       "generate-sbom.mjs",
       "hardening-show-derived.mjs",
       "migrate-fungi.mjs",
@@ -2955,6 +2971,7 @@
       "debug-compiler-globs.mjs",
       "emit-doc-wat.mjs",
       "gather-t1-twin-hashes.mjs",
+      "gather-t2-twin-hashes.mjs",
       "hardening-show-derived.mjs",
       "p9-100-site-mapper.mjs",
       "test-compiler-subdirs.mjs"

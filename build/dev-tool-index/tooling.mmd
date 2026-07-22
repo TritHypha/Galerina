@@ -533,6 +533,11 @@ flowchart LR
   T_gather_t1_twin_hashes_mjs --> C_governance
   T_gather_t1_twin_hashes_mjs --> C_diagnostics
   T_gather_t1_twin_hashes_mjs --> C_graph_index
+  T_gather_t2_twin_hashes_mjs["gather-t2-twin-hashes.mjs"]
+  T_gather_t2_twin_hashes_mjs --> C_effects
+  T_gather_t2_twin_hashes_mjs --> C_signing_fusion
+  T_gather_t2_twin_hashes_mjs --> C_diagnostics
+  T_gather_t2_twin_hashes_mjs --> C_graph_index
   T_generate_sbom_mjs["generate-sbom.mjs"]
   T_generate_sbom_mjs --> C_sinks_taint
   T_generate_sbom_mjs --> C_signing_fusion
