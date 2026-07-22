@@ -1,15 +1,15 @@
 # Galerina Graph Report
 
 Workspace: Galerina-app
-Generated: 2026-07-22T17:33:36.875Z
+Generated: 2026-07-22T22:58:06.295Z
 
 ## Summary
 
 - Packages: 95
-- Documents: 2910
+- Documents: 2915
 - Types/interfaces: 2536
 - Functions: 1277
-- Relationships: 7124
+- Relationships: 7121
 
 ## Package Nodes
 

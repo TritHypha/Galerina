@@ -4,9 +4,9 @@
     "packages": 97,
     "testBearing": 96,
     "tests": 7591,
-    "devTools": 109,
-    "auditTools": 63,
-    "toolsInCadence": 46,
+    "devTools": 111,
+    "auditTools": 64,
+    "toolsInCadence": 47,
     "proofs": 40
   },
   "packages": [
@@ -1187,6 +1187,19 @@
       ]
     },
     {
+      "name": "audit-compiler-stage-twins.mjs",
+      "category": "audit",
+      "purpose": "(no header description)",
+      "selfTest": true,
+      "inCadence": true,
+      "concerns": [
+        "governance",
+        "source-hygiene",
+        "doc-drift",
+        "proofs"
+      ]
+    },
+    {
       "name": "audit-corpus-effect-names.mjs",
       "category": "audit",
       "purpose": "the CORPUS half of the effect-vocabulary SoT",
@@ -2279,6 +2292,21 @@
       ]
     },
     {
+      "name": "gather-compiler-stage-hashes.mjs",
+      "category": "util",
+      "purpose": "RD-0528 Phase I-1 evidence producer (item d) for the COMPILER",
+      "selfTest": false,
+      "inCadence": false,
+      "concerns": [
+        "effects",
+        "signing/fusion",
+        "governance",
+        "gate-wiring",
+        "diagnostics",
+        "graph/index"
+      ]
+    },
+    {
       "name": "gather-t1-twin-hashes.mjs",
       "category": "util",
       "purpose": "RD-0361 R4 evidence-pack producer, item (d).",
@@ -2601,6 +2629,7 @@
       "brand-audit.mjs",
       "build-core-chain.mjs",
       "emit-doc-wat.mjs",
+      "gather-compiler-stage-hashes.mjs",
       "gather-t1-twin-hashes.mjs",
       "gather-t2-twin-hashes.mjs",
       "generate-sbom.mjs",
@@ -2678,6 +2707,7 @@
       "check-gate-injection.mjs",
       "debug-compiler-globs.mjs",
       "emit-doc-wat.mjs",
+      "gather-compiler-stage-hashes.mjs",
       "gather-t1-twin-hashes.mjs",
       "gather-t2-twin-hashes.mjs",
       "generate-sbom.mjs",
@@ -2732,6 +2762,7 @@
       "lint-conventions.mjs",
       "check-gate-injection.mjs",
       "debug-compiler-globs.mjs",
+      "gather-compiler-stage-hashes.mjs",
       "hardening-show-derived.mjs",
       "test-compiler-subdirs.mjs"
     ],
@@ -2783,6 +2814,7 @@
       "build-core-chain.mjs",
       "check-gate-injection.mjs",
       "emit-doc-wat.mjs",
+      "gather-compiler-stage-hashes.mjs",
       "gather-t1-twin-hashes.mjs",
       "gather-t2-twin-hashes.mjs",
       "generate-sbom.mjs",
@@ -2800,6 +2832,7 @@
       "audit-checker-wiring.mjs",
       "audit-claim-hygiene.mjs",
       "audit-codes-full.mjs",
+      "audit-compiler-stage-twins.mjs",
       "audit-corpus-effect-names.mjs",
       "audit-coverage.mjs",
       "audit-diagnostic-doc-drift.mjs",
@@ -2856,6 +2889,7 @@
       "audit-cast-hygiene.mjs",
       "audit-checker-wiring.mjs",
       "audit-codes-full.mjs",
+      "audit-compiler-stage-twins.mjs",
       "audit-coverage.mjs",
       "audit-diagnostic-doc-drift.mjs",
       "audit-effect-canonicality.mjs",
@@ -2879,6 +2913,7 @@
       "registry-index-cli.mjs",
       "lint-fungi.mjs",
       "debug-compiler-globs.mjs",
+      "gather-compiler-stage-hashes.mjs",
       "gather-t1-twin-hashes.mjs",
       "hardening-show-derived.mjs",
       "license-rollout.mjs",
@@ -2890,6 +2925,7 @@
       "audit-cast-hygiene.mjs",
       "audit-claim-hygiene.mjs",
       "audit-codes-full.mjs",
+      "audit-compiler-stage-twins.mjs",
       "audit-corpus-effect-names.mjs",
       "audit-name-collisions.mjs",
       "audit-papers-index.mjs",
@@ -2912,6 +2948,7 @@
     "proofs": [
       "audit-cast-hygiene.mjs",
       "audit-claim-hygiene.mjs",
+      "audit-compiler-stage-twins.mjs",
       "audit-diagnostic-codes.mjs",
       "audit-license-compat.mjs",
       "audit-silent-overwrite.mjs",
@@ -2970,6 +3007,7 @@
       "kb-index.mjs",
       "debug-compiler-globs.mjs",
       "emit-doc-wat.mjs",
+      "gather-compiler-stage-hashes.mjs",
       "gather-t1-twin-hashes.mjs",
       "gather-t2-twin-hashes.mjs",
       "hardening-show-derived.mjs",

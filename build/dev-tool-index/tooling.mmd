@@ -83,6 +83,11 @@ flowchart LR
   T_audit_codes_full_mjs --> C_source_hygiene
   T_audit_codes_full_mjs --> C_doc_drift
   T_audit_codes_full_mjs --> C_graph_index
+  T_audit_compiler_stage_twins_mjs["audit-compiler-stage-twins.mjs"]
+  T_audit_compiler_stage_twins_mjs --> C_governance
+  T_audit_compiler_stage_twins_mjs --> C_source_hygiene
+  T_audit_compiler_stage_twins_mjs --> C_doc_drift
+  T_audit_compiler_stage_twins_mjs --> C_proofs
   T_audit_corpus_effect_names_mjs["audit-corpus-effect-names.mjs"]
   T_audit_corpus_effect_names_mjs --> C_effects
   T_audit_corpus_effect_names_mjs --> C_gate_wiring
@@ -527,6 +532,13 @@ flowchart LR
   T_emit_doc_wat_mjs --> C_graph_index
   T_fungi_astshape_mjs["fungi-astshape.mjs"]
   T_fungi_astshape_mjs --> C_secrets_privacy
+  T_gather_compiler_stage_hashes_mjs["gather-compiler-stage-hashes.mjs"]
+  T_gather_compiler_stage_hashes_mjs --> C_effects
+  T_gather_compiler_stage_hashes_mjs --> C_signing_fusion
+  T_gather_compiler_stage_hashes_mjs --> C_governance
+  T_gather_compiler_stage_hashes_mjs --> C_gate_wiring
+  T_gather_compiler_stage_hashes_mjs --> C_diagnostics
+  T_gather_compiler_stage_hashes_mjs --> C_graph_index
   T_gather_t1_twin_hashes_mjs["gather-t1-twin-hashes.mjs"]
   T_gather_t1_twin_hashes_mjs --> C_effects
   T_gather_t1_twin_hashes_mjs --> C_signing_fusion
