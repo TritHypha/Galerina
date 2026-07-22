@@ -1925,6 +1925,18 @@ export function emitWATExpr(
         return `(call $${name} ${args.join(" ")})`.trimEnd();
       }
 
+      // #163-A2: redact(x) ALWAYS returns the -2 "redacted" sentinel (galerina-core-runtime-wasm
+      // __redact returns -2 regardless of input). Lower it INLINE — no `$host___redact` is defined or
+      // imported in the module (host-free standalone cannot provide one), so `(call $host___redact ...)`
+      // is a dangling undefined call (an A2 emitter defect that makes the standalone module invalid).
+      // Evaluate the arg for any side effects, drop it, push -2 — value-faithful to the interpreter,
+      // and it strips the PII input by construction. (The STDLIB_HOST_CALL_MAP `redact` entry below is
+      // now dead — this branch intercepts first.)
+      if (name === "redact") {
+        const dropped = children.map((c) => `(drop ${emitWATExpr(c, vars, staticConsts)})`).join(" ");
+        return `(block (result i32) ${dropped} (i32.const -2))`.trimEnd();
+      }
+
       // ── P9.3: plain stdlib constructor calls (Some(x)) ──────────────────────
       const hostCallFn = STDLIB_HOST_CALL_MAP[name];
       if (hostCallFn !== undefined) {
