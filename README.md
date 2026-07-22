@@ -10,7 +10,26 @@ Galerina is built for organisations where software failure is not acceptable —
 
 ---
 
+## Language classification
 
+Galerina is a **Governed Application Language for High-Assurance Systems**.
+
+It is not a systems language, not a scripting language, and not a general-purpose application language. The classification is narrow by design.
+
+| Word | What it means |
+|---|---|
+| **Governed** | Governance is not a library bolted on top — it is the compiler's primary output. Every flow has a `contract {}` block verified at build time. Effects, capabilities, boundaries, and invariants are declared in source and proven before execution begins. |
+| **Application** | Galerina writes application logic — API routes, payment flows, medical record handlers, governed data pipelines, authentication decisions. Not device drivers, kernel modules, or memory allocators. |
+| **Language** | `.fungi` is a proper programming language: defined syntax, type system, effect system, value-state checker, and a verified compiler pipeline to GIR → WASM. Not a DSL or policy format. |
+| **High-Assurance** | Designed for software where failure is not acceptable. Failure modes are exhaustively declared and fail-closed. The audit trail is cryptographic. Supply-chain provenance is enforced. Security properties are compile-time proofs, not runtime detections. |
+
+**What it is not:** not C/Rust/Zig (no raw pointer arithmetic, no kernel drivers), not Python/Ruby/Bash (no REPL, no dynamic execution, no monkey-patching), not Go/Java/TypeScript (not a general-purpose tool — the right tool for governed, fail-closed, auditable logic in regulated domains), not OPA/Cedar (full executable logic, not a policy DSL), not TLA+/Coq (governance contracts verified at compile time, not a theorem prover).
+
+**Closest analogies:** Ada/SPARK (formally verified, safety-critical, regulated domains) + Rust (no silent failure, explicit ownership) + Erlang (structured fault handling) — but targeting modern API/web workloads and shipping to WASM, with K3 ternary governance and first-class supply-chain provenance.
+
+> Full classification record: [`ZTF-Knowledge-Bases/galerina-language-classification.md`](../ZTF-Knowledge-Bases/galerina-language-classification.md)
+
+---
 
 ## The Zero-Trust thesis
 
