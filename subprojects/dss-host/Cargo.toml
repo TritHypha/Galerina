@@ -6,8 +6,14 @@ edition = "2024"
 [dependencies]
 anyhow = "1.0.104"
 wasmtime = "47.0.2"
+# F3 admission re-verify (owner-ruled, bridge 0045). Pure-Rust — pairs with the coming pure-Rust
+# ml-dsa for the F2 hybrid = one coherent crypto stack, no C/asm re-entering the TCB. Cargo.lock is
+# the exact pin (cargo-deny/vet). verify_admission takes RAW signature bytes, so base64 stays test-only.
+ed25519-dalek = "2"
+sha2 = "0.10"
 
 [dev-dependencies]
-# Test-only: parse the generated M1 differential fixture. NOT a runtime dependency of the
-# sidecar TCB — the production binary's surface stays anyhow + wasmtime only.
+# Test-only: parse the M1 fixture + base64-decode the attestation. NOT runtime deps — the production
+# sidecar surface stays anyhow + wasmtime + ed25519-dalek + sha2.
 serde_json = "1"
+base64 = "0.22"
