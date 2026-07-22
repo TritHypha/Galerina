@@ -8,6 +8,33 @@ The dated blocks below are a historical log; the **CURRENT STATE** block is the 
 
 **Suite 95/95 packages · 7,619+ tests · 0 fail** · audit 0 errors · 75 warnings (all pre-existing).
 
+### Session deliverables — 2026-07-22 (WAT stdlib host stubs finished · EXOR/XNOR · RT-28→DSS.wasm inputs)
+
+Full-auto loop (main). 3 commits, none pushed. Verified green this session: runtime-wasm **27/27** · compiler host+p9-exec **32/32** · core-logic tri-contracts **45/45**.
+
+- **WAT stdlib host stubs FINISHED** (`c82db9b1`, on prior `3081a5b2`). Money currency constructors
+  (gbp/eur/usd/chf/jpy/cad/aud/nzd/sgd/hkd) + `print`/`println` + `redact` + `range` now LOWER
+  (`STDLIB_HOST_CALL_MAP` in `wat-emitter.ts`) **and EXECUTE** (host stubs in
+  `galerina-core-runtime-wasm/src/wasm-runtime.ts`). `print`/`println` route through a NEW
+  **`Observer.onOutput`** (the governed, auditable sink — DSS audit-output seam), console.log dev-fallback
+  only; the old comment overpromised "observer capture" while only console.log'ing → fixed. Added
+  **`readMoney`** accessor (the money handle was write-only). New oracle
+  `wat-host-stdlib-stubs-oracle.test.mjs` (11 cases). Decimal/map/reduce/filter stay fail-closed `(unreachable)`.
+- **EXOR question answered — NO exclusive trit-or is needed** (owner asked). `xorTrit` = `sumTrit` =
+  arithmetic balanced-ternary SUM (the AXOR), correct and quarantined from governance by the Verdict/Trit
+  brand + machine-checked in `tools/verify-governance-algebra.mjs` SUITE 3 + `governance-algebra-binding.test.mjs`.
+  `triStateXnor` = Kleene equivalence — was defined+exported but **UNTESTED**; added truth-table +
+  unknown-propagation tests for it AND `triStateImplies` (`32996c49`). `triStateXor` genuinely absent, no
+  consumer. ⚠ The RD-0525 **T1 "binary-fuse/XOR filters"** tech uses **bitwise** `Int.bitXor`→`i32.xor`
+  (already shipped `d18e2841`, differential-tested) — NOT a trit operator. A logical EXOR would be
+  `triStateEXOR = NOT(triStateXnor)`; add only when a real consumer needs "exactly one of A/B" reasoning.
+- **RT-28 (Wasmtime security/correctness) → DSS.wasm** design inputs committed (`6281396c`,
+  `docs/architecture/dss-wasm-runtime-security-inputs-2026-07-22.md`). The DSS differential proof is a
+  FIDELITY gate ("not an isolation claim"); RT-28's ISOLATION practices are inputs for the post-v1,
+  owner-gated `#102–106` embedder (behind the R4 flip `#143`). Five requirements folded to R&D bridge `#0038`.
+- Bridge: verified R&D `0032` **RESOLVED** at source (myco mirror `@galerina/tools-myco` is Apache-2.0 +
+  pinning tests + `galerinaVendor` provenance); `0033` owner packs queued behind WAT/P9.
+
 ### Session deliverables — 2026-07-22 (Phase 3: R3 byte-parity for 3 checker stages)
 
 - **Phase 3 DSS.wasm path COMPLETE** — R3 byte-parity proven for all 3 remaining stages:
