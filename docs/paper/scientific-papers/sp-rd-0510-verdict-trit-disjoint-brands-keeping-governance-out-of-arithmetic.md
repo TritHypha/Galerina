@@ -1,6 +1,6 @@
 # Two disjoint trit brands: keeping a governance verdict out of arithmetic — a machine-checked authority-laundering closure
 
-**Disclosure ID:** SP-RD-0510 (landed in `docs/paper/scientific-papers/` 2026-07-22; number = the source RD id, verified free in the canonical index) · **Date:** 2026-07-18 · **Type:** construction paper (prior-art disclosure — NOT a patent claim; a **shipped, tested** mechanism + its necessity proof) · **Provenance:** KB RD-0510 (the brand ruling) + the shipped brand in the governed runtime; runnable harness `ZTF-Knowledge-Bases/tools/verify-governance-algebra.mjs` SUITE 3 + SUITE 5 — part of **169/169** green (re-run + personally verified 2026-07-18, and again 2026-07-22); the brand's own `@ts-expect-error` type-guard + mint tests. **Honesty lock:** three-valued *classical* logic (Kleene K3), **not** a qubit/quantum claim.
+**Disclosure ID:** SP-RD-0510 (landed in `docs/paper/scientific-papers/` 2026-07-22; number = the source RD id, verified free in the canonical index) · **Date:** 2026-07-18 · **Type:** construction paper (prior-art disclosure — NOT a patent claim; a **shipped, tested** mechanism + its necessity proof) · **Provenance:** KB RD-0510 (the brand ruling) + the shipped brand in the governed runtime; runnable harness `tools/verify-governance-algebra.mjs` SUITE 3 + SUITE 5 — part of **169/169** green (re-run + personally verified 2026-07-18, and again 2026-07-22); the brand's own `@ts-expect-error` type-guard + mint tests. **Honesty lock:** three-valued *classical* logic (Kleene K3), **not** a qubit/quantum claim.
 
 ## Purpose
 A three-valued governance system encodes verdicts as `−1|0|1` (`DENY`/`INDETERMINATE`/`ALLOW`). But *arithmetic* over the same three symbols — a balanced-ternary `sum`/`xor`/`carry`/`add`/`mul`/`consensus` — is **also** `−1|0|1`, and those operations can **raise or flip** a value's sign. If a governance verdict and an arithmetic trit share one type, a verdict can be fed to an arithmetic operator that **changes its authority** (an `ALLOW` laundered out of a `DENY`, or the reverse). We disclose the closure: **two nominally-disjoint brands** — `Verdict` (governance) and `Trit` (arithmetic) — mutually non-assignable, so a verdict can never enter an arithmetic operator (or vice-versa), with the **necessity machine-checked**.
@@ -25,7 +25,7 @@ A compile-time (type-level) separation: it closes the confusion at the type laye
 - **Authorship & AI assistance:** drafted with AI assistance under human direction; grounded in the KB brand ruling (RD-0510) and the named runnable harness suites.
 - **Funding:** none.
 - **Competing interests:** none.
-- **Data / artifact availability:** in-repo — `ZTF-Knowledge-Bases/tools/verify-governance-algebra.mjs` (SUITE 3 + SUITE 5, part of 169/169; re-run 2026-07-22) and the brand's compile-time `@ts-expect-error` pin tests in the product repository; no external data.
+- **Data / artifact availability:** in-repo — `tools/verify-governance-algebra.mjs` (SUITE 3 + SUITE 5, part of 169/169; re-run 2026-07-22) and the brand's compile-time `@ts-expect-error` pin tests in the product repository; no external data.
 - **Licence:** Apache-2.0.
 
 *Contact hello@trithypha.dev.*

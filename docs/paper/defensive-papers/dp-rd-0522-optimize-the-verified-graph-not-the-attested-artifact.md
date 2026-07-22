@@ -33,7 +33,7 @@ The general graph-compression pass (CSE / hash-consing / reachability tree-shaki
 - **Authorship & AI assistance:** drafted with AI assistance under human direction; grounded in the cited KB graph-compression R&D and the shipped provability-gated elision with its machine-checked algebra suite.
 - **Funding:** none.
 - **Competing interests:** none.
-- **Data / artifact availability:** in-repo — `ZTF-Knowledge-Bases/tools/verify-governance-algebra.mjs` (SUITE 4; part of 169/169, re-run 2026-07-22); the compiler's differential (interpreter == VM == compiled) and twin byte-parity gates are in the product repository.
+- **Data / artifact availability:** in-repo — `tools/verify-governance-algebra.mjs` (SUITE 4; part of 169/169, re-run 2026-07-22); the compiler's differential (interpreter == VM == compiled) and twin byte-parity gates are in the product repository.
 - **Licence:** Apache-2.0.
 
 *Contact hello@trithypha.dev.*

@@ -38,7 +38,7 @@ A compile-time (type-level) separation. The **two-brand instance ships and is ma
 - **Authorship & AI assistance:** drafted with AI assistance under human direction; grounded in the KB verdict-brand-family adjudication and the shipped two-brand instance with its machine-checked disjointness harness (`verify-governance-algebra`, 169/169, plus the SP-RD-0510 disjointness/closure suites).
 - **Funding:** none.
 - **Competing interests:** none.
-- **Data / artifact availability:** in-repo — `ZTF-Knowledge-Bases/tools/verify-governance-algebra.mjs` (re-runnable) and the SP-RD-0510 suites; no external data.
+- **Data / artifact availability:** in-repo — `tools/verify-governance-algebra.mjs` (re-runnable) and the SP-RD-0510 suites; no external data.
 - **Licence:** Apache-2.0.
 
 *Published as a defensive disclosure. Contact hello@trithypha.dev.*

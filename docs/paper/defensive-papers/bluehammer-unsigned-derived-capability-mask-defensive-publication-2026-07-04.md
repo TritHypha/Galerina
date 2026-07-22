@@ -1,6 +1,6 @@
 # BlueHammer: the unsigned derived capability-mask as a fault-injection privilege-escalation target
 
-**Disclosure ID:** DP-RD-0233 · **Date:** 2026-07-04 · **Type:** Prior-art disclosure (defensive) — NOT a patent claim · **Provenance:** source finding `ZTF-Knowledge-Bases/galerina-rd-0233-bluehammer-language-exposure-and-fix.md`; machine proof `Galerina/proofs/rd-0233-proof.mjs` (**13/13 GREEN — re-run & personally verified 2026-07-04**); landed prod fix `Galerina/packages-galerina/galerina-tower-citizen/src/hybrid-engine.ts` (line references verified by direct read 2026-07-04, read-only); builds on DP-RD-0225.
+**Disclosure ID:** DP-RD-0233 · **Date:** 2026-07-04 · **Type:** Prior-art disclosure (defensive) — NOT a patent claim · **Provenance:** source finding `galerina-rd-0233-bluehammer-language-exposure-and-fix.md` (internal engineering KB); machine proof `Galerina/proofs/rd-0233-proof.mjs` (**13/13 GREEN — re-run & personally verified 2026-07-04**); landed prod fix `Galerina/packages-galerina/galerina-tower-citizen/src/hybrid-engine.ts` (line references verified by direct read 2026-07-04, read-only); builds on DP-RD-0225.
 
 ## Purpose
 
@@ -125,8 +125,8 @@ Disclosed publicly as prior art:
 
 ## Cross-references
 
-- `ZTF-Knowledge-Bases/galerina-rd-0233-bluehammer-language-exposure-and-fix.md` (source finding: the unsigned-authority gap, the fixes, the sibling vectors)
-- `ZTF-Knowledge-Bases/defensive-publications/dp-rd-0225-rowhammer-signed-hash-detection-detect-not-prevent.md` (detect-not-prevent; the prior-art this builds on and disclaims overlap with)
+- `galerina-rd-0233-bluehammer-language-exposure-and-fix.md` (internal engineering KB) (source finding: the unsigned-authority gap, the fixes, the sibling vectors)
+- `dp-rd-0225-rowhammer-signed-hash-detection-detect-not-prevent.md` (internal engineering KB) (detect-not-prevent; the prior-art this builds on and disclaims overlap with)
 - `Galerina/packages-galerina/galerina-tower-citizen/src/hybrid-engine.ts`, `.../capability-grant.ts` (landed embodiment)
 
 ## Declarations

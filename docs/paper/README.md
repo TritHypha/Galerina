@@ -67,7 +67,7 @@ Any document in this folder follows the conventions below. These are good-practi
 ### Defensive publications consolidated in from the ZTF KB (`defensive-papers/`, moved 2026-07-09)
 
 All carry the header `Prior-art disclosure (defensive) · Not a patent claim`; a redirect stub remains at the old
-KB location (`ZTF-Knowledge-Bases/defensive-publications/README.md`).
+KB location (`README.md` (internal engineering KB)).
 
 | Document | Disclosed | Subject |
 |---|---|---|
@@ -209,4 +209,4 @@ cited harnesses **re-run green 2026-07-22** under the publisher's own hand; Decl
 
 ---
 
-*Maintained as part of the Galerina KB. The patents-decision rationale lives in `Galerina-Patens/README.md` (zero patents, on purpose); the full paper-worthiness assessments live in `../../../ZTF-Knowledge-Bases/galerina-paper-worthiness-assessment-2026-06-23.md` and the IP/paper strategy memory.*
+*Maintained as part of the Galerina KB. The patents-decision rationale lives in `Galerina-Patens/README.md` (zero patents, on purpose); the full paper-worthiness assessments live in `galerina-paper-worthiness-assessment-2026-06-23.md` (internal engineering KB) and the IP/paper strategy memory.*

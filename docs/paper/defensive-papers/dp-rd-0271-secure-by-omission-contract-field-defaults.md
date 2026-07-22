@@ -1,7 +1,7 @@
 # Defensive Publication — Secure-by-omission governance contracts: fail-closed injected defaults with declare-only-to-override and a mandatory expansion dump
 
 **Disclosure ID:** DP-RD-0271 · **Date:** 2026-07-08 · **Type:** Prior-art disclosure (defensive) · **Not** a patent claim.
-**Provenance:** RD-0266c §6 (`ZTF-Knowledge-Bases/galerina-rd-0266c-zt-scorecard-and-20yr-legacy-checklist.md`, owner decision 2026-07-08) · security review findings A6/A15/A20/A24 (`galerina-rd-0266-syntax-security-review-2026-07-08.md`) · the trusted-by-omission fail-open it inverts (H2 / FO-TRUSTED-BY-DEFAULT-BOUNDARY, DP-RD-0269).
+**Provenance:** RD-0266c §6 (`galerina-rd-0266c-zt-scorecard-and-20yr-legacy-checklist.md` (internal engineering KB), owner decision 2026-07-08) · security review findings A6/A15/A20/A24 (`galerina-rd-0266-syntax-security-review-2026-07-08.md`) · the trusted-by-omission fail-open it inverts (H2 / FO-TRUSTED-BY-DEFAULT-BOUNDARY, DP-RD-0269).
 
 > **Purpose.** Defensive publication; **novelty disclaimed** (§3). The recorded construction: in a governance language where every flow carries a policy contract, an omitted contract field is **injected at compile time with its fail-closed (deny-side) default** — so a developer declares a field *only to override toward permissiveness*, and omission is always the safe direction ("secure-by-omission", the exact inverse of the trusted-by-omission defect class). Two fields are **non-defaultable toward permissiveness at all** (authorization and data classification). The injected expansion is compile-time, immutable, covered by the artifact signature, and **dumpable on demand** — "not declared" must never mean "invisible".
 

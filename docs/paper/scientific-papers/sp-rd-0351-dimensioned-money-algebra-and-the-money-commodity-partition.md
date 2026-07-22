@@ -1,6 +1,6 @@
 # Dimensioned money, sourced scale, and the money/commodity partition — an executable value-unit algebra
 
-**Disclosure ID:** SP-RD-0351 (landed in `docs/paper/scientific-papers/` 2026-07-22; number = the source RD id, verified free in the canonical index) · **Date:** 2026-07-18 · **Type:** construction paper (prior-art disclosure — NOT a patent claim) · **Provenance:** KB RD-0349 (value-unit types: money/commodity/crypto registry), RD-0350 (*"gold is not money"* — the adversarial case for the commodity/crypto generics), RD-0351 (*"the algebra decides — money/markets partition"*); runnable harness `ZTF-Knowledge-Bases/tools/verify-value-unit-algebra.mjs` — **35/35 assertions green** (dependency-free; re-run and personally verified 2026-07-18, and again 2026-07-22). Honesty lock: the harness verifies the **algebra**; `Money<C>` ships in the Galerina type-checker, the `Commodity<T>` partition is the disclosed extension.
+**Disclosure ID:** SP-RD-0351 (landed in `docs/paper/scientific-papers/` 2026-07-22; number = the source RD id, verified free in the canonical index) · **Date:** 2026-07-18 · **Type:** construction paper (prior-art disclosure — NOT a patent claim) · **Provenance:** KB RD-0349 (value-unit types: money/commodity/crypto registry), RD-0350 (*"gold is not money"* — the adversarial case for the commodity/crypto generics), RD-0351 (*"the algebra decides — money/markets partition"*); runnable harness `verify-value-unit-algebra.mjs` (internal engineering KB) — **35/35 assertions green** (dependency-free; re-run and personally verified 2026-07-18, and again 2026-07-22). Honesty lock: the harness verifies the **algebra**; `Money<C>` ships in the Galerina type-checker, the `Commodity<T>` partition is the disclosed extension.
 
 ## Purpose
 Money is not a number. Representing amounts as bare floats or fixed-2-decimal values silently (a) **corrupts** currencies whose minor-unit scale is not 2 (JPY = 0dp, BHD = 3dp, ETH = 18dp), (b) permits nonsensical **cross-currency** arithmetic, and (c) lets a **commodity** (gold, priced in troy ounces) be handled as if it were money. We disclose a uniform value-unit construction: every amount carries a dimension (unit + *sourced* scale); operations are defined only *within* a dimension; distinct value-kinds occupy **disjoint partitions**; and any unit mismatch is **deny-by-default** — with the algebra machine-checked.
@@ -26,7 +26,7 @@ The harness verifies the **algebra** (scale exactness, partition disjointness, d
 - **Authorship & AI assistance:** drafted with AI assistance under human direction; grounded in the cited KB R&D records (RD-0349/0350/0351) and the named runnable harness.
 - **Funding:** none.
 - **Competing interests:** none.
-- **Data / artifact availability:** in-repo — `ZTF-Knowledge-Bases/tools/verify-value-unit-algebra.mjs` (dependency-free; 35/35 on re-run 2026-07-22); no external data.
+- **Data / artifact availability:** re-runnable harness `verify-value-unit-algebra.mjs` in the internal engineering KB (dependency-free; 35/35 on re-run 2026-07-22); no external data.
 - **Licence:** Apache-2.0.
 
 *Contact hello@trithypha.dev.*
