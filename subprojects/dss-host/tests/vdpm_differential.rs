@@ -124,5 +124,72 @@ fn vdpm_decision_core_equals_stage_a_through_wasmtime() -> anyhow::Result<()> {
     );
     assert!(checked >= 380, "differential coverage too low: only {checked} points (fixture incomplete)");
     println!("wasmtime V_DPM differential: {checked} points — interpreter === Node-WASM === wasmtime OK");
+
+    // ── LAWS on the WASM outputs directly (parity with the Node differential's non-vacuity guards).
+    //    Independent of the fixture's `expected`: a fixture corrupted in the SAME way as the module
+    //    could still pass pointwise agreement, but not these intrinsic properties. Constants mirror
+    //    vdpm.fungi's bitfield.
+    const INITIAL: i32 = 15_728_895; // bits 0-7 + 20-23; carries NO dag bit
+    const BIT_DAG: u32 = 1 << 8;
+    const BIT_QUARANTINE: u32 = 1 << 30;
+    const BIT_EMERGENCY: u32 = 1 << 31;
+    const SETTABLE: u32 = BIT_QUARANTINE | BIT_EMERGENCY; // the only bits a transition may SET
+    const CB_TRIO: u32 = 35; // network(1) | storage(2) | ai(32) — the circuit-breaker clears exactly these
+    assert_eq!(INITIAL as u32 & BIT_DAG, 0, "INITIAL must not carry the dag bit");
+
+    // effect (name, handle) pairs + the transition vdpm states, straight from the fixture
+    let effects: Vec<(String, i32)> = points
+        .iter()
+        .filter(|p| p["flow"] == "capability_to_bitmask")
+        .map(|p| (p["args"][0]["str"].as_str().unwrap_or("").to_string(), p["args"][0]["value"].as_i64().unwrap() as i32))
+        .collect();
+    let states: Vec<i32> = points
+        .iter()
+        .filter(|p| p["flow"] == "vdpm_apply_circuit_breaker")
+        .map(|p| p["args"][0]["value"].as_i64().unwrap() as i32)
+        .collect();
+
+    // LAW 1 — topology-first: INITIAL has no dag bit, so every effect is denied.
+    for (name, h) in &effects {
+        store.set_fuel(100_000_000)?;
+        let f = instance.get_typed_func::<(i32, i32), i32>(&mut store, "vdpm_check")?;
+        assert_eq!(f.call(&mut store, (INITIAL, *h))?, 0, "topology-first: vdpm_check(INITIAL, {name}) must deny");
+    }
+
+    // LAW 2 — deny-by-default: unknown / empty effect grants no capability.
+    for probe in ["unknown.effect", ""] {
+        if let Some((_, h)) = effects.iter().find(|(n, _)| n == probe) {
+            store.set_fuel(100_000_000)?;
+            let f = instance.get_typed_func::<i32, i32>(&mut store, "capability_to_bitmask")?;
+            assert_eq!(f.call(&mut store, *h)?, 0, "deny-by-default: capability_to_bitmask({probe:?}) must be 0");
+        }
+    }
+
+    // LAW 3 — monotonicity: a transition only CLEARs bits, except the containment flags it may set.
+    for &v in &states {
+        let vin = v as u32;
+        store.set_fuel(100_000_000)?;
+        let f = instance.get_typed_func::<i32, i32>(&mut store, "vdpm_apply_circuit_breaker")?;
+        let cb = f.call(&mut store, v)? as u32;
+        assert_eq!(cb, vin & !CB_TRIO, "circuit-breaker must clear exactly bits {{0,1,5}} (vdpm={v})");
+
+        store.set_fuel(100_000_000)?;
+        let f = instance.get_typed_func::<i32, i32>(&mut store, "vdpm_enter_quarantine")?;
+        let q = f.call(&mut store, v)? as u32;
+        assert_eq!(q & BIT_QUARANTINE, BIT_QUARANTINE, "quarantine must set bit 30 (vdpm={v})");
+        assert_eq!(q & !vin & !SETTABLE, 0, "quarantine gained a non-containment bit (vdpm={v})");
+
+        store.set_fuel(100_000_000)?;
+        let f = instance.get_typed_func::<i32, i32>(&mut store, "vdpm_enter_emergency")?;
+        let e = f.call(&mut store, v)? as u32;
+        assert_eq!(e & BIT_EMERGENCY, BIT_EMERGENCY, "emergency must set bit 31 (vdpm={v})");
+        assert_eq!(e & !vin & !SETTABLE, 0, "emergency gained a non-containment bit (vdpm={v})");
+    }
+
+    println!(
+        "laws hold on wasmtime outputs: topology-first ({} effects), deny-by-default, monotonicity ({} states) OK",
+        effects.len(),
+        states.len()
+    );
     Ok(())
 }
