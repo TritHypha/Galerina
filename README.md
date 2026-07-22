@@ -2,15 +2,9 @@
 
 **A governance-first programming language and runtime for high-assurance software.**
 
-Galerina is built for organisations where software failure is not acceptable — financial platforms, healthcare systems, government services, and regulated enterprise. Every execution is **declared, verified, and audited** by design, not by convention.
+Galerina is a **Governed Application Language for High-Assurance Systems** — part of a wider **zero-trust ecosystem** for projects that must handle PII or other sensitive information in high-compliance environments. It is built for organisations where software failure is not acceptable — financial platforms, healthcare systems, government services, and regulated enterprise: every execution is **declared, verified, and audited** by design, not by convention. It is not a systems language, not a scripting language, not general-purpose; the classification is narrow by design.
 
 > **New here?** → [**SETUP.md**](SETUP.md) — install · run your first benchmark · Hello World with full governance comments
-
----
-
-## What Galerina is
-
-Galerina is a **Governed Application Language for High-Assurance Systems**. It is not a systems language, not a scripting language, and not a general-purpose application language — the classification is narrow by design.
 
 | Word | What it means |
 |---|---|
@@ -19,11 +13,38 @@ Galerina is a **Governed Application Language for High-Assurance Systems**. It i
 | **Language** | `.fungi` is a proper programming language: defined syntax, type system, effect system, value-state checker, and a verified compiler pipeline to GIR → WASM. Not a DSL or policy format. |
 | **High-Assurance** | Failure modes are exhaustively declared and fail-closed. The audit trail is cryptographic. Supply-chain provenance is enforced. Security properties are compile-time proofs, not runtime detections. |
 
-**What it is not:** not C/Rust/Zig (no raw pointers, no kernel drivers) · not Python/Ruby/Bash (no REPL, no dynamic execution, no monkey-patching) · not Go/Java/TypeScript (not general-purpose — the right tool for governed, fail-closed, auditable logic in regulated domains) · not OPA/Cedar (full executable logic, not a policy DSL) · not TLA+/Coq (governance contracts verified at compile time, not a theorem prover).
+## What can you do with Galerina
 
-**Closest analogies:** Ada/SPARK (verified, safety-critical, regulated domains) + Rust (no silent failure) + Erlang (structured fault handling) — but targeting modern API/web workloads, shipping to WASM, with K3 ternary governance and first-class supply-chain provenance.
+- **Write governed application logic** — API routes, payment flows, medical-record handlers, authentication decisions, governed data pipelines — with intent, effects, and invariants declared in a `contract {}` block the compiler proves at build time.
+- **Author fail-closed authorisation** on the K3 verdict lattice (`ALLOW / INDETERMINATE / DENY`) — an unknown input can only *lower* a verdict, never manufacture an ALLOW.
+- **Handle PII / PHI safely** — protected types and type-level `redact()`, enforced before anything reaches an audit sink.
+- **Mint hallmark types of your own** — developer-defined nominal types with a **mandatory assay gate**: nothing becomes an `Email`, `AccountId`, or `Iban` without passing its assay first, so stringly-typed domain bugs cannot compile.
+- **Defend every border** — external input arrives `unsafe` and cannot be used until it is gated (`Border.validate()`); plugins, packages, and apps cross **deny-by-default admission borders** — nothing is trusted by import.
+- **Ship signed WASM** — `galerina build` produces one signed `.wasm` + `.lmanifest`; a deny-by-default kernel admits it (hash-pin · signature · capability mask) before a single instruction runs.
+- **Produce compliance evidence as a by-product** — cryptographic receipts, append-only audit events, the ProofGraph; PCI DSS auditing built in.
+- **Govern compute you don't trust** — AI inference, native bridges, and the photonic-emulated numeric lane participate at the border, degrade-only, never inside the trusted base *(today: one attested reference bridge + governed simulators)*.
+- *Deliberately not for:* kernel drivers, quick scripts, or theorem proving — see *Honest scope* below.
 
-### Who it is for
+## What is under the hood
+
+- **A verified compiler pipeline** — lexer → parser → symbol resolver → type checker → value-state → effect checker → governance verifier → GIR → WASM (diagram below).
+- **K3 ternary verdict algebra** — three-valued authorization with No-Coercion `min` composition; boolean gates cannot express "unknown", Galerina's can.
+- **A deny-by-default effect + capability system** — `database.write`, `network.outbound`, … refused unless declared in the contract and granted at admission.
+- **Value-state and taint tracking** — `UNSAFE → VALIDATED → PROTECTED → REDACTED` transitions checked at compile time; secrets and PII cannot silently cross a boundary.
+- **Cryptographic outputs** — the ProofGraph, Epilogue Receipts, and the signed `.lmanifest` (Ed25519; the certified profile mandates hybrid +ML-DSA-65).
+- **A signed admission border** — packages and apps enter only through hash-pin + signature + revocation + closed capability masks.
+- **The governed runtime** — the K3 algebra, bridge attestation, and the DSS/V_DPM supervision model, compiled to WASM as the production path *(DSS supervision: the decision core is proven on real wasmtime; the full supervisor is in build)*.
+- **Zero middleware** — governance is compiled *into* the binary, not stacked around it. What is middleware elsewhere (authorisation, audit, redaction, rate-limits) is a compile-time property of the flow itself — there is no auth wrapper, logging layer, or policy sidecar in the request path to misconfigure or bypass. The transport design extends this to the OS: raw encrypted bytes go straight into the sandbox, not through kernel/middleware layers.
+- **Design lineage** — Ada/SPARK's contracts-for-regulated-domains, Rust's no-silent-failure, Erlang's structured fault handling — retargeted at modern API/web workloads, shipping to WASM.
+
+## How your data is protected
+
+- **Memory-safe by construction.** There are no raw pointers and no pointer arithmetic in `.fungi`; values are immutable by default, and production code executes inside the WASM sandbox — bounds-checked linear memory, nothing reachable outside it. The memory boundary itself is actively governed: the alignment, pool-exhaustion, segmentation, and corruption-sentinel decision guards are `.fungi` programs, five of them now running **authoritative as signed WASM** — and uncontrolled spill to host memory is a deny-only effect (`memory.spill`), refused at compile time.
+- **The OS is assumed already compromised.** Galerina extends no trust to the machine it runs on. Native OS capabilities are denied by default, the host is treated as a dumb byte-mover, and every authorisation folds through the fail-closed K3 gate. The transport design (TLSTP) completes the posture: raw encrypted packets enter WASM linear memory as unparsed bytes and **decryption happens inside the sandbox — the kernel never sees plaintext**. *(The K3 gate and denied-by-default capabilities are shipped; full in-sandbox decryption is the target architecture, embedder in progress.)*
+- **Secrets are sealed, never compiled in.** `env.spore` replaces the plaintext `.env` file with sealed, encrypted-at-rest credentials (the `.spore` capsule's KEM-DEM engine, opt-in package). Secrets are injected at runtime — never compiled into the binary — the compiler's secret-taint checks stop a credential from reaching a log, response, or audit sink, and a route that declares `secrets.require` is refused fail-closed **before any side effect runs** when its secret is unavailable.
+- The other half of the story — PII/PHI typing with enforced `redact()`, and the cryptographic audit trail every flow emits — is under *What can you do* above and *Native properties* below.
+
+## Who it is for
 
 | Sector | Why Galerina |
 |---|---|
@@ -61,7 +82,7 @@ Galerina optimises for **compile-time-verified governance and fail-closed Zero-T
 | AI guesses at structure | Machine-readable ProofGraph + intent manifests |
 | Security checked at runtime | Compile-time: taint, secrets, PCI DSS, governance proofs |
 | Dependencies trusted by import | **Signed admission border** — hash-pin · signature · revocation · capability mask before a package runs |
-| Fixed hardware | Declared targets: CPU · WASM · GPU · NPU · Photonic |
+| Fixed hardware | Declared targets: CPU · WASM · GPU · JS · native · AI-accelerator · Photonic — WASM is the production path; the rest are governed contract adapters (photonic = simulation, native execution planned) |
 
 ## Native properties
 
@@ -78,7 +99,7 @@ Properties of the **language itself** — not libraries, not middleware, not con
 | **Post-Quantum Ready** | Hybrid **Ed25519 + ML-DSA-65** (NIST FIPS 204) signing shipped on attestation, proof-graph, and bridge surfaces. Certified mode **mandates** both halves — no post-quantum downgrade path. |
 | **Data Security** | PII/PHI types tracked end-to-end; `redact()` enforced at the type level **before** data reaches any audit sink. Taint, secret isolation, and OWASP guards are compile-time checks. |
 | **Reproducibility** | The signed `.lmanifest` is the machine-readable proof that a given WASM binary came from a given source under a given policy. The ProofGraph captures the full decision DAG and authority chain. |
-| **Auditing** | Every governed execution emits an **Epilogue Receipt** (sha256_seal or zk_snark) and appends a structured AuditEvent (CBOR Tag 410) to an append-only log. |
+| **Auditing** | Every governed execution emits an **Epilogue Receipt** (sha256_seal today; zk_snark planned) and appends a structured AuditEvent (CBOR Tag 410) to an append-only log. |
 
 ---
 
@@ -164,7 +185,7 @@ contract { intent { "Map a status enum to a display string." } }
 ```
 Layer 1: Galerina Source (.fungi)     — what the developer writes
 Layer 2: Governed IR (GIR)            — verified governance contract
-Layer 3: WASM / bytecode / native     — compiled execution (WASM = production path)
+Layer 3: WASM / bytecode              — compiled execution (WASM = production path; native target planned)
 Layer 4: RunResult                    — retVal + auditLog (observable effects)
 Layer 5: ProofGraph + .lmanifest      — cryptographic audit proof (Ed25519; certified profile = hybrid +ML-DSA-65)
 ```
@@ -184,7 +205,7 @@ intent  →  governed execution plan  →  coordinated compute  →  audit proof
 | `galerina-framework-*` | The **application layer** — app-kernel admission/fusion border, api-server adapter, example app. | governed host |
 | `galerina-ext-*` | **Govern-Don't-Absorb border extensions** — the `.spore` trust engine, secrets vault, native bridges (BitNet · quantum · C++). | governed at the border |
 | `galerina-devtools-*` | Dev/audit **tooling** — security + PCI auditors, benchmarks, graph generators. | host-side tools |
-| `galerina-target-*` | **Target adapters** — cpu · wasm · gpu · native · js, each deny-by-default capability-gated. | governed contracts |
+| `galerina-target-*` | **Target adapters** — cpu · wasm · gpu · js · native · ai-accelerator · photonic, each deny-by-default capability-gated. | governed contracts |
 | `galerina-data-*` · `-db-*` · `-web-*` · `-registry` | Data engine, database adapters, web governance, signed package registry. | data/db/web shipped · registry planned |
 
 **Two rules hold it together:**
@@ -196,7 +217,7 @@ intent  →  governed execution plan  →  coordinated compute  →  audit proof
 
 ### Architecture patterns
 
-Nine canonical patterns; 1–6 compile today (`drcm_stable_v0`), 7–9 require DRCM phases (`drcm_core_v1`). Each has a verified `.fungi` example in `tests/patterns/`.
+Nine canonical patterns; 1–6 compile today (`drcm_stable_v0`); 7–9 require the DRCM core profile (`drcm_core_v1` — planned). Patterns 1–6 have verified `.fungi` examples in `tests/patterns/`.
 
 | # | Pattern | Profile | When to use |
 |---|---|---|---|
@@ -266,17 +287,17 @@ At runtime the app reaches the world **only** through the deny-by-default **Capa
 
 ## Diagrams
 
-<table align="center">
-  <tr>
-    <td align="center" width="100%"><a href="docs/diagrams/galerina-mechanics.svg"><img src="docs/diagrams/galerina-mechanics.svg" alt="Galerina — governance-first compute pipeline" width="100%"></a><br><sub><b>Galerina — governance-first compute pipeline</b></sub></td>
-  </tr>
-  <tr>
-    <td align="center" width="100%"><a href="docs/diagrams/galerina-k3-verdict-lattice.svg"><img src="docs/diagrams/galerina-k3-verdict-lattice.svg" alt="Galerina — the K3 verdict lattice" width="100%"></a><br><sub><b>The K3 verdict lattice (deny-by-default, No-Coercion min)</b></sub></td>
-  </tr>
-  <tr>
-    <td align="center" width="100%"><a href="docs/diagrams/galerina-ungoverned-vs-governed-breach.svg"><img src="docs/diagrams/galerina-ungoverned-vs-governed-breach.svg" alt="Galerina — the breach that can't compile" width="100%"></a><br><sub><b>The breach that can't compile (ungoverned vs governed)</b></sub></td>
-  </tr>
-</table>
+![Galerina — governance-first compute pipeline](docs/diagrams/galerina-mechanics.svg)
+
+**Governance-first compute pipeline**
+
+![Galerina — the K3 verdict lattice](docs/diagrams/galerina-k3-verdict-lattice.svg)
+
+**The K3 verdict lattice (deny-by-default, No-Coercion min)**
+
+![Galerina — the breach that can't compile](docs/diagrams/galerina-ungoverned-vs-governed-breach.svg)
+
+**The breach that can't compile (ungoverned vs governed)**
 
 > **18 more** — capability radars (security/governance · performance · DevX · web/API · databasing · data science · AI/ML · language/type-system vs Rust/TS/Python …) and concept maps (trust-state lifecycle · govern-don't-absorb · privacy-cut authoring · governed healthcare + payment lanes) — in [`docs/diagrams/`](docs/diagrams/).
 
