@@ -37,7 +37,7 @@ Type `Y` and press Enter to confirm.
 ### Step 3 — Clone and link
 
 ```powershell
-git clone https://github.com/galerina/Galerina.git
+git clone https://github.com/TritHypha/Galerina.git
 cd Galerina
 npm link
 ```
@@ -90,7 +90,7 @@ sudo pacman -S nodejs npm
 ### Step 2 — Clone and link
 
 ```bash
-git clone https://github.com/galerina/Galerina.git
+git clone https://github.com/TritHypha/Galerina.git
 cd Galerina
 npm link
 ```
@@ -143,7 +143,7 @@ nvm use 20
 ### Step 2 — Clone and link
 
 ```bash
-git clone https://github.com/galerina/Galerina.git
+git clone https://github.com/TritHypha/Galerina.git
 cd Galerina
 npm link
 ```
