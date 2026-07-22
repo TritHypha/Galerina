@@ -1,47 +1,30 @@
 // =============================================================================
-// Phase R7A: Stage B Lexer Parity — TypeScript lexer vs lexer.fungi
+// bootstrap-determinism/lexer-parity.test.mjs
 //
-// Verifies that the self-hosted lexer (src/self-hosted/lexer.fungi) produces
-// the same token sequence as the TypeScript reference lexer (lex) for
-// real Galerina source.
+// REFRAMED 2026-07-23 (R&D #0050 §3): the old `PARITY_ACHIEVED = true` framing
+// claimed the self-hosted lexer matches the TypeScript reference lexer token-for-
+// token. It does NOT. Measured over a real corpus the two diverge in two
+// SYSTEMATIC, BY-DESIGN classes (a functional-not-byte-identical relationship —
+// see the RD-0528 I-1 evidence pack); the single-input test only passed because
+// that one input dodged both classes. This test now asserts what is actually
+// TRUE — the self-hosted lexer's own DOCUMENTED conventions, on inputs that
+// EXERCISE the divergences, plus run-to-run determinism. There is no TS-parity
+// claim to keep false.
 //
-// Test input: "pure flow add(a: Int, b: Int) -> Int { return a }"
-//
-// Gap reporting strategy:
-//   If lexer.fungi does not yet match, the test logs the diff and passes with
-//   assert.ok(true) so CI does not block.  When full parity is reached, flip
-//   the PARITY_ACHIEVED flag to true to convert to hard assertions.
-//
-// Known gaps at time of writing (see LEXER_PARITY_STATUS.md):
-//   1. Multi-char operators: lexer.fungi emits Symbol("-") + Symbol(">") where
-//      the TS lexer emits operator("->").  Need scanOperator() helper.
-//   2. Kind casing: lexer.fungi uses PascalCase ("Keyword", "Identifier", …)
-//      while the TS lexer uses lowercase ("keyword", "identifier", …).
+// The two documented divergences from the TS lexer (intentional — the self-hosted
+// compiler defines its own IR):
+//   1. Single-char operators (`=`, `+`, …) are kind `Symbol`, not `Operator`
+//      (self-hosted `scanOperator` promotes only TWO-char operators).
+//   2. String / char literals carry the UNQUOTED content as their value
+//      (`"hi"` -> `hi`), where the TS lexer keeps the raw quoted text.
 // =============================================================================
 
 import assert from "node:assert/strict";
-import { describe, it } from "node:test";
+import { describe, it, before } from "node:test";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join, dirname } from "node:path";
-
-import {
-  lex,
-  parseProgram,
-  resolveSymbols,
-  checkTypes,
-  executeFlow,
-} from "../../dist/index.js";
-
-// ---------------------------------------------------------------------------
-// Flip to true once lexer.fungi achieves full parity with the TS lexer.
-// When true, every comparison becomes a hard assertion.
-// ---------------------------------------------------------------------------
-const PARITY_ACHIEVED = true;
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
+import { parseProgram, resolveSymbols, checkTypes, executeFlow } from "../../dist/index.js";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const LEXER_PATH = join(__dir, "../../src/self-hosted/lexer.fungi");
@@ -56,17 +39,11 @@ function loadSelfHostedLexer() {
   return parsed;
 }
 
-/**
- * Run the self-hosted tokenize flow on the given source text.
- * @param {{ ast: unknown }} parsed - result of loadSelfHostedLexer()
- * @param {string} input - Galerina source to tokenize
- * @returns {Promise<Array<{kind: string, value: string}>>}
- */
+/** Run the self-hosted tokenize flow; returns [{kind, value}]. */
 async function selfHostedTokens(parsed, input) {
   const args = new Map();
   args.set("source", { __tag: "string", value: input });
   const result = await executeFlow("tokenize", args, parsed.ast);
-
   if (result.value.__tag !== "ok") {
     throw new Error(`lexer.fungi tokenize returned non-Ok: ${JSON.stringify(result.value)}`);
   }
@@ -79,266 +56,62 @@ async function selfHostedTokens(parsed, input) {
     const kind = t.fields.get("kind");
     const val = t.fields.get("value");
     const kindStr =
-      kind?.__tag === "unresolved"
-        ? kind.name
-        : kind?.__tag === "string"
-          ? kind.value
-          : "??";
+      kind?.__tag === "unresolved" ? kind.name
+        : kind?.__tag === "string" ? kind.value : "??";
     const valStr = val?.__tag === "string" ? val.value : "??";
     return { kind: kindStr, value: valStr };
   });
 }
 
-/**
- * Normalise a TypeScript-lexer token kind to PascalCase so comparisons
- * can be done in a kind-case-neutral way.
- *
- * TS lexer uses:  keyword | identifier | symbol | operator | number |
- *                 string  | char       | newline | eof
- * lexer.fungi uses: Keyword | Identifier | Symbol | Operator | NumberLiteral |
- *                 StringLiteral | CharLiteral | Newline | Eof
- */
-function tsPascalKind(kind) {
-  const map = {
-    keyword: "Keyword",
-    identifier: "Identifier",
-    symbol: "Symbol",
-    operator: "Operator",
-    number: "NumberLiteral",
-    string: "StringLiteral",
-    char: "CharLiteral",
-    newline: "Newline",
-    eof: "Eof",
-    comment: "Comment",
-  };
-  return map[kind] ?? kind;
-}
+/** first token whose value === `value` */
+const tokenOf = (toks, value) => toks.find((t) => t.value === value);
 
-/**
- * Filter out newline and eof tokens for a fair content comparison.
- */
-function significantTokens(toks) {
-  return toks.filter((t) => {
-    const lc = t.kind.toLowerCase();
-    return lc !== "newline" && lc !== "eof";
-  });
-}
+let parsed;
+before(() => { parsed = loadSelfHostedLexer(); });
 
-// ---------------------------------------------------------------------------
-// The source under test
-// ---------------------------------------------------------------------------
-
-// Phase R7A: Stage B parity input — "pure flow add" uses the pure qualifier,
-// two typed parameters, the -> return-type arrow, and a return expression.
-// This exercises keywords, identifiers, symbols, and the multi-char operator.
-const FLOW_GREET_SOURCE = "pure flow add(a: Int, b: Int) -> Int { return a }";
-
-// ---------------------------------------------------------------------------
-// Tests
-// ---------------------------------------------------------------------------
-
-describe("Stage B lexer parity: TS lexer vs lexer.fungi", () => {
-
-  // ── 1. TS lexer baseline ─────────────────────────────────────────────────
-
-  it("TS lexer: tokenises FLOW_GREET_SOURCE without diagnostics", () => {
-    const result = lex(FLOW_GREET_SOURCE, "parity.fungi");
-    const errors = result.diagnostics.filter((d) => d.severity === "error");
-    assert.equal(
-      errors.length,
-      0,
-      `TS lexer produced errors: ${errors.map((e) => e.message).join("; ")}`,
-    );
-  });
-
-  it("TS lexer: produces > 10 tokens for FLOW_GREET_SOURCE", () => {
-    const result = lex(FLOW_GREET_SOURCE, "parity.fungi");
-    // "pure flow add(a: Int, b: Int) -> Int { return a }" yields 18 significant + eof = 19 total
-    assert.ok(result.tokens.length > 10, `Expected >10 tokens, got ${result.tokens.length}`);
-  });
-
-  it("TS lexer: produces expected token sequence for FLOW_GREET_SOURCE", () => {
-    const result = lex(FLOW_GREET_SOURCE, "parity.fungi");
-    const sig = result.tokens.filter(
-      (t) => t.kind !== "eof" && t.kind !== "newline",
-    );
-    // "pure flow add(a: Int, b: Int) -> Int { return a }"
-    const expected = [
-      { kind: "keyword",    value: "pure"   },
-      { kind: "keyword",    value: "flow"   },
-      { kind: "identifier", value: "add"    },
-      { kind: "symbol",     value: "("      },
-      { kind: "identifier", value: "a"      },
-      { kind: "symbol",     value: ":"      },
-      { kind: "identifier", value: "Int"    },
-      { kind: "symbol",     value: ","      },
-      { kind: "identifier", value: "b"      },
-      { kind: "symbol",     value: ":"      },
-      { kind: "identifier", value: "Int"    },
-      { kind: "symbol",     value: ")"      },
-      { kind: "operator",   value: "->"     },
-      { kind: "identifier", value: "Int"    },
-      { kind: "symbol",     value: "{"      },
-      { kind: "keyword",    value: "return" },
-      { kind: "identifier", value: "a"      },
-      { kind: "symbol",     value: "}"      },
+describe("lexer.fungi — documented conventions on divergence-class inputs (R&D #0050 §3)", () => {
+  it("single-char operators are kind `Symbol`; two-char operators are `Operator`", async () => {
+    // The divergence class the old parity test dodged: TS emits `Operator` for a
+    // single `=`/`+`; the self-hosted lexer emits `Symbol` (only 2-char promote).
+    const cases = [
+      { src: "let x = 1", value: "=", kind: "Symbol" },
+      { src: "x + y", value: "+", kind: "Symbol" },
+      { src: "a != b", value: "!=", kind: "Operator" }, // 2-char → Operator (both agree)
+      { src: "x >= 10", value: ">=", kind: "Operator" },
     ];
-    assert.equal(sig.length, expected.length, `Expected ${expected.length} tokens, got ${sig.length}`);
-    for (let i = 0; i < expected.length; i++) {
-      assert.equal(sig[i].kind,  expected[i].kind,  `Token[${i}] kind mismatch`);
-      assert.equal(sig[i].value, expected[i].value, `Token[${i}] value mismatch`);
+    for (const c of cases) {
+      const t = tokenOf(await selfHostedTokens(parsed, c.src), c.value);
+      assert.ok(t, `expected a token '${c.value}' in ${JSON.stringify(c.src)}`);
+      assert.equal(t.kind, c.kind, `'${c.value}' should be kind ${c.kind}, got ${t.kind}`);
     }
   });
 
-  // ── 2. lexer.fungi baseline ────────────────────────────────────────────────
-
-  it("lexer.fungi: parses with zero errors", () => {
-    let source = readFileSync(LEXER_PATH, "utf8");
-    if (source.charCodeAt(0) === 0xFEFF) source = source.slice(1);
-    const parsed = parseProgram(source, "lexer.fungi");
-    const errors = parsed.diagnostics.filter((d) => d.severity === "error");
-    assert.equal(
-      errors.length,
-      0,
-      `lexer.fungi parse errors: ${errors.map((e) => e.message).join("; ")}`,
-    );
+  it("string literals carry the UNQUOTED content as their value", async () => {
+    const s = (await selfHostedTokens(parsed, `x = "hi"`)).find((t) => t.kind === "StringLiteral");
+    assert.ok(s, "expected a StringLiteral token");
+    assert.equal(s.value, "hi", `string value should be unquoted, got ${JSON.stringify(s.value)}`);
   });
 
-  it("lexer.fungi: tokenize flow executes without runtime errors on FLOW_GREET_SOURCE", async () => {
-    const parsed = loadSelfHostedLexer();
-    const args = new Map();
-    args.set("source", { __tag: "string", value: FLOW_GREET_SOURCE });
-    const result = await executeFlow("tokenize", args, parsed.ast);
-    const runtimeErrors = result.diagnostics.filter((d) => d.severity === "error");
-    assert.equal(
-      runtimeErrors.length,
-      0,
-      `lexer.fungi runtime errors: ${runtimeErrors.map((e) => e.message).join("; ")}`,
-    );
-    assert.equal(result.value.__tag, "ok", "tokenize should return Ok(...)");
+  it("char literals carry the UNQUOTED content as their value", async () => {
+    const c = (await selfHostedTokens(parsed, `c = 'a'`)).find((t) => t.kind === "CharLiteral");
+    assert.ok(c, "expected a CharLiteral token");
+    assert.equal(c.value, "a", `char value should be unquoted, got ${JSON.stringify(c.value)}`);
+  });
+});
+
+describe("lexer.fungi — run-to-run determinism", () => {
+  it("tokenizing the same source twice yields an identical token stream", async () => {
+    const src = `pure flow add(a: Int, b: Int) -> Int { let x = "hi"\nreturn a }`;
+    const a = await selfHostedTokens(parsed, src);
+    const b = await selfHostedTokens(parsed, src);
+    assert.deepEqual(a, b, "tokenize is not deterministic run-to-run");
   });
 
-  // ── 3. Parity comparison ─────────────────────────────────────────────────
-
-  it("parity: both lexers produce the same number of significant tokens", async () => {
-    const parsed = loadSelfHostedLexer();
-
-    const tsResult  = lex(FLOW_GREET_SOURCE, "parity.fungi");
-    const tsSig     = significantTokens(tsResult.tokens.map((t) => ({ kind: t.kind, value: t.value })));
-    const fungiTokens = await selfHostedTokens(parsed, FLOW_GREET_SOURCE);
-    const fungiSig    = significantTokens(fungiTokens);
-
-    const msg = `TypeScript lexer: ${tsSig.length} tokens, lexer.fungi: ${fungiSig.length} tokens`;
-    console.log(`  [parity] ${msg}`);
-
-    if (PARITY_ACHIEVED) {
-      assert.equal(fungiSig.length, tsSig.length, msg);
-    } else {
-      // Report gap without failing
-      if (fungiSig.length !== tsSig.length) {
-        console.log(`  [parity] GAP — token counts differ. ${msg}`);
-        console.log("  [parity] TS tokens:  ", tsSig.map((t) => `${t.kind}:${JSON.stringify(t.value)}`).join(", "));
-        console.log("  [parity] fungi tokens: ", fungiSig.map((t) => `${t.kind}:${JSON.stringify(t.value)}`).join(", "));
-      }
-      assert.ok(true, "Parity check (informational only — PARITY_ACHIEVED=false)");
+  it("determinism holds across the divergence-class corpus", async () => {
+    for (const src of [`let x = 1`, `x + y`, `c = 'a'`, `msg = "hello world"`, `a != b && c`]) {
+      const a = await selfHostedTokens(parsed, src);
+      const b = await selfHostedTokens(parsed, src);
+      assert.deepEqual(a, b, `non-deterministic for ${JSON.stringify(src)}`);
     }
-  });
-
-  it("parity: token kinds match at each position (normalised to PascalCase)", async () => {
-    const parsed = loadSelfHostedLexer();
-
-    const tsResult  = lex(FLOW_GREET_SOURCE, "parity.fungi");
-    const tsSig     = significantTokens(tsResult.tokens.map((t) => ({ kind: t.kind, value: t.value })));
-    const fungiTokens = await selfHostedTokens(parsed, FLOW_GREET_SOURCE);
-    const fungiSig    = significantTokens(fungiTokens);
-
-    const minLen = Math.min(tsSig.length, fungiSig.length);
-    const mismatches = [];
-    for (let i = 0; i < minLen; i++) {
-      const tsKind  = tsPascalKind(tsSig[i].kind);
-      const fungiKind = fungiSig[i].kind;
-      if (tsKind !== fungiKind) {
-        mismatches.push(`[${i}] TS=${tsKind} fungi=${fungiKind} (value=${JSON.stringify(tsSig[i].value)})`);
-      }
-    }
-
-    if (mismatches.length > 0) {
-      console.log(`  [parity] Kind mismatches (${mismatches.length}): ${mismatches.join("; ")}`);
-    } else if (tsSig.length === fungiSig.length) {
-      console.log("  [parity] All kind positions match!");
-    }
-
-    if (PARITY_ACHIEVED) {
-      assert.equal(mismatches.length, 0, `Kind mismatches: ${mismatches.join("; ")}`);
-    } else {
-      assert.ok(true, "Kind parity (informational only — PARITY_ACHIEVED=false)");
-    }
-  });
-
-  it("parity: token values match at each position", async () => {
-    const parsed = loadSelfHostedLexer();
-
-    const tsResult  = lex(FLOW_GREET_SOURCE, "parity.fungi");
-    const tsSig     = significantTokens(tsResult.tokens.map((t) => ({ kind: t.kind, value: t.value })));
-    const fungiTokens = await selfHostedTokens(parsed, FLOW_GREET_SOURCE);
-    const fungiSig    = significantTokens(fungiTokens);
-
-    const minLen = Math.min(tsSig.length, fungiSig.length);
-    const mismatches = [];
-    for (let i = 0; i < minLen; i++) {
-      if (tsSig[i].value !== fungiSig[i].value) {
-        mismatches.push(
-          `[${i}] TS=${JSON.stringify(tsSig[i].value)} fungi=${JSON.stringify(fungiSig[i].value)}`,
-        );
-      }
-    }
-
-    if (mismatches.length > 0) {
-      console.log(`  [parity] Value mismatches (${mismatches.length}): ${mismatches.join("; ")}`);
-    } else if (tsSig.length === fungiSig.length) {
-      console.log("  [parity] All value positions match!");
-    }
-
-    if (PARITY_ACHIEVED) {
-      assert.equal(mismatches.length, 0, `Value mismatches: ${mismatches.join("; ")}`);
-    } else {
-      assert.ok(true, "Value parity (informational only — PARITY_ACHIEVED=false)");
-    }
-  });
-
-  // ── 4. Detailed gap report ───────────────────────────────────────────────
-
-  it("parity: print full side-by-side comparison", async () => {
-    const parsed = loadSelfHostedLexer();
-
-    const tsResult  = lex(FLOW_GREET_SOURCE, "parity.fungi");
-    const tsSig     = tsResult.tokens.map((t) => ({ kind: t.kind, value: t.value }));
-    const fungiTokens = await selfHostedTokens(parsed, FLOW_GREET_SOURCE);
-
-    console.log("\n  [parity] Side-by-side token comparison:");
-    console.log("  [parity] Source:", JSON.stringify(FLOW_GREET_SOURCE));
-    console.log("  [parity] idx | TS lexer              | lexer.fungi             | match?");
-    console.log("  [parity] ----+----------------------+----------------------+-------");
-
-    const maxLen = Math.max(tsSig.length, fungiTokens.length);
-    let matchCount = 0;
-    let mismatchCount = 0;
-
-    for (let i = 0; i < maxLen; i++) {
-      const ts  = tsSig[i]    ? `${tsSig[i].kind}:${JSON.stringify(tsSig[i].value)}`.padEnd(22) : "(missing)".padEnd(22);
-      const fungi = fungiTokens[i] ? `${fungiTokens[i].kind}:${JSON.stringify(fungiTokens[i].value)}`.padEnd(22) : "(missing)".padEnd(22);
-      const tsKind  = tsSig[i]    ? tsPascalKind(tsSig[i].kind) : null;
-      const fungiKind = fungiTokens[i] ? fungiTokens[i].kind          : null;
-      const tsVal   = tsSig[i]    ? tsSig[i].value    : null;
-      const fungiVal  = fungiTokens[i] ? fungiTokens[i].value : null;
-      const match   = tsKind === fungiKind && tsVal === fungiVal ? "OK" : "GAP";
-      if (match === "OK") matchCount++; else mismatchCount++;
-      console.log(`  [parity] ${String(i).padStart(3)} | ${ts}| ${fungi}| ${match}`);
-    }
-
-    console.log(`\n  [parity] Summary: ${matchCount} matches, ${mismatchCount} mismatches out of ${maxLen} total positions`);
-
-    // Always passes — this is an informational test
-    assert.ok(true, "Side-by-side comparison complete");
   });
 });
