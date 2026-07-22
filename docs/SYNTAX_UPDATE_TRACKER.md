@@ -54,4 +54,5 @@
 | T4.3 | verify-by-running deny suite (forged/unclassified/raw/old-version/ungoverned — anti-vacuous A27) | ☐ | |
 | T4.4 | full recursive suite + component-health + audits green | ☐ | baseline today: 61/61 · 6,086 |
 | — | **Verified already landed (2026-07-04 set, re-checked in code this session)** | ☑ | RD-0240-WAT · BK-1 · BK-2 · BK-3(downgraded) · BK-5/H1/M1 · H3-safelist — see plan §1 |
-| ✖ | A18 tenant scope (BETA BLOCKER — next work package) · A3/A16 `.hypha` · A13/A14/A15/A24/A25/A26/A19 · RD-0238 P0 · C2 upgrade | ✖ | tracked in plan §2 "Deferred" — not dropped |
+| ☑ | A18 tenant scope (BETA BLOCKER — **DONE 2026-07-22**) | ☑ | FUNGI-TENANT-001/002 defined + `verifyTenantIsolation()` wired into `governance-verifier.ts` (commit `5b9b8cc3`). Half A: deny-by-default-private (unscoped `.tenant_scoped` access = fail-closed error). Half B: capability-scope intersection at the contract/capability layer (not a query rewriter). Codes registered in KB `galerina-governance-rules.md` + `compiler-diagnostics.md`. Exported from `index.ts`. Tests: `tests/governance/tenant-isolation.test.mjs` 10/10 (A27 anti-vacuous included). Half C (per-tenant KEK, border-2) gated on tmf slice 4. |
+| ✖ | A3/A16 `.hypha` · A13/A14/A15/A24/A25/A26/A19 · RD-0238 P0 · C2 upgrade | ✖ | tracked in plan §2 "Deferred" — not dropped |

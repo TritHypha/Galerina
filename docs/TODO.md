@@ -4,10 +4,29 @@ Living task list. Authoritative forward view: `../ZTF-Knowledge-Bases/galerina-r
 Live per-item state also lives in the in-session task board + `../ZTF-Knowledge-Bases/coordination/` (main↔R&D).
 The dated blocks below are a historical log; the **CURRENT STATE** block is the head.
 
-## 📍 CURRENT STATE — 2026-07-22 (Constellation architecture + README/KB docs session)
+## 📍 CURRENT STATE — 2026-07-22 (A18 tenant scope — BETA BLOCKER closed)
 
-**Suite 95/95 packages · 7,611 tests · 0 fail** · audit 0 errors · 75 warnings (all pre-existing) ·
-HEAD unchanged from `9aec26c3` (clean; owner pushes when ready).
+**Suite 95/95 packages · 7,619 tests · 0 fail** · audit 0 errors · 75 warnings (all pre-existing).
+
+### Session deliverables — 2026-07-22 (A18 tenant scope)
+
+- **A18 tenant scope CLOSED** — the declared beta blocker. FUNGI-TENANT-001/002 defined +
+  `verifyTenantIsolation()` wired in `governance-verifier.ts` (Half A + Half B complete):
+  - **Half A** — deny-by-default-private: any effect ending `.tenant_scoped` without the sibling
+    `tenant.scope` marker is a FAIL-CLOSED compile error in every profile (dev/production/deterministic/
+    check-only). Forgetting the annotation = SAFE/denied (the inversion of the Rails `default_scope`
+    footgun).
+  - **Half B** — capability-scope intersection at the contract/capability layer (NOT a query rewriter):
+    for a tenant-scoped access, the compiler requires the `tenant.scope` caller-scope proof alongside it;
+    the unscoped-query class of IDOR bug cannot ship. Exactly the shipped attenuation rule ("delegated
+    grants must not be broader than the delegator's authority").
+  - Codes registered in `ZTF-Knowledge-Bases/compiler-diagnostics.md` + `galerina-governance-rules.md`.
+  - `FUNGI_TENANT_001` + `FUNGI_TENANT_002` exported from `galerina-core-compiler/src/index.ts`.
+  - Tests: `tests/governance/tenant-isolation.test.mjs` 10/10 (includes A27 anti-vacuous guard).
+  - Half C (per-tenant KEK, border-2, digital) remains gated on tmf slice 4 (M-of-N threshold custody).
+  - Phase 1 DSS.wasm path: **A18 ✅ → W6 codemod → T2.3 → Phase 2 (Array<Auto>)**
+
+### Previous session deliverables — 2026-07-22 (Constellation architecture + README/KB docs)
 
 **Session deliverables — 2026-07-22:**
 
@@ -121,7 +140,7 @@ of origin — owner pushes when ready).
 - T2.5 `unsecure`/`secure flow`/`purify` (W6-coupled, lands with codemod)
 - T2.6 lexer alias table + desugar-identity lint (W6-coupled)
 - T3.x codemod + taint-default flip + corpus migration (W6)
-- A18 tenant scope (BETA BLOCKER — next work package)
+- ✅ **A18 tenant scope — CLOSED** (FUNGI-TENANT-001/002, `verifyTenantIsolation`, 10/10 tests)
 - check{} WAT lowering for `fault` audited channel spec (A10 surface-syntax spec pending)
 - Final deliverables: `.fungi` building standards doc ✅ · package migration plan doc ✅ (both done in session 2)
 
@@ -130,7 +149,7 @@ of origin — owner pushes when ready).
   Sits above `secure flow` in obligation: mandatory contract, mandatory intent (all profiles),
   mandatory `await` effect, mandatory timeout in production, no inline `fn`, Border.validate()
   required on external wait results, no fire-and-forget tasks.
-  Gates: A18 tenant scope must land first.
+  Gates: A18 tenant scope ✅ LANDED. Next gate: W6 codemod (T2.5/T2.6) before Stage B starts.
   KB spec: `../ZTF-Knowledge-Bases/asyncflow-design.md`
   Reserved codes: FUNGI-ASYNC-001..006 (defined in `galerina-core-compiler/src/index.ts`, not emitted).
   Implementation plan (4 sprints B-1..B-4): see KB spec.

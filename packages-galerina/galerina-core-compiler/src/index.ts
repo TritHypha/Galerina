@@ -915,6 +915,17 @@ export {
   FUNGI_SUBSTRATE_003,
   FUNGI_SUBSTRATE_004,
   FUNGI_SUBSTRATE_005,
+  // GlobalVault — FUNGI-VAULT-001..007
+  FUNGI_VAULT_001,
+  FUNGI_VAULT_002,
+  FUNGI_VAULT_003,
+  FUNGI_VAULT_004,
+  FUNGI_VAULT_005,
+  FUNGI_VAULT_006,
+  FUNGI_VAULT_007,
+  // A18 — tenant-isolation border (G1, R&D 0109): FUNGI-TENANT-001/002
+  FUNGI_TENANT_001,
+  FUNGI_TENANT_002,
   type GovernanceDiagnostic,
   type GovernanceVerifyResult,
   type DeploymentProfile,
