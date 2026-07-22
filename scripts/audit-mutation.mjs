@@ -589,7 +589,26 @@ const RD_DIFFERENTIAL_TAIL = [
   },
 ];
 
-const MUTANTS = configArg ? JSON.parse(readFileSync(configArg, "utf8")) : [...BUILTIN, ...CERT, ...FUSE, ...CC_I32, ...VSC_EGRESS, ...QUORUM_GOV, ...RD0361_T1, ...RD0361_T2_MEMORY, ...RD0361_IO_NETWORK, ...RD0361_APPKERNEL_TOWER, ...RD_DIFFERENTIAL_TAIL];
+// ── RD-0528 compiler self-hosting (I-1 item c): the 7 self-hosted COMPILER stages' correctness
+// differentials must be NON-VACUOUS too. Unlike the sentinel verdict-folds, these stages have LOOPS,
+// so a mutant MUST be a VALUE change (a wrong-output planted bug), NEVER a loop-control flip — a
+// loop-condition mutation hangs the tokenizer/parser (infinite loop) instead of failing the test.
+// Each mutant is killed by the stage's `self-hosted-*` CORRECTNESS oracle (interp output === EXPECTED;
+// the .fungi is read + compiled INSIDE the test, so no build step). PROPOSAL evidence only — no stage
+// is authoritative until the owner's condition-form nod over its pack (RD-0528 I-4).
+const RD0528_COMPILER = [
+  {
+    id: "rd0528-lexer-keyword-table",
+    file: "packages-galerina/galerina-core-compiler/src/self-hosted/lexer.fungi",
+    find: '"let", "mut", "readonly", "return", "if", "else", "match",',
+    replace: '"lett", "mut", "readonly", "return", "if", "else", "match",',
+    cwd: "packages-galerina/galerina-core-compiler",
+    test: ["node", "--test", "tests/self-hosted-lexer.test.mjs"],
+    desc: "RD-0528 compiler self-hosting — lexer.fungi keyword table 'let' mis-spelled 'lett' (the 'let' keyword tokenizes as an Identifier, wrong kind); a VALUE change (no loop control touched) so the self-hosted-lexer correctness oracle catches interp output != EXPECTED without hanging",
+  },
+];
+
+const MUTANTS = configArg ? JSON.parse(readFileSync(configArg, "utf8")) : [...BUILTIN, ...CERT, ...FUSE, ...CC_I32, ...VSC_EGRESS, ...QUORUM_GOV, ...RD0361_T1, ...RD0361_T2_MEMORY, ...RD0361_IO_NETWORK, ...RD0361_APPKERNEL_TOWER, ...RD_DIFFERENTIAL_TAIL, ...RD0528_COMPILER];
 
 function git(args) { return spawnSync("git", args, { cwd: ROOT, encoding: "utf8" }); }
 function isClean(file) { return git(["diff", "--quiet", "--", file]).status === 0; }
