@@ -651,6 +651,15 @@ const RD0528_COMPILER = [
     test: ["node", "--test", "tests/self-hosted-runtime.test.mjs"],
     desc: "RD-0528 compiler self-hosting — runtime.fungi mis-classifies the execution tier at its single `tier: \"sync\"` site (no-effects fast-path -> synx); the self-hosted-runtime oracle asserts field(d,'tier') == 'sync' (VALUE change, no loop).",
   },
+  {
+    id: "rd0528-parser-param-readonly",
+    file: "packages-galerina/galerina-core-compiler/src/self-hosted/parser.fungi",
+    find: "isReadonly: false",
+    replace: "isReadonly: true",
+    cwd: "packages-galerina/galerina-core-compiler",
+    test: ["node", "--test", "tests/self-hosted-parser.test.mjs"],
+    desc: "RD-0528 compiler self-hosting — parser.fungi mis-classifies a non-readonly param as readonly at its unique `isReadonly: false` field (the non-readonly path; -> true); the self-hosted-parser oracle asserts params[0].isReadonly == 'false'. The parser's outputs are otherwise structural __tags, so this classification field is the clean data anchor (a record-field bool, no loop control).",
+  },
 ];
 
 const MUTANTS = configArg ? JSON.parse(readFileSync(configArg, "utf8")) : [...BUILTIN, ...CERT, ...FUSE, ...CC_I32, ...VSC_EGRESS, ...QUORUM_GOV, ...RD0361_T1, ...RD0361_T2_MEMORY, ...RD0361_IO_NETWORK, ...RD0361_APPKERNEL_TOWER, ...RD_DIFFERENTIAL_TAIL, ...RD0528_COMPILER];
