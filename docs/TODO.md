@@ -4,9 +4,26 @@ Living task list. Authoritative forward view: `../ZTF-Knowledge-Bases/galerina-r
 Live per-item state also lives in the in-session task board + `../ZTF-Knowledge-Bases/coordination/` (main↔R&D).
 The dated blocks below are a historical log; the **CURRENT STATE** block is the head.
 
-## 📍 CURRENT STATE — 2026-07-22 (Phase 2: #100 Array<Auto> erasure fix — 3 stage twins now RUN)
+## 📍 CURRENT STATE — 2026-07-22 (Phase 3: R3 byte-parity for type-checker, effect-checker, governance-verifier)
 
-**Suite 95/95 packages · 7,619 tests · 0 fail** · audit 0 errors · 75 warnings (all pre-existing).
+**Suite 95/95 packages · 7,619+ tests · 0 fail** · audit 0 errors · 75 warnings (all pre-existing).
+
+### Session deliverables — 2026-07-22 (Phase 3: R3 byte-parity for 3 checker stages)
+
+- **Phase 3 DSS.wasm path COMPLETE** — R3 byte-parity proven for all 3 remaining stages:
+  - `wat-p9-typechecker-parity.test.mjs` — 13/13 ✅ (`checkFlows` + `checkFlowBodies` byte-parity)
+  - `wat-p9-effectchecker-parity.test.mjs` — 14/14 ✅ (`checkBodyEffects` flowCount + cleanFlows byte-parity)
+  - `wat-p9-governance-parity.test.mjs` — 14/14 ✅ (`verifyGovernance` + `checkBodyGovernance` byte-parity)
+  - Root causes found and fixed (all 3 classes of WAT `unreachable` emitted by `#128-sibling` fail-closed):
+    1. **`stmt.isBranded`/`isTensor`/`typeArgs`/`arms` on `Stmt` record**: added extended fields to `Stmt`
+       definition in `parser.fungi` (appended after slot 5 to preserve slot-stable JS WASM reader).
+    2. **`withNames`/`effectWithNames` reading `d.code` etc. on `Auto` diagnostic record**: typed-local
+       hoist `let td: TypeDiagnostic = d` / `let td: EffectDiagnostic = d` resolves field layout.
+    3. **`containsEffectRec`/`collectTransitiveEffects`/`checkBodyEffects` reading `rec.effect` on `Auto`**:
+       added `EffectTransRec { effect, introducer }` record + typed-local hoist `let erec: EffectTransRec = r`.
+  - **All 7 self-hosted stages now at R3 byte-parity** (lexer, parser, gir-emitter, runtime, type-checker,
+    effect-checker, governance-verifier).
+  - **DSS.wasm path progress: Phase 1 ✅ → Phase 2 ✅ → Phase 3 ✅ → Phase 4 (R4 owner-gated)**
 
 ### Session deliverables — 2026-07-22 (Phase 2: #100 Array<Auto> fix)
 

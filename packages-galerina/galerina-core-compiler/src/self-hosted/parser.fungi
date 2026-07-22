@@ -45,13 +45,23 @@ record ExprParse {
 }
 
 // A structured statement node (folded from body-parser.fungi, Milestone M-A).
+// LAYOUT NOTE: the first 6 fields (kind..elseBody) are slot-stable — the JS WASM reader in
+// wat-p9-parser-stmt-parity.test.mjs reads slots 0..5 by index. New fields must be appended AFTER
+// elseBody to preserve those slot numbers.
 record Stmt {
   kind: String         // "let" | "mut" | "assign" | "return" | "if" | "while" | "exprStmt"
   name: String         // let/mut/assign target name; otherwise ""
   typeName: String     // let/mut declared type (token after ':'); otherwise ""
-  expr: Array<Expr>    // 0 or 1 element: RHS / return value / if-while condition
-  body: Array<Stmt>    // if/while block statements (if: the then-block); otherwise empty
-  elseBody: Array<Stmt> // if: the else-block statements; otherwise empty
+  expr: Array<Expr>    // 0 or 1 element: RHS / return value / if-while condition          slot 3
+  body: Array<Stmt>    // if/while block statements (if: the then-block); otherwise empty   slot 4
+  elseBody: Array<Stmt> // if: the else-block statements; otherwise empty                  slot 5
+  // Extended fields (slot 6+): used by type-checker body checks; emitter defaults to 0/false/empty.
+  typeBase: String     // generic base name (e.g. "Array", "Result"); "" for non-generic bindings
+  typeArgs: Array<String> // generic type argument list; empty for non-generic bindings
+  isBranded: Bool      // true for a branded-type binding (Brand<T,"Name">); false by default
+  isTensor: Bool       // true for a Tensor<Elem,[dims]> binding; false by default
+  litI32Overflow: Bool // true when an Int literal exceeds the i32 range; false by default
+  arms: Array<Stmt>    // match: the parsed arm statements (kept in .body too); empty otherwise
 }
 
 record StmtParse { stmt: Stmt, nextPos: Int }

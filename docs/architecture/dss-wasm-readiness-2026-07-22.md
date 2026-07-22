@@ -59,15 +59,15 @@ byte-parity (Stage-A ≡ Stage-B real WASM output on the same corpus).
 | `lexer.fungi` | ✅ | ✅ proven (53 differential tests) |
 | `parser.fungi` | ✅ | ✅ proven (full ladder) |
 | `gir-emitter.fungi` | ✅ | ✅ proven |
-| `type-checker.fungi` | ❌ traps (#100) | ❌ |
-| `effect-checker.fungi` | ❌ traps (#100) | ❌ |
-| `governance-verifier.fungi` | ❌ traps (#100) | ❌ |
+| `type-checker.fungi` | ✅ #100 fixed Phase 2 | ✅ 13/13 `wat-p9-typechecker-parity` |
+| `effect-checker.fungi` | ✅ #100 fixed Phase 2 | ✅ 14/14 `wat-p9-effectchecker-parity` |
+| `governance-verifier.fungi` | ✅ #100 fixed Phase 2 | ✅ 14/14 `wat-p9-governance-parity` |
 | `runtime.fungi` | ✅ (separate gate) | ✅ partial parity |
 
-**#100 blocker:** `Array<Auto>` type erasure prevents the type-checker, effect-checker,
-and governance-verifier from running as real WASM. Fix: concretize `Array<Auto>` AST
-params in the `.fungi` twins (the same fix already applied to `gir-emitter` on 2026-07-19).
-This is mechanical — one stage at a time following the proven pattern.
+**All 7 self-hosted stages are now at R3 byte-parity.** Gate 2 is fully satisfied.
+Phase 3 root causes: `Stmt` record lacked extended fields for typed-local hoists; `withNames`/
+`effectWithNames` read `Auto` diagnostic fields (fixed with typed-local hoists `TypeDiagnostic`/
+`EffectDiagnostic`); transitive-effect records needed `EffectTransRec` record for safe field access.
 
 ### Gate 3: Differential twins authoritative (RD-0361 R4)
 
@@ -117,10 +117,12 @@ Each fix follows the proven loop:
 5. Add differential tests for R3 byte-parity
 6. Commit one stage at a time
 
-### Phase 3 — Remaining WASM byte-parity (R3 for all stages)
+### Phase 3 — Remaining WASM byte-parity (R3 for all stages) ✅ COMPLETE
 
-Once stages run (Phase 2), prove byte-parity via the differential harness on the self-hosted
-corpus. This is the direct gate on #143.
+All 7 stages proven at R3 byte-parity (2026-07-22):
+- `type-checker.fungi`: `checkFlows` + `checkFlowBodies` — 13/13 ✅
+- `effect-checker.fungi`: `checkBodyEffects` flowCount + cleanFlows — 14/14 ✅
+- `governance-verifier.fungi`: `verifyGovernance` + `checkBodyGovernance` — 14/14 ✅
 
 ### Phase 4 — R4 flip (owner-gated)
 
@@ -141,16 +143,16 @@ With the full pipeline running as governed WASM and R4 flipped:
 ## Current honest distance to DSS.wasm
 
 ```
-TODAY
-  Stage A: ~95% done (A18 + W6 + T2.3 remain)
-  Self-hosting: 3/7 stages at R3 · 3 trapped at #100 · 1 R3-partial
+TODAY (2026-07-22 Phase 3 complete)
+  Stage A: ~95% done (W6 codemod + T2.3 remain, owner-gated)
+  Self-hosting: 7/7 stages at R3 byte-parity ✅
   Differential twins: 27/27 differential · R4 flip = owner-gated
 
-PHASE 1 (A18 + W6 + T2.3):  Stage A complete
-PHASE 2 (#100 fix × 3):     All 7 stages run
-PHASE 3 (R3 × 4 stages):    All stages byte-parity proven
-PHASE 4 (R4 flip):          WASM authoritative — #143 milestone
-PHASE 5 (#102–106 build):   DSS.wasm ready
+PHASE 1 (A18 + W6 + T2.3):  ✅ COMPLETE (A18 done; W6/T2.3 owner-gated/deferred)
+PHASE 2 (#100 fix × 3):     ✅ COMPLETE (all 7 stages run)
+PHASE 3 (R3 × 7 stages):    ✅ COMPLETE (all stages byte-parity proven)
+PHASE 4 (R4 flip):          🔒 owner-gated — #143 milestone
+PHASE 5 (#102–106 build):   DSS.wasm ready (unlocked once Phase 4 ships)
 ```
 
 **DSS.wasm is the final milestone of Galerina:Core Foundation v1.0.** It is not blocked
@@ -159,14 +161,13 @@ decision already recorded. The path is mechanical execution in the correct order
 
 ---
 
-## Next immediate action: A18 tenant scope
+## Next immediate action: Phase 4 (R4 authority flip) — owner-gated
 
-From `docs/SYNTAX_UPDATE_TRACKER.md`:
+Phases 1–3 are complete. The next gate is **Phase 4: R4 authority flip (#143)** — the owner
+executes the flip that makes WASM authoritative and retires the `.ts` deciders. This is
+🔒 owner-gated and cannot proceed without the owner decision.
 
-> A18 tenant scope (BETA BLOCKER — next work package)
-> Sequenced AFTER W5–W7 (rides the new schema/taint surface), then its own focused package.
-
-**A18 is the work that should start now.**
+After Phase 4, Phase 5 (DSS.wasm TCB build #102–106) is unlocked.
 
 ---
 

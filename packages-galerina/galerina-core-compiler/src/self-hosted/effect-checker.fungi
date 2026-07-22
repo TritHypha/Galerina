@@ -48,6 +48,12 @@ record EffectCheckResult {
   cleanFlows: Int
 }
 
+// Transitive-effect record: an effect introduced by a transitively-called flow.
+record EffectTransRec {
+  effect: String
+  introducer: String
+}
+
 // ── Known effects registry ───────────────────────────────────
 
 pure flow knownEffects() -> Array<Auto>
@@ -223,7 +229,12 @@ contract { intent { "Return the diagnostics with the canonical Stage-A name atta
   while i < diags.count() {
     let dOpt = diags.get(i)
     match dOpt {
-      Some(d) => { out = out.append({ code: d.code, name: effectDiagName(d.code), message: d.message, flowName: d.flowName, severity: d.severity }) }
+      Some(d) => {
+        // Typed-local hoist: d is Auto (diagnostic record from heterogeneous accumulator).
+        // Cast to EffectDiagnostic so the WAT emitter can resolve .code/.message/.flowName/.severity.
+        let td: EffectDiagnostic = d
+        out = out.append({ code: td.code, name: effectDiagName(td.code), message: td.message, flowName: td.flowName, severity: td.severity })
+      }
       None => {}
       _ => {}
     }
@@ -686,7 +697,9 @@ contract { intent { "True when some record in recs has .effect == effect." } }
     let rOpt = recs.get(i)
     match rOpt {
       Some(r) => {
-        if r.effect == effect {
+        // Typed-local hoist: r is Auto (EffectTransRec).
+        let erec3: EffectTransRec = r
+        if erec3.effect == effect {
           found = true
         }
       }
@@ -733,8 +746,10 @@ contract { intent { "Records {effect, introducer} for every effect a transitivel
             let dOpt = deeper.get(k)
             match dOpt {
               Some(rec) => {
-                if containsEffectRec(out, rec.effect) == false {
-                  out = out.append(rec)
+                // Typed-local hoist: rec is Auto (EffectTransRec).
+                let erec: EffectTransRec = rec
+                if containsEffectRec(out, erec.effect) == false {
+                  out = out.append(erec)
                 }
               }
               None => {}
@@ -807,10 +822,12 @@ contract {
           let trOpt = transReq.get(t)
           match trOpt {
             Some(rec) => {
-              if contains(declared, rec.effect) == false {
-                let msg2: String = "Flow '" + name + "' calls '" + rec.introducer + "' which requires effect '" + rec.effect + "', but '" + name + "' does not declare it"
-                flowDiags = flowDiags.append({ code: "FUNGI-EFFECT-002", message: msg2, flowName: name, severity: "error" })
-              }
+                // Typed-local hoist: rec is Auto (EffectTransRec).
+                let erec2: EffectTransRec = rec
+                if contains(declared, erec2.effect) == false {
+                  let msg2: String = "Flow '" + name + "' calls '" + erec2.introducer + "' which requires effect '" + erec2.effect + "', but '" + name + "' does not declare it"
+                  flowDiags = flowDiags.append({ code: "FUNGI-EFFECT-002", message: msg2, flowName: name, severity: "error" })
+                }
             }
             None => {}
             _ => {}

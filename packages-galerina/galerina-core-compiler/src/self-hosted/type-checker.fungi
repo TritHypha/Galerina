@@ -354,7 +354,12 @@ contract { intent { "Return the diagnostics with the canonical Stage-A name + se
   while i < diags.count() {
     let dOpt = diags.get(i)
     match dOpt {
-      Some(d) => { out = out.append({ code: d.code, name: diagName(d.code), severity: diagSeverity(d.code), message: d.message, flowName: d.flowName }) }
+      Some(d) => {
+        // Typed-local hoist: d is Auto (diagnostic record from heterogeneous accumulator).
+        // Cast to TypeDiagnostic so the WAT emitter can resolve .code/.message/.flowName.
+        let td: TypeDiagnostic = d
+        out = out.append({ code: td.code, name: diagName(td.code), severity: diagSeverity(td.code), message: td.message, flowName: td.flowName })
+      }
       None => {}
       _ => {}
     }
