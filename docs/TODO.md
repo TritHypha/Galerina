@@ -4,7 +4,80 @@ Living task list. Authoritative forward view: `../ZTF-Knowledge-Bases/galerina-r
 Live per-item state also lives in the in-session task board + `../ZTF-Knowledge-Bases/coordination/` (main↔R&D).
 The dated blocks below are a historical log; the **CURRENT STATE** block is the head.
 
-## 📍 CURRENT STATE — 2026-07-21 (P2 K3 inline + vault docs session)
+## 📍 CURRENT STATE — 2026-07-22 (Constellation architecture + README/KB docs session)
+
+**Suite 95/95 packages · 7,611 tests · 0 fail** · audit 0 errors · 75 warnings (all pre-existing) ·
+HEAD unchanged from `9aec26c3` (clean; owner pushes when ready).
+
+**Session deliverables — 2026-07-22:**
+
+- **README.md `## Native properties` section added** — 10-row table of language-native properties (Fail-Closed
+  by Default, Declared Authority, Zero-Trust Boundaries, Structured Fault Handling, Deterministic Execution,
+  Supply-Chain Provenance, Post-Quantum Ready, Data Security, Reproducibility, Auditing). Each row grounded in
+  real mechanisms (K3 lattice, `contract {}` blocks, `FUNGI-MATCH-001`, hybrid ML-DSA-65, `.lmanifest`,
+  ProofGraph). Not aspirational — describes only what is actually shipped or structurally enforced.
+
+- **Language classification doc written** — `../ZTF-Knowledge-Bases/galerina-language-classification.md`.
+  Canonical answer: **"Governed Application Language for High-Assurance Systems"**. Covers: what each word means,
+  what Galerina is NOT (systems / scripting / general-purpose / DSL / formal verification), closest analogies
+  and where they diverge (Ada/SPARK, Rust, Erlang, Pony), why the classification matters for adopters/auditors.
+
+- **Constellation architecture — confirmed and written up in full:**
+  - Gap analysis: `../ZTF-Knowledge-Bases/constellation-architecture-plan-2026-07-22.md`
+  - KB canonical spec: `../ZTF-Knowledge-Bases/galerina-constellation-architecture.md`
+  - In-repo record: `docs/architecture/constellation-architecture-2026-07-22.md`
+
+  **Key confirmed decisions:**
+  1. Finish Core first → TritMesh:QL → other engines. No TritMesh work today.
+  2. FUNGI-* / GALERINA-* codes stay with Core. Optional engines define FABRIC-* / CORTEX-* / etc.
+  3. No large runtime or compiler changes needed to support the future split — current architecture already
+     satisfies the Constellation Core Foundation invariants (Core-only build/test passes; DI seams; authority
+     graph; BOUNDARY.md per package).
+  4. Optional engines attach via DI seams (deny-by-default when absent) — existing precedent: `InferenceBridge`,
+     `target-*` packages. Same pattern for Fabric/Cortex/Quantum.
+  5. Sister language reuses shared compiler base (below `galerina.compiler.shared.v1` seam), NOT governance.
+     Sister-language work cannot begin until the seam schema is defined.
+  6. Repository split happens AFTER Core v1.0 ships and seam schemas are defined and gated.
+  7. Lego-block rules are already satisfied in principle. Gaps are tooling/metadata only (not runtime):
+     - `package.fungi.json` needs `provides`/`consumes`/`onAbsent` fields in all packages
+     - `audit-seam-graph.mjs` gate (fail on undeclared cross-block edges) does not exist yet
+     - Interface hash is shallow (method names); needs full typed ABI for production
+     - Unplug-denies test exists only for runtime seam; needed for all seams
+  8. Audit: 0 errors · 75 warnings (all pre-existing WARN-tier; FUNGI-ASYNC-002..006 correctly in CHECK-5).
+
+**Pre-split gaps (not Core v1.0 blockers — future work items):**
+- `package.fungi.json` `provides`/`consumes`/`onAbsent` schema extension
+- `audit-seam-graph.mjs` — build-time authority-graph gate
+- `galerina.compiler.shared.v1` seam schema document (prerequisite for sister-language work)
+- Interface hash extension (full typed ABI)
+- Unplug-denies test per registered seam
+
+**Item 14 — REPL (interactive exploration) — DESIGN DONE, not yet built:**
+- Package: `galerina-devtools-repl` (new)
+- Thin wrapper over existing pipeline: `parseProgram → checkTypes → checkEffects → verifyGovernance → run()`
+- Expressions wrapped as synthetic `pure flow __repl() -> Auto { <expr> }`
+- Session context: accumulated flow declarations; `:load` / `:reset` / `:save`
+- Commands: `:type` · `:effects` · `:explain` · `:k3` · `:gir` · `:profile` · `:quit`
+- Capability mocking in dev mode (no real DB/network in REPL)
+- Gate: Core v1.0 (A18 tenant scope) first; REPL is 4 sprints (R-1..R-4)
+- KB spec: `../ZTF-Knowledge-Bases/galerina-repl-design.md`
+- In-repo doc: `docs/devtools/repl.md`
+
+**Item 15 — LSP (IDE developer experience) — DESIGN DONE, not yet built:**
+- Package: `galerina-devtools-lsp` (new) + `galerina-vscode` extension
+- Library: `vscode-languageserver` (Node.js, same as TypeScript LSP)
+- Features: diagnostics · code actions (FixEdit seam already shipped) · completions
+  (registry-backed: effects/capabilities/contract keys) · governance-aware hover ·
+  value-state inlay hints (UNSAFE/VALIDATED/PROTECTED/REDACTED) · go-to-def · find-refs ·
+  governed rename · document outline · workspace symbol search
+- Worker thread mandatory — pipeline runs async, main loop never blocked
+- TextMate grammar generated from `V1_ACTIVE_KEYWORDS` — not hand-maintained
+- Gate: Core v1.0. 7 sprints (L-1..L-7)
+- KB spec: `../ZTF-Knowledge-Bases/galerina-lsp-design.md`
+- In-repo doc: `docs/devtools/lsp.md`
+- Existing aspirational spec: `../ZTF-Knowledge-Bases/galerina-ide-tooling.md`
+
+## 📍 PREVIOUS STATE — 2026-07-21 (P2 K3 inline + vault docs session)
 
 **Suite 95/95 packages · 7,611 tests · 0 fail** · phase-close all green (56 gates) · graph-all all green ·
 benchmark snapshot `2026-07-21_post-wat-lowering` (29 benchmarks) · HEAD `9aec26c3` (clean, ahead
@@ -51,6 +124,17 @@ of origin — owner pushes when ready).
 - A18 tenant scope (BETA BLOCKER — next work package)
 - check{} WAT lowering for `fault` audited channel spec (A10 surface-syntax spec pending)
 - Final deliverables: `.fungi` building standards doc ✅ · package migration plan doc ✅ (both done in session 2)
+
+**Stage B backlog (designed, not yet built — locked pending Stage A completion):**
+- `asyncflow` qualifier — first-class async flow kind for governed I/O-bound work (API/database retrieval).
+  Sits above `secure flow` in obligation: mandatory contract, mandatory intent (all profiles),
+  mandatory `await` effect, mandatory timeout in production, no inline `fn`, Border.validate()
+  required on external wait results, no fire-and-forget tasks.
+  Gates: A18 tenant scope must land first.
+  KB spec: `../ZTF-Knowledge-Bases/asyncflow-design.md`
+  Reserved codes: FUNGI-ASYNC-001..006 (defined in `galerina-core-compiler/src/index.ts`, not emitted).
+  Implementation plan (4 sprints B-1..B-4): see KB spec.
+  Decision record: 2026-07-22 (Bob + owner). Stage A = KB spec + reserved codes only.
 
 
 **Bob architectural review 2026-07 — 7/7 items implemented and gated:**

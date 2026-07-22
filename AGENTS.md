@@ -106,6 +106,23 @@ pure flow calculateVat(amount: Money<GBP>) -> Money<GBP> { ... }
 `safe flow`, `unsafe flow`, and `guard flow` are **not** valid v0.1 syntax.
 `safe`/`unsafe` annotate **values** inside a flow body, not the flow itself.
 
+## Constellation Architecture (forward design — adopted 2026-07-22)
+
+Galerina is structured as a **Core-first product constellation**. Core ships first. All other products are optional, separately released, and depend on Core — Core depends on none of them.
+
+| What | Where |
+|---|---|
+| **Canonical Constellation spec** | `../ZTF-Knowledge-Bases/galerina-constellation-architecture.md` |
+| **In-repo architecture record** | `docs/architecture/constellation-architecture-2026-07-22.md` |
+| **Gap analysis (pre-split checklist)** | `../ZTF-Knowledge-Bases/constellation-architecture-plan-2026-07-22.md` |
+
+**Development order:** Finish Core → TritMesh:QL → other engines.
+**FUNGI-* / GALERINA-* codes:** Core only — never in optional engines.
+**Product split:** happens after Core v1.0 ships and seam schemas are defined and gated. No premature split.
+**No runtime/compiler changes needed:** current architecture already satisfies all Constellation Core Foundation invariants.
+
+---
+
 ## Authoritative Sources for AI Tools
 
 | What | File |
@@ -116,6 +133,7 @@ pure flow calculateVat(amount: Money<GBP>) -> Money<GBP> { ... }
 | Code INDEX — every code → def/emit/test/doc sites (query instead of grep) | `build/code-index/CODE_INDEX.md` (regen: `node scripts/code-index.mjs`) |
 | Diagnostic-code CONVENTIONS (binding) | `../ZTF-Knowledge-Bases/galerina-diagnostic-code-conventions.md` |
 | Audit Coverage & R&D Standards (20, research-grounded) | `../ZTF-Knowledge-Bases/galerina-audit-coverage-and-rd-standards.md` |
+| Language classification (canonical) | `../ZTF-Knowledge-Bases/galerina-language-classification.md` |
 | AST contract (AstNodeKind, Token, etc.) | `packages-galerina/galerina-core/src/index.ts` |
 | Phase 4 plan | `../ZTF-Knowledge-Bases/phase-4-parser-ast-plan.md` |
 | Concept model | `../ZTF-Knowledge-Bases/galerina-concept-map.md` |

@@ -4,8 +4,8 @@
     "packages": 97,
     "testBearing": 96,
     "tests": 7591,
-    "devTools": 107,
-    "auditTools": 62,
+    "devTools": 108,
+    "auditTools": 63,
     "toolsInCadence": 46,
     "proofs": 40
   },
@@ -1167,6 +1167,23 @@
         "source-hygiene",
         "doc-drift",
         "proofs"
+      ]
+    },
+    {
+      "name": "audit-codes-full.mjs",
+      "category": "audit",
+      "purpose": "Comprehensive diagnostic-code audit for Galerina.",
+      "selfTest": false,
+      "inCadence": false,
+      "concerns": [
+        "effects",
+        "governance",
+        "coverage",
+        "diagnostics",
+        "tier-floor",
+        "source-hygiene",
+        "doc-drift",
+        "graph/index"
       ]
     },
     {
@@ -2493,6 +2510,7 @@
       "audit-arithmetic-conformance.mjs",
       "audit-artifact-drift.mjs",
       "audit-auto-erasure-ratchet.mjs",
+      "audit-codes-full.mjs",
       "audit-coverage.mjs",
       "audit-dss-wasm-build.mjs",
       "audit-fungi-runtime.mjs",
@@ -2520,6 +2538,7 @@
       "audit-brand-keys.mjs",
       "audit-cast-hygiene.mjs",
       "audit-checker-wiring.mjs",
+      "audit-codes-full.mjs",
       "audit-corpus-effect-names.mjs",
       "audit-coverage.mjs",
       "audit-diagnostic-codes.mjs",
@@ -2594,6 +2613,7 @@
       "audit-allowlist-sensitive.mjs",
       "audit-arithmetic-conformance.mjs",
       "audit-checker-wiring.mjs",
+      "audit-codes-full.mjs",
       "audit-corpus-effect-names.mjs",
       "audit-coverage.mjs",
       "audit-diagnostic-doc-drift.mjs",
@@ -2763,6 +2783,7 @@
       "audit-cast-hygiene.mjs",
       "audit-checker-wiring.mjs",
       "audit-claim-hygiene.mjs",
+      "audit-codes-full.mjs",
       "audit-corpus-effect-names.mjs",
       "audit-coverage.mjs",
       "audit-diagnostic-doc-drift.mjs",
@@ -2818,6 +2839,7 @@
     "governance": [
       "audit-cast-hygiene.mjs",
       "audit-checker-wiring.mjs",
+      "audit-codes-full.mjs",
       "audit-coverage.mjs",
       "audit-diagnostic-doc-drift.mjs",
       "audit-effect-canonicality.mjs",
@@ -2851,6 +2873,7 @@
     "source-hygiene": [
       "audit-cast-hygiene.mjs",
       "audit-claim-hygiene.mjs",
+      "audit-codes-full.mjs",
       "audit-corpus-effect-names.mjs",
       "audit-name-collisions.mjs",
       "audit-papers-index.mjs",
@@ -2902,6 +2925,7 @@
     ],
     "tier-floor": [
       "audit-claim-hygiene.mjs",
+      "audit-codes-full.mjs",
       "audit-gscm.mjs",
       "audit-muted-diagnostics.mjs",
       "audit-oblivious.mjs",
@@ -2911,6 +2935,7 @@
       "license-rollout.mjs"
     ],
     "effects": [
+      "audit-codes-full.mjs",
       "audit-corpus-effect-names.mjs",
       "audit-effect-canonicality.mjs",
       "audit-example-diagnostics.mjs",
@@ -3014,6 +3039,7 @@
     "toolsNotInCadence": [
       "audit-allowlist-sensitive.mjs",
       "audit-brand-keys.mjs",
+      "audit-codes-full.mjs",
       "audit-diagnostic-codes.mjs",
       "audit-diagnostic-doc-drift.mjs",
       "audit-dss-wasm-build.mjs",

@@ -1,13 +1,13 @@
 {
   "generatedFrom": "build/code-index/code-index.json",
-  "total": 692,
+  "total": 698,
   "counts": {
     "ref": 181,
     "inline": 162,
     "phantom": 111,
     "live": 132,
-    "referenced": 98,
-    "dead": 8
+    "referenced": 99,
+    "dead": 13
   },
   "entries": [
     {
@@ -1403,6 +1403,102 @@
       "severities": [],
       "defs": 0,
       "emits": 1,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-ASYNC-001",
+      "family": "ASYNC",
+      "namespace": "FUNGI",
+      "status": "referenced",
+      "names": [
+        "AWAIT_EFFECT_NOT_DECLARED"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
+      "code": "FUNGI-ASYNC-002",
+      "family": "ASYNC",
+      "namespace": "FUNGI",
+      "status": "dead",
+      "names": [
+        "EXTERNAL_AWAIT_MISSING_TIMEOUT"
+      ],
+      "severities": [
+        "warning"
+      ],
+      "defs": 1,
+      "emits": 0,
+      "tests": 0,
+      "docs": 1
+    },
+    {
+      "code": "FUNGI-ASYNC-003",
+      "family": "ASYNC",
+      "namespace": "FUNGI",
+      "status": "dead",
+      "names": [
+        "ORPHANED_TASK"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 0,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-ASYNC-004",
+      "family": "ASYNC",
+      "namespace": "FUNGI",
+      "status": "dead",
+      "names": [
+        "UNVALIDATED_EXTERNAL_RESULT"
+      ],
+      "severities": [
+        "warning"
+      ],
+      "defs": 1,
+      "emits": 0,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-ASYNC-005",
+      "family": "ASYNC",
+      "namespace": "FUNGI",
+      "status": "dead",
+      "names": [
+        "FN_IN_ASYNCFLOW_BODY"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 0,
+      "tests": 0,
+      "docs": 0
+    },
+    {
+      "code": "FUNGI-ASYNC-006",
+      "family": "ASYNC",
+      "namespace": "FUNGI",
+      "status": "dead",
+      "names": [
+        "ASYNCFLOW_MISSING_CONTRACT"
+      ],
+      "severities": [
+        "error"
+      ],
+      "defs": 1,
+      "emits": 0,
       "tests": 0,
       "docs": 0
     },
@@ -2920,7 +3016,7 @@
       "namespace": "FUNGI",
       "status": "live",
       "names": [
-        "FAILED_CLOSED"
+        "DECISION_FAILED_CLOSED"
       ],
       "severities": [
         "error"
@@ -3964,7 +4060,7 @@
       ],
       "defs": 1,
       "emits": 1,
-      "tests": 0,
+      "tests": 10,
       "docs": 4
     },
     {
@@ -5213,7 +5309,7 @@
       "defs": 0,
       "emits": 1,
       "tests": 5,
-      "docs": 15
+      "docs": 16
     },
     {
       "code": "FUNGI-MEMORY-001",
@@ -8380,7 +8476,7 @@
       "namespace": "FUNGI",
       "status": "live",
       "names": [
-        "EMPTY_UNKNOWN_REASONS"
+        "TRI_EMPTY_UNKNOWN_REASONS"
       ],
       "severities": [
         "error"

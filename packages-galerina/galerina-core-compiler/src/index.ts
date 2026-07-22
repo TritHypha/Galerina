@@ -1946,6 +1946,86 @@ export const FUNGI_BACKEND_001 = {
 };
 
 // ---------------------------------------------------------------------------
+// asyncflow diagnostic codes — FUNGI-ASYNC-001..006
+//
+// STAGE A STATUS: RESERVED / NOT-EMITTED.
+// asyncflow is a Stage B feature. These codes are defined here for namespace
+// stability, registry coverage, and design lock — they appear in the
+// code-registry as "dead/reserved" which is CORRECT for Stage A.
+//
+// Implementation gate: A18 tenant scope must land first.
+// KB spec: ../ZTF-Knowledge-Bases/asyncflow-design.md
+// Decision record: docs/TODO.md (Stage B asyncflow section)
+// ---------------------------------------------------------------------------
+
+/** RESERVED (Stage B): task/wait used in an asyncflow body but `await` is not declared as an effect.
+ *  `await` is a governed effect — it must appear in the contract.effects block. This makes async
+ *  execution visible in governance reports and the audit trail. */
+export const FUNGI_ASYNC_001 = {
+  code: "FUNGI-ASYNC-001",
+  name: "AWAIT_EFFECT_NOT_DECLARED",
+  severity: "error" as const,
+  message: "asyncflow uses task/wait but 'await' is not declared in the effects block. Add 'await' to contract { effects { ... await } }.",
+  why: "The 'await' effect makes async execution visible in all governance reports and the signed audit trail. An asyncflow that awaits without declaring it is ungovernable.",
+  suggestedFix: "Add 'await' to the effects block: contract { effects { ... await } }",
+} as const;
+
+/** RESERVED (Stage B): an asyncflow awaits a network.* or database.* call but declares no timeout
+ *  for that effect in production. Missing timeout = awaiting forever in a production system. */
+export const FUNGI_ASYNC_002 = {
+  code: "FUNGI-ASYNC-002",
+  name: "EXTERNAL_AWAIT_MISSING_TIMEOUT",
+  severity: "warning" as const,
+  message: "asyncflow awaits a network or database effect but no timeout is declared. Add contract { timeouts { network.outbound 2s } }.",
+  why: "An asyncflow waiting on external I/O with no timeout will hang indefinitely on slow or unavailable services. In a zero-trust system, timeout is a mandatory governance declaration, not an optional performance hint.",
+  suggestedFix: "Add a timeouts block: contract { timeouts { network.outbound 2s  database.read 500ms } }",
+} as const;
+
+/** RESERVED (Stage B): a `task` was started inside an asyncflow body but never `wait`ed and never
+ *  handed to a queue contract. Fire-and-forget is not permitted — untracked work cannot be audited. */
+export const FUNGI_ASYNC_003 = {
+  code: "FUNGI-ASYNC-003",
+  name: "ORPHANED_TASK",
+  severity: "error" as const,
+  message: "A task was started but never waited or queued. Every task must have a corresponding wait or be handed to a typed queue contract.",
+  why: "Fire-and-forget background work is unauditable and ungovernable. In a zero-trust runtime, every task must complete within a declared scope or be explicitly handed to a queue with audit, retry, and timeout policy.",
+  suggestedFix: "Add 'let result = wait myTask' or hand it to a queue: 'await queue MyQueue.add(task)'",
+} as const;
+
+/** RESERVED (Stage B): the result of a wait on a network or database task was used without passing
+ *  through Border.validate(). Raw external data must be validated before use. */
+export const FUNGI_ASYNC_004 = {
+  code: "FUNGI-ASYNC-004",
+  name: "UNVALIDATED_EXTERNAL_RESULT",
+  severity: "warning" as const,
+  message: "The result of an external wait is used without Border.validate(). External data is unsafe until border-validated.",
+  why: "Data arriving from a network or database call is implicitly unsafe — it has crossed a trust boundary. Using it without Border.validate() is the 'trust the wire' vulnerability class. asyncflow makes border validation mandatory to close this.",
+  suggestedFix: "Wrap the result: let safe = Border.validate(wait myTask)",
+} as const;
+
+/** RESERVED (Stage B): an inline `fn` was declared inside an asyncflow body. fn is not permitted
+ *  inside asyncflow — the body must be a clean narrative of governed async calls. */
+export const FUNGI_ASYNC_005 = {
+  code: "FUNGI-ASYNC-005",
+  name: "FN_IN_ASYNCFLOW_BODY",
+  severity: "error" as const,
+  message: "An inline fn was declared inside an asyncflow body. asyncflow bodies may not contain fn declarations.",
+  why: "An asyncflow body must be a clean, auditable narrative of governed async calls. Inline fn reduces auditability and could accidentally capture async context. Call a pure flow instead.",
+  suggestedFix: "Move the fn body to a separate 'pure flow' and call it from the asyncflow.",
+} as const;
+
+/** RESERVED (Stage B): an asyncflow has no contract block. Contract is mandatory for asyncflow
+ *  (unlike secure flow where it is optional). */
+export const FUNGI_ASYNC_006 = {
+  code: "FUNGI-ASYNC-006",
+  name: "ASYNCFLOW_MISSING_CONTRACT",
+  severity: "error" as const,
+  message: "asyncflow has no contract block. A contract block with at minimum 'intent' and 'effects { ... await }' is required.",
+  why: "Async I/O without declared intent and effects is ungovernable. Every asyncflow touches the network or a database by definition — the contract forces the developer to declare what the flow is for before the compiler accepts it.",
+  suggestedFix: "Add: contract { intent { \"What this flow does.\" } effects { ... await } }",
+} as const;
+
+// ---------------------------------------------------------------------------
 // Source-level escape diagnostics — FUNGI-SOURCE-ESCAPE-001
 // ---------------------------------------------------------------------------
 

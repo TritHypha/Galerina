@@ -1,5 +1,21 @@
 # Architecture
 
+## Constellation Architecture (2026-07-22 — adopted)
+
+Galerina is structured as a **Core-first product constellation**. The full specification lives in:
+
+- **KB canonical spec:** `../ZTF-Knowledge-Bases/galerina-constellation-architecture.md`
+- **In-repo record:** `docs/architecture/constellation-architecture-2026-07-22.md`
+- **Gap analysis:** `../ZTF-Knowledge-Bases/constellation-architecture-plan-2026-07-22.md`
+
+**One-line summary:** Galerina:Core ships first as a complete independent product. Fabric, Cortex, Quantum, TritMesh, and the optional fast sister language are separate products that depend on Core — Core depends on none of them.
+
+**Development order (confirmed):** Finish Core → TritMesh:QL → other engines.
+
+**FUNGI-* / GALERINA-* codes:** belong exclusively to Core. Optional engines define their own namespaces (FABRIC-*, CORTEX-*, QUANTUM-*, TRITMESH-*).
+
+---
+
 ## Overview
 
 This workspace separates the Galerina language core from the bespoke app that uses it.

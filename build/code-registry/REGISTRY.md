@@ -10,13 +10,18 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 |---|---|---|
 | live | 132 | emitted with an exported constant |
 | inline | 162 | emitted, NO exported constant (R4 — Stage F) |
-| referenced | 98 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
-| dead | 8 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
+| referenced | 99 | defined + used/tested, emit via a pattern the indexer can't see (NOT dead) |
+| dead | 13 | defined AND truly unreferenced — RESERVED (wire or retire, std #1) |
 | phantom | 111 | doc-only mention, not in source (drift — DOC-004) |
 | ref | 181 | referenced only (no def/emit) |
 
 ## RESERVED — defined but not emitted (std #1: tag wire-or-retire)
 
+- `FUNGI-ASYNC-002`
+- `FUNGI-ASYNC-003`
+- `FUNGI-ASYNC-004`
+- `FUNGI-ASYNC-005`
+- `FUNGI-ASYNC-006`
 - `FUNGI-BLOCK-003`
 - `FUNGI-BYTE-002`
 - `FUNGI-BYTE-003`
@@ -78,6 +83,17 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-ASSUME-003 | ref | — | — |
 | FUNGI-ASSUME-004 | inline | ASSUMING_EXTERNAL_FLOW | — |
 | FUNGI-ASSUME-005 | inline | ASSUMING_CLAIM_NOT_FOUND | — |
+
+### ASYNC (6)
+
+| code | status | name(s) | severity |
+|---|---|---|---|
+| FUNGI-ASYNC-001 | referenced | AWAIT_EFFECT_NOT_DECLARED | error |
+| FUNGI-ASYNC-002 | dead | EXTERNAL_AWAIT_MISSING_TIMEOUT | warning |
+| FUNGI-ASYNC-003 | dead | ORPHANED_TASK | error |
+| FUNGI-ASYNC-004 | dead | UNVALIDATED_EXTERNAL_RESULT | warning |
+| FUNGI-ASYNC-005 | dead | FN_IN_ASYNCFLOW_BODY | error |
+| FUNGI-ASYNC-006 | dead | ASYNCFLOW_MISSING_CONTRACT | error |
 
 ### ATTR (2)
 
@@ -325,7 +341,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | FUNGI-DECISION-001 | live | INVALID_DECISION | error |
 | FUNGI-DECISION-002 | live | EMPTY_REASON | error |
 | FUNGI-DECISION-003 | live | EMPTY_UNKNOWN_REASONS | error |
-| FUNGI-DECISION-004 | live | FAILED_CLOSED | error |
+| FUNGI-DECISION-004 | live | DECISION_FAILED_CLOSED | error |
 | FUNGI-DECISION-005 | live | EMPTY_COMBINE | warning |
 
 ### DENIAL (2)
@@ -1292,7 +1308,7 @@ Universal-coverage anchor (#219 std 1): every code below is registered by constr
 | code | status | name(s) | severity |
 |---|---|---|---|
 | FUNGI-TRI-001 | live | INVALID_TRISTATE | error |
-| FUNGI-TRI-002 | live | EMPTY_UNKNOWN_REASONS | error |
+| FUNGI-TRI-002 | live | TRI_EMPTY_UNKNOWN_REASONS | error |
 | FUNGI-TRI-003 | live | INVALID_OPERAND | error |
 | FUNGI-TRI-004 | live | UNKNOWN_LEAKED | error |
 | FUNGI-TRI-005 | live | MALFORMED_UNKNOWN_REASON | error |

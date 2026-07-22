@@ -55,6 +55,25 @@ Galerina optimises for **compile-time-verified governance and fail-closed Zero-T
 
 ---
 
+## Native properties
+
+These are properties of the **language itself** — not libraries, not middleware, not configuration. They are enforced by the compiler and runtime for every flow, not opted into.
+
+| Property | What it means |
+|---|---|
+| **Fail-Closed by Default** | Every unhandled case **denies** — `match` requires an exhaustive arm or explicit wildcard (`FUNGI-MATCH-001`), unhandled `Result` propagates as an error, and every unhandled fault trap fires `halt` before the next instruction. There is no path to silent pass. |
+| **Declared Authority** | Effects, capabilities, and boundaries are declared in the `contract {}` block and **verified at compile time** — not asserted at runtime, not checked by a linter, not enforced by a framework. A flow without authority cannot acquire it. |
+| **Zero-Trust Boundaries** | Every boundary is treated as **already hostile** at compile time — plugin inputs require `Border.validate()`, untrusted data is typed `unsafe let raw` until gated, and the K3 lattice (`ALLOW / INDETERMINATE / DENY`) can only be lowered by an unknown input, never raised. |
+| **Structured Fault Handling** | There are **no exceptions** in `.fungi`. Faults surface as explicit `Result<T, E>` values with `?` propagation, or as audited `fault` channel entries. `try/catch` does not exist. The fault channel is append-only and cryptographically sealed. |
+| **Deterministic Execution** | Same source → same verified governance contract → same cryptographic receipt, every time. The compiler's pre-resolved policy DAG is deterministic by construction; there is no runtime configuration that changes what a flow is allowed to do. |
+| **Supply-Chain Provenance** | Dependencies enter only through the **signed admission border** — hash-pin · Ed25519 signature · revocation check · closed capability mask — before a single instruction runs. A package without a valid signed manifest is refused at link time. |
+| **Post-Quantum Ready** | Hybrid **Ed25519 + ML-DSA-65** (NIST FIPS 204) signing is shipped on all attestation, proof-graph, and bridge surfaces. Certified mode **mandates** both halves — no post-quantum downgrade path exists. |
+| **Data Security** | PII/PHI types are tracked end-to-end; `redact()` is enforced at the type level **before** data reaches any audit sink. Taint propagation, secret isolation, and OWASP injection guards are compile-time checks, not runtime detections. |
+| **Reproducibility** | The signed `.lmanifest` is the **machine-readable proof** that a given WASM binary was produced from a given source under a given governance policy. The ProofGraph captures the full DAG of decisions and their authority chain. |
+| **Auditing** | Every governed execution emits an **Epilogue Receipt** (sha256_seal or zk_snark) and appends a structured AuditEvent (CBOR Tag 410) to an append-only log. The audit trail is a first-class output of every flow, not an afterthought. |
+
+---
+
 ## What Galerina can and cannot do (honest scope)
 
 Three plain-English blocks. The first is the mature, shipped core; the second is a real but **emulated / owner-gated** frontier; the third is the hard boundary — what Galerina deliberately will **not** do.

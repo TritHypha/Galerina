@@ -74,6 +74,15 @@ flowchart LR
   T_audit_claim_hygiene_mjs --> C_source_hygiene
   T_audit_claim_hygiene_mjs --> C_doc_drift
   T_audit_claim_hygiene_mjs --> C_proofs
+  T_audit_codes_full_mjs["audit-codes-full.mjs"]
+  T_audit_codes_full_mjs --> C_effects
+  T_audit_codes_full_mjs --> C_governance
+  T_audit_codes_full_mjs --> C_coverage
+  T_audit_codes_full_mjs --> C_diagnostics
+  T_audit_codes_full_mjs --> C_tier_floor
+  T_audit_codes_full_mjs --> C_source_hygiene
+  T_audit_codes_full_mjs --> C_doc_drift
+  T_audit_codes_full_mjs --> C_graph_index
   T_audit_corpus_effect_names_mjs["audit-corpus-effect-names.mjs"]
   T_audit_corpus_effect_names_mjs --> C_effects
   T_audit_corpus_effect_names_mjs --> C_gate_wiring
