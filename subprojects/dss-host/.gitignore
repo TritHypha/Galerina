@@ -1,2 +1,5 @@
 # Rust build artifacts — never committed. Cargo.lock IS committed (the zero-trust dependency pin).
 /target
+# Generated M1 differential fixture (regenerate: node tools/export-differential-fixture.mjs).
+# The supervisor .wasm + matrix are DERIVED from the .fungi source — never hand-edited, never committed.
+/fixtures
