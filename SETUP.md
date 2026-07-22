@@ -177,8 +177,8 @@ galerina run packages-galerina/galerina-devtools-benchmarks/benchmarks/governanc
 **Compile to WebAssembly:**
 ```bash
 galerina build packages-galerina/galerina-devtools-benchmarks/benchmarks/governance-cost/benchmark.fungi
-# → build/benchmark.wasm  (133 bytes)
-# → build/benchmark.wat   (28 lines)
+# → build/benchmark.wasm  (~130 bytes — governance compiled in, no runtime attached)
+# → build/benchmark.wat
 ```
 
 **Run the compiled WASM with wasmtime (no Node.js needed):**
@@ -197,7 +197,7 @@ galerina check examples/auth-service/verifyPassword.fungi
 
 ## Running the benchmarks
 
-The benchmark suite compares Galerina against Rust, C++, Node.js, Python, and WASM across 23 workloads.
+The benchmark suite compares Galerina's WASM output against Rust (generic + AVX2), Node.js, Python, and real GPU across 36 workloads.
 
 ```bash
 cd packages-galerina/galerina-devtools-benchmarks
@@ -209,23 +209,7 @@ npm run run
 npm run compare
 ```
 
-You'll see results like this on screen:
-
-```
-## 1. Throughput — Winner per Benchmark
-
-| Benchmark       | 🏆 Winner          | Winner Speed | Galerina (governed) | gov ÷ Python     |
-|---|---|---|---|---|
-| arithmetic-threshold | WASM (Phase 27) | 4.0B/s  | 860K/s  | ❌ 0.19×         |
-| data-query      | Galerina (governed)  | 228K/s       | 228K/s             | 🏆 (winner)      |
-| nbody           | Galerina (passive)   | 76K/s        | 62K/s              | ✅ 1,200× faster |
-...
-
-## Benchmark Glossary
-| nbody | N-body gravitational force: pairwise O(N²) physics simulation | 1,200× faster than Python |
-| governance-cost | Sum 1..100 (triangle number = 5050, the Gauss problem) | Measures governance overhead |
-| data-query | Filter + sort + aggregate — Galerina wins this workload outright | ...
-```
+The canonical view is the **§1.5 production-ceiling scoreboard** printed by `npm run compare` — it compares the shipping **WASM ▶ production** path against the fastest real runtime per workload. Two honesty rules built into the harness: the Stage-A interpreter tiers are *diagnostic* (the WASM parity oracle) and are excluded from winning, and any lane without verified work-equivalence carries **no** cross-runtime ratio. A truth-audit (cross-language checksums + unit alignment) runs with every full suite.
 
 **Quick benchmark (development feedback, ~30 seconds):**
 ```bash
