@@ -3730,7 +3730,7 @@
       "severities": [],
       "defs": 0,
       "emits": 2,
-      "tests": 30,
+      "tests": 31,
       "docs": 5
     },
     {
@@ -8318,7 +8318,7 @@
       "defs": 1,
       "emits": 1,
       "tests": 9,
-      "docs": 0
+      "docs": 3
     },
     {
       "code": "FUNGI-TENANT-002",
@@ -8333,7 +8333,7 @@
       ],
       "defs": 1,
       "emits": 1,
-      "tests": 20,
+      "tests": 25,
       "docs": 0
     },
     {

@@ -1,7 +1,9 @@
 {
   "generatedBy": "gen-contract-registry.mjs",
-  "contracts": 909,
-  "parsed": 450,
+  "generatedAt": "2026-07-22T11:44:06.869Z",
+  "sha": "2bcfd457",
+  "contracts": 926,
+  "parsed": 460,
   "rows": [
     {
       "file": "docs/examples/Level-1-Basics/001-pure-flow/example.fungi",
@@ -151,6 +153,46 @@
       "signature": "pure flow approveOrder(amount: Int, limit: Int, isActive: Bool, isVerified: Bool) -> Bool",
       "effects": [],
       "intent": "Approve an order using readable operator aliases (and, or, unless, is) to express the approval logic."
+    },
+    {
+      "file": "docs/examples/Level-1-Basics/024-vault-global-basic/example.fungi",
+      "name": "getMaxUploadMb",
+      "qualifier": "pure",
+      "signature": "pure flow getMaxUploadMb() -> Int",
+      "effects": [],
+      "intent": ""
+    },
+    {
+      "file": "docs/examples/Level-1-Basics/024-vault-global-basic/example.fungi",
+      "name": "isPaymentsEnabled",
+      "qualifier": "pure",
+      "signature": "pure flow isPaymentsEnabled() -> Bool",
+      "effects": [],
+      "intent": ""
+    },
+    {
+      "file": "docs/examples/Level-1-Basics/024-vault-global-basic/example.fungi",
+      "name": "getPaymentCurrency",
+      "qualifier": "pure",
+      "signature": "pure flow getPaymentCurrency() -> String",
+      "effects": [],
+      "intent": ""
+    },
+    {
+      "file": "docs/examples/Level-1-Basics/026-pure-flow-main/example.fungi",
+      "name": "main",
+      "qualifier": "pure",
+      "signature": "pure flow main() -> Int",
+      "effects": [],
+      "intent": "Run the program and return exit code 0 on success."
+    },
+    {
+      "file": "docs/examples/Level-1-Basics/027-print-hello-world/example.fungi",
+      "name": "main",
+      "qualifier": "pure",
+      "signature": "pure flow main() -> Int",
+      "effects": [],
+      "intent": "Demonstrate print() with multiple value types."
     },
     {
       "file": "docs/examples/Level-2-Types/051-int-basic/example.fungi",
@@ -1416,6 +1458,65 @@
       "intent": "Return a record to an authorised actor."
     },
     {
+      "file": "docs/examples/Level-5-Governance/227-global-vault-declaration/example.fungi",
+      "name": "getLoginCount",
+      "qualifier": "guarded",
+      "signature": "guarded flow getLoginCount() -> Int",
+      "effects": [
+        "vault.read"
+      ],
+      "intent": ""
+    },
+    {
+      "file": "docs/examples/Level-5-Governance/227-global-vault-declaration/example.fungi",
+      "name": "getAppId",
+      "qualifier": "guarded",
+      "signature": "guarded flow getAppId() -> String",
+      "effects": [
+        "vault.read"
+      ],
+      "intent": ""
+    },
+    {
+      "file": "docs/examples/Level-5-Governance/228-global-vault-mut-write/example.fungi",
+      "name": "getLoginCount",
+      "qualifier": "guarded",
+      "signature": "guarded flow getLoginCount() -> Int",
+      "effects": [
+        "vault.read"
+      ],
+      "intent": ""
+    },
+    {
+      "file": "docs/examples/Level-5-Governance/228-global-vault-mut-write/example.fungi",
+      "name": "incrementLogin",
+      "qualifier": "guarded",
+      "signature": "guarded flow incrementLogin(userId: String) -> Result<Bool,Error>",
+      "effects": [
+        "vault.write",
+        "audit.write"
+      ],
+      "intent": ""
+    },
+    {
+      "file": "docs/examples/Level-5-Governance/229-vault-write-without-mut-invalid/example.fungi",
+      "name": "incrementLogin",
+      "qualifier": "guarded",
+      "signature": "guarded flow incrementLogin(userId: String) -> Result<Bool,Error>",
+      "effects": [
+        "audit.write"
+      ],
+      "intent": ""
+    },
+    {
+      "file": "docs/examples/Level-5-Governance/230-vault-access-denied-invalid/example.fungi",
+      "name": "unauthorisedFlow",
+      "qualifier": "guarded",
+      "signature": "guarded flow unauthorisedFlow() -> Int",
+      "effects": [],
+      "intent": ""
+    },
+    {
       "file": "docs/examples/Level-5-Security/227-process-spawn-governance/example.fungi",
       "name": "scheduleBackgroundJob",
       "qualifier": "secure",
@@ -2261,6 +2362,73 @@
       "qualifier": "pure",
       "signature": "pure flow simulationStep(massKg: Decimal, velocityMs: Decimal, forceN: Decimal, displacementM: Decimal) -> Decimal",
       "effects": [],
+      "intent": ""
+    },
+    {
+      "file": "docs/examples/Level-9-Enterprise/473-scoped-vault-request/example.fungi",
+      "name": "loadCustomer",
+      "qualifier": "guarded",
+      "signature": "guarded flow loadCustomer(id: CustomerId) -> Result<Customer,Error>",
+      "effects": [
+        "database.read",
+        "vault.write"
+      ],
+      "intent": ""
+    },
+    {
+      "file": "docs/examples/Level-9-Enterprise/473-scoped-vault-request/example.fungi",
+      "name": "getCustomerForOrder",
+      "qualifier": "guarded",
+      "signature": "guarded flow getCustomerForOrder(id: CustomerId) -> Result<Customer,Error>",
+      "effects": [
+        "vault.read"
+      ],
+      "intent": ""
+    },
+    {
+      "file": "docs/examples/Level-9-Enterprise/473-scoped-vault-request/example.fungi",
+      "name": "createOrder",
+      "qualifier": "secure",
+      "signature": "secure flow createOrder(readonly request: Request, customerId: CustomerId) -> Result<OrderId,Error>",
+      "effects": [
+        "database.read",
+        "database.write",
+        "vault.read",
+        "vault.write",
+        "audit.write"
+      ],
+      "intent": ""
+    },
+    {
+      "file": "docs/examples/Level-9-Enterprise/474-vault-session-session-pattern/example.fungi",
+      "name": "loadPermissions",
+      "qualifier": "guarded",
+      "signature": "guarded flow loadPermissions(userId: UserId) -> Result<PermissionSummary,Error>",
+      "effects": [
+        "database.read",
+        "vault.write"
+      ],
+      "intent": ""
+    },
+    {
+      "file": "docs/examples/Level-9-Enterprise/474-vault-session-session-pattern/example.fungi",
+      "name": "authorizeAction",
+      "qualifier": "guarded",
+      "signature": "guarded flow authorizeAction(userId: UserId, action: String) -> Result<Bool,Error>",
+      "effects": [
+        "vault.read"
+      ],
+      "intent": ""
+    },
+    {
+      "file": "docs/examples/Level-9-Enterprise/474-vault-session-session-pattern/example.fungi",
+      "name": "renderDashboard",
+      "qualifier": "secure",
+      "signature": "secure flow renderDashboard(readonly request: Request, userId: UserId) -> Result<DashboardData,Error>",
+      "effects": [
+        "vault.read",
+        "audit.write"
+      ],
       "intent": ""
     },
     {
@@ -3831,7 +3999,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi",
       "name": "collectCallEffectsExpr",
       "qualifier": "pure",
-      "signature": "pure flow collectCallEffectsExpr(expr: Auto) -> Array<Auto>",
+      "signature": "pure flow collectCallEffectsExpr(expr: Expr) -> Array<Auto>",
       "effects": [],
       "intent": "Walk an Expr: a call contributes effectOfCall(value); recurse into children for binary/call."
     },
@@ -3839,7 +4007,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi",
       "name": "collectBodyEffects",
       "qualifier": "pure",
-      "signature": "pure flow collectBodyEffects(stmts: Array<Auto>) -> Array<Auto>",
+      "signature": "pure flow collectBodyEffects(stmts: Array<Stmt>) -> Array<Auto>",
       "effects": [],
       "intent": "Walk a statement list: each stmt's expr(s) and nested if/while bodies contribute call effects."
     },
@@ -3847,7 +4015,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi",
       "name": "collectCallNamesExpr",
       "qualifier": "pure",
-      "signature": "pure flow collectCallNamesExpr(expr: Auto) -> Array<Auto>",
+      "signature": "pure flow collectCallNamesExpr(expr: Expr) -> Array<Auto>",
       "effects": [],
       "intent": "Collect every called name in an Expr (call value + recursion into children)."
     },
@@ -3855,7 +4023,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi",
       "name": "collectCallNamesStmts",
       "qualifier": "pure",
-      "signature": "pure flow collectCallNamesStmts(stmts: Array<Auto>) -> Array<Auto>",
+      "signature": "pure flow collectCallNamesStmts(stmts: Array<Stmt>) -> Array<Auto>",
       "effects": [],
       "intent": "Walk a statement list collecting every called name (exprs + nested bodies)."
     },
@@ -3863,7 +4031,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi",
       "name": "declaredEffectsOfFlow",
       "qualifier": "pure",
-      "signature": "pure flow declaredEffectsOfFlow(flows: Array<Auto>, name: String) -> Array<Auto>",
+      "signature": "pure flow declaredEffectsOfFlow(flows: Array<FlowDecl>, name: String) -> Array<Auto>",
       "effects": [],
       "intent": "Return the declared effects of the flow with this name, else empty."
     },
@@ -3871,7 +4039,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi",
       "name": "flowCallNames",
       "qualifier": "pure",
-      "signature": "pure flow flowCallNames(flows: Array<Auto>, name: String) -> Array<Auto>",
+      "signature": "pure flow flowCallNames(flows: Array<FlowDecl>, name: String) -> Array<Auto>",
       "effects": [],
       "intent": "Return the callee names in the body of the flow with this name, else empty."
     },
@@ -3887,7 +4055,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi",
       "name": "collectTransitiveEffects",
       "qualifier": "pure",
-      "signature": "pure flow collectTransitiveEffects(flows: Array<Auto>, name: String, seen: Array<Auto>) -> Array<Auto>",
+      "signature": "pure flow collectTransitiveEffects(flows: Array<FlowDecl>, name: String, seen: Array<Auto>) -> Array<Auto>",
       "effects": [],
       "intent": "Records {effect, introducer} for every effect a transitively-called flow declares."
     },
@@ -3895,7 +4063,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/effect-checker.fungi",
       "name": "checkBodyEffects",
       "qualifier": "pure",
-      "signature": "pure flow checkBodyEffects(flows: Array<Auto>) -> EffectCheckResult",
+      "signature": "pure flow checkBodyEffects(flows: Array<FlowDecl>) -> EffectCheckResult",
       "effects": [],
       "intent": "Derive each flow's used effects from its body AST and reconcile against declared effects."
     },
@@ -4047,7 +4215,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/governance-verifier.fungi",
       "name": "verifyGovernance",
       "qualifier": "pure",
-      "signature": "pure flow verifyGovernance(flows: Array<Auto>) -> GovResult",
+      "signature": "pure flow verifyGovernance(flows: Array<FlowDecl>) -> GovResult",
       "effects": [],
       "intent": "Run all governance checks across flows from the Stage B ParseResult."
     },
@@ -4055,7 +4223,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/governance-verifier.fungi",
       "name": "exprCallsAudit",
       "qualifier": "pure",
-      "signature": "pure flow exprCallsAudit(e: Array<Auto>) -> Bool",
+      "signature": "pure flow exprCallsAudit(e: Array<Expr>) -> Bool",
       "effects": [],
       "intent": "Return true when the expression (0/1-element array) contains an auditWrite call."
     },
@@ -4063,7 +4231,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/governance-verifier.fungi",
       "name": "flowCallsAudit",
       "qualifier": "pure",
-      "signature": "pure flow flowCallsAudit(stmts: Array<Auto>) -> Bool",
+      "signature": "pure flow flowCallsAudit(stmts: Array<Stmt>) -> Bool",
       "effects": [],
       "intent": "Recursively detect whether the flow body performs an auditWrite call."
     },
@@ -4087,7 +4255,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/governance-verifier.fungi",
       "name": "verifyDomainGuardConformance",
       "qualifier": "pure",
-      "signature": "pure flow verifyDomainGuardConformance(flows: Array<Auto>, policies: Array<Auto>) -> GovResult",
+      "signature": "pure flow verifyDomainGuardConformance(flows: Array<FlowDecl>, policies: Array<Auto>) -> GovResult",
       "effects": [],
       "intent": "FUNGI-GOV-004: verify declared effects ⊆ permitted_effects for each [conforms_to: X] contract."
     },
@@ -4095,7 +4263,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/governance-verifier.fungi",
       "name": "checkBodyGovernance",
       "qualifier": "pure",
-      "signature": "pure flow checkBodyGovernance(flows: Array<Auto>) -> GovResult",
+      "signature": "pure flow checkBodyGovernance(flows: Array<FlowDecl>) -> GovResult",
       "effects": [],
       "intent": "A secure flow must perform an audit call in its body (FUNGI-VAL-001)."
     },
@@ -4743,7 +4911,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
       "name": "checkParams",
       "qualifier": "pure",
-      "signature": "pure flow checkParams(flowName: String, params: Array<Auto>) -> Array<Auto>",
+      "signature": "pure flow checkParams(flowName: String, params: Array<FlowParam>) -> Array<Auto>",
       "effects": [],
       "intent": "FUNGI-TYPE-001: every parameter must name a known type."
     },
@@ -4751,7 +4919,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
       "name": "checkFlows",
       "qualifier": "pure",
-      "signature": "pure flow checkFlows(flows: Array<Auto>) -> TypeCheckResult",
+      "signature": "pure flow checkFlows(flows: Array<FlowDecl>) -> TypeCheckResult",
       "effects": [],
       "intent": "Run Stage B type checks across all flows from the ParseResult."
     },
@@ -4759,7 +4927,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
       "name": "firstExpr",
       "qualifier": "pure",
-      "signature": "pure flow firstExpr(stmt: Auto) -> Option<Auto>",
+      "signature": "pure flow firstExpr(stmt: Stmt) -> Option<Expr>",
       "effects": [],
       "intent": "Return Some(expr) for the statement's lone expr (RHS/condition), else None."
     },
@@ -4767,7 +4935,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
       "name": "checkStmt",
       "qualifier": "pure",
-      "signature": "pure flow checkStmt(flowName: String, stmt: Auto, scope: Array<Auto>) -> Array<Auto>",
+      "signature": "pure flow checkStmt(flowName: String, stmt: Stmt, scope: Array<Auto>) -> Array<Auto>",
       "effects": [],
       "intent": "Type-check one body statement (let/mut binding + nested if/while); the initializer and nested blocks both see `scope` (params + prior bindings)."
     },
@@ -4823,7 +4991,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
       "name": "checkBinding",
       "qualifier": "pure",
-      "signature": "pure flow checkBinding(flowName: String, stmt: Auto, scope: Array<Auto>) -> Array<Auto>",
+      "signature": "pure flow checkBinding(flowName: String, stmt: Stmt, scope: Array<Auto>) -> Array<Auto>",
       "effects": [],
       "intent": "FUNGI-TYPE-001/002/019 for a let/mut binding: unknown declared type, literal-type mismatch, or a name initializer referencing an undeclared symbol."
     },
@@ -4831,7 +4999,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
       "name": "paramNames",
       "qualifier": "pure",
-      "signature": "pure flow paramNames(params: Array<Auto>) -> Array<Auto>",
+      "signature": "pure flow paramNames(params: Array<FlowParam>) -> Array<Auto>",
       "effects": [],
       "intent": "Return the list of parameter names declared by a flow (the body's initial in-scope symbols)."
     },
@@ -4855,7 +5023,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
       "name": "checkStmtList",
       "qualifier": "pure",
-      "signature": "pure flow checkStmtList(flowName: String, stmts: Array<Auto>, outerScope: Array<Auto>) -> Array<Auto>",
+      "signature": "pure flow checkStmtList(flowName: String, stmts: Array<Stmt>, outerScope: Array<Auto>) -> Array<Auto>",
       "effects": [],
       "intent": "Walk a block scope: flag a duplicate binding (FUNGI-NAME-002) and a binding that shadows an outer scope (FUNGI-TYPE-020)."
     },
@@ -4863,7 +5031,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
       "name": "collectCallsInExpr",
       "qualifier": "pure",
-      "signature": "pure flow collectCallsInExpr(e: Auto) -> Array<Auto>",
+      "signature": "pure flow collectCallsInExpr(e: Expr) -> Array<Auto>",
       "effects": [],
       "intent": "Every callee name in an expression tree (the call itself and calls nested in its arguments)."
     },
@@ -4871,7 +5039,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
       "name": "collectCallNames",
       "qualifier": "pure",
-      "signature": "pure flow collectCallNames(stmts: Array<Auto>) -> Array<Auto>",
+      "signature": "pure flow collectCallNames(stmts: Array<Stmt>) -> Array<Auto>",
       "effects": [],
       "intent": "Every callee name invoked in a statement body, descending into nested block bodies."
     },
@@ -4879,7 +5047,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
       "name": "effectsForFlow",
       "qualifier": "pure",
-      "signature": "pure flow effectsForFlow(flows: Array<Auto>, name: String) -> Array<Auto>",
+      "signature": "pure flow effectsForFlow(flows: Array<FlowDecl>, name: String) -> Array<Auto>",
       "effects": [],
       "intent": "The declared effects of the flow with this name (empty if unknown or effect-free)."
     },
@@ -4887,7 +5055,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
       "name": "checkCallEffects",
       "qualifier": "pure",
-      "signature": "pure flow checkCallEffects(flowName: String, fd: Auto, flows: Array<Auto>) -> Array<Auto>",
+      "signature": "pure flow checkCallEffects(flowName: String, fd: FlowDecl, flows: Array<FlowDecl>) -> Array<Auto>",
       "effects": [],
       "intent": "FUNGI-TYPE-014: a call whose callee declares an effect the current flow does not declare."
     },
@@ -4895,7 +5063,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
       "name": "collectNamesByKind",
       "qualifier": "pure",
-      "signature": "pure flow collectNamesByKind(stmts: Array<Auto>, kind: String) -> Array<Auto>",
+      "signature": "pure flow collectNamesByKind(stmts: Array<Stmt>, kind: String) -> Array<Auto>",
       "effects": [],
       "intent": "Every statement.name for statements of the given kind, recursing into block bodies."
     },
@@ -4903,7 +5071,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
       "name": "checkImmutableReassign",
       "qualifier": "pure",
-      "signature": "pure flow checkImmutableReassign(flowName: String, body: Array<Auto>) -> Array<Auto>",
+      "signature": "pure flow checkImmutableReassign(flowName: String, body: Array<Stmt>) -> Array<Auto>",
       "effects": [],
       "intent": "FUNGI-BINDING-005: an assignment whose target was declared immutable (let, never mut)."
     },
@@ -4911,7 +5079,7 @@
       "file": "packages-galerina/galerina-core-compiler/src/self-hosted/type-checker.fungi",
       "name": "checkFlowBodies",
       "qualifier": "pure",
-      "signature": "pure flow checkFlowBodies(flows: Array<Auto>) -> TypeCheckResult",
+      "signature": "pure flow checkFlowBodies(flows: Array<FlowDecl>) -> TypeCheckResult",
       "effects": [],
       "intent": "Stage B body-level type checks: validate each flow's statement body AST."
     },

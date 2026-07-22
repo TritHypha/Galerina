@@ -3,7 +3,7 @@
   "provenance": {
     "available": true,
     "branch": "main",
-    "sha": "5d75fbd1",
+    "sha": "2bcfd457",
     "detached": false,
     "dirty": true
   },
@@ -225,7 +225,7 @@
         {
           "label": "Stage-B self-hosting — WASM execution (P9)",
           "pct": null,
-          "status": "in progress — 3 of 7 stages RUN · ★ 4 of 7 carry #100 (3 TRAP at COMPILE, 1 at EXECUTION) — lexer, parser + gir-emitter run; erasure ⟺ trap, exact across all seven, and gir-emitter is now the PROOF of it: un-erase its AST params (Array<Auto> → the parser's FlowDecl/Expr/Stmt) and it runs (2026-07-19, P9 brick-2). PROVEN at R3 (byte-parity ≡ Stage-A through real WASM behind #105): lexer `tokenize` · the whole PARSER ladder to its entry point — parseParams (flat) → parseExpr (recursive) → parseStmt (self+mutual) → parseBlock → parseFlows (2026-07-17, 53 differential tests, all first-run green); the recursive AST readback needed NO new ABI (that was an assertion; it is now executed) · gir-emitter `emitGIRModule` (2026-07-19, Stage-A interpreter == Stage-B WASM over a parsed corpus). ★ TRAP AT R2 (compile) — type-checker · effect-checker · governance-verifier: each is R0-clean, R0-assembles, R1-#105-admits AND EXPORTS, then throws `unreachable` on one trivial flow. gir-emitter was the FIRST of the #100 stages UN-ERASED (2026-07-19, P9 brick-2 via Option Y — concatenate the real lexer+parser so the parser's FlowDecl/Expr/Stmt records are in scope, then type emitGIRModule's `flows` param + its callees' AST params off Array<Auto>; a typed local `let re: ReturnExpr = fd.returnExpr` clears the scalar-record-field erasure too): it now RUNS, audit-stage-execution.mjs baseline 4→3, emitGIRModule R3 byte-parity green. ALSO carries #100 but traps at EXECUTION not compile: runtime `envLookup` reads b.name/b.val off an Array<Auto> payload, reached by every variable reference (runProgram→evalGIRExpr→envLookup) — construct verified in source, not yet driven. ROOT CAUSE (isolated one-variable-at-a-time, 20-line repro with R&D): reading a RECORD FIELD off an Option payload obtained from `.get()` on an `Array<Auto>` — Array<Auto> alone is fine, get+field on a CONCRETE array is fine, the two TOGETHER erase the element type so the field offset is unknown at lowering and the emitter falls through to `unreachable`. That is TASK #100, now P9's blocker; the stages take Array<Auto> per their own headers 'to avoid generic syntax constraints in Stage B param declarations' — the workaround IS the bug. THE FIX (R&D ruling 2026-07-17, verified in emitter source): the wat-emitter.ts:1340 trap is DELIBERATE fail-closed (#163) — do NOT touch it; only REAL Stage-B generics (un-erase the element type end-to-end, INCLUDING the get→Option→match-bind inference chain) unblocks R2 (does-it-RUN) for the #100 stages (5 originally; gir-emitter cleared first 2026-07-19, 4 to go) — NOT R3. Option/enum-variant lowering (the fix that fits #100's NAME) does NOT unblock it, because the discriminator is the erasure, NOT the Option — the R2 control case proves it by execution: the identical body over a CONCRETE array RUNS. Patch-per-site is visibly wrong; un-erasure at source clears each stage AT R2 — gir-emitter first (2026-07-19, DONE), the remaining three (type/effect/gov-verifier) next. ★ R3 (byte-parity) is a LARGER, DISTINCT track (R&D correction 2026-07-17): 'fix #100 → self-hosting' is true for does-it-RUN, false for does-it-byte-MATCH — R3 needs the WAT emitter's TOTAL un-lowered-node debt → 0 (385 module-wide nodes across the 7 stages, measured by audit-unlowered-nodes.mjs, ALL #128; #100's field-reads are an INDISTINGUISHABLE subset). The emitter is a PARTIAL emitter; #100 is ONE class of its completeness gap, not the whole. Fixing #100 buys R2-green on those stages, NOT R3. ALSO: the stages cannot be concatenated — `appendAll` is defined in both type-checker and governance-verifier (`paramNames` in type-checker and gir-emitter), the compiler accepts duplicate FLOW names (FUNGI-NAME-002 covers bindings only), and it surfaces only as a WASM `Duplicate export name` at instantiate — so the whole-compiler bundle P9 ends at cannot be built today. ⚠ THE ROW WAS THE LESSON: 'all 7 twins build (R0) + admit (R1), flows callable' stood from 2026-07-12 and read as 'the stages work'. They ARE callable. THREE now trap at compile-time (gir-emitter un-erased 2026-07-19, the first flip), a fourth (runtime) at execution. R1 asks 'does it export?', R3 asks 'does it agree?' — nothing asked 'does it RUN?' (that is R2, now built: audit-stage-execution.mjs). UNSWEPT (declared): runtime — execution-time #100 casualty, a different surface from this compile-pipeline sweep (same root, same un-erasure fix).",
+          "status": "R3 BYTE-PARITY ACHIEVED for ALL 7 self-hosted stages (2026-07-22, commit 2bcfd457) — 138/138 wat-p9-*-parity tests green: lexer tokenize · the full parser ladder (params → expr → stmt → block → flows) · gir-emitter emitGIRModule · type-checker · effect-checker · governance-verifier · runtime exec-value (Stage-A interpreter ≡ Stage-B WASM behind #105). #100 (the Array<Auto> element-type erasure that trapped 4 stages at COMPILE/EXECUTION) CLEARED end-to-end by un-erasing the element type at source across the stage twins (commit 4eba36bd); audit-stage-execution now 5/5 swept stages RUN · 0 trap · baseline 0 (was 3). Remaining for FULL self-hosting (post-v1, non-v1 gate): the bootstrap fixpoint (parser→GIR→WAT→WASM round-trip) + the whole-compiler bundle, still blocked when stages are concatenated by duplicate export names (FUNGI-NAME-002 covers bindings only). ⚠ this row read '3 of 7 stages RUN' until 2026-07-22 — superseded by the R3 milestone; corrected against 138/138 parity + audit-stage-execution baseline 0. Owner may wish to convert this WORD row to a countable 7/7-stages-at-R3 ladder.",
           "live": false,
           "evidence": null
         },
@@ -272,17 +272,17 @@
         {
           "item": "Contract Registry (RD-0359)",
           "state": "shipped",
-          "detail": "gen-contract-registry.mjs BUILT — 907 contracts across 450 .fungi → docs/contract-registry/CONTRACT_REGISTRY.md + .json; parser-authoritative flow list + intent extraction; --self-test + --check (CI-ready)"
+          "detail": "gen-contract-registry.mjs BUILT — 926 contracts across 460 .fungi → docs/contract-registry/CONTRACT_REGISTRY.md + .json; parser-authoritative flow list + intent extraction; --self-test + --check (CI-ready)"
         },
         {
           "item": "Workspace package families",
           "state": "shipped",
-          "detail": "93 workspace packages + 2 #32-exempt orphans = 95 components (target×9 · data×12 · db×5 · web×6 · ai · tools). galerina-tools-myco joined 2026-07-17 — it had a package.json and 14 passing tests but was never in galerina.workspace.json, so it read as an un-adjudicated ORPHAN. Two hand-kept registries (workspace list · version.json testCountByPackage) disagreeing is what that gate is for; it caught it."
+          "detail": "95 workspace packages + 2 #32-exempt orphans = 97 components (target×9 · data×12 · db×5 · web×6 · ai · tools). galerina-tools-myco joined 2026-07-17 — it had a package.json and 23 passing tests but was never in galerina.workspace.json, so it read as an un-adjudicated ORPHAN. Two hand-kept registries (workspace list · version.json testCountByPackage) disagreeing is what that gate is for; it caught it."
         },
         {
           "item": "Devtools audit suite",
           "state": "shipped",
-          "detail": "77 tools · 45 audits (incl. claim-hygiene public-doc gate + env-var-literal-strict path-leak + the fungi-corpus-check compile gate: 447 tracked .fungi found (myco-graph∪git-index), 211 checkable vs the real `galerina check`, ratcheted 49-file baseline) · keep-green + gate-selftests meta-gate; twin-audit execution column shipped (shadow|differential|authoritative)"
+          "detail": "108 tools · 63 audits · 40 proofs (incl. claim-hygiene public-doc gate + env-var-literal-strict path-leak + the fungi-corpus-check compile gate; + report-blind-consumers / auto-erasure-ratchet / gate-key-injectivity added 2026-07-19; corpus sub-counts 447/211/49 unverified this pass) · keep-green + gate-selftests meta-gate; twin-audit execution column shipped (shadow|differential|authoritative)"
         },
         {
           "item": "Signing-key custody",
@@ -297,7 +297,7 @@
         {
           "item": "myco",
           "state": "shipped",
-          "detail": "v0.1.2 (graph-indexed grep replacement, own subproject); silent size-cap skips now surfaced + VERSION drift gate; npm publish 🔒 outward"
+          "detail": "v0.1.3 (graph-indexed grep replacement, own subproject; Apache-2.0): ReDoS regex-guard + per-edge word-boundary fix with wordBoundaryExcluded reporting (no silent narrowing); owned Galerina mirror galerina-tools-myco synced to upstream e5e0e25 (src+tests byte-identical, 23/23); npm publish 🔒 outward"
         },
         {
           "item": "Execution-cutover (RD-0361)",

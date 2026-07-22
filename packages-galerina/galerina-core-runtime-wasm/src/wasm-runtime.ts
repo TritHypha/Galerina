@@ -234,11 +234,14 @@ export function createHostRuntime(
   const strings: string[] = [];
   const arrays: number[][] = [];
   const results: { tag: "ok" | "err"; value: number }[] = [];
+  const moneys: { currency: string; amountStr: string }[] = [];
   let memory: WebAssembly.Memory | null = null;
   // RD-0389: host bump pointer for records STAGED to pass in (allocRecord), based at the same
   // WAT_HEAP_BASE the emitter allocates from. Monotone for this host's lifetime — a fresh host per
   // scenario resets it, and it never overlaps a heap-free consuming flow (which makes no allocations).
   let recordBump = WAT_HEAP_BASE;
+  // I/O sink — routes print/println output through the observer's capture or console.log (dev only).
+  const outputSink: (s: string) => void = (s) => { console.log(s); };
 
   const tap = (name: string, args: number[], ret: number | undefined): number | undefined => {
     observe?.onHostCall?.(name, args, ret);
@@ -353,6 +356,45 @@ export function createHostRuntime(
     __unwrap_or: (opt: number, def: number) => tap("__unwrap_or", [opt, def], opt >= 0 ? opt : def) as number,
     __option_some: (x: number) => tap("__option_some", [x], x) as number,
     __option_none: () => tap("__option_none", [], -1) as number,
+
+    // ── Money currency constructors (ISO 4217) ───────────────────────────────
+    // Each accepts a string handle (the amount) and returns a Money handle (i32
+    // index into the moneys registry). The host stores { currency, amountStr } so
+    // WASM code can pass the handle back to a method or to the observer.
+    // NOTE: `strings[amountStrHandle]` retrieves the amount; an unknown handle
+    // yields "0.00" (fail-safe). The observer receives the handle, not the currency.
+    __money_gbp: (h: number) => { const id = moneys.length; moneys.push({ currency: "GBP", amountStr: strings[h] ?? "0.00" }); return tap("__money_gbp", [h], id) as number; },
+    __money_eur: (h: number) => { const id = moneys.length; moneys.push({ currency: "EUR", amountStr: strings[h] ?? "0.00" }); return tap("__money_eur", [h], id) as number; },
+    __money_usd: (h: number) => { const id = moneys.length; moneys.push({ currency: "USD", amountStr: strings[h] ?? "0.00" }); return tap("__money_usd", [h], id) as number; },
+    __money_chf: (h: number) => { const id = moneys.length; moneys.push({ currency: "CHF", amountStr: strings[h] ?? "0.00" }); return tap("__money_chf", [h], id) as number; },
+    __money_jpy: (h: number) => { const id = moneys.length; moneys.push({ currency: "JPY", amountStr: strings[h] ?? "0.00" }); return tap("__money_jpy", [h], id) as number; },
+    __money_cad: (h: number) => { const id = moneys.length; moneys.push({ currency: "CAD", amountStr: strings[h] ?? "0.00" }); return tap("__money_cad", [h], id) as number; },
+    __money_aud: (h: number) => { const id = moneys.length; moneys.push({ currency: "AUD", amountStr: strings[h] ?? "0.00" }); return tap("__money_aud", [h], id) as number; },
+    __money_nzd: (h: number) => { const id = moneys.length; moneys.push({ currency: "NZD", amountStr: strings[h] ?? "0.00" }); return tap("__money_nzd", [h], id) as number; },
+    __money_sgd: (h: number) => { const id = moneys.length; moneys.push({ currency: "SGD", amountStr: strings[h] ?? "0.00" }); return tap("__money_sgd", [h], id) as number; },
+    __money_hkd: (h: number) => { const id = moneys.length; moneys.push({ currency: "HKD", amountStr: strings[h] ?? "0.00" }); return tap("__money_hkd", [h], id) as number; },
+
+    // ── I/O ──────────────────────────────────────────────────────────────────
+    // print(strHandle) / println(strHandle): emit the interned string to the
+    // observer's output sink (or to console.log as a fallback in dev). Returns 0.
+    __print:   (h: number) => { outputSink(strings[h] ?? "");       return tap("__print",   [h], 0) as number; },
+    __println: (h: number) => { outputSink((strings[h] ?? "") + "\n"); return tap("__println", [h], 0) as number; },
+
+    // ── Privacy ───────────────────────────────────────────────────────────────
+    // redact(strHandle): returns a redacted-sentinel handle. The sentinel value
+    // -2 is distinct from -1 (None) and from any valid string/array handle (≥0).
+    // Consumers should treat any negative value as opaque in this context.
+    __redact: (h: number) => tap("__redact", [h], -2) as number,
+
+    // ── Collections ──────────────────────────────────────────────────────────
+    // range(lo, hi): returns an Array<Int> handle containing [lo, lo+1, … hi-1].
+    // Mirrors stdlib.ts Array.range (exclusive upper bound, step 1).
+    __range: (lo: number, hi: number) => {
+      const items: number[] = [];
+      for (let i = lo | 0; i < (hi | 0); i++) items.push(i);
+      const id = arrays.length; arrays.push(items);
+      return tap("__range", [lo, hi], id) as number;
+    },
   };
 
   // Sanctioned effect grants (see the `grants` doc above): explicit, per-admission, deny-by-

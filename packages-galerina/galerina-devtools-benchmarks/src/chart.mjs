@@ -261,7 +261,8 @@ export function buildChartHtml(report) {
   // ground so it is legible on any HTML page, not rely on the host's background). Single deliberate
   // theme — no prefers-color-scheme flip — so it renders identically wherever it is embedded/published.
   const style = `<style>
-  .bench-chart{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;max-width:920px;margin:0 auto;padding:1.5rem 1.75rem;color:#ebeae2;background:#16150e;border-radius:14px}
+  html,body{background:#000000;margin:0}
+  .bench-chart{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;max-width:920px;margin:0 auto;padding:1.5rem 1.75rem;color:#ebeae2;background:#000000;border-radius:14px}
   .bench-chart h1{font-size:20px;font-weight:500;margin:0 0 4px;color:#f5f4ed}.bench-chart h2{font-size:16px;font-weight:500;margin:1.7rem 0 2px;color:#f5f4ed}
   .bench-chart .sub{font-size:13px;color:#a5a49a;margin:0 0 10px}.bench-chart .empty{color:#8f8e85;font-size:13px}
   .bench-chart svg .grid{stroke:#413f37;stroke-width:1}.bench-chart svg .tick{fill:#a5a49a;font-size:11px}

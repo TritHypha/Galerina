@@ -1200,6 +1200,29 @@ const STDLIB_HOST_CALL_MAP: Record<string, string> = {
   Ok:   "$host___result_ok",   // Result.Ok(x)  (#145 lexer link)
   Err:  "$host___result_err",  // Result.Err(x) (#145 lexer link)
   // None is an identifier (no call); resolves via the host_none import at link time.
+
+  // Money currency constructors (ISO 4217) — lowered to host-side tagged handles.
+  // Each returns an i32 Money handle. The amount arg is a string handle (intern first).
+  gbp: "$host___money_gbp",
+  eur: "$host___money_eur",
+  usd: "$host___money_usd",
+  chf: "$host___money_chf",
+  jpy: "$host___money_jpy",
+  cad: "$host___money_cad",
+  aud: "$host___money_aud",
+  nzd: "$host___money_nzd",
+  sgd: "$host___money_sgd",
+  hkd: "$host___money_hkd",
+
+  // I/O — print(strHandle) emits to the host console; returns 0 (void).
+  print:   "$host___print",
+  println: "$host___println",
+
+  // Privacy — redact(strHandle) returns a redacted-sentinel handle.
+  redact: "$host___redact",
+
+  // Collection — range(lo, hi) returns an Array<Int> handle.
+  range: "$host___range",
 };
 
 /**
@@ -1917,21 +1940,19 @@ export function emitWATExpr(
       // The correct failure mode is `(unreachable)` — a loud WASM trap, not a silent deletion.
       // The full fix is to define/import these as host functions; until then, emit fail-closed.
       //
-      // This set covers the stdlib symbols confirmed as A2 causes in the corpus:
-      //   - Money currency constructors: gbp, eur, usd, chf, jpy, cad, aud — Money<X>(value)
-      //   - Decimal constructor: Decimal(value) — maps to f64 but no WASM host stub yet
-      //   - Collection/IO operations: range, print, map, redact — no WASM host stub yet
+      // Remaining unlowered set (after wiring Money, print, println, redact, range above):
+      //   - Decimal: intentionally fail-closed (bignum; f64 would be silently wrong — #137)
+      //   - map/reduce/filter: need HOF/closure support in WAT (not in scope)
       //
       // NOTE: `flowReturnTypes` will not contain these names (they are not user flows), so
       // the lookup below will be null — meaning they WOULD fall through to the bare call.
       // Instead, fail closed here explicitly.
       const UNLOWERED_STDLIB_CONSTRUCTORS = new Set([
-        // Money currency constructors (ISO 4217)
-        "gbp", "eur", "usd", "chf", "jpy", "cad", "aud", "nzd", "sgd", "hkd",
-        // Decimal (bignum) constructor — no WASM host stub; lowers to f64 which is wrong (#137)
+        // Decimal (bignum) constructor — no WASM host stub; lowers to f64 which is wrong (#137).
+        // Intentionally fail-closed: wat-decimal-decline.test.mjs pins this as (unreachable).
         "Decimal",
-        // Collection/IO stdlib — no WASM host stubs yet
-        "range", "map", "redact", "reduce", "filter",
+        // Higher-order collection ops — need HOF/closure support in WAT (not in scope).
+        "map", "reduce", "filter",
       ]);
       if (UNLOWERED_STDLIB_CONSTRUCTORS.has(name) && flowReturnTypes?.get(name) === undefined) {
         // Inline block comment (safe in any expression position — no `;;` that swallows parens).
