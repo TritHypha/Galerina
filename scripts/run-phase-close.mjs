@@ -472,6 +472,16 @@ run("kernel-fungi-twins", "node", ["scripts/audit-kernel-fungi-twins.mjs"]);
 //   7 differential · 0 authoritative · exit 0.
 run("compiler-stage-twins", "node", ["scripts/audit-compiler-stage-twins.mjs"]);
 
+// wasmtime-presence — RD-0529 A4: the second execution engine (wasmtime) must be REACHABLE, not
+//   silently absent. Closes the wat-phase26:81 fail-open (a `wasmtime --version` probe ending in
+//   `assert.ok(true)` — "0 wasmtime tests ran" reads identical to "all pass"). AVAILABLE = wasmtime CLI
+//   on PATH OR the dss-host Rust harness (cargo + the wasmtime crate — M1's proven oracle path). Profile-
+//   aware + fail-closed where it counts: under CI / GALERINA_CERTIFIED=1 an absent engine EXITS 1 so the
+//   coming A1/A2/A3 wasmtime conformance harnesses cannot be silently skipped; the dev profile loud-skips
+//   (exit 0, warned) and always names which engine would run. Self-tested truth table (absent⟹FAIL under
+//   CI vs absent⟹skip under dev is the discriminator proving it enforces, not always-passes).
+run("wasmtime-presence", "node", ["scripts/audit-wasmtime-presence.mjs"]);
+
 // ── Doc-freshness gates: previously unwired (Bob review 2026-07) ────────────────────────────────────
 // Documentation drift in a language specification is a security issue: a stale spec that disagrees with
 // the compiler is a source of developer confusion that can lead to incorrect assumptions about guarantees.
