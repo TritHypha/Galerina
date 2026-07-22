@@ -15,6 +15,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { pathToFileURL, fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
+import { createPublicKey } from "node:crypto";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "..", "..", "..");        // tools -> dss-host -> subprojects -> repo root
@@ -117,9 +118,27 @@ writeFileSync(join(OUT, "interned-strings.json"), JSON.stringify(exportInterned,
 const meta = { generated_by: "tools/export-differential-fixture.mjs", source: "dss-supervisor.fungi", wasm_bytes: asm.wasm.length, interned_strings: interned.length, points: points.length };
 writeFileSync(join(OUT, "matrix.json"), JSON.stringify({ meta, points }, null, 2) + "\n");
 
+// ── F3 fixture: a Node-signed admission attestation over supervisor.wasm + the raw Ed25519 public
+//    key, so the Rust sidecar (dss-host) can re-verify the #173 signature INDEPENDENTLY (Node
+//    signWasm ≡ Rust verify — the F3 per-module re-verify). Ephemeral dev keypair per run; never a real key.
+const kp = L.generateRunnerKeypair();
+const att = L.signWasm(asm.wasm, kp.privateKeyPem, "dev"); // { sha256, signature(b64), profile }
+// ed25519-dalek needs the RAW 32-byte key, not the SPKI PEM: a JWK export gives x = base64url(32B).
+const jwk = createPublicKey(kp.publicKeyPem).export({ format: "jwk" });
+const publicKeyRawB64 = Buffer.from(jwk.x, "base64url").toString("base64");
+writeFileSync(join(OUT, "attestation.json"), JSON.stringify({
+  domain: "FUNGI-WASM-ADMIT-v1",
+  sha256: att.sha256,
+  signature: att.signature,
+  profile: att.profile,
+  publicKeyRawB64,
+  preimage_shape: "FUNGI-WASM-ADMIT-v1\\0<sha256hex>\\0<profile>",
+}, null, 2) + "\n");
+
 console.log(`fixture -> ${OUT}`);
 console.log(`  supervisor.wasm        ${asm.wasm.length} bytes`);
 console.log(`  interned-strings.json  ${interned.length} entries`);
 console.log(`  matrix.json            ${points.length} points`);
+console.log(`  attestation.json       Ed25519 #173 sig + 32B pubkey (profile=${att.profile})`);
 if (points.length < 380) { console.error(`FAIL: only ${points.length} points (<380) — matrix incomplete`); process.exit(1); }
 console.log(`M1 fixture ready — ${points.length} points for the wasmtime harness.`);
