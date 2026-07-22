@@ -37,12 +37,6 @@
       "file": "scripts/bench-startup.mjs",
       "line": 97,
       "why": "branches on .valid but never consults .diagnostics in a decision"
-    },
-    {
-      "key": "scripts/gather-t1-twin-hashes.mjs::assembleWAT::asm::VIOLATION#1",
-      "file": "scripts/gather-t1-twin-hashes.mjs",
-      "line": 42,
-      "why": "uses .wasm without branching on .valid or .diagnostics at all"
     }
   ]
 }

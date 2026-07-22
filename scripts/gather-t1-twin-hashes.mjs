@@ -39,20 +39,29 @@ for (const [pkg, fname, mod] of T1_TWINS) {
   const { gir } = L.emitGIR(prog.ast, prog.flows, fx);
   const wat = L.renderWAT(L.buildWATModuleFromGIR(gir, undefined, mod, prog.ast, /*exportAllPure*/ true));
   const asm = await L.assembleWAT(wat);
-  const sha256 = L.wasmHash(asm.wasm);
+  // #141 fail-closed (signing path): a wabt-rejected module comes back as the minimal-encoder STUB with
+  // valid:true PLUS a "NOT a faithful compile" diagnostic (#163). Hashing / signing / admitting that stub
+  // would pin an unfaithful artifact into the ledger. Gate on valid && diagnostics.length===0 before
+  // touching asm.wasm — reading the VALUE without the REPORT is fail-open by construction.
+  const asmFaithful = asm.valid && asm.diagnostics.length === 0;
+  const sha256 = asmFaithful ? L.wasmHash(asm.wasm) : null;
   // R1 — sign + admit through the attestation-first #105 gate (requireSigned), then instantiate.
   const kp = L.generateRunnerKeypair();
-  const att = L.signWasm(asm.wasm, kp.privateKeyPem, "dev");
-  const host = L.createHostRuntime();
   let admitted = false, admitError = null;
-  try {
-    await L.admitAndInstantiate({ wasm: asm.wasm, attestation: att, policy: { requireSigned: true, publicKeyPem: kp.publicKeyPem }, host });
-    admitted = true;
-  } catch (e) { admitError = e instanceof Error ? e.message : String(e); }
-  rows.push({ twin: fname, pkg, module: mod, r0Errors, bytes: asm.wasm.length, sha256, admitted, admitError });
+  if (asmFaithful) {
+    const att = L.signWasm(asm.wasm, kp.privateKeyPem, "dev");
+    const host = L.createHostRuntime();
+    try {
+      await L.admitAndInstantiate({ wasm: asm.wasm, attestation: att, policy: { requireSigned: true, publicKeyPem: kp.publicKeyPem }, host });
+      admitted = true;
+    } catch (e) { admitError = e instanceof Error ? e.message : String(e); }
+  } else {
+    admitError = "unfaithful assembly (stub): " + asm.diagnostics.map((d) => d.message).join("; ");
+  }
+  rows.push({ twin: fname, pkg, module: mod, r0Errors, bytes: asm.wasm.length, sha256, asmFaithful, admitted, admitError });
 }
 
-const allClean = rows.every((r) => r.r0Errors === 0 && r.admitted);
+const allClean = rows.every((r) => r.r0Errors === 0 && r.asmFaithful && r.admitted);
 if (JSON_OUT) {
   console.log(JSON.stringify({ tool: "gather-t1-twin-hashes", tranche: "T1", allClean, rows }, null, 2));
 } else {
