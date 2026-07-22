@@ -6,3 +6,8 @@ edition = "2024"
 [dependencies]
 anyhow = "1.0.104"
 wasmtime = "47.0.2"
+
+[dev-dependencies]
+# Test-only: parse the generated M1 differential fixture. NOT a runtime dependency of the
+# sidecar TCB — the production binary's surface stays anyhow + wasmtime only.
+serde_json = "1"

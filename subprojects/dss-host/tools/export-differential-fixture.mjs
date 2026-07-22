@@ -74,7 +74,24 @@ const BIT = { dag: 1 << 8, quarantine: 2 ** 30, emergency: 2 ** 31 };
 const INITIAL = 15728895;
 const VDPM_STATES = [0, BIT.dag, 1, BIT.dag + 1, BIT.dag + 35, INITIAL, INITIAL + BIT.dag, BIT.dag + BIT.quarantine, BIT.dag + BIT.emergency + 1, BIT.quarantine + BIT.emergency, 4279230464, 4294967295];
 const EFFECTS = ["network.outbound", "storage.write", "secret.access", "audit.write", "database.write", "ai.inference", "shell.execute", "native.call", "payment.charge", "pii.read", "phi.read", "phi.write", "unknown.effect", ""];
-const H = (s) => host.internString(s); // effect string -> interned i32 handle (the arg the WASM export takes)
+// effect string -> the handle the WASM's OWN string literals use = its getInternedStrings handle.
+// NOT host.internString(): that mints a FRESH runtime handle every call (the compiler interns
+// "network.outbound" at handle 1, but internString returns 15+, a handle the module never baked).
+// The Node test survives only because its __str_eq is value-based AND internString seeds the minted
+// handle's value; passing the compile-time handle instead makes the WASM's own identity/value compare
+// hit directly. An effect that is NOT a compile-time literal (e.g. "unknown.effect") gets a synthetic
+// handle beyond the literal range, seeded with its value, so __str_eq denies it — matching the WASM's
+// no-match -> 0 (deny-by-default). Fail-closed by construction.
+const handleOf = new Map(interned.map((e) => [e.value, e.handle]));
+const exportInterned = interned.slice();
+let synth = Math.max(...interned.map((e) => e.handle)) + 1000;
+const H = (s) => {
+  if (handleOf.has(s)) return handleOf.get(s);
+  const h = synth++;
+  handleOf.set(s, h);
+  exportInterned.push({ handle: h, value: s });
+  return h;
+};
 
 const points = [];
 for (const eff of EFFECTS) {
@@ -96,7 +113,7 @@ for (const vdpm of VDPM_STATES) {
 // ── write the fixture (deterministic — no timestamp, so a re-export is byte-stable) ──
 mkdirSync(OUT, { recursive: true });
 writeFileSync(join(OUT, "supervisor.wasm"), Buffer.from(asm.wasm));
-writeFileSync(join(OUT, "interned-strings.json"), JSON.stringify(interned, null, 2) + "\n");
+writeFileSync(join(OUT, "interned-strings.json"), JSON.stringify(exportInterned, null, 2) + "\n");
 const meta = { generated_by: "tools/export-differential-fixture.mjs", source: "dss-supervisor.fungi", wasm_bytes: asm.wasm.length, interned_strings: interned.length, points: points.length };
 writeFileSync(join(OUT, "matrix.json"), JSON.stringify({ meta, points }, null, 2) + "\n");
 
