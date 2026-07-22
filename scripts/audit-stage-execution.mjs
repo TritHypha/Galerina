@@ -143,7 +143,9 @@ contract { intent { "R2: does ${entry} run on one real input?" } }
   const { gir } = L.emitGIR(prog.ast, prog.flows, fx);
   const wat = L.renderWAT(L.buildWATModuleFromGIR(gir, undefined, "r2", prog.ast, true));
   const asm = await L.assembleWAT(wat);
-  if (!asm.valid) { out.r0 = "assemble-invalid"; out.r2 = "r0-failed"; return out; }
+  // #141 fail-closed: a wabt-rejected module returns the minimal-encoder STUB (valid:true PLUS a "NOT a
+  // faithful compile" diagnostic, #163). Consult .diagnostics, not just .valid, or the stub runs as "ok".
+  if (!asm.valid || asm.diagnostics.length > 0) { out.r0 = "assemble-invalid"; out.r2 = "r0-failed"; return out; }
   out.r0 = "ok";
 
   const host = L.createHostRuntime();
@@ -249,8 +251,10 @@ async function selfTest(L) {
     const { gir } = L.emitGIR(prog.ast, prog.flows, fx);
     const wat = L.renderWAT(L.buildWATModuleFromGIR(gir, undefined, "st", prog.ast, true));
     const asm = await L.assembleWAT(wat);
-    checks.push(["…and assembles (R0) — so the trap is at RUN time, not build time", asm.valid]);
-    if (asm.valid) {
+    // #141 fail-closed: reject the unfaithful stub (valid:true PLUS a diagnostic, #163) — consult .diagnostics.
+    const asmFaithful = asm.valid && asm.diagnostics.length === 0;
+    checks.push(["…and assembles (R0) — so the trap is at RUN time, not build time", asmFaithful]);
+    if (asmFaithful) {
       const host = L.createHostRuntime();
       let maxH = 0;
       for (const e of L.getInternedStrings()) { host.seedString(e.handle, e.value); if (e.handle > maxH) maxH = e.handle; }

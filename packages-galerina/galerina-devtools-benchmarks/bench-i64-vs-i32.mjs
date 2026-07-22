@@ -21,7 +21,8 @@ const fx = L.checkEffects(prog.flows, prog.ast);
 const { gir } = L.emitGIR(prog.ast, prog.flows, fx);
 const wat = L.renderWAT(L.buildWATModuleFromGIR(gir, undefined, "i64bench", prog.ast, true));
 const asm = await L.assembleWAT(wat);
-if (!asm.valid) { console.error("module did not assemble:", JSON.stringify(asm.diagnostics)); process.exit(2); }
+// #141: reject the unfaithful stub too (valid:true PLUS a "NOT a faithful compile" diagnostic, #163).
+if (!asm.valid || asm.diagnostics.length > 0) { console.error("module did not assemble (or unfaithful stub):", JSON.stringify(asm.diagnostics)); process.exit(2); }
 const kp = L.generateRunnerKeypair();
 const att = L.signWasm(asm.wasm, kp.privateKeyPem, "dev");
 const { instance } = await L.admitAndInstantiate({

@@ -106,6 +106,13 @@ async function classify(src, file) {
     if (!b.valid && b.wasm.length === 0 && asmDiag.length > 0) {
       return { k: "INVALID", why: "assembler A2 pre-check: " + asmDiag[0].message.slice(0, 120) };
     }
+    // #141: the STUB case — a wabt-rejected module returns the minimal-encoder stub with valid:true PLUS a
+    // "NOT a faithful compile" diagnostic (#163). It is >8 bytes and WebAssembly.validate()s, so without
+    // this it buckets as VALID — an unfaithful compile counted valid. Branch on b.valid AND b.diagnostics
+    // directly (not just size) before touching b.wasm.
+    if (!b.valid || (b.diagnostics ?? []).length > 0) {
+      return { k: "INVALID", why: "unfaithful assembly (valid but diagnostics): " + (b.diagnostics?.[0]?.message ?? "invalid").slice(0, 120) };
+    }
     u8 = b.wasm;
   } catch (e) { return { k: "INVALID", why: "assemble rejected: " + e.message.slice(0, 60) }; }
   // <= 8, not < 8 (R&D 2026-07-19): the bespoke assembler does NOT throw on unparseable WAT — it

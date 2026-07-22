@@ -94,7 +94,8 @@ async function runPhases() {
   const asm = await L.assembleWAT(wat);
   marks.push(["emit", performance.now()]);
   let firstCallNote = "";
-  if (asm.valid) {
+  // #141: reject the unfaithful stub (valid:true PLUS a diagnostic, #163) — timing a stub is a false benchmark.
+  if (asm.valid && asm.diagnostics.length === 0) {
     const kp = L.generateRunnerKeypair();
     const att = L.signWasm(asm.wasm, kp.privateKeyPem, "dev");
     const { instance } = await L.admitAndInstantiate({ wasm: asm.wasm, attestation: att, policy: { requireSigned: true, publicKeyPem: kp.publicKeyPem }, host: L.createHostRuntime() });

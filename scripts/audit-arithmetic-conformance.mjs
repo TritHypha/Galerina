@@ -177,6 +177,11 @@ async function runStageB(c) {
   const { gir } = L.emitGIR(p.ast, p.flows, fx);
   const wat = L.renderWAT(L.buildWATModuleFromGIR(gir, undefined, "a", p.ast, true));
   const b = await L.assembleWAT(wat);
+  // #141: reject the unfaithful STUB (valid:true PLUS a "NOT a faithful compile" diagnostic, #163) — a
+  // wabt-rejected module comes back as the minimal-encoder stub; counting it as conforming is fail-open.
+  if (b && typeof b === "object" && !(b instanceof Uint8Array) && (!b.valid || (b.diagnostics?.length ?? 0) > 0)) {
+    return { k: "INVALID-MODULE", why: "unfaithful assembly: " + (b.diagnostics?.[0]?.message ?? "invalid").slice(0, 80) };
+  }
   const u8 = b instanceof Uint8Array ? b : new Uint8Array(b?.bytes || b?.wasm || b);
   // `assembleWAT` returns an 8-byte EMPTY module for WAT it cannot parse, and that module
   // "validates". `<= 8`, never `< 8`.
