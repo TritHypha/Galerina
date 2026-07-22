@@ -41,6 +41,56 @@
       "evidencePack": "docs/security/rd0361-t1-r4-evidence-pack.md",
       "ownerNod": "2026-07-18 — '#143 R4 flip go for it'",
       "bake": "shadow-bake in progress (.ts retained as differential shadow; delete post-bake)"
+    },
+    {
+      "file": "memory-validator.fungi",
+      "dir": "packages-galerina/galerina-core-sentinel-memory/src/self-hosted",
+      "tranche": "T2",
+      "surface": "pointer-alignment gate (isAligned: ptr % align == 0)",
+      "sha256": "5cf14bbff6684be2775ff7c8fcea590bf4eaa94688c391ba48c0017c477c5239",
+      "evidencePack": "docs/security/rd0361-t2-r4-evidence-pack.md",
+      "ownerNod": "2026-07-22 — owner 'unlock R4 flip (#143) — GO!'; T2 Memory assembled + flipped by main under that authorization (pack a–e cleared)",
+      "bake": "shadow-bake in progress (.ts retained as differential shadow; delete post-bake)"
+    },
+    {
+      "file": "pool-allocation-guard.fungi",
+      "dir": "packages-galerina/galerina-core-sentinel-memory/src/self-hosted",
+      "tranche": "T2",
+      "surface": "pool-exhaustion admission (LSM-POOL-EXHAUSTED)",
+      "sha256": "81602fd15f014ca7407013aa5fcd2082ddb4cbeb59f02548a1b8a4eae1798421",
+      "evidencePack": "docs/security/rd0361-t2-r4-evidence-pack.md",
+      "ownerNod": "2026-07-22 — owner 'unlock R4 flip (#143) — GO!'; T2 Memory assembled + flipped by main under that authorization (pack a–e cleared)",
+      "bake": "shadow-bake in progress (.ts retained as differential shadow; delete post-bake)"
+    },
+    {
+      "file": "pool-policy.fungi",
+      "dir": "packages-galerina/galerina-core-sentinel-memory/src/self-hosted",
+      "tranche": "T2",
+      "surface": "pool block-size policy floor (blockBytes)",
+      "sha256": "cd04590cb072710113b546c054dbfecdf9083516dba11777b56e7083d4bd6b9b",
+      "evidencePack": "docs/security/rd0361-t2-r4-evidence-pack.md",
+      "ownerNod": "2026-07-22 — owner 'unlock R4 flip (#143) — GO!'; T2 Memory assembled + flipped by main under that authorization (pack a–e cleared)",
+      "bake": "shadow-bake in progress (.ts retained as differential shadow; delete post-bake)"
+    },
+    {
+      "file": "segmentation-guard.fungi",
+      "dir": "packages-galerina/galerina-core-sentinel-memory/src/self-hosted",
+      "tranche": "T2",
+      "surface": "cross-segment access guard (LSM-SEGV)",
+      "sha256": "b6ff083815a47d2621ff44755c113f20ca861b6bd8002afaabdeb577aecf584f",
+      "evidencePack": "docs/security/rd0361-t2-r4-evidence-pack.md",
+      "ownerNod": "2026-07-22 — owner 'unlock R4 flip (#143) — GO!'; T2 Memory assembled + flipped by main under that authorization (pack a–e cleared)",
+      "bake": "shadow-bake in progress (.ts retained as differential shadow; delete post-bake)"
+    },
+    {
+      "file": "trit-buffer-guard.fungi",
+      "dir": "packages-galerina/galerina-core-sentinel-memory/src/self-hosted",
+      "tranche": "T2",
+      "surface": "trit-buffer 2-bit-corruption sentinel (LSM-TRIT-CORRUPT)",
+      "sha256": "e4523d7cae6e3416c345b58af7b7aac894e47942729343abd216cd7514370dda",
+      "evidencePack": "docs/security/rd0361-t2-r4-evidence-pack.md",
+      "ownerNod": "2026-07-22 — owner 'unlock R4 flip (#143) — GO!'; T2 Memory assembled + flipped by main under that authorization (pack a–e cleared)",
+      "bake": "shadow-bake in progress (.ts retained as differential shadow; delete post-bake)"
     }
   ]
 }
