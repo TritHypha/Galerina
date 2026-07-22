@@ -8,7 +8,7 @@ This pack records the three I-1 evidence items — **(a)** R3 byte-parity, **(c)
 
 The RD-0361 kernel packs supported a flip because each sentinel twin already had an **execution-cutover differential** — a standing test asserting `WASM verdict === real .ts verdict` over a boundary corpus — so trusting the `.fungi` WASM was safe: any divergence from the `.ts` was already a RED alarm.
 
-The compiler stages have **no such `.ts`-equivalence oracle yet.** R3 byte-parity (item a) proves each stage is *internally* faithful — its WASM backend agrees with its interpreter, and both match hand-authored fixtures — but it does **not** prove the self-hosted stage produces the same output as the current `.ts` compiler. Establishing that equivalence **is** prerequisite I-3, and it is not built. Prerequisite I-2 (a pinned trusted stage0 `.fungi`→WASM compiler, so `.fungi` can compile `.fungi` with no `.ts` in the loop) is also not built. Both are HARD and **not pre-emptible** (RD-0528 §2; ledger `prerequisites`). Until both exist, no flip is askable — deny-by-default.
+The compiler stages have **no comprehensive, enforced `.fungi ≡ .ts`-equivalence oracle yet.** R3 byte-parity (item a) proves each stage is *internally* faithful — its WASM backend agrees with its interpreter, and both match hand-authored fixtures — but internal faithfulness does **not** prove the self-hosted stage produces the same output as the current `.ts` compiler. What exists toward that equivalence is narrow: only the **lexer** has an *enforced* `.ts`-differential (`tests/bootstrap-determinism/lexer-parity.test.mjs`, `PARITY_ACHIEVED = true` → hard-asserts token count / kind / value of the TS `lex()` against the self-hosted `tokenize`), and it covers a **single source line**, not a corpus; the **parser**'s bootstrap-parity harness exists but is **not enforced** (`PARITY_ACHIEVED = false`, informational); the other **five** stages have no `.ts`-differential at all. Building that equivalence out to a comprehensive, enforced corpus across all seven stages **is** prerequisite I-3. Prerequisite I-2 (a pinned trusted stage0 `.fungi`→WASM compiler, so `.fungi` compiles `.fungi` with no `.ts` in the loop) is also not built — `tests/bootstrap-determinism/canonical-hash.test.mjs` supplies part of its foundation (same-source → same-GIR-hash determinism), but the trusted-seed pin itself does not exist. Both prerequisites are HARD and **not pre-emptible** (RD-0528 §2; ledger `prerequisites`). Until both exist, no flip is askable — deny-by-default.
 
 ## The seven stages
 
@@ -34,7 +34,7 @@ Each stage, compiled through the P9 WASM backend, produces output byte-identical
 tests 512 · pass 512 · fail 0 · skipped 0 · todo 0
 ```
 
-Scope note: this is *internal* faithfulness (backend + fixtures), **not** `.fungi ≡ .ts`-compiler equivalence (that is I-3, open — see above).
+Scope note: this is *internal* faithfulness (backend + fixtures), **not** the comprehensive `.fungi ≡ .ts`-compiler equivalence a flip needs (that is I-3, only narrowly started — see above).
 
 ### (c) mutation-kill non-vacuity — ✅ 7 / 7
 
@@ -71,7 +71,7 @@ For each stage a deliberately-wrong **value** is planted into the `.fungi`; the 
 ## Open prerequisites before ANY flip (HARD, not pre-emptible)
 
 1. **I-2 bootstrap-seed** — pin a trusted stage0 `.fungi`→WASM compiler so `.fungi` compiles `.fungi` with no `.ts` in the trust path. **Not built.**
-2. **I-3 oracle-before-`.ts`-deletion** — the `.fungi ≡ .ts`-compiler equivalence oracle (the compiler analog of the kernel's execution-cutover differential), so a stage can be trusted over its `.ts` and the `.ts` retained one bake window before deletion. **Not built.**
+2. **I-3 oracle-before-`.ts`-deletion** — a comprehensive, enforced `.fungi ≡ .ts`-compiler equivalence oracle over a real corpus for all seven stages (the compiler analog of the kernel's execution-cutover differential), so a stage can be trusted over its `.ts` and the `.ts` retained one bake window before deletion. **Only narrowly started:** the lexer has an enforced single-line `.ts`-differential (`bootstrap-determinism/lexer-parity.test.mjs`); the parser's is informational (`PARITY_ACHIEVED = false`); the other five have none.
 3. **Per-stage owner nod (I-4)** — nod → ledger entry → shadow-bake window → post-bake `.ts` delete. Owner-gated, one stage at a time.
 
 The standing enforcement already exists: `scripts/audit-compiler-stage-twins.mjs` (wired into `run-phase-close.mjs`) reads the ledger and, fail-closed, RED-alarms any authoritative stage that regresses to shadow or fails `galerina check`. With `twins: []` it currently enforces that all seven stay check-clean and differential.
