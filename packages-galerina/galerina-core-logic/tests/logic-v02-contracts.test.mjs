@@ -16,6 +16,8 @@ import {
   triStateAnd,
   triStateOr,
   triStateNor,
+  triStateXnor,
+  triStateImplies,
   combineUnknownReasons,
   deduplicateUnknownReasons,
   FUNGI_TRI_001_INVALID_TRISTATE,
@@ -203,6 +205,43 @@ describe("@galerina/core-logic/tri — TriState v0.2", () => {
     assert.equal(triStateNor(TRI_STATE_FALSE, TRI_STATE_FALSE), TRI_STATE_TRUE);
     assert.equal(triStateNor(TRI_STATE_TRUE, TRI_STATE_FALSE), TRI_STATE_FALSE);
     assert.equal(triStateNor(TRI_STATE_TRUE, TRI_STATE_TRUE), TRI_STATE_FALSE);
+  });
+
+  it("triStateXnor (equivalence / biconditional) — full truth table + unknown propagation", () => {
+    const ua = triUnknown({ code: "UA", message: "ua" });
+    const ub = triUnknown({ code: "UB", message: "ub" });
+    // Equal definite operands → true; unequal → false. This is LOGICAL equivalence — distinct from the
+    // ARITHMETIC xorTrit/sumTrit in tpl-simulator (balanced-ternary SUM), which is a different operation.
+    assert.equal(triStateXnor(TRI_STATE_TRUE, TRI_STATE_TRUE), TRI_STATE_TRUE);
+    assert.equal(triStateXnor(TRI_STATE_FALSE, TRI_STATE_FALSE), TRI_STATE_TRUE);
+    assert.equal(triStateXnor(TRI_STATE_TRUE, TRI_STATE_FALSE), TRI_STATE_FALSE);
+    assert.equal(triStateXnor(TRI_STATE_FALSE, TRI_STATE_TRUE), TRI_STATE_FALSE);
+    // Symmetric.
+    assert.equal(
+      triStateXnor(TRI_STATE_TRUE, TRI_STATE_FALSE),
+      triStateXnor(TRI_STATE_FALSE, TRI_STATE_TRUE),
+    );
+    // unknown ∘ anything = unknown (reasons preserved / combined) — never a definite verdict.
+    assert.equal(triStateXnor(ua, TRI_STATE_TRUE).kind, "unknown");
+    assert.equal(triStateXnor(TRI_STATE_FALSE, ua).kind, "unknown");
+    const both = triStateXnor(ua, ub);
+    assert.equal(both.kind, "unknown");
+    assert.equal(both.reasons.length, 2);
+  });
+
+  it("triStateImplies (A→B ≡ ¬A ∨ B) — only T→F fails; false/unknown antecedent is vacuous/held", () => {
+    const ua = triUnknown({ code: "UA", message: "ua" });
+    // Definite truth table — the single failing case is a true antecedent with a false consequent.
+    assert.equal(triStateImplies(TRI_STATE_TRUE, TRI_STATE_TRUE), TRI_STATE_TRUE);
+    assert.equal(triStateImplies(TRI_STATE_TRUE, TRI_STATE_FALSE), TRI_STATE_FALSE);
+    assert.equal(triStateImplies(TRI_STATE_FALSE, TRI_STATE_TRUE), TRI_STATE_TRUE);
+    assert.equal(triStateImplies(TRI_STATE_FALSE, TRI_STATE_FALSE), TRI_STATE_TRUE); // vacuously true
+    // Kleene unknown behaviour: a true consequent OR a false antecedent DISCHARGES the obligation;
+    // otherwise it is held unknown (we cannot prove the obligation is met) — the fail-closed posture.
+    assert.equal(triStateImplies(ua, TRI_STATE_TRUE), TRI_STATE_TRUE, "true consequent discharges");
+    assert.equal(triStateImplies(TRI_STATE_FALSE, ua), TRI_STATE_TRUE, "false antecedent is vacuously true");
+    assert.equal(triStateImplies(ua, TRI_STATE_FALSE).kind, "unknown", "unknown antecedent + false consequent → held");
+    assert.equal(triStateImplies(TRI_STATE_TRUE, ua).kind, "unknown", "true antecedent + unknown consequent → held");
   });
 
   it("deduplicateUnknownReasons removes duplicate codes", () => {
