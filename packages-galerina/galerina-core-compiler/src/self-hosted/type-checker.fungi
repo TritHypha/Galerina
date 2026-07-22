@@ -3,7 +3,7 @@
 /// @purpose: Stage B type checker — real subset, executing
 /// @phase: 47
 /// @version: 2.2
-/// @status: functional subset — infers return-expression types and validates them; v2.2 adds static/bitfield/view/trap/step
+/// @status: functional subset — infers return-expression types and validates them; v2.2 adds static/bitfield/view/trap/step (R2 runs — #100 fixed)
 ///
 /// Expected flow-record shape (from the Stage B ParseResult):
 ///   { name: String, returnType: String,
@@ -363,7 +363,7 @@ contract { intent { "Return the diagnostics with the canonical Stage-A name + se
   return out
 }
 
-pure flow checkParams(flowName: String, params: Array<Auto>) -> Array<Auto>
+pure flow checkParams(flowName: String, params: Array<FlowParam>) -> Array<Auto>
 contract {
   intent { "FUNGI-TYPE-001: every parameter must name a known type." }
 }
@@ -390,7 +390,7 @@ contract {
 
 // ── Full type-check pass ──────────────────────────────────────
 
-pure flow checkFlows(flows: Array<Auto>) -> TypeCheckResult
+pure flow checkFlows(flows: Array<FlowDecl>) -> TypeCheckResult
 contract {
   intent { "Run Stage B type checks across all flows from the ParseResult." }
 }
@@ -485,19 +485,20 @@ contract {
 // and recurse into `if`/`while` bodies (each a child scope, seeing the outer scope) too.
 
 // Read the single initializer/condition expression off a statement, if present.
-pure flow firstExpr(stmt: Auto) -> Option<Auto>
+pure flow firstExpr(stmt: Stmt) -> Option<Expr>
 contract {
   intent { "Return Some(expr) for the statement's lone expr (RHS/condition), else None." }
 }
 {
-  if stmt.expr.count() > 0 {
-    return stmt.expr.get(0)
+  let stmtExpr: Array<Expr> = stmt.expr
+  if stmtExpr.count() > 0 {
+    return stmtExpr.get(0)
   }
   return None
 }
 
 // Check one statement, recursing into if/while bodies, returning its diagnostics.
-pure flow checkStmt(flowName: String, stmt: Auto, scope: Array<Auto>) -> Array<Auto>
+pure flow checkStmt(flowName: String, stmt: Stmt, scope: Array<Auto>) -> Array<Auto>
 contract {
   intent { "Type-check one body statement (let/mut binding + nested if/while); the initializer and nested blocks both see `scope` (params + prior bindings)." }
 }
@@ -512,17 +513,21 @@ contract {
     diags = appendAll(diags, checkBinding(flowName, stmt, scope))
   }
   if kind == "if" {
-    diags = appendAll(diags, checkStmtList(flowName, stmt.body, scope))
-    diags = appendAll(diags, checkStmtList(flowName, stmt.elseBody, scope))
+    let stmtBody: Array<Stmt> = stmt.body
+    let stmtElse: Array<Stmt> = stmt.elseBody
+    diags = appendAll(diags, checkStmtList(flowName, stmtBody, scope))
+    diags = appendAll(diags, checkStmtList(flowName, stmtElse, scope))
   }
   if kind == "while" {
-    diags = appendAll(diags, checkStmtList(flowName, stmt.body, scope))
+    let stmtBody: Array<Stmt> = stmt.body
+    diags = appendAll(diags, checkStmtList(flowName, stmtBody, scope))
   }
   if kind == "match" {
     // FUNGI-TYPE-022/023: check the match arm SET for a mandatory wildcard + arm reachability.
     diags = appendAll(diags, checkMatchArms(flowName, stmt.arms))
     // Each arm body is a child scope over the same visible `scope`; check nested statements too.
-    diags = appendAll(diags, checkStmtList(flowName, stmt.body, scope))
+    let stmtBody: Array<Stmt> = stmt.body
+    diags = appendAll(diags, checkStmtList(flowName, stmtBody, scope))
   }
   return diags
 }
@@ -804,7 +809,7 @@ contract {
 
 // Validate a let/mut binding: declared type, a literal initializer's type, and a name-reference
 // initializer against the visible `scope` (params + bindings declared before it).
-pure flow checkBinding(flowName: String, stmt: Auto, scope: Array<Auto>) -> Array<Auto>
+pure flow checkBinding(flowName: String, stmt: Stmt, scope: Array<Auto>) -> Array<Auto>
 contract {
   intent { "FUNGI-TYPE-001/002/019 for a let/mut binding: unknown declared type, literal-type mismatch, or a name initializer referencing an undeclared symbol." }
 }
@@ -927,7 +932,7 @@ contract {
 }
 
 // Extract just the parameter NAMES from a flow's params array (seeds the body's initial scope).
-pure flow paramNames(params: Array<Auto>) -> Array<Auto>
+pure flow paramNames(params: Array<FlowParam>) -> Array<Auto>
 contract {
   intent { "Return the list of parameter names declared by a flow (the body's initial in-scope symbols)." }
 }
@@ -989,7 +994,7 @@ contract {
 // Emits FUNGI-NAME-002 for a duplicate binding name within THIS scope (matching Stage A's
 // same-scope DuplicateName). A nested if/while body is a child scope (its own checkStmtList
 // call with a fresh `seen`), so re-declaring a name in a nested block is NOT a duplicate here.
-pure flow checkStmtList(flowName: String, stmts: Array<Auto>, outerScope: Array<Auto>) -> Array<Auto>
+pure flow checkStmtList(flowName: String, stmts: Array<Stmt>, outerScope: Array<Auto>) -> Array<Auto>
 contract {
   intent { "Walk a block scope: flag a duplicate binding (FUNGI-NAME-002) and a binding that shadows an outer scope (FUNGI-TYPE-020)." }
 }
@@ -1031,16 +1036,17 @@ contract {
 // Collect every callee NAME referenced by an expression tree (a `call` expr's `value`, plus any
 // calls nested in its arguments). Flat by design — Stage-A's 014 is a flow-name lookup, not scope
 // resolution (the twin has no symbol table; see why 019 was removed).
-pure flow collectCallsInExpr(e: Auto) -> Array<Auto>
+pure flow collectCallsInExpr(e: Expr) -> Array<Auto>
 contract { intent { "Every callee name in an expression tree (the call itself and calls nested in its arguments)." } }
 {
   mut names: Array<Auto> = Array.empty()
   if e.kind == "call" {
     names = names.append(e.value)
   }
+  let eChildren: Array<Expr> = e.children
   mut i: Int = 0
-  while i < e.children.count() {
-    let cOpt = e.children.get(i)
+  while i < eChildren.count() {
+    let cOpt = eChildren.get(i)
     match cOpt {
       Some(c) => { names = appendAll(names, collectCallsInExpr(c)) }
       None => {}
@@ -1054,7 +1060,7 @@ contract { intent { "Every callee name in an expression tree (the call itself an
 // Collect every callee name called anywhere in a statement body: from each statement's initializer /
 // return / call expression, and recursively from nested if/while/match block bodies. The body-block
 // recursion is kind-gated exactly like checkStmt, so `body`/`elseBody` are only read where they exist.
-pure flow collectCallNames(stmts: Array<Auto>) -> Array<Auto>
+pure flow collectCallNames(stmts: Array<Stmt>) -> Array<Auto>
 contract { intent { "Every callee name invoked in a statement body, descending into nested block bodies." } }
 {
   mut names: Array<Auto> = Array.empty()
@@ -1063,9 +1069,10 @@ contract { intent { "Every callee name invoked in a statement body, descending i
     let sOpt = stmts.get(i)
     match sOpt {
       Some(s) => {
+        let sExpr: Array<Expr> = s.expr
         mut j: Int = 0
-        while j < s.expr.count() {
-          let eOpt = s.expr.get(j)
+        while j < sExpr.count() {
+          let eOpt = sExpr.get(j)
           match eOpt {
             Some(e) => { names = appendAll(names, collectCallsInExpr(e)) }
             None => {}
@@ -1074,14 +1081,18 @@ contract { intent { "Every callee name invoked in a statement body, descending i
           j = j + 1
         }
         if s.kind == "if" {
-          names = appendAll(names, collectCallNames(s.body))
-          names = appendAll(names, collectCallNames(s.elseBody))
+          let sBody: Array<Stmt> = s.body
+          let sElse: Array<Stmt> = s.elseBody
+          names = appendAll(names, collectCallNames(sBody))
+          names = appendAll(names, collectCallNames(sElse))
         }
         if s.kind == "while" {
-          names = appendAll(names, collectCallNames(s.body))
+          let sBody: Array<Stmt> = s.body
+          names = appendAll(names, collectCallNames(sBody))
         }
         if s.kind == "match" {
-          names = appendAll(names, collectCallNames(s.body))
+          let sBody: Array<Stmt> = s.body
+          names = appendAll(names, collectCallNames(sBody))
         }
       }
       None => {}
@@ -1094,7 +1105,7 @@ contract { intent { "Every callee name invoked in a statement body, descending i
 
 // The declared effect set of the flow named `name`, or empty when it is not found / declares none.
 // A flat flow-name lookup (Stage-A's `flowDeclaredEffects` map), NOT scope resolution.
-pure flow effectsForFlow(flows: Array<Auto>, name: String) -> Array<Auto>
+pure flow effectsForFlow(flows: Array<FlowDecl>, name: String) -> Array<Auto>
 contract { intent { "The declared effects of the flow with this name (empty if unknown or effect-free)." } }
 {
   mut i: Int = 0
@@ -1118,7 +1129,7 @@ contract { intent { "The declared effects of the flow with this name (empty if u
 // effect INFERENCE (a flow that USES an undeclared effect is FUNGI-EFFECT-001, the effect-checker's
 // job, not 014). Verified vs raw diagnostics: caller `effects {}` calling `writer effects
 // { network.outbound }` -> 014; caller declaring the effect -> clean. (Tranche B, RD-0412 §4.)
-pure flow checkCallEffects(flowName: String, fd: Auto, flows: Array<Auto>) -> Array<Auto>
+pure flow checkCallEffects(flowName: String, fd: FlowDecl, flows: Array<FlowDecl>) -> Array<Auto>
 contract { intent { "FUNGI-TYPE-014: a call whose callee declares an effect the current flow does not declare." } }
 {
   mut diags: Array<Auto> = Array.empty()
@@ -1157,7 +1168,7 @@ contract { intent { "FUNGI-TYPE-014: a call whose callee declares an effect the 
 // Collect every binding NAME declared (or, for kind "assign", targeted) by a statement of the given
 // kind in a body, descending into nested block bodies (kind-gated like checkStmt, so body/elseBody are
 // only read where they exist). Used by the FUNGI-BINDING-005 reassignment check.
-pure flow collectNamesByKind(stmts: Array<Auto>, kind: String) -> Array<Auto>
+pure flow collectNamesByKind(stmts: Array<Stmt>, kind: String) -> Array<Auto>
 contract { intent { "Every statement.name for statements of the given kind, recursing into block bodies." } }
 {
   mut names: Array<Auto> = Array.empty()
@@ -1170,14 +1181,18 @@ contract { intent { "Every statement.name for statements of the given kind, recu
           names = names.append(s.name)
         }
         if s.kind == "if" {
-          names = appendAll(names, collectNamesByKind(s.body, kind))
-          names = appendAll(names, collectNamesByKind(s.elseBody, kind))
+          let sBody: Array<Stmt> = s.body
+          let sElse: Array<Stmt> = s.elseBody
+          names = appendAll(names, collectNamesByKind(sBody, kind))
+          names = appendAll(names, collectNamesByKind(sElse, kind))
         }
         if s.kind == "while" {
-          names = appendAll(names, collectNamesByKind(s.body, kind))
+          let sBody: Array<Stmt> = s.body
+          names = appendAll(names, collectNamesByKind(sBody, kind))
         }
         if s.kind == "match" {
-          names = appendAll(names, collectNamesByKind(s.body, kind))
+          let sBody: Array<Stmt> = s.body
+          names = appendAll(names, collectNamesByKind(sBody, kind))
         }
       }
       None => {}
@@ -1196,7 +1211,7 @@ contract { intent { "Every statement.name for statements of the given kind, recu
 // name that is ever `mut` is conservatively left alone (an under-report on shadowing, never a false
 // positive; scope-aware mutability is the honest follow-up). `readonly` is not in the twin's model — a
 // documented gap. Verified vs raw diagnostics: `let x = 1; x = 2` -> 005; `mut y; y = 2` -> clean.
-pure flow checkImmutableReassign(flowName: String, body: Array<Auto>) -> Array<Auto>
+pure flow checkImmutableReassign(flowName: String, body: Array<Stmt>) -> Array<Auto>
 contract { intent { "FUNGI-BINDING-005: an assignment whose target was declared immutable (let, never mut)." } }
 {
   mut diags: Array<Auto> = Array.empty()
@@ -1224,7 +1239,7 @@ contract { intent { "FUNGI-BINDING-005: an assignment whose target was declared 
 }
 
 // Walk every flow's full statement body, emitting binding diagnostics + the cross-flow effect check.
-pure flow checkFlowBodies(flows: Array<Auto>) -> TypeCheckResult
+pure flow checkFlowBodies(flows: Array<FlowDecl>) -> TypeCheckResult
 contract {
   intent { "Stage B body-level type checks: validate each flow's statement body AST." }
 }

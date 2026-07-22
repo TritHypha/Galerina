@@ -3,7 +3,7 @@
 /// @purpose: Stage B governance verifier — real subset, executing
 /// @phase: 67
 /// @version: 2.2
-/// @status: functional subset — validates governance contracts for flows; v2.2 adds guard/hierarchy/emergency/trap/step/mutation
+/// @status: functional subset — validates governance contracts for flows; v2.2 adds guard/hierarchy/emergency/trap/step/mutation (R2 runs — #100 fixed)
 ///
 /// Expected flow-record shape (from the Stage B ParseResult):
 ///   { name: String, kind: String, effects: Array<String>,
@@ -112,7 +112,7 @@ contract {
 
 // ── Full governance verification pass ─────────────────────────
 
-pure flow verifyGovernance(flows: Array<Auto>) -> GovResult
+pure flow verifyGovernance(flows: Array<FlowDecl>) -> GovResult
 contract {
   intent { "Run all governance checks across flows from the Stage B ParseResult." }
 }
@@ -172,7 +172,7 @@ contract {
 // if/while `body`, and Expr `children` (call args, binary operands).
 
 // True if ANY call Expr reachable from `e` calls "auditWrite".
-pure flow exprCallsAudit(e: Array<Auto>) -> Bool
+pure flow exprCallsAudit(e: Array<Expr>) -> Bool
 contract {
   intent { "Return true when the expression (0/1-element array) contains an auditWrite call." }
 }
@@ -186,9 +186,10 @@ contract {
           if x.value == "auditWrite" { return true }
         }
         // Recurse into children (call args / binary operands).
+        let kids: Array<Expr> = x.children
         mut j: Int = 0
-        while j < x.children.count() {
-          let cOpt = x.children.get(j)
+        while j < kids.count() {
+          let cOpt = kids.get(j)
           match cOpt {
             Some(c) => {
               if exprCallsAudit(Array.empty().append(c)) { return true }
@@ -208,7 +209,7 @@ contract {
 }
 
 // True if ANY call Expr in the statement list calls "auditWrite".
-pure flow flowCallsAudit(stmts: Array<Auto>) -> Bool
+pure flow flowCallsAudit(stmts: Array<Stmt>) -> Bool
 contract {
   intent { "Recursively detect whether the flow body performs an auditWrite call." }
 }
@@ -219,11 +220,14 @@ contract {
     match sOpt {
       Some(s) => {
         // Statement-level expression (let/return/exprStmt/condition).
-        if exprCallsAudit(s.expr) { return true }
+        let sExpr: Array<Expr> = s.expr
+        if exprCallsAudit(sExpr) { return true }
         // Nested if/while block.
-        if flowCallsAudit(s.body) { return true }
+        let sBody: Array<Stmt> = s.body
+        if flowCallsAudit(sBody) { return true }
         // Else block of an if.
-        if flowCallsAudit(s.elseBody) { return true }
+        let sElse: Array<Stmt> = s.elseBody
+        if flowCallsAudit(sElse) { return true }
       }
       None => {}
       _ => {}
@@ -288,7 +292,7 @@ contract {
   return false
 }
 
-pure flow verifyDomainGuardConformance(flows: Array<Auto>, policies: Array<Auto>) -> GovResult
+pure flow verifyDomainGuardConformance(flows: Array<FlowDecl>, policies: Array<Auto>) -> GovResult
 contract {
   intent { "FUNGI-GOV-004: verify declared effects ⊆ permitted_effects for each [conforms_to: X] contract." }
 }
@@ -344,7 +348,7 @@ contract {
 
 // ── Body-governance verification pass ─────────────────────────
 
-pure flow checkBodyGovernance(flows: Array<Auto>) -> GovResult
+pure flow checkBodyGovernance(flows: Array<FlowDecl>) -> GovResult
 contract {
   intent { "A secure flow must perform an audit call in its body (FUNGI-VAL-001)." }
 }

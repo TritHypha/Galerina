@@ -80,6 +80,9 @@ record FlowDecl {
   conformsTo: String        // domain guard policy name from contract [conforms_to: X]; "" if not bound
   body: Array<Stmt>
   returnExpr: ReturnExpr
+  classification: String    // "safety_critical" | "standard" | ""; parsed from contract annotations
+  deterministic: Bool       // true when the flow declares deterministic_execution in its contract
+  usedEffects: Array<String> // effects decomposed from the body by the parser; empty when not computed
 }
 
 // A domain guard policy declaration:
@@ -1824,7 +1827,10 @@ contract {
           effects: efx,
           conformsTo: ctConformsTo,
           body: bodyStmts,
-          returnExpr: returnExpr
+          returnExpr: returnExpr,
+          classification: "",
+          deterministic: false,
+          usedEffects: Array.empty()
         })
         pos = p
       }

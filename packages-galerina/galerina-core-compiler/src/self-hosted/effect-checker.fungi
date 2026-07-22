@@ -2,7 +2,7 @@
 /// @file: effect-checker.fungi
 /// @purpose: Stage B effect checker — declared-vs-used reconciliation (Phase S2)
 /// @phase: 66
-/// @status: declared-vs-used effect reconciliation subset, executing tests
+/// @status: declared-vs-used effect reconciliation subset, executing (R2 runs — #100 fixed)
 
 // ============================================================
 // Galerina Self-Hosted Effect Checker — Phase 66 / Axis-B S2
@@ -414,7 +414,7 @@ contract {
 }
 
 // Collect effects from a single Expr, recursing into children.
-pure flow collectCallEffectsExpr(expr: Auto) -> Array<Auto>
+pure flow collectCallEffectsExpr(expr: Expr) -> Array<Auto>
 contract {
   intent { "Walk an Expr: a call contributes effectOfCall(value); recurse into children for binary/call." }
 }
@@ -427,7 +427,7 @@ contract {
       out = out.append(eff)
     }
   }
-  let children: Array<Auto> = expr.children
+  let children: Array<Expr> = expr.children
   mut i: Int = 0
   while i < children.count() {
     let cOpt = children.get(i)
@@ -454,7 +454,7 @@ contract {
 }
 
 // Collect effects from a list of statements, recursing into nested blocks.
-pure flow collectBodyEffects(stmts: Array<Auto>) -> Array<Auto>
+pure flow collectBodyEffects(stmts: Array<Stmt>) -> Array<Auto>
 contract {
   intent { "Walk a statement list: each stmt's expr(s) and nested if/while bodies contribute call effects." }
 }
@@ -466,7 +466,7 @@ contract {
     match sOpt {
       Some(stmt) => {
         // Expressions carried directly by this statement (RHS / return / condition).
-        let exprs: Array<Auto> = stmt.expr
+        let exprs: Array<Expr> = stmt.expr
         mut e: Int = 0
         while e < exprs.count() {
           let exOpt = exprs.get(e)
@@ -490,7 +490,7 @@ contract {
           e = e + 1
         }
         // Nested block (if/while body) — recurse.
-        let nested: Array<Auto> = stmt.body
+        let nested: Array<Stmt> = stmt.body
         let nestedEffs: Array<Auto> = collectBodyEffects(nested)
         mut n: Int = 0
         while n < nestedEffs.count() {
@@ -503,7 +503,7 @@ contract {
           n = n + 1
         }
         // Else block (if elseBody) — recurse.
-        let elseNested: Array<Auto> = stmt.elseBody
+        let elseNested: Array<Stmt> = stmt.elseBody
         let elseEffs: Array<Auto> = collectBodyEffects(elseNested)
         mut m: Int = 0
         while m < elseEffs.count() {
@@ -532,7 +532,7 @@ contract {
 // not declared on the caller.
 
 // Every callee NAME in an Expr tree (a `call` Expr contributes its callee `value`; recurse children).
-pure flow collectCallNamesExpr(expr: Auto) -> Array<Auto>
+pure flow collectCallNamesExpr(expr: Expr) -> Array<Auto>
 contract { intent { "Collect every called name in an Expr (call value + recursion into children)." } }
 {
   mut out: Array<Auto> = Array.empty()
@@ -540,7 +540,7 @@ contract { intent { "Collect every called name in an Expr (call value + recursio
   if kind == "call" {
     out = out.append(expr.value)
   }
-  let children: Array<Auto> = expr.children
+  let children: Array<Expr> = expr.children
   mut i: Int = 0
   while i < children.count() {
     let cOpt = children.get(i)
@@ -567,7 +567,7 @@ contract { intent { "Collect every called name in an Expr (call value + recursio
 }
 
 // Every callee name in a statement list (stmt exprs + nested if/while/else bodies).
-pure flow collectCallNamesStmts(stmts: Array<Auto>) -> Array<Auto>
+pure flow collectCallNamesStmts(stmts: Array<Stmt>) -> Array<Auto>
 contract { intent { "Walk a statement list collecting every called name (exprs + nested bodies)." } }
 {
   mut out: Array<Auto> = Array.empty()
@@ -576,7 +576,7 @@ contract { intent { "Walk a statement list collecting every called name (exprs +
     let sOpt = stmts.get(i)
     match sOpt {
       Some(stmt) => {
-        let exprs: Array<Auto> = stmt.expr
+        let exprs: Array<Expr> = stmt.expr
         mut e: Int = 0
         while e < exprs.count() {
           let exOpt = exprs.get(e)
@@ -599,7 +599,7 @@ contract { intent { "Walk a statement list collecting every called name (exprs +
           }
           e = e + 1
         }
-        let nested: Array<Auto> = stmt.body
+        let nested: Array<Stmt> = stmt.body
         let nestedNames: Array<Auto> = collectCallNamesStmts(nested)
         mut n: Int = 0
         while n < nestedNames.count() {
@@ -611,7 +611,7 @@ contract { intent { "Walk a statement list collecting every called name (exprs +
           }
           n = n + 1
         }
-        let elseNested: Array<Auto> = stmt.elseBody
+        let elseNested: Array<Stmt> = stmt.elseBody
         let elseNames: Array<Auto> = collectCallNamesStmts(elseNested)
         mut m: Int = 0
         while m < elseNames.count() {
@@ -633,7 +633,7 @@ contract { intent { "Walk a statement list collecting every called name (exprs +
 }
 
 // The declared effects of the flow named `name` (empty if not found).
-pure flow declaredEffectsOfFlow(flows: Array<Auto>, name: String) -> Array<Auto>
+pure flow declaredEffectsOfFlow(flows: Array<FlowDecl>, name: String) -> Array<Auto>
 contract { intent { "Return the declared effects of the flow with this name, else empty." } }
 {
   mut out: Array<Auto> = Array.empty()
@@ -655,7 +655,7 @@ contract { intent { "Return the declared effects of the flow with this name, els
 }
 
 // The callee names in the body of the flow named `name` (empty if not found).
-pure flow flowCallNames(flows: Array<Auto>, name: String) -> Array<Auto>
+pure flow flowCallNames(flows: Array<FlowDecl>, name: String) -> Array<Auto>
 contract { intent { "Return the callee names in the body of the flow with this name, else empty." } }
 {
   mut out: Array<Auto> = Array.empty()
@@ -700,7 +700,7 @@ contract { intent { "True when some record in recs has .effect == effect." } }
 
 // Effects required TRANSITIVELY by `name`: every transitively-called flow's DECLARED effects, as
 // {effect, introducer} records (first introducer kept). `seen` is the path guard against cycles.
-pure flow collectTransitiveEffects(flows: Array<Auto>, name: String, seen: Array<Auto>) -> Array<Auto>
+pure flow collectTransitiveEffects(flows: Array<FlowDecl>, name: String, seen: Array<Auto>) -> Array<Auto>
 contract { intent { "Records {effect, introducer} for every effect a transitively-called flow declares." } }
 {
   mut out: Array<Auto> = Array.empty()
@@ -753,7 +753,7 @@ contract { intent { "Records {effect, introducer} for every effect a transitivel
 }
 
 // Derive used effects from the body AST, then reconcile against declared.
-pure flow checkBodyEffects(flows: Array<Auto>) -> EffectCheckResult
+pure flow checkBodyEffects(flows: Array<FlowDecl>) -> EffectCheckResult
 contract {
   intent { "Derive each flow's used effects from its body AST and reconcile against declared effects." }
 }

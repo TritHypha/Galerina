@@ -48,11 +48,11 @@ const TESTS = join(ROOT, "packages-galerina/galerina-core-compiler/tests");
 const STAGES = [
   { file: "parser.fungi", entry: "parseFlows", expect: "runs",
     body: "let p = parseFlows(toks) return p.flows.count()" },
-  { file: "type-checker.fungi", entry: "checkFlows", expect: "traps", debt: "#100",
+  { file: "type-checker.fungi", entry: "checkFlows", expect: "runs",
     body: "let p = parseFlows(toks) let r = checkFlows(p.flows) return r.flowCount" },
-  { file: "effect-checker.fungi", entry: "checkFlowEffects", expect: "traps", debt: "#100",
-    body: "let p = parseFlows(toks) let r = checkFlowEffects(p.flows) return r.flowCount" },
-  { file: "governance-verifier.fungi", entry: "verifyGovernance", expect: "traps", debt: "#100",
+  { file: "effect-checker.fungi", entry: "checkBodyEffects", expect: "runs",
+    body: "let p = parseFlows(toks) let r = checkBodyEffects(p.flows) return r.flowCount" },
+  { file: "governance-verifier.fungi", entry: "verifyGovernance", expect: "runs",
     body: "let p = parseFlows(toks) let r = verifyGovernance(p.flows) return r.passed + r.failed" },
   // gir-emitter's ON-chain entry is emitGIRModule(flows: Array<Auto>). It read fd.name/fd.returnExpr off the
   // erased Auto payload — the identical #100 shape as the three above. FIXED 2026-07-19 (P9 brick-2, Option Y —
@@ -65,10 +65,11 @@ const STAGES = [
     body: "let p = parseFlows(toks) let g = emitGIRModule(p.flows) return g.pureCount" },
 ];
 // Shrink-only. Raise it and you are declaring a new stage broken; that needs a human sentence, not a bump.
-// 3: gir-emitter's #100 debt was PAID 2026-07-19 (its `flows` param concretized to Array<FlowDecl> — it RUNS and
-// is R3 byte-parity green), so the sweep drops 4→3, leaving the three remaining trappers (type-checker,
-// effect-checker, governance-verifier). Lowered because a debt was retired, never raised.
-const TRAP_BASELINE = 3;
+// 3→0: type-checker, effect-checker, governance-verifier #100 debt PAID 2026-07-22 (Phase 2 DSS.wasm path):
+// Array<Auto>→Array<FlowDecl>/Array<Stmt>/Array<Expr> concretization in all three stage twins; FlowDecl
+// extended with classification/deterministic/usedEffects fields so all field accesses resolve at WAT lowering.
+// All 5 swept stages now RUN on one real input (R2 green across the board). Baseline drops 3→0.
+const TRAP_BASELINE = 0;
 
 // ★ NOT SWEPT — declared, never silently omitted. A gate that quietly covers 4 of 7 while its green says
 // nothing is the surface problem this whole file is about.
