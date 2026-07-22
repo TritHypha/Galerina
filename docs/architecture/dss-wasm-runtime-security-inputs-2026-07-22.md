@@ -55,6 +55,21 @@ practices land on the `#102` embedder spec, not on any shipped code today.
 5. **Embedder-dependency vetting.** If `#102` binds a real Wasmtime embedder (a Rust/native dependency),
    that dependency itself enters the SBOM/vet scope — the cargo-vet lesson applied to our own supply chain.
 
+## Verified embedder-config pins (2026-07-22)
+
+Verified at source against the Wasmtime `Store` docs (docs.rs) and the wasmex CHANGELOG — the pins the `#102`
+embedder must adopt, extending the attestation-profile config set (requirement 2). This corrects **DRCM
+Decision 4 / addendum U3**:
+
+- **Fuel API.** `wasmtime::Store::add_fuel` **no longer exists**. The current API is `Store::set_fuel(u64)` /
+  `Store::get_fuel() -> u64`, enabled via `Config::consume_fuel(true)`. **A Store starts with 0 fuel and traps
+  immediately** unless `set_fuel` is called — a fail-closed default to adopt *explicitly*: a DWI isolate
+  receives fuel ONLY via `policy::calculateStepFuelLimit → set_fuel`, never a permissive/ambient grant.
+  Component-model guest→host calls meter via `set_hostcall_fuel`. The rewrite landed upstream mid-2024 (tracked
+  in wasmex `v0.9.0`, 2024-07-25). ⚠ **Re-pin the exact API against the chosen Wasmtime version at `#102` build
+  time** — which version, and whether the embedder is Rust-native, a Node binding, or the `wasmtime` CLI, is the
+  open embedder-dependency decision (requirement 5) that gates the build.
+
 ## Not actionable now
 
 Every item above is gated behind Phase 4 (R4 flip `#143`, owner-gated) → Phase 5 (`#102–106` build,
