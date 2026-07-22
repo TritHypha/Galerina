@@ -163,6 +163,12 @@ export interface Observer {
   readonly onViolation?: (reason: string, wasm: Uint8Array) => void;
   /** A WASM trap (e.g. `unreachable`) — receives a snapshot of linear memory. */
   readonly onTrap?: (err: unknown, memory: Uint8Array | null) => void;
+  /**
+   * A line emitted by the module through the `print`/`println` I/O stdlib. When set, output is
+   * captured HERE — the governed, auditable sink a DSS supervisor wires up — instead of hitting the
+   * ambient console. Absent → dev fallback to `console.log`. Observation only; never affects control.
+   */
+  readonly onOutput?: (line: string) => void;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -182,6 +188,8 @@ export interface HostRuntime {
   readArray(handle: number): readonly number[] | undefined;
   /** Resolve a Result handle (from `__result_ok`/`__result_err`) to its tag + value. */
   readResult(handle: number): { tag: "ok" | "err"; value: number } | undefined;
+  /** Resolve a Money handle (from a `__money_*` currency constructor) to its currency + amount. */
+  readMoney(handle: number): { currency: string; amountStr: string } | undefined;
   /** Bind the instance's exported memory after instantiation (for record reads). */
   bindMemory(memory: WebAssembly.Memory): void;
   /** Read field `slot` (0-based i32 slots) of a record at linear-memory `ptr`. */
@@ -240,8 +248,13 @@ export function createHostRuntime(
   // WAT_HEAP_BASE the emitter allocates from. Monotone for this host's lifetime — a fresh host per
   // scenario resets it, and it never overlaps a heap-free consuming flow (which makes no allocations).
   let recordBump = WAT_HEAP_BASE;
-  // I/O sink — routes print/println output through the observer's capture or console.log (dev only).
-  const outputSink: (s: string) => void = (s) => { console.log(s); };
+  // I/O sink — print/println route through the observer's capture when one is wired (the governed,
+  // auditable path a DSS supervisor supplies); otherwise dev fallback to console.log. With an observer
+  // present nothing hits the ambient console — a supervisor/test sees exactly what the module emitted.
+  const outputSink: (s: string) => void = (s) => {
+    if (observe?.onOutput) observe.onOutput(s);
+    else console.log(s);
+  };
 
   const tap = (name: string, args: number[], ret: number | undefined): number | undefined => {
     observe?.onHostCall?.(name, args, ret);
@@ -413,6 +426,7 @@ export function createHostRuntime(
     readString(handle: number) { return strings[handle]; },
     readArray(handle: number) { return arrays[handle]; },
     readResult(handle: number) { return results[handle]; },
+    readMoney(handle: number) { return moneys[handle]; },
     bindMemory(m: WebAssembly.Memory) { memory = m; },
     readRecordField(ptr: number, slot: number): number {
       if (memory === null) throw new Error("readRecordField before bindMemory");
