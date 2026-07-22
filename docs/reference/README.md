@@ -34,6 +34,14 @@ here is **source-verified**: each documents a vocabulary that resolves to a real
   actually costs (flow calls today, loops as algorithm, host crossings). *Structure is free; safety text is
   free; declare the contraction.*
 
+## The runtime error contract
+
+- **[dss-wasm-runtime-errors.md](dss-wasm-runtime-errors.md)** — the stable `FUNGI-*` error codes a program
+  hits at the WASM/wasmtime boundary (traps, fuel, admission `CRITICAL_SECURITY_VIOLATION`), and the rule that
+  the DSS.wasm sidecar translates every raw engine error into one of them — so a `.fungi` program's error
+  handling survives an engine upgrade (the `add_fuel`→`set_fuel` lesson). Compile-time + admission codes are
+  live; the runtime trap-classification lands with DSS.wasm (`#102`).
+
 ## How to trust these pages
 
 Each page ends with a **provenance line** naming the source file(s) it was verified against. A mechanical
