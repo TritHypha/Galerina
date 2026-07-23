@@ -100,6 +100,8 @@ contract {
   * `readonly request: Request` — the caller's value is a read-only view; the flow may not mutate it.
   * `tainted data: RawPayload` — marks the parameter as untrusted so the taint/governed-sink checks
     fire on it (see [05 — Bindings, taint & privacy](05-bindings-taint-privacy.md)).
+  * **Full parameter reference: [Parameters](parameters.md)** — type options, `readonly`/`tainted`,
+    governed-type parameters, and what is not supported yet.
 * An optional `decreases <metric>` termination annotation may follow the return type on the same line
   (`parser.ts:631-669`), e.g. `pure flow countdown(n: Int) -> Int decreases n { ... }`. It tells the
   compiler which quantity strictly decreases so a bounded loop provably terminates. Optional; omit

@@ -91,7 +91,8 @@ shows the **common mistake(s)**, and points at a **real example file** you can o
 
 1. **[Mental model & your first flow](01-flows-and-functions.md)** — `flow`, the three qualifiers
    `secure`/`guarded`/`pure`, `fn` helpers, `governed <floor> flow`, `route`, signatures, `uses`,
-   the flow-comment rule. *Start here.*
+   the flow-comment rule. *Start here.* Companion: the **[parameter reference](parameters.md)**
+   (`readonly`/`tainted`, type options, governed-type params).
 2. **[Contracts](02-contracts.md)** — the anonymous `contract { ... }` block, its real sub-clauses
    (`intent`, `effects`, `events`, `audit`, `privacy`, `invariant`, `limits`, `types`, `request`,
    `response`, ...), and what each one is for. Resolves the named-vs-anonymous drift.
