@@ -27,7 +27,7 @@ Each parameter is:
   `request` (not `req`) — see the mistakes table.
 * **`: Type`** — the type is mandatory. There is no untyped parameter form. `Type` is any type
   reference the type language accepts (below).
-* **`readonly`** and **`tainted`** — optional governance qualifiers, in that order, before the name.
+* **`readonly`** and **`tainted`** — optional governance qualifiers, in any order, before the name.
 
 The parser reads parameters left to right, tracking `<>` depth in its error recovery so a comma inside
 a generic type (`Result<A, B>`) does **not** end the parameter early (`parser.ts:1063-1073`).
@@ -52,7 +52,7 @@ contract { intent "Check age is within acceptable range" effects {} }
 }
 ```
 
-From `examples/foundations/comment-styles-example.fungi:28` — two primitives:
+From `examples/foundations/comment-styles-example.fungi:45` — two primitives:
 
 ```fungi
 governed floor_3 flow validatePaymentAmount(amount: Int, currency: String) -> Bool
