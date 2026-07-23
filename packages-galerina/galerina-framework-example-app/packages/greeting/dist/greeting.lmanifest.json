@@ -3,11 +3,12 @@
   "sourceHash": "sha256:1ddc23cf9d736a8ffbc608a137064a18fd7c7b7f8567588085c412d5c609ac62",
   "sourceFile": "packages-galerina/galerina-framework-example-app/packages/greeting/src/index.fungi",
   "flowCount": 1,
+  "compilerVersion": "1.0.0-beta.2",
   "policyResolutionDag": {
     "allowedEffects": 0,
     "deniedEffects": 0,
     "conflictsResolved": 0,
-    "resolvedAt": "2026-07-09T07:50:51.201Z"
+    "resolvedAt": "2026-07-23T07:25:52.978Z"
   },
   "behavioralFingerprint": "sha256:0b634eb7be2a1ad02da52d8c56c79c045598d675521a54ac821b5e023c7c7667",
   "derivedConstraints": [
@@ -21,13 +22,13 @@
       "verified": "static"
     }
   ],
-  "generatedAt": "2026-07-09T07:50:51.201Z",
+  "generatedAt": "2026-07-23T07:25:52.978Z",
   "governanceSignature": {
     "algorithm": "Ed25519",
-    "keyId": "cd01346961d88e94",
-    "signature": "qGkTpJ0HwrB2NsJLU40teSUrg9XsrJVGr7h91V1w+ky3HELQkES+BFKdgn1/fGJI7VXN19GpM5msA32K8zDjAg==",
+    "keyId": "942d6b2726b0a991",
+    "signature": "gWCqtkIJthoy886YNRhafLl0NbJmTdomke5XuGywQ6B3dYMzTqb/OebQPmEUO0LHgI1795gP5gdtroa91US/CA==",
     "canon": "jcs",
-    "signedAt": "2026-07-09T07:50:51.209Z"
+    "signedAt": "2026-07-23T07:25:52.988Z"
   },
   "fuse": {
     "schemaVersion": "fungi.fuse.v1",
