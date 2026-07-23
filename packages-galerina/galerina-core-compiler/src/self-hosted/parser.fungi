@@ -1866,6 +1866,13 @@ contract {
         // from inside the contract block rather than just skipping it entirely.
         mut efx: Array<String> = Array.empty()
         mut ctConformsTo: String = ""
+        // finding (d): extract the governance metadata the parser previously hardcoded — the
+        // classification (from the `value {}` sub-block) and the deterministic flag (from `safety {}`).
+        // A flipped self-hosted parser that dropped these would silently skip the safety_critical
+        // VAL-001/002 governance checks; extracting them is a parser-flip precondition (RD-0528).
+        mut ctClassification: String = ""
+        mut ctDeterministic: Bool = false
+        mut captureClassNext: Bool = false
 
         // Skip newlines between the return type and the contract/body
         while isNewline(tokens, p) { p = p + 1 }
@@ -1921,6 +1928,18 @@ contract {
                   p = p + 1
                 }
               }
+              // finding (d): keyword-scan for the governance metadata (these tokens are unique to
+              // their sub-blocks). `classification <value>` — the value follows the keyword directly;
+              // `require deterministic_execution` — a single distinct token. No p advance here (the
+              // effects branch or the else below advances every token exactly once).
+              if captureClassNext {
+                if cv != "{" and cv != "}" { ctClassification = cv }
+                captureClassNext = false
+              }
+              else {
+                if cv == "classification" { captureClassNext = true }
+              }
+              if cv == "deterministic_execution" { ctDeterministic = true }
               // Extract effects { e1, e2 } at depth 1
               if contractDepth == 1 and cv == "effects" {
                 p = p + 1
@@ -1991,8 +2010,8 @@ contract {
           conformsTo: ctConformsTo,
           body: bodyStmts,
           returnExpr: returnExpr,
-          classification: "",
-          deterministic: false,
+          classification: ctClassification,
+          deterministic: ctDeterministic,
           usedEffects: Array.empty()
         })
         pos = p
