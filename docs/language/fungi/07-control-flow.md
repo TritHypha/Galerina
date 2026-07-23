@@ -62,10 +62,11 @@ match opt {
 (Real, from `.../self-hosted/lexer.fungi:88-105`.)
 
 ```fungi
-// Result destructuring
+// Result destructuring — the `_` arm is MANDATORY (FUNGI-MATCH-001), even for a 2-variant match
 match decoded {
   Ok(input)  => { return Ok(process(input)) }
   Err(error) => { return Err(error) }
+  _          => { /* unreachable for Ok/Err, but the checker requires it — audit + deny */ }
 }
 ```
 
@@ -110,6 +111,11 @@ Recognised pattern forms (from `parseMatchArm`):
 > `core-syntax-keywords.md`, but the parser's real facility for numeric branching is the **`when`
 > guard** (`when score >= 90 => …`). Prefer `when` guards; treat bare comparison-operator patterns as
 > doc-only unless you've confirmed them against your compiler.
+
+> ★ **Every `match` needs a wildcard `_` arm (`FUNGI-MATCH-001`).** A match with no `_` is a hard compile
+> ERROR — even an "exhaustive" two-variant `Ok`/`Err` or `Some`/`None` match — because the WASM backend traps
+> on the unmatched case (RD-0240), so the checker fails closed by construction, not with a warning. Add a `_`
+> arm routed to an audited/deny sink: `_ => { /* audit + deny */ }`.
 
 ## `while` — condition loop
 
@@ -193,6 +199,7 @@ Equivalent explicit form (what `?` desugars to conceptually):
 match Session.create(request.body.token) {
   Ok(s)  => s
   Err(e) => { return Err(e) }
+  _      => { /* FUNGI-MATCH-001 mandates a wildcard even here */ }
 }
 ```
 
@@ -273,6 +280,7 @@ contract {
 | `match score { >= 90 => … }` | range patterns are doc-only | `when score >= 90 => …` |
 | `emit X` at top level | must be in a body | move inside a flow (`FUNGI-SYNTAX-009`) |
 | ignoring a `Result` return | fallible result unhandled | `?` or `match` the `Result` |
+| `match r { Ok(v) => … Err(e) => … }` (no `_`) | every match needs a wildcard (`FUNGI-MATCH-001`) | add `_ => { /* audit + deny */ }` |
 
 ## Real files to open
 
