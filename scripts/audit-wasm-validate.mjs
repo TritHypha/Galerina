@@ -69,6 +69,24 @@ function declines(wat) {
   return false;
 }
 
+// ── B1 (RD-0529): root-cause of an INVALID, coarse-bucketed from the `why` this gate already computes.
+// This is NOT a re-implementation of wat-invalid-triage (which recovers the EXACT validator reason and the
+// deeper A3/A1 classes) — it is a thin bucketing of the message so the ENFORCING gate can track the backlog
+// per cause toward closure. The two live root causes across the corpus (measured 2026-07-23: 21 + 4 = 25):
+const CAUSES = {
+  "undefined-call": "emitter lowers `(call $X)` but never defines/imports $X — needs a faithful standalone lowering OR a host import (per-callee; the `redact` 7180bd04 precedent).",
+  "type-mismatch": "an i32 slot/scalar can't hold an f64 → wabt type mismatch (the f64/i32-width class) — owned by audit-wat-lowering.mjs legs B/C (#132 slot-width · #137 Decimal).",
+  "other": "neither undefined-call nor width — e.g. a spaced-local (A3) or void-with-result (A1); see wat-invalid-triage for the deep class.",
+};
+// Two further emitter gaps are known but NOT corpus-present (so not baselined here): `int(float)` → undefined
+// `$int` call (an undefined-call instance) and a negative float literal `-1.0` in SOURCE → wabt validate-fail
+// (its own bucket). Recorded in RD-0529 A4; they surface only when a corpus example exercises them.
+function classifyCause(why) {
+  if (/neither defined nor imported/.test(why)) return "undefined-call";
+  if (/error:\s*type|type mismatch/i.test(why)) return "type-mismatch";
+  return "other";
+}
+
 async function classify(src, file) {
   const expectsDiag = /^\/\/\/ expected_diagnostics:\s*(?!none)\S/m.test(src);
   const reject = expectsDiag ? "CHECK-REJECT" : null;
@@ -134,11 +152,19 @@ if (process.argv.includes("--self-test")) {
     ["known-good Int flow is VALID (proves assembleWAT is awaited)", g.k === "VALID"],
     ["known-bad money-ratio is INVALID (proves the gate fires)", b.k === "INVALID"],
     ["the two verdicts differ (the projection discriminates)", g.k !== b.k],
+    // B1 — the cause classifier must DISCRIMINATE the two live root classes (not lump them / not 'other').
+    ["B1 classifyCause: an undefined-callee message → undefined-call",
+      classifyCause("assembler A2 pre-check: WAT module calls function(s) that are neither defined nor imported: $gbp") === "undefined-call"],
+    ["B1 classifyCause: a wabt type-mismatch message → type-mismatch",
+      classifyCause("wabt rejected this WAT: validate failed: galerina.wat:17:6: error: type mismatch") === "type-mismatch"],
+    ["B1 classifyCause: an unrecognised reason → other (fail-open into the deep-dive, never silently a known class)",
+      classifyCause("some novel emitter failure") === "other"],
+    ["B1: the known-bad money-ratio classifies as a real cause, not 'other'", classifyCause(b.why) !== "other"],
   ];
   console.log(`  [good -> ${g.k} ${g.why}]  [bad -> ${b.k} ${b.why}]`);
   let ok = true;
   for (const [name, pass] of checks) { console.log(`  ${pass ? "PASS" : "FAIL"}  ${name}`); if (!pass) ok = false; }
-  console.log(ok ? "self-test 3/3" : "SELF-TEST FAILED — the gate cannot be trusted");
+  console.log(ok ? `self-test ${checks.length}/${checks.length}` : "SELF-TEST FAILED — the gate cannot be trusted");
   process.exit(ok ? 0 : 1);
 }
 
@@ -152,19 +178,40 @@ for (const abs of files) {
 }
 
 const baseline = existsSync(BASELINE) ? JSON.parse(readFileSync(BASELINE, "utf8")) : { invalid: [] };
-const known = new Set(baseline.invalid || []);
-const current = buckets.INVALID.map(([f]) => f);
+// backward-compat: a baseline entry is either a bare string (pre-B1) or { file, cause } (B1).
+const baseEntries = (baseline.invalid || []).map((e) => (typeof e === "string" ? { file: e, cause: null } : e));
+const known = new Set(baseEntries.map((e) => e.file));
+const knownCause = new Map(baseEntries.map((e) => [e.file, e.cause]));
+// current INVALIDs + the cause bucketed from the `why` this gate already produced (B1)
+const currentEntries = buckets.INVALID.map(([f, why]) => ({ file: f, cause: classifyCause(why) }));
+const current = currentEntries.map((e) => e.file);
 const fresh = current.filter((f) => !known.has(f));
 const fixed = [...known].filter((f) => !current.includes(f));
+const byCause = {};
+for (const e of currentEntries) (byCause[e.cause] ??= []).push(e.file);
+// cause-DRIFT: a still-invalid baselined file whose cause changed (a "fix" that moved the defect between
+// classes — surfaced as a signal, NOT a hard fail; the fresh-file shrink-only below is the enforcing edge).
+const drift = currentEntries
+  .filter((e) => known.has(e.file) && knownCause.get(e.file) && knownCause.get(e.file) !== e.cause)
+  .map((e) => ({ file: e.file, was: knownCause.get(e.file), now: e.cause }));
 
 if (process.argv.includes("--update-baseline")) {
-  writeFileSync(BASELINE, JSON.stringify({ invalid: current.sort() }, null, 2) + "\n");
-  console.log(`baseline updated: ${current.length} known-invalid`);
+  const entries = currentEntries.slice().sort((a, b) => a.file.localeCompare(b.file));
+  writeFileSync(BASELINE, JSON.stringify({ invalid: entries }, null, 2) + "\n");
+  const split = Object.entries(byCause).map(([c, l]) => `${c}:${l.length}`).join(" · ");
+  console.log(`baseline updated: ${entries.length} known-invalid (${split})`);
   process.exit(0);
 }
 
 if (process.argv.includes("--json")) {
-  console.log(JSON.stringify({ counts: Object.fromEntries(Object.entries(buckets).map(([k, v]) => [k, v.length])), buckets, fresh, fixed }, null, 2));
+  // --json emits ONLY json + exits with the enforcement code (previously fell through to the trailing
+  // "VIOLATIONS" text, which broke a strict JSON parse of this gate's output).
+  console.log(JSON.stringify({
+    counts: Object.fromEntries(Object.entries(buckets).map(([k, v]) => [k, v.length])),
+    byCause: Object.fromEntries(Object.entries(byCause).map(([c, l]) => [c, l.length])),
+    buckets, fresh, fixed, drift,
+  }, null, 2));
+  process.exit(fresh.length ? 1 : 0);
 } else {
   console.log(`audit-wasm-validate — swept ${files.length} .fungi\n`);
   for (const k of ["VALID", "DECLINES", "INVALID", "CHECK-REJECT", "SKIP"]) console.log("  " + k.padEnd(14) + buckets[k].length);
@@ -172,7 +219,18 @@ if (process.argv.includes("--json")) {
   for (const [f, w] of buckets.SKIP) console.log("    ? " + f + "   " + w);
   if (buckets.INVALID.length) {
     console.log("\n  INVALID (emitter produced a malformed module):");
-    for (const [f, w] of buckets.INVALID) console.log("    x " + f + "   " + w + (known.has(f) ? "   [baselined]" : "   *** NEW ***"));
+    for (const [f, w] of buckets.INVALID) {
+      const c = classifyCause(w);
+      console.log("    x " + f + `  [${c}]  ` + w + (known.has(f) ? "   [baselined]" : "   *** NEW ***"));
+    }
+    // B1 — the actionable per-cause split of the backlog toward closure (undefined-call vs f64/i32-width)
+    console.log("\n  by root cause (RD-0529 B1):");
+    for (const [c, l] of Object.entries(byCause).sort((a, b) => b[1].length - a[1].length))
+      console.log(`    ${String(l.length).padStart(3)}  ${c} — ${CAUSES[c] ?? ""}`);
+  }
+  if (drift.length) {
+    console.log(`\n  ⚠ cause-drift (${drift.length}) — a still-invalid baselined file changed root class (a "fix" that moved the defect between classes):`);
+    for (const d of drift) console.log(`    ~ ${d.file}   ${d.was} → ${d.now}`);
   }
   if (fixed.length) console.log(`\n  ${fixed.length} baselined file(s) now pass — shrink the baseline: --update-baseline`);
 }
