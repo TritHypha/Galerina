@@ -1292,6 +1292,21 @@ class Interpreter {
       return this.buildResult(flowName, qualifier, startedAt, value, msg);
     }
 
+    // A7 (owner-ruled 2026-07-23, RD-0529): enforce INPUT pre-conditions at flow ENTRY. An
+    // `invariant { ensure … }` that does NOT reference `result` is a parameter pre-condition; it is
+    // evaluated here, before ANY body work, fail-closed — mirroring the WAT entry gate (ensureDecl) so
+    // Stage-A matches production. A violated (or non-evaluable) pre-condition means the body NEVER runs.
+    // FUNGI-INV-001 — the dynamic counterpart of the static PRE_CONDITION_STATICALLY_FALSE check,
+    // exactly as FUNGI-INV-002 is used for both static and runtime postcondition violations.
+    {
+      const violation = await this.checkInputPreconditions(flowNode, flowName, args);
+      if (violation !== undefined) {
+        this.diagnostics.push({ code: "FUNGI-INV-001", message: violation });
+        const value: GalerinaValue = { __tag: "runtimeError", message: violation };
+        return this.buildResult(flowName, qualifier, startedAt, value, violation);
+      }
+    }
+
     // R6A: If a verified RuntimeManifest is provided, use its allowedEffects as the
     // pre-approved capability list and skip re-running the full contract check.
     // This is the fast-path for production execution.
@@ -1312,7 +1327,7 @@ class Interpreter {
       // gate below. A flow with an `ensure result …` must NOT use it — skip so it falls through to
       // the normal flow body + the single-exit gate (fail-closed). (Latent today: no in-tree caller
       // sets useExecutionPlan, but this keeps the governed runFlow path airtight if it is enabled.)
-      if (plan !== undefined && plan.qualifier === "pure" && !flowHasResultPostcondition(this.ast, flowName)) {
+      if (plan !== undefined && plan.qualifier === "pure" && !flowHasEnforcedInvariants(this.ast, flowName)) {
         const ctx = this.getContext(flowName);
         try {
           const planResult = await executePlan(plan, this.capabilityHost, ctx);
@@ -1473,6 +1488,45 @@ class Interpreter {
       audit,
       ...(this.enforcer !== undefined ? { enforcementRecord: this.enforcer.enforcementRecord } : {}),
     };
+  }
+
+  /**
+   * A7 (owner-ruled 2026-07-23): enforce INPUT pre-conditions (`invariant { ensure <param-predicate> }`)
+   * at flow ENTRY, before the body runs. Mirrors checkOutputPostconditions: each non-`result` ensure is
+   * evaluated with the flow parameters bound; a failing OR non-evaluable predicate FAILS CLOSED with a
+   * violation message (FUNGI-INV-001) — so a violated pre-condition traps identically in Stage-A and in
+   * production WASM (the D1 corpus divergence this closes). Returns undefined when every pre-condition
+   * holds. Ensures referencing names outside parameter scope are refused statically (FUNGI-INV-004), so
+   * a non-evaluable predicate here is unexpected and treated as a violation, never skipped.
+   */
+  private async checkInputPreconditions(
+    flowNode: AstNode,
+    flowName: string,
+    args: ReadonlyMap<string, GalerinaValue>,
+  ): Promise<string | undefined> {
+    const ensures = extractInputPreconditions(flowNode);
+    if (ensures.length === 0) return undefined;
+    this.pushScope();
+    try {
+      for (const [name, val] of args) this.declare(name, val, false);
+      for (const expr of ensures) {
+        let val: GalerinaValue;
+        try {
+          val = await this.evalExpr(expr);
+        } catch {
+          return `[Flow '${flowName}'] pre-condition 'ensure ${describeEnsureExpr(expr)}' could not be evaluated — fail-closed (FUNGI-INV-001).`;
+        }
+        const holds =
+          (val.__tag === "bool" && val.value === true) ||
+          (val.__tag === "int" && val.value !== 0);
+        if (!holds) {
+          return `[Flow '${flowName}'] violated pre-condition 'ensure ${describeEnsureExpr(expr)}' — fail-closed (FUNGI-INV-001).`;
+        }
+      }
+      return undefined;
+    } finally {
+      this.popScope();
+    }
   }
 
   /**
@@ -3279,17 +3333,44 @@ function exprReferencesResult(node: AstNode): boolean {
 }
 
 /**
- * 0040/#70: true if the named flow declares an OUTPUT post-condition (`invariant { ensure result … }`).
- * Such flows MUST run through the governed flow exit (runFlow) where the post-condition gate fires.
- * The fast tiers (bytecode VM, sync fast-path, ExecutionGraph fast-path, pure-flow cache) all return
- * early and would bypass the gate — so executeFlow excludes post-condition flows from them (fail-closed).
+ * A7: extract the INPUT pre-condition `ensure` expressions — those NOT referencing `result` — from a
+ * flow's `invariant {}` block. The exact dual of extractOutputPostconditions (the two partition the
+ * ensure set). FUNGI-INV-004 statically guarantees such ensures reference only parameter-scope names.
  */
-function flowHasResultPostcondition(ast: AstNode, flowName: string): boolean {
+function extractInputPreconditions(flowNode: AstNode): AstNode[] {
+  const contractNode = (flowNode.children ?? []).find((c) => c.kind === "contractDecl");
+  if (contractNode === undefined) return [];
+  const invariantBlock = (contractNode.children ?? []).find(
+    (c) => c.kind === "identifier" && c.value === "invariant:block",
+  );
+  if (invariantBlock === undefined) return [];
+  const out: AstNode[] = [];
+  for (const child of invariantBlock.children ?? []) {
+    if (child.kind !== "ensureDecl") continue;
+    const expr = child.children?.[0];
+    if (expr !== undefined && !exprReferencesResult(expr)) out.push(expr);
+  }
+  return out;
+}
+
+/**
+ * 0040/#70 + A7: true if the named flow declares ANY enforced invariant — an OUTPUT post-condition
+ * (`invariant { ensure result … }`) OR an INPUT pre-condition (a non-`result` ensure). Such flows MUST
+ * run through the governed runFlow path where the entry pre-condition gate and the single-exit
+ * post-condition gate fire. The fast tiers (bytecode VM, sync fast-path, ExecutionGraph fast-path,
+ * pure-flow cache) all return early and would bypass BOTH gates — so executeFlow excludes these flows
+ * from them (fail-closed).
+ */
+function flowHasEnforcedInvariants(ast: AstNode, flowName: string): boolean {
   let found = false;
   const FLOW_KINDS = new Set(["pureFlowDecl", "flowDecl", "secureFlowDecl", "guardedFlowDecl"]);
   function walk(node: AstNode): void {
     if (found) return;
-    if (FLOW_KINDS.has(node.kind) && node.value === flowName && extractOutputPostconditions(node).length > 0) {
+    if (
+      FLOW_KINDS.has(node.kind) &&
+      node.value === flowName &&
+      (extractOutputPostconditions(node).length > 0 || extractInputPreconditions(node).length > 0)
+    ) {
       found = true;
       return;
     }
@@ -3441,7 +3522,7 @@ export function executeFlowSync(
   // async exit gate (checkOutputPostconditions). The sync fast-path ignores the invariant {} block,
   // so DECLINE here (return null) — every caller of executeFlowSync falls back to the async
   // executeFlow, which enforces the post-condition fail-closed. Closes the exported-sync bypass.
-  if (flowHasResultPostcondition(ast, flowName)) return null;
+  if (flowHasEnforcedInvariants(ast, flowName)) return null;
   return tryPureFlowSync(ast, knownFlows, flowName, args);
 }
 
@@ -3562,7 +3643,7 @@ export async function executeFlow(
     // 0040/#70: a flow with an output post-condition (`ensure result …`) must take the governed
     // exit (runFlow), where the post-condition gate fires fail-closed. The bytecode VM / sync /
     // cache tiers below return early and would bypass it — exclude such flows from the fast path.
-    !flowHasResultPostcondition(ast, flowName)
+    !flowHasEnforcedInvariants(ast, flowName)
   ) {
     // Phase 49: per-request cache scoping.
     // The cache key includes a sourceTag so that pure flows cached for one request
@@ -3753,7 +3834,7 @@ export async function executeFlow(
       // 0040/#70: the ExecutionGraph fast-path also returns early, bypassing the output
       // post-condition gate — exclude post-condition flows so they fall through to runFlow.
       if (egraphEnabled && egraph.isPure && enforcer === undefined && capabilityHost === undefined
-          && !flowHasResultPostcondition(ast, flowName)) {
+          && !flowHasEnforcedInvariants(ast, flowName)) {
         const fastResult = runFromGraph(egraph, args);
         if (fastResult !== null) {
           // Fast-path succeeded — return a synthetic FlowExecutionResult

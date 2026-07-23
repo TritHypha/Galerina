@@ -109,15 +109,15 @@ const SEED = [
   //    check + unreachable). This proves the fail-closed contract is engine-consistent for a governance-adjacent
   //    class beyond overflow/÷0/non-finite. (Non-exhaustive match is COMPILE-caught FUNGI-MATCH-001, not a
   //    runtime trap; capability-deny is DSS/governance — M1's domain. Neither is a standalone-flow runtime trap.)
-  // MEASURED, precised by R&D #0067: an `invariant { ensure … }` violation is scope-specific across engines —
-  //   the production WASM traps on ALL ensures, but the Stage-A interpreter enforces ONLY output-postconditions
-  //   (`ensure result …`, checkOutputPostconditions interpreter.ts:1487), NOT parameter/pre-condition ensures
-  //   (`ensure a …`, which reference a param — outside that scope). So the corpus pins BOTH classes:
-  //   ● param/pre-condition `ensure a > 0` → WASM enforces, interp does NOT ⟹ wasmEnforcedTrap (V8≡wasmtime
-  //     trap; interp non-enforcement RECORDED, never asserted — forward-safe if the interp is later fixed).
-  //   ● output-postcondition `ensure result > 0` → interp AND WASM both enforce ⟹ a SYMMETRIC three-way trap.
-  //   Together they make the divergence precise (result vs param), not the blanket claim my first pass wrote.
-  { id: "ensure-param-precond-trap", src: `pure flow f(a: Int) -> Int\ncontract { effects {} invariant { ensure a > 0 } }\n{ return a }`, wrap: I, wasmEnforcedTrap: true, calls: [{ args: [-5] }, { args: [0] }] },
+  // HISTORY (D1 → A7, closed 2026-07-23): the corpus originally pinned a REAL divergence here — the interp
+  //   enforced only output-postconditions (`ensure result …`), NOT parameter/pre-condition ensures (`ensure a …`),
+  //   so the param case was wasmEnforcedTrap (V8≡wasmtime trapped; interp returned the value — recorded as a
+  //   finding). The OWNER RULED A7 gap-to-close (zero-trust path): the interp is a governed tier and now enforces
+  //   pre-conditions at flow ENTRY (checkInputPreconditions, FUNGI-INV-001 — the mirror of
+  //   checkOutputPostconditions/FUNGI-INV-002). This case then MOVED wasmEnforcedTrap → symmetric `trap:true`,
+  //   exactly the category shift the forward-safe design predicted — the corpus now ASSERTS all three engines
+  //   trap on BOTH ensure classes. (The wasmEnforcedTrap machinery below is kept for future divergences.)
+  { id: "ensure-param-precond-trap", src: `pure flow f(a: Int) -> Int\ncontract { effects {} invariant { ensure a > 0 } }\n{ return a }`, wrap: I, trap: true, calls: [{ args: [-5] }, { args: [0] }] },
   { id: "ensure-param-precond-pass", src: `pure flow f(a: Int) -> Int\ncontract { effects {} invariant { ensure a > 0 } }\n{ return a }`, wrap: I, calls: [{ args: [5] }, { args: [1] }] }, // satisfied ⟹ interp≡V8 both return
   { id: "ensure-result-postcond-trap", src: `pure flow f(a: Int) -> Int\ncontract { effects {} invariant { ensure result > 0 } }\n{ return a }`, wrap: I, trap: true, calls: [{ args: [-5] }, { args: [0] }] }, // violated ⟹ interp≡V8≡wasmtime ALL trap
   { id: "ensure-result-postcond-pass", src: `pure flow f(a: Int) -> Int\ncontract { effects {} invariant { ensure result > 0 } }\n{ return a }`, wrap: I, calls: [{ args: [5] }, { args: [1] }] }, // satisfied ⟹ all return
