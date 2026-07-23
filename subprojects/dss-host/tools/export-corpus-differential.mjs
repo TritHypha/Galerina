@@ -99,14 +99,18 @@ const SEED = [
   //    check + unreachable). This proves the fail-closed contract is engine-consistent for a governance-adjacent
   //    class beyond overflow/÷0/non-finite. (Non-exhaustive match is COMPILE-caught FUNGI-MATCH-001, not a
   //    runtime trap; capability-deny is DSS/governance — M1's domain. Neither is a standalone-flow runtime trap.)
-  // MEASURED: on a violated ensure, the standalone WASM traps (V8 + wasmtime enforce) but the Stage-A
-  //   interpreter RETURNS the value (executeFlow → {audit.result:"ok", value}) — it does NOT enforce the
-  //   invariant. So this is `wasmEnforcedTrap`, NOT a symmetric all-engine trap: assert V8≡wasmtime BOTH
-  //   trap (the fail-closed contract), and RECORD the interp non-enforcement informationally (forward-safe —
-  //   if the interp is later fixed to enforce, the finding count just drops; nothing to un-assert). Whether
-  //   the interp SHOULD enforce it is a spec question surfaced to R&D, not decided here.
-  { id: "ensure-invariant-trap", src: `pure flow f(a: Int) -> Int\ncontract { effects {} invariant { ensure a > 0 } }\n{ return a }`, wrap: I, wasmEnforcedTrap: true, calls: [{ args: [-5] }, { args: [0] }] },
-  { id: "ensure-invariant-pass", src: `pure flow f(a: Int) -> Int\ncontract { effects {} invariant { ensure a > 0 } }\n{ return a }`, wrap: I, calls: [{ args: [5] }, { args: [1] }] }, // satisfied ⟹ interp≡V8 both return (a conditional trap, not unconditional)
+  // MEASURED, precised by R&D #0067: an `invariant { ensure … }` violation is scope-specific across engines —
+  //   the production WASM traps on ALL ensures, but the Stage-A interpreter enforces ONLY output-postconditions
+  //   (`ensure result …`, checkOutputPostconditions interpreter.ts:1487), NOT parameter/pre-condition ensures
+  //   (`ensure a …`, which reference a param — outside that scope). So the corpus pins BOTH classes:
+  //   ● param/pre-condition `ensure a > 0` → WASM enforces, interp does NOT ⟹ wasmEnforcedTrap (V8≡wasmtime
+  //     trap; interp non-enforcement RECORDED, never asserted — forward-safe if the interp is later fixed).
+  //   ● output-postcondition `ensure result > 0` → interp AND WASM both enforce ⟹ a SYMMETRIC three-way trap.
+  //   Together they make the divergence precise (result vs param), not the blanket claim my first pass wrote.
+  { id: "ensure-param-precond-trap", src: `pure flow f(a: Int) -> Int\ncontract { effects {} invariant { ensure a > 0 } }\n{ return a }`, wrap: I, wasmEnforcedTrap: true, calls: [{ args: [-5] }, { args: [0] }] },
+  { id: "ensure-param-precond-pass", src: `pure flow f(a: Int) -> Int\ncontract { effects {} invariant { ensure a > 0 } }\n{ return a }`, wrap: I, calls: [{ args: [5] }, { args: [1] }] }, // satisfied ⟹ interp≡V8 both return
+  { id: "ensure-result-postcond-trap", src: `pure flow f(a: Int) -> Int\ncontract { effects {} invariant { ensure result > 0 } }\n{ return a }`, wrap: I, trap: true, calls: [{ args: [-5] }, { args: [0] }] }, // violated ⟹ interp≡V8≡wasmtime ALL trap
+  { id: "ensure-result-postcond-pass", src: `pure flow f(a: Int) -> Int\ncontract { effects {} invariant { ensure result > 0 } }\n{ return a }`, wrap: I, calls: [{ args: [5] }, { args: [1] }] }, // satisfied ⟹ all return
 ];
 
 // ── compile one program's source to WASM bytes (front-end gated, #141 stub-rejected) ──
@@ -231,7 +235,9 @@ for (const p of programs) console.log(`  · ${p.id.padEnd(22)} ${p.calls.length}
 if (interpNotEnforcing.length) {
   console.log(`\n  FINDING (D1) — the WASM engines enforce a fail-closed trap the INTERPRETER does not (${interpNotEnforcing.length} call(s)):`);
   for (const f of interpNotEnforcing) console.log(`    · ${f}`);
-  console.log(`    (the \`invariant { ensure … }\` guarantee is WASM-lowering-only; whether Stage-A SHOULD enforce it is a spec question for R&D.)`);
+  console.log(`    SCOPE (R&D #0067): only PARAMETER/pre-condition ensures (\`ensure a\`) are WASM-lowering-only — the interp`);
+  console.log(`    DOES enforce OUTPUT-postconditions (\`ensure result\`), proven by the symmetric ensure-result-postcond cases.`);
+  console.log(`    Whether Stage-A should ALSO enforce pre-conditions is the owner spec question (RD-0529 A7; R&D lean: gap-to-close, low urgency).`);
 }
 if (divergences.length) {
   console.error(`\n❌ ${divergences.length} divergence(s) (interp≠V8 value, or a WASM engine that did NOT fail-closed):`);
