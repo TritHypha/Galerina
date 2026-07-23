@@ -243,8 +243,15 @@ const OP_IDS: Record<string, number> = {
 // proving every int×int arithmetic key is present is what makes the sync raw-arith
 // fallback (interpreter.ts ~:498) provably unreachable for int×int — the R&D-0112 hazard.
 export function dispatchKey(leftTag: string, op: string, rightTag: string): number {
-  const l = leftTag  === "int"    ? 1 : leftTag  === "float" ? 2 : leftTag  === "string" ? 3 : leftTag  === "bool" ? 4 : leftTag  === "int64" ? 5 : leftTag  === "uint64" ? 6 : 0;
-  const r = rightTag === "int"    ? 1 : rightTag === "float" ? 2 : rightTag === "string" ? 3 : rightTag === "bool" ? 4 : rightTag === "int64" ? 5 : rightTag === "uint64" ? 6 : 0;
+  // record→9, list→10 (2026-07-23): pull composite values OUT of the catch-all 0 so `record==record`
+  // and `list==list` no longer collide into the verdict==/&& wildcard entries (which compared the
+  // absent `.value` field: undefined===undefined → two DIFFERENT records/lists were EQUAL, a fail-open,
+  // bridge 0096). With a distinct id they miss the dispatch map and fall through to the structural
+  // galerinaValuesEqual fallback (interpreter ~:2254). DELIBERATELY leaves verdict/unresolved/enum at 0
+  // — the self-hosted twins' `tok.kind` compares depend on that shared wildcard matching their WASM twin
+  // under the R3 parity gate; changing it is the coordinated interp+emitter arc (bridge 0097), not this.
+  const l = leftTag  === "int"    ? 1 : leftTag  === "float" ? 2 : leftTag  === "string" ? 3 : leftTag  === "bool" ? 4 : leftTag  === "int64" ? 5 : leftTag  === "uint64" ? 6 : leftTag  === "record" ? 9 : leftTag  === "list" ? 10 : 0;
+  const r = rightTag === "int"    ? 1 : rightTag === "float" ? 2 : rightTag === "string" ? 3 : rightTag === "bool" ? 4 : rightTag === "int64" ? 5 : rightTag === "uint64" ? 6 : rightTag === "record" ? 9 : rightTag === "list" ? 10 : 0;
   const o = OP_IDS[op] ?? 0;
   return (l << 8) | (o << 4) | r;
 }

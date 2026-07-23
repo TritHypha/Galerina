@@ -1750,6 +1750,25 @@ export function galerinaValuesEqual(a: GalerinaValue, b: GalerinaValue): boolean
   if (a.__tag === "char" && b.__tag === "char") return a.value === b.value;
   if (a.__tag === "none" && b.__tag === "none") return true;
   if (a.__tag === "void" && b.__tag === "void") return true;
+  // Composite STRUCTURAL equality (2026-07-23, bridge 0096): before this, record/list `==` collided into
+  // the dispatch wildcard and compared the absent `.value` (undefined===undefined) → two DIFFERENT
+  // records/lists were EQUAL (fail-open). Records = same key set + recursively-equal values; lists = same
+  // length + elementwise-equal. Recursion terminates: Galerina values are finite immutable trees, no cycles.
+  if (a.__tag === "record" && b.__tag === "record") {
+    if (a.fields.size !== b.fields.size) return false;
+    for (const [k, av] of a.fields) {
+      const bv = b.fields.get(k);
+      if (bv === undefined || !galerinaValuesEqual(av, bv)) return false;
+    }
+    return true;
+  }
+  if (a.__tag === "list" && b.__tag === "list") {
+    if (a.items.length !== b.items.length) return false;
+    for (let i = 0; i < a.items.length; i += 1) {
+      if (!galerinaValuesEqual(a.items[i]!, b.items[i]!)) return false;
+    }
+    return true;
+  }
   return false;
 }
 
