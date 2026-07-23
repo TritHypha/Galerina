@@ -1541,7 +1541,14 @@ contract {
       mut polName: String = ""
       match polNameOpt {
         Some(polTok) => {
-          if polTok.kind == "Identifier" { polName = polTok.value  pp = pp + 1 }
+          // (c) 2026-07-23 token-kind arc: VALUE-BASED / positional. The policy name is the token
+          // right after `policy` (newlines already skipped). The old `polTok.kind == "Identifier"`
+          // was the always-false TokenKind-vs-string compare (bridge 0086) → polName stayed "" → the
+          // whole `if polName != ""` gate blocked policies.append → the decl was silently dropped
+          // (0090: `policies count : 0`). A real name is any non-empty token that is not the
+          // body-opening brace. Compiles identically on both backends (source, no kind check) → R3-safe.
+          let pnv: String = polTok.value
+          if pnv != "" and pnv != "{" { polName = pnv  pp = pp + 1 }
         }
         None => {}
         _ => {}
@@ -1569,16 +1576,21 @@ contract {
                 let peOpt = tokens.get(pp)
                 match peOpt {
                   Some(peTok) => {
-                    match peTok.kind {
-                      Identifier | Keyword => {
-                        let parsed = parseDotPath(tokens, pp)
-                        permEffects = permEffects.append(parsed.name)
-                        pp = parsed.nextPos
-                        while isNewline(tokens, pp) { pp = pp + 1 }
-                        if tokVal(tokens, pp) == "," { pp = pp + 1 }
-                      }
-                      _ => { pp = pp + 1 }
+                    // (c) 2026-07-23 token-kind arc: VALUE-BASED. An effect entry is any NON-newline
+                    // token that is not a separator or brace; parse it as a dot-path (network.outbound).
+                    // The old `match peTok.kind { Identifier | Keyword => }` was a bare-member TokenKind
+                    // match (bridge 0090). The newline exclusion the old `_ =>` arm gave is kept explicit
+                    // via isNewline — a multi-line permitted_effects block would otherwise capture a
+                    // newline token as a spurious "\n" effect (caught by the multi-line probe before commit).
+                    let pev: String = peTok.value
+                    if isNewline(tokens, pp) == false and pev != "," and pev != "{" and pev != "}" {
+                      let parsed = parseDotPath(tokens, pp)
+                      permEffects = permEffects.append(parsed.name)
+                      pp = parsed.nextPos
+                      while isNewline(tokens, pp) { pp = pp + 1 }
+                      if tokVal(tokens, pp) == "," { pp = pp + 1 }
                     }
+                    else { pp = pp + 1 }
                   }
                   None => {}
                   _ => {}
