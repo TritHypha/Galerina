@@ -1,0 +1,19 @@
+{
+  "note": "RD-0529 B2 emitter-completeness — {construct: class}. A construct that drops emitter-completeness rank fails the gate; recapture with --update-baseline after an intended change.",
+  "completeness_pct": 67,
+  "classes": {
+    "bool-cmp": "standalone-valid",
+    "decimal-add": "fail-closed",
+    "ensure-result": "fail-closed",
+    "float-add": "standalone-valid",
+    "int-add": "standalone-valid",
+    "int64-add": "standalone-valid",
+    "io-effect": "fail-closed",
+    "money-add": "standalone-valid",
+    "money-ratio": "emitter-invalid",
+    "record-read": "standalone-valid",
+    "string-id": "standalone-valid",
+    "type-mismatch": "gate-refused",
+    "uint64-div": "standalone-valid"
+  }
+}

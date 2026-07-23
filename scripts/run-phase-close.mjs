@@ -395,6 +395,13 @@ run("wat-lowering", "node", ["scripts/audit-wat-lowering.mjs"]);
 //   clears checkTypes + governance + security (052/077 hid here). 10 baselined (A1/A2/A3/B emitter
 //   classes); shrink-only, a NEW invalid → exit 1. Complements the source-level audit-wat-lowering sweep.
 run("wasm-validate", "node", ["scripts/audit-wasm-validate.mjs"]);
+// emitter-completeness (RD-0529 B2) — the per-CONSTRUCT companion to wasm-validate's per-FILE sweep:
+//   classifies a curated construct inventory through the same front-end gate + emitter into the MEASURED
+//   taxonomy {standalone-valid | fail-closed | host-import | emitter-invalid | gate-refused} and derives an
+//   honest completeness % from that ladder (never a hand-typed number). Ratcheted: a construct that DROPS
+//   emitter-completeness rank → exit 1. Measured finding 2026-07-23: host-import is EMPTY (the emitter emits
+//   no declared imports; effectful/opaque constructs decline or emit undefined-calls instead).
+run("emitter-completeness", "node", ["scripts/audit-emitter-completeness.mjs"]);
 // wat-invalid-triage (R&D prototype, vendored 2026-07-19) — ADVISORY root-cause classifier for the
 //   10 baselined INVALID modules. Pairs with wasm-validate: where wasm-validate is the enforcing gate
 //   ("is any module malformed?"), this answers "WHY?" by recovering the actual WASM validator reason
