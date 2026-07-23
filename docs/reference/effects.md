@@ -7,8 +7,10 @@ compiler holds you to it.
 
 **Source of truth:** `CANONICAL_EFFECTS` and `DENY_ONLY_EFFECTS` in
 `packages-galerina/galerina-core-compiler/src/effect-checker.ts`, kept drift-free by
-`scripts/audit-effect-canonicality.mjs`. **Verified against source 2026-07-15: 45 canonical effects + 2 deny-only,
-no drift.** Regenerate this page from that file if in doubt — do not hand-edit the set.
+`scripts/audit-effect-canonicality.mjs`. **Verified against source 2026-07-23: 50 canonical effects + 2 deny-only,
+no drift.** Regenerate this page from that file if in doubt — do not hand-edit the set. *(The per-section counts
+below — "the 45", "23 of the 45 are secure-required" — are pre-2026-07-23 and pending a recount; the coverage gate
+above is authoritative that every canonical effect has an entry.)*
 
 **Badge legend** (per effect):
 - **secure-tier** — declaring or using this from a `flow`/`guarded` declaration under-declares the obligation and
@@ -125,6 +127,26 @@ cache so the capability model can tell durable stores from ephemeral app state.
 a pure flow may not perform.
 **Inferred from** — the `StateWrite` capability bit.
 **Result** — authorises state mutation; undeclared → `FUNGI-EFFECT-001`.
+
+#### `vault.read`
+**What** — read a variable value from the governed **vault**: the sanctioned channel for state that crosses
+*between* flows (fetch a value another flow saved — the replacement for global mutable state). Per-flow-per-variable
+permissioned — the `vault {}` declaration's entry allow-list gates who may reach it, and the reading flow declares
+`vault.read`. **Distinct** from the legacy `vault.secret` call-pattern, which infers `secret.read` (a *credential*
+read), not this cross-flow-state effect. (Owner-ruled canonical 2026-07-23; tier assignment — whether a vault read
+should be pure-forbidden — is an open refinement, so it currently carries no tier badge.)
+**Inferred from** — reading a vault entry via `secure.<name>`; the governance verifier **requires** `vault.read`
+whenever a flow reads vault state (`FUNGI-VAULT-003` if omitted).
+**Result** — authorises vault reads; a vault-reading flow that omits it is `FUNGI-VAULT-003`.
+
+#### `vault.write`
+**What** — write a variable value to the governed vault (save state for another flow to fetch) — the governed
+cross-flow-state mutation. Per-flow-per-variable permissioned by the `vault {}` declaration, and a write must go
+through `mut secure.<name>` (a readonly entry cannot be mutated). Distinct from `vault.secret`→`secret.read`.
+(Owner-ruled canonical 2026-07-23; secure-tier assignment is an open refinement — currently no tier badge.)
+**Inferred from** — mutating a vault entry via `mut secure.<name>`; the governance verifier **requires**
+`vault.write` whenever a flow writes vault state (`FUNGI-VAULT-004` if omitted).
+**Result** — authorises vault writes; a vault-writing flow that omits it is `FUNGI-VAULT-004`.
 
 #### `ledger.mutate`  · secure-tier · pure-forbidden
 **What** — append to or mutate an audit ledger — a composite of `storage.write` + `audit.write` given its own name
