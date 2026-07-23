@@ -493,12 +493,12 @@ run("wasmtime-presence", "node", ["scripts/audit-wasmtime-presence.mjs"]);
 // u2-version-floor — U2 admission provenance: every SIGNED package manifest must carry the
 //   compilerVersion of the compiler that built it (generateManifest stamps it inside the SIGNED body;
 //   a signature proves provenance, never fidelity — the floor is what recalls pre-#140/#163
-//   placeholder-bodied artifacts). REPORT-ONLY here until the owner's U2 re-sign ceremony completes
-//   (runbook step 4.8 flips this to --enforce: absent field ⟹ refuse). Report mode never reds the
-//   phase-close but names every PRE-FLOOR row loudly — a report-only gate whose output reads like a
-//   pass would be the signal-conflation class. Self-tested truth table incl. the no-op alarm
-//   (zero measurable rows under --enforce ⟹ exit 1: cannot-attest is not a pass).
-run("u2-version-floor", "node", ["scripts/audit-u2-version-floor.mjs"]);
+//   placeholder-bodied artifacts). ★ ENFORCED since 2026-07-23 (U2 ceremony step 4.8): the owner
+//   re-signed the ceremony set under 942d6b2726b0a991 with the stamp (`596bae4e`), every signed
+//   package manifest measures stamped, so absent-field ⟹ exit 1 (refuse) is now permanent.
+//   Fail-closed corners: an UNREADABLE manifest counts pre-floor (cannot prove stamped), and zero
+//   measurable rows ⟹ exit 1 (cannot-attest is not a pass — the no-op alarm). Self-tested truth table.
+run("u2-version-floor", "node", ["scripts/audit-u2-version-floor.mjs", "--enforce"]);
 
 // ── Doc-freshness gates: previously unwired (Bob review 2026-07) ────────────────────────────────────
 // Documentation drift in a language specification is a security issue: a stale spec that disagrees with
