@@ -4,7 +4,22 @@ Living task list. Authoritative forward view: `../ZTF-Knowledge-Bases/galerina-r
 Live per-item state also lives in the in-session task board + `../ZTF-Knowledge-Bases/coordination/` (main↔R&D).
 The dated blocks below are a historical log; the **CURRENT STATE** block is the head.
 
-## 📍 CURRENT STATE — 2026-07-23 (U2 ceremony COMPLETE + floor ENFORCED · parser fail-closed · token-kind arc ACTIVE)
+## 📍 CURRENT STATE — 2026-07-23 (compiler self-hosting RD-0528 + crypto-agility 0099 part 1 + parameter-enhancements commission · pre-flip battery run)
+
+**Forward view:** `roadmap-2026-07-23.md`. This head supersedes the U2-ceremony block below — U2 is DONE + enforced, and the token-kind arc is LIVE-COMPLETE (not "active"). Owner unlocked the I-2/I-4/crypto/DSS gates; key bytes stay the owner's.
+
+### Session deliverables (since the U2 ceremony)
+
+- **Token-kind arc LIVE-COMPLETE.** The dispatch-wildcard `==` fail-open closed (records/lists structural, `195804fd`); the live twin `Token.kind == "…"` sites migrated value-based (`7d603948` underscore lexer · `d622b464` policy · `72e85535` guard+conforms_to). No broken kind-compare remains. `a1` (full enum-value evaluation) is deferred as a coordinated interp+WASM-emitter change (interp-only breaks the R3 parity gate).
+- **Crypto-agility (0099) part 1** (`eec56499` + `1c437ca`): `governance/crypto-suites.json` mirrors the authoritative signature-suite register (3 domain-separated families) + a fail-closed reader (`crypto-suites.mjs`: only an active suite signs, a retired suite keeps verifying, unknown/malformed denies), 18/18. Carries the `signProofGraphHybrid`→v1 signer-downgrade finding for the part-3 gate. Parts 2–3 (dispatcher + conformance gate) queued.
+- **Compiler self-hosting I-3 oracle** — 3 tranches over the REAL self-hosted pipeline, 31/31: type-correctness (FUNGI-TYPE), parse-correctness (FUNGI-PARSE-001..004, `0f3a7761`), governance-correctness (FUNGI-GOV-002 + FUNGI-VAL-001, `e1a9112c`; + safety_critical VAL-001/002 end-to-end `aec10ce0`).
+- **Finding (d)** (`d6b27b64`): the self-hosted parser now extracts `classification` + `deterministic` from the `value{}`/`safety{}` contract sub-blocks — the **parser-flip precondition** (R&D 0116). 4968/4968, wat-p9-parser-parity green, #105-admit. Two rule-10 drift findings: the stage-hash baseline was stale for parser since `72e85535` (fixed); the gather's **shared cross-stage intern table** couples per-stage hashes (a flip-ledger precondition — isolate per-stage compilation before I-4).
+- **Hardened Border** (`b2dc4d97`): allow `node:url` in `@galerina/core-compiler` (a `fileURLToPath` import added in U2 without the policy widening — latent-red, now green; border 97/0).
+- **Parameter-enhancements commission (RD 0119) item 1** (`8394c62f`): `docs/language/fungi/parameters.md` — source-grounded parameter reference (the free win). Flagship (three-valued K3 parameter admission) is next, R&D co-designs; owner elevated the commission to before-`.ts`-switch.
+- **Pre-flip battery (owner-asked):** graph-all 6/6 green (project 6883n/7153e · integrity 0 · **border 97/0** · kb/memory/dev-tool clean) · full test suite green (exit 0) · phase-close green EXCEPT two reds — (1) `effects:corpus`: the 4 vault `vault.read/write` examples (non-canonical → FUNGI-EFFECT-004), **owner-routed to R&D** to decide+spec (`0124`); (2) `artifact-drift`: a **PRE-EXISTING** diagnostic-code registry ratchet growth (phantom 111→112, dead 8→13, entered at `3081a5b2` a day before this session — the taxonomy burn-down #86, NOT blind-bumpable).
+- **Flip-prereq set** (all before the `.ts` switch): finding-d ✓ · parameter enhancements (flagship) · per-stage intern isolation · usedEffects derive-not-field-read confirm · the vault-effects decision (R&D) · the artifact-drift hygiene · then the owner's full graph+audit+tests battery.
+
+## 📍 2026-07-23 (earlier, superseded) — U2 ceremony COMPLETE + floor ENFORCED · parser fail-closed · token-kind arc
 
 **Forward view:** `roadmap-2026-07-23.md` (generated status block + the ladder). Compiler pkg last evidenced
 **4,930/4,930 · 0 fail**; drift gate green; gate-selftests 69 gates · 56 guarded · 0 violations.
