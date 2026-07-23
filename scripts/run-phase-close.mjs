@@ -587,6 +587,13 @@ run("tests:cli-invoke-marshal", "node",
   ["--test", "tests/cli-invoke-marshal/cli-invoke-marshal.test.mjs"],
   { silent: false });
 
+// ── 7d. Crypto-suite register reader (crypto-agility part 1 — fail-closed suite dispatch) ──
+//        The register names every signature suite + its signer/verifier; only the active suite
+//        may sign, a retired suite keeps verifying (iron rule). Parts 2/3 dispatch + gate on it.
+run("tests:crypto-suites", "node",
+  ["--test", "tests/crypto-suites/crypto-suites.test.mjs"],
+  { silent: false });
+
 // ── Summary ──
 console.log("\n── phase-close summary ──");
 let anyFail = false;

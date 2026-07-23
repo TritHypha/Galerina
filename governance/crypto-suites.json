@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "kind": "galerina.crypto-suite-register",
+  "purpose": "Central index of every Galerina signature SUITE: its id, algorithms, domain/context, status, and the signer + verifier bound to it. Mirror of the authoritative crypto-suite register (the source of truth); this file is kept reconciled to it so the runtime version-dispatch verifier and the conformance gate read one shared list.",
+  "reconciledAtRef": "72e85535",
+  "ironRule": "Retiring a suite means setting its status to verify-only-retired and KEEPING its verifier — never delete a verifier. A verifier verifies everything that suite ever signed; removing it makes historical artifacts fail admission.",
+  "envelopeScope": "Three domain-separated signing families (governance-signature, audit-attestation, bridge-manifest), deliberately cross-protocol-separated so one ML-DSA key cannot be confused between surfaces. Version-dispatch happens WITHIN each domain, never across.",
+  "statusVocabulary": {
+    "active-for-signing": "production default; may sign new artifacts and verify existing ones",
+    "verify-only-retired": "must NOT sign new artifacts; MUST keep verifying old ones (the iron rule)",
+    "open-decision": "code-signable today but policy-undecided; treated as NOT signable until the owner rules, still verifiable",
+    "planned": "documented but not implemented; no signer and no verifier — never signs or verifies"
+  },
+  "domains": [
+    {
+      "id": "governance-signature",
+      "description": "ProofGraph + .lmanifest governance signature.",
+      "context": "galerina.proofgraph.governance.v2",
+      "sourceModule": "proof-graph.ts",
+      "suites": [
+        {
+          "suiteId": "fungi.gov.sig.v1",
+          "algorithms": ["ed25519"],
+          "status": "open-decision",
+          "note": "Code-signable via signProofGraph and via the signProofGraphHybrid non-hybrid-key fallback, but NOT the production default. See securityFindings[signer-downgrade-fallback] and openDecisions[v1-retirement].",
+          "signer": "signProofGraph",
+          "verifier": "verifyGovernanceSignature"
+        },
+        {
+          "suiteId": "fungi.gov.sig.v2",
+          "algorithms": ["ed25519", "ml-dsa-65"],
+          "status": "active-for-signing",
+          "note": "Certified/production default; the signing CLI pins this suite at multiple sites. Hybrid Ed25519 + ML-DSA-65.",
+          "signer": "signProofGraphHybrid",
+          "verifier": "verifyGovernanceSignatureHybrid",
+          "additionalVerifier": "makeLmanifestHybridVerifier"
+        },
+        {
+          "suiteId": "fungi.gov.sig.v3",
+          "algorithms": ["ml-dsa-65"],
+          "status": "planned",
+          "note": "pq_strict, ML-DSA-65 only. Documented in proof-graph.ts; no signer or verifier yet.",
+          "signer": null,
+          "verifier": null
+        }
+      ]
+    },
+    {
+      "id": "audit-attestation",
+      "description": "Signed audit attestation (the Epilogue receipt).",
+      "context": "galerina.audit.attestation",
+      "artifact": "galerina.audit.attestation",
+      "sourceModule": "attestation.ts",
+      "note": "Its own algorithm namespace — the signature.algorithm field carries Ed25519 / Ed25519+ML-DSA-65, NOT fungi.gov.sig.",
+      "suites": [
+        {
+          "suiteId": "Ed25519",
+          "algorithms": ["ed25519"],
+          "status": "active-for-signing",
+          "note": "Stage 1 base. Which of Ed25519 vs the hybrid production emits has not been measured — see whatWasNotChecked.",
+          "signer": "signAttestation",
+          "verifier": "verifyAttestation"
+        },
+        {
+          "suiteId": "Ed25519+ML-DSA-65",
+          "algorithms": ["ed25519", "ml-dsa-65"],
+          "status": "planned",
+          "note": "Stage 2 (planned): ML-DSA (FIPS-204), SLH-DSA (FIPS-205). Verifier exists; hybrid signer not yet built.",
+          "signer": null,
+          "verifier": "verifyAttestationHybrid"
+        }
+      ]
+    },
+    {
+      "id": "bridge-manifest",
+      "description": "Bridge-manifest signing surface (distinct cross-protocol domain).",
+      "status": "placeholder",
+      "note": "The concrete signing scheme was not found in the core-compiler source — it is implemented in another package. Its context, algorithm and verifier must be MEASURED before suites are added here.",
+      "suites": []
+    }
+  ],
+  "securityFindings": [
+    {
+      "id": "signer-downgrade-fallback",
+      "domain": "governance-signature",
+      "summary": "signProofGraphHybrid silently downgrades to Ed25519 (fungi.gov.sig.v1) via signProofGraph when handed a non-hybrid key, or a key missing its ML-DSA private half. This is asymmetric with the verifier discipline: the verifiers reject a v2 signature missing its ML-DSA half (no PQ downgrade), but the signer will emit v1 without objection.",
+      "sourceModule": "proof-graph.ts",
+      "gateAction": "The part-3 conformance gate should flag this fallback and, if v1 is retired, forbid new v1 signing.",
+      "livenessChecked": false,
+      "livenessNote": "Whether any production caller passes a non-hybrid key to signProofGraphHybrid has not been measured."
+    }
+  ],
+  "openDecisions": [
+    {
+      "id": "v1-retirement",
+      "question": "Should fungi.gov.sig.v1 become verify-only-retired — block new v1 signing, keep verifying old v1 artifacts, and fix the hybrid fallback to fail closed?",
+      "lean": "verify-only-retired + gate-enforced",
+      "owner": "pending"
+    },
+    {
+      "id": "v3-trigger",
+      "question": "When to move fungi.gov.sig.v3 (pq_strict, ML-DSA-65 only) from planned to built — a suite-migration ceremony.",
+      "owner": "pending"
+    },
+    {
+      "id": "slh-dsa",
+      "question": "Whether to add SLH-DSA (FIPS-205) as a further audit-attestation suite.",
+      "owner": "pending"
+    }
+  ],
+  "whatWasNotChecked": [
+    "The bridge-manifest signing scheme (implemented outside the core-compiler source).",
+    "Whether the v1 signing paths (signProofGraph and the hybrid fallback) are reachable from any production caller, or are dev/test/legacy only.",
+    "Which of the audit-attestation Ed25519 vs hybrid suites production emits today."
+  ]
+}
