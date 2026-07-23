@@ -171,12 +171,12 @@ const MUST_PASS_PARSE = [
 ];
 
 // Tranche 3 — governance-correctness via the REAL pipeline (parse -> governance checker), all
-// MEASURED 2026-07-23. Reachable rules: verifyGovernance FUNGI-GOV-002 (a secure flow must declare
-// >=1 effect) + checkBodyGovernance FUNGI-VAL-001 (a secure flow must CALL audit in its body). NOT
-// reachable via the pipeline: the classification-based VAL-001/002 (safety_critical) + declared-
-// effect checks — the parser hardcodes classification="", deterministic=false, usedEffects=[]
-// (parser.fungi:1994-1996), so those rules only fire on hand-built FlowDecl records (the existing
-// self-hosted-governance-verifier.test.mjs). That parser metadata gap is a separate R&D finding.
+// MEASURED. Reachable rules: verifyGovernance FUNGI-GOV-002 (a secure flow must declare >=1 effect);
+// checkBodyGovernance FUNGI-VAL-001 (a secure flow must CALL audit in its body); and — since finding
+// (d) (d6b27b64) taught the parser to extract classification + deterministic from the value{}/safety{}
+// contract sub-blocks — the classification-based safety_critical checks verifyGovernance
+// FUNGI-VAL-001/002 now fire END-TO-END from source (GOV_SAFETY below). Still NOT pipeline-reachable:
+// the declared-effect checks needing usedEffects (still body-decomposed, left empty by the parser).
 const GOV_VERIFY = [
   { label: "secure flow with no effects -> GOV-002", src: `secure flow charge() -> Int { return 1 }`, expect: "FUNGI-GOV-002" },
   { label: "pure flow -> passes governance", src: `pure flow add(a: Int) -> Int { return a }`, expect: null },
@@ -186,6 +186,16 @@ const GOV_BODY = [
   { label: "secure flow whose body calls auditWrite -> passes", src: `secure flow charge() -> Int { auditWrite() return 1 }`, expect: null },
   { label: "secure flow whose body has no audit call -> VAL-001", src: `secure flow charge() -> Int { doThing() return 1 }`, expect: "FUNGI-VAL-001" },
   { label: "non-secure (pure) flow needs no audit -> passes", src: `pure flow compute() -> Int { doThing() return 1 }`, expect: null },
+];
+// Tranche 3b — safety_critical governance END-TO-END, unlocked by finding (d). The parser now extracts
+// classification (value{}) + deterministic (safety{}), so verifyGovernance's FUNGI-VAL-001 (no audit
+// effect) / VAL-002 (not deterministic) fire from real SOURCE, not just hand-built records. `contains`
+// is a list because a safety_critical flow can trip both at once. All MEASURED.
+const GOV_SAFETY = [
+  { label: "safety_critical, no audit + not deterministic -> VAL-001 + VAL-002", src: `guarded flow fire() -> Int\ncontract { value { classification safety_critical } effects { hw.write } } { return 1 }`, contains: ["FUNGI-VAL-001", "FUNGI-VAL-002"] },
+  { label: "safety_critical, audit + deterministic -> passes", src: `guarded flow fire() -> Int\ncontract { value { classification safety_critical } effects { audit.write } safety { require deterministic_execution } } { return 1 }`, contains: [] },
+  { label: "safety_critical, audit but NOT deterministic -> VAL-002", src: `guarded flow fire() -> Int\ncontract { value { classification safety_critical } effects { audit.write } } { return 1 }`, contains: ["FUNGI-VAL-002"] },
+  { label: "standard classification -> no safety_critical checks (passes)", src: `guarded flow ok() -> Int\ncontract { value { classification standard } effects { hw.write } } { return 1 }`, contains: [] },
 ];
 
 describe("RD-0528 I-3 functional corpus (tranche 1: type-correctness) — MUST-PASS", () => {
@@ -249,12 +259,23 @@ describe("RD-0528 I-3 functional corpus (tranche 3: governance-correctness) — 
   }
 });
 
+describe("RD-0528 I-3 functional corpus (tranche 3b: safety_critical VAL via parse->classification, finding d)", () => {
+  for (const c of GOV_SAFETY) {
+    it(`${c.contains.length ? "rejects" : "accepts"}: ${c.label}`, async () => {
+      const codes = await govCodes(c.src, "verifyGovernance");
+      for (const code of c.contains) assert.ok(codes.includes(code), `expected ${code}, got ${JSON.stringify(codes)}`);
+      if (c.contains.length === 0) assert.deepEqual(codes, [], `expected clean governance, got ${JSON.stringify(codes)}`);
+    });
+  }
+});
+
 describe("RD-0528 I-3 functional corpus — non-vacuity guard", () => {
   it("the corpus carries known-bad cases (a corpus that can only pass proves nothing)", () => {
     assert.ok(MUST_FAIL.length >= 5, "the type must-fail set must be non-trivial");
     assert.ok(MUST_PASS.length >= 3, "the type must-pass set must be non-trivial");
     assert.ok(MUST_FAIL_PARSE.length >= 4, "the parse must-fail set must be non-trivial");
     assert.ok(GOV_VERIFY.some((c) => c.expect) && GOV_BODY.some((c) => c.expect), "the governance corpus must carry reject cases");
+    assert.ok(GOV_SAFETY.some((c) => c.contains.length > 0), "the safety_critical governance corpus must carry reject cases");
   });
   it("the parse corpus exercises every FUNGI-PARSE code (001..004), not just one path", () => {
     const covered = new Set(MUST_FAIL_PARSE.map((c) => c.contains));
@@ -262,9 +283,11 @@ describe("RD-0528 I-3 functional corpus — non-vacuity guard", () => {
       assert.ok(covered.has(code), `the parse corpus must exercise ${code}`);
     }
   });
-  it("the governance corpus exercises both reachable pipeline codes (GOV-002 + VAL-001)", () => {
+  it("the governance corpus exercises every reachable pipeline code (GOV-002 · VAL-001 · VAL-002)", () => {
     const covered = new Set([...GOV_VERIFY, ...GOV_BODY].map((c) => c.expect).filter(Boolean));
-    assert.ok(covered.has("FUNGI-GOV-002"), "must exercise FUNGI-GOV-002 (verifyGovernance, parse-driven)");
-    assert.ok(covered.has("FUNGI-VAL-001"), "must exercise FUNGI-VAL-001 (checkBodyGovernance, parse-driven)");
+    for (const c of GOV_SAFETY) for (const code of c.contains) covered.add(code);
+    assert.ok(covered.has("FUNGI-GOV-002"), "must exercise FUNGI-GOV-002 (verifyGovernance secure-no-effects)");
+    assert.ok(covered.has("FUNGI-VAL-001"), "must exercise FUNGI-VAL-001 (body-audit + safety_critical no-audit)");
+    assert.ok(covered.has("FUNGI-VAL-002"), "must exercise FUNGI-VAL-002 (safety_critical not-deterministic, unlocked by finding d)");
   });
 });
