@@ -1,5 +1,6 @@
 /**
- * RD-0528 I-3 — self-hosted FUNCTIONAL-correctness corpus (tranche 1: type-correctness).
+ * RD-0528 I-3 — self-hosted FUNCTIONAL-correctness corpus (tranche 1: type-correctness;
+ * tranche 2: parse-correctness — the parser's own FUNGI-PARSE-00x fail-closed reporting).
  *
  * Owner ruling 2026-07-22: I-3 (the oracle that must hold before the .ts compiler can be
  * retired) is FUNCTIONAL correctness — the self-hosted pipeline accepts correct programs and
@@ -55,6 +56,27 @@ const readDiags = (res) =>
     return { code: x.fields.get("code").value, flowName: x.fields.get("flowName").value };
   });
 
+/**
+ * Run a source string through lex -> parse and return the self-hosted parser's OWN error
+ * codes (FUNGI-PARSE-00x). This is the reject-bad oracle at the PARSE stage — distinct from
+ * typecheck(), which REFUSES to run when the parser reported errors (driver fail-closed). A
+ * malformed program must be caught here, before the type-checker ever sees it.
+ */
+async function parseErrorCodes(source) {
+  const lexRes = await executeFlow("tokenize", new Map([["source", vStr(source)]]), lexer.ast);
+  let tokensVal = lexRes.value ?? lexRes;
+  if (tokensVal.__tag === "ok") tokensVal = tokensVal.value;
+  const parseRes = await executeFlow("parseFlows", new Map([["tokens", tokensVal]]), parser.ast);
+  const prRec = parseRes.value ?? parseRes;
+  const errs = prRec.fields.get("errors");
+  const items = errs?.__tag === "list" ? errs.items : [];
+  return items.map((e) => {
+    const s = (e.value ?? e).value ?? (e.value ?? e);
+    const m = typeof s === "string" ? s.match(/^(FUNGI-PARSE-\d+)/) : null;
+    return m ? m[1] : String(s);
+  });
+}
+
 /** Run a source string through the self-hosted lex -> parse -> type-check pipeline. */
 async function typecheck(source) {
   const lexRes = await executeFlow("tokenize", new Map([["source", vStr(source)]]), lexer.ast);
@@ -96,6 +118,28 @@ const MUST_FAIL = [
   { label: "one bad flow beside a good one — only the bad flagged", src: `pure flow bad6() -> String { return 42 }\npure flow ok(a: Int) -> Int { return a }`, expect: { code: "FUNGI-TYPE-008", flowName: "bad6" } },
 ];
 
+// Tranche 2 — parse-correctness. Malformed programs the self-hosted PARSER must reject with a
+// FUNGI-PARSE-00x code (all MEASURED 2026-07-23). Several of these previously fell through to an
+// accidental FUNGI-TYPE-001 catch or FAILED OPEN silently; the landed parser fail-closed reporting
+// (FUNGI-PARSE-001..004) now catches them at the parse stage, and typecheck()'s driver refusal
+// stops any of them reaching the type-checker. Each asserts the errors list CONTAINS the expected
+// code (a missing brace legitimately raises two: "no body" + a stray top-level token).
+const MUST_FAIL_PARSE = [
+  { label: "garbage tokens at top level", src: `!!! @@@ ###`, contains: "FUNGI-PARSE-001" },
+  { label: "trailing non-grammar token after a valid flow", src: `pure flow f() -> Int { return 1 } zzz`, contains: "FUNGI-PARSE-001" },
+  { label: "qualifier not followed by 'flow'", src: `pure zzz f() -> Int { return 1 }`, contains: "FUNGI-PARSE-002" },
+  { label: "dangling 'flow' keyword at EOF (no name)", src: `pure flow`, contains: "FUNGI-PARSE-003" },
+  { label: "unclosed params, no body brace", src: `pure flow f(a: Int -> Int { return 1 }`, contains: "FUNGI-PARSE-004" },
+  { label: "flow header with no body block", src: `pure flow f() -> Int return 1`, contains: "FUNGI-PARSE-004" },
+];
+
+// The false-positive guard: well-formed input — INCLUDING a comment-only file, which is
+// legitimately empty (R&D 0050: an empty program is not a parse error) — must yield ZERO parse errors.
+const MUST_PASS_PARSE = [
+  { label: "a valid flow", src: `pure flow f() -> Int { return 1 }` },
+  { label: "comment-only (legitimately empty, not a parse error)", src: `// just a comment` },
+];
+
 describe("RD-0528 I-3 functional corpus (tranche 1: type-correctness) — MUST-PASS", () => {
   for (const c of MUST_PASS) {
     it(`accepts: ${c.label}`, async () => {
@@ -118,9 +162,35 @@ describe("RD-0528 I-3 functional corpus (tranche 1: type-correctness) — MUST-F
   }
 });
 
+describe("RD-0528 I-3 functional corpus (tranche 2: parse-correctness) — MUST-FAIL (fail-closed)", () => {
+  for (const c of MUST_FAIL_PARSE) {
+    it(`parser rejects: ${c.label} -> ${c.contains}`, async () => {
+      const codes = await parseErrorCodes(c.src);
+      assert.ok(codes.length > 0, `NON-VACUITY LEAK: a malformed program produced no parse error (${c.label})`);
+      assert.ok(codes.includes(c.contains), `expected ${c.contains} among parse errors, got ${JSON.stringify(codes)}`);
+    });
+  }
+});
+
+describe("RD-0528 I-3 functional corpus (tranche 2: parse-correctness) — MUST-PASS (no false alarm)", () => {
+  for (const c of MUST_PASS_PARSE) {
+    it(`parser accepts: ${c.label}`, async () => {
+      const codes = await parseErrorCodes(c.src);
+      assert.deepEqual(codes, [], `expected zero parse errors, got ${JSON.stringify(codes)}`);
+    });
+  }
+});
+
 describe("RD-0528 I-3 functional corpus — non-vacuity guard", () => {
   it("the corpus carries known-bad cases (a corpus that can only pass proves nothing)", () => {
-    assert.ok(MUST_FAIL.length >= 5, "the must-fail set must be non-trivial");
-    assert.ok(MUST_PASS.length >= 3, "the must-pass set must be non-trivial");
+    assert.ok(MUST_FAIL.length >= 5, "the type must-fail set must be non-trivial");
+    assert.ok(MUST_PASS.length >= 3, "the type must-pass set must be non-trivial");
+    assert.ok(MUST_FAIL_PARSE.length >= 4, "the parse must-fail set must be non-trivial");
+  });
+  it("the parse corpus exercises every FUNGI-PARSE code (001..004), not just one path", () => {
+    const covered = new Set(MUST_FAIL_PARSE.map((c) => c.contains));
+    for (const code of ["FUNGI-PARSE-001", "FUNGI-PARSE-002", "FUNGI-PARSE-003", "FUNGI-PARSE-004"]) {
+      assert.ok(covered.has(code), `the parse corpus must exercise ${code}`);
+    }
   });
 });
