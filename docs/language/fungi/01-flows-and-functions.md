@@ -1,7 +1,7 @@
 # 01 — Flows & Functions
 
 > Grounded in: `parser.ts:597` (`parseFlowDecl`), `parser.ts:409-410` / `878-925` (qualifier
-> dispatch), `parser.ts:931-972` (`governed`), `parser.ts:4722` (`uses`), lexer keyword table
+> dispatch), `parser.ts:931-972` (`governed`), lexer keyword table
 > `lexer.ts:131-187`. Real examples: `examples/foundations/validation-utils.fungi`,
 > `examples/healthcare/getPatient.fungi`, `examples/foundations/comment-styles-example.fungi`.
 
@@ -30,9 +30,12 @@ touches:
 
 ### `pure flow` — correct
 
-From `examples/foundations/validation-utils.fungi:18-31`:
+Every `.fungi` file's **first line** must be `@version <integer>` (a versionless file is rejected *before*
+parsing — `FUNGI-SYNTAX-015`); it is shown as the literal first line here and applies to every file you
+convert. From `examples/foundations/validation-utils.fungi:18-31`:
 
 ```fungi
+@version 1
 pure flow validateAge(age: Int) -> Bool
 contract {
   intent "Check age is within acceptable range"
@@ -107,8 +110,9 @@ contract {
   compiler which quantity strictly decreases so a bounded loop provably terminates. Optional; omit
   unless you need it.
 
-After the signature come optional clause blocks — `contract { }`, `access { }`, `uses ...`,
-`authority { }`, `compute ... ` — then the `{ body }`. `contract { }` is by far the most common; see
+After the signature come optional clause blocks — `contract { }`, `access { }`,
+`authority { }`, `compute … ` — then the `{ body }` (a `uses` clause on the header does **not** parse;
+see the warning below). `contract { }` is by far the most common; see
 [02 — Contracts](02-contracts.md).
 
 ## `fn` — local helper functions
@@ -162,22 +166,14 @@ declare `request { }` / `response { }` clauses in the contract (see
 `examples/ai-inference/classifyMessage.fungi`). Treat `route` as available but reach for a governed
 `flow` + `request`/`response` clauses first.
 
-## `uses` — inline capability declaration (the Core-style form)
+## ⚠ `uses` — a Core-style sketch that does NOT parse on a flow header
 
-The Core dialect declares capabilities inline with `uses`, and the parser **does** accept it
-(`parser.ts:4722`):
-
-```fungi
-flow load_secret(user_id: Id) -> Secret
-  uses vault.secrets.read
-{
-  return GlobalVault.secrets.get(user_id)
-}
-```
-
-This is real, but the **dominant, example-backed way** to declare what a flow may do is the
-`contract { effects { ... } }` block. Prefer `effects {}`; know that `uses` exists when you read
-older Core-style code. See [03 — Effects & capabilities](03-effects-and-capabilities.md).
+The Core dialect *sketches* inline capability with `uses`, but **it does not parse on a flow header**:
+`secure flow f() uses vault.secrets.read { … }` → **`FUNGI-PARSE-001: Expected "{", got "uses"`** (verified).
+`uses` is a keyword only *inside* `model { }` blocks. Declare what a flow may do **exclusively** through the
+`contract { effects { … } }` block (and the `access { grant … }` boundary). See
+[03 — Effects & capabilities](03-effects-and-capabilities.md). This section is kept only as a warning so a
+converter does not emit the non-compiling `uses`-header form.
 
 ## The flow-comment rule
 
