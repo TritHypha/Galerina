@@ -85,10 +85,30 @@ test("audit-attestation Ed25519 is active+verifiable; the hybrid is planned but 
   assert.equal(isSuiteVerifiable(REG, AUDIT, "Ed25519+ML-DSA-65"), true, "verifier exists (verifyAttestationHybrid)");
 });
 
-// ── bridge-manifest is a measured-later placeholder ───────────────────────────
-test("bridge-manifest is a placeholder with no suites", () => {
-  assert.deepEqual(listSuites(REG, BRIDGE), []);
-  assert.equal(isSuiteSignable(REG, BRIDGE, "anything"), false);
+// ── bridge-manifest domain (galerina-tower-citizen, cross-package) ────────────
+test("bridge-manifest carries the classical + hybrid suites, both active and verifiable", () => {
+  assert.deepEqual(listSuites(REG, BRIDGE), ["Ed25519", "Ed25519+ML-DSA-65"]);
+  assert.equal(getDomain(REG, BRIDGE).context, "galerina.bridge.manifest.v2");
+  assert.equal(isSuiteSignable(REG, BRIDGE, "Ed25519"), true);
+  assert.equal(getSignerSymbol(REG, BRIDGE, "Ed25519"), "signManifest");
+  assert.equal(getVerifierSymbol(REG, BRIDGE, "Ed25519"), "verifyAttestation");
+  assert.equal(isSuiteSignable(REG, BRIDGE, "Ed25519+ML-DSA-65"), true, "hybrid is built + active here (unlike audit)");
+  assert.equal(getSignerSymbol(REG, BRIDGE, "Ed25519+ML-DSA-65"), "signManifestHybrid");
+  assert.equal(getVerifierSymbol(REG, BRIDGE, "Ed25519+ML-DSA-65"), "verifyAttestationHybrid");
+  assert.equal(isSuiteSignable(REG, BRIDGE, "unknown"), false);
+});
+
+// ── cross-cutting invariant: an active suite must be able to sign AND verify ───
+test("every active-for-signing suite names both a signer and a verifier", () => {
+  for (const domainId of listDomains(REG)) {
+    for (const suiteId of listSuites(REG, domainId)) {
+      const s = getSuite(REG, domainId, suiteId);
+      if (s.status === "active-for-signing") {
+        assert.ok(getSignerSymbol(REG, domainId, suiteId), `${domainId}/${suiteId} is active but names no signer`);
+        assert.ok(getVerifierSymbol(REG, domainId, suiteId), `${domainId}/${suiteId} is active but names no verifier`);
+      }
+    }
+  }
 });
 
 // ── findings + open decisions carried for parts 2/3 and the owner ─────────────

@@ -73,10 +73,29 @@
     },
     {
       "id": "bridge-manifest",
-      "description": "Bridge-manifest signing surface (distinct cross-protocol domain).",
-      "status": "placeholder",
-      "note": "The concrete signing scheme was not found in the core-compiler source — it is implemented in another package. Its context, algorithm and verifier must be MEASURED before suites are added here.",
-      "suites": []
+      "description": "Bridge-manifest signing surface — signs the CF-3 BridgeManifest (deterministic-bridge admission).",
+      "context": "galerina.bridge.manifest.v2",
+      "sourceModule": "bridge-attestation.ts (galerina-tower-citizen)",
+      "note": "A distinct cross-protocol domain, implemented outside the core compiler. Verifiers fail closed with NO silent downgrade: verifyAttestationHybrid runs both halves (logical AND), and a requireHybrid / CRYPTO-002 policy DENIES a classical-only attestation — symmetric discipline, unlike the governance signer fallback.",
+      "refactorPolicy": "The implementing module was flagged possibly-frozen in an earlier note; its recent hardening (hybrid signing, requireHybrid) suggests that flag is stale, but part 2 MUST verify frozen-status before refactoring this domain's dispatch. If frozen, record the suite and handle read-only.",
+      "suites": [
+        {
+          "suiteId": "Ed25519",
+          "algorithms": ["ed25519"],
+          "status": "active-for-signing",
+          "note": "Classical, backward-compatible default. A requireHybrid policy (tier-3 toxic-border admission) denies a classical-only attestation.",
+          "signer": "signManifest",
+          "verifier": "verifyAttestation"
+        },
+        {
+          "suiteId": "Ed25519+ML-DSA-65",
+          "algorithms": ["ed25519", "ml-dsa-65"],
+          "status": "active-for-signing",
+          "note": "Hybrid, required for tier-3 toxic-border admission. verifyAttestationHybrid verifies both halves (logical AND, no PQ downgrade).",
+          "signer": "signManifestHybrid",
+          "verifier": "verifyAttestationHybrid"
+        }
+      ]
     }
   ],
   "securityFindings": [
@@ -109,7 +128,7 @@
     }
   ],
   "whatWasNotChecked": [
-    "The bridge-manifest signing scheme (implemented outside the core-compiler source).",
+    "Whether the bridge-manifest module is under an active code freeze — the possibly-frozen flag looks stale given its recent hybrid/requireHybrid hardening, but was not definitively confirmed lifted; part 2 verifies before refactoring.",
     "Whether the v1 signing paths (signProofGraph and the hybrid fallback) are reachable from any production caller, or are dev/test/legacy only.",
     "Which of the audit-attestation Ed25519 vs hybrid suites production emits today."
   ]
