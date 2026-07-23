@@ -94,6 +94,19 @@ const SEED = [
   { id: "u64-div-high-bit", ...bin("UInt64", "/", I)("UInt64", "UInt64"), calls: [{ args: [18446744073709551615n, 2n] }] }, // 2^64-1 / 2 = 2^63-1 (a signed lowering gives 0)
   { id: "u64-mod-high-bit", ...bin("UInt64", "%", I)("UInt64", "UInt64"), calls: [{ args: [18446744073709551615n, 10n] }] }, // 2^64-1 % 10 = 5
   { id: "u64-cmp-high-bit", ...bin("Bool", ">", I)("UInt64", "UInt64"), calls: [{ args: [18446744073709551615n, 1n] }] }, // 2^64-1 > 1 = true (a signed lowering gives false)
+  // ── D1 (RD-0529): the `invariant { ensure … }` postcondition is a RUNTIME fail-closed trap in standalone
+  //    WASM (MEASURED — not static-only as the parser comment suggests: a violated ensure lowers to a runtime
+  //    check + unreachable). This proves the fail-closed contract is engine-consistent for a governance-adjacent
+  //    class beyond overflow/÷0/non-finite. (Non-exhaustive match is COMPILE-caught FUNGI-MATCH-001, not a
+  //    runtime trap; capability-deny is DSS/governance — M1's domain. Neither is a standalone-flow runtime trap.)
+  // MEASURED: on a violated ensure, the standalone WASM traps (V8 + wasmtime enforce) but the Stage-A
+  //   interpreter RETURNS the value (executeFlow → {audit.result:"ok", value}) — it does NOT enforce the
+  //   invariant. So this is `wasmEnforcedTrap`, NOT a symmetric all-engine trap: assert V8≡wasmtime BOTH
+  //   trap (the fail-closed contract), and RECORD the interp non-enforcement informationally (forward-safe —
+  //   if the interp is later fixed to enforce, the finding count just drops; nothing to un-assert). Whether
+  //   the interp SHOULD enforce it is a spec question surfaced to R&D, not decided here.
+  { id: "ensure-invariant-trap", src: `pure flow f(a: Int) -> Int\ncontract { effects {} invariant { ensure a > 0 } }\n{ return a }`, wrap: I, wasmEnforcedTrap: true, calls: [{ args: [-5] }, { args: [0] }] },
+  { id: "ensure-invariant-pass", src: `pure flow f(a: Int) -> Int\ncontract { effects {} invariant { ensure a > 0 } }\n{ return a }`, wrap: I, calls: [{ args: [5] }, { args: [1] }] }, // satisfied ⟹ interp≡V8 both return (a conditional trap, not unconditional)
 ];
 
 // ── compile one program's source to WASM bytes (front-end gated, #141 stub-rejected) ──
@@ -169,7 +182,8 @@ const f64bits = (v) => "0x" + new BigUint64Array(new Float64Array([Number(unwrap
 // engine fails-closed is a REAL divergence (exit 1) — that is the fail-closed conformance this proves.
 const programs = [];
 const divergences = [];
-let calls = 0, valueCalls = 0, trapCalls = 0;
+const interpNotEnforcing = []; // wasmEnforcedTrap cases where the interp returned a value instead of trapping (the finding)
+let calls = 0, valueCalls = 0, trapCalls = 0, wasmEnforcedCalls = 0;
 mkdirSync(OUT, { recursive: true });
 for (const prog of SEED) {
   const u8 = await compile(prog.src, prog.id);
@@ -180,7 +194,15 @@ for (const prog of SEED) {
     const a = await interp(prog.src, "f", call.args, prog.wrap);
     // BigInt args (i64/u64) can't be JSON'd — store them as strings; the Rust leg parses per the module's param type.
     const argsJson = call.args.map((x) => (typeof x === "bigint" ? x.toString() : x));
-    if (prog.trap) {
+    if (prog.wasmEnforcedTrap) {
+      // WASM-ENFORCED trap (D1): the WASM engines enforce a fail-closed trap the interpreter does NOT. Assert
+      // V8 traps (the fail-closed contract; wasmtime re-verifies via expect.trap); RECORD the interp
+      // non-enforcement informationally (forward-safe — never asserted, so an interp fix just drops the count).
+      wasmEnforcedCalls++;
+      if (v8.k !== "TRAP") divergences.push(`${prog.id}(${call.args}): WASM did NOT enforce the invariant — V8 returned ${v8.k}${v8.k === "VALUE" ? `(${canon(v8.value)})` : ""}`);
+      if (a.k !== "TRAP") interpNotEnforcing.push(`${prog.id}(${call.args}): interp returned ${a.k === "VALUE" ? canon(a.value) : a.k} where the WASM enforces the fail-closed trap`);
+      rec.calls.push({ args: argsJson, expect: { trap: true } });
+    } else if (prog.trap) {
       trapCalls++;
       if (v8.k !== "TRAP") divergences.push(`${prog.id}(${call.args}): WASM did NOT fail-closed — V8 returned ${v8.k}${v8.k === "VALUE" ? `(${canon(v8.value)})` : ""}`);
       if (a.k !== "TRAP") divergences.push(`${prog.id}(${call.args}): interpreter did NOT fail-closed — computed ${canon(a.value)} where the WASM traps`);
@@ -197,20 +219,26 @@ for (const prog of SEED) {
 }
 
 const meta = {
-  generated_by: "tools/export-corpus-differential.mjs", rd: "RD-0529 A1",
+  generated_by: "tools/export-corpus-differential.mjs", rd: "RD-0529 A1+A2+D1",
   programs: programs.length, calls, value_calls: valueCalls, trap_calls: trapCalls,
-  note: "interp≡V8 asserted here on every call (values AND fail-closed traps). The wasmtime leg (tests/corpus_differential.rs) re-runs each call through real wasmtime to close interp≡V8≡wasmtime.",
+  wasm_enforced_trap_calls: wasmEnforcedCalls, interp_not_enforcing: interpNotEnforcing.length,
+  note: "interp≡V8 asserted for value + symmetric-trap calls; wasmEnforcedTrap (D1) calls assert V8 traps only (the interp does not enforce the invariant — recorded, not asserted). The wasmtime leg re-runs each call to close V8≡wasmtime (and interp for the symmetric classes).",
 };
 writeFileSync(join(OUT, "corpus-differential.json"), JSON.stringify({ meta, programs }, null, 2) + "\n");
 
-console.log(`A1 corpus differential — interp ≡ V8 over ${programs.length} programs / ${calls} calls (${valueCalls} value · ${trapCalls} trap)`);
-for (const p of programs) console.log(`  · ${p.id.padEnd(20)} ${p.calls.length} call(s)`);
+console.log(`A1 corpus differential — ${programs.length} programs / ${calls} calls (${valueCalls} value · ${trapCalls} symmetric-trap · ${wasmEnforcedCalls} wasm-enforced-trap)`);
+for (const p of programs) console.log(`  · ${p.id.padEnd(22)} ${p.calls.length} call(s)`);
+if (interpNotEnforcing.length) {
+  console.log(`\n  FINDING (D1) — the WASM engines enforce a fail-closed trap the INTERPRETER does not (${interpNotEnforcing.length} call(s)):`);
+  for (const f of interpNotEnforcing) console.log(`    · ${f}`);
+  console.log(`    (the \`invariant { ensure … }\` guarantee is WASM-lowering-only; whether Stage-A SHOULD enforce it is a spec question for R&D.)`);
+}
 if (divergences.length) {
-  console.error(`\n❌ ${divergences.length} interp≡V8 divergence(s):`);
+  console.error(`\n❌ ${divergences.length} divergence(s) (interp≠V8 value, or a WASM engine that did NOT fail-closed):`);
   for (const d of divergences) console.error(`   ${d}`);
   console.error(`\nFixture NOT trustworthy — refusing (exit 1).`);
   process.exit(1);
 }
-console.log(`\n✅ interp ≡ V8 on all ${calls} calls: ${valueCalls} values equal, ${trapCalls} trap classes fail-closed in BOTH. Fixture -> ${OUT}`);
+console.log(`\n✅ ${valueCalls} values interp≡V8 · ${trapCalls} symmetric traps fail-closed in BOTH · ${wasmEnforcedCalls} wasm-enforced traps V8-fail-closed. Fixture -> ${OUT}`);
 console.log(`   ${programs.length} .wasm + corpus-differential.json — ready for the wasmtime leg (tests/corpus_differential.rs).`);
-console.log(`SUMMARY: A1 interp≡V8 ${calls}/${calls} calls agree (${valueCalls} value · ${trapCalls} fail-closed) · wasmtime fixture emitted`);
+console.log(`SUMMARY: A1/A2/D1 ${calls} calls (${valueCalls} value · ${trapCalls} sym-trap · ${wasmEnforcedCalls} wasm-enforced-trap) · ${interpNotEnforcing.length} interp-non-enforce findings · fixture emitted`);

@@ -144,8 +144,11 @@ fn corpus_equals_interp_and_v8_through_wasmtime() -> anyhow::Result<()> {
     );
     assert!(checked >= 30, "corpus coverage too low: only {checked} calls (fixture incomplete — run the exporter)");
     assert!(traps_checked >= 3, "non-vacuity: only {traps_checked} trap classes exercised (need the fail-closed cases)");
+    // Honest scope: this leg proves wasmtime matches the interp≡V8 FIXTURE. For value + symmetric-trap calls
+    // that is the full three-way; for the D1 wasm-enforced-trap calls the fixture encodes V8≡wasmtime only (the
+    // interpreter does not enforce the invariant — recorded by the exporter, not a wasmtime concern here).
     println!(
-        "wasmtime corpus differential: {checked} calls ({traps_checked} fail-closed) — interpreter === V8 === wasmtime OK"
+        "wasmtime corpus differential: {checked} calls ({traps_checked} fail-closed) — wasmtime matches the interp≡V8 fixture OK"
     );
     Ok(())
 }
