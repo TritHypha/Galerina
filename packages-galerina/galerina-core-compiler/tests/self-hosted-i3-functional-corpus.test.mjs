@@ -1,6 +1,8 @@
 /**
  * RD-0528 I-3 — self-hosted FUNCTIONAL-correctness corpus (tranche 1: type-correctness;
- * tranche 2: parse-correctness — the parser's own FUNGI-PARSE-00x fail-closed reporting).
+ * tranche 2: parse-correctness — the parser's own FUNGI-PARSE-00x fail-closed reporting;
+ * tranche 3: governance-correctness — parse -> verifyGovernance/checkBodyGovernance, the REAL
+ * pipeline, distinct from the hand-built-record self-hosted-governance-verifier.test.mjs).
  *
  * Owner ruling 2026-07-22: I-3 (the oracle that must hold before the .ts compiler can be
  * retired) is FUNCTIONAL correctness — the self-hosted pipeline accepts correct programs and
@@ -42,11 +44,12 @@ function load(name) {
   return p;
 }
 
-let lexer, parser, checker;
+let lexer, parser, checker, gov;
 before(() => {
   lexer = load("lexer.fungi");
   parser = load("parser.fungi");
   checker = load("type-checker.fungi");
+  gov = load("governance-verifier.fungi");
 });
 
 const vStr = (s) => ({ __tag: "string", value: s });
@@ -98,6 +101,33 @@ async function typecheck(source) {
   return [...readDiags(checkRes), ...readDiags(bodyRes)];
 }
 
+/** Parse a source string and return the parser's `flows` list value (for the governance runners). */
+async function parseToFlows(source) {
+  const lexRes = await executeFlow("tokenize", new Map([["source", vStr(source)]]), lexer.ast);
+  let tokensVal = lexRes.value ?? lexRes;
+  if (tokensVal.__tag === "ok") tokensVal = tokensVal.value;
+  const parseRes = await executeFlow("parseFlows", new Map([["tokens", tokensVal]]), parser.ast);
+  return (parseRes.value ?? parseRes).fields.get("flows");
+}
+
+/**
+ * Run a source string through parse -> a governance-verifier flow (verifyGovernance or
+ * checkBodyGovernance) and return its diagnostic codes. This is the I-3 value over the existing
+ * self-hosted-governance-verifier.test.mjs, which drives these checkers with HAND-BUILT FlowDecl
+ * records: driving from the PARSER's output proves the parser extracts the governance-relevant
+ * shape (the `secure` kind, the body call-exprs) that the rules enforce.
+ */
+async function govCodes(source, flowName) {
+  const flows = await parseToFlows(source);
+  const r = await executeFlow(
+    flowName, new Map([["flows", flows]]), gov.ast, gov.flows,
+    undefined, undefined, { pureFastPath: false },
+  );
+  const rec = r.value ?? r;
+  const d = rec.fields.get("diagnostics");
+  return d?.__tag === "list" ? d.items.map((x) => (x.value ?? x).fields.get("code").value) : [];
+}
+
 // ── The corpus (measured 2026-07-22) ───────────────────────────────────────────
 
 // Correct programs: the self-hosted type-checker MUST accept (zero diagnostics).
@@ -138,6 +168,24 @@ const MUST_FAIL_PARSE = [
 const MUST_PASS_PARSE = [
   { label: "a valid flow", src: `pure flow f() -> Int { return 1 }` },
   { label: "comment-only (legitimately empty, not a parse error)", src: `// just a comment` },
+];
+
+// Tranche 3 — governance-correctness via the REAL pipeline (parse -> governance checker), all
+// MEASURED 2026-07-23. Reachable rules: verifyGovernance FUNGI-GOV-002 (a secure flow must declare
+// >=1 effect) + checkBodyGovernance FUNGI-VAL-001 (a secure flow must CALL audit in its body). NOT
+// reachable via the pipeline: the classification-based VAL-001/002 (safety_critical) + declared-
+// effect checks — the parser hardcodes classification="", deterministic=false, usedEffects=[]
+// (parser.fungi:1994-1996), so those rules only fire on hand-built FlowDecl records (the existing
+// self-hosted-governance-verifier.test.mjs). That parser metadata gap is a separate R&D finding.
+const GOV_VERIFY = [
+  { label: "secure flow with no effects -> GOV-002", src: `secure flow charge() -> Int { return 1 }`, expect: "FUNGI-GOV-002" },
+  { label: "pure flow -> passes governance", src: `pure flow add(a: Int) -> Int { return a }`, expect: null },
+  { label: "plain flow -> passes governance", src: `flow orchestrate() -> Int { return 1 }`, expect: null },
+];
+const GOV_BODY = [
+  { label: "secure flow whose body calls auditWrite -> passes", src: `secure flow charge() -> Int { auditWrite() return 1 }`, expect: null },
+  { label: "secure flow whose body has no audit call -> VAL-001", src: `secure flow charge() -> Int { doThing() return 1 }`, expect: "FUNGI-VAL-001" },
+  { label: "non-secure (pure) flow needs no audit -> passes", src: `pure flow compute() -> Int { doThing() return 1 }`, expect: null },
 ];
 
 describe("RD-0528 I-3 functional corpus (tranche 1: type-correctness) — MUST-PASS", () => {
@@ -181,16 +229,42 @@ describe("RD-0528 I-3 functional corpus (tranche 2: parse-correctness) — MUST-
   }
 });
 
+describe("RD-0528 I-3 functional corpus (tranche 3: governance-correctness) — verifyGovernance (parse -> govern)", () => {
+  for (const c of GOV_VERIFY) {
+    it(`${c.expect ? "rejects" : "accepts"}: ${c.label}`, async () => {
+      const codes = await govCodes(c.src, "verifyGovernance");
+      if (c.expect) assert.ok(codes.includes(c.expect), `expected ${c.expect}, got ${JSON.stringify(codes)}`);
+      else assert.deepEqual(codes, [], `expected clean governance, got ${JSON.stringify(codes)}`);
+    });
+  }
+});
+
+describe("RD-0528 I-3 functional corpus (tranche 3: governance-correctness) — checkBodyGovernance (parse -> body audit)", () => {
+  for (const c of GOV_BODY) {
+    it(`${c.expect ? "rejects" : "accepts"}: ${c.label}`, async () => {
+      const codes = await govCodes(c.src, "checkBodyGovernance");
+      if (c.expect) assert.ok(codes.includes(c.expect), `expected ${c.expect}, got ${JSON.stringify(codes)}`);
+      else assert.deepEqual(codes, [], `expected clean governance, got ${JSON.stringify(codes)}`);
+    });
+  }
+});
+
 describe("RD-0528 I-3 functional corpus — non-vacuity guard", () => {
   it("the corpus carries known-bad cases (a corpus that can only pass proves nothing)", () => {
     assert.ok(MUST_FAIL.length >= 5, "the type must-fail set must be non-trivial");
     assert.ok(MUST_PASS.length >= 3, "the type must-pass set must be non-trivial");
     assert.ok(MUST_FAIL_PARSE.length >= 4, "the parse must-fail set must be non-trivial");
+    assert.ok(GOV_VERIFY.some((c) => c.expect) && GOV_BODY.some((c) => c.expect), "the governance corpus must carry reject cases");
   });
   it("the parse corpus exercises every FUNGI-PARSE code (001..004), not just one path", () => {
     const covered = new Set(MUST_FAIL_PARSE.map((c) => c.contains));
     for (const code of ["FUNGI-PARSE-001", "FUNGI-PARSE-002", "FUNGI-PARSE-003", "FUNGI-PARSE-004"]) {
       assert.ok(covered.has(code), `the parse corpus must exercise ${code}`);
     }
+  });
+  it("the governance corpus exercises both reachable pipeline codes (GOV-002 + VAL-001)", () => {
+    const covered = new Set([...GOV_VERIFY, ...GOV_BODY].map((c) => c.expect).filter(Boolean));
+    assert.ok(covered.has("FUNGI-GOV-002"), "must exercise FUNGI-GOV-002 (verifyGovernance, parse-driven)");
+    assert.ok(covered.has("FUNGI-VAL-001"), "must exercise FUNGI-VAL-001 (checkBodyGovernance, parse-driven)");
   });
 });
